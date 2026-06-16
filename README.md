@@ -6,17 +6,18 @@
 
 最后更新：2026-06-16
 
+
+关联文档：
+
+- [业务流程图](./ztor-eshop-business-flow.md)
+- [需求拆解文档](./ztor-eshop-requirements-breakdown.md)
+
 原型入口：
 
 - [商品管理](https://ztor-v2-creator-studio.vercel.app/e-shop.html)
 - [订单管理](https://ztor-v2-creator-studio.vercel.app/orders.html)
 - [商店设置](https://ztor-v2-creator-studio.vercel.app/store-settings.html)
 - [收入管理](https://ztor-v2-creator-studio.vercel.app/earnings.html)
-
-关联文档：
-
-- [业务流程图](./docs/ztor-eshop-business-flow.md)
-- [需求拆解文档](./docs/ztor-eshop-requirements-breakdown.md)
 
 
 ### Checklist
