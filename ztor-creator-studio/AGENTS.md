@@ -1,11 +1,12 @@
 # AGENTS.md — ztor Creator Studio 原型 site（共編規則）
 
-本檔供 Codex 使用，與同目錄 `CLAUDE.md`（給 Claude）維持相同規則。本 repo（`ztor20/ztor-creator-studio`）是 ztor Creator Studio 的原型 site，採**分支 + Pull Request** 共編，`main` 只放穩定版、**不直接推**。
+本檔供 Codex 使用，與同目錄 `CLAUDE.md`（給 Claude）維持相同規則。ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`ztor20/Creator-Studio`](https://github.com/ztor20/Creator-Studio)，內容位於該 repo 的 `ztor-creator-studio/` 子目錄（git subtree）；舊獨立 repo `ztor20/ztor-creator-studio` 已封存（唯讀）。** 本機 vault 的 `site/`（就是這層）仍是你編輯的工作目錄；發版採**分支 + Pull Request**、`main` 只放穩定版、**不直接推**。
 
 ## 編輯 → 提交流程（鐵律）
 
-- **每次編輯完本 repo 的檔，主動詢問使用者「要 commit 嗎？」**——不要自動 commit，先問。
-- 使用者要 commit 時，跑 `./collab.sh "<變更說明>"`：開 `edit/<時間戳>` 分支 → commit → push → 自動開 PR，並把 PR 連結回報給使用者。
+- **每次編輯完 `site/` 的檔，主動詢問使用者「要 commit 嗎？」**——不要自動 commit，先問。
+- 在 vault `site/`（本層）編輯；**不要直接改 monorepo 的 `ztor-creator-studio/` 子目錄**（collab.sh 會「清空再灌」同步、直接改動會被覆蓋）。
+- 使用者要 commit 時，跑 `./collab.sh "<變更說明>"`：clone monorepo → 把 `site/` 的 git 追蹤檔（含未提交編輯）同步進 `ztor-creator-studio/` 子目錄 → 開 `edit/<時間戳>` 分支 → commit → push → 自動在 `ztor20/Creator-Studio` 開 PR，並把連結回報給使用者。未追蹤檔（scratch、`fonts/` 等）不會被帶上。
 - **不要直接 commit/push `main`**；變更一律走 PR，到 GitHub 審查後合併。
 - 變更說明先跟使用者確認；一次編輯一個主題就跑一次流程。
 - 開好 PR 後**由使用者在 GitHub 按 Merge 上線**，AI 不自行合併（上線的最後關卡在使用者手上）。
@@ -13,7 +14,7 @@
 
 ## 認證
 
-`collab.sh` 自動讀中央倉 `~/SynologyDrive/.cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（Yves 本機）；協作者沒有該檔時，退回各自的 `gh auth login` / git 既有登入。**repo 內不留明文 token**。
+`collab.sh` 自動讀中央倉 `~/SynologyDrive/.cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（需對 `ztor20/Creator-Studio` 有**寫入權**；它屬 `yvesliu`，org owner `codeL1985`／`pf-jhy` 可在 repo Settings → Collaborators 調權限）。協作者沒有該檔時，需自備對該 repo 有寫入權的 token。**repo 內不留明文 token**。
 
 ## 其他
 
