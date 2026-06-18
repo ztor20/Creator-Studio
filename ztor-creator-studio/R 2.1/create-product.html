@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="theme.js?v=20260617t"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260617t">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260617t">
-<link rel="stylesheet" href="shared.css?v=20260617t">
+<script src="theme.js?v=20260618a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/input.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260618a">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260618a">
+<link rel="stylesheet" href="shared.css?v=20260618a">
 <style>
   /* page-specific：單頁三型表單的區塊顯示切換 · spec 5.1.5.2 §3-4 */
   .cp-section { margin-top: 18px; }
@@ -54,14 +54,12 @@
   .cp-subfields[hidden] { display: none; }
   /* §4.1② 詳細規格：每筆＝規格名稱＋規格值兩欄並列＋行尾刪除鈕 */
   .cp-spec-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; }
-  /* 主題鈕移除後右動作槽空了：給它對齊左側「關閉」鈕的寬度，讓標題維持置中 */
-  .wizard__top-actions[aria-hidden="true"] { min-width: 52px; }
-  /* 即時預覽＝常駐分割（不可開關）。≤760px 無法再壓窄，改成靜態堆疊在表單下方，
-     避免固定覆蓋層擋住表單卻又沒有關閉鈕。 */
+  /* 即時預覽可開關、預設開啟（spec §4.5 v5.1 / D084）。≤760px 無法再壓窄，開啟時改成靜態堆疊
+     在表單下方（限 .is-open；關閉時維持隱藏，避免覆蓋層擋住表單）。 */
   @media (max-width: 760px) {
-    #cp-preview.preview-panel { position: static; width: auto; transform: none; visibility: visible; z-index: auto; }
-    #cp-preview .preview-panel__sheet { position: static; border-left: 0; border-top: 1px solid var(--border); }
-    #cp-preview .preview-panel__body { padding-bottom: 120px; }
+    #cp-preview.preview-panel.is-open { position: static; width: auto; transform: none; visibility: visible; z-index: auto; }
+    #cp-preview.is-open .preview-panel__sheet { position: static; border-left: 0; border-top: 1px solid var(--border); }
+    #cp-preview.is-open .preview-panel__body { padding-bottom: 120px; }
   }
   /* Embed 模式：由 create-bundle 的「New item」以 popup（iframe）開啟。
      彈窗空間有限——隱藏常駐側邊預覽。 */
@@ -74,9 +72,10 @@
   <header class="wizard__top">
     <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
     <div class="wizard__stepper-slot"><span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span></div>
-    <!-- 預覽為常駐側欄（無 Preview 鈕）；主題切換鈕移除（仍可由 Cheat Codes 切換）。
-         保留空動作槽以維持標題置中的三欄平衡。 -->
-    <div class="wizard__top-actions" aria-hidden="true"></div>
+    <!-- 即時預覽切換鈕（spec §4.5 v5.1 / D084：可開關、預設開啟）；主題切換鈕移除（仍可由 Cheat Codes 切換）。 -->
+    <div class="wizard__top-actions">
+      <button class="btn btn--outline btn--sm" type="button" id="cp-preview-toggle" aria-pressed="true" data-i18n="cp.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+    </div>
   </header>
 
   <div class="wizard__body">
@@ -426,6 +425,7 @@
   <div class="preview-panel__sheet">
     <div class="preview-panel__head">
       <h3 class="preview-panel__title" id="cp-preview-title" data-i18n="cp.preview.title">How buyers see it on Ztor</h3>
+      <button class="btn btn--icon btn--sm" data-cp-preview-close aria-label="Close preview" data-i18n-aria-label="e-shop.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="preview-panel__body">
       <!-- 商品卡（實體/數位）-->
@@ -924,8 +924,17 @@
     if (rm) { rm.closest('.cp-spec-row').remove(); refresh(); }
   });
 
-  /* 即時預覽為常駐側欄分割：body.preview-open 與面板 .is-open 在 markup 預設開、
-     無開關鈕；內容由 refresh()→renderPreview() 持續更新（見上）。 */
+  /* 即時預覽可開關、預設開啟（spec §4.5 v5.1 / D084）。markup 預設 body.preview-open + 面板 .is-open；
+     頂部 Preview 鈕切換、面板 ✕ 與 Esc 關閉；內容由 refresh()→renderPreview() 持續更新（見上）。 */
+  (function () {
+    const panel = document.getElementById('cp-preview');
+    const toggle = document.getElementById('cp-preview-toggle');
+    if (!panel || !toggle) return;
+    const sync = on => { panel.classList.toggle('is-open', on); document.body.classList.toggle('preview-open', on); toggle.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+    toggle.addEventListener('click', () => sync(!panel.classList.contains('is-open')));
+    panel.querySelectorAll('[data-cp-preview-close]').forEach(b => b.addEventListener('click', () => sync(false)));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel.classList.contains('is-open')) sync(false); });
+  })();
 
   /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating（含初始化時的廣播）*/
   document.addEventListener('ztor:devstate-changed', renderReadiness);
@@ -941,6 +950,8 @@
   if (embed) {
     document.body.classList.remove('preview-open');
     document.body.classList.add('cp-embed');
+    const previewToggle = document.getElementById('cp-preview-toggle');
+    if (previewToggle) previewToggle.hidden = true;   // 嵌入態無側邊預覽，藏掉切換鈕
     const closeBtn = document.querySelector('.wizard__close');
     if (closeBtn) closeBtn.onclick = () => { try { parent.postMessage({ type: 'cp:cancel' }, '*'); } catch (e) {} };
   }
@@ -962,9 +973,9 @@
   setType(initType);
 })();
 </script>
-<script src="icons.js?v=20260617t"></script>
-<script src="i18n.js?v=20260617t"></script>
-<script src="reveal.js?v=20260617t"></script>
-<script src="devtools.js?v=20260617t"></script>
+<script src="icons.js?v=20260618a"></script>
+<script src="i18n.js?v=20260618a"></script>
+<script src="reveal.js?v=20260618a"></script>
+<script src="devtools.js?v=20260618a"></script>
 </body>
 </html>
