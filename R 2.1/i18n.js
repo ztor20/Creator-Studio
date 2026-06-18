@@ -792,14 +792,8 @@
     'store-settings.see-as-fan':     { en: 'See as fan',                            zh: '粉絲視角預覽' },
     'store-settings.preview.title':  { en: 'How buyers see your shop',              zh: '買家看到的店面' },
     'store-settings.preview.close':  { en: 'Close preview',                         zh: '關閉預覽' },
-    'store-settings.group.display':  { en: 'Product display',                      zh: '商品陳列' },
-    'store-settings.display.sub':    { en: 'Drag to set the order fans see in your shop. Only listed products appear here.', zh: '拖曳排序，決定粉絲在你商店看到的商品順序；只有已上架的商品會出現。' },
-    'store-settings.display.empty-none.title': { en: 'No products yet',             zh: '還沒有商品' },
-    'store-settings.display.empty-none.sub':   { en: 'Create a product first — then arrange how it shows in your shop here.', zh: '先建立商品，之後就能在這裡安排它在商店的陳列順序。' },
-    'store-settings.display.empty-none.cta':   { en: 'Create a product',             zh: '建立商品' },
-    'store-settings.display.empty-hidden.title': { en: 'Nothing listed yet',         zh: '尚未有上架商品' },
-    'store-settings.display.empty-hidden.sub':   { en: 'Products show here once you list them. Turn on the Shop toggle in E-Shop.', zh: '商品上架後才會出現在這裡排序；請到電子商店打開上架開關。' },
-    'store-settings.display.empty-hidden.cta':   { en: 'Go to E-Shop',   zh: '前往電子商店' },
+    /* 粉絲端陳列排序（Display Order）已於 2026-06-18 由商店設定 F3 移至電子商店 F4（D083）；
+       原 store-settings.display.* / group.display 鍵已移除，改為 e-shop.order.*（見下方 e-shop 區塊）。 */
 
     'e-shop.alert.title':     { en: '3 products below low-stock threshold', zh: '3 件商品低於庫存門檻' },
     'e-shop.alert.meta':      { en: 'Tour zine vol. 02 · Coastline tee (S) · Salt &amp; Bitumen poster', zh: 'Tour zine vol. 02 · Coastline tee (S) · Salt & Bitumen 海報' },
@@ -2893,6 +2887,14 @@
     'e-shop.empty.account.title':   { en: 'No products yet', zh: '尚未建立商品' },
     'e-shop.empty.account.text':    { en: 'Add your first product, bundle or auction to start selling merch, digital goods and special editions.', zh: '新增第一個商品、組合或拍賣，開始販售周邊、數位內容與限定品。' },
     'e-shop.empty.account.cta':     { en: 'Add product', zh: '新增商品' },
+    /* F4 末段 · 粉絲端陳列排序（Display Order，原商店設定 F3 移入，D083）*/
+    'e-shop.order.title':           { en: 'Fan-facing display order', zh: '粉絲端陳列順序' },
+    'e-shop.order.sub':             { en: 'Drag to set the order fans see in your shop. Only listed products appear here.', zh: '拖曳排序，決定粉絲在你商店看到的商品順序；只有已上架的商品會出現。' },
+    'e-shop.order.empty-none.title':   { en: 'No products yet', zh: '還沒有商品' },
+    'e-shop.order.empty-none.sub':     { en: 'Create a product first — then arrange how it shows in your shop here.', zh: '先建立商品，之後就能在這裡安排它在商店的陳列順序。' },
+    'e-shop.order.empty-none.cta':     { en: 'Create a product', zh: '建立商品' },
+    'e-shop.order.empty-hidden.title': { en: 'Nothing listed yet', zh: '尚未有上架商品' },
+    'e-shop.order.empty-hidden.sub':   { en: 'Products show here once you list them. Turn on the Shop toggle on a product row above.', zh: '商品上架後才會出現在這裡排序；打開上方商品列的上架開關即可。' },
     'e-shop.preview.empty.title':   { en: 'Your store is empty', zh: '店面尚無商品' },
     'e-shop.preview.empty.text':    { en: 'Once you add and publish a product, fans see it here.', zh: '上架並發布商品後，粉絲會在這裡看到。' },
     'events.empty.account.title':   { en: 'No events yet', zh: '尚無活動' },

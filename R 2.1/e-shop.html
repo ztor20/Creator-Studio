@@ -3,32 +3,33 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Shop · Ztor Creator Studio</title>
-<script src="theme.js?v=20260617m"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/button.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/product-list.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/card.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/input.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/split-button.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617m">
-<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617m">
-<link rel="stylesheet" href="shared.css?v=20260617m">
+<script src="theme.js?v=20260617n"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/order-list.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/split-button.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617n">
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617n">
+<link rel="stylesheet" href="shared.css?v=20260617n">
 <style>
   /* E-Shop add-new dropdown (spec §5.1.5 F3) → promoted to ds-components/dropdown-menu.css (2026-06-11) */
 
@@ -192,6 +193,11 @@
   }
   /* 2 row actions (Restock + Edit) sit side by side */
   .product-list--eshop .product-list__actions { display: flex; gap: 4px; justify-content: flex-end; }
+
+  /* F4 末段 · 粉絲端陳列排序（Display Order，原商店設定 F3 移入，D083）。清單樣式＝order-list 元件 */
+  .eshop-order-card { margin-top: 16px; }
+  .eshop-order-card__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .eshop-order-card__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
 
   /* Bundles list — same product-list chrome, wider Members column, no Stock-vs-Price swap.
      Columns: Image / Bundle / Members / Price / Status / Stock / Shop / Actions (spec 5.1.5 F3) */
@@ -424,6 +430,53 @@
         </div>
       </section>
 
+      <!-- F4 末段 · 粉絲端陳列排序（Display Order）：拖曳排定粉絲端商店的陳列順序，只列已上架商品。
+           原商店設定 F3，2026-06-18 移入本頁（D083）。data-eshop-panel="products" → 隨 Products 分頁顯隱、
+           只在 Products 出現（組合/拍賣排序待確認）。order-list 為 ds-components 元件。 -->
+      <section class="card eshop-order-card when-data" data-eshop-panel="products" aria-label="Fan-facing display order">
+        <div class="eshop-order-card__head">
+          <h2 class="eshop-order-card__title" data-i18n="e-shop.order.title">Fan-facing display order</h2>
+          <p class="eshop-order-card__sub" data-i18n="e-shop.order.sub">Drag to set the order fans see in your shop. Only listed products appear here.</p>
+        </div>
+        <ul class="order-list" id="eshop-order" aria-label="Product display order">
+          <li class="order-list__row" draggable="true">
+            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
+            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
+            <span class="order-list__main"><span class="order-list__name">Tour zine vol. 02</span><span class="order-list__meta">Books · $18</span></span>
+          </li>
+          <li class="order-list__row" draggable="true">
+            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
+            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
+            <span class="order-list__main"><span class="order-list__name">Coastline tee</span><span class="order-list__meta">Apparel · $32</span></span>
+          </li>
+          <li class="order-list__row" draggable="true">
+            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
+            <span class="order-list__thumb"><i data-lucide="music" class="ztor-icon"></i></span>
+            <span class="order-list__main"><span class="order-list__name">Coastline EP · digital</span><span class="order-list__meta">Digital · $12</span></span>
+          </li>
+          <li class="order-list__row" draggable="true">
+            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
+            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
+            <span class="order-list__main"><span class="order-list__name">Coastline acetate · numbered 1/50</span><span class="order-list__meta">Collectibles · $180</span></span>
+          </li>
+        </ul>
+        <div class="empty-stub order-list-empty" data-eshop-order-empty="none" hidden>
+          <div class="empty-stub__inner">
+            <div class="empty-stub__mark"><i data-lucide="shopping-bag" class="ztor-icon"></i></div>
+            <h3 class="empty-stub__title" data-i18n="e-shop.order.empty-none.title">No products yet</h3>
+            <p class="empty-stub__sub" data-i18n="e-shop.order.empty-none.sub">Create a product first — then arrange how it shows in your shop here.</p>
+            <a class="btn btn--primary" href="create-product.html" data-i18n="e-shop.order.empty-none.cta">Create a product</a>
+          </div>
+        </div>
+        <div class="empty-stub order-list-empty" data-eshop-order-empty="all-hidden" hidden>
+          <div class="empty-stub__inner">
+            <div class="empty-stub__mark"><i data-lucide="eye" class="ztor-icon"></i></div>
+            <h3 class="empty-stub__title" data-i18n="e-shop.order.empty-hidden.title">Nothing listed yet</h3>
+            <p class="empty-stub__sub" data-i18n="e-shop.order.empty-hidden.sub">Products show here once you list them. Turn on the Shop toggle on a product row above.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Bundles tab · spec §5.1.5 F3 · 套組清單（庫存＝min 成員，D031） -->
       <section class="product-list product-list--eshop product-list--bundles when-data" role="table" aria-label="Bundles" data-eshop-panel="bundles" hidden>
         <div class="product-list__head" role="row">
@@ -566,13 +619,13 @@
   </div>
 </div>
 
-<script src="icons.js?v=20260617m"></script>
-<script src="i18n.js?v=20260617m"></script>
-<script src="sidebar.js?v=20260617m"></script>
-<script src="reveal.js?v=20260617m"></script>
-<script src="partials/restock-modal.js?v=20260617m"></script>
-<script src="partials/product-post-modal.js?v=20260617m"></script>
-<script src="partials/fan-store.js?v=20260617m"></script>
+<script src="icons.js?v=20260617n"></script>
+<script src="i18n.js?v=20260617n"></script>
+<script src="sidebar.js?v=20260617n"></script>
+<script src="reveal.js?v=20260617n"></script>
+<script src="partials/restock-modal.js?v=20260617n"></script>
+<script src="partials/product-post-modal.js?v=20260617n"></script>
+<script src="partials/fan-store.js?v=20260617n"></script>
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
      tab switch · search + status filter (scoped to active tab) ·
@@ -676,6 +729,31 @@
 
     /* Search */
     search && search.addEventListener('input', applyFilter);
+
+    /* F4 末段 粉絲端陳列排序 — HTML5 drag-reorder（順序＝粉絲端商店的陳列順序，D083，原商店設定 F3 移入）*/
+    (function () {
+      const list = document.getElementById('eshop-order');
+      if (!list) return;
+      let dragging = null;
+      list.addEventListener('dragstart', e => {
+        dragging = e.target.closest('.order-list__row');
+        if (dragging) { dragging.classList.add('is-dragging'); e.dataTransfer.effectAllowed = 'move'; }
+      });
+      list.addEventListener('dragend', () => {
+        if (dragging) dragging.classList.remove('is-dragging');
+        list.querySelectorAll('.is-over').forEach(r => r.classList.remove('is-over'));
+        dragging = null;
+      });
+      list.addEventListener('dragover', e => {
+        e.preventDefault();
+        const row = e.target.closest('.order-list__row');
+        list.querySelectorAll('.is-over').forEach(r => r.classList.remove('is-over'));
+        if (!row || row === dragging) return;
+        const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
+        row.classList.add('is-over');
+        list.insertBefore(dragging, after ? row.nextSibling : row);
+      });
+    })();
 
     /* Shop toggle → status (off = Hidden). Stores the prior badge to restore. */
     document.querySelectorAll('[data-eshop-shop]').forEach(sw => {
@@ -858,6 +936,6 @@
     });
   })();
 </script>
-<script src="devtools.js?v=20260617m"></script>
+<script src="devtools.js?v=20260617n"></script>
 </body>
 </html>
