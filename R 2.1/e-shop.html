@@ -3,33 +3,32 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Shop · Ztor Creator Studio</title>
-<script src="theme.js?v=20260617n"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/button.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/product-list.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/card.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/input.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/order-list.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/split-button.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617n">
-<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617n">
-<link rel="stylesheet" href="shared.css?v=20260617n">
+<script src="theme.js?v=20260617p"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/split-button.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617p">
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617p">
+<link rel="stylesheet" href="shared.css?v=20260617p">
 <style>
   /* E-Shop add-new dropdown (spec §5.1.5 F3) → promoted to ds-components/dropdown-menu.css (2026-06-11) */
 
@@ -194,10 +193,21 @@
   /* 2 row actions (Restock + Edit) sit side by side */
   .product-list--eshop .product-list__actions { display: flex; gap: 4px; justify-content: flex-end; }
 
-  /* F4 末段 · 粉絲端陳列排序（Display Order，原商店設定 F3 移入，D083）。清單樣式＝order-list 元件 */
-  .eshop-order-card { margin-top: 16px; }
-  .eshop-order-card__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
-  .eshop-order-card__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
+  /* F6 拍賣即時橫條：行內（非 page-top sticky），僅 Auctions 分頁有 live 時顯示 */
+  .eshop-live-banner { margin-bottom: 12px; }
+  .eshop-live-banner[hidden] { display: none; }
+
+  /* F3/F4 查無符合（搜尋／篩選無結果）*/
+  .eshop-noresult[hidden] { display: none; }
+
+  /* F4 商品清單列＝粉絲端陳列順序：商品列可直接拖曳重排（D083，spec §59/§69）。
+     單一表格、無另開排序清單；只有 Products 分頁的列可拖曳（Bundles/Auctions 排序待確認）。 */
+  .eshop-reorder-hint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--foreground-subtle); padding: 2px 0 10px; }
+  .eshop-reorder-hint .ztor-icon { width: 14px; height: 14px; }
+  .product-list--eshop[data-eshop-panel="products"] .product-list__row { cursor: grab; }
+  .product-list--eshop[data-eshop-panel="products"] .product-list__row:active { cursor: grabbing; }
+  .product-list__row.is-dragging { opacity: 0.5; }
+  .product-list__row.is-over { box-shadow: inset 0 0 0 2px var(--foreground); }
 
   /* Bundles list — same product-list chrome, wider Members column, no Stock-vs-Price swap.
      Columns: Image / Bundle / Members / Price / Status / Stock / Shop / Actions (spec 5.1.5 F3) */
@@ -206,11 +216,14 @@
     grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 72px 40px;
   }
 
-  /* Auctions list — Image / Item / Category / Current bid / Status(lifecycle) / Bids / Shop / Actions (spec 5.1.5.8 入口) */
+  /* Auctions list — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Shop / Actions。
+     單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
   .product-list--auctions .product-list__head,
   .product-list--auctions .product-list__row {
-    grid-template-columns: 68px minmax(180px, 1.4fr) minmax(120px, 1fr) 88px 112px 72px 72px 40px;
+    grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 56px 44px;
   }
+  .product-list--auctions .product-list__activity { font-size: 12px; color: var(--foreground-subtle); line-height: 1.35; }
+  .product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: 4px; align-content: center; }
 
   @media (max-width: 900px) {
     .eshop-list-topbar {
@@ -338,6 +351,8 @@
       </section>
 
       <section class="product-list product-list--eshop when-data" role="table" aria-label="Products" data-eshop-panel="products">
+        <!-- F4 商品列順序＝粉絲端陳列順序：直接拖曳商品列重排（D083，spec §59/§69）。單一表格、不另設排序清單。 -->
+        <div class="eshop-reorder-hint" data-i18n="e-shop.reorder.hint"><i data-lucide="grip-vertical" class="ztor-icon"></i>Drag rows to set the order fans see in your shop.</div>
         <div class="product-list__head" role="row">
           <div role="columnheader" data-i18n="e-shop.col.image">Image</div>
           <div role="columnheader" data-i18n="e-shop.col.product">Product</div>
@@ -430,53 +445,6 @@
         </div>
       </section>
 
-      <!-- F4 末段 · 粉絲端陳列排序（Display Order）：拖曳排定粉絲端商店的陳列順序，只列已上架商品。
-           原商店設定 F3，2026-06-18 移入本頁（D083）。data-eshop-panel="products" → 隨 Products 分頁顯隱、
-           只在 Products 出現（組合/拍賣排序待確認）。order-list 為 ds-components 元件。 -->
-      <section class="card eshop-order-card when-data" data-eshop-panel="products" aria-label="Fan-facing display order">
-        <div class="eshop-order-card__head">
-          <h2 class="eshop-order-card__title" data-i18n="e-shop.order.title">Fan-facing display order</h2>
-          <p class="eshop-order-card__sub" data-i18n="e-shop.order.sub">Drag to set the order fans see in your shop. Only listed products appear here.</p>
-        </div>
-        <ul class="order-list" id="eshop-order" aria-label="Product display order">
-          <li class="order-list__row" draggable="true">
-            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
-            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
-            <span class="order-list__main"><span class="order-list__name">Tour zine vol. 02</span><span class="order-list__meta">Books · $18</span></span>
-          </li>
-          <li class="order-list__row" draggable="true">
-            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
-            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
-            <span class="order-list__main"><span class="order-list__name">Coastline tee</span><span class="order-list__meta">Apparel · $32</span></span>
-          </li>
-          <li class="order-list__row" draggable="true">
-            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
-            <span class="order-list__thumb"><i data-lucide="music" class="ztor-icon"></i></span>
-            <span class="order-list__main"><span class="order-list__name">Coastline EP · digital</span><span class="order-list__meta">Digital · $12</span></span>
-          </li>
-          <li class="order-list__row" draggable="true">
-            <span class="order-list__handle" aria-hidden="true"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
-            <span class="order-list__thumb"><i data-lucide="package" class="ztor-icon"></i></span>
-            <span class="order-list__main"><span class="order-list__name">Coastline acetate · numbered 1/50</span><span class="order-list__meta">Collectibles · $180</span></span>
-          </li>
-        </ul>
-        <div class="empty-stub order-list-empty" data-eshop-order-empty="none" hidden>
-          <div class="empty-stub__inner">
-            <div class="empty-stub__mark"><i data-lucide="shopping-bag" class="ztor-icon"></i></div>
-            <h3 class="empty-stub__title" data-i18n="e-shop.order.empty-none.title">No products yet</h3>
-            <p class="empty-stub__sub" data-i18n="e-shop.order.empty-none.sub">Create a product first — then arrange how it shows in your shop here.</p>
-            <a class="btn btn--primary" href="create-product.html" data-i18n="e-shop.order.empty-none.cta">Create a product</a>
-          </div>
-        </div>
-        <div class="empty-stub order-list-empty" data-eshop-order-empty="all-hidden" hidden>
-          <div class="empty-stub__inner">
-            <div class="empty-stub__mark"><i data-lucide="eye" class="ztor-icon"></i></div>
-            <h3 class="empty-stub__title" data-i18n="e-shop.order.empty-hidden.title">Nothing listed yet</h3>
-            <p class="empty-stub__sub" data-i18n="e-shop.order.empty-hidden.sub">Products show here once you list them. Turn on the Shop toggle on a product row above.</p>
-          </div>
-        </div>
-      </section>
-
       <!-- Bundles tab · spec §5.1.5 F3 · 套組清單（庫存＝min 成員，D031） -->
       <section class="product-list product-list--eshop product-list--bundles when-data" role="table" aria-label="Bundles" data-eshop-panel="bundles" hidden>
         <div class="product-list__head" role="row">
@@ -521,50 +489,75 @@
         </div>
       </section>
 
+      <!-- F6 拍賣即時橫條（spec §124–128）：僅 Auctions 分頁、有進行中競標才顯示；置於狀態篩選與清單之間。
+           重點拍賣挑選規則待確認，先取第一筆 live。重用 .alert--bar。JS 於切到 Auctions 且有 live 列時 unhide。 -->
+      <div class="alert alert--bar eshop-live-banner" role="status" data-eshop-live-banner hidden>
+        <div class="alert__icon"><i data-lucide="gavel" class="ztor-icon"></i></div>
+        <div class="alert__body">
+          <div class="alert__title" data-eshop-live-count data-i18n="e-shop.live.count">1 auction live</div>
+          <div class="alert__sub" style="font-size:12px;color:var(--foreground-muted);margin-top:2px" data-eshop-live-feature data-i18n="e-shop.live.feature">Stage-worn leather jacket · $385 · Live</div>
+        </div>
+        <a class="alert__cta" href="auction-detail.html" data-i18n="e-shop.live.view">View →</a>
+      </div>
+
       <!-- Auctions tab · 拍賣清單（一物一拍）；每列 → 拍賣商品細節頁 5.1.5.8。建立走 ＋New → create-auction.html（5.1.5.10）-->
       <section class="product-list product-list--eshop product-list--auctions when-data" role="table" aria-label="Auctions" data-eshop-panel="auctions" hidden>
         <div class="product-list__head" role="row">
           <div role="columnheader" data-i18n="e-shop.col.image">Image</div>
           <div role="columnheader" data-i18n="e-shop.col.item">Item</div>
           <div role="columnheader" data-i18n="e-shop.col.category">Category</div>
-          <div role="columnheader" data-i18n="e-shop.col.currentbid">Current bid</div>
+          <div role="columnheader" data-i18n="e-shop.col.bid">Bid</div>
           <div role="columnheader" data-i18n="e-shop.col.status">Status</div>
-          <div role="columnheader" data-i18n="e-shop.col.bids">Bids</div>
+          <div role="columnheader" data-i18n="e-shop.col.activity">Activity</div>
           <div role="columnheader" data-i18n="e-shop.col.shop">Shop</div>
           <div role="columnheader" aria-label="Actions"></div>
         </div>
 
+        <!-- Live：目前出價／出價·人數·剩餘時間；列操作＝複製連結（spec §89）-->
         <div class="product-list__row" role="row" data-status="live" data-type="auction" data-name="Stage-worn leather jacket">
           <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No image"><i data-lucide="gavel" class="ztor-icon"></i></div></div>
-          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a1.name">Stage-worn leather jacket</div></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a1.name">Stage-worn leather jacket</div><div class="product-list__meta" data-i18n="e-shop.a1.meta">Good · Inner Circle</div></div></div>
           <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.clothing">Clothing</div>
           <div class="product-list__cell product-list__price" role="cell">$385</div>
           <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.astatus.live">Live</span></span></div>
-          <div class="product-list__cell product-list__stock" role="cell">18</div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a1.activity">18 bids · 12 bidders · 1d left</div>
           <div class="product-list__cell product-list__shop" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" title="Visible to fans" data-eshop-shop></div></div>
-          <div class="product-list__actions" role="cell"><a class="btn btn--icon btn--xs product-list__edit" href="auction-detail.html" aria-label="Open" data-i18n-aria-label="e-shop.edit"><i data-lucide="pencil" class="ztor-icon"></i></a></div>
+          <div class="product-list__actions" role="cell"><button class="btn btn--icon btn--xs" type="button" aria-label="Copy link" data-i18n-aria-label="e-shop.a.copylink" title="Copy link"><i data-lucide="link" class="ztor-icon"></i></button></div>
         </div>
 
+        <!-- Upcoming：起標價／距開始倒數·關注數；列操作＝編輯（spec §88）-->
         <div class="product-list__row" role="row" data-status="upcoming" data-type="auction" data-name="Signed tour poster 1 of 1">
           <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No image"><i data-lucide="gavel" class="ztor-icon"></i></div></div>
-          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a2.name">Signed tour poster · 1 of 1</div></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a2.name">Signed tour poster · 1 of 1</div><div class="product-list__meta" data-i18n="e-shop.a2.meta">New · Superfan+</div></div></div>
           <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.memorabilia">Memorabilia</div>
-          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.a.nobid">—</div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.a2.bid">From $50</div>
           <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.upcoming">Upcoming</span></span></div>
-          <div class="product-list__cell product-list__stock" role="cell">0</div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a2.activity">Starts in 2d · 14 watching</div>
           <div class="product-list__cell product-list__shop" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" title="Visible to fans" data-eshop-shop></div></div>
-          <div class="product-list__actions" role="cell"><a class="btn btn--icon btn--xs product-list__edit" href="auction-detail.html" aria-label="Open" data-i18n-aria-label="e-shop.edit"><i data-lucide="pencil" class="ztor-icon"></i></a></div>
+          <div class="product-list__actions" role="cell"><a class="btn btn--icon btn--xs product-list__edit" href="auction-detail.html" aria-label="Edit" data-i18n-aria-label="e-shop.edit"><i data-lucide="pencil" class="ztor-icon"></i></a></div>
         </div>
 
+        <!-- Ended（已出貨）：成交價／得標者·實收；Shipped 徽章；列操作＝追蹤履約 → 訂單管理（spec §90）-->
         <div class="product-list__row" role="row" data-status="ended" data-type="auction" data-name="Vintage synth">
           <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No image"><i data-lucide="gavel" class="ztor-icon"></i></div></div>
-          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a3.name">Vintage synth</div></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a3.name">Vintage synth</div><div class="product-list__meta" data-i18n="e-shop.a3.meta">Well-loved · All fans</div></div></div>
           <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.equipment">Equipment</div>
           <div class="product-list__cell product-list__price" role="cell">$1,240</div>
-          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.ended">Ended</span></span></div>
-          <div class="product-list__cell product-list__stock" role="cell">32</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.ended">Ended</span></span><span class="badge badge--success"><span data-i18n="e-shop.astatus.shipped">Shipped</span></span></div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a3.activity">Winner @luna · Earnings $1,116</div>
           <div class="product-list__cell product-list__shop" role="cell"><div class="switch" role="switch" aria-checked="false" title="Hidden" data-eshop-shop></div></div>
-          <div class="product-list__actions" role="cell"><a class="btn btn--icon btn--xs product-list__edit" href="auction-detail.html" aria-label="Open" data-i18n-aria-label="e-shop.edit"><i data-lucide="pencil" class="ztor-icon"></i></a></div>
+          <div class="product-list__actions" role="cell"><a class="btn btn--icon btn--xs" href="orders.html" aria-label="Track fulfilment" data-i18n-aria-label="e-shop.a.track" title="Track fulfilment"><i data-lucide="truck" class="ztor-icon"></i></a></div>
+        </div>
+      </section>
+
+      <!-- F4/F3 查無符合（搜尋／狀態篩選無結果）· spec §96。沿用 orders 的 noresult 模式；
+           JS 於 active 面板可見列數＝0 時顯示，Clear 重置搜尋＋狀態回 All。與帳號層級「無資料」分流。 -->
+      <section class="card eshop-noresult when-data" data-eshop-noresult hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="e-shop.noresult.title">No matching items</h3>
+          <p class="empty-card__text" data-i18n="e-shop.noresult.text">No items match your search or status filter. Try a different keyword or clear the filters.</p>
+          <button class="btn btn--outline empty-card__cta" type="button" data-eshop-clear data-i18n="e-shop.noresult.clear">Clear filters</button>
         </div>
       </section>
 
@@ -619,13 +612,13 @@
   </div>
 </div>
 
-<script src="icons.js?v=20260617n"></script>
-<script src="i18n.js?v=20260617n"></script>
-<script src="sidebar.js?v=20260617n"></script>
-<script src="reveal.js?v=20260617n"></script>
-<script src="partials/restock-modal.js?v=20260617n"></script>
-<script src="partials/product-post-modal.js?v=20260617n"></script>
-<script src="partials/fan-store.js?v=20260617n"></script>
+<script src="icons.js?v=20260617p"></script>
+<script src="i18n.js?v=20260617p"></script>
+<script src="sidebar.js?v=20260617p"></script>
+<script src="reveal.js?v=20260617p"></script>
+<script src="partials/restock-modal.js?v=20260617p"></script>
+<script src="partials/product-post-modal.js?v=20260617p"></script>
+<script src="partials/fan-store.js?v=20260617p"></script>
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
      tab switch · search + status filter (scoped to active tab) ·
@@ -647,13 +640,18 @@
       const s = activeStatus();
       const panel = activePanel();
       if (!panel) return;
+      let visible = 0;
       panel.querySelectorAll('.product-list__row').forEach(row => {
         const name = (row.getAttribute('data-name') || '').toLowerCase();
         const st = row.getAttribute('data-status') || '';
         const okName = !q || name.includes(q);
         const okStatus = s === 'all' || st === s;
         row.hidden = !(okName && okStatus);
+        if (!row.hidden) visible++;
       });
+      /* F3/F4 查無符合（spec §96）：有篩選條件且 active 面板 0 列可見 → 顯示空狀態 */
+      const noResult = document.querySelector('[data-eshop-noresult]');
+      if (noResult) noResult.hidden = !((q || s !== 'all') && visible === 0);
     }
 
     /* F3 狀態篩選每項顯示目前類型的商品數（spec / D066）；數量隨 tab 重算，是否隨搜尋連動產品待確認 */
@@ -717,6 +715,15 @@
       createMain.setAttribute('href', c.href);
     }
 
+    /* F6 拍賣即時橫條：僅 Auctions 分頁、且有進行中（data-status="live"）拍賣才顯示（spec §124–128）*/
+    const liveBanner = document.querySelector('[data-eshop-live-banner]');
+    function updateLiveBanner(key) {
+      if (!liveBanner) return;
+      const auctions = document.querySelector('[data-eshop-panel="auctions"]');
+      const hasLive = auctions ? auctions.querySelector('.product-list__row[data-status="live"]') : null;
+      liveBanner.hidden = !(key === 'auctions' && hasLive);
+    }
+
     /* Tabs (type switch) — reset status to All and recompute counts for the new type */
     tabs.forEach(tab => tab.addEventListener('click', () => {
       const key = tab.getAttribute('data-eshop-tab');
@@ -724,20 +731,31 @@
       panels.forEach(p => { p.hidden = p.getAttribute('data-eshop-panel') !== key; });
       renderStatusTabs(key);   // 依類型重建狀態選項集並重置為「全部」
       setCreate(key);
+      updateLiveBanner(key);
       applyFilter();
     }));
 
     /* Search */
     search && search.addEventListener('input', applyFilter);
 
-    /* F4 末段 粉絲端陳列排序 — HTML5 drag-reorder（順序＝粉絲端商店的陳列順序，D083，原商店設定 F3 移入）*/
+    /* F3/F4 查無符合 → 「Clear filters」：清空搜尋＋狀態回 All（spec §96）*/
+    document.querySelectorAll('[data-eshop-clear]').forEach(btn => btn.addEventListener('click', () => {
+      if (search) search.value = '';
+      const all = statusTabs.find(t => t.getAttribute('data-status-val') === 'all');
+      if (all) setStatus(all); else applyFilter();
+    }));
+
+    /* F4 粉絲端陳列排序 — 商品列直接拖曳重排（順序＝粉絲端商店陳列順序，D083 / spec §59·§69）。
+       單一表格、無另設排序清單；只 Products 分頁、由非互動區（避開開關/按鈕/連結）起拖。 */
     (function () {
-      const list = document.getElementById('eshop-order');
+      const list = document.querySelector('.product-list--eshop[data-eshop-panel="products"]');
       if (!list) return;
+      list.querySelectorAll('.product-list__row').forEach(r => r.setAttribute('draggable', 'true'));
       let dragging = null;
       list.addEventListener('dragstart', e => {
-        dragging = e.target.closest('.order-list__row');
-        if (dragging) { dragging.classList.add('is-dragging'); e.dataTransfer.effectAllowed = 'move'; }
+        const row = e.target.closest('.product-list__row');
+        if (!row || e.target.closest('button, a, .switch')) { e.preventDefault(); return; }
+        dragging = row; row.classList.add('is-dragging'); e.dataTransfer.effectAllowed = 'move';
       });
       list.addEventListener('dragend', () => {
         if (dragging) dragging.classList.remove('is-dragging');
@@ -745,8 +763,9 @@
         dragging = null;
       });
       list.addEventListener('dragover', e => {
+        if (!dragging) return;
         e.preventDefault();
-        const row = e.target.closest('.order-list__row');
+        const row = e.target.closest('.product-list__row');
         list.querySelectorAll('.is-over').forEach(r => r.classList.remove('is-over'));
         if (!row || row === dragging) return;
         const after = e.clientY > row.getBoundingClientRect().top + row.offsetHeight / 2;
@@ -936,6 +955,6 @@
     });
   })();
 </script>
-<script src="devtools.js?v=20260617n"></script>
+<script src="devtools.js?v=20260617p"></script>
 </body>
 </html>
