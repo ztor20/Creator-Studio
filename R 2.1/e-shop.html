@@ -3,32 +3,32 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Shop · Ztor Creator Studio</title>
-<script src="theme.js?v=20260617s"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/button.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/product-list.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/card.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/input.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/split-button.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617s">
-<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617s">
-<link rel="stylesheet" href="shared.css?v=20260617s">
+<script src="theme.js?v=20260617t"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/store-settings.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/split-button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260617t">
+<link rel="stylesheet" href="shared.css?v=20260617t">
 <style>
   /* E-Shop add-new dropdown (spec §5.1.5 F3) → promoted to ds-components/dropdown-menu.css (2026-06-11) */
 
@@ -209,16 +209,17 @@
   .product-list__drag:active { cursor: grabbing; }
   .product-list__drag:hover { color: var(--foreground); }
   .product-list__drag .ztor-icon { width: 16px; height: 16px; }
-  /* 拖曳中：整列像被「拿起來」——抬升陰影＋微放大＋置頂、游標 grabbing；其他列即時讓位，不再用內框黑線。 */
-  .product-list--eshop[data-eshop-panel="products"] .product-list__row { transition: box-shadow 150ms ease, transform 150ms ease; }
+  /* 拖曳中：整列像被「拿起來」並跟著游標移動——抬升陰影＋置頂、游標 grabbing；其他列即時讓位，不用內框黑線。
+     transform 由 JS 即時控制（translateY 跟手＋微放大）；故 transition 只放 box-shadow，不放 transform（否則跟手會延遲）。 */
+  .product-list--eshop[data-eshop-panel="products"] .product-list__row { transition: box-shadow 150ms ease; }
   .product-list__row.is-dragging {
     position: relative;
     z-index: 3;
     background: var(--surface);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-popover);
-    transform: scale(1.012);
     cursor: grabbing;
+    will-change: transform;
   }
   @media (max-width: 760px) { .product-list__drag { display: none; } }
 
@@ -630,13 +631,13 @@
   </div>
 </div>
 
-<script src="icons.js?v=20260617s"></script>
-<script src="i18n.js?v=20260617s"></script>
-<script src="sidebar.js?v=20260617s"></script>
-<script src="reveal.js?v=20260617s"></script>
-<script src="partials/restock-modal.js?v=20260617s"></script>
-<script src="partials/product-post-modal.js?v=20260617s"></script>
-<script src="partials/fan-store.js?v=20260617s"></script>
+<script src="icons.js?v=20260617t"></script>
+<script src="i18n.js?v=20260617t"></script>
+<script src="sidebar.js?v=20260617t"></script>
+<script src="reveal.js?v=20260617t"></script>
+<script src="partials/restock-modal.js?v=20260617t"></script>
+<script src="partials/product-post-modal.js?v=20260617t"></script>
+<script src="partials/fan-store.js?v=20260617t"></script>
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
      tab switch · search + status filter (scoped to active tab) ·
@@ -770,7 +771,22 @@
     (function () {
       const list = document.querySelector('.product-list--eshop[data-eshop-panel="products"]');
       if (!list) return;
-      let dragging = null;
+      let dragging = null, grabDY = 0;   // grabDY＝抓取點在列內的縱向偏移，讓抓的點剛好黏在游標上
+
+      /* 依游標位置：①底下清單即時讓位（insertBefore）②把被拖的列 translateY 到游標、跟手移動 */
+      function follow(clientY) {
+        const rows = [...list.querySelectorAll('.product-list__row')];
+        const over = rows.find(r => { if (r === dragging) return false; const b = r.getBoundingClientRect(); return clientY >= b.top && clientY <= b.bottom; });
+        if (over) {
+          const b = over.getBoundingClientRect();
+          const ref = clientY > b.top + b.height / 2 ? over.nextSibling : over;
+          if (ref !== dragging) list.insertBefore(dragging, ref);
+        }
+        dragging.style.transform = 'none';                         // 先還原以量到「在流位置」
+        const natTop = dragging.getBoundingClientRect().top;
+        dragging.style.transform = 'translateY(' + (clientY - grabDY - natTop) + 'px) scale(1.01)';
+      }
+
       list.addEventListener('pointerdown', e => {
         const handle = e.target.closest('.product-list__drag');
         if (!handle) return;                       // 只有抓握把才開始拖曳
@@ -778,19 +794,13 @@
         if (!row) return;
         e.preventDefault();
         dragging = row;
+        grabDY = e.clientY - row.getBoundingClientRect().top;
         row.classList.add('is-dragging');
         try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+        follow(e.clientY);
       });
-      list.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        const rows = [...list.querySelectorAll('.product-list__row')];
-        const over = rows.find(r => { if (r === dragging) return false; const b = r.getBoundingClientRect(); return e.clientY >= b.top && e.clientY <= b.bottom; });
-        if (!over) return;
-        const b = over.getBoundingClientRect();
-        const after = e.clientY > b.top + b.height / 2;
-        list.insertBefore(dragging, after ? over.nextSibling : over);
-      });
-      const end = () => { if (!dragging) return; dragging.classList.remove('is-dragging'); dragging = null; };
+      list.addEventListener('pointermove', e => { if (dragging) follow(e.clientY); });
+      const end = () => { if (!dragging) return; dragging.style.transform = ''; dragging.classList.remove('is-dragging'); dragging = null; };
       list.addEventListener('pointerup', end);
       list.addEventListener('pointercancel', end);
     })();
@@ -976,6 +986,6 @@
     });
   })();
 </script>
-<script src="devtools.js?v=20260617s"></script>
+<script src="devtools.js?v=20260617t"></script>
 </body>
 </html>
