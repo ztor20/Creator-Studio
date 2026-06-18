@@ -1,0 +1,138 @@
+/* ============================================================
+   Variant builder · Shopify-style options + per-variant table
+   (spec 5.1.5.2 §4.1④ · physical only). Creator defines options
+   (Size / Color …) with values; every value combination becomes a
+   priced & stocked row. Single ↔ Multiple is driven by .segmented;
+   the whole builder shows only in Multiple mode.
+     .variant-builder
+       .variant-option
+         .variant-option__head  > .variant-option__name (.input) + __remove
+         .variant-option__values > .chip--removable… + .variant-option__add
+       .variant-table-wrap (scroll-x)
+         .variant-table(.--limited)
+           .variant-table__head | .variant-table__row(.is-excluded)
+             .variant-cell--variant / .variant-cell--total / .variant-row__remove
+   Editable cells reuse .input; value chips reuse .chip--removable.
+   --limited adds the Total Quantity column (Limited Edition, §4.1⑤).
+   ============================================================ */
+
+.variant-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* [hidden] 必須蓋過上面的 display:flex，否則單一規格模式下建構器仍會露出（含「新增選項」）*/
+.variant-builder[hidden] { display: none; }
+
+/* ---- option rows ---- */
+.variant-option {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.variant-option__head { display: flex; align-items: center; gap: 8px; }
+.variant-option__name { flex: 1; }
+.variant-option__remove {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--foreground-subtle);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.variant-option__remove:hover { color: var(--status-error); background: var(--surface-muted); }
+.variant-option__remove .ztor-icon { width: 15px; height: 15px; }
+
+.variant-option__values {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.variant-option__add {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--foreground);
+  padding: 4px 2px;
+}
+.variant-option__add::placeholder { color: var(--foreground-subtle); }
+
+/* ---- generated per-variant table ---- */
+.variant-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+.variant-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 560px;
+}
+.variant-table__head,
+.variant-table__row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.3fr) 96px 78px 116px 92px 34px;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 12px;
+}
+.variant-table--limited .variant-table__head,
+.variant-table--limited .variant-table__row {
+  grid-template-columns: minmax(110px, 1.3fr) 96px 78px 84px 116px 92px 34px;
+}
+.variant-table__head {
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--foreground-subtle);
+}
+.variant-table__row {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.variant-table__row:last-child { border-bottom: 0; }
+.variant-table__row.is-excluded { opacity: 0.42; }
+
+.variant-cell--variant {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.variant-cell--total { display: none; }
+.variant-table--limited .variant-cell--total { display: block; }
+
+.variant-table .input { padding: 7px 9px; font-size: 12.5px; }
+
+.variant-row__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--foreground-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.variant-row__remove:hover { color: var(--status-error); background: var(--surface-muted); }
+.variant-row__remove .ztor-icon { width: 14px; height: 14px; }

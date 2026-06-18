@@ -1,0 +1,96 @@
+/* ============================================================
+   New Product Post — composer popup for announcing a just-created
+   product to fans (spec 5.1.5.7 / D068). Opens on the E-Shop list
+   right after a product is created.
+
+   REUSE, don't duplicate:
+   • Shell  = .payout-modal / .payout-dialog (payout-modal.css)
+   • Fields = .msg-compose / .msg-field / .msg-tokens / .msg-schedule*
+              + .char-counter (message-modal.css) — audience, title,
+              body, personalization tokens and schedule are the SAME
+              sending system as Broadcast (5.1.7.1), so they share CSS.
+
+   This file adds ONLY the post-specific bits:
+   • .npp-intro            one-line lead under the dialog title
+   • .npp-product          F2 attached-product card (thumb · name · price · link)
+
+   The dialog title + close live on the popup frame (no page header,
+   per D067); the action footer (Skip / Publish) reuses
+   .payout-dialog__foot + .btn.
+   ============================================================ */
+
+.payout-dialog.npp-dialog { width: min(560px, 94vw); }
+
+.npp-intro {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+}
+
+/* ── F2 · Attached product card ── */
+.npp-product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+.npp-product__thumb {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--foreground-subtle);
+  overflow: hidden;
+}
+.npp-product__thumb .ztor-icon { width: 22px; height: 22px; stroke-width: 1.4; }
+.npp-product__info {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.npp-product__name {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.npp-product__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--foreground-subtle);
+}
+.npp-product__price { font-weight: 600; color: var(--foreground); }
+.npp-product__link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.npp-product__link .ztor-icon { width: 14px; height: 14px; }
+.npp-product__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 520px) {
+  .npp-product { flex-wrap: wrap; }
+  .npp-product__link { margin-left: 60px; }
+}

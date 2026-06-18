@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ztor — Sample Page (Design System Demo)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="components/_tokens.css" />
+<link rel="stylesheet" href="components/button.css" />
+<link rel="stylesheet" href="components/card.css" />
+<link rel="stylesheet" href="components/header.css" />
+<link rel="stylesheet" href="components/navigation-menu.css" />
+<link rel="stylesheet" href="components/input.css" />
+<link rel="stylesheet" href="components/badge.css" />
+<link rel="stylesheet" href="components/footer.css" />
+<link rel="stylesheet" href="components/accordion.css" />
+<link rel="stylesheet" href="components/table.css" />
+<link rel="stylesheet" href="components/cookie-banner.css" />
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1248px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 64px;
+    text-align: center;
+  }
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 7vw, 64px);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -1.28px;
+    max-width: 16ch;
+    margin: 0 auto 24px;
+  }
+  .hero__subtitle {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--foreground-muted);
+    max-width: 60ch;
+    margin: 0 auto 40px;
+  }
+  .hero__cta-row {
+    display: inline-flex;
+    gap: 16px;
+  }
+
+  /* Dashboard mockup */
+  .dashboard-mockup {
+    margin-top: 80px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    padding: 24px;
+    text-align: left;
+  }
+  .dashboard-mockup__header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .dashboard-mockup__title {
+    font-family: var(--font-ui); font-size: 14px; font-weight: 500;
+  }
+  .dashboard-mockup__chart {
+    height: 200px;
+    background: linear-gradient(180deg, var(--surface-muted) 0%, var(--surface) 100%);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--foreground-subtle);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  /* Section */
+  .section {
+    padding: 80px 0;
+    border-top: 1px solid var(--border);
+  }
+  .section__heading {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.8px;
+    margin-bottom: 16px;
+    max-width: 20ch;
+  }
+  .section__lede {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--foreground-muted);
+    max-width: 56ch;
+    margin-bottom: 48px;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .feature-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  // Apply persisted theme before paint to avoid flash
+  (function() {
+    var t = localStorage.getItem('ztor-theme');
+    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  })();
+</script>
+</head>
+<body>
+
+  <button class="theme-toggle" type="button" aria-label="Toggle dark mode" onclick="(function(b){var d=document.documentElement.getAttribute('data-theme')==='dark';if(d){document.documentElement.removeAttribute('data-theme');localStorage.setItem('ztor-theme','light');}else{document.documentElement.setAttribute('data-theme','dark');localStorage.setItem('ztor-theme','dark');}})(this)">
+    <span class="theme-toggle__icon-moon" aria-hidden="true">🌙</span>
+    <span class="theme-toggle__icon-sun" aria-hidden="true">☀️</span>
+  </button>
+
+  <!-- Header -->
+  <header class="ztor-header">
+    <div class="ztor-header__inner">
+      <a class="ztor-header__brand" href="/">
+        <span class="ztor-header__brand-mark">✻</span> ztor
+      </a>
+
+      <nav class="ztor-header__nav">
+        <button class="ztor-nav-trigger">
+          Pricing <span class="ztor-nav-trigger__chevron">▾</span>
+        </button>
+        <button class="ztor-nav-trigger" onclick="document.getElementById('resources-panel').dataset.state = document.getElementById('resources-panel').dataset.state === 'open' ? 'closed' : 'open';">
+          Resources <span class="ztor-nav-trigger__chevron">▾</span>
+        </button>
+        <button class="ztor-nav-trigger">
+          Partnerships <span class="ztor-nav-trigger__chevron">▾</span>
+        </button>
+        <a class="ztor-nav-trigger" href="#">MCP</a>
+        <a class="ztor-nav-trigger" href="#">Careers</a>
+      </nav>
+
+      <div class="ztor-header__actions">
+        <a class="ztor-btn ztor-btn--outline ztor-btn--sm" href="#">Log in</a>
+        <a class="ztor-btn ztor-btn--sm" href="#">Sign up</a>
+      </div>
+    </div>
+
+    <!-- Resources dropdown panel (controlled) -->
+    <div class="ztor-nav-panel" id="resources-panel" data-state="closed" style="left: 50%; transform: translateX(-50%);">
+      <div class="ztor-nav-panel__col">
+        <a class="ztor-nav-link" href="#">
+          <span class="ztor-nav-link__icon">📚</span>
+          <div>
+            <p class="ztor-nav-link__title">Blog</p>
+            <p class="ztor-nav-link__desc">The latest research and thinking on AI search visibility</p>
+          </div>
+        </a>
+        <a class="ztor-nav-link" href="#">
+          <span class="ztor-nav-link__icon">📖</span>
+          <div>
+            <p class="ztor-nav-link__title">Docs</p>
+            <p class="ztor-nav-link__desc">Learn about our product in more depth in our docs</p>
+          </div>
+        </a>
+      </div>
+      <div class="ztor-nav-promo">
+        <p class="ztor-nav-promo__title">Find a trusted partner for your GEO needs</p>
+        <a class="ztor-nav-promo__cta" href="#">→ Get in touch with our partners</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero container">
+    <h1 class="hero__title">AI search analytics for marketing teams.</h1>
+    <p class="hero__subtitle">
+      Track, analyze, and improve brand performance on AI search platforms through key metrics like
+      <span class="ztor-metric-pill"><span class="ztor-dot ztor-dot--info"></span> Visibility</span>,
+      <span class="ztor-metric-pill"><span class="ztor-dot ztor-dot--black"></span> Position</span>, and
+      <span class="ztor-metric-pill"><span class="ztor-dot ztor-dot--success"></span> Sentiment</span>.
+    </p>
+    <div class="hero__cta-row">
+      <a class="ztor-btn ztor-btn--outline" href="#">Talk to Sales</a>
+      <a class="ztor-btn" href="#">Start Free Trial</a>
+    </div>
+
+    <!-- Dashboard mockup -->
+    <div class="dashboard-mockup container" style="margin-top: 64px; max-width: 1100px;">
+      <div class="dashboard-mockup__header">
+        <div class="dashboard-mockup__title">Attio · Last 7 days · All Models</div>
+        <a class="ztor-btn ztor-btn--outline ztor-btn--sm" href="#">Export</a>
+      </div>
+      <div class="dashboard-mockup__chart">— line chart visualization placeholder —</div>
+      <table class="ztor-table">
+        <thead>
+          <tr><th>#</th><th>Brand</th><th>Visibility</th><th>Sentiment</th><th>Position</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><span class="ztor-dot ztor-dot--success"></span> Monday</td><td>65%</td><td>↗ 0.3</td><td>86</td></tr>
+          <tr><td>2</td><td><span class="ztor-dot ztor-dot--info"></span> Salesforce</td><td>62%</td><td>↗ 0.2</td><td>62</td></tr>
+          <tr><td>3</td><td><span class="ztor-dot ztor-dot--black"></span> Attio</td><td>47%</td><td>↘ 0.3</td><td>89</td></tr>
+          <tr><td>4</td><td><span class="ztor-dot ztor-dot--warning"></span> Pipedrive</td><td>41%</td><td>↘ 0.3</td><td>76</td></tr>
+          <tr><td>5</td><td><span class="ztor-dot ztor-dot--success"></span> Zero</td><td>28%</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Feature grid -->
+  <section class="section container">
+    <h2 class="section__heading">Turn AI search insights into new customers.</h2>
+    <p class="section__lede">Set up prompts, track competitors, find key sources, and act on insights — all in one place built specifically for how teams need to operate in AI search.</p>
+
+    <div class="feature-grid">
+      <article class="ztor-card ztor-card--clickable">
+        <h3 class="ztor-card__title">Set up Prompts</h3>
+        <p class="ztor-card__body">Define the prompts you want to track across ChatGPT, Gemini, AI Mode, and more.</p>
+      </article>
+      <article class="ztor-card ztor-card--clickable">
+        <h3 class="ztor-card__title">Find Key Sources</h3>
+        <p class="ztor-card__body">See exactly which domains LLMs cite when answering your category's questions.</p>
+      </article>
+      <article class="ztor-card ztor-card--clickable">
+        <h3 class="ztor-card__title">Act on Insights</h3>
+        <p class="ztor-card__body">Turn anomalies into briefings, pages, and pitches with one click.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- FAQ accordion -->
+  <section class="section container">
+    <h2 class="section__heading">Questions, answered.</h2>
+
+    <div class="ztor-accordion">
+      <div class="ztor-accordion__item" data-state="open">
+        <button class="ztor-accordion__trigger" onclick="this.parentElement.dataset.state = this.parentElement.dataset.state === 'open' ? 'closed' : 'open';">
+          How do I get started with ztor?
+          <span class="ztor-accordion__chevron">▾</span>
+        </button>
+        <div class="ztor-accordion__content">
+          <p>Start a free trial — you'll set up your first prompt set in under five minutes. Most teams have their first visibility report live by the end of day one.</p>
+        </div>
+      </div>
+      <div class="ztor-accordion__item">
+        <button class="ztor-accordion__trigger" onclick="this.parentElement.dataset.state = this.parentElement.dataset.state === 'open' ? 'closed' : 'open';">
+          How often is the data refreshed?
+          <span class="ztor-accordion__chevron">▾</span>
+        </button>
+        <div class="ztor-accordion__content">
+          <p>Daily by default; weekly summaries roll up automatically. Higher-volume plans support hourly refresh.</p>
+        </div>
+      </div>
+      <div class="ztor-accordion__item">
+        <button class="ztor-accordion__trigger" onclick="this.parentElement.dataset.state = this.parentElement.dataset.state === 'open' ? 'closed' : 'open';">
+          What are brand visibility vs. position?
+          <span class="ztor-accordion__chevron">▾</span>
+        </button>
+        <div class="ztor-accordion__content">
+          <p>Visibility = % of relevant prompts where you appear at all. Position = your average rank within the answer (1 = most prominent).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="ztor-footer">
+    <div class="ztor-footer__inner">
+      <div class="ztor-footer__brand">
+        <div class="ztor-footer__wordmark">✻ ztor</div>
+        <p class="ztor-footer__tagline">AI search analytics for marketing teams.</p>
+      </div>
+
+      <div class="ztor-footer__col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#">Pricing</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">MCP</a></li>
+          <li><a href="#">Actions</a></li>
+        </ul>
+      </div>
+      <div class="ztor-footer__col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><a href="#">Comparisons</a></li>
+        </ul>
+      </div>
+      <div class="ztor-footer__col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Partnerships</a></li>
+          <li><a href="#">Book a Demo</a></li>
+        </ul>
+      </div>
+      <div class="ztor-footer__col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Imprint</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="ztor-footer__inner ztor-footer__bottom">
+      <span>© 2026 ztor — extracted for design-system demo only</span>
+      <span>Built on Ztor tokens</span>
+    </div>
+  </footer>
+
+  <!-- Cookie banner -->
+  <div class="ztor-cookie-banner" id="cookie">
+    <p class="ztor-cookie-banner__copy">We use cookies to personalize content, run ads, and analyze traffic.</p>
+    <div class="ztor-cookie-banner__actions">
+      <button class="ztor-cookie-banner__settings">Cookie Settings</button>
+      <button class="ztor-btn ztor-btn--sm" onclick="document.getElementById('cookie').remove();">Okay</button>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,116 @@
+/* ZTOR Minimalist v2 Resizable — ◎ Default (shadcn react-resizable-panels + ztor-v2 tokens)
+ * Signature: split-panel layout with hairline drag handle.
+ *            CSS-only — pair with react-resizable-panels for the resize logic.
+ */
+
+.ztor-resizable {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ztor-resizable--horizontal {
+  flex-direction: row;
+}
+
+.ztor-resizable--vertical {
+  flex-direction: column;
+}
+
+/* ── Panel ────────────────────────────────────────── */
+
+.ztor-resizable__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ztor-resizable__panel-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+/* ── Handle (drag area between panels) ────────────── */
+
+.ztor-resizable__handle {
+  position: relative;
+  flex-shrink: 0;
+  background: var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-resizable--horizontal > .ztor-resizable__handle {
+  width: var(--border-hairline-width);
+  cursor: col-resize;
+}
+
+.ztor-resizable--vertical > .ztor-resizable__handle {
+  height: var(--border-hairline-width);
+  cursor: row-resize;
+}
+
+.ztor-resizable__handle:hover,
+.ztor-resizable__handle[data-state="dragging"] {
+  background: var(--accent-yellow);
+}
+
+.ztor-resizable__handle[data-state="dragging"] {
+  /* Extend hit area while dragging */
+  outline: 4px solid rgba(255, 219, 41, 0.16);
+  outline-offset: -2px;
+}
+
+.ztor-resizable__handle:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 4px;
+}
+
+/* ── Handle grip indicator (3 dots showing it's draggable) ── */
+
+.ztor-resizable__handle-grip {
+  position: absolute;
+  background: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-quick) var(--ease);
+}
+
+.ztor-resizable--horizontal > .ztor-resizable__handle .ztor-resizable__handle-grip {
+  width: 4px;
+  height: 32px;
+}
+
+.ztor-resizable--vertical > .ztor-resizable__handle .ztor-resizable__handle-grip {
+  width: 32px;
+  height: 4px;
+}
+
+.ztor-resizable__handle:hover .ztor-resizable__handle-grip,
+.ztor-resizable__handle[data-state="dragging"] .ztor-resizable__handle-grip {
+  opacity: 0.7;
+}
+
+/* ── Variants ─────────────────────────────────────── */
+
+.ztor-resizable--bordered {
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+}
+
+.ztor-resizable--no-resize > .ztor-resizable__handle {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-resizable__handle,
+  .ztor-resizable__handle-grip { transition: none; }
+}

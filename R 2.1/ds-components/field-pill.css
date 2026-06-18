@@ -1,0 +1,79 @@
+/* ============================================================
+   Field pill · inline control pill — search / select / dropdown-trigger
+   (promoted 2026-06-12 from e-shop 頁內 .eshop-list-search/.eshop-list-status；
+    補齊參考圖缺的「下拉觸發按鈕」變體)
+   ------------------------------------------------------------
+   白底＋1px 線框 pill，內含前置 icon、控制項、後置 chevron。
+   content 變體（擇一）：
+     .field-pill__input    — 搜尋輸入（配 --grow 撐滿）
+     .field-pill__select   — 原生 <select>（狀態／篩選下拉）
+     .field-pill__label    — 純文字（按鈕式選單觸發，自管 click→menu）
+   anatomy
+     .field-pill__icon     — 前置 icon
+     .field-pill__chevron  — 後置 chevron（下拉才放）
+   modifier
+     .field-pill--grow     — flex:1，撐滿可用寬（搜尋常用）
+     .field-pill--block    — width:100%，chevron 推到最右（側欄 switcher）
+   ============================================================ */
+
+.field-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--easing),
+    box-shadow var(--duration) var(--easing);
+}
+.field-pill:hover { background: var(--surface-muted); }
+.field-pill:focus-within {
+  box-shadow:
+    0 0 0 1px var(--ring),
+    0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
+}
+
+.field-pill__icon,
+.field-pill__chevron {
+  width: 18px; height: 18px;
+  color: var(--foreground-subtle);
+  flex: none;
+}
+.field-pill__chevron { width: 16px; height: 16px; margin-left: 2px; pointer-events: none; }
+
+.field-pill__input,
+.field-pill__select {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: var(--foreground);
+  outline: none;
+  cursor: inherit;
+}
+.field-pill__input { cursor: text; }
+.field-pill__input::placeholder { color: var(--foreground-subtle); }
+.field-pill__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none;
+  padding-right: 2px;
+}
+.field-pill__label { color: var(--foreground); white-space: nowrap; }
+
+/* sizing */
+.field-pill--grow { flex: 1 1 auto; }
+.field-pill--grow .field-pill__input { flex: 1 1 auto; }
+.field-pill--block { width: 100%; }
+.field-pill--block .field-pill__label,
+.field-pill--block .field-pill__select { flex: 1 1 auto; }
+.field-pill--block .field-pill__chevron { margin-left: auto; }

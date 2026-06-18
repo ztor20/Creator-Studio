@@ -1,0 +1,68 @@
+/* ============================================================
+   Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.6 / §5.2.5）
+   ------------------------------------------------------------
+   建立活動流程預覽面板內的卡片，鏡像粉絲端活動卡，依建立表單當下
+   輸入即時渲染：海報（直式 poster／橫式 banner，未傳顯佔位）、活動
+   名稱、活動類型、日期＋場地（城市）、票種摘要（from $X 或票種數）。
+   與粉絲端活動卡同源，不引入規格外欄位。
+     .event-preview-card
+       .event-preview-card__poster        — 海報（空時放 icon 佔位）
+         .event-preview-card__type-tag    — 類型徽章（疊在海報左上）
+       .event-preview-card__body
+         .event-preview-card__name        — 活動名稱
+         .event-preview-card__meta        — 日期＋場地（圖示＋文字列）
+           .event-preview-card__meta-row
+         .event-preview-card__tickets     — 票種摘要（from $X / N 票種）
+   未填欄位用 .is-empty（斜體、subtle）。海報預設 3:4 直式（對齊 Vertical
+   poster），有橫式 banner 時可加 --landscape 切 16:9。
+   surface 層：卡坐在面板 __body 的灰底上，本體 --surface（白）+ 1px border。
+   ============================================================ */
+
+.event-preview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.event-preview-card__poster {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  background: var(--surface-muted);
+  display: grid; place-items: center;
+  color: var(--foreground-subtle);
+  background-size: cover;
+  background-position: center;
+}
+.event-preview-card--landscape .event-preview-card__poster { aspect-ratio: 16 / 9; }
+.event-preview-card__poster .ztor-icon { width: 34px; height: 34px; stroke-width: 1; }
+
+/* 類型徽章疊在海報左上（複用 .badge 視覺，這裡只定位） */
+.event-preview-card__type-tag { position: absolute; top: 10px; left: 10px; }
+
+.event-preview-card__body { padding: 14px 14px 16px; }
+
+.event-preview-card__name { font-size: 16px; font-weight: 600; margin: 0; line-height: 1.3; }
+
+.event-preview-card__meta {
+  margin: 10px 0 0;
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 12.5px; color: var(--foreground-muted);
+}
+.event-preview-card__meta-row { display: flex; align-items: center; gap: 7px; }
+.event-preview-card__meta-row .ztor-icon { width: 14px; height: 14px; flex: none; color: var(--foreground-subtle); }
+
+.event-preview-card__tickets {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13.5px; font-weight: 600;
+}
+
+/* 未填欄位佔位：斜體 + subtle，與已填值區隔 */
+.event-preview-card__name.is-empty,
+.event-preview-card__tickets.is-empty {
+  color: var(--foreground-subtle);
+  font-style: italic;
+  font-weight: 400;
+}

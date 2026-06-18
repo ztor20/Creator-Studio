@@ -1,0 +1,219 @@
+/* ZTOR Minimalist v2 Calendar — ◎ Default (shadcn react-day-picker style + ztor-v2 tokens)
+ * Signature: 7-column day grid, yellow selected day, hairline week separator,
+ *            Inter UPPER weekday headers.
+ *            CSS-only — pair with react-day-picker for date logic.
+ */
+
+.ztor-calendar {
+  display: inline-block;
+  padding: 16px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  user-select: none;
+}
+
+/* ── Header (month/year + nav arrows) ──────────────── */
+
+.ztor-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.ztor-calendar__title {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-primary);
+}
+
+.ztor-calendar__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ztor-calendar__nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-calendar__nav-btn:hover {
+  background: var(--surface-secondary);
+}
+
+.ztor-calendar__nav-btn:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.ztor-calendar__nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Grid (7 columns) ─────────────────────────────── */
+
+.ztor-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.ztor-calendar__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+}
+
+.ztor-calendar__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-quick) var(--ease),
+    color var(--duration-quick) var(--ease);
+}
+
+.ztor-calendar__day:hover {
+  background: var(--surface-secondary);
+}
+
+.ztor-calendar__day:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: -1px;
+}
+
+/* ── Day states ───────────────────────────────────── */
+
+.ztor-calendar__day--outside,
+.ztor-calendar__day[data-outside="true"] {
+  color: var(--text-secondary);
+  opacity: 0.4;
+}
+
+.ztor-calendar__day--today,
+.ztor-calendar__day[data-today="true"] {
+  font-weight: 500;
+  position: relative;
+}
+
+.ztor-calendar__day--today::after,
+.ztor-calendar__day[data-today="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  transform: translateX(-50%);
+}
+
+.ztor-calendar__day--selected,
+.ztor-calendar__day[aria-selected="true"],
+.ztor-calendar__day[data-selected="true"] {
+  background: var(--accent-yellow);
+  color: var(--text-accent-on);
+  font-weight: 500;
+}
+
+.ztor-calendar__day--selected:hover,
+.ztor-calendar__day[aria-selected="true"]:hover {
+  background: var(--accent-yellow-hover);
+}
+
+.ztor-calendar__day--selected.ztor-calendar__day--today::after,
+.ztor-calendar__day[aria-selected="true"][data-today="true"]::after {
+  background: var(--text-accent-on);
+}
+
+/* Range selection (start / middle / end) */
+
+.ztor-calendar__day--range-start,
+.ztor-calendar__day[data-range="start"] {
+  background: var(--accent-yellow);
+  color: var(--text-accent-on);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.ztor-calendar__day--range-end,
+.ztor-calendar__day[data-range="end"] {
+  background: var(--accent-yellow);
+  color: var(--text-accent-on);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.ztor-calendar__day--range-middle,
+.ztor-calendar__day[data-range="middle"] {
+  background: rgba(255, 219, 41, 0.2);
+  border-radius: 0;
+}
+
+.ztor-calendar__day--disabled,
+.ztor-calendar__day[aria-disabled="true"] {
+  color: var(--text-secondary);
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+  text-decoration: line-through;
+}
+
+/* ── Variants ─────────────────────────────────────── */
+
+.ztor-calendar--compact {
+  padding: 12px;
+}
+
+.ztor-calendar--compact .ztor-calendar__day,
+.ztor-calendar--compact .ztor-calendar__weekday {
+  width: 30px;
+  height: 30px;
+}
+
+.ztor-calendar--multi-month {
+  /* For showing 2-3 months side by side */
+  display: inline-flex;
+  gap: 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-calendar__day,
+  .ztor-calendar__nav-btn { transition: none; }
+}

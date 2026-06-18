@@ -1,0 +1,145 @@
+/* ZTOR Minimalist v2 Input OTP — ◎ Default (shadcn input-otp + ztor-v2 tokens)
+ * Signature: separated single-character slots, focus = yellow accent border.
+ *            Optional middle separator for grouped codes (3+3, 4+4).
+ */
+
+.ztor-otp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ztor-otp__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ztor-otp__slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 52px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-right-width: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  outline: none;
+  caret-color: var(--accent-yellow);
+  transition:
+    border-color var(--duration-quick) var(--ease),
+    background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-otp__slot:first-child {
+  border-top-left-radius: var(--radius-button);
+  border-bottom-left-radius: var(--radius-button);
+}
+
+.ztor-otp__slot:last-child {
+  border-right-width: var(--border-hairline-width);
+  border-top-right-radius: var(--radius-button);
+  border-bottom-right-radius: var(--radius-button);
+}
+
+.ztor-otp__slot:hover {
+  border-color: var(--text-secondary);
+}
+
+.ztor-otp__slot:focus,
+.ztor-otp__slot[data-state="active"] {
+  border-color: var(--border-emphasis);
+  border-right-width: var(--border-hairline-width);
+  z-index: 1;
+  position: relative;
+}
+
+.ztor-otp__slot[data-filled="true"] {
+  border-color: var(--text-primary);
+  border-right-width: var(--border-hairline-width);
+  z-index: 1;
+  position: relative;
+}
+
+.ztor-otp__slot[aria-invalid="true"] {
+  border-color: var(--status-error);
+}
+
+.ztor-otp__slot:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--surface-secondary);
+}
+
+/* ── Separator (middle dash between groups) ───────── */
+
+.ztor-otp__separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-label);
+  font-size: 18px;
+  color: var(--text-secondary);
+  user-select: none;
+  padding: 0 4px;
+}
+
+.ztor-otp__separator::before {
+  content: "—";
+}
+
+.ztor-otp__separator--dot::before { content: "·"; }
+.ztor-otp__separator--space::before { content: ""; padding: 0 2px; }
+
+/* ── Sizes ────────────────────────────────────────── */
+
+.ztor-otp--sm .ztor-otp__slot {
+  width: 36px;
+  height: 44px;
+  font-size: 18px;
+}
+
+.ztor-otp--lg .ztor-otp__slot {
+  width: 56px;
+  height: 64px;
+  font-size: 28px;
+}
+
+/* ── Variants ─────────────────────────────────────── */
+
+/* Spaced (each slot independent, gap between) */
+.ztor-otp--spaced .ztor-otp__group {
+  gap: 8px;
+}
+
+.ztor-otp--spaced .ztor-otp__slot {
+  border-right-width: var(--border-hairline-width);
+  border-radius: var(--radius-button);
+}
+
+/* Masked (for password-style OTP) */
+.ztor-otp--masked .ztor-otp__slot[data-filled="true"] {
+  color: transparent;
+  position: relative;
+}
+
+.ztor-otp--masked .ztor-otp__slot[data-filled="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-otp__slot { transition: none; }
+}

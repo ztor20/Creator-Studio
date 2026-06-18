@@ -1,0 +1,70 @@
+/* ============================================================
+   Ztor Creator Studio R 2.0 — Self-hosted fonts
+
+   Latin: Geist (Vercel) + Inter (body) — matches ztor stack.
+   CJK:   Noto Sans TC — system-installed on most Mac / Linux; on
+          Windows it falls through to the OS CJK default (JhengHei).
+          Self-hosting Noto Sans TC is an open task — it's a ~10MB+
+          family even subsetted; not yet bundled.
+
+   Loading order: Geist priority for UI / display, Inter for body, and
+   Noto Sans TC as the CJK fallback so 中文字 falls through per-glyph
+   without per-element overrides. (R 2.1.39 — Taipei Sans TC Beta
+   removed by spec; CJK switched to Noto Sans TC.)
+   ============================================================ */
+
+@font-face {
+  font-family: "Geist";
+  src: url("../fonts/Geist-Variable.woff2") format("woff2-variations"),
+       url("../fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Variable name alias used in design-system.md H1 spec ("Geist Variable") */
+@font-face {
+  font-family: "Geist Variable";
+  src: url("../fonts/Geist-Variable.woff2") format("woff2-variations"),
+       url("../fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/Geist-Mono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* R 2.1.39: Taipei Sans TC Beta @font-face removed per user spec — Noto Sans
+   TC is now the canonical CJK face. The .ttf files at /fonts/TaipeiSansTCBeta-*
+   are no longer referenced and can be deleted from disk in a separate pass. */
+
+/* Override ztor's :root font stacks so CJK glyphs fall through to Noto Sans
+ * TC while Latin glyphs stay on Geist / Inter. ztor's _tokens.css declares
+ * these but without CJK fallback. */
+:root {
+  --font-display: "Geist Variable", "Geist", "Noto Sans TC", system-ui, sans-serif;
+  --font-ui:      "Geist", "Noto Sans TC", system-ui, sans-serif;
+  --font-body:    "Inter", "Noto Sans TC", system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html, body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

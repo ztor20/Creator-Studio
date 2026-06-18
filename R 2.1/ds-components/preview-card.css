@@ -1,0 +1,53 @@
+/* ============================================================
+   Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
+   ------------------------------------------------------------
+   建立流程預覽面板內的卡片，鏡像商店端的商品卡 / 拍賣卡，
+   依建立表單當下輸入即時渲染；未填欄位顯示斜體占位。
+   與真正粉絲端卡片同源，不引入規格外欄位。
+     .preview-card
+       .preview-card__media     — 主圖（空時放 icon 占位）
+       .preview-card__body
+         .preview-card__row     — 名稱 ｜ 價格 同列
+         .preview-card__name / __price / __desc
+       拍賣額外：__dots(輪播圓點) · __meta(by/分類/狀態) · __cta
+   未填占位用 .is-empty（斜體、subtle）。狀態徽章複用 .badge，CTA 複用 .btn。
+   surface 層：卡坐在面板 __body 的灰底上，本體用 --surface（白）+ 1px border。
+   ============================================================ */
+
+.preview-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.preview-card__media {
+  aspect-ratio: 4 / 3;
+  background: var(--surface-muted);
+  display: grid; place-items: center;
+  color: var(--foreground-subtle);
+}
+.preview-card__media .ztor-icon { width: 34px; height: 34px; stroke-width: 1; }
+
+.preview-card__dots { display: flex; gap: 5px; justify-content: center; padding: 9px 0 0; }
+.preview-card__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.preview-card__dot--on { background: var(--foreground); }
+
+.preview-card__body { padding: 14px 14px 16px; }
+.preview-card__row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.preview-card__name { font-size: 14.5px; font-weight: 600; margin: 0; }
+.preview-card__price { font-size: 14.5px; font-weight: 600; white-space: nowrap; }
+.preview-card__desc { font-size: 12.5px; color: var(--foreground-muted); margin: 8px 0 0; line-height: 1.5; }
+
+/* 未填欄位占位：斜體 + subtle，與已填值區隔 */
+.preview-card__name.is-empty,
+.preview-card__price.is-empty,
+.preview-card__desc.is-empty {
+  color: var(--foreground-subtle);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* 拍賣卡：賣家 / 分類 chip / 狀態 + 出價 CTA */
+.preview-card__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 7px 0 0; font-size: 12px; color: var(--foreground-subtle); }
+.preview-card__cta { margin-top: 12px; width: 100%; justify-content: center; }

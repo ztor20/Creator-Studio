@@ -1,0 +1,183 @@
+/* ZTOR Minimalist v2 Sheet (Drawer) — ◎ Default (shadcn + ztor-v2 tokens)
+ * Signature: side-anchored slide-in panel. Right-side default (cart, filters).
+ *            Left / top / bottom variants for navigation drawers.
+ *            0.5px hairline on the anchor edge.
+ */
+
+.ztor-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+  z-index: 90;
+  animation: ztor-sheet-fade var(--duration-quick) var(--ease) forwards;
+}
+
+.ztor-sheet-content {
+  position: fixed;
+  background: var(--surface-canvas);
+  z-index: 91;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+@keyframes ztor-sheet-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Side variants ────────────────────────────────── */
+
+.ztor-sheet-content--right {
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(90vw, 480px);
+  border-left: var(--border-hairline-width) solid var(--border-hairline);
+  animation: ztor-sheet-slide-right var(--duration-base) var(--ease) forwards;
+}
+
+.ztor-sheet-content--left {
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: min(90vw, 480px);
+  border-right: var(--border-hairline-width) solid var(--border-hairline);
+  animation: ztor-sheet-slide-left var(--duration-base) var(--ease) forwards;
+}
+
+.ztor-sheet-content--top {
+  top: 0;
+  left: 0;
+  right: 0;
+  max-height: 80vh;
+  border-bottom: var(--border-hairline-width) solid var(--border-hairline);
+  animation: ztor-sheet-slide-top var(--duration-base) var(--ease) forwards;
+}
+
+.ztor-sheet-content--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 80vh;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout) var(--radius-callout) 0 0;
+  animation: ztor-sheet-slide-bottom var(--duration-base) var(--ease) forwards;
+}
+
+@keyframes ztor-sheet-slide-right  { from { transform: translateX(100%); }  to { transform: translateX(0); } }
+@keyframes ztor-sheet-slide-left   { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes ztor-sheet-slide-top    { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes ztor-sheet-slide-bottom { from { transform: translateY(100%); }  to { transform: translateY(0); } }
+
+/* ── Anatomy ──────────────────────────────────────── */
+
+.ztor-sheet__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 28px 16px;
+  border-bottom: var(--border-hairline-width) solid var(--border-hairline);
+}
+
+.ztor-sheet__title-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.ztor-sheet__eyebrow {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+
+.ztor-sheet__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.ztor-sheet__description {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ztor-sheet__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.ztor-sheet__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 28px 24px;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+}
+
+.ztor-sheet__close {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-sheet__close:hover {
+  background: var(--surface-secondary);
+}
+
+.ztor-sheet__close:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* ── Bottom-sheet drag handle (mobile drawer pattern) ── */
+
+.ztor-sheet__handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 0 4px;
+}
+
+.ztor-sheet__handle::before {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-sheet-overlay,
+  .ztor-sheet-content,
+  .ztor-sheet__close { animation: none; transition: none; }
+}

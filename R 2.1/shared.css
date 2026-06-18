@@ -1,0 +1,1123 @@
+/* ============================================================
+   Ztor Creator Studio · R 2.1 · shared.css
+   Project-level patterns built on top of ds-components (ztor yellow).
+
+   Design-language delta from R 2.0:
+   - Horizontal topbar (canonical ztor-header pattern, 80 px relative)
+     with hover-open dropdown nav panels for IP Bank / E-Shop / Fans
+   - Editorial bento layout for Dashboard
+   - Yellow as structural element (active-nav underline, sticky-note accents,
+     KPI highlight tile)
+   - Larger Geist display for page headlines
+   - Denser tables with row dividers, fewer card frames
+   - Sticky bottom action bar on wizards
+   ============================================================ */
+
+/* Header is the canonical DS component — single source in ds-components/header.css.
+   All product pages load shared.css, so this @import gives every page the topbar
+   from the one place; design-system.html links header.css directly. */
+@import url("ds-components/header.css?v=20260616j");
+@import url("ds-components/icon.css?v=20260616j");
+@import url("ds-components/page-intro.css?v=20260616j");
+@import url("ds-components/field-system.css?v=20260616j");
+@import url("ds-components/settings.css?v=20260616j");
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+/* zh-Hant locale: put Noto Sans TC FIRST in every font-family token so
+   the line box (line-height / baseline / x-height) is driven by the CJK face,
+   not by Geist. Without this, mixed 英文+中文 lines look uneven — Latin
+   fallback in Geist controls metrics and Chinese glyphs sit small + tight.
+   i18n.js toggles `document.documentElement.lang = 'zh-Hant'` so :lang() fires.
+   Override is project-level (not in _tokens.css) — the DS tokens stay
+   English-first as their canonical declaration.
+
+   R 2.1.39: Taipei Sans TC Beta removed per user spec. Noto Sans TC is the
+   primary CJK face. Open task — Noto Sans TC is NOT yet self-hosted (web font
+   ~10MB+ even subsetted); relies on system install (macOS / Linux usually
+   ship it; Windows hit-or-miss → falls through to OS default JhengHei). If
+   Windows parity matters, next step is downloading subsetted Noto Sans TC
+   .woff2 files and adding @font-face in fonts.css.
+
+   NOTE: opposite trade-off from the weasyprint PDF rule
+   (`feedback_weasyprint_cjk_fonts.md`: PingFang first nukes 中文 in macOS
+   weasyprint). That's a print-engine bug; browser per-glyph fallback works
+   fine with CJK first. */
+:lang(zh-Hant) {
+  --font-display: 'Noto Sans TC', 'Geist Variable', 'Geist', system-ui, sans-serif;
+  --font-ui:      'Noto Sans TC', 'Geist', system-ui, sans-serif;
+  --font-body:    'Noto Sans TC', 'Inter', system-ui, sans-serif;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ---------- App shell ---------- */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+/* 桌機：app shell 固定滿版、不隨文件捲動；只有 .main 內部捲動（2026-06-14）。
+   窄螢幕（≤900px）維持一般文件捲動（見各 @media）。 */
+@media (min-width: 901px) {
+  .app { height: 100vh; overflow: hidden; }
+  /* .main 是 flex column；變成固定高捲動容器後，子項預設會被 flex-shrink 壓扁
+     （例如 Hero 被擠成 0 高）。鎖定不收縮，讓子項保持自然高度、改由 .main 內捲。 */
+  .app .main > * { flex-shrink: 0; }
+}
+/* Hero（fullbleed）有被合成的 transform 圖層，會逃出 .main 圓角+overflow 的裁切，
+   且自身 border-radius:0 → 角變方。讓它直接繼承 .main 的圓角（topbar 上兩角、sidebar 左上角、
+   ≤900px 為 0），用自身 overflow:hidden 把內容裁圓。 */
+.app .main > .hero--fullbleed { border-radius: inherit; }
+
+/* ════════════════════════════════════════════════════════════
+ * Display mode: Sidebar — spec §6.9 / decisions D016
+ * ────────────────────────────────────────────────────────────
+ * Same nav model as the topbar (sidebar.js renders .app-sidebar
+ * instead of .app-topbar when html[data-nav-mode="sidebar"]).
+ * Only placement changes; IA is identical. theme.js sets the
+ * attribute in <head> so the row layout is correct before paint.
+ * ════════════════════════════════════════════════════════════ */
+html[data-nav-mode="sidebar"] body { background: var(--surface-shell); }
+html[data-nav-mode="sidebar"] .app {
+  flex-direction: row;
+  align-items: flex-start;
+  background: var(--surface-shell);
+}
+/* Reserve the rail width before sidebar.js renders → no shift. */
+html[data-nav-mode="sidebar"] #sidebar,
+html[data-nav-mode="sidebar"] #topbar { flex: 0 0 248px; }
+/* Full-bleed hero breaks out to the viewport (-50vw) in topbar mode; with a
+   248px rail that would overlap the sidebar and overflow right. The hero is a
+   child of .main, so in sidebar mode we just neutralise the breakout and let it
+   fill .main edge-to-edge (rail → viewport right), the sidebar-mode equivalent
+   of edge-to-edge. */
+html[data-nav-mode="sidebar"] .hero--fullbleed {
+  width: auto; left: auto; right: auto;
+  margin-left: 0; margin-right: 0;
+}
+
+.app-sidebar {
+  position: sticky; top: 0; z-index: 50; align-self: stretch;
+  width: 248px; height: 100vh; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 20px 14px;
+  background: transparent;
+  border-right: 0;
+  overflow-y: auto;
+}
+.app-sidebar__brand { display: block; padding: 4px 10px 16px; color: var(--foreground); }
+.app-sidebar__brand-logo { height: 26px; width: auto; }
+
+.app-sidebar__nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }  /* 2026-06-13：加大項目間距 */
+.app-sidebar__nav > li { list-style: none; }
+
+.app-sidebar__link {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 12px; border: 0; background: transparent; cursor: pointer;
+  border-radius: var(--radius-lg); text-align: left;  /* 已選/hover 圓角矩形（2026-06-13：pill 變高後全膠囊 9999px 顯得太圓，改回較小圓角 --radius-lg 8px） */
+  font-size: 14px; line-height: 1.2; font-weight: 500;
+  color: var(--foreground-muted); text-decoration: none;
+  font-family: inherit;
+}
+.app-sidebar__link:hover { background: var(--surface-rail-hover); color: var(--foreground); }
+.app-sidebar__link[aria-current="page"],
+.app-sidebar__link--active { background: var(--surface-rail-active); color: var(--foreground); }
+.app-sidebar__link .ztor-icon { flex: 0 0 auto; width: 18px; height: 18px; }
+.app-sidebar__link-label { flex: 1 1 auto; }
+
+/* Section-label group 變體（分組標題＋子項平鋪）— 2026-06-13 做過、使用者選擇改回 accordion，
+   樣式保留為可隨時切回的變體（sidebar.js 目前不渲染這些 class；demo 見 design-system）。
+   label 與項目 icon 同一左緣（padding-left 12px）；上方留白做分組分隔。 */
+.app-sidebar__section { list-style: none; }
+.app-sidebar__nav-gap { margin-top: 14px; }   /* 分組之後的平鋪頂層項：上方留白，與前一組分離 */
+.app-sidebar__section-label {
+  display: block;
+  padding: 0 12px;
+  margin: 16px 0 4px;
+  font-size: 12px; font-weight: 500; line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--foreground-subtle);
+}
+
+/* Expandable group (IP Bank / E-Shop) — 舊收合樣式，sidebar 改 section-label 後保留供回退 */
+.app-sidebar__group-toggle .app-sidebar__chevron { transition: transform .18s ease; }
+.app-sidebar__group[data-state="open"] .app-sidebar__chevron { transform: rotate(180deg); }
+.app-sidebar__subnav {
+  list-style: none; margin: 6px 0 0; padding: 0;   /* 2026-06-13：移除左縮排，子項 pill 改全寬（與主項同尺寸）*/
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows .2s ease;
+}
+.app-sidebar__group[data-state="open"] .app-sidebar__subnav { grid-template-rows: 1fr; }
+.app-sidebar__subnav > div { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 6px; }  /* 2026-06-13：加大子項間距 */
+/* 子項：pill 與主項同尺寸（同 padding-y/全寬/圓角）；文字 padding-left 40px 對齊主項(12+18 icon+10 gap)，靠縮排與無 icon 區分層級 */
+.app-sidebar__sub-link {
+  display: block; padding: 9px 12px 9px 40px; border-radius: var(--radius-lg);  /* 同主項圓角（2026-06-13） */
+  font-size: 13.5px; line-height: 1.2; color: var(--foreground-muted); text-decoration: none;
+}
+.app-sidebar__sub-link:hover { background: var(--surface-rail-hover); color: var(--foreground); }
+.app-sidebar__sub-link[aria-current="page"] { background: var(--surface-rail-active); color: var(--foreground); }
+
+/* Bottom action cluster — search / notifications / language / theme / account */
+.app-sidebar__actions {
+  margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.app-sidebar__action {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 10px; border: 0; background: transparent; cursor: pointer;
+  border-radius: var(--radius-md); text-align: left;
+  font-size: 13px; color: var(--foreground-muted); font-family: inherit;
+  text-decoration: none; position: relative;
+}
+.app-sidebar__action:hover { background: var(--surface-rail-hover); color: var(--foreground); }
+.app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
+.app-topbar__badge-dot[data-read="true"] { display: none; }
+.app-sidebar__lang [data-lang] { font-weight: 600; }
+.app-sidebar__lang [data-lang][aria-current="false"] { color: var(--foreground-muted); font-weight: 400; }
+.app-sidebar__search { gap: 8px; cursor: text; }
+.app-sidebar__search-input {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
+  color: var(--foreground); font: inherit; font-size: 13px; outline: none;
+}
+.app-sidebar__avatar {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-muted); color: var(--foreground);
+  font-size: 12px; font-weight: 600;
+}
+
+/* Sidebar theme toggle reuses the topbar sun/moon visibility rules
+   (those selectors key off [data-theme-toggle], not .app-topbar). */
+
+/* ════════════════════════════════════════════════════════════
+ * Notification & to-do center — spec §5.2.1 / decisions D019
+ * Shared panel; opens as a topbar dropdown OR a sidebar-right flyout.
+ * Base surface + open/close animation come from .app-topbar__dropdown.
+ * ════════════════════════════════════════════════════════════ */
+.app-notif { position: relative; }
+.app-notif__panel { width: 360px; max-width: calc(100vw - 32px); padding: 0; overflow: hidden; }
+.app-notif__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+.app-notif__title { font-weight: 600; font-size: 14px; }
+.app-notif__markread {
+  border: 0; background: transparent; cursor: pointer; font: inherit;
+  font-size: 12px; color: var(--foreground-muted);
+}
+.app-notif__markread:hover { color: var(--foreground); }
+.app-notif__scroll { max-height: min(64vh, 520px); overflow-y: auto; padding: 6px; }
+.app-notif__section-label {
+  font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase;
+  color: var(--foreground-subtle); padding: 10px 8px 4px;
+}
+.app-notif__item {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start;
+  padding: 9px 8px; border-radius: var(--radius-md); text-decoration: none; color: var(--foreground);
+}
+.app-notif__item:hover { background: var(--surface-muted); }
+.app-notif__item[data-unread="true"] { background: color-mix(in srgb, var(--primary) 7%, transparent); }
+.app-notif__item[data-unread="true"]:hover { background: color-mix(in srgb, var(--primary) 11%, var(--surface-muted)); }
+.app-notif__item-icon {
+  width: 30px; height: 30px; border-radius: var(--radius); flex-shrink: 0;
+  background: var(--surface-muted); display: inline-flex; align-items: center; justify-content: center;
+  color: var(--foreground-muted);
+}
+.app-notif__item--todo .app-notif__item-icon { color: var(--foreground); background: color-mix(in srgb, var(--primary) 26%, var(--surface)); }
+.app-notif__item-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.app-notif__item-title { font-size: 13px; line-height: 1.3; font-weight: 500; }
+.app-notif__item[data-unread="true"] .app-notif__item-title::before {
+  content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--primary); margin-right: 6px; vertical-align: middle;
+}
+.app-notif__item-meta {
+  font-size: 12px; line-height: 1.3; color: var(--foreground-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.app-notif__item-source {
+  width: max-content; max-width: 100%;
+  margin-top: 3px; padding: 2px 6px; border: 1px solid var(--border);
+  border-radius: 999px; color: var(--foreground-muted); background: var(--surface);
+  font-size: 11px; line-height: 1.2; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.app-notif__item-time { font-size: 11px; color: var(--foreground-subtle); white-space: nowrap; }
+.app-notif__foot {
+  display: block; text-align: center; padding: 11px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--foreground-muted); text-decoration: none;
+}
+.app-notif__foot:hover { color: var(--foreground); background: var(--surface-muted); }
+
+/* Sidebar mode: open as a fixed flyout to the right of the rail (the rail is
+   overflow-y:auto and would clip an absolutely-positioned child). */
+html[data-nav-mode="sidebar"] .app-notif__panel--rail {
+  position: fixed; left: 256px; bottom: 16px; top: auto; right: auto;
+  transform-origin: bottom left;
+}
+@media (max-width: 900px) {
+  /* Rail collapses to a top row on small screens → drop the notif flyout below it. */
+  html[data-nav-mode="sidebar"] .app-notif__panel--rail {
+    position: absolute; left: auto; right: 0; bottom: auto; top: calc(100% + 8px);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Small screens: collapse the rail to a top row so content keeps full width.
+     (Basic responsive per spec §6.8 — full drawer/hamburger is R 2.1.x.) */
+  html[data-nav-mode="sidebar"] body,
+  html[data-nav-mode="sidebar"] .app { background: var(--background); }
+  html[data-nav-mode="sidebar"] .app {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  html[data-nav-mode="sidebar"] #sidebar,
+  html[data-nav-mode="sidebar"] #topbar { flex: 0 0 auto; width: 100%; }
+  .app-sidebar { width: 100%; height: auto; position: sticky; top: 0; z-index: 40;
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px;
+    background: var(--surface-rail);
+    border-right: 0; border-bottom: 1px solid var(--border); }
+  .app-sidebar__brand { padding: 4px 8px; }
+  .app-sidebar__nav { flex-direction: row; flex-wrap: wrap; flex: 1 1 100%; }
+  .app-sidebar__actions { margin-top: 0; padding-top: 0; border-top: 0; flex-direction: row; }
+  .app-sidebar__subnav { padding-left: 12px; }
+}
+
+
+/* Theme toggle: show only the icon matching resolved theme. */
+[data-theme-toggle] [data-lucide="sun"],
+[data-theme-toggle] [data-lucide="moon"] { display: none; }
+html[data-theme="light"] [data-theme-toggle] [data-lucide="moon"] { display: inline-block; }
+html[data-theme="dark"]  [data-theme-toggle] [data-lucide="sun"]  { display: inline-block; }
+
+/* Display-mode toggle: show the icon of the mode you'll switch TO
+   (topbar now → panel-left hints sidebar; sidebar now → panel-top hints topbar). */
+[data-nav-toggle] [data-lucide="panel-left"],
+[data-nav-toggle] [data-lucide="panel-top"] { display: none; }
+html:not([data-nav-mode="sidebar"]) [data-nav-toggle] [data-lucide="panel-left"] { display: inline-block; }
+html[data-nav-mode="sidebar"]       [data-nav-toggle] [data-lucide="panel-top"]  { display: inline-block; }
+
+/* ---------- Main content ---------- */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+html[data-nav-mode="sidebar"] .main {
+  min-height: 0;
+  align-self: stretch;   /* row 版 .app 為 flex-start，需撐滿高度，內捲才有作用 */
+  margin-top: var(--space-shell-gutter);
+  background: var(--surface-page);
+  border-radius: var(--radius-shell) 0 0 0;
+  overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
+}
+@media (max-width: 900px) {
+  html[data-nav-mode="sidebar"] .main {
+    min-height: 0;
+    margin-top: 0;
+    background: var(--background);
+    border-radius: 0;
+    overflow: visible;
+  }
+}
+
+/* ---- Topbar-mode app shell（2026-06-14，依使用者反饋）----
+   topbar 坐在灰色 canvas（--surface-shell）上，內容為白色圓角面板（上方兩角圓），
+   與 sidebar 模式同一套 shell token。Hero 收進面板（overflow:clip 裁圓角）。
+   只作用於 topbar 模式；wizard 頁（.wizard，無 .app/.main）不受影響。 */
+html:not([data-nav-mode="sidebar"]) .app { background: var(--surface-shell); }  /* 只灰 .app；wizard 頁無 .app、不受影響 */
+html:not([data-nav-mode="sidebar"]) .app-topbar {
+  background: var(--surface-shell);
+  border-bottom: 0;
+}
+html:not([data-nav-mode="sidebar"]) .app-topbar.is-scrolled {
+  background: var(--surface-shell);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow: 0 1px 0 var(--border);   /* 內容捲到 topbar 下方時的淡分隔 */
+}
+html:not([data-nav-mode="sidebar"]) .main {
+  margin-top: var(--space-shell-gutter);
+  min-height: 0;
+  background: var(--surface-page);
+  border-radius: var(--radius-shell) var(--radius-shell) 0 0;   /* 上方兩角圓（sidebar 只圓左上）*/
+  overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
+}
+/* Hero 收進面板：取消滿版 breakout，填滿面板、上緣跟著面板圓角被裁 */
+html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
+  width: auto; left: auto; right: auto; margin-left: 0; margin-right: 0;
+}
+@media (max-width: 900px) {
+  /* 窄螢幕收掉 shell，回到滿版白底 */
+  html:not([data-nav-mode="sidebar"]) .app { background: var(--background); }
+  html:not([data-nav-mode="sidebar"]) .app-topbar { background: var(--surface); border-bottom: 1px solid var(--border); }
+  html:not([data-nav-mode="sidebar"]) .main {
+    margin-top: 0; min-height: 0;
+    background: var(--background); border-radius: 0; overflow: visible;
+  }
+}
+.page {
+  /* Top padding bumped 32 → 48px on 2026-05-28 after .page-intro__eyebrow was
+     retired — title needs more breathing room above without the eyebrow row. */
+  padding: 48px 28px 96px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+/* Buttons live in the component library — see ds-components/button.css
+   (.btn product-density variants + .ztor-btn canonical). Only hero-context
+   overrides for the light-on-dark variant remain below. */
+
+/* ════════════════════════════════════════════════════════════
+ * Components promoted to ds-components/ on 2026-05-26
+ * ────────────────────────────────────────────────────────────
+ *   .card      → ds-components/card.css        (was .surface)
+ *   .badge     → ds-components/badge.css       (was .pill)
+ *   .alert     → ds-components/alert.css       (was .alert-card + .alert-row)
+ *   .kpi       → ds-components/kpi.css
+ *   .data-list → ds-components/data-list.css
+ *   .stickynote→ ds-components/stickynote.css
+ *   .tabs      → ds-components/tabs.css
+ *   .chip      → ds-components/chip.css        (with .filter-row layout)
+ *   .linechart → ds-components/chart.css       (with .stacked-bar + .source-list)
+ *   .bento     → ds-components/bento.css
+ *   .empty-stub→ ds-components/empty-stub.css
+ *   .switch    → ds-components/switch.css
+ *   .selection-card → ds-components/selection-card.css  (merged .choice-card + .appearance-card)
+ *
+ * Remaining shared.css patterns are project-level / page-specific
+ * (hero, wizard, settings layout, ip-hero, etc).
+ * ════════════════════════════════════════════════════════════ */
+
+/* ---------- Hero banner carousel (Dashboard signature) ---------- */
+.hero {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  padding: 0;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.hero__slide {
+  position: relative;
+  z-index: 0;            /* establish a stacking context so inner layers
+                            (incl. the z-index:3 bottom blur-veil) stay BELOW
+                            the sibling .hero__nav carousel controls (z-index:2) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--surface-muted);
+  overflow: hidden;
+}
+/* Full-cover media (video or image layers) sit at the very back of a slide. */
+.hero__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+/* Cut-out performer layers for the "audience" composite slide — vertically
+   centred (not bottom-anchored) so when the height clamp() shrinks at narrower
+   viewports (≲ 1450px) the figures contract symmetrically around the middle
+   instead of piling at the bottom edge with empty space above. Horizontal slot
+   stays via .hero__layer--* left/right per the assembly reference. They sit
+   under the .hero__copy text (z-index 2) and the bottom blur-veil (z-index 3).
+
+   WAAPI entrance (hero.js runHeroIntro) MUST carry translateY(-50%) in every
+   keyframe — otherwise the inline transform clobbers this rule and the figures
+   snap to top:50% (= visually 50% lower) during/after the animation. */
+.hero__layer {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+}
+/* DOM order paints left-back first, then left-front on top of it. All three
+   are nudged toward the edges to widen the centre gap for the copy. */
+/* Heights scale with viewport WIDTH (vw) — clamped — so the performers shrink
+   as the banner narrows instead of crowding the centre copy. The max caps
+   keep the wide-screen look (~previous 94/80/86% of the 720px slide). */
+.hero__layer--left-back    { left: 10%;  height: clamp(430px, 48vw, 680px); }
+.hero__layer--left-front   { left: -16%; height: clamp(400px, 44vw, 640px); }
+.hero__layer--right-singer { right: -15%; height: clamp(390px, 43vw, 620px); }
+
+/* Audience slide: dim the bright corridor background WITHOUT dimming the cut-out
+   performers. The pseudo sits between the slide background-image and the
+   <img>.hero__layer children — z-index 0 + ::before being the first generated
+   sibling means the layers (also z-index 0 but later in DOM) paint on top,
+   leaving people crisp while the wall behind them goes ~40% darker. The
+   centred white .hero__copy (z-index 2) is now legible against the dimmed bg
+   so text-shadow is no longer needed (and was bleeding into the CTA labels,
+   breaking DS parity with .btn--primary).
+   Two-class selector outranks the base .hero__slide::before regardless of
+   source order; position:absolute/inset:0/content:"" inherit from the base. */
+.hero__slide.hero__slide--audience::before {
+  background: rgba(0, 0, 0, 0.06);
+  z-index: 0;
+}
+
+/* Bottom blur-veil — frosts + fades the bottom of the scene into the page
+   background (var(--background)) so the hero dissolves seamlessly into the
+   site below it. Sits on TOP of everything in the slide (z-index 3); the mask
+   confines the backdrop blur to the lower band and fades it upward. The
+   carousel dots live in .hero__nav (a sibling of the slides) so they stay
+   above this and remain visible. */
+.hero__slide--audience::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36%;
+  z-index: 3;
+  background: linear-gradient(to top,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 55%, transparent) 42%,
+    transparent 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 32%, transparent 100%);
+          mask-image: linear-gradient(to top, #000 0%, #000 32%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Centred radial veil — darkest behind the centred copy, fading to the edges
+   so the photo still reads, while keeping overlaid white text ≥ 5:1 contrast. */
+.hero__slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(ellipse 95% 85% at 50% 48%,
+    rgba(0,0,0,0.62) 0%,
+    rgba(0,0,0,0.34) 60%,
+    rgba(0,0,0,0.18) 100%);
+  pointer-events: none;
+}
+.hero__copy {
+  position: relative;
+  z-index: 2;
+  padding: 56px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  color: #FFFFFF;
+}
+.hero__copy .hero__eyebrow { color: rgba(255,255,255,0.75); }
+.hero__copy .hero__eyebrow-dot { background: var(--primary); }
+.hero__copy .hero__title { color: #FFFFFF; }
+.hero__copy .hero__sub { color: rgba(255,255,255,0.85); }
+/* Hero secondary = .btn--outline component. The hero photo is dark in BOTH
+   themes, so this button is theme-independent (fixed light fill + dark text),
+   not token-driven — otherwise dark mode flips --surface to a muddy translucent
+   fill. Same light-button-with-edge look as the §4.2 Outline demo. */
+.hero__actions .btn--outline {
+  background: #FAFAF7;
+  color: #171717;
+  box-shadow: var(--shadow-micro);
+}
+.hero__actions .btn--outline:hover {
+  background: #FFFFFF;
+}
+.hero__eyebrow {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.hero__eyebrow-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary);
+}
+.hero__title {
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  font-weight: 500;
+  margin: 0;
+  max-width: 560px;
+}
+.hero__sub {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: 14px;
+  max-width: 480px;
+}
+.hero__actions { display: flex; justify-content: center; gap: 8px; margin-top: 6px; }
+/* Legacy visual column — no longer rendered; replaced by background-image on .hero__slide.
+   Kept declarations commented to document the migration. */
+/* .hero__visual { … } removed 2026-05-25 — slide is now a single image container. */
+
+/* Full-bleed variant — pulls hero edge-to-edge of the viewport */
+.hero--fullbleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 0;        /* no hairline — the hero dissolves into the page */
+}
+.hero--fullbleed .hero__slide { min-height: 720px; }
+.hero--fullbleed .hero__copy {
+  max-width: 760px;
+  padding: 96px 24px;
+}
+.hero--fullbleed .hero__title { font-size: 56px; max-width: 720px; }
+.hero--fullbleed .hero__nav {
+  justify-content: center;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+/* Framer-style slideshow indicator — a frosted dark pill holding the dots,
+   where the active dot grows into a progress capsule (JS-driven fill synced
+   to the 8 s timer), plus a separate frosted play/pause circle. */
+.hero__nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+.hero__nav .hero__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  background: rgba(20,20,22,0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 999px;
+}
+.hero__nav .hero__dot {
+  position: relative;
+  width: 8px; height: 8px;
+  padding: 0; border: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.38);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: none;
+  transition: width var(--duration) var(--easing),
+              background var(--duration) var(--easing);
+}
+.hero__nav .hero__dot:hover { background: rgba(255,255,255,0.6); }
+.hero__nav .hero__dot--active {
+  width: 46px;
+  background: rgba(255,255,255,0.28);   /* track behind the progress fill */
+  cursor: default;
+}
+.hero__dot-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: #FFFFFF;
+  border-radius: 999px;
+}
+.hero__playpause {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; border: 0;
+  border-radius: 50%;
+  background: rgba(20,20,22,0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background var(--duration) var(--easing);
+}
+.hero__playpause:hover { background: rgba(44,44,48,0.72); }
+.hero__playpause svg { width: 14px; height: 14px; display: block; }
+.hero__playpause .hero__icon-play { display: none; }
+.hero__playpause[aria-pressed="true"] .hero__icon-pause { display: none; }
+.hero__playpause[aria-pressed="true"] .hero__icon-play { display: block; }
+@media (prefers-reduced-motion: reduce) {
+  .hero__nav .hero__dot { transition: none; }
+}
+.hero__dot {
+  width: 18px; height: 4px; border-radius: 2px;
+  background: var(--border);
+  cursor: pointer;
+}
+.hero__dot--active { background: var(--foreground); }
+@media (max-width: 720px) {
+  .hero__slide { grid-template-columns: 1fr; }
+  .hero__visual { min-height: 120px; }
+}
+
+/* ---------- Status pill / badge ---------- */
+/* `.alert / .alert--{card|row} / .alert--{warning|error|success|info} /
+   .alert__{icon|body|title|desc|meta|cta|close}` promoted to
+   ds-components/alert.css on 2026-05-26 (was .alert-card + .alert-row). */
+
+/* ---------- Trend / chart placeholder ---------- */
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 140px;
+  padding: 10px 0;
+}
+.trend__bar {
+  flex: 1;
+  background: color-mix(in srgb, var(--primary) 60%, var(--surface));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 8px;
+  position: relative;
+}
+.trend__bar--accent { background: var(--primary); }
+.trend__bar::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+}
+.trend-wrap { padding-bottom: 26px; }
+
+/* ---------- Section divider (subtle inline editorial header) ---------- */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 36px 0 14px;
+}
+.section-head__title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.section-head__sub { color: var(--foreground-subtle); font-size: 13px; }
+
+.input, .textarea, .select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 0;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--foreground);
+  width: 100%;
+  outline: none;
+  transition: box-shadow 150ms ease;
+}
+.input:focus, .textarea:focus, .select:focus {
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
+}
+.textarea { min-height: 100px; resize: vertical; }
+.input--with-prefix { padding-left: 32px; }
+
+/* Native <select> styled to match the design system: drop the OS arrow and
+   draw our own chevron with comfortable right padding (the native arrow
+   crowded the edge and looked broken). */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+}
+
+
+/* ---------- Wizard frame ---------- */
+.wizard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.wizard__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.wizard__close {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--foreground-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+/* §5.2.4 建立流程頂部操作欄 — 四頁單一框架（2026-06-12 統一）：
+   left = Close（固定）｜center = stepper 槽（多步放 stepper，單頁放標題、永遠留位）｜right = 工具。
+   核心動作 Close／Save／Next 一律同位：Close 在頂部左、Save／主動作在底部 footer。 */
+.wizard__top-actions { display: flex; align-items: center; gap: 8px; }
+/* 中央 stepper 槽：flex:1 撐滿並置中，無論左右寬度都讓中間內容真正置中、並為 stepper 留位 */
+.wizard__stepper-slot { flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; }
+.wizard__top-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.stepper__item {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  color: var(--foreground-subtle);
+}
+.stepper__num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: var(--surface-muted);
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--foreground-muted);
+  box-shadow: 0 0 0 1px var(--border);
+}
+.stepper__item--current .stepper__num {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 1px rgba(23,23,23,0.18);
+}
+.stepper__item--done .stepper__num {
+  background: var(--surface-inverse);
+  color: var(--foreground-on-inverse);
+}
+.stepper__item--current,
+.stepper__item--done { color: var(--foreground); }
+.stepper__sep {
+  width: 28px; height: 1px; background: var(--border);
+}
+.wizard__body {
+  flex: 1;
+  padding: 40px 28px 140px;
+  max-width: 820px;
+  margin: 0 auto;
+  width: 100%;
+}
+.wizard__step-title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  margin: 0 0 6px;
+}
+.wizard__step-sub { color: var(--foreground-muted); margin: 0 0 24px; max-width: 560px; }
+.wizard__bottom {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 14px 28px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 30;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
+}
+.wizard__bottom-actions { display: flex; gap: 8px; }
+
+/* ---------- IP detail page ---------- */
+.ip-hero {
+  display: grid;
+  grid-template-columns: 280px 1fr auto;
+  gap: 24px;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 24px;
+}
+.ip-hero__cover {
+  width: 100%; aspect-ratio: 3/4;
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
+  display: grid; place-items: center;
+  color: var(--primary-foreground);
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  padding: 16px;
+  text-align: center;
+}
+.ip-hero__title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  margin: 6px 0 4px;
+}
+.ip-hero__owner { color: var(--foreground-muted); font-size: 14px; margin-bottom: 14px; }
+.ip-hero__meta {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;
+  margin-top: 18px;
+}
+.meta-cell { display: flex; flex-direction: column; gap: 2px; }
+.meta-cell__label { font-size: 11.5px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--foreground-subtle); }
+.meta-cell__value { font-family: var(--font-display); font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+.ip-hero__side { width: 280px; }
+.rental-card { padding: 16px; }
+.rental-card__total {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  margin: 8px 0 4px;
+}
+.rental-card__breakdown { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; font-size: 12.5px; color: var(--foreground-muted); }
+.rental-card__breakdown-row { display: flex; justify-content: space-between; }
+.duration-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  margin: 10px 0 14px;
+}
+.duration-chip {
+  text-align: center;
+  padding: 9px 6px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.duration-chip__price { font-family: var(--font-display); font-size: 14px; display: block; margin-top: 2px; font-weight: 500; }
+.duration-chip--active {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface));
+  box-shadow: 0 0 0 2px var(--primary);
+}
+@media (max-width: 900px) {
+  .ip-hero { grid-template-columns: 1fr; }
+  .ip-hero__side { width: 100%; }
+}
+
+/* ---------- Footer bar ---------- */
+.app-footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--foreground-subtle);
+  display: flex; gap: 14px; flex-wrap: wrap;
+}
+
+/* ---------- Utility ---------- */
+.text-mono { font-family: var(--font-mono); }
+.text-sub  { color: var(--foreground-subtle); }
+.text-muted { color: var(--foreground-muted); }
+.text-right { text-align: right; }
+.flex-row { display: flex; gap: 8px; align-items: center; }
+.gap-12 { gap: 12px; }
+.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
+.hidden { display: none !important; }
+
+/* ---------- Insight split (Dashboard F7 — two labelled insight groups in one card) ----------
+   Fan relations (Fans CRM) | Audience trends (Audience Intelligence). Centered hairline
+   divider with symmetric breathing room; collapses to a single stacked column < 900px. */
+.insight-split { display: grid; grid-template-columns: 1fr 1fr; }
+.insight-split__col { min-width: 0; padding: 0 26px; }
+.insight-split__col:first-child { padding-left: 0; }
+.insight-split__col:last-child  { padding-right: 0; border-left: 1px solid var(--border); }
+.insight-eyebrow {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-bottom: 12px;
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase; color: var(--foreground-subtle);
+}
+.insight-eyebrow__src { font-weight: 500; text-transform: none; letter-spacing: 0; white-space: nowrap; }
+
+/* ---------- Projects · F1 extras (spec 5.1.2) ----------
+   projects.html composes existing components (tabs = status filter · chip-group = type
+   filter · input = search · data-list = list view · badge = status). These three are
+   project-owned additions: a list/card view switch, a hover "incomplete" tooltip, and a
+   card-view grid + card. Project-owned per SPEC §5.5 (lives in shared.css until promoted). */
+
+/* List ↔ card view switch — segmented control in page-intro actions */
+.view-switch { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
+.view-switch__btn {
+  display: inline-grid; place-items: center; width: 38px; height: 34px;
+  background: var(--surface); color: var(--foreground-muted); border: 0; cursor: pointer;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.view-switch__btn + .view-switch__btn { border-left: 1px solid var(--border); }
+.view-switch__btn:hover { background: var(--surface-muted); color: var(--foreground); }
+.view-switch__btn--active { background: var(--foreground); color: var(--background); }
+.view-switch__btn .ztor-icon { width: 18px; height: 18px; }
+
+/* Incomplete-tasks tooltip — secondary hover hint per project (spec F1 未完成提示).
+   Hover / keyboard-focus only; touch can't trigger and that is acceptable (secondary info). */
+.tip { position: relative; display: inline-grid; place-items: center; color: var(--foreground-subtle); cursor: help; }
+.tip .ztor-icon { width: 15px; height: 15px; }
+.tip:hover, .tip:focus-visible { color: var(--foreground); outline: none; }
+.tip__bubble {
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  z-index: 30; width: max-content; max-width: 240px;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--foreground); color: var(--background);
+  font-family: var(--font-body); font-size: 12px; line-height: 1.4; text-align: left;
+  box-shadow: var(--shadow-card);
+  opacity: 0; pointer-events: none; transform: translateY(4px);
+  transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing);
+}
+.tip:hover .tip__bubble, .tip:focus-visible .tip__bubble { opacity: 1; transform: translateY(0); }
+
+/* Card view — responsive grid of project cards (alternative to the data-list view) */
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.project-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card); overflow: hidden;
+  text-decoration: none; color: inherit;
+  transition: box-shadow var(--duration) var(--easing), transform var(--duration) var(--easing);
+}
+.project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+.project-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.project-card__cover {
+  position: relative; aspect-ratio: 16 / 9;
+  display: grid; place-items: center;
+  background: var(--surface-muted); color: var(--foreground-subtle);
+  border-bottom: 1px solid var(--border);
+}
+.project-card__cover .ztor-icon { width: 30px; height: 30px; }
+.project-card__badge { position: absolute; top: 12px; right: 12px; }
+.project-card__body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
+.project-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.project-card__title { font-family: var(--font-ui); font-size: 15px; font-weight: 500; line-height: 1.25; margin: 0; }
+.project-card__kind { font-size: 12px; color: var(--foreground-subtle); }
+.project-card__desc { font-family: var(--font-body); font-size: 13px; color: var(--foreground-subtle); margin: 0; }
+.project-card__meta { font-size: 12.5px; color: var(--foreground-muted); margin-top: 2px; }
+/* progress track (fund / pre-order while live or funded) */
+.project-bar { height: 6px; border-radius: var(--radius-pill); background: var(--surface-muted); overflow: hidden; margin-top: 4px; }
+.project-bar__fill { height: 100%; border-radius: var(--radius-pill); background: var(--primary); }
+.project-bar__fill--info { background: var(--status-info); }
+.project-bar__fill--success { background: var(--status-success); }
+/* data-list rows are clickable anchors on this page → strip link chrome, add hover */
+a.data-list__row { text-decoration: none; color: inherit; }
+a.data-list__row:hover { background: var(--surface-muted); }
+a.data-list__row:hover .data-list__title { color: var(--foreground); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .page { padding: 32px 16px 80px; }
+  .hero--fullbleed { margin-left: -16px; margin-right: -16px; border-radius: 0; }
+  .hero__slide { grid-template-columns: 1fr; }
+  .hero__copy { padding: 24px 20px; }
+  .hero__title { font-size: 26px; }
+  .insight-split { grid-template-columns: 1fr; }
+  .insight-split__col { padding: 0; }
+  .insight-split__col:last-child { border-left: 0; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
+}
+
+/* ============================================================
+   Scroll reveal — fade + slight rise as blocks enter the viewport.
+   Driven by reveal.js (IntersectionObserver). The hidden start-state
+   only applies once reveal.js adds `.reveal-on` to <html> and tags
+   blocks with `.reveal`, so no-JS / load-failure leaves content fully
+   visible. Honors prefers-reduced-motion (shown instantly, no motion).
+   ============================================================ */
+html.reveal-on .reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s var(--easing), transform 0.5s var(--easing);
+  will-change: opacity, transform;
+}
+html.reveal-on .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+/* Audience-slide layers and hero copy children: pre-hidden here, then driven
+   in by JS Web Animations API in hero.js (runHeroIntro). CSS animations and
+   transitions on <img> + heading <h2> were inconsistent in this engine —
+   stuck at "from" values; WAAPI works reliably. */
+.hero__slide--audience .hero__layer,
+.hero__slide--audience .hero__copy > * {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__slide--audience .hero__layer,
+  .hero__slide--audience .hero__copy > * { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Hero copy — the container itself stays visible (not animated by reveal).
+   Children are driven by JS WAAPI in hero.js (see runHeroIntro). */
+html.reveal-on .hero__copy.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* KPI bento cards — rise + fade on .reveal, staggered. Animation (not the
+   shared transition) so all 4 cards animate on load even if they're below the
+   fold (IO may not fire .is-in on a short viewport otherwise). */
+@keyframes kpiRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+html.reveal-on .kpi.reveal {
+  animation: kpiRise 0.7s var(--easing) both;
+  transition: none;
+}
+html.reveal-on .kpi.reveal:nth-child(1) { animation-delay: 0.08s; }
+html.reveal-on .kpi.reveal:nth-child(2) { animation-delay: 0.22s; }
+html.reveal-on .kpi.reveal:nth-child(3) { animation-delay: 0.36s; }
+html.reveal-on .kpi.reveal:nth-child(4) { animation-delay: 0.50s; }
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on .kpi.reveal { animation: none; }
+}
+
+/* ============================================================
+   Dashboard data-state toggle (Cheat Codes · spec 5.1.1 §頁面狀態)
+   Swap the data view ↔ empty-state view via <html data-data-state>.
+   devtools.js sets the attribute (empty | has-data) globally.
+   ============================================================ */
+.dash-empty-only { display: none; }
+html[data-data-state="empty"] .dash-empty-only { display: block; }
+html[data-data-state="empty"] .dash-data-only { display: none; }
+
+/* .input invalid state (＊ inline validation) — promoted 2026-06-16 from
+   create-event / register-ip page <style>; .input itself lives here in shared.css. */
+.input[aria-invalid="true"] {
+  box-shadow: 0 0 0 1px var(--status-error), 0 0 0 4px color-mix(in srgb, var(--status-error) 14%, transparent);
+}
+
+/* Neutral data-state toggle (Cheat Codes Empty) — page-agnostic siblings of
+   the dashboard's .dash-empty-only/.dash-data-only, for module list pages.
+   Show .when-empty only when account has no data; hide .when-data then. */
+.when-empty { display: none; }
+html[data-data-state="empty"] .when-empty { display: block; }
+html[data-data-state="empty"] .when-data { display: none; }

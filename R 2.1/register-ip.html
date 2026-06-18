@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register External IP · Ztor Creator Studio</title>
+<script src="theme.js?v=20260617m"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617m">
+<link rel="stylesheet" href="shared.css?v=20260617m">
+<style>
+  /* register-ip 專屬 layout hooks（欄位排版、多選標籤、版稅輸入、摘要列），非跨頁重用，比照 create-event 留頁內。 */
+  .ri-block { margin-bottom: 28px; }
+  .ri-block__title { font-family:var(--font-ui); font-size:14px; font-weight:600; margin:0 0 2px; }
+  .ri-block__sub { font-size:12.5px; color:var(--foreground-subtle); margin:0 0 12px; }
+  .ri-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  /* 多選標籤（允許用途 / 授權地區）：點擊 toggle，選中描邊高亮。沿用 selection-card 風格但為輕量 chip。 */
+  .ri-tags { display:flex; flex-wrap:wrap; gap:8px; }
+  .ri-tag {
+    appearance:none; border:0; cursor:pointer; font:inherit;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; border-radius:var(--radius-pill);
+    background:var(--surface); color:var(--foreground-muted);
+    box-shadow:0 0 0 1px var(--border);
+    font-family:var(--font-ui); font-size:13px; font-weight:500;
+    transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+  .ri-tag:hover { color:var(--foreground); }
+  .ri-tag--active {
+    background:color-mix(in srgb, var(--primary) 16%, var(--surface));
+    color:var(--primary-foreground);
+    box-shadow:0 0 0 2px var(--primary);
+  }
+  .ri-tag__check { display:none; width:13px; height:13px; }
+  .ri-tag--active .ri-tag__check { display:inline-block; }
+
+  /* 允許用途：標題＋描述兩行的卡式多選（比 chip 多一行釋義） */
+  .ri-usage { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ri-usage__card {
+    appearance:none; border:0; cursor:pointer; font:inherit; text-align:left;
+    display:flex; flex-direction:column; gap:3px;
+    padding:13px 15px; border-radius:var(--radius-md);
+    background:var(--surface); color:var(--foreground);
+    box-shadow:0 0 0 1px var(--border);
+    transition:background .15s ease, box-shadow .15s ease;
+  }
+  .ri-usage__card:hover { box-shadow:0 0 0 1px var(--foreground-subtle); }
+  .ri-usage__card--active { background:color-mix(in srgb, var(--primary) 12%, var(--surface)); box-shadow:0 0 0 2px var(--primary); }
+  .ri-usage__title { font-family:var(--font-ui); font-size:13.5px; font-weight:600; }
+  .ri-usage__desc { font-size:12px; color:var(--foreground-subtle); line-height:1.4; }
+
+  /* 版稅 / 金額輸入：前後綴（% 後綴、$ 前綴）。沿用 .input，僅加包裹定位。 */
+  .ri-affix { position:relative; }
+  .ri-affix__input { width:100%; }
+  .ri-affix--suffix .ri-affix__input { padding-right:34px; }
+  .ri-affix--prefix .ri-affix__input { padding-left:26px; }
+  .ri-affix__sign { position:absolute; top:50%; transform:translateY(-50%); color:var(--foreground-subtle); font-size:14px; pointer-events:none; }
+  .ri-affix--suffix .ri-affix__sign { right:14px; }
+  .ri-affix--prefix .ri-affix__sign { left:12px; }
+
+  /* 定價區（僅 List for rental 時顯示） */
+  .ri-pricing[hidden] { display:none; }
+
+  /* ＊ 必填 inline 驗證（檢核 §6①）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
+  .ri-field-error { display:none; margin-top:6px; font-size:12px; color:var(--status-error); }
+  .field.is-invalid .ri-field-error { display:block; }
+
+  /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
+
+  /* Review 摘要列：label / value 兩欄 */
+  .ri-summary { display:flex; flex-direction:column; gap:10px; }
+  .ri-summary__row { display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline; }
+  .ri-summary__k { font-size:12px; color:var(--foreground-subtle); }
+  .ri-summary__v { font-size:13.5px; color:var(--foreground); }
+  .ri-summary__v.is-empty { color:var(--foreground-subtle); font-style:italic; }
+
+  /* 上架狀態提示條（Review）：依 List for rental / Keep private 切換語氣 */
+  .ri-list-note { margin-top:12px; }
+
+  @media (max-width:640px){
+    .ri-grid-2, .ri-usage { grid-template-columns:1fr; }
+    .ri-summary__row { grid-template-columns:1fr; gap:2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wizard">
+  <header class="wizard__top">
+    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
+    <div class="wizard__stepper-slot">
+      <div class="stepper" id="stepper">
+        <div class="stepper__item stepper__item--current" data-step="1"><span class="stepper__num">1</span><span data-i18n="ri.step.type">Type &amp; Info</span></div>
+        <span class="stepper__sep"></span>
+        <div class="stepper__item" data-step="2"><span class="stepper__num">2</span><span data-i18n="ri.step.usage">Usage Rules</span></div>
+        <span class="stepper__sep"></span>
+        <div class="stepper__item" data-step="3"><span class="stepper__num">3</span><span data-i18n="ri.step.pricing">Pricing &amp; Earnings</span></div>
+        <span class="stepper__sep"></span>
+        <div class="stepper__item" data-step="4"><span class="stepper__num">4</span><span data-i18n="ri.step.review">Review</span></div>
+      </div>
+    </div>
+    <div class="wizard__top-actions">
+      <button class="app-icon-btn" data-theme-toggle><span class="theme-toggle__icon-moon">☾</span><span class="theme-toggle__icon-sun">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wizard__body">
+
+    <!-- STEP 1 · Type & Info -->
+    <section data-step-panel="1">
+      <h1 class="wizard__step-title" data-i18n="ri.s1.h1">Register your IP</h1>
+      <p class="wizard__step-sub" data-i18n="ri.s1.sub">Record an existing right you own from outside Ztor. Projects you publish on Ztor are recorded automatically — this is for everything else.</p>
+
+      <!-- IP Type · 單選卡（六型）。taxonomy 為產品待確認（PRD 列 Character/Visual，截圖第六項 Other）。 -->
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.type">IP type</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.type.note">Sample taxonomy — final categories pending product alignment.</p>
+        <div class="selection-grid" id="ri-type-grid">
+          <button type="button" class="selection-card" data-choice="story"><span class="selection-card__title" data-i18n="ri.type.story">Story World</span><span class="selection-card__sub" data-i18n="ri.type.story-sub">Characters, settings, lore</span></button>
+          <button type="button" class="selection-card" data-choice="music"><span class="selection-card__title" data-i18n="ri.type.music">Music</span><span class="selection-card__sub" data-i18n="ri.type.music-sub">Songs, recordings, libraries</span></button>
+          <button type="button" class="selection-card" data-choice="person"><span class="selection-card__title" data-i18n="ri.type.person">Person-Based</span><span class="selection-card__sub" data-i18n="ri.type.person-sub">Likeness, persona, voice</span></button>
+          <button type="button" class="selection-card" data-choice="brand"><span class="selection-card__title" data-i18n="ri.type.brand">Brand</span><span class="selection-card__sub" data-i18n="ri.type.brand-sub">Names, marks, visual identity</span></button>
+          <button type="button" class="selection-card" data-choice="event"><span class="selection-card__title" data-i18n="ri.type.event">Event Format</span><span class="selection-card__sub" data-i18n="ri.type.event-sub">Show or experience concept</span></button>
+          <button type="button" class="selection-card" data-choice="other"><span class="selection-card__title" data-i18n="ri.type.other">Other</span><span class="selection-card__sub" data-i18n="ri.type.other-sub">Something else you own</span></button>
+        </div>
+      </div>
+
+      <div class="ri-block">
+        <div class="field">
+          <label class="field__label"><span data-i18n="ri.name">IP name</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
+          <input class="input" data-ri="name" data-required maxlength="100" placeholder="e.g., Naruto Story World" data-i18n-placeholder="ri.name.ph">
+          <div class="field__hint" data-ri-counter="name">0/100 characters, min 2 required</div>
+          <p class="ri-field-error" data-i18n="ri.err.name">IP name is required (2–100 characters).</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ri.desc">Description</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
+          <textarea class="textarea" data-ri="desc" data-required maxlength="2000" placeholder="Describe your IP — what it is, what makes it valuable" data-i18n-placeholder="ri.desc.ph"></textarea>
+          <div class="field__hint" data-ri-counter="desc">0/2000 characters, min 10 required</div>
+          <p class="ri-field-error" data-i18n="ri.err.desc">Description is required (10–2000 characters).</p>
+        </div>
+      </div>
+
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.proof">Proof of ownership</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.proof.sub">Contracts, certificates, or creation evidence. Helps verification — verification rules pending product alignment.</p>
+        <div class="upload-tile upload-tile--file" data-ri-asset="proof">
+          <span class="upload-tile__icon"><i data-lucide="file-check" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="ri.proof.cta">Upload proof</span>
+          <span class="upload-tile__hint" data-i18n="ri.proof.hint">PDF, JPG or PNG · up to 10MB per file</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2 · Usage Rules -->
+    <section data-step-panel="2" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ri.s2.h1">How can it be used?</h1>
+      <p class="wizard__step-sub" data-i18n="ri.s2.sub">Set what renters are allowed to do and where the license applies.</p>
+
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.usage">Permitted usage</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.usage.sub">Select at least one.</p>
+        <div class="ri-usage" id="ri-usage">
+          <button type="button" class="ri-usage__card" data-usage="streaming"><span class="ri-usage__title" data-i18n="ri.usage.streaming">Streaming (VOD/PPV)</span><span class="ri-usage__desc" data-i18n="ri.usage.streaming-d">Renters can create video content for streaming.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="adaptation"><span class="ri-usage__title" data-i18n="ri.usage.adaptation">Adaptation (derivative works)</span><span class="ri-usage__desc" data-i18n="ri.usage.adaptation-d">New stories, characters, or content based on your IP.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="promotion"><span class="ri-usage__title" data-i18n="ri.usage.promotion">Promotion only</span><span class="ri-usage__desc" data-i18n="ri.usage.promotion-d">Marketing and promotional use, no standalone content.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="merch"><span class="ri-usage__title" data-i18n="ri.usage.merch">Merchandise</span><span class="ri-usage__desc" data-i18n="ri.usage.merch-d">Physical or digital products featuring your IP.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="live"><span class="ri-usage__title" data-i18n="ri.usage.live">Live events</span><span class="ri-usage__desc" data-i18n="ri.usage.live-d">Concerts, screenings, meetups using your IP.</span></button>
+        </div>
+      </div>
+
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.territory">Territory</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.territory.sub">Worldwide covers all regions. Deselect to choose specific territories. (Worldwide-vs-region exclusivity pending product alignment.)</p>
+        <div class="ri-tags" id="ri-territory">
+          <button type="button" class="ri-tag" data-territory="worldwide"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.world">Worldwide</span></button>
+          <button type="button" class="ri-tag" data-territory="hk"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.hk">Hong Kong</span></button>
+          <button type="button" class="ri-tag" data-territory="tw"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.tw">Taiwan</span></button>
+          <button type="button" class="ri-tag" data-territory="jp"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.jp">Japan</span></button>
+          <button type="button" class="ri-tag" data-territory="kr"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.kr">Korea</span></button>
+          <button type="button" class="ri-tag" data-territory="sea"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.sea">Southeast Asia</span></button>
+          <button type="button" class="ri-tag" data-territory="na"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.na">North America</span></button>
+          <button type="button" class="ri-tag" data-territory="eu"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.eu">Europe</span></button>
+          <button type="button" class="ri-tag" data-territory="other"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.other">Other</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3 · Pricing & Earnings -->
+    <section data-step-panel="3" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ri.s3.h1">Pricing &amp; earnings</h1>
+      <p class="wizard__step-sub" data-i18n="ri.s3.sub">Set what you earn, then decide whether to list this IP for rental now.</p>
+
+      <div class="ri-block">
+        <div class="field">
+          <label class="field__label"><span data-i18n="ri.royalty">Royalty rate</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
+          <div class="ri-affix ri-affix--suffix">
+            <input class="input ri-affix__input" data-ri="royalty" data-required type="number" min="0" max="30" step="0.5" placeholder="12" data-i18n-placeholder="ri.royalty.ph">
+            <span class="ri-affix__sign">%</span>
+          </div>
+          <div class="field__hint" data-i18n="ri.royalty.hint">The percentage you earn from gross revenue of every project that uses your IP. Industry range: 5–15%. Allowed: 0–30%.</div>
+          <p class="ri-field-error" data-i18n="ri.err.royalty">Enter a royalty rate between 0 and 30%.</p>
+        </div>
+      </div>
+
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.list.q">List this IP for rental?</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <div class="selection-grid" id="ri-list-grid" style="grid-template-columns:1fr 1fr">
+          <button type="button" class="selection-card" data-list="rental"><span class="selection-card__title" data-i18n="ri.list.rental">List for rental</span><span class="selection-card__sub" data-i18n="ri.list.rental-sub">Other creators can browse and rent your IP.</span></button>
+          <button type="button" class="selection-card" data-list="private"><span class="selection-card__title" data-i18n="ri.list.private">Keep private</span><span class="selection-card__sub" data-i18n="ri.list.private-sub">Only you can use this IP. You can list it later.</span></button>
+        </div>
+      </div>
+
+      <!-- 定價（僅 List for rental 顯示） -->
+      <div class="ri-block ri-pricing" id="ri-pricing" hidden>
+        <h3 class="ri-block__title" data-i18n="ri.pricing">Pricing</h3>
+        <p class="ri-block__sub" data-i18n="ri.pricing.sub">What renters pay upfront. Currency follows your Earnings settings. (Pricing unit — one-off vs term — pending product confirmation.)</p>
+        <div class="ri-grid-2">
+          <div class="field">
+            <label class="field__label"><span data-i18n="ri.price.standard">Standard license</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
+            <div class="ri-affix ri-affix--prefix">
+              <input class="input ri-affix__input" data-ri="standard" type="number" min="0" placeholder="5,000" data-i18n-placeholder="ri.price.standard.ph">
+              <span class="ri-affix__sign">$</span>
+            </div>
+            <p class="ri-field-error" data-i18n="ri.err.standard">Standard license price is required when listing for rental.</p>
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ri.price.exclusive">Exclusive license</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
+            <div class="ri-affix ri-affix--prefix">
+              <input class="input ri-affix__input" data-ri="exclusive" type="number" min="0" placeholder="7,000" data-i18n-placeholder="ri.price.exclusive.ph">
+              <span class="ri-affix__sign">$</span>
+            </div>
+            <div class="field__hint" data-i18n="ri.price.exclusive.hint">Leave empty if not offered.</div>
+          </div>
+        </div>
+        <div class="field" style="max-width:240px">
+          <label class="field__label"><span data-i18n="ri.price.min">Minimum rental term</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
+          <div class="ri-affix ri-affix--suffix">
+            <input class="input ri-affix__input" data-ri="minterm" type="number" min="1" placeholder="1" data-i18n-placeholder="ri.price.min.ph" style="padding-right:62px">
+            <span class="ri-affix__sign" data-i18n="ri.price.min.unit">months</span>
+          </div>
+        </div>
+        <div class="stickynote" style="margin-top:6px">
+          <span class="stickynote__mark">✦</span>
+          <span data-i18n="ri.list.lifecycle">Once listed, rentals run through the license lifecycle: renter requests → you approve → terms complete before going Active. Marketplace visibility is OFF by default; your media pack is frozen when a license activates.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4 · Review -->
+    <section data-step-panel="4" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ri.s4.h1">Review &amp; register</h1>
+      <p class="wizard__step-sub" data-i18n="ri.s4.sub">Check everything before you register this IP.</p>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="ri.rev.info">Type &amp; Info</h3>
+          <a class="card__link" href="#" data-goto="1" data-i18n="ri.rev.edit">Edit →</a>
+        </div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.name">Name</span><span class="ri-summary__v is-empty" data-rev="name" data-i18n="ri.ph.name">Not entered</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.type">Type</span><span class="ri-summary__v is-empty" data-rev="type" data-i18n="ri.ph.notsel">Not selected</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.proof">Proof</span><span class="ri-summary__v is-empty" data-rev="proof" data-i18n="ri.ph.proof">Not uploaded</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="ri.rev.usage">Usage Rules</h3>
+          <a class="card__link" href="#" data-goto="2" data-i18n="ri.rev.edit">Edit →</a>
+        </div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.permitted">Permitted</span><span class="ri-summary__v is-empty" data-rev="usage" data-i18n="ri.ph.none">None selected</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.territory">Territory</span><span class="ri-summary__v is-empty" data-rev="territory" data-i18n="ri.ph.none">None selected</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="ri.rev.pricing">Pricing &amp; Earnings</h3>
+          <a class="card__link" href="#" data-goto="3" data-i18n="ri.rev.edit">Edit →</a>
+        </div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.royalty">Royalty</span><span class="ri-summary__v is-empty" data-rev="royalty" data-i18n="ri.ph.notset">Not set</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.listed">Listed</span><span class="ri-summary__v is-empty" data-rev="listed" data-i18n="ri.ph.notdecided">Not decided</span></div>
+          <div class="ri-summary__row" data-rev-row="prices" hidden><span class="ri-summary__k" data-i18n="ri.rev.prices">Prices</span><span class="ri-summary__v" data-rev="prices"></span></div>
+        </div>
+        <!-- 上架狀態提示（依選擇切換語氣）。List for rental 對應提示截圖未涵蓋，文案為示例（產品待確認）。 -->
+        <div class="badge ri-list-note" id="ri-list-note" hidden></div>
+      </div>
+
+      <!-- 發布前檢核（檢核 §6）：必填齊全才開放 Register。 -->
+      <section class="readiness">
+        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ri.qc.title">Before you register</h3></div>
+        <ul class="readiness__list">
+          <li class="readiness__item" data-qc="type"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.type">IP type selected</span></li>
+          <li class="readiness__item" data-qc="name"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.name">Name (2–100 characters)</span></li>
+          <li class="readiness__item" data-qc="desc"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.desc">Description (10–2000 characters)</span></li>
+          <li class="readiness__item" data-qc="usage"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.usage">At least one permitted usage</span></li>
+          <li class="readiness__item" data-qc="territory"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.territory">At least one territory</span></li>
+          <li class="readiness__item" data-qc="royalty"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.royalty">Royalty rate set (0–30%)</span></li>
+          <li class="readiness__item" data-qc="listdecision"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.listdecision">Listing decision made</span></li>
+          <li class="readiness__item" data-qc="standard"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.standard">Standard price (if listing for rental)</span></li>
+        </ul>
+        <div class="readiness__banner" id="ri-qc-banner" data-i18n="ri.qc.banner">Complete the required items to register</div>
+      </section>
+
+      <!-- 法律揭露（檢核 §6②，PRD §5.1.3 業務規則 2）。 -->
+      <div class="text-sub" style="font-size:12px;margin-top:14px" data-i18n="ri.legal">A Ztor IP record is not a formal legal contract. It documents the rights you declare; settle binding agreements separately.</div>
+    </section>
+
+  </div>
+
+  <footer class="wizard__bottom">
+    <button class="btn btn--ghost" data-action="save-exit" data-i18n="ri.saveexit">Save &amp; exit</button>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" data-action="back" disabled data-i18n="wiz.back">Back</button>
+      <button class="btn btn--primary" data-action="next" data-i18n="ri.next.1">Next: Usage Rules</button>
+    </div>
+  </footer>
+
+</div>
+
+<script src="icons.js?v=20260617m"></script>
+<script src="i18n.js?v=20260617m"></script>
+<script>
+/* 登錄 IP 流程互動 · spec 5.1.4.1（四步：Type & Info → Usage Rules → Pricing & Earnings → Review）
+   stepper 切步、Review 回填、發布前檢核 gating Register。純前端 demo，不真持久化。
+   標「產品待確認」處（taxonomy / Worldwide 互斥 / 計價單位 / Proof 驗證 / 送出文案）以示例呈現，不發明規則。 */
+(function () {
+  let step = 1;
+  const total = 4;
+  const nextKeys = ["", "ri.next.1", "ri.next.2", "ri.next.3", "ri.register"];
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+
+  const TYPE_LABEL = { story:"Story World", music:"Music", person:"Person-Based", brand:"Brand", event:"Event Format", other:"Other" };
+  const USAGE_LABEL = { streaming:"Streaming", adaptation:"Adaptation", promotion:"Promotion only", merch:"Merchandise", live:"Live events" };
+  const TERR_LABEL = { worldwide:"Worldwide", hk:"Hong Kong", tw:"Taiwan", jp:"Japan", kr:"Korea", sea:"Southeast Asia", na:"North America", eu:"Europe", other:"Other" };
+
+  function nextLabel(s) { const k = nextKeys[s]; return (window.i18nT && window.i18nT(k)) || k; }
+
+  function render() {
+    document.querySelectorAll("[data-step-panel]").forEach(p => {
+      p.classList.toggle("hidden", Number(p.dataset.stepPanel) !== step);
+    });
+    document.querySelectorAll(".stepper__item").forEach(s => {
+      const n = Number(s.dataset.step);
+      s.classList.toggle("stepper__item--current", n === step);
+      s.classList.toggle("stepper__item--done", n < step);
+    });
+    document.querySelector("[data-action=back]").disabled = step === 1;
+    const next = document.querySelector("[data-action=next]");
+    next.dataset.i18n = nextKeys[step];
+    next.textContent = nextLabel(step);
+    syncReview();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  /* ---- 讀目前狀態 ---- */
+  const val = sel => (document.querySelector(sel)?.value || "").trim();
+  function readState() {
+    const typeCard = document.querySelector("#ri-type-grid .selection-card--active");
+    const listCard = document.querySelector("#ri-list-grid .selection-card--active");
+    return {
+      type: typeCard ? typeCard.dataset.choice : "",
+      name: val('[data-ri="name"]'),
+      desc: val('[data-ri="desc"]'),
+      proof: !!document.querySelector('.upload-tile.is-filled[data-ri-asset="proof"]'),
+      usage: Array.from(document.querySelectorAll('#ri-usage .ri-usage__card--active')).map(c => c.dataset.usage),
+      territory: Array.from(document.querySelectorAll('#ri-territory .ri-tag--active')).map(c => c.dataset.territory),
+      royalty: val('[data-ri="royalty"]'),
+      list: listCard ? listCard.dataset.list : "",
+      standard: val('[data-ri="standard"]'),
+      exclusive: val('[data-ri="exclusive"]'),
+      minterm: val('[data-ri="minterm"]'),
+    };
+  }
+
+  function setRev(key, value, phKey, phFallback) {
+    const el = document.querySelector('[data-rev="' + key + '"]');
+    if (!el) return;
+    if (value) { el.textContent = value; el.classList.remove("is-empty"); }
+    else { el.textContent = T(phKey, phFallback); el.classList.add("is-empty"); }
+  }
+
+  function syncReview() {
+    const s = readState();
+
+    // 摘要回填
+    setRev("name", s.name, "ri.ph.name", "Not entered");
+    setRev("type", s.type ? T("ri.type." + s.type, TYPE_LABEL[s.type]) : "", "ri.ph.notsel", "Not selected");
+    setRev("proof", s.proof ? T("ri.proof.uploaded", "Uploaded") : "", "ri.ph.proof", "Not uploaded");
+    setRev("usage", s.usage.map(u => USAGE_LABEL[u]).join(", "), "ri.ph.none", "None selected");
+    setRev("territory", s.territory.map(t => TERR_LABEL[t]).join(", "), "ri.ph.none", "None selected");
+    setRev("royalty", s.royalty !== "" ? (s.royalty + T("ri.rev.royalty.suffix", "% of gross revenue")) : "", "ri.ph.notset", "Not set");
+
+    // Listed 狀態
+    let listedVal = "";
+    if (s.list === "private") listedVal = T("ri.listed.no", "No · private");
+    else if (s.list === "rental") listedVal = T("ri.listed.yes", "Yes · listed for rental");
+    setRev("listed", listedVal, "ri.ph.notdecided", "Not decided");
+
+    // 價格摘要列（僅 rental 顯示）
+    const priceRow = document.querySelector('[data-rev-row="prices"]');
+    const priceVal = document.querySelector('[data-rev="prices"]');
+    if (s.list === "rental") {
+      const parts = [];
+      if (s.standard)  parts.push(T("ri.rev.std", "Standard") + " $" + s.standard);
+      if (s.exclusive) parts.push(T("ri.rev.exc", "Exclusive") + " $" + s.exclusive);
+      if (s.minterm)   parts.push(T("ri.rev.minn", "Min {n}mo").replace("{n}", s.minterm));
+      priceRow.hidden = parts.length === 0;
+      priceVal.textContent = parts.join(" · ");
+    } else {
+      priceRow.hidden = true;
+    }
+
+    // 上架狀態提示（示例文案，產品待確認）
+    const note = document.getElementById("ri-list-note");
+    if (s.list === "private") {
+      note.hidden = false;
+      note.className = "badge ri-list-note";
+      note.textContent = T("ri.note.private", "This IP is private. List anytime from the IP detail page. Only you can use this IP.");
+    } else if (s.list === "rental") {
+      note.hidden = false;
+      note.className = "badge badge--yellow ri-list-note";
+      note.textContent = T("ri.note.rental", "This IP will be listed for rental once registered. Marketplace visibility stays OFF until you turn it on.");
+    } else {
+      note.hidden = true;
+    }
+
+    // 定價區顯隱（List for rental 才顯示） — 在 step 3 即時反映
+    document.getElementById("ri-pricing").hidden = s.list !== "rental";
+
+    // 發布前檢核
+    const checks = {
+      type:         !!s.type,
+      name:         s.name.length >= 2 && s.name.length <= 100,
+      desc:         s.desc.length >= 10 && s.desc.length <= 2000,
+      usage:        s.usage.length > 0,
+      territory:    s.territory.length > 0,
+      royalty:      s.royalty !== "" && Number(s.royalty) >= 0 && Number(s.royalty) <= 30,
+      listdecision: !!s.list,
+      standard:     s.list !== "rental" || !!s.standard,   // 僅 rental 時要求；private 視為通過
+    };
+    let done = 0, totalC = 0;
+    Object.keys(checks).forEach(k => {
+      totalC++;
+      const li = document.querySelector('[data-qc="' + k + '"]');
+      if (li) li.classList.toggle("readiness__item--done", checks[k]);
+      if (checks[k]) done++;
+    });
+    const left = totalC - done, allOk = left === 0;
+
+    const banner = document.getElementById("ri-qc-banner");
+    if (banner) {
+      banner.classList.toggle("readiness__banner--ready", allOk);
+      banner.removeAttribute("data-i18n");
+      banner.textContent = allOk
+        ? T("ri.qc.ready", "All set — ready to register")
+        : T("ri.qc.left", "{n} required items left").replace("{n}", left);
+    }
+
+    // Register 閘（step 4）。Cheat Codes 的 Skip validation 可略過。
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    const next = document.querySelector("[data-action=next]");
+    next.disabled = (step === total) && !allOk && !skip;
+
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.querySelector(".readiness"));
+  }
+
+  /* ---- 導覽 ---- */
+  document.querySelector("[data-action=next]").addEventListener("click", () => {
+    if (step < total) { step++; render(); } else { tryRegister(); }
+  });
+  document.querySelector("[data-action=back]").addEventListener("click", () => {
+    if (step > 1) { step--; render(); }
+  });
+  document.querySelector("[data-action=save-exit]").addEventListener("click", () => {
+    alert(T("ri.saveexit-alert", "Draft saved. You can resume from My IP."));
+  });
+  document.querySelectorAll(".stepper__item").forEach(s => {
+    s.addEventListener("click", () => { step = Number(s.dataset.step); render(); });
+  });
+  document.querySelectorAll("[data-goto]").forEach(a => {
+    a.addEventListener("click", e => { e.preventDefault(); step = Number(a.dataset.goto); render(); });
+  });
+
+  /* ---- 單選卡：IP type ---- */
+  document.querySelectorAll("#ri-type-grid .selection-card").forEach(c => {
+    c.addEventListener("click", () => {
+      document.querySelectorAll("#ri-type-grid .selection-card").forEach(x => x.classList.remove("selection-card--active"));
+      c.classList.add("selection-card--active");
+      syncReview();
+    });
+  });
+
+  /* ---- 單選卡：List for rental / Keep private ---- */
+  document.querySelectorAll("#ri-list-grid .selection-card").forEach(c => {
+    c.addEventListener("click", () => {
+      document.querySelectorAll("#ri-list-grid .selection-card").forEach(x => x.classList.remove("selection-card--active"));
+      c.classList.add("selection-card--active");
+      syncReview();
+    });
+  });
+
+  /* ---- 多選：Permitted usage ---- */
+  document.querySelectorAll("#ri-usage .ri-usage__card").forEach(c => {
+    c.addEventListener("click", () => { c.classList.toggle("ri-usage__card--active"); syncReview(); });
+  });
+
+  /* ---- 多選：Territory（含 Worldwide 與個別地區互斥示意；最終規則產品待確認）---- */
+  document.querySelectorAll("#ri-territory .ri-tag").forEach(c => {
+    c.addEventListener("click", () => {
+      const isWorld = c.dataset.territory === "worldwide";
+      const willActivate = !c.classList.contains("ri-tag--active");
+      if (isWorld && willActivate) {
+        // 選 Worldwide → 取消其他（示例互斥行為，產品待確認）
+        document.querySelectorAll("#ri-territory .ri-tag").forEach(x => x.classList.remove("ri-tag--active"));
+      } else if (!isWorld && willActivate) {
+        // 選個別地區 → 取消 Worldwide
+        document.querySelector('#ri-territory .ri-tag[data-territory="worldwide"]').classList.remove("ri-tag--active");
+      }
+      c.classList.toggle("ri-tag--active");
+      syncReview();
+    });
+  });
+
+  /* ---- 字數計數（name / desc）---- */
+  function bindCounter(name, max, min, tmpl) {
+    const el = document.querySelector('[data-ri="' + name + '"]');
+    const label = document.querySelector('[data-ri-counter="' + name + '"]');
+    if (!el || !label) return;
+    const upd = () => { label.textContent = tmpl.replace("{n}", el.value.length).replace("{max}", max).replace("{min}", min); };
+    el.addEventListener("input", upd); upd();
+  }
+  bindCounter("name", 100, 2, "{n}/{max} characters, min {min} required");
+  bindCounter("desc", 2000, 10, "{n}/{max} characters, min {min} required");
+
+  /* ---- 任何輸入即時重算 ---- */
+  document.querySelectorAll('[data-ri]').forEach(el => el.addEventListener("input", syncReview));
+
+  /* ---- 上傳格：點擊模擬上傳 ---- */
+  document.querySelectorAll(".upload-tile[data-ri-asset]").forEach(tile => {
+    tile.addEventListener("click", () => { tile.classList.toggle("is-filled"); syncReview(); });
+  });
+
+  /* ---- ＊ 必填 inline 驗證（on blur）---- */
+  function fieldWrap(el) { return el.closest(".field"); }
+  function validateField(el) {
+    let bad = !el.value.trim();
+    if (el.dataset.ri === "royalty" && !bad) { const n = Number(el.value); bad = !(n >= 0 && n <= 30); }
+    if (el.dataset.ri === "name" && !bad) { const l = el.value.trim().length; bad = l < 2 || l > 100; }
+    if (el.dataset.ri === "desc" && !bad) { const l = el.value.trim().length; bad = l < 10 || l > 2000; }
+    const wrap = fieldWrap(el);
+    el.setAttribute("aria-invalid", bad ? "true" : "false");
+    if (wrap) wrap.classList.toggle("is-invalid", bad);
+    return !bad;
+  }
+  document.querySelectorAll("[data-required]").forEach(el => {
+    el.addEventListener("blur", () => validateField(el));
+    el.addEventListener("input", () => { if (el.value.trim()) { el.setAttribute("aria-invalid", "false"); fieldWrap(el)?.classList.remove("is-invalid"); } });
+  });
+
+  /* ---- Register：硬閘（已由 syncReview gate disabled）＋ 收尾示意 ---- */
+  function tryRegister() {
+    syncReview();
+    alert(T("ri.register-alert", "IP would be registered here. (Prototype) — final submit copy pending product confirmation."));
+  }
+
+  /* Cheat Codes（devtools）切換 Skip validation → 重算閘 */
+  document.addEventListener('ztor:devstate-changed', syncReview);
+  document.addEventListener('i18n:applied', render);
+
+  render();
+})();
+</script>
+<script src="reveal.js?v=20260617m"></script>
+<script src="devtools.js?v=20260617m"></script>
+</body>
+</html>

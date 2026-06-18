@@ -1,0 +1,193 @@
+/* ZTOR Minimalist v2 Form — ◎ Default (shadcn react-hook-form pattern + ztor-v2 tokens)
+ * Signature: composite wrapper for input + label + description + error message.
+ *            Inherits ztor's numbered-label signature pattern.
+ *            CSS-only — pair with react-hook-form + Zod for full functionality.
+ */
+
+.ztor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.ztor-form--compact { gap: 16px; }
+.ztor-form--comfortable { gap: 28px; }
+
+/* ── Form item (label + control + description + error) ── */
+
+.ztor-form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ztor-form-item__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.ztor-form-item__label--required::after {
+  content: "*";
+  color: var(--status-error);
+  margin-left: 2px;
+}
+
+.ztor-form-item__optional {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.ztor-form-item__description {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ztor-form-item__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--status-error);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.ztor-form-item__error::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  background: var(--status-error);
+  color: var(--text-invert);
+  border-radius: 50%;
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+/* When form-item has an error, inputs should pick up aria-invalid styling
+   via the input.css rule. This class is a backup marker. */
+.ztor-form-item--error .ztor-input,
+.ztor-form-item--error .ztor-select,
+.ztor-form-item--error .ztor-textarea {
+  border-color: var(--status-error);
+}
+
+/* ── Form section (groups of items with optional heading) ── */
+
+.ztor-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 0;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+}
+
+.ztor-form-section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.ztor-form-section__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.ztor-form-section__eyebrow {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.ztor-form-section__title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ztor-form-section__description {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ── Form row (multi-column horizontal layout) ────── */
+
+.ztor-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.ztor-form-row--2col { grid-template-columns: 1fr 1fr; }
+.ztor-form-row--3col { grid-template-columns: 1fr 1fr 1fr; }
+
+@media (max-width: 640px) {
+  .ztor-form-row,
+  .ztor-form-row--2col,
+  .ztor-form-row--3col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Form actions (submit + cancel buttons row) ────── */
+
+.ztor-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.ztor-form-actions--end { justify-content: flex-end; }
+.ztor-form-actions--between { justify-content: space-between; }
+.ztor-form-actions--stretch .ztor-btn { flex: 1; }
+
+/* ── Inline form (search bar, newsletter) ──────────── */
+
+.ztor-form-inline {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ztor-form-inline .ztor-input,
+.ztor-form-inline .ztor-select {
+  flex: 1;
+}

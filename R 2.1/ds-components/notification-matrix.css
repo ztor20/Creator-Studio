@@ -1,0 +1,118 @@
+/* ============================================================
+   Notification matrix — event-type (rows) × channel (columns)
+   per-cell independent toggles. Built for Settings → Notifications
+   (spec 5.1.9 F3): each event can be switched on/off per channel
+   (Email / Push / In-App). Some channels are compliance-locked
+   (kyc_state_change / compliance_alert / payout_confirmed · Email
+   always on, disabled) and render a lock affordance instead of a
+   live switch.
+
+   Anatomy:
+     .notif-matrix                          (CSS grid · label col + 3 channel cols)
+       .notif-matrix__corner                (top-left empty header cell)
+       .notif-matrix__chead                 (channel column header · Email/Push/In-App)
+       .notif-matrix__label                 (row label cell · name + hint)
+         .notif-matrix__label-title
+         .notif-matrix__label-hint
+       .notif-matrix__cell                  (toggle cell · centers a .switch)
+         .notif-matrix__cell--locked        (compliance-locked · shows lock + on switch)
+       .notif-matrix__lock                  (lock glyph shown in a locked cell)
+     .switch / .switch--on / .switch--locked   (reused form control)
+
+   Locked cells reuse .switch.switch--on plus .switch--locked (defined
+   below) so the visual stays consistent with every other toggle; the
+   lock icon sits beside it and the title attribute carries the reason.
+   ============================================================ */
+
+.notif-matrix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, 84px);
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+/* Header row */
+.notif-matrix__corner,
+.notif-matrix__chead {
+  padding: 10px 12px;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+.notif-matrix__chead {
+  text-align: center;
+  border-left: 1px solid var(--border);
+}
+
+/* Row label cell */
+.notif-matrix__label {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  min-width: 0;
+}
+.notif-matrix__label-title {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.notif-matrix__label-hint {
+  font-size: 12px;
+  color: var(--foreground-subtle);
+  margin-top: 2px;
+}
+
+/* Toggle cell */
+.notif-matrix__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border-left: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Last visual row: drop the bottom hairline */
+.notif-matrix__label:last-of-type,
+.notif-matrix__row:last-child .notif-matrix__label,
+.notif-matrix__row:last-child .notif-matrix__cell {
+  border-bottom: 0;
+}
+
+/* Locked (compliance) cell — switch is forced on + non-interactive,
+   lock glyph signals why. Reason lives in the title attribute. */
+.switch--locked {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.notif-matrix__cell--locked {
+  cursor: not-allowed;
+}
+.notif-matrix__lock {
+  width: 13px;
+  height: 13px;
+  color: var(--foreground-subtle);
+  flex: none;
+}
+
+/* Compact stacking on narrow widths: collapse the channel header to
+   short labels; the grid columns shrink rather than wrap. */
+@media (max-width: 560px) {
+  .notif-matrix {
+    grid-template-columns: minmax(0, 1fr) repeat(3, 56px);
+  }
+  .notif-matrix__chead,
+  .notif-matrix__cell {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}

@@ -1,0 +1,392 @@
+/* ============================================================
+   Alert — inline notice with status indicator, icon, title, desc,
+   optional CTA link and close button.
+
+   Density modifiers:
+   • .alert--card   = 大卡片版 · row-divider 列表（dashboard alerts panel）
+   • .alert--row    = 細條版 · single-line with left border accent
+                       （inline page warnings）
+   • .alert--banner = 頁面公告卡 · dark campaign style
+   • .alert--bar    = 通知條 · single-line notification bar（rounded corners +
+                       soft shadow, no divider）; neutral surface, icon chip +
+                       text-link CTA + round dismiss. Flush（貼頂滿版）or floating
+                       per consumer positioning（E-Shop low-stock F2）
+
+   Four status variants（modify icon chip + cta color）:
+   .alert--warning · .alert--error · .alert--success · .alert--info
+
+   Anatomy:
+     .alert
+       .alert__icon  (status-tinted square w/ filled icon glyph)
+       .alert__body
+         .alert__title
+         .alert__desc      (or .alert__meta for --row density)
+         .alert__cta       (inline colored link, optional)
+       .alert__close       (chevron, .alert--card only)
+   ============================================================ */
+
+/* [hidden] 必須蓋過各 density 的 display（flex/grid 會壓過 UA 的 [hidden]）。
+   .alert[hidden] specificity 高於 .alert--bar/.alert--card，故 JS 的 el.hidden=true
+   能真正隱藏（scenario.js no-event / × 關閉、fans-crm 風險條等都靠這個）。 */
+.alert[hidden] { display: none; }
+
+/* ── --card density (rounded-square icon + multi-line body + close) ── */
+.alert--card {
+  display: grid;
+  grid-template-columns: 40px 1fr 28px;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-radius: 0;
+}
+.alert--card:last-child { border-bottom: 0; }
+
+.alert--card .alert__icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: inline-grid; place-items: center;
+  flex-shrink: 0;
+  align-self: start;
+}
+.alert--card .alert__icon .ztor-icon { width: 20px; height: 20px; stroke-width: 1.2; }
+
+.alert--card .alert__body { min-width: 0; padding-top: 2px; }
+.alert--card .alert__title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--foreground);
+  margin-bottom: 2px;
+}
+.alert--card .alert__desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+}
+.alert--card .alert__desc em { font-style: normal; font-weight: 500; color: var(--foreground); }
+/* Meta row — severity · associated object · processing status (Dashboard F4). */
+.alert--card .alert__meta {
+  margin-top: 5px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  letter-spacing: 0.1px;
+  color: var(--foreground-subtle);
+}
+.alert--card .alert__cta {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.alert--card .alert__cta:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Close composes the Button atom — markup `.alert__close .btn .btn--icon btn--xs`.
+   Hook keeps only grid placement + the larger 20px chevron. (2026-06-01) */
+.alert--card .alert__close { align-self: start; }
+.alert--card .alert__close .ztor-icon { width: 20px; height: 20px; }
+/* Blocking item — close control is disabled (resolve only in source module). */
+.alert--card .alert__close:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Snoozed item — soft-closed info, visually receded but still listed (reappears ~7d). */
+.alert--snoozed.alert--card { opacity: 0.62; }
+.alert--snoozed.alert--card .alert__cta { opacity: 0.9; }
+
+/* ── --row density (slim, single-line, left-border accent) ── */
+.alert--row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  border-left: 3px solid var(--primary);
+}
+.alert--row + .alert--row { margin-top: 8px; }
+
+.alert--row .alert__icon {
+  width: 30px; height: 30px;
+  border-radius: var(--radius-sm);
+  display: inline-grid; place-items: center;
+  background: var(--surface);
+  font-size: 13px;
+}
+.alert--row .alert__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.alert--row .alert__title {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.alert--row .alert__desc,
+.alert--row .alert__meta { font-size: 12px; color: var(--foreground-subtle); }
+.alert--row .alert__cta {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* ── --banner density (page-level announcement, dark campaign style) ── */
+.alert--banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 104px;
+  padding: 20px 24px;
+  padding-right: 54px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  color: var(--foreground);
+}
+.alert.alert--banner .alert__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  color: var(--primary);
+  font-family: var(--font-ui);
+  font-size: 17px;
+  font-weight: 600;
+}
+.alert--banner .alert__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.alert--banner .alert__title {
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.alert--banner .alert__desc,
+.alert--banner .alert__meta {
+  color: var(--foreground-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.alert.alert--banner .alert__cta {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--duration) var(--easing),
+    transform var(--duration) var(--easing);
+}
+.alert.alert--banner .alert__cta::after {
+  content: "→";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+.alert.alert--banner .alert__cta:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+.alert--banner .alert__dismiss {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--foreground-subtle);
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    background var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+.alert--banner .alert__dismiss:hover {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  color: var(--foreground);
+}
+
+[data-theme="dark"] .alert--banner {
+  background: var(--surface);
+  color: var(--foreground);
+}
+[data-theme="dark"] .alert.alert--banner .alert__icon {
+  background: color-mix(in srgb, var(--foreground) 8%, var(--surface));
+}
+[data-theme="dark"] .alert--banner .alert__title {
+  color: var(--foreground);
+}
+[data-theme="dark"] .alert--banner .alert__desc,
+[data-theme="dark"] .alert--banner .alert__meta,
+[data-theme="dark"] .alert--banner .alert__dismiss {
+  color: var(--foreground-muted);
+}
+[data-theme="dark"] .alert--banner .alert__dismiss:hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  color: var(--foreground);
+}
+
+@media (max-width: 720px) {
+  .alert--banner {
+    grid-template-columns: 38px minmax(0, 1fr);
+    min-height: 0;
+    padding: 18px;
+    padding-right: 48px;
+  }
+  .alert--banner .alert__icon {
+    width: 38px;
+    height: 38px;
+  }
+  .alert--banner .alert__cta {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 4px;
+  }
+}
+
+/* ── --bar density (single-line notification bar; neutral surface, rounded
+     corners + soft shadow, no divider). Warning icon chip + dark text-link CTA
+     + round dismiss. Sits below the app topbar; pair with position:sticky.
+     Consumer may run it flush（貼頂滿版、上緣兩角 border-radius:inherit）or as a
+     floating card. (2026-06-15 F2; 2026-06-16 hairline→shadow, flush variant) ── */
+.alert--bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 22px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.alert--bar .alert__icon {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  display: inline-grid; place-items: center;
+  font-size: 13px;
+}
+/* Title + CTA cluster on the left (body doesn't grow); the dismiss is pushed
+   to the far right via margin-left:auto. (2026-06-15) */
+.alert--bar .alert__body {
+  display: flex; align-items: baseline; gap: 8px;
+  min-width: 0; flex: 0 1 auto;
+}
+.alert--bar .alert__title {
+  font-family: var(--font-ui);
+  font-size: 13.5px; font-weight: 500;
+  color: var(--foreground);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.alert--bar .alert__meta { font-size: 12.5px; color: var(--foreground-subtle); white-space: nowrap; }
+.alert.alert--bar .alert__cta {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-ui);
+  font-size: 12.5px; font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer; text-decoration: none;
+}
+.alert--bar .alert__cta::after { content: "\2192"; font-size: 14px; font-weight: 400; line-height: 1; }
+.alert--bar .alert__cta:hover { text-decoration: underline; text-underline-offset: 3px; }
+.alert--bar .alert__dismiss {
+  flex-shrink: 0;
+  margin-left: auto;
+  width: 26px; height: 26px;
+  display: inline-grid; place-items: center;
+  padding: 0; border: 0; border-radius: 50%;
+  background: transparent; color: var(--foreground-subtle);
+  cursor: pointer; font-size: 16px; line-height: 1;
+  transition:
+    background var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+.alert--bar .alert__dismiss:hover {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  color: var(--foreground);
+}
+@media (max-width: 760px) {
+  .alert--bar .alert__title { white-space: normal; }
+}
+
+/* ── .alert--page-top ── 頁面貼頂常駐通知條（搭 .alert--bar）
+   滿版貼齊 app shell 面板：sticky 貼頂、邊到邊、上緣沿用面板圓角、下緣方角＋向下陰影
+   取代分隔線。padding-inline 對齊 .page 內容欄（max-width 1280 + 28px gutter）。
+   須為 .main 第一個子元素。e-shop 低庫存（5.1.5 F2）與 events 情境橫幅共用。
+   ::after 補捲動容器右上方角（.main overflow 不去圓捲動側的角；僅 ≥901px）。 */
+.alert--page-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  width: 100%;
+  margin: 0;
+  padding-inline: max(28px, calc((100% - 1280px) / 2 + 28px));
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--foreground) 28%, transparent);
+}
+@media (min-width: 901px) {
+  .alert--page-top::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--radius-shell);
+    height: var(--radius-shell);
+    pointer-events: none;
+    background: radial-gradient(circle var(--radius-shell) at bottom left,
+      transparent calc(var(--radius-shell) - 0.5px), var(--surface-shell) var(--radius-shell));
+  }
+}
+
+/* ── Status variants (shared across densities) ── */
+.alert--warning.alert--row { border-left-color: var(--status-warning); }
+.alert--error.alert--row   { border-left-color: var(--status-error); }
+.alert--info.alert--row    { border-left-color: var(--status-info); }
+.alert--success.alert--row { border-left-color: var(--status-success); }
+
+.alert--warning .alert__icon { background: color-mix(in srgb, var(--status-warning) 10%, var(--surface)); color: var(--status-warning); }
+.alert--error   .alert__icon { background: color-mix(in srgb, var(--status-error)    8%, var(--surface)); color: var(--status-error); }
+.alert--success .alert__icon { background: color-mix(in srgb, var(--status-success)  8%, var(--surface)); color: var(--status-success); }
+.alert--info    .alert__icon { background: color-mix(in srgb, var(--status-info)     8%, var(--surface)); color: var(--status-info); }
+
+.alert--warning .alert__cta { color: var(--status-warning); }
+.alert--error   .alert__cta { color: var(--status-error); }
+.alert--success .alert__cta { color: var(--status-success); }
+.alert--info    .alert__cta { color: var(--status-info); }

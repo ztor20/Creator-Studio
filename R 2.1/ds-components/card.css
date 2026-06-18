@@ -1,0 +1,133 @@
+/* ============================================================
+   Ztor — Card
+   Soft elevation with rim+drop multi-layer shadow.
+   ============================================================ */
+
+.ztor-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  padding: 24px;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+
+  transition: box-shadow var(--duration) var(--easing),
+              transform  var(--duration) var(--easing);
+}
+
+.ztor-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ztor-card--clickable:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ztor-card__title {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.ztor-card__meta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--foreground-subtle);
+  margin: 0;
+}
+
+.ztor-card__body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+  margin: 0;
+}
+
+/* Muted variant — alternative card bg */
+.ztor-card--muted {
+  background: var(--surface-muted);
+}
+
+/* Dashboard-frame variant — used to wrap product mockups */
+.ztor-card--frame {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-card,
+  .ztor-card--clickable:hover { transition: none; transform: none; }
+}
+
+/* ============================================================
+   Card (project namespace) — section wrapper used across product pages
+   API differs from .ztor-card: head/title/link/hint composition for
+   "section card" pattern (KPI rows, Recent earnings, Alerts panel,
+   Earnings sub-sections, etc.). Both namespaces coexist:
+   .ztor-card = canonical design-system reference (docs)
+   .card      = product-page usage (head + body composition)
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+}
+.card--muted { background: var(--surface-muted); }
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.card__title {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+}
+.card__hint { font-size: 12px; color: var(--foreground-subtle); }
+.card__link {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  text-decoration: none;
+}
+/* Title-side variant of .card__link (inside .card__head): no underline + a
+   trailing chevron-right icon (lucide path, rendered via mask + currentColor
+   so it tracks link color & hover). Scope is .card__head only — breadcrumbs,
+   row-level edit/manage links and inline body links keep the canonical
+   underline as a textual affordance. */
+.card__head .card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.card__head .card__link::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>") center/contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>") center/contain no-repeat;
+  flex-shrink: 0;
+}
+.card__head .card__link:hover { color: var(--foreground); }

@@ -1,0 +1,212 @@
+/* ZTOR Minimalist v2 Navigation Menu — ◎ Default (shadcn radix navigation-menu + ztor-v2 tokens)
+ * Signature: horizontal nav with hover-triggered mega panels (multi-column rich content).
+ *            Differs from .ztor-navbar — Navbar is for simple flat marketing links;
+ *            NavigationMenu is for product / category mega-nav (e-commerce, large sites).
+ */
+
+.ztor-nav-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Item (trigger) ───────────────────────────────── */
+
+.ztor-nav-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-quick) var(--ease),
+    color var(--duration-quick) var(--ease);
+}
+
+.ztor-nav-menu__trigger:hover,
+.ztor-nav-menu__trigger[data-state="open"] {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+.ztor-nav-menu__trigger[aria-current="page"] {
+  color: var(--text-primary);
+}
+
+.ztor-nav-menu__trigger:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.ztor-nav-menu__trigger-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  transition: transform var(--duration-quick) var(--ease);
+}
+
+.ztor-nav-menu__trigger[data-state="open"] .ztor-nav-menu__trigger-icon {
+  transform: rotate(180deg);
+}
+
+/* ── Mega panel (multi-column rich content) ───────── */
+
+.ztor-nav-menu__content {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+  padding: 24px;
+  animation: ztor-nav-menu-in var(--duration-base) var(--ease) forwards;
+}
+
+@keyframes ztor-nav-menu-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Multi-column layout */
+
+.ztor-nav-menu__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.ztor-nav-menu__grid--with-feature {
+  /* First column wider for featured / promotional content */
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+}
+
+/* Column with group of links */
+
+.ztor-nav-menu__column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ztor-nav-menu__column-title {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: var(--border-hairline-width) solid var(--border-hairline);
+}
+
+.ztor-nav-menu__link {
+  display: block;
+  padding: 6px 0;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-decoration: none;
+  transition: color var(--duration-quick) var(--ease);
+}
+
+.ztor-nav-menu__link:hover {
+  color: var(--text-secondary);
+}
+
+.ztor-nav-menu__link-description {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Featured card (left column promo) ───────────── */
+
+.ztor-nav-menu__feature {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-button);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-nav-menu__feature:hover {
+  background: var(--accent-yellow);
+}
+
+.ztor-nav-menu__feature-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--surface-canvas);
+  border-radius: var(--radius-chip);
+  overflow: hidden;
+}
+
+.ztor-nav-menu__feature-eyebrow {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.ztor-nav-menu__feature-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ── Simple link list variant (no mega) ───────────── */
+
+.ztor-nav-menu__simple-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+  padding: 6px;
+}
+
+.ztor-nav-menu__simple-list .ztor-nav-menu__link {
+  padding: 8px 12px;
+  border-radius: var(--radius-chip);
+}
+
+.ztor-nav-menu__simple-list .ztor-nav-menu__link:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-nav-menu__trigger,
+  .ztor-nav-menu__trigger-icon,
+  .ztor-nav-menu__content,
+  .ztor-nav-menu__link,
+  .ztor-nav-menu__feature { transition: none; animation: none; }
+}

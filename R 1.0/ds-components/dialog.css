@@ -1,0 +1,112 @@
+/* ZTOR Minimalist v2 Dialog / Modal — ⚠ Runtime (shadcn-ui structure + ztor-v2 tokens)
+ * Signature: canvas bg, 0.5px hairline, radius-callout 8px, Space Grotesk 700 UPPER title.
+ * Differs from unsiloed-ai-v1: radius 8px (not 0), 0.5px (not 1px) border,
+ *                              UPPER display title (not 24/500 sentence case).
+ */
+
+.ztor-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+  z-index: 100;
+  animation: ztor-dialog-fade var(--duration-quick) var(--ease) forwards;
+}
+
+.ztor-dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90vw, 480px);
+  max-height: 90vh;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  animation: ztor-dialog-slide var(--duration-base) var(--ease) forwards;
+}
+
+@keyframes ztor-dialog-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ztor-dialog-slide {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.ztor-dialog__header {
+  padding: 32px 32px 16px;
+}
+
+.ztor-dialog__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+}
+
+.ztor-dialog__description {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ztor-dialog__body {
+  padding: 8px 32px 16px;
+  flex: 1;
+  overflow-y: auto;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ztor-dialog__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 32px 32px;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+}
+
+.ztor-dialog__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-dialog__close:hover {
+  background: var(--surface-secondary);
+}
+
+.ztor-dialog__close:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-dialog-overlay,
+  .ztor-dialog-content,
+  .ztor-dialog__close { animation: none; transition: none; }
+}

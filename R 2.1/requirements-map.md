@@ -1,0 +1,52 @@
+# Ztor Creator Studio · R 2.1 · Requirements Map
+
+本文件只對照「上游需求覆蓋到哪個 UI 實作」，不複製或改寫產品規則。
+
+## 權威來源
+
+1. [`../../requirement/02-PRD-產品需求規格書.md`](../../requirement/02-PRD-產品需求規格書.md)
+2. [`../../documents/decisions.md`](../../documents/decisions.md) 的有效產品決策
+3. [`../../documents/0-設計規格書.md`](../../documents/0-設計規格書.md) 與相關 `5.1.x` 子頁
+4. [`BUILD-SPEC.md`](BUILD-SPEC.md) 的呈現與工程決策
+
+發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
+
+## 覆蓋對照
+
+| 上游規格 | R 2.1 實作 | 狀態 |
+|---|---|---|
+| 5.1.1 Dashboard | `index.html` | F1–F8 已覆蓋（五列佈局）。2026-06-14 對齊規格新約束：F3 近期收入只列已結算收入、移除狀態欄（`hideStatus`）；F2 總收入環比改週粒度＋顯示最後更新＋深連結 Earnings；F4 補 Snoozed（軟關、排除 F2 計數）與阻斷型 disabled 關閉。F2 待處理／F4 「View all」缺「完整待辦視圖」頁、F5 缺「完整動態視圖」頁（PG-006）|
+| 5.1.2 Projects | `projects.html` | 已有清單與建立入口 |
+| 5.1.2.1 Create Project | `create-project.html` | 已實作；需複查模式規則與費率引用 |
+| 5.1.2.2 Project Detail | `project-detail.html` | 2026-06-15 新建：Overview/Content/Public details/Money 四分頁，含狀態時間軸、合作者分潤、收益瀑布、淨利池手動分配、募資監看、NFT 治理唯讀；金額引用 Earnings §7.3 不重算。由 projects.html 列進入。多專案資料綁定與狀態轉換確認流程待後續 |
+| 5.1.3 IP Market | `ip-market.html` | 已有探索；2026-06-15 補 F1 搜尋、F2 Availability 三態篩選、F3 素材包完整度（§7.7）、冷啟動／無結果空狀態 |
+| 5.1.3.1 IP Detail | `ip-detail.html` | 2026-06-15 交易呈現降級為「權利資訊＋詢問」：估價非扣款、Send＝建 Draft 進核准佇列、競標僅預覽（對齊 §3.3.5／§3.4，PCR-003／PG-010 已解決） |
+| 5.1.4 My IP（含 F6 Add your IP 入口） | `my-ip.html` | 部分覆蓋；Add your IP 入口 → register-ip.html（5.1.4.1） |
+| 5.1.4.1 Register IP | `register-ip.html` | 2026-06-15 新建：四步精靈（Type & Info → Usage Rules → Pricing & Earnings → Review）＋發布前檢核 gating；入口＝my-ip Add your IP／ip-market 冷啟動 List your IP。taxonomy／地區互斥／計價單位／Proof 驗證／送出文案標產品待確認（D037） |
+| 5.1.5 E-Shop | `e-shop.html` | F1–F4 已覆蓋：tab 切換、搜尋＋狀態篩選（§7.2）、Shop 開關→Hidden、See as fan 分割預覽、Bundles 清單（庫存＝min 成員，D031/UIA-008）、低庫存/售罄實體列補貨入口；互動為前端 demo（UIA-006）；Auctions 建立待 D026。2026-06-15：**D065** F3 工作列加「商店設定」鈕、以 `embed-modal` 全螢幕 popup 內嵌 store-settings.html（不離開清單、關閉保留篩選）；**D064** 限量列 Stock 顯示在庫/上限進度（21/50）、多規格列加「N variants」badge；**D066 F3 改版**：狀態篩選每選項附數量（隨 tab 重算，是否隨搜尋連動待確認）、建立鈕改 context-aware 分割按鈕（`split-button`，主鈕隨 tab）、See as fan 抽出工作列改 F5（UIA-021）；**F2/F3/F5 再改版（UIA-023）**：F2 低庫存改 `.alert--bar` 全寬細條（頂欄之下、sticky 常駐、只留數量＋CTA）、F3 狀態篩選由 select 改第二排 `filter-tabs`（pill＋數量）、F3 類型切換加 `.tabs--brand` 淡黃 pill、**F5 商店預覽改常駐不可關閉的畫面分割**（重用 `preview-panel`、永遠開啟、壓窄 `.main`、非浮層；移除切換鈕與 ✕／Esc；窄螢幕 ≤1100px 改靜態堆疊；標題改「商店預覽」；對齊 spec「常駐右側欄」）。**2026-06-16 F5 預覽內容改用 Fan store 元件（UIA-026）**：粉絲端店面（hero cover＋本月精選＋分頁＋商品格）抽成共用 `partials/fan-store.js`，與商店設定 F1 同源（§6.7）；新增追蹤數/社群/加入社群/本月精選/立即購買/補貨中欄位＝**產品變更提案，待上游核准**（§6.7 禁止預覽引入未定義欄位）|
+| 5.1.5.1 Product Detail | `product-detail.html` | 已有頁面；費率需引用上游；Restock 鈕接補貨流程（5.1.5.6）。2026-06-15 §2.3/D064：新增「庫存、取貨與購買設定」卡——庫存版本 Edition、取貨方式（物流/QR）、每人限購、商品標籤（重用建立商品元件與 `cp.*` i18n，條件顯示 `data-when-edition`/`-delivery`，皆 demo UIA-018）；多規格逐規格呈現待確認、media/交付細節 R2.1.1 待建 |
+| 5.1.5.2 Create Product | `create-product.html` | 已實作三型單頁；2026-06-15 對齊 spec v2.6（D063/D064）補：§4.1④ 多規格 Variations（僅實體，`.segmented` 單/多 + 選項建構器 + 逐規格表，多規格時取代單一價格庫存）、§4.1⑤/§4.2 庫存版本 Edition（不限量/限量，限量補上限 Total Quantity；數位限量補剩餘份數）、§4.1⑥ 取貨方式（物流 重量/尺寸/出貨分類/寄件地 ‖ 現場 QR 領取 領取說明，僅實體）、§4.5 共用設定（每人限購開關＋每人最大購買量、商品標籤）；就緒檢查依狀態動態（多規格→每規格有價格庫存、限量→上限≥在庫、物流→重量/尺寸/寄件地、限購→每人上限）。互動為前端 demo（UIA-016）；硬性必填 vs 建議劃分、選項數上限、單件成本納毛利、QR 核銷、Shipping Categories 來源、限購 enforcement/退款回補、數位限量下載權皆標待確認（D026/D064 §8.12）。2026-06-16：完成「Start selling」就緒後導回 `e-shop.html?posted=1` 觸發新品貼文 popup（→ 5.1.5.7 / D068）。**2026-06-18 對齊 spec v5.0（D081）：拍賣型整個移除，本頁只剩實體／數位兩型**（type 卡、F1 拍賣素材、故事＋物品狀況、真實性、競標設定、競標資格、拍賣出貨、拍賣預覽卡與相關 JS 全部拆走）；舊 `?type=auction` 連結自動轉址 `create-auction.html`|
+| 5.1.5.3 Orders | `orders.html` | 已有頁面；2026-06-15 **PCR-001 解決**：每列改兩條狀態軸（履約＋付款·結算，`.status-axes`，§7.2 不混用）；reconcile 提示同步更新 |
+| 5.1.5.3.1 Order Detail | `order-detail.html` | 已有頁面；2026-06-15 §2.2 兩條狀態軸 `.status-axes--labeled`（PCR-001 解決）；§2.5/D064 取貨方式履約分支 demo 切換（物流／QR 領取 Mark received／數位交付狀態，QR 核銷待補）；§2.3 每人限購結果唯讀呈現（承接結果不重設）；§2.6/D041 v1 退款鈕停用＋說明（爭議保留、退款回補口徑見 §7.3）|
+| 5.1.5.4 Create Bundle | `create-bundle.html` | 已實作；2026-06-15 §6.3/§6.4 補：套組庫存＝min(成員) 即時顯示（`data-stock`）、固定價≤成員合計驗證＋省下金額（超過擋 Create）、成員限量/多規格相容性提示（`data-edition`/`data-variants`）、Create gating 加 name＋price；皆顯示層 demo（UIA-019）。右側預覽/就緒檢查（§4⑥）spec 標存在與否待確認、未做；%off 算法與成員票券（§8.9）待補 |
+| 5.1.5.5 Store Settings | `store-settings.html` | 已實作（spec v8 / D036 功能頁 F1~F5）：F1 頁首與動作（含 See as fan）、F2 店面門面常駐、F3 商品陳列、F4 付款、F5 出貨；陳列順序（F3/D031）、品牌素材、幣別歸屬屬有效產品決策；tab 與畫面分割為非約束呈現（BUILD-SPEC）。**2026-06-16 F1 See-as-fan 預覽改用 Fan store 元件（UIA-026）**，與 E-Shop F5 同源（§6.7）；新欄位為產品變更提案、待上游核准 |
+| 5.1.5.6 Restock | `e-shop.html`、`product-detail.html`、`partials/restock-modal.js` | popup 對話框（重用 payout 外殼）：選品項→數量/供應商/到貨/備註→送出進 Restocking／到貨確認還原；入口＝低庫存橫條/商品列補貨鈕/細節頁 Restock；建議補貨量與狀態重算口徑（§7.2）標待補（UIA-007），本輪僅顯示層 demo |
+| 5.1.5.7 New Product Post | `e-shop.html`、`partials/product-post-modal.js`、`create-product.html` | 2026-06-16 落地（spec 5.1.5.7 / D068）：建立商品完成→導回電子商店清單以 `?posted=1` 彈出撰寫 popup（`.payout-dialog` 外殼＋**重用群發 composer** `.msg-*`：受眾／標題≤120／內文≤2000／token／排程，message-modal.css），本檔只加 F2 商品附件卡 `.npp-product` 與略過路徑；無頁首（D067）。發布為 demo（通知粉絲＋寫入 Fans CRM，引用 5.1.7.1／5.1.2.2 §4.9）。可否不附/換商品、預設受眾、公開動態邊界、composer 跨模組共用、與群發去重、未存提示皆待確認（§8.13，UIA-024）|
+| 5.1.5.8 Auction Detail | `auction-detail.html` | 已建（§2.1–§2.7）：競標生命週期三階段、物品摘要、競標概況 KPI、出價活動（filter-tabs＋Reserve met）、拍賣資訊一覽、Preview 接 fan-store。競標產品語意（密封終局、保留價流標、結標履約等）標待確認（§8.14）|
+| 5.1.5.9 Bundle Detail | `bundle-detail.html` | 已建（§2.1–§2.5）：組合內容（名稱/成員/定價/限量）、銷售摘要＋空狀態、組合庫存＝min(成員)＋影響、See-as-fan 預覽。%off 算法與成員票券口徑待補 |
+| 5.1.5.10 Create Auction | `create-auction.html` | **2026-06-18 新建（spec 5.1.5.10 v1 / D081）**：拍賣獨立流程，頂部選種類（實體／數位／活動，只影響分類與 F6 交付）；F1 素材＋F2 故事・物品狀況（四級・預設全新・分類用所選種類 §7.1 次分類）＋F3 真實性（合照＊／來源說明／證書）＋F4 競標設定（起標價＊／保留價／時長 3·5·7＝5 預設／密封終局＋5% 增額）＋F5 競標資格（核心圈預設／超粉／全部）＋F6 交付（實體＝得標者付運費＋出貨時限｜數位＝下載 stub｜活動＝入場 stub）＋商品標籤；右側即時預覽「Now fans see it」＋就緒檢查「Ready to start auction?」（8 項）。沿用 create-product 元件與 `cp.*` i18n、新增 `ca.*`；競標語意（密封終局/保留價流標/資格門檻/數位·活動交付）標待確認（§8.14 / PG-014）。入口＝e-shop F3＋Auctions 分頁；舊 `create-product?type=auction` 轉址至此 |
+| 5.1.6 Events（含 F5 活動詳情與營運） | `events.html` | 已有清單；2026-06-15 副標對齊；D060/D033(c) 移除 Drafts 時段分頁、草稿改狀態軸（跨時段）；詳情與營運（F5）2026-06-15 新建 event-detail.html（7 分頁：總覽/票種/名單報到三色/退款招待/通知/成本營收/系列＋轉售P2），規格已定部分落地、退款吸收順序與轉售 Phase2 標待補；由 events 已發布列進入 |
+| 5.1.6.1 Create Event | `create-event.html` | 已實作五階段；2026-06-15（D060）補即時預覽（§5.2.5）、自動儲存＋狀態（§5.2.4）、QC 五項發布硬閘＋＊inline 驗證、Review 回填、上傳 demo；單票種子表單欄位待補（PG-009） |
+| 5.1.7 Fans（含 F7 Fan Detail、F8 Tier Settings） | `fans-crm.html` | 2026-06-15 補 Leaderboard\|Hall of fame tab、View explanations、F3 Pareto 自動洞察、F5 列級訊息/詳情入口＋Recovered、F6 即時過濾＋Load more、F4 條件橫幅；群發訊息（5.1.7.1 v2 / D058）已建為 modal；F7 粉絲詳情 2026-06-15 新建 fan-detail.html（行為時間線/消費/活動參與/標籤＋名人堂 peak tier）、F8 分級與權益設定新建 tier-settings.html（雙閘門檻/行為加權/Benefits 編輯/規則版本），由 fans-crm 列詳情與 Tier settings 入口進入；雙閘驗證與版本邏輯標待確認（上游） |
+| 5.1.8 Earnings | `earnings.html` | 五分頁（Overview/Transactions/Breakdown/Payouts/Tax）；Breakdown 用「本期間(F12)/依專案(F11)」segmented 一次顯示一個、報表式 waterfall（bar 只留里程碑）；F3 淨利卡有「View breakdown」捷徑跳 Breakdown；F8 淨利池/退款準備金摘要在 Payouts、F10 手動補登 popup（5.1.8.2）由 Transactions 觸發、F7 逐筆可追溯（費率版本/Event ID/展開金流瀑布）——皆已覆蓋；多地稅務仍待收斂 |
+| 5.1.8.1 Request Payout | `earnings.html`、`request-payout.html` | popup 主畫面/新增銀行/結果＋不可逆確認閘門（§4.5）＋摘要含結算來源/費率版本（§4.4）已覆蓋；非台灣地區欄位與費率仍待上游（PG-004）|
+| 5.1.8.2 Manual Entry | `earnings.html`、`partials/manual-entry-modal.js` | 由 F7 觸發的補登 popup（重用 canonical dialog 外殼）：交易項目/分類/日期/金額/幣別/備註/附件＋未驗證·不計入可提領/提款/稅務提示已覆蓋；補登審核、附件規則、未來日期等仍待上游 |
+| 5.1.9 Settings | `settings.html` | 2026-06-15 通知改事件×管道矩陣（含 In-App、payout/KYC/compliance Email 鎖定）、勿擾、寄測試、Active Sessions、未存離開提示、稅務 Edit、整合補 Stripe/GA 與失敗一致呈現；刪除帳戶文案改 soft-delete（D053）；**F7 合規（唯讀）已落地**（KYC 狀態/用量上限/凍結/地區限制）。KYC/2FA/收款方式狀態機/Webhooks **流程**待 5.1.9.x 子流程規格（PG-007）；團隊權限仍受上游待決限制 |
+
+## 更新順序
+
+1. 先更新 `requirement/`、`documents/decisions.md` 或 `documents/`。
+2. 更新本表與 `ASSUMPTIONS.md`。
+3. 由 `project-ui-creator` 決定呈現並更新 `BUILD-SPEC.md`。
+4. 實作頁面與元件。
+5. 更新 `UI-CHANGES.md` 並執行驗證。

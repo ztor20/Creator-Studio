@@ -1,0 +1,94 @@
+/* ============================================================
+   Composer — drop-or-type input card with bottom action bar.
+   Captured from Mobbin AI-chat reference 2026-05-28. Single card
+   houses (a) a large drop / type area and (b) an action row
+   (left: tool icons, right: credit meter + circular send).
+
+   Anatomy
+     .composer                — outer surface card (radius-xl)
+       .composer__drop        — large empty zone, idle copy
+       .composer__bar         — bottom action row, hairline-divided
+         .composer__bar-group — left | right slots in the bar
+         .composer__icon-btn  — neutral icon affordance (upload / mic)
+         .composer__credits   — small muted meter text
+         .composer__send      — 36px circular submit button
+   ============================================================ */
+
+.composer {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+}
+
+/* ---------- Drop / type area ---------- */
+.composer__drop {
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  padding: 32px 24px;
+  color: var(--foreground-subtle);
+  font-size: 14px;
+  text-align: center;
+  background: var(--surface-muted);
+}
+/* Active drag state — primary tint + ring */
+.composer.is-dragover .composer__drop {
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+/* Typed-input variant: the drop slot becomes a textarea */
+.composer__textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 18px 20px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--foreground);
+}
+.composer__textarea::placeholder { color: var(--foreground-subtle); }
+
+/* ---------- Action bar ---------- */
+.composer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.composer__bar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icon affordance + circular send: now composed from the Button atom —
+   markup uses `.btn .btn--icon btn--sm` (upload/mic) and
+   `.btn .btn--icon-circle` (+ `.is-active` when there's content) (send).
+   See button.css → .btn--icon / .btn--icon-circle. (2026-06-01 refactor.) */
+
+/* Credit meter — small muted text */
+.composer__credits {
+  font-size: 13px;
+  color: var(--foreground-subtle);
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .composer__drop { min-height: 104px; padding: 24px 16px; }
+  .composer__bar { padding: 8px 10px; }
+  .composer__credits { display: none; }
+}

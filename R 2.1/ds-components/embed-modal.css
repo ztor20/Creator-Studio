@@ -1,0 +1,79 @@
+/* ============================================================
+   Embed modal · full-viewport popup that hosts another page in an
+   <iframe>, opened in-context (no navigation away).
+   Used: E-Shop F3 「商店設定」opens store-settings.html as a popup
+   (spec 5.1.5 F3 / D065) so the creator never leaves the E-Shop list;
+   closing returns to the page with its filter/search context intact.
+   Reusable for any "open page X as a popup" need.
+     .embed-modal[hidden]        — fixed blurred backdrop, z-index 80
+       .embed-modal__sheet       — large rounded surface (capped vw/vh)
+         .embed-modal__head      — title + close
+           .embed-modal__title
+           .embed-modal__close
+         .embed-modal__frame     — iframe filling the remaining height
+   ============================================================ */
+
+.embed-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 3vh 3vw;
+  background: color-mix(in srgb, var(--foreground) 32%, transparent);
+  backdrop-filter: blur(3px);
+}
+.embed-modal[hidden] { display: none; }
+
+.embed-modal__sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  height: min(900px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.embed-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.embed-modal__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.embed-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--foreground-muted);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.embed-modal__close:hover { color: var(--foreground); background: var(--surface-muted); }
+.embed-modal__close .ztor-icon { width: 16px; height: 16px; }
+
+.embed-modal__frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--surface);
+}

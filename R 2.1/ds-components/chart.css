@@ -1,0 +1,503 @@
+/* ============================================================
+   Chart — SVG-based data visualizations for the dashboard / earnings.
+
+   Three sub-patterns under one family:
+   • .linechart  — single- or two-series polyline (trend)
+   • .stacked-bar — horizontal proportion bar (revenue by source)
+   • .source-list — color-keyed legend rows with amount + percentage
+
+   All charts use status / primary tokens via inline style hooks
+   (the SVG itself takes hex / token values inline; CSS handles
+   layout chrome around it).
+   ============================================================ */
+
+/* ── 1. Line chart (design-system §Chart polyline pattern) ──
+   Matches the SVG shown in the design system: light grid lines +
+   yellow primary polyline + circle markers + accent on the latest
+   data point. Supports a dashed --prev overlay line for period
+   comparison. */
+.linechart {
+  position: relative;
+  width: 100%;
+}
+.linechart__svg {
+  display: block;
+  width: 100%;
+  height: 180px;
+  overflow: visible;
+}
+.linechart__grid { stroke: var(--border); stroke-width: 1; }
+.linechart__area { fill: color-mix(in srgb, var(--primary) 18%, transparent); }
+.linechart__line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+/* preserveAspectRatio="none" stretches the viewBox to fill width; non-scaling
+   stroke keeps the line weight uniform so wide charts don't look distorted. */
+.linechart svg [class*="linechart__line"] { vector-effect: non-scaling-stroke; }
+.linechart__line--prev {
+  stroke: var(--foreground-subtle);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.linechart__dot {
+  fill: var(--background);
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+.linechart__dot--accent {
+  fill: var(--primary);
+  stroke: var(--primary);
+}
+.linechart__labels {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 12px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  text-align: center;
+}
+
+/* ── 2. Stacked bar (Revenue by Source) ──
+   Horizontal 14 px tall pill split into colored segments. Each
+   segment's width = proportion (set via inline `style="width:X%"`);
+   color is set inline so the consumer controls the palette. */
+.stacked-bar {
+  display: flex;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+.stacked-bar__seg { height: 100%; }
+
+/* ── 3. Source list (legend with amount + percentage) ──
+   Companion to stacked-bar: 4-column grid of [swatch] [label] [amt] [pct].
+   Used standalone or paired below a stacked-bar / linechart. */
+.source-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.source-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+.source-row__swatch { width: 10px; height: 10px; border-radius: 3px; }
+.source-row__pct { color: var(--foreground-subtle); font-size: 12px; }
+.source-row__amt { font-weight: 500; }
+
+/* ── 4. Chart card composition ──
+   Composes .card + linechart with:
+   • Header row: icon + title + subtitle (left) · segmented D/W/M + export (right)
+   • Chart body with Y-axis tick labels on the left + X-axis dates below
+   • Footer row: "Showing data for N days" · chart-type toggle (line/bar)
+   • Multi-series line colors via .linechart__line--s1…s5
+
+   Anatomy:
+     <section class="card chart-card">
+       <div class="chart-card__head">
+         <div class="chart-card__title-group">
+           <span class="chart-card__title-icon"><i data-lucide="eye"></i></span>
+           <h3 class="chart-card__title">Visibility</h3>
+           <span class="chart-card__subtitle">subtitle prose</span>
+         </div>
+         <div class="chart-card__controls">
+           <div class="segmented" role="tablist">
+             <button class="segmented__item segmented__item--active">D</button>
+             <button class="segmented__item">W</button>
+             <button class="segmented__item">M</button>
+           </div>
+           <button class="chart-card__icon-btn" aria-label="Export"><i data-lucide="upload"></i></button>
+         </div>
+       </div>
+       <div class="chart-card__body">
+         <div class="linechart linechart--axes">
+           <div class="linechart__y-axis">…</div>
+           <div class="linechart__main">
+             <svg class="linechart__svg" …>…</svg>
+             <div class="linechart__labels linechart__labels--sparse">…</div>
+           </div>
+         </div>
+       </div>
+       <div class="chart-card__foot">
+         <span>Showing data for 7 days</span>
+         <div class="chart-card__foot-actions">…</div>
+       </div>
+     </section>
+*/
+/* .card.chart-card specificity: card.css loads after chart.css and its
+   `.card { padding: 20px }` would otherwise win — chart-card is full-bleed
+   (head / body / foot supply their own padding), so force 0 here. */
+.card.chart-card,
+.chart-card {
+  padding: 0;
+  overflow: hidden;
+}
+/* Head padding aligned to .card outer (20px) so a chart-card sitting next to
+   a regular .card in a bento row has its title text starting at the same
+   horizontal offset; bottom is 14px to mirror .card__head margin-bottom
+   rhythm. Border-bottom stays — chart-card always shows a head divider. */
+.chart-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.chart-card__title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.chart-card__title-icon {
+  display: inline-flex;
+  color: var(--foreground-subtle);
+  flex-shrink: 0;
+}
+.chart-card__title-icon .ztor-icon { width: 16px; height: 16px; }
+/* Title typography mirrors .card__title (15px / 500) so chart-card and
+   regular section card headings read as the same hierarchy in mixed bento. */
+.chart-card__title {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--foreground);
+  margin: 0;
+}
+.chart-card__subtitle {
+  font-size: 13px;
+  color: var(--foreground-subtle);
+}
+.chart-card__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+/* Composes the Button atom — markup `.chart-card__icon-btn .btn .btn--icon btn--xs`.
+   Hook only adds the hairline border (chart icon buttons are bordered, unlike
+   the ghost default). Look/size from button.css. (2026-06-01) */
+.chart-card__icon-btn { border: 1px solid var(--border); }
+
+/* Body sides aligned to .card outer (20px); the previous 28px pushed the
+   chart inward relative to neighbouring cards. Vertical rhythm preserved. */
+.chart-card__body {
+  padding: 16px 20px 12px;
+  position: relative;
+}
+.chart-card__watermark {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-ui);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--foreground-subtle);
+  opacity: 0.12;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;       /* side padding aligned to .card 20px */
+  border-top: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--foreground-subtle);
+}
+.chart-card__foot-actions {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--surface-muted);
+  border-radius: var(--radius);
+  padding: 2px;
+}
+
+/* Segmented control — D/W/M style. Used in chart card header.
+   Generic enough to promote to its own component later. */
+.segmented {
+  display: inline-flex;
+  background: var(--surface-muted);
+  border-radius: var(--radius);
+  padding: 2px;
+  gap: 1px;
+}
+.segmented__item {
+  padding: 3px 9px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--foreground-subtle);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 24px;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+.segmented__item:hover { color: var(--foreground); }
+.segmented__item--active {
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: var(--shadow-hairline);
+}
+
+/* Linechart axes + multi-series additions */
+.linechart--axes {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 0;
+}
+.linechart__y-axis {
+  position: relative;
+  height: 180px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  border-right: 1px dashed var(--border);
+}
+.linechart__y-tick {
+  position: absolute;
+  right: 4px;
+  transform: translateY(-50%);
+}
+.linechart__main { position: relative; }
+.linechart__labels--sparse {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+}
+.linechart__line--s1 { stroke: var(--primary);        fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.linechart__line--s2 { stroke: var(--status-success); fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.linechart__line--s3 { stroke: var(--status-info);    fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.linechart__line--s4 { stroke: var(--status-error);   fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.linechart__line--s5 { stroke: var(--foreground-subtle); fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+
+/* ── 5. Bar chart (vertical bars, paired with linechart in chart-card) ──
+   Monthly revenue bars (one per month) — alternate view of the same
+   single-series trend shown by the linechart. Bars flex-fill the track so
+   any count (≈12 months) distributes evenly; x-axis month label under each.
+   Share .linechart__y-axis container for vertical tick labels. */
+.barchart {
+  position: relative;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px;
+  /* horizontal gridlines behind bars (shadcn CartesianGrid vertical={false}),
+     aligned to the y-axis ticks at 5 / 33 / 60 / 88% */
+  background:
+    linear-gradient(var(--border), var(--border)) 0 5%  / 100% 1px no-repeat,
+    linear-gradient(var(--border), var(--border)) 0 33% / 100% 1px no-repeat,
+    linear-gradient(var(--border), var(--border)) 0 60% / 100% 1px no-repeat,
+    linear-gradient(var(--border), var(--border)) 0 88% / 100% 1px no-repeat;
+}
+.barchart__bar {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 40px;          /* thinner bars; gap stays the spacing min, bars spread via space-between */
+  position: relative;
+  background: var(--foreground-subtle);
+  border-radius: 8px 8px 0 0;
+  min-height: 6px;
+}
+.barchart__bar--s1 { background: var(--primary); }
+.barchart__bar--s2 { background: var(--status-success); }
+.barchart__bar--s3 { background: var(--status-info); }
+.barchart__bar--s4 { background: var(--status-error); }
+.barchart__bar--s5 { background: var(--foreground-subtle); }
+.barchart__bar__label {
+  position: absolute;
+  bottom: -22px;
+  left: -4px; right: -4px;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  color: var(--foreground-subtle);
+  white-space: nowrap;
+}
+.barchart-wrap { padding-bottom: 26px; }
+
+/* Chart card · view toggle — hide inactive view
+   The bar-wrap reuses .linechart--axes for its 2-col layout; use :not()
+   to scope the "hide line view" rule to non-bar linecharts only. */
+.chart-card[data-chart-view="line"] .barchart-wrap {
+  display: none;
+}
+.chart-card[data-chart-view="bar"] .linechart:not(.barchart-wrap) {
+  display: none;
+}
+
+/* ── Hover affordances (shadcn ChartTooltip-style) ──
+   Driven by chart.js: a floating tooltip card, a vertical cursor line + dot
+   for the line view, and a faint column highlight for the bar view. All
+   created/positioned by JS; hidden until pointer enters the plot. */
+.chart-tip {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  min-width: 130px;
+  padding: 7px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  transform: translate(-50%, calc(-100% - 12px));
+  opacity: 0;
+  transition: opacity 120ms var(--easing);
+}
+.chart-tip--show { opacity: 1; }
+.chart-tip__label {
+  color: var(--foreground-subtle);
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+.chart-tip__row { display: flex; align-items: center; gap: 10px; }
+.chart-tip__key { display: inline-flex; align-items: center; gap: 6px; color: var(--foreground-muted); }
+.chart-tip__dot { width: 8px; height: 8px; border-radius: 2px; background: var(--primary); flex-shrink: 0; }
+.chart-tip__val { margin-left: auto; font-weight: 600; color: var(--foreground); font-variant-numeric: tabular-nums; }
+
+.chart-cursor {
+  position: absolute;
+  width: 1px;
+  background: var(--foreground-subtle);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--easing);
+}
+.chart-cursor--show { opacity: 0.5; }
+.chart-cursor__dot {
+  position: absolute;
+  z-index: 5;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2.5px solid var(--surface);
+  /* yellow halo ring (standard active-dot affordance) + soft drop so the
+     marker reads clearly on top of the thick line + filled area */
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent),
+    var(--shadow-raise-strong);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--easing);
+}
+.chart-cursor__dot--show { opacity: 1; }
+/* Bar view column highlight — sits behind the bars (z 0); bars are raised. */
+.barchart { } /* (bars get z-index below) */
+.chart-bar-cursor {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--easing);
+  z-index: 0;
+}
+.chart-bar-cursor--show { opacity: 1; }
+.barchart__bar { z-index: 1; }
+
+/* ── 6. Rank bars (proportional list) ──
+   Horizontal ranked bar list — alternative to .stacked-bar + .source-list
+   when each category deserves its own row + visible proportion. Each row:
+   • full-width track (transparent)
+   • muted fill — width scaled so the largest value = 100% of the track
+   • on top of the fill: colored dot + label (always anchored left)
+   • percentage to the right of the track
+
+   Anatomy:
+     <ul class="rank-bars">
+       <li class="rank-bar">
+         <div class="rank-bar__track">
+           <div class="rank-bar__fill" style="width: 100%"></div>
+           <div class="rank-bar__content">
+             <span class="rank-bar__dot" style="background: var(--primary)"></span>
+             <span class="rank-bar__label">E-Shop sales</span>
+           </div>
+         </div>
+         <span class="rank-bar__pct">42%</span>
+       </li>
+     </ul>
+
+   Fill width math: row_pct / max_row_pct * 100  (consumer computes).
+*/
+.rank-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rank-bar {
+  display: grid;
+  grid-template-columns: 1fr 48px;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+.rank-bar__track {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+.rank-bar__fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+.rank-bar__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+.rank-bar__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rank-bar__label {
+  color: var(--foreground);
+  font-weight: 400;
+}
+.rank-bar__pct {
+  text-align: right;
+  color: var(--foreground-subtle);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}

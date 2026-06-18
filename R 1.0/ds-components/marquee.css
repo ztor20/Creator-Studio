@@ -1,0 +1,63 @@
+/* ZTOR Minimalist v2 Logo Marquee Strip — ✓ Site (site-specific)
+ * Signature: horizontal auto-scroll, all logos grayscale, fade-mask edges.
+ * Inherited from unsiloed pattern — minimal divergence (color tokens swap only).
+ */
+
+.ztor-marquee {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.ztor-marquee__track {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+  flex-shrink: 0;
+  animation: ztor-marquee 40s linear infinite;
+}
+
+.ztor-marquee__item {
+  flex-shrink: 0;
+  filter: grayscale(1);
+  opacity: 0.5;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+@keyframes ztor-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Pause on hover */
+.ztor-marquee:hover .ztor-marquee__track {
+  animation-play-state: paused;
+}
+
+/* Variants — speed */
+.ztor-marquee--slow .ztor-marquee__track { animation-duration: 60s; }
+.ztor-marquee--fast .ztor-marquee__track { animation-duration: 25s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .ztor-marquee__track {
+    animation: none;
+    transform: translateX(0);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

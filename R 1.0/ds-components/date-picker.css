@@ -1,0 +1,142 @@
+/* ZTOR Minimalist v2 Date Picker — ◎ Default (composite: input + popover + calendar)
+ * Signature: input trigger that opens a popover containing .ztor-calendar.
+ *            CSS only — composition layer. Pair with react-day-picker or similar.
+ */
+
+.ztor-date-picker {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* ── Trigger (input-styled button) ─────────────────── */
+
+.ztor-date-picker__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 48px;
+  padding: 12px 16px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-button);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--duration-quick) var(--ease);
+}
+
+.ztor-date-picker__trigger:hover {
+  border-color: var(--text-secondary);
+}
+
+.ztor-date-picker__trigger:focus-visible,
+.ztor-date-picker__trigger[data-state="open"] {
+  outline: none;
+  border-color: var(--border-emphasis);
+}
+
+.ztor-date-picker__trigger--placeholder {
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.ztor-date-picker__icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+/* ── Popover panel (contains calendar) ─────────────── */
+
+.ztor-date-picker__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+  animation: ztor-date-picker-in var(--duration-quick) var(--ease) forwards;
+}
+
+@keyframes ztor-date-picker-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Preset shortcuts (Today, Yesterday, Last 7 days...) ── */
+
+.ztor-date-picker__presets {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-right: var(--border-hairline-width) solid var(--border-hairline);
+  min-width: 140px;
+}
+
+.ztor-date-picker__preset {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-date-picker__preset:hover {
+  background: var(--surface-secondary);
+}
+
+.ztor-date-picker__preset[aria-pressed="true"] {
+  background: rgba(255, 219, 41, 0.12);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ── Range picker (two-input layout) ──────────────── */
+
+.ztor-date-picker-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ztor-date-picker-range__separator {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+}
+
+/* ── Layout with presets on left + calendar on right ── */
+
+.ztor-date-picker__panel--with-presets {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-date-picker__trigger,
+  .ztor-date-picker__panel,
+  .ztor-date-picker__preset { transition: none; animation: none; }
+}

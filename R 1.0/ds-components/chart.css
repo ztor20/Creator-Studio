@@ -1,0 +1,243 @@
+/* ZTOR Minimalist v2 Chart — ◎ Default (shadcn recharts wrapper + ztor-v2 tokens)
+ * Signature: chart container with hairline gridlines, Inter UPPER axis labels,
+ *            yellow as primary data color. Compatible with recharts / d3 / chart.js.
+ *            CSS-only — pair with charting library for data binding.
+ */
+
+.ztor-chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  background: var(--surface-canvas);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+/* ── Chart header (title + meta + actions) ────────── */
+
+.ztor-chart__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ztor-chart__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ztor-chart__eyebrow {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.ztor-chart__title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ztor-chart__value {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ztor-chart__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+.ztor-chart__delta--positive { color: var(--status-success); }
+.ztor-chart__delta--negative { color: var(--status-error); }
+.ztor-chart__delta--neutral  { color: var(--text-secondary); }
+
+/* ── Chart canvas / SVG area ──────────────────────── */
+
+.ztor-chart__canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.ztor-chart__canvas--square { aspect-ratio: 1 / 1; }
+.ztor-chart__canvas--wide   { aspect-ratio: 21 / 9; }
+.ztor-chart__canvas--sm     { height: 80px; aspect-ratio: auto; }
+
+/* ── Axes ─────────────────────────────────────────── */
+
+.ztor-chart__axis text,
+.ztor-chart .recharts-cartesian-axis-tick text,
+.ztor-chart .ztor-chart__axis-label {
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  fill: var(--text-secondary);
+  color: var(--text-secondary);
+}
+
+.ztor-chart__axis line,
+.ztor-chart__axis path,
+.ztor-chart .recharts-cartesian-axis-line {
+  stroke: var(--border-hairline);
+  stroke-width: 0.5;
+}
+
+/* ── Gridlines ────────────────────────────────────── */
+
+.ztor-chart__grid line,
+.ztor-chart .recharts-cartesian-grid line {
+  stroke: var(--border-hairline);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 4;
+}
+
+/* ── Data colors (use in inline fill / stroke) ───── */
+
+:root {
+  --chart-color-1: #FFDB29; /* yellow — primary */
+  --chart-color-2: #0A0A0A; /* dark */
+  --chart-color-3: #5F5E5A; /* secondary */
+  --chart-color-4: #E5E5E0; /* surface */
+  --chart-color-5: #2E7D32; /* status success */
+  --chart-color-6: #C62828; /* status error */
+}
+
+.ztor-chart__bar--primary,
+.ztor-chart__line--primary {
+  fill: var(--chart-color-1);
+  stroke: var(--chart-color-1);
+}
+
+.ztor-chart__bar--secondary,
+.ztor-chart__line--secondary {
+  fill: var(--chart-color-2);
+  stroke: var(--chart-color-2);
+}
+
+.ztor-chart__line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.ztor-chart__area {
+  fill: rgba(255, 219, 41, 0.16);
+}
+
+/* ── Tooltip (re-uses .ztor-tooltip) ──────────────── */
+
+.ztor-chart__tooltip {
+  background: var(--surface-dark-cta);
+  border-radius: var(--radius-chip);
+  padding: 8px 12px;
+  color: var(--text-invert);
+  font-family: var(--font-body);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.ztor-chart__tooltip-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.ztor-chart__tooltip-value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ── Legend ───────────────────────────────────────── */
+
+.ztor-chart__legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ztor-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-primary);
+}
+
+.ztor-chart__legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--chart-color-1);
+}
+
+/* ── Sparkline (tiny inline chart) ────────────────── */
+
+.ztor-chart-sparkline {
+  display: inline-block;
+  height: 24px;
+  width: 80px;
+  vertical-align: middle;
+}
+
+.ztor-chart-sparkline svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ── Empty state ──────────────────────────────────── */
+
+.ztor-chart__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) dashed var(--border-hairline);
+  border-radius: var(--radius-button);
+  color: var(--text-secondary);
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}

@@ -1,0 +1,234 @@
+/* ZTOR Minimalist v2 Command — ◎ Default (shadcn cmdk + ztor-v2 tokens)
+ * Signature: ⌘K palette — centered modal-style search with grouped items,
+ *            icons, keyboard shortcuts, and live filtering.
+ *            Composes overlay + dialog-content + search input + grouped list.
+ */
+
+.ztor-command-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+  z-index: 105;
+  animation: ztor-command-fade var(--duration-quick) var(--ease) forwards;
+}
+
+.ztor-command {
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 560px);
+  max-height: 60vh;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-callout);
+  z-index: 106;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  animation: ztor-command-slide var(--duration-base) var(--ease) forwards;
+}
+
+@keyframes ztor-command-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ztor-command-slide {
+  from { opacity: 0; transform: translate(-50%, calc(25% - 8px)); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+
+/* ── Search input (top) ───────────────────────────── */
+
+.ztor-command__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: var(--border-hairline-width) solid var(--border-hairline);
+  flex-shrink: 0;
+}
+
+.ztor-command__search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.ztor-command__search-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.ztor-command__search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.ztor-command__search-shortcut {
+  padding: 2px 8px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-chip);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--font-size-micro);
+  color: var(--text-secondary);
+}
+
+/* ── List ─────────────────────────────────────────── */
+
+.ztor-command__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Group ────────────────────────────────────────── */
+
+.ztor-command__group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 8px;
+}
+
+.ztor-command__group:last-child { margin-bottom: 0; }
+
+.ztor-command__group-label {
+  padding: 8px 12px 4px;
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+}
+
+/* ── Item ─────────────────────────────────────────── */
+
+.ztor-command__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-command__item:hover,
+.ztor-command__item[data-selected="true"],
+.ztor-command__item[aria-selected="true"] {
+  background: var(--surface-secondary);
+}
+
+.ztor-command__item[data-active-search="true"] {
+  /* Highlighted result during keyboard nav */
+  background: rgba(255, 219, 41, 0.12);
+}
+
+.ztor-command__item-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.ztor-command__item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ztor-command__item-shortcut {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.ztor-command__item-shortcut kbd {
+  padding: 1px 5px;
+  background: var(--surface-secondary);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+  font-family: inherit;
+  font-size: var(--font-size-micro);
+  color: var(--text-primary);
+}
+
+/* ── Separator ────────────────────────────────────── */
+
+.ztor-command__separator {
+  height: 0;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+  margin: 6px -8px;
+}
+
+/* ── Empty state ──────────────────────────────────── */
+
+.ztor-command__empty {
+  padding: 40px 20px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.ztor-command__empty-title {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  margin-bottom: 4px;
+}
+
+/* ── Footer (optional — hint row) ─────────────────── */
+
+.ztor-command__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: var(--border-hairline-width) solid var(--border-hairline);
+  font-family: var(--font-label);
+  font-size: var(--font-size-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.ztor-command__footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-command-overlay,
+  .ztor-command,
+  .ztor-command__item { animation: none; transition: none; }
+}

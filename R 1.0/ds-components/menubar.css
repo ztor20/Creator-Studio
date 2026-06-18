@@ -1,0 +1,132 @@
+/* ZTOR Minimalist v2 Menubar — ◎ Default (shadcn menubar + ztor-v2 tokens)
+ * Signature: horizontal top app menu (File / Edit / View pattern).
+ *            Differs from .ztor-navbar — Menubar is for desktop app patterns,
+ *            not marketing nav. Click trigger opens dropdown beneath each item.
+ */
+
+.ztor-menubar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-button);
+  font-family: var(--font-body);
+}
+
+.ztor-menubar__trigger {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-chip);
+  color: var(--text-primary);
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease);
+}
+
+.ztor-menubar__trigger:hover,
+.ztor-menubar__trigger[data-state="open"] {
+  background: var(--surface-secondary);
+}
+
+.ztor-menubar__trigger[data-state="open"] {
+  background: var(--accent-yellow);
+  color: var(--text-accent-on);
+}
+
+.ztor-menubar__trigger:focus-visible {
+  outline: var(--border-hairline-width) solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.ztor-menubar__trigger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Menu content (dropdown panel beneath trigger) ── */
+/* Reuses .ztor-dropdown structure — see dropdown-menu.css.
+   This file just defines the menubar bar; item/separator/label/shortcut classes
+   come from dropdown-menu.css to avoid duplication. */
+
+.ztor-menubar__content {
+  position: absolute;
+  top: calc(100% + 4px);
+  min-width: 200px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-button);
+  padding: 6px;
+  z-index: 50;
+  animation: ztor-menubar-fade var(--duration-quick) var(--ease) forwards;
+}
+
+@keyframes ztor-menubar-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Items inside menubar use .ztor-dropdown__item from dropdown-menu.css */
+
+/* ── Sub-menu (nested) ────────────────────────────── */
+
+.ztor-menubar__sub-content {
+  position: absolute;
+  left: calc(100% - 4px);
+  top: -6px;
+  min-width: 200px;
+  background: var(--surface-canvas);
+  border: var(--border-hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-button);
+  padding: 6px;
+  z-index: 51;
+  animation: ztor-menubar-sub-fade var(--duration-quick) var(--ease) forwards;
+}
+
+@keyframes ztor-menubar-sub-fade {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Variants ─────────────────────────────────────── */
+
+.ztor-menubar--ghost {
+  /* No background — for embedding in toolbars */
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.ztor-menubar--dark {
+  background: var(--surface-dark-cta);
+  border-color: var(--surface-dark-cta);
+}
+
+.ztor-menubar--dark .ztor-menubar__trigger {
+  color: var(--text-invert);
+}
+
+.ztor-menubar--dark .ztor-menubar__trigger:hover {
+  background: var(--surface-inverse);
+}
+
+.ztor-menubar--dark .ztor-menubar__trigger[data-state="open"] {
+  background: var(--accent-yellow);
+  color: var(--text-accent-on);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-menubar__trigger,
+  .ztor-menubar__content,
+  .ztor-menubar__sub-content { transition: none; animation: none; }
+}

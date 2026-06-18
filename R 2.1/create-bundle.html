@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create bundle · Ztor Creator Studio</title>
+<script src="theme.js?v=20260617m"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/picker.css?v=20260617m">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617m">
+<link rel="stylesheet" href="shared.css?v=20260617m">
+<style>
+  /* page-specific：Create bundle 表單 · spec 5.1.5.4
+     版面沿用 create-product 的卡片堆疊語言（每區塊一張 card + 區塊標題），不照截圖裸版面 */
+  .cb-section { margin-top: 18px; }
+  .cb-section__head { margin-bottom: 12px; }
+  .cb-section__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .cb-section__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
+  .cb-count__hint { font-size: 12.5px; color: var(--foreground-subtle); margin-top: 10px; }
+  /* 近期瀏覽子標題（spec 5.1.5.4 §4②）*/
+  .cb-sublabel { font-size: 13.5px; font-weight: 600; margin: 16px 0 8px; }
+  .cb-sublabel:first-child { margin-top: 0; }
+  /* 合併的新增方塊：取代「In this bundle」計數＋空狀態提示＋New item 按鈕；
+     點擊加入一件商品，已選商品在其上方疊加成清單 */
+  .cb-add-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; padding: 16px; margin-top: 8px;
+    border: 1px dashed var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--foreground);
+    cursor: pointer; font: inherit; transition: background .15s ease, border-color .15s ease; }
+  .cb-add-tile:hover { background: var(--surface-muted); border-color: var(--foreground-subtle); }
+  .cb-add-tile .ztor-icon { width: 18px; height: 18px; margin-bottom: 3px; }
+  .cb-add-tile__main { font-size: 13.5px; font-weight: 600; }
+  .cb-add-tile__sub { font-size: 12px; color: var(--foreground-subtle); }
+  /* 列尾：價格 + 移除鈕並排 */
+  .cb-row-end { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+  .cb-price-input { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .cb-price-input[hidden] { display: none; }  /* class display 會蓋掉 [hidden] 的 none，需顯式還原 */
+  .cb-price-input__sym { font-size: 14px; color: var(--foreground-subtle); }
+  /* 套組庫存＝min(成員) 與相容性提示（spec 5.1.5.4 §6.3/§6.4，顯示層 demo）*/
+  .cb-summary { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-muted); font-size: 13px; }
+  .cb-summary[hidden] { display: none; }
+  .cb-summary__row { display: flex; justify-content: space-between; font-weight: 600; }
+  .cb-note { font-size: 12.5px; color: var(--foreground-subtle); margin-top: 6px; }
+  .cb-warn { color: var(--status-error); }
+  .cb-save { color: var(--status-success); }
+  /* 商品搜尋無結果引導（spec 5.1.5.4 §6.6）*/
+  .cb-no-result { padding: 16px; text-align: center; font-size: 12.5px; color: var(--foreground-subtle); }
+  .cb-no-result[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="wizard">
+  <!-- §5.2.4 頂部操作欄 · 統一框架：Close 左｜標題置中(stepper 槽)｜主題右。Save／主動作在 footer -->
+  <header class="wizard__top">
+    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
+    <div class="wizard__stepper-slot"><span class="wizard__top-title" data-i18n="cb.h1">Create bundle</span></div>
+    <div class="wizard__top-actions">
+      <button class="app-icon-btn" data-theme-toggle><span class="theme-toggle__icon-moon">☾</span><span class="theme-toggle__icon-sun">☀</span></button>
+    </div>
+  </header>
+
+  <div class="wizard__body">
+
+    <!-- ① 套組名稱 -->
+    <section class="card cb-section">
+      <div class="field" style="margin:0">
+        <div class="field__label"><span data-i18n="cb.name">Bundle name</span> <span style="color:var(--error,#c00)">*</span></div>
+        <input class="input" id="cb-name" placeholder="e.g., Ultimate Fan Bundle" data-i18n-placeholder="cb.name.ph">
+      </div>
+    </section>
+
+    <!-- ② 加入商品（Items）-->
+    <section class="card cb-section">
+      <div class="cb-section__head">
+        <h3 class="cb-section__title" data-i18n="cb.items">Items</h3>
+        <p class="cb-section__sub" data-i18n="cb.items.sub">Add products, tickets, or anything from your shop</p>
+      </div>
+
+      <!-- 已選商品：清單疊加 + 合併的新增方塊（點擊加入一件，往上疊）-->
+      <div class="data-list" id="cb-selected"></div>
+      <button type="button" class="cb-add-tile" id="cb-add-tile">
+        <i data-lucide="plus" class="ztor-icon"></i>
+        <span class="cb-add-tile__main" data-i18n="cb.add">New item</span>
+        <span class="cb-add-tile__sub" data-i18n="cb.add.sub">Create a new product to add to this bundle</span>
+      </button>
+
+      <!-- 近期瀏覽的商品（Recently viewed）-->
+      <div class="cb-sublabel" data-i18n="cb.recent">Recently viewed</div>
+      <div class="picker">
+        <div class="picker__search">
+          <input class="picker__search-input" placeholder="Search your products…" data-i18n-placeholder="cb.search.ph">
+        </div>
+        <div class="picker__list">
+          <div class="data-list" id="cb-recent">
+            <div class="data-list__row" data-cb-item data-price="11.00" data-stock="40" data-name="Art Print" data-cat="Posters &amp; prints">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">Art Print <span class="text-sub">Posters &amp; prints · 40 in stock</span></div></div>
+              </div>
+              <div class="data-list__end cb-row-end"><span class="cb-price">$11.00</span></div>
+            </div>
+            <div class="data-list__row" data-cb-item data-price="12.00" data-stock="12" data-edition="limited" data-name="Cassette" data-cat="Music">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">Cassette <span class="text-sub">Music · Limited · 12 left</span></div></div>
+              </div>
+              <div class="data-list__end cb-row-end"><span class="cb-price">$12.00</span></div>
+            </div>
+            <div class="data-list__row" data-cb-item data-price="13.00" data-stock="unlimited" data-name="Summer Preset Pack" data-cat="Digital">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">Summer Preset Pack <span class="text-sub">Digital · Unlimited</span></div></div>
+              </div>
+              <div class="data-list__end cb-row-end"><span class="cb-price">$13.00</span></div>
+            </div>
+            <div class="data-list__row" data-cb-item data-price="14.00" data-stock="8" data-name="Cookbook" data-cat="Books">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">Cookbook <span class="text-sub">Books · 8 in stock</span></div></div>
+              </div>
+              <div class="data-list__end cb-row-end"><span class="cb-price">$14.00</span></div>
+            </div>
+            <div class="data-list__row" data-cb-item data-price="15.00" data-stock="25" data-variants="3" data-name="Lanyard Special" data-cat="Accessories">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">Lanyard Special <span class="text-sub">Accessories · 3 variants · 25 in stock</span></div></div>
+              </div>
+              <div class="data-list__end cb-row-end"><span class="cb-price">$15.00</span></div>
+            </div>
+          </div>
+          <div class="cb-no-result" id="cb-no-result" hidden data-i18n="cb.search.noresult">No products match. Create a New item above to add it to this bundle.</div>
+        </div>
+      </div>
+
+      <div class="cb-count__hint" id="cb-count-hint" data-i18n="cb.min-items">Add at least 2 items</div>
+
+      <!-- 套組庫存＝min(成員) ＋ 成員相容性提示（spec §6.4 / D031 / UIA-008，顯示層）-->
+      <div class="cb-summary" id="cb-summary" hidden>
+        <div class="cb-summary__row"><span data-i18n="cb.stock.label">Bundle stock</span><span id="cb-stock">—</span></div>
+        <div id="cb-notes"></div>
+      </div>
+    </section>
+
+    <!-- ③ 定價（Pricing）-->
+    <section class="card cb-section">
+      <div class="cb-section__head">
+        <h3 class="cb-section__title" data-i18n="cb.pricing">Pricing</h3>
+      </div>
+      <div class="selection-grid" id="cb-price-grid">
+        <button class="selection-card selection-card--active" data-cb-price="fixed">
+          <span class="selection-card__title" data-i18n="cb.price.fixed">Fixed price</span>
+          <span class="selection-card__sub" data-i18n="cb.price.fixed-sub">Set one bundle price</span>
+        </button>
+        <button class="selection-card" data-cb-price="pct">
+          <span class="selection-card__title" data-i18n="cb.price.pct">% off</span>
+          <span class="selection-card__sub" data-i18n="cb.price.pct-sub">Discount when bundled</span>
+        </button>
+      </div>
+
+      <!-- 固定價輸入 -->
+      <div data-cb-price-show="fixed">
+        <div class="cb-price-input">
+          <span class="cb-price-input__sym">$</span>
+          <input class="input" id="cb-fixed-price" placeholder="0.00" style="max-width:200px">
+        </div>
+        <div class="field__hint" id="cb-price-hint" style="margin-top:8px" data-i18n="cb.price.fixed-hint">Bundle price must not exceed members' total.</div>
+      </div>
+      <!-- 折扣輸入（spec 待補：依對稱推定為 % 輸入，標自創待確認）-->
+      <div class="cb-price-input" data-cb-price-show="pct" hidden>
+        <input class="input" placeholder="0" style="max-width:160px">
+        <span class="cb-price-input__sym">% <span class="text-sub" data-i18n="cb.price.pct-note">off · field pending spec 5.1.5.4</span></span>
+      </div>
+    </section>
+
+    <!-- ④ 限量（Limit quantity）-->
+    <section class="card cb-section">
+      <div class="cb-section__head">
+        <h3 class="cb-section__title" data-i18n="cb.limit">Limit quantity</h3>
+      </div>
+      <input class="input" placeholder="Unlimited" data-i18n-placeholder="cb.limit.ph">
+      <div class="field__hint" data-i18n="cb.limit.hint">Leave empty for unlimited</div>
+    </section>
+  </div>
+
+  <!-- §5.2.4 底部操作列（統一）：Save for later 左；主動作右 -->
+  <footer class="wizard__bottom">
+    <button class="btn btn--ghost" data-i18n="wiz.savelater">Save for later</button>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--primary" id="cb-create" disabled data-i18n="cb.create">Create bundle</button>
+    </div>
+  </footer>
+</div>
+
+<!-- 臨時新增商品 popup：嵌入完整 create-product 流程（?embed=1），
+     建立完成由 iframe postMessage 回傳，加入上方組合清單。一般入口仍走整頁。 -->
+<div class="payout-modal" id="cb-add-modal" hidden>
+  <div class="payout-dialog payout-dialog--embed" role="dialog" aria-modal="true" aria-label="New item">
+    <iframe class="embed-frame" id="cb-add-frame" title="Create product"></iframe>
+  </div>
+</div>
+
+<script>
+/* Create bundle 互動 · spec 5.1.5.4。新增（顯示層 demo，不重算後端）：
+   §6.4 套組庫存＝min(成員)、§6.3 固定價≤成員合計＋省下金額、成員限量/多規格相容性提示。 */
+(function () {
+  const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pGrid = document.getElementById('cb-price-grid');
+  const recent = document.getElementById('cb-recent');
+  const selected = document.getElementById('cb-selected');
+  const addTile = document.getElementById('cb-add-tile');
+  const hint = document.getElementById('cb-count-hint');
+  const summary = document.getElementById('cb-summary');
+  const stockEl = document.getElementById('cb-stock');
+  const notesEl = document.getElementById('cb-notes');
+  const nameEl = document.getElementById('cb-name');
+  const fixedPrice = document.getElementById('cb-fixed-price');
+  const priceHint = document.getElementById('cb-price-hint');
+  const createBtn = document.getElementById('cb-create');
+
+  const numStock = v => (v === 'unlimited' || v === '∞') ? Infinity : (parseFloat(v) || 0);
+  const fixedMode = () => { const a = pGrid.querySelector('.selection-card--active'); return !a || a.dataset.cbPrice === 'fixed'; };
+
+  function recompute() {
+    const items = [...selected.querySelectorAll('[data-cb-item]')];
+    const n = items.length;
+    const ok2 = n >= 2;
+    hint.hidden = ok2;
+    summary.hidden = n === 0;
+
+    let minStock = Infinity, sum = 0, hasLimited = false, hasVariants = false;
+    items.forEach(it => {
+      minStock = Math.min(minStock, numStock(it.dataset.stock));
+      sum += parseFloat(it.dataset.price) || 0;
+      if (it.dataset.edition === 'limited') hasLimited = true;
+      if (it.dataset.variants) hasVariants = true;
+    });
+    stockEl.textContent = n === 0 ? '—'
+      : (minStock === Infinity ? T('cb.stock.unlimited', 'Unlimited')
+        : minStock + ' ' + T('cb.stock.min', '(min of members)'));
+
+    let notes = '';
+    if (hasLimited) notes += '<div class="cb-note" data-i18n="cb.note.limited">A limited-edition member caps the bundle — it sells out when that member runs out.</div>';
+    if (hasVariants) notes += '<div class="cb-note" data-i18n="cb.note.variants">A variant member is included — which variant ships in the bundle is pending spec.</div>';
+    notesEl.innerHTML = notes;
+    if (window.applyI18n) window.applyI18n(notesEl);
+
+    let priceOk = true;
+    if (fixedMode()) {
+      priceHint.removeAttribute('data-i18n');
+      const raw = fixedPrice ? fixedPrice.value.trim() : '';
+      const price = parseFloat(raw);
+      if (!raw) {
+        priceHint.className = 'field__hint';
+        priceHint.textContent = T('cb.price.cap', "Bundle price must not exceed members' total") + (n ? ' · $' + sum.toFixed(2) : '');
+        priceOk = false;
+      } else if (price > sum) {
+        priceHint.className = 'field__hint cb-warn';
+        priceHint.textContent = '$' + price.toFixed(2) + ' ' + T('cb.price.over', 'exceeds members total') + ' $' + sum.toFixed(2);
+        priceOk = false;
+      } else {
+        priceHint.className = 'field__hint cb-save';
+        priceHint.textContent = T('cb.price.saves', 'Saves') + ' $' + (sum - price).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total') + ' $' + sum.toFixed(2);
+      }
+    }
+    const nameOk = nameEl && nameEl.value.trim() !== '';
+    createBtn.disabled = !(ok2 && nameOk && (fixedMode() ? priceOk : true));
+  }
+
+  /* 定價模式切換 */
+  pGrid.querySelectorAll('[data-cb-price]').forEach(card => {
+    card.addEventListener('click', () => {
+      pGrid.querySelectorAll('[data-cb-price]').forEach(c => c.classList.toggle('selection-card--active', c === card));
+      document.querySelectorAll('[data-cb-price-show]').forEach(el => el.hidden = el.dataset.cbPriceShow !== card.dataset.cbPrice);
+      recompute();
+    });
+  });
+
+  /* 近期瀏覽 ⇄ 已選：點候選列或移除鈕在兩區間搬移 */
+  function pick(row) {
+    const end = row.querySelector('.cb-row-end');
+    const rm = document.createElement('button');
+    rm.className = 'btn btn--icon btn--xs';
+    rm.setAttribute('aria-label', 'Remove');
+    rm.innerHTML = '<i data-lucide="x" class="ztor-icon"></i>';
+    rm.addEventListener('click', e => { e.stopPropagation(); unpick(row, rm); });
+    end.appendChild(rm);
+    row.onclick = null;
+    selected.appendChild(row);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(end);
+    recompute();
+  }
+  function unpick(row, rm) {
+    rm.remove();
+    row.onclick = () => pick(row);
+    recent.appendChild(row);
+    recompute();
+  }
+  recent.querySelectorAll('[data-cb-item]').forEach(row => {
+    row.style.cursor = 'pointer';
+    row.onclick = () => pick(row);
+  });
+
+  /* 臨時新增商品：以 popup 嵌入完整 create-product 流程（不離開組合）。
+     一般入口（e-shop）仍走整頁；只有這裡用 ?embed=1。 */
+  const addModal = document.getElementById('cb-add-modal');
+  const addFrame = document.getElementById('cb-add-frame');
+  const openAdd = () => {
+    addFrame.src = 'create-product.html?embed=1&cb=20260617m';
+    addModal.hidden = false;
+    document.body.classList.add('is-modal-open');
+  };
+  const closeAdd = () => {
+    addModal.hidden = true;
+    document.body.classList.remove('is-modal-open');
+    addFrame.src = 'about:blank';
+  };
+  addTile.addEventListener('click', openAdd);
+  addModal.addEventListener('click', e => { if (e.target === addModal) closeAdd(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !addModal.hidden) closeAdd(); });
+
+  /* 把嵌入頁建立的商品做成一列，沿用 pick() 加進「已選」並重算 */
+  function addCreated(p) {
+    const price = parseFloat(String(p.price || '').replace(/[^0-9.]/g, '')) || 0;
+    const row = document.createElement('div');
+    row.className = 'data-list__row';
+    row.setAttribute('data-cb-item', '');
+    row.dataset.price = price.toFixed(2);
+    row.dataset.stock = (p.stock && p.stock !== '') ? p.stock : 'unlimited';
+    row.dataset.name = p.name || T('cp.embed.untitled', 'New product');
+    row.dataset.cat = p.cat || '';
+    if (p.edition === 'limited') row.dataset.edition = 'limited';
+    if (p.variants) row.dataset.variants = p.variants;
+    const bits = [];
+    if (p.cat) bits.push(p.cat);
+    if (p.variants) bits.push(p.variants + ' ' + T('cb.meta.variants', 'variants'));
+    if (row.dataset.stock === 'unlimited') bits.push(T('cb.stock.unlimited', 'Unlimited'));
+    else bits.push(row.dataset.stock + ' ' + T('cb.meta.instock', 'in stock'));
+    row.innerHTML = '<div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>'
+      + '<div class="data-list__body"><div class="data-list__title">' + esc(row.dataset.name)
+      + ' <span class="text-sub">' + esc(bits.join(' · ')) + '</span></div></div></div>'
+      + '<div class="data-list__end cb-row-end"><span class="cb-price">$' + price.toFixed(2) + '</span></div>';
+    pick(row);
+  }
+  window.addEventListener('message', e => {
+    const d = (e && e.data) || {};
+    if (d.type === 'cp:cancel') { closeAdd(); return; }
+    if (d.type === 'cp:created') { addCreated(d.product || {}); closeAdd(); }
+  });
+  if (nameEl) nameEl.addEventListener('input', recompute);
+  if (fixedPrice) fixedPrice.addEventListener('input', recompute);
+
+  /* 商品搜尋過濾「近期瀏覽」(spec §4 F2)；無相符列顯示空狀態引導 New item (§6.6) */
+  const search = document.querySelector('.picker__search-input');
+  const noResult = document.getElementById('cb-no-result');
+  if (search) search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    const rows = [...recent.querySelectorAll('[data-cb-item]')];
+    let shown = 0;
+    rows.forEach(r => {
+      const hay = ((r.dataset.name || '') + ' ' + (r.dataset.cat || '')).toLowerCase();
+      const vis = !q || hay.includes(q);
+      r.hidden = !vis;
+      if (vis) shown++;
+    });
+    if (noResult) noResult.hidden = !(q && shown === 0);
+  });
+
+  /* 建立完成 → 回電子商店清單並彈出新品貼文（spec 5.1.5.7 v1.2 全類型皆開），帶入組合名/價 */
+  createBtn.addEventListener('click', () => {
+    if (createBtn.disabled) return;
+    const nm = (nameEl && nameEl.value.trim()) || '';
+    let pr = (fixedMode() && fixedPrice && fixedPrice.value.trim()) || '';
+    if (pr && !/\$/.test(pr)) pr = '$' + pr;
+    const q = new URLSearchParams({ posted: '1', type: 'bundle' });
+    if (nm) q.set('name', nm);
+    if (pr) q.set('price', pr);
+    location.href = 'e-shop.html?' + q.toString();
+  });
+
+  recompute();
+})();
+</script>
+<script src="icons.js?v=20260617m"></script>
+<script src="i18n.js?v=20260617m"></script>
+<script src="reveal.js?v=20260617m"></script>
+<script src="devtools.js?v=20260617m"></script>
+</body>
+</html>

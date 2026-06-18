@@ -1,0 +1,304 @@
+/* ============================================================
+   Ztor Creator Studio — Header (canonical app topbar)
+   2026-06-01: promoted from shared.css `.app-topbar*` so the shipped product
+   topbar is the single-source DS Header component. Markup is injected by
+   sidebar.js on product pages; design-system.html renders a static mirror.
+   Tokens come from ds-components/_tokens.css. (Replaces the old unused
+   `.ztor-header`.)
+   ============================================================ */
+
+/* ---------- Top bar (ported from R 2.0 .app-topbar__* pattern, R 2.1 tokens) ----------
+   64 px sticky header · brand SVG logo + semantic <ul> nav + mega dropdown panels +
+   right-side cluster (theme · search panel · lang · notifications · avatar menu).
+   Tokens (--surface / --foreground / --border / --primary) all come from
+   ds-components/_tokens.css — visual chrome from R 2.0, palette from R 2.1. */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 32px;
+  transition: background-color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing),
+              backdrop-filter var(--duration) var(--easing);
+}
+
+/* Dark mode: --surface is translucent, so on scroll the header turns into a
+   frosted pane (blur + slight darkening) instead of letting the content/hero
+   photo bleed through the nav. Light mode keeps its opaque surface — no blur. */
+[data-theme="dark"] .app-topbar.is-scrolled {
+  background: color-mix(in srgb, var(--background) 62%, transparent);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+}
+
+.app-topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--foreground);
+  flex-shrink: 0;
+}
+.app-topbar__brand-logo { height: 24px; width: auto; color: currentColor; }
+
+.app-topbar__nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.app-topbar__nav > li { position: relative; z-index: 1; }
+.app-topbar__nav-group { position: relative; z-index: 1; }
+
+/* Shared sliding highlight — one pill that glides between nav items on hover
+   and rests on the active page item. Reuses --surface-muted / --radius-md /
+   --duration / --easing (Motion mega-menu shared-element feel). */
+.app-topbar__nav-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 36px;                 /* matches .app-topbar__link height */
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;                   /* behind the links */
+  will-change: transform, width;
+  transition: transform var(--duration) var(--easing),
+              width     var(--duration) var(--easing),
+              opacity   var(--duration) var(--easing);
+}
+.app-topbar__nav-highlight[data-show="true"] { opacity: 1; }
+
+.app-topbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: transparent;
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+/* Hover / active bg is now provided by the shared sliding highlight pill
+   (.app-topbar__nav-highlight), so the links themselves stay transparent to
+   avoid a double background. Colour still shifts on hover / active. */
+.app-topbar__link:hover { background: transparent; color: var(--foreground); }
+.app-topbar__link[aria-current="page"] { color: var(--foreground); background: transparent; }
+.app-topbar__link--group { padding-right: 8px; }
+.app-topbar__link--group .ztor-icon { opacity: 0.6; transition: transform var(--duration) var(--easing); }
+.app-topbar__link[aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+
+/* Dropdown panel (mega) */
+.app-topbar__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 280px;
+  background: var(--surface);          /* match the header bg (.app-topbar) */
+  /* Frosted glass: when --surface is translucent (dark mode) the blur turns
+     the hero/content showing through into a frosted pane so text stays legible;
+     no-op in light mode where --surface is opaque. Matches the scrolled header. */
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  z-index: 60;
+
+  /* Animated open/close (Motion-style): fade + slide + subtle scale.
+     visibility (not display) is toggled so the transition can run.
+     State is driven by sidebar.js via data-state; default = closed. */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity   var(--duration) var(--easing),
+              transform var(--duration) var(--easing),
+              visibility 0s linear var(--duration);
+}
+.app-topbar__dropdown[data-state="open"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0s;
+}
+/* Legacy no-JS fallback: the [hidden] attribute still fully hides a panel. */
+.app-topbar__dropdown[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-topbar__nav-highlight,
+  .app-topbar__dropdown { transition: none; }
+}
+.app-topbar__dropdown--mega {
+  min-width: 360px;
+  /* Drop 4px below the 64px header bottom. The nav <li> is 36px tall and centered
+     in the header, so its bottom sits 14px above the header bottom; 14 + 4 = 18px. */
+  top: calc(100% + 18px);
+}
+.app-topbar__dropdown--right { right: 0; left: auto; }
+/* No dark override: the dropdown uses var(--surface), same as .app-topbar, in both themes. */
+
+.app-topbar__dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--foreground);
+  cursor: pointer;
+}
+.app-topbar__dropdown-option:hover { background: var(--surface-muted); }
+
+.app-topbar__dropdown-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--foreground-muted);
+}
+.app-topbar__dropdown-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.app-topbar__dropdown-option-title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.app-topbar__dropdown-option-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--foreground-subtle);
+}
+.app-topbar__dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+/* Right-side cluster: theme · search · lang · notifications · avatar */
+.app-topbar__actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Icon buttons now compose the Button atom — markup is
+   `.app-topbar__icon-btn .btn .btn--icon`. This hook only keeps the
+   position context for the unread badge-dot; look comes from
+   button.css → .btn--icon. (2026-06-01 refactor.) */
+.app-topbar__icon-btn { position: relative; }
+
+.app-topbar__badge-dot {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.app-topbar__lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+  cursor: pointer;
+}
+.app-topbar__lang [aria-current="true"]  { color: var(--foreground); }
+.app-topbar__lang [aria-current="false"] { color: var(--foreground-subtle); }
+
+.app-topbar__avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--foreground);
+  color: var(--background);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Search trigger + panel */
+.app-topbar__search-menu { position: relative; }
+.app-topbar__search-panel {
+  width: 380px;
+  padding: 12px;
+}
+.app-topbar__search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-md);
+}
+.app-topbar__search-input-wrap .ztor-icon { color: var(--foreground-subtle); width: 16px; height: 16px; }
+.app-topbar__search-input {
+  border: 0; background: transparent; outline: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  flex: 1;
+  color: var(--foreground);
+}
+.app-topbar__search-input::placeholder { color: var(--foreground-subtle); }
+.app-topbar__search-kbd {
+  font-family: var(--font-mono, var(--font-ui));
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--foreground-subtle);
+  background: var(--background);
+}
+.app-topbar__search-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  padding: 0 4px;
+}
+
+/* Responsive — collapse to wrap + hide inline nav (burger/JS handles the rest) */
+@media (max-width: 900px) {
+  .app-topbar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 12px; }
+  .app-topbar__nav { display: none; }
+}
