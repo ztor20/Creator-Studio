@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tier settings &amp; benefits · Ztor Creator Studio</title>
+<script src="theme.js?v=20260617t"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/settings.css?v=20260617t">
+<link rel="stylesheet" href="shared.css?v=20260617t">
+<style>
+  /* tier-settings 專屬 layout hooks（非可重用樣式留頁內）。 */
+  .tier-card { margin-bottom: 16px; }
+  .tier-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .tier-card__name {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+  /* dual-gate threshold input pair */
+  .gate-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 4px 0 2px;
+  }
+  @media (max-width: 560px) { .gate-grid { grid-template-columns: 1fr; } }
+  .gate-field__label {
+    font-family: var(--font-ui);
+    font-size: 12px; letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--foreground-subtle);
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 24px;
+  }
+  @media (max-width: 640px) { .benefit-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- Breadcrumb -->
+      <div class="text-sub" style="font-size:12.5px;margin-bottom:14px">
+        <a href="fans-crm.html" class="card__link" data-i18n="tier-settings.crumb.fans">Fans</a>
+        <span style="margin:0 6px">/</span>
+        <span data-i18n="tier-settings.crumb.self">Tier settings &amp; benefits</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="tier-settings.h1">Tier settings &amp; benefits</h1>
+          <p class="page-intro__sub" data-i18n="tier-settings.sub">Define the dual-gate thresholds, behavior multipliers and fan benefits for each tier.</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" data-i18n="tier-settings.btn.discard">Discard</button>
+          <button class="btn btn--primary" data-i18n="tier-settings.btn.save">Save thresholds</button>
+        </div>
+      </div>
+
+      <!-- Demo notice -->
+      <p class="text-sub" style="font-size:12px;margin:-6px 0 16px;display:flex;align-items:center;gap:6px">
+        <i data-lucide="info" class="ztor-icon" style="width:13px;height:13px;flex-shrink:0"></i>
+        <span data-i18n="tier-settings.demo">Sample threshold and benefit values for prototype illustration.</span>
+      </p>
+
+      <div class="settings-layout">
+        <nav class="settings-nav">
+          <a class="settings-nav__item settings-nav__item--active" href="#thresholds" data-i18n="tier-settings.nav.thresholds">Thresholds</a>
+          <a class="settings-nav__item" href="#multipliers" data-i18n="tier-settings.nav.multipliers">Behavior multipliers</a>
+          <a class="settings-nav__item" href="#benefits" data-i18n="tier-settings.nav.benefits">Benefits</a>
+          <a class="settings-nav__item" href="#rules" data-i18n="tier-settings.nav.rules">Rules &amp; versioning</a>
+        </nav>
+
+        <div>
+
+          <!-- ============ Thresholds · F8 dual-gate ============ -->
+          <section class="settings-section" id="thresholds">
+            <h2 class="settings-section__title" data-i18n="tier-settings.thresh.title">Tier thresholds</h2>
+            <p class="settings-section__sub" data-i18n="tier-settings.thresh.sub">A fan moves up only when they pass <strong>both</strong> gates — reputation AND spend (§7.5). Thresholds must decrease down the ladder (Inner Circle &gt; Superfan &gt; Devoted).</p>
+
+            <!-- Inner Circle -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge badge--yellow"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></div>
+                <span class="text-sub" style="font-size:12px" data-i18n="tier-settings.tier.inner-count">359 fans today</span>
+              </div>
+              <div class="gate-grid">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.reputation">Reputation gate</div>
+                  <input class="input" value="800" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.spend">Spend gate (USD)</div>
+                  <input class="input" value="1000" inputmode="numeric">
+                </div>
+              </div>
+            </section>
+
+            <!-- Superfan -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></div>
+                <span class="text-sub" style="font-size:12px" data-i18n="tier-settings.tier.superfan-count">512 fans today</span>
+              </div>
+              <div class="gate-grid">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.reputation">Reputation gate</div>
+                  <input class="input" value="500" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.spend">Spend gate (USD)</div>
+                  <input class="input" value="400" inputmode="numeric">
+                </div>
+              </div>
+            </section>
+
+            <!-- Devoted -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.devoted">Devoted</span></span></div>
+                <span class="text-sub" style="font-size:12px" data-i18n="tier-settings.tier.devoted-count">640 fans today</span>
+              </div>
+              <div class="gate-grid">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.reputation">Reputation gate</div>
+                  <input class="input" value="200" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.gate.spend">Spend gate (USD)</div>
+                  <input class="input" value="100" inputmode="numeric">
+                </div>
+              </div>
+            </section>
+
+            <!-- Fan (base, no gate) -->
+            <section class="card tier-card" style="margin-bottom:0">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.fan">Fan</span></span></div>
+                <span class="text-sub" style="font-size:12px" data-i18n="tier-settings.tier.fan-count">329 fans today</span>
+              </div>
+              <p class="text-sub" style="font-size:12.5px;margin:4px 0 0" data-i18n="tier-settings.tier.fan-base">Base tier — every fan starts here. No threshold to set.</p>
+            </section>
+
+            <!-- Save-time preview + monotonic-decrease rule -->
+            <div class="stickynote mt-16">
+              <span class="stickynote__mark">ⓘ</span>
+              <span data-i18n="tier-settings.thresh.preview"><strong>Before saving:</strong> a live preview shows “will re-tier N fans”. Thresholds must be monotonically decreasing to save. <em>Validation logic — TBC; the exact rule and preview count are owned upstream and not invented here.</em></span>
+            </div>
+            <div class="stickynote mt-8">
+              <span class="stickynote__mark">🌙</span>
+              <span data-i18n="tier-settings.thresh.batch">Reputation and tiers are recomputed by the nightly batch (§7.5). Threshold changes take effect at the next recompute, not immediately.</span>
+            </div>
+          </section>
+
+          <!-- ============ Behavior multipliers ============ -->
+          <section class="settings-section" id="multipliers" hidden>
+            <h2 class="settings-section__title" data-i18n="tier-settings.mult.title">Behavior multipliers</h2>
+            <p class="settings-section__sub" data-i18n="tier-settings.mult.sub">Weight how much each behavior contributes to reputation. <em>How multipliers feed the score is owned by the scoring engine (§7.5) — TBC, shown for setup only.</em></p>
+
+            <div class="settings-row">
+              <div><div class="settings-row__label" data-i18n="tier-settings.mult.purchase">Purchases</div><div class="settings-row__hint" data-i18n="tier-settings.mult.purchase-hint">Shop orders, tickets, project backing.</div></div>
+              <input class="input" style="max-width:120px" value="1.5" inputmode="decimal">
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row__label" data-i18n="tier-settings.mult.event">Event check-ins</div><div class="settings-row__hint" data-i18n="tier-settings.mult.event-hint">Verified attendance at your events.</div></div>
+              <input class="input" style="max-width:120px" value="1.2" inputmode="decimal">
+            </div>
+            <div class="settings-row">
+              <div><div class="settings-row__label" data-i18n="tier-settings.mult.interact">Interactions</div><div class="settings-row__hint" data-i18n="tier-settings.mult.interact-hint">Comments, reactions, DMs.</div></div>
+              <input class="input" style="max-width:120px" value="0.8" inputmode="decimal">
+            </div>
+            <div class="settings-row" style="border-bottom:0">
+              <div><div class="settings-row__label" data-i18n="tier-settings.mult.referral">Referrals</div><div class="settings-row__hint" data-i18n="tier-settings.mult.referral-hint">New fans brought in.</div></div>
+              <input class="input" style="max-width:120px" value="1.0" inputmode="decimal">
+            </div>
+          </section>
+
+          <!-- ============ Benefits · F8 per-tier benefit editor ============ -->
+          <section class="settings-section" id="benefits" hidden>
+            <h2 class="settings-section__title" data-i18n="tier-settings.ben.title">Benefits</h2>
+            <p class="settings-section__sub" data-i18n="tier-settings.ben.sub">What each tier unlocks. Benefits apply immediately — no nightly recompute. Each tier has defaults you can override.</p>
+
+            <!-- Inner Circle benefits -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge badge--yellow"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></div>
+                <div class="flex-row">
+                  <span class="settings-row__hint" data-i18n="tier-settings.ben.visible">Visible to fans</span>
+                  <div class="switch switch--on" role="switch" aria-checked="true"></div>
+                </div>
+              </div>
+              <div class="benefit-grid mt-8">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.early">Early access (days)</div>
+                  <input class="input" value="7" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.discount">Merch discount (%)</div>
+                  <input class="input" value="20" inputmode="numeric">
+                </div>
+                <div style="grid-column:1/-1">
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.gated">Gated content</div>
+                  <div class="flex-row" style="flex-wrap:wrap;gap:6px">
+                    <span class="chip chip--active" data-i18n="tier-settings.ben.gated.demos">Demo tracks</span>
+                    <span class="chip chip--active" data-i18n="tier-settings.ben.gated.bts">Behind the scenes</span>
+                    <span class="chip" data-i18n="tier-settings.ben.gated.livestream">Private livestreams</span>
+                    <button class="btn btn--outline btn--sm" type="button"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="tier-settings.ben.gated.add">Add</span></button>
+                  </div>
+                </div>
+                <div style="grid-column:1/-1">
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.custom">Custom perk</div>
+                  <input class="input" value="Name in the album liner notes">
+                </div>
+              </div>
+            </section>
+
+            <!-- Superfan benefits -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></div>
+                <div class="flex-row">
+                  <span class="settings-row__hint" data-i18n="tier-settings.ben.visible">Visible to fans</span>
+                  <div class="switch switch--on" role="switch" aria-checked="true"></div>
+                </div>
+              </div>
+              <div class="benefit-grid mt-8">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.early">Early access (days)</div>
+                  <input class="input" value="3" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.discount">Merch discount (%)</div>
+                  <input class="input" value="10" inputmode="numeric">
+                </div>
+                <div style="grid-column:1/-1">
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.gated">Gated content</div>
+                  <div class="flex-row" style="flex-wrap:wrap;gap:6px">
+                    <span class="chip chip--active" data-i18n="tier-settings.ben.gated.demos">Demo tracks</span>
+                    <span class="chip" data-i18n="tier-settings.ben.gated.bts">Behind the scenes</span>
+                    <button class="btn btn--outline btn--sm" type="button"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="tier-settings.ben.gated.add">Add</span></button>
+                  </div>
+                </div>
+                <div style="grid-column:1/-1">
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.custom">Custom perk</div>
+                  <input class="input" placeholder="Optional perk text">
+                </div>
+              </div>
+            </section>
+
+            <!-- Devoted benefits -->
+            <section class="card tier-card">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.devoted">Devoted</span></span></div>
+                <div class="flex-row">
+                  <span class="settings-row__hint" data-i18n="tier-settings.ben.visible">Visible to fans</span>
+                  <div class="switch switch--on" role="switch" aria-checked="true"></div>
+                </div>
+              </div>
+              <div class="benefit-grid mt-8">
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.early">Early access (days)</div>
+                  <input class="input" value="1" inputmode="numeric">
+                </div>
+                <div>
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.discount">Merch discount (%)</div>
+                  <input class="input" value="5" inputmode="numeric">
+                </div>
+                <div style="grid-column:1/-1">
+                  <div class="gate-field__label" data-i18n="tier-settings.ben.custom">Custom perk</div>
+                  <input class="input" placeholder="Optional perk text">
+                </div>
+              </div>
+            </section>
+
+            <!-- Fan benefits (defaults: none) -->
+            <section class="card tier-card" style="margin-bottom:0">
+              <div class="tier-card__head">
+                <div class="tier-card__name"><span class="badge"><span class="badge__dot"></span><span data-i18n="tier-settings.tier.fan">Fan</span></span></div>
+                <div class="flex-row">
+                  <span class="settings-row__hint" data-i18n="tier-settings.ben.visible">Visible to fans</span>
+                  <div class="switch" role="switch" aria-checked="false"></div>
+                </div>
+              </div>
+              <p class="text-sub" style="font-size:12.5px;margin:4px 0 0" data-i18n="tier-settings.ben.fan-none">No benefits by default. Add early access, a discount or a custom perk to override.</p>
+            </section>
+
+            <div class="stickynote mt-16">
+              <span class="stickynote__mark">⚖</span>
+              <span data-i18n="tier-settings.ben.nft-note">Benefit and perk wording is checked against the platform’s NFT / funding language rules (§7.8) to avoid implying a financial return.</span>
+            </div>
+          </section>
+
+          <!-- ============ Rules & versioning · product-rule explainer ============ -->
+          <section class="settings-section" id="rules" hidden>
+            <h2 class="settings-section__title" data-i18n="tier-settings.rules.title">Rules &amp; versioning</h2>
+            <p class="settings-section__sub" data-i18n="tier-settings.rules.sub">How the tier system behaves. These are product rules — surfaced here, owned upstream.</p>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label" data-i18n="tier-settings.rules.dualgate">Dual-gate upgrade</div>
+                <div class="settings-row__hint" data-i18n="tier-settings.rules.dualgate-hint">A fan upgrades only when reputation AND spend both pass the tier’s gates (§7.5).</div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label" data-i18n="tier-settings.rules.monotonic">Monotonic thresholds</div>
+                <div class="settings-row__hint" data-i18n="tier-settings.rules.monotonic-hint">Higher tiers must require strictly more than lower tiers, or the save is blocked. <em>Exact validation — TBC, not invented here.</em></div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label" data-i18n="tier-settings.rules.version">Versioned, non-retroactive</div>
+                <div class="settings-row__hint" data-i18n="tier-settings.rules.version-hint">Each save creates an immutable tier config version. Past revenue and badges earned under an old version are not rewritten (mirrors §7.6 rate versioning). <em>Versioning behaviour — TBC, owned upstream.</em></div>
+              </div>
+            </div>
+            <div class="settings-row" style="border-bottom:0">
+              <div>
+                <div class="settings-row__label" data-i18n="tier-settings.rules.effective">When changes take effect</div>
+                <div class="settings-row__hint" data-i18n="tier-settings.rules.effective-hint">Threshold and multiplier changes apply at the next nightly recompute. Benefit changes apply immediately.</div>
+              </div>
+            </div>
+
+            <h3 style="font-family:var(--font-ui);font-size:13px;font-weight:500;letter-spacing:0.4px;text-transform:uppercase;color:var(--foreground-subtle);margin:24px 0 0" data-i18n="tier-settings.rules.history">Version history</h3>
+            <div class="settings-row" style="border-bottom:0;justify-content:flex-start;gap:8px">
+              <i data-lucide="history" class="ztor-icon" style="width:15px;height:15px;color:var(--foreground-subtle)"></i>
+              <div class="settings-row__hint" style="margin-top:0" data-i18n="tier-settings.rules.history-demo">v3 active since May 26, 2026 · v2 Mar 01 · v1 Jan 12 (sample — read-only history is owned upstream).</div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span data-i18n="tier-settings.footer1">Tier settings · part of Fans CRM</span>
+      <span>·</span>
+      <span data-i18n="tier-settings.footer2">Thresholds take effect at the next nightly recompute · benefits apply immediately</span>
+    </footer>
+  </main>
+</div>
+
+<script src="icons.js?v=20260617t"></script>
+<script src="i18n.js?v=20260617t"></script>
+<script src="sidebar.js?v=20260617t"></script>
+<script>
+(function () {
+  // Local section nav behaves like tabs (deep-linkable via hash), mirroring
+  // settings.html so #benefits from "Edit benefits" lands on the right section.
+  const links = Array.from(document.querySelectorAll('.settings-nav__item'));
+  const sections = Array.from(document.querySelectorAll('.settings-section[id]'));
+  const validIds = new Set(sections.map(s => s.id));
+
+  function requested() {
+    const id = (location.hash || '').replace('#', '');
+    return validIds.has(id) ? id : 'thresholds';
+  }
+  function activate(id) {
+    const active = validIds.has(id) ? id : 'thresholds';
+    links.forEach(link => {
+      const on = link.getAttribute('href') === '#' + active;
+      link.classList.toggle('settings-nav__item--active', on);
+      if (on) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+    });
+    sections.forEach(s => { s.hidden = s.id !== active; });
+  }
+  links.forEach(link => link.addEventListener('click', e => {
+    e.preventDefault();
+    const id = link.getAttribute('href').slice(1);
+    if (!validIds.has(id)) return;
+    if (location.hash !== '#' + id) history.pushState({ section: id }, '', '#' + id);
+    activate(id);
+  }));
+
+  // Toggle switches are <div>s — make them clickable (locked ones excluded).
+  document.querySelectorAll('.settings-layout .switch').forEach(sw => {
+    if (sw.classList.contains('switch--locked')) return;
+    sw.addEventListener('click', () => {
+      const on = sw.classList.toggle('switch--on');
+      sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  });
+
+  // Gated-content chips toggle on click (selection affordance).
+  document.querySelectorAll('#benefits .chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('chip--active'));
+  });
+
+  activate(requested());
+  window.addEventListener('popstate', () => activate(requested()));
+  window.addEventListener('hashchange', () => activate(requested()));
+})();
+</script>
+<script src="reveal.js?v=20260617t"></script>
+<script src="devtools.js?v=20260617t"></script>
+</body>
+</html>

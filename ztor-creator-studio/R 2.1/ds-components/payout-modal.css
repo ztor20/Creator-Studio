@@ -1,0 +1,333 @@
+/* ----------------------------------------------------------------
+   Payout — bank picker + request-payout modal
+   spec §5.1.8 (Earnings · Payouts)
+
+   Single consumer today: earnings.html (Payouts tab card + the
+   request-payout modal mounted from partials/payout-request-modal.js).
+   Promoted out of earnings.html inline <style> on 2026-06-09 so the
+   reusable component appearance lives in a token-driven component file
+   (per project rule: no long-term page-inline component CSS).
+   All values reference design tokens from _tokens.css.
+   ---------------------------------------------------------------- */
+
+/* Page-side bank picker (Payouts tab "Choose payout bank" card) */
+.payout-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.payout-bank-card {
+  min-height: 132px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--foreground);
+  text-align: left;
+  text-decoration: none;
+}
+.payout-bank-card--selected {
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 2px var(--foreground),
+    var(--shadow-card);
+}
+.payout-bank-card--add {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--border);
+  box-shadow: none;
+}
+.payout-bank-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+.payout-bank-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: inline-grid;
+  place-items: center;
+  background: var(--surface);
+  box-shadow: var(--shadow-hairline);
+  flex: none;
+}
+.payout-bank-card__title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.payout-bank-card__meta {
+  margin-top: 5px;
+  color: var(--foreground-subtle);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.payout-bank-empty {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+/* Modal shell + backdrop */
+.payout-modal[hidden] {
+  display: none;
+}
+.payout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--background) 68%, var(--overlay-tint));
+  backdrop-filter: blur(14px);
+}
+.payout-dialog {
+  width: min(620px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+}
+.payout-dialog__head,
+.payout-dialog__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+.payout-dialog__head {
+  border-bottom: 1px solid var(--border);
+}
+.payout-dialog__foot {
+  border-top: 1px solid var(--border);
+}
+.payout-dialog__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+.payout-dialog__body {
+  padding: 20px;
+}
+.payout-view[hidden] {
+  display: none;
+}
+.payout-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.payout-form-grid--single {
+  grid-template-columns: 1fr;
+}
+.payout-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.payout-field__label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+}
+.payout-field__hint {
+  color: var(--foreground-subtle);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.payout-selected-bank,
+.payout-bank-option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.payout-bank-option {
+  width: 100%;
+  border: 0;
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+}
+.payout-bank-option.is-active {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--foreground);
+}
+.payout-selected-bank__main,
+.payout-bank-option__main {
+  min-width: 0;
+  flex: 1;
+}
+.payout-selected-bank__title,
+.payout-bank-option__title {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.payout-selected-bank__meta,
+.payout-bank-option__meta {
+  margin-top: 4px;
+  color: var(--foreground-subtle);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.payout-bank-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.payout-amount-wrap {
+  position: relative;
+}
+.payout-amount-prefix {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--foreground-subtle);
+  font-family: var(--font-display);
+  font-size: 28px;
+}
+/* .input.payout-amount-input — double class so this wins over shared.css's
+   `.input` regardless of stylesheet order (regression found 2026-06-11: the
+   single-class selector was silently overridden after the 06-09 promote). */
+.input.payout-amount-input {
+  height: 70px;
+  padding-left: 42px;
+  font-family: var(--font-display);
+  font-size: 34px;
+  letter-spacing: 0;
+}
+.payout-summary {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+.payout-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+}
+.payout-summary__row span:first-child {
+  color: var(--foreground-subtle);
+}
+
+/* Irreversible-payout confirmation gate (spec §5.1.8.1 §4.5) —
+   the submit Button stays [disabled] until this box is checked. */
+.payout-confirm {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  cursor: pointer;
+}
+.payout-confirm__box {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  accent-color: var(--foreground);
+  cursor: pointer;
+}
+.payout-confirm__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+}
+
+.payout-inline-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+}
+.payout-result {
+  display: grid;
+  gap: 14px;
+  text-align: center;
+  padding: 18px 0 4px;
+}
+.payout-result__icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--status-success) 14%, var(--surface));
+  color: var(--status-success);
+}
+
+/* Embed variant (2026-06-17) — hosts a full page (e.g. create-product) in an
+   iframe instead of inline form content. Near-fullscreen so the embedded
+   multi-section form keeps its width; no head/foot (the embedded page owns its
+   own top bar + close). First consumer: create-bundle's "New item" → opens
+   create-product.html?embed=1 as a popup, product posts back via postMessage. */
+.payout-dialog--embed {
+  width: min(1040px, 100%);
+  height: calc(100vh - 48px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.payout-dialog--embed .embed-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  display: block;
+}
+
+/* Body scroll lock while any modal is open (toggled by the loader) */
+.is-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .payout-modal {
+    align-items: end;
+    padding: 12px;
+  }
+  .payout-dialog {
+    max-height: calc(100vh - 24px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .payout-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .payout-dialog--embed {
+    height: calc(100vh - 24px);
+    max-height: calc(100vh - 24px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}

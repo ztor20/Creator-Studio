@@ -1,0 +1,63 @@
+/* ============================================================
+   Upload tile · dashed upload affordance for create flows
+   spec 5.1.5.2 §4 — Show it off / 數位下載檔 / Prove it's real
+   ------------------------------------------------------------
+   variants
+     .upload-tile          — base dashed click/drop target
+     .upload-tile--hero    — large hero slot（主圖，整列寬）
+     .upload-tile--file    — file-drop bar（數位下載檔／證書）
+   anatomy
+     .upload-tile__icon    — lucide icon 或 ＋
+     .upload-tile__title   — 主文案（occupies --foreground）
+     .upload-tile__hint    — 限制說明（Min 尺寸／檔型）
+   layout helper
+     .upload-grid          — 4 格縮圖列（附圖）
+   ============================================================ */
+
+.upload-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 96px;
+  padding: 18px 14px;
+  text-align: center;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--foreground-subtle);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.upload-tile:hover {
+  border-color: var(--foreground-subtle);
+  background: var(--surface-muted);
+}
+
+/* --hero / 縮圖格的佔位比例對齊建議尺寸（主圖 800×800、附圖 600×600 皆 1:1）。
+   主圖收斂寬度、置左，不做滿版正方形（否則高度過長把表單推遠）。 */
+.upload-tile--hero { aspect-ratio: 1 / 1; max-width: 320px; min-height: 0; }
+.upload-tile--file { min-height: 110px; }
+
+.upload-tile__icon  { font-size: 18px; line-height: 1; }
+.upload-tile__title { color: var(--foreground); font-weight: 500; font-size: 13px; }
+.upload-tile__hint  { font-size: 11.5px; color: var(--foreground-subtle); }
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.upload-grid .upload-tile { aspect-ratio: 1 / 1; min-height: 0; }
+
+/* filled state — set after a file is chosen (create-product / create-event / register-ip).
+   Promoted 2026-06-16 from per-page <style> dupes to the shared component. */
+.upload-tile.is-filled {
+  border-style: solid;
+  border-color: var(--status-success);
+  color: var(--status-success);
+}
+.upload-tile.is-filled .upload-tile__title { color: var(--status-success); }

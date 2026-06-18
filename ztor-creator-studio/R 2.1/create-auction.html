@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create auction · Ztor Creator Studio</title>
+<script src="theme.js?v=20260617t"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260617t">
+<link rel="stylesheet" href="shared.css?v=20260617t">
+<style>
+  /* page-specific：建立拍賣單頁表單的區塊顯示切換 · spec 5.1.5.10 §4-5
+     沿用 create-product 的版面語彙（每區塊一張 card），命名以 ca- 區隔。
+     所有 LOOK 來自 ds-components（selection-card / segmented / switch / upload-tile /
+     readiness / preview-card / tag-input / chip / card / input / button）；此處只放佈局。 */
+  .ca-section { margin-top: 18px; }
+  .ca-section[hidden] { display: none; }
+  .ca-section__head { margin-bottom: 12px; }
+  .ca-section__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .ca-section__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
+  .ca-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ca-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ca-show-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .ca-show-row__main { font-size: 13.5px; font-weight: 600; }
+  .ca-show-row__sub { font-size: 12px; color: var(--foreground-subtle); margin-top: 2px; }
+  .ca-field[hidden] { display: none; }
+  .ca-note { font-size: 12.5px; color: var(--foreground-muted); line-height: 1.5; padding: 13px 14px; border-radius: var(--radius-md); background: var(--surface-muted); box-shadow: inset 0 0 0 1px var(--border); }
+  .ca-footnote { text-align: center; font-size: 12px; color: var(--foreground-subtle); margin-top: 22px; }
+  .ca-ready-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--foreground-muted); white-space: nowrap; }
+  .ca-ready-chip .ztor-icon { width: 14px; height: 14px; }
+  .ca-ready-chip--ready { color: var(--status-success); }
+  .ca-delete { color: var(--status-error, #c0392b); }
+  .ca-delete:hover { background: color-mix(in srgb, var(--status-error, #c0392b) 10%, transparent); color: var(--status-error, #c0392b); }
+  .wizard__top-actions[aria-hidden="true"] { min-width: 52px; }
+  /* 即時預覽＝常駐分割（不可開關）。≤760px 改成靜態堆疊在表單下方。 */
+  @media (max-width: 760px) {
+    #ca-preview.preview-panel { position: static; width: auto; transform: none; visibility: visible; z-index: auto; }
+    #ca-preview .preview-panel__sheet { position: static; border-left: 0; border-top: 1px solid var(--border); }
+    #ca-preview .preview-panel__body { padding-bottom: 120px; }
+  }
+</style>
+</head>
+<body class="preview-open">
+<div class="wizard">
+  <!-- §5.2.4 頂部操作欄 · 統一框架：Close 左｜標題置中｜空動作槽維持置中 -->
+  <header class="wizard__top">
+    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
+    <div class="wizard__stepper-slot"><span class="wizard__top-title" id="ca-title" data-i18n="ca.h1">New auction</span></div>
+    <div class="wizard__top-actions" aria-hidden="true"></div>
+  </header>
+
+  <div class="wizard__body">
+
+    <!-- §4 拍賣種類：實體／數位／活動 三選一，預設實體；只影響素材與 F6 交付 -->
+    <div class="field">
+      <div class="selection-grid" id="ca-kind-grid">
+        <button class="selection-card selection-card--active" data-ca-kind="physical">
+          <span class="selection-card__title" data-i18n="ca.type.physical">Physical</span>
+          <span class="selection-card__sub" data-i18n="ca.type.physical-sub">A real item shipped to the winner</span>
+        </button>
+        <button class="selection-card" data-ca-kind="digital">
+          <span class="selection-card__title" data-i18n="ca.type.digital">Digital</span>
+          <span class="selection-card__sub" data-i18n="ca.type.digital-sub">A 1-of-1 digital item, delivered as download</span>
+        </button>
+        <button class="selection-card" data-ca-kind="event">
+          <span class="selection-card__title" data-i18n="ca.type.event">Experience</span>
+          <span class="selection-card__sub" data-i18n="ca.type.event-sub">A limited experience or event access</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- §4 F1 素材（Show it off）：主圖＊＋附圖，三種類共用 -->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.media.title">Show it off</h3>
+        <p class="ca-section__sub" data-i18n="ca.media.sub">Buyers can't touch it. Your photos do that job.</p>
+      </div>
+      <div class="upload-tile upload-tile--hero" data-ca-asset="a-hero">
+        <span class="upload-tile__icon"><i data-lucide="gavel" class="ztor-icon"></i></span>
+        <span class="upload-tile__title" data-i18n="cp.media.hero-auction">Hero image — show off the item</span>
+        <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+      </div>
+      <div class="upload-grid">
+        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
+      </div>
+      <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.angles">Add multiple angles to build trust</div>
+    </section>
+
+    <!-- §4 F2 商品資訊・故事＋物品狀況（The story）-->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.story.title">The story</h3>
+        <p class="ca-section__sub" data-i18n="cp.story.sub">This isn't a product description. It's why this item matters.</p>
+      </div>
+      <div class="field">
+        <div class="field__label"><span data-i18n="cp.story.name">Item name</span> <span style="color:var(--error,#c00)">*</span></div>
+        <input class="input" id="ca-f-name" placeholder="e.g., Stage-worn leather jacket from 2025 Tokyo tour" data-i18n-placeholder="cp.story.name.ph">
+      </div>
+      <div class="field">
+        <div class="field__label"><span data-i18n="cp.story.why">Tell fans why this is special</span> <span style="color:var(--error,#c00)">*</span></div>
+        <div class="field__hint" style="margin:0 0 6px" data-i18n="cp.story.why-hint">The more personal the story, the higher the bids.</div>
+        <textarea class="textarea" id="ca-f-story" placeholder="Tell the story behind this item…" data-i18n-placeholder="cp.story.why.ph" data-ca-counter="50"></textarea>
+        <div class="field__hint" data-ca-counter-label>0/50 minimum</div>
+      </div>
+      <div class="ca-two-col">
+        <!-- 分類：依所選種類用 §7.1 該主分類的次分類（D080）-->
+        <div class="ca-field" data-ca-show="physical">
+          <div class="field__label" data-i18n="cp.category">Category</div>
+          <select class="select" id="ca-cat-phys">
+            <option data-i18n="cp.psub.apparel">Apparel · 服飾</option>
+            <option data-i18n="cp.psub.accessories">Accessories · 配件</option>
+            <option data-i18n="cp.psub.poster">Posters &amp; prints · 海報與印刷</option>
+            <option data-i18n="cp.psub.home">Home &amp; Living · 居家生活</option>
+            <option data-i18n="cp.psub.books">Books · 書籍</option>
+            <option selected data-i18n="cp.psub.collectibles">Collectibles · 收藏品</option>
+            <option data-i18n="cp.psub.music">Music (physical) · 音樂（實體）</option>
+            <option data-i18n="cp.psub.album">Album · 音樂專輯</option>
+            <option data-i18n="cp.psub.instruments">Instruments · 樂器</option>
+            <option data-i18n="cp.psub.art">Art · 藝術品</option>
+            <option data-i18n="cp.psub.equipment">Equipment · 設備器材</option>
+            <option data-i18n="cp.psub.memorabilia">Memorabilia · 紀念物</option>
+            <option data-i18n="cp.psub.limited">Limited &amp; signed · 限量・簽名品</option>
+            <option data-i18n="cp.psub.merch">Merch · 商品</option>
+          </select>
+        </div>
+        <div class="ca-field" data-ca-show="digital" hidden>
+          <div class="field__label" data-i18n="cp.category">Category</div>
+          <select class="select" id="ca-cat-digi">
+            <option data-i18n="cp.dsub.movie">Movie · 電影</option>
+            <option data-i18n="cp.dsub.short">Short drama · 短劇</option>
+            <option data-i18n="cp.dsub.series">Series · 影集</option>
+            <option data-i18n="cp.dsub.mv">MV · MV</option>
+            <option data-i18n="cp.dsub.music">Music · 音樂</option>
+            <option data-i18n="cp.dsub.album">Album · 音樂專輯</option>
+            <option data-i18n="cp.dsub.documentary">Document · 文檔</option>
+            <option data-i18n="cp.dsub.membership">Membership / VIP card · 會員卡</option>
+          </select>
+        </div>
+        <div class="ca-field" data-ca-show="event" hidden>
+          <div class="field__label" data-i18n="cp.category">Category</div>
+          <select class="select" id="ca-cat-event">
+            <option data-i18n="ca.esub.concert">Concert · 演唱會</option>
+            <option selected data-i18n="ca.esub.meetgreet">Meet &amp; Greet · 見面會</option>
+            <option data-i18n="ca.esub.festival">Festival · 音樂祭</option>
+            <option data-i18n="ca.esub.launch">Launch Party · 發表派對</option>
+            <option data-i18n="ca.esub.virtual">Virtual Event · 線上活動</option>
+          </select>
+        </div>
+        <!-- 物品狀況（四級下拉，全新預設）· spec §4 F2 / D075-修正・D080 -->
+        <div class="field">
+          <div class="field__label" data-i18n="cp.condition">Condition</div>
+          <select class="select" id="ca-condition">
+            <option selected data-i18n="cp.cond.new">New · 全新</option>
+            <option data-i18n="cp.cond.likenew">Like new · 近全新</option>
+            <option data-i18n="cp.cond.good">Good · 良好</option>
+            <option data-i18n="cp.cond.wellloved">Well-loved · 使用痕跡明顯</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- §4 F3 真實性證明（Prove it's real）-->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.prove.title">Prove it's real</h3>
+        <p class="ca-section__sub" data-i18n="cp.prove.sub">Fans need to know this came from you.</p>
+      </div>
+      <div class="field">
+        <div class="field__label"><span data-i18n="cp.prove.photo">Photo of you with the item</span> <span style="color:var(--error,#c00)">*</span></div>
+        <div class="upload-tile upload-tile--file" data-ca-asset="a-auth">
+          <span class="upload-tile__icon"><i data-lucide="camera" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="cp.prove.photo-hint">Selfie holding it, or photo with signature visible</span>
+          <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field__label"><span data-i18n="cp.prove.provenance">Provenance note</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <input class="input" placeholder="e.g., Bought in 2019, played every show" data-i18n-placeholder="cp.prove.provenance.ph">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="field__label"><span data-i18n="cp.prove.cert">Certificate</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <div class="upload-tile">
+          <span class="upload-tile__icon"><i data-lucide="file" class="ztor-icon"></i></span>
+          <span class="upload-tile__hint" data-i18n="cp.prove.cert-hint">PDF or image</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- §4 F4 競標設定（Auction rules）-->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.auc.title">Auction rules</h3>
+        <p class="ca-section__sub" data-i18n="cp.auc.sub">No fixed price — fans bid. One-of-a-kind, so no stock or variations.</p>
+      </div>
+      <div class="ca-price-row">
+        <div class="field">
+          <div class="field__label"><span data-i18n="cp.auc.start">Starting price</span> <span style="color:var(--error,#c00)">*</span></div>
+          <input class="input" placeholder="$ 50" id="ca-startprice">
+        </div>
+        <div class="field">
+          <div class="field__label"><span data-i18n="cp.auc.reserve">Reserve price</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+          <input class="input" placeholder="$ 0.00">
+          <div class="field__hint" data-i18n="cp.auc.reserve-hint">Item won't sell below this. Behaviour if unmet pending spec.</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field__label"><span data-i18n="cp.auc.duration">Duration</span> <span style="color:var(--error,#c00)">*</span></div>
+        <div class="selection-grid" id="ca-duration">
+          <button class="selection-card" type="button" data-ca-dur="3"><span class="selection-card__title" data-i18n="cp.auc.dur3">3 days</span><span class="selection-card__sub" data-i18n="cp.auc.dur3-sub">Quick and intense</span></button>
+          <button class="selection-card selection-card--active" type="button" data-ca-dur="5"><span class="selection-card__title" data-i18n="cp.auc.dur5">5 days</span><span class="selection-card__sub" data-i18n="cp.auc.dur5-sub">Recommended</span></button>
+          <button class="selection-card" type="button" data-ca-dur="7"><span class="selection-card__title" data-i18n="cp.auc.dur7">7 days</span><span class="selection-card__sub" data-i18n="cp.auc.dur7-sub">Maximum exposure</span></button>
+        </div>
+      </div>
+      <div class="ca-show-row" style="margin-top:6px">
+        <div>
+          <div class="ca-show-row__main" data-i18n="cp.auc.sealed">Sealed final round</div>
+          <div class="ca-show-row__sub" data-i18n="cp.auc.sealed-sub">Each bidder gets one final hidden bid near the end; highest wins. Window pending spec.</div>
+        </div>
+        <div class="switch" role="switch" aria-checked="false" onclick="this.classList.toggle('switch--on');this.setAttribute('aria-checked', this.classList.contains('switch--on'))"></div>
+      </div>
+      <div class="field__hint" data-i18n="cp.auc.increment">Minimum increment: 5% above the current highest bid (auto-calculated).</div>
+    </section>
+
+    <!-- §4 F5 競標資格（Who can bid?）-->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.elig.title">Who can bid?</h3>
+        <p class="ca-section__sub" data-i18n="cp.elig.sub">Limit which fan tiers can join this auction.</p>
+      </div>
+      <div class="segmented" id="ca-elig">
+        <button class="segmented__btn segmented__btn--active" type="button" data-ca-elig="inner" data-i18n="cp.elig.inner">Inner Circle only</button>
+        <button class="segmented__btn" type="button" data-ca-elig="super" data-i18n="cp.elig.super">Superfan and above</button>
+        <button class="segmented__btn" type="button" data-ca-elig="all" data-i18n="cp.elig.all">All fans</button>
+      </div>
+      <div class="field__hint" data-i18n="cp.elig.hint">Restricting to top tiers passes this item to the next Drop for lower tiers. Tier thresholds follow §7.1 / 5.1.7.1.</div>
+    </section>
+
+    <!-- §4 F6 交付（Delivery，依種類）-->
+    <!-- 實體：得標者付運費＋出貨時限 -->
+    <section class="card ca-section" data-ca-show="physical">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="cp.auc.ship.title">Shipping</h3>
+        <p class="ca-section__sub" data-i18n="cp.auc.ship.sub">One-of-a-kind item shipped to the winner after the auction ends.</p>
+      </div>
+      <div class="ca-show-row">
+        <div>
+          <div class="ca-show-row__main" data-i18n="cp.auc.winpay">Winner pays shipping</div>
+          <div class="ca-show-row__sub" data-i18n="cp.auc.winpay-sub">Auctions are an exception to your store's free-shipping default (Store settings F5).</div>
+        </div>
+        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on');this.setAttribute('aria-checked', this.classList.contains('switch--on'))"></div>
+      </div>
+      <div class="field" style="margin-top:12px;margin-bottom:0">
+        <div class="field__label" data-i18n="cp.auc.shipby">Ship by</div>
+        <select class="select" style="max-width:240px">
+          <option data-i18n="cp.auc.shipby.3">Within 3 days of end</option>
+          <option selected data-i18n="cp.auc.shipby.5">Within 5 days of end</option>
+          <option data-i18n="cp.auc.shipby.7">Within 7 days of end</option>
+          <option data-i18n="cp.auc.shipby.14">Within 14 days of end</option>
+        </select>
+      </div>
+    </section>
+    <!-- 數位：下載／存取交付（語意待確認）-->
+    <section class="card ca-section" data-ca-show="digital" hidden>
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="ca.deliver.digital.title">Delivery</h3>
+        <p class="ca-section__sub" data-i18n="ca.deliver.digital.sub">Delivered to the winner after the auction ends.</p>
+      </div>
+      <div class="ca-note" data-i18n="ca.deliver.digital.note">Winner receives a download / access link. 1-of-1 download &amp; rights semantics (NFT-style) pending spec.</div>
+    </section>
+    <!-- 活動：入場憑證／門票（對接 Events 待確認）-->
+    <section class="card ca-section" data-ca-show="event" hidden>
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="ca.deliver.event.title">Delivery</h3>
+        <p class="ca-section__sub" data-i18n="ca.deliver.event.sub">Winner receives entry to the experience.</p>
+      </div>
+      <div class="ca-note" data-i18n="ca.deliver.event.note">Winner receives an entry pass / ticket. Integration with the Events module (check-in, rights) pending spec.</div>
+    </section>
+
+    <!-- §4 共用設定：商品標籤（拍賣為唯一件，每人限購不適用）-->
+    <section class="card ca-section">
+      <div class="ca-section__head">
+        <h3 class="ca-section__title" data-i18n="ca.tags.title">Tags</h3>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="field__label"><span data-i18n="cp.tags">Product tags</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
+        <div class="field__hint" style="margin-bottom:8px" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</div>
+        <div class="tag-input" id="ca-tags">
+          <div class="tag-input__field" id="ca-tags-field">
+            <input class="tag-input__entry" placeholder="Type a tag, press Enter" id="ca-tags-entry" data-i18n-placeholder="cp.tags.ph">
+          </div>
+          <div>
+            <div class="tag-input__suggest-label" style="margin-bottom:6px" data-i18n="cp.tags.suggest">Suggested</div>
+            <div class="chip-group" id="ca-tags-suggest">
+              <button class="chip" type="button" data-tag-suggest>Tour 2025</button>
+              <button class="chip" type="button" data-tag-suggest>Signed</button>
+              <button class="chip" type="button" data-tag-suggest>One of a kind</button>
+              <button class="chip" type="button" data-tag-suggest>Memorabilia</button>
+              <button class="chip" type="button" data-tag-suggest>Rare</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ca-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
+  </div>
+
+  <!-- §5.2.4 底部操作列（統一）：Save for later 左；就緒 chip＋主動作右 -->
+  <footer class="wizard__bottom">
+    <button class="btn btn--ghost" data-i18n="wiz.savelater">Save for later</button>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--ghost ca-delete" id="ca-delete" hidden data-i18n="cp.delete">Delete</button>
+      <span class="ca-ready-chip" id="ca-ready-chip"><i data-lucide="circle" class="ztor-icon"></i><span id="ca-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span></span>
+      <button class="btn btn--primary" id="ca-primary" disabled data-i18n="cp.start.auction">Start auction</button>
+    </div>
+  </footer>
+</div>
+
+<!-- §5.2.5 即時預覽面板（常駐側欄）-->
+<div class="preview-panel is-open" id="ca-preview">
+  <div class="preview-panel__sheet">
+    <div class="preview-panel__head">
+      <h3 class="preview-panel__title" data-i18n="cp.preview.title-auction">Now fans see it</h3>
+    </div>
+    <div class="preview-panel__body">
+      <div class="preview-card">
+        <div class="preview-card__media"><i data-lucide="gavel" class="ztor-icon"></i></div>
+        <div class="preview-card__dots"><span class="preview-card__dot preview-card__dot--on"></span><span class="preview-card__dot"></span><span class="preview-card__dot"></span></div>
+        <div class="preview-card__body">
+          <h4 class="preview-card__name is-empty" id="ca-pv-name" data-i18n="cp.pv.itemname">Item name</h4>
+          <div class="preview-card__meta">
+            <span data-i18n="cp.pv.by">by Creator</span>
+            <span class="badge" id="ca-pv-cat" data-i18n="cp.pv.collectible">Collectibles</span>
+          </div>
+          <p class="preview-card__desc is-empty" id="ca-pv-story" data-i18n="cp.pv.story">Missing: story</p>
+          <div class="preview-card__row" style="margin-top:10px">
+            <span class="preview-card__price" id="ca-pv-start" data-i18n="cp.pv.startingat">Starting at $0</span>
+          </div>
+          <button class="btn btn--outline preview-card__cta" data-i18n="cp.pv.watch">Watch this auction</button>
+        </div>
+      </div>
+
+      <section class="readiness ca-section" id="ca-readiness" style="margin-top:18px">
+        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ca.ready.title">Ready to start auction?</h3></div>
+        <ul class="readiness__list" id="ca-ready-list"></ul>
+        <div class="readiness__banner" id="ca-ready-banner" data-i18n="ca.ready.togo">8 items needed to start the auction</div>
+      </section>
+
+      <section class="card ca-section">
+        <div class="ca-show-row">
+          <div>
+            <div class="ca-show-row__main" data-i18n="cp.show">Show in my shop</div>
+            <div class="ca-show-row__sub" data-i18n="cp.show.sub">Visible to fans in your storefront</div>
+          </div>
+          <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 建立拍賣流程互動 · spec 5.1.5.10 §4-5
+   種類切換（實體／數位／活動，只影響分類與 F6 交付）、競標設定、競標資格、
+   即時預覽綁定、就緒檢查（8 項）、上傳格模擬、商品標籤 */
+(function () {
+  const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const assets = {};
+  const state = { kind: 'physical' };
+  let editMode = false;   // 編輯態（?edit）：主動作改 Save changes、顯示 Delete、不擋開拍（spec §4 共用操作）
+
+  const fName = document.getElementById('ca-f-name');
+  const fStory = document.getElementById('ca-f-story');
+  const fStart = document.getElementById('ca-startprice');
+  const has = el => el && el.value.trim() !== '';
+  const len = el => (el ? el.value.trim().length : 0);
+
+  /* ---- 就緒檢查（8 項，spec §4 就緒檢查卡）---- */
+  function buildChecks() {
+    return [
+      { k: T('ca.chk.hero', 'Hero image'),        done: () => !!assets['a-hero'] },
+      { k: T('ca.chk.gallery', 'Gallery images'), done: () => !!assets['a-gallery'] },
+      { k: T('ca.chk.name', 'Item name'),         done: () => has(fName) },
+      { k: T('ca.chk.story', 'Story (50+)'),      done: () => len(fStory) >= 50 },
+      { k: T('ca.chk.auth', 'Authenticity photo'),done: () => !!assets['a-auth'] },
+      { k: T('ca.chk.start', 'Starting price'),   done: () => has(fStart) },
+      { k: T('ca.chk.duration', 'Duration'),      done: () => !!document.querySelector('#ca-duration .selection-card--active') },
+      { k: T('ca.chk.elig', 'Who can bid'),       done: () => !!document.querySelector('#ca-elig .segmented__btn--active') },
+    ];
+  }
+
+  const listEl   = document.getElementById('ca-ready-list');
+  const bannerEl = document.getElementById('ca-ready-banner');
+  const chipEl   = document.getElementById('ca-ready-chip');
+  const chipText = document.getElementById('ca-ready-chip-text');
+  const chipIcon = chipEl.querySelector('.ztor-icon');
+  const primary  = document.getElementById('ca-primary');
+
+  function renderReadiness() {
+    const checks = buildChecks();
+    const remaining = checks.filter(c => !c.done()).length;
+    listEl.innerHTML = '';
+    checks.forEach(c => {
+      const done = c.done();
+      const li = document.createElement('li');
+      li.className = 'readiness__item' + (done ? ' readiness__item--done' : '');
+      li.innerHTML = '<span class="readiness__mark">' + (done ? '<i data-lucide="check" class="ztor-icon"></i>' : '') + '</span><span>' + esc(c.k) + '</span>';
+      listEl.appendChild(li);
+    });
+    const ready = remaining === 0;
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    if (ready) {
+      bannerEl.textContent = T('ca.ready.done', 'Ready to start the auction!');
+      bannerEl.classList.add('readiness__banner--ready');
+      chipText.textContent = T('ca.chip.ready', 'Ready');
+      chipEl.classList.add('ca-ready-chip--ready');
+      chipIcon.setAttribute('data-lucide', 'check-circle');
+    } else if (skip) {
+      bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
+      bannerEl.classList.remove('readiness__banner--ready');
+      chipText.textContent = 'Validation skipped';
+      chipEl.classList.remove('ca-ready-chip--ready');
+      chipIcon.setAttribute('data-lucide', 'circle');
+    } else {
+      bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' needed to start the auction';
+      bannerEl.classList.remove('readiness__banner--ready');
+      chipText.textContent = remaining + ' to go';
+      chipEl.classList.remove('ca-ready-chip--ready');
+      chipIcon.setAttribute('data-lucide', 'circle');
+    }
+    if (editMode) { primary.disabled = false; chipEl.hidden = true; }
+    else { primary.disabled = !(ready || skip); chipEl.hidden = false; }
+    if (window.ztorIcons) window.ztorIcons.applyIcons(listEl), window.ztorIcons.applyIcons(chipEl);
+  }
+
+  /* 完成→回電子商店清單並彈出新品貼文 composer（spec §9 / 5.1.5.7） */
+  primary.addEventListener('click', () => {
+    if (primary.disabled) return;
+    if (editMode) { location.href = 'e-shop.html'; return; }
+    const nm = (fName && fName.value.trim()) || '';
+    let pr = (fStart && fStart.value.trim()) || '';
+    if (pr && !/\$/.test(pr)) pr = '$' + pr;
+    const q = new URLSearchParams({ posted: '1', type: 'auction' });
+    if (nm) q.set('name', nm);
+    if (pr) q.set('price', pr);
+    location.href = 'e-shop.html?' + q.toString();
+  });
+
+  /* ---- 即時預覽綁定 ---- */
+  const pvName = document.getElementById('ca-pv-name');
+  const pvStory = document.getElementById('ca-pv-story');
+  const pvCat = document.getElementById('ca-pv-cat');
+  const pvStart = document.getElementById('ca-pv-start');
+  function bindText(srcEl, dstEl, emptyText) {
+    if (!srcEl || !dstEl) return;
+    const v = srcEl.value.trim();
+    if (v) { dstEl.textContent = v; dstEl.classList.remove('is-empty'); }
+    else { dstEl.textContent = emptyText; dstEl.classList.add('is-empty'); }
+  }
+  function currentCatSelect() {
+    return document.getElementById('ca-cat-' + (state.kind === 'physical' ? 'phys' : state.kind === 'digital' ? 'digi' : 'event'));
+  }
+  function renderPreview() {
+    bindText(fName, pvName, T('cp.pv.itemname', 'Item name'));
+    bindText(fStory, pvStory, T('cp.pv.story', 'Missing: story'));
+    const sel = currentCatSelect();
+    if (sel && pvCat && sel.selectedIndex >= 0) pvCat.textContent = (sel.options[sel.selectedIndex].text || '').split(' · ')[0];
+    if (pvStart) {
+      const v = (fStart && fStart.value.trim()) || '';
+      const num = v.replace(/[^0-9.]/g, '');
+      pvStart.textContent = T('cp.pv.startingat-pre', 'Starting at') + ' $' + (num || '0');
+    }
+  }
+
+  function refresh() { renderReadiness(); renderPreview(); }
+
+  /* ---- 種類切換：只影響分類與 F6 交付（data-ca-show）---- */
+  function applyVisibility() {
+    document.querySelectorAll('[data-ca-show]').forEach(el => {
+      el.hidden = !el.dataset.caShow.split(' ').includes(state.kind);
+    });
+  }
+  const grid = document.getElementById('ca-kind-grid');
+  const cards = grid.querySelectorAll('[data-ca-kind]');
+  function setKind(k) {
+    state.kind = k;
+    cards.forEach(c => c.classList.toggle('selection-card--active', c.dataset.caKind === k));
+    applyVisibility();
+    refresh();
+  }
+  cards.forEach(c => c.addEventListener('click', () => setKind(c.dataset.caKind)));
+
+  /* ---- 競標時長：單選卡 ---- */
+  const durGrid = document.getElementById('ca-duration');
+  if (durGrid) durGrid.querySelectorAll('[data-ca-dur]').forEach(card => card.addEventListener('click', () => {
+    durGrid.querySelectorAll('[data-ca-dur]').forEach(c => c.classList.toggle('selection-card--active', c === card));
+    refresh();
+  }));
+  /* ---- 競標資格：segmented 三擇一 ---- */
+  const eligSeg = document.getElementById('ca-elig');
+  if (eligSeg) eligSeg.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => {
+    eligSeg.querySelectorAll('.segmented__btn').forEach(b => b.classList.remove('segmented__btn--active'));
+    btn.classList.add('segmented__btn--active');
+    refresh();
+  }));
+
+  /* ---- 故事字數計數 ---- */
+  document.querySelectorAll('[data-ca-counter]').forEach(ta => {
+    const label = ta.parentElement.querySelector('[data-ca-counter-label]');
+    const min = ta.dataset.caCounter;
+    ta.addEventListener('input', () => {
+      const n = ta.value.length;
+      label.textContent = n === 0 ? `0/${min} minimum` : `${n} characters`;
+    });
+  });
+
+  /* ---- 商品標籤 ---- */
+  const tags = [];
+  const tagsField = document.getElementById('ca-tags-field');
+  const tagsEntry = document.getElementById('ca-tags-entry');
+  function syncSuggest() { document.querySelectorAll('[data-tag-suggest]').forEach(b => b.classList.toggle('chip--active', tags.includes(b.textContent.trim()))); }
+  function renderTags() {
+    tagsField.querySelectorAll('.chip').forEach(c => c.remove());
+    tags.forEach((t, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip chip--active chip--removable';
+      chip.innerHTML = `<span>${esc(t)}</span><button class="chip__remove" type="button" data-tag-remove="${i}" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>`;
+      tagsField.insertBefore(chip, tagsEntry);
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(tagsField);
+    syncSuggest();
+  }
+  tagsEntry.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const v = tagsEntry.value.trim(); if (v && !tags.includes(v)) tags.push(v); tagsEntry.value = ''; renderTags(); } });
+  tagsField.addEventListener('click', e => {
+    const rm = e.target.closest('[data-tag-remove]');
+    if (rm) { tags.splice(+rm.dataset.tagRemove, 1); renderTags(); return; }
+    if (e.target === tagsField) tagsEntry.focus();
+  });
+  document.querySelectorAll('[data-tag-suggest]').forEach(btn => {
+    btn.addEventListener('click', () => { const label = btn.textContent.trim(); const i = tags.indexOf(label); if (i >= 0) tags.splice(i, 1); else tags.push(label); renderTags(); });
+  });
+
+  /* ---- 任何輸入都重算就緒＋預覽 ---- */
+  document.querySelector('.wizard__body').addEventListener('input', refresh);
+
+  /* ---- 上傳格：點擊模擬上傳 ---- */
+  document.querySelectorAll('[data-ca-asset]').forEach(tile => {
+    tile.style.cursor = 'pointer';
+    tile.addEventListener('click', () => {
+      const key = tile.dataset.caAsset;
+      const on = tile.classList.toggle('is-filled');
+      assets[key] = on ? true : (document.querySelector('.is-filled[data-ca-asset="' + key + '"]') ? true : false);
+      refresh();
+    });
+  });
+
+  /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating */
+  document.addEventListener('ztor:devstate-changed', renderReadiness);
+
+  /* ---- 入口參數（spec §2 種類預設、§4 編輯態）---- */
+  const params = new URLSearchParams(location.search);
+  editMode = params.get('edit') != null;
+  const initKind = ['physical', 'digital', 'event'].includes(params.get('type')) ? params.get('type') : 'physical';
+  if (editMode) {
+    const nm = (params.get('name') || '').trim();
+    const titleEl = document.getElementById('ca-title');
+    if (titleEl) { titleEl.removeAttribute('data-i18n'); titleEl.textContent = nm ? (T('cp.h1.edit.pre', 'Edit') + ' ' + nm) : T('ca.h1.edit', 'Edit auction'); }
+    primary.setAttribute('data-i18n', 'cp.save.changes');
+    primary.textContent = T('cp.save.changes', 'Save changes');
+    const del = document.getElementById('ca-delete');
+    if (del) {
+      del.hidden = false;
+      del.addEventListener('click', () => { if (window.confirm(T('ca.delete.confirm', 'Delete this auction? This cannot be undone.'))) location.href = 'e-shop.html'; });
+    }
+  }
+
+  setKind(initKind);
+})();
+</script>
+<script src="icons.js?v=20260617t"></script>
+<script src="i18n.js?v=20260617t"></script>
+<script src="reveal.js?v=20260617t"></script>
+<script src="devtools.js?v=20260617t"></script>
+</body>
+</html>

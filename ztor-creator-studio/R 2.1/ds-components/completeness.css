@@ -1,0 +1,54 @@
+/* ============================================================
+   Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前完整度 current」）
+   ------------------------------------------------------------
+   緊湊的「x/y 槽 + 進度條」指示，用在卡片內顯示某 IP 素材包目前
+   備齊程度（current 值，非授權凍結的 frozen 值）。一行 label + 軌道。
+     .completeness
+       .completeness__head > .completeness__label + .completeness__count
+       .completeness__track > .completeness__fill
+   進度色用 --primary（品牌黃）；軌道用 muted 表面。
+   ============================================================ */
+
+.completeness {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.completeness__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  line-height: 1.2;
+}
+.completeness__label { color: var(--foreground-subtle); }
+.completeness__count {
+  color: var(--foreground);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.completeness__track {
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+  overflow: hidden;
+}
+.completeness__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  transition: width var(--duration) var(--easing);
+}
+
+/* near-complete reads as confident green; low completeness stays neutral-yellow */
+.completeness--ready .completeness__fill { background: var(--status-success); }
+.completeness--ready .completeness__count { color: var(--status-success); }
+
+@media (prefers-reduced-motion: reduce) {
+  .completeness__fill { transition: none; }
+}

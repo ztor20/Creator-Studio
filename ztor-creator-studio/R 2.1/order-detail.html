@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#ZT-10482 · Order detail · Ztor</title>
+<script src="theme.js?v=20260617t"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/status-axes.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260617t">
+<link rel="stylesheet" href="shared.css?v=20260617t">
+<style>
+  /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
+  .od-amt { display:flex; justify-content:space-between; padding:7px 0; font-size:13px; border-bottom:1px solid var(--border); }
+  .od-amt:last-child { border-bottom:0; font-weight:600; }
+  .od-amt__neg { color: var(--foreground-subtle); }
+  /* §2.5 取貨方式分支：QR 領取的 QR 占位框 */
+  .od-qr { display:flex; gap:14px; align-items:center; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-muted); }
+  .od-qr__code { width:96px; height:96px; flex:none; display:grid; place-items:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--foreground-muted); }
+  .od-qr__code .ztor-icon { width:56px; height:56px; }
+  .od-ful-branch[hidden] { display:none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- §2.1 導航與返回脈絡 -->
+      <div class="text-sub" style="font-size:12.5px;margin-bottom:14px">
+        <a href="e-shop.html" class="card__link" data-i18n="od.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <a href="orders.html" class="card__link" data-i18n="od.crumb.orders">Order management</a> <span style="margin:0 6px">/</span>
+        <span>#ZT-10482</span>
+      </div>
+
+      <!-- §2.2 訂單基本資料 -->
+      <div class="page-intro">
+        <div>
+          <!-- §2.2 兩條狀態軸（履約 vs 收入結算），不混用（PCR-001）-->
+          <div class="status-axes status-axes--labeled" style="margin-bottom:10px">
+            <div class="status-axis">
+              <span class="status-axis__label" data-i18n="od.axis.fulfil">Fulfilment</span>
+              <span class="badge badge--warning" id="od-fulfil-badge"><span class="badge__dot"></span><span data-i18n="od.badge.toship">To ship</span></span>
+            </div>
+            <div class="status-axis">
+              <span class="status-axis__label" data-i18n="od.axis.payment">Payment · settlement</span>
+              <span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="od.badge.paid">Paid</span></span>
+            </div>
+          </div>
+          <h1 class="page-intro__title">#ZT-10482</h1>
+          <p class="page-intro__sub" data-i18n="od.sub">Placed 2026-06-08 · 2 items</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" disabled title="Creator-initiated refunds open in a later release (D041)" data-i18n="od.btn.refund">Refund</button>
+          <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
+        </div>
+      </div>
+
+      <div class="bento">
+
+        <!-- §2.3 品項與金額 -->
+        <section class="card bento--span-7">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="od.items.title">Items &amp; amount</h3>
+            <span class="text-sub" style="font-size:12px" data-i18n="od.items.source">Source · Earnings</span>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><a class="card__link" href="product-detail.html">Tour zine vol. 02</a> ×1</div>
+                  <div class="data-list__meta" data-i18n="od.item1.meta">書籍（Books） · $24.00</div>
+                </div>
+              </div>
+              <span style="font-size:13px">$24.00</span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">Coastline tee (M) ×1 <span class="badge badge--neutral" style="margin-left:4px;font-weight:400;vertical-align:middle" data-i18n="od.item.limit">Limit 2/person</span></div>
+                  <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
+                </div>
+              </div>
+              <span style="font-size:13px">$32.00</span>
+            </div>
+          </div>
+          <div class="field__hint mt-8" data-i18n="od.limit.note">Purchase-limited items are checked against each buyer's running total at checkout; this page shows the result only (§2.3 / 5.1.5.2 §4.5).</div>
+
+          <div class="mt-16">
+            <div class="od-amt"><span data-i18n="od.amt.goods">Goods</span><span>$56.00</span></div>
+            <div class="od-amt"><span data-i18n="od.amt.shipping">Shipping</span><span>$5.00</span></div>
+            <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.platform">Platform fee · 15%</span><span class="od-amt__neg">−$8.40</span></div>
+            <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.payment">Payment fee · 2.4%</span><span class="od-amt__neg">−$1.30</span></div>
+            <div class="od-amt"><span data-i18n="od.amt.net">Net to you</span><span>$51.30</span></div>
+          </div>
+          <!-- §2.3 跨幣別呈現（§7.3）：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
+          <div class="field__hint mt-8" data-i18n="od.amt.fx">Buyer paid NT$1,764 · converted to $56.00 at 1 USD = 31.5 TWD (2026-06-08).</div>
+          <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings (§7.3) — order detail never recomputes amounts.</div>
+          <a class="btn btn--outline btn--sm mt-8" href="earnings.html" style="width:100%" data-i18n="od.amt.cta">View in Earnings →</a>
+        </section>
+
+        <!-- 買家 -->
+        <section class="card bento--span-5">
+          <div class="card__head"><h3 class="card__title" data-i18n="od.buyer.title">Buyer</h3></div>
+          <div class="field">
+            <div class="field__label" data-i18n="od.buyer.name">Buyer</div>
+            <div style="font-size:14px">Mika L. · <a class="card__link" href="fans-crm.html" data-i18n="od.buyer.fan">View fan record</a></div>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="od.buyer.ship-to">Ship to</div>
+            <div class="text-sub" style="font-size:13px">No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="od.buyer.contact">Contact</div>
+            <div class="text-sub" style="font-size:13px">mika.l@example.com</div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- §2.5 出貨與履約已移入「標記出貨」popup（見頁末 #od-ship-modal）；不再是頁面常駐區塊（spec 5.1.5.3.1 §2.2/§2.5）。 -->
+
+      <!-- §2.5 退款與爭議 + §2.6 收入對帳 -->
+      <section class="card mt-16">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="od.refund.title">Refund &amp; dispute</h3>
+          <span class="text-sub" style="font-size:12px" data-i18n="od.refund.sub">Impact on revenue follows Earnings</span>
+        </div>
+        <p class="text-sub" style="font-size:13px" data-i18n="od.refund.body">Issue a full or partial refund, or handle a dispute. Refund and dispute effects on revenue are settled by Earnings (§7.3); a disputed amount is held from Available during investigation.</p>
+        <div class="flex-row" style="gap:8px;margin-top:8px">
+          <button class="btn btn--outline btn--sm" disabled title="Disabled in v1 (D041)" data-i18n="od.refund.partial">Partial refund</button>
+          <button class="btn btn--outline btn--sm" disabled title="Disabled in v1 (D041)" data-i18n="od.refund.full">Full refund</button>
+        </div>
+        <div class="field__hint mt-8" data-i18n="od.refund.v1">v1: creator-initiated refunds are disabled (D041) and settled through Earnings (§7.3). Approved refunds restock physical items; digital items are non-restockable. Disputes are still handled here.</div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- §2.2「標記出貨」popup：§2.5 出貨與履約內容（物流商下拉＋其他／追蹤碼；QR／數位分支）· spec 5.1.5.3.1 §2.2/§2.5 -->
+<div class="payout-modal" id="od-ship-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-ship-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="od-ship-title" data-i18n="od.ful.title">Fulfilment</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-od-ship-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="segmented" id="od-ful-view" style="margin-bottom:14px">
+        <button class="segmented__btn segmented__btn--active" type="button" data-od-ful="shipping" data-i18n="od.ful.shipping">Shipping</button>
+        <button class="segmented__btn" type="button" data-od-ful="qr" data-i18n="od.ful.qr">QR pickup</button>
+        <button class="segmented__btn" type="button" data-od-ful="digital" data-i18n="od.ful.digital">Digital</button>
+      </div>
+
+      <!-- 物流配送：物流商下拉＋其他、追蹤碼 -->
+      <div class="od-ful-branch" data-od-ful-branch="shipping">
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div>
+            <div class="field__label" data-i18n="od.ful.carrier">Carrier</div>
+            <select class="select" id="od-carrier" data-od-carrier>
+              <option value="" data-i18n="od.ful.carrier.ph">Select carrier</option>
+              <option>黑貓宅急便</option>
+              <option>新竹物流</option>
+              <option>中華郵政</option>
+              <option>7-ELEVEN 交貨便</option>
+              <option>全家店到店</option>
+              <option>宅配通</option>
+              <option value="__other__" data-i18n="od.ful.carrier.other">Other</option>
+            </select>
+          </div>
+          <div>
+            <div class="field__label" data-i18n="od.ful.tracking">Tracking number</div>
+            <input class="input" placeholder="—">
+          </div>
+        </div>
+        <div class="field" data-od-carrier-other hidden>
+          <div class="field__label" data-i18n="od.ful.carrier.custom">Custom carrier</div>
+          <input class="input" placeholder="Enter carrier name" data-i18n-placeholder="od.ful.carrier.custom.ph">
+        </div>
+        <div class="field__hint" data-i18n="od.ful.note">Marking shipped logs a fulfilment event — it never changes amounts (§7.6).</div>
+      </div>
+
+      <!-- 現場 QR 領取 -->
+      <div class="od-ful-branch" data-od-ful-branch="qr" hidden>
+        <div class="od-qr">
+          <div class="od-qr__code"><i data-lucide="qr-code" class="ztor-icon"></i></div>
+          <div>
+            <div style="font-size:13.5px;font-weight:600" data-i18n="od.qr.title">On-site QR pickup</div>
+            <p class="text-sub" style="font-size:12.5px;margin:4px 0 0" data-i18n="od.qr.body">Buyer shows this QR at the merch table; scan to verify, then mark received. Redemption mechanics pending spec.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 數位交付 -->
+      <div class="od-ful-branch" data-od-ful-branch="digital" hidden>
+        <div class="data-list">
+          <div class="data-list__row">
+            <div class="data-list__row-main">
+              <div class="data-list__icon"><i data-lucide="download" class="ztor-icon"></i></div>
+              <div class="data-list__body">
+                <div class="data-list__title" data-i18n="od.dig.item">Coastline EP — FLAC + MP3</div>
+                <div class="data-list__meta" data-i18n="od.dig.meta">Auto-delivered at purchase · no shipping</div>
+              </div>
+            </div>
+            <span class="badge badge--success"><span data-i18n="od.dig.available">Access ready</span></span>
+          </div>
+        </div>
+        <div class="field__hint mt-8" data-i18n="od.dig.note">Digital orders show download / access status; no carrier or tracking fields.</div>
+      </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" data-od-ship-close data-i18n="od.ful.cancel">Cancel</button>
+      <button class="btn btn--primary btn--sm" id="od-ship-confirm" data-i18n="od.ful.mark">Mark shipped</button>
+    </div>
+  </div>
+</div>
+
+<script src="icons.js?v=20260617t"></script>
+<script src="i18n.js?v=20260617t"></script>
+<script src="sidebar.js?v=20260617t"></script>
+<script src="reveal.js?v=20260617t"></script>
+<script>
+  /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
+     - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
+     - segmented 預覽取貨方式（demo，真實訂單由其取貨方式單一決定）。
+     - 物流商「其他」→ 顯示自訂物流商輸入。
+     - 確認 → 履約 badge 改 已出貨／已領取 並關窗（數位為自動交付、無確認鈕）。 */
+  (function () {
+    const modal = document.getElementById('od-ship-modal');
+    const openBtn = document.getElementById('od-ship-open');
+    if (!modal || !openBtn) return;
+    const seg = document.getElementById('od-ful-view');
+    const carrier = document.getElementById('od-carrier');
+    const other = modal.querySelector('[data-od-carrier-other]');
+    const confirmBtn = document.getElementById('od-ship-confirm');
+    const badge = document.getElementById('od-fulfil-badge');
+    const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+    let branch = 'shipping';
+
+    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
+    openBtn.addEventListener('click', open);
+    modal.querySelectorAll('[data-od-ship-close]').forEach(el => el.addEventListener('click', close));
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+    function setBranch(v) {
+      branch = v;
+      seg.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.odFul === v));
+      modal.querySelectorAll('[data-od-ful-branch]').forEach(br => { br.hidden = br.dataset.odFulBranch !== v; });
+      if (v === 'digital') { confirmBtn.hidden = true; }   // 數位自動交付，無確認動作
+      else {
+        confirmBtn.hidden = false;
+        const key = v === 'qr' ? 'od.qr.mark' : 'od.ful.mark';
+        confirmBtn.setAttribute('data-i18n', key);
+        confirmBtn.textContent = T(key, v === 'qr' ? 'Mark received' : 'Mark shipped');
+      }
+    }
+    seg.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => setBranch(btn.dataset.odFul)));
+
+    if (carrier && other) carrier.addEventListener('change', () => { other.hidden = carrier.value !== '__other__'; });
+
+    confirmBtn.addEventListener('click', () => {
+      if (badge) {
+        const key = branch === 'qr' ? 'od.badge.received' : 'od.badge.shipped';
+        const label = branch === 'qr' ? T('od.badge.received', 'Received') : T('od.badge.shipped', 'Shipped');
+        badge.className = 'badge badge--neutral';
+        badge.innerHTML = '<span class="badge__dot"></span><span data-i18n="' + key + '">' + label + '</span>';
+      }
+      close();
+    });
+
+    setBranch('shipping');
+  })();
+</script>
+<script src="devtools.js?v=20260617t"></script>
+</body>
+</html>

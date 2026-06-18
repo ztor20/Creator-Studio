@@ -1,0 +1,85 @@
+/* ============================================================
+   Selection card — click-to-select 1-of-N card with optional
+   slots (title + sub + tag + swatch).
+
+   Merged from project-level `.choice-card` (wizard radio cards)
+   and `.appearance-card` (settings theme picker) on 2026-05-26.
+
+   Anatomy:
+     .selection-grid                    (auto-fit min 220px grid)
+       OR .selection-grid--3            (forced 3-column · used by theme picker)
+       .selection-card
+         .selection-card__swatch        (optional · 64 px preview block)
+           .selection-card__swatch--theme-light|dark|system  (theme picker variants)
+         .selection-card__title         (required · 14.5 px / 500)
+         .selection-card__sub           (optional · 12.5 px muted desc)
+         .selection-card__tag           (optional · corner uppercase chip)
+       .selection-card--active          (yellow outline + tinted bg)
+
+   Two canonical compositions:
+   1) Wizard radio card: title + sub + tag (no swatch)
+   2) Settings theme picker: swatch + title (+ optional sub)
+   ============================================================ */
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.selection-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.selection-card {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  position: relative;
+  transition: box-shadow 150ms ease, background 150ms ease;
+}
+.selection-card:hover { box-shadow: var(--shadow-card-hover); }
+.selection-card--active {
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface));
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.selection-card__title {
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.selection-card__sub {
+  font-size: 12.5px;
+  color: var(--foreground-muted);
+}
+.selection-card__tag {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--foreground-subtle);
+}
+.selection-card--active .selection-card__tag { color: var(--primary-foreground); }
+
+/* Theme-picker variant — 64 px tall preview swatch with diagonal gradients */
+.selection-card__swatch {
+  height: 64px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.selection-card__swatch--theme-light  { background: linear-gradient(135deg, #FAFAF7 50%, #FFDB29 50%); }
+.selection-card__swatch--theme-dark   { background: linear-gradient(135deg, #171717 50%, #FFDB29 50%); }
+.selection-card__swatch--theme-system { background: linear-gradient(135deg, #FAFAF7 0%, #FAFAF7 47%, #FFDB29 47%, #FFDB29 53%, #171717 53%, #171717 100%); }

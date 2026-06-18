@@ -1,0 +1,101 @@
+/* ============================================================
+   Tabs — horizontal tab bar with hairline underline + yellow
+   active accent · paired with .tab-panel switching.
+
+   Promoted from project pattern on 2026-05-26 (was shared.css).
+   Used on Earnings page (Overview / Transactions / Payouts / Tax),
+   E-Shop (Products / Bundles / Auctions), Projects (status filter
+   tabs), Fans CRM (Leaderboard / Hall of fame).
+
+   Anatomy:
+     .tabs (role="tablist")
+       .tabs__item              (button, default style)
+         <text>
+         .tabs__item-count      (optional pill badge with number)
+       .tabs__item--active      (foreground color + yellow underline)
+     .tab-panel                 (hidden by default)
+       .tab-panel--active       (display: block)
+
+   The tab → panel mapping is wired by inline JS on the consuming
+   page (see earnings.html for canonical example).
+   ============================================================ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.tabs__item {
+  padding: 10px 14px;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--foreground-subtle);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs__item:hover { color: var(--foreground); }
+.tabs__item--active {
+  color: var(--foreground);
+  border-bottom-color: var(--primary);
+}
+.tabs__item-count {
+  margin-left: 6px;
+  font-size: 11.5px;
+  color: var(--foreground-subtle);
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+
+/* ── .tabs--brand — opt-in pill variant with a soft brand (yellow) active
+     fill instead of the underline. Used as a primary type switch where a
+     little brand colour is wanted without a saturated block (E-Shop F3
+     Products / Bundles / Auctions). Does NOT change the default .tabs, so
+     other pages keep the underline style. (2026-06-15) ── */
+.tabs--brand {
+  gap: 8px;
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+.tabs--brand .tabs__item {
+  padding: 9px 16px;
+  border-bottom: 0;
+  margin-bottom: 0;
+  border-radius: var(--radius-pill);
+  color: var(--foreground-muted);
+  transition:
+    background-color var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+.tabs--brand .tabs__item:hover {
+  background: var(--surface-muted);
+  color: var(--foreground);
+}
+.tabs--brand .tabs__item--active {
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface));
+  color: var(--foreground);
+  border-bottom: 0;
+}
+.tabs--brand .tabs__item--active:hover {
+  background: color-mix(in srgb, var(--primary) 24%, var(--surface));
+}
+
+/* When .tabs__item is rendered as <button> (programmatic tabs),
+   strip default button chrome. */
+button.tabs__item {
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  outline: none;
+}
+button.tabs__item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Panel — switched in sync with .tabs__item--active by inline JS */
+.tab-panel { display: none; }
+.tab-panel--active { display: block; }

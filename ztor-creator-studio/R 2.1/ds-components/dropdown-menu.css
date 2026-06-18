@@ -1,0 +1,61 @@
+/* ============================================================
+   Ztor — Dropdown menu (action menu)
+   Native <details>/<summary> dropdown: any .btn as trigger, a
+   floating panel of action links/items below-right. No JS needed;
+   open/close is the native details toggle.
+   Promoted from e-shop.html inline styles on 2026-06-11
+   (spec §5.1.5 F3 「＋ New」 menu was the first consumer).
+   Markup:
+     <details class="dropdown">
+       <summary class="btn btn--primary">＋ New ▾</summary>
+       <div class="dropdown__menu" role="menu">
+         <a class="dropdown__item" role="menuitem" href="…">Create new product</a>
+       </div>
+     </details>
+   ============================================================ */
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* trigger — strip native disclosure marker so the summary renders as a plain .btn */
+.dropdown > summary { list-style: none; }
+.dropdown > summary::-webkit-details-marker { display: none; }
+
+/* floating panel — below trigger, right-aligned */
+.dropdown__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 230px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* menu item */
+.dropdown__item {
+  display: block;
+  padding: 9px 10px;
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.dropdown__item:hover { background: var(--surface-muted); }
+.dropdown__item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* left-aligned variant — panel anchors to the trigger's left edge */
+.dropdown--left .dropdown__menu {
+  right: auto;
+  left: 0;
+}

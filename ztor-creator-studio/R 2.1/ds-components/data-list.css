@@ -1,0 +1,86 @@
+/* ============================================================
+   Data list — row-divider list (no card per row).
+
+   Used in dashboard recent earnings, earnings transactions,
+   payout history, tax documents, products list, in-progress
+   projects list, etc.
+
+   Anatomy:
+     .data-list
+       .data-list__row
+         .data-list__row-main
+           .data-list__icon          (40 px rounded-square chip, matches .alert--card icon)
+             <i data-lucide="…" class="ztor-icon">  (20 px outline lucide icon)
+             .data-list__icon--neutral|success|error|info (monochrome — variants kept for semantics only)
+           .data-list__body
+             .data-list__title       (truncated, font-ui 13.5/500)
+             .data-list__meta        (12px foreground-subtle)
+         .data-list__amount          (right-aligned, font-display 15px)
+           .data-list__amount--neg   (status-error red)
+
+   Icon variants are monochrome (semantic class kept for hook
+   purposes but visual tone is neutral). Amount uses semantic color.
+   ============================================================ */
+.data-list {
+  display: flex;
+  flex-direction: column;
+}
+.data-list__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.data-list__row:last-child { border-bottom: 0; }
+.data-list__row-main {
+  display: flex; align-items: center; gap: 12px; min-width: 0;
+}
+/* Icon chip sized to match the alert--card icon (40×40, radius 10) so the
+   two dashboard panels read as one family. Monochrome neutral surface +
+   muted foreground; the glyph is an outline (stroke) lucide icon at 20px. */
+.data-list__icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--foreground-muted);
+  display: inline-grid; place-items: center;
+  font-size: 14px; flex: none;
+}
+.data-list__icon .ztor-icon { width: 20px; height: 20px; }
+/* Monochrome icon variants — colored fills retired per user feedback (2026-05-25);
+   size unified with alert--card icon (2026-05-27). Semantic variants kept as
+   class names for amount/status cues elsewhere, but the chip itself is neutral. */
+.data-list__icon--success,
+.data-list__icon--error,
+.data-list__icon--info,
+.data-list__icon--neutral {
+  background: var(--surface-muted);
+  color: var(--foreground-muted);
+}
+.data-list__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.data-list__title {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-list__meta { font-size: 12px; color: var(--foreground-subtle); }
+.data-list__amount {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  text-align: right;
+}
+.data-list__amount--neg { color: var(--status-error); }
+/* End cap — right column stacking amount over a status pill (Dashboard Recent earnings F3). */
+.data-list__end { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+/* Row entry — status pill + source-aware deep-link chevron in one right cell (Dashboard F6). */
+.data-list__end--row { flex-direction: row; align-items: center; gap: 12px; }
+.data-list__go { display: inline-grid; place-items: center; color: var(--foreground-subtle); flex: none; text-decoration: none; }
+.data-list__go .ztor-icon { width: 18px; height: 18px; }
+.data-list__go:hover { color: var(--foreground); }

@@ -1,0 +1,83 @@
+/* ============================================================
+   Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
+   ------------------------------------------------------------
+   create-product 等建立流程：頂部「Preview」鈕點擊時，從右側展開
+   一個**佔版面的分割面板（page split，非浮層遮蓋）**——表單側不被
+   遮罩變暗，而是壓窄讓出面板寬度，使用者可邊填邊看預覽；關閉後復位。
+   （2026-06-13：由 overlay + backdrop 改為畫面分割，依使用者反饋。）
+     .preview-panel              — fixed 右側欄（佔 --preview-w 寬，滑入/滑出）
+       .preview-panel__backdrop  — 保留 DOM 但不顯示（分割版無遮罩）
+       .preview-panel__sheet     — 填滿欄的容器
+         .preview-panel__head    — 標題 + 關閉
+         .preview-panel__body    — 預覽內容（灰底，襯白卡）
+   surface 層：sheet 坐 --surface（白），body 襯 --surface-muted（灰）讓白卡浮起。
+   ============================================================ */
+
+:root { --preview-w: min(420px, 92vw); }
+
+/* Right-hand split column (no full-screen overlay, no dim) */
+.preview-panel {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: var(--preview-w);
+  z-index: 40;
+  transform: translateX(100%);
+  transition: transform .24s var(--easing);
+  visibility: hidden;
+}
+.preview-panel.is-open { transform: translateX(0); visibility: visible; }
+
+/* On app-topbar pages (sticky 64px header, z 50) the panel sits *below* the
+   header so it never covers the nav; on the wizard (no header) it spans full
+   height. */
+.preview-panel--inset { top: 64px; }
+
+/* Split layout: compress the page frame instead of covering it.
+   - Wizard pages (create flow): the wizard bottom bar is fixed (left:0;right:0)
+     so it needs its own right offset; top bar + body move with .wizard margin.
+   - App-topbar pages (store settings): compress .main.
+   preview-panel.css loads only on pages that use the preview, so these
+   transitions stay scoped to them. */
+.wizard,
+.wizard__bottom,
+.main { transition: margin-right .24s var(--easing), right .24s var(--easing); }
+body.preview-open .wizard { margin-right: var(--preview-w); }
+body.preview-open .wizard__bottom { right: var(--preview-w); }
+body.preview-open .main { margin-right: var(--preview-w); }
+
+/* Split version draws no scrim — the form stays visible and usable. */
+.preview-panel__backdrop { display: none; }
+
+.preview-panel__sheet {
+  position: absolute; inset: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+
+.preview-panel__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.preview-panel__title { font-size: 14px; font-weight: 600; margin: 0; }
+
+.preview-panel__body {
+  flex: 1; overflow-y: auto;
+  padding: 18px;
+  background: var(--surface-muted);
+}
+
+@media (max-width: 760px) {
+  /* Too narrow to compress further — panel overlays the page on small screens. */
+  :root { --preview-w: 92vw; }
+  body.preview-open .wizard { margin-right: 0; }
+  body.preview-open .wizard__bottom { right: 0; }
+  body.preview-open .main { margin-right: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-panel,
+  .wizard,
+  .wizard__bottom { transition: none; }
+}

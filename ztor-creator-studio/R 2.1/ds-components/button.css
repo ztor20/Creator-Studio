@@ -1,0 +1,206 @@
+/* ============================================================
+   Ztor Creator Studio · R 2.1 — Button
+   Differs from ztor: primary fill flips from near-black #171717
+   to highlighter yellow #FFDB29 with dark text. Outline variant
+   is unchanged (token-driven).
+   ============================================================ */
+
+.ztor-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;   /* icon ↔ label spacing (§4.2) */
+
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  line-height: 1;
+
+  height: 44px;
+  padding: 14px 20px;
+
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+
+  transition: all var(--duration) var(--easing);
+}
+
+.ztor-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.ztor-btn:active {
+  transform: translateY(0);
+}
+
+.ztor-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ztor-btn:disabled,
+.ztor-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------- Outline variant ----------
+   2026-06-12：改為真 1px 線框（border: var(--border)），平面無陰影。
+   舊版「白填色＋微陰影當邊」是 2026-05-28 暖灰 canvas 時代的解法；
+   06-09 canvas 改純白後，白填色按鈕在白底上近乎隱形（使用者反饋）。
+   實線框在白底與灰底都成立——這也才是 outline 的本義；邊由 border 負責，
+   不再加 shadow（border + micro-shadow 同時存在會顯得陰影過重，使用者反饋）。 */
+.ztor-btn--outline {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.ztor-btn--outline:hover {
+  background: var(--surface-muted);
+}
+
+/* ---------- Sizes ---------- */
+.ztor-btn--sm {
+  height: 36px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.ztor-btn--lg {
+  height: 52px;
+  padding: 16px 28px;
+  font-size: 16px;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ztor-btn { transition: none; }
+  .ztor-btn:hover { transform: none; }
+}
+
+/* ============================================================
+   .btn — product-page button (app density). Same dual-namespace
+   split as card.css: .ztor-btn = canonical design-system reference
+   (docs); .btn = the denser variant used across the actual product
+   pages (smaller padding / 13.5px). Both live in this component file
+   so buttons are sourced from the library, not ad-hoc page CSS.
+   (Moved out of shared.css 2026-05-27.)
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;   /* icon ↔ label spacing (§4.2) */
+  padding: 9px 14px;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  border: 0;
+  white-space: nowrap;
+  transition: filter 150ms ease, background 150ms ease;
+}
+/* [hidden] 必須蓋過上面的 display:inline-flex，否則帶 hidden 屬性的按鈕（如編輯態才出現的 Delete）會誤顯示 */
+.btn[hidden] { display: none; }
+.btn--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-raise);
+}
+.btn--primary:hover { background: var(--primary-hover); }
+/* Outline = white surface + real 1px hairline border (2026-06-12).
+   History: 05-28 transparent fill disappeared on warm-paper canvas → fill+micro-shadow;
+   06-09 canvas flipped clean white → fill-only outline disappeared again (user feedback).
+   A real border works on both white and gray grounds — and is what "outline" means.
+   Flat, no shadow: the border is the edge; adding micro-shadow on top read as too
+   much shadow (user feedback 2026-06-12). Padding −1px each side vs .btn base. */
+.btn--outline {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 8px 13px;
+  border-radius: var(--radius-md);
+}
+.btn--outline:hover { background: var(--surface-muted); }
+.btn--outline.btn--lg { padding: 11px 17px; }
+.btn--outline.btn--sm { padding: 5px 9px; }
+.btn--ghost {
+  background: transparent;
+  color: var(--foreground-muted);
+}
+.btn--ghost:hover { background: color-mix(in srgb, var(--foreground) 6%, transparent); color: var(--foreground); }
+/* Soft / tonal secondary (2026-06-12) — resting light-grey fill, no border.
+   Sits between ghost (transparent until hover) and outline (white + border):
+   use for a quiet-but-always-visible secondary like a toolbar Export. */
+.btn--soft {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--surface));
+  color: var(--foreground);
+}
+.btn--soft:hover { background: color-mix(in srgb, var(--foreground) 10%, var(--surface)); }
+.btn--lg { padding: 12px 18px; font-size: 14.5px; }
+.btn--sm { padding: 6px 10px; font-size: 12.5px; }
+/* Disabled — e.g. a primary gated by a readiness check (2026-06-12) */
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
+
+/* ============================================================
+   Shared button variants (2026-06-01) — promoted from bespoke
+   per-component controls so molecules/organisms compose the Button
+   atom instead of rolling their own. Each consumer keeps only a
+   layout hook (grid placement / position:relative) and pulls the
+   LOOK from these classes.
+   ============================================================ */
+
+/* ---------- Icon-only button (ghost square) ----------
+   replaces: composer__icon-btn · app-topbar__icon-btn ·
+   alert__close · chart-card__icon-btn */
+.btn--icon {
+  width: 36px; height: 36px;
+  padding: 0;
+  justify-content: center;
+  color: var(--foreground-muted);
+  background: transparent;
+  border-radius: var(--radius);
+}
+.btn--icon:hover { background: var(--surface-muted); color: var(--foreground); }
+.btn--icon.btn--sm { width: 32px; height: 32px; padding: 0; }
+.btn--icon.btn--xs { width: 28px; height: 28px; padding: 0; }
+.btn--icon .ztor-icon { width: 18px; height: 18px; stroke-width: 1.2; }
+.btn--icon.btn--xs .ztor-icon { width: 14px; height: 14px; }
+
+/* ---------- Circular icon button (submit / send) ----------
+   replaces: composer__send. Add .btn--primary (or .is-active) to flip
+   to the yellow filled state when there's content to submit. */
+.btn--icon-circle {
+  width: 36px; height: 36px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--surface-muted);
+  color: var(--foreground-subtle);
+}
+.btn--icon-circle:hover { background: color-mix(in srgb, var(--foreground) 10%, var(--surface-muted)); color: var(--foreground); }
+.btn--icon-circle.btn--primary,
+.btn--icon-circle.is-active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.btn--icon-circle.btn--primary:hover,
+.btn--icon-circle.is-active:hover { background: var(--primary-hover); color: var(--primary-foreground); }
+.btn--icon-circle .ztor-icon { width: 16px; height: 16px; stroke-width: 1.2; }
+
+/* (Text links — card__link, alert__cta, cookie settings — stay component-owned:
+   they differ per context (status color / trailing chevron / no underline), so
+   they are NOT forced into a shared atom. Only the icon/send buttons above were
+   genuine duplicates worth promoting.) */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--icon, .btn--icon-circle { transition: none; }
+}

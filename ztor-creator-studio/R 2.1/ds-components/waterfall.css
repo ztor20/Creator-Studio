@@ -1,0 +1,154 @@
+/* ----------------------------------------------------------------
+   Earnings waterfall — gross revenue → net profit pool ledger
+   spec §5.1.8 F12 (Earnings · Overview) · figures follow §7.3
+
+   A vertical ledger where each stage carries a running-balance bar,
+   so the descending staircase from gross revenue down to the net
+   profit pool (and its Creator / NFT split) is visible at a glance.
+   Consumers today: earnings.html (Overview tab) + design-system.html demo.
+   Sits on --surface (white card) and the gray --surface-muted track;
+   bar fills use role tokens so dark mode flips automatically.
+   All values reference design tokens from _tokens.css.
+   ---------------------------------------------------------------- */
+
+.waterfall {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+}
+
+.waterfall__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 20px;
+  row-gap: 9px;
+  align-items: baseline;
+  padding: 13px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.waterfall__row:first-child {
+  border-top: 0;
+}
+
+/* Label + meta stack (grid col 1) */
+.waterfall__head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.waterfall__name {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+.waterfall__meta {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--foreground-subtle);
+}
+
+/* Amount (grid col 2, right) */
+.waterfall__amt {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--foreground);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Running-balance bar (spans both columns, second row) */
+.waterfall__bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+.waterfall__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--foreground);
+  transition: width var(--duration) var(--easing);
+}
+
+/* ── Row types ─────────────────────────────────────────────── */
+
+/* Income — top of the waterfall (gross revenue) */
+.waterfall__row--income .waterfall__name { font-weight: 700; }
+.waterfall__row--income .waterfall__amt { font-weight: 700; }
+
+/* Deduction — a plain statement line, indented under its milestone.
+   No bar: bars are reserved for milestones so the ledger reads like a P&L,
+   not a wall of bars (2026-06-14, declutter). */
+.waterfall__row--deduct {
+  padding: 9px 0 9px 14px;
+}
+.waterfall__row--deduct .waterfall__name { font-weight: 400; color: var(--foreground-muted); }
+.waterfall__row--deduct .waterfall__amt { color: var(--foreground-muted); }
+.waterfall__row--deduct .waterfall__bar { display: none; }
+
+/* Subtotal — a named milestone (gross profit, net revenue) */
+.waterfall__row--subtotal {
+  border-top: 1.5px solid var(--foreground);
+}
+.waterfall__row--subtotal .waterfall__name { font-weight: 700; }
+.waterfall__row--subtotal .waterfall__amt { font-weight: 700; font-size: 15px; }
+
+/* Pool — the distributable net profit pool (payout-relevant result) */
+.waterfall__row--pool {
+  border-top: 1.5px solid var(--foreground);
+}
+.waterfall__row--pool .waterfall__name { font-weight: 700; }
+.waterfall__row--pool .waterfall__amt { font-weight: 700; font-size: 16px; }
+.waterfall__row--pool .waterfall__fill {
+  background: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--foreground);
+}
+
+/* Distribution — allocations out of the pool (Creator / NFT split) */
+.waterfall__row--distribution {
+  padding-left: 18px;
+  position: relative;
+}
+.waterfall__row--distribution::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 19px;
+  width: 8px;
+  height: 8px;
+  border-left: 1.5px solid var(--border);
+  border-bottom: 1.5px solid var(--border);
+}
+.waterfall__row--distribution .waterfall__name { font-weight: 500; }
+.waterfall__row--distribution .waterfall__fill {
+  background: color-mix(in srgb, var(--primary) 58%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* Pool-negative warning — distribution paused (spec §7.3) */
+.waterfall__row--pool.waterfall__row--negative .waterfall__amt { color: var(--status-error); }
+.waterfall__row--pool.waterfall__row--negative .waterfall__fill { background: var(--status-error); box-shadow: none; }
+
+/* Empty state — no settled income this period (spec: don't fake $0) */
+.waterfall__empty {
+  padding: 22px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  color: var(--foreground-subtle);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .waterfall__row { column-gap: 12px; }
+  .waterfall__meta { font-size: 11.5px; }
+}

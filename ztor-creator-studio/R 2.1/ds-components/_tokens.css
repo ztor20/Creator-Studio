@@ -1,0 +1,358 @@
+/* ============================================================
+   Ztor Creator Studio · R 2.1 — Design Tokens
+   Differs from ztor:
+     --background        #F7F7F7 → #FFFFFF   (clean white canvas)
+     --surface-rail      #FBFBFB             (near-white sidebar rail)
+     --primary           #171717 → #FFDB29   (highlighter yellow CTA)
+     --primary-hover     #000000 → #FFE55C   (brighter yellow on hover)
+     --primary-foreground #FFFFFF → #171717  (dark text on yellow, ~14:1)
+     --ring                            yellow (=var(--primary)) by request 2026-06-02 — note ~1.3:1 on light canvas, below WCAG AA 3:1
+   Dark mode primary also shifts to #FFDB29 to keep visual language paired.
+   R 2.1 light-mode token deltas from the Ztor parent design system (recorded 2026-05-22).
+   Border updated 2026-05-25: reverted from #D1D1C7 → #E5E5E5 (cooler hairline,
+   matches base ztor; warmer canvas + cooler hairline reads cleaner per user feedback).
+   ============================================================ */
+
+:root {
+  /* Surfaces */
+  --background:        #FFFFFF;   /* canvas / body (clean white, 2026-06-09) */
+  --surface:           #FFFFFF;   /* cards, popovers, nav panels */
+  --surface-muted:     #FAFAFA;   /* alt card / muted bg */
+  --surface-inverse:   #000000;   /* footer / hi-contrast block */
+  --surface-shell:     #F5F5F5;   /* sidebar-mode app canvas; subtle contrast against the white route page */
+  --surface-page:      #FFFFFF;   /* opaque route page inside the app shell */
+  --surface-rail:      #FBFBFB;   /* sidebar display-mode rail (near-white neutral; ramp: canvas/surface #FFFFFF → rail #FBFBFB → muted #FAFAFA → rail-hover #F3F3F3 → border #E5E5E5) */
+  --surface-rail-hover:#F3F3F3;   /* rail item hover (neutral, visibly deeper than the near-white rail) */
+  --surface-rail-active:#ECECEC;  /* rail selected pill — 比 hover 再深一階，已選態一眼可辨（2026-06-12） */
+
+  /* Foreground */
+  --foreground:        #000000;
+  --foreground-muted:  rgba(0, 0, 0, 0.7);
+  --foreground-subtle: #737373;
+  --foreground-on-inverse: #FFFFFF;
+  --foreground-on-inverse-muted: rgba(255, 255, 255, 0.6);
+
+  /* Primary action (highlighter yellow) */
+  --primary:            #FFDB29;
+  --primary-hover:      #FFE55C;
+  --primary-foreground: #171717;
+
+  /* Edges */
+  --border:            #E5E5E5;   /* cooler hairline (was #D1D1C7 until 2026-05-25) */
+  --border-soft:       #EFEFEF;   /* lighter list/item dividers */
+  --border-inverse:    rgba(255, 255, 255, 0.1);   /* hairline on always-dark / inverse surfaces (footer slab) — same in both themes */
+  --ring:              var(--primary);   /* yellow focus ring (2026-06-02, by request — note: ~1.3:1 on light canvas, below WCAG AA 3:1) */
+
+  /* Status accents */
+  --status-success:    #22C55E;
+  --status-error:      #DA314A;
+  --status-info:       #266DF0;
+  --status-warning:    #F8D749;
+  --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
+
+  /* Geometry */
+  --radius-sm:         3px;
+  --radius:            6px;       /* primary buttons */
+  --radius-md:         7px;       /* outline buttons, cards */
+  --radius-lg:         8px;       /* nav panels */
+  --radius-xl:         16px;      /* cookie banner */
+  --radius-shell:      28px;      /* route-page corner inside sidebar app shell */
+  --radius-pill:       9999px;
+  --space-shell-gutter:16px;      /* desktop gap above the route page */
+
+  /* Shadow tokens */
+  --shadow-micro:
+    0 4px 4px rgba(23, 23, 23, 0.04);
+
+  /* Low-elevation control raise (buttons, inputs, segmented, switch knob,
+     chart marker). Replaced the per-component ad-hoc `0 1px 2px rgba(...)`
+     shadows on 2026-06-15 so they tokenize + adapt to dark mode. */
+  --shadow-raise:
+    0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-raise-strong:
+    0 1px 2px rgba(0, 0, 0, 0.16);
+
+  --shadow-card:
+    0 2px 6px rgba(12, 10, 9, 0.08),
+    0 0 0 1px rgba(23, 23, 23, 0.08);
+
+  --shadow-card-hover:
+    0 4px 12px rgba(12, 10, 9, 0.10),
+    0 0 0 1px rgba(23, 23, 23, 0.10);
+
+  --shadow-popover:
+    0 1px 1.6px rgba(0, 0, 0, 0.05),
+    0 0 0.83px rgba(0, 0, 0, 0.2);
+
+  --shadow-hairline:
+    0 0 0.833px rgba(0, 0, 0, 0.2);
+
+  /* Seam shadow — 向右柔投影，由「上層的主面板」蓋向相鄰的下層面板（E-Shop 主面板疊在商店預覽之上），
+     順著主面板圓角填滿接縫凹口。⚠ 不可掛在捲動容器（其圓角被瀏覽器畫成方角→方角陰影）；
+     掛在一個透明、真圓角的輔助層（貼上層面板右緣）向右投到下層上。 */
+  --shadow-seam:
+    7px 0 20px -4px rgba(12, 10, 9, 0.16);
+
+  /* Motion */
+  --duration:          200ms;
+  --easing:            cubic-bezier(0.32, 0.72, 0, 1);  /* common Framer ease-out-quart */
+
+  /* Frosted overlay recipe — 浮層毛玻璃。暗色模式 --surface 是半透明，浮層需靠它
+     模糊背景才不會透出後方內容（見檔尾 .overlay-surface 集中規則）。 */
+  --overlay-blur:      blur(14px) saturate(140%);
+  --overlay-tint:      rgba(0, 0, 0, 0.45);   /* darkening mixed into modal backdrops (see .payout-modal) */
+
+  /* Typography */
+  --font-display: 'Geist Variable', 'Geist', system-ui, sans-serif;
+  --font-ui:      'Geist', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+
+  /* Typography foundation scale */
+  --type-display-64-family: var(--font-display);
+  --type-display-64-size: 64px;
+  --type-display-64-weight: 400;
+  --type-display-64-line-height: 1;
+  --type-display-64-tracking: -1.28px;
+
+  --type-display-44-family: var(--font-display);
+  --type-display-44-size: 44px;
+  --type-display-44-weight: 500;
+  --type-display-44-line-height: 1.05;
+  --type-display-44-tracking: -1px;
+
+  --type-title-40-family: var(--font-ui);
+  --type-title-40-size: 40px;
+  --type-title-40-weight: 500;
+  --type-title-40-line-height: 1.05;
+  --type-title-40-tracking: -0.8px;
+
+  --type-title-32-family: var(--font-ui);
+  --type-title-32-size: 32px;
+  --type-title-32-weight: 500;
+  --type-title-32-line-height: 1.1;
+  --type-title-32-tracking: -0.6px;
+
+  --type-title-24-family: var(--font-ui);
+  --type-title-24-size: 24px;
+  --type-title-24-weight: 500;
+  --type-title-24-line-height: 1.2;
+  --type-title-24-tracking: -0.48px;
+
+  --type-label-15-family: var(--font-ui);
+  --type-label-15-size: 15px;
+  --type-label-15-weight: 500;
+  --type-label-15-line-height: 1;
+  --type-label-15-tracking: -0.3px;
+
+  --type-label-14-family: var(--font-ui);
+  --type-label-14-size: 14.5px;
+  --type-label-14-weight: 700;
+  --type-label-14-line-height: 1.25;
+  --type-label-14-tracking: 0;
+
+  --type-body-16-family: var(--font-body);
+  --type-body-16-size: 16px;
+  --type-body-16-weight: 400;
+  --type-body-16-line-height: 1.6;
+  --type-body-16-tracking: 0;
+
+  --type-body-14-family: var(--font-body);
+  --type-body-14-size: 14px;
+  --type-body-14-weight: 400;
+  --type-body-14-line-height: 1.5;
+  --type-body-14-tracking: 0;
+
+  --type-caption-12-family: var(--font-ui);
+  --type-caption-12-size: 12px;
+  --type-caption-12-weight: 500;
+  --type-caption-12-line-height: 1.3;
+  --type-caption-12-tracking: 0.05em;
+
+  /* Typography role aliases */
+  --type-display-1-family: var(--type-display-64-family);
+  --type-display-1-size: var(--type-display-64-size);
+  --type-display-1-weight: var(--type-display-64-weight);
+  --type-display-1-line-height: var(--type-display-64-line-height);
+  --type-display-1-tracking: var(--type-display-64-tracking);
+
+  --type-page-title-family: var(--type-display-44-family);
+  --type-page-title-size: var(--type-display-44-size);
+  --type-page-title-weight: var(--type-display-44-weight);
+  --type-page-title-line-height: var(--type-display-44-line-height);
+  --type-page-title-tracking: var(--type-display-44-tracking);
+
+  --type-h2-family: var(--type-title-40-family);
+  --type-h2-size: var(--type-title-40-size);
+  --type-h2-weight: var(--type-title-40-weight);
+  --type-h2-line-height: var(--type-title-40-line-height);
+  --type-h2-tracking: var(--type-title-40-tracking);
+
+  --type-h3-family: var(--type-title-32-family);
+  --type-h3-size: var(--type-title-32-size);
+  --type-h3-weight: var(--type-title-32-weight);
+  --type-h3-line-height: var(--type-title-32-line-height);
+  --type-h3-tracking: var(--type-title-32-tracking);
+
+  --type-h4-family: var(--type-title-24-family);
+  --type-h4-size: var(--type-title-24-size);
+  --type-h4-weight: var(--type-title-24-weight);
+  --type-h4-line-height: var(--type-title-24-line-height);
+  --type-h4-tracking: var(--type-title-24-tracking);
+
+  --type-section-label-family: var(--type-label-14-family);
+  --type-section-label-size: var(--type-label-14-size);
+  --type-section-label-weight: var(--type-label-14-weight);
+  --type-section-label-line-height: var(--type-label-14-line-height);
+  --type-section-label-tracking: var(--type-label-14-tracking);
+
+  --type-body-lg-family: var(--type-body-16-family);
+  --type-body-lg-size: var(--type-body-16-size);
+  --type-body-lg-weight: var(--type-body-16-weight);
+  --type-body-lg-line-height: var(--type-body-16-line-height);
+  --type-body-lg-tracking: var(--type-body-16-tracking);
+
+  --type-body-family: var(--type-body-14-family);
+  --type-body-size: var(--type-body-14-size);
+  --type-body-weight: var(--type-body-14-weight);
+  --type-body-line-height: var(--type-body-14-line-height);
+  --type-body-tracking: var(--type-body-14-tracking);
+
+  --type-caption-family: var(--type-caption-12-family);
+  --type-caption-size: var(--type-caption-12-size);
+  --type-caption-weight: var(--type-caption-12-weight);
+  --type-caption-line-height: var(--type-caption-12-line-height);
+  --type-caption-tracking: var(--type-caption-12-tracking);
+
+  --type-button-label-family: var(--type-label-15-family);
+  --type-button-label-size: var(--type-label-15-size);
+  --type-button-label-weight: var(--type-label-15-weight);
+  --type-button-label-line-height: var(--type-label-15-line-height);
+  --type-button-label-tracking: var(--type-label-15-tracking);
+}
+
+/* ============================================================
+   Dark theme overrides — translucent-overlay surface model (see design-system.md §3 Mode), 2026-05-25.
+   Surface pattern: translucent white overlays on near-black canvas
+   (NOT stepped opaque greys). Brand accents shift to pure RGB
+   greens/reds in dark — see §6.5.5 of design-system.md.
+   Activate by setting [data-theme="dark"] on <html> or <body>.
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* Surfaces — translucent overlay scale */
+  --background:        #171717;                       /* body bg (ztor app dark) */
+  --surface:           rgba(253, 253, 253, 0.10);     /* standard card */
+  --surface-muted:     rgba(253, 253, 253, 0.06);     /* low elevation */
+  --surface-inverse:   #000000;                       /* footer slab — 2026-06-12 反轉後 content 已是 #0A0A0A，footer 改純黑才仍比內文深、讀為分隔塊 */
+  --surface-shell:     #171717;                       /* app shell（rail＋canvas）— 2026-06-12 反轉：shell 用較淺的 #171717，content 才是最深 */
+  --surface-page:      #0A0A0A;                       /* route page = 最深底色（content 比 shell 深，視覺上內凹）；不透明避免半透明頁面 chrome */
+  --surface-rail:      #171717;                       /* rail 與 shell canvas 同色（#171717），靠 hover/active 疊色區分項目 */
+  --surface-rail-hover:rgba(253, 253, 253, 0.06);     /* rail item hover (dark) */
+  --surface-rail-active:rgba(253, 253, 253, 0.12);    /* rail selected pill (dark — 比 hover 深一階) */
+
+  /* Foreground */
+  --foreground:        #FDFDFD;
+  --foreground-muted:  rgba(253, 253, 253, 0.7);
+  --foreground-subtle: rgba(253, 253, 253, 0.4);
+  --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
+  --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
+
+  /* Primary action — yellow stays in dark mode for visual pairing */
+  --primary:            #FFDB29;
+  --primary-hover:      #FFE55C;
+  --primary-foreground: #171717;
+
+  /* Edges */
+  --border:            rgba(253, 253, 253, 0.12);
+  --border-soft:       #2A2A2A;
+  --ring:              #FDFDFD;
+
+  /* Status accents — pure-RGB variants for dark mode */
+  --status-success:    #00A63E;
+  --status-error:      #E7000B;
+  --status-info:       #5896F3;
+  --status-warning:    #F3CF58;
+  --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
+
+  /* Shadows — softer drops, white hairline ring inverted */
+  --shadow-micro:
+    0 4px 4px rgba(0, 0, 0, 0.3);
+
+  /* Low-elevation control raise — stronger alpha so it stays visible on the dark canvas */
+  --shadow-raise:
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-raise-strong:
+    0 1px 2px rgba(0, 0, 0, 0.6);
+
+  --shadow-card:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(253, 253, 253, 0.08);
+
+  --shadow-card-hover:
+    0 4px 12px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(253, 253, 253, 0.10);
+
+  --shadow-popover:
+    0 1px 1.6px rgba(0, 0, 0, 0.4),
+    0 0 0.83px rgba(253, 253, 253, 0.2);
+
+  --shadow-hairline:
+    0 0 0.833px rgba(253, 253, 253, 0.2);
+
+  /* Seam shadow（dark）— 主面板＝最深 #0A0A0A，用較強黑向右蓋在預覽上、壓出層疊深度 */
+  --shadow-seam:
+    7px 0 22px -2px rgba(0, 0, 0, 0.6);
+}
+
+/* Smooth transition on theme switch */
+html, body {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Theme toggle button — fixed top-right on any page that includes _tokens.css */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  font-family: var(--font-ui);
+  transition: filter 150ms ease;
+}
+.theme-toggle:hover { filter: brightness(0.96); }
+[data-theme="dark"] .theme-toggle:hover { filter: brightness(1.15); }
+
+.theme-toggle__icon-sun  { display: none; }
+.theme-toggle__icon-moon { display: inline; }
+[data-theme="dark"] .theme-toggle__icon-sun  { display: inline; }
+[data-theme="dark"] .theme-toggle__icon-moon { display: none; }
+
+/* ============================================================
+   Foundation · Frosted overlay surfaces（全域、一處治理）
+   ------------------------------------------------------------
+   暗色模式下 --surface 是半透明（rgba(253,253,253,0.10)），任何「浮在內容上」
+   的面板若用 --surface 當底就會透出後方內容。解法是讓這類浮層一律 backdrop-blur
+   背景（毛玻璃），而非逐元件各自硬寫。新浮層直接加 .overlay-surface；既有浮層
+   在下方集中列入，改一次全部生效。亮色模式 --surface 不透明，blur 自動無作用。
+   （此前只有 header dropdown 自己解過，現統一收斂到 --overlay-blur。）
+   ============================================================ */
+.overlay-surface,
+.dropdown__menu,
+.preview-panel__sheet,
+.payout-dialog {
+  -webkit-backdrop-filter: var(--overlay-blur);
+  backdrop-filter: var(--overlay-blur);
+}

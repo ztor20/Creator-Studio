@@ -1,0 +1,208 @@
+/* ============================================================
+   Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同源）
+   ------------------------------------------------------------
+   E-Shop F5（商店預覽）與 Store-settings F1（See as fan）共用此元件，
+   確保「預覽＝粉絲端」同一視角（§6.7，差異即缺陷）。
+   版面參考（hero cover + 本月精選 + 分頁 + 商品格）；顏色一律走 token、
+   跟隨全站主題（§6.9，不鎖深色），hero 為品牌色淺底 banner（裝飾層）。
+
+   ⚠ 下列欄位目前規格未定義，屬「產品變更提案」（見 ASSUMPTIONS UIA-026）；
+      上游核准前僅作提案呈現，不得寫回 documents/：
+      追蹤數、社群連結（YT/IG/TH）、加入社群、本月精選、立即購買、售完補貨中。
+
+   Anatomy:
+     .fan-store
+       .fan-store__hero            cover banner（品牌色淺底）
+         .fan-store__avatar
+         .fan-store__artist / __tagline
+         .fan-store__meta          ● role · followers ＋ socials
+         .fan-store__follow        加入社群 CTA
+       .fan-store__featured        本月精選（大圖卡）
+         __featured-tag / __featured-media / __featured-title
+         __featured-price / __featured-cta
+       .fan-store__tabs            商品 / 套組 / 拍賣（預覽用，display-only）
+       .fan-store__grid            2-col 商品格
+         .fan-store__card
+           __thumb / __card-body / __card-title
+           __card-price | __card-status（售完補貨中…）
+   ============================================================ */
+
+/* 預覽 frame 與 main 連在一起；frame 內部 content 留內距、左邊較大，讓內容不貼交界（使用者裁示）。
+   底色走 --surface-page（粉絲端「頁面」底）：亮色＝白 #FFFFFF、深色＝最深 #0A0A0A 近黑
+   （使用者：黑夜版預覽底改黑）；覆寫 preview-panel.css 預設的 --surface-muted 灰底。
+   兩處 See-as-fan 共用（§6.7 同源）。 */
+.preview-panel__body:has(.fan-store) {
+  background: var(--surface-page);
+  padding: 0;   /* hero 滿版貼齊；內距交給各區塊（hero 只留下方、content 左內距較大）*/
+}
+.fan-store { display: flex; flex-direction: column; gap: 16px; }
+/* hero 以外的內容（本月精選/分頁/商品格）留內距、左邊較大，不貼交界 */
+.fan-store__content { display: flex; flex-direction: column; gap: 18px; padding: 0 16px 16px 24px; }
+
+/* ── Hero cover（灰底 cover、滿版；上傳封面時於此放圖）。只有下方間距由 .fan-store gap 提供 ── */
+.fan-store__hero {
+  position: relative;
+  padding: 16px;
+  background: var(--surface-muted);
+}
+/* 預覽標籤小字（放在店名上方；由消費端 JS 填字＋顯示，預設 hidden）*/
+.fan-store__overline {
+  margin: 0 0 6px;
+  font-family: var(--font-ui);
+  font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--foreground-subtle);
+}
+.fan-store__artist {
+  font-family: var(--font-display);
+  font-size: 19px; font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--foreground);
+}
+.fan-store__tagline {
+  margin: 10px 0 0;
+  font-size: 13px; line-height: 1.5;
+  color: var(--foreground-muted);
+}
+.fan-store__meta {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12px; color: var(--foreground-subtle);
+}
+.fan-store__role { display: inline-flex; align-items: center; gap: 6px; }
+.fan-store__role::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--status-success);
+}
+.fan-store__socials { display: inline-flex; gap: 6px; margin-left: auto; }
+.fan-store__social {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: 9.5px; font-weight: 600;
+  color: var(--foreground-muted);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.fan-store__follow {
+  margin-top: 14px;
+  width: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 0; border-radius: var(--radius-pill);
+  background: var(--primary); color: var(--primary-foreground);
+  font-family: var(--font-ui); font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration) var(--easing), transform var(--duration) var(--easing);
+}
+.fan-store__follow .ztor-icon { width: 16px; height: 16px; }
+.fan-store__follow:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+/* ── 本月精選 featured ── */
+.fan-store__featured {
+  position: relative;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.fan-store__featured-media {
+  aspect-ratio: 16 / 10;
+  background: var(--surface-muted);
+  display: grid; place-items: center;
+  color: var(--foreground-subtle);
+}
+.fan-store__featured-media .ztor-icon { width: 34px; height: 34px; stroke-width: 1; }
+.fan-store__featured-tag {
+  position: absolute; top: 12px; left: 12px;
+  display: inline-flex; align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--primary); color: var(--primary-foreground);
+  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+}
+.fan-store__featured-info { padding: 14px; }
+.fan-store__featured-title {
+  font-family: var(--font-ui);
+  font-size: 15px; font-weight: 600; line-height: 1.3;
+  color: var(--foreground);
+}
+.fan-store__featured-price {
+  margin-top: 6px;
+  font-size: 14px; font-weight: 600; color: var(--foreground);
+}
+.fan-store__featured-cta {
+  margin-top: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 38px; padding: 0 20px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--primary);
+  background: transparent; color: var(--foreground);
+  font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration) var(--easing);
+}
+.fan-store__featured-cta:hover { background: color-mix(in srgb, var(--primary) 16%, var(--surface)); }
+
+/* ── tabs（display-only 預覽分頁） ── */
+.fan-store__tabs {
+  display: flex; gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-muted);
+}
+.fan-store__tab {
+  flex: 1;
+  border: 0; border-radius: var(--radius-pill);
+  padding: 9px 10px;
+  background: transparent; color: var(--foreground-muted);
+  font-family: var(--font-ui); font-size: 12.5px; font-weight: 500;
+  cursor: pointer;
+  transition: background var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.fan-store__tab--active {
+  background: var(--surface); color: var(--foreground);
+  font-weight: 600; box-shadow: var(--shadow-card);
+}
+
+/* ── 商品格 ── */
+.fan-store__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.fan-store__card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.fan-store__thumb {
+  aspect-ratio: 1 / 1;
+  background: var(--surface-muted);
+  display: grid; place-items: center;
+  color: var(--foreground-subtle);
+}
+.fan-store__thumb .ztor-icon { width: 28px; height: 28px; stroke-width: 1; }
+.fan-store__card-body { padding: 10px 12px 12px; }
+.fan-store__card-title {
+  font-size: 13px; font-weight: 500; line-height: 1.3;
+  color: var(--foreground);
+}
+.fan-store__card-price {
+  margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--foreground);
+}
+/* 售完補貨中 等狀態（沿用既有狀態色，提案欄位） */
+.fan-store__card-status {
+  margin-top: 4px;
+  font-size: 12px; font-weight: 500;
+  color: var(--status-warning);
+}
+.fan-store__card--out .fan-store__thumb { opacity: 0.7; }

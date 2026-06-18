@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events · Ztor Creator Studio</title>
+<script src="theme.js?v=20260617t"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/button.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/input.css?v=20260617t">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260617t">
+<link rel="stylesheet" href="shared.css?v=20260617t">
+<style>
+  /* 篩選工具列：時段分頁底下的「狀態切換＋關鍵字搜尋」(F3)。
+     pill/segmented chrome 由 ds-components 提供；此處只留 events 專屬 layout hook。 */
+  .events-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .events-toolbar .field-pill--grow { flex: 1 1 360px; }
+  .events-search-clear {
+    border: 0; background: transparent; cursor: pointer; flex: none;
+    color: var(--foreground-subtle); font-size: 15px; line-height: 1; padding: 2px 0;
+  }
+  .events-search-clear:hover { color: var(--foreground); }
+
+  /* events 活動清單 8 欄覆寫 (F1)：縮圖｜活動｜日期時間｜場地｜票券｜收入｜狀態｜操作。
+     欄數為本頁專屬，比照 e-shop 留頁內。 */
+  .product-list--events .product-list__head,
+  .product-list--events .product-list__row {
+    grid-template-columns: 52px minmax(200px, 1.4fr) 150px 150px 132px 96px 112px 104px;
+  }
+  .product-list--events .product-list__revenue,
+  .product-list--events .product-list__datetime,
+  .product-list--events .product-list__venue {
+    color: var(--foreground);
+  }
+  .product-list--events .product-list__image .ztor-icon {
+    width: 20px; height: 20px;
+    color: var(--foreground-muted);
+  }
+  .product-list--events .product-list__actions { gap: 2px; }
+
+  /* 票券銷售進度條（F1 票券欄輔助判讀） */
+  .event-tickets { font-family: var(--font-ui); font-size: 13px; color: var(--foreground); }
+  .event-tickets__bar {
+    margin-top: 6px; width: 100%; max-width: 112px; height: 5px;
+    background: var(--surface-muted); border-radius: 9999px; overflow: hidden;
+  }
+  .event-tickets__fill { height: 100%; background: var(--primary); border-radius: 9999px; }
+  .event-tickets--unlimited { color: var(--foreground-subtle); }
+
+  @media (max-width: 760px) {
+    .events-toolbar .field-pill { width: 100%; flex-basis: auto; }
+    .product-list--events .product-list__head { display: none; }
+    .product-list--events .product-list__row {
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      gap: 8px 14px;
+    }
+    .product-list--events .product-list__image-cell { grid-column: 1; grid-row: 1; align-self: start; }
+    .product-list--events .product-list__product   { grid-column: 2; grid-row: 1; }
+    .product-list--events .product-list__datetime  { grid-column: 2; grid-row: 2; }
+    .product-list--events .product-list__venue     { grid-column: 2; grid-row: 3; }
+    .product-list--events .product-list__tickets   { grid-column: 2; grid-row: 4; }
+    .product-list--events .product-list__revenue   { grid-column: 2; grid-row: 5; }
+    .product-list--events .product-list__status    { grid-column: 2; grid-row: 6; }
+    .product-list--events .product-list__actions   { grid-column: 3; grid-row: 1; align-self: start; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="text-sub" style="font-size:12.5px;margin-bottom:14px">
+        <span data-i18n="events.crumb.self">Events</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="events.h1">Events</h1>
+          <p class="page-intro__sub" data-i18n="events.sub2">Manage your concerts, meet &amp; greets, and live events.</p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="btn btn--primary" href="create-event.html" data-i18n="events.btn.new">＋ New event</a>
+        </div>
+      </div>
+
+      <!-- F1/F2/F3 data body (account has events). The account-level "no events yet"
+           empty state is the sibling .when-empty below; toggled by Cheat Codes Empty
+           via <html data-data-state="empty">. The #ev-empty stub inside stays the
+           search/filter no-result state (a different concern, kept). -->
+      <div class="when-data">
+
+      <div class="bento">
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.total">Total events</div><div class="kpi__value">11</div><div class="kpi__delta" data-i18n="events.kpi.total-meta">+3 vs last year</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.tickets">Tickets sold</div><div class="kpi__value">842</div><div class="kpi__delta" data-i18n="events.kpi.tickets-meta">+18% YoY</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.revenue">Total revenue</div><div class="kpi__value">$28,420</div><div class="kpi__delta" data-i18n="events.kpi.revenue-meta">+12% YoY</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.avg">Avg attendance</div><div class="kpi__value">76</div><div class="kpi__meta" data-i18n="events.kpi.avg-meta">From check-in data</div></div>
+      </div>
+
+      <!-- F3 ① 時段分頁（預設 Upcoming）；計數由 JS 依實際列數填入 -->
+      <nav class="tabs mt-24" id="ev-tabs">
+        <div class="tabs__item tabs__item--active" data-tab="upcoming"><span data-i18n="events.tab.upcoming">Upcoming</span> <span class="tabs__item-count"></span></div>
+        <div class="tabs__item" data-tab="past"><span data-i18n="events.tab.past">Past</span> <span class="tabs__item-count"></span></div>
+      </nav>
+
+      <!-- F3 ② 狀態切換 + ③ 活動搜尋（名稱／場地／Lineup） -->
+      <div class="events-toolbar">
+        <div class="segmented" id="ev-status" role="group" aria-label="Filter by sale status">
+          <button class="segmented__btn segmented__btn--active" type="button" data-status="all" data-i18n="events.status.all">All</button>
+          <button class="segmented__btn" type="button" data-status="on-sale" data-i18n="events.status.on-sale">On Sale</button>
+          <button class="segmented__btn" type="button" data-status="draft" data-i18n="events.status.draft">Draft</button>
+        </div>
+        <label class="field-pill field-pill--grow" aria-label="Search events">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" id="ev-search" placeholder="Search by name, venue, performer" data-i18n-placeholder="events.filter.placeholder">
+          <button class="events-search-clear hidden" id="ev-search-clear" type="button" aria-label="Clear search" data-i18n-aria-label="events.search.clear">✕</button>
+        </label>
+      </div>
+
+      <section class="product-list product-list--events mt-16" id="ev-list" role="table" aria-label="Events">
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Thumbnail"></div>
+          <div role="columnheader" data-i18n="events.col.event">Event</div>
+          <div role="columnheader" data-i18n="events.col.datetime">Date &amp; time</div>
+          <div role="columnheader" data-i18n="events.col.venue">Venue</div>
+          <div role="columnheader" data-i18n="events.col.tickets">Tickets</div>
+          <div role="columnheader" data-i18n="events.col.revenue">Revenue</div>
+          <div role="columnheader" data-i18n="events.col.status">Status</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <!-- Upcoming -->
+        <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="spring launch coastline ep listening party 聆聽會 legacy taipei 台北 coastline mika l">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row1.title">Spring Launch — Coastline EP listening party</a></div>
+              <div class="product-list__meta" data-i18n="events.row1.meta">Concert · Series 1/3</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row1.datetime">Apr 12, 2026 · 8:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row1.venue">Legacy Taipei · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">84 / 200<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:42%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$2,520</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="spring launch hualien encore 花蓮加場 hualien cultural center 花蓮 coastline">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row2.title">Spring Launch — Hualien encore</a></div>
+              <div class="product-list__meta" data-i18n="events.row2.meta">Concert · Series 2/3</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row2.datetime">Apr 19, 2026 · 7:30 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row2.venue">Hualien Cultural Center · Hualien</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">31 / 120<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:26%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$930</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-period="upcoming" data-status="scheduled" data-search="online q&a with fanvestors 問答會 online zoom 線上 coastline">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row3.title">Online — Q&amp;A with fanvestors</a></div>
+              <div class="product-list__meta" data-i18n="events.row3.meta">Meet &amp; greet</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row3.datetime">May 04, 2026 · 9:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row3.venue">Online (Zoom)</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets event-tickets--unlimited" data-i18n="events.row3.tickets">— / unlimited</div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span class="badge__dot"></span><span data-i18n="events.badge.scheduled">Scheduled</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <!-- Past -->
+        <div class="product-list__row" role="row" data-period="past" data-status="ended" data-search="winter acoustic night 冬季原聲之夜 the wall taipei 台北 coastline rei">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row4.title">Winter Acoustic Night</a></div>
+              <div class="product-list__meta" data-i18n="events.row4.meta">Concert</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row4.datetime">Dec 14, 2025 · 8:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row4.venue">The Wall · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">180 / 180<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$5,400</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span class="badge__dot"></span><span data-i18n="events.badge.ended">Ended</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-period="past" data-status="ended" data-search="tokyo pop-up meet greet 東京快閃見面會 shibuya loft tokyo 澀谷 東京 coastline">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row5.title">Tokyo Pop-up Meet &amp; Greet</a></div>
+              <div class="product-list__meta" data-i18n="events.row5.meta">Meet &amp; greet</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row5.datetime">Nov 02, 2025 · 6:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row5.venue">Shibuya Loft · Tokyo</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">60 / 60<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$1,800</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span class="badge__dot"></span><span data-i18n="events.badge.ended">Ended</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <!-- Drafts -->
+        <div class="product-list__row" role="row" data-period="drafts" data-status="draft" data-search="summer festival 2026 夏日音樂節">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title" data-i18n="events.row6.title">Summer Festival 2026</div>
+              <div class="product-list__meta" data-i18n="events.row6.meta">Festival</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime text-sub" role="cell" data-i18n="events.row6.datetime">Date TBD</div>
+          <div class="product-list__cell product-list__venue" role="cell">—</div>
+          <div class="product-list__cell product-list__tickets" role="cell"><div class="event-tickets event-tickets--unlimited">—</div></div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span class="badge__dot"></span><span data-i18n="events.badge.draft">Draft</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-period="drafts" data-status="draft" data-search="acoustic living-room session 原聲客廳場 coastline">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No event image"><i data-lucide="calendar" class="ztor-icon" aria-hidden="true"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title" data-i18n="events.row7.title">Acoustic living-room session</div>
+              <div class="product-list__meta" data-i18n="events.row7.meta">Meet &amp; greet</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime text-sub" role="cell" data-i18n="events.row7.datetime">Date TBD</div>
+          <div class="product-list__cell product-list__venue" role="cell">—</div>
+          <div class="product-list__cell product-list__tickets" role="cell"><div class="event-tickets event-tickets--unlimited">—</div></div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span class="badge__dot"></span><span data-i18n="events.badge.draft">Draft</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <a class="btn btn--icon btn--xs" href="create-event.html" aria-label="Edit" data-i18n-aria-label="events.edit"><i data-lucide="pencil" class="ztor-icon"></i></a>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Duplicate" data-i18n-aria-label="events.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="Delete" data-i18n-aria-label="events.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- F3 搜尋／篩選無結果空狀態 -->
+      <div class="empty-stub hidden" id="ev-empty" style="min-height:auto;padding:48px 0">
+        <div class="empty-stub__inner">
+          <div class="empty-stub__mark">◍</div>
+          <div class="empty-stub__title" data-i18n="events.empty.noresult.title">No events match</div>
+          <p class="empty-stub__sub" data-i18n="events.empty.noresult.sub">Try a different time tab, status, or search term.</p>
+          <button class="btn btn--outline btn--sm" id="ev-empty-clear" type="button" data-i18n="events.empty.noresult.clear">Clear search</button>
+        </div>
+      </div>
+
+      </div><!-- /.when-data -->
+
+      <!-- Account-level empty state (no events created on this account) · spec 5.1.6
+           各 F「其他狀態 · 無資料」. Shown only when <html data-data-state="empty">. -->
+      <div class="when-empty">
+        <section class="card"><div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="calendar" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="events.empty.account.title">No events yet</h3>
+          <p class="empty-card__text" data-i18n="events.empty.account.text">Create your first event to start selling tickets, managing guest lists, and tracking revenue.</p>
+          <a class="btn btn--primary empty-card__cta" href="create-event.html" data-i18n="events.empty.account.cta">＋ New event</a>
+        </div></section>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="icons.js?v=20260617t"></script>
+<script src="i18n.js?v=20260617t"></script>
+<script src="sidebar.js?v=20260617t"></script>
+<script>
+/* Events F3 — 時段分頁 × 狀態切換 × 活動搜尋（名稱／場地／Lineup）三者 AND 過濾目前清單。
+   靜態列各帶 data-period / data-status / data-search（含中英＋表演者名）；search 即時、可清除、無結果顯空狀態。
+   時段分頁計數依實際列數填入。草稿改由狀態軸管（D060/D033 c）：選 Draft 跨時段顯示所有草稿、其餘狀態不含草稿。 */
+(function () {
+  const list      = document.getElementById('ev-list');
+  const rows      = Array.from(list.querySelectorAll('.product-list__row'));
+  const tabsEl    = document.getElementById('ev-tabs');
+  const tabs      = Array.from(tabsEl.querySelectorAll('[data-tab]'));
+  const statusBtns= Array.from(document.querySelectorAll('#ev-status [data-status]'));
+  const searchEl  = document.getElementById('ev-search');
+  const clearEl   = document.getElementById('ev-search-clear');
+  const emptyEl   = document.getElementById('ev-empty');
+  const emptyClr  = document.getElementById('ev-empty-clear');
+
+  let period = 'upcoming', status = 'all', q = '';
+
+  function apply() {
+    let shown = 0;
+    rows.forEach(r => {
+      const okQ = !q || (r.dataset.search || '').indexOf(q) !== -1;
+      // D060/D033 (c): Draft is a status across time, not a time tab.
+      // status=draft → show all drafts regardless of period; otherwise →
+      // match active time tab + sale status, drafts excluded (unpublished).
+      let vis;
+      if (status === 'draft') {
+        vis = r.dataset.status === 'draft' && okQ;
+      } else {
+        vis = r.dataset.period === period && r.dataset.status !== 'draft'
+              && (status === 'all' || r.dataset.status === status) && okQ;
+      }
+      r.classList.toggle('hidden', !vis);
+      if (vis) shown++;
+    });
+    tabs.forEach(t => {
+      const cnt = t.querySelector('.tabs__item-count');
+      if (cnt) cnt.textContent = rows.filter(r => r.dataset.period === t.dataset.tab).length;
+      t.classList.toggle('tabs__item--active', t.dataset.tab === period);
+    });
+    statusBtns.forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.status === status));
+    clearEl.classList.toggle('hidden', !q);
+    list.classList.toggle('hidden', shown === 0);
+    emptyEl.classList.toggle('hidden', shown !== 0);
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => { period = t.dataset.tab; apply(); }));
+  statusBtns.forEach(b => b.addEventListener('click', () => { status = b.dataset.status; apply(); }));
+  searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
+  function clearSearch() { searchEl.value = ''; q = ''; searchEl.focus(); apply(); }
+  clearEl.addEventListener('click', clearSearch);
+  emptyClr.addEventListener('click', clearSearch);
+
+  apply();
+})();
+</script>
+<script src="reveal.js?v=20260617t"></script>
+<script src="devtools.js?v=20260617t"></script>
+<script src="scenario.js?v=20260617t"></script>
+</body>
+</html>
