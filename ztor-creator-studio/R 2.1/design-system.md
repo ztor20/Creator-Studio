@@ -931,7 +931,7 @@ Static callout — no interactive states.
 | Base | `.upload-tile` | 縮圖格／證書格（96px；grid 內 84px） |
 | File | `.upload-tile--file` | 檔案上傳列（數位下載檔、合照；110px） |
 
-**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）。
+**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）；`.upload-grid--2x2` 改 2 欄（搭 showcase 並排用）。`.upload-showcase`：主圖（左）＋縮圖格（右）並排兩等寬欄，附圖排 2×2 對齊 1:1 主圖高度；窄於 880px 收成主圖在上、附圖 4 格在下（create-product 展示它）。
 
 **States**
 
@@ -949,6 +949,8 @@ Static callout — no interactive states.
 | `.upload-tile__icon` / `__title` / `__hint` | icon／主文案（`--foreground` 500）／限制說明 |
 | `.upload-tile.is-filled` | 已選檔狀態：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-product／create-event／register-ip 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
+| `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
+| `.upload-showcase` | 主圖＋縮圖格並排兩等寬欄（≤880px 收回堆疊） |
 
 **Token usage** (→ Pillar 2 Role)
 

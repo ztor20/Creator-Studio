@@ -2,15 +2,13 @@
    Ztor Creator Studio R 2.0 — Self-hosted fonts
 
    Latin: Geist (Vercel) + Inter (body) — matches ztor stack.
-   CJK:   Noto Sans TC — system-installed on most Mac / Linux; on
-          Windows it falls through to the OS CJK default (JhengHei).
-          Self-hosting Noto Sans TC is an open task — it's a ~10MB+
-          family even subsetted; not yet bundled.
+   CJK:   Noto Sans TC — self-hosted & subsetted (see @font-face below).
+          中文 renders as Noto on every machine; no reliance on OS install.
 
    Loading order: Geist priority for UI / display, Inter for body, and
    Noto Sans TC as the CJK fallback so 中文字 falls through per-glyph
-   without per-element overrides. (R 2.1.39 — Taipei Sans TC Beta
-   removed by spec; CJK switched to Noto Sans TC.)
+   without per-element overrides. (R 2.1.40 — Noto Sans TC self-hosted;
+   R 2.1.39 removed Taipei Sans TC Beta.)
    ============================================================ */
 
 @font-face {
@@ -48,9 +46,22 @@
   font-display: swap;
 }
 
-/* R 2.1.39: Taipei Sans TC Beta @font-face removed per user spec — Noto Sans
-   TC is now the canonical CJK face. The .ttf files at /fonts/TaipeiSansTCBeta-*
-   are no longer referenced and can be deleted from disk in a separate pass. */
+/* CJK — Noto Sans TC, self-hosted & subsetted (R 2.1.40).
+   Subset = only the 中文/全形 glyphs actually used across the served
+   html/js/css (~1.25k glyphs → ~375KB woff2), variable wght 100–900 so every
+   weight maps through the axis. unicode-range pins it to CJK blocks so Latin
+   stays on Geist / Inter (no metric interference). Re-subset after adding new
+   中文 copy:  pyftsubset "NotoSansTC[wght].ttf" --text-file=<used-glyphs.txt>
+   --flavor=woff2 --output-file=fonts/NotoSansTC-subset.woff2 --no-hinting
+   (Taipei Sans TC Beta .ttf removed from /fonts in this pass.) */
+@font-face {
+  font-family: "Noto Sans TC";
+  src: url("../fonts/NotoSansTC-subset.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
 
 /* Override ztor's :root font stacks so CJK glyphs fall through to Noto Sans
  * TC while Latin glyphs stay on Geist / Inter. ztor's _tokens.css declares
