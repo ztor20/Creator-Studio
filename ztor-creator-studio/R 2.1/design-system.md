@@ -9,7 +9,7 @@
 > | `background-canvas` | `#F7F7F7` | **`#FFFFFF`** (clean white since 2026-06-09; was `#FAFAF7` warm paper, since neutralised) |
 > | `border-soft` | `#E5E5E5` | `#E5E5E5` (cooler hairline retained — was briefly `#D1D1C7` 2026-05-22→25, reverted on user feedback) |
 > | `primary` | `#171717` | **`#ffa33f`** (highlighter orange) |
-> | `primary-foreground` | `#FFFFFF` | **`#171717`** (dark text on orange) |
+> | `primary-foreground` | `#FFFFFF` | **light `#FFFFFF` / dark `#171717`** (使用者指定 2026-06-22：白天白字、黑夜黑字；白字在淡橘上對比 ~1.9:1，低於 WCAG AA) |
 > | `primary-hover` | `#000000` | **`#ffb866`** (brighter orange) |
 > | `ring` | `#ffa33f` (light, =primary) · `#FDFDFD` (dark) | orange focus ring (=primary), by request 2026-06-02 |
 >
@@ -79,7 +79,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | `foreground-subtle` | rgb 115 115 115 | `#737373` |
 | `primary` | rgb 255 219 41 | `#ffa33f` ⚡ |
 | `primary-hover` | rgb 255 229 92 | `#ffb866` ⚡ |
-| `primary-foreground` | rgb 23 23 23 | `#171717` ⚡ |
+| `primary-foreground` | rgb 23 23 23 | light `#FFFFFF` / dark `#171717` ⚡ |
 | `ring` | rgb 255 219 41 | `#ffa33f` (=primary) |
 | `border-soft` | rgb 229 229 229 | `#E5E5E5` |
 | `status-success` | rgb 34 197 94 | `#22C55E` |
@@ -150,7 +150,7 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `foreground-subtle` | `#737373` | Caption, metadata, meta-text |
 | `primary` | `#ffa33f` ⚡ | Primary CTA fill — "Create project" / "Request payout" / "Publish". The signature color |
 | `primary-hover` | `#ffb866` ⚡ | CTA hover — brighter (reverse of ztor's "darken on hover" pattern) |
-| `primary-foreground` | `#171717` ⚡ | Text inside primary CTAs (dark text on orange, ~13:1) |
+| `primary-foreground` | light `#FFFFFF` / dark `#171717` ⚡ | Text inside primary CTAs (使用者指定 2026-06-22：白天白字、黑夜黑字；白字對比 ~1.9:1 < WCAG AA) |
 | `ring` | `#ffa33f` | Focus ring — orange (=primary), by request 2026-06-02 |
 | `border-soft` | `#E5E5E5` | Hairline rule (rare — usually swapped for shadow rim). Retained from base ztor for clean contrast on the white canvas |
 
@@ -289,7 +289,7 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | |
 | **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
 | **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 |
-| **Primary — foreground** (text on orange) | `--primary-foreground` | `#171717` | near-black, ~14:1 contrast |
+| **Primary — foreground** (text on orange) | `--primary-foreground` | light `#FFFFFF` / dark `#171717` | 使用者指定 2026-06-22：白天白字、黑夜黑字（白字 ~1.9:1 < WCAG AA） |
 | **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
 | **Status — success** | `--status-success` | `#22C55E` | green.500 |
@@ -449,7 +449,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
-| Filter tabs | 🟡 molecule | ✓ App | Secondary status filter pills with live counts, row below the primary tabs (E-Shop F3) | [filter-tabs.css](./ds-components/filter-tabs.css) |
+| Filter tabs | 🟡 molecule | ✓ App | Secondary status filter pills with live counts, row below the primary tabs (E-Shop F3). Base = grey-muted active (orders, auction-detail); `.filter-tabs--brand` = soft-orange active + orange/bubble-less counts (E-Shop, paired with underline type tabs) | [filter-tabs.css](./ds-components/filter-tabs.css) |
 | Cookie banner | 🟡 molecule | ✓ App | Dismissible consent pill, bottom-right | [cookie-banner.css](./ds-components/cookie-banner.css) |
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
 | Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker | [selection-card.css](./ds-components/selection-card.css) |
