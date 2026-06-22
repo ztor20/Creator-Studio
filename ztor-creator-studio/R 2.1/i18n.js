@@ -4,6 +4,7 @@
  *   <h1 data-i18n="page.dashboard.h1">Dashboard</h1>          → swaps textContent (innerHTML)
  *   <input data-i18n-placeholder="nav.search-placeholder"/>   → swaps placeholder
  *   <button data-i18n-aria-label="nav.lang-label"/>           → swaps aria-label
+ *   <button data-i18n-title="nav.search"/>                    → swaps title (tooltip)
  *
  * The .app-topbar__lang button toggles via toggleLang(); state persists in localStorage.
  * Default language is English (R 2.1's body copy is mostly EN); zh-Hant is the alternate.
@@ -733,6 +734,8 @@
     'e-shop.btn.new-bundle':  { en: 'Create bundle from products',         zh: '從既有商品建立 bundle' },
     'e-shop.btn.new-auction': { en: 'Create auction',                      zh: '建立拍賣' },
     'e-shop.btn.storeset':    { en: 'Store settings',                      zh: '商店設定' },
+    'e-shop.btn.search':      { en: 'Search',                              zh: '搜尋' },
+    'e-shop.search.close':    { en: 'Close search',                        zh: '關閉搜尋' },
     'e-shop.btn.seefan':      { en: 'See as fan',                          zh: '粉絲視角' },
     'e-shop.storeset.title':  { en: 'Store settings',                      zh: '商店設定' },
     'e-shop.storeset.close':  { en: 'Close store settings',                zh: '關閉商店設定' },
@@ -2956,6 +2959,10 @@
     root.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
       const v = t(el.dataset.i18nAriaLabel);
       if (v != null) el.setAttribute('aria-label', v);
+    });
+    root.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const v = t(el.dataset.i18nTitle);
+      if (v != null) el.setAttribute('title', v);
     });
     /* Topbar lang button: highlight active language span via [data-lang] markers */
     document.querySelectorAll('.app-topbar__lang').forEach(btn => {
