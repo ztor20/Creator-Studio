@@ -1200,7 +1200,7 @@
     'settings.theme.light':         { en: 'Light',                zh: '淺色' },
     'settings.theme.light-desc':    { en: 'Warm paper canvas — the default for editorial.', zh: '暖紙底——編輯內容的預設。' },
     'settings.theme.dark':          { en: 'Dark',                 zh: '深色' },
-    'settings.theme.dark-desc':     { en: 'Translucent overlays on near-black. Yellow CTA stays.', zh: '近黑底配半透明圖層。黃色 CTA 保留。' },
+    'settings.theme.dark-desc':     { en: 'Translucent overlays on near-black. Orange CTA stays.', zh: '近黑底配半透明圖層。橘色 CTA 保留。' },
     'settings.theme.system':        { en: 'System',               zh: '跟隨系統' },
     'settings.theme.system-desc':   { en: 'Follow the OS · re-evaluates when the OS flips.', zh: '跟隨作業系統 · OS 切換時自動套用。' },
     'settings.navmode.title':       { en: 'Display mode',         zh: '顯示模式' },

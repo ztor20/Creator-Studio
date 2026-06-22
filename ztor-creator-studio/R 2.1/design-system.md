@@ -4,16 +4,16 @@
 
 > **Differs from ztor**: two light-mode tokens shift to give the system a single, attention-grabbing brand color where ztor was deliberately near-monochrome.
 >
-> | Token | ztor | ztor-yellow |
+> | Token | ztor | ztor-orange |
 > |---|---|---|
 > | `background-canvas` | `#F7F7F7` | **`#FFFFFF`** (clean white since 2026-06-09; was `#FAFAF7` warm paper, since neutralised) |
 > | `border-soft` | `#E5E5E5` | `#E5E5E5` (cooler hairline retained — was briefly `#D1D1C7` 2026-05-22→25, reverted on user feedback) |
-> | `primary` | `#171717` | **`#FFDB29`** (highlighter yellow) |
-> | `primary-foreground` | `#FFFFFF` | **`#171717`** (dark text on yellow) |
-> | `primary-hover` | `#000000` | **`#FFE55C`** (brighter yellow) |
-> | `ring` | `#FFDB29` (light, =primary) · `#FDFDFD` (dark) | yellow focus ring (=primary), by request 2026-06-02 |
+> | `primary` | `#171717` | **`#ffa33f`** (highlighter orange) |
+> | `primary-foreground` | `#FFFFFF` | **`#171717`** (dark text on orange) |
+> | `primary-hover` | `#000000` | **`#ffb866`** (brighter orange) |
+> | `ring` | `#ffa33f` (light, =primary) · `#FDFDFD` (dark) | orange focus ring (=primary), by request 2026-06-02 |
 >
-> Dark-mode `primary` also moves to `#FFDB29` to keep the yellow voice paired across modes. Every other ztor token (surface, foreground, status accents, radii, shadows, motion, typography) is preserved as-is. All `ds-components/*.css` are 100% token-driven, so the visual flip happens entirely in `ds-components/_tokens.css`.
+> Dark-mode `primary` also moves to `#ffa33f` to keep the orange voice paired across modes. Every other ztor token (surface, foreground, status accents, radii, shadows, motion, typography) is preserved as-is. All `ds-components/*.css` are 100% token-driven, so the visual flip happens entirely in `ds-components/_tokens.css`.
 
 ---
 
@@ -25,11 +25,11 @@
 
 **Locales** — `en (primary) · zh-Hant (secondary)`, toggled in the topbar and persisted. CJK fallback font `Taipei Sans TC Beta` (self-hosted, 3 weights) is appended to every `--font-*` stack so Traditional Chinese never falls back to a system serif.
 
-**Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-yellow-primary`.
+**Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
-**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — cards separate by shadow, and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6–7px radii, and multi-layer rim+drop shadows in place of borders. Its one high-saturation move is **a highlighter-yellow primary (`#FFDB29`) with near-black text** — used structurally, not only on CTAs: active nav, KPI highlight tiles, sticky-note callouts, hero fills, pre-order pills. Hairlines stay at `#E5E5E5`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
+**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — cards separate by shadow, and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6–7px radii, and multi-layer rim+drop shadows in place of borders. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active nav, KPI highlight tiles, sticky-note callouts, hero fills, pre-order pills. Hairlines stay at `#E5E5E5`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
 
-**Similar systems** — [Notion](https://notion.so) (highlighter-yellow accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
+**Similar systems** — [Notion](https://notion.so) (highlighter-orange accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
 
 ---
 
@@ -40,10 +40,10 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 ### Do
 
 - Use `Geist Variable` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
-- Reserve `--primary` (`#FFDB29`) for one role: the primary CTA. The hero banner, sticky-note callouts, and the brand mark may also touch yellow — never as a fill for nav chrome, KPI highlights, or status pills.
+- Reserve `--primary` (`#ffa33f`) for one role: the primary CTA. The hero banner, sticky-note callouts, and the brand mark may also touch orange — never as a fill for nav chrome, KPI highlights, or status pills.
 - Apply `--radius` (6 px) to buttons, `--radius-md` (7 px) to cards / surfaces, `--radius-lg` (10 px) to dropdowns and mega menus.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
-- Use the `pill` taxonomy (`pill--yellow / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
+- Use the `pill` taxonomy (`pill--orange / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
 - Use Lucide icons via the local `icons.js` registry, stroke-width `1.2`, `currentColor` inheritance. Never inline raw `<svg>` for chrome icons.
 - Use `var(--font-display)` only for hero / page H1; `var(--font-ui)` for everything else (buttons, nav, labels, KPI titles, table headers).
 - Pair `--primary` with `--foreground` for button text. For longer button copy add `white-space: nowrap` on the `.btn` base.
@@ -77,10 +77,10 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | `foreground` | rgb 0 0 0 | `#000000` |
 | `foreground-muted` | rgba 0 0 0 / .7 | `rgba(0,0,0,0.7)` |
 | `foreground-subtle` | rgb 115 115 115 | `#737373` |
-| `primary` | rgb 255 219 41 | `#FFDB29` ⚡ |
-| `primary-hover` | rgb 255 229 92 | `#FFE55C` ⚡ |
+| `primary` | rgb 255 219 41 | `#ffa33f` ⚡ |
+| `primary-hover` | rgb 255 229 92 | `#ffb866` ⚡ |
 | `primary-foreground` | rgb 23 23 23 | `#171717` ⚡ |
-| `ring` | rgb 255 219 41 | `#FFDB29` (=primary) |
+| `ring` | rgb 255 219 41 | `#ffa33f` (=primary) |
 | `border-soft` | rgb 229 229 229 | `#E5E5E5` |
 | `status-success` | rgb 34 197 94 | `#22C55E` |
 | `status-error` | rgb 218 49 74 | `#DA314A` |
@@ -99,7 +99,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Base spacing | Dense scale — 1, 4, 6, 8, 10, 12, 14, 16, 24 |
 | Card shadow | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` (rim + drop) |
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
-| Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also yellow) |
+| Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist Variable) |
 | Button label | `15px / 500 / tracking -0.3px` (Geist) |
 | Icon system | Lucide (via `icons.js` registry) |
@@ -119,8 +119,8 @@ System metadata. No design values — just provenance.
 | `source` | Ztor Creator Studio — creator-economy operations dashboard (this project, R 2.1) |
 | `version` | R 2.1 |
 | `date` | 2026-06-01 (de-branded + Pattern cards + provenance cleanup) |
-| `base` | Ztor (parent design system) — three light-mode tokens diverged for highlighter-yellow CTA |
-| `notes` | `--border` reverted from `#D1D1C7` → `#E5E5E5` on 2026-05-25 (cooler hairline, per user feedback). Canvas neutralised to white `#FFFFFF` and warm surfaces removed 2026-06-09. Yellow Z brand mark replaced with full Ztor wordmark SVG in R 2.1.6. 13 app-tier components promoted from `shared.css` to `ds-components/*.css` across Phase 0-4 (2026-05-26). |
+| `base` | Ztor (parent design system) — three light-mode tokens diverged for highlighter-orange CTA |
+| `notes` | `--border` reverted from `#D1D1C7` → `#E5E5E5` on 2026-05-25 (cooler hairline, per user feedback). Canvas neutralised to white `#FFFFFF` and warm surfaces removed 2026-06-09. Orange Z brand mark replaced with full Ztor wordmark SVG in R 2.1.6. 13 app-tier components promoted from `shared.css` to `ds-components/*.css` across Phase 0-4 (2026-05-26). |
 
 ---
 
@@ -130,7 +130,7 @@ System metadata. No design values — just provenance.
 
 ### 1.1 Color
 
-Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-gray surfaces and a single high-saturation brand color** — highlighter yellow `#FFDB29` plays the role of primary CTA and nothing else does. Status accents stay reserved for dashboard data dots.
+Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-gray surfaces and a single high-saturation brand color** — highlighter orange `#ffa33f` plays the role of primary CTA and nothing else does. Status accents stay reserved for dashboard data dots.
 
 > **Surface-layer contrast（全域通則，所有元件適用）** — 這些 surface 是一層階梯（白 `--surface`/`--background` → 灰 `--surface-muted`/`--surface-shell`/`--surface-rail`）。任何元件靠「填色／邊框／陰影跟它所在那層的對比」被看見，**填色和背景同色就會消失**。所以：淺灰填（soft 按鈕、segmented 軌道、chip、hover 態）只在更亮的底成立；白填要靠 1px 邊框在白底成形；要跨層安全就用實線 border，別用「填色當邊」或「純陰影當邊」。做／改任何有填色的元件時，先確定它坐在哪幾層、並在**最深的那層**目視驗證。（按鈕的白/灰底實例見 §4.2 Button。）
 
@@ -148,10 +148,10 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `foreground` | `#000000` | Body text, headings (dominant — 415 occurrences on home) |
 | `foreground-muted` | `rgba(0,0,0,0.7)` | Secondary copy, supporting sentences |
 | `foreground-subtle` | `#737373` | Caption, metadata, meta-text |
-| `primary` | `#FFDB29` ⚡ | Primary CTA fill — "Create project" / "Request payout" / "Publish". The signature color |
-| `primary-hover` | `#FFE55C` ⚡ | CTA hover — brighter (reverse of ztor's "darken on hover" pattern) |
-| `primary-foreground` | `#171717` ⚡ | Text inside primary CTAs (dark text on yellow, ~13:1) |
-| `ring` | `#FFDB29` | Focus ring — yellow (=primary), by request 2026-06-02 |
+| `primary` | `#ffa33f` ⚡ | Primary CTA fill — "Create project" / "Request payout" / "Publish". The signature color |
+| `primary-hover` | `#ffb866` ⚡ | CTA hover — brighter (reverse of ztor's "darken on hover" pattern) |
+| `primary-foreground` | `#171717` ⚡ | Text inside primary CTAs (dark text on orange, ~13:1) |
+| `ring` | `#ffa33f` | Focus ring — orange (=primary), by request 2026-06-02 |
 | `border-soft` | `#E5E5E5` | Hairline rule (rare — usually swapped for shadow rim). Retained from base ztor for clean contrast on the white canvas |
 
 ⚡ = changed from ztor
@@ -239,7 +239,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 **Edge & overlay tokens (2026-06-15)** — `--border-inverse` (`rgba(255,255,255,0.1)`, same in both themes) is the hairline on always-dark / inverse surfaces (footer slab). `--overlay-tint` (`rgba(0,0,0,0.45)`) is the darkening mixed into modal backdrops (`.payout-modal`, paired with `--overlay-blur`).
 
-**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags 3 remaining bare colors, all in `selection-card.css:83–85`: the theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`). These are **irreducible** — each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#FFDB29` / `#171717`) so the preview shows what each mode looks like even when you're viewing a different mode; they can't reference theme-reactive tokens. All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
+**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags 3 remaining bare colors, all in `selection-card.css:83–85`: the theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`). These are **irreducible** — each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#171717`) so the preview shows what each mode looks like even when you're viewing a different mode; they can't reference theme-reactive tokens. All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
 
 ### 1.6 Motion
 
@@ -287,17 +287,17 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Foreground — muted** (descriptions) | `--foreground-muted` | `rgba(0,0,0,0.7)` | |
 | **Foreground — subtle** (meta, eyebrow) | `--foreground-subtle` | `#737373` | |
 | **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | |
-| **Primary — fill** (CTA bg) | `--primary` | `#FFDB29` | yellow.500 |
-| **Primary — hover** | `--primary-hover` | `#FFE55C` | yellow.300 |
-| **Primary — foreground** (text on yellow) | `--primary-foreground` | `#171717` | near-black, ~14:1 contrast |
+| **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
+| **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 |
+| **Primary — foreground** (text on orange) | `--primary-foreground` | `#171717` | near-black, ~14:1 contrast |
 | **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
-| **Ring** (focus outline) | `--ring` | `#FFDB29` | yellow (=primary), by request 2026-06-02 |
+| **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
 | **Status — success** | `--status-success` | `#22C55E` | green.500 |
 | **Status — error** | `--status-error` | `#DA314A` | red.500 |
 | **Status — info** | `--status-info` | `#266DF0` | blue.500 |
 | **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots |
 
-**Reserved**: `--primary` (yellow) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--surface-muted` instead.
+**Reserved**: `--primary` (orange) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--surface-muted` instead.
 
 ### 2.2 Spacing Roles
 
@@ -365,9 +365,9 @@ No higher elevation than Card. Hero is the only deeply-shadowed surface and it d
 | `--foreground` | `#000000` | `#FDFDFD` | |
 | `--foreground-muted` | `rgba(0,0,0,0.7)` | `rgba(253,253,253,0.7)` | |
 | `--foreground-subtle` | `#737373` | `rgba(253,253,253,0.4)` | |
-| `--primary` | `#FFDB29` | `#FFDB29` | **yellow stays** — paired across modes for brand consistency |
+| `--primary` | `#ffa33f` | `#ffa33f` | **orange stays** — paired across modes for brand consistency |
 | `--border` | `#E5E5E5` | `rgba(253,253,253,0.12)` | inverted hairline |
-| `--ring` | `#FFDB29` | `#FDFDFD` | light: yellow focus ring (by request); dark: white ring |
+| `--ring` | `#ffa33f` | `#FDFDFD` | light: orange focus ring (by request); dark: white ring |
 | `--status-success` | `#22C55E` | `#00A63E` | pure-RGB green for dark |
 | `--status-error` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
@@ -435,7 +435,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Component | `_layer` | Status | Where seen (Ztor Creator Studio) | CSS |
 |---|---|---|---|---|
 | Button | 🟢 atom | ✓ App | Primary CTAs, wizard action bar, header actions (primary / outline / ghost) | [button.css](./ds-components/button.css) |
-| Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants yellow / success / error / info / warning / accent (purple) / neutral | [badge.css](./ds-components/badge.css) |
+| Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral | [badge.css](./ds-components/badge.css) |
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
 | Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
@@ -445,13 +445,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (`--highlight` = yellow tint) | [kpi.css](./ds-components/kpi.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (`--highlight` = orange tint) | [kpi.css](./ds-components/kpi.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
-| Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-yellow pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
+| Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
 | Filter tabs | 🟡 molecule | ✓ App | Secondary status filter pills with live counts, row below the primary tabs (E-Shop F3) | [filter-tabs.css](./ds-components/filter-tabs.css) |
 | Cookie banner | 🟡 molecule | ✓ App | Dismissible consent pill, bottom-right | [cookie-banner.css](./ds-components/cookie-banner.css) |
-| Empty stub | 🟡 molecule | ✓ App | Routes not yet built (yellow mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
+| Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
 | Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker | [selection-card.css](./ds-components/selection-card.css) |
 | Composer | 🟡 molecule | ✓ App | Drop / type card + bottom action bar (tool icons · credit meter · circular send) | [composer.css](./ds-components/composer.css) |
 | Dropdown menu | 🟡 molecule | ✓ App | E-Shop "＋ New" action menu (details/summary, no JS); trigger is a real Button | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
@@ -510,7 +510,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 ### 4.2 Button
 
-**`_layer`** · atom — Primary action control; solid highlighter-yellow CTA, neutral outline, and quiet ghost for low-emphasis actions.
+**`_layer`** · atom — Primary action control; solid highlighter-orange CTA, neutral outline, and quiet ghost for low-emphasis actions.
 
 **Anatomy**
 
@@ -521,7 +521,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
    icon/arrow each own flex child
 ```
 
-**Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (yellow), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
+**Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
 **Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13.5px (9×14 padding) / `--sm` 12.5px / `--lg` 14.5px.
 
@@ -539,10 +539,10 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-btn` | Canonical primary button (44px, yellow) |
+| `.ztor-btn` | Canonical primary button (44px, orange) |
 | `.ztor-btn--outline` | White surface + 1px `--border` hairline, flat (no shadow) |
 | `.ztor-btn--sm` / `.ztor-btn--lg` | 36px / 52px sizes |
-| `.btn` + `.btn--primary` | Product-density yellow CTA |
+| `.btn` + `.btn--primary` | Product-density orange CTA |
 | `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；padding −1px 補償保持尺寸（2026-06-12 取代「填色當邊」與多餘陰影） |
 | `.btn--ghost` | Transparent, muted text; tints on hover |
 | `.btn--soft` | Resting grey fill (`--foreground` 6% on surface), no border; quiet always-visible secondary（2026-06-12） |
@@ -558,7 +558,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 | 變體 | 強度 | 用在哪 | 同一塊可放幾個 | 例 |
 |---|---|---|---|---|
-| `--primary`（黃填） | 最強 CTA | 這一塊裡最重要的那一個動作 | **最多 1 個** | Create · Publish · Request payout |
+| `--primary`（橘填） | 最強 CTA | 這一塊裡最重要的那一個動作 | **最多 1 個** | Create · Publish · Request payout |
 | `--outline`（白底＋1px 線框） | 次要 | 內容區的次要／取消，需要明確邊界 | 想放幾個都行 | Back · Cancel · See as fan |
 | `--soft`（灰填、無框） | 次要、更安靜 | 工具列／密集控制列，多個次要並排 | 想放幾個都行 | Export · Store settings |
 | `--ghost`（透明→hover 上色） | 低強調 | 行內、輔助、不搶版面 | 想放幾個都行 | 列內動作 · Save draft |
@@ -566,9 +566,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **規則**
 
-1. 每一塊（卡片／彈窗／工具列…）只留 **1 個** 黃 primary 當最明顯的主按鈕；整頁可以有多個 primary，但別擠在同一塊。
+1. 每一塊（卡片／彈窗／工具列…）只留 **1 個** 橘 primary 當最明顯的主按鈕；整頁可以有多個 primary，但別擠在同一塊。
 2. **Outline vs Soft**＝「要不要框」：白內容區要邊界 → outline；工具列／密集區要安靜 → soft。
-3. 破壞性動作（刪除）**不要**用黃 primary。⚠️ 目前**無紅色 destructive 變體**，是待補缺口——需要時補 `.btn--danger`。
+3. 破壞性動作（刪除）**不要**用橘 primary。⚠️ 目前**無紅色 destructive 變體**，是待補缺口——需要時補 `.btn--danger`。
 
 **按鈕 × 背景層（白底 vs 灰底）**
 
@@ -583,7 +583,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Do & Don't**
 
-- ✅ Do keep one yellow primary per view as the clear CTA.
+- ✅ Do keep one orange primary per view as the clear CTA.
 - ✅ Do put the icon/arrow in its own flex child so the 8px gap applies.
 - ❌ Don't bake the `→` into the label string (gap can't apply).
 - ❌ Don't use transparent-fill or fill-only outline on the white canvas — it reads as "nothing there"; the 1px `--border` hairline is the edge.
@@ -618,7 +618,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 └─────────────────────┘
 ```
 
-**Variants** — `.badge`: `--yellow`, `--success`, `--error`, `--info`, `--warning`, `--accent` (purple), `--neutral`. `.ztor-badge` (docs): `--success`, `--error`, `--info`, `--warning`. Plus `.ztor-metric-pill` inline metric chip for hero/prose.
+**Variants** — `.badge`: `--orange`, `--success`, `--error`, `--info`, `--warning`, `--accent` (purple), `--neutral`. `.ztor-badge` (docs): `--success`, `--error`, `--info`, `--warning`. Plus `.ztor-metric-pill` inline metric chip for hero/prose.
 
 **Sizes** — `.badge` 4×10 padding, 12.5px / 500, `--radius-md`. `.ztor-badge` 2×8 padding, 12px. `.ztor-metric-pill` 4×10 padding, 14px.
 
@@ -627,7 +627,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | State | Selector | Change |
 |---|---|---|
 | default | `.badge` | bg `--surface-muted`, text `--foreground-muted`, no ring, no dot |
-| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (yellow 30% · accent 16%), text = the saturated hue token |
+| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange 30% · accent 16%), text = the saturated hue token |
 
 No hover/focus/disabled — display-only.
 
@@ -637,7 +637,7 @@ No hover/focus/disabled — display-only.
 |---|---|
 | `.badge` | Flat neutral tag, `--radius-md`, no dot / no ring |
 | `.badge__dot` | `display:none` (legacy; the soft-tag look carries no dot) |
-| `.badge--yellow` | `color-mix(--primary 30%, surface)` + dark text |
+| `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
 | `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`) |
 | `.badge--warning` | 18% warning tint; text = `color-mix(--status-warning 50%, --foreground)` (hue too light for direct text) — added 2026-06-11 |
 | `.badge--neutral` | `--surface-muted` background |
@@ -653,7 +653,7 @@ No hover/focus/disabled — display-only.
 **Do & Don't**
 
 - ✅ Do pick a variant hue that matches the meaning (status or category).
-- ✅ Do reserve `--yellow` for the highlight state, not generic info.
+- ✅ Do reserve `--orange` for the highlight state, not generic info.
 - ❌ Don't make a badge clickable (it has no interactive state).
 - ❌ Don't invent ad-hoc status colors — use the variant tokens.
 
@@ -798,13 +798,13 @@ No interactive states — purely decorative.
 
 ### 4.6 Switch
 
-**`_layer`** · atom — Binary on/off toggle; 36 × 20 pill with a sliding 16px knob, on-state fills yellow.
+**`_layer`** · atom — Binary on/off toggle; 36 × 20 pill with a sliding 16px knob, on-state fills orange.
 
 **Anatomy**
 
 ```
 off  ◖○      ◗   .switch          (neutral track, knob left)
-on   ◖      ●◗   .switch--on      (yellow track, knob right)
+on   ◖      ●◗   .switch--on      (orange track, knob right)
                   └ ::after knob (16px)
 ```
 
@@ -826,7 +826,7 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 | Class / modifier | Effect |
 |---|---|
 | `.switch` | Off track + knob (knob is `::after`) |
-| `.switch--on` | On state: yellow track + knob slid right |
+| `.switch--on` | On state: orange track + knob slid right |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -852,7 +852,7 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 
 ### 4.7 Sticky-note
 
-**`_layer`** · atom — Yellow-tinted editorial callout with a leading `!` mark; the "Why" / hint / pending-warning block.
+**`_layer`** · atom — Orange-tinted editorial callout with a leading `!` mark; the "Why" / hint / pending-warning block.
 
 **Anatomy**
 
@@ -879,7 +879,7 @@ Static callout — no interactive states.
 
 | Class / modifier | Effect |
 |---|---|
-| `.stickynote` | Yellow-tinted callout block (flex, top-aligned) |
+| `.stickynote` | Orange-tinted callout block (flex, top-aligned) |
 | `.stickynote__mark` | Leading display glyph (`!`), `--font-display` 16px / 500 |
 
 **Token usage** (→ Pillar 2 Role)
@@ -891,7 +891,7 @@ Static callout — no interactive states.
 **Do & Don't**
 
 - ✅ Do keep it to 1–3 sentences and use `<strong>` for the key clause.
-- ✅ Do reserve it for editorial callouts (one of the few yellow fills allowed).
+- ✅ Do reserve it for editorial callouts (one of the few orange fills allowed).
 - ❌ Don't use it as a generic note container.
 - ❌ Don't stack multiple sticky-notes in one section.
 
@@ -1157,7 +1157,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 - ✅ Do drive open/close via `[data-state="open"]` on the panel and `[aria-expanded]` on the trigger together.
 - ✅ Do keep link descriptions short (the `__desc` is capped at 24ch).
 - ❌ Don't add a panel border — elevation comes from `--shadow-card` only.
-- ❌ Don't use yellow fill inside the panel; chrome stays neutral surfaces.
+- ❌ Don't use orange fill inside the panel; chrome stays neutral surfaces.
 
 
 **Code example**
@@ -1283,7 +1283,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
  └ .kpi__link    (optional quiet "view more →" link, e.g. Net income → Breakdown)
 ```
 
-**Variants** — Single variant. The only modifier is `.kpi__delta--neg` (negative delta color); no yellow / highlight fill exists. A tile may carry a `.kpi__delta` AND a linked `.kpi__meta` together — Dashboard F2 total-revenue pairs a week-over-week delta with a freshness/deep-link meta line (spec 5.1.1 §F2).
+**Variants** — Single variant. The only modifier is `.kpi__delta--neg` (negative delta color); no orange / highlight fill exists. A tile may carry a `.kpi__delta` AND a linked `.kpi__meta` together — Dashboard F2 total-revenue pairs a week-over-week delta with a freshness/deep-link meta line (spec 5.1.1 §F2).
 
 **Sizes** — Single size (`padding: 16px 18px`, `min-height: 96px`).
 
@@ -1319,7 +1319,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - ✅ Do use `.kpi__delta--neg` for declines so red signals direction without an icon.
 - ✅ Do choose `.kpi__meta` instead of `.kpi__delta` when the footnote is informational (e.g. release date), not a change.
-- ❌ Don't fill the tile yellow or use a highlight background — yellow is reserved for the primary CTA; a selected metric is shown by position, not color.
+- ❌ Don't fill the tile orange or use a highlight background — orange is reserved for the primary CTA; a selected metric is shown by position, not color.
 - ❌ Don't put more than one value in a single tile.
 
 
@@ -1491,13 +1491,13 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 ### 4.15 Tabs
 
-**`_layer`** · molecule — Horizontal tab bar with a hairline underline and yellow active accent, paired with `.tab-panel` one-at-a-time switching.
+**`_layer`** · molecule — Horizontal tab bar with a hairline underline and orange active accent, paired with `.tab-panel` one-at-a-time switching.
 
 **Anatomy**
 
 ```
 .tabs (role="tablist")
- ├ .tabs__item--active   (foreground + yellow underline)
+ ├ .tabs__item--active   (foreground + orange underline)
  │   └ .tabs__item-count  (optional pill badge)
  └ .tabs__item …
 ─────────────────────────────────────
@@ -1515,7 +1515,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|---|
 | default | — | Item color `--foreground-subtle`, transparent 2px bottom border |
 | hover | `.tabs__item:hover` | Color → `--foreground` |
-| active | `.tabs__item--active` | Color `--foreground` + `--primary` (yellow) bottom border |
+| active | `.tabs__item--active` | Color `--foreground` + `--primary` (orange) bottom border |
 | focus | `button.tabs__item:focus-visible` | `2px solid var(--primary)` outline, 2px offset |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -1524,7 +1524,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|
 | `.tabs` | Flex tab bar with bottom hairline + 20px bottom margin |
 | `.tabs__item` | Tab button/link, subtle by default, transparent underline |
-| `.tabs__item--active` | Foreground color + yellow `--primary` underline |
+| `.tabs__item--active` | Foreground color + orange `--primary` underline |
 | `.tabs__item-count` | Optional 11.5px count pill in `--surface-muted` |
 | `button.tabs__item` | Strips native button chrome when rendered as `<button>` |
 | `.tab-panel` | Hidden panel (display:none) |
@@ -1540,7 +1540,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - ✅ Do keep exactly one `.tabs__item--active` and its matching `.tab-panel--active` in sync.
 - ✅ Do use `.tabs__item-count` for record counts (e.g. Transactions 214).
-- ❌ Don't use the yellow underline anywhere it isn't a structural active indicator — yellow stays reserved.
+- ❌ Don't use the orange underline anywhere it isn't a structural active indicator — orange stays reserved.
 - ❌ Don't leave native button borders on `<button>` tabs; apply `button.tabs__item` reset.
 
 
@@ -1634,7 +1634,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 ```
 .empty-stub                            (grid place-items:center · min-height 70vh)
   .empty-stub__inner                   (max 460 · vertical stack · centered)
-    .empty-stub__mark                  (56×56 yellow chip · big display letter)
+    .empty-stub__mark                  (56×56 orange chip · big display letter)
     .empty-stub__title                 (display 28 / 500)
     .empty-stub__sub                   (muted prose)
     .empty-stub__refs                  (optional · wrap of static chips)
@@ -1656,7 +1656,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|
 | `.empty-stub` | `display:grid; place-items:center`, `min-height:70vh`, centered text, 40px padding |
 | `.empty-stub__inner` | Column stack, `max-width:460px`, `gap:12px`, centered |
-| `.empty-stub__mark` | 56×56 yellow `--primary` chip, `--radius-md`, 24px display letter, 1px hairline ring |
+| `.empty-stub__mark` | 56×56 orange `--primary` chip, `--radius-md`, 24px display letter, 1px hairline ring |
 | `.empty-stub__title` | Display 28px / 500, `letter-spacing:-0.5px` |
 | `.empty-stub__sub` | `--foreground-muted` description |
 | `.empty-stub__refs` | Optional centered wrap row (`gap:6px`) for static spec/source chips |
@@ -1709,7 +1709,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
     .selection-card__title             (required · 14.5px / 500)
     .selection-card__sub               (optional · 12.5px muted)
     .selection-card__tag               (optional · corner uppercase chip)
-  .selection-card--active              (yellow outline + tinted bg)
+  .selection-card--active              (orange outline + tinted bg)
 ```
 
 **Variants** — Two canonical compositions: (A) Wizard radio card = title + sub + tag (no swatch); (B) Settings theme picker = swatch + title (+ optional sub), with `--theme-light / --theme-dark / --theme-system` swatch fills.
@@ -1731,7 +1731,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.selection-grid` | Auto-fit `minmax(220px, 1fr)` grid, `gap:12px` |
 | `.selection-grid--3` | Forces 3 equal columns (theme picker) |
 | `.selection-card` | Column flex card, `--radius-md`, hairline ring, `cursor:pointer`, 150ms transitions |
-| `.selection-card--active` | Selected state: tinted bg + double yellow outline; recolors child `__tag` |
+| `.selection-card--active` | Selected state: tinted bg + double orange outline; recolors child `__tag` |
 | `.selection-card__title` | Required label, `--font-ui` 14.5px / 500 |
 | `.selection-card__sub` | Optional 12.5px muted description |
 | `.selection-card__tag` | Absolute top-right uppercase chip, 10.5px, `letter-spacing:0.4px` |
@@ -1741,7 +1741,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 **Token usage** (→ Pillar 2 Role)
 
 - `--surface` (bg) · `--border` (idle ring) · `--foreground-muted` (hover ring + sub) · `--foreground-subtle` (tag) · `--primary` (active outline) · `--primary-foreground` (active tag) · `--radius-md` (card) · `--radius-sm` (swatch) · `--font-ui` (title/tag)
-- **Token exception（記錄在案）**：`__swatch--theme-*` 的漸層用寫死 hex（`#FAFAF7` / `#171717` / `#FFDB29`）——縮圖畫的是「light / dark 主題長什麼樣」的固定預覽，本來就不該跟著當前主題變色。
+- **Token exception（記錄在案）**：`__swatch--theme-*` 的漸層用寫死 hex（`#FAFAF7` / `#171717` / `#ffa33f`）——縮圖畫的是「light / dark 主題長什麼樣」的固定預覽，本來就不該跟著當前主題變色。
 
 **Usage** — Use when the user picks one option from a small visible set (account type, theme) and you want the choices laid out as tactile cards. Avoid for long lists or multi-select — use a list/checkboxes there.
 
@@ -1774,7 +1774,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 ### 4.19 Composer
 
-**`_layer`** · molecule — Drop-or-type input card with a bottom action bar: left tool icons, right credit meter and a circular send button that flips to yellow when there's content.
+**`_layer`** · molecule — Drop-or-type input card with a bottom action bar: left tool icons, right credit meter and a circular send button that flips to orange when there's content.
 
 **Anatomy**
 
@@ -1787,10 +1787,10 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
       .composer__icon-btn              (32×32 neutral icon affordance · 18px glyph)
     .composer__bar-group               (right slot)
       .composer__credits               (small muted meter text)
-      .composer__send                  (36px circular submit · gray → yellow)
+      .composer__send                  (36px circular submit · gray → orange)
 ```
 
-**Variants** — Two input modes in the top slot: drop zone (`.composer__drop`) vs typed input (`.composer__textarea`). Send button: `.composer__send` (idle gray) vs `.composer__send--active` (primary yellow when submittable).
+**Variants** — Two input modes in the top slot: drop zone (`.composer__drop`) vs typed input (`.composer__textarea`). Send button: `.composer__send` (idle gray) vs `.composer__send--active` (primary orange when submittable).
 
 **Sizes** — Single size; drop/textarea `min-height:132px`. Mobile ≤640px tightens to `min-height:104px`, shrinks bar padding, and hides `.composer__credits`.
 
@@ -1819,7 +1819,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.composer__icon-btn` | 32×32 transparent icon button (upload/mic), 18px lucide glyph |
 | `.composer__credits` | Small muted credit-meter text, no-wrap |
 | `.composer__send` | 36px circular submit, idle gray |
-| `.composer__send--active` | Flips send pill to primary yellow when there's content |
+| `.composer__send--active` | Flips send pill to primary orange when there's content |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -1831,7 +1831,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - ✅ Do add `.composer__send--active` only once there's real content to submit.
 - ✅ Do show remaining credits in `.composer__credits` so the user knows the cost before sending.
-- ❌ Don't leave the send button yellow when the input is empty.
+- ❌ Don't leave the send button orange when the input is empty.
 - ❌ Don't crowd the left `__bar-group` — keep it to a couple of tool icons.
 
 
@@ -1911,7 +1911,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - ✅ Do use the one sliding highlight pill for hover + active, not a per-link background.
 - ✅ Do keep dropdown panels on `--background` so dark-mode translucency stays opaque over the hero.
-- ❌ Don't put the yellow primary in the bar — nav stays neutral; yellow is for the unread dot only.
+- ❌ Don't put the orange primary in the bar — nav stays neutral; orange is for the unread dot only.
 - ❌ Don't hard-code nav items per page — they come from one definition in `sidebar.js`.
 
 
@@ -1987,7 +1987,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - ✅ Do keep links muted by default and let them brighten to full white only on hover.
 - ✅ Do collapse to a single column at the 768px breakpoint for mobile.
-- ❌ Don't put the highlighter-yellow primary on the black slab — keep it white/muted-white only.
+- ❌ Don't put the highlighter-orange primary on the black slab — keep it white/muted-white only.
 - ❌ Don't exceed four link columns; the grid is `2fr repeat(4, 1fr)`.
 
 
@@ -2176,7 +2176,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 |---|---|---|
 | default | — | bg `--surface`, 1px `--border`, radius `--radius-md` |
 | hover | `:hover` | bg `--surface-muted` |
-| focus | `:focus-within` | `--ring` ＋ 4px 黃暈 |
+| focus | `:focus-within` | `--ring` ＋ 4px 橘暈 |
 
 **Class API**
 
@@ -2386,13 +2386,13 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 
 ### 4.22k Insight row
 
-**`_layer`** · molecule — 置於圖表／分布下方的單行自動洞察 callout（如 Fans CRM F3 Pareto）。內容由頁面計算；無合格洞察時整行隱藏（不顯示假 0%）。黃色 tint 條 + 前導 icon + 一句平白結論。
+**`_layer`** · molecule — 置於圖表／分布下方的單行自動洞察 callout（如 Fans CRM F3 Pareto）。內容由頁面計算；無合格洞察時整行隱藏（不顯示假 0%）。橘色 tint 條 + 前導 icon + 一句平白結論。
 
 **Class API**
 
 | Class | Effect |
 |---|---|
-| `.insight-row` | 黃色 12% tint 條容器 |
+| `.insight-row` | 橘色 12% tint 條容器 |
 | `.insight-row__icon` | 16px lucide |
 | `.insight-row__text` | 一句結論 |
 
@@ -2599,7 +2599,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | Class / modifier | Effect |
 |---|---|
 | `.linechart__line` / `--prev` / `--s1…s5` | Primary trend / dashed comparison / multi-series colors |
-| `.linechart__area` | Yellow area fill (`--primary` 18% mix) under the line |
+| `.linechart__area` | Orange area fill (`--primary` 18% mix) under the line |
 | `.linechart__dot` / `--accent` | Data marker / accent marker for latest point |
 | `.linechart--axes` (+ `__y-axis` / `__main`) | 2-col layout adding y-tick axis |
 | `.stacked-bar` / `__seg` | Proportion pill; segment width + color set inline |
@@ -2620,7 +2620,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - ✅ Do set stacked-bar segment widths and palette inline (`style="width:42%;background:…"`) — the CSS only supplies the track.
 - ✅ Do scale `.rank-bar__fill` so the largest value reads 100% (`row_pct / max_pct * 100`).
-- ❌ Don't apply `.linechart__area` yellow fill to multi-series charts — area is reserved for the single primary trend.
+- ❌ Don't apply `.linechart__area` orange fill to multi-series charts — area is reserved for the single primary trend.
 - ❌ Don't rely on hover tooltip/cursor for essential values; they are JS-driven and pointer-only.
 
 
@@ -2673,7 +2673,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 .waterfall__empty   — no-settled-income state
 ```
 
-**Variants** — Row types: `--income` (source, bold, bar), `--deduct` (a cut: plain indented row, − amount, **no bar**), `--subtotal` (milestone: top rule + bold + bar), `--pool` (net profit pool: yellow bar), `--distribution` (indented allocation, bar). `--pool.waterfall__row--negative` flips the pool to an error-tinted warning (distribution paused, §7.3).
+**Variants** — Row types: `--income` (source, bold, bar), `--deduct` (a cut: plain indented row, − amount, **no bar**), `--subtotal` (milestone: top rule + bold + bar), `--pool` (net profit pool: orange bar), `--distribution` (indented allocation, bar). `--pool.waterfall__row--negative` flips the pool to an error-tinted warning (distribution paused, §7.3).
 
 **Sizes** — Bar track 8px; subtotal/pool top rule 1.5px.
 
@@ -2683,7 +2683,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 |---|---|---|
 | deduction | `.waterfall__row--deduct` | Muted name/amount + `--foreground-subtle` fill |
 | milestone | `.waterfall__row--subtotal` / `--pool` | 1.5px `--foreground` top rule + bold |
-| pool | `.waterfall__row--pool` | Yellow `--primary` fill with inset foreground ring |
+| pool | `.waterfall__row--pool` | Orange `--primary` fill with inset foreground ring |
 | pool negative | `.waterfall__row--pool.waterfall__row--negative` | Error-tinted bar + amount |
 | empty | `.waterfall__empty` | Muted note, no bars |
 
@@ -3098,8 +3098,8 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 
 - **trigger**: The landing surface after login — the creator needs a one-glance read of money, alerts, and what to do next.
 - **must**: Lead with the full-bleed Hero band, then a KPI bento row (earnings / pending / fans / live items) using `KPI` (`--highlight` for the headline metric); pair an `Alert` panel ("Actions needed") beside a `Data list` of recent earnings; every money figure states its state (available vs pending) inline.
-- **should**: Follow with a trend `Chart` + source breakdown pair; keep yellow for one structural accent per viewport (hero fill OR a single highlight tile, not both competing).
-- **must-not**: Never stack two yellow highlight tiles side by side; never show a bare number without its currency + state; never push primary actions below the fold.
+- **should**: Follow with a trend `Chart` + source breakdown pair; keep orange for one structural accent per viewport (hero fill OR a single highlight tile, not both competing).
+- **must-not**: Never stack two orange highlight tiles side by side; never show a bare number without its currency + state; never push primary actions below the fold.
 - **_edge-cases**: `empty` → first-run hero with "Create your first project" CTA, KPI tiles show `—` not `0`; `error` → KPI tile shows last-known value + a stale badge; `new-user` → checklist card replaces the trend pair; `mobile` → bento collapses to span-12 single column; `offline` → KPI tiles dim, banner "Showing last synced data".
 
 #### Tabbed section view (Layout)
@@ -3194,7 +3194,7 @@ Global interaction defaults — keyframes live here (state-driven), not in Pilla
 - **Motion**: durations 150–240ms, ease-out; all entrance animations gated behind `@media (prefers-reduced-motion: reduce)` (shown immediately when reduced).
 - **Lifecycle states** (see the Lifecycle pattern card in §5.1):
   - **404** — same chrome, single "Page not found" headline, link back to Dashboard.
-  - **Empty stub** (`.empty-stub`) — routes not yet built (yellow mark + display title + spec refs).
+  - **Empty stub** (`.empty-stub`) — routes not yet built (orange mark + display title + spec refs).
   - **Error** — inline `Alert --row`, retry available, already-loaded data preserved.
 
 ### 5.4 Data Visualization
@@ -3315,7 +3315,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
 :root {
   /* Pillar 1 → Pillar 2: raw value flows into role token */
   --background:        #FFFFFF;
-  --primary:           #FFDB29;
+  --primary:           #ffa33f;
   --primary-foreground:#171717;
   --status-success:    #22C55E;
   /* … see _tokens.css for the full list */
@@ -3334,7 +3334,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
 ```css
 @theme {
   --color-background:        #FFFFFF;
-  --color-primary:           #FFDB29;
+  --color-primary:           #ffa33f;
   --color-primary-foreground:#171717;
   --color-status-success:    #22C55E;
   --color-status-error:      #DA314A;
@@ -3358,7 +3358,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
 {
   "color": {
     "background": { "$value": "#FFFFFF", "$type": "color" },
-    "primary":    { "$value": "#FFDB29", "$type": "color" },
+    "primary":    { "$value": "#ffa33f", "$type": "color" },
     "primary-foreground": { "$value": "#171717", "$type": "color" },
     "status-success": { "$value": "#22C55E", "$type": "color" }
   },
@@ -3383,12 +3383,13 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
     "version": "R 2.1",
     "date": "2026-06-01",
     "base": "Ztor (parent design system)",
-    "notes": "Highlighter-yellow primary used structurally (active nav, KPI highlight, sticky-note, hero, pre-order pills). App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
+    "notes": "Highlighter-orange primary used structurally (active nav, KPI highlight, sticky-note, hero, pre-order pills). App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
   },
   "foundation": {
     "palette": {
       "neutral": { "50":"#FFFFFF", "100":"#FAFAFA", "500":"#737373", "900":"#171717", "1000":"#000000" },
-      "yellow":  { "300":"#FFE55C", "500":"#FFDB29", "warning":"#F8D749" },
+      "orange":  { "300":"#ffb866", "500":"#ffa33f" },
+      "yellow":  { "warning":"#F8D749" },
       "green":   { "500":"#22C55E", "dark":"#00A63E" },
       "red":     { "500":"#DA314A", "dark":"#E7000B" },
       "blue":    { "500":"#266DF0", "dark":"#5896F3" }
@@ -3415,7 +3416,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
     "color": {
       "bg": { "canvas":"palette.neutral.50", "surface":"#FFFFFF", "muted":"palette.neutral.100", "inverse":"palette.neutral.1000" },
       "fg": { "default":"palette.neutral.1000", "muted":"rgba(0,0,0,0.7)", "subtle":"palette.neutral.500" },
-      "primary":     { "bg":"palette.yellow.500", "fg":"palette.neutral.900", "hover":"palette.yellow.300" },
+      "primary":     { "bg":"palette.orange.500", "fg":"palette.neutral.900", "hover":"palette.orange.300" },
       "border":      "#E5E5E5",
       "ring":        "palette.neutral.900",
       "status": {

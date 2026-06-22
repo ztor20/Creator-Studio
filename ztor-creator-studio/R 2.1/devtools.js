@@ -110,7 +110,7 @@
     + '.ztd__body{padding:14px 16px 4px}'
     + '.ztd__group{margin-bottom:16px}'
     + '.ztd__group-label{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--foreground-subtle);text-transform:uppercase;margin:0 0 9px}'
-    /* 開關列＝標籤＋真 switch（黃只出現在滑軌，量很小）。比照 ds switch.css */
+    /* 開關列＝標籤＋真 switch（橘只出現在滑軌，量很小）。比照 ds switch.css */
     + '.ztd__row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:11px 13px;'
     + 'border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--surface);color:var(--foreground);'
     + 'font:inherit;font-size:13.5px;font-weight:500;cursor:pointer;text-align:left}'
@@ -119,7 +119,7 @@
     + '.ztd__sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.15);transition:left .15s ease}'
     + '.ztd__row.is-on .ztd__sw{background:var(--primary);box-shadow:none}'
     + '.ztd__row.is-on .ztd__sw::after{left:18px}'
-    /* 單選選項：選中＝淡黃 tint＋細黃環（比照 ds selection-card--active），不再整塊黃 */
+    /* 單選選項：選中＝淡橘 tint＋細橘環（比照 ds selection-card--active），不再整塊橘 */
     + '.ztd__grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}'
     + '.ztd__opt{padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--surface);'
     + 'color:var(--foreground);font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-align:left}'
@@ -144,7 +144,7 @@
     + '.ztd__inspect.is-locked{outline:2px solid var(--primary);outline-offset:-1px}'
     + '.ztd__badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-weight:600}'
     + '.ztd__muted{color:var(--foreground-subtle)}'
-    /* highlight overlay：非元件＝藍框；是元件＝黃框（一眼分辨）*/
+    /* highlight overlay：非元件＝藍框；是元件＝橘框（一眼分辨）*/
     + '.ztd-hl{position:fixed;z-index:2147482999;pointer-events:none;border:1.5px solid var(--status-info,#266DF0);'
     + 'background:color-mix(in srgb,var(--status-info,#266DF0) 12%,transparent);border-radius:2px;display:none}'
     + '.ztd-hl.is-on{display:block}'
@@ -196,7 +196,7 @@
       +   '<div class="ztd__body">'
       +     '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
       +       '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
-      +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。黃框＝已建立元件、藍框＝非元件。</div></div>'
+      +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
       +     '</div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Validation</p>'
       +       '<button class="ztd__row' + (state.skipValidation ? ' is-on' : '') + '" data-act="toggle-skip"><span>Skip validation</span><span class="ztd__sw"></span></button>'
@@ -304,7 +304,7 @@
     if (btn) btn.classList.toggle('is-on', on);
     var box = root.querySelector('#ztd-inspect');
     if (box) box.classList.remove('is-locked');
-    if (!on) { hl.classList.remove('is-on'); if (box) box.innerHTML = '<div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。黃框＝已建立元件、藍框＝非元件。</div>'; }
+    if (!on) { hl.classList.remove('is-on'); if (box) box.innerHTML = '<div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div>'; }
   }
   function selectorOf(el) {
     var s = el.tagName.toLowerCase();

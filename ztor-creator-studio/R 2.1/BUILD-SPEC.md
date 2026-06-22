@@ -29,9 +29,9 @@
 | **App 框架** | Slim topbar + 內容滿版 | **Canonical ztor-header topbar 64 px sticky · 邊到邊**（padding 0 32px）+ hover dropdown nav 對應 spec §3.2.2 |
 | **首屏節奏** | Page-intro → KPI strip → 大量 patterns | **全屏 Hero banner 輪播**（spec §5.1.1.1，`.hero--fullbleed` 邊到邊）→ Page intro → KPI bento → 模組化卡片群 |
 | **資料呈現偏好** | Card-per-row · shadow-heavy | **Row-divider 為主**（`.data-list`）· 卡片只用於資訊區塊 |
-| **Yellow 使用** | 主要在 CTA + active states | **結構性使用**：active nav yellow underline、kpi--highlight、sticky-note callout、hero visual fill |
+| **Orange 使用** | 主要在 CTA + active states | **結構性使用**：active nav orange underline、kpi--highlight、sticky-note callout、hero visual fill |
 | **Typography weight** | H1 32–40 px Geist 500 | **H1 44 px / Hero title 56 px / Geist Variable 500 / tracking −1px**（更編輯感） |
-| **Sticky-note pattern** | 沒有 | 新增 `.stickynote` — 高飽和黃底 + 黑字，用於 inline 提示與 callout |
+| **Sticky-note pattern** | 沒有 | 新增 `.stickynote` — 高飽和橘底 + 黑字，用於 inline 提示與 callout |
 | **Wizard 結構** | Topbar 內嵌 stepper（圓圈 + 直線） | **獨立 wizard top**（不顯示主導航）· stepper 在中央 · 底部 sticky action bar |
 | **元件覆蓋** | 14 頁全部產品化 + Light/Dark 完整實作 | 初版 6 完整＋8 stub，把心力集中在 IA + 設計語言展示；**現況 18 頁（9 完整、8 structure/step-1、1 重導 stub，見 §2）** |
 
@@ -51,7 +51,7 @@
 4. **連動一致** — 同一筆資料在不同頁面用同一口徑、同一狀態語言。
 5. **合規保守** — 涉及粉絲支持、收益分潤、稅務時文案保守可查核。
 
-R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active nav、KPI highlight tile、sticky-note callout、Hero visual fill、Pre-order pill 直接出場。這是 ztor yellow design system 的精神延續。
+R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active nav、KPI highlight tile、sticky-note callout、Hero visual fill、Pre-order pill 直接出場。這是 ztor yellow design system 的精神延續。
 
 ---
 
@@ -109,7 +109,7 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 
 完全套用 `Design/Design System/ztor yellow/` 的 design system，文件結構對齊 **DSS v1.4 7-Pillar 架構**（Pillar 0 Record · 1 Foundation · 2 Role · 3 Mode · 4 Component · 5 Pattern · 6 Structure + Appendix A/B）。重點 tokens：
 
-- **Foundation**（raw）：`#FAFAF7` warm paper · `#FFDB29` highlighter yellow · `#171717` dark text on yellow
+- **Foundation**（raw）：`#FAFAF7` warm paper · `#ffa33f` highlighter orange · `#171717` dark text on orange
 - **Role**（semantic）：`--background / --surface / --primary / --foreground-muted / --status-{success|error|info|warning}` 在 `_tokens.css` 統一注入
 - **Mode**：`[data-theme="dark"]` 13 個 role 覆寫，`theme.js` 切換 + localStorage 持久化
 - **Typography**：Geist Variable (display) · Geist (UI) · Inter (body) · Noto Sans TC（CJK fallback，系統字；自架為 open task，R 2.1.39 起取代 Taipei Sans TC Beta）
@@ -122,19 +122,19 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 | Pattern | CSS class | 用途 |
 |---|---|---|
 | Topbar (canonical) | `.app-topbar` | **64 px** 高 · sticky · `--surface` bg · padding 0 32px · flex（actions 用 `margin-left:auto` 推右）· 對齊 design-system.html 的 `.dm-header` |
-| Brand | `.app-brand / .app-brand__mark` | Geist UI 18px / 500 + 22 px yellow Z mark（小，配 18 px wordmark） |
-| Main nav | `.app-topbar__nav / .app-topbar__link` | 14 px / 500 · foreground-muted · hover/active 底色由**共用滑動高亮 pill** `.app-topbar__nav-highlight` 提供（一顆 `--surface-muted` pill 在項目間滑動跟游標、離開 nav 滑回 active 頁；Motion mega-menu shared-element 風格，vanilla 實作）；link 自身背景透明避免雙重底（**不**用 yellow underline，yellow 留給 CTA / sticky-note / hero）|
+| Brand | `.app-brand / .app-brand__mark` | Geist UI 18px / 500 + 22 px orange Z mark（小，配 18 px wordmark） |
+| Main nav | `.app-topbar__nav / .app-topbar__link` | 14 px / 500 · foreground-muted · hover/active 底色由**共用滑動高亮 pill** `.app-topbar__nav-highlight` 提供（一顆 `--surface-muted` pill 在項目間滑動跟游標、離開 nav 滑回 active 頁；Motion mega-menu shared-element 風格，vanilla 實作）；link 自身背景透明避免雙重底（**不**用 orange underline，orange 留給 CTA / sticky-note / hero）|
 | Dropdown panel | `.app-topbar__nav-group[data-dropdown] / .app-topbar__dropdown--mega` | **Hover-open**（140 ms 關閉延遲讓游標進得了 panel；click 仍可切換）· 開關用 `data-state="open\|closed"` 跑 fade+slide(-6px)+scale(0.98) 進出場動畫 · **下拉＝IP Bank（My IP / IP Market）與 E-Shop（電子商店 / 訂單管理；商店設定 2026-06-15 移出下拉、改 F3 popup，D065）**（Events / Fans 平鋪；spec §3.2.1 / decisions D013 + D014）· sidebar 顯示模式下這兩個下拉改為可展開群組（`.app-sidebar__group`） · **bg 比照 header 用 `--surface`**（2026-06-09 反饋：下拉底色要和 header 一致；移除先前 `--background` + dark `#1F1F1F` 寫法）· 面板頂距 header(64px) 底 +4px（`top: calc(100% + 18px)`）· **frosted glass**：加 `backdrop-filter: blur(14px) saturate(140%)`（同 scrolled header），dark 下 `--surface` 半透明時把背後 hero/content 模糊成霧面、文字仍清楚；light 下 `--surface` 不透明，blur 自然 no-op |
-| Topbar actions | `.app-actions / .app-icon-btn / .app-icon-btn__dot / .app-search / .app-notif` | 8 px gap · icon button 36×36 transparent，hover `--surface-muted` · notification 帶 yellow unread dot · search icon 點開內嵌 input · 通知與待辦中心分「需要你處理」與「狀態更新」兩區，官方公告併入 |
+| Topbar actions | `.app-actions / .app-icon-btn / .app-icon-btn__dot / .app-search / .app-notif` | 8 px gap · icon button 36×36 transparent，hover `--surface-muted` · notification 帶 orange unread dot · search icon 點開內嵌 input · 通知與待辦中心分「需要你處理」與「狀態更新」兩區，官方公告併入 |
 | Language pill | `.app-lang` | 32 px pill + hairline border · `EN · 中` 雙語 toggle · 對齊 R 2.0 寫法 |
-| Avatar | `.app-avatar` | 32×32 圓形 · `--foreground` bg / `--background` text（inverse colors，**不**用 yellow）|
+| Avatar | `.app-avatar` | 32×32 圓形 · `--foreground` bg / `--background` text（inverse colors，**不**用 orange）|
 | Account menu | `.app-account__wrap / .app-account__panel` | Avatar 下拉 · Profile / Settings / Payments / Logout（Settings 入口在帳戶選單 ≠ 主導航，spec §3.2.2.5）· 同樣 `--background` bg |
 | Hero full-bleed | `.hero / .hero--fullbleed / .hero__slide` | Dashboard 專用 · `width:100vw + margin-left:-50vw` trick · 邊到邊 · **720 px 高** · **置中設計**（copy / CTA / dots 全部水平置中，760 px 置中欄）· **進場動畫**：title → subtext → CTA 由下往上（+24px）staggered 淡入，沿用 reveal.js 的 `.is-in` 觸發（載入時 + 每張 slide 首次出現時各播一次；reduced-motion 下直接顯示）· **4 slide** 自動輪播 8 s（① Create Project = 「audience」分層合成圖：空景長廊 + 3 個去背表演者層 `.hero__layer` 依 assembly 構圖疊出；② Create Project = `Video/hero-project.mp4` Veo 影片背景；③ IP Market；④ Create Event）· 輪播控制 = **Framer video-slideshow 風格指示器**：霧面深色膠囊（`rgba(20,20,22,0.62)` + blur）裝 dots，**active dot 展開成進度 capsule**（白色 fill 與 8s 換頁由同一個 `requestAnimationFrame` 時鐘驅動），旁邊一顆獨立 **play/pause 圓鈕**（暫停同時凍結進度與換頁、圖示切換；reduced-motion 下不自動播、起始即暫停）· 每 slide 用 `background-image` 載入 `images/hero-*.jpg`，**置中 radial veil**（中心 0.62 → 邊緣 0.18）保證置中白字 ≥ 5:1 對比、邊緣照片仍可見 |
 | Bento grid | `.bento / .bento--span-{3,4,5,6,7,8,12}` | 12-col responsive bento |
-| KPI tile | `.kpi / .kpi--highlight` | `.kpi--highlight` = yellow 22% tinted bg |
+| KPI tile | `.kpi / .kpi--highlight` | `.kpi--highlight` = orange 22% tinted bg |
 | Data list | `.data-list / .data-list__row` | Row-divider 為主，沒有 card-per-row；`.data-list__end` 右欄堆疊金額 + 狀態 pill（Dashboard F3）|
 | Insight split | `.insight-split / .insight-split__col / .insight-eyebrow` | Dashboard F7 一卡雙洞察欄（粉絲關係 Fans CRM ｜ 受眾趨勢 Audience Intelligence）· 中央 hairline 分隔 · <900px 收合單欄 |
-| Sticky-note | `.stickynote` | Yellow 32% tinted bg + 黑字 · inline 提示 |
+| Sticky-note | `.stickynote` | Orange 32% tinted bg + 黑字 · inline 提示 |
 | Upload tile | `.upload-tile / --hero / --file / .upload-grid` | 建立流程虛線上傳格（主圖／縮圖列／檔案）· spec 5.1.5.2 |
 | Picker | `.picker / __search / __search-input / __new / __list` | 搜尋＋可捲動挑選清單（列復用 data-list）· spec 5.1.5.4 |
 | Preview card | `.preview-card / __media / __row / __name / __price / __desc / __dots / __meta / __cta / .is-empty` | 粉絲端即時預覽卡（商品／拍賣）· spec §5.2.5 |
@@ -152,18 +152,18 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 | Wizard frame | `.wizard / .wizard__top / .stepper / .wizard__bottom` | 4-step wizard 專用 layout（無 sidebar） |
 | IP hero | `.ip-hero / .ip-hero__cover / .rental-card / .duration-grid` | IP 詳情頁專用三欄 hero |
 | Stacked bar | `.stacked-bar / .source-list` | Revenue by Source 共用 |
-| Tabs | `.tabs / .tabs__item / .tabs__item--active` | Yellow 底線 active state · **`.tabs--brand` 變體**＝淡黃（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
+| Tabs | `.tabs / .tabs__item / .tabs__item--active` | Orange 底線 active state · **`.tabs--brand` 變體**＝淡橘（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
 | Filter tabs | `.filter-tabs / __item / __item--active / __count` | 次級狀態篩選 pill 列（spec 5.1.5 F3）：每顆 pill 一個狀態＋即時數量徽章，active＝淡 `--surface-muted` 填底、刻意不用品牌色，放主 tabs 下一行形成主次層級；數量由前端讀清單 `data-status` 計算（切 tab 重算）。E-Shop F3 狀態篩選由原 `field-pill` select 改用（2026-06-15）|
 | Alert（`--bar`）| `.alert--bar` + `.alert__icon/__body/__title/__cta/__dismiss` | 全寬頂部通知條變體（spec 5.1.5 F2）：白底、底部細線、單行、⚠ 警示色 chip＋深色文字連結 CTA＋圓形關閉；置於 `.main` 頂端、`position:sticky` 常駐、可關閉。E-Shop 低庫存提醒由原 `.alert--banner` 卡片改用（2026-06-15）|
 | Settings layout | `.settings-layout / .settings-nav / .settings-section / .settings-row` | 220 px sticky 左側 + 右側單一 active section；左側選項以 URL hash 切換，其他 section 不佔頁面高度 |
 | Appearance card | `.appearance-card / --dark / --system` | 三選一主題 radio card（spec 5.1.9 Appearance） |
-| Pills | `.pill / .pill--yellow / --success / --error / --info` | 統一狀態語言 |
+| Pills | `.pill / .pill--orange / --success / --error / --info` | 統一狀態語言 |
 | Store settings 版面與欄位 | `.ss-stack / .ss-identity-card / .ss-band__* / .ss-edit / .ss-url / .ss-amount / .ss-status / .ss-order / .ss-tabpanel / .ss-fan` | 商店設定頁（spec 5.1.5.5 v8 / D035 IA + D036 功能頁 F1~F5）：`.ss-stack` 滿版（≤1280px，同其他頁）；門面（F2）`.ss-identity-card` 常駐用 **Base44/FB 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介），**逐欄就地編輯** `.ss-edit`（文字態 ↔ 內嵌控制項，✓/Enter 確認、✕/Esc 取消；品牌素材＝封面＋頭像，不另設上傳框）+ 設定群組 `.card` 用 `.tabs` 切 `.ss-tabpanel`（F3 商品陳列/F4 付款/F5 出貨，出貨 tab 用 `.settings-row`）；補基礎控制項沒有的欄位（網址前綴 `.ss-url`、$ 金額前綴 `.ss-amount`、唯讀 Stripe 卡 `.ss-status`）＋拖曳排序 `.ss-order`（F3 / D031）＋ See as fan 預覽 `.ss-fan`（F1，`.preview-panel--inset` 畫面分割）＋底部提交列 `.ss-actionbar`（D067 popup 提交區，sticky）。**D067：popup-only，無全域導航/麵包屑/page-intro**，標題與關閉由 embed-modal 外框承擔。逐欄編輯為前端 demo，最終由底部 `.ss-actionbar` 的 Save 提交（postMessage 關閉 popup）。**See-as-fan 預覽內容 2026-06-16 改用 Fan store 元件**（見下行，取代 `.ss-fan`） |
 | Fan store（粉絲端店面） | `.fan-store / __hero(__hero-top/__avatar/__artist/__tagline/__meta/__role/__socials/__social/__follow) / __featured(-media/-tag/-info/-title/-price/-cta) / __tabs/__tab(--active) / __grid > __card(--out)(__thumb/__card-body/__card-title/__card-price/__card-status)` | See-as-fan 預覽的粉絲端店面（**E-Shop F5＋商店設定 F1 共用** `partials/fan-store.js`，§6.7 同源、差異即缺陷，取代舊 `.ss-fan`）。版面＝hero cover＋本月精選 featured＋分頁＋雙欄商品格；**色彩全 token、跟隨主題（§6.9）**，hero 為品牌色淺底帶。空店面 `.when-empty`＋`.empty-card`，grid/featured 隨 `html[data-data-state="empty"]` 切 `.when-data`。**追蹤數/社群/加入社群/本月精選/立即購買/售完補貨中＝產品變更提案（UIA-026，待上游核准、未寫回 documents/）**；display-only，預覽不改資料 |
 
 ### 3.3 Dark mode
 
-繼承 R 2.0 / ztor yellow 的 `[data-theme="dark"]` 機制 — translucent white overlays on near-black canvas，yellow primary 在兩種模式都保留。所有 R 2.1 patterns 都 100% token-driven，flip 主題不需任何 override。
+繼承 R 2.0 / ztor yellow 的 `[data-theme="dark"]` 機制 — translucent white overlays on near-black canvas，orange primary 在兩種模式都保留。所有 R 2.1 patterns 都 100% token-driven，flip 主題不需任何 override。
 
 切換入口：
 - Topbar sun/moon button（`[data-theme-toggle]`，循環 light → dark → system）
@@ -181,7 +181,7 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 | 03 §5.1.3 IP Market | ip-market.html | ◑ Structure | Filter strip + 3 sample IP cards |
 | 03 §5.1.4 My IP | my-ip.html | ◑ Structure | KPI（Total IP / Total rentals / Total revenue）+ tabs + 自有/外部 IP 分組 + Marketplace 開關 + 圖例 |
 | 03.2 IP 詳情頁 | ip-detail.html | ✓ Full | IP hero · permitted usage · 法律提示 · rental + bidding 兩種模式 · owner manage panel |
-| 03 §5.1.5 E-Shop | e-shop.html | ✓ | 低庫存通知條（含補貨入口）· Products/Bundles/Auctions tabs **互動切換**（`data-eshop-tab`/`-panel`）· **搜尋＋狀態篩選**作用於目前分頁（`data-name`/`data-status`，§7.2 Live/Low Stock/Sold Out/Draft）· **Shop 開關→狀態**（關＝Hidden，badge 即時換）· **See as fan** 分割預覽（重用 `.preview-panel--inset`＋`.ss-fan`）· **Bundles 清單**（`.product-list--bundles`，庫存＝min 成員 D031/UIA-008）· 低庫存/售罄實體列 **補貨**動作（→ restock popup）· 新增入口下拉（建立商品／建 bundle，Auctions 待 D026）· 分類顯示次分類（主分類＝badge 顏色）· 排序在商店設定 F3（D031，移除過時「Drag to reorder」字）· **2026-06-15 D065**：F3 加「商店設定」鈕，以 `embed-modal` 全螢幕 popup 內嵌 store-settings.html（不離開清單、關閉保留篩選）· **D064**：限量列 Stock 顯示在庫/上限進度（21/50）＋`data-edition`，多規格列加「N variants」neutral badge · **2026-06-15 D066 F3 改版**：狀態篩選每選項顯示目前類型商品數（All 4／Live 3…，切 tab 重算、不隨搜尋連動＝待確認）· 建立鈕改 **context-aware 分割按鈕**（`split-button`，主鈕隨 tab、箭頭列全部）· **See as fan 移出工作列 → F5 右側常駐欄**（`.eshop-layout` 左主欄＋右 aside，不收合，重用 `.ss-fan`）· **2026-06-15 F2/F3/F5 再改版（UIA-023）**：F2 低庫存改 `.alert--bar` 全寬細條（置於 `.main` 頂端、頂欄之下、`sticky` 常駐、只留數量＋CTA，取代 `.alert--banner` 卡片）· F3 狀態篩選由 `field-pill` select 改第二排 `filter-tabs`（pill＋數量）· F3 類型切換加 `.tabs--brand` 淡黃 active pill · **F5 商店預覽改常駐不可關閉的畫面分割**（重用 `.preview-panel--inset` 壓窄 `.main`、非浮層、永遠 `is-open`；移除「粉絲視角」切換鈕與 ✕／Esc；窄螢幕 ≤1100px 退化為靜態堆疊在清單下方；標題由「粉絲眼中的商店」改「商店預覽」；撤除 `.eshop-layout` 固定右欄）· **F5 視覺**＝灰底上的兩塊圓角面板（右欄內縮 `--space-shell-gutter` 灰隙、頂對齊 main、頂角 `--radius-shell`，使 main 右上角露出圓角）＋預覽內容包成白色圓角「店面頁」卡、商品平鋪磁磚（Mobbin Direction B；`#eshop-preview` scope 覆寫 `.ss-fan`，不動 store-settings）· **2026-06-16 新品貼文（5.1.5.7／D068）**：掛 `partials/product-post-modal.js`，`?posted=1`（建立商品完成後導回）自動彈出撰寫 popup、帶入剛建商品；重用群發 composer＋F2 商品附件卡，可發布／略過（見 New product post 元件）· **2026-06-16 F5 預覽改用 Fan store 元件（UIA-026）**：See-as-fan 內容由 `.ss-fan` 改注入共用 `partials/fan-store.js`（hero cover＋本月精選＋分頁＋商品格，與商店設定 F1 同源 §6.7）；右預覽欄與主面板頂/底齊平；新欄位（追蹤數/社群/加入社群/本月精選/立即購買/補貨中）為提案 · 互動皆 demo 無後端 |
+| 03 §5.1.5 E-Shop | e-shop.html | ✓ | 低庫存通知條（含補貨入口）· Products/Bundles/Auctions tabs **互動切換**（`data-eshop-tab`/`-panel`）· **搜尋＋狀態篩選**作用於目前分頁（`data-name`/`data-status`，§7.2 Live/Low Stock/Sold Out/Draft）· **Shop 開關→狀態**（關＝Hidden，badge 即時換）· **See as fan** 分割預覽（重用 `.preview-panel--inset`＋`.ss-fan`）· **Bundles 清單**（`.product-list--bundles`，庫存＝min 成員 D031/UIA-008）· 低庫存/售罄實體列 **補貨**動作（→ restock popup）· 新增入口下拉（建立商品／建 bundle，Auctions 待 D026）· 分類顯示次分類（主分類＝badge 顏色）· 排序在商店設定 F3（D031，移除過時「Drag to reorder」字）· **2026-06-15 D065**：F3 加「商店設定」鈕，以 `embed-modal` 全螢幕 popup 內嵌 store-settings.html（不離開清單、關閉保留篩選）· **D064**：限量列 Stock 顯示在庫/上限進度（21/50）＋`data-edition`，多規格列加「N variants」neutral badge · **2026-06-15 D066 F3 改版**：狀態篩選每選項顯示目前類型商品數（All 4／Live 3…，切 tab 重算、不隨搜尋連動＝待確認）· 建立鈕改 **context-aware 分割按鈕**（`split-button`，主鈕隨 tab、箭頭列全部）· **See as fan 移出工作列 → F5 右側常駐欄**（`.eshop-layout` 左主欄＋右 aside，不收合，重用 `.ss-fan`）· **2026-06-15 F2/F3/F5 再改版（UIA-023）**：F2 低庫存改 `.alert--bar` 全寬細條（置於 `.main` 頂端、頂欄之下、`sticky` 常駐、只留數量＋CTA，取代 `.alert--banner` 卡片）· F3 狀態篩選由 `field-pill` select 改第二排 `filter-tabs`（pill＋數量）· F3 類型切換加 `.tabs--brand` 淡橘 active pill · **F5 商店預覽改常駐不可關閉的畫面分割**（重用 `.preview-panel--inset` 壓窄 `.main`、非浮層、永遠 `is-open`；移除「粉絲視角」切換鈕與 ✕／Esc；窄螢幕 ≤1100px 退化為靜態堆疊在清單下方；標題由「粉絲眼中的商店」改「商店預覽」；撤除 `.eshop-layout` 固定右欄）· **F5 視覺**＝灰底上的兩塊圓角面板（右欄內縮 `--space-shell-gutter` 灰隙、頂對齊 main、頂角 `--radius-shell`，使 main 右上角露出圓角）＋預覽內容包成白色圓角「店面頁」卡、商品平鋪磁磚（Mobbin Direction B；`#eshop-preview` scope 覆寫 `.ss-fan`，不動 store-settings）· **2026-06-16 新品貼文（5.1.5.7／D068）**：掛 `partials/product-post-modal.js`，`?posted=1`（建立商品完成後導回）自動彈出撰寫 popup、帶入剛建商品；重用群發 composer＋F2 商品附件卡，可發布／略過（見 New product post 元件）· **2026-06-16 F5 預覽改用 Fan store 元件（UIA-026）**：See-as-fan 內容由 `.ss-fan` 改注入共用 `partials/fan-store.js`（hero cover＋本月精選＋分頁＋商品格，與商店設定 F1 同源 §6.7）；右預覽欄與主面板頂/底齊平；新欄位（追蹤數/社群/加入社群/本月精選/立即購買/補貨中）為提案 · 互動皆 demo 無後端 |
 | 5.1.5.5 商店設定 | store-settings.html | ✓ | popup IA（D067，回退 D028 的 header 子頁；D035 群組 IA + D036 功能頁 F1~F5）：**popup 不需頁首**——移除全域導航/麵包屑/page-intro，標題與關閉由 embed-modal 外框承擔；F1 設定動作與預覽＝內容底部 `.ss-actionbar` 提交列（See as fan/Discard/Save，sticky）· F2 店面門面常駐置頂（店名/簡介 200 字/品牌素材/`ztor.com/shop/` 網址/幣別載入預設未選）· F3~F5 以 tab 切換——F3 商品陳列＝拖曳排序已上架商品（粉絲端順序單一來源 D031）＋兩種空狀態、F4 付款＝唯讀 Stripe 卡（口徑依 Earnings §7.3）、F5 出貨＝出貨地址/免運門檻 · F1 See as fan 畫面分割預覽（門面＋商品陳列）· Save/Discard 以 `postMessage('ztor:storeset-close')` 通知 e-shop 關閉 popup · 皆 demo · **入口為電子商店 F3「商店設定」鈕，由 e-shop 以 `embed-modal` iframe 內嵌（D065）**；store-settings.html 為該 popup 的完整內容、popup-only · tab 與畫面分割為非約束呈現參考 · **2026-06-16 F1 See-as-fan 預覽改用 Fan store 元件（UIA-026）**：內容由 `.ss-fan` 改注入共用 `partials/fan-store.js`，與 E-Shop F5 同源（§6.7）；新欄位為提案 |
 | 03.4 商品細節頁 | product-detail.html | ✓ | breadcrumb · 內容編輯 · 銷售摘要（引用 Earnings）· 專案引用警告 · Restock 鈕（5.1.5.6）· **2026-06-15 §2.3/D064**：新增「庫存、取貨與購買設定」卡——庫存版本 Edition（不限量/限量 `.segmented`，限量補上限/在庫）· 取貨方式（物流 重量/尺寸/出貨分類/寄件地 ‖ QR 領取 `.segmented`）· 每人限購（switch＋上限）· 商品標籤（`tag-input`）；重用建立商品的元件與 `cp.*` i18n，條件顯示 `data-when-edition`/`-delivery`；皆 demo（UIA-018）· 多規格逐規格呈現待確認、media/交付細節 R2.1.1 待建 |
 | 5.1.5.2 建立商品 | create-product.html | ✓ | Add new item 單頁三型（實體/數位/拍賣）· upload-tile · 描述字數計數（0/30、0/50）· 均價提示 · 拍賣 The story + Prove it's real · §5.2.4 頂部操作欄（無 stepper，主動作隨型）· §5.2.5 即時預覽面板（Preview 鈕開，畫面分割壓窄、非浮層）· Ready to sell? 就緒檢查（依**狀態動態**：多規格→每規格價格庫存、限量→上限≥在庫、物流→重量/尺寸/寄件地、限購→每人上限；pending 不擋）· Show in my shop · **2026-06-15 對齊 spec v2.6（D063/D064）**：§4.1④ 多規格 Variations（`variant-builder`，僅實體，單/多 `.segmented`，多規格取代單一價格庫存）· §4.1⑤/§4.2 庫存版本 Edition（不限量/限量 `.segmented`，限量補上限/剩餘份數）· §4.1⑥ 取貨方式（物流‖QR 領取 `.segmented`，僅實體）· §4.5 每人限購（switch＋每人上限）＋商品標籤（`tag-input`）· 統一條件顯示 `data-cp-show`/`data-when-var`/`-edition`/`-delivery`；互動 demo（UIA-016）· 競標設定待補（D026）· **2026-06-16**：「Start selling」就緒後點擊 → 導回 `e-shop.html?posted=1&name=&price=` 觸發新品貼文 popup（5.1.5.7／D068）|
@@ -207,7 +207,7 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 - **主導航**：Dashboard · Projects · IP Bank ▾ · E-Shop ▾ · Events · Fans · Earnings（**下拉＝IP Bank（My IP / IP Market）與 E-Shop（電子商店 / 訂單管理；商店設定 2026-06-15 移出下拉、改 F3 popup，D065）**；其餘平鋪，子頁與建立流程頁內進入，spec §3.2.1 / decisions D013 + D014）
 - **顯示模式**：主導航可在 Topbar（預設）與 Sidebar 間切換，同一套 nav／IA；導航上有快速切換鈕（`[data-nav-toggle]`）＋ Settings→外觀切換卡（spec §6.9 / D016，見 §5.2a）
 - **Settings 不在主 nav**（spec §3.2.2.5）— 入口在 Avatar dropdown / sidebar 帳戶群組內
-- **Active state**：`[aria-current="page"]` + `--surface-muted` 背景（不用 yellow underline）
+- **Active state**：`[aria-current="page"]` + `--surface-muted` 背景（不用 orange underline）
 - **Dropdown**：`.app-topbar__dropdown--mega` 360 px · icon box + title + sub 兩行 · **IP Bank + E-Shop 使用**（sidebar 模式改為 `.app-sidebar__group` 可展開群組）
 
 ### 5.2 主題（Theme）
@@ -230,7 +230,7 @@ R 2.1 的視覺取向：**highlighter-yellow 沒有藏起來。** 它在 active 
 
 ### 5.2b 通知與待辦中心（Notification & To-do Center · spec §5.2.1 / D019）
 
-- 入口常駐在全域導航 actions；使用 flag icon 與 yellow unread dot，文案為 Notifications & to-dos / 通知與待辦。
+- 入口常駐在全域導航 actions；使用 flag icon 與 orange unread dot，文案為 Notifications & to-dos / 通知與待辦。
 - Topbar 模式：從右側通知 icon 下方展開 `.app-notif__panel` 下拉，靠右對齊。
 - Sidebar 模式：同一份內容從 rail 底部通知項右側打開 flyout；小螢幕 sidebar 收成頂列時改為下拉。
 - 面板分兩區：Needs action / 需要你處理 在上，Status updates / 狀態更新 在下。每則包含來源 icon、標題、摘要、時間與來源模組 pill；點擊導向來源頁處理。

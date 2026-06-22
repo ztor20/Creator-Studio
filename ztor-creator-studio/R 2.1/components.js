@@ -249,7 +249,7 @@
 
     // F6 — recent events & ongoing projects (source-aware entry: event → events.html, project → projects.html).
     'dash-events': { rows: [
-      { icon: 'circle', titleKey: 'dash.progress.row1.title', title: '<em>Coastline EP</em> · pre-order',        metaKey: 'dash.progress.row1.meta', meta: 'Project · Projects · 62 / 100 supporters · ends Dec 14', status: { key: 'status.live',      fallback: 'Live',      variant: 'yellow' },  go: 'projects.html' },
+      { icon: 'circle', titleKey: 'dash.progress.row1.title', title: '<em>Coastline EP</em> · pre-order',        metaKey: 'dash.progress.row1.meta', meta: 'Project · Projects · 62 / 100 supporters · ends Dec 14', status: { key: 'status.live',      fallback: 'Live',      variant: 'orange' },  go: 'projects.html' },
       { icon: 'circle', titleKey: 'dash.progress.row2.title', title: '<em>Late Bloom</em> short film · funding', metaKey: 'dash.progress.row2.meta', meta: 'Project · Projects · $8,420 / $15,000 · 21 days left',   status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' },    go: 'projects.html' },
       { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>Spring Launch</em> show · in-person',  metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'events.html' },
       { icon: 'circle', titleKey: 'dash.progress.row4.title', title: '<em>Quiet Hours</em> playlist · go live',  metaKey: 'dash.progress.row4.meta', meta: 'Project · Projects · scheduled to launch Dec 01',        status: { key: 'status.draft',     fallback: 'Draft',     variant: '' },        go: 'projects.html' }
