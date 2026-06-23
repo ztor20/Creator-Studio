@@ -1307,12 +1307,19 @@
 
     /* ─── Shared wizard chrome ────────────────────────────── */
     'wiz.close':            { en: '✕ Close',                          zh: '✕ 關閉' },
+    'wiz.cancel':           { en: 'Cancel',                           zh: '取消' },
+    'wiz.savebtn':          { en: 'Save',                             zh: '儲存' },
+    'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
+    'wiz.delete':           { en: 'Delete',                           zh: '刪除' },
+    'wiz.more':             { en: 'More',                             zh: '更多' },
     'wiz.save':             { en: 'Save and come back anytime',       zh: '儲存草稿稍後再回來' },
     'wiz.savelater':        { en: 'Save for later',                   zh: '稍後再存' },
     'wiz.autosaved':        { en: 'Saved',                            zh: '已儲存' },
     'wiz.back':             { en: 'Back',                             zh: '上一步' },
 
     /* ─── Create event wizard ─────────────────────────────── */
+    'ce.h1':                { en: 'Create event',                     zh: '建立活動' },
+    'ce.subtitle':          { en: 'Offline event',                    zh: '線下活動' },
     'ce.req':               { en: '· required',                       zh: '· 必填' },
     'ce.opt':               { en: '(optional)',                       zh: '（選填）' },
     'ce.step.type':         { en: 'Type',                             zh: '類型' },
@@ -1410,12 +1417,14 @@
 
     /* ─── Add new item · 單頁三型表單 (spec 5.1.5.2 v2.1) ──── */
     'cp.h1':                { en: 'New item',                         zh: '新增商品' },
+    'cp.subtitle':          { en: 'Physical item',                    zh: '實體商品' },
     'cp.type.physical':     { en: 'Physical item',                    zh: '實體商品' },
     'cp.type.physical-sub': { en: 'Ships to the buyer',               zh: '出貨給買家' },
     'cp.type.digital':      { en: 'Digital file',                     zh: '數位商品' },
     'cp.type.digital-sub':  { en: 'Instant download after purchase',  zh: '購買後即時下載' },
     'cp.type.auction':      { en: 'Auction',                          zh: '拍賣' },
     'cp.type.auction-sub':  { en: 'One-of-a-kind items your top fans bid for', zh: '獨一無二、讓鐵粉競標' },
+    'cp.info.title':        { en: 'Product info',                     zh: '商品資訊' },
     'cp.media.title':       { en: 'Show it off',                      zh: '展示它' },
     'cp.media.sub':         { en: "Buyers can't touch it. Your photos do that job.", zh: '買家摸不到，照片替你做事。' },
     'cp.media.hero-physical':{ en: 'Hero image — the first thing buyers see', zh: '主圖——買家第一眼看到的' },
@@ -1670,6 +1679,11 @@
     'cp.preview.title-auction': { en: 'Now fans see it',              zh: '粉絲現在看到的樣子' },
     'cp.ready.title':       { en: 'Ready to sell?',                   zh: '可以上架了嗎？' },
     'cp.ready.togo':        { en: '6 items needed to start selling',  zh: '還差 6 項才能開始販售' },
+    'cp.ready.chip.togo':   { en: '{n} to go',                        zh: '剩餘 {n} 項未完成' },
+    'cp.ready.chip.ready':  { en: 'Ready to sell',                    zh: '可以上架了' },
+    'cp.ready.chip.skip':   { en: 'Validation skipped',               zh: '已略過驗證' },
+    'cp.ready.banner.ready':{ en: 'Ready to sell!',                   zh: '可以上架了！' },
+    'cp.ready.banner.needed':{ en: '{n} items needed to start selling', zh: '還差 {n} 項才能開始販售' },
     'cp.show':              { en: 'Show in my shop',                  zh: '上架開關' },
     'cp.show.sub':          { en: 'Visible to fans in your storefront', zh: '粉絲在你的商店看得到' },
     'cp.pv.name':           { en: 'Product name',                     zh: '商品名稱' },

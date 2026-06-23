@@ -14,7 +14,9 @@
 
 ## 認證
 
-`collab.sh` 自動讀中央倉 `~/SynologyDrive/.cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（需對 `ztor20/Creator-Studio` 有**寫入權**；它屬 `yvesliu`，org owner `codeL1985`／`pf-jhy` 可在 repo Settings → Collaborators 調權限）。協作者沒有該檔時，需自備對該 repo 有寫入權的 token。**repo 內不留明文 token**。
+`collab.sh` 自動讀中央倉 `~/SynologyDrive/.cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（需對 `ztor20/Creator-Studio` 有**寫入權**）。協作者沒有該檔時，需自備對該 repo 有寫入權的 token。**repo 內不留明文 token**。
+
+推送用的 token 只需 **write 權**即可 commit／push 分支＋開 PR，**不需 merge 權**；**merge 一律由具 merge 權限的協作者在 GitHub 上操作**，AI 不代合。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
 
 ## 其他
 
