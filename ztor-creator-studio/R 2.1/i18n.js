@@ -1307,12 +1307,28 @@
 
     /* ─── Shared wizard chrome ────────────────────────────── */
     'wiz.close':            { en: '✕ Close',                          zh: '✕ 關閉' },
+    'wiz.cancel':           { en: 'Cancel',                           zh: '取消' },
+    'wiz.savebtn':          { en: 'Save',                             zh: '儲存' },
+    'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
+    'wiz.delete':           { en: 'Delete',                           zh: '刪除' },
+    'wiz.more':             { en: 'More',                             zh: '更多' },
     'wiz.save':             { en: 'Save and come back anytime',       zh: '儲存草稿稍後再回來' },
     'wiz.savelater':        { en: 'Save for later',                   zh: '稍後再存' },
     'wiz.autosaved':        { en: 'Saved',                            zh: '已儲存' },
+    'wiz.saving':           { en: 'Saving…',                          zh: '儲存中…' },
     'wiz.back':             { en: 'Back',                             zh: '上一步' },
+    /* 返回離開確認彈窗 */
+    'wiz.leave.title.edited': { en: 'Save before you leave?',         zh: '要先儲存再離開嗎？' },
+    'wiz.leave.body.edited':  { en: 'You have edits on this page.',   zh: '這一頁有你做的編輯。' },
+    'wiz.leave.saveleave':    { en: 'Save and leave',                 zh: '儲存並離開' },
+    'wiz.leave.discard':      { en: 'Leave without saving',           zh: '不儲存就離開' },
+    'wiz.leave.title.clean':  { en: 'Leave this page?',               zh: '要離開這一頁嗎？' },
+    'wiz.leave.body.clean':   { en: 'You can come back anytime.',     zh: '你隨時可以再回來。' },
+    'wiz.leave.leave':        { en: 'Leave',                          zh: '離開' },
 
     /* ─── Create event wizard ─────────────────────────────── */
+    'ce.h1':                { en: 'Create event',                     zh: '建立活動' },
+    'ce.subtitle':          { en: 'Offline event',                    zh: '線下活動' },
     'ce.req':               { en: '· required',                       zh: '· 必填' },
     'ce.opt':               { en: '(optional)',                       zh: '（選填）' },
     'ce.step.type':         { en: 'Type',                             zh: '類型' },
@@ -1410,12 +1426,14 @@
 
     /* ─── Add new item · 單頁三型表單 (spec 5.1.5.2 v2.1) ──── */
     'cp.h1':                { en: 'New item',                         zh: '新增商品' },
+    'cp.subtitle':          { en: 'Physical item',                    zh: '實體商品' },
     'cp.type.physical':     { en: 'Physical item',                    zh: '實體商品' },
     'cp.type.physical-sub': { en: 'Ships to the buyer',               zh: '出貨給買家' },
     'cp.type.digital':      { en: 'Digital file',                     zh: '數位商品' },
     'cp.type.digital-sub':  { en: 'Instant download after purchase',  zh: '購買後即時下載' },
     'cp.type.auction':      { en: 'Auction',                          zh: '拍賣' },
     'cp.type.auction-sub':  { en: 'One-of-a-kind items your top fans bid for', zh: '獨一無二、讓鐵粉競標' },
+    'cp.info.title':        { en: 'Product info',                     zh: '商品資訊' },
     'cp.media.title':       { en: 'Show it off',                      zh: '展示它' },
     'cp.media.sub':         { en: "Buyers can't touch it. Your photos do that job.", zh: '買家摸不到，照片替你做事。' },
     'cp.media.hero-physical':{ en: 'Hero image — the first thing buyers see', zh: '主圖——買家第一眼看到的' },
@@ -1469,6 +1487,7 @@
     'cp.dsub.merch':        { en: 'Merch · 商品',                     zh: '商品 · Merch' },
     /* 建立拍賣流程（create-auction · spec 5.1.5.10）——種類、活動次分類、交付、就緒檢查 */
     'ca.h1':                { en: 'New auction',                      zh: '建立拍賣' },
+    'ca.subtitle':          { en: 'Auction',                          zh: '拍賣' },
     'ca.h1.edit':           { en: 'Edit auction',                     zh: '編輯拍賣' },
     'ca.delete.confirm':    { en: 'Delete this auction? This cannot be undone.', zh: '刪除這個拍賣？此動作無法復原。' },
     'ca.type.physical':     { en: 'Physical',                         zh: '實體' },
@@ -1670,6 +1689,11 @@
     'cp.preview.title-auction': { en: 'Now fans see it',              zh: '粉絲現在看到的樣子' },
     'cp.ready.title':       { en: 'Ready to sell?',                   zh: '可以上架了嗎？' },
     'cp.ready.togo':        { en: '6 items needed to start selling',  zh: '還差 6 項才能開始販售' },
+    'cp.ready.chip.togo':   { en: '{n} to go',                        zh: '剩餘 {n} 項未完成' },
+    'cp.ready.chip.ready':  { en: 'Ready to sell',                    zh: '可以上架了' },
+    'cp.ready.chip.skip':   { en: 'Validation skipped',               zh: '已略過驗證' },
+    'cp.ready.banner.ready':{ en: 'Ready to sell!',                   zh: '可以上架了！' },
+    'cp.ready.banner.needed':{ en: '{n} items needed to start selling', zh: '還差 {n} 項才能開始販售' },
     'cp.show':              { en: 'Show in my shop',                  zh: '上架開關' },
     'cp.show.sub':          { en: 'Visible to fans in your storefront', zh: '粉絲在你的商店看得到' },
     'cp.pv.name':           { en: 'Product name',                     zh: '商品名稱' },
@@ -1683,6 +1707,7 @@
 
     /* ─── Create bundle · 單頁表單 (spec 5.1.5.4) ─────────── */
     'cb.h1':                { en: 'Create bundle',                    zh: '建立組合' },
+    'cb.subtitle':          { en: 'Bundle',                           zh: '組合' },
     'cb.name':              { en: 'Bundle name',                      zh: '組合名稱' },
     'cb.name.ph':           { en: 'e.g., Ultimate Fan Bundle',        zh: '例：終極粉絲組合' },
     'cb.items':             { en: 'Items',                            zh: '商品' },
@@ -1740,6 +1765,8 @@
     'cpp.publish-alert':    { en: 'Project would be published here. (Prototype)', zh: '專案會在這裡發布。（原型示意）' },
     'cpp.draft-alert':      { en: 'Draft saved. You can return from Projects → Drafts.', zh: '草稿已儲存。可從 專案 → 草稿 找回。' },
 
+    'cpp.h1':               { en: 'Create project',                  zh: '建立專案' },
+    'cpp.subtitle':         { en: 'Crowdfunding project',            zh: '募資專案' },
     /* Step 1 · About */
     'cpp.s1.h1':            { en: 'What are you making?',             zh: '你正在做的是什麼？' },
     'cpp.s1.sub':           { en: 'Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.', zh: '選一種專案類型，告訴我們基本資訊。一切都可之後再調整——目前只需足以存草稿的內容。' },
@@ -2483,6 +2510,8 @@
     'project-detail.footer2':{en:'Revenue rolls up to Earnings → Project Net Income',zh:'收益匯入收入管理 → 專案淨利'},
 
     /* Register IP flow (5.1.4.1) */
+    'ri.h1': { en: 'Register IP', zh: '登錄 IP' },
+    'ri.subtitle': { en: 'External IP', zh: '外部 IP' },
     'ri.step.type': { en: 'Type & Info', zh: '類型與資訊' },
     'ri.step.usage': { en: 'Usage Rules', zh: '使用規則' },
     'ri.step.pricing': { en: 'Pricing & Earnings', zh: '定價與收益' },

@@ -3,49 +3,61 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="theme.js?v=20260622i"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/button.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/input.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260622i">
-<link rel="stylesheet" href="shared.css?v=20260622i">
+<script src="theme.js?v=20260623c"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/button.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/card.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/input.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260623c">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260623c">
+<link rel="stylesheet" href="shared.css?v=20260623c">
 <style>
   /* page-specific：單頁三型表單的區塊顯示切換 · spec 5.1.5.2 §3-4 */
   .cp-section { margin-top: 18px; }
   .cp-section[hidden] { display: none; }
   .cp-section__head { margin-bottom: 12px; }
-  .cp-section__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
-  .cp-section__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
+  .cp-section__title { font-size: var(--fs-15); font-weight: var(--fw-semibold); margin: 0 0 2px; }
+  .cp-section__sub { font-size: var(--fs-12); color: var(--foreground-subtle); margin: 0; }
   .cp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .cp-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .cp-switch-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-top: 26px; }
+  .cp-switch-row { display: flex; align-items: center; gap: 10px; font-size: var(--fs-13); margin-top: 26px; }
   .cp-switch-row[hidden] { display: none; }  /* [hidden] 要蓋過上面的 display:flex（低庫存提醒僅實體，數位模式須隱藏）*/
-  .cp-footnote { text-align: center; font-size: 12px; color: var(--foreground-subtle); margin-top: 22px; }
+  .cp-footnote { text-align: center; font-size: var(--fs-12); color: var(--foreground-subtle); margin-top: 22px; }
   /* §5.2.4 頂部框架（.wizard__stepper-slot/-title/-actions）在 shared.css；統一框架見該檔 */
   /* 就緒檢查 chip（貼主動作，現在 footer）：未備齊 muted、備齊轉綠 */
-  .cp-ready-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--foreground-muted); white-space: nowrap; }
+  .cp-ready-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); font-weight: var(--fw-medium); color: var(--foreground-muted); white-space: nowrap; cursor: default; }
   .cp-ready-chip .ztor-icon { width: 14px; height: 14px; }
   .cp-ready-chip--ready { color: var(--status-success); }
+  /* 就緒檢查 tooltip：hover／focus chip 時於上方浮出（footer 在底部，往上開）；內容沿用 .readiness 元件 */
+  .cp-ready-pop {
+    position: absolute; right: 0; bottom: calc(100% + 10px);
+    width: 300px; max-width: 78vw;
+    opacity: 0; visibility: hidden; transform: translateY(4px);
+    transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing), visibility var(--duration) var(--easing);
+    pointer-events: none; z-index: 60;
+  }
+  .cp-ready-pop .readiness { box-shadow: var(--shadow-popover); max-height: 60vh; overflow: auto; text-align: left; }
+  .cp-ready-pop::after { content: ""; position: absolute; top: 100%; right: 26px; border: 7px solid transparent; border-top-color: var(--surface-muted); }
+  .cp-ready-chip:hover .cp-ready-pop,
+  .cp-ready-chip:focus-within .cp-ready-pop { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
   /* 編輯態 Delete（破壞性）：紅字 ghost。完整 destructive 樣式＋確認 modal 待規格（§4.5 註「確認流程待補」）*/
   .cp-delete { color: var(--status-error, #c0392b); }
   .cp-delete:hover { background: color-mix(in srgb, var(--status-error, #c0392b) 10%, transparent); color: var(--status-error, #c0392b); }
   /* 上架開關（Show in my shop）：表單末一張卡片列 */
   .cp-show-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-  .cp-show-row__main { font-size: 13.5px; font-weight: 600; }
-  .cp-show-row__sub { font-size: 12px; color: var(--foreground-subtle); margin-top: 2px; }
+  .cp-show-row__main { font-size: var(--fs-13); font-weight: var(--fw-semibold); }
+  .cp-show-row__sub { font-size: var(--fs-12); color: var(--foreground-subtle); margin-top: 2px; }
   /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
   /* 子欄位三欄（取貨方式的長/寬/高）*/
   .cp-three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
@@ -68,13 +80,22 @@
 </head>
 <body class="preview-open">
 <div class="wizard">
-  <!-- §5.2.4 頂部操作欄 · 統一框架：Close 左｜標題置中(stepper 槽)｜Preview＋主題右。Save／主動作在 footer -->
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄空（無 stepper）；右＝自動儲存＋預覽。主動作（Start selling）仍在 footer；複製／刪除僅編輯既有商品時出現。 -->
   <header class="wizard__top">
-    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
-    <div class="wizard__stepper-slot"><span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span></div>
-    <!-- 即時預覽切換鈕（spec §4.5 v5.1 / D084：可開關、預設開啟）；主題切換鈕移除（仍可由 Cheat Codes 切換）。 -->
-    <div class="wizard__top-actions">
-      <button class="btn btn--outline btn--sm" type="button" id="cp-preview-toggle" aria-pressed="true" data-i18n="cp.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span>
+          <span class="wizard__top-sub" id="cp-subtitle" data-i18n="cp.subtitle">Physical item</span>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-duplicate" hidden aria-label="Duplicate" data-i18n-aria-label="wiz.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-delete-top" hidden aria-label="Delete" data-i18n-aria-label="wiz.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+        <button class="btn btn--outline btn--sm" type="button" id="cp-preview-toggle" aria-pressed="true" data-i18n="cp.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+      </div>
     </div>
   </header>
 
@@ -101,34 +122,38 @@
         <p class="cp-section__sub" data-i18n="cp.media.sub">Buyers can't touch it. Your photos do that job.</p>
       </div>
 
-      <!-- 實體：主圖 + 4 附圖 -->
+      <!-- 實體：主圖（左）+ 4 附圖 2×2（右）-->
       <div data-cp-show="physical">
-        <div class="upload-tile upload-tile--hero" data-cp-asset="p-hero">
-          <span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image — the first thing buyers see</span>
-          <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
-        </div>
-        <div class="upload-grid">
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-showcase">
+          <div class="upload-tile upload-tile--hero" data-cp-asset="p-hero">
+            <span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image — the first thing buyers see</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+          </div>
+          <div class="upload-grid upload-grid--2x2">
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
+          </div>
         </div>
         <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.min600">Min 600 x 600px</div>
       </div>
 
-      <!-- 數位 F1 素材：封面＊ + 附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3 -->
+      <!-- 數位 F1 素材：封面＊（左）+ 附圖 2×2（右）（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3 -->
       <div data-cp-show="digital" hidden>
-        <div class="upload-tile upload-tile--hero" data-cp-asset="d-cover">
-          <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="cp.media.cover-hero">Cover art — the first thing buyers see</span>
-          <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
-        </div>
-        <div class="upload-grid">
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-showcase">
+          <div class="upload-tile upload-tile--hero" data-cp-asset="d-cover">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="cp.media.cover-hero">Cover art — the first thing buyers see</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+          </div>
+          <div class="upload-grid upload-grid--2x2">
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
+          </div>
         </div>
         <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.min600">Min 600 x 600px</div>
       </div>
@@ -137,6 +162,9 @@
 
     <!-- §4 ② 商品資訊（實體/數位）-->
     <section class="card cp-section" data-cp-show="physical digital">
+      <div class="cp-section__head">
+        <h3 class="cp-section__title" data-i18n="cp.info.title">Product info</h3>
+      </div>
       <div class="field">
         <div class="field__label"><span data-i18n="cp.name">Product name</span> <span style="color:var(--error,#c00)">*</span></div>
         <input class="input" id="cp-f-name" placeholder="e.g., Summer Tour Hoodie" data-i18n-placeholder="cp.name.ph">
@@ -183,7 +211,7 @@
         <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
         <div class="field__hint" style="margin-bottom:10px" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
         <div id="cp-spec-rows"></div>
-        <button class="btn btn--ghost btn--sm" id="cp-add-spec" data-i18n="cp.spec.add">＋ Add spec</button>
+        <button class="btn btn--outline btn--sm" id="cp-add-spec" style="align-self:flex-start" data-i18n="cp.spec.add">＋ Add spec</button>
       </div>
     </section>
 
@@ -408,13 +436,23 @@
     <div class="cp-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
   </div>
 
-  <!-- §5.2.4 底部操作列（統一）：Save for later 左；就緒 chip＋主動作右 -->
-  <footer class="wizard__bottom">
-    <button class="btn btn--ghost" data-i18n="wiz.savelater">Save for later</button>
+  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放就緒 chip＋主動作（右對齊）。
+       就緒檢查（Ready to sell?）改為 chip 的 hover/focus tooltip（使用者裁示，取代右欄常駐卡）。 -->
+  <footer class="wizard__bottom" style="justify-content:flex-end">
     <div class="wizard__bottom-actions">
       <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
       <button class="btn btn--ghost cp-delete" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
-      <span class="cp-ready-chip" id="cp-ready-chip"><i data-lucide="circle" class="ztor-icon"></i><span id="cp-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span></span>
+      <div class="cp-ready-chip" id="cp-ready-chip" tabindex="0" aria-describedby="cp-ready-pop">
+        <i data-lucide="circle" class="ztor-icon"></i><span id="cp-ready-chip-text">6 items needed</span>
+        <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
+        <div class="cp-ready-pop" id="cp-ready-pop" role="tooltip">
+          <div class="readiness">
+            <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title">Ready to sell?</h3></div>
+            <ul class="readiness__list" id="cp-ready-list"></ul>
+            <div class="readiness__banner" id="cp-ready-banner">6 items needed to start selling</div>
+          </div>
+        </div>
+      </div>
       <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
     </div>
   </footer>
@@ -440,12 +478,7 @@
         </div>
       </div>
 
-      <!-- 就緒檢查卡（Ready to sell?）· spec §4.4/§4.5：右欄三件之一，依類型換檢查項 -->
-      <section class="readiness cp-section" id="cp-readiness" style="margin-top:18px">
-        <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title" data-i18n="cp.ready.title">Ready to sell?</h3></div>
-        <ul class="readiness__list" id="cp-ready-list"></ul>
-        <div class="readiness__banner" id="cp-ready-banner" data-i18n="cp.ready.togo">6 items needed to start selling</div>
-      </section>
+      <!-- 就緒檢查（Ready to sell?）已移到 footer chip 的 hover tooltip（使用者裁示），右欄不再常駐此卡 -->
 
       <!-- 上架開關（Show in my shop）· spec §4.4/§4.5：右欄三件之一，預設開 -->
       <section class="card cp-section">
@@ -635,28 +668,28 @@
     /* Cheat Codes（devtools）的 Skip validation：開啟時略過就緒 gating，強制可上架 */
     const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
     if (ready) {
-      bannerEl.textContent = 'Ready to sell!';
+      bannerEl.textContent = T('cp.ready.banner.ready', 'Ready to sell!');
       bannerEl.classList.add('readiness__banner--ready');
-      chipText.textContent = 'Ready to sell';
+      chipText.textContent = T('cp.ready.chip.ready', 'Ready to sell');
       chipEl.classList.add('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'check-circle');
     } else if (skip) {
       bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = 'Validation skipped';
+      chipText.textContent = T('cp.ready.chip.skip', 'Validation skipped');
       chipEl.classList.remove('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     } else {
-      bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' needed to start ' + verb;
+      bannerEl.textContent = T('cp.ready.banner.needed', '{n} items needed to start selling').replace('{n}', remaining);
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = remaining + ' to go';
+      chipText.textContent = T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
       chipEl.classList.remove('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     }
-    /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒卡仍列在右欄供參考）*/
+    /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒 tooltip 也隨之收起）*/
     if (editMode) { primary.disabled = false; chipEl.hidden = true; }
     else { primary.disabled = !(ready || skip); chipEl.hidden = false; }
-    readyTitle.textContent = 'Ready to sell?';
+    readyTitle.textContent = T('cp.ready.title', 'Ready to sell?');
     if (window.ztorIcons) window.ztorIcons.applyIcons(listEl), window.ztorIcons.applyIcons(chipEl);
   }
 
@@ -938,6 +971,8 @@
 
   /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating（含初始化時的廣播）*/
   document.addEventListener('ztor:devstate-changed', renderReadiness);
+  /* 切語言後重算 chip／tooltip／預覽文字（這些由 JS 直接寫入、非 data-i18n 套用）*/
+  document.addEventListener('i18n:applied', refresh);
 
   /* ---- 入口參數（spec §2.2/§2.3 預設類型、§4.5 編輯態）---- */
   const params = new URLSearchParams(location.search);
@@ -973,9 +1008,10 @@
   setType(initType);
 })();
 </script>
-<script src="icons.js?v=20260622i"></script>
-<script src="i18n.js?v=20260622i"></script>
-<script src="reveal.js?v=20260622i"></script>
-<script src="devtools.js?v=20260622i"></script>
+<script src="icons.js?v=20260623c"></script>
+<script src="i18n.js?v=20260623c"></script>
+<script src="partials/wizard-chrome.js?v=20260623c"></script>
+<script src="reveal.js?v=20260623c"></script>
+<script src="devtools.js?v=20260623c"></script>
 </body>
 </html>
