@@ -3,55 +3,134 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="theme.js?v=20260622i"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/button.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/input.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260622i">
-<link rel="stylesheet" href="shared.css?v=20260622i">
+<script src="theme.js?v=20260624b"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/button.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/card.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/input.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260624b">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260624b">
+<link rel="stylesheet" href="shared.css?v=20260624b">
 <style>
   /* page-specific：單頁三型表單的區塊顯示切換 · spec 5.1.5.2 §3-4 */
-  .cp-section { margin-top: 18px; }
+  /* === 無卡片版面（2026-06-24）：去 .card 外觀，改用「區段標題放大＋灰副標＋分隔線＋寬鬆留白」。
+         只動排版；input/select/segmented/switch/selection-card/upload-tile 等控件全用原元件。 === */
+  .cp-section { padding: 44px 0; margin: 0; }                   /* 加大上下留白＝分隔間隔更大 */
   .cp-section[hidden] { display: none; }
-  .cp-section__head { margin-bottom: 12px; }
-  .cp-section__title { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
-  .cp-section__sub { font-size: 12.5px; color: var(--foreground-subtle); margin: 0; }
+  .cp-section + .cp-section { border-top: 1px solid var(--border-soft); }   /* 區段間分隔線 */
+  .cp-section__head { margin-bottom: 24px; }
+  /* 區段標題：font-ui／18px／medium（使用者指定 2026-06-24，由 20→18）*/
+  .cp-section__title { font-family: var(--type-title-24-family); font-size: var(--fs-18); font-weight: var(--type-title-24-weight); letter-spacing: var(--type-title-24-tracking); line-height: 1.3; margin: 0 0 4px; }
+  .cp-section__sub { font-size: var(--fs-14); color: var(--foreground-muted); margin: 0; }
+  /* input 標題（field label）：fs-14／medium（使用者指定 2026-06-24，由 15→14）*/
+  .cp-section .field { gap: 4px; margin-bottom: 26px; }   /* 欄位內 label/描述/控件/計數統一 4px（使用者指定 2026-06-24）；欄位↔欄位 26 */
+  .cp-section .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
   .cp-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .cp-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .cp-switch-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-top: 26px; }
+  /* #4 低庫存提醒：有外框的一條 row（左字右開關）（2026-06-24，如圖四 waitlist）*/
+  .cp-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding: 14px 16px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--border); font-size: var(--fs-14); font-weight: var(--fw-medium); }
   .cp-switch-row[hidden] { display: none; }  /* [hidden] 要蓋過上面的 display:flex（低庫存提醒僅實體，數位模式須隱藏）*/
-  .cp-footnote { text-align: center; font-size: 12px; color: var(--foreground-subtle); margin-top: 22px; }
+  .cp-footnote { text-align: center; font-size: var(--fs-12); color: var(--foreground-subtle); margin-top: 22px; }
   /* §5.2.4 頂部框架（.wizard__stepper-slot/-title/-actions）在 shared.css；統一框架見該檔 */
   /* 就緒檢查 chip（貼主動作，現在 footer）：未備齊 muted、備齊轉綠 */
-  .cp-ready-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--foreground-muted); white-space: nowrap; }
+  .cp-ready-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); font-weight: var(--fw-medium); color: var(--foreground-muted); white-space: nowrap; cursor: default; }
   .cp-ready-chip .ztor-icon { width: 14px; height: 14px; }
   .cp-ready-chip--ready { color: var(--status-success); }
+  /* 就緒檢查 tooltip：hover／focus chip 時於上方浮出（footer 在底部，往上開）；內容沿用 .readiness 元件 */
+  .cp-ready-pop {
+    position: absolute; right: 0; bottom: calc(100% + 10px);
+    width: 300px; max-width: 78vw;
+    opacity: 0; visibility: hidden; transform: translateY(4px);
+    transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing), visibility var(--duration) var(--easing);
+    pointer-events: none; z-index: 60;
+  }
+  .cp-ready-pop .readiness { box-shadow: var(--shadow-popover); max-height: 60vh; overflow: auto; text-align: left; }
+  .cp-ready-pop::after { content: ""; position: absolute; top: 100%; right: 26px; border: 7px solid transparent; border-top-color: var(--surface-muted); }
+  .cp-ready-chip:hover .cp-ready-pop,
+  .cp-ready-chip:focus-within .cp-ready-pop { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
   /* 編輯態 Delete（破壞性）：紅字 ghost。完整 destructive 樣式＋確認 modal 待規格（§4.5 註「確認流程待補」）*/
   .cp-delete { color: var(--status-error, #c0392b); }
   .cp-delete:hover { background: color-mix(in srgb, var(--status-error, #c0392b) 10%, transparent); color: var(--status-error, #c0392b); }
-  /* 上架開關（Show in my shop）：表單末一張卡片列 */
-  .cp-show-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-  .cp-show-row__main { font-size: 13.5px; font-weight: 600; }
-  .cp-show-row__sub { font-size: 12px; color: var(--foreground-subtle); margin-top: 2px; }
+  /* 上架開關 / 每人限購：有外框的一條 row（與「庫存快不夠時提醒我」一致，2026-06-24）*/
+  .cp-show-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--border); }
+  .cp-show-row__main { font-size: var(--fs-14); font-weight: var(--fw-medium); }
+  .cp-show-row__sub { font-size: var(--fs-12); color: var(--foreground-subtle); margin-top: 2px; }
   /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
   /* 子欄位三欄（取貨方式的長/寬/高）*/
   .cp-three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   /* segmented 切換後揭露的子欄位群（庫存版本/取貨方式）*/
   .cp-subfields { margin-top: 14px; }
   .cp-subfields[hidden] { display: none; }
+
+  /* ═══ 5 項改版（2026-06-24，使用者指定，僅 create-product）═══ */
+
+  /* #1 商品預覽移到表單旁、sticky 常駐 → .wizard__body 改兩欄（左表單／右預覽），表單欄縮窄 */
+  .wizard__body { max-width: 1000px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; align-items: start; padding-top: 16px; }   /* 上內距 40→16（使用者指定 2026-06-24，僅本頁 override）*/
+  .cp-form-col { min-width: 0; }
+  /* sticky top＝header(80)＋body 上內距(16)＝預覽欄自然位置 → 黏在原地、不滑上去躲到 sticky header 後（2026-06-24，padding 改 16 後同步）*/
+  .cp-preview-col { position: sticky; top: 96px; display: flex; flex-direction: column; gap: 16px; align-self: start; }
+  .cp-preview-col__title { font-family: var(--type-title-24-family); font-size: var(--fs-18); font-weight: var(--type-title-24-weight); letter-spacing: var(--type-title-24-tracking); line-height: 1.3; margin: 0; }
+  @media (max-width: 1040px) {            /* 窄螢幕：預覽堆到表單下方 */
+    .wizard__body { grid-template-columns: 1fr; gap: 28px; }
+    .cp-preview-col { position: static; }
+  }
+
+  /* 黑夜版背景↔footer 對調（使用者指定 2026-06-24，僅本頁 override；其餘 wizard 頁維持 shared.css 的 content#2B2B2C／footer#191A1A）。
+     本頁：content＋header＝最深 #191A1A（--surface-page）；footer＋底層 canvas＝較淺 #2B2B2C（--surface-shell）。 */
+  [data-theme="dark"] .wizard__sheet,
+  [data-theme="dark"] .wizard__top { background: var(--surface-page); }     /* content＋header → #191A1A */
+  [data-theme="dark"] .wizard,
+  [data-theme="dark"] .wizard__bottom { background: var(--surface-shell); } /* footer＋canvas → #2B2B2C */
+
+  /* #2 型別選擇卡：加 icon、置中；已選＝未選底框＋橘色外框疊加（使用者指定 2026-06-24）*/
+  .selection-card--active { background: var(--surface); box-shadow: var(--shadow-card), 0 0 0 2px var(--primary); }
+  #cp-type-grid .selection-card { align-items: center; text-align: center; gap: 10px; padding: 22px 16px; }
+  /* icon 統一灰色、不隨 hover/已選換色（使用者指定 2026-06-24）*/
+  #cp-type-grid .selection-card__ic,
+  #cp-type-grid .selection-card:hover .selection-card__ic,
+  #cp-type-grid .selection-card--active .selection-card__ic { color: var(--foreground-muted); }
+  #cp-type-grid .selection-card__ic { width: 42px; height: 42px; display: grid; place-items: center; }
+  #cp-type-grid .selection-card__ic .ztor-icon { width: 28px; height: 28px; stroke-width: 1.4; }
+  /* 已選＝未選底框＋橘色細外框疊加 */
+  #cp-type-grid .selection-card--active { box-shadow: var(--shadow-card), 0 0 0 1.5px var(--primary); }
+  /* 型別區段＝.cp-form-col 第一個區段，去掉多餘頂距 */
+  .cp-form-col > .cp-section:first-child { padding-top: 4px; }
+
+  /* #3 單一/多規格、不限量/限量：segmented → 兩張並排 radio 卡（如圖三）*/
+  .cp-radio-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: transparent; padding: 0; border: 0; box-shadow: none; }
+  .cp-radio-cards .segmented__btn {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px; height: auto;
+    padding: 14px 16px; border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-card);
+    color: var(--foreground); font-weight: var(--fw-medium); font-size: var(--fs-14);
+  }
+  .cp-radio-cards .segmented__btn { align-items: flex-start; }
+  .cp-radio-cards .segmented__btn::after { content: ""; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--border); flex: 0 0 auto; margin-top: 1px; }
+  .cp-radio-cards .segmented__btn--active { box-shadow: var(--shadow-card), 0 0 0 2px var(--primary); }
+  .cp-radio-cards .segmented__btn--active::after { box-shadow: inset 0 0 0 2px var(--primary); background: radial-gradient(circle at center, var(--primary) 0 4px, transparent 5px); }
+  /* 卡內可帶標題＋描述（如「不限量／可隨時補貨…」）*/
+  .cp-radio-cards .cp-rc-text { display: flex; flex-direction: column; gap: 3px; text-align: left; min-width: 0; }
+  .cp-radio-cards .cp-rc-title { font-weight: var(--fw-medium); }
+  .cp-radio-cards .cp-rc-sub { font-size: var(--fs-12); font-weight: 400; color: var(--foreground-muted); line-height: 1.4; white-space: normal; }
+  /* 多規格建構器與上方 radio 卡之間留間距（使用者指定 2026-06-24，原本黏在一起）*/
+  #cp-var-builder { margin-top: 16px; }
+
+  /* #5 上傳框（主圖/封面）：image5 風 — 大檔案 icon＋標題＋拖放說明＋格式/大小 */
+  .upload-tile--hero .upload-tile__icon { color: var(--foreground); margin-bottom: 4px; }
+  .upload-tile--hero .upload-tile__icon .up-stack { width: 44px; height: 44px; }
+  .upload-tile--hero .upload-tile__title { font-size: var(--fs-15); font-weight: var(--fw-semibold); }
+  .upload-tile__sub { font-size: var(--fs-13); color: var(--foreground-muted); }
+  .upload-tile--hero .upload-tile__hint { font-size: var(--fs-12); }
   /* §4.1② 詳細規格：每筆＝規格名稱＋規格值兩欄並列＋行尾刪除鈕 */
   .cp-spec-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; }
   /* 即時預覽可開關、預設開啟（spec §4.5 v5.1 / D084）。≤760px 無法再壓窄，開啟時改成靜態堆疊
@@ -62,88 +141,112 @@
     #cp-preview.is-open .preview-panel__body { padding-bottom: 120px; }
   }
   /* Embed 模式：由 create-bundle 的「New item」以 popup（iframe）開啟。
-     彈窗空間有限——隱藏常駐側邊預覽。 */
-  body.cp-embed #cp-preview { display: none; }
+     彈窗空間有限——隱藏常駐側邊預覽、表單回單欄。 */
+  body.cp-embed .cp-preview-col { display: none; }
+  body.cp-embed .wizard__body { grid-template-columns: 1fr; }
 </style>
 </head>
-<body class="preview-open">
+<body>
 <div class="wizard">
-  <!-- §5.2.4 頂部操作欄 · 統一框架：Close 左｜標題置中(stepper 槽)｜Preview＋主題右。Save／主動作在 footer -->
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄空（無 stepper）；右＝自動儲存＋預覽。主動作（Start selling）仍在 footer；複製／刪除僅編輯既有商品時出現。 -->
+  <div class="wizard__sheet">
   <header class="wizard__top">
-    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
-    <div class="wizard__stepper-slot"><span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span></div>
-    <!-- 即時預覽切換鈕（spec §4.5 v5.1 / D084：可開關、預設開啟）；主題切換鈕移除（仍可由 Cheat Codes 切換）。 -->
-    <div class="wizard__top-actions">
-      <button class="btn btn--outline btn--sm" type="button" id="cp-preview-toggle" aria-pressed="true" data-i18n="cp.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" id="cp-title" data-i18n="cp.h1">New item</span>
+          <span class="wizard__top-sub" id="cp-subtitle" data-i18n="cp.subtitle">Physical item</span>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-duplicate" hidden aria-label="Duplicate" data-i18n-aria-label="wiz.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
+        <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-delete-top" hidden aria-label="Delete" data-i18n-aria-label="wiz.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+      </div>
     </div>
   </header>
 
   <div class="wizard__body">
+    <div class="cp-form-col">
 
     <!-- §3 商品類型：實體／數位 二選一，預設實體（拍賣已獨立為 create-auction.html，spec 5.1.5.2 v5.0 / D081）-->
-    <div class="field">
+    <section class="cp-section">
+      <div class="cp-section__head">
+        <h3 class="cp-section__title" data-i18n="cp.type.title">Product type</h3>
+        <p class="cp-section__sub" data-i18n="cp.type.sub">Choose what you're selling.</p>
+      </div>
       <div class="selection-grid" id="cp-type-grid">
         <button class="selection-card selection-card--active" data-cp-type="physical">
+          <span class="selection-card__ic"><i data-lucide="package" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="cp.type.physical">Physical item</span>
           <span class="selection-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span>
         </button>
         <button class="selection-card" data-cp-type="digital">
+          <span class="selection-card__ic"><i data-lucide="download" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="cp.type.digital">Digital file</span>
           <span class="selection-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span>
         </button>
       </div>
-    </div>
+    </section>
 
     <!-- §4 ① 素材（Show it off）-->
-    <section class="card cp-section" data-cp-show="physical digital">
+    <section class="cp-section" data-cp-show="physical digital">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.media.title">Show it off</h3>
         <p class="cp-section__sub" data-i18n="cp.media.sub">Buyers can't touch it. Your photos do that job.</p>
       </div>
 
-      <!-- 實體：主圖 + 4 附圖 -->
+      <!-- 實體：主圖（左）+ 4 附圖 2×2（右）-->
       <div data-cp-show="physical">
-        <div class="upload-tile upload-tile--hero" data-cp-asset="p-hero">
-          <span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image — the first thing buyers see</span>
-          <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+        <div class="upload-showcase">
+          <div class="upload-tile upload-tile--hero" data-cp-asset="p-hero">
+            <span class="upload-tile__icon"><svg class="up-stack" viewBox="0 0 48 48" fill="none"><rect x="11" y="10" width="20" height="26" rx="3" transform="rotate(-9 21 23)" stroke="var(--border)" stroke-width="2"/><rect x="17" y="10" width="20" height="26" rx="3" transform="rotate(9 27 23)" stroke="var(--border)" stroke-width="2"/><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--surface)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
+            <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image — the first thing buyers see</span>
+            <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+          </div>
+          <div class="upload-grid upload-grid--2x2">
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+          </div>
         </div>
-        <div class="upload-grid">
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="p-gallery"><span class="upload-tile__icon">＋</span></div>
-        </div>
-        <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.min600">Min 600 x 600px</div>
       </div>
 
-      <!-- 數位 F1 素材：封面＊ + 附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3 -->
+      <!-- 數位 F1 素材：封面＊（左）+ 附圖 2×2（右）（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3 -->
       <div data-cp-show="digital" hidden>
-        <div class="upload-tile upload-tile--hero" data-cp-asset="d-cover">
-          <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="cp.media.cover-hero">Cover art — the first thing buyers see</span>
-          <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+        <div class="upload-showcase">
+          <div class="upload-tile upload-tile--hero" data-cp-asset="d-cover">
+            <span class="upload-tile__icon"><svg class="up-stack" viewBox="0 0 48 48" fill="none"><rect x="11" y="10" width="20" height="26" rx="3" transform="rotate(-9 21 23)" stroke="var(--border)" stroke-width="2"/><rect x="17" y="10" width="20" height="26" rx="3" transform="rotate(9 27 23)" stroke="var(--border)" stroke-width="2"/><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--surface)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
+            <span class="upload-tile__title" data-i18n="cp.media.cover-hero">Cover art — the first thing buyers see</span>
+            <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+          </div>
+          <div class="upload-grid upload-grid--2x2">
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+          </div>
         </div>
-        <div class="upload-grid">
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-          <div class="upload-tile" data-cp-asset="d-gallery"><span class="upload-tile__icon">＋</span></div>
-        </div>
-        <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.min600">Min 600 x 600px</div>
       </div>
 
     </section>
 
     <!-- §4 ② 商品資訊（實體/數位）-->
-    <section class="card cp-section" data-cp-show="physical digital">
+    <section class="cp-section" data-cp-show="physical digital">
+      <div class="cp-section__head">
+        <h3 class="cp-section__title" data-i18n="cp.info.title">Product info</h3>
+      </div>
       <div class="field">
         <div class="field__label"><span data-i18n="cp.name">Product name</span> <span style="color:var(--error,#c00)">*</span></div>
         <input class="input" id="cp-f-name" placeholder="e.g., Summer Tour Hoodie" data-i18n-placeholder="cp.name.ph">
       </div>
       <div class="field">
         <div class="field__label"><span data-i18n="cp.desc">Tell your fans what they're getting</span> <span style="color:var(--error,#c00)">*</span></div>
-        <div class="field__hint" style="margin:0 0 6px" data-i18n="cp.desc.hint">The more detail, the more they trust it.</div>
+        <div class="field__hint" data-i18n="cp.desc.hint">The more detail, the more they trust it.</div>
         <textarea class="textarea" id="cp-f-desc" placeholder="Describe your product…" data-i18n-placeholder="cp.desc.ph" data-cp-counter="30"></textarea>
         <div class="field__hint" data-cp-counter-label>0/30 minimum</div>
       </div>
@@ -181,14 +284,14 @@
       <!-- §4.1② 詳細規格 Specifications（僅實體；併入商品資訊）· spec 5.1.5.2 §4.1② / v3.0 -->
       <div class="field" data-cp-show="physical" style="margin-bottom:0">
         <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
-        <div class="field__hint" style="margin-bottom:10px" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
+        <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
         <div id="cp-spec-rows"></div>
-        <button class="btn btn--ghost btn--sm" id="cp-add-spec" data-i18n="cp.spec.add">＋ Add spec</button>
+        <button class="btn btn--outline" id="cp-add-spec" style="align-self:flex-start;margin-top:4px" data-i18n="cp.spec.add">＋ Add spec</button>
       </div>
     </section>
 
     <!-- §4.2 F11 內容檔案（數位）：下載檔，依 F2 數位次分類切換上傳格 · spec 5.1.5.2 §4.2 F11 / v4.3 -->
-    <section class="card cp-section" data-cp-show="digital" hidden>
+    <section class="cp-section" data-cp-show="digital" hidden>
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.cfile.title">Content file</h3>
         <p class="cp-section__sub" data-i18n="cp.cfile.sub">The file buyers download — the upload format follows your sub-category.</p>
@@ -201,24 +304,24 @@
     </section>
 
     <!-- §4.1③ 商品規格 Variations（僅實體）：規格模式 + 多規格選項建構器。逐規格表移到獨立區塊 · spec 5.1.5.2 §4.1③ -->
-    <section class="card cp-section" data-cp-show="physical">
+    <section class="cp-section" data-cp-show="physical">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.var.title">Variations</h3>
         <p class="cp-section__sub" data-i18n="cp.var.sub">Same item in different sizes or colors — each with its own price and stock.</p>
       </div>
-      <div class="segmented" id="cp-var-mode">
+      <div class="segmented cp-radio-cards" id="cp-var-mode">
         <button class="segmented__btn segmented__btn--active" type="button" data-cp-var="single" data-i18n="cp.var.single">Single option</button>
         <button class="segmented__btn" type="button" data-cp-var="multiple" data-i18n="cp.var.multiple">Multiple variations</button>
       </div>
       <!-- 多規格：選項建構器（選項名/值）。逐規格表在下方獨立區塊 -->
       <div class="variant-builder" id="cp-var-builder" data-cp-show="physical" data-when-var="multiple" hidden>
         <div id="cp-var-options"></div>
-        <button class="btn btn--ghost btn--sm" type="button" id="cp-add-option"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.var.add-option">Add option</span></button>
+        <button class="btn btn--outline" type="button" id="cp-add-option" style="align-self:flex-start"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.var.add-option">Add option</span></button>
       </div>
     </section>
 
     <!-- §4.1③ 價格（單一規格獨立區塊；多規格時價格在逐規格表內）· spec 5.1.5.2 §4.1③ 路線A -->
-    <section class="card cp-section" data-cp-show="physical digital" data-when-var="single">
+    <section class="cp-section" data-cp-show="physical digital" data-when-var="single">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.price.title">Price</h3>
       </div>
@@ -237,18 +340,20 @@
     </section>
 
     <!-- §4.1③⑤ 庫存（庫存版本 Edition 置頂，控制下方/表格欄位；單一規格在此填在庫，多規格改由表格）· spec 5.1.5.2 §4.1③⑤ / §4.2 / D064 -->
-    <section class="card cp-section" data-cp-show="physical digital">
+    <section class="cp-section" data-cp-show="physical digital">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.stock.title">Stock</h3>
       </div>
       <!-- 庫存版本 Edition：不限量 / 限量（決定上限欄與逐規格表的上限欄）-->
       <div class="field">
-        <div class="field__label" data-i18n="cp.edition">Edition</div>
-        <div class="segmented" id="cp-edition">
-          <button class="segmented__btn segmented__btn--active" type="button" data-cp-edition="unlimited" data-i18n="cp.edition.unlimited">Unlimited edition</button>
-          <button class="segmented__btn" type="button" data-cp-edition="limited" data-i18n="cp.edition.limited">Limited edition</button>
+        <div class="segmented cp-radio-cards" id="cp-edition">
+          <button class="segmented__btn segmented__btn--active" type="button" data-cp-edition="unlimited">
+            <span class="cp-rc-text"><span class="cp-rc-title" data-i18n="cp.edition.unlimited">Unlimited edition</span><span class="cp-rc-sub" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</span></span>
+          </button>
+          <button class="segmented__btn" type="button" data-cp-edition="limited">
+            <span class="cp-rc-text"><span class="cp-rc-title" data-i18n="cp.edition.limited">Limited edition</span><span class="cp-rc-sub" data-i18n="cp.edition.limited-hint">Hard cap with a visible total — fans see how many remain.</span></span>
+          </button>
         </div>
-        <div class="field__hint" id="cp-edition-hint" data-i18n="cp.edition.unlimited-hint">Restock anytime — never auto sells out.</div>
       </div>
 
       <!-- 單一規格的在庫欄位（多規格時改由逐規格表）-->
@@ -275,13 +380,13 @@
 
       <!-- 低庫存提醒（實體；單一與多規格皆適用）-->
       <div class="cp-switch-row" data-cp-show="physical">
-        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
         <span data-i18n="cp.lowstock">Alert me when running low</span>
+        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
       </div>
     </section>
 
     <!-- §4.1③ 逐規格表（僅實體+多規格；獨立區塊，欄位隨庫存版本變化）· spec 5.1.5.2 §4.1③ 路線B -->
-    <section class="card cp-section" data-cp-show="physical" data-when-var="multiple" hidden>
+    <section class="cp-section" data-cp-show="physical" data-when-var="multiple" hidden>
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.var.table.title">Pricing per variation</h3>
         <p class="cp-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — Limited edition adds a cap column.</p>
@@ -304,12 +409,12 @@
     </section>
 
     <!-- §4.1 ⑥ 取貨方式 Delivery method（僅實體）· spec 5.1.5.2 §4.1⑥ / D064 -->
-    <section class="card cp-section" data-cp-show="physical">
+    <section class="cp-section" data-cp-show="physical">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.delivery.title">Delivery method</h3>
         <p class="cp-section__sub" data-i18n="cp.delivery.sub">Ship it to buyers, or let them collect on site with a QR code.</p>
       </div>
-      <div class="segmented" id="cp-delivery">
+      <div class="segmented cp-radio-cards" id="cp-delivery">
         <button class="segmented__btn segmented__btn--active" type="button" data-cp-delivery="shipping" data-i18n="cp.delivery.shipping">Shipping</button>
         <button class="segmented__btn" type="button" data-cp-delivery="qr" data-i18n="cp.delivery.qr">QR code pickup</button>
       </div>
@@ -364,7 +469,7 @@
     </section>
 
     <!-- §4.5 共用商品設定（兩型）：每人限購 + 商品標籤 · spec 5.1.5.2 §4.5 / D064 -->
-    <section class="card cp-section">
+    <section class="cp-section">
       <div class="cp-section__head">
         <h3 class="cp-section__title" data-i18n="cp.shared.title">Buyer limits &amp; tags</h3>
       </div>
@@ -406,29 +511,11 @@
 
     <!-- §4.6 結帳與保障（共用）-->
     <div class="cp-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
-  </div>
+    </div><!-- /.cp-form-col -->
 
-  <!-- §5.2.4 底部操作列（統一）：Save for later 左；就緒 chip＋主動作右 -->
-  <footer class="wizard__bottom">
-    <button class="btn btn--ghost" data-i18n="wiz.savelater">Save for later</button>
-    <div class="wizard__bottom-actions">
-      <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
-      <button class="btn btn--ghost cp-delete" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
-      <span class="cp-ready-chip" id="cp-ready-chip"><i data-lucide="circle" class="ztor-icon"></i><span id="cp-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span></span>
-      <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
-    </div>
-  </footer>
-</div>
-
-<!-- §5.2.5 即時預覽面板（右側滑出，由頂部 Preview 開啟）-->
-<div class="preview-panel is-open" id="cp-preview">
-  <div class="preview-panel__sheet">
-    <div class="preview-panel__head">
-      <h3 class="preview-panel__title" id="cp-preview-title" data-i18n="cp.preview.title">How buyers see it on Ztor</h3>
-      <button class="btn btn--icon btn--sm" data-cp-preview-close aria-label="Close preview" data-i18n-aria-label="e-shop.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="preview-panel__body">
-      <!-- 商品卡（實體/數位）-->
+    <!-- §5.2.5 即時預覽：表單旁 sticky 常駐欄（取代舊右側滑出面板；使用者裁示 2026-06-24）-->
+    <aside class="cp-preview-col" data-cp-show="physical digital">
+      <h3 class="cp-preview-col__title" id="cp-preview-title" data-i18n="cp.preview.title">How buyers see it on Ztor</h3>
       <div class="preview-card" data-cp-show="physical digital">
         <div class="preview-card__media"><i data-lucide="package" class="ztor-icon" id="cp-pv-media"></i></div>
         <div class="preview-card__body">
@@ -439,27 +526,40 @@
           <p class="preview-card__desc is-empty" id="cp-pv-desc" data-i18n="cp.pv.desc">Missing: description</p>
         </div>
       </div>
-
-      <!-- 就緒檢查卡（Ready to sell?）· spec §4.4/§4.5：右欄三件之一，依類型換檢查項 -->
-      <section class="readiness cp-section" id="cp-readiness" style="margin-top:18px">
-        <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title" data-i18n="cp.ready.title">Ready to sell?</h3></div>
-        <ul class="readiness__list" id="cp-ready-list"></ul>
-        <div class="readiness__banner" id="cp-ready-banner" data-i18n="cp.ready.togo">6 items needed to start selling</div>
-      </section>
-
-      <!-- 上架開關（Show in my shop）· spec §4.4/§4.5：右欄三件之一，預設開 -->
-      <section class="card cp-section">
-        <div class="cp-show-row">
-          <div>
-            <div class="cp-show-row__main" data-i18n="cp.show">Show in my shop</div>
-            <div class="cp-show-row__sub" data-i18n="cp.show.sub">Visible to fans in your storefront</div>
-          </div>
-          <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
+      <div class="cp-show-row">
+        <div>
+          <div class="cp-show-row__main" data-i18n="cp.show">Show in my shop</div>
+          <div class="cp-show-row__sub" data-i18n="cp.show.sub">Visible to fans in your storefront</div>
         </div>
-      </section>
-    </div>
+        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
+      </div>
+    </aside>
   </div>
+
+  </div><!-- /.wizard__sheet -->
+  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放就緒 chip＋主動作（右對齊）。
+       就緒檢查（Ready to sell?）改為 chip 的 hover/focus tooltip（使用者裁示，取代右欄常駐卡）。 -->
+  <footer class="wizard__bottom" style="justify-content:flex-end">
+    <div class="wizard__bottom-actions">
+      <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
+      <button class="btn btn--ghost cp-delete" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
+      <div class="cp-ready-chip" id="cp-ready-chip" tabindex="0" aria-describedby="cp-ready-pop">
+        <i data-lucide="circle" class="ztor-icon"></i><span id="cp-ready-chip-text">6 items needed</span>
+        <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
+        <div class="cp-ready-pop" id="cp-ready-pop" role="tooltip">
+          <div class="readiness">
+            <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title">Ready to sell?</h3></div>
+            <ul class="readiness__list" id="cp-ready-list"></ul>
+            <div class="readiness__banner" id="cp-ready-banner">6 items needed to start selling</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
+    </div>
+  </footer>
 </div>
+
+<!-- §5.2.5 即時預覽已移到表單旁 sticky 欄（.cp-preview-col，見 .wizard__body 內）。 -->
 
 <script>
 /* 建立商品流程互動 · spec 5.1.5.2 §3-4 + §4.5 + §5.2.4/§5.2.5
@@ -635,28 +735,28 @@
     /* Cheat Codes（devtools）的 Skip validation：開啟時略過就緒 gating，強制可上架 */
     const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
     if (ready) {
-      bannerEl.textContent = 'Ready to sell!';
+      bannerEl.textContent = T('cp.ready.banner.ready', 'Ready to sell!');
       bannerEl.classList.add('readiness__banner--ready');
-      chipText.textContent = 'Ready to sell';
+      chipText.textContent = T('cp.ready.chip.ready', 'Ready to sell');
       chipEl.classList.add('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'check-circle');
     } else if (skip) {
       bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = 'Validation skipped';
+      chipText.textContent = T('cp.ready.chip.skip', 'Validation skipped');
       chipEl.classList.remove('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     } else {
-      bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' needed to start ' + verb;
+      bannerEl.textContent = T('cp.ready.banner.needed', '{n} items needed to start selling').replace('{n}', remaining);
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = remaining + ' to go';
+      chipText.textContent = T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
       chipEl.classList.remove('cp-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     }
-    /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒卡仍列在右欄供參考）*/
+    /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒 tooltip 也隨之收起）*/
     if (editMode) { primary.disabled = false; chipEl.hidden = true; }
     else { primary.disabled = !(ready || skip); chipEl.hidden = false; }
-    readyTitle.textContent = 'Ready to sell?';
+    readyTitle.textContent = T('cp.ready.title', 'Ready to sell?');
     if (window.ztorIcons) window.ztorIcons.applyIcons(listEl), window.ztorIcons.applyIcons(chipEl);
   }
 
@@ -938,6 +1038,8 @@
 
   /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating（含初始化時的廣播）*/
   document.addEventListener('ztor:devstate-changed', renderReadiness);
+  /* 切語言後重算 chip／tooltip／預覽文字（這些由 JS 直接寫入、非 data-i18n 套用）*/
+  document.addEventListener('i18n:applied', refresh);
 
   /* ---- 入口參數（spec §2.2/§2.3 預設類型、§4.5 編輯態）---- */
   const params = new URLSearchParams(location.search);
@@ -973,9 +1075,10 @@
   setType(initType);
 })();
 </script>
-<script src="icons.js?v=20260622i"></script>
-<script src="i18n.js?v=20260622i"></script>
-<script src="reveal.js?v=20260622i"></script>
-<script src="devtools.js?v=20260622i"></script>
+<script src="icons.js?v=20260624b"></script>
+<script src="i18n.js?v=20260624b"></script>
+<script src="partials/wizard-chrome.js?v=20260624b"></script>
+<script src="reveal.js?v=20260624b"></script>
+<script src="devtools.js?v=20260624b"></script>
 </body>
 </html>
