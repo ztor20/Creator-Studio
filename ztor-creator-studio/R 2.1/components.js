@@ -132,7 +132,7 @@
   // F8 — external data-status row: brand chip · platform · type·sync / impact · status badge + optional Settings CTA.
   function extRow(r) {
     var L = r.logo || {};
-    var style = 'font-weight:700;font-size:' + (L.fs || '13px') + ';';
+    var style = 'font-weight: var(--fw-bold);font-size:' + (L.fs || 'var(--fs-13)') + ';';
     if (L.bg) style += 'background:' + L.bg + ';';
     if (L.fg) style += 'color:' + L.fg + ';';
     var cta = r.cta ? '<a class="card__link" href="' + r.cta.href + '"' + di18n(r.cta.key) + '>' + s(r.cta.text) + '</a>' : '';
@@ -156,20 +156,20 @@
       return '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">'
         + '<span' + di18n(t.key) + '>' + s(t.label) + '</span>'
         + '<span class="text-sub">' + s(t.pct) + '</span>'
-        + '<span style="font-weight:500">' + s(t.rev) + '</span></div>';
+        + '<span style="font-weight: var(--fw-medium)">' + s(t.rev) + '</span></div>';
     }).join('');
     var plats = (a.platforms || []).map(function (p) {
       var val = p.muted
         ? '<span class="text-sub"' + di18n(p.valKey) + '>' + s(p.val) + '</span>'
-        : '<span style="font-weight:500">' + s(p.val) + '</span>';
+        : '<span style="font-weight: var(--fw-medium)">' + s(p.val) + '</span>';
       return '<div style="display:grid;grid-template-columns:1fr auto;gap:8px"><span>' + s(p.name) + '</span>' + val + '</div>';
     }).join('');
     var fansCol = '<div class="insight-split__col">'
       + '<div class="insight-eyebrow"><span' + di18n(f.eyebrowKey) + '>' + s(f.eyebrow) + '</span>'
       +   '<span class="insight-eyebrow__src"' + di18n(f.syncKey) + '>' + s(f.sync) + '</span></div>'
       + '<div class="kpi__value" style="margin-bottom:4px">' + s(f.value) + '</div>'
-      + '<div class="text-sub" style="font-size:12.5px;margin-bottom:14px"' + di18n(f.subKey) + '>' + s(f.sub) + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size:12.5px">' + tiers + '</div>'
+      + '<div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px"' + di18n(f.subKey) + '>' + s(f.sub) + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-12)">' + tiers + '</div>'
       + '<div class="stickynote mt-16"><span class="stickynote__mark">⚐</span>'
       +   '<span' + di18n(f.warnKey) + '>' + s(f.warn) + '</span></div>'
       + '<div class="mt-16"><a class="card__link" href="' + f.linkHref + '"' + di18n(f.linkKey) + '>' + s(f.link) + '</a></div>'
@@ -178,9 +178,9 @@
       + '<div class="insight-eyebrow"><span' + di18n(a.eyebrowKey) + '>' + s(a.eyebrow) + '</span>'
       +   '<span class="insight-eyebrow__src"' + di18n(a.syncKey) + '>' + s(a.sync) + '</span></div>'
       + '<div class="kpi__value" style="margin-bottom:4px">' + s(a.value) + '</div>'
-      + '<div class="text-sub" style="font-size:12.5px;margin-bottom:14px"' + di18n(a.leadKey) + '>' + s(a.lead) + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:10px;font-family:var(--font-ui);font-size:13px">' + plats + '</div>'
-      + '<div class="text-sub" style="font-size:11.5px;margin-top:14px"><span' + di18n(a.noteKey) + '>' + s(a.note) + '</span> '
+      + '<div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px"' + di18n(a.leadKey) + '>' + s(a.lead) + '</div>'
+      + '<div style="display:flex;flex-direction:column;gap:10px;font-family:var(--font-ui);font-size: var(--fs-13)">' + plats + '</div>'
+      + '<div class="text-sub" style="font-size: var(--fs-11);margin-top:14px"><span' + di18n(a.noteKey) + '>' + s(a.note) + '</span> '
       +   '<a class="card__link" href="' + a.fixHref + '"' + di18n(a.fixKey) + '>' + s(a.fix) + '</a></div>'
       + '</div>';
     return fansCol + audCol;
@@ -260,7 +260,7 @@
       { logo: { t: 'Y',  bg: '#ff0000', fg: '#fff' },                                                       title: 'YouTube',     typeKey: 'ext.youtube.type',     type: 'Subscribers & views · synced 1h ago',                  impactKey: 'ext.youtube.impact',     impact: 'Feeds Audience trends',                       status: { key: 'data.status.normal',  fallback: 'Normal',        variant: 'success' } },
       { logo: { t: 'IG', bg: 'linear-gradient(45deg,#fbad50,#cd486b,#5b51d8)', fg: '#fff' },                title: 'Instagram',   typeKey: 'ext.instagram.type',   type: 'Followers & engagement · synced 2h ago',               impactKey: 'ext.instagram.impact',   impact: 'Feeds Audience trends & Fans CRM',            status: { key: 'data.status.normal',  fallback: 'Normal',        variant: 'success' } },
       { logo: { t: 'S',  bg: '#1ed760', fg: '#000' },                                                       title: 'Spotify',     typeKey: 'ext.spotify.type',     type: 'Streams & monthly listeners · last synced Nov 18',     impactKey: 'ext.spotify.impact',     impact: 'Affects Audience trends & streaming royalties', status: { key: 'data.status.delayed', fallback: 'Stalled',       variant: 'error' },   cta: { key: 'ext.cta.fix',     text: 'Fix in Settings', href: 'settings.html#integrations' } },
-      { logo: { t: 'SV', bg: '#ec5b24', fg: '#fff', fs: '12px' },                                           title: 'StreetVoice', typeKey: 'ext.streetvoice.type', type: 'Followers & plays · synced Nov 23',                    impactKey: 'ext.streetvoice.impact', impact: 'Some audience metrics incomplete',            status: { key: 'data.status.partial', fallback: 'Partial',       variant: 'neutral' }, cta: { key: 'ext.cta.fix',     text: 'Fix in Settings', href: 'settings.html#integrations' } },
+      { logo: { t: 'SV', bg: '#ec5b24', fg: '#fff', fs: 'var(--fs-12)' },                                           title: 'StreetVoice', typeKey: 'ext.streetvoice.type', type: 'Followers & plays · synced Nov 23',                    impactKey: 'ext.streetvoice.impact', impact: 'Some audience metrics incomplete',            status: { key: 'data.status.partial', fallback: 'Partial',       variant: 'neutral' }, cta: { key: 'ext.cta.fix',     text: 'Fix in Settings', href: 'settings.html#integrations' } },
       { logo: { t: 'T' },                                                                                   title: 'TikTok',      typeKey: 'ext.tiktok.type',      type: 'Not linked · no data flowing in',                      impactKey: 'ext.tiktok.impact',      impact: 'No TikTok audience data in analytics',        status: { key: 'status.not-connected', fallback: 'Not connected', variant: 'neutral' }, cta: { key: 'ext.cta.connect', text: 'Connect',         href: 'settings.html#integrations' } }
     ] },
 

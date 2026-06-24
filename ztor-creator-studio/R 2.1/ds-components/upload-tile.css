@@ -27,7 +27,7 @@
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--foreground-subtle);
-  font-size: 12.5px;
+  font-size: var(--fs-12);
   cursor: pointer;
   transition: border-color .15s ease, background .15s ease;
 }
@@ -41,9 +41,9 @@
 .upload-tile--hero { aspect-ratio: 1 / 1; max-width: 320px; min-height: 0; }
 .upload-tile--file { min-height: 110px; }
 
-.upload-tile__icon  { font-size: 18px; line-height: 1; }
-.upload-tile__title { color: var(--foreground); font-weight: 500; font-size: 13px; }
-.upload-tile__hint  { font-size: 11.5px; color: var(--foreground-subtle); }
+.upload-tile__icon  { font-size: var(--fs-18); line-height: 1; }
+.upload-tile__title { color: var(--foreground); font-weight: var(--fw-medium); font-size: var(--fs-13); }
+.upload-tile__hint  { font-size: var(--fs-11); color: var(--foreground-subtle); }
 
 .upload-grid {
   display: grid;
@@ -52,6 +52,26 @@
   margin-top: 10px;
 }
 .upload-grid .upload-tile { aspect-ratio: 1 / 1; min-height: 0; }
+
+/* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
+   附圖格在此排成 2×2，總高度與 1:1 主圖一致（create-product 主圖 + 附圖）。 */
+.upload-showcase {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.upload-showcase .upload-tile--hero { max-width: none; width: 100%; }
+.upload-showcase .upload-grid { margin-top: 0; }
+.upload-grid--2x2 { grid-template-columns: repeat(2, 1fr); }
+
+/* 窄版（側邊預覽開啟或小視窗）：改回主圖在上、附圖列在下 */
+@media (max-width: 880px) {
+  .upload-showcase { grid-template-columns: 1fr; }
+  .upload-showcase .upload-tile--hero { max-width: 320px; }
+  .upload-showcase .upload-grid { margin-top: 10px; }
+  .upload-grid--2x2 { grid-template-columns: repeat(4, 1fr); }
+}
 
 /* filled state — set after a file is chosen (create-product / create-event / register-ip).
    Promoted 2026-06-16 from per-page <style> dupes to the shared component. */
