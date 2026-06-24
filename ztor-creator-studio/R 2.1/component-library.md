@@ -9,7 +9,7 @@ Quick index of the project component library. The **shipping library** is the se
 | File | Role |
 |---|---|
 | [`ds-components/_tokens.css`](./ds-components/_tokens.css) | Pillar 1 Foundation + Pillar 2 Role + Pillar 3 Mode (`[data-theme="dark"]`) — the single token layer every component references |
-| [`ds-components/fonts.css`](./ds-components/fonts.css) | self-hosted Geist / Inter / Taipei Sans TC Beta + CJK fallback chain |
+| [`ds-components/fonts.css`](./ds-components/fonts.css) | self-hosted Geist / Inter / Noto Sans TC (subset) + CJK fallback chain |
 
 ## Components
 
