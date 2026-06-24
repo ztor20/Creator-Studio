@@ -16,11 +16,11 @@
 /* Header is the canonical DS component — single source in ds-components/header.css.
    All product pages load shared.css, so this @import gives every page the topbar
    from the one place; design-system.html links header.css directly. */
-@import url("ds-components/header.css?v=20260622a");
-@import url("ds-components/icon.css?v=20260622a");
-@import url("ds-components/page-intro.css?v=20260622a");
-@import url("ds-components/field-system.css?v=20260622a");
-@import url("ds-components/settings.css?v=20260622a");
+@import url("ds-components/header.css?v=20260624a");
+@import url("ds-components/icon.css?v=20260624a");
+@import url("ds-components/page-intro.css?v=20260624a");
+@import url("ds-components/field-system.css?v=20260624a");
+@import url("ds-components/settings.css?v=20260624a");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -33,27 +33,52 @@ html, body { margin: 0; padding: 0; }
    Override is project-level (not in _tokens.css) — the DS tokens stay
    English-first as their canonical declaration.
 
-   R 2.1.39: Taipei Sans TC Beta removed per user spec. Noto Sans TC is the
-   primary CJK face. Open task — Noto Sans TC is NOT yet self-hosted (web font
-   ~10MB+ even subsetted); relies on system install (macOS / Linux usually
-   ship it; Windows hit-or-miss → falls through to OS default JhengHei). If
-   Windows parity matters, next step is downloading subsetted Noto Sans TC
-   .woff2 files and adding @font-face in fonts.css.
+   R 2.1.40: Noto Sans TC is the primary CJK face and is now self-hosted —
+   subsetted .woff2 + @font-face live in ds-components/fonts.css, so 中文
+   renders as Noto on every machine (no reliance on OS install). One glyph,
+   払 (earnings.html «支払調書», a JP kanji absent from Noto Sans TC), still
+   per-glyph falls back. (R 2.1.39 removed Taipei Sans TC Beta.)
 
    NOTE: opposite trade-off from the weasyprint PDF rule
    (`feedback_weasyprint_cjk_fonts.md`: PingFang first nukes 中文 in macOS
    weasyprint). That's a print-engine bug; browser per-glyph fallback works
    fine with CJK first. */
 :lang(zh-Hant) {
-  --font-display: 'Noto Sans TC', 'Geist Variable', 'Geist', system-ui, sans-serif;
-  --font-ui:      'Noto Sans TC', 'Geist', system-ui, sans-serif;
-  --font-body:    'Noto Sans TC', 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-cjk), 'Geist', system-ui, sans-serif;
+  --font-ui:      var(--font-cjk), 'Geist', system-ui, sans-serif;
+  --font-body:    var(--font-cjk), 'Inter', system-ui, sans-serif;
+
+  /* CJK 字距歸零（2026-06-23）：display/title/label 的負 letter-spacing（~−0.02em）
+     是為拉丁大字做的光學收緊，但方塊字本就貼著走，套負字距會把中文擠在一起。
+     繁中模式把這些 tracking token 歸零 → 中文回到自然間距；英文模式（lang=en）
+     不匹配本規則、維持 Geist 緊收。混排標題在中文模式一起歸零（可接受）。
+     只動有負值的 token；body/caption 本來就 0 或正值，不需覆寫。 */
+  --type-display-64-tracking: 0;
+  --type-display-44-tracking: 0;
+  --type-title-40-tracking:   0;
+  --type-title-32-tracking:   0;
+  --type-title-24-tracking:   0;
+  --type-label-15-tracking:   0;
+}
+
+/* CJK 標題/名稱/數值的負字距是寫死在各 class 上（沒走 tracking token），繁中模式逐一歸零。
+   shared.css 最後載入 + :lang 提高 specificity（0,2,0 > 各元件的 0,1,0／頁內 <style> 單 class），
+   蓋過那些負值；英文模式（lang=en）不匹配、維持 Geist 緊收。
+   只列「會擠到中文」的（≥約 −0.3px）；em 級的小負值（alert/header/fan-store ~−0.005～−0.01em）
+   肉眼無感、Latin-only 的 inline（IP 分類磚、金額數字）無中文，皆略過。 */
+:lang(zh-Hant) :is(
+  .page-intro__title, .hero__title, .ip-hero__title, .ip-hero__cover,
+  .wizard__step-title, .section-head__title, .empty-stub__title, .settings-section__title,
+  .kpi__value, .meta-cell__value, .ss-edit__value, .rental-card__total, .data-list__amount,
+  .ztor-footer__wordmark, .fan-hero__name, .tier-card__name, .ztor-btn, .btn
+) {
+  letter-spacing: 0;
 }
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--fs-14);
   line-height: 1.5;
   min-height: 100vh;
 }
@@ -120,7 +145,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: flex; align-items: center; gap: 10px; width: 100%;
   padding: 9px 12px; border: 0; background: transparent; cursor: pointer;
   border-radius: var(--radius-lg); text-align: left;  /* 已選/hover 圓角矩形（2026-06-13：pill 變高後全膠囊 9999px 顯得太圓，改回較小圓角 --radius-lg 8px） */
-  font-size: 14px; line-height: 1.2; font-weight: 500;
+  font-size: var(--fs-14); line-height: 1.2; font-weight: var(--fw-medium);
   color: var(--foreground-muted); text-decoration: none;
   font-family: inherit;
 }
@@ -139,7 +164,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: block;
   padding: 0 12px;
   margin: 16px 0 4px;
-  font-size: 12px; font-weight: 500; line-height: 1.2;
+  font-size: var(--fs-12); font-weight: var(--fw-medium); line-height: 1.2;
   letter-spacing: 0.02em;
   color: var(--foreground-subtle);
 }
@@ -157,7 +182,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 /* 子項：pill 與主項同尺寸（同 padding-y/全寬/圓角）；文字 padding-left 40px 對齊主項(12+18 icon+10 gap)，靠縮排與無 icon 區分層級 */
 .app-sidebar__sub-link {
   display: block; padding: 9px 12px 9px 40px; border-radius: var(--radius-lg);  /* 同主項圓角（2026-06-13） */
-  font-size: 13.5px; line-height: 1.2; color: var(--foreground-muted); text-decoration: none;
+  font-size: var(--fs-13); line-height: 1.2; color: var(--foreground-muted); text-decoration: none;
 }
 .app-sidebar__sub-link:hover { background: var(--surface-rail-hover); color: var(--foreground); }
 .app-sidebar__sub-link[aria-current="page"] { background: var(--surface-rail-active); color: var(--foreground); }
@@ -171,25 +196,25 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: flex; align-items: center; gap: 10px; width: 100%;
   padding: 9px 10px; border: 0; background: transparent; cursor: pointer;
   border-radius: var(--radius-md); text-align: left;
-  font-size: 13px; color: var(--foreground-muted); font-family: inherit;
+  font-size: var(--fs-13); color: var(--foreground-muted); font-family: inherit;
   text-decoration: none; position: relative;
 }
 .app-sidebar__action:hover { background: var(--surface-rail-hover); color: var(--foreground); }
 .app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
 .app-topbar__badge-dot[data-read="true"] { display: none; }
-.app-sidebar__lang [data-lang] { font-weight: 600; }
-.app-sidebar__lang [data-lang][aria-current="false"] { color: var(--foreground-muted); font-weight: 400; }
+.app-sidebar__lang [data-lang] { font-weight: var(--fw-semibold); }
+.app-sidebar__lang [data-lang][aria-current="false"] { color: var(--foreground-muted); font-weight: var(--fw-regular); }
 .app-sidebar__search { gap: 8px; cursor: text; }
 .app-sidebar__search-input {
   flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
-  color: var(--foreground); font: inherit; font-size: 13px; outline: none;
+  color: var(--foreground); font: inherit; font-size: var(--fs-13); outline: none;
 }
 .app-sidebar__avatar {
   flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--surface-muted); color: var(--foreground);
-  font-size: 12px; font-weight: 600;
+  font-size: var(--fs-12); font-weight: var(--fw-semibold);
 }
 
 /* Sidebar theme toggle reuses the topbar sun/moon visibility rules
@@ -206,15 +231,15 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 14px; border-bottom: 1px solid var(--border);
 }
-.app-notif__title { font-weight: 600; font-size: 14px; }
+.app-notif__title { font-weight: var(--fw-semibold); font-size: var(--fs-14); }
 .app-notif__markread {
   border: 0; background: transparent; cursor: pointer; font: inherit;
-  font-size: 12px; color: var(--foreground-muted);
+  font-size: var(--fs-12); color: var(--foreground-muted);
 }
 .app-notif__markread:hover { color: var(--foreground); }
 .app-notif__scroll { max-height: min(64vh, 520px); overflow-y: auto; padding: 6px; }
 .app-notif__section-label {
-  font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase;
+  font-size: var(--fs-11); letter-spacing: 0.4px; text-transform: uppercase;
   color: var(--foreground-subtle); padding: 10px 8px 4px;
 }
 .app-notif__item {
@@ -231,26 +256,26 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 }
 .app-notif__item--todo .app-notif__item-icon { color: var(--foreground); background: color-mix(in srgb, var(--primary) 26%, var(--surface)); }
 .app-notif__item-body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.app-notif__item-title { font-size: 13px; line-height: 1.3; font-weight: 500; }
+.app-notif__item-title { font-size: var(--fs-13); line-height: 1.3; font-weight: var(--fw-medium); }
 .app-notif__item[data-unread="true"] .app-notif__item-title::before {
   content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
   background: var(--primary); margin-right: 6px; vertical-align: middle;
 }
 .app-notif__item-meta {
-  font-size: 12px; line-height: 1.3; color: var(--foreground-muted);
+  font-size: var(--fs-12); line-height: 1.3; color: var(--foreground-muted);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .app-notif__item-source {
   width: max-content; max-width: 100%;
   margin-top: 3px; padding: 2px 6px; border: 1px solid var(--border);
   border-radius: 999px; color: var(--foreground-muted); background: var(--surface);
-  font-size: 11px; line-height: 1.2; white-space: nowrap;
+  font-size: var(--fs-11); line-height: 1.2; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-.app-notif__item-time { font-size: 11px; color: var(--foreground-subtle); white-space: nowrap; }
+.app-notif__item-time { font-size: var(--fs-11); color: var(--foreground-subtle); white-space: nowrap; }
 .app-notif__foot {
   display: block; text-align: center; padding: 11px; border-top: 1px solid var(--border);
-  font-size: 13px; color: var(--foreground-muted); text-decoration: none;
+  font-size: var(--fs-13); color: var(--foreground-muted); text-decoration: none;
 }
 .app-notif__foot:hover { color: var(--foreground); background: var(--surface-muted); }
 
@@ -540,7 +565,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .hero__eyebrow {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: var(--fs-12);
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--foreground-subtle);
@@ -552,17 +577,17 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .hero__title {
   font-family: var(--font-display);
-  font-size: 44px;
+  font-size: var(--fs-44);
   line-height: 1.05;
   letter-spacing: -1px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   margin: 0;
   max-width: 560px;
 }
 .hero__sub {
   margin: 0;
   color: var(--foreground-muted);
-  font-size: 14px;
+  font-size: var(--fs-14);
   max-width: 480px;
 }
 .hero__actions { display: flex; justify-content: center; gap: 8px; margin-top: 6px; }
@@ -587,7 +612,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   max-width: 760px;
   padding: 96px 24px;
 }
-.hero--fullbleed .hero__title { font-size: 56px; max-width: 720px; }
+.hero--fullbleed .hero__title { font-size: var(--fs-56); max-width: 720px; }
 .hero--fullbleed .hero__nav {
   justify-content: center;
   padding-left: 24px;
@@ -703,7 +728,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: var(--fs-11);
   color: var(--foreground-subtle);
 }
 .trend-wrap { padding-bottom: 26px; }
@@ -715,16 +740,16 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .section-head__title {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 500;
+  font-size: var(--fs-22);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.5px;
   margin: 0;
 }
-.section-head__sub { color: var(--foreground-subtle); font-size: 13px; }
+.section-head__sub { color: var(--foreground-subtle); font-size: var(--fs-13); }
 
 .input, .textarea, .select {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--fs-14);
   padding: 9px 12px;
   border-radius: var(--radius);
   border: 0;
@@ -756,97 +781,154 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 
 
 /* ---------- Wizard frame ---------- */
+/* §5.2.4 建立流程框架 v3（2026-06-24，對齊 .main「灰 canvas 上白色圓角卡」語言）：
+   .wizard＝灰 canvas（滿版固定高、不捲）；.wizard__sheet＝白色圓角 content 卡（內部捲動、圓角誠實歸自己）；
+   .wizard__bottom＝其下的平面灰 footer。取代舊的 footer::before 白卡 hack（圓角不再做在 footer 上）。 */
 .wizard {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: var(--surface-shell);   /* 灰 canvas */
+}
+.wizard__sheet {
+  flex: 1 1 auto;
+  min-height: 0;                 /* 允許收縮，內部捲動 */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);     /* 白色 content 卡 */
+  border-radius: 0 0 var(--radius-shell) var(--radius-shell);   /* 圓角歸 content 卡自己（下緣）*/
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.12);             /* 浮在灰 footer 上的向下投影 */
 }
 .wizard__top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
+  flex-direction: column;
+  background: var(--surface);   /* 無底部分隔線（2026-06-23 使用者指定）；content 同為 surface，header 自然融入 */
+}
+/* §5.2.4 建立流程頂部框架（2026-06-23 改版 v2）：單列三欄。
+   col1 左＝.wizard__top-lead（返回箭頭＋標題/副標，靠左）｜
+   col2 中＝進度條 .wizard__progress（max 820 內容寬、置中對齊下方 .wizard__body 內容欄；無 stepper 頁此欄空）｜
+   col3 右＝.wizard__top-actions（自動儲存狀態＋預覽）。
+   中欄固定為內容寬、兩側 1fr 對稱 → 進度條在視窗置中、對齊內容欄。 */
+.wizard__top-bar {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 820px) 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 28px;
-  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  padding: 20px 28px;   /* 上下 padding 加大（2026-06-23 使用者指定）*/
+}
+/* col1：返回箭頭＋標題塊，靠左（含舊 .wizard__close 向後相容）。
+   箭頭對齊「主標題那一行」（align-items:flex-start＋箭頭高度≈標題行高），副標在標題下方。 */
+.wizard__top-lead { grid-column: 1; justify-self: start; display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+.wizard__close { grid-column: 1; justify-self: start; }
+.wizard__back {
+  flex: 0 0 auto;
+  display: inline-grid; place-items: center;
+  width: 24px; height: var(--fs-22);   /* 高度≈主標題行高，與標題同高並列 */
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--foreground); border-radius: var(--radius-sm);
+}
+.wizard__back:hover { background: var(--surface-muted); }
+.wizard__back .ztor-icon { width: 22px; height: 22px; }
+.wizard__close {
+  font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium);
+  color: var(--foreground-muted); background: transparent; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.wizard__close:hover { color: var(--foreground); }
+/* col3：右側工具 */
+.wizard__top-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 8px; }
+/* col2：進度條／舊中央槽（向後相容）。內容寬靠中欄 minmax(0,820) 撐起、padding 28 對齊 .wizard__body 內距 */
+.wizard__progress, .wizard__stepper-slot { grid-column: 2; }
+.wizard__progress { justify-self: stretch; width: 100%; padding-inline: 28px; }
+.wizard__stepper-slot { justify-self: stretch; display: flex; align-items: center; justify-content: center; min-width: 0; }
+/* 標題塊靠左堆疊 */
+.wizard__top-titlewrap { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; max-width: 100%; }
+.wizard__top-title { font-weight: var(--fw-semibold); font-size: var(--fs-16); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wizard__top-sub { font-size: var(--fs-13); color: var(--foreground-muted); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* 自動儲存狀態（各 wizard 頁共用）。兩態：saved（綠點＋已儲存）／saving（轉圈＋儲存中…）。
+   fallback：沒有 autosave 的頁面（.wizard[data-autosave="false"]）→ 渲染成可點的「儲存」鈕（--button）。 */
+.wizard__save-status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); color: var(--foreground-muted); white-space: nowrap; font-family: inherit; }
+.wizard__save-status__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-success); flex: 0 0 auto; }
+.wizard__save-status[data-state="saving"] { color: var(--foreground-muted); }
+.wizard__save-status[data-state="saving"] .wizard__save-status__dot {
+  width: 12px; height: 12px; background: transparent;
+  border: 2px solid var(--border); border-top-color: var(--foreground-muted);
+  animation: wiz-spin .6s linear infinite;
+}
+@keyframes wiz-spin { to { transform: rotate(360deg); } }
+/* 手動儲存鈕變體（autosave 不可用時）*/
+.wizard__save-status--button {
+  border: 0; cursor: pointer; color: var(--foreground); font-weight: var(--fw-medium);
+  padding: 5px 12px; border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border);
   background: var(--surface);
 }
-.wizard__close {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  color: var(--foreground-muted);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px;
+.wizard__save-status--button:hover { background: var(--surface-muted); }
+.wizard__save-status--button .wizard__save-status__dot { display: none; }
+/* 自動儲存狀態與預覽鈕之間加大間距（2026-06-23 使用者指定）：在 8px gap 外再補右邊距 */
+.wizard__top-actions .wizard__save-status,
+.wizard__top-actions .ce-save-status { margin-inline-end: 12px; }
+
+/* ── 返回離開確認彈窗（共用，由 partials/wizard-chrome.js 注入並控制）── */
+.wizard-leave { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+.wizard-leave[data-open] { display: flex; }
+.wizard-leave__scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+.wizard-leave__card {
+  position: relative; z-index: 1;
+  width: min(420px, calc(100vw - 40px));
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: 24px; box-shadow: var(--shadow-popover);
 }
-/* §5.2.4 建立流程頂部操作欄 — 四頁單一框架（2026-06-12 統一）：
-   left = Close（固定）｜center = stepper 槽（多步放 stepper，單頁放標題、永遠留位）｜right = 工具。
-   核心動作 Close／Save／Next 一律同位：Close 在頂部左、Save／主動作在底部 footer。 */
-.wizard__top-actions { display: flex; align-items: center; gap: 8px; }
-/* 中央 stepper 槽：flex:1 撐滿並置中，無論左右寬度都讓中間內容真正置中、並為 stepper 留位 */
-.wizard__stepper-slot { flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; }
-.wizard__top-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stepper {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.wizard-leave__close {
+  position: absolute; top: 12px; right: 12px;
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border: 0; background: transparent; cursor: pointer; color: var(--foreground-muted); border-radius: var(--radius-sm);
 }
-.stepper__item {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-ui);
-  font-size: 12.5px;
-  color: var(--foreground-subtle);
-}
-.stepper__num {
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  display: inline-grid; place-items: center;
-  background: var(--surface-muted);
-  font-weight: 500;
-  font-size: 11.5px;
-  color: var(--foreground-muted);
-  box-shadow: 0 0 0 1px var(--border);
-}
-.stepper__item--current .stepper__num {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  box-shadow: 0 0 0 1px rgba(23,23,23,0.18);
-}
-.stepper__item--done .stepper__num {
-  background: var(--surface-inverse);
-  color: var(--foreground-on-inverse);
-}
-.stepper__item--current,
-.stepper__item--done { color: var(--foreground); }
-.stepper__sep {
-  width: 28px; height: 1px; background: var(--border);
-}
+.wizard-leave__close:hover { color: var(--foreground); background: var(--surface-muted); }
+.wizard-leave__close .ztor-icon { width: 18px; height: 18px; }
+.wizard-leave__title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); margin: 0 6px 6px 0; }
+.wizard-leave__body { color: var(--foreground-muted); font-size: var(--fs-14); margin: 0 0 20px; }
+.wizard-leave__actions { display: flex; flex-direction: column; gap: 8px; }
+.wizard-leave__actions .btn { width: 100%; justify-content: center; }
+/* .stepper（舊：數字圓圈＋分隔線）已於 2026-06-23 退役 → 改用
+   ds-components/progress-stepper.css 的 .progress-stepper（細軌＋漸層填充）。
+   create-event / create-project / register-ip 皆已遷移。 */
 .wizard__body {
   flex: 1;
-  padding: 40px 28px 140px;
+  padding: 40px 28px 56px;   /* 不再需要為 fixed footer 預留 140px（footer 已改 in-flow）*/
   max-width: 820px;
   margin: 0 auto;
   width: 100%;
 }
 .wizard__step-title {
   font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 500;
+  font-size: var(--fs-28);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.6px;
   margin: 0 0 6px;
 }
 .wizard__step-sub { color: var(--foreground-muted); margin: 0 0 24px; max-width: 560px; }
+/* footer：in-flow、平面灰條（在 .wizard 灰 canvas 上、content 卡下方）。圓角已歸 content 卡，footer 不再做假圓角。 */
 .wizard__bottom {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  padding: 14px 28px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  flex: 0 0 auto;
+  padding: 16px 28px;
+  background: var(--surface-shell);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 30;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
 }
 .wizard__bottom-actions { display: flex; gap: 8px; }
+
+/* 窄螢幕 fallback：回到一般文件捲動（content 卡不內捲、footer 黏底、不做圓角）。 */
+@media (max-width: 900px) {
+  .wizard { height: auto; min-height: 100vh; overflow: visible; }
+  .wizard__sheet { overflow: visible; border-radius: 0; box-shadow: none; }
+  .wizard__bottom { position: sticky; bottom: 0; }
+}
 
 /* ---------- IP detail page ---------- */
 .ip-hero {
@@ -866,37 +948,37 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   display: grid; place-items: center;
   color: var(--primary-foreground);
   font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 500;
+  font-size: var(--fs-32);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.6px;
   padding: 16px;
   text-align: center;
 }
 .ip-hero__title {
   font-family: var(--font-display);
-  font-size: 36px;
-  font-weight: 500;
+  font-size: var(--fs-32);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.8px;
   margin: 6px 0 4px;
 }
-.ip-hero__owner { color: var(--foreground-muted); font-size: 14px; margin-bottom: 14px; }
+.ip-hero__owner { color: var(--foreground-muted); font-size: var(--fs-14); margin-bottom: 14px; }
 .ip-hero__meta {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;
   margin-top: 18px;
 }
 .meta-cell { display: flex; flex-direction: column; gap: 2px; }
-.meta-cell__label { font-size: 11.5px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--foreground-subtle); }
-.meta-cell__value { font-family: var(--font-display); font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+.meta-cell__label { font-size: var(--fs-11); letter-spacing: 0.4px; text-transform: uppercase; color: var(--foreground-subtle); }
+.meta-cell__value { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-medium); letter-spacing: -0.3px; }
 .ip-hero__side { width: 280px; }
 .rental-card { padding: 16px; }
 .rental-card__total {
   font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 500;
+  font-size: var(--fs-28);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.6px;
   margin: 8px 0 4px;
 }
-.rental-card__breakdown { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; font-size: 12.5px; color: var(--foreground-muted); }
+.rental-card__breakdown { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; font-size: var(--fs-12); color: var(--foreground-muted); }
 .rental-card__breakdown-row { display: flex; justify-content: space-between; }
 .duration-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
@@ -910,10 +992,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   box-shadow: 0 0 0 1px var(--border);
   cursor: pointer;
   font-family: var(--font-ui);
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
 }
-.duration-chip__price { font-family: var(--font-display); font-size: 14px; display: block; margin-top: 2px; font-weight: 500; }
+.duration-chip__price { font-family: var(--font-display); font-size: var(--fs-14); display: block; margin-top: 2px; font-weight: var(--fw-medium); }
 .duration-chip--active {
   background: color-mix(in srgb, var(--primary) 18%, var(--surface));
   box-shadow: 0 0 0 2px var(--primary);
@@ -927,7 +1009,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .app-footer {
   padding: 18px 28px;
   border-top: 1px solid var(--border);
-  font-size: 12px;
+  font-size: var(--fs-12);
   color: var(--foreground-subtle);
   display: flex; gap: 14px; flex-wrap: wrap;
 }
@@ -953,10 +1035,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .insight-eyebrow {
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
   margin-bottom: 12px;
-  font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-semibold);
   letter-spacing: 0.4px; text-transform: uppercase; color: var(--foreground-subtle);
 }
-.insight-eyebrow__src { font-weight: 500; text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.insight-eyebrow__src { font-weight: var(--fw-medium); text-transform: none; letter-spacing: 0; white-space: nowrap; }
 
 /* ---------- Projects · F1 extras (spec 5.1.2) ----------
    projects.html composes existing components (tabs = status filter · chip-group = type
@@ -986,7 +1068,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   z-index: 30; width: max-content; max-width: 240px;
   padding: 8px 10px; border-radius: var(--radius-sm);
   background: var(--foreground); color: var(--background);
-  font-family: var(--font-body); font-size: 12px; line-height: 1.4; text-align: left;
+  font-family: var(--font-body); font-size: var(--fs-12); line-height: 1.4; text-align: left;
   box-shadow: var(--shadow-card);
   opacity: 0; pointer-events: none; transform: translateY(4px);
   transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing);
@@ -1014,10 +1096,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .project-card__badge { position: absolute; top: 12px; right: 12px; }
 .project-card__body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; }
 .project-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.project-card__title { font-family: var(--font-ui); font-size: 15px; font-weight: 500; line-height: 1.25; margin: 0; }
-.project-card__kind { font-size: 12px; color: var(--foreground-subtle); }
-.project-card__desc { font-family: var(--font-body); font-size: 13px; color: var(--foreground-subtle); margin: 0; }
-.project-card__meta { font-size: 12.5px; color: var(--foreground-muted); margin-top: 2px; }
+.project-card__title { font-family: var(--font-ui); font-size: var(--fs-15); font-weight: var(--fw-medium); line-height: 1.25; margin: 0; }
+.project-card__kind { font-size: var(--fs-12); color: var(--foreground-subtle); }
+.project-card__desc { font-family: var(--font-body); font-size: var(--fs-13); color: var(--foreground-subtle); margin: 0; }
+.project-card__meta { font-size: var(--fs-12); color: var(--foreground-muted); margin-top: 2px; }
 /* progress track (fund / pre-order while live or funded) */
 .project-bar { height: 6px; border-radius: var(--radius-pill); background: var(--surface-muted); overflow: hidden; margin-top: 4px; }
 .project-bar__fill { height: 100%; border-radius: var(--radius-pill); background: var(--primary); }
@@ -1034,7 +1116,7 @@ a.data-list__row:hover .data-list__title { color: var(--foreground); }
   .hero--fullbleed { margin-left: -16px; margin-right: -16px; border-radius: 0; }
   .hero__slide { grid-template-columns: 1fr; }
   .hero__copy { padding: 24px 20px; }
-  .hero__title { font-size: 26px; }
+  .hero__title { font-size: var(--fs-24); }
   .insight-split { grid-template-columns: 1fr; }
   .insight-split__col { padding: 0; }
   .insight-split__col:last-child { border-left: 0; border-top: 1px solid var(--border); margin-top: 18px; padding-top: 18px; }
