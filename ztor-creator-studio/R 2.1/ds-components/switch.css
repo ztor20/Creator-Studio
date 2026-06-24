@@ -19,7 +19,10 @@
 .switch {
   position: relative;
   width: 36px; height: 20px;
-  background: var(--surface-muted);
+  /* off track one step darker than --surface-muted so the white knob reads (ramp:
+     …#FAFAFA → #F3F3F3 → #E5E5E5). Dark-mode --surface-rail-hover == --surface-muted,
+     so this only deepens light mode. */
+  background: var(--surface-rail-hover);
   border-radius: var(--radius-pill);
   box-shadow: 0 0 0 1px var(--border);
   cursor: pointer;
@@ -42,4 +45,12 @@
 .switch--on::after {
   left: 18px;
   background: var(--surface);
+}
+
+/* Dark mode: knob stays opaque white. Light-mode --surface is solid white, but
+   dark-mode --surface is translucent (rgba .10) → the knob would show the track
+   (orange when on) through it. Force an opaque near-white in dark for both states. */
+[data-theme="dark"] .switch::after,
+[data-theme="dark"] .switch--on::after {
+  background: var(--foreground);
 }

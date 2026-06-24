@@ -36,6 +36,8 @@
   --primary:            #ffa33f;
   --primary-hover:      #ffb866;
   --primary-foreground: #FFFFFF;   /* 白天白字（使用者指定 2026-06-22；黑夜版維持黑字見下方 dark override）*/
+  /* 品牌漸層：建立流程進度條用（品牌黃為主、暖色推進；2026-06-23）*/
+  --gradient-brand:     linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%);
 
   /* Edges */
   --border:            #E5E5E5;   /* cooler hairline (was #D1D1C7 until 2026-05-25) */
@@ -103,68 +105,110 @@
   --overlay-tint:      rgba(0, 0, 0, 0.45);   /* darkening mixed into modal backdrops (see .payout-modal) */
 
   /* Typography */
-  --font-display: 'Geist Variable', 'Geist', system-ui, sans-serif;
+
+  /* Font families — base (Latin-first) declaration.
+     四個家族：Geist（display＋UI）· Inter（body）· Geist Mono（mono）。
+     ⚠ 三層 cascade，別只看這裡：
+       1) 這裡＝拉丁優先的 base；
+       2) ds-components/fonts.css 重新宣告 --font-display/ui/body，於每個 stack 末端
+          補上自架的 'Noto Sans TC'（CJK per-glyph fallback），並擁有所有 @font-face；
+       3) shared.css 的 :lang(zh-Hant) 把 'Noto Sans TC' 提到第一位（繁中行高/基線）。
+     有效字體堆＝本宣告 + Noto fallback。詳見 ds-components/fonts.css。 */
+  --font-display: 'Geist', system-ui, sans-serif;
   --font-ui:      'Geist', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* 中文那一套 — 自架 Noto Sans TC，獨立成 token。接在每個拉丁 stack 末端做 CJK
+     per-glyph fallback（見 fonts.css）；繁中模式由 shared.css :lang(zh-Hant) 提到第一位。 */
+  --font-cjk:     'Noto Sans TC';
+
+  /* ── Font-size scale — 整數級，全站唯一來源（2026-06-23）──
+     所有 font-size 一律 var(--fs-N)；半 px 已收斂（.5 無條件捨去、<11 併 11）。
+     級距：11 12 13 14 15 16 18 22 24 28 32 40 44 56 64。 */
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-22: 22px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-44: 44px;
+  --fs-56: 56px;
+  --fs-64: 64px;
+
+  /* ── Font-weight scale — 全站唯一來源（2026-06-23）──
+     所有 font-weight 一律 var(--fw-*)。實際只用這 4 階（舊有 650 已併入 semibold）。
+     字體均為 variable（軸 100–900），故任何階都能精準對應。 */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
 
   /* Typography foundation scale */
   --type-display-64-family: var(--font-display);
-  --type-display-64-size: 64px;
-  --type-display-64-weight: 400;
+  --type-display-64-size: var(--fs-64);
+  --type-display-64-weight: var(--fw-regular);
   --type-display-64-line-height: 1;
   --type-display-64-tracking: -1.28px;
 
   --type-display-44-family: var(--font-display);
-  --type-display-44-size: 44px;
-  --type-display-44-weight: 500;
+  --type-display-44-size: var(--fs-44);
+  --type-display-44-weight: var(--fw-medium);
   --type-display-44-line-height: 1.05;
   --type-display-44-tracking: -1px;
 
   --type-title-40-family: var(--font-ui);
-  --type-title-40-size: 40px;
-  --type-title-40-weight: 500;
+  --type-title-40-size: var(--fs-40);
+  --type-title-40-weight: var(--fw-medium);
   --type-title-40-line-height: 1.05;
   --type-title-40-tracking: -0.8px;
 
   --type-title-32-family: var(--font-ui);
-  --type-title-32-size: 32px;
-  --type-title-32-weight: 500;
+  --type-title-32-size: var(--fs-32);
+  --type-title-32-weight: var(--fw-medium);
   --type-title-32-line-height: 1.1;
   --type-title-32-tracking: -0.6px;
 
   --type-title-24-family: var(--font-ui);
-  --type-title-24-size: 24px;
-  --type-title-24-weight: 500;
+  --type-title-24-size: var(--fs-24);
+  --type-title-24-weight: var(--fw-medium);
   --type-title-24-line-height: 1.2;
   --type-title-24-tracking: -0.48px;
 
   --type-label-15-family: var(--font-ui);
-  --type-label-15-size: 15px;
-  --type-label-15-weight: 500;
+  --type-label-15-size: var(--fs-15);
+  --type-label-15-weight: var(--fw-medium);
   --type-label-15-line-height: 1;
   --type-label-15-tracking: -0.3px;
 
   --type-label-14-family: var(--font-ui);
-  --type-label-14-size: 14.5px;
-  --type-label-14-weight: 700;
+  --type-label-14-size: var(--fs-14);
+  --type-label-14-weight: var(--fw-bold);
   --type-label-14-line-height: 1.25;
   --type-label-14-tracking: 0;
 
   --type-body-16-family: var(--font-body);
-  --type-body-16-size: 16px;
-  --type-body-16-weight: 400;
+  --type-body-16-size: var(--fs-16);
+  --type-body-16-weight: var(--fw-regular);
   --type-body-16-line-height: 1.6;
   --type-body-16-tracking: 0;
 
   --type-body-14-family: var(--font-body);
-  --type-body-14-size: 14px;
-  --type-body-14-weight: 400;
+  --type-body-14-size: var(--fs-14);
+  --type-body-14-weight: var(--fw-regular);
   --type-body-14-line-height: 1.5;
   --type-body-14-tracking: 0;
 
   --type-caption-12-family: var(--font-ui);
-  --type-caption-12-size: 12px;
-  --type-caption-12-weight: 500;
+  --type-caption-12-size: var(--fs-12);
+  --type-caption-12-weight: var(--fw-medium);
   --type-caption-12-line-height: 1.3;
   --type-caption-12-tracking: 0.05em;
 
@@ -240,13 +284,13 @@
 
 [data-theme="dark"] {
   /* Surfaces — translucent overlay scale */
-  --background:        #171717;                       /* body bg (ztor app dark) */
+  --background:        #191A1A;                       /* body bg / 滿版 content 底（與 --surface-page 同階，2026-06-22） */
   --surface:           rgba(253, 253, 253, 0.10);     /* standard card */
   --surface-muted:     rgba(253, 253, 253, 0.06);     /* low elevation */
-  --surface-inverse:   #000000;                       /* footer slab — 2026-06-12 反轉後 content 已是 #0A0A0A，footer 改純黑才仍比內文深、讀為分隔塊 */
-  --surface-shell:     #171717;                       /* app shell（rail＋canvas）— 2026-06-12 反轉：shell 用較淺的 #171717，content 才是最深 */
-  --surface-page:      #0A0A0A;                       /* route page = 最深底色（content 比 shell 深，視覺上內凹）；不透明避免半透明頁面 chrome */
-  --surface-rail:      #171717;                       /* rail 與 shell canvas 同色（#171717），靠 hover/active 疊色區分項目 */
+  --surface-inverse:   #000000;                       /* footer slab — content 為 #191A1A，footer 純黑才仍比內文深、讀為分隔塊 */
+  --surface-shell:     #2B2B2C;                       /* app shell（rail＋canvas）— shell 較淺 #2B2B2C，content 才是最深（2026-06-22 依使用者指定） */
+  --surface-page:      #191A1A;                       /* route page = content 底色（比 shell 深、視覺上內凹）；不透明避免半透明頁面 chrome（2026-06-22 依使用者指定） */
+  --surface-rail:      #2B2B2C;                       /* rail 與 shell canvas 同色（#2B2B2C），靠 hover/active 疊色區分項目 */
   --surface-rail-hover:rgba(253, 253, 253, 0.06);     /* rail item hover (dark) */
   --surface-rail-active:rgba(253, 253, 253, 0.12);    /* rail selected pill (dark — 比 hover 深一階) */
 
@@ -326,7 +370,7 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: var(--fs-16);
   line-height: 1;
   padding: 0;
   font-family: var(--font-ui);
