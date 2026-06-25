@@ -22,4 +22,4 @@
 ## 其他
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。
-- 共用大檔（`R 2.1/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。
+- 共用大檔（`r2.1/i18n.js`、`shared.css`、`design-system.html`）多人同改最易衝突，先講好分工。

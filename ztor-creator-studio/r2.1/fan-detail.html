@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wei Yu-han · Fan detail · Ztor Creator Studio</title>
+<script src="js/theme.js?v=20260625b"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/button.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/chart.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/card.css?v=20260625b">
+<link rel="stylesheet" href="shared.css?v=20260625b">
+<style>
+  /* fan-detail 專屬 layout hooks（非可重用樣式留頁內）。 */
+  .fan-hero {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .fan-hero__avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--primary) 30%, var(--card));
+    display: inline-grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: var(--fw-medium); font-size: var(--fs-28);
+    flex: none;
+  }
+  .fan-hero__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-28); font-weight: var(--fw-medium);
+    letter-spacing: -0.6px;
+    margin: 2px 0 4px;
+    line-height: 1.05;
+  }
+  .fan-hero__meta { color: var(--foreground-muted); font-size: var(--fs-13); }
+  .fan-hero__actions { display: flex; gap: 8px; align-items: center; }
+  @media (max-width: 720px) {
+    .fan-hero { grid-template-columns: auto 1fr; }
+    .fan-hero__actions { grid-column: 1 / -1; }
+  }
+  /* timeline rail — composes data-list rows with a left marker column. */
+  .timeline__cat {
+    font-family: var(--font-ui);
+    font-size: var(--fs-12); letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin: 18px 0 6px;
+  }
+  .timeline__cat:first-child { margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- Breadcrumb -->
+      <div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px">
+        <a href="fans-crm.html" class="card__link" data-i18n="fan-detail.crumb.fans">Fans</a>
+        <span style="margin:0 6px">/</span>
+        <span>Wei Yu-han</span>
+      </div>
+
+      <!-- Demo notice -->
+      <p class="text-sub" style="font-size: var(--fs-12);margin:0 0 16px;display:flex;align-items:center;gap:6px">
+        <i data-lucide="info" class="ztor-icon" style="width:13px;height:13px;flex-shrink:0"></i>
+        <span data-i18n="fan-detail.demo">Sample fan data for prototype illustration.</span>
+      </p>
+
+      <!-- F7 · Fan hero: avatar / name / tier / reputation / status -->
+      <section class="fan-hero">
+        <span class="fan-hero__avatar">W</span>
+        <div>
+          <div class="flex-row" style="gap:8px;flex-wrap:wrap">
+            <span class="badge badge--orange"><span class="badge__dot"></span><span data-i18n="fan-detail.tier.inner">Inner Circle</span></span>
+            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="fan-detail.status.active">Active</span></span>
+            <span class="chip" data-i18n="fan-detail.chip.vip">VIP</span>
+            <span class="chip" data-i18n="fan-detail.chip.high-spender">High spender</span>
+          </div>
+          <h1 class="fan-hero__name">Wei Yu-han</h1>
+          <div class="fan-hero__meta" data-i18n="fan-detail.identity">yuhan@studio · Taipei, Taiwan · Fan since Mar 2024</div>
+        </div>
+        <div class="fan-hero__actions">
+          <a class="btn btn--outline" href="fans-crm.html"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fan-detail.btn.message">Message</span></a>
+          <a class="btn btn--ghost btn--sm" href="tier-settings.html" data-i18n="fan-detail.btn.tier-settings">Tier settings</a>
+        </div>
+      </section>
+
+      <!-- KPI strip: reputation / spent / progress / status -->
+      <div class="bento" style="margin-bottom:6px">
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="fan-detail.kpi.reputation">Reputation</div>
+          <div class="kpi__value">874</div>
+          <div class="kpi__delta" data-i18n="fan-detail.kpi.reputation-delta">+38 vs last batch</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="fan-detail.kpi.spent">Spent</div>
+          <div class="kpi__value">$1,420</div>
+          <div class="kpi__meta" data-i18n="fan-detail.kpi.spent-meta">Lifetime · 18 orders</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="fan-detail.kpi.progress">Next tier progress</div>
+          <div class="kpi__value">92%</div>
+          <div class="kpi__meta" data-i18n="fan-detail.kpi.progress-meta">Already top tier — retention focus</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="fan-detail.kpi.last-active">Last active</div>
+          <div class="kpi__value" style="font-size: var(--fs-22)" data-i18n="fan-detail.kpi.last-active-val">2 days ago</div>
+          <div class="kpi__meta" data-i18n="fan-detail.kpi.last-active-meta">Opened the Coastline EP drop</div>
+        </div>
+      </div>
+
+      <p class="text-sub" style="font-size: var(--fs-11);margin:8px 0 18px;display:flex;align-items:center;gap:6px">
+        <i data-lucide="info" class="ztor-icon" style="width:12px;height:12px;flex-shrink:0"></i>
+        <span data-i18n="fan-detail.batch-note">Reputation and tier are recomputed by the nightly batch — values reflect the last run, not live activity (§7.5).</span>
+      </p>
+
+      <!-- Tabs -->
+      <nav class="tabs" role="tablist">
+        <button class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="timeline" data-i18n="fan-detail.tab.timeline">Behavior timeline</button>
+        <button class="tabs__item" role="tab" aria-selected="false" data-tab="spending" data-i18n="fan-detail.tab.spending">Spending</button>
+        <button class="tabs__item" role="tab" aria-selected="false" data-tab="participation" data-i18n="fan-detail.tab.participation">Events &amp; projects</button>
+        <button class="tabs__item" role="tab" aria-selected="false" data-tab="tags" data-i18n="fan-detail.tab.tags">Tags &amp; contribution</button>
+      </nav>
+
+      <!-- ============ F9 · Behavior timeline ============ -->
+      <div class="tab-panel tab-panel--active" data-panel="timeline">
+        <div class="bento">
+          <section class="card bento--span-8">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.timeline.title">Behavior timeline</h3>
+              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.timeline.sub">Cross-module: E-Shop, Events, Projects, interactions</span>
+            </div>
+
+            <div class="timeline__cat" data-i18n="fan-detail.timeline.recent">This week</div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.tl.eshop1">Pre-ordered “Coastline EP” vinyl</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.tl.eshop1-meta">E-Shop · 2 days ago</div>
+                  </div>
+                </div>
+                <div class="data-list__amount">$48</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="heart" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.tl.interact1">Commented on the studio diary post</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.tl.interact1-meta">Interaction · 3 days ago</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline__cat" data-i18n="fan-detail.timeline.earlier">Earlier</div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.tl.event1">Checked in · “Tainan Coastline Live”</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.tl.event1-meta">Events · Apr 12</div>
+                  </div>
+                </div>
+                <div class="data-list__amount">$60</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.tl.project1">Backed “Goldfish Patterns” fund</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.tl.project1-meta">Projects · Mar 02</div>
+                  </div>
+                </div>
+                <div class="data-list__amount">$200</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="user-plus" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.tl.referral1">Referred 2 new fans</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.tl.referral1-meta">Referral · Feb 20</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card bento--span-4">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.repmix.title">What drives this reputation</h3>
+            </div>
+            <p class="text-sub" style="font-size: var(--fs-12);margin:0 0 12px" data-i18n="fan-detail.repmix.sub">Behavior signals weighted into the score (§7.5). Recent activity weighs more and decays over time.</p>
+            <ul class="rank-bars">
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:100%"></div>
+                  <div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="fan-detail.repmix.spend">Purchases</span></div>
+                </div>
+                <span class="rank-bar__pct">41%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:66%"></div>
+                  <div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label" data-i18n="fan-detail.repmix.events">Event check-ins</span></div>
+                </div>
+                <span class="rank-bar__pct">27%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:46%"></div>
+                  <div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label" data-i18n="fan-detail.repmix.interact">Interactions</span></div>
+                </div>
+                <span class="rank-bar__pct">19%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:32%"></div>
+                  <div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--muted-foreground)"></span><span class="rank-bar__label" data-i18n="fan-detail.repmix.referral">Referrals</span></div>
+                </div>
+                <span class="rank-bar__pct">13%</span>
+              </li>
+            </ul>
+            <p class="text-sub" style="font-size: var(--fs-11);margin:12px 0 0" data-i18n="fan-detail.repmix.note">Illustrative split — the exact weighting formula is owned by the scoring engine.</p>
+          </section>
+        </div>
+      </div>
+
+      <!-- ============ F10 · Spending records ============ -->
+      <div class="tab-panel" data-panel="spending">
+        <div class="bento">
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="fan-detail.spend.kpi.lifetime">Lifetime spent</div>
+            <div class="kpi__value">$1,420</div>
+            <div class="kpi__meta" data-i18n="fan-detail.spend.kpi.lifetime-meta">Across shop, tickets, projects</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="fan-detail.spend.kpi.aov">Avg order value</div>
+            <div class="kpi__value">$79</div>
+            <div class="kpi__meta" data-i18n="fan-detail.spend.kpi.aov-meta">18 paid orders</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="fan-detail.spend.kpi.last90">Last 90 days</div>
+            <div class="kpi__value">$308</div>
+            <div class="kpi__delta" data-i18n="fan-detail.spend.kpi.last90-delta">+$110 vs prior 90d</div>
+          </div>
+        </div>
+
+        <section class="card mt-16">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="fan-detail.spend.title">Spending records</h3>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fan-detail.spend.sub">Products, tickets, project support</span>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="fan-detail.spend.r1">“Coastline EP” vinyl (pre-order)</div>
+                  <div class="data-list__meta" data-i18n="fan-detail.spend.r1-meta">E-Shop · Jun 13, 2026</div>
+                </div>
+              </div>
+              <div class="data-list__amount">$48</div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="fan-detail.spend.r2">“Tainan Coastline Live” · 1 ticket</div>
+                  <div class="data-list__meta" data-i18n="fan-detail.spend.r2-meta">Events · Apr 12, 2026</div>
+                </div>
+              </div>
+              <div class="data-list__amount">$60</div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="fan-detail.spend.r3">“Goldfish Patterns” fund · backer tier 2</div>
+                  <div class="data-list__meta" data-i18n="fan-detail.spend.r3-meta">Projects · Mar 02, 2026</div>
+                </div>
+              </div>
+              <div class="data-list__amount">$200</div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="shopping-bag" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="fan-detail.spend.r4">Tote bag + zine bundle</div>
+                  <div class="data-list__meta" data-i18n="fan-detail.spend.r4-meta">E-Shop · Jan 18, 2026</div>
+                </div>
+              </div>
+              <div class="data-list__amount">$54</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============ F11 · Event & project participation ============ -->
+      <div class="tab-panel" data-panel="participation">
+        <div class="bento">
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.events.title">Event participation</h3>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.events.r1">Tainan Coastline Live</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.events.r1-meta">Attended · checked in · Apr 12, 2026</div>
+                  </div>
+                </div>
+                <span class="badge badge--success"><span data-i18n="fan-detail.events.attended">Attended</span></span>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.events.r2">Listening Room · Vol. 3</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.events.r2-meta">RSVP’d · upcoming · Jul 06, 2026</div>
+                  </div>
+                </div>
+                <span class="badge badge--info"><span data-i18n="fan-detail.events.rsvp">RSVP’d</span></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.projects.title">Project support</h3>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.projects.r1">Goldfish Patterns (fund)</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.projects.r1-meta">Backer tier 2 · Mar 02, 2026</div>
+                  </div>
+                </div>
+                <div class="data-list__amount">$200</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="rocket" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="fan-detail.projects.r2">Coastline EP (creative project)</div>
+                    <div class="data-list__meta" data-i18n="fan-detail.projects.r2-meta">Followed · Dec 2025</div>
+                  </div>
+                </div>
+                <span class="badge"><span data-i18n="fan-detail.projects.following">Following</span></span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- ============ F12 · Tags & long-term contribution ============ -->
+      <div class="tab-panel" data-panel="tags">
+        <div class="bento">
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.tags.title">Tags</h3>
+            </div>
+            <p class="text-sub" style="font-size: var(--fs-12);margin:0 0 12px" data-i18n="fan-detail.tags.sub">Quick-filter labels used across the fan list.</p>
+            <div class="flex-row" style="flex-wrap:wrap;gap:8px">
+              <span class="chip" data-i18n="fan-detail.chip.vip">VIP</span>
+              <span class="chip" data-i18n="fan-detail.chip.high-spender">High spender</span>
+              <span class="chip" data-i18n="fan-detail.tags.event-goer">Event attendee</span>
+              <span class="chip" data-i18n="fan-detail.tags.early-backer">Early backer</span>
+              <button class="btn btn--outline btn--sm" type="button"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="fan-detail.tags.add">Add tag</span></button>
+            </div>
+          </section>
+
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fan-detail.contrib.title">Long-term contribution</h3>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="flex-row" style="justify-content:space-between">
+                <span class="text-sub" style="font-size: var(--fs-13)" data-i18n="fan-detail.contrib.tenure">Tenure</span>
+                <span style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-medium)" data-i18n="fan-detail.contrib.tenure-val">2.3 years · since Mar 2024</span>
+              </div>
+              <div class="flex-row" style="justify-content:space-between">
+                <span class="text-sub" style="font-size: var(--fs-13)" data-i18n="fan-detail.contrib.lifetime">Lifetime spent</span>
+                <span style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-medium)">$1,420</span>
+              </div>
+              <div class="flex-row" style="justify-content:space-between">
+                <span class="text-sub" style="font-size: var(--fs-13)" data-i18n="fan-detail.contrib.peak">Hall of fame · peak tier</span>
+                <span class="badge badge--orange"><span class="badge__dot"></span><span data-i18n="fan-detail.tier.inner">Inner Circle</span> · 2025</span>
+              </div>
+            </div>
+            <div class="stickynote mt-16">
+              <span class="stickynote__mark">★</span>
+              <span data-i18n="fan-detail.contrib.note"><strong>Hall of fame is read-only.</strong> Peak tier records the highest tier ever reached and the year it happened — it does not change when the current tier moves (F12).</span>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span data-i18n="fan-detail.footer1">Fan profile · part of Fans CRM</span>
+      <span>·</span>
+      <span data-i18n="fan-detail.footer2">Reputation &amp; tier recomputed nightly (§7.5)</span>
+    </footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=20260625b"></script>
+<script src="js/i18n.js?v=20260625b"></script>
+<script src="js/sidebar.js?v=20260625b"></script>
+<script>
+(function () {
+  // Tabs ↔ panels switching (canonical pattern, see earnings.html).
+  const tabs = Array.from(document.querySelectorAll('.tabs__item[data-tab]'));
+  const panels = Array.from(document.querySelectorAll('.tab-panel[data-panel]'));
+  tabs.forEach(tab => tab.addEventListener('click', () => {
+    const id = tab.dataset.tab;
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === id));
+  }));
+})();
+</script>
+<script src="js/reveal.js?v=20260625b"></script>
+<script src="js/devtools.js?v=20260625b"></script>
+</body>
+</html>
