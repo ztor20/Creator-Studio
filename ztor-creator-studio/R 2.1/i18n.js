@@ -1690,6 +1690,7 @@
     'cp.delete':            { en: 'Delete',                           zh: '刪除' },
     'cp.delete.confirm':    { en: 'Delete this product? This cannot be undone.', zh: '確定刪除這個商品？此動作無法復原。' },
     'cp.preview':           { en: 'Preview',                          zh: '預覽' },
+    'cp.preview.heading':   { en: 'Product preview',                  zh: '商品預覽' },
     'cp.preview.title':     { en: 'How buyers see it on Ztor',        zh: '買家在 Ztor 看到的樣子' },
     'cp.preview.title-auction': { en: 'Now fans see it',              zh: '粉絲現在看到的樣子' },
     'cp.ready.title':       { en: 'Ready to sell?',                   zh: '可以上架了嗎？' },
