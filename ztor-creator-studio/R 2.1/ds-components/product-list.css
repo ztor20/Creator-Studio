@@ -24,10 +24,10 @@
   min-height: 44px;
   padding: 0 10px;
   border-bottom: 1px solid var(--border);
-  color: var(--foreground-subtle);
+  color: var(--muted-foreground);
   font-family: var(--font-ui);
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
 }
 
 .product-list__row {
@@ -38,7 +38,7 @@
 }
 
 .product-list__row:hover {
-  background: var(--surface-muted);
+  background: var(--muted);
 }
 
 .product-list__product {
@@ -55,7 +55,7 @@
   display: inline-grid;
   place-items: center;
   border-radius: var(--radius);
-  background: var(--surface-muted);
+  background: var(--muted);
   color: var(--foreground-muted);
 }
 
@@ -80,7 +80,7 @@
   overflow: hidden;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--card);
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -94,15 +94,15 @@
 }
 
 .product-list__image--placeholder {
-  background: var(--surface-muted);
+  background: var(--muted);
   border-color: var(--border-soft);
 }
 
 .product-list__image-placeholder-mark {
-  color: color-mix(in srgb, var(--foreground) 14%, var(--surface));
+  color: color-mix(in srgb, var(--foreground) 14%, var(--card));
   font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
+  font-size: var(--fs-16);
+  font-weight: var(--fw-bold);
   letter-spacing: -0.02em;
   line-height: 1;
   opacity: 1;
@@ -117,8 +117,8 @@
   overflow: hidden;
   color: var(--foreground);
   font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -127,8 +127,8 @@
 .product-list__meta {
   overflow: hidden;
   margin-top: 2px;
-  color: var(--foreground-subtle);
-  font-size: 12px;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
   line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -136,13 +136,13 @@
 
 .product-list__category {
   color: var(--foreground-muted);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
 }
 
 .product-list__cell {
   min-width: 0;
   color: var(--foreground-muted);
-  font-size: 13px;
+  font-size: var(--fs-13);
 }
 
 .product-list__actions {
@@ -151,7 +151,7 @@
 }
 
 .product-list__edit {
-  color: var(--foreground-subtle);
+  color: var(--muted-foreground);
 }
 
 .product-list__edit:hover {
@@ -208,4 +208,52 @@
     grid-column: 2;
     grid-row: 1;
   }
+}
+
+/* ============================================================
+   E-Shop 分頁欄位版型（page-level column layouts）
+   ------------------------------------------------------------
+   E-Shop 三個分頁各換一組欄位，疊在 base grid 上、不改 base：
+     --eshop     商品：drag / image / 名稱+meta / 分類 / 價格 / 狀態 / 庫存 / actions
+     --bundles   套組：image / 套組名 / 成員 / 套組價 / 狀態 / 庫存 / actions
+     --auctions  競標：image / 品項 / 分類 / 出價 / 狀態 / 動態 / actions
+   （拖曳、篩空、分頁切換、kebab 等頁級行為仍在 e-shop.html）。
+   ============================================================ */
+
+/* 商品分頁 */
+.product-list--eshop .product-list__head,
+.product-list--eshop .product-list__row {
+  /* 後方資料欄收窄：分類/價格/狀態/庫存不過寬、右側更緊湊；名稱欄(1.6fr)吸收釋出空間。
+     狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。 */
+  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+}
+.product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
+.product-list--eshop .product-list__price,
+.product-list--eshop .product-list__stock,
+.product-list--eshop .product-list__category-cell { color: var(--foreground); }
+.product-list--eshop .product-list__actions { display: flex; justify-content: flex-end; }
+
+/* 套組分頁 — 同 product-list 外觀，較寬的成員欄；欄位：Image / Bundle / Members / Price / Status / Stock / Actions */
+.product-list--bundles .product-list__head,
+.product-list--bundles .product-list__row {
+  grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+}
+
+/* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。
+   單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
+.product-list--auctions .product-list__head,
+.product-list--auctions .product-list__row {
+  grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+}
+.product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: 1.35; }
+.product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: 4px; align-content: center; }
+
+/* 商品分頁 ≤760px 重排（base 760 已處理 status/stock；此處補 --eshop 多出的分類/價格欄與左內距） */
+@media (max-width: 760px) {
+  .product-list--eshop .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--eshop .product-list__product { padding-left: 72px; }
+  .product-list--eshop .product-list__category-cell { grid-column: 1; grid-row: 2; padding-left: 72px; }
+  .product-list--eshop .product-list__price { grid-column: 1; grid-row: 3; padding-left: 72px; }
+  .product-list--eshop .product-list__status { grid-column: 1; grid-row: 4; padding-left: 72px; }
+  .product-list--eshop .product-list__stock { grid-column: 1; grid-row: 5; padding-left: 72px; }
 }

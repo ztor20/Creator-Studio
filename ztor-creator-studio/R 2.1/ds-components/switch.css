@@ -19,7 +19,10 @@
 .switch {
   position: relative;
   width: 36px; height: 20px;
-  background: var(--surface-muted);
+  /* off track one step darker than --muted so the white knob reads (ramp:
+     …#FAFAFA → #F3F3F3 → #E5E5E5). Dark-mode --accent == --muted,
+     so this only deepens light mode. */
+  background: var(--accent);
   border-radius: var(--radius-pill);
   box-shadow: 0 0 0 1px var(--border);
   cursor: pointer;
@@ -32,7 +35,7 @@
   top: 2px; left: 2px;
   width: 16px; height: 16px;
   border-radius: 50%;
-  background: var(--surface);
+  background: var(--card);
   box-shadow: var(--shadow-raise-strong);
   transition: left 150ms ease;
 }
@@ -41,5 +44,13 @@
 }
 .switch--on::after {
   left: 18px;
-  background: var(--surface);
+  background: var(--card);
+}
+
+/* Dark mode: knob stays opaque white. Light-mode --card is solid white, but
+   dark-mode --card is translucent (rgba .10) → the knob would show the track
+   (orange when on) through it. Force an opaque near-white in dark for both states. */
+[data-theme="dark"] .switch::after,
+[data-theme="dark"] .switch--on::after {
+  background: var(--foreground);
 }

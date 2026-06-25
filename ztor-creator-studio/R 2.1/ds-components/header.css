@@ -10,14 +10,14 @@
 /* ---------- Top bar (ported from R 2.0 .app-topbar__* pattern, R 2.1 tokens) ----------
    64 px sticky header · brand SVG logo + semantic <ul> nav + mega dropdown panels +
    right-side cluster (theme · search panel · lang · notifications · avatar menu).
-   Tokens (--surface / --foreground / --border / --primary) all come from
+   Tokens (--card / --foreground / --border / --primary) all come from
    ds-components/_tokens.css — visual chrome from R 2.0, palette from R 2.1. */
 .app-topbar {
   position: sticky;
   top: 0;
   z-index: 50;
   height: 64px;
-  background: var(--surface);
+  background: var(--card);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@
               backdrop-filter var(--duration) var(--easing);
 }
 
-/* Dark mode: --surface is translucent, so on scroll the header turns into a
+/* Dark mode: --card is translucent, so on scroll the header turns into a
    frosted pane (blur + slight darkening) instead of letting the content/hero
    photo bleed through the nav. Light mode keeps its opaque surface — no blur. */
 [data-theme="dark"] .app-topbar.is-scrolled {
@@ -59,7 +59,7 @@
 .app-topbar__nav-group { position: relative; z-index: 1; }
 
 /* Shared sliding highlight — one pill that glides between nav items on hover
-   and rests on the active page item. Reuses --surface-muted / --radius-md /
+   and rests on the active page item. Reuses --muted / --radius-md /
    --duration / --easing (Motion mega-menu shared-element feel). */
 .app-topbar__nav-highlight {
   position: absolute;
@@ -67,7 +67,7 @@
   left: 0;
   height: 36px;                 /* matches .app-topbar__link height */
   border-radius: var(--radius-md);
-  background: var(--surface-muted);
+  background: var(--muted);
   opacity: 0;
   pointer-events: none;
   z-index: 0;                   /* behind the links */
@@ -89,8 +89,8 @@
   background: transparent;
   color: var(--foreground-muted);
   font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
   letter-spacing: -0.003em;
   cursor: pointer;
   text-decoration: none;
@@ -113,10 +113,10 @@
   top: calc(100% + 8px);
   left: 0;
   min-width: 280px;
-  background: var(--surface);          /* match the header bg (.app-topbar) */
-  /* Frosted glass: when --surface is translucent (dark mode) the blur turns
+  background: var(--card);          /* match the header bg (.app-topbar) */
+  /* Frosted glass: when --card is translucent (dark mode) the blur turns
      the hero/content showing through into a frosted pane so text stays legible;
-     no-op in light mode where --surface is opaque. Matches the scrolled header. */
+     no-op in light mode where --card is opaque. Matches the scrolled header. */
   backdrop-filter: var(--overlay-blur);
   -webkit-backdrop-filter: var(--overlay-blur);
   border: 1px solid var(--border);
@@ -158,7 +158,7 @@
   top: calc(100% + 18px);
 }
 .app-topbar__dropdown--right { right: 0; left: auto; }
-/* No dark override: the dropdown uses var(--surface), same as .app-topbar, in both themes. */
+/* No dark override: the dropdown uses var(--card), same as .app-topbar, in both themes. */
 
 .app-topbar__dropdown-option {
   display: flex;
@@ -170,12 +170,12 @@
   color: var(--foreground);
   cursor: pointer;
 }
-.app-topbar__dropdown-option:hover { background: var(--surface-muted); }
+.app-topbar__dropdown-option:hover { background: var(--muted); }
 
 .app-topbar__dropdown-icon {
   width: 36px; height: 36px;
   border-radius: var(--radius);
-  background: var(--surface-muted);
+  background: var(--muted);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -190,14 +190,14 @@
 }
 .app-topbar__dropdown-option-title {
   font-family: var(--font-ui);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
   color: var(--foreground);
 }
 .app-topbar__dropdown-option-sub {
   font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--foreground-subtle);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
 }
 .app-topbar__dropdown-divider {
   height: 1px;
@@ -237,13 +237,13 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   font-family: var(--font-ui);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
   color: var(--foreground-muted);
   cursor: pointer;
 }
 .app-topbar__lang [aria-current="true"]  { color: var(--foreground); }
-.app-topbar__lang [aria-current="false"] { color: var(--foreground-subtle); }
+.app-topbar__lang [aria-current="false"] { color: var(--muted-foreground); }
 
 .app-topbar__avatar {
   width: 32px; height: 32px;
@@ -252,8 +252,8 @@
   background: var(--foreground);
   color: var(--background);
   font-family: var(--font-ui);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--fs-12);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
@@ -268,32 +268,32 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background: var(--surface-muted);
+  background: var(--muted);
   border-radius: var(--radius-md);
 }
-.app-topbar__search-input-wrap .ztor-icon { color: var(--foreground-subtle); width: 16px; height: 16px; }
+.app-topbar__search-input-wrap .ztor-icon { color: var(--muted-foreground); width: 16px; height: 16px; }
 .app-topbar__search-input {
   border: 0; background: transparent; outline: none;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: var(--fs-13);
   flex: 1;
   color: var(--foreground);
 }
-.app-topbar__search-input::placeholder { color: var(--foreground-subtle); }
+.app-topbar__search-input::placeholder { color: var(--muted-foreground); }
 .app-topbar__search-kbd {
   font-family: var(--font-mono, var(--font-ui));
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
   padding: 2px 6px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--foreground-subtle);
+  color: var(--muted-foreground);
   background: var(--background);
 }
 .app-topbar__search-hint {
   margin: 8px 0 0;
-  font-size: 11px;
-  color: var(--foreground-subtle);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
   padding: 0 4px;
 }
 
