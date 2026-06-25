@@ -3,24 +3,25 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Register External IP · Ztor Creator Studio</title>
-<script src="theme.js?v=20260622i"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/button.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/card.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/input.css?v=20260622i">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260622i">
-<link rel="stylesheet" href="shared.css?v=20260622i">
+<script src="theme.js?v=20260625a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/input.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260625a">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260625a">
+<link rel="stylesheet" href="shared.css?v=20260625a">
 <style>
   /* register-ip 專屬 layout hooks（欄位排版、多選標籤、版稅輸入、摘要列），非跨頁重用，比照 create-event 留頁內。 */
   .ri-block { margin-bottom: 28px; }
-  .ri-block__title { font-family:var(--font-ui); font-size:14px; font-weight:600; margin:0 0 2px; }
-  .ri-block__sub { font-size:12.5px; color:var(--foreground-subtle); margin:0 0 12px; }
+  .ri-block__title { font-family:var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-semibold); margin:0 0 2px; }
+  .ri-block__sub { font-size: var(--fs-12); color:var(--foreground-subtle); margin:0 0 12px; }
   .ri-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 
   /* 多選標籤（允許用途 / 授權地區）：點擊 toggle，選中描邊高亮。沿用 selection-card 風格但為輕量 chip。 */
@@ -31,7 +32,7 @@
     padding:8px 14px; border-radius:var(--radius-pill);
     background:var(--surface); color:var(--foreground-muted);
     box-shadow:0 0 0 1px var(--border);
-    font-family:var(--font-ui); font-size:13px; font-weight:500;
+    font-family:var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium);
     transition:background .15s ease, color .15s ease, box-shadow .15s ease;
   }
   .ri-tag:hover { color:var(--foreground); }
@@ -54,16 +55,16 @@
     transition:background .15s ease, box-shadow .15s ease;
   }
   .ri-usage__card:hover { box-shadow:0 0 0 1px var(--foreground-subtle); }
-  .ri-usage__card--active { background:color-mix(in srgb, var(--primary) 12%, var(--surface)); box-shadow:0 0 0 2px var(--primary); }
-  .ri-usage__title { font-family:var(--font-ui); font-size:13.5px; font-weight:600; }
-  .ri-usage__desc { font-size:12px; color:var(--foreground-subtle); line-height:1.4; }
+  .ri-usage__card--active { background:var(--surface); box-shadow:0 0 0 1.5px var(--primary); }   /* ring-only（無底色），與建立流程選擇卡一致（2026-06-25）*/
+  .ri-usage__title { font-family:var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-semibold); }
+  .ri-usage__desc { font-size: var(--fs-12); color:var(--foreground-subtle); line-height:1.4; }
 
   /* 版稅 / 金額輸入：前後綴（% 後綴、$ 前綴）。沿用 .input，僅加包裹定位。 */
   .ri-affix { position:relative; }
   .ri-affix__input { width:100%; }
   .ri-affix--suffix .ri-affix__input { padding-right:34px; }
   .ri-affix--prefix .ri-affix__input { padding-left:26px; }
-  .ri-affix__sign { position:absolute; top:50%; transform:translateY(-50%); color:var(--foreground-subtle); font-size:14px; pointer-events:none; }
+  .ri-affix__sign { position:absolute; top:50%; transform:translateY(-50%); color:var(--foreground-subtle); font-size: var(--fs-14); pointer-events:none; }
   .ri-affix--suffix .ri-affix__sign { right:14px; }
   .ri-affix--prefix .ri-affix__sign { left:12px; }
 
@@ -71,7 +72,7 @@
   .ri-pricing[hidden] { display:none; }
 
   /* ＊ 必填 inline 驗證（檢核 §6①）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
-  .ri-field-error { display:none; margin-top:6px; font-size:12px; color:var(--status-error); }
+  .ri-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--status-error); }
   .field.is-invalid .ri-field-error { display:block; }
 
   /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
@@ -79,12 +80,19 @@
   /* Review 摘要列：label / value 兩欄 */
   .ri-summary { display:flex; flex-direction:column; gap:10px; }
   .ri-summary__row { display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline; }
-  .ri-summary__k { font-size:12px; color:var(--foreground-subtle); }
-  .ri-summary__v { font-size:13.5px; color:var(--foreground); }
+  .ri-summary__k { font-size: var(--fs-12); color:var(--foreground-subtle); }
+  .ri-summary__v { font-size: var(--fs-13); color:var(--foreground); }
   .ri-summary__v.is-empty { color:var(--foreground-subtle); font-style:italic; }
 
   /* 上架狀態提示條（Review）：依 List for rental / Keep private 切換語氣 */
   .ri-list-note { margin-top:12px; }
+
+  /* 全頁無卡片化（使用者指定 2026-06-25）：review 摘要 .card 去卡面、改底線分隔列；ri-block 本就無卡片。 */
+  .card { background: transparent !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
+  .card:has(.card__head) { padding: 14px 0 !important; border-bottom: 1px solid var(--border-soft) !important; margin-bottom: 0 !important; }
+  .card__head { margin-bottom: 4px; }
+  .card__title { font-size: var(--fs-15); font-weight: var(--fw-medium); }
+  .wizard__body { padding-top: 16px; }
 
   @media (max-width:640px){
     .ri-grid-2, .ri-usage { grid-template-columns:1fr; }
@@ -94,21 +102,31 @@
 </head>
 <body>
 <div class="wizard">
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬）；右＝自動儲存。 -->
+  <div class="wizard__sheet">
   <header class="wizard__top">
-    <button class="wizard__close" onclick="history.back()" data-i18n="wiz.close">✕ Close</button>
-    <div class="wizard__stepper-slot">
-      <div class="stepper" id="stepper">
-        <div class="stepper__item stepper__item--current" data-step="1"><span class="stepper__num">1</span><span data-i18n="ri.step.type">Type &amp; Info</span></div>
-        <span class="stepper__sep"></span>
-        <div class="stepper__item" data-step="2"><span class="stepper__num">2</span><span data-i18n="ri.step.usage">Usage Rules</span></div>
-        <span class="stepper__sep"></span>
-        <div class="stepper__item" data-step="3"><span class="stepper__num">3</span><span data-i18n="ri.step.pricing">Pricing &amp; Earnings</span></div>
-        <span class="stepper__sep"></span>
-        <div class="stepper__item" data-step="4"><span class="stepper__num">4</span><span data-i18n="ri.step.review">Review</span></div>
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="ri.h1">Register IP</span>
+          <span class="wizard__top-sub" data-i18n="ri.subtitle">External IP</span>
+        </div>
       </div>
-    </div>
-    <div class="wizard__top-actions">
-      <button class="app-icon-btn" data-theme-toggle><span class="theme-toggle__icon-moon">☾</span><span class="theme-toggle__icon-sun">☀</span></button>
+      <div class="wizard__progress">
+        <div class="progress-stepper" id="stepper" style="--progress:25%">
+          <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+          <div class="progress-stepper__labels">
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="1" data-i18n="ri.step.type">Type &amp; Info</span>
+            <span class="progress-stepper__label" data-step="2" data-i18n="ri.step.usage">Usage Rules</span>
+            <span class="progress-stepper__label" data-step="3" data-i18n="ri.step.pricing">Pricing &amp; Earnings</span>
+            <span class="progress-stepper__label" data-step="4" data-i18n="ri.step.review">Review</span>
+          </div>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+      </div>
     </div>
   </header>
 
@@ -313,10 +331,11 @@
       </section>
 
       <!-- 法律揭露（檢核 §6②，PRD §5.1.3 業務規則 2）。 -->
-      <div class="text-sub" style="font-size:12px;margin-top:14px" data-i18n="ri.legal">A Ztor IP record is not a formal legal contract. It documents the rights you declare; settle binding agreements separately.</div>
+      <div class="text-sub" style="font-size: var(--fs-12);margin-top:14px" data-i18n="ri.legal">A Ztor IP record is not a formal legal contract. It documents the rights you declare; settle binding agreements separately.</div>
     </section>
 
   </div>
+  </div><!-- /.wizard__sheet -->
 
   <footer class="wizard__bottom">
     <button class="btn btn--ghost" data-action="save-exit" data-i18n="ri.saveexit">Save &amp; exit</button>
@@ -328,8 +347,9 @@
 
 </div>
 
-<script src="icons.js?v=20260622i"></script>
-<script src="i18n.js?v=20260622i"></script>
+<script src="icons.js?v=20260625a"></script>
+<script src="i18n.js?v=20260625a"></script>
+<script src="partials/wizard-chrome.js?v=20260625a"></script>
 <script>
 /* 登錄 IP 流程互動 · spec 5.1.4.1（四步：Type & Info → Usage Rules → Pricing & Earnings → Review）
    stepper 切步、Review 回填、發布前檢核 gating Register。純前端 demo，不真持久化。
@@ -350,10 +370,13 @@
     document.querySelectorAll("[data-step-panel]").forEach(p => {
       p.classList.toggle("hidden", Number(p.dataset.stepPanel) !== step);
     });
-    document.querySelectorAll(".stepper__item").forEach(s => {
+    const stepperEl = document.getElementById("stepper");
+    const labels = document.querySelectorAll(".progress-stepper__label");
+    if (stepperEl) stepperEl.style.setProperty("--progress", Math.round(step / labels.length * 100) + "%");
+    labels.forEach(s => {
       const n = Number(s.dataset.step);
-      s.classList.toggle("stepper__item--current", n === step);
-      s.classList.toggle("stepper__item--done", n < step);
+      s.classList.toggle("progress-stepper__label--current", n === step);
+      s.classList.toggle("progress-stepper__label--done", n < step);
     });
     document.querySelector("[data-action=back]").disabled = step === 1;
     const next = document.querySelector("[data-action=next]");
@@ -485,7 +508,7 @@
   document.querySelector("[data-action=save-exit]").addEventListener("click", () => {
     alert(T("ri.saveexit-alert", "Draft saved. You can resume from My IP."));
   });
-  document.querySelectorAll(".stepper__item").forEach(s => {
+  document.querySelectorAll(".progress-stepper__label").forEach(s => {
     s.addEventListener("click", () => { step = Number(s.dataset.step); render(); });
   });
   document.querySelectorAll("[data-goto]").forEach(a => {
@@ -581,7 +604,7 @@
   render();
 })();
 </script>
-<script src="reveal.js?v=20260622i"></script>
-<script src="devtools.js?v=20260622i"></script>
+<script src="reveal.js?v=20260625a"></script>
+<script src="devtools.js?v=20260625a"></script>
 </body>
 </html>
