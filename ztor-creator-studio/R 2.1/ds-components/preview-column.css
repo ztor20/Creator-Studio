@@ -1,0 +1,44 @@
+/* ============================================================
+   preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
+   ------------------------------------------------------------
+   建立流程（create-product / create-auction…）的「表單｜預覽」兩欄版面：
+   左欄表單、右欄一條 sticky 預覽欄（標題＋描述＋預覽內容）。
+   取代舊的滑出式 preview-panel；欄內的卡用 preview-card 元件。
+   anatomy
+     .preview-split            (套在 wizard__body：表單｜預覽 兩欄 grid)
+       .preview-split__form    (左：表單欄)
+       .preview-col            (右：sticky 預覽欄)
+         .preview-col__head    (標題＋描述，緊排)
+           .preview-col__title (= 區段標題 title role / 18px)
+           .preview-col__sub   (灰色描述 / fs-14)
+         <preview-card …>
+   sticky top 預設 96px（wizard header 80＋body 上內距 16）；
+   頁面可用 --preview-col-top 覆寫。窄螢幕（≤1040px）改堆疊、取消 sticky。
+   ============================================================ */
+
+.preview-split { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; align-items: start; }
+.preview-split__form { min-width: 0; }
+
+.preview-col {
+  position: sticky;
+  top: var(--preview-col-top, 96px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: start;
+}
+.preview-col__head { display: block; }
+.preview-col__title {
+  font-family: var(--type-title-24-family);
+  font-size: var(--fs-18);
+  font-weight: var(--type-title-24-weight);
+  letter-spacing: var(--type-title-24-tracking);
+  line-height: 1.3;
+  margin: 0;
+}
+.preview-col__sub { font-size: var(--fs-14); color: var(--foreground-muted); margin: 4px 0 0; }
+
+@media (max-width: 1040px) {
+  .preview-split { grid-template-columns: 1fr; gap: 28px; }
+  .preview-col { position: static; }
+}

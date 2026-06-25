@@ -1,0 +1,60 @@
+/* ============================================================
+   radio-card.css · 並排可選卡（radio 卡）
+   ------------------------------------------------------------
+   建立在 Segmented 之上：一組 .segmented 容器加 .radio-cards，
+   把段內 .segmented__btn 從「軌道內文字切換」改成「兩張並排的
+   可選卡」——卡面 + 右上 radio 點，可帶標題＋描述。
+   已選＝保留卡面陰影 + 疊一圈橘外框（不換底色）。
+   用於：單一/多規格、不限量/限量、取貨方式等二選一。
+   JS 沿用 segmented 的 toggle（.segmented__btn--active）。
+   anatomy
+     .segmented.radio-cards
+       .segmented__btn  (.segmented__btn--active)
+         .radio-card__text
+           .radio-card__title
+           .radio-card__sub
+   ============================================================ */
+
+.radio-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: transparent;     /* 覆蓋 segmented 的軌道底 */
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.radio-cards .segmented__btn {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  height: auto;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  color: var(--foreground);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-14);
+}
+/* 右上 radio 點 */
+.radio-cards .segmented__btn::after {
+  content: "";
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--border);
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+/* 已選＝卡面陰影 + 橘外框疊加；radio 點填橘心 */
+.radio-cards .segmented__btn--active { box-shadow: var(--shadow-card), 0 0 0 2px var(--primary); }
+.radio-cards .segmented__btn--active::after {
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: radial-gradient(circle at center, var(--primary) 0 4px, transparent 5px);
+}
+
+/* 卡內標題＋描述 */
+.radio-card__text { display: flex; flex-direction: column; gap: 3px; text-align: left; min-width: 0; }
+.radio-card__title { font-weight: var(--fw-medium); }
+.radio-card__sub { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--foreground-muted); line-height: 1.4; white-space: normal; }

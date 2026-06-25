@@ -1,0 +1,69 @@
+/* ── Progress stepper ─────────────────────────────────────────────────────
+   建立流程多步驟進度條：一條細長軌道 + 品牌漸層填充（依當前步推進）+ 下方步驟標籤。
+   取代舊的列內數字圓圈 .stepper（2026-06-23）。用在 create-event / create-project /
+   register-ip 等多步驟 wizard 的 .wizard__progress 槽內。
+
+   驅動：在 .progress-stepper 上設 inline `--progress`（已完成比例，如 40%）。
+   JS 切步時更新 `--progress` 與各 .progress-stepper__label 的 --current / --done。 */
+
+.progress-stepper {
+  --progress: 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.progress-stepper__track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muted);
+  overflow: hidden;
+}
+
+.progress-stepper__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress);
+  border-radius: 999px;
+  background: var(--gradient-brand);
+  transition: width .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+.progress-stepper__labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-stepper__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* 已完成步驟：可回點 */
+.progress-stepper__label--done {
+  color: var(--foreground-muted);
+  cursor: pointer;
+}
+
+/* 當前步驟 */
+.progress-stepper__label--current {
+  color: var(--foreground);
+  font-weight: var(--fw-medium);
+}
+
+/* 第一與最後一個標籤貼齊兩端，中間自然分布 */
+.progress-stepper__label:first-child { text-align: left; }
+.progress-stepper__label:last-child  { text-align: right; }
+
+/* 窄螢幕：標籤縮小、軌道加高一點維持可見 */
+@media (max-width: 720px) {
+  .progress-stepper__label { font-size: var(--fs-11); letter-spacing: .02em; }
+}
