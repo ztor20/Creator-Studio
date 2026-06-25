@@ -14,38 +14,74 @@
    ============================================================ */
 
 :root {
-  /* Surfaces */
-  --background:        #FFFFFF;   /* canvas / body (clean white, 2026-06-09) */
-  --surface:           #FFFFFF;   /* cards, popovers, nav panels */
-  --surface-muted:     #FAFAFA;   /* alt card / muted bg */
-  --surface-inverse:   #000000;   /* footer / hi-contrast block */
-  --surface-shell:     #F5F5F5;   /* sidebar-mode app canvas; subtle contrast against the white route page */
-  --surface-page:      #FFFFFF;   /* opaque route page inside the app shell */
-  --surface-rail:      #FBFBFB;   /* sidebar display-mode rail (near-white neutral; ramp: canvas/surface #FFFFFF → rail #FBFBFB → muted #FAFAFA → rail-hover #F3F3F3 → border #E5E5E5) */
-  --surface-rail-hover:#F3F3F3;   /* rail item hover (neutral, visibly deeper than the near-white rail) */
-  --surface-rail-active:#ECECEC;  /* rail selected pill — 比 hover 再深一階，已選態一眼可辨（2026-06-12） */
+  /* ─────────────────────────────────────────────────────────────
+     Pillar 2 Role — 命名對齊 shadcn/ui（2026-06-25, issue #11 jaskang）
+     shadcn 通用 role 為主層；creator 多出來的當 extension（標 [ext]），
+     不蓋掉 shadcn 名。對齊語意、不對齊數值——品牌橘照樣是 --primary。
+     舊名→新名：surface→card · surface-muted→muted · foreground-subtle→
+     muted-foreground · surface-rail→sidebar · surface-rail-hover→accent ·
+     status-error→destructive。
+     ───────────────────────────────────────────────────────────── */
 
-  /* Foreground */
+  /* Base surfaces / text */
+  --background:        #FFFFFF;   /* canvas / body */
   --foreground:        #000000;
-  --foreground-muted:  rgba(0, 0, 0, 0.7);
-  --foreground-subtle: #737373;
-  --foreground-on-inverse: #FFFFFF;
-  --foreground-on-inverse-muted: rgba(255, 255, 255, 0.6);
+  --card:              #FFFFFF;   /* cards / panels（原 --surface）*/
+  --card-foreground:   #000000;
+  --popover:           #FFFFFF;   /* popovers / nav 浮層 */
+  --popover-foreground:#000000;
+  --muted:             #FAFAFA;   /* 次級底（原 --surface-muted）*/
+  --muted-foreground:  #737373;   /* 輔助文字（原 --foreground-subtle）*/
+  --secondary:         #F4F4F4;   /* 安靜次要鈕底（新增）*/
+  --secondary-foreground:#000000;
+  --accent:            #F3F3F3;   /* hover / 選單項底（原 --surface-rail-hover）*/
+  --accent-foreground: #000000;
 
   /* Primary action (highlighter orange) */
   --primary:            #ffa33f;
-  --primary-hover:      #ffb866;
-  --primary-foreground: #FFFFFF;   /* 白天白字（使用者指定 2026-06-22；黑夜版維持黑字見下方 dark override）*/
+  --primary-foreground: #FFFFFF;   /* 白天白字（使用者指定 2026-06-22；夜間黑字見 dark override）*/
+  --primary-hover:      #ffb866;   /* [ext] shadcn 用 /90，我們保留具名 hover */
+
+  /* Destructive（原 --status-error）*/
+  --destructive:        #DA314A;
+  --destructive-foreground: #FFFFFF;
 
   /* Edges */
-  --border:            #E5E5E5;   /* cooler hairline (was #D1D1C7 until 2026-05-25) */
-  --border-soft:       #EFEFEF;   /* lighter list/item dividers */
-  --border-inverse:    rgba(255, 255, 255, 0.1);   /* hairline on always-dark / inverse surfaces (footer slab) — same in both themes */
-  --ring:              var(--primary);   /* orange focus ring (2026-06-02, by request — note: ~1.3:1 on light canvas, below WCAG AA 3:1) */
+  --border:            #E5E5E5;   /* cooler hairline */
+  --input:             #E5E5E5;   /* 控件邊（= border）*/
+  --ring:              var(--primary);   /* 品牌橘 focus ring；亮暗同色（2026-06-25）。a11y：白底約 1.3:1 低於 WCAG，依「無障礙僅建議」保留 */
 
-  /* Status accents */
+  /* Charts — 品牌＋status 色序 */
+  --chart-1:           #ffa33f;   /* 橘 */
+  --chart-2:           #266DF0;   /* 藍 */
+  --chart-3:           #22C55E;   /* 綠 */
+  --chart-4:           #F8D749;   /* 黃 */
+  --chart-5:           #8B5CF6;   /* 紫 */
+
+  /* Sidebar（原 --surface-rail 一家）*/
+  --sidebar:                   #FBFBFB;
+  --sidebar-foreground:        #000000;
+  --sidebar-primary:           #ffa33f;
+  --sidebar-primary-foreground:#FFFFFF;
+  --sidebar-accent:            #F3F3F3;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border:            #E5E5E5;
+  --sidebar-ring:              var(--primary);
+  --sidebar-active:            #ECECEC;   /* [ext] 已選 pill（原 --surface-rail-active）*/
+
+  /* ── creator extensions（shadcn 沒有；保留）── */
+  --surface-shell:     #F5F5F5;   /* [ext] app shell 外層 canvas */
+  --surface-page:      #FFFFFF;   /* [ext] shell 內的 route page */
+  --surface-inverse:   #000000;   /* [ext] footer / hi-contrast slab */
+  --foreground-muted:  #4D4D4D;   /* [ext] 中階文字（原 rgba(0,0,0,.7) 實色化 2026-06-25）*/
+  --foreground-on-inverse:       #FFFFFF;   /* [ext] footer 文字 */
+  --foreground-on-inverse-muted: rgba(255, 255, 255, 0.6);  /* [ext] footer 次文字（恆在黑 slab 上）*/
+  --border-soft:       #EFEFEF;   /* [ext] 更淡的分隔線 */
+  --border-inverse:    rgba(255, 255, 255, 0.1);   /* [ext] 黑 slab 上的 hairline（兩主題同值）*/
+  --gradient-brand:    linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%);   /* [ext] 進度條品牌漸層 */
+
+  /* Status accents [ext]（shadcn 只有 destructive；其餘為 creator extension）*/
   --status-success:    #22C55E;
-  --status-error:      #DA314A;
   --status-info:       #266DF0;
   --status-warning:    #F8D749;
   --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
@@ -59,6 +95,26 @@
   --radius-shell:      28px;      /* route-page corner inside sidebar app shell */
   --radius-pill:       9999px;
   --space-shell-gutter:16px;      /* desktop gap above the route page */
+
+  /* Control sizes — 表單控件＋按鈕共用高度級（全部 4 的倍數，2026-06-25 issue #11）
+     同尺寸的 input 與 button 等高；驅動 button / input / select / segmented…。 */
+  --control-h-xs:      28px;
+  --control-h-sm:      36px;
+  --control-h-md:      44px;      /* default */
+  --control-h-lg:      52px;
+  --control-h-xl:      60px;
+
+  /* Spacing scale — 4px 網格（元件 padding / gap / 間距的單一刻度，2026-06-25）*/
+  --space-1:           4px;
+  --space-2:           8px;
+  --space-3:           12px;
+  --space-4:           16px;
+  --space-5:           20px;
+  --space-6:           24px;
+  --space-8:           32px;
+  --space-10:          40px;
+  --space-12:          48px;
+  --space-16:          64px;
 
   /* Shadow tokens */
   --shadow-micro:
@@ -81,11 +137,11 @@
     0 0 0 1px rgba(23, 23, 23, 0.10);
 
   --shadow-popover:
-    0 1px 1.6px rgba(0, 0, 0, 0.05),
-    0 0 0.83px rgba(0, 0, 0, 0.2);
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 0 1px rgba(0, 0, 0, 0.2);
 
   --shadow-hairline:
-    0 0 0.833px rgba(0, 0, 0, 0.2);
+    0 0 1px rgba(0, 0, 0, 0.2);
 
   /* Seam shadow — 向右柔投影，由「上層的主面板」蓋向相鄰的下層面板（E-Shop 主面板疊在商店預覽之上），
      順著主面板圓角填滿接縫凹口。⚠ 不可掛在捲動容器（其圓角被瀏覽器畫成方角→方角陰影）；
@@ -103,68 +159,110 @@
   --overlay-tint:      rgba(0, 0, 0, 0.45);   /* darkening mixed into modal backdrops (see .payout-modal) */
 
   /* Typography */
-  --font-display: 'Geist Variable', 'Geist', system-ui, sans-serif;
+
+  /* Font families — base (Latin-first) declaration.
+     四個家族：Geist（display＋UI）· Inter（body）· Geist Mono（mono）。
+     ⚠ 三層 cascade，別只看這裡：
+       1) 這裡＝拉丁優先的 base；
+       2) ds-components/fonts.css 重新宣告 --font-display/ui/body，於每個 stack 末端
+          補上自架的 'Noto Sans TC'（CJK per-glyph fallback），並擁有所有 @font-face；
+       3) shared.css 的 :lang(zh-Hant) 把 'Noto Sans TC' 提到第一位（繁中行高/基線）。
+     有效字體堆＝本宣告 + Noto fallback。詳見 ds-components/fonts.css。 */
+  --font-display: 'Geist', system-ui, sans-serif;
   --font-ui:      'Geist', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* 中文那一套 — 自架 Noto Sans TC，獨立成 token。接在每個拉丁 stack 末端做 CJK
+     per-glyph fallback（見 fonts.css）；繁中模式由 shared.css :lang(zh-Hant) 提到第一位。 */
+  --font-cjk:     'Noto Sans TC';
+
+  /* ── Font-size scale — 整數級，全站唯一來源（2026-06-23）──
+     所有 font-size 一律 var(--fs-N)；半 px 已收斂（.5 無條件捨去、<11 併 11）。
+     級距：11 12 13 14 15 16 18 22 24 28 32 40 44 56 64。 */
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-22: 22px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-44: 44px;
+  --fs-56: 56px;
+  --fs-64: 64px;
+
+  /* ── Font-weight scale — 全站唯一來源（2026-06-23）──
+     所有 font-weight 一律 var(--fw-*)。實際只用這 4 階（舊有 650 已併入 semibold）。
+     字體均為 variable（軸 100–900），故任何階都能精準對應。 */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
 
   /* Typography foundation scale */
   --type-display-64-family: var(--font-display);
-  --type-display-64-size: 64px;
-  --type-display-64-weight: 400;
+  --type-display-64-size: var(--fs-64);
+  --type-display-64-weight: var(--fw-regular);
   --type-display-64-line-height: 1;
   --type-display-64-tracking: -1.28px;
 
   --type-display-44-family: var(--font-display);
-  --type-display-44-size: 44px;
-  --type-display-44-weight: 500;
+  --type-display-44-size: var(--fs-44);
+  --type-display-44-weight: var(--fw-medium);
   --type-display-44-line-height: 1.05;
   --type-display-44-tracking: -1px;
 
   --type-title-40-family: var(--font-ui);
-  --type-title-40-size: 40px;
-  --type-title-40-weight: 500;
+  --type-title-40-size: var(--fs-40);
+  --type-title-40-weight: var(--fw-medium);
   --type-title-40-line-height: 1.05;
   --type-title-40-tracking: -0.8px;
 
   --type-title-32-family: var(--font-ui);
-  --type-title-32-size: 32px;
-  --type-title-32-weight: 500;
+  --type-title-32-size: var(--fs-32);
+  --type-title-32-weight: var(--fw-medium);
   --type-title-32-line-height: 1.1;
   --type-title-32-tracking: -0.6px;
 
   --type-title-24-family: var(--font-ui);
-  --type-title-24-size: 24px;
-  --type-title-24-weight: 500;
+  --type-title-24-size: var(--fs-24);
+  --type-title-24-weight: var(--fw-medium);
   --type-title-24-line-height: 1.2;
   --type-title-24-tracking: -0.48px;
 
   --type-label-15-family: var(--font-ui);
-  --type-label-15-size: 15px;
-  --type-label-15-weight: 500;
+  --type-label-15-size: var(--fs-15);
+  --type-label-15-weight: var(--fw-medium);
   --type-label-15-line-height: 1;
   --type-label-15-tracking: -0.3px;
 
   --type-label-14-family: var(--font-ui);
-  --type-label-14-size: 14.5px;
-  --type-label-14-weight: 700;
+  --type-label-14-size: var(--fs-14);
+  --type-label-14-weight: var(--fw-bold);
   --type-label-14-line-height: 1.25;
   --type-label-14-tracking: 0;
 
   --type-body-16-family: var(--font-body);
-  --type-body-16-size: 16px;
-  --type-body-16-weight: 400;
+  --type-body-16-size: var(--fs-16);
+  --type-body-16-weight: var(--fw-regular);
   --type-body-16-line-height: 1.6;
   --type-body-16-tracking: 0;
 
   --type-body-14-family: var(--font-body);
-  --type-body-14-size: 14px;
-  --type-body-14-weight: 400;
+  --type-body-14-size: var(--fs-14);
+  --type-body-14-weight: var(--fw-regular);
   --type-body-14-line-height: 1.5;
   --type-body-14-tracking: 0;
 
   --type-caption-12-family: var(--font-ui);
-  --type-caption-12-size: 12px;
-  --type-caption-12-weight: 500;
+  --type-caption-12-size: var(--fs-12);
+  --type-caption-12-weight: var(--fw-medium);
   --type-caption-12-line-height: 1.3;
   --type-caption-12-tracking: 0.05em;
 
@@ -239,37 +337,67 @@
    ============================================================ */
 
 [data-theme="dark"] {
-  /* Surfaces — translucent overlay scale */
-  --background:        #171717;                       /* body bg (ztor app dark) */
-  --surface:           rgba(253, 253, 253, 0.10);     /* standard card */
-  --surface-muted:     rgba(253, 253, 253, 0.06);     /* low elevation */
-  --surface-inverse:   #000000;                       /* footer slab — 2026-06-12 反轉後 content 已是 #0A0A0A，footer 改純黑才仍比內文深、讀為分隔塊 */
-  --surface-shell:     #171717;                       /* app shell（rail＋canvas）— 2026-06-12 反轉：shell 用較淺的 #171717，content 才是最深 */
-  --surface-page:      #0A0A0A;                       /* route page = 最深底色（content 比 shell 深，視覺上內凹）；不透明避免半透明頁面 chrome */
-  --surface-rail:      #171717;                       /* rail 與 shell canvas 同色（#171717），靠 hover/active 疊色區分項目 */
-  --surface-rail-hover:rgba(253, 253, 253, 0.06);     /* rail item hover (dark) */
-  --surface-rail-active:rgba(253, 253, 253, 0.12);    /* rail selected pill (dark — 比 hover 深一階) */
+  /* ── Mode override — 暗色實色面（2026-06-25 issue #11：主要面與卡片不用半透明）──
+     值由原半透明疊層在 #191A1A（content）/ #2B2B2C（shell）上算出，外觀近乎不變、改為實色。
+     半透明只剩真正浮在內容上的 overlay（見檔尾 .overlay-surface）。 */
 
-  /* Foreground */
+  /* Base surfaces / text */
+  --background:        #191A1A;
   --foreground:        #FDFDFD;
-  --foreground-muted:  rgba(253, 253, 253, 0.7);
-  --foreground-subtle: rgba(253, 253, 253, 0.4);
-  --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
-  --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
+  --card:              #303131;   /* 原 surface rgba(.10) over #191A1A */
+  --card-foreground:   #FDFDFD;
+  --popover:           #303131;
+  --popover-foreground:#FDFDFD;
+  --muted:             #272828;   /* 原 surface-muted rgba(.06) */
+  --muted-foreground:  #757575;   /* 原 foreground-subtle rgba(.4) */
+  --secondary:         #2A2A2B;
+  --secondary-foreground:#FDFDFD;
+  --accent:            #383839;   /* hover / 選單項底（原 rail-hover rgba(.06) over shell）*/
+  --accent-foreground: #FDFDFD;
 
-  /* Primary action — orange stays in dark mode for visual pairing */
+  /* Primary — orange stays in dark */
   --primary:            #ffa33f;
+  --primary-foreground: #171717;   /* 夜間黑字（使用者指定 2026-06-22）*/
   --primary-hover:      #ffb866;
-  --primary-foreground: #171717;   /* 黑夜黑字（使用者指定 2026-06-22）*/
+
+  /* Destructive */
+  --destructive:        #E7000B;
+  --destructive-foreground: #FFFFFF;
 
   /* Edges */
-  --border:            rgba(253, 253, 253, 0.12);
-  --border-soft:       #2A2A2A;
-  --ring:              #FDFDFD;
+  --border:            #3A3A3C;
+  --input:             #3A3A3C;
+  /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
 
-  /* Status accents — pure-RGB variants for dark mode */
+  /* Charts — dark variants */
+  --chart-1:           #ffa33f;
+  --chart-2:           #5896F3;
+  --chart-3:           #00A63E;
+  --chart-4:           #F3CF58;
+  --chart-5:           #A78BFA;
+
+  /* Sidebar */
+  --sidebar:                   #2B2B2C;
+  --sidebar-foreground:        #FDFDFD;
+  --sidebar-primary:           #ffa33f;
+  --sidebar-primary-foreground:#171717;
+  --sidebar-accent:            #383839;   /* rail hover over #2B2B2C */
+  --sidebar-accent-foreground: #FDFDFD;
+  --sidebar-border:            #3A3A3C;
+  --sidebar-ring:              var(--primary);
+  --sidebar-active:            #444445;   /* [ext] 已選 pill（原 rail-active rgba(.12)）*/
+
+  /* creator extensions */
+  --surface-shell:     #2B2B2C;   /* [ext] app shell（rail＋canvas）*/
+  --surface-page:      #191A1A;   /* [ext] route page = content 底 */
+  --surface-inverse:   #000000;   /* [ext] footer slab */
+  --foreground-muted:  #B9B9B9;   /* [ext] 中階文字（原 rgba(.7) 實色化）*/
+  --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
+  --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
+  --border-soft:       #2A2A2A;
+
+  /* Status accents [ext] — pure-RGB dark variants */
   --status-success:    #00A63E;
-  --status-error:      #E7000B;
   --status-info:       #5896F3;
   --status-warning:    #F3CF58;
   --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
@@ -293,11 +421,11 @@
     0 0 0 1px rgba(253, 253, 253, 0.10);
 
   --shadow-popover:
-    0 1px 1.6px rgba(0, 0, 0, 0.4),
-    0 0 0.83px rgba(253, 253, 253, 0.2);
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 0 1px rgba(253, 253, 253, 0.2);
 
   --shadow-hairline:
-    0 0 0.833px rgba(253, 253, 253, 0.2);
+    0 0 1px rgba(253, 253, 253, 0.2);
 
   /* Seam shadow（dark）— 主面板＝最深 #0A0A0A，用較強黑向右蓋在預覽上、壓出層疊深度 */
   --shadow-seam:
@@ -318,7 +446,7 @@ html, body {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--surface);
+  background: var(--card);
   color: var(--foreground);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
@@ -326,7 +454,7 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: var(--fs-16);
   line-height: 1;
   padding: 0;
   font-family: var(--font-ui);
@@ -343,10 +471,9 @@ html, body {
 /* ============================================================
    Foundation · Frosted overlay surfaces（全域、一處治理）
    ------------------------------------------------------------
-   暗色模式下 --surface 是半透明（rgba(253,253,253,0.10)），任何「浮在內容上」
-   的面板若用 --surface 當底就會透出後方內容。解法是讓這類浮層一律 backdrop-blur
-   背景（毛玻璃），而非逐元件各自硬寫。新浮層直接加 .overlay-surface；既有浮層
-   在下方集中列入，改一次全部生效。亮色模式 --surface 不透明，blur 自動無作用。
+   2026-06-25 起主要面（card / popover / muted）已改實色，浮層不再會透出後方內容。
+   此 backdrop-blur 保留給「真正浮在內容上」的浮層作毛玻璃質感（modal / dropdown /
+   popover）；新浮層加 .overlay-surface，既有浮層集中列下，改一次全部生效。
    （此前只有 header dropdown 自己解過，現統一收斂到 --overlay-blur。）
    ============================================================ */
 .overlay-surface,

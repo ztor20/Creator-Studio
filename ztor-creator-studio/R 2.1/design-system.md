@@ -15,6 +15,14 @@
 >
 > Dark-mode `primary` also moves to `#ffa33f` to keep the orange voice paired across modes. Every other ztor token (surface, foreground, status accents, radii, shadows, motion, typography) is preserved as-is. All `ds-components/*.css` are 100% token-driven, so the visual flip happens entirely in `ds-components/_tokens.css`.
 
+> **2026-06-25 · 命名對齊 shadcn + 暗色實色 + 控件尺寸 + focus（issue #11 — ztor 工程端 jaskang 反饋）**
+> - **Token 改名 → shadcn role**：`--surface→--card` · `--surface-muted→--muted` · `--foreground-subtle→--muted-foreground` · `--surface-rail→--sidebar` · `--surface-rail-hover→--accent` · `--status-error→--destructive`；補齊 shadcn 全集（`card-foreground` / `popover(-foreground)` / `secondary(-foreground)` / `accent-foreground` / `destructive-foreground` / `input` / `chart-1..5` / `sidebar-*` 整組）。creator 獨有的（`surface-shell` / `surface-page` / `primary-hover` / `status-{success,info,warning,accent}` / `gradient-brand` / `sidebar-active`）保留為 `[ext]`。**對齊語意、值不變**，品牌橘仍是 `--primary`。
+> - **暗色實色面**：`--background` / `--foreground` 與 card / muted / sidebar / border 改實色 hex（值由原 `rgba` 疊層在 `#191A1A` / `#2B2B2C` 上算出，外觀不變）；半透明只剩 `backdrop-blur` overlay。`--ring` 暗色不再覆寫成白、改繼承品牌橘（亮暗同色）。
+> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），button / input / field 共用、同尺寸等高；新增 4px `--space-1..16`。default 維持 44。
+> - **focus 統一**：全控件＋亮暗一律 `outline: 2px solid var(--ring); outline-offset: 2px`（清單列 `-2px` 內嵌）。
+> - **小數收斂**：裝飾邊框 1.5 / 2.5px → 整數、陰影次像素 → 整數。
+> - **無障礙＝最低優先、只建議**：依使用者裁示，橘 ring 低對比等 a11y 議題僅記風險、不阻擋交付、不改品牌決策。
+
 ---
 
 ## Identity
@@ -23,7 +31,7 @@
 
 **Category** — Creator-economy operations dashboard. A single studio for independent creators to manage IP licensing, projects, events, products, fans (CRM), and earnings — with finance, royalties, splits, and verification states kept legible. Theme: light / dark / system.
 
-**Locales** — `en (primary) · zh-Hant (secondary)`, toggled in the topbar and persisted. CJK fallback font `Taipei Sans TC Beta` (self-hosted, 3 weights) is appended to every `--font-*` stack so Traditional Chinese never falls back to a system serif.
+**Locales** — `en (primary) · zh-Hant (secondary)`, toggled in the topbar and persisted. CJK fallback font `Noto Sans TC` (self-hosted, subsetted woff2) is appended to every `--font-*` stack so Traditional Chinese never falls back to a system serif.
 
 **Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
@@ -39,7 +47,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 ### Do
 
-- Use `Geist Variable` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
+- Use `Geist` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
 - Reserve `--primary` (`#ffa33f`) for one role: the primary CTA. The hero banner, sticky-note callouts, and the brand mark may also touch orange — never as a fill for nav chrome, KPI highlights, or status pills.
 - Apply `--radius` (6 px) to buttons, `--radius-md` (7 px) to cards / surfaces, `--radius-lg` (10 px) to dropdowns and mega menus.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
@@ -50,12 +58,12 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 ### Don't
 
-- Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — use `--surface-muted` instead.
+- Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — use `--muted` instead.
 - Do not stack `box-shadow` heavier than `--shadow-card`. Only the hero carries deep shadow; cards stay flat.
-- Do not introduce fonts outside the four-font stack (`Geist Variable`, `Geist`, `Geist Mono`, `Taipei Sans TC Beta`). The CJK fallback is non-negotiable.
-- Do not give data-list icons semantic color. List icons stay monochrome (`--surface-muted` bg + `--foreground-muted` color); semantic color lives in the **amount** text, not the icon chip.
+- Do not introduce fonts outside the four-font stack (`Geist`, `Geist`, `Geist Mono`, `Inter`, `Noto Sans TC`). The CJK fallback is non-negotiable.
+- Do not give data-list icons semantic color. List icons stay monochrome (`--muted` bg + `--foreground-muted` color); semantic color lives in the **amount** text, not the icon chip.
 - Do not use `--status-warning` (`#F8D749`) as a UI fill — it reads too close to `--primary`. Reserve it for status dots inside dashboards only.
-- Do not place dropdowns over the full-bleed hero with `var(--surface)` background — in dark mode `--surface` is translucent. Use `var(--background)` (always opaque) for any panel that overlaps imagery.
+- Do not place dropdowns over the full-bleed hero with `var(--card)` background — in dark mode `--card` is translucent. Use `var(--background)` (always opaque) for any panel that overlaps imagery.
 - Do not hardcode color hex values in page CSS. All visual decisions route through `_tokens.css`; new color needs go to `:root` overrides, not inline rules.
 - Do not break button copy across lines — `.btn` base sets `white-space: nowrap`; long labels need a shorter copy decision, not a wrapped button.
 
@@ -91,7 +99,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 | Property | Value |
 |---|---|
-| Display font | `Geist Variable` (H1) |
+| Display font | `Geist` (H1) |
 | UI font | `Geist` (H2-H4, buttons, nav) |
 | Body font | `Inter` (paragraphs only) |
 | Primary radius | `6px` (CTAs), `7px` (cards / outline buttons) |
@@ -100,7 +108,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Card shadow | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` (rim + drop) |
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
-| H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist Variable) |
+| H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
 | Button label | `15px / 500 / tracking -0.3px` (Geist) |
 | Icon system | Lucide (via `icons.js` registry) |
 | Theme mode | both — light / dark / system |
@@ -132,11 +140,11 @@ System metadata. No design values — just provenance.
 
 Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-gray surfaces and a single high-saturation brand color** — highlighter orange `#ffa33f` plays the role of primary CTA and nothing else does. Status accents stay reserved for dashboard data dots.
 
-> **Surface-layer contrast（全域通則，所有元件適用）** — 這些 surface 是一層階梯（白 `--surface`/`--background` → 灰 `--surface-muted`/`--surface-shell`/`--surface-rail`）。任何元件靠「填色／邊框／陰影跟它所在那層的對比」被看見，**填色和背景同色就會消失**。所以：淺灰填（soft 按鈕、segmented 軌道、chip、hover 態）只在更亮的底成立；白填要靠 1px 邊框在白底成形；要跨層安全就用實線 border，別用「填色當邊」或「純陰影當邊」。做／改任何有填色的元件時，先確定它坐在哪幾層、並在**最深的那層**目視驗證。（按鈕的白/灰底實例見 §4.2 Button。）
+> **Surface-layer contrast（全域通則，所有元件適用）** — 這些 surface 是一層階梯（白 `--card`/`--background` → 灰 `--muted`/`--surface-shell`/`--sidebar`）。任何元件靠「填色／邊框／陰影跟它所在那層的對比」被看見，**填色和背景同色就會消失**。所以：淺灰填（soft 按鈕、segmented 軌道、chip、hover 態）只在更亮的底成立；白填要靠 1px 邊框在白底成形；要跨層安全就用實線 border，別用「填色當邊」或「純陰影當邊」。做／改任何有填色的元件時，先確定它坐在哪幾層、並在**最深的那層**目視驗證。（按鈕的白/灰底實例見 §4.2 Button。）
 
 | Role | Hex | Where it lives |
 |---|---|---|
-| `background-canvas` | `#FFFFFF` | Body / page — clean white (2026-06-09). Cards (`--surface` #FFFFFF) now separate by shadow, not by canvas tint |
+| `background-canvas` | `#FFFFFF` | Body / page — clean white (2026-06-09). Cards (`--card` #FFFFFF) now separate by shadow, not by canvas tint |
 | `surface-shell` | `#F5F5F5` | Subtle Sidebar-mode outer canvas behind navigation and the route page |
 | `surface-page` | `#FFFFFF` | One continuous opaque route page containing hero, content, and footer |
 | `surface-rail` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
@@ -168,24 +176,24 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 ### 1.2 Typography
 
 ```css
---font-display: 'Geist Variable', 'Geist', system-ui, sans-serif;
+--font-display: 'Geist', 'Geist', system-ui, sans-serif;
 --font-ui:      'Geist', system-ui, sans-serif;
 --font-body:    'Inter', system-ui, sans-serif;
 ```
 
-- **Geist Variable** — used on `<h1>` only (variable axis for hero display)
+- **Geist** — used on `<h1>` only (variable axis for hero display)
 - **Geist** — H2 / H3 / H4, buttons, nav, eyebrow text
 - **Inter** — paragraph body copy (`<p>`), long-form descriptions, and alert text
 
 | Scale token | Family | Size | Weight | Line height | Tracking |
 |---|---|---|---|---|---|
-| `display-64` | Geist Variable | `64px` | 400 | `64px` (1.0) | `-1.28px` |
-| `display-44` | Geist Variable | `44px` | 500 | `46.2px` (1.05) | `-1px` |
+| `display-64` | Geist | `64px` | 400 | `64px` (1.0) | `-1.28px` |
+| `display-44` | Geist | `44px` | 500 | `46.2px` (1.05) | `-1px` |
 | `title-40` | Geist | `40px` | 500 | `42px` (1.05) | `-0.8px` |
 | `title-32` | Geist | `32px` | 500 | `35.2px` (1.1) | `-0.6px` |
 | `title-24` | Geist | `24px` | 500 | `28.8px` (1.2) | `-0.48px` |
 | `label-15` | Geist | `15px` | 500 | `15px` (1.0) | `-0.3px` |
-| `label-14` | Geist | `14.5px` | 700 | `18.125px` (1.25) | normal |
+| `label-14` | Geist | `14px` | 700 | `17.5px` (1.25) | normal |
 | `body-16` | Inter | `16px` | 400 | `25.6px` (1.6) | normal |
 | `body-14` | Inter | `14px` | 400 | `21px` (1.5) | normal |
 | `caption-12` | Geist | `12px` | 500 | `15.6px` (1.3) | `0.05em` |
@@ -196,6 +204,16 @@ example `--type-title-40-size`, `--type-title-40-weight`,
 names such as page title, section label, and button label are role aliases
 defined in Pillar 2 or component rules, not the primary naming model for
 Foundation.
+
+**Font-size scale (`--fs-*`)** — 2026-06-23 起全站 `font-size` 一律引用整數級 primitive token `--fs-11 … --fs-64`，共 15 級：
+
+`11 · 12 · 13 · 14 · 15 · 16 · 18 · 22 · 24 · 28 · 32 · 40 · 44 · 56 · 64`（px）
+
+舊有的零散半 px（12.5 / 13.5 / 11.5 …）已收斂為整數：`.5` 無條件捨去（12.5→12、13.5→13、14.5→14）、小於 11 的併入 11。上方 Foundation 的 `--type-*-size` 都改為指向這層，`--fs-*` 是字級的唯一來源。
+
+**Weight scale (`--fw-*`)** — 2026-06-23 起全站 `font-weight` 一律引用 4 階 primitive：`--fw-regular 400 · --fw-medium 500 · --fw-semibold 600 · --fw-bold 700`（舊有 1 個 650 已併入 semibold）。`--type-*-weight` 也改為指向這層。
+
+**Font families (`--font-*`)** — 四個家族：`--font-display` Geist（H1/display）· `--font-ui` Geist（H2–H4/UI）· `--font-body` Inter（內文）· `--font-mono` Geist Mono。每個 stack 末端接自架 `Noto Sans TC`（CJK fallback；繁中模式由 `:lang(zh-Hant)` 提到第一位）。base 宣告在 `_tokens.css`、Noto fallback 與 `@font-face` 在 `ds-components/fonts.css`。
 
 Tight negative tracking (`-1.28px` on H1, `-0.8px` on H2) is the Geist signature.
 
@@ -239,7 +257,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 **Edge & overlay tokens (2026-06-15)** — `--border-inverse` (`rgba(255,255,255,0.1)`, same in both themes) is the hairline on always-dark / inverse surfaces (footer slab). `--overlay-tint` (`rgba(0,0,0,0.45)`) is the darkening mixed into modal backdrops (`.payout-modal`, paired with `--overlay-blur`).
 
-**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags 3 remaining bare colors, all in `selection-card.css:83–85`: the theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`). These are **irreducible** — each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#171717`) so the preview shows what each mode looks like even when you're viewing a different mode; they can't reference theme-reactive tokens. All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
+**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags 3 remaining bare colors, all in `selection-card.css:83–85`: the theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`). These are **irreducible** — each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#191A1A`) so the preview shows what each mode looks like even when you're viewing a different mode; they can't reference theme-reactive tokens. All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
 
 ### 1.6 Motion
 
@@ -279,13 +297,13 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | Role | Token | Light value | References Pillar 1 |
 |---|---|---|---|
 | **Canvas** background | `--background` | `#FFFFFF` | clean white |
-| **Surface** (cards, popovers, panels) | `--surface` | `#FFFFFF` | pure white |
-| **Rail** (sidebar display mode) | `--surface-rail` | `#FBFBFB` | near-white neutral |
-| **Surface — muted** (alt cards, hover) | `--surface-muted` | `#FAFAFA` | softer than canvas |
+| **Surface** (cards, popovers, panels) | `--card` | `#FFFFFF` | pure white |
+| **Rail** (sidebar display mode) | `--sidebar` | `#FBFBFB` | near-white neutral |
+| **Surface — muted** (alt cards, hover) | `--muted` | `#FAFAFA` | softer than canvas |
 | **Surface — inverse** (footer slab) | `--surface-inverse` | `#000000` | pure black |
 | **Foreground — default** (body / titles) | `--foreground` | `#000000` | |
 | **Foreground — muted** (descriptions) | `--foreground-muted` | `rgba(0,0,0,0.7)` | |
-| **Foreground — subtle** (meta, eyebrow) | `--foreground-subtle` | `#737373` | |
+| **Foreground — subtle** (meta, eyebrow) | `--muted-foreground` | `#737373` | |
 | **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | |
 | **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
 | **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 |
@@ -293,11 +311,11 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
 | **Status — success** | `--status-success` | `#22C55E` | green.500 |
-| **Status — error** | `--status-error` | `#DA314A` | red.500 |
+| **Status — error** | `--destructive` | `#DA314A` | red.500 |
 | **Status — info** | `--status-info` | `#266DF0` | blue.500 |
 | **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots |
 
-**Reserved**: `--primary` (orange) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--surface-muted` instead.
+**Reserved**: `--primary` (orange) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--muted` instead.
 
 ### 2.2 Spacing Roles
 
@@ -311,10 +329,10 @@ Built directly off Pillar 1's spacing scale (no custom Role names). Project page
 
 | Role | Token | Stack | Used for |
 |---|---|---|---|
-| Display | `--font-display` | `'Geist Variable', 'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
+| Display | `--font-display` | `'Geist', 'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
 | UI | `--font-ui` | `'Geist', system-ui, sans-serif` | Buttons, nav, labels, badges, all chrome text |
 | Body | `--font-body` | `'Inter', system-ui, sans-serif` | Long-form prose, alert descriptions |
-| CJK fallback | (inside all stacks) | `'Taipei Sans TC Beta'` | 繁中 mode (i18n.js) — bundled woff2 in `fonts/` |
+| CJK fallback | (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
 
 Concrete typography usage is assigned as role aliases that point back to the
 neutral §1.2 type scale:
@@ -355,30 +373,30 @@ No higher elevation than Card. Hero is the only deeply-shadowed surface and it d
 
 | Role | Light | Dark | Notes |
 |---|---|---|---|
-| `--background` | `#FFFFFF` | `#171717` | white canvas (light) · near-black body (dark) |
-| `--surface` | `#FFFFFF` | `rgba(253,253,253,0.10)` | **translucent overlay**, not opaque grey |
-| `--surface-muted` | `#FAFAFA` | `rgba(253,253,253,0.06)` | lower elevation overlay |
-| `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 改純黑（2026-06-12 反轉後 content 已是 `#0A0A0A`，footer 要更深才讀為分隔） |
-| `--surface-page` | `#FFFFFF` | `#0A0A0A` | route page。**Dark 反轉（2026-06-12）**：content 是最深底色，比 app shell 更深、視覺上內凹 |
-| `--surface-shell` | `#F5F5F5` | `#171717` | sidebar-mode app shell（rail＋canvas）。Dark 用較淺的 `#171717`，襯托更深的 content |
-| `--surface-rail` | `#FBFBFB` | `#171717` | sidebar rail 與 shell canvas 同色（flush）；項目區分靠 hover/active 疊色 |
+| `--background` | `#FFFFFF` | `#191A1A` | white canvas (light) · content-level body bg (dark；與 `--surface-page` 同階，2026-06-22) |
+| `--card` | `#FFFFFF` | `rgba(253,253,253,0.10)` | **translucent overlay**, not opaque grey |
+| `--muted` | `#FAFAFA` | `rgba(253,253,253,0.06)` | lower elevation overlay |
+| `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 改純黑（content 為 `#191A1A`，footer 要更深才讀為分隔） |
+| `--surface-page` | `#FFFFFF` | `#191A1A` | route page。**Dark 反轉**：content 是最深底色，比 app shell 更深、視覺上內凹（2026-06-22 依使用者指定 `#191A1A`） |
+| `--surface-shell` | `#F5F5F5` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定） |
+| `--sidebar` | `#FBFBFB` | `#2B2B2C` | sidebar rail 與 shell canvas 同色（flush）；項目區分靠 hover/active 疊色 |
 | `--foreground` | `#000000` | `#FDFDFD` | |
 | `--foreground-muted` | `rgba(0,0,0,0.7)` | `rgba(253,253,253,0.7)` | |
-| `--foreground-subtle` | `#737373` | `rgba(253,253,253,0.4)` | |
+| `--muted-foreground` | `#737373` | `rgba(253,253,253,0.4)` | |
 | `--primary` | `#ffa33f` | `#ffa33f` | **orange stays** — paired across modes for brand consistency |
 | `--border` | `#E5E5E5` | `rgba(253,253,253,0.12)` | inverted hairline |
 | `--ring` | `#ffa33f` | `#FDFDFD` | light: orange focus ring (by request); dark: white ring |
 | `--status-success` | `#22C55E` | `#00A63E` | pure-RGB green for dark |
-| `--status-error` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
+| `--destructive` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
 | `--status-warning` | `#F8D749` | `#F3CF58` | slightly cooler yellow |
 | `--shadow-card` | rim + drop on white | drop only on dark | white hairline rim inverted |
 
 ### 3.2 Translucent surface pitfall
 
-Because `--surface` is translucent in dark mode, any panel that floats **on top of content** (dropdown menus, slide-over panels, modals) bleeds the content behind it unless it frosts that background. This is governed in **one place**, not per-component: the `--overlay-blur` token (`blur(14px) saturate(140%)`) plus a centralized rule in `_tokens.css` that applies `backdrop-filter` to every floating surface together — `.dropdown__menu`, `.preview-panel__sheet`, `.payout-dialog`, and `.app-topbar__dropdown`.
+Because `--card` is translucent in dark mode, any panel that floats **on top of content** (dropdown menus, slide-over panels, modals) bleeds the content behind it unless it frosts that background. This is governed in **one place**, not per-component: the `--overlay-blur` token (`blur(14px) saturate(140%)`) plus a centralized rule in `_tokens.css` that applies `backdrop-filter` to every floating surface together — `.dropdown__menu`, `.preview-panel__sheet`, `.payout-dialog`, and `.app-topbar__dropdown`.
 
-**新增浮層** 只要加 class `.overlay-surface`（或把選擇器列進 `_tokens.css` 那條集中規則），就自動吃毛玻璃，不必各自硬寫 `backdrop-filter`。亮色模式 `--surface` 不透明，blur 自動無作用。需要完全不透明（不要毛玻璃）的浮層才改用 `var(--background)`。（2026-06-12 從「只有 `.app-topbar__dropdown` 自己解」收斂為全域治理；舊的硬寫 `blur(14px) saturate(140%)` 已改引 `--overlay-blur`。）
+**新增浮層** 只要加 class `.overlay-surface`（或把選擇器列進 `_tokens.css` 那條集中規則），就自動吃毛玻璃，不必各自硬寫 `backdrop-filter`。亮色模式 `--card` 不透明，blur 自動無作用。需要完全不透明（不要毛玻璃）的浮層才改用 `var(--background)`。（2026-06-12 從「只有 `.app-topbar__dropdown` 自己解」收斂為全域治理；舊的硬寫 `blur(14px) saturate(140%)` 已改引 `--overlay-blur`。）
 
 ### 3.3 High-contrast mode
 
@@ -407,8 +425,8 @@ Not implemented. Browser-level forced-colors will fall through to defaults; sema
 
 | Layer | Definition | R 2.1 examples |
 |---|---|---|
-| 🟢 atom | Single indivisible UI primitive — typically one HTML element | Button · Badge · Status dot · Chip · Switch · Sticky-note · Upload tile · Input · Icon · Meta cell |
-| 🟡 molecule | 2–4 atoms cooperating on one job, can't stand alone in a page | NavigationMenu · Card · KPI · Alert · Accordion · Tabs · Filter tabs · Cookie banner · Empty stub · Selection card · Page intro · Field system · Filter row · Stepper · Settings row · Rental card |
+| 🟢 atom | Single indivisible UI primitive — typically one HTML element | Button · Badge · Status dot · Chip · Switch · Sticky-note · Upload tile · Input · Icon · Meta cell · Form grid |
+| 🟡 molecule | 2–4 atoms cooperating on one job, can't stand alone in a page | NavigationMenu · Card · KPI · Alert · Accordion · Tabs · Filter tabs · Cookie banner · Empty stub · Selection card · Page intro · Field system · Form section · Radio card · Control row · Filter row · Stepper · Progress stepper · Settings row · Rental card |
 | 🟠 organism | Multiple molecules forming a complete page region | Header · Footer · Chart family · Data list · Table · Bento grid · App shell · Wizard frame · Hero slideshow · IP hero · Chart card |
 | 🟣 template | Page-skeleton composition — lives in Pillar 6 Structure, not Pillar 4 | Dashboard · Earnings 4-tab · Wizard · Settings · Empty stub |
 
@@ -493,10 +511,15 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field system | 🟡 molecule | ✓ Project | Form label / hint / control grouping in settings and wizards | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
+| Form section | 🟡 molecule | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / spacing tweaks under `.form-section` | [form-section.css](./ds-components/form-section.css) |
+| Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (radio dot + title/sub) built on Segmented; selected = card shadow + orange ring | [radio-card.css](./ds-components/radio-card.css) |
+| Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
+| Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
 | Segmented control | 🟡 molecule | ✓ Project | Compact chart view switcher and mode toggles | [chart.css](./ds-components/chart.css) |
-| Stepper | 🟡 molecule | ✓ Project | Wizard progress strip | [shared.css](./shared.css) |
-| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**四頁單一框架**（§5.2.4，create-product/-bundle/-project/-event 一致）。**Header**：`.wizard__close`(Close) 左｜`.wizard__stepper-slot` 置中（多步放 `.stepper`，單頁放 `.wizard__top-title`，永遠留位）｜`.wizard__top-actions`(工具：主題、商品另有 Preview) 右。**Footer** `.wizard__bottom`：Save for later 左｜`.wizard__bottom-actions`([Back 多步才有]＋主動作) 右。核心動作 Close／Save／主動作一律同位 | [shared.css](./shared.css) |
+| Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
+| Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用 | [progress-stepper.css](./ds-components/progress-stepper.css) |
+| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋Save&exit | [shared.css](./shared.css) |
 | Settings nav | 🟡 molecule | ✓ Project | Sticky local navigation inside Settings | [settings.css](./ds-components/settings.css) |
 | Settings row | 🟡 molecule | ✓ Project | Dense label + hint + value/control/action row | [settings.css](./ds-components/settings.css) |
 | Hero slideshow | 🟠 organism | ✓ Project | Dashboard full-bleed carousel | [shared.css](./shared.css) · [hero.js](./hero.js) |
@@ -523,14 +546,14 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
-**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13.5px (9×14 padding) / `--sm` 12.5px / `--lg` 14.5px.
+**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px.
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
 | default | — | bg `--primary`, text `--primary-foreground`, hairline `0 0 0 1px rgba(23,23,23,0.12)` |
-| hover | `:hover` | bg `--primary-hover`; `.ztor-btn` lifts `translateY(-1px)`; outline tints to `--surface-muted`; ghost gets `color-mix(--foreground 6%)` fill |
+| hover | `:hover` | bg `--primary-hover`; `.ztor-btn` lifts `translateY(-1px)`; outline tints to `--muted`; ghost gets `color-mix(--foreground 6%)` fill |
 | active | `:active` | `.ztor-btn` returns `translateY(0)` |
 | focus | `:focus-visible` | `outline: 2px solid var(--ring)`, offset 2px |
 | disabled | `:disabled` / `[aria-disabled="true"]` | `opacity: 0.5`, `pointer-events: none` |
@@ -550,7 +573,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · outline surface `--surface` / `--surface-muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · outline surface `--card` / `--muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage — 按鈕階層／什麼時候用哪個**
 
@@ -572,7 +595,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **按鈕 × 背景層（白底 vs 灰底）**
 
-原則：按鈕靠「填色或邊框跟背景的對比」被看見——**填色和背景同色就會消失**（outline 早期在白底消失即此故）。所以選變體要看它**坐在哪一層 surface 上**（surface 階梯見 Pillar 1：白 `--surface`/`--background` → 灰 `--surface-muted`/`--surface-shell`/`--surface-rail`）。
+原則：按鈕靠「填色或邊框跟背景的對比」被看見——**填色和背景同色就會消失**（outline 早期在白底消失即此故）。所以選變體要看它**坐在哪一層 surface 上**（surface 階梯見 Pillar 1：白 `--card`/`--background` → 灰 `--muted`/`--surface-shell`/`--sidebar`）。
 
 | 坐在哪 | 能用 | 別用 |
 |---|---|---|
@@ -620,13 +643,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — `.badge`: `--orange`, `--success`, `--error`, `--info`, `--warning`, `--accent` (purple), `--neutral`. `.ztor-badge` (docs): `--success`, `--error`, `--info`, `--warning`. Plus `.ztor-metric-pill` inline metric chip for hero/prose.
 
-**Sizes** — `.badge` 4×10 padding, 12.5px / 500, `--radius-md`. `.ztor-badge` 2×8 padding, 12px. `.ztor-metric-pill` 4×10 padding, 14px.
+**Sizes** — `.badge` 4×10 padding, 12px / 500, `--radius-md`. `.ztor-badge` 2×8 padding, 12px. `.ztor-metric-pill` 4×10 padding, 14px.
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | `.badge` | bg `--surface-muted`, text `--foreground-muted`, no ring, no dot |
+| default | `.badge` | bg `--muted`, text `--foreground-muted`, no ring, no dot |
 | (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange 30% · accent 16%), text = the saturated hue token |
 
 No hover/focus/disabled — display-only.
@@ -640,13 +663,13 @@ No hover/focus/disabled — display-only.
 | `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
 | `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`) |
 | `.badge--warning` | 18% warning tint; text = `color-mix(--status-warning 50%, --foreground)` (hue too light for direct text) — added 2026-06-11 |
-| `.badge--neutral` | `--surface-muted` background |
+| `.badge--neutral` | `--muted` background |
 | `.ztor-badge` (+ `--success`/`--error`/`--info`/`--warning`) | Compact docs badge with status tints |
 | `.ztor-metric-pill` / `.ztor-metric-pill__icon` | Inline metric pill + 14px glyph |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--surface-muted` + `color-mix` of `--status-success` / `--status-error` / `--status-info` / `--status-accent` / `--primary` against `--surface` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
+- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
 
 **Usage** — Surface a state or a category at a glance (payout status, transaction state, live/draft; IP type, fan tier). Avoid for clickable filters — use Chip (§4.5) — and never as a button.
 
@@ -704,7 +727,7 @@ No interactive states — purely decorative.
 
 **Token usage** (→ Pillar 2 Role)
 
-- color `--status-success` / `--status-error` / `--status-info` / `--status-warning` / `--foreground` (black variant) · fill via `currentColor` · radius `--radius-pill`
+- color `--status-success` / `--destructive` / `--status-info` / `--status-warning` / `--foreground` (black variant) · fill via `currentColor` · radius `--radius-pill`
 
 **Usage** — Use to tag/legend items in tables and lists (e.g. color-code brands in the dashboard demo). Avoid as a standalone status badge — pair with a text label.
 
@@ -741,14 +764,14 @@ No interactive states — purely decorative.
 
 **Variants** — Base `.chip`, `.chip--active` (inverted), `.chip--static` (read-only, no hover). Container `.chip-group`; row wrapper `.filter-row` + `.filter-row__actions`.
 
-**Sizes** — Single size (6 × 12px padding, 12.5px / 500).
+**Sizes** — Single size (6 × 12px padding, 12px / 500).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--surface`, text `--foreground-muted`, `1px solid --border`, `--radius-pill` |
-| hover | `:hover` | bg `--surface-muted`, text `--foreground` |
+| default | — | bg `--card`, text `--foreground-muted`, `1px solid --border`, `--radius-pill` |
+| hover | `:hover` | bg `--muted`, text `--foreground` |
 | active | `.chip--active` | bg `--foreground`, text `--background`, border `--foreground` (hover unchanged) |
 | static | `.chip--static` | `cursor: default`, hover reverts to default look |
 
@@ -766,7 +789,7 @@ No interactive states — purely decorative.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--surface` / `--surface-muted` · active bg `--foreground`, text `--background` · text `--foreground-muted` → `--foreground` · count `--foreground-subtle` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--card` / `--muted` · active bg `--foreground`, text `--background` · text `--foreground-muted` → `--foreground` · count `--muted-foreground` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage** — Use for filterable taxonomies (Earnings transaction filters, Tax-docs year filter). Avoid for read-only status — use Badge (§4.3).
 
@@ -816,7 +839,7 @@ on   ◖      ●◗   .switch--on      (orange track, knob right)
 
 | State | Selector | Change |
 |---|---|---|
-| default (off) | `.switch` | track `--surface-muted`, ring `1px --border`, knob `--surface` left:2px |
+| default (off) | `.switch` | track `--muted`, ring `1px --border`, knob `--card` left:2px |
 | checked (on) | `.switch--on` | track `--primary`, ring `rgba(23,23,23,0.12)`, knob `--primary-foreground` left:18px |
 
 No separate hover/focus styling in CSS (state toggled via the `--on` class).
@@ -830,7 +853,7 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 
 **Token usage** (→ Pillar 2 Role)
 
-- off track `--surface-muted`, ring `--border` · on track `--primary` · knob `--surface` (off) / `--primary-foreground` (on) · radius `--radius-pill` · knob motion `left 150ms ease`, track `--duration` / `--easing`
+- off track `--muted`, ring `--border` · on track `--primary` · knob `--card` (off) / `--primary-foreground` (on) · radius `--radius-pill` · knob motion `left 150ms ease`, track `--duration` / `--easing`
 
 **Usage** — Use for immediate-apply binary settings (notifications, privacy, auto-payout, product/marketplace visibility). Avoid where a Save step is required — use a checkbox/form control instead.
 
@@ -884,7 +907,7 @@ Static callout — no interactive states.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `color-mix(--primary 32%, --surface)` · text `--primary-foreground` · radius `--radius-md` · hairline `rgba(23,23,23,0.12)` · note font `--font-ui` 13px · mark font `--font-display`
+- bg `color-mix(--primary 32%, --card)` · text `--primary-foreground` · radius `--radius-md` · hairline `rgba(23,23,23,0.12)` · note font `--font-ui` 13px · mark font `--font-display`
 
 **Usage** — Use for a single high-attention editorial sentence (Earnings "Pending ≠ Available", Tax-docs region note, IP legal hint). Avoid for general notes — those go to `.card__hint` — and limit to ≤1 per page section.
 
@@ -931,14 +954,14 @@ Static callout — no interactive states.
 | Base | `.upload-tile` | 縮圖格／證書格（96px；grid 內 84px） |
 | File | `.upload-tile--file` | 檔案上傳列（數位下載檔、合照；110px） |
 
-**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）。
+**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）；`.upload-grid--2x2` 改 2 欄（搭 showcase 並排用）。`.upload-showcase`：主圖（左）＋縮圖格（右）並排兩等寬欄，附圖排 2×2 對齊 1:1 主圖高度；窄於 880px 收成主圖在上、附圖 4 格在下（create-product 展示它）。
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | 1.5px dashed `--border`, radius `--radius-md`, text `--foreground-subtle` |
-| hover | `:hover` | border → `--foreground-subtle`, bg → `--surface-muted` |
+| default | — | 1.5px dashed `--border`, radius `--radius-md`, text `--muted-foreground` |
+| hover | `:hover` | border → `--muted-foreground`, bg → `--muted` |
 
 **Class API**
 
@@ -949,10 +972,12 @@ Static callout — no interactive states.
 | `.upload-tile__icon` / `__title` / `__hint` | icon／主文案（`--foreground` 500）／限制說明 |
 | `.upload-tile.is-filled` | 已選檔狀態：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-product／create-event／register-ip 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
+| `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
+| `.upload-showcase` | 主圖＋縮圖格並排兩等寬欄（≤880px 收回堆疊） |
 
 **Token usage** (→ Pillar 2 Role)
 
-- border `--border`(dashed) · radius `--radius-md` · text `--foreground-subtle` / title `--foreground` · hover bg `--surface-muted`
+- border `--border`(dashed) · radius `--radius-md` · text `--muted-foreground` / title `--foreground` · hover bg `--muted`
 
 **Usage** — 建立流程的上傳入口。限制（最小尺寸／檔型）一律寫進 `__hint`，不留光禿格。一般空狀態用 `empty-stub`，不用這個。
 
@@ -1002,11 +1027,11 @@ Static callout — no interactive states.
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--surface`, hairline `--shadow-hairline`, text `--foreground`, placeholder `--foreground-subtle` |
+| default | — | bg `--card`, hairline `--shadow-hairline`, text `--foreground`, placeholder `--muted-foreground` |
 | hover | `:hover` | shadow deepens to `0 0 0 1px rgba(0,0,0,0.16), 0 1px 2px rgba(0,0,0,0.04)` |
 | focus | `:focus-visible` | `outline: 0`; `0 0 0 2px var(--ring)` ring + 1px drop |
 | disabled | `:disabled` | `opacity: 0.5`, `cursor: not-allowed` |
-| error | `[aria-invalid="true"]` | `0 0 0 2px var(--status-error)` ring |
+| error | `[aria-invalid="true"]` | `0 0 0 2px var(--destructive)` ring |
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
 
@@ -1015,11 +1040,11 @@ Static callout — no interactive states.
 | `.ztor-input` | Single-line field, 44px |
 | `.ztor-input--sm` / `--lg` | 36px / 52px sizes |
 | `.ztor-textarea` | Multi-line field, vertical resize |
-| `[aria-invalid="true"]` | Error ring in `--status-error` |
+| `[aria-invalid="true"]` | Error ring in `--destructive` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--surface` · text `--foreground` · placeholder `--foreground-subtle` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--status-error` · motion `--duration` / `--easing` · font `--font-body`
+- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
 
 **Usage** — Use for text/number entry in forms (get-matched, settings, payout forms) and `.ztor-textarea` for longer free text. Avoid borders — the field uses surface + hairline, not a 1px border.
 
@@ -1143,12 +1168,12 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | `.app-topbar__dropdown--mega` | Absolute mega panel; animates on `[data-state="open"]` |
 | `.app-topbar__dropdown-col` | Vertical stack of dropdown links |
 | `.app-topbar__dropdown-link` | Icon + title + desc row link |
-| `.app-topbar__dropdown-icon` | 32px chip, `--surface-muted` + token edge |
+| `.app-topbar__dropdown-icon` | 32px chip, `--muted` + token edge |
 | `.app-topbar__dropdown-promo` | Right-column promo block |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface`, `--surface-muted` (trigger/panel/link/icon bg) · `--foreground`, `--foreground-subtle` (text) · `--radius`, `--radius-lg` (trigger/link vs panel) · `--shadow-hairline`, `--shadow-card` (trigger hover vs panel elevation) · `--font-ui`, `--font-body` (titles/labels vs descriptions) · `--duration`, `--easing` (open/chevron transitions)
+- `--card`, `--muted` (trigger/panel/link/icon bg) · `--foreground`, `--muted-foreground` (text) · `--radius`, `--radius-lg` (trigger/link vs panel) · `--shadow-hairline`, `--shadow-card` (trigger hover vs panel elevation) · `--font-ui`, `--font-body` (titles/labels vs descriptions) · `--duration`, `--easing` (open/chevron transitions)
 
 **Usage** — Use when a topbar section needs to expose several destinations with brief descriptions plus a promotional shortcut (IP Bank / E-Shop / Fans dropdowns). Avoid when there is only one destination — use a plain header link instead.
 
@@ -1208,7 +1233,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
  └ ...section body...
 ```
 
-**Variants** — `.ztor-card--clickable` (lift + focus ring), `.ztor-card--muted` (`--surface-muted` bg), `.ztor-card--frame` (zero-pad, overflow-hidden, `--radius-lg` — wraps mockups); `.card--muted` (muted section wrapper).
+**Variants** — `.ztor-card--clickable` (lift + focus ring), `.ztor-card--muted` (`--muted` bg), `.ztor-card--frame` (zero-pad, overflow-hidden, `--radius-lg` — wraps mockups); `.card--muted` (muted section wrapper).
 
 **Sizes** — Single size per namespace (`.ztor-card` padding `24px`; `.card` padding `20px`).
 
@@ -1216,7 +1241,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--surface` bg, `--shadow-card`, `--radius-md` |
+| default | — | `--card` bg, `--shadow-card`, `--radius-md` |
 | hover | `.ztor-card--clickable:hover` | `translateY(-2px)` + deeper drop + hairline rim shadow |
 | focus | `.ztor-card--clickable:focus-visible` | `2px solid var(--ring)` outline, `2px` offset |
 | link hover | `.card__head .card__link:hover` | Link color → `--foreground` (chevron tracks via currentColor) |
@@ -1227,7 +1252,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 |---|---|
 | `.ztor-card` | Base elevated column container, 24px pad |
 | `.ztor-card--clickable` | Adds hover lift + focus-visible ring |
-| `.ztor-card--muted` | Swaps bg to `--surface-muted` |
+| `.ztor-card--muted` | Swaps bg to `--muted` |
 | `.ztor-card--frame` | Padding 0 + overflow hidden + `--radius-lg` (mockup frame) |
 | `.ztor-card__title` / `__meta` / `__body` | 18px title / 13px subtle meta / 14px body |
 | `.card` | Product section wrapper, 20px pad |
@@ -1235,11 +1260,11 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | `.card__head` | Baseline-aligned space-between head row, 14px bottom margin |
 | `.card__title` | 15px / 500 section title |
 | `.card__hint` | 12px subtle non-actionable hint |
-| `.card__link` | 12.5px action link — underline by default; in `.card__head` becomes underline-less with trailing chevron icon |
+| `.card__link` | 12px action link — underline by default; in `.card__head` becomes underline-less with trailing chevron icon |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface`, `--surface-muted` (bg) · `--foreground`, `--foreground-muted`, `--foreground-subtle` (title / body / meta) · `--border` (link underline) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card` (elevation); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
+- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / body / meta) · `--border` (link underline) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card` (elevation); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
 
 **Usage** — Use `.card` for every product-page section that needs a titled wrapper with an optional action link; use `.ztor-card` for standalone info blocks and the design-system docs. Avoid when content is a flat row list — reach for Data list / Table instead.
 
@@ -1291,9 +1316,9 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--surface` bg, `--shadow-card`, value in display font |
-| (delta sign) | `.kpi__delta--neg` | Delta color switches `--status-success` → `--status-error` |
-| link hover | `.kpi__link:hover` | `--foreground-subtle` → `--foreground` |
+| default | — | `--card` bg, `--shadow-card`, value in display font |
+| (delta sign) | `.kpi__delta--neg` | Delta color switches `--status-success` → `--destructive` |
+| link hover | `.kpi__link:hover` | `--muted-foreground` → `--foreground` |
 
 The tile itself is static; only the optional `.kpi__link` is interactive.
 
@@ -1305,13 +1330,13 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.kpi__label` | Uppercase 12px / 0.4px tracking, subtle; flex for leading icon |
 | `.kpi__value` | Display font 28px / 500 / -0.6px tracking |
 | `.kpi__delta` | 12px UI; default `--status-success` (positive) |
-| `.kpi__delta--neg` | Overrides delta to `--status-error` |
+| `.kpi__delta--neg` | Overrides delta to `--destructive` |
 | `.kpi__meta` | 12px subtle neutral footnote (alternative to — or, on F2, alongside — delta); may wrap an `.card__link` for a deep-link |
 | `.kpi__link` | Optional quiet "view more →" link pinned to the tile bottom (subtle → foreground on hover); pairs with `data-tab-jump` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (bg); `--shadow-card`; `--radius-md` · `--foreground-subtle` (label, meta) · `--status-success` (positive delta), `--status-error` (negative delta) · `--font-ui`, `--font-display`
+- `--card` (bg); `--shadow-card`; `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta), `--destructive` (negative delta) · `--font-ui`, `--font-display`
 
 **Usage** — Use for dashboard summary rows, earnings tabs, and page-header metric strips where one number per tile is the point. Avoid when the value needs a trend chart or multiple sub-figures — use the Chart organism.
 
@@ -1364,7 +1389,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|---|
 | default | — | Status icon tint + (card) bottom divider / (row) left-border accent |
 | cta hover | `.alert--card .alert__cta:hover` | Underline appears, `3px` offset |
-| close hover | `.alert--card .alert__close:hover` | `--surface-muted` bg, color → `--foreground` |
+| close hover | `.alert--card .alert__close:hover` | `--muted` bg, color → `--foreground` |
 | last item | `.alert--card:last-child` | Drops `border-bottom` (clean list end) |
 | snoozed | `.alert--snoozed.alert--card` | Receded to ~62% opacity; still listed (reappears ~7d) |
 | blocking close | `.alert--card .alert__close:disabled` | Close control dimmed (0.4) + `not-allowed`; locked |
@@ -1381,14 +1406,14 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.alert--warning/-error/-success/-info` | Sets icon chip tint, CTA color, and (row) left-border color |
 | `.alert__icon` | Status-tinted chip holding a filled `.ztor-icon` |
 | `.alert__body` | Title + desc/meta + optional CTA stack |
-| `.alert__title` | 14px/600 (card) or 13.5px/500 (row) |
-| `.alert__desc` / `.alert__meta` | 13.5px muted (card) / 12px subtle (row); `<em>` = emphasis |
+| `.alert__title` | 14px/600 (card) or 13px/500 (row) |
+| `.alert__desc` / `.alert__meta` | 13px muted (card) / 12px subtle (row); `<em>` = emphasis |
 | `.alert__cta` | Inline status-colored action link |
 | `.alert__close` | 28px chevron-right dismiss button (card only) |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--status-warning`, `--status-error`, `--status-success`, `--status-info` (icon tint via `color-mix`, CTA, row accent) · `--primary` (default `--row` left accent when no status) · `--surface`, `--surface-muted` (row bg, close hover) · `--border` (card divider); `--foreground`, `--foreground-muted`, `--foreground-subtle` · `--radius-md`, `--radius-sm`; `--font-ui`
+- `--status-warning`, `--destructive`, `--status-success`, `--status-info` (icon tint via `color-mix`, CTA, row accent) · `--primary` (default `--row` left accent when no status) · `--card`, `--muted` (row bg, close hover) · `--border` (card divider); `--foreground`, `--foreground-muted`, `--muted-foreground` · `--radius-md`, `--radius-sm`; `--font-ui`
 
 **Usage** — Use `.alert--card` in the dashboard alerts panel (stacked, dismissible, with renew/manage CTAs); use `.alert--row` for inline page warnings like low-stock or region banners. Avoid for a single editorial hint — use the Sticky-note instead.
 
@@ -1458,7 +1483,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--border` (item dividers) · `--foreground`, `--foreground-muted`, `--foreground-subtle` (trigger / hover / chevron) · `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing` (chevron + height transitions)
+- `--border` (item dividers) · `--foreground`, `--foreground-muted`, `--muted-foreground` (trigger / hover / chevron) · `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing` (chevron + height transitions)
 
 **Usage** — Use for collapsible Q&A / disclosure lists where only some items are open at a time. Avoid when all content must be visible at once, or when each section is a full navigable view — use Tabs.
 
@@ -1507,13 +1532,13 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Variants** — Single variant; optional `.tabs__item-count` pill badge on an item. Items may render as `<button>` (programmatic) which strips default button chrome.
 
-**Sizes** — Single size (`.tabs__item` pad `10px 14px`, 13.5px / 500).
+**Sizes** — Single size (`.tabs__item` pad `10px 14px`, 13px / 500).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | Item color `--foreground-subtle`, transparent 2px bottom border |
+| default | — | Item color `--muted-foreground`, transparent 2px bottom border |
 | hover | `.tabs__item:hover` | Color → `--foreground` |
 | active | `.tabs__item--active` | Color `--foreground` + `--primary` (orange) bottom border |
 | focus | `button.tabs__item:focus-visible` | `2px solid var(--primary)` outline, 2px offset |
@@ -1525,14 +1550,14 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.tabs` | Flex tab bar with bottom hairline + 20px bottom margin |
 | `.tabs__item` | Tab button/link, subtle by default, transparent underline |
 | `.tabs__item--active` | Foreground color + orange `--primary` underline |
-| `.tabs__item-count` | Optional 11.5px count pill in `--surface-muted` |
+| `.tabs__item-count` | Optional 11px count pill in `--muted` |
 | `button.tabs__item` | Strips native button chrome when rendered as `<button>` |
 | `.tab-panel` | Hidden panel (display:none) |
 | `.tab-panel--active` | Shown panel (display:block) |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--primary` (active underline + focus ring) · `--foreground`, `--foreground-subtle` (active/hover vs idle) · `--border` (tab-bar hairline) · `--surface-muted` (count pill bg); `--radius-pill` · `--font-ui`
+- `--primary` (active underline + focus ring) · `--foreground`, `--muted-foreground` (active/hover vs idle) · `--border` (tab-bar hairline) · `--muted` (count pill bg); `--radius-pill` · `--font-ui`
 
 **Usage** — Use to switch between sibling views of one page section: Earnings (Overview / Transactions / Payouts / Tax), E-Shop (Products / Bundles / Auctions), Projects status filters, Fans CRM views. Avoid for disclosure of optional detail — use Accordion.
 
@@ -1583,8 +1608,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | White `--surface` pill, fixed `bottom:24px / right:24px`, `z-index:100` |
-| settings hover | `.ztor-cookie-banner__settings:hover` | Link color shifts `--foreground-subtle` → `--foreground` |
+| default | — | White `--card` pill, fixed `bottom:24px / right:24px`, `z-index:100` |
+| settings hover | `.ztor-cookie-banner__settings:hover` | Link color shifts `--muted-foreground` → `--foreground` |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -1597,7 +1622,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (pill bg) · `--foreground` (text) · `--foreground-muted` (copy) · `--foreground-subtle` (settings link idle) · `--radius-xl` (desktop) · `--radius-lg` (mobile) · `--shadow-card` · `--font-body` (copy) · `--font-ui` (settings link)
+- `--card` (pill bg) · `--foreground` (text) · `--foreground-muted` (copy) · `--muted-foreground` (settings link idle) · `--radius-xl` (desktop) · `--radius-lg` (mobile) · `--shadow-card` · `--font-body` (copy) · `--font-ui` (settings link)
 
 **Usage** — Use when first-visit consent must surface without blocking the page. Avoid when the message is blocking/legal-modal territory — use a dialog, not a corner pill.
 
@@ -1706,8 +1731,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
   .selection-card                      (soft-shadow surface · cursor pointer)
     .selection-card__swatch            (optional · 64px preview block)
       .selection-card__swatch--theme-light|dark|system
-    .selection-card__title             (required · 14.5px / 500)
-    .selection-card__sub               (optional · 12.5px muted)
+    .selection-card__title             (required · 14px / 500)
+    .selection-card__sub               (optional · 12px muted)
     .selection-card__tag               (optional · corner uppercase chip)
   .selection-card--active              (orange outline + tinted bg)
 ```
@@ -1720,7 +1745,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--surface` bg + soft card shadow (`--shadow-card`) |
+| default | — | `--card` bg + soft card shadow (`--shadow-card`) |
 | hover | `.selection-card:hover` | Shadow lifts to `--shadow-card-hover` |
 | active/selected | `.selection-card--active` | Tinted bg (`color-mix --primary 16%`) + 2px `--primary` outline + 1px shadow; `__tag` recolors to `--primary-foreground` |
 
@@ -1732,16 +1757,16 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.selection-grid--3` | Forces 3 equal columns (theme picker) |
 | `.selection-card` | Column flex card, `--radius-md`, hairline ring, `cursor:pointer`, 150ms transitions |
 | `.selection-card--active` | Selected state: tinted bg + double orange outline; recolors child `__tag` |
-| `.selection-card__title` | Required label, `--font-ui` 14.5px / 500 |
-| `.selection-card__sub` | Optional 12.5px muted description |
-| `.selection-card__tag` | Absolute top-right uppercase chip, 10.5px, `letter-spacing:0.4px` |
+| `.selection-card__title` | Required label, `--font-ui` 14px / 500 |
+| `.selection-card__sub` | Optional 12px muted description |
+| `.selection-card__tag` | Absolute top-right uppercase chip, 11px, `letter-spacing:0.4px` |
 | `.selection-card__swatch` | Optional 64px preview block, `--radius-sm`, 1px border |
 | `.selection-card__swatch--theme-light/dark/system` | Diagonal-gradient theme previews |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (bg) · `--border` (idle ring) · `--foreground-muted` (hover ring + sub) · `--foreground-subtle` (tag) · `--primary` (active outline) · `--primary-foreground` (active tag) · `--radius-md` (card) · `--radius-sm` (swatch) · `--font-ui` (title/tag)
-- **Token exception（記錄在案）**：`__swatch--theme-*` 的漸層用寫死 hex（`#FAFAF7` / `#171717` / `#ffa33f`）——縮圖畫的是「light / dark 主題長什麼樣」的固定預覽，本來就不該跟著當前主題變色。
+- `--card` (bg) · `--border` (idle ring) · `--foreground-muted` (hover ring + sub) · `--muted-foreground` (tag) · `--primary` (active outline) · `--primary-foreground` (active tag) · `--radius-md` (card) · `--radius-sm` (swatch) · `--font-ui` (title/tag)
+- **Token exception（記錄在案）**：`__swatch--theme-*` 的漸層用寫死 hex（`#FAFAF7` / `#191A1A` / `#ffa33f`）——縮圖畫的是「light / dark 主題長什麼樣」的固定預覽，本來就不該跟著當前主題變色。
 
 **Usage** — Use when the user picks one option from a small visible set (account type, theme) and you want the choices laid out as tactile cards. Avoid for long lists or multi-select — use a list/checkboxes there.
 
@@ -1800,7 +1825,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|---|
 | default | — | `surface-muted` drop zone, subtle copy; gray idle send |
 | dragover | `.composer.is-dragover .composer__drop` | Drop zone gets `--primary 12%` tint + inset 1px `--primary` ring; copy darkens to `--foreground` |
-| icon hover | `.composer__icon-btn:hover` | Icon → `--foreground`, bg → `--surface-muted` |
+| icon hover | `.composer__icon-btn:hover` | Icon → `--foreground`, bg → `--muted` |
 | send hover | `.composer__send:hover` | Bg darkens (`--foreground 10%` mix), color → `--foreground` |
 | send active (has content) | `.composer__send--active` | Flips to `--primary` bg + `--primary-foreground` + 1px hairline |
 | send press | `.composer__send:active` | `translateY(0.5px)` nudge |
@@ -1813,7 +1838,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.composer` | Outer surface card, `--radius-xl`, `--shadow-card`, column flex, `overflow:hidden` |
 | `.composer__drop` | 132px drop zone, `surface-muted`, centered subtle idle copy |
 | `.composer.is-dragover` | Activates the drag-over tint + ring on the inner `__drop` |
-| `.composer__textarea` | Typed-input variant of the slot: borderless 132px textarea, `--font-body` 14.5px |
+| `.composer__textarea` | Typed-input variant of the slot: borderless 132px textarea, `--font-body` 14px |
 | `.composer__bar` | Bottom action row, space-between, 1px `--border` top divider |
 | `.composer__bar-group` | Left/right flex slot inside the bar, `gap:8px` |
 | `.composer__icon-btn` | 32×32 transparent icon button (upload/mic), 18px lucide glyph |
@@ -1823,7 +1848,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (card / bar / textarea text) · `--surface-muted` (drop zone, idle send, icon hover) · `--border` (bar divider) · `--foreground` / `--foreground-subtle` (copy, icons, credits) · `--primary` / `--primary-hover` / `--primary-foreground` (dragover tint + active send) · `--radius-xl` (card) · `--radius` / `--radius-sm` (icon btn) · `--shadow-card` · `--font-ui` (chrome) · `--font-body` (textarea)
+- `--card` (card / bar / textarea text) · `--muted` (drop zone, idle send, icon hover) · `--border` (bar divider) · `--foreground` / `--muted-foreground` (copy, icons, credits) · `--primary` / `--primary-hover` / `--primary-foreground` (dragover tint + active send) · `--radius-xl` (card) · `--radius` / `--radius-sm` (icon btn) · `--shadow-card` · `--font-ui` (chrome) · `--font-body` (textarea)
 
 **Usage** — Use when a creator submits a prompt or uploads an asset and you need a single card combining input, tool affordances, a credit meter, and submit. Avoid for plain single-line fields — use a standard input/textarea without the action bar.
 
@@ -1864,7 +1889,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 **Anatomy**
 
 ```
-.app-topbar (64px, position:sticky top:0, bg --surface, bottom 1px hairline, z 50)
+.app-topbar (64px, position:sticky top:0, bg --card, bottom 1px hairline, z 50)
 ├─ .app-topbar__brand > .app-topbar__brand-logo (24px SVG wordmark)
 ├─ nav > ul.app-topbar__nav
 │  ├─ .app-topbar__nav-highlight (one sliding pill — rests on active, glides on hover)
@@ -1885,8 +1910,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 | State | Selector | Change |
 |---|---|---|
-| default | `.app-topbar` | Sticky, `--surface` fill, bottom `1px` hairline, `z-index: 50` |
-| link hover / active | `:hover` / `[aria-current="page"]` | Text → `--foreground`; shared highlight pill slides under it (`--surface-muted`) |
+| default | `.app-topbar` | Sticky, `--card` fill, bottom `1px` hairline, `z-index: 50` |
+| link hover / active | `:hover` / `[aria-current="page"]` | Text → `--foreground`; shared highlight pill slides under it (`--muted`) |
 | group open | `[aria-expanded="true"]` | Chevron rotates 180°; `.app-topbar__dropdown[data-state="open"]` fades + slides in |
 | scrolled (dark) | `.app-topbar.is-scrolled` | Dark mode only: frosted blur + slight darken so a hero photo doesn't bleed through |
 | mobile (≤900px) | `@media (max-width: 900px)` | Bar wraps; `.app-topbar__nav` hidden (compact nav via JS) |
@@ -1903,7 +1928,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (bar fill) · `--border` (bottom hairline + dropdown edge) · `--surface-muted` (highlight pill, icon-btn hover, option hover) · `--foreground` / `--foreground-muted` / `--foreground-subtle` (brand / links / sub-labels) · `--primary` (unread `__badge-dot`) · `--background` (dropdown panel fill — opaque over hero) · `--radius-md` / `--radius-lg` / `--radius-pill` · `--shadow-card` · `--duration` / `--easing` · `--font-ui`
+- `--card` (bar fill) · `--border` (bottom hairline + dropdown edge) · `--muted` (highlight pill, icon-btn hover, option hover) · `--foreground` / `--foreground-muted` / `--muted-foreground` (brand / links / sub-labels) · `--primary` (unread `__badge-dot`) · `--background` (dropdown panel fill — opaque over hero) · `--radius-md` / `--radius-lg` / `--radius-pill` · `--shadow-card` · `--duration` / `--easing` · `--font-ui`
 
 **Usage** — The single persistent topbar on every product page, injected by `sidebar.js` at `#sidebar`/`#topbar`. Nav order follows the sitemap; mega-dropdowns group IP Bank / E-Shop / Fans sub-routes. Promote new global actions into `__actions` rather than adding a second bar.
 
@@ -2024,17 +2049,17 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 .data-list (flex column)
 └─ .data-list__row (grid minmax(0,1fr) auto, gap 12, padding 12px 0, border-bottom --border)
    ├─ .data-list__row-main (flex, gap 12, min-width 0)
-   │   ├─ .data-list__icon (40×40, radius 10, --surface-muted bg, --foreground-muted)
+   │   ├─ .data-list__icon (40×40, radius 10, --muted bg, --foreground-muted)
    │   │   └─ <i class="ztor-icon"> (20px outline lucide)
    │   └─ .data-list__body (flex column, gap 2)
    │       ├─ .data-list__title (Geist 13.5/500, truncated ellipsis)
-   │       └─ .data-list__meta   (12px --foreground-subtle)
+   │       └─ .data-list__meta   (12px --muted-foreground)
    └─ .data-list__amount (Display 15/500, right-aligned)
-        └─ .data-list__amount--neg (--status-error)
+        └─ .data-list__amount--neg (--destructive)
 last .data-list__row → border-bottom: 0
 ```
 
-**Variants** — Icon semantic hooks only: `.data-list__icon--neutral|success|error|info` — all four render identical monochrome chips (`--surface-muted` bg + `--foreground-muted`); colored fills were retired 2026-05-25. Semantic color lives on the amount, not the chip.
+**Variants** — Icon semantic hooks only: `.data-list__icon--neutral|success|error|info` — all four render identical monochrome chips (`--muted` bg + `--foreground-muted`); colored fills were retired 2026-05-25. Semantic color lives on the amount, not the chip.
 
 The shared `transaction-list` renderer (components.js) composes this list with an optional trailing status badge. The status column is **per-call**: Earnings renders it; Dashboard F3 passes `hideStatus` to drop it, because F3 lists settled income only (status is always settled — spec 5.1.1 §F3).
 
@@ -2046,7 +2071,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 |---|---|---|
 | default | `.data-list__row` | Hairline `border-bottom: 1px solid var(--border)` |
 | last row | `.data-list__row:last-child` | `border-bottom: 0` |
-| negative amount | `.data-list__amount--neg` | Amount color → `--status-error` |
+| negative amount | `.data-list__amount--neg` | Amount color → `--destructive` |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -2059,13 +2084,13 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.data-list__icon--neutral / --success / --error / --info` | Semantic hook only — visually identical neutral chip |
 | `.data-list__body` | Title + meta stack; flex column, `gap: 2px`, `min-width: 0` |
 | `.data-list__title` | Geist 13.5/500, ellipsis-truncated single line |
-| `.data-list__meta` | 12px `--foreground-subtle` secondary line |
+| `.data-list__meta` | 12px `--muted-foreground` secondary line |
 | `.data-list__amount` | Display 15/500, `letter-spacing: -0.3px`, right-aligned |
-| `.data-list__amount--neg` | Switches amount to `--status-error` |
+| `.data-list__amount--neg` | Switches amount to `--destructive` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--border` (row dividers) · `--surface-muted` (icon chip bg) · `--foreground-muted` (chip glyph) · `--foreground-subtle` (meta) · `--status-error` (negative amount) · `--font-ui` (title) · `--font-display` (amount)
+- `--border` (row dividers) · `--muted` (icon chip bg) · `--foreground-muted` (chip glyph) · `--muted-foreground` (meta) · `--destructive` (negative amount) · `--font-ui` (title) · `--font-display` (amount)
 
 **Usage** — Use when rows of records need vertical density without a card per row. Avoid when ≥3 data columns need column alignment — use `.ztor-table` instead.
 
@@ -2128,7 +2153,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 
 **Token usage** (→ Pillar 2 Role)
 
-- border `--border` · radius `--radius-md` · 列復用 data-list tokens · hover `--surface-muted`
+- border `--border` · radius `--radius-md` · 列復用 data-list tokens · hover `--muted`
 
 **Usage** — 「從既有清單挑選 N 筆」的情境（建立套組、IP rental linker）。列一律復用 `.data-list`，picker 只負責搜尋列與捲動外框。一般資料表用 `data-list` / `table`，不用 picker。
 
@@ -2174,8 +2199,8 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--surface`, 1px `--border`, radius `--radius-md` |
-| hover | `:hover` | bg `--surface-muted` |
+| default | — | bg `--card`, 1px `--border`, radius `--radius-md` |
+| hover | `:hover` | bg `--muted` |
 | focus | `:focus-within` | `--ring` ＋ 4px 橘暈 |
 
 **Class API**
@@ -2183,11 +2208,11 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | Class / modifier | Effect |
 |---|---|
 | `.field-pill` | 白底＋1px 線框 pill |
-| `.field-pill__icon` / `__chevron` | 前置 icon／後置 chevron（`--foreground-subtle`） |
+| `.field-pill__icon` / `__chevron` | 前置 icon／後置 chevron（`--muted-foreground`） |
 | `.field-pill__input` / `__select` / `__label` | 搜尋／原生 select／選單文字 |
 | `.field-pill--grow` / `--block` | flex:1／width:100%（chevron 推右） |
 
-**Token usage** — surface `--surface` · border `--border` · hover `--surface-muted` · icon `--foreground-subtle` · focus `--ring` · radius `--radius-md`
+**Token usage** — surface `--card` · border `--border` · hover `--muted` · icon `--muted-foreground` · focus `--ring` · radius `--radius-md`
 
 **Usage** — 工具列的篩選／範圍控制。下拉一律前 icon、後 chevron；搜尋變體不放 chevron。主要動作用 `.btn--primary`，不用 field-pill。
 
@@ -2228,7 +2253,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 |---|---|---|
 | default | `.segmented__btn` | 透明底、`--foreground-muted` 文字 |
 | hover | `:hover` | 文字 → `--foreground` |
-| active | `.segmented__btn--active` | bg `--surface`、1px `--border`、`0 1px 2px` 柔陰影 |
+| active | `.segmented__btn--active` | bg `--card`、1px `--border`、`0 1px 2px` 柔陰影 |
 
 **Class API**
 
@@ -2238,7 +2263,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.segmented__btn` | 段；靜音文字 |
 | `.segmented__btn--active` | 白浮起 pill |
 
-**Token usage** — track `color-mix(--foreground 5%, --surface-muted)` · active `--surface` ＋ `--border` · text `--foreground-muted` → `--foreground` · radius `--radius-lg`/`--radius-md`
+**Token usage** — track `color-mix(--foreground 5%, --muted)` · active `--card` ＋ `--border` · text `--foreground-muted` → `--foreground` · radius `--radius-lg`/`--radius-md`
 
 **Usage** — 同一資料 2–4 個互斥視角。頁面導覽用 `.tabs`；段數超過 ~4 改用 `.field-pill__select` 下拉。
 
@@ -2260,7 +2285,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 
 **`_layer`** · molecule — 粉絲端即時預覽卡（規格 §5.2.5），鏡像商店端商品卡／拍賣卡，在建立流程的預覽面板內依當下輸入即時渲染。未填欄位用 `.is-empty` 顯示斜體占位（`Product name`／`$0.00`／斜體 `Missing: description`）。
 
-**surface 層** — 卡本體坐 `--surface`（白）＋1px `--border`；放在預覽面板 `__body` 的 `--surface-muted`（灰）底上浮起。
+**surface 層** — 卡本體坐 `--card`（白）＋1px `--border`；放在預覽面板 `__body` 的 `--muted`（灰）底上浮起。
 
 **Class API**
 
@@ -2301,7 +2326,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | `.preview-panel` | fixed 右側欄（寬 `--preview-w`），預設 translateX(100%) 收起 |
 | `.is-open` | sheet 滑入 |
 | `body.preview-open` | 把 `.wizard` 壓窄、`.wizard__bottom` 右移（畫面分割） |
-| `.preview-panel__body` | 內容區，`--surface-muted` 灰底 |
+| `.preview-panel__body` | 內容區，`--muted` 灰底 |
 
 **Usage** — create-product 已接（單一 consumer）。JS 同時切 `.preview-panel.is-open` 與 `body.preview-open`；✕／Esc 關閉。≤760px 無法再壓縮 → 面板改覆蓋。全 token-driven、無遮罩裸色。
 
@@ -2339,7 +2364,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | Class | Effect |
 |---|---|
 | `.empty-card` | 置中直欄堆疊，卡片內距 |
-| `.empty-card__icon` | 40×40 淡化 chip（`--surface-muted` 底）內嵌 lucide |
+| `.empty-card__icon` | 40×40 淡化 chip（`--muted` 底）內嵌 lucide |
 | `.empty-card__title / __text` | 14/600 標題、淡化說明（max 320） |
 | `.empty-card__cta` | 選配，用 `.btn` |
 
@@ -2356,10 +2381,10 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | Class | Effect |
 |---|---|
 | `.notif-matrix` | grid =「label 欄 + 3 管道欄」 |
-| `.notif-matrix__corner / __chead` | 左上角格、欄表頭（`--surface-muted` 底） |
+| `.notif-matrix__corner / __chead` | 左上角格、欄表頭（`--muted` 底） |
 | `.notif-matrix__label(__label-title/__label-hint)` | 事件列標題與說明 |
 | `.notif-matrix__cell(.--locked)` | 開關格；鎖定格放鎖頭 |
-| `.notif-matrix__lock` / `.switch--locked` | 鎖頭色 `--foreground-subtle`；鎖定 switch not-allowed、降透明 |
+| `.notif-matrix__lock` / `.switch--locked` | 鎖頭色 `--muted-foreground`；鎖定 switch not-allowed、降透明 |
 
 **響應式** — ≤560px 欄寬收窄不換行。
 
@@ -2377,7 +2402,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 |---|---|
 | `.completeness` | 容器 |
 | `.completeness__head / __label / __count` | 標題列：label + x/y |
-| `.completeness__track / __fill` | 軌道（`--surface-muted`）/ 填充（`--primary`，inline width 控制） |
+| `.completeness__track / __fill` | 軌道（`--muted`）/ 填充（`--primary`，inline width 控制） |
 | `.completeness--ready` | 近滿時填充與計數轉 `--status-success` |
 
 **CSS** — [`completeness.css`](./ds-components/completeness.css)
@@ -2435,7 +2460,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 
 ### 4.22n Char counter
 
-**`_layer`** · molecule — 限長輸入欄的即時字數計數（主旨 ≤120、內文 ≤2000），到達上限以 `--status-error` 轉紅；計數值由頁面 JS 即時更新。
+**`_layer`** · molecule — 限長輸入欄的即時字數計數（主旨 ≤120、內文 ≤2000），到達上限以 `--destructive` 轉紅；計數值由頁面 JS 即時更新。
 
 | Class | 用途 |
 |---|---|
@@ -2484,16 +2509,16 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 **Anatomy**
 
 ```
-table.ztor-table (width 100%, border-collapse separate, --surface, radius-md, shadow-card, overflow hidden)
-├─ thead th (16px 20px, Geist 13/500, --foreground-subtle, --surface-muted bg, bottom hairline)
+table.ztor-table (width 100%, border-collapse separate, --card, radius-md, shadow-card, overflow hidden)
+├─ thead th (16px 20px, Geist 13/500, --muted-foreground, --muted bg, bottom hairline)
 └─ tbody
    ├─ tr td (16px 20px, --foreground, bottom hairline, vertical-align middle)
    ├─ tr:last-child td → border-bottom: 0
-   └─ tr:hover td → background --surface-muted
+   └─ tr:hover td → background --muted
    cell helpers:
      .ztor-table__feature (Geist 500 label cell)
      .ztor-table__check   (--status-success ✓)
-     .ztor-table__cross   (--status-error ✗)
+     .ztor-table__cross   (--destructive ✗)
      .ztor-table__partial (--status-warning ~)
    expandable rows (Earnings transactions · F7):
      tr.ztor-table__row[aria-expanded] (clickable) > td > i.ztor-table__chev (rotates 90° when open)
@@ -2512,28 +2537,28 @@ table.ztor-table (width 100%, border-collapse separate, --surface, radius-md, sh
 |---|---|---|
 | default | `.ztor-table tbody td` | `--foreground` text, bottom hairline `--border` |
 | last row | `.ztor-table tbody tr:last-child td` | `border-bottom: 0` |
-| row hover | `.ztor-table tbody tr:hover td` | Row cells fill `--surface-muted` |
-| row expanded | `.ztor-table__row[aria-expanded="true"]` | Chevron rotates 90°, row cells fill `--surface-muted`, sibling `.ztor-table__detail` shown (JS toggles `[hidden]`) |
+| row hover | `.ztor-table tbody tr:hover td` | Row cells fill `--muted` |
+| row expanded | `.ztor-table__row[aria-expanded="true"]` | Chevron rotates 90°, row cells fill `--muted`, sibling `.ztor-table__detail` shown (JS toggles `[hidden]`) |
 | detail hidden | `.ztor-table__detail[hidden]` | `display: none` |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-table` | Card-framed table; `--surface` bg, `radius-md`, `shadow-card`, `overflow: hidden`, separated borders |
-| `thead th` | Muted header cell; `--surface-muted` bg, Geist 13/500 `--foreground-subtle`, bottom hairline |
+| `.ztor-table` | Card-framed table; `--card` bg, `radius-md`, `shadow-card`, `overflow: hidden`, separated borders |
+| `thead th` | Muted header cell; `--muted` bg, Geist 13/500 `--muted-foreground`, bottom hairline |
 | `tbody td` | Body cell; `16px 20px` padding, `--foreground`, middle-aligned, bottom hairline |
 | `.ztor-table__feature` | Emphasized label cell — Geist `font-weight: 500` |
 | `.ztor-table__check` | Inline-flex ✓ in `--status-success` |
-| `.ztor-table__cross` | Inline-flex ✗ in `--status-error` |
+| `.ztor-table__cross` | Inline-flex ✗ in `--destructive` |
 | `.ztor-table__partial` | Partial mark in `--status-warning` |
 | `.ztor-table__row` / `.ztor-table__chev` | Clickable row (`aria-expanded`) + leading chevron that rotates 90° when open |
-| `.ztor-table__detail` (`[hidden]`) | Sibling detail row (`<td colspan>`), `--surface-muted` bg; `[hidden]` hides it |
+| `.ztor-table__detail` (`[hidden]`) | Sibling detail row (`<td colspan>`), `--muted` bg; `[hidden]` hides it |
 | `.tx-detail` / `__meta` / `__id` / `__copy` / `__note` / `__ladder` | Trace block: Event ID `<code>` + copy button, rate version, note, and `.waterfall` mini-ladder |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--surface` (table fill) · `--surface-muted` (header bg + row hover + detail bg) · `--border` (dividers + header rule + code ring) · `--foreground` (cells) · `--foreground-subtle` (header text + chevron) · `--foreground-muted` (detail note) · `--status-success` / `--status-error` / `--status-warning` (cell marks) · `--radius-md` / `--radius-sm` (code chip) · `--shadow-card` (card frame) · `--duration` / `--easing` (chevron) · `--font-ui` (header, feature) · `--font-body` (cells) · `--font-mono` (Event ID code)
+- `--card` (table fill) · `--muted` (header bg + row hover + detail bg) · `--border` (dividers + header rule + code ring) · `--foreground` (cells) · `--muted-foreground` (header text + chevron) · `--foreground-muted` (detail note) · `--status-success` / `--destructive` / `--status-warning` (cell marks) · `--radius-md` / `--radius-sm` (code chip) · `--shadow-card` (card frame) · `--duration` / `--easing` (chevron) · `--font-ui` (header, feature) · `--font-body` (cells) · `--font-mono` (Event ID code)
 
 **Usage** — Use when ≥3 data columns need aligned comparison (canonical use: Earnings transactions, feature-comparison grids). Avoid for single icon+body+amount rows — use `.data-list` for that density.
 
@@ -2588,9 +2613,9 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | State | Selector | Change |
 |---|---|---|
 | default segmented | `.segmented__item` | Subtle text on muted track |
-| active segmented | `.segmented__item--active` | `--surface` bg + `--foreground` + `--shadow-hairline` |
+| active segmented | `.segmented__item--active` | `--card` bg + `--foreground` + `--shadow-hairline` |
 | segmented hover | `.segmented__item:hover` | Text → `--foreground` |
-| icon-btn hover | `.chart-card__icon-btn:hover` | `--surface-muted` bg + `--foreground` |
+| icon-btn hover | `.chart-card__icon-btn:hover` | `--muted` bg + `--foreground` |
 | line / bar view | `.chart-card[data-chart-view="line"\|"bar"]` | Hides `.barchart-wrap` / non-bar `.linechart` |
 | tooltip / cursor (JS) | `.chart-tip--show` / `.chart-cursor--show` / `.chart-bar-cursor--show` | Floating value card / vertical cursor / column highlight shown |
 
@@ -2612,7 +2637,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--primary` (line, area mix, accent dot, swatch, s1 series) · `--status-success/info/error` + `--foreground-subtle` (s2–s5 series) · `--border` (grid, dividers) · `--surface` / `--surface-muted` (cards, tracks, fills, gridlines) · `--foreground` / `--foreground-muted` / `--foreground-subtle` (text, ticks, default bars) · `--radius` / `--radius-sm` / `--radius-pill` · `--shadow-card` / `--shadow-hairline` · `--font-ui` · `--duration` / `--easing`
+- `--primary` (line, area mix, accent dot, swatch, s1 series) · `--status-success/info/error` + `--muted-foreground` (s2–s5 series) · `--border` (grid, dividers) · `--card` / `--muted` (cards, tracks, fills, gridlines) · `--foreground` / `--foreground-muted` / `--muted-foreground` (text, ticks, default bars) · `--radius` / `--radius-sm` / `--radius-pill` · `--shadow-card` / `--shadow-hairline` · `--font-ui` · `--duration` / `--easing`
 
 **Usage** — Use `.linechart` for trends, `.stacked-bar` + `.source-list` for a single proportion breakdown, `.rank-bars` when each category deserves its own row with a visible proportion, and `.chart-card` to wrap a chart with head controls + footer. Avoid for exact tabular figures — use `.ztor-table` or `.data-list`.
 
@@ -2681,7 +2706,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 | State | Selector | Change |
 |---|---|---|
-| deduction | `.waterfall__row--deduct` | Muted name/amount + `--foreground-subtle` fill |
+| deduction | `.waterfall__row--deduct` | Muted name/amount + `--muted-foreground` fill |
 | milestone | `.waterfall__row--subtotal` / `--pool` | 1.5px `--foreground` top rule + bold |
 | pool | `.waterfall__row--pool` | Orange `--primary` fill with inset foreground ring |
 | pool negative | `.waterfall__row--pool.waterfall__row--negative` | Error-tinted bar + amount |
@@ -2699,7 +2724,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- fills `--foreground` (income/subtotal) / `--foreground-subtle` (deduct) / `--primary` (pool) / `color-mix(--primary 58%, --surface)` (distribution) · track `--surface-muted` + `--border` · rules `--foreground` / `--border-soft` · text `--foreground` / `--foreground-muted` / `--foreground-subtle` · warning `--status-error` · radius `--radius-pill` / `--radius-md` · `--font-ui` · `--duration` / `--easing`
+- fills `--foreground` (income/subtotal) / `--muted-foreground` (deduct) / `--primary` (pool) / `color-mix(--primary 58%, --card)` (distribution) · track `--muted` + `--border` · rules `--foreground` / `--border-soft` · text `--foreground` / `--foreground-muted` / `--muted-foreground` · warning `--destructive` · radius `--radius-pill` / `--radius-md` · `--font-ui` · `--duration` / `--easing`
 
 **Usage** — Earnings · Breakdown tab: the F12 full-period waterfall above, and the F11 per-project profit ladder below (same component, project-scoped rows). Set each `__fill` width to the running balance as a % of gross so the staircase descends. Use `.waterfall__empty` (not $0 rows) when there is no settled income. Don't push unsettled / disputed amounts into the pool (§7.3).
 
@@ -2802,7 +2827,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 |---|---|---|
 | closed | `details:not([open])` | Only the trigger button renders |
 | open | `details[open]` | Panel floats below-right of trigger (`z-index: 30`) |
-| hover | `.dropdown__item:hover` | Item bg `--surface-muted` |
+| hover | `.dropdown__item:hover` | Item bg `--muted` |
 | focus-visible | `.dropdown__item:focus-visible` | Inset 2px `--ring` outline |
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
@@ -2816,7 +2841,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--surface` / hover `--surface-muted` · border `--border` · text `--foreground` · radius `--radius-lg` / `--radius-md` · shadow `--shadow-card` · focus `--ring` · font `--font-ui` (inherited)
+- bg `--card` / hover `--muted` · border `--border` · text `--foreground` · radius `--radius-lg` / `--radius-md` · shadow `--shadow-card` · focus `--ring` · font `--font-ui` (inherited)
 
 **Usage** — "Create / more actions" menus in toolbars (first consumer: E-Shop "＋ New" → product / bundle / auction). Avoid for nav mega-dropdowns — use NavigationMenu (§4.10) — and for form value selection — use a select / Input (§4.8).
 
@@ -2860,18 +2885,18 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __actions > __edit (Icon)
 ```
 
-**Variants** — Base columns; page-level extension `.product-list--eshop` (E-Shop adds image / price / stock columns). `__thumb--cover` inverts to foreground/background; `__image--placeholder` shows the "ztor." mark.
+**Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` shows the "ztor." mark.
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| hover | `.product-list__row:hover` | bg `--surface-muted` |
+| hover | `.product-list__row:hover` | bg `--muted` |
 | ≤760px | `@media (max-width: 760px)` | header hidden; rows restack to 2-col grid |
 
 **Token usage** (→ Pillar 2 Role)
 
-- text `--foreground` / `--foreground-muted` / `--foreground-subtle` · dividers `--border` / `--border-soft` · hover `--surface-muted` · thumb `--surface-muted` (cover: `--foreground`/`--background`) · radius `--radius` · motion `--duration`/`--easing` · fonts `--font-ui`/`--font-display`
+- text `--foreground` / `--foreground-muted` / `--muted-foreground` · dividers `--border` / `--border-soft` · hover `--muted` · thumb `--muted` (cover: `--foreground`/`--background`) · radius `--radius` · motion `--duration`/`--easing` · fonts `--font-ui`/`--font-display`
 
 **Usage** — E-Shop inventory (e-shop.html). Use Table (§4.24) instead for dense numeric ledgers.
 
@@ -2908,13 +2933,13 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 | State | Selector | Change |
 |---|---|---|
-| hover | `.project-list__row:hover` | bg `--surface-muted`; `__go` darkens to `--foreground` |
+| hover | `.project-list__row:hover` | bg `--muted`; `__go` darkens to `--foreground` |
 | focus-visible | `.project-list__row:focus-visible` | inset 2px `--ring` outline |
 | ≤760px | `@media (max-width: 760px)` | header hidden; rows restack to 2-col grid |
 
 **Token usage** (→ Pillar 2 Role)
 
-- text `--foreground` / `--foreground-muted` / `--foreground-subtle` · dividers `--border` · hover `--surface-muted` · focus `--ring` · icon tile `--surface-muted` · radius `--radius` · motion `--duration`/`--easing` · font `--font-ui`
+- text `--foreground` / `--foreground-muted` / `--muted-foreground` · dividers `--border` · hover `--muted` · focus `--ring` · icon tile `--muted` · radius `--radius` · motion `--duration`/`--easing` · font `--font-ui`
 
 **Usage** — Projects page list view (projects.html; rows rendered by its inline JS from data). Card view is the separate `.project-card` page block.
 
@@ -2965,7 +2990,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--surface` / `--surface-muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-popover` / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --surface)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
+- surfaces `--card` / `--muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-popover` / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --card)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
 
 **Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps.
 
@@ -3000,8 +3025,8 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 | State | Selector | Change |
 |---|---|---|
-| default | `.restock-item` | `--surface-muted` bg + inset `--border` ring |
-| checked | `.restock-item.is-checked` | white `--surface` + inset 2px `--foreground` ring (matches selected bank option) |
+| default | `.restock-item` | `--muted` bg + inset `--border` ring |
+| checked | `.restock-item.is-checked` | white `--card` + inset 2px `--foreground` ring (matches selected bank option) |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -3014,7 +3039,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--surface` / `--surface-muted` · ring `--border` / `--foreground` (checked) · radius `--radius-md` · accent `--foreground` (checkbox) · `--font-ui` · text `--foreground` / `--foreground-subtle`
+- surfaces `--card` / `--muted` · ring `--border` / `--foreground` (checked) · radius `--radius-md` · accent `--foreground` (checkbox) · `--font-ui` · text `--foreground` / `--muted-foreground`
 
 **Usage** — E-Shop restock popup (spec §5.1.5.6). Reuse the canonical payout dialog shell + form helpers; only the checklist is restock-specific. Toggle `.is-checked` on the row to mirror the checkbox.
 
@@ -3068,7 +3093,7 @@ See as fan：.preview-panel.preview-panel--inset > .ss-fan（__header/__avatar/_
 
 > 2026-06-13 改版（D035）：由四張卡堆疊改為「門面常駐 + 群組 tab + See as fan」；新增品牌素材、幣別移入門面。
 
-**Token usage** — surfaces `--surface` / `--surface-muted` · border `--border` · ring `--ring` · radius `--radius` / `--radius-sm` / `--radius-md` · shadow `--shadow-card` / `--shadow-hairline` · fonts `--font-ui` / `--font-display` / `--font-body` · primary（fan avatar）· subtle `--foreground-subtle`.
+**Token usage** — surfaces `--card` / `--muted` · border `--border` · ring `--ring` · radius `--radius` / `--radius-sm` / `--radius-md` · shadow `--shadow-card` / `--shadow-hairline` · fonts `--font-ui` / `--font-display` / `--font-body` · primary（fan avatar）· subtle `--muted-foreground`.
 
 **Usage** — popup，由 E-Shop F3「商店設定」按鈕以 embed-modal iframe 開啟（spec D065 / D067）；頁面無頁首，標題與關閉由 modal 外框提供，Save / Discard 以 `postMessage('ztor:storeset-close')` 通知父頁關閉。截圖未定義的（幣別選項/預設、slug 規則、bio 必填、品牌素材種類）依規格「產品待確認」先留最小。商品陳列拖曳與 See as fan 為 demo 互動（無後端）。
 
@@ -3185,11 +3210,11 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 
 Global interaction defaults — keyframes live here (state-driven), not in Pillar 1.
 
-- **Nav dropdown**: hover-open with a 140ms close delay (cursor can reach the panel); click still toggles. `aria-haspopup` + `aria-expanded` + ESC-to-close. Panel bg uses `--background` (not `--surface`) so dark-mode translucency never muddies it over a colored hero.
+- **Nav dropdown**: hover-open with a 140ms close delay (cursor can reach the panel); click still toggles. `aria-haspopup` + `aria-expanded` + ESC-to-close. Panel bg uses `--background` (not `--card`) so dark-mode translucency never muddies it over a colored hero.
 - **Theme toggle**: light / dark / system 3-state cycle. Persists in `localStorage["ztor.theme.preference"]`. URL `?theme=dark` is a one-time override.
 - **Tab switching** (`.tabs / .tab-panel`): single active panel, URL hash sync via `history.replaceState`; deep-link load activates the target tab.
 - **Filter chip selection** (`.chip / .chip--active`): single-select within a `.chip-group`; active chip inverts to `--foreground` bg; result count updates on every change.
-- **Switch** (`.switch / --on`): 150ms knob slide; track `--surface-muted` ↔ `--primary`.
+- **Switch** (`.switch / --on`): 150ms knob slide; track `--muted` ↔ `--primary`.
 - **Accordion**: chevron-rotate, height transition on expand/collapse.
 - **Motion**: durations 150–240ms, ease-out; all entrance animations gated behind `@media (prefers-reduced-motion: reduce)` (shown immediately when reduced).
 - **Lifecycle states** (see the Lifecycle pattern card in §5.1):
@@ -3201,7 +3226,7 @@ Global interaction defaults — keyframes live here (state-driven), not in Pilla
 
 R 2.1 chart family lives in [`ds-components/chart.css`](./ds-components/chart.css). Three sub-patterns:
 
-- **Line chart** (`.linechart`) — single- or two-series polyline. Default series uses `var(--primary)`; comparison line uses `var(--foreground-subtle)` with `stroke-dasharray: 4 4`. Area fill below line is `color-mix(--primary 18%, transparent)`. Accent dot on latest point.
+- **Line chart** (`.linechart`) — single- or two-series polyline. Default series uses `var(--primary)`; comparison line uses `var(--muted-foreground)` with `stroke-dasharray: 4 4`. Area fill below line is `color-mix(--primary 18%, transparent)`. Accent dot on latest point.
 - **Stacked bar** (`.stacked-bar`) — 14px tall horizontal proportion pill. Segment widths set inline (consumer controls proportion); segment colors set inline (palette = primary / black / status-success / status-info / neutral-grey).
 - **Source list legend** (`.source-list / .source-row`) — 4-col `[10×10 swatch] [label 1fr] [amt auto] [pct auto]` grid; pairs below `.stacked-bar` to spell out segment palette.
 
@@ -3298,7 +3323,7 @@ Technical-stack landing for this design system. The studio is a **static prototy
 | Theme | `theme.js` — light / dark / system cycle, persisted in `localStorage["ztor.theme.preference"]`; `?theme=` one-time override |
 | Icons | `icons.js` — Lucide registry, injected per page via `ztorIcons.applyIcons()`; new icons must be registered first |
 | i18n | `i18n.js` — `en` / `zh-Hant` dictionary, `data-i18n*` bindings, topbar toggle, `localStorage` persisted |
-| Fonts | self-hosted woff2/ttf in [`fonts/`](./fonts/) (Geist / Inter / Taipei Sans TC Beta) — no CDN |
+| Fonts | self-hosted woff2 in [`fonts/`](./fonts/) (Geist / Inter / Noto Sans TC subset) — no CDN |
 | Project chrome | `shared.css` — project-level patterns (topbar, bento, wizard, hero) on top of `ds-components/` |
 | Component API | CSS classes only (no JS component API) — so spec cards use HTML examples, not JSX; Props/API is N/A |
 | Self-contained | the folder runs standalone — no asset or link depends on anything outside this directory |
@@ -3324,7 +3349,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
 [data-theme="dark"] {
   /* Pillar 3 Mode: only the differences from Role */
   --background:        #171717;
-  --surface:           rgba(253,253,253,0.10);
+  --card:           rgba(253,253,253,0.10);
   /* … */
 }
 ```
@@ -3346,7 +3371,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
   --radius-lg:8px;
   --radius-xl:16px;
 
-  --font-display: 'Geist Variable', 'Geist', system-ui, sans-serif;
+  --font-display: 'Geist', 'Geist', system-ui, sans-serif;
   --font-ui:      'Geist', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
 }
@@ -3397,7 +3422,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
     "scale": [0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128],
     "type": {
       "family": {
-        "display": "Geist Variable, Geist, system-ui, sans-serif",
+        "display": "Geist, Geist, system-ui, sans-serif",
         "ui":      "Geist, system-ui, sans-serif",
         "body":    "Inter, system-ui, sans-serif"
       }
@@ -3441,7 +3466,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
   "component": {
     "_note": "see Pillar 4 §4.1 for the full inventory; each unit carries a _layer tag (atom/molecule/organism), orthogonal to variant",
     "button": { "_layer": "atom", "primary": {}, "outline": {}, "ghost": {} },
-    "_inventory": "button · badge · status-dot · chip · switch · stickynote · input · icon · meta-cell (atoms) · navigation-menu · card · kpi · alert · accordion · tabs · cookie-banner · empty-stub · selection-card · composer · page-intro · field-system · filter-row · segmented-control · stepper · settings-nav · settings-row · rental-card · rank-bars (molecules) · header · footer · data-list · table · chart · bento · app-shell · wizard-frame · hero-slideshow · ip-hero · chart-card (organisms)"
+    "_inventory": "button · badge · status-dot · chip · switch · stickynote · input · icon · meta-cell (atoms) · navigation-menu · card · kpi · alert · accordion · tabs · cookie-banner · empty-stub · selection-card · composer · page-intro · field-system · filter-row · segmented-control · stepper · progress-stepper · settings-nav · settings-row · rental-card · rank-bars (molecules) · header · footer · data-list · table · chart · bento · app-shell · wizard-frame · hero-slideshow · ip-hero · chart-card (organisms)"
   },
   "pattern": {
     "_cards": {

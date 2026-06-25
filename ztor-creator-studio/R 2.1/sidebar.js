@@ -198,7 +198,7 @@
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html" role="menuitem" data-i18n="nav.settings">Settings</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#payments" role="menuitem" data-i18n="nav.payments">Payments</a></li>
           <li class="app-topbar__dropdown-divider" role="separator"></li>
-          <li role="presentation"><a class="app-topbar__dropdown-option" href="#" role="menuitem" data-i18n="nav.logout" style="color:var(--status-error)">Log out</a></li>
+          <li role="presentation"><a class="app-topbar__dropdown-option" href="#" role="menuitem" data-i18n="nav.logout" style="color:var(--destructive)">Log out</a></li>
         </ul>
       </div>
     </div>
@@ -291,7 +291,7 @@
           <li><a class="app-sidebar__sub-link" href="settings.html#profile" data-i18n="nav.profile">Profile</a></li>
           <li><a class="app-sidebar__sub-link" href="settings.html" data-i18n="nav.settings">Settings</a></li>
           <li><a class="app-sidebar__sub-link" href="settings.html#payments" data-i18n="nav.payments">Payments</a></li>
-          <li><a class="app-sidebar__sub-link" href="#" data-i18n="nav.logout" style="color:var(--status-error)">Log out</a></li>
+          <li><a class="app-sidebar__sub-link" href="#" data-i18n="nav.logout" style="color:var(--destructive)">Log out</a></li>
         </div></ul>
       </div>
     </div>
@@ -328,7 +328,7 @@
   }
 
   /* Scrolled state — topbar switches to a frosted backdrop blur once the
-     page leaves the top (dark mode, where --surface is translucent). */
+     page leaves the top (dark mode, where --card is translucent). */
   let scrollHandler = null;
   function wireScroll(root) {
     if (scrollHandler) window.removeEventListener("scroll", scrollHandler);

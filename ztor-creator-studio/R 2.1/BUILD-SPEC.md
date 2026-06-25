@@ -30,7 +30,7 @@
 | **首屏節奏** | Page-intro → KPI strip → 大量 patterns | **全屏 Hero banner 輪播**（spec §5.1.1.1，`.hero--fullbleed` 邊到邊）→ Page intro → KPI bento → 模組化卡片群 |
 | **資料呈現偏好** | Card-per-row · shadow-heavy | **Row-divider 為主**（`.data-list`）· 卡片只用於資訊區塊 |
 | **Orange 使用** | 主要在 CTA + active states | **結構性使用**：active nav orange underline、kpi--highlight、sticky-note callout、hero visual fill |
-| **Typography weight** | H1 32–40 px Geist 500 | **H1 44 px / Hero title 56 px / Geist Variable 500 / tracking −1px**（更編輯感） |
+| **Typography weight** | H1 32–40 px Geist 500 | **H1 44 px / Hero title 56 px / Geist 500 / tracking −1px**（更編輯感） |
 | **Sticky-note pattern** | 沒有 | 新增 `.stickynote` — 高飽和橘底 + 黑字，用於 inline 提示與 callout |
 | **Wizard 結構** | Topbar 內嵌 stepper（圓圈 + 直線） | **獨立 wizard top**（不顯示主導航）· stepper 在中央 · 底部 sticky action bar |
 | **元件覆蓋** | 14 頁全部產品化 + Light/Dark 完整實作 | 初版 6 完整＋8 stub，把心力集中在 IA + 設計語言展示；**現況 18 頁（9 完整、8 structure/step-1、1 重導 stub，見 §2）** |
@@ -83,7 +83,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
         component-library.md    · CSS / component ownership index
 
 骨架     ds-components/         · base 由 ztor yellow components/ 拷貝（10 個基礎元件：accordion · badge · button · card · cookie-banner · footer · header · input · navigation-menu · table）+ _tokens.css + fonts.css；R 2.1 另 promote app-tier 與 project-owned 元件，完整清單以 design-system.md §4.1 Inventory / component-library.md 為準
-        fonts/                  · 自架 Geist / Geist Mono / Inter woff2；Taipei Sans TC Beta 已移除（殘留 .ttf 為孤兒檔），CJK 現用系統 Noto Sans TC（自架 Noto 為 open task）
+        fonts/                  · 自架 Geist / Geist Mono / Inter woff2；Taipei Sans TC Beta 已移除，CJK 用自架 subset 的 Noto Sans TC（woff2 在 fonts/）
         images/                 · Hero banner 全屏照片（unsplash placeholder × 3）
         shared.css              · project-level patterns（R 2.0 canonical topbar / bento / wizard / IP hero / fullbleed hero / linechart / alert-card / chip / tab-panel）
         sidebar.js              · 注入全域導航框架（spec §5.2.1）。依 html[data-nav-mode] 兩模式渲染：topbar（R 2.0 canonical `.app-topbar__*`，預設）或 sidebar（248px 直向 `.app-sidebar__*`，下拉變可展開群組）。同一套 NAV，IA 不變（spec §6.9 / D016）。通知與待辦中心同源渲染：topbar 為右側下拉，sidebar 為貼 rail 右側 flyout；官方公告併入中心。檔名保留為 sidebar.js 維持 HTML 相容
@@ -110,9 +110,9 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 完全套用 `Design/Design System/ztor yellow/` 的 design system，文件結構對齊 **DSS v1.4 7-Pillar 架構**（Pillar 0 Record · 1 Foundation · 2 Role · 3 Mode · 4 Component · 5 Pattern · 6 Structure + Appendix A/B）。重點 tokens：
 
 - **Foundation**（raw）：`#FAFAF7` warm paper · `#ffa33f` highlighter orange · `#171717` dark text on orange
-- **Role**（semantic）：`--background / --surface / --primary / --foreground-muted / --status-{success|error|info|warning}` 在 `_tokens.css` 統一注入
+- **Role**（semantic）：`--background / --card / --primary / --foreground-muted / --status-{success|error|info|warning}` 在 `_tokens.css` 統一注入
 - **Mode**：`[data-theme="dark"]` 13 個 role 覆寫，`theme.js` 切換 + localStorage 持久化
-- **Typography**：Geist Variable (display) · Geist (UI) · Inter (body) · Noto Sans TC（CJK fallback，系統字；自架為 open task，R 2.1.39 起取代 Taipei Sans TC Beta）
+- **Typography**：Geist (display) · Geist (UI) · Inter (body) · Noto Sans TC（CJK fallback，自架 subset woff2；R 2.1.39 起取代 Taipei Sans TC Beta、R 2.1.40 起自架）
 - **Component**：28 個元件已 promote 進 `ds-components/` 成獨立 CSS（完整清單與 anatomy 見 design-system.md §4.1 Inventory；index 見 component-library.md）；另有 App shell 等 project-owned 元件仍住 `shared.css`。全部元件（含 shared.css 持有者）在 design-system.html 都有 demo 卡——這是設計師檢視元件的唯一入口，新增/修改元件必同步
 - **Pattern**：5.1 Pattern 卡（Layout / Interaction / Lifecycle / Workflow 四類）/ 5.2 Voice / 5.3 States / 5.4 Data viz / 5.5 Workflow
 - **Structure**：12-col bento + 5 page templates（Dashboard / Earnings 4-tab / Wizard / Settings / Empty stub）
@@ -121,11 +121,11 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 | Pattern | CSS class | 用途 |
 |---|---|---|
-| Topbar (canonical) | `.app-topbar` | **64 px** 高 · sticky · `--surface` bg · padding 0 32px · flex（actions 用 `margin-left:auto` 推右）· 對齊 design-system.html 的 `.dm-header` |
+| Topbar (canonical) | `.app-topbar` | **64 px** 高 · sticky · `--card` bg · padding 0 32px · flex（actions 用 `margin-left:auto` 推右）· 對齊 design-system.html 的 `.dm-header` |
 | Brand | `.app-brand / .app-brand__mark` | Geist UI 18px / 500 + 22 px orange Z mark（小，配 18 px wordmark） |
-| Main nav | `.app-topbar__nav / .app-topbar__link` | 14 px / 500 · foreground-muted · hover/active 底色由**共用滑動高亮 pill** `.app-topbar__nav-highlight` 提供（一顆 `--surface-muted` pill 在項目間滑動跟游標、離開 nav 滑回 active 頁；Motion mega-menu shared-element 風格，vanilla 實作）；link 自身背景透明避免雙重底（**不**用 orange underline，orange 留給 CTA / sticky-note / hero）|
-| Dropdown panel | `.app-topbar__nav-group[data-dropdown] / .app-topbar__dropdown--mega` | **Hover-open**（140 ms 關閉延遲讓游標進得了 panel；click 仍可切換）· 開關用 `data-state="open\|closed"` 跑 fade+slide(-6px)+scale(0.98) 進出場動畫 · **下拉＝IP Bank（My IP / IP Market）與 E-Shop（電子商店 / 訂單管理；商店設定 2026-06-15 移出下拉、改 F3 popup，D065）**（Events / Fans 平鋪；spec §3.2.1 / decisions D013 + D014）· sidebar 顯示模式下這兩個下拉改為可展開群組（`.app-sidebar__group`） · **bg 比照 header 用 `--surface`**（2026-06-09 反饋：下拉底色要和 header 一致；移除先前 `--background` + dark `#1F1F1F` 寫法）· 面板頂距 header(64px) 底 +4px（`top: calc(100% + 18px)`）· **frosted glass**：加 `backdrop-filter: blur(14px) saturate(140%)`（同 scrolled header），dark 下 `--surface` 半透明時把背後 hero/content 模糊成霧面、文字仍清楚；light 下 `--surface` 不透明，blur 自然 no-op |
-| Topbar actions | `.app-actions / .app-icon-btn / .app-icon-btn__dot / .app-search / .app-notif` | 8 px gap · icon button 36×36 transparent，hover `--surface-muted` · notification 帶 orange unread dot · search icon 點開內嵌 input · 通知與待辦中心分「需要你處理」與「狀態更新」兩區，官方公告併入 |
+| Main nav | `.app-topbar__nav / .app-topbar__link` | 14 px / 500 · foreground-muted · hover/active 底色由**共用滑動高亮 pill** `.app-topbar__nav-highlight` 提供（一顆 `--muted` pill 在項目間滑動跟游標、離開 nav 滑回 active 頁；Motion mega-menu shared-element 風格，vanilla 實作）；link 自身背景透明避免雙重底（**不**用 orange underline，orange 留給 CTA / sticky-note / hero）|
+| Dropdown panel | `.app-topbar__nav-group[data-dropdown] / .app-topbar__dropdown--mega` | **Hover-open**（140 ms 關閉延遲讓游標進得了 panel；click 仍可切換）· 開關用 `data-state="open\|closed"` 跑 fade+slide(-6px)+scale(0.98) 進出場動畫 · **下拉＝IP Bank（My IP / IP Market）與 E-Shop（電子商店 / 訂單管理；商店設定 2026-06-15 移出下拉、改 F3 popup，D065）**（Events / Fans 平鋪；spec §3.2.1 / decisions D013 + D014）· sidebar 顯示模式下這兩個下拉改為可展開群組（`.app-sidebar__group`） · **bg 比照 header 用 `--card`**（2026-06-09 反饋：下拉底色要和 header 一致；移除先前 `--background` + dark `#1F1F1F` 寫法）· 面板頂距 header(64px) 底 +4px（`top: calc(100% + 18px)`）· **frosted glass**：加 `backdrop-filter: blur(14px) saturate(140%)`（同 scrolled header），dark 下 `--card` 半透明時把背後 hero/content 模糊成霧面、文字仍清楚；light 下 `--card` 不透明，blur 自然 no-op |
+| Topbar actions | `.app-actions / .app-icon-btn / .app-icon-btn__dot / .app-search / .app-notif` | 8 px gap · icon button 36×36 transparent，hover `--muted` · notification 帶 orange unread dot · search icon 點開內嵌 input · 通知與待辦中心分「需要你處理」與「狀態更新」兩區，官方公告併入 |
 | Language pill | `.app-lang` | 32 px pill + hairline border · `EN · 中` 雙語 toggle · 對齊 R 2.0 寫法 |
 | Avatar | `.app-avatar` | 32×32 圓形 · `--foreground` bg / `--background` text（inverse colors，**不**用 orange）|
 | Account menu | `.app-account__wrap / .app-account__panel` | Avatar 下拉 · Profile / Settings / Payments / Logout（Settings 入口在帳戶選單 ≠ 主導航，spec §3.2.2.5）· 同樣 `--background` bg |
@@ -153,7 +153,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | IP hero | `.ip-hero / .ip-hero__cover / .rental-card / .duration-grid` | IP 詳情頁專用三欄 hero |
 | Stacked bar | `.stacked-bar / .source-list` | Revenue by Source 共用 |
 | Tabs | `.tabs / .tabs__item / .tabs__item--active` | Orange 底線 active state · **`.tabs--brand` 變體**＝淡橘（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
-| Filter tabs | `.filter-tabs / __item / __item--active / __count` | 次級狀態篩選 pill 列（spec 5.1.5 F3）：每顆 pill 一個狀態＋即時數量徽章，active＝淡 `--surface-muted` 填底、刻意不用品牌色，放主 tabs 下一行形成主次層級；數量由前端讀清單 `data-status` 計算（切 tab 重算）。E-Shop F3 狀態篩選由原 `field-pill` select 改用（2026-06-15）|
+| Filter tabs | `.filter-tabs / __item / __item--active / __count` | 次級狀態篩選 pill 列（spec 5.1.5 F3）：每顆 pill 一個狀態＋即時數量徽章，active＝淡 `--muted` 填底、刻意不用品牌色，放主 tabs 下一行形成主次層級；數量由前端讀清單 `data-status` 計算（切 tab 重算）。E-Shop F3 狀態篩選由原 `field-pill` select 改用（2026-06-15）|
 | Alert（`--bar`）| `.alert--bar` + `.alert__icon/__body/__title/__cta/__dismiss` | 全寬頂部通知條變體（spec 5.1.5 F2）：白底、底部細線、單行、⚠ 警示色 chip＋深色文字連結 CTA＋圓形關閉；置於 `.main` 頂端、`position:sticky` 常駐、可關閉。E-Shop 低庫存提醒由原 `.alert--banner` 卡片改用（2026-06-15）|
 | Settings layout | `.settings-layout / .settings-nav / .settings-section / .settings-row` | 220 px sticky 左側 + 右側單一 active section；左側選項以 URL hash 切換，其他 section 不佔頁面高度 |
 | Appearance card | `.appearance-card / --dark / --system` | 三選一主題 radio card（spec 5.1.9 Appearance） |
@@ -207,7 +207,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - **主導航**：Dashboard · Projects · IP Bank ▾ · E-Shop ▾ · Events · Fans · Earnings（**下拉＝IP Bank（My IP / IP Market）與 E-Shop（電子商店 / 訂單管理；商店設定 2026-06-15 移出下拉、改 F3 popup，D065）**；其餘平鋪，子頁與建立流程頁內進入，spec §3.2.1 / decisions D013 + D014）
 - **顯示模式**：主導航可在 Topbar（預設）與 Sidebar 間切換，同一套 nav／IA；導航上有快速切換鈕（`[data-nav-toggle]`）＋ Settings→外觀切換卡（spec §6.9 / D016，見 §5.2a）
 - **Settings 不在主 nav**（spec §3.2.2.5）— 入口在 Avatar dropdown / sidebar 帳戶群組內
-- **Active state**：`[aria-current="page"]` + `--surface-muted` 背景（不用 orange underline）
+- **Active state**：`[aria-current="page"]` + `--muted` 背景（不用 orange underline）
 - **Dropdown**：`.app-topbar__dropdown--mega` 360 px · icon box + title + sub 兩行 · **IP Bank + E-Shop 使用**（sidebar 模式改為 `.app-sidebar__group` 可展開群組）
 
 ### 5.2 主題（Theme）
@@ -220,7 +220,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 ### 5.2a 顯示模式（Display mode · spec §6.9 / D016）
 
 - 導航有兩種顯示模式：**Topbar**（橫向頂列，預設）與 **Sidebar**（248px 左側直向 rail）。同一套 NAV、同一份 IA，只改擺放位置。
-- 配色（2026-06-10）：Topbar 模式維持純白 `--background #FFFFFF`。Sidebar 模式使用 `--surface-shell #F5F5F5` 作淡灰 App Shell，rail 直接融入 shell；item hover/active 仍用 `--surface-rail-hover #F3F3F3`。右側 `.main` 使用 `--surface-page #FFFFFF` 成為單一不透明內容頁。
+- 配色（2026-06-10）：Topbar 模式維持純白 `--background #FFFFFF`。Sidebar 模式使用 `--surface-shell #F5F5F5` 作淡灰 App Shell，rail 直接融入 shell；item hover/active 仍用 `--accent #F3F3F3`。右側 `.main` 使用 `--surface-page #FFFFFF` 成為單一不透明內容頁。
 - `<html data-nav-mode="topbar|sidebar">` 屬性 driven，`theme.js` 在 `<head>` 早期套用（避免版面閃爍）+ localStorage key `ztor.nav.mode` 持久化，API `window.ztorNavMode`。
 - `sidebar.js` 依 `data-nav-mode` 渲染對應 markup（`.app-topbar__*` 或 `.app-sidebar__*`），並監聽 `ztor:navmode-changed` 即時重繪。版面切換規則在 `shared.css` 的 `[data-nav-mode="sidebar"]` 區塊。
 - Sidebar 模式：頂層平鋪、IP Bank / E-Shop 為可展開群組（`.app-sidebar__group`，active 子頁時自動展開；現役）；全域操作（搜尋 / 通知 / 語言 / 主題 / 帳戶）收在 rail 底部。另有「分組標題＋子項平鋪」變體（`.app-sidebar__section-label`，2026-06-13 做過、使用者選擇改回 accordion）保留在 CSS／design-system，可隨時切回。
@@ -244,7 +244,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - localStorage key `ztor-r21-lang` 持久化，`<html lang>` 同步寫
 - **覆蓋範圍**：全站 17 頁 body 完整覆蓋（topbar 通用 + Dashboard + Earnings + orders / order-detail + 其餘內容頁）。`applyI18n()` 以 `document.querySelectorAll('[data-i18n*]')` 全域套用，runtime 注入的區塊（sidebar / components.js）注入後再各自呼叫一次
 - 切換後 `applyI18n()` 重新跑 query selectors，不需 reload
-- **CJK fallback** 字型：系統 `Noto Sans TC`（R 2.1.39 起；Taipei Sans TC Beta 已移除，自架 Noto 為 open task）
+- **CJK fallback** 字型：自架 `Noto Sans TC`（subset woff2；R 2.1.39 起取代、R 2.1.40 起自架；Taipei Sans TC Beta 已移除）
 
 ### 5.4 響應式（Responsive）
 
@@ -315,7 +315,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 ### 6.3 字型
 
-自架 woff2 在 `fonts/`：Geist-Variable / Geist-Mono / Inter。CJK fallback 為系統 `Noto Sans TC`（fonts.css 將其加進 `--font-display / --font-ui / --font-body` token 鏈；Taipei Sans TC Beta 已於 R 2.1.39 移除，fonts/ 內殘留 .ttf 為孤兒檔、自架 Noto 為 open task）。
+自架 woff2 在 `fonts/`：Geist-Variable / Geist-Mono / Inter。CJK fallback 為自架 subset 的 `Noto Sans TC`（fonts.css 以 @font-face 自架並加進 `--font-display / --font-ui / --font-body` token 鏈；Taipei Sans TC Beta 已於 R 2.1.39 移除）。
 
 ---
 
