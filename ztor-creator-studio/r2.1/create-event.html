@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create New Event · Ztor Creator Studio</title>
+<script src="js/theme.js?v=20260625b"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/button.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/card.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/input.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/event-preview-card.css?v=20260625b">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260625b">
+<link rel="stylesheet" href="shared.css?v=20260625b">
+<style>
+  /* create-event 專屬 layout hooks（欄位排版／類型卡圖示／圖片格網），非跨頁重用，比照 e-shop/events 留頁內。 */
+  .ce-type-icon { display:inline-grid; place-items:center; width:30px; height:30px; margin-bottom:6px; color:var(--foreground-muted); }
+  .ce-type-icon .ztor-icon { width:20px; height:20px; }
+  .selection-card--active .ce-type-icon { color:var(--foreground); }
+
+  .ce-block { margin-bottom:28px; }
+  .ce-block__title { font-family:var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-semibold); margin:0 0 2px; }
+  .ce-block__sub { font-size: var(--fs-12); color:var(--muted-foreground); margin:0 0 12px; }
+
+  .ce-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .ce-image-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .ce-tier-count { margin-top:10px; text-align:right; font-size: var(--fs-12); color:var(--muted-foreground); }
+
+  /* 上傳格已填狀態（.upload-tile.is-filled）已 promote 至 ds-components/upload-tile.css。 */
+
+  /* 自動儲存狀態指示（§5.2.4）：頂部操作列的小 pill，create-event 專屬。 */
+  .ce-save-status {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-ui); font-size: var(--fs-12);
+    color:var(--muted-foreground); white-space:nowrap;
+  }
+  .ce-save-status__dot { width:6px; height:6px; border-radius:50%; background:var(--status-success); flex:none; }
+  .ce-save-status[data-state="saving"] { color:var(--foreground-muted); }
+  .ce-save-status[data-state="saving"] .ce-save-status__dot { background:var(--status-warning); }
+
+  /* Review 步驟摘要：無卡片化（與 create-product 無卡片語言一致）——標題＋Edit 連結一行、值在下、底線分隔。 */
+  .ce-review-row { padding: 14px 0; border-bottom: 1px solid var(--border-soft); }
+  .ce-review-row__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .ce-review-row__title { font-family: var(--font-ui); font-size: var(--fs-15); font-weight: var(--fw-medium); margin: 0; }
+
+  /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
+  .ce-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--destructive); }
+  .field.is-invalid .ce-field-error { display:block; }
+
+  @media (max-width:640px){
+    .ce-grid-2, .ce-image-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wizard">
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬）；右＝自動儲存＋預覽。 -->
+  <div class="wizard__sheet">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="ce.h1">Create event</span>
+          <span class="wizard__top-sub" id="ce-subtitle" data-i18n="ce.subtitle">Offline event</span>
+        </div>
+      </div>
+      <!-- 進度條：中欄、內容寬（id 沿用 stepper 供切步 JS 找到）-->
+      <div class="wizard__progress">
+        <div class="progress-stepper" id="stepper" style="--progress:20%">
+          <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+          <div class="progress-stepper__labels">
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="1" data-i18n="ce.step.type">Type</span>
+            <span class="progress-stepper__label" data-step="2" data-i18n="ce.step.details">Details</span>
+            <span class="progress-stepper__label" data-step="3" data-i18n="ce.step.venue">Venue &amp; Time</span>
+            <span class="progress-stepper__label" data-step="4" data-i18n="ce.step.tickets">Tickets</span>
+            <span class="progress-stepper__label" data-step="5" data-i18n="ce.step.review">Review</span>
+          </div>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <span class="ce-save-status" id="ce-save-status" data-state="saved">
+          <span class="ce-save-status__dot"></span>
+          <span id="ce-save-status-text" data-i18n="ce.save.saved">Saved · just now</span>
+        </span>
+        <button class="btn btn--outline" id="ce-preview-open"><i data-lucide="eye" class="ztor-icon"></i> <span data-i18n="ce.preview">Preview</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body">
+
+    <!-- STEP 1 · Type -->
+    <section data-step-panel="1">
+      <h1 class="wizard__step-title" data-i18n="ce.s1.h1">What kind of event?</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s1.sub">This determines what settings you will see.</p>
+
+      <div class="selection-grid">
+        <button type="button" class="selection-card" data-choice="concert">
+          <span class="ce-type-icon"><i data-lucide="music" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.concert">Concert</span>
+          <span class="selection-card__sub" data-i18n="ce.type.concert-sub">Live music performance</span>
+        </button>
+        <button type="button" class="selection-card" data-choice="meet">
+          <span class="ce-type-icon"><i data-lucide="users" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.meet">Meet &amp; Greet</span>
+          <span class="selection-card__sub" data-i18n="ce.type.meet-sub">Intimate fan interaction</span>
+        </button>
+        <button type="button" class="selection-card" data-choice="festival">
+          <span class="ce-type-icon"><i data-lucide="tent" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.festival">Festival</span>
+          <span class="selection-card__sub" data-i18n="ce.type.festival-sub">Multi-day, multiple acts</span>
+        </button>
+        <button type="button" class="selection-card" data-choice="launch">
+          <span class="ce-type-icon"><i data-lucide="party-popper" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.launch">Launch Party</span>
+          <span class="selection-card__sub" data-i18n="ce.type.launch-sub">Celebrate a release</span>
+        </button>
+        <button type="button" class="selection-card" data-choice="virtual">
+          <span class="ce-type-icon"><i data-lucide="video" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.virtual">Virtual Event</span>
+          <span class="selection-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2 · Details -->
+    <section data-step-panel="2" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ce.s2.h1">Make them feel it</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s2.sub">What will fans experience?</p>
+
+      <div class="ce-block">
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ce="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
+          <p class="ce-field-error" data-i18n="ce.err.name">Event name is required.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <textarea class="textarea" data-ce="desc" data-required placeholder="What will fans experience? Make it vivid." data-i18n-placeholder="ce.desc.ph"></textarea>
+          <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
+        </div>
+      </div>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.lineup">Lineup / performers</h3>
+        <p class="ce-block__sub" data-i18n="ce.lineup.sub">Search Ztor users or type external names.</p>
+        <button type="button" class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
+      </div>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.images">Images</h3>
+        <p class="ce-block__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
+        <div class="ce-image-grid">
+          <div class="upload-tile" data-asset="thumb">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+          </div>
+          <div class="upload-tile" data-asset="poster">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
+          </div>
+          <div class="upload-tile" data-asset="banner">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
+          </div>
+          <div class="upload-tile" data-asset="gallery">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
+        <div class="upload-tile upload-tile--file" data-asset="video">
+          <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="ce.video.title">Upload a teaser</span>
+          <span class="upload-tile__hint" data-i18n="ce.video.hint">MP4 or MOV · up to 2GB</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3 · Venue & Time -->
+    <section data-step-panel="3" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ce.s3.h1">Where and when</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s3.sub">Where are fans going?</p>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.venue">Venue</h3>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ce="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
+          <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.city">City / Country</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <input class="input" data-ce="city" placeholder="e.g., Taipei, Taiwan" data-i18n-placeholder="ce.venue.city.ph">
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <input class="input" placeholder="Street address" data-i18n-placeholder="ce.venue.addr.ph">
+        </div>
+      </div>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.time">Time</h3>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.date">Event date</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ce="date" data-required type="date">
+          <p class="ce-field-error" data-i18n="ce.err.date">Event date is required.</p>
+        </div>
+        <div class="ce-grid-2">
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.start">Start time</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" data-ce="start" type="time">
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.end">End time</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" type="time">
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.doors">Doors open</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" type="time">
+          </div>
+        </div>
+      </div>
+
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.capacity">Capacity</h3>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.capacity.label">Capacity</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ce="capacity" data-required type="number" placeholder="Total seats or standing" data-i18n-placeholder="ce.capacity.ph">
+          <p class="ce-field-error" data-i18n="ce.err.capacity">Capacity is required.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4 · Tickets -->
+    <section data-step-panel="4" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ce.s4.h1">Set your tickets</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s4.sub">Create ticket tiers. Minimum 1.</p>
+
+      <button type="button" class="upload-tile" id="ce-tier-add" style="min-height:120px">
+        <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
+        <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
+        <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity, eligibility</span>
+      </button>
+      <div class="ce-tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
+    </section>
+
+    <!-- STEP 5 · Review -->
+    <section data-step-panel="5" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
+
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.type">Event type</h3>
+          <a class="card__link" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
+        </div>
+        <div class="meta-cell__value" data-rev="type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+      </div>
+
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.name">Event name</h3>
+          <a class="card__link" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
+        </div>
+        <div class="meta-cell__value" data-rev="name" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
+      </div>
+
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.venue">Venue &amp; time</h3>
+          <a class="card__link" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
+        </div>
+        <div class="meta-cell__value" data-rev="venue" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
+      </div>
+
+      <div class="ce-review-row" style="margin-bottom:18px">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.tickets">Tickets</h3>
+          <a class="card__link" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
+        </div>
+        <div class="meta-cell__value" data-rev="tickets" data-ph-key="ce.ph.0tiers"><span data-i18n="ce.ph.0tiers">0 tiers</span></div>
+      </div>
+
+      <section class="readiness">
+        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ce.qc.title">Quality check</h3></div>
+        <ul class="readiness__list">
+          <li class="readiness__item" data-qc="type"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.type">Event type selected</span></li>
+          <li class="readiness__item" data-qc="name"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.name">Event name filled</span></li>
+          <li class="readiness__item" data-qc="date"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.date">Date set</span></li>
+          <li class="readiness__item" data-qc="venue"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.venue">Venue set</span></li>
+          <li class="readiness__item" data-qc="ticket"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.ticket">At least 1 ticket tier</span></li>
+        </ul>
+        <div class="readiness__banner" id="ce-qc-banner" data-i18n="ce.qc.banner">5 items needed before publishing</div>
+      </section>
+    </section>
+
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom">
+    <button class="btn btn--ghost" data-action="save-exit" data-i18n="ce.saveexit">Save &amp; exit</button>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" data-action="back" disabled data-i18n="wiz.back">Back</button>
+      <button class="btn btn--primary" data-action="next" data-i18n="ce.next.1">Next: Details</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- 即時預覽面板（§4.6／§5.2.5）：粉絲視角活動卡，畫面分割、隨輸入更新 -->
+<div class="preview-panel" id="ce-preview">
+  <div class="preview-panel__backdrop" data-ce-preview-close></div>
+  <div class="preview-panel__sheet">
+    <div class="preview-panel__head">
+      <h3 class="preview-panel__title" data-i18n="ce.preview.title">How fans see your event</h3>
+      <button class="btn btn--icon btn--sm" data-ce-preview-close aria-label="Close preview"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="preview-panel__body">
+      <div class="event-preview-card">
+        <div class="event-preview-card__poster" id="ce-pv-poster">
+          <span class="badge event-preview-card__type-tag" id="ce-pv-type" hidden></span>
+          <i data-lucide="image" class="ztor-icon" id="ce-pv-poster-icon"></i>
+        </div>
+        <div class="event-preview-card__body">
+          <h4 class="event-preview-card__name is-empty" id="ce-pv-name" data-i18n="ce.pv.name">Event name</h4>
+          <div class="event-preview-card__meta">
+            <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span id="ce-pv-date" data-i18n="ce.pv.date">Date to be set</span></span>
+            <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span id="ce-pv-venue" data-i18n="ce.pv.venue">Venue to be set</span></span>
+          </div>
+          <div class="event-preview-card__tickets is-empty" id="ce-pv-tickets" data-i18n="ce.pv.tickets">Tickets coming soon</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=20260625b"></script>
+<script src="js/i18n.js?v=20260625b"></script>
+<script src="partials/wizard-chrome.js?v=20260625b"></script>
+<script>
+(function () {
+  let step = 1;
+  const total = 5;
+  const nextKeys = ["", "ce.next.1", "ce.next.2", "ce.next.3", "ce.next.4", "ce.publish"];
+
+  function nextLabel(s) {
+    const k = nextKeys[s];
+    return (window.i18nT && window.i18nT(k)) || k;
+  }
+
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+
+  function render() {
+    document.querySelectorAll("[data-step-panel]").forEach(p => {
+      p.classList.toggle("hidden", Number(p.dataset.stepPanel) !== step);
+    });
+    const labels = document.querySelectorAll(".progress-stepper__label");
+    labels.forEach(s => {
+      const n = Number(s.dataset.step);
+      s.classList.toggle("progress-stepper__label--current", n === step);
+      s.classList.toggle("progress-stepper__label--done", n < step);
+    });
+    const ps = document.getElementById("stepper");
+    if (ps) ps.style.setProperty("--progress", (step / labels.length * 100) + "%");
+    document.querySelector("[data-action=back]").disabled = step === 1;
+    const next = document.querySelector("[data-action=next]");
+    next.dataset.i18n = nextKeys[step];
+    next.textContent = nextLabel(step);
+    syncReview();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  /* ---- A2/A3：讀前面步驟輸入 → 回填 Review 摘要、即時打勾 Quality check、
+          banner 計數、全通過才開放 Publish。純前端就緒示意（spec §4.5 五項）。---- */
+  function readState() {
+    const typeCard = document.querySelector(".selection-card--active");
+    const typeName = typeCard ? (typeCard.querySelector(".selection-card__title")?.textContent || "").trim() : "";
+    const name  = (document.querySelector("[data-ce=name]")?.value  || "").trim();
+    const date  = (document.querySelector("[data-ce=date]")?.value  || "").trim();
+    const venue = (document.querySelector("[data-ce=venue]")?.value || "").trim();
+    const city  = (document.querySelector("[data-ce=city]")?.value  || "").trim();
+    const start = (document.querySelector("[data-ce=start]")?.value || "").trim();
+    const tiers = Number(document.getElementById("ce-tier-count")?.dataset.tiers || 0);
+    const posterFilled = !!document.querySelector('.upload-tile.is-filled[data-asset="poster"], .upload-tile.is-filled[data-asset="banner"]');
+    return { typeName, name, date, venue, city, start, tiers, posterFilled };
+  }
+
+  function setRev(key, value, phKey, phFallback) {
+    const el = document.querySelector('[data-rev="' + key + '"]');
+    if (!el) return;
+    el.textContent = value || T(phKey, phFallback);
+  }
+
+  function syncReview() {
+    const s = readState();
+
+    // A3 — 摘要回填（未填顯佔位）
+    setRev("type",  s.typeName, "ce.ph.notsel",     "Not selected");
+    setRev("name",  s.name,     "ce.ph.notentered", "Not entered");
+    let venueLine = "";
+    if (s.venue || s.date) {
+      const parts = [];
+      if (s.venue) parts.push(s.city ? (s.venue + " · " + s.city) : s.venue);
+      if (s.date)  parts.push(s.start ? (s.date + " · " + s.start) : s.date);
+      venueLine = parts.join(" — ");
+    }
+    setRev("venue", venueLine, "ce.ph.notset", "Not set");
+    setRev("tickets", s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "", "ce.ph.0tiers", "0 tiers");
+
+    // A2 — Quality check 即時打勾
+    const checks = {
+      type:   !!s.typeName,
+      name:   !!s.name,
+      date:   !!s.date,
+      venue:  !!s.venue,
+      ticket: s.tiers > 0
+    };
+    let done = 0;
+    Object.keys(checks).forEach(k => {
+      const li = document.querySelector('[data-qc="' + k + '"]');
+      if (li) li.classList.toggle("readiness__item--done", checks[k]);
+      if (checks[k]) done++;
+    });
+    const totalQc = 5, left = totalQc - done, allOk = left === 0;
+
+    // banner 計數即時更新；全通過轉 ready
+    const banner = document.getElementById("ce-qc-banner");
+    if (banner) {
+      banner.classList.toggle("readiness__banner--ready", allOk);
+      if (allOk) {
+        banner.removeAttribute("data-i18n");
+        banner.textContent = T("ce.qc.ready", "All set — ready to publish");
+      } else {
+        banner.removeAttribute("data-i18n");
+        banner.textContent = T("ce.qc.left", "{n} items needed before publishing").replace("{n}", left);
+      }
+    }
+
+    // 全通過才開放 Publish（就緒示意；step 5 時生效）
+    const next = document.querySelector("[data-action=next]");
+    next.disabled = (step === total) && !allOk;
+
+    // 即時預覽卡同步
+    renderPreview(s);
+  }
+
+  /* ---- A：粉絲視角活動卡即時預覽（§4.6／§5.2.5）。隨輸入更新；未填顯佔位。---- */
+  function setPv(id, value, fallbackKey, fallback) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (value) { el.textContent = value; el.classList.remove("is-empty"); }
+    else { el.textContent = T(fallbackKey, fallback); el.classList.add("is-empty"); }
+  }
+  function renderPreview(s) {
+    s = s || readState();
+    // 海報：已傳 Vertical poster／Landscape banner 時換實色背景示意，未傳顯 icon 佔位
+    const poster = document.getElementById("ce-pv-poster");
+    const posterIcon = document.getElementById("ce-pv-poster-icon");
+    if (poster) {
+      poster.style.background = s.posterFilled ? "var(--surface-inverse)" : "";
+      if (posterIcon) posterIcon.style.display = s.posterFilled ? "none" : "";
+    }
+    // 類型徽章
+    const typeTag = document.getElementById("ce-pv-type");
+    if (typeTag) {
+      if (s.typeName) { typeTag.textContent = s.typeName; typeTag.hidden = false; }
+      else { typeTag.hidden = true; }
+    }
+    // 名稱
+    setPv("ce-pv-name", s.name, "ce.pv.name", "Event name");
+    // 日期（＋開始時間）
+    const dateLine = s.date ? (s.start ? (s.date + " · " + s.start) : s.date) : "";
+    setPv("ce-pv-date", dateLine, "ce.pv.date", "Date to be set");
+    // 場地（＋城市）
+    const venueLine = s.venue ? (s.city ? (s.venue + " · " + s.city) : s.venue) : "";
+    setPv("ce-pv-venue", venueLine, "ce.pv.venue", "Venue to be set");
+    // 票種摘要：有票種顯「N tiers」，無顯佔位
+    const ticketLine = s.tiers > 0 ? T("ce.pv.tiersn", "{n} ticket tiers").replace("{n}", s.tiers) : "";
+    setPv("ce-pv-tickets", ticketLine, "ce.pv.tickets", "Tickets coming soon");
+  }
+
+  document.querySelector("[data-action=next]").addEventListener("click", () => {
+    if (step < total) { step++; render(); }
+    else { tryPublish(); }
+  });
+  document.querySelector("[data-action=back]").addEventListener("click", () => {
+    if (step > 1) { step--; render(); }
+  });
+  document.querySelector("[data-action=save-exit]").addEventListener("click", () => {
+    markSaved();
+    alert(T('ce.saveexit-alert', "Draft saved. You can come back from Events → Draft."));
+  });
+
+  document.querySelectorAll(".progress-stepper__label").forEach(s => {
+    s.addEventListener("click", () => {
+      const n = Number(s.dataset.step);
+      if (n <= step) { step = n; render(); }   // 只能回點已完成/當前步，前進走 Next
+    });
+  });
+  document.querySelectorAll("[data-goto]").forEach(a => {
+    a.addEventListener("click", e => { e.preventDefault(); step = Number(a.dataset.goto); render(); });
+  });
+
+  document.querySelectorAll(".selection-card").forEach(c => {
+    c.addEventListener("click", () => {
+      c.parentElement.querySelectorAll(".selection-card").forEach(s => s.classList.remove("selection-card--active"));
+      c.classList.add("selection-card--active");
+      syncReview();
+      scheduleSave();
+    });
+  });
+
+  // 任何欄位輸入即時回填／打勾＋觸發自動儲存示意
+  document.querySelectorAll("[data-ce]").forEach(el => el.addEventListener("input", () => { syncReview(); scheduleSave(); }));
+
+  /* ---- B：自動儲存狀態（§5.2.4）。任何輸入 → 短暫「Saving…」再回「Saved · just now」。
+          純前端示意，不真的持久化。---- */
+  const saveStatus = document.getElementById("ce-save-status");
+  const saveText   = document.getElementById("ce-save-status-text");
+  let saveTimer = null;
+  function markSaving() {
+    if (!saveStatus) return;
+    saveStatus.dataset.state = "saving";
+    saveStatus.removeAttribute("data-i18n");
+    if (saveText) { saveText.removeAttribute("data-i18n"); saveText.textContent = T("ce.save.saving", "Saving…"); }
+  }
+  function markSaved() {
+    if (!saveStatus) return;
+    saveStatus.dataset.state = "saved";
+    if (saveText) { saveText.removeAttribute("data-i18n"); saveText.textContent = T("ce.save.saved", "Saved · just now"); }
+  }
+  function scheduleSave() {
+    markSaving();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(markSaved, 700);
+  }
+
+  /* ---- C：＊ 必填 inline 驗證（§4.5③）。on blur 空白標紅、不擋切步；
+          Publish 時彙整未過 ＊ 並聚焦／標示。---- */
+  function fieldWrap(el) { return el.closest(".field"); }
+  function validateField(el) {
+    const empty = !el.value.trim();
+    const wrap = fieldWrap(el);
+    el.setAttribute("aria-invalid", empty ? "true" : "false");
+    if (wrap) wrap.classList.toggle("is-invalid", empty);
+    return !empty;
+  }
+  function clearFieldError(el) {
+    const wrap = fieldWrap(el);
+    el.setAttribute("aria-invalid", "false");
+    if (wrap) wrap.classList.remove("is-invalid");
+  }
+  const requiredEls = Array.from(document.querySelectorAll("[data-required]"));
+  requiredEls.forEach(el => {
+    el.addEventListener("blur", () => validateField(el));
+    el.addEventListener("input", () => { if (el.value.trim()) clearFieldError(el); });
+  });
+
+  /* ---- 即時預覽面板開關（畫面分割：開啟時 body.preview-open 壓窄 wizard）---- */
+  const panel = document.getElementById("ce-preview");
+  const openPreview  = () => { renderPreview(); panel.classList.add("is-open"); document.body.classList.add("preview-open"); };
+  const closePreview = () => { panel.classList.remove("is-open"); document.body.classList.remove("preview-open"); };
+  document.getElementById("ce-preview-open").addEventListener("click", openPreview);
+  panel.querySelectorAll("[data-ce-preview-close]").forEach(el => el.addEventListener("click", closePreview));
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closePreview(); });
+
+  /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
+  function tryPublish() {
+    const stepOf = { name: 2, desc: 2, venue: 3, date: 3, capacity: 3 };
+    let firstBad = null;
+    requiredEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
+    if (firstBad) {
+      const key = firstBad.getAttribute("data-ce");
+      const goStep = stepOf[key] || step;
+      step = goStep; render();
+      const badInStep = requiredEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
+      if (badInStep) { badInStep.focus(); }
+      alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
+      return;
+    }
+    markSaved();
+    alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
+  }
+
+  /* ---- A6：圖片/影片上傳格點擊填入示意（demo）。必填 4 圖填齊才反映就緒。
+          目前 QC 五項（spec §4.5）未含「圖片齊全」，故圖片填入只回饋視覺，不改 QC 計數。---- */
+  document.querySelectorAll(".upload-tile[data-asset]").forEach(tile => {
+    tile.addEventListener("click", () => { tile.classList.toggle("is-filled"); renderPreview(); scheduleSave(); });
+  });
+
+  // ---- 票種：點擊新增票種卡 → 計數 +1、回填 Review/QC（demo）----
+  const tierAdd   = document.getElementById("ce-tier-add");
+  const tierCount = document.getElementById("ce-tier-count");
+  const tierCta   = document.getElementById("ce-tier-cta");
+  if (tierAdd && tierCount) {
+    tierAdd.addEventListener("click", () => {
+      const n = Number(tierCount.dataset.tiers || 0) + 1;
+      tierCount.dataset.tiers = n;
+      tierCount.removeAttribute("data-i18n");
+      tierCount.textContent = T("ce.tier.countn", "{n} tiers created · minimum 1 required").replace("{n}", n);
+      if (tierCta) { tierCta.removeAttribute("data-i18n"); tierCta.textContent = T("ce.tier.addmore", "＋ Add another tier"); }
+      syncReview();
+      scheduleSave();
+    });
+  }
+
+  document.addEventListener('i18n:applied', render);
+})();
+</script>
+<script src="js/reveal.js?v=20260625b"></script>
+<script src="js/devtools.js?v=20260625b"></script>
+</body>
+</html>

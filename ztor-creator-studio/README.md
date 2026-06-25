@@ -26,6 +26,6 @@
 
 - **推之前先同步**：若 `main` 被別人推進過，PR 會在 GitHub 上提示衝突；本機可 `git switch main && git pull` 再開新分支。
 - **絕不對 `main` 強推**（`git push -f`）。建議在 repo 設定把 `main` 設為 protected branch。
-- **同檔同時改最易衝突**：`R 2.1/i18n.js`、`shared.css`、`design-system.html` 是多頁共用大檔，先講好分工。
+- **同檔同時改最易衝突**：`r2.1/i18n.js`、`shared.css`、`design-system.html` 是多頁共用大檔，先講好分工。
 - **認證**：Yves 本機由中央倉 `ZTOR20_GH_TOKEN` 提供；協作者用各自的 `gh auth login`。token 不進 repo。
 
