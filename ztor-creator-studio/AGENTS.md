@@ -4,7 +4,7 @@
 
 ## 編輯 → 提交流程（鐵律）
 
-- **開工前先跑 `./pull.sh`**：把 monorepo 最新版同步回本機 `site/`，確保在最新基礎上編輯（collab.sh 是全量發版，本機落後就會洗掉他人剛合併的改動）。有未提交的已追蹤變更會先擋你；未追蹤檔（`fonts/`、scratch）受保護不會被刪。
+- **開工前先跑 `./pull.sh`**：智慧三方同步——你沒動過的檔自動更新成 monorepo 最新版、你的編輯一律保留，只有「你和同事改到同一檔」才列出來請你決定（覆寫前都先備份到 `.git/collab-backup-…`）。確保在最新基礎上編輯（collab.sh 是全量發版，本機落後就會洗掉他人剛合併的改動）。未追蹤檔（`fonts/`、scratch）不會被碰；首次執行只建基準。
 - **每次編輯完 `site/` 的檔，主動詢問使用者「要 commit 嗎？」**——不要自動 commit，先問。
 - 在 vault `site/`（本層）編輯；**不要直接改 monorepo 的 `ztor-creator-studio/` 子目錄**（collab.sh 會「清空再灌」同步、直接改動會被覆蓋）。
 - 使用者要 commit 時，跑 `./collab.sh "<變更說明>"`：clone monorepo → 把 `site/` 的 git 追蹤檔（含未提交編輯）同步進 `ztor-creator-studio/` 子目錄 → 開 `edit/<時間戳>` 分支 → commit → push → 自動在 `ztor20/Creator-Studio` 開 PR，並把連結回報給使用者。未追蹤檔（scratch、`fonts/` 等）不會被帶上。
