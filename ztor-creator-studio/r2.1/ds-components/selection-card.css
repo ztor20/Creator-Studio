@@ -45,19 +45,23 @@
   font: inherit;
   text-align: left;
   position: relative;
-  transition: box-shadow 150ms ease, background 150ms ease;
+  transition: box-shadow 150ms ease, background 150ms ease, outline-color 150ms ease;
 }
 .selection-card:hover { box-shadow: var(--shadow-card-hover); }
-/* 已選預設＝ring-only（保留卡面陰影＋細橘外框，不換底色）— 建立流程選擇卡的標準
-   （2026-06-24 使用者指定，全建立流程一致）。 */
+/* 已選預設＝橘色「線框」（outline，不放進陰影）＋卡面陰影維持中性、不換底色——
+   建立流程選擇卡的標準（2026-06-24／06-25 使用者指定：陰影不帶橘色，橘色是線匡）。
+   用 outline+offset 不撐版面、跟隨圓角。 */
 .selection-card--active {
   background: var(--card);
-  box-shadow: var(--shadow-card), 0 0 0 1.5px var(--primary);
+  box-shadow: var(--shadow-card);
+  outline: 1.5px solid var(--primary);
+  outline-offset: -1.5px;
 }
-/* 例外：含 swatch 的卡（Settings 主題挑選器）維持淡橘底＋2px 外框（維持原樣）。 */
+/* 例外：含 swatch 的卡（Settings 主題挑選器）維持淡橘底＋2px 外框（維持原樣，不用線框）。 */
 .selection-card--active:has(.selection-card__swatch) {
   background: color-mix(in srgb, var(--primary) 16%, var(--card));
   box-shadow: 0 0 0 2px var(--primary);
+  outline: 0;
 }
 
 .selection-card__title {
@@ -92,16 +96,11 @@
 .selection-card__swatch--theme-system { background: linear-gradient(135deg, #FAFAF7 0%, #FAFAF7 47%, #ffa33f 47%, #ffa33f 53%, #191A1A 53%, #191A1A 100%); }
 
 /* ---- icon variant（建立流程型別/方式卡）----
-   icon 置中、統一灰、不隨 hover/已選換色；已選＝保留卡面陰影＋細橘外框
-   （不換底色，與 radio-card 的選中風格一致）。全域 .selection-card--active
-   的「淡底＋2px 環」維持給主題挑選器等其他用途，不受影響。 */
-.selection-card__ic { width: 42px; height: 42px; display: grid; place-items: center; color: var(--foreground-muted); }
+   icon 置中、統一灰（--muted-foreground，較淺）、不隨 hover/已選換色；
+   已選的橘色＝線框（outline），由全域 .selection-card--active 提供，不另寫。 */
+.selection-card__ic { width: 42px; height: 42px; display: grid; place-items: center; color: var(--muted-foreground); }
 .selection-card__ic .ztor-icon { width: 28px; height: 28px; stroke-width: 1.4; }
 
 .selection-card--icon { align-items: center; text-align: center; gap: 10px; padding: 22px 16px; }
 .selection-card--icon:hover .selection-card__ic,
-.selection-card--icon.selection-card--active .selection-card__ic { color: var(--foreground-muted); }
-.selection-card--icon.selection-card--active {
-  background: var(--card);
-  box-shadow: var(--shadow-card), 0 0 0 1.5px var(--primary);
-}
+.selection-card--icon.selection-card--active .selection-card__ic { color: var(--muted-foreground); }
