@@ -3,32 +3,32 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>E-Shop · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260625b"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/button.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/product-list.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/card.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/input.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/store-settings.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/fan-store.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/split-button.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/message-modal.css?v=20260625b">
-<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260625b">
-<link rel="stylesheet" href="shared.css?v=20260625b">
+<script src="js/theme.js?v=20260626j"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/button.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/card.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/input.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/store-settings.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/restock-modal.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/split-button.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=20260626j">
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=20260626j">
+<link rel="stylesheet" href="shared.css?v=20260626j">
 <style>
   /* E-Shop add-new dropdown (spec §5.1.5 F3) → promoted to ds-components/dropdown-menu.css (2026-06-11) */
 
@@ -68,43 +68,36 @@
   .eshop-stock-bar__link { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
   .eshop-stock-bar__link:hover { color: var(--primary); }
   #eshop-stock-bar .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
-  /* 寬度對齊內容欄（max 1280＋28px gutter、置中），sticky 貼頂；無圓角、無外框線，
-     只用向下陰影當分隔（對齊 Figma node 671-2295；2026-06-22）。 */
+  /* 寬度對齊內容欄（max 1280＋28px gutter、置中），sticky 貼頂；無圓角、無外框線。
+     下緣陰影改用共用工具 .edge-shadow（與 wizard header 同一套：--shadow-header＋圓角 taper、兩端漸淡、只露下緣），
+     取代原本各做一套的漸層帶。.edge-shadow 預設 position:relative，這裡用 id 重申 sticky 維持貼頂。 */
   #eshop-stock-bar {
     max-width: 1280px;
     margin-inline: auto;
     padding-inline: 28px;
     border-radius: 0;
-    box-shadow: none;   /* 蓋掉共用 .alert--page-top 的全寬分隔陰影，改用下方 ::after 漸層帶（兩端淡出） */
+    box-shadow: none;          /* 蓋掉共用 .alert--page-top 的全寬分隔陰影，改用 .edge-shadow 的下緣陰影 */
+    position: sticky;          /* 重申 sticky（蓋過 .edge-shadow 的 relative），維持貼頂 */
+    top: 0;
   }
-  /* 陰影＝卡片正下方一條向下淡出的漸層帶（不用 box-shadow——box-shadow 畫在框外，會被 mask 整個裁掉）。
-     再用水平漸層遮罩讓這條帶往左右兩端漸變消失，取代舊的實色塊硬蓋（使用者指定 2026-06-22）。 */
-  #eshop-stock-bar::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    width: auto;   /* 覆蓋共用 .alert--page-top::after 角遮罩漏進來的 width:var(--radius-shell)，否則帶子只剩 28px 貼左 */
-    top: 100%;
-    height: 12px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
-    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 88%, transparent 100%);
-    pointer-events: none;
-  }
+  /* 關掉 .alert--page-top::after 的角遮罩（置中 bar 用不到）；下緣陰影改由 .edge-shadow 的 ::before 提供 */
+  #eshop-stock-bar::after { content: none; }
   /* 類型 tab 與動作列同排：tab 佔整行；分隔改用向下陰影（取代灰底線，對齊 Figma node 671-2295）；
      動作列絕對定位靠右、浮在分隔上方。 */
+  /* 照 Figma node 720:2165 結構：主體層（Container 720:2167）不透明底＋下緣圓角 12；
+     陰影層（shadow 720:2166）向下柔影。CSS 直接讓「不透明圓角主體」投 box-shadow——
+     圓角元素的 box-shadow 會沿圓角邊緣走，圓角陰影自然成形；
+     向下偏移 y6＋負 spread -4 把陰影收成主要往下、兩側內縮（模擬 Figma 陰影左右 inset、上緣不溢）。 */
   .eshop-list-topbar {
     position: relative;
     /* z-index 提到狀態篩選列（sticky、z-index:5、不透明白底）之上，否則向下陰影會被它蓋掉大半 */
     z-index: 6;
     margin-bottom: 8px;   /* 工作列 → 狀態篩選列間距＝8px（對齊 Figma node 671-2309/2338）*/
     padding-inline: 8px;  /* 工作列容器左右內距 8px（對齊 Figma node 671-2309）*/
-    /* 向下分隔陰影＋左右下圓角（使用者指定值）：blur 6 / spread -5 / #000 5% / y12；
-       spread -5 < 圓角 12 才看得到圓角。 */
-    box-shadow: 0 12px 6px -5px rgba(0, 0, 0, 0.05);
+    background: var(--surface-page);   /* 不透明主體（與頁面同色、本身不顯眼，但讓陰影沿圓角成形）*/
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
+    box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.16);
   }
 
   /* 黑夜版（使用者裁示）：
@@ -114,9 +107,7 @@
   [data-theme="dark"] #eshop-stock-bar::after {
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0));
   }
-  [data-theme="dark"] .eshop-list-topbar {
-    box-shadow: 0 12px 6px -5px rgba(255, 255, 255, 0.07);
-  }
+  [data-theme="dark"] .eshop-list-topbar { box-shadow: 0 6px 14px -4px rgba(255, 255, 255, 0.12); }
   /* 移除灰色基準底線（改用上方陰影分隔），保留 active tab 的橘色指示線 */
   .eshop-list-topbar .tabs { margin-bottom: 0; border-bottom-color: transparent; }
   /* 已選 tab 底線縮短為約文字寬（置中，不佔滿整個 tab padding）— 對齊 Figma node 671-2337 */
@@ -353,7 +344,7 @@
 
     <!-- F2 低庫存通知條 · spec §5.1.5 F2（alert--bar，sticky 常駐、× 關閉）。
          .main 第一個子元素 → 頂欄之下、白色面板頂端、全寬；分割預覽開啟時隨左主欄壓縮 -->
-    <div class="alert alert--bar alert--warning alert--page-top when-data" role="status" id="eshop-stock-bar">
+    <div class="alert alert--bar alert--warning alert--page-top edge-shadow when-data" role="status" id="eshop-stock-bar">
       <div class="alert__icon">⚠</div>
       <div class="alert__body">
         <!-- 單句格式（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。 由 JS 組句、隨語言重建 -->
@@ -671,13 +662,13 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260625b"></script>
-<script src="js/i18n.js?v=20260625b"></script>
-<script src="js/sidebar.js?v=20260625b"></script>
-<script src="js/reveal.js?v=20260625b"></script>
-<script src="partials/restock-modal.js?v=20260625b"></script>
-<script src="partials/product-post-modal.js?v=20260625b"></script>
-<script src="partials/fan-store.js?v=20260625b"></script>
+<script src="js/icons.js?v=20260626j"></script>
+<script src="js/i18n.js?v=20260626j"></script>
+<script src="js/sidebar.js?v=20260626j"></script>
+<script src="js/reveal.js?v=20260626j"></script>
+<script src="partials/restock-modal.js?v=20260626j"></script>
+<script src="partials/product-post-modal.js?v=20260626j"></script>
+<script src="partials/fan-store.js?v=20260626j"></script>
 <script>
   /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
      tab switch · search + status filter (scoped to active tab) ·
@@ -1115,6 +1106,6 @@
     });
   })();
 </script>
-<script src="js/devtools.js?v=20260625b"></script>
+<script src="js/devtools.js?v=20260626j"></script>
 </body>
 </html>

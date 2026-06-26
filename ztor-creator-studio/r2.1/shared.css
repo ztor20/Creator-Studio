@@ -16,11 +16,11 @@
 /* Header is the canonical DS component — single source in ds-components/header.css.
    All product pages load shared.css, so this @import gives every page the topbar
    from the one place; design-system.html links header.css directly. */
-@import url("ds-components/header.css?v=20260625b");
-@import url("ds-components/icon.css?v=20260625b");
-@import url("ds-components/page-intro.css?v=20260625b");
-@import url("ds-components/field-system.css?v=20260625b");
-@import url("ds-components/settings.css?v=20260625b");
+@import url("ds-components/header.css?v=20260626j");
+@import url("ds-components/icon.css?v=20260626j");
+@import url("ds-components/page-intro.css?v=20260626j");
+@import url("ds-components/field-system.css?v=20260626j");
+@import url("ds-components/settings.css?v=20260626j");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -807,7 +807,28 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   z-index: 30;
   display: flex;
   flex-direction: column;
-  background: var(--card);   /* 無底部分隔線（2026-06-23 使用者指定）；content 同為 surface，header 自然融入 */
+  background: var(--card);   /* 無底部分隔線；改用下層 Header shadow 色塊 */
+}
+/* ── Edge shadow（可覆用工具）─────────────────────────────────────────
+   在元素「下緣」產生一道柔和、內縮、兩端圓角漸淡(taper)、不外漏的陰影。
+   作法：一個與元素等高、左右內縮、下方大圓角的透明圖層投 --shadow-header，
+   再用 clip-path 只露出元素「下方」那一段 → 只看到下緣陰影、兩端因圓角收尾、
+   上緣與兩側都不外漏（不需另做不透明上層遮蓋）。套在任何「已定位」元素上即可。
+   可調：--edge-shadow-inset（左右內縮，預設 28px）、--edge-shadow-radius（圓角，預設 64px）。
+   忠實照 Figma 720:1763 的分層結構（色塊藏在元素後、只露下緣）。 */
+.edge-shadow { position: relative; }
+.edge-shadow::before,
+.wizard__top::before {   /* 用 ::before（避開 .alert--page-top 等用 ::after 的元件）；.wizard__top 已 sticky */
+  content: "";
+  position: absolute;
+  left: var(--edge-shadow-inset, 28px);
+  right: var(--edge-shadow-inset, 28px);
+  top: 0;
+  bottom: 0;
+  border-radius: 0 0 var(--edge-shadow-radius, 64px) var(--edge-shadow-radius, 64px);
+  box-shadow: var(--shadow-header);
+  clip-path: inset(100% 0 -40px 0);   /* 只露出元素下方那段陰影 */
+  pointer-events: none;
 }
 /* §5.2.4 建立流程頂部框架（2026-06-23 改版 v2）：單列三欄。
    col1 左＝.wizard__top-lead（返回箭頭＋標題/副標，靠左）｜
