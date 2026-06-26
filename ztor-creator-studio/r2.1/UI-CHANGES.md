@@ -6,6 +6,13 @@
 
 ---
 
+## 2026-06-26 · E-Shop 建立入口收斂為 toolbar split button（B 反饋 · F3 工具列）
+
+- 範圍：`split-button.css` 在既有 Split button 元件內新增 `.split-button--toolbar` 修飾；E-Shop F3「Create product」分割按鈕套用該修飾；design-system.html 原 Button 章節內的 `Variant · Split button` demo 與 design-system.md／BUILD-SPEC／requirements-map 同步，不新增獨立元件章節。
+- 動機：使用者指出此控制位於工具列，應是 toolbar split button，不是普通大 CTA；需和同列 search/settings/preview icon button 的 36px 密度一致。
+- 規格：整體高 36px（`--control-h-sm`）、主按鈕左右 12px、文字 13px／line-height 16px、caret 區 36×36、caret icon 16×16、中間只用 1px inset 分隔線。
+- 收尾：全站 asset cache bump `?v=20260625b` → `?v=20260626a`；本地 toolbar sizing assertion PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
 ## 2026-06-25 · DS token 對齊 shadcn＋暗色實色＋控件尺寸＋focus 統一（B 反饋 · issue #11）
 
 - 範圍：ztor 工程端 jaskang 在 GitHub issue #11 提 5 點。`ds-components/_tokens.css` 重訂 Role 層；60 元件 CSS＋shared.css＋全頁面＋JS 以邊界安全 sed 換名；design-system.html（Role/Mode/Foundation/控件尺寸/focus）＋design-system.md＋BUILD-SPEC 同步；`project-ui-creator` skill 加 6 條規則。

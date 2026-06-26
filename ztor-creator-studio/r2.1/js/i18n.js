@@ -2978,6 +2978,12 @@
     'earnings.empty.tax.text':        { en: 'Tax forms and earnings summaries are issued here once you have income for a reporting period.', zh: '有收入並進入申報期間後，稅務文件與收入摘要會在此產生。' },
   };
 
+  function normalizeLang(lang) {
+    if (lang === 'zh' || lang === 'zh-Hant') return 'zh-Hant';
+    if (lang === 'en') return 'en';
+    return null;
+  }
+
   function currentLang() {
     return document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en';
   }
@@ -3019,7 +3025,7 @@
   }
 
   function setLang(lang) {
-    const normalized = lang === 'zh' || lang === 'zh-Hant' ? 'zh-Hant' : 'en';
+    const normalized = normalizeLang(lang) || 'en';
     document.documentElement.lang = normalized;
     try { localStorage.setItem(STORAGE_KEY, normalized); } catch (_) {}
     apply();
@@ -3029,12 +3035,20 @@
     setLang(currentLang() === 'en' ? 'zh-Hant' : 'en');
   }
 
-  /* Restore persisted lang, or fall back to DEFAULT_LANG. */
+  /* Restore embedded page lang from ?lang= first, then persisted lang, then DEFAULT_LANG. */
   let restored = DEFAULT_LANG;
+  let urlLang = null;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'en' || saved === 'zh-Hant') restored = saved;
+    urlLang = normalizeLang(new URLSearchParams(window.location.search).get('lang'));
   } catch (_) {}
+  if (urlLang) {
+    restored = urlLang;
+  } else {
+    try {
+      const saved = normalizeLang(localStorage.getItem(STORAGE_KEY));
+      if (saved) restored = saved;
+    } catch (_) {}
+  }
   document.documentElement.lang = restored === 'zh-Hant' ? 'zh-Hant' : 'en';
 
   /* Wire the topbar lang button (delegated — sidebar.js injects it lazily). */

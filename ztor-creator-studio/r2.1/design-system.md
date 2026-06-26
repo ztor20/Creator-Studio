@@ -507,7 +507,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.5）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
-| Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
+| Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；工具列用 `.split-button--toolbar`（36px 高、caret 36×36、icon 16×16）；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
@@ -547,7 +547,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
-**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px.
+**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px. **Toolbar split button** uses `.split-button--toolbar`: 36px overall height (`--control-h-sm`), main action 12px horizontal padding, caret zone 36×36, caret icon 16×16, and a 1px divider.
 
 **States**
 
