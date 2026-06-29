@@ -38,6 +38,7 @@
 | UIA-030 | Tier 1 頁有兩種呈現（依是否已選定 creator）：**未選＝一般創作者視角**（純 dashboard、無 admin chrome，即之前的版本）；**已從名冊 Manage 選定＝admin 代管視角**（logo 前返回名冊 icon＋「管理中 X」）。切換走 devtools「Creator · Admin」cheat code（選 creator＝代管、選「一般創作者」＝清除）。creator 自助登入的實際 auth 仍為 phase 2（D086）| 可由 UI 調整 |
 | UIA-031 | 返回 Creator 名冊入口固定置於導航 logo 之前（使用者裁示，D086）；圖示與樣式可由 UI 調整 | 依裁示 |
 | UIA-032 | creator 工作區範圍已確認＝完整現有工作區（Dashboard…Settings，§8.3／D086）；creator 狀態（已發布／草稿）枚舉、店鋪識別唯一性、代操稽核仍待上游 | 待上游 D086 |
+| UIA-033 | 建立組合／組合細節擴充至 spec 5.1.5.4 v1.6（D089）：F1 加素材（Show it off，沿用 upload-tile）＋描述（textarea）、F4 限量改庫存（Edition 不限量/限量＋唯讀「目前在庫＝min(成員)」）、F7 排程特價（啟用 toggle＋起訖日）。**呈現假設**：(a) 素材上傳、描述皆為前端 demo（無實上傳/持久化）；**主圖＊與描述不納入 Create gating**（避免 demo 永遠擋住建立）——僅名稱＋≥2 成員＋有效定價納入 gating；(b) 限量版本的「組合上限 Total quantity」**納入 gating**（限量需填有效正值，對齊欄位 ＊）；(c) 目前在庫唯讀＝min(成員,上限)，即時重算、不可手動編輯；(d) 排程特價啟用時起訖日必填且結束晚於開始（§6.1，納入 gating），但特價價格來源、時區、結束自動回原價、是否與單品共用排程＝**產品待確認**（spec §4 F7），UI 以「pending spec」提示標示、不自創價格欄。組合細節頁（5.1.5.9）同步同欄位＋%off 改雙欄，為 display-only demo | 呈現可調；F7 價格/時區待上游 |
 
 ## 產品缺口
 

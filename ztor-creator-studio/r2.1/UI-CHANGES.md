@@ -6,6 +6,59 @@
 
 ---
 
+## 2026-06-29 · 建立組合加即時預覽＋上架開關、footer 右對齊、「排程特價」改名「販售排程」（B 反饋＋A 規格 · spec 5.1.5.4 v1.8 / 5.1.5.9 v1.5 / D091）
+
+依使用者反饋：
+1. **footer 主動作右對齊**：`<footer class="wizard__bottom" style="justify-content:flex-end">`（比照建立商品；先前移除左側「稍後再存」後按鈕掉到左邊）。
+2. **加即時預覽欄**（A 規格 5.1.5.4 §4 F6 確認，比照建立商品 §5.2.5）：`.wizard__body` 改 `preview-split`、表單包入 `.preview-split__form`、新增 `<aside class="preview-col">`＝preview-col head＋`preview-card`（粉絲視角組合卡）。JS 在 recompute 即時更新預覽卡名稱／價格（固定價或折後價）／描述（`.is-empty` 佔位切換）。新掛 preview-card.css／preview-column.css。
+3. **加上架開關**（A 規格 F6 確認）：preview-col 內 `control-row`＋`switch`（Show in my shop），沿用 `cp.show`／`cp.show.sub`。
+4. **「排程特價」改名「販售排程」**（A 規格 F7／D091）：i18n `cb.sale.title`→販售排程、`cb.sale.activate`→啟用販售排程、`cb.sale.start/end`→販售開始/結束日；create-bundle 與 bundle-detail（透過 i18n）一致。
+- 新增 i18n：`cb.preview.heading`／`cb.preview.sub`／`cb.pv.name`／`cb.pv.desc`。spec 同步：5.1.5.4 §4 F6 把「即時預覽卡＋上架開關」由待確認改確認（就緒檢查仍待確認、未建）；§4 F7／§3／§5／§6.1 改名；5.1.5.9 §2.3 改名。
+- cache bump `20260629j`→`20260629k`。驗證：validate_spec OK、check_ds_sync PASS、Playwright（footer flex-end＋按鈕靠右、preview-col 可見、show 開關、販售排程改名、預覽卡即時更新名稱/價/描述）全綠。
+
+---
+
+## 2026-06-29 · 建立組合 5 項校正：素材獨立區段／庫存改 selection-card／在庫 disabled／特價日期僅啟用顯示／footer 去「稍後再存」（B 反饋＋A 規格 · spec 5.1.5.4 v1.7 / D090）
+
+依使用者反饋校正前一版：
+1. **素材自「組合資訊」拆為獨立區段**（A 規格 5.1.5.4 §4 新增 F8 素材、F1 僅留名稱＋描述／D090）：create-bundle 由一個「Bundle info」段拆成「Show it off」＋「Bundle info」兩個 `form-section`。
+2. **庫存版本改用 selection-card**（同定價固定價/折扣卡），取代原 `segmented.radio-cards`；兩頁 `#cb-edition`／`#bd-edition` 改 `.selection-grid`＋`.selection-card`，JS active class 改 `.selection-card--active`；移除兩頁已不用的 radio-card.css／segmented.css link。
+3. **目前在庫無值時用 disabled input**（不顯示「—」）：create-bundle `#cb-avail` 初始 `disabled`，recompute 在 n=0 時 `disabled`＋清空、n>0 時解除 disabled 並填 min。
+4. **排程特價日期僅啟用時出現**：修 `ds-components/form-grid.css` 補 `.form-grid[hidden]{display:none}`（`display:grid` 原會蓋掉 `[hidden]`，導致起訖日恆顯）；兩頁起訖日 `data-*-sale-fields` 現正確隱藏。
+5. **footer 去除「稍後再存／Save for later」**：create-bundle 底部僅留主動作（建立組合）靠右（D090；頂部已有 Save as draft、離開走返回箭頭，spec §3/§F5 本即未列、規格與 UI 一致）。
+- 其餘 4 個建立頁（create-product/auction/project、ip-detail）仍有 footer「Save for later」——本輪未動（各有自身 spec），待確認是否一併移除。
+- cache bump `20260629i`→`20260629j`。驗證：validate_spec OK、check_ds_sync PASS、Playwright 兩頁重測。
+
+---
+
+## 2026-06-29 · 建立組合／組合細節擴充：素材＋描述＋庫存(Edition)＋排程特價（A 規格 · spec 5.1.5.4 v1.6 / 5.1.5.9 v1.3 / D089）
+
+- 來源：`documents/5.1.5.4-建立組合流程.md` v1.6（D089／Plan153）＋ `5.1.5.9-組合商品細節頁.md` v1.3——依使用者截圖把組合建立擴充成完整流程。
+- 改動（沿用既有 ds-components，無新元件）：
+  - **create-bundle.html** — F1「組合資訊」加素材（Show it off，`upload-tile` 主圖＋2×2 附圖，沿用建立商品 §4 F1）＋描述（`textarea`）；F4 由「限量」改「庫存」＝Edition `segmented.radio-cards`（不限量／限量）＋唯讀「目前在庫」`input[readonly]`（即時＝min(成員,上限)）＋限量才出現的「組合上限」；新增 F7「排程特價」＝`control-row`＋`switch`（啟用）＋兩個 `input[type=date]` 起訖日。
+  - **bundle-detail.html（5.1.5.9）** — 同步加描述＋素材＋庫存(Edition＋唯讀在庫)＋排程特價；%off 由單欄改「折扣後價格＋折扣趴數」雙欄（對齊 D088）；底部卡由「庫存＋影響」改為純「成員影響」（庫存已移入內容卡，去重）。
+  - 新增 ds-component link：create-bundle 與 bundle-detail 皆補 upload-tile／radio-card／segmented／control-row／switch／form-grid。
+  - JS：Edition 切換顯隱上限欄、唯讀在庫＝min(成員,上限) 即時重算、排程特價 toggle 顯隱起訖日；Create gating 加「限量需有效上限」「啟用特價需起訖日且結束晚於開始」（§6.1）。素材／描述為 demo、**不納入 gating**（見 ASSUMPTIONS UIA-033）。
+  - i18n 新增 `cb.media.*`／`cb.desc*`／`cb.stock.title`／`cb.edition.*`／`cb.total*`／`cb.avail.*`／`cb.sale.*`＋`bd.impact.title`（en＋zh）；素材通用鍵沿用 `cp.media.dnd/formats/min600`。
+- 產品待確認（記 ASSUMPTIONS UIA-033、spec §4 F7）：特價價格來源、時區、結束回原價、是否與單品共用排程——UI 標「pending spec」、不自創價格欄。
+- cache bump `20260629h`→`20260629i`。驗證：check_ds_sync PASS、Playwright 兩頁互動。
+
+---
+
+## 2026-06-29 · 建立組合表單欄位標題＋折扣雙欄連動（A 規格 · spec 5.1.5.4 v1.5 / D088）
+
+- 來源：`documents/5.1.5.4-建立組合流程.md` v1.5／decisions D088——使用者裁示組合建立頁四項。
+- 改動（`create-bundle.html`，皆沿用既有 `.form-section`／`.field`／`.field__label`／`.field__hint`，無新元件）：
+  1. **組合名稱**區段補區段標題「組合包資訊（Bundle info）」（`form-section__head`）。
+  2. **固定價** input 補 label「固定價」；「組合價不得高於成員原價合計」維持為該 input 的描述（既有動態 `#cb-price-hint`）。
+  3. **折扣（% off）** 由原「待補」單一 % 欄改為兩個連動欄位：折扣後價格（`#cb-disc-price`）↔ 折扣趴數（`#cb-disc-pct`），填一欄另一欄即時依成員原價合計 S 換算（價＝S×(1−%/100)、%＝(1−價/S)×100），以最後編輯欄為準；S＝0 提示先加入成員；折扣後價 > S 擋建立（D088）。
+  4. **限量** input 補 label「總數量（Total quantity）」。
+- i18n 新增 `cb.info.title`／`cb.price.discounted`／`cb.price.pctoff`／`cb.price.disc-hint`／`cb.disc.addfirst`／`cb.limit.label`（en＋zh）；移除已具規格的 `cb.price.pct-note`。
+- 無元件／token 變更，design-system 無需同步。cache bump `20260629g`→`20260629h`。
+- 驗證（Playwright，cache-bust，DOM eval）：選 2 成員（$11+$12＝$23）後切 % off →填 50% 得折後價 $11.50、填折後價 $20 得 13%、提示「省下 $3.00 相對成員合計 $23.00」；區段標題「組合包資訊」、固定價／總數量／折扣後價格／折扣趴數 label 皆渲染（zh）。check_ds_sync PASS；validate_spec PASS。
+
+---
+
 ## 2026-06-29 · 平台營運（Admin）層＋Creator 管理頁（A spec · 5.1.0 / D086）
 
 - 範圍：依新規格 `documents/5.1.0-Creator管理.md`（D086）在現有單一創作者工作區之上加 Admin 視角。新增 `creators.html`（Tier 0：creator 名冊 F1＋建立 creator F2／自動生成 eShop 為 demo＋進入與返回 F3）。改 `sidebar.js`：roster 頁只露 Creator 管理 marker＋Tier 1 各模組鎖定（`.app-topbar__link--locked`）；進入 creator 後 logo 前加返回名冊 icon＋「管理中 <creator>」標示、導航解鎖。`devtools.js` 加「Creator · Admin」cheat code 切換／清除 activeCreator。`icons.js` 補 arrow-left／shield-check。`shared.css` 加 `.app-topbar__back/__context/__link--locked` 與 sidebar 對應。i18n 補 admin.* / creators.* 鍵。
