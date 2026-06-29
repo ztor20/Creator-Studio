@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-06-29 · 建立組合表單欄位標題＋折扣雙欄連動（A 規格 · spec 5.1.5.4 v1.5 / D088）
+
+- 來源：`documents/5.1.5.4-建立組合流程.md` v1.5／decisions D088——使用者裁示組合建立頁四項。
+- 改動（`create-bundle.html`，皆沿用既有 `.form-section`／`.field`／`.field__label`／`.field__hint`，無新元件）：
+  1. **組合名稱**區段補區段標題「組合包資訊（Bundle info）」（`form-section__head`）。
+  2. **固定價** input 補 label「固定價」；「組合價不得高於成員原價合計」維持為該 input 的描述（既有動態 `#cb-price-hint`）。
+  3. **折扣（% off）** 由原「待補」單一 % 欄改為兩個連動欄位：折扣後價格（`#cb-disc-price`）↔ 折扣趴數（`#cb-disc-pct`），填一欄另一欄即時依成員原價合計 S 換算（價＝S×(1−%/100)、%＝(1−價/S)×100），以最後編輯欄為準；S＝0 提示先加入成員；折扣後價 > S 擋建立（D088）。
+  4. **限量** input 補 label「總數量（Total quantity）」。
+- i18n 新增 `cb.info.title`／`cb.price.discounted`／`cb.price.pctoff`／`cb.price.disc-hint`／`cb.disc.addfirst`／`cb.limit.label`（en＋zh）；移除已具規格的 `cb.price.pct-note`。
+- 無元件／token 變更，design-system 無需同步。cache bump `20260629g`→`20260629h`。
+- 驗證（Playwright，cache-bust，DOM eval）：選 2 成員（$11+$12＝$23）後切 % off →填 50% 得折後價 $11.50、填折後價 $20 得 13%、提示「省下 $3.00 相對成員合計 $23.00」；區段標題「組合包資訊」、固定價／總數量／折扣後價格／折扣趴數 label 皆渲染（zh）。check_ds_sync PASS；validate_spec PASS。
+
+---
+
 ## 2026-06-29 · 平台營運（Admin）層＋Creator 管理頁（A spec · 5.1.0 / D086）
 
 - 範圍：依新規格 `documents/5.1.0-Creator管理.md`（D086）在現有單一創作者工作區之上加 Admin 視角。新增 `creators.html`（Tier 0：creator 名冊 F1＋建立 creator F2／自動生成 eShop 為 demo＋進入與返回 F3）。改 `sidebar.js`：roster 頁只露 Creator 管理 marker＋Tier 1 各模組鎖定（`.app-topbar__link--locked`）；進入 creator 後 logo 前加返回名冊 icon＋「管理中 <creator>」標示、導航解鎖。`devtools.js` 加「Creator · Admin」cheat code 切換／清除 activeCreator。`icons.js` 補 arrow-left／shield-check。`shared.css` 加 `.app-topbar__back/__context/__link--locked` 與 sidebar 對應。i18n 補 admin.* / creators.* 鍵。
