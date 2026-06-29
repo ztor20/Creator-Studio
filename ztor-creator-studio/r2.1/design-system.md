@@ -2893,11 +2893,16 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` shows the "ztor." mark.
 
+**Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
+
+**Thumbnail lazy-load** (spec 5.1.5 F4 / D094) — real thumbnails (`.product-list__image img`) carry `loading="lazy"` (fetch only when scrolled into view). The E-Shop demo lists use no-image CSS placeholders (`__image--placeholder`, self-hosted, no CDN), so lazy-load is a convention for real thumbnails with no visible effect in the demo. List batching defaults to 25/batch (spec); demo uses a smaller batch to surface "Load more".
+
 **States**
 
 | State | Selector | Change |
 |---|---|---|
 | hover | `.product-list__row:hover` | bg `--muted` |
+| draft | `.product-list__title--draft` · `.product-list__empty` | Draft / unfilled cells show muted placeholder — name → "Untitled / 未命名", other cols → "—" (spec 5.1.5 F4 / D092, all three E-Shop panels) |
 | ≤760px | `@media (max-width: 760px)` | header hidden; rows restack to 2-col grid |
 
 **Token usage** (→ Pillar 2 Role)

@@ -6,6 +6,51 @@
 
 ---
 
+## 2026-06-29 · 電子商店 F4 分批載入校正：批量預設 10→25、縮圖 lazy-load 記為慣例（D infra · spec 5.1.5 F4 三類共通 / D094 改版）
+
+依 D094 改版（批量 10→25、縮圖延遲載入）：
+- **批量預設 10→25**（使用者裁示）＋ demo 批量改用 25（與規格一致）：先前 demo 取 4 會在 6 筆時誤現「載入更多」（與真實 25 批量矛盾，使用者指出）。改 `BATCH=25`。
+- **Demo Products 補滿至 30 筆**（使用者要求，以真實 25 批量展示「載入更多」）：JS `fillDemoProducts()` 於所有 binding 前生成 24 筆樣本列（Live、無圖佔位，套 icons／i18n，故 shop 開關/計數/篩選/拖曳皆涵蓋）。Products 30 筆 → 顯示 25＋載入更多 → 點擊 → 30＋end-cap「已顯示全部 30 筆」。Bundles/Auctions 仍 <25、直接 end-cap。
+- **「載入更多」改用無外框按鈕** `btn--ghost`（原 `btn--outline`，使用者指定）。
+- Playwright 驗證：30 筆、初顯 25、ghost Load more（border 0/none）、點擊→30＋「已顯示全部 30 筆」、All 計數 30、生成列 Live 徽章中文「已上架」。
+- **縮圖 lazy-load**：真實縮圖 `.product-list__image img` 的撰寫慣例＝`loading="lazy"`（僅捲入視窗才抓圖）。**惟本 demo 三類清單為無圖 CSS 佔位（「ztor.」字樣／圖示，自架不依賴 CDN，無真實 `<img>`）**，故依使用者裁示「記成慣例、不放假圖」——記入 design-system.md（product-list「Thumbnail lazy-load」）＋ BUILD-SPEC ＋ ASSUMPTIONS UIA-036；demo 無可見變化、無資產版號變更。
+- 待真實縮圖接上時，於 `.product-list__image img` 套 `loading="lazy"` 即生效。
+
+---
+
+## 2026-06-29 · 電子商店 F4 清單分批載入＋end-cap（A 規格 · spec 5.1.5 F4 三類共通 / D094）
+
+依 spec 5.1.5 F4 三類共通「分批載入（Load more）＋全部載完 end-cap」（D094）：
+- **e-shop.html**：三類清單共用一個頁尾 `[data-eshop-foot]`（貼在目前可見分頁下方）——未載完顯示「載入更多（Load more）」鈕、全部載完顯示 end-cap「已顯示全部 N 筆」（N＝目前狀態篩選相符總數）。JS：`applyFilter` 改為「相符列只顯示前 `shownCount` 筆」，`updateListFoot` 控制 Load more／end-cap；切換類型分頁、改搜尋、改狀態篩選→`resetBatch()` 回第 1 批；「載入更多」`shownCount += BATCH` 再重套；0 筆走既有「查無符合」（與 end-cap 分流）；語言切換重算 end-cap 文案。
+- **批量**：`BATCH = 4`（**demo 值**；spec 預設 10，樣本列少取 4 以展示 Load more，記 ASSUMPTIONS UIA-036）。Products（6 列）→ 顯示 4＋Load more→全 6＋end-cap；Bundles（3 列）／Auctions 直接 end-cap。
+- **排序達任一位置**（D094 原則）：demo 清單小、Load more 載完即可全列拖曳；正式門檻（小量全載／大量移到指定位置）屬 BUILD-SPEC（UIA-036）。
+- i18n 新增 `e-shop.loadmore`（Load more／載入更多）；end-cap 文案 JS 生成（隨語言）。
+- cache bump `20260629m`→`20260629n`。驗證：check_ds_sync PASS；Playwright——Products 顯示 4→Load more→全 6（end-cap「已顯示全部 6 筆」）、Bundles 直接 end-cap「3 筆」、切分頁重置回 4、Sold Out 篩選 end-cap「1 筆」（N 對齊篩選）。
+
+---
+
+## 2026-06-29 · 電子商店 F4 商品狀態欄補「售罄（Sold Out）」徽章（A 規格 · spec 5.1.5 F4 Products / D093）
+
+依 spec 5.1.5 F4 Products 狀態欄列明徽章（D093）：補上「售罄（Sold Out）」，並與「低庫存（Low Stock）」明確區隔、不混用。
+- **e-shop.html**：Products 清單加一筆售罄範例列（`data-status="out"`，Enamel pin · wave）——狀態徽章 `badge--neutral`「已售完」（沿用既有 i18n `e-shop.row.out`），stock「剩 0 件」，仍上架、列操作含補貨（Restock，實體售罄可補貨）。售罄篩選（原已有，無對應列）現有一筆、計數＝1。
+- **徽章對映**：Live→`badge--success`（綠）／Low Stock→`badge--error`（紅）／Sold Out・Draft・Hidden→`badge--neutral`（灰）。售罄＝庫存歸零、低庫存＝低於門檻仍有貨，灰 vs 紅視覺區隔（D093）。Hidden 維持既有「Shop 關→動態 neutral『已隱藏』」。
+- **i18n**：新增售罄範例列欄位 `e-shop.row5.meta/cat/price/stock`；徽章文案沿用既有 `e-shop.row.out`（Sold Out／已售完）。
+- **DS 同步**：design-system.html §4.26 product-list 基本 demo 加一筆 Sold Out 列；design-system.md 加「Status badges」對映說明（Live/Low Stock/Sold Out/Draft/Hidden → badge 變體）。
+- cache bump `20260629l`→`20260629m`。驗證：check_ds_sync PASS；Playwright——售罄列 `badge--neutral`「已售完」、與 Low Stock `badge--error` 類別/底色皆不同、含 Restock、Sold Out 篩選計數＝1 且只剩售罄列。顯示文案／灰階記 ASSUMPTIONS UIA-035。
+
+---
+
+## 2026-06-29 · 電子商店 F4 清單草稿列空值占位（A 規格 · spec 5.1.5 F4 三類共通 / D092）
+
+依 spec 5.1.5 F4「三類共通——草稿空值占位」（D092）：清單草稿列每一欄都以占位呈現未填值、不留空白。
+- **元件**：`product-list.css` 加 `.product-list__title--draft`（淡色、常規字重、斜體）＋`.product-list__empty`（淡色），作為清單列的「草稿／空值」狀態。
+- **e-shop.html**：Products／Bundles／Auctions 三類各加一筆草稿範例列（`data-status="draft"`）——名稱→「未命名（Untitled）」、圖片→既有預設 placeholder、次分類／價格／庫存／成員／出價／動態等→「—」；草稿列上架開關預設關閉。Auctions 原狀態集無 draft，本輪補上 `draft` 篩選（STATUS_SETS.auctions）＋草稿拍賣列（Edit→create-auction）。
+- **i18n**：新增 `e-shop.draft.untitled`（Untitled／未命名）；Draft 徽章沿用既有 `e-shop.status.draft`。
+- **DS 同步**：design-system.html §4.26 Product list 基本 demo 加一筆草稿列、State 表加「draft」列；design-system.md 同步 State 列。
+- cache bump `20260629k`→`20260629l`。驗證：check_ds_sync PASS；Playwright——三類草稿列渲染（未命名＋四欄「—」、淡色斜體）、Draft 篩選計數＝1 且只剩草稿列、上架開關 off、auctions 取得 draft 篩選。占位文案（Untitled／—）為 project-ui-creator 依 D092 待辦所定，記 ASSUMPTIONS UIA-034。
+
+---
+
 ## 2026-06-29 · 其餘建立頁 footer 一致化：去除多餘「Save for later」、主動作右對齊（C 撤除 · 比照 D090）
 
 把建立組合的 footer 慣例（主動作右對齊、不放多餘「稍後再存」）套到其餘建立頁：
