@@ -1309,6 +1309,7 @@
     'wiz.close':            { en: '✕ Close',                          zh: '✕ 關閉' },
     'wiz.cancel':           { en: 'Cancel',                           zh: '取消' },
     'wiz.savebtn':          { en: 'Save',                             zh: '儲存' },
+    'wiz.savedraft':        { en: 'Save as draft',                    zh: '儲存為草稿' },
     'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
     'wiz.delete':           { en: 'Delete',                           zh: '刪除' },
     'wiz.more':             { en: 'More',                             zh: '更多' },

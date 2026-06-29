@@ -58,6 +58,16 @@
       status.addEventListener('click', function () { saving(); clearTimeout(timer); timer = setTimeout(saved, 700); });
     }
 
+    // 「儲存為草稿」手動鈕（§5.2.4）：手動儲存同時觸發自動儲存示意（寫入自動儲存紀錄）；
+    // 離開頁面時以最後一次自動儲存的紀錄為準。create-event 用自有狀態 JS（status 為 null），由該頁自行接。
+    var draftBtn = document.querySelector('[data-wizard-savedraft]');
+    if (draftBtn) {
+      draftBtn.addEventListener('click', function () {
+        edited = true;
+        if (autosave && status && !isButton) autosaveTick();
+      });
+    }
+
     document.addEventListener('i18n:applied', renderStatus);
     renderStatus();
 
