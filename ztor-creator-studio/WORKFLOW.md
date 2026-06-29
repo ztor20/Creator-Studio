@@ -52,15 +52,15 @@ site/                         ← 獨立 git repo → 共用 monorepo ztor20/Cre
 
 ## 3. 改東西會觸發哪些流程
 
-| 你改了… | 必須連帶做 |
-|---|---|
-| **Token**（`_tokens.css`） | 影響全站所有元件 + 頁面 → 跨頁、跨深色目視驗證 |
-| **寫出可重用樣式** | 第一次就 promote 成 `ds-components/{name}.css`，不留在頁面 `<style>` |
-| **某個元件**（`ds-components/X.css`） | ① 同步 `design-system.html`（demo 卡 + TOC）② 同步 `design-system.md` 條目 ③ grep 所有用到的頁、一起改（共用元件改一次、同步全部 consumer） |
-| **i18n 字串** | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典 |
-| **新圖示** | 先在 `js/icons.js` registry 註冊，再用 `data-lucide` |
-| **新字型** | 放 `fonts/` + `fonts.css` 加 @font-face |
-| **任何收尾** | 跑 `check_ds_sync.py "site/r2.1"`（6 項：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產 `?v=` 一致／元件有 demo／無裸色 token／TOC 錨點），全 PASS；再 append `UI-CHANGES.md`、同步 `requirements-map.md` |
+| 你改了…                            | 必須連帶做                                                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Token**（`_tokens.css`）        | 影響全站所有元件 + 頁面 → 跨頁、跨深色目視驗證                                                                                                                                         |
+| **寫出可重用樣式**                     | 第一次就 promote 成 `ds-components/{name}.css`，不留在頁面 `<style>`                                                                                                          |
+| **某個元件**（`ds-components/X.css`） | ① 同步 `design-system.html`（demo 卡 + TOC）② 同步 `design-system.md` 條目 ③ grep 所有用到的頁、一起改（共用元件改一次、同步全部 consumer）                                                         |
+| **i18n 字串**                     | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典                                                                                                                       |
+| **新圖示**                         | 先在 `js/icons.js` registry 註冊，再用 `data-lucide`                                                                                                                      |
+| **新字型**                         | 放 `fonts/` + `fonts.css` 加 @font-face                                                                                                                              |
+| **任何收尾**                        | 跑 `check_ds_sync.py "site/r2.1"`（6 項：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產 `?v=` 一致／元件有 demo／無裸色 token／TOC 錨點），全 PASS；再 append `UI-CHANGES.md`、同步 `requirements-map.md` |
 
 > 規則出處：規則摘要在專案 `CLAUDE.md`「site/ 原型編修鐵律」；詳細 Edit Cycle 在 `project-ui-creator` skill；檢查由該 skill 的 `scripts/check_ds_sync.py`；**收尾守門員**是個 Stop hook，想結束一輪時自動跑 check，FAIL 就擋住。
 

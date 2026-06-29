@@ -18,10 +18,13 @@
 > **2026-06-25 · 命名對齊 shadcn + 暗色實色 + 控件尺寸 + focus（issue #11 — ztor 工程端 jaskang 反饋）**
 > - **Token 改名 → shadcn role**：`--surface→--card` · `--surface-muted→--muted` · `--foreground-subtle→--muted-foreground` · `--surface-rail→--sidebar` · `--surface-rail-hover→--accent` · `--status-error→--destructive`；補齊 shadcn 全集（`card-foreground` / `popover(-foreground)` / `secondary(-foreground)` / `accent-foreground` / `destructive-foreground` / `input` / `chart-1..5` / `sidebar-*` 整組）。creator 獨有的（`surface-shell` / `surface-page` / `primary-hover` / `status-{success,info,warning,accent}` / `gradient-brand` / `sidebar-active`）保留為 `[ext]`。**對齊語意、值不變**，品牌橘仍是 `--primary`。
 > - **暗色實色面**：`--background` / `--foreground` 與 card / muted / sidebar / border 改實色 hex（值由原 `rgba` 疊層在 `#191A1A` / `#2B2B2C` 上算出，外觀不變）；半透明只剩 `backdrop-blur` overlay。`--ring` 暗色不再覆寫成白、改繼承品牌橘（亮暗同色）。
-> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），button / input / field 共用、同尺寸等高；新增 4px `--space-1..16`。default 維持 44。
+> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），input / field 共用、同尺寸等高；新增 4px `--space-1..16`。表單 default 維持 44；Button 自 2026-06-29 起改用 §4.2 的 `--button-*` 三檔尺寸。
 > - **focus 統一**：全控件＋亮暗一律 `outline: 2px solid var(--ring); outline-offset: 2px`（清單列 `-2px` 內嵌）。
 > - **小數收斂**：裝飾邊框 1.5 / 2.5px → 整數、陰影次像素 → 整數。
 > - **無障礙＝最低優先、只建議**：依使用者裁示，橘 ring 低對比等 a11y 議題僅記風險、不阻擋交付、不改品牌決策。
+
+> **2026-06-29 · Button 尺寸收斂（DS feedback）**
+> - **Button size tier**：`.btn` / `.ztor-btn` 改為桌面產品節奏：小號 `32px`（表格、彈窗次要操作；padding `6px 12px`）、中型 default `36px`（一般產品/工具列操作；padding `8px 16px`、字號 14px）、大 CTA `44px`（提交、支付、登入等主流程；padding `12px 24px`）。這組走 `--button-*` token，不改 Input 的 44px 表單 default。
 
 ---
 
@@ -109,7 +112,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
-| Button label | `15px / 500 / tracking -0.3px` (Geist) |
+| Button label | `14px / 500 / tracking 0` (Geist) |
 | Icon system | Lucide (via `icons.js` registry) |
 | Theme mode | both — light / dark / system |
 
@@ -547,7 +550,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
-**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px. **Toolbar split button** uses `.split-button--toolbar`: 36px overall height (`--control-h-sm`), main action 12px horizontal padding, caret zone 36×36, caret icon 16×16, and a 1px divider.
+**Sizes** — `.btn` and canonical `.ztor-btn` share the same button tier: default 36px (`8×16` padding, 14px label), `--sm` 32px (`6×12` padding, dense table/dialog secondary), and `--lg` 44px (`12×24` padding, submit / pay / login CTA). Button tiers use `--button-*` tokens so they can be denser than form controls, whose default remains 44px. **Toolbar split button** uses `.split-button--toolbar`: 36px overall height (`--control-h-sm`), main action 12px horizontal padding, caret zone 36×36, caret icon 16×16, and a 1px divider.
 
 **States**
 
@@ -563,18 +566,18 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-btn` | Canonical primary button (44px, orange) |
+| `.ztor-btn` | Canonical primary button (36px default, orange) |
 | `.ztor-btn--outline` | White surface + 1px `--border` hairline, flat (no shadow) |
-| `.ztor-btn--sm` / `.ztor-btn--lg` | 36px / 52px sizes |
+| `.ztor-btn--sm` / `.ztor-btn--lg` | 32px / 44px sizes |
 | `.btn` + `.btn--primary` | Product-density orange CTA |
-| `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；padding −1px 補償保持尺寸（2026-06-12 取代「填色當邊」與多餘陰影） |
+| `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；與同尺寸 `.btn` 共用 padding（2026-06-12 取代「填色當邊」與多餘陰影） |
 | `.btn--ghost` | Transparent, muted text; tints on hover |
 | `.btn--soft` | Resting grey fill (`--foreground` 6% on surface), no border; quiet always-visible secondary（2026-06-12） |
-| `.btn--sm` / `.btn--lg` | Compact / large product densities |
+| `.btn--sm` / `.btn--lg` | 32px compact / 44px large CTA product densities |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · outline surface `--card` / `--muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · size `--button-h-*` / `--button-pad-*`（32 / 36 / 44px tier） · outline surface `--card` / `--muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage — 按鈕階層／什麼時候用哪個**
 
@@ -2211,11 +2214,14 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.field-pill` | 白底＋1px 線框 pill |
 | `.field-pill__icon` / `__chevron` | 前置 icon／後置 chevron（`--muted-foreground`） |
 | `.field-pill__input` / `__select` / `__label` | 搜尋／原生 select／選單文字 |
-| `.field-pill--grow` / `--block` | flex:1／width:100%（chevron 推右） |
+| `.field-pill__action` | 尾端 icon 動作區；搭配 `--toolbar` 時為 36 × 36px |
+| `.field-pill--grow` / `--block` / `--toolbar` | flex:1／width:100%／36px 工具列密度（icon 16px、左 padding 12px、尾端 action 36px） |
 
 **Token usage** — surface `--card` · border `--border` · hover `--muted` · icon `--muted-foreground` · focus `--ring` · radius `--radius-md`
 
 **Usage** — 工具列的篩選／範圍控制。下拉一律前 icon、後 chevron；搜尋變體不放 chevron。主要動作用 `.btn--primary`，不用 field-pill。
+
+工具列展開態搜尋用 `.field-pill--toolbar`：高度 36px，寬度建議 220–280px，E-Shop 使用 240px；尾端關閉鈕用 `.field-pill__action`，點擊區等於工具列高度。
 
 **Code example**
 
@@ -3077,7 +3083,7 @@ store-settings.html  (popup body — D067: no global nav / breadcrumb / page hea
       ├─ panel display: .ss-order > .ss-order__row[draggable]（+ .empty-stub.ss-order-empty）
       ├─ panel payment: .ss-status (__icon/__main/__title/__meta + Badge)
       └─ panel shipping: .settings-row（ships from / .ss-amount 免運）
-└─ .ss-actionbar（提交列：See as fan ｜ Discard ｜ Save changes，sticky 底部；Save/Discard postMessage 關閉 popup）
+└─ .ss-actionbar（提交列：See as fan ｜ Discard ｜ Save changes，sticky 底部；10px 20px 內距；radius-md 圓角；shadow-card；Save/Discard postMessage 關閉 popup）
 See as fan：.preview-panel.preview-panel--inset > .ss-fan（__header/__avatar/__name/__bio + __grid/__card）
 ```
 

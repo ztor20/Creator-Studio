@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-06-29 · Button 尺寸規範收斂為 32 / 36 / 44（B 反饋 · DS Button）
+
+- 範圍：`_tokens.css` 新增 `--button-h-*` / `--button-pad-*`；`button.css` 將 `.btn` 與 canonical `.ztor-btn` 收斂到同一套尺寸；design-system.html／design-system.md／BUILD-SPEC／修改记录同步。
+- 動機：使用者檢查後指出現有 DS 仍是控件 default 44px，與「桌面後台產品以 36px 為中型基準、32px 給密集操作、44px 留給大 CTA」的專業落地方式不一致。原本 `.ztor-btn`、`.btn` 又分別使用不同 padding / 字級，容易產生頁面漂移。
+- 規格：小號 `32px`（padding `6px 12px`，表格／彈窗次要操作）；中型 default `36px`（padding `8px 16px`，14px 字級，一般產品／工具列操作）；大 CTA `44px`（padding `12px 24px`，提交／支付／登入）。Input / select 仍保留 `--control-h-md = 44px` 的表單密度，不被本次按鈕收斂牽動。
+- 收尾：全站 asset cache bump `?v=20260629c` → `?v=20260629d`；本地 Chrome 量測 PASS（primary / outline 均為 32 / 36 / 44；E-Shop toolbar split button 仍 36px）；`git diff --check` PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
+## 2026-06-29 · E-Shop 展开态搜索框收敛为 toolbar field pill（B 反饋 · F3 工具列）
+
+- 範圍：`field-pill.css` 在既有 Field pill 元件內新增 `.field-pill--toolbar` 修飾與 `__action` 尾端動作區；E-Shop F3 展開態搜尋框套用該修飾；design-system.html／design-system.md／BUILD-SPEC／requirements-map 同步，不新增獨立元件。
+- 動機：使用者指出展開後搜尋框量測為 240×44，放在工具列中偏像普通表單輸入框；應與同列 icon button、toolbar split button 的 36px 密度一致。
+- 規格：寬度維持 240px；高度改 36px（`--control-h-sm`）；左 padding 12px；內部 gap 8px；search icon 16×16；右側關閉 action 36×36。
+- 收尾：全站 asset cache bump `?v=20260626b` → `?v=20260629a`；本地 toolbar field-pill assertion PASS；`git diff --check` PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
 ## 2026-06-26 · E-Shop 建立入口收斂為 toolbar split button（B 反饋 · F3 工具列）
 
 - 範圍：`split-button.css` 在既有 Split button 元件內新增 `.split-button--toolbar` 修飾；E-Shop F3「Create product」分割按鈕套用該修飾；design-system.html 原 Button 章節內的 `Variant · Split button` demo 與 design-system.md／BUILD-SPEC／requirements-map 同步，不新增獨立元件章節。
