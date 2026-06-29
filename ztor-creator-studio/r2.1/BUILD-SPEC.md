@@ -66,6 +66,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
         ip-market.html          · IP 市場              · grid + 篩選 ✓（spec 03 §5.1.3）
         ip-detail.html          · IP 詳情頁            · 完整 ✓（spec 03.2）
         e-shop.html             · 商品管理 Products / Bundles / Auctions · 互動 tab＋搜尋/狀態篩選＋Shop 開關→Hidden＋See as fan 分割預覽＋低庫存橫條＋補貨入口 ✓（spec 5.1.5 / 5.1.5.6）
+                                  · F4 狀態徽章 Live(success)/Low Stock(error)/Sold Out·Draft·Hidden(neutral)（D093）；草稿列每欄空值占位「未命名／—」（D092）；分批載入 批量 25（spec 預設，使用者裁示）＋載入更多（僅 >25 筆出現）＋end-cap「已顯示全部 N 筆」（樣本 <25 直接 end-cap、無載入更多），排序達任一位置門檻待工程；縮圖 lazy load＝真實縮圖 `.product-list__image img` 用 `loading="lazy"`（demo 無圖佔位、無可見效果，記為慣例）（D094 / UIA-036）
         store-settings.html     · 商店設定（電子商店 F3 popup 入口，D065）· 店面門面常駐＋商品陳列/付款/出貨 tab 群組＋See as fan 畫面分割預覽 ✓（spec 5.1.5.5 / D035 / D065）
         product-detail.html     · 商品細節頁           · 結構 + 銷售摘要 ✓（spec 03.4）
         create-product.html     · 建立商品 Add new item · 單頁三型表單 ✓（spec 5.1.5.2 v2.1）
