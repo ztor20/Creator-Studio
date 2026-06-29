@@ -38,6 +38,7 @@
 > **2026-05-25 pivot**: 初版 R 2.1 用了左側 240 px sidebar；經反饋後改回 canonical 横向 topbar（spec §3.2.2 / ds-components/header.css 的標準），並把 Dashboard Hero 改為 `--fullbleed` 邊到邊。Sidebar 當時完全移除。
 > **2026-06-09 更新**: Sidebar 以「可切換顯示模式」重新納入（topbar 仍是預設）——不是回到舊版固定 sidebar，而是 spec §6.9 / D016 的 Topbar↔Sidebar 切換，同一套 IA。見 §5.2a。
 > **2026-06-14 更新**: Topbar 模式也套上 app shell（與 sidebar 同一套 shell token）——`.app` 灰底 `--surface-shell`、`.app-topbar` 坐灰底、`.main` 上方留 gutter ＋ `--radius-shell` 圓**上方兩角** ＋ 白底 ＋ `overflow:clip`，Dashboard Hero 收進面板。只作用於有 `.app` 的 topbar 頁；wizard（`.wizard`）不受影響；≤900px 收掉 shell。見 shared.css「Topbar-mode app shell」。
+> **2026-06-29 更新**: 新增**平台營運（Admin）層**（spec §4.1／§3.2.1 Tier 0-1／D086）。`creators.html` 為 Tier 0 Admin 落地（creator 名冊＋建立，roster／data-list＋badge＋button 組成，建立用 inline card 表單）；現有頁＝Tier 1 creator scope。`sidebar.js` 依 `window.ztorCreator`（活躍 creator 存 localStorage `ztor.activeCreator`）渲染：roster 頁只露 Creator 管理 marker＋Tier 1 模組鎖定（`.app-topbar__link--locked`）；creator scope 在 logo 前加返回名冊 icon（`.app-topbar__back`，使用者裁示固定此位）＋「管理中 <creator>」chip（`.app-topbar__context`），導航解鎖。切換 creator 走 `devtools.js`「Creator · Admin」cheat code（呼叫 `window.ztorCreator.set`，派 `ztor:creator-changed` 重繪）。新增 icon arrow-left／shield-check。樣式住 shared.css（隨 nav shell），DS 頁 Header 段說明。
 
 ---
 

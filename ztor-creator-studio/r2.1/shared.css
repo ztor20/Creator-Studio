@@ -386,6 +386,61 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
     background: var(--background); border-radius: 0; overflow: visible;
   }
 }
+/* ---- Platform-operator (Admin) layer nav · spec §4.1 / D086 ----
+   Back-to-roster icon before the logo + "Managing <creator>" context chip
+   (creator scope); "Creator Management" marker + locked Tier-1 items (roster).
+   Lives with the nav shell; the Header DS section documents it. */
+.app-topbar__back {
+  display: inline-grid; place-items: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.app-topbar__back:hover { background: var(--muted); color: var(--foreground); }
+.app-topbar__context {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 8px; border-radius: 999px;
+  background: var(--muted); color: var(--foreground);
+  font-size: var(--fs-13); font-weight: var(--fw-medium);
+  white-space: nowrap; flex-shrink: 0;
+}
+.app-topbar__context-label { color: var(--muted-foreground); font-weight: var(--fw-regular); }
+.app-topbar__context--admin {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--foreground);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.app-topbar__context--admin .ztor-icon { color: var(--primary); }
+.app-topbar__link--locked {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 10px;
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+.app-topbar__link--locked .ztor-icon { color: var(--muted-foreground); }
+/* Sidebar-mode equivalents */
+.app-sidebar__back {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; margin: 0 0 4px; border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  font-size: var(--fs-13); font-weight: var(--fw-medium);
+}
+.app-sidebar__back:hover { background: var(--muted); color: var(--foreground); }
+.app-sidebar__context { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px 12px; }
+.app-sidebar__context-label { font-size: var(--fs-11); color: var(--muted-foreground); }
+.app-sidebar__context-name { font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--foreground); }
+.app-sidebar__context--admin {
+  flex-direction: row; align-items: center; gap: 8px;
+  padding: 8px 12px; margin: 0 0 8px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+  font-size: var(--fs-13); font-weight: var(--fw-semibold);
+}
+.app-sidebar__context--admin .ztor-icon { color: var(--primary); }
+.app-sidebar__link--locked {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+
 .page {
   /* Top padding bumped 32 → 48px on 2026-05-28 after .page-intro__eyebrow was
      retired — title needs more breathing room above without the eyebrow row. */
@@ -894,27 +949,8 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .wizard__top-actions .wizard__save-status,
 .wizard__top-actions .ce-save-status { margin-inline-end: 12px; }
 
-/* ── 返回離開確認彈窗（共用，由 partials/wizard-chrome.js 注入並控制）── */
-.wizard-leave { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
-.wizard-leave[data-open] { display: flex; }
-.wizard-leave__scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
-.wizard-leave__card {
-  position: relative; z-index: 1;
-  width: min(420px, calc(100vw - 40px));
-  background: var(--card); border-radius: var(--radius-lg);
-  padding: 24px; box-shadow: var(--shadow-popover);
-}
-.wizard-leave__close {
-  position: absolute; top: 12px; right: 12px;
-  display: inline-grid; place-items: center; width: 32px; height: 32px;
-  border: 0; background: transparent; cursor: pointer; color: var(--foreground-muted); border-radius: var(--radius-sm);
-}
-.wizard-leave__close:hover { color: var(--foreground); background: var(--muted); }
-.wizard-leave__close .ztor-icon { width: 18px; height: 18px; }
-.wizard-leave__title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); margin: 0 6px 6px 0; }
-.wizard-leave__body { color: var(--foreground-muted); font-size: var(--fs-14); margin: 0 0 20px; }
-.wizard-leave__actions { display: flex; flex-direction: column; gap: 8px; }
-.wizard-leave__actions .btn { width: 100%; justify-content: center; }
+/* 返回離開確認彈窗已 promote 成元件 → ds-components/leave-dialog.css（2026-06-29）*/
+
 /* .stepper（舊：數字圓圈＋分隔線）已於 2026-06-23 退役 → 改用
    ds-components/progress-stepper.css 的 .progress-stepper（細軌＋漸層填充）。
    create-event / create-project / register-ip 皆已遷移。 */
