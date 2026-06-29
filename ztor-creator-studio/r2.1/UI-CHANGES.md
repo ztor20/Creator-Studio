@@ -6,6 +6,29 @@
 
 ---
 
+## 2026-06-29 · 商品細節頁補完 media／數位內容檔案／數位交付＋主分類連動（A 規格 · spec 5.1.5.1 §2.3 / D096）
+
+接續 D095，把原標「R 2.1.1 待建」的欄位在 product-detail.html 做完，並由使用者裁示移除規格的「待建」字眼：
+- **商品圖片／素材 Media**：「商品內容」卡最上方加素材上傳區——實體＝主圖＋4 附圖（2×2）、數位＝封面＋4 附圖，重用建立商品 5.1.5.2 §4 F1 的 `upload-showcase`/`upload-tile`（dashed 佔位，無真圖、自架不依賴 CDN）。
+- **數位內容檔案 Content file（僅數位）**：重用 5.1.5.2 §4.2 F11 的 `upload-tile--file`；**數位交付／存取說明**：stickynote 提示「購買後即時下載／存取，檔案於『內容檔案』管理」。
+- **主分類連動顯隱**：主分類 `<select>` 加 id `pd-main-cat`，新增頁面層 IIFE 依選擇切換 `[data-pd-cat="physical|digital"]`——實體顯示（主圖／詳細規格／取貨方式），數位顯示（封面／內容檔案／下載存取），預設實體（Tour zine 範例）。`.field[hidden]` 已由 field-system.css 處理、無 display 蓋掉問題。
+- **i18n**：新增 `product-detail.field.media`、`pd.digital-delivery.title/note`（en＋zh）；其餘重用 `cp.media.*`/`cp.cfile.*`。
+- **規格同步**：spec 5.1.5.1 §2.3 移除媒體／交付行的「R 2.1.1 待建」與 §2 前言待建註（D096／Plan160），產品定義不變。
+- cache：i18n.js 改動 → 全站版本統一 bump `20260629n`→`20260629o`（含新 `upload-tile.css` 連入 product-detail）。驗證：check_ds_sync PASS；Playwright——實體預設顯 3 實體區/隱 3 數位區，切數位反轉、切回還原，0 raw i18n key，hero SVG 44px。
+
+---
+
+## 2026-06-29 · 商品細節頁補「詳細規格」＋主分類對齊（A 規格 · spec 5.1.5.1 §2.3 / D095）
+
+依 spec 5.1.5.1 §2.3（D095）把建立商品已定義、細節頁漏列的欄位補進 product-detail.html：
+- **詳細規格 Specifications（僅實體）**：在「商品內容」卡描述／價格之後新增可編輯逐筆「規格名稱＋規格值」列，預填 zine 範例（Material／Size／Pages），＋ 新增規格可加空列、行尾刪除。重用建立商品 5.1.5.2 §4.1② 的列樣式與 `cp.spec.*` i18n；前端 demo（無持久化）。
+- **spec-row promote 成元件**：原樣式內聯在 create-product 的 `.cp-spec-row`，第二頁（product-detail）用到，promote 成 `ds-components/spec-row.css`（`.spec-row`）；create-product 同步改用、移除內聯 CSS。DS 頁加 §4.78 demo＋TOC＋index 列、design-system.md 加條目。
+- **主分類選項對齊 §7.1／D080**：移除已打散的「Special / Premium」選項，主分類僅留 實體商品（Physical）／數位商品（Digital）／Experiences & Events。
+- **media／數位內容檔案／交付細節未做**：spec §2.3＋D095 待辦明標 site R 2.1.1 待建（圖片素材區、數位內容檔案可編輯範圍、交付設定），本輪不建，記 ASSUMPTIONS UIA-018。
+- cache：新增 `spec-row.css?v=20260629o`（其餘資產不變、仍 `n`）。驗證：check_ds_sync PASS（spec-row 連入＋demo＋版本一致＋TOC 解析）。
+
+---
+
 ## 2026-06-29 · 電子商店 F4 分批載入校正：批量預設 10→25、縮圖 lazy-load 記為慣例（D infra · spec 5.1.5 F4 三類共通 / D094 改版）
 
 依 D094 改版（批量 10→25、縮圖延遲載入）：
