@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-06-29 · 其餘建立頁 footer 一致化：去除多餘「Save for later」、主動作右對齊（C 撤除 · 比照 D090）
+
+把建立組合的 footer 慣例（主動作右對齊、不放多餘「稍後再存」）套到其餘建立頁：
+- **create-auction.html**：footer 左側無動作的 ghost「Save for later」移除，`<footer class="wizard__bottom" style="justify-content:flex-end">`（header 已有 Save as draft）。
+- **create-project.html**（多步驟）：footer 左側「Save draft」（與 header 的 Save as draft 重複）移除，連同其 JS 綁定（原 `[data-action=save-draft]` alert）一併拿掉以免 querySelector null 報錯；footer 改右對齊，Back／Continue 保留。存草稿統一走 header `data-wizard-savedraft`（wizard-chrome.js）。
+- **create-product.html**：footer 早已 `flex-end`、無左側 save-for-later，未動。
+- **ip-detail.html**：其「Save for later」是頁內卡片的功能按鈕（`ip-detail.btn.save`，非 wizard footer ghost），保留不動。
+- 純呈現／移除冗餘，無資產版本變更（仍 `?v=20260629k`）；驗證：check_ds_sync PASS、Playwright（兩頁 footer flex-end＋主動作靠右、create-project stepper Back/Continue 仍正常、無 console error）。
+
+---
+
 ## 2026-06-29 · 建立組合加即時預覽＋上架開關、footer 右對齊、「排程特價」改名「販售排程」（B 反饋＋A 規格 · spec 5.1.5.4 v1.8 / 5.1.5.9 v1.5 / D091）
 
 依使用者反饋：
