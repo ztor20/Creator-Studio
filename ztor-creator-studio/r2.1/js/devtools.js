@@ -56,6 +56,20 @@
   function curTheme() { return (window.ztorTheme && window.ztorTheme.getPreference && window.ztorTheme.getPreference()) || 'system'; }
   function curLang() { return document.documentElement.lang === 'zh-Hant' ? 'zh-Hant' : 'en'; }
   function curNav() { return (window.ztorNavMode && window.ztorNavMode.get && window.ztorNavMode.get()) || 'topbar'; }
+  /* Creator (Admin) — spec §4.1 / D086. Switch which creator the Admin is
+     operating as, or clear back to the roster (Tier 1 locked). Reads/sets the
+     shared model exposed by sidebar.js (window.ztorCreator). */
+  function creatorOpts() {
+    var list = (window.ztorCreator && window.ztorCreator.list) || [];
+    /* 一般創作者（無代管）排第一，其後才是各 creator 的 admin 代管。 */
+    var opts = [['__none__', '一般創作者', '一般創作者視角（無 admin chrome）']];
+    list.forEach(function (c) { opts.push([c.handle, c.name, c.shop]); });
+    return opts;
+  }
+  function curCreator() {
+    var c = window.ztorCreator && window.ztorCreator.get && window.ztorCreator.get();
+    return c ? c.handle : '__none__';
+  }
 
   var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event' };
   var LS = 'ztor.devstate';
@@ -201,6 +215,8 @@
       +     '<div class="ztd__group"><p class="ztd__group-label">Validation</p>'
       +       '<button class="ztd__row' + (state.skipValidation ? ' is-on' : '') + '" data-act="toggle-skip"><span>Skip validation</span><span class="ztd__sw"></span></button>'
       +     '</div>'
+      +     '<div class="ztd__group"><p class="ztd__group-label">User</p>'
+      +       '<div class="ztd__grid">' + optsHtml(creatorOpts(), curCreator(), 'creator') + '</div></div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Data State</p>'
       +       '<div class="ztd__grid">' + optsHtml(DATA, state.data, 'data') + '</div></div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Event Day</p>'
@@ -393,6 +409,7 @@
     if (kind === 'theme') { if (window.ztorTheme) window.ztorTheme.setPreference(val); return paint(); }
     if (kind === 'lang')  { if (window.setLang) window.setLang(val); return paint(); }
     if (kind === 'nav')   { if (window.ztorNavMode) window.ztorNavMode.set(val); return paint(); }
+    if (kind === 'creator') { if (window.ztorCreator) window.ztorCreator.set(val === '__none__' ? null : val); return paint(); }
     state[kind] = val; update();
   });
 
@@ -437,6 +454,7 @@
   function syncAppearance() { if (root.classList.contains('is-open') && !inspecting) paint(); }
   document.addEventListener('ztor:theme-changed', syncAppearance);
   document.addEventListener('ztor:navmode-changed', syncAppearance);
+  document.addEventListener('ztor:creator-changed', syncAppearance);
   document.addEventListener('i18n:applied', syncAppearance);
 
   window.ztorDevState = {

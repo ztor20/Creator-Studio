@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creator Management · Ztor Creator Studio</title>
+<script src="js/theme.js?v=20260629g"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/button.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/card.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/input.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/header.css?v=20260629g">
+<link rel="stylesheet" href="ds-components/footer.css?v=20260629g">
+<link rel="stylesheet" href="shared.css?v=20260629g">
+<style>
+  /* Page-specific layout for the Admin roster (Tier 0, creators.html only).
+     Roster rows / status / actions reuse data-list + badge + button; only the
+     avatar circle and the create-form grid are one-off page chrome. */
+  .creator-ava {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--primary) 16%, var(--muted));
+    color: var(--foreground); font-weight: var(--fw-semibold); font-size: var(--fs-13);
+  }
+  .creators-form { display: none; margin-bottom: 20px; padding: 20px; }
+  .creators-form.is-open { display: block; }
+  .creators-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .creators-form__field { display: flex; flex-direction: column; gap: 6px; }
+  .creators-form__label { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
+  .creators-form__actions { display: flex; gap: 10px; }
+  .creators-roster__handle { color: var(--muted-foreground); font-size: var(--fs-12); }
+  /* empty-card sets its own display → [hidden] alone won't hide it (DS gotcha). */
+  #creator-empty[hidden] { display: none; }
+  @media (max-width: 640px) { .creators-form__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- Tier 0 · Admin landing — no breadcrumb (like Dashboard). spec 5.1.0 / §3.2.1 -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="creators.title">Creator Management</h1>
+          <p class="page-intro__sub" data-i18n="creators.lede">Manage every creator on the platform. Pick one to open and operate their studio on their behalf.</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--primary" type="button" data-creator-create>
+            <i data-lucide="plus" class="ztor-icon ztor-icon--sm"></i>
+            <span data-i18n="creators.create">Create creator</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- F2 · Create creator (auto-generates the e-shop). Inline form, toggled. -->
+      <form class="card creators-form" id="creator-form" aria-label="Create creator">
+        <div class="creators-form__grid">
+          <label class="creators-form__field">
+            <span class="creators-form__label" data-i18n="creators.form-name">Creator name</span>
+            <input class="input" type="text" name="name" required data-i18n-placeholder="creators.form-name-ph" placeholder="e.g. Denise Lonely">
+          </label>
+          <label class="creators-form__field">
+            <span class="creators-form__label" data-i18n="creators.form-handle">Shop handle</span>
+            <input class="input" type="text" name="handle" required data-i18n-placeholder="creators.form-handle-ph" placeholder="e.g. denise">
+          </label>
+        </div>
+        <div class="creators-form__actions">
+          <button class="btn btn--primary" type="submit" data-i18n="creators.form-submit">Create</button>
+          <button class="btn btn--ghost" type="button" data-creator-cancel data-i18n="creators.create-cancel">Cancel</button>
+        </div>
+      </form>
+
+      <!-- F1 · Creator roster — rendered from window.ztorCreator.list -->
+      <section class="card" id="creator-roster-card">
+        <div class="data-list" id="creator-roster"></div>
+      </section>
+
+      <!-- Empty state (shown when the roster is empty) -->
+      <div class="empty-card" id="creator-empty" hidden>
+        <div class="empty-card__icon"><i data-lucide="shield-check" class="ztor-icon"></i></div>
+        <h2 class="empty-card__title" data-i18n="creators.empty-title">No creators yet</h2>
+        <p class="empty-card__desc" data-i18n="creators.empty-desc">Create the first creator — their e-shop is generated automatically.</p>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>Ztor Creator Studio · R 2.1 prototype</span>
+      <span>·</span>
+      <span>Admin · Creator Management (Tier 0)</span>
+    </footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=20260629g"></script>
+<script src="js/i18n.js?v=20260629g"></script>
+<script src="js/sidebar.js?v=20260629g"></script>
+<script src="js/devtools.js?v=20260629g"></script>
+<script>
+/* Creator roster page logic (Tier 0). Reads the shared model exposed by
+   sidebar.js (window.ztorCreator). Picking "Manage" sets the active creator and
+   enters their Tier 1 workspace (index.html); creating appends a demo creator. */
+(function () {
+  var roster = document.getElementById('creator-roster');
+  var rosterCard = document.getElementById('creator-roster-card');
+  var empty = document.getElementById('creator-empty');
+  var form = document.getElementById('creator-form');
+  if (!roster || !window.ztorCreator) return;
+  var list = window.ztorCreator.list;
+
+  function statusBadge(status) {
+    var cls = status === 'published' ? 'badge--success' : 'badge--neutral';
+    var key = status === 'published' ? 'creators.status-published' : 'creators.status-draft';
+    return '<span class="badge ' + cls + '"><span class="badge__dot"></span><span data-i18n="' + key + '">' + status + '</span></span>';
+  }
+  function initial(name) { return (name || '?').trim().charAt(0).toUpperCase(); }
+
+  function render() {
+    var hasAny = list.length > 0;
+    rosterCard.hidden = !hasAny;
+    empty.hidden = hasAny;
+    roster.innerHTML = list.map(function (c) {
+      return '<div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-creator-row>'
+        + '<div class="data-list__icon"><span class="creator-ava">' + initial(c.name) + '</span></div>'
+        + '<div class="data-list__body">'
+        +   '<div class="data-list__title">' + c.name + '</div>'
+        +   '<div class="data-list__meta creators-roster__handle">' + c.shop + '</div>'
+        + '</div>'
+        + statusBadge(c.status)
+        + '<button class="btn btn--primary btn--sm" type="button" data-manage="' + c.handle + '" data-i18n="creators.manage">Manage</button>'
+        + '</div>';
+    }).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons(roster);
+    if (window.applyI18n) { window.applyI18n(roster); window.applyI18n(empty); }
+  }
+
+  /* Manage → operate as this creator → enter Tier 1 (index.html). */
+  roster.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-manage]');
+    if (!btn) return;
+    window.ztorCreator.set(btn.getAttribute('data-manage'));
+    location.href = 'index.html';
+  });
+
+  /* Create-form toggle + demo submit (in-memory; real create is upstream). */
+  document.querySelector('[data-creator-create]').addEventListener('click', function () {
+    form.classList.add('is-open');
+    form.querySelector('input[name="name"]').focus();
+  });
+  form.querySelector('[data-creator-cancel]').addEventListener('click', function () {
+    form.classList.remove('is-open'); form.reset();
+  });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = form.querySelector('input[name="name"]').value.trim();
+    var handle = form.querySelector('input[name="handle"]').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (!name || !handle) return;
+    list.push({ handle: handle, name: name, shop: '/shop/' + handle, status: 'draft' });
+    form.classList.remove('is-open'); form.reset();
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
