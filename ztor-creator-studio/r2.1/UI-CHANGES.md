@@ -6,6 +6,53 @@
 
 ---
 
+## 2026-06-30 · Creator 管理頁對齊電子商店元件：bento 概覽、前往(Enter)、field-pill/filter-tabs/product-list ＋ 規格 F 重編號（B 反饋 · A 規格 D098 · D infra）
+
+延續同日 creators 改版，使用者再反饋四項：摘要改 bento、管理鈕改「前往」、搜尋/篩選/列表改用電子商店同款元件、規格 F 項照電子商店分類重編號。
+
+**B 反饋（呈現，creators.html）**
+- **摘要列改 bento**：「N 位·X 啟用中·Y 已停用」文字行 → bento 12 欄格＋三張 `.kpi.bento--span-4`（總數/啟用中/已停用），與 Dashboard KPI 同元件。
+- **管理 → 前往**：列主按鈕 i18n `creators.manage` 改 en `Enter`／zh `前往`。
+- **搜尋改 field-pill**：原 `.creators-search`＋`.input` → e-shop 同款 `field-pill`（放大鏡 icon＋輸入）。
+- **狀態篩選改 filter-tabs**：原 native `<select>` → e-shop 同款 `filter-tabs filter-tabs--brand`（全部/啟用中/已停用 淡橘 pill＋每項數量，隨名冊即時重算）。
+- **列表改 product-list**：原 `data-list` → e-shop 同款 `product-list` 列骨架（retarget 欄位 avatar／名稱+識別／狀態／列操作）；停用列淡化、整列可點維持。依使用者再指定，補上 `product-list__head` **欄位表頭**（Creator／狀態，欄寬固定 `52px / 1fr / 104px / 140px` 讓表頭與列對齊）；creators 無分類/價格/庫存與拖曳重排，故省略 e-shop 的那幾欄與 drag handle。再依使用者指定**移除工作列/清單最外層 `.card` 包裹**（e-shop 清單本就不包卡片，改用 `eshop-list-controls`＋`product-list` 兩 section 直接落頁），creators 同步拿掉 `.card` 與 card.css 連結；bento 概覽 tile（kpi）保留。
+
+**A 規格（D098，先改 documents/）**
+- 5.1.0 F 項照 5.1.5 電子商店「頁首/概覽/工作列/清單」分類重編號：F1 頁首／F2 名冊概覽（bento）／F3 名冊工作列（搜尋＋篩選＋建立）／F4 Creator 名冊（列＋列操作 前往/停用/啟用）／F5 進入與返回。原 F2 建立併入 F3、原 F4 停用啟用與進入入口收為 F4 列操作（比照 e-shop 列操作含於清單 F）。頁面佈局/狀態/情境 F 引用同步；備份 Plan152。
+
+**D infra**
+- creators.html 連入 `kpi.css`／`bento.css`／`field-pill.css`／`filter-tabs.css`／`product-list.css`，移除 `data-list.css`；新增 i18n `creators.metric-total`。
+- cache：改動 i18n.js → 全站版本 bump `20260630a`→`20260630b`。
+
+驗證：http 實測 0 JS error；bento 三 tile（3/2/1）、filter-tabs 點「已停用」只剩 KMT、前往按鈕、中文齊全；截圖 `screenshots/creators-06/07-*-20260630.png`；check_ds_sync PASS、validate_spec OK。
+
+---
+
+## 2026-06-30 · Creator 管理頁：狀態定案兩值＋停用/啟用、建立改 popup、搜尋/篩選/摘要/整列可點（A 規格 D097 · B 反饋 · D infra）
+
+使用者檢視 creators.html 後反饋三事：建立要 popup、要停用按鈕、`已發布／草稿`看不懂。查證後確認 `draft／published` 是建站自塞、無上游依據（D086 待確認 #4 狀態枚舉一直未定），先回上游定案再改站台。
+
+**A 規格（D097，先改 documents/ 再改 site）**
+- creator 狀態枚舉定為兩值 **啟用中（Active）／已停用（Disabled）**，撤除無依據的已發布／草稿；spec 5.1.0 F1 寫實、新增 F4「停用／啟用 Creator」、關閉 D086 待確認 #4（備份 Plan151）。
+
+**B 反饋（呈現）**
+- **建立改 popup**：inline 展開表單 → modal 彈窗，重用 canonical 對話框外殼 `.payout-modal`／`.payout-dialog`（比照 message-modal），含關閉 ✕／Esc／點遮罩關閉、開啟自動聚焦 name。
+- **停用／啟用**：列尾新增 ⋯ 溢出選單（`dropdown`），啟用中顯「停用」、已停用顯「啟用」，in-memory 切換即時重繪；已停用列 `badge--neutral`＋淡化。**已停用仍可 Manage 進入代操**（spec F4 待確認，本輪 demo 不閘控，記 UIA-036）。
+- **搜尋／篩選**：toolbar 加名稱／識別搜尋＋狀態 All／Active／Disabled 篩選（僅影響檢視，補建站漏的 F1 既有要求）；無符合顯卡內提示。
+- **名冊摘要列**：「共 N 位 · X 啟用中 · Y 已停用」，i18nT 組字＋掛 `i18n:applied` 切語言重譯。
+- **整列可點**進管理（管理鈕／⋯選單 stopPropagation）。
+
+**D infra**
+- 新 i18n 詞條（status-active／disabled、search-ph、filter-*、summary-unit、row-actions、action-disable／enable、create-close、empty-filter），移除 status-published／draft。
+- icons.js 核心 registry 補 `more-horizontal`（⋯）。
+- sidebar.js demo roster 狀態改 active／active／disabled。
+- creators.html 新連入 `dropdown-menu.css`、`payout-modal.css`。
+- cache：改動共用 i18n.js／sidebar.js／icons.js → 全站版本統一 bump `20260629o`→`20260630a`。
+
+驗證：http 起本機站，截圖 light（roster／popup／⋯選單／停用後／中文）存 `screenshots/creators-0x-*-20260630.png`；console 0 JS error（僅 favicon 404）；切中文 0 raw key、摘要即時重譯；check_ds_sync PASS（版本一致、元件齊、TOC），WARN 僅既有 selection-card 裸色。
+
+---
+
 ## 2026-06-29 · 商品細節頁補完 media／數位內容檔案／數位交付＋主分類連動（A 規格 · spec 5.1.5.1 §2.3 / D096）
 
 接續 D095，把原標「R 2.1.1 待建」的欄位在 product-detail.html 做完，並由使用者裁示移除規格的「待建」字眼：
