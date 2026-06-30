@@ -53,6 +53,86 @@
     ['topbar', 'Topbar', '水平頂列（預設）'],
     ['sidebar', 'Sidebar', '左側直欄'],
   ];
+  /* ---- 版本（最高級別 gate）：讀 feature-scope-map.md 重新配置 ----
+     一份 md 當單一真相：版本清單＋規則取自其「## 開發版本配置」表，
+     功能→tier 取自各 pillar 功能表的 🟢/🔵/⚪ 欄。fetch 失敗（file://）用內建後備。
+     規則語法：all｜tier:p1,next｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
+     減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。*/
+  var TIER_EMOJI = { '🟢': 'p1', '🔵': 'next', '⚪': 'tbd' };
+  var VERSIONS = [
+    ['full', '最終完整版', 'all', '全部功能（預設）'],
+    ['p1-next', 'Phase 1 ＋ Next', 'tier:p1,next', '首發＋規劃追加'],
+    ['p1', 'Phase 1', 'tier:p1', '內部首發'],
+    ['test', '測試版（特殊）', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
+  ];
+  var FEAT_TIER = {};   // { S30:'p1', … } 由 md 功能表填
+  function parseScopeMd(txt) {
+    var lines = txt.split('\n'), vs = [], inVer = false;
+    lines.forEach(function (ln) {
+      if (/^##\s*開發版本配置/.test(ln)) { inVer = true; return; }
+      if (inVer && /^##\s/.test(ln)) inVer = false;
+      if (inVer) {
+        var m = ln.match(/^\|\s*`?([\w-]+)`?\s*\|\s*([^|]+?)\s*\|\s*[^|]+?\s*\|\s*`?([^|`]+?)`?\s*\|\s*([^|]*?)\s*\|/);
+        if (m && m[1] !== '鍵' && !/^-+$/.test(m[1])) vs.push([m[1], m[2], m[3], m[4]]);
+      }
+    });
+    if (vs.length) VERSIONS = vs;
+    lines.forEach(function (ln) {
+      var idm = ln.match(/\|\s*`([SOEB]\d{2})`\s*\|/);
+      if (!idm) return;
+      for (var em in TIER_EMOJI) { if (ln.indexOf(em) >= 0) { FEAT_TIER[idm[1]] = TIER_EMOJI[em]; break; } }
+    });
+  }
+  function curVersionRule() {
+    for (var i = 0; i < VERSIONS.length; i++) if (VERSIONS[i][0] === state.version) return VERSIONS[i][2];
+    return 'all';
+  }
+  function tiersForRule(rule) {
+    var m = /tier:([\w,]+)/.exec(rule || '');
+    return m ? m[1].split(',') : null;   // null ＝ 全部 tier（all／route／page 規則皆不減功能）
+  }
+  function routesForRule(rule) {
+    var out = [];
+    (rule || '').split(/\s+/).forEach(function (tok) {
+      var m = /^route:([^=]+)=(.+)$/.exec(tok);
+      if (m) out.push([m[1], m[2]]);
+    });
+    return out;
+  }
+  function applyVersion() {
+    var rule = curVersionRule();
+    /* 1) 減功能：依 tier 隱藏／標記帶 data-feat 的元素 */
+    var allow = tiersForRule(rule);
+    document.querySelectorAll('[data-feat]').forEach(function (el) {
+      var tier = FEAT_TIER[el.getAttribute('data-feat')] || 'p1';
+      var inVer = !allow || allow.indexOf(tier) >= 0;
+      el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
+      el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
+    });
+    /* 2) 改接：route:來源=目標——先把上次改過的全還原，再套當前版本（標 data-route-keep 的不動）*/
+    document.querySelectorAll('a[data-route-orig]').forEach(function (a) {
+      a.setAttribute('href', a.getAttribute('data-route-orig'));
+      a.removeAttribute('data-route-orig');
+    });
+    routesForRule(rule).forEach(function (pair) {
+      var from = pair[0], to = pair[1];
+      document.querySelectorAll('a[href]').forEach(function (a) {
+        if (a.hasAttribute('data-route-keep')) return;
+        var h = a.getAttribute('href');
+        if (h === from || h.split(/[?#]/)[0] === from) {
+          a.setAttribute('data-route-orig', h);
+          a.setAttribute('href', to);
+        }
+      });
+    });
+  }
+  function loadVersions() {
+    try {
+      fetch('feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (t) { if (t) { parseScopeMd(t); if (root.classList.contains('is-open')) paint(); applyVersion(); } })
+        .catch(function () {});
+    } catch (e) {}
+  }
   function curTheme() { return (window.ztorTheme && window.ztorTheme.getPreference && window.ztorTheme.getPreference()) || 'system'; }
   function curLang() { return document.documentElement.lang === 'zh-Hant' ? 'zh-Hant' : 'en'; }
   function curNav() { return (window.ztorNavMode && window.ztorNavMode.get && window.ztorNavMode.get()) || 'topbar'; }
@@ -71,7 +151,7 @@
     return c ? c.handle : '__none__';
   }
 
-  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event' };
+  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event', version: 'full', showFuture: false };
   var LS = 'ztor.devstate';
 
   function load() {
@@ -81,6 +161,8 @@
     if (q.has('data')) s.data = q.get('data');
     if (q.has('event')) s.eventDay = q.get('event');
     if (q.has('skip')) s.skipValidation = q.get('skip') === '1' || q.get('skip') === 'true';
+    if (q.has('version')) s.version = q.get('version');
+    if (q.has('future')) s.showFuture = q.get('future') === '1' || q.get('future') === 'true';
     return s;
   }
   var state = load();
@@ -92,6 +174,8 @@
     q.set('data', state.data);
     q.set('event', state.eventDay);
     if (state.skipValidation) q.set('skip', '1'); else q.delete('skip');
+    if (state.version && state.version !== 'full') q.set('version', state.version); else q.delete('version');
+    if (state.showFuture) q.set('future', '1'); else q.delete('future');
     history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
   }
   function emit() {
@@ -101,6 +185,8 @@
     el.setAttribute('data-data-state', state.data);
     el.setAttribute('data-event-day', state.eventDay);
     el.setAttribute('data-skip-validation', state.skipValidation ? '1' : '0');
+    el.setAttribute('data-version', state.version);
+    applyVersion();
     listeners.forEach(function (f) { try { f(d); } catch (e) {} });
     document.dispatchEvent(new CustomEvent('ztor:devstate-changed', { detail: d }));
   }
@@ -140,6 +226,10 @@
     + '.ztd__opt:hover{background:var(--muted)}'
     + '.ztd__opt.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
     + '.ztd__opt-desc{display:block;font-size: var(--fs-11);font-weight: var(--fw-regular);color:var(--muted-foreground);margin-top:4px;line-height:1.4}'   /* 說明預設常駐 */
+    /* 版本（最高級別 gate）：組強調框＋版本外功能的隱藏/標記樣式（全站套用）*/
+    + '.ztd__group--top{border:1px solid color-mix(in srgb,var(--primary) 55%,var(--border));background:color-mix(in srgb,var(--primary) 7%,var(--card));border-radius:var(--radius-md,7px);padding:12px 13px 4px;margin-bottom:18px}'
+    + '.ztd-ver-hidden{display:none!important}'
+    + '.ztd-ver-future{opacity:.42!important;outline:1px dashed var(--primary);outline-offset:2px}'
     /* 縮小：只留 header，body／foot 收起，面板高度回到 auto（蓋掉 resize 存的高度）*/
     + '.ztd.is-min .ztd__body,.ztd.is-min .ztd__foot{display:none}'
     + '.ztd.is-min .ztd__panel{min-height:0;height:auto!important;resize:none}'
@@ -208,6 +298,10 @@
       +     '<button class="ztd__iconbtn" data-act="close" aria-label="Close">' + CLOSE + '</button>'
       +   '</div>'
       +   '<div class="ztd__body">'
+      +     '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
+      +       '<div class="ztd__grid">' + optsHtml(VERSIONS.map(function (v) { return [v[0], v[1], v[3]]; }), state.version, 'version') + '</div>'
+      +       '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
+      +     '</div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
       +       '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
       +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
@@ -401,6 +495,7 @@
     if (act === 'minimize') { var m = root.classList.toggle('is-min'); try { localStorage.setItem(MIN_LS, m ? '1' : '0'); } catch (e) {} return paint(); }
     if (act === 'reset') { state = Object.assign({}, DEFAULTS); setInspect(false); return update(); }
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
+    if (act === 'toggle-future') { state.showFuture = !state.showFuture; return update(); }
     if (act === 'toggle-inspect') { setInspect(!inspecting); return; }
     var kind = btn.getAttribute('data-kind');
     if (!kind) return;
@@ -463,4 +558,5 @@
     on: function (cb) { if (typeof cb === 'function') listeners.push(cb); },
   };
   emit();
+  loadVersions();
 })();
