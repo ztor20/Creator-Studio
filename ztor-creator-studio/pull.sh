@@ -118,8 +118,8 @@ while IFS= read -r f; do
       rm -f "$SITE/$f"; echo "$f" >> "$DELETED"
     fi
   else
-    # 你動過：若剛好和上游一樣就無事，否則衝突
-    if [ $mex -eq 1 ] && [ $lex -eq 1 ] && cmp -s "$SITE/$f" "$M/$f"; then
+    # 你動過：若你和上游的結果一致就無事（都刪、或都改成相同內容），否則衝突
+    if [ $mex -eq $lex ] && { [ $mex -eq 0 ] || cmp -s "$SITE/$f" "$M/$f"; }; then
       :
     else
       echo "$f" >> "$CONFLICTS"
@@ -141,9 +141,9 @@ while IFS= read -r f; do
 done < "$CONFLICTS"
 
 # ---------- 報告 ----------
-nU=$(grep -c . "$UPDATED" 2>/dev/null || echo 0)
-nD=$(grep -c . "$DELETED" 2>/dev/null || echo 0)
-nC=$(grep -c . "$CONFLICTS" 2>/dev/null || echo 0)
+nU=$(wc -l <"$UPDATED" | tr -d ' ')
+nD=$(wc -l <"$DELETED" | tr -d ' ')
+nC=$(wc -l <"$CONFLICTS" | tr -d ' ')
 echo ""
 echo "✓ 智慧同步完成（monorepo @ ${SRCSHA}）"
 if [ "$nU" -gt 0 ]; then echo "→ 更新 $nU 個你沒動過的檔："; sed 's/^/   + /' "$UPDATED"; fi
