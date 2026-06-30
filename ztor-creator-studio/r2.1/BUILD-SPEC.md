@@ -155,6 +155,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | Stacked bar | `.stacked-bar / .source-list` | Revenue by Source 共用 |
 | Tabs | `.tabs / .tabs__item / .tabs__item--active` | Orange 底線 active state · **`.tabs--brand` 變體**＝淡橘（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
 | Filter tabs | `.filter-tabs / __item / __item--active / __count` | 次級狀態篩選 pill 列（spec 5.1.5 F3）：每顆 pill 一個狀態＋即時數量徽章，active＝淡 `--muted` 填底、刻意不用品牌色，放主 tabs 下一行形成主次層級；數量由前端讀清單 `data-status` 計算（切 tab 重算）。E-Shop F3 狀態篩選由原 `field-pill` select 改用（2026-06-15）|
+| E-Shop list controls | `.eshop-list-controls / .eshop-list-topbar / .eshop-status-row` | E-Shop F3 頁級組合：類型 tabs＋工具列動作＋狀態 filter-tabs 作為同一個列表控制組；桌機（≥901px）整組 sticky，預設停在 `.main` 內距 16px，下方有低庫存條時停在 56px，避開 shell 頂部大圓角與通知條；無低庫存條時用 `::before` 補 16px 面板底遮罩，避免商品列從安全距離縫隙露出；非共用元件，不提升到 DS component |
 | Field pill | `.field-pill / --grow / --block / --toolbar / __icon / __input / __select / __label / __chevron / __action` | 工具列篩選／範圍控制 pill；預設為 44px 表單密度，`.field-pill--toolbar` 為 36px 工具列密度（icon 16px、左 padding 12px、尾端 action 36×36），用於 E-Shop F3 展開態搜尋 |
 | Alert（`--bar`）| `.alert--bar` + `.alert__icon/__body/__title/__cta/__dismiss` | 全寬頂部通知條變體（spec 5.1.5 F2）：白底、底部細線、單行、⚠ 警示色 chip＋深色文字連結 CTA＋圓形關閉；置於 `.main` 頂端、`position:sticky` 常駐、可關閉。E-Shop 低庫存提醒由原 `.alert--banner` 卡片改用（2026-06-15）|
 | Settings layout | `.settings-layout / .settings-nav / .settings-section / .settings-row` | 220 px sticky 左側 + 右側單一 active section；左側選項以 URL hash 切換，其他 section 不佔頁面高度 |

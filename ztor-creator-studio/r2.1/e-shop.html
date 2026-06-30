@@ -57,9 +57,18 @@
      群組策略（無外框列表，靠「區帶邊界」而非框）：
        ① topbar 下加分隔線，界定「上＝換資料集（類別）／下＝列表模組（狀態＋列表）」；
        ② 間距反轉——類別↔狀態拉開、狀態↔列表貼緊，讓狀態用鄰近律歸進列表組；
-       ③ 狀態列 sticky，捲動時固定、行為上「擁有」這個列表。 */
+       ③ 列表控制組整體 sticky，捲動時固定、行為上「擁有」這個列表。 */
   /* 區段間距加大：頁首 → 主工作列 → 商品清單三段各自留白（2026-06-22）*/
-  .eshop-list-controls { margin-top: 20px; margin-bottom: 24px; }
+  .eshop-list-controls {
+    --eshop-list-controls-top: 16px;
+    --eshop-list-controls-cover: 16px;
+    margin-top: 20px;
+    margin-bottom: 24px;
+  }
+  .main:has(#eshop-stock-bar) .eshop-list-controls {
+    --eshop-list-controls-top: 56px;
+    --eshop-list-controls-cover: 0px;
+  }
 
   /* F2 低庫存提醒：單句格式（x 件商品 ( 名稱… ) 低於庫存門檻，前往查看。）。
      名稱淡色、前往查看為底線連結、✕ 放大（2026-06-22）。 */
@@ -139,15 +148,30 @@
     gap: 12px;
     flex-wrap: wrap;
   }
-  /* 桌機：狀態列 sticky 貼在捲動容器頂（.main 內捲，top:0＝面板頂、header 在容器外）。
-     背景用面板色遮住捲過的列；z-index 低於 app-topbar(50)。 */
+  /* 桌機：列表控制組整體 sticky，但需避開 .main 兩個頂部大圓角與低庫存條。
+     top=16px 是面板內安全距；低庫存條存在時改 56px，讓控制組停在提醒條下方。
+     狀態列留在控制組內，不再單獨 sticky，避免兩層吸頂互相擠壓。 */
   @media (min-width: 901px) {
-    .eshop-status-row {
+    .eshop-list-controls {
       position: sticky;
-      top: 0;
-      z-index: 5;
-      padding: 8px 0;
+      top: var(--eshop-list-controls-top);
+      z-index: 4;
+      padding: 8px 0 10px;
       background: var(--surface-page);
+      box-shadow: 0 16px 18px -22px color-mix(in srgb, var(--foreground) 26%, transparent);
+    }
+    .eshop-list-controls::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(-1 * var(--eshop-list-controls-cover));
+      height: var(--eshop-list-controls-cover);
+      background: var(--surface-page);
+    }
+    .eshop-status-row {
+      padding: 8px 0 0;
+      background: transparent;
     }
   }
 
@@ -512,6 +536,127 @@
           <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
           <div class="product-list__cell product-list__stock" role="cell" data-i18n="e-shop.row4.stock" title="In stock / edition cap">21 / 50</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
         </div>
+
+        <div class="product-list__row" role="row" data-status="low" data-type="physical" data-name="Midnight tour poster">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Midnight tour poster</div><div class="product-list__meta">Poster · A2 screen print</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$18</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--error"><span data-i18n="e-shop.row.low">Low Stock</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">2 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock data-i18n="e-shop.restock">Restock</button></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-name="Analog sticker pack">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Analog sticker pack</div><div class="product-list__meta">Sticker set · 8 pieces</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$9</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">120 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-edition="unlimited" data-variants="3" data-name="Coastline hoodie">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Coastline hoodie <span class="badge badge--neutral" style="margin-left:6px;font-weight: var(--fw-regular);vertical-align:middle">3 variants</span></div><div class="product-list__meta">Hoodie · S/M/L</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row2.cat">Apparel</div>
+          <div class="product-list__cell product-list__price" role="cell">$64</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">18 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="draft" data-type="physical" data-name="Backstage photo zine">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Backstage photo zine</div><div class="product-list__meta">Zine · draft layout</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row1.cat">Books</div>
+          <div class="product-list__cell product-list__price" role="cell">$22</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.status.draft">Draft</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">--</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="false" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="low" data-type="physical" data-edition="limited" data-name="Limited enamel pin">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Limited enamel pin <span class="badge badge--neutral" style="margin-left:6px;font-weight: var(--fw-regular);vertical-align:middle" data-i18n="e-shop.row.limited">Limited</span></div><div class="product-list__meta">Pin · numbered batch</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$16</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--error"><span data-i18n="e-shop.row.low">Low Stock</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">4 / 100</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock data-i18n="e-shop.restock">Restock</button></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Digital liner notes">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Digital liner notes</div><div class="product-list__meta">PDF · hi-res booklet</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row3.cat">Album</div>
+          <div class="product-list__cell product-list__price" role="cell">$6</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="out" data-type="physical" data-name="Cassette demo tape">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Cassette demo tape</div><div class="product-list__meta">Cassette · hand-labeled</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$28</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.row.out">Sold Out</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">0 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock data-i18n="e-shop.restock">Restock</button></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-name="Tour tote bag">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Tour tote bag</div><div class="product-list__meta">Canvas tote · natural</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row2.cat">Apparel</div>
+          <div class="product-list__cell product-list__price" role="cell">$26</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">33 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Acoustic stems pack">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Acoustic stems pack</div><div class="product-list__meta">WAV stems · 24-bit</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row3.cat">Album</div>
+          <div class="product-list__cell product-list__price" role="cell">$18</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-name="Vinyl slipmat">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Vinyl slipmat</div><div class="product-list__meta">Turntable mat · felt</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$20</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">44 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="draft" data-type="physical" data-name="Signed lyric sheet">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Signed lyric sheet</div><div class="product-list__meta">Print · awaiting photos</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row4.cat">Collectibles</div>
+          <div class="product-list__cell product-list__price" role="cell">$48</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.status.draft">Draft</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">--</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="false" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="low" data-type="physical" data-edition="unlimited" data-variants="4" data-name="Crewneck sweatshirt">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No product image"><span class="product-list__image-placeholder-mark" aria-hidden="true">ztor.</span></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Crewneck sweatshirt <span class="badge badge--neutral" style="margin-left:6px;font-weight: var(--fw-regular);vertical-align:middle">4 variants</span></div><div class="product-list__meta">Sweatshirt · S/M/L/XL</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.row2.cat">Apparel</div>
+          <div class="product-list__cell product-list__price" role="cell">$58</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--error"><span data-i18n="e-shop.row.low">Low Stock</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">5 left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" data-i18n="e-shop.edit">Edit</a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock data-i18n="e-shop.restock">Restock</button></div></details></div>
+        </div>
+
       </section>
 
       <!-- Bundles tab · spec §5.1.5 F3 · 套組清單（庫存＝min 成員，D031） -->

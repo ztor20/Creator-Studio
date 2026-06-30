@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-06-30 · E-Shop 列表控制組內縮吸頂，避開 shell 圓角（B 反饋 · F3 長列表）
+
+- 範圍：`e-shop.html` 頁內樣式；同步 BUILD-SPEC／requirements-map／修改记录。未改 `tabs.css`、`filter-tabs.css` 等共用元件。
+- 動機：使用者指出商品列表變長時，可考慮讓篩選欄或頂部卡片吸頂；但吸頂層不能與頁面頂部兩個大圓角、低庫存提醒條衝突。專業處理應讓「類型 tabs＋工具列動作＋狀態篩選」作為列表控制組整體吸頂，而不是只讓第二排狀態列貼到 `top:0`。
+- 規格：桌機（≥901px）`.eshop-list-controls` 整組 `position: sticky`；預設 `top:16px`，低庫存條存在時以 `:has(#eshop-stock-bar)` 改 `top:56px`；控制組加 `8px 0 10px` 內距、面板底色與極輕分隔陰影。`.eshop-status-row` 不再單獨 sticky，避免雙層吸頂互相擠壓。手機／窄螢幕維持自然流。
+- 追加：Products demo rows 由 4 條擴為 16 條（新增 12 條），覆蓋 Live / Low Stock / Sold Out / Draft，讓長列表與狀態篩選可在本地 HTML 直接測到。
+- 修正：無低庫存條時，16px 安全距會露出捲過的商品列；`.eshop-list-controls::before` 補同色遮罩（height=16px），並保留 pointer hit 在控制組上，不讓空白安全帶點穿到商品列。
+- 收尾：本地 Chrome 以 36 行長列表模擬滾動驗證 PASS（低庫存條存在時 controls top=56px、關閉後 top=16px；`.eshop-status-row` 為 static）；截圖 `/private/tmp/eshop-sticky-list-controls-20260630.png`；`git diff --check` PASS。
+
 ## 2026-06-29 · Button 尺寸規範收斂為 32 / 36 / 44（B 反饋 · DS Button）
 
 - 範圍：`_tokens.css` 新增 `--button-h-*` / `--button-pad-*`；`button.css` 將 `.btn` 與 canonical `.ztor-btn` 收斂到同一套尺寸；design-system.html／design-system.md／BUILD-SPEC／修改记录同步。
