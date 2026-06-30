@@ -1865,11 +1865,11 @@
 - **使用者明示「Header 參考 r2.0 版本，但 design token 都是 r2.1 的」** — 把 R 2.1 自製的 `.app-brand / .app-nav / .app-actions / .app-icon-btn / .app-lang / .app-search / .app-avatar / .app-account` 整套退役，全面採用 R 2.0 `R 2.0/dashboard.css §App-topbar` 的 `.app-topbar__*` canonical 命名與結構，但 token 不動（`--background / --surface / --foreground / --border / --primary` 都還是 R 2.1 yellow design system 的值）。
   - **Brand**：移除黃方塊 Z + "Ztor Studio" 文字，改成 R 2.0 的完整 Ztor 字標 SVG（101×32 viewBox · 24 px 高 · `currentColor` 描邊）。
   - **Nav 結構**：從扁平 `<a>/<button>` 改為 R 2.0 semantic `<ul class="app-topbar__nav"> > <li> > <a class="app-topbar__link">`，dropdown 用 `<li class="app-topbar__nav-group" data-dropdown>`。Active state 由 R 2.1 的 `--active` modifier 改 R 2.0 的 `[aria-current="page"]` selector + `--surface-muted` 背景。
-  - **Dropdown panel**：`.app-topbar__dropdown--mega` 360 px min-width + 6 px padding + 36 px icon box（`--surface-muted` bg）+ title / sub 兩行。對齊使用者「Project/ztor-creator-studio/site/R 2.1/Revise ref/004.png」E-Shop dropdown 設計（Manage E-Shop / Product detail / Add product · 圖示 + 主名 + 描述）。
+  - **Dropdown panel**：`.app-topbar__dropdown--mega` 360 px min-width + 6 px padding + 36 px icon box（`--surface-muted` bg）+ title / sub 兩行。對齊使用者「Project/ztor-creator-studio/site/R 2.1/references/004.png」E-Shop dropdown 設計（Manage E-Shop / Product detail / Add product · 圖示 + 主名 + 描述）。
   - **右側 cluster 順序與 R 2.0 對齊**：theme → search panel → lang → notifications → avatar。
   - **Search 改 dropdown panel**：上一版是 inline 展開的 search bar（`.app-search--open`），改成 R 2.0 的 panel pattern（`.app-topbar__search-panel` + `.app-topbar__search-input-wrap` + 右上 ESC kbd hint）。autofocus 開啟時直接聚焦輸入框。
   - **Theme toggle 改 R 2.0 CSS attribute selector**：`html[data-theme="light"]` 顯示 moon、`html[data-theme="dark"]` 顯示 sun（取代上一版用 class modifier `.theme-toggle__icon-moon/sun`）。
-  - **保留 R 2.1 在意的兩處小差異**：(1) notifications 用 **flag** icon + yellow dot（對齊 Revise ref/003.png 使用者偏好，**不** 回到 R 2.0 的 bell icon）；(2) 主導航 label 保持英文（R 2.1 內容語言為主，不採 R 2.0 的中文 nav），等之後接 i18n 再雙語。
+  - **保留 R 2.1 在意的兩處小差異**：(1) notifications 用 **flag** icon + yellow dot（對齊 references/003.png 使用者偏好，**不** 回到 R 2.0 的 bell icon）；(2) 主導航 label 保持英文（R 2.1 內容語言為主，不採 R 2.0 的中文 nav），等之後接 i18n 再雙語。
 
 ### A. Spec-derived
 
@@ -1929,13 +1929,13 @@
 
 ### B. 反饋導入
 
-- **Alerts & actions 改卡片設計**（反饋圖 `Revise ref/001-small.png`） — 從原本的 `border-left 細條 + 小 icon + 兩行 row` 改為「**tinted card + 填色圓形 icon + 標題 + 描述 + 來源行 + 右側 outline pill 按鈕**」的版面。卡片之間 10 px 縱向間距、圓角 12 px、padding 16/18。語言改為繁體中文以對齊參考圖（IP 租借 6 天後到期 / 庫存過低 · 3 項商品 / 活動檢核尚未完成 / SPOTIFY 同步失敗），actions：續租 / 補貨 / 前往 / 重新授權。每則加 `來自 · {模組}` footer。
+- **Alerts & actions 改卡片設計**（反饋圖 `references/001-small.png`） — 從原本的 `border-left 細條 + 小 icon + 兩行 row` 改為「**tinted card + 填色圓形 icon + 標題 + 描述 + 來源行 + 右側 outline pill 按鈕**」的版面。卡片之間 10 px 縱向間距、圓角 12 px、padding 16/18。語言改為繁體中文以對齊參考圖（IP 租借 6 天後到期 / 庫存過低 · 3 項商品 / 活動檢核尚未完成 / SPOTIFY 同步失敗），actions：續租 / 補貨 / 前往 / 重新授權。每則加 `來自 · {模組}` footer。
   - Warning 卡：bg 用 `color-mix(var(--status-warning) 18%, surface)`，icon 圓在 `--status-warning` 上覆深色字
   - Error 卡：bg `color-mix(var(--status-error) 10%, surface)`，icon 圓填紅色 + 白色 `package-x` glyph
   - Info 卡：bg `--surface-muted`，icon 圓填 `--foreground` + 反色 `info` glyph（對應參考圖最後一則的深色 chip 質感）
-- **Dashboard `.page-intro` 整段拿掉**（反饋圖 `Revise ref/002-small.png`） — 原本 hero 下面的 `TUESDAY, MAY 25 / Good morning, Maya. / Three things need your attention…` 加 Export / + New project 雙按鈕，使用者要求刪掉這一行。Dashboard 現在 hero 之後直接接 `November at a glance` KPI；intro 的 CTA 重要性下降（New project 已在 hero CTA + Projects 頁有入口）。
+- **Dashboard `.page-intro` 整段拿掉**（反饋圖 `references/002-small.png`） — 原本 hero 下面的 `TUESDAY, MAY 25 / Good morning, Maya. / Three things need your attention…` 加 Export / + New project 雙按鈕，使用者要求刪掉這一行。Dashboard 現在 hero 之後直接接 `November at a glance` KPI；intro 的 CTA 重要性下降（New project 已在 hero CTA + Projects 頁有入口）。
   - `.page-intro` CSS class **保留**，因為 11 個其他產品頁仍在用（projects/my-ip/earnings/…）。只動 Dashboard。
-- **Topbar 右側 icon 全部換 Lucide SVG**（反饋圖 `Revise ref/003.png`） — 上一版用 ASCII 字符（`⌕` / `⚑` / `☾` / `☀`）當 icon，size 不可控、和瀏覽器字型強相關，所以使用者觀感是「icon 大小壞了」。改成 `<i data-lucide="search|flag|moon|sun">` placeholder + `icons.js` `applyIcons()` 注入正規 SVG，全部統一 18 × 18 + 1.75 stroke-width。
+- **Topbar 右側 icon 全部換 Lucide SVG**（反饋圖 `references/003.png`） — 上一版用 ASCII 字符（`⌕` / `⚑` / `☾` / `☀`）當 icon，size 不可控、和瀏覽器字型強相關，所以使用者觀感是「icon 大小壞了」。改成 `<i data-lucide="search|flag|moon|sun">` placeholder + `icons.js` `applyIcons()` 注入正規 SVG，全部統一 18 × 18 + 1.75 stroke-width。
   - 通知 icon 從 bell `⚑` 改 `flag`（旗幟）對齊參考圖
   - Theme toggle 兩 icon 用 CSS 顯示控制：light → 顯示 moon、dark → 顯示 sun。原本兩個都顯示，所以視覺上像被切壞了
   - Search icon 在 `.app-search` 展開後 inline 也用 SVG，size 16 + subtle 色

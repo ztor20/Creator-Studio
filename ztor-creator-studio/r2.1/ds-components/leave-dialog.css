@@ -1,0 +1,33 @@
+/* ----------------------------------------------------------------
+   Leave dialog — 建立／編輯流程的「返回離開確認」彈窗
+   spec §5.2.4（建立流程共同行為 · 關閉確認）
+
+   由 partials/wizard-chrome.js 注入並控制，6 個建立流程頁共用
+   （create-product / -auction / -bundle / -event / -project / register-ip）。
+   兩個型態，同一結構：
+     · 編輯過（有未存內容）→ 標題「要先儲存再離開嗎？」＋ 儲存並離開（primary）／不儲存就離開（outline）
+     · 未編輯 → 標題「要離開這一頁嗎？」＋ 離開（primary，不問儲存）
+   2026-06-29 自 shared.css promote 成元件（原 class .wizard-leave* → .leave-dialog*）。
+   全值引用 _tokens.css 的設計 token。
+   ---------------------------------------------------------------- */
+
+.leave-dialog { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
+.leave-dialog[data-open] { display: flex; }
+.leave-dialog__scrim { position: absolute; inset: 0; background: var(--overlay-tint); }
+.leave-dialog__card {
+  position: relative; z-index: 1;
+  width: min(420px, calc(100vw - 40px));
+  background: var(--card); border-radius: var(--radius-lg);
+  padding: 24px; box-shadow: var(--shadow-popover);
+}
+.leave-dialog__close {
+  position: absolute; top: 12px; right: 12px;
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border: 0; background: transparent; cursor: pointer; color: var(--foreground-muted); border-radius: var(--radius-sm);
+}
+.leave-dialog__close:hover { color: var(--foreground); background: var(--muted); }
+.leave-dialog__close .ztor-icon { width: 18px; height: 18px; }
+.leave-dialog__title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); margin: 0 6px 6px 0; }
+.leave-dialog__body { color: var(--foreground-muted); font-size: var(--fs-14); margin: 0 0 20px; }
+.leave-dialog__actions { display: flex; flex-direction: column; gap: 8px; }
+.leave-dialog__actions .btn { width: 100%; justify-content: center; }
