@@ -16,12 +16,15 @@ set -euo pipefail
 REPO_SLUG="ztor20/Creator-Studio"
 HOST="github.com"
 SUBDIR="ztor-creator-studio"
+REMOTE="${PULL_REMOTE:-upstream}"
+BRANCH="${PULL_BRANCH:-main}"
 
-SITE="$(git rev-parse --show-toplevel)"
-BASE="$SITE/.git/collab-base"          # 上次同步的 monorepo 子目錄快照（不被追蹤）
+GIT_TOP="$(git rev-parse --show-toplevel)"
+SITE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE="$GIT_TOP/.git/collab-base"       # 上次同步的 monorepo 子目錄快照（不被追蹤）
 TS="$(date +%Y%m%d-%H%M%S)"
-BACKUP="$SITE/.git/collab-backup-$TS"   # 本次被覆寫/刪除前的舊版備份
-CONFLICT_DIR="$SITE/.git/collab-conflict-$TS"  # 衝突檔的 monorepo 版（供你比對）
+BACKUP="$GIT_TOP/.git/collab-backup-$TS"   # 本次被覆寫/刪除前的舊版備份
+CONFLICT_DIR="$GIT_TOP/.git/collab-conflict-$TS"  # 衝突檔的 monorepo 版（供你比對）
 
 CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
 [ -f "$CENTRAL" ] && source "$CENTRAL" || true
@@ -30,16 +33,27 @@ if [ -z "$TOKEN" ]; then
   echo "找不到 ZTOR20_GH_TOKEN（中央倉 $CENTRAL）。請先放對 ${REPO_SLUG} 有讀取權的 token。"
   exit 1
 fi
-AUTH="https://x-access-token:${TOKEN}@${HOST}/${REPO_SLUG}.git"
+AUTH_HEADER="$(printf 'x-access-token:%s' "$TOKEN" | base64 | tr -d '\n')"
 
-WORK="$(mktemp -d)"
+WORK="$(mktemp -d /private/tmp/ztor-pull.XXXXXX)"
 trap 'rm -rf "$WORK"' EXIT
 
-echo "→ clone ${REPO_SLUG} …"
-git clone --depth 1 "$AUTH" "$WORK/mono" >/dev/null 2>&1
+if [ "${PULL_SKIP_FETCH:-0}" = "1" ]; then
+  echo "→ use existing ${REMOTE}/${BRANCH} …"
+  FETCH_REF="${REMOTE}/${BRANCH}"
+else
+  echo "→ fetch ${REMOTE}/${BRANCH} …"
+  GIT_TERMINAL_PROMPT=0 git -C "$GIT_TOP" \
+    -c "http.https://${HOST}/.extraheader=AUTHORIZATION: basic ${AUTH_HEADER}" \
+    fetch "$REMOTE" "$BRANCH"
+  FETCH_REF="FETCH_HEAD"
+fi
+mkdir -p "$WORK/mono/$SUBDIR"
+git -C "$GIT_TOP" archive "$FETCH_REF:$SUBDIR" | tar -C "$WORK/mono/$SUBDIR" -xf -
 M="$WORK/mono/$SUBDIR"
 [ -d "$M" ] || { echo "monorepo 沒有 ${SUBDIR}/ 子目錄，停止。"; exit 1; }
-SRCSHA="$(git -C "$WORK/mono" rev-parse --short HEAD)"
+SRCSHA="$(git -C "$GIT_TOP" rev-parse --short "$FETCH_REF")"
+echo "→ compare ${SUBDIR}/（monorepo @ ${SRCSHA}）…"
 
 # 受保護：本機未追蹤＋被忽略檔（永不納入比對、永不動）
 PROT="$WORK/protect"
@@ -141,20 +155,22 @@ while IFS= read -r f; do
 done < "$CONFLICTS"
 
 # ---------- 報告 ----------
-nU=$(grep -c . "$UPDATED" 2>/dev/null || echo 0)
-nD=$(grep -c . "$DELETED" 2>/dev/null || echo 0)
-nC=$(grep -c . "$CONFLICTS" 2>/dev/null || echo 0)
+nU=$(grep -c . "$UPDATED" 2>/dev/null || true); nU=${nU:-0}
+nD=$(grep -c . "$DELETED" 2>/dev/null || true); nD=${nD:-0}
+nC=$(grep -c . "$CONFLICTS" 2>/dev/null || true); nC=${nC:-0}
 echo ""
 echo "✓ 智慧同步完成（monorepo @ ${SRCSHA}）"
 if [ "$nU" -gt 0 ]; then echo "→ 更新 $nU 個你沒動過的檔："; sed 's/^/   + /' "$UPDATED"; fi
 if [ "$nD" -gt 0 ]; then echo "→ 跟著上游刪除 $nD 個你沒動過的檔："; sed 's/^/   - /' "$DELETED"; fi
-[ "$nU" -gt 0 ] || [ "$nD" -gt 0 ] && echo "  （被改動的舊版已備份到 ${BACKUP#$SITE/}）"
+[ "$nU" -gt 0 ] || [ "$nD" -gt 0 ] && echo "  （被改動的舊版已備份到 ${BACKUP#$GIT_TOP/}）"
 if [ "$nC" -gt 0 ]; then
   echo ""
   echo "⚠ $nC 個檔「你和共用 repo 都改過」，未動你的版本，請你決定："
   sed 's/^/   ! /' "$CONFLICTS"
-  echo "   共用 repo 的版本已放到 ${CONFLICT_DIR#$SITE/}/ 供比對，例如："
+  echo "   共用 repo 的版本已放到 ${CONFLICT_DIR#$GIT_TOP/}/ 供比對，例如："
   firstc="$(head -1 "$CONFLICTS")"
   echo "     diff \"$SITE/$firstc\" \"$CONFLICT_DIR/$firstc\""
 fi
-[ "$nU" -eq 0 ] && [ "$nD" -eq 0 ] && [ "$nC" -eq 0 ] && echo "  已是最新，無變更。"
+if [ "$nU" -eq 0 ] && [ "$nD" -eq 0 ] && [ "$nC" -eq 0 ]; then
+  echo "  已是最新，無變更。"
+fi
