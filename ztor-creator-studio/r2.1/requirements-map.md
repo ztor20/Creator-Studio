@@ -15,7 +15,7 @@
 
 | 上游規格 | R 2.1 實作 | 狀態 |
 |---|---|---|
-| 5.1.0 Creator Management | `creators.html` | 新增（D086）：Admin Tier 0 名冊＋建立 creator（F1–F3）。`sidebar.js` 渲染 Admin 導航——roster 鎖 Tier 1／creator scope logo 前返回＋「管理中」標示；creator 切換走 devtools cheat code。範圍＝完整現有工作區。建立必填／店鋪唯一性／代操稽核／creator 狀態枚舉待上游（ASSUMPTIONS UIA-029..032）|
+| 5.1.0 Creator Management | `creators.html` | 新增（D086）：Admin Tier 0 名冊＋建立 creator。`sidebar.js` 渲染 Admin 導航——roster 鎖 Tier 1／creator scope logo 前返回＋「管理中」標示；creator 切換走 devtools cheat code。範圍＝完整現有工作區。**2026-06-30（D097）**：狀態枚舉定案＝啟用中／已停用（兩值）；建立改 popup、停用／啟用（⋯ 選單）、搜尋／篩選、整列可點。**2026-06-30（D098→D099）**：F 項依電子商店分類重編號，最終＝**F1 頁首／F2 名冊工作列（狀態篩選＋搜尋同列＋建立）／F3 Creator 名冊（列＋列操作 前往/停用/啟用，含欄位表頭）／F4 進入與返回**；搜尋/篩選/列改吃 e-shop 同款 field-pill／filter-tabs／product-list、管理鈕改 Enter（前往）。D099 移除 D098 一度加入的名冊概覽（bento），各狀態數量由 filter-tabs count 承載。建立必填／店鋪唯一性／代操稽核／已停用可否代操仍待上游（ASSUMPTIONS UIA-029..032、036）|
 | 5.1.1 Dashboard | `index.html` | F1–F8 已覆蓋（五列佈局）。2026-06-14 對齊規格新約束：F3 近期收入只列已結算收入、移除狀態欄（`hideStatus`）；F2 總收入環比改週粒度＋顯示最後更新＋深連結 Earnings；F4 補 Snoozed（軟關、排除 F2 計數）與阻斷型 disabled 關閉。F2 待處理／F4 「View all」缺「完整待辦視圖」頁、F5 缺「完整動態視圖」頁（PG-006）|
 | 5.1.2 Projects | `projects.html` | 已有清單與建立入口 |
 | 5.1.2.1 Create Project | `create-project.html` | 已實作；需複查模式規則與費率引用 |

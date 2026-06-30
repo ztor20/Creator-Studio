@@ -185,18 +185,18 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 - **Geist** — H2 / H3 / H4, buttons, nav, eyebrow text
 - **Inter** — paragraph body copy (`<p>`), long-form descriptions, and alert text
 
-| Scale token | Family | Size | Weight | Line height | Tracking |
+| Scale token | Family | Size | Weight | Line height (`--lh-*`) | Tracking |
 |---|---|---|---|---|---|
-| `display-64` | Geist | `64px` | 400 | `64px` (1.0) | `-1.28px` |
-| `display-44` | Geist | `44px` | 500 | `46.2px` (1.05) | `-1px` |
-| `title-40` | Geist | `40px` | 500 | `42px` (1.05) | `-0.8px` |
-| `title-32` | Geist | `32px` | 500 | `35.2px` (1.1) | `-0.6px` |
-| `title-24` | Geist | `24px` | 500 | `28.8px` (1.2) | `-0.48px` |
-| `label-15` | Geist | `15px` | 500 | `15px` (1.0) | `-0.3px` |
-| `label-14` | Geist | `14px` | 700 | `17.5px` (1.25) | normal |
-| `body-16` | Inter | `16px` | 400 | `25.6px` (1.6) | normal |
-| `body-14` | Inter | `14px` | 400 | `21px` (1.5) | normal |
-| `caption-12` | Geist | `12px` | 500 | `15.6px` (1.3) | `0.05em` |
+| `display-64` | Geist | `64px` | 400 | `none` 1.0 | `-1.28px` |
+| `display-44` | Geist | `44px` | 500 | `tight` 1.1 | `-1px` |
+| `title-40` | Geist | `40px` | 500 | `tight` 1.1 | `-0.8px` |
+| `title-32` | Geist | `32px` | 500 | `tight` 1.1 | `-0.6px` |
+| `title-24` | Geist | `24px` | 500 | `snug` 1.2 | `-0.48px` |
+| `label-15` | Geist | `15px` | 500 | `none` 1.0 | `-0.3px` |
+| `label-14` | Geist | `14px` | 700 | `snug` 1.2 | normal |
+| `body-16` | Inter | `16px` | 400 | `loose` 1.6 | normal |
+| `body-14` | Inter | `14px` | 400 | `relaxed` 1.5 | normal |
+| `caption-12` | Geist | `12px` | 500 | `normal` 1.3 | `0.05em` |
 
 Each scale token is available as CSS custom properties in `_tokens.css`, for
 example `--type-title-40-size`, `--type-title-40-weight`,
@@ -212,6 +212,12 @@ Foundation.
 舊有的零散半 px（12.5 / 13.5 / 11.5 …）已收斂為整數：`.5` 無條件捨去（12.5→12、13.5→13、14.5→14）、小於 11 的併入 11。上方 Foundation 的 `--type-*-size` 都改為指向這層，`--fs-*` 是字級的唯一來源。
 
 **Weight scale (`--fw-*`)** — 2026-06-23 起全站 `font-weight` 一律引用 4 階 primitive：`--fw-regular 400 · --fw-medium 500 · --fw-semibold 600 · --fw-bold 700`（舊有 1 個 650 已併入 semibold）。`--type-*-weight` 也改為指向這層。
+
+**Line-height scale (`--lh-*`)** — 2026-06-30 起把行距收成第 4 個原始字型維度（繼字體／字級／字重），全站 `line-height` 一律引用這 6 階 unitless primitive（命名對齊 shadcn/Tailwind 的 `leading-*`，數值為這套資料密集 UI 調得更緊的版本）：
+
+`none 1 · tight 1.1 · snug 1.2 · normal 1.3 · relaxed 1.5 · loose 1.6`
+
+上方各 `--type-*-line-height` 都改為指向這層（例：`--type-body-14-line-height: var(--lh-relaxed)`）。哪個 role 綁哪一階見 §2.3。先前散落的 8 個 per-role 值（1.05 / 1.25 等）收斂進這 6 階：3 個標題從 1.05→1.1（單行幾乎無差異）、`label-14` 從 1.25→1.2，其餘原值不動；內文 1.5 / 1.6 與 caption 1.3 完全保留。元件層另有約 12 種硬寫的 `line-height`（含 1.35 / 1.4 / 1.45）尚未走 token，列為後續清理，不在本次範圍。
 
 **Font families (`--font-*`)** — 四個家族：`--font-display` Geist（H1/display）· `--font-ui` Geist（H2–H4/UI）· `--font-body` Inter（內文）· `--font-mono` Geist Mono。每個 stack 末端接自架 `Noto Sans TC`（CJK fallback；繁中模式由 `:lang(zh-Hant)` 提到第一位）。base 宣告在 `_tokens.css`、Noto fallback 與 `@font-face` 在 `ds-components/fonts.css`。
 
@@ -337,20 +343,23 @@ Built directly off Pillar 1's spacing scale (no custom Role names). Project page
 | CJK fallback | (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
 
 Concrete typography usage is assigned as role aliases that point back to the
-neutral §1.2 type scale:
+neutral §1.2 type scale. Each role resolves the four raw dimensions into one
+decision — family · size · weight · **leading** · tracking — where **leading
+binds to the `--lh-*` scale** (§1.2). This matrix is the standard; component CSS
+references the role, never raw values:
 
-| Usage role | Foundation scale |
-|---|---|
-| `--type-display-1-*` | `--type-display-64-*` |
-| `--type-page-title-*` | `--type-display-44-*` |
-| `--type-h2-*` | `--type-title-40-*` |
-| `--type-h3-*` | `--type-title-32-*` |
-| `--type-h4-*` | `--type-title-24-*` |
-| `--type-section-label-*` | `--type-label-14-*` |
-| `--type-button-label-*` | `--type-label-15-*` |
-| `--type-body-lg-*` | `--type-body-16-*` |
-| `--type-body-*` | `--type-body-14-*` |
-| `--type-caption-*` | `--type-caption-12-*` |
+| Usage role | ← Foundation | Family | Size | Weight | Leading (`--lh-*`) | Tracking |
+|---|---|---|---|---|---|---|
+| `--type-display-1-*` | `display-64` | Geist | 64 | 400 | `none` 1 | `-1.28px` |
+| `--type-page-title-*` | `display-44` | Geist | 44 | 500 | `tight` 1.1 | `-1px` |
+| `--type-h2-*` | `title-40` | Geist | 40 | 500 | `tight` 1.1 | `-0.8px` |
+| `--type-h3-*` | `title-32` | Geist | 32 | 500 | `tight` 1.1 | `-0.6px` |
+| `--type-h4-*` | `title-24` | Geist | 24 | 500 | `snug` 1.2 | `-0.48px` |
+| `--type-section-label-*` | `label-14` | Geist | 14 | 700 | `snug` 1.2 | normal |
+| `--type-button-label-*` | `label-15` | Geist | 15 | 500 | `none` 1 | `-0.3px` |
+| `--type-body-lg-*` | `body-16` | Inter | 16 | 400 | `loose` 1.6 | normal |
+| `--type-body-*` | `body-14` | Inter | 14 | 400 | `relaxed` 1.5 | normal |
+| `--type-caption-*` | `caption-12` | Geist | 12 | 500 | `normal` 1.3 | `0.05em` |
 
 ### 2.4 Elevation
 
