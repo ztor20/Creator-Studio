@@ -654,7 +654,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | State | Selector | Change |
 |---|---|---|
 | default | `.badge` | bg `--muted`, text `--foreground-muted`, no ring, no dot |
-| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange 30% · accent 16%), text = the saturated hue token |
+| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange light 30% / dark 14% · accent 16%), text = the saturated hue token |
 
 No hover/focus/disabled — display-only.
 
@@ -664,7 +664,7 @@ No hover/focus/disabled — display-only.
 |---|---|
 | `.badge` | Flat neutral tag, `--radius-md`, no dot / no ring |
 | `.badge__dot` | `display:none` (legacy; the soft-tag look carries no dot) |
-| `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
+| `.badge--orange` | light: `color-mix(--primary 18%, surface)` + `--primary`; dark: `color-mix(--primary 14%, surface)` + `--primary` |
 | `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`) |
 | `.badge--warning` | 18% warning tint; text = `color-mix(--status-warning 50%, --foreground)` (hue too light for direct text) — added 2026-06-11 |
 | `.badge--neutral` | `--muted` background |
@@ -673,7 +673,7 @@ No hover/focus/disabled — display-only.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
+- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
 
 **Usage** — Surface a state or a category at a glance (payout status, transaction state, live/draft; IP type, fan tier). Avoid for clickable filters — use Chip (§4.5) — and never as a button.
 
@@ -1025,6 +1025,8 @@ Static callout — no interactive states.
 
 **Variants** — `.ztor-input` (line field) and `.ztor-textarea` (multi-line, vertical resize).
 
+**Input icon** — `.ztor-input-affix` wraps a base `.ztor-input` when a field needs a non-clickable right-side icon (for example calendar). The icon is static: 16px, `aria-hidden`, `pointer-events:none`, no button background, and it follows the input state through neutral foreground tokens.
+
 **Sizes** — `.ztor-input` default 44px / `--sm` 36px / `--lg` 52px. Textarea single size (min-height 120px).
 
 **States**
@@ -1044,11 +1046,12 @@ Static callout — no interactive states.
 | `.ztor-input` | Single-line field, 44px |
 | `.ztor-input--sm` / `--lg` | 36px / 52px sizes |
 | `.ztor-textarea` | Multi-line field, vertical resize |
+| `.ztor-input-affix` + `__field` + `__icon` | Right-side non-clickable input icon; `__field` adds right padding, `__icon` is 16px and `aria-hidden` |
 | `[aria-invalid="true"]` | Error ring in `--destructive` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
+- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · icon `--muted-foreground` / focus-within `--foreground-muted` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
 
 **Usage** — Use for text/number entry in forms (get-matched, settings, payout forms) and `.ztor-textarea` for longer free text. Avoid borders — the field uses surface + hairline, not a 1px border.
 
@@ -1066,6 +1069,10 @@ Static callout — no interactive states.
 <label for="email">Email</label>
 <input id="email" class="ztor-input" type="email" placeholder="you@studio.com">
 <textarea class="ztor-textarea" placeholder="Notes…"></textarea>
+<span class="ztor-input-affix">
+  <input class="ztor-input ztor-input-affix__field" placeholder="YYYY/MM/DD">
+  <span class="ztor-input-affix__icon" aria-hidden="true"><i data-lucide="calendar" class="ztor-icon"></i></span>
+</span>
 ```
 
 **CSS** — [`input.css`](./ds-components/input.css)
@@ -3016,44 +3023,46 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.29c Restock checklist
 
-**`_layer`** · molecule — "Select items to restock" checklist for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and the shared form helpers (`.payout-form-grid` / `.payout-field`) for the quantity / supplier / ETA / notes fields; the **only** restock-specific CSS is the `.restock-items` checklist, styled to match `.payout-bank-option`. Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — "Select items to restock" checklist for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and the shared form helpers (`.payout-form-grid` / `.payout-field`) for the quantity / supplier / ETA / notes fields; the **only** restock-specific CSS is the `.restock-items` checklist, styled as compact 44px selectable rows so it aligns with Input. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
 ```
 .restock-items (grid, 10px gap)
-└─ label.restock-item(.is-checked) > .restock-item__box (17px checkbox) + .restock-item__main(__title + __meta) + Badge (Low Stock / Sold Out)
-   — mounts inside the reused .payout-dialog shell; quantity/supplier/ETA/notes use .payout-form-grid/.payout-field; footer = Cancel / Mark received / Submit restock Buttons
+└─ label.restock-item(.is-checked) > input.restock-item__box + .restock-item__check (18px success check-circle visual) + .restock-item__main(__title + __meta) + Badge (Low Stock / Sold Out)
+   — row min-height = 44px; mounts inside the reused .payout-dialog shell; quantity/supplier/ETA/notes use .payout-form-grid/.payout-field; footer = Cancel / Mark received / Submit restock Buttons
 ```
 
-**Variants** — Row: default / `.is-checked` (white surface + inset 2px `--foreground` ring).
+**Variants** — Row: default / `.is-checked` (neutral selected row; state is carried by the success check icon).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | `.restock-item` | `--muted` bg + inset `--border` ring |
-| checked | `.restock-item.is-checked` | white `--card` + inset 2px `--foreground` ring (matches selected bank option) |
+| default | `.restock-item` | 44px row, `--card` bg + inset `1px --border` edge |
+| checked | `.restock-item.is-checked` | neutral `--card` surface + inset `1px --border` edge; left icon becomes green `check-circle-fill` |
+| focus | `.restock-item:focus-within` | 2px `--ring` outline on the row; applies after mouse selection and keyboard focus |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
 | `.restock-items` | Grid container (10px gap) for the selectable checklist |
-| `.restock-item` (`.is-checked`) | Checklist row; checked = white surface + inset 2px `--foreground` ring |
-| `.restock-item__box` | 17px checkbox, `accent-color: --foreground` |
-| `.restock-item__main` / `__title` / `__meta` | Text stack — 14/500 title + 12px subtle meta |
+| `.restock-item` (`.is-checked`) | 44px checklist row; checked keeps the neutral row surface and shows state through the success icon |
+| `.restock-item__box` | Visually hidden semantic checkbox; owns checked/focus state |
+| `.restock-item__check` | 18px status visual; unchecked = empty circle, checked = green `check-circle-fill` in `--status-success` |
+| `.restock-item__main` / `__title` / `__meta` | Single-line text run — 14/500 title + 12px subtle meta; title ellipsizes before the badge |
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--card` / `--muted` · ring `--border` / `--foreground` (checked) · radius `--radius-md` · accent `--foreground` (checkbox) · `--font-ui` · text `--foreground` / `--muted-foreground`
+- size `--control-h-md` (44px) · surface `--card` · edge `--border` · selected icon `--status-success` · focus `--ring` · radius `--radius-md` · `--font-ui` · text `--foreground` / `--muted-foreground`
 
 **Usage** — E-Shop restock popup (spec §5.1.5.6). Reuse the canonical payout dialog shell + form helpers; only the checklist is restock-specific. Toggle `.is-checked` on the row to mirror the checkbox.
 
 **Do & Don't**
 
 - ✅ Do mount inside the canonical payout dialog shell — don't re-roll a modal.
-- ✅ Do keep the row styling aligned with `.payout-bank-option` so the dialog reads as one family.
+- ✅ Do keep the row styling quiet: neutral card surface, inset `1px --border` edge, and success check-circle for selected state.
 - ❌ Don't fork the dialog / form styles — only `.restock-items` is restock-specific.
 
 **Dependencies** — composes Badge (§4.3); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
