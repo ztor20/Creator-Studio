@@ -33,9 +33,9 @@
   /* Demo roster (prototype data; the real list comes from the backend).
      Mirrors the concept sketch (denise / aya / kmt). */
   const CREATORS = [
-    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "published" },
-    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "draft" },
-    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "draft" },
+    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active" },
+    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active" },
+    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled" },
   ];
   const CREATOR_LS = "ztor.activeCreator";
   function getCreator() {

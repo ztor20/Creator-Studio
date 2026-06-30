@@ -25,6 +25,7 @@ const REGISTRY = {
   'search':         '<path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" />',           // 搜尋
   'sliders-horizontal': '<line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> <line x1="14" x2="14" y1="2" y2="6" /> <line x1="8" x2="8" y1="10" y2="14" /> <line x1="16" x2="16" y1="18" y2="22" />', // 篩選 / 狀態篩選
   'x':              '<path d="M18 6 6 18" /> <path d="m6 6 12 12" />',                          // 關閉
+  'more-horizontal':'<circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" />', // 列溢出操作選單（⋯）
   'lock':           '<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" />', // 阻斷型告警 / 鎖定（F4 blocking、關閉鈕 disabled）
   'eye':            '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" />',  // 即時預覽 Preview
   'chevron-left':   '<path d="m15 18-6-6 6-6" />',                                              // 上一張 / 返回

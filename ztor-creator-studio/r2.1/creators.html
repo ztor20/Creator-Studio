@@ -4,39 +4,52 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creator Management · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260629o"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/button.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/card.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/input.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/header.css?v=20260629o">
-<link rel="stylesheet" href="ds-components/footer.css?v=20260629o">
-<link rel="stylesheet" href="shared.css?v=20260629o">
+<script src="js/theme.js?v=20260630c"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/button.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/input.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/header.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/footer.css?v=20260630c">
+<link rel="stylesheet" href="shared.css?v=20260630c">
 <style>
-  /* Page-specific layout for the Admin roster (Tier 0, creators.html only).
-     Roster rows / status / actions reuse data-list + badge + button; only the
-     avatar circle and the create-form grid are one-off page chrome. */
+  /* Page-specific chrome for the Admin roster (Tier 0, creators.html only).
+     Per spec 5.1.0 F2–F3 / D097–D099 the page reuses e-shop's component family:
+     field-pill (search) + filter-tabs (status) on one work row (F2),
+     product-list (F3 roster rows); the create form reuses the payout dialog
+     shell. Only the avatar, the work-row layout and the disabled-row dimming
+     are one-off page chrome. */
   .creator-ava {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     display: grid; place-items: center;
     background: color-mix(in srgb, var(--primary) 16%, var(--muted));
-    color: var(--foreground); font-weight: var(--fw-semibold); font-size: var(--fs-13);
+    color: var(--foreground); font-weight: var(--fw-semibold); font-size: var(--fs-14);
   }
-  .creators-form { display: none; margin-bottom: 20px; padding: 20px; }
-  .creators-form.is-open { display: block; }
-  .creators-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-  .creators-form__field { display: flex; flex-direction: column; gap: 6px; }
-  .creators-form__label { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
-  .creators-form__actions { display: flex; gap: 10px; }
-  .creators-roster__handle { color: var(--muted-foreground); font-size: var(--fs-12); }
+  /* F2 work row: status filter (left) + search (right) on one row. */
+  .creators-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .creators-toolbar__search { flex: 0 1 320px; min-width: 200px; }
+  .creators-toolbar__search .field-pill { width: 100%; }
+  /* F4 roster: e-shop product-list with column header; columns mapped to creators
+     (avatar / Creator / status / actions — no category/price/stock/drag). Header
+     and rows share one column template so they align. Whole row → Enter. */
+  .product-list--creators .product-list__head,
+  .product-list--creators .product-list__row { grid-template-columns: 52px minmax(0,1fr) 104px 140px; gap: 16px; }
+  .product-list--creators .product-list__row { cursor: pointer; }
+  .product-list--creators .product-list__row.is-disabled .product-list__title,
+  .product-list--creators .product-list__row.is-disabled .creator-ava { opacity: 0.55; }
+  .creators-row__actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   /* empty-card sets its own display → [hidden] alone won't hide it (DS gotcha). */
   #creator-empty[hidden] { display: none; }
-  @media (max-width: 640px) { .creators-form__grid { grid-template-columns: 1fr; } }
+  .creators-nomatch { margin: 4px 0 0; color: var(--muted-foreground); font-size: var(--fs-13); }
+  @media (max-width: 640px) { .payout-form-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -47,7 +60,7 @@
   <main class="main">
     <div class="page">
 
-      <!-- Tier 0 · Admin landing — no breadcrumb (like Dashboard). spec 5.1.0 / §3.2.1 -->
+      <!-- F1 · 頁首 Header — Tier 0 Admin landing, no breadcrumb (like Dashboard). spec 5.1.0 F1 / §3.2.1 -->
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="creators.title">Creator Management</h1>
@@ -61,30 +74,37 @@
         </div>
       </div>
 
-      <!-- F2 · Create creator (auto-generates the e-shop). Inline form, toggled. -->
-      <form class="card creators-form" id="creator-form" aria-label="Create creator">
-        <div class="creators-form__grid">
-          <label class="creators-form__field">
-            <span class="creators-form__label" data-i18n="creators.form-name">Creator name</span>
-            <input class="input" type="text" name="name" required data-i18n-placeholder="creators.form-name-ph" placeholder="e.g. Denise Lonely">
-          </label>
-          <label class="creators-form__field">
-            <span class="creators-form__label" data-i18n="creators.form-handle">Shop handle</span>
-            <input class="input" type="text" name="handle" required data-i18n-placeholder="creators.form-handle-ph" placeholder="e.g. denise">
+      <!-- F2 · 名冊工作列 List Controls + F3 · Creator 名冊 Roster (no card — matches e-shop's card-less list) -->
+      <div id="creator-roster-card">
+        <!-- F2 work row: status filter (left) + search (right), one row -->
+        <div class="creators-toolbar">
+          <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by status" id="creator-status">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all"><span data-i18n="creators.filter-all">All</span><span class="filter-tabs__count" data-status-count="all">0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="active"><span data-i18n="creators.filter-active">Active</span><span class="filter-tabs__count" data-status-count="active">0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="disabled"><span data-i18n="creators.filter-disabled">Disabled</span><span class="filter-tabs__count" data-status-count="disabled">0</span></button>
+          </nav>
+          <label class="creators-toolbar__search" aria-label="Search creators">
+            <span class="field-pill">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" type="search" id="creator-search" autocomplete="off"
+                     data-i18n-placeholder="creators.search-ph" placeholder="Search name or handle">
+            </span>
           </label>
         </div>
-        <div class="creators-form__actions">
-          <button class="btn btn--primary" type="submit" data-i18n="creators.form-submit">Create</button>
-          <button class="btn btn--ghost" type="button" data-creator-cancel data-i18n="creators.create-cancel">Cancel</button>
+        <!-- F3 roster — product-list with column header (e-shop style). spec 5.1.0 F3 / D099 -->
+        <div class="product-list product-list--creators">
+          <div class="product-list__head" role="row">
+            <div role="columnheader" aria-hidden="true"></div>
+            <div role="columnheader" data-i18n="creators.col-name">Creator</div>
+            <div role="columnheader" data-i18n="creators.col-status">Status</div>
+            <div role="columnheader" aria-hidden="true"></div>
+          </div>
+          <div id="creator-roster"></div>
         </div>
-      </form>
+        <p class="creators-nomatch" id="creator-nomatch" hidden data-i18n="creators.empty-filter">No creators match your search.</p>
+      </div>
 
-      <!-- F1 · Creator roster — rendered from window.ztorCreator.list -->
-      <section class="card" id="creator-roster-card">
-        <div class="data-list" id="creator-roster"></div>
-      </section>
-
-      <!-- Empty state (shown when the roster is empty) -->
+      <!-- Empty state (platform has no creators at all) -->
       <div class="empty-card" id="creator-empty" hidden>
         <div class="empty-card__icon"><i data-lucide="shield-check" class="ztor-icon"></i></div>
         <h2 class="empty-card__title" data-i18n="creators.empty-title">No creators yet</h2>
@@ -101,73 +121,184 @@
   </main>
 </div>
 
-<script src="js/icons.js?v=20260629o"></script>
-<script src="js/i18n.js?v=20260629o"></script>
-<script src="js/sidebar.js?v=20260629o"></script>
-<script src="js/devtools.js?v=20260629o"></script>
+<!-- F2 · 建立 creator — popup (reuses the canonical payout dialog shell). spec 5.1.0 F2 / D097 -->
+<div class="payout-modal" id="creator-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="creator-modal-title" style="width:min(520px,100%)">
+    <form id="creator-form">
+      <div class="payout-dialog__head">
+        <h2 class="payout-dialog__title" id="creator-modal-title" data-i18n="creators.create">Create creator</h2>
+        <button class="btn btn--icon btn--ghost" type="button" data-creator-cancel data-i18n-aria-label="creators.create-close" aria-label="Close">
+          <i data-lucide="x" class="ztor-icon"></i>
+        </button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="payout-form-grid">
+          <label class="payout-field">
+            <span class="payout-field__label" data-i18n="creators.form-name">Creator name</span>
+            <input class="input" type="text" name="name" required data-i18n-placeholder="creators.form-name-ph" placeholder="e.g. Denise Lonely">
+          </label>
+          <label class="payout-field">
+            <span class="payout-field__label" data-i18n="creators.form-handle">Shop handle</span>
+            <input class="input" type="text" name="handle" required data-i18n-placeholder="creators.form-handle-ph" placeholder="e.g. denise">
+          </label>
+        </div>
+      </div>
+      <div class="payout-dialog__foot">
+        <button class="btn btn--ghost" type="button" data-creator-cancel data-i18n="creators.create-cancel">Cancel</button>
+        <button class="btn btn--primary" type="submit" data-i18n="creators.form-submit">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/icons.js?v=20260630c"></script>
+<script src="js/i18n.js?v=20260630c"></script>
+<script src="js/sidebar.js?v=20260630c"></script>
+<script src="js/devtools.js?v=20260630c"></script>
 <script>
-/* Creator roster page logic (Tier 0). Reads the shared model exposed by
-   sidebar.js (window.ztorCreator). Picking "Manage" sets the active creator and
-   enters their Tier 1 workspace (index.html); creating appends a demo creator. */
+/* Creator roster page logic (Tier 0). Reads the shared model from sidebar.js
+   (window.ztorCreator). Reuses e-shop's component family: field-pill search +
+   filter-tabs status on one work row (F2), product-list rows (F3).
+   Enter / whole-row → operate as creator → Tier 1 (index.html). Create → popup.
+   Disable/Enable → row ⋯ menu toggles the creator's operating status.
+   spec 5.1.0 F1–F4 / D097–D099. */
 (function () {
-  var roster = document.getElementById('creator-roster');
-  var rosterCard = document.getElementById('creator-roster-card');
-  var empty = document.getElementById('creator-empty');
-  var form = document.getElementById('creator-form');
+  var roster   = document.getElementById('creator-roster');
+  var card     = document.getElementById('creator-roster-card');
+  var empty    = document.getElementById('creator-empty');
+  var noMatch  = document.getElementById('creator-nomatch');
+  var statusNav= document.getElementById('creator-status');
+  var modal    = document.getElementById('creator-modal');
+  var form     = document.getElementById('creator-form');
+  var search   = document.getElementById('creator-search');
   if (!roster || !window.ztorCreator) return;
   var list = window.ztorCreator.list;
+  var st = function (c) { return c.status === 'disabled' ? 'disabled' : 'active'; };
 
-  function statusBadge(status) {
-    var cls = status === 'published' ? 'badge--success' : 'badge--neutral';
-    var key = status === 'published' ? 'creators.status-published' : 'creators.status-draft';
-    return '<span class="badge ' + cls + '"><span class="badge__dot"></span><span data-i18n="' + key + '">' + status + '</span></span>';
+  function statusBadge(s) {
+    var on  = s !== 'disabled';
+    var cls = on ? 'badge--success' : 'badge--neutral';
+    var key = on ? 'creators.status-active' : 'creators.status-disabled';
+    return '<span class="badge ' + cls + '"><span class="badge__dot"></span>'
+         + '<span data-i18n="' + key + '">' + key + '</span></span>';
   }
   function initial(name) { return (name || '?').trim().charAt(0).toUpperCase(); }
+  function activeStatus() {
+    var t = statusNav.querySelector('.filter-tabs__item--active');
+    return t ? t.getAttribute('data-status-val') : 'all';
+  }
+  function counts() {
+    var a = list.filter(function (c) { return st(c) === 'active'; }).length;
+    return { all: list.length, active: a, disabled: list.length - a };
+  }
+  function visible() {
+    var q = (search.value || '').trim().toLowerCase();
+    var f = activeStatus();
+    return list.filter(function (c) {
+      if (f !== 'all' && st(c) !== f) return false;
+      if (q && (c.name + ' ' + c.handle + ' ' + c.shop).toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+  }
+
+  function renderCounts() {
+    var n = counts();
+    statusNav.querySelector('[data-status-count="all"]').textContent = n.all;
+    statusNav.querySelector('[data-status-count="active"]').textContent = n.active;
+    statusNav.querySelector('[data-status-count="disabled"]').textContent = n.disabled;
+  }
 
   function render() {
     var hasAny = list.length > 0;
-    rosterCard.hidden = !hasAny;
+    card.hidden = !hasAny;
     empty.hidden = hasAny;
-    roster.innerHTML = list.map(function (c) {
-      return '<div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-creator-row>'
-        + '<div class="data-list__icon"><span class="creator-ava">' + initial(c.name) + '</span></div>'
-        + '<div class="data-list__body">'
-        +   '<div class="data-list__title">' + c.name + '</div>'
-        +   '<div class="data-list__meta creators-roster__handle">' + c.shop + '</div>'
+    if (!hasAny) return;
+
+    renderCounts();
+    var rows = visible();
+    noMatch.hidden = rows.length > 0;
+
+    roster.innerHTML = rows.map(function (c) {
+      var disabled = st(c) === 'disabled';
+      var toggleKey = disabled ? 'creators.action-enable' : 'creators.action-disable';
+      return '<div class="product-list__row' + (disabled ? ' is-disabled' : '') + '" data-creator-row data-handle="' + c.handle + '">'
+        + '<span class="creator-ava">' + initial(c.name) + '</span>'
+        + '<div class="product-list__body">'
+        +   '<div class="product-list__title">' + c.name + '</div>'
+        +   '<div class="product-list__meta">' + c.shop + '</div>'
         + '</div>'
-        + statusBadge(c.status)
-        + '<button class="btn btn--primary btn--sm" type="button" data-manage="' + c.handle + '" data-i18n="creators.manage">Manage</button>'
+        + '<div class="product-list__cell">' + statusBadge(c.status) + '</div>'
+        + '<div class="creators-row__actions">'
+        +   '<button class="btn btn--primary btn--sm" type="button" data-manage="' + c.handle + '" data-i18n="creators.manage">Enter</button>'
+        +   '<details class="dropdown">'
+        +     '<summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + ((window.i18nT && window.i18nT('creators.row-actions')) || 'More actions') + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>'
+        +     '<div class="dropdown__menu" role="menu">'
+        +       '<button class="dropdown__item" type="button" role="menuitem" data-toggle="' + c.handle + '" data-i18n="' + toggleKey + '">' + toggleKey + '</button>'
+        +     '</div>'
+        +   '</details>'
+        + '</div>'
         + '</div>';
     }).join('');
+
     if (window.ztorIcons) window.ztorIcons.applyIcons(roster);
-    if (window.applyI18n) { window.applyI18n(roster); window.applyI18n(empty); }
+    if (window.applyI18n) { window.applyI18n(roster); window.applyI18n(empty); window.applyI18n(noMatch); }
   }
 
-  /* Manage → operate as this creator → enter Tier 1 (index.html). */
+  function goManage(handle) { window.ztorCreator.set(handle); location.href = 'index.html'; }
+
   roster.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-manage]');
-    if (!btn) return;
-    window.ztorCreator.set(btn.getAttribute('data-manage'));
-    location.href = 'index.html';
+    var toggle = e.target.closest('[data-toggle]');
+    if (toggle) {
+      e.preventDefault();
+      var h = toggle.getAttribute('data-toggle');
+      var c = list.filter(function (x) { return x.handle === h; })[0];
+      if (c) { c.status = (st(c) === 'disabled') ? 'active' : 'disabled'; render(); }
+      return;
+    }
+    if (e.target.closest('.dropdown')) return;   /* native <details> handles open/close */
+    var manage = e.target.closest('[data-manage]');
+    if (manage) { goManage(manage.getAttribute('data-manage')); return; }
+    var row = e.target.closest('[data-creator-row]');
+    if (row) goManage(row.getAttribute('data-handle'));
   });
 
-  /* Create-form toggle + demo submit (in-memory; real create is upstream). */
-  document.querySelector('[data-creator-create]').addEventListener('click', function () {
-    form.classList.add('is-open');
-    form.querySelector('input[name="name"]').focus();
+  /* Status filter (filter-tabs) */
+  statusNav.addEventListener('click', function (e) {
+    var item = e.target.closest('.filter-tabs__item');
+    if (!item) return;
+    statusNav.querySelectorAll('.filter-tabs__item').forEach(function (t) {
+      var on = t === item;
+      t.classList.toggle('filter-tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    render();
   });
-  form.querySelector('[data-creator-cancel]').addEventListener('click', function () {
-    form.classList.remove('is-open'); form.reset();
+
+  /* Create popup */
+  function openModal() {
+    modal.hidden = false; document.body.classList.add('is-modal-open');
+    var f = form.querySelector('input[name="name"]'); if (f) f.focus();
+  }
+  function closeModal() {
+    modal.hidden = true; document.body.classList.remove('is-modal-open'); form.reset();
+  }
+  document.querySelector('[data-creator-create]').addEventListener('click', openModal);
+  Array.prototype.forEach.call(modal.querySelectorAll('[data-creator-cancel]'), function (b) {
+    b.addEventListener('click', closeModal);
   });
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var name = form.querySelector('input[name="name"]').value.trim();
     var handle = form.querySelector('input[name="handle"]').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
     if (!name || !handle) return;
-    list.push({ handle: handle, name: name, shop: '/shop/' + handle, status: 'draft' });
-    form.classList.remove('is-open'); form.reset();
-    render();
+    list.push({ handle: handle, name: name, shop: '/shop/' + handle, status: 'active' });
+    closeModal(); render();
   });
+
+  /* Search (view only) */
+  search.addEventListener('input', render);
 
   render();
 })();
