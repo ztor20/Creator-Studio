@@ -225,11 +225,13 @@ Tight negative tracking (`-1.28px` on H1, `-0.8px` on H2) is the Geist signature
 
 ### 1.3 Spacing
 
-Dense scale — many micro-paddings (1–6px) give fine inner spacing on a data-dense UI. Effective rhythm:
+Dense scale — many micro-paddings give fine inner spacing on a data-dense UI. Effective rhythm (from全庫 ~443 個實際 px 值，高頻在 12/10/8/16/14/6/4)：
 
-`1, 4, 6, 8, 10, 12, 14, 16, 24, 32, 48, 64, 80`
+`2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32, 48, 64, 80`
 
 Section-level vertical rhythm is closer to `80–96px`. Card internal padding is typically `16–24px`. Footer uses `80px` vertical padding.
+
+> **Token 現況（誠實標註）**：`--space-1…16` primitive 已定義，但為純 4 倍數（`4 8 12 16 20 24 32 40 48 64`），缺了上面密集刻度大量使用的 `6 / 10 / 14 / 18`；目前幾乎未採用（只有 `--space-shell-gutter`），實況以硬寫 px 為主。間距沒有語意 role 層（見 §2.3）。全面 token 化列為後續清理。
 
 ### 1.4 Radius
 
@@ -300,7 +302,11 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 >
 > In `_tokens.css` these are CSS custom properties whose **names already encode the semantic role** (`--background`, `--foreground-muted`, `--primary`, `--status-success`). The raw values from Pillar 1 are substituted at the `:root` level.
 
+本層分六類，與 `design-system.html` 對齊：**2.1 顏色 · 2.2 字體 · 2.3 間距 · 2.4 控件尺寸 · 2.5 陰影 · 2.6 跨元件規則**。這裡的值為**亮色**（角色預設）；深色覆寫只記在 Pillar 3。html 版每一類都有即時渲染。
+
 ### 2.1 Color Roles
+
+亮色值；深色見 §3.1。`[ext]` = creator 擴充（shadcn 無此名）。
 
 | Role | Token | Light value | References Pillar 1 |
 |---|---|---|---|
@@ -310,43 +316,37 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Surface — muted** (alt cards, hover) | `--muted` | `#FAFAFA` | softer than canvas |
 | **Surface — inverse** (footer slab) | `--surface-inverse` | `#000000` | pure black |
 | **Foreground — default** (body / titles) | `--foreground` | `#000000` | |
-| **Foreground — muted** (descriptions) | `--foreground-muted` | `rgba(0,0,0,0.7)` | |
+| **Foreground — muted** (descriptions) | `--foreground-muted` | `#4D4D4D` | [ext] |
 | **Foreground — subtle** (meta, eyebrow) | `--muted-foreground` | `#737373` | |
-| **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | |
+| **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | [ext] |
 | **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
-| **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 |
+| **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 [ext] |
 | **Primary — foreground** (text on orange) | `--primary-foreground` | light `#FFFFFF` / dark `#171717` | 使用者指定 2026-06-22：白天白字、黑夜黑字（白字 ~1.9:1 < WCAG AA） |
 | **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
-| **Status — success** | `--status-success` | `#22C55E` | green.500 |
+| **Status — success** | `--status-success` | `#22C55E` | green.500 [ext] |
 | **Status — error** | `--destructive` | `#DA314A` | red.500 |
-| **Status — info** | `--status-info` | `#266DF0` | blue.500 |
-| **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots |
+| **Status — info** | `--status-info` | `#266DF0` | blue.500 [ext] |
+| **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots [ext] |
+| **Status — accent** | `--status-accent` | `#8B5CF6` | purple — extra category hue [ext] |
 
-**Reserved**: `--primary` (orange) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--muted` instead.
+**Naming aligns with shadcn/ui** (issue #11): semantic tokens use shadcn's vocabulary so shadcn code + AI map directly; names shadcn lacks are kept as `[ext]`. (Primary-reserved usage rule moved to §2.6.)
 
-### 2.2 Spacing Roles
-
-Built directly off Pillar 1's spacing scale (no custom Role names). Project pages use scale values inline:
-- `--gap-tight` = 8px (icon-button clusters)
-- `--gap-default` = 16px (bento grid children, KPI rows)
-- `--gap-section` = 24px (mt-24 utility, between major surfaces)
-- `--gap-page` = 32px (page padding, header padding)
-
-### 2.3 Typography Roles
+### 2.2 Typography Roles
 
 | Role | Token | Stack | Used for |
 |---|---|---|---|
-| Display | `--font-display` | `'Geist', 'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
+| Display | `--font-display` | `'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
 | UI | `--font-ui` | `'Geist', system-ui, sans-serif` | Buttons, nav, labels, badges, all chrome text |
 | Body | `--font-body` | `'Inter', system-ui, sans-serif` | Long-form prose, alert descriptions |
-| CJK fallback | (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
+| Mono | `--font-mono` | `'Geist Mono', ui-monospace, …` | Code, tabular figures, dev tags |
+| CJK fallback | `--font-cjk` (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
 
 Concrete typography usage is assigned as role aliases that point back to the
 neutral §1.2 type scale. Each role resolves the four raw dimensions into one
 decision — family · size · weight · **leading** · tracking — where **leading
 binds to the `--lh-*` scale** (§1.2). This matrix is the standard; component CSS
-references the role, never raw values:
+references the role, never raw values (html 版另有每個角色的即時渲染):
 
 | Usage role | ← Foundation | Family | Size | Weight | Leading (`--lh-*`) | Tracking |
 |---|---|---|---|---|---|---|
@@ -361,7 +361,27 @@ references the role, never raw values:
 | `--type-body-*` | `body-14` | Inter | 14 | 400 | `relaxed` 1.5 | normal |
 | `--type-caption-*` | `caption-12` | Geist | 12 | 500 | `normal` 1.3 | `0.05em` |
 
-### 2.4 Elevation
+### 2.3 Spacing
+
+**誠實標註：目前沒有語意間距 role 層。**（先前此處列的 `--gap-tight/default/section/page` 是不存在的虛構 token，2026-06-30 移除。）實況是：
+
+- 元件**直接寫 px**，落在 Pillar 1 §1.3 的密集節奏：`2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 32 · 48 · 64 · 80`（全庫實測 ~443 處硬寫 px，高頻在 12/10/8/16/14/6/4）。
+- `--space-1…16` primitive **已定義但尚未採用**（只有 `--space-shell-gutter` 在用），且是純 4 倍數、缺了真實大量使用的 6/10/14/18，所以對不上現況——這是它沒被採用的原因。
+- 結論：把上面的密集刻度視為實際間距系統；全面 token 化（收斂硬寫 px → primitive）列為後續清理，不是現在的宣稱。
+
+### 2.4 Control sizes
+
+按鈕與表單控件共用一套高度級（全部 4 的倍數），同尺寸的 input 與 button 對齊。高度一律走 `--control-h-*`，不寫死。
+
+| Token | Height | Use |
+|---|---|---|
+| `--control-h-xs` | 28px | compact toolbar (optional) |
+| `--control-h-sm` | 36px | dense forms / inline |
+| `--control-h-md` | **44px** | **default** — button / input / select |
+| `--control-h-lg` | 52px | prominent CTA |
+| `--control-h-xl` | 60px | hero CTA (optional) |
+
+### 2.5 Elevation
 
 | Role | Token | Used for |
 |---|---|---|
@@ -371,6 +391,14 @@ references the role, never raw values:
 | Popover | `--shadow-popover` | Nav dropdowns, account menu (slightly tighter rim) |
 
 No higher elevation than Card. Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
+
+### 2.6 Cross-component rules
+
+Principles every component obeys (not a token scale; html 版各附 live 示例):
+
+- **Focus**：全控件、兩模式單一配方 — `outline: 2px solid var(--ring); outline-offset: 2px`（清單列用 `-2px` 內嵌）。不再各元件 `outline`／`box-shadow` 各寫各的。
+- **Surface-layer contrast**：元件靠「填色／邊框／陰影跟所在那層的對比」被看見，**填色和背景同色就會消失**。白填要靠 1px 邊框在白底成形；跨層安全用實線 border，別用填色當邊或純陰影當邊。做任何有填色的元件，在**最深**那層目視驗證（按鈕白/灰底實例見 §4.2）。
+- **Reserved — `--primary`**：橘色**只**用於主要 CTA + 便利貼 + 品牌標記 + hero 強調。絕不用在 nav active、KPI 高亮或狀態 pill——那些用 `--muted`/`--accent`。
 
 ---
 
@@ -474,7 +502,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (`--highlight` = orange tint) | [kpi.css](./ds-components/kpi.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour) | [kpi.css](./ds-components/kpi.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
@@ -3143,7 +3171,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 #### Dashboard home (Layout)
 
 - **trigger**: The landing surface after login — the creator needs a one-glance read of money, alerts, and what to do next.
-- **must**: Lead with the full-bleed Hero band, then a KPI bento row (earnings / pending / fans / live items) using `KPI` (`--highlight` for the headline metric); pair an `Alert` panel ("Actions needed") beside a `Data list` of recent earnings; every money figure states its state (available vs pending) inline.
+- **must**: Lead with the full-bleed Hero band, then a KPI bento row (earnings / pending / fans / live items) using `KPI` (headline metric carried by display size, not colour); pair an `Alert` panel ("Actions needed") beside a `Data list` of recent earnings; every money figure states its state (available vs pending) inline.
 - **should**: Follow with a trend `Chart` + source breakdown pair; keep orange for one structural accent per viewport (hero fill OR a single highlight tile, not both competing).
 - **must-not**: Never stack two orange highlight tiles side by side; never show a bare number without its currency + state; never push primary actions below the fold.
 - **_edge-cases**: `empty` → first-run hero with "Create your first project" CTA, KPI tiles show `—` not `0`; `error` → KPI tile shows last-known value + a stale badge; `new-user` → checklist card replaces the trend pair; `mobile` → bento collapses to span-12 single column; `offline` → KPI tiles dim, banner "Showing last synced data".

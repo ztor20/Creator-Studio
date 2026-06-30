@@ -53,6 +53,101 @@
     ['topbar', 'Topbar', '水平頂列（預設）'],
     ['sidebar', 'Sidebar', '左側直欄'],
   ];
+  /* ---- 版本（最高級別 gate）：讀 feature-scope-map.md 重新配置 ----
+     一份 md 當單一真相：版本清單＋規則取自其「## 開發版本配置」表，
+     功能→tier 取自各 pillar 功能表的 🟢/🔵/⚪ 欄。fetch 失敗（file://）用內建後備。
+     規則語法：all｜tier:p1,next｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
+     減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。*/
+  var TIER_EMOJI = { '🟢': 'p1', '🔵': 'next', '⚪': 'tbd' };
+  /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。*/
+  var VERSIONS = [
+    ['full', '最終完整版', '開發', 'all', '全部功能（預設）'],
+    ['p1-next', 'Phase 1 ＋ Next', '開發', 'tier:p1,next', '首發＋規劃追加'],
+    ['p1', 'Phase 1', '開發', 'tier:p1', '內部首發'],
+    ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
+  ];
+  var FEAT_TIER = {};   // { S30:'p1', … } 由 md 功能表填
+  function parseScopeMd(txt) {
+    var lines = txt.split('\n'), vs = [], inVer = false;
+    lines.forEach(function (ln) {
+      if (/^##\s*開發版本配置/.test(ln)) { inVer = true; return; }
+      if (inVer && /^##\s/.test(ln)) inVer = false;
+      if (inVer) {
+        var m = ln.match(/^\|\s*`?([\w.-]+)`?\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*`?([^|`]+?)`?\s*\|\s*([^|]*?)\s*\|/);
+        if (m && m[1] !== '鍵' && !/^-+$/.test(m[1])) vs.push([m[1], m[2], m[3], m[4], m[5]]);
+      }
+    });
+    if (vs.length) VERSIONS = vs;
+    lines.forEach(function (ln) {
+      var idm = ln.match(/\|\s*`([SOEB]\d{2})`\s*\|/);
+      if (!idm) return;
+      for (var em in TIER_EMOJI) { if (ln.indexOf(em) >= 0) { FEAT_TIER[idm[1]] = TIER_EMOJI[em]; break; } }
+    });
+  }
+  function curVersionRule() {
+    for (var i = 0; i < VERSIONS.length; i++) if (VERSIONS[i][0] === state.version) return VERSIONS[i][3];
+    return 'all';
+  }
+  function tiersForRule(rule) {
+    var m = /tier:([\w,]+)/.exec(rule || '');
+    return m ? m[1].split(',') : null;   // null ＝ 全部 tier（all／route／page 規則皆不減功能）
+  }
+  function routesForRule(rule) {
+    var out = [];
+    (rule || '').split(/\s+/).forEach(function (tok) {
+      var m = /^route:([^=]+)=(.+)$/.exec(tok);
+      if (m) out.push([m[1], m[2]]);
+    });
+    return out;
+  }
+  /* 版本選項渲染：一行一個、依類型分「開發版本／測試版」兩組。
+     mode='onb' 給首次 popup（data-onb 暫存選擇）；否則面板（data-kind=version 立即套用）。*/
+  function verRows(current, mode) {
+    function attrs(k) { return mode === 'onb' ? 'data-onb="' + k + '"' : 'data-kind="version" data-val="' + k + '"'; }
+    function row(v) {
+      return '<button class="ztd__optrow' + (v[0] === current ? ' is-active' : '') + '" ' + attrs(v[0]) + '>'
+        + '<span class="ztd__optrow-name">' + v[1] + '</span><span class="ztd__optrow-desc">' + (v[4] || '') + '</span></button>';
+    }
+    var dev = [], test = [];
+    VERSIONS.forEach(function (v) { (v[2] === '測試' ? test : dev).push(v); });
+    var h = '<div class="ztd__subgroup">開發版本</div><div class="ztd__rows-v">' + dev.map(row).join('') + '</div>';
+    if (test.length) h += '<div class="ztd__subgroup">測試版</div><div class="ztd__rows-v">' + test.map(row).join('') + '</div>';
+    return h;
+  }
+  function applyVersion() {
+    var rule = curVersionRule();
+    /* 1) 減功能：依 tier 隱藏／標記帶 data-feat 的元素 */
+    var allow = tiersForRule(rule);
+    document.querySelectorAll('[data-feat]').forEach(function (el) {
+      var tier = FEAT_TIER[el.getAttribute('data-feat')] || 'p1';
+      var inVer = !allow || allow.indexOf(tier) >= 0;
+      el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
+      el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
+    });
+    /* 2) 改接：route:來源=目標——先把上次改過的全還原，再套當前版本（標 data-route-keep 的不動）*/
+    document.querySelectorAll('a[data-route-orig]').forEach(function (a) {
+      a.setAttribute('href', a.getAttribute('data-route-orig'));
+      a.removeAttribute('data-route-orig');
+    });
+    routesForRule(rule).forEach(function (pair) {
+      var from = pair[0], to = pair[1];
+      document.querySelectorAll('a[href]').forEach(function (a) {
+        if (a.hasAttribute('data-route-keep')) return;
+        var h = a.getAttribute('href');
+        if (h === from || h.split(/[?#]/)[0] === from) {
+          a.setAttribute('data-route-orig', h);
+          a.setAttribute('href', to);
+        }
+      });
+    });
+  }
+  function loadVersions() {
+    try {
+      fetch('feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
+        .then(function (t) { if (t) { parseScopeMd(t); if (root.classList.contains('is-open')) paint(); applyVersion(); } })
+        .catch(function () {});
+    } catch (e) {}
+  }
   function curTheme() { return (window.ztorTheme && window.ztorTheme.getPreference && window.ztorTheme.getPreference()) || 'system'; }
   function curLang() { return document.documentElement.lang === 'zh-Hant' ? 'zh-Hant' : 'en'; }
   function curNav() { return (window.ztorNavMode && window.ztorNavMode.get && window.ztorNavMode.get()) || 'topbar'; }
@@ -71,7 +166,7 @@
     return c ? c.handle : '__none__';
   }
 
-  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event' };
+  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event', version: 'full', showFuture: false };
   var LS = 'ztor.devstate';
 
   function load() {
@@ -81,6 +176,8 @@
     if (q.has('data')) s.data = q.get('data');
     if (q.has('event')) s.eventDay = q.get('event');
     if (q.has('skip')) s.skipValidation = q.get('skip') === '1' || q.get('skip') === 'true';
+    if (q.has('version')) s.version = q.get('version');
+    if (q.has('future')) s.showFuture = q.get('future') === '1' || q.get('future') === 'true';
     return s;
   }
   var state = load();
@@ -92,6 +189,8 @@
     q.set('data', state.data);
     q.set('event', state.eventDay);
     if (state.skipValidation) q.set('skip', '1'); else q.delete('skip');
+    if (state.version && state.version !== 'full') q.set('version', state.version); else q.delete('version');
+    if (state.showFuture) q.set('future', '1'); else q.delete('future');
     history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
   }
   function emit() {
@@ -101,6 +200,8 @@
     el.setAttribute('data-data-state', state.data);
     el.setAttribute('data-event-day', state.eventDay);
     el.setAttribute('data-skip-validation', state.skipValidation ? '1' : '0');
+    el.setAttribute('data-version', state.version);
+    applyVersion();
     listeners.forEach(function (f) { try { f(d); } catch (e) {} });
     document.dispatchEvent(new CustomEvent('ztor:devstate-changed', { detail: d }));
   }
@@ -140,6 +241,19 @@
     + '.ztd__opt:hover{background:var(--muted)}'
     + '.ztd__opt.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
     + '.ztd__opt-desc{display:block;font-size: var(--fs-11);font-weight: var(--fw-regular);color:var(--muted-foreground);margin-top:4px;line-height:1.4}'   /* 說明預設常駐 */
+    /* 版本（最高級別 gate）：組強調框＋版本外功能的隱藏/標記樣式（全站套用）*/
+    + '.ztd__group--top{border:1px solid color-mix(in srgb,var(--primary) 55%,var(--border));background:color-mix(in srgb,var(--primary) 7%,var(--card));border-radius:var(--radius-md,7px);padding:12px 13px 4px;margin-bottom:18px}'
+    /* 版本選項：一行一個＋分組小標題（開發版本／測試版）*/
+    + '.ztd__subgroup{font-size:var(--fs-11);font-weight:var(--fw-semibold);color:var(--muted-foreground);letter-spacing:.04em;margin:2px 0 7px}'
+    + '.ztd__subgroup:not(:first-child){margin-top:13px}'
+    + '.ztd__rows-v{display:flex;flex-direction:column;gap:6px}'
+    + '.ztd__optrow{display:block;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--card);color:var(--foreground);font:inherit;cursor:pointer;transition:.15s}'
+    + '.ztd__optrow:hover{background:var(--muted)}'
+    + '.ztd__optrow.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
+    + '.ztd__optrow-name{display:block;font-size:var(--fs-13);font-weight:var(--fw-medium)}'
+    + '.ztd__optrow-desc{display:block;font-size:var(--fs-11);color:var(--muted-foreground);margin-top:3px;line-height:1.4}'
+    + '.ztd-ver-hidden{display:none!important}'
+    + '.ztd-ver-future{opacity:.42!important;outline:1px dashed var(--primary);outline-offset:2px}'
     /* 縮小：只留 header，body／foot 收起，面板高度回到 auto（蓋掉 resize 存的高度）*/
     + '.ztd.is-min .ztd__body,.ztd.is-min .ztd__foot{display:none}'
     + '.ztd.is-min .ztd__panel{min-height:0;height:auto!important;resize:none}'
@@ -165,7 +279,17 @@
     + '.ztd-hl--component{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 16%,transparent)}'
     + '.ztd-hl__tag{position:absolute;top:-22px;left:0;white-space:nowrap;font:var(--fs-11)/1.6 var(--font-mono,ui-monospace,monospace);'
     + 'padding:1px 6px;border-radius:4px;background:var(--surface-inverse,#000);color:var(--foreground-on-inverse,#fff)}'
-    + '.ztd-hl--component .ztd-hl__tag{background:var(--primary);color:var(--primary-foreground)}';
+    + '.ztd-hl--component .ztd-hl__tag{background:var(--primary);color:var(--primary-foreground)}'
+    /* 首次進站 onboarding popup：選版本 → 確定 → 進入（之後不再跳）*/
+    + '.ztd-onb{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);font-family:var(--font-ui,system-ui,sans-serif)}'
+    + '.ztd-onb__card{width:min(440px,100%);max-height:calc(100vh - 40px);overflow:auto;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:var(--radius-xl,16px);padding:22px 22px 20px;box-shadow:0 16px 48px rgba(0,0,0,.28)}'
+    + '.ztd-onb__title{display:flex;align-items:center;gap:8px;font-size:var(--fs-18,18px);font-weight:var(--fw-semibold);margin-bottom:6px}'
+    + '.ztd-onb__title svg{width:20px;height:20px;color:var(--primary)}'
+    + '.ztd-onb__sub{font-size:var(--fs-13);color:var(--muted-foreground);margin-bottom:16px;line-height:1.5}'
+    + '.ztd-onb__opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}'
+    + '.ztd-onb__ok{width:100%;padding:12px;border:0;border-radius:var(--radius-md,7px);background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:var(--fw-semibold);font-size:var(--fs-14);cursor:pointer}'
+    + '.ztd-onb__ok:hover{filter:brightness(.96)}'
+    + '@media (max-width:420px){.ztd-onb__opts{grid-template-columns:1fr}}';
   var style = document.createElement('style');
   style.textContent = css;
   document.head.appendChild(style);
@@ -208,6 +332,10 @@
       +     '<button class="ztd__iconbtn" data-act="close" aria-label="Close">' + CLOSE + '</button>'
       +   '</div>'
       +   '<div class="ztd__body">'
+      +     '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
+      +       verRows(state.version, 'panel')
+      +       '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
+      +     '</div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
       +       '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
       +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
@@ -227,6 +355,7 @@
       +       '<div class="ztd__grid">' + optsHtml(LANG, curLang(), 'lang') + '</div></div>'
       +     '<div class="ztd__group"><p class="ztd__group-label">Display mode · 版面</p>'
       +       '<div class="ztd__grid">' + optsHtml(NAV, curNav(), 'nav') + '</div></div>'
+      +     '<div class="ztd__group"><button class="ztd__row" data-act="reonboard"><span>重新顯示首次 popup</span></button></div>'
       +   '</div>'
       +   '<div class="ztd__foot"><button class="ztd__reset" data-act="reset">Reset</button>'
       +     '<span class="ztd__muted">Alt＋右鍵 開關 · 拖標題移動 · 拉底邊調高</span></div>'
@@ -400,7 +529,9 @@
     if (act === 'close') return close();
     if (act === 'minimize') { var m = root.classList.toggle('is-min'); try { localStorage.setItem(MIN_LS, m ? '1' : '0'); } catch (e) {} return paint(); }
     if (act === 'reset') { state = Object.assign({}, DEFAULTS); setInspect(false); return update(); }
+    if (act === 'reonboard') { try { localStorage.removeItem(ONBOARD_LS); } catch (e) {} showOnboarding(); return; }
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
+    if (act === 'toggle-future') { state.showFuture = !state.showFuture; return update(); }
     if (act === 'toggle-inspect') { setInspect(!inspecting); return; }
     var kind = btn.getAttribute('data-kind');
     if (!kind) return;
@@ -463,4 +594,32 @@
     on: function (cb) { if (typeof cb === 'function') listeners.push(cb); },
   };
   emit();
+  loadVersions();
+  /* 首次進站：跳 popup 選版本 → 確定進入（每裝置第一次；手機免 Alt＋右鍵也能設版本）*/
+  var ONBOARD_LS = 'ztor.devtools.onboarded';
+  function showOnboarding() {
+    var _old = document.querySelector('.ztd-onb'); if (_old) _old.remove();
+    var ov = document.createElement('div'); ov.className = 'ztd-onb';
+    var sel = state.version || 'full';
+    function draw() {
+      ov.innerHTML = '<div class="ztd-onb__card">'
+        + '<div class="ztd-onb__title">' + SPARK + 'Cheat Codes</div>'
+        + '<p class="ztd-onb__sub">選擇要檢視的版本。之後桌面可 Alt＋右鍵叫出完整面板再調整。</p>'
+        + verRows(sel, 'onb')
+        + '<button class="ztd-onb__ok">確定</button>'
+        + '</div>';
+    }
+    draw();
+    ov.addEventListener('click', function (e) {
+      var opt = e.target.closest('[data-onb]');
+      if (opt) { sel = opt.getAttribute('data-onb'); draw(); return; }
+      if (e.target.closest('.ztd-onb__ok')) {
+        state.version = sel; update();
+        try { localStorage.setItem(ONBOARD_LS, '1'); } catch (e) {}
+        ov.remove();
+      }
+    });
+    document.body.appendChild(ov);
+  }
+  try { if (!localStorage.getItem(ONBOARD_LS)) showOnboarding(); } catch (e) {}
 })();
