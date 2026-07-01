@@ -3,24 +3,32 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create bundle · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260629d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260629d">
+<script src="js/theme.js?v=20260630c"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/button.css?v=20260630c">
 <link rel="stylesheet" href="ds-components/badge.css?v=20260630d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/picker.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260629d">
-<link rel="stylesheet" href="shared.css?v=20260629d">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/input.css?v=20260630b">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/picker.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260630c">
+<link rel="stylesheet" href="shared.css?v=20260630e">
 <style>
   /* page-specific：Create bundle 表單 · spec 5.1.5.4
      區段骨架用 ds-components/form-section.css（無卡片，與 create-product 一致）；此處只留 bundle 專屬。 */
-  .wizard__body { padding-top: 16px; }
-  .wizard__body > .form-section:first-child { padding-top: 4px; }
+  /* 預覽欄／表單兩欄版面用 ds-components/preview-column.css；此處只留本頁寬度與上內距（比照建立商品）。 */
+  .wizard__body { max-width: 1000px; padding-top: 16px; }
+  .preview-split__form > .form-section:first-child { padding-top: 4px; }
   .cb-count__hint { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 10px; }
   /* 近期瀏覽子標題（spec 5.1.5.4 §4②）*/
   .cb-sublabel { font-size: var(--fs-13); font-weight: var(--fw-semibold); margin: 16px 0 8px; }
@@ -36,7 +44,8 @@
   .cb-add-tile__sub { font-size: var(--fs-12); color: var(--muted-foreground); }
   /* 列尾：價格 + 移除鈕並排 */
   .cb-row-end { display: flex; flex-direction: row; align-items: center; gap: 10px; }
-  .cb-price-input { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  /* $ 前綴＋input 的橫向組（控件本身）；上下間距交給 .form-section .field 的 gap:4px（與建立商品同律），不另加 margin-top */
+  .cb-price-input { display: flex; align-items: center; gap: 8px; }
   .cb-price-input[hidden] { display: none; }  /* class display 會蓋掉 [hidden] 的 none，需顯式還原 */
   .cb-price-input__sym { font-size: var(--fs-14); color: var(--muted-foreground); }
   /* 套組庫存＝min(成員) 與相容性提示（spec 5.1.5.4 §6.3/§6.4，顯示層 demo）*/
@@ -66,17 +75,55 @@
       </div>
       <div class="wizard__top-actions">
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
       </div>
     </div>
   </header>
 
-  <div class="wizard__body">
+  <div class="wizard__body preview-split">
+    <div class="preview-split__form">
 
-    <!-- ① 套組名稱 -->
+    <!-- ① 素材（Show it off）：獨立區段（spec 5.1.5.4 §4 F8，比照建立商品 §4 F1）-->
     <section class="form-section">
-      <div class="field" style="margin:0">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.media.show">Show it off</h3>
+        <p class="form-section__sub" data-i18n="cb.media.sub">Buyers can't touch it. Your photos do that job.</p>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="upload-showcase">
+          <div class="upload-tile upload-tile--hero" data-cb-asset="hero">
+            <span class="upload-tile__icon"><svg class="up-stack" viewBox="0 0 48 48" fill="none"><rect x="11" y="10" width="20" height="26" rx="3" transform="rotate(-9 21 23)" stroke="var(--border)" stroke-width="2"/><rect x="17" y="10" width="20" height="26" rx="3" transform="rotate(9 27 23)" stroke="var(--border)" stroke-width="2"/><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
+            <span class="upload-tile__title" data-i18n="cb.media.hero">Bundle cover — the first thing fans see</span>
+            <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+          </div>
+          <div class="upload-grid upload-grid--2x2">
+            <div class="upload-tile" data-cb-asset="gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cb-asset="gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cb-asset="gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+            <div class="upload-tile" data-cb-asset="gallery"><span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② 組合資訊（Bundle info）：名稱＋描述（spec 5.1.5.4 §4 F1，與素材 F8 分屬不同區段）-->
+    <section class="form-section">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.info.title">Bundle info</h3>
+      </div>
+
+      <!-- 組合名稱 -->
+      <div class="field">
         <div class="field__label"><span data-i18n="cb.name">Bundle name</span> <span style="color:var(--error,#c00)">*</span></div>
         <input class="input" id="cb-name" placeholder="e.g., Ultimate Fan Bundle" data-i18n-placeholder="cb.name.ph">
+      </div>
+
+      <!-- 組合描述（字數上限／必填待確認 → 不設 counter、不擋建立）-->
+      <div class="field" style="margin-bottom:0">
+        <div class="field__label" data-i18n="cb.desc">Tell fans what they'll get</div>
+        <div class="field__hint" data-i18n="cb.desc.hint">Describe what's inside and why it's worth it.</div>
+        <textarea class="textarea" id="cb-desc" placeholder="Describe your bundle…" data-i18n-placeholder="cb.desc.ph"></textarea>
       </div>
     </section>
 
@@ -157,46 +204,141 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cb.pricing">Pricing</h3>
       </div>
-      <div class="selection-grid" id="cb-price-grid">
-        <button class="selection-card selection-card--active" data-cb-price="fixed">
-          <span class="selection-card__title" data-i18n="cb.price.fixed">Fixed price</span>
-          <span class="selection-card__sub" data-i18n="cb.price.fixed-sub">Set one bundle price</span>
-        </button>
-        <button class="selection-card" data-cb-price="pct">
-          <span class="selection-card__title" data-i18n="cb.price.pct">% off</span>
-          <span class="selection-card__sub" data-i18n="cb.price.pct-sub">Discount when bundled</span>
-        </button>
+      <!-- 包一層 .field：取得 .form-section .field 的 26px 下欄距，讓選擇卡與下方輸入不擠在一起（比照建立商品 Edition）-->
+      <div class="field">
+        <div class="selection-grid" id="cb-price-grid">
+          <button class="selection-card selection-card--active" data-cb-price="fixed">
+            <span class="selection-card__title" data-i18n="cb.price.fixed">Fixed price</span>
+            <span class="selection-card__sub" data-i18n="cb.price.fixed-sub">Set one bundle price</span>
+          </button>
+          <button class="selection-card" data-cb-price="pct">
+            <span class="selection-card__title" data-i18n="cb.price.pct">% off</span>
+            <span class="selection-card__sub" data-i18n="cb.price.pct-sub">Discount when bundled</span>
+          </button>
+        </div>
       </div>
 
-      <!-- 固定價輸入 -->
+      <!-- 固定價輸入（spec 5.1.5.4 §4 F3）：input 有標題＋「不得高於成員合計」描述 -->
       <div data-cb-price-show="fixed">
-        <div class="cb-price-input">
-          <span class="cb-price-input__sym">$</span>
-          <input class="input" id="cb-fixed-price" placeholder="0.00" style="max-width:200px">
+        <div class="field">
+          <div class="field__label" data-i18n="cb.price.fixed">Fixed price</div>
+          <div class="cb-price-input">
+            <span class="cb-price-input__sym">$</span>
+            <input class="input" id="cb-fixed-price" placeholder="0.00" style="max-width:200px">
+          </div>
+          <div class="field__hint" id="cb-price-hint" data-i18n="cb.price.fixed-hint">Bundle price must not exceed members' total.</div>
         </div>
-        <div class="field__hint" id="cb-price-hint" style="margin-top:8px" data-i18n="cb.price.fixed-hint">Bundle price must not exceed members' total.</div>
       </div>
-      <!-- 折扣輸入（spec 待補：依對稱推定為 % 輸入，標自創待確認）-->
-      <div class="cb-price-input" data-cb-price-show="pct" hidden>
-        <input class="input" placeholder="0" style="max-width:160px">
-        <span class="cb-price-input__sym">% <span class="text-sub" data-i18n="cb.price.pct-note">off · field pending spec 5.1.5.4</span></span>
+      <!-- 折扣輸入（spec 5.1.5.4 §4 F3 / D088）：折扣後價格 ↔ 折扣趴數 雙欄連動，依成員原價合計換算 -->
+      <div data-cb-price-show="pct" hidden>
+        <div class="field">
+          <div class="field__label" data-i18n="cb.price.discounted">Discounted price</div>
+          <div class="cb-price-input">
+            <span class="cb-price-input__sym">$</span>
+            <input class="input" id="cb-disc-price" placeholder="0.00" style="max-width:200px">
+          </div>
+        </div>
+        <div class="field">
+          <div class="field__label" data-i18n="cb.price.pctoff">Discount %</div>
+          <div class="cb-price-input">
+            <input class="input" id="cb-disc-pct" placeholder="0" style="max-width:160px">
+            <span class="cb-price-input__sym">%</span>
+          </div>
+        </div>
+        <div class="field__hint" id="cb-disc-hint" data-i18n="cb.price.disc-hint">Fill either field — the other updates from members' total.</div>
       </div>
     </section>
 
-    <!-- ④ 限量（Limit quantity）-->
+    <!-- ④ 庫存（Stock）：Edition 不限量/限量 + 唯讀目前在庫＝min(成員)（spec 5.1.5.4 §4 F4，比照建立商品 §4.1 F3.3）-->
     <section class="form-section">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cb.limit">Limit quantity</h3>
+        <h3 class="form-section__title" data-i18n="cb.stock.title">Stock</h3>
       </div>
-      <input class="input" placeholder="Unlimited" data-i18n-placeholder="cb.limit.ph">
-      <div class="field__hint" data-i18n="cb.limit.hint">Leave empty for unlimited</div>
+      <!-- 庫存版本：用 selection-card（同定價固定價/折扣卡），非 radio-card；包 .field 取 26px 下欄距（比照建立商品 Edition）-->
+      <div class="field">
+        <div class="selection-grid" id="cb-edition">
+          <button class="selection-card selection-card--active" type="button" data-cb-edition="unlimited">
+            <span class="selection-card__title" data-i18n="cb.edition.unlimited">Unlimited</span>
+            <span class="selection-card__sub" data-i18n="cb.edition.unlimited-hint">Sells as long as members are in stock — no extra cap.</span>
+          </button>
+          <button class="selection-card" type="button" data-cb-edition="limited">
+            <span class="selection-card__title" data-i18n="cb.edition.limited">Limited</span>
+            <span class="selection-card__sub" data-i18n="cb.edition.limited-hint">Add a hard cap on top of member stock.</span>
+          </button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:6px">
+        <!-- 組合硬上限：限量才出現 -->
+        <div class="field" data-when-cb-edition="limited" hidden>
+          <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span style="color:var(--error,#c00)">*</span></div>
+          <input class="input" id="cb-total" placeholder="0">
+          <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
+        </div>
+        <!-- 目前在庫：唯讀＝min(成員)（§6 ④），創作者不可手動編輯 -->
+        <div class="field" style="margin-bottom:0">
+          <div class="field__label" data-i18n="cb.avail.label">Available now</div>
+          <input class="input" id="cb-avail" readonly disabled>
+          <div class="field__hint" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</div>
+        </div>
+      </div>
     </section>
+
+    <!-- ⑤ 販售排程（Scheduled Sale）：啟用 toggle + 起訖日（spec 5.1.5.4 §4 F7；價格來源/時區待確認）-->
+    <section class="form-section">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cb.sale.title">Scheduled sale</h3>
+      </div>
+      <div class="control-row">
+        <div>
+          <div class="control-row__main" data-i18n="cb.sale.activate">Activate scheduled sale</div>
+          <div class="control-row__sub" data-i18n="cb.sale.activate-sub">Run a limited-time sale on this bundle</div>
+        </div>
+        <div class="switch" role="switch" aria-checked="false" tabindex="0" id="cb-sale-toggle"></div>
+      </div>
+      <div class="form-grid" data-cb-sale-fields hidden style="margin-top:12px">
+        <div class="field" style="margin-bottom:0">
+          <div class="field__label"><span data-i18n="cb.sale.start">Sale start date</span> <span style="color:var(--error,#c00)">*</span></div>
+          <input class="input" type="date" id="cb-sale-start">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <div class="field__label"><span data-i18n="cb.sale.end">Sale end date</span> <span style="color:var(--error,#c00)">*</span></div>
+          <input class="input" type="date" id="cb-sale-end">
+          <div class="field__hint" id="cb-sale-hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
+        </div>
+      </div>
+    </section>
+    </div><!-- /.preview-split__form -->
+
+    <!-- §4 F6 即時預覽欄：粉絲視角組合卡＋上架開關（比照建立商品 §5.2.5；spec 5.1.5.4 v1.8 / D091）-->
+    <aside class="preview-col">
+      <div class="preview-col__head">
+        <h3 class="preview-col__title" data-i18n="cb.preview.heading">Bundle preview</h3>
+        <p class="preview-col__sub" data-i18n="cb.preview.sub">How fans see it on Ztor</p>
+      </div>
+      <div class="preview-card">
+        <div class="preview-card__media"><i data-lucide="package" class="ztor-icon"></i></div>
+        <div class="preview-card__body">
+          <div class="preview-card__row">
+            <h4 class="preview-card__name is-empty" id="cb-pv-name" data-i18n="cb.pv.name">Bundle name</h4>
+            <span class="preview-card__price is-empty" id="cb-pv-price">$0.00</span>
+          </div>
+          <p class="preview-card__desc is-empty" id="cb-pv-desc" data-i18n="cb.pv.desc">Missing: description</p>
+        </div>
+      </div>
+      <!-- 上架開關（Show in my shop）：spec 5.1.5.4 §4 F6 -->
+      <div class="control-row">
+        <div>
+          <div class="control-row__main" data-i18n="cp.show">Show in my shop</div>
+          <div class="control-row__sub" data-i18n="cp.show.sub">Visible to fans in your storefront</div>
+        </div>
+        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
+      </div>
+    </aside>
   </div>
 
   </div><!-- /.wizard__sheet -->
-  <!-- §5.2.4 底部操作列（統一）：Save for later 左；主動作右 -->
-  <footer class="wizard__bottom">
-    <button class="btn btn--ghost" data-i18n="wiz.savelater">Save for later</button>
+  <!-- §5.2.4 底部操作列：主動作靠右（無「稍後再存」——頂部已有 Save as draft、離開走返回箭頭，spec §3/§F5 / D090）-->
+  <footer class="wizard__bottom" style="justify-content:flex-end">
     <div class="wizard__bottom-actions">
       <button class="btn btn--primary" id="cb-create" disabled data-i18n="cb.create">Create bundle</button>
     </div>
@@ -226,12 +368,46 @@
   const stockEl = document.getElementById('cb-stock');
   const notesEl = document.getElementById('cb-notes');
   const nameEl = document.getElementById('cb-name');
+  const descEl = document.getElementById('cb-desc');
+  const pvName = document.getElementById('cb-pv-name');
+  const pvPrice = document.getElementById('cb-pv-price');
+  const pvDesc = document.getElementById('cb-pv-desc');
   const fixedPrice = document.getElementById('cb-fixed-price');
   const priceHint = document.getElementById('cb-price-hint');
+  const discPrice = document.getElementById('cb-disc-price');
+  const discPct = document.getElementById('cb-disc-pct');
+  const discHint = document.getElementById('cb-disc-hint');
   const createBtn = document.getElementById('cb-create');
+  let discLast = 'pct';  // 折扣模式最後編輯的欄位，成員合計變動時以它為準重算另一欄（D088）
+  /* F4 庫存 + F7 販售排程（spec 5.1.5.4 §4 F4／F7）*/
+  const editionGrid = document.getElementById('cb-edition');
+  const totalInput = document.getElementById('cb-total');
+  const availEl = document.getElementById('cb-avail');
+  const saleToggle = document.getElementById('cb-sale-toggle');
+  const saleFields = document.querySelector('[data-cb-sale-fields]');
+  const saleStart = document.getElementById('cb-sale-start');
+  const saleEnd = document.getElementById('cb-sale-end');
+  const saleHint = document.getElementById('cb-sale-hint');
+  const limitedEdition = () => { const a = editionGrid && editionGrid.querySelector('.selection-card--active'); return !!a && a.dataset.cbEdition === 'limited'; };
+  const saleOn = () => saleToggle && saleToggle.getAttribute('aria-checked') === 'true';
 
   const numStock = v => (v === 'unlimited' || v === '∞') ? Infinity : (parseFloat(v) || 0);
   const fixedMode = () => { const a = pGrid.querySelector('.selection-card--active'); return !a || a.dataset.cbPrice === 'fixed'; };
+  const sumMembers = () => [...selected.querySelectorAll('[data-cb-item]')].reduce((a, it) => a + (parseFloat(it.dataset.price) || 0), 0);
+
+  /* 折扣雙欄連動（spec 5.1.5.4 §4 F3 / D088）：以成員原價合計 S 互換，填一欄算另一欄 */
+  function syncDiscount() {
+    if (!discPrice || !discPct) return;
+    const S = sumMembers();
+    if (S <= 0) return;
+    if (discLast === 'pct') {
+      const p = parseFloat(discPct.value);
+      if (!isNaN(p)) discPrice.value = (S * (1 - p / 100)).toFixed(2);
+    } else {
+      const v = parseFloat(discPrice.value);
+      if (!isNaN(v)) discPct.value = (Math.round((1 - v / S) * 1000) / 10).toString();
+    }
+  }
 
   function recompute() {
     const items = [...selected.querySelectorAll('[data-cb-item]')];
@@ -250,6 +426,22 @@
     stockEl.textContent = n === 0 ? '—'
       : (minStock === Infinity ? T('cb.stock.unlimited', 'Unlimited')
         : minStock + ' ' + T('cb.stock.min', '(min of members)'));
+
+    /* F4 目前在庫（唯讀）＝min(成員)，限量時再受硬上限約束（§6 ④）*/
+    let editionOk = true;
+    if (availEl) {
+      const cap = totalInput ? parseFloat(totalInput.value) : NaN;
+      let availNum = minStock;
+      if (limitedEdition() && !isNaN(cap)) availNum = Math.min(availNum, cap);
+      if (n === 0) {
+        availEl.value = '';
+        availEl.disabled = true;   // 還沒有成員→無在庫數量，用 disabled 空欄（不顯示「—」）
+      } else {
+        availEl.disabled = false;
+        availEl.value = availNum === Infinity ? T('cb.stock.unlimited', 'Unlimited') : String(availNum);
+      }
+      if (limitedEdition() && (isNaN(cap) || cap <= 0)) editionOk = false;  // 限量需設有效硬上限（Total quantity ＊）
+    }
 
     let notes = '';
     if (hasLimited) notes += '<div class="cb-note" data-i18n="cb.note.limited">A limited-edition member caps the bundle — it sells out when that member runs out.</div>';
@@ -274,9 +466,65 @@
         priceHint.className = 'field__hint cb-save';
         priceHint.textContent = T('cb.price.saves', 'Saves') + ' $' + (sum - price).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total') + ' $' + sum.toFixed(2);
       }
+    } else if (discHint) {
+      /* 折扣模式（D088）：依成員合計重算連動欄，並檢核折扣後價 ≤ 合計（折扣 ≥ 0）*/
+      if (sum > 0) syncDiscount();
+      discHint.removeAttribute('data-i18n');
+      const dp = discPrice ? parseFloat(discPrice.value) : NaN;
+      const pc = discPct ? parseFloat(discPct.value) : NaN;
+      if (sum <= 0) {
+        discHint.className = 'field__hint';
+        discHint.textContent = T('cb.disc.addfirst', 'Add members first to set a discount');
+        priceOk = false;
+      } else if (isNaN(dp) && isNaN(pc)) {
+        discHint.className = 'field__hint';
+        discHint.textContent = T('cb.price.disc-hint', "Fill either field — the other updates from members' total");
+        priceOk = false;
+      } else if (dp > sum) {
+        discHint.className = 'field__hint cb-warn';
+        discHint.textContent = '$' + dp.toFixed(2) + ' ' + T('cb.price.over', 'exceeds members total') + ' $' + sum.toFixed(2);
+        priceOk = false;
+      } else {
+        discHint.className = 'field__hint cb-save';
+        discHint.textContent = T('cb.price.saves', 'Saves') + ' $' + (sum - dp).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total') + ' $' + sum.toFixed(2);
+      }
     }
+    /* F7 販售排程：啟用時起訖日必填且結束晚於開始（§6.1）*/
+    let saleOk = true;
+    if (saleOn()) {
+      const s = saleStart ? saleStart.value : '', e = saleEnd ? saleEnd.value : '';
+      if (saleHint) saleHint.removeAttribute('data-i18n');
+      if (!s || !e) {
+        saleOk = false;
+        if (saleHint) { saleHint.className = 'field__hint'; saleHint.textContent = T('cb.sale.pending', 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).'); }
+      } else if (e <= s) {
+        saleOk = false;
+        if (saleHint) { saleHint.className = 'field__hint cb-warn'; saleHint.textContent = T('cb.sale.endbefore', 'End date must be after start date'); }
+      } else if (saleHint) {
+        saleHint.className = 'field__hint'; saleHint.textContent = T('cb.sale.pending', 'Sale price source & time zone pending spec (5.1.5.4 §4 F7).');
+      }
+    }
+
+    /* F6 即時預覽卡：依輸入更新粉絲視角組合卡（名稱／價格／描述）*/
+    if (pvName) {
+      const nm = nameEl ? nameEl.value.trim() : '';
+      pvName.textContent = nm || T('cb.pv.name', 'Bundle name');
+      pvName.classList.toggle('is-empty', !nm);
+    }
+    if (pvPrice) {
+      const pv = fixedMode() ? (fixedPrice ? fixedPrice.value.trim() : '') : (discPrice ? discPrice.value.trim() : '');
+      const num = parseFloat(pv);
+      pvPrice.textContent = isNaN(num) ? '$0.00' : '$' + num.toFixed(2);
+      pvPrice.classList.toggle('is-empty', isNaN(num));
+    }
+    if (pvDesc) {
+      const d = descEl ? descEl.value.trim() : '';
+      pvDesc.textContent = d || T('cb.pv.desc', 'Missing: description');
+      pvDesc.classList.toggle('is-empty', !d);
+    }
+
     const nameOk = nameEl && nameEl.value.trim() !== '';
-    createBtn.disabled = !(ok2 && nameOk && (fixedMode() ? priceOk : true));
+    createBtn.disabled = !(ok2 && nameOk && priceOk && editionOk && saleOk);
   }
 
   /* 定價模式切換 */
@@ -287,6 +535,31 @@
       recompute();
     });
   });
+
+  /* F4 庫存版本切換（不限量／限量）：限量才顯示硬上限欄 */
+  if (editionGrid) editionGrid.querySelectorAll('[data-cb-edition]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editionGrid.querySelectorAll('[data-cb-edition]').forEach(b => b.classList.toggle('selection-card--active', b === btn));
+      document.querySelectorAll('[data-when-cb-edition]').forEach(el => el.hidden = el.dataset.whenCbEdition !== btn.dataset.cbEdition);
+      recompute();
+    });
+  });
+  if (totalInput) totalInput.addEventListener('input', recompute);
+
+  /* F7 販售排程：toggle 開關顯示起訖日；起訖日改動即重算 */
+  if (saleToggle) {
+    const flip = () => {
+      const on = saleToggle.getAttribute('aria-checked') !== 'true';
+      saleToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+      saleToggle.classList.toggle('switch--on', on);
+      if (saleFields) saleFields.hidden = !on;
+      recompute();
+    };
+    saleToggle.addEventListener('click', flip);
+    saleToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+  }
+  if (saleStart) saleStart.addEventListener('input', recompute);
+  if (saleEnd) saleEnd.addEventListener('input', recompute);
 
   /* 近期瀏覽 ⇄ 已選：點候選列或移除鈕在兩區間搬移 */
   function pick(row) {
@@ -360,7 +633,10 @@
     if (d.type === 'cp:created') { addCreated(d.product || {}); closeAdd(); }
   });
   if (nameEl) nameEl.addEventListener('input', recompute);
+  if (descEl) descEl.addEventListener('input', recompute);
   if (fixedPrice) fixedPrice.addEventListener('input', recompute);
+  if (discPct) discPct.addEventListener('input', () => { discLast = 'pct'; syncDiscount(); recompute(); });
+  if (discPrice) discPrice.addEventListener('input', () => { discLast = 'price'; syncDiscount(); recompute(); });
 
   /* 商品搜尋過濾「近期瀏覽」(spec §4 F2)；無相符列顯示空狀態引導 New item (§6.6) */
   const search = document.querySelector('.picker__search-input');
@@ -382,7 +658,9 @@
   createBtn.addEventListener('click', () => {
     if (createBtn.disabled) return;
     const nm = (nameEl && nameEl.value.trim()) || '';
-    let pr = (fixedMode() && fixedPrice && fixedPrice.value.trim()) || '';
+    let pr = fixedMode()
+      ? ((fixedPrice && fixedPrice.value.trim()) || '')      // 固定價＝組合售價
+      : ((discPrice && discPrice.value.trim()) || '');        // 折扣模式＝折扣後價格（D088）
     if (pr && !/\$/.test(pr)) pr = '$' + pr;
     const q = new URLSearchParams({ posted: '1', type: 'bundle' });
     if (nm) q.set('name', nm);
@@ -393,10 +671,10 @@
   recompute();
 })();
 </script>
-<script src="js/icons.js?v=20260629d"></script>
-<script src="js/i18n.js?v=20260629d"></script>
-<script src="partials/wizard-chrome.js?v=20260629d"></script>
-<script src="js/reveal.js?v=20260629d"></script>
-<script src="js/devtools.js?v=20260629d"></script>
+<script src="js/icons.js?v=20260630c"></script>
+<script src="js/i18n.js?v=20260630c"></script>
+<script src="partials/wizard-chrome.js?v=20260630c"></script>
+<script src="js/reveal.js?v=20260630c"></script>
+<script src="js/devtools.js?v=20260630c"></script>
 </body>
 </html>

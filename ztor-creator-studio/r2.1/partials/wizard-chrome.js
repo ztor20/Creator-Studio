@@ -58,19 +58,32 @@
       status.addEventListener('click', function () { saving(); clearTimeout(timer); timer = setTimeout(saved, 700); });
     }
 
+    // 「儲存為草稿」手動鈕（§5.2.4）：手動儲存同時觸發自動儲存示意（寫入自動儲存紀錄）；
+    // 離開頁面時以最後一次自動儲存的紀錄為準。create-event 用自有狀態 JS（status 為 null），由該頁自行接。
+    var draftBtn = document.querySelector('[data-wizard-savedraft]');
+    if (draftBtn) {
+      draftBtn.addEventListener('click', function () {
+        edited = true;
+        draftBtn.disabled = true;                                  // 按下即 disable，存完才回 active
+        if (autosave && status && !isButton) autosaveTick();
+        clearTimeout(draftBtn._reTimer);
+        draftBtn._reTimer = setTimeout(function () { draftBtn.disabled = false; }, 700);  // 與儲存示意同步
+      });
+    }
+
     document.addEventListener('i18n:applied', renderStatus);
     renderStatus();
 
     // ── 離開確認彈窗（注入一次）──
     var modal = document.createElement('div');
-    modal.className = 'wizard-leave';
+    modal.className = 'leave-dialog';
     modal.innerHTML =
-      '<div class="wizard-leave__scrim" data-leave-cancel></div>' +
-      '<div class="wizard-leave__card" role="dialog" aria-modal="true">' +
-        '<button class="wizard-leave__close" type="button" data-leave-cancel aria-label="' + T('wiz.cancel', 'Cancel') + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
-        '<h2 class="wizard-leave__title" data-leave-title></h2>' +
-        '<p class="wizard-leave__body" data-leave-body></p>' +
-        '<div class="wizard-leave__actions" data-leave-actions></div>' +
+      '<div class="leave-dialog__scrim" data-leave-cancel></div>' +
+      '<div class="leave-dialog__card" role="dialog" aria-modal="true">' +
+        '<button class="leave-dialog__close" type="button" data-leave-cancel aria-label="' + T('wiz.cancel', 'Cancel') + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+        '<h2 class="leave-dialog__title" data-leave-title></h2>' +
+        '<p class="leave-dialog__body" data-leave-body></p>' +
+        '<div class="leave-dialog__actions" data-leave-actions></div>' +
       '</div>';
     document.body.appendChild(modal);
     var titleEl = modal.querySelector('[data-leave-title]');
@@ -92,7 +105,7 @@
         titleEl.textContent = T('wiz.leave.title.edited', 'Save before you leave?');
         bodyEl.textContent = T('wiz.leave.body.edited', 'You have edits on this page.');
         actionsEl.appendChild(mkBtn('btn btn--primary', T('wiz.leave.saveleave', 'Save and leave'), function () { if (autosave) autosaveTick(); leave(); }));
-        actionsEl.appendChild(mkBtn('btn btn--ghost', T('wiz.leave.discard', 'Leave without saving'), leave));
+        actionsEl.appendChild(mkBtn('btn btn--outline', T('wiz.leave.discard', 'Leave without saving'), leave));
       } else {
         titleEl.textContent = T('wiz.leave.title.clean', 'Leave this page?');
         bodyEl.textContent = T('wiz.leave.body.clean', 'You can come back anytime.');

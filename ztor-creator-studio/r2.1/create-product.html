@@ -3,29 +3,31 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260629d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260629d">
+<script src="js/theme.js?v=20260630c"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/button.css?v=20260630c">
 <link rel="stylesheet" href="ds-components/badge.css?v=20260630d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/radio-card.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260629d">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260629d">
-<link rel="stylesheet" href="shared.css?v=20260629d">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/input.css?v=20260630b">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260630c">
+<link rel="stylesheet" href="ds-components/spec-row.css?v=20260630c">
+<link rel="stylesheet" href="shared.css?v=20260630e">
 <style>
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
      型別卡 icon 變體／upload hero 已 promote 成 ds-components（form-section /
@@ -65,15 +67,9 @@
   /* 預覽欄／表單｜預覽兩欄版面用 ds-components/preview-column.css；此處只留本頁寬度與上內距。 */
   .wizard__body { max-width: 1000px; padding-top: 16px; }
 
-  /* 黑夜版背景↔footer 對調（僅本頁；其餘 wizard 頁維持 shared.css 預設）。
-     本頁：content＋header＝#191A1A（--surface-page）；footer＋canvas＝#2B2B2C（--surface-shell）。 */
-  [data-theme="dark"] .wizard__sheet,
-  [data-theme="dark"] .wizard__top { background: var(--surface-page); }
-  [data-theme="dark"] .wizard,
-  [data-theme="dark"] .wizard__bottom { background: var(--surface-shell); }
+  /* 黑夜版 wizard 配色已升進 shared.css（2026-06-30，create-flow 全頁標準）；本頁原頁內覆寫移除。 */
 
-  /* §4.1② 詳細規格：每筆＝規格名稱＋規格值兩欄並列＋行尾刪除鈕 */
-  .cp-spec-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; }
+  /* §4.1② 詳細規格列：見 ds-components/spec-row.css（.spec-row）。 */
   /* Embed 模式：由 create-bundle 的「New item」以 popup（iframe）開啟。
      彈窗空間有限——隱藏常駐側邊預覽、表單回單欄。 */
   body.cp-embed .preview-col { display: none; }
@@ -95,6 +91,7 @@
       </div>
       <div class="wizard__top-actions">
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
         <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-duplicate" hidden aria-label="Duplicate" data-i18n-aria-label="wiz.duplicate"><i data-lucide="copy" class="ztor-icon"></i></button>
         <button class="btn btn--icon btn--sm cp-edit-only" type="button" id="cp-delete-top" hidden aria-label="Delete" data-i18n-aria-label="wiz.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
       </div>
@@ -219,7 +216,7 @@
       <div class="field" data-cp-show="physical" style="margin-bottom:0">
         <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
         <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
-        <div id="cp-spec-rows"></div>
+        <div id="spec-rows"></div>
         <button class="btn btn--outline" id="cp-add-spec" style="align-self:flex-start;margin-top:4px" data-i18n="cp.spec.add">＋ Add spec</button>
       </div>
     </section>
@@ -268,6 +265,12 @@
         <div class="field">
           <div class="field__label"><span data-i18n="cp.original">Original price</span> <span class="text-sub" data-i18n="cp.original.if">if on sale</span></div>
           <input class="input" placeholder="$ 0.00">
+          <div class="field__hint" data-i18n="cp.optional-cap">Optional</div>
+        </div>
+        <!-- 成本價（Cost）· spec 5.1.5.2 §4.1 F3.2 / D085：選填、創作者內部成本、不對買家顯示（多規格時走逐規格表的 Cost 欄）-->
+        <div class="field">
+          <div class="field__label"><span data-i18n="cp.cost">Cost</span> <span class="text-sub" data-i18n="cp.cost.note">creator only</span></div>
+          <input class="input" placeholder="$ 0.00" id="cp-cost">
           <div class="field__hint" data-i18n="cp.optional-cap">Optional</div>
         </div>
       </div>
@@ -522,7 +525,7 @@
   const fLimitQty = document.getElementById('cp-limit-qty');
   const has = el => el && el.value.trim() !== '';
   const len = el => (el ? el.value.trim().length : 0);
-  const specCount = () => document.getElementById('cp-spec-rows').children.length;
+  const specCount = () => document.getElementById('spec-rows').children.length;
 
   /* ---- 多規格（Variations）模型 ---- */
   let varOptions = [];      // [{ name, values: [] }]
@@ -943,10 +946,10 @@
   });
 
   /* ---- 詳細規格 Specifications：每筆＝規格名稱＋規格值兩欄＋刪除（spec §4.1②）---- */
-  const specHost = document.getElementById('cp-spec-rows');
+  const specHost = document.getElementById('spec-rows');
   function addSpecRow() {
     const row = document.createElement('div');
-    row.className = 'cp-spec-row';
+    row.className = 'spec-row';
     row.innerHTML =
       '<input class="input" placeholder="' + esc(T('cp.spec.name.ph', 'e.g., Material')) + '" data-i18n-placeholder="cp.spec.name.ph">'
       + '<input class="input" placeholder="' + esc(T('cp.spec.value.ph', 'e.g., 100% organic cotton')) + '" data-i18n-placeholder="cp.spec.value.ph">'
@@ -958,7 +961,7 @@
   document.getElementById('cp-add-spec').addEventListener('click', addSpecRow);
   specHost.addEventListener('click', e => {
     const rm = e.target.closest('[data-spec-remove]');
-    if (rm) { rm.closest('.cp-spec-row').remove(); refresh(); }
+    if (rm) { rm.closest('.spec-row').remove(); refresh(); }
   });
 
   /* 即時預覽可開關、預設開啟（spec §4.5 v5.1 / D084）。markup 預設 body.preview-open + 面板 .is-open；
@@ -1012,10 +1015,10 @@
   setType(initType);
 })();
 </script>
-<script src="js/icons.js?v=20260629d"></script>
-<script src="js/i18n.js?v=20260629d"></script>
-<script src="partials/wizard-chrome.js?v=20260629d"></script>
-<script src="js/reveal.js?v=20260629d"></script>
-<script src="js/devtools.js?v=20260629d"></script>
+<script src="js/icons.js?v=20260630c"></script>
+<script src="js/i18n.js?v=20260630c"></script>
+<script src="partials/wizard-chrome.js?v=20260630c"></script>
+<script src="js/reveal.js?v=20260630c"></script>
+<script src="js/devtools.js?v=20260630c"></script>
 </body>
 </html>

@@ -188,18 +188,18 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 - **Geist** — H2 / H3 / H4, buttons, nav, eyebrow text
 - **Inter** — paragraph body copy (`<p>`), long-form descriptions, and alert text
 
-| Scale token | Family | Size | Weight | Line height | Tracking |
+| Scale token | Family | Size | Weight | Line height (`--lh-*`) | Tracking |
 |---|---|---|---|---|---|
-| `display-64` | Geist | `64px` | 400 | `64px` (1.0) | `-1.28px` |
-| `display-44` | Geist | `44px` | 500 | `46.2px` (1.05) | `-1px` |
-| `title-40` | Geist | `40px` | 500 | `42px` (1.05) | `-0.8px` |
-| `title-32` | Geist | `32px` | 500 | `35.2px` (1.1) | `-0.6px` |
-| `title-24` | Geist | `24px` | 500 | `28.8px` (1.2) | `-0.48px` |
-| `label-15` | Geist | `15px` | 500 | `15px` (1.0) | `-0.3px` |
-| `label-14` | Geist | `14px` | 700 | `17.5px` (1.25) | normal |
-| `body-16` | Inter | `16px` | 400 | `25.6px` (1.6) | normal |
-| `body-14` | Inter | `14px` | 400 | `21px` (1.5) | normal |
-| `caption-12` | Geist | `12px` | 500 | `15.6px` (1.3) | `0.05em` |
+| `display-64` | Geist | `64px` | 400 | `none` 1.0 | `-1.28px` |
+| `display-44` | Geist | `44px` | 500 | `tight` 1.1 | `-1px` |
+| `title-40` | Geist | `40px` | 500 | `tight` 1.1 | `-0.8px` |
+| `title-32` | Geist | `32px` | 500 | `tight` 1.1 | `-0.6px` |
+| `title-24` | Geist | `24px` | 500 | `snug` 1.2 | `-0.48px` |
+| `label-15` | Geist | `15px` | 500 | `none` 1.0 | `-0.3px` |
+| `label-14` | Geist | `14px` | 700 | `snug` 1.2 | normal |
+| `body-16` | Inter | `16px` | 400 | `loose` 1.6 | normal |
+| `body-14` | Inter | `14px` | 400 | `relaxed` 1.5 | normal |
+| `caption-12` | Geist | `12px` | 500 | `normal` 1.3 | `0.05em` |
 
 Each scale token is available as CSS custom properties in `_tokens.css`, for
 example `--type-title-40-size`, `--type-title-40-weight`,
@@ -216,17 +216,25 @@ Foundation.
 
 **Weight scale (`--fw-*`)** — 2026-06-23 起全站 `font-weight` 一律引用 4 階 primitive：`--fw-regular 400 · --fw-medium 500 · --fw-semibold 600 · --fw-bold 700`（舊有 1 個 650 已併入 semibold）。`--type-*-weight` 也改為指向這層。
 
+**Line-height scale (`--lh-*`)** — 2026-06-30 起把行距收成第 4 個原始字型維度（繼字體／字級／字重），全站 `line-height` 一律引用這 6 階 unitless primitive（命名對齊 shadcn/Tailwind 的 `leading-*`，數值為這套資料密集 UI 調得更緊的版本）：
+
+`none 1 · tight 1.1 · snug 1.2 · normal 1.3 · relaxed 1.5 · loose 1.6`
+
+上方各 `--type-*-line-height` 都改為指向這層（例：`--type-body-14-line-height: var(--lh-relaxed)`）。哪個 role 綁哪一階見 §2.3。先前散落的 8 個 per-role 值（1.05 / 1.25 等）收斂進這 6 階：3 個標題從 1.05→1.1（單行幾乎無差異）、`label-14` 從 1.25→1.2，其餘原值不動；內文 1.5 / 1.6 與 caption 1.3 完全保留。元件層另有約 12 種硬寫的 `line-height`（含 1.35 / 1.4 / 1.45）尚未走 token，列為後續清理，不在本次範圍。
+
 **Font families (`--font-*`)** — 四個家族：`--font-display` Geist（H1/display）· `--font-ui` Geist（H2–H4/UI）· `--font-body` Inter（內文）· `--font-mono` Geist Mono。每個 stack 末端接自架 `Noto Sans TC`（CJK fallback；繁中模式由 `:lang(zh-Hant)` 提到第一位）。base 宣告在 `_tokens.css`、Noto fallback 與 `@font-face` 在 `ds-components/fonts.css`。
 
 Tight negative tracking (`-1.28px` on H1, `-0.8px` on H2) is the Geist signature.
 
 ### 1.3 Spacing
 
-Dense scale — many micro-paddings (1–6px) give fine inner spacing on a data-dense UI. Effective rhythm:
+Dense scale — many micro-paddings give fine inner spacing on a data-dense UI. Effective rhythm (from全庫 ~443 個實際 px 值，高頻在 12/10/8/16/14/6/4)：
 
-`1, 4, 6, 8, 10, 12, 14, 16, 24, 32, 48, 64, 80`
+`2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32, 48, 64, 80`
 
 Section-level vertical rhythm is closer to `80–96px`. Card internal padding is typically `16–24px`. Footer uses `80px` vertical padding.
+
+> **Token 現況（誠實標註）**：`--space-1…16` primitive 已定義，但為純 4 倍數（`4 8 12 16 20 24 32 40 48 64`），缺了上面密集刻度大量使用的 `6 / 10 / 14 / 18`；目前幾乎未採用（只有 `--space-shell-gutter`），實況以硬寫 px 為主。間距沒有語意 role 層（見 §2.3）。全面 token 化列為後續清理。
 
 ### 1.4 Radius
 
@@ -255,6 +263,8 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | `shadow-raise` | `0 1px 2px rgba(0,0,0,0.06)` (dark `0.5`) | Low control raise — primary buttons, input drop, segmented active |
 | `shadow-raise-strong` | `0 1px 2px rgba(0,0,0,0.16)` (dark `0.6`) | Floating control — switch knob, chart marker drop |
 | `shadow-hairline` | `0 0 0.833px rgba(0,0,0,0.2)` | Sub-pixel border simulation |
+| `shadow-header` | `0 3px 16px rgba(0,0,0,0.10)` (dark `0.45`) | Sticky wizard header 下緣柔和投影（由 header 後內縮圓角色塊投出，只露下緣） |
+| `shadow-seam` | `7px 0 20px -4px rgba(12,10,9,0.16)` (dark `0.6`) | 上層主面板向右蓋向相鄰下層（E-Shop 主面板疊在預覽上） |
 
 **Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This is the dominant elevation pattern across the app. **Exception (2026-06-12)**: outline buttons now draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears; shadows-as-edges remains the pattern for cards / popovers.
 
@@ -295,7 +305,11 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 >
 > In `_tokens.css` these are CSS custom properties whose **names already encode the semantic role** (`--background`, `--foreground-muted`, `--primary`, `--status-success`). The raw values from Pillar 1 are substituted at the `:root` level.
 
+本層分六類，與 `design-system.html` 對齊：**2.1 顏色 · 2.2 字體 · 2.3 間距 · 2.4 控件尺寸 · 2.5 陰影 · 2.6 跨元件規則**。這裡的值為**亮色**（角色預設）；深色覆寫只記在 Pillar 3。html 版每一類都有即時渲染。
+
 ### 2.1 Color Roles
+
+亮色值；深色見 §3.1。`[ext]` = creator 擴充（shadcn 無此名）。
 
 | Role | Token | Light value | References Pillar 1 |
 |---|---|---|---|
@@ -305,55 +319,72 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Surface — muted** (alt cards, hover) | `--muted` | `#FAFAFA` | softer than canvas |
 | **Surface — inverse** (footer slab) | `--surface-inverse` | `#000000` | pure black |
 | **Foreground — default** (body / titles) | `--foreground` | `#000000` | |
-| **Foreground — muted** (descriptions) | `--foreground-muted` | `rgba(0,0,0,0.7)` | |
+| **Foreground — muted** (descriptions) | `--foreground-muted` | `#4D4D4D` | [ext] |
 | **Foreground — subtle** (meta, eyebrow) | `--muted-foreground` | `#737373` | |
-| **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | |
+| **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | [ext] |
 | **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
-| **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 |
+| **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 [ext] |
 | **Primary — foreground** (text on orange) | `--primary-foreground` | light `#FFFFFF` / dark `#171717` | 使用者指定 2026-06-22：白天白字、黑夜黑字（白字 ~1.9:1 < WCAG AA） |
 | **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
-| **Status — success** | `--status-success` | `#22C55E` | green.500 |
+| **Status — success** | `--status-success` | `#22C55E` | green.500 [ext] |
 | **Status — error** | `--destructive` | `#DA314A` | red.500 |
-| **Status — info** | `--status-info` | `#266DF0` | blue.500 |
-| **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots |
+| **Status — info** | `--status-info` | `#266DF0` | blue.500 [ext] |
+| **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots [ext] |
+| **Status — accent** | `--status-accent` | `#8B5CF6` | purple — extra category hue [ext] |
 
-**Reserved**: `--primary` (orange) is **only** for primary CTA + sticky-note + brand mark + hero accent. Never for nav active states, KPI highlights, or status pills — those use `--muted` instead.
+**Naming aligns with shadcn/ui** (issue #11): semantic tokens use shadcn's vocabulary so shadcn code + AI map directly; names shadcn lacks are kept as `[ext]`. (Primary-reserved usage rule moved to §2.6.)
 
-### 2.2 Spacing Roles
-
-Built directly off Pillar 1's spacing scale (no custom Role names). Project pages use scale values inline:
-- `--gap-tight` = 8px (icon-button clusters)
-- `--gap-default` = 16px (bento grid children, KPI rows)
-- `--gap-section` = 24px (mt-24 utility, between major surfaces)
-- `--gap-page` = 32px (page padding, header padding)
-
-### 2.3 Typography Roles
+### 2.2 Typography Roles
 
 | Role | Token | Stack | Used for |
 |---|---|---|---|
-| Display | `--font-display` | `'Geist', 'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
+| Display | `--font-display` | `'Geist', system-ui, sans-serif` | H1 / page intros / KPI values |
 | UI | `--font-ui` | `'Geist', system-ui, sans-serif` | Buttons, nav, labels, badges, all chrome text |
 | Body | `--font-body` | `'Inter', system-ui, sans-serif` | Long-form prose, alert descriptions |
-| CJK fallback | (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
+| Mono | `--font-mono` | `'Geist Mono', ui-monospace, …` | Code, tabular figures, dev tags |
+| CJK fallback | `--font-cjk` (inside all stacks) | `'Noto Sans TC'` | 繁中 mode (i18n.js) — self-hosted subset woff2 in `fonts/` |
 
 Concrete typography usage is assigned as role aliases that point back to the
-neutral §1.2 type scale:
+neutral §1.2 type scale. Each role resolves the four raw dimensions into one
+decision — family · size · weight · **leading** · tracking — where **leading
+binds to the `--lh-*` scale** (§1.2). This matrix is the standard; component CSS
+references the role, never raw values (html 版另有每個角色的即時渲染):
 
-| Usage role | Foundation scale |
-|---|---|
-| `--type-display-1-*` | `--type-display-64-*` |
-| `--type-page-title-*` | `--type-display-44-*` |
-| `--type-h2-*` | `--type-title-40-*` |
-| `--type-h3-*` | `--type-title-32-*` |
-| `--type-h4-*` | `--type-title-24-*` |
-| `--type-section-label-*` | `--type-label-14-*` |
-| `--type-button-label-*` | `--type-label-15-*` |
-| `--type-body-lg-*` | `--type-body-16-*` |
-| `--type-body-*` | `--type-body-14-*` |
-| `--type-caption-*` | `--type-caption-12-*` |
+| Usage role | ← Foundation | Family | Size | Weight | Leading (`--lh-*`) | Tracking |
+|---|---|---|---|---|---|---|
+| `--type-display-1-*` | `display-64` | Geist | 64 | 400 | `none` 1 | `-1.28px` |
+| `--type-page-title-*` | `display-44` | Geist | 44 | 500 | `tight` 1.1 | `-1px` |
+| `--type-h2-*` | `title-40` | Geist | 40 | 500 | `tight` 1.1 | `-0.8px` |
+| `--type-h3-*` | `title-32` | Geist | 32 | 500 | `tight` 1.1 | `-0.6px` |
+| `--type-h4-*` | `title-24` | Geist | 24 | 500 | `snug` 1.2 | `-0.48px` |
+| `--type-section-label-*` | `label-14` | Geist | 14 | 700 | `snug` 1.2 | normal |
+| `--type-button-label-*` | `label-15` | Geist | 15 | 500 | `none` 1 | `-0.3px` |
+| `--type-body-lg-*` | `body-16` | Inter | 16 | 400 | `loose` 1.6 | normal |
+| `--type-body-*` | `body-14` | Inter | 14 | 400 | `relaxed` 1.5 | normal |
+| `--type-caption-*` | `caption-12` | Geist | 12 | 500 | `normal` 1.3 | `0.05em` |
 
-### 2.4 Elevation
+### 2.3 Spacing
+
+**誠實標註：目前沒有語意間距 role 層。**（先前此處列的 `--gap-tight/default/section/page` 是不存在的虛構 token，2026-06-30 移除。）實況是：
+
+- 元件**直接寫 px**，落在 Pillar 1 §1.3 的密集節奏：`2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 32 · 48 · 64 · 80`（全庫實測 ~443 處硬寫 px，高頻在 12/10/8/16/14/6/4）。
+- `--space-1…16` primitive **已定義但尚未採用**（只有 `--space-shell-gutter` 在用），且是純 4 倍數、缺了真實大量使用的 6/10/14/18，所以對不上現況——這是它沒被採用的原因。
+- 結論：把上面的密集刻度視為實際間距系統；全面 token 化（收斂硬寫 px → primitive）列為後續清理，不是現在的宣稱。
+
+### 2.4 Control sizes
+
+按鈕與表單控件共用一套高度級（全部 4 的倍數），同尺寸的 input 與 button 對齊。高度一律走 `--control-h-*`，不寫死。
+
+| Token | Height | Use |
+|---|---|---|
+| `--control-h-xs` | 28px | compact toolbar (optional) |
+| `--control-h-sm` | 36px | dense forms / inline |
+| `--control-h-md` | **44px** | **default** — button / input / select |
+| `--control-h-lg` | 52px | prominent CTA |
+| `--control-h-xl` | 60px | hero CTA (optional) |
+
+### 2.5 Elevation
 
 | Role | Token | Used for |
 |---|---|---|
@@ -363,6 +394,14 @@ neutral §1.2 type scale:
 | Popover | `--shadow-popover` | Nav dropdowns, account menu (slightly tighter rim) |
 
 No higher elevation than Card. Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
+
+### 2.6 Cross-component rules
+
+Principles every component obeys (not a token scale; html 版各附 live 示例):
+
+- **Focus**：全控件、兩模式單一配方 — `outline: 2px solid var(--ring); outline-offset: 2px`（清單列用 `-2px` 內嵌）。不再各元件 `outline`／`box-shadow` 各寫各的。
+- **Surface-layer contrast**：元件靠「填色／邊框／陰影跟所在那層的對比」被看見，**填色和背景同色就會消失**。白填要靠 1px 邊框在白底成形；跨層安全用實線 border，別用填色當邊或純陰影當邊。做任何有填色的元件，在**最深**那層目視驗證（按鈕白/灰底實例見 §4.2）。
+- **Reserved — `--primary`**：橘色**只**用於主要 CTA + 便利貼 + 品牌標記 + hero 強調。絕不用在 nav active、KPI 高亮或狀態 pill——那些用 `--muted`/`--accent`。
 
 ---
 
@@ -466,7 +505,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (`--highlight` = orange tint) | [kpi.css](./ds-components/kpi.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour) | [kpi.css](./ds-components/kpi.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
@@ -478,6 +517,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
 | Header (topbar) | 🟠 organism | ✓ App | All pages — canonical 64px app topbar (`.app-topbar`, injected by `sidebar.js`); hover mega-dropdown nav + action cluster | [header.css](./ds-components/header.css) |
 | Global nav · sidebar mode | 🟠 organism | ✓ App | Display-mode alternative to the topbar (spec §6.9 / D016): 248px left rail (`.app-sidebar`, same `sidebar.js`) sits on `--surface-shell`; dropdowns → expandable groups（`.app-sidebar__group`，accordion，現役）。另保留 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）可切回。Driven by `data-nav-mode` (theme.js) | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
+| Admin-layer nav · Tier 0/1 | 🟠 organism | ✓ App | Platform-operator (Admin) variant of the topbar (spec §4.1 / D086): roster page shows a "Creator Management" marker + locked Tier-1 items (`.app-topbar__link--locked`); inside a creator workspace, a back-to-roster icon (`.app-topbar__back`) sits **before** the logo + "Managing &lt;creator&gt;" chip (`.app-topbar__context`). Active creator held in `window.ztorCreator` (localStorage `ztor.activeCreator`); switched via devtools "Creator · Admin" cheat code. Used by `creators.html` (Tier 0) and every Tier-1 page | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Footer | 🟠 organism | ✓ App | Black hi-contrast footer slab | [footer.css](./ds-components/footer.css) |
 | Data list | 🟠 organism | ✓ App | Recent earnings, transactions, payouts, products, projects (row-divider) | [data-list.css](./ds-components/data-list.css) |
 | Picker | 🟠 organism | ✓ App | Search + scrollable pick-list（Create bundle items、IP linker） | [picker.css](./ds-components/picker.css) |
@@ -510,6 +550,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.5）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
+| Leave dialog | 🟠 organism | ✓ App | 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用。兩態同殼：有未存編輯→問儲存（儲存並離開 primary／不儲存就離開 outline）；未編輯→純離開（離開 primary）。`.leave-dialog`[data-open]＞`__scrim`＋`__card`＞`__close`/`__title`/`__body`/`__actions`（堆疊滿寬 btn）；Esc/scrim/× 取消。2026-06-29 自 shared.css `.wizard-leave*` promote | [leave-dialog.css](./ds-components/leave-dialog.css) |
+| Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
 | Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；工具列用 `.split-button--toolbar`（36px 高、caret 36×36、icon 16×16）；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
@@ -520,6 +562,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
+| Edge shadow（工具）| ⚪ utility | ✓ Project | `.edge-shadow`：把 `--shadow-header` 變成「只露下緣、內縮、兩端漸淡」的邊緣陰影（`::before`＋clip）。wizard header／電子商店庫存條共用；其他元素加 class 即覆用 | [shared.css](./shared.css) |
 | Segmented control | 🟡 molecule | ✓ Project | Compact chart view switcher and mode toggles | [chart.css](./ds-components/chart.css) |
 | Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
 | Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用 | [progress-stepper.css](./ds-components/progress-stepper.css) |
@@ -2901,11 +2944,16 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` shows the "ztor." mark.
 
+**Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
+
+**Thumbnail lazy-load** (spec 5.1.5 F4 / D094) — real thumbnails (`.product-list__image img`) carry `loading="lazy"` (fetch only when scrolled into view). The E-Shop demo lists use no-image CSS placeholders (`__image--placeholder`, self-hosted, no CDN), so lazy-load is a convention for real thumbnails with no visible effect in the demo. List batching defaults to 25/batch (spec); demo uses a smaller batch to surface "Load more".
+
 **States**
 
 | State | Selector | Change |
 |---|---|---|
 | hover | `.product-list__row:hover` | bg `--muted` |
+| draft | `.product-list__title--draft` · `.product-list__empty` | Draft / unfilled cells show muted placeholder — name → "Untitled / 未命名", other cols → "—" (spec 5.1.5 F4 / D092, all three E-Shop panels) |
 | ≤760px | `@media (max-width: 760px)` | header hidden; rows restack to 2-col grid |
 
 **Token usage** (→ Pillar 2 Role)
@@ -3138,7 +3186,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 #### Dashboard home (Layout)
 
 - **trigger**: The landing surface after login — the creator needs a one-glance read of money, alerts, and what to do next.
-- **must**: Lead with the full-bleed Hero band, then a KPI bento row (earnings / pending / fans / live items) using `KPI` (`--highlight` for the headline metric); pair an `Alert` panel ("Actions needed") beside a `Data list` of recent earnings; every money figure states its state (available vs pending) inline.
+- **must**: Lead with the full-bleed Hero band, then a KPI bento row (earnings / pending / fans / live items) using `KPI` (headline metric carried by display size, not colour); pair an `Alert` panel ("Actions needed") beside a `Data list` of recent earnings; every money figure states its state (available vs pending) inline.
 - **should**: Follow with a trend `Chart` + source breakdown pair; keep orange for one structural accent per viewport (hero fill OR a single highlight tile, not both competing).
 - **must-not**: Never stack two orange highlight tiles side by side; never show a bare number without its currency + state; never push primary actions below the fold.
 - **_edge-cases**: `empty` → first-run hero with "Create your first project" CTA, KPI tiles show `—` not `0`; `error` → KPI tile shows last-known value + a stale badge; `new-user` → checklist card replaces the trend pair; `mobile` → bento collapses to span-12 single column; `offline` → KPI tiles dim, banner "Showing last synced data".

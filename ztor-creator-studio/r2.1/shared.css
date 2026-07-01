@@ -16,11 +16,11 @@
 /* Header is the canonical DS component — single source in ds-components/header.css.
    All product pages load shared.css, so this @import gives every page the topbar
    from the one place; design-system.html links header.css directly. */
-@import url("ds-components/header.css?v=20260625b");
-@import url("ds-components/icon.css?v=20260625b");
-@import url("ds-components/page-intro.css?v=20260625b");
-@import url("ds-components/field-system.css?v=20260625b");
-@import url("ds-components/settings.css?v=20260625b");
+@import url("ds-components/header.css?v=20260626j");
+@import url("ds-components/icon.css?v=20260626j");
+@import url("ds-components/page-intro.css?v=20260626j");
+@import url("ds-components/field-system.css?v=20260626j");
+@import url("ds-components/settings.css?v=20260626j");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -386,6 +386,61 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
     background: var(--background); border-radius: 0; overflow: visible;
   }
 }
+/* ---- Platform-operator (Admin) layer nav · spec §4.1 / D086 ----
+   Back-to-roster icon before the logo + "Managing <creator>" context chip
+   (creator scope); "Creator Management" marker + locked Tier-1 items (roster).
+   Lives with the nav shell; the Header DS section documents it. */
+.app-topbar__back {
+  display: inline-grid; place-items: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.app-topbar__back:hover { background: var(--muted); color: var(--foreground); }
+.app-topbar__context {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 8px; border-radius: 999px;
+  background: var(--muted); color: var(--foreground);
+  font-size: var(--fs-13); font-weight: var(--fw-medium);
+  white-space: nowrap; flex-shrink: 0;
+}
+.app-topbar__context-label { color: var(--muted-foreground); font-weight: var(--fw-regular); }
+.app-topbar__context--admin {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--foreground);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.app-topbar__context--admin .ztor-icon { color: var(--primary); }
+.app-topbar__link--locked {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 10px;
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+.app-topbar__link--locked .ztor-icon { color: var(--muted-foreground); }
+/* Sidebar-mode equivalents */
+.app-sidebar__back {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; margin: 0 0 4px; border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  font-size: var(--fs-13); font-weight: var(--fw-medium);
+}
+.app-sidebar__back:hover { background: var(--muted); color: var(--foreground); }
+.app-sidebar__context { display: flex; flex-direction: column; gap: 1px; padding: 6px 12px 12px; }
+.app-sidebar__context-label { font-size: var(--fs-11); color: var(--muted-foreground); }
+.app-sidebar__context-name { font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--foreground); }
+.app-sidebar__context--admin {
+  flex-direction: row; align-items: center; gap: 8px;
+  padding: 8px 12px; margin: 0 0 8px; border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+  font-size: var(--fs-13); font-weight: var(--fw-semibold);
+}
+.app-sidebar__context--admin .ztor-icon { color: var(--primary); }
+.app-sidebar__link--locked {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+
 .page {
   /* Top padding bumped 32 → 48px on 2026-05-28 after .page-intro__eyebrow was
      retired — title needs more breathing room above without the eyebrow row. */
@@ -843,7 +898,28 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   z-index: 30;
   display: flex;
   flex-direction: column;
-  background: var(--card);   /* 無底部分隔線（2026-06-23 使用者指定）；content 同為 surface，header 自然融入 */
+  background: var(--card);   /* 無底部分隔線；改用下層 Header shadow 色塊 */
+}
+/* ── Edge shadow（可覆用工具）─────────────────────────────────────────
+   在元素「下緣」產生一道柔和、內縮、兩端圓角漸淡(taper)、不外漏的陰影。
+   作法：一個與元素等高、左右內縮、下方大圓角的透明圖層投 --shadow-header，
+   再用 clip-path 只露出元素「下方」那一段 → 只看到下緣陰影、兩端因圓角收尾、
+   上緣與兩側都不外漏（不需另做不透明上層遮蓋）。套在任何「已定位」元素上即可。
+   可調：--edge-shadow-inset（左右內縮，預設 28px）、--edge-shadow-radius（圓角，預設 64px）。
+   忠實照 Figma 720:1763 的分層結構（色塊藏在元素後、只露下緣）。 */
+.edge-shadow { position: relative; }
+.edge-shadow::before,
+.wizard__top::before {   /* 用 ::before（避開 .alert--page-top 等用 ::after 的元件）；.wizard__top 已 sticky */
+  content: "";
+  position: absolute;
+  left: var(--edge-shadow-inset, 28px);
+  right: var(--edge-shadow-inset, 28px);
+  top: 0;
+  bottom: 0;
+  border-radius: 0 0 var(--edge-shadow-radius, 64px) var(--edge-shadow-radius, 64px);
+  box-shadow: var(--shadow-header);
+  clip-path: inset(100% 0 -40px 0);   /* 只露出元素下方那段陰影 */
+  pointer-events: none;
 }
 /* §5.2.4 建立流程頂部框架（2026-06-23 改版 v2）：單列三欄。
    col1 左＝.wizard__top-lead（返回箭頭＋標題/副標，靠左）｜
@@ -909,27 +985,8 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .wizard__top-actions .wizard__save-status,
 .wizard__top-actions .ce-save-status { margin-inline-end: 12px; }
 
-/* ── 返回離開確認彈窗（共用，由 partials/wizard-chrome.js 注入並控制）── */
-.wizard-leave { position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; }
-.wizard-leave[data-open] { display: flex; }
-.wizard-leave__scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
-.wizard-leave__card {
-  position: relative; z-index: 1;
-  width: min(420px, calc(100vw - 40px));
-  background: var(--card); border-radius: var(--radius-lg);
-  padding: 24px; box-shadow: var(--shadow-popover);
-}
-.wizard-leave__close {
-  position: absolute; top: 12px; right: 12px;
-  display: inline-grid; place-items: center; width: 32px; height: 32px;
-  border: 0; background: transparent; cursor: pointer; color: var(--foreground-muted); border-radius: var(--radius-sm);
-}
-.wizard-leave__close:hover { color: var(--foreground); background: var(--muted); }
-.wizard-leave__close .ztor-icon { width: 18px; height: 18px; }
-.wizard-leave__title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); margin: 0 6px 6px 0; }
-.wizard-leave__body { color: var(--foreground-muted); font-size: var(--fs-14); margin: 0 0 20px; }
-.wizard-leave__actions { display: flex; flex-direction: column; gap: 8px; }
-.wizard-leave__actions .btn { width: 100%; justify-content: center; }
+/* 返回離開確認彈窗已 promote 成元件 → ds-components/leave-dialog.css（2026-06-29）*/
+
 /* .stepper（舊：數字圓圈＋分隔線）已於 2026-06-23 退役 → 改用
    ds-components/progress-stepper.css 的 .progress-stepper（細軌＋漸層填充）。
    create-event / create-project / register-ip 皆已遷移。 */
@@ -959,14 +1016,16 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .wizard__bottom-actions { display: flex; gap: 8px; }
 
-/* 黑夜版 wizard 配色（2026-06-24 使用者指定）：content＋header＝較淺的 #2B2B2C（浮起的卡），
-   footer＋其下 canvas＝最深的 #191A1A（卡浮在深底上、圓角下緣露出深底）。
+/* 黑夜版 wizard 配色（2026-06-30 改版，升進 DS）：content＋header＝最深的 #191A1A（沉下的內容卡），
+   footer＋其下 canvas＝較淺的 #2B2B2C（卡浮在較淺底上）。此為 create-flow 全頁標準，
+   原 create-product 的頁內覆寫已移除、改由此處統一提供。
    用 dark token 覆寫（--surface-shell=#2B2B2C／--surface-page=#191A1A），不寫裸 hex、不動全域 token；
-   只在 dark mode 生效，淺色模式維持 content=白／footer=#F5F5F5。 */
-[data-theme="dark"] .wizard { background: var(--surface-page); }          /* 深底 canvas（圓角下緣露出）*/
-[data-theme="dark"] .wizard__sheet { background: var(--surface-shell); }   /* content 卡 #2B2B2C */
-[data-theme="dark"] .wizard__top { background: var(--surface-shell); }     /* header 同 content #2B2B2C（不再半透明）*/
-[data-theme="dark"] .wizard__bottom { background: var(--surface-page); }   /* footer #191A1A */
+   只在 dark mode 生效，淺色模式維持 content=白／footer=#F5F5F5。
+   2026-06-24 原版為相反配色（content #2B2B2C 淺、canvas #191A1A 深）；本次依使用者確認以 create-product 配色為準。 */
+[data-theme="dark"] .wizard { background: var(--surface-shell); }          /* canvas #2B2B2C（較淺，卡浮其上）*/
+[data-theme="dark"] .wizard__sheet { background: var(--surface-page); }     /* content 卡 #191A1A（最深）*/
+[data-theme="dark"] .wizard__top { background: var(--surface-page); }       /* header 同 content #191A1A */
+[data-theme="dark"] .wizard__bottom { background: var(--surface-shell); }   /* footer #2B2B2C */
 
 /* 窄螢幕 fallback：回到一般文件捲動（content 卡不內捲、footer 黏底、不做圓角）。 */
 @media (max-width: 900px) {

@@ -132,8 +132,8 @@ while IFS= read -r f; do
       rm -f "$SITE/$f"; echo "$f" >> "$DELETED"
     fi
   else
-    # 你動過：若剛好和上游一樣就無事，否則衝突
-    if [ $mex -eq 1 ] && [ $lex -eq 1 ] && cmp -s "$SITE/$f" "$M/$f"; then
+    # 你動過：若你和上游的結果一致就無事（都刪、或都改成相同內容），否則衝突
+    if [ $mex -eq $lex ] && { [ $mex -eq 0 ] || cmp -s "$SITE/$f" "$M/$f"; }; then
       :
     else
       echo "$f" >> "$CONFLICTS"
