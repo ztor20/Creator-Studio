@@ -1,0 +1,41 @@
+/* ============================================================
+   search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
+   ------------------------------------------------------------
+   收合時只見放大鏡 icon 鈕；展開時滑開成 field-pill 輸入（自帶放大鏡＋✕）。
+   任一時刻只露一個放大鏡。內層重用既有 .field-pill（不重造輸入框），
+   本元件只負責「觸發鈕 ↔ 可過渡外殼」這一層。開合的 .is-open 由頁面 JS 切換。
+   Promoted 2026-07-01 from e-shop.html inline（F3 工作列搜尋）。
+
+   anatomy
+     .search-collapse
+       <button.btn.btn--icon.search-collapse__toggle>   觸發（放大鏡）
+       <label.field-pill.search-collapse__field>        可過渡外殼（包 field-pill）
+         .field-pill__input + <button.search-collapse__close>（✕）
+   states：.is-open（展開）
+   ============================================================ */
+.search-collapse { display: flex; align-items: center; }
+
+.search-collapse__field {
+  width: 0; min-width: 0;
+  padding-left: 0; padding-right: 0;
+  opacity: 0; overflow: hidden;
+  border-color: transparent;
+  transition: width var(--duration) var(--easing),
+              opacity var(--duration) var(--easing),
+              padding var(--duration) var(--easing);
+}
+.search-collapse.is-open .search-collapse__field {
+  width: 240px;
+  padding-left: 12px; padding-right: 4px;
+  opacity: 1;
+  border-color: var(--border);
+}
+.search-collapse.is-open .search-collapse__toggle { display: none; }
+.search-collapse__close { flex: none; margin-left: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .search-collapse__field { transition: none; }
+}
+@media (max-width: 760px) {
+  .search-collapse.is-open .search-collapse__field { width: 180px; }
+}

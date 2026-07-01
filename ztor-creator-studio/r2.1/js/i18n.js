@@ -1595,6 +1595,8 @@
     /* Album 曲目管理器（§4.2 F11.1）*/
     'cp.album.upload':        { en: 'Upload File',                   zh: '上傳檔案' },
     'cp.album.upload-hint':   { en: 'Suggested file type: mp3, mp4', zh: '建議檔型：mp3、mp4' },
+    'cp.album.empty':         { en: 'No files uploaded yet',         zh: '尚未上傳任何檔案' },
+    'cp.album.track.play':    { en: 'Play',                          zh: '播放' },
     'cp.album.uploadingword': { en: 'is uploading…',                zh: '上傳中…' },
     'cp.album.justnow':       { en: 'just now',                      zh: '剛剛' },
     'cp.album.viewlyrics':    { en: 'View Lyrics',                   zh: '查看歌詞' },
