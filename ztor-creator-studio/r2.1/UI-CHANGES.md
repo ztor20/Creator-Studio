@@ -6,6 +6,36 @@
 
 ---
 
+## 2026-06-30 · E-Shop 列表控制組內縮吸頂，避開 shell 圓角（B 反饋 · F3 長列表）
+
+- 範圍：`e-shop.html` 頁內樣式；同步 BUILD-SPEC／requirements-map／修改记录。未改 `tabs.css`、`filter-tabs.css` 等共用元件。
+- 動機：使用者指出商品列表變長時，可考慮讓篩選欄或頂部卡片吸頂；但吸頂層不能與頁面頂部兩個大圓角、低庫存提醒條衝突。專業處理應讓「類型 tabs＋工具列動作＋狀態篩選」作為列表控制組整體吸頂，而不是只讓第二排狀態列貼到 `top:0`。
+- 規格：桌機（≥901px）`.eshop-list-controls` 整組 `position: sticky`；預設 `top:16px`，低庫存條存在時以 `:has(#eshop-stock-bar)` 改 `top:56px`；控制組加 `8px 0 10px` 內距、面板底色與極輕分隔陰影。`.eshop-status-row` 不再單獨 sticky，避免雙層吸頂互相擠壓。手機／窄螢幕維持自然流。
+- 安全區：無低庫存條時，16px 安全距以 `.eshop-list-controls::before` 同色遮罩覆蓋，避免商品列從安全距離縫隙露出，並保留 pointer hit 在控制組上。
+- 重做：2026-06-30 `pull` 後，以 `upstream/main` 的 E-Shop 最新版（含 D094 分批載入／end-cap）為基底重新套用此方案；未保留先前手工補 12 條 demo 商品的過程性改動。
+- 收尾：本地 Chrome 長列表滾動驗證 PASS（低庫存條存在時 controls top=56px、關閉後 top=16px；`.eshop-status-row` 為 static）；截圖 `/private/tmp/eshop-sticky-list-controls-20260630.png`；`git diff --check` PASS。
+
+## 2026-06-29 · Button 尺寸規範收斂為 32 / 36 / 44（B 反饋 · DS Button）
+
+- 範圍：`_tokens.css` 新增 `--button-h-*` / `--button-pad-*`；`button.css` 將 `.btn` 與 canonical `.ztor-btn` 收斂到同一套尺寸；design-system.html／design-system.md／BUILD-SPEC／修改记录同步。
+- 動機：使用者檢查後指出現有 DS 仍是控件 default 44px，與「桌面後台產品以 36px 為中型基準、32px 給密集操作、44px 留給大 CTA」的專業落地方式不一致。原本 `.ztor-btn`、`.btn` 又分別使用不同 padding / 字級，容易產生頁面漂移。
+- 規格：小號 `32px`（padding `6px 12px`，表格／彈窗次要操作）；中型 default `36px`（padding `8px 16px`，14px 字級，一般產品／工具列操作）；大 CTA `44px`（padding `12px 24px`，提交／支付／登入）。Input / select 仍保留 `--control-h-md = 44px` 的表單密度，不被本次按鈕收斂牽動。
+- 收尾：全站 asset cache bump `?v=20260629c` → `?v=20260629d`；本地 Chrome 量測 PASS（primary / outline 均為 32 / 36 / 44；E-Shop toolbar split button 仍 36px）；`git diff --check` PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
+## 2026-06-29 · E-Shop 展开态搜索框收敛为 toolbar field pill（B 反饋 · F3 工具列）
+
+- 範圍：`field-pill.css` 在既有 Field pill 元件內新增 `.field-pill--toolbar` 修飾與 `__action` 尾端動作區；E-Shop F3 展開態搜尋框套用該修飾；design-system.html／design-system.md／BUILD-SPEC／requirements-map 同步，不新增獨立元件。
+- 動機：使用者指出展開後搜尋框量測為 240×44，放在工具列中偏像普通表單輸入框；應與同列 icon button、toolbar split button 的 36px 密度一致。
+- 規格：寬度維持 240px；高度改 36px（`--control-h-sm`）；左 padding 12px；內部 gap 8px；search icon 16×16；右側關閉 action 36×36。
+- 收尾：全站 asset cache bump `?v=20260626b` → `?v=20260629a`；本地 toolbar field-pill assertion PASS；`git diff --check` PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
+## 2026-06-26 · E-Shop 建立入口收斂為 toolbar split button（B 反饋 · F3 工具列）
+
+- 範圍：`split-button.css` 在既有 Split button 元件內新增 `.split-button--toolbar` 修飾；E-Shop F3「Create product」分割按鈕套用該修飾；design-system.html 原 Button 章節內的 `Variant · Split button` demo 與 design-system.md／BUILD-SPEC／requirements-map 同步，不新增獨立元件章節。
+- 動機：使用者指出此控制位於工具列，應是 toolbar split button，不是普通大 CTA；需和同列 search/settings/preview icon button 的 36px 密度一致。
+- 規格：整體高 36px（`--control-h-sm`）、主按鈕左右 12px、文字 13px／line-height 16px、caret 區 36×36、caret icon 16×16、中間只用 1px inset 分隔線。
+- 收尾：全站 asset cache bump `?v=20260625b` → `?v=20260626a`；本地 toolbar sizing assertion PASS；本機未找到 `check_ds_sync.py`，未能執行該腳本。
+
 ## 2026-06-30 · Creator 管理頁移除 bento 概覽＋搜尋/篩選改同列（B 反饋 · A 規格 D099）
 
 延續同日 creators 改版，使用者裁示再調整：拿掉名冊概覽（bento）、狀態篩選與搜尋改放同一列。

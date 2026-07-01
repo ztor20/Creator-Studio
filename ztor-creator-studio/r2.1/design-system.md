@@ -18,10 +18,13 @@
 > **2026-06-25 · 命名對齊 shadcn + 暗色實色 + 控件尺寸 + focus（issue #11 — ztor 工程端 jaskang 反饋）**
 > - **Token 改名 → shadcn role**：`--surface→--card` · `--surface-muted→--muted` · `--foreground-subtle→--muted-foreground` · `--surface-rail→--sidebar` · `--surface-rail-hover→--accent` · `--status-error→--destructive`；補齊 shadcn 全集（`card-foreground` / `popover(-foreground)` / `secondary(-foreground)` / `accent-foreground` / `destructive-foreground` / `input` / `chart-1..5` / `sidebar-*` 整組）。creator 獨有的（`surface-shell` / `surface-page` / `primary-hover` / `status-{success,info,warning,accent}` / `gradient-brand` / `sidebar-active`）保留為 `[ext]`。**對齊語意、值不變**，品牌橘仍是 `--primary`。
 > - **暗色實色面**：`--background` / `--foreground` 與 card / muted / sidebar / border 改實色 hex（值由原 `rgba` 疊層在 `#191A1A` / `#2B2B2C` 上算出，外觀不變）；半透明只剩 `backdrop-blur` overlay。`--ring` 暗色不再覆寫成白、改繼承品牌橘（亮暗同色）。
-> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），button / input / field 共用、同尺寸等高；新增 4px `--space-1..16`。default 維持 44。
+> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），input / field 共用、同尺寸等高；新增 4px `--space-1..16`。表單 default 維持 44；Button 自 2026-06-29 起改用 §4.2 的 `--button-*` 三檔尺寸。
 > - **focus 統一**：全控件＋亮暗一律 `outline: 2px solid var(--ring); outline-offset: 2px`（清單列 `-2px` 內嵌）。
 > - **小數收斂**：裝飾邊框 1.5 / 2.5px → 整數、陰影次像素 → 整數。
 > - **無障礙＝最低優先、只建議**：依使用者裁示，橘 ring 低對比等 a11y 議題僅記風險、不阻擋交付、不改品牌決策。
+
+> **2026-06-29 · Button 尺寸收斂（DS feedback）**
+> - **Button size tier**：`.btn` / `.ztor-btn` 改為桌面產品節奏：小號 `32px`（表格、彈窗次要操作；padding `6px 12px`）、中型 default `36px`（一般產品/工具列操作；padding `8px 16px`、字號 14px）、大 CTA `44px`（提交、支付、登入等主流程；padding `12px 24px`）。這組走 `--button-*` token，不改 Input 的 44px 表單 default。
 
 ---
 
@@ -109,7 +112,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
-| Button label | `15px / 500 / tracking -0.3px` (Geist) |
+| Button label | `14px / 500 / tracking 0` (Geist) |
 | Icon system | Lucide (via `icons.js` registry) |
 | Theme mode | both — light / dark / system |
 
@@ -549,7 +552,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
 | Leave dialog | 🟠 organism | ✓ App | 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用。兩態同殼：有未存編輯→問儲存（儲存並離開 primary／不儲存就離開 outline）；未編輯→純離開（離開 primary）。`.leave-dialog`[data-open]＞`__scrim`＋`__card`＞`__close`/`__title`/`__body`/`__actions`（堆疊滿寬 btn）；Esc/scrim/× 取消。2026-06-29 自 shared.css `.wizard-leave*` promote | [leave-dialog.css](./ds-components/leave-dialog.css) |
 | Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
-| Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
+| Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；工具列用 `.split-button--toolbar`（36px 高、caret 36×36、icon 16×16）；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
@@ -590,7 +593,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
-**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px.
+**Sizes** — `.btn` and canonical `.ztor-btn` share the same button tier: default 36px (`8×16` padding, 14px label), `--sm` 32px (`6×12` padding, dense table/dialog secondary), and `--lg` 44px (`12×24` padding, submit / pay / login CTA). Button tiers use `--button-*` tokens so they can be denser than form controls, whose default remains 44px. **Toolbar split button** uses `.split-button--toolbar`: 36px overall height (`--control-h-sm`), main action 12px horizontal padding, caret zone 36×36, caret icon 16×16, and a 1px divider.
 
 **States**
 
@@ -606,18 +609,18 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-btn` | Canonical primary button (44px, orange) |
+| `.ztor-btn` | Canonical primary button (36px default, orange) |
 | `.ztor-btn--outline` | White surface + 1px `--border` hairline, flat (no shadow) |
-| `.ztor-btn--sm` / `.ztor-btn--lg` | 36px / 52px sizes |
+| `.ztor-btn--sm` / `.ztor-btn--lg` | 32px / 44px sizes |
 | `.btn` + `.btn--primary` | Product-density orange CTA |
-| `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；padding −1px 補償保持尺寸（2026-06-12 取代「填色當邊」與多餘陰影） |
+| `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；與同尺寸 `.btn` 共用 padding（2026-06-12 取代「填色當邊」與多餘陰影） |
 | `.btn--ghost` | Transparent, muted text; tints on hover |
 | `.btn--soft` | Resting grey fill (`--foreground` 6% on surface), no border; quiet always-visible secondary（2026-06-12） |
-| `.btn--sm` / `.btn--lg` | Compact / large product densities |
+| `.btn--sm` / `.btn--lg` | 32px compact / 44px large CTA product densities |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · outline surface `--card` / `--muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--primary` · hover `--primary-hover` · text `--primary-foreground` · size `--button-h-*` / `--button-pad-*`（32 / 36 / 44px tier） · outline surface `--card` / `--muted` · outline border `--border`（平面，無 shadow） · ghost text `--foreground-muted` → `--foreground` · radius `--radius` (primary) / `--radius-md` (outline) · shadow `--shadow-raise`（primary lift） · focus ring `--ring` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage — 按鈕階層／什麼時候用哪個**
 
@@ -694,7 +697,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | State | Selector | Change |
 |---|---|---|
 | default | `.badge` | bg `--muted`, text `--foreground-muted`, no ring, no dot |
-| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange 30% · accent 16%), text = the saturated hue token |
+| (variant) | `.badge--success` etc. | bg `color-mix(--status 14%, surface)` (orange light 30% / dark 14% · accent 16%), text = the saturated hue token |
 
 No hover/focus/disabled — display-only.
 
@@ -704,7 +707,7 @@ No hover/focus/disabled — display-only.
 |---|---|
 | `.badge` | Flat neutral tag, `--radius-md`, no dot / no ring |
 | `.badge__dot` | `display:none` (legacy; the soft-tag look carries no dot) |
-| `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
+| `.badge--orange` | light: `color-mix(--primary 18%, surface)` + `--primary`; dark: `color-mix(--primary 14%, surface)` + `--primary` |
 | `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`) |
 | `.badge--warning` | 18% warning tint; text = `color-mix(--status-warning 50%, --foreground)` (hue too light for direct text) — added 2026-06-11 |
 | `.badge--neutral` | `--muted` background |
@@ -713,7 +716,7 @@ No hover/focus/disabled — display-only.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
+- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
 
 **Usage** — Surface a state or a category at a glance (payout status, transaction state, live/draft; IP type, fan tier). Avoid for clickable filters — use Chip (§4.5) — and never as a button.
 
@@ -1065,6 +1068,8 @@ Static callout — no interactive states.
 
 **Variants** — `.ztor-input` (line field) and `.ztor-textarea` (multi-line, vertical resize).
 
+**Input icon** — `.ztor-input-affix` wraps a base `.ztor-input` when a field needs a non-clickable right-side icon (for example calendar). The icon is static: 16px, `aria-hidden`, `pointer-events:none`, no button background, and it follows the input state through neutral foreground tokens.
+
 **Sizes** — `.ztor-input` default 44px / `--sm` 36px / `--lg` 52px. Textarea single size (min-height 120px).
 
 **States**
@@ -1084,11 +1089,12 @@ Static callout — no interactive states.
 | `.ztor-input` | Single-line field, 44px |
 | `.ztor-input--sm` / `--lg` | 36px / 52px sizes |
 | `.ztor-textarea` | Multi-line field, vertical resize |
+| `.ztor-input-affix` + `__field` + `__icon` | Right-side non-clickable input icon; `__field` adds right padding, `__icon` is 16px and `aria-hidden` |
 | `[aria-invalid="true"]` | Error ring in `--destructive` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
+- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · icon `--muted-foreground` / focus-within `--foreground-muted` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
 
 **Usage** — Use for text/number entry in forms (get-matched, settings, payout forms) and `.ztor-textarea` for longer free text. Avoid borders — the field uses surface + hairline, not a 1px border.
 
@@ -1106,6 +1112,10 @@ Static callout — no interactive states.
 <label for="email">Email</label>
 <input id="email" class="ztor-input" type="email" placeholder="you@studio.com">
 <textarea class="ztor-textarea" placeholder="Notes…"></textarea>
+<span class="ztor-input-affix">
+  <input class="ztor-input ztor-input-affix__field" placeholder="YYYY/MM/DD">
+  <span class="ztor-input-affix__icon" aria-hidden="true"><i data-lucide="calendar" class="ztor-icon"></i></span>
+</span>
 ```
 
 **CSS** — [`input.css`](./ds-components/input.css)
@@ -2254,11 +2264,14 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.field-pill` | 白底＋1px 線框 pill |
 | `.field-pill__icon` / `__chevron` | 前置 icon／後置 chevron（`--muted-foreground`） |
 | `.field-pill__input` / `__select` / `__label` | 搜尋／原生 select／選單文字 |
-| `.field-pill--grow` / `--block` | flex:1／width:100%（chevron 推右） |
+| `.field-pill__action` | 尾端 icon 動作區；搭配 `--toolbar` 時為 36 × 36px |
+| `.field-pill--grow` / `--block` / `--toolbar` | flex:1／width:100%／36px 工具列密度（icon 16px、左 padding 12px、尾端 action 36px） |
 
 **Token usage** — surface `--card` · border `--border` · hover `--muted` · icon `--muted-foreground` · focus `--ring` · radius `--radius-md`
 
 **Usage** — 工具列的篩選／範圍控制。下拉一律前 icon、後 chevron；搜尋變體不放 chevron。主要動作用 `.btn--primary`，不用 field-pill。
+
+工具列展開態搜尋用 `.field-pill--toolbar`：高度 36px，寬度建議 220–280px，E-Shop 使用 240px；尾端關閉鈕用 `.field-pill__action`，點擊區等於工具列高度。
 
 **Code example**
 
@@ -3058,44 +3071,46 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.29c Restock checklist
 
-**`_layer`** · molecule — "Select items to restock" checklist for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and the shared form helpers (`.payout-form-grid` / `.payout-field`) for the quantity / supplier / ETA / notes fields; the **only** restock-specific CSS is the `.restock-items` checklist, styled to match `.payout-bank-option`. Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — "Select items to restock" checklist for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and the shared form helpers (`.payout-form-grid` / `.payout-field`) for the quantity / supplier / ETA / notes fields; the **only** restock-specific CSS is the `.restock-items` checklist, styled as compact 44px selectable rows so it aligns with Input. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
 ```
 .restock-items (grid, 10px gap)
-└─ label.restock-item(.is-checked) > .restock-item__box (17px checkbox) + .restock-item__main(__title + __meta) + Badge (Low Stock / Sold Out)
-   — mounts inside the reused .payout-dialog shell; quantity/supplier/ETA/notes use .payout-form-grid/.payout-field; footer = Cancel / Mark received / Submit restock Buttons
+└─ label.restock-item(.is-checked) > input.restock-item__box + .restock-item__check (18px success check-circle visual) + .restock-item__main(__title + __meta) + Badge (Low Stock / Sold Out)
+   — row min-height = 44px; mounts inside the reused .payout-dialog shell; quantity/supplier/ETA/notes use .payout-form-grid/.payout-field; footer = Cancel / Mark received / Submit restock Buttons
 ```
 
-**Variants** — Row: default / `.is-checked` (white surface + inset 2px `--foreground` ring).
+**Variants** — Row: default / `.is-checked` (neutral selected row; state is carried by the success check icon).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | `.restock-item` | `--muted` bg + inset `--border` ring |
-| checked | `.restock-item.is-checked` | white `--card` + inset 2px `--foreground` ring (matches selected bank option) |
+| default | `.restock-item` | 44px row, `--card` bg + inset `1px --border` edge |
+| checked | `.restock-item.is-checked` | neutral `--card` surface + inset `1px --border` edge; left icon becomes green `check-circle-fill` |
+| focus | `.restock-item:focus-within` | 2px `--ring` outline on the row; applies after mouse selection and keyboard focus |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
 | `.restock-items` | Grid container (10px gap) for the selectable checklist |
-| `.restock-item` (`.is-checked`) | Checklist row; checked = white surface + inset 2px `--foreground` ring |
-| `.restock-item__box` | 17px checkbox, `accent-color: --foreground` |
-| `.restock-item__main` / `__title` / `__meta` | Text stack — 14/500 title + 12px subtle meta |
+| `.restock-item` (`.is-checked`) | 44px checklist row; checked keeps the neutral row surface and shows state through the success icon |
+| `.restock-item__box` | Visually hidden semantic checkbox; owns checked/focus state |
+| `.restock-item__check` | 18px status visual; unchecked = empty circle, checked = green `check-circle-fill` in `--status-success` |
+| `.restock-item__main` / `__title` / `__meta` | Single-line text run — 14/500 title + 12px subtle meta; title ellipsizes before the badge |
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--card` / `--muted` · ring `--border` / `--foreground` (checked) · radius `--radius-md` · accent `--foreground` (checkbox) · `--font-ui` · text `--foreground` / `--muted-foreground`
+- size `--control-h-md` (44px) · surface `--card` · edge `--border` · selected icon `--status-success` · focus `--ring` · radius `--radius-md` · `--font-ui` · text `--foreground` / `--muted-foreground`
 
 **Usage** — E-Shop restock popup (spec §5.1.5.6). Reuse the canonical payout dialog shell + form helpers; only the checklist is restock-specific. Toggle `.is-checked` on the row to mirror the checkbox.
 
 **Do & Don't**
 
 - ✅ Do mount inside the canonical payout dialog shell — don't re-roll a modal.
-- ✅ Do keep the row styling aligned with `.payout-bank-option` so the dialog reads as one family.
+- ✅ Do keep the row styling quiet: neutral card surface, inset `1px --border` edge, and success check-circle for selected state.
 - ❌ Don't fork the dialog / form styles — only `.restock-items` is restock-specific.
 
 **Dependencies** — composes Badge (§4.3); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
@@ -3125,7 +3140,7 @@ store-settings.html  (popup body — D067: no global nav / breadcrumb / page hea
       ├─ panel display: .ss-order > .ss-order__row[draggable]（+ .empty-stub.ss-order-empty）
       ├─ panel payment: .ss-status (__icon/__main/__title/__meta + Badge)
       └─ panel shipping: .settings-row（ships from / .ss-amount 免運）
-└─ .ss-actionbar（提交列：See as fan ｜ Discard ｜ Save changes，sticky 底部；Save/Discard postMessage 關閉 popup）
+└─ .ss-actionbar（提交列：See as fan ｜ Discard ｜ Save changes，sticky 底部；10px 20px 內距；radius-md 圓角；shadow-card；Save/Discard postMessage 關閉 popup）
 See as fan：.preview-panel.preview-panel--inset > .ss-fan（__header/__avatar/__name/__bio + __grid/__card）
 ```
 

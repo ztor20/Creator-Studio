@@ -23,6 +23,7 @@ window.ZTOR_PARTIALS.restockModal = String.raw`
       <div class="restock-items">
         <label class="restock-item is-checked">
           <input class="restock-item__box" type="checkbox" data-restock-pick checked>
+          <span class="restock-item__check" aria-hidden="true"><i data-lucide="check-circle-fill" class="ztor-icon"></i></span>
           <span class="restock-item__main">
             <span class="restock-item__title">Tour zine vol. 02</span>
             <span class="restock-item__meta">3 left · threshold 5</span>
@@ -31,6 +32,7 @@ window.ZTOR_PARTIALS.restockModal = String.raw`
         </label>
         <label class="restock-item is-checked">
           <input class="restock-item__box" type="checkbox" data-restock-pick checked>
+          <span class="restock-item__check" aria-hidden="true"><i data-lucide="check-circle-fill" class="ztor-icon"></i></span>
           <span class="restock-item__main">
             <span class="restock-item__title">Coastline tee (S)</span>
             <span class="restock-item__meta">2 left · threshold 5</span>
@@ -39,6 +41,7 @@ window.ZTOR_PARTIALS.restockModal = String.raw`
         </label>
         <label class="restock-item">
           <input class="restock-item__box" type="checkbox" data-restock-pick>
+          <span class="restock-item__check" aria-hidden="true"><i data-lucide="check-circle-fill" class="ztor-icon"></i></span>
           <span class="restock-item__main">
             <span class="restock-item__title">Salt &amp; Bitumen poster</span>
             <span class="restock-item__meta">0 left · threshold 5</span>
@@ -59,7 +62,10 @@ window.ZTOR_PARTIALS.restockModal = String.raw`
         </label>
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="restock.f.eta">Expected arrival (optional)</span>
-          <input class="input" type="date" value="2026-06-28">
+          <span class="input-affix">
+            <input class="input input-affix__field" type="text" inputmode="numeric" value="2026/06/28" aria-label="Expected arrival" data-i18n-aria-label="restock.f.eta">
+            <span class="input-affix__icon" aria-hidden="true"><i data-lucide="calendar" class="ztor-icon"></i></span>
+          </span>
         </label>
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="restock.f.notes">Notes (optional)</span>
