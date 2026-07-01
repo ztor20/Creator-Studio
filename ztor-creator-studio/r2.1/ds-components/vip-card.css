@@ -1,0 +1,64 @@
+/* ============================================================
+   VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
+   spec 5.1.5.2 §4.2 F11.2（VIP card customization）
+   ------------------------------------------------------------
+   結構（partials/vip-card.js 綁定）：
+     .vip-card                 容器（data-vip-card）
+       .vip-card__settings     設定：Text/Image 模式 + 名稱輸入 / logo 上傳
+       .vip-card__preview      即時預覽：公版卡片 + 合成文字/logo + 副標
+   模式：data-vip-mode="text|image" 驅動設定區與預覽合成內容切換。
+   公版卡面（frame + plate）為 CSS 近似的固定藝術（theme-independent），
+   內含裸色漸層＝刻意例外（比照 selection-card 主題色票，見 design-system.md）。
+   ============================================================ */
+
+.vip-card { display: flex; flex-direction: column; gap: 20px; }
+
+/* ---- 設定區 ---- */
+.vip-card__settings { display: flex; flex-direction: column; gap: 14px; }
+.vip-card__head { display: flex; flex-direction: column; gap: 2px; }
+.vip-card__title { font-family: var(--font-ui); font-size: var(--fs-15); font-weight: var(--fw-semibold); color: var(--foreground); margin: 0; }
+.vip-card__sub-desc { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0; }
+/* 模式切換沿用 .segmented.radio-cards；欄位沿用 .field / .input / .upload-tile */
+.vip-card__field[hidden] { display: none; }
+
+/* ---- 預覽區 ---- */
+.vip-card__preview { display: flex; flex-direction: column; gap: 12px; }
+.vip-card__preview-title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); color: var(--foreground); margin: 0; }
+
+/* 公版卡面「場景」：固定深色全像背景（不隨主題，屬固定藝術） */
+.vip-card__frame {
+  position: relative; overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: #0d0d10;
+  min-height: 340px; padding: 32px;
+  display: grid; place-items: center;
+}
+/* 全像色塊（裸色漸層＝固定藝術，刻意例外）*/
+.vip-card__frame::before,
+.vip-card__frame::after {
+  content: ""; position: absolute; width: 78%; height: 62%; border-radius: 50%;
+  filter: blur(46px); opacity: .85; pointer-events: none;
+}
+.vip-card__frame::before { top: -8%; right: -12%; background: radial-gradient(circle at 30% 30%, #6f7bff 0%, #33d6c8 55%, transparent 72%); }
+.vip-card__frame::after  { bottom: -12%; left: -14%; background: radial-gradient(circle at 60% 40%, #b06bff 0%, #ff5d8f 48%, #2b2f8f 78%, transparent 88%); }
+
+/* 霧面玻璃卡（合成載體）*/
+.vip-card__plate {
+  position: relative; z-index: 1;
+  width: min(232px, 70%); aspect-ratio: 0.63;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 24px 18px; text-align: center;
+}
+/* 合成的文字（Text 模式）/ logo（Image 模式）*/
+.vip-card__logo { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: clamp(28px, 7vw, 40px); line-height: 1; letter-spacing: .04em; color: #fff; text-transform: uppercase; word-break: break-word; max-width: 100%; }
+.vip-card__logo-img { max-width: 78%; max-height: 44px; object-fit: contain; display: none; }
+.vip-card--image .vip-card__logo { display: none; }
+.vip-card--image .vip-card__logo-img { display: block; }
+/* 固定副標 */
+.vip-card__plate-sub { font-family: var(--font-display); font-size: var(--fs-11); letter-spacing: .22em; color: rgba(255, 255, 255, 0.82); text-transform: uppercase; }
