@@ -492,17 +492,18 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Component | `_layer` | Status | Where seen (Ztor Creator Studio) | CSS |
 |---|---|---|---|---|
 | Button | 🟢 atom | ✓ App | Primary CTAs, wizard action bar, header actions (primary / outline / ghost) | [button.css](./ds-components/button.css) |
-| Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral | [badge.css](./ds-components/badge.css) |
+| Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral。`--inline`：接在標題文字後的安靜限定詞（regular 字重、middle 對齊、左 6px），如清單「4 variants／限量」、訂單「Limit 2/person」 | [badge.css](./ds-components/badge.css) |
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
 | Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
 | Sticky-note | 🟢 atom | ✓ App | Inline callouts ("Pending ≠ Available", region note, legal hint) | [stickynote.css](./ds-components/stickynote.css) |
 | Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除 | [upload-tile.css](./ds-components/upload-tile.css) |
+| Album tracks | 🟠 organism | ✓ App | 數位「音樂專輯（Album）」多曲目管理（spec 5.1.5.2 §4.2 F11.1）：上傳 mp3/mp4→逐曲列（`.album-track`：`__grip`/`__cover`/`__main`(`__name`/`__meta`/`__bar`/`__lyrics`)/`.dropdown.album-track__menu`）；拖曳重排、改名(inline)、換封面、上傳歌詞(音訊限定→View Lyrics)、刪除；上傳中 `.is-uploading`。`partials/album-tracks.js` 增強、emit `albumtracks:change`；逐列選單重用 dropdown-menu.css。呈現層 demo（假上傳/歌詞） | [album-tracks.css](./ds-components/album-tracks.css) |
 | Input | 🟢 atom | ✓ App | Wizard fields, settings forms, search | [input.css](./ds-components/input.css) |
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour) | [kpi.css](./ds-components/kpi.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary） | [kpi.css](./ds-components/kpi.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
@@ -511,7 +512,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
 | Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker | [selection-card.css](./ds-components/selection-card.css) |
 | Composer | 🟡 molecule | ✓ App | Drop / type card + bottom action bar (tool icons · credit meter · circular send) | [composer.css](./ds-components/composer.css) |
-| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
+| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」） | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
 | Header (topbar) | 🟠 organism | ✓ App | All pages — canonical 64px app topbar (`.app-topbar`, injected by `sidebar.js`); hover mega-dropdown nav + action cluster | [header.css](./ds-components/header.css) |
 | Global nav · sidebar mode | 🟠 organism | ✓ App | Display-mode alternative to the topbar (spec §6.9 / D016): 248px left rail (`.app-sidebar`, same `sidebar.js`) sits on `--surface-shell`; dropdowns → expandable groups（`.app-sidebar__group`，accordion，現役）。另保留 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）可切回。Driven by `data-nav-mode` (theme.js) | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Admin-layer nav · Tier 0/1 | 🟠 organism | ✓ App | Platform-operator (Admin) variant of the topbar (spec §4.1 / D086): roster page shows a "Creator Management" marker + locked Tier-1 items (`.app-topbar__link--locked`); inside a creator workspace, a back-to-roster icon (`.app-topbar__back`) sits **before** the logo + "Managing &lt;creator&gt;" chip (`.app-topbar__context`). Active creator held in `window.ztorCreator` (localStorage `ztor.activeCreator`); switched via devtools "Creator · Admin" cheat code. Used by `creators.html` (Tier 0) and every Tier-1 page | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
@@ -519,22 +520,24 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Data list | 🟠 organism | ✓ App | Recent earnings, transactions, payouts, products, projects (row-divider) | [data-list.css](./ds-components/data-list.css) |
 | Picker | 🟠 organism | ✓ App | Search + scrollable pick-list（Create bundle items、IP linker） | [picker.css](./ds-components/picker.css) |
 | Field pill | 🟡 molecule | ✓ App | Inline filter pill — search / select / dropdown-trigger | [field-pill.css](./ds-components/field-pill.css) |
+| Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
+| Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
 | Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active | [segmented.css](./ds-components/segmented.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
 | Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源）：hero cover＋本月精選＋分頁＋商品格；顏色跟隨主題（§6.9）。追蹤數/社群/加入社群/精選/立即購買/補貨中為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
-| Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner | [readiness.css](./ds-components/readiness.css) |
+| Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product footer 用（create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
 | Empty card | 🟡 molecule | ✓ App | 卡片內「已載入但無資料」空狀態 | [empty-card.css](./ds-components/empty-card.css) |
 | Notification matrix | 🟠 organism | ✓ App | 事件×管道逐格開關矩陣（含鎖定通道） | [notification-matrix.css](./ds-components/notification-matrix.css) |
 | Completeness meter | 🟡 molecule | ✓ App | label＋x/y＋進度條（素材包完整度） | [completeness.css](./ds-components/completeness.css) |
 | Insight row | 🟡 molecule | ✓ App | 圖表下單行自動洞察（無洞察隱藏） | [insight-row.css](./ds-components/insight-row.css) |
-| List footer | 🟡 molecule | ✓ App | 清單分頁頁尾（Showing N of M＋Load more） | [list-footer.css](./ds-components/list-footer.css) |
+| List footer | 🟡 molecule | ✓ App | 清單分頁頁尾（Showing N of M＋Load more）。變體：`--center`（Load more 置中＋加大上下留白，E-Shop F4 分批載入）。`[hidden]` 已顯式歸零（蓋 display:flex） | [list-footer.css](./ds-components/list-footer.css) |
 | Message composer | 🟠 organism | ✓ App | 群發撰寫 modal（Compose＋History） | [message-modal.css](./ds-components/message-modal.css) |
 | Char counter | 🟡 molecule | ✓ App | 限長輸入即時字數 | [message-modal.css](./ds-components/message-modal.css) |
 | Token chip | 🟡 molecule | ✓ App | 點擊插入個人化變數 | [message-modal.css](./ds-components/message-modal.css) |
 | Event preview card | 🟡 molecule | ✓ App | 建立活動粉絲視角活動卡（即時預覽） | [event-preview-card.css](./ds-components/event-preview-card.css) |
-| Product list | 🟠 organism | ✓ App | E-Shop inventory table: product identity + status + stock + visibility + edit action, borderless row-divider layout | [product-list.css](./ds-components/product-list.css) |
+| Product list | 🟠 organism | ✓ App | E-Shop inventory table: product identity + status + stock + visibility + edit action, borderless row-divider layout。變體：`--eshop`/`--bundles`/`--auctions` 欄位版型；拖曳握把 `__drag`（grip，抓它才重排）＋抬起態 `.product-list__row.is-dragging`（抬升陰影＋置頂，僅 --eshop Products 分頁；跟手 transform 由頁面 JS 控制）。草稿列（`[data-status="draft"]`）握把隱藏、不可拖曳（無粉絲端陳列順序），頁面 JS 置頂 | [product-list.css](./ds-components/product-list.css) |
 | Project list | 🟠 organism | ✓ App | Projects table: project identity + type + status + to-do hint + detail action, borderless row-divider layout | [project-list.css](./ds-components/project-list.css) |
 | Table | 🟠 organism | ✓ App | Earnings transactions 9-col table | [table.css](./ds-components/table.css) |
 | Chart | 🟠 organism | ✓ App | Linechart (Dashboard / Earnings trends) + stacked-bar + source-list legend + rank-bars | [chart.css](./ds-components/chart.css) |
@@ -560,6 +563,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
 | Edge shadow（工具）| ⚪ utility | ✓ Project | `.edge-shadow`：把 `--shadow-header` 變成「只露下緣、內縮、兩端漸淡」的邊緣陰影（`::before`＋clip）。wizard header／電子商店庫存條共用；其他元素加 class 即覆用 | [shared.css](./shared.css) |
+| Shell 補角／接縫（頁級技法）| ⚪ utility | — SiteSpecific | 分割/捲動容器的圓角補位技法，與 `.edge-shadow`、`.alert--page-top::after` 同族，目前寫在 e-shop.html `<style>`（僅該頁用，隨 preview split 版式）：**corner-mask** 用同色 radial-gradient 補 `.main` 捲動容器右上被裁的方角（吃 `--surface-shell`／`--radius-shell`，公式與 `.alert--page-top::after` 一致、閾值統一 `-1px`）；**seam-shadow** 用透明真圓角輔助層投 `--shadow-seam`、蓋在接縫上（避免方角容器 box-shadow 走方角）。屬 shell 版式膠水、非通用元件，待其他分割頁複用時再抽 utility | [e-shop.html](./e-shop.html) |
 | Segmented control | 🟡 molecule | ✓ Project | Compact chart view switcher and mode toggles | [chart.css](./ds-components/chart.css) |
 | Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
 | Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用 | [progress-stepper.css](./ds-components/progress-stepper.css) |
@@ -1355,7 +1359,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
  └ .kpi__link    (optional quiet "view more →" link, e.g. Net income → Breakdown)
 ```
 
-**Variants** — Single variant. The only modifier is `.kpi__delta--neg` (negative delta color); no orange / highlight fill exists. A tile may carry a `.kpi__delta` AND a linked `.kpi__meta` together — Dashboard F2 total-revenue pairs a week-over-week delta with a freshness/deep-link meta line (spec 5.1.1 §F2).
+**Variants** — Modifiers: `.kpi__delta--neg` (negative delta color) and `.kpi--compact` (drops the 96px min-height and tightens padding to 12px 14px, for side-column / summary use — Product detail Sales summary). No orange / highlight fill exists. A tile may carry a `.kpi__delta` AND a linked `.kpi__meta` together — Dashboard F2 total-revenue pairs a week-over-week delta with a freshness/deep-link meta line (spec 5.1.1 §F2).
 
 **Sizes** — Single size (`padding: 16px 18px`, `min-height: 96px`).
 
