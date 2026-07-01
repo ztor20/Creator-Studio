@@ -33,6 +33,7 @@ const REGISTRY = {
   'chevron-down':   '<path d="m6 9 6 6 6-6" />',                                                // dropdown / select 展開
   'upload':         '<path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />', // 上傳
   'play':           '<path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />',         // 播放
+  'pause':          '<rect x="14" y="4" width="4" height="16" rx="1" /> <rect x="6" y="4" width="4" height="16" rx="1" />',      // 暫停（Album 曲目封面播放控制）
   'layout-grid':    '<rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" />', // 卡片檢視
   'list':           '<path d="M3 5h.01" /> <path d="M3 12h.01" /> <path d="M3 19h.01" /> <path d="M8 5h13" /> <path d="M8 12h13" /> <path d="M8 19h13" />',                                          // 清單檢視
   'grip-vertical':  '<circle cx="9" cy="12" r="1" fill="currentColor" /> <circle cx="9" cy="5" r="1" fill="currentColor" /> <circle cx="9" cy="19" r="1" fill="currentColor" /> <circle cx="15" cy="12" r="1" fill="currentColor" /> <circle cx="15" cy="5" r="1" fill="currentColor" /> <circle cx="15" cy="19" r="1" fill="currentColor" />',  // 拖曳把手（商品陳列排序）
