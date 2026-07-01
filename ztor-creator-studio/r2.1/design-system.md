@@ -497,7 +497,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
 | Sticky-note | 🟢 atom | ✓ App | Inline callouts ("Pending ≠ Available", region note, legal hint) | [stickynote.css](./ds-components/stickynote.css) |
-| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item） | [upload-tile.css](./ds-components/upload-tile.css) |
+| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除 | [upload-tile.css](./ds-components/upload-tile.css) |
 | Input | 🟢 atom | ✓ App | Wizard fields, settings forms, search | [input.css](./ds-components/input.css) |
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
@@ -1014,16 +1014,19 @@ Static callout — no interactive states.
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
 | `.upload-tile--hero` / `--file` | 大格／檔案列尺寸變體 |
 | `.upload-tile__icon` / `__title` / `__hint` | icon／主文案（`--foreground` 500）／限制說明 |
-| `.upload-tile.is-filled` | 已選檔狀態：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-product／create-event／register-ip 共用（2026-06-16 promote 自頁內） |
+| `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
 | `.upload-showcase` | 主圖＋縮圖格並排兩等寬欄（≤880px 收回堆疊） |
+| `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/AI 優化/刪除）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」）。就緒仍走 `upload:change` 事件。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）** |
+| `.upload-tile__thumb` / `__overlay` / `__spinner` / `__progress` / `__bar` / `__actions` / `__act`(`--ai`) / `__badge` | 互動上傳格的注入子元素（縮圖／進行中罩／spinner／進度條／hover 動作／AI 優化徽章）；全 token 驅動，罩用 `color-mix(--foreground/--card)` 主題自適應 |
 
 **Token usage** (→ Pillar 2 Role)
 
 - border `--border`(dashed) · radius `--radius-md` · text `--muted-foreground` / title `--foreground` · hover bg `--muted`
+- 互動態：進度/徽章/AI 強調 `--primary`(+`--primary-foreground`) · 進行中罩 `color-mix(--card 82%)` · hover 動作罩 `color-mix(--foreground 42%)` · 動作鈕 `--card`/`--shadow-card`
 
-**Usage** — 建立流程的上傳入口。限制（最小尺寸／檔型）一律寫進 `__hint`，不留光禿格。一般空狀態用 `empty-stub`，不用這個。
+**Usage** — 建立流程的上傳入口。限制（最小尺寸／檔型）一律寫進 `__hint`，不留光禿格。一般空狀態用 `empty-stub`，不用這個。需要真正「選圖→上傳→hover 動作」時加 `[data-upload]`（見 create-product「Show it off」），並在頁面監聽 `upload:change` 更新就緒。
 
 **Do & Don't**
 

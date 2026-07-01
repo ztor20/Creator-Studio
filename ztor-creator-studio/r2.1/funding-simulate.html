@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>前台認購試算（測試版）· Ztor Creator Studio</title>
+
+<!-- 共用 r2.1 DS（相對引用、不複製）。 -->
+<script src="js/theme.js?v=20260701a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260701a">
+<link rel="stylesheet" href="shared.css?v=20260701a">
+<style>
+  .wizard__body { max-width: 1000px; padding-top: 32px; }
+  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--surface); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--text-sub); }
+  .fc-lang:hover { background: var(--muted); color: var(--foreground); }
+  .fc-footnote { font-family: var(--font-ui); font-size: var(--fs-12); line-height: 1.5; color: var(--text-sub); margin: 0 0 16px; }
+  /* 前台試算：共用池條 + 套組認購列（沿用 create-campaign 的樣式） */
+  .fc-sim-pool { background: var(--surface-muted); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 16px 18px; margin: 0 0 16px; }
+  .fc-sim-pool__row { display: flex; justify-content: space-between; align-items: baseline; }
+  .fc-sim-pool__label { font-family: var(--font-ui); font-weight: var(--fw-medium); }
+  .fc-sim-pool__nums { font-family: var(--font-ui); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
+  .fc-sim-pool__nums #fc-sim-left { color: var(--primary); }
+  .fc-sim-pool__sub { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 6px; }
+  .fc-sim-bar { height: 10px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; margin: 10px 0; }
+  .fc-sim-bar__fill { height: 100%; width: 0%; background: var(--gradient-brand); border-radius: var(--radius-pill); transition: width .3s ease; }
+  .fc-sim-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--border-soft); border-radius: var(--radius-md); margin-bottom: 10px; background: var(--surface); }
+  .fc-sim-row--out { opacity: .55; }
+  .fc-sim-row__name { font-family: var(--font-ui); font-weight: var(--fw-medium); }
+  .fc-sim-row__meta { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 3px; }
+  .fc-sim-row__left { font-family: var(--font-ui); font-size: var(--fs-13); margin-top: 4px; }
+  .fc-sim-row__left b { color: var(--primary); }
+  .fc-sim-buy { display: flex; align-items: center; gap: 8px; }
+  .fc-sim-buy__btn { width: 34px; height: 34px; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-sm); font-size: var(--fs-18); line-height: 1; cursor: pointer; color: var(--foreground); }
+  .fc-sim-buy__btn:hover:not(:disabled) { background: var(--muted); }
+  .fc-sim-buy__btn:disabled { opacity: .4; cursor: not-allowed; }
+  .fc-sim-buy__qty { min-width: 28px; text-align: center; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+  .fc-sim-soldout { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--status-success); font-weight: var(--fw-medium); }
+</style>
+</head>
+<body>
+<div class="wizard" data-autosave="false">
+
+  <div class="wizard__sheet">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" id="fc-back-arrow" aria-label="Back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-fi="sim.h1">前台認購試算</span>
+          <span class="wizard__top-sub" data-fi="sim.tag">demo · 正式版不會出現</span>
+        </div>
+      </div>
+      <div class="wizard__top-actions">
+        <button class="fc-lang" type="button" id="fc-lang" aria-label="Switch language">中 / EN</button>
+        <button class="btn btn--outline btn--sm" type="button" id="fc-reset" data-fi="sim.reset">重設試算</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body">
+    <p class="fc-footnote" data-fi="sim.sub">模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。資料來自前一步的創建設定。</p>
+
+    <div class="fc-sim-pool" id="fc-sim-pool">
+      <div class="fc-sim-pool__row">
+        <span class="fc-sim-pool__label" data-fi="sim.pool">共用股份池</span>
+        <span class="fc-sim-pool__nums"><span id="fc-sim-left">—</span> / <span id="fc-sim-total">—</span> <span data-fi="sim.unit">股</span></span>
+      </div>
+      <div class="fc-sim-bar"><div class="fc-sim-bar__fill" id="fc-sim-fill"></div></div>
+      <div class="fc-sim-pool__sub"><span data-fi="sim.sold">已認購</span> <span id="fc-sim-consumed">0</span> <span data-fi="sim.unit">股</span></div>
+    </div>
+
+    <div id="fc-sim-list"></div>
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom" style="justify-content:flex-end">
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" type="button" id="fc-back" data-fi="sim.back">上一步</button>
+      <button class="btn btn--primary" type="button" id="fc-close" data-fi="sim.close">關閉</button>
+    </div>
+  </footer>
+</div>
+
+<script src="js/icons.js?v=20260701a"></script>
+<script src="js/i18n.js?v=20260701a"></script>
+<script>
+/* 前台認購試算（獨立 demo 頁）：資料由 create-campaign.html「創建送出」寫入 sessionStorage('fc-sim')；
+   直接開啟（無資料）則用種子示範。正式版不會出現此頁。 */
+(function () {
+  /* 預設中文；沿用使用者既有語言偏好 */
+  try { if (!localStorage.getItem('ztor-r21-lang')) document.documentElement.lang = 'zh-Hant'; } catch (e) { document.documentElement.lang = 'zh-Hant'; }
+
+  const FI = {
+    'sim.h1':       { zh: '前台認購試算', en: 'Front-end pledge simulation' },
+    'sim.tag':      { zh: 'demo · 正式版不會出現', en: 'demo · not in the real version' },
+    'sim.sub':      { zh: '模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。資料來自前一步的創建設定。', en: 'Simulate backers pledging one by one — watch the shared share pool drop and each bundle’s remaining react. Data comes from the previous create step.' },
+    'sim.reset':    { zh: '重設試算', en: 'Reset' },
+    'sim.pool':     { zh: '共用股份池', en: 'Shared share pool' },
+    'sim.sold':     { zh: '已認購', en: 'Pledged' },
+    'sim.unit':     { zh: '股', en: 'shares' },
+    'sim.back':     { zh: '上一步', en: 'Back' },
+    'sim.close':    { zh: '關閉', en: 'Close' },
+    'sim.empty':    { zh: '沒有套組資料（請從創建流程進來）。', en: 'No bundle data (enter from the create flow).' },
+    'sim.unit-price': { zh: '單價', en: 'Unit price' },
+    'sim.per':      { zh: '每份含', en: 'Each =' },
+    'sim.cap':      { zh: '名額', en: 'Cap' },
+    'sim.cap-inf':  { zh: '不限', en: 'Unlimited' },
+    'sim.left':     { zh: '剩餘可買', en: 'Remaining' },
+    'sim.bought':   { zh: '已認購', en: 'Pledged' },
+    'sim.soldout':  { zh: '售罄', en: 'Sold out' },
+    'sim.nonshare': { zh: '不佔股份池', en: 'no pool shares' },
+  };
+  const lang = () => (document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en');
+  const fiText = k => (FI[k] ? FI[k][lang()] : null);
+  function applyFI() {
+    document.querySelectorAll('[data-fi]').forEach(el => { const v = fiText(el.dataset.fi); if (v != null) el.textContent = v; });
+  }
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const fmtMoney = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  /* ---- 取得資料：sessionStorage 或種子示範 ---- */
+  let data;
+  try { data = JSON.parse(sessionStorage.getItem('fc-sim') || 'null'); } catch (e) { data = null; }
+  if (!data || !Array.isArray(data.bundles)) {
+    data = { goal: 120000, totalShares: 120, bundles: [
+      { name: '套組 1', shares: 1, cap: 100 },
+      { name: '套組 2', shares: 5, cap: 20 },
+      { name: '套組 3', shares: 10, cap: 10 },
+    ] };
+  }
+  const total = Number(data.totalShares) || 0;
+  const price = total > 0 ? (Number(data.goal) || 0) / total : 0;
+  const sim = data.bundles.map((b, i) => ({
+    name: (b.name || '').trim() || ('套組 ' + (i + 1)),
+    shares: Number(b.shares) || 0, cap: Number(b.cap) || 0, sold: 0,
+  }));
+
+  function renderSim() {
+    const consumed = sim.reduce((s, b) => s + b.sold * b.shares, 0);
+    const left = Math.max(0, total - consumed);
+    $('fc-sim-total').textContent = total.toLocaleString('en-US');
+    $('fc-sim-left').textContent = left.toLocaleString('en-US');
+    $('fc-sim-consumed').textContent = consumed.toLocaleString('en-US');
+    $('fc-sim-fill').style.width = (total > 0 ? Math.min(100, consumed / total * 100) : 0) + '%';
+    const wrap = $('fc-sim-list');
+    if (!sim.length) { wrap.innerHTML = '<p class="fc-footnote">' + (fiText('sim.empty') || '') + '</p>'; return; }
+    const inf = fiText('sim.cap-inf') || '不限';
+    const unitWord = fiText('sim.unit') || '股';
+    wrap.innerHTML = sim.map((b, i) => {
+      const cap = b.cap > 0 ? b.cap : Infinity;
+      const maxByPool = b.shares > 0 ? Math.floor(left / b.shares) : Infinity;
+      const remain = Math.max(0, Math.min(cap - b.sold, maxByPool));
+      const canBuy = remain > 0;
+      const unit = b.shares * price;
+      const capTxt = b.cap > 0 ? b.cap : inf;
+      const leftTxt = (remain === Infinity) ? inf : remain;
+      const shareTxt = b.shares > 0 ? (b.shares + ' ' + unitWord) : (fiText('sim.nonshare') || '不佔股份池');
+      return '<div class="fc-sim-row' + (canBuy ? '' : ' fc-sim-row--out') + '">' +
+        '<div><div class="fc-sim-row__name">' + esc(b.name) + '</div>' +
+        '<div class="fc-sim-row__meta">' + (fiText('sim.per') || '每份含') + ' ' + shareTxt + ' · ' + (fiText('sim.unit-price') || '單價') + ' ' + fmtMoney(unit) + ' · ' + (fiText('sim.cap') || '名額') + ' ' + capTxt + '</div>' +
+        '<div class="fc-sim-row__left">' + (fiText('sim.bought') || '已認購') + ' ' + b.sold + ' · ' + (fiText('sim.left') || '剩餘可買') + ' <b>' + leftTxt + '</b>' + (canBuy ? '' : ' · <span class="fc-sim-soldout">' + (fiText('sim.soldout') || '售罄') + '</span>') + '</div></div>' +
+        '<div class="fc-sim-buy">' +
+          '<button type="button" class="fc-sim-buy__btn" data-minus="' + i + '"' + (b.sold > 0 ? '' : ' disabled') + '>－</button>' +
+          '<span class="fc-sim-buy__qty">' + b.sold + '</span>' +
+          '<button type="button" class="fc-sim-buy__btn" data-plus="' + i + '"' + (canBuy ? '' : ' disabled') + '>＋</button>' +
+        '</div></div>';
+    }).join('');
+    wrap.querySelectorAll('[data-plus]').forEach(btn => btn.addEventListener('click', () => { sim[+btn.dataset.plus].sold++; renderSim(); }));
+    wrap.querySelectorAll('[data-minus]').forEach(btn => btn.addEventListener('click', () => { const i = +btn.dataset.minus; if (sim[i].sold > 0) sim[i].sold--; renderSim(); }));
+  }
+
+  /* ---- 導覽 ---- */
+  function goBack() {
+    if (document.referrer && document.referrer.indexOf('create-campaign') >= 0) history.back();
+    else location.href = 'create-campaign.html?step=bundles';
+  }
+  function doClose() {
+    // 正式版：回專案列表（projects.html）。獨立 demo 版沒有列表頁，這裡回到創建頁起點。
+    location.href = 'create-campaign.html';
+  }
+  $('fc-back-arrow').addEventListener('click', goBack);
+  $('fc-back').addEventListener('click', goBack);
+  $('fc-close').addEventListener('click', doClose);
+  $('fc-reset').addEventListener('click', () => { sim.forEach(b => b.sold = 0); renderSim(); });
+  $('fc-lang').addEventListener('click', () => { if (window.toggleLang) window.toggleLang(); });
+  document.addEventListener('i18n:applied', () => { applyFI(); renderSim(); });
+
+  applyFI();
+  renderSim();
+})();
+</script>
+</body>
+</html>

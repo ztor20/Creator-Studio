@@ -6,31 +6,32 @@
 <title>募資創建（測試版）· Ztor Creator Studio</title>
 
 <!-- 共用 r2.1 的 design system（相對引用、不複製）。資產版本沿用 r2.1 的 ?v=20260701a。 -->
-<script src="../js/theme.js?v=20260701a"></script>
-<link rel="stylesheet" href="../ds-components/_tokens.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/fonts.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/button.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/badge.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/selection-card.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/card.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/input.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/switch.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/upload-tile.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/preview-card.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/readiness.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/chip.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/form-section.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/control-row.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/form-grid.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/preview-column.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/progress-stepper.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/alert.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/data-list.css?v=20260701a">
-<link rel="stylesheet" href="../ds-components/leave-dialog.css?v=20260701a">
-<link rel="stylesheet" href="../shared.css?v=20260701a">
+<script src="js/theme.js?v=20260701a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/input.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260701a">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260701a">
+<link rel="stylesheet" href="shared.css?v=20260701a">
 <style>
   /* 測試版專屬：版面寬度與計算值樣式（沿用 preview-column.css 的兩欄；此處只補本頁差異） */
   .wizard__body { max-width: 1240px; padding-top: 44px; }
+  /* 黑夜版 wizard 配色由 shared.css 提供（2026-06-30 升進 DS），本頁不再自行覆寫。 */
   /* header stepper 響應式：比 r2.1 預設(720px)更早收斂，避免中等寬度時三個標籤擠在一起（僅本頁覆寫） */
   @media (max-width: 1180px) {
     .wizard__top-bar { grid-template-columns: 1fr minmax(0, 520px) 1fr; gap: 12px; }
@@ -66,29 +67,9 @@
   .fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
   .fc-add { min-height: 56px; font-weight: var(--fw-medium); }
   .fc-add-item { min-height: 48px; margin-top: 10px; }
-  /* 前台試算（demo）：單欄、共用池條、套組認購列 */
-  .preview-split.sim-mode { grid-template-columns: 1fr; }
-  .preview-split.sim-mode .preview-col { display: none; }
-  .fc-sim-pool { background: var(--surface-muted); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 16px 18px; margin: 18px 0 16px; }
-  .fc-sim-pool__row { display: flex; justify-content: space-between; align-items: baseline; }
-  .fc-sim-pool__label { font-family: var(--font-ui); font-weight: var(--fw-medium); }
-  .fc-sim-pool__nums { font-family: var(--font-ui); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
-  .fc-sim-pool__nums #fc-sim-left { color: var(--primary); }
-  .fc-sim-pool__sub { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 6px; }
-  .fc-sim-bar { height: 10px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; margin: 10px 0; }
-  .fc-sim-bar__fill { height: 100%; width: 0%; background: var(--gradient-brand); border-radius: var(--radius-pill); transition: width .3s ease; }
-  .fc-sim-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--border-soft); border-radius: var(--radius-md); margin-bottom: 10px; background: var(--surface); }
-  .fc-sim-row--out { opacity: .55; }
-  .fc-sim-row__name { font-family: var(--font-ui); font-weight: var(--fw-medium); }
-  .fc-sim-row__meta { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 3px; }
-  .fc-sim-row__left { font-family: var(--font-ui); font-size: var(--fs-13); margin-top: 4px; }
-  .fc-sim-row__left b { color: var(--primary); }
-  .fc-sim-buy { display: flex; align-items: center; gap: 8px; }
-  .fc-sim-buy__btn { width: 34px; height: 34px; border: 1px solid var(--border); background: var(--card); border-radius: var(--radius-sm); font-size: var(--fs-18); line-height: 1; cursor: pointer; color: var(--foreground); }
-  .fc-sim-buy__btn:hover:not(:disabled) { background: var(--muted); }
-  .fc-sim-buy__btn:disabled { opacity: .4; cursor: not-allowed; }
-  .fc-sim-buy__qty { min-width: 28px; text-align: center; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
-  .fc-sim-soldout { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--status-success); font-weight: var(--fw-medium); }
+  /* 語言切換鈕（中／EN，working） */
+  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--surface); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--text-sub); }
+  .fc-lang:hover { background: var(--muted); color: var(--foreground); }
   /* 添加共創者：搜尋框 + 結果下拉 + 已添加 chips */
   .fc-cc-search { position: relative; }
   .fc-cc-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-popover); z-index: 20; max-height: 280px; overflow-y: auto; }
@@ -126,6 +107,7 @@
       </div>
 
       <div class="wizard__top-actions">
+        <button class="fc-lang" type="button" id="fc-lang" aria-label="Switch language">中 / EN</button>
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
       </div>
@@ -206,20 +188,10 @@
             <h3 class="form-section__title" data-fi="fc.fund.title">募資視窗</h3>
             <p class="form-section__sub" data-fi="fc.fund.sub">幣別、目標金額與募資起訖。發布後鎖定。</p>
           </div>
-          <div class="fc-grid-2">
-            <div class="field">
-              <label class="field__label" for="fc-currency" data-fi="fc.f.currency">結算幣別</label>
-              <select id="fc-currency" class="select">
-                <option value="USD">USD</option>
-                <option value="HKD">HKD</option>
-                <option value="SGD">SGD</option>
-              </select>
-            </div>
-            <div class="field">
-              <label class="field__label" for="fc-goal"><span data-fi="fc.f.goal">目標金額</span> <span class="text-sub" data-fi="fc.required">· 必填</span></label>
-              <input id="fc-goal" class="input" type="number" min="0" placeholder="60000" value="60000">
-              <div class="field__hint" data-fi="fc.f.goal.hint">募資達標門檻。</div>
-            </div>
+          <div class="field">
+            <label class="field__label" for="fc-goal"><span data-fi="fc.f.goal">目標金額</span> <span class="text-sub" data-fi="fc.required">· 必填</span></label>
+            <input id="fc-goal" class="input" type="number" min="0" placeholder="60000" value="60000">
+            <div class="field__hint" data-fi="fc.f.goal.hint">募資達標門檻。</div>
           </div>
           <div class="fc-grid-2">
             <div class="field">
@@ -229,7 +201,7 @@
             <div class="field">
               <label class="field__label" for="fc-end" data-fi="fc.f.end">募資結束</label>
               <input id="fc-end" class="input" type="date">
-              <div class="field__hint" data-fi="fc.f.end.hint">最長 30 天 · 由營運手動設定〔產品待確認〕。</div>
+              <div class="field__hint" data-fi="fc.f.end.hint">最長 30 天，由營運手動設定〔產品待確認〕。</div>
             </div>
           </div>
         </section>
@@ -241,13 +213,13 @@
           </div>
           <div class="fc-grid-2">
             <div class="field">
+              <label class="field__label" for="fc-shares" data-fi="fc.f.shares">總股數（等份）</label>
+              <input id="fc-shares" class="input" type="number" min="1" value="1000">
+            </div>
+            <div class="field">
               <label class="field__label" for="fc-equity" data-fi="fc.f.equity">回饋股權 %</label>
               <input id="fc-equity" class="input" type="number" min="0" max="100" value="30">
               <div class="field__hint"><span data-fi="fc.f.equity.keep">創作者保留</span> <strong id="fc-keep">70%</strong></div>
-            </div>
-            <div class="field">
-              <label class="field__label" for="fc-shares" data-fi="fc.f.shares">總股數（等份）</label>
-              <input id="fc-shares" class="input" type="number" min="1" value="1000">
             </div>
           </div>
           <div class="fc-grid-2">
@@ -274,30 +246,6 @@
         <div id="fc-bundles"><!-- bundle cards injected by JS --></div>
 
         <button type="button" class="btn btn--outline fc-add" id="fc-add-bundle"><span data-fi="fc.bundle.add">＋ 新增套組</span></button>
-      </section>
-
-      <!-- ───────────── STEP 3 · 前台試算（DEMO 專用，正式版不出現）───────────── -->
-      <section data-panel="simulate" class="hidden">
-        <div class="flex-row" style="justify-content:space-between;align-items:flex-end;gap:12px">
-          <div>
-            <h1 class="wizard__step-title" data-fi="fc.sim.h1">前台認購試算</h1>
-            <p class="wizard__step-sub" style="margin-bottom:0" data-fi="fc.sim.sub">模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。此頁僅供 demo，正式版不會出現。</p>
-          </div>
-          <button type="button" class="btn btn--outline btn--sm" id="fc-sim-reset" data-fi="fc.sim.reset">重設試算</button>
-        </div>
-
-        <!-- 共用股份池 -->
-        <div class="fc-sim-pool" id="fc-sim-pool">
-          <div class="fc-sim-pool__row">
-            <span class="fc-sim-pool__label" data-fi="fc.sim.pool">共用股份池</span>
-            <span class="fc-sim-pool__nums"><span id="fc-sim-left">—</span> / <span id="fc-sim-total">—</span> <span data-fi="fc.pv.shares.unit">股</span></span>
-          </div>
-          <div class="fc-sim-bar"><div class="fc-sim-bar__fill" id="fc-sim-fill"></div></div>
-          <div class="fc-sim-pool__sub"><span data-fi="fc.sim.sold">已認購</span> <span id="fc-sim-consumed">0</span> <span data-fi="fc.pv.shares.unit">股</span></div>
-        </div>
-
-        <!-- 套組（前台認購模擬）-->
-        <div id="fc-sim-list"></div>
       </section>
 
     </div><!-- /.preview-split__form -->
@@ -360,139 +308,115 @@
   .cp-ready-pop .readiness { box-shadow: var(--shadow-popover); background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-md); max-height: 60vh; overflow: auto; text-align: left; }
 </style>
 
-<script src="../js/icons.js?v=20260701a"></script>
-<script src="../js/i18n.js?v=20260701a"></script>
-<script src="../partials/wizard-chrome.js?v=20260701a"></script>
+<script src="js/icons.js?v=20260701a"></script>
+<script src="js/i18n.js?v=20260701a"></script>
+<script src="partials/wizard-chrome.js?v=20260701a"></script>
 <script>
 /* 募資創建（測試版）互動 · 依 r2.1_funding-test/5.1.1-募資計畫創建流程.md
    3 步精靈（基本資料／金額與股權／套組）＋全程即時預覽＋就緒檢查；每股金額/股權即時換算。
    i18n：共用 r2.1 的 i18n.js 處理 wiz.* chrome；本頁內容用獨立 data-fi 字典（不改 r2.1 的 i18n.js）。 */
 (function () {
-  /* 本測試版固定中文（無語言切換）。直接設定 lang，不寫入 localStorage，
-     避免影響 r2.1 其他頁的語言偏好；之後 i18n.js 的 apply() 會以此 lang 渲染 chrome。 */
-  document.documentElement.lang = 'zh-Hant';
+  /* 預設中文；若使用者已用「中/EN」切換過（localStorage 已存）則沿用其選擇。 */
+  try { if (!localStorage.getItem('ztor-r21-lang')) document.documentElement.lang = 'zh-Hant'; } catch (e) { document.documentElement.lang = 'zh-Hant'; }
 
-  /* ---------- 本頁中文字典（data-fi / data-fi-ph）---------- */
+  /* ---------- 本頁雙語字典（data-fi / data-fi-ph；中文預設，可中／EN 切換）---------- */
   const FI = {
-    'fc.h1': '建立新的共創計畫',
-    'fc.draft': '共創募資計畫 · 草稿',
-    'fc.required': '· 必填',
-    'fc.upload': '上傳圖片',
-    'fc.back': '上一步',
-    'fc.next': '下一步',
-    'fc.savedraft.mock': '草稿已儲存（原型不實際寫入）',
-
-    'fc.step.basics': '基本資料',
-    'fc.step.money': '金額與股權',
-    'fc.step.bundles': '套組',
-    'fc.step.simulate': '前台試算',
-
-    'fc.sim.h1': '前台認購試算',
-    'fc.sim.sub': '模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。此頁僅供 demo，正式版不會出現。',
-    'fc.sim.reset': '重設試算',
-    'fc.sim.pool': '共用股份池',
-    'fc.sim.sold': '已認購',
-    'fc.sim.empty': '尚未設定套組，請返回上一步新增。',
-    'fc.sim.unit-price': '單價',
-    'fc.sim.per': '每份含',
-    'fc.sim.cap': '名額',
-    'fc.sim.cap-inf': '不限',
-    'fc.sim.left': '剩餘可買',
-    'fc.sim.bought': '已認購',
-    'fc.sim.soldout': '售罄',
-    'fc.sim.nonshare': '不佔股份池',
-
-    'fc.s0.h1': '先填基本資料',
-    'fc.s0.sub': '贊助者會看到的計畫門面。財務設定在下一步。',
-    'fc.identity.title': '識別資訊',
-    'fc.identity.sub': '贊助者會看到的內容。',
-    'fc.f.title': '計畫標題',
-    'fc.f.title.ph': '例如：深空回聲',
-    'fc.f.subtitle': '副標',
-    'fc.f.subtitle.ph': '一句話簡介',
-    'fc.f.about': '計畫介紹',
-    'fc.f.about.ph': '這個計畫在說什麼？',
-    'fc.f.poster': '海報',
-    'fc.f.banner': '橫幅',
-    'fc.cc.title': '添加共創者',
-    'fc.cc.sub': '搜尋 creator 用戶，或貼上 email 來添加共同創作者。可多位。',
-    'fc.cc.ph': '搜尋用戶名稱，或貼上 email',
-    'fc.cc.invite': '以 email 邀請',
-    'fc.cc.invited': '邀請中',
-    'fc.cc.none': '找不到符合的用戶',
-
-    'fc.s1.h1': '設定金額與股權',
-    'fc.s1.sub': '幣別、目標、期間，以及回饋多少股權、拆成幾股。每股金額與每股股權會自動算出。',
-    'fc.fund.title': '募資視窗',
-    'fc.fund.sub': '幣別、目標金額與募資起訖。發布後鎖定。',
-    'fc.f.currency': '結算幣別',
-    'fc.f.goal': '目標金額',
-    'fc.f.goal.hint': '募資達標門檻。',
-    'fc.f.start': '募資開始',
-    'fc.f.end': '募資結束',
-    'fc.f.end.hint': '最長 30 天，由營運手動設定〔產品待確認〕。',
-    'fc.equity.title': '股權與股數',
-    'fc.equity.sub': '回饋給贊助者多少股權、拆成幾股。股權比例只影響股權分配，不影響每股金額。',
-    'fc.f.equity': '回饋股權 %',
-    'fc.f.equity.keep': '創作者保留',
-    'fc.f.shares': '總股數（等份）',
-    'fc.calc.price': '每股金額',
-    'fc.calc.equity': '每股股權',
-    'fc.calc.note': '每股金額 = 目標金額 ÷ 總股數；每股股權 = 回饋股權% ÷ 總股數。即時換算。',
-    'fc.legal.note': '合規：每計畫 T&C 由 Legal 撰寫、Stripe 達標後才扣款、退款一律 Stripe 後台手動。〔產品待確認〕',
-
-    'fc.s2.h1': '新增套組',
-    'fc.s2.sub': '每個套組是贊助者可認購的回饋方案，可含分潤股份與多件商品。至少一個。',
-    'fc.bundle.add': '＋ 新增套組',
-    'fc.bundle.title': '套組',
-    'fc.bundle.remove': '移除',
-    'fc.b.name': '套組名稱',
-    'fc.b.name.ph': '例如：早鳥支持者',
-    'fc.b.desc': '套組描述',
-    'fc.b.desc.ph': '這個套組包含什麼？',
-    'fc.b.shares': '含股份',
-    'fc.b.shares.ph': '非分潤留空',
-    'fc.b.cap': '名額',
-    'fc.b.cap.ph': '0 = 無上限',
-    'fc.b.items': '套組商品（照片＋名稱＋描述，可多件）',
-    'fc.b.item.name.ph': '商品名稱',
-    'fc.b.item.desc.ph': '商品描述',
-    'fc.b.item.add': '＋ 新增商品',
-
-    'fc.pv.heading': '計畫預覽',
-    'fc.pv.sub': '贊助者在 Ztor 看到的樣子',
-    'fc.pv.goal': '目標',
-    'fc.pv.price': '每股金額',
-    'fc.pv.equityshare': '每股股權',
-    'fc.pv.equity': '回饋股權',
-    'fc.pv.keep': '創作者保留',
-    'fc.pv.dates': '募資期間',
-    'fc.pv.bundles.empty': '尚未新增套組',
-    'fc.pv.shares.unit': '股',
-    'fc.pv.cap.unit': '名額',
-    'fc.pv.cap.inf': '不限名額',
-
-    'fc.ready.title': '建立前檢查',
-    'fc.ready.note': '就緒判準〔產品待確認〕，此處僅示意。',
-    'fc.ready.title-ok': '標題已填',
-    'fc.ready.goal-ok': '目標金額 > 0',
-    'fc.ready.shares-ok': '總股數 > 0',
-    'fc.ready.dates-ok': '募資起訖已設',
-    'fc.ready.bundle-ok': '至少一個套組',
-    'fc.ready.chip.todo': '還差 {n} 項',
-    'fc.ready.chip.ready': '可建立',
+    'fc.h1': { zh: '建立新的共創計畫', en: 'New campaign' },
+    'fc.draft': { zh: '共創募資計畫 · 草稿', en: 'Crowdfunding campaign · Draft' },
+    'fc.required': { zh: '· 必填', en: '· required' },
+    'fc.upload': { zh: '上傳圖片', en: 'Upload image' },
+    'fc.back': { zh: '上一步', en: 'Back' },
+    'fc.next': { zh: '下一步', en: 'Continue' },
+    'fc.savedraft.mock': { zh: '草稿已儲存（原型不實際寫入）', en: 'Draft saved (no-op in prototype)' },
+    'fc.step.basics': { zh: '基本資料', en: 'Basics' },
+    'fc.step.money': { zh: '金額與股權', en: 'Money & equity' },
+    'fc.step.bundles': { zh: '套組', en: 'Bundles' },
+    'fc.s0.h1': { zh: '先填基本資料', en: 'Start with the basics' },
+    'fc.s0.sub': { zh: '贊助者會看到的計畫門面。財務設定在下一步。', en: 'The campaign\'s public identity. Money comes next.' },
+    'fc.identity.title': { zh: '識別資訊', en: 'Identity' },
+    'fc.identity.sub': { zh: '贊助者會看到的內容。', en: 'What backers will see.' },
+    'fc.f.title': { zh: '計畫標題', en: 'Project title' },
+    'fc.f.title.ph': { zh: '例如：深空回聲', en: 'e.g. Deep Space Echo' },
+    'fc.f.subtitle': { zh: '副標', en: 'Subtitle' },
+    'fc.f.subtitle.ph': { zh: '一句話簡介', en: 'One-line summary' },
+    'fc.f.about': { zh: '計畫介紹', en: 'About' },
+    'fc.f.about.ph': { zh: '這個計畫在說什麼？', en: 'What is this campaign about?' },
+    'fc.f.poster': { zh: '海報', en: 'Poster' },
+    'fc.f.banner': { zh: '橫幅', en: 'Banner' },
+    'fc.cc.title': { zh: '添加共創者', en: 'Add co-creators' },
+    'fc.cc.sub': { zh: '搜尋 creator 用戶，或貼上 email 來添加共同創作者。可多位。', en: 'Search creators, or paste an email to add co-creators. Multiple allowed.' },
+    'fc.cc.ph': { zh: '搜尋用戶名稱，或貼上 email', en: 'Search a username, or paste an email' },
+    'fc.cc.invite': { zh: '以 email 邀請', en: 'Invite by email' },
+    'fc.cc.invited': { zh: '邀請中', en: 'Invited' },
+    'fc.cc.none': { zh: '找不到符合的用戶', en: 'No matching users' },
+    'fc.s1.h1': { zh: '設定金額與股權', en: 'Set the money & equity' },
+    'fc.s1.sub': { zh: '目標、期間，以及回饋多少股權、拆成幾股。每股金額與每股股權會自動算出。', en: 'Goal, window, how much equity to give back and into how many shares. Per-share figures auto-calculate.' },
+    'fc.fund.title': { zh: '募資視窗', en: 'Funding window' },
+    'fc.fund.sub': { zh: '目標金額與募資起訖。發布後鎖定。', en: 'Goal and dates. Locked after publish.' },
+    'fc.f.goal': { zh: '目標金額', en: 'Funding goal' },
+    'fc.f.goal.hint': { zh: '募資達標門檻。', en: 'The amount that counts as funded.' },
+    'fc.f.start': { zh: '募資開始', en: 'Start date' },
+    'fc.f.end': { zh: '募資結束', en: 'End date' },
+    'fc.f.end.hint': { zh: '最長 30 天，由營運手動設定〔產品待確認〕。', en: 'Up to 30 days, set manually by ops [pending].' },
+    'fc.equity.title': { zh: '股權與股數', en: 'Shares & equity' },
+    'fc.equity.sub': { zh: '回饋給贊助者多少股權、拆成幾股。股權比例只影響股權分配，不影響每股金額。', en: 'How much equity backers get and into how many shares. The ratio only affects equity split, not the per-share price.' },
+    'fc.f.equity': { zh: '回饋股權 %', en: 'Backer equity %' },
+    'fc.f.equity.keep': { zh: '創作者保留', en: 'Creator keeps' },
+    'fc.f.shares': { zh: '總股數（等份）', en: 'Total shares' },
+    'fc.calc.price': { zh: '每股金額', en: 'Price / share' },
+    'fc.calc.equity': { zh: '每股股權', en: 'Equity / share' },
+    'fc.calc.note': { zh: '每股金額 = 目標金額 ÷ 總股數；每股股權 = 回饋股權% ÷ 總股數。即時換算。', en: 'Price/share = goal ÷ shares; equity/share = backer equity% ÷ shares. Live.' },
+    'fc.legal.note': { zh: '合規：每計畫 T&C 由 Legal 撰寫、Stripe 達標後才扣款、退款一律 Stripe 後台手動。〔產品待確認〕', en: 'Legal: per-campaign T&C by Legal, Stripe charges only after the goal is met, refunds are manual in Stripe. [pending]' },
+    'fc.s2.h1': { zh: '新增套組', en: 'Add bundles' },
+    'fc.s2.sub': { zh: '每個套組是贊助者可認購的回饋方案，可含分潤股份與多件商品。至少一個。', en: 'Each bundle is a reward backers can pledge to — may include profit-share shares and multiple items. At least one.' },
+    'fc.bundle.add': { zh: '＋ 新增套組', en: '＋ Add bundle' },
+    'fc.bundle.title': { zh: '套組', en: 'Bundle' },
+    'fc.bundle.remove': { zh: '移除', en: 'Remove' },
+    'fc.b.name': { zh: '套組名稱', en: 'Bundle name' },
+    'fc.b.name.ph': { zh: '例如：早鳥支持者', en: 'e.g. Early Bird' },
+    'fc.b.desc': { zh: '套組描述', en: 'Description' },
+    'fc.b.desc.ph': { zh: '這個套組包含什麼？', en: 'What\'s in this bundle?' },
+    'fc.b.shares': { zh: '含股份', en: 'Shares included' },
+    'fc.b.shares.ph': { zh: '非分潤留空', en: 'leave blank if none' },
+    'fc.b.cap': { zh: '名額', en: 'Cap' },
+    'fc.b.cap.ph': { zh: '0 = 無上限', en: '0 = unlimited' },
+    'fc.b.items': { zh: '套組商品（照片＋名稱＋描述，可多件）', en: 'Bundle items (photo + name + description, multiple)' },
+    'fc.b.item.name.ph': { zh: '商品名稱', en: 'Item name' },
+    'fc.b.item.desc.ph': { zh: '商品描述', en: 'Item description' },
+    'fc.b.item.add': { zh: '＋ 新增商品', en: '＋ Add item' },
+    'fc.pv.heading': { zh: '計畫預覽', en: 'Campaign preview' },
+    'fc.pv.sub': { zh: '贊助者在 Ztor 看到的樣子', en: 'How backers see it on Ztor' },
+    'fc.pv.goal': { zh: '目標', en: 'Goal' },
+    'fc.pv.price': { zh: '每股金額', en: 'Price / share' },
+    'fc.pv.equityshare': { zh: '每股股權', en: 'Equity / share' },
+    'fc.pv.equity': { zh: '回饋股權', en: 'Backer equity' },
+    'fc.pv.keep': { zh: '創作者保留', en: 'creator keeps' },
+    'fc.pv.dates': { zh: '募資期間', en: 'Window' },
+    'fc.pv.bundles.empty': { zh: '尚未新增套組', en: 'No bundles yet' },
+    'fc.pv.shares.unit': { zh: '股', en: 'shares' },
+    'fc.pv.cap.unit': { zh: '名額', en: 'cap' },
+    'fc.pv.cap.inf': { zh: '不限名額', en: 'unlimited' },
+    'fc.ready.title': { zh: '建立前檢查', en: 'Before you save' },
+    'fc.ready.note': { zh: '就緒判準〔產品待確認〕，此處僅示意。', en: 'Readiness rules pending — illustrative only.' },
+    'fc.ready.title-ok': { zh: '標題已填', en: 'Title filled' },
+    'fc.ready.goal-ok': { zh: '目標金額 > 0', en: 'Goal > 0' },
+    'fc.ready.shares-ok': { zh: '總股數 > 0', en: 'Shares > 0' },
+    'fc.ready.dates-ok': { zh: '募資起訖已設', en: 'Dates set' },
+    'fc.ready.bundle-ok': { zh: '至少一個套組', en: 'At least one bundle' },
+    'fc.ready.chip.todo': { zh: '還差 {n} 項', en: '{n} to go' },
+    'fc.ready.chip.ready': { zh: '可建立', en: 'Ready' },
   };
 
   const lang = () => (document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en');
-  function fiText(k) { return (k in FI) ? FI[k] : null; }
+  function fiText(k) { const e = FI[k]; return e ? e[lang()] : null; }
   function applyFI(root) {
     (root || document).querySelectorAll('[data-fi]').forEach(el => { const v = fiText(el.dataset.fi); if (v != null) el.textContent = v; });
     (root || document).querySelectorAll('[data-fi-ph]').forEach(el => { const v = fiText(el.dataset.fiPh); if (v != null) el.setAttribute('placeholder', v); });
   }
 
   /* ---------- 步驟控制 ---------- */
-  const FLOW = ['basics', 'money', 'bundles', 'simulate'];
-  const STEP_LABEL = { basics: 'fc.step.basics', money: 'fc.step.money', bundles: 'fc.step.bundles', simulate: 'fc.step.simulate' };
+  const FLOW = ['basics', 'money', 'bundles'];
+  const STEP_LABEL = { basics: 'fc.step.basics', money: 'fc.step.money', bundles: 'fc.step.bundles' };
   let idx = 0;
 
   function buildStepper() {
@@ -512,13 +436,10 @@
     if (idx >= FLOW.length) idx = FLOW.length - 1;
     const cur = FLOW[idx];
     document.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== cur));
-    document.querySelector('.preview-split').classList.toggle('sim-mode', cur === 'simulate');
-    if (cur === 'simulate') { if (!simBuilt) { buildSim(); simBuilt = true; } else { renderSim(); } }
-    else { simBuilt = false; }
     buildStepper();
     document.querySelector('[data-action=back]').style.display = idx === 0 ? 'none' : '';
     const next = document.querySelector('[data-action=next]');
-    if (idx === FLOW.length - 1) next.textContent = (lang() === 'zh' ? '儲存草稿' : 'Save draft');
+    if (idx === FLOW.length - 1) next.textContent = (lang() === 'zh' ? '創建送出' : 'Create');
     else next.textContent = (fiText('fc.next') || 'Continue') + ' · ' + (fiText(STEP_LABEL[FLOW[idx + 1]]) || '');
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -532,7 +453,7 @@
     const goal = Number($('fc-goal').value) || 0;
     const shares = Number($('fc-shares').value) || 0;
     const equity = Number($('fc-equity').value) || 0;
-    const cur = $('fc-currency').value;
+    const cur = 'USD';   // 結算幣別已移除，原型固定 USD
     const price = shares > 0 ? goal / shares : 0;
     const eqShare = shares > 0 ? equity / shares : 0;
     const keep = Math.max(0, 100 - equity);
@@ -625,10 +546,8 @@
     card.innerHTML =
       '<div class="fc-bundle__head"><h3 class="card__title"><span data-fi="fc.bundle.title">套組</span> ' + bundleSeq + '</h3>' +
       '<a class="card__link" href="#" data-bundle-remove><span data-fi="fc.bundle.remove">移除</span></a></div>' +
-      '<div class="fc-grid-2">' +
-        '<div class="field"><label class="field__label" data-fi="fc.b.name">套組名稱</label><input class="input" data-b-name data-fi-ph="fc.b.name.ph" placeholder="例如：早鳥支持者"></div>' +
-        '<div class="field"><label class="field__label" data-fi="fc.b.desc">套組描述</label><input class="input" data-b-desc data-fi-ph="fc.b.desc.ph" placeholder="這個套組包含什麼？"></div>' +
-      '</div>' +
+      '<div class="field"><label class="field__label" data-fi="fc.b.name">套組名稱</label><input class="input" data-b-name data-fi-ph="fc.b.name.ph" placeholder="例如：早鳥支持者"></div>' +
+      '<div class="field"><label class="field__label" data-fi="fc.b.desc">套組描述</label><textarea class="textarea" data-b-desc data-fi-ph="fc.b.desc.ph" placeholder="這個套組包含什麼？"></textarea></div>' +
       '<div class="fc-grid-2">' +
         '<div class="field"><label class="field__label" data-fi="fc.b.shares">含股份</label><input class="input" type="number" min="0" data-b-shares data-fi-ph="fc.b.shares.ph" placeholder="非分潤留空"></div>' +
         '<div class="field"><label class="field__label" data-fi="fc.b.cap">名額</label><input class="input" type="number" min="0" data-b-cap data-fi-ph="fc.b.cap.ph" placeholder="0 = 無上限" value="0"></div>' +
@@ -643,55 +562,6 @@
     return card;
   }
 
-  /* ---------- 前台試算（demo：共用股份池）---------- */
-  let sim = [];   // [{name, shares, cap, sold}]
-  let simBuilt = false;   // 只在首次進入試算步驟建一次（重新進入才重建；i18n 重繪不重置已認購）
-  function buildSim() {
-    sim = bundleData().map((b, i) => ({
-      name: b.name || ((fiText('fc.bundle.title') || '套組') + ' ' + (i + 1)),
-      shares: b.shares, cap: b.cap, sold: 0,
-    }));
-    renderSim();
-  }
-  function renderSim() {
-    const total = Number($('fc-shares').value) || 0;
-    const consumed = sim.reduce((s, b) => s + b.sold * b.shares, 0);
-    const left = Math.max(0, total - consumed);
-    $('fc-sim-total').textContent = total.toLocaleString('en-US');
-    $('fc-sim-left').textContent = left.toLocaleString('en-US');
-    $('fc-sim-consumed').textContent = consumed.toLocaleString('en-US');
-    $('fc-sim-fill').style.width = (total > 0 ? Math.min(100, consumed / total * 100) : 0) + '%';
-    const c = calc();
-    const wrap = $('fc-sim-list');
-    if (!sim.length) { wrap.innerHTML = '<p class="fc-footnote" style="margin-top:8px">' + (fiText('fc.sim.empty') || '') + '</p>'; return; }
-    const inf = fiText('fc.sim.cap-inf') || '不限';
-    const unitWord = fiText('fc.pv.shares.unit') || '股';
-    wrap.innerHTML = sim.map((b, i) => {
-      const cap = b.cap > 0 ? b.cap : Infinity;
-      const maxByPool = b.shares > 0 ? Math.floor(left / b.shares) : Infinity;
-      const remain = Math.max(0, Math.min(cap - b.sold, maxByPool));
-      const canBuy = remain > 0;
-      const unit = b.shares * c.price;
-      const capTxt = b.cap > 0 ? b.cap : inf;
-      const leftTxt = (remain === Infinity) ? inf : remain;
-      const shareTxt = b.shares > 0 ? (b.shares + ' ' + unitWord) : (fiText('fc.sim.nonshare') || '不佔股份池');
-      return '<div class="fc-sim-row' + (canBuy ? '' : ' fc-sim-row--out') + '">' +
-        '<div>' +
-          '<div class="fc-sim-row__name">' + esc(b.name) + '</div>' +
-          '<div class="fc-sim-row__meta">' + (fiText('fc.sim.per') || '每份含') + ' ' + shareTxt + ' · ' + (fiText('fc.sim.unit-price') || '單價') + ' ' + fmtMoney(unit, c.cur) + ' · ' + (fiText('fc.sim.cap') || '名額') + ' ' + capTxt + '</div>' +
-          '<div class="fc-sim-row__left">' + (fiText('fc.sim.bought') || '已認購') + ' ' + b.sold + ' · ' + (fiText('fc.sim.left') || '剩餘可買') + ' <b>' + leftTxt + '</b>' + (canBuy ? '' : ' · <span class="fc-sim-soldout">' + (fiText('fc.sim.soldout') || '售罄') + '</span>') + '</div>' +
-        '</div>' +
-        '<div class="fc-sim-buy">' +
-          '<button type="button" class="fc-sim-buy__btn" data-sim-minus="' + i + '"' + (b.sold > 0 ? '' : ' disabled') + '>－</button>' +
-          '<span class="fc-sim-buy__qty">' + b.sold + '</span>' +
-          '<button type="button" class="fc-sim-buy__btn" data-sim-plus="' + i + '"' + (canBuy ? '' : ' disabled') + '>＋</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-    wrap.querySelectorAll('[data-sim-plus]').forEach(btn => btn.addEventListener('click', () => { sim[+btn.dataset.simPlus].sold++; renderSim(); }));
-    wrap.querySelectorAll('[data-sim-minus]').forEach(btn => btn.addEventListener('click', () => { const i = +btn.dataset.simMinus; if (sim[i].sold > 0) sim[i].sold--; renderSim(); }));
-  }
-  document.getElementById('fc-sim-reset').addEventListener('click', () => { sim.forEach(b => b.sold = 0); renderSim(); });
 
   /* ---------- 添加共創者（搜尋用戶或貼 email）---------- */
   const CREATORS = [
@@ -746,27 +616,34 @@
   });
 
   /* ---------- 綁定 ---------- */
+  document.getElementById('fc-lang').addEventListener('click', () => { if (window.toggleLang) window.toggleLang(); });
   document.getElementById('fc-add-bundle').addEventListener('click', () => { document.getElementById('fc-bundles').appendChild(bundleCard()); updatePreview(); });
+  function submitCampaign() {
+    const c = calc();
+    const data = { goal: c.goal, totalShares: c.shares, equity: c.equity, bundles: bundleData() };
+    try { sessionStorage.setItem('fc-sim', JSON.stringify(data)); } catch (e) {}
+    location.href = 'funding-simulate.html';   // 創建送出 → 獨立「前台試算」頁
+  }
   document.querySelector('[data-action=next]').addEventListener('click', () => {
     if (idx < FLOW.length - 1) { idx++; render(); }
-    else alert(fiText('fc.savedraft.mock'));
+    else submitCampaign();
   });
   document.querySelector('[data-action=back]').addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
   document.querySelector('.wizard__body').addEventListener('input', updatePreview);
   document.querySelector('.wizard__body').addEventListener('change', updatePreview);
 
   // 語言切換時：i18n.js 處理 wiz.*，本頁重套 data-fi 並重繪
-  document.addEventListener('i18n:applied', () => { applyFI(); render(); updatePreview(); });
+  document.addEventListener('i18n:applied', () => { applyFI(); render(); updatePreview(); renderCcChips(); });
 
   // 預設不預先帶套組（畫面只留「新增套組」按鈕，使用者按了才出現套組卡）
   applyFI();
-  // 深連結：?step=basics|money|bundles|simulate 直接開到該步（方便檢視／截圖）
+  // 深連結：?step=basics|money|bundles 直接開到該步（方便檢視／截圖）
   const qStep = new URLSearchParams(location.search).get('step');
   if (qStep && FLOW.indexOf(qStep) >= 0) idx = FLOW.indexOf(qStep);
   render();
   updatePreview();
 })();
 </script>
-<script src="../js/devtools.js?v=20260701a"></script>
+<script src="js/devtools.js?v=20260701a"></script>
 </body>
 </html>
