@@ -222,7 +222,7 @@
      --eshop     商品：drag / image / 名稱+meta / 分類 / 價格 / 狀態 / 庫存 / actions
      --bundles   套組：image / 套組名 / 成員 / 套組價 / 狀態 / 庫存 / actions
      --auctions  競標：image / 品項 / 分類 / 出價 / 狀態 / 動態 / actions
-   （拖曳、篩空、分頁切換、kebab 等頁級行為仍在 e-shop.html）。
+   （篩空、分頁切換、kebab 等頁級行為仍在 e-shop.html；拖曳握把與抬起態見檔尾）。
    ============================================================ */
 
 /* 商品分頁 */
@@ -261,4 +261,37 @@
   .product-list--eshop .product-list__price { grid-column: 1; grid-row: 3; padding-left: 72px; }
   .product-list--eshop .product-list__status { grid-column: 1; grid-row: 4; padding-left: 72px; }
   .product-list--eshop .product-list__stock { grid-column: 1; grid-row: 5; padding-left: 72px; }
+  .product-list__drag { display: none; }
+}
+
+/* ------------------------------------------------------------
+   拖曳重排：握把 + 抬起態（spec §59/§69，粉絲端陳列順序，D083）
+   商品列最前的 grip 握把才可抓取重排；抓起時整列抬升、置頂、grabbing。
+   跟手 transform 由頁面 JS 即時控制（不放進 transition，否則跟手延遲）。
+   Promoted 2026-07-01 from e-shop.html inline。目前 E-Shop Products 分頁在用。
+   ------------------------------------------------------------ */
+.product-list__drag {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted-foreground);
+  cursor: grab; touch-action: none; user-select: none;
+}
+.product-list__drag:hover { color: var(--foreground); }
+.product-list__drag:active { cursor: grabbing; }
+.product-list__drag .ztor-icon { width: 16px; height: 16px; }
+/* 只有 --eshop Products 分頁的列參與拖曳（陰影過渡範圍限定此處） */
+.product-list--eshop[data-eshop-panel="products"] .product-list__row { transition: box-shadow 150ms ease; }
+.product-list__row.is-dragging {
+  position: relative;
+  z-index: 3;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  cursor: grabbing;
+  will-change: transform;
+}
+/* 草稿列不參與粉絲端陳列排序（草稿不對粉絲顯示、無陳列順序）：藏握把、不可抓；頁面 JS 另把草稿列置頂。 */
+.product-list__row[data-status="draft"] .product-list__drag {
+  visibility: hidden;
+  pointer-events: none;
+  cursor: default;
 }

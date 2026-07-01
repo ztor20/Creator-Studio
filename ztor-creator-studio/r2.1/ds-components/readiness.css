@@ -54,3 +54,35 @@
   color: var(--foreground-muted);
 }
 .readiness__banner--ready { color: var(--status-success); }
+
+/* ------------------------------------------------------------
+   Footer chip 變體：貼在 footer 主動作旁的就緒狀態指示（inline chip）。
+   未備齊＝muted、全備齊＝轉綠（--ready）；hover／focus 於上方浮出完整
+   .readiness 卡當 tooltip（__pop）。create-product / create-campaign footer 共用。
+   Promoted 2026-07-01 from create-product/create-campaign inline（.cp-ready-chip）。
+   ------------------------------------------------------------ */
+.readiness__chip {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: var(--fs-12); font-weight: var(--fw-medium);
+  color: var(--foreground-muted);
+  white-space: nowrap; cursor: default;
+}
+.readiness__chip .ztor-icon { width: 14px; height: 14px; }
+.readiness__chip--ready { color: var(--status-success); }
+.readiness__pop {
+  position: absolute; right: 0; bottom: calc(100% + 10px);
+  width: 300px; max-width: 78vw;
+  opacity: 0; visibility: hidden; transform: translateY(4px);
+  transition: opacity var(--duration) var(--easing),
+              transform var(--duration) var(--easing),
+              visibility var(--duration) var(--easing);
+  pointer-events: none; z-index: 60;
+}
+.readiness__pop .readiness { box-shadow: var(--shadow-popover); max-height: 60vh; overflow: auto; text-align: left; }
+.readiness__pop::after { content: ""; position: absolute; top: 100%; right: 26px; border: 7px solid transparent; border-top-color: var(--muted); }
+.readiness__chip:hover .readiness__pop,
+.readiness__chip:focus-within .readiness__pop { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .readiness__pop { transition: none; }
+}
