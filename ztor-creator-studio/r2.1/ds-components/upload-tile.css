@@ -88,3 +88,63 @@
   color: var(--status-success);
 }
 .upload-tile.is-filled .upload-tile__title { color: var(--status-success); }
+
+/* ============================================================
+   Interactive uploader — opt-in via [data-upload]
+   spec 5.1.5.2 §4 Show it off（呈現層互動；真實上傳/AI 優化為 demo）
+   states on root: .is-empty（預設）· .is-uploading · .is-filled · .is-optimizing · .is-optimized
+   增強端：partials/upload-tile.js（注入 input/thumb/overlay/progress/actions/badge、切狀態、假計時）
+   只作用在 [data-upload]；沒有此屬性的舊 tile 維持上方 .is-filled 綠框行為，不受影響。
+   ============================================================ */
+.upload-tile[data-upload] { position: relative; overflow: hidden; }
+
+/* 未上傳：hover 才浮現更多資訊（保留空間、只切 opacity，無版面跳動）*/
+.upload-tile[data-upload].is-empty .upload-tile__sub,
+.upload-tile[data-upload].is-empty .upload-tile__hint { opacity: 0; transition: opacity .15s ease; }
+.upload-tile[data-upload].is-empty:hover .upload-tile__sub,
+.upload-tile[data-upload].is-empty:hover .upload-tile__hint { opacity: 1; }
+
+/* 縮圖（選到的圖，createObjectURL）：非空狀態即鋪滿 */
+.upload-tile__thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__thumb { display: block; }
+/* 非空狀態隱藏空狀態提示；filled/optimized 收掉綠框與內距、改中性邊 */
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__icon,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__title,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__sub,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__hint { display: none; }
+.upload-tile[data-upload].is-filled,
+.upload-tile[data-upload].is-optimizing,
+.upload-tile[data-upload].is-optimized,
+.upload-tile[data-upload].is-uploading {
+  border-style: solid; border-color: var(--border); color: var(--foreground); padding: 0;
+}
+
+/* 上傳中：底部進度條 */
+.upload-tile__progress { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 6px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; display: none; z-index: 2; }
+.upload-tile__bar { height: 100%; width: 0%; background: var(--primary); border-radius: inherit; transition: width .2s linear; }
+.upload-tile[data-upload].is-uploading .upload-tile__progress { display: block; }
+
+/* 進行中浮層（上傳中／優化中）：frosted 罩＋spinner＋狀態字，主題自適應 */
+.upload-tile__overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: color-mix(in srgb, var(--card) 82%, transparent); color: var(--foreground); font-size: var(--fs-12); z-index: 3; }
+.upload-tile[data-upload].is-uploading .upload-tile__overlay,
+.upload-tile[data-upload].is-optimizing .upload-tile__overlay { display: flex; }
+.upload-tile__spinner { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: upl-spin .6s linear infinite; }
+@keyframes upl-spin { to { transform: rotate(360deg); } }
+
+/* 已上傳 hover：替換／AI 優化／刪除 */
+.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: 8px; background: color-mix(in srgb, var(--foreground) 42%, transparent); opacity: 0; transition: opacity .15s ease; z-index: 4; }
+.upload-tile[data-upload].is-filled .upload-tile__actions,
+.upload-tile[data-upload].is-optimized .upload-tile__actions { display: flex; }
+.upload-tile[data-upload].is-filled:hover .upload-tile__actions,
+.upload-tile[data-upload].is-optimized:hover .upload-tile__actions,
+.upload-tile[data-upload].is-filled:focus-within .upload-tile__actions,
+.upload-tile[data-upload].is-optimized:focus-within .upload-tile__actions { opacity: 1; }
+.upload-tile__act { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 0; border-radius: var(--radius-md); background: var(--card); color: var(--foreground); box-shadow: var(--shadow-card); cursor: pointer; transition: background .12s ease; }
+.upload-tile__act:hover { background: var(--muted); }
+.upload-tile__act--ai { color: var(--primary); }
+.upload-tile__act .ztor-icon { width: 16px; height: 16px; }
+
+/* AI 優化完成徽章 */
+.upload-tile__badge { position: absolute; top: 6px; left: 6px; display: none; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font-size: var(--fs-11); font-weight: var(--fw-medium); z-index: 5; }
+.upload-tile[data-upload].is-optimized .upload-tile__badge { display: inline-flex; }
+.upload-tile__badge .ztor-icon { width: 12px; height: 12px; }
