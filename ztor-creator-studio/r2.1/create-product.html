@@ -39,7 +39,54 @@
   /* footnote（footer 上方置中小字）*/
   .cp-footnote { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 22px; }
 
-  /* 就緒檢查 footer chip＋tooltip（.readiness__chip / --ready / __pop）已 promote 至 ds-components/readiness.css。 */
+  .wizard__ready-hint {
+    color: var(--foreground-muted);
+    font: var(--fw-medium) var(--fs-12)/1.3 var(--font-ui);
+    white-space: nowrap;
+  }
+  .wizard__ready-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--foreground-muted);
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    font-weight: var(--fw-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .wizard__ready-status .ztor-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .wizard__ready-status:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+  .wizard__ready-status--ready { color: var(--status-success); }
+  .readiness__item-label { flex: 1; min-width: 0; }
+  .readiness__status {
+    margin-left: auto;
+    color: var(--muted-foreground);
+    font-size: var(--fs-12);
+    white-space: nowrap;
+  }
+  .readiness__item--done .readiness__status { color: var(--status-success); }
+  .readiness__item[data-ready-target] { cursor: pointer; }
+  .form-section--jumped {
+    border-radius: var(--radius-md);
+    outline: 2px solid var(--ring);
+    outline-offset: 8px;
+  }
+  .bulk-apply { margin-bottom: 14px; }
+  .bulk-apply__head { margin-bottom: 10px; }
+  .bulk-apply__action { align-self: end; }
+  .bulk-apply__action .btn { width: 100%; }
   /* 編輯態 Delete（破壞性）：紅字 ghost。完整 destructive 樣式＋確認 modal 待規格 */
   .cp-delete { color: var(--destructive, #c0392b); }
   .cp-delete:hover { background: color-mix(in srgb, var(--destructive, #c0392b) 10%, transparent); color: var(--destructive, #c0392b); }
@@ -273,8 +320,18 @@
         <p class="form-section__sub" data-i18n="cp.var.sub">Same item in different sizes or colors — each with its own price and stock.</p>
       </div>
       <div class="segmented radio-cards" id="cp-var-mode">
-        <button class="segmented__btn segmented__btn--active" type="button" data-cp-var="single" data-i18n="cp.var.single">Single option</button>
-        <button class="segmented__btn" type="button" data-cp-var="multiple" data-i18n="cp.var.multiple">Multiple variations</button>
+        <button class="segmented__btn segmented__btn--active" type="button" data-cp-var="single">
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="cp.var.single">Single option</span>
+            <span class="radio-card__sub" data-i18n="cp.var.single-sub">All buyers purchase the same option.</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-cp-var="multiple">
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="cp.var.multiple">Multiple variations</span>
+            <span class="radio-card__sub" data-i18n="cp.var.multiple-sub">Each variation can have its own price and stock.</span>
+          </span>
+        </button>
       </div>
       <!-- 多規格：選項建構器（選項名/值）。逐規格表在下方獨立區塊 -->
       <div class="variant-builder" id="cp-var-builder" data-cp-show="physical" data-when-var="multiple" hidden>
@@ -371,6 +428,25 @@
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.var.table.title">Pricing per variation</h3>
         <p class="form-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — Limited edition adds a cap column.</p>
+      </div>
+      <div class="bulk-apply">
+        <div class="bulk-apply__head">
+          <div class="field__label" data-i18n="cp.var.bulk.title">Apply to all variations</div>
+          <div class="field__hint" data-i18n="cp.var.bulk.hint">Enter shared price and stock, then apply them to every row below.</div>
+        </div>
+        <div class="form-grid form-grid--3">
+          <div class="field">
+            <div class="field__label" data-i18n="cp.price">Price</div>
+            <input class="input" id="cp-bulk-price" placeholder="$ 0.00" data-i18n-placeholder="cp.price.ph" aria-label="Bulk price">
+          </div>
+          <div class="field">
+            <div class="field__label" data-i18n="cp.var.col.stock">Stock</div>
+            <input class="input" id="cp-bulk-stock" placeholder="0" aria-label="Bulk stock">
+          </div>
+          <div class="field bulk-apply__action">
+            <button class="btn btn--outline" type="button" id="cp-apply-bulk" data-i18n="cp.var.bulk.apply">Apply to all</button>
+          </div>
+        </div>
       </div>
       <div class="variant-table-wrap" id="cp-var-table-wrap" hidden>
         <div class="variant-table" id="cp-var-table">
@@ -517,27 +593,22 @@
         </div>
         <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
       </div>
+      <div class="readiness">
+        <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title" data-i18n="cp.ready.title">Listing readiness</h3></div>
+        <ul class="readiness__list" id="cp-ready-list"></ul>
+        <div class="readiness__banner" id="cp-ready-banner">4 items to list</div>
+      </div>
     </aside>
   </div>
 
   </div><!-- /.wizard__sheet -->
-  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放就緒 chip＋主動作（右對齊）。
-       就緒檢查（Ready to sell?）改為 chip 的 hover/focus tooltip（使用者裁示，取代右欄常駐卡）。 -->
+  <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放狀態提醒＋主動作（右對齊）。 -->
   <footer class="wizard__bottom" style="justify-content:flex-end">
     <div class="wizard__bottom-actions">
       <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
       <button class="btn btn--ghost cp-delete" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
-      <div class="readiness__chip" id="readiness__chip" tabindex="0" aria-describedby="readiness__pop">
-        <i data-lucide="circle" class="ztor-icon"></i><span id="readiness__chip-text">6 items needed</span>
-        <!-- hover/focus 顯示的就緒檢查 tooltip（內容由 renderReadiness 填）-->
-        <div class="readiness__pop" id="readiness__pop" role="tooltip">
-          <div class="readiness">
-            <div class="readiness__head"><h3 class="readiness__title" id="cp-ready-title">Ready to sell?</h3></div>
-            <ul class="readiness__list" id="cp-ready-list"></ul>
-            <div class="readiness__banner" id="cp-ready-banner">6 items needed to start selling</div>
-          </div>
-        </div>
-      </div>
+      <span class="wizard__ready-hint" id="cp-ready-hint" data-i18n="cp.ready.hint">Complete required items to start selling</span>
+      <a class="wizard__ready-status" href="#" id="cp-ready-chip" aria-label="4 items to list"><span id="cp-ready-chip-text">4 items to list</span></a>
       <button class="btn btn--primary" id="cp-primary" disabled data-i18n="cp.start.selling">Start selling</button>
     </div>
   </footer>
@@ -662,31 +733,31 @@
   function buildChecks() {
     if (state.type === 'physical') {
       const a = [
-        { k: 'Hero image',           done: () => !!assets['p-hero'] },
-        { k: '1+ gallery images',    done: () => !!assets['p-gallery'] },
-        { k: 'Product name',         done: () => has(fName) },
-        { k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
+        { key: 'cp.ready.item.hero',    fb: 'Hero image',        target: '[data-cp-asset="p-hero"]', done: () => !!assets['p-hero'] },
+        { key: 'cp.ready.item.gallery', fb: '1+ gallery images', target: '[data-cp-asset="p-gallery"]', done: () => !!assets['p-gallery'] },
+        { key: 'cp.ready.item.name',    fb: 'Product name',      target: '#cp-f-name', done: () => has(fName) },
+        { key: 'cp.ready.item.desc',    fb: 'Description (30+)', target: '#cp-f-desc', done: () => len(fDesc) >= 30 },
       ];
       if (state.varMode === 'multiple') {
-        a.push({ k: 'Every variation priced & stocked', done: () => variantState().allPriced });
+        a.push({ key: 'cp.ready.item.variations', fb: 'Every variation priced & stocked', target: '#cp-var-table-wrap', done: () => variantState().allPriced });
       } else {
-        a.push({ k: 'Price', done: () => has(fPrice) });
-        if (state.edition === 'limited') a.push({ k: 'Total quantity ≥ stock', done: () => capOk() });
+        a.push({ key: 'cp.ready.item.price', fb: 'Price', target: '#cp-price', done: () => has(fPrice) });
+        if (state.edition === 'limited') a.push({ key: 'cp.ready.item.total', fb: 'Total quantity >= stock', target: '#cp-total', done: () => capOk() });
       }
-      a.push({ k: 'Specifications', done: () => specCount() >= 1 });
-      if (state.delivery === 'shipping') a.push({ k: 'Shipping weight, size & origin', done: () => shippingOk() });
-      if (state.limitOn) a.push({ k: 'Max quantity per person', done: () => has(fLimitQty) });
+      a.push({ key: 'cp.ready.item.specs', fb: 'Specifications', target: '#spec-rows', done: () => specCount() >= 1 });
+      if (state.delivery === 'shipping') a.push({ key: 'cp.ready.item.shipping', fb: 'Shipping weight, size & origin', target: '#cp-ship-weight', done: () => shippingOk() });
+      if (state.limitOn) a.push({ key: 'cp.ready.item.limit', fb: 'Max quantity per person', target: '#cp-limit-qty', done: () => has(fLimitQty) });
       return a;
     }
     const a = [
-      { k: 'Item file',            done: () => !!assets['d-file'] },
-      { k: 'Cover art',            done: () => !!assets['d-cover'] },
-      { k: 'Product name',         done: () => has(fName) },
-      { k: 'Description (30+)',     done: () => len(fDesc) >= 30 },
-      { k: 'Price',                done: () => has(fPrice) },
+      { key: 'cp.ready.item.file',  fb: 'Item file',         target: '[data-cp-asset="d-file"]', done: () => !!assets['d-file'] },
+      { key: 'cp.ready.item.cover', fb: 'Cover art',         target: '[data-cp-asset="d-cover"]', done: () => !!assets['d-cover'] },
+      { key: 'cp.ready.item.name',  fb: 'Product name',      target: '#cp-f-name', done: () => has(fName) },
+      { key: 'cp.ready.item.desc',  fb: 'Description (30+)', target: '#cp-f-desc', done: () => len(fDesc) >= 30 },
+      { key: 'cp.ready.item.price', fb: 'Price',             target: '#cp-price', done: () => has(fPrice) },
     ];
-    if (state.edition === 'limited') a.push({ k: 'Total quantity & copies', done: () => digitalCapOk() });
-    if (state.limitOn) a.push({ k: 'Max quantity per person', done: () => has(fLimitQty) });
+    if (state.edition === 'limited') a.push({ key: 'cp.ready.item.digital-total', fb: 'Total quantity & copies', target: '#cp-total', done: () => digitalCapOk() });
+    if (state.limitOn) a.push({ key: 'cp.ready.item.limit', fb: 'Max quantity per person', target: '#cp-limit-qty', done: () => has(fLimitQty) });
     return a;
   }
 
@@ -695,11 +766,24 @@
 
   const listEl   = document.getElementById('cp-ready-list');
   const bannerEl = document.getElementById('cp-ready-banner');
-  const chipEl   = document.getElementById('readiness__chip');
-  const chipText = document.getElementById('readiness__chip-text');
-  const chipIcon = chipEl.querySelector('.ztor-icon');
+  const chipEl   = document.getElementById('cp-ready-chip');
   const primary  = document.getElementById('cp-primary');
   const readyTitle = document.getElementById('cp-ready-title');
+
+  function findFirstMissingCheck() {
+    return buildChecks().find(c => !c.pending && !c.done());
+  }
+  function jumpToCheck(check) {
+    if (!check || !check.target) return;
+    const target = document.querySelector(check.target);
+    if (!target) return;
+    const focusTarget = target.closest('.form-section') || target;
+    focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    focusTarget.setAttribute('tabindex', '-1');
+    focusTarget.focus({ preventScroll: true });
+    focusTarget.classList.add('form-section--jumped');
+    setTimeout(() => focusTarget.classList.remove('form-section--jumped'), 1300);
+  }
 
   function renderReadiness() {
     const checks = buildChecks();
@@ -710,39 +794,58 @@
       const done = c.done();
       const li = document.createElement('li');
       li.className = 'readiness__item' + (done ? ' readiness__item--done' : '');
+      if (c.target) li.dataset.readyTarget = c.target;
       li.innerHTML = '<span class="readiness__mark">' + (done ? '<i data-lucide="check" class="ztor-icon"></i>' : '') + '</span>'
-        + '<span>' + esc(c.k) + (c.pending ? ' <span class="text-sub">(pending spec)</span>' : '') + '</span>';
+        + '<span class="readiness__item-label">' + esc(T(c.key, c.fb)) + (c.pending ? ' <span class="text-sub">(pending spec)</span>' : '') + '</span>'
+        + '<span class="readiness__status">' + esc(done ? T('cp.ready.done', 'Done') : T('cp.ready.pending', 'To do')) + '</span>';
       listEl.appendChild(li);
     });
     const ready = remaining === 0;
-    const verb = VERB[state.type];
     /* Cheat Codes（devtools）的 Skip validation：開啟時略過就緒 gating，強制可上架 */
     const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
     if (ready) {
+      const text = T('cp.ready.chip.ready', 'Ready to sell');
       bannerEl.textContent = T('cp.ready.banner.ready', 'Ready to sell!');
       bannerEl.classList.add('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.ready', 'Ready to sell');
-      chipEl.classList.add('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'check-circle');
+      chipEl.classList.add('wizard__ready-status--ready');
+      chipEl.innerHTML = '<i data-lucide="check-circle" class="ztor-icon"></i><span id="cp-ready-chip-text">' + esc(text) + '</span>';
+      chipEl.setAttribute('aria-label', text);
+      chipEl.setAttribute('href', '#');
     } else if (skip) {
-      bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
+      const text = T('cp.ready.chip.skip', 'Validation skipped');
+      bannerEl.textContent = T('cp.ready.banner.needed', '{n} items to list').replace('{n}', remaining) + ' · ' + text;
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.skip', 'Validation skipped');
-      chipEl.classList.remove('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'circle');
+      chipEl.classList.remove('wizard__ready-status--ready');
+      chipEl.innerHTML = '<span id="cp-ready-chip-text">' + esc(text) + '</span>';
+      chipEl.setAttribute('aria-label', text);
+      chipEl.setAttribute('href', '#');
     } else {
-      bannerEl.textContent = T('cp.ready.banner.needed', '{n} items needed to start selling').replace('{n}', remaining);
+      const text = T('cp.ready.chip.togo', '{n} items to list').replace('{n}', remaining);
+      const firstMissing = findFirstMissingCheck();
+      bannerEl.textContent = T('cp.ready.banner.needed', '{n} items to list').replace('{n}', remaining);
       bannerEl.classList.remove('readiness__banner--ready');
-      chipText.textContent = T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
-      chipEl.classList.remove('readiness__chip--ready');
-      chipIcon.setAttribute('data-lucide', 'circle');
+      chipEl.classList.remove('wizard__ready-status--ready');
+      chipEl.innerHTML = '<span id="cp-ready-chip-text">' + esc(text) + '</span>';
+      chipEl.setAttribute('aria-label', text);
+      chipEl.setAttribute('href', '#');
     }
     /* 編輯態：商品已存在，Save changes 不受就緒 gating，footer chip 收起（就緒 tooltip 也隨之收起）*/
     if (editMode) { primary.disabled = false; chipEl.hidden = true; }
     else { primary.disabled = !(ready || skip); chipEl.hidden = false; }
-    readyTitle.textContent = T('cp.ready.title', 'Ready to sell?');
-    if (window.ztorIcons) window.ztorIcons.applyIcons(listEl), window.ztorIcons.applyIcons(chipEl);
+    readyTitle.textContent = T('cp.ready.title', 'Listing readiness');
+    if (window.ztorIcons) {
+      window.ztorIcons.applyIcons(listEl);
+      window.ztorIcons.applyIcons(chipEl);
+    }
   }
+  chipEl.addEventListener('click', e => {
+    e.preventDefault();
+    jumpToCheck(findFirstMissingCheck());
+  });
+  listEl.addEventListener('click', e => {
+    const item = e.target.closest('[data-ready-target]');
+    if (item) jumpToCheck({ target: item.dataset.readyTarget });
+  });
 
   /* 完成→回電子商店清單並彈出新品貼文 composer（spec §7 / 5.1.5.7 / D068）。
      就緒（或 dev Skip validation）時點主動作 → e-shop?posted=1，帶入剛填的商品名/價供 popup 預填。 */
@@ -865,7 +968,15 @@
   wireSegmented('cp-var-mode', 'cpVar', v => {
     state.varMode = v;
     applyVisibility();
-    if (v === 'multiple' && !seededVar) { seededVar = true; varOptions = [{ name: 'Size', values: ['S', 'M', 'L'] }]; renderOptions(); renderVariants(); }
+    if (v === 'multiple' && !seededVar) {
+      seededVar = true;
+      varOptions = [
+        { name: 'Size', values: ['S', 'M', 'L'] },
+        { name: 'Color', values: ['Black', 'Blue', 'Red'] }
+      ];
+      renderOptions();
+      renderVariants();
+    }
     refresh();
   });
   wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); refresh(); });
@@ -983,6 +1094,19 @@
   rowsHost.addEventListener('click', e => {
     const ex = e.target.closest('[data-vexclude]');
     if (ex) { const k = ex.dataset.vexclude; const d = (varData[k] = varData[k] || {}); d.excluded = !d.excluded; ex.closest('.variant-table__row').classList.toggle('is-excluded', d.excluded); refresh(); }
+  });
+  document.getElementById('cp-apply-bulk').addEventListener('click', () => {
+    const price = (document.getElementById('cp-bulk-price').value || '').trim();
+    const stock = (document.getElementById('cp-bulk-stock').value || '').trim();
+    if (!price && !stock) return;
+    currentCombos().forEach(key => {
+      const d = (varData[key] = varData[key] || {});
+      if (d.excluded) return;
+      if (price) d.price = price;
+      if (stock) d.stock = stock;
+    });
+    renderVariants();
+    refresh();
   });
 
   /* ---- 每人限購開關 ---- */
