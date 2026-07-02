@@ -550,7 +550,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → net profit pool ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
 | Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup | [payout-modal.css](./ds-components/payout-modal.css) |
-| Restock order (lines) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6 v1.4, D104) — order model: document layer (method + supplier/ETA/notes) + item quantity lines (`.restock-lines` / `.restock-line`, grouped for multi-variant / bundle); reuses payout shell + Segmented + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
+| Restock order (lines) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs) — document layer (method + supplier/ETA/notes) + item quantity lines (`.restock-lines` / `.restock-line`); product variants = matrix (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.ss-amount`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多規格（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多規格 + `.variant-option`（選項名＋值 chip）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；值 chip 重用 `.chip--removable`、格重用 `.input` | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.5）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
@@ -3072,7 +3072,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.29c Restock order (lines)
 
-**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6 v1.4, D104). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.payout-form-grid` / `.payout-field`, filled once) and an **item layer** — `.restock-lines` holding one `.restock-line` quantity row per restockable item. A **multi-variant product** (5.1.5.2 §4.1 F3 route B) or a **bundle** gets a `.restock-lines__group` header with its variants / members listed as lines beneath. Blank quantity = skip that item — no tabs, no per-item re-entry (replaces the D100/D101 tab panels). History log on product-detail reuses `.data-list`. Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6, D104 order model + D106 member tabs). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.payout-field`, filled once) and an **item layer** of `.restock-line` quantity rows. A **product's variants are always a matrix** (single-variant = 1 line; 2-option = sub-grouped by option-1 via `.restock-lines__group`) — no tabs. A **bundle separates its member products with `.tabs`** (one tab per member; each `.tab-panel` holds that member's variant matrix). Only one tab level (members) — variants never use tabs (D106); quantities persist across tabs (all member panels stay in the DOM). Blank quantity = skip that item. History log on product-detail reuses `.data-list`. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
@@ -3080,17 +3080,18 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 .payout-dialog (reused shell)
 ├─ document layer: .payout-field > .segmented (Restock now / Scheduled) + hint
 │                  .payout-form-grid > .payout-field × (Expected arrival[scheduled] / Supplier / Notes)
-└─ item layer: .restock-lines
-   ├─ .restock-lines__group   (multi-variant product name / bundle member name; optional)
-   └─ .restock-line × N
-      ├─ .restock-line__main > __img (34px chip) + __text(__name + Badge, __meta: current/threshold)
-      ├─ input.restock-line__qty  (blank = skip)
-      └─ .restock-line__after     (→ current + qty, live)
+└─ item layer:
+   ├─ [PRODUCT] .restock-lines  (no tabs)
+   │      └─ (.restock-lines__group ×option-1, for 2-option) .restock-line × N
+   └─ [BUNDLE]  .tabs (one .tabs__item per member product)  →  .tab-panel × member
+          └─ .restock-lines  (that member's variant matrix; single member = 1 line)
+   .restock-line: __main > __img (34px chip) + __text(__name + Badge, __meta: current/threshold)
+                  · input.restock-line__qty (blank = skip) · .restock-line__after (→ current + qty, live)
    — footer = Cancel / Mark received (scheduled only) / Submit restock
    — restock HISTORY on product-detail = .data-list rows (+qty · date · supplier + status Badge)
 ```
 
-**Variants** — Method (document layer): Restock now (immediate) / Scheduled (Restocking until Mark received). Item list shape by entry: single-variant product (1 line) / multi-variant product (group header + one line per variant) / bundle (one group per member, multi-variant member → its variant lines).
+**Variants** — Method (document layer): Restock now (immediate) / Scheduled (Restocking until Mark received). Item shape by entry: single-variant product (1 line) / multi-variant product (matrix lines, 2-option sub-grouped) — no tabs / bundle (`.tabs` per member product; each `.tab-panel` = that member's variant matrix).
 
 **States**
 
@@ -3109,12 +3110,13 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | `.restock-lines__group` | Group header — multi-variant product name / bundle member name |
 | `.restock-line` (`__main` / `__img` / `__text` / `__name` / `__meta`) | One item: 34px chip + name + status badge + current/threshold; grid [identity · qty · after] |
 | `.input.restock-line__qty` / `.restock-line__after` | Centered quantity input · live "→ N" after-restock readout (current + qty) |
+| (reuse) `.tabs` / `.tabs__item` / `.tab-panel` | Bundle only — one tab per member product; each panel a `.restock-lines` matrix. `[data-restock-tabs][hidden]` hides the bar for single-product restock (D106) |
 
 **Token usage** (→ Pillar 2 Role)
 
 - chip `--muted` + inset `--border` · row divider `--border` · `--font-ui` / `--font-display` (qty/after) · text `--foreground` / `--muted-foreground` · badges via badge.css · ETA field `[data-restock-modal] .payout-field[hidden]{display:none}` restores hiding under the flex display
 
-**Usage** — E-Shop restock popup (spec §5.1.5.6 v1.4): single-variant product row / product-detail = one line; multi-variant product row = group + variant lines; bundle row = group per member (multi-variant member expands to variant lines); each restocked line (qty>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Data list; the lines are restock-specific.
+**Usage** — E-Shop restock popup (spec §5.1.5.6, D104 + D106): single-variant product row / product-detail = one line; multi-variant product row = matrix (no tabs); bundle row = `.tabs` per member product, each panel that member's variant matrix; each restocked line (qty>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Tabs + Data list; the lines are restock-specific.
 
 **Do & Don't**
 

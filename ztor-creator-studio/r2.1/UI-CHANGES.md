@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-07-02 · 補貨組合成員改「成員 tab」＋新增 2×3 矩陣示範商品（A 規格 · D106）
+
+使用者指出 D104 把組合成員平鋪在同一份矩陣清單（不同商品跟 variant 混在一起）不對——不同商品應以 tab 分開。裁示模型：`商品 → 規格矩陣`；`組合 → 商品A(tab)/商品B(tab) → 各自規格矩陣`（spec 5.1.5.6 v1.5／D106／Plan165）：
+- **只有「成員商品」用單層 tab；規格永遠是矩陣**（解 D101 曾有的「成員 tab 內再套規格 tab」兩層問題）。
+- **restock-modal.js 重構**：`openProduct(groups)`＝無 tab 的規格矩陣；`openBundle(members)`＝成員 tab（重用 tabs.css `.tabs`＋`.tab-panel`），每個 tab 面板放該成員的 `.restock-lines` 矩陣；成員資料支援 `variants`（1 選項）／`matrix`（2 選項）／單品三型。單據層（方式/供應商/ETA/備註）仍在 tab 之上、整單填一次；**數量跨 tab 保留**（各成員面板都在 DOM，`.tab-panel` 切顯示）。移除 `.restock-lines__group`＝成員名的用法（成員改用 tab；group 現只用於商品內 2 選項的選項一分組）。
+- **restock-modal.css**：加 `[data-restock-tabs][hidden]{display:none}`（`.tabs` 的 flex 會蓋 `[hidden]`）。
+- **e-shop demo**：組合「Coastline starter pack」改混合成員＝tee（4 規格）＋hoodie（2×3 矩陣）＋sticker（單品），完整展示「成員 tab → tab 內規格矩陣（含 2 選項矩陣）」。
+- **另新增 2×3 矩陣示範商品**（前一輪）：Coastline hoodie（顏色 Black/Sand × 尺寸 S/M/L＝6 格），列於 Products；補貨以選項一（顏色）分組、選項二（尺寸）為列。
+- DS §4.62／design-system.md §4.29c、ASSUMPTIONS UIA-006、BUILD-SPEC、requirements-map 同步為「商品矩陣／組合成員 tab」。皆前端 demo（UIA-006/007；成員實際出貨規格口徑沿用上游待確認）。
+
+---
+
 ## 2026-07-02 · 補貨改「一張補貨單＋逐品項數量列」（A 規格 · D104，取代 D101 tab）
 
 使用者指出 tab 模式兩個破綻：組合內含多規格成員 → 成員 tab 再套規格 tab（兩層）；一個商品規格很多 → tab 爆版面且供應商/到貨要逐面板重填。裁示改「補貨單」模型（spec 5.1.5.6 v1.4／Plan163）：
