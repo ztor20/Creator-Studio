@@ -1,21 +1,35 @@
 /* ----------------------------------------------------------------
-   Restock dialog — selectable item checklist
+   Restock dialog — single-product restock panel
    spec 5.1.5.6 (documents/5.1.5.6-補貨流程.md)
 
    The restock popup reuses the canonical dialog shell (.payout-modal /
    .payout-dialog) and the shared form helpers (.payout-form-grid /
-   .payout-field) for the quantity / supplier / ETA / notes fields — no
-   forked shell. The ONLY restock-specific markup is the "select items to
-   restock" checklist below, styled to match .payout-bank-option so it reads
-   as part of the same dialog family. All values reference design tokens.
+   .payout-field). Method switch reuses .segmented; bundle member switch
+   reuses .tabs; the restock HISTORY log on product-detail reuses .data-list.
+
+   Restock-specific markup here is only:
+     .restock-panel      — one single-product restock form (single = 1 panel;
+                           bundle = one panel per member, toggled by .tabs)
+     .restock-identity   — the "which product + current stock" header row
+     .restock-after      — the "after restock = current + qty" readout
+
+   All values reference design tokens.
    ---------------------------------------------------------------- */
 
-.restock-items {
-  display: grid;
-  gap: 10px;
-  margin-top: 6px;
-}
-.restock-item {
+/* One member's restock form. Bundle mode renders N of these and toggles
+   visibility via [hidden] (default block → [hidden] hides, no display trap). */
+.restock-panel[hidden] { display: none; }
+
+/* [hidden] guards — .payout-field (flex) and .tabs (flex) set `display`, which
+   overrides the [hidden] attribute's display:none. Restore hiding inside the
+   restock dialog: the Expected-arrival field in Restock-now mode, and the
+   bundle member tab bar for single-product entries. */
+.restock-panel .payout-field[hidden] { display: none; }
+[data-restock-tabs][hidden] { display: none; }
+
+/* Product identity — image chip + name + current stock/threshold + status.
+   Image chip sizing mirrors .data-list__icon (44×44, radius 10, muted). */
+.restock-identity {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -23,32 +37,56 @@
   border-radius: var(--radius-md);
   background: var(--muted);
   box-shadow: inset 0 0 0 1px var(--border);
-  cursor: pointer;
 }
-.restock-item.is-checked {
-  background: var(--card);
-  box-shadow: inset 0 0 0 2px var(--foreground);
-}
-.restock-item__box {
+.restock-identity__img {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   flex: none;
-  width: 17px;
-  height: 17px;
-  accent-color: var(--foreground);
-  cursor: pointer;
+  background: var(--card);
+  color: var(--foreground-muted);
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--border);
 }
-.restock-item__main {
-  min-width: 0;
-  flex: 1;
-}
-.restock-item__title {
+.restock-identity__img .ztor-icon { width: 20px; height: 20px; }
+.restock-identity__img img { width: 100%; height: 100%; object-fit: cover; }
+.restock-identity__main { min-width: 0; flex: 1; }
+.restock-identity__title {
   font-family: var(--font-ui);
   font-size: var(--fs-14);
   font-weight: var(--fw-medium);
   line-height: 1.35;
 }
-.restock-item__meta {
+.restock-identity__meta {
   margin-top: 4px;
   color: var(--muted-foreground);
   font-size: var(--fs-12);
   line-height: 1.45;
+}
+.restock-identity__meta b {
+  color: var(--foreground);
+  font-weight: var(--fw-medium);
+}
+
+/* After-restock readout — current + entered quantity, updated live. */
+.restock-after {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+.restock-after b {
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.3px;
 }

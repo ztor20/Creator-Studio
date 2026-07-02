@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-07-02 · 補貨流程改版：入口分單一/組合、立即/計時、補貨紀錄（A 規格 · D100）
+
+依使用者裁示改版補貨（spec 5.1.5.6 改寫、5.1.5.1 §2.3＋主規格 §7.2 同步，D100/Plan161）：
+- **單一商品面板為核心**：商品列補貨鈕／商品細節頁 Restock 開單一 `.restock-panel`——商品識別（圖＋名＋目前庫存/門檻＋狀態 badge `.restock-identity`）、補貨方式、數量、補後在庫讀數（`.restock-after`＝目前剩餘＋補貨數量，即時算）。移除舊「勾選品項清單」（`.restock-items`／`.restock-item*`）。
+- **組合補貨＝tabs 逐成員**：live bundle 列 kebab 加「補貨」，開 `.tabs`＋每個實體成員各一面板分別填（demo 成員 literal）。
+- **立即／計時補貨**：`.segmented` 切換——`Restock now`（現貨、送出即 In stock、隱藏預計到貨與到貨確認）／`Scheduled`（送出進 Restocking、顯示「預計到貨」必填＋「到貨確認」）。
+- **補貨紀錄**：商品細節頁 §2.3 新增「補貨紀錄」區（重用 `.data-list`：補貨數量／時間／供應商＋狀態 badge，最新在上）；送出即 prepend 一列（demo）。
+- **重用不重造**：方式＝Segmented、成員＝Tabs、紀錄＝Data list；restock 專屬只有 `.restock-panel`／`.restock-identity`／`.restock-after`。行為集中在 `partials/restock-modal.js` 的 `createRestock()` 工廠，e-shop.html／product-detail.html 共用。
+- 動機：補貨對象與方式因入口與時序不同（現貨即入庫 vs 下單待到貨），單品與組合的填寫粒度也不同；把「單品面板」做成可重用核心、組合用 tab 疊 N 份，最貼近「逐成員分別填」的心智。皆前端 demo，實際庫存/狀態重算口徑待上游 §7.2（UIA-006/007）。
+
+---
+
 ## 2026-07-01 · E-Shop 草稿列行為細化（B 反饋 · 使用者裁示 · UIA-038）
 
 草稿（`data-status="draft"`）在商品列表的行為，依使用者兩次裁示調整：
