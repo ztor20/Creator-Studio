@@ -1,19 +1,25 @@
 window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
-/* Restock modal · spec §5.1.5.6 v1.4 (E-Shop · Restock sub-flow · D104).
-   Loaded as a <script> on e-shop.html and product-detail.html (file:// safe).
+/* Restock modal · spec §5.1.5.6 (E-Shop · Restock sub-flow · D104 order model,
+   D106 bundle member tabs). Loaded as a <script> on e-shop.html and
+   product-detail.html (file:// safe).
 
-   Order model: ONE restock = one order. The popup reuses the canonical dialog
-   shell (.payout-modal / .payout-dialog) + form helpers. The DOCUMENT layer
-   (method .segmented + supplier / ETA / notes) is filled once. The ITEM layer
-   is a list of quantity lines (.restock-line): single product = 1 line;
-   multi-variant product = one line per enabled variant under a group header;
-   bundle = one group per physical member (a multi-variant member expands to
-   its variant lines). Quantity blank = that item isn't restocked. No tabs, no
-   per-item re-entry — solves nested bundles + many-variant overflow.
+   One restock = one ORDER. Two layers + one grouping rule:
+     · DOCUMENT layer (filled once): method .segmented (now/scheduled) +
+       supplier / ETA / notes.
+     · ITEM layer: quantity lines .restock-line.
+   Grouping (D106):
+     · A PRODUCT's variants are always a MATRIX of lines (single-variant = 1
+       line; multi-variant = lines, sub-grouped by option-1 via
+       .restock-lines__group for a 2-option matrix). No tabs.
+     · A BUNDLE separates its MEMBER PRODUCTS with .tabs (one tab per member);
+       each tab panel holds that member's variant matrix. Only ONE tab level
+       (members) — variants never use tabs. Quantities persist across tabs
+       (all member panels stay in the DOM; .tab-panel toggles visibility).
 
-   createRestock(host, hooks) returns { openSingle, openVariants, openBundle,
-   openOrder, close }. hooks: { onSubmit(entries, mode), onReceive(entries) }.
-   UI chrome is data-i18n; sample data stays literal. */
+   createRestock(host, hooks) → { openProduct, openBundle, openSingle,
+   openVariants, close }. hooks: { onSubmit(entries, mode), onReceive(entries) }.
+   Each entry = { member, name, qty, current, supplier }. UI chrome = data-i18n;
+   sample data literal. */
 (function () {
   window.ZTOR_PARTIALS.restockModal = `
 <div class="payout-modal" data-restock-modal hidden>
@@ -50,9 +56,10 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         </label>
       </div>
 
-      <!-- Item layer — one quantity line per restockable item -->
+      <!-- Item layer — bundle members become tabs; each panel holds a variant matrix -->
       <div class="payout-field__label mt-16"><span data-i18n="restock.items">Items to restock</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="restock.items-hint">— leave blank to skip an item</span></div>
-      <div class="restock-lines" data-restock-lines></div>
+      <div class="tabs" role="tablist" data-restock-tabs hidden></div>
+      <div data-restock-members></div>
       <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
       <div class="stickynote mt-16">
@@ -70,7 +77,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
   </section>
 </div>`;
 
-  /* Controller factory. */
   window.ZTOR_PARTIALS.createRestock = function (host, hooks) {
     hooks = hooks || {};
     var modal = null, lastFocused = null, originRow = null;
@@ -80,12 +86,11 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (window.applyI18n) window.applyI18n(el);
     }
     function num(v) { var n = parseInt(v, 10); return isNaN(n) ? 0 : n; }
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function mode() {
-      var on = modal && modal.querySelector('.segmented__btn--active');
+      var on = modal && modal.querySelector('[data-restock-method] .segmented__btn--active');
       return on ? on.getAttribute('data-restock-mode') : 'now';
     }
-    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-
     function badgeFor(status) {
       return status === 'out' ? ['badge--neutral', 'e-shop.row.out', 'Sold Out']
            : status === 'ok'  ? ['badge--success', 'e-shop.row.instock', 'In stock']
@@ -109,15 +114,34 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
           '<div class="restock-line__after">→ <b data-restock-after>' + cur + '</b></div>' +
         '</div>';
     }
-    function renderLines(groups) {
-      var wrap = modal.querySelector('[data-restock-lines]');
+    /* A member's variant matrix: groups = [{label, items}] → .restock-lines */
+    function matrixHTML(groups) {
       var html = '';
-      groups.forEach(function (g) {
+      (groups || []).forEach(function (g) {
         if (g.label) html += '<div class="restock-lines__group">' + esc(g.label) + '</div>';
         (g.items || []).forEach(function (it) { html += lineHTML(it); });
       });
-      wrap.innerHTML = html;
-      chrome(wrap);
+      return '<div class="restock-lines">' + html + '</div>';
+    }
+    /* members = [{name, groups}]; tabbed = bundle (member tabs) vs product (one panel) */
+    function renderMembers(members, tabbed) {
+      var tabs = modal.querySelector('[data-restock-tabs]');
+      var wrap = modal.querySelector('[data-restock-members]');
+      tabs.hidden = !tabbed;
+      tabs.innerHTML = tabbed ? members.map(function (m, i) {
+        return '<button class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + (i === 0) + '" data-restock-tab="' + i + '">' + esc(m.name || ('Item ' + (i + 1))) + '</button>';
+      }).join('') : '';
+      wrap.innerHTML = members.map(function (m, i) {
+        return '<div class="tab-panel' + (i === 0 ? ' tab-panel--active' : '') + '" data-restock-member data-name="' + esc(m.name || '') + '">' + matrixHTML(m.groups) + '</div>';
+      }).join('');
+      chrome(tabs); chrome(wrap);
+    }
+    function showMember(idx) {
+      modal.querySelectorAll('[data-restock-member]').forEach(function (p, i) { p.classList.toggle('tab-panel--active', i === idx); });
+      modal.querySelectorAll('[data-restock-tab]').forEach(function (t, i) {
+        t.classList.toggle('tabs__item--active', i === idx);
+        t.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+      });
     }
     function recalc(line) {
       var cur = num(line.getAttribute('data-current'));
@@ -145,9 +169,12 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var supEl = modal.querySelector('[data-restock-supplier]');
       var supplier = (supEl && supEl.value) || '';
       var entries = [];
-      modal.querySelectorAll('[data-restock-line]').forEach(function (line) {
-        var q = num((line.querySelector('[data-restock-qty]') || {}).value);
-        if (q > 0) entries.push({ name: line.getAttribute('data-name'), qty: q, current: num(line.getAttribute('data-current')), supplier: supplier });
+      modal.querySelectorAll('[data-restock-member]').forEach(function (mem) {
+        var mname = mem.getAttribute('data-name') || '';
+        mem.querySelectorAll('[data-restock-line]').forEach(function (line) {
+          var q = num((line.querySelector('[data-restock-qty]') || {}).value);
+          if (q > 0) entries.push({ member: mname, name: line.getAttribute('data-name'), qty: q, current: num(line.getAttribute('data-current')), supplier: supplier });
+        });
       });
       return entries;
     }
@@ -160,7 +187,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     }
     function submit() {
       var entries = collect();
-      if (!entries.length) return;   /* nothing entered */
+      if (!entries.length) return;
       var m = mode();
       if (m === 'scheduled') setOriginBadge('badge--warning', 'e-shop.row.restocking', 'Restocking');
       else setOriginBadge('badge--success', 'e-shop.row.instock', 'In stock');
@@ -177,6 +204,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (e.target === modal) { close(); return; }
       var modeBtn = e.target.closest('[data-restock-mode]');
       if (modeBtn) { setMode(modeBtn.getAttribute('data-restock-mode')); return; }
+      var tab = e.target.closest('[data-restock-tab]');
+      if (tab) { showMember(num(tab.getAttribute('data-restock-tab'))); return; }
       if (e.target.closest('[data-restock-close]')) { close(); return; }
       if (e.target.closest('[data-restock-submit]')) { submit(); return; }
       if (e.target.closest('[data-restock-receive]')) { receive(); return; }
@@ -199,6 +228,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       lastFocused = document.activeElement;
       modal.hidden = false;
       document.body.classList.add('is-modal-open');
+      setMode('now');
+      var supEl = modal.querySelector('[data-restock-supplier]');
+      if (supEl) supEl.value = '';
       var f = modal.querySelector('input, button');
       if (f) f.focus();
     }
@@ -210,38 +242,36 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (lastFocused && lastFocused.focus) lastFocused.focus();
     }
 
-    /* Core entry — groups = [{ label: string|null, items: [{name,current,threshold,status,img}] }] */
-    function openOrder(groups, row) {
+    /* A PRODUCT restock — variants as a matrix, NO member tabs.
+       groups = [{label, items}] (single-variant → one groupless line;
+       2-option → sub-grouped by option-1). */
+    function openProduct(groups, row) {
       if (!ensure()) return;
       originRow = row || null;
-      groups = (groups && groups.length) ? groups : [{ label: null, items: [] }];
-      renderLines(groups);
-      setMode('now');
-      var supEl = modal.querySelector('[data-restock-supplier]');
-      if (supEl) supEl.value = '';
+      renderMembers([{ name: '', groups: groups }], false);
+      open();
+    }
+    /* A BUNDLE restock — member products as tabs, each a variant matrix.
+       members accept a friendly shape: {name, variants:[...]} | {name, matrix:[{label,items}]}
+       | {name, current, threshold, status} (single-variant). */
+    function openBundle(members, row) {
+      if (!ensure()) return;
+      originRow = row || null;
+      var norm = (members || []).map(function (m) {
+        if (m.matrix) return { name: m.name, groups: m.matrix };
+        if (m.variants) return { name: m.name, groups: [{ label: null, items: m.variants }] };
+        return { name: m.name, groups: [{ label: null, items: [{ name: m.name, current: m.current, threshold: m.threshold, status: m.status }] }] };
+      });
+      renderMembers(norm, true);
+      showMember(0);
       open();
     }
     return {
-      openOrder: openOrder,
-      /* single-variant product → one groupless line */
-      openSingle: function (item, row) { openOrder([{ label: null, items: [item || {}] }], row); },
-      /* multi-variant product → group header (product) + one line per variant */
-      openVariants: function (product, variants, row) { openOrder([{ label: product, items: variants || [] }], row); },
-      /* bundle → one group per physical member; a multi-variant member expands
-         to its variant lines (member.variants), else a single groupless-ish line */
-      openBundle: function (members, row) {
-        /* Plain single-variant members first (groupless lines), then
-           multi-variant members as titled groups — so a group header clearly
-           bounds its variant lines and no loose line trails under it. */
-        var ordered = (members || []).slice().sort(function (a, b) {
-          return (a.variants ? 1 : 0) - (b.variants ? 1 : 0);
-        });
-        var groups = ordered.map(function (m) {
-          if (m.variants && m.variants.length) return { label: m.name, items: m.variants };
-          return { label: null, items: [m] };
-        });
-        openOrder(groups, row);
-      },
+      openProduct: openProduct,
+      openBundle: openBundle,
+      /* conveniences */
+      openSingle: function (item, row) { openProduct([{ label: null, items: [item || {}] }], row); },
+      openVariants: function (product, variants, row) { openProduct([{ label: null, items: variants || [] }], row); },
       close: close
     };
   };
