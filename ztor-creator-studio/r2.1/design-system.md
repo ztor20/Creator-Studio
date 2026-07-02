@@ -3071,7 +3071,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.29c Restock panel
 
-**`_layer`** · molecule — single-product restock form for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and form helpers (`.payout-form-grid` / `.payout-field`); the **method** switch (Restock now / Scheduled) reuses `.segmented`, the **bundle member** switch reuses `.tabs`, and the **restock history** log on product-detail reuses `.data-list`. Restock-specific CSS is only `.restock-panel` / `.restock-identity` / `.restock-after`. Single-product entry = one panel; bundle entry clones one panel per physical member under tabs (each filled separately). Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — single-product restock form for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and form helpers (`.payout-form-grid` / `.payout-field`); the **method** switch (Restock now / Scheduled) reuses `.segmented`, the **bundle member / variant** switch reuses `.tabs`, and the **restock history** log on product-detail reuses `.data-list`. Restock-specific CSS is only `.restock-panel` / `.restock-identity` / `.restock-after`. Single-variant product entry = one panel; multi-variant product (spec 5.1.5.2 §4.1 F3 route B) = one panel per enabled variant under tabs; bundle entry = one panel per physical member — each filled separately (D100/D101). Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
@@ -3085,7 +3085,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    — restock HISTORY on product-detail = .data-list rows (+qty · date · supplier + status Badge)
 ```
 
-**Variants** — Method: Restock now (immediate) / Scheduled (Restocking until Mark received). Entry: single-product (1 panel) / bundle (`.tabs`, one panel per member).
+**Variants** — Method: Restock now (immediate) / Scheduled (Restocking until Mark received). Entry: single-variant product (1 panel) / multi-variant product (`.tabs`, one panel per enabled variant) / bundle (`.tabs`, one panel per member).
 
 **States**
 
@@ -3099,7 +3099,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 | Class / modifier | Effect |
 |---|---|
-| `.restock-panel` (`[hidden]`) | One single-product restock form; bundle mode toggles N via `[hidden]` under `.tabs` |
+| `.restock-panel` (`[hidden]`) | One restock form; tabbed mode (bundle members / product variants) toggles N via `[hidden]` under `.tabs` |
 | `.restock-identity` | Which-product header row (`--muted` surface + inset `--border`) |
 | `.restock-identity__img` | 44px image chip, mirrors `.data-list__icon` sizing |
 | `.restock-identity__main` / `__title` / `__meta` | Text stack — 14/500 title + 12px meta (current stock `b` emphasised) |
@@ -3109,7 +3109,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - surfaces `--card` / `--muted` · ring `--border` · radius `--radius-md` · after readout tint `color-mix(--primary 8%)` · `--font-ui` / `--font-display` · text `--foreground` / `--muted-foreground`
 
-**Usage** — E-Shop restock popup (spec §5.1.5.6): product row / product-detail = single panel; bundle row = Tabs of member panels; each restock is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Tabs + Data list; only the panel / identity / after readout is restock-specific.
+**Usage** — E-Shop restock popup (spec §5.1.5.6): single-variant product row / product-detail = single panel; multi-variant product row = Tabs of variant panels; bundle row = Tabs of member panels; each restock is logged to `.data-list` on product-detail (variant noted for multi-variant). Reuse the payout dialog shell + Segmented + Tabs + Data list; only the panel / identity / after readout is restock-specific.
 
 **Do & Don't**
 
