@@ -267,7 +267,8 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 **Edge & overlay tokens (2026-06-15)** — `--border-inverse` (`rgba(255,255,255,0.1)`, same in both themes) is the hairline on always-dark / inverse surfaces (footer slab). `--overlay-tint` (`rgba(0,0,0,0.45)`) is the darkening mixed into modal backdrops (`.payout-modal`, paired with `--overlay-blur`).
 
-**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags bare colors in two components, both intentional fixed artwork:
+**Raw-color exceptions (acknowledged WARN)** — `check_ds_sync` flags bare colors in three components, all intentional fixed artwork:
+- `upload-tile.css` video letterbox (`.upload-tile__video { background: #000 }`) — **irreducible**: media playback matte is pure black regardless of light/dark theme (standard video letterbox), same rationale as an embedded image; not a themeable surface.
 - `selection-card.css` theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`) — **irreducible**: each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#191A1A`) so the preview shows what each mode looks like even when viewing a different mode; can't reference theme-reactive tokens.
 - `vip-card.css` VIP-card template (`.vip-card__frame` holographic gradients + `.vip-card__plate`/`__logo`/`__plate-sub` white/rgba) — the membership-card face is a **fixed, theme-independent artwork** (a CSS approximation of the platform template); its colors deliberately do not follow light/dark tokens, same rationale as an embedded illustration/image. Real template asset TBD.
 
@@ -549,7 +550,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → net profit pool ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
 | Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup | [payout-modal.css](./ds-components/payout-modal.css) |
-| Restock panel | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6) — single-product restock form (identity + method + qty + after readout); reuses the payout shell + Segmented / Tabs / Data-list (history log) | [restock-modal.css](./ds-components/restock-modal.css) |
+| Restock order (lines) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6 v1.4, D104) — order model: document layer (method + supplier/ETA/notes) + item quantity lines (`.restock-lines` / `.restock-line`, grouped for multi-variant / bundle); reuses payout shell + Segmented + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.ss-amount`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多規格（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多規格 + `.variant-option`（選項名＋值 chip）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；值 chip 重用 `.chip--removable`、格重用 `.input` | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.5）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
@@ -3069,23 +3070,27 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ---
 
-### 4.29c Restock panel
+### 4.29c Restock order (lines)
 
-**`_layer`** · molecule — single-product restock form for the E-Shop restock popup (spec §5.1.5.6). The popup reuses the canonical payout dialog shell (`.payout-modal` / `.payout-dialog`) and form helpers (`.payout-form-grid` / `.payout-field`); the **method** switch (Restock now / Scheduled) reuses `.segmented`, the **bundle member** switch reuses `.tabs`, and the **restock history** log on product-detail reuses `.data-list`. Restock-specific CSS is only `.restock-panel` / `.restock-identity` / `.restock-after`. Single-product entry = one panel; bundle entry clones one panel per physical member under tabs (each filled separately). Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6 v1.4, D104). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.payout-form-grid` / `.payout-field`, filled once) and an **item layer** — `.restock-lines` holding one `.restock-line` quantity row per restockable item. A **multi-variant product** (5.1.5.2 §4.1 F3 route B) or a **bundle** gets a `.restock-lines__group` header with its variants / members listed as lines beneath. Blank quantity = skip that item — no tabs, no per-item re-entry (replaces the D100/D101 tab panels). History log on product-detail reuses `.data-list`. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
 ```
-.restock-panel (one per product; bundle = N toggled by [hidden] under .tabs)
-├─ .restock-identity > __img (44px chip) + __main(__title + __meta: current stock / threshold) + Badge (Low Stock / Sold Out)
-├─ .payout-field > .segmented (Restock now / Scheduled) + hint   — Scheduled reveals Expected arrival (required)
-├─ .payout-form-grid > .payout-field × (Restock quantity* / Supplier / Notes [/ Expected arrival when scheduled])
-└─ .restock-after (current + entered quantity, live)
-   — mounts inside the reused .payout-dialog shell; footer = Cancel / Mark received (scheduled only) / Submit restock
+.payout-dialog (reused shell)
+├─ document layer: .payout-field > .segmented (Restock now / Scheduled) + hint
+│                  .payout-form-grid > .payout-field × (Expected arrival[scheduled] / Supplier / Notes)
+└─ item layer: .restock-lines
+   ├─ .restock-lines__group   (multi-variant product name / bundle member name; optional)
+   └─ .restock-line × N
+      ├─ .restock-line__main > __img (34px chip) + __text(__name + Badge, __meta: current/threshold)
+      ├─ input.restock-line__qty  (blank = skip)
+      └─ .restock-line__after     (→ current + qty, live)
+   — footer = Cancel / Mark received (scheduled only) / Submit restock
    — restock HISTORY on product-detail = .data-list rows (+qty · date · supplier + status Badge)
 ```
 
-**Variants** — Method: Restock now (immediate) / Scheduled (Restocking until Mark received). Entry: single-product (1 panel) / bundle (`.tabs`, one panel per member).
+**Variants** — Method (document layer): Restock now (immediate) / Scheduled (Restocking until Mark received). Item list shape by entry: single-variant product (1 line) / multi-variant product (group header + one line per variant) / bundle (one group per member, multi-variant member → its variant lines).
 
 **States**
 
@@ -3093,31 +3098,31 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 |---|---|---|
 | method = now | `.segmented__btn--active` on "Restock now" | Expected-arrival hidden; Mark received hidden; Submit → In stock |
 | method = scheduled | `.segmented__btn--active` on "Scheduled" | Expected-arrival shown (required); Mark received shown; Submit → Restocking |
-| panel hidden | `.restock-panel[hidden]` | Inactive bundle member (display:none) |
+| line status | `.restock-line__name > .badge--error / --neutral / --success` | Low Stock / Sold Out / In stock (stock axis §7.2) |
+| line skipped | empty `.restock-line__qty` | not restocked; after = current |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
-| `.restock-panel` (`[hidden]`) | One single-product restock form; bundle mode toggles N via `[hidden]` under `.tabs` |
-| `.restock-identity` | Which-product header row (`--muted` surface + inset `--border`) |
-| `.restock-identity__img` | 44px image chip, mirrors `.data-list__icon` sizing |
-| `.restock-identity__main` / `__title` / `__meta` | Text stack — 14/500 title + 12px meta (current stock `b` emphasised) |
-| `.restock-after` | Soft brand-tint readout of current + entered quantity (live) |
+| `.restock-lines` | Item list container (column of quantity rows) |
+| `.restock-lines__group` | Group header — multi-variant product name / bundle member name |
+| `.restock-line` (`__main` / `__img` / `__text` / `__name` / `__meta`) | One item: 34px chip + name + status badge + current/threshold; grid [identity · qty · after] |
+| `.input.restock-line__qty` / `.restock-line__after` | Centered quantity input · live "→ N" after-restock readout (current + qty) |
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--card` / `--muted` · ring `--border` · radius `--radius-md` · after readout tint `color-mix(--primary 8%)` · `--font-ui` / `--font-display` · text `--foreground` / `--muted-foreground`
+- chip `--muted` + inset `--border` · row divider `--border` · `--font-ui` / `--font-display` (qty/after) · text `--foreground` / `--muted-foreground` · badges via badge.css · ETA field `[data-restock-modal] .payout-field[hidden]{display:none}` restores hiding under the flex display
 
-**Usage** — E-Shop restock popup (spec §5.1.5.6): product row / product-detail = single panel; bundle row = Tabs of member panels; each restock is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Tabs + Data list; only the panel / identity / after readout is restock-specific.
+**Usage** — E-Shop restock popup (spec §5.1.5.6 v1.4): single-variant product row / product-detail = one line; multi-variant product row = group + variant lines; bundle row = group per member (multi-variant member expands to variant lines); each restocked line (qty>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Data list; the lines are restock-specific.
 
 **Do & Don't**
 
-- ✅ Do mount inside the canonical payout dialog shell — don't re-roll a modal.
-- ✅ Do keep the row styling aligned with `.payout-bank-option` so the dialog reads as one family.
-- ❌ Don't fork the dialog / form styles — only `.restock-items` is restock-specific.
+- ✅ Do keep method / supplier / ETA / notes at the document layer (filled once); per-item quantities on lines.
+- ✅ Do group a multi-variant product or bundle member with `.restock-lines__group`.
+- ❌ Don't put method / supplier / ETA on each line, and don't reintroduce per-item tabs — that's what the order model removed.
 
-**Dependencies** — composes Badge (§4.3); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
+**Dependencies** — composes Badge (§4.3); reuses Segmented (§4.x) + Data list (§4.x, history); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
 
 **CSS** — [`restock-modal.css`](./ds-components/restock-modal.css) · [`partials/restock-modal.js`](./partials/restock-modal.js)
 

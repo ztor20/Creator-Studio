@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create bundle · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260702e"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/button.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/card.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/input.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/picker.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260702e">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260702e">
-<link rel="stylesheet" href="shared.css?v=20260702e">
+<script src="js/theme.js?v=20260702h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/picker.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260702h">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260702h">
+<link rel="stylesheet" href="shared.css?v=20260702h">
 <style>
   /* page-specific：Create bundle 表單 · spec 5.1.5.4
      區段骨架用 ds-components/form-section.css（無卡片，與 create-product 一致）；此處只留 bundle 專屬。 */
@@ -48,6 +48,11 @@
   .cb-price-input { display: flex; align-items: center; gap: 8px; }
   .cb-price-input[hidden] { display: none; }  /* class display 會蓋掉 [hidden] 的 none，需顯式還原 */
   .cb-price-input__sym { font-size: var(--fs-14); color: var(--muted-foreground); }
+  /* 組合價格（自動 base ＋ 折扣）D103：base 加總／「從 $X 起」；有折扣時大字＝折後價、旁邊劃掉 base */
+  .cb-priceline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-semibold); color: var(--foreground); }
+  .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
+  .cb-basestrike[hidden] { display: none; }
   /* 套組庫存＝min(成員) 與相容性提示（spec 5.1.5.4 §6.3/§6.4，顯示層 demo）*/
   .cb-summary { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--muted); font-size: var(--fs-13); }
   .cb-summary[hidden] { display: none; }
@@ -199,53 +204,26 @@
       </div>
     </section>
 
-    <!-- ③ 定價（Pricing）-->
+    <!-- ③ 組合價格：自動 base（唯讀）＋ 折扣 %（可填）· spec 5.1.5.4 §4 F3 / D103（修訂 D102）
+         base＝成員自動加總（不可編輯，多規格→「從 $X 起」）；折扣套在 base 上，折後＝粉絲付的價 -->
     <section class="form-section">
       <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cb.pricing">Pricing</h3>
+        <h3 class="form-section__title" data-i18n="cb.pricing">Bundle price</h3>
       </div>
-      <!-- 包一層 .field：取得 .form-section .field 的 26px 下欄距，讓選擇卡與下方輸入不擠在一起（比照建立商品 Edition）-->
       <div class="field">
-        <div class="selection-grid" id="cb-price-grid">
-          <button class="selection-card selection-card--active" data-cb-price="fixed">
-            <span class="selection-card__title" data-i18n="cb.price.fixed">Fixed price</span>
-            <span class="selection-card__sub" data-i18n="cb.price.fixed-sub">Set one bundle price</span>
-          </button>
-          <button class="selection-card" data-cb-price="pct">
-            <span class="selection-card__title" data-i18n="cb.price.pct">% off</span>
-            <span class="selection-card__sub" data-i18n="cb.price.pct-sub">Discount when bundled</span>
-          </button>
+        <div class="cb-priceline">
+          <span class="cb-autoprice" id="cb-autoprice">$0.00</span>
+          <span class="cb-basestrike" id="cb-basestrike" hidden></span>
         </div>
+        <div class="field__hint" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</div>
       </div>
-
-      <!-- 固定價輸入（spec 5.1.5.4 §4 F3）：input 有標題＋「不得高於成員合計」描述 -->
-      <div data-cb-price-show="fixed">
-        <div class="field">
-          <div class="field__label" data-i18n="cb.price.fixed">Fixed price</div>
-          <div class="cb-price-input">
-            <span class="cb-price-input__sym">$</span>
-            <input class="input" id="cb-fixed-price" placeholder="0.00" style="max-width:200px">
-          </div>
-          <div class="field__hint" id="cb-price-hint" data-i18n="cb.price.fixed-hint">Bundle price must not exceed members' total.</div>
+      <div class="field">
+        <div class="field__label" data-i18n="cb.price.discount">Discount % (optional)</div>
+        <div class="cb-price-input">
+          <input class="input" id="cb-discount" placeholder="0" inputmode="decimal" style="max-width:160px">
+          <span class="cb-price-input__sym">%</span>
         </div>
-      </div>
-      <!-- 折扣輸入（spec 5.1.5.4 §4 F3 / D088）：折扣後價格 ↔ 折扣趴數 雙欄連動，依成員原價合計換算 -->
-      <div data-cb-price-show="pct" hidden>
-        <div class="field">
-          <div class="field__label" data-i18n="cb.price.discounted">Discounted price</div>
-          <div class="cb-price-input">
-            <span class="cb-price-input__sym">$</span>
-            <input class="input" id="cb-disc-price" placeholder="0.00" style="max-width:200px">
-          </div>
-        </div>
-        <div class="field">
-          <div class="field__label" data-i18n="cb.price.pctoff">Discount %</div>
-          <div class="cb-price-input">
-            <input class="input" id="cb-disc-pct" placeholder="0" style="max-width:160px">
-            <span class="cb-price-input__sym">%</span>
-          </div>
-        </div>
-        <div class="field__hint" id="cb-disc-hint" data-i18n="cb.price.disc-hint">Fill either field — the other updates from members' total.</div>
+        <div class="field__hint" id="cb-disc-hint" data-i18n="cb.price.discount-hint">Applied to the auto-summed total — fans pay the discounted price.</div>
       </div>
     </section>
 
@@ -359,7 +337,10 @@
 (function () {
   const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const pGrid = document.getElementById('cb-price-grid');
+  const autopriceEl = document.getElementById('cb-autoprice');
+  const baseStrike = document.getElementById('cb-basestrike');
+  const discEl = document.getElementById('cb-discount');
+  const discHintEl = document.getElementById('cb-disc-hint');
   const recent = document.getElementById('cb-recent');
   const selected = document.getElementById('cb-selected');
   const addTile = document.getElementById('cb-add-tile');
@@ -372,13 +353,7 @@
   const pvName = document.getElementById('cb-pv-name');
   const pvPrice = document.getElementById('cb-pv-price');
   const pvDesc = document.getElementById('cb-pv-desc');
-  const fixedPrice = document.getElementById('cb-fixed-price');
-  const priceHint = document.getElementById('cb-price-hint');
-  const discPrice = document.getElementById('cb-disc-price');
-  const discPct = document.getElementById('cb-disc-pct');
-  const discHint = document.getElementById('cb-disc-hint');
   const createBtn = document.getElementById('cb-create');
-  let discLast = 'pct';  // 折扣模式最後編輯的欄位，成員合計變動時以它為準重算另一欄（D088）
   /* F4 庫存 + F7 販售排程（spec 5.1.5.4 §4 F4／F7）*/
   const editionGrid = document.getElementById('cb-edition');
   const totalInput = document.getElementById('cb-total');
@@ -392,21 +367,31 @@
   const saleOn = () => saleToggle && saleToggle.getAttribute('aria-checked') === 'true';
 
   const numStock = v => (v === 'unlimited' || v === '∞') ? Infinity : (parseFloat(v) || 0);
-  const fixedMode = () => { const a = pGrid.querySelector('.selection-card--active'); return !a || a.dataset.cbPrice === 'fixed'; };
   const sumMembers = () => [...selected.querySelectorAll('[data-cb-item]')].reduce((a, it) => a + (parseFloat(it.dataset.price) || 0), 0);
-
-  /* 折扣雙欄連動（spec 5.1.5.4 §4 F3 / D088）：以成員原價合計 S 互換，填一欄算另一欄 */
-  function syncDiscount() {
-    if (!discPrice || !discPct) return;
-    const S = sumMembers();
-    if (S <= 0) return;
-    if (discLast === 'pct') {
-      const p = parseFloat(discPct.value);
-      if (!isNaN(p)) discPrice.value = (S * (1 - p / 100)).toFixed(2);
-    } else {
-      const v = parseFloat(discPrice.value);
-      if (!isNaN(v)) discPct.value = (Math.round((1 - v / S) * 1000) / 10).toString();
-    }
+  /* 折扣 %（D103）：合法 0–100 才生效；空/0＝無折扣；非法（NaN/<0/>100）→ pct=0 且 discOk=false */
+  function discInfo() {
+    const raw = discEl ? discEl.value.trim() : '';
+    if (!raw) return { pct: 0, ok: true, empty: true };
+    const v = parseFloat(raw);
+    if (isNaN(v) || v < 0 || v > 100) return { pct: 0, ok: false, empty: false };
+    return { pct: v, ok: true, empty: false };
+  }
+  /* 組合價格（D103）：base＝成員自動加總（多規格→「從 $X 起」）；折後＝base×(1−pct) */
+  function priceParts() {
+    const items = [...selected.querySelectorAll('[data-cb-item]')];
+    const base = sumMembers();
+    const hasVar = items.some(it => it.dataset.variants);
+    const d = discInfo();
+    return { n: items.length, base: base, hasVar: hasVar, pct: d.pct, discOk: d.ok, final: base * (1 - d.pct / 100) };
+  }
+  function money(v, hasVar) {
+    return hasVar ? (T('cb.price.from', 'From') + ' $' + v.toFixed(2) + T('cb.price.from-suffix', '')) : ('$' + v.toFixed(2));
+  }
+  /* 粉絲付的價（折後）文字，供預覽／送出用 */
+  function bundlePriceText() {
+    const p = priceParts();
+    if (p.n === 0) return '$0.00';
+    return money(p.final, p.hasVar);
   }
 
   function recompute() {
@@ -449,44 +434,28 @@
     notesEl.innerHTML = notes;
     if (window.applyI18n) window.applyI18n(notesEl);
 
-    let priceOk = true;
-    if (fixedMode()) {
-      priceHint.removeAttribute('data-i18n');
-      const raw = fixedPrice ? fixedPrice.value.trim() : '';
-      const price = parseFloat(raw);
-      if (!raw) {
-        priceHint.className = 'field__hint';
-        priceHint.textContent = T('cb.price.cap', "Bundle price must not exceed members' total") + (n ? ' · $' + sum.toFixed(2) : '');
-        priceOk = false;
-      } else if (price > sum) {
-        priceHint.className = 'field__hint cb-warn';
-        priceHint.textContent = '$' + price.toFixed(2) + ' ' + T('cb.price.over', 'exceeds members total') + ' $' + sum.toFixed(2);
-        priceOk = false;
+    /* 組合價格（D103）：base 自動加總（唯讀）＋ 折扣 %；大字＝折後價、有折扣時旁邊劃掉 base */
+    const pp = priceParts();
+    if (autopriceEl) autopriceEl.textContent = pp.n === 0 ? '$0.00' : money(pp.final, pp.hasVar);
+    if (baseStrike) {
+      const showStrike = pp.n > 0 && pp.pct > 0 && pp.discOk;
+      baseStrike.hidden = !showStrike;
+      if (showStrike) baseStrike.textContent = money(pp.base, pp.hasVar);
+    }
+    let discOk = true;
+    if (discHintEl) {
+      discHintEl.removeAttribute('data-i18n');
+      const d = discInfo();
+      if (!d.ok) {
+        discHintEl.className = 'field__hint cb-warn';
+        discHintEl.textContent = T('cb.price.discount-bad', 'Discount must be 0–100.');
+        discOk = false;
+      } else if (d.pct > 0 && pp.n > 0) {
+        discHintEl.className = 'field__hint cb-save';
+        discHintEl.textContent = '−' + d.pct + '% · ' + T('cb.price.saves', 'Saves') + ' $' + (pp.base - pp.final).toFixed(2);
       } else {
-        priceHint.className = 'field__hint cb-save';
-        priceHint.textContent = T('cb.price.saves', 'Saves') + ' $' + (sum - price).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total') + ' $' + sum.toFixed(2);
-      }
-    } else if (discHint) {
-      /* 折扣模式（D088）：依成員合計重算連動欄，並檢核折扣後價 ≤ 合計（折扣 ≥ 0）*/
-      if (sum > 0) syncDiscount();
-      discHint.removeAttribute('data-i18n');
-      const dp = discPrice ? parseFloat(discPrice.value) : NaN;
-      const pc = discPct ? parseFloat(discPct.value) : NaN;
-      if (sum <= 0) {
-        discHint.className = 'field__hint';
-        discHint.textContent = T('cb.disc.addfirst', 'Add members first to set a discount');
-        priceOk = false;
-      } else if (isNaN(dp) && isNaN(pc)) {
-        discHint.className = 'field__hint';
-        discHint.textContent = T('cb.price.disc-hint', "Fill either field — the other updates from members' total");
-        priceOk = false;
-      } else if (dp > sum) {
-        discHint.className = 'field__hint cb-warn';
-        discHint.textContent = '$' + dp.toFixed(2) + ' ' + T('cb.price.over', 'exceeds members total') + ' $' + sum.toFixed(2);
-        priceOk = false;
-      } else {
-        discHint.className = 'field__hint cb-save';
-        discHint.textContent = T('cb.price.saves', 'Saves') + ' $' + (sum - dp).toFixed(2) + ' ' + T('cb.price.vs', 'vs members total') + ' $' + sum.toFixed(2);
+        discHintEl.className = 'field__hint';
+        discHintEl.textContent = T('cb.price.discount-hint', 'Applied to the auto-summed total — fans pay the discounted price.');
       }
     }
     /* F7 販售排程：啟用時起訖日必填且結束晚於開始（§6.1）*/
@@ -512,10 +481,8 @@
       pvName.classList.toggle('is-empty', !nm);
     }
     if (pvPrice) {
-      const pv = fixedMode() ? (fixedPrice ? fixedPrice.value.trim() : '') : (discPrice ? discPrice.value.trim() : '');
-      const num = parseFloat(pv);
-      pvPrice.textContent = isNaN(num) ? '$0.00' : '$' + num.toFixed(2);
-      pvPrice.classList.toggle('is-empty', isNaN(num));
+      pvPrice.textContent = bundlePriceText();
+      pvPrice.classList.toggle('is-empty', n === 0);
     }
     if (pvDesc) {
       const d = descEl ? descEl.value.trim() : '';
@@ -524,17 +491,10 @@
     }
 
     const nameOk = nameEl && nameEl.value.trim() !== '';
-    createBtn.disabled = !(ok2 && nameOk && priceOk && editionOk && saleOk);
+    createBtn.disabled = !(ok2 && nameOk && editionOk && saleOk && discOk);   // base 自動；折扣可選但填了需 0–100（D103）
   }
 
-  /* 定價模式切換 */
-  pGrid.querySelectorAll('[data-cb-price]').forEach(card => {
-    card.addEventListener('click', () => {
-      pGrid.querySelectorAll('[data-cb-price]').forEach(c => c.classList.toggle('selection-card--active', c === card));
-      document.querySelectorAll('[data-cb-price-show]').forEach(el => el.hidden = el.dataset.cbPriceShow !== card.dataset.cbPrice);
-      recompute();
-    });
-  });
+  /* 定價模式切換已移除（D102，組合價格自動、唯讀）*/
 
   /* F4 庫存版本切換（不限量／限量）：限量才顯示硬上限欄 */
   if (editionGrid) editionGrid.querySelectorAll('[data-cb-edition]').forEach(btn => {
@@ -634,9 +594,8 @@
   });
   if (nameEl) nameEl.addEventListener('input', recompute);
   if (descEl) descEl.addEventListener('input', recompute);
-  if (fixedPrice) fixedPrice.addEventListener('input', recompute);
-  if (discPct) discPct.addEventListener('input', () => { discLast = 'pct'; syncDiscount(); recompute(); });
-  if (discPrice) discPrice.addEventListener('input', () => { discLast = 'price'; syncDiscount(); recompute(); });
+  /* base 隨成員變動於 recompute 重算；折扣 % 輸入即時重算（D103）*/
+  if (discEl) discEl.addEventListener('input', recompute);
 
   /* 商品搜尋過濾「近期瀏覽」(spec §4 F2)；無相符列顯示空狀態引導 New item (§6.6) */
   const search = document.querySelector('.picker__search-input');
@@ -658,10 +617,7 @@
   createBtn.addEventListener('click', () => {
     if (createBtn.disabled) return;
     const nm = (nameEl && nameEl.value.trim()) || '';
-    let pr = fixedMode()
-      ? ((fixedPrice && fixedPrice.value.trim()) || '')      // 固定價＝組合售價
-      : ((discPrice && discPrice.value.trim()) || '');        // 折扣模式＝折扣後價格（D088）
-    if (pr && !/\$/.test(pr)) pr = '$' + pr;
+    let pr = (autopriceEl && autopriceEl.textContent.trim()) || '';   // 組合價格＝自動加總文字（D102，含「從 $X 起」）
     const q = new URLSearchParams({ posted: '1', type: 'bundle' });
     if (nm) q.set('name', nm);
     if (pr) q.set('price', pr);
@@ -671,10 +627,10 @@
   recompute();
 })();
 </script>
-<script src="js/icons.js?v=20260702e"></script>
-<script src="js/i18n.js?v=20260702e"></script>
-<script src="partials/wizard-chrome.js?v=20260702e"></script>
-<script src="js/reveal.js?v=20260702e"></script>
-<script src="js/devtools.js?v=20260702e"></script>
+<script src="js/icons.js?v=20260702h"></script>
+<script src="js/i18n.js?v=20260702h"></script>
+<script src="partials/wizard-chrome.js?v=20260702h"></script>
+<script src="js/reveal.js?v=20260702h"></script>
+<script src="js/devtools.js?v=20260702h"></script>
 </body>
 </html>
