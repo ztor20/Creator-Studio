@@ -57,7 +57,9 @@
      一份 md 當單一真相：版本清單＋規則取自其「## 開發版本配置」表，
      功能→tier 取自各 pillar 功能表的 🟢/🔵/⚪ 欄。fetch 失敗（file://）用內建後備。
      規則語法：all｜tier:p1,next｜feat:ID／-feat:ID｜page:原頁=變體（特殊版換頁，行為製作時定）。
-     減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。*/
+     減功能型靠元素的 data-feat → tier 比對；特殊版（page:）不減功能、換頁行為待接。
+     data-feat＝功能在版本內才顯示；data-feat-off＝功能「不」在版本內才顯示（base／預設呈現），
+     兩者同位置成對即可做「Phase 1 用預設、Next+ 換升級版」的呈現切換（如 S31.1 低庫存門檻）。*/
   var TIER_EMOJI = { '🟢': 'p1', '🔵': 'next', '⚪': 'tbd' };
   /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。*/
   var VERSIONS = [
@@ -80,7 +82,7 @@
     });
     if (vs.length) VERSIONS = vs;
     lines.forEach(function (ln) {
-      var idm = ln.match(/\|\s*`([SOEB]\d{2})`\s*\|/);
+      var idm = ln.match(/\|\s*`([SOEB]\d{2}(?:\.\d+)?)`\s*\|/);
       if (!idm) return;
       for (var em in TIER_EMOJI) { if (ln.indexOf(em) >= 0) { FEAT_TIER[idm[1]] = TIER_EMOJI[em]; break; } }
     });
@@ -127,6 +129,17 @@
       });
       el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
       el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
+    });
+    /* 1b) 反向閘：data-feat-off 的元素是「該功能未納入版本時才顯示」的 base／預設呈現，
+       與同位置的 data-feat 元素成對——功能在版本內（或預覽 future）→ 顯示升級版、收起 base；
+       功能不在 → 顯示 base、藏升級版。逗號多值＝任一功能在版本內即收起 base。 */
+    document.querySelectorAll('[data-feat-off]').forEach(function (el) {
+      var offIds = el.getAttribute('data-feat-off').split(',');
+      var featShown = offIds.some(function (id) {
+        var inVer = !allow || allow.indexOf(FEAT_TIER[id.trim()] || 'p1') >= 0;
+        return inVer || state.showFuture;
+      });
+      el.classList.toggle('ztd-ver-hidden', featShown);
     });
     /* 作用中分頁被版本藏掉時，自動切到第一個可見的兄弟 tab（點擊觸發頁面自身切換 JS）*/
     document.querySelectorAll('.tabs__item.ztd-ver-hidden, .filter-tabs__item.ztd-ver-hidden').forEach(function (t) {

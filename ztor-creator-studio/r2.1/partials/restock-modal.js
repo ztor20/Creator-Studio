@@ -107,7 +107,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
             '<div class="restock-line__text">' +
               '<div class="restock-line__name">' + esc(item.name) +
                 ' <span class="badge ' + b[0] + '"><span data-i18n="' + b[1] + '">' + b[2] + '</span></span></div>' +
-              '<div class="restock-line__meta"><span data-i18n="restock.current">Current stock</span> <b>' + cur + '</b> · <span data-i18n="restock.threshold">threshold</span> ' + num(item.threshold || 5) + '</div>' +
+              '<div class="restock-line__meta"><span data-i18n="restock.current">Current stock</span> <b>' + cur + '</b>' +
+                (item.threshold != null ? ' · <span data-i18n="restock.threshold">threshold</span> ' + num(item.threshold) : '') +
+              '</div>' +
             '</div>' +
           '</div>' +
           '<input class="input restock-line__qty" inputmode="numeric" placeholder="0" data-restock-qty aria-label="Restock quantity">' +
