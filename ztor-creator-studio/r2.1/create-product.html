@@ -3,34 +3,34 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260702k"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/button.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/card.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/input.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/album-tracks.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/vip-card.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/radio-card.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260702k">
-<link rel="stylesheet" href="ds-components/spec-row.css?v=20260702k">
-<link rel="stylesheet" href="shared.css?v=20260702k">
+<script src="js/theme.js?v=20260702l"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/button.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/card.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/input.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/album-tracks.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/vip-card.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260702l">
+<link rel="stylesheet" href="ds-components/spec-row.css?v=20260702l">
+<link rel="stylesheet" href="shared.css?v=20260702l">
 <style>
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
      型別卡 icon 變體／upload hero 已 promote 成 ds-components（form-section /
@@ -347,10 +347,22 @@
         </div>
       </div>
 
-      <!-- 低庫存提醒（實體；單一與多規格皆適用）-->
+      <!-- 低庫存提醒（實體；單一與多規格皆適用）。門檻預設＝庫存上限的 10%（spec §7.2 / D105）。
+           逐商品自訂（S31.1）由下方輸入格提供、cheat code「版本」控制其呈現 -->
       <div class="control-row" data-cp-show="physical" style="margin-top:16px">
-        <span class="control-row__main" data-i18n="cp.lowstock">Alert me when running low</span>
-        <div class="switch switch--on" role="switch" aria-checked="true" onclick="this.classList.toggle('switch--on')"></div>
+        <div>
+          <div class="control-row__main" data-i18n="cp.lowstock">Alert me when running low</div>
+          <div class="control-row__sub" data-i18n="cp.lowstock.hint">Alerts you at 10% of your stock cap — the default low-stock threshold.</div>
+        </div>
+        <div class="switch switch--on" id="cp-lowstock-toggle" role="switch" aria-checked="true"></div>
+      </div>
+      <!-- S31.1 逐商品自訂低庫存門檻（覆寫預設 10%）。兩層 gate：cheat code「版本」以 data-feat 控制
+           （Phase 1 隱藏＝固定 10%；Next+ 顯示），以及只有上方「庫存快不夠時提醒我」開啟時才顯示（JS 控 hidden）；
+           顯示時預填＝庫存基準的 10%（限量＝總量、不限量＝目前在庫〔demo 代理，spec §7.2 待確認〕）。 -->
+      <div class="field" data-feat="S31.1" id="cp-lowstock-custom" hidden style="margin-top:12px;max-width:300px">
+        <div class="field__label" data-i18n="cp.lowstock.custom">Custom low-stock threshold</div>
+        <input class="input" type="number" min="0" id="cp-lowstock-thr" placeholder="10% of cap" data-i18n-placeholder="cp.lowstock.custom.ph">
+        <div class="field__hint" data-i18n="cp.lowstock.custom.hint">Pre-filled to 10% of your stock cap — edit to override.</div>
       </div>
     </section>
 
@@ -807,6 +819,7 @@
       if (el.dataset.whenDelivery) vis = vis && el.dataset.whenDelivery === state.delivery;
       el.hidden = !vis;
     });
+    syncLowStock();   // 低庫存自訂門檻的顯示＋預填隨 type/edition 連動（S31.1）
   }
 
   /* ---- 類型切換 ---- */
@@ -857,6 +870,39 @@
   });
   wireSegmented('cp-edition', 'cpEdition', v => { state.edition = v; updateEditionHint(); applyVisibility(); syncVariantLimited(); refresh(); });
   wireSegmented('cp-delivery', 'cpDelivery', v => { state.delivery = v; applyVisibility(); refresh(); });
+
+  /* ---- 低庫存提醒開關 → 顯示「自訂低庫存門檻」並預填 10% of cap（S31.1）----
+     顯示條件＝實體 且 提醒開關開啟（版本 gate 另由 data-feat 控制）。預填基準：限量＝總量上限、
+     不限量無硬上限→demo 用目前在庫（spec §7.2 待確認，UIA-042）。使用者手動改值後停止覆寫，清空則回自動。 */
+  const lowToggle = document.getElementById('cp-lowstock-toggle');
+  const customThrWrap = document.getElementById('cp-lowstock-custom');
+  const customThrInput = document.getElementById('cp-lowstock-thr');
+  let thrUserEdited = false;
+  function lowStockOn() { return !!(lowToggle && lowToggle.classList.contains('switch--on')); }
+  function lowStockRef() {
+    const raw = state.edition === 'limited' ? (fTotal && fTotal.value.trim()) : (fStock && fStock.value.trim());
+    const n = Number(raw);
+    return (raw && isFinite(n) && n > 0) ? n : null;
+  }
+  function syncLowStock() {
+    if (!customThrWrap) return;
+    const show = state.type === 'physical' && lowStockOn();
+    customThrWrap.hidden = !show;
+    if (show && !thrUserEdited) {
+      const ref = lowStockRef();
+      customThrInput.value = ref ? String(Math.ceil(ref * 0.10)) : '';
+    }
+  }
+  if (lowToggle) lowToggle.addEventListener('click', () => {
+    const on = lowToggle.classList.toggle('switch--on');
+    lowToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+    syncLowStock();
+  });
+  if (customThrInput) customThrInput.addEventListener('input', () => {
+    thrUserEdited = customThrInput.value.trim() !== '';   // 清空則回自動預填
+    if (!thrUserEdited) syncLowStock();
+  });
+  [fTotal, fStock].forEach(el => { if (el) el.addEventListener('input', syncLowStock); });
 
   /* §4.2 F11 內容檔案：數位下載檔上傳格隨數位次分類切換（音樂／專輯／影片／會員卡／其他）*/
   const catDigi = document.getElementById('cp-cat-digi');
@@ -1082,13 +1128,13 @@
   setType(initType);
 })();
 </script>
-<script src="js/icons.js?v=20260702k"></script>
-<script src="js/i18n.js?v=20260702k"></script>
-<script src="partials/upload-tile.js?v=20260702k"></script>
-<script src="partials/album-tracks.js?v=20260702k"></script>
-<script src="partials/vip-card.js?v=20260702k"></script>
-<script src="partials/wizard-chrome.js?v=20260702k"></script>
-<script src="js/reveal.js?v=20260702k"></script>
-<script src="js/devtools.js?v=20260702k"></script>
+<script src="js/icons.js?v=20260702l"></script>
+<script src="js/i18n.js?v=20260702l"></script>
+<script src="partials/upload-tile.js?v=20260702l"></script>
+<script src="partials/album-tracks.js?v=20260702l"></script>
+<script src="partials/vip-card.js?v=20260702l"></script>
+<script src="partials/wizard-chrome.js?v=20260702l"></script>
+<script src="js/reveal.js?v=20260702l"></script>
+<script src="js/devtools.js?v=20260702l"></script>
 </body>
 </html>

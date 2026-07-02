@@ -6,6 +6,28 @@
 
 ---
 
+## 2026-07-02 · 低庫存門檻自訂 S31.1 建置，改由 cheat code「版本」切換呈現（A 規格 · D105／D infra）
+
+使用者裁示：把原本延後的「逐商品自訂門檻」現在就做進原型，交付版本切割改由 cheat code 的「版本」開關控制呈現（不再只是 deferred 不做）。做法＝建 UI＋用 `data-feat` 版本閘，Phase 1 仍看到固定 10%、Next+／最終版才看到可編輯門檻：
+- **cheat code 機制補強（infra）**：(1) `devtools.js` 解析 feature-scope-map 的 ID 正規表達式原本只吃 `[SOEB]\d{2}`，**加上可選小數點子 ID**（`(?:\.\d+)?`）才抓得到 `S31.1`——否則 `data-feat="S31.1"` 會被當 p1、每版都顯示（gate 失效）。(2) 新增**反向閘 `data-feat-off`**：功能「不」在版本內才顯示，與同位置 `data-feat` 成對，做「Phase 1 用預設呈現、Next+ 換升級版」的切換（`ztd-ver-hidden`）。首次使用。
+- **建立商品**（create-product）：低庫存提醒開關下方加「自訂低庫存門檻」數值輸入格（`data-feat="S31.1"`）；Phase 1 隱藏＝只有開關＋固定 10% 說明，Next+ 顯示輸入格。**追加（使用者回饋）**：(1) 輸入格改為**只有「庫存快不夠時提醒我」開關開啟時才顯示**（JS 控 `hidden`，關閉即收起）；(2) 顯示時**預填＝庫存基準的 10%**並隨基準即時重算——限量＝總量上限（如 50→5、30→3）、不限量無硬上限→demo 用目前在庫（如 40→4，spec §7.2 待確認）；使用者手動改值後停止覆寫、清空則回自動。移除原 inline `onclick`，開關改由控制器接管（同步 `aria-checked`）。
+- **商品細節頁**（product-detail）：門檻欄改**兩態成對**——base（`data-feat-off="S31.1"`）＝唯讀自動 10%＋「後續版本可自訂」提示；升級版（`data-feat="S31.1"`）＝可編輯數值＋「覆寫預設、留空則自動」提示。版本開關切換兩者。
+- **feature-scope-map**：S31.1 Build ⏳ deferred → ✅ built（tier 維持 🔵 Next）；補「data-feat 標註現況」註記。i18n 新增 `cp.lowstock.custom`／`.ph`／`.hint`、`product-detail.threshold.custom.hint`（中英）。
+- 動機：規格本就描述「可逐商品調整」為最終產品，原型預設（最終完整版）本應看得到；用版本閘保留 D105「Phase 1 用固定 10%」的交付切割。**未反轉 D105**（Phase 1 體驗不變）、未動 documents/。逐規格門檻粒度仍未做（spec §8 待決）。
+
+---
+
+## 2026-07-02 · 低庫存門檻預設改「庫存上限的 10%」＋自訂門檻延後（A 規格 · D105）
+
+上游把低庫存門檻預設由寫死的「5 件」改為**該品項庫存上限的 10%**（限量＝Total Quantity×10%；不限量基準待確認），且「逐商品自訂門檻」的 UI **v1 不做**、記入版本切割 feature-scope-map S31.1（🔵 Next／deferred）（spec §7.2／5.1.5.1 §2.3／5.1.5.2 §4.1、D105／Plan164）。R2.1 對應：
+- **建立商品**（create-product）：低庫存提醒開關由單行標題補上副說明列——「在庫存降到庫存上限的 10%（預設低庫存門檻）時提醒你」（`.control-row__sub`＋`cp.lowstock.hint`）；仍只有開關、無門檻數值輸入（對齊 S31.1「v1 無自訂門檻 UI」）。
+- **商品細節頁**（product-detail）：低庫存門檻欄由可編輯 `value="5"` 改為**唯讀**（`readonly`，demo 值 4＝cap40 的 10%）＋提示「自動 · 庫存上限的 10%，逐商品自訂為後續版本功能」（`product-detail.threshold.hint`）；PRODUCT demo threshold 5→4。
+- **補貨彈窗**（restock-modal + e-shop 控制器）：新增 `lowThr(cap)=ceil(cap×10%)`，示範資料每個規格/成員改帶自身 cap 並由此導門檻（tee S30→3／M·L40→4；hoodie 30–60→3–6；sticker50→5；LP150→15；poster100→10），列 meta 顯示導出值而非寫死 5；一般清單列無 cap→隱藏「· threshold N」meta（移除 `|| 5` 魔術數）。
+- DS §4.62 demo 門檻 5→3/4/4＋補「threshold＝10% of cap」說明；design-system.md §4.29c、ASSUMPTIONS UIA-042、requirements-map 同步。全站資產版本 `20260702k→l`。
+- 動機：門檻跟著庫存規模走比固定值更合理；自訂門檻延後讓 v1 聚焦固定預設。皆前端 demo；不限量 10% 基準、取整、門檻粒度＝上游待確認（D105 待辦）。
+
+---
+
 ## 2026-07-02 · 補貨組合成員改「成員 tab」＋新增 2×3 矩陣示範商品（A 規格 · D106）
 
 使用者指出 D104 把組合成員平鋪在同一份矩陣清單（不同商品跟 variant 混在一起）不對——不同商品應以 tab 分開。裁示模型：`商品 → 規格矩陣`；`組合 → 商品A(tab)/商品B(tab) → 各自規格矩陣`（spec 5.1.5.6 v1.5／D106／Plan165）：
