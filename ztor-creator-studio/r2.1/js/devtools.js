@@ -61,9 +61,10 @@
   var TIER_EMOJI = { '🟢': 'p1', '🔵': 'next', '⚪': 'tbd' };
   /* 每筆：[鍵, 顯示名, 類型(開發/測試), 規則, 說明]。類型用於分組（測試版自成一組）。*/
   var VERSIONS = [
-    ['full', '最終完整版', '開發', 'all', '全部功能（預設）'],
-    ['p1-next', 'Phase 1 ＋ Next', '開發', 'tier:p1,next', '首發＋規劃追加'],
-    ['p1', 'Phase 1', '開發', 'tier:p1', '內部首發'],
+    ['p1', 'Phase 1（Phase 1）', '開發', 'tier:p1', '內部首發'],
+    ['p1-next', 'Phase 2（Phase 1 ＋ Next）', '開發', 'tier:p1,next', '首發＋規劃追加'],
+    ['p1-next-tbd', 'Phase 3（Phase 1 ＋ Next ＋ TBD）', '開發', 'tier:p1,next,tbd', '＋商務待定（TBD）'],
+    ['full', 'Phase 4（最終完整版）', '開發', 'all', '全部功能（預設）'],
     ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
   ];
   var FEAT_TIER = {};   // { S30:'p1', … } 由 md 功能表填
@@ -119,10 +120,20 @@
     /* 1) 減功能：依 tier 隱藏／標記帶 data-feat 的元素 */
     var allow = tiersForRule(rule);
     document.querySelectorAll('[data-feat]').forEach(function (el) {
-      var tier = FEAT_TIER[el.getAttribute('data-feat')] || 'p1';
-      var inVer = !allow || allow.indexOf(tier) >= 0;
+      /* data-feat 支援逗號多值（外殼包多個功能時）：任一功能在版本內→顯示；全部不在→藏 */
+      var ids = el.getAttribute('data-feat').split(',');
+      var inVer = !allow || ids.some(function (id) {
+        return allow.indexOf(FEAT_TIER[id.trim()] || 'p1') >= 0;
+      });
       el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
       el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
+    });
+    /* 作用中分頁被版本藏掉時，自動切到第一個可見的兄弟 tab（點擊觸發頁面自身切換 JS）*/
+    document.querySelectorAll('.tabs__item.ztd-ver-hidden, .filter-tabs__item.ztd-ver-hidden').forEach(function (t) {
+      var active = t.classList.contains('tabs__item--active') || t.classList.contains('filter-tabs__item--active') || t.getAttribute('aria-selected') === 'true';
+      if (!active || !t.parentElement) return;
+      var sib = t.parentElement.querySelector('.tabs__item:not(.ztd-ver-hidden), .filter-tabs__item:not(.ztd-ver-hidden)');
+      if (sib && sib !== t) sib.click();
     });
     /* 2) 改接：route:來源=目標——先把上次改過的全還原，再套當前版本（標 data-route-keep 的不動）*/
     document.querySelectorAll('a[data-route-orig]').forEach(function (a) {
