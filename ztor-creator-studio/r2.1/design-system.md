@@ -18,7 +18,7 @@
 > **2026-06-25 · 命名對齊 shadcn + 暗色實色 + 控件尺寸 + focus（issue #11 — ztor 工程端 jaskang 反饋）**
 > - **Token 改名 → shadcn role**：`--surface→--card` · `--surface-muted→--muted` · `--foreground-subtle→--muted-foreground` · `--surface-rail→--sidebar` · `--surface-rail-hover→--accent` · `--status-error→--destructive`；補齊 shadcn 全集（`card-foreground` / `popover(-foreground)` / `secondary(-foreground)` / `accent-foreground` / `destructive-foreground` / `input` / `chart-1..5` / `sidebar-*` 整組）。creator 獨有的（`surface-shell` / `surface-page` / `primary-hover` / `status-{success,info,warning,accent}` / `gradient-brand` / `sidebar-active`）保留為 `[ext]`。**對齊語意、值不變**，品牌橘仍是 `--primary`。
 > - **暗色實色面**：`--background` / `--foreground` 與 card / muted / sidebar / border 改實色 hex（值由原 `rgba` 疊層在 `#191A1A` / `#2B2B2C` 上算出，外觀不變）；半透明只剩 `backdrop-blur` overlay。`--ring` 暗色不再覆寫成白、改繼承品牌橘（亮暗同色）。
-> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），button / input / field 共用、同尺寸等高；新增 4px `--space-1..16`。default 維持 44。
+> - **控件尺寸**：新增 `--control-h-{xs,sm,md,lg,xl}` = `28/36/44/52/60`（皆 ÷4），button / input / field 共用、同尺寸等高；新增 4px `--space-1..16`（現況待採用，見 §2.3）。default 維持 44。
 > - **focus 統一**：全控件＋亮暗一律 `outline: 2px solid var(--ring); outline-offset: 2px`（清單列 `-2px` 內嵌）。
 > - **小數收斂**：裝飾邊框 1.5 / 2.5px → 整數、陰影次像素 → 整數。
 > - **無障礙＝最低優先、只建議**：依使用者裁示，橘 ring 低對比等 a11y 議題僅記風險、不阻擋交付、不改品牌決策。
@@ -213,25 +213,27 @@ Foundation.
 
 **Weight scale (`--fw-*`)** — 2026-06-23 起全站 `font-weight` 一律引用 4 階 primitive：`--fw-regular 400 · --fw-medium 500 · --fw-semibold 600 · --fw-bold 700`（舊有 1 個 650 已併入 semibold）。`--type-*-weight` 也改為指向這層。
 
-**Line-height scale (`--lh-*`)** — 2026-06-30 起把行距收成第 4 個原始字型維度（繼字體／字級／字重），全站 `line-height` 一律引用這 6 階 unitless primitive（命名對齊 shadcn/Tailwind 的 `leading-*`，數值為這套資料密集 UI 調得更緊的版本）：
+**Line-height scale (`--lh-*`)** — 2026-06-30 起把行距收成第 4 個原始字型維度（繼字體／字級／字重），全站 `line-height` 一律引用這 7 階 unitless primitive（命名對齊 shadcn/Tailwind 的 `leading-*`，數值為這套資料密集 UI 調得更緊的版本；`comfy` 為 2026-07-02 補的第 7 階）：
 
-`none 1 · tight 1.1 · snug 1.2 · normal 1.3 · relaxed 1.5 · loose 1.6`
+`none 1 · tight 1.1 · snug 1.2 · normal 1.3 · comfy 1.4 · relaxed 1.5 · loose 1.6`
 
-上方各 `--type-*-line-height` 都改為指向這層（例：`--type-body-14-line-height: var(--lh-relaxed)`）。哪個 role 綁哪一階見 §2.3。先前散落的 8 個 per-role 值（1.05 / 1.25 等）收斂進這 6 階：3 個標題從 1.05→1.1（單行幾乎無差異）、`label-14` 從 1.25→1.2，其餘原值不動；內文 1.5 / 1.6 與 caption 1.3 完全保留。元件層另有約 12 種硬寫的 `line-height`（含 1.35 / 1.4 / 1.45）尚未走 token，列為後續清理，不在本次範圍。
+上方各 `--type-*-line-height` 都改為指向這層（例：`--type-body-14-line-height: var(--lh-relaxed)`）。哪個 role 綁哪一階見 §2.2。role 層收斂（2026-06-30）：3 個標題 1.05→1.1、`label-14` 1.25→1.2，其餘原值不動。元件層收斂（2026-07-02）：70 處硬寫行距全轉 `var(--lh-*)`，其中 53 處值完全不變、17 處 ±0.05（1.35/1.45→1.4、1.05→1.1、1.15/1.25→1.2）；`fan-store.css` 因並行編輯暫未轉。
 
 **Font families (`--font-*`)** — 四個家族：`--font-display` Geist（H1/display）· `--font-ui` Geist（H2–H4/UI）· `--font-body` Inter（內文）· `--font-mono` Geist Mono。每個 stack 末端接自架 `Noto Sans TC`（CJK fallback；繁中模式由 `:lang(zh-Hant)` 提到第一位）。base 宣告在 `_tokens.css`、Noto fallback 與 `@font-face` 在 `ds-components/fonts.css`。
 
 Tight negative tracking (`-1.28px` on H1, `-0.8px` on H2) is the Geist signature.
 
-### 1.3 Spacing
+### 1.3 Spacing — `--sp-*`
 
-Dense scale — many micro-paddings give fine inner spacing on a data-dense UI. Effective rhythm (from全庫 ~443 個實際 px 值，高頻在 12/10/8/16/14/6/4)：
+**px 直命名刻度（2026-07-02 起，數字＝px，與 `--fs-14`=14px 同邏輯）**，取自全庫實際 px 值統計（高頻在 12/10/8/16/14/6/4），20 階：
 
-`2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 32, 48, 64, 80`
+`--sp-2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 28 · 32 · 40 · 48 · 56 · 64 · 72 · 80 · 96`
+
+元件的 `gap` / `padding` / `margin` 一律 `var(--sp-N)`（2026-07-02 已全面轉換 645+ 處，轉換採「值不變」驗證、零渲染變化；`fan-store.css` 因並行編輯中暫未轉，後續補）。**例外保留字面值**：奇數微調（1/3/5/7/9/11/13px，optical adjustment）、刻度外偶數（22/26px）、負值 margin、`calc()` 運算。
 
 Section-level vertical rhythm is closer to `80–96px`. Card internal padding is typically `16–24px`. Footer uses `80px` vertical padding.
 
-> **Token 現況（誠實標註）**：`--space-1…16` primitive 已定義，但為純 4 倍數（`4 8 12 16 20 24 32 40 48 64`），缺了上面密集刻度大量使用的 `6 / 10 / 14 / 18`；目前幾乎未採用（只有 `--space-shell-gutter`），實況以硬寫 px 為主。間距沒有語意 role 層（見 §2.3）。全面 token 化列為後續清理。
+> 舊 `--space-1…16`（N×4 制、幾乎未被採用、缺 6/10/14/18）已於 2026-07-02 退役移除；`--space-shell-gutter` 屬 shell 幾何、保留。間距語意 role 層（component/layout 級別命名）仍未建立（見 §2.3）。
 
 ### 1.4 Radius
 
@@ -271,6 +273,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 - `upload-tile.css` video letterbox (`.upload-tile__video { background: #000 }`) — **irreducible**: media playback matte is pure black regardless of light/dark theme (standard video letterbox), same rationale as an embedded image; not a themeable surface.
 - `selection-card.css` theme-picker swatches (`--theme-light` / `--theme-dark` / `--theme-system`) — **irreducible**: each swatch must paint the *actual* literal theme colors (`#FAFAF7` / `#ffa33f` / `#191A1A`) so the preview shows what each mode looks like even when viewing a different mode; can't reference theme-reactive tokens.
 - `vip-card.css` VIP-card template (`.vip-card__frame` holographic gradients + `.vip-card__plate`/`__logo`/`__plate-sub` white/rgba) — the membership-card face is a **fixed, theme-independent artwork** (a CSS approximation of the platform template); its colors deliberately do not follow light/dark tokens, same rationale as an embedded illustration/image. Real template asset TBD.
+- `fan-store.css` phone screen (`.fan-store__phone` scoped `--fst-*` dark neutrals + bezel/hero-gradient/fan-ring hexes) — the See-as-fan phone renders the **fan app's fixed-dark surface** (theme-independent, same rationale as vip-card): the fan app is its own product with its own dark theme, so the phone must not flip with the creator-backoffice light/dark toggle. Brand accent stays `var(--primary)`; rank-ring colors (#A78BFA/#4ADE80/#2DD4BF/#86EFAC) are fixed decorative rank hues (2026-07-02).
 
 All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
 
@@ -281,6 +284,8 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 ### 1.7 Iconography
 
 **Lucide** icon set, registered in `icons.js` and injected per page via `ztorIcons.applyIcons()`. Thin 1.2px outlined glyphs as inline SVG (no icon font). Any new icon must be added to the registry before use.
+
+**兩檔分工（刻意設計，勿合併）**：`js/icons.js`（~27KB，策展 89 顆）＝產品頁 registry，30 頁都載、保持輕量；`js/icons-all.js`（~365KB，完整 Lucide 1713 顆，自動生成）**只有 `design-system.html` 載**（供「未使用」icon 總覽瀏覽），且必須排在 `icons.js` 之前——`icons.js` 會把 `window.ZTOR_ICONS_ALL` 中缺的 key 併入 REGISTRY。產品頁要用新 icon 仍走「補進 `icons.js` registry」流程，不掛全集。
 
 ### 1.8 Theme mode
 
@@ -334,6 +339,15 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Status — info** | `--status-info` | `#266DF0` | blue.500 [ext] |
 | **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots [ext] |
 | **Status — accent** | `--status-accent` | `#8B5CF6` | purple — extra category hue [ext] |
+| **Card — foreground** | `--card-foreground` | `#000000` | shadcn 對齊補的配對字色；元件現多直接用 `--foreground`（待採用） |
+| **Popover** (dropdown / nav 浮層) | `--popover` / `--popover-foreground` | `#FFFFFF` / `#000000` | white tier；元件尚未改引用（待採用） |
+| **Secondary** (安靜次要鈕底) | `--secondary` / `--secondary-foreground` | `#F4F4F4` / `#000000` | soft-grey tier；元件尚未改引用（待採用） |
+| **Accent — foreground** | `--accent-foreground` | `#000000` | 配對字色（待採用） |
+| **Destructive — foreground** | `--destructive-foreground` | `#FFFFFF` | 配對字色（待採用） |
+| **Input** (控件邊) | `--input` | `#E5E5E5` | = border；元件現多直接用 `--border`（待採用） |
+| **Charts** | `--chart-1..5` | 橘 `#ffa33f` · 藍 `#266DF0` · 綠 `#22C55E` · 黃 `#F8D749` · 紫 `#8B5CF6` | chart series；chart.js 尚未讀 token（待採用） |
+| **Sidebar family** | `--sidebar-*`（`-foreground` / `-primary(-foreground)` / `-accent(-foreground)` / `-border` / `-ring` / `-active` [ext]） | `#FBFBFB` + 整組 | rail 一家 |
+| **Brand gradient** | `--gradient-brand` | 橘漸層（#ffd9a0 · #ffa33f · #ff7a4d） | 進度條品牌漸層 [ext] |
 
 **Naming aligns with shadcn/ui** (issue #11): semantic tokens use shadcn's vocabulary so shadcn code + AI map directly; names shadcn lacks are kept as `[ext]`. (Primary-reserved usage rule moved to §2.6.)
 
@@ -368,11 +382,10 @@ references the role, never raw values (html 版另有每個角色的即時渲染
 
 ### 2.3 Spacing
 
-**誠實標註：目前沒有語意間距 role 層。**（先前此處列的 `--gap-tight/default/section/page` 是不存在的虛構 token，2026-06-30 移除。）實況是：
+間距自 2026-07-02 起走 Pillar 1 的 `--sp-*` px 直命名刻度（見 §1.3），元件 `gap` / `padding` / `margin` 直接引用 primitive——與字級直接用 `--fs-*` 同一模式。
 
-- 元件**直接寫 px**，落在 Pillar 1 §1.3 的密集節奏：`2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 20 · 24 · 32 · 48 · 64 · 80`（全庫實測 ~443 處硬寫 px，高頻在 12/10/8/16/14/6/4）。
-- `--space-1…16` primitive **已定義但尚未採用**（只有 `--space-shell-gutter` 在用），且是純 4 倍數、缺了真實大量使用的 6/10/14/18，所以對不上現況——這是它沒被採用的原因。
-- 結論：把上面的密集刻度視為實際間距系統；全面 token 化（收斂硬寫 px → primitive）列為後續清理，不是現在的宣稱。
+- **語意 role 層（component/layout 級別命名）仍未建立**：這是誠實現況，不是缺陷宣稱；等有真實一致的用途分群再命名，不預先杜撰（先前虛構的 `--gap-tight/default/section/page` 已於 2026-06-30 移除，教訓見 anti-patterns #11）。
+- 例外保留字面值：奇數微調（1/3/5/7/9/11/13px）、刻度外偶數（22/26px）、負值、`calc()`；`fan-store.css` 因並行編輯暫未轉換。
 
 ### 2.4 Control sizes
 
@@ -532,7 +545,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
-| Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源）：hero cover＋本月精選＋分頁＋商品格；顏色跟隨主題（§6.9）。追蹤數/社群/加入社群/精選/立即購買/補貨中為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
+| Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源），**2026-07-02 改呈現為深色手機**（`.fan-store__phone`＞`__screen` 自捲動；版型參考 endgame creator 商店手機版，僅視覺證據）：app 頂列＋hero（名字壓深色漸層＋社群＋加入社群）＋sticky app 分頁列＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。螢幕＝fan app 固定深色面（scoped `--fst-*`，主題例外見 §1.5；accent＝`var(--primary)`）。追蹤數/社群/加入社群/精選/立即購買/補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product footer 用（create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
 | Empty card | 🟡 molecule | ✓ App | 卡片內「已載入但無資料」空狀態 | [empty-card.css](./ds-components/empty-card.css) |
 | Notification matrix | 🟠 organism | ✓ App | 事件×管道逐格開關矩陣（含鎖定通道） | [notification-matrix.css](./ds-components/notification-matrix.css) |
