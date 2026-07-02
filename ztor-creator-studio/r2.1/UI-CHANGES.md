@@ -15,6 +15,7 @@
 - **e-shop demo**：組合「Coastline starter pack」改混合成員＝tee（4 規格）＋hoodie（2×3 矩陣）＋sticker（單品），完整展示「成員 tab → tab 內規格矩陣（含 2 選項矩陣）」。
 - **另新增 2×3 矩陣示範商品**（前一輪）：Coastline hoodie（顏色 Black/Sand × 尺寸 S/M/L＝6 格），列於 Products；補貨以選項一（顏色）分組、選項二（尺寸）為列。
 - DS §4.62／design-system.md §4.29c、ASSUMPTIONS UIA-006、BUILD-SPEC、requirements-map 同步為「商品矩陣／組合成員 tab」。皆前端 demo（UIA-006/007；成員實際出貨規格口徑沿用上游待確認）。
+- 微調（使用者回饋）：組合成員 tab 與上方「補貨品項」標題間距加大（restock-modal.css `[data-restock-tabs]{margin-top:14px}`，原約 4px）。
 
 ---
 
