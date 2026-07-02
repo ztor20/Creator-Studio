@@ -147,9 +147,13 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (th && item.threshold != null) th.textContent = item.threshold;
       var badge = panel.querySelector('[data-restock-badge]');
       if (badge) {
-        var out = item.status === 'out';
-        badge.className = 'badge ' + (out ? 'badge--neutral' : 'badge--error');
-        badge.innerHTML = '<span data-i18n="' + (out ? 'e-shop.row.out' : 'e-shop.row.low') + '">' + (out ? 'Sold Out' : 'Low Stock') + '</span>';
+        /* stock-axis badge per item: out = Sold Out (neutral) · ok = In stock
+           (success) · default low = Low Stock (error) — §7.2 stock axis */
+        var st = item.status === 'out' ? ['badge--neutral', 'e-shop.row.out', 'Sold Out']
+               : item.status === 'ok'  ? ['badge--success', 'e-shop.row.instock', 'In stock']
+               :                         ['badge--error',   'e-shop.row.low', 'Low Stock'];
+        badge.className = 'badge ' + st[0];
+        badge.innerHTML = '<span data-i18n="' + st[1] + '">' + st[2] + '</span>';
         if (window.applyI18n) window.applyI18n(badge);
       }
       var img = panel.querySelector('[data-restock-img]');
@@ -243,31 +247,39 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (lastFocused && lastFocused.focus) lastFocused.focus();
     }
 
+    function openSingle(item, row) {
+      if (!ensure()) return;
+      originRow = row || null;
+      var tabs = modal.querySelector('[data-restock-tabs]');
+      if (tabs) { tabs.hidden = true; tabs.innerHTML = ''; }
+      var panels = resetPanels(1);
+      fillIdentity(panels[0], item || {});
+      showMember(0);
+      open();
+    }
+    /* Tabbed mode — one panel per item, each filled separately. Two callers,
+       same mechanic (spec 5.1.5.6 §2): bundle = tabs are physical MEMBERS;
+       multi-variant product (5.1.5.2 §4.1 F3 route B) = tabs are enabled
+       VARIANTS of one product. */
+    function openTabbed(members, row) {
+      if (!ensure()) return;
+      originRow = row || null;
+      members = (members && members.length) ? members : [];
+      var tabs = modal.querySelector('[data-restock-tabs]');
+      tabs.hidden = false;
+      tabs.innerHTML = members.map(function (m, i) {
+        return '<button class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + (i === 0) + '" data-restock-tab="' + i + '">' + (m.tab || m.name || ('Item ' + (i + 1))) + '</button>';
+      }).join('');
+      var panels = resetPanels(members.length || 1);
+      members.forEach(function (m, i) { fillIdentity(panels[i], m); });
+      showMember(0);
+      open();
+    }
+
     return {
-      openSingle: function (item, row) {
-        if (!ensure()) return;
-        originRow = row || null;
-        var tabs = modal.querySelector('[data-restock-tabs]');
-        if (tabs) { tabs.hidden = true; tabs.innerHTML = ''; }
-        var panels = resetPanels(1);
-        fillIdentity(panels[0], item || {});
-        showMember(0);
-        open();
-      },
-      openBundle: function (members, row) {
-        if (!ensure()) return;
-        originRow = row || null;
-        members = (members && members.length) ? members : [];
-        var tabs = modal.querySelector('[data-restock-tabs]');
-        tabs.hidden = false;
-        tabs.innerHTML = members.map(function (m, i) {
-          return '<button class="tabs__item' + (i === 0 ? ' tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + (i === 0) + '" data-restock-tab="' + i + '">' + (m.name || ('Member ' + (i + 1))) + '</button>';
-        }).join('');
-        var panels = resetPanels(members.length || 1);
-        members.forEach(function (m, i) { fillIdentity(panels[i], m); });
-        showMember(0);
-        open();
-      },
+      openSingle: openSingle,
+      openBundle: openTabbed,   /* bundle members */
+      openVariants: openTabbed, /* multi-variant product's enabled variants */
       close: close
     };
   };
