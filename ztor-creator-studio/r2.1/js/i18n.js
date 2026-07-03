@@ -11,7 +11,7 @@
  * --------------------------------------------------------------------------- */
 (function () {
   const STORAGE_KEY = 'ztor-r21-lang';
-  const DEFAULT_LANG = 'en';
+  const DEFAULT_LANG = 'zh-Hant';  // D108: v1 單一語言＝繁體中文，不提供語言切換
 
   const DICT = {
     /* ─── Hero slideshow controls ──────────────────────────── */
@@ -41,6 +41,7 @@
     'creators.create-cancel': { en: 'Cancel',          zh: '取消' },
     'creators.col-name':  { en: 'Creator',             zh: 'Creator' },
     'creators.col-handle':{ en: 'Shop handle',         zh: '店鋪識別' },
+    'creators.col-created':{ en: 'Created',            zh: '創建時間' },
     'creators.col-status':{ en: 'Status',              zh: '狀態' },
     'creators.manage':    { en: 'Enter',               zh: '前往' },
     'creators.status-active':   { en: 'Active',         zh: '啟用中' },
@@ -57,10 +58,17 @@
     'creators.empty-filter':   { en: 'No creators match your search.', zh: '沒有符合搜尋的 creator。' },
     'creators.empty-title':{ en: 'No creators yet',    zh: '尚無 creator' },
     'creators.empty-desc': { en: 'Create the first creator — their e-shop is generated automatically.', zh: '建立第一個 creator——其電子商店會自動生成。' },
+    'creators.form-avatar':{ en: 'Avatar',             zh: '頭像' },
     'creators.form-name':  { en: 'Creator name',       zh: 'Creator 名稱' },
     'creators.form-name-ph':{ en: 'e.g. Denise Lonely', zh: '例：Denise Lonely' },
-    'creators.form-handle':{ en: 'Shop handle',        zh: '店鋪識別' },
-    'creators.form-handle-ph':{ en: 'e.g. denise',     zh: '例：denise' },
+    'creators.form-handle':{ en: 'Shop URL',           zh: '店鋪網址' },
+    'creators.form-handle-ph':{ en: 'denise',          zh: 'denise' },
+    'creators.form-handle-dup':{ en: 'This shop URL is already taken.', zh: '此店鋪網址已被使用。' },
+    'creators.form-email': { en: 'Email',              zh: 'Email' },
+    'creators.form-email-ph':{ en: 'creator@example.com', zh: 'creator@example.com' },
+    'creators.form-phone': { en: 'Phone',              zh: '電話' },
+    'creators.form-phone-ph':{ en: '+886 900 000 000', zh: '+886 900 000 000' },
+    'creators.form-optional':{ en: '(optional)',       zh: '（選填）' },
     'creators.form-submit':{ en: 'Create',             zh: '建立' },
     'creators.locked-note':{ en: 'Pick a creator to unlock their workspace.', zh: '選一個 creator 以解鎖其工作區。' },
 
@@ -1295,7 +1303,7 @@
     'settings.profile.lang':        { en: 'Language preference',  zh: '語言偏好' },
     'settings.profile.lang-hint':   { en: 'Interface &amp; notification language.', zh: '介面與通知語言。' },
     'settings.appearance.title':    { en: 'Appearance',           zh: '外觀' },
-    'settings.appearance.sub':      { en: 'Theme mode applies immediately. Stored per account.', zh: '主題模式立即生效。依帳戶儲存。' },
+    'settings.appearance.sub':      { en: 'Interface is fixed to the light theme. Display mode is switchable — applies immediately and is remembered.', zh: '介面固定淺色主題。顯示模式可切換，變更即時套用並記住。' },
     'settings.theme.light':         { en: 'Light',                zh: '淺色' },
     'settings.theme.light-desc':    { en: 'Warm paper canvas — the default for editorial.', zh: '暖紙底——編輯內容的預設。' },
     'settings.theme.dark':          { en: 'Dark',                 zh: '深色' },
@@ -1305,9 +1313,9 @@
     'settings.navmode.title':       { en: 'Display mode',         zh: '顯示模式' },
     'settings.navmode.sub':         { en: 'Where primary navigation sits. Same menu, different placement. Applies immediately and is remembered.', zh: '主導航的擺放位置。同一套選單、不同位置。立即生效並記住。' },
     'settings.navmode.topbar':      { en: 'Topbar',               zh: '頂列' },
-    'settings.navmode.topbar-desc': { en: 'Horizontal bar across the top — the default.', zh: '橫向頂列——預設。' },
+    'settings.navmode.topbar-desc': { en: 'Horizontal bar across the top.', zh: '橫向頂列。' },
     'settings.navmode.sidebar':     { en: 'Sidebar',              zh: '側邊欄' },
-    'settings.navmode.sidebar-desc':{ en: 'Vertical rail on the left. Dropdowns become expandable groups.', zh: '左側直向導航列。下拉改為可展開群組。' },
+    'settings.navmode.sidebar-desc':{ en: 'Vertical rail on the left — the default. Dropdowns become expandable groups.', zh: '左側直向導航列——預設。下拉改為可展開群組。' },
     'nav.navmode-label':            { en: 'Display mode',         zh: '顯示模式' },
     'settings.notif.title':         { en: 'Notifications',        zh: '通知' },
     'settings.notif.sub':           { en: 'Pick a channel for every event. Email, push and in-app are independent — locked rows are kept on for compliance.', zh: '為每個事件選擇管道。Email、推播、站內各自獨立——鎖定列為合規保持開啟。' },
@@ -3200,13 +3208,10 @@
     setLang(currentLang() === 'en' ? 'zh-Hant' : 'en');
   }
 
-  /* Restore persisted lang, or fall back to DEFAULT_LANG. */
-  let restored = DEFAULT_LANG;
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'en' || saved === 'zh-Hant') restored = saved;
-  } catch (_) {}
-  document.documentElement.lang = restored === 'zh-Hant' ? 'zh-Hant' : 'en';
+  /* D108: v1 固定繁體中文，不吃舊儲存的 'en'、不提供切換。 */
+  const restored = 'zh-Hant';
+  try { localStorage.setItem(STORAGE_KEY, 'zh-Hant'); } catch (_) {}
+  document.documentElement.lang = 'zh-Hant';
 
   /* Wire the topbar lang button (delegated — sidebar.js injects it lazily). */
   document.addEventListener('click', e => {

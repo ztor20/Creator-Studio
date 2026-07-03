@@ -32,10 +32,11 @@
   const isRoster = path === ROSTER_PAGE;
   /* Demo roster (prototype data; the real list comes from the backend).
      Mirrors the concept sketch (denise / aya / kmt). */
+  /* D107: creator 資料含 email／電話（選填）／建立時間。email 供 phase 2 交還本人。 */
   const CREATORS = [
-    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active" },
-    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active" },
-    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled" },
+    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active",   email: "denise@example.com", phone: "",             created: "2026-01-08" },
+    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19" },
+    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30" },
   ];
   const CREATOR_LS = "ztor.activeCreator";
   function getCreator() {
@@ -147,17 +148,11 @@
      TOPBAR mode (R 2.0 canonical) — horizontal bar markup.
      ───────────────────────────────────────────────────────── */
   function topbarNavHtml(locked) {
+    /* D107: 未選定 creator（Tier 0 名冊）時，Tier 1 模組不在導航呈現——
+       只留「Creator 管理」marker，不列出鎖住項。 */
+    if (locked) return "";
     let html = "";
     for (const it of NAV) {
-      if (locked) {
-        /* Tier 1 modules shown locked until a creator is selected (spec §4.1
-           gating / concept "locked until a creator is selected"). */
-        html += `<li><span class="app-topbar__link app-topbar__link--locked" aria-disabled="true">
-          <span data-i18n="${it.key}">${it.key}</span>
-          <i data-lucide="lock" class="ztor-icon ztor-icon--sm"></i>
-        </span></li>`;
-        continue;
-      }
       const active = isActive(it);
       if (it.panel) {
         html += `<li class="app-topbar__nav-group" data-dropdown>
@@ -218,11 +213,6 @@
     </nav>
 
     <div class="app-topbar__actions">
-      <button class="app-topbar__icon-btn btn btn--icon" type="button" data-theme-toggle aria-label="Toggle theme" data-i18n-aria-label="nav.theme-label">
-        <i data-lucide="sun" class="ztor-icon"></i>
-        <i data-lucide="moon" class="ztor-icon"></i>
-      </button>
-
       <button class="app-topbar__icon-btn btn btn--icon" type="button" data-nav-toggle aria-label="Display mode" data-i18n-aria-label="nav.navmode-label">
         <i data-lucide="panel-left" class="ztor-icon"></i>
         <i data-lucide="panel-top" class="ztor-icon"></i>
@@ -241,10 +231,6 @@
           <p class="app-topbar__search-hint" data-i18n="nav.search-hint">Type a keyword, then press Enter</p>
         </div>
       </div>
-
-      <button class="app-topbar__lang" type="button" aria-label="Language" data-i18n-aria-label="nav.lang-label">
-        <span data-lang="en" aria-current="true">EN</span><span aria-hidden="true">·</span><span data-lang="zh" aria-current="false">中</span>
-      </button>
 
       <div class="app-topbar__nav-group app-notif" data-dropdown data-notif>
         <button class="app-topbar__icon-btn btn btn--icon" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications" data-i18n-aria-label="nav.notif-label">
@@ -276,15 +262,10 @@
     /* 現役樣式＝可收合 accordion（2026-06-13 使用者反饋改回原樣）。
        「分組標題＋子項平鋪」版本（.app-sidebar__section-label）仍保留在
        shared.css 與 design-system，作為可隨時切回的變體。 */
+    /* D107: 未選定 creator 時 Tier 1 模組不在導航呈現（只留 Creator 管理 marker）。 */
+    if (locked) return "";
     let html = "";
     for (const it of NAV) {
-      if (locked) {
-        html += `<li><span class="app-sidebar__link app-sidebar__link--locked" aria-disabled="true">
-          <i data-lucide="lock" class="ztor-icon"></i>
-          <span class="app-sidebar__link-label" data-i18n="${it.key}">${it.key}</span>
-        </span></li>`;
-        continue;
-      }
       const active = isActive(it);
       if (it.panel) {
         /* 2026-06-13：群組預設展開（const open = true，仍可點 toggle 收合）；
@@ -351,17 +332,6 @@
         </button>
         <div class="app-topbar__dropdown app-notif__panel app-notif__panel--rail" role="dialog" aria-label="Notifications">${notifPanelHtml()}</div>
       </div>
-
-      <button class="app-sidebar__action app-topbar__lang app-sidebar__lang" type="button" aria-label="Language" data-i18n-aria-label="nav.lang-label">
-        <i data-lucide="globe" class="ztor-icon"></i>
-        <span><span data-lang="en" aria-current="true">EN</span> · <span data-lang="zh" aria-current="false">中</span></span>
-      </button>
-
-      <button class="app-sidebar__action" type="button" data-theme-toggle aria-label="Toggle theme" data-i18n-aria-label="nav.theme-label">
-        <i data-lucide="sun" class="ztor-icon"></i>
-        <i data-lucide="moon" class="ztor-icon"></i>
-        <span class="app-sidebar__action-label" data-i18n="nav.theme-label">Toggle theme</span>
-      </button>
 
       <button class="app-sidebar__action" type="button" data-nav-toggle aria-label="Display mode" data-i18n-aria-label="nav.navmode-label">
         <i data-lucide="panel-left" class="ztor-icon"></i>
