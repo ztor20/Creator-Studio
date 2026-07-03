@@ -8,6 +8,16 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-03 · 4.2 Button：高度對齊 --control-h 尺度＋Split button 併入顯示展示矩陣（B 反饋導入）
+
+使用者反饋兩點：`.btn` 系列高度是非整數（預設 37.5px、`--sm` 27.5px，源自 padding＋`line-height` 撐出的尾數），要**對齊既有控件尺度 `--control-h`**（跟 input／`.ztor-btn` 同一套 token）；4.2 Button 的「顯示展示」本身就是變體矩陣，底下不該再掛一個獨立的「變體 · Split button」區塊。
+
+- **`.btn` 高度 token 化（`button.css`）**：產品密度 `.btn` 改為釘 `--control-h` 高度、丟掉垂直 padding、由 `align-items:center` 置中（`box-sizing:border-box` 讓 outline 的 1px 邊框含在同一高度內）。對應：預設 `.btn` = `--control-h-sm`（36px，原 37.5）、`--sm` = `--control-h-xs`（28px，原 27.5）、`--lg` = `--control-h-md`（44px，原 ~45）。四變體（primary／outline／ghost／soft）× 三尺寸全部精準落在 token 值、無裁切。outline 各尺寸 padding 同步去掉垂直值（`0 13/17/9px`）。icon 方鈕（36/32/28px）維持自有尺寸系統、不動。全站 25 頁的 `.btn` 經共用 `button.css` 自動吃到新高度。
+  - 註：原始需求是「sm 取整數 27」，追問後改為對齊控件尺度 → sm=`--control-h-xs`(28)、預設=`--control-h-sm`(36)；`--lg` 因預設被釘死需連帶給 height，接尺度下一階 `--control-h-md`(44)。
+- **Split button 併入 gallery（`design-system.html`）**：移除 §4.2 末尾獨立的「變體 · Split button」區塊（含 `<hr>`／`sub__desc`／`.demo`／自帶 code-fold），改成顯示展示 gallery 內的一張 `matrix-block` 卡——三欄對應 context（Products／Bundles／Auctions）呈現 context-aware 主鈕文字（建立商品／組合／拍賣），caret 可點開全建立類型選單。同步：compose 圖「Used by molecule」補 Split button chip、Button 段 code-fold 的 Class API 補 `.split-button` 系列列。元件 `split-button.css` 與 e-shop markup **未動**（結構本就一致）。
+- **產品頁**：e-shop 的 split button 隨 `.btn` 高度變 36px（主鈕＝caret＝36 對齊、context-aware 正常）；sm 按鈕自動變 28px。無 markup 改動。
+- 同步 `design-system.md`（Sizes／Class API 改記 token 驅動高度 28/36/44）。驗證：playwright 實測 DS 頁四變體×三尺寸＝28/36/44 且無裁切、split 三卡渲染、舊獨立區塊 0 殘留、e-shop（split 主鈕/caret＝36、sm＝28）與 settings（default 36／sm 28）皆無裁切；`check_ds_sync` PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260703c`。
+
 ## 2026-07-03 · 全域外觀鎖定＋Creator 管理擴充（A spec-derived · D107／D108／D110）
 
 上游規格改動落地（documents/ D107 建立欄位擴充／D108 移除語言·主題·顯示模式切換／D110 修訂：顯示模式保留可切換、預設側邊欄）。
