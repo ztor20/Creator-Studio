@@ -8,6 +8,15 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-03 · 4.5 Chip：視覺展示改完整矩陣＋釐清「動作用 Button 不用 chip」（B 反饋導入）
+
+使用者反饋：4.5 Chip 的視覺展示要像 §4.2 Button 一樣是完整矩陣；並確認 Export CSV 應是 Button、產品頁沒用錯。
+
+- **Chip 視覺展示改矩陣（`design-system.html`）**：原本是「一個 filter-row demo ＋ 一個只有 `.chip` 一列、把 `.chip--static` 硬塞成狀態欄的半矩陣」，改成三張 `matrix-block` 卡：① `.chip`（篩選）— text／+count 兩列 × default／:hover／.chip--active；② `.chip--static`（唯讀）— default／:hover(無變化)；③ `.chip--removable`（帶 ×）— neutral／.chip--active。`.filter-row`（chip-group＋Button 動作）保留為「實際情境」示範。格式與 §4.2 一致。
+- **釐清 Export CSV 是 Button（非 chip）**：filter-row 情境下加 field-text 明說「Export CSV 是 `.btn--outline`、不是 chip；chip 負責篩選，匯出／列印這類動作用 Button」；Do&Don't 補一條「別把動作做成 chip」。`design-system.md` 同步（Don't 條）。
+- **產品頁審計（無需修）**：全庫掃 `.chip` 用法——文字全是篩選／分類／標籤值（All、E-Shop、Vinyl、稅務國別、尺寸 S/M/L…），**0 個動作被做成 chip**；所有 Export／匯出 都是 `.btn`（earnings／fans-crm 皆 `.btn--outline`）。產品頁用法正確，未動 markup。
+- 驗證：playwright 實測 chip 段三張矩陣卡渲染、Export CSV＝`<button class="btn btn--outline btn--sm">`、`.chip--static` 不再當狀態欄；`check_ds_sync` PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260703d`。
+
 ## 2026-07-03 · 4.2 Button：高度對齊 --control-h 尺度＋Split button 併入顯示展示矩陣（B 反饋導入）
 
 使用者反饋兩點：`.btn` 系列高度是非整數（預設 37.5px、`--sm` 27.5px，源自 padding＋`line-height` 撐出的尾數），要**對齊既有控件尺度 `--control-h`**（跟 input／`.ztor-btn` 同一套 token）；4.2 Button 的「顯示展示」本身就是變體矩陣，底下不該再掛一個獨立的「變體 · Split button」區塊。
