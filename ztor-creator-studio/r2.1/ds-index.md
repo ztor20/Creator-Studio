@@ -1,0 +1,349 @@
+# DS 速查索引（機器生成，勿手改）
+
+> 由 `gen_ds_index.py` 從 `ds-components/` 產生；Stop hook 驗收 PASS 後自動重生，
+> 手動重生：專案根執行 `python3 ../../Skills/project-ui-creator/scripts/gen_ds_index.py "site/r2.1"`。
+> 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
+> 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
+
+## Tokens（_tokens.css，亮色，共 216 條）
+
+### --accent-*
+- `--accent`: #F3F3F3
+- `--accent-foreground`: #000000
+
+### --background-*
+- `--background`: #FFFFFF
+
+### --border-*
+- `--border`: #E5E5E5
+- `--border-soft`: #EFEFEF
+- `--border-inverse`: rgba(255, 255, 255, 0.1)
+
+### --card-*
+- `--card`: #FFFFFF
+- `--card-foreground`: #000000
+
+### --chart-*
+- `--chart-1`: #ffa33f
+- `--chart-2`: #266DF0
+- `--chart-3`: #22C55E
+- `--chart-4`: #F8D749
+- `--chart-5`: #8B5CF6
+
+### --control-*
+- `--control-h-xs`: 28px
+- `--control-h-sm`: 36px
+- `--control-h-md`: 44px
+- `--control-h-lg`: 52px
+- `--control-h-xl`: 60px
+
+### --destructive-*
+- `--destructive`: #DA314A
+- `--destructive-foreground`: #FFFFFF
+
+### --duration-*
+- `--duration`: 200ms
+
+### --easing-*
+- `--easing`: cubic-bezier(0.32, 0.72, 0, 1)
+
+### --font-*
+- `--font-display`: 'Geist', system-ui, sans-serif
+- `--font-ui`: 'Geist', system-ui, sans-serif
+- `--font-body`: 'Inter', system-ui, sans-serif
+- `--font-mono`: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace
+- `--font-cjk`: 'Noto Sans TC'
+
+### --foreground-*
+- `--foreground`: #000000
+- `--foreground-muted`: #4D4D4D
+- `--foreground-on-inverse`: #FFFFFF
+- `--foreground-on-inverse-muted`: rgba(255, 255, 255, 0.6)
+
+### --fs-*
+- `--fs-11`: 11px
+- `--fs-12`: 12px
+- `--fs-13`: 13px
+- `--fs-14`: 14px
+- `--fs-15`: 15px
+- `--fs-16`: 16px
+- `--fs-18`: 18px
+- `--fs-20`: 20px
+- `--fs-22`: 22px
+- `--fs-24`: 24px
+- `--fs-28`: 28px
+- `--fs-32`: 32px
+- `--fs-40`: 40px
+- `--fs-44`: 44px
+- `--fs-56`: 56px
+- `--fs-64`: 64px
+
+### --fw-*
+- `--fw-regular`: 400
+- `--fw-medium`: 500
+- `--fw-semibold`: 600
+- `--fw-bold`: 700
+
+### --gradient-*
+- `--gradient-brand`: linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%)
+
+### --input-*
+- `--input`: #E5E5E5
+
+### --lh-*
+- `--lh-none`: 1
+- `--lh-tight`: 1.1
+- `--lh-snug`: 1.2
+- `--lh-normal`: 1.3
+- `--lh-comfy`: 1.4
+- `--lh-relaxed`: 1.5
+- `--lh-loose`: 1.6
+
+### --muted-*
+- `--muted`: #FAFAFA
+- `--muted-foreground`: #737373
+
+### --overlay-*
+- `--overlay-blur`: blur(14px) saturate(140%)
+- `--overlay-tint`: rgba(0, 0, 0, 0.45)
+
+### --popover-*
+- `--popover`: #FFFFFF
+- `--popover-foreground`: #000000
+
+### --primary-*
+- `--primary`: #ffa33f
+- `--primary-foreground`: #FFFFFF
+- `--primary-hover`: #ffb866
+
+### --radius-*
+- `--radius-sm`: 3px
+- `--radius`: 6px
+- `--radius-md`: 7px
+- `--radius-lg`: 8px
+- `--radius-xl`: 16px
+- `--radius-shell`: 28px
+- `--radius-pill`: 9999px
+
+### --ring-*
+- `--ring`: var(--primary)
+
+### --secondary-*
+- `--secondary`: #F4F4F4
+- `--secondary-foreground`: #000000
+
+### --sidebar-*
+- `--sidebar`: #FBFBFB
+- `--sidebar-foreground`: #000000
+- `--sidebar-primary`: #ffa33f
+- `--sidebar-primary-foreground`: #FFFFFF
+- `--sidebar-accent`: #F3F3F3
+- `--sidebar-accent-foreground`: #000000
+- `--sidebar-border`: #E5E5E5
+- `--sidebar-ring`: var(--primary)
+- `--sidebar-active`: #ECECEC
+
+### --sp-*
+- `--sp-2`: 2px
+- `--sp-4`: 4px
+- `--sp-6`: 6px
+- `--sp-8`: 8px
+- `--sp-10`: 10px
+- `--sp-12`: 12px
+- `--sp-14`: 14px
+- `--sp-16`: 16px
+- `--sp-18`: 18px
+- `--sp-20`: 20px
+- `--sp-24`: 24px
+- `--sp-28`: 28px
+- `--sp-32`: 32px
+- `--sp-40`: 40px
+- `--sp-48`: 48px
+- `--sp-56`: 56px
+- `--sp-64`: 64px
+- `--sp-72`: 72px
+- `--sp-80`: 80px
+- `--sp-96`: 96px
+
+### --space-*
+- `--space-shell-gutter`: 16px
+
+### --status-*
+- `--status-success`: #22C55E
+- `--status-info`: #266DF0
+- `--status-warning`: #F8D749
+- `--status-accent`: #8B5CF6
+
+### --surface-*
+- `--surface-shell`: #F5F5F5
+- `--surface-page`: #FFFFFF
+- `--surface-inverse`: #000000
+
+### --type-*
+- `--type-display-64-family`: var(--font-display)
+- `--type-display-64-size`: var(--fs-64)
+- `--type-display-64-weight`: var(--fw-regular)
+- `--type-display-64-line-height`: var(--lh-none)
+- `--type-display-64-tracking`: -1.28px
+- `--type-display-44-family`: var(--font-display)
+- `--type-display-44-size`: var(--fs-44)
+- `--type-display-44-weight`: var(--fw-medium)
+- `--type-display-44-line-height`: var(--lh-tight)
+- `--type-display-44-tracking`: -1px
+- `--type-title-40-family`: var(--font-ui)
+- `--type-title-40-size`: var(--fs-40)
+- `--type-title-40-weight`: var(--fw-medium)
+- `--type-title-40-line-height`: var(--lh-tight)
+- `--type-title-40-tracking`: -0.8px
+- `--type-title-32-family`: var(--font-ui)
+- `--type-title-32-size`: var(--fs-32)
+- `--type-title-32-weight`: var(--fw-medium)
+- `--type-title-32-line-height`: var(--lh-tight)
+- `--type-title-32-tracking`: -0.6px
+- `--type-title-24-family`: var(--font-ui)
+- `--type-title-24-size`: var(--fs-24)
+- `--type-title-24-weight`: var(--fw-medium)
+- `--type-title-24-line-height`: var(--lh-snug)
+- `--type-title-24-tracking`: -0.48px
+- `--type-label-15-family`: var(--font-ui)
+- `--type-label-15-size`: var(--fs-15)
+- `--type-label-15-weight`: var(--fw-medium)
+- `--type-label-15-line-height`: var(--lh-none)
+- `--type-label-15-tracking`: -0.3px
+- `--type-label-14-family`: var(--font-ui)
+- `--type-label-14-size`: var(--fs-14)
+- `--type-label-14-weight`: var(--fw-bold)
+- `--type-label-14-line-height`: var(--lh-snug)
+- `--type-label-14-tracking`: 0
+- `--type-body-16-family`: var(--font-body)
+- `--type-body-16-size`: var(--fs-16)
+- `--type-body-16-weight`: var(--fw-regular)
+- `--type-body-16-line-height`: var(--lh-loose)
+- `--type-body-16-tracking`: 0
+- `--type-body-14-family`: var(--font-body)
+- `--type-body-14-size`: var(--fs-14)
+- `--type-body-14-weight`: var(--fw-regular)
+- `--type-body-14-line-height`: var(--lh-relaxed)
+- `--type-body-14-tracking`: 0
+- `--type-caption-12-family`: var(--font-ui)
+- `--type-caption-12-size`: var(--fs-12)
+- `--type-caption-12-weight`: var(--fw-medium)
+- `--type-caption-12-line-height`: var(--lh-normal)
+- `--type-caption-12-tracking`: 0.05em
+- `--type-display-1-family`: var(--type-display-64-family)
+- `--type-display-1-size`: var(--type-display-64-size)
+- `--type-display-1-weight`: var(--type-display-64-weight)
+- `--type-display-1-line-height`: var(--type-display-64-line-height)
+- `--type-display-1-tracking`: var(--type-display-64-tracking)
+- `--type-page-title-family`: var(--type-display-44-family)
+- `--type-page-title-size`: var(--type-display-44-size)
+- `--type-page-title-weight`: var(--type-display-44-weight)
+- `--type-page-title-line-height`: var(--type-display-44-line-height)
+- `--type-page-title-tracking`: var(--type-display-44-tracking)
+- `--type-h2-family`: var(--type-title-40-family)
+- `--type-h2-size`: var(--type-title-40-size)
+- `--type-h2-weight`: var(--type-title-40-weight)
+- `--type-h2-line-height`: var(--type-title-40-line-height)
+- `--type-h2-tracking`: var(--type-title-40-tracking)
+- `--type-h3-family`: var(--type-title-32-family)
+- `--type-h3-size`: var(--type-title-32-size)
+- `--type-h3-weight`: var(--type-title-32-weight)
+- `--type-h3-line-height`: var(--type-title-32-line-height)
+- `--type-h3-tracking`: var(--type-title-32-tracking)
+- `--type-h4-family`: var(--type-title-24-family)
+- `--type-h4-size`: var(--type-title-24-size)
+- `--type-h4-weight`: var(--type-title-24-weight)
+- `--type-h4-line-height`: var(--type-title-24-line-height)
+- `--type-h4-tracking`: var(--type-title-24-tracking)
+- `--type-section-label-family`: var(--type-label-14-family)
+- `--type-section-label-size`: var(--type-label-14-size)
+- `--type-section-label-weight`: var(--type-label-14-weight)
+- `--type-section-label-line-height`: var(--type-label-14-line-height)
+- `--type-section-label-tracking`: var(--type-label-14-tracking)
+- `--type-body-lg-family`: var(--type-body-16-family)
+- `--type-body-lg-size`: var(--type-body-16-size)
+- `--type-body-lg-weight`: var(--type-body-16-weight)
+- `--type-body-lg-line-height`: var(--type-body-16-line-height)
+- `--type-body-lg-tracking`: var(--type-body-16-tracking)
+- `--type-body-family`: var(--type-body-14-family)
+- `--type-body-size`: var(--type-body-14-size)
+- `--type-body-weight`: var(--type-body-14-weight)
+- `--type-body-line-height`: var(--type-body-14-line-height)
+- `--type-body-tracking`: var(--type-body-14-tracking)
+- `--type-caption-family`: var(--type-caption-12-family)
+- `--type-caption-size`: var(--type-caption-12-size)
+- `--type-caption-weight`: var(--type-caption-12-weight)
+- `--type-caption-line-height`: var(--type-caption-12-line-height)
+- `--type-caption-tracking`: var(--type-caption-12-tracking)
+- `--type-button-label-family`: var(--type-label-15-family)
+- `--type-button-label-size`: var(--type-label-15-size)
+- `--type-button-label-weight`: var(--type-label-15-weight)
+- `--type-button-label-line-height`: var(--type-label-15-line-height)
+- `--type-button-label-tracking`: var(--type-label-15-tracking)
+
+## 元件（ds-components/，共 64 支；主 class 前 5 個）
+
+- `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
+- `album-tracks.css` — .album-tracks, .album-tracks__upload, .album-tracks__upload-label, .album-tracks__req, .album-tracks__upload-hint ｜ Album tracks · 數位商品「音樂專輯」的多曲目管理器
+- `alert.css` — .alert, .alert--card, .alert--snoozed, .alert--row, .alert--banner ｜ Alert — inline notice with status indicator, ico
+- `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
+- `bento.css` — .bento ｜ Bento — 12-column grid utility for dashboard / p
+- `button.css` — .ztor-btn, .ztor-btn--outline, .ztor-btn--xs, .ztor-btn--sm, .ztor-btn--lg ｜ Ztor Creator Studio · R 2.1 — Button
+- `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
+- `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
+- `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip__count ｜ Chip — clickable filter pill with active state +
+- `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
+- `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
+- `control-row.css` — .control-row, .control-row__main, .control-row__sub ｜ control-row.css · 有外框的「左文字右控件」獨立列
+- `cookie-banner.css` — .ztor-cookie-banner, .ztor-cookie-banner__copy, .ztor-cookie-banner__actions, .ztor-cookie-banner__settings ｜ Ztor — Cookie Banner
+- `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__icon, .data-list__icon--success ｜ Data list — row-divider list (no card per row).
+- `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
+- `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
+- `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__title, .empty-card__text, .empty-card__cta ｜ Empty card — in-card empty state for a loaded-bu
+- `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
+- `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
+- `fan-store.css` — .preview-panel__body, .fan-store, .fan-store__overline, .fan-store__phone, .fan-store__screen ｜ Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同
+- `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
+- `field-system.css` — .field, .field__label, .field__hint, .field__req ｜ Ztor Creator Studio - Field system molecule
+- `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
+- `footer.css` — .ztor-footer, .ztor-footer__inner, .ztor-footer__brand, .ztor-footer__wordmark, .ztor-footer__tagline ｜ Ztor — Footer
+- `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
+- `form-section.css` — .form-section, .form-section__head, .form-section__title, .form-section__sub ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
+- `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
+- `icon.css` — .ztor-icon, .ztor-icon--sm ｜ Ztor Creator Studio - Icon atom
+- `input.css` — .ztor-input, .ztor-input--xs, .ztor-input--sm, .ztor-input--lg, .ztor-input--xl ｜ Ztor — Input (form field)
+- `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
+- `kpi.css` — .kpi, .kpi__label, .kpi__value, .kpi__delta, .kpi__delta--neg ｜ KPI — metric tile (label / value / delta or meta
+- `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
+- `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
+- `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
+- `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
+- `page-intro.css` — .page-intro, .page-intro__title, .page-intro__sub, .page-intro__actions ｜ Ztor Creator Studio - Page intro molecule
+- `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
+- `picker.css` — .picker, .picker__search, .picker__search-input, .picker__new, .picker__list ｜ Picker · search box + scrollable pick-list conta
+- `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
+- `preview-column.css` — .preview-split, .preview-split__form, .preview-col, .preview-col__head, .preview-col__title ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
+- `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
+- `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list__product, .product-list__thumb ｜ Product list — borderless inventory table for E-
+- `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
+- `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper__labels, .progress-stepper__label ｜ ── Progress stepper
+- `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__project, .project-list__icon ｜ Project list — borderless table list for the Pro
+- `radio-card.css` — .radio-cards, .radio-card__text, .radio-card__title, .radio-card__sub ｜ radio-card.css · 並排可選卡（radio 卡）
+- `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
+- `restock-modal.css` — .restock-lines, .restock-lines__group, .restock-line, .restock-line__main, .restock-line__img
+- `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
+- `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active ｜ Segmented control · 2/3-way text toggle in a mut
+- `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
+- `settings.css` — .settings-layout, .settings-nav, .settings-nav__item, .settings-nav__item--active, .settings-section ｜ Ztor Creator Studio - Settings layout, nav, and 
+- `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
+- `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
+- `stickynote.css` — .stickynote, .stickynote__mark ｜ Sticky-note callout — the "Why" / hint / pending
+- `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
+- `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
+- `table.css` — .ztor-table, .ztor-table__feature, .ztor-table__check, .ztor-table__cross, .ztor-table__partial ｜ Ztor — Table
+- `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--brand ｜ Tabs — horizontal tab bar with hairline underlin
+- `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
+- `upload-tile.css` — .upload-tile, .upload-tile--hero, .upload-tile--file, .upload-tile__icon, .upload-tile__title ｜ Upload tile · dashed upload affordance for creat
+- `variant-builder.css` — .variant-builder, .variant-option, .variant-option__head, .variant-option__name, .variant-option__remove ｜ Variant builder · Shopify-style options + per-va
+- `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
+- `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
