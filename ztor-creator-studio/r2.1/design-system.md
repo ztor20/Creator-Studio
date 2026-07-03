@@ -869,6 +869,7 @@ No interactive states — purely decorative.
 - ✅ Do use `.chip--static` when a chip is informational, not a filter.
 - ❌ Don't use a chip to display non-filterable status.
 - ❌ Don't put more than one active chip in a single-select group.
+- ❌ Don't render an action (Export / Print / Download) as a chip — those are Buttons (§4.2). In a `.filter-row`, chips filter and the right-aligned action (e.g. Export CSV `.btn--outline`) is a Button.
 
 
 **Code example**
