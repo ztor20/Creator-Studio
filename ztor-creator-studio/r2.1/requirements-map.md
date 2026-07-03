@@ -15,7 +15,7 @@
 
 | 上游規格 | R 2.1 實作 | 狀態 |
 |---|---|---|
-| 5.1.0 Creator Management | `creators.html` | 新增（D086）：Admin Tier 0 名冊＋建立 creator。`sidebar.js` 渲染 Admin 導航——roster 鎖 Tier 1／creator scope logo 前返回＋「管理中」標示；creator 切換走 devtools cheat code。範圍＝完整現有工作區。**2026-06-30（D097）**：狀態枚舉定案＝啟用中／已停用（兩值）；建立改 popup、停用／啟用（⋯ 選單）、搜尋／篩選、整列可點。**2026-06-30（D098→D099）**：F 項依電子商店分類重編號，最終＝**F1 頁首／F2 名冊工作列（狀態篩選＋搜尋同列＋建立）／F3 Creator 名冊（列＋列操作 前往/停用/啟用，含欄位表頭）／F4 進入與返回**；搜尋/篩選/列改吃 e-shop 同款 field-pill／filter-tabs／product-list、管理鈕改 Enter（前往）。D099 移除 D098 一度加入的名冊概覽（bento），各狀態數量由 filter-tabs count 承載。建立必填／店鋪唯一性／代操稽核／已停用可否代操仍待上游（ASSUMPTIONS UIA-029..032、036）|
+| 5.1.0 Creator Management | `creators.html` | 新增（D086）：Admin Tier 0 名冊＋建立 creator。`sidebar.js` 渲染 Admin 導航——roster 鎖 Tier 1／creator scope logo 前返回＋「管理中」標示；creator 切換走 devtools cheat code。範圍＝完整現有工作區。**2026-06-30（D097）**：狀態枚舉定案＝啟用中／已停用（兩值）；建立改 popup、停用／啟用（⋯ 選單）、搜尋／篩選、整列可點。**2026-06-30（D098→D099）**：F 項依電子商店分類重編號，最終＝**F1 頁首／F2 名冊工作列（狀態篩選＋搜尋同列＋建立）／F3 Creator 名冊（列＋列操作 前往/停用/啟用，含欄位表頭）／F4 進入與返回**；搜尋/篩選/列改吃 e-shop 同款 field-pill／filter-tabs／product-list、管理鈕改 Enter（前往）。D099 移除 D098 一度加入的名冊概覽（bento），各狀態數量由 filter-tabs count 承載。建立必填／店鋪唯一性／代操稽核／已停用可否代操仍待上游（ASSUMPTIONS UIA-029..032、036）。**2026-07-03（D107）**：(a) 未選 creator 時導航**只留「Creator 管理」marker**、移除鎖住的 Tier 1 模組列（`sidebar.js` locked→空字串，撤 UIA-030「roster 鎖 Tier 1」呈現）；(b) 建立表單擴充＝頭像＋email（必填）＋電話（選填）＋店鋪網址（`ztor.com/shop/…` 即時預覽、handle 平台唯一→擋重複）；(c) 名冊列加「創建時間」欄（`CREATORS` 補 `email/phone/created`）。皆前端 demo（UIA-045）；操作紀錄檢視 UI 未建（PG-015）|
 | 5.1.1 Dashboard | `index.html` | F1–F8 已覆蓋（五列佈局）。2026-06-14 對齊規格新約束：F3 近期收入只列已結算收入、移除狀態欄（`hideStatus`）；F2 總收入環比改週粒度＋顯示最後更新＋深連結 Earnings；F4 補 Snoozed（軟關、排除 F2 計數）與阻斷型 disabled 關閉。F2 待處理／F4 「View all」缺「完整待辦視圖」頁、F5 缺「完整動態視圖」頁（PG-006）|
 | 5.1.2 Projects | `projects.html` | 已有清單與建立入口 |
 | 5.1.2.1 Create Project | `create-project.html` | 已實作；需複查模式規則與費率引用 |
@@ -42,7 +42,7 @@
 | 5.1.8 Earnings | `earnings.html` | 五分頁（Overview/Transactions/Breakdown/Payouts/Tax）；Breakdown 用「本期間(F12)/依專案(F11)」segmented 一次顯示一個、報表式 waterfall（bar 只留里程碑）；F3 淨利卡有「View breakdown」捷徑跳 Breakdown；F8 淨利池/退款準備金摘要在 Payouts、F10 手動補登 popup（5.1.8.2）由 Transactions 觸發、F7 逐筆可追溯（費率版本/Event ID/展開金流瀑布）——皆已覆蓋；多地稅務仍待收斂 |
 | 5.1.8.1 Request Payout | `earnings.html`、`request-payout.html` | popup 主畫面/新增銀行/結果＋不可逆確認閘門（§4.5）＋摘要含結算來源/費率版本（§4.4）已覆蓋；非台灣地區欄位與費率仍待上游（PG-004）|
 | 5.1.8.2 Manual Entry | `earnings.html`、`partials/manual-entry-modal.js` | 由 F7 觸發的補登 popup（重用 canonical dialog 外殼）：交易項目/分類/日期/金額/幣別/備註/附件＋未驗證·不計入可提領/提款/稅務提示已覆蓋；補登審核、附件規則、未來日期等仍待上游 |
-| 5.1.9 Settings | `settings.html` | 2026-06-15 通知改事件×管道矩陣（含 In-App、payout/KYC/compliance Email 鎖定）、勿擾、寄測試、Active Sessions、未存離開提示、稅務 Edit、整合補 Stripe/GA 與失敗一致呈現；刪除帳戶文案改 soft-delete（D053）；**F7 合規（唯讀）已落地**（KYC 狀態/用量上限/凍結/地區限制）。KYC/2FA/收款方式狀態機/Webhooks **流程**待 5.1.9.x 子流程規格（PG-007）；團隊權限仍受上游待決限制 |
+| 5.1.9 Settings | `settings.html` | 2026-06-15 通知改事件×管道矩陣（含 In-App、payout/KYC/compliance Email 鎖定）、勿擾、寄測試、Active Sessions、未存離開提示、稅務 Edit、整合補 Stripe/GA 與失敗一致呈現；刪除帳戶文案改 soft-delete（D053）；**F7 合規（唯讀）已落地**（KYC 狀態/用量上限/凍結/地區限制）。KYC/2FA/收款方式狀態機/Webhooks **流程**待 5.1.9.x 子流程規格（PG-007）；團隊權限仍受上游待決限制。**2026-07-03（D108／D110）**：全域外觀鎖定——主題固定淺色、語言固定繁中（皆移除切換：settings 移除 Light/Dark/System 三卡與 Profile 語言偏好欄；`theme.js`/`i18n.js` 強制、`sidebar.js` 拿掉主題/語言鈕）；**顯示模式保留可切換、預設改側邊欄**（settings 顯示模式兩卡保留；`data-nav-toggle` 保留）。深色/英文 i18n 移出 v1、非刪除（UIA-001／UIA-044）|
 
 ## 更新順序
 

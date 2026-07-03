@@ -8,6 +8,22 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-03 · 全域外觀鎖定＋Creator 管理擴充（A spec-derived · D107／D108／D110）
+
+上游規格改動落地（documents/ D107 建立欄位擴充／D108 移除語言·主題·顯示模式切換／D110 修訂：顯示模式保留可切換、預設側邊欄）。
+
+- **全域外觀（D108／D110）**：
+  - **主題固定淺色**（`theme.js`）：`readStored()` 強制回 `light`、boot 直接 `apply("light")`，忽略舊儲存值與 `?theme=`；`sidebar.js` 拿掉 topbar／sidebar 兩處主題切換鈕（`data-theme-toggle`）。
+  - **語言固定繁中**（`i18n.js`）：`DEFAULT_LANG` 由 `en` 改 `zh-Hant`，啟動強制 `restored='zh-Hant'` 並覆寫 localStorage；`sidebar.js` 拿掉 topbar／sidebar 兩處語言切換鈕（`.app-topbar__lang`）。英文字串保留在 DICT（移出 v1、非刪除）。
+  - **顯示模式保留可切換、預設側邊欄**（D110）：`theme.js` 的 navmode `readStored` 預設由 `topbar` 改 `sidebar`；顯示模式切換鈕（`data-nav-toggle`）**保留**。
+  - **settings.html 外觀**：移除 Light/Dark/System 三張主題卡、移除 Profile 的「語言偏好」欄；保留顯示模式兩卡（「預設」標註移到 sidebar）。
+- **Creator 管理（D107，`creators.html`＋`sidebar.js`）**：
+  - **未選 creator 時導航只留 Creator 管理**：`topbarNavHtml/sidebarNavHtml` 在 `locked` 時直接回空字串，移除原本鎖住的 Tier 1 模組列（不再顯示 lock 排）。
+  - **建立表單擴充**：新增頭像（file，demo）、email（必填）、電話（選填）、店鋪網址（`ztor.com/shop/…` 即時預覽、handle 平台唯一→建立時擋重複 `setCustomValidity`）；名稱保留。
+  - **名冊列**：新增「創建時間」欄（grid 5 欄，≤720px 收起該欄）；頭像欄沿用首字母。資料模型 `CREATORS` 補 `email/phone/created`；建立成功以 `new Date()` 記創建時間 append。
+  - 新增 i18n keys：`creators.col-created`／`form-avatar`／`form-email(-ph)`／`form-phone(-ph)`／`form-optional`／`form-handle-dup`；`form-handle` 標籤改「店鋪網址」。
+- 驗證：`check_ds_sync` 9 項 PASS（唯一 WARN＝既存 fan-store 裸色，非本輪）；`bump_ver` → `20260703a`（31 頁 732 連結）。
+
 ## 2026-07-02 · DS 優化輪收尾：fan-store 補轉／UI-CHANGES 歸檔／cache-bust 統一／icon 舊名修正（D infra）
 
 - `fan-store.css` 補轉 `--sp-*`×48＋`--lh-*`×4（值不變驗證；先前因並行編輯跳過）。

@@ -31,10 +31,8 @@
   const VALID = new Set(["light", "dark", "system"]);
 
   function readStored() {
-    try {
-      const v = localStorage.getItem(STORAGE_KEY);
-      return VALID.has(v) ? v : "system";
-    } catch (e) { return "system"; }
+    // D108: v1 固定淺色（Light），不提供主題切換；忽略舊儲存值與系統偏好。
+    return "light";
   }
 
   function readUrlOverride() {
@@ -80,8 +78,8 @@
   }
 
   // ── Boot ──────────────────────────────────────────────
-  const initial = readUrlOverride() || readStored();
-  apply(initial);
+  // D108: 固定淺色，不吃 ?theme= 或舊儲存值。
+  apply("light");
 
   // Listen for system theme changes — only re-applies when current
   // preference is "system" so explicit light/dark stays sticky.
@@ -149,8 +147,8 @@
   function readStored() {
     try {
       const v = localStorage.getItem(STORAGE_KEY);
-      return VALID.has(v) ? v : "topbar";
-    } catch (e) { return "topbar"; }
+      return VALID.has(v) ? v : "sidebar";  // D110: 預設側邊欄（仍可切換 Topbar）
+    } catch (e) { return "sidebar"; }
   }
   function readUrlOverride() {
     try {
