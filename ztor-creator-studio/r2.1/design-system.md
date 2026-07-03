@@ -613,7 +613,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 **Variants** — Two namespaces both shipped in `button.css`. Docs/canonical `.ztor-btn` (+ `.ztor-btn--outline`); product-density `.btn` with `.btn--primary` (orange), `.btn--outline` (white surface + 1px `--border` hairline, flat — no shadow; 2026-06-12), `.btn--ghost` (transparent → tints on hover), `.btn--soft` (resting grey fill, no border — quiet secondary like toolbar Export).
 
-**Sizes** — `.ztor-btn` default 44px / `--sm` 36px / `--lg` 52px. `.btn` default 13px (9×14 padding) / `--sm` 12px / `--lg` 14px.
+**Sizes** — both namespaces pin height to the shared `--control-h` scale (same tokens as input). `.ztor-btn` default 44px (`--control-h-md`) / `--sm` 36px (`--control-h-sm`) / `--lg` 52px (`--control-h-lg`). `.btn` (product density, one rung denser) default **36px** (`--control-h-sm`, 13px font) / `--sm` **28px** (`--control-h-xs`, 12px font) / `--lg` **44px** (`--control-h-md`, 14px font). Vertical padding is dropped and the label is vertically centred (`align-items:center`); `box-sizing:border-box` keeps the outline variant's 1px border inside the same height, so every variant lands exactly on its token height. (2026-07-03: replaced the old padding-driven 37.5 / 27.5px fractional heights.)
+
+**Split button** (🟡 molecule) — a `.btn--primary` main action joined to a caret `<summary>` that opens a `.dropdown__menu` of related actions; composes Button + Dropdown. Main label is context-aware and follows the active tab (E-Shop F3, D066). Shown in the §4.2 rendered-preview gallery (context columns: Products / Bundles / Auctions). Full inventory entry above; CSS [`split-button.css`](./ds-components/split-button.css).
 
 **States**
 
@@ -636,7 +638,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | `.btn--outline` | White surface + 1px `--border` hairline，平面無陰影；padding −1px 補償保持尺寸（2026-06-12 取代「填色當邊」與多餘陰影） |
 | `.btn--ghost` | Transparent, muted text; tints on hover |
 | `.btn--soft` | Resting grey fill (`--foreground` 6% on surface), no border; quiet always-visible secondary（2026-06-12） |
-| `.btn--sm` / `.btn--lg` | Compact / large product densities |
+| `.btn--sm` / `.btn--lg` | Compact 28px (`--control-h-xs`) / large 44px (`--control-h-md`); default `.btn` = 36px (`--control-h-sm`) |
+| `.split-button` > `.split-button__main` + `.dropdown` > `.split-button__caret` | Split button (🟡 molecule): primary main (left-rounded) + caret (right-rounded, inset hairline) opening `.dropdown__menu`; context-aware main label (E-Shop F3, D066) — `split-button.css` |
 
 **Token usage** (→ Pillar 2 Role)
 
