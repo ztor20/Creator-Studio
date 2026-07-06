@@ -3,34 +3,36 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Add new item · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260703d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/stickynote.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/album-tracks.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/vip-card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/radio-card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/spec-row.css?v=20260703d">
-<link rel="stylesheet" href="shared.css?v=20260703d">
+<script src="js/theme.js?v=20260703e"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/button.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/input.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/album-tracks.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/vip-card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/variant-builder.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/spec-row.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/pickup.css?v=20260703e">
+<link rel="stylesheet" href="shared.css?v=20260703e">
 <style>
   /* create-product 專屬樣式。可重用的區段骨架／radio 卡／control row／form-grid／
      型別卡 icon 變體／upload hero 已 promote 成 ds-components（form-section /
@@ -436,15 +438,27 @@
         </div>
       </div>
 
-      <!-- 現場 QR 領取 -->
+      <!-- 現場 QR 領取（D111：串接取貨管理場次 → scanner URL 核銷）-->
       <div class="cp-subfields" data-when-delivery="qr" hidden>
         <div class="field">
           <div class="field__label"><span data-i18n="cp.delivery.instr">Pickup instructions</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
           <textarea class="textarea" placeholder="e.g., Collect at the merch table after the show. Show this QR code." data-i18n-placeholder="cp.delivery.instr.ph"></textarea>
         </div>
+        <div class="field">
+          <div class="field__label" data-i18n="cp.delivery.session">Pickup session</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select class="select" id="cp-pickup-session" style="flex:1 1 220px">
+              <option value="" data-i18n="cp.delivery.session.none">Not linked yet</option>
+              <option value="tpe" data-i18n="cp.delivery.session.tpe">Taipei signing — pickup (today)</option>
+              <option value="khh" data-i18n="cp.delivery.session.khh">Kaohsiung fan-meet — pickup (Jul 12)</option>
+            </select>
+            <button class="btn btn--outline" type="button" data-cp-new-session><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.delivery.session.new">Create pickup session</span></button>
+          </div>
+          <div class="field__hint" data-i18n="cp.delivery.session.hint">On-site QR pickup is redeemed at a pickup session's scanner. Pick an existing session or create one — this product is pre-added. Scanner URL, password and roster live in Pickup management.</div>
+        </div>
         <div class="stickynote">
           <span class="stickynote__mark"><i data-lucide="qr-code" class="ztor-icon"></i></span>
-          <span data-i18n="cp.delivery.qr-note">A QR code is generated per order and scanned to verify pickup. Redemption mechanics pending spec.</span>
+          <span data-i18n="cp.delivery.qr-note">Buyers get a QR per order; staff scan it at the session's scanner URL to redeem. Manage sessions, scanner and log in Pickup management (5.1.5.11).</span>
         </div>
       </div>
     </section>
@@ -1128,13 +1142,47 @@
   setType(initType);
 })();
 </script>
-<script src="js/icons.js?v=20260703d"></script>
-<script src="js/i18n.js?v=20260703d"></script>
-<script src="partials/upload-tile.js?v=20260703d"></script>
-<script src="partials/album-tracks.js?v=20260703d"></script>
-<script src="partials/vip-card.js?v=20260703d"></script>
-<script src="partials/wizard-chrome.js?v=20260703d"></script>
-<script src="js/reveal.js?v=20260703d"></script>
-<script src="js/devtools.js?v=20260703d"></script>
+<script src="js/icons.js?v=20260703e"></script>
+<script src="js/i18n.js?v=20260703e"></script>
+<script src="partials/upload-tile.js?v=20260703e"></script>
+<script src="partials/album-tracks.js?v=20260703e"></script>
+<script src="partials/vip-card.js?v=20260703e"></script>
+<script src="partials/wizard-chrome.js?v=20260703e"></script>
+<div data-pickup-modal-host></div>
+<script src="partials/pickup-session-modal.js?v=20260703e"></script>
+<script>
+  /* D111 · 現場 QR 領取 → 建立取貨場次共用 popup（本商品預先加入）。
+     Faux-QR helper needed by the shared modal's result step. */
+  window.ztorFauxQr = window.ztorFauxQr || function (seed) {
+    seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
+    function fnd(ox, oy) {
+      r += '<rect x="' + (pad + ox * cell) + '" y="' + (pad + oy * cell) + '" width="' + (7 * cell) + '" height="' + (7 * cell) + '" fill="currentColor"/>';
+      r += '<rect x="' + (pad + (ox + 1) * cell) + '" y="' + (pad + (oy + 1) * cell) + '" width="' + (5 * cell) + '" height="' + (5 * cell) + '" fill="var(--surface)"/>';
+      r += '<rect x="' + (pad + (ox + 2) * cell) + '" y="' + (pad + (oy + 2) * cell) + '" width="' + (3 * cell) + '" height="' + (3 * cell) + '" fill="currentColor"/>';
+    }
+    function inF(x, y) { return (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9); }
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      if (inF(x, y)) continue;
+      if (((x * 131 + y * 57 + seed * 17 + x * y) % 3) === 0)
+        r += '<rect x="' + (pad + x * cell) + '" y="' + (pad + y * cell) + '" width="' + cell + '" height="' + cell + '" fill="currentColor"/>';
+    }
+    fnd(0, 0); fnd(N - 7, 0); fnd(0, N - 7);
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="QR code" xmlns="http://www.w3.org/2000/svg">' + r + '</svg>';
+  };
+  (function () {
+    var host = document.querySelector('[data-pickup-modal-host]');
+    var pickup = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession
+      ? window.ZTOR_PARTIALS.createPickupSession(host, {
+          onCreate: function () {
+            var sel = document.getElementById('cp-pickup-session');
+            if (sel) { sel.value = 'tpe'; }
+          }
+        }) : null;
+    var btn = document.querySelector('[data-cp-new-session]');
+    if (btn && pickup) btn.addEventListener('click', function () { pickup.openForProduct('zine'); });
+  })();
+</script>
+<script src="js/reveal.js?v=20260703e"></script>
+<script src="js/devtools.js?v=20260703e"></script>
 </body>
 </html>

@@ -8,6 +8,20 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-03 · E-Shop 新增「取貨管理」＋現場 QR 領取串接（A spec-derived · D111／Plan170）
+
+上游規格新增 E-Shop 子頁「取貨管理（Pickup Management）」（documents/5.1.5.11，決策 D111）：現場 QR 領取不再塞進訂單出貨表單，改由取貨場次統一核銷，一個場次可同時核銷多個取貨商品與多個活動票券，並產生密碼保護的獨立手機 scanner URL。依規格把整套落到 R 2.1。
+
+- **導航（全站）**：`js/sidebar.js` 的 E-Shop 下拉由「電子商店／訂單管理」加為三項，第三項＝取貨管理 → 新頁 `pickup.html`（icon `qr-code`）。i18n 新增 `nav.pickup`／`nav.pickup-sub`。`scanner.html` 為獨立手機頁、無主導航，刻意不進 `match`。
+- **新頁 `pickup.html`（取貨管理主頁，F1–F8）**：清單視圖（F1 頁首＋4 張總覽 KPI「今日待核銷／進行中場次／待設定／有問題」＋needs-setup 提示＋F2 場次清單，狀態 filter-tabs＋搜尋，比照 orders.html）；場次詳情視圖（場次基本資訊＋F6 Scanner 存取卡＋tabs：F4 可核銷項目〔取貨商品／活動票券〕、F5 取貨入場名單〔狀態篩選＋搜尋〕、F8 核銷紀錄〔結果篩選＋匯出〕）。清單全部重用 `.data-list`／`.kpi`／`.filter-tabs`／`.tabs`／`.badge`／`.empty-card`。
+- **新元件 `ds-components/pickup.css`（🟠 organism · SiteSpecific）**：`.scanner-access`（F6 URL＋密碼＋QR 卡）、`.qr-box`（framed faux-QR，`window.ztorFauxQr()` 生成）、`.pickup-detail__header/__meta`、`.pickup-stats`、`.pickup-select__row`（建立場次多選列）。全 token 化、無裸色。
+- **新元件 `ds-components/scanner.css`＋新頁 `scanner.html`（F7 手機 scanner，🟠 organism）**：獨立 URL、無主工作台導航。密碼閘 → 相機視窗（`--surface-inverse` role token、非裸色；掃描線 respects `prefers-reduced-motion`）→ 掃描結果（有效／重複／不屬此場次 三種 banner）→ 確認核銷。demo 用「模擬掃描」循環四情境。
+- **共用建立場次 popup `partials/pickup-session-modal.js`（F3）**：`.payout-dialog` 外殼＋`.pickup-select` 多選＋場次名稱／地點／開始·結束時間（含結束＞開始驗證）／取貨說明／scanner 密碼；建立成功→顯示 scanner URL＋QR 結果步。由 `pickup.html`／`create-product.html`／`product-detail.html` 三處共用；從商品脈絡開啟時該商品預先勾選。
+- **姊妹頁串接**：`create-product.html`／`product-detail.html` 的「現場 QR 領取」加「取貨場次」選擇＋「建立取貨場次」鈕（開共用 popup）；`orders.html` 混合訂單列加品項層取貨狀態徽章＋待出貨只計物流的說明；`order-detail.html` 品項列加取貨資格狀態（待取貨／場次／核銷紀錄入口），出貨 popup 的 QR 分支改為「不在此手動 Mark received、由取貨管理 scanner 核銷回寫」並隱藏確認鈕。
+- **icon**：`js/icons.js` 新增 `scan`／`map-pin`／`calendar-clock`／`key`／`rotate-ccw`。**i18n**：新增 `pk.*`／`pks.*`／`sc.*`／`cp.delivery.session.*`／`pd.delivery.session.hint`／`od.item.pickup.*`／`od.qr.session|manage|note`／`orders.row1.pickup`／`orders.pickup.note`（en＋zh），並改寫既有 `cp.delivery.qr-note`／`od.qr.body`（原「核銷機制待補」→ 串接取貨場次）。
+- **DS 同步**：`design-system.html` 加兩支 `<link>`＋TOC＋元件表列＋§4.81 Pickup management／§4.82 Mobile scanner demo；`design-system.md` 元件表加兩列。camera 視窗用 `--surface-inverse`、無新裸色例外。
+- 驗證：`check_ds_sync` PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260703e`；Playwright 實測見下。
+
 ## 2026-07-03 · 4.5 Chip：視覺展示改完整矩陣＋釐清「動作用 Button 不用 chip」（B 反饋導入）
 
 使用者反饋：4.5 Chip 的視覺展示要像 §4.2 Button 一樣是完整矩陣；並確認 Export CSV 應是 Button、產品頁沒用錯。
