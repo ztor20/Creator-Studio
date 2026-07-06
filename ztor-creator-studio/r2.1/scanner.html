@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pickup scanner · Ztor</title>
+<script src="js/theme.js?v=20260706e"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/icon.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/button.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/input.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260706e">
+<link rel="stylesheet" href="shared.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/scanner.css?v=20260706e">
+</head>
+<body>
+<div class="scanner-page">
+  <div class="scanner-frame">
+
+    <!-- Top bar · session identity -->
+    <div class="scanner-top">
+      <span class="scanner-top__brand">
+        <i data-lucide="qr-code" class="ztor-icon" style="width:18px;height:18px;color:var(--primary)"></i>
+        <span class="scanner-top__title" data-i18n="sc.brand">ztor scanner</span>
+      </span>
+      <span class="scanner-top__spacer"></span>
+      <span class="scanner-top__sub" data-sc-session data-i18n="sc.session">Taipei signing — pickup</span>
+    </div>
+
+    <!-- SCREEN 1 · password gate -->
+    <div class="scanner-screen scanner-pw" data-sc-screen="pw">
+      <div class="scanner-pw__icon"><i data-lucide="lock" class="ztor-icon"></i></div>
+      <div class="scanner-pw__title" data-i18n="sc.pw.title">Enter scanner password</div>
+      <div class="scanner-pw__sub" data-i18n="sc.pw.sub">Ask the organizer for this session's password. Demo: enter any text.</div>
+      <input class="input" type="password" data-sc-pw placeholder="Password" data-i18n-placeholder="sc.pw.ph" autocomplete="off" style="text-align:center">
+      <div class="scanner-pw__err" data-sc-pw-err></div>
+    </div>
+
+    <!-- SCREEN 2 · scan -->
+    <div class="scanner-screen" data-sc-screen="scan" hidden>
+      <div class="scanner-cam">
+        <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a buyer's QR code</span>
+        <div class="scanner-cam__reticle"></div>
+        <div class="scanner-cam__line"></div>
+      </div>
+      <button class="btn btn--primary" type="button" data-sc-simulate><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="sc.scan.simulate">Simulate a scan</span></button>
+      <div class="scanner-manual"><a href="#" class="card__link" data-sc-manual data-i18n="sc.scan.manual">Enter code manually</a></div>
+      <div class="scanner-hint" data-i18n="sc.scan.note">The scanner only redeems — it can't see amounts, Earnings or fan data.</div>
+    </div>
+
+    <!-- SCREEN 3 · result -->
+    <div class="scanner-screen" data-sc-screen="result" hidden>
+      <div class="scanner-result">
+        <div class="scanner-result__banner" data-sc-banner>
+          <span data-sc-banner-icon><i data-lucide="check-circle" class="ztor-icon"></i></span>
+          <span data-sc-banner-text data-i18n="sc.res.valid">Valid — ready to redeem</span>
+        </div>
+        <dl class="scanner-result__rows" data-sc-rows></dl>
+        <div class="stickynote" data-sc-note hidden>
+          <span class="stickynote__mark">!</span>
+          <span data-sc-note-text></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Foot · scan screen -->
+    <div class="scanner-foot" data-sc-foot="scan" hidden>
+      <span class="scanner-top__sub" style="align-self:center;margin:0 auto" data-sc-count>42 redeemed · 18 pending</span>
+    </div>
+    <!-- Foot · result screen -->
+    <div class="scanner-foot" data-sc-foot="result" hidden>
+      <button class="btn btn--outline" type="button" data-sc-back data-i18n="sc.res.back">Back</button>
+      <button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirm">Confirm pickup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Standalone mobile scanner demo · spec 5.1.5.11 F7.
+     pw gate → scan → cycle through result scenarios → confirm. No backend. */
+  (function () {
+    var SCEN = [
+      { kind: 'ok',  banner: 'sc.res.valid',    icon: 'check-circle', cls: 'scanner-result__banner--ok',
+        rows: [['sc.r.buyer', 'Mika L.'], ['sc.r.source', 'Order #ZT-10482'], ['sc.r.item', 'Tour zine vol. 02'], ['sc.r.qty', '×1'], ['sc.r.status', 'sc.st.pending']], canRedeem: true },
+      { kind: 'ok',  banner: 'sc.res.valid',    icon: 'check-circle', cls: 'scanner-result__banner--ok',
+        rows: [['sc.r.holder', 'Aria S.'], ['sc.r.source', 'Ticket TK-88213'], ['sc.r.item', 'Signing GA entry'], ['sc.r.status', 'sc.st.waiting']], canRedeem: true },
+      { kind: 'warn', banner: 'sc.res.dup',     icon: 'alert-triangle', cls: 'scanner-result__banner--warn',
+        rows: [['sc.r.buyer', 'Kai T.'], ['sc.r.source', 'Order #ZT-10466'], ['sc.r.item', 'Coastline tee (L)'], ['sc.r.status', 'sc.st.doneat']], canRedeem: false, note: 'sc.note.dup' },
+      { kind: 'bad', banner: 'sc.res.notin',    icon: 'x-circle', cls: 'scanner-result__banner--bad',
+        rows: [['sc.r.item', 'Poster print A2'], ['sc.r.source', 'Order #ZT-10490']], canRedeem: false, note: 'sc.note.notin' }
+    ];
+    var idx = -1;
+    var frame = document.querySelector('.scanner-frame');
+    function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
+    function show(screen) {
+      frame.querySelectorAll('[data-sc-screen]').forEach(function (s) { s.hidden = s.getAttribute('data-sc-screen') !== screen; });
+      frame.querySelectorAll('[data-sc-foot]').forEach(function (f) { f.hidden = f.getAttribute('data-sc-foot') !== screen; });
+    }
+    /* password gate */
+    var pwBtnScreen = document.querySelector('[data-sc-screen="pw"]');
+    var pw = document.querySelector('[data-sc-pw]');
+    var pwErr = document.querySelector('[data-sc-pw-err]');
+    function unlock() {
+      if (!pw.value.trim()) { pwErr.textContent = T('sc.pw.err', 'Enter the password to continue.'); return; }
+      pwErr.textContent = ''; show('scan');
+    }
+    pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+    /* add an explicit unlock button under the password field */
+    var unlockBtn = document.createElement('button');
+    unlockBtn.className = 'btn btn--primary';
+    unlockBtn.type = 'button';
+    unlockBtn.setAttribute('data-i18n', 'sc.pw.unlock');
+    unlockBtn.textContent = 'Unlock scanner';
+    pwBtnScreen.appendChild(unlockBtn);
+    unlockBtn.addEventListener('click', unlock);
+
+    /* scan → result */
+    function renderResult(s) {
+      var banner = document.querySelector('[data-sc-banner]');
+      banner.className = 'scanner-result__banner ' + s.cls;
+      var ic = document.querySelector('[data-sc-banner-icon]');
+      ic.innerHTML = '<i data-lucide="' + s.icon + '" class="ztor-icon"></i>';
+      var bt = document.querySelector('[data-sc-banner-text]');
+      bt.setAttribute('data-i18n', s.banner); bt.textContent = T(s.banner);
+      var rows = document.querySelector('[data-sc-rows]');
+      rows.innerHTML = s.rows.map(function (r) {
+        var val = r[1].indexOf('sc.') === 0 ? '<span data-i18n="' + r[1] + '">' + T(r[1]) + '</span>' : r[1];
+        return '<div class="scanner-result__row"><dt data-i18n="' + r[0] + '">' + T(r[0]) + '</dt><dd>' + val + '</dd></div>';
+      }).join('');
+      var note = document.querySelector('[data-sc-note]');
+      if (s.note) { note.hidden = false; var nt = document.querySelector('[data-sc-note-text]'); nt.setAttribute('data-i18n', s.note); nt.textContent = T(s.note); }
+      else note.hidden = true;
+      var confirm = document.querySelector('[data-sc-confirm]');
+      confirm.hidden = !s.canRedeem;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(document.querySelector('[data-sc-screen="result"]'));
+      if (window.applyI18n) window.applyI18n(document.querySelector('[data-sc-screen="result"]'));
+      show('result');
+    }
+    document.querySelector('[data-sc-simulate]').addEventListener('click', function () {
+      idx = (idx + 1) % SCEN.length; renderResult(SCEN[idx]);
+    });
+    var manual = document.querySelector('[data-sc-manual]');
+    if (manual) manual.addEventListener('click', function (e) { e.preventDefault(); idx = (idx + 1) % SCEN.length; renderResult(SCEN[idx]); });
+    document.querySelector('[data-sc-back]').addEventListener('click', function () { show('scan'); });
+    document.querySelector('[data-sc-confirm]').addEventListener('click', function () {
+      var banner = document.querySelector('[data-sc-banner]');
+      banner.className = 'scanner-result__banner scanner-result__banner--ok';
+      var bt = document.querySelector('[data-sc-banner-text]');
+      bt.setAttribute('data-i18n', 'sc.res.redeemed'); bt.textContent = T('sc.res.redeemed', 'Redeemed ✓');
+      document.querySelector('[data-sc-confirm]').hidden = true;
+      setTimeout(function () { show('scan'); }, 900);
+    });
+  })();
+</script>
+<script src="js/icons.js?v=20260706e"></script>
+<script src="js/i18n.js?v=20260706f"></script>
+</body>
+</html>
