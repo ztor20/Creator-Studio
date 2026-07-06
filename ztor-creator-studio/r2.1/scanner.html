@@ -12,7 +12,10 @@
 <link rel="stylesheet" href="ds-components/input.css?v=20260706e">
 <link rel="stylesheet" href="ds-components/stickynote.css?v=20260706e">
 <link rel="stylesheet" href="shared.css?v=20260706e">
-<link rel="stylesheet" href="ds-components/scanner.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/scanner.css?v=20260706g">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/pickup.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260706e">
 </head>
 <body>
 <div class="scanner-page">
@@ -36,6 +39,13 @@
       <input class="input" type="password" data-sc-pw placeholder="Password" data-i18n-placeholder="sc.pw.ph" autocomplete="off" style="text-align:center">
       <div class="scanner-pw__err" data-sc-pw-err></div>
     </div>
+
+    <!-- F1 sub-nav（Scan／Items／Roster）· 解鎖後顯示，僅本頁內三個畫面互切，不連出其他 Creator Studio 頁面 -->
+    <nav class="tabs" role="tablist" aria-label="Scanner sections" data-sc-nav hidden style="margin:0 12px">
+      <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-sc-navto="scan" data-i18n="sc.nav.scan">Scan</button>
+      <button class="tabs__item" type="button" role="tab" aria-selected="false" data-sc-navto="items" data-i18n="sc.nav.items">Items</button>
+      <button class="tabs__item" type="button" role="tab" aria-selected="false" data-sc-navto="roster" data-i18n="sc.nav.roster">Roster</button>
+    </nav>
 
     <!-- SCREEN 2 · scan -->
     <div class="scanner-screen" data-sc-screen="scan" hidden>
@@ -62,6 +72,77 @@
           <span data-sc-note-text></span>
         </div>
       </div>
+    </div>
+
+    <!-- SCREEN 4 · F2 可核銷項目（Verifiable Items，正式定義）-->
+    <div class="scanner-screen scanner-screen--list" data-sc-screen="items" hidden>
+      <div class="data-list__title" style="font-size: var(--fs-13);color:var(--foreground-subtle)" data-i18n="pk.f4.products">Pickup items</div>
+      <div class="data-list">
+        <div class="data-list__row" style="grid-template-columns:auto 1fr">
+          <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title" data-i18n="pk.item.zine">Tour zine vol. 02</div>
+            <div class="pickup-stats mt-4"><span data-i18n="pk.stat.sold">Sold</span> <b>40</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.pending">Pending</span> <b>12</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.done">Redeemed</span> <b>28</b></div>
+          </div>
+        </div>
+        <div class="data-list__row" style="grid-template-columns:auto 1fr">
+          <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title" data-i18n="pk.item.tee">Coastline tee · M / L</div>
+            <div class="pickup-stats mt-4"><span data-i18n="pk.stat.sold">Sold</span> <b>22</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.pending">Pending</span> <b>5</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.done">Redeemed</span> <b>14</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.issues">Issues</span> <b>1</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="data-list__title mt-16" style="font-size: var(--fs-13);color:var(--foreground-subtle)" data-i18n="pk.f4.tickets">Event tickets</div>
+      <div class="data-list">
+        <div class="data-list__row" style="grid-template-columns:auto 1fr">
+          <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title" data-i18n="pk.tk.signing">Signing session · GA entry</div>
+            <div class="pickup-stats mt-4"><span data-i18n="pk.stat.issued">Issued</span> <b>60</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.waiting">To check in</span> <b>6</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.checkedin">Checked in</span> <b>54</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 5 · F3 取貨／入場名單（簡化版，唯讀查詢，QR 無法掃描時人工核對）-->
+    <div class="scanner-screen scanner-screen--list" data-sc-screen="roster" hidden>
+      <input class="input" placeholder="Name, email, order #, ticket ID" data-sc-roster-search data-i18n-placeholder="pk.roster.search.ph">
+      <div class="data-list mt-16">
+        <div class="data-list__row" style="grid-template-columns:auto 1fr auto" data-sc-roster-row data-sc-roster-text="mika l zt-10482 zine">
+          <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title">Mika L.</div>
+            <div class="data-list__meta" data-i18n="pk.roster.r1">Order #ZT-10482 · Tour zine vol. 02 ×1</div>
+          </div>
+          <span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="pk.st.pending">Pending</span></span>
+        </div>
+        <div class="data-list__row" style="grid-template-columns:auto 1fr auto" data-sc-roster-row data-sc-roster-text="devon w zt-10475 tee m">
+          <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title">Devon W.</div>
+            <div class="data-list__meta" data-i18n="pk.roster.r2">Order #ZT-10475 · Coastline tee (M) ×1 · redeemed 14:22</div>
+          </div>
+          <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="pk.st.done">Redeemed</span></span>
+        </div>
+        <div class="data-list__row" style="grid-template-columns:auto 1fr auto" data-sc-roster-row data-sc-roster-text="aria s ticket ga signing checked">
+          <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title">Aria S.</div>
+            <div class="data-list__meta" data-i18n="pk.roster.r3">Ticket TK-88213 · Signing GA entry · checked in 14:05</div>
+          </div>
+          <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="pk.st.checkedin">Checked in</span></span>
+        </div>
+        <div class="data-list__row" style="grid-template-columns:auto 1fr auto" data-sc-roster-row data-sc-roster-text="kai t zt-10466 tee l duplicate">
+          <div class="data-list__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></div>
+          <div class="data-list__body">
+            <div class="data-list__title">Kai T.</div>
+            <div class="data-list__meta" data-i18n="pk.roster.r4">Order #ZT-10466 · Coastline tee (L) ×1 · duplicate scan flagged</div>
+          </div>
+          <span class="badge badge--error"><span class="badge__dot"></span><span data-i18n="pk.st.issue">Issue</span></span>
+        </div>
+      </div>
+      <div class="field__hint mt-16" data-i18n="sc.roster.hint">Read-only lookup — mark issue / reverse a redemption only in Pickup session detail on the creator dashboard.</div>
     </div>
 
     <!-- Foot · scan screen -->
@@ -93,9 +174,18 @@
     var idx = -1;
     var frame = document.querySelector('.scanner-frame');
     function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
+    var nav = document.querySelector('[data-sc-nav]');
     function show(screen) {
       frame.querySelectorAll('[data-sc-screen]').forEach(function (s) { s.hidden = s.getAttribute('data-sc-screen') !== screen; });
       frame.querySelectorAll('[data-sc-foot]').forEach(function (f) { f.hidden = f.getAttribute('data-sc-foot') !== screen; });
+      if (nav) {
+        var navScreen = (screen === 'result') ? 'scan' : screen; /* 掃描結果仍算在 Scan 分頁下 */
+        nav.querySelectorAll('[data-sc-navto]').forEach(function (b) {
+          var on = b.getAttribute('data-sc-navto') === navScreen;
+          b.classList.toggle('tabs__item--active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+      }
     }
     /* password gate */
     var pwBtnScreen = document.querySelector('[data-sc-screen="pw"]');
@@ -103,7 +193,7 @@
     var pwErr = document.querySelector('[data-sc-pw-err]');
     function unlock() {
       if (!pw.value.trim()) { pwErr.textContent = T('sc.pw.err', 'Enter the password to continue.'); return; }
-      pwErr.textContent = ''; show('scan');
+      pwErr.textContent = ''; if (nav) nav.hidden = false; show('scan');
     }
     pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
     /* add an explicit unlock button under the password field */
@@ -114,6 +204,19 @@
     unlockBtn.textContent = 'Unlock scanner';
     pwBtnScreen.appendChild(unlockBtn);
     unlockBtn.addEventListener('click', unlock);
+
+    /* F1 sub-nav：Scan／Items／Roster 互切 */
+    if (nav) nav.querySelectorAll('[data-sc-navto]').forEach(function (b) {
+      b.addEventListener('click', function () { show(b.getAttribute('data-sc-navto')); });
+    });
+
+    /* F3 取貨／入場名單（簡化版）搜尋 */
+    var rSearch = document.querySelector('[data-sc-roster-search]');
+    var rRows = [].slice.call(document.querySelectorAll('[data-sc-roster-row]'));
+    if (rSearch && rRows.length) rSearch.addEventListener('input', function () {
+      var q = rSearch.value.trim().toLowerCase();
+      rRows.forEach(function (r) { r.hidden = !!q && (r.getAttribute('data-sc-roster-text') || '').indexOf(q) < 0; });
+    });
 
     /* scan → result */
     function renderResult(s) {
@@ -154,6 +257,6 @@
   })();
 </script>
 <script src="js/icons.js?v=20260706e"></script>
-<script src="js/i18n.js?v=20260706f"></script>
+<script src="js/i18n.js?v=20260706h"></script>
 </body>
 </html>
