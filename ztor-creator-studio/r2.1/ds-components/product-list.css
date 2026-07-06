@@ -295,3 +295,40 @@
   pointer-events: none;
   cursor: default;
 }
+
+/* ============================================================
+   訂單管理 / 取貨管理欄位版型（對齊 E-Shop 家族，D111 後續一致性）
+   ------------------------------------------------------------
+   同 --eshop 手法：只換欄位模板疊在 base grid 上、不改 base。列重用
+   product-list__image-cell(thumb) / __product / __body / __title / __meta /
+   __cell / __status / __actions(kebab)。無圖片/拖曳欄。
+     --orders   訂單：icon / 訂單編號+買家(+品項/取貨 meta) / 金額 / 狀態(雙軸) / 日期 / actions
+     --pickup   場次：icon / 場次名(+地點/時間/統計 meta) / 狀態 / scanner / actions
+   ============================================================ */
+.product-list--orders .product-list__head,
+.product-list--orders .product-list__row {
+  grid-template-columns: 44px minmax(220px, 1fr) 84px minmax(148px, auto) 92px 40px;
+}
+.product-list--orders .product-list__price,
+.product-list--orders .product-list__cell { color: var(--foreground); }
+.product-list--orders .product-list__status { display: flex; align-items: center; }
+
+.product-list--pickup .product-list__head,
+.product-list--pickup .product-list__row {
+  grid-template-columns: 44px minmax(240px, 1fr) 112px 116px 40px;
+}
+.product-list--pickup .product-list__cell { color: var(--foreground); }
+
+/* ≤760px：兩版型都退回 base 的堆疊模式（重設被桌機模板覆蓋掉的 grid，
+   讓 base 760 規則的 __product/__image-cell/__actions 定位生效，其餘欄堆到左欄）。 */
+@media (max-width: 760px) {
+  .product-list--orders .product-list__row,
+  .product-list--pickup .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--orders .product-list__product,
+  .product-list--pickup .product-list__product { padding-left: var(--sp-56); }
+  .product-list--orders .product-list__cell,
+  .product-list--orders .product-list__status,
+  .product-list--orders .product-list__price,
+  .product-list--pickup .product-list__cell,
+  .product-list--pickup .product-list__status { grid-column: 1; padding-left: var(--sp-56); }
+}
