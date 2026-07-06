@@ -8,6 +8,19 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-06 · 訂單管理／取貨管理主清單對齊電子商店 UI 元件（B 反饋導入）
+
+使用者裁示：訂單管理（orders.html F3）與取貨管理（pickup.html F2 場次清單）要以電子商店（e-shop 家族）的 UI 元件為準。原本兩頁用的是較陽春的 `.data-list`＋灰底 `.filter-tabs`＋常駐 `.input` 搜尋，與 e-shop（product-list＋淡橘 filter-tabs＋收合搜尋＋kebab＋分批頁尾）不一致。本輪把兩頁主清單改吃同一套共用元件。
+
+- **清單列 `.data-list` → `.product-list`**：新增兩個欄位版型 `product-list--orders`（icon／訂單+買家+品項·取貨 meta／金額／狀態雙軸／日期／actions）與 `product-list--pickup`（icon／場次名+地點·時間·統計 meta／狀態／scanner／actions），比照既有 `--eshop/--bundles/--auctions` 手法疊在 base grid 上、不改 base（含 `product-list__head` 欄位表頭、≤760px 堆疊）。清單**不再包 `.card`**、直接落頁（比照 e-shop）。pickup 詳情內的 F4/F5/F8 子清單維持 `.data-list`（次級清單，比照 order-detail）。
+- **狀態篩選灰底 `.filter-tabs` → `.filter-tabs--brand`＋每項數量**：淡橘 active／橘字，每個 tab 附 `.filter-tabs__count`（隨搜尋連動重算）。
+- **搜尋常駐 `.input` → `search-collapse`（收合式）**：放大鏡鈕點開成 `field-pill`、✕／Esc 收起。
+- **工作列改兩排式**（比照 e-shop F3）：上排收合搜尋靠右、下排狀態篩選獨佔整列（版面為 page-specific inline 佈局，不套 e-shop 的 sticky／Figma 陰影；元件本身皆共用）。
+- **列操作收進 kebab（⋯）`dropdown-menu`**：orders 列＝Open order／Copy order #／View in Earnings；pickup 場次列依狀態＝Open／Start scanning／Copy URL／Edit session／Archive（草稿＝Edit／Delete；已結束＝Open／Export／Archive）。點外部或點選項後自動關閉。
+- **分批載入頁尾 `list-footer`**：清單下方加 end-cap 計數（Showing N of M，隨篩選更新；demo 已全載）。
+- 新增 i18n：`orders.col.*`／`orders.a.*`／`orders.btn.search`／`orders.search.close`／`orders.footer.count`／`pk.col.*`／`pk.a.more`／`pk.act.archive`／`pk.act.delete`／`pk.btn.search`／`pk.search.close`／`pk.footer.count`（en＋zh）。無新增 icon（more-vertical/search/x 皆既有）。
+- 驗證：Playwright 實測兩頁——product-list 渲染（列高 88px、欄位版型正確）、filter-tabs--brand 橘色 active＋數量（orders 4/0/3/1/2/1/1、pickup 4/1/1/1/1/0）、收合搜尋開合、狀態篩選、kebab 開關、footer 句子在地化（load 後重跑修掉 inline 早於 i18n 的英文殘留）、pickup 詳情/建立場次 popup 仍正常；0 raw i18n、0 缺 icon。`check_ds_sync` PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260706a`。
+
 ## 2026-07-03 · E-Shop 新增「取貨管理」＋現場 QR 領取串接（A spec-derived · D111／Plan170）
 
 上游規格新增 E-Shop 子頁「取貨管理（Pickup Management）」（documents/5.1.5.11，決策 D111）：現場 QR 領取不再塞進訂單出貨表單，改由取貨場次統一核銷，一個場次可同時核銷多個取貨商品與多個活動票券，並產生密碼保護的獨立手機 scanner URL。依規格把整套落到 R 2.1。

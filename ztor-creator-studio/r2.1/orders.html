@@ -3,25 +3,30 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Order management · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260703e"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/button.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/card.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/input.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/status-axes.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260703e">
-<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260703e">
-<link rel="stylesheet" href="shared.css?v=20260703e">
+<script src="js/theme.js?v=20260706a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/input.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/status-axes.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260706a">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260706a">
+<link rel="stylesheet" href="shared.css?v=20260706a">
 <style>
-  /* F2 訂單篩選：狀態 filter-tabs（左）＋ 搜尋（右）同列，對齊電子商店 F3（spec 5.1.5.3 §F2）*/
-  .orders-filter-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .orders-filter-row .input { max-width:260px; }
-  @media (max-width:760px){ .orders-filter-row .input { max-width:100%; flex:1 1 100%; } }
+  /* F2 工作列版型（對齊電子商店 F3 兩排式）：上排＝收合搜尋靠右，下排＝狀態 filter-tabs 獨佔整列。
+     版面為 page-specific 佈局（不套 e-shop 的 sticky/Figma 陰影，只取兩排結構）；元件本身皆共用。 */
+  .ord-list-controls { margin-top: 16px; margin-bottom: 16px; }
+  .ord-list-topbar { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:8px; }
+  .ord-status-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   /* F3 篩選無結果空狀態（§F3／§頁面狀態「查無符合的訂單」，與帳號層級 .when-empty 分流）*/
   .orders-noresult[hidden]{ display:none; }
 </style>
@@ -56,71 +61,97 @@
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="orders.kpi.completed">Completed · 30d</div><div class="kpi__value"><span class="when-data">214</span><span class="when-empty">0</span></div></div>
       </div>
 
-      <!-- F2 · Filters · 狀態改 filter-tabs（對齊電子商店 F3），搜尋同列（spec 5.1.5.3 §F2）-->
-      <div class="orders-filter-row mb-16">
-        <nav class="filter-tabs" role="tablist" aria-label="Filter by status" data-orders-status>
-          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all" data-i18n="orders.status.all">All status</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="unpaid" data-i18n="orders.status.unpaid">Unpaid</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="paid" data-i18n="orders.status.paid">Paid</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="toship" data-i18n="orders.status.toship">To ship</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="shipped" data-i18n="orders.status.shipped">Shipped</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="completed" data-i18n="orders.status.completed">Completed</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="refund" data-feat="O09" data-i18n="orders.status.refund">Refund / dispute</button>
-        </nav>
-        <input class="input" placeholder="Search orders" data-orders-search data-i18n-placeholder="orders.filter.placeholder">
-      </div>
-
-      <!-- F3 · Order list · 點任一筆 → 訂單詳情 (5.1.5.3.1) -->
-      <section class="card when-data">
-        <div class="data-list">
-          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto auto" data-order-row data-order-status="paid toship" data-order-text="zt-10482 mika tour zine coastline tee">
-            <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">#ZT-10482 · <span class="text-sub">Mika L.</span></div>
-              <div class="data-list__meta" data-i18n="orders.row1.items">Tour zine vol. 02 ×1 · Coastline tee (M) ×1</div>
-              <!-- D111 混合訂單：取貨品項狀態顯示在品項摘要旁（品項層，不改訂單層狀態）-->
-              <div class="data-list__meta mt-4"><span class="badge badge--warning badge--inline"><span class="badge__dot"></span><span data-i18n="orders.row1.pickup">1 item awaiting on-site pickup</span></span></div>
-            </div>
-            <span style="font-size: var(--fs-13)">$56.00</span>
-            <span class="status-axes"><span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="orders.status.toship">To ship</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span>
-            <span class="text-sub" style="font-size: var(--fs-12)">2026-06-08</span>
-            <a class="card__link" href="order-detail.html" data-i18n="orders.open">Open</a>
-          </div>
-          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto auto" data-order-row data-order-status="paid completed" data-order-text="zt-10481 devon coastline ep digital download">
-            <div class="data-list__icon"><i data-lucide="play" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">#ZT-10481 · <span class="text-sub">Devon W.</span></div>
-              <div class="data-list__meta" data-i18n="orders.row2.items">Coastline EP — digital download ×1</div>
-            </div>
-            <span style="font-size: var(--fs-13)">$12.00</span>
-            <span class="status-axes"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="orders.status.delivered">Delivered</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span>
-            <span class="text-sub" style="font-size: var(--fs-12)">2026-06-08</span>
-            <a class="card__link" href="order-detail.html" data-i18n="orders.open">Open</a>
-          </div>
-          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto auto" data-order-row data-order-status="shipped refund" data-order-text="zt-10477 aria coastline acetate numbered">
-            <div class="data-list__icon"><i data-lucide="circle" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">#ZT-10477 · <span class="text-sub">Aria S.</span></div>
-              <div class="data-list__meta" data-i18n="orders.row3.items">Coastline acetate · numbered 1/50 ×1</div>
-            </div>
-            <span style="font-size: var(--fs-13)">$180.00</span>
-            <span class="status-axes"><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="orders.status.shipped">Shipped</span></span><span class="badge badge--error"><span data-i18n="orders.pay.disputed">Disputed</span></span></span>
-            <span class="text-sub" style="font-size: var(--fs-12)">2026-06-06</span>
-            <a class="card__link" href="order-detail.html" data-i18n="orders.open">Open</a>
-          </div>
-          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto auto" data-order-row data-order-status="paid shipped" data-order-text="zt-10470 kai tour zine">
-            <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">#ZT-10470 · <span class="text-sub">Kai T.</span></div>
-              <div class="data-list__meta" data-i18n="orders.row4.items">Tour zine vol. 02 ×2</div>
-            </div>
-            <span style="font-size: var(--fs-13)">$48.00</span>
-            <span class="status-axes"><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="orders.status.shipped">Shipped</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span>
-            <span class="text-sub" style="font-size: var(--fs-12)">2026-06-05</span>
-            <a class="card__link" href="order-detail.html" data-i18n="orders.open">Open</a>
+      <!-- F2 · Filters · 對齊電子商店 F3：上排收合搜尋、下排狀態 filter-tabs--brand（每項附數量）-->
+      <section class="ord-list-controls when-data" aria-label="Order filters">
+        <div class="ord-list-topbar">
+          <div class="search-collapse" data-orders-search-wrap>
+            <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-orders-search-toggle aria-expanded="false" aria-label="Search orders" title="Search orders" data-i18n-aria-label="orders.btn.search" data-i18n-title="orders.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
+            <label class="field-pill search-collapse__field" aria-label="Search orders">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" placeholder="Search orders" data-i18n-placeholder="orders.filter.placeholder" data-orders-search>
+              <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-orders-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="orders.search.close" data-i18n-title="orders.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </label>
           </div>
         </div>
+        <div class="ord-status-row">
+          <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by status" data-orders-status>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all"><span data-i18n="orders.status.all">All status</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="unpaid"><span data-i18n="orders.status.unpaid">Unpaid</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="paid"><span data-i18n="orders.status.paid">Paid</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="toship"><span data-i18n="orders.status.toship">To ship</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="shipped"><span data-i18n="orders.status.shipped">Shipped</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="completed"><span data-i18n="orders.status.completed">Completed</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="refund" data-feat="O09"><span data-i18n="orders.status.refund">Refund / dispute</span><span class="filter-tabs__count" data-status-count>0</span></button>
+          </nav>
+        </div>
       </section>
+
+      <!-- F3 · Order list · product-list（對齊電子商店 F4）· 列操作收進 kebab（⋯）-->
+      <section class="product-list product-list--orders when-data" role="table" aria-label="Orders" data-orders-list>
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Icon"></div>
+          <div role="columnheader" data-i18n="orders.col.order">Order</div>
+          <div role="columnheader" data-i18n="orders.col.amount">Amount</div>
+          <div role="columnheader" data-i18n="orders.col.status">Status</div>
+          <div role="columnheader" data-i18n="orders.col.date">Date</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-order-row data-order-status="paid toship" data-order-text="zt-10482 mika tour zine coastline tee">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="package" class="ztor-icon"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__title">#ZT-10482 · <span class="text-sub">Mika L.</span></div>
+            <div class="product-list__meta" data-i18n="orders.row1.items">Tour zine vol. 02 ×1 · Coastline tee (M) ×1</div>
+            <!-- D111 混合訂單：取貨品項狀態顯示在品項摘要旁（品項層，不改訂單層狀態）-->
+            <div class="product-list__meta" style="margin-top:4px"><span class="badge badge--warning badge--inline"><span class="badge__dot"></span><span data-i18n="orders.row1.pickup">1 item awaiting on-site pickup</span></span></div>
+          </div></div>
+          <div class="product-list__cell product-list__price" role="cell">$56.00</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="status-axes"><span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="orders.status.toship">To ship</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span></div>
+          <div class="product-list__cell" role="cell">2026-06-08</div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="orders.a.more" data-i18n-title="orders.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html" data-i18n="orders.open">Open order</a><button class="dropdown__item" type="button" role="menuitem" data-i18n="orders.a.copy">Copy order #</button><a class="dropdown__item" role="menuitem" href="earnings.html" data-i18n="orders.a.earnings">View in Earnings</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-order-row data-order-status="paid completed" data-order-text="zt-10481 devon coastline ep digital download">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="play" class="ztor-icon"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__title">#ZT-10481 · <span class="text-sub">Devon W.</span></div>
+            <div class="product-list__meta" data-i18n="orders.row2.items">Coastline EP — digital download ×1</div>
+          </div></div>
+          <div class="product-list__cell product-list__price" role="cell">$12.00</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="status-axes"><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="orders.status.delivered">Delivered</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span></div>
+          <div class="product-list__cell" role="cell">2026-06-08</div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="orders.a.more" data-i18n-title="orders.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html" data-i18n="orders.open">Open order</a><button class="dropdown__item" type="button" role="menuitem" data-i18n="orders.a.copy">Copy order #</button><a class="dropdown__item" role="menuitem" href="earnings.html" data-i18n="orders.a.earnings">View in Earnings</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-order-row data-order-status="shipped refund" data-order-text="zt-10477 aria coastline acetate numbered">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="circle" class="ztor-icon"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__title">#ZT-10477 · <span class="text-sub">Aria S.</span></div>
+            <div class="product-list__meta" data-i18n="orders.row3.items">Coastline acetate · numbered 1/50 ×1</div>
+          </div></div>
+          <div class="product-list__cell product-list__price" role="cell">$180.00</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="status-axes"><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="orders.status.shipped">Shipped</span></span><span class="badge badge--error"><span data-i18n="orders.pay.disputed">Disputed</span></span></span></div>
+          <div class="product-list__cell" role="cell">2026-06-06</div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="orders.a.more" data-i18n-title="orders.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html" data-i18n="orders.open">Open order</a><button class="dropdown__item" type="button" role="menuitem" data-i18n="orders.a.copy">Copy order #</button><a class="dropdown__item" role="menuitem" href="earnings.html" data-i18n="orders.a.earnings">View in Earnings</a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-order-row data-order-status="paid shipped" data-order-text="zt-10470 kai tour zine">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__thumb"><i data-lucide="package" class="ztor-icon"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__title">#ZT-10470 · <span class="text-sub">Kai T.</span></div>
+            <div class="product-list__meta" data-i18n="orders.row4.items">Tour zine vol. 02 ×2</div>
+          </div></div>
+          <div class="product-list__cell product-list__price" role="cell">$48.00</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="status-axes"><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="orders.status.shipped">Shipped</span></span><span class="badge badge--neutral"><span data-i18n="orders.pay.paid">Paid</span></span></span></div>
+          <div class="product-list__cell" role="cell">2026-06-05</div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="orders.a.more" data-i18n-title="orders.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="order-detail.html" data-i18n="orders.open">Open order</a><button class="dropdown__item" type="button" role="menuitem" data-i18n="orders.a.copy">Copy order #</button><a class="dropdown__item" role="menuitem" href="earnings.html" data-i18n="orders.a.earnings">View in Earnings</a></div></details></div>
+        </div>
+      </section>
+
+      <!-- F3 分批載入頁尾（對齊電子商店 F4，共用 list-footer；demo 已全載，只留 end-cap 計數）-->
+      <div class="list-footer list-footer--center when-data" data-orders-footer>
+        <span class="list-footer__count" data-orders-count></span>
+      </div>
 
       <!-- F3 篩選無結果 · 查無符合的訂單（5.1.5.3 §F3／§頁面狀態），與帳號層級無資料分流 -->
       <section class="card orders-noresult when-data" hidden>
@@ -149,15 +180,33 @@
   </main>
 </div>
 <script>
-  /* F2 狀態 filter-tabs ＋ 關鍵字搜尋 → 過濾 F3 清單；無結果顯示 .orders-noresult（spec 5.1.5.3 §F2/§F3）。
+  /* F2/F3 對齊電子商店：filter-tabs--brand（每項數量）＋收合搜尋＋product-list 過濾＋list-footer 計數。
      每列 data-order-status 為空白分隔的合格篩選 token（一筆訂單可符合多個 tab，如 paid + toship）。 */
   (function () {
     const tabsNav = document.querySelector('[data-orders-status]');
     const search = document.querySelector('[data-orders-search]');
     const rows = [...document.querySelectorAll('[data-order-row]')];
     const noResult = document.querySelector('.orders-noresult');
+    const countEl = document.querySelector('[data-orders-count]');
+    const footer = document.querySelector('[data-orders-footer]');
     if (!tabsNav || !rows.length) return;
     let status = 'all';
+    const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+
+    /* 每個狀態 tab 的數量（隨搜尋連動；All＝符合搜尋的總數）*/
+    function refreshCounts() {
+      const q = (search && search.value.trim().toLowerCase()) || '';
+      tabsNav.querySelectorAll('.filter-tabs__item').forEach(btn => {
+        const val = btn.dataset.statusVal;
+        const cnt = rows.filter(r => {
+          const okStatus = val === 'all' || (r.dataset.orderStatus || '').split(' ').includes(val);
+          const okText = !q || (r.dataset.orderText || '').includes(q);
+          return okStatus && okText;
+        }).length;
+        const c = btn.querySelector('[data-status-count]');
+        if (c) c.textContent = cnt;
+      });
+    }
     function apply() {
       const q = (search && search.value.trim().toLowerCase()) || '';
       let shown = 0;
@@ -169,6 +218,9 @@
         if (vis) shown++;
       });
       if (noResult) noResult.hidden = shown !== 0;
+      if (footer) footer.hidden = shown === 0;
+      if (countEl) countEl.textContent = T('orders.footer.count', 'Showing {n} of {m} orders').replace('{n}', shown).replace('{m}', rows.length);
+      refreshCounts();
     }
     tabsNav.querySelectorAll('.filter-tabs__item').forEach(btn => btn.addEventListener('click', () => {
       tabsNav.querySelectorAll('.filter-tabs__item').forEach(b => {
@@ -180,6 +232,19 @@
       apply();
     }));
     if (search) search.addEventListener('input', apply);
+
+    /* 收合搜尋（比照電子商店）：放大鏡展開 field-pill、✕/Esc 收起 */
+    const wrap = document.querySelector('[data-orders-search-wrap]');
+    const toggle = document.querySelector('[data-orders-search-toggle]');
+    const close = document.querySelector('[data-orders-search-close]');
+    if (wrap && toggle) {
+      const openSearch = () => { wrap.classList.add('is-open'); toggle.setAttribute('aria-expanded', 'true'); if (search) search.focus(); };
+      const closeSearch = () => { wrap.classList.remove('is-open'); toggle.setAttribute('aria-expanded', 'false'); if (search) { search.value = ''; apply(); } };
+      toggle.addEventListener('click', openSearch);
+      if (close) close.addEventListener('click', closeSearch);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && wrap.classList.contains('is-open')) closeSearch(); });
+    }
+
     const clear = document.querySelector('[data-orders-clear]');
     if (clear) clear.addEventListener('click', () => {
       status = 'all';
@@ -191,12 +256,24 @@
       });
       apply();
     });
+
+    /* kebab dropdown（⋯）：點外部關閉；點選項後關閉（比照電子商店列操作）*/
+    document.addEventListener('click', e => {
+      const item = e.target.closest && e.target.closest('.dropdown__item');
+      document.querySelectorAll('details.dropdown[open]').forEach(d => {
+        if (!d.contains(e.target)) { d.removeAttribute('open'); return; }
+        if (item && d.contains(item) && !item.hasAttribute('data-keep-open')) d.removeAttribute('open');
+      });
+    });
+
+    apply();
+    window.addEventListener('load', apply);  /* i18n.js 在本 inline 之後載入，load 後重跑讓 footer 句子在地化 */
   })();
 </script>
-<script src="js/icons.js?v=20260703e"></script>
-<script src="js/i18n.js?v=20260703e"></script>
-<script src="js/sidebar.js?v=20260703e"></script>
-<script src="js/reveal.js?v=20260703e"></script>
-<script src="js/devtools.js?v=20260703e"></script>
+<script src="js/icons.js?v=20260706a"></script>
+<script src="js/i18n.js?v=20260706a"></script>
+<script src="js/sidebar.js?v=20260706a"></script>
+<script src="js/reveal.js?v=20260706a"></script>
+<script src="js/devtools.js?v=20260706a"></script>
 </body>
 </html>
