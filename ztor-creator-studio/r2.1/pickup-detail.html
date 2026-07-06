@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taipei signing — pickup · Ztor Creator Studio</title>
+<script src="js/theme.js?v=20260706e"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/button.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/card.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/input.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/pickup.css?v=20260706e">
+<link rel="stylesheet" href="shared.css?v=20260706e">
+<style>
+  /* 5.1.5.15 取貨場次詳情：場次基本資訊（F1）／Scanner URL 與密碼（F2）／核銷紀錄（F3），由上到下堆疊，不用 tab（比照規格頁面佈局順序）。 */
+  .pk-filter-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px">
+        <a href="e-shop.html" class="card__link" data-i18n="pk.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="pk.row1.name">Taipei signing — pickup</span>
+      </div>
+
+      <!-- F1 · session basic info -->
+      <div class="page-intro">
+        <div>
+          <div class="pickup-detail__header">
+            <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
+            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="pk.status.active">Active</span></span>
+          </div>
+          <div class="pickup-detail__meta">
+            <span><i data-lucide="map-pin" class="ztor-icon"></i> <span data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
+            <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
+          </div>
+          <p class="page-intro__sub" data-i18n="pk.detail.sub">Session info, scanner access and the redemption log. Verifiable items and the pickup &amp; check-in list live on their own page.</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button" data-pk-edit><i data-lucide="pencil" class="ztor-icon"></i> <span data-i18n="pk.act.editsession">Edit session</span></button>
+          <a class="btn btn--primary" href="scanner.html" target="_blank" rel="noopener"><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="pk.act.startscan">Start scanning</span></a>
+        </div>
+      </div>
+
+      <!-- entry to 5.1.5.13 -->
+      <a class="card__link" href="pickup-roster.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:20px" data-i18n="pk.detail.viewroster">View verifiable items &amp; check-in list →</a>
+
+      <!-- F2 · Scanner access -->
+      <div class="data-list__title" style="margin:8px 0 8px;font-size: var(--fs-14)"><span data-i18n="pk.f6.title">Scanner access</span></div>
+      <div class="scanner-access mb-24" id="scanner" data-pk-scanner>
+        <div class="scanner-access__qr">
+          <div class="qr-box" data-qr></div>
+        </div>
+        <div class="scanner-access__main">
+          <div class="scanner-access__label" data-i18n="pk.f6.url">Scanner URL</div>
+          <div class="scanner-access__url">
+            <code data-pk-url>ztor.app/scan/tpe-signing-7f3a2</code>
+            <span class="badge badge--success" data-pk-url-badge><span data-i18n="pk.f6.enabled">Enabled</span></span>
+          </div>
+          <div class="scanner-access__actions">
+            <button class="btn btn--outline btn--sm" type="button" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="pk.act.copyurl">Copy URL</span></button>
+            <button class="btn btn--outline btn--sm" type="button" data-pk-reset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pk.act.reset">Reset URL</span></button>
+            <button class="btn btn--outline btn--sm" type="button" data-pk-toggle-url data-i18n="pk.act.disable">Disable</button>
+          </div>
+          <div class="scanner-access__pw">
+            <i data-lucide="key" class="ztor-icon" style="width:15px;height:15px"></i>
+            <span data-i18n="pk.f6.pw">Scanner password</span>
+            <code>••••••</code>
+            <button class="btn btn--ghost btn--sm" type="button" data-pk-editpw data-i18n="pk.act.changepw">Change</button>
+          </div>
+          <p class="field__hint mt-8" data-i18n="pk.f6.hint">Staff open the URL, enter the password, then scan. The scanner can only redeem — it never shows amounts, Earnings or CRM.</p>
+        </div>
+      </div>
+
+      <!-- F3 · redemption log -->
+      <div class="data-list__title mt-24" style="font-size: var(--fs-14)"><span data-i18n="pk.f8.title">Redemption log</span></div>
+      <div class="pk-filter-row mt-16 mb-16">
+        <nav class="filter-tabs" role="tablist" aria-label="Filter log" data-pk-log-status>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"       data-i18n="pk.log.all">All</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="success"   data-i18n="pk.log.success">Success</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="duplicate" data-i18n="pk.log.duplicate">Duplicate</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="reversal"  data-i18n="pk.log.reversal">Reversal</button>
+        </nav>
+        <button class="btn btn--outline btn--sm" type="button" data-pk-export><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.log.export">Export</span></button>
+      </div>
+      <section class="card">
+        <div class="data-list">
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-pk-log-row data-pk-log-st="success">
+            <div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title" data-i18n="pk.log.l1">Devon W. · Coastline tee (M) ×1</div>
+              <div class="data-list__meta" data-i18n="pk.log.l1.meta">14:22 · order #ZT-10475 · staff: Jo</div>
+            </div>
+            <span class="badge badge--success"><span data-i18n="pk.log.st.success">Success</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-pk-log-row data-pk-log-st="success">
+            <div class="data-list__icon"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title" data-i18n="pk.log.l2">Aria S. · Signing GA entry</div>
+              <div class="data-list__meta" data-i18n="pk.log.l2.meta">14:05 · ticket TK-88213 · check-in written to Events</div>
+            </div>
+            <span class="badge badge--success"><span data-i18n="pk.log.st.success">Success</span></span>
+            <a class="card__link" href="event-detail.html" data-i18n="pk.roster.source">Source</a>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-pk-log-row data-pk-log-st="duplicate">
+            <div class="data-list__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title" data-i18n="pk.log.l3">Kai T. · Coastline tee (L) ×1</div>
+              <div class="data-list__meta" data-i18n="pk.log.l3.meta">14:31 · already redeemed 13:58 — blocked</div>
+            </div>
+            <span class="badge badge--warning"><span data-i18n="pk.log.st.duplicate">Duplicate</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto" data-pk-log-row data-pk-log-st="reversal">
+            <div class="data-list__icon"><i data-lucide="rotate-ccw" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title" data-i18n="pk.log.l4">Reversal · Nina P. · Tour zine vol. 02 ×1</div>
+              <div class="data-list__meta" data-i18n="pk.log.l4.meta">13:40 · reversed wrong scan · order #ZT-10460 restored to pending</div>
+            </div>
+            <span class="badge badge--neutral"><span data-i18n="pk.log.st.reversal">Reversal</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+          </div>
+        </div>
+      </section>
+      <div class="field__hint mt-8" data-i18n="pk.log.note">The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.</div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Shared create/edit pickup-session popup -->
+<div data-pickup-modal-host></div>
+
+<script>
+  window.ztorFauxQr = function (seed) {
+    seed = seed || 7;
+    var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
+    function finder(ox, oy) {
+      r += '<rect x="' + (pad + ox * cell) + '" y="' + (pad + oy * cell) + '" width="' + (7 * cell) + '" height="' + (7 * cell) + '" fill="currentColor"/>';
+      r += '<rect x="' + (pad + (ox + 1) * cell) + '" y="' + (pad + (oy + 1) * cell) + '" width="' + (5 * cell) + '" height="' + (5 * cell) + '" fill="var(--surface)"/>';
+      r += '<rect x="' + (pad + (ox + 2) * cell) + '" y="' + (pad + (oy + 2) * cell) + '" width="' + (3 * cell) + '" height="' + (3 * cell) + '" fill="currentColor"/>';
+    }
+    function inFinder(x, y) {
+      return (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9);
+    }
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      if (inFinder(x, y)) continue;
+      if (((x * 131 + y * 57 + seed * 17 + x * y) % 3) === 0)
+        r += '<rect x="' + (pad + x * cell) + '" y="' + (pad + y * cell) + '" width="' + cell + '" height="' + cell + '" fill="currentColor"/>';
+    }
+    finder(0, 0); finder(N - 7, 0); finder(0, N - 7);
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" role="img" aria-label="QR code" xmlns="http://www.w3.org/2000/svg">' + r + '</svg>';
+  };
+
+  (function () {
+    document.querySelectorAll('[data-qr]').forEach(function (el, i) {
+      if (!el.childElementCount) el.innerHTML = window.ztorFauxQr(i + 3);
+    });
+
+    /* create/edit session popup */
+    var host = document.querySelector('[data-pickup-modal-host]');
+    var pickup = null;
+    function getPickup() {
+      if (!pickup && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession)
+        pickup = window.ZTOR_PARTIALS.createPickupSession(host, {});
+      return pickup;
+    }
+    var edit = document.querySelector('[data-pk-edit]');
+    if (edit) edit.addEventListener('click', function () { var p = getPickup(); if (p) p.openExisting(); });
+
+    function flash(btn, key, fallback) {
+      var span = btn.querySelector('span'); if (!span) return;
+      var prev = span.getAttribute('data-i18n');
+      span.removeAttribute('data-i18n');
+      span.textContent = (window.i18nT && window.i18nT(key)) || fallback;
+      setTimeout(function () { if (prev) { span.setAttribute('data-i18n', prev); if (window.applyI18n) window.applyI18n(span); } }, 1400);
+    }
+    var copyBtn = document.querySelector('[data-pk-copy]');
+    if (copyBtn) copyBtn.addEventListener('click', function () {
+      var url = (document.querySelector('[data-pk-url]') || {}).textContent || 'ztor.app/scan/…';
+      if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function () {});
+      flash(copyBtn, 'pk.act.copied', 'Copied');
+    });
+
+    var toggleUrl = document.querySelector('[data-pk-toggle-url]');
+    if (toggleUrl) toggleUrl.addEventListener('click', function () {
+      var box = document.querySelector('[data-pk-scanner]');
+      var badge = document.querySelector('[data-pk-url-badge] span');
+      var qr = document.querySelector('[data-pk-scanner] .qr-box');
+      var off = box.classList.toggle('is-url-off');
+      if (qr) qr.classList.toggle('qr-box--disabled', off);
+      toggleUrl.setAttribute('data-i18n', off ? 'pk.act.enable' : 'pk.act.disable');
+      if (badge) {
+        badge.setAttribute('data-i18n', off ? 'pk.f6.disabled' : 'pk.f6.enabled');
+        document.querySelector('[data-pk-url-badge]').className = 'badge ' + (off ? 'badge--neutral' : 'badge--success');
+      }
+      if (window.applyI18n) window.applyI18n(box);
+    });
+    var reset = document.querySelector('[data-pk-reset]');
+    if (reset) reset.addEventListener('click', function () {
+      var url = document.querySelector('[data-pk-url]');
+      if (url) url.textContent = 'ztor.app/scan/tpe-signing-' + Math.random().toString(36).slice(2, 7);
+      var qr = document.querySelector('[data-pk-scanner] .qr-box');
+      if (qr) qr.innerHTML = window.ztorFauxQr(Math.floor(Math.random() * 40) + 5);
+      flash(reset, 'pk.act.reset.done', 'URL reset');
+    });
+
+    /* redemption log filter */
+    var nav = document.querySelector('[data-pk-log-status]');
+    var rows = [].slice.call(document.querySelectorAll('[data-pk-log-row]'));
+    if (nav && rows.length) {
+      var status = 'all';
+      function apply() {
+        rows.forEach(function (r) { r.hidden = status !== 'all' && r.getAttribute('data-pk-log-st') !== status; });
+      }
+      nav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          nav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
+            var on = b === btn;
+            b.classList.toggle('filter-tabs__item--active', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          status = btn.getAttribute('data-status-val'); apply();
+        });
+      });
+    }
+    var exp = document.querySelector('[data-pk-export]');
+    if (exp) exp.addEventListener('click', function () { flash(exp, 'pk.log.exported', 'Exported'); });
+  })();
+</script>
+<script src="js/icons.js?v=20260706e"></script>
+<script src="js/i18n.js?v=20260706f"></script>
+<script src="js/sidebar.js?v=20260706e"></script>
+<script src="js/reveal.js?v=20260706e"></script>
+<script src="partials/pickup-session-modal.js?v=20260706e"></script>
+<script src="js/devtools.js?v=20260706e"></script>
+</body>
+</html>
