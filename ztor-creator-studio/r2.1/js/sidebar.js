@@ -68,15 +68,19 @@
       { href: "my-ip.html",     icon: "tag",    titleKey: "nav.my-ip",     descKey: "nav.my-ip-sub" },
       { href: "ip-market.html", icon: "search", titleKey: "nav.ip-market", descKey: "nav.ip-market-sub" },
     ], match: ["ip-detail.html"] },
-    /* E-Shop dropdown (D065, partial rollback of D028): two items only —
-       電子商店 E-Shop (the landing page, renamed from 商品管理) + 訂單管理 Orders.
+    /* E-Shop dropdown (D065, partial rollback of D028; +取貨管理 D111): three
+       items — 電子商店 E-Shop (landing page) + 訂單管理 Orders + 取貨管理
+       Pickup management (on-site QR redemption workspace, sibling of Orders).
        Store settings left the dropdown (D065): it is now a popup opened from the
        E-Shop page F3 toolbar; store-settings.html stays as the popup's full spec
        and is matched here so E-Shop nav highlights on it. Product detail /
-       create-product / create-bundle / order-detail are in-page sub-routes. */
+       create-product / create-bundle / order-detail are in-page sub-routes.
+       scanner.html is the standalone mobile scanner (spec 5.1.5.11 F7) — a
+       separate URL with no Studio nav, so it is intentionally NOT matched here. */
     { key: "nav.eshop", icon: "shopping-bag", panel: [
-      { href: "e-shop.html", icon: "package", titleKey: "nav.manage-eshop", descKey: "nav.manage-eshop-sub" },
-      { href: "orders.html", icon: "receipt", titleKey: "nav.orders",       descKey: "nav.orders-sub" },
+      { href: "e-shop.html", icon: "package",  titleKey: "nav.manage-eshop", descKey: "nav.manage-eshop-sub" },
+      { href: "orders.html", icon: "receipt",  titleKey: "nav.orders",       descKey: "nav.orders-sub" },
+      { href: "pickup.html", icon: "qr-code",  titleKey: "nav.pickup",       descKey: "nav.pickup-sub" },
     ], match: ["product-detail.html", "create-product.html", "create-auction.html", "create-bundle.html", "auction-detail.html", "bundle-detail.html", "order-detail.html", "store-settings.html"] },
     /* Events / Fans = flat top-level links; sub-pages reached in-page. */
     { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html"] },

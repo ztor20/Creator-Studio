@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>#ZT-10482 · Order detail · Ztor</title>
-<script src="js/theme.js?v=20260703d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/status-axes.css?v=20260703d">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260703d">
-<link rel="stylesheet" href="shared.css?v=20260703d">
+<script src="js/theme.js?v=20260703e"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/button.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/card.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/input.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/status-axes.css?v=20260703e">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260703e">
+<link rel="stylesheet" href="shared.css?v=20260703e">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
   .od-amt { display:flex; justify-content:space-between; padding:7px 0; font-size: var(--fs-13); border-bottom:1px solid var(--border); }
@@ -91,6 +91,12 @@
                 <div class="data-list__body">
                   <div class="data-list__title">Coastline tee (M) ×1 <span class="badge badge--neutral badge--inline" data-i18n="od.item.limit">Limit 2/person</span></div>
                   <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
+                  <!-- §2.3 品項層取貨狀態（D111）：現場 QR 領取品項，由取貨管理 scanner 回寫 -->
+                  <div class="data-list__meta mt-4" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                    <span class="badge badge--warning badge--inline"><span class="badge__dot"></span><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
+                    <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.session">On-site QR pickup · Taipei signing</span>
+                    <a class="card__link" href="pickup.html" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.log">Redemption log</a>
+                  </div>
                 </div>
               </div>
               <span style="font-size: var(--fs-13)">$32.00</span>
@@ -192,15 +198,24 @@
         <div class="field__hint" data-i18n="od.ful.note">Marking shipped logs a fulfilment event — it never changes amounts (§7.6).</div>
       </div>
 
-      <!-- 現場 QR 領取 -->
+      <!-- 現場 QR 領取（D111：核銷改由取貨管理 scanner，此處不手動 Mark received）-->
       <div class="od-ful-branch" data-od-ful-branch="qr" hidden>
         <div class="od-qr">
           <div class="od-qr__code"><i data-lucide="qr-code" class="ztor-icon"></i></div>
           <div>
             <div style="font-size: var(--fs-13);font-weight: var(--fw-semibold)" data-i18n="od.qr.title">On-site QR pickup</div>
-            <p class="text-sub" style="font-size: var(--fs-12);margin:4px 0 0" data-i18n="od.qr.body">Buyer shows this QR at the merch table; scan to verify, then mark received. Redemption mechanics pending spec.</p>
+            <p class="text-sub" style="font-size: var(--fs-12);margin:4px 0 0" data-i18n="od.qr.body">This item is redeemed at its pickup session's scanner, not here. Buyers show their QR; staff scan it to redeem, which writes the item back to Redeemed automatically.</p>
           </div>
         </div>
+        <div class="field mt-8">
+          <div class="field__label" data-i18n="od.qr.session">Pickup session</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
+            <span class="text-sub" style="font-size: var(--fs-13)">Taipei signing — pickup</span>
+            <a class="btn btn--outline btn--sm" href="pickup.html" data-i18n="od.qr.manage">Open in Pickup management</a>
+          </div>
+        </div>
+        <div class="field__hint mt-8" data-i18n="od.qr.note">On-site QR items can't be marked received here — redemption happens at the session scanner and writes back automatically (§2.5 / 5.1.5.11).</div>
       </div>
 
       <!-- 數位交付 -->
@@ -227,10 +242,10 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260703d"></script>
-<script src="js/i18n.js?v=20260703d"></script>
-<script src="js/sidebar.js?v=20260703d"></script>
-<script src="js/reveal.js?v=20260703d"></script>
+<script src="js/icons.js?v=20260703e"></script>
+<script src="js/i18n.js?v=20260703e"></script>
+<script src="js/sidebar.js?v=20260703e"></script>
+<script src="js/reveal.js?v=20260703e"></script>
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
      - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
@@ -260,12 +275,12 @@
       branch = v;
       seg.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.odFul === v));
       modal.querySelectorAll('[data-od-ful-branch]').forEach(br => { br.hidden = br.dataset.odFulBranch !== v; });
-      if (v === 'digital') { confirmBtn.hidden = true; }   // 數位自動交付，無確認動作
+      // 數位＝自動交付；QR 現場領取＝由取貨管理 scanner 核銷（D111）——兩者皆無此處手動確認動作
+      if (v === 'digital' || v === 'qr') { confirmBtn.hidden = true; }
       else {
         confirmBtn.hidden = false;
-        const key = v === 'qr' ? 'od.qr.mark' : 'od.ful.mark';
-        confirmBtn.setAttribute('data-i18n', key);
-        confirmBtn.textContent = T(key, v === 'qr' ? 'Mark received' : 'Mark shipped');
+        confirmBtn.setAttribute('data-i18n', 'od.ful.mark');
+        confirmBtn.textContent = T('od.ful.mark', 'Mark shipped');
       }
     }
     seg.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => setBranch(btn.dataset.odFul)));
@@ -285,6 +300,6 @@
     setBranch('shipping');
   })();
 </script>
-<script src="js/devtools.js?v=20260703d"></script>
+<script src="js/devtools.js?v=20260703e"></script>
 </body>
 </html>
