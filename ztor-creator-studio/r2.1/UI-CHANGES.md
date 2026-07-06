@@ -8,6 +8,16 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-06 · 取貨核銷改二元制（A spec-derived · D122，部分推翻 D119）
+
+使用者裁示：取貨核銷是二元的——每次掃描一次領取該買家在此場次的所有物品；掃過＝已核銷、未掃＝待核銷。移除 部分核銷、有問題、未到場（No-show）。規格 §7.2 與 5.1.5.11／5.1.5.14／5.1.5.15／5.1.5.3.1 同步。
+
+- **pickup.html**：F2 摘要「Issues」KPI 改「Redeemed today（今日已核銷）」；F4 清單移除「Issues」欄（9→8 欄，`product-list--pickup` grid 同步）與 Ended 列的 No-show 統計。
+- **pickup-detail.html**：F4 名單移除 No-show／Issues 篩選分頁與該兩列、pending 列的「Mark issue」動作、標記有問題的 JS；保留「反轉核銷」。
+- **scanner.html**：Items 統計去「Issues」；Roster 的 Issue 列改為已核銷；hint 去「mark issue」。SCEN 保留「已領取過（重複掃）／不在此場次」即時提醒（非狀態）。
+- **i18n**：移除 pk.kpi.issues／pk.col.issues／pk.stat.issues／pk.stat.noshow／pk.roster.issue／pk.roster.noshow／pk.st.issue／pk.roster.flag／pk.roster.r5；新增 pk.kpi.redeemed；改寫 pk.roster.r4／sc.roster.hint。
+- 動機：現場核銷是「來了就一次領完」，部分／異常／未到場對 demo 語意多餘；二元制與 scanner「一次領取全部」一致。
+
 ## 2026-07-06 · 取貨場次移除「草稿」狀態（A spec-derived · D112）
 
 使用者裁示：取貨管理不需要草稿。規格同步更新（§7.2 取貨場次狀態、5.1.5.11 F2／F3），站台跟改。
