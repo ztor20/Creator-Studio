@@ -14,11 +14,13 @@
 <link rel="stylesheet" href="ds-components/input.css?v=20260706e">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260706e">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260706e">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260706e">
 <link rel="stylesheet" href="ds-components/pickup.css?v=20260706e">
 <link rel="stylesheet" href="shared.css?v=20260706e">
 <style>
-  /* 5.1.5.15 取貨場次詳情：場次基本資訊（F1）／Scanner URL 與密碼（F2）／核銷紀錄（F3），由上到下堆疊，不用 tab（比照規格頁面佈局順序）。 */
+  /* 5.1.5.15 取貨場次詳情：場次基本資訊（F1）／Scanner URL 與密碼（F2）／核銷紀錄（F3）／取貨與入場名單（F4），由上到下堆疊，不用 tab（比照規格頁面佈局順序）。 */
   .pk-filter-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .pk-noresult[hidden]{ display:none; }
 </style>
 </head>
 <body>
@@ -45,16 +47,13 @@
             <span><i data-lucide="map-pin" class="ztor-icon"></i> <span data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
             <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
           </div>
-          <p class="page-intro__sub" data-i18n="pk.detail.sub">Session info, scanner access and the redemption log. Verifiable items and the pickup &amp; check-in list live on their own page.</p>
+          <p class="page-intro__sub" data-i18n="pk.detail.sub">Session info, scanner access, the redemption log, and the pickup &amp; check-in list. Verifiable items are defined on the mobile scanner.</p>
         </div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-pk-edit><i data-lucide="pencil" class="ztor-icon"></i> <span data-i18n="pk.act.editsession">Edit session</span></button>
           <a class="btn btn--primary" href="scanner.html" target="_blank" rel="noopener"><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="pk.act.startscan">Start scanning</span></a>
         </div>
       </div>
-
-      <!-- entry to 5.1.5.13 -->
-      <a class="card__link" href="pickup-roster.html" style="display:inline-flex;align-items:center;gap:6px;margin-bottom:20px" data-i18n="pk.detail.viewroster">View verifiable items &amp; check-in list →</a>
 
       <!-- F2 · Scanner access -->
       <div class="data-list__title" style="margin:8px 0 8px;font-size: var(--fs-14)"><span data-i18n="pk.f6.title">Scanner access</span></div>
@@ -135,6 +134,79 @@
         </div>
       </section>
       <div class="field__hint mt-8" data-i18n="pk.log.note">The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.</div>
+
+      <!-- F4 · 取貨／入場名單（Pickup & Check-in List，正式定義：完整管理版，含搜尋/狀態篩選/人工處理/反轉）-->
+      <div class="data-list__title mt-24" style="font-size: var(--fs-14)"><span data-i18n="pk.tab.roster">Pickup &amp; check-in list</span></div>
+      <div class="pk-filter-row mt-16 mb-16">
+        <nav class="filter-tabs" role="tablist" aria-label="Filter roster" data-pk-roster-status>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="noshow"  data-i18n="pk.roster.noshow">No-show</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="issue"   data-i18n="pk.roster.issue">Issues</button>
+        </nav>
+        <input class="input" placeholder="Name, email, order #, ticket ID" data-pk-roster-search data-i18n-placeholder="pk.roster.search.ph" style="max-width:280px">
+      </div>
+      <section class="card">
+        <div class="data-list">
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto" data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 zine">
+            <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title">Mika L.</div>
+              <div class="data-list__meta" data-i18n="pk.roster.r1">Order #ZT-10482 · Tour zine vol. 02 ×1</div>
+            </div>
+            <span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="pk.st.pending">Pending</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+            <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-flag data-i18n="pk.roster.flag">Mark issue</button></div></details>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="devon w zt-10475 tee m">
+            <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title">Devon W.</div>
+              <div class="data-list__meta" data-i18n="pk.roster.r2">Order #ZT-10475 · Coastline tee (M) ×1 · redeemed 14:22</div>
+            </div>
+            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="pk.st.done">Redeemed</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+            <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse data-i18n="pk.roster.reverse">Reverse redemption</button></div></details>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="aria s ticket ga signing checked">
+            <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title">Aria S.</div>
+              <div class="data-list__meta" data-i18n="pk.roster.r3">Ticket TK-88213 · Signing GA entry · checked in 14:05</div>
+            </div>
+            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="pk.st.checkedin">Checked in</span></span>
+            <a class="card__link" href="event-detail.html" data-i18n="pk.roster.source">Source</a>
+            <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse data-i18n="pk.roster.reverse">Reverse redemption</button></div></details>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto" data-pk-roster-row data-pk-roster-st="issue" data-pk-roster-text="kai t zt-10466 tee l duplicate">
+            <div class="data-list__icon"><i data-lucide="alert-triangle" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title">Kai T.</div>
+              <div class="data-list__meta" data-i18n="pk.roster.r4">Order #ZT-10466 · Coastline tee (L) ×1 · duplicate scan flagged</div>
+            </div>
+            <span class="badge badge--error"><span class="badge__dot"></span><span data-i18n="pk.st.issue">Issue</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+            <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse data-i18n="pk.roster.reverse">Reverse redemption</button></div></details>
+          </div>
+          <div class="data-list__row" style="grid-template-columns:auto 1fr auto auto auto" data-pk-roster-row data-pk-roster-st="noshow" data-pk-roster-text="nina p zt-10460 zine noshow">
+            <div class="data-list__icon"><i data-lucide="user-x" class="ztor-icon"></i></div>
+            <div class="data-list__body">
+              <div class="data-list__title">Nina P.</div>
+              <div class="data-list__meta" data-i18n="pk.roster.r5">Order #ZT-10460 · Tour zine vol. 02 ×1 · session ended</div>
+            </div>
+            <span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="pk.stat.noshow">No-show</span></span>
+            <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+            <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-flag data-i18n="pk.roster.flag">Mark issue</button></div></details>
+          </div>
+        </div>
+      </section>
+      <section class="card pk-noresult" data-pk-roster-noresult hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="pk.roster.noresult">No matching people</h3>
+        </div>
+      </section>
 
     </div>
   </main>
@@ -238,10 +310,56 @@
     }
     var exp = document.querySelector('[data-pk-export]');
     if (exp) exp.addEventListener('click', function () { flash(exp, 'pk.log.exported', 'Exported'); });
+
+    /* F4 取貨／入場名單：狀態篩選 + 搜尋 */
+    var rNav = document.querySelector('[data-pk-roster-status]');
+    var rRows = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
+    var rSearch = document.querySelector('[data-pk-roster-search]');
+    var rNoRes = document.querySelector('[data-pk-roster-noresult]');
+    if (rNav && rRows.length) {
+      var rStatus = 'all';
+      function rApply() {
+        var q = (rSearch && rSearch.value.trim().toLowerCase()) || '';
+        var shown = 0;
+        rRows.forEach(function (r) {
+          var okS = rStatus === 'all' || r.getAttribute('data-pk-roster-st') === rStatus;
+          var okT = !q || (r.getAttribute('data-pk-roster-text') || '').indexOf(q) >= 0;
+          var vis = okS && okT; r.hidden = !vis; if (vis) shown++;
+        });
+        if (rNoRes) rNoRes.hidden = shown !== 0;
+      }
+      rNav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          rNav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
+            var on = b === btn;
+            b.classList.toggle('filter-tabs__item--active', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          rStatus = btn.getAttribute('data-status-val'); rApply();
+        });
+      });
+      if (rSearch) rSearch.addEventListener('input', rApply);
+    }
+
+    /* F4 人工處理（demo）：標記有問題／反轉核銷 */
+    document.querySelectorAll('[data-pk-flag]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('[data-pk-roster-row]');
+        var badge = row && row.querySelector('.badge');
+        if (badge) { badge.className = 'badge badge--error'; badge.innerHTML = '<span class="badge__dot"></span><span data-i18n="pk.st.issue">Issue</span>'; if (window.applyI18n) window.applyI18n(badge); }
+      });
+    });
+    document.querySelectorAll('[data-pk-reverse]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var row = b.closest('[data-pk-roster-row]');
+        var badge = row && row.querySelector('.badge');
+        if (badge) { badge.className = 'badge badge--warning'; badge.innerHTML = '<span class="badge__dot"></span><span data-i18n="pk.roster.pending">Pending</span>'; if (window.applyI18n) window.applyI18n(badge); }
+      });
+    });
   })();
 </script>
 <script src="js/icons.js?v=20260706e"></script>
-<script src="js/i18n.js?v=20260706f"></script>
+<script src="js/i18n.js?v=20260706h"></script>
 <script src="js/sidebar.js?v=20260706e"></script>
 <script src="js/reveal.js?v=20260706e"></script>
 <script src="partials/pickup-session-modal.js?v=20260706e"></script>
