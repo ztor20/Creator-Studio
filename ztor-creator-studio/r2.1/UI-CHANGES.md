@@ -8,6 +8,22 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-07 · DS 頁優化輪：結構修正＋token 文件化補洞＋15 段矩陣卡化（B 反饋導入 · D infra）
+
+使用者指示「優化 r2.1 的 Design System」，盤點後執行三批：
+
+- **結構修正（`design-system.html`）**：
+  - 合併重複文件化的 Search collapse——原 §4.28b（插錯位）與 §4.79 同 id、同元件寫了兩段；併成一段（保留較完整敘述＋雙態標籤 demo），TOC 去重。
+  - 修 §4.78 編號碰撞（Spec row／Album tracks 同號）：尾段順推為 4.78 Spec row → 4.79 Album tracks → 4.80 Search collapse → 4.81 VIP card → 4.82 Pickup → 4.83 Scanner。全頁不再有重複編號。
+  - 兩個殘留的獨立「變體 ·」區塊照 Split button 前例併入視覺展示：4.45 Tabs 的「變體 · Filter tabs」改為兩張矩陣卡（base × default/:hover/:focus-visible/--active、brand × default/--active），其 Purpose 濃縮進卡頭、Do&Don't 與 Class API 併入主段；4.54 Preview card 的「變體 · Event preview card」併為卡片，整段重構為兩張矩陣卡（.preview-card 含 filled/.is-empty 兩態、.event-preview-card）＋單一 code-fold。
+  - 盤點原疑「4.8 Icon 雙 code-fold」經查屬誤判——第一個 fold 是「瀏覽 1683 個未用圖示」圖庫、與開發者 fold 用途不同，保留。
+- **token 文件化補洞（含檢查器 bug 修正）**：
+  - 修 `check_ds_sync.py` 檢查 9 的通配 bug：`--r1..--r5` 範圍寫法產生 rogue 前綴「-」，等於任何 token 都算已文件化、html 覆蓋檢查形同虛設。加「範圍前綴必須仍是合法 token 形」防呆。
+  - bug 修掉後浮出 45 個 html 端未文件化 token，全數補齊：字級表第二欄改記真正 token 家族名（`--type-display-64-*` 等 6 家 ×5=30）；§2.1 補「已定義・待採用」揭露行（shadcn 對齊組：`--chart-1..5`、`--popover(-foreground)`、`--secondary(-foreground)`、`--accent-foreground`、`--card-foreground`、`--destructive-foreground`、`--input`、sidebar 四成員）；狀態色說明補 `--status-accent`；§1.5 陰影表補全 `--shadow-raise-strong` 全名；§2.5 補 `--overlay-tint`/`--overlay-blur` 毛玻璃配方。
+  - `design-system.md` 同步：changelog 過期指標修正（`--space-1..16` 已退役非待採用）、Sidebar family 行標注 4 個未引用成員待採用、機器 `_inventory` 移除已退役的 navigation-menu。
+- **15 段裸矩陣升級 matrix-block 卡**（比照 §4.2/§4.5 格式，卡頭帶名稱＋用途說明）：4.3 Badge、4.4 Status dot、4.6 Switch、4.8 Icon、4.9 Input、4.19 Selection card、4.22 Segmented control、4.25 Table（兩張）、4.33 Card、4.34 KPI、4.40 NavigationMenu、4.45 Tabs、4.46 Accordion、4.68 Alert。內容值不變、只升級包裝與可讀性；chart 段經查無矩陣（盤點誤標）未動。
+- 驗證：headless playwright 實測——15 段卡數正確、獨立變體區塊 0 殘留、search-collapse 唯一、尾段編號連續、TOC 0 斷鏈、filter-tabs pill 正常渲染；`check_ds_sync` 10 項 PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260707b`。
+
 ## 2026-07-07 · 陰影系統化：E0–E4 海拔階梯（B 反饋導入・全站 token 層）
 
 使用者裁示風格方向：扁平為底、用柔和陰影做浮起分層，並要求把它變成統一系統。陰影收斂為五階海拔（elevation）階梯，每階綁定固定用途：
