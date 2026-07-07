@@ -131,11 +131,19 @@
   --sp-80: 80px;
   --sp-96: 96px;
 
-  /* Shadow tokens */
+  /* ── Shadow tokens · Elevation 海拔階梯（E0–E4）──────────────────────
+     扁平為底，陰影只表達「浮起的層級」；同層分隔一律用 hairline／surface 色階。
+       E0 貼底＝無陰影（頁底、側欄、表格列；邊緣用 --shadow-hairline）
+       E1 微浮 --shadow-raise（按鈕、輸入框、switch knob）
+       E2 卡片 --shadow-card（card、清單容器、KPI、sticky 工作列）
+       E3 懸浮 --shadow-float（下拉、popover、tooltip、拖曳中的列；card hover 升到這階）
+       E4 覆蓋 --shadow-overlay（modal、對話框、抽屜）
+     規則：一元件一階；互動＝借上一階 token（不自創 hover 陰影）；
+     越高越大而淡（offset/blur↑、alpha 收斂）；全站僅此階梯、不寫裸陰影值。 */
   --shadow-micro:
     0 4px 4px rgba(23, 23, 23, 0.04);
 
-  /* Low-elevation control raise (buttons, inputs, segmented, switch knob,
+  /* E1 · Low-elevation control raise (buttons, inputs, segmented, switch knob,
      chart marker). Replaced the per-component ad-hoc `0 1px 2px rgba(...)`
      shadows on 2026-06-15 so they tokenize + adapt to dark mode. */
   --shadow-raise:
@@ -143,18 +151,23 @@
   --shadow-raise-strong:
     0 1px 2px rgba(0, 0, 0, 0.16);
 
+  /* E2 · resting card（rim + drop）*/
   --shadow-card:
     0 2px 6px rgba(12, 10, 9, 0.08),
     0 0 0 1px rgba(23, 23, 23, 0.08);
 
-  --shadow-card-hover:
-    0 4px 12px rgba(12, 10, 9, 0.10),
-    0 0 0 1px rgba(23, 23, 23, 0.10);
+  /* E3 · floating — 下拉／popover／tooltip／拖曳列；card hover 借用本階 */
+  --shadow-float:
+    0 6px 16px -4px rgba(12, 10, 9, 0.12),
+    0 0 0 1px rgba(23, 23, 23, 0.08);
+  --shadow-card-hover: var(--shadow-float);
 
-  --shadow-popover:
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    0 0 1px rgba(0, 0, 0, 0.2);
+  /* E4 · overlay — modal／對話框／抽屜（scrim 之上）*/
+  --shadow-overlay:
+    0 16px 40px -8px rgba(12, 10, 9, 0.18),
+    0 0 0 1px rgba(23, 23, 23, 0.08);
 
+  /* E0 邊緣 · sub-pixel rim（分隔用，非浮起）*/
   --shadow-hairline:
     0 0 1px rgba(0, 0, 0, 0.2);
 
@@ -448,13 +461,15 @@
     0 2px 6px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(253, 253, 253, 0.08);
 
-  --shadow-card-hover:
-    0 4px 12px rgba(0, 0, 0, 0.45),
+  /* E3／E4（dark）— 深底陰影失效，提高 alpha＋亮色內框補輪廓（階梯規則見淺色區）*/
+  --shadow-float:
+    0 6px 16px -4px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(253, 253, 253, 0.10);
+  --shadow-card-hover: var(--shadow-float);
 
-  --shadow-popover:
-    0 1px 2px rgba(0, 0, 0, 0.4),
-    0 0 1px rgba(253, 253, 253, 0.2);
+  --shadow-overlay:
+    0 16px 40px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(253, 253, 253, 0.12);
 
   --shadow-hairline:
     0 0 1px rgba(253, 253, 253, 0.2);

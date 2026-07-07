@@ -59,7 +59,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 ### Don't
 
 - Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — use `--muted` instead.
-- Do not stack `box-shadow` heavier than `--shadow-card`. Only the hero carries deep shadow; cards stay flat.
+- Content surfaces top out at E2 `--shadow-card`; `--shadow-float` / `--shadow-overlay` are reserved for transient layers (dropdowns, dialogs) — never for resting content. Interaction borrows the rung above (card hover → float); no ad-hoc shadow values. Only the hero carries deep light and it does so via gradient veil, not box-shadow.
 - Do not introduce fonts outside the four-font stack (`Geist`, `Geist`, `Geist Mono`, `Inter`, `Noto Sans TC`). The CJK fallback is non-negotiable.
 - Do not give data-list icons semantic color. List icons stay monochrome (`--muted` bg + `--foreground-muted` color); semantic color lives in the **amount** text, not the icon chip.
 - Do not use `--status-warning` (`#F8D749`) as a UI fill — it reads too close to `--primary`. Reserve it for status dots inside dashboards only.
@@ -255,10 +255,11 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 | Token | Value | Use |
 |---|---|---|
-| `shadow-micro` | `0 4px 4px rgba(23,23,23,0.04)` | Soft lift on cards / popovers（outline 按鈕 2026-06-12 起改 1px `--border` 平面線框，不用此陰影） |
-| `shadow-card` | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` | Cards — multi-layer rim + drop |
-| `shadow-popover` | `0 1px 1.6px rgba(0,0,0,0.05), 0 0 0.83px rgba(0,0,0,0.2)` | Popovers, tooltips |
-| `shadow-card-hover` | `0 4px 12px rgba(12,10,9,0.10), 0 0 0 1px rgba(23,23,23,0.10)` | Clickable card hover lift |
+| `shadow-micro` | `0 4px 4px rgba(23,23,23,0.04)` | Soft edge（outline 按鈕 2026-06-12 起改 1px `--border` 平面線框，不用此陰影；階梯外邊緣工具） |
+| `shadow-card` | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` | E2 resting card — multi-layer rim + drop |
+| `shadow-float` | `0 6px 16px -4px rgba(12,10,9,0.12), 0 0 0 1px rgba(23,23,23,0.08)` | E3 floating — dropdowns, popovers, tooltips, dragged rows |
+| `shadow-overlay` | `0 16px 40px -8px rgba(12,10,9,0.18), 0 0 0 1px rgba(23,23,23,0.08)` | E4 overlay — modals, dialogs, drawers |
+| `shadow-card-hover` | `var(--shadow-float)` | Clickable card hover lift = borrow E3 (interaction rises one rung) |
 | `shadow-raise` | `0 1px 2px rgba(0,0,0,0.06)` (dark `0.5`) | Low control raise — primary buttons, input drop, segmented active |
 | `shadow-raise-strong` | `0 1px 2px rgba(0,0,0,0.16)` (dark `0.6`) | Floating control — switch knob, chart marker drop |
 | `shadow-hairline` | `0 0 0.833px rgba(0,0,0,0.2)` | Sub-pixel border simulation |
@@ -401,14 +402,17 @@ references the role, never raw values (html 版另有每個角色的即時渲染
 
 ### 2.5 Elevation
 
-| Role | Token | Used for |
-|---|---|---|
-| Hairline (subtle ring) | `--shadow-hairline` | Inline metric pills, small chip outlines |
-| Micro (soft edge) | `--shadow-micro` | Outline button edge (used as edge replacement, not lift) |
-| Card | `--shadow-card` | Surface cards, KPI tiles, dropdowns, popovers |
-| Popover | `--shadow-popover` | Nav dropdowns, account menu (slightly tighter rim) |
+E0–E4 海拔階梯（見 Pillar 1 §1.5）：一元件一階、互動借上一階、同層分隔不用陰影（用 hairline／surface 色階）、越高越大而淡。
 
-No higher elevation than Card. Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
+| Rung | Token | Used for |
+|---|---|---|
+| E0 貼底 | `--shadow-hairline` | No lift — page / rails / table rows; hairline is an edge, not elevation |
+| E1 微浮 | `--shadow-raise` / `-strong` | Buttons, inputs, segmented, switch knob |
+| E2 卡片 | `--shadow-card` | Surface cards, KPI tiles, list containers, sticky toolbars |
+| E3 懸浮 | `--shadow-float` | Dropdowns, popovers, tooltips, dragged rows; `--shadow-card-hover` aliases here |
+| E4 覆蓋 | `--shadow-overlay` | Modals, dialogs, drawers (above the scrim) |
+
+Content surfaces top out at E2. Edge utilities（`--shadow-micro` / `--shadow-seam` / `--shadow-header`）屬方向性分隔手法、不在階梯內。Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
 
 ### 2.6 Cross-component rules
 
@@ -448,6 +452,7 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
 | `--status-warning` | `#F8D749` | `#F3CF58` | slightly cooler yellow |
 | `--shadow-card` | rim + drop on white | drop only on dark | white hairline rim inverted |
+| `--shadow-float` / `--shadow-overlay` | soft dark drop | stronger alpha (0.5 / 0.6) + white rim (0.10 / 0.12) | 深底陰影失效，提高濃度＋亮框補輪廓 |
 
 ### 3.2 Translucent surface pitfall
 
@@ -1670,7 +1675,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 **Anatomy**
 
 ```
-.ztor-cookie-banner                    (fixed bottom-right · radius-xl · shadow-card)
+.ztor-cookie-banner                    (fixed bottom-right · radius-xl · shadow-float · E3)
   .ztor-cookie-banner__copy            (flex:1 muted consent prose)
   .ztor-cookie-banner__actions         (right cluster · gap 12)
     .btn.btn--primary                  ("Okay")
@@ -2005,7 +2010,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card` (bar fill) · `--border` (bottom hairline + dropdown edge) · `--muted` (highlight pill, icon-btn hover, option hover) · `--foreground` / `--foreground-muted` / `--muted-foreground` (brand / links / sub-labels) · `--primary` (unread `__badge-dot`) · `--background` (dropdown panel fill — opaque over hero) · `--radius-md` / `--radius-lg` / `--radius-pill` · `--shadow-card` · `--duration` / `--easing` · `--font-ui`
+- `--card` (bar fill) · `--border` (bottom hairline + dropdown edge) · `--muted` (highlight pill, icon-btn hover, option hover) · `--foreground` / `--foreground-muted` / `--muted-foreground` (brand / links / sub-labels) · `--primary` (unread `__badge-dot`) · `--background` (dropdown panel fill — opaque over hero) · `--radius-md` / `--radius-lg` / `--radius-pill` · `--shadow-float` (dropdown panel, E3) · `--duration` / `--easing` · `--font-ui`
 
 **Usage** — The single persistent topbar on every product page, injected by `sidebar.js` at `#sidebar`/`#topbar`. Nav order follows the sitemap; mega-dropdowns group IP Bank / E-Shop / Fans sub-routes. Promote new global actions into `__actions` rather than adding a second bar.
 
@@ -2912,7 +2917,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | Class / modifier | Effect |
 |---|---|
 | `.dropdown` | Positioning context (`<details>`); strips native marker from summary |
-| `.dropdown__menu` | Floating panel — right-aligned, `min-width: 230px`, `--radius-lg`, `--shadow-card` |
+| `.dropdown__menu` | Floating panel — right-aligned, `min-width: 230px`, `--radius-lg`, `--shadow-float` (E3) |
 | `.dropdown__item` | Block action link, 9×10 padding, `--radius-md` |
 | `.dropdown--left` | Panel anchors to the trigger's left edge instead |
 
@@ -2962,7 +2967,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __actions > __edit (Icon)
 ```
 
-**Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` shows the "ztor." mark.
+**Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--foreground-subtle` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package).
 
 **Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
 
@@ -3045,7 +3050,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 ```
 .payout-bank-grid > .payout-bank-card(--selected|--add) > __top(__icon) + __title + __meta
 .payout-modal (fixed, z 80, blur backdrop)
-└─ .payout-dialog (620px, --shadow-popover)
+└─ .payout-dialog (620px, --shadow-overlay · E4)
    ├─ __head (__title + close Button)
    ├─ __body > .payout-view × N steps
    │   ├─ .payout-form-grid(--single) > .payout-field (__label/__hint)
@@ -3072,7 +3077,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- surfaces `--card` / `--muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-popover` / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --card)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
+- surfaces `--card` / `--muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-overlay` (dialog shell, E4) / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --card)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
 
 **Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps.
 
