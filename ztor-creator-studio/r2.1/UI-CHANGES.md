@@ -8,6 +8,22 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-08 · 元件 vs Pattern 分類學修正：展示判準＋Pillar 5 中間層配方（B 反饋導入）
+
+使用者發現 4.10 Field system 的視覺展示長得像 pattern（兩個欄位堆成表單）、4.11 Form section 的示範是隨機組合。診斷：Pillar 5 只有頁面級配方，中間層組合規則（表單怎麼堆、modal 殼共用…）無處可放，於是寄生在 Pillar 4 的示範裡造成誤導。整輪修正：
+
+- **立展示判準（§4.0＋design-system.md＋skill）**：元件段視覺展示只展示「該元件單一實例」的變體 × 狀態矩陣；多元件組合示範一律標「實際情境 In context」並連 Pillar 5 對應卡；組合規則只寫 Pillar 5。判斷句：「刪掉這個元件的 CSS，這條規則還成立嗎？」成立 → pattern。
+- **4.10 Field system**：展示改為單欄位矩陣（input／switch／textarea 三種槽 × default／+hint／+required），原兩欄位堆疊改標 In context 連 Form assembly 配方；規格表註明「多欄位成組＝Pillar 5，非本元件」。
+- **4.11 Form section**：層級 🟡 molecule → 🟠 organism（承載 Field 的組合殼）；展示改「單一區段（unit）」＋「區段相接自動分隔線（form-section.css 自有規則）」兩塊，並註明「哪些區段、什麼順序、放哪些欄位＝Pillar 5 配方，示範欄位只是示意」。inventory 同步。
+- **4.30 Filter row**：拆掉展示內嵌的 data-list（那是 Pillar 5 · Filter + list 配方的重演），改為文字指向配方卡。
+- **4.82 Pickup management**：原本兩個無關功能（F6 Scanner 存取卡＋F3 取貨多選列）疊在同一示範，拆成兩塊各自標題的獨立展示。
+- **4.50 Wizard frame／4.61 Payout**：加指向——殼歸元件段、使用規則歸 Pillar 5（wizard 卡／新 Modal shell 卡）。
+- **Pillar 5 擴充＋修 bug**：
+  - 修既有表格 bug：Lifecycle 與 Wizard 兩列都少了「Pattern card」名稱格（內容擠進名稱欄）。
+  - 新增 4 張中間層配方卡（html 縮圖＋表列、md 完整五欄卡）：**Form assembly**（欄位→區段→表單、26px 節奏、欄位順序識別→內容→設定→風險揭露）、**Settings page**（nav 分組＋列卡、右槽單控件、逐列生效或整卡儲存擇一）、**Modal shell**（canonical `.payout-dialog` 殼＋scroll-lock＋確認閘、絕不自捲新殼）、**Split preview**（右欄壓縮主欄、無遮罩非浮層、關閉還原）。5 → 9 張卡。
+- skill 同步：project-ui-creator SKILL.md 元件策略加展示判準條；`_shared/component-inventory.md` §16 加 v9 變更（含「Pillar 5 必須含中間層配方」）。
+- 驗證：headless playwright——4.10 矩陣 9 格單欄位＋In context 連結、4.11 organism 標籤＋pattern 連結、4.30 無內嵌 list、4.82 兩塊展示、Pillar 5 縮圖 9 張／表 9 列／0 缺格列、§4.0 判準在、4.50/4.61 指向在；`check_ds_sync` PASS（唯一 WARN＝既存 fan-store 裸色）；`bump_ver` → `20260708a`。
+
 ## 2026-07-07 · DS 頁優化輪：結構修正＋token 文件化補洞＋15 段矩陣卡化（B 反饋導入 · D infra）
 
 使用者指示「優化 r2.1 的 Design System」，盤點後執行三批：
