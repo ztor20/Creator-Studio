@@ -1,0 +1,165 @@
+/* Pickup management · spec 5.1.5.11 (E-Shop · Pickup Management · D111).
+   Site-specific organism set for the on-site QR redemption workspace:
+     · .scanner-access  — F6 Scanner URL + password card (URL row, QR, actions)
+     · .qr-box          — reusable framed QR placeholder (also used by the
+                          shared session modal and the standalone scanner page)
+     · .pickup-detail   — single-session detail header + section spacing
+     · .pickup-stats    — inline labelled counts on verifiable-item / roster rows
+     · .pickup-select   — multi-select rows inside the create-session popup
+   List rows (F2 sessions, F4 items, F5 roster, F8 log) reuse .data-list.
+   Everything is token-driven; no raw hex (checked by check_ds_sync). */
+
+/* ── F6 · Scanner access card ───────────────────────────────── */
+.scanner-access {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-16) var(--sp-20);
+  align-items: start;
+  padding: var(--sp-16);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+.scanner-access__qr { grid-row: span 2; }
+.scanner-access__main { min-width: 0; }
+.scanner-access__label {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-semibold);
+  color: var(--foreground-subtle);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: var(--sp-6);
+}
+.scanner-access__url {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+}
+.scanner-access__url code {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-13);
+  padding: var(--sp-8) var(--sp-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--foreground);
+}
+.scanner-access__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+}
+.scanner-access__pw {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-14);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.scanner-access__pw code {
+  letter-spacing: .18em;
+  color: var(--foreground);
+}
+
+/* ── QR placeholder box (framed, theme-independent artwork) ──── */
+.qr-box {
+  display: grid;
+  place-items: center;
+  width: var(--sp-96);
+  height: var(--sp-96);
+  flex: none;
+  padding: var(--sp-8);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+}
+.qr-box--lg { width: 168px; height: 168px; }
+.qr-box svg { width: 100%; height: 100%; display: block; }
+.qr-box--disabled { opacity: .45; }
+
+/* ── Single-session detail ──────────────────────────────────── */
+.pickup-detail__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-10) var(--sp-16);
+  margin-bottom: var(--sp-6);
+}
+.pickup-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-16);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.pickup-detail__meta span { display: inline-flex; align-items: center; gap: var(--sp-6); }
+.pickup-detail__meta .ztor-icon { width: 15px; height: 15px; color: var(--foreground-subtle); }
+
+/* ── Inline labelled counts on item / roster rows ───────────── */
+.pickup-stats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-14);
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+}
+.pickup-stats b { color: var(--foreground); font-weight: var(--fw-semibold); }
+.pickup-stats__dot { color: var(--foreground-subtle); }
+
+/* ── Multi-select rows inside the create-session popup ──────── */
+.pickup-select { display: flex; flex-direction: column; gap: var(--sp-8); }
+.pickup-select__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+}
+.pickup-select__row:hover { border-color: var(--foreground-subtle); }
+.pickup-select__row.is-checked {
+  border-color: var(--primary);
+  background: var(--surface-muted);
+}
+.pickup-select__box {
+  width: 18px; height: 18px; flex: none;
+  display: grid; place-items: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--primary-foreground);
+  background: var(--surface);
+}
+.pickup-select__row.is-checked .pickup-select__box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.pickup-select__box .ztor-icon { width: 13px; height: 13px; opacity: 0; }
+.pickup-select__row.is-checked .pickup-select__box .ztor-icon { opacity: 1; }
+.pickup-select__img {
+  width: 34px; height: 34px; flex: none;
+  display: grid; place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--foreground-subtle);
+  overflow: hidden;
+}
+.pickup-select__img img { width: 100%; height: 100%; object-fit: cover; }
+.pickup-select__text { min-width: 0; flex: 1 1 auto; }
+.pickup-select__name { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
+.pickup-select__meta { font-size: var(--fs-12); color: var(--foreground-subtle); margin-top: 2px; }
+
+@media (max-width: 640px) {
+  .scanner-access { grid-template-columns: 1fr; }
+  .scanner-access__qr { grid-row: auto; justify-self: start; }
+}
