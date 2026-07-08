@@ -29,3 +29,5 @@
 - **同檔同時改最易衝突**：`r2.1/i18n.js`、`shared.css`、`design-system.html` 是多頁共用大檔，先講好分工。
 - **認證**：Yves 本機由中央倉 `ZTOR20_GH_TOKEN` 提供；協作者用各自的 `gh auth login`。token 不進 repo。
 
+
+<!-- collab PR 機制測試 90a9cd5，此分支/PR 測完即刪 -->
