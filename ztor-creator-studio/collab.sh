@@ -10,7 +10,7 @@
 #   ⚠ 約定：所有人都在 vault site/ 編輯、走本腳本發版；不要直接在 monorepo 的 ztor-creator-studio/ 內改檔，
 #     否則本腳本的「清空再灌」同步會覆蓋掉那些直接改動。
 #
-# 認證：讀中央倉 ~/SynologyDrive/.cfg/personal.env 的 ZTOR20_GH_TOKEN（需對 Creator-Studio 有寫入權）。
+# 認證：讀中央倉 ~/AI/cfg/personal.env 的 ZTOR20_GH_TOKEN（需對 Creator-Studio 有寫入權）。
 #   repo 內不留明文 token。
 set -euo pipefail
 
@@ -27,7 +27,9 @@ fi
 SITE="$(git rev-parse --show-toplevel)"   # vault 的 site/ 工作目錄（本機 git repo）
 
 # 認證來源
-CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
+# 中央倉：優先新路徑 ~/AI/cfg/，找不到再退回舊路徑（相容尚未搬遷的機器）
+CENTRAL="$HOME/AI/cfg/personal.env"
+[ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
 [ -f "$CENTRAL" ] && source "$CENTRAL" || true
 TOKEN="${ZTOR20_GH_TOKEN:-}"
 if [ -z "$TOKEN" ]; then

@@ -10,7 +10,7 @@
 #   - 上游新增的檔：你沒有 → 直接帶下來；上游刪除你沒動的檔 → 跟著刪（先備份）
 # 未追蹤/被忽略的本機檔（fonts/、scratch、screenshots）永遠不碰。
 # 不在本機 commit（維持你「工作區即狀態」的習慣）；同步狀態靠 base 快照記錄。
-# 認證：讀中央倉 ~/SynologyDrive/.cfg/personal.env 的 ZTOR20_GH_TOKEN。
+# 認證：讀中央倉 ~/AI/cfg/personal.env 的 ZTOR20_GH_TOKEN。
 set -euo pipefail
 
 REPO_SLUG="ztor20/Creator-Studio"
@@ -23,7 +23,9 @@ TS="$(date +%Y%m%d-%H%M%S)"
 BACKUP="$SITE/.git/collab-backup-$TS"   # 本次被覆寫/刪除前的舊版備份
 CONFLICT_DIR="$SITE/.git/collab-conflict-$TS"  # 衝突檔的 monorepo 版（供你比對）
 
-CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
+# 中央倉：優先新路徑 ~/AI/cfg/，找不到再退回舊路徑（相容尚未搬遷的機器）
+CENTRAL="$HOME/AI/cfg/personal.env"
+[ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
 [ -f "$CENTRAL" ] && source "$CENTRAL" || true
 TOKEN="${ZTOR20_GH_TOKEN:-}"
 if [ -z "$TOKEN" ]; then
