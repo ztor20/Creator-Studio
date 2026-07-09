@@ -284,11 +284,12 @@
 - `--type-button-label-line-height`: var(--type-label-15-line-height)
 - `--type-button-label-tracking`: var(--type-label-15-tracking)
 
-## 元件（ds-components/，共 66 支；主 class 前 5 個）
+## 元件（ds-components/，共 67 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `album-tracks.css` — .album-tracks, .album-tracks__upload, .album-tracks__upload-label, .album-tracks__req, .album-tracks__upload-hint ｜ Album tracks · 數位商品「音樂專輯」的多曲目管理器
 - `alert.css` — .alert, .alert--card, .alert--snoozed, .alert--row, .alert--banner ｜ Alert — inline notice with status indicator, ico
+- `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `bento.css` — .bento ｜ Bento — 12-column grid utility for dashboard / p
 - `button.css` — .ztor-btn, .ztor-btn--outline, .ztor-btn--xs, .ztor-btn--sm, .ztor-btn--lg ｜ Ztor Creator Studio · R 2.1 — Button
