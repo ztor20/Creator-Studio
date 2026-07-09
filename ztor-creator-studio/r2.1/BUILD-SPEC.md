@@ -164,7 +164,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | Split button | `.split-button / __main / __caret` + 重用 `.btn`/`.dropdown` | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware——主鈕標籤/連結隨目前 tab（商品 5.1.5.2／組合 5.1.5.4／拍賣 待補），箭頭下拉一律列全部三類；主鈕只留左圓角、`__caret` 只留右圓角＋inset 細線相連，選單右對齊。分割按鈕為非約束呈現參考 |
 | New product post | `.npp-product(__thumb/__info/__name/__meta/__price/__link)` + `.npp-intro` + 重用 `.payout-dialog` 外殼與 `.msg-*`（message-modal）| 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：**重用群發 composer**（受眾·標題≤120·內文≤2000·個人化 token·排程，不重定義發送機制），本檔只加 F2 商品附件卡與略過路徑。由 `partials/product-post-modal.js` 掛於 e-shop.html、`?posted=1` 開啟；標題/關閉在彈窗外框（無頁首，D067）。發布為 demo（通知粉絲＋Fans CRM 引用 5.1.7.1／5.1.2.2 §4.9）|
 | Choice card grid | `.choice-grid / .choice-card / .choice-card--active` | Radio-style 選擇器（專案類型、access model、event type） |
-| Wizard frame | `.wizard / .wizard__top / .stepper / .wizard__bottom` | 4-step wizard 專用 layout（無 sidebar） |
+| Wizard frame | `.wizard / .wizard__top / .stepper / .wizard__bottom` | 4-step wizard 專用 layout（無 sidebar）。**2026-07-09**：7 個建立頁重複的 `.wizard__body` 頂距／內容寬頁內覆寫 promote 成 `.wizard__body--form/--narrow/--wide` 修飾類；funding-simulate／funding-test 頁的分岔值維持頁內，未強行統一 |
 | IP hero | `.ip-hero / .ip-hero__cover / .rental-card / .duration-grid` | IP 詳情頁專用三欄 hero |
 | Stacked bar | `.stacked-bar / .source-list` | Revenue by Source 共用 |
 | Tabs | `.tabs / .tabs__item / .tabs__item--active` | Orange 底線 active state · **`.tabs--brand` 變體**＝淡橘（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
@@ -273,6 +273,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - 仍在 `shared.css` 的高復用元件必須標為 project-owned component，不可因尚未拆檔而從 design system 消失。
 - `design-system.html` 內建 integrity check，用於檢查 anchor、compose chip、duplicate id 與 CSS link 清單。
 - 無障礙合規不是 R 2.1 預設交付範圍；若未來需要，另開 opt-in audit，不回寫成全站視覺規範。
+- **2026-07-09**：破壞性 ghost 按鈕（`.btn--ghost.btn--destructive`）與表單 footnote（`.form-footnote`）兩組跨頁重複頁內樣式一併 promote 進 ds-components，零視覺變動；細節見 UI-CHANGES.md 同日條目。
 
 ---
 

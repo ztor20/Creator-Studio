@@ -8,6 +8,16 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-09 · 3 組重複頁內樣式 promote 進 design system（D infra，零視覺變動）
+
+稽核發現 create-product / create-auction 兩頁逐字重複破壞性 ghost 按鈕與 footnote 樣式，7 個建立頁逐頁複寫 `.wizard__body` 的頂距與內容寬——皆違反「可重用樣式第一次出現就 promote」鐵律。三組數值全數照抄搬進 ds-components，不改動任何呈現：
+
+- **`.btn--ghost.btn--destructive`**（`ds-components/button.css`）：紅字＋hover 淡紅底，綁 `.btn--ghost` 防止誤掛 `.btn--primary` 做出紅色主按鈕。create-product `#cp-delete`、create-auction `#ca-delete` 改用，刪除頁內 `.cp-delete`/`.ca-delete` 兩組規則（含殘留的 fallback hex，改用 `var(--destructive)` 純 token）。
+- **`.form-footnote`**（併入 `ds-components/form-section.css`，不開新檔）：表單底部置中小字（如 Stripe 保障文案）。create-product `.cp-footnote`、create-auction `.ca-footnote` 改掛，數值逐字照抄（margin-top 22px 非 token）；create-campaign 的 `.fc-footnote` 樣式不同，維持獨立不動。
+- **`.wizard__body--form` / `--narrow` / `--wide`**（併入 `shared.css` 既有 `.wizard__body` 規則之後）：7 個建立頁（create-product/-auction/-bundle/-campaign/-event/-project、register-ip）刪除頁內 `.wizard__body` 覆寫、改掛修飾類。已知分岔未收：funding-simulate.html（32px 頂距）、funding-test/create-campaign.html（44px 頂距）維持頁內獨立覆寫，不強行統一。
+
+DS 雙文件（`design-system.md`＋`design-system.html`）同步三項新內容；`check_ds_sync` 全 PASS；`bump_ver` 統一 cache-bust。
+
 ## 2026-07-08 · 元件 vs Pattern 分類學修正：展示判準＋Pillar 5 中間層配方（B 反饋導入）
 
 使用者發現 4.10 Field system 的視覺展示長得像 pattern（兩個欄位堆成表單）、4.11 Form section 的示範是隨機組合。診斷：Pillar 5 只有頁面級配方，中間層組合規則（表單怎麼堆、modal 殼共用…）無處可放，於是寄生在 Pillar 4 的示範裡造成誤導。整輪修正：
