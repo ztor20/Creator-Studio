@@ -311,7 +311,7 @@
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
 - `footer.css` — .ztor-footer, .ztor-footer__inner, .ztor-footer__brand, .ztor-footer__wordmark, .ztor-footer__tagline ｜ Ztor — Footer
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
-- `form-section.css` — .form-section, .form-section__head, .form-section__title, .form-section__sub ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
+- `form-section.css` — .form-section, .form-section__head, .form-section__title, .form-section__sub, .form-footnote ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--sm ｜ Ztor Creator Studio - Icon atom
 - `input.css` — .ztor-input, .ztor-input--xs, .ztor-input--sm, .ztor-input--lg, .ztor-input--xl ｜ Ztor — Input (form field)

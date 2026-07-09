@@ -3,36 +3,35 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create auction · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260708a"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/button.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/card.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/input.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260708a">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260708a">
-<link rel="stylesheet" href="shared.css?v=20260708a">
+<script src="js/theme.js?v=20260709a"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260709a">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260709a">
+<link rel="stylesheet" href="shared.css?v=20260709a">
 <style>
   /* create-auction 專屬樣式。無卡片區段／radio 卡／control row／form-grid／upload hero
      用 ds-components（form-section / radio-card / control-row / form-grid / upload-tile）；
-     此處只留本頁專屬：預覽欄、就緒 chip＋tooltip、note、footnote。
+     此處只留本頁專屬：預覽欄、就緒 chip＋tooltip、note。footnote 已 promote 至 .form-footnote（2026-07-09）。
      黑夜版維持 shared.css 全域預設（content #2B2B2C／footer #191A1A）；對調僅 create-product。 */
 
   .ca-field[hidden] { display: none; }
   .ca-note { font-size: var(--fs-12); color: var(--foreground-muted); line-height: 1.5; padding: 13px 14px; border-radius: var(--radius-md); background: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
-  .ca-footnote { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 22px; }
 
   /* 就緒檢查 chip（貼 footer 主動作）：未備齊 muted、備齊轉綠；hover/focus 往上開 tooltip（內容＝.readiness）*/
   .ca-ready-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); font-weight: var(--fw-medium); color: var(--foreground-muted); white-space: nowrap; cursor: default; }
@@ -49,15 +48,12 @@
   .ca-ready-pop::after { content: ""; position: absolute; top: 100%; right: 26px; border: 7px solid transparent; border-top-color: var(--muted); }
   .ca-ready-chip:hover .ca-ready-pop,
   .ca-ready-chip:focus-within .ca-ready-pop { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
-  .ca-delete { color: var(--destructive, #c0392b); }
-  .ca-delete:hover { background: color-mix(in srgb, var(--destructive, #c0392b) 10%, transparent); color: var(--destructive, #c0392b); }
   .wizard__top-actions[aria-hidden="true"] { min-width: 52px; }
 
   /* 種類區段在最前，去掉多餘頂距 */
   .preview-split__form > .form-section:first-child { padding-top: 4px; }
 
-  /* 預覽欄／表單｜預覽兩欄版面用 ds-components/preview-column.css；此處只留本頁寬度與上內距。 */
-  .wizard__body { max-width: 1000px; padding-top: 72px; }
+  /* 預覽欄／表單｜預覽兩欄版面用 ds-components/preview-column.css；本頁寬度與上內距改用 shared.css 的 .wizard__body--form/--narrow 修飾類（2026-07-09）。 */
 </style>
 </head>
 <body>
@@ -80,7 +76,7 @@
     </div>
   </header>
 
-  <div class="wizard__body preview-split">
+  <div class="wizard__body wizard__body--form wizard__body--narrow preview-split">
     <div class="preview-split__form">
 
     <!-- §4 拍賣種類：實體／數位／活動 三選一，預設實體；只影響素材與 F6 交付 -->
@@ -339,7 +335,7 @@
       </div>
     </section>
 
-    <div class="ca-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
+    <div class="form-footnote" data-i18n="cp.stripe">Secure payments via Stripe. Buyer protection included.</div>
     </div><!-- /.preview-split__form -->
 
     <!-- §5.2.5 即時預覽（表單旁 sticky 常駐欄）-->
@@ -375,7 +371,7 @@
   <!-- §5.2.4 底部操作列（統一）：Save for later 左；就緒 chip＋主動作右 -->
   <footer class="wizard__bottom" style="justify-content:flex-end">
     <div class="wizard__bottom-actions">
-      <button class="btn btn--ghost ca-delete" id="ca-delete" hidden data-i18n="cp.delete">Delete</button>
+      <button class="btn btn--ghost btn--destructive" id="ca-delete" hidden data-i18n="cp.delete">Delete</button>
       <span class="ca-ready-chip" id="ca-ready-chip" tabindex="0"><i data-lucide="circle" class="ztor-icon"></i><span id="ca-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span>
         <span class="ca-ready-pop">
           <section class="readiness" id="ca-readiness">
@@ -611,10 +607,10 @@
   setKind(initKind);
 })();
 </script>
-<script src="js/icons.js?v=20260708a"></script>
-<script src="js/i18n.js?v=20260708a"></script>
-<script src="partials/wizard-chrome.js?v=20260708a"></script>
-<script src="js/reveal.js?v=20260708a"></script>
-<script src="js/devtools.js?v=20260708a"></script>
+<script src="js/icons.js?v=20260709a"></script>
+<script src="js/i18n.js?v=20260709a"></script>
+<script src="partials/wizard-chrome.js?v=20260709a"></script>
+<script src="js/reveal.js?v=20260709a"></script>
+<script src="js/devtools.js?v=20260709a"></script>
 </body>
 </html>
