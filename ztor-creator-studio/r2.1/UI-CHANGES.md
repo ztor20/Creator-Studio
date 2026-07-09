@@ -8,6 +8,15 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-09 · 對齊 eShop BRD：建立商品加「定價單位切換」＋商店設定幣別四選（A spec-derived）
+
+依 documents 新決策落地兩處（上游：BRD BR-05／BR-13，已寫進 `documents/decisions.md` D124／D125）：
+
+- **create-product 定價單位切換**（spec 5.1.5.2 F3.2／D124）：在價格區塊之前新增一個 `.segmented`（沿用既有元件、非新元件）現金／POPCORN 二選一切換，作用於整件商品（單一與多規格皆然）。切 POPCORN 時價格欄 placeholder 由 `$ 0.00` 換 `POPCORN 0`、隱藏同分類均價提示。**為什麼這樣設計**：規格把 POPCORN 定位為「與現金切換的定價單位」（現金為定價之準、POPCORN 由現金價換算），非並排兩個價格欄；故用單一單位切換而非新增欄位。JS 沿用頁內 `wireSegmented` 助手，i18n 新增 `cp.priceunit.*` 四鍵。**POPCORN 換算率與收款受 OQ-1 閘控＝產品缺口 PG-016**，此切換為探索性佔位、不做換算計算、不宣稱可收 POPCORN。
+- **store-settings 幣別重整**（spec 5.1.5.5 F6／D125）：三件事——(a) 幣別由 F2 店面門面抽出成獨立的 **F6 · 幣別**；(b) F6 與付款／出貨並列為**第三個設定 tab**（付款｜出貨｜幣別），原型把幣別 select 從身分帶 meta 行搬進設定群組 tabpanel（`data-ss-tab/panel="currency"`、沿用通用 tab 切換 JS），i18n 加 `store-settings.group.currency`／`store-settings.currency.hint`；(c) 選項由原型自填的 USD/EUR/GBP/JPY/TWD 校正為規格四種 **HKD／TWD／SGD／USD**。**為什麼**：幣別選項集與版面歸屬屬產品決策，依 D125 校正；此為法幣顯示幣別、與商品 POPCORN 單位是兩件事，放同一組 tab 與付款/出貨並列。顯示鎖定方式仍待上游、未在此假設。
+
+---
+
 ## 2026-07-09 · 3 組重複頁內樣式 promote 進 design system（D infra，零視覺變動）
 
 稽核發現 create-product / create-auction 兩頁逐字重複破壞性 ghost 按鈕與 footnote 樣式，7 個建立頁逐頁複寫 `.wizard__body` 的頂距與內容寬——皆違反「可重用樣式第一次出現就 promote」鐵律。三組數值全數照抄搬進 ds-components，不改動任何呈現：

@@ -806,6 +806,8 @@
     'store-settings.group.basics':   { en: 'Shop basics',                          zh: '商店基本資料' },
     'store-settings.group.payment':  { en: 'Payment settings',                     zh: '付款設定' },
     'store-settings.group.shipping': { en: 'Shipping defaults',                    zh: '出貨預設' },
+    'store-settings.group.currency': { en: 'Currency',                            zh: '幣別' },
+    'store-settings.currency.hint':  { en: "Default display currency for your shop's pricing. Fiat only — separate from a product's POPCORN unit.", zh: '商店定價的預設顯示幣別；此為法幣顯示幣別，與商品的 POPCORN 單位是兩件事、不互斥。' },
     'store-settings.basics.sub':     { en: "Your shop's name, address, and how fans find it.", zh: '商店的名稱、網址，以及粉絲怎麼找到你。' },
     'store-settings.payment.sub':    { en: 'How fans pay you. Connection and payouts are managed in Earnings.', zh: '粉絲怎麼付款給你；連接與出款於收入管理設定。' },
     'store-settings.shipping.sub':   { en: 'Defaults for physical items. Digital items are unaffected.', zh: '實體商品的預設值；數位商品不適用。' },
@@ -1772,6 +1774,11 @@
     'cp.var.priced-above':  { en: 'Each variation is priced and stocked in the table above.', zh: '每個規格的價格與庫存在上方逐規格表設定。' },
     /* §4.1③ 拆塊後的區塊標題（價格／庫存／逐規格表）*/
     'cp.price.title':       { en: 'Pricing',                          zh: '定價' },
+    /* 定價單位（現金／POPCORN 切換）· spec 5.1.5.2 F3.2 / D124 */
+    'cp.priceunit.title':   { en: 'Pricing unit',                     zh: '定價單位' },
+    'cp.priceunit.cash':    { en: 'Cash',                             zh: '現金' },
+    'cp.priceunit.popcorn': { en: 'POPCORN',                          zh: 'POPCORN' },
+    'cp.priceunit.hint':    { en: 'Cash is the price of record; POPCORN is converted from it — rate TBD, and needs legal sign-off before it goes live.', zh: '現金為定價之準；POPCORN 由現金價換算——換算率待定，收款需法務確認後才啟用。' },
     'cp.stock.title':       { en: 'Stock',                            zh: '庫存' },
     'cp.var.table.title':   { en: 'Pricing per variation',            zh: '各規格價格與庫存' },
     'cp.var.table.sub':     { en: 'Each variation has its own price and stock — Limited edition adds a cap column.', zh: '每個規格各自定價與庫存；選限量會多一欄上限。' },

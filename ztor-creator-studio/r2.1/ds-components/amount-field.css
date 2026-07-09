@@ -1,0 +1,75 @@
+/* ============================================================
+   Ztor — Amount field (money input with a unit prefix)
+   A single-line money input with a left-side unit affix. The affix
+   can be an interactive toggle (switch pricing unit, e.g. cash / POPCORN)
+   or a static, read-only symbol. Mirrors .ss-amount's absolute-prefix
+   approach so it sits flush on the shadow-hairline .input.
+   Used in create-product.html (spec 5.1.5.2 F3.2 定價單位 · D127).
+   ============================================================ */
+
+.amount-field {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+/* Left unit affix — interactive by default (a button). */
+.amount-field__unit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--sp-8);
+  border: 0;
+  border-right: 1px solid var(--border);   /* divider from the amount field */
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--card);                  /* white affix, not a grey fill */
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur-fast, .12s) ease;
+}
+.amount-field__unit:hover { background: var(--accent); }
+.amount-field__unit:focus-visible {
+  outline: 2px solid var(--ring, var(--foreground));
+  outline-offset: 1px;
+}
+
+/* Interactive toggle: fixed width so cash ($) and POPCORN (🍿) render at the
+   same width — switching unit never shifts the affix or the input. */
+.amount-field[data-price-sync] .amount-field__unit {
+  width: 46px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Fixed-width, centered symbol so $ and 🍿 occupy the same column. */
+.amount-field__sym {
+  display: inline-flex;
+  justify-content: center;
+  width: 18px;
+  font-weight: var(--fw-semibold);
+}
+
+.amount-field__chev {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  line-height: 1;
+}
+
+/* Read-only affix (static symbol, e.g. cash-only cost) — no toggle. */
+.amount-field--readonly .amount-field__unit {
+  cursor: default;
+  background: var(--card);
+  pointer-events: none;
+}
+
+/* Input padding makes room for the affix. */
+.amount-field__input.input { padding-left: 52px; }
+.amount-field--readonly .amount-field__input.input { padding-left: 40px; }
