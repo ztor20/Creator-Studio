@@ -1184,7 +1184,7 @@ Static callout — no interactive states.
 
 **Variants** — outline (default) · filled (`-fill` glyphs, e.g. `check-circle-fill`).
 
-**Sizes** — 16px base (`.ztor-icon`) · 14px (`.ztor-icon--sm`) · context overrides (e.g. 18px inside `.btn--icon`).
+**Sizes** — 16px base (`.ztor-icon`) · 14px (`.ztor-icon--sm`) · context-owned controls keep compact icon glyphs at 16px (e.g. `.btn--icon`).
 
 **Registry** — hand-curated set in `icons.js` (the in-use glyphs) + the **full Lucide library (~1,713) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
 
