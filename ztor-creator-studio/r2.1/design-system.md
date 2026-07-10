@@ -78,13 +78,13 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | `background-card` | rgb 250 250 250 | `#FAFAFA` |
 | `surface-shell` | rgb 245 245 245 | `#F5F5F5` (sidebar-mode App Shell canvas) |
 | `surface-page` | rgb 255 255 255 | `#FFFFFF` (single opaque route page) |
-| `surface-rail` | rgb 251 251 251 | `#FBFBFB` (sidebar display-mode rail — near-white neutral) |
-| `surface-rail-hover` | rgb 243 243 243 | `#F3F3F3` (rail item hover) |
-| `surface-rail-active` | rgb 236 236 236 | `#ECECEC` (rail selected pill, 2026-06-12) |
+| `sidebar` | rgb 251 251 251 | `#FBFBFB` (sidebar display-mode rail — near-white neutral) |
+| `accent` | rgb 243 243 243 | `#F3F3F3` (rail item hover) |
+| `sidebar-active` | rgb 236 236 236 | `#ECECEC` (rail selected pill, 2026-06-12) |
 | `background-footer` | rgb 0 0 0 | `#000000` |
 | `foreground` | rgb 0 0 0 | `#000000` |
 | `foreground-muted` | rgba 0 0 0 / .7 | `rgba(0,0,0,0.7)` |
-| `foreground-subtle` | rgb 115 115 115 | `#737373` |
+| `muted-foreground` | rgb 115 115 115 | `#737373` |
 | `primary` | rgb 255 219 41 | `#ffa33f` ⚡ |
 | `primary-hover` | rgb 255 229 92 | `#ffb866` ⚡ |
 | `primary-foreground` | rgb 23 23 23 | light `#FFFFFF` / dark `#171717` ⚡ |
@@ -147,15 +147,15 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `background-canvas` | `#FFFFFF` | Body / page — clean white (2026-06-09). Cards (`--card` #FFFFFF) now separate by shadow, not by canvas tint |
 | `surface-shell` | `#F5F5F5` | Subtle Sidebar-mode outer canvas behind navigation and the route page |
 | `surface-page` | `#FFFFFF` | One continuous opaque route page containing hero, content, and footer |
-| `surface-rail` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
-| `surface-rail-hover` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
-| `surface-rail-active` | `#ECECEC` | Sidebar selected item — full-pill（9999px）capsule fill, one step deeper than hover so the current page is unmistakable（2026-06-12，dark: rgba 253/0.12） |
+| `sidebar` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
+| `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
+| `sidebar-active` | `#ECECEC` | Sidebar selected item — full-pill（9999px）capsule fill, one step deeper than hover so the current page is unmistakable（2026-06-12，dark: rgba 253/0.12） |
 | `background-surface` | `#FFFFFF` | Cards, nav-dropdown panels, dashboard mockup frames |
 | `background-card` | `#FAFAFA` | Muted card variant (slightly cooler than surface) |
 | `background-footer` | `#000000` | Pure black footer — the only place black appears as a fill |
 | `foreground` | `#000000` | Body text, headings (dominant — 415 occurrences on home) |
 | `foreground-muted` | `rgba(0,0,0,0.7)` | Secondary copy, supporting sentences |
-| `foreground-subtle` | `#737373` | Caption, metadata, meta-text |
+| `muted-foreground` | `#737373` | Caption, metadata, meta-text |
 | `primary` | `#ffa33f` ⚡ | Primary CTA fill — "Create project" / "Request payout" / "Publish". The signature color |
 | `primary-hover` | `#ffb866` ⚡ | CTA hover — brighter (reverse of ztor's "darken on hover" pattern) |
 | `primary-foreground` | light `#FFFFFF` / dark `#171717` ⚡ | Text inside primary CTAs (使用者指定 2026-06-22：白天白字、黑夜黑字；白字對比 ~1.9:1 < WCAG AA) |
@@ -234,6 +234,12 @@ Tight negative tracking (`-1.28px` on H1, `-0.8px` on H2) is the Geist signature
 Section-level vertical rhythm is closer to `80–96px`. Card internal padding is typically `16–24px`. Footer uses `80px` vertical padding.
 
 > 舊 `--space-1…16`（N×4 制、幾乎未被採用、缺 6/10/14/18）已於 2026-07-02 退役移除；`--space-shell-gutter` 屬 shell 幾何、保留。間距語意 role 層（component/layout 級別命名）仍未建立（見 §2.3）。
+
+**Width — `--w-*`**（2026-07-10 起）— 欄位／小元件的 `max-width`（或 `flex-basis`）刻度家族，px 直命名、與 `--sp-*` 同邏輯，主題無關（只定義在 `:root`）。起點兩個值，後續依實際使用值按需擴充：
+
+`--w-220 · 300`
+
+用於窄欄位（如 create-product 的自訂低庫存門檻輸入、限購數量輸入、pickup session 下拉）的 `max-width` / `flex-basis`；元件寬度裸值一律改用 `var(--w-N)`。
 
 ### 1.4 Radius
 
@@ -532,7 +538,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary） | [kpi.css](./ds-components/kpi.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
-| Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
+| Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill; type-switch row uses `--underline-short` for the divider-off, shortened active underline), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
 | Filter tabs | 🟡 molecule | ✓ App | Secondary status filter pills with live counts, row below the primary tabs (E-Shop F3). Base = grey-muted active (orders, auction-detail); `.filter-tabs--brand` = soft-orange active + orange/bubble-less counts (E-Shop, paired with underline type tabs) | [filter-tabs.css](./ds-components/filter-tabs.css) |
 | Cookie banner | 🟡 molecule | ✓ App | Dismissible consent pill, bottom-right | [cookie-banner.css](./ds-components/cookie-banner.css) |
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
@@ -549,7 +555,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
 | Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
 | Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active | [segmented.css](./ds-components/segmented.css) |
-| Amount field | 🟡 molecule | ✓ App | money input with a unit-prefix toggle (cash $ / POPCORN 🍿) or static read-only symbol; built on Input; host shares one unit state so switching any price field updates all（create-product 定價單位 · spec 5.1.5.2 F3.2 / D127） | [amount-field.css](./ds-components/amount-field.css) |
+| Amount field | 🟡 molecule | ✓ App | money input with a unit-prefix toggle (cash $ / POPCORN 🍿) or static read-only symbol; built on Input; host shares one unit state so switching any price field updates all（create-product 定價單位 · spec 5.1.5.2 F3.2 / D127）。`[data-price-sync]` marks a field as a member of the shared-unit group and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to toggle $ / 🍿 across the group | [amount-field.css](./ds-components/amount-field.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
@@ -1488,7 +1494,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.alert--snoozed` | F4 soft-closed info state — muted ~62%, still in list |
 | `.alert--row` | Row density: `auto 1fr auto` grid, muted bg, 3px left accent |
 | `.alert--bar` | Bar density: single-line rounded bar, soft shadow, no divider; `.alert__title` + inline `.alert__meta`, optional `.alert__cta`, `.alert__dismiss` ✕ |
-| `.alert--page-top` | Positioning modifier on `.alert--bar`: sticky, full-bleed, flush page-top inside the app shell (must be `.main` first child). Shared by E-Shop low-stock (F2) + Events scenario banner. `::after` masks the scroll-side top corner (≥901px) |
+| `.alert--page-top` | Positioning modifier on `.alert--bar`: sticky, full-bleed edge-to-edge flush page-top inside the app shell (must be `.main` first child), padding-inline aligned to the content column. `::after` masks the scroll-side top corner (≥901px). Two usages: Events' Event Day scenario banner (injected by `js/scenario.js`) uses the base as-is (full-bleed); E-Shop's low-stock bar (F2, `#eshop-stock-bar`) applies an instance override narrowing + centering it to the content column and swapping its shadow for `.edge-shadow` — a documented page-level exception (see e-shop.html) |
 | `.alert--warning/-error/-success/-info` | Sets icon chip tint, CTA color, and (row) left-border color |
 | `.alert__icon` | Status-tinted chip holding a filled `.ztor-icon` |
 | `.alert__body` | Title + desc/meta + optional CTA stack |
@@ -1616,7 +1622,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 .tab-panel--active       (display:block)
 ```
 
-**Variants** — Single variant; optional `.tabs__item-count` pill badge on an item. Items may render as `<button>` (programmatic) which strips default button chrome.
+**Variants** — Base underline style, plus two opt-in modifiers: `.tabs--brand` (soft orange pill active fill instead of the underline) and `.tabs--underline-short` (base divider off, active underline shortened + centered to ~text width instead of full-width — E-Shop F3 type switch, Figma node 671-2337/671-2295; separator is left to the consuming context, e.g. a downward toolbar shadow). Optional `.tabs__item-count` pill badge on an item. Items may render as `<button>` (programmatic) which strips default button chrome.
 
 **Sizes** — Single size (`.tabs__item` pad `10px 14px`, 13px / 500).
 
@@ -1637,6 +1643,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.tabs__item` | Tab button/link, subtle by default, transparent underline |
 | `.tabs__item--active` | Foreground color + orange `--primary` underline |
 | `.tabs__item-count` | Optional 11px count pill in `--muted` |
+| `.tabs--underline-short` | Opt-in modifier: base gray divider off, active underline shortened + centered (`--sp-12` inset each side) instead of full-width. Separator left to the consuming context (E-Shop F3 type switch) |
 | `button.tabs__item` | Strips native button chrome when rendered as `<button>` |
 | `.tab-panel` | Hidden panel (display:none) |
 | `.tab-panel--active` | Shown panel (display:block) |
@@ -2971,7 +2978,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __actions > __edit (Icon)
 ```
 
-**Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--foreground-subtle` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package).
+**Variants** — Base columns; E-Shop column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--muted-foreground` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package).
 
 **Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
 

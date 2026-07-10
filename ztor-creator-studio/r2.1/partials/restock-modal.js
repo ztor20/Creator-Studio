@@ -60,7 +60,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <div class="payout-field__label mt-16"><span data-i18n="restock.items">Items to restock</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="restock.items-hint">— leave blank to skip an item</span></div>
       <div class="tabs" role="tablist" data-restock-tabs hidden></div>
       <div data-restock-members></div>
-      <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
+      <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--muted-foreground)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
       <div class="stickynote mt-16">
         <span class="stickynote__mark">!</span>

@@ -8,6 +8,27 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-10 · 三項 design system 歸位修正：alert--page-top 文件校正＋tabs 短底線變體＋寬度 token 家族（D infra，零視覺變動）
+
+昨日 DS 稽核發現三處歸位問題，已裁決落地：
+
+- **`.alert--page-top` 文件校正**：`ds-components/alert.css` 註解、`design-system.md`、`design-system.html` 對此變體的描述更新為雙情境現況——(1) Events 的 Event Day 情境橫幅（`js/scenario.js` 注入 events.html，由 devtools 情境狀態觸發），用變體基底原樣＝滿版邊到邊；(2) E-Shop 低庫存提醒（`#eshop-stock-bar`），該頁以 instance 覆寫將其收窄、置中對齊內容欄，關閉自帶下緣陰影與 `::after` 角遮罩、改走共用 `.edge-shadow`，屬記錄在案的頁面特例。「邊到邊」是基底行為、保留描述；原稽核「Events 相關頁面查無使用」的前提經核實為誤判（橫幅由 JS 注入、靜態 grep 頁面 markup 看不到）。**e-shop.html 的 alert 相關區塊零改動**。
+- **tabs 短底線升級為正式變體**：e-shop.html 頁內覆寫（灰底線關閉＋active 底線縮短置中）promote 成 `ds-components/tabs.css` 的 `.tabs--underline-short`；e-shop.html 的 `.tabs` 改掛此 class、刪除頁內對應覆寫規則（`margin-bottom:0` 屬頁面版式間距，保留頁內）。`design-system.md`／`design-system.html` 同步新增變體說明與 demo，視覺與改前逐 px 一致。
+- **寬度 token 家族 `--w-*`**：`ds-components/_tokens.css` 新增 Foundation 寬度刻度 `--w-220`／`--w-300`（欄位／小元件 max-width 刻度，起點兩值、後續按需擴充）；套用於 create-product.html 三處寬度裸值（自訂低庫存門檻欄、限購數量欄、pickup session 下拉的 flex-basis）。`design-system.md` 的 token 表與 `design-system.html` token 展示區同步文件化。
+
+`requirements-map.md`：本輪全屬呈現層，無產品映射變化，未動。check_ds_sync 全 PASS（既有 fan-store 裸色 WARN 為存量已註記，未變動）；`bump_ver` → **20260710b**。
+
+## 2026-07-10 · 補齊 6/25 token 改名收尾：斷鏈修復＋md 表格對齊＋裸值→token＋amount-field 文件修正（D infra）
+
+6/25 token 大改名（`--foreground-subtle→--muted-foreground`、`--surface-rail→--sidebar`、`--surface-rail-hover→--accent`、`--surface-rail-active→--sidebar-active`）與 px→token 遷移收尾有漏，本輪補齊：
+
+- **斷鏈 token 修復**：`product-list.css`、`pickup.css`（6 處）、`scanner.css`（4 處）、`scanner.html`（2 處 inline）、`restock-modal.js`（1 處模板字串）共引用已不存在的 `--foreground-subtle` 14 處，一律換成 `--muted-foreground`（原本樣式實際失效，本輪修復後灰字才真正生效）；`data-list.css` 註解、`design-system.md` 規格文字（§4.90 Product list variants）同步改詞。
+- **design-system.md 兩張 token 表舊名清理**：Quick Reference（§0，~76-96 行）與 Pillar 1 Foundation（~145-163 行）表內 `foreground-subtle`／`surface-rail`／`surface-rail-hover`／`surface-rail-active` 四列就地改名為 `muted-foreground`／`sidebar`／`accent`／`sidebar-active`，值與描述保留不變。
+- **e-shop.html／create-product.html 裸值→token**：兩頁 6/25 新寫 markup 遺留的裸 px 間距共 12 處，換成對應 `var(--sp-N)`（e-shop.html 的 `margin-top`/`margin-bottom` 3 處；create-product.html `<style>` 區 3 處＋inline style 9 處），寬度類裸值（max-width 等）維持不動。
+- **amount-field 文件修正**：`design-system.html` anatomy 表 `.amount-field__unit` 描述由「muted fill／灰底」改為與 `amount-field.css:29` 實作一致的「白底（--card）、hover 淡灰（--accent）」；補文件化 `[data-price-sync]`（標記共用單位群組、前綴固定 46px 置中欄）與 `[data-amount-unit]`（前綴按鈕點擊 hook，頁面 JS 對整組切換 $/🍿）兩個屬性契約，`design-system.md` 的 Amount field 條目同步補一句說明。
+
+`requirements-map.md`：本輪全是呈現層修正，無產品映射變化，未動。check_ds_sync 全 PASS（既有 fan-store 裸色 WARN 為存量已註記，未變動）；`bump_ver` → **20260710a**。
+
 ## 2026-07-09 · 對齊 eShop BRD：建立商品加「定價單位切換」＋商店設定幣別四選（A spec-derived）
 
 依 documents 新決策落地兩處（上游：BRD BR-05／BR-13，已寫進 `documents/decisions.md` D124／D125）：
