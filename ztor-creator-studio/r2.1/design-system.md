@@ -591,7 +591,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
-| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
+| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨預設密度 gap 6／欄距 16；在 Form section 內由情境規則收緊為 gap 4／欄距 26（form-section.css），產品建立頁即此密度 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
 | Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / spacing tweaks under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (radio dot + title/sub) built on Segmented; selected = card shadow + orange ring | [radio-card.css](./ds-components/radio-card.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
@@ -715,6 +715,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 **`_layer`** · atom — Read-only soft "category-tag" pill: flat tinted background + saturated same-hue text, rounded-rectangle corners, **no status dot, no ring**. Serves both live-status (payout / transaction / live·draft) and category/taxonomy (IP type, fan tier) roles. Plus an inline metric pill for prose.
 
 > **2026-06-05 restyle:** moved from a dotted, ringed, full-pill capsule to the flat soft-tag look (per request, to match a Notion/Airtable-style select tag). `.badge__dot` is now `display:none` (markup kept for back-compat, renders nothing), corners are `--radius-md`, the hairline ring is removed, and a purple `--accent` variant was added.
+>
+> **2026-07-10:** `badge__dot` 已棄用（`display:none`），markup 不再需要——design-system.html 的 Badge demo（Status pill 表格 7 處）已移除 `<span class="badge__dot">`；其餘元件 demo 裡沿用 badge 的既有 markup 未動（保留不影響視覺）。
 
 **Anatomy**
 
@@ -729,6 +731,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 ```
 
 **Variants** — `.badge`: `--orange`, `--success`, `--error`, `--info`, `--warning`, `--accent` (purple), `--neutral`. `.ztor-badge` (docs): `--success`, `--error`, `--info`, `--warning`. Plus `.ztor-metric-pill` inline metric chip for hero/prose.
+
+> **2026-07-10 標註：** `.ztor-metric-pill` 為行銷站遺留元件，admin 後台（本產品）未使用／marketing-site legacy, unused in the admin app。內容與 CSS 保留不刪。
 
 **Sizes** — `.badge` 4×10 padding, 12px / 500, `--radius-md`. `.ztor-badge` 2×8 padding, 12px. `.ztor-metric-pill` 4×10 padding, 14px.
 
@@ -1096,67 +1100,73 @@ Static callout — no interactive states.
 
 ### 4.8 Input
 
-**`_layer`** · atom — Single-line text field (and matching textarea); white surface with hairline edge that promotes to a focus ring.
+**`_layer`** · atom — Single-line text field, matching textarea, and native select; white surface with hairline edge (`0 0 0 1px var(--border)`) that promotes to a focus ring on focus.
+
+> **2026-07-10 整併**：舊 `.ztor-input` / `.ztor-input--xs/sm/lg/xl` / `.ztor-textarea` 替身 class 已刪除（未被任何實頁使用）；design-system.html 的 demo 改用真身 `.input` / `.textarea` / `.select`。真身規則原住 `shared.css`，現搬進 `input.css`（屬性值原樣未動）。
 
 **Anatomy**
 
 ```
 ┌──────────────────────────────────────┐
-│ Placeholder text                      │   .ztor-input (44px)
+│ Placeholder text                      │   .input (single size)
 └──────────────────────────────────────┘
 
 ┌──────────────────────────────────────┐
 │                                       │
-│                                       │   .ztor-textarea (min 120px, resize-y)
+│                                       │   .textarea (min-height 100px, resize-y)
+└──────────────────────────────────────┘
+
+┌──────────────────────────────────────┐
+│ Choose one                         ▾  │   .select (native, custom chevron)
 └──────────────────────────────────────┘
 ```
 
-**Variants** — `.ztor-input` (line field) and `.ztor-textarea` (multi-line, vertical resize).
+**Variants** — `.input` (line field), `.input--with-prefix` (extra left padding for a leading glyph), `.textarea` (multi-line, vertical resize), `.select` (native select, custom chevron, no OS arrow).
 
-**Sizes** — `.ztor-input` default 44px / `--sm` 36px / `--lg` 52px. Textarea single size (min-height 120px).
+**Sizes** — Single size only across all three (no `--sm`/`--lg`/`--xl` variants — that ladder existed only in the deleted `.ztor-input` replica, never in the real component).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--card`, hairline `--shadow-hairline`, text `--foreground`, placeholder `--muted-foreground` |
-| hover | `:hover` | shadow deepens to `0 0 0 1px rgba(0,0,0,0.16), 0 1px 2px rgba(0,0,0,0.04)` |
-| focus | `:focus-visible` | `outline: 0`; `0 0 0 2px var(--ring)` ring + 1px drop |
-| disabled | `:disabled` | `opacity: 0.5`, `cursor: not-allowed` |
-| error | `[aria-invalid="true"]` | `0 0 0 2px var(--destructive)` ring |
+| default | — | bg `--card`, hairline `0 0 0 1px var(--border)`, text `--foreground` |
+| focus | `:focus` | `outline: none`; `0 0 0 1px var(--ring)` + `0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent)` soft ring |
+
+**狀態缺口** — `:disabled` 與 `aria-invalid`（錯誤 ring）樣式尚未在 `input.css` 實作；design-system.html 不示範，待補。
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-input` | Single-line field, 44px |
-| `.ztor-input--sm` / `--lg` | 36px / 52px sizes |
-| `.ztor-textarea` | Multi-line field, vertical resize |
-| `[aria-invalid="true"]` | Error ring in `--destructive` |
+| `.input` | Single-line field |
+| `.input--with-prefix` | Extra left padding (`--sp-32`) for a leading glyph (currency, unit) |
+| `.textarea` | Multi-line field, vertical resize, min-height 100px |
+| `.select` | Native `<select>`, OS arrow dropped, custom SVG chevron |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` · text `--foreground` · placeholder `--muted-foreground` · radius `--radius` · edge `--shadow-hairline` · focus ring `--ring` · error `--destructive` · motion `--duration` / `--easing` · font `--font-body`
+- bg `--card` · text `--foreground` · hairline `--border` · radius `--radius` · focus ring `--ring` · font `--font-body` · font size `--fs-14` · padding `--sp-12` (left/right prefix `--sp-32`)
 
-**Usage** — Use for text/number entry in forms (get-matched, settings, payout forms) and `.ztor-textarea` for longer free text. Avoid borders — the field uses surface + hairline, not a 1px border.
+**Usage** — Use `.input` for text/number entry in forms (settings, payout forms), `.textarea` for longer free text, `.select` for a native dropdown. Avoid borders — the field uses surface + hairline, not a 1px border.
 
 **Do & Don't**
 
-- ✅ Do set `aria-invalid="true"` to surface the error ring.
-- ✅ Do pick the size that matches the surrounding form density.
+- ✅ Do pair with Field system for label + hint.
+- ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
 - ❌ Don't add a literal CSS border — the hairline shadow is the edge.
-- ❌ Don't convey errors with the red ring alone — pair with a message.
+- ❌ Don't invent a size variant — the real component ships one size only.
 
 
 **Code example**
 
 ```html
 <label for="email">Email</label>
-<input id="email" class="ztor-input" type="email" placeholder="you@studio.com">
-<textarea class="ztor-textarea" placeholder="Notes…"></textarea>
+<input id="email" class="input" type="email" placeholder="you@studio.com">
+<textarea class="textarea" placeholder="Notes…"></textarea>
+<select class="select"><option>Choose one</option></select>
 ```
 
-**CSS** — [`input.css`](./ds-components/input.css)
+**CSS** — [`input.css`](./ds-components/input.css)（原住 `shared.css`，2026-07-10 搬入）
 
 ---
 
@@ -1307,7 +1317,9 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 ### 4.11 Card
 
-**`_layer`** · molecule — Soft-elevated surface container; two coexisting namespaces: `.ztor-card` (canonical reference) and `.card` (product-page section wrapper with head row).
+> **2026-07-10 標註：** `.ztor-card` 產品頁未使用，僅展示保留／not used on product pages, kept for reference display. 產品頁的區段外框請見 **4.11b Section card**（`.card`）。
+
+**`_layer`** · molecule — Canonical elevated-card reference: standalone content container with title / meta / body slots. Docs-only generic card shell — not the product-page section wrapper (see **4.11b Section card**).
 
 **Anatomy**
 
@@ -1316,18 +1328,11 @@ Static, non-interactive — it reflects the host control's state via `currentCol
  ├ .ztor-card__title
  ├ .ztor-card__meta
  └ .ztor-card__body
-─────────────────────────────────────
-.card  (or .card--muted)              [product namespace]
- ├ .card__head
- │   ├ .card__title
- │   ├ .card__hint        (non-actionable)
- │   └ .card__link →      (chevron after, in head)
- └ ...section body...
 ```
 
-**Variants** — `.ztor-card--clickable` (lift + focus ring), `.ztor-card--muted` (`--muted` bg), `.ztor-card--frame` (zero-pad, overflow-hidden, `--radius-lg` — wraps mockups); `.card--muted` (muted section wrapper).
+**Variants** — `.ztor-card--clickable` (lift + focus ring), `.ztor-card--muted` (`--muted` bg), `.ztor-card--frame` (zero-pad, overflow-hidden, `--radius-lg` — wraps mockups).
 
-**Sizes** — Single size per namespace (`.ztor-card` padding `24px`; `.card` padding `20px`).
+**Sizes** — Single size (padding `24px`).
 
 **States**
 
@@ -1336,7 +1341,6 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | default | — | `--card` bg, `--shadow-card`, `--radius-md` |
 | hover | `.ztor-card--clickable:hover` | `translateY(-2px)` + deeper drop + hairline rim shadow |
 | focus | `.ztor-card--clickable:focus-visible` | `2px solid var(--ring)` outline, `2px` offset |
-| link hover | `.card__head .card__link:hover` | Link color → `--foreground` (chevron tracks via currentColor) |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -1347,6 +1351,63 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | `.ztor-card--muted` | Swaps bg to `--muted` |
 | `.ztor-card--frame` | Padding 0 + overflow hidden + `--radius-lg` (mockup frame) |
 | `.ztor-card__title` / `__meta` / `__body` | 18px title / 13px subtle meta / 14px body |
+
+**Token usage** (→ Pillar 2 Role)
+
+- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / body / meta) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card` (elevation); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
+
+**Usage** — Docs-only generic standalone card shell; not used on any product page today (kept as a documented reference). For product-page sections, use **4.11b Section card** (`.card`) instead.
+
+**Do & Don't**
+
+- ✅ Do use `.ztor-card--muted` for nested sub-blocks.
+- ❌ Don't add `--clickable` lift to non-interactive cards.
+- ❌ Don't use this for a product-page section wrapper — use `.card` (Section card) instead.
+
+
+**Code example**
+
+```html
+<div class="ztor-card ztor-card--clickable">
+  <div class="ztor-card__title">Project</div>
+  <div class="ztor-card__meta">2h ago</div>
+</div>
+```
+
+**CSS** — [`card.css`](./ds-components/card.css)
+
+---
+
+### 4.11b Section card
+
+**`_layer`** · molecule — The product-page section wrapper: a titled outline with an optional head-row action link, used for every card-shaped section across the app (dashboard tiles, earnings panels, detail-page blocks). Boundary vs. **4.11 Card**: `.card` = section wrapper (this entry), `.ztor-card` = generic standalone content card (docs-only reference, unused on product pages).
+
+**Anatomy**
+
+```
+.card  (or .card--muted)
+ ├ .card__head
+ │   ├ .card__title
+ │   ├ .card__hint        (non-actionable)
+ │   └ .card__link →      (chevron after, in head)
+ └ ...section body...
+```
+
+**Variants** — `.card--muted` (muted section wrapper, for nested sub-sections).
+
+**Sizes** — Single size (padding `20px`).
+
+**States**
+
+| State | Selector | Change |
+|---|---|---|
+| default | — | `--card` bg, `--shadow-card`, `--radius-md` |
+| link hover | `.card__head .card__link:hover` | Link color → `--foreground` (chevron tracks via currentColor) |
+
+**Class API** (CSS classes — Props/API = N/A, static CSS prototype)
+
+| Class / modifier | Effect |
+|---|---|
 | `.card` | Product section wrapper, 20px pad |
 | `.card--muted` | Muted section bg (nested sub-sections) |
 | `.card__head` | Baseline-aligned space-between head row, 14px bottom margin |
@@ -1356,16 +1417,16 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / body / meta) · `--border` (link underline) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card` (elevation); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
+- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / hint) · `--border` (link underline) · `--radius-md` · `--shadow-card` (elevation) · `--font-ui`, `--font-body`
 
-**Usage** — Use `.card` for every product-page section that needs a titled wrapper with an optional action link; use `.ztor-card` for standalone info blocks and the design-system docs. Avoid when content is a flat row list — reach for Data list / Table instead.
+**Usage** — Use for every product-page section that needs a titled wrapper with an optional action link. Avoid when content is a flat row list — reach for Data list / Table instead.
 
 **Do & Don't**
 
 - ✅ Do put the section action in `.card__head .card__link` so it auto-renders the trailing chevron.
 - ✅ Do use `.card--muted` for nested sub-sections to differentiate depth.
-- ❌ Don't add `--clickable` lift to non-interactive cards.
 - ❌ Don't put a border on cards — elevation is `--shadow-card` only.
+- ❌ Don't use this for a standalone info block outside a page section — use `.ztor-card` instead.
 
 
 **Code example**
@@ -1381,6 +1442,8 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 ```
 
 **CSS** — [`card.css`](./ds-components/card.css)
+
+**Evidence / usage** — e-shop, earnings, event-detail, auction-detail, bundle-detail, my-ip, fan-detail, create-campaign, create-event, create-project.
 
 ---
 
@@ -1536,6 +1599,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 ### 4.14 Accordion
 
+> **2026-07-10 標註：** 行銷站遺留元件，admin 後台（本產品）未使用／marketing-site legacy, unused in the admin app。內容與 CSS 保留不刪。
+
 **`_layer`** · molecule — Stack of collapsible items; each is a full-width trigger with a rotating chevron over a height-animated content panel (FAQ pattern).
 
 **Anatomy**
@@ -1680,6 +1745,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 ---
 
 ### 4.16 Cookie banner
+
+> **2026-07-10 標註：** 行銷站遺留元件，admin 後台（本產品）未使用／marketing-site legacy, unused in the admin app。內容與 CSS 保留不刪。
 
 **`_layer`** · molecule — Bottom-right floating consent pill with a copy line, a primary "Okay" button, and an underlined "Cookie Settings" text link.
 
@@ -2053,6 +2120,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 **CSS** — [`header.css`](./ds-components/header.css) (canonical; product pages load it via `shared.css` `@import`)
 
 ### 4.21 Footer
+
+> **2026-07-10 標註：** 行銷站遺留元件，admin 後台（本產品）未使用／marketing-site legacy, unused in the admin app。內容與 CSS 保留不刪。
 
 **`_layer`** · organism — Pure-black hi-contrast brand epilogue: 2fr brand column + four link columns, white-on-black slab.
 
