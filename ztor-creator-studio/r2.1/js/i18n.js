@@ -1737,7 +1737,7 @@
     'cp.auc.shipby.14':     { en: 'Within 14 days of end',           zh: '結束後 14 天內' },
     'cp.spec.title':        { en: 'Specifications',                   zh: '規格' },
     'cp.spec.sub':          { en: "Help buyers know exactly what they're getting.", zh: '讓買家清楚會拿到什麼。' },
-    'cp.spec.add':          { en: '＋ Add spec',                      zh: '＋ 新增規格' },
+    'cp.spec.add':          { en: 'Add spec',                         zh: '新增規格' },
     'cp.spec.name.ph':      { en: 'e.g., Material',                   zh: '例：材質' },
     'cp.spec.value.ph':     { en: 'e.g., 100% organic cotton',        zh: '例：100% 有機棉' },
     'cp.prove.title':       { en: "Prove it's real",                  zh: '證明是真的' },

@@ -1062,7 +1062,7 @@ Static callout — no interactive states.
 |---|---|
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
 | `.upload-tile--hero` / `--file` | 大格／檔案列尺寸變體 |
-| `.upload-tile__icon` / `__title` / `__hint` | icon／主文案（`--foreground` 500）／限制說明 |
+| `.upload-tile__icon` / `__title` / `__hint` | Icon atom wrapper／主文案（`--foreground` 500）／限制說明 |
 | `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
@@ -1082,14 +1082,16 @@ Static callout — no interactive states.
 
 - ✅ Do 在 `__hint` 標明限制（Min 800 x 800px／檔型清單）。
 - ✅ Do 主格用 `--hero`、次要角度用 `.upload-grid`。
+- ✅ Do use `<i data-lucide="..." class="ztor-icon">` inside `__icon`; upload thumbnail add affordances use `ztor-icon--md`.
 - ❌ Don't 當一般空狀態容器（那是 `empty-stub`）。
 - ❌ Don't 改實線或填色——虛線就是可上傳的訊號。
+- ❌ Don't use literal text `＋` as the upload affordance.
 
 **Code example**
 
 ```html
 <div class="upload-tile upload-tile--hero">
-  <span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+  <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
   <span class="upload-tile__title">Hero image — the first thing buyers see</span>
   <span class="upload-tile__hint">Min 800 x 800px</span>
 </div>
@@ -1184,7 +1186,17 @@ Static callout — no interactive states.
 
 **Variants** — outline (default) · filled (`-fill` glyphs, e.g. `check-circle-fill`).
 
-**Sizes** — 16px base (`.ztor-icon`) · 14px (`.ztor-icon--sm`) · context-owned controls keep compact icon glyphs at 16px (e.g. `.btn--icon`).
+**Sizes** — semantic classes first: `--xs` = 12px · `--sm` = 14px · base `.ztor-icon` = 16px · `--md` = 20px · `--lg` = 24px.
+
+**Size usage**
+
+| Size token | Class | Box | Use for |
+|---|---|---:|---|
+| `xs` | `.ztor-icon--xs` | 12px | Metadata, tiny status, dense helper glyphs |
+| `sm` | `.ztor-icon--sm` | 14px | Dense rows, small chips, compact secondary actions |
+| `base` | `.ztor-icon` | 16px | Default controls, buttons, nav, select chevrons |
+| `md` | `.ztor-icon--md` | 20px | Form affordances, upload thumbnails, radio-card markers |
+| `lg` | `.ztor-icon--lg` | 24px | Empty-state hints, preview placeholders, larger upload heroes |
 
 **Registry** — hand-curated set in `icons.js` (the in-use glyphs) + the **full Lucide library (~1,713) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
 
@@ -1193,7 +1205,10 @@ Static callout — no interactive states.
 | State | Selector | Change |
 |---|---|---|
 | default | — | size box, `currentColor` stroke/fill, `flex-shrink: 0`, `vertical-align: -2px` |
+| (size) | `.ztor-icon--xs` | 12px box |
 | (size) | `.ztor-icon--sm` | 14px box |
+| (size) | `.ztor-icon--md` | 20px box |
+| (size) | `.ztor-icon--lg` | 24px box |
 
 Static, non-interactive — it reflects the host control's state via `currentColor`; no focus/keyboard role of its own.
 
@@ -1203,20 +1218,24 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 |---|---|
 | `data-lucide="name"` | Registry key; replaced with the inline SVG by `ztorIcons.applyIcons()` |
 | `.ztor-icon` | 16px box, `currentColor`, `flex-shrink: 0`, `vertical-align: -2px` |
+| `.ztor-icon--xs` | 12px box |
 | `.ztor-icon--sm` | 14px box |
+| `.ztor-icon--md` | 20px box |
+| `.ztor-icon--lg` | 24px box |
 
 **Token usage** (→ Pillar 1 Foundation · Iconography)
 
-- `currentColor` — stroke/fill source (inherited from host) · size by context (16 / 14 / 18px)
+- `currentColor` — stroke/fill source (inherited from host) · size scale (`xs` / `sm` / `base` / `md` / `lg`)
 
 **Usage** — Reused by [Button](#42-button) (icon variants), Badge (leading glyph), NavigationMenu, Alert, Composer, Header, Data list, Chart. Decorative icons are `aria-hidden`; icon-only controls carry an `aria-label` on the host `<button>`/`<a>`.
 
 **Do & Don't**
 
 - ✅ Do register the name in `icons.js` first, then use `<i data-lucide="name" class="ztor-icon">`.
-- ✅ Do let it inherit `currentColor` and size from the host control.
+- ✅ Do use semantic size classes (`--xs`, `--sm`, base, `--md`, `--lg`) instead of one-off pixel overrides.
 - ❌ Don't hardcode a hex color or fixed px when the context already sets them.
 - ❌ Don't use a glyph not in the registry (it renders as the literal tag).
+- ❌ Don't use text symbols like `＋` / `▾` when a matching Icon atom exists.
 
 
 **Code example**
