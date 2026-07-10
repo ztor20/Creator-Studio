@@ -394,6 +394,19 @@ references the role, never raw values (html 版另有每個角色的即時渲染
 - **語意 role 層（component/layout 級別命名）仍未建立**：這是誠實現況，不是缺陷宣稱；等有真實一致的用途分群再命名，不預先杜撰（先前虛構的 `--gap-tight/default/section/page` 已於 2026-06-30 移除，教訓見 anti-patterns #11）。
 - 例外保留字面值：奇數微調（1/3/5/7/9/11/13px）、刻度外偶數（22/26px）、負值、`calc()`；`fan-store.css` 因並行編輯暫未轉換。
 
+**Padding usage rules** — padding follows the existing `--sp-*` primitive scale and the component's density, not a second global semantic token layer. Reusable decisions are exposed as **component variables** inside the component CSS, so each component owns its optical exceptions while still mapping back to the same primitive scale.
+
+| Layer | Component variable / source | Default rule | Compact / dense | Spacious / emphasis | Use for |
+|---|---|---|---|---|---|
+| Text input / select | `--input-pad-*`, `--select-*` in `input.css` | `9px var(--sp-12)` inside the real `.input` / `.select` component | prefix controls use `--input-prefix-pad-x` (`var(--sp-32)`) | textarea increases y padding; x padding stays aligned | Form fields, search, inline editing |
+| Toolbar button `.btn` | `--btn-pad-x` in `button.css` | `--control-h-sm` 36px high, `0 var(--sp-14)` | `.btn--sm` uses `--control-h-xs` 28px, `0 var(--sp-10)` | `.btn--lg` uses `--control-h-md` 44px, `0 var(--sp-18)` | Product-page toolbars, table actions |
+| App button `.ztor-btn` | `--ztor-btn-pad-*` in `button.css` | `--control-h-md` 44px, `var(--sp-14) var(--sp-20)` | `--sm` uses `--control-h-sm`, `var(--sp-10) var(--sp-14)` | `--lg` / `--xl` use larger control heights and wider x padding | App-level CTAs and wizard actions |
+| Section card `.card` / `.ztor-card` | `--card-pad` in `card.css` | `.card` uses `var(--sp-20)` | compact cards use local component variants when needed | `.ztor-card` canonical examples use `var(--sp-24)` | Product-page sections and DS examples |
+| Upload / empty affordance | `--upload-tile-pad-*` in `upload-tile.css` | `var(--sp-18) var(--sp-14)` minimum | thumbnail slots keep content centered and small | large empty states can use `var(--sp-24)+` | Upload tile, empty card, placeholder states |
+| Page / section rhythm | local layout CSS | page x padding usually `var(--sp-24)` / `var(--sp-32)`; section rhythm `var(--sp-80)` | mobile x padding usually `var(--sp-16)` | spacious section rhythm can reach `var(--sp-96)` | Page containers, major section breaks |
+
+**Reading order** — do not normalize all padding into one value. Normalize it into the nearest layer rule above, then check the component's own **Sizes** section for justified optical exceptions.
+
 ### 2.4 Control sizes
 
 按鈕與表單控件共用一套高度級（全部 4 的倍數），同尺寸的 input 與 button 對齊。高度一律走 `--control-h-*`，不寫死。
