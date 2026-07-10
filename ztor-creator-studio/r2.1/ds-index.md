@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 217 條）
+## Tokens（_tokens.css，亮色，共 219 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -283,6 +283,10 @@
 - `--type-button-label-weight`: var(--type-label-15-weight)
 - `--type-button-label-line-height`: var(--type-label-15-line-height)
 - `--type-button-label-tracking`: var(--type-label-15-tracking)
+
+### --w-*
+- `--w-220`: 220px
+- `--w-300`: 300px
 
 ## 元件（ds-components/，共 67 支；主 class 前 5 個）
 
