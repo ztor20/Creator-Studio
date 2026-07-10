@@ -319,7 +319,7 @@
 - `form-section.css` — .form-section, .form-section__head, .form-section__title, .form-section__sub, .form-footnote ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--sm ｜ Ztor Creator Studio - Icon atom
-- `input.css` — .ztor-input, .ztor-input--xs, .ztor-input--sm, .ztor-input--lg, .ztor-input--xl ｜ Ztor — Input (form field)
+- `input.css` — .input, .textarea, .input--with-prefix, .select ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
 - `kpi.css` — .kpi, .kpi__label, .kpi__value, .kpi__delta, .kpi__delta--neg ｜ KPI — metric tile (label / value / delta or meta
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title

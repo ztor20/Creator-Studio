@@ -8,6 +8,19 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-10 · Design system demo 改用真身元件：Input 家族整併＋field__hint 防呆＋4 孤兒標註＋Card 章節損毀修復＋新增 Section card 條目＋badge__dot 清理（D infra，產品頁視覺零改動）
+
+使用者發現 4.10 Field system 的 demo 間距與 create-product 實頁不同，根因是 DS 頁 demo 長期用一套 `ztor-*` 替身 class（產品頁從未採用）。原則：產品頁視覺是真相、DS 頁改成展示真身。
+
+- **Input 家族整併**：`.input`／`.textarea`／`.select` 規則原住 `shared.css:805-835`，原樣整段搬進 `ds-components/input.css`（屬性值逐字元未動，含非 token 的 `9px` padding）；`shared.css` 原位置留一行指向新家的註解。`input.css` 內未被任何實頁使用的 `.ztor-input`／`.ztor-input--xs/sm/lg/xl`／`.ztor-textarea` 全數移除，檔頭補刪除紀錄。`design-system.html` 4.9 Input 章節 29＋5 處 `ztor-input`／`ztor-textarea` 全改真身：input 用 `.input`、textarea 用 `.textarea`，移除假的尺寸變體 demo，補 `.select`（含原生 chevron，此前從未正式示範）；真身缺 disabled／invalid 樣式，demo 不展示、`design-system.md` 記「狀態缺口：待補」。
+- **field__hint 防呆**：`ds-components/field-system.css` 的 `.field__hint` 加 `margin: 0`，讓 p／div 元素選用不影響視覺；`design-system.html` 7 處 `<p class="field__hint">` 改 `<div>`，並修正 `pickup-detail.html:82`（本輪唯一動到的產品頁 markup，改後因 margin:0 防呆視覺不變）。
+- **4 個行銷孤兒標註保留**：`ztor-footer`（4.42）、`ztor-cookie-banner`（4.67）、`ztor-accordion`（4.46）、`ztor-metric-pill`（Badge 條目內）在 `design-system.html` 各加一行雙語告示（沿用既有 `.compose__note` 告示樣式）「行銷站遺留元件，admin 後台未使用」，`design-system.md` 對應條目同步加註；內容與 CSS 均未刪除。
+- **4.33 Card 章節損毀修復＋拆分**：該章節內容曾重複貼兩次、中間夾一段殘破片段（`</div>n class="sub" id="card">`），已重建為單一正確章節。順勢把混用已久的 `.ztor-card`／`.card` 兩個命名空間拆乾淨：4.33 Card 現只講 `.ztor-card`（產品頁未使用，展示保留，補雙語告示），新增 **4.33b Section card** 條目講 `.card`（產品頁真正在用的區段外框，evidence：e-shop、earnings、event-detail、auction-detail、bundle-detail、my-ip、fan-detail、create-campaign、create-event、create-project），並修掉原 demo 裡 `.card` 誤配 `.ztor-card__body` 的 bug。`design-system.html` 內原本語意上指向「區段外框」卻連到 `#card` 的交叉連結（Chart／Bento grid／Store settings／Chart 家族的 compose-map、4.1 Inventory 表）一併改連 `#card-section`，避免文件自相矛盾；TOC 新增 Section card 錨點。`design-system.md` 同步拆成 4.11 Card／4.11b Section card 兩條目，含界線說明。
+- **badge__dot 清理**：Badge 條目（4.3）的 Status pill demo 表格 7 處 `<span class="badge__dot">` 移除（該子元件已 `display:none`，soft-tag 改版後棄用，markup 不再需要）；`design-system.md` Badge 條目補一句棄用說明。
+- **驗收後補修（同輪）**：`ds-index.md` 重新生成（原索引仍列已刪的 `.ztor-input*`）；Badge 條目 Do／Class API 兩處說明文字仍在推薦 `badge__dot`，改為棄用口徑；`design-system.html` 其餘散落的死 markup `<span class="badge__dot"></span>`（程式碼範例、empty-stub、status-axes、settings-row、rental demo 共 8 處）全數移除，僅留 Class API 表的棄用說明列；4.10 Field system demo 頭與 `design-system.md` 條目補「單獨預設密度 gap 6／欄距 16 vs Form section 內收緊為 gap 4／欄距 26（form-section.css 情境規則）」交叉說明——這正是使用者比對 4.10 與 create-product 時的第二個困惑來源（第一個是 ztor-input 替身），兩者現都已文件化。產品頁殘留的隱形 `badge__dot` markup（24 檔）不影響視覺，留待日後順手清。
+
+`requirements-map.md`：本輪全屬呈現層元件整併，無產品映射變化，未動。check_ds_sync 全 PASS（既有 fan-store 裸色 WARN 為存量已註記，未變動）；`bump_ver` → **20260710c**。
+
 ## 2026-07-10 · 三項 design system 歸位修正：alert--page-top 文件校正＋tabs 短底線變體＋寬度 token 家族（D infra，零視覺變動）
 
 昨日 DS 稽核發現三處歸位問題，已裁決落地：
