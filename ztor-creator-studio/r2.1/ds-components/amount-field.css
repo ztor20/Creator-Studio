@@ -73,3 +73,66 @@
 /* Input padding makes room for the affix. */
 .amount-field__input.input { padding-left: 52px; }
 .amount-field--readonly .amount-field__input.input { padding-left: 40px; }
+
+/* ============================================================
+   Suffix mode — unit affix on the right (e.g. "50 [%]", "6 [mo]")
+   instead of the left prefix. Visual baseline: register-ip.html's
+   .ri-affix--suffix (royalty % / minimum rental term) and
+   bundle-detail.html's .bd-price-input (discount %) — both static,
+   non-interactive right-side labels; promoted here so future suffix
+   fields don't need a page-local affix class.
+   .amount-field--suffix alone mirrors the interactive button chrome to
+   the right (symmetric with the left prefix, for a future toggleable
+   suffix); pair it with .amount-field--readonly for the static/no-toggle
+   case, which is what every current usage (%, months) needs.
+   ============================================================ */
+.amount-field--suffix .amount-field__unit {
+  left: auto;
+  right: 0;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.amount-field--suffix .amount-field__input.input {
+  padding-left: var(--sp-12);
+  padding-right: 52px;
+}
+/* Static suffix — no button chrome, just a muted label sitting in the
+   input's own padding (matches .ri-affix__sign / .bd-price-input__sym). */
+.amount-field--suffix.amount-field--readonly .amount-field__unit {
+  border-left: 0;
+  background: transparent;
+  padding: 0 var(--sp-12) 0 0;
+}
+.amount-field--suffix.amount-field--readonly .amount-field__input.input {
+  padding-right: 40px;
+}
+
+/* ============================================================
+   Hero size — large, single-focus money input for a modal's headline
+   amount (e.g. payout request amount). Visual baseline was
+   ds-components/payout-modal.css's old .payout-amount-wrap /
+   .payout-amount-prefix / .input.payout-amount-input — values ported
+   as-is; 2026-07-11: partials/payout-request-modal.js migrated onto this
+   variant and the old page-local rules were retired from payout-modal.css
+   (tombstone comment left there). height (70px) and input left padding
+   (42px) have no matching --sp-N step — documented token exception, see
+   design-system.md's Amount field entry.
+   ============================================================ */
+.amount-field--hero .amount-field__unit {
+  padding: 0 0 0 var(--sp-16);
+  border-right: 0;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;   /* static prefix — no toggle, no hover chrome */
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  color: var(--muted-foreground);
+}
+.amount-field--hero .amount-field__input.input {
+  height: 70px;         /* [token exception] no --sp-N step matches; see design-system.md */
+  padding-left: 42px;   /* [token exception] no --sp-N step matches; see design-system.md */
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  letter-spacing: 0;
+}

@@ -56,6 +56,7 @@
     'creators.summary-unit':   { en: 'creators',        zh: '位' },
     'creators.create-close':   { en: 'Close',           zh: '關閉' },
     'creators.empty-filter':   { en: 'No creators match your search.', zh: '沒有符合搜尋的 creator。' },
+    'creators.footer.count':   { en: 'Showing {n} of {m} creators',   zh: '顯示 {m} 位中的 {n} 位 creator' },
     'creators.empty-title':{ en: 'No creators yet',    zh: '尚無 creator' },
     'creators.empty-desc': { en: 'Create the first creator — their e-shop is generated automatically.', zh: '建立第一個 creator——其電子商店會自動生成。' },
     'creators.form-avatar':{ en: 'Avatar',             zh: '頭像' },
@@ -648,6 +649,8 @@
     'projects.empty.none.cta':    { en: '＋ Create a project',                    zh: '＋ 建立專案' },
     'projects.empty.noresult.title': { en: 'No projects match',                  zh: '沒有符合的專案' },
     'projects.empty.noresult.sub':   { en: 'Try a different status, type, or search term.', zh: '換個狀態、類型或搜尋字詞試試。' },
+    'projects.empty.noresult.clear': { en: 'Clear filters',                      zh: '清除篩選' },
+    'projects.footer.count':      { en: 'Showing {n} of {m} projects',           zh: '顯示 {m} 筆中的 {n} 筆專案' },
 
     /* ─── My IP page ──────────────────────────────────────── */
     'my-ip.h1':              { en: 'My IP',                      zh: '我的 IP' },
@@ -677,6 +680,7 @@
     'my-ip.row4.meta':       { en: 'Registered Oct 2, 2025 · Awaiting waterfall verification', zh: '2025/10/02 登錄 · 等待 waterfall 驗證' },
     'my-ip.mktplace':        { en: 'Mktplace',                   zh: '市場' },
     'my-ip.manage':          { en: 'Manage',                     zh: '管理' },
+    'my-ip.footer.count':    { en: 'Showing {n} of {m} IP',      zh: '顯示 {m} 筆中的 {n} 筆 IP' },
     'my-ip.legend':          { en: '<strong>Mktplace ON</strong> · other creators can find &amp; rent. <strong>OFF</strong> · waterfall tracking only, not rentable.', zh: '<strong>市場 ON</strong> · 其他創作者可搜尋與租用。<strong>OFF</strong> · 僅追蹤 waterfall，不可租用。' },
 
     /* ─── IP detail page ──────────────────────────────────── */
@@ -1184,6 +1188,7 @@
     'events.edit':             { en: 'Edit',                                zh: '編輯' },
     'events.duplicate':        { en: 'Duplicate',                           zh: '複製' },
     'events.delete':           { en: 'Delete',                              zh: '刪除' },
+    'events.a.more':           { en: 'More actions',                        zh: '更多操作' },
     'events.row1.title':       { en: 'Spring Launch — Coastline EP listening party', zh: 'Spring Launch — Coastline EP 聆聽會' },
     'events.row1.meta':        { en: 'Concert · Series 1/3',                zh: '演出 · 系列 1/3' },
     'events.row1.datetime':    { en: 'Apr 12, 2026 · 8:00 PM',             zh: '2026/4/12 · 晚上 8:00' },
@@ -1214,6 +1219,7 @@
     'events.empty.noresult.title': { en: 'No events match',                 zh: '沒有符合的活動' },
     'events.empty.noresult.sub':   { en: 'Try a different time tab, status, or search term.', zh: '換個時段分頁、狀態或搜尋字詞試試。' },
     'events.empty.noresult.clear': { en: 'Clear search',                    zh: '清除搜尋' },
+    'events.footer.count':         { en: 'Showing {n} of {m} events',       zh: '顯示 {m} 場中的 {n} 場活動' },
     /* 情境橫幅（scenario.js · 接 devtools Event Day；用 alert--bar 元件）*/
     'events.scenario.dismiss':     { en: 'Dismiss',                          zh: '關閉提醒' },
     'events.scenario.pre.title':   { en: 'Your next event starts soon',      zh: '下一場活動快開始了' },
@@ -1374,7 +1380,7 @@
     'settings.pay.sched.weekly':    { en: 'Weekly · Friday',      zh: '每週 · 週五' },
     'settings.pay.sched.monthly':   { en: 'Monthly · 1st',        zh: '每月 · 1 號' },
     'settings.pay.min':             { en: 'Minimum payout threshold', zh: '最低提款金額' },
-    'settings.pay.min-hint':        { en: 'Available balance must exceed this.', zh: '可提領餘額需超過此值。' },
+    'settings.pay.min-hint':        { en: 'Available balance must exceed this, in USD.', zh: '可提領餘額需超過此值（單位 USD）。' },
     'settings.pay.currency':        { en: 'Default currency',     zh: '預設幣別' },
     'settings.pay.currency-hint':   { en: 'Conversions happen at transaction time.', zh: '換匯於交易當下進行。' },
     'settings.pay.tax-title':       { en: 'Tax information',      zh: '稅務資訊' },
@@ -2665,6 +2671,8 @@
     'fans.row9.next':          { en: '↗ next tier 19%', zh: '↗ 升級進度 19%' },
     'fans.loadmore':           { en: 'Load more', zh: '載入更多' },
     'fans.empty':              { en: 'No fans match your filters.', zh: '沒有符合篩選的粉絲。' },
+    'fans.empty.noresult.title': { en: 'No fans match',             zh: '沒有符合的粉絲' },
+    'fans.empty.noresult.clear': { en: 'Clear filters',             zh: '清除篩選' },
     'fans.hof.intro':          { en: 'Long-term top contributors, by the highest tier they ever reached. Read-only — this does not change with current tier.', zh: '長期高貢獻粉絲，依其歷史曾達最高等級排列。唯讀，不隨現時分級變動。' },
     'fans.hof.peak.inner':     { en: 'Peak · Inner Circle', zh: '巔峰 · Inner Circle' },
     'fans.hof.peak.super':     { en: 'Peak · Superfan', zh: '巔峰 · Superfan' },

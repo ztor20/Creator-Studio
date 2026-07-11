@@ -37,41 +37,41 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 
     <!-- STEP 1 · form -->
     <div class="payout-dialog__body" data-pks-form>
-      <div class="payout-form-grid">
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
+      <div class="form-grid">
+        <label class="field">
+          <span class="field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
           <input class="input" data-pks-name placeholder="e.g., Taipei signing — pickup" data-i18n-placeholder="pks.f.name.ph">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
+        <label class="field">
+          <span class="field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
           <input class="input" data-pks-loc placeholder="Venue, booth or entrance" data-i18n-placeholder="pks.f.loc.ph">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
+        <label class="field">
+          <span class="field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
           <input class="input" type="datetime-local" data-pks-start value="2026-07-12T13:00">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
+        <label class="field">
+          <span class="field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
           <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
         </label>
       </div>
-      <span class="payout-field__hint" data-pks-time-err hidden style="color:var(--error)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
+      <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
 
-      <label class="payout-field mt-16">
-        <span class="payout-field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
+      <label class="field mt-16">
+        <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
         <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
       </label>
 
-      <div class="payout-field__label mt-16"><span data-i18n="pks.items">Pickup items</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.items.hint">— physical items set to on-site QR pickup</span></div>
+      <div class="field__label mt-16"><span data-i18n="pks.items">Pickup items</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.items.hint">— physical items set to on-site QR pickup</span></div>
       <div class="pickup-select" data-pks-products></div>
 
-      <div class="payout-field__label mt-16"><span data-i18n="pks.tickets">Event tickets</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.tickets.hint">— redeem event tickets with the same scanner</span></div>
+      <div class="field__label mt-16"><span data-i18n="pks.tickets">Event tickets</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.tickets.hint">— redeem event tickets with the same scanner</span></div>
       <div class="pickup-select" data-pks-tickets></div>
 
-      <label class="payout-field mt-16">
-        <span class="payout-field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
+      <label class="field mt-16">
+        <span class="field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
         <input class="input" type="password" data-pks-pw placeholder="Staff enter this to scan" data-i18n-placeholder="pks.f.pw.ph" autocomplete="new-password">
-        <span class="payout-field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
+        <span class="field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
       </label>
 
       <div class="stickynote mt-16">

@@ -6,30 +6,29 @@
 <title>前台認購試算（測試版）· Ztor Creator Studio</title>
 
 <!-- 共用 r2.1 DS（相對引用、不複製）。 -->
-<script src="js/theme.js?v=20260710c"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260710c">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260710c">
-<link rel="stylesheet" href="ds-components/button.css?v=20260710c">
-<link rel="stylesheet" href="ds-components/card.css?v=20260710c">
-<link rel="stylesheet" href="shared.css?v=20260710c">
+<script src="js/theme.js?v=20260711c"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260711c">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260711c">
+<link rel="stylesheet" href="ds-components/button.css?v=20260711c">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260711c">
+<link rel="stylesheet" href="shared.css?v=20260711c">
 <style>
   .wizard__body { max-width: 1000px; padding-top: 32px; }
-  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--surface); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--text-sub); }
+  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--card); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--muted-foreground); }
   .fc-lang:hover { background: var(--muted); color: var(--foreground); }
-  .fc-footnote { font-family: var(--font-ui); font-size: var(--fs-12); line-height: 1.5; color: var(--text-sub); margin: 0 0 16px; }
   /* 前台試算：共用池條 + 套組認購列（沿用 create-campaign 的樣式） */
-  .fc-sim-pool { background: var(--surface-muted); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 16px 18px; margin: 0 0 16px; }
+  .fc-sim-pool { background: var(--muted); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 16px 18px; margin: 0 0 16px; }
   .fc-sim-pool__row { display: flex; justify-content: space-between; align-items: baseline; }
   .fc-sim-pool__label { font-family: var(--font-ui); font-weight: var(--fw-medium); }
   .fc-sim-pool__nums { font-family: var(--font-ui); font-size: var(--fs-18); font-weight: var(--fw-semibold); }
   .fc-sim-pool__nums #fc-sim-left { color: var(--primary); }
-  .fc-sim-pool__sub { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 6px; }
+  .fc-sim-pool__sub { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 6px; }
   .fc-sim-bar { height: 10px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; margin: 10px 0; }
   .fc-sim-bar__fill { height: 100%; width: 0%; background: var(--gradient-brand); border-radius: var(--radius-pill); transition: width .3s ease; }
-  .fc-sim-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--border-soft); border-radius: var(--radius-md); margin-bottom: 10px; background: var(--surface); }
+  .fc-sim-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid var(--border-soft); border-radius: var(--radius-md); margin-bottom: 10px; background: var(--card); }
   .fc-sim-row--out { opacity: .55; }
   .fc-sim-row__name { font-family: var(--font-ui); font-weight: var(--fw-medium); }
-  .fc-sim-row__meta { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--text-sub); margin-top: 3px; }
+  .fc-sim-row__meta { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 3px; }
   .fc-sim-row__left { font-family: var(--font-ui); font-size: var(--fs-13); margin-top: 4px; }
   .fc-sim-row__left b { color: var(--primary); }
   .fc-sim-buy { display: flex; align-items: center; gap: 8px; }
@@ -61,7 +60,7 @@
   </header>
 
   <div class="wizard__body">
-    <p class="fc-footnote" data-fi="sim.sub">模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。資料來自前一步的創建設定。</p>
+    <p class="form-footnote" data-fi="sim.sub">模擬贊助者在前台逐筆認購，看共用股份池如何下降、各套組「剩餘可買」如何連動。資料來自前一步的創建設定。</p>
 
     <div class="fc-sim-pool" id="fc-sim-pool">
       <div class="fc-sim-pool__row">
@@ -84,8 +83,8 @@
   </footer>
 </div>
 
-<script src="js/icons.js?v=20260710c"></script>
-<script src="js/i18n.js?v=20260710c"></script>
+<script src="js/icons.js?v=20260711c"></script>
+<script src="js/i18n.js?v=20260711c"></script>
 <script>
 /* 前台認購試算（獨立 demo 頁）：資料由 create-campaign.html「創建送出」寫入 sessionStorage('fc-sim')；
    直接開啟（無資料）則用種子示範。正式版不會出現此頁。 */
@@ -147,7 +146,7 @@
     $('fc-sim-consumed').textContent = consumed.toLocaleString('en-US');
     $('fc-sim-fill').style.width = (total > 0 ? Math.min(100, consumed / total * 100) : 0) + '%';
     const wrap = $('fc-sim-list');
-    if (!sim.length) { wrap.innerHTML = '<p class="fc-footnote">' + (fiText('sim.empty') || '') + '</p>'; return; }
+    if (!sim.length) { wrap.innerHTML = '<p class="form-footnote">' + (fiText('sim.empty') || '') + '</p>'; return; }
     const inf = fiText('sim.cap-inf') || '不限';
     const unitWord = fiText('sim.unit') || '股';
     wrap.innerHTML = sim.map((b, i) => {

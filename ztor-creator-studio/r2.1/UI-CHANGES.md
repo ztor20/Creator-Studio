@@ -8,6 +8,65 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-11 · 全站元件統一（第三批）：四個新變體元件＋二輪掃描補修＋機械清理（B 反饋導入）
+
+使用者指示「再次把基準三頁的元件推到其他所有產品頁」。三路二輪掃描（表單軸／清單狀態軸／24 頁殘留複檢）＋使用者裁決四項設計判斷後施工。同輪的兩則 payout 收斂另見下方兩條目。
+
+- **四個新變體／元件（三件套齊全）**：`.amount-field--suffix`（右側單位如 %／months，與 `--readonly` 組合）；`.amount-field--hero`（payout 主角級 70px/32px）；`.kpi--success/--warning/--destructive`（只染 `__value` 的色態，status role token）；新元件 **`review-row.css`**（建立流程 Review 摘要列：`__item` > `__head`(`__name`＋`__action`)＋`__value`，另有 `__item--kv` 名值變體）——正規化 create-event `.ce-review-row`、create-project 壓平 `.card`、register-ip `.ri-summary` 三頁各自手刻的同族。
+- **create-project 二輪補修**（第一批只改了骨架、金額欄與雙欄結構全漏）：5 個金額欄改 `.amount-field--readonly`（含「Per slot」的 `$200` 烤字串移出為前綴）；6 處「單一 `.field` 塞兩組 label+input 的 inline grid」拆成 `.form-grid`＋雙 `.field`；Review 步驟 9 個壓平 `.card` 改 `.review-row`，頁內 `!important` 壓平規則全數退場。
+- **新變體套用**：register-ip 的 %／months 後綴改 `--suffix`（`.ri-affix` 家族退場）、`.ri-summary`→review-row；bundle-detail 折扣 %（`.bd-price-input` 退場）；event-detail 簽到統計三色卡（`.checkin-stats` 退場）改標準 `.kpi`＋色態；create-event `.ce-review-row`→review-row、時間三欄補 `form-grid--3`（第一批漏的修飾類）。
+- **scanner.html data-list 標準化**：7 列重排 `__row-main`/`__end` 結構、inline grid 退場（全站 data-list anatomy 至此一致）；核銷互動經瀏覽器實測（篩選／模擬掃描／確認流程正常）。
+- **ip-detail 分頁接線**：5 個裝飾性 tab 補 role/aria/data-tab＋切換 JS（照 project-detail 慣例、hash 深連結），內容分組：Overview（含歸屬模糊的「Manage as owner」，已標註）／Terms & usage／Assets（**產品缺口：無資產內容，面板為空**，記 ASSUMPTIONS.md）／Bidding／Owner contact。
+- **list-footer 補齊**：projects／events／creators／my-ip 四個 JS 渲染清單頁補「Showing N of M」計數（接各頁篩選函式、空狀態時隱藏），新增 i18n 四鍵（`projects/events/creators/my-ip.footer.count`）；my-ip tabs 補 role/aria。
+- **`.data-list__row[hidden]{display:none}` 收斂進 data-list.css**（原為 pickup-detail 頁內臨時規則，display:grid 蓋過 [hidden] 的元件級 bug 正式修復）。
+- **store-settings 文件同步＋`.ss-amount` 退場**：規則已無 consumer，自 store-settings.css 刪除（tombstone），DS 兩份文件的欄位型別描述改 `.amount-field`。
+- **機械清理**：全站 145 處 `<span class="badge__dot">` 死 markup 移除（24 檔＋`js/components.js` badge() 範本＋payout-request-modal.js；badge.css 規則與 DS 頁棄用說明保留）；15 支「link 了但零使用」的多餘元件 CSS 引用移除（create-campaign ×6、funding-simulate、events、my-ip、order-detail、pickup-detail、e-shop、store-settings；funding-simulate 的 form-section.css 因 `.form-footnote` 在用而保留）。
+- **疑似項維持現狀（記錄不動）**：tier-settings spend gate 無 $ 前綴（與 Reputation gate 對稱考量）、頭像上傳兩頁實作不一（無正式元件）、my-ip 清單列尾迷你開關、scanner-result 的 dl key-value、fan-detail「Last active」KPI 字級（需字級變體而非 compact）、create-project 的 checkbox 選擇列（DS 無對應元件）、卡內窄搜尋（pickup-detail/scanner/create-project tier editor 一致待遇）。
+
+- **icon registry 補鍵**：瀏覽器實測抓到 7 個「頁面在用但 registry 漏收、渲染空白」的 icon（inbox／gift／heart／history／store／user-plus／file-check，分布 event-detail、fan-detail、tier-settings、ip-market、register-ip），lucide path 已補進 `js/icons.js`，全站 icon 缺鍵清零。
+
+check_ds_sync 全 PASS（fan-store 裸色 WARN 為既有註記存量）；收尾統一 `bump_ver` → **20260711c**（68 支元件 CSS，review-row 為第 68 支）；ip-detail 兩個產品缺口記 `ASSUMPTIONS.md` PG-016；`requirements-map.md` 無產品映射變化未動。
+
+## 2026-07-11 · `.payout-field` 平行表單家族退場：restock／pickup-session／creators 三個最後 consumer 收斂進 field-system／form-grid／control-row（D infra，純呈現整併，零產品行為變更）
+
+前一則「Earnings payout 彈窗欄位殼收斂」明確跳過 `partials/restock-modal.js`、`partials/pickup-session-modal.js`、`creators.html` 三個 consumer，本輪補做，`.payout-field`／`.payout-form-grid`／`.payout-inline-control` 家族全站退場。
+
+- **三檔欄位殼統一**：`.payout-field`→`.field`（`__label`/`__hint`→`.field__label`/`.field__hint`）；`.payout-form-grid`→`.form-grid`。`restock-modal.js` 的「補貨方式＋供應商／到貨／備註」單據層、`pickup-session-modal.js` 的場次表單、`creators.html` 內建的建立 creator 表單皆改用新殼。三檔皆未曾實際使用 `.payout-inline-control`（`payout-modal.css` 裡的舊註解誤植，全站 grep 確認零 consumer）。所有 JS `querySelector` 走 `data-*` 屬性，class 改名不影響綁定；文案與 `data-i18n` key 零變動。
+- **宿主頁補 `<link>`**（版本沿用該頁既有 `?v=20260711a`）：`e-shop.html`／`pickup.html`／`creators.html` 補齊 `field-system.css`／`form-grid.css`／`control-row.css` 三支；`product-detail.html`／`create-product.html` 各補 `field-system.css`（`form-grid.css`／`control-row.css` 已在）；`pickup-detail.html` 補齊三支。`design-system.html` 本來就三支俱全，未動。
+- **`ds-components/payout-modal.css` 完全退場**：刪除 `.payout-form-grid`／`.payout-form-grid--single`／`.payout-field`(`__label`/`__hint`)／`.payout-inline-control` 四組規則（零剩餘 consumer），留 tombstone 註解指向 `field-system.css`／`form-grid.css`；同步修正 `@media (max-width:720px)` 內殘留指向舊 class 的響應式規則，改為 `.payout-dialog .form-grid`（範圍收在 modal 殼內，不影響頁面其他 `.form-grid` 用法）——這條規則在上一輪改名後其實已失效（選擇器對應不到任何元素），一併修正。
+- **`ds-components/restock-modal.css` 精簡**：移除 `[data-restock-modal] .payout-field[hidden]{display:none}` 頁面局部覆寫——`field-system.css` 本身的 `.field[hidden]{display:none}` 已通用涵蓋（該檔已補 link 進兩個宿主頁），不需重複定義。
+- **`creators.html` 順手清理**：狀態 badge 的 `<span class="badge__dot">` 死 markup 移除（該子元件 2026-07 起 `display:none` 棄用，僅此頁殘留字面 markup；其餘頁面另行處理不在本輪範圍）。
+- **`design-system.html`／`design-system.md` 同步**：4.61 Payout 段落 prose（英/中雙語）改為「全部四個 consumer + creators.html 皆已收斂、舊 class 零 consumer、規則已從 payout-modal.css 移除」；4.62 Restock demo 卡的 `.payout-field`/`.payout-form-grid` 手刻 markup 改用 `.field`/`.form-grid`；`design-system.md` §4.29 Usage 段落同步、§4.29c Restock anatomy／Token usage／Dependencies／CSS 補上 field-system.css／form-grid.css。
+- **已知殘留、本輪未動**：`pickup-detail.html` 原本就未 link `payout-modal.css`（modal 殼本身的樣式來源缺失），本輪只補齊 field-system／form-grid／control-row 三支，未動 payout-modal.css 缺口——與本次退場任務無關的既有缺口，留待後續處理。`BUILD-SPEC.md`／`ASSUMPTIONS.md` 中對 restock 的 `.payout-field` 描述屬歷史記錄未同步改寫（僅 design-system.md／html 屬本輪同步範圍）。
+
+check_ds_sync 全 PASS（既有 fan-store 裸色 WARN 為存量已註記，未變動）；未 bump 版本（版本沿用既有 `?v=20260711a`，未新增 CSS/JS 檔）。
+
+## 2026-07-11 · Earnings payout 彈窗欄位殼收斂進 field-system／form-grid／control-row／amount-field--hero（D infra，純呈現整併，零產品行為變更）
+
+前一則「2026-07-10 全站元件統一」批次收尾時明確跳過「earnings payout 平行表單系統」，本輪補做。`partials/payout-request-modal.js`／`partials/manual-entry-modal.js` 原本各自用一套 `.payout-field`／`.payout-form-grid`／`.payout-inline-control`／`.payout-amount-*`，與全站標準 `.field`／`.form-grid`／`.control-row`／`.amount-field` 平行重複；金額輸入框（彈窗主角級 70px 高／32px display 字視覺）改用 design system 已新建的 `.amount-field.amount-field--hero` 變體承接，退場自刻的 `.payout-amount-*`。
+
+- **兩支 partial 欄位殼統一**：`.payout-field`→`.field`（`__label`/`__hint`→`.field__label`/`.field__hint`）；add-bank／manual-entry 兩個表單網格 `.payout-form-grid`→`.form-grid`（預設 2 欄，欄位數符合）；「設為預設帳戶」／「上傳附件」兩個行內開關列 `.payout-inline-control`→`.control-row`(`__main`/`__sub`)，比照 create-auction 既有寫法。金額框改 `.amount-field.amount-field--hero`(`__unit` $ 前綴 + `.amount-field__input.input`)，70px/32px 視覺與改前等價、數值原樣移植。manual-entry 的「金額＋幣別 select」組合維持不動（無對應的無前綴＋幣別變體，只換外層欄位殼）。所有 JS 綁定走 `data-*` 屬性（如 `[data-payout-amount]`），class 改名不影響選擇器；文案與 `data-i18n` key 零變動。
+- **`ds-components/payout-modal.css` 部分退場**：刪除 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`（唯一 consumer 已遷移），留 tombstone 註解指向 `amount-field.css`。**`.payout-field`／`.payout-form-grid`／`.payout-inline-control` 未刪**——全站 grep 發現 `partials/restock-modal.js`、`partials/pickup-session-modal.js`、`creators.html` 仍在用（另有 create-bundle／create-product／e-shop／pickup／fans-crm／order-detail／product-detail 等頁載入 `payout-modal.css` 間接依賴），不在本次改動清單內，保留並加註記說明原因，待後續分次收斂。
+- **`earnings.html` 補 4 支 `<link>`**：`field-system.css`／`form-grid.css`／`control-row.css`／`amount-field.css`（此前只有 `payout-modal.css`）。
+- **`design-system.html`／`design-system.md` 同步**：4.61 Payout demo 卡改用真身 `.field`／`.amount-field--hero`（移除純展示用的 `.payout-form-grid--single` 包裹，因真實 markup 本來就沒有這層）；compose chips 補 Field system／Form grid／Control row／Amount field；Class API 表兩列改寫並附「2026-07-11 起⋯原為」對照；`design-system.md` §4.29 anatomy／Dependencies／Usage 同步，Usage 段落註明 restock/pickup 兩支 partial 現況仍用舊 class；Pillar 4 表 Amount field 條目與 `amount-field.css` 的 Hero size 註解，語氣從「待遷移」改「已遷移」。
+
+`requirements-map.md` 未動——5.1.8.1／5.1.8.2 兩條只到「已覆蓋哪些欄位」層級，未提及實作 class，本次純呈現整併不影響。check_ds_sync 全 PASS（既有 fan-store 裸色 WARN 為存量已註記，未變動）；`bump_ver` → **20260711a**。
+
+## 2026-07-10 · 全站元件統一（第一＋二批）：以電子商店／建立商品／建立組合為基準，24 頁改用基準元件（B 反饋導入）
+
+使用者指示「以 e-shop／create-product／create-bundle 用到的元件為主，改到其他所有產品頁上」。四路獨立盤點 29 頁得 28 項確定差距，經使用者批准後分七路施工；已對齊免改：orders、pickup、scanner、ip-market（request-payout 為轉址殘頁不適用）。
+
+- **自建骨架歸位**：create-event（`.ce-block`→`.form-section`、`.ce-grid`→`.form-grid`、`.ce-type-icon`→`.selection-card--icon`、`.ce-save-status`→`.wizard__save-status`）；create-project（`.tf-grid`→`.form-grid`、`.card`+`!important` 硬蓋改 `.form-section`／`.form-grid`、2 處無樣式破版的 `.settings-row`→`.control-row`）；register-ip（`.ri-block`→`.form-section`、`.ri-tags` 19 處→`.chip-group`/`.chip`、`.ri-usage` 11 處→`.selection-card`、`$` 前綴 `.ri-affix`→`.amount-field--readonly`）
+- **金額欄統一 `.amount-field`（唯讀 $ 前綴款）**：create-auction 起標/保留價、create-campaign 目標金額、product-detail 價格（value 內的 `$`/`USD` 移出為前綴呈現）、settings 撥款門檻（USD 字樣改進 hint，i18n key `settings.pay.min-hint` 雙語擴充）、store-settings 免運門檻（舊制 `.ss-amount` 退場，store-settings.css 內規則已無使用者、待清理）
+- **空狀態語意修正**：projects／events／event-detail 誤用 `.empty-stub`（「頁面未建置」佔位符）→ `.empty-card`（icon＋title＋text＋清除篩選 CTA）；fans-crm 單行文字空狀態升級 `.empty-card`；creators `.empty-card__desc`→`__text`（class 錯字，樣式本來沒生效）
+- **清單頁工具列**：projects／fans-crm 搜尋裸 input→`.field-pill`；fans-crm 手刻篩選鈕→`.chip-group`（JS toggle 改 `.chip--active`）；events 每列 3 顆常駐圖示鈕→`.dropdown` kebab；my-ip 裝飾性 tabs 接上切換 JS
+- **詳情頁**：auction/bundle-detail 9 個 KPI 卡 inline style→`.kpi--compact`；auction-detail `.ad-info__k`／event-detail `.kv-row`→`.data-list`；order-detail 金額掛 `.data-list__amount`、出貨 modal 拆成標準雙 `.field`；pickup-detail 7 列重排 `.data-list__row-main`/`__end` 標準結構（並修復既有 bug：`[hidden]` 被 `display:grid` 蓋過、篩選從未真的隱藏列，頁內補 `.data-list__row[hidden]{display:none}` 待收斂進 data-list.css）；project-detail select 正名＋Actions 卡標題用 `.card__head`
+- **失效 token 修復**：create-campaign／funding-simulate 16+6 處未定義變數（`--surface`/`--surface-muted`/`--text-sub`/`--text-strong`→`--card`/`--muted`/`--muted-foreground`/`--foreground`）；三頁 QR 產生 JS 的 `fill="var(--surface)"`→`var(--card)`；驗收時加抓 `pickup.css`／`scanner.css` 共 19 處同源殘留（含 `--success`/`--warning`/`--error`→`--status-success`/`--status-warning`/`--destructive`），修復後全站失效 token 清零（`--surface-shell`/`--surface-page`/`--surface-inverse` 為刻意保留的 [ext] token，不在此列）
+- **i18n**：新增 `projects.empty.noresult.clear`、`events.a.more`、`fans.empty.noresult.title`/`.clear` 四鍵（雙語）
+- **跳過歸第三批（設計判斷）**：register-ip 的 `%`/月數後綴輸入（amount-field 僅支援前綴）、event-detail 簽到統計卡（需 KPI 色態變體）、create-project Review 摘要卡 9 個的 `.card` 壓平（需 review-row 元件）、earnings payout 平行表單系統、tier-settings 大寫標籤、金額拆解列與 Review 摘要列的跨頁收斂
+
+check_ds_sync 全 PASS（fan-store 裸色 WARN 為既有註記存量）；`bump_ver` → **20260710e**（施工後首 bump d、驗收加修 CSS 失效 token 後再 bump e）；`requirements-map.md` 無產品映射變化未動。
+
 ## 2026-07-10 · Design system demo 改用真身元件：Input 家族整併＋field__hint 防呆＋4 孤兒標註＋Card 章節損毀修復＋新增 Section card 條目＋badge__dot 清理（D infra，產品頁視覺零改動）
 
 使用者發現 4.10 Field system 的 demo 間距與 create-product 實頁不同，根因是 DS 頁 demo 長期用一套 `ztor-*` 替身 class（產品頁從未採用）。原則：產品頁視覺是真相、DS 頁改成展示真身。
