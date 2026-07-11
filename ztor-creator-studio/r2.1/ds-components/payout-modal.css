@@ -129,29 +129,12 @@
 .payout-view[hidden] {
   display: none;
 }
-.payout-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-14);
-}
-.payout-form-grid--single {
-  grid-template-columns: 1fr;
-}
-.payout-field {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.payout-field__label {
-  font-family: var(--font-ui);
-  font-size: var(--fs-13);
-  font-weight: var(--fw-medium);
-}
-.payout-field__hint {
-  color: var(--muted-foreground);
-  font-size: var(--fs-12);
-  line-height: var(--lh-comfy);
-}
+/* .payout-form-grid / .payout-field(__label/__hint) / .payout-form-grid--single —
+   retired 2026-07-11. Their last three consumers (partials/restock-modal.js,
+   partials/pickup-session-modal.js, creators.html) converged onto
+   .form-grid / .field (field-system.css / form-grid.css), matching what
+   earnings.html's two payout modals already did. No remaining callers —
+   rules removed instead of kept dormant. */
 .payout-selected-bank,
 .payout-bank-option {
   display: flex;
@@ -197,28 +180,10 @@
   gap: var(--sp-10);
   margin-top: var(--sp-12);
 }
-.payout-amount-wrap {
-  position: relative;
-}
-.payout-amount-prefix {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted-foreground);
-  font-family: var(--font-display);
-  font-size: var(--fs-28);
-}
-/* .input.payout-amount-input — double class so this wins over shared.css's
-   `.input` regardless of stylesheet order (regression found 2026-06-11: the
-   single-class selector was silently overridden after the 06-09 promote). */
-.input.payout-amount-input {
-  height: 70px;
-  padding-left: 42px;
-  font-family: var(--font-display);
-  font-size: var(--fs-32);
-  letter-spacing: 0;
-}
+/* .payout-amount-wrap / .payout-amount-prefix / .input.payout-amount-input 已於
+   2026-07-11 收斂進 .amount-field.amount-field--hero（ds-components/amount-field.css）——
+   樣式定義移至該檔，此處不再定義；唯一 consumer partials/payout-request-modal.js
+   已改用新結構。*/
 .payout-summary {
   display: grid;
   gap: var(--sp-10);
@@ -264,13 +229,10 @@
   color: var(--foreground-muted);
 }
 
-.payout-inline-control {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-16);
-  padding: 13px 0;
-}
+/* .payout-inline-control — retired 2026-07-11 alongside .payout-field.
+   No remaining consumer (restock-modal.js / pickup-session-modal.js never
+   actually used it — the two earnings modals had already moved to
+   .control-row, ds-components/control-row.css) — rule removed. */
 .payout-result {
   display: grid;
   gap: var(--sp-14);
@@ -322,7 +284,7 @@
     max-height: calc(100vh - 24px);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
-  .payout-form-grid {
+  .payout-dialog .form-grid {
     grid-template-columns: 1fr;
   }
   .payout-dialog--embed {

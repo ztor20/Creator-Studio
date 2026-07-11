@@ -16,13 +16,13 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
       <button class="btn btn--icon" type="button" aria-label="Close manual entry" data-i18n-aria-label="manual.close" data-manual-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="payout-form-grid">
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.item">Transaction item</span>
+      <div class="form-grid">
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.item">Transaction item</span>
           <input class="input" placeholder="Neon Tide · live show merch">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.category">Revenue category</span>
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.category">Revenue category</span>
           <select class="select">
             <option data-i18n="src.eshop">E-Shop sales</option>
             <option data-i18n="src.events">Event tickets</option>
@@ -31,28 +31,28 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
             <option data-i18n="src.streaming">Platform / streaming</option>
           </select>
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.date">Date</span>
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.date">Date</span>
           <input class="input" type="date" value="2026-06-14">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.amount">Amount</span>
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.amount">Amount</span>
           <input class="input" inputmode="decimal" placeholder="0.00">
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.currency">Currency</span>
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.currency">Currency</span>
           <select class="select"><option>USD</option><option>TWD</option><option>EUR</option><option>JPY</option></select>
         </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="manual.f.note">Note (optional)</span>
+        <label class="field">
+          <span class="field__label" data-i18n="manual.f.note">Note (optional)</span>
           <input class="input" placeholder="—">
         </label>
       </div>
 
-      <div class="payout-inline-control">
+      <div class="control-row">
         <div>
-          <div class="payout-field__label" data-i18n="manual.f.attachment">Supporting attachment (optional)</div>
-          <div class="payout-field__hint" data-i18n="manual.f.attachment-hint">Receipt, statement, or contract as evidence.</div>
+          <div class="control-row__main" data-i18n="manual.f.attachment">Supporting attachment (optional)</div>
+          <div class="control-row__sub" data-i18n="manual.f.attachment-hint">Receipt, statement, or contract as evidence.</div>
         </div>
         <button class="btn btn--outline btn--sm" type="button" data-i18n="manual.attach-btn">Add file</button>
       </div>

@@ -34,7 +34,7 @@
   function badge(st) {
     if (!st) return '';
     var cls = 'badge' + (st.variant ? ' badge--' + st.variant : '');
-    return '<span class="' + cls + '"><span class="badge__dot"></span>'
+    return '<span class="' + cls + '">'
       + '<span' + di18n(st.key) + '>' + s(st.fallback) + '</span></span>';
   }
 

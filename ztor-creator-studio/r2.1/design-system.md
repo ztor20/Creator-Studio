@@ -555,7 +555,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
 | Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
 | Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active | [segmented.css](./ds-components/segmented.css) |
-| Amount field | 🟡 molecule | ✓ App | money input with a unit-prefix toggle (cash $ / POPCORN 🍿) or static read-only symbol; built on Input; host shares one unit state so switching any price field updates all（create-product 定價單位 · spec 5.1.5.2 F3.2 / D127）。`[data-price-sync]` marks a field as a member of the shared-unit group and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to toggle $ / 🍿 across the group | [amount-field.css](./ds-components/amount-field.css) |
+| Amount field | 🟡 molecule | ✓ App | money input with a unit-prefix toggle (cash $ / POPCORN 🍿) or static read-only symbol; built on Input; host shares one unit state so switching any price field updates all（create-product 定價單位 · spec 5.1.5.2 F3.2 / D127）。`[data-price-sync]` marks a field as a member of the shared-unit group and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to toggle $ / 🍿 across the group。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
+| Review row | 🟡 molecule | ✓ App | 流程 Review 步驟摘要列（無卡片、hairline 分隔）：欄位名＋值＋右側 Edit →。正規化自 create-event.html `.ce-review-row`、register-ip.html `.ri-summary`、create-project.html Review 步驟的扁平化 `.card`（該頁 2026-06-25 註解已預告「這批歸第三批 review-row」）。詳見 §4.49 | [review-row.css](./ds-components/review-row.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
@@ -580,7 +581,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
 | Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup | [payout-modal.css](./ds-components/payout-modal.css) |
 | Restock order (lines) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs) — document layer (method + supplier/ETA/notes) + item quantity lines (`.restock-lines` / `.restock-line`); product variants = matrix (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
-| Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.ss-amount`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
+| Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.amount-field`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多規格（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多規格 + `.variant-option`（選項名＋值 chip）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；值 chip 重用 `.chip--removable`、格重用 `.input` | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.5）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
@@ -1454,7 +1455,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 **Anatomy**
 
 ```
-.kpi
+.kpi[.kpi--success|--warning|--destructive]   (optional color state, tints __value only)
  ├ .kpi__label   (uppercase 12px, optional leading icon)
  ├ .kpi__value   (display 28px)
  └ .kpi__delta   (+/- · success default; .kpi__delta--neg = error)
@@ -1464,6 +1465,8 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 ```
 
 **Variants** — Modifiers: `.kpi__delta--neg` (negative delta color) and `.kpi--compact` (drops the 96px min-height and tightens padding to 12px 14px, for side-column / summary use — Product detail Sales summary). No orange / highlight fill exists. A tile may carry a `.kpi__delta` AND a linked `.kpi__meta` together — Dashboard F2 total-revenue pairs a week-over-week delta with a freshness/deep-link meta line (spec 5.1.1 §F2).
+
+Color-state modifiers `.kpi--success` / `.kpi--warning` / `.kpi--destructive` tint `.kpi__value` only (label/meta/delta stay neutral) — for a KPI tile whose whole number carries a status, not just its delta (e.g. a "valid check-ins" count). Visual baseline: event-detail.html's `.checkin-stats` three-color legend (valid green / already-used yellow / invalid red, spec 5.1.6 F5); `--warning` reuses the same `color-mix(in srgb, var(--status-warning) 60%, var(--foreground))` formula as `.checkin-stat--used` so both read as the same yellow.
 
 **Sizes** — Single size (`padding: 16px 18px`, `min-height: 96px`).
 
@@ -1488,10 +1491,13 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.kpi__delta--neg` | Overrides delta to `--destructive` |
 | `.kpi__meta` | 12px subtle neutral footnote (alternative to — or, on F2, alongside — delta); may wrap an `.card__link` for a deep-link |
 | `.kpi__link` | Optional quiet "view more →" link pinned to the tile bottom (subtle → foreground on hover); pairs with `data-tab-jump` |
+| `.kpi--success` | Tints `.kpi__value` `--status-success` |
+| `.kpi--warning` | Tints `.kpi__value` `color-mix(in srgb, var(--status-warning) 60%, var(--foreground))` |
+| `.kpi--destructive` | Tints `.kpi__value` `--destructive` |
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card` (bg); `--shadow-card`; `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta), `--destructive` (negative delta) · `--font-ui`, `--font-display`
+- `--card` (bg); `--shadow-card`; `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta / `.kpi--success`), `--destructive` (negative delta / `.kpi--destructive`), `--status-warning` (`.kpi--warning`, color-mixed) · `--font-ui`, `--font-display`
 
 **Usage** — Use for dashboard summary rows, earnings tabs, and page-header metric strips where one number per tile is the point. Avoid when the value needs a trend chart or multiple sub-figures — use the Chart organism.
 
@@ -1511,6 +1517,12 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
   <div class="kpi__value">$24,830</div>
   <div class="kpi__delta">+18.4% MoM</div>
   <!-- decline: <div class="kpi__delta kpi__delta--neg">-4.2% MoM</div> -->
+</div>
+
+<!-- color-state: whole value carries a status, not just its delta -->
+<div class="kpi kpi--success">
+  <div class="kpi__label">Valid check-ins</div>
+  <div class="kpi__value">312</div>
 </div>
 ```
 
@@ -2234,6 +2246,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | default | `.data-list__row` | Hairline `border-bottom: 1px solid var(--border)` |
 | last row | `.data-list__row:last-child` | `border-bottom: 0` |
 | negative amount | `.data-list__amount--neg` | Amount color → `--destructive` |
+| filtered out | `.data-list__row[hidden]` | `display: none` — must win over the row's own `display: grid`, or a filtered row stays visible (promoted from a pickup-detail.html page-local override, 2026-07-11) |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
@@ -3133,12 +3146,12 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 └─ .payout-dialog (620px, --shadow-overlay · E4)
    ├─ __head (__title + close Button)
    ├─ __body > .payout-view × N steps
-   │   ├─ .payout-form-grid(--single) > .payout-field (__label/__hint)
-   │   ├─ .payout-amount-wrap (-prefix + .input.payout-amount-input)
+   │   ├─ .field (bank picker label/hint) · .field > .amount-field.amount-field--hero (amount, __unit "$" + __input) — converged onto the shared field-system/amount-field components 2026-07-11 (was .payout-field / .payout-amount-*)
+   │   ├─ .form-grid > .field (__label/__hint) × 5 (add-bank fields) — converged onto .form-grid/.field 2026-07-11 (was .payout-form-grid / .payout-field)
    │   ├─ .payout-selected-bank / .payout-bank-options > .payout-bank-option(.is-active)
    │   ├─ .payout-summary > __row ×N (incl. settled-sources + rate-version)
    │   ├─ .payout-confirm > __box (checkbox) + __text   — irreversible-confirm gate
-   │   ├─ .payout-inline-control (Switch)
+   │   ├─ .control-row (Switch) — converged onto .control-row 2026-07-11 (was .payout-inline-control)
    │   └─ .payout-result (__icon success circle)
    └─ __foot (ghost + primary Buttons)
 ```
@@ -3159,7 +3172,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - surfaces `--card` / `--muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-overlay` (dialog shell, E4) / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --card)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
 
-**Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps.
+**Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps; and by `partials/restock-modal.js` / `partials/pickup-session-modal.js` / `creators.html`'s inline create-creator form. All of these now build their fields from `.field` / `.form-grid` / `.control-row` (field-system.css / form-grid.css / control-row.css), not page-local `.payout-field*` markup — the page-local `.payout-field` / `.payout-form-grid` / `.payout-inline-control` classes have no remaining consumer and their rules were removed from `payout-modal.css` (2026-07-11).
 
 **Do & Don't**
 
@@ -3168,22 +3181,22 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 - ❌ Don't rebuild the dialog shell per page.
 - ❌ Don't forget `.is-modal-open` scroll lock when opening.
 
-**Dependencies** — composes Button (§4.2), Input (§4.8), Switch (§4.6), Badge (§4.3); used by earnings.html.
+**Dependencies** — composes Button (§4.2), Input (§4.8), Switch (§4.6), Badge (§4.3), Field system, Form grid, Control row, Amount field; used by earnings.html.
 
-**CSS** — [`payout-modal.css`](./ds-components/payout-modal.css) · [`partials/payout-request-modal.js`](./partials/payout-request-modal.js) · shell reused by [`partials/manual-entry-modal.js`](./partials/manual-entry-modal.js)
+**CSS** — [`payout-modal.css`](./ds-components/payout-modal.css) · [`partials/payout-request-modal.js`](./partials/payout-request-modal.js) · shell reused by [`partials/manual-entry-modal.js`](./partials/manual-entry-modal.js) · fields use [`field-system.css`](./ds-components/field-system.css) · [`form-grid.css`](./ds-components/form-grid.css) · [`control-row.css`](./ds-components/control-row.css) · [`amount-field.css`](./ds-components/amount-field.css)
 
 ---
 
 ### 4.29c Restock order (lines)
 
-**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6, D104 order model + D106 member tabs). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.payout-field`, filled once) and an **item layer** of `.restock-line` quantity rows. A **product's variants are always a matrix** (single-variant = 1 line; 2-option = sub-grouped by option-1 via `.restock-lines__group`) — no tabs. A **bundle separates its member products with `.tabs`** (one tab per member; each `.tab-panel` holds that member's variant matrix). Only one tab level (members) — variants never use tabs (D106); quantities persist across tabs (all member panels stay in the DOM). Blank quantity = skip that item. History log on product-detail reuses `.data-list`. Each line's `__meta` shows the low-stock **threshold**, whose default is **10% of that item's stock cap** (spec §7.2 / D105) — derived per item, not a flat number; hidden when a cap is unknown. Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6, D104 order model + D106 member tabs). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.field`, filled once) and an **item layer** of `.restock-line` quantity rows. A **product's variants are always a matrix** (single-variant = 1 line; 2-option = sub-grouped by option-1 via `.restock-lines__group`) — no tabs. A **bundle separates its member products with `.tabs`** (one tab per member; each `.tab-panel` holds that member's variant matrix). Only one tab level (members) — variants never use tabs (D106); quantities persist across tabs (all member panels stay in the DOM). Blank quantity = skip that item. History log on product-detail reuses `.data-list`. Each line's `__meta` shows the low-stock **threshold**, whose default is **10% of that item's stock cap** (spec §7.2 / D105) — derived per item, not a flat number; hidden when a cap is unknown. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
 ```
 .payout-dialog (reused shell)
-├─ document layer: .payout-field > .segmented (Restock now / Scheduled) + hint
-│                  .payout-form-grid > .payout-field × (Expected arrival[scheduled] / Supplier / Notes)
+├─ document layer: .field > .segmented (Restock now / Scheduled) + hint
+│                  .form-grid > .field × (Expected arrival[scheduled] / Supplier / Notes)
 └─ item layer:
    ├─ [PRODUCT] .restock-lines  (no tabs)
    │      └─ (.restock-lines__group ×option-1, for 2-option) .restock-line × N
@@ -3218,7 +3231,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Token usage** (→ Pillar 2 Role)
 
-- chip `--muted` + inset `--border` · row divider `--border` · `--font-ui` / `--font-display` (qty/after) · text `--foreground` / `--muted-foreground` · badges via badge.css · ETA field `[data-restock-modal] .payout-field[hidden]{display:none}` restores hiding under the flex display
+- chip `--muted` + inset `--border` · row divider `--border` · `--font-ui` / `--font-display` (qty/after) · text `--foreground` / `--muted-foreground` · badges via badge.css · ETA field hiding is `.field[hidden]{display:none}` from field-system.css (no page-local override needed)
 
 **Usage** — E-Shop restock popup (spec §5.1.5.6, D104 + D106): single-variant product row / product-detail = one line; multi-variant product row = matrix (no tabs); bundle row = `.tabs` per member product, each panel that member's variant matrix; each restocked line (qty>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Tabs + Data list; the lines are restock-specific.
 
@@ -3228,15 +3241,15 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 - ✅ Do group a multi-variant product or bundle member with `.restock-lines__group`.
 - ❌ Don't put method / supplier / ETA on each line, and don't reintroduce per-item tabs — that's what the order model removed.
 
-**Dependencies** — composes Badge (§4.3); reuses Segmented (§4.x) + Data list (§4.x, history); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
+**Dependencies** — composes Badge (§4.3), Field system, Form grid; reuses Segmented (§4.x) + Data list (§4.x, history); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
 
-**CSS** — [`restock-modal.css`](./ds-components/restock-modal.css) · [`partials/restock-modal.js`](./partials/restock-modal.js)
+**CSS** — [`restock-modal.css`](./ds-components/restock-modal.css) · [`partials/restock-modal.js`](./partials/restock-modal.js) · document-layer fields use [`field-system.css`](./ds-components/field-system.css) · [`form-grid.css`](./ds-components/form-grid.css)
 
 ---
 
 ### 4.48 Store settings page
 
-**`_layer`** · organism — E-Shop 商店層級設定的 **popup**（`store-settings.html`，spec 5.1.5.5 / D035 / D067），由 E-Shop F3「商店設定」按鈕以 **embed-modal iframe** 開啟；popup 外框承擔標題與關閉，**頁面本身無全域導航／麵包屑／頁首**，動作改置底部提交列（`.ss-actionbar`：See as fan ｜ Discard ｜ Save changes，sticky 底部；spec F1 設定動作與預覽）。IA：**店面門面**（`.ss-identity-card`）常駐置頂，用 **Base44／Facebook 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介為文字），**逐欄就地編輯**（`.ss-edit`：文字態 ↔ 內嵌 input/textarea/select，✓/Enter 確認、✕/Esc 取消，`.is-editing` 切換）；品牌素材就是封面＋頭像（各自有編輯鈕），不另設上傳框；整頁用滿標準 1280px 欄寬；其下**商品陳列／付款／出貨**三個對等設定群組以 **tab 切換**（`.tabs` + `.ss-tabpanel`，一次處理其一；出貨 tab 用 `.settings-row`）；另有 **粉絲視角預覽（See as fan）** 以畫面分割開啟（`.preview-panel--inset` + `.ss-fan`）。本元件補基礎控制項沒有的欄位型別：網址前綴（`.ss-url`）、`$` 金額前綴（`.ss-amount`）、唯讀 Stripe 狀態卡（`.ss-status`）、品牌素材上傳（`.ss-brand` + Upload tile），以及**拖曳排序清單**（`.ss-order`）與粉絲預覽內容（`.ss-fan`）。
+**`_layer`** · organism — E-Shop 商店層級設定的 **popup**（`store-settings.html`，spec 5.1.5.5 / D035 / D067），由 E-Shop F3「商店設定」按鈕以 **embed-modal iframe** 開啟；popup 外框承擔標題與關閉，**頁面本身無全域導航／麵包屑／頁首**，動作改置底部提交列（`.ss-actionbar`：See as fan ｜ Discard ｜ Save changes，sticky 底部；spec F1 設定動作與預覽）。IA：**店面門面**（`.ss-identity-card`）常駐置頂，用 **Base44／Facebook 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介為文字），**逐欄就地編輯**（`.ss-edit`：文字態 ↔ 內嵌 input/textarea/select，✓/Enter 確認、✕/Esc 取消，`.is-editing` 切換）；品牌素材就是封面＋頭像（各自有編輯鈕），不另設上傳框；整頁用滿標準 1280px 欄寬；其下**商品陳列／付款／出貨**三個對等設定群組以 **tab 切換**（`.tabs` + `.ss-tabpanel`，一次處理其一；出貨 tab 用 `.settings-row`）；另有 **粉絲視角預覽（See as fan）** 以畫面分割開啟（`.preview-panel--inset` + `.ss-fan`）。本元件補基礎控制項沒有的欄位型別：網址前綴（`.ss-url`）、`$` 金額前綴（`.amount-field`，見 Amount field 元件）、唯讀 Stripe 狀態卡（`.ss-status`）、品牌素材上傳（`.ss-brand` + Upload tile），以及**拖曳排序清單**（`.ss-order`）與粉絲預覽內容（`.ss-fan`）。
 
 商品陳列（5.1.5.5 F3 / D031）：拖曳已上架商品調整粉絲端陳列順序——粉絲端順序的單一來源；上 / 下架（上架開關 Shop）仍在 E-Shop F4。只納入已上架（§7.2 可見）商品。兩種空狀態（`.empty-stub`）：完全沒商品 → 導向建立商品；有商品但全未上架 → 導向商品管理上架。
 
@@ -3254,7 +3267,7 @@ store-settings.html  (popup body — D067: no global nav / breadcrumb / page hea
       ├─ .tabs（商品陳列 / 付款 / 出貨）→ 切換 .ss-tabpanel
       ├─ panel display: .ss-order > .ss-order__row[draggable]（+ .empty-stub.ss-order-empty）
       ├─ panel payment: .ss-status (__icon/__main/__title/__meta + Badge)
-      └─ panel shipping: .settings-row（ships from / .ss-amount 免運）
+      └─ panel shipping: .settings-row（ships from / .amount-field 免運）
 └─ .ss-actionbar（提交列：See as fan ｜ Discard ｜ Save changes，sticky 底部；Save/Discard postMessage 關閉 popup）
 See as fan：.preview-panel.preview-panel--inset > .ss-fan（__header/__avatar/__name/__bio + __grid/__card）
 ```
@@ -3287,6 +3300,93 @@ See as fan：.preview-panel.preview-panel--inset > .ss-fan（__header/__avatar/_
 **Dependencies** — composes Card (§4.10), Tabs (§4.21), Upload tile, Settings row (§4.38), Preview panel (§4.22f), Input (§4.8), Badge (§4.3), Empty stub (§4.22e); used by store-settings.html.
 
 **CSS** — [`store-settings.css`](./ds-components/store-settings.css) (layout + field types + fan preview) · [`card.css`](./ds-components/card.css) · [`tabs.css`](./ds-components/tabs.css) · [`upload-tile.css`](./ds-components/upload-tile.css) · [`preview-panel.css`](./ds-components/preview-panel.css) · [`settings.css`](./ds-components/settings.css) · [`empty-stub.css`](./ds-components/empty-stub.css)
+
+---
+
+### 4.49 Review row
+
+**`_layer`** · molecule — Flat, no-card wizard Review-step summary: a field/section name + value with a right-side "Edit →" action, rows separated by hairline dividers.
+
+Normalizes three page-local versions into one component: create-event.html's `.ce-review-row` (name + value + per-row Edit, hairline — the closest match to the target shape, kept as the default stacked layout), register-ip.html's `.ri-summary` (label/value grid pairs, empty-state italic placeholder, no edit → `.review-row__item--kv`), and create-project.html's Review-step `.card` blocks (title + Edit heading a group of sub key/values — that page's 2026-06-25 comment, "全頁無卡片化…這批歸第三批 review-row 設計判斷，元件定案後再遷移", already flagged this exact consolidation; its `.card` is `!important`-flattened there to look like this component ahead of migration).
+
+**Anatomy**
+
+```
+.review-row (flex column, no card bg/shadow)
+└─ .review-row__item (padding 14px 0, hairline border-bottom --border-soft; none on :last-child)
+   ├─ .review-row__head (flex, name + action, one line)
+   │   ├─ .review-row__name (font-ui 15/500)
+   │   └─ .review-row__action (right-aligned "Edit →" link, 12px, underline)
+   └─ .review-row__value (font-ui 13px; wraps by default, no truncation)
+      └─ .review-row__value--empty (placeholder — italic, --muted-foreground)
+
+.review-row__item--kv (inline modifier — replaces __head/__value stacking with a
+  130px-label / value grid on one line, no action; for grouped fields under one
+  outer Edit; collapses to 1 column ≤480px)
+```
+
+**Variants** — `.review-row__item--kv` for compact inline label/value rows (no per-row Edit). A group's `.review-row__value` may also hold several sub label/value pairs as plain content (e.g. reusing `.meta-cell`) when one Edit action covers multiple fields, as in create-project's Review card — that's flexible content, not new CSS.
+
+**Sizes** — Single size (`padding: 14px 0` per row).
+
+**States**
+
+| State | Selector | Change |
+|---|---|---|
+| default | `.review-row__item` | Hairline `border-bottom: 1px solid var(--border-soft)` |
+| last row | `.review-row__item:last-child` | `border-bottom: 0` |
+| empty value | `.review-row__value--empty` | Italic, `--muted-foreground` (e.g. "Not entered") |
+| action hover | `.review-row__action:hover` | `--foreground-muted` → `--foreground` |
+| long value | — (default) | Wraps to a second line; no truncation/ellipsis |
+
+**Class API** (CSS classes — Props/API = N/A, static CSS prototype)
+
+| Class / modifier | Effect |
+|---|---|
+| `.review-row` | Flex-column container of rows; no background/shadow (flat, no card chrome) |
+| `.review-row__item` | One row; `padding: 14px 0`, bottom hairline |
+| `.review-row__head` | Flex row: name (left) + action (right), `justify-content: space-between` |
+| `.review-row__name` | Field/section name — font-ui 15/500 |
+| `.review-row__action` | "Edit →" link — font-ui 12/500, `--foreground-muted`, underline |
+| `.review-row__value` | Value text below head — font-ui 13px, wraps by default |
+| `.review-row__value--empty` | Placeholder state — italic, `--muted-foreground` |
+| `.review-row__item--kv` | Inline modifier: grid `130px 1fr` label/value, single line, no action |
+
+**Token usage** (→ Pillar 2 Role)
+
+- `--border-soft` (row dividers) · `--muted-foreground` (empty state, kv label, action default) · `--foreground` (value, action hover) · `--foreground-muted` (action default) · `--border` (action underline) · `--font-ui` · `--lh-comfy`
+
+**Usage** — Use for a wizard's Review step to show what will be submitted, each field/section with a one-click way back to edit it. Avoid for record lists (transactions, products) — use Data list; avoid when every row needs its own card surface — this component is deliberately flat.
+
+**Do & Don't**
+
+- ✅ Do let long values wrap to a second line — never truncate a Review value the user is about to confirm.
+- ✅ Do use `.review-row__item--kv` for a cluster of short fields sharing one outer Edit action.
+- ❌ Don't wrap `.review-row__item` in a `.card` — the whole point is a flat, hairline-divided list (see create-project's `!important` flatten, which this component replaces).
+- ❌ Don't put more than one Edit action per stacked `.review-row__item`.
+
+**Code example**
+
+```html
+<div class="review-row">
+  <div class="review-row__item">
+    <div class="review-row__head">
+      <h3 class="review-row__name">Event name</h3>
+      <a class="review-row__action" href="#">Edit →</a>
+    </div>
+    <div class="review-row__value review-row__value--empty">Not entered</div>
+  </div>
+  <div class="review-row__item">
+    <div class="review-row__head">
+      <h3 class="review-row__name">Venue &amp; time</h3>
+      <a class="review-row__action" href="#">Edit →</a>
+    </div>
+    <div class="review-row__value">Legacy Books, Xinyi Rd. Sec 4 — Sat, Aug 16 · 14:00–18:00</div>
+  </div>
+</div>
+```
+
+**CSS** — [`review-row.css`](./ds-components/review-row.css)
 
 ---
 

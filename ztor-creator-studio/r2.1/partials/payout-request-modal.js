@@ -16,15 +16,15 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
         <button class="btn btn--icon" type="button" aria-label="Close payout popup" data-i18n-aria-label="payout.close" data-payout-close><i data-lucide="x" class="ztor-icon"></i></button>
       </div>
       <div class="payout-dialog__body">
-        <div class="payout-field">
-          <div class="payout-field__label" data-i18n="payout.bank-label">Payout bank</div>
+        <div class="field">
+          <div class="field__label" data-i18n="payout.bank-label">Payout bank</div>
           <div class="payout-selected-bank">
             <span class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
             <span class="payout-selected-bank__main">
               <span class="payout-selected-bank__title" data-payout-selected-title>First Commercial Bank · •••3417</span>
               <span class="payout-selected-bank__meta" data-payout-selected-meta>Maya Chou · USD · default · available</span>
             </span>
-            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="payout.selected">Selected</span></span>
+            <span class="badge badge--success"><span data-i18n="payout.selected">Selected</span></span>
           </div>
           <div class="payout-bank-options" aria-label="Available payout banks">
             <button class="payout-bank-option is-active" type="button" data-bank-option data-bank-title="First Commercial Bank · •••3417" data-bank-meta="Maya Chou · USD · default · available">
@@ -51,13 +51,13 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
           </div>
         </div>
 
-        <label class="payout-field mt-24">
-          <span class="payout-field__label" data-i18n="payout.amount-label">Payout amount</span>
-          <span class="payout-amount-wrap">
-            <span class="payout-amount-prefix">$</span>
-            <input class="input payout-amount-input" type="text" inputmode="decimal" value="8,940" data-payout-amount>
+        <label class="field mt-24">
+          <span class="field__label" data-i18n="payout.amount-label">Payout amount</span>
+          <span class="amount-field amount-field--hero">
+            <span class="amount-field__unit">$</span>
+            <input class="input amount-field__input" type="text" inputmode="decimal" value="8,940" data-payout-amount>
           </span>
-          <span class="payout-field__hint" data-i18n="payout.amount-hint">Available balance: $8,940.00 · Minimum payout: $50.00</span>
+          <span class="field__hint" data-i18n="payout.amount-hint">Available balance: $8,940.00 · Minimum payout: $50.00</span>
         </label>
 
         <div class="payout-summary" aria-label="Payout summary" data-i18n-aria-label="payout.summary">
@@ -91,32 +91,32 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
         <button class="btn btn--icon" type="button" aria-label="Close payout popup" data-i18n-aria-label="payout.close" data-payout-close><i data-lucide="x" class="ztor-icon"></i></button>
       </div>
       <div class="payout-dialog__body">
-        <div class="payout-form-grid">
-          <label class="payout-field">
-            <span class="payout-field__label" data-i18n="payout.field.holder">Account holder name</span>
+        <div class="form-grid">
+          <label class="field">
+            <span class="field__label" data-i18n="payout.field.holder">Account holder name</span>
             <input class="input" value="Maya Chou">
           </label>
-          <label class="payout-field">
-            <span class="payout-field__label" data-i18n="payout.field.bank">Bank name</span>
+          <label class="field">
+            <span class="field__label" data-i18n="payout.field.bank">Bank name</span>
             <input class="input" value="Mega International Commercial Bank">
           </label>
-          <label class="payout-field">
-            <span class="payout-field__label" data-i18n="payout.field.swift">SWIFT / BIC ID</span>
+          <label class="field">
+            <span class="field__label" data-i18n="payout.field.swift">SWIFT / BIC ID</span>
             <input class="input" value="ICBCTWTP">
-            <span class="payout-field__hint" data-i18n="payout.field.swift-hint">Usually 8 to 11 characters. Confirm this with your bank.</span>
+            <span class="field__hint" data-i18n="payout.field.swift-hint">Usually 8 to 11 characters. Confirm this with your bank.</span>
           </label>
-          <label class="payout-field">
-            <span class="payout-field__label" data-i18n="payout.field.account">Bank account number</span>
+          <label class="field">
+            <span class="field__label" data-i18n="payout.field.account">Bank account number</span>
             <input class="input" value="009221449001">
           </label>
-          <label class="payout-field">
-            <span class="payout-field__label" data-i18n="payout.field.account-confirm">Confirm account number</span>
+          <label class="field">
+            <span class="field__label" data-i18n="payout.field.account-confirm">Confirm account number</span>
             <input class="input" value="009221449001">
           </label>
-          <div class="payout-inline-control">
+          <div class="control-row">
             <div>
-              <div class="payout-field__label" data-i18n="payout.field.default">Set as default account</div>
-              <div class="payout-field__hint" data-i18n="payout.field.default-hint">Future payout requests will use this account first.</div>
+              <div class="control-row__main" data-i18n="payout.field.default">Set as default account</div>
+              <div class="control-row__sub" data-i18n="payout.field.default-hint">Future payout requests will use this account first.</div>
             </div>
             <div class="switch switch--on" role="switch" aria-checked="true"></div>
           </div>
