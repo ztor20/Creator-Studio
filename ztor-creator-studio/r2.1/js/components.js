@@ -18,7 +18,7 @@
 
    Load order: AFTER icons.js + i18n.js (needs window.ztorIcons /
    window.applyI18n) and BEFORE reveal.js (so injected .card/.kpi/
-   .stickynote exist when reveal sets up its IntersectionObserver).
+   .info-banner exist when reveal sets up its IntersectionObserver).
    Mounts synchronously on execution — placeholders above it in the
    <body> are already parsed.
 
@@ -170,7 +170,7 @@
       + '<div class="kpi__value" style="margin-bottom:4px">' + s(f.value) + '</div>'
       + '<div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px"' + di18n(f.subKey) + '>' + s(f.sub) + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-12)">' + tiers + '</div>'
-      + '<div class="stickynote mt-16"><span class="stickynote__mark">⚐</span>'
+      + '<div class="info-banner mt-16"><i data-lucide="info" class="ztor-icon info-banner__icon"></i>'
       +   '<span' + di18n(f.warnKey) + '>' + s(f.warn) + '</span></div>'
       + '<div class="mt-16"><a class="card__link" href="' + f.linkHref + '"' + di18n(f.linkKey) + '>' + s(f.link) + '</a></div>'
       + '</div>';

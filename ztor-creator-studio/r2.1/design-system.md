@@ -35,7 +35,7 @@
 
 **Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
-**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active tabs, selection-card selected state, sticky-note callouts, hero fills, pre-order pills (nav active states stay neutral gray — Q8). Hairlines stay at `#EAEAEA`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
+**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally for CTAs, active tabs, selection-card selected state, hero fills and pre-order pills (nav active states stay neutral gray — Q8). Informational banners stay neutral gray. Hairlines stay at `#EAEAEA`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
 
 **Similar systems** — [Notion](https://notion.so) (highlighter-orange accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
 
@@ -48,7 +48,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 ### Do
 
 - Use `Geist` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
-- Reserve `--primary` (`#ffa33f`) for one role: the primary CTA. The hero banner, sticky-note callouts, and the brand mark may also touch orange — never as a fill for nav chrome, KPI highlights, or status pills.
+- Reserve `--primary` (`#ffa33f`) for the primary CTA, hero accent and brand mark. Informational banners use neutral tokens; never use orange as a fill for nav chrome, KPI highlights, or status pills.
 - Apply `--radius` (6 px) to all controls, buttons, cards and surfaces; `--radius-md` is now an alias of `--radius` (merged to 6 px, Q2 2026-07-13). Use `--radius-lg` (8 px) for dropdowns / nav panels and `--radius-pill` for full-round.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
 - Use the `pill` taxonomy (`pill--orange / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
@@ -81,9 +81,9 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 - **Q3 卡片預設＝1px 純邊框**
   `.card` / `.kpi` / `.ztor-card` 預設用 `border: 1px solid var(--border)`，不用陰影。
   只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）hover 時才升級成純陰影（`--shadow-card-hover`）。
-- **Q4 控制項＝真 border**
-  `.input` / `.textarea` / `.select`、`.ztor-metric-pill`、`.switch` 一律用 `border: 1px solid var(--border)`，與 outline 按鈕一致。
-  不再用陰影模擬邊框；focus 改 `border-color: var(--ring)` + 3px 柔光環。
+- **Q4 控制項＝視覺邊線**
+  `.input` / `.textarea` / `.select` 使用 `0 0 0 1px var(--border)` 陰影邊線，避免原生 border 影響控件尺寸。
+  focus 改為 `--ring` 1px 邊線 + 4px 柔光環；`.ztor-metric-pill`、`.switch` 維持各自既有規則。
 - **Q5 hover 浮起規則**
   可點卡片 hover 借 `--shadow-float` / `--shadow-card-hover` 浮起。
   清單列與表格列 hover 只換底色 `--accent`，不浮起。
@@ -300,7 +300,7 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 | `radius-small` | `2–5px` | Inner sub-radii on nested components |
 | `radius-card-feature` | `12px` | Feature / highlight cards |
 | `radius-media` | `16px` | Embedded media / hero video container |
-| `radius-quote-card` | `24px` | Editorial / callout card (sticky-note, IP hero) |
+| `radius-quote-card` | `24px` | Editorial / callout card (IP hero) |
 | `radius-pill` | `1000px / 100%` | Status dots, avatar circles, badge chips |
 
 Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px buttons / inputs / nav cards) but **escalates sharply** at the editorial layer — `12px → 16px → 24px` are reserved for content surfaces (callouts, editorial cards, media). Then a clean leap to full pills for round elements.
@@ -320,7 +320,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | `shadow-header` | `0 3px 16px rgba(0,0,0,0.10)` (dark `0.45`) | Sticky wizard header 下緣柔和投影（由 header 後內縮圓角色塊投出，只露下緣） |
 | `shadow-seam` | `7px 0 20px -4px rgba(12,10,9,0.16)` (dark `0.6`) | 上層主面板向右蓋向相鄰下層（E-Shop 主面板疊在預覽上） |
 
-**Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This remains the pattern for dropdowns / popovers / dialogs / overlays, and for the hover state of clickable / selection cards. **Exception (2026-06-12)**: outline buttons draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears. **Exception extended (Q2–Q4, 2026-07-13)**: default cards (`.card` / `.kpi` / `.ztor-card`) and form controls (`.input` / `.textarea` / `.select`, `.switch`, `.ztor-metric-pill`) also moved to a real 1px `--border` — resting content no longer draws a shadow by default; `--shadow-card` is now reserved for clickable/selection-card hover and for surfaces that were never touched by this change (selection-card default, dropdown-item, table, composer, cookie-banner, radio-card).
+**Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This remains the pattern for dropdowns / popovers / dialogs / overlays, input controls, and the hover state of clickable / selection cards. **Exception (2026-06-12)**: outline buttons draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears. **Exception extended (Q2–Q3, 2026-07-13)**: default cards (`.card` / `.kpi` / `.ztor-card`) moved to a real 1px `--border`; `--shadow-card` is reserved for clickable/selection-card hover and for surfaces that retain their own elevation (selection-card default, dropdown-item, table, composer, cookie-banner, radio-card).
 
 **Edge & overlay tokens (2026-06-15)** — `--border-inverse` (`rgba(255,255,255,0.1)`, same in both themes) is the hairline on always-dark / inverse surfaces (footer slab). `--overlay-tint` (`rgba(0,0,0,0.45)`) is the darkening mixed into modal backdrops (`.payout-modal`, paired with `--overlay-blur`).
 
@@ -542,7 +542,7 @@ Not implemented. Browser-level forced-colors will fall through to defaults; sema
 
 | Layer | Definition | R 2.1 examples |
 |---|---|---|
-| 🟢 atom | Single indivisible UI primitive — typically one HTML element | Button · Badge · Status dot · Chip · Switch · Sticky-note · Upload tile · Input · Icon · Meta cell · Form grid |
+| 🟢 atom | Single indivisible UI primitive — typically one HTML element | Button · Badge · Status dot · Chip · Switch · Info banner · Upload tile · Input · Icon · Meta cell · Form grid |
 | 🟡 molecule | 2–4 atoms cooperating on one job, can't stand alone in a page | NavigationMenu · Card · KPI · Alert · Accordion · Tabs · Filter tabs · Cookie banner · Empty stub · Selection card · Page intro · Field system · Form section · Radio card · Control row · Filter row · Stepper · Progress stepper · Settings row · Rental card |
 | 🟠 organism | Multiple molecules forming a complete page region | Header · Footer · Chart family · Data list · Table · Bento grid · App shell · Wizard frame · Hero slideshow · IP hero · Chart card |
 | 🟣 template | Page-skeleton composition — lives in Pillar 6 Structure, not Pillar 4 | Dashboard · Earnings 4-tab · Wizard · Settings · Empty stub |
@@ -574,7 +574,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
 | Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
-| Sticky-note | 🟢 atom | ✓ App | Inline callouts ("Pending ≠ Available", region note, legal hint) | [stickynote.css](./ds-components/stickynote.css) |
+| Info banner | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](./ds-components/info-banner.css) |
 | Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除 | [upload-tile.css](./ds-components/upload-tile.css) |
 | Album tracks | 🟠 organism | ✓ App | 數位「音樂專輯（Album）」多曲目管理（spec 5.1.5.2 §4.2 F11.1）：上傳 mp3/mp4→逐曲列（`.album-track`：`__grip`/`__cover`/`__main`(`__name`/`__meta`/`__bar`/`__lyrics`)/`.dropdown.album-track__menu`）；拖曳重排、改名(inline)、換封面、上傳歌詞(音訊限定→View Lyrics)、刪除；上傳中 `.is-uploading`。`partials/album-tracks.js` 增強、emit `albumtracks:change`；逐列選單重用 dropdown-menu.css。呈現層 demo（假上傳/歌詞） | [album-tracks.css](./ds-components/album-tracks.css) |
 | VIP card | 🟠 organism | ✓ App | 數位「會員卡（Membership / VIP card）」卡面自訂（spec 5.1.5.2 §4.2 F11.2）：`.vip-card`[data-vip-card]＞`__settings`（`.segmented.radio-cards` Text/Image＋`.input`名稱／`.upload-tile` logo）＋`__preview`（`__frame`公版場景＞`__plate`霧面卡＞`__logo`/`__logo-img`/`__plate-sub`）。Text→文字合成、Image→PNG logo 合成；`.vip-card--image` 切模式。`partials/vip-card.js` 綁定、emit `vipcard:change`。公版為 CSS 近似固定藝術（frame 漸層裸色＝記錄在案例外，見下）。呈現層 demo | [vip-card.css](./ds-components/vip-card.css) |
@@ -641,7 +641,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨預設密度 gap 6／欄距 16；在 Form section 內由情境規則收緊為 gap 4／欄距 26（form-section.css），產品建立頁即此密度 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
 | Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / spacing tweaks under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
-| Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (radio dot + title/sub) built on Segmented; selected = card shadow + orange ring | [radio-card.css](./ds-components/radio-card.css) |
+| Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (default radio dot + title/sub) built on Segmented; selected = card shadow + orange ring; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
@@ -1013,28 +1013,23 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 
 ---
 
-### 4.7 Sticky-note
+### 4.7 Info banner
 
-**`_layer`** · atom — Orange-tinted editorial callout with a leading `!` mark; the "Why" / hint / pending-warning block.
+**`_layer`** · atom — Neutral contextual information banner with a leading `info` icon. It explains a rule, timing, limitation, or next step without giving it warning priority.
 
 **Anatomy**
 
-```
-┌──────────────────────────────────────┐
-│ !  Pending ≠ Available. Funds held…   │
-└──────────────────────────────────────┘
- └ .stickynote__mark   └ note text (<strong> for emphasis)
-```
+The banner contains a Lucide `info` icon (`.info-banner__icon`) followed by the explanatory text. Use `<strong>` only for the clause people need to scan first.
 
 **Variants** — Single variant.
 
-**Sizes** — Single size (14 × 16px padding, 13px text).
+**Sizes** — Desktop uses 10 × 12px padding with 14px text; mobile keeps the compact padding and contracts to 13px text.
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `color-mix(--primary 32%, surface)`, text `--primary-foreground`, hairline `0 0 0 1px rgba(23,23,23,0.12)`, flex with 10px gap |
+| default | — | neutral `--accent` surface, `--border` hairline, `--foreground-muted` text, `--radius-lg` corners and a 10px icon gap |
 
 Static callout — no interactive states.
 
@@ -1042,33 +1037,33 @@ Static callout — no interactive states.
 
 | Class / modifier | Effect |
 |---|---|
-| `.stickynote` | Orange-tinted callout block (flex, top-aligned) |
-| `.stickynote__mark` | Leading display glyph (`!`), `--font-display` 16px / 500 |
+| `.info-banner` | Neutral gray information banner (flex, centered vertically) |
+| `.info-banner__icon` | Leading Lucide `info` icon, 20px desktop / 18px mobile |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `color-mix(--primary 32%, --card)` · text `--primary-foreground` · radius `--radius-md` · hairline `rgba(23,23,23,0.12)` · note font `--font-ui` 13px · mark font `--font-display`
+- bg `--accent` · border `--border` · text `--foreground-muted` · icon `--foreground` · radius `--radius-lg` · type `--font-ui`
 
-**Usage** — Use for a single high-attention editorial sentence (Earnings "Pending ≠ Available", Tax-docs region note, IP legal hint). Avoid for general notes — those go to `.card__hint` — and limit to ≤1 per page section.
+**Usage** — Use when context helps a person understand a rule, timing, limitation, or next step. Use `alert` for warnings, failures, or urgent action; use `.card__hint` for a short field-level hint.
 
 **Do & Don't**
 
 - ✅ Do keep it to 1–3 sentences and use `<strong>` for the key clause.
-- ✅ Do reserve it for editorial callouts (one of the few orange fills allowed).
-- ❌ Don't use it as a generic note container.
-- ❌ Don't stack multiple sticky-notes in one section.
+- ✅ Do use the same `info` icon for every instance so this role remains recognisable.
+- ❌ Don't use it for urgent warnings or destructive consequences.
+- ❌ Don't use it as a substitute for field-level help.
 
 
 **Code example**
 
 ```html
-<div class="stickynote">
-  <span class="stickynote__mark">!</span>
+<div class="info-banner">
+  <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
   <span><strong>Pending ≠ Available.</strong> Pending settlement holds funds for the T+7 dispute window.</span>
 </div>
 ```
 
-**CSS** — [`stickynote.css`](./ds-components/stickynote.css)
+**CSS** — [`info-banner.css`](./ds-components/info-banner.css)
 
 ---
 
@@ -1109,7 +1104,7 @@ Static callout — no interactive states.
 |---|---|
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
 | `.upload-tile--hero` / `--file` | 大格／檔案列尺寸變體 |
-| `.upload-tile__icon` / `__title` / `__hint` | icon／主文案（`--foreground` 500）／限制說明 |
+| `.upload-tile__icon` / `__title` / `__hint` | registered Lucide icon／主文案（`--foreground` 500）／限制說明；不用文字 `＋` 或自製 SVG |
 | `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
@@ -1136,7 +1131,7 @@ Static callout — no interactive states.
 
 ```html
 <div class="upload-tile upload-tile--hero">
-  <span class="upload-tile__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+  <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
   <span class="upload-tile__title">Hero image — the first thing buyers see</span>
   <span class="upload-tile__hint">Min 800 x 800px</span>
 </div>
@@ -1148,7 +1143,7 @@ Static callout — no interactive states.
 
 ### 4.8 Input
 
-**`_layer`** · atom — Single-line text field, matching textarea, and native select; white surface with a real 1px `--border` edge (Q4 2026-07-13: was a `0 0 0 1px var(--border)` shadow-simulated hairline) that promotes `border-color` to `--ring` + a soft 3px glow on focus.
+**`_layer`** · atom — Single-line text field, matching textarea, and native select; white surface with a 1px `--border` shadow edge, promoted to a `--ring` edge + soft 4px glow on focus.
 
 > **2026-07-10 整併**：舊 `.ztor-input` / `.ztor-input--xs/sm/lg/xl` / `.ztor-textarea` 替身 class 已刪除（未被任何實頁使用）；design-system.html 的 demo 改用真身 `.input` / `.textarea` / `.select`。真身規則原住 `shared.css`，現搬進 `input.css`（屬性值原樣未動）。
 
@@ -1177,8 +1172,8 @@ Static callout — no interactive states.
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--card`, 1px `border: solid var(--border)`, text `--foreground` (Q4 2026-07-13: real border) |
-| focus | `:focus` | `outline: none`; `border-color: var(--ring)` + `0 0 0 3px color-mix(in srgb, var(--ring) 15%, transparent)` soft glow |
+| default | — | bg `--card`, `0 0 0 1px var(--border)` shadow edge, text `--foreground` |
+| focus | `:focus` | `outline: none`; `0 0 0 1px var(--ring)` + `0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent)` soft glow |
 
 **狀態缺口** — `:disabled` 與 `aria-invalid`（錯誤 ring）樣式尚未在 `input.css` 實作；design-system.html 不示範，待補。
 
@@ -1189,19 +1184,19 @@ Static callout — no interactive states.
 | `.input` | Single-line field |
 | `.input--with-prefix` | Extra left padding (`--sp-32`) for a leading glyph (currency, unit) |
 | `.textarea` | Multi-line field, vertical resize, min-height 100px |
-| `.select` | Native `<select>`, OS arrow dropped, custom SVG chevron |
+| `.select` | Native `<select>`, OS arrow dropped; pair with `.select-wrap` + `.select-wrap__icon` for a registered Lucide chevron |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` · text `--foreground` · border `--border` (1px, Q4) · radius `--radius` · focus `border-color: --ring` + soft glow ring · font `--font-body` · font size `--fs-14` · padding `--sp-12` (left/right prefix `--sp-32`)
+- bg `--card` · text `--foreground` · edge `--border` (1px shadow) · radius `--radius` · focus `--ring` edge + soft glow ring · font `--font-body` · font size `--fs-14` · padding `--sp-12` (left/right prefix `--sp-32`)
 
-**Usage** — Use `.input` for text/number entry in forms (settings, payout forms), `.textarea` for longer free text, `.select` for a native dropdown. The field uses a real 1px `--border`, matching the outline button (Q4 2026-07-13).
+**Usage** — Use `.input` for text/number entry in forms (settings, payout forms), `.textarea` for longer free text, `.select` for a native dropdown. The field uses a 1px visual edge without changing its box size.
 
 **Do & Don't**
 
 - ✅ Do pair with Field system for label + hint.
 - ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
-- ✅ Do rely on the 1px `--border` for the edge — no box-shadow-as-border simulation (Q4 2026-07-13).
+- ✅ Do rely on the component's 1px `--border` shadow edge; do not add a second border.
 - ❌ Don't invent a size variant — the real component ships one size only.
 
 
@@ -1231,7 +1226,7 @@ Static callout — no interactive states.
 
 **Variants** — outline (default) · filled (`-fill` glyphs, e.g. `check-circle-fill`).
 
-**Sizes** — 16px base (`.ztor-icon`) · 14px (`.ztor-icon--sm`) · context overrides (e.g. 18px inside `.btn--icon`).
+**Sizes** — semantic scale: 12px (`--xs`) · 14px (`--sm`) · 16px base · 20px (`--md`) · 24px (`--lg`). Icon buttons use the 16px base glyph; size the icon for its meaning, not the button box.
 
 **Registry** — hand-curated set in `icons.js` (the in-use glyphs) + the **full Lucide library (~1,713) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
 
@@ -1240,7 +1235,7 @@ Static callout — no interactive states.
 | State | Selector | Change |
 |---|---|---|
 | default | — | size box, `currentColor` stroke/fill, `flex-shrink: 0`, `vertical-align: -2px` |
-| (size) | `.ztor-icon--sm` | 14px box |
+| (size) | `.ztor-icon--xs` / `--sm` / `--md` / `--lg` | 12px / 14px / 20px / 24px box |
 
 Static, non-interactive — it reflects the host control's state via `currentColor`; no focus/keyboard role of its own.
 
@@ -1250,18 +1245,18 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 |---|---|
 | `data-lucide="name"` | Registry key; replaced with the inline SVG by `ztorIcons.applyIcons()` |
 | `.ztor-icon` | 16px box, `currentColor`, `flex-shrink: 0`, `vertical-align: -2px` |
-| `.ztor-icon--sm` | 14px box |
+| `.ztor-icon--xs` / `.ztor-icon--sm` / `.ztor-icon--md` / `.ztor-icon--lg` | 12px / 14px / 20px / 24px boxes |
 
 **Token usage** (→ Pillar 1 Foundation · Iconography)
 
-- `currentColor` — stroke/fill source (inherited from host) · size by context (16 / 14 / 18px)
+- `currentColor` — stroke/fill source (inherited from host) · semantic size scale (12 / 14 / 16 / 20 / 24px)
 
 **Usage** — Reused by [Button](#42-button) (icon variants), Badge (leading glyph), NavigationMenu, Alert, Composer, Header, Data list, Chart. Decorative icons are `aria-hidden`; icon-only controls carry an `aria-label` on the host `<button>`/`<a>`.
 
 **Do & Don't**
 
 - ✅ Do register the name in `icons.js` first, then use `<i data-lucide="name" class="ztor-icon">`.
-- ✅ Do let it inherit `currentColor` and size from the host control.
+- ✅ Do use the semantic size modifiers when the base 16px glyph is not appropriate.
 - ❌ Don't hardcode a hex color or fixed px when the context already sets them.
 - ❌ Don't use a glyph not in the registry (it renders as the literal tag).
 
@@ -1629,7 +1624,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 - `--status-warning`, `--destructive`, `--status-success`, `--status-info` (icon tint via `color-mix`, CTA, row accent) · `--primary` (default `--row` left accent when no status) · `--card`, `--muted` (row bg, close hover) · `--border` (card divider); `--foreground`, `--foreground-muted`, `--muted-foreground` · `--radius-md`, `--radius-sm`; `--font-ui`
 
-**Usage** — Use `.alert--card` in the dashboard alerts panel (stacked, dismissible, with renew/manage CTAs); use `.alert--row` for inline page warnings like low-stock or region banners. Avoid for a single editorial hint — use the Sticky-note instead.
+**Usage** — Use `.alert--card` in the dashboard alerts panel (stacked, dismissible, with renew/manage CTAs); use `.alert--row` for inline page warnings like low-stock or region banners. Avoid for a single editorial hint — use the Info banner instead.
 
 **Do & Don't**
 
@@ -3766,7 +3761,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
     "version": "R 2.1",
     "date": "2026-06-01",
     "base": "Ztor (parent design system)",
-    "notes": "Highlighter-orange primary used structurally (active tabs, selection-card selected state, sticky-note, hero, pre-order pills — nav active states stay neutral gray, Q8 2026-07-13). App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
+    "notes": "Highlighter-orange primary used structurally (active tabs, selection-card selected state, hero and pre-order pills — nav active states stay neutral gray, Q8 2026-07-13). Info banners use neutral tokens. App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
   },
   "foundation": {
     "palette": {
@@ -3824,7 +3819,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
   "component": {
     "_note": "see Pillar 4 §4.1 for the full inventory; each unit carries a _layer tag (atom/molecule/organism), orthogonal to variant",
     "button": { "_layer": "atom", "primary": {}, "outline": {}, "ghost": {} },
-    "_inventory": "button · badge · status-dot · chip · switch · stickynote · input · icon · meta-cell (atoms) · card · kpi · alert · accordion · tabs · cookie-banner · empty-stub · selection-card · composer · page-intro · field-system · filter-row · segmented-control · stepper · progress-stepper · settings-nav · settings-row · rental-card · rank-bars (molecules) · header · footer · data-list · table · chart · bento · app-shell · wizard-frame · hero-slideshow · ip-hero · chart-card (organisms)"
+    "_inventory": "button · badge · status-dot · chip · switch · info-banner · input · icon · meta-cell (atoms) · card · kpi · alert · accordion · tabs · cookie-banner · empty-stub · selection-card · composer · page-intro · field-system · filter-row · segmented-control · stepper · progress-stepper · settings-nav · settings-row · rental-card · rank-bars (molecules) · header · footer · data-list · table · chart · bento · app-shell · wizard-frame · hero-slideshow · ip-hero · chart-card (organisms)"
   },
   "pattern": {
     "_cards": {

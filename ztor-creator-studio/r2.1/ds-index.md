@@ -315,6 +315,7 @@
 - `form-section.css` — .form-section, .form-section__head, .form-section__title, .form-section__sub, .form-footnote ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--sm ｜ Ztor Creator Studio - Icon atom
+- `info-banner.css` — .info-banner ｜ Neutral informational banner — for contextual ex
 - `input.css` — .input, .textarea, .input--with-prefix, .select ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
 - `kpi.css` — .kpi, .kpi__label, .kpi__value, .kpi__delta, .kpi__delta--neg ｜ KPI — metric tile (label / value / delta or meta
@@ -336,7 +337,7 @@
 - `radio-card.css` — .radio-cards, .radio-card__text, .radio-card__title, .radio-card__sub ｜ radio-card.css · 並排可選卡（radio 卡）
 - `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
 - `restock-modal.css` — .restock-lines, .restock-lines__group, .restock-line, .restock-line__main, .restock-line__img
-- `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
+- `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__brand, .scanner-top__title ｜ Mobile scanner · spec 5.1.5.11 F7 (standalone ph
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
 - `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active ｜ Segmented control · 2/3-way text toggle in a mut
@@ -344,7 +345,6 @@
 - `settings.css` — .settings-layout, .settings-nav, .settings-nav__item, .settings-nav__item--active, .settings-section ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
-- `stickynote.css` — .stickynote, .stickynote__mark ｜ Sticky-note callout — the "Why" / hint / pending
 - `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
 - `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
 - `table.css` — .ztor-table, .ztor-table__feature, .ztor-table__check, .ztor-table__cross, .ztor-table__partial ｜ Ztor — Table

@@ -57,8 +57,8 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
         <button class="btn btn--outline btn--sm" type="button" data-i18n="manual.attach-btn">Add file</button>
       </div>
 
-      <div class="stickynote mt-16">
-        <span class="stickynote__mark">!</span>
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
         <span data-i18n="manual.note"><strong>Marked unverified.</strong> Manual income never counts toward Available, payouts, or tax documents — at most it shows in display stats (§7.3).</span>
       </div>
     </div>

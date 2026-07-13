@@ -74,8 +74,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         <span class="field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
       </label>
 
-      <div class="stickynote mt-16">
-        <span class="stickynote__mark">!</span>
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
         <span data-i18n="pks.note">Add at least one item or ticket before you can create the session — that also enables the scanner. Creating it generates a password-protected scanner URL you hand to staff.</span>
       </div>
     </div>

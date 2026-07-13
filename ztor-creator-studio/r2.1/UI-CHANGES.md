@@ -8,6 +8,26 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-13 · Create Product 元件尺寸與 Icon atom 對齊（B 反饋導入）
+
+- 套用 PR #101 的實質元件調整：Upload tile 的自製 SVG／文字 `＋` 改為 Lucide、select 改用 `.select-wrap` 的 Lucide chevron、icon 增加 12／20／24px 語意尺寸、filter tabs 與 icon button 對齊密度。
+- Input 改為 1px 陰影邊線與 4px focus glow；卡片仍保留主分支的 1px border、無陰影，按鈕 hover 仍用 `--accent`。
+- 此輪只改呈現層與元件文件，Create Product 的產品流程、文字語意與資產清單不變。
+
+## 2026-07-13 · 訂單匯出移至篩選工作列（A 規格同步）
+
+- `orders.html` 的 Export 自 F1 訂單摘要頁首移到 F2 訂單篩選上排，與搜尋並列；功能不變。規格書與需求對照同步。
+
+## 2026-07-13 · Info banner 密度與圓角修正（B 反饋導入）
+
+- **回歸緊湊資訊元件尺度**：`.info-banner` 字級 16px → 14px、圖示 24px → 20px、圖示間距 16px → 10px、內距 16×20px → 10×12px。原先過大的比例使單句說明看似頁面公告，與「情境資訊提示」角色不符。
+- **圓角 token 修正**：`--radius-shell`（28px，app 外框專用）改為 `--radius-lg`（8px，緊湊面板）。同步更新 Design System 文件與展示；手機為 13px 字級、18px 圖示。
+
+## 2026-07-13 · Stickynote 全站改為中性 Info banner（B 反饋導入 · 元件替換）
+
+- **元件語意與視覺重置**：移除橘色 `.stickynote`，改為 `.info-banner`。全站 32 個提示保留原本的產品文字與位置，統一改成中性灰底、細邊框、較大圓角與圓形 `info` 圖示，符合使用者提供的參考樣式；不再把說明文字誤傳達成警示。
+- **共用層同步**：新增 `ds-components/info-banner.css`，移除 `stickynote.css`；所有頁面、彈窗、Dashboard 元件與 `design-system.html` 改載入新檔。`design-system.md`、`design-system.html`、`BUILD-SPEC.md` 更新元件角色與 token 說明。
+
 ## 2026-07-13 · 兩處使用者反饋修正：交易表展開箭頭移到列尾 + stickynote 字色可讀（B 反饋導入）
 
 - **earnings 交易明細 `.ztor-table` 展開箭頭移到列尾獨立欄**：原 `chevron-right` 內嵌在「日期」儲存格最前，把 `Nov 24` 擠到換行。改法——箭頭移到每列最後新增的 `.ztor-table__chevcell`（右對齊、32px 寬），表頭補一個等寬 `<th>` 對齊，日期欄加 `.ztor-table__datecell{white-space:nowrap}` 不再換行；詳情列 colspan 6→7。展開互動（點列 rotate 90°＋顯示 waterfall 詳情）不變。`ds-components/table.css` 移除 chevron 的 `margin-right`、新增兩個 cell class；`design-system.html` demo 表與 `design-system.md` 條目同步改成「列尾 chevron」。
