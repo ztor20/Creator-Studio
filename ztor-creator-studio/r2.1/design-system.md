@@ -35,7 +35,7 @@
 
 **Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
-**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — cards separate by shadow, and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6–7px radii, and multi-layer rim+drop shadows in place of borders. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active nav, KPI highlight tiles, sticky-note callouts, hero fills, pre-order pills. Hairlines stay at `#E5E5E5`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
+**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active tabs, selection-card selected state, sticky-note callouts, hero fills, pre-order pills (nav active states stay neutral gray — Q8). Hairlines stay at `#E5E5E5`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
 
 **Similar systems** — [Notion](https://notion.so) (highlighter-orange accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
 
@@ -49,7 +49,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 - Use `Geist` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
 - Reserve `--primary` (`#ffa33f`) for one role: the primary CTA. The hero banner, sticky-note callouts, and the brand mark may also touch orange — never as a fill for nav chrome, KPI highlights, or status pills.
-- Apply `--radius` (6 px) to buttons, `--radius-md` (7 px) to cards / surfaces, `--radius-lg` (10 px) to dropdowns and mega menus.
+- Apply `--radius` (6 px) to all controls, buttons, cards and surfaces; `--radius-md` is now an alias of `--radius` (merged to 6 px, Q2 2026-07-13). Use `--radius-lg` (8 px) for dropdowns / nav panels and `--radius-pill` for full-round.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
 - Use the `pill` taxonomy (`pill--orange / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
 - Use Lucide icons via the local `icons.js` registry, stroke-width `1.2`, `currentColor` inheritance. Never inline raw `<svg>` for chrome icons.
@@ -58,7 +58,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 ### Don't
 
-- Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — use `--muted` instead.
+- Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — nav active states use `--sidebar-active` (neutral gray, Q8), interactive hover uses `--accent` (Q9), KPI/row backgrounds stay neutral `--card`/`--muted`.
 - Content surfaces top out at E2 `--shadow-card`; `--shadow-float` / `--shadow-overlay` are reserved for transient layers (dropdowns, dialogs) — never for resting content. Interaction borrows the rung above (card hover → float); no ad-hoc shadow values. Only the hero carries deep light and it does so via gradient veil, not box-shadow.
 - Do not introduce fonts outside the four-font stack (`Geist`, `Geist`, `Geist Mono`, `Inter`, `Noto Sans TC`). The CJK fallback is non-negotiable.
 - Do not give data-list icons semantic color. List icons stay monochrome (`--muted` bg + `--foreground-muted` color); semantic color lives in the **amount** text, not the icon chip.
@@ -66,6 +66,54 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 - Do not place dropdowns over the full-bleed hero with `var(--card)` background — in dark mode `--card` is translucent. Use `var(--background)` (always opaque) for any panel that overlaps imagery.
 - Do not hardcode color hex values in page CSS. All visual decisions route through `_tokens.css`; new color needs go to `:root` overrides, not inline rules.
 - Do not break button copy across lines — `.btn` base sets `white-space: nowrap`; long labels need a shorter copy decision, not a wrapped button.
+
+### 風格裁決落地（2026-07-13，Q1–Q12）
+
+以下 12 條是 2026-07-13 落地的風格裁決，CSS 已改完，此節是給後續新元件對齊用的規則摘要。逐條換行列出：
+
+- **Q1 形狀＝可否互動的線索**
+  可篩選／可點的膠囊（chip、filter-tabs）＝全圓 `--radius-pill`。
+  純顯示徽章（badge、field-pill、metric-pill）＝小圓角矩形 `--radius`。
+  新元件照此選形狀，不得混用。
+- **Q2 圓角統一 6px**
+  `--radius` 與 `--radius-md` 同值（6px），`--radius-md` 是別名。
+  例外：`--radius-pill`（9999px）、shell（28px）、`--radius-lg`（8px）。
+- **Q3 卡片預設＝1px 純邊框**
+  `.card` / `.kpi` / `.ztor-card` 預設用 `border: 1px solid var(--border)`，不用陰影。
+  只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）hover 時才升級成純陰影（`--shadow-card-hover`）。
+- **Q4 控制項＝真 border**
+  `.input` / `.textarea` / `.select`、`.ztor-metric-pill`、`.switch` 一律用 `border: 1px solid var(--border)`，與 outline 按鈕一致。
+  不再用陰影模擬邊框；focus 改 `border-color: var(--ring)` + 3px 柔光環。
+- **Q5 hover 浮起規則**
+  可點卡片 hover 借 `--shadow-float` / `--shadow-card-hover` 浮起。
+  清單列與表格列 hover 只換底色 `--accent`，不浮起。
+  純預覽／展示卡（preview-card、kpi）不做 hover。
+- **Q6 表單節奏**
+  以基礎 `.field` 為準：描述↔控件 6px、欄位↔欄位 16px。
+  `.form-section` 不再局部覆寫垂直節奏。
+- **Q7 卡片內距對照表（維持各自密度，不硬統一）**
+  `.kpi` 16/18px。
+  `.card` 20px。
+  `.ztor-card` 24px。
+  `.selection-card` 14/16px。
+  `.empty-card` 32/24px。
+  未來新卡片對號入座，不要隨機挑數字。
+- **Q8 品牌橘範圍**
+  橘只給主操作／主分類（Tabs、選擇卡已選）。
+  導覽／篩選的已選一律中性灰（`.settings-nav--active`、`.app-sidebar` 已對齊，用 `--sidebar-active`）。
+- **Q9 hover 底色**
+  互動 hover 一律 `--accent`（亮 `#F3F3F3` / 暗 `#383839`）。
+  `--muted` 只給斑馬紋／襯底，不做 hover。
+  `--secondary` 已退役（全站零消費，已自 `_tokens.css` 移除）。
+  例外：`.filter-tabs__item:hover` 仍用 `--muted`（因其 active 也是灰 muted，hover 不可比已選更重）。
+- **Q10 關閉鍵**
+  `.alert__close`、`.leave-dialog__close` 的 20px/18px 覆寫已移除。
+  全部關閉鍵回到基礎 `.ztor-icon` 16px。
+- **Q11 已付款 Paid**
+  orders／order-detail 的 Paid 徽章一律 `badge--success`（綠色），不再是 `badge--neutral`。
+- **Q12 欄位標籤**
+  用一般大小寫（`.settings-row__label`）。
+  `tier-settings.html` 原本的大寫 `.gate-field__label` 已退役，不再新增大寫孤例。
 
 ---
 
@@ -102,10 +150,10 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Display font | `Geist` (H1) |
 | UI font | `Geist` (H2-H4, buttons, nav) |
 | Body font | `Inter` (paragraphs only) |
-| Primary radius | `6px` (CTAs), `7px` (cards / outline buttons) |
+| Primary radius | `6px` (CTAs, cards, outline buttons — `--radius-md` merged into `--radius`, Q2 2026-07-13) |
 | Pill radius | `1000px` / `100%` (status dots, avatars) |
 | Base spacing | Dense scale — 1, 4, 6, 8, 10, 12, 14, 16, 24 |
-| Card shadow | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` (rim + drop) |
+| Card shadow | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` (rim + drop) — used at rest by selection-card / dropdown-item / table / composer / cookie-banner; `.card`/`.kpi`/`.ztor-card` default to a flat 1px `--border` instead (Q3 2026-07-13), shadow reserved for their clickable hover |
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
@@ -246,8 +294,8 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 | Token | Value | Where |
 |---|---|---|
 | `radius-button-primary` | `6px` | "Create project", "Request payout" |
-| `radius-button-secondary` | `7px` | "Back" / "Cancel" outline CTA |
-| `radius-card` | `7px – 8px` | Cards, dropdown panels |
+| `radius-button-secondary` | `6px` | "Back" / "Cancel" outline CTA (`--radius-md` merged into `--radius`, Q2 2026-07-13) |
+| `radius-card` | `6px` (cards) `– 8px` (dropdown panels, `--radius-lg`) | Cards, dropdown panels |
 | `radius-input` | `6px` | Form fields |
 | `radius-small` | `2–5px` | Inner sub-radii on nested components |
 | `radius-card-feature` | `12px` | Feature / highlight cards |
@@ -272,7 +320,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | `shadow-header` | `0 3px 16px rgba(0,0,0,0.10)` (dark `0.45`) | Sticky wizard header 下緣柔和投影（由 header 後內縮圓角色塊投出，只露下緣） |
 | `shadow-seam` | `7px 0 20px -4px rgba(12,10,9,0.16)` (dark `0.6`) | 上層主面板向右蓋向相鄰下層（E-Shop 主面板疊在預覽上） |
 
-**Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This is the dominant elevation pattern across the app. **Exception (2026-06-12)**: outline buttons now draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears; shadows-as-edges remains the pattern for cards / popovers.
+**Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This remains the pattern for dropdowns / popovers / dialogs / overlays, and for the hover state of clickable / selection cards. **Exception (2026-06-12)**: outline buttons draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears. **Exception extended (Q2–Q4, 2026-07-13)**: default cards (`.card` / `.kpi` / `.ztor-card`) and form controls (`.input` / `.textarea` / `.select`, `.switch`, `.ztor-metric-pill`) also moved to a real 1px `--border` — resting content no longer draws a shadow by default; `--shadow-card` is now reserved for clickable/selection-card hover and for surfaces that were never touched by this change (selection-card default, dropdown-item, table, composer, cookie-banner, radio-card).
 
 **Edge & overlay tokens (2026-06-15)** — `--border-inverse` (`rgba(255,255,255,0.1)`, same in both themes) is the hairline on always-dark / inverse surfaces (footer slab). `--overlay-tint` (`rgba(0,0,0,0.45)`) is the darkening mixed into modal backdrops (`.payout-modal`, paired with `--overlay-blur`).
 
@@ -348,7 +396,6 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Status — accent** | `--status-accent` | `#8B5CF6` | purple — extra category hue [ext] |
 | **Card — foreground** | `--card-foreground` | `#000000` | shadcn 對齊補的配對字色；元件現多直接用 `--foreground`（待採用） |
 | **Popover** (dropdown / nav 浮層) | `--popover` / `--popover-foreground` | `#FFFFFF` / `#000000` | white tier；元件尚未改引用（待採用） |
-| **Secondary** (安靜次要鈕底) | `--secondary` / `--secondary-foreground` | `#F4F4F4` / `#000000` | soft-grey tier；元件尚未改引用（待採用） |
 | **Accent — foreground** | `--accent-foreground` | `#000000` | 配對字色（待採用） |
 | **Destructive — foreground** | `--destructive-foreground` | `#FFFFFF` | 配對字色（待採用） |
 | **Input** (控件邊) | `--input` | `#E5E5E5` | = border；元件現多直接用 `--border`（待採用） |
@@ -414,8 +461,8 @@ E0–E4 海拔階梯（見 Pillar 1 §1.5）：一元件一階、互動借上一
 |---|---|---|
 | E0 貼底 | `--shadow-hairline` | No lift — page / rails / table rows; hairline is an edge, not elevation |
 | E1 微浮 | `--shadow-raise` / `-strong` | Buttons, inputs, segmented, switch knob |
-| E2 卡片 | `--shadow-card` | Surface cards, KPI tiles, list containers, sticky toolbars |
-| E3 懸浮 | `--shadow-float` | Dropdowns, popovers, tooltips, dragged rows; `--shadow-card-hover` aliases here |
+| E2 卡片 | `--shadow-card` | Selection card, dropdown-item, table, composer, cookie-banner, radio-card — surfaces this rung still applies to at rest. **Not** `.card` / `.kpi` / `.ztor-card` (Q3 2026-07-13: those default to 1px `--border`, no shadow) |
+| E3 懸浮 | `--shadow-float` | Dropdowns, popovers, tooltips, dragged rows; `--shadow-card-hover` aliases here (also the hover rung for `.ztor-card--clickable` / `.selection-card`) |
 | E4 覆蓋 | `--shadow-overlay` | Modals, dialogs, drawers (above the scrim) |
 
 Content surfaces top out at E2. Edge utilities（`--shadow-micro` / `--shadow-seam` / `--shadow-header`）屬方向性分隔手法、不在階梯內。Hero is the only deeply-shadowed surface and it does it via gradient overlay, not box-shadow.
@@ -723,7 +770,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 
 ```
 ┌──────────────┐
-│ Available    │   .badge .badge--success   (flat tint · saturated text · ~7px corners · no dot)
+│ Available    │   .badge .badge--success   (flat tint · saturated text · ~6px corners · no dot)
 └──────────────┘
 
 ┌─────────────────────┐
@@ -1101,7 +1148,7 @@ Static callout — no interactive states.
 
 ### 4.8 Input
 
-**`_layer`** · atom — Single-line text field, matching textarea, and native select; white surface with hairline edge (`0 0 0 1px var(--border)`) that promotes to a focus ring on focus.
+**`_layer`** · atom — Single-line text field, matching textarea, and native select; white surface with a real 1px `--border` edge (Q4 2026-07-13: was a `0 0 0 1px var(--border)` shadow-simulated hairline) that promotes `border-color` to `--ring` + a soft 3px glow on focus.
 
 > **2026-07-10 整併**：舊 `.ztor-input` / `.ztor-input--xs/sm/lg/xl` / `.ztor-textarea` 替身 class 已刪除（未被任何實頁使用）；design-system.html 的 demo 改用真身 `.input` / `.textarea` / `.select`。真身規則原住 `shared.css`，現搬進 `input.css`（屬性值原樣未動）。
 
@@ -1130,8 +1177,8 @@ Static callout — no interactive states.
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | bg `--card`, hairline `0 0 0 1px var(--border)`, text `--foreground` |
-| focus | `:focus` | `outline: none`; `0 0 0 1px var(--ring)` + `0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent)` soft ring |
+| default | — | bg `--card`, 1px `border: solid var(--border)`, text `--foreground` (Q4 2026-07-13: real border) |
+| focus | `:focus` | `outline: none`; `border-color: var(--ring)` + `0 0 0 3px color-mix(in srgb, var(--ring) 15%, transparent)` soft glow |
 
 **狀態缺口** — `:disabled` 與 `aria-invalid`（錯誤 ring）樣式尚未在 `input.css` 實作；design-system.html 不示範，待補。
 
@@ -1146,15 +1193,15 @@ Static callout — no interactive states.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` · text `--foreground` · hairline `--border` · radius `--radius` · focus ring `--ring` · font `--font-body` · font size `--fs-14` · padding `--sp-12` (left/right prefix `--sp-32`)
+- bg `--card` · text `--foreground` · border `--border` (1px, Q4) · radius `--radius` · focus `border-color: --ring` + soft glow ring · font `--font-body` · font size `--fs-14` · padding `--sp-12` (left/right prefix `--sp-32`)
 
-**Usage** — Use `.input` for text/number entry in forms (settings, payout forms), `.textarea` for longer free text, `.select` for a native dropdown. Avoid borders — the field uses surface + hairline, not a 1px border.
+**Usage** — Use `.input` for text/number entry in forms (settings, payout forms), `.textarea` for longer free text, `.select` for a native dropdown. The field uses a real 1px `--border`, matching the outline button (Q4 2026-07-13).
 
 **Do & Don't**
 
 - ✅ Do pair with Field system for label + hint.
 - ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
-- ❌ Don't add a literal CSS border — the hairline shadow is the edge.
+- ✅ Do rely on the 1px `--border` for the edge — no box-shadow-as-border simulation (Q4 2026-07-13).
 - ❌ Don't invent a size variant — the real component ships one size only.
 
 
@@ -1339,15 +1386,15 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--card` bg, `--shadow-card`, `--radius-md` |
-| hover | `.ztor-card--clickable:hover` | `translateY(-2px)` + deeper drop + hairline rim shadow |
+| default | — | `--card` bg, 1px `--border`, `--radius` (Q3 2026-07-13: flat border, no shadow at rest) |
+| hover | `.ztor-card--clickable:hover` | `translateY(-2px)` + `--shadow-card-hover` (borrows E3) |
 | focus | `.ztor-card--clickable:focus-visible` | `2px solid var(--ring)` outline, `2px` offset |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
-| `.ztor-card` | Base elevated column container, 24px pad |
+| `.ztor-card` | Base column container, 1px `--border`, 24px pad |
 | `.ztor-card--clickable` | Adds hover lift + focus-visible ring |
 | `.ztor-card--muted` | Swaps bg to `--muted` |
 | `.ztor-card--frame` | Padding 0 + overflow hidden + `--radius-lg` (mockup frame) |
@@ -1355,7 +1402,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / body / meta) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card` (elevation); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
+- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / body / meta) · `--border` (1px, default edge — Q3) · `--radius-md`, `--radius-lg` (default vs frame) · `--shadow-card-hover` (clickable hover only, Q3); `--ring` (focus outline) · `--font-ui`, `--font-body`; `--duration`, `--easing`
 
 **Usage** — Docs-only generic standalone card shell; not used on any product page today (kept as a documented reference). For product-page sections, use **4.11b Section card** (`.card`) instead.
 
@@ -1402,7 +1449,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--card` bg, `--shadow-card`, `--radius-md` |
+| default | — | `--card` bg, 1px `--border`, `--radius` (Q3 2026-07-13: flat border, no shadow) |
 | link hover | `.card__head .card__link:hover` | Link color → `--foreground` (chevron tracks via currentColor) |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -1418,7 +1465,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / hint) · `--border` (link underline) · `--radius-md` · `--shadow-card` (elevation) · `--font-ui`, `--font-body`
+- `--card`, `--muted` (bg) · `--foreground`, `--foreground-muted`, `--muted-foreground` (title / hint) · `--border` (1px default edge, Q3; also link underline) · `--radius-md` · `--font-ui`, `--font-body`
 
 **Usage** — Use for every product-page section that needs a titled wrapper with an optional action link. Avoid when content is a flat row list — reach for Data list / Table instead.
 
@@ -1426,7 +1473,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 
 - ✅ Do put the section action in `.card__head .card__link` so it auto-renders the trailing chevron.
 - ✅ Do use `.card--muted` for nested sub-sections to differentiate depth.
-- ❌ Don't put a border on cards — elevation is `--shadow-card` only.
+- ✅ Do rely on the 1px `--border` for the section edge — no shadow by default (Q3 2026-07-13).
 - ❌ Don't use this for a standalone info block outside a page section — use `.ztor-card` instead.
 
 
@@ -1474,7 +1521,7 @@ Color-state modifiers `.kpi--success` / `.kpi--warning` / `.kpi--destructive` ti
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--card` bg, `--shadow-card`, value in display font |
+| default | — | `--card` bg, 1px `--border`, value in display font (Q3 2026-07-13: flat border, no shadow) |
 | (delta sign) | `.kpi__delta--neg` | Delta color switches `--status-success` → `--destructive` |
 | link hover | `.kpi__link:hover` | `--muted-foreground` → `--foreground` |
 
@@ -1484,7 +1531,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 | Class / modifier | Effect |
 |---|---|
-| `.kpi` | Tile container — column, 6px gap, elevated |
+| `.kpi` | Tile container — column, 6px gap, 1px `--border` |
 | `.kpi__label` | Uppercase 12px / 0.4px tracking, subtle; flex for leading icon |
 | `.kpi__value` | Display font 28px / 500 / -0.6px tracking |
 | `.kpi__delta` | 12px UI; default `--status-success` (positive) |
@@ -1497,7 +1544,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card` (bg); `--shadow-card`; `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta / `.kpi--success`), `--destructive` (negative delta / `.kpi--destructive`), `--status-warning` (`.kpi--warning`, color-mixed) · `--font-ui`, `--font-display`
+- `--card` (bg); `--border` (1px, default edge — Q3); `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta / `.kpi--success`), `--destructive` (negative delta / `.kpi--destructive`), `--status-warning` (`.kpi--warning`, color-mixed) · `--font-ui`, `--font-display`
 
 **Usage** — Use for dashboard summary rows, earnings tabs, and page-header metric strips where one number per tile is the point. Avoid when the value needs a trend chart or multiple sub-figures — use the Chart organism.
 
@@ -3678,7 +3725,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
 
   --radius-sm: 3px;
   --radius:   6px;
-  --radius-md:7px;
+  --radius-md:6px;  /* merged alias of --radius (Q2 2026-07-13) */
   --radius-lg:8px;
   --radius-xl:16px;
 
@@ -3700,7 +3747,7 @@ The DSS v1.4 standard is output-agnostic. Ztor Creator Studio · R 2.1 ships as 
   },
   "radius": {
     "sm": { "$value": "3px", "$type": "dimension" },
-    "md": { "$value": "7px", "$type": "dimension" }
+    "md": { "$value": "6px", "$type": "dimension" }
   }
 }
 ```
@@ -3719,7 +3766,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
     "version": "R 2.1",
     "date": "2026-06-01",
     "base": "Ztor (parent design system)",
-    "notes": "Highlighter-orange primary used structurally (active nav, KPI highlight, sticky-note, hero, pre-order pills). App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
+    "notes": "Highlighter-orange primary used structurally (active tabs, selection-card selected state, sticky-note, hero, pre-order pills — nav active states stay neutral gray, Q8 2026-07-13). App-tier components promoted from project shared.css to ds-components/ across Phase 0-4."
   },
   "foundation": {
     "palette": {
@@ -3739,7 +3786,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
       }
     },
     "effect": {
-      "radius": { "sm":"3px", "default":"6px", "md":"7px", "lg":"8px", "xl":"16px", "pill":"9999px" },
+      "radius": { "sm":"3px", "default":"6px", "md":"6px", "lg":"8px", "xl":"16px", "pill":"9999px" },
       "shadow": {
         "micro":    "0 4px 4px rgba(23,23,23,0.04)",
         "card":     "0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)",

@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 219 條）
+## Tokens（_tokens.css，亮色，共 217 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -119,7 +119,7 @@
 ### --radius-*
 - `--radius-sm`: 3px
 - `--radius`: 6px
-- `--radius-md`: 7px
+- `--radius-md`: var(--radius)
 - `--radius-lg`: 8px
 - `--radius-xl`: 16px
 - `--radius-shell`: 28px
@@ -127,10 +127,6 @@
 
 ### --ring-*
 - `--ring`: var(--primary)
-
-### --secondary-*
-- `--secondary`: #F4F4F4
-- `--secondary-foreground`: #000000
 
 ### --shadow-*
 - `--shadow-card-hover`: var(--shadow-float)

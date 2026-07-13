@@ -8,6 +8,25 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-13 · 風格裁決 Q1–Q12 全數落地（A spec-derived · 含 C 撤除）
+
+`STYLE-DECISIONS.md` 累積的 12 題「同一視覺角色站上有兩種以上做法」經使用者逐題裁決後一次全站落地。視覺化圈選版 `docs/風格裁決-視覺化.html`。此輪只動呈現層（token／元件 CSS／少量頁面 class），零產品行為變更。
+
+- **Q1 形狀＝可否互動的線索（文件化）**：可篩選/可點膠囊（chip、filter-tabs）＝全圓；純顯示徽章（badge、field-pill、metric-pill）＝小圓角矩形。規則寫進 design-system。CSS 本已如此，本輪只補明文。
+- **Q2 圓角統一 6px**：`--radius-md` 由 7px 改成 `var(--radius)`（6px 別名，不 churn 67 處呼叫點，視覺同全量合併）；`.btn--icon-circle` 裸值 `9999px` 改 `var(--radius-pill)`。
+- **Q3 預設卡＝純邊框（C 撤除陰影）**：`.ztor-card`／`.card`／`.kpi` 由 `--shadow-card` 改 `border:1px solid var(--border)`（平、editorial）。可點/浮起強調卡（`.ztor-card--clickable` hover、`.selection-card`）保留陰影。`.preview-card`／`.event-preview-card` 本為純邊框、維持。
+- **Q4 控制項＝真 border**：`.input/.textarea/.select`、`.ztor-metric-pill`、`.switch` 由陰影模擬邊框改真 `border:1px solid var(--border)`（與 2026-06-12 outline 按鈕決定一致）；input focus 改 `border-color:--ring`＋3px 柔光環；switch knob 內移 1px 補償 border-box。
+- **Q5 hover 浮起規則（文件化）**：可點卡片 hover 借陰影浮起；清單列/表格列 hover 只換底色（見 Q9）；純預覽/展示卡不做 hover。
+- **Q6 表單節奏統一 16px**：移除 `.form-section .field` 的垂直節奏覆寫（原 gap 4px／欄位間距 26px 裸值），改吃基礎 `.field`（6px／16px）。「長流程用 24」折衷未採用（可選）。
+- **Q7 卡片內距對照表（文件化）**：維持各自密度（kpi 16/18、card 20、ztor-card 24、selection-card 14/16、empty-card 32/24），整理成表寫進 design-system，未來新卡對號入座。
+- **Q8 品牌橘收斂**：`.settings-nav__item--active` 由品牌橘 tint 改中性灰 `var(--sidebar-active)`，向 `.app-sidebar` 看齊（橘只留給主操作/主分類）。
+- **Q9 hover 底色統一 --accent（C 撤除 --secondary）**：全站互動 hover 由散落的 `--muted`／即席 `color-mix` 灰統一成 `var(--accent)`（約 30 處，跨 button/chip/dropdown/list/table/tile/nav/wizard 等）；`--muted` 僅留斑馬紋/襯底。零消費的 `--secondary`／`--secondary-foreground` token 自 `_tokens.css` 亮暗兩區塊退役。**例外**：`.filter-tabs__item:hover` 保留 `--muted`（其 active 也是 muted，hover 不可比已選重）。
+- **Q10 關閉鍵 icon 統一 16px**：移除 `.alert__close`(20)／`.leave-dialog__close`(18) 覆寫，回到基礎 `.ztor-icon` 16px。
+- **Q11 已付款 Paid ＝ 綠色**：orders.html（3 處）／order-detail.html（1 處）的 Paid 徽章 `badge--neutral`→`badge--success`。
+- **Q12 欄位標籤退役大寫孤例（C 撤除）**：`tier-settings.html` 的 `.gate-field__label`（大寫）退役，改用 DS 的 `.settings-row__label`（一般大小寫）；頁內 `<style>` 定義移除，補一條 gate/benefit 標籤↔輸入框 6px 間距。
+
+design-system.md／design-system.html 同步 12 條裁決（卡片/控制項描述改真邊框、Q1/Q5/Q7/Q8 規則新增小節、`--secondary` 從 token 表移除）；check_ds_sync 全 PASS（既有 fan-store 裸色、零消費元件 WARN 未變）；收尾 `bump_ver` → **20260713a**（833 連結、34 頁）。
+
 ## 2026-07-11 · 全站元件統一（第三批）：四個新變體元件＋二輪掃描補修＋機械清理（B 反饋導入）
 
 使用者指示「再次把基準三頁的元件推到其他所有產品頁」。三路二輪掃描（表單軸／清單狀態軸／24 頁殘留複檢）＋使用者裁決四項設計判斷後施工。同輪的兩則 payout 收斂另見下方兩條目。
