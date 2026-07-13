@@ -1,5 +1,7 @@
 # Ztor Creator Studio · Component Library Index
 
+> **⚠️ DEPRECATED（2026-07-12 起凍結）**：本檔 2026-07-12 起凍結不再維護（清單已 drift：只列約 30 支、實況 68 支）。元件清單以機器生成的 [`ds-index.md`](./ds-index.md) 為準；元件規格以 [`design-system.md`](./design-system.md) Pillar 4 為準。本檔僅留歷史脈絡。
+
 Quick index of the project component library. The **shipping library** is the set of CSS files in [`ds-components/`](./ds-components/); the **authoritative spec** for each unit (anatomy, states, tokens) lives in [`design-system.md`](./design-system.md) Pillar 4 · Component. This file is the at-a-glance map between them.
 
 > Source of truth: `design-system.md` Pillar 4. Do not duplicate spec detail here — add it there and link.
