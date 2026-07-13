@@ -8,6 +8,22 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-13 · 兩處使用者反饋修正：交易表展開箭頭移到列尾 + stickynote 字色可讀（B 反饋導入）
+
+- **earnings 交易明細 `.ztor-table` 展開箭頭移到列尾獨立欄**：原 `chevron-right` 內嵌在「日期」儲存格最前，把 `Nov 24` 擠到換行。改法——箭頭移到每列最後新增的 `.ztor-table__chevcell`（右對齊、32px 寬），表頭補一個等寬 `<th>` 對齊，日期欄加 `.ztor-table__datecell{white-space:nowrap}` 不再換行；詳情列 colspan 6→7。展開互動（點列 rotate 90°＋顯示 waterfall 詳情）不變。`ds-components/table.css` 移除 chevron 的 `margin-right`、新增兩個 cell class；`design-system.html` demo 表與 `design-system.md` 條目同步改成「列尾 chevron」。
+- **`.stickynote` 字色白→深**：橘色便利貼 callout（create-product 等 7 頁用）原本 `color: var(--primary-foreground)`（白字），在淡橘底（`color-mix(--primary 32%, --card)`）上讀不清。改成 `var(--foreground)`，隨主題翻轉（白天深字、夜間白字），兩模式都清楚。
+
+## 2026-07-13 · 風格微調（taste／minimalist／soft 三方體檢後，使用者選定落地）（B 反饋導入 · 純 token 層）
+
+用 `taste-skill`（產品 UI 只取可轉用維度）＋`minimalist-skill`＋`soft-skill` 對 r2.1 體檢，做成 `docs/風格微調體檢-視覺化.html`（current↔proposed 對照）。使用者逐條選定後落地。全部集中在 `ds-components/_tokens.css` 的 token 值調整，零元件結構變更。
+
+- **文字純黑→off-black**（三方共識）：`--foreground` `#000000`→`#1A1A1A`；`--muted-foreground` `#737373`→`#6E6E68`（微暖）。純黑殺層次，off-black 更柔、對比仍遠超 AAA。dormant 的 `--card-foreground`／`--popover-foreground`／`--accent-foreground`／`--sidebar-foreground`（零消費、元件一律吃 `--foreground`）維持 `#000000` 不動。
+- **底色微暖＋邊框更淡**（三方共識）：`--surface-shell` `#F5F5F5`→`#FAFAF8`（暖 off-white，讓白卡靠色階浮出）；`--border`／`--input`／`--sidebar-border` `#E5E5E5`→`#EAEAEA`。
+- **陰影柔化**（minimalist §7「shadow <0.05」／soft「柔擴散 ambient」）：`--shadow-card`、`--shadow-float` 改成更擴散、更低透明（保留極淡 rim 維持輪廓）。只影響仍用陰影的浮層／強調卡（下拉、彈窗、selection-card hover），不動 Q3 的預設卡純邊框。
+- **暗色校準**（taste §8「兩模式層級對等」，補 STYLE-DECISIONS 的暗色落差）：暗色 `--status-success`／`--chart-3` `#00A63E`→`#4ADE80`（原本反向變暗、與其他狀態色方向相反，屬漏調；Paid 綠徽章在深底才讀得清）；補上暗色缺的 `--overlay-tint`（`rgba(0,0,0,0.6)`，深底遮罩要更濃）與 `--gradient-brand`（拿掉亮色淡膚起點 `#ffd9a0`，深底才讀得出漸層）。
+- **使用者未採用**：主按鈕對比（維持白字，未改深字／深橘）、卡片柔浮陰影基調（維持純邊框）、double-bezel 巢狀卡。
+- design-system.md／.html／ds-index.md 同步新 token 值；check_ds_sync 全 PASS；bump_ver → **20260713b**。
+
 ## 2026-07-13 · 風格裁決 Q1–Q12 全數落地（A spec-derived · 含 C 撤除）
 
 `STYLE-DECISIONS.md` 累積的 12 題「同一視覺角色站上有兩種以上做法」經使用者逐題裁決後一次全站落地。視覺化圈選版 `docs/風格裁決-視覺化.html`。此輪只動呈現層（token／元件 CSS／少量頁面 class），零產品行為變更。
