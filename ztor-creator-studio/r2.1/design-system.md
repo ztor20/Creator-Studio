@@ -35,7 +35,7 @@
 
 **Tags** — `creator-economy`, `operations-dashboard`, `geist-stack`, `clean-white-canvas`, `neutral-surfaces`, `subtle-radii`, `multi-layer-shadows`, `dashboard-hero`, `row-divider-data`, `light-and-dark`, `highlighter-orange-primary`.
 
-**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active tabs, selection-card selected state, sticky-note callouts, hero fills, pre-order pills (nav active states stay neutral gray — Q8). Hairlines stay at `#E5E5E5`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
+**Overview** — Ztor Creator Studio · R 2.1 is a clean, editorial take on a creator-economy operations dashboard: a white canvas (`#FFFFFF`) with near-white neutral surfaces — default cards and controls separate by a flat 1px `--border` (Q3/Q4 2026-07-13), and the sidebar display-mode rail uses a quieter `#FBFBFB`. Geist for UI / Inter for body, subtle 6px radii, and multi-layer rim+drop shadows reserved for popovers/overlays and for the hover state of clickable/selection cards. Its one high-saturation move is **a highlighter-orange primary (`#ffa33f`) with near-black text** — used structurally, not only on CTAs: active tabs, selection-card selected state, sticky-note callouts, hero fills, pre-order pills (nav active states stay neutral gray — Q8). Hairlines stay at `#EAEAEA`. The voice is task-oriented and finance-honest: every page states what you can do now, and money / royalties / verification states are always spelled out.
 
 **Similar systems** — [Notion](https://notion.so) (highlighter-orange accent, editorial chrome), [Linear](https://linear.app) (Geist + neutral tokens, dense data UI), [Vercel](https://vercel.com) (Geist origin, subtle radii, rim+drop shadows), [Attio](https://attio.com) (dashboard-as-hero, CRM-style data density), [Stripe Dashboard](https://stripe.com) (finance-honest tables, transparent money / payout states).
 
@@ -124,15 +124,15 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | `background-canvas` | rgb 255 255 255 | `#FFFFFF` (clean white · 2026-06-09) |
 | `background-surface` | rgb 255 255 255 | `#FFFFFF` |
 | `background-card` | rgb 250 250 250 | `#FAFAFA` |
-| `surface-shell` | rgb 245 245 245 | `#F5F5F5` (sidebar-mode App Shell canvas) |
+| `surface-shell` | rgb 250 250 248 | `#FAFAF8` (sidebar-mode App Shell canvas) |
 | `surface-page` | rgb 255 255 255 | `#FFFFFF` (single opaque route page) |
 | `sidebar` | rgb 251 251 251 | `#FBFBFB` (sidebar display-mode rail — near-white neutral) |
 | `accent` | rgb 243 243 243 | `#F3F3F3` (rail item hover) |
 | `sidebar-active` | rgb 236 236 236 | `#ECECEC` (rail selected pill, 2026-06-12) |
 | `background-footer` | rgb 0 0 0 | `#000000` |
-| `foreground` | rgb 0 0 0 | `#000000` |
+| `foreground` | rgb 26 26 26 | `#1A1A1A` |
 | `foreground-muted` | rgba 0 0 0 / .7 | `rgba(0,0,0,0.7)` |
-| `muted-foreground` | rgb 115 115 115 | `#737373` |
+| `muted-foreground` | rgb 110 110 104 | `#6E6E68` |
 | `primary` | rgb 255 219 41 | `#ffa33f` ⚡ |
 | `primary-hover` | rgb 255 229 92 | `#ffb866` ⚡ |
 | `primary-foreground` | rgb 23 23 23 | light `#FFFFFF` / dark `#171717` ⚡ |
@@ -153,7 +153,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Primary radius | `6px` (CTAs, cards, outline buttons — `--radius-md` merged into `--radius`, Q2 2026-07-13) |
 | Pill radius | `1000px` / `100%` (status dots, avatars) |
 | Base spacing | Dense scale — 1, 4, 6, 8, 10, 12, 14, 16, 24 |
-| Card shadow | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` (rim + drop) — used at rest by selection-card / dropdown-item / table / composer / cookie-banner; `.card`/`.kpi`/`.ztor-card` default to a flat 1px `--border` instead (Q3 2026-07-13), shadow reserved for their clickable hover |
+| Card shadow | `0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` (rim + drop, softened 2026-07-13 — more diffuse, lower alpha) — used at rest by selection-card / dropdown-item / table / composer / cookie-banner; `.card`/`.kpi`/`.ztor-card` default to a flat 1px `--border` instead (Q3 2026-07-13), shadow reserved for their clickable hover |
 | Soft elevation | `0 4px 4px rgba(23,23,23,0.04)` (cards / popovers lift；outline 按鈕自 2026-06-12 改 1px `--border` 實線、不再用此陰影) |
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
@@ -193,7 +193,7 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | Role | Hex | Where it lives |
 |---|---|---|
 | `background-canvas` | `#FFFFFF` | Body / page — clean white (2026-06-09). Cards (`--card` #FFFFFF) now separate by shadow, not by canvas tint |
-| `surface-shell` | `#F5F5F5` | Subtle Sidebar-mode outer canvas behind navigation and the route page |
+| `surface-shell` | `#FAFAF8` | Subtle Sidebar-mode outer canvas behind navigation and the route page（2026-07-13 微暖 off-white，原 `#F5F5F5`，讓白卡浮出） |
 | `surface-page` | `#FFFFFF` | One continuous opaque route page containing hero, content, and footer |
 | `sidebar` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
@@ -201,9 +201,9 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `background-surface` | `#FFFFFF` | Cards, nav-dropdown panels, dashboard mockup frames |
 | `background-card` | `#FAFAFA` | Muted card variant (slightly cooler than surface) |
 | `background-footer` | `#000000` | Pure black footer — the only place black appears as a fill |
-| `foreground` | `#000000` | Body text, headings (dominant — 415 occurrences on home) |
+| `foreground` | `#1A1A1A` | Body text, headings (dominant — 415 occurrences on home; off-black, 2026-07-13 體檢：純黑殺層次) |
 | `foreground-muted` | `rgba(0,0,0,0.7)` | Secondary copy, supporting sentences |
-| `muted-foreground` | `#737373` | Caption, metadata, meta-text |
+| `muted-foreground` | `#6E6E68` | Caption, metadata, meta-text（2026-07-13 微暖） |
 | `primary` | `#ffa33f` ⚡ | Primary CTA fill — "Create project" / "Request payout" / "Publish". The signature color |
 | `primary-hover` | `#ffb866` ⚡ | CTA hover — brighter (reverse of ztor's "darken on hover" pattern) |
 | `primary-foreground` | light `#FFFFFF` / dark `#171717` ⚡ | Text inside primary CTAs (使用者指定 2026-06-22：白天白字、黑夜黑字；白字對比 ~1.9:1 < WCAG AA) |
@@ -310,8 +310,8 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | Token | Value | Use |
 |---|---|---|
 | `shadow-micro` | `0 4px 4px rgba(23,23,23,0.04)` | Soft edge（outline 按鈕 2026-06-12 起改 1px `--border` 平面線框，不用此陰影；階梯外邊緣工具） |
-| `shadow-card` | `0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)` | E2 resting card — multi-layer rim + drop |
-| `shadow-float` | `0 6px 16px -4px rgba(12,10,9,0.12), 0 0 0 1px rgba(23,23,23,0.08)` | E3 floating — dropdowns, popovers, tooltips, dragged rows |
+| `shadow-card` | `0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` | E2 resting card — multi-layer rim + drop（2026-07-13 柔化：更擴散、更低透明） |
+| `shadow-float` | `0 8px 24px -8px rgba(12,10,9,0.08), 0 2px 6px -2px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` | E3 floating — dropdowns, popovers, tooltips, dragged rows（2026-07-13 柔化：更擴散、更低透明） |
 | `shadow-overlay` | `0 16px 40px -8px rgba(12,10,9,0.18), 0 0 0 1px rgba(23,23,23,0.08)` | E4 overlay — modals, dialogs, drawers |
 | `shadow-card-hover` | `var(--shadow-float)` | Clickable card hover lift = borrow E3 (interaction rises one rung) |
 | `shadow-raise` | `0 1px 2px rgba(0,0,0,0.06)` (dark `0.5`) | Low control raise — primary buttons, input drop, segmented active |
@@ -380,14 +380,14 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Rail** (sidebar display mode) | `--sidebar` | `#FBFBFB` | near-white neutral |
 | **Surface — muted** (alt cards, hover) | `--muted` | `#FAFAFA` | softer than canvas |
 | **Surface — inverse** (footer slab) | `--surface-inverse` | `#000000` | pure black |
-| **Foreground — default** (body / titles) | `--foreground` | `#000000` | |
+| **Foreground — default** (body / titles) | `--foreground` | `#1A1A1A` | off-black（2026-07-13 體檢：純黑殺層次） |
 | **Foreground — muted** (descriptions) | `--foreground-muted` | `#4D4D4D` | [ext] |
-| **Foreground — subtle** (meta, eyebrow) | `--muted-foreground` | `#737373` | |
+| **Foreground — subtle** (meta, eyebrow) | `--muted-foreground` | `#6E6E68` | 2026-07-13 微暖 |
 | **Foreground — on inverse** (footer text) | `--foreground-on-inverse` | `#FFFFFF` | [ext] |
 | **Primary — fill** (CTA bg) | `--primary` | `#ffa33f` | orange.500 |
 | **Primary — hover** | `--primary-hover` | `#ffb866` | orange.300 [ext] |
 | **Primary — foreground** (text on orange) | `--primary-foreground` | light `#FFFFFF` / dark `#171717` | 使用者指定 2026-06-22：白天白字、黑夜黑字（白字 ~1.9:1 < WCAG AA） |
-| **Border** (hairlines) | `--border` | `#E5E5E5` | cooler neutral |
+| **Border** (hairlines) | `--border` | `#EAEAEA` | cooler neutral（2026-07-13 體檢：更淡，配微暖畫布靠色階分層） |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
 | **Status — success** | `--status-success` | `#22C55E` | green.500 [ext] |
 | **Status — error** | `--destructive` | `#DA314A` | red.500 |
@@ -398,7 +398,7 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Popover** (dropdown / nav 浮層) | `--popover` / `--popover-foreground` | `#FFFFFF` / `#000000` | white tier；元件尚未改引用（待採用） |
 | **Accent — foreground** | `--accent-foreground` | `#000000` | 配對字色（待採用） |
 | **Destructive — foreground** | `--destructive-foreground` | `#FFFFFF` | 配對字色（待採用） |
-| **Input** (控件邊) | `--input` | `#E5E5E5` | = border；元件現多直接用 `--border`（待採用） |
+| **Input** (控件邊) | `--input` | `#EAEAEA` | = border；元件現多直接用 `--border`（待採用） |
 | **Charts** | `--chart-1..5` | 橘 `#ffa33f` · 藍 `#266DF0` · 綠 `#22C55E` · 黃 `#F8D749` · 紫 `#8B5CF6` | chart series；chart.js 尚未讀 token（待採用） |
 | **Sidebar family** | `--sidebar-*`（`-foreground` / `-primary(-foreground)` / `-accent(-foreground)` / `-border` / `-ring` / `-active` [ext]） | `#FBFBFB` + 整組 | rail 一家；其中 `--sidebar-primary(-foreground)` / `--sidebar-ring` / `--sidebar-accent-foreground` 元件尚未引用（待採用） |
 | **Brand gradient** | `--gradient-brand` | 橘漸層（#ffd9a0 · #ffa33f · #ff7a4d） | 進度條品牌漸層 [ext] |
@@ -492,15 +492,15 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 | `--muted` | `#FAFAFA` | `rgba(253,253,253,0.06)` | lower elevation overlay |
 | `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 改純黑（content 為 `#191A1A`，footer 要更深才讀為分隔） |
 | `--surface-page` | `#FFFFFF` | `#191A1A` | route page。**Dark 反轉**：content 是最深底色，比 app shell 更深、視覺上內凹（2026-06-22 依使用者指定 `#191A1A`） |
-| `--surface-shell` | `#F5F5F5` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定） |
+| `--surface-shell` | `#FAFAF8` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定；light 2026-07-13 微暖，原 `#F5F5F5`） |
 | `--sidebar` | `#FBFBFB` | `#2B2B2C` | sidebar rail 與 shell canvas 同色（flush）；項目區分靠 hover/active 疊色 |
-| `--foreground` | `#000000` | `#FDFDFD` | |
+| `--foreground` | `#1A1A1A` | `#FDFDFD` | 2026-07-13 light 改 off-black（原 `#000000`） |
 | `--foreground-muted` | `rgba(0,0,0,0.7)` | `rgba(253,253,253,0.7)` | |
-| `--muted-foreground` | `#737373` | `rgba(253,253,253,0.4)` | |
+| `--muted-foreground` | `#6E6E68` | `rgba(253,253,253,0.4)` | 2026-07-13 light 微暖（原 `#737373`） |
 | `--primary` | `#ffa33f` | `#ffa33f` | **orange stays** — paired across modes for brand consistency |
-| `--border` | `#E5E5E5` | `rgba(253,253,253,0.12)` | inverted hairline |
+| `--border` | `#EAEAEA` | `rgba(253,253,253,0.12)` | inverted hairline · 2026-07-13 light 更淡（原 `#E5E5E5`） |
 | `--ring` | `#ffa33f` | `#FDFDFD` | light: orange focus ring (by request); dark: white ring |
-| `--status-success` | `#22C55E` | `#00A63E` | pure-RGB green for dark |
+| `--status-success` | `#22C55E` | `#4ADE80` | pure-RGB green for dark（2026-07-13 體檢提亮，原 `#00A63E`） |
 | `--destructive` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
 | `--status-warning` | `#F8D749` | `#F3CF58` | slightly cooler yellow |
@@ -2774,7 +2774,7 @@ table.ztor-table (width 100%, border-collapse separate, --card, radius-md, shado
 | `.ztor-table__check` | Inline-flex ✓ in `--status-success` |
 | `.ztor-table__cross` | Inline-flex ✗ in `--destructive` |
 | `.ztor-table__partial` | Partial mark in `--status-warning` |
-| `.ztor-table__row` / `.ztor-table__chev` | Clickable row (`aria-expanded`) + leading chevron that rotates 90° when open |
+| `.ztor-table__row` / `.ztor-table__chev` (in `.ztor-table__chevcell`) | Clickable row (`aria-expanded`) + trailing chevron in its own last column that rotates 90° when open (2026-07-13: moved leading→trailing so the date column keeps width and the header stays aligned) |
 | `.ztor-table__detail` (`[hidden]`) | Sibling detail row (`<td colspan>`), `--muted` bg; `[hidden]` hides it |
 | `.tx-detail` / `__meta` / `__id` / `__copy` / `__note` / `__ladder` | Trace block: Event ID `<code>` + copy button, rate version, note, and `.waterfall` mini-ladder |
 
@@ -3770,10 +3770,10 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
   },
   "foundation": {
     "palette": {
-      "neutral": { "50":"#FFFFFF", "100":"#FAFAFA", "500":"#737373", "900":"#171717", "1000":"#000000" },
+      "neutral": { "50":"#FFFFFF", "100":"#FAFAFA", "500":"#6E6E68", "900":"#171717", "1000":"#000000" },
       "orange":  { "300":"#ffb866", "500":"#ffa33f" },
       "yellow":  { "warning":"#F8D749" },
-      "green":   { "500":"#22C55E", "dark":"#00A63E" },
+      "green":   { "500":"#22C55E", "dark":"#4ADE80" },
       "red":     { "500":"#DA314A", "dark":"#E7000B" },
       "blue":    { "500":"#266DF0", "dark":"#5896F3" }
     },
@@ -3789,7 +3789,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
       "radius": { "sm":"3px", "default":"6px", "md":"6px", "lg":"8px", "xl":"16px", "pill":"9999px" },
       "shadow": {
         "micro":    "0 4px 4px rgba(23,23,23,0.04)",
-        "card":     "0 2px 6px rgba(12,10,9,0.08), 0 0 0 1px rgba(23,23,23,0.08)",
+        "card":     "0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)",
         "popover":  "0 1px 1.6px rgba(0,0,0,0.05), 0 0 0.83px rgba(0,0,0,0.2)",
         "hairline": "0 0 0.833px rgba(0,0,0,0.2)"
       }
@@ -3800,7 +3800,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
       "bg": { "canvas":"palette.neutral.50", "surface":"#FFFFFF", "muted":"palette.neutral.100", "inverse":"palette.neutral.1000" },
       "fg": { "default":"palette.neutral.1000", "muted":"rgba(0,0,0,0.7)", "subtle":"palette.neutral.500" },
       "primary":     { "bg":"palette.orange.500", "fg":"palette.neutral.900", "hover":"palette.orange.300" },
-      "border":      "#E5E5E5",
+      "border":      "#EAEAEA",
       "ring":        "palette.neutral.900",
       "status": {
         "success":"palette.green.500",

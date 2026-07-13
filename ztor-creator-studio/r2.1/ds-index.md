@@ -15,7 +15,7 @@
 - `--background`: #FFFFFF
 
 ### --border-*
-- `--border`: #E5E5E5
+- `--border`: #EAEAEA
 - `--border-soft`: #EFEFEF
 - `--border-inverse`: rgba(255, 255, 255, 0.1)
 
@@ -55,7 +55,7 @@
 - `--font-cjk`: 'Noto Sans TC'
 
 ### --foreground-*
-- `--foreground`: #000000
+- `--foreground`: #1A1A1A
 - `--foreground-muted`: #4D4D4D
 - `--foreground-on-inverse`: #FFFFFF
 - `--foreground-on-inverse-muted`: rgba(255, 255, 255, 0.6)
@@ -88,7 +88,7 @@
 - `--gradient-brand`: linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%)
 
 ### --input-*
-- `--input`: #E5E5E5
+- `--input`: #EAEAEA
 
 ### --lh-*
 - `--lh-none`: 1
@@ -101,7 +101,7 @@
 
 ### --muted-*
 - `--muted`: #FAFAFA
-- `--muted-foreground`: #737373
+- `--muted-foreground`: #6E6E68
 
 ### --overlay-*
 - `--overlay-blur`: blur(14px) saturate(140%)
@@ -138,7 +138,7 @@
 - `--sidebar-primary-foreground`: #FFFFFF
 - `--sidebar-accent`: #F3F3F3
 - `--sidebar-accent-foreground`: #000000
-- `--sidebar-border`: #E5E5E5
+- `--sidebar-border`: #EAEAEA
 - `--sidebar-ring`: var(--primary)
 - `--sidebar-active`: #ECECEC
 
@@ -174,7 +174,7 @@
 - `--status-accent`: #8B5CF6
 
 ### --surface-*
-- `--surface-shell`: #F5F5F5
+- `--surface-shell`: #FAFAF8
 - `--surface-page`: #FFFFFF
 - `--surface-inverse`: #000000
 
