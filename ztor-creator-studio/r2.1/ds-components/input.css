@@ -5,26 +5,33 @@
 /* 刪除紀錄（2026-07-10）：.ztor-input / .ztor-input--xs/sm/lg/xl / .ztor-textarea 替身 class
    已移除，未被任何實頁使用（產品頁一律用 .input / .textarea，無尺寸變體）。
    design-system.html 的 demo 同輪已改用真身 .input / .textarea。
-   真身規則（原住 shared.css:805-835）整段搬進本檔，屬性值逐字元未動。此檔本身非棄用檔，持續使用中。 */
+   真身規則原住 shared.css:805-835，後續依元件對齊調整為陰影邊線與 4px focus glow。此檔本身非棄用檔，持續使用中。 */
 
 .input, .textarea, .select {
+  --input-pad-y: 9px;
+  --input-pad-x: var(--sp-12);
+  --input-prefix-pad-x: var(--sp-32);
+  --select-arrow-pad-x: 34px;
+  --select-wrap-arrow-pad-x: var(--sp-40);
+  --select-icon-inset: var(--sp-12);
+
   font-family: var(--font-body);
   font-size: var(--fs-14);
-  padding: 9px var(--sp-12);
+  padding: var(--input-pad-y) var(--input-pad-x);
   border-radius: var(--radius);
-  border: 1px solid var(--border);   /* Q4 2026-07-13：真 border 取代陰影模擬，與 outline 按鈕一致 */
+  border: 0;
+  box-shadow: 0 0 0 1px var(--border);
   background: var(--card);
   color: var(--foreground);
   width: 100%;
   outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
 }
 .input:focus, .textarea:focus, .select:focus {
-  border-color: var(--ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 15%, transparent);
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
 }
-.textarea { min-height: 100px; resize: vertical; }
-.input--with-prefix { padding-left: var(--sp-32); }
+.textarea { --input-pad-y: var(--sp-12); min-height: 100px; resize: vertical; }
+.input--with-prefix { padding-left: var(--input-prefix-pad-x); }
 
 /* Native <select> styled to match the design system: drop the OS arrow and
    draw our own chevron with comfortable right padding (the native arrow
@@ -32,9 +39,13 @@
 .select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 34px;
+  padding-right: var(--select-arrow-pad-x);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px 16px;
 }
+
+.select-wrap { position: relative; display: block; width: 100%; }
+.select-wrap .select { background-image: none; padding-right: var(--select-wrap-arrow-pad-x); }
+.select-wrap__icon { position: absolute; top: 50%; right: var(--select-icon-inset); width: 16px; height: 16px; color: var(--muted-foreground); pointer-events: none; transform: translateY(-50%); }

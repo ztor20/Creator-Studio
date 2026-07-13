@@ -17,7 +17,7 @@
      <h2>/<img> were unreliable in this engine, stuck at "from" values). */
   var SELECTOR = [
     '.hero__copy', '.section-head', '.kpi', '.card',
-    '.tabs', '.stickynote', '.ztor-table', '.alert--row',
+    '.tabs', '.info-banner', '.ztor-table', '.alert--row',
     '.filter-row', '.empty-stub'
   ].join(',');
 

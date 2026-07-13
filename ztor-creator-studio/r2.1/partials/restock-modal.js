@@ -62,8 +62,8 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <div data-restock-members></div>
       <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--muted-foreground)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
-      <div class="stickynote mt-16">
-        <span class="stickynote__mark">!</span>
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
         <span data-i18n="restock.note"><strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received (§7.2). Each restocked item is logged on the product page. Digital / unlimited items can't be restocked.</span>
       </div>
     </div>

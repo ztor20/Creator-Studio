@@ -24,7 +24,7 @@ Layer: 🟢 atom · 🟡 molecule · 🟠 organism. Spec = `design-system.md` Pi
 | Status dot | 🟢 | [badge.css](./ds-components/badge.css) | §4.4 |
 | Chip | 🟢 | [chip.css](./ds-components/chip.css) | §4.5 |
 | Switch | 🟢 | [switch.css](./ds-components/switch.css) | §4.6 |
-| Sticky-note | 🟢 | [stickynote.css](./ds-components/stickynote.css) | §4.7 |
+| Info banner | 🟢 | [info-banner.css](./ds-components/info-banner.css) | §4.7 |
 | Input | 🟢 | [input.css](./ds-components/input.css) | §4.8 |
 | Icon | 🟢 | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) | §4.9 |
 | NavigationMenu | 🟡 | [header.css](./ds-components/header.css) | §4.10 |
@@ -77,7 +77,7 @@ These are real, reused product components that still live in [`shared.css`](./sh
 
 ## Runtime-injected content blocks ([components.js](./components.js))
 
-Composite blocks rendered from one shared JS renderer + a named dataset, the same way [sidebar.js](./sidebar.js) injects the topbar. A page drops a `<div data-component="NAME" data-key="...">` placeholder; on load it is filled, then `ztorIcons.applyIcons` + `applyI18n` re-run on the new nodes. This is how a block becomes a real **change-once, every-page-syncs** component in a static prototype with no build step — editing the renderer or dataset updates every page that mounts it. Each block composes the CSS atoms/molecules above (data-list, kpi, alert, badge, card, stickynote, insight-split).
+Composite blocks rendered from one shared JS renderer + a named dataset, the same way [sidebar.js](./sidebar.js) injects the topbar. A page drops a `<div data-component="NAME" data-key="...">` placeholder; on load it is filled, then `ztorIcons.applyIcons` + `applyI18n` re-run on the new nodes. This is how a block becomes a real **change-once, every-page-syncs** component in a static prototype with no build step — editing the renderer or dataset updates every page that mounts it. Each block composes the CSS atoms/molecules above (data-list, kpi, alert, badge, card, info-banner, insight-split).
 
 | Block (`data-component`) | Used by | Composes | Notes |
 |---|---|---|---|
@@ -86,7 +86,7 @@ Composite blocks rendered from one shared JS renderer + a named dataset, the sam
 | `alerts` (F4) | index.html | alert | Today's actions — severity · object · status · CTA. |
 | `activity-list` (F5) | index.html | data-list · badge | Recent activity — type · source · time · result status. |
 | `events-projects` (F6) | index.html | data-list · badge | Recent events & projects — source-aware per-row entry (event → events.html, project → projects.html). |
-| `insight-split` (F7) | index.html | insight-split · kpi · stickynote | Fan relations (Fans CRM) ｜ audience trends (Audience Intelligence). |
+| `insight-split` (F7) | index.html | insight-split · kpi · info-banner | Fan relations (Fans CRM) ｜ audience trends (Audience Intelligence). |
 | `ext-data-status` (F8) | index.html | data-list · badge | External data status — source · type · last sync · status · impact; CTAs route to Settings only. |
 
 Datasets live in `components.js` (`DATA` / shared `TX` row library). To change a block's content, edit its dataset; to change its format, edit its renderer — both propagate to every mounting page.
