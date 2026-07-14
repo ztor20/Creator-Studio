@@ -1,0 +1,107 @@
+/* ============================================================
+   Ztor — Review row (flat, no-card wizard summary list)
+
+   A Review-step summary: field/section name + value with a right-side
+   "Edit →" action, rows separated by hairline dividers — no card chrome.
+   Normalizes three page-local versions into one component:
+     · create-event.html   .ce-review-row   — name + value + per-row Edit,
+                                               hairline (closest match to
+                                               the target anatomy, kept as
+                                               the default/stacked layout)
+     · register-ip.html    .ri-summary      — label/value grid pairs,
+                                               empty-state italic placeholder,
+                                               no edit action (→ --kv variant)
+     · create-project.html Review .card blocks — title + Edit heading a
+                                               group of sub key/values; that
+                                               page's 2026-06-25 comment
+                                               ("全頁無卡片化…這批歸第三批
+                                               review-row 設計判斷") already
+                                               flagged this exact
+                                               consolidation — .card is
+                                               !important-flattened there to
+                                               look like this component ahead
+                                               of migration.
+
+   Anatomy:
+     .review-row                       (container — flat list, no card bg/shadow)
+       .review-row__item                 (one row; hairline divider, none on :last-child)
+         .review-row__head                 (name + action, one line)
+           .review-row__name                 (field/section name)
+           .review-row__action                (right-aligned "Edit →" link)
+         .review-row__value                (value text below head)
+           .review-row__value--empty          (placeholder state — italic, muted)
+       .review-row__item--kv              (inline modifier: label-left / value-right,
+                                            single line, no action — grouped rows
+                                            sharing one outer Edit higher up the tree)
+
+   Long values wrap by default (no truncation) — no extra modifier needed.
+   A group's __value can also hold several sub label/value pairs (plain grid
+   markup, e.g. reusing .meta-cell) when one Edit action covers multiple
+   fields, as in create-project's Review card — that's flexible content, not
+   new CSS.
+   ============================================================ */
+.review-row {
+  display: flex;
+  flex-direction: column;
+}
+.review-row__item {
+  padding: var(--sp-14) 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.review-row__item:last-child { border-bottom: 0; }
+
+.review-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-4);
+}
+.review-row__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-15);
+  font-weight: var(--fw-medium);
+  margin: 0;
+}
+.review-row__action {
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--foreground-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  text-decoration: none;
+}
+.review-row__action:hover { color: var(--foreground); }
+
+.review-row__value {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  line-height: var(--lh-comfy);
+}
+/* Placeholder state — nothing entered yet (matches .ri-summary__v.is-empty). */
+.review-row__value--empty {
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+/* Inline compact variant — label-left / value-right on one line, no Edit
+   action. Visual baseline: register-ip.html's .ri-summary__row (fixed
+   130px label column). Use for grouped fields under one outer Edit. */
+.review-row__item--kv {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: var(--sp-12);
+  align-items: baseline;
+}
+.review-row__item--kv .review-row__name {
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+}
+.review-row__item--kv .review-row__value { font-size: var(--fs-13); }
+@media (max-width: 480px) {
+  .review-row__item--kv { grid-template-columns: 1fr; gap: var(--sp-2); }
+}
