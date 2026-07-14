@@ -10,7 +10,7 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 - 使用者要 commit 時，跑 `./collab.sh "<變更說明>"`：clone monorepo → 把 `site/` 的 git 追蹤檔（含未提交編輯）同步進 `ztor-creator-studio/` 子目錄 → 開 `edit/<時間戳>` 分支 → commit → push → 自動在 `ztor20/Creator-Studio` 開 PR，並把連結回報給使用者。未追蹤檔（scratch、`fonts/` 等）不會被帶上。
 - **不要直接 commit/push `main`**；變更一律走 PR，到 GitHub 審查後合併。
 - 變更說明先跟使用者確認；一次編輯一個主題就跑一次流程。
-- 開好 PR 後**由使用者在 GitHub 按 Merge 上線**，AI 不自行合併（上線的最後關卡在使用者手上）。
+- 開好 PR 後可由使用者在 GitHub 按 Merge 上線；若使用者明確授權，也可由 AI 代為合併（上線的最後關卡仍以使用者授權為準）。
 - PR 有衝突（GitHub 顯示無法自動合併）時，**先問使用者、取得其確認後**再解衝突並合併；不自行強推或硬合。
 
 ## 認證

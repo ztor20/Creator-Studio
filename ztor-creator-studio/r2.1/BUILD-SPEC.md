@@ -23,6 +23,8 @@
 
 > **2026-07-13 · 元件對齊快照**：Create Product 採用 Lucide icon atom（12／14／16／20／24px）取代文字與自製 SVG；輸入控件使用 1px 陰影邊線＋4px focus glow。此輪為純呈現更新，不改產品流程。`.card` 維持主分支 1px border、無陰影；按鈕 hover 維持 `--accent`。
 
+> **2026-07-14 · Admin Creator Studio**：新增三個同層 Admin 目的地（Creator 管理、Admin IP Bank、IP Bank Reporting），切換固定收在 Admin 左側欄；Artist Creator Studio 的 `index.html`／`my-ip.html` 沿用原本導航。`admin-ip-bank-entry.html` 是 Admin 子流程，採既有單頁建立 shell（頂部儲存、底部取消／提交），不載入 Artist 導覽。Reporting 將 Film 與可操作的起始／結束日期收在同一篩選列，篩選後重繪摘要與列表。IP Bank 的 localStorage mock 僅為原型跨頁資料呈現。
+
 ---
 
 ## 0. 與 R 2.0 的關鍵差異
@@ -41,7 +43,7 @@
 
 > **2026-05-25 pivot**: 初版 R 2.1 用了左側 240 px sidebar；經反饋後改回 canonical 横向 topbar（spec §3.2.2 / ds-components/header.css 的標準），並把 Dashboard Hero 改為 `--fullbleed` 邊到邊。Sidebar 當時完全移除。
 > **2026-06-09 更新**: Sidebar 以「可切換顯示模式」重新納入（topbar 仍是預設）——不是回到舊版固定 sidebar，而是 spec §6.9 / D016 的 Topbar↔Sidebar 切換，同一套 IA。見 §5.2a。
-> **2026-06-14 更新**: Topbar 模式也套上 app shell（與 sidebar 同一套 shell token）——`.app` 灰底 `--surface-shell`、`.app-topbar` 坐灰底、`.main` 上方留 gutter ＋ `--radius-shell` 圓**上方兩角** ＋ 白底 ＋ `overflow:clip`，Dashboard Hero 收進面板。只作用於有 `.app` 的 topbar 頁；wizard（`.wizard`）不受影響；≤900px 收掉 shell。見 shared.css「Topbar-mode app shell」。
+> **2026-06-14 更新**: Topbar 模式也套上 app shell（與 sidebar 同一套 shell token）——`.app` 用 `--surface-shell`、`.app-topbar` 坐 shell 底、`.main` 上方留 gutter ＋ `--radius-shell` 圓**上方兩角** ＋ `--surface-page` 底 ＋ `overflow:clip`，Dashboard Hero 收進面板。只作用於有 `.app` 的 topbar 頁；wizard（`.wizard`）不受影響；≤900px 收掉 shell。見 shared.css「Topbar-mode app shell」。
 > **2026-07-07 更新（陰影系統化）**: 陰影收斂為 **E0–E4 海拔階梯**（使用者裁示：扁平為底＋柔和浮起分層）——E0 貼底（hairline）／E1 微浮（raise）／E2 卡片（card）／E3 懸浮（新 `--shadow-float`：下拉、popover、tooltip、拖曳列）／E4 覆蓋（新 `--shadow-overlay`：modal、對話框）。規則：一元件一階、互動借上一階（`--shadow-card-hover` 改為 float 別名）、同層分隔不用陰影、越高越大而淡；`--shadow-popover` 淘汰（原 9 處改指 float／overlay）、低庫存 sticky 條裸值改 `--shadow-header`。深淺模式成對定義。見 design-system.html §1.5／§2.5。
 > **2026-06-29 更新**: 新增**平台營運（Admin）層**（spec §4.1／§3.2.1 Tier 0-1／D086）。`creators.html` 為 Tier 0 Admin 落地（creator 名冊＋建立，roster／data-list＋badge＋button 組成，建立用 inline card 表單）；現有頁＝Tier 1 creator scope。`sidebar.js` 依 `window.ztorCreator`（活躍 creator 存 localStorage `ztor.activeCreator`）渲染：roster 頁只露 Creator 管理 marker＋Tier 1 模組鎖定（`.app-topbar__link--locked`）；creator scope 在 logo 前加返回名冊 icon（`.app-topbar__back`，使用者裁示固定此位）＋「管理中 <creator>」chip（`.app-topbar__context`），導航解鎖。切換 creator 走 `devtools.js`「Creator · Admin」cheat code（呼叫 `window.ztorCreator.set`，派 `ztor:creator-changed` 重繪）。新增 icon arrow-left／shield-check。樣式住 shared.css（隨 nav shell），DS 頁 Header 段說明。
 >
@@ -175,7 +177,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | Filter tabs | `.filter-tabs / __item / __item--active / __count` | 次級狀態篩選 pill 列（spec 5.1.5 F3）：每顆 pill 一個狀態＋即時數量徽章，active＝淡 `--muted` 填底、刻意不用品牌色，放主 tabs 下一行形成主次層級；數量由前端讀清單 `data-status` 計算（切 tab 重算）。E-Shop F3 狀態篩選由原 `field-pill` select 改用（2026-06-15）|
 | Alert（`--bar`）| `.alert--bar` + `.alert__icon/__body/__title/__cta/__dismiss` | 全寬頂部通知條變體（spec 5.1.5 F2）：白底、底部細線、單行、⚠ 警示色 chip＋深色文字連結 CTA＋圓形關閉；置於 `.main` 頂端、`position:sticky` 常駐、可關閉。E-Shop 低庫存提醒由原 `.alert--banner` 卡片改用（2026-06-15）|
 | Settings layout | `.settings-layout / .settings-nav / .settings-section / .settings-row` | 220 px sticky 左側 + 右側單一 active section；左側選項以 URL hash 切換，其他 section 不佔頁面高度 |
-| Appearance card | `.appearance-card / --dark / --system` | 三選一主題 radio card（spec 5.1.9 Appearance） |
+| Theme controller | `[data-theme-toggle] / [data-theme-set]` | `theme.js` 的 light / dark / system 偏好控制；無儲存值預設 dark，URL `?theme=` 僅當頁覆寫 |
 | Pills | `.pill / .pill--orange / --success / --error / --info` | 統一狀態語言 |
 | Store settings 版面與欄位 | `.ss-stack / .ss-identity-card / .ss-band__* / .ss-edit / .ss-url / .ss-amount / .ss-status / .ss-order / .ss-tabpanel / .ss-fan` | 商店設定頁（spec 5.1.5.5 v8 / D035 IA + D036 功能頁 F1~F5）：`.ss-stack` 滿版（≤1280px，同其他頁）；門面（F2）`.ss-identity-card` 常駐用 **Base44/FB 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介），**逐欄就地編輯** `.ss-edit`（文字態 ↔ 內嵌控制項，✓/Enter 確認、✕/Esc 取消；品牌素材＝封面＋頭像，不另設上傳框）+ 設定群組 `.card` 用 `.tabs` 切 `.ss-tabpanel`（F3 商品陳列/F4 付款/F5 出貨，出貨 tab 用 `.settings-row`）；補基礎控制項沒有的欄位（網址前綴 `.ss-url`、$ 金額前綴 `.ss-amount`、唯讀 Stripe 卡 `.ss-status`）＋拖曳排序 `.ss-order`（F3 / D031）＋ See as fan 預覽 `.ss-fan`（F1，`.preview-panel--inset` 畫面分割）＋底部提交列 `.ss-actionbar`（D067 popup 提交區，sticky）。**D067：popup-only，無全域導航/麵包屑/page-intro**，標題與關閉由 embed-modal 外框承擔。逐欄編輯為前端 demo，最終由底部 `.ss-actionbar` 的 Save 提交（postMessage 關閉 popup）。**See-as-fan 預覽內容 2026-06-16 改用 Fan store 元件**（見下行，取代 `.ss-fan`） |
 | Fan store（粉絲端店面·手機版） | `.fan-store / __overline / __phone（scoped --fst-*）> __screen（自捲動）> __appbar(__wordmark/__appbar-end) / __hero(__artist/__tagline/__meta/__role/__socials/__social/__follow) / __nav(__nav-item--active，sticky) / __content > __featured(-media/-info/-tag/-title/-price/-cta) · __tabs/__tab(--active，底線式) · __grid > __card(--out)(__thumb/__card-title/__card-foot(__card-price+__cart)/__card-status) · __fans(__section-head/__section-title/__link/__fans-row > __fan(__fan-ava--r1..r5/__fan-rank/__fan-name/__fan-pts)) · __about(__about-text) / __tabbar(__tabbar-item--active，sticky bottom)` | See-as-fan 預覽的粉絲端店面（**E-Shop F5＋商店設定 F1 共用** `partials/fan-store.js`，§6.7 同源、差異即缺陷）。**2026-07-02 改「深色手機」呈現**（使用者裁示，版型參考 endgame creator 商店手機版原型、僅視覺證據）：面板中央深色手機外殼＋560–640px 自捲動螢幕＝粉絲 app 商店頁——app 頂列（sticky）＋hero（名字壓深色漸層＋社群 YT/IG/TH/X＋加入社群橘 pill）＋sticky app 分頁列（商店/活動/排行榜/貼文/關於）＋本月精選（橘 overline＋橘框 Buy now）＋商品/組合/拍賣底線子分頁＋雙欄商品格（橘購物車圓鈕；售完無鈕）＋頭號粉絲（名次圈 r1 橘=var(--primary)/r2 紫/r3 綠…）＋關於＋sticky 底部 app 導航。**螢幕＝fan app 固定深色面**（scoped `--fst-*` 主題例外，同 vip-card；登記 design-system.md Raw-color exceptions）；空店面 `.when-empty`＋`.empty-card`（螢幕內深色覆寫），grid/featured/tabs 隨 `html[data-data-state="empty"]` 收起。icons 新增 menu/user/shopping-cart。**追蹤數/社群/加入社群/本月精選/立即購買/售完補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航＝產品變更提案（UIA-026 共 12 項，待上游核准、未寫回 documents/）**；display-only，預覽不改資料 |
@@ -184,9 +186,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 繼承 R 2.0 / ztor yellow 的 `[data-theme="dark"]` 機制 — translucent white overlays on near-black canvas，orange primary 在兩種模式都保留。所有 R 2.1 patterns 都 100% token-driven，flip 主題不需任何 override。
 
-切換入口：
-- Topbar sun/moon button（`[data-theme-toggle]`，循環 light → dark → system）
-- Settings → Appearance 三選一 radio cards（`[data-theme-set]`）
+主題偏好由 `theme.js` 的 `[data-theme-toggle]`／`[data-theme-set]` 控制，寫入 localStorage；無儲存偏好時預設黑夜。`?theme=light|dark|system` 是不寫入偏好的當頁覆寫；`section-test.html` 提供目前的外框與主題驗證入口。
 
 ---
 
@@ -231,15 +231,15 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 ### 5.2 主題（Theme）
 
-- Light / Dark / System 三選一，預設 light
-- `<html data-theme>` 屬性 driven，`theme.js` 管理 + localStorage 持久化
+- Light / Dark / System 三選一，無儲存偏好時預設 dark
+- `<html data-theme>` 屬性 driven，`theme.js` 管理 + localStorage 持久化；URL `?theme=` 優先且不寫入偏好
 - Topbar 月亮 / 太陽 icon 透過 attribute selector 切換（light 顯示 moon，dark 顯示 sun — 顯示「下一個會切到」）
-- Settings → Appearance 提供 radio cards 直接設定
+- `section-test.html` 提供 `data-theme-set` 測試控制；`.form-section--outlined` 是正式 opt-in 變體，目前由 `admin-ip-bank-entry.html` 採用
 
 ### 5.2a 顯示模式（Display mode · spec §6.9 / D016）
 
 - 導航有兩種顯示模式：**Topbar**（橫向頂列，預設）與 **Sidebar**（248px 左側直向 rail）。同一套 NAV、同一份 IA，只改擺放位置。
-- 配色（2026-06-10）：Topbar 模式維持純白 `--background #FFFFFF`。Sidebar 模式使用 `--surface-shell #F5F5F5` 作淡灰 App Shell，rail 直接融入 shell；item hover/active 仍用 `--accent #F3F3F3`。右側 `.main` 使用 `--surface-page #FFFFFF` 成為單一不透明內容頁。
+- 配色（2026-07-14）：Topbar 模式維持純白 `--background #FFFFFF`。Sidebar 模式使用 `--surface-shell #F0F0EE` 作較深一階的淡灰 App Shell，rail 直接融入 shell；item hover/active 仍用 `--accent #F3F3F3`。右側 `.main` 使用 `--surface-page #FAFAFA` 成為單一不透明內容頁。
 - `<html data-nav-mode="topbar|sidebar">` 屬性 driven，`theme.js` 在 `<head>` 早期套用（避免版面閃爍）+ localStorage key `ztor.nav.mode` 持久化，API `window.ztorNavMode`。
 - `sidebar.js` 依 `data-nav-mode` 渲染對應 markup（`.app-topbar__*` 或 `.app-sidebar__*`），並監聽 `ztor:navmode-changed` 即時重繪。版面切換規則在 `shared.css` 的 `[data-nav-mode="sidebar"]` 區塊。
 - Sidebar 模式：頂層平鋪、IP Bank / E-Shop 為可展開群組（`.app-sidebar__group`，active 子頁時自動展開；現役）；全域操作（搜尋 / 通知 / 語言 / 主題 / 帳戶）收在 rail 底部。另有「分組標題＋子項平鋪」變體（`.app-sidebar__section-label`，2026-06-13 做過、使用者選擇改回 accordion）保留在 CSS／design-system，可隨時切回。

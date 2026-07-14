@@ -1,5 +1,12 @@
 # Ztor Creator Studio · R 2.1 · Requirements Map
 
+| 上游規格 | 頁面 | 覆蓋內容 |
+|---|---|---|
+| `5.1.0-Creator管理.md` | `creators.html` | Admin Creator Studio 左側欄的 Creator 管理目的地與進入 Artist Studio 入口 |
+| `5.1.0.1-Admin-IP-Bank.md` | `admin-ip-bank.html` | Film × IP × Owner 列表、Linked／Pending、Share、Edit／Remove 與建立入口 |
+| `5.1.0.1.1-建立IP-Entry流程.md` | `admin-ip-bank-entry.html` | Film、IP type、Owner／邀請、Share 0.01 與 Film ≤100% 驗證 |
+| `5.1.0.2-IP-Bank-Reporting.md` | `ip-bank-reporting.html` | Film 篩選、唯讀 KPI、Owner／Platform 分潤列與 Pending 鎖定呈現 |
+
 本文件只對照「上游需求覆蓋到哪個 UI 實作」，不複製或改寫產品規則。
 
 ## 權威來源
@@ -10,6 +17,8 @@
 4. [`BUILD-SPEC.md`](BUILD-SPEC.md) 的呈現與工程決策
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
+
+> **2026-07-14 呈現追蹤**：白天 `--surface-shell`／`--surface-page` 只降低明度；正式 opt-in `.form-section--outlined` 再以 `--card` 形成最亮內層（黑夜維持 `--muted`）。目前由 `admin-ip-bank-entry.html` 採用，`section-test.html` 保留作視覺驗證；不涉及上游需求、頁面責任或產品行為變更。
 
 > **2026-07-14 呈現追蹤**：版本切割由 `feature-scope-map.md` 管理；未列功能只在 Phase 4 呈現，並不表示上游最終產品範圍被移除。
 
@@ -45,7 +54,7 @@
 | 5.1.8 Earnings | `earnings.html` | 五分頁（Overview/Transactions/Breakdown/Payouts/Tax）；Breakdown 用「本期間(F12)/依專案(F11)」segmented 一次顯示一個、報表式 waterfall（bar 只留里程碑）；F3 淨利卡有「View breakdown」捷徑跳 Breakdown；F8 淨利池/退款準備金摘要在 Payouts、F10 手動補登 popup（5.1.8.2）由 Transactions 觸發、F7 逐筆可追溯（費率版本/Event ID/展開金流瀑布）——皆已覆蓋；多地稅務仍待收斂 |
 | 5.1.8.1 Request Payout | `earnings.html`、`request-payout.html` | popup 主畫面/新增銀行/結果＋不可逆確認閘門（§4.5）＋摘要含結算來源/費率版本（§4.4）已覆蓋；非台灣地區欄位與費率仍待上游（PG-004）|
 | 5.1.8.2 Manual Entry | `earnings.html`、`partials/manual-entry-modal.js` | 由 F7 觸發的補登 popup（重用 canonical dialog 外殼）：交易項目/分類/日期/金額/幣別/備註/附件＋未驗證·不計入可提領/提款/稅務提示已覆蓋；補登審核、附件規則、未來日期等仍待上游 |
-| 5.1.9 Settings | `settings.html` | 2026-06-15 通知改事件×管道矩陣（含 In-App、payout/KYC/compliance Email 鎖定）、勿擾、寄測試、Active Sessions、未存離開提示、稅務 Edit、整合補 Stripe/GA 與失敗一致呈現；刪除帳戶文案改 soft-delete（D053）；**F7 合規（唯讀）已落地**（KYC 狀態/用量上限/凍結/地區限制）。KYC/2FA/收款方式狀態機/Webhooks **流程**待 5.1.9.x 子流程規格（PG-007）；團隊權限仍受上游待決限制。**2026-07-03（D108／D110）**：全域外觀鎖定——主題固定淺色、語言固定繁中（皆移除切換：settings 移除 Light/Dark/System 三卡與 Profile 語言偏好欄；`theme.js`/`i18n.js` 強制、`sidebar.js` 拿掉主題/語言鈕）；**顯示模式保留可切換、預設改側邊欄**（settings 顯示模式兩卡保留；`data-nav-toggle` 保留）。深色/英文 i18n 移出 v1、非刪除（UIA-001／UIA-044）|
+| 5.1.9 Settings | `settings.html` | 2026-06-15 通知改事件×管道矩陣（含 In-App、payout/KYC/compliance Email 鎖定）、勿擾、寄測試、Active Sessions、未存離開提示、稅務 Edit、整合補 Stripe/GA 與失敗一致呈現；刪除帳戶文案改 soft-delete（D053）；**F7 合規（唯讀）已落地**（KYC 狀態/用量上限/凍結/地區限制）。KYC/2FA/收款方式狀態機/Webhooks **流程**待 5.1.9.x 子流程規格（PG-007）；團隊權限仍受上游待決限制。**2026-07-03（D108／D110）**：語言固定繁中，顯示模式保留可切換、預設側邊欄（settings 顯示模式兩卡保留；`data-nav-toggle` 保留）。**2026-07-14 覆寫 D108 的主題限制**：`theme.js` 恢復 light / dark / system 偏好；合法 localStorage 偏好跨頁保存、無值預設 dark，`?theme=` 優先但不寫入偏好。Settings 不新增主題卡，`section-test.html` 提供外框與主題驗證頁（UIA-048） |
 
 ## 更新順序
 

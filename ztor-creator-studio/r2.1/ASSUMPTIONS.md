@@ -1,5 +1,13 @@
 # Ztor Creator Studio · R 2.1 · Assumptions
 
+## UIA-049 · Admin IP Bank prototype data
+
+- `js/ip-bank-store.js` 的 Film、IP、Owner、Share、Owed 與 Withdrawn 是 localStorage prototype data，僅用於示範 Admin IP Bank 與 Reporting 的跨頁連動。
+- Film net revenue、monthly close、Withdrawn 與 settlement engine 未在原型實作或定義；Reporting 明示為 illustrative derived figures。
+- 外部 Owner 邀請在原型只呈現 Linked／Invited (Pending) 與 required invitation contact，沒有送信、claim 或 payout 操作。
+- 建立 IP Entry 以現有單頁建立 shell 呈現四個既有表單群組；這是流程呈現決策，不新增產品階段或改變資料規則。
+- Reporting 日期範圍會觸發摘要與列表重繪；prototype 沒有日粒度收入來源，因此篩選範圍顯示於 KPI 與報表範圍文字，金額維持 illustrative sample。
+
 本文件把 UI 工作中發現的內容分成三類。只有「呈現假設」可由 `project-ui-creator` 自行決定；產品缺口與產品變更提案必須先由上游核准。
 
 ## 呈現假設
@@ -8,7 +16,8 @@
 
 | ID | 假設 | 狀態 |
 |---|---|---|
-| UIA-001 | R 2.1 **預設側邊欄（Sidebar，D110）**、可切 topbar；兩顯示模式不改變產品 IA。**主題固定淺色、語言固定繁中，皆不提供切換（D108）**（詳見 UIA-037） | 可由 UI 調整 |
+| UIA-001 | R 2.1 **預設側邊欄（Sidebar，D110）**、可切 topbar；兩顯示模式不改變產品 IA。語言固定繁中；主題偏好規則見 UIA-048 | 可由 UI 調整 |
+| UIA-048 | **2026-07-14 覆寫 UIA-001／UIA-044 的主題部分**：主題偏好恢復為呈現層設定，`theme.js` 讀取合法 localStorage 值（light / dark / system），無值預設 dark；`?theme=light|dark|system` 優先但不寫入偏好。深色與淺色偏好都會跨頁保存；語言固定繁中與預設側邊欄的決定不變。`section-test.html` 是外框變體與主題驗證頁，不影響正式產品流程 | 可由 UI 調整 |
 | UIA-002 | 清單、資料摘要、建立流程與預覽的具體元件依 design system 組合 | 可由 UI 調整 |
 | UIA-003 | 範例姓名、金額、圖片與文案只作為展示資料 | 不得視為產品規則 |
 | UIA-004 | 商店設定（5.1.5.5 / D035）的呈現選擇：店面門面用 **Base44／Facebook 式身分帶**（`.ss-identity-card`：封面＋疊加 logo 頭像＋店名／網址／簡介為文字），**逐欄就地編輯** `.ss-edit`（平常文字、點該欄當場變輸入、✓/Enter 確認、✕/Esc 取消）；品牌素材＝封面＋頭像（各自編輯鈕），不另設上傳框；整頁滿版 1280px。使用者反饋分四輪收斂：緊湊雙欄(窄島)→滿版標準列(仍高)→滿版雙欄→**身分帶＋就地編輯**（使用者要 Facebook 式、點了才可改）；Mobbin web 參考 Base44 讀取/編輯態、Sora 逐元素 pencil、Linktree。商品陳列/付款/出貨以 `.tabs` 切換；See as fan 用 `.preview-panel--inset` 畫面分割。對應 spec §2「呈現參考、非約束」 | 可由 UI 調整 |
