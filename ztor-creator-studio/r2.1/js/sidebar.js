@@ -38,6 +38,39 @@
     { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19" },
     { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30" },
   ];
+
+  const FULL_ROUTES = new Set([
+    "index.html", "creators.html", "projects.html", "project-detail.html", "create-project.html",
+    "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html",
+    "fans-crm.html", "fan-detail.html", "tier-settings.html", "my-ip.html", "ip-detail.html",
+    "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
+  ]);
+  function fullVersion() {
+    const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
+      || document.documentElement.getAttribute("data-version") || "full";
+    return v === "full" || v === "funding-test";
+  }
+  function routeAllowed(href) {
+    const route = (href || "").split(/[?#]/)[0].toLowerCase();
+    return fullVersion() || !FULL_ROUTES.has(route);
+  }
+  function applyVersionRoutes(root) {
+    if (!root) return;
+    const limited = !fullVersion();
+    root.querySelectorAll("a[href]").forEach(a => {
+      if (!routeAllowed(a.getAttribute("href"))) {
+        a.hidden = true;
+        const li = a.closest("li"); if (li) li.hidden = true;
+      }
+    });
+    root.querySelectorAll(".app-topbar__nav-group, .app-sidebar__group").forEach(group => {
+      const links = Array.from(group.querySelectorAll("a[href]")).filter(a => !a.hidden && a.getAttribute("href") !== "#");
+      if (limited && group.closest("nav") && links.length === 0) group.hidden = true;
+    });
+    root.querySelectorAll(".app-topbar__brand, .app-sidebar__brand").forEach(brand => {
+      brand.setAttribute("href", limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html"));
+    });
+  }
   const CREATOR_LS = "ztor.activeCreator";
   function getCreator() {
     try { return CREATORS.find(c => c.handle === localStorage.getItem(CREATOR_LS)) || null; }
@@ -381,6 +414,7 @@
     }
     if (window.ztorIcons) window.ztorIcons.applyIcons(root);
     if (window.applyI18n)  window.applyI18n(root);
+    applyVersionRoutes(root);
 
     if (mode === "topbar") {
       wireScroll(root);
@@ -513,4 +547,5 @@
   mount();
   document.addEventListener("ztor:navmode-changed", mount);
   document.addEventListener("ztor:creator-changed", mount);
+  document.addEventListener("ztor:devstate-changed", mount);
 })();
