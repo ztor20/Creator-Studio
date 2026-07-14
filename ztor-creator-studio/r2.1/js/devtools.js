@@ -123,9 +123,11 @@
       var route = (a.getAttribute('href') || '').split(/[?#]/)[0].toLowerCase();
       if (!FULL_ROUTES[route]) return;
       a.classList.toggle('ztd-ver-hidden', !allowFull);
-      a.classList.toggle('ztd-ver-future', false);
+      a.classList.toggle('ztd-ver-future', false); // future preview must never re-open a blocked route
     });
   }
+  /* future 是視覺預覽，不是權限提升。被 feature gate 排除的連結可以淡顯，
+     但 href／鍵盤焦點必須拿掉；切回可用版本再完整還原。 */
   function setFeatureLinkDisabled(el, disabled) {
     var links = el.matches && el.matches('a[href],a[data-ztd-feat-href]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('a[href],a[data-ztd-feat-href]'));
     links.forEach(function (a) {
@@ -205,14 +207,18 @@
     });
     applyRouteAvailability();
   }
+  /* 全頁功能（scope 未列＝full-only）不能只靠 data-feat：直接輸入 URL 時，
+     該頁沒有可見產品內容才是正確的低版本行為。導向 P1 可用的 E-Shop，保留
+     version/query/hash；funding-test 明確定義為其餘同 Phase 4，故可通過。 */
   function guardPageFeature() {
     var pageFeat = document.documentElement.getAttribute('data-page-feat');
     if (!pageFeat || state.version === 'full' || state.version === 'funding-test') return false;
     var allow = tiersForRule(curVersionRule());
     if (!allow || allow.indexOf(featTier(pageFeat)) >= 0) return false;
     var here = (location.pathname.split('/').pop() || '').toLowerCase();
-    if (here === 'e-shop.html') return false;
-    location.replace('e-shop.html' + location.search + location.hash);
+    if (here === 'e-shop.html') return false; // defensive: avoid a malformed page attribute loop
+    var target = 'e-shop.html' + location.search + location.hash;
+    location.replace(target);
     return true;
   }
   function loadVersions() {
@@ -670,6 +676,7 @@
   };
   emit();
   loadVersions();
+  /* partials/i18n 會在初次 applyVersion 後注入連結；新節點也必須遵守 full-only route gate。 */
   if (window.MutationObserver) {
     new MutationObserver(function () { applyRouteAvailability(); })
       .observe(document.body, { childList: true, subtree: true });

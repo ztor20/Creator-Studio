@@ -5,13 +5,39 @@
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
 ---
+
+## 2026-07-14 · Admin Creator Studio 的 IP Bank 與 Reporting（A 規格同步）
+
+- 新增 `admin-ip-bank.html`、`admin-ip-bank-entry.html`、`ip-bank-reporting.html`，分別對應 Admin IP Bank、建立 IP Entry 流程與 IP Bank Reporting 規格。
+- `sidebar.js` 將 Admin 三個同層目的地固定為左側欄導覽與 active state；Artist Creator Studio 導覽不加入 IP Bank 後台。
+- `admin-ip-bank-entry.html` 採既有單頁建立 shell：Content／IP details／Owner／Share 四個表單群組、頂部儲存與底部取消／提交，作為 Admin 子流程而非 Artist 導覽頁。
+- Reporting 的 Film、起始日期與結束日期收為同一操作列；變更篩選重繪 F3／F4，並在 KPI 與列表間保留明確垂直間距。
+- `ip-bank-store.js` 以 localStorage 提供原型用跨頁 mock data；正式 settlement／payout 規則未由 UI 推定，詳見 ASSUMPTIONS UIA-049。
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
+
+## 2026-07-14 · 白天 App Shell 再降一階（B 反饋導入）
+
+- **外層層次加深**：`--surface-shell` `#F5F5F3` → `#F0F0EE`，讓 app 外層比 `main` 的 `--surface-page #FAFAFA` 更明確退後；`--card #FFF`、`--surface-page #FAFAFA` 與所有 dark token 不變。
 
 ## 2026-07-14 · 全頁版本切割（D infra · 使用者裁決）
 
 - `feature-scope-map.md` 未列的產品功能改為 Phase 4-only：頁級 `data-page-feat="full"`、區塊級 `data-feat="full"`；`devtools.js` 內建安全 fallback、低版本直連回 E-Shop、動態連結與 `sidebar.js` 導航不再露出完整功能入口。funding-test 保持同 Phase 4。
 - 補齊已列 scope：S11 拍賣頁級 gate、S45 組合限量、E13–E18 收入來源 chip／列表／Overview source gate；E09 Overview panel 於 P1 隱藏。
+
+## 2026-07-14 · 白天 Form Section 外框三階層（B 反饋導入）
+
+- **明確分層**：正式 opt-in `.form-section--outlined` 在白天使用最亮的 `--card #FFF`；其外為 `main` 的 `--surface-page #FAFAFA`，再外為 `app` 的 `--surface-shell #F0F0EE`。黑夜維持 `--muted #272828` 填色與 `--border #3A3A3C` 外框。`admin-ip-bank-entry.html` 為目前採用流程，`section-test.html` 保留作視覺驗證。
+
+## 2026-07-14 · 白天 Shell／Page Surface 降低明度（B 反饋導入）
+
+- **只調整兩層外框面**：當時 `--surface-shell` `#FAFAF8` → `#F5F5F3`，`--surface-page` `#FFFFFF` → `#FAFAFA`；後續 shell 再調為 `#F0F0EE`。外層 App Shell 與建立流程的 route page 保留原本層次、降低整體白亮度。`--background`、`--card`、元件樣式與 dark token 不變。
+
+## 2026-07-14 · 主題偏好跨頁保存＋Section 外框測試（B 反饋導入）
+
+- **主題偏好恢復**：`theme.js` 改讀合法的 localStorage light／dark／system 值，沒有偏好時預設黑夜；`?theme=` 為優先、但不寫入的當頁覆寫。使用者切換淺色或黑夜後，換頁仍保留選擇；所有可到達 HTML 的靜態初始 theme 改 dark，避免白色首幀。
+- **外框先做 opt-in 視覺驗證**：`form-section.css` 新增 `.form-section--outlined`，使用 `--muted` 填色與 `--border` 外框；暗色實際對應 #272828 填色與 #3A3A3C 邊線。新增 `section-test.html` 供切換主題／URL override 檢視；後續由 `admin-ip-bank-entry.html` 成為首個正式採用流程。
+- **設計系統與追蹤文件同步**：Form section 的欄位節奏統一記為基礎 gap 6／欄距 16，移除舊的 4／26 說法；BUILD-SPEC、ASSUMPTIONS、requirements map 的 D108 固定淺色現況改為本輪決定。
 
 ## 2026-07-13 · Create Product 元件尺寸與 Icon atom 對齊（B 反饋導入）
 

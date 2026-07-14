@@ -192,4 +192,4 @@ if (document.readyState === 'loading') {
 }
 
 // Expose for manual re-application after dynamic insertions
-window.ztorIcons = { applyIcons, REGISTRY };
+window.ztorIcons = { applyIcons, render: applyIcons, REGISTRY };

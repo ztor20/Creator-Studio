@@ -4,7 +4,7 @@
    Drives the `data-theme` attribute on <html>. Three states:
      · "light"  — forced light
      · "dark"   — forced dark
-     · "system" — follows prefers-color-scheme (default)
+     · "system" — follows prefers-color-scheme
 
    Storage key: ztor.theme.preference  (one of light / dark / system)
    The actual resolved `data-theme` only ever flips between
@@ -14,7 +14,8 @@
    Sources of truth:
      1. URL ?theme=<value>  (debug override, NOT persisted)
      2. localStorage["ztor.theme.preference"]
-     3. window.matchMedia("(prefers-color-scheme: dark)")
+     3. dark (the R 2.1 fallback when no valid preference is stored)
+     4. window.matchMedia("(prefers-color-scheme: dark)") when set to system
 
    Public API on window.ztorTheme:
      · getPreference()  → "light" | "dark" | "system"
@@ -22,8 +23,8 @@
      · setPreference(value)
      · cycle()          → light → dark → system → light
 
-   Topbar adds a sun/moon icon button (added in index.html etc.).
-   Settings page Appearance section uses three radio cards.
+   Any page can opt into the shared controls with data-theme-toggle or
+   data-theme-set. section-test.html is the current visual test surface.
    ============================================================ */
 
 (function () {
@@ -31,8 +32,10 @@
   const VALID = new Set(["light", "dark", "system"]);
 
   function readStored() {
-    // D108: v1 固定淺色（Light），不提供主題切換；忽略舊儲存值與系統偏好。
-    return "light";
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      return VALID.has(v) ? v : "dark";
+    } catch (e) { return "dark"; }
   }
 
   function readUrlOverride() {
@@ -78,15 +81,17 @@
   }
 
   // ── Boot ──────────────────────────────────────────────
-  // D108: 固定淺色，不吃 ?theme= 或舊儲存值。
-  apply("light");
+  // URL is a one-page debug override. Otherwise keep the saved choice;
+  // a first-time visitor starts in dark mode.
+  apply(readUrlOverride() || readStored());
 
   // Listen for system theme changes — only re-applies when current
   // preference is "system" so explicit light/dark stays sticky.
   if (window.matchMedia) {
     window.matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", () => {
-        if (readStored() === "system") apply("system");
+        const preference = readUrlOverride() || readStored();
+        if (preference === "system") apply(preference);
       });
   }
 

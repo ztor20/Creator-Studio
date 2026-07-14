@@ -124,8 +124,8 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | `background-canvas` | rgb 255 255 255 | `#FFFFFF` (clean white · 2026-06-09) |
 | `background-surface` | rgb 255 255 255 | `#FFFFFF` |
 | `background-card` | rgb 250 250 250 | `#FAFAFA` |
-| `surface-shell` | rgb 250 250 248 | `#FAFAF8` (sidebar-mode App Shell canvas) |
-| `surface-page` | rgb 255 255 255 | `#FFFFFF` (single opaque route page) |
+| `surface-shell` | rgb 240 240 238 | `#F0F0EE` (sidebar-mode App Shell canvas) |
+| `surface-page` | rgb 250 250 250 | `#FAFAFA` (single opaque route page) |
 | `sidebar` | rgb 251 251 251 | `#FBFBFB` (sidebar display-mode rail — near-white neutral) |
 | `accent` | rgb 243 243 243 | `#F3F3F3` (rail item hover) |
 | `sidebar-active` | rgb 236 236 236 | `#ECECEC` (rail selected pill, 2026-06-12) |
@@ -193,8 +193,8 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | Role | Hex | Where it lives |
 |---|---|---|
 | `background-canvas` | `#FFFFFF` | Body / page — clean white (2026-06-09). Cards (`--card` #FFFFFF) now separate by shadow, not by canvas tint |
-| `surface-shell` | `#FAFAF8` | Subtle Sidebar-mode outer canvas behind navigation and the route page（2026-07-13 微暖 off-white，原 `#F5F5F5`，讓白卡浮出） |
-| `surface-page` | `#FFFFFF` | One continuous opaque route page containing hero, content, and footer |
+| `surface-shell` | `#F0F0EE` | Subtle Sidebar-mode outer canvas behind navigation and the route page（2026-07-14 再降一階，保留與 route page 的層次） |
+| `surface-page` | `#FAFAFA` | One continuous opaque route page containing hero, content, and footer（2026-07-14 降低明度） |
 | `sidebar` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
 | `sidebar-active` | `#ECECEC` | Sidebar selected item — full-pill（9999px）capsule fill, one step deeper than hover so the current page is unmistakable（2026-06-12，dark: rgba 253/0.12） |
@@ -491,8 +491,8 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 | `--card` | `#FFFFFF` | `rgba(253,253,253,0.10)` | **translucent overlay**, not opaque grey |
 | `--muted` | `#FAFAFA` | `rgba(253,253,253,0.06)` | lower elevation overlay |
 | `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 改純黑（content 為 `#191A1A`，footer 要更深才讀為分隔） |
-| `--surface-page` | `#FFFFFF` | `#191A1A` | route page。**Dark 反轉**：content 是最深底色，比 app shell 更深、視覺上內凹（2026-06-22 依使用者指定 `#191A1A`） |
-| `--surface-shell` | `#FAFAF8` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定；light 2026-07-13 微暖，原 `#F5F5F5`） |
+| `--surface-page` | `#FAFAFA` | `#191A1A` | route page。Light 於 2026-07-14 降低明度；**Dark 反轉**：content 是最深底色，比 app shell 更深、視覺上內凹（2026-06-22 依使用者指定 `#191A1A`） |
+| `--surface-shell` | `#F0F0EE` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Light 於 2026-07-14 再降一階；Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定） |
 | `--sidebar` | `#FBFBFB` | `#2B2B2C` | sidebar rail 與 shell canvas 同色（flush）；項目區分靠 hover/active 疊色 |
 | `--foreground` | `#1A1A1A` | `#FDFDFD` | 2026-07-13 light 改 off-black（原 `#000000`） |
 | `--foreground-muted` | `rgba(0,0,0,0.7)` | `rgba(253,253,253,0.7)` | |
@@ -583,6 +583,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
 | KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary） | [kpi.css](./ds-components/kpi.css) |
+| Admin IP Bank table | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列；共用 token-driven table wrapper、owner identity 與日期範圍操作列 | [admin-ip-bank-table.css](./ds-components/admin-ip-bank-table.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill; type-switch row uses `--underline-short` for the divider-off, shortened active underline), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
@@ -639,8 +640,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
-| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨預設密度 gap 6／欄距 16；在 Form section 內由情境規則收緊為 gap 4／欄距 26（form-section.css），產品建立頁即此密度 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
-| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / spacing tweaks under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
+| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
+| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為正式 opt-in 變體：白天 `--card` 填色、黑夜 `--muted` 填色、兩模式共用 `--border` 外框；目前由 [admin-ip-bank-entry.html](./admin-ip-bank-entry.html) 採用，並保留 [section-test.html](./section-test.html) 作視覺驗證。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (default radio dot + title/sub) built on Segmented; selected = card shadow + orange ring; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
@@ -3483,7 +3484,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 #### Form assembly (Workflow)
 
 - **trigger**: Any create / edit form — wizard steps, settings forms, create-product / -event / -project sections.
-- **must**: Every field is a `Field`（label + optional hint + exactly one control slot; the control reuses an atom — Input / Switch / Segmented / textarea）; group fields into `Form section`s（title + grey sub; sibling sections auto-divide via the component's own `+` rule; 26px in-section field rhythm）; side-by-side fields use `Form grid`, never hand-rolled columns.
+- **must**: Every field is a `Field`（label + optional hint + exactly one control slot; the control reuses an atom — Input / Switch / Segmented / textarea）; group fields into `Form section`s（title + grey sub; sibling sections auto-divide via the component's own `+` rule; base gap 6 / field spacing 16）；side-by-side fields use `Form grid`, never hand-rolled columns. Use `.form-section--outlined` only when a product flow explicitly adopts this formal opt-in variant; its fill is `--card` in light mode and `--muted` in dark mode, with a shared `--border` edge. Add IP Entry is the current adoption.
 - **should**: Order fields identity → content → settings → risk disclosures; put character counts as right-aligned `field__hint--count`（form-section scope）; keep one sticky action bar per form for save / next.
 - **must-not**: Never hand-roll a label/hint stack outside `.field`; never nest a second heading system inside a section; never mix card-wrapped and no-card sections in the same flow.
 - **_edge-cases**: `empty` → fields show placeholders, never pre-filled fake data; `error` → inline validation on the field, section stays open; `new-user` → first section carries a one-line explainer; `mobile` → `Form grid` collapses to single column; `offline` → draft-save locally（同 wizard）.
