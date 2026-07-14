@@ -4,6 +4,8 @@
 
 ## 呈現假設
 
+| UIA-049 | **2026-07-14 版本切割呈現規則**：使用者裁決 P1/P2/P3 只顯示 `feature-scope-map.md` 明列功能，未列產品功能一律 Phase 4；這是 prototype 的呈現／驗收規則，不修改上游最終產品規格。低版本跨頁入口隱藏、直接 URL 回 E-Shop；funding-test 維持同 Phase 4（僅 create-project route 改接）。 | 使用者已確認 |
+
 | ID | 假設 | 狀態 |
 |---|---|---|
 | UIA-001 | R 2.1 **預設側邊欄（Sidebar，D110）**、可切 topbar；兩顯示模式不改變產品 IA。**主題固定淺色、語言固定繁中，皆不提供切換（D108）**（詳見 UIA-037） | 可由 UI 調整 |

@@ -69,7 +69,21 @@
     ['full', 'Phase 4（最終完整版）', '開發', 'all', '全部功能（預設）'],
     ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
   ];
-  var FEAT_TIER = {};   // { S30:'p1', … } 由 md 功能表填
+  /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
+     必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
+  /* 載入前／失敗後的安全後備：非 P1 gate 不能因 fetch 問題降格成 P1。 */
+  var FEAT_TIER = {
+    full: 'full', S05: 'next', S06: 'next', S11: 'tbd', S24: 'tbd', 'S31.1': 'next', S45: 'tbd',
+    O04: 'tbd', O09: 'tbd', O17: 'next', O18: 'tbd', O22: 'next', O23: 'next',
+    E08: 'next', E09: 'next', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'next', E20: 'next', E22: 'tbd', E23: 'next', E24: 'tbd'
+  };   // { S30:'p1', … } 由 md 功能表填
+  var FULL_ROUTES = {
+    'index.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
+    'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1,
+    'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
+    'ip-market.html': 1, 'register-ip.html': 1, 'pickup.html': 1, 'pickup-detail.html': 1, 'scanner.html': 1, 'settings.html': 1
+  };
+  function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'p1'); }
   function parseScopeMd(txt) {
     var lines = txt.split('\n'), vs = [], inVer = false;
     lines.forEach(function (ln) {
@@ -103,6 +117,30 @@
     });
     return out;
   }
+  function applyRouteAvailability() {
+    var allowFull = state.version === 'full' || state.version === 'funding-test';
+    document.querySelectorAll('a[href]').forEach(function (a) {
+      var route = (a.getAttribute('href') || '').split(/[?#]/)[0].toLowerCase();
+      if (!FULL_ROUTES[route]) return;
+      a.classList.toggle('ztd-ver-hidden', !allowFull);
+      a.classList.toggle('ztd-ver-future', false);
+    });
+  }
+  function setFeatureLinkDisabled(el, disabled) {
+    var links = el.matches && el.matches('a[href],a[data-ztd-feat-href]') ? [el] : Array.prototype.slice.call(el.querySelectorAll('a[href],a[data-ztd-feat-href]'));
+    links.forEach(function (a) {
+      if (disabled) {
+        if (a.hasAttribute('href')) { a.setAttribute('data-ztd-feat-href', a.getAttribute('href')); a.removeAttribute('href'); }
+        if (a.hasAttribute('tabindex')) a.setAttribute('data-ztd-feat-tabindex', a.getAttribute('tabindex'));
+        a.setAttribute('tabindex', '-1'); a.setAttribute('aria-disabled', 'true');
+      } else if (a.hasAttribute('data-ztd-feat-href')) {
+        a.setAttribute('href', a.getAttribute('data-ztd-feat-href')); a.removeAttribute('data-ztd-feat-href');
+        if (a.hasAttribute('data-ztd-feat-tabindex')) { a.setAttribute('tabindex', a.getAttribute('data-ztd-feat-tabindex')); a.removeAttribute('data-ztd-feat-tabindex'); }
+        else a.removeAttribute('tabindex');
+        a.removeAttribute('aria-disabled');
+      }
+    });
+  }
   /* 版本選項渲染：一行一個、依類型分「開發版本／測試版」兩組。
      mode='onb' 給首次 popup（data-onb 暫存選擇）；否則面板（data-kind=version 立即套用）。*/
   function verRows(current, mode) {
@@ -125,10 +163,11 @@
       /* data-feat 支援逗號多值（外殼包多個功能時）：任一功能在版本內→顯示；全部不在→藏 */
       var ids = el.getAttribute('data-feat').split(',');
       var inVer = !allow || ids.some(function (id) {
-        return allow.indexOf(FEAT_TIER[id.trim()] || 'p1') >= 0;
+        return allow.indexOf(featTier(id)) >= 0;
       });
       el.classList.toggle('ztd-ver-hidden', !inVer && !state.showFuture);
       el.classList.toggle('ztd-ver-future', !inVer && state.showFuture);
+      setFeatureLinkDisabled(el, !inVer);
     });
     /* 1b) 反向閘：data-feat-off 的元素是「該功能未納入版本時才顯示」的 base／預設呈現，
        與同位置的 data-feat 元素成對——功能在版本內（或預覽 future）→ 顯示升級版、收起 base；
@@ -136,7 +175,7 @@
     document.querySelectorAll('[data-feat-off]').forEach(function (el) {
       var offIds = el.getAttribute('data-feat-off').split(',');
       var featShown = offIds.some(function (id) {
-        var inVer = !allow || allow.indexOf(FEAT_TIER[id.trim()] || 'p1') >= 0;
+        var inVer = !allow || allow.indexOf(featTier(id)) >= 0;
         return inVer || state.showFuture;
       });
       el.classList.toggle('ztd-ver-hidden', featShown);
@@ -164,6 +203,17 @@
         }
       });
     });
+    applyRouteAvailability();
+  }
+  function guardPageFeature() {
+    var pageFeat = document.documentElement.getAttribute('data-page-feat');
+    if (!pageFeat || state.version === 'full' || state.version === 'funding-test') return false;
+    var allow = tiersForRule(curVersionRule());
+    if (!allow || allow.indexOf(featTier(pageFeat)) >= 0) return false;
+    var here = (location.pathname.split('/').pop() || '').toLowerCase();
+    if (here === 'e-shop.html') return false;
+    location.replace('e-shop.html' + location.search + location.hash);
+    return true;
   }
   function loadVersions() {
     try {
@@ -225,6 +275,7 @@
     el.setAttribute('data-event-day', state.eventDay);
     el.setAttribute('data-skip-validation', state.skipValidation ? '1' : '0');
     el.setAttribute('data-version', state.version);
+    if (guardPageFeature()) return;
     applyVersion();
     listeners.forEach(function (f) { try { f(d); } catch (e) {} });
     document.dispatchEvent(new CustomEvent('ztor:devstate-changed', { detail: d }));
@@ -619,6 +670,10 @@
   };
   emit();
   loadVersions();
+  if (window.MutationObserver) {
+    new MutationObserver(function () { applyRouteAvailability(); })
+      .observe(document.body, { childList: true, subtree: true });
+  }
   /* 首次進站：跳 popup 選版本 → 確定進入（每裝置第一次；手機免 Alt＋右鍵也能設版本）*/
   var ONBOARD_LS = 'ztor.devtools.onboarded';
   function showOnboarding() {

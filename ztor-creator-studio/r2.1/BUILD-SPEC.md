@@ -19,6 +19,8 @@
 
 > R 2.1 不是 R 2.0 的迭代版本，而是以相同上游需求重新探索設計語言。兩個版本都不能反向決定產品規則。
 
+> **2026-07-14 · 版本切割工程**：Cheat Codes 以 `feature-scope-map.md` 為功能 tier 單一真相。P1/P2/P3 只呈現明列 tier；未列產品功能以 `data-feat="full"`／`data-page-feat="full"` 留在 Phase 4，低版本的連結與直連 route 均不放行。funding-test 除建立專案改接外同 Phase 4。
+
 > **2026-07-13 · 元件對齊快照**：Create Product 採用 Lucide icon atom（12／14／16／20／24px）取代文字與自製 SVG；輸入控件使用 1px 陰影邊線＋4px focus glow。此輪為純呈現更新，不改產品流程。`.card` 維持主分支 1px border、無陰影；按鈕 hover 維持 `--accent`。
 
 ---

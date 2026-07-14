@@ -8,6 +8,11 @@
 >
 > **排序慣例（2026-07-02 起）**：新條目一律加在**最上方**（新→舊）。更早的紀錄（2026-05-25 ～ 2026-06-24）已移至 [UI-CHANGES-archive.md](UI-CHANGES-archive.md)。
 
+## 2026-07-14 · 全頁版本切割（D infra · 使用者裁決）
+
+- `feature-scope-map.md` 未列的產品功能改為 Phase 4-only：頁級 `data-page-feat="full"`、區塊級 `data-feat="full"`；`devtools.js` 內建安全 fallback、低版本直連回 E-Shop、動態連結與 `sidebar.js` 導航不再露出完整功能入口。funding-test 保持同 Phase 4。
+- 補齊已列 scope：S11 拍賣頁級 gate、S45 組合限量、E13–E18 收入來源 chip／列表／Overview source gate；E09 Overview panel 於 P1 隱藏。
+
 ## 2026-07-13 · Create Product 元件尺寸與 Icon atom 對齊（B 反饋導入）
 
 - 套用 PR #101 的實質元件調整：Upload tile 的自製 SVG／文字 `＋` 改為 Lucide、select 改用 `.select-wrap` 的 Lucide chevron、icon 增加 12／20／24px 語意尺寸、filter tabs 與 icon button 對齊密度。
