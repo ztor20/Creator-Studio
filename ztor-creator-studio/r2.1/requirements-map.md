@@ -3,9 +3,9 @@
 | 上游規格 | 頁面 | 覆蓋內容 |
 |---|---|---|
 | `5.1.0-Creator管理.md` | `creators.html` | Admin Creator Studio 左側欄的 Creator 管理目的地與進入 Artist Studio 入口 |
-| `5.1.0.1-Admin-IP-Bank.md` | `admin-ip-bank.html` | Film × IP × Owner 列表、Linked／Pending、Share、Edit／Remove 與建立入口 |
+| `5.1.0.1-Admin-IP-Bank.md` | `admin-ip-bank.html` | Admin Creator Studio → IP Bank 的導航脈絡、Film × IP × Owner 列表、Linked／Pending、Share、Edit／Remove 與建立入口 |
 | `5.1.0.1.1-建立IP-Entry流程.md` | `admin-ip-bank-entry.html` | Film、IP type、Owner／邀請、Share 0.01 與 Film ≤100% 驗證 |
-| `5.1.0.2-IP-Bank-Reporting.md` | `ip-bank-reporting.html` | Film 篩選、唯讀 KPI、Owner／Platform 分潤列與 Pending 鎖定呈現 |
+| `5.1.0.2-IP-Bank-Reporting.md` | `ip-bank-reporting.html` | Admin Creator Studio → IP Bank Reporting 的導航脈絡、Film 與日期範圍篩選、KPI、Owner／Platform 分潤列與 Pending 鎖定呈現 |
 
 本文件只對照「上游需求覆蓋到哪個 UI 實作」，不複製或改寫產品規則。
 
@@ -18,7 +18,7 @@
 
 發現上游缺口或實作衝突時記入 [`ASSUMPTIONS.md`](ASSUMPTIONS.md)。不得因畫面已存在就把行為寫回上游。
 
-> **2026-07-14 呈現追蹤**：白天 `--surface-shell`／`--surface-page` 只降低明度；正式 opt-in `.form-section--outlined` 再以 `--card` 形成最亮內層（黑夜維持 `--muted`）。目前由 `admin-ip-bank-entry.html` 採用，`section-test.html` 保留作視覺驗證；不涉及上游需求、頁面責任或產品行為變更。
+> **2026-07-15 呈現追蹤**：建立流程統一採 `.wizard__sheet--sectioned`（`--surface-page` 底）與 `.form-section--outlined`（`--card`／dark `--muted`、`--border`）；可見區塊以 `--sp-24` 間隔，跨越 `[hidden]` 條件區塊不留空白。採用頁為 create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry，`section-test.html` 保留作視覺驗證；不涉及上游需求、頁面責任或產品行為變更。
 
 > **2026-07-14 呈現追蹤**：版本切割由 `feature-scope-map.md` 管理；未列功能只在 Phase 4 呈現，並不表示上游最終產品範圍被移除。
 

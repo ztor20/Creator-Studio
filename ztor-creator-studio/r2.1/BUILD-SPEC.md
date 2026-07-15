@@ -171,6 +171,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | New product post | `.npp-product(__thumb/__info/__name/__meta/__price/__link)` + `.npp-intro` + 重用 `.payout-dialog` 外殼與 `.msg-*`（message-modal）| 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：**重用群發 composer**（受眾·標題≤120·內文≤2000·個人化 token·排程，不重定義發送機制），本檔只加 F2 商品附件卡與略過路徑。由 `partials/product-post-modal.js` 掛於 e-shop.html、`?posted=1` 開啟；標題/關閉在彈窗外框（無頁首，D067）。發布為 demo（通知粉絲＋Fans CRM 引用 5.1.7.1／5.1.2.2 §4.9）|
 | Choice card grid | `.choice-grid / .choice-card / .choice-card--active` | Radio-style 選擇器（專案類型、access model、event type） |
 | Wizard frame | `.wizard / .wizard__top / .stepper / .wizard__bottom` | 4-step wizard 專用 layout（無 sidebar）。**2026-07-09**：7 個建立頁重複的 `.wizard__body` 頂距／內容寬頁內覆寫 promote 成 `.wizard__body--form/--narrow/--wide` 修飾類；funding-simulate／funding-test 頁的分岔值維持頁內，未強行統一 |
+| Sectioned create form | `.wizard__sheet--sectioned / .form-section--outlined` | 建立流程共用區塊式表單：sheet 底使用 `--surface-page`；outlined section 以 `--card`（light）／`--muted`（dark）、`--border` 組成，所有可見 outlined siblings 以 `--sp-24` 分隔並跨越 `[hidden]` 條件 section。採用於 create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；不改欄位、驗證或流程行為 |
 | IP hero | `.ip-hero / .ip-hero__cover / .rental-card / .duration-grid` | IP 詳情頁專用三欄 hero |
 | Stacked bar | `.stacked-bar / .source-list` | Revenue by Source 共用 |
 | Tabs | `.tabs / .tabs__item / .tabs__item--active` | Orange 底線 active state · **`.tabs--brand` 變體**＝淡橘（`--primary` 18%）填色 active pill、無底線（opt-in，僅 E-Shop F3 類型切換，不動全站 `.tabs`，2026-06-15）|
@@ -234,7 +235,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - Light / Dark / System 三選一，無儲存偏好時預設 dark
 - `<html data-theme>` 屬性 driven，`theme.js` 管理 + localStorage 持久化；URL `?theme=` 優先且不寫入偏好
 - Topbar 月亮 / 太陽 icon 透過 attribute selector 切換（light 顯示 moon，dark 顯示 sun — 顯示「下一個會切到」）
-- `section-test.html` 提供 `data-theme-set` 測試控制；`.form-section--outlined` 是正式 opt-in 變體，目前由 `admin-ip-bank-entry.html` 採用
+- `section-test.html` 提供 `data-theme-set` 測試控制；`.form-section--outlined` 是建立流程正式採用的區塊變體，使用 `--surface-page` sheet 底與 `--sp-24` 可見區塊間距（create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry）
 
 ### 5.2a 顯示模式（Display mode · spec §6.9 / D016）
 
