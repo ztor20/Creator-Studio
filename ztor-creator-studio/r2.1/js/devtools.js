@@ -41,9 +41,9 @@
   /* 外觀類切換：直接驅動既有系統（theme.js / i18n.js），
      各自持久化，不併入 devstate；面板只讀現值高亮、點擊呼叫其 API。*/
   var THEME = [
+    ['dark', 'Dark', '強制暗色（預設）'],
     ['light', 'Light', '強制亮色'],
-    ['dark', 'Dark', '強制暗色'],
-    ['system', 'System', '跟隨系統（預設）'],
+    ['system', 'System', '跟隨系統'],
   ];
   var LANG = [
     ['en', 'English', '英文（預設）'],

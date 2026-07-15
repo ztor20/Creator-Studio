@@ -33,37 +33,37 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     </div>
     <div class="payout-dialog__body">
       <!-- Document layer — method + supplier / ETA / notes, filled once per order -->
-      <div class="field">
-        <span class="field__label"><span data-i18n="restock.method">Restock method</span> <span class="field__req">*</span></span>
+      <div class="payout-field">
+        <span class="payout-field__label"><span data-i18n="restock.method">Restock method</span> <span class="field__req">*</span></span>
         <div class="segmented" role="tablist" data-restock-method>
           <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-restock-mode="now" data-i18n="restock.method.now">Restock now</button>
           <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-restock-mode="scheduled" data-i18n="restock.method.scheduled">Scheduled</button>
         </div>
-        <span class="field__hint" data-restock-method-hint data-i18n="restock.method.now-hint">Stock is on hand — adds to inventory immediately.</span>
+        <span class="payout-field__hint" data-restock-method-hint data-i18n="restock.method.now-hint">Stock is on hand — adds to inventory immediately.</span>
       </div>
-      <div class="form-grid mt-16">
-        <label class="field" data-restock-eta hidden>
-          <span class="field__label"><span data-i18n="restock.f.eta">Expected arrival</span> <span class="field__req">*</span></span>
+      <div class="payout-form-grid mt-16">
+        <label class="payout-field" data-restock-eta hidden>
+          <span class="payout-field__label"><span data-i18n="restock.f.eta">Expected arrival</span> <span class="field__req">*</span></span>
           <input class="input" type="date" value="2026-07-08">
         </label>
-        <label class="field">
-          <span class="field__label" data-i18n="restock.f.supplier">Supplier (optional)</span>
+        <label class="payout-field">
+          <span class="payout-field__label" data-i18n="restock.f.supplier">Supplier (optional)</span>
           <input class="input" placeholder="—" data-restock-supplier>
         </label>
-        <label class="field">
-          <span class="field__label" data-i18n="restock.f.notes">Notes (optional)</span>
+        <label class="payout-field">
+          <span class="payout-field__label" data-i18n="restock.f.notes">Notes (optional)</span>
           <input class="input" placeholder="—">
         </label>
       </div>
 
       <!-- Item layer — bundle members become tabs; each panel holds a variant matrix -->
-      <div class="field__label mt-16"><span data-i18n="restock.items">Items to restock</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="restock.items-hint">— leave blank to skip an item</span></div>
+      <div class="payout-field__label mt-16"><span data-i18n="restock.items">Items to restock</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="restock.items-hint">— leave blank to skip an item</span></div>
       <div class="tabs" role="tablist" data-restock-tabs hidden></div>
       <div data-restock-members></div>
-      <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--muted-foreground)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
+      <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
-      <div class="info-banner mt-16">
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+      <div class="stickynote mt-16">
+        <span class="stickynote__mark">!</span>
         <span data-i18n="restock.note"><strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received (§7.2). Each restocked item is logged on the product page. Digital / unlimited items can't be restocked.</span>
       </div>
     </div>
