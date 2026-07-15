@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-07-15 · Admin IP Entry Owner lookup 與待寄送邀請原型（A 規格同步）
+
+- 新增 owner-lookup SiteSpecific component（CSS + vanilla JS），以同一 Owner 輸入搜尋 sample Ztor directory 的名稱、username 與 email；結果顯示身份三要素，選取後為 Linked。
+- 有效但尚未註冊的 email 可建立 Pending invitation；同一待邀請 email 會被阻擋重複建立，清單與 Reporting 仍以既有 Linked／Pending 狀態呈現。
+- 原型只將 invitation metadata 存入 localStorage，成功語意為已建立／待寄送；不查正式帳號、不寄送 email。對應 D132。
+
 ## 2026-07-15 · 建立流程統一為區塊式表單（B 反饋導入）
 
 - create-product、create-auction、create-bundle、create-event、create-project、register-ip 與 admin-ip-bank-entry 的 wizard sheet 統一使用 `--surface-page` 底色；每個指定的表單群組採 outlined section。

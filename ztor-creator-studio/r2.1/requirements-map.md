@@ -4,7 +4,7 @@
 |---|---|---|
 | `5.1.0-Creator管理.md` | `creators.html` | Admin Creator Studio 左側欄的 Creator 管理目的地與進入 Artist Studio 入口 |
 | `5.1.0.1-Admin-IP-Bank.md` | `admin-ip-bank.html` | Admin Creator Studio → IP Bank 的導航脈絡、Film × IP × Owner 列表、Linked／Pending、Share、Edit／Remove 與建立入口 |
-| `5.1.0.1.1-建立IP-Entry流程.md` | `admin-ip-bank-entry.html` | Film、IP type、Owner／邀請、Share 0.01 與 Film ≤100% 驗證 |
+| `5.1.0.1.1-建立IP-Entry流程.md` | `admin-ip-bank-entry.html` | Film、IP type、Owner username／email lookup、Linked／Pending email invitation、Share 0.01 與 Film ≤100% 驗證 |
 | `5.1.0.2-IP-Bank-Reporting.md` | `ip-bank-reporting.html` | Admin Creator Studio → IP Bank Reporting 的導航脈絡、Film 與日期範圍篩選、KPI、Owner／Platform 分潤列與 Pending 鎖定呈現 |
 
 本文件只對照「上游需求覆蓋到哪個 UI 實作」，不複製或改寫產品規則。

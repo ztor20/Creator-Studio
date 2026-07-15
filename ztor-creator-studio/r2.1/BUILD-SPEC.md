@@ -1,5 +1,7 @@
 # Ztor Creator Studio · R 2.1 BUILD-SPEC
 
+> **2026-07-15 · Owner lookup prototype**：Admin IP Entry 將 Owner 欄位拆成 SiteSpecific owner-lookup component（同一輸入搜尋 display name／username／email）。component 輸出 linked user 或 invite email union；Entry 頁保有 Share 與送出驗證。有效但未註冊的 email 在本機儲存為 pending invitation metadata，清單沿用 Invited (Pending) 顯示；不宣稱已寄送 email。
+
 > **文件角色：UI／前端實作快照。** 本文件只記錄 R 2.1 已採用的佈局、元件、視覺、動效、響應式與工程做法，不是產品需求來源。
 >
 > 產品權威依序為 `requirement/`、`documents/decisions.md` 的有效決策、`documents/`。本文件若與上游衝突，應更新實作或記入 [ASSUMPTIONS.md](ASSUMPTIONS.md)，不得把既有 UI 靜默反向同步到上游。

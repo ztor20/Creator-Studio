@@ -3433,6 +3433,15 @@ Normalizes three page-local versions into one component: create-event.html's `.c
 
 ---
 
+### 4.?? Owner lookup
+
+- Source: ds-components/owner-lookup.css and partials/owner-lookup.js
+- Layer and scope: SiteSpecific organism; currently used only by admin-ip-bank-entry.html.
+- Purpose: searches registered Ztor users by display name, username, or email; it outputs a linked user or a pending invite email. No result, incomplete email, and duplicate pending email remain within the same control.
+- Anatomy and states: input, result list, identity metadata (name / @username / email), Linked, Pending invite, no result, and duplicate pending.
+- Tokens: --popover, --border, --accent, --shadow-float, --sp-*, --fs-*, --foreground, --muted-foreground, --destructive.
+- Boundary: the component owns search and selection and exposes getValue() plus ownerlookup:change. The Entry page owns Share validation and localStorage prototype saving. The prototype does not send email.
+
 ## Pillar 5 · Pattern
 
 > Cross-component behavior conventions. Per DSS v1.4: layout patterns / voice / accessibility / interaction states / data viz live here, NOT in Component (which only defines per-component variants/states).

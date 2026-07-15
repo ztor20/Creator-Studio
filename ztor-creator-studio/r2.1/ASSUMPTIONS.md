@@ -4,7 +4,7 @@
 
 - `js/ip-bank-store.js` 的 Film、IP、Owner、Share、Owed 與 Withdrawn 是 localStorage prototype data，僅用於示範 Admin IP Bank 與 Reporting 的跨頁連動。
 - Film net revenue、monthly close、Withdrawn 與 settlement engine 未在原型實作或定義；Reporting 明示為 illustrative derived figures。
-- 外部 Owner 邀請在原型只呈現 Linked／Invited (Pending) 與 required invitation contact，沒有送信、claim 或 payout 操作。
+- Owner lookup 的 directory、linked user 與 pending invitation 都是 localStorage prototype state。原型只顯示「邀請已建立／待寄送」，不查詢正式帳號資料、不建立真實 invitation record，也不寄送 email；正式搜尋權限、email queue、claim、KYC 與 payout 邊界由上游與後端決定。
 - 建立 IP Entry 以現有單頁建立 shell 呈現四個既有表單群組；這是流程呈現決策，不新增產品階段或改變資料規則。
 - Reporting 日期範圍會觸發摘要與列表重繪；prototype 沒有日粒度收入來源，因此篩選範圍顯示於 KPI 與報表範圍文字，金額維持 illustrative sample。
 
