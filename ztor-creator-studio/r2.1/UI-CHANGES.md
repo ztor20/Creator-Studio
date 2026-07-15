@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-07-15 · 建立流程統一為區塊式表單（B 反饋導入）
+
+- create-product、create-auction、create-bundle、create-event、create-project、register-ip 與 admin-ip-bank-entry 的 wizard sheet 統一使用 `--surface-page` 底色；每個指定的表單群組採 outlined section。
+- outlined section 以 `--card`／黑夜 `--muted`、`--border` 組成，所有可見區塊間以 `--sp-24` 留白；跨越條件顯示的 `[hidden]` 區塊時不留下空白。
+- 只調整呈現層與區塊容器，既有欄位、條件顯示、驗證與 JavaScript 行為不變。
+
+## 2026-07-15 · Admin IP Bank 補齊導覽脈絡（A 規格同步）
+
+- 在既有 `page-intro` 前補上 Admin Creator Studio → IP Bank 的 Breadcrumb，明確標記目前頁並提供回到 Admin 起始目的地的連結；重用既有文字連結與 token，不新增 CSS 或視覺元件。
+
+## 2026-07-15 · Admin IP Bank Reporting 補齊導覽脈絡（A 規格同步）
+
+- 在既有 `page-intro` 前補上 Admin Creator Studio → IP Bank Reporting 的 Breadcrumb，明確標記目前頁並提供回到 Admin 起始目的地的連結；重用既有文字連結與 token，不新增 CSS 或視覺元件。
+
+## 2026-07-15 · Admin IP Bank Reporting 頁首收斂（B 反饋導入）
+
+- 移除 Reporting 頁首的非操作 badge，保留既有 `page-intro` 標題與說明層級；頁首無操作時不建立空的 actions 區，與其他 Admin 頁的既有頁首規則一致。報表的唯讀權限、KPI 與 Owner／Platform 分潤資料均維持不變。
+
 ## 2026-07-14 · Admin Creator Studio 的 IP Bank 與 Reporting（A 規格同步）
 
 - 新增 `admin-ip-bank.html`、`admin-ip-bank-entry.html`、`ip-bank-reporting.html`，分別對應 Admin IP Bank、建立 IP Entry 流程與 IP Bank Reporting 規格。
