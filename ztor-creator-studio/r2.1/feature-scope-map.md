@@ -15,7 +15,7 @@
 | 🔵 Next | planned follow-up phase（已規劃的後續期） |
 | ⚪ TBD | business team to decide（商務團隊待定） |
 
-本期統計：🟢 Phase 1 82 · 🔵 Next 12 · ⚪ TBD 14
+本期統計：🟢 Phase 1 82 · 🔵 Next 12 · ⚪ TBD 13
 
 ## Build 狀態圖例
 
@@ -150,7 +150,7 @@ ID 起始 `O01…` ｜ 🟢 17 · 🔵 3 · ⚪ 3
 
 ## E · 收入管理 — Earnings / Income
 
-ID 起始 `E01…` ｜ 🟢 12 · 🔵 5 · ⚪ 7
+ID 起始 `E01…` ｜ 🟢 12 · 🔵 6 · ⚪ 6
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -176,7 +176,7 @@ ID 起始 `E01…` ｜ 🟢 12 · 🔵 5 · ⚪ 7
 | `E19` | 　　載入更多 | Load more | 🟢 Phase 1 | ✅ built |  |
 | `E20` | 　　手動補登 | Manual entry | 🔵 Next | ✅⬆ ahead |  |
 | `E21` | 　　匯出 CSV | Export CSV | 🟢 Phase 1 | ✅ built |  |
-| `E22` | 　收益拆解（瀑布圖 / 依專案 · Ztor抽成·創作者·NFT） | Revenue breakdown waterfall | ⚪ TBD | ✅⬆ ahead | 'Follow the Money' split — blocked on platform-cut decision（原文「EFT」為筆誤，依規格 §7.3 淨利池 NFT 40% 更正） |
+| `E22` | 　收益拆解（瀑布圖 / 依專案 · Ztor抽成·創作者·NFT） | Revenue breakdown waterfall | 🔵 Next | ✅⬆ ahead | 收益拆解納入 scope（使用者 2026-07-16 裁示補上，D139）；平台費率設定入口見規格 5.1.0.3、費率凍結機制 §7.6，結構依 §7.3／5.1.8 F11·F12，**實際抽成比例數值仍待產品確認**。（原文「EFT」為筆誤，依規格 §7.3 淨利池 NFT 40% 更正） |
 | `E23` | 　提款 | Payout | 🔵 Next | ✅⬆ ahead |  |
 | `E24` | 　稅務檔案 | Tax documents | ⚪ TBD | ✅⬆ ahead |  |
 

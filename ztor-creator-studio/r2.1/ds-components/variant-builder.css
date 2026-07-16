@@ -78,6 +78,11 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow-x: auto;
+  /* 外框貼齊表格實際內容寬、靠左，不再撐滿整個 preview-split 表單欄
+     （否則第一欄 fr 會吃掉多餘寬度、規格組合被撐得過寬）；
+     更窄視窗回退到滿寬＋水平捲動（min-width 560 觸發 overflow-x）。 */
+  width: fit-content;
+  max-width: 100%;
 }
 .variant-table {
   display: flex;
@@ -87,14 +92,15 @@
 .variant-table__head,
 .variant-table__row {
   display: grid;
-  grid-template-columns: minmax(110px, 1.3fr) 96px 78px 116px 92px 34px;
+  /* 規格組合欄＝內容寬（max-content）＋110px 下限，不用 fr 吃滿剩餘寬度 */
+  grid-template-columns: minmax(110px, max-content) 96px 78px 116px 92px 34px;
   gap: var(--sp-8);
   align-items: center;
   padding: 9px var(--sp-12);
 }
 .variant-table--limited .variant-table__head,
 .variant-table--limited .variant-table__row {
-  grid-template-columns: minmax(110px, 1.3fr) 96px 78px 84px 116px 92px 34px;
+  grid-template-columns: minmax(110px, max-content) 96px 78px 84px 116px 92px 34px;
 }
 .variant-table__head {
   background: var(--muted);

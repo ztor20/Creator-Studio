@@ -16,15 +16,18 @@
    flow explicitly adopts it. In light mode the section is the brightest
    layer (`--card`) inside the `--surface-page` main and `--surface-shell`
    app. Dark mode deliberately uses `--muted`, one step above the #191A1A
-   page surface; both modes share the `--border` outer edge. */
-.form-section--outlined {
+   page surface. 2026-07-16 使用者裁示：去除外框線（保留填色卡＝bg＋圓角＋內距），
+   兩模式都靠填色對比區分區塊、不再有 1px 邊界。 */
+/* 寫成 .form-section.form-section--outlined 提高權重（0,2,0）蓋過
+   `.form-section + .form-section` 的 border-top 分隔線（同權重），確保四邊皆無 border——
+   否則相鄰 outlined 卡頂端會殘留一條分隔線。 */
+.form-section.form-section--outlined {
   padding: var(--sp-16);
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 0;   /* 2026-07-16：去外框線（原 1px solid --border）*/
   border-radius: var(--radius-xl);   /* 16px — 對齊 Figma node 781-4166（2026-07-16 使用者裁示全站統一）*/
 }
 [data-theme="dark"] .form-section--outlined { background: var(--muted); }
-.form-section--outlined + .form-section--outlined { border-top-color: var(--border); }
 /* 區塊式建立流程：僅在前方已有可見 outlined section 時留出區段間距。
    使用一般兄弟選擇器，讓中間的條件 section [hidden] 不會留下空白、
    也不會讓下一個可見區段漏掉間距。 */
