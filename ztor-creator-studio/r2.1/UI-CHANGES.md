@@ -6,6 +6,70 @@
 
 ---
 
+## 2026-07-16 · 電影關聯精修：拆獨立 section＋可搜尋（promote film-picker 元件）（A 規格同步）
+
+依上游 5.1.5.2 v6.2／5.1.5.1 v1.22／D140（電影關聯自 §4.4 拆為獨立小節 §4.5、加電影名稱搜尋），同步 r2.1。
+
+- **【A · D140】create-product 電影關聯改獨立 section**：原本電影關聯欄併在「Buyer limits & tags」共用設定 section 內，改為**自己一張 `form-section--outlined` 卡**（標題 Linked movies＋副標），對齊 spec 把 F12 拆成獨立 §4.5。
+- **【A · D140】promote 共用元件 `partials/film-picker.js`（可搜尋多選）**：兩頁的電影選取邏輯抽成單一 JS 元件，**建於既有 tag-input＋chip 之上、無自帶 CSS**——`.tag-input__entry`(type=search) 即時過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`。create-product 掛空選取、product-detail 掛預設示意 2 部，取代前一版兩頁各自的 inline 渲染。design-system.md 元件表新增 Film picker 條目（指向 .js）。
+- **【A · D140】搜尋（BR-NEW-1）**：新增 i18n `films.search`（placeholder「搜尋電影名稱加入…」）／`films.suggest`／`films.none`；candidate 多時可打字定位，只在既有候選內過濾、不新建電影。
+- **無新元件 CSS / 無新裸值**：film-picker 純 JS 復用 tag-input＋chip，check_ds_sync 5/10/11 基準未動；cache-bust bump 至 `20260716i`。移除兩頁舊 inline 電影程式碼（cp-films chip-group 迴圈、pd-films 渲染 IIFE）。
+
+## 2026-07-16 · ztor eShop 新需求落地：商品電影關聯（BR-NEW-1）＋Admin 平台費率設定頁（BR-NEW-4）（A 規格新增）
+
+依上游新規格 5.1.5.2 §4.4 F12（v6.1）／5.1.5.1 §2.14（v1.21）／新頁 5.1.0.3／0-設計規格書 §7.1·§3.2.1（v3）與 D138／D139，把兩條新需求實作進 r2.1。
+
+- **【A · BR-NEW-1】商品電影關聯（可多部、選填）**：
+  - 新增 `js/films-store.js`——前台已上架電影 mock（6 部），A/B 兩頁共用的候選來源；電影是前台實體、不在 CS 管理，此處只建立商品→電影引用（呈現假設記 UIA-052）。
+  - `create-product.html` §4.5 共用設定區新增「電影關聯」欄：`.chip-group#cp-films` 由 films-store 動態渲染可點 chip，toggle `chip--active` 即多選（沿用既有 chip / chip-group 元件，無新元件）；收集陣列 `linkedFilms`。films-store 於該頁首個 IIFE 前載入以確保 `window.ztorFilms` 就緒。
+  - `product-detail.html` 於 §2.13 標籤與 §2.4 專案引用之間新增「§2.14 電影關聯」區塊：已關聯以 `chip--active chip--removable` 呈現（預設示意 2 部）、下方 suggested chip 群可加入，空狀態 hint；與 §2.4 專案引用（未上架電影）明確區隔。
+  - i18n：新增 `cp.films*`／`pd.films*` 鍵（en/zh）。
+- **【A · BR-NEW-4】Admin 平台費率設定頁（第四個 Admin 目的地）**：
+  - 新增 `admin-platform-fees.html`——仿 `ip-bank-reporting.html` 目的地外殼（breadcrumb＋page-intro＋app 頁框），內容為可編輯設定型：Admin-only + 待確認雙 info-banner、F2 費率表（`ztor-table` + `amount-field--suffix` % 可編輯輸入，示意值 15/10/2.4，全標「產品待確認」不寫死承諾）、F3 費率版本與生效範圍（目前版本 badge＋生效日期＋Save，儲存即發版 demo：append-only 插入版本歷史、既有列不動＝不回溯）、版本歷史表。全用既有元件（form-section／table／amount-field／info-banner／badge／page-intro），無新元件 CSS。
+  - `js/sidebar.js` 三處掛第四目的地（`ADMIN_ROUTES`／`ADMIN_NAV`｛icon `percent`｝／`FULL_ROUTES`）；`js/icons.js` 新增 `percent` icon；i18n 新增 `admin.platform-fees` 與 `fees.*` 鍵。
+- **【A】收益拆解 E22**：earnings 頁既有實作（Breakdown tab＋F12 waterfall＋費率版本引用，`data-feat="E22"`）已涵蓋，scope-map 由 TBD/blocked 解成 Next；本輪只驗收、未改頁面。
+- **無新元件 / 無新裸值**：三件事全部復用既有元件與 token，`check_ds_sync` 檢查 5/10 基準未動；cache-bust 統一 bump 至 `20260716h`。費率確切數值、per-creator/IP 覆寫、電影候選前台介接屬產品/工程缺口（記 ASSUMPTIONS UIA-052／UIA-053），原型不宣稱為正式行為。
+
+## 2026-07-16 · 商品細節頁：D137 建立後固定不可編輯欄位鎖定＋銷售摘要去框＋素材附圖移次行（A 規格同步＋B 反饋導入）
+
+依上游 5.1.5.1 §2.6/§2.8/§2.10（v1.20）與 D137，把「建立後固定不可編輯」的三個欄位在 `product-detail.html` 改成唯讀呈現、不可切換；並依使用者版面反饋去掉銷售摘要外框、把素材附圖移到主圖下方一行。
+
+- **【A · D137】三欄位鎖定（呈現層唯讀）**：
+  - 主分類 `#pd-main-cat` 改 `disabled` select（唯讀呈現目前值、不可切換）＋下方鎖定 hint。
+  - 規格模式 `#pd-var-mode`、庫存版本 `#pd-edition` 兩個 segmented 改 `segmented--locked`（`aria-disabled="true"`＋各 `__btn disabled`）——維持當前模式的 active 高亮、整組不可點＋下方鎖定 hint。
+  - 三者共用新 i18n `product-detail.locked.hint`（en `Fixed after creation`／zh `建立後不可變更`）。
+  - 後端訂單約束（上限≥已售、已售規格不可刪、數位改次分類受限）屬工程、不在原型強制（記 ASSUMPTIONS）。
+- **【A · D137】demo 替代版面預覽改走開發者工具**：鎖定後頁面固定樣本值（zine＝實體／單一規格／不限量），設計師看不到數位／多規格／限量版面。於 `js/devtools.js` 新增**通用 page-scoped 預覽開關機制**（`window.ZTOR_DEV_PAGE_GROUPS` → Cheat Codes 面板渲染單選組 → `ztor:devstate-changed` 的 `detail.pageOpts` 派給頁面），product-detail 註冊三組（主分類 實體/數位、規格模式 單一/多規格、庫存版本 不限量/限量），驅動 `data-pd-cat`/`data-when-var`/`data-when-edition` 顯隱並同步鎖定 segmented 高亮。其他頁未設定即不渲染、零影響。
+- **【B】銷售摘要去 section 外框**：由 `form-section form-section--outlined` 改成裸露 `.pd-sales`（無卡框）；第一行三個 KPI bento 並排（`bento--span-4`×3，Units sold／Gross／Net after fees，net-meta 收在 Net 格內），第二行「View sales & revenue log →」右下小型文字連結；保留 when-data／when-empty 兩態與 Source · Earnings。移除與 Source 重複的 `product-detail.sales.hint` 呈現（i18n 鍵保留）。
+- **【B】素材附圖移次行**：Media 的 `.upload-showcase` 加新修飾 `.upload-showcase--stacked`（實體＋數位版都套）——主圖第一行、附圖列第二行（不分寬度），取代原橫向並排。
+- **JS 重構**：管理 IIFE 的 `wireSeg` 只保留 delivery（可互動）；var/edition 不再 wire（改鎖定）；新增 `applyCat`（含更新 disabled select 顯示值）、`syncLocked`（鎖定 segmented 高亮）、`applyFromDev`（讀 devtools pageOpts）；移除舊獨立主分類切換 IIFE。限購 toggle／標籤／delivery segmented／規格列／補貨 modal／See as fan 照舊。
+- **元件層新增（promote，同步 DS 文件）**：`segmented.css` 加 `.segmented--locked`；`upload-tile.css` 加 `.upload-showcase--stacked`；`input.css` 加 `:disabled` 狀態（靜音底＋not-allowed）。三者皆已同步 `design-system.html`（demo＋spec 表）與 `design-system.md`（Class API／States 條目）；input `:disabled` 狀態缺口註記已更新為已補。全用既有 token，未新增裸值（check_ds_sync 5/10 基準未動，PASS）。
+
+## 2026-07-16 · 商品細節頁改 form-section 風格＋依 D136 §3 頁面佈局重排（B 反饋導入）
+
+依上游 5.1.5.1 §3 頁面佈局（D136）＋使用者版面反饋，把 `product-detail.html` 全部區塊從 `.card` 改成建立商品頁的 `form-section form-section--outlined`（`.form-section__head > .form-section__title + .form-section__sub`），並補掛 `ds-components/form-section.css`；顯示順序重排成 10 節。
+
+- **全區改 form-section 風格**：Sales summary／Product content／Content file／Variations／Price／Stock & restock／Delivery & pickup／Purchase limit／Product tags／Referenced by projects 十區一律 outlined form-section，標題結構統一；各區內部欄位（KPI bento、upload-showcase、spec-row、variant-builder、amount-field、segmented、control-row、switch、tag-input、data-list）原封不動。
+- **新顯示序（§3）**：銷售摘要首排獨立一區（不再與專案引用並排）→ 商品素材＋商品資訊並列同一區 → 數位內容檔案（獨立節，僅數位）→ 商品規格 Variations → 價格 → 庫存與補貨 → 取貨與交付 → 每人限購 → 商品標籤 → 專案引用置底。
+- **銷售摘要入口降級**：「View sales & revenue log →」由整寬 outline 按鈕改成右下角小型文字連結（`.card__link`＋`--fs-12`，`flex-row` 靠右），符合 §3「次要入口」呈現參考。
+- **素材＋資訊並列**：用 `bento` 兩欄（`bento--span-6`×2）——一欄 Media（實體主圖組／數位封面組，保留 `data-pd-cat` 雙版），另一欄 Title＋主分類＋次分類＋描述＋詳細規格（僅實體）；窄螢幕自動疊。
+- **拆節**：舊 Price & stock 卡拆成「價格」與「庫存與補貨」兩節；舊 Delivery & buyer settings 卡（`#pd-settings`）拆成「取貨與交付」「每人限購」「商品標籤」三節；數位內容檔案自 Product content 卡移出成獨立節。
+- **JS 掛勾保留**：settings 段入口由 `getElementById('pd-settings')` 改判 document 範圍錨點（`#pd-limit-toggle`／`#pd-delivery`），限購欄位 `[data-pd-limit-fields]` 改 `document.querySelector`；`wireSeg('pd-edition'/'pd-delivery'/'pd-var-mode')`、`applyVis()`（document 範圍）、標籤（`#pd-tags-field`/`-entry`）、補貨 modal、規格列、取貨場次、See as fan 拆節後全部照舊運作。清掉主分類切換 script 過時註解「2 體驗（採實體版型）」。
+- 新增 i18n（en+zh）：`product-detail.content.sub`／`.price2.title`／`.price2.sub`／`.stock2.title`／`.stock2.sub`／`.delivery2.title`／`.limit2.title`／`.limit2.sub`；標題重用 `product-detail.sales.*`／`.content.title`／`.ref.*`／`cp.cfile.*`／`cp.var.*`／`cp.tags`／`cp.optional`／`product-detail.inv.sub`。全用既有 token／元件，未新增元件 CSS、未新增裸值（check_ds_sync 5/10 基準未動）。
+
+## 2026-07-16 · 商品細節頁重排＋補原價/成本/規格；E-Shop 數位樣本補齊（A 規格同步）
+
+依上游 5.1.5.1 §2 13 節新順序（D133／D134／D135）重排 `product-detail.html`：
+
+- **銷售摘要前置（D134）**：把 Sales summary（改 `bento--span-7`）與 Referenced by projects（改 `bento--span-5`、保留 `data-feat="S24"`）搬到 page-intro 之後成為第一個 bento；原內部 markup（when-data／when-empty、KPI、資料列）原封不動。Product content 卡改為緊接其後的獨立 `card mt-16`。
+- **移除 Experiences 主分類（D133）**：`#pd-main-cat` 刪掉 `Experiences & Events` option，只留 Physical／Digital；主分類切換 JS 以 `selectedIndex===1` 判 digital，不受影響。
+- **新增 §2.8 商品規格 Variations 卡（D135）**：僅實體（`data-pd-cat="physical"`，切數位整卡隱藏）。重用既有 `variant-builder.css`／`segmented.css`／`chip.css`——規格模式 segmented（單一/多規格）＋多規格時的選項建構器（示範選項「Size / 尺寸」＋值 chips S/M/L＋「新增選項」outline 鈕，示範未接功能）＋逐規格表（靜態 3 列 S/M/L，欄：規格組合／價格／庫存／SKU／單件成本，價格與成本用現金 `$` 前綴 `amount-field--readonly`、無 POPCORN 切換；上限欄限量才顯示，示範從簡）。JS 擴充既有 settings 那段的 `applyVis`／`wireSeg` 加 `data-when-var`（預設 single、建構器隱藏）。
+- **價格補原價/成本（D133）**：Price & stock 卡的價格區由單一 Price 改三欄 `form-grid--3`＝價格 $24.00 ＋原價 $30.00（`cp.original`／`cp.original.if`）＋成本價 $9.00（`cp.cost`／`cp.cost.note`「僅自己可見」）；三欄一律現金 `$` 前綴 `amount-field--readonly`、不帶 POPCORN 定價單位鈕（POPCORN 本專案維持未啟用）。Stock／低庫存門檻改置於其下獨立 `form-grid`（2 欄），欄位內部 markup 與 feature-gate 原封不動；Edition／補貨紀錄不變。
+
+`e-shop.html` Products 清單調整為「草稿置頂 → 實體各列 → 數位各列」的 demo 呈現順序：把原本夾在實體列中間的 Coastline EP（Album）移到實體列之後，並新增音樂單曲（Song，`music`）、電影（Movie，`film`）、會員卡（Membership，`id-card`）三列數位樣本；最終數位順序＝單曲 → 電影 → 專輯 → 會員卡，四類覆蓋數位次分類。不動 `applyFilter()`／`pinDrafts()`。
+
+新增 icon `id-card`（REGISTRY 補，path 取自 icons-all）。新增 i18n 鍵（en+zh）：`cp.var.single-note`、`e-shop.rowSong.*`、`e-shop.rowMovie.*`、`e-shop.rowVip.*`；其餘（`cp.var.*`／`cp.original`／`cp.cost*`／`cp.optional-cap`／`e-shop.row3.*`）全數重用。全用既有 token／元件，未新增元件 CSS、未新增裸值（check_ds_sync 10 未動基準）。
+
 ## 2026-07-16 · radio-card 邊框化＋標記精修（對齊 Figma node 781-4386）（B 反饋導入）
 
 - `.radio-cards`（不限量/限量、規格模式、取貨方式等二選一卡）卡面由 `--shadow-card` 陰影改 1px 純邊框 `--border`、扁平無陰影。

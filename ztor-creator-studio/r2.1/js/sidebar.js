@@ -29,11 +29,12 @@
      driven by the devtools "cheat code" panel (D086, presentation裁示).
      ───────────────────────────────────────────────────────── */
   const ROSTER_PAGE = "creators.html";
-  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html"]);
+  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html"]);
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
-    { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" }
+    { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
+    { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" }
   ];
   const isRoster = path === ROSTER_PAGE;
   const isAdminPlatform = ADMIN_ROUTES.has(path);
@@ -98,7 +99,7 @@
   /* feature-scope-map 未列的整頁功能在低版本不可作為任何入口。
      完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
   const FULL_ROUTES = new Set([
-    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "my-ip.html", "ip-detail.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"

@@ -246,6 +246,14 @@
     return c ? c.handle : '__none__';
   }
 
+  /* ---- 頁面自訂 dev 預覽開關（page-scoped，非全站）----
+     頁面在載入 devtools 前設 window.ZTOR_DEV_PAGE_GROUPS = [{ key, label,
+       options:[[val,name,desc],…], def }, …]；選值存 state.pageOpts[key]，
+     切換時透過 ztor:devstate-changed 的 detail.pageOpts 派給該頁自行套用。
+     未設定時完全不渲染、對其他頁零影響。用於「建立後鎖定」的欄位在 demo
+     仍能預覽替代版面（如 product-detail 的實體/數位、單一/多規格、限量）。*/
+  var PAGE_GROUPS = (window.ZTOR_DEV_PAGE_GROUPS && window.ZTOR_DEV_PAGE_GROUPS.length) ? window.ZTOR_DEV_PAGE_GROUPS : [];
+
   var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event', version: 'full', showFuture: false };
   var LS = 'ztor.devstate';
 
@@ -261,6 +269,13 @@
     return s;
   }
   var state = load();
+  /* page-scoped 預覽選值：確保 state.pageOpts 存在且每個 group 有預設；
+     不放進 DEFAULTS 以免 reset 時與 DEFAULTS 共用同一物件參照。 */
+  function seedPageOpts() {
+    if (!state.pageOpts || typeof state.pageOpts !== 'object') state.pageOpts = {};
+    PAGE_GROUPS.forEach(function (g) { if (state.pageOpts[g.key] == null) state.pageOpts[g.key] = g.def; });
+  }
+  seedPageOpts();
   var listeners = [];
 
   function persist() {
@@ -387,6 +402,17 @@
         + o[1] + '<span class="ztd__opt-desc">' + o[2] + '</span></button>';
     }).join('');
   }
+  /* page-scoped 預覽開關的分組渲染（data-kind=page＋data-group=<key>）；無 group 回空字串。 */
+  function pageGroupsHtml() {
+    return PAGE_GROUPS.map(function (g) {
+      var cur = state.pageOpts[g.key];
+      var opts = g.options.map(function (o) {
+        return '<button class="ztd__opt' + (o[0] === cur ? ' is-active' : '') + '" data-kind="page" data-group="' + g.key + '" data-val="' + o[0] + '">'
+          + o[1] + '<span class="ztd__opt-desc">' + (o[2] || '') + '</span></button>';
+      }).join('');
+      return '<div class="ztd__group"><p class="ztd__group-label">' + g.label + '</p><div class="ztd__grid">' + opts + '</div></div>';
+    }).join('');
+  }
 
   /* ---- 面板位置／高度（拖移＋resize）持久化 ---- */
   var GEO = 'ztor.devtools.geo';
@@ -417,6 +443,7 @@
       +       verRows(state.version, 'panel')
       +       '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
       +     '</div>'
+      +     pageGroupsHtml()
       +     '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
       +       '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
       +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
@@ -609,7 +636,7 @@
     var act = btn.getAttribute('data-act');
     if (act === 'close') return close();
     if (act === 'minimize') { var m = root.classList.toggle('is-min'); try { localStorage.setItem(MIN_LS, m ? '1' : '0'); } catch (e) {} return paint(); }
-    if (act === 'reset') { state = Object.assign({}, DEFAULTS); setInspect(false); return update(); }
+    if (act === 'reset') { state = Object.assign({}, DEFAULTS); state.pageOpts = {}; seedPageOpts(); setInspect(false); return update(); }
     if (act === 'reonboard') { try { localStorage.removeItem(ONBOARD_LS); } catch (e) {} showOnboarding(); return; }
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
     if (act === 'toggle-future') { state.showFuture = !state.showFuture; return update(); }
@@ -617,6 +644,8 @@
     var kind = btn.getAttribute('data-kind');
     if (!kind) return;
     var val = btn.getAttribute('data-val');
+    /* page-scoped 預覽開關：存 state.pageOpts[group]，emit 時併入 detail.pageOpts 派給該頁 */
+    if (kind === 'page') { state.pageOpts[btn.getAttribute('data-group')] = val; return update(); }
     /* 外觀類：呼叫既有系統（自行持久化），再 repaint 更新高亮；不動 devstate */
     if (kind === 'theme') { if (window.ztorTheme) window.ztorTheme.setPreference(val); return paint(); }
     if (kind === 'lang')  { if (window.setLang) window.setLang(val); return paint(); }
