@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-07-15 · E-Shop 工作列暗色分隔陰影改純黑（B 反饋導入）
+
+- 暗色模式下 `.eshop-list-topbar` 的下緣分隔陰影由白色微光 `rgba(255,255,255,0.12)` 改純黑 `rgba(0,0,0,0.45)`，色相與透明度對齊同頁低庫存橫條的 `--shadow-header` 暗色值，兩塊分隔陰影一致。
+- 沿用 topbar 原本 `0 6px 14px -4px` 的下緣偏移幾何，只換顏色；同步更新該區塊註解。頁面內嵌樣式，未動 CSS/JS 資產、不需 bump 版本。
+
+## 2026-07-15 · 預設主題定為 Dark（B 反饋導入）
+
+- theme.js `cycle()` 循環起點由 light 改 dark（dark → light → system → dark）；fallback 本就為 dark，此次僅對齊起點與註解措辭。
+- devtools（cheat code）Theme 選項改為 Dark 排第一並標「（預設）」，System 去掉「（預設）」字樣，讓面板呈現與實際預設一致。
+- 純預設值／選項順序調整，不動任何視覺 token、元件或版面；既有訪客的 localStorage 偏好仍以其上次選擇為準。
+
 ## 2026-07-15 · Admin IP Entry Owner lookup 與待寄送邀請原型（A 規格同步）
 
 - 新增 owner-lookup SiteSpecific component（CSS + vanilla JS），以同一 Owner 輸入搜尋 sample Ztor directory 的名稱、username 與 email；結果顯示身份三要素，選取後為 Linked。

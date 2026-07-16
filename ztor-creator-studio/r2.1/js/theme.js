@@ -21,7 +21,7 @@
      · getPreference()  → "light" | "dark" | "system"
      · getResolved()    → "light" | "dark"   (what's actually applied)
      · setPreference(value)
-     · cycle()          → light → dark → system → light
+     · cycle()          → dark → light → system → dark
 
    Any page can opt into the shared controls with data-theme-toggle or
    data-theme-set. section-test.html is the current visual test surface.
@@ -73,7 +73,7 @@
   }
 
   function cycle() {
-    const order = ["light", "dark", "system"];
+    const order = ["dark", "light", "system"];
     const cur = readStored();
     const next = order[(order.indexOf(cur) + 1) % order.length];
     setPreference(next);
