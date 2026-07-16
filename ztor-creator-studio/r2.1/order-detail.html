@@ -3,30 +3,35 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>#ZT-10482 · Order detail · Ztor</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/status-axes.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260717d"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/button.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/card.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/input.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/status-axes.css?v=20260717d">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260717d">
+<link rel="stylesheet" href="shared.css?v=20260717d">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
-  .od-amt { display:flex; justify-content:space-between; padding:7px 0; font-size: var(--fs-13); border-bottom:1px solid var(--border); }
+  .od-amt { display:flex; justify-content:space-between; padding:var(--sp-8) 0; font-size: var(--fs-13); border-bottom:1px solid var(--border); }
   .od-amt:last-child { border-bottom:0; font-weight: var(--fw-semibold); }
-  .od-amt__neg { color: var(--muted-foreground); }
+  .od-amt__neg { color: var(--foreground-muted); }
   /* §2.5 取貨方式分支：QR 領取的 QR 占位框 */
   .od-qr { display:flex; gap:14px; align-items:center; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--muted); }
   .od-qr__code { width:96px; height:96px; flex:none; display:grid; place-items:center; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--foreground-muted); }
   .od-qr__code .ztor-icon { width:56px; height:56px; }
   .od-ful-branch[hidden] { display:none; }
+  /* §2.6 退款 popup：整筆／部分分支＋品項勾選 */
+  .od-refund-branch[hidden] { display:none; }
+  .od-refund-pick { cursor:pointer; }
+  .od-refund-check { width:16px; height:16px; flex:none; accent-color: var(--primary); }
 </style>
 </head>
 <body>
@@ -61,96 +66,99 @@
           <p class="page-intro__sub" data-i18n="od.sub">Placed 2026-06-08 · 2 items</p>
         </div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline" disabled title="Creator-initiated refunds open in a later release (D041)" data-feat="O18" data-i18n="od.btn.refund">Refund</button>
+          <button class="btn btn--outline" id="od-refund-open" data-feat="O18" data-i18n="od.btn.refund">Refund</button>
           <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
         </div>
       </div>
 
-      <div class="bento">
-
-        <!-- §2.3 品項與金額 -->
-        <section class="card bento--span-7">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="od.items.title">Items &amp; amount</h3>
-            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="od.items.source">Source · Earnings</span>
+      <!-- §2.3.1 品項明細（Order items）· 依規格 §2.3 拆為獨立 section，手法對齊商品細節頁 form-section -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="od.items.sub.items">Order items</h3>
+          <p class="form-section__sub" data-i18n="od.sec.items.sub">Items, pickup status and per-buyer purchase limits.</p>
+        </div>
+        <div class="data-list">
+          <div class="data-list__row">
+            <div class="data-list__row-main">
+              <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+              <div class="data-list__body">
+                <!-- §2.3.1 品項名稱點擊開商品快照 popup（§2.7 / D143），不直接連活商品；快照資料為下單當時 demo 值 -->
+                <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Tour zine vol. 02" data-snap-price="$24.00" data-snap-cat="書籍（Books）" data-snap-desc="32-page photo zine documenting the east-coast tour. Letterpress cover." data-snap-manage="product-detail.html">Tour zine vol. 02</a> ×1</div>
+                <div class="data-list__meta" data-i18n="od.item1.meta">書籍（Books） · $24.00</div>
+              </div>
+            </div>
+            <span class="data-list__amount">$24.00</span>
           </div>
-          <div class="data-list">
-            <div class="data-list__row">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title"><a class="card__link" href="product-detail.html">Tour zine vol. 02</a> ×1</div>
-                  <div class="data-list__meta" data-i18n="od.item1.meta">書籍（Books） · $24.00</div>
+          <div class="data-list__row">
+            <div class="data-list__row-main">
+              <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+              <div class="data-list__body">
+                <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Coastline tee" data-snap-price="$32.00" data-snap-cat="服飾（Apparel）" data-snap-variant="M" data-snap-desc="Soft-washed cotton tee with a coastline print. Unisex fit." data-snap-manage="product-detail.html">Coastline tee (M)</a> ×1 <span class="badge badge--neutral badge--inline" data-i18n="od.item.limit">Limit 2/person</span></div>
+                <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
+                <!-- §2.3 品項層取貨狀態（D111）：現場 QR 領取品項，由取貨管理 scanner 回寫 -->
+                <div class="data-list__meta mt-4" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                  <span class="badge badge--warning badge--inline"><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
+                  <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.session">On-site QR pickup · Taipei signing</span>
+                  <a class="card__link" href="pickup.html" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.log">Redemption log</a>
                 </div>
               </div>
-              <span class="data-list__amount">$24.00</span>
             </div>
-            <div class="data-list__row">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title">Coastline tee (M) ×1 <span class="badge badge--neutral badge--inline" data-i18n="od.item.limit">Limit 2/person</span></div>
-                  <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
-                  <!-- §2.3 品項層取貨狀態（D111）：現場 QR 領取品項，由取貨管理 scanner 回寫 -->
-                  <div class="data-list__meta mt-4" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
-                    <span class="badge badge--warning badge--inline"><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
-                    <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.session">On-site QR pickup · Taipei signing</span>
-                    <a class="card__link" href="pickup.html" style="font-size: var(--fs-12)" data-i18n="od.item.pickup.log">Redemption log</a>
-                  </div>
-                </div>
-              </div>
-              <span class="data-list__amount">$32.00</span>
-            </div>
+            <span class="data-list__amount">$32.00</span>
           </div>
-          <div class="field__hint mt-8" data-i18n="od.limit.note">Purchase-limited items are checked against each buyer's running total at checkout; this page shows the result only (§2.3 / 5.1.5.2 §4.5).</div>
+        </div>
+        <div class="field__hint mt-8" data-i18n="od.limit.note">Purchase-limited items are checked against each buyer's running total at checkout; this page shows the result only (§2.3 / 5.1.5.2 §4.5).</div>
+      </section>
 
-          <div class="mt-16">
-            <div class="od-amt"><span data-i18n="od.amt.goods">Goods</span><span>$56.00</span></div>
-            <div class="od-amt"><span data-i18n="od.amt.shipping">Shipping</span><span>$5.00</span></div>
-            <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.platform">Platform fee · 15%</span><span class="od-amt__neg">−$8.40</span></div>
-            <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.payment">Payment fee · 2.4%</span><span class="od-amt__neg">−$1.30</span></div>
-            <div class="od-amt"><span data-i18n="od.amt.net">Net to you</span><span>$51.30</span></div>
-          </div>
-          <!-- §2.3 跨幣別呈現（§7.3）：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
-          <div class="field__hint mt-8" data-i18n="od.amt.fx">Buyer paid NT$1,764 · converted to $56.00 at 1 USD = 31.5 TWD (2026-06-08).</div>
-          <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings (§7.3) — order detail never recomputes amounts.</div>
-          <a class="btn btn--outline btn--sm mt-8" href="earnings.html" style="width:100%" data-i18n="od.amt.cta">View in Earnings →</a>
-        </section>
+      <!-- §2.3.2 金額拆解（Amount breakdown）-->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="od.items.sub.amount">Amount breakdown</h3>
+          <p class="form-section__sub" data-i18n="od.sec.amount.sub">Line amounts and net — reconciled to Earnings, never recomputed here.</p>
+        </div>
+        <div>
+          <div class="od-amt"><span data-i18n="od.amt.goods">Goods</span><span>$56.00</span></div>
+          <div class="od-amt"><span data-i18n="od.amt.shipping">Shipping</span><span>$5.00</span></div>
+          <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.platform">Platform fee · 15%</span><span class="od-amt__neg">−$8.40</span></div>
+          <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.payment">Payment fee · 2.4%</span><span class="od-amt__neg">−$1.30</span></div>
+          <div class="od-amt"><span data-i18n="od.amt.net">Net to you</span><span>$51.30</span></div>
+        </div>
+        <!-- §2.3 跨幣別呈現（§7.3）：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
+        <div class="field__hint mt-8" data-i18n="od.amt.fx">Buyer paid NT$1,764 · converted to $56.00 at 1 USD = 31.5 TWD (2026-06-08).</div>
+        <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings (§7.3) — order detail never recomputes amounts.</div>
+      </section>
 
-        <!-- 買家 -->
-        <section class="card bento--span-5">
-          <div class="card__head"><h3 class="card__title" data-i18n="od.buyer.title">Buyer</h3></div>
-          <div class="field">
-            <div class="field__label" data-i18n="od.buyer.name">Buyer</div>
-            <div style="font-size: var(--fs-14)">Mika L. · <a class="card__link" href="fans-crm.html" data-feat="O17" data-i18n="od.buyer.fan">View fan record</a></div>
-          </div>
-          <div class="field">
-            <div class="field__label" data-i18n="od.buyer.ship-to">Ship to</div>
-            <div class="text-sub" style="font-size: var(--fs-13)">No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
-          </div>
-          <div class="field">
-            <div class="field__label" data-i18n="od.buyer.contact">Contact</div>
-            <div class="text-sub" style="font-size: var(--fs-13)">mika.l@example.com</div>
-          </div>
-        </section>
+      <!-- §2.3.3 收入對帳（Reconciliation）-->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="od.items.sub.recon">Reconciliation</h3>
+          <p class="form-section__sub" data-i18n="od.sec.recon.sub">Open this order's entry in Earnings.</p>
+        </div>
+        <a class="btn btn--outline btn--sm" href="earnings.html" style="width:100%" data-i18n="od.amt.cta">View in Earnings →</a>
+      </section>
 
-      </div>
+      <!-- §2.4 買家（Buyer）-->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="od.buyer.title">Buyer</h3>
+          <p class="form-section__sub" data-i18n="od.buyer.sub">Buyer, shipping and contact.</p>
+        </div>
+        <div class="field">
+          <div class="field__label" data-i18n="od.buyer.name">Buyer</div>
+          <div style="font-size: var(--fs-14)">Mika L. · <a class="card__link" href="fans-crm.html" data-feat="O17" data-i18n="od.buyer.fan">View fan record</a></div>
+        </div>
+        <div class="field">
+          <div class="field__label" data-i18n="od.buyer.ship-to">Ship to</div>
+          <div class="text-sub" style="font-size: var(--fs-13)">No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
+        </div>
+        <div class="field">
+          <div class="field__label" data-i18n="od.buyer.contact">Contact</div>
+          <div class="text-sub" style="font-size: var(--fs-13)">mika.l@example.com</div>
+        </div>
+      </section>
 
       <!-- §2.5 出貨與履約已移入「標記出貨」popup（見頁末 #od-ship-modal）；不再是頁面常駐區塊（spec 5.1.5.3.1 §2.2/§2.5）。 -->
 
-      <!-- §2.5 退款與爭議 + §2.6 收入對帳 -->
-      <section class="card mt-16" data-feat="O23">
-        <div class="card__head">
-          <h3 class="card__title" data-i18n="od.refund.title">Refund &amp; dispute</h3>
-          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="od.refund.sub">Impact on revenue follows Earnings</span>
-        </div>
-        <p class="text-sub" style="font-size: var(--fs-13)" data-i18n="od.refund.body">Issue a full or partial refund, or handle a dispute. Refund and dispute effects on revenue are settled by Earnings (§7.3); a disputed amount is held from Available during investigation.</p>
-        <div class="flex-row" style="gap:8px;margin-top:8px">
-          <button class="btn btn--outline btn--sm" disabled title="Disabled in v1 (D041)" data-i18n="od.refund.partial">Partial refund</button>
-          <button class="btn btn--outline btn--sm" disabled title="Disabled in v1 (D041)" data-i18n="od.refund.full">Full refund</button>
-        </div>
-        <div class="field__hint mt-8" data-i18n="od.refund.v1">v1: creator-initiated refunds are disabled (D041) and settled through Earnings (§7.3). Approved refunds restock physical items; digital items are non-restockable. Disputes are still handled here.</div>
-      </section>
+      <!-- §2.6 退款已移入「退款」popup（見頁末 #od-refund-modal），由 §2.2 頁首 Refund 主操作觸發；不再是頁面常駐區塊（spec 5.1.5.3.1 §2.2/§2.6）。爭議降為 §2.2 付款·結算軸的 disputed 狀態＋退款 popup 末尾爭議區隔。 -->
 
     </div>
   </main>
@@ -242,10 +250,110 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="js/sidebar.js?v=20260716d"></script>
-<script src="js/reveal.js?v=20260716d"></script>
+<!-- §2.6「退款」popup：§2.2 頁首 Refund 主操作觸發 · 整筆／部分退款、部分退款勾選品項 · spec 5.1.5.3.1 §2.2/§2.6 -->
+<div class="payout-modal" id="od-refund-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-refund-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="od-refund-title" data-i18n="od.refund.title">Refund</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-od-refund-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <!-- 退款範圍：整筆／部分 -->
+      <div class="segmented" id="od-refund-scope" style="margin-bottom:14px">
+        <button class="segmented__btn segmented__btn--active" type="button" data-od-refund-scope="full" data-i18n="od.refund.full">Full refund</button>
+        <button class="segmented__btn" type="button" data-od-refund-scope="partial" data-i18n="od.refund.partial">Partial refund</button>
+      </div>
+
+      <!-- 整筆退款：全額退、不需選品項 -->
+      <div class="od-refund-branch" data-od-refund-branch="full">
+        <div class="field__hint" data-i18n="od.refund.full.note">Refunds the whole order (all items and shipping). No item selection needed.</div>
+      </div>
+
+      <!-- 部分退款：勾選要退的品項 -->
+      <div class="od-refund-branch" data-od-refund-branch="partial" hidden>
+        <div class="field__label" data-i18n="od.refund.select">Select items to refund</div>
+        <div class="data-list">
+          <label class="data-list__row od-refund-pick">
+            <div class="data-list__row-main">
+              <input type="checkbox" class="od-refund-check" data-amt="24" checked>
+              <div class="data-list__body">
+                <div class="data-list__title">Tour zine vol. 02 ×1</div>
+                <div class="data-list__meta" data-i18n="od.item1.meta">書籍（Books） · $24.00</div>
+              </div>
+            </div>
+            <span class="data-list__amount">$24.00</span>
+          </label>
+          <label class="data-list__row od-refund-pick">
+            <div class="data-list__row-main">
+              <input type="checkbox" class="od-refund-check" data-amt="32">
+              <div class="data-list__body">
+                <div class="data-list__title">Coastline tee (M) ×1</div>
+                <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
+              </div>
+            </div>
+            <span class="data-list__amount">$32.00</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 退款金額試算 -->
+      <div class="mt-16">
+        <div class="od-amt"><span data-i18n="od.refund.amount">Refund amount</span><span id="od-refund-total">$56.00</span></div>
+      </div>
+
+      <div class="field__hint mt-8" data-i18n="od.refund.restock">Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings (§7.3) and posted as an adjustment — the original revenue event is never edited (§7.6).</div>
+      <div class="field__hint mt-8" data-i18n="od.refund.dispute">Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it (§7.3).</div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" data-od-refund-close data-i18n="od.refund.cancel">Cancel</button>
+      <button class="btn btn--primary btn--sm" id="od-refund-confirm" data-i18n="od.refund.confirm">Confirm refund</button>
+    </div>
+  </div>
+</div>
+
+<!-- §2.7 商品快照 popup：§2.3.1 品項名稱點擊觸發 · 買家視角快照卡（重用 preview-card）＋訂單欄位＋管理入口 · spec 5.1.5.3.1 §2.7 / D143 -->
+<div class="payout-modal" id="od-snapshot-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-snap-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="od-snap-title" data-i18n="od.snap.title">Product snapshot</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-od-snap-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <!-- 買家視角快照卡（重用建立流程的 preview-card；資料為下單當時凍結快照）。限寬置中＝維持商店卡真實尺寸，避免 4/3 主圖在寬 popup 被撐大 -->
+      <div class="preview-card" style="max-width:320px;margin:0 auto">
+        <div class="preview-card__media"><i data-lucide="package" class="ztor-icon"></i></div>
+        <div class="preview-card__body">
+          <div class="preview-card__row">
+            <h4 class="preview-card__name" id="od-snap-name">—</h4>
+            <span class="preview-card__price" id="od-snap-price">—</span>
+          </div>
+          <p class="preview-card__desc" id="od-snap-desc">—</p>
+        </div>
+      </div>
+      <!-- 訂單情境欄位：所購規格、次分類 -->
+      <div class="data-list mt-16">
+        <div class="data-list__row" id="od-snap-variant-row">
+          <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="od.snap.variant">Variant purchased</div></div></div>
+          <span class="text-sub" id="od-snap-variant" style="font-size: var(--fs-13)">—</span>
+        </div>
+        <div class="data-list__row">
+          <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" data-i18n="od.snap.cat">Category</div></div></div>
+          <span class="text-sub" id="od-snap-cat" style="font-size: var(--fs-13)">—</span>
+        </div>
+      </div>
+      <div class="field__hint mt-8" data-i18n="od.snap.freeze">This snapshot preserves how the item looked when ordered — it doesn't change if the product is later edited or unlisted (§2.7).</div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" data-od-snap-close data-i18n="od.snap.close">Close</button>
+      <a class="btn btn--outline btn--sm" id="od-snap-manage" href="product-detail.html" data-i18n="od.snap.manage">Manage this product →</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=20260717d"></script>
+<script src="js/i18n.js?v=20260717d"></script>
+<script src="js/sidebar.js?v=20260717d"></script>
+<script src="js/reveal.js?v=20260717d"></script>
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
      - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
@@ -299,7 +407,79 @@
 
     setBranch('shipping');
   })();
+
+  /* §2.6「退款」popup：§2.2 頁首 Refund 開窗（最終形態，v1 由 data-feat="O18" 版本閘控隱藏＝守 D041）；
+     整筆／部分切換，部分退款勾選品項即時試算退款金額。confirm 為 demo（真實退款經 Earnings §7.3 結算、不在此重算）。 */
+  (function () {
+    const modal = document.getElementById('od-refund-modal');
+    const openBtn = document.getElementById('od-refund-open');
+    if (!modal || !openBtn) return;
+    const scope = document.getElementById('od-refund-scope');
+    const totalEl = document.getElementById('od-refund-total');
+    const checks = modal.querySelectorAll('.od-refund-check');
+    const FULL = 56;
+    let scopeVal = 'full';
+
+    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
+    openBtn.addEventListener('click', open);
+    modal.querySelectorAll('[data-od-refund-close]').forEach(el => el.addEventListener('click', close));
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+    function recalc() {
+      let total = FULL;
+      if (scopeVal === 'partial') {
+        total = 0;
+        checks.forEach(c => { if (c.checked) total += Number(c.dataset.amt || 0); });
+      }
+      totalEl.textContent = '$' + total.toFixed(2);
+    }
+    function setScope(v) {
+      scopeVal = v;
+      scope.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.odRefundScope === v));
+      modal.querySelectorAll('[data-od-refund-branch]').forEach(br => { br.hidden = br.dataset.odRefundBranch !== v; });
+      recalc();
+    }
+    scope.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => setScope(btn.dataset.odRefundScope)));
+    checks.forEach(c => c.addEventListener('change', recalc));
+    modal.querySelector('#od-refund-confirm').addEventListener('click', close);
+    setScope('full');
+  })();
+
+  /* §2.7 商品快照 popup：§2.3.1 品項名稱點擊開窗，呈現下單當時商品快照（買家視角預覽卡＋所購規格／次分類）。
+     快照資料為 demo 固定值（真實為後端保存的下單當時 snapshot，D143）；「管理此商品」連回商品管理頁。 */
+  (function () {
+    const modal = document.getElementById('od-snapshot-modal');
+    if (!modal) return;
+    const nameEl = document.getElementById('od-snap-name');
+    const priceEl = document.getElementById('od-snap-price');
+    const descEl = document.getElementById('od-snap-desc');
+    const catEl = document.getElementById('od-snap-cat');
+    const varEl = document.getElementById('od-snap-variant');
+    const varRow = document.getElementById('od-snap-variant-row');
+    const manage = document.getElementById('od-snap-manage');
+
+    const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
+    const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
+    modal.querySelectorAll('[data-od-snap-close]').forEach(el => el.addEventListener('click', close));
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+    document.querySelectorAll('.od-snap-open').forEach(el => el.addEventListener('click', e => {
+      e.preventDefault();
+      const d = el.dataset;
+      nameEl.textContent = d.snapName || '—';
+      priceEl.textContent = d.snapPrice || '—';
+      descEl.textContent = d.snapDesc || '';
+      catEl.textContent = d.snapCat || '—';
+      if (d.snapVariant) { varEl.textContent = d.snapVariant; varRow.hidden = false; }
+      else { varRow.hidden = true; }
+      if (d.snapManage) manage.setAttribute('href', d.snapManage);
+      open();
+    }));
+  })();
 </script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/devtools.js?v=20260717d"></script>
 </body>
 </html>
