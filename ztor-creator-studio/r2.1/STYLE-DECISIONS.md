@@ -20,6 +20,7 @@
 | Q10 | 關閉鍵 icon 尺寸 | **16px**：拿掉 alert(20)／dialog(18) 覆寫，全部關閉鍵回到基礎 16 | 2026-07-13 | 對齊基礎 `.ztor-icon` 尺度 | ✅ 已執行 2026-07-13 |
 | Q11 | 「已付款 Paid」顏色 | **A**：全站綠色 success（`orders.pay.paid`、`od.badge.paid` 改 `badge--success`）。備註：若之後覺訂單列視覺過重可退 B | 2026-07-13 | 一語意一色、綠色 Paid 直覺 | ✅ 已執行 2026-07-13 |
 | Q12 | 欄位標籤：大寫 vs 一般 | **A**：`tier-settings.html` 的 `.gate-field__label`（大寫孤例）退役，改用 `.settings-row__label`（一般大小寫） | 2026-07-13 | 大寫孤例是站上小標系統的重複發明 | ✅ 已執行 2026-07-13 |
+| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32） | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
 
 ---
 
