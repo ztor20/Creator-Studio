@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-07-16 · radio-card 邊框化＋標記精修（對齊 Figma node 781-4386）（B 反饋導入）
+
+- `.radio-cards`（不限量/限量、規格模式、取貨方式等二選一卡）卡面由 `--shadow-card` 陰影改 1px 純邊框 `--border`、扁平無陰影。
+- 選中標記精修（對齊 Figma node 781-4386）：已選卡**移除橘色 outline 外框**（只留灰邊框）；radio 標記由「橘外圈＋橘心」改成**置中小橘實心點、無外圈**；**未選卡不再顯示灰圈**（無可見標記）。卡距維持 `--sp-12`。
+- 元件層改一次，consumer（create-product／-auction／-bundle／bundle-detail）全部生效。併入 STYLE-DECISIONS Q13。同步 design-system.md（E2 階梯、Pillar 3 陰影例外、radio-card 條目）、design-system.html（radio-card demo＋spec 表）。全用既有 token。
+
+## 2026-07-16 · 型別選擇卡邊框化 ＋ form-section 外框對齊 Figma（B 反饋導入）
+
+- 對齊 Figma node 781-4166（商品類型 section）。`.selection-card--icon`（create-product／create-event 的型別卡）由 `--shadow-card` 陰影改成 1px 純邊框 `--border`、扁平無陰影；卡片間距由 12 收成 8（`.selection-grid:has(.selection-card--icon)`）；已選仍是橘色 outline 線框。base `.selection-card` 其他用途（拍賣 kind／組合 edition／主題 swatch…）維持陰影，不受影響。
+- `.form-section--outlined` 外框全站改圓角 `--radius-xl`(16px)／內距 `--sp-16`（原圓角 6／內距 32）；影響所有採用頁（create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry／section-test）。使用者裁示全站統一。
+- 對應 STYLE-DECISIONS Q13。同步 design-system.html（icon 變體說明）、design-system.md（變體表＋form-section 條目）。全用既有 token，無新增裸值。
+
 ## 2026-07-15 · E-Shop 工作列暗色分隔陰影改純黑（B 反饋導入）
 
 - 暗色模式下 `.eshop-list-topbar` 的下緣分隔陰影由白色微光 `rgba(255,255,255,0.12)` 改純黑 `rgba(0,0,0,0.45)`，色相與透明度對齊同頁低庫存橫條的 `--shadow-header` 暗色值，兩塊分隔陰影一致。
