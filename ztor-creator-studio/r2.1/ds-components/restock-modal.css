@@ -5,19 +5,18 @@
    A restock = ONE order. The popup reuses the canonical dialog shell
    (.payout-modal / .payout-dialog) + form helpers:
      · document layer — method (.segmented) + supplier / ETA / notes
-       (.form-grid / .field, field-system.css + form-grid.css), filled ONCE
-       per order
+       (.payout-form-grid / .payout-field), filled ONCE per order
      · item layer — one .restock-line per restockable item; a multi-variant
        product or a bundle member gets a .restock-lines__group header, its
        variants listed as lines beneath (no tabs, no per-item re-entry)
    The restock HISTORY log on product-detail reuses .data-list.
    Restock-specific CSS here = the item quantity lines. All values are tokens.
-   2026-07-11: converged onto .field / .form-grid (field-system.css /
-   form-grid.css) — the ETA [hidden] restore rule that used to live here for
-   .payout-field moved with it: field-system.css's own .field[hidden] rule
-   already covers this, so no page-local override is needed anymore.
    ---------------------------------------------------------------- */
 
+/* ETA field is [hidden]-toggled by method; .payout-field sets display:flex,
+   which would override the [hidden] attribute's display:none — restore it
+   inside the restock dialog only. */
+[data-restock-modal] .payout-field[hidden] { display: none; }
 /* Bundle member tab bar is [hidden] for single-product restock; .tabs sets
    display:flex, so restore hiding (D106). Member panels use .tab-panel
    (class-driven display) so they need no guard. */

@@ -1,7 +1,5 @@
 # Ztor Creator Studio · Component Library Index
 
-> **⚠️ DEPRECATED（2026-07-12 起凍結）**：本檔 2026-07-12 起凍結不再維護（清單已 drift：只列約 30 支、實況 68 支）。元件清單以機器生成的 [`ds-index.md`](./ds-index.md) 為準；元件規格以 [`design-system.md`](./design-system.md) Pillar 4 為準。本檔僅留歷史脈絡。
-
 Quick index of the project component library. The **shipping library** is the set of CSS files in [`ds-components/`](./ds-components/); the **authoritative spec** for each unit (anatomy, states, tokens) lives in [`design-system.md`](./design-system.md) Pillar 4 · Component. This file is the at-a-glance map between them.
 
 > Source of truth: `design-system.md` Pillar 4. Do not duplicate spec detail here — add it there and link.
@@ -24,7 +22,7 @@ Layer: 🟢 atom · 🟡 molecule · 🟠 organism. Spec = `design-system.md` Pi
 | Status dot | 🟢 | [badge.css](./ds-components/badge.css) | §4.4 |
 | Chip | 🟢 | [chip.css](./ds-components/chip.css) | §4.5 |
 | Switch | 🟢 | [switch.css](./ds-components/switch.css) | §4.6 |
-| Info banner | 🟢 | [info-banner.css](./ds-components/info-banner.css) | §4.7 |
+| Sticky-note | 🟢 | [stickynote.css](./ds-components/stickynote.css) | §4.7 |
 | Input | 🟢 | [input.css](./ds-components/input.css) | §4.8 |
 | Icon | 🟢 | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) | §4.9 |
 | NavigationMenu | 🟡 | [header.css](./ds-components/header.css) | §4.10 |
@@ -77,7 +75,7 @@ These are real, reused product components that still live in [`shared.css`](./sh
 
 ## Runtime-injected content blocks ([components.js](./components.js))
 
-Composite blocks rendered from one shared JS renderer + a named dataset, the same way [sidebar.js](./sidebar.js) injects the topbar. A page drops a `<div data-component="NAME" data-key="...">` placeholder; on load it is filled, then `ztorIcons.applyIcons` + `applyI18n` re-run on the new nodes. This is how a block becomes a real **change-once, every-page-syncs** component in a static prototype with no build step — editing the renderer or dataset updates every page that mounts it. Each block composes the CSS atoms/molecules above (data-list, kpi, alert, badge, card, info-banner, insight-split).
+Composite blocks rendered from one shared JS renderer + a named dataset, the same way [sidebar.js](./sidebar.js) injects the topbar. A page drops a `<div data-component="NAME" data-key="...">` placeholder; on load it is filled, then `ztorIcons.applyIcons` + `applyI18n` re-run on the new nodes. This is how a block becomes a real **change-once, every-page-syncs** component in a static prototype with no build step — editing the renderer or dataset updates every page that mounts it. Each block composes the CSS atoms/molecules above (data-list, kpi, alert, badge, card, stickynote, insight-split).
 
 | Block (`data-component`) | Used by | Composes | Notes |
 |---|---|---|---|
@@ -86,7 +84,7 @@ Composite blocks rendered from one shared JS renderer + a named dataset, the sam
 | `alerts` (F4) | index.html | alert | Today's actions — severity · object · status · CTA. |
 | `activity-list` (F5) | index.html | data-list · badge | Recent activity — type · source · time · result status. |
 | `events-projects` (F6) | index.html | data-list · badge | Recent events & projects — source-aware per-row entry (event → events.html, project → projects.html). |
-| `insight-split` (F7) | index.html | insight-split · kpi · info-banner | Fan relations (Fans CRM) ｜ audience trends (Audience Intelligence). |
+| `insight-split` (F7) | index.html | insight-split · kpi · stickynote | Fan relations (Fans CRM) ｜ audience trends (Audience Intelligence). |
 | `ext-data-status` (F8) | index.html | data-list · badge | External data status — source · type · last sync · status · impact; CTAs route to Settings only. |
 
 Datasets live in `components.js` (`DATA` / shared `TX` row library). To change a block's content, edit its dataset; to change its format, edit its renderer — both propagate to every mounting page.

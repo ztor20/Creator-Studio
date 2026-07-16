@@ -6,6 +6,46 @@
 
 ---
 
+## 2026-07-16 · 商品細節頁：D137 建立後固定不可編輯欄位鎖定＋銷售摘要去框＋素材附圖移次行（A 規格同步＋B 反饋導入）
+
+依上游 5.1.5.1 §2.6/§2.8/§2.10（v1.20）與 D137，把「建立後固定不可編輯」的三個欄位在 `product-detail.html` 改成唯讀呈現、不可切換；並依使用者版面反饋去掉銷售摘要外框、把素材附圖移到主圖下方一行。
+
+- **【A · D137】三欄位鎖定（呈現層唯讀）**：
+  - 主分類 `#pd-main-cat` 改 `disabled` select（唯讀呈現目前值、不可切換）＋下方鎖定 hint。
+  - 規格模式 `#pd-var-mode`、庫存版本 `#pd-edition` 兩個 segmented 改 `segmented--locked`（`aria-disabled="true"`＋各 `__btn disabled`）——維持當前模式的 active 高亮、整組不可點＋下方鎖定 hint。
+  - 三者共用新 i18n `product-detail.locked.hint`（en `Fixed after creation`／zh `建立後不可變更`）。
+  - 後端訂單約束（上限≥已售、已售規格不可刪、數位改次分類受限）屬工程、不在原型強制（記 ASSUMPTIONS）。
+- **【A · D137】demo 替代版面預覽改走開發者工具**：鎖定後頁面固定樣本值（zine＝實體／單一規格／不限量），設計師看不到數位／多規格／限量版面。於 `js/devtools.js` 新增**通用 page-scoped 預覽開關機制**（`window.ZTOR_DEV_PAGE_GROUPS` → Cheat Codes 面板渲染單選組 → `ztor:devstate-changed` 的 `detail.pageOpts` 派給頁面），product-detail 註冊三組（主分類 實體/數位、規格模式 單一/多規格、庫存版本 不限量/限量），驅動 `data-pd-cat`/`data-when-var`/`data-when-edition` 顯隱並同步鎖定 segmented 高亮。其他頁未設定即不渲染、零影響。
+- **【B】銷售摘要去 section 外框**：由 `form-section form-section--outlined` 改成裸露 `.pd-sales`（無卡框）；第一行三個 KPI bento 並排（`bento--span-4`×3，Units sold／Gross／Net after fees，net-meta 收在 Net 格內），第二行「View sales & revenue log →」右下小型文字連結；保留 when-data／when-empty 兩態與 Source · Earnings。移除與 Source 重複的 `product-detail.sales.hint` 呈現（i18n 鍵保留）。
+- **【B】素材附圖移次行**：Media 的 `.upload-showcase` 加新修飾 `.upload-showcase--stacked`（實體＋數位版都套）——主圖第一行、附圖列第二行（不分寬度），取代原橫向並排。
+- **JS 重構**：管理 IIFE 的 `wireSeg` 只保留 delivery（可互動）；var/edition 不再 wire（改鎖定）；新增 `applyCat`（含更新 disabled select 顯示值）、`syncLocked`（鎖定 segmented 高亮）、`applyFromDev`（讀 devtools pageOpts）；移除舊獨立主分類切換 IIFE。限購 toggle／標籤／delivery segmented／規格列／補貨 modal／See as fan 照舊。
+- **元件層新增（promote，同步 DS 文件）**：`segmented.css` 加 `.segmented--locked`；`upload-tile.css` 加 `.upload-showcase--stacked`；`input.css` 加 `:disabled` 狀態（靜音底＋not-allowed）。三者皆已同步 `design-system.html`（demo＋spec 表）與 `design-system.md`（Class API／States 條目）；input `:disabled` 狀態缺口註記已更新為已補。全用既有 token，未新增裸值（check_ds_sync 5/10 基準未動，PASS）。
+
+## 2026-07-16 · 商品細節頁改 form-section 風格＋依 D136 §3 頁面佈局重排（B 反饋導入）
+
+依上游 5.1.5.1 §3 頁面佈局（D136）＋使用者版面反饋，把 `product-detail.html` 全部區塊從 `.card` 改成建立商品頁的 `form-section form-section--outlined`（`.form-section__head > .form-section__title + .form-section__sub`），並補掛 `ds-components/form-section.css`；顯示順序重排成 10 節。
+
+- **全區改 form-section 風格**：Sales summary／Product content／Content file／Variations／Price／Stock & restock／Delivery & pickup／Purchase limit／Product tags／Referenced by projects 十區一律 outlined form-section，標題結構統一；各區內部欄位（KPI bento、upload-showcase、spec-row、variant-builder、amount-field、segmented、control-row、switch、tag-input、data-list）原封不動。
+- **新顯示序（§3）**：銷售摘要首排獨立一區（不再與專案引用並排）→ 商品素材＋商品資訊並列同一區 → 數位內容檔案（獨立節，僅數位）→ 商品規格 Variations → 價格 → 庫存與補貨 → 取貨與交付 → 每人限購 → 商品標籤 → 專案引用置底。
+- **銷售摘要入口降級**：「View sales & revenue log →」由整寬 outline 按鈕改成右下角小型文字連結（`.card__link`＋`--fs-12`，`flex-row` 靠右），符合 §3「次要入口」呈現參考。
+- **素材＋資訊並列**：用 `bento` 兩欄（`bento--span-6`×2）——一欄 Media（實體主圖組／數位封面組，保留 `data-pd-cat` 雙版），另一欄 Title＋主分類＋次分類＋描述＋詳細規格（僅實體）；窄螢幕自動疊。
+- **拆節**：舊 Price & stock 卡拆成「價格」與「庫存與補貨」兩節；舊 Delivery & buyer settings 卡（`#pd-settings`）拆成「取貨與交付」「每人限購」「商品標籤」三節；數位內容檔案自 Product content 卡移出成獨立節。
+- **JS 掛勾保留**：settings 段入口由 `getElementById('pd-settings')` 改判 document 範圍錨點（`#pd-limit-toggle`／`#pd-delivery`），限購欄位 `[data-pd-limit-fields]` 改 `document.querySelector`；`wireSeg('pd-edition'/'pd-delivery'/'pd-var-mode')`、`applyVis()`（document 範圍）、標籤（`#pd-tags-field`/`-entry`）、補貨 modal、規格列、取貨場次、See as fan 拆節後全部照舊運作。清掉主分類切換 script 過時註解「2 體驗（採實體版型）」。
+- 新增 i18n（en+zh）：`product-detail.content.sub`／`.price2.title`／`.price2.sub`／`.stock2.title`／`.stock2.sub`／`.delivery2.title`／`.limit2.title`／`.limit2.sub`；標題重用 `product-detail.sales.*`／`.content.title`／`.ref.*`／`cp.cfile.*`／`cp.var.*`／`cp.tags`／`cp.optional`／`product-detail.inv.sub`。全用既有 token／元件，未新增元件 CSS、未新增裸值（check_ds_sync 5/10 基準未動）。
+
+## 2026-07-16 · 商品細節頁重排＋補原價/成本/規格；E-Shop 數位樣本補齊（A 規格同步）
+
+依上游 5.1.5.1 §2 13 節新順序（D133／D134／D135）重排 `product-detail.html`：
+
+- **銷售摘要前置（D134）**：把 Sales summary（改 `bento--span-7`）與 Referenced by projects（改 `bento--span-5`、保留 `data-feat="S24"`）搬到 page-intro 之後成為第一個 bento；原內部 markup（when-data／when-empty、KPI、資料列）原封不動。Product content 卡改為緊接其後的獨立 `card mt-16`。
+- **移除 Experiences 主分類（D133）**：`#pd-main-cat` 刪掉 `Experiences & Events` option，只留 Physical／Digital；主分類切換 JS 以 `selectedIndex===1` 判 digital，不受影響。
+- **新增 §2.8 商品規格 Variations 卡（D135）**：僅實體（`data-pd-cat="physical"`，切數位整卡隱藏）。重用既有 `variant-builder.css`／`segmented.css`／`chip.css`——規格模式 segmented（單一/多規格）＋多規格時的選項建構器（示範選項「Size / 尺寸」＋值 chips S/M/L＋「新增選項」outline 鈕，示範未接功能）＋逐規格表（靜態 3 列 S/M/L，欄：規格組合／價格／庫存／SKU／單件成本，價格與成本用現金 `$` 前綴 `amount-field--readonly`、無 POPCORN 切換；上限欄限量才顯示，示範從簡）。JS 擴充既有 settings 那段的 `applyVis`／`wireSeg` 加 `data-when-var`（預設 single、建構器隱藏）。
+- **價格補原價/成本（D133）**：Price & stock 卡的價格區由單一 Price 改三欄 `form-grid--3`＝價格 $24.00 ＋原價 $30.00（`cp.original`／`cp.original.if`）＋成本價 $9.00（`cp.cost`／`cp.cost.note`「僅自己可見」）；三欄一律現金 `$` 前綴 `amount-field--readonly`、不帶 POPCORN 定價單位鈕（POPCORN 本專案維持未啟用）。Stock／低庫存門檻改置於其下獨立 `form-grid`（2 欄），欄位內部 markup 與 feature-gate 原封不動；Edition／補貨紀錄不變。
+
+`e-shop.html` Products 清單調整為「草稿置頂 → 實體各列 → 數位各列」的 demo 呈現順序：把原本夾在實體列中間的 Coastline EP（Album）移到實體列之後，並新增音樂單曲（Song，`music`）、電影（Movie，`film`）、會員卡（Membership，`id-card`）三列數位樣本；最終數位順序＝單曲 → 電影 → 專輯 → 會員卡，四類覆蓋數位次分類。不動 `applyFilter()`／`pinDrafts()`。
+
+新增 icon `id-card`（REGISTRY 補，path 取自 icons-all）。新增 i18n 鍵（en+zh）：`cp.var.single-note`、`e-shop.rowSong.*`、`e-shop.rowMovie.*`、`e-shop.rowVip.*`；其餘（`cp.var.*`／`cp.original`／`cp.cost*`／`cp.optional-cap`／`e-shop.row3.*`）全數重用。全用既有 token／元件，未新增元件 CSS、未新增裸值（check_ds_sync 10 未動基準）。
+
 ## 2026-07-16 · radio-card 邊框化＋標記精修（對齊 Figma node 781-4386）（B 反饋導入）
 
 - `.radio-cards`（不限量/限量、規格模式、取貨方式等二選一卡）卡面由 `--shadow-card` 陰影改 1px 純邊框 `--border`、扁平無陰影。

@@ -29,14 +29,7 @@
      driven by the devtools "cheat code" panel (D086, presentation裁示).
      ───────────────────────────────────────────────────────── */
   const ROSTER_PAGE = "creators.html";
-  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html"]);
-  const ADMIN_NAV = [
-    { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
-    { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
-    { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" }
-  ];
   const isRoster = path === ROSTER_PAGE;
-  const isAdminPlatform = ADMIN_ROUTES.has(path);
   /* Demo roster (prototype data; the real list comes from the backend).
      Mirrors the concept sketch (denise / aya / kmt). */
   /* D107: creator 資料含 email／電話（選填）／建立時間。email 供 phase 2 交還本人。 */
@@ -94,41 +87,6 @@
     { href: "fans-crm.html", key: "nav.fans",     icon: "users" },
     { href: "earnings.html", key: "nav.earnings", icon: "banknote" },
   ];
-
-  /* feature-scope-map 未列的整頁功能在低版本不可作為任何入口。
-     完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
-  const FULL_ROUTES = new Set([
-    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "projects.html", "project-detail.html", "create-project.html",
-    "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html",
-    "fans-crm.html", "fan-detail.html", "tier-settings.html", "my-ip.html", "ip-detail.html",
-    "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
-  ]);
-  function fullVersion() {
-    const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
-      || document.documentElement.getAttribute("data-version") || "full";
-    return v === "full" || v === "funding-test";
-  }
-  function routeAllowed(href) {
-    const route = (href || "").split(/[?#]/)[0].toLowerCase();
-    return fullVersion() || !FULL_ROUTES.has(route);
-  }
-  function applyVersionRoutes(root) {
-    if (!root) return;
-    const limited = !fullVersion();
-    root.querySelectorAll("a[href]").forEach(a => {
-      if (!routeAllowed(a.getAttribute("href"))) {
-        a.hidden = true;
-        const li = a.closest("li"); if (li) li.hidden = true;
-      }
-    });
-    root.querySelectorAll(".app-topbar__nav-group, .app-sidebar__group").forEach(group => {
-      const links = Array.from(group.querySelectorAll("a[href]")).filter(a => !a.hidden && a.getAttribute("href") !== "#");
-      if (limited && group.closest("nav") && links.length === 0) group.hidden = true;
-    });
-    root.querySelectorAll(".app-topbar__brand, .app-sidebar__brand").forEach(brand => {
-      brand.setAttribute("href", limited ? "e-shop.html" : (isRoster ? ROSTER_PAGE : "index.html"));
-    });
-  }
 
   function isActive(it) {
     const allHrefs = it.panel
@@ -228,7 +186,7 @@
 
   function buildTopbar() {
     const creator = getCreator();                 // null = 一般創作者（無 admin 代管）
-    const adminScope = !isAdminPlatform && !!creator;    // admin 正在代管某個 creator
+    const adminScope = !isRoster && !!creator;    // admin 正在代管某個 creator
     /* Three nav faces (spec §4.1):
        · Tier 0 roster (creators.html): "Creator Management" marker + locked Tier-1.
        · Admin 代管 (Tier-1, a creator selected): back-to-roster icon BEFORE the logo
@@ -240,7 +198,7 @@
            <i data-lucide="arrow-left" class="ztor-icon"></i>
          </a>`
       : "";
-    const marker = isAdminPlatform
+    const marker = isRoster
       ? `<span class="app-topbar__context app-topbar__context--admin">
            <i data-lucide="shield-check" class="ztor-icon ztor-icon--sm"></i>
            <span data-i18n="admin.creator-mgmt">Creator Management</span>
@@ -251,11 +209,11 @@
          </span>` : "");
     return `
     ${back}
-    <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-topbar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
+    <a href="${isRoster ? ROSTER_PAGE : "index.html"}" class="app-topbar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
     ${marker}
 
     <nav aria-label="Primary">
-      <ul class="app-topbar__nav"><span class="app-topbar__nav-highlight" aria-hidden="true"></span>${topbarNavHtml(isAdminPlatform)}</ul>
+      <ul class="app-topbar__nav"><span class="app-topbar__nav-highlight" aria-hidden="true"></span>${topbarNavHtml(isRoster)}</ul>
     </nav>
 
     <div class="app-topbar__actions">
@@ -309,15 +267,6 @@
        「分組標題＋子項平鋪」版本（.app-sidebar__section-label）仍保留在
        shared.css 與 design-system，作為可隨時切回的變體。 */
     /* D107: 未選定 creator 時 Tier 1 模組不在導航呈現（只留 Creator 管理 marker）。 */
-    if (isAdminPlatform) {
-      return ADMIN_NAV.map(function (it) {
-        var active = [it.href].concat(it.match || []).includes(path);
-        return `<li><a class="app-sidebar__link" href="${it.href}"${active ? ' aria-current="page"' : ''}>
-          <i data-lucide="${it.icon}" class="ztor-icon"></i>
-          <span class="app-sidebar__link-label" data-i18n="${it.key}">${it.key}</span>
-        </a></li>`;
-      }).join("");
-    }
     if (locked) return "";
     let html = "";
     for (const it of NAV) {
@@ -349,13 +298,13 @@
 
   function buildSidebar() {
     const creator = getCreator();                 // null = 一般創作者（無 admin 代管）
-    const adminScope = !isAdminPlatform && !!creator;
+    const adminScope = !isRoster && !!creator;
     /* Same three faces as topbar: roster marker / admin 代管 (back + managing) /
        plain creator (no chrome). */
-    const lead = isAdminPlatform
+    const lead = isRoster
       ? `<div class="app-sidebar__context app-sidebar__context--admin">
            <i data-lucide="shield-check" class="ztor-icon"></i>
-           <span data-i18n="admin.studio">Admin Creator Studio</span>
+           <span data-i18n="admin.creator-mgmt">Creator Management</span>
          </div>`
       : (adminScope ? `<a class="app-sidebar__back" href="${ROSTER_PAGE}" data-i18n-aria-label="admin.back" aria-label="Back to creators">
            <i data-lucide="arrow-left" class="ztor-icon"></i>
@@ -366,11 +315,11 @@
            <span class="app-sidebar__context-name">${creator.name}</span>
          </div>` : "");
     return `
-    <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
+    <a href="${isRoster ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
     ${lead}
 
     <nav aria-label="Primary">
-      <ul class="app-sidebar__nav">${sidebarNavHtml(isAdminPlatform)}</ul>
+      <ul class="app-sidebar__nav">${sidebarNavHtml(isRoster)}</ul>
     </nav>
 
     <div class="app-sidebar__actions">
@@ -415,7 +364,6 @@
      Mount / re-mount.
      ───────────────────────────────────────────────────────── */
   function currentMode() {
-    if (isAdminPlatform) return "sidebar";
     return document.documentElement.getAttribute("data-nav-mode") === "sidebar"
       ? "sidebar" : "topbar";
   }
@@ -433,7 +381,6 @@
     }
     if (window.ztorIcons) window.ztorIcons.applyIcons(root);
     if (window.applyI18n)  window.applyI18n(root);
-    applyVersionRoutes(root);
 
     if (mode === "topbar") {
       wireScroll(root);
@@ -566,5 +513,4 @@
   mount();
   document.addEventListener("ztor:navmode-changed", mount);
   document.addEventListener("ztor:creator-changed", mount);
-  document.addEventListener("ztor:devstate-changed", mount);
 })();

@@ -1,30 +1,29 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="S11">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create auction · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260709h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260709h">
+<link rel="stylesheet" href="shared.css?v=20260709h">
 <style>
   /* create-auction 專屬樣式。無卡片區段／radio 卡／control row／form-grid／upload hero
      用 ds-components（form-section / radio-card / control-row / form-grid / upload-tile）；
@@ -34,7 +33,25 @@
   .ca-field[hidden] { display: none; }
   .ca-note { font-size: var(--fs-12); color: var(--foreground-muted); line-height: 1.5; padding: 13px 14px; border-radius: var(--radius-md); background: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
 
+  /* 就緒檢查 chip（貼 footer 主動作）：未備齊 muted、備齊轉綠；hover/focus 往上開 tooltip（內容＝.readiness）*/
+  .ca-ready-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-12); font-weight: var(--fw-medium); color: var(--foreground-muted); white-space: nowrap; cursor: default; }
+  .ca-ready-chip .ztor-icon { width: 14px; height: 14px; }
+  .ca-ready-chip--ready { color: var(--status-success); }
+  .ca-ready-pop {
+    position: absolute; right: 0; bottom: calc(100% + 10px);
+    width: 300px; max-width: 78vw;
+    opacity: 0; visibility: hidden; transform: translateY(4px);
+    transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing), visibility var(--duration) var(--easing);
+    pointer-events: none; z-index: 60;
+  }
+  .ca-ready-pop .readiness { box-shadow: var(--shadow-float); max-height: 60vh; overflow: auto; text-align: left; }
+  .ca-ready-pop::after { content: ""; position: absolute; top: 100%; right: 26px; border: 7px solid transparent; border-top-color: var(--muted); }
+  .ca-ready-chip:hover .ca-ready-pop,
+  .ca-ready-chip:focus-within .ca-ready-pop { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
   .wizard__top-actions[aria-hidden="true"] { min-width: 52px; }
+
+  /* 種類區段在最前，去掉多餘頂距 */
+  .preview-split__form > .form-section:first-child { padding-top: 4px; }
 
   /* 預覽欄／表單｜預覽兩欄版面用 ds-components/preview-column.css；本頁寬度與上內距改用 shared.css 的 .wizard__body--form/--narrow 修飾類（2026-07-09）。 */
 </style>
@@ -42,7 +59,7 @@
 <body>
 <div class="wizard">
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄空（無 stepper）；右＝自動儲存。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet">
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -63,7 +80,7 @@
     <div class="preview-split__form">
 
     <!-- §4 拍賣種類：實體／數位／活動 三選一，預設實體；只影響素材與 F6 交付 -->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
     <div class="field" style="margin-bottom:0">
       <div class="selection-grid" id="ca-kind-grid">
         <button class="selection-card selection-card--active" data-ca-kind="physical">
@@ -83,7 +100,7 @@
     </section>
 
     <!-- §4 F1 素材（Show it off）：主圖＊＋附圖，三種類共用 -->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.media.title">Show it off</h3>
         <p class="form-section__sub" data-i18n="ca.media.sub">Buyers can't touch it. Your photos do that job.</p>
@@ -103,7 +120,7 @@
     </section>
 
     <!-- §4 F2 商品資訊・故事＋物品狀況（The story）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.story.title">The story</h3>
         <p class="form-section__sub" data-i18n="cp.story.sub">This isn't a product description. It's why this item matters.</p>
@@ -176,7 +193,7 @@
     </section>
 
     <!-- §4 F3 真實性證明（Prove it's real）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.prove.title">Prove it's real</h3>
         <p class="form-section__sub" data-i18n="cp.prove.sub">Fans need to know this came from you.</p>
@@ -203,7 +220,7 @@
     </section>
 
     <!-- §4 F4 競標設定（Auction rules）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.auc.title">Auction rules</h3>
         <p class="form-section__sub" data-i18n="cp.auc.sub">No fixed price — fans bid. One-of-a-kind, so no stock or variations.</p>
@@ -211,17 +228,11 @@
       <div class="form-grid">
         <div class="field">
           <div class="field__label"><span data-i18n="cp.auc.start">Starting price</span> <span class="field__req">*</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-            <input class="input amount-field__input" placeholder="50" id="ca-startprice">
-          </span>
+          <input class="input" placeholder="$ 50" id="ca-startprice">
         </div>
         <div class="field">
           <div class="field__label"><span data-i18n="cp.auc.reserve">Reserve price</span> <span class="text-sub" data-i18n="cp.optional">(optional)</span></div>
-          <span class="amount-field amount-field--readonly">
-            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-            <input class="input amount-field__input" placeholder="0.00">
-          </span>
+          <input class="input" placeholder="$ 0.00">
           <div class="field__hint" data-i18n="cp.auc.reserve-hint">Item won't sell below this. Behaviour if unmet pending spec.</div>
         </div>
       </div>
@@ -244,7 +255,7 @@
     </section>
 
     <!-- §4 F5 競標資格（Who can bid?）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.elig.title">Who can bid?</h3>
         <p class="form-section__sub" data-i18n="cp.elig.sub">Limit which fan tiers can join this auction.</p>
@@ -259,7 +270,7 @@
 
     <!-- §4 F6 交付（Delivery，依種類）-->
     <!-- 實體：得標者付運費＋出貨時限 -->
-    <section class="form-section form-section--outlined" data-ca-show="physical">
+    <section class="form-section" data-ca-show="physical">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="cp.auc.ship.title">Shipping</h3>
         <p class="form-section__sub" data-i18n="cp.auc.ship.sub">One-of-a-kind item shipped to the winner after the auction ends.</p>
@@ -282,7 +293,7 @@
       </div>
     </section>
     <!-- 數位：下載／存取交付（語意待確認）-->
-    <section class="form-section form-section--outlined" data-ca-show="digital" hidden>
+    <section class="form-section" data-ca-show="digital" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="ca.deliver.digital.title">Delivery</h3>
         <p class="form-section__sub" data-i18n="ca.deliver.digital.sub">Delivered to the winner after the auction ends.</p>
@@ -290,7 +301,7 @@
       <div class="ca-note" data-i18n="ca.deliver.digital.note">Winner receives a download / access link. 1-of-1 download &amp; rights semantics (NFT-style) pending spec.</div>
     </section>
     <!-- 活動：入場憑證／門票（對接 Events 待確認）-->
-    <section class="form-section form-section--outlined" data-ca-show="event" hidden>
+    <section class="form-section" data-ca-show="event" hidden>
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="ca.deliver.event.title">Delivery</h3>
         <p class="form-section__sub" data-i18n="ca.deliver.event.sub">Winner receives entry to the experience.</p>
@@ -299,7 +310,7 @@
     </section>
 
     <!-- §4 共用設定：商品標籤（拍賣為唯一件，每人限購不適用）-->
-    <section class="form-section form-section--outlined">
+    <section class="form-section">
       <div class="form-section__head">
         <h3 class="form-section__title" data-i18n="ca.tags.title">Tags</h3>
       </div>
@@ -361,8 +372,8 @@
   <footer class="wizard__bottom" style="justify-content:flex-end">
     <div class="wizard__bottom-actions">
       <button class="btn btn--ghost btn--destructive" id="ca-delete" hidden data-i18n="cp.delete">Delete</button>
-      <span class="readiness__chip" id="ca-ready-chip" tabindex="0"><i data-lucide="circle" class="ztor-icon"></i><span id="ca-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span>
-        <span class="readiness__pop">
+      <span class="ca-ready-chip" id="ca-ready-chip" tabindex="0"><i data-lucide="circle" class="ztor-icon"></i><span id="ca-ready-chip-text" data-i18n="cp.ready.togo">6 items needed</span>
+        <span class="ca-ready-pop">
           <section class="readiness" id="ca-readiness">
             <div class="readiness__head"><h3 class="readiness__title" data-i18n="ca.ready.title">Ready to start auction?</h3></div>
             <ul class="readiness__list" id="ca-ready-list"></ul>
@@ -432,19 +443,19 @@
       bannerEl.textContent = T('ca.ready.done', 'Ready to start the auction!');
       bannerEl.classList.add('readiness__banner--ready');
       chipText.textContent = T('ca.chip.ready', 'Ready');
-      chipEl.classList.add('readiness__chip--ready');
+      chipEl.classList.add('ca-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'check-circle');
     } else if (skip) {
       bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' missing · validation skipped (dev)';
       bannerEl.classList.remove('readiness__banner--ready');
       chipText.textContent = 'Validation skipped';
-      chipEl.classList.remove('readiness__chip--ready');
+      chipEl.classList.remove('ca-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     } else {
       bannerEl.textContent = remaining + ' item' + (remaining > 1 ? 's' : '') + ' needed to start the auction';
       bannerEl.classList.remove('readiness__banner--ready');
       chipText.textContent = remaining + ' to go';
-      chipEl.classList.remove('readiness__chip--ready');
+      chipEl.classList.remove('ca-ready-chip--ready');
       chipIcon.setAttribute('data-lucide', 'circle');
     }
     if (editMode) { primary.disabled = false; chipEl.hidden = true; }
@@ -596,10 +607,10 @@
   setKind(initKind);
 })();
 </script>
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="partials/wizard-chrome.js?v=20260716d"></script>
-<script src="js/reveal.js?v=20260716d"></script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/icons.js?v=20260709h"></script>
+<script src="js/i18n.js?v=20260709h"></script>
+<script src="partials/wizard-chrome.js?v=20260709h"></script>
+<script src="js/reveal.js?v=20260709h"></script>
+<script src="js/devtools.js?v=20260709h"></script>
 </body>
 </html>

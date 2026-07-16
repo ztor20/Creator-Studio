@@ -1,38 +1,39 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>New project · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/review-row.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260709h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260709h">
+<link rel="stylesheet" href="shared.css?v=20260709h">
 <style>
-  /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
-     settings-row 裸 HTML 改用 ds-components/control-row.css；revenue estimate 卡改用
-     ds-components/form-section.css（2026-07-10，全站元件統一）。 */
+  /* page-specific layout-only helper · 2-col field grid for type-specific fields */
+  .tf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .tf-grid { grid-template-columns: 1fr; } }
 
-  /* 全頁無卡片化（使用者指定 2026-06-25）：Review 摘要卡／tier 卡／tier editor 已改用
-     ds-components/review-row.css（第三批元件統一，2026-07-11），呈現「標題＋Edit 一行＋
-     底線分隔」的無卡片摘要列；.card 全頁恢復標準卡面語意，不再需要頁內覆寫。 */
+  /* 全頁無卡片化（使用者指定 2026-06-25）：去掉 .card / .card--muted 的卡面（底色/邊框/陰影/圓角/內距），
+     內容直接流動，與 create-product 的無卡片語言一致；用 !important 蓋過各處 inline padding。
+     有 head 的摘要（review/區塊標題列）改成「標題＋Edit 一行＋底線分隔」的無卡片摘要列。 */
+  .card, .card--muted { background: transparent !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
+  .card--muted { padding: 0 !important; }
+  .card:has(.card__head) { padding: 14px 0 !important; border-bottom: 1px solid var(--border-soft) !important; margin-bottom: 0 !important; }
+  .card__head { margin-bottom: 4px; }
+  .card__title { font-size: var(--fs-15); font-weight: var(--fw-medium); }
   /* 上內距改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），與 create-product 一致 */
 </style>
 </head>
@@ -40,7 +41,7 @@
 <div class="wizard">
 
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬，JS 建構）；右＝自動儲存。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet">
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -69,7 +70,7 @@
       <h1 class="wizard__step-title" data-i18n="cpp.s1.h1">What are you making?</h1>
       <p class="wizard__step-sub" data-i18n="cpp.s1.sub">Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.</p>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s1.type">Project type</div>
         <div class="selection-grid">
           <button type="button" class="selection-card selection-card--active" data-type="golive">
@@ -90,12 +91,12 @@
         </div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <label class="field__label" for="proj-title"><span data-i18n="cpp.s1.title">Project title</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
         <input id="proj-title" class="input" placeholder="A name fans will remember" value="Coastline EP" data-i18n-placeholder="cpp.s1.title.ph">
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label"><span data-i18n="cpp.s1.content">Content type</span> <span class="text-sub" data-i18n="cpp.required">· required</span></div>
         <div class="chip-group" id="cat-group">
           <button type="button" class="chip" data-cat="movie"  data-group="film"  data-i18n="cpp.content.movie">Movie</button>
@@ -112,17 +113,17 @@
         <div class="field__hint" data-i18n="cpp.s1.content-hint">Fans see the content type label. Subcategory only — main category is auto-assigned in E-Shop.</div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <label class="field__label" for="proj-desc"><span data-i18n="cpp.s1.desc">Description</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
         <textarea id="proj-desc" class="textarea" placeholder="Two sentences to pull fans in." data-i18n-placeholder="cpp.s1.desc.ph" data-i18n="cpp.s1.desc-val">A five-track EP recorded between Tainan and Hualien, released alongside a tour zine and seven limited screen prints. Pre-orders fund the vinyl pressing run.</textarea>
       </div>
 
       <!-- ④ Category-specific fields · one group shown per content type -->
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label"><span data-i18n="cpp.s1.type-fields">Type-specific fields</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
 
         <!-- film · movie / short / series -->
-        <div class="form-grid hidden" data-fieldgroup="film">
+        <div class="card card--muted tf-grid hidden" data-fieldgroup="film" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.director">Director</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.runtime">Runtime</div><input class="input" placeholder="e.g. 90 min" data-i18n-placeholder="cpp.tf.runtime.ph"></div>
           <div><div class="field__label" data-i18n="cpp.tf.location">Shooting location</div><input class="input"></div>
@@ -134,7 +135,7 @@
         </div>
 
         <!-- music · song / album -->
-        <div class="form-grid" data-fieldgroup="music">
+        <div class="card card--muted tf-grid" data-fieldgroup="music" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.artists">Artists</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.producer">Producer</div><input class="input"></div>
           <div style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.featured">Featured artists</div><input class="input"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.featured.add">＋ Add artist</button></div>
@@ -154,7 +155,7 @@
         </div>
 
         <!-- mv / documentary -->
-        <div class="form-grid hidden" data-fieldgroup="mvdoc">
+        <div class="card card--muted tf-grid hidden" data-fieldgroup="mvdoc" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.director">Director</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.subject">Subject</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.runtime">Runtime</div><input class="input" placeholder="e.g. 90 min" data-i18n-placeholder="cpp.tf.runtime.ph"></div>
@@ -166,14 +167,14 @@
         </div>
 
         <!-- event -->
-        <div class="form-grid hidden" data-fieldgroup="event">
+        <div class="card card--muted tf-grid hidden" data-fieldgroup="event" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.venue">Venue</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.datetime">Date &amp; Time</div><input class="input" type="datetime-local"></div>
           <div><div class="field__label" data-i18n="cpp.tf.capacity">Capacity</div><input class="input"></div>
           <div style="grid-column:span 1"><div class="field__label" data-i18n="cpp.tf.performers">Performers</div><input class="input"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.performers.add">＋ Add performer</button></div>
           <div style="grid-column:span 2">
-            <div class="control-row">
-              <div><div class="control-row__main" data-i18n="cpp.tf.livestream">Livestream available</div></div>
+            <div class="settings-row" style="border:0;padding:4px 0">
+              <div><div class="settings-row__label" data-i18n="cpp.tf.livestream">Livestream available</div></div>
               <div class="switch"></div>
             </div>
           </div>
@@ -183,7 +184,7 @@
         </div>
 
         <!-- merch -->
-        <div class="form-grid hidden" data-fieldgroup="merch">
+        <div class="card card--muted tf-grid hidden" data-fieldgroup="merch" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.ptype">Product type</div><input class="input" placeholder="e.g. T-shirt, Poster" data-i18n-placeholder="cpp.tf.ptype.ph"></div>
           <div><div class="field__label" data-i18n="cpp.tf.manufacturer">Manufacturer</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.prodtime">Est. production time</div><input class="input" placeholder="e.g. 4-6 weeks" data-i18n-placeholder="cpp.tf.prodtime.ph"></div>
@@ -192,7 +193,7 @@
         </div>
 
         <!-- custom -->
-        <div class="form-grid hidden" data-fieldgroup="custom">
+        <div class="card card--muted tf-grid hidden" data-fieldgroup="custom" style="padding:14px 16px">
           <div><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input"></div>
           <div><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
           <div><div class="field__label" data-i18n="cpp.tf.territory">Territory</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
@@ -202,9 +203,9 @@
       </div>
 
       <!-- ⑤ IP rental -->
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s1.iprent">IP Rental · disclose other rights you're using</div>
-        <div>
+        <div class="card card--muted" style="padding:14px 16px">
           <div class="flex-row" style="justify-content:space-between">
             <div>
               <div class="data-list__title" data-i18n="cpp.s1.iprent.empty">No IP rentals attached yet</div>
@@ -222,7 +223,7 @@
       <h1 class="wizard__step-title" data-i18n="cpp.s2.h1">Show fans why this matters.</h1>
       <p class="wizard__step-sub" data-i18n="cpp.s2.sub">Cover, poster, banner, gallery. One short story. A video if you have it. We accept files up to 2 GB.</p>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label"><span data-i18n="cpp.s2.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.four-req">· all four required</span></div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
           <button type="button" class="upload-tile" style="aspect-ratio:1/1">
@@ -248,7 +249,7 @@
         </div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label"><span data-i18n="cpp.s2.trailer">Video</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
         <button type="button" class="upload-tile upload-tile--file">
           <span class="upload-tile__title" data-i18n="cpp.s2.trailer-drop">Drop an MP4 or MOV</span>
@@ -256,12 +257,12 @@
         </button>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <label class="field__label" for="proj-story"><span data-i18n="cpp.s2.story">Story</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
         <textarea id="proj-story" class="textarea" style="min-height:180px" data-i18n="cpp.s2.story-val">Last winter I spent three weeks driving the east coast in a borrowed van, recording on a 4-track between roadside concerts and quiet mornings. The EP is the second half of that road. The first half is on the cassette I lost in Hualien.</textarea>
         <div class="flex-row" style="justify-content:space-between;margin-top:6px">
           <div class="field__hint" style="margin:0" data-i18n="cpp.s2.story-hint">Rich text · bold, italic, links and images supported.</div>
-          <span class="badge badge--success" id="story-count"><span data-i18n="cpp.s2.story.ok">✓ 100 character minimum met</span></span>
+          <span class="badge badge--success" id="story-count"><span class="badge__dot"></span><span data-i18n="cpp.s2.story.ok">✓ 100 character minimum met</span></span>
         </div>
       </div>
     </section>
@@ -271,7 +272,7 @@
       <h1 class="wizard__step-title" data-i18n="cpp.s3.h1">How fans get it. How you get paid.</h1>
       <p class="wizard__step-sub" data-i18n="cpp.s3.sub">Set access, price and platform fee. Ads and brand partnerships are optional. Net income shows up in Earnings as soon as money lands.</p>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s3.access">Access model</div>
         <div class="selection-grid">
           <button type="button" class="selection-card" data-access="free">
@@ -292,10 +293,10 @@
         </div>
       </div>
 
-      <div class="form-grid form-section form-section--outlined">
+      <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div data-price-field>
           <label class="field__label" for="price" data-i18n="cpp.s3.price">Price · USD</label>
-          <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="price" class="amount-field__input input" placeholder="9.99" value="12.00"></div>
+          <input id="price" class="input" placeholder="9.99" value="12.00">
           <div class="field__hint" data-i18n="cpp.s3.price-hint">Stripe handles currency conversion at checkout.</div>
         </div>
         <div>
@@ -305,10 +306,10 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="cpp.s3.expected">Revenue estimate · your number</h3>
-          <p class="form-section__sub" data-i18n="cpp.s3.expected-sub">Saved for Earnings comparison</p>
+      <div class="card card--muted" style="padding:16px;margin-bottom:18px">
+        <div class="card__head">
+          <div class="card__title" data-i18n="cpp.s3.expected">Revenue estimate · your number</div>
+          <div class="text-sub" style="font-size: var(--fs-12)" data-i18n="cpp.s3.expected-sub">Saved for Earnings comparison</div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
           <div><div class="meta-cell__label" data-i18n="cpp.s3.buyers">Estimated buyers</div><div class="meta-cell__value">450</div></div>
@@ -318,16 +319,16 @@
         <div class="field__hint" style="margin-top:8px" data-i18n="cpp.s3.expected-hint">Reflects 5% platform fee + 3% Stripe. Marked as <em>creator estimate</em> in Project Net Income — not a platform forecast.</div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s3.ads">Ads</div>
-        <div class="control-row">
+        <div class="settings-row" style="border:0;padding:8px 0">
           <div>
-            <div class="control-row__main" data-i18n="cpp.s3.ads.enable">Enable ads</div>
-            <div class="control-row__sub" data-i18n="cpp.s3.ads.hint">Earn additional revenue from ad placements.</div>
+            <div class="settings-row__label" data-i18n="cpp.s3.ads.enable">Enable ads</div>
+            <div class="settings-row__hint" data-i18n="cpp.s3.ads.hint">Earn additional revenue from ad placements.</div>
           </div>
           <div class="switch"></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
+        <div class="card card--muted" style="padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
           <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.pre">Pre-roll</span></label>
           <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.mid">Mid-roll</span></label>
           <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.post">Post-roll</span></label>
@@ -336,7 +337,7 @@
         <div class="field__hint" data-i18n="cpp.s3.ads.note">Placement options &amp; rules TBD.</div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s3.brand">Brand partnerships</div>
         <div class="data-list">
           <div class="data-list__row">
@@ -353,7 +354,7 @@
         <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.s3.add-brand">＋ Add brand partnership</button>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.s3.publish">Publish timing</div>
         <div class="selection-grid">
           <button type="button" class="selection-card selection-card--active" data-publish="now">
@@ -384,10 +385,10 @@
         </div>
       </div>
 
-      <div class="form-grid form-section form-section--outlined">
+      <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
           <label class="field__label" for="fd-goal"><span data-i18n="cpp.fd.goal">Funding goal · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-          <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="fd-goal" class="amount-field__input input" placeholder="10000" value="20000"></div>
+          <input id="fd-goal" class="input" placeholder="10000" value="20000">
           <div class="field__hint" data-i18n="cpp.fd.goal.hint">Minimum $500</div>
         </div>
         <div>
@@ -397,21 +398,21 @@
         </div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label" data-i18n="cpp.fd.dist">Distribution settings</div>
-        <div class="form-grid form-grid--3">
+        <div class="card card--muted" style="padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
           <div><div class="field__label" data-i18n="cpp.fd.pool">Pool %</div><input class="input" value="10"><div class="field__hint" data-i18n="cpp.fd.pool.hint">Your final share of the net</div></div>
           <div><div class="field__label" data-i18n="cpp.fd.slots">Supporter slots</div><input class="input" value="100"><div class="field__hint" data-i18n="cpp.fd.slots.hint">Max number of backers</div></div>
-          <div><div class="field__label" data-i18n="cpp.fd.perslot">Per slot</div><div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" value="200" disabled></div><div class="field__hint" data-i18n="cpp.fd.perslot.hint">Auto · goal ÷ slots</div></div>
+          <div><div class="field__label" data-i18n="cpp.fd.perslot">Per slot</div><input class="input" value="$200" disabled><div class="field__hint" data-i18n="cpp.fd.perslot.hint">Auto · goal ÷ slots</div></div>
         </div>
         <div class="field__hint" data-i18n="cpp.fd.dist.note">If $200k net, each slot = $200.</div>
         <div class="field__hint" data-i18n="cpp.fd.fee.note">5% platform fee (only if goal met) + 3% Stripe. No fees if goal not met.</div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="flex-row" style="justify-content:space-between">
           <div class="field__label" data-i18n="cpp.fd.budget">Budget allocation</div>
-          <span class="badge badge--success" id="budget-total"><span>100%</span></span>
+          <span class="badge badge--success" id="budget-total"><span class="badge__dot"></span><span>100%</span></span>
         </div>
         <!-- page-specific stacked allocation bar · colors via status role tokens -->
         <div id="budget-bar" style="display:flex;height:14px;border-radius:var(--radius-pill);overflow:hidden;margin:10px 0 14px">
@@ -448,24 +449,16 @@
       <h1 class="wizard__step-title" data-i18n="cpp.tr.h1">Build your backer tiers.</h1>
       <p class="wizard__step-sub" data-i18n="cpp.tr.hint">Create your tiers. Each tier is a bundle fans can back. Minimum 3.</p>
 
-      <div class="form-section form-section--outlined">
-        <div class="flex-row" style="justify-content:flex-end;margin-bottom:10px">
-          <span class="badge" id="tier-progress"><span data-i18n="cpp.tr.progress">1 of 3 required</span></span>
-        </div>
+      <div class="flex-row" style="justify-content:flex-end;margin-bottom:10px">
+        <span class="badge" id="tier-progress"><span class="badge__dot"></span><span data-i18n="cpp.tr.progress">1 of 3 required</span></span>
+      </div>
 
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-        <div class="review-row" style="padding:14px 16px">
-          <div class="review-row__item">
-            <div class="review-row__head">
-              <h3 class="review-row__name">Early Bird</h3>
-              <a class="review-row__action" data-tier-open href="#" data-i18n="cpp.edit">Edit</a>
-            </div>
-            <div class="review-row__value">
-              <span class="badge badge--success"><span data-i18n="cpp.tr.created">Created</span></span>
-              <div class="meta-cell__value">$25</div>
-              <div class="data-list__meta" style="margin-top:6px">Coastline EP · digital · 1 perk</div>
-            </div>
-          </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="card__head"><h3 class="card__title">Early Bird</h3><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.tr.created">Created</span></span></div>
+          <div class="meta-cell__value">$25</div>
+          <div class="data-list__meta" style="margin-top:6px">Coastline EP · digital · 1 perk</div>
+          <a class="card__link mt-8" data-tier-open href="#" data-i18n="cpp.edit">Edit</a>
         </div>
         <button type="button" class="upload-tile" data-tier-open style="min-height:120px">
           <span class="upload-tile__icon">＋</span>
@@ -477,53 +470,45 @@
           <span class="upload-tile__title" data-i18n="cpp.tr.add">Add tier</span>
           <span class="upload-tile__hint">Tier 3</span>
         </button>
-        </div>
       </div>
 
       <!-- Edit tier panel (spec: right slide-out; prototype shows it inline below) -->
-      <div class="review-row hidden" id="tier-editor" style="margin-top:16px;padding:18px">
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.tr.edit">Edit tier</h3>
-            <a class="review-row__action" data-tier-close href="#" data-i18n="cpp.tr.cancel">Cancel</a>
+      <div class="card hidden" id="tier-editor" style="margin-top:16px;padding:18px">
+        <div class="card__head"><h3 class="card__title" data-i18n="cpp.tr.edit">Edit tier</h3><a class="card__link" data-tier-close href="#" data-i18n="cpp.tr.cancel">Cancel</a></div>
+        <div class="field" style="display:grid;grid-template-columns:2fr 1fr;gap:14px">
+          <div><label class="field__label"><span data-i18n="cpp.tr.name">Tier name</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label><input class="input" placeholder="e.g. Early Bird" data-i18n-placeholder="cpp.tr.name.ph"></div>
+          <div><label class="field__label"><span data-i18n="cpp.tr.price">Price · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label><input class="input" placeholder="0"></div>
+        </div>
+        <div class="field">
+          <div class="field__label"><span data-i18n="cpp.tr.whats">What's in this tier?</span> <span class="text-sub" data-i18n="cpp.tr.whats.sub">· Merch items</span></div>
+          <input class="input" placeholder="Search your products..." data-i18n-placeholder="cpp.tr.search">
+          <div class="data-list mt-8">
+            <div class="data-list__row">
+              <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">Coastline EP — digital download</div></div></div>
+              <a class="card__link" href="#">×</a>
+            </div>
           </div>
-          <div class="review-row__value">
-            <div class="form-grid" style="grid-template-columns:2fr 1fr">
-              <div><label class="field__label"><span data-i18n="cpp.tr.name">Tier name</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label><input class="input" placeholder="e.g. Early Bird" data-i18n-placeholder="cpp.tr.name.ph"></div>
-              <div><label class="field__label"><span data-i18n="cpp.tr.price">Price · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label><div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" placeholder="0"></div></div>
+        </div>
+        <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div><label class="field__label" data-i18n="cpp.tr.slots">Supporter slots</label><input class="input" value="0"></div>
+          <div>
+            <div class="field__label" data-i18n="cpp.tr.avail">Availability</div>
+            <div class="flex-row" style="gap:16px;font-family:var(--font-ui);font-size: var(--fs-13)">
+              <label class="flex-row" style="gap:6px"><input type="radio" name="tier-avail" checked> <span data-i18n="cpp.tr.avail.unlimited">Unlimited</span></label>
+              <label class="flex-row" style="gap:6px"><input type="radio" name="tier-avail"> <span data-i18n="cpp.tr.avail.limited">Limited</span></label>
             </div>
-            <div class="field">
-              <div class="field__label"><span data-i18n="cpp.tr.whats">What's in this tier?</span> <span class="text-sub" data-i18n="cpp.tr.whats.sub">· Merch items</span></div>
-              <input class="input" placeholder="Search your products..." data-i18n-placeholder="cpp.tr.search">
-              <div class="data-list mt-8">
-                <div class="data-list__row">
-                  <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title">Coastline EP — digital download</div></div></div>
-                  <a class="card__link" href="#">×</a>
-                </div>
-              </div>
-            </div>
-            <div class="form-grid">
-              <div><label class="field__label" data-i18n="cpp.tr.slots">Supporter slots</label><input class="input" value="0"></div>
-              <div>
-                <div class="field__label" data-i18n="cpp.tr.avail">Availability</div>
-                <div class="flex-row" style="gap:16px;font-family:var(--font-ui);font-size: var(--fs-13)">
-                  <label class="flex-row" style="gap:6px"><input type="radio" name="tier-avail" checked> <span data-i18n="cpp.tr.avail.unlimited">Unlimited</span></label>
-                  <label class="flex-row" style="gap:6px"><input type="radio" name="tier-avail"> <span data-i18n="cpp.tr.avail.limited">Limited</span></label>
-                </div>
-              </div>
-            </div>
-            <div class="field">
-              <div class="field__label"><span data-i18n="cpp.tr.perks">Perks</span> <span class="text-sub" data-i18n="cpp.tr.perks.sub">· Extras beyond merch and slots</span></div>
-              <input class="input" placeholder="e.g. Exclusive Discord access" data-i18n-placeholder="cpp.tr.perks.eg">
-              <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tr.perks.add">＋ Add perk</button>
-            </div>
-            <div class="flex-row" style="justify-content:space-between;margin-top:12px">
-              <span class="text-sub" data-i18n="cpp.tr.summary">Untitled · $0</span>
-              <div class="flex-row" style="gap:8px">
-                <button class="btn btn--outline btn--sm" data-tier-close data-i18n="cpp.tr.cancel">Cancel</button>
-                <button class="btn btn--primary btn--sm" data-tier-close data-i18n="cpp.tr.save">Save tier</button>
-              </div>
-            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field__label"><span data-i18n="cpp.tr.perks">Perks</span> <span class="text-sub" data-i18n="cpp.tr.perks.sub">· Extras beyond merch and slots</span></div>
+          <input class="input" placeholder="e.g. Exclusive Discord access" data-i18n-placeholder="cpp.tr.perks.eg">
+          <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tr.perks.add">＋ Add perk</button>
+        </div>
+        <div class="flex-row" style="justify-content:space-between;margin-top:12px">
+          <span class="text-sub" data-i18n="cpp.tr.summary">Untitled · $0</span>
+          <div class="flex-row" style="gap:8px">
+            <button class="btn btn--outline btn--sm" data-tier-close data-i18n="cpp.tr.cancel">Cancel</button>
+            <button class="btn btn--primary btn--sm" data-tier-close data-i18n="cpp.tr.save">Save tier</button>
           </div>
         </div>
       </div>
@@ -541,10 +526,10 @@
         </div>
       </div>
 
-      <div class="form-grid form-section form-section--outlined">
+      <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
           <label class="field__label"><span data-i18n="cpp.po.price">Price per unit · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-          <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" placeholder="29.99" value="29.99"></div>
+          <input class="input" placeholder="29.99" value="29.99">
         </div>
         <div>
           <label class="field__label"><span data-i18n="cpp.po.min">Minimum orders</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
@@ -553,7 +538,7 @@
         </div>
       </div>
 
-      <div class="form-grid form-section form-section--outlined">
+      <div class="field" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
           <label class="field__label"><span data-i18n="cpp.po.deadline">Pre-order deadline</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
           <input class="input" type="number" placeholder="30" value="30">
@@ -566,7 +551,7 @@
         </div>
       </div>
 
-      <div class="field form-section form-section--outlined">
+      <div class="field">
         <div class="field__label"><span data-i18n="cpp.po.included">What's included</span> <span class="text-sub" data-i18n="cpp.po.included.sub">· Merch items</span> <span class="text-sub" data-i18n="cpp.required">· required</span></div>
         <div class="data-list">
           <div class="data-list__row">
@@ -587,146 +572,136 @@
       <h1 class="wizard__step-title" data-i18n="cpp.s4.h1">Ready to publish.</h1>
       <p class="wizard__step-sub" data-i18n="cpp.s4.sub">Verify what fans will see and what kicks off behind the scenes. You can step back into any section without losing progress.</p>
 
-      <div class="review-row">
-        <!-- About summary -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.about">About</h3>
-            <a class="review-row__action" data-goto-step="about" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.type">Project type</div><div class="meta-cell__value" id="rv-type" data-i18n="cpp.golive.title">Go live</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.title">Title</div><div class="meta-cell__value">Coastline EP</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s1.content">Content type</div><div class="meta-cell__value" data-i18n="cpp.content.song">Song</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.iprents">IP rentals</div><div class="meta-cell__value" data-i18n="cpp.s4.none">None</div></div>
-          </div>
+      <!-- About summary -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.step.about">About</h3>
+          <a class="card__link" data-goto-step="about" href="#" data-i18n="cpp.s4.edit">Edit →</a>
         </div>
-
-        <!-- Showcase summary -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.showcase">Showcase</h3>
-            <a class="review-row__action" data-goto-step="showcase" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:flex;flex-direction:column;gap:6px">
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s2.story">Story</span><span class="badge badge--success"><span data-i18n="cpp.s4.complete">✓ Completed</span></span></div>
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Thumbnail · poster · banner · gallery</span><span class="badge badge--success"><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.trailer">Video</span><span class="badge badge--neutral"><span data-i18n="cpp.s4.no-trailer">Not uploaded</span></span></div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Go live -->
-        <div class="review-row__item hidden" data-review-mid="golive">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.step.money">Monetization</h3>
-            <a class="review-row__action" data-goto-step="monetization" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.access">Access</div><div class="meta-cell__value" data-i18n="cpp.ppv.title">Pay per view</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.price">Price</div><div class="meta-cell__value">$12.00</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s3.fee">Platform fee</div><div class="meta-cell__value">5% + 3%</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s3.ads">Ads</div><div class="meta-cell__value" data-i18n="cpp.s4.off">Off</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.brand">Brand deals</div><div class="meta-cell__value" data-i18n="cpp.s4.brand-val">1 attached</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.s4.publish">Publish</div><div class="meta-cell__value" data-i18n="cpp.s3.now">Immediately</div></div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Fund it first -->
-        <div class="review-row__item hidden" data-review-mid="fund">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.fund.title">Funding</h3>
-            <a class="review-row__action" data-goto-step="funding" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px">
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.goal">Goal</div><div class="meta-cell__value">$20,000</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.length">Length</div><div class="meta-cell__value">30 days</div></div>
-              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.dist">Distribution</div><div class="meta-cell__value">10% · 100 slots</div></div>
-            </div>
-            <div class="flex-row" style="justify-content:space-between;border-top:1px solid var(--border-soft);padding-top:10px">
-              <span class="meta-cell__label" data-i18n="cpp.rv.tiers.title">Tiers</span>
-              <span class="badge badge--success"><span data-i18n="cpp.rv.tiers.val">3 tiers</span></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Middle summary · Pre-order -->
-        <div class="review-row__item hidden" data-review-mid="preorder">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.pre.title">Pre-order</h3>
-            <a class="review-row__action" data-goto-step="preorder" href="#" data-i18n="cpp.s4.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
-            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.price">Unit price</div><div class="meta-cell__value">$29.99</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.min">Min orders</div><div class="meta-cell__value">100</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.deadline">Deadline</div><div class="meta-cell__value">30 days</div></div>
-            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.delivery">Expected delivery</div><div class="meta-cell__value">—</div></div>
-          </div>
-        </div>
-
-        <!-- Delivery timeline · Fund / Pre-order only -->
-        <div class="review-row__item hidden" data-review-delivery>
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.delivery">Delivery timeline</h3>
-          </div>
-          <div class="review-row__value">
-            <div class="data-list__meta" style="margin-bottom:10px" data-i18n="cpp.rv.delivery.sub">When backers can expect the final product.</div>
-            <div class="field" style="max-width:280px">
-              <label class="field__label"><span data-i18n="cpp.rv.delivery.expected">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
-              <input class="input" type="date">
-            </div>
-            <div class="field__label" style="margin-top:8px" data-i18n="cpp.rv.milestones">Milestones</div>
-            <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
-              <div class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.ms1">Campaign funded</span></div>
-              <div class="flex-row" style="gap:8px"><span class="text-sub">◔</span><span data-i18n="cpp.rv.ms2">Pre-production complete</span></div>
-              <div class="flex-row" style="gap:8px"><span class="text-sub">○</span><span data-i18n="cpp.rv.ms3">Delivery to backers</span></div>
-            </div>
-            <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
-          </div>
-        </div>
-
-        <!-- What happens next · per type -->
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="cpp.rv.next.title">What happens next</h3>
-          </div>
-          <div class="review-row__value">
-            <ul class="hidden" data-review-next="golive" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl1">Your project goes live immediately (or at the scheduled time).</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl2">Fans watch, or pay per view / unlock paid content.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl3">You earn from views, pay-per-view, and ad placements.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl4">5% platform fee + 3% Stripe on revenue.</span></li>
-            </ul>
-            <ul class="hidden" data-review-next="fund" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd1">Campaign goes live.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd2">Fans back your project.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd3">If the goal is met, funds are released.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd4">If not, everyone is refunded.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd5">5% platform fee + 3% Stripe (only if funded).</span></li>
-            </ul>
-            <ul class="hidden" data-review-next="preorder" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po1">Pre-orders open.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po2">Fans commit to buy.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po3">If the threshold is met, you deliver.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po4">If not, everyone is refunded.</span></li>
-              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po5">5% platform fee + 3% Stripe (only if threshold met).</span></li>
-            </ul>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+          <div><div class="meta-cell__label" data-i18n="cpp.s1.type">Project type</div><div class="meta-cell__value" id="rv-type" data-i18n="cpp.golive.title">Go live</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s1.title">Title</div><div class="meta-cell__value">Coastline EP</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s1.content">Content type</div><div class="meta-cell__value" data-i18n="cpp.content.song">Song</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s4.iprents">IP rentals</div><div class="meta-cell__value" data-i18n="cpp.s4.none">None</div></div>
         </div>
       </div>
 
+      <!-- Showcase summary -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.step.showcase">Showcase</h3>
+          <a class="card__link" data-goto-step="showcase" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s2.story">Story</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.complete">✓ Completed</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Thumbnail · poster · banner · gallery</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.trailer">Video</span><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="cpp.s4.no-trailer">Not uploaded</span></span></div>
+        </div>
+      </div>
+
+      <!-- Middle summary · Go live -->
+      <div class="card hidden" data-review-mid="golive" style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.step.money">Monetization</h3>
+          <a class="card__link" data-goto-step="monetization" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <div><div class="meta-cell__label" data-i18n="cpp.s4.access">Access</div><div class="meta-cell__value" data-i18n="cpp.ppv.title">Pay per view</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s4.price">Price</div><div class="meta-cell__value">$12.00</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s3.fee">Platform fee</div><div class="meta-cell__value">5% + 3%</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s3.ads">Ads</div><div class="meta-cell__value" data-i18n="cpp.s4.off">Off</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s4.brand">Brand deals</div><div class="meta-cell__value" data-i18n="cpp.s4.brand-val">1 attached</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s4.publish">Publish</div><div class="meta-cell__value" data-i18n="cpp.s3.now">Immediately</div></div>
+        </div>
+      </div>
+
+      <!-- Middle summary · Fund it first -->
+      <div class="card hidden" data-review-mid="fund" style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.rv.fund.title">Funding</h3>
+          <a class="card__link" data-goto-step="funding" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px">
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.goal">Goal</div><div class="meta-cell__value">$20,000</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.length">Length</div><div class="meta-cell__value">30 days</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.dist">Distribution</div><div class="meta-cell__value">10% · 100 slots</div></div>
+        </div>
+        <div class="flex-row" style="justify-content:space-between;border-top:1px solid var(--border-soft);padding-top:10px">
+          <span class="meta-cell__label" data-i18n="cpp.rv.tiers.title">Tiers</span>
+          <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.rv.tiers.val">3 tiers</span></span>
+        </div>
+      </div>
+
+      <!-- Middle summary · Pre-order -->
+      <div class="card hidden" data-review-mid="preorder" style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.rv.pre.title">Pre-order</h3>
+          <a class="card__link" data-goto-step="preorder" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.price">Unit price</div><div class="meta-cell__value">$29.99</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.min">Min orders</div><div class="meta-cell__value">100</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.deadline">Deadline</div><div class="meta-cell__value">30 days</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.delivery">Expected delivery</div><div class="meta-cell__value">—</div></div>
+        </div>
+      </div>
+
+      <!-- Delivery timeline · Fund / Pre-order only -->
+      <div class="card hidden" data-review-delivery style="margin-bottom:14px">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="cpp.rv.delivery">Delivery timeline</h3>
+        </div>
+        <div class="data-list__meta" style="margin-bottom:10px" data-i18n="cpp.rv.delivery.sub">When backers can expect the final product.</div>
+        <div class="field" style="max-width:280px">
+          <label class="field__label"><span data-i18n="cpp.rv.delivery.expected">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+          <input class="input" type="date">
+        </div>
+        <div class="field__label" style="margin-top:8px" data-i18n="cpp.rv.milestones">Milestones</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <div class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.ms1">Campaign funded</span></div>
+          <div class="flex-row" style="gap:8px"><span class="text-sub">◔</span><span data-i18n="cpp.rv.ms2">Pre-production complete</span></div>
+          <div class="flex-row" style="gap:8px"><span class="text-sub">○</span><span data-i18n="cpp.rv.ms3">Delivery to backers</span></div>
+        </div>
+        <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
+      </div>
+
+      <!-- What happens next · per type -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="card__head"><h3 class="card__title" data-i18n="cpp.rv.next.title">What happens next</h3></div>
+        <ul class="hidden" data-review-next="golive" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl1">Your project goes live immediately (or at the scheduled time).</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl2">Fans watch, or pay per view / unlock paid content.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl3">You earn from views, pay-per-view, and ad placements.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl4">5% platform fee + 3% Stripe on revenue.</span></li>
+        </ul>
+        <ul class="hidden" data-review-next="fund" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd1">Campaign goes live.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd2">Fans back your project.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd3">If the goal is met, funds are released.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd4">If not, everyone is refunded.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd5">5% platform fee + 3% Stripe (only if funded).</span></li>
+        </ul>
+        <ul class="hidden" data-review-next="preorder" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po1">Pre-orders open.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po2">Fans commit to buy.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po3">If the threshold is met, you deliver.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po4">If not, everyone is refunded.</span></li>
+          <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po5">5% platform fee + 3% Stripe (only if threshold met).</span></li>
+        </ul>
+      </div>
+
       <!-- Pre-flight check -->
-      <div class="field mt-16 form-section form-section--outlined">
+      <div class="field mt-16">
         <div class="field__label" data-i18n="cpp.s4.preflight">Pre-flight check</div>
         <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk1">Required fields complete (Title · Category · Description)</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk2">Required images uploaded · story meets minimum</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between" data-review-pf="golive"><span data-i18n="cpp.rv.pf.mid.golive">Monetization set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.mid.fund">Funding set · budget totals 100%</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.tiers">3+ tiers created</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.mid.pre">Pre-order set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="delivery"><span data-i18n="cpp.rv.pf.delivery">Delivery timeline clear</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
-          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.rv.pf.ip">IP rental linked (if other IP is used)</span><span class="badge"><span data-i18n="cpp.s4.na">N/A</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk1">Required fields complete (Title · Category · Description)</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk2">Required images uploaded · story meets minimum</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between" data-review-pf="golive"><span data-i18n="cpp.rv.pf.mid.golive">Monetization set</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.mid.fund">Funding set · budget totals 100%</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.tiers">3+ tiers created</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.mid.pre">Pre-order set</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="delivery"><span data-i18n="cpp.rv.pf.delivery">Delivery timeline clear</span><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.rv.pf.ip">IP rental linked (if other IP is used)</span><span class="badge"><span class="badge__dot"></span><span data-i18n="cpp.s4.na">N/A</span></span></div>
         </div>
       </div>
     </section>
@@ -743,9 +718,9 @@
 
 </div>
 
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="partials/wizard-chrome.js?v=20260716d"></script>
+<script src="js/icons.js?v=20260709h"></script>
+<script src="js/i18n.js?v=20260709h"></script>
+<script src="partials/wizard-chrome.js?v=20260709h"></script>
 <script>
 (function () {
   const FLOWS = {
@@ -922,7 +897,7 @@
   render();
 })();
 </script>
-<script src="js/reveal.js?v=20260716d"></script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/reveal.js?v=20260709h"></script>
+<script src="js/devtools.js?v=20260709h"></script>
 </body>
 </html>

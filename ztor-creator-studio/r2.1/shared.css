@@ -6,7 +6,7 @@
    - Horizontal topbar (canonical ztor-header pattern, 80 px relative)
      with hover-open dropdown nav panels for IP Bank / E-Shop / Fans
    - Editorial bento layout for Dashboard
-   - Orange as structural element (active-nav underline, hero accents,
+   - Orange as structural element (active-nav underline, sticky-note accents,
      KPI highlight tile)
    - Larger Geist display for page headlines
    - Denser tables with row dividers, fewer card frames
@@ -246,7 +246,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-10); align-items: start;
   padding: 9px var(--sp-8); border-radius: var(--radius-md); text-decoration: none; color: var(--foreground);
 }
-.app-notif__item:hover { background: var(--accent); }
+.app-notif__item:hover { background: var(--muted); }
 .app-notif__item[data-unread="true"] { background: color-mix(in srgb, var(--primary) 7%, transparent); }
 .app-notif__item[data-unread="true"]:hover { background: color-mix(in srgb, var(--primary) 11%, var(--muted)); }
 .app-notif__item-icon {
@@ -277,7 +277,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   display: block; text-align: center; padding: 11px; border-top: 1px solid var(--border);
   font-size: var(--fs-13); color: var(--foreground-muted); text-decoration: none;
 }
-.app-notif__foot:hover { color: var(--foreground); background: var(--accent); }
+.app-notif__foot:hover { color: var(--foreground); background: var(--muted); }
 
 /* Sidebar mode: open as a fixed flyout to the right of the rail (the rail is
    overflow-y:auto and would clip an absolutely-positioned child). */
@@ -397,7 +397,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   color: var(--foreground-muted); text-decoration: none;
   transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
 }
-.app-topbar__back:hover { background: var(--accent); color: var(--foreground); }
+.app-topbar__back:hover { background: var(--muted); color: var(--foreground); }
 .app-topbar__context {
   display: inline-flex; align-items: center; gap: var(--sp-6);
   padding: var(--sp-4) var(--sp-10) var(--sp-4) var(--sp-8); border-radius: 999px;
@@ -424,7 +424,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   color: var(--foreground-muted); text-decoration: none;
   font-size: var(--fs-13); font-weight: var(--fw-medium);
 }
-.app-sidebar__back:hover { background: var(--accent); color: var(--foreground); }
+.app-sidebar__back:hover { background: var(--muted); color: var(--foreground); }
 .app-sidebar__context { display: flex; flex-direction: column; gap: 1px; padding: var(--sp-6) var(--sp-12) var(--sp-12); }
 .app-sidebar__context-label { font-size: var(--fs-11); color: var(--muted-foreground); }
 .app-sidebar__context-name { font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--foreground); }
@@ -461,7 +461,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
  *   .alert     → ds-components/alert.css       (was .alert-card + .alert-row)
  *   .kpi       → ds-components/kpi.css
  *   .data-list → ds-components/data-list.css
- *   .info-banner→ ds-components/info-banner.css
+ *   .stickynote→ ds-components/stickynote.css
  *   .tabs      → ds-components/tabs.css
  *   .chip      → ds-components/chip.css        (with .filter-row layout)
  *   .linechart → ds-components/chart.css       (with .stacked-bar + .source-list)
@@ -802,7 +802,38 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .section-head__sub { color: var(--muted-foreground); font-size: var(--fs-13); }
 
-/* .input / .textarea / .select 已搬到 ds-components/input.css（2026-07-10，元件三件套整併）。 */
+.input, .textarea, .select {
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  padding: 9px var(--sp-12);
+  border-radius: var(--radius);
+  border: 0;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--border);
+  color: var(--foreground);
+  width: 100%;
+  outline: none;
+  transition: box-shadow 150ms ease;
+}
+.input:focus, .textarea:focus, .select:focus {
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
+}
+.textarea { min-height: 100px; resize: vertical; }
+.input--with-prefix { padding-left: var(--sp-32); }
+
+/* Native <select> styled to match the design system: drop the OS arrow and
+   draw our own chevron with comfortable right padding (the native arrow
+   crowded the edge and looked broken). */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+}
+
 
 /* ---------- Wizard frame ---------- */
 /* §5.2.4 建立流程框架 v3（2026-06-24，對齊 .main「灰 canvas 上白色圓角卡」語言）：
@@ -825,7 +856,6 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   border-radius: 0 0 var(--radius-shell) var(--radius-shell);   /* 圓角歸 content 卡自己（下緣）*/
   box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.12);             /* 浮在灰 footer 上的向下投影 */
 }
-.wizard__sheet--sectioned { background: var(--surface-page); }
 .wizard__top {
   position: sticky;
   top: 0;
@@ -878,7 +908,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   border: 0; background: transparent; cursor: pointer;
   color: var(--foreground); border-radius: var(--radius-sm);
 }
-.wizard__back:hover { background: var(--accent); }
+.wizard__back:hover { background: var(--muted); }
 .wizard__back .ztor-icon { width: 22px; height: 22px; }
 .wizard__close {
   font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium);
@@ -913,7 +943,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   padding: 5px var(--sp-12); border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border);
   background: var(--card);
 }
-.wizard__save-status--button:hover { background: var(--accent); }
+.wizard__save-status--button:hover { background: var(--muted); }
 .wizard__save-status--button .wizard__save-status__dot { display: none; }
 /* 自動儲存狀態與預覽鈕之間加大間距（2026-06-23 使用者指定）：在 8px gap 外再補右邊距 */
 .wizard__top-actions .wizard__save-status,
@@ -1097,7 +1127,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
 }
 .view-switch__btn + .view-switch__btn { border-left: 1px solid var(--border); }
-.view-switch__btn:hover { background: var(--accent); color: var(--foreground); }
+.view-switch__btn:hover { background: var(--muted); color: var(--foreground); }
 .view-switch__btn--active { background: var(--foreground); color: var(--background); }
 .view-switch__btn .ztor-icon { width: 18px; height: 18px; }
 
@@ -1150,7 +1180,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .project-bar__fill--success { background: var(--status-success); }
 /* data-list rows are clickable anchors on this page → strip link chrome, add hover */
 a.data-list__row { text-decoration: none; color: inherit; }
-a.data-list__row:hover { background: var(--accent); }
+a.data-list__row:hover { background: var(--muted); }
 a.data-list__row:hover .data-list__title { color: var(--foreground); }
 
 /* ---------- Responsive ---------- */

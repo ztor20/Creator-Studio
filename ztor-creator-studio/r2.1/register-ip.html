@@ -1,31 +1,76 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Register External IP · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/review-row.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260709h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260709h">
+<link rel="stylesheet" href="shared.css?v=20260709h">
 <style>
-  /* register-ip 專屬 layout hooks，非跨頁重用，比照 create-event 留頁內。
-     區段骨架／多選標籤／用途多選卡／$ 前綴／% 與 months 後綴／Review 摘要列已改用 ds-components 的
-     form-section／chip／selection-card／amount-field／review-row（2026-07-10、2026-07-11）。 */
+  /* register-ip 專屬 layout hooks（欄位排版、多選標籤、版稅輸入、摘要列），非跨頁重用，比照 create-event 留頁內。 */
+  .ri-block { margin-bottom: 28px; }
+  .ri-block__title { font-family:var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-semibold); margin:0 0 2px; }
+  .ri-block__sub { font-size: var(--fs-12); color:var(--muted-foreground); margin:0 0 12px; }
+  .ri-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+  /* 多選標籤（允許用途 / 授權地區）：點擊 toggle，選中描邊高亮。沿用 selection-card 風格但為輕量 chip。 */
+  .ri-tags { display:flex; flex-wrap:wrap; gap:8px; }
+  .ri-tag {
+    appearance:none; border:0; cursor:pointer; font:inherit;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; border-radius:var(--radius-pill);
+    background:var(--card); color:var(--foreground-muted);
+    box-shadow:0 0 0 1px var(--border);
+    font-family:var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium);
+    transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+  .ri-tag:hover { color:var(--foreground); }
+  .ri-tag--active {
+    background:color-mix(in srgb, var(--primary) 16%, var(--card));
+    color:var(--primary-foreground);
+    box-shadow:0 0 0 2px var(--primary);
+  }
+  .ri-tag__check { display:none; width:13px; height:13px; }
+  .ri-tag--active .ri-tag__check { display:inline-block; }
+
+  /* 允許用途：標題＋描述兩行的卡式多選（比 chip 多一行釋義） */
+  .ri-usage { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ri-usage__card {
+    appearance:none; border:0; cursor:pointer; font:inherit; text-align:left;
+    display:flex; flex-direction:column; gap:3px;
+    padding:13px 15px; border-radius:var(--radius-md);
+    background:var(--card); color:var(--foreground);
+    box-shadow:0 0 0 1px var(--border);
+    transition:background .15s ease, box-shadow .15s ease;
+  }
+  .ri-usage__card:hover { box-shadow:0 0 0 1px var(--muted-foreground); }
+  .ri-usage__card--active { background:var(--card); box-shadow:none; outline:1px solid var(--primary); outline-offset:-1px; }   /* 橘色線框 1px，與 selection-card/radio-card 一致（2026-06-26）*/
+  .ri-usage__title { font-family:var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-semibold); }
+  .ri-usage__desc { font-size: var(--fs-12); color:var(--muted-foreground); line-height:1.4; }
+
+  /* 版稅 / 金額輸入：前後綴（% 後綴、$ 前綴）。沿用 .input，僅加包裹定位。 */
+  .ri-affix { position:relative; }
+  .ri-affix__input { width:100%; }
+  .ri-affix--suffix .ri-affix__input { padding-right:34px; }
+  .ri-affix--prefix .ri-affix__input { padding-left:26px; }
+  .ri-affix__sign { position:absolute; top:50%; transform:translateY(-50%); color:var(--muted-foreground); font-size: var(--fs-14); pointer-events:none; }
+  .ri-affix--suffix .ri-affix__sign { right:14px; }
+  .ri-affix--prefix .ri-affix__sign { left:12px; }
+
+  /* 定價區（僅 List for rental 時顯示） */
+  .ri-pricing[hidden] { display:none; }
 
   /* ＊ 必填 inline 驗證（檢核 §6①）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
   .ri-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--destructive); }
@@ -33,21 +78,33 @@
 
   /* 上傳格已填狀態（.upload-tile.is-filled）已移至 ds-components/upload-tile.css。 */
 
+  /* Review 摘要列：label / value 兩欄 */
+  .ri-summary { display:flex; flex-direction:column; gap:10px; }
+  .ri-summary__row { display:grid; grid-template-columns:130px 1fr; gap:12px; align-items:baseline; }
+  .ri-summary__k { font-size: var(--fs-12); color:var(--muted-foreground); }
+  .ri-summary__v { font-size: var(--fs-13); color:var(--foreground); }
+  .ri-summary__v.is-empty { color:var(--muted-foreground); font-style:italic; }
+
   /* 上架狀態提示條（Review）：依 List for rental / Keep private 切換語氣 */
   .ri-list-note { margin-top:12px; }
 
-  /* 全頁無卡片化（使用者指定 2026-06-25）：review 摘要 .card 去卡面、改底線分隔列；.form-section 本就無卡片。 */
+  /* 全頁無卡片化（使用者指定 2026-06-25）：review 摘要 .card 去卡面、改底線分隔列；ri-block 本就無卡片。 */
   .card { background: transparent !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; }
   .card:has(.card__head) { padding: 14px 0 !important; border-bottom: 1px solid var(--border-soft) !important; margin-bottom: 0 !important; }
   .card__head { margin-bottom: 4px; }
   .card__title { font-size: var(--fs-15); font-weight: var(--fw-medium); }
   /* 上內距改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09） */
+
+  @media (max-width:640px){
+    .ri-grid-2, .ri-usage { grid-template-columns:1fr; }
+    .ri-summary__row { grid-template-columns:1fr; gap:2px; }
+  }
 </style>
 </head>
 <body>
 <div class="wizard">
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬）；右＝自動儲存。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet">
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -83,11 +140,9 @@
       <p class="wizard__step-sub" data-i18n="ri.s1.sub">Record an existing right you own from outside Ztor. Projects you publish on Ztor are recorded automatically — this is for everything else.</p>
 
       <!-- IP Type · 單選卡（六型）。taxonomy 為產品待確認（PRD 列 Character/Visual，截圖第六項 Other）。 -->
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.type">IP type</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
-          <p class="form-section__sub" data-i18n="ri.type.note">Sample taxonomy — final categories pending product alignment.</p>
-        </div>
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.type">IP type</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.type.note">Sample taxonomy — final categories pending product alignment.</p>
         <div class="selection-grid" id="ri-type-grid">
           <button type="button" class="selection-card" data-choice="story"><span class="selection-card__title" data-i18n="ri.type.story">Story World</span><span class="selection-card__sub" data-i18n="ri.type.story-sub">Characters, settings, lore</span></button>
           <button type="button" class="selection-card" data-choice="music"><span class="selection-card__title" data-i18n="ri.type.music">Music</span><span class="selection-card__sub" data-i18n="ri.type.music-sub">Songs, recordings, libraries</span></button>
@@ -96,9 +151,9 @@
           <button type="button" class="selection-card" data-choice="event"><span class="selection-card__title" data-i18n="ri.type.event">Event Format</span><span class="selection-card__sub" data-i18n="ri.type.event-sub">Show or experience concept</span></button>
           <button type="button" class="selection-card" data-choice="other"><span class="selection-card__title" data-i18n="ri.type.other">Other</span><span class="selection-card__sub" data-i18n="ri.type.other-sub">Something else you own</span></button>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section form-section--outlined">
+      <div class="ri-block">
         <div class="field">
           <label class="field__label"><span data-i18n="ri.name">IP name</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
           <input class="input" data-ri="name" data-required maxlength="100" placeholder="e.g., Naruto Story World" data-i18n-placeholder="ri.name.ph">
@@ -111,19 +166,17 @@
           <div class="field__hint" data-ri-counter="desc">0/2000 characters, min 10 required</div>
           <p class="ri-field-error" data-i18n="ri.err.desc">Description is required (10–2000 characters).</p>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.proof">Proof of ownership</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
-          <p class="form-section__sub" data-i18n="ri.proof.sub">Contracts, certificates, or creation evidence. Helps verification — verification rules pending product alignment.</p>
-        </div>
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.proof">Proof of ownership</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.proof.sub">Contracts, certificates, or creation evidence. Helps verification — verification rules pending product alignment.</p>
         <div class="upload-tile upload-tile--file" data-ri-asset="proof">
           <span class="upload-tile__icon"><i data-lucide="file-check" class="ztor-icon"></i></span>
           <span class="upload-tile__title" data-i18n="ri.proof.cta">Upload proof</span>
           <span class="upload-tile__hint" data-i18n="ri.proof.hint">PDF, JPG or PNG · up to 10MB per file</span>
         </div>
-      </section>
+      </div>
     </section>
 
     <!-- STEP 2 · Usage Rules -->
@@ -131,37 +184,33 @@
       <h1 class="wizard__step-title" data-i18n="ri.s2.h1">How can it be used?</h1>
       <p class="wizard__step-sub" data-i18n="ri.s2.sub">Set what renters are allowed to do and where the license applies.</p>
 
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.usage">Permitted usage</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
-          <p class="form-section__sub" data-i18n="ri.usage.sub">Select at least one.</p>
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.usage">Permitted usage</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.usage.sub">Select at least one.</p>
+        <div class="ri-usage" id="ri-usage">
+          <button type="button" class="ri-usage__card" data-usage="streaming"><span class="ri-usage__title" data-i18n="ri.usage.streaming">Streaming (VOD/PPV)</span><span class="ri-usage__desc" data-i18n="ri.usage.streaming-d">Renters can create video content for streaming.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="adaptation"><span class="ri-usage__title" data-i18n="ri.usage.adaptation">Adaptation (derivative works)</span><span class="ri-usage__desc" data-i18n="ri.usage.adaptation-d">New stories, characters, or content based on your IP.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="promotion"><span class="ri-usage__title" data-i18n="ri.usage.promotion">Promotion only</span><span class="ri-usage__desc" data-i18n="ri.usage.promotion-d">Marketing and promotional use, no standalone content.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="merch"><span class="ri-usage__title" data-i18n="ri.usage.merch">Merchandise</span><span class="ri-usage__desc" data-i18n="ri.usage.merch-d">Physical or digital products featuring your IP.</span></button>
+          <button type="button" class="ri-usage__card" data-usage="live"><span class="ri-usage__title" data-i18n="ri.usage.live">Live events</span><span class="ri-usage__desc" data-i18n="ri.usage.live-d">Concerts, screenings, meetups using your IP.</span></button>
         </div>
-        <div class="selection-grid" id="ri-usage">
-          <button type="button" class="selection-card" data-usage="streaming"><span class="selection-card__title" data-i18n="ri.usage.streaming">Streaming (VOD/PPV)</span><span class="selection-card__sub" data-i18n="ri.usage.streaming-d">Renters can create video content for streaming.</span></button>
-          <button type="button" class="selection-card" data-usage="adaptation"><span class="selection-card__title" data-i18n="ri.usage.adaptation">Adaptation (derivative works)</span><span class="selection-card__sub" data-i18n="ri.usage.adaptation-d">New stories, characters, or content based on your IP.</span></button>
-          <button type="button" class="selection-card" data-usage="promotion"><span class="selection-card__title" data-i18n="ri.usage.promotion">Promotion only</span><span class="selection-card__sub" data-i18n="ri.usage.promotion-d">Marketing and promotional use, no standalone content.</span></button>
-          <button type="button" class="selection-card" data-usage="merch"><span class="selection-card__title" data-i18n="ri.usage.merch">Merchandise</span><span class="selection-card__sub" data-i18n="ri.usage.merch-d">Physical or digital products featuring your IP.</span></button>
-          <button type="button" class="selection-card" data-usage="live"><span class="selection-card__title" data-i18n="ri.usage.live">Live events</span><span class="selection-card__sub" data-i18n="ri.usage.live-d">Concerts, screenings, meetups using your IP.</span></button>
-        </div>
-      </section>
+      </div>
 
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.territory">Territory</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
-          <p class="form-section__sub" data-i18n="ri.territory.sub">Worldwide covers all regions. Deselect to choose specific territories. (Worldwide-vs-region exclusivity pending product alignment.)</p>
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.territory">Territory</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+        <p class="ri-block__sub" data-i18n="ri.territory.sub">Worldwide covers all regions. Deselect to choose specific territories. (Worldwide-vs-region exclusivity pending product alignment.)</p>
+        <div class="ri-tags" id="ri-territory">
+          <button type="button" class="ri-tag" data-territory="worldwide"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.world">Worldwide</span></button>
+          <button type="button" class="ri-tag" data-territory="hk"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.hk">Hong Kong</span></button>
+          <button type="button" class="ri-tag" data-territory="tw"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.tw">Taiwan</span></button>
+          <button type="button" class="ri-tag" data-territory="jp"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.jp">Japan</span></button>
+          <button type="button" class="ri-tag" data-territory="kr"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.kr">Korea</span></button>
+          <button type="button" class="ri-tag" data-territory="sea"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.sea">Southeast Asia</span></button>
+          <button type="button" class="ri-tag" data-territory="na"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.na">North America</span></button>
+          <button type="button" class="ri-tag" data-territory="eu"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.eu">Europe</span></button>
+          <button type="button" class="ri-tag" data-territory="other"><i data-lucide="check" class="ztor-icon ri-tag__check"></i><span data-i18n="ri.terr.other">Other</span></button>
         </div>
-        <div class="chip-group" id="ri-territory">
-          <button type="button" class="chip" data-territory="worldwide"><span data-i18n="ri.terr.world">Worldwide</span></button>
-          <button type="button" class="chip" data-territory="hk"><span data-i18n="ri.terr.hk">Hong Kong</span></button>
-          <button type="button" class="chip" data-territory="tw"><span data-i18n="ri.terr.tw">Taiwan</span></button>
-          <button type="button" class="chip" data-territory="jp"><span data-i18n="ri.terr.jp">Japan</span></button>
-          <button type="button" class="chip" data-territory="kr"><span data-i18n="ri.terr.kr">Korea</span></button>
-          <button type="button" class="chip" data-territory="sea"><span data-i18n="ri.terr.sea">Southeast Asia</span></button>
-          <button type="button" class="chip" data-territory="na"><span data-i18n="ri.terr.na">North America</span></button>
-          <button type="button" class="chip" data-territory="eu"><span data-i18n="ri.terr.eu">Europe</span></button>
-          <button type="button" class="chip" data-territory="other"><span data-i18n="ri.terr.other">Other</span></button>
-        </div>
-      </section>
+      </div>
     </section>
 
     <!-- STEP 3 · Pricing & Earnings -->
@@ -169,64 +218,60 @@
       <h1 class="wizard__step-title" data-i18n="ri.s3.h1">Pricing &amp; earnings</h1>
       <p class="wizard__step-sub" data-i18n="ri.s3.sub">Set what you earn, then decide whether to list this IP for rental now.</p>
 
-      <section class="form-section form-section--outlined">
+      <div class="ri-block">
         <div class="field">
           <label class="field__label"><span data-i18n="ri.royalty">Royalty rate</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
-          <span class="amount-field amount-field--suffix amount-field--readonly">
-            <input class="input amount-field__input" data-ri="royalty" data-required type="number" min="0" max="30" step="0.5" placeholder="12" data-i18n-placeholder="ri.royalty.ph">
-            <span class="amount-field__unit">%</span>
-          </span>
+          <div class="ri-affix ri-affix--suffix">
+            <input class="input ri-affix__input" data-ri="royalty" data-required type="number" min="0" max="30" step="0.5" placeholder="12" data-i18n-placeholder="ri.royalty.ph">
+            <span class="ri-affix__sign">%</span>
+          </div>
           <div class="field__hint" data-i18n="ri.royalty.hint">The percentage you earn from gross revenue of every project that uses your IP. Industry range: 5–15%. Allowed: 0–30%.</div>
           <p class="ri-field-error" data-i18n="ri.err.royalty">Enter a royalty rate between 0 and 30%.</p>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ri.list.q">List this IP for rental?</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
-        </div>
+      <div class="ri-block">
+        <h3 class="ri-block__title"><span data-i18n="ri.list.q">List this IP for rental?</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
         <div class="selection-grid" id="ri-list-grid" style="grid-template-columns:1fr 1fr">
           <button type="button" class="selection-card" data-list="rental"><span class="selection-card__title" data-i18n="ri.list.rental">List for rental</span><span class="selection-card__sub" data-i18n="ri.list.rental-sub">Other creators can browse and rent your IP.</span></button>
           <button type="button" class="selection-card" data-list="private"><span class="selection-card__title" data-i18n="ri.list.private">Keep private</span><span class="selection-card__sub" data-i18n="ri.list.private-sub">Only you can use this IP. You can list it later.</span></button>
         </div>
-      </section>
+      </div>
 
       <!-- 定價（僅 List for rental 顯示） -->
-      <section class="form-section form-section--outlined" id="ri-pricing" hidden>
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ri.pricing">Pricing</h3>
-          <p class="form-section__sub" data-i18n="ri.pricing.sub">What renters pay upfront. Currency follows your Earnings settings. (Pricing unit — one-off vs term — pending product confirmation.)</p>
-        </div>
-        <div class="form-grid">
+      <div class="ri-block ri-pricing" id="ri-pricing" hidden>
+        <h3 class="ri-block__title" data-i18n="ri.pricing">Pricing</h3>
+        <p class="ri-block__sub" data-i18n="ri.pricing.sub">What renters pay upfront. Currency follows your Earnings settings. (Pricing unit — one-off vs term — pending product confirmation.)</p>
+        <div class="ri-grid-2">
           <div class="field">
             <label class="field__label"><span data-i18n="ri.price.standard">Standard license</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-              <input class="input amount-field__input" data-ri="standard" type="number" min="0" placeholder="5,000" data-i18n-placeholder="ri.price.standard.ph">
-            </span>
+            <div class="ri-affix ri-affix--prefix">
+              <input class="input ri-affix__input" data-ri="standard" type="number" min="0" placeholder="5,000" data-i18n-placeholder="ri.price.standard.ph">
+              <span class="ri-affix__sign">$</span>
+            </div>
             <p class="ri-field-error" data-i18n="ri.err.standard">Standard license price is required when listing for rental.</p>
           </div>
           <div class="field">
             <label class="field__label"><span data-i18n="ri.price.exclusive">Exclusive license</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-              <input class="input amount-field__input" data-ri="exclusive" type="number" min="0" placeholder="7,000" data-i18n-placeholder="ri.price.exclusive.ph">
-            </span>
+            <div class="ri-affix ri-affix--prefix">
+              <input class="input ri-affix__input" data-ri="exclusive" type="number" min="0" placeholder="7,000" data-i18n-placeholder="ri.price.exclusive.ph">
+              <span class="ri-affix__sign">$</span>
+            </div>
             <div class="field__hint" data-i18n="ri.price.exclusive.hint">Leave empty if not offered.</div>
           </div>
         </div>
         <div class="field" style="max-width:240px">
           <label class="field__label"><span data-i18n="ri.price.min">Minimum rental term</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
-          <span class="amount-field amount-field--suffix amount-field--readonly">
-            <input class="input amount-field__input" data-ri="minterm" type="number" min="1" placeholder="1" data-i18n-placeholder="ri.price.min.ph" style="padding-right:62px">
-            <span class="amount-field__unit" data-i18n="ri.price.min.unit">months</span>
-          </span>
+          <div class="ri-affix ri-affix--suffix">
+            <input class="input ri-affix__input" data-ri="minterm" type="number" min="1" placeholder="1" data-i18n-placeholder="ri.price.min.ph" style="padding-right:62px">
+            <span class="ri-affix__sign" data-i18n="ri.price.min.unit">months</span>
+          </div>
         </div>
-        <div class="info-banner" style="margin-top:6px">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <div class="stickynote" style="margin-top:6px">
+          <span class="stickynote__mark">✦</span>
           <span data-i18n="ri.list.lifecycle">Once listed, rentals run through the license lifecycle: renter requests → you approve → terms complete before going Active. Marketplace visibility is OFF by default; your media pack is frozen when a license activates.</span>
         </div>
-      </section>
+      </div>
     </section>
 
     <!-- STEP 4 · Review -->
@@ -239,10 +284,10 @@
           <h3 class="card__title" data-i18n="ri.rev.info">Type &amp; Info</h3>
           <a class="card__link" href="#" data-goto="1" data-i18n="ri.rev.edit">Edit →</a>
         </div>
-        <div class="review-row">
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.name">Name</span><span class="review-row__value review-row__value--empty" data-rev="name" data-i18n="ri.ph.name">Not entered</span></div>
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.type">Type</span><span class="review-row__value review-row__value--empty" data-rev="type" data-i18n="ri.ph.notsel">Not selected</span></div>
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.proof">Proof</span><span class="review-row__value review-row__value--empty" data-rev="proof" data-i18n="ri.ph.proof">Not uploaded</span></div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.name">Name</span><span class="ri-summary__v is-empty" data-rev="name" data-i18n="ri.ph.name">Not entered</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.type">Type</span><span class="ri-summary__v is-empty" data-rev="type" data-i18n="ri.ph.notsel">Not selected</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.proof">Proof</span><span class="ri-summary__v is-empty" data-rev="proof" data-i18n="ri.ph.proof">Not uploaded</span></div>
         </div>
       </div>
 
@@ -251,9 +296,9 @@
           <h3 class="card__title" data-i18n="ri.rev.usage">Usage Rules</h3>
           <a class="card__link" href="#" data-goto="2" data-i18n="ri.rev.edit">Edit →</a>
         </div>
-        <div class="review-row">
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.permitted">Permitted</span><span class="review-row__value review-row__value--empty" data-rev="usage" data-i18n="ri.ph.none">None selected</span></div>
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.territory">Territory</span><span class="review-row__value review-row__value--empty" data-rev="territory" data-i18n="ri.ph.none">None selected</span></div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.permitted">Permitted</span><span class="ri-summary__v is-empty" data-rev="usage" data-i18n="ri.ph.none">None selected</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.territory">Territory</span><span class="ri-summary__v is-empty" data-rev="territory" data-i18n="ri.ph.none">None selected</span></div>
         </div>
       </div>
 
@@ -262,10 +307,10 @@
           <h3 class="card__title" data-i18n="ri.rev.pricing">Pricing &amp; Earnings</h3>
           <a class="card__link" href="#" data-goto="3" data-i18n="ri.rev.edit">Edit →</a>
         </div>
-        <div class="review-row">
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.royalty">Royalty</span><span class="review-row__value review-row__value--empty" data-rev="royalty" data-i18n="ri.ph.notset">Not set</span></div>
-          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.listed">Listed</span><span class="review-row__value review-row__value--empty" data-rev="listed" data-i18n="ri.ph.notdecided">Not decided</span></div>
-          <div class="review-row__item review-row__item--kv" data-rev-row="prices" hidden><span class="review-row__name" data-i18n="ri.rev.prices">Prices</span><span class="review-row__value" data-rev="prices"></span></div>
+        <div class="ri-summary">
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.royalty">Royalty</span><span class="ri-summary__v is-empty" data-rev="royalty" data-i18n="ri.ph.notset">Not set</span></div>
+          <div class="ri-summary__row"><span class="ri-summary__k" data-i18n="ri.rev.listed">Listed</span><span class="ri-summary__v is-empty" data-rev="listed" data-i18n="ri.ph.notdecided">Not decided</span></div>
+          <div class="ri-summary__row" data-rev-row="prices" hidden><span class="ri-summary__k" data-i18n="ri.rev.prices">Prices</span><span class="ri-summary__v" data-rev="prices"></span></div>
         </div>
         <!-- 上架狀態提示（依選擇切換語氣）。List for rental 對應提示截圖未涵蓋，文案為示例（產品待確認）。 -->
         <div class="badge ri-list-note" id="ri-list-note" hidden></div>
@@ -304,9 +349,9 @@
 
 </div>
 
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="partials/wizard-chrome.js?v=20260716d"></script>
+<script src="js/icons.js?v=20260709h"></script>
+<script src="js/i18n.js?v=20260709h"></script>
+<script src="partials/wizard-chrome.js?v=20260709h"></script>
 <script>
 /* 登錄 IP 流程互動 · spec 5.1.4.1（四步：Type & Info → Usage Rules → Pricing & Earnings → Review）
    stepper 切步、Review 回填、發布前檢核 gating Register。純前端 demo，不真持久化。
@@ -353,8 +398,8 @@
       name: val('[data-ri="name"]'),
       desc: val('[data-ri="desc"]'),
       proof: !!document.querySelector('.upload-tile.is-filled[data-ri-asset="proof"]'),
-      usage: Array.from(document.querySelectorAll('#ri-usage .selection-card--active')).map(c => c.dataset.usage),
-      territory: Array.from(document.querySelectorAll('#ri-territory .chip--active')).map(c => c.dataset.territory),
+      usage: Array.from(document.querySelectorAll('#ri-usage .ri-usage__card--active')).map(c => c.dataset.usage),
+      territory: Array.from(document.querySelectorAll('#ri-territory .ri-tag--active')).map(c => c.dataset.territory),
       royalty: val('[data-ri="royalty"]'),
       list: listCard ? listCard.dataset.list : "",
       standard: val('[data-ri="standard"]'),
@@ -366,8 +411,8 @@
   function setRev(key, value, phKey, phFallback) {
     const el = document.querySelector('[data-rev="' + key + '"]');
     if (!el) return;
-    if (value) { el.textContent = value; el.classList.remove("review-row__value--empty"); }
-    else { el.textContent = T(phKey, phFallback); el.classList.add("review-row__value--empty"); }
+    if (value) { el.textContent = value; el.classList.remove("is-empty"); }
+    else { el.textContent = T(phKey, phFallback); el.classList.add("is-empty"); }
   }
 
   function syncReview() {
@@ -491,23 +536,23 @@
   });
 
   /* ---- 多選：Permitted usage ---- */
-  document.querySelectorAll("#ri-usage .selection-card").forEach(c => {
-    c.addEventListener("click", () => { c.classList.toggle("selection-card--active"); syncReview(); });
+  document.querySelectorAll("#ri-usage .ri-usage__card").forEach(c => {
+    c.addEventListener("click", () => { c.classList.toggle("ri-usage__card--active"); syncReview(); });
   });
 
   /* ---- 多選：Territory（含 Worldwide 與個別地區互斥示意；最終規則產品待確認）---- */
-  document.querySelectorAll("#ri-territory .chip").forEach(c => {
+  document.querySelectorAll("#ri-territory .ri-tag").forEach(c => {
     c.addEventListener("click", () => {
       const isWorld = c.dataset.territory === "worldwide";
-      const willActivate = !c.classList.contains("chip--active");
+      const willActivate = !c.classList.contains("ri-tag--active");
       if (isWorld && willActivate) {
         // 選 Worldwide → 取消其他（示例互斥行為，產品待確認）
-        document.querySelectorAll("#ri-territory .chip").forEach(x => x.classList.remove("chip--active"));
+        document.querySelectorAll("#ri-territory .ri-tag").forEach(x => x.classList.remove("ri-tag--active"));
       } else if (!isWorld && willActivate) {
         // 選個別地區 → 取消 Worldwide
-        document.querySelector('#ri-territory .chip[data-territory="worldwide"]').classList.remove("chip--active");
+        document.querySelector('#ri-territory .ri-tag[data-territory="worldwide"]').classList.remove("ri-tag--active");
       }
-      c.classList.toggle("chip--active");
+      c.classList.toggle("ri-tag--active");
       syncReview();
     });
   });
@@ -561,7 +606,7 @@
   render();
 })();
 </script>
-<script src="js/reveal.js?v=20260716d"></script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/reveal.js?v=20260709h"></script>
+<script src="js/devtools.js?v=20260709h"></script>
 </body>
 </html>

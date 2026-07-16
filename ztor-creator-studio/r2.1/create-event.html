@@ -1,47 +1,68 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create New Event · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/input.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/event-preview-card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/review-row.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260709h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/event-preview-card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260709h">
+<link rel="stylesheet" href="shared.css?v=20260709h">
 <style>
-  /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
-     區段骨架／欄位網格／類型卡圖示／自動儲存 pill 已改用基準元件（2026-07-10）：
-     form-section／form-grid（ds-components）、selection-card--icon（ds-components/selection-card.css）、
-     .wizard__save-status（shared.css）。 */
+  /* create-event 專屬 layout hooks（欄位排版／類型卡圖示／圖片格網），非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。 */
+  .ce-type-icon { display:inline-grid; place-items:center; width:30px; height:30px; margin-bottom:6px; color:var(--foreground-muted); }
+  .ce-type-icon .ztor-icon { width:20px; height:20px; }
+  .selection-card--active .ce-type-icon { color:var(--foreground); }
+
+  .ce-block { margin-bottom:28px; }
+  .ce-block__title { font-family:var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-semibold); margin:0 0 2px; }
+  .ce-block__sub { font-size: var(--fs-12); color:var(--muted-foreground); margin:0 0 12px; }
+
+  .ce-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .ce-image-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .ce-tier-count { margin-top:10px; text-align:right; font-size: var(--fs-12); color:var(--muted-foreground); }
 
   /* 上傳格已填狀態（.upload-tile.is-filled）已 promote 至 ds-components/upload-tile.css。 */
 
-  /* Review 步驟摘要（無卡片化，標題＋Edit 連結一行、值在下、底線分隔）已改用
-     ds-components/review-row.css 的預設堆疊變體（本頁原本的頁內摘要列樣式即其視覺基準，2026-07-11）。 */
+  /* 自動儲存狀態指示（§5.2.4）：頂部操作列的小 pill，create-event 專屬。 */
+  .ce-save-status {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--font-ui); font-size: var(--fs-12);
+    color:var(--muted-foreground); white-space:nowrap;
+  }
+  .ce-save-status__dot { width:6px; height:6px; border-radius:50%; background:var(--status-success); flex:none; }
+  .ce-save-status[data-state="saving"] { color:var(--foreground-muted); }
+  .ce-save-status[data-state="saving"] .ce-save-status__dot { background:var(--status-warning); }
+
+  /* Review 步驟摘要：無卡片化（與 create-product 無卡片語言一致）——標題＋Edit 連結一行、值在下、底線分隔。 */
+  .ce-review-row { padding: 14px 0; border-bottom: 1px solid var(--border-soft); }
+  .ce-review-row__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .ce-review-row__title { font-family: var(--font-ui); font-size: var(--fs-15); font-weight: var(--fw-medium); margin: 0; }
 
   /* ＊ 必填 inline 驗證（§4.5③）：.input 與其 aria-invalid 狀態在 shared.css；此處只留訊息行。 */
   .ce-field-error { display:none; margin-top:6px; font-size: var(--fs-12); color:var(--destructive); }
   .field.is-invalid .ce-field-error { display:block; }
+
+  @media (max-width:640px){
+    .ce-grid-2, .ce-image-grid { grid-template-columns:1fr; }
+  }
 </style>
 </head>
 <body>
 <div class="wizard">
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬）；右＝自動儲存＋預覽。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet">
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -65,8 +86,8 @@
         </div>
       </div>
       <div class="wizard__top-actions">
-        <span class="wizard__save-status" id="ce-save-status" data-state="saved">
-          <span class="wizard__save-status__dot"></span>
+        <span class="ce-save-status" id="ce-save-status" data-state="saved">
+          <span class="ce-save-status__dot"></span>
           <span id="ce-save-status-text" data-i18n="ce.save.saved">Saved · just now</span>
         </span>
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
@@ -82,29 +103,29 @@
       <h1 class="wizard__step-title" data-i18n="ce.s1.h1">What kind of event?</h1>
       <p class="wizard__step-sub" data-i18n="ce.s1.sub">This determines what settings you will see.</p>
 
-      <div class="selection-grid form-section form-section--outlined">
-        <button type="button" class="selection-card selection-card--icon" data-choice="concert">
-          <span class="selection-card__ic"><i data-lucide="music" class="ztor-icon"></i></span>
+      <div class="selection-grid">
+        <button type="button" class="selection-card" data-choice="concert">
+          <span class="ce-type-icon"><i data-lucide="music" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="ce.type.concert">Concert</span>
           <span class="selection-card__sub" data-i18n="ce.type.concert-sub">Live music performance</span>
         </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="meet">
-          <span class="selection-card__ic"><i data-lucide="users" class="ztor-icon"></i></span>
+        <button type="button" class="selection-card" data-choice="meet">
+          <span class="ce-type-icon"><i data-lucide="users" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="ce.type.meet">Meet &amp; Greet</span>
           <span class="selection-card__sub" data-i18n="ce.type.meet-sub">Intimate fan interaction</span>
         </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="festival">
-          <span class="selection-card__ic"><i data-lucide="tent" class="ztor-icon"></i></span>
+        <button type="button" class="selection-card" data-choice="festival">
+          <span class="ce-type-icon"><i data-lucide="tent" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="ce.type.festival">Festival</span>
           <span class="selection-card__sub" data-i18n="ce.type.festival-sub">Multi-day, multiple acts</span>
         </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="launch">
-          <span class="selection-card__ic"><i data-lucide="party-popper" class="ztor-icon"></i></span>
+        <button type="button" class="selection-card" data-choice="launch">
+          <span class="ce-type-icon"><i data-lucide="party-popper" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="ce.type.launch">Launch Party</span>
           <span class="selection-card__sub" data-i18n="ce.type.launch-sub">Celebrate a release</span>
         </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="virtual">
-          <span class="selection-card__ic"><i data-lucide="video" class="ztor-icon"></i></span>
+        <button type="button" class="selection-card" data-choice="virtual">
+          <span class="ce-type-icon"><i data-lucide="video" class="ztor-icon"></i></span>
           <span class="selection-card__title" data-i18n="ce.type.virtual">Virtual Event</span>
           <span class="selection-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span>
         </button>
@@ -116,7 +137,7 @@
       <h1 class="wizard__step-title" data-i18n="ce.s2.h1">Make them feel it</h1>
       <p class="wizard__step-sub" data-i18n="ce.s2.sub">What will fans experience?</p>
 
-      <div class="form-section form-section--outlined">
+      <div class="ce-block">
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
@@ -129,20 +150,16 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.lineup">Lineup / performers</h3>
-          <p class="form-section__sub" data-i18n="ce.lineup.sub">Search Ztor users or type external names.</p>
-        </div>
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.lineup">Lineup / performers</h3>
+        <p class="ce-block__sub" data-i18n="ce.lineup.sub">Search Ztor users or type external names.</p>
         <button type="button" class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
-          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
-        </div>
-        <div class="form-grid">
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.images">Images</h3>
+        <p class="ce-block__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
+        <div class="ce-image-grid">
           <div class="upload-tile" data-asset="thumb">
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
@@ -166,10 +183,8 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
-        </div>
+      <div class="ce-block">
+        <h3 class="ce-block__title"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
         <div class="upload-tile upload-tile--file" data-asset="video">
           <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
           <span class="upload-tile__title" data-i18n="ce.video.title">Upload a teaser</span>
@@ -183,10 +198,8 @@
       <h1 class="wizard__step-title" data-i18n="ce.s3.h1">Where and when</h1>
       <p class="wizard__step-sub" data-i18n="ce.s3.sub">Where are fans going?</p>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.venue">Venue</h3>
-        </div>
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.venue">Venue</h3>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
@@ -202,16 +215,14 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.time">Time</h3>
-        </div>
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.time">Time</h3>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.date">Event date</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="date" data-required type="date">
           <p class="ce-field-error" data-i18n="ce.err.date">Event date is required.</p>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="ce-grid-2">
           <div class="field">
             <label class="field__label"><span data-i18n="ce.start">Start time</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
             <input class="input" data-ce="start" type="time">
@@ -227,10 +238,8 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.capacity">Capacity</h3>
-        </div>
+      <div class="ce-block">
+        <h3 class="ce-block__title" data-i18n="ce.capacity">Capacity</h3>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.capacity.label">Capacity</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="capacity" data-required type="number" placeholder="Total seats or standing" data-i18n-placeholder="ce.capacity.ph">
@@ -244,14 +253,12 @@
       <h1 class="wizard__step-title" data-i18n="ce.s4.h1">Set your tickets</h1>
       <p class="wizard__step-sub" data-i18n="ce.s4.sub">Create ticket tiers. Minimum 1.</p>
 
-      <div class="form-section form-section--outlined">
-        <button type="button" class="upload-tile" id="ce-tier-add" style="min-height:120px">
-          <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
-          <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity, eligibility</span>
-        </button>
-        <div class="ce-tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
-      </div>
+      <button type="button" class="upload-tile" id="ce-tier-add" style="min-height:120px">
+        <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
+        <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
+        <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity, eligibility</span>
+      </button>
+      <div class="ce-tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
     </section>
 
     <!-- STEP 5 · Review -->
@@ -259,38 +266,36 @@
       <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
       <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
 
-      <div class="review-row" style="margin-bottom:18px">
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
-            <a class="review-row__action" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.type">Event type</h3>
+          <a class="card__link" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
         </div>
+        <div class="meta-cell__value" data-rev="type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+      </div>
 
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.name">Event name</h3>
-            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="name" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.name">Event name</h3>
+          <a class="card__link" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
         </div>
+        <div class="meta-cell__value" data-rev="name" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
+      </div>
 
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.venue">Venue &amp; time</h3>
-            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="venue" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
+      <div class="ce-review-row">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.venue">Venue &amp; time</h3>
+          <a class="card__link" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
         </div>
+        <div class="meta-cell__value" data-rev="venue" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
+      </div>
 
-        <div class="review-row__item">
-          <div class="review-row__head">
-            <h3 class="review-row__name" data-i18n="ce.rev.tickets">Tickets</h3>
-            <a class="review-row__action" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
-          </div>
-          <div class="review-row__value" data-rev="tickets" data-ph-key="ce.ph.0tiers"><span data-i18n="ce.ph.0tiers">0 tiers</span></div>
+      <div class="ce-review-row" style="margin-bottom:18px">
+        <div class="ce-review-row__head">
+          <h3 class="ce-review-row__title" data-i18n="ce.rev.tickets">Tickets</h3>
+          <a class="card__link" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
         </div>
+        <div class="meta-cell__value" data-rev="tickets" data-ph-key="ce.ph.0tiers"><span data-i18n="ce.ph.0tiers">0 tiers</span></div>
       </div>
 
       <section class="readiness">
@@ -346,9 +351,9 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="partials/wizard-chrome.js?v=20260716d"></script>
+<script src="js/icons.js?v=20260709h"></script>
+<script src="js/i18n.js?v=20260709h"></script>
+<script src="partials/wizard-chrome.js?v=20260709h"></script>
 <script>
 (function () {
   let step = 1;
@@ -622,7 +627,7 @@
   document.addEventListener('i18n:applied', render);
 })();
 </script>
-<script src="js/reveal.js?v=20260716d"></script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/reveal.js?v=20260709h"></script>
+<script src="js/devtools.js?v=20260709h"></script>
 </body>
 </html>

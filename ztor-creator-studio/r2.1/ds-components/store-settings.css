@@ -7,10 +7,9 @@
    header — the modal frame owns the title + close. Built on the Settings
    layout (.settings-row) + the shared .input / .textarea / .select controls.
    This file adds only the field types those components don't cover:
-   the Shop URL prefix affix (.ss-url), the read-only Stripe status card
-   (.ss-status), and the popup submit bar (.ss-actionbar). The $ amount
-   field now uses ds-components/amount-field.css (.amount-field
-   .amount-field--readonly) — see tombstone below. All token-driven.
+   the Shop URL prefix affix (.ss-url), the $ amount affix (.ss-amount),
+   the read-only Stripe status card (.ss-status), and the popup submit bar
+   (.ss-actionbar). All token-driven.
    ---------------------------------------------------------------- */
 
 /* Stack of section cards (store-settings page layout). No own max-width —
@@ -105,7 +104,7 @@
   border-radius: var(--radius-sm);
   cursor: text;
 }
-.ss-edit__read:hover { background: var(--accent); }
+.ss-edit__read:hover { background: color-mix(in srgb, var(--foreground) 5%, transparent); }
 .ss-edit__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ss-edit--bio .ss-edit__value { white-space: normal; }
 .ss-edit__value:empty::before { content: attr(data-placeholder); color: var(--muted-foreground); }
@@ -172,12 +171,23 @@
   box-shadow: none;
 }
 
-/* Tombstone — .ss-amount ($ prefix money input) retired 2026-07-11: replaced
-   by ds-components/amount-field.css (.amount-field .amount-field--readonly),
-   full DS token roll-out third batch. store-settings.html now uses
-   .amount-field for the free-shipping-threshold field; no other page
-   referenced .ss-amount. Safe to delete this comment once confirmed unused
-   for a while longer. */
+/* Amount field: $ prefix on a single-line money input */
+.ss-amount {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.ss-amount__prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+  font-size: var(--fs-14);
+}
+.ss-amount__input.input {
+  padding-left: 26px;
+}
 
 /* Read-only Stripe connection status card (spec §2.3) */
 .ss-status {

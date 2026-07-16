@@ -16,6 +16,9 @@
 
 | ID | 假設 | 狀態 |
 |---|---|---|
+| UIA-050 | **2026-07-16 E-Shop Products 清單「實體→數位」呈現順序**：清單靜態列排成 草稿置頂（`pinDrafts`）→ 實體各列 → 數位各列（單曲／電影／專輯／會員卡），這是 demo 樣本的**呈現排列**、不是強制排序功能。`applyFilter()` 不加排序、`pinDrafts()` 不動；粉絲端實際陳列順序仍由創作者拖曳決定（spec D083 / 5.1.5.5）。新增數位樣本列（Song／Movie／Membership）＋既有 Album（EP）只為覆蓋 D135 對應的數位次分類，金額/名稱為示例資料（UIA-003） | 可由 UI 調整 |
+| UIA-051 | **2026-07-16 商品細節頁 §2.8 商品規格（Variations，D135）為靜態 demo**：規格模式 segmented 可切單一/多規格並顯隱建構器與逐規格表，但逐規格表為靜態 3 列 S/M/L、選項建構器的「新增選項」與 remove 鈕未接功能、不生成組合、無持久化；比照建立商品 §4.1（UIA-016）的前端 demo 口徑。多規格逐規格價格/庫存、單件成本納毛利與否等仍待上游（UIA-017 / D064 §8.12） | 可由 UI 調整 |
+| UIA-052 | **2026-07-16 商品細節頁 D137「建立後固定不可編輯」欄位＝呈現層鎖定＋預覽走 devtools**：主分類（`#pd-main-cat` disabled select）、規格模式（`#pd-var-mode` `segmented--locked`）、庫存版本（`#pd-edition` `segmented--locked`）三者在細節頁只呈現當前值、不可切換，落實 D137「硬鎖」的呈現層表達。D137 的後端訂單約束——限量上限只能 ≥ 已售、已有訂單的規格組合不可刪、數位改次分類受限——屬工程／產品待確認，**原型不強制驗證**（無真實庫存/訂單資料）。鎖定後細節頁固定樣本值（zine＝實體／單一規格／不限量），數位／多規格／限量的替代版面**改由開發者工具（Cheat Codes，devtools.js 的 page-scoped 預覽開關 `pd-cat`／`pd-var`／`pd-edition`）預覽**，非使用者面向；正式建立時這些值由建立商品流程（5.1.5.2）決定。devtools 的通用 page-scoped 機制（`window.ZTOR_DEV_PAGE_GROUPS`）本身為原型工具 infra、不影響其他頁 | 可由 UI 調整；後端訂單約束待工程 |
 | UIA-001 | R 2.1 **預設側邊欄（Sidebar，D110）**、可切 topbar；兩顯示模式不改變產品 IA。語言固定繁中；主題偏好規則見 UIA-048 | 可由 UI 調整 |
 | UIA-048 | **2026-07-14 覆寫 UIA-001／UIA-044 的主題部分**：主題偏好恢復為呈現層設定，`theme.js` 讀取合法 localStorage 值（light / dark / system），無值預設 dark；`?theme=light|dark|system` 優先但不寫入偏好。深色與淺色偏好都會跨頁保存；語言固定繁中與預設側邊欄的決定不變。`section-test.html` 是外框變體與主題驗證頁，不影響正式產品流程 | 可由 UI 調整 |
 | UIA-002 | 清單、資料摘要、建立流程與預覽的具體元件依 design system 組合 | 可由 UI 調整 |

@@ -4,18 +4,15 @@
    建立在 Segmented 之上：一組 .segmented 容器加 .radio-cards，
    把段內 .segmented__btn 從「軌道內文字切換」改成「兩張並排的
    可選卡」——卡面 + 右上 radio 點，可帶標題＋描述。
-   卡面＝扁平 1px --border、無陰影（2026-07-16 對齊 icon 選擇卡的邊框化，
-   Figma node 781-4166 血統，STYLE-DECISIONS Q13）。已選＝無橘外框（只留灰邊框），
-   標記為右上置中小橘實心點、無外圈；未選＝無可見標記（對齊 Figma node 781-4386）。
+   已選＝保留卡面陰影 + 疊一圈橘外框（不換底色）。
    用於：單一/多規格、不限量/限量、取貨方式等二選一。
    JS 沿用 segmented 的 toggle（.segmented__btn--active）。
    anatomy
      .segmented.radio-cards
-     .segmented__btn  (.segmented__btn--active)
+       .segmented__btn  (.segmented__btn--active)
          .radio-card__text
            .radio-card__title
            .radio-card__sub
-         .radio-card__icon
    ============================================================ */
 
 .radio-cards {
@@ -36,33 +33,26 @@
   padding: var(--sp-14) var(--sp-16);
   border-radius: var(--radius-md);
   background: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: none;
+  box-shadow: var(--shadow-card);
   color: var(--foreground);
   font-weight: var(--fw-medium);
   font-size: var(--fs-14);
 }
-/* 右上標記位（18px 佔位框）。未選＝無可見標記（對齊 Figma node 781-4386：未選圈透明）。 */
+/* 右上 radio 點 */
 .radio-cards .segmented__btn::after {
   content: "";
   width: 18px; height: 18px;
   border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--border);
   flex: 0 0 auto;
   margin-top: 1px;
 }
-/* 單行卡（無副標，如 單一/多規格）：文字與橘點垂直置中對齊；有副標的（標題＋描述）維持置頂。 */
-.radio-cards .segmented__btn:not(:has(.radio-card__sub)) { align-items: center; }
-.radio-cards .segmented__btn:not(:has(.radio-card__sub))::after { margin-top: 0; }
-/* 已選＝扁平卡面、無橘外框（只留灰邊框）；標記＝置中小橘實心點、無外圈（對齊 Figma node 781-4386）。 */
-.radio-cards .segmented__btn--active { box-shadow: none; }
+/* 已選＝卡面陰影維持中性 + 橘色「線框」(1px outline，不放進陰影，與 selection-card 一致)；radio 點填橘心 */
+.radio-cards .segmented__btn--active { box-shadow: var(--shadow-card); outline: 1px solid var(--primary); outline-offset: -1px; }
 .radio-cards .segmented__btn--active::after {
-  background: radial-gradient(circle at center, var(--primary) 0 3px, transparent 3.5px);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: radial-gradient(circle at center, var(--primary) 0 4px, transparent 5px);
 }
-
-/* Optional Icon atom marker. Existing cards continue to use the CSS pseudo marker. */
-.radio-cards--icon .segmented__btn::after { content: none; }
-.radio-card__icon { width: 20px; height: 20px; flex: 0 0 auto; margin-top: 0; color: var(--border); border-radius: 50%; }
-.radio-cards .segmented__btn--active .radio-card__icon { color: var(--primary); background: radial-gradient(circle at center, var(--primary) 0 4px, transparent 5px); }
 
 /* 卡內標題＋描述 */
 .radio-card__text { display: flex; flex-direction: column; gap: 3px; text-align: left; min-width: 0; }

@@ -1,23 +1,25 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spring Launch · Event detail · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260716d"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/button.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/card.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/table.css?v=20260716d">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260716d">
-<link rel="stylesheet" href="shared.css?v=20260716d">
+<script src="js/theme.js?v=20260709h"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/button.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/stickynote.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/card.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/input.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/table.css?v=20260709h">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=20260709h">
+<link rel="stylesheet" href="shared.css?v=20260709h">
 <style>
   /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
      報到三色直接重用 badge--success / --warning / --error（§7.2 valid/already_used/invalid），不另開元件。 */
@@ -36,8 +38,23 @@
   .tier-progress--danger .tier-progress__fill { background: var(--destructive); }
   .tier-progress--unlimited { color: var(--muted-foreground); }
 
-  /* 報到三色統計小列（總覽 + 名單分頁複用）已改用 ds-components/kpi.css 的
-     .kpi--success/--warning/--destructive 色態變體（2026-07-11）。 */
+  /* 報到三色統計小列（總覽 + 名單分頁複用） */
+  .checkin-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .checkin-stat {
+    flex: 1 1 140px; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-md, 12px); background: var(--card);
+  }
+  .checkin-stat__num { font-family: var(--font-display); font-size: var(--fs-24); font-weight: var(--fw-medium); line-height: 1.1; }
+  .checkin-stat__label { color: var(--muted-foreground); font-size: var(--fs-12); margin-top: 2px; }
+  .checkin-stat--valid  .checkin-stat__num { color: var(--status-success); }
+  .checkin-stat--used   .checkin-stat__num { color: color-mix(in srgb, var(--status-warning) 60%, var(--foreground)); }
+  .checkin-stat--invalid .checkin-stat__num { color: var(--destructive); }
+
+  /* 簡易標籤值對 */
+  .kv-row { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-ui); font-size: var(--fs-13); padding: 7px 0; }
+  .kv-row + .kv-row { border-top: 1px solid var(--border); }
+  .kv-row__k { color: var(--muted-foreground); }
+  .kv-row__v { color: var(--foreground); text-align: right; }
 
   .ed-hero__meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
 </style>
@@ -60,9 +77,9 @@
       <div class="page-intro">
         <div>
           <div class="flex-row" style="gap:8px;margin-bottom:8px">
-            <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
-            <span class="badge"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
-            <span class="badge badge--info"><span data-i18n="event-detail.badge.type">Concert</span></span>
+            <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+            <span class="badge"><span class="badge__dot"></span><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
+            <span class="badge badge--info"><span class="badge__dot"></span><span data-i18n="event-detail.badge.type">Concert</span></span>
           </div>
           <h1 class="page-intro__title" data-i18n="event-detail.h1">Spring Launch — Coastline EP listening party</h1>
           <p class="page-intro__sub" data-i18n="event-detail.sub">Apr 12, 2026 · 8:00 PM · Legacy Taipei, Taipei</p>
@@ -74,8 +91,8 @@
       </div>
 
       <!-- 樣本資料說明 — 全頁示例資料 / R 2.1.1 候選；產品規則先定義（§5.1.6 F5、§8.1） -->
-      <div class="info-banner">
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+      <div class="stickynote">
+        <span class="stickynote__mark">ⓘ</span>
         <span data-i18n="event-detail.note.scope"><strong>Operations console — product rules first, UI lands in R 2.1.1 (spec §5.1.6 F5 · §8.1).</strong> Figures are sample data. Ticket-tier, check-in, refund and series flows shown here reflect defined product rules; anything marked TBD or Phase 2 is intentionally not built.</span>
       </div>
 
@@ -107,17 +124,15 @@
             <div class="card__head">
               <h3 class="card__title" data-i18n="event-detail.ov.details.title">Event details</h3>
             </div>
-            <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.datetime">Date &amp; time</span></div><span>Apr 12, 2026 · 8:00 PM (GMT+8)</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.venue">Venue</span></div><span>Legacy Taipei · Taipei</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.lineup">Lineup</span></div><span>Mika L · Coastline (band)</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Spring Launch · 1 of 3</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.stream">Stream entitlement</span></div><span data-i18n="event-detail.ov.stream-val">VIP tier includes live stream</span></div>
-            </div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.type">Type</span><span class="kv-row__v" data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.datetime">Date &amp; time</span><span class="kv-row__v">Apr 12, 2026 · 8:00 PM (GMT+8)</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.venue">Venue</span><span class="kv-row__v">Legacy Taipei · Taipei</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.lineup">Lineup</span><span class="kv-row__v">Mika L · Coastline (band)</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.series">Series</span><span class="kv-row__v" data-i18n="event-detail.ov.series-val">Spring Launch · 1 of 3</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.ov.stream">Stream entitlement</span><span class="kv-row__v" data-i18n="event-detail.ov.stream-val">VIP tier includes live stream</span></div>
 
-            <div class="info-banner mt-16">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <div class="stickynote mt-16">
+              <span class="stickynote__mark">⚖</span>
               <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling auto-triggers refunds on all valid tickets (§7.2 · §5.1.6 F5).</span>
             </div>
           </section>
@@ -126,21 +141,21 @@
           <section class="card bento--span-5">
             <div class="card__head">
               <h3 class="card__title" data-i18n="event-detail.ov.checkin.title">Check-in snapshot</h3>
-              <span class="badge badge--neutral"><span data-i18n="event-detail.ov.checkin.pending">Opens on event day</span></span>
+              <span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.ov.checkin.pending">Opens on event day</span></span>
             </div>
             <!-- 報到三色：valid 綠 / already_used 黃 / invalid 紅（§5.1.6 F5、§7.2） -->
-            <div class="bento">
-              <div class="kpi kpi--success bento--span-4">
-                <div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div>
-                <div class="kpi__value">—</div>
+            <div class="checkin-stats">
+              <div class="checkin-stat checkin-stat--valid">
+                <div class="checkin-stat__num">—</div>
+                <div class="checkin-stat__label" data-i18n="event-detail.checkin.valid">Valid (green)</div>
               </div>
-              <div class="kpi kpi--warning bento--span-4">
-                <div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div>
-                <div class="kpi__value">—</div>
+              <div class="checkin-stat checkin-stat--used">
+                <div class="checkin-stat__num">—</div>
+                <div class="checkin-stat__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div>
               </div>
-              <div class="kpi kpi--destructive bento--span-4">
-                <div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div>
-                <div class="kpi__value">—</div>
+              <div class="checkin-stat checkin-stat--invalid">
+                <div class="checkin-stat__num">—</div>
+                <div class="checkin-stat__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div>
               </div>
             </div>
             <p class="text-sub" style="font-size: var(--fs-12);margin-top:12px" data-i18n="event-detail.ov.checkin.note">Scanning a QR returns one of three states. A valid scan moves the ticket issued → used (irreversible; only the creator can reverse). Scanner works offline (~4 h) and re-syncs; on double scan the earliest wins.</p>
@@ -170,37 +185,37 @@
               <tr class="ztor-table__row">
                 <td><strong>General Admission</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.ga.window">Sale Mar 01 – Apr 12</div></td>
                 <td>$30 USD</td>
-                <td><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.ent.inperson">In-person</span></span></td>
+                <td><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.ent.inperson">In-person</span></span></td>
                 <td>
                   <div class="tier-progress">62 / 120
                     <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:52%"></div></div>
                   </div>
                 </td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.tiers.st.onsale">On sale</span></span></td>
+                <td><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.st.onsale">On sale</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><strong>VIP + Live stream</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.vip.window">Sale Mar 01 – Apr 11 · Top Fan priority</div></td>
                 <td>$80 USD</td>
-                <td><span class="badge badge--info"><span data-i18n="event-detail.tiers.ent.both">In-person + stream</span></span></td>
+                <td><span class="badge badge--info"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.ent.both">In-person + stream</span></span></td>
                 <td>
                   <!-- 80% → 黃警示 -->
                   <div class="tier-progress tier-progress--warn">17 / 20
                     <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:85%"></div></div>
                   </div>
                 </td>
-                <td><span class="badge badge--warning"><span data-i18n="event-detail.tiers.st.almost">Almost sold out</span></span></td>
+                <td><span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.st.almost">Almost sold out</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><strong>Livestream only</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.stream.window">Sale Mar 01 – Apr 12 · replay 48 h</div></td>
                 <td>$15 USD</td>
-                <td><span class="badge badge--accent"><span data-i18n="event-detail.tiers.ent.stream">Stream only</span></span></td>
+                <td><span class="badge badge--accent"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.ent.stream">Stream only</span></span></td>
                 <td>
                   <!-- 95% → 紅警示 -->
                   <div class="tier-progress tier-progress--danger">58 / 60
                     <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:97%"></div></div>
                   </div>
                 </td>
-                <td><span class="badge badge--error"><span data-i18n="event-detail.tiers.st.nearfull">Near capacity</span></span></td>
+                <td><span class="badge badge--error"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.st.nearfull">Near capacity</span></span></td>
               </tr>
             </tbody>
           </table>
@@ -212,10 +227,10 @@
           </div>
           <div class="data-list">
             <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--info"><i data-lucide="lock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.cap">Hard inventory cap — no overselling</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.cap-meta">Concurrent sales use atomic decrement; the N+1 purchase fails with tier_sold_out and emits no revenue event.</div></div></div></div>
-            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="pause" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.pause">Pause sales (Paused)</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.pause-meta">Rejects new purchases; existing tickets stay valid.</div></div></div><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.rule.pause-state">All active</span></span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="pause" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.pause">Pause sales (Paused)</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.pause-meta">Rejects new purchases; existing tickets stay valid.</div></div></div><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.tiers.rule.pause-state">All active</span></span></div>
           </div>
-          <div class="info-banner mt-16">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <div class="stickynote mt-16">
+            <span class="stickynote__mark">ⓘ</span>
             <span data-i18n="event-detail.tiers.tbd"><strong>TBD:</strong> Full per-tier field editor (purchase eligibility detail, currency list, sale-window picker) lands with the R 2.1.1 tier setup UI. Fields shown here illustrate defined attributes only.</span>
           </div>
         </section>
@@ -229,10 +244,10 @@
         </div>
 
         <!-- 報到三色圖例 -->
-        <div class="bento">
-          <div class="kpi kpi--success bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div><div class="kpi__value">—</div></div>
-          <div class="kpi kpi--warning bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div><div class="kpi__value">—</div></div>
-          <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div><div class="kpi__value">—</div></div>
+        <div class="checkin-stats">
+          <div class="checkin-stat checkin-stat--valid"><div class="checkin-stat__num">—</div><div class="checkin-stat__label" data-i18n="event-detail.checkin.valid">Valid (green)</div></div>
+          <div class="checkin-stat checkin-stat--used"><div class="checkin-stat__num">—</div><div class="checkin-stat__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div></div>
+          <div class="checkin-stat checkin-stat--invalid"><div class="checkin-stat__num">—</div><div class="checkin-stat__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div></div>
         </div>
 
         <section class="card mt-16" style="padding:0;overflow:hidden">
@@ -248,19 +263,19 @@
             <tbody>
               <tr class="ztor-table__row">
                 <td>Aki Tanaka</td><td>VIP + Live stream</td><td><code>tkt_9F2A1</code></td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+                <td><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td>Lena Wu</td><td>General Admission</td><td><code>tkt_7C4B8</code></td>
-                <td><span class="badge badge--warning"><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
+                <td><span class="badge badge--warning"><span class="badge__dot"></span><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><span class="text-sub" data-i18n="event-detail.att.unknown">Unrecognised QR</span></td><td>—</td><td><code>—</code></td>
-                <td><span class="badge badge--error"><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
+                <td><span class="badge badge--error"><span class="badge__dot"></span><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td>Coastline (comp)</td><td>VIP + Live stream</td><td><code>tkt_C0MP3</code></td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+                <td><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
               </tr>
             </tbody>
           </table>
@@ -271,8 +286,8 @@
           <button class="btn btn--ghost" type="button" data-i18n="event-detail.att.scanner">Open scanner</button>
         </div>
 
-        <div class="info-banner mt-16">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <div class="stickynote mt-16">
+          <span class="stickynote__mark">ⓘ</span>
           <span data-i18n="event-detail.att.note"><strong>A valid scan is irreversible.</strong> The ticket moves issued → used; only the creator can reverse it. Scanner runs offline ~4 h and re-syncs on reconnect; on a double scan the earliest scan wins. For online events, external-platform data may be incomplete.</span>
         </div>
       </div>
@@ -288,15 +303,17 @@
           <section class="card bento--span-7">
             <div class="card__head">
               <h3 class="card__title" data-i18n="event-detail.ref.queue.title">Refund queue</h3>
-              <span class="badge badge--neutral"><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
+              <span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
             </div>
-            <div class="empty-card">
-              <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
-              <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
-              <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
+            <div class="empty-stub" style="min-height:auto;padding:32px 0">
+              <div class="empty-stub__inner">
+                <div class="empty-stub__mark">◍</div>
+                <div class="empty-stub__title" data-i18n="event-detail.ref.empty.title">No refund requests</div>
+                <p class="empty-stub__sub" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
+              </div>
             </div>
-            <div class="info-banner">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <div class="stickynote">
+              <span class="stickynote__mark">⚖</span>
               <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current net-profit pool → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
             </div>
           </section>
@@ -349,7 +366,7 @@
               <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation auto-refund</div>
               <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, all valid tickets are auto-refunded per the refund flow. Always on.</div>
             </div>
-            <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
+            <span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
           </div>
         </section>
       </div>
@@ -375,15 +392,15 @@
             <tbody>
               <tr class="ztor-table__row">
                 <td><code>rev_8H2KQ4</code></td><td>VIP + Live stream</td><td>$80.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">Settled</span></span></td>
+                <td><span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.fin.st.settled">Settled</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><code>rev_7C4B81</code></td><td>General Admission</td><td>$30.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--orange"><span data-i18n="event-detail.fin.st.accrued">Accrued</span></span></td>
+                <td><span class="badge badge--orange"><span class="badge__dot"></span><span data-i18n="event-detail.fin.st.accrued">Accrued</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><code>rev_C0MP30</code></td><td>VIP (comp)</td><td>$0.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--neutral"><span data-i18n="event-detail.fin.st.comp">Comp · audit only</span></span></td>
+                <td><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.fin.st.comp">Comp · audit only</span></span></td>
               </tr>
             </tbody>
           </table>
@@ -392,12 +409,10 @@
         <div class="bento mt-16">
           <section class="card bento--span-7">
             <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.summary.title">Summary</h3></div>
-            <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.gross">Gross ticket revenue</span></div><span>$2,520.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.accrued">Of which accrued (待結算)</span></div><span>$780.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.settled">Of which settled (已結算)</span></div><span>$1,740.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing (§7.3)</span></div>
-            </div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.fin.gross">Gross ticket revenue</span><span class="kv-row__v">$2,520.00</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.fin.accrued">Of which accrued (待結算)</span><span class="kv-row__v">$780.00</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.fin.settled">Of which settled (已結算)</span><span class="kv-row__v">$1,740.00</span></div>
+            <div class="kv-row"><span class="kv-row__k" data-i18n="event-detail.fin.category">Category</span><span class="kv-row__v" data-i18n="event-detail.fin.category-val">Event ticketing (§7.3)</span></div>
           </section>
           <section class="card bento--span-5">
             <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.where.title">Where this rolls up</h3></div>
@@ -409,8 +424,8 @@
           </section>
         </div>
 
-        <div class="info-banner mt-16">
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <div class="stickynote mt-16">
+          <span class="stickynote__mark">ⓘ</span>
           <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (refunded / disputed) per §7.2. Refund / cancel effects on revenue follow the §7.3 absorption order; v1 refund scope is in §8.6.</span>
         </div>
       </div>
@@ -432,7 +447,7 @@
                   <div class="data-list__meta">Apr 12, 2026 · Legacy Taipei · <span data-i18n="event-detail.series.this">this event</span></div>
                 </div>
               </div>
-              <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+              <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
             </div>
             <div class="data-list__row">
               <div class="data-list__row-main">
@@ -442,7 +457,7 @@
                   <div class="data-list__meta">Apr 19, 2026 · Hualien Cultural Center</div>
                 </div>
               </div>
-              <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+              <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
             </div>
             <div class="data-list__row">
               <div class="data-list__row-main">
@@ -452,7 +467,7 @@
                   <div class="data-list__meta">TBD · Online (Zoom)</div>
                 </div>
               </div>
-              <span class="badge"><span data-i18n="event-detail.badge.scheduled">Scheduled</span></span>
+              <span class="badge"><span class="badge__dot"></span><span data-i18n="event-detail.badge.scheduled">Scheduled</span></span>
             </div>
           </div>
         </section>
@@ -460,11 +475,11 @@
         <!-- 轉售 P2 — 已定義產品規則、明確標 Phase 2、不落地 -->
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.resale.title">Resale</h2>
-          <div class="section-head__sub"><span class="badge badge--neutral"><span data-i18n="event-detail.resale.p2">Phase 2</span></span></div>
+          <div class="section-head__sub"><span class="badge badge--neutral"><span class="badge__dot"></span><span data-i18n="event-detail.resale.p2">Phase 2</span></span></div>
         </div>
         <section class="card">
-          <div class="info-banner">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <div class="stickynote">
+            <span class="stickynote__mark">ⓘ</span>
             <span data-i18n="event-detail.resale.note"><strong>Resale is Phase 2 — not available in this build.</strong> Per-event modes Allowed / Blocked (default) / Limited; Limited sets a price-cap multiple and platform cut, a successful resale atomically transfers the holder and emits a resale_fee revenue event, Blocked rejects all transfers (§5.1.6 F5).</span>
           </div>
         </section>
@@ -480,9 +495,9 @@
   </main>
 </div>
 
-<script src="js/icons.js?v=20260716d"></script>
-<script src="js/i18n.js?v=20260716d"></script>
-<script src="js/sidebar.js?v=20260716d"></script>
+<script src="js/icons.js?v=20260709h"></script>
+<script src="js/i18n.js?v=20260709h"></script>
+<script src="js/sidebar.js?v=20260709h"></script>
 <script>
   /* event-detail tabs · §5.1.6 F5 — switch active state + visible panel (pattern from earnings.html) */
   (function () {
@@ -511,7 +526,7 @@
     if (names.includes(initial)) activate(initial);
   })();
 </script>
-<script src="js/reveal.js?v=20260716d"></script>
-<script src="js/devtools.js?v=20260716d"></script>
+<script src="js/reveal.js?v=20260709h"></script>
+<script src="js/devtools.js?v=20260709h"></script>
 </body>
 </html>

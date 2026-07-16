@@ -937,6 +937,16 @@
     'e-shop.row4.meta':       { en: 'Limited LP · hand-numbered',          zh: '限量黑膠 · 手寫編號' },
     'e-shop.row4.price':      { en: '$180',                                zh: '$180' },
     'e-shop.row4.stock':      { en: '21 / 50',                             zh: '21 / 50' },
+    /* 數位樣本列（實體列之後集中呈現；D135 商品規格頁對應的數位四分類：單曲 / 電影 / 專輯 / 會員卡）*/
+    'e-shop.rowSong.cat':     { en: 'Song',                                zh: '單曲' },
+    'e-shop.rowSong.meta':    { en: 'Single · MP3 + FLAC',                 zh: '單曲 · MP3 + FLAC' },
+    'e-shop.rowSong.price':   { en: '$1.99',                               zh: '$1.99' },
+    'e-shop.rowMovie.cat':    { en: 'Movie',                               zh: '電影' },
+    'e-shop.rowMovie.meta':   { en: 'Documentary · MP4 1080p',            zh: '紀錄片 · MP4 1080p' },
+    'e-shop.rowMovie.price':  { en: '$6.99',                               zh: '$6.99' },
+    'e-shop.rowVip.cat':      { en: 'Membership',                          zh: '會員卡' },
+    'e-shop.rowVip.meta':     { en: 'Membership · monthly',                zh: '會員卡 · 月費' },
+    'e-shop.rowVip.price':    { en: '$30',                                 zh: '$30' },
     'e-shop.empty.title':     { en: 'Auctions builder',                    zh: '競標編輯器' },
     'e-shop.empty.sub':       { en: 'Products and Bundles are live. Timed-auction setup arrives in a later release.', zh: 'Products 與 Bundles 已開放。限時競標設定將於後續版本推出。' },
     'e-shop.preview.title':   { en: 'Store preview',                         zh: '商店預覽' },
@@ -1112,6 +1122,17 @@
     'product-detail.ref.row1-meta': { en: 'Included as fulfilment item · 62 supporters affected', zh: '作為交付項目 · 影響 62 位支持者' },
     'product-detail.ref.open':      { en: 'Open project',   zh: '前往專案' },
     'product-detail.ref.empty':     { en: 'Not referenced by any project yet.', zh: '尚未被任何專案引用。' },
+    /* D136 §3 頁面佈局重排新增的 section 標題／副標 */
+    'product-detail.content.sub':   { en: 'Photos on one side, the details buyers read on the other.', zh: '素材放一側，買家會讀到的資訊放另一側。' },
+    'product-detail.price2.title':  { en: 'Price', zh: '價格' },
+    'product-detail.price2.sub':    { en: 'How this product is priced.', zh: '這個商品怎麼定價。' },
+    'product-detail.stock2.title':  { en: 'Stock &amp; restock', zh: '庫存與補貨' },
+    'product-detail.stock2.sub':    { en: 'How much is left and how you refill it.', zh: '還剩多少、以及怎麼補貨。' },
+    'product-detail.delivery2.title': { en: 'Delivery &amp; pickup', zh: '取貨與交付' },
+    'product-detail.limit2.title':  { en: 'Purchase limit', zh: '每人限購' },
+    'product-detail.limit2.sub':    { en: 'Cap how many each buyer can purchase.', zh: '限制每位買家可購買的數量。' },
+    /* D137 建立後固定不可編輯欄位（主分類／規格模式／庫存版本）的鎖定提示 */
+    'product-detail.locked.hint':   { en: 'Fixed after creation', zh: '建立後不可變更' },
 
     /* ─── Bundle detail (spec 5.1.5.9 組合商品細節頁) ─────────── */
     'bd.crumb.eshop':       { en: 'E-Shop',                  zh: '電子商店' },
@@ -1801,6 +1822,7 @@
     'cp.var.col.sku':       { en: 'SKU',                              zh: 'SKU' },
     'cp.var.col.cost':      { en: 'Cost',                             zh: '單件成本' },
     'cp.var.priced-above':  { en: 'Each variation is priced and stocked in the table above.', zh: '每個規格的價格與庫存在上方逐規格表設定。' },
+    'cp.var.single-note':   { en: 'One price for this product — set it in Price below.', zh: '此商品僅單一價格——在下方「價格」區設定。' },
     /* §4.1③ 拆塊後的區塊標題（價格／庫存／逐規格表）*/
     'cp.price.title':       { en: 'Pricing',                          zh: '定價' },
     /* 定價單位（現金／POPCORN 切換）· spec 5.1.5.2 F3.2 / D124 */
