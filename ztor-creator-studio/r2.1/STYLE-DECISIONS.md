@@ -20,7 +20,8 @@
 | Q10 | 關閉鍵 icon 尺寸 | **16px**：拿掉 alert(20)／dialog(18) 覆寫，全部關閉鍵回到基礎 16 | 2026-07-13 | 對齊基礎 `.ztor-icon` 尺度 | ✅ 已執行 2026-07-13 |
 | Q11 | 「已付款 Paid」顏色 | **A**：全站綠色 success（`orders.pay.paid`、`od.badge.paid` 改 `badge--success`）。備註：若之後覺訂單列視覺過重可退 B | 2026-07-13 | 一語意一色、綠色 Paid 直覺 | ✅ 已執行 2026-07-13 |
 | Q12 | 欄位標籤：大寫 vs 一般 | **A**：`tier-settings.html` 的 `.gate-field__label`（大寫孤例）退役，改用 `.settings-row__label`（一般大小寫） | 2026-07-13 | 大寫孤例是站上小標系統的重複發明 | ✅ 已執行 2026-07-13 |
-| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32） | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
+| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32）〔**邊框部分已被 Q14 取代**〕 | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
+| Q14 | `form-section--outlined` 是否保留 1px 外框 | **去外框、保留填色卡**：`.form-section--outlined` 移除 `border`（原 1px `--border`），保留背景填色（亮 `--card`／暗 `--muted`）、圓角 `--radius-xl`(16)、內距 `--sp-16`；靠填色對比區分區塊，不再有邊界線。**取代 Q13 對本元件的「邊框化」部分**（Q13 的 selection-card／radio-cards 邊框不受影響）。實作用 `.form-section.form-section--outlined`（權重 0,2,0）蓋掉 `.form-section + .form-section` 分隔線，確保四邊無殘留 | 2026-07-16 | 使用者裁示：outlined 卡的硬邊界太重，改用填色卡即可分區 | ✅ 已執行 2026-07-16（全站 11 頁 88 處經元件層一次生效）|
 
 ---
 

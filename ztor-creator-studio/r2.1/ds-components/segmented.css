@@ -15,7 +15,10 @@
   align-items: center;
   gap: var(--sp-2);
   padding: 3px;
-  background: color-mix(in srgb, var(--foreground) 5%, var(--muted));
+  /* 2026-07-16：軌道恆用 --muted（比 active 的 --card 暗），修正原 color-mix(foreground 5%) 在深色反把軌道提亮到接近 card、控制融進背景的缺陷；
+     再加真 border 界定邊界（Q4 控制項用真 border），讓 segmented 在 card/popover 等任何底色上都看得出是一個切換控制 */
+  background: var(--muted);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }
 
@@ -51,3 +54,10 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/* locked — 建立後固定不可編輯（D137）。整組停用、不可點，仍保留 --active
+   高亮以呈現當前值（僅唯讀呈現）。搭 aria-disabled="true" 與各 btn 的 disabled。 */
+.segmented--locked { opacity: 0.6; }
+.segmented--locked .segmented__btn { pointer-events: none; cursor: not-allowed; }
+.segmented--locked .segmented__btn:hover { color: var(--foreground-muted); }
+.segmented--locked .segmented__btn--active:hover { color: var(--foreground); }

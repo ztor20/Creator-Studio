@@ -869,16 +869,38 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 /* col1：返回箭頭＋標題塊，靠左（含舊 .wizard__close 向後相容）。
    箭頭對齊「主標題那一行」（align-items:flex-start＋箭頭高度≈標題行高），副標在標題下方。 */
-.wizard__top-lead { grid-column: 1; justify-self: start; display: flex; align-items: flex-start; gap: var(--sp-14); min-width: 0; }
+/* 2026-07-16：整組（返回箭頭＋標題/副標）合併為單一返回按鈕（Figma 781:4142）。
+   .wizard__top-lead 當可 hover 的膠囊面：常態透明、hover 套 --accent 圓角底（Q9 hover 統一色、--radius-lg 8px、內距 8/16/8/8 皆照 Figma）；
+   padding 用等量負 margin 抵銷 → 維持箭頭原本靠左位置、hover 不位移。
+   實際可點/可聚焦的仍是內層 .wizard__back <button>，用 stretched ::after 把命中區與焦點環撐滿整個 lead，
+   點標題也回上一頁——免動 10 個消費頁 markup。 */
+.wizard__top-lead {
+  grid-column: 1; justify-self: start;
+  position: relative;
+  display: flex; align-items: flex-start; gap: var(--sp-12);   /* Figma=12（原 14）*/
+  min-width: 0;
+  padding: var(--sp-8) var(--sp-16) var(--sp-8) var(--sp-8);
+  margin: calc(-1 * var(--sp-8)) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-8)) calc(-1 * var(--sp-8));
+  border-radius: var(--radius-lg);
+  transition: background-color var(--duration) var(--easing);
+}
+.wizard__top-lead:hover { background: var(--accent); }
 .wizard__close { grid-column: 1; justify-self: start; }
 .wizard__back {
   flex: 0 0 auto;
   display: inline-grid; place-items: center;
   width: 24px; height: var(--fs-22);   /* 高度≈主標題行高，與標題同高並列 */
   border: 0; background: transparent; cursor: pointer;
-  color: var(--foreground); border-radius: var(--radius-sm);
+  color: var(--foreground);
 }
-.wizard__back:hover { background: var(--accent); }
+/* stretched hit area：把 .wizard__back 的命中區＋焦點環撐滿整個 .wizard__top-lead（含標題）。
+   inset:0 以 position:relative 的 .wizard__top-lead 為基準，非小箭頭本身。 */
+.wizard__back::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: var(--radius-lg);
+}
+.wizard__back:focus-visible { outline: none; }
+.wizard__back:focus-visible::after { outline: 2px solid var(--ring); outline-offset: 2px; }
 .wizard__back .ztor-icon { width: 22px; height: 22px; }
 .wizard__close {
   font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium);
@@ -935,6 +957,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    --form 頂距、--narrow/--wide 內容寬。已知分岔未收：funding-simulate(32px)、funding-test/create-campaign(44px) */
 .wizard__body--form { padding-top: var(--sp-72); }
 .wizard__body--narrow { max-width: 1000px; }
+.wizard__body--mid { max-width: 1140px; }   /* narrow 與 wide 之間；create-product：剛好容下逐規格表(≈682)＋320 預覽欄，比 wide 收斂又不溢出捲動（floor≈1100）*/
 .wizard__body--wide { max-width: 1240px; }
 .wizard__step-title {
   font-family: var(--font-display);

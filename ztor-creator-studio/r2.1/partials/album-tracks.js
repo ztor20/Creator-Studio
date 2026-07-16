@@ -31,9 +31,9 @@
 
     function emit() { syncEmpty(); root.dispatchEvent(new CustomEvent('albumtracks:change', { bubbles: true, detail: { count: list.querySelectorAll('.album-track:not(.is-uploading)').length } })); }
 
-    function buildRow(file) {
+    function buildRow(file, finished) {
       var isAudio = (file.type || '').indexOf('video') === -1;
-      var row = el('div', 'album-track is-uploading'); row.draggable = false;
+      var row = el('div', 'album-track' + (finished ? '' : ' is-uploading')); row.draggable = !!finished;
       var typeIcon = isAudio ? 'music' : 'video';
       row.innerHTML =
         '<span class="album-track__grip"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>' +
@@ -68,16 +68,22 @@
       var menu = row.querySelector('details');
       var coverUrl = null;
 
-      metaEl.textContent = file.name + ' ' + T('cp.album.uploadingword', 'is uploading…');
-
-      // 假上傳 → 完成
-      setTimeout(function () {
-        row.classList.remove('is-uploading');
-        row.draggable = true;
+      if (finished) {
+        // 預置（seed）曲目：已存在的內容，直接呈現完成列、不跑假上傳
         nameEl.textContent = baseName(file.name);
-        metaEl.textContent = file.name + ' · ' + fmtSize(file.size) + ' · ' + T('cp.album.justnow', 'just now');
-        emit();
-      }, 1600 + Math.random() * 900);
+        metaEl.textContent = file.meta || (file.name + ' · ' + fmtSize(file.size));
+        if (file.lyrics && lyricsBtn) lyricsBtn.hidden = false;
+      } else {
+        metaEl.textContent = file.name + ' ' + T('cp.album.uploadingword', 'is uploading…');
+        // 假上傳 → 完成
+        setTimeout(function () {
+          row.classList.remove('is-uploading');
+          row.draggable = true;
+          nameEl.textContent = baseName(file.name);
+          metaEl.textContent = file.name + ' · ' + fmtSize(file.size) + ' · ' + T('cp.album.justnow', 'just now');
+          emit();
+        }, 1600 + Math.random() * 900);
+      }
 
       function closeMenu() { if (menu) menu.open = false; }
 
@@ -144,6 +150,19 @@
 
     addBtn.addEventListener('click', function () { input.click(); });
     input.addEventListener('change', function () { if (input.files && input.files.length) { addFiles(input.files); input.value = ''; } });
+
+    // 預置曲目：data-album-seed = JSON array of {name, meta, type?, lyrics?}。
+    // 用於商品細節頁呈現已存在的專輯內容（product-detail）；建立頁不帶此屬性＝空狀態。
+    var seedRaw = root.getAttribute('data-album-seed');
+    if (seedRaw) {
+      try {
+        JSON.parse(seedRaw).forEach(function (t) {
+          var row = buildRow({ name: t.name, size: t.size || 0, type: t.type || 'audio', meta: t.meta, lyrics: t.lyrics }, true);
+          list.appendChild(row);
+          if (window.ztorIcons) window.ztorIcons.applyIcons(row);
+        });
+      } catch (e) { /* 忽略格式錯誤的 seed */ }
+    }
     syncEmpty();
   }
 
