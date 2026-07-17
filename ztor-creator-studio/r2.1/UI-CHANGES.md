@@ -6,6 +6,90 @@
 
 ---
 
+## 2026-07-17 · 折扣設定：單一規格 折扣價↔折扣% 雙向連動、多規格改折扣%＋移到逐規格表下（B 反饋導入 · 產品變更待規格 · 接續 D144）
+
+使用者反饋：多規格下折扣設定位置與語意都不理想——(a) 折扣設定給的是「絕對折扣價 $」，多規格每個規格各自定價，一個絕對折扣價套不到 N 個規格；(b) 單一規格的定價區在多規格會隱藏（`data-when-var="single"`），但折扣設定沒設隱藏、照樣顯示且排在「逐規格定價表」上方，與真正的價格脫節。裁決走「折扣跟著價格走」＋「多規格用折扣%」。**⚠️ 動到折扣的資料模型（D144 原定義＝絕對折扣價），屬產品變更，`documents/` 規格尚未同步（見 ASSUMPTIONS UIA-060）。**
+
+- **【B · 單一規格＝折扣價 ↔ 折扣% 雙欄連動】** create-product 單一規格折扣設定的「折扣價」欄改成 form-grid 兩欄：折扣價（$ 前綴）＋折扣%（% 後綴，`amount-field--suffix`）；以定價（`cp-price`）為基準雙向自動換算、最後編輯為準（打折扣價算出%、打%算出折扣價、改定價時依現有%重算折扣價）。程式設值不觸發 input 事件故無迴圈。原 section 補 `data-when-var="single"`（多規格時隱藏）。
+- **【B · 多規格＝折扣%、位置移到表格下】** 新增第二個折扣設定 section（`data-cp-show="physical" data-when-var="multiple"`），置於「逐規格定價表」正下方；只放單一「折扣 %」（套用所有規格，無絕對折扣價）＋限時折扣起訖日。與單一規格版互斥顯示。
+- **【D · 位置原則】** 折扣設定「跟著價格走」：單一規格＝定價下（現狀）、多規格＝逐規格表下。上架設定（發佈行為）在預覽欄、折扣設定（改價格）留表單，兩者刻意分流。
+- 新增 i18n：`cp.sale.percent`、`cp.sale.linkhint`、`cp.sale.pct-allhint`、`cp.discount.enable-pct-sub`（皆 en+zh）。重用 `amount-field--suffix`（既有 % 後綴變體）、`control-row`、`form-grid`、`switch`，無新元件。check_ds_sync 全 PASS（棘輪未超標＝無新裸值；WARN 9 `--shadow-edge-top` 屬 Q18 既有 drift、非本輪）、bump `20260717o`。
+- 範圍：本輪只動 create-product（創建頁）。product-detail 的 §2.15 折扣設定同理應套同模型（單一→雙欄、多規格→折扣%），未動＝待辦。
+
+## 2026-07-17 · 建立取貨場次 modal 反饋三輪：改頁籤式 dialog（B 反饋導入 · C 撤除 · UIA-059）
+
+依使用者反饋（參考 Mobbin：Vapi「Create Structured Output」等頂部分頁 dialog——頁籤可自由切換、非 1→2→3 步驟）把共用「建立取貨場次」popup（`partials/pickup-session-modal.js`）從「三塊 `--muted` 填色面板疊直」改成「頂部三頁籤自由切換」。動機：只有三區、填色面板偏重且暗色下仍顯笨重；頁籤一次只看一區、無捲動、無步驟壓力，分區交給頁籤底線承載。
+
+- **【B · 版面改頁籤】** F1/F2/F3 三區改成 `.tabs`＋`.tab-panel`（重用既有 Tabs 元件，不新造）三頁籤：基本資訊／取貨項目／密碼；移除段內重複 H3（頁籤標籤即區名）。pickup.css 加 glue：`[data-pks-panels]` 保 `min-height:248px` 免切換塌陷、`.pks-panel__intro` 為取貨項目頁引言、面板內 `.field__label` 維持 14px regular（沿用原 modal 節奏）。
+- **【B · 藏欄位驗證路由】** 取貨項目頁加 `.tabs__item-count` 即時計數徽章；按「建立」時驗證，若未加項目或起訖時間顛倒，自動跳到出錯的頁籤（解掉頁籤把必填藏起來的取捨——藏在別頁的錯不會沉默）。「無草稿、需 ≥1 項才可建立」（D112）仍以停用建立鈕落地。
+- **【C · 撤除 `.form-section--modal`】** 同日上一輪為此 modal 新增的 `--muted` 填色面板變體，改頁籤後無任何消費者，從 `form-section.css` 移除；`design-system.html` 該 demo 改成退場說明、`design-system.md` 條目同步。
+- **【B · 頁籤標籤 i18n】** 新增 `pks.tab.{basic,items,scanner}`（en+zh，短標籤）；移除改版後不再被引用的 `pks.sec.{basic,scanner}` 與 `pks.sec.items`（`pks.sec.items.sub` 仍作引言保留）。
+- check_ds_sync 全 PASS、cache-bust bump。淺色暗色皆截圖驗證。
+
+## 2026-07-17 · 上架設定移到商店預覽下＋改 radio-list（新元件）（B 反饋導入，接續 D144）
+
+依使用者反饋，把「上架設定」從表單流程搬到右側「商店預覽」欄（預覽卡下方），並把選法從分段控制（segmented）換成新的輕量單選列（radio-list）。動機：預覽窄欄放水平三段軌太擠；「何時上架」與「買家看到的樣子」擺一起語意最順；選法上，上架時機是「資料選擇」而非 segmented 定義的「視角切換」，radio-list 語意更對。使用者從三案（直式選擇卡／下拉／輕量 radio 列）中選 radio-list（探索稿 `docs/上架設定-位置與選法探索.html`）。此筆更新前一則「上架設定改分段控制」中 segmented 的部分。
+
+- **【D · 新元件 radio-list】** promote `ds-components/radio-list.css`（輕量垂直單選：radio 點＋標題＋可選描述，選中＝填橘點；透明列、hover `--muted`、無卡框；純 token、無裸 hex/rgb/font-size）。DS 頁新增「4.84 Radio list」demo＋TOC＋元件矩陣列，`design-system.md` 補條目。掛入 5 頁＋design-system。
+- **【B · 位置（僅創建頁）】** create-product／create-bundle／create-auction 的上架設定從 `.preview-split__form` 移到 `.preview-col`，包成第二張 `.card` 疊在預覽卡下（sticky 欄；窄螢幕 ≤1040px 改堆疊在表單後）。
+- **【B · 選法（全 5 頁）】** 上架設定控制由 segmented 改 radio-list：create-product／-bundle／-auction（拍賣為 不開拍／立刻開拍／定時開拍）＋ product-detail／bundle-detail（位置不動、僅換選法，維持全站同一控制長相一致）。選「定時上架／定時開拍」才展開時間欄的行為不變。
+- **【C · 移除】** 三創建頁表單內原 `form-section--outlined` 上架設定區塊移除（內容搬到預覽欄）；listing 控制的 segmented 用法退場（segmented 仍保留給視角切換）。
+- 新增 i18n：`cp.listing.{none,now,schedule}-sub`、`ca.start.{none,now,schedule}-sub`（各 en+zh，一句描述）。check_ds_sync 全 PASS（棘輪未超標＝無新裸值）、cache-bust bump `20260717k`。
+- 風格觀察（未阻斷）：站上 1-of-N 選擇器現有三種——selection-card（grid 大卡）／radio-card（2-up）／radio-list（vertical 窄欄），依版面密度分工；是否需明確分工或收斂已記入 `STYLE-DECISIONS.md` 待裁決（Q17）。
+
+## 2026-07-17 · 建立取貨場次 modal 反饋二輪：combobox 選取＋間距＋文案（B 反饋導入 · UIA-059）
+
+依使用者反饋再調共用「建立取貨場次」popup（`partials/pickup-session-modal.js`）。四點：
+
+- **【B · F2 改單框 combobox】** 原「搜尋框＋兩份常駐清單」改為單一 search-to-add combobox（新元件 `ds-components/combobox.css`，重用 `.tag-input` 欄位＋`.chip`）：已選項顯示為可移除 chip，focus／輸入時彈出下拉建議（取貨商品／活動票券分組、icon＋名稱＋meta），點選加入為 chip、已選項自建議移除、無命中顯示空訊息。F2 標題「加入可核銷項目」→「**加入取貨項目**」，副標改「**至少加入一項商品或活動票券**」。
+- **【C · 移除文案】** 刪 F2 舊副標「把取貨商品與活動票券加進本場次…」與底部 stickynote「! 場次至少需加入一個商品或票券才能建立…」（i18n `pks.note` def 一併移除）。最低一項的規則改由 F2 副標承載。
+- **【B · F3 改名】** 「Scanner 存取」→「**設置密碼**」。
+- **【B · 區段分區改填色面板】** 使用者反饋暗色下 section 沒有區隔——根因是 **pickup.html 漏掛 `form-section.css`／`chip.css`**（modal 的區段與 chip 樣式在此頁根本沒載入），補齊；並把 `.form-section--modal` 由「間距＋細線」改為 **`--muted` 填色面板＋`--border` 邊框＋`--radius-xl`**（`--card` dialog 上細線暗色讀不出，改填色分區，淺暗兩色都清楚）。淺色暗色皆截圖驗證。
+- 新元件 `combobox.css` 掛入 pickup／create-product／product-detail／design-system（pickup 另補漏掛的 `tag-input.css`）；DS 頁新增「4.16b Combobox」demo＋TOC＋`design-system.md` 條目。i18n 更新 `pks.sec.items/.items.sub/.scanner`、刪 `pks.note`。check_ds_sync 全 PASS（棘輪未超標）、cache-bust bump。
+
+## 2026-07-17 · 建立取貨場次 modal 分三區塊＋統一搜尋＋死 class 遷移（A spec-derived · D infra · Plan195）
+
+依上游 5.1.5.12 v1.4（§4 歸三個功能塊）重構共用「建立取貨場次」popup（`partials/pickup-session-modal.js`，pickup／create-product／product-detail 三頁共用開啟）；同時修掉 2026-07-11 欄位系統退役後遺留的死 class。使用者反饋：欄位在頁面上「全部擠在一起、沒有視覺區隔」。
+
+- **【D · 死 class 遷移（根因）】** modal STEP 1 表單仍在用 2026-07-11 已退役、無 CSS 定義的 `.payout-field` / `.payout-form-grid` / `.payout-field__label` / `.payout-field__hint`（欄位因此失去樣式、擠成一團＝反饋的根因）；改用 canonical `.field` / `.form-grid` / `.field__label` / `.field__hint`（field-system.css／form-grid.css）。（`partials/restock-modal.js` 殘留同樣的死 class，本輪未動，另記待辦。）
+- **【A · 分三區塊】** 依 spec §4 用 `.form-section` 包成 F1 場次基本資訊（名稱／地點／起訖時間／說明）· F2 加入可核銷項目 · F3 Scanner 存取（密碼）；區段標題＋`+` 分隔線提供視覺分區。
+- **【A · 統一搜尋加入（spec §4 F2）】** F2 頂部加搜尋框，依名稱即時過濾取貨商品與活動票券兩份清單（`filterItems()`）；純視覺過濾——被過濾掉的已勾選項仍保持勾選並計數；兩清單皆無命中時顯示「沒有符合搜尋的項目」。
+- **【D · 新增 `.form-section--modal` 變體】** 頁面版 44px 垂直留白在 modal 太空曠，新增 dialog 用精簡變體（`--sp-20` 內距、區段起點 `:first-child` 去上內距，標題與分隔線不變）；`design-system.html` demo ＋ `design-system.md` 條目同步。
+- 新增 i18n：`pks.sec.basic/.items/.items.sub/.scanner`、`pks.search/.ph/.empty`（皆 en+zh）；補 `.pickup-select__row[hidden]` 還原規則（搜尋過濾需要）。check_ds_sync 全 PASS（棘輪未超標＝無新裸值）、cache-bust bump `20260717f`。
+
+## 2026-07-17 · 折扣設定結構化＋上架設定改分段控制（B 反饋導入，接續 D144）
+
+使用者對前一筆 D144 的兩個新區塊給了更明確的互動結構：折扣設定改成「開啟折扣 → 折扣價 →（可選）開啟限時折扣 → 起訖日」的兩層揭示；上架設定改成三選一「不上架／立刻上架／定時上架」分段控制、選「定時上架」才展開時間欄（使用者選定分段控制，非並排卡）。純呈現/互動結構調整，復用既有元件，無新 CSS 元件。
+
+- **【B · 折扣設定兩層揭示（商品）】** create-product／product-detail：主開關「開啟折扣」（`cp.discount.enable`）→ 展開折扣價（`cp.sale.price`，絕對價）＋次開關「開啟限時折扣」（`cp.discount.limited`）→ 展開起訖日。限時折扣關＝常態折扣、開＝只在檔期內套用。JS 用既有 `wireReveal`／`revealToggle` 綁兩層開關。
+- **【B · 折扣設定（組合）差異化】** create-bundle／bundle-detail：組合折扣幅度＝定價區既有的「折扣 %」（衍生價，不動），折扣設定區只放一句說明（`cb.discount.note`）＋「開啟限時折扣」→ 起訖日；不設絕對折扣價欄。**組合是否把折扣% 併入折扣設定＝待使用者裁決。**
+- **【B · 上架設定改分段控制（三型）】** 三建立頁＋兩細節頁的「上架開關＋定時上架二開關」改為單一 `.segmented` 三選一（商品/組合＝不上架／立刻上架／定時上架 `cp.listing.none/now/schedule`；拍賣＝不開拍／立刻開拍／定時開拍 `ca.start.none/now/schedule`），預設「立刻上架/開拍」，選「定時」才 reveal 時間欄。三選一已含「不上架＝隱藏」，故移除原獨立上架開關（`cp.show`）。create-bundle／bundle-detail 補掛 `segmented.css`。
+- **命名／鍵**：i18n 新增 `cp.discount.enable/enable-sub`、`cp.discount.limited/limited-sub`、`cp.listing.none/now`、`ca.start.none/now`、`cb.discount.note`；`cp.sale.price` 值「特價」→「折扣價」、`cp.sale.start/end`／`cb.sale.start/end`「特價」→「折扣」起訖日；`cp.listing.schedule`／`ca.start.schedule` en 縮成「Schedule」。移除孤兒鍵 `cp.sale.activate(-sub)`、`cp.listing.schedule-sub`、`cb.sale.activate(-sub)`、`ca.start.schedule-sub`。check_ds_sync 全 PASS（棘輪未超標）、cache-bust bump（→20260717h）。
+- **與規格的分歧（待同步）**：折扣可「常態不限期」與上架三態，較 documents 現寫的「排程特價一定有起訖日／上架開關」更廣，屬 D144 的細化；`documents/5.1.5.1/2/4` 與 decisions 待補一則細化紀錄（尚未同步）。
+
+## 2026-07-17 · 定價瘦身＋折扣設定/上架設定（排程特價・定時上架）三型對齊（A spec-derived · D144）
+
+依 D144 把規格改動落到原型：商品定價只留「定價（現金）＋成本價」，移除原價與 POPCORN 定價單位；三型都補「上架設定」（含定時上架，拍賣叫定時開拍），商品與組合再補「折扣設定 → 排程特價」，拍賣不設。規格已於前一輪同步（`documents/5.1.5.1/2/4/8/9/10`、decisions.md D144、backup_plan Plan210）。全部復用既有元件（form-section／control-row／switch／field／form-grid／amount-field），零新 CSS 元件。
+
+- **【C · 移除原價欄】** create-product 與 product-detail 的定價區刪整個「原價（Original price · if on sale）」欄；三欄 `form-grid--3` 收成兩欄 `form-grid`（定價＋成本）。i18n `cp.original`／`cp.original.if` 移除。
+- **【C · 移除 POPCORN 定價單位切換】** create-product 的價格欄（含逐規格表 JS 樣板）由 `amount-field` 互動切換鈕（`<button data-amount-unit>`＋`__chev`＋`data-price-sync`）改回純現金 `$`（`amount-field--readonly`）；刪 `syncPriceUnit()` 狀態機與 `cp-price-unit-note` 換算 hint；i18n `cp.priceunit.*`（title/cash/popcorn/hint）移除。store-settings F6 幣別說明改寫、不再對照 POPCORN。
+- **【A · 折扣設定 → 排程特價（商品＋組合）】** create-product／product-detail 新增「折扣設定」區塊＝排程特價開關 → 展開特價價格＋起訖日（商品有絕對特價，取代原價劃線機制）。create-bundle 現有「販售排程」改名回「排程特價」歸入「折扣設定」（反轉 D091），bundle-detail 同步；組合維持開關＋起訖日、**不設特價價格欄**（規格標組合特價來源待確認）。拍賣不設排程特價（競標無固定售價可折）。
+- **【A · 上架設定 → 定時上架（三型）】** 三建立頁＋product-detail／bundle-detail 新增「上架設定」＝上架開關＋定時上架（開關→上架時間，`datetime-local`）；拍賣的等價功能為「定時開拍」（`ca.start.*`）。
+- **【C · 上架開關由預覽欄併入主表單】** 三建立頁原本在右側 sticky 預覽欄的「Show in my shop」開關移入主表單新「上架設定」區塊、移除預覽欄重複開關（使用者裁示佈局 A）；與細節頁的上架設定分組一致。
+- **命名／鍵**：i18n.js 新增共用家族 `cp.discount.title`／`cp.sale.*`（商品＋詳情共用）／`cp.listing.*`（五頁共用區塊標題）／`ca.start.*`（拍賣）；bundle 沿用 `cb.sale.*` 但值由「販售排程」改「排程特價」、移除 `cb.sale.title`。全部新 key 皆 en+zh、經覆蓋檢查（def=1、被 1–5 頁引用）。
+- **【D · 元件文件同步】** `amount-field.css` 檔頭註解標明 cash/POPCORN 互動切換隨 D144 退場、切換 chrome 保留為可重用能力（無消費者）；`design-system.html`／`design-system.md` 的 amount-field demo 拿掉 🍿 示範、改「靜態 $＋保留切換」雙例，anatomy／Do&Don't／`[data-amount-unit]` 說明同步。check_ds_sync 全 PASS（棘輪未超標＝無新裸值）、cache-bust bump（20260717e）。
+
+## 2026-07-17 · 黑夜版 midnight 壓暗（v2）＋KPI delta chip＋卡片圓角 16（B 反饋導入 · Q15／Q16）
+
+使用者以總覽為起點裁示採用 midnight 深色風格（`docs/黑夜版風格探索-midnight.html` 測試頁截圖核可；Mobbin 參照 Whop/Posh/Substack）。改動全在元件層與 token 層，**不動任何產品頁 HTML 檔案**（其他 session 正在編輯產品頁，僅外觀經 token 連動）。亮色模式完全不動。
+
+- **【B · 暗色 token 壓暗 v2（`_tokens.css` dark 區塊 14 值，Q15）】** **維持 r2.1 內凹層次語意**：content(surface-page/background) `#191A1A`→**`#0C0D0D`＝最深** → 嵌套襯底 `--muted #272828`→`#161718` → 外殼(surface-shell/sidebar) `#2B2B2C`→**`#1C1D1E`＝明顯亮於 content、包住圓角內凹的 content** → 卡/popover `#303131`→`#212223` → hover `--accent #383839`→`#2A2B2C`；border/input `#3A3A3C`→`#2C2D2E`、border-soft `#2A2A2A`→`#202122`、sidebar-accent→`#262728`、sidebar-active `#444445`→`#303132`。**v1 一度反轉成殼最深/content 較亮且兩者相近，使用者回饋「content 要最深、外殼別太相近」後改回 v2**（維持 r2.1 原制、整體壓暗）。舊值全部留在 token 行註解。
+- **【B · KPI delta 升級膠囊 chip（`kpi.css`，Q15）】** `.kpi__delta` 由純色文字改染色膠囊——semibold、`color-mix(status 12%, --card)` 底、radius-pill、`2px --sp-8` 內距；`--neg` 紅色同構。膠囊＝「趨勢指示」新視覺角色（與 Q1 badge 小圓角角色區隔）。全站 15 頁 KPI 消費者連動受益。
+- **【B · form-section 暗色配套修正（`form-section.css`，Q15）】** `[data-theme="dark"] .form-section--outlined` 填色 `--muted`→`--card`：壓暗後 `--muted` 與最深的 content 過近、區塊會消失；改 `--card`(#212223) 浮在 content(#0C0D0D) 上、與亮色行為一致（修訂 Q14 暗色部分）。
+- **【B · 卡片/面板級圓角 6→16px（Q16，約 40 支元件）】** card／kpi／preview-card／selection-card／radio-card／readiness／notification-matrix／insight-row／table 容器／picker／album-tracks／upload-tile／alert banner·bar／info-banner／store-settings 卡／scanner／vip-card／彈窗 dialog（payout/embed/leave）＋其內容卡，統一到現有 `--radius-xl`(16px)、與 form-section 一致。**控制項維持 6px**（button/input/badge/segmented/field-pill）、下拉浮層維持 `--radius-lg` 8px、清單列/icon 底框/縮圖不動（守 Q1 形狀＝角色）。不引入新圓角值、不違反 Q2。
+- **【D · 版本與檔案紀律】** 本輪未主動跑 bump_ver（避免改寫全站 39 頁與別 session 衝突）；**別 session 稍後已 bump 全站到 `20260717f`**，本輪 CSS 改動（內容已變）搭該版號生效。全程**未動 `js/i18n.js`**（別 session 編輯中）與 `js/components.js`（純換皮、資料結構不碰）。
+- **影響面**：暗色模式全站外觀連動（sidebar／卡片／彈窗／表單區塊全變深、卡片圓角變柔）；檔案動 4 支 CSS（_tokens／kpi／card／form-section 的暗色與圓角）＋約 40 支元件的圓角行＋4 份文件。回歸抽查 index／e-shop／create-product／product-detail／退款彈窗通過。DS 雙軌（md＋html token 表 v2、Q15/Q16 裁決、kpi/form-section/card/radius 條目、Q9 行）已同步。
+
 ## 2026-07-16 · 訂單詳情品項名稱改開「商品快照」popup（A spec-derived · D143）
 
 依使用者指示＋新產品決策 D143，把訂單詳情品項明細的商品名稱從「直連商品管理頁」改為開一個「商品快照（Product snapshot）」popup，呈現下單當時的商品樣貌。規格已同步（`documents/5.1.5.3.1-訂單詳情.md` §2.3.1 導向、新增 §2.7、§3／§5、frontmatter v2.0）與 `documents/decisions.md` D143。

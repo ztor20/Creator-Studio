@@ -20,7 +20,7 @@
   padding: var(--sp-16) var(--sp-18);
   background: var(--card);
   border: 1px solid var(--border);   /* Q3 2026-07-13：預設卡改純邊框，取代 --shadow-card */
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 .card / form-section 統一 */
   min-height: 96px;
 }
 .kpi__label {
@@ -39,12 +39,24 @@
   font-weight: var(--fw-medium);
   letter-spacing: -0.6px;
 }
+/* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
+   膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
+   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix 對 --card，亮暗自動跟隨。 */
 .kpi__delta {
   font-family: var(--font-ui);
   font-size: var(--fs-12);
+  font-weight: var(--fw-semibold);
   color: var(--status-success);
+  background: color-mix(in srgb, var(--status-success) 12%, var(--card));
+  border-radius: var(--radius-pill);
+  padding: 2px var(--sp-8);
+  display: inline-block;
+  width: fit-content;
 }
-.kpi__delta--neg { color: var(--destructive); }
+.kpi__delta--neg {
+  color: var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 12%, var(--card));
+}
 .kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
 
 /* Quiet "view more" link on a metric tile — e.g. Net income → Breakdown,

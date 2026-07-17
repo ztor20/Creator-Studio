@@ -177,6 +177,12 @@
   --shadow-hairline:
     0 0 1px rgba(0, 0, 0, 0.2);
 
+  /* Top-edge highlight — 疊在浮起面頂緣的 1px 內光，給無邊框卡一道「被光打到的上緣」，
+     與 --shadow-card 併用做出微立體感（2026-07-17，form-section--outlined 採用；midnight 探索）。
+     亮色白底上幾乎不可見（無害）；深底才顯出上緣高光。 */
+  --shadow-edge-top:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
   /* Seam shadow — 向右柔投影，由「上層的主面板」蓋向相鄰的下層面板（E-Shop 主面板疊在商店預覽之上），
      順著主面板圓角填滿接縫凹口。⚠ 不可掛在捲動容器（其圓角被瀏覽器畫成方角→方角陰影）；
      掛在一個透明、真圓角的輔助層（貼上層面板右緣）向右投到下層上。 */
@@ -390,19 +396,24 @@
 [data-theme="dark"] {
   /* ── Mode override — 暗色實色面（2026-06-25 issue #11：主要面與卡片不用半透明）──
      值由原半透明疊層在 #191A1A（content）/ #2B2B2C（shell）上算出，外觀近乎不變、改為實色。
-     半透明只剩真正浮在內容上的 overlay（見檔尾 .overlay-surface）。 */
+     半透明只剩真正浮在內容上的 overlay（見檔尾 .overlay-surface）。
+     ── midnight 壓暗（2026-07-17 使用者裁示，Mobbin 參照 Whop/Posh/Substack）──
+     v2（2026-07-17 使用者回饋）：保留 r2.1 的 shell 層次語意——**content(surface-page) 最深、
+     外殼(surface-shell) 明顯較淺、兩者拉開對比**（v1 一度反轉成殼最深、且與 content 太相近，已改回）。
+     由深到淺：content #0C0D0D → muted 襯底 #161718 → 外殼/rail #1C1D1E → 卡 #212223 → hover #2A2B2C。
+     整體比原 r2.1 壓暗（原 shell #2B2B2C/content #191A1A/card #303131），但相對關係與內凹視覺不變。舊值留註解。 */
 
   /* Base surfaces / text */
-  --background:        #191A1A;
+  --background:        #0C0D0D;   /* midnight-v2（原 #191A1A）content-level，最深、與 --surface-page 同階 */
   --foreground:        #FDFDFD;
-  --card:              #303131;   /* 原 surface rgba(.10) over #191A1A */
+  --card:              #212223;   /* midnight-v2（原 #303131）浮在 content 上的卡，略亮於外殼 */
   --card-foreground:   #FDFDFD;
-  --popover:           #303131;
+  --popover:           #212223;   /* midnight-v2（原 #303131）＝卡同層 */
   --popover-foreground:#FDFDFD;
-  --muted:             #272828;   /* 原 surface-muted rgba(.06) */
+  --muted:             #161718;   /* midnight-v2（原 #272828）嵌套襯底：比卡深、比 content 亮一階 */
   --muted-foreground:  #757575;   /* 原 foreground-subtle rgba(.4) */
   /* --secondary 已於 Q9 2026-07-13 退役（見亮色區塊註解）*/
-  --accent:            #383839;   /* hover / 選單項底 · 互動 hover 統一色（Q9 2026-07-13）*/
+  --accent:            #2A2B2C;   /* midnight-v2（原 #383839）hover / 選單項底 · 互動 hover 統一色（Q9 2026-07-13）*/
   --accent-foreground: #FDFDFD;
 
   /* Primary — orange stays in dark */
@@ -415,8 +426,8 @@
   --destructive-foreground: #FFFFFF;
 
   /* Edges */
-  --border:            #3A3A3C;
-  --input:             #3A3A3C;
+  --border:            #2C2D2E;   /* midnight-v2（原 #3A3A3C）hairline，比卡略亮才讀得出 */
+  --input:             #2C2D2E;   /* midnight-v2（原 #3A3A3C，維持＝border）*/
   /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
 
   /* Charts — dark variants */
@@ -427,24 +438,24 @@
   --chart-5:           #A78BFA;
 
   /* Sidebar */
-  --sidebar:                   #2B2B2C;
+  --sidebar:                   #1C1D1E;   /* midnight-v2（原 #2B2B2C）rail＝外殼色，明顯亮於 content */
   --sidebar-foreground:        #FDFDFD;
   --sidebar-primary:           #ffa33f;
   --sidebar-primary-foreground:#171717;
-  --sidebar-accent:            #383839;   /* rail hover over #2B2B2C */
+  --sidebar-accent:            #262728;   /* midnight-v2（原 #383839）rail hover over #1C1D1E */
   --sidebar-accent-foreground: #FDFDFD;
-  --sidebar-border:            #3A3A3C;
+  --sidebar-border:            #2C2D2E;   /* midnight-v2（原 #3A3A3C）*/
   --sidebar-ring:              var(--primary);
-  --sidebar-active:            #444445;   /* [ext] 已選 pill（原 rail-active rgba(.12)）*/
+  --sidebar-active:            #303132;   /* midnight-v2（原 #444445）[ext] 已選 pill，比 hover 再亮一階 */
 
   /* creator extensions */
-  --surface-shell:     #2B2B2C;   /* [ext] app shell（rail＋canvas）*/
-  --surface-page:      #191A1A;   /* [ext] route page = content 底 */
+  --surface-shell:     #1C1D1E;   /* midnight-v2（原 #2B2B2C）[ext] app shell（rail＋canvas）明顯亮於 content、與其拉開 */
+  --surface-page:      #0C0D0D;   /* midnight-v2（原 #191A1A）[ext] route page = content 底，最深、內凹在較淺外殼裡 */
   --surface-inverse:   #000000;   /* [ext] footer slab */
   --foreground-muted:  #B9B9B9;   /* [ext] 中階文字（原 rgba(.7) 實色化）*/
   --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
   --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
-  --border-soft:       #2A2A2A;
+  --border-soft:       #202122;   /* midnight-v2（原 #2A2A2A）*/
 
   /* 2026-07-13 體檢：暗色缺的 override 補上 */
   --overlay-tint:      rgba(0, 0, 0, 0.6);   /* 深底上遮罩要更濃才有存在感（亮色 0.45 太弱）*/
@@ -482,6 +493,10 @@
 
   --shadow-hairline:
     0 0 1px rgba(253, 253, 253, 0.2);
+
+  /* Top-edge highlight（dark）— 深底才顯的上緣內光（= midnight --edge）*/
+  --shadow-edge-top:
+    inset 0 1px 0 rgba(253, 253, 253, 0.05);
 
   /* Seam shadow（dark）— 主面板＝最深 #0A0A0A，用較強黑向右蓋在預覽上、壓出層疊深度 */
   --shadow-seam:

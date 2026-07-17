@@ -12,6 +12,9 @@
 .form-section[hidden] { display: none; }
 .form-section + .form-section { border-top: 1px solid var(--border-soft); }   /* 區段間分隔線 */
 
+/* (2026-07-17) `.form-section--modal` 已退場：pickup session modal 當日改用頂部頁籤
+   （shared .tabs + .tab-panel）分區，不再套填色面板；此變體無其他消費者，故移除。 */
+
 /* Opt-in outlined variant — reserved for evaluation pages until a product
    flow explicitly adopts it. In light mode the section is the brightest
    layer (`--card`) inside the `--surface-page` main and `--surface-shell`
@@ -21,13 +24,18 @@
 /* 寫成 .form-section.form-section--outlined 提高權重（0,2,0）蓋過
    `.form-section + .form-section` 的 border-top 分隔線（同權重），確保四邊皆無 border——
    否則相鄰 outlined 卡頂端會殘留一條分隔線。 */
+/* 2026-07-17（使用者裁示，Q14 修訂）：無邊框填色卡再加「浮起感」——resting card 陰影(E2)＋頂緣高光，
+   讓區塊像浮在內容底上的卡（midnight 探索頁做法）。仍無 1px 邊框；填色＋陰影＋上緣光共同分區。 */
 .form-section.form-section--outlined {
   padding: var(--sp-16);
   background: var(--card);
   border: 0;   /* 2026-07-16：去外框線（原 1px solid --border）*/
   border-radius: var(--radius-xl);   /* 16px — 對齊 Figma node 781-4166（2026-07-16 使用者裁示全站統一）*/
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);   /* 2026-07-17：E2 浮起＋頂緣高光（Q14 修訂）*/
 }
-[data-theme="dark"] .form-section--outlined { background: var(--muted); }
+/* 2026-07-17 midnight：暗色改用 --card（原 --muted）——midnight 壓暗後 --muted(#131414) 與頁面底(#111212)
+   幾乎同色、區塊會消失；--card(#191A1B) 在新層次裡正是「浮在內容底上的卡」，與亮色行為一致。 */
+[data-theme="dark"] .form-section--outlined { background: var(--card); }
 /* 區塊式建立流程：僅在前方已有可見 outlined section 時留出區段間距。
    使用一般兄弟選擇器，讓中間的條件 section [hidden] 不會留下空白、
    也不會讓下一個可見區段漏掉間距。 */

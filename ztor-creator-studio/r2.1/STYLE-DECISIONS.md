@@ -20,8 +20,11 @@
 | Q10 | 關閉鍵 icon 尺寸 | **16px**：拿掉 alert(20)／dialog(18) 覆寫，全部關閉鍵回到基礎 16 | 2026-07-13 | 對齊基礎 `.ztor-icon` 尺度 | ✅ 已執行 2026-07-13 |
 | Q11 | 「已付款 Paid」顏色 | **A**：全站綠色 success（`orders.pay.paid`、`od.badge.paid` 改 `badge--success`）。備註：若之後覺訂單列視覺過重可退 B | 2026-07-13 | 一語意一色、綠色 Paid 直覺 | ✅ 已執行 2026-07-13 |
 | Q12 | 欄位標籤：大寫 vs 一般 | **A**：`tier-settings.html` 的 `.gate-field__label`（大寫孤例）退役，改用 `.settings-row__label`（一般大小寫） | 2026-07-13 | 大寫孤例是站上小標系統的重複發明 | ✅ 已執行 2026-07-13 |
-| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32）〔**邊框部分已被 Q14 取代**〕 | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
-| Q14 | `form-section--outlined` 是否保留 1px 外框 | **去外框、保留填色卡**：`.form-section--outlined` 移除 `border`（原 1px `--border`），保留背景填色（亮 `--card`／暗 `--muted`）、圓角 `--radius-xl`(16)、內距 `--sp-16`；靠填色對比區分區塊，不再有邊界線。**取代 Q13 對本元件的「邊框化」部分**（Q13 的 selection-card／radio-cards 邊框不受影響）。實作用 `.form-section.form-section--outlined`（權重 0,2,0）蓋掉 `.form-section + .form-section` 分隔線，確保四邊無殘留 | 2026-07-16 | 使用者裁示：outlined 卡的硬邊界太重，改用填色卡即可分區 | ✅ 已執行 2026-07-16（全站 11 頁 88 處經元件層一次生效）|
+| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32）〔**邊框部分已被 Q14 取代**〕〔**icon 磚尺寸已被 Q18 縮小**〕 | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
+| Q14 | `form-section--outlined` 是否保留 1px 外框 | **去外框、保留填色卡**：`.form-section--outlined` 移除 `border`（原 1px `--border`），保留背景填色（亮 `--card`／暗 `--muted`）、圓角 `--radius-xl`(16)、內距 `--sp-16`；靠填色對比區分區塊，不再有邊界線。**取代 Q13 對本元件的「邊框化」部分**（Q13 的 selection-card／radio-cards 邊框不受影響）。實作用 `.form-section.form-section--outlined`（權重 0,2,0）蓋掉 `.form-section + .form-section` 分隔線，確保四邊無殘留〔**暗色填色已被 Q15 midnight 改為 `--card`**〕〔**Q18 再加 E2 陰影＋頂緣高光＝浮起卡，仍無邊框**〕 | 2026-07-16 | 使用者裁示：outlined 卡的硬邊界太重，改用填色卡即可分區 | ✅ 已執行 2026-07-16（全站 11 頁 88 處經元件層一次生效）|
+| Q15 | 黑夜版 midnight 深色層次＋KPI delta chip | **整體壓暗、維持 r2.1 內凹層次語意（v2 定案）**（Mobbin Whop/Posh/Substack 參照）：暗色 token 改——**content(surface-page/background) `#0C0D0D`＝最深** → 嵌套襯底 `--muted #161718` → **外殼(surface-shell/sidebar) `#1C1D1E`＝明顯亮於 content、包住圓角內凹的 content** → 卡/popover `#212223` → hover `--accent #2A2B2C`；border/input `#2C2D2E`、border-soft `#202122`、sidebar-accent `#262728`、sidebar-active `#303132`。**層次方向＝維持 r2.1 原制**（content 最深、外殼較淺、拉開對比）——v1 一度反轉成殼最深/content 較亮且兩者相近，經使用者回饋改回（v2）。配套：`form-section--outlined` 暗色填色 `--muted`→`--card`（浮在最深 content 上，修訂 Q14 暗色部分）。**KPI delta 升級染色膠囊 chip**（success/destructive 12% tint over `--card`、radius-pill、semibold）——膠囊形狀屬「趨勢指示（data-trend）」新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的狀態徽章角色區隔，不構成 Q1 例外。亮色 token 全部不動 | 2026-07-17 | 使用者裁示（以總覽為起點、截圖核可；v2 依「content 要最深、外殼別太相近」回饋修正；docs/黑夜版風格探索-midnight.html） | ✅ 已執行 2026-07-17 v2（token＋kpi＋form-section 元件層一次生效；**未跑 bump_ver**，等其他 session 收工統一補） |
+| Q18 | midnight 精修搬入 r2.1（form-section 浮起／型別磚縮小／上傳圖示晶片） | **套用（僅建立流程，不動全站 `.card`）**：(1) `form-section--outlined` 由純填色卡加「E2 resting 陰影 `--shadow-card` ＋頂緣高光 `--shadow-edge-top`（新增 Foundation token，亮色白底近乎不可見、深底顯上緣光）」＝浮起卡（**修訂 Q14**：仍無 1px 邊框，改由填色＋陰影＋上緣光共同分區）；(2) `.selection-card--icon` 型別磚縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊，**修訂 Q13 尺寸部分**）；(3) `.upload-tile--hero` 圖示加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`）。全站一般 `.card`（Q3 純邊框）與 `.selection-card--icon` 的邊框/橘 outline 標記（Q13）均不動 | 2026-07-17 | 使用者裁示：把 docs/黑夜版風格探索-midnight.html 的區塊浮起感與元件微調搬進正式站，限建立流程、不覆蓋 Q3 全站卡片 | ✅ 已執行 2026-07-17（元件層一次生效；**未跑 bump_ver**，等其他 session 收工統一補）|
+| Q16 | 卡片/面板級圓角放大 | **卡片級 6→16px（`--radius-xl`）**：card／kpi／preview-card／selection-card／radio-card／readiness／notification-matrix／insight-row／table 容器／picker／album-tracks／upload-tile／alert banner·bar／info-banner／store-settings 卡／scanner／vip-card／彈窗 dialog（payout/embed/leave）＋其內容卡，共約 40 處統一到現有 `--radius-xl`（16px），與 form-section 一致。**維持 6px**：控制項（button/input/badge/segmented/field-pill）、下拉選單浮層（dropdown/header/owner-lookup 用 `--radius-lg` 8px）、tooltip、清單列、icon 底框、縮圖——放大會違反 Q1「形狀＝角色」或造成一堆圓角。不違反 Q2（Q2 裁的是 6 vs 7px 假精度，非禁止大圓角；shell 28/pill 9999 本就不動） | 2026-07-17 | 使用者裁示（midnight 深色大卡配大圓角更柔和、且統一站上原本 form-section 16 vs 一般卡 6 的不一致） | ✅ 已執行 2026-07-17（元件層逐支改、控制項未動；**未跑 bump_ver**，等其他 session 收工統一補） |
 
 ---
 
@@ -38,6 +41,16 @@
 > 完整改動清單見 `UI-CHANGES.md`（2026-07-13 條目）。
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
+
+### Q17：1-of-N 選擇器的分工（2026-07-17 提出，待裁決）
+
+站上互斥單選（1-of-N）現有三支元件，各自合 token、機械檢查抓不到分岔，但概念上都是「從幾個選項挑一個」：
+
+- **selection-card**（`ds-components/selection-card.css`）：grid 大卡，title＋sub（＋可選 icon／swatch），已選＝橘 outline。用於顯眼的主選擇（商品型別、組合 edition、主題）。證據：`create-auction.html` 種類卡。
+- **radio-card**（`ds-components/radio-card.css`）：2-up 並排卡，建在 segmented 上，已選＝橘點。用於表單內二選一（單一/多規格、不限量/限量、取貨方式）。證據：`create-product.html` variant/edition/delivery。
+- **radio-list**（`ds-components/radio-list.css`，2026-07-17 新增）：垂直輕量列，radio 點＋標題＋可選描述，已選＝填橘點、無卡框。用於窄欄的資料選擇（上架設定）。證據：三創建頁預覽欄＋兩細節頁。
+
+選項：**A** 維持三支、把「何時用哪支」寫成 design-system.md 的明確分工表（依版面：grid 大卡／2-up 並排／vertical 窄欄）；**B** 收斂成兩支（e.g. 卡式一支＋列式一支）；**C** 全部收斂成單一可配置元件。暫依 **A**（三支分工並存，現行做法），標 Q17；裁決權在使用者。
 
 ### 維度 1：圓角尺度
 
