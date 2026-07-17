@@ -49,7 +49,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 - Use `Geist` weight 500–700 with `letter-spacing: -0.2px` for H1/H2 display headings; `Geist` 500 / 13–14 px for UI labels and nav.
 - Reserve `--primary` (`#ffa33f`) for the primary CTA, hero accent and brand mark. Informational banners use neutral tokens; never use orange as a fill for nav chrome, KPI highlights, or status pills.
-- Apply `--radius` (6 px) to all controls, buttons, cards and surfaces; `--radius-md` is now an alias of `--radius` (merged to 6 px, Q2 2026-07-13). Use `--radius-lg` (8 px) for dropdowns / nav panels and `--radius-pill` for full-round.
+- Controls & buttons use `--radius` (6 px; `--radius-md` is an alias of `--radius`, merged Q2 2026-07-13). **Card / panel / dialog-level containers use `--radius-xl` (16 px)** (Q16 2026-07-17 — cards放大到與 form-section 一致). Dropdown / nav-panel浮層 use `--radius-lg` (8 px); `--radius-pill` for full-round.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
 - Use the `pill` taxonomy (`pill--orange / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
 - Use Lucide icons via the local `icons.js` registry, stroke-width `1.2`, `currentColor` inheritance. Never inline raw `<svg>` for chrome icons.
@@ -75,9 +75,11 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   可篩選／可點的膠囊（chip、filter-tabs）＝全圓 `--radius-pill`。
   純顯示徽章（badge、field-pill、metric-pill）＝小圓角矩形 `--radius`。
   新元件照此選形狀，不得混用。
-- **Q2 圓角統一 6px**
-  `--radius` 與 `--radius-md` 同值（6px），`--radius-md` 是別名。
-  例外：`--radius-pill`（9999px）、shell（28px）、`--radius-lg`（8px）。
+- **Q2 控制項圓角統一 6px**
+  `--radius` 與 `--radius-md` 同值（6px），`--radius-md` 是別名——用於控制項與按鈕。
+  例外：`--radius-pill`（9999px）、shell（28px）、`--radius-lg`（8px，dropdown/nav 浮層）、`--radius-xl`（16px，卡片/面板級，見 Q16）。
+- **Q16 卡片/面板級圓角＝16px（`--radius-xl`）**
+  card／kpi／預覽卡／選擇卡／表格容器／資訊 banner／上傳卡／彈窗 dialog 等「內容容器」統一 16px，與 form-section 一致；控制項維持 6px（形狀＝角色，呼應 Q1）。
 - **Q3 卡片預設＝1px 純邊框**
   `.card` / `.kpi` / `.ztor-card` 預設用 `border: 1px solid var(--border)`，不用陰影。
   只有可點／浮起的強調卡（`.ztor-card--clickable` hover、`.selection-card`）hover 時才升級成純陰影（`--shadow-card-hover`）。
@@ -102,7 +104,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   橘只給主操作／主分類（Tabs、選擇卡已選）。
   導覽／篩選的已選一律中性灰（`.settings-nav--active`、`.app-sidebar` 已對齊，用 `--sidebar-active`）。
 - **Q9 hover 底色**
-  互動 hover 一律 `--accent`（亮 `#F3F3F3` / 暗 `#383839`）。
+  互動 hover 一律 `--accent`（亮 `#F3F3F3` / 暗 `#2A2B2C`，2026-07-17 midnight-v2 壓暗）。
   `--muted` 只給斑馬紋／襯底，不做 hover。
   `--secondary` 已退役（全站零消費，已自 `_tokens.css` 移除）。
   例外：`.filter-tabs__item:hover` 仍用 `--muted`（因其 active 也是灰 muted，hover 不可比已選更重）。
@@ -150,7 +152,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Display font | `Geist` (H1) |
 | UI font | `Geist` (H2-H4, buttons, nav) |
 | Body font | `Inter` (paragraphs only) |
-| Primary radius | `6px` (CTAs, cards, outline buttons — `--radius-md` merged into `--radius`, Q2 2026-07-13) |
+| Primary radius | `6px` controls/buttons · `16px` card/panel-level（`--radius-xl`, Q16 2026-07-17）· `8px` dropdown 浮層 |
 | Pill radius | `1000px` / `100%` (status dots, avatars) |
 | Base spacing | Dense scale — 1, 4, 6, 8, 10, 12, 14, 16, 24 |
 | Card shadow | `0 2px 8px -1px rgba(12,10,9,0.05), 0 0 0 1px rgba(23,23,23,0.05)` (rim + drop, softened 2026-07-13 — more diffuse, lower alpha) — used at rest by selection-card / dropdown-item / table / composer / cookie-banner; `.card`/`.kpi`/`.ztor-card` default to a flat 1px `--border` instead (Q3 2026-07-13), shadow reserved for their clickable hover |
@@ -295,7 +297,7 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 |---|---|---|
 | `radius-button-primary` | `6px` | "Create project", "Request payout" |
 | `radius-button-secondary` | `6px` | "Back" / "Cancel" outline CTA (`--radius-md` merged into `--radius`, Q2 2026-07-13) |
-| `radius-card` | `6px` (cards) `– 8px` (dropdown panels, `--radius-lg`) | Cards, dropdown panels |
+| `radius-card` | `16px` (`--radius-xl`, card/panel/dialog level — Q16 2026-07-17；原 6px) · `8px` (dropdown 浮層, `--radius-lg`) | Cards, panels, dialogs / dropdown panels |
 | `radius-input` | `6px` | Form fields |
 | `radius-small` | `2–5px` | Inner sub-radii on nested components |
 | `radius-card-feature` | `12px` | Feature / highlight cards |
@@ -319,6 +321,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 | `shadow-hairline` | `0 0 0.833px rgba(0,0,0,0.2)` | Sub-pixel border simulation |
 | `shadow-header` | `0 3px 16px rgba(0,0,0,0.10)` (dark `0.45`) | Sticky wizard header 下緣柔和投影（由 header 後內縮圓角色塊投出，只露下緣） |
 | `shadow-seam` | `7px 0 20px -4px rgba(12,10,9,0.16)` (dark `0.6`) | 上層主面板向右蓋向相鄰下層（E-Shop 主面板疊在預覽上） |
+| `shadow-edge-top` | `inset 0 1px 0 rgba(255,255,255,0.5)` (dark `rgba(253,253,253,0.05)`) | 頂緣高光——疊在無邊框浮起卡上緣，與 `--shadow-card` 併用（`form-section--outlined`，Q18 2026-07-17）；亮色白底近乎不可見、深底顯上緣光。屬階梯外邊緣工具 |
 
 **Pattern** — Ztor uses **multi-layer shadows to define edges without ever drawing a border**. The `inset 0 0 0 1px rgba()` ring is a soft outline; the `0 2px 6px rgba()` is the drop. Together they replace what most systems would draw as a `border: 1px solid var(--border)`. This remains the pattern for dropdowns / popovers / dialogs / overlays, input controls, and the hover state of clickable / selection cards. **Exception (2026-06-12)**: outline buttons draw a real `border: 1px solid var(--border)` — on the clean-white canvas (06-09) a fill-only edge disappears. **Exception extended (Q2–Q3, 2026-07-13)**: default cards (`.card` / `.kpi` / `.ztor-card`) moved to a real 1px `--border`; `--shadow-card` is reserved for clickable/selection-card hover and for surfaces that retain their own elevation (base `.selection-card`, dropdown-item, table, composer, cookie-banner). **Exception extended (Q13, 2026-07-16)**: the create-flow choice cards — `.selection-card--icon` and `.radio-cards` — moved to a flat 1px `--border`, no shadow, aligned to Figma node 781-4166.
 
@@ -487,19 +490,19 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 
 | Role | Light | Dark | Notes |
 |---|---|---|---|
-| `--background` | `#FFFFFF` | `#191A1A` | white canvas (light) · content-level body bg (dark；與 `--surface-page` 同階，2026-06-22) |
-| `--card` | `#FFFFFF` | `rgba(253,253,253,0.10)` | **translucent overlay**, not opaque grey |
-| `--muted` | `#FAFAFA` | `rgba(253,253,253,0.06)` | lower elevation overlay |
-| `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 改純黑（content 為 `#191A1A`，footer 要更深才讀為分隔） |
-| `--surface-page` | `#FAFAFA` | `#191A1A` | route page。Light 於 2026-07-14 降低明度；**Dark 反轉**：content 是最深底色，比 app shell 更深、視覺上內凹（2026-06-22 依使用者指定 `#191A1A`） |
-| `--surface-shell` | `#F0F0EE` | `#2B2B2C` | sidebar-mode app shell（rail＋canvas）。Light 於 2026-07-14 再降一階；Dark 用較淺的 `#2B2B2C`，襯托更深的 content（2026-06-22 依使用者指定） |
-| `--sidebar` | `#FBFBFB` | `#2B2B2C` | sidebar rail 與 shell canvas 同色（flush）；項目區分靠 hover/active 疊色 |
+| `--background` | `#FFFFFF` | `#0C0D0D` | white canvas (light) · content-level body bg (dark；與 `--surface-page` 同階＝最深；2026-07-17 midnight-v2 壓暗，原 `#191A1A`) |
+| `--card` | `#FFFFFF` | `#212223` | 浮在 content 上的卡；2026-06-25 改實色（原 rgba .10 疊層）；2026-07-17 midnight-v2（原 `#303131`） |
+| `--muted` | `#FAFAFA` | `#161718` | 嵌套襯底、比卡深比 content 亮一階；2026-06-25 改實色（原 rgba .06）；2026-07-17 midnight-v2（原 `#272828`） |
+| `--surface-inverse` | `#000000` | `#000000` | footer slab。Dark 純黑（content 為 `#0C0D0D`，footer 要更深才讀為分隔） |
+| `--surface-page` | `#FAFAFA` | `#0C0D0D` | route page＝content 底、**最深**。Light 於 2026-07-14 降低明度；**Dark（2026-07-17 midnight-v2）**：維持 r2.1 原制的層次語意——content 最深、比較淺的外殼(`--surface-shell`)包住、圓角內凹；整體比原 r2.1 壓暗（原 content `#191A1A`）。（註：midnight-v1 一度反轉成殼最深/content 較亮且兩者相近，經使用者回饋改回。） |
+| `--surface-shell` | `#F0F0EE` | `#1C1D1E` | sidebar-mode app shell（rail＋canvas），**明顯亮於 content、與其拉開**（內凹視覺）。Light 於 2026-07-14 再降一階；Dark 於 2026-07-17 midnight-v2 壓暗（原 `#2B2B2C`），Mobbin Whop/Posh 參照 |
+| `--sidebar` | `#FBFBFB` | `#1C1D1E` | sidebar rail 與 shell canvas 同色（flush）＝外殼色；項目區分靠 hover/active 疊色（2026-07-17 midnight-v2 壓暗，原 `#2B2B2C`） |
 | `--foreground` | `#1A1A1A` | `#FDFDFD` | 2026-07-13 light 改 off-black（原 `#000000`） |
-| `--foreground-muted` | `rgba(0,0,0,0.7)` | `rgba(253,253,253,0.7)` | |
-| `--muted-foreground` | `#6E6E68` | `rgba(253,253,253,0.4)` | 2026-07-13 light 微暖（原 `#737373`） |
+| `--foreground-muted` | `#4D4D4D` | `#B9B9B9` | 中階文字；2026-06-25 改實色（原 rgba .7 疊層） |
+| `--muted-foreground` | `#6E6E68` | `#757575` | 2026-07-13 light 微暖（原 `#737373`）；dark 2026-06-25 改實色（原 rgba .4） |
 | `--primary` | `#ffa33f` | `#ffa33f` | **orange stays** — paired across modes for brand consistency |
-| `--border` | `#EAEAEA` | `rgba(253,253,253,0.12)` | inverted hairline · 2026-07-13 light 更淡（原 `#E5E5E5`） |
-| `--ring` | `#ffa33f` | `#FDFDFD` | light: orange focus ring (by request); dark: white ring |
+| `--border` | `#EAEAEA` | `#2C2D2E` | hairline · 2026-07-13 light 更淡（原 `#E5E5E5`）；dark 2026-06-25 實色化、2026-07-17 midnight-v2（原 `#3A3A3C`） |
+| `--ring` | `#ffa33f` | `#ffa33f` | 亮暗同色：dark 於 2026-06-25 起不再覆寫成白、改繼承品牌橘 |
 | `--status-success` | `#22C55E` | `#4ADE80` | pure-RGB green for dark（2026-07-13 體檢提亮，原 `#00A63E`） |
 | `--destructive` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
@@ -581,8 +584,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Input | 🟢 atom | ✓ App | Wizard fields, settings forms, search | [input.css](./ds-components/input.css) |
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
-| Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary） | [kpi.css](./ds-components/kpi.css) |
+| Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages。圓角 `--radius-xl`（16px，Q16 2026-07-17；原 6px） | [card.css](./ds-components/card.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary）。圓角 `--radius-xl`（16px，Q16 2026-07-17）；`.kpi__delta` 為染色膠囊 chip（Q15） | [kpi.css](./ds-components/kpi.css) |
 | Admin IP Bank table | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列；共用 token-driven table wrapper、owner identity 與日期範圍操作列 | [admin-ip-bank-table.css](./ds-components/admin-ip-bank-table.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
@@ -603,13 +606,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
 | Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
 | Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active | [segmented.css](./ds-components/segmented.css) |
-| Amount field | 🟡 molecule | ✓ App | money input with a unit-prefix toggle (cash $ / POPCORN 🍿) or static read-only symbol; built on Input; host shares one unit state so switching any price field updates all（create-product 定價單位 · spec 5.1.5.2 F3.2 / D127）。`[data-price-sync]` marks a field as a member of the shared-unit group and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to toggle $ / 🍿 across the group。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
+| Amount field | 🟡 molecule | ✓ App | money input with a unit affix — normally a static read-only symbol (`$` prefix); built on Input. The affix can also be an interactive unit toggle (`[data-price-sync]` marks a shared-unit member and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to switch the unit across the group); that toggle shipped for the cash/POPCORN pricing unit, **removed in spec 5.1.5.2 · D144** (was D127), so no page uses it today — the chrome is kept as a reusable capability。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
 | Review row | 🟡 molecule | ✓ App | 流程 Review 步驟摘要列（無卡片、hairline 分隔）：欄位名＋值＋右側 Edit →。正規化自 create-event.html `.ce-review-row`、register-ip.html `.ri-summary`、create-project.html Review 步驟的扁平化 `.card`（該頁 2026-06-25 註解已預告「這批歸第三批 review-row」）。詳見 §4.49 | [review-row.css](./ds-components/review-row.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
 | Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源），**2026-07-02 改呈現為深色手機**（`.fan-store__phone`＞`__screen` 自捲動；版型參考 endgame creator 商店手機版，僅視覺證據）：app 頂列＋hero（名字壓深色漸層＋社群＋加入社群）＋sticky app 分頁列＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。螢幕＝fan app 固定深色面（scoped `--fst-*`，主題例外見 §1.5；accent＝`var(--primary)`）。追蹤數/社群/加入社群/精選/立即購買/補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
-| Pickup management | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列。`.scanner-access`（F6：`__qr`/`__main`/`__label`/`__url`/`__actions`/`__pw`）＋`.qr-box`(`--lg`/`--disabled`，faux QR via `window.ztorFauxQr()`)＋`.pickup-detail__header`/`__meta`＋`.pickup-stats`＋`.pickup-select`＞`.pickup-select__row`(`.is-checked`·`__box`/`__img`/`__text`)。場次清單／可核銷項目／名單／核銷紀錄重用 `.data-list`。共用建立場次 popup＝`partials/pickup-session-modal.js`（F3，亦掛 create-product.html／product-detail.html）。camera 視窗用 `--surface-inverse` role token、無裸色 | [pickup.css](./ds-components/pickup.css) |
+| Pickup management | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列。`.scanner-access`（F6：`__qr`/`__main`/`__label`/`__url`/`__actions`/`__pw`）＋`.qr-box`(`--lg`/`--disabled`，faux QR via `window.ztorFauxQr()`)＋`.pickup-detail__header`/`__meta`＋`.pickup-stats`＋`.pickup-select`＞`.pickup-select__row`(`.is-checked`·`__box`/`__img`/`__text`)。場次清單／可核銷項目／名單／核銷紀錄重用 `.data-list`。共用建立場次 popup＝`partials/pickup-session-modal.js`（F3，亦掛 create-product.html／product-detail.html）：表單分成三個自由切換頁籤（重用 Tabs 的 `.tabs`＋`.tab-panel`，spec 5.1.5.12 §4：基本資訊／取貨項目／密碼），取代原疊直填色面板；`[data-pks-panels]` 保 `min-height` 免切換塌陷、`.pks-panel__intro` 為項目頁引言、取貨項目頁計數用 `.tabs__item-count`，按「建立」時驗證並自動跳到出錯的頁籤（藏在別頁的必填不會沉默）。camera 視窗用 `--surface-inverse` role token、無裸色 | [pickup.css](./ds-components/pickup.css) |
 | Mobile scanner | 🟠 organism | SiteSpecific | 獨立手機 scanner（spec 5.1.5.11 F7 · D111）——獨立 URL、無主工作台導航。`.scanner-page`＞`.scanner-frame`＞`.scanner-top`＋`.scanner-screen`（`.scanner-pw` 密碼閘／`.scanner-cam`(`__reticle`/`__line` 掃描動畫，respects `prefers-reduced-motion`)／`.scanner-result`(`__banner --ok/--warn/--bad`/`__rows`)）＋`.scanner-foot`。相機視窗＝`--surface-inverse` role token（theme-independent、非裸色）。`scanner.html` inline controller | [scanner.css](./ds-components/scanner.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product footer 用（create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
 | Empty card | 🟡 molecule | ✓ App | 卡片內「已載入但無資料」空狀態 | [empty-card.css](./ds-components/empty-card.css) |
@@ -632,6 +635,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.amount-field`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多規格（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多規格 + `.variant-option`（選項名＋值 chip）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；值 chip 重用 `.chip--removable`、格重用 `.input`；表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、規格組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16） | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤 | [tag-input.css](./ds-components/tag-input.css) |
+| Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2） | [combobox.css](./ds-components/combobox.css) |
 | Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1） | [partials/film-picker.js](./partials/film-picker.js) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
@@ -642,8 +646,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
-| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜以既有 `--surface-page`／`--muted` 層次呈現；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
+| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
+| Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row, filled orange dot (`--primary`) = selected; transparent rows, hover `--muted`, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title; JS toggles `.radio-list__item--active` across the group + reveals the schedule field on "schedule". Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock) | [radio-list.css](./ds-components/radio-list.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
@@ -1533,8 +1538,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.kpi` | Tile container — column, 6px gap, 1px `--border` |
 | `.kpi__label` | Uppercase 12px / 0.4px tracking, subtle; flex for leading icon |
 | `.kpi__value` | Display font 28px / 500 / -0.6px tracking |
-| `.kpi__delta` | 12px UI; default `--status-success` (positive) |
-| `.kpi__delta--neg` | Overrides delta to `--destructive` |
+| `.kpi__delta` | 12px UI semibold；染色膠囊 chip——`color-mix(--status-success 12%, --card)` 底＋success 字、radius-pill、`2px --sp-8` 內距（2026-07-17 midnight 使用者裁示，由純色文字升級；膠囊＝「趨勢指示 data-trend」新視覺角色，與 Q1 顯示型 badge 小圓角的狀態徽章角色區隔，見 STYLE-DECISIONS Q15） |
+| `.kpi__delta--neg` | Overrides delta to `--destructive`（chip 底同構換 destructive tint） |
 | `.kpi__meta` | 12px subtle neutral footnote (alternative to — or, on F2, alongside — delta); may wrap an `.card__link` for a deep-link |
 | `.kpi__link` | Optional quiet "view more →" link pinned to the tile bottom (subtle → foreground on hover); pairs with `data-tab-jump` |
 | `.kpi--success` | Tints `.kpi__value` `--status-success` |
@@ -3498,7 +3503,7 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 #### Form assembly (Workflow)
 
 - **trigger**: Any create / edit form — wizard steps, settings forms, create-product / -event / -project sections.
-- **must**: Every field is a `Field`（label + optional hint + exactly one control slot; the control reuses an atom — Input / Switch / Segmented / textarea）; group fields into `Form section`s（title + grey sub; sibling sections auto-divide via the component's own `+` rule; base gap 6 / field spacing 16）；side-by-side fields use `Form grid`, never hand-rolled columns. 建立流程的 `.wizard__sheet--sectioned` 使用 `--surface-page` 作底；`.form-section--outlined` 以 `--card`（light）／`--muted`（dark）填色形成區塊（**無外框線**，Q14），所有可見 outlined siblings 以 `--sp-24` 間隔並跨越 `[hidden]`。採用頁為 create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry。
+- **must**: Every field is a `Field`（label + optional hint + exactly one control slot; the control reuses an atom — Input / Switch / Segmented / textarea）; group fields into `Form section`s（title + grey sub; sibling sections auto-divide via the component's own `+` rule; base gap 6 / field spacing 16）；side-by-side fields use `Form grid`, never hand-rolled columns. 建立流程的 `.wizard__sheet--sectioned` 使用 `--surface-page` 作底；`.form-section--outlined` 以 `--card` 填色形成區塊（亮暗一致；dark 原用 `--muted`、2026-07-17 midnight 改 `--card`）（**無外框線**，Q14），所有可見 outlined siblings 以 `--sp-24` 間隔並跨越 `[hidden]`。採用頁為 create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry。
 - **should**: Order fields identity → content → settings → risk disclosures; put character counts as right-aligned `field__hint--count`（form-section scope）; keep one sticky action bar per form for save / next.
 - **must-not**: Never hand-roll a label/hint stack outside `.field`; never nest a second heading system inside a section; never mix card-wrapped and no-card sections in the same flow.
 - **_edge-cases**: `empty` → fields show placeholders, never pre-filled fake data; `error` → inline validation on the field, section stays open; `new-user` → first section carries a one-line explainer; `mobile` → `Form grid` collapses to single column; `offline` → draft-save locally（同 wizard）.

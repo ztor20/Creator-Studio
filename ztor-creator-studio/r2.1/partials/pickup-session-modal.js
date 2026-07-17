@@ -6,23 +6,32 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    add other items and event tickets.
 
    Two steps in one dialog:
-     · form   — name / location / start·end time / instructions / verifiable
-                items (products + tickets, multi-select) / scanner password.
+     · form   — three freely-switchable tabs (shared .tabs + .tab-panel), spec
+                5.1.5.12 §4: "basic" session basics (name / location / start·end
+                / instructions), "items" pickup items — ONE search-to-add
+                combobox (selected items are removable chips; focus/typing opens
+                a dropdown of products + tickets), "scanner" set password. The
+                items tab carries a live count badge; Create validates and routes
+                to the offending tab so a hidden required field is never silent.
      · result — generated scanner URL + QR + copy, shown after Create.
+   Fields use the canonical .field / .form-grid system (field-system.css /
+   form-grid.css); the retired .payout-field* classes were dropped 2026-07-17.
+   The item picker reuses .tag-input (field + chips) + .combobox (dropdown).
 
    createPickupSession(host, hooks) → { openBlank, openExisting,
    openForProduct(name), close }. hooks: { onCreate(session) }.
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
   var PRODUCTS = [
-    { id: 'zine', name: 'Tour zine vol. 02', meta: 'Books · 40 sold', img: '' },
-    { id: 'tee',  name: 'Coastline tee · M / L', meta: 'Apparel · 22 sold', img: '' },
-    { id: 'lp',   name: 'Coastline acetate LP', meta: 'Music · numbered', img: '' }
+    { id: 'zine', kind: 'product', name: 'Tour zine vol. 02', meta: 'Books · 40 sold' },
+    { id: 'tee',  kind: 'product', name: 'Coastline tee · M / L', meta: 'Apparel · 22 sold' },
+    { id: 'lp',   kind: 'product', name: 'Coastline acetate LP', meta: 'Music · numbered' }
   ];
   var TICKETS = [
-    { id: 'sign', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },
-    { id: 'meet', name: 'Fan-meet · VIP', meta: 'Kaohsiung fan-meet · on-site entry' }
+    { id: 'sign', kind: 'ticket', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },
+    { id: 'meet', kind: 'ticket', name: 'Fan-meet · VIP', meta: 'Kaohsiung fan-meet · on-site entry' }
   ];
+  var ITEMS = PRODUCTS.concat(TICKETS);
 
   window.ZTOR_PARTIALS.pickupSessionModal = `
 <div class="payout-modal" data-pickup-modal hidden>
@@ -35,48 +44,63 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pks-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
 
-    <!-- STEP 1 · form -->
+    <!-- STEP 1 · form — three freely-switchable tabs: basics / items / scanner (spec 5.1.5.12 §4).
+         The tab bar replaces the old stacked filled panels; only the active .tab-panel shows. -->
     <div class="payout-dialog__body" data-pks-form>
-      <div class="payout-form-grid">
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
-          <input class="input" data-pks-name placeholder="e.g., Taipei signing — pickup" data-i18n-placeholder="pks.f.name.ph">
-        </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
-          <input class="input" data-pks-loc placeholder="Venue, booth or entrance" data-i18n-placeholder="pks.f.loc.ph">
-        </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
-          <input class="input" type="datetime-local" data-pks-start value="2026-07-12T13:00">
-        </label>
-        <label class="payout-field">
-          <span class="payout-field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
-          <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
-        </label>
-      </div>
-      <span class="payout-field__hint" data-pks-time-err hidden style="color:var(--error)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
+      <nav class="tabs" role="tablist" data-pks-tabs>
+        <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-pks-tab="basic"><span data-i18n="pks.tab.basic">Basics</span></button>
+        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-pks-tab="items"><span data-i18n="pks.tab.items">Items</span><span class="tabs__item-count" data-pks-item-count>0</span></button>
+        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-pks-tab="scanner"><span data-i18n="pks.tab.scanner">Password</span></button>
+      </nav>
 
-      <label class="payout-field mt-16">
-        <span class="payout-field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
-        <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
-      </label>
+      <div data-pks-panels>
+        <!-- Tab · basics -->
+        <section class="tab-panel tab-panel--active" role="tabpanel" data-pks-panel="basic">
+          <div class="form-grid">
+            <label class="field">
+              <span class="field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
+              <input class="input" data-pks-name placeholder="e.g., Taipei signing — pickup" data-i18n-placeholder="pks.f.name.ph">
+            </label>
+            <label class="field">
+              <span class="field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
+              <input class="input" data-pks-loc placeholder="Venue, booth or entrance" data-i18n-placeholder="pks.f.loc.ph">
+            </label>
+            <label class="field">
+              <span class="field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
+              <input class="input" type="datetime-local" data-pks-start value="2026-07-12T13:00">
+            </label>
+            <label class="field">
+              <span class="field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
+              <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
+            </label>
+          </div>
+          <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
+          <label class="field mt-16">
+            <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
+            <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
+          </label>
+        </section>
 
-      <div class="payout-field__label mt-16"><span data-i18n="pks.items">Pickup items</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.items.hint">— physical items set to on-site QR pickup</span></div>
-      <div class="pickup-select" data-pks-products></div>
+        <!-- Tab · items — single search-to-add combobox (products + tickets); focus opens a suggestion dropdown -->
+        <section class="tab-panel" role="tabpanel" data-pks-panel="items">
+          <p class="pks-panel__intro" data-i18n="pks.sec.items.sub">Add at least one product or event ticket.</p>
+          <div class="combobox" data-pks-combo>
+            <div class="tag-input__field" data-pks-field>
+              <input class="tag-input__entry" type="search" data-pks-search role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or tickets by name…" data-i18n-placeholder="pks.search.ph">
+              <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
+            </div>
+            <div class="combobox__menu" data-pks-menu hidden></div>
+          </div>
+        </section>
 
-      <div class="payout-field__label mt-16"><span data-i18n="pks.tickets">Event tickets</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="pks.tickets.hint">— redeem event tickets with the same scanner</span></div>
-      <div class="pickup-select" data-pks-tickets></div>
-
-      <label class="payout-field mt-16">
-        <span class="payout-field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
-        <input class="input" type="password" data-pks-pw placeholder="Staff enter this to scan" data-i18n-placeholder="pks.f.pw.ph" autocomplete="new-password">
-        <span class="payout-field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
-      </label>
-
-      <div class="stickynote mt-16">
-        <span class="stickynote__mark">!</span>
-        <span data-i18n="pks.note">Add at least one item or ticket before you can create the session — that also enables the scanner. Creating it generates a password-protected scanner URL you hand to staff.</span>
+        <!-- Tab · scanner -->
+        <section class="tab-panel" role="tabpanel" data-pks-panel="scanner">
+          <label class="field">
+            <span class="field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
+            <input class="input" type="password" data-pks-pw placeholder="Staff enter this to scan" data-i18n-placeholder="pks.f.pw.ph" autocomplete="new-password">
+            <span class="field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
+          </label>
+        </section>
       </div>
     </div>
 
@@ -107,40 +131,82 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 
   window.ZTOR_PARTIALS.createPickupSession = function (host, hooks) {
     hooks = hooks || {};
-    var modal = null, lastFocused = null;
+    var modal = null, lastFocused = null, selected = [];
 
     function chrome(el) {
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
       if (window.applyI18n) window.applyI18n(el);
     }
     function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function rowHTML(kind, it) {
-      var img = it.img
-        ? '<span class="pickup-select__img"><img src="' + esc(it.img) + '" alt=""></span>'
-        : '<span class="pickup-select__img"><i data-lucide="' + (kind === 'ticket' ? 'ticket' : 'package') + '" class="ztor-icon" style="width:16px;height:16px"></i></span>';
-      return '<label class="pickup-select__row" data-pks-item data-id="' + esc(it.id) + '">' +
-        '<span class="pickup-select__box"><i data-lucide="check" class="ztor-icon"></i></span>' + img +
-        '<span class="pickup-select__text"><span class="pickup-select__name">' + esc(it.name) + '</span>' +
-        '<span class="pickup-select__meta">' + esc(it.meta) + '</span></span>' +
-        '<input type="checkbox" hidden></label>';
+    function itemById(id) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i]; return null; }
+    function iconFor(kind) { return kind === 'ticket' ? 'ticket' : 'package'; }
+
+    /* Search-to-add combobox (spec 5.1.5.12 §4 F2): ONE field. Selected items
+       show as removable chips; focusing / typing opens a suggestion dropdown of
+       not-yet-added products + tickets, filtered by name/meta. Reuses .tag-input
+       (field + chips) + .combobox (menu). */
+    function renderChips() {
+      var field = modal.querySelector('[data-pks-field]');
+      var search = field.querySelector('[data-pks-search]');
+      field.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+      selected.forEach(function (id) {
+        var it = itemById(id); if (!it) return;
+        var chip = document.createElement('span');
+        chip.className = 'chip chip--removable';
+        chip.innerHTML = '<span>' + esc(it.name) + '</span>' +
+          '<button class="chip__remove" type="button" data-pks-remove="' + esc(id) + '" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+        field.insertBefore(chip, search);
+      });
+      if (window.ztorIcons) window.ztorIcons.applyIcons(field);
     }
-    function renderLists() {
-      modal.querySelector('[data-pks-products]').innerHTML = PRODUCTS.map(function (p) { return rowHTML('product', p); }).join('');
-      modal.querySelector('[data-pks-tickets]').innerHTML = TICKETS.map(function (t) { return rowHTML('ticket', t); }).join('');
-      chrome(modal.querySelector('[data-pks-products]'));
-      chrome(modal.querySelector('[data-pks-tickets]'));
+    function renderMenu() {
+      var menu = modal.querySelector('[data-pks-menu]');
+      var q = (modal.querySelector('[data-pks-search]').value || '').trim().toLowerCase();
+      var groups = [['product', 'pks.items'], ['ticket', 'pks.tickets']];
+      var html = '', total = 0;
+      groups.forEach(function (g) {
+        var avail = ITEMS.filter(function (it) {
+          return it.kind === g[0] && selected.indexOf(it.id) < 0 &&
+            (!q || (it.name + ' ' + it.meta).toLowerCase().indexOf(q) >= 0);
+        });
+        if (!avail.length) return;
+        total += avail.length;
+        html += '<div class="combobox__group" data-i18n="' + g[1] + '"></div>';
+        avail.forEach(function (it) {
+          html += '<button type="button" class="combobox__opt" data-pks-add="' + esc(it.id) + '">' +
+            '<span class="combobox__opt-icon"><i data-lucide="' + iconFor(it.kind) + '" class="ztor-icon" style="width:16px;height:16px"></i></span>' +
+            '<span class="combobox__opt-text"><span class="combobox__opt-name">' + esc(it.name) + '</span>' +
+            '<span class="combobox__opt-meta">' + esc(it.meta) + '</span></span></button>';
+        });
+      });
+      if (!total) html = '<div class="combobox__empty" data-i18n="pks.search.empty">No items match your search.</div>';
+      menu.innerHTML = html;
+      chrome(menu);
     }
-    function setChecked(row, on) {
-      row.classList.toggle('is-checked', on);
-      var cb = row.querySelector('input[type=checkbox]'); if (cb) cb.checked = on;
-    }
-    function checkedCount() {
-      return modal.querySelectorAll('[data-pks-item].is-checked').length;
-    }
-    /* No draft state (D112) — a session needs ≥1 item/ticket before it can be created. */
+    function openMenu() { renderMenu(); var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = false; setExpanded(true); }
+    function closeMenu() { var m = modal.querySelector('[data-pks-menu]'); if (m) m.hidden = true; setExpanded(false); }
+    function setExpanded(on) { var s = modal.querySelector('[data-pks-search]'); if (s) s.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+    function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); syncCreateEnabled(); }
+    function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); syncCreateEnabled(); }
+    /* No draft state (D112) — a session needs ≥1 item/ticket before it can be created.
+       Also refreshes the items-tab count badge so the requirement's location stays
+       visible from any tab. */
     function syncCreateEnabled() {
       var btn = modal.querySelector('[data-pks-create]');
-      if (btn) btn.disabled = checkedCount() === 0;
+      if (btn) btn.disabled = selected.length === 0;
+      var badge = modal.querySelector('[data-pks-item-count]');
+      if (badge) badge.textContent = selected.length;
+    }
+    /* Switch the active tab + panel (shared .tabs / .tab-panel wiring). */
+    function setTab(name) {
+      modal.querySelectorAll('[data-pks-tab]').forEach(function (t) {
+        var on = t.getAttribute('data-pks-tab') === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      modal.querySelectorAll('[data-pks-panel]').forEach(function (p) {
+        p.classList.toggle('tab-panel--active', p.getAttribute('data-pks-panel') === name);
+      });
     }
     function validTime() {
       var s = modal.querySelector('[data-pks-start]').value;
@@ -163,20 +229,25 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (box && window.ztorFauxQr) box.innerHTML = window.ztorFauxQr(seed || 9);
     }
     function create() {
-      if (checkedCount() === 0) { syncCreateEnabled(); return; }
-      if (!updateTimeErr()) return;
+      if (selected.length === 0) { setTab('items'); syncCreateEnabled(); return; }
+      if (!updateTimeErr()) { setTab('basic'); return; }   /* route to the tab that holds the error */
       var name = (modal.querySelector('[data-pks-name]').value || '').trim();
       var slug = (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'session').slice(0, 18);
       modal.querySelector('[data-pks-url]').textContent = 'ztor.app/scan/' + slug + '-' + Math.random().toString(36).slice(2, 7);
       fillQr(Math.floor(Math.random() * 40) + 5);
       step('result');
-      if (hooks.onCreate) hooks.onCreate({ name: name, items: checkedCount() });
+      if (hooks.onCreate) hooks.onCreate({ name: name, items: selected.length });
     }
 
     function onClick(e) {
       if (e.target === modal) { close(); return; }
-      var row = e.target.closest('[data-pks-item]');
-      if (row) { e.preventDefault(); setChecked(row, !row.classList.contains('is-checked')); syncCreateEnabled(); return; }
+      var tab = e.target.closest('[data-pks-tab]');
+      if (tab) { setTab(tab.getAttribute('data-pks-tab')); return; }
+      var add = e.target.closest('[data-pks-add]');
+      if (add) { addItem(add.getAttribute('data-pks-add')); var si = modal.querySelector('[data-pks-search]'); if (si) si.focus(); return; }
+      var rm = e.target.closest('[data-pks-remove]');
+      if (rm) { e.preventDefault(); removeItem(rm.getAttribute('data-pks-remove')); return; }
+      if (e.target.closest('[data-pks-field]')) { var sf = modal.querySelector('[data-pks-search]'); if (sf) sf.focus(); return; }
       if (e.target.closest('[data-pks-close]')) { close(); return; }
       if (e.target.closest('[data-pks-create]')) { create(); return; }
       if (e.target.closest('[data-pks-copy]')) {
@@ -184,8 +255,14 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function () {});
         return;
       }
+      if (!e.target.closest('[data-pks-combo]')) closeMenu();   /* click outside the picker closes the dropdown */
     }
-    function onKey(e) { if (e.key === 'Escape' && modal && !modal.hidden) close(); }
+    function onKey(e) {
+      if (e.key !== 'Escape' || !modal || modal.hidden) return;
+      var m = modal.querySelector('[data-pks-menu]');
+      if (m && !m.hidden) { closeMenu(); return; }   /* Esc closes the dropdown first, then the modal */
+      close();
+    }
 
     function ensure() {
       if (modal) return true;
@@ -194,10 +271,15 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       host.innerHTML = html;
       chrome(host);
       modal = host.querySelector('[data-pickup-modal]');
-      renderLists();
       modal.addEventListener('click', onClick);
       modal.addEventListener('change', function (e) {
         if (e.target.matches('[data-pks-start],[data-pks-end]')) updateTimeErr();
+      });
+      modal.addEventListener('input', function (e) {
+        if (e.target.matches('[data-pks-search]')) openMenu();
+      });
+      modal.addEventListener('focusin', function (e) {
+        if (e.target.matches('[data-pks-search]')) openMenu();
       });
       document.addEventListener('keydown', onKey);
       return true;
@@ -205,12 +287,13 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function open(preselectId, titleKey) {
       lastFocused = document.activeElement;
       step('form');
+      setTab('basic');   /* always land on the first tab */
       updateTimeErr();
-      modal.querySelectorAll('[data-pks-item]').forEach(function (r) { setChecked(r, false); });
-      if (preselectId) {
-        var row = modal.querySelector('[data-pks-item][data-id="' + preselectId + '"]');
-        if (row) setChecked(row, true);
-      }
+      selected = preselectId ? [preselectId] : [];
+      var search = modal.querySelector('[data-pks-search]');
+      if (search) search.value = '';
+      renderChips();
+      closeMenu();
       syncCreateEnabled();
       var title = modal.querySelector('#pickup-dialog-title');
       title.setAttribute('data-i18n', titleKey || 'pks.title');

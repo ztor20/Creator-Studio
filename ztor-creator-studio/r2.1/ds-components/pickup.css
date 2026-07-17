@@ -17,7 +17,7 @@
   align-items: start;
   padding: var(--sp-16);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--muted);
 }
 .scanner-access__qr { grid-row: span 2; }
@@ -116,6 +116,7 @@
 
 /* ── Multi-select rows inside the create-session popup ──────── */
 .pickup-select { display: flex; flex-direction: column; gap: var(--sp-8); }
+.pickup-select__row[hidden] { display: none; }   /* search-to-add filter hides non-matching rows; display:flex below would otherwise win over [hidden] */
 .pickup-select__row {
   display: flex;
   align-items: center;
@@ -158,6 +159,20 @@
 .pickup-select__text { min-width: 0; flex: 1 1 auto; }
 .pickup-select__name { font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground); }
 .pickup-select__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 2px; }
+
+/* ── Pickup session modal · tabbed layout (partials/pickup-session-modal.js) ──
+   The create/edit dialog groups its fields into three freely-switchable tabs
+   (basics / items / scanner) built on the shared .tabs + .tab-panel. Glue only:
+   reserve a min-height so switching tabs doesn't collapse the dialog height,
+   preserve the field-label rhythm the dialog had under form-section, and style
+   the items-tab intro line. */
+[data-pks-panels] { min-height: 248px; }
+[data-pks-panels] .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+.pks-panel__intro {
+  margin: 0 0 var(--sp-16);
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+}
 
 @media (max-width: 640px) {
   .scanner-access { grid-template-columns: 1fr; }
