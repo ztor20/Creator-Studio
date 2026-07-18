@@ -6,6 +6,27 @@
 
 ---
 
+## 2026-07-17 · midnight 精修搬入 r2.1 batch 2：input 填色＋標籤橘框＋radio 小點（B 反饋導入 · Q19）
+
+接續 Q18，使用者對照 `docs/黑夜版風格探索-midnight.html` 逐項截圖指定，再搬三項元件級精修（全走元件層、consumer 頁自動生效）。
+
+- **【B · input 填色，新增 `--input-surface` token】** `.input/.textarea/.select` 底色由 `--card` 改用新 token `--input-surface`（亮＝`var(--card)` 白卡、靠 1px border 分界；暗＝`#262729` 比卡 `#212223` 亮一階）。動機：section 改浮起卡後，input 底＝卡底同色會糊在卡面上（Surface-Layer Contrast），暗色尤明顯；filled 一階讓欄位讀得出。全站所有表單欄位生效，亮色維持白卡不變（無回歸）。
+- **【B · 標籤已選橘框，Q8 scoped 例外】** tag-input 的已選標籤 chip（`.tag-input__field .chip--active`）改品牌橘外框＋橘字＋淡橘底（`color-mix(--primary 8%)`）。只 scope 在 tag-input 內——全站一般 `.chip--active`（earnings/fans/projects 等篩選器）維持反白黑底（Q8 不動）。動機：標籤是創作者為自己商品下的分類，橘標更像「已套用」而非中性篩選。
+- **【B · radio-list 點精修】** `.radio-list__dot` 未選 16→13px 細環（1.5→1.25px），已選粗環消失、只留 8px 實心橘點（原已選還留一圈橘環）。midnight 選中指示器 A 案。radio-list 全 5 頁生效（create-product/-bundle/-auction 上架設定＋product-detail/bundle-detail）。
+- **【B · 追加 2026-07-18，續對照 midnight】** (a) tag-input 橘色 scope 由 `.tag-input__field` 放寬到整個 `.tag-input`——建議列裡「已加入」而原本反白成白色的標籤，現在也是橘框橘字（全站 `.chip--active` 仍不動）；(b) 已選型別卡（`.selection-card--icon.selection-card--active`）除橘 outline 再加淡橘底，對齊 midnight——icon 維持中性、不加勾（修訂 Q13 已選呈現）。bump `20260718b`。
+- **【B · 追加 2026-07-18 第二輪，續對照 midnight】** (a) 型別選項卡 `.selection-card--icon` 與上傳投放區 `.upload-tile` 底色由「同 section 卡色／transparent」改用 `--input-surface`（暗色比 section 亮一階＝填色互動面、亮色白卡）——對齊 midnight「選項/投放區比 section 亮一階」，`--input-surface` 用途由「只 input」擴為「input＋型別卡＋上傳」；已選型別卡淡橘底基底同步改疊在 `--input-surface` 上。(b) 順修一個既有 bug：`.select-wrap__icon`（下拉自訂箭頭）原 `right: var(--select-icon-inset)`，但該變數定義在兄弟 `.select` 上、CSS 變數不從兄弟繼承→箭頭 `right` 失效跑到框外，改直接 `right: var(--sp-12)`（並移除孤兒變數）。bump `20260718c`。
+- 文件同步：`_tokens.css` 新 token（亮/暗）、`design-system.md` token 表＋input/tag-input/radio-list 條目、`design-system.html` swatch、`STYLE-DECISIONS.md` Q19＋Q8 scoped 例外標記。check_ds_sync 全 PASS、fresh-context 驗收、bump `20260718a`（與 Q18 batch 一起收）。淺色暗色皆截圖驗證（含 committed 標籤橘態）。
+
+## 2026-07-17 · midnight 精修搬入 r2.1：form-section 浮起卡＋型別磚縮小＋上傳圖示晶片框（B 反饋導入 · Q18）
+
+把探索頁 `docs/黑夜版風格探索-midnight.html` 的三項區塊/元件精修搬進正式站，範圍**限建立流程元件、不動全站一般 `.card`**（維持 Q3）。使用者先在 midnight 迭代確認外觀，再指定搬 r2.1，並選「只套建立流程 section」的範圍（不覆蓋全站卡片、不撞另一 session 進行中的 Q15/Q16）。
+
+- **【B · form-section 浮起，修訂 Q14】** `.form-section--outlined` 由「純填色卡」加 `box-shadow: var(--shadow-card), var(--shadow-edge-top)`＝浮在內容底上的卡；仍 `border:0`（無 1px 邊框），改由填色＋E2 陰影＋頂緣高光共同分區。新增 Foundation token `--shadow-edge-top`（亮 `inset 0 1px 0 rgba(255,255,255,.5)` 白底近乎不可見／暗 `rgba(253,253,253,.05)` 深底顯上緣光）。元件層一次生效、~12 個 consumer 建立頁自動套用。
+- **【B · 型別磚縮小，修訂 Q13 尺寸】** `.selection-card--icon` icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`（較 Figma 781-4166 更緊）。僅動 `--icon` 變體，base/swatch 卡不變；已選標記仍是橘 outline 無勾（Q13 邊框/標記不變）。
+- **【B · 上傳圖示晶片框】** `.upload-tile--hero .upload-tile__icon` 加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`＋56×56）；縮圖格不變。
+- **未採用**：input 底再亮一階（#262729）——r2.1 暗色 input 已是 filled `--card`(#212223)、差一階幾乎不可見，不值得為它加暗色專用 token（撞棘輪），略過。
+- 文件同步：`design-system.md` 新增 `shadow-edge-top` token 列＋form-section/upload/selection 條目更新；`design-system.html` 邊緣工具行含 `--shadow-edge-top`；`STYLE-DECISIONS.md` 新增 Q18＋Q13/Q14 修訂標記。check_ds_sync 全 PASS（WARN 僅既有 fan-store raw-color＋cookie-banner/footer 零消費）、fresh-context 驗收 10 條全 pass、bump `20260717p`。淺色暗色皆截圖驗證。
+
 ## 2026-07-17 · 折扣設定：單一規格 折扣價↔折扣% 雙向連動、多規格改折扣%＋移到逐規格表下（B 反饋導入 · 產品變更待規格 · 接續 D144）
 
 使用者反饋：多規格下折扣設定位置與語意都不理想——(a) 折扣設定給的是「絕對折扣價 $」，多規格每個規格各自定價，一個絕對折扣價套不到 N 個規格；(b) 單一規格的定價區在多規格會隱藏（`data-when-var="single"`），但折扣設定沒設隱藏、照樣顯示且排在「逐規格定價表」上方，與真正的價格脫節。裁決走「折扣跟著價格走」＋「多規格用折扣%」。**⚠️ 動到折扣的資料模型（D144 原定義＝絕對折扣價），屬產品變更，`documents/` 規格尚未同步（見 ASSUMPTIONS UIA-060）。**
