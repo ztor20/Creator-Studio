@@ -346,3 +346,35 @@
   .product-list--pickup .product-list__cell,
   .product-list--pickup .product-list__status { grid-column: 1; padding-left: var(--sp-56); }
 }
+
+/* ============================================================
+   我的 IP 清單欄位版型（2026-07-20，spec 5.1.4 §F6「清單欄位」）
+   ------------------------------------------------------------
+   同 --orders／--pickup 手法：只換欄位模板疊在 base grid 上、不改 base。
+   欄位：IP(icon+名稱+標籤(+登記日期 meta)) / Rights / Rented / Revenue /
+         Price / Mktplace(開關) / Actions(Manage)。重用
+   product-list__thumb(icon) / __product / __body / __title / __meta /
+   __cell(通用文字欄)；Mktplace 與 Actions 為本變體新增的專屬欄。
+   ============================================================ */
+.product-list--ip .product-list__head,
+.product-list--ip .product-list__row {
+  /* 名稱欄需要吸收較長 IP 名稱＋類型徽章，給足最小寬度；租出數/收入/操作欄收窄
+     （文字短、不需要 e-shop 那種寬裕）；Mktplace 欄只放切換鈕（標籤在表頭，列內不重複），
+     不需要 96px，釋出空間給租金欄避免「$480 / 6 個月」中途換行。 */
+  grid-template-columns: 60px minmax(220px, 1.3fr) minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+}
+.product-list--ip .product-list__cell { color: var(--foreground); }
+
+.product-list__mktplace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ≤760px：退回堆疊模式（同 --orders／--pickup 手法） */
+@media (max-width: 760px) {
+  .product-list--ip .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--ip .product-list__product { padding-left: var(--sp-72); }
+  .product-list--ip .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
+  .product-list--ip .product-list__mktplace { grid-column: 2; justify-content: flex-end; }
+}

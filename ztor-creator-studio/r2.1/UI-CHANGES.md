@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-07-20 · 我的 IP 清單改表格化，對齊 spec 5.1.4 §F6 的 8 欄定義（A 規格補齊 · 新元件變體 · UIA-061）
+
+使用者反饋「我的 IP 版面跟電子商店不像」，指的不是圖示顏色（那已經一致），而是整體版面——`my-ip.html` 原本用 `.data-list` 卡片式清單，把 IP 名稱、權利資訊、租出數、收入、租金全部擠成一行文字（如「Maya Chou · 租出3 · 收入$2,180 · 分潤100% · 租金$480/6個月」）。查證 `documents/5.1.4-我的IP.md` §F6「清單頁欄位與互動」發現：**規格本來就定義了 8 個獨立欄位**（IP／權利資訊／租出數／收入／租金／Mktplace／Manage），現有實作沒有照著做——使用者的直覺跟規格是一致的，不是新提案。
+
+- **【A · 新元件變體 `.product-list--ip`】** 比照 e-shop/orders/pickup 既有的「同一組 grid 換一批欄位模板」手法，在 `product-list.css` 新增 8 欄版型：icon(60px) / IP 名稱＋標籤 / 權利資訊 / 租出數 / 收入 / 租金 / Mktplace(開關，新 `.product-list__mktplace` cell) / Manage。含 ≤760px 響應式堆疊規則（同 --orders/--pickup 手法）。
+- **【A · my-ip.html 表格化】** 兩段清單（「在 Ztor 上產出的 IP」5 筆／「Ztor 之外的 IP」3 筆，現有樣本各 3 筆／1 筆）改用新變體，含表頭列（IP/權利資訊/租出數/收入/租金/Mktplace）。**純拆欄、不動資料**：原本擠在單一 meta 字串裡的權利資訊/租出數/收入/租金原樣拆進對應欄，數字文字皆未改動。i18n 新增 `my-ip.col.*`（欄位表頭）＋ `my-ip.rowN.rights/rented/revenue/price`（原 `rowN.meta` 拆開，取代舊 key）。
+- **【D · 頁面樣式依賴切換】** `my-ip.html` 移除 `data-list.css`、改載 `product-list.css`（`.data-list` 元件仍供其餘 14 頁使用，未退場）。JS 計數改抓 `.product-list__row`。
+- **呈現假設記入 UIA-061**：spec §F6 IP 欄要求「發布或登記日期」，現有前 3 筆 demo 資料本來就沒有日期值，本輪未捏造日期、暫不顯示；第 4 筆（Ztor 之外的 IP，原本就有登記日期）保留在 `.product-list__meta` 顯示。
+- 文件同步：`design-system.md` Product list 條目與 Variants 段補 `--ip`；`ASSUMPTIONS.md` 新增 UIA-061。實測欄寬三輪微調（避免長標題被省略號截斷、避免租金欄位中途換行），已用 Playwright 截圖確認與 e-shop 視覺語言一致（表頭字級色、圖示晶片、hairline、hover）。check_ds_sync 全 PASS、bump `20260720g`。
+
 ## 2026-07-20 · 清單列縮圖三度修正：data-list__icon 取消獨立家族、全站併成單一標準（B 反饋導入 · Q20 三修）
 
 使用者指出「我的 IP」（用 `.data-list__icon`）跟電子商店仍不一樣。二次修正時 `.data-list__icon` 刻意保留成獨立家族（`--card`／`--border`／40px，理由是與 `.alert--card .alert__icon` 同尺寸家族），但使用者的判斷標準很明確：全站看起來就是要一樣，不接受「兩個家族各自合理」的解釋。
