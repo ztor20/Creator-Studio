@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-07-20 · 清單列縮圖二次修正：對齊錯了基準，重改成真實呈現值（B 反饋導入 · Q20 修正）
+
+使用者截圖指出訂單管理與電子商店的縮圖仍尺寸、顏色都不同——07-18 那筆改動對齊錯了對象。`.product-list__image` 全站 28 處使用皆搭配 `--placeholder` 變體，基礎規則（`--card`／`--border`／52px）從未單獨呈現過；真正畫面上看到的是 `--placeholder` 覆蓋後的值（`--muted` 底／`--border-soft` 邊／`--muted-foreground` icon），且 07-18 那筆也忘了同步尺寸（維持舊的 44px，`.product-list__image--placeholder` 其實是 52px）。
+
+- **【B · 二次修正】** `.product-list__thumb`（orders／pickup）與 `.project-list__icon`（projects）改為 52×52／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`——這次直接用 Playwright 量測兩邊的 computed style（背景色、邊框色、尺寸、icon 顏色）逐項核對到數值相同，不是只憑外觀感覺判斷。
+- **`.data-list__icon` 不套用這組新值**：它是「儀表板資訊列圖示」家族（與 `.alert--card .alert__icon` 同尺寸家族），跟「照片佔位圖」家族角色不同，維持 07-18 那筆改的 `--card`／`--border`／40px，不強行統一到 52px／`--muted`。
+- 文件同步：`design-system.md` product-list／project-list／data-list 三條目改寫，清楚標示兩個家族各自的基準；`STYLE-DECISIONS.md` Q20 補「二次修正」段落，誠實記錄首版對齊錯誤的原因。check_ds_sync 全 PASS、bump `20260720c`。
+
 ## 2026-07-20 · 清單列縮圖統一追加：data-list__icon 也改描邊框（B 反饋導入 · Q20 續）
 
 接續 07-18 那筆，使用者確認「我的 IP」等 15 頁用的 `.data-list__icon` 也要一併改，不維持例外。
