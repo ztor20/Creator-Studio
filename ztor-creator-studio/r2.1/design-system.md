@@ -351,7 +351,7 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 
 ### 1.9 Grid / Layout
 
-- Page container max-width 1248px, centered
+- Page container max-width 1280px, centered；窄版變體 `.page--narrow` = 1056px，只給兩欄詳情頁（見 §6.1）
 - Page gutter 24px desktop, 16px mobile (`@media (max-width: 900px)`)
 - Topbar height 64px, `sticky` top (canonical app topbar + hover dropdown nav)
 - Section vertical rhythm 80–96px
@@ -644,10 +644,10 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
 | Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
-| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner | [shared.css](./shared.css) |
+| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`（`.page` max-width 1280px）. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner。**窄版變體 `.page--narrow`（1056px，2026-07-20 Q21）**：只給 Detail rail（§4.52）的兩欄詳情頁——右欄固定 300px，容器留在 1280 會讓左欄行長過長；其餘頁面維持 1280。Q21 原裁全站收窄，同日改為僅變體套用。Consumer 目前只有 product-detail.html | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
-| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
-| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
+| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
+| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
 | Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--muted`, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title; JS toggles `.radio-list__item--active` across the group + reveals the schedule field on "schedule". Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock) | [radio-list.css](./ds-components/radio-list.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
@@ -665,6 +665,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | IP hero | 🟠 organism | ✓ Project | IP detail cover + usage + rental composition | [shared.css](./shared.css) |
 | Rental card | 🟡 molecule | ✓ Project | Rental / bidding terms and CTA card | [shared.css](./shared.css) |
 | Meta cell | 🟢 atom | ✓ Project | Compact label/value stack in dense commercial panels | [shared.css](./shared.css) |
+| KV list | 🟢 atom | ✓ Project | 唯讀鍵值列（鍵左值右、逐列 hairline）：詳情頁 meta 卡、狀態摘要。值可編輯請改用 Field system；逐列 Edit 請用 Review row。`.kv--lead` 供有 `[hidden]` 條件列時手動指定群組首列；`.kv[hidden]` 已顯式歸零 display（元件為 flex，會蓋過 UA 對 hidden 的預設）。詳見 §4.50 | [kv-list.css](./ds-components/kv-list.css) |
+| Stock bar | 🟢 atom | ✓ Project | 5px 細長量條（庫存水位／用量比例），必與精確數字並列；兩態＝正常 `--primary`／低於門檻 `--destructive`（`.stock-bar__fill--low`）。百分比由 consumer 以 inline `width` 提供、門檻判斷屬產品規則。比 Completeness meter 更原始（無標籤/計數表頭）。詳見 §4.51 | [stock-bar.css](./ds-components/stock-bar.css) |
+| Detail rail | 🟠 organism | ✓ Project | 詳情頁兩欄殼：可編輯主欄（Tabs＋分頁）＋ sticky 唯讀 meta 右欄（1fr / 300px，≤1100px 收單欄並取消 sticky）。元件段只講殼；「何時用、右欄放什麼」見 Pillar 5 §5.1 *Detail + persistent rail*。詳見 §4.52 | [detail-rail.css](./ds-components/detail-rail.css) |
 | Chart card | 🟠 organism | ✓ Project | Chart surface with title, controls, body | [chart.css](./ds-components/chart.css) |
 | Rank bars / source breakdown | 🟡 molecule | ✓ Project | Ranked bar rows and source distribution legends | [chart.css](./ds-components/chart.css) |
 | Tooltip | — | ◎ Default | shadcn baseline — not promoted to a project CSS file | — |
@@ -1526,7 +1529,7 @@ Color-state modifiers `.kpi--success` / `.kpi--warning` / `.kpi--destructive` ti
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | `--card` bg, 1px `--border`, value in display font (Q3 2026-07-13: flat border, no shadow) |
+| default | — | `--input-surface` bg（2026-07-20 Q21，原 `--card`）, 1px `--border`, value in display font (Q3 2026-07-13: flat border, no shadow) |
 | (delta sign) | `.kpi__delta--neg` | Delta color switches `--status-success` → `--destructive` |
 | link hover | `.kpi__link:hover` | `--muted-foreground` → `--foreground` |
 
@@ -1549,7 +1552,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--card` (bg); `--border` (1px, default edge — Q3); `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta / `.kpi--success`), `--destructive` (negative delta / `.kpi--destructive`), `--status-warning` (`.kpi--warning`, color-mixed) · `--font-ui`, `--font-display`
+- `--input-surface` (bg — 2026-07-20 Q21，由 `--card` 改；KPI 常被放進以 `--card` 填色的 `.form-section--outlined` 卡內，兩層同為 `--card` 會糊成一片平面，亮一階後內層方塊才浮在卡面上。亮色 `--input-surface` 目前等於 `--card`，差異在暗色模式顯現＝比卡亮一階); `--border` (1px, default edge — Q3); `--radius-md` · `--muted-foreground` (label, meta) · `--status-success` (positive delta / `.kpi--success`), `--destructive` (negative delta / `.kpi--destructive`), `--status-warning` (`.kpi--warning`, color-mixed) · `--font-ui`, `--font-display`
 
 **Usage** — Use for dashboard summary rows, earnings tabs, and page-header metric strips where one number per tile is the point. Avoid when the value needs a trend chart or multiple sub-figures — use the Chart organism.
 
@@ -3114,7 +3117,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __actions > __edit (Icon)
 ```
 
-**Variants** — Base columns; page-level column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity), `.product-list--orders` (Orders: icon / order+buyer / amount / status / date), `.product-list--pickup` (Pickup sessions), `.product-list--ip` (2026-07-20，My IP: icon / IP name+badges / rights / rented / revenue / price / mktplace toggle / manage — spec 5.1.4 §F6 8 欄；`__mktplace` cell 為本變體專屬，`display:flex;justify-content:center` 置中開關). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--muted-foreground` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package).
+**Variants** — Base columns; page-level column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (Products: drag / image / name / category / price / status / stock), `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity), `.product-list--orders` (Orders: icon / order+buyer / amount / status / date), `.product-list--pickup` (Pickup sessions), `.product-list--ip` (2026-07-20，My IP: icon / IP name+badges / rights / rented / revenue / price / mktplace toggle / manage — spec 5.1.4 §F6 8 欄；`__mktplace` cell 為本變體專屬，`display:flex;justify-content:center` 置中開關；**hover 浮起**——`:hover` 改 `--card` 底＋`--radius-md`＋`--shadow-float`，比照 `--eshop` 的 `.is-dragging` 拖曳抬起態，使用者裁示，為 Q5「清單列 hover 只換底色」的 scoped 例外，僅此變體). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--muted-foreground` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package).
 
 **Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
 
@@ -3303,7 +3306,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.48 Store settings page
 
-**`_layer`** · organism — E-Shop 商店層級設定的 **popup**（`store-settings.html`，spec 5.1.5.5 / D035 / D067），由 E-Shop F3「商店設定」按鈕以 **embed-modal iframe** 開啟；popup 外框承擔標題與關閉，**頁面本身無全域導航／麵包屑／頁首**，動作改置底部提交列（`.ss-actionbar`：See as fan ｜ Discard ｜ Save changes，sticky 底部；spec F1 設定動作與預覽）。IA：**店面門面**（`.ss-identity-card`）常駐置頂，用 **Base44／Facebook 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介為文字），**逐欄就地編輯**（`.ss-edit`：文字態 ↔ 內嵌 input/textarea/select，✓/Enter 確認、✕/Esc 取消，`.is-editing` 切換）；品牌素材就是封面＋頭像（各自有編輯鈕），不另設上傳框；整頁用滿標準 1280px 欄寬；其下**商品陳列／付款／出貨**三個對等設定群組以 **tab 切換**（`.tabs` + `.ss-tabpanel`，一次處理其一；出貨 tab 用 `.settings-row`）；另有 **粉絲視角預覽（See as fan）** 以畫面分割開啟（`.preview-panel--inset` + `.ss-fan`）。本元件補基礎控制項沒有的欄位型別：網址前綴（`.ss-url`）、`$` 金額前綴（`.amount-field`，見 Amount field 元件）、唯讀 Stripe 狀態卡（`.ss-status`）、品牌素材上傳（`.ss-brand` + Upload tile），以及**拖曳排序清單**（`.ss-order`）與粉絲預覽內容（`.ss-fan`）。
+**`_layer`** · organism — E-Shop 商店層級設定的 **popup**（`store-settings.html`，spec 5.1.5.5 / D035 / D067），由 E-Shop F3「商店設定」按鈕以 **embed-modal iframe** 開啟；popup 外框承擔標題與關閉，**頁面本身無全域導航／麵包屑／頁首**，動作改置底部提交列（`.ss-actionbar`：See as fan ｜ Discard ｜ Save changes，sticky 底部；spec F1 設定動作與預覽）。IA：**店面門面**（`.ss-identity-card`）常駐置頂，用 **Base44／Facebook 式身分帶**（封面 `.ss-band__cover` ＋疊加 logo 頭像 `.ss-band__avatar` ＋店名／網址／簡介為文字），**逐欄就地編輯**（`.ss-edit`：文字態 ↔ 內嵌 input/textarea/select，✓/Enter 確認、✕/Esc 取消，`.is-editing` 切換）；品牌素材就是封面＋頭像（各自有編輯鈕），不另設上傳框；整頁用滿標準 1280px 的 `.page` 欄寬（非兩欄詳情頁，不套 `.page--narrow`）；其下**商品陳列／付款／出貨**三個對等設定群組以 **tab 切換**（`.tabs` + `.ss-tabpanel`，一次處理其一；出貨 tab 用 `.settings-row`）；另有 **粉絲視角預覽（See as fan）** 以畫面分割開啟（`.preview-panel--inset` + `.ss-fan`）。本元件補基礎控制項沒有的欄位型別：網址前綴（`.ss-url`）、`$` 金額前綴（`.amount-field`，見 Amount field 元件）、唯讀 Stripe 狀態卡（`.ss-status`）、品牌素材上傳（`.ss-brand` + Upload tile），以及**拖曳排序清單**（`.ss-order`）與粉絲預覽內容（`.ss-fan`）。
 
 商品陳列（5.1.5.5 F3 / D031）：拖曳已上架商品調整粉絲端陳列順序——粉絲端順序的單一來源；上 / 下架（上架開關 Shop）仍在 E-Shop F4。只納入已上架（§7.2 可見）商品。兩種空狀態（`.empty-stub`）：完全沒商品 → 導向建立商品；有商品但全未上架 → 導向商品管理上架。
 
@@ -3311,7 +3314,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ```
 store-settings.html  (popup body — D067: no global nav / breadcrumb / page header)
-├─ .ss-stack (單欄, gap 18px, 滿版 ≤1280px)
+├─ .ss-stack (單欄, gap 18px, 滿版 ≤`.page` 寬＝1280px)
    ├─ .ss-identity-card 店面門面（常駐，身分帶＋逐欄就地編輯）
    │  ├─ .ss-band__cover（封面品牌素材＋編輯鈕）
    │  ├─ .ss-band__head: .ss-band__avatar（logo＋編輯鈕） + .ss-edit--name / .ss-edit--url
@@ -3444,6 +3447,222 @@ Normalizes three page-local versions into one component: create-event.html's `.c
 
 ---
 
+### 4.50 KV list
+
+**`_layer`** · atom — Read-only key/value row: label left, value right, a hairline divider above every row but the first. The unit of a "look, don't touch" summary — detail-page meta cards, status snapshots, anything restating facts the user cannot edit here.
+
+Distinct from its two nearest neighbours: unlike **Field system** (§ Inventory) it has no control slot and must never be dressed up as a form — if the value is editable it belongs in a `.field` / `.input`; unlike **Review row** (§4.49) it carries no per-row Edit action and no wizard-Review semantics. It also brings no card chrome of its own and expects to sit inside a Form section card.
+
+**Anatomy**
+
+```
+.kv[.kv--lead]              one row — flex, space-between, baseline-aligned
+ ├ .kv__k                   key   (--muted-foreground)
+ └ .kv__v                   value (right-aligned, --fw-medium, default foreground)
+```
+
+**Variants** — One modifier, `.kv--lead`: treat this row as the lead of a group, dropping the top hairline and top padding (the same treatment `:first-child` gets automatically). It exists because `:first-child` is unreliable whenever rows are conditionally shown — a `[hidden]` row still matches `:first-child`, so the automatic rule fires on an invisible row and the first *visible* row keeps a stray divider. Any group whose opening rows can be hidden (e.g. a pickup-method pair where only one applies) must mark its lead row explicitly.
+
+**Sizes** — Single size (`padding: var(--sp-8) 0`, `--fs-13`).
+
+**States**
+
+| State | Selector | Change |
+|---|---|---|
+| default | `.kv` | `1px solid var(--border)` top hairline, `--sp-8` vertical padding |
+| first row | `.kv:first-child`, `.kv--lead` | Top hairline and top padding removed |
+| hidden | `.kv[hidden]` | `display: none` — declared explicitly (see Notes) |
+
+The component is entirely static; it has no interactive state.
+
+**Class API** (CSS classes — Props/API = N/A, static CSS prototype)
+
+| Class / modifier | Effect |
+|---|---|
+| `.kv` | One row — `display:flex`, `justify-content:space-between`, `align-items:baseline`, `--sp-12` gap, `--fs-13` |
+| `.kv__k` | Key — `--muted-foreground` |
+| `.kv__v` | Value — `text-align:right`, `--fw-medium`, inherits foreground |
+| `.kv--lead` | Group lead row — removes top border and top padding |
+
+**Token usage** (→ Pillar 2 Role)
+
+- `--border` (row hairline) · `--muted-foreground` (key) · `--fs-13` · `--fw-medium` (value) · `--sp-8` (vertical padding) · `--sp-12` (key/value gap)
+
+**Notes / gotchas**
+
+- **`.kv[hidden]` must zero `display` explicitly.** The component is `display: flex`, which beats the user-agent default for the `hidden` attribute, so without an explicit `.kv[hidden] { display: none }` a "hidden" row still renders. The rule ships inside `kv-list.css` — consumers must not override it back.
+- **No width ceiling.** The component deliberately sets no `max-width` on `.kv__v`; where values can run long, the consumer caps them.
+
+**Usage** — Use for read-only fact lists inside a detail-page meta card or status card. Avoid when any value is editable (use Field system), when each row needs its own Edit action (use Review row §4.49), or for scannable record sets (use Data list).
+
+**Do & Don't**
+
+- ✅ Do mark the first visible row of a group `.kv--lead` when preceding rows may be `[hidden]`.
+- ✅ Do cap value width yourself when values can be long.
+- ❌ Don't put an input, switch, or button inside `.kv__v`.
+- ❌ Don't rely on the browser's default `hidden` handling — see Notes.
+
+**Code example**
+
+```html
+<div class="kv"><span class="kv__k">Category</span><span class="kv__v">Apparel</span></div>
+<div class="kv"><span class="kv__k">SKU</span><span class="kv__v">ZT-TEE-0042</span></div>
+
+<!-- conditional pair: only one shows, so the visible one is marked --lead -->
+<div class="kv" hidden><span class="kv__k">Ship to</span><span class="kv__v">—</span></div>
+<div class="kv kv--lead"><span class="kv__k">Pickup window</span><span class="kv__v">Aug 16 · 14:00–18:00</span></div>
+```
+
+**Consumers** — `product-detail.html` (the three right-rail meta cards).
+
+**CSS** — [`kv-list.css`](./ds-components/kv-list.css)
+
+---
+
+### 4.51 Stock bar
+
+**`_layer`** · atom — A 5px horizontal quantity bar reading "how much is left" at a glance: stock level, usage ratio. Always paired with the exact figure beside it (e.g. "3 / 50") — the bar carries the feel, the number carries the truth, and neither substitutes for the other.
+
+Thinner and more primitive than **Completeness meter**, which owns its own label + count header and a `--ready` near-full state. Stock bar is bare track + fill; the surrounding card supplies all wording.
+
+**Anatomy**
+
+```
+.stock-bar                         track (--muted, 5px, pill radius, overflow hidden)
+ └ .stock-bar__fill[--low]         fill  (--primary; width from the consumer's inline style)
+```
+
+**Variants** — One modifier, `.stock-bar__fill--low`, switching the fill to `--destructive` when the quantity is under the low-stock threshold. There are exactly two colour states by design; a finer gradation would be a product rule, and product rules do not live in the component.
+
+**Sizes** — Single size (`height: 5px`, `--sp-8` vertical margin).
+
+**States**
+
+| State | Selector | Change |
+|---|---|---|
+| default | `.stock-bar__fill` | `--primary` fill |
+| low | `.stock-bar__fill--low` | Fill switches to `--destructive` |
+
+Static; no interactive state.
+
+**Class API** (CSS classes — Props/API = N/A, static CSS prototype)
+
+| Class / modifier | Effect |
+|---|---|
+| `.stock-bar` | Track — 5px tall, `--muted` background, `--radius-pill`, `overflow:hidden`, `--sp-8` vertical margin |
+| `.stock-bar__fill` | Fill — `display:block`, full height, `--primary`, `--radius-pill`; **no width** |
+| `.stock-bar__fill--low` | Fill switches to `--destructive` |
+
+**Token usage** (→ Pillar 2 Role)
+
+- `--muted` (track) · `--primary` (fill) · `--destructive` (low fill) · `--radius-pill` · `--sp-8` (vertical margin)
+
+**Notes / gotchas**
+
+- **The percentage is supplied by the consumer as an inline `style="width:N%"` on `.stock-bar__fill`.** It is data, not styling; the component deliberately declares no width, so a fill without an inline width renders as zero.
+- **The low threshold is a product rule.** The component only offers the modifier; deciding when "low" begins, and applying the class, is the consumer's job.
+
+**Usage** — Use next to a stock or usage figure where the ratio should be felt instantly. Avoid as a task-progress indicator with its own label (use Completeness meter), and avoid as the only representation of a quantity — the number always accompanies it.
+
+**Do & Don't**
+
+- ✅ Do pass the percentage via inline `width` on the fill.
+- ✅ Do show the exact figure alongside the bar.
+- ❌ Don't invent a third colour state.
+- ❌ Don't encode the low-stock threshold in CSS.
+
+**Code example**
+
+```html
+<div class="kv kv--lead"><span class="kv__k">In stock</span><span class="kv__v">3 / 50</span></div>
+<div class="stock-bar"><span class="stock-bar__fill stock-bar__fill--low" style="width:6%"></span></div>
+```
+
+**Consumers** — `product-detail.html` (right-rail "current stock" card).
+
+**CSS** — [`stock-bar.css`](./ds-components/stock-bar.css)
+
+---
+
+### 4.52 Detail rail
+
+**`_layer`** · organism — The two-column skeleton for a detail / edit page: an editable main column on the left (usually Tabs + tab panels) and a sticky read-only meta rail on the right that survives every tab switch, so the facts a user needs before changing anything are never a click away.
+
+This section documents **the shell only** — column ratio, sticky behavior, nested spacing overrides, responsive breakpoint. Per §4.0, a component section demos a single instance's variants × states; *when* to reach for this layout and *what belongs in the rail* are assembly decisions and live in the Pillar 5 pattern card **Detail + persistent rail** (§5.1). Documenting them in both places would split the source of truth.
+
+**Anatomy**
+
+```
+.detail-grid                  grid — minmax(0, 1fr) / 300px, --sp-16 gap, align-items:start
+ ├ .detail-main               main column (min-width: 0)
+ └ .detail-rail               right column (flex column, --sp-24 gap, sticky at --sp-24)
+```
+
+**Variants** — None. The shell has one shape; what varies is its content.
+
+**Sizes** — Single configuration: `minmax(0, 1fr) 300px`.
+
+**States**
+
+| State | Selector | Change |
+|---|---|---|
+| default (≥1101px) | `.detail-grid` | Two columns; `.detail-rail` is `position: sticky; top: var(--sp-24)` |
+| ≤1100px | `@media (max-width: 1100px)` | Collapses to `minmax(0, 1fr)` single column; rail drops to `position: static` and falls in below the main column |
+
+**Class API** (CSS classes — Props/API = N/A, static CSS prototype)
+
+| Class / modifier | Effect |
+|---|---|
+| `.detail-grid` | Two-column grid `minmax(0,1fr) 300px`, `--sp-16` gap, `align-items:start` |
+| `.detail-main` | Main column; `min-width: 0` so wide tables or long unbroken strings can't burst the grid |
+| `.detail-rail` | Right column — flex column, `--sp-24` gap, sticky |
+| `.detail-rail .form-section` | Margin zeroed — spacing inside the rail is owned by the rail's `gap` |
+| `.detail-rail .form-section--outlined:not([hidden]) ~ …` | The component-layer sibling `margin-top: var(--sp-24)` is zeroed here (see Notes) |
+| `.detail-rail .form-section__head` | Head bottom margin tightened 24px → `--sp-12` |
+
+**Token usage** (→ Pillar 2 Role)
+
+- `--sp-16` (column gap) · `--sp-24` (rail card gap, sticky offset) · `--sp-12` (rail card head margin)
+
+**Notes / gotchas**
+
+- **The adjacent-sibling `margin-top` from `form-section.css` must be zeroed inside the rail.** Form section gives visible outlined siblings a `--sp-24` top margin; inside a flex column that already has a `--sp-24` gap, the two stack and rail cards end up spaced twice as far apart as intended. `detail-rail.css` zeroes the rule so spacing is owned by `gap` alone — consumers must not reintroduce per-card margins.
+- **Rail card heads are tightened.** Form section's default 24px head bottom margin reads as slack in short rail cards, so it drops to `--sp-12` in this scope.
+- **This shell expects the narrow page container.** Put it inside `.page.page--narrow` (1056px, §6.1): at the default 1280px the 300px rail leaves the main column wide enough that line length becomes uncomfortable. The variant exists for exactly this layout.
+- **The rail is not guaranteed to be beside the content.** Below 1100px it falls in underneath, which is why nothing in the rail may be the only route to a task.
+
+**Usage** — Use for a detail / edit page whose editing surface is split across tabs while a small set of read-only constraints must stay visible. Avoid for single-column forms and for create wizards (use the `wizard-focus` template), and avoid when the "rail" content would need more than 3–4 cards.
+
+**Do & Don't**
+
+- ✅ Do keep the rail read-only.
+- ✅ Do leave `min-width: 0` on `.detail-main` in place.
+- ❌ Don't add per-card margins inside the rail.
+- ❌ Don't restate rail composition rules here — they belong to the Pillar 5 pattern card.
+
+**Code example**
+
+```html
+<div class="detail-grid">
+  <div class="detail-main">
+    <nav class="tabs" role="tablist">…</nav>
+    <div class="tab-panel">…</div>
+  </div>
+  <aside class="detail-rail">
+    <section class="form-section form-section--outlined">…</section>
+    <section class="form-section form-section--outlined">…</section>
+  </aside>
+</div>
+```
+
+**Dependencies** — composes Form section, Tabs, KPI, KV list (§4.50), Stock bar (§4.51). Assembly rules: Pillar 5 §5.1 *Detail + persistent rail*.
+
+**Consumers** — `product-detail.html`.
+
+**CSS** — [`detail-rail.css`](./ds-components/detail-rail.css)
+
+---
+
 ### 4.?? Owner lookup
 
 - Source: ds-components/owner-lookup.css and partials/owner-lookup.js
@@ -3459,7 +3678,7 @@ Normalizes three page-local versions into one component: create-event.html's `.c
 
 ### 5.1 Pattern cards
 
-Best-practice assembly recipes — how components combine to meet a creator's goal. A Pattern is not a component (Pillar 4) and not a wireframe (the page implementation). Each card has five grids: `trigger` (when to use) / `must` (≥2 non-negotiables) / `should` (advisable) / `must-not` (anti-patterns) / `_edge-cases` (empty / error / new-user / mobile / offline). Four categories, nine cards（頁面級 5 張＋中間層 4 張，2026-07-08）。Component sections demo the unit only — assembly rules live here（判準見 §4.0）。
+Best-practice assembly recipes — how components combine to meet a creator's goal. A Pattern is not a component (Pillar 4) and not a wireframe (the page implementation). Each card has five grids: `trigger` (when to use) / `must` (≥2 non-negotiables) / `should` (advisable) / `must-not` (anti-patterns) / `_edge-cases` (empty / error / new-user / mobile / offline). Four categories, ten cards（頁面級 5 張＋中間層 4 張，2026-07-08；2026-07-20 新增 Detail + persistent rail，共十張）。Component sections demo the unit only — assembly rules live here（判準見 §4.0）。
 
 #### Dashboard home (Layout)
 
@@ -3532,6 +3751,14 @@ Best-practice assembly recipes — how components combine to meet a creator's go
 - **should**: Keep the preview sticky while the form scrolls; re-render on field input, not on save.
 - **must-not**: Never make the preview a modal that blocks editing; never let preview content drift from form state; never fake data in the preview（用 `.is-empty` 占位）.
 - **_edge-cases**: `empty` → preview shows the placeholder card; `error` → preview keeps last valid render; `new-user` → preview visible by default in create flows; `mobile` → preview collapses behind a toggle; `offline` → preview still renders（純前端）.
+
+#### Detail + persistent rail (Layout)
+
+- **trigger**: An entity page where editing is split across tabs, but a handful of read-only facts must never leave view — product detail (stock on hand, delivery method, linked project); any future detail page with the same shape.
+- **must**: Wrap the page in `.page.page--narrow`（1056px 窄版容器，§6.1——1280 的預設寬度配上 300px 右欄會讓左欄行長過長）; use the `Detail rail` shell (§4.52) — editable `Tabs` inside `.detail-main`, `.detail-rail` on the right holding **read-only** `Form section` cards built from `KV list` (§4.50) / `Stock bar` (§4.51) / `KPI`. The rail answers "what do I need to know before I change something", so it carries constraints and consequences, never the fields being edited. Every rail card must make sense from **every** tab — anything meaningful in only one tab belongs in that panel instead.
+- **should**: Cap the rail at 3–4 cards（會捲動的右欄就不再是常駐）; order them by how often they block a decision (stock before provenance); pair every bar or meter with its exact figure（見 §4.51）; keep rail cards short enough that the head's tightened `--sp-12` spacing reads as deliberate.
+- **must-not**: Never put a primary action or the only entry point to a task in the rail — below 1100px it falls in under the main column and stops being visible alongside the content; never make a rail value editable in place（可編輯就該回到主欄的 `.field`）; never add per-card margins inside the rail（間距由 `.detail-rail` 的 `gap` 擁有，見 §4.52 Notes）。
+- **_edge-cases**: `empty` → a rail card with no data shows an em-dash value, never disappears (a vanishing card changes the page's shape between tabs); `error` → the card keeps its last-known value with a stale marker rather than blanking; `new-user` → rail renders with placeholder values so the layout is learnable from the first visit; `mobile` → single column, rail after main, so nothing in it may be the only route to a task; `offline` → rail values dim and carry a "last synced" note.
 
 ### 5.2 Voice & Microcopy
 
@@ -3638,7 +3865,7 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 | `grid.columns` | `12` | Standard 12-col bento (`.bento`) |
 | `grid.gutter` | `16px` | `gap: 16px` between bento children |
 | `grid.margin` | `32px / 24px` | Page x-padding desktop / mobile |
-| `grid.max-width` | `1248px` | Container cap |
+| `grid.max-width` | `1280px` | Container cap — `.page` max-width。窄版變體 `.page--narrow` = `1056px`（兩欄詳情頁專用，見 §6.1） |
 | `grid.breakpoints.lg` | `900px` | **R 2.1 canonical breakpoint** — topbar nav collapses, bento children fall back to span-12, hero single-column |
 | `grid.breakpoints.xl` | `1280px` | Above which max-width caps |
 | `grid.adaptive` | `null` | Web only — no iOS / iPad / Mac native |
@@ -3657,7 +3884,8 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 ### 6.1 Grid System (narrative)
 
 - **12-col bento grid** (`.bento`) — primary layout for dashboard / earnings rows. Children use `.bento--span-{3,4,5,6,7,8,9,12}` to set columns. Below 900px breakpoint all children fall back to span 12 (mobile single-column). See [§4.25 Bento grid](#424-bento-grid).
-- **Page container** — `max-width: 1248px`, centered; padding 32 24 96 (top-x-bottom).
+- **Page container** — `max-width: 1280px`, centered; padding 32 24 96 (top-x-bottom).
+- **`.page--narrow` 窄版變體** — `max-width: 1056px`（2026-07-20 Q21）。**用途**：只給「主欄＋右側常駐 meta 欄」的兩欄詳情頁（Detail rail §4.52）。**為什麼需要**：右欄固定 300px，容器若維持 1280，左欄會寬到行長過長、讀起來吃力；收成 1056 讓左欄回到舒適行長，右欄寬度不變。**基準不動**：其餘所有頁面維持 1280——Q21 原本裁定全站 1280→1056，同日經使用者實看結果後改為僅此變體套用。**Consumer**：目前只有 `product-detail.html`（`<div class="page page--narrow">`）。定義在 `shared.css`。
 - **Section vertical rhythm** — `mt-24` (24px) for top-level section gap; `gap: 16px` for bento children; `gap: 8px` for topbar action cluster.
 
 ### 6.2 Page Templates
@@ -3863,6 +4091,15 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
 ---
 
 ## Changelog
+
+- **2026-07-20** — Product-detail round: three new components promoted + a site-wide type / surface / width adjustment (裁決編號 Q21).
+  - **New §4.50 KV list** (`kv-list.css`, 🟢 atom) — read-only key/value row for detail-page meta cards. `.kv--lead` exists because `[hidden]` rows still match `:first-child`; `.kv[hidden]` zeroes `display` explicitly since the component is `display:flex`. Consumer: product-detail.html.
+  - **New §4.51 Stock bar** (`stock-bar.css`, 🟢 atom) — 5px quantity bar, two colour states (normal / `--low`); percentage supplied by the consumer as inline `width`, low threshold owned by the product rule not the CSS. Consumer: product-detail.html.
+  - **New §4.52 Detail rail** (`detail-rail.css`, 🟠 organism) — detail-page two-column shell (1fr / 300px, sticky rail, single column ≤1100px). Component section covers the shell only; assembly rules moved to a new Pillar 5 pattern card **Detail + persistent rail** (§5.1, now ten cards) per the §4.0 component-vs-pattern boundary. Consumer: product-detail.html.
+  - **`form-section.css`** — `.form-section__title` `--fs-18` → `--fs-14` (level with `.field__label`; hierarchy now carried by the card edge, not by heading size); `.form-section__sub` `--fs-14` → `--fs-11` and `--foreground-muted` → `--muted-foreground` (level with `.field__hint` — section sub and field hint are the same supporting-explanation role). Affects every form-section consumer page at once.
+  - **`field-system.css`** — `.field__hint` `--foreground-muted` → `--muted-foreground`, reversing the 2026-07-16 lightening decision; hints return to the supporting tier and re-align with `.form-section__sub`. Site-wide.
+  - **`kpi.css`** — `.kpi` background `--card` → `--input-surface`. KPI tiles are frequently nested inside `--card`-filled outlined Form sections, where two identical fills merged into one flat surface; one step brighter lets the inner tile sit on top of the card (visible mainly in dark mode, where `--input-surface` is a step above `--card`).
+  - **`shared.css`** — 頁寬**改為變體、不做全站收窄**（同日兩次裁決）：`.page` 的 `max-width` 維持 **1280px**；新增窄版變體 **`.page--narrow` = 1056px**，只給 Detail rail（§4.52）的兩欄詳情頁使用——右欄固定 300px，容器留在 1280 會讓左欄行長過長。Q21 原本裁定全站 1280→1056，使用者實看結果後同日改為僅此變體套用，其餘頁面一律維持 1280。目前唯一 consumer 是 `product-detail.html`。文件連動：Pillar 1 §1.9、Pillar 6 §6.0 `grid.max-width`、§6.1（新增 `.page--narrow` 條目）、§4.1 Inventory 的 App shell 列；順帶校正這三處原本停留在更舊的 1248px 數字。
 
 - **2026-06-01** — De-branded + cleaned of upstream-source residue to align with `project-ui-creator` skill rules (DSS v1.4).
   - Identity, §5.2 Voice, §5.1 patterns, §5.3 States, §5.5 Workflow rewritten from the upstream source-system (GEO) framing to **Ztor Creator Studio** (creator-economy operations dashboard).

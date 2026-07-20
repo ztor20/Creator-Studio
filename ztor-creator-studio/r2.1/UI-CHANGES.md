@@ -6,6 +6,63 @@
 
 ---
 
+## 2026-07-20 · 商品明細改版：兩欄版型＋右側常駐 meta 欄，連帶四項全站視覺尺度裁決（B 反饋導入 · A 規格對齊 · C 撤除 · Q21）
+
+起點是使用者要求「依照 `docs/黑夜版風格探索-midnight.html` 的商品明細改 r2.1」，中途改以 Figma node `845-10300` 為準；經約十輪逐項截圖回饋定案。先在 `docs/商品明細-midnight版型-預覽.html` 做獨立預覽頁反覆對版，確認後才落地。
+
+### 【B】版型：單欄分頁 → 兩欄（主欄＋右側常駐 meta 欄）
+
+- 分頁列橫跨全寬，其下分左右兩欄。左欄放分頁內容，右欄是**跨分頁常駐**的唯讀狀態欄（sticky），切到任何分頁都看得到庫存、交付、關聯——這是本次改版的核心：改東西前要先知道的資訊不該藏在某個分頁裡。
+- 分頁由 5 個併為 4 個：**總覽**（原總覽＋原基本資訊）／定價與庫存／交付與取貨／關聯。原總覽的庫存健康與專案引用移進右欄，銷售摘要留在總覽最上方。
+- 右欄三張卡：**當前庫存**（量條＋庫存 3/50＋補貨鈕）／**交付與取貨**（取貨方式二選一，選物流配送顯示發貨地址、選 QR 領取顯示領取場次，由既有 `data-when-delivery` 連動）／**使用中**（專案／組合引用）。
+
+### 【B】新元件三支（promote，鐵律 1）
+
+- `ds-components/detail-rail.css` — `.detail-grid` / `.detail-main` / `.detail-rail`。詳情頁兩欄殼，右欄 sticky、≤1100px 收單欄。內含一條必要的權重覆寫：元件層 `.form-section--outlined:not([hidden]) ~ …` 的 24px margin-top 會疊上 flex gap 變成 48px，在此歸零讓右欄間距只由 gap 決定（與左欄同為 24px）。
+- `ds-components/kv-list.css` — `.kv` / `.kv__k` / `.kv__v` / `.kv--lead`。唯讀鍵值列。**`.kv[hidden]` 必須顯式歸零 display**：本元件用 flex，會蓋過瀏覽器對 hidden 屬性的預設 `display:none`——這是實作時真的踩到的坑（兩種取貨方式同時顯示）。
+- `ds-components/stock-bar.css` — `.stock-bar` / `__fill` / `__fill--low`。細長量條，低於低庫存門檻轉紅（`--destructive`）。百分比由 consumer 以 inline style 提供（那是資料不是樣式）。
+
+### 【Q21】四項全站視覺尺度（詳見 STYLE-DECISIONS.md Q21）
+
+這四項動到的是共用元件與 token，依鐵律 9 不能留在頁面 `<style>`。已在明確告知影響範圍（15–28 頁）後由使用者裁決**全站套用**：
+
+- `.form-section__title` 18→14px（同 `.field__label`）
+- `.form-section__sub` 14→11px、色階壓暗（同 `.field__hint`）
+- `.field__hint` 壓暗成 `--muted-foreground`——**推翻 2026-07-16 的反向提亮決定**
+- `.kpi` 底色 `--card`→`--input-surface`（卡中卡不再同色相糊）
+- 頁寬：**新增 `.page--narrow`（1056）只給商品明細用，`.page` 維持 1280**（同日修訂；原裁決是全站收窄，使用者看過實際結果後改為變體）
+
+### 【A】對齊 Figma 845-10300 的內容調整
+
+- 素材區改成一排四格（主圖／＋／＋／more），尺寸一致；由 `upload-showcase--stacked` 改回 base `upload-showcase`，未動共用元件。
+- 欄位順序改為 標題 → 描述 → 主分類／次分類 → 規格；「新增規格」改通欄按鈕。
+- 銷售摘要包進 outlined 卡、補副標、右上連結改「查看更多 →」；KPI 由三個改四個（已售／營收／扣費後淨利／轉換率）。
+- 麵包屑「商品」→「實體商品」；頁首去縮圖、只留單一狀態徽章。
+- 狀態徽章去橘改中性——除對齊 Figma，亦符合 Q8「品牌橘只給主操作與主分類」。
+
+### 【C】撤除（依使用者逐項指定）
+
+頁首的庫存過低徽章與商品描述、右欄的低庫存門檻與上架中兩列、專案引用的影響範圍說明與變更影響副標、主分類的「建立後不可變更」提示、頁首的補貨鈕（入口收斂到右欄當前庫存卡）。**其中專案引用的兩項是規格 §2.4 明列的組成項，移除後規格與畫面不一致——已記入 ASSUMPTIONS UIA-065 待上游裁決。**
+
+### 產品缺口（UIA-062～065）
+
+轉換率 KPI、組合引用、次分類鎖定、以及上述【C】的規格落差，四項均為上游未定義或與規格不符，已記入 `ASSUMPTIONS.md`，未回寫 `documents/`。
+
+### 收尾
+
+i18n 新增 18 個 `product-detail.*` key（已驗證頁面 0 缺 key）；bump `20260720j`；Playwright 逐頁量測 index／create-product／e-shop／earnings／settings／product-detail，0 水平溢出；頁寬僅 product-detail 用 `.page--narrow` 1056、其餘頁維持 1280。
+
+---
+
+## 2026-07-20 · `--ip` 列 hover 改浮起，比照拖曳抬起態（B 反饋導入 · Q5 scoped 例外）
+
+使用者比對 `--eshop` 拖曳握把的抬起效果後，指定「hover 效果要跟 drag 的 style 一樣」。
+
+- **【B】** `.product-list--ip .product-list__row:hover` 由 base 的純換底色（`--accent`）改成 `--card` 底＋`--radius-md`＋`--shadow-float`，跟 `.is-dragging`（拖曳抬起態）同一種浮起視覺；`position:relative;z-index:1` 避免陰影被相鄰列的 hairline 分隔線切掉。
+- **牴觸 Q5、記為 scoped 例外**：Q5 裁決「清單列 hover 只換底色，只有可點卡片才浮起」，本次是使用者當次明確指定、非默默偏離——已記入 `STYLE-DECISIONS.md` Q5 的 scoped 例外（僅 `--ip`，其餘 5 個變體不受影響）。
+- 順手修一個文件殘留：`design-system.html` 的 Product list Behavior details 表格原寫 base hover 是 `--muted`，實際 CSS（Q9 2026-07-13）早已是 `--accent`，文件跟程式碼不同步多時，一併修正。
+- check_ds_sync 全 PASS、bump `20260720i`。
+
 ## 2026-07-20 · 我的 IP 清單改表格化，對齊 spec 5.1.4 §F6 的 8 欄定義（A 規格補齊 · 新元件變體 · UIA-061）
 
 使用者反饋「我的 IP 版面跟電子商店不像」，指的不是圖示顏色（那已經一致），而是整體版面——`my-ip.html` 原本用 `.data-list` 卡片式清單，把 IP 名稱、權利資訊、租出數、收入、租金全部擠成一行文字（如「Maya Chou · 租出3 · 收入$2,180 · 分潤100% · 租金$480/6個月」）。查證 `documents/5.1.4-我的IP.md` §F6「清單頁欄位與互動」發現：**規格本來就定義了 8 個獨立欄位**（IP／權利資訊／租出數／收入／租金／Mktplace／Manage），現有實作沒有照著做——使用者的直覺跟規格是一致的，不是新提案。
