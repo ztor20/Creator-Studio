@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-07-20 · 清單列縮圖統一追加：data-list__icon 也改描邊框（B 反饋導入 · Q20 續）
+
+接續 07-18 那筆，使用者確認「我的 IP」等 15 頁用的 `.data-list__icon` 也要一併改，不維持例外。
+
+- **【B】** `.data-list__icon` 由 `--muted` 填色無邊框改為 `--card` 底＋1px `--border`，與 `.product-list__thumb`／`.project-list__icon` 一致。原本保留 `--muted` 是因為與 `.alert--card .alert__icon`「同族」（同尺寸 40×40／radius 10）；但 `alert__icon` 底色本就由狀態變體決定、無邊框語意不同，改邊框不影響兩者的視覺配對。
+- 影響頁：auction-detail／bundle-detail／create-bundle／create-project／fan-detail／earnings／event-detail／order-detail／ip-detail／pickup-detail／product-detail／project-detail／scanner／my-ip（14 頁）＋ design-system.html。
+- 文件同步：`design-system.md` Data list 條目、`STYLE-DECISIONS.md` Q20（移除「未納入」但改為說明差異不影響配對）。check_ds_sync 全 PASS、bump `20260720b`。暗色截圖驗證。
+
+## 2026-07-18 · 清單列縮圖統一成描邊框（B 反饋導入 · Q20）
+
+使用者截圖指定：把「填色無邊框」那種列縮圖全部換成「描邊框」那種。這其實是 product-list 元件內部的真實不一致——同一個「清單列縮圖」角色有兩種做法並存。
+
+- **【B · 統一列縮圖】** `.product-list__thumb`（orders／pickup）與 `.project-list__icon`（projects）由 `--muted` 填色無邊框，改為 `--card` 底＋1px `--border` 描邊框，與同元件既有的 `.product-list__image`（e-shop／events／pickup）一致。反白變體 `.product-list__thumb--cover` 的 `border-color` 設成與自身填色同色，避免反白塊上露出中性描邊。
+- **未納入（待使用者決定）**：`.data-list__icon`（15 頁的儀表板資訊列圖示晶片，40×40／radius 10，當初刻意與 `alert--card` 圖示同族）維持 `--muted` 填色無邊框——角色與清單列縮圖不同，未一併改。
+- 元件層一次生效、consumer 頁無需改 markup。文件同步：`design-system.md` product-list／project-list 條目、`STYLE-DECISIONS.md` Q20。check_ds_sync 全 PASS、bump `20260720a`。暗色截圖驗證。
+
 ## 2026-07-17 · midnight 精修搬入 r2.1 batch 2：input 填色＋標籤橘框＋radio 小點（B 反饋導入 · Q19）
 
 接續 Q18，使用者對照 `docs/黑夜版風格探索-midnight.html` 逐項截圖指定，再搬三項元件級精修（全走元件層、consumer 頁自動生效）。
