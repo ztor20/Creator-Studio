@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-07-20 · 清單列縮圖三度修正：data-list__icon 取消獨立家族、全站併成單一標準（B 反饋導入 · Q20 三修）
+
+使用者指出「我的 IP」（用 `.data-list__icon`）跟電子商店仍不一樣。二次修正時 `.data-list__icon` 刻意保留成獨立家族（`--card`／`--border`／40px，理由是與 `.alert--card .alert__icon` 同尺寸家族），但使用者的判斷標準很明確：全站看起來就是要一樣，不接受「兩個家族各自合理」的解釋。
+
+- **【B】** `.data-list__icon` 由 `--card`／`--border`／40×40 改為 `--muted`／`--border-soft`／52×52／icon 色 `--muted-foreground`，與 `.product-list__thumb`／`.project-list__icon` 完全一致（不再是獨立家族）。取消與 `.alert--card .alert__icon` 的尺寸配對關係。
+- 影響 15 頁（auction-detail／bundle-detail／create-bundle／create-project／fan-detail／earnings／event-detail／order-detail／ip-detail／pickup-detail／product-detail／project-detail／scanner／my-ip／design-system.html）。row 用 flex/grid 自適應高度，尺寸放大不會撞版；已用 Playwright 截圖檢查我的 IP（一般密度）與收入管理（較密集列表）兩頁，版面正常無破版。
+- 用 Playwright 量測 my-ip.html 的 `.data-list__icon` computed style，與先前驗證過的 orders/e-shop/projects 三頁數值逐項比對相同（52px／`rgb(22,23,24)`／`1px rgb(32,33,34)`／icon `rgb(117,117,117)`）。
+- 文件同步：`design-system.md` Data list 條目與 Anatomy 區塊改寫、`STYLE-DECISIONS.md` Q20 改為「全站統一單一標準」並記錄完整沿革（首版→二次修正→三度修正）。check_ds_sync 全 PASS、bump `20260720d`。
+- **追加**：驗收發現 `border-radius` 也沒統一（`.data-list__icon` 寫死 `10px`，另三者用 `var(--radius)`=6px，肉眼可辨），一併改成 `var(--radius)`；`design-system.md` 對應段落（Anatomy／Sizes／Class API）同步。四頁四元件的 width/height/背景色/邊框寬與色/圓角/icon 色共 7 項，已用 Playwright 逐項量測完全相等。bump `20260720e`。
+
 ## 2026-07-20 · 清單列縮圖二次修正：對齊錯了基準，重改成真實呈現值（B 反饋導入 · Q20 修正）
 
 使用者截圖指出訂單管理與電子商店的縮圖仍尺寸、顏色都不同——07-18 那筆改動對齊錯了對象。`.product-list__image` 全站 28 處使用皆搭配 `--placeholder` 變體，基礎規則（`--card`／`--border`／52px）從未單獨呈現過；真正畫面上看到的是 `--placeholder` 覆蓋後的值（`--muted` 底／`--border-soft` 邊／`--muted-foreground` icon），且 07-18 那筆也忘了同步尺寸（維持舊的 44px，`.product-list__image--placeholder` 其實是 52px）。

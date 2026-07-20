@@ -601,7 +601,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Global nav · sidebar mode | 🟠 organism | ✓ App | Display-mode alternative to the topbar (spec §6.9 / D016): 248px left rail (`.app-sidebar`, same `sidebar.js`) sits on `--surface-shell`; dropdowns → expandable groups（`.app-sidebar__group`，accordion，現役）。另保留 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）可切回。Driven by `data-nav-mode` (theme.js) | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Admin-layer nav · Tier 0/1 | 🟠 organism | ✓ App | Platform-operator (Admin) variant of the topbar (spec §4.1 / D086): roster page shows a "Creator Management" marker + locked Tier-1 items (`.app-topbar__link--locked`); inside a creator workspace, a back-to-roster icon (`.app-topbar__back`) sits **before** the logo + "Managing &lt;creator&gt;" chip (`.app-topbar__context`). Active creator held in `window.ztorCreator` (localStorage `ztor.activeCreator`); switched via devtools "Creator · Admin" cheat code. Used by `creators.html` (Tier 0) and every Tier-1 page | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Footer | 🟠 organism | ✓ App | Black hi-contrast footer slab | [footer.css](./ds-components/footer.css) |
-| Data list | 🟠 organism | ✓ App | Recent earnings, transactions, payouts, products, projects (row-divider)。列圖示晶片 `__icon` 2026-07-20 統一成描邊框（`--card` 底＋1px `--border`，40×40 不變，Q20 追加）——與 `.alert--card .alert__icon` 同尺寸家族，角色是「資訊列語意圖示」；**不同於** `.product-list__thumb`／`.project-list__icon` 的「照片佔位圖」家族（52px／`--muted`／`--border-soft`，見 Q20 二次修正） | [data-list.css](./ds-components/data-list.css) |
+| Data list | 🟠 organism | ✓ App | Recent earnings, transactions, payouts, products, projects (row-divider)。列圖示晶片 `__icon` 2026-07-20 三度修正後併入與 `.product-list__thumb`／`.project-list__icon` 同一組標準（52×52／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`），取消與 `.alert--card .alert__icon` 的尺寸家族關係（Q20） | [data-list.css](./ds-components/data-list.css) |
 | Picker | 🟠 organism | ✓ App | Search + scrollable pick-list（Create bundle items、IP linker） | [picker.css](./ds-components/picker.css) |
 | Field pill | 🟡 molecule | ✓ App | Inline filter pill — search / select / dropdown-trigger | [field-pill.css](./ds-components/field-pill.css) |
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
@@ -2276,7 +2276,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 .data-list (flex column)
 └─ .data-list__row (grid minmax(0,1fr) auto, gap 12, padding 12px 0, border-bottom --border)
    ├─ .data-list__row-main (flex, gap 12, min-width 0)
-   │   ├─ .data-list__icon (40×40, radius 10, --card bg, 1px --border, --foreground-muted；2026-07-20 由 --muted 無邊框改描邊框，Q20)
+   │   ├─ .data-list__icon (52×52, radius var(--radius), --muted bg, 1px --border-soft, --muted-foreground；2026-07-20 三度修正，併入 product-list/project-list 標準，圓角改用共用 token，Q20)
    │   │   └─ <i class="ztor-icon"> (20px outline lucide)
    │   └─ .data-list__body (flex column, gap 2)
    │       ├─ .data-list__title (Geist 13.5/500, truncated ellipsis)
@@ -2286,11 +2286,11 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 last .data-list__row → border-bottom: 0
 ```
 
-**Variants** — Icon semantic hooks only: `.data-list__icon--neutral|success|error|info` — all four render identical monochrome chips (`--card` bg + 1px `--border` + `--foreground-muted`; border added 2026-07-20, Q20); colored fills were retired 2026-05-25. Semantic color lives on the amount, not the chip.
+**Variants** — Icon semantic hooks only: `.data-list__icon--neutral|success|error|info` — all four render identical monochrome chips (`--muted` bg + 1px `--border-soft` + `--muted-foreground`; unified with product-list/project-list thumbnail family 2026-07-20, Q20); colored fills were retired 2026-05-25. Semantic color lives on the amount, not the chip.
 
 The shared `transaction-list` renderer (components.js) composes this list with an optional trailing status badge. The status column is **per-call**: Earnings renders it; Dashboard F3 passes `hideStatus` to drop it, because F3 lists settled income only (status is always settled — spec 5.1.1 §F3).
 
-**Sizes** — Single size (40px icon chip, `12px 0` rows).
+**Sizes** — Single size (52px icon chip, `12px 0` rows; 2026-07-20 unified with product-list/project-list, was 40px, Q20).
 
 **States**
 
@@ -2308,7 +2308,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.data-list` | Flex-column container of rows |
 | `.data-list__row` | Grid `minmax(0,1fr) auto`; `padding: 12px 0`, bottom hairline |
 | `.data-list__row-main` | Left group (icon + body); flex, `gap: 12px`, `min-width: 0` for truncation |
-| `.data-list__icon` | 40×40 `radius 10px` neutral chip, `inline-grid` centered glyph |
+| `.data-list__icon` | 52×52 `radius var(--radius)` neutral chip, `inline-grid` centered glyph（2026-07-20 併入 product-list/project-list 標準，原 40×40／`radius 10px`，Q20）|
 | `.data-list__icon--neutral / --success / --error / --info` | Semantic hook only — visually identical neutral chip |
 | `.data-list__body` | Title + meta stack; flex column, `gap: 2px`, `min-width: 0` |
 | `.data-list__title` | Geist 13.5/500, ellipsis-truncated single line |
