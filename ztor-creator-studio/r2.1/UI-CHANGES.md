@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-07-20 · 電子商店商品清單三處內容對齊 Figma（A 規格補齊 · UIA-066）
+
+使用者提供 Figma 參考（node 845-12576），要求電子商店「商品」分頁清單三處內容規則對齊：商品名稱副標、分類欄、庫存欄。
+
+- **【A · 規格副標】** `.product-list__meta`：單一規格商品固定顯示「單一規格」（新 i18n key `e-shop.variant.single`，取代 row1/row4/row5 各自的 `rowN.meta`）；多規格商品顯示「維度（選項）× 維度（選項）」——Coastline hoodie 原本就是這個格式（拿掉多餘的「連帽衫 · 」前綴），Coastline tee 補成「尺寸（S/M/L/XL）」。JS 動態填充的 21 筆商品（`document.querySelector('[data-eshop-panel="products"]')` 那段 IIFE）同步：僅 Tee 兩款有真實尺寸選項改用 variant 欄位，其餘 19 筆一律「單一規格」（原本各自的格式描述文字如「貼紙·12入」不再顯示，改為統一的規格副標語意）。
+- **【A · 分類兩行】** 新增元件層 class `.product-list__cat-sub`（子分類，白字 `--foreground`）／`.product-list__cat-main`（主分類，灰字 `--muted-foreground`），`.product-list__category-cell` 改放兩個 span；主分類用共用 i18n key `e-shop.cat.physical`／`e-shop.cat.digital`（不必每列各自定義），依各列 `data-type` 挑選。9 筆命名商品＋21 筆 JS 填充商品皆套用（填充商品主分類固定「實體商品」，因為 ITEMS 陣列全是實體品）。
+- **【A · 庫存格式】** `.product-list__stock`：無限量商品「剩餘 / ∞」（取代原本「X left」／「剩 X 件」），限量商品「剩餘 / 上限」（Coastline acetate 原本就是 `21 / 50`，格式已對，未變動）。
+- **呈現假設記入 UIA-066**：數位商品（單曲／電影／EP／會員卡）在 Figma 稿子也顯示「48 / ∞」，但三列數字相同、疑似佔位假資料，且數位商品無實體庫存概念——經使用者確認，數位商品庫存維持純 `∞`、不採用 Figma 字面值捏造銷售數字；數位商品的 `__meta` 也維持原本格式描述文字（音樂單曲·MP3+FLAC 等），不套用規格副標規則（數位商品無「規格」概念）。
+- 影響範圍：僅 `e-shop.html` 商品（Products）分頁；套組（Bundles）／競標（Auctions）分頁的 `category-cell` 是不同語意（成員／分類），未觸碰。
+- 文件同步：`design-system.md`／`design-system.html` 的 Product list 條目與 Class API 表補充兩行分類的說明；`ASSUMPTIONS.md` 新增 UIA-066。check_ds_sync 全 PASS、Playwright 逐列量測 30 筆 Products 資料＋i18n 中英切換皆確認正確、bump `20260721a`。
+
 ## 2026-07-20 · 商品明細改版：兩欄版型＋右側常駐 meta 欄，連帶四項全站視覺尺度裁決（B 反饋導入 · A 規格對齊 · C 撤除 · Q21）
 
 起點是使用者要求「依照 `docs/黑夜版風格探索-midnight.html` 的商品明細改 r2.1」，中途改以 Figma node `845-10300` 為準；經約十輪逐項截圖回饋定案。先在 `docs/商品明細-midnight版型-預覽.html` 做獨立預覽頁反覆對版，確認後才落地。
