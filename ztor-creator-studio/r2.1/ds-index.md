@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 217 條）
+## Tokens（_tokens.css，亮色，共 220 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -89,6 +89,7 @@
 
 ### --input-*
 - `--input`: #EAEAEA
+- `--input-surface`: var(--card)
 
 ### --lh-*
 - `--lh-none`: 1
@@ -102,6 +103,9 @@
 ### --muted-*
 - `--muted`: #FAFAFA
 - `--muted-foreground`: #6E6E68
+
+### --nest-*
+- `--nest-surface`: transparent
 
 ### --overlay-*
 - `--overlay-blur`: blur(14px) saturate(140%)
@@ -172,6 +176,7 @@
 - `--status-info`: #266DF0
 - `--status-warning`: #F8D749
 - `--status-accent`: #8B5CF6
+- `--status-error`: #DA314A
 
 ### --surface-*
 - `--surface-shell`: #F0F0EE
@@ -284,7 +289,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 72 支；主 class 前 5 個）
+## 元件（ds-components/，共 80 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -296,19 +301,22 @@
 - `button.css` — .ztor-btn, .ztor-btn--outline, .ztor-btn--xs, .ztor-btn--sm, .ztor-btn--lg ｜ Ztor Creator Studio · R 2.1 — Button
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
-- `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip__count ｜ Chip — clickable filter pill with active state +
+- `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip--value ｜ Chip — clickable filter pill with active state +
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
 - `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
-- `control-row.css` — .control-row, .control-row__main, .control-row__sub ｜ control-row.css · 有外框的「左文字右控件」獨立列
+- `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group__body ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `cookie-banner.css` — .ztor-cookie-banner, .ztor-cookie-banner__copy, .ztor-cookie-banner__actions, .ztor-cookie-banner__settings ｜ Ztor — Cookie Banner
 - `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__icon, .data-list__icon--success ｜ Data list — row-divider list (no card per row).
+- `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
+- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
 - `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__title, .empty-card__text, .empty-card__cta ｜ Empty card — in-card empty state for a loaded-bu
 - `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
 - `fan-store.css` — .preview-panel__body, .fan-store, .fan-store__overline, .fan-store__phone, .fan-store__screen ｜ Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同
+- `field-more.css` — .field-more, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
 - `field-system.css` — .field, .field__label, .field__hint, .field__req ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
@@ -321,9 +329,11 @@
 - `input.css` — .input, .textarea, .input--with-prefix, .select, .select-wrap ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
 - `kpi.css` — .kpi, .kpi__label, .kpi__value, .kpi__delta, .kpi__delta--neg ｜ KPI — metric tile (label / value / delta or meta
+- `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__v ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
+- `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
 - `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
 - `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__avatar ｜ SiteSpecific Owner lookup — registered user sele
 - `page-intro.css` — .page-intro, .page-intro__title, .page-intro__sub, .page-intro__actions ｜ Ztor Creator Studio - Page intro molecule
@@ -338,8 +348,9 @@
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper__labels, .progress-stepper__label ｜ ── Progress stepper
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__project, .project-list__icon ｜ Project list — borderless table list for the Pro
 - `radio-card.css` — .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text, .radio-card__title ｜ radio-card.css · 並排可選卡（radio 卡）
-- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__dot, .radio-list__item--active, .radio-list__text ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
+- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
 - `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
+- `restock-log.css` — .restock-log-wrap, .restock-log, .restock-log__head, .restock-log__row, .restock-log--with-option ｜ Restock Log — 補貨紀錄表（逐欄對齊的歷史清單）
 - `restock-modal.css` — .restock-lines, .restock-lines__group, .restock-line, .restock-line__main, .restock-line__img
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__brand, .scanner-top__title ｜ Mobile scanner · spec 5.1.5.11 F7 (standalone ph
@@ -349,12 +360,14 @@
 - `settings.css` — .settings-layout, .settings-nav, .settings-nav__item, .settings-nav__item--active, .settings-section ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
+- `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例）
+- `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
 - `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
 - `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
 - `table.css` — .ztor-table, .ztor-table__feature, .ztor-table__check, .ztor-table__cross, .ztor-table__partial ｜ Ztor — Table
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--brand ｜ Tabs — horizontal tab bar with hairline underlin
 - `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
 - `upload-tile.css` — .upload-tile, .upload-tile--hero, .upload-tile--file, .upload-tile__icon, .upload-tile__title ｜ Upload tile · dashed upload affordance for creat
-- `variant-builder.css` — .variant-builder, .variant-option, .variant-option__head, .variant-option__name, .variant-option__remove ｜ Variant builder · Shopify-style options + per-va
+- `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
