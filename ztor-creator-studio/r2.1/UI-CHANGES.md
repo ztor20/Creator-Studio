@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-07-21 · Icon 圖庫由 Lucide 全面換成 Tabler（D infra）
+
+使用者指示「全部換成 Tabler」。改法選擇「只換皮、不換名」：registry 的 key 一律沿用換庫前的舊名（`trash-2`、`more-horizontal`、`check-circle`…），`data-lucide` 屬性名也不動，只把 key 底下的 SVG 內容換成 Tabler 的。因此 **39 頁、2,630 處 icon 引用一行都沒改**，風險集中在單一檔案而不是散在全站。兩套圖庫同為 24×24 網格、2px 線條基準，幾何相容，`applyIcons()` 注入的 1.2px stroke 維持不變。
+
+- **【D】** `js/icons.js`：registry 全數換成 Tabler SVG（來源 `@tabler/icons` 3.45.0）。71 顆同名直接對上、40 顆需名稱對照（`trash-2`→`trash`、`more-horizontal`→`dots`、`sliders-horizontal`→`adjustments-horizontal`、`party-popper`→`confetti`…完整對照表已落在 `design-system.md` §1.7 與 `design-system.html` §1.7 的可展開表格）。4 顆實心變體（`alert-triangle-fill`／`check-circle-fill`／`x-circle-fill`／`info-fill`）原本是手刻的 heroicons-style solid，改用 Tabler 原生 filled，風格終於跟 outline 同源。每行的中文用途註解全部保留。
+- **【D】** `js/icons-all.js`：Lucide 全集 1,713 顆 → Tabler 全集 6,166 顆（outline 5,112＋filled 1,054，filled 以 `<name>-fill` 命名，沿用 registry 既有慣例）。檔案 365KB → 1.7MB，但**只有 `design-system.html` 載**，產品頁不受影響。
+- **【D】** `design-system.html` icon 圖庫改成**執行期懶生成**：原本是寫死的 1,683 格 Lucide markup（176KB），換庫後那些名稱多半在 Tabler 不存在、會整片空白。改成展開時才依 `window.ZTOR_ICONS_ALL` 實際內容建格子，並自動排除頁面上已使用的名稱。副作用是 `design-system.html` 大幅瘦身，且以後再換圖庫或增刪 icon 都不用重生 markup。
+- **【D】** 文件同步：`design-system.md`（§1.7 Iconography、§4.9 Icon、Pillar 0/6 摘要表）、`design-system.html`（雙語對照，新增「換庫對照表」可展開區塊與「key 沿用舊名」的取捨說明）、`BUILD-SPEC.md`、`js/sidebar.js` 與 5 支 `ds-components/*.css` 的註解，全部從 Lucide 改為 Tabler。`UI-CHANGES-archive.md` 與 `docs/` 底下的歷史紀錄**刻意不動**——那些描述的是當時的事實。
+- **順手補的兩個既有缺鍵**：`badge-check`（交易列表「IP 授權金」，`js/components.js` 動態帶入）與 `dollar-sign`（DS 頁金額輸入前綴示範）**在換庫之前就不在 registry 裡**、一直渲染成空白，這輪一併補上（對應 Tabler 的 `rosette-discount-check` 與 `currency-dollar`）。屬既有缺陷，非本次換庫造成。
+- **刻意留下的技術債**：`data-lucide` 屬性名現在名不副實。正名成 `data-icon` 要動 2,630 處，跟換圖庫綁在一起會讓出事時無法二分定位，因此拆成獨立的一次性機械改名，另案處理。
+- 驗證：`node --check` 過兩支 JS；程式比對全 39 頁 static icon 名稱＋JS 動態注入名稱對 registry，缺鍵數 0；registry 110 顆 SVG 結構逐顆檢查通過；check_ds_sync 全 PASS。
+
+
 ## 2026-07-17 · 折扣設定：單一規格 折扣價↔折扣% 雙向連動、多規格改折扣%＋移到逐規格表下（B 反饋導入 · 產品變更待規格 · 接續 D144）
 
 使用者反饋：多規格下折扣設定位置與語意都不理想——(a) 折扣設定給的是「絕對折扣價 $」，多規格每個規格各自定價，一個絕對折扣價套不到 N 個規格；(b) 單一規格的定價區在多規格會隱藏（`data-when-var="single"`），但折扣設定沒設隱藏、照樣顯示且排在「逐規格定價表」上方，與真正的價格脫節。裁決走「折扣跟著價格走」＋「多規格用折扣%」。**⚠️ 動到折扣的資料模型（D144 原定義＝絕對折扣價），屬產品變更，`documents/` 規格尚未同步（見 ASSUMPTIONS UIA-060）。**

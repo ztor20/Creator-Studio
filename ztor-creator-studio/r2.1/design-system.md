@@ -52,7 +52,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 - Controls & buttons use `--radius` (6 px; `--radius-md` is an alias of `--radius`, merged Q2 2026-07-13). **Card / panel / dialog-level containers use `--radius-xl` (16 px)** (Q16 2026-07-17 — cards放大到與 form-section 一致). Dropdown / nav-panel浮層 use `--radius-lg` (8 px); `--radius-pill` for full-round.
 - Separate top-level sections with `mt-24` (24 px); use `gap: 16px` for bento children and `gap: 8px` for tight topbar clusters.
 - Use the `pill` taxonomy (`pill--orange / --success / --error / --info / --neutral`) for every status indicator. New colored backgrounds outside that set are forbidden.
-- Use Lucide icons via the local `icons.js` registry, stroke-width `1.2`, `currentColor` inheritance. Never inline raw `<svg>` for chrome icons.
+- Use Tabler icons via the local `icons.js` registry, stroke-width `1.2`, `currentColor` inheritance. Never inline raw `<svg>` for chrome icons.
 - Use `var(--font-display)` only for hero / page H1; `var(--font-ui)` for everything else (buttons, nav, labels, KPI titles, table headers).
 - Pair `--primary` with `--foreground` for button text. For longer button copy add `white-space: nowrap` on the `.btn` base.
 
@@ -160,7 +160,7 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 | Theme | **Light + dark** (toggle inherited from ztor's 2026-05-25 dark-mode adapter; dark primary also orange) |
 | H1 desktop | `64px / 400 / lh 1 / tracking -1.28px` (Geist) |
 | Button label | `15px / 500 / tracking -0.3px` (Geist) |
-| Icon system | Lucide (via `icons.js` registry) |
+| Icon system | Tabler (via `icons.js` registry) |
 | Theme mode | both — light / dark / system |
 
 **Assumptions** — sample data, names, copy, and money figures are illustrative placeholders. Product gaps and implementation drift are tracked in [`ASSUMPTIONS.md`](ASSUMPTIONS.md); presentation and engineering decisions are tracked in [`BUILD-SPEC.md`](BUILD-SPEC.md).
@@ -341,9 +341,58 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 
 ### 1.7 Iconography
 
-**Lucide** icon set, registered in `icons.js` and injected per page via `ztorIcons.applyIcons()`. Thin 1.2px outlined glyphs as inline SVG (no icon font). Any new icon must be added to the registry before use.
+**Tabler** icon set (`@tabler/icons` 3.45.0), registered in `icons.js` and injected per page via `ztorIcons.applyIcons()`. Thin 1.2px outlined glyphs as inline SVG (no icon font). Any new icon must be added to the registry before use.
 
-**兩檔分工（刻意設計，勿合併）**：`js/icons.js`（~27KB，策展 89 顆）＝產品頁 registry，30 頁都載、保持輕量；`js/icons-all.js`（~365KB，完整 Lucide 1713 顆，自動生成）**只有 `design-system.html` 載**（供「未使用」icon 總覽瀏覽），且必須排在 `icons.js` 之前——`icons.js` 會把 `window.ZTOR_ICONS_ALL` 中缺的 key 併入 REGISTRY。產品頁要用新 icon 仍走「補進 `icons.js` registry」流程，不掛全集。
+**兩檔分工（刻意設計，勿合併）**：`js/icons.js`（~36KB，策展 111 顆）＝產品頁 registry，30 頁都載、保持輕量；`js/icons-all.js`（~1.7MB，完整 Tabler 6,166 顆＝outline 5,112＋filled 1,054，自動生成）**只有 `design-system.html` 載**，且必須排在 `icons.js` 之前——`icons.js` 會把 `window.ZTOR_ICONS_ALL` 中缺的 key 併入 REGISTRY。產品頁要用新 icon 仍走「補進 `icons.js` registry」流程，不掛全集。
+
+**registry key 沿用舊名（2026-07-21 換庫後的刻意決定）**：由 Lucide 換成 Tabler 時，key 名稱一律保持換庫前的舊名（`trash-2`、`more-horizontal`、`check-circle`…），HTML 的 `data-lucide="..."` 屬性名也未改，因此 39 頁、2,630 處引用完全不用動。代價是屬性名與圖庫名不一致——這是拿命名整潔換零改動風險的取捨；日後要正名，走獨立的一次性機械改名（`data-lucide` → `data-icon`），不要跟換圖庫混在同一輪。
+
+**DS 頁圖庫改為執行期生成**：`design-system.html` 的「未使用」icon 清單原本是寫死的 markup，換庫後會整片失效；現改成展開時依 `window.ZTOR_ICONS_ALL` 實際內容懶生成，並自動排除頁面已使用的名稱，日後增刪 icon 不需重生 markup。
+
+**換庫對照表（key → Tabler 檔名）**：71 顆同名直接對上，以下 40 顆需對照。
+
+| registry key | Tabler |
+|---|---|
+| `alert-triangle-fill` | `filled/alert-triangle` |
+| `badge-check` | `rosette-discount-check` |
+| `banknote` | `cash-banknote` |
+| `book-open` | `book` |
+| `boxes` | `stack-2` |
+| `check-circle` | `circle-check` |
+| `check-circle-fill` | `filled/circle-check` |
+| `disc-3` | `disc` |
+| `dollar-sign` | `currency-dollar` |
+| `film` | `movie` |
+| `gem` | `diamond` |
+| `house` | `home` |
+| `id-card` | `id` |
+| `image` | `photo` |
+| `info` | `info-circle` |
+| `info-fill` | `filled/info-circle` |
+| `landmark` | `building-bank` |
+| `megaphone` | `speakerphone` |
+| `mic` | `microphone` |
+| `monitor` | `device-desktop` |
+| `more-horizontal` | `dots` |
+| `more-vertical` | `dots-vertical` |
+| `package-x` | `package-off` |
+| `panel-left` | `layout-sidebar` |
+| `panel-top` | `layout-navbar` |
+| `party-popper` | `confetti` |
+| `pause` | `player-pause` |
+| `percent` | `percentage` |
+| `play` | `player-play` |
+| `qr-code` | `qrcode` |
+| `refresh-ccw / refresh-cw` | `refresh` |
+| `repeat-2` | `repeat` |
+| `rotate-ccw` | `rotate` |
+| `search-x` | `search-off` |
+| `sliders-horizontal` | `adjustments-horizontal` |
+| `smartphone` | `device-mobile` |
+| `store` | `building-store` |
+| `trash-2` | `trash` |
+| `x-circle` | `circle-x` |
+| `x-circle-fill` | `filled/circle-x` |
 
 ### 1.8 Theme mode
 
@@ -582,7 +631,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Album tracks | 🟠 organism | ✓ App | 數位「音樂專輯（Album）」多曲目管理（spec 5.1.5.2 §4.2 F11.1）：上傳 mp3/mp4→逐曲列（`.album-track`：`__grip`/`__cover`/`__main`(`__name`/`__meta`/`__bar`/`__lyrics`)/`.dropdown.album-track__menu`）；拖曳重排、改名(inline)、換封面、上傳歌詞(音訊限定→View Lyrics)、刪除；上傳中 `.is-uploading`。`partials/album-tracks.js` 增強、emit `albumtracks:change`；逐列選單重用 dropdown-menu.css。**`data-album-seed`（JSON `[{name,meta,type?,lyrics?}]`）可預置已完成曲目列**（2026-07-16，供 product-detail 呈現既有專輯內容；建立頁不帶＝空狀態）。呈現層 demo（假上傳/歌詞） | [album-tracks.css](./ds-components/album-tracks.css) |
 | VIP card | 🟠 organism | ✓ App | 數位「會員卡（Membership / VIP card）」卡面自訂（spec 5.1.5.2 §4.2 F11.2）：`.vip-card`[data-vip-card]＞`__settings`（`.segmented.radio-cards` Text/Image＋`.input`名稱／`.upload-tile` logo）＋`__preview`（`__frame`公版場景＞`__plate`霧面卡＞`__logo`/`__logo-img`/`__plate-sub`）。Text→文字合成、Image→PNG logo 合成；`.vip-card--image` 切模式。`partials/vip-card.js` 綁定、emit `vipcard:change`。公版為 CSS 近似固定藝術（frame 漸層裸色＝記錄在案例外，見下）。呈現層 demo | [vip-card.css](./ds-components/vip-card.css) |
 | Input | 🟢 atom | ✓ App | Wizard fields, settings forms, search | [input.css](./ds-components/input.css) |
-| Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Lucide set in `icons-all.js`; 38 in use, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
+| Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Tabler set in `icons-all.js`; 111 curated, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages。圓角 `--radius-xl`（16px，Q16 2026-07-17；原 6px） | [card.css](./ds-components/card.css) |
 | KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary）。圓角 `--radius-xl`（16px，Q16 2026-07-17）；`.kpi__delta` 為染色膠囊 chip（Q15） | [kpi.css](./ds-components/kpi.css) |
@@ -753,7 +802,6 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 - ❌ Don't bake the `→` into the label string (gap can't apply).
 - ❌ Don't use transparent-fill or fill-only outline on the white canvas — it reads as "nothing there"; the 1px `--border` hairline is the edge.
 
-
 **Code example**
 
 ```html
@@ -826,7 +874,6 @@ No hover/focus/disabled — display-only.
 - ❌ Don't make a badge clickable (it has no interactive state).
 - ❌ Don't invent ad-hoc status colors — use the variant tokens.
 
-
 **Code example**
 
 ```html
@@ -881,7 +928,6 @@ No interactive states — purely decorative.
 
 - ✅ Do reuse the same status colors as Badge for consistency.
 - ❌ Don't resize it ad-hoc — it is a fixed 8px token.
-
 
 **Code example**
 
@@ -947,7 +993,6 @@ No interactive states — purely decorative.
 - ❌ Don't put more than one active chip in a single-select group.
 - ❌ Don't render an action (Export / Print / Download) as a chip — those are Buttons (§4.2). In a `.filter-row`, chips filter and the right-aligned action (e.g. Export CSV `.btn--outline`) is a Button.
 
-
 **Code example**
 
 ```html
@@ -1009,7 +1054,6 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 - ✅ Do label what "on" means next to the switch.
 - ❌ Don't use a switch for actions that need confirmation.
 
-
 **Code example**
 
 ```html
@@ -1026,7 +1070,7 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 
 **Anatomy**
 
-The banner contains a Lucide `info` icon (`.info-banner__icon`) followed by the explanatory text. Use `<strong>` only for the clause people need to scan first.
+The banner contains a Tabler `info` icon (`.info-banner__icon`) followed by the explanatory text. Use `<strong>` only for the clause people need to scan first.
 
 **Variants** — Single variant.
 
@@ -1045,7 +1089,7 @@ Static callout — no interactive states.
 | Class / modifier | Effect |
 |---|---|
 | `.info-banner` | Neutral gray information banner (flex, centered vertically) |
-| `.info-banner__icon` | Leading Lucide `info` icon, 20px desktop / 18px mobile |
+| `.info-banner__icon` | Leading Tabler `info` icon, 20px desktop / 18px mobile |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -1059,7 +1103,6 @@ Static callout — no interactive states.
 - ✅ Do use the same `info` icon for every instance so this role remains recognisable.
 - ❌ Don't use it for urgent warnings or destructive consequences.
 - ❌ Don't use it as a substitute for field-level help.
-
 
 **Code example**
 
@@ -1111,7 +1154,7 @@ Static callout — no interactive states.
 |---|---|
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
 | `.upload-tile--hero` / `--file` | 大格／檔案列尺寸變體 |
-| `.upload-tile__icon` / `__title` / `__hint` | registered Lucide icon／主文案（`--foreground` 500）／限制說明；不用文字 `＋` 或自製 SVG |
+| `.upload-tile__icon` / `__title` / `__hint` | registered Tabler icon／主文案（`--foreground` 500）／限制說明；不用文字 `＋` 或自製 SVG |
 | `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
@@ -1193,7 +1236,7 @@ Static callout — no interactive states.
 | `.input` | Single-line field |
 | `.input--with-prefix` | Extra left padding (`--sp-32`) for a leading glyph (currency, unit) |
 | `.textarea` | Multi-line field, vertical resize, min-height 100px |
-| `.select` | Native `<select>`, OS arrow dropped; pair with `.select-wrap` + `.select-wrap__icon` for a registered Lucide chevron |
+| `.select` | Native `<select>`, OS arrow dropped; pair with `.select-wrap` + `.select-wrap__icon` for a registered Tabler chevron |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -1207,7 +1250,6 @@ Static callout — no interactive states.
 - ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
 - ✅ Do rely on the component's 1px `--border` shadow edge; do not add a second border.
 - ❌ Don't invent a size variant — the real component ships one size only.
-
 
 **Code example**
 
@@ -1224,7 +1266,7 @@ Static callout — no interactive states.
 
 ### 4.9 Icon
 
-**`_layer`** · atom — Lucide outline glyph as inline SVG, registered in `icons.js` and injected per page via `ztorIcons.applyIcons()` (no icon font, no network). The single icon primitive every other component reuses; it inherits `currentColor` and is sized by its context.
+**`_layer`** · atom — Tabler outline glyph as inline SVG, registered in `icons.js` and injected per page via `ztorIcons.applyIcons()` (no icon font, no network). The single icon primitive every other component reuses; it inherits `currentColor` and is sized by its context.
 
 **Anatomy**
 
@@ -1237,7 +1279,7 @@ Static callout — no interactive states.
 
 **Sizes** — semantic scale: 12px (`--xs`) · 14px (`--sm`) · 16px base · 20px (`--md`) · 24px (`--lg`). Icon buttons use the 16px base glyph; size the icon for its meaning, not the button box.
 
-**Registry** — hand-curated set in `icons.js` (the in-use glyphs) + the **full Lucide library (~1,713) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
+**Registry** — hand-curated set in `icons.js` (111 glyphs) + the **full Tabler library (6,166 = 5,112 outline + 1,054 filled) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
 
 **States**
 
@@ -1268,7 +1310,6 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 - ✅ Do use the semantic size modifiers when the base 16px glyph is not appropriate.
 - ❌ Don't hardcode a hex color or fixed px when the context already sets them.
 - ❌ Don't use a glyph not in the registry (it renders as the literal tag).
-
 
 **Code example**
 
@@ -1337,7 +1378,6 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 - ✅ Do keep link descriptions short (the `__desc` is capped at 24ch).
 - ❌ Don't add a panel border — elevation comes from `--shadow-card` only.
 - ❌ Don't use orange fill inside the panel; chrome stays neutral surfaces.
-
 
 **Code example**
 
@@ -1416,7 +1456,6 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 - ❌ Don't add `--clickable` lift to non-interactive cards.
 - ❌ Don't use this for a product-page section wrapper — use `.card` (Section card) instead.
 
-
 **Code example**
 
 ```html
@@ -1479,7 +1518,6 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 - ✅ Do use `.card--muted` for nested sub-sections to differentiate depth.
 - ✅ Do rely on the 1px `--border` for the section edge — no shadow by default (Q3 2026-07-13).
 - ❌ Don't use this for a standalone info block outside a page section — use `.ztor-card` instead.
-
 
 **Code example**
 
@@ -1559,7 +1597,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't fill the tile orange or use a highlight background — orange is reserved for the primary CTA; a selected metric is shown by position, not color.
 - ❌ Don't put more than one value in a single tile.
 
-
 **Code example**
 
 ```html
@@ -1638,9 +1675,8 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 **Do & Don't**
 
 - ✅ Do match the status modifier to severity so the icon tint and CTA color stay coherent.
-- ✅ Do use a filled lucide glyph in `.alert__icon` (matches the card spec).
+- ✅ Do use a filled Tabler glyph in `.alert__icon` (matches the card spec).
 - ❌ Don't add a close button to `.alert--row` — close styling exists for `--card` only.
-
 
 **Code example**
 
@@ -1712,7 +1748,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ✅ Do toggle `data-state="open"` on the `.ztor-accordion__item` to drive both chevron rotation and content height.
 - ✅ Do keep body copy within the `320px` open max-height (or raise it deliberately).
 - ❌ Don't animate with display:none — the height transition relies on `max-height`/`overflow`.
-
 
 **Code example**
 
@@ -1789,7 +1824,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't use the orange underline anywhere it isn't a structural active indicator — orange stays reserved.
 - ❌ Don't leave native button borders on `<button>` tabs; apply `button.tabs__item` reset.
 
-
 **Code example**
 
 ```html
@@ -1856,7 +1890,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't stack more than two actions in `__actions`.
 - ❌ Don't raise `z-index` above modal/toast layers — it must sit under them.
 
-
 **Code example**
 
 ```html
@@ -1921,7 +1954,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ✅ Do use `__refs` chips to point at the spec section that will fill the route.
 - ❌ Don't use this for a loaded-but-empty data view.
 - ❌ Don't add interactive controls — it's a non-actionable placeholder.
-
 
 **Code example**
 
@@ -2000,7 +2032,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't mix swatch and tag in the same card — they're for different compositions.
 - ❌ Don't use it for multi-select; the active treatment reads as 1-of-N.
 
-
 **Code example**
 
 ```html
@@ -2065,7 +2096,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.composer__textarea` | Typed-input variant of the slot: borderless 132px textarea, `--font-body` 14px |
 | `.composer__bar` | Bottom action row, space-between, 1px `--border` top divider |
 | `.composer__bar-group` | Left/right flex slot inside the bar, `gap:8px` |
-| `.composer__icon-btn` | 32×32 transparent icon button (upload/mic), 18px lucide glyph |
+| `.composer__icon-btn` | 32×32 transparent icon button (upload/mic), 18px Tabler glyph |
 | `.composer__credits` | Small muted credit-meter text, no-wrap |
 | `.composer__send` | 36px circular submit, idle gray |
 | `.composer__send--active` | Flips send pill to primary orange when there's content |
@@ -2082,7 +2113,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ✅ Do show remaining credits in `.composer__credits` so the user knows the cost before sending.
 - ❌ Don't leave the send button orange when the input is empty.
 - ❌ Don't crowd the left `__bar-group` — keep it to a couple of tool icons.
-
 
 **Code example**
 
@@ -2163,7 +2193,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't put the orange primary in the bar — nav stays neutral; orange is for the unread dot only.
 - ❌ Don't hard-code nav items per page — they come from one definition in `sidebar.js`.
 
-
 **Code example**
 
 ```html
@@ -2241,7 +2270,6 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 - ❌ Don't put the highlighter-orange primary on the black slab — keep it white/muted-white only.
 - ❌ Don't exceed four link columns; the grid is `2fr repeat(4, 1fr)`.
 
-
 **Code example**
 
 ```html
@@ -2276,7 +2304,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 └─ .data-list__row (grid minmax(0,1fr) auto, gap 12, padding 12px 0, border-bottom --border)
    ├─ .data-list__row-main (flex, gap 12, min-width 0)
    │   ├─ .data-list__icon (40×40, radius 10, --muted bg, --foreground-muted)
-   │   │   └─ <i class="ztor-icon"> (20px outline lucide)
+   │   │   └─ <i class="ztor-icon"> (20px outline Tabler)
    │   └─ .data-list__body (flex column, gap 2)
    │       ├─ .data-list__title (Geist 13.5/500, truncated ellipsis)
    │       └─ .data-list__meta   (12px --muted-foreground)
@@ -2324,10 +2352,9 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 **Do & Don't**
 
 - ✅ Do keep the icon chip neutral and carry status via `.data-list__amount--neg` or the meta text.
-- ✅ Do use 20px outline lucide glyphs in `.ztor-icon` so chips match the `.alert--card` panel.
+- ✅ Do use 20px outline Tabler glyphs in `.ztor-icon` so chips match the `.alert--card` panel.
 - ❌ Don't re-introduce colored icon fills — the `--success/--error/--info` hooks are intentionally monochrome.
 - ❌ Don't wrap each row in its own card; the divider list is the whole point of this organism.
-
 
 **Code example**
 
@@ -2592,7 +2619,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | Class | Effect |
 |---|---|
 | `.empty-card` | 置中直欄堆疊，卡片內距 |
-| `.empty-card__icon` | 40×40 淡化 chip（`--muted` 底）內嵌 lucide |
+| `.empty-card__icon` | 40×40 淡化 chip（`--muted` 底）內嵌 Tabler |
 | `.empty-card__title / __text` | 14/600 標題、淡化說明（max 320） |
 | `.empty-card__cta` | 選配，用 `.btn` |
 
@@ -2646,7 +2673,7 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | Class | Effect |
 |---|---|
 | `.insight-row` | 橘色 12% tint 條容器 |
-| `.insight-row__icon` | 16px lucide |
+| `.insight-row__icon` | 16px Tabler |
 | `.insight-row__text` | 一句結論 |
 
 **CSS** — [`insight-row.css`](./ds-components/insight-row.css)
@@ -2796,7 +2823,6 @@ table.ztor-table (width 100%, border-collapse separate, --card, radius-md, shado
 - ✅ Do keep the table inside its own rounded card frame — the shadow + `overflow:hidden` are part of the look.
 - ❌ Don't add per-cell borders; the design uses only horizontal hairline dividers.
 
-
 **Code example**
 
 ```html
@@ -2875,7 +2901,6 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 - ✅ Do scale `.rank-bar__fill` so the largest value reads 100% (`row_pct / max_pct * 100`).
 - ❌ Don't apply `.linechart__area` orange fill to multi-series charts — area is reserved for the single primary trend.
 - ❌ Don't rely on hover tooltip/cursor for essential values; they are JS-driven and pointer-only.
-
 
 **Code example**
 
@@ -3015,7 +3040,6 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 - ✅ Do keep span numbers summing to 12 per intended row (e.g. four `--span-3`).
 - ❌ Don't expect modifiers below 900px — they collapse to a single full-width column by design.
 - ❌ Don't use span values outside the active set (3, 4, 5, 6, 7, 8, 9, 12); others are undefined.
-
 
 **Code example**
 
@@ -3694,7 +3718,7 @@ Technical-stack landing for this design system. The studio is a **static prototy
 | Markup / styling | Hand-written HTML + CSS; one CSS file per component in [`ds-components/`](./ds-components/), all token-driven (`var(--…)`) |
 | Tokens | [`ds-components/_tokens.css`](./ds-components/_tokens.css) — Foundation + Role + Mode (`[data-theme="dark"]`) in one layer |
 | Theme | `theme.js` — light / dark / system cycle, persisted in `localStorage["ztor.theme.preference"]`; `?theme=` one-time override |
-| Icons | `icons.js` — Lucide registry, injected per page via `ztorIcons.applyIcons()`; new icons must be registered first |
+| Icons | `icons.js` — Tabler registry, injected per page via `ztorIcons.applyIcons()`; new icons must be registered first |
 | i18n | `i18n.js` — `en` / `zh-Hant` dictionary, `data-i18n*` bindings, topbar toggle, `localStorage` persisted |
 | Fonts | self-hosted woff2 in [`fonts/`](./fonts/) (Geist / Inter / Noto Sans TC subset) — no CDN |
 | Project chrome | `shared.css` — project-level patterns (topbar, bento, wizard, hero) on top of `ds-components/` |
@@ -3857,7 +3881,6 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
 ```
 
 ---
-
 
 ---
 
