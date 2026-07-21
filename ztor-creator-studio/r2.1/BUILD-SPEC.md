@@ -113,7 +113,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
         hero.js                 · Dashboard hero banner 輪播控制
         components.js           · runtime-injected content blocks（同 sidebar.js 注入模式）；Dashboard F2–F8 區塊 + 跨頁共用的 transaction-list（index.html F3 與 earnings.html 共用同一 renderer）。詳見 component-library.md
         theme.js                · 主題（[data-theme] cycle light / dark / system，window.ztorTheme）＋顯示模式（[data-nav-mode] topbar / sidebar，window.ztorNavMode）；皆在 <head> 早期套用避免 FOUC、localStorage 持久化（spec §6.9 / D016）
-        icons.js                · Lucide SVG registry，**全頁面 active 載入**；新增 icon 必須先進 REGISTRY
+        icons.js                · Tabler SVG registry，**全頁面 active 載入**；新增 icon 必須先進 REGISTRY
         i18n.js                 · 雙語字典（EN / zh-Hant）+ data-i18n / data-i18n-placeholder / data-i18n-aria-label apply 機制 + 透過 .app-topbar__lang 切換 + localStorage 持久化
         devtools.js             · 「Cheat Codes」原型情境工具（Alt＋右鍵開、無常駐鈕）；自包含、DS tokens 樣式。Skip validation／Onboarding／Event Day 狀態存 localStorage `ztor.devstate`＋同步 URL＋反映 `<html data-onboarding/data-event-day>`；內建元素 inspector（hover 標元件/非元件、可拖移調高）。對外 `window.ztorDevState` + 事件 `ztor:devstate-changed`。掛在全部產品頁（design-system.html 除外）。**「版本」切換**讀 feature-scope-map，依 `data-feat`（功能在版本內才顯示）／`data-feat-off`（功能不在版本內才顯示＝base 呈現）成對切換元素；2026-07-02 補：ID 解析支援小數點子 ID（`S31.1`）＋新增 `data-feat-off` 反向閘（首用於 S31.1 低庫存門檻自訂）。**2026-07-16 補 page-scoped 預覽開關**：頁面在載入 devtools 前設 `window.ZTOR_DEV_PAGE_GROUPS = [{key,label,options,def},…]`，面板即在版本組下渲染對應單選組（`data-kind=page`），選值存 `state.pageOpts[key]`（localStorage 持久化）並經 `ztor:devstate-changed` 的 `detail.pageOpts` 派給該頁自行套用；未設定即不渲染、其他頁零影響。首用於 product-detail 的 D137 鎖定欄位替代版面預覽（`pd-cat`／`pd-var`／`pd-edition`）
         scenario.js             · 把 devstate 接到頁面：Dashboard 吃 Onboarding Flow、Events 吃 Event Day，頂部顯示情境提示橫幅。自包含、DS tokens；掛在 index.html／events.html
@@ -323,7 +323,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 </head>
 <body>
   ...
-  <script src="icons.js"></script>      <!-- 1. Lucide registry，先載入才能讓 applyIcons() 被使用 -->
+  <script src="icons.js"></script>      <!-- 1. Tabler registry，先載入才能讓 applyIcons() 被使用 -->
   <script src="i18n.js"></script>       <!-- 2. DICT + 還原 localStorage 語言 + 標 <html lang> + 接 click toggle -->
   <script src="sidebar.js"></script>    <!-- 3. 注入 topbar HTML，inject 完呼叫 ztorIcons.applyIcons(root) + applyI18n(root) -->
   <script src="components.js"></script> <!-- 4. runtime 注入 Dashboard F2–F8 + 共用 transaction-list；index.html 與 earnings.html 載入 -->

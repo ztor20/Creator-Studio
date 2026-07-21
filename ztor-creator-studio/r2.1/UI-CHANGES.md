@@ -6,6 +6,347 @@
 
 ---
 
+## 2026-07-21 · 電子商店工作列＋狀態列捲動時整塊固定（B 反饋導入）
+
+使用者截圖指出：捲動到工作列（類型 tab＋動作群）與狀態篩選列這個位置時，這兩排要固定在頂端、下方商品清單繼續捲動。原本只有狀態列掛了 `position:sticky`，工作列本身沒有；而且實測發現狀態列自己也沒有真的黏住——捲超過約 120px 後兩者一起脫黏跟著清單捲走。
+
+- **【B】** 根因：`position:sticky` 的可黏貼範圍受限於元素自己的親層 box 高度，親層多高就只能黏多久。工作列＋狀態列原本被關在一個只包這兩排、高約 120px 的窄 `<section class="eshop-list-controls">` 裡，一旦捲動距離超過這個高度，兩者就會脫黏。
+- **【B】** `e-shop.html`：把 `.eshop-list-controls` 從只包工作列＋狀態列的 `<section>`，改成往下併吞三個 product-list 分頁（Products／Bundles／Auctions）＋ list-footer ＋ 查無符合／帳號無資料卡的 `<div>`，讓親層 box 跟整張清單一樣高，工作列＋狀態列才能在清單捲動全程保持貼頂。原本掛在外層的 `aria-label="Main list filters"` 隨舊 `<section>` 一併移除，改由內層每個 product-list panel 自帶的 `role="table" aria-label` 承擔語意。
+- **【B】** `.eshop-list-topbar` 新增 `position:sticky; top:0`（桌機 ≥901px），與既有 `.eshop-status-row` 的 sticky 疊接；狀態列 top 位移改為 74px（工作列高 58px ＋ 兩者相鄰 margin 摺疊後的 16px 間距，不是原本誤算的 8px）。狀態列↔清單原本 24px 的視覺間距，因外層 margin-bottom 隨併層失效，改移到 `.eshop-status-row` 自己的 margin-bottom，數字不變。
+- 驗證：Playwright 量測桌機（1512px）捲動 0/300/600/900/1200px，工作列＋狀態列全程貼在同一位置（top 16px／90px）、清單持續往上捲；窄螢幕（≤900px，未啟用 sticky）行為不受影響。check_ds_sync 全 PASS。
+
+## 2026-07-21 · Icon 按鈕字符 16px → 20px（B 反饋導入）
+
+使用者看電子商店工具列（搜尋／商店設定／預覽）反映「這幾個 icon 要稍微大一點」。判斷是元件層問題而非單頁問題：那三顆是 `.btn--icon.btn--sm`，吃的是 `button.css` 的全站通則，同樣的偏小情形在其他 11 頁一樣存在。與使用者確認後採全站一起調，不做單頁特例。
+
+- **【B】** `ds-components/button.css`：`.btn--icon .ztor-icon` 與 `.btn--icon-circle .ztor-icon` 由 16px 改為 **20px**（語意階梯的 `--md`，不新增體系外數值）。32px 框內填充率 50% → 62.5%，36px 框內 44% → 56%。
+- **【B】** 一併移除 `.btn--icon.btn--xs .ztor-icon` 那條 16px 覆寫。它原本與基準同值、屬無作用規則；基準上調後若留著，會讓 `--xs` 與 `--sm`（兩者框都是 32×32）出現兩種字符大小。移除後統一吃基準。
+- **牽動範圍**：`.btn--icon.btn--sm` 36 處／12 頁、`.btn--icon.btn--xs` 74 處／9 頁、`.btn--icon-circle` 14 處／1 頁、單獨 `.btn--icon` 19 處／2 頁，合計約 143 顆按鈕。全部走元件層一次改完，無頁面級覆寫。
+- **【B】** DS 文件同步：`design-system.md` §4.9 Sizes 與 `design-system.html` 的 `.ztor-icon` 尺寸矩陣說明，原本明寫「icon buttons 維持 16px 基準字符」，已改為 20px `--md` 並註明調整原因。
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（本機 Playwright 被佔用），143 顆按鈕的實際觀感尚未逐頁確認。
+
+
+## 2026-07-21 · 補完 Stock readout 的 DS 三件套（D infra）
+
+**這支元件不是本 session 建的**——`ds-components/stock-readout.css` 與 `product-detail.html` 的用法由另一個並行 session 加入（同日 16:38），但只做了 CSS ＋ 產品頁，沒接上 `design-system.html`，觸發 check_ds_sync 的 1／2／4 三條 FAIL（缺 `<link>`、產品頁有 DS 頁沒有、主 class 無 demo）。收尾守門員擋住，故由本 session 補完，內容一律依 CSS 檔頭註解與 product-detail 的實際用法還原，未新增或改變任何行為。
+
+- **【D】** `design-system.html`：補 `<link>`、TOC 項、元件總表列、§4.87 元件卡（含兩個情境 demo：一般＋限量分母、Do &amp; Don't、規格表）。
+- **【D】** `design-system.md`：補元件總表列與 §4.54 條目。
+- 記錄兩個設計判斷（來自原作者的 CSS 註解，非本 session 決定）：庫存做成唯讀讀數而非 `.input`，因為庫存只能靠補貨增加、每筆留紀錄，做成輸入框等於暗示一個不存在的能力；不用 `.kpi` 因為那是儀表列的有框方塊，這個是表單卡內的一行。
+
+## 2026-07-21 · 「顯示更多」改成滿寬線框按鈕（B 反饋導入）
+
+使用者指示取貨方式的「顯示更多」要用 fill-width 的線框按鈕（原為靠左的無框文字鈕）。
+
+- **【B】** markup 掛上 `.btn.btn--outline`，`field-more.css` 只留 `width:100%` ＋ `justify-content:center`——**外觀一律重用 Button atom，不自己刻一顆長得像 outline 的按鈕**，否則 Button 的邊框／圓角／hover 日後改了這裡不會跟著動。原本 `.field-more__toggle` 自帶的 background／border／font／color／hover／focus-visible 全部刪除。
+- **【B】** 三個 consumer 一起改：`create-product.html`（取貨方式）、`product-detail.html`（同一組欄位的編輯頁）、`design-system.html`（demo 卡）。改共用元件必須全庫 grep 同步所有使用頁，只改單頁會讓兩頁分岔。
+- **【B】** 連帶補間距（使用者回報「都黏在一起」）：`.field-more` 原本沒有下外距——上方的 16px 是前一個 `.field` 的 `margin-bottom` 給的，自己不出力，所以後面的元素（取貨方式的 `info-banner`）直接貼上來。文字鈕時代看不太出來，變成滿寬實心方塊後就讀成擠成一團。補 `margin-bottom: var(--sp-16)` 吃 `.field` 同一套節奏，並用 `:last-child` 歸零，避免商品明細那種「收在區塊尾端」的情形多出尾巴。
+- **【D】** `design-system.md` ＋ `design-system.html` 的 Field more 條目同步改敘述與 anatomy。
+
+## 2026-07-21 · 多選項編輯器改版：逐值 input、列去填色改邊框（B 反饋導入）
+
+使用者提供設計圖要求改多選項的選項編輯器。兩個關鍵取捨由使用者拍板：**值改成逐值一個 input**（取消 chip 膠囊）、**列一律透明、新增鈕用虛線**。後者正好讓同日確立的 Q24「L3 改邊框」第一次有真實消費者——這些列坐在 nest（L2）裡就是第三層。
+
+- **【B】** `create-product.html` `renderOptions()`：編輯態改成「選項名稱 *」「選項值 *」兩個 `.field`，值為逐值 `.input`（`__value` > `.input` ＋ `__value-remove`），底部虛線 `__add-value` 再長一列（Enter 亦可），最下方 `__actions` 靠右放「刪除」＋「儲存」。原本 head 右上的 X 移除鈕與左下的「完成」鈕退場。**為什麼放棄 chip**：設定選項時最常做的是改一個字，chip 模式得先刪掉再重打。
+- **【B】** `ds-components/variant-builder.css`：`.option-set__row`／`.variant-option` 由 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`（Q24 的 L3 規則落地）；`.option-set__add` 與新的 `.variant-option__add-value` 改 1px **虛線** `--border`。虛線不是新語彙——upload-tile、payout-modal 早就用它表達「這裡還沒有東西、按了會長出來」。新增 `__value`／`__value-remove`／`__actions`，退場 `__head`／`__remove`／`__entry`／`__add`。`.variant-option .field` 明確 `margin-bottom:0`，否則 `.field` 自帶的 16 會與容器 gap 10 疊成 26、比設計圖鬆散。
+- **【B】** 打字時的重繪紀律：值 input 的 `input` 事件**只寫回資料 ＋ 重繪逐規格表**（新切 `syncVariantsOnly()`），刻意不呼叫含 `renderOptions()` 的 `regenVariants()`——那會整層重建 DOM、每敲一鍵游標就跳掉。整組 `.option-set` 只在新增／刪除值這種離散事件才重繪。沿用 `data-opt-name` 既有的保焦點手法。
+- **【B】** `currentCombos()` 與收合列摘要一律過濾空字串值：逐值 input 模式下「新增了一列但還沒填字」是常態，不濾會生出「S / 」空組合污染逐規格表、摘要則會顯示「S、、M」。
+- **【C】** `js/i18n.js`：`cp.var.opt.done` 移除（唯一消費者已改用 `cp.var.opt.save`）；新增 `cp.var.opt.save`／`.delete`／`.name.label`／`.value.label`／`.add-value`。
+- **刻意沒做**：設計圖的「刪除」是紅底填色，但 Button 元件契約明寫「破壞性只綁 ghost，避免做出紅色實心鈕」。提報使用者後裁示**尊重舊規則**，改用現成的 `.btn--ghost.btn--destructive`，不新增變體、不動既有裁決。
+- **【D】** 連帶的文件校正（收尾驗收抓到）：`design-system.md`／`.html` 的 Chip 元件 class API 原本把 `.chip--value` 與 `.chip--removable` 的用途寫成「多選項的選項值」，改版後已不成立，兩份都改掉。同時退場兩段死 CSS：`.variant-option__entry`（舊的「打字按 Enter」輸入列）與 `.variant-option__add::placeholder`（更舊的無框 input 殘留），已無任何 markup 消費。
+- **⚠ `.chip--value` 變成零消費，待裁決**：這個變體是同日稍早才為「輸入後的標籤不要用白的」而建的（灰底＋一般內文色，參照 Webflow），唯一消費者就是選項值；本輪改成逐值 input 後它失去用途，目前只剩 DS 頁 demo。**未擅自移除**——退場屬治理動作、要使用者確認，已在兩份 DS 文件標記為退場候選。
+- **已知限制（沿用既有，非本輪引入）**：`varData` 以「值字串組合」當 key，就地改值會讓已填價格庫存的舊 key 變孤兒。改字每次都會換 key 是新模型帶來的放大效果；根治要把 key 換成穩定 id，屬架構級改動，本輪不處理。
+
+## 2026-07-21 · 新增 Nest 巢狀層元件，確立「兩層填色、L3+ 改邊框」的層級規則（B 反饋導入）
+
+使用者要求把商品選項切到「多選項」後出現的建構器，做成「疊上去的一層」（Figma 856:27798）。動手前先量測發現真正的問題：巢狀層與其中的 input 在現有絕對色模型下算出**完全同色** `rgb(38,39,41)`——填色階梯已經用完，再往上加一階就得動 foundation。與使用者在探索頁 `docs/層級系統-半透明疊加-探索.html` 逐輪確認後裁決（STYLE-DECISIONS **Q24**）：填色上限壓在兩層，所以**既有 token 零修改**，只新增兩個。
+
+- **【B】** `ds-components/nest.css`（新元件）：`.nest` 以負 margin 抵銷母卡 `--sp-16` 內距，左／右／下三邊切齊母卡外緣，`border-radius` 取與母卡同值的 `--radius-xl`，靠 `--shadow-nest-up` 的向上投影從卡面浮起。附帶 `.form-section--outlined:has(> .nest) { overflow: hidden; }`——**這條是必要的**，`--shadow-nest-up` 只有垂直位移，8px 模糊會往左右擴散到母卡圓角外、漏到頁面底色上；用 `:has()` 只裁真的含 nest 的卡，其餘 form-section 不受影響。
+- **【B】** `ds-components/_tokens.css`：新增 `--nest-surface`（亮 `transparent`／深 `rgba(222,223,233,.04)`）與 `--shadow-nest-up`（亮 `0 -6px 8px rgba(0,0,0,.05)`／深 `0 -8px 8px rgba(0,0,0,.08)`）。深色刻意用**冷調淺灰而非純白**：純白疊加會把 midnight 畫布的冷調洗掉（B−R 由 +2 掉到 +0.8），這個 tint 反而推到 +3.0、與畫布同溫；Figma 獨立算出的也是同一個值（856:27796）。亮色兩層都是白，單靠陰影分層。
+- **【B】** `create-product.html`：`#cp-var-builder` 加上 `.nest`（唯一消費者，多選項模式才顯示）。
+- **【D】** 文件：`design-system.md` §4.53 ＋ 元件表 ＋ role token 表 ＋ 陰影 token 表；`design-system.html` §4.86 元件卡 ＋ TOC ＋ 色票 ＋ 邊緣工具列。兩份都寫明**與 `.card--muted` 的分工**（同為「卡中卡」的兩種做法，不寫清楚就是同角色第二種答案）：`.card--muted` ＝ 保留母卡內距的靜態子區塊，`.nest` ＝ 貼齊底緣的另一個平面。
+- **刻意不做的兩件事**：(1) **L3 邊框規則只寫進文件、不出 CSS**——站上目前沒有三層巢狀的用例，寫了就是沒驗證過的死碼，真的出現時再補。(2) **不順帶結案 Q23**——那題問的是全站「邊框 vs 陰影」判準，與本次的填色分層是不同問題，裁決權在使用者。
+- 亮色版的 `0 -6px 8px rgba(0,0,0,.05)` 是補的初稿（Figma 只給了深色值），待使用者目視確認。
+
+## 2026-07-21 · Icon 圖庫由 Lucide 全面換成 Tabler（D infra）
+
+使用者指示「全部換成 Tabler」。改法選擇「只換皮、不換名」：registry 的 key 一律沿用換庫前的舊名（`trash-2`、`more-horizontal`、`check-circle`…），`data-lucide` 屬性名也不動，只把 key 底下的 SVG 內容換成 Tabler 的。因此 **39 頁、2,630 處 icon 引用一行都沒改**，風險集中在單一檔案而不是散在全站。兩套圖庫同為 24×24 網格、2px 線條基準，幾何相容，`applyIcons()` 注入的 1.2px stroke 維持不變。
+
+- **【D】** `js/icons.js`：registry 全數換成 Tabler SVG（來源 `@tabler/icons` 3.45.0）。71 顆同名直接對上、40 顆需名稱對照（`trash-2`→`trash`、`more-horizontal`→`dots`、`sliders-horizontal`→`adjustments-horizontal`、`party-popper`→`confetti`…完整對照表已落在 `design-system.md` §1.7 與 `design-system.html` §1.7 的可展開表格）。4 顆實心變體（`alert-triangle-fill`／`check-circle-fill`／`x-circle-fill`／`info-fill`）原本是手刻的 heroicons-style solid，改用 Tabler 原生 filled，風格終於跟 outline 同源。每行的中文用途註解全部保留。
+- **【D】** `js/icons-all.js`：Lucide 全集 1,713 顆 → Tabler 全集 6,166 顆（outline 5,112＋filled 1,054，filled 以 `<name>-fill` 命名，沿用 registry 既有慣例）。檔案 365KB → 1.7MB，但**只有 `design-system.html` 載**，產品頁不受影響。
+- **【D】** `design-system.html` icon 圖庫改成**執行期懶生成**：原本是寫死的 1,683 格 Lucide markup（176KB），換庫後那些名稱多半在 Tabler 不存在、會整片空白。改成展開時才依 `window.ZTOR_ICONS_ALL` 實際內容建格子，並自動排除頁面上已使用的名稱。副作用是 `design-system.html` 從 1.0MB 縮到 864KB，且以後再換圖庫或增刪 icon 都不用重生 markup。
+- **【D】** 文件同步：`design-system.md`（§1.7 Iconography、§4.9 Icon、Pillar 0/6 摘要表）、`design-system.html`（雙語對照，新增「換庫對照表」可展開區塊與「key 沿用舊名」的取捨說明）、`BUILD-SPEC.md`、`js/sidebar.js` 與 5 支 `ds-components/*.css` 的註解，全部從 Lucide 改為 Tabler。`UI-CHANGES-archive.md` 與 `docs/` 底下的歷史紀錄**刻意不動**——那些描述的是當時的事實。
+- **順手補的三個既有缺鍵**：`badge-check`（交易列表「IP 授權金」，`js/components.js:212` 動態帶入）、`dollar-sign`（DS 頁金額輸入前綴示範）、`bar-chart-3`（Admin 側欄 IP Bank Reporting，`js/sidebar.js:36`）**在換庫之前就不在 registry 裡**、一直渲染成空白，這輪一併補上（對應 Tabler 的 `rosette-discount-check`、`currency-dollar`、`chart-bar`）。屬既有缺陷，非本次換庫造成。
+- **刻意留下的技術債**：`data-lucide` 屬性名現在名不副實。正名成 `data-icon` 要動 2,630 處，跟換圖庫綁在一起會讓出事時無法二分定位，因此拆成獨立的一次性機械改名，另案處理。
+- 驗證：`node --check` 過兩支 JS；程式比對產品頁 79 個 icon 名＋JS 動態注入 15 個名稱對 registry 缺鍵數＝0；Playwright 起 http 逐頁截圖比對並讀 console 攔 `[icons.js] Unknown icon` 警告；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 電子商店商品狀態顯示文案改版（A 規格對齊，規格與 UI 一起改）
+
+使用者指示「全站狀態調整（規格一起改）」：全部狀態→全部商品、草稿→未完成、庫存過低→急需補貨、上架中→販售中。這是呈現文案調整，不是狀態機改名——`documents/5.1.5-電子商店.md` §7.2 對齊的內部狀態概念（Draft／Live／Low Stock）維持不變，只換使用者看到的中文字。
+
+- **【A】** `documents/5.1.5-電子商店.md` §2 狀態徽章行同步改字（先於 `documents/backup_plan.md` 記 Plan211 存底稿），F3 狀態篩選選項集列舉行（純英文內部狀態名）不受影響、維持原樣。
+- **【A】** `js/i18n.js` 8 個 key 同步中英文顯示值：`e-shop.status.all/in/low/draft`（Products／Bundles／Auctions 三分頁共用的篩選 tab，全部商品／販售中／急需補貨／未完成）、`e-shop.row.active/low`（清單列狀態徽章）、`product-detail.badge.live/low2`（商品細節頁狀態徽章）。英文對應（All products／Selling／Needs restock／Incomplete）為本輪 project-ui-creator 譯法決定，規格條目本身未指定英文字詞。
+- **牽動範圍確認**：`e-shop.status.all/in/draft` 三個 key 是 Products／Bundles／Auctions 三分頁篩選 tab 共用（既有架構、非本次新增），改字後三分頁一併套用；「已售完」（Sold Out）與拍賣分頁自己的「競標中」等詞彙未受影響、使用者未要求變動。訂單管理的「全部狀態」（`orders.status.all`，語意是訂單狀態非商品狀態）、我的IP／專案／活動的「草稿」（不同領域語意）皆為不同 key、確認不受影響。
+- 驗證：Playwright 讀出 Products／Bundles／Auctions 三分頁篩選 tab 文字與商品列狀態徽章文字，逐一核對「全部商品／販售中／急需補貨／已售完／未完成」；product-detail.html 狀態徽章同步核對「販售中」；check_ds_sync 全 PASS；`Skills/design-spec-writer/scripts/validate_spec.py` 確認規格結構未破壞。
+
+## 2026-07-21 · 電子商店清單縮圖去邊框放大＋kebab 新增「複製商店連結」（B 反饋導入）
+
+使用者附兩張圖：已上架商品的 kebab 選單要多一項「複製商店連結」；清單縮圖（不管是真實照片還是 icon placeholder 狀態）都不要邊框、再放大一點。
+
+- **【B】** `.product-list__image` 底層 CSS：52×52＋1px `--border` 改 60×60、拿掉邊框；`.product-list__image--placeholder` 同步拿掉 `border-color` 覆寫（沒有邊框可染色了）。真實照片與 icon 兩種狀態共用同一個底層 class，一次改完兩種樣子都對齊使用者要求。
+- **【B】** Products／Bundles／Auctions 三分頁的 kebab 選單，緊接在「在商店上架」開關之後新增「複製商店連結」（新 i18n key `e-shop.a.copystorelink`），純展示用（跟既有其他選單項一樣沒有真的複製邏輯）——JS 動態生成的商品列模板也同步补上。Auctions 分頁原本就有一個獨立的「複製連結」（`e-shop.a.copylink`），語意已經涵蓋，維持不動、不重複加。
+- **牽動範圍確認**：`.product-list__image` 是共用元件，除了 e-shop 只有 `events.html` 也在用（真實活動海報／icon 兩態同一元件）；events 頁的欄寬是寫死 `grid-template-columns: 52px ...`（含桌機與 ≤760px 兩處），縮圖改 60px 若不同步欄寬會裁切，已一併改成 60px 對齊。`.product-list__thumb`／`.project-list__icon`／`.data-list__icon`（Q20 統一的純 icon 家族，orders/pickup/my-ip/projects/14 頁）**不受影響、維持原本 52px＋邊框**——那組角色是唯讀 icon chip、不承載真實照片，跟這次改的 `.product-list__image`（可放真實商品照）本來就是不同元件，只是 Q20 當時把兩者的視覺基準對齊過，這次拉開後在 design-system.md 補了說明避免以後誤會成沒同步。
+- 驗證：Playwright 量測 `.product-list__image` computed width/height/border（60px／60px／`0px none`）；開啟 kebab 選單讀出項目順序「在商店上架／複製商店連結／編輯／補貨」；events.html 桌機截圖確認縮圖沒被裁切。check_ds_sync 全 PASS。
+
+使用者指出全站商品縮圖都是「尚未上傳」的分類 icon placeholder，要求電子商店的商品/組合/競標清單改用真實商品照片，並提供參考站 `ztor-eshop-fe.vercel.app/shop.html`。討論後範圍收斂為「只改電子商店」（不動 orders／pickup／my-ip 等其他頁面共用同款 icon placeholder 的清單，那些留待之後視需要再議）。
+
+- **【B】** 新增 `images/products/`（29 張 `.webp`，共 412KB），取自參考站的商品攝影素材（`assets/images/shop/g/t/*.webp`，經 `assets/shop-data-imgmap.js` 找到實際路徑；該站與本站同屬 Ztor 產品家族，圖檔重新命名為語意化檔名如 `coastline-tee.webp`，不沿用來源站的泛用檔名）。
+- **【B】** `e-shop.html` 商品分頁：9 個具名商品列＋Bundles 2 列＋Auctions 3 列，`.product-list__image--placeholder`＋分類 icon 改成 `.product-list__image`＋`<img>` 真實照片；JS 動態生成的 20 筆填充商品中，前 15 筆（Sticker sheet ~ Wristband）比照辦理，**刻意保留最後 5 筆（Bandana／Pennant／Lyric booklet／Photo set／Bookmark）維持原本的 icon placeholder**（使用者指定，示範「尚未上傳圖片」的原始樣式仍在，不是全部換掉）。三個分頁的草稿列（Untitled，各分頁各 1 列）維持 icon——草稿本來就沒有素材，符合「尚未上傳」語意，不算在保留名額內。
+- **【B】** 數位商品（單曲／電影／專輯／會員卡）依使用者指定也換照片（原本用 music/film/disc/id-card 語意化 icon）；會員卡用參考站的卡片攝影（`cards-3.webp`）視覺上最貼近「會員卡」概念。「古董合成器」拍賣品找不到貼切素材，用通用道具照代替（`vintage-synth.webp`，來源檔 `prop-3.webp`），為一處已知的不完美配對。
+- 影響範圍：僅 `e-shop.html`；`.product-list__image`／`.product-list__image--placeholder`／`.product-list__image img` 三個共用 class 定義本身未變動，其他頁面沿用同款元件的地方不受影響。
+- 驗證：Playwright 逐列檢查 `hasImg`／`hasIcon` 布林值，商品分頁 30 列中 24 張圖＋1 草稿 icon＋5 保留 icon，組合/競標分頁真實列全數換圖、草稿列維持 icon，圖片全數 200（`loading="lazy"` 未進視窗前 `naturalWidth` 為 0 屬正常延遲載入、非壞圖）；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 電子商店清單 hover 擴大套用浮起效果（B 反饋導入，Q5 例外擴大）
+
+使用者先前（2026-07-20）已指定「我的 IP」清單 hover 要跟拖曳抬起態一樣浮起，這次再指定電子商店清單也要一樣。
+
+- **【B】** `.product-list--eshop .product-list__row:hover` 併入原本只給 `.product-list--ip` 的浮起規則（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging`），兩者合併成同一條 CSS 規則，不重複定義。`.product-list--eshop` 是 Products／Bundles／Auctions 三分頁共用的 class，三頁的清單列 hover 一併套用；`--orders`／`--pickup` 兩個清單仍維持原本只換底色（未被要求變動）。
+- STYLE-DECISIONS.md Q5 與 design-system.md 的 Product list Variants 條目同步更新例外範圍。
+- 驗證：Playwright hover Coastline acetate 列，量測 computed background/border-radius/box-shadow 與拖曳態數值一致；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 物流欄位收進「顯示更多」＋出貨分類 placeholder＋購買限制與標籤拆兩區（B 反饋導入）
+
+使用者三項指示：(1) 取貨方式的物流配送只顯示重量，其餘用「顯示更多」按鈕展開；(2) 出貨分類下拉的 placeholder 寫「選擇貨物類型」；(3)「購買限制與標籤」拆成「購買限制」與「商品標籤」兩個 section。
+
+- **【B】** 新元件 [field-more.css](./ds-components/field-more.css) ＋ [partials/field-more.js](./partials/field-more.js)：`.field-more__toggle`（chevron ＋顯示更多／收合）＋ `.field-more__body[hidden]`。物流配送只留「重量」在外層，出貨分類／尺寸／寄件地收進去。
+- **關鍵設計判斷——收合區有值就自動展開**：同一段 markup 在建立商品是空表單（收起來合理），在商品明細是編輯頁、欄位帶著真實資料（尺寸 21/15/2、寄件地台南）。若照樣收起來等於把使用者填過的東西藏起來。改由 JS 依「收合區內有沒有值」決定初始狀態，兩頁就能共用同一支元件、不必分岔成兩種寫法——這也是不用原生 `<details>` 的原因。實測：建立商品初始收合、商品明細初始展開。
+- **【B】** 出貨分類下拉新增空值 option `cp.delivery.shipcat.ph`（選擇貨物類型／Select cargo type）取代原本的空白 option；create-product 與 product-detail 同步。
+- **【B】** `create-product.html` 的「購買限制與標籤」拆成兩個 `form-section--outlined`：「購買限制」（`cp.limits.title`，新 key）與「商品標籤」（沿用 `cp.tags` 當區塊標題，原本的說明文字改掛 `form-section__sub`）。`product-detail.html` 本來就是分開的兩區，未動。`cp.shared.title`（購買限制與標籤）已無消費頁，保留定義不刪。
+- i18n 新增 4 個 key：`field.show-more`／`field.show-less`（通用元件文案）、`cp.delivery.shipcat.ph`、`cp.limits.title`。
+- 施工中踩到的坑（同一類問題連續三次，記下來）：**新元件的資源掛載漏了三處**。(1) `create-product.html` 的 `<script src="partials/field-more.js">` 沒寫進去（批次插入時被同時在改這批檔的其他 session 覆蓋，版本號一路被別人 bump 到 zf），按鈕點了沒反應；(2) `design-system.html` 漏掛同一支 JS，元件卡的 demo 不會動；(3) `design-system.html` 連 `field-more.css` 的 `<link>` 都沒有——chevron 不會轉向。**第 (3) 點暴露 check_ds_sync 檢查 1 的盲點**：它判斷「元件 CSS 有沒有進 DS 頁」是比對檔名字串，而 `field-more.css` 這個字串本來就出現在元件卡的 `<code>` 說明裡，於是誤判為已連入。三處都已補上並實測（DS 頁與產品頁的 chevron 皆正確轉 180°、開合與文案切換正常）。**教訓：批次掛資源後要逐檔 grep 真正的 `<link>`／`<script>` 標籤，不能只看腳本回報成功，也不能只信 check_ds_sync 的 PASS。**
+- 驗證：Playwright 實測 create-product 收合→展開→再收合三態（`data-open` 與按鈕文案同步切換）、外層只剩「重量 *」一欄；product-detail 初始即 `data-open="true"`、收合區內確實有值（一般包裹／21／15／2）；出貨分類第一個 option 顯示「選擇貨物類型」；兩個 section 標題為「購買限制」與「商品標籤」；兩頁 div／section 平衡（HTMLParser 檢查 0 錯）。
+
+## 2026-07-21 · 「規格」術語收斂成「選項」＋成本價欄位精簡（B 反饋導入，全站文案）
+
+使用者指定三項全站文案改動：(1) 商品資訊的「規格」改「詳細規格」；(2) 「商品規格」section 改「商品選項」，其中「單一規格／多規格」改「單一選項／多選項」；(3) 成本價的「僅自己可見」改「選填」，並移除 input 下方那行「選填」。
+
+- **【B】** 站上「規格」原本混用兩種意思：**產品規格書**（「時區與時間精度待規格確認」那類）與**商品變體**。本輪只動後者，前者全部保留。經使用者裁示連衍生詞一起改，避免出現「多選項」旁邊寫「逐規格表」的矛盾。
+- 改動的 i18n key（20 個 key、23 處值，其中 3 處是英文對應）：`cp.spec.title`（規格→詳細規格）、`cp.spec.add`、`cp.var.title`（商品規格→商品選項；en Variations→Product options）、`cp.var.single`、`cp.var.multiple`（en Multiple variations→Multiple options）、`cp.var.col.variant`（規格組合→選項組合）、`cp.var.priced-above`、`cp.var.table.title`、`cp.var.table.sub`、`cp.var.empty`、`cp.discount.enable-pct-sub`、`cp.sale.pct-allhint`、`e-shop.variant.single`、`product-detail.var.opts-locked`、`cp.auc.sub`、`cb.meta.variants`、`cb.note.variants`、`cb.price.auto-hint`、`od.snap.variant`、`cp.cost.note`（僅自己可見→選填；en creator only→Optional）。
+- 英文只動兩個 section 級標籤（Variations→Product options、Multiple variations→Multiple options）。句子層的 EN 維持 variation／variant——英文本來就用 options 指「尺寸／顏色」、variants 指「組合」，語意已經分得清楚，跟著改反而會失準。
+- **【C】** `create-product.html` 與 `product-detail.html` 的成本價 input 下方 `field__hint`（`cp.optional-cap`）移除——資訊與標籤上的「選填」重複。該 key 目前無消費頁、成為孤兒 key，保留定義備用（未刪，避免影響其他 session 正在做的改動）。
+- 影響頁面：文案改在 `js/i18n.js` 一處，實際渲染變動的頁面為 create-product、product-detail、e-shop、create-bundle、bundle-detail、order-detail、create-auction。
+- **收尾驗收抓到一處漏改**：`e-shop.html` 動態生成商品列時，變體欄的 fallback 直接寫死中文 `it.variant || '單一規格'`，不吃 i18n、也沒跟著改；該頁 24 筆填充商品有 22 筆走這條 fallback，畫面上會與同頁靜態列的「單一選項」並存。已改成沒有自訂變體字串時輸出帶 `data-i18n="e-shop.variant.single"` 的節點（注入後既有的 `applyI18n` 會處理），順帶讓這欄支援語言切換。`design-system.html` 的 variant-builder demo 按鈕 `Multiple variations` 也一併同步成 `Multiple options`。
+- **上游落差（未回寫）**：`documents/` 的 5.1.5.1／5.1.5.2／5.1.5.4 等規格仍使用「規格／多規格／規格組合」的舊術語，本輪只改 UI 呈現層、未動 `documents/`。術語表若要正式更名，需走 `design-spec-writer` 更新上游並記入 `decisions.md`；在那之前規格書與畫面的用詞會不一致。
+
+## 2026-07-21 · 建立流程右側預覽欄的卡去邊框，與左欄一致（B 反饋導入）
+
+使用者指出上架設定的外框不該有線、要跟左邊的 section 一致。查證後確認是站上兩條裁決撞在一起：左欄的 `form-section--outlined` 早在 Q14／Q18 就改成「填色＋E2 陰影＋頂緣高光、無邊框」，右欄的卡卻還是 Q3 的「填色＋1px 邊框」——同一個畫面兩種卡邊界。
+
+- **【B】** `preview-column.css` 新增 scoped 規則：`.preview-col .card` 與 `.preview-col .preview-card` 改 `border: 0` ＋ `box-shadow: var(--shadow-card), var(--shadow-edge-top)`，與左欄完全同一組值。
+- 範圍由使用者裁示為「右側預覽欄全部」而非只改上架設定卡——只改一張的話，它正上方的商店預覽卡還是有線，同一欄會出現兩種做法。實際受影響 **4 頁共 7 個盒子**，經元件層一次生效：create-product／create-bundle／create-auction 各 2（預覽卡＋上架設定卡），外加 **create-campaign 的預覽卡 1 個**——這頁同樣用 `.preview-col`，首版回報時漏列，收尾驗收抓出後補上（該頁預覽欄只有預覽卡、沒有第二張卡）。
+- **未推翻 Q3**：規則 scope 在 `.preview-col` 內，全站其他約 40 處 `.card`（儀表板、收入、訂單…）維持 1px 邊框不變。
+- 欄內收合式上架設定選單自己的 1px 外框保留——那是控制項層級的邊界（Q4：控制項用真 border），與卡片邊界是兩個角色。
+- 驗證：Playwright 量測上架設定卡／商店預覽卡／左側 section 三者的 border 與 box-shadow，三組值完全相同（`0px none` ＋ `rgba(0,0,0,0.4) 0 2px 6px` ＋ 頂緣高光）；create-bundle／create-auction 各確認 2 個盒子都在 scope 內。
+
+## 2026-07-21 · 開關揭示的表單包進外框：新增 `.control-group`；多規格選項列圓角放大（B 反饋導入）
+
+使用者附兩張圖：(1) 低庫存提醒那組——開關列與它揭示的「自訂低庫存門檻」要包在同一個框內，並指名「開啟折扣這類開關開啟後會有表單出現的設計都要」比照；(2) 多規格選項列的圓角要更大。
+
+- **【B】** `control-row.css` 新增 `.control-group`（`--radius-xl` 外框＋1px 內描邊）與 `.control-group__body`（1px 上分隔線＋`--sp-16` 內距）。群組內的 `.control-row` 交出自己的邊框與圓角，邊界由群組承擔。原本揭示欄位是裸的散在外框列下方，看起來像獨立的另一件事；包成一框＋一條分隔線，「這塊歸這個開關管」的從屬關係才讀得出來。
+- **【B】** 全站 11 組「開關→揭示表單」一次包完：create-product（開啟折扣 ▸ 限時折扣、多規格折扣 ▸ 限時折扣、低庫存提醒、每人限購）、create-bundle 與 bundle-detail（限時折扣）、product-detail（開啟折扣 ▸ 限時折扣、每人限購）。**群組可巢狀**——折扣的揭示區裡本來就包著限時折扣的開關，現在呈現為外框內再一框。沒有揭示表單的單純開關列（create-auction 密封終局／得標者付運費、create-project 直播／廣告）維持單獨 `.control-row`，未動。
+- **【B】** `variant-builder.css` 的 `.option-set__row`／`.option-set__add` 圓角由 `--radius`(6) 放大到 `--radius-xl`(16)；編輯態的 `.variant-option` 一併由 `--radius-md`(6) 改 16——兩者是同一列的收合／展開兩態，圓角不同會在切換時跳一下。與收合式 radio-list 的列同階（見 STYLE-DECISIONS Q22）。**收尾驗收抓到一個漏改**：同檔另有一條優先權更高的 `.option-set .variant-option{border-radius:var(--radius)}`（兩個 class）把編輯態蓋回 6px；由於 `renderOptions()` 一定把 `.variant-option` append 進 `.option-set`，正式頁面實際渲染的是被蓋掉的 6px，只有收合列真的變 16。已一併改為 16。
+- 落地時修掉一個副作用：低庫存那組的揭示欄位原本帶 `max-width:300px` 的行內樣式，包進群組後會讓分隔線只有 300px 寬、切在半途；把寬度限制移到內層 `input`，容器保持滿版。這條規則已寫進元件卡（寬度限制下在欄位、不下在 `__body`）。
+- 連帶修正 DS demo 的還原度：`design-system.html` 的 variant-builder demo 原本沒把 `.variant-option` 包進 `.option-set`，與真實 DOM 不符，正好繞過上述那條覆寫規則、讓 demo「看起來是對的」而掩蓋 bug。demo 已補上 `.option-set` 外層並加註解，DS demo 須還原真實巢狀結構這條規則寫進該段註解。
+- 驗證：Playwright 量測 `.control-group` 圓角 16px／內描邊 `rgb(51,52,53)`、`__body` 上分隔線 1px＋內距 16px、群組內 `.control-row` box-shadow 為 none；四頁 div 平衡以 HTMLParser 逐檔核對（未閉合 0、多餘關閉 0）；巢狀折扣組與低庫存組各截圖確認。
+
+## 2026-07-21 · 多規格選項值 chip 改中性淡填：chip 新增 `--value` 變體（B 反饋導入）
+
+使用者附圖指出建立商品「多規格」裡剛輸入的選項值標籤是白底黑字、太搶眼，並要求參照 Webflow 的做法。查 Webflow Designer 的 class chip（Mobbin screen `eb345f20`）：淡色填底、低對比，安靜待在深色面板上，不會反白。
+
+- **【B】** `chip.css` 新增 `.chip--value`：`--input-surface` 底＋`--foreground` 字＋1px `--border`，hover 不變色。語意是「創作者剛輸入的值」——正在輸入的資料不該比頁面上任何東西都搶眼。`create-product.html` 的多規格選項值由 `chip--active`（反白）改用 `chip--value`；圓角維持 `--radius-pill`（Q1「可點＝全圓」不動）。
+- 三種「創作者自建值 chip」的分工同輪寫進 `design-system.md`：`--value` 中性灰＝剛建立的值、`.tag-input .chip--active` 橘＝已套用的分類（Q19）、`--active` 反白＝篩選已選（Q8）。使用者選中性灰而非併入橘色，理由是選項值與商品標籤的語意不同。
+- 影響範圍：`create-product.html` 多規格選項值一處（全站唯一消費點）＋ `design-system.html` 的 chip 卡（新增 `--value` 矩陣與三者對照）與 variant-builder demo。商品標籤、電影關聯、篩選 chip 全部不動。
+
+## 2026-07-21 · 日期／時間欄位補 placeholder：新元件 date-input（B 反饋導入，全站約 40 個欄位）
+
+使用者附圖指出上架時間欄空著時顯示的「年/月/日 --:--」是一般內文色，看起來像已經填了值，要求「所有日期的 input 文字都要改成 placeholder 的顏色，並且都要顯示日曆 icon ＋『選擇日期』」。原生日期欄位不吃 `placeholder` 屬性，那串遮罩是瀏覽器自己畫的，只能另做裝飾層。
+
+- **【B】** 新增 [date-input.css](./ds-components/date-input.css)：空值＝日曆 icon ＋淡灰「選擇日期」（原生 `::-webkit-datetime-edit` 藏起來）；已填＝日期用正常內文色、內距回到欄位原值。**icon 與文字都只在空值時出現**——首版讓 icon 常駐，實測發現它吃掉 28px 橫向空間，設定頁 120px 的勿擾時段時間欄會被切字（截圖佐證），改成只在空值出現後，已填狀態的版面與改版前完全相同。原生右側日曆鈕攤平成整格透明覆蓋層，所以填值後仍可點整格開選單。
+- **【B】** 新增 [partials/date-input.js](./partials/date-input.js)：執行期掃全站 `date`／`datetime-local`／`time` 欄位，各包一層 `.date-input` 並注入 icon 與文案，依 value 切 `[data-empty]`。這樣頁面 markup 完全不用動（約 40 個欄位散在 17 個檔），日後改文案只改一處。補貨、取貨場次、手動登錄、新品貼文這些點開才生出來的彈窗，用 `MutationObserver` 接住，各 partial 不必自己記得呼叫 mount。
+- 文案三型共用一句「選擇日期」（i18n `field.pick-date`），依使用者裁示；純時間欄位（活動時刻、勿擾時段）因此也顯示日曆 icon ＋「選擇日期」，語意上略有落差，已向使用者說明、待其決定是否分寫。
+- 影響範圍：17 頁掛上新 CSS／JS（admin-platform-fees／bundle-detail／create-auction／create-bundle／create-campaign／create-event／create-product／create-project／design-system／e-shop／earnings／fans-crm／ip-bank-reporting／pickup-detail／pickup／product-detail／settings）。`input.css` 本身未動，避免影響非日期欄位。
+- 驗證：Playwright 量測 create-product 上架時間欄——空值 padding-left 40px、placeholder 落在 icon 右側 40px 處且完整置於欄內；填值後 `[data-empty="false"]`、padding 回 12px、文字色 `rgb(253,253,253)`＝`--foreground`、無截斷。設定頁 120px 窄時間欄 `scrollWidth === clientWidth`（未溢出）。
+- 已知落差：design-system 頁沒有 `data-i18n` 執行環境，該頁 demo 的 placeholder 固定顯示英文 "Pick a date"，產品頁不受影響（已寫進元件卡的 Note 欄）。
+
+## 2026-07-21 · 上架設定改收合式選擇器：radio-list 新增 `--collapsible` 變體（A 規格對齊，Figma 856-22782）
+
+使用者提供 Figma node 856-22782 的兩態（收合／展開＋hover），要求把上架設定做進原型。原本（2026-07-17）是三個選項恆展開的 `radio-list`；新版收合時只顯示目前選項＋chevron，點一下才展開完整清單。使用者裁示：五個消費頁一次全改（避免同一角色兩種做法），展開時已選項在觸發列與清單各出現一次的重複照 Figma 保留。
+
+- **【A】** `ds-components/radio-list.css` 新增 `--collapsible` 變體：外框 1px `--border` ＋ `--radius-xl`、`.radio-list__trigger`（圓點恆為已選態＋文字＋`.radio-list__chevron`）、`.radio-list__options[hidden]`；展開時 `[data-open="true"]` 讓觸發列填 `--input-surface`（比卡亮一階＝作用中的控制面，沿用 Q19 的 filled 語言）、chevron 轉 180°。base 變體（選項恆展開）保留未動。
+- **【A】** 新增 `partials/radio-list.js`：自動 mount 全站 `.radio-list--collapsible`，統一處理開合、把已選列的文字與 `data-i18n` key 同步到觸發列（切語言由 `applyI18n` 重填，不會殘留單語）、外點與 Esc 關閉、派發 `radio-list:change`。五頁原本各自複製的「移除 active／加 active」邏輯全部退場，頁面只留自己的欄位揭示（選「定時上架／定時開拍」才顯示時間欄）。
+- **【B】** 同一輪把 `.radio-list__item:hover` 的底色由 `--muted` 改回 `--accent`——暗色 `--muted`（#161718）比卡片 #212223 還深，hover 讀起來像凹下去；Q9 早就裁決「互動 hover 統一 accent」，這支元件建立時漏跟，Figma 的 hover 也是亮一階。
+- 影響範圍：五個消費頁（`create-product`／`create-bundle`／`create-auction` 預覽卡下方、`product-detail`／`bundle-detail` 定價與庫存頁籤）＋ `design-system.html` 卡（base 與 `--collapsible` 兩個 demo）＋ `design-system.md` 條目。拍賣頁語彙仍是「不開拍／立刻開拍／定時開拍」，只換選法、不動文案。
+- 待裁決：外框與內部列的圓角取了 `--radius-xl`(16) 對齊 Figma 的 18，與 Q16「控制項／清單列維持 6px」相衝，已記為 `STYLE-DECISIONS.md` Q22，暫依 Figma。
+
+## 2026-07-21 · 狀態徽章新增 `--status-error` token，與 `--destructive` 分離（B 反饋導入，全站共用元件）
+
+使用者附圖指出電子商店清單的狀態標籤（草稿／庫存過低／上架中）顏色要改，附 Figma 參考（node 845:11071）。抿出三色實際值：草稿（`badge--neutral`）與上架中（`badge--success`）跟現有 token 完全對上（`#161718`/`#B9B9B9`、`#4ADE80`）不用改；只有庫存過低（`badge--error`）暗色不對——目前用 `--destructive`（`#E7000B`，深底小字徽章讀不清），Figma 要的是較亮的 `#FF3D47`。
+
+- **【B】** `_tokens.css` 新增 `--status-error`（亮色 `#DA314A`，暫同 `--destructive`；暗色 `#FF3D47`，對齊 Figma），語意上與 `--destructive`（刪除等破壞性操作，如刪除鈕、danger dropdown item）分開——這兩者原本就是兩個概念，2026-06-25 那筆 `--status-error→--destructive` 改名只是對齊 shadcn 命名、當時值本來就相同，不是「兩者永遠同色」的設計裁決，故拆開不算推翻舊決策。
+- `.badge--error`／`.ztor-badge--error`／`.ztor-dot--error` 改讀 `--status-error`（原讀 `--destructive`）；`.badge--success` 與 `.ztor-badge--error`／`--success` 的 tint 百分比順手從 14%／12% 對齊到 Figma 量到的 16%，`--destructive` 本身與其餘破壞性操作用途（刪除鈕、danger 選單項、負數金額等）完全不動。
+- 影響範圍：`badge.css`／`_tokens.css` 是全站共用元件，凡用 `.badge--error` 的頁面（e-shop／orders／earnings／fans-crm／projects／event-detail／product-detail／settings…）狀態標籤紅色同步變亮；未動 `.alert--error`、`.kpi--destructive`、`.data-list__amount--neg` 等其他仍合理沿用 `--destructive` 的地方（範圍收在使用者實際指出的狀態徽章，不做無關擴大）。
+- 驗證：Playwright 在 e-shop.html 與 orders.html 分別量測 `.badge--error`／`--success`／`--neutral` computed color，`rgb(255,61,71)`／`rgb(74,222,128)`／`rgb(185,185,185)` 與 Figma 三色文字值完全吻合；check_ds_sync 全 PASS（含新 token 的 md↔html 文件化檢查）。
+
+## 2026-07-21 · 電子商店主工作列改實色殼卡（A 規格對齊，取代 720:2165 版）
+
+使用者提供新版 Figma 參考（node 845:11081），指出「商品/組合/競標」分頁列＋右側動作圖示這條工作列的底色樣式跟目前不一樣。
+
+- **【A】** `.eshop-list-topbar` 主體從「與頁面同色（`--surface-page`）＋只有下緣圓角 12px＋向下柔影撐出圓角視覺」，改成「實色殼層（`--surface-shell`，比頁面亮一階）＋四角全圓角 16px」；顏色本身的階差已經讓卡片輪廓讀得出來，不再需要陰影撐圓角，box-shadow（含暗色覆寫）一併移除。Figma 量到的 `#1a1c1c` 對應既有 token `--surface-shell`（暗色 `#1C1D1E`，數值差在 Figma 匯出誤差內），亮色沿用同 token（`#F0F0EE`），不必新增 token。
+- 2026-06-26 那筆「照 Figma 720:2165 兩層陰影結構」的紀錄視為被本次取代——該版 Figma 節點已更新為新結構，不再是同色卡＋陰影的做法。
+- 影響範圍：僅 `e-shop.html` 頁面內 `<style>`（`.eshop-list-topbar` 頁面專屬樣式，未跨頁共用，不動 ds-components）。下方狀態篩選列（`全部狀態／上架中…`）背景仍是 `--surface-page`，維持與頁面同色、不受影響。
+- 驗證：Playwright 量測 `.eshop-list-topbar` computed background/border-radius/box-shadow，暗色 `rgb(28,29,30)`／`16px`／`none`，亮色 `rgb(240,240,238)`／`16px`，兩色階與 Figma 對齊；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 電子商店商品清單移除規格數／限量徽章（C 撤除）
+
+使用者看過上一輪（UIA-066 那筆）改完的畫面後回饋：Coastline tee／hoodie 名稱後的「4 種規格」「6 種規格」徽章、Coastline acetate 名稱後的「限量」徽章都是多餘的——庫存欄已經是「21 / 50」能直接看出限量，規格種類則已經由名稱下方的灰色副標（`__meta`，「顏色（Black/Sand）× 尺寸（S/M/L）」這類文字）呈現，徽章與這兩者是重複資訊。
+
+- **【C】** `e-shop.html` 移除三個 `badge badge--neutral badge--inline` 徽章（`e-shop.row2.variants`／`e-shop.rowH.variants`／`e-shop.row.limited`），連同 `js/i18n.js` 對應三個 key 一併刪除（皆已確認無其他頁面引用）。`__meta` 副標與 `__stock` 格式維持 UIA-066 那筆的內容不變，本次只拿掉徽章，不影響規格副標與庫存的文字規則本身。
+- `.badge--inline` 元件本身不受影響（`order-detail.html`「Limit 2/person」「Awaiting pickup」、`orders.html` 取貨提醒仍在用），只是 E-Shop 這個特定用法被撤除；`design-system.html` Class API 的 `--inline` 示範改用 order-detail 的真實案例，`design-system.md` 的 Badge 條目與 Product list Variants 條目同步註記。
+- 影響範圍：僅 Coastline tee／hoodie／acetate 三列的商品名稱；分類欄、庫存欄、JS 動態填充的 21 筆商品皆未變動（那批本來就沒有這個徽章）。
+
+## 2026-07-20 · 電子商店商品清單三處內容對齊 Figma（A 規格補齊 · UIA-066）
+
+使用者提供 Figma 參考（node 845-12576），要求電子商店「商品」分頁清單三處內容規則對齊：商品名稱副標、分類欄、庫存欄。
+
+- **【A · 規格副標】** `.product-list__meta`：單一規格商品固定顯示「單一規格」（新 i18n key `e-shop.variant.single`，取代 row1/row4/row5 各自的 `rowN.meta`）；多規格商品顯示「維度（選項）× 維度（選項）」——Coastline hoodie 原本就是這個格式（拿掉多餘的「連帽衫 · 」前綴），Coastline tee 補成「尺寸（S/M/L/XL）」。JS 動態填充的 21 筆商品（`document.querySelector('[data-eshop-panel="products"]')` 那段 IIFE）同步：僅 Tee 兩款有真實尺寸選項改用 variant 欄位，其餘 19 筆一律「單一規格」（原本各自的格式描述文字如「貼紙·12入」不再顯示，改為統一的規格副標語意）。
+- **【A · 分類兩行】** 新增元件層 class `.product-list__cat-sub`（子分類，白字 `--foreground`）／`.product-list__cat-main`（主分類，灰字 `--muted-foreground`），`.product-list__category-cell` 改放兩個 span；主分類用共用 i18n key `e-shop.cat.physical`／`e-shop.cat.digital`（不必每列各自定義），依各列 `data-type` 挑選。9 筆命名商品＋21 筆 JS 填充商品皆套用（填充商品主分類固定「實體商品」，因為 ITEMS 陣列全是實體品）。
+- **【A · 庫存格式】** `.product-list__stock`：無限量商品「剩餘 / ∞」（取代原本「X left」／「剩 X 件」），限量商品「剩餘 / 上限」（Coastline acetate 原本就是 `21 / 50`，格式已對，未變動）。
+- **呈現假設記入 UIA-066**：數位商品（單曲／電影／EP／會員卡）在 Figma 稿子也顯示「48 / ∞」，但三列數字相同、疑似佔位假資料，且數位商品無實體庫存概念——經使用者確認，數位商品庫存維持純 `∞`、不採用 Figma 字面值捏造銷售數字；數位商品的 `__meta` 也維持原本格式描述文字（音樂單曲·MP3+FLAC 等），不套用規格副標規則（數位商品無「規格」概念）。
+- 影響範圍：僅 `e-shop.html` 商品（Products）分頁；套組（Bundles）／競標（Auctions）分頁的 `category-cell` 是不同語意（成員／分類），未觸碰。
+- 文件同步：`design-system.md`／`design-system.html` 的 Product list 條目與 Class API 表補充兩行分類的說明；`ASSUMPTIONS.md` 新增 UIA-066。check_ds_sync 全 PASS、Playwright 逐列量測 30 筆 Products 資料＋i18n 中英切換皆確認正確、bump `20260721a`。
+
+## 2026-07-20 · 商品明細改版：兩欄版型＋右側常駐 meta 欄，連帶四項全站視覺尺度裁決（B 反饋導入 · A 規格對齊 · C 撤除 · Q21）
+
+起點是使用者要求「依照 `docs/黑夜版風格探索-midnight.html` 的商品明細改 r2.1」，中途改以 Figma node `845-10300` 為準；經約十輪逐項截圖回饋定案。先在 `docs/商品明細-midnight版型-預覽.html` 做獨立預覽頁反覆對版，確認後才落地。
+
+### 【B】版型：單欄分頁 → 兩欄（主欄＋右側常駐 meta 欄）
+
+- 分頁列橫跨全寬，其下分左右兩欄。左欄放分頁內容，右欄是**跨分頁常駐**的唯讀狀態欄（sticky），切到任何分頁都看得到庫存、交付、關聯——這是本次改版的核心：改東西前要先知道的資訊不該藏在某個分頁裡。
+- 分頁由 5 個併為 4 個：**總覽**（原總覽＋原基本資訊）／定價與庫存／交付與取貨／關聯。原總覽的庫存健康與專案引用移進右欄，銷售摘要留在總覽最上方。
+- 右欄三張卡：**當前庫存**（量條＋庫存 3/50＋補貨鈕）／**交付與取貨**（取貨方式二選一，選物流配送顯示發貨地址、選 QR 領取顯示領取場次，由既有 `data-when-delivery` 連動）／**使用中**（專案／組合引用）。
+
+### 【B】新元件三支（promote，鐵律 1）
+
+- `ds-components/detail-rail.css` — `.detail-grid` / `.detail-main` / `.detail-rail`。詳情頁兩欄殼，右欄 sticky、≤1100px 收單欄。內含一條必要的權重覆寫：元件層 `.form-section--outlined:not([hidden]) ~ …` 的 24px margin-top 會疊上 flex gap 變成 48px，在此歸零讓右欄間距只由 gap 決定（與左欄同為 24px）。
+- `ds-components/kv-list.css` — `.kv` / `.kv__k` / `.kv__v` / `.kv--lead`。唯讀鍵值列。**`.kv[hidden]` 必須顯式歸零 display**：本元件用 flex，會蓋過瀏覽器對 hidden 屬性的預設 `display:none`——這是實作時真的踩到的坑（兩種取貨方式同時顯示）。
+- `ds-components/stock-bar.css` — `.stock-bar` / `__fill` / `__fill--low`。細長量條，低於低庫存門檻轉紅（`--destructive`）。百分比由 consumer 以 inline style 提供（那是資料不是樣式）。
+
+### 【Q21】四項全站視覺尺度（詳見 STYLE-DECISIONS.md Q21）
+
+這四項動到的是共用元件與 token，依鐵律 9 不能留在頁面 `<style>`。已在明確告知影響範圍（15–28 頁）後由使用者裁決**全站套用**：
+
+- `.form-section__title` 18→14px（同 `.field__label`）
+- `.form-section__sub` 14→11px、色階壓暗（同 `.field__hint`）
+- `.field__hint` 壓暗成 `--muted-foreground`——**推翻 2026-07-16 的反向提亮決定**
+- `.kpi` 底色 `--card`→`--input-surface`（卡中卡不再同色相糊）
+- 頁寬：**新增 `.page--narrow`（1056）只給商品明細用，`.page` 維持 1280**（同日修訂；原裁決是全站收窄，使用者看過實際結果後改為變體）
+
+### 【A】對齊 Figma 845-10300 的內容調整
+
+- 素材區改成一排四格（主圖／＋／＋／more），尺寸一致；由 `upload-showcase--stacked` 改回 base `upload-showcase`，未動共用元件。
+- 欄位順序改為 標題 → 描述 → 主分類／次分類 → 規格；「新增規格」改通欄按鈕。
+- 銷售摘要包進 outlined 卡、補副標、右上連結改「查看更多 →」；KPI 由三個改四個（已售／營收／扣費後淨利／轉換率）。
+- 麵包屑「商品」→「實體商品」；頁首去縮圖、只留單一狀態徽章。
+- 狀態徽章去橘改中性——除對齊 Figma，亦符合 Q8「品牌橘只給主操作與主分類」。
+
+### 【C】撤除（依使用者逐項指定）
+
+頁首的庫存過低徽章與商品描述、右欄的低庫存門檻與上架中兩列、專案引用的影響範圍說明與變更影響副標、主分類的「建立後不可變更」提示、頁首的補貨鈕（入口收斂到右欄當前庫存卡）。**其中專案引用的兩項是規格 §2.4 明列的組成項，移除後規格與畫面不一致——已記入 ASSUMPTIONS UIA-065 待上游裁決。**
+
+### 產品缺口（UIA-062～065）
+
+轉換率 KPI、組合引用、次分類鎖定、以及上述【C】的規格落差，四項均為上游未定義或與規格不符，已記入 `ASSUMPTIONS.md`，未回寫 `documents/`。
+
+### 收尾
+
+i18n 新增 18 個 `product-detail.*` key（已驗證頁面 0 缺 key）；bump `20260720j`；Playwright 逐頁量測 index／create-product／e-shop／earnings／settings／product-detail，0 水平溢出；頁寬僅 product-detail 用 `.page--narrow` 1056、其餘頁維持 1280。
+
+---
+
+## 2026-07-20 · `--ip` 列 hover 改浮起，比照拖曳抬起態（B 反饋導入 · Q5 scoped 例外）
+
+使用者比對 `--eshop` 拖曳握把的抬起效果後，指定「hover 效果要跟 drag 的 style 一樣」。
+
+- **【B】** `.product-list--ip .product-list__row:hover` 由 base 的純換底色（`--accent`）改成 `--card` 底＋`--radius-md`＋`--shadow-float`，跟 `.is-dragging`（拖曳抬起態）同一種浮起視覺；`position:relative;z-index:1` 避免陰影被相鄰列的 hairline 分隔線切掉。
+- **牴觸 Q5、記為 scoped 例外**：Q5 裁決「清單列 hover 只換底色，只有可點卡片才浮起」，本次是使用者當次明確指定、非默默偏離——已記入 `STYLE-DECISIONS.md` Q5 的 scoped 例外（僅 `--ip`，其餘 5 個變體不受影響）。
+- 順手修一個文件殘留：`design-system.html` 的 Product list Behavior details 表格原寫 base hover 是 `--muted`，實際 CSS（Q9 2026-07-13）早已是 `--accent`，文件跟程式碼不同步多時，一併修正。
+- check_ds_sync 全 PASS、bump `20260720i`。
+
+## 2026-07-20 · 我的 IP 清單改表格化，對齊 spec 5.1.4 §F6 的 8 欄定義（A 規格補齊 · 新元件變體 · UIA-061）
+
+使用者反饋「我的 IP 版面跟電子商店不像」，指的不是圖示顏色（那已經一致），而是整體版面——`my-ip.html` 原本用 `.data-list` 卡片式清單，把 IP 名稱、權利資訊、租出數、收入、租金全部擠成一行文字（如「Maya Chou · 租出3 · 收入$2,180 · 分潤100% · 租金$480/6個月」）。查證 `documents/5.1.4-我的IP.md` §F6「清單頁欄位與互動」發現：**規格本來就定義了 8 個獨立欄位**（IP／權利資訊／租出數／收入／租金／Mktplace／Manage），現有實作沒有照著做——使用者的直覺跟規格是一致的，不是新提案。
+
+- **【A · 新元件變體 `.product-list--ip`】** 比照 e-shop/orders/pickup 既有的「同一組 grid 換一批欄位模板」手法，在 `product-list.css` 新增 8 欄版型：icon(60px) / IP 名稱＋標籤 / 權利資訊 / 租出數 / 收入 / 租金 / Mktplace(開關，新 `.product-list__mktplace` cell) / Manage。含 ≤760px 響應式堆疊規則（同 --orders/--pickup 手法）。
+- **【A · my-ip.html 表格化】** 兩段清單（「在 Ztor 上產出的 IP」5 筆／「Ztor 之外的 IP」3 筆，現有樣本各 3 筆／1 筆）改用新變體，含表頭列（IP/權利資訊/租出數/收入/租金/Mktplace）。**純拆欄、不動資料**：原本擠在單一 meta 字串裡的權利資訊/租出數/收入/租金原樣拆進對應欄，數字文字皆未改動。i18n 新增 `my-ip.col.*`（欄位表頭）＋ `my-ip.rowN.rights/rented/revenue/price`（原 `rowN.meta` 拆開，取代舊 key）。
+- **【D · 頁面樣式依賴切換】** `my-ip.html` 移除 `data-list.css`、改載 `product-list.css`（`.data-list` 元件仍供其餘 14 頁使用，未退場）。JS 計數改抓 `.product-list__row`。
+- **呈現假設記入 UIA-061**：spec §F6 IP 欄要求「發布或登記日期」，現有前 3 筆 demo 資料本來就沒有日期值，本輪未捏造日期、暫不顯示；第 4 筆（Ztor 之外的 IP，原本就有登記日期）保留在 `.product-list__meta` 顯示。
+- 文件同步：`design-system.md` Product list 條目與 Variants 段補 `--ip`；`ASSUMPTIONS.md` 新增 UIA-061。實測欄寬三輪微調（避免長標題被省略號截斷、避免租金欄位中途換行），已用 Playwright 截圖確認與 e-shop 視覺語言一致（表頭字級色、圖示晶片、hairline、hover）。check_ds_sync 全 PASS、bump `20260720g`。
+
+## 2026-07-20 · 清單列縮圖三度修正：data-list__icon 取消獨立家族、全站併成單一標準（B 反饋導入 · Q20 三修）
+
+使用者指出「我的 IP」（用 `.data-list__icon`）跟電子商店仍不一樣。二次修正時 `.data-list__icon` 刻意保留成獨立家族（`--card`／`--border`／40px，理由是與 `.alert--card .alert__icon` 同尺寸家族），但使用者的判斷標準很明確：全站看起來就是要一樣，不接受「兩個家族各自合理」的解釋。
+
+- **【B】** `.data-list__icon` 由 `--card`／`--border`／40×40 改為 `--muted`／`--border-soft`／52×52／icon 色 `--muted-foreground`，與 `.product-list__thumb`／`.project-list__icon` 完全一致（不再是獨立家族）。取消與 `.alert--card .alert__icon` 的尺寸配對關係。
+- 影響 15 頁（auction-detail／bundle-detail／create-bundle／create-project／fan-detail／earnings／event-detail／order-detail／ip-detail／pickup-detail／product-detail／project-detail／scanner／my-ip／design-system.html）。row 用 flex/grid 自適應高度，尺寸放大不會撞版；已用 Playwright 截圖檢查我的 IP（一般密度）與收入管理（較密集列表）兩頁，版面正常無破版。
+- 用 Playwright 量測 my-ip.html 的 `.data-list__icon` computed style，與先前驗證過的 orders/e-shop/projects 三頁數值逐項比對相同（52px／`rgb(22,23,24)`／`1px rgb(32,33,34)`／icon `rgb(117,117,117)`）。
+- 文件同步：`design-system.md` Data list 條目與 Anatomy 區塊改寫、`STYLE-DECISIONS.md` Q20 改為「全站統一單一標準」並記錄完整沿革（首版→二次修正→三度修正）。check_ds_sync 全 PASS、bump `20260720d`。
+- **追加**：驗收發現 `border-radius` 也沒統一（`.data-list__icon` 寫死 `10px`，另三者用 `var(--radius)`=6px，肉眼可辨），一併改成 `var(--radius)`；`design-system.md` 對應段落（Anatomy／Sizes／Class API）同步。四頁四元件的 width/height/背景色/邊框寬與色/圓角/icon 色共 7 項，已用 Playwright 逐項量測完全相等。bump `20260720e`。
+
+## 2026-07-20 · 清單列縮圖二次修正：對齊錯了基準，重改成真實呈現值（B 反饋導入 · Q20 修正）
+
+使用者截圖指出訂單管理與電子商店的縮圖仍尺寸、顏色都不同——07-18 那筆改動對齊錯了對象。`.product-list__image` 全站 28 處使用皆搭配 `--placeholder` 變體，基礎規則（`--card`／`--border`／52px）從未單獨呈現過；真正畫面上看到的是 `--placeholder` 覆蓋後的值（`--muted` 底／`--border-soft` 邊／`--muted-foreground` icon），且 07-18 那筆也忘了同步尺寸（維持舊的 44px，`.product-list__image--placeholder` 其實是 52px）。
+
+- **【B · 二次修正】** `.product-list__thumb`（orders／pickup）與 `.project-list__icon`（projects）改為 52×52／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`——這次直接用 Playwright 量測兩邊的 computed style（背景色、邊框色、尺寸、icon 顏色）逐項核對到數值相同，不是只憑外觀感覺判斷。
+- **`.data-list__icon` 不套用這組新值**：它是「儀表板資訊列圖示」家族（與 `.alert--card .alert__icon` 同尺寸家族），跟「照片佔位圖」家族角色不同，維持 07-18 那筆改的 `--card`／`--border`／40px，不強行統一到 52px／`--muted`。
+- 文件同步：`design-system.md` product-list／project-list／data-list 三條目改寫，清楚標示兩個家族各自的基準；`STYLE-DECISIONS.md` Q20 補「二次修正」段落，誠實記錄首版對齊錯誤的原因。check_ds_sync 全 PASS、bump `20260720c`。
+
+## 2026-07-20 · 清單列縮圖統一追加：data-list__icon 也改描邊框（B 反饋導入 · Q20 續）
+
+接續 07-18 那筆，使用者確認「我的 IP」等 15 頁用的 `.data-list__icon` 也要一併改，不維持例外。
+
+- **【B】** `.data-list__icon` 由 `--muted` 填色無邊框改為 `--card` 底＋1px `--border`，與 `.product-list__thumb`／`.project-list__icon` 一致。原本保留 `--muted` 是因為與 `.alert--card .alert__icon`「同族」（同尺寸 40×40／radius 10）；但 `alert__icon` 底色本就由狀態變體決定、無邊框語意不同，改邊框不影響兩者的視覺配對。
+- 影響頁：auction-detail／bundle-detail／create-bundle／create-project／fan-detail／earnings／event-detail／order-detail／ip-detail／pickup-detail／product-detail／project-detail／scanner／my-ip（14 頁）＋ design-system.html。
+- 文件同步：`design-system.md` Data list 條目、`STYLE-DECISIONS.md` Q20（移除「未納入」但改為說明差異不影響配對）。check_ds_sync 全 PASS、bump `20260720b`。暗色截圖驗證。
+
+## 2026-07-18 · 清單列縮圖統一成描邊框（B 反饋導入 · Q20）
+
+使用者截圖指定：把「填色無邊框」那種列縮圖全部換成「描邊框」那種。這其實是 product-list 元件內部的真實不一致——同一個「清單列縮圖」角色有兩種做法並存。
+
+- **【B · 統一列縮圖】** `.product-list__thumb`（orders／pickup）與 `.project-list__icon`（projects）由 `--muted` 填色無邊框，改為 `--card` 底＋1px `--border` 描邊框，與同元件既有的 `.product-list__image`（e-shop／events／pickup）一致。反白變體 `.product-list__thumb--cover` 的 `border-color` 設成與自身填色同色，避免反白塊上露出中性描邊。
+- **未納入（待使用者決定）**：`.data-list__icon`（15 頁的儀表板資訊列圖示晶片，40×40／radius 10，當初刻意與 `alert--card` 圖示同族）維持 `--muted` 填色無邊框——角色與清單列縮圖不同，未一併改。
+- 元件層一次生效、consumer 頁無需改 markup。文件同步：`design-system.md` product-list／project-list 條目、`STYLE-DECISIONS.md` Q20。check_ds_sync 全 PASS、bump `20260720a`。暗色截圖驗證。
+
+## 2026-07-17 · midnight 精修搬入 r2.1 batch 2：input 填色＋標籤橘框＋radio 小點（B 反饋導入 · Q19）
+
+接續 Q18，使用者對照 `docs/黑夜版風格探索-midnight.html` 逐項截圖指定，再搬三項元件級精修（全走元件層、consumer 頁自動生效）。
+
+- **【B · input 填色，新增 `--input-surface` token】** `.input/.textarea/.select` 底色由 `--card` 改用新 token `--input-surface`（亮＝`var(--card)` 白卡、靠 1px border 分界；暗＝`#262729` 比卡 `#212223` 亮一階）。動機：section 改浮起卡後，input 底＝卡底同色會糊在卡面上（Surface-Layer Contrast），暗色尤明顯；filled 一階讓欄位讀得出。全站所有表單欄位生效，亮色維持白卡不變（無回歸）。
+- **【B · 標籤已選橘框，Q8 scoped 例外】** tag-input 的已選標籤 chip（`.tag-input__field .chip--active`）改品牌橘外框＋橘字＋淡橘底（`color-mix(--primary 8%)`）。只 scope 在 tag-input 內——全站一般 `.chip--active`（earnings/fans/projects 等篩選器）維持反白黑底（Q8 不動）。動機：標籤是創作者為自己商品下的分類，橘標更像「已套用」而非中性篩選。
+- **【B · radio-list 點精修】** `.radio-list__dot` 未選 16→13px 細環（1.5→1.25px），已選粗環消失、只留 8px 實心橘點（原已選還留一圈橘環）。midnight 選中指示器 A 案。radio-list 全 5 頁生效（create-product/-bundle/-auction 上架設定＋product-detail/bundle-detail）。
+- **【B · 追加 2026-07-18，續對照 midnight】** (a) tag-input 橘色 scope 由 `.tag-input__field` 放寬到整個 `.tag-input`——建議列裡「已加入」而原本反白成白色的標籤，現在也是橘框橘字（全站 `.chip--active` 仍不動）；(b) 已選型別卡（`.selection-card--icon.selection-card--active`）除橘 outline 再加淡橘底，對齊 midnight——icon 維持中性、不加勾（修訂 Q13 已選呈現）。bump `20260718b`。
+- **【B · 追加 2026-07-18 第二輪，續對照 midnight】** (a) 型別選項卡 `.selection-card--icon` 與上傳投放區 `.upload-tile` 底色由「同 section 卡色／transparent」改用 `--input-surface`（暗色比 section 亮一階＝填色互動面、亮色白卡）——對齊 midnight「選項/投放區比 section 亮一階」，`--input-surface` 用途由「只 input」擴為「input＋型別卡＋上傳」；已選型別卡淡橘底基底同步改疊在 `--input-surface` 上。(b) 順修一個既有 bug：`.select-wrap__icon`（下拉自訂箭頭）原 `right: var(--select-icon-inset)`，但該變數定義在兄弟 `.select` 上、CSS 變數不從兄弟繼承→箭頭 `right` 失效跑到框外，改直接 `right: var(--sp-12)`（並移除孤兒變數）。bump `20260718c`。
+- 文件同步：`_tokens.css` 新 token（亮/暗）、`design-system.md` token 表＋input/tag-input/radio-list 條目、`design-system.html` swatch、`STYLE-DECISIONS.md` Q19＋Q8 scoped 例外標記。check_ds_sync 全 PASS、fresh-context 驗收、bump `20260718a`（與 Q18 batch 一起收）。淺色暗色皆截圖驗證（含 committed 標籤橘態）。
+
+## 2026-07-17 · midnight 精修搬入 r2.1：form-section 浮起卡＋型別磚縮小＋上傳圖示晶片框（B 反饋導入 · Q18）
+
+把探索頁 `docs/黑夜版風格探索-midnight.html` 的三項區塊/元件精修搬進正式站，範圍**限建立流程元件、不動全站一般 `.card`**（維持 Q3）。使用者先在 midnight 迭代確認外觀，再指定搬 r2.1，並選「只套建立流程 section」的範圍（不覆蓋全站卡片、不撞另一 session 進行中的 Q15/Q16）。
+
+- **【B · form-section 浮起，修訂 Q14】** `.form-section--outlined` 由「純填色卡」加 `box-shadow: var(--shadow-card), var(--shadow-edge-top)`＝浮在內容底上的卡；仍 `border:0`（無 1px 邊框），改由填色＋E2 陰影＋頂緣高光共同分區。新增 Foundation token `--shadow-edge-top`（亮 `inset 0 1px 0 rgba(255,255,255,.5)` 白底近乎不可見／暗 `rgba(253,253,253,.05)` 深底顯上緣光）。元件層一次生效、~12 個 consumer 建立頁自動套用。
+- **【B · 型別磚縮小，修訂 Q13 尺寸】** `.selection-card--icon` icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`（較 Figma 781-4166 更緊）。僅動 `--icon` 變體，base/swatch 卡不變；已選標記仍是橘 outline 無勾（Q13 邊框/標記不變）。
+- **【B · 上傳圖示晶片框】** `.upload-tile--hero .upload-tile__icon` 加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`＋56×56）；縮圖格不變。
+- **未採用**：input 底再亮一階（#262729）——r2.1 暗色 input 已是 filled `--card`(#212223)、差一階幾乎不可見，不值得為它加暗色專用 token（撞棘輪），略過。
+- 文件同步：`design-system.md` 新增 `shadow-edge-top` token 列＋form-section/upload/selection 條目更新；`design-system.html` 邊緣工具行含 `--shadow-edge-top`；`STYLE-DECISIONS.md` 新增 Q18＋Q13/Q14 修訂標記。check_ds_sync 全 PASS（WARN 僅既有 fan-store raw-color＋cookie-banner/footer 零消費）、fresh-context 驗收 10 條全 pass、bump `20260717p`。淺色暗色皆截圖驗證。
+
 ## 2026-07-17 · 折扣設定：單一規格 折扣價↔折扣% 雙向連動、多規格改折扣%＋移到逐規格表下（B 反饋導入 · 產品變更待規格 · 接續 D144）
 
 使用者反饋：多規格下折扣設定位置與語意都不理想——(a) 折扣設定給的是「絕對折扣價 $」，多規格每個規格各自定價，一個絕對折扣價套不到 N 個規格；(b) 單一規格的定價區在多規格會隱藏（`data-when-var="single"`），但折扣設定沒設隱藏、照樣顯示且排在「逐規格定價表」上方，與真正的價格脫節。裁決走「折扣跟著價格走」＋「多規格用折扣%」。**⚠️ 動到折扣的資料模型（D144 原定義＝絕對折扣價），屬產品變更，`documents/` 規格尚未同步（見 ASSUMPTIONS UIA-060）。**

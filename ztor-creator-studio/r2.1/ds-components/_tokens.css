@@ -48,6 +48,10 @@
   /* Edges */
   --border:            #EAEAEA;   /* hairline · 2026-07-13 體檢：更淡，配微暖畫布靠色階分層（minimalist）*/
   --input:             #EAEAEA;   /* 控件邊（= border）*/
+  --input-surface:     var(--card);   /* 控件填色底：亮色＝白卡（靠 border 分界）；暗色改亮一階讓 filled 欄位浮出卡面（見 dark override，Q19）*/
+  /* 巢狀層填色（.nest）：疊在卡片上的第二層 surface。亮色＝透明——卡與 nest 同為白，
+     單靠 --shadow-nest-up 的向上陰影分層就夠（2026-07-21 使用者裁示）。深色才真的疊一層薄膜。 */
+  --nest-surface:      transparent;
   --ring:              var(--primary);   /* 品牌橘 focus ring；亮暗同色（2026-06-25）。a11y：白底約 1.3:1 低於 WCAG，依「無障礙僅建議」保留 */
 
   /* Charts — 品牌＋status 色序 */
@@ -84,6 +88,7 @@
   --status-info:       #266DF0;
   --status-warning:    #F8D749;
   --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
+  --status-error:      #DA314A;   /* 2026-07-21 補回：狀態徽章的錯誤色，與 --destructive（刪除等破壞性操作）語意分開；值暫同 --destructive，暗色見 override（Figma 845:11071 兩色分歧） */
 
   /* Geometry */
   --radius-sm:         3px;
@@ -182,6 +187,12 @@
      亮色白底上幾乎不可見（無害）；深底才顯出上緣高光。 */
   --shadow-edge-top:
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  /* Nest shadow — 向上柔投影，由「嵌在卡片底部的巢狀層」往上打在母卡面上，做出 nest 疊在卡片之上的感覺
+     （2026-07-21，.nest 採用；Figma node 856:27798）。⚠ 模糊會往左右外溢，母卡必須 overflow:hidden。
+     亮色版：卡與 nest 同為白，這道陰影是唯一的分層線索，所以不能再更淡。 */
+  --shadow-nest-up:
+    0 -6px 8px rgba(0, 0, 0, 0.05);
 
   /* Seam shadow — 向右柔投影，由「上層的主面板」蓋向相鄰的下層面板（E-Shop 主面板疊在商店預覽之上），
      順著主面板圓角填滿接縫凹口。⚠ 不可掛在捲動容器（其圓角被瀏覽器畫成方角→方角陰影）；
@@ -426,8 +437,13 @@
   --destructive-foreground: #FFFFFF;
 
   /* Edges */
-  --border:            #2C2D2E;   /* midnight-v2（原 #3A3A3C）hairline，比卡略亮才讀得出 */
-  --input:             #2C2D2E;   /* midnight-v2（原 #3A3A3C，維持＝border）*/
+  --border:            #333435;   /* hairline。2026-07-21（Q22）：#2C2D2E → #333435 提亮（先試 #3A3B3C 太亮，回退一階）——midnight-v2 當初壓到 #2C2D2E 後邊界讀不出來，使用者裁示全站深色 hairline 一起提亮（等於回到 midnight 之前的量級）*/
+  --input:             #333435;   /* 控件邊（維持＝border）· 2026-07-21 Q22 同步提亮 */
+  --input-surface:     #262729;   /* 控件填色底：比卡 #212223 亮一階，filled 欄位在卡面上讀得出（2026-07-17 Q19；midnight 探索）*/
+  /* 巢狀層填色（.nest）· 2026-07-21：疊在 --card(#212223) 上的半透明薄膜，合成後 ≈ #292A2B。
+     刻意用冷調淺灰 rgb(222,223,233) 而非純白——純白會把畫布的冷色調洗掉（B−R 由 +2 掉到 +0.8），
+     這個 tint 疊上去反而把冷調推到 +3.0，與 midnight 畫布同溫。值與 Figma node 856:27796 相同。 */
+  --nest-surface:      rgba(222, 223, 233, 0.04);
   /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
 
   /* Charts — dark variants */
@@ -444,7 +460,7 @@
   --sidebar-primary-foreground:#171717;
   --sidebar-accent:            #262728;   /* midnight-v2（原 #383839）rail hover over #1C1D1E */
   --sidebar-accent-foreground: #FDFDFD;
-  --sidebar-border:            #2C2D2E;   /* midnight-v2（原 #3A3A3C）*/
+  --sidebar-border:            #333435;   /* 2026-07-21 Q22 同步提亮 */
   --sidebar-ring:              var(--primary);
   --sidebar-active:            #303132;   /* midnight-v2（原 #444445）[ext] 已選 pill，比 hover 再亮一階 */
 
@@ -466,6 +482,7 @@
   --status-info:       #5896F3;
   --status-warning:    #F3CF58;
   --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
+  --status-error:      #FF3D47;   /* 2026-07-21 對齊 Figma 845:11071：暗色 --destructive #E7000B 太深、徽章小字不易讀，狀態徽章改用較亮的紅，破壞性操作（刪除鈕等）維持原 --destructive 不變 */
 
   /* Shadows — softer drops, white hairline ring inverted */
   --shadow-micro:
@@ -497,6 +514,10 @@
   /* Top-edge highlight（dark）— 深底才顯的上緣內光（= midnight --edge）*/
   --shadow-edge-top:
     inset 0 1px 0 rgba(253, 253, 253, 0.05);
+
+  /* Nest shadow（dark）— 深底上加深、加大位移；值取自 Figma node 856:27798 */
+  --shadow-nest-up:
+    0 -8px 8px rgba(0, 0, 0, 0.08);
 
   /* Seam shadow（dark）— 主面板＝最深 #0A0A0A，用較強黑向右蓋在預覽上、壓出層疊深度 */
   --shadow-seam:
