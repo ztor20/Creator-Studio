@@ -24,65 +24,189 @@
 /* [hidden] 必須蓋過上面的 display:flex，否則單一規格模式下建構器仍會露出（含「新增選項」）*/
 .variant-builder[hidden] { display: none; }
 
+
+/* ---- option set rows（收合態，2026-07-20；Mobbin: Webflow Ecommerce）----
+   多規格常有 2–3 組選項（顏色 × 尺寸 × 材質），每組都完整展開會把版面撐得很長，
+   而下面還接著逐規格表。改成「設定好的選項收成一行、只有正在編輯的展開」。
+
+   2026-07-21 修訂（使用者裁示）：原本做成「單一外框容器＋逐列 hairline 分隔」，
+   造成兩個問題——列與列之間的分隔線在圓角容器裡看起來像多了一條左邊界，
+   且最後一列（新增選項）沒有自己的圓角。改為**每列各自是獨立的圓角方塊**，
+   以 gap 分隔、不共用外框；圓角與底色一律對齊 .input（--radius / --input-surface），
+   讓這一區讀起來跟其他表單欄位同一族，而不是另一種深色卡。
+
+     .option-set                  垂直堆疊容器（只負責 gap，無邊框無底色）
+       .option-set__row           一組選項一列：圖示＋名稱＋值摘要＋編輯
+         .option-set__name        選項名（如 尺寸）
+         .option-set__values      值摘要，以頓號串接（如 S、M、L）
+         .option-set__action      編輯入口（唯讀情境不出現）
+       .option-set__add           最後一列＝新增選項（唯讀情境不出現）
+   唯讀情境（商品明細，選項建立後鎖定 UIA-056）只渲染 __row、不給 __action／__add。
+   ------------------------------------------------------------------ */
+.option-set {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+/* 圓角 2026-07-21 由 --radius(6) 放大到 --radius-xl(16)（使用者裁示：這幾條列的圓角要更大），
+   與收合式 radio-list 的列同一階（見 STYLE-DECISIONS Q22）。 */
+.option-set__row,
+.option-set__add {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12);
+  /* 2026-07-21（STYLE-DECISIONS Q24 落地）：去填色改透明。這些列坐在 .nest（L2）裡＝第三層，
+     依「卡片內只有兩層填色、L3 以後改用 1px 邊框」的裁決，層級改由邊框承擔而非再疊一階填色。 */
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.option-set__row .ztor-icon,
+.option-set__add .ztor-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--muted-foreground);
+}
+.option-set__name {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+  flex: none;
+}
+.option-set__values {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.option-set__action {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.option-set__action:hover { color: var(--foreground); background: var(--accent); }
+
+/* 兩顆「新增」鈕（新增選項／新增選項值）＝虛線邊框（2026-07-21 使用者裁示）。
+   虛線是「這裡還沒有東西、按了會長出來」的既有語彙（同 upload-tile、payout-modal 的投放區），
+   跟已存在的實線列區分得開。 */
+.option-set__add,
+.variant-option__add-value {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12);
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xl);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.option-set__add:hover,
+.variant-option__add-value:hover { color: var(--foreground); border-color: var(--muted-foreground); background: var(--accent); }
+.variant-option__add-value .ztor-icon { width: 15px; height: 15px; flex: none; color: var(--muted-foreground); }
+/* 值列與新增鈕之間的呼吸；.field 已歸零 margin，這裡自己補 */
+.variant-option__add-value { margin-top: var(--sp-8); }
+
+/* 展開編輯中的那一組：沿用 .variant-option 編輯器，圓角與底色對齊同一族。
+   圓角 2026-07-21 跟著 .option-set__row 一起放大到 --radius-xl——編輯中的列一定被
+   .option-set 包住（renderOptions() 把 .variant-option append 進 .option-set），
+   這條兩個 class 的規則優先權高於 .variant-option 本體，漏改會讓收合 16／編輯 6 對不上。 */
+.option-set .variant-option {
+  background: transparent;   /* 同上 Q24：L3 靠邊框，不疊填色 */
+  border-radius: var(--radius-xl);
+}
+
+/* 2026-07-21 退場：`.variant-option__entry`（單一「打字按 Enter」輸入框）。
+   值已改成逐值一個 .input（見下方 .variant-option__value），不再需要獨立的輸入列樣式。 */
+
 /* ---- option rows ---- */
 .variant-option {
   display: flex;
   flex-direction: column;
   gap: var(--sp-10);
   padding: var(--sp-12);
-  background: var(--muted);
+  background: transparent;   /* 2026-07-21 Q24：L3 靠邊框，不疊填色 */
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  /* 與收合態的 .option-set__row 同階（2026-07-21 一併放大到 16）：兩者是同一列的兩個狀態，
+     圓角不同會在切換編輯／完成時跳一下。 */
+  border-radius: var(--radius-xl);
 }
-.variant-option__head { display: flex; align-items: center; gap: var(--sp-8); }
-.variant-option__name { flex: 1; }
-.variant-option__remove {
+/* 編輯態的兩個欄位用共用 .field，但 .field 自帶 margin-bottom:16 會與 .variant-option 的
+   gap:10 疊加成 26、比設計圖鬆散——這裡明確歸零，垂直節奏一律交給 gap。 */
+.variant-option .field { margin-bottom: 0; }
+.variant-option__name { width: 100%; }
+
+/* ---- 逐值 input（2026-07-21 使用者裁示，取代原本的 chip 膠囊列）----
+   一個值一列 .input，可就地改字；右側 X 移除該值。
+   為什麼不用 chip：chip 只能整顆新增／刪除，打錯字要先刪再重打；
+   逐值 input 讓「改一個字」變成原地編輯，這是設定選項時最常做的事。 */
+.variant-option__values {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.variant-option__value {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+.variant-option__value .input { flex: 1; min-width: 0; }
+.variant-option__value-remove {
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--border);
+  width: 32px;
+  height: 32px;
+  border: 0;
   border-radius: var(--radius-sm);
-  background: var(--card);
+  background: transparent;
   color: var(--muted-foreground);
   cursor: pointer;
   transition: color var(--duration) var(--easing),
               background-color var(--duration) var(--easing);
 }
-.variant-option__remove:hover { color: var(--destructive); background: var(--accent); }
-.variant-option__remove .ztor-icon { width: 15px; height: 15px; }
+.variant-option__value-remove:hover { color: var(--destructive); background: var(--accent); }
+.variant-option__value-remove .ztor-icon { width: 15px; height: 15px; }
 
-.variant-option__values {
+/* 編輯態底部動作列：刪除（ghost destructive，站上破壞性只用透明底）＋ 儲存（outline）靠右 */
+.variant-option__actions {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-6);
+  justify-content: flex-end;
+  gap: var(--sp-8);
+  margin-top: var(--sp-4);
 }
-.variant-option__add {
-  flex: 1;
-  min-width: 120px;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-family: var(--font-ui);
-  font-size: var(--fs-13);
-  color: var(--foreground);
-  padding: var(--sp-4) var(--sp-2);
-}
-.variant-option__add::placeholder { color: var(--muted-foreground); }
+/* 2026-07-21 退場：`.variant-option__add`（舊版把「新增值」做成 chip 列尾的無框 input）。
+   現在新增值是一顆虛線按鈕 `.variant-option__add-value`（不同 class），不需要 placeholder 樣式。 */
 
 /* ---- generated per-variant table ---- */
 .variant-table-wrap {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   overflow-x: auto;
-  /* 外框貼齊表格實際內容寬、靠左，不再撐滿整個 preview-split 表單欄
-     （否則第一欄 fr 會吃掉多餘寬度、規格組合被撐得過寬）；
-     更窄視窗回退到滿寬＋水平捲動（min-width 560 觸發 overflow-x）。 */
-  width: fit-content;
-  max-width: 100%;
+  /* 2026-07-21：改回滿寬。原本 fit-content 是為了避免「規格組合」欄用 fr 把多餘寬度
+     全吃掉；現在改成多餘寬度只分給價格與單件成本（見下方 1fr），規格組合仍是內容寬，
+     所以可以安心撐滿容器。更窄視窗回退水平捲動（min-width 560 觸發 overflow-x）。 */
+  width: 100%;
 }
 .variant-table {
   display: flex;
@@ -92,15 +216,16 @@
 .variant-table__head,
 .variant-table__row {
   display: grid;
-  /* 規格組合欄＝內容寬（max-content）＋110px 下限，不用 fr 吃滿剩餘寬度 */
-  grid-template-columns: minmax(110px, max-content) 96px 78px 116px 92px 34px;
+  /* 規格組合＝內容寬（max-content）＋110px 下限；庫存／SKU／刪除＝固定寬；
+     多餘寬度只分給價格與單件成本這兩個金額欄（金額欄位最需要呼吸空間）。 */
+  grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 116px minmax(92px, 1fr) 34px;
   gap: var(--sp-8);
   align-items: center;
   padding: 9px var(--sp-12);
 }
 .variant-table--limited .variant-table__head,
 .variant-table--limited .variant-table__row {
-  grid-template-columns: minmax(110px, max-content) 96px 78px 84px 116px 92px 34px;
+  grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
 .variant-table__head {
   background: var(--muted);
@@ -125,6 +250,19 @@
 }
 .variant-cell--total { display: none; }
 .variant-table--limited .variant-cell--total { display: block; }
+
+/* 庫存欄＝唯讀讀數，不是 .input（2026-07-21，使用者裁決）。
+   庫存只能靠補貨增加、每筆留紀錄，做成輸入框會讓人以為可以直接打字覆蓋。
+   低於低庫存門檻的規格轉紅，讓「哪一個規格快沒了」在表上一眼可見。 */
+.variant-cell--stock {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+}
+.variant-cell--stock-low {
+  color: var(--destructive);
+  font-weight: var(--fw-medium);
+}
 
 .variant-table .input { padding: 7px 9px; font-size: var(--fs-12); }
 
