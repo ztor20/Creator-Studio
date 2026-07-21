@@ -6,7 +6,14 @@
 
 ---
 
-## 2026-07-21 · 電子商店商品清單縮圖改真實照片，保留 icon placeholder 示範（B 反饋導入）
+## 2026-07-21 · 電子商店清單縮圖去邊框放大＋kebab 新增「複製商店連結」（B 反饋導入）
+
+使用者附兩張圖：已上架商品的 kebab 選單要多一項「複製商店連結」；清單縮圖（不管是真實照片還是 icon placeholder 狀態）都不要邊框、再放大一點。
+
+- **【B】** `.product-list__image` 底層 CSS：52×52＋1px `--border` 改 60×60、拿掉邊框；`.product-list__image--placeholder` 同步拿掉 `border-color` 覆寫（沒有邊框可染色了）。真實照片與 icon 兩種狀態共用同一個底層 class，一次改完兩種樣子都對齊使用者要求。
+- **【B】** Products／Bundles／Auctions 三分頁的 kebab 選單，緊接在「在商店上架」開關之後新增「複製商店連結」（新 i18n key `e-shop.a.copystorelink`），純展示用（跟既有其他選單項一樣沒有真的複製邏輯）——JS 動態生成的商品列模板也同步补上。Auctions 分頁原本就有一個獨立的「複製連結」（`e-shop.a.copylink`），語意已經涵蓋，維持不動、不重複加。
+- **牽動範圍確認**：`.product-list__image` 是共用元件，除了 e-shop 只有 `events.html` 也在用（真實活動海報／icon 兩態同一元件）；events 頁的欄寬是寫死 `grid-template-columns: 52px ...`（含桌機與 ≤760px 兩處），縮圖改 60px 若不同步欄寬會裁切，已一併改成 60px 對齊。`.product-list__thumb`／`.project-list__icon`／`.data-list__icon`（Q20 統一的純 icon 家族，orders/pickup/my-ip/projects/14 頁）**不受影響、維持原本 52px＋邊框**——那組角色是唯讀 icon chip、不承載真實照片，跟這次改的 `.product-list__image`（可放真實商品照）本來就是不同元件，只是 Q20 當時把兩者的視覺基準對齊過，這次拉開後在 design-system.md 補了說明避免以後誤會成沒同步。
+- 驗證：Playwright 量測 `.product-list__image` computed width/height/border（60px／60px／`0px none`）；開啟 kebab 選單讀出項目順序「在商店上架／複製商店連結／編輯／補貨」；events.html 桌機截圖確認縮圖沒被裁切。check_ds_sync 全 PASS。
 
 使用者指出全站商品縮圖都是「尚未上傳」的分類 icon placeholder，要求電子商店的商品/組合/競標清單改用真實商品照片，並提供參考站 `ztor-eshop-fe.vercel.app/shop.html`。討論後範圍收斂為「只改電子商店」（不動 orders／pickup／my-ip 等其他頁面共用同款 icon placeholder 的清單，那些留待之後視需要再議）。
 
@@ -23,6 +30,18 @@
 - **【B】** `.product-list--eshop .product-list__row:hover` 併入原本只給 `.product-list--ip` 的浮起規則（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging`），兩者合併成同一條 CSS 規則，不重複定義。`.product-list--eshop` 是 Products／Bundles／Auctions 三分頁共用的 class，三頁的清單列 hover 一併套用；`--orders`／`--pickup` 兩個清單仍維持原本只換底色（未被要求變動）。
 - STYLE-DECISIONS.md Q5 與 design-system.md 的 Product list Variants 條目同步更新例外範圍。
 - 驗證：Playwright hover Coastline acetate 列，量測 computed background/border-radius/box-shadow 與拖曳態數值一致；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 「規格」術語收斂成「選項」＋成本價欄位精簡（B 反饋導入，全站文案）
+
+使用者指定三項全站文案改動：(1) 商品資訊的「規格」改「詳細規格」；(2) 「商品規格」section 改「商品選項」，其中「單一規格／多規格」改「單一選項／多選項」；(3) 成本價的「僅自己可見」改「選填」，並移除 input 下方那行「選填」。
+
+- **【B】** 站上「規格」原本混用兩種意思：**產品規格書**（「時區與時間精度待規格確認」那類）與**商品變體**。本輪只動後者，前者全部保留。經使用者裁示連衍生詞一起改，避免出現「多選項」旁邊寫「逐規格表」的矛盾。
+- 改動的 i18n key（20 個 key、23 處值，其中 3 處是英文對應）：`cp.spec.title`（規格→詳細規格）、`cp.spec.add`、`cp.var.title`（商品規格→商品選項；en Variations→Product options）、`cp.var.single`、`cp.var.multiple`（en Multiple variations→Multiple options）、`cp.var.col.variant`（規格組合→選項組合）、`cp.var.priced-above`、`cp.var.table.title`、`cp.var.table.sub`、`cp.var.empty`、`cp.discount.enable-pct-sub`、`cp.sale.pct-allhint`、`e-shop.variant.single`、`product-detail.var.opts-locked`、`cp.auc.sub`、`cb.meta.variants`、`cb.note.variants`、`cb.price.auto-hint`、`od.snap.variant`、`cp.cost.note`（僅自己可見→選填；en creator only→Optional）。
+- 英文只動兩個 section 級標籤（Variations→Product options、Multiple variations→Multiple options）。句子層的 EN 維持 variation／variant——英文本來就用 options 指「尺寸／顏色」、variants 指「組合」，語意已經分得清楚，跟著改反而會失準。
+- **【C】** `create-product.html` 與 `product-detail.html` 的成本價 input 下方 `field__hint`（`cp.optional-cap`）移除——資訊與標籤上的「選填」重複。該 key 目前無消費頁、成為孤兒 key，保留定義備用（未刪，避免影響其他 session 正在做的改動）。
+- 影響頁面：文案改在 `js/i18n.js` 一處，實際渲染變動的頁面為 create-product、product-detail、e-shop、create-bundle、bundle-detail、order-detail、create-auction。
+- **收尾驗收抓到一處漏改**：`e-shop.html` 動態生成商品列時，變體欄的 fallback 直接寫死中文 `it.variant || '單一規格'`，不吃 i18n、也沒跟著改；該頁 24 筆填充商品有 22 筆走這條 fallback，畫面上會與同頁靜態列的「單一選項」並存。已改成沒有自訂變體字串時輸出帶 `data-i18n="e-shop.variant.single"` 的節點（注入後既有的 `applyI18n` 會處理），順帶讓這欄支援語言切換。`design-system.html` 的 variant-builder demo 按鈕 `Multiple variations` 也一併同步成 `Multiple options`。
+- **上游落差（未回寫）**：`documents/` 的 5.1.5.1／5.1.5.2／5.1.5.4 等規格仍使用「規格／多規格／規格組合」的舊術語，本輪只改 UI 呈現層、未動 `documents/`。術語表若要正式更名，需走 `design-spec-writer` 更新上游並記入 `decisions.md`；在那之前規格書與畫面的用詞會不一致。
 
 ## 2026-07-21 · 建立流程右側預覽欄的卡去邊框，與左欄一致（B 反饋導入）
 
