@@ -6,6 +6,25 @@
 
 ---
 
+## 2026-07-21 · 下拉選單去外框線＋開關列跟動作項加分隔線（B 反饋導入）
+
+使用者接續前一項下拉選單改動再反饋：面板不要外框線；「在商店上架」開關列跟下面的一般動作項之間要有分隔線。
+
+- **【B】** `ds-components/dropdown-menu.css`：`.dropdown__menu` 移除 `border: 1px solid var(--border)`——面板本來就有 `--shadow-float`，那顆 token 內建一圈 `0 0 0 1px` 的軟性描邊已經在畫邊緣，兩個疊在一起是重複畫兩次。
+- **【B】** `.dropdown__item--toggle`（如 e-shop 的「在商店上架」）加 `border-bottom` + `margin-bottom`，跟後面的一般動作項分隔——切換狀態跟會跑導頁／JS 的動作是兩種語意，不該連在一起看不出界線。
+- 過程中抓到一個 specificity 陷阱：選擇器一開始寫 `.dropdown__item--toggle`（單一 class），border-bottom 完全沒生效——因為這個變體的 markup 一律是 `<button>`，而 `button.dropdown__item { border: 0 }` 的 specificity（元素+class）比單一 class 高，會贏過它、把四邊 border 全部歸零。改成 `.dropdown__item.dropdown__item--toggle`（兩個 class 疊加）才穩定蓋過去。
+- **【D】** `design-system.md`／`.html` 同步：Class API 新增 `.dropdown__item--toggle` 條目，Token usage 移除 border、順手修正一處早就跟實際 CSS 不同步的 `--shadow-card`→`--shadow-float`。
+- 驗證：Playwright 量測 computed style 確認 `.dropdown__menu` 的 `border` 歸零、`--toggle` 的 `border-bottom` 確實是 `1px solid`；light/dark 兩種主題都截圖確認面板邊緣靠陰影仍讀得出來、分隔線清楚可見。`check_ds_sync.py` 全 PASS。
+
+## 2026-07-21 · 全站下拉選單每個選項前面加對應 icon（B 反饋導入）
+
+使用者指定：全站表單／列操作的下拉選單（`.dropdown__item`），每個選項前面都要有對應的 icon，唯一例外是「在商店上架」那種開關列（`.dropdown__item--toggle`）。
+
+- **【B】** `ds-components/dropdown-menu.css`：`.dropdown__item` 由 `display:block` 改 `display:flex; align-items:center; gap:var(--sp-10)`，讓 icon 跟文字同一行對齊。icon 顏色不額外指定，直接吃 `currentColor`——一般項跟著 `--foreground`、`--danger` 項（如「刪除」）自動變紅，不用另外覆寫。`--toggle` 變體維持原樣不受影響（本來就是另一套 flex 版面）。
+- **【B】** 全站 7 個消費頁逐一補上圖示，同一動作全站統一同一顆 icon：`e-shop.html`（Copy store link／Copy link → `copy`；Edit → `pencil`；Restock → `package`；Delete → `trash-2`；Track fulfilment → `truck`；Create new product → `plus`；Create bundle from products → `boxes`；Create auction → `gavel`）、`admin-ip-bank.html`（Edit → `pencil`；Delete → `trash-2`）、`events.html`（Edit → `pencil`；Duplicate → `copy`；Delete → `trash-2`）、`creators.html`（啟用/停用 toggle 改成依狀態動態切換 `check-circle`／`x-circle`——這顆不是 `--toggle` 變體、是一般動作項，仍要有 icon）、`pickup.html`（Open → `external-link`；Start scanning → `scan`；Copy URL → `copy`；Show QR code → `qr-code`；Edit session → `pencil`；Archive → `inbox`；Export → `download`）、`orders.html`（Copy order # → `copy`；Open order → `external-link`；View in Earnings → `banknote`，對齊側欄 nav.earnings 既有用的同一顆）、`pickup-detail.html`（Reverse redemption → `rotate-ccw`）。全部沿用既有 Tabler icon registry（`js/icons.js`），無新增 icon。
+- **【D】** `design-system.html`／`.md` 同步：Dropdown menu 元件的 Anatomy／Do & Don't／Class API／Token usage／Code example／兩處 rendered demo 全部補上 icon 範例與規則說明。
+- 驗證：`check_ds_sync.py` 全 PASS；Playwright 檢查 e-shop.html／orders.html 的選單展開狀態，確認每個非 toggle 選項都出現對應 icon、「在商店上架」維持無 icon。
+
 ## 2026-07-21 · 上架設定移到右側常駐欄（B 反饋導入）
 
 - **【B】** `product-detail.html`：「上架設定」整張卡自「定價與庫存」分頁移入 `.detail-rail`，排在右欄第一張。上架與否是商品的最高層級狀態，塞在定價庫存分頁裡等於暗示它只跟定價庫存有關；放右欄後，編輯任何分頁時都看得到並能隨手改。
@@ -78,6 +97,16 @@
 - **【B】** DS 文件同步：`design-system.md` §4.9 Sizes 與 `design-system.html` 的 `.ztor-icon` 尺寸矩陣說明，原本明寫「icon buttons 維持 16px 基準字符」，已改為 20px `--md` 並註明調整原因。
 - 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（本機 Playwright 被佔用），143 顆按鈕的實際觀感尚未逐頁確認。
 
+
+## 2026-07-21 · 物流配送的尺寸／寄件地改選填（A 規格對齊，規格與 UI 一起改）
+
+使用者裁示「取貨方式／物流配送的尺寸、寄件地、出貨分類都改為選填，規格書也改」。出貨分類原本就是選填，實際變更的是尺寸與寄件地兩欄。**這是必填規則變更＝產品決策**，所以先改上游規格再改 UI，記 D148。
+
+- **【A】** `documents/5.1.5.2` §4.1⑥：尺寸與寄件地移除 ＊，四欄只剩重量必填（改前原文存 `backup_plan.md` Plan212）。§4.6 就緒檢查由「需重量與尺寸與寄件地齊備」改為「需重量齊備」。
+- **【C】** 連帶移除 D145 的第二個收合硬條件（「就緒檢查因尺寸或寄件地未填而不通過時，收合區必須展開或指出缺漏」）。那條是為了保護被收合的必填欄；唯一必填只剩常駐的重量後就沒有保護對象了。**第一個條件保留**（收合區內有值即預設展開）——它保護的是編輯既有商品時不藏已填資料，與必填無關。
+- **【A】** `create-product.html`：移除尺寸／寄件地的 `.field__req`；`shippingOk()` 由「重量＋寄件地＋三個尺寸全填」改成只檢查重量；就緒清單那一項的文字由 `Shipping weight, size & origin` 改成 `Shipping weight`（不改會變成勾選條件與敘述不符）。順手移除因此失去消費者的 `fShipPickup` 常數。
+- **【A】** `product-detail.html`：同步移除兩個 `.field__req`（同一組欄位的編輯頁）。
+- 已確認不需改：`documents/5.1.5.1` §2 取貨方式那行只列舉欄位名稱、不帶 ＊ 標記。
 
 ## 2026-07-21 · 補完 Stock readout 的 DS 三件套（D infra）
 

@@ -628,7 +628,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
 | Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker。`.selection-card--icon` 型別磚 2026-07-17 縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊；Q18）。型別磚底色 `--input-surface`（暗色比 section 卡亮一階＝浮出的填色選項、亮色白卡，2026-07-18，對齊 midnight）；已選 icon 卡除橘 outline 外加淡橘底 `color-mix(--primary 5%, --input-surface)`（2026-07-18 Q19，對齊 midnight；icon 維持中性、無勾） | [selection-card.css](./ds-components/selection-card.css) |
 | Composer | 🟡 molecule | ✓ App | Drop / type card + bottom action bar (tool icons · credit meter · circular send) | [composer.css](./ds-components/composer.css) |
-| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」） | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
+| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」）。**每個選項前面都要有對應 `.ztor-icon`（2026-07-21 使用者裁示），唯一例外是 `--toggle` 那列**——全站 7 個消費頁全數補齊 | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
 | Header (topbar) | 🟠 organism | ✓ App | All pages — canonical 64px app topbar (`.app-topbar`, injected by `sidebar.js`); hover mega-dropdown nav + action cluster | [header.css](./ds-components/header.css) |
 | Global nav · sidebar mode | 🟠 organism | ✓ App | Display-mode alternative to the topbar (spec §6.9 / D016): 248px left rail (`.app-sidebar`, same `sidebar.js`) sits on `--surface-shell`; dropdowns → expandable groups（`.app-sidebar__group`，accordion，現役）。另保留 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）可切回。Driven by `data-nav-mode` (theme.js) | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Admin-layer nav · Tier 0/1 | 🟠 organism | ✓ App | Platform-operator (Admin) variant of the topbar (spec §4.1 / D086): roster page shows a "Creator Management" marker + locked Tier-1 items (`.app-topbar__link--locked`); inside a creator workspace, a back-to-roster icon (`.app-topbar__back`) sits **before** the logo + "Managing &lt;creator&gt;" chip (`.app-topbar__context`). Active creator held in `window.ztorCreator` (localStorage `ztor.activeCreator`); switched via devtools "Creator · Admin" cheat code. Used by `creators.html` (Tier 0) and every Tier-1 page | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
@@ -3109,12 +3109,13 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 |---|---|
 | `.dropdown` | Positioning context (`<details>`); strips native marker from summary |
 | `.dropdown__menu` | Floating panel — right-aligned, `min-width: 230px`, `--radius-lg`, `--shadow-float` (E3) |
-| `.dropdown__item` | Block action link, 9×10 padding, `--radius-md` |
+| `.dropdown__item` | Flex action row, 9×10 padding, `--radius-md`; leads with a `.ztor-icon` (2026-07-21, 使用者裁示) — icon color inherits `currentColor`, no override needed even on `--danger`. Only exception: `.dropdown__item--toggle` (a switch row, not an action, e.g. E-Shop's List-in-shop toggle) |
 | `.dropdown--left` | Panel anchors to the trigger's left edge instead |
+| `.dropdown__item--toggle` | Switch row (menuitemcheckbox), no icon; 2026-07-21 使用者裁示加 `border-bottom` + `margin-bottom` — 跟後面的一般動作項分隔（切換狀態 vs. 會跑導頁／JS 的動作，語意不同） |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` / hover `--muted` · border `--border` · text `--foreground` · radius `--radius-lg` / `--radius-md` · shadow `--shadow-card` · focus `--ring` · font `--font-ui` (inherited)
+- bg `--card` / hover `--muted` · text `--foreground` · radius `--radius-lg` / `--radius-md` · shadow `--shadow-float`（面板邊緣靠這顆 token 內建的軟性描邊，2026-07-21 拿掉多餘的 `border`）· toggle 分隔線 `--border-soft` · focus `--ring` · font `--font-ui` (inherited)
 
 **Usage** — "Create / more actions" menus in toolbars (first consumer: E-Shop "＋ New" → product / bundle / auction). Avoid for nav mega-dropdowns — use NavigationMenu (§4.10) — and for form value selection — use a select / Input (§4.8).
 
@@ -3122,6 +3123,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - ✅ Do use a real `.btn` variant as the summary trigger.
 - ✅ Do keep items short, action-first, max ~6 entries.
+- ✅ Do lead every item with a matching `.ztor-icon` (2026-07-21 使用者裁示) — the only exception is `.dropdown__item--toggle`.
 - ❌ Don't rebuild it per page with inline styles — link `dropdown-menu.css`.
 - ❌ Don't use it for navigation menus or form selects.
 
@@ -3133,7 +3135,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 <details class="dropdown">
   <summary class="btn btn--primary">＋ New ▾</summary>
   <div class="dropdown__menu" role="menu">
-    <a class="dropdown__item" role="menuitem" href="create-product.html">Create new product</a>
+    <a class="dropdown__item" role="menuitem" href="create-product.html"><i data-lucide="plus" class="ztor-icon"></i>Create new product</a>
   </div>
 </details>
 ```
