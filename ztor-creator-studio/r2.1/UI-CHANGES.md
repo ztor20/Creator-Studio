@@ -6,6 +6,25 @@
 
 ---
 
+## 2026-07-21 · 電子商店清單 hover 擴大套用浮起效果（B 反饋導入，Q5 例外擴大）
+
+使用者先前（2026-07-20）已指定「我的 IP」清單 hover 要跟拖曳抬起態一樣浮起，這次再指定電子商店清單也要一樣。
+
+- **【B】** `.product-list--eshop .product-list__row:hover` 併入原本只給 `.product-list--ip` 的浮起規則（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging`），兩者合併成同一條 CSS 規則，不重複定義。`.product-list--eshop` 是 Products／Bundles／Auctions 三分頁共用的 class，三頁的清單列 hover 一併套用；`--orders`／`--pickup` 兩個清單仍維持原本只換底色（未被要求變動）。
+- STYLE-DECISIONS.md Q5 與 design-system.md 的 Product list Variants 條目同步更新例外範圍。
+- 驗證：Playwright hover Coastline acetate 列，量測 computed background/border-radius/box-shadow 與拖曳態數值一致；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 日期／時間欄位補 placeholder：新元件 date-input（B 反饋導入，全站約 40 個欄位）
+
+使用者附圖指出上架時間欄空著時顯示的「年/月/日 --:--」是一般內文色，看起來像已經填了值，要求「所有日期的 input 文字都要改成 placeholder 的顏色，並且都要顯示日曆 icon ＋『選擇日期』」。原生日期欄位不吃 `placeholder` 屬性，那串遮罩是瀏覽器自己畫的，只能另做裝飾層。
+
+- **【B】** 新增 [date-input.css](./ds-components/date-input.css)：空值＝日曆 icon ＋淡灰「選擇日期」（原生 `::-webkit-datetime-edit` 藏起來）；已填＝日期用正常內文色、內距回到欄位原值。**icon 與文字都只在空值時出現**——首版讓 icon 常駐，實測發現它吃掉 28px 橫向空間，設定頁 120px 的勿擾時段時間欄會被切字（截圖佐證），改成只在空值出現後，已填狀態的版面與改版前完全相同。原生右側日曆鈕攤平成整格透明覆蓋層，所以填值後仍可點整格開選單。
+- **【B】** 新增 [partials/date-input.js](./partials/date-input.js)：執行期掃全站 `date`／`datetime-local`／`time` 欄位，各包一層 `.date-input` 並注入 icon 與文案，依 value 切 `[data-empty]`。這樣頁面 markup 完全不用動（約 40 個欄位散在 17 個檔），日後改文案只改一處。補貨、取貨場次、手動登錄、新品貼文這些點開才生出來的彈窗，用 `MutationObserver` 接住，各 partial 不必自己記得呼叫 mount。
+- 文案三型共用一句「選擇日期」（i18n `field.pick-date`），依使用者裁示；純時間欄位（活動時刻、勿擾時段）因此也顯示日曆 icon ＋「選擇日期」，語意上略有落差，已向使用者說明、待其決定是否分寫。
+- 影響範圍：17 頁掛上新 CSS／JS（admin-platform-fees／bundle-detail／create-auction／create-bundle／create-campaign／create-event／create-product／create-project／design-system／e-shop／earnings／fans-crm／ip-bank-reporting／pickup-detail／pickup／product-detail／settings）。`input.css` 本身未動，避免影響非日期欄位。
+- 驗證：Playwright 量測 create-product 上架時間欄——空值 padding-left 40px、placeholder 落在 icon 右側 40px 處且完整置於欄內；填值後 `[data-empty="false"]`、padding 回 12px、文字色 `rgb(253,253,253)`＝`--foreground`、無截斷。設定頁 120px 窄時間欄 `scrollWidth === clientWidth`（未溢出）。
+- 已知落差：design-system 頁沒有 `data-i18n` 執行環境，該頁 demo 的 placeholder 固定顯示英文 "Pick a date"，產品頁不受影響（已寫進元件卡的 Note 欄）。
+
 ## 2026-07-21 · 上架設定改收合式選擇器：radio-list 新增 `--collapsible` 變體（A 規格對齊，Figma 856-22782）
 
 使用者提供 Figma node 856-22782 的兩態（收合／展開＋hover），要求把上架設定做進原型。原本（2026-07-17）是三個選項恆展開的 `radio-list`；新版收合時只顯示目前選項＋chevron，點一下才展開完整清單。使用者裁示：五個消費頁一次全改（避免同一角色兩種做法），展開時已選項在觸發列與清單各出現一次的重複照 Figma 保留。

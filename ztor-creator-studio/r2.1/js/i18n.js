@@ -257,6 +257,10 @@
     'notif.announce.meta':    { en: 'Official update merged into this center.', zh: '官方公告已併入通知與待辦中心。' },
     'notif.announce.time':    { en: 'Mon',                    zh: '週一' },
 
+    /* ─── Shared field copy ───────────────────────────────── */
+    /* 日期／時間欄位的 placeholder（partials/date-input.js 注入，全站共用一句）*/
+    'field.pick-date':        { en: 'Pick a date',           zh: '選擇日期' },
+
     /* ─── Common buttons / chips ──────────────────────────── */
     'btn.export':             { en: 'Export',                zh: '匯出' },
     'btn.export-csv':         { en: 'Export CSV',            zh: '匯出 CSV' },
