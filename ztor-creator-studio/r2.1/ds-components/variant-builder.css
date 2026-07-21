@@ -27,19 +27,26 @@
 
 /* ---- option set rows（收合態，2026-07-20；Mobbin: Webflow Ecommerce）----
    多規格常有 2–3 組選項（顏色 × 尺寸 × 材質），每組都完整展開會把版面撐得很長，
-   而下面還接著逐規格表。改成「設定好的選項收成一行、只有正在編輯的展開」：
-     .option-set                  外框容器，逐列 hairline 分隔
-       .option-set__row           一組選項一行：圖示＋名稱＋值摘要＋編輯
+   而下面還接著逐規格表。改成「設定好的選項收成一行、只有正在編輯的展開」。
+
+   2026-07-21 修訂（使用者裁示）：原本做成「單一外框容器＋逐列 hairline 分隔」，
+   造成兩個問題——列與列之間的分隔線在圓角容器裡看起來像多了一條左邊界，
+   且最後一列（新增選項）沒有自己的圓角。改為**每列各自是獨立的圓角方塊**，
+   以 gap 分隔、不共用外框；圓角與底色一律對齊 .input（--radius / --input-surface），
+   讓這一區讀起來跟其他表單欄位同一族，而不是另一種深色卡。
+
+     .option-set                  垂直堆疊容器（只負責 gap，無邊框無底色）
+       .option-set__row           一組選項一列：圖示＋名稱＋值摘要＋編輯
          .option-set__name        選項名（如 尺寸）
-         .option-set__values      值摘要，以逗號串接（如 S、M、L）
+         .option-set__values      值摘要，以頓號串接（如 S、M、L）
          .option-set__action      編輯入口（唯讀情境不出現）
        .option-set__add           最後一列＝新增選項（唯讀情境不出現）
    唯讀情境（商品明細，選項建立後鎖定 UIA-056）只渲染 __row、不給 __action／__add。
    ------------------------------------------------------------------ */
 .option-set {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
 }
 .option-set__row,
 .option-set__add {
@@ -47,11 +54,10 @@
   align-items: center;
   gap: var(--sp-10);
   padding: var(--sp-12);
-  background: var(--muted);
-  border-top: 1px solid var(--border);
+  background: var(--input-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
-.option-set__row:first-child,
-.option-set__add:first-child { border-top: 0; }
 
 .option-set__row .ztor-icon,
 .option-set__add .ztor-icon {
@@ -100,13 +106,33 @@
 }
 .option-set__add:hover { color: var(--foreground); background: var(--accent); }
 
-/* 展開編輯中的那一組：沿用 .variant-option 編輯器，但塞進容器裡不重複外框 */
+/* 展開編輯中的那一組：沿用 .variant-option 編輯器，圓角與底色對齊同一族 */
 .option-set .variant-option {
-  border: 0;
-  border-top: 1px solid var(--border);
-  border-radius: 0;
+  background: var(--input-surface);
+  border-radius: var(--radius);
 }
-.option-set .variant-option:first-child { border-top: 0; }
+
+/* 值輸入＝有邊框的實體欄位，已加入的值排在框外下方（2026-07-21；
+   Mobbin: Etsy Item options / Julienne Edit recipe——主流做法是輸入框歸輸入框、
+   已選值另成一列，而不是把膠囊塞進框內與游標爭空間）。 */
+.variant-option__entry {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  padding: var(--sp-8) var(--sp-10);
+  outline: none;
+  transition: border-color var(--duration) var(--easing),
+              box-shadow var(--duration) var(--easing);
+}
+.variant-option__entry::placeholder { color: var(--muted-foreground); }
+.variant-option__entry:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+}
 
 /* ---- option rows ---- */
 .variant-option {
