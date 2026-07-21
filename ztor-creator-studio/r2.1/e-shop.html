@@ -71,20 +71,29 @@
      2026-07-21 改照 Figma node 856:25546：撤掉原本「跟頁面同色、貼頂滿版、方底邊＋edge-shadow」
      的處理（取代舊 .alert--page-top／.edge-shadow／⚠ icon 那套），改成跟工作列同語言的實色殼卡——
      `--surface-shell` 底＋四角全圓角 16px＋自身 12/16 內距，不再需要 icon 或陰影撐視覺。
-     `margin-inline` 用跟 .page 同一條「內容欄置中、窄螢幕至少留 28px」公式（.alert--page-top 舊版
-     是用 padding 做同樣的事，這裡改 margin，讓 28px 那段留白真的透出頁面底色，色塊本身只到內容欄
-     寬度為止，才會跟工作列的圓角卡對齊、不貼齊 .main 邊緣）。 */
+     兩層結構：外層 `#eshop-stock-bar` 只負責定位（跟 `.page` 同一套 max-width(1280)+margin:auto+
+     padding-inline(28) 配方），內層 `__card` 才是視覺卡（底色＋圓角＋自身內距）。
+     （2026-07-21 修正：原本單層用 `margin-inline: max(28px, calc((100% - 1280px)/2 + 28px))` 在
+     寬螢幕下量到 bug——`.main` 是 flex 直欄容器，這個元素被 stretch 撐開時，瀏覽器算出的寬度沒有扣掉
+     這個 margin，導致卡片右側溢出 `.main`（實測：viewport 2400px 時 barWidth 等於整個 mainWidth、
+     完全沒扣掉左右 margin，右緣溢出視窗）。`.page` 本身用的 max-width+margin:auto+padding 是全站已
+     驗證沒有這個問題的寫法，改採同一配方即可避開，不必再猜瀏覽器的 flex 百分比 margin 解析順序。） */
   #eshop-stock-bar .alert__title { font-weight: var(--fw-medium); }
   .eshop-stock-bar__names { color: color-mix(in srgb, var(--muted-foreground) 62%, var(--card)); }
   .eshop-stock-bar__link { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
   .eshop-stock-bar__link:hover { color: var(--primary); }
   #eshop-stock-bar .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
-  #eshop-stock-bar {
+  .eshop-stock-bar-outer {
     position: sticky;
     top: 0;
     z-index: 6;
-    margin-inline: max(28px, calc((100% - 1280px) / 2 + 28px));
+    width: 100%;   /* 必須顯式設，靠 flex 預設 stretch 撐不滿（跟 .page 同一套寫法，見上方註解） */
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 28px;
     margin-bottom: 8px;
+  }
+  .eshop-stock-bar__card {
     padding: 12px 16px;
     background: var(--surface-shell);
     border-radius: var(--radius-xl);
@@ -290,13 +299,18 @@
     <div class="eshop-corner-mask" aria-hidden="true"></div>
 
     <!-- F2 低庫存通知條 · spec §5.1.5 F2（alert--bar，sticky 常駐、× 關閉）。
-         .main 第一個子元素 → 頂欄之下、白色面板頂端、全寬；分割預覽開啟時隨左主欄壓縮 -->
-    <div class="alert alert--bar when-data" role="status" id="eshop-stock-bar">
-      <div class="alert__body">
-        <!-- 單句格式（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。 由 JS 組句、隨語言重建 -->
-        <div class="alert__title" data-eshop-stock-msg></div>
+         .main 第一個子元素 → 頂欄之下、白色面板頂端、全寬；分割預覽開啟時隨左主欄壓縮。
+         外層 #eshop-stock-bar 只管定位（跟 .page 同一套 max-width+margin:auto+padding，寬螢幕下經測
+         `margin-inline: max(28px, calc(...))` 在這個 flex 直欄容器裡量到的寬度不會扣掉 margin、
+         導致右側溢出，改用 .page 已驗證沒問題的寫法）；視覺卡（底色＋圓角＋內距）交給內層 __card。 -->
+    <div class="eshop-stock-bar-outer when-data" id="eshop-stock-bar">
+      <div class="alert alert--bar eshop-stock-bar__card" role="status">
+        <div class="alert__body">
+          <!-- 單句格式（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。 由 JS 組句、隨語言重建 -->
+          <div class="alert__title" data-eshop-stock-msg></div>
+        </div>
+        <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#eshop-stock-bar').remove()">×</button>
       </div>
-      <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#eshop-stock-bar').remove()">×</button>
     </div>
 
     <div class="page">
