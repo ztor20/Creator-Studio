@@ -3,29 +3,29 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create auction · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260721c"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/button.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/card.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/input.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/preview-card.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/radio-list.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/tag-input.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/preview-column.css?v=20260721c">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260721c">
-<link rel="stylesheet" href="shared.css?v=20260721c">
+<script src="js/theme.js?v=20260721d"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/button.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/card.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/input.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=20260721d">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260721d">
+<link rel="stylesheet" href="shared.css?v=20260721d">
 <style>
   /* create-auction 專屬樣式。無卡片區段／radio 卡／control row／form-grid／upload hero
      用 ds-components（form-section / radio-card / control-row / form-grid / upload-tile）；
@@ -353,19 +353,26 @@
       <!-- 上架設定（spec 5.1.5.10 shared operations · D144；位置與選法 2026-07-17 微調）：移到預覽卡下方，改 radio-list（不開拍／立刻開拍／定時開拍），選「定時開拍」才展開開拍時間。拍賣不設排程特價（競標無固定售價可折）。 -->
       <div class="card">
         <div class="card__head"><h3 class="card__title" data-i18n="cp.listing.title">Listing settings</h3></div>
-        <div class="radio-list" id="ca-start-mode">
-          <button class="radio-list__item" type="button" data-ca-start="none">
-            <span class="radio-list__dot"></span>
-            <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.none">Don't start</span><span class="radio-list__sub" data-i18n="ca.start.none-sub">Save as draft, no auction yet</span></span>
-          </button>
-          <button class="radio-list__item radio-list__item--active" type="button" data-ca-start="now">
+        <div class="radio-list radio-list--collapsible" id="ca-start-mode">
+          <button class="radio-list__trigger" type="button" aria-expanded="false">
             <span class="radio-list__dot"></span>
             <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.now">Start now</span><span class="radio-list__sub" data-i18n="ca.start.now-sub">Bidding opens right after saving</span></span>
+            <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
           </button>
-          <button class="radio-list__item" type="button" data-ca-start="schedule">
-            <span class="radio-list__dot"></span>
-            <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Schedule</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Auto-starts at the time you set</span></span>
-          </button>
+          <div class="radio-list__options" hidden>
+            <button class="radio-list__item" type="button" data-ca-start="none">
+              <span class="radio-list__dot"></span>
+              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.none">Don't start</span><span class="radio-list__sub" data-i18n="ca.start.none-sub">Save as draft, no auction yet</span></span>
+            </button>
+            <button class="radio-list__item radio-list__item--active" type="button" data-ca-start="now">
+              <span class="radio-list__dot"></span>
+              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.now">Start now</span><span class="radio-list__sub" data-i18n="ca.start.now-sub">Bidding opens right after saving</span></span>
+            </button>
+            <button class="radio-list__item" type="button" data-ca-start="schedule">
+              <span class="radio-list__dot"></span>
+              <span class="radio-list__text"><span class="radio-list__title" data-i18n="ca.start.schedule">Schedule</span><span class="radio-list__sub" data-i18n="ca.start.schedule-sub">Auto-starts at the time you set</span></span>
+            </button>
+          </div>
         </div>
         <div class="field" data-ca-start-fields hidden style="margin-top:12px;margin-bottom:0">
           <div class="field__label"><span data-i18n="ca.start.time">Start time</span> <span class="field__req">*</span></div>
@@ -593,14 +600,13 @@
     });
   });
 
-  /* 上架設定 radio-list（移至預覽欄，2026-07-17）：選「定時開拍」才展開開拍時間欄（spec 5.1.5.10 shared operations · D144）*/
+  /* 上架設定 radio-list（移至預覽欄，2026-07-17；2026-07-21 改收合式）：選「定時開拍」才展開開拍時間欄
+     （spec 5.1.5.10 shared operations · D144）。開合與選中狀態由 partials/radio-list.js 統一處理。 */
   const caSm = document.getElementById('ca-start-mode');
-  if (caSm) caSm.querySelectorAll('.radio-list__item').forEach(btn => btn.addEventListener('click', () => {
-    caSm.querySelectorAll('.radio-list__item').forEach(b => b.classList.remove('radio-list__item--active'));
-    btn.classList.add('radio-list__item--active');
+  if (caSm) caSm.addEventListener('radio-list:change', e => {
     const f = document.querySelector('[data-ca-start-fields]');
-    if (f) f.hidden = btn.dataset.caStart !== 'schedule';
-  }));
+    if (f) f.hidden = e.detail.item.dataset.caStart !== 'schedule';
+  });
 
   /* Cheat Codes（devtools）切換 Skip validation → 重算就緒 gating */
   document.addEventListener('ztor:devstate-changed', renderReadiness);
@@ -625,10 +631,11 @@
   setKind(initKind);
 })();
 </script>
-<script src="js/icons.js?v=20260721c"></script>
-<script src="js/i18n.js?v=20260721c"></script>
-<script src="partials/wizard-chrome.js?v=20260721c"></script>
-<script src="js/reveal.js?v=20260721c"></script>
-<script src="js/devtools.js?v=20260721c"></script>
+<script src="js/icons.js?v=20260721d"></script>
+<script src="js/i18n.js?v=20260721d"></script>
+<script src="partials/wizard-chrome.js?v=20260721d"></script>
+<script src="partials/radio-list.js?v=20260721d"></script>
+<script src="js/reveal.js?v=20260721d"></script>
+<script src="js/devtools.js?v=20260721d"></script>
 </body>
 </html>

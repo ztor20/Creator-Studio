@@ -6,6 +6,25 @@
 
 ---
 
+## 2026-07-21 · 上架設定改收合式選擇器：radio-list 新增 `--collapsible` 變體（A 規格對齊，Figma 856-22782）
+
+使用者提供 Figma node 856-22782 的兩態（收合／展開＋hover），要求把上架設定做進原型。原本（2026-07-17）是三個選項恆展開的 `radio-list`；新版收合時只顯示目前選項＋chevron，點一下才展開完整清單。使用者裁示：五個消費頁一次全改（避免同一角色兩種做法），展開時已選項在觸發列與清單各出現一次的重複照 Figma 保留。
+
+- **【A】** `ds-components/radio-list.css` 新增 `--collapsible` 變體：外框 1px `--border` ＋ `--radius-xl`、`.radio-list__trigger`（圓點恆為已選態＋文字＋`.radio-list__chevron`）、`.radio-list__options[hidden]`；展開時 `[data-open="true"]` 讓觸發列填 `--input-surface`（比卡亮一階＝作用中的控制面，沿用 Q19 的 filled 語言）、chevron 轉 180°。base 變體（選項恆展開）保留未動。
+- **【A】** 新增 `partials/radio-list.js`：自動 mount 全站 `.radio-list--collapsible`，統一處理開合、把已選列的文字與 `data-i18n` key 同步到觸發列（切語言由 `applyI18n` 重填，不會殘留單語）、外點與 Esc 關閉、派發 `radio-list:change`。五頁原本各自複製的「移除 active／加 active」邏輯全部退場，頁面只留自己的欄位揭示（選「定時上架／定時開拍」才顯示時間欄）。
+- **【B】** 同一輪把 `.radio-list__item:hover` 的底色由 `--muted` 改回 `--accent`——暗色 `--muted`（#161718）比卡片 #212223 還深，hover 讀起來像凹下去；Q9 早就裁決「互動 hover 統一 accent」，這支元件建立時漏跟，Figma 的 hover 也是亮一階。
+- 影響範圍：五個消費頁（`create-product`／`create-bundle`／`create-auction` 預覽卡下方、`product-detail`／`bundle-detail` 定價與庫存頁籤）＋ `design-system.html` 卡（base 與 `--collapsible` 兩個 demo）＋ `design-system.md` 條目。拍賣頁語彙仍是「不開拍／立刻開拍／定時開拍」，只換選法、不動文案。
+- 待裁決：外框與內部列的圓角取了 `--radius-xl`(16) 對齊 Figma 的 18，與 Q16「控制項／清單列維持 6px」相衝，已記為 `STYLE-DECISIONS.md` Q22，暫依 Figma。
+
+## 2026-07-21 · 狀態徽章新增 `--status-error` token，與 `--destructive` 分離（B 反饋導入，全站共用元件）
+
+使用者附圖指出電子商店清單的狀態標籤（草稿／庫存過低／上架中）顏色要改，附 Figma 參考（node 845:11071）。抿出三色實際值：草稿（`badge--neutral`）與上架中（`badge--success`）跟現有 token 完全對上（`#161718`/`#B9B9B9`、`#4ADE80`）不用改；只有庫存過低（`badge--error`）暗色不對——目前用 `--destructive`（`#E7000B`，深底小字徽章讀不清），Figma 要的是較亮的 `#FF3D47`。
+
+- **【B】** `_tokens.css` 新增 `--status-error`（亮色 `#DA314A`，暫同 `--destructive`；暗色 `#FF3D47`，對齊 Figma），語意上與 `--destructive`（刪除等破壞性操作，如刪除鈕、danger dropdown item）分開——這兩者原本就是兩個概念，2026-06-25 那筆 `--status-error→--destructive` 改名只是對齊 shadcn 命名、當時值本來就相同，不是「兩者永遠同色」的設計裁決，故拆開不算推翻舊決策。
+- `.badge--error`／`.ztor-badge--error`／`.ztor-dot--error` 改讀 `--status-error`（原讀 `--destructive`）；`.badge--success` 與 `.ztor-badge--error`／`--success` 的 tint 百分比順手從 14%／12% 對齊到 Figma 量到的 16%，`--destructive` 本身與其餘破壞性操作用途（刪除鈕、danger 選單項、負數金額等）完全不動。
+- 影響範圍：`badge.css`／`_tokens.css` 是全站共用元件，凡用 `.badge--error` 的頁面（e-shop／orders／earnings／fans-crm／projects／event-detail／product-detail／settings…）狀態標籤紅色同步變亮；未動 `.alert--error`、`.kpi--destructive`、`.data-list__amount--neg` 等其他仍合理沿用 `--destructive` 的地方（範圍收在使用者實際指出的狀態徽章，不做無關擴大）。
+- 驗證：Playwright 在 e-shop.html 與 orders.html 分別量測 `.badge--error`／`--success`／`--neutral` computed color，`rgb(255,61,71)`／`rgb(74,222,128)`／`rgb(185,185,185)` 與 Figma 三色文字值完全吻合；check_ds_sync 全 PASS（含新 token 的 md↔html 文件化檢查）。
+
 ## 2026-07-21 · 電子商店主工作列改實色殼卡（A 規格對齊，取代 720:2165 版）
 
 使用者提供新版 Figma 參考（node 845:11081），指出「商品/組合/競標」分頁列＋右側動作圖示這條工作列的底色樣式跟目前不一樣。

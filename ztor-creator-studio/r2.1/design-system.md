@@ -393,7 +393,8 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Border** (hairlines) | `--border` | `#EAEAEA` | cooler neutral（2026-07-13 體檢：更淡，配微暖畫布靠色階分層） |
 | **Ring** (focus outline) | `--ring` | `#ffa33f` | orange (=primary), by request 2026-06-02 |
 | **Status — success** | `--status-success` | `#22C55E` | green.500 [ext] |
-| **Status — error** | `--destructive` | `#DA314A` | red.500 |
+| **Status — error** (badges/pills) | `--status-error` | `#DA314A`（dark `#FF3D47`）| 2026-07-21 對齊 Figma 845:11071：與破壞性操作色分開，暗色改較亮的紅（原 `#E7000B` 深底徽章小字不易讀）；亮色暫同 `--destructive` [ext] |
+| **Destructive** (delete / danger actions) | `--destructive` | `#DA314A` | red.500；刪除鈕、danger dropdown item、破壞性確認——不用於狀態徽章（見上） |
 | **Status — info** | `--status-info` | `#266DF0` | blue.500 [ext] |
 | **Status — warning** (data dots only · NOT UI fill) | `--status-warning` | `#F8D749` | yellow-warning — visually close to `--primary`, reserved for dashboard status dots [ext] |
 | **Status — accent** | `--status-accent` | `#8B5CF6` | purple — extra category hue [ext] |
@@ -505,7 +506,8 @@ Principles every component obeys (not a token scale; html 版各附 live 示例)
 | `--border` | `#EAEAEA` | `#2C2D2E` | hairline · 2026-07-13 light 更淡（原 `#E5E5E5`）；dark 2026-06-25 實色化、2026-07-17 midnight-v2（原 `#3A3A3C`） |
 | `--ring` | `#ffa33f` | `#ffa33f` | 亮暗同色：dark 於 2026-06-25 起不再覆寫成白、改繼承品牌橘 |
 | `--status-success` | `#22C55E` | `#4ADE80` | pure-RGB green for dark（2026-07-13 體檢提亮，原 `#00A63E`） |
-| `--destructive` | `#DA314A` | `#E7000B` | pure-RGB red for dark |
+| `--destructive` | `#DA314A` | `#E7000B` | pure-RGB red for dark；破壞性操作（刪除鈕等），不用於狀態徽章 |
+| `--status-error` | `#DA314A` | `#FF3D47` | 2026-07-21 新增：狀態徽章專用紅，暗色比 `--destructive` 亮（對齊 Figma 845:11071，深底小字徽章的 `#E7000B` 太深不易讀） |
 | `--status-info` | `#266DF0` | `#5896F3` | lighter blue for dark contrast |
 | `--status-warning` | `#F8D749` | `#F3CF58` | slightly cooler yellow |
 | `--shadow-card` | rim + drop on white | drop only on dark | white hairline rim inverted |
@@ -649,7 +651,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
 | Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
-| Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--muted`, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title; JS toggles `.radio-list__item--active` across the group + reveals the schedule field on "schedule". Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock) | [radio-list.css](./ds-components/radio-list.css) |
+| Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--accent`（2026-07-21 由 `--muted` 改回 Q9 裁決值——暗色 `--muted` 比卡還深、hover 像凹下去）, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title. **變體 `--collapsible`（2026-07-21 · Figma 856-22782）**：收合式，`.radio-list__trigger`（圓點＋文字＋`.radio-list__chevron`）＋`.radio-list__options[hidden]`，外框 1px `--border` ＋ `--radius-xl`，展開時觸發列填 `--input-surface`、chevron 轉 180°、`[data-open]` 標開合；展開時已選項在觸發列與清單各出現一次（Figma 原設計、使用者裁示保留）。行為由 [partials/radio-list.js](./partials/radio-list.js) 統一接線（開合、觸發列文字＋`data-i18n` 同步、外點與 Esc 關閉、派發 `radio-list:change`），頁面只留自己的欄位揭示邏輯。Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock)，五頁 2026-07-21 起一律用 `--collapsible` | [radio-list.css](./ds-components/radio-list.css) |
 | Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
@@ -811,7 +813,7 @@ No hover/focus/disabled — display-only.
 | `.badge` | Flat neutral tag, `--radius-md`, no dot / no ring |
 | `.badge__dot` | `display:none` (legacy; the soft-tag look carries no dot) |
 | `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
-| `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`) |
+| `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`; `--error` = `--status-error`, **not** `--destructive`, since 2026-07-21) |
 | `.badge--warning` | 22% warning tint; text = `color-mix(--status-warning 60%, --foreground)` (hue too light for direct text; 2026-07-16 對比優化 18→22% tint、50→60% text，text 與 checkin-stat 黃一致) — added 2026-06-11 |
 | `.badge--neutral` | `--muted` background |
 | `.ztor-badge` (+ `--success`/`--error`/`--info`/`--warning`) | Compact docs badge with status tints |
@@ -819,7 +821,7 @@ No hover/focus/disabled — display-only.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--muted` + `color-mix` of `--status-success` / `--destructive` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
+- bg `--muted` + `color-mix` of `--status-success` / `--status-error` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
 
 **Usage** — Surface a state or a category at a glance (payout status, transaction state, live/draft; IP type, fan tier). Avoid for clickable filters — use Chip (§4.5) — and never as a button.
 
@@ -877,7 +879,7 @@ No interactive states — purely decorative.
 
 **Token usage** (→ Pillar 2 Role)
 
-- color `--status-success` / `--destructive` / `--status-info` / `--status-warning` / `--foreground` (black variant) · fill via `currentColor` · radius `--radius-pill`
+- color `--status-success` / `--status-error` / `--status-info` / `--status-warning` / `--foreground` (black variant) · fill via `currentColor` · radius `--radius-pill`
 
 **Usage** — Use to tag/legend items in tables and lists (e.g. color-code brands in the dashboard demo). Avoid as a standalone status badge — pair with a text label.
 
