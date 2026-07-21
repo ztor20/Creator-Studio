@@ -143,7 +143,10 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 
 .app-sidebar__link {
   display: flex; align-items: center; gap: var(--sp-10); width: 100%;
-  padding: 9px var(--sp-12); border: 0; background: transparent; cursor: pointer;
+  /* 2026-07-21 Q25：原 padding 9px ＋ fs-14 × lh-snug(1.2) 撐出 34.8px，改吃 token 固定 36，
+     與同一條側欄裡的 .app-sidebar__action（含搜尋列）齊平。 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-12); border: 0; background: transparent; cursor: pointer;
   border-radius: var(--radius-lg); text-align: left;  /* 已選/hover 圓角矩形（2026-06-13：pill 變高後全膠囊 9999px 顯得太圓，改回較小圓角 --radius-lg 8px） */
   font-size: var(--fs-14); line-height: var(--lh-snug); font-weight: var(--fw-medium);
   color: var(--foreground-muted); text-decoration: none;
@@ -181,7 +184,11 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 .app-sidebar__subnav > div { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-6); }  /* 2026-06-13：加大子項間距 */
 /* 子項：pill 與主項同尺寸（同 padding-y/全寬/圓角）；文字 padding-left 40px 對齊主項(12+18 icon+10 gap)，靠縮排與無 icon 區分層級 */
 .app-sidebar__sub-link {
-  display: block; padding: 9px var(--sp-12) 9px var(--sp-40); border-radius: var(--radius-lg);  /* 同主項圓角（2026-06-13） */
+  /* 2026-07-21 Q25：原 padding 9px ＋ fs-13 × lh-snug(1.2) 撐出 33.6px，改吃 token 固定 36＝與主項同高。
+     display 由 block 改 flex：鎖高之後 block 的文字會貼齊頂端、不會自動垂直置中。
+     子項與主項的區別交給縮排（padding-left 40）與字級，不靠高度差。 */
+  display: flex; align-items: center; height: var(--control-h-sm);
+  padding: 0 var(--sp-12) 0 var(--sp-40); border-radius: var(--radius-lg);  /* 同主項圓角（2026-06-13） */
   font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted); text-decoration: none;
 }
 .app-sidebar__sub-link:hover { background: var(--accent); color: var(--foreground); }
@@ -194,7 +201,9 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 }
 .app-sidebar__action {
   display: flex; align-items: center; gap: var(--sp-10); width: 100%;
-  padding: 9px var(--sp-10); border: 0; background: transparent; cursor: pointer;
+  /* 2026-07-21 Q25：原 padding 9px 撐出 37.5px（側欄搜尋也吃這條），改吃 token 固定 36 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-10); border: 0; background: transparent; cursor: pointer;
   border-radius: var(--radius-md); text-align: left;
   font-size: var(--fs-13); color: var(--foreground-muted); font-family: inherit;
   text-decoration: none; position: relative;
