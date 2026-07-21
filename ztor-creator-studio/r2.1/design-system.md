@@ -1277,7 +1277,7 @@ Static callout — no interactive states.
 
 **Variants** — outline (default) · filled (`-fill` glyphs, e.g. `check-circle-fill`).
 
-**Sizes** — semantic scale: 12px (`--xs`) · 14px (`--sm`) · 16px base · 20px (`--md`) · 24px (`--lg`). Icon buttons use the 16px base glyph; size the icon for its meaning, not the button box.
+**Sizes** — semantic scale: 12px (`--xs`) · 14px (`--sm`) · 16px base · 20px (`--md`) · 24px (`--lg`). Icon buttons (`.btn--icon`, `.btn--icon-circle`) use the 20px `--md` glyph — raised from 16px on 2026-07-21 because the base glyph read too small inside the 32／36px box. Elsewhere, size the icon for its meaning, not the button box.
 
 **Registry** — hand-curated set in `icons.js` (111 glyphs) + the **full Tabler library (6,166 = 5,112 outline + 1,054 filled) in `icons-all.js`**, merged into the registry when that file is loaded (design-system.html only; product pages stay lean). Classified in §4.9 as **in use (38)** vs **not in use (~1,683)**. An icon renders as the literal tag if its name isn't registered.
 

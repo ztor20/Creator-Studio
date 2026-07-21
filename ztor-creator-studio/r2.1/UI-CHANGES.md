@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-07-21 · Icon 按鈕字符 16px → 20px（B 反饋導入）
+
+使用者看電子商店工具列（搜尋／商店設定／預覽）反映「這幾個 icon 要稍微大一點」。判斷是元件層問題而非單頁問題：那三顆是 `.btn--icon.btn--sm`，吃的是 `button.css` 的全站通則，同樣的偏小情形在其他 11 頁一樣存在。與使用者確認後採全站一起調，不做單頁特例。
+
+- **【B】** `ds-components/button.css`：`.btn--icon .ztor-icon` 與 `.btn--icon-circle .ztor-icon` 由 16px 改為 **20px**（語意階梯的 `--md`，不新增體系外數值）。32px 框內填充率 50% → 62.5%，36px 框內 44% → 56%。
+- **【B】** 一併移除 `.btn--icon.btn--xs .ztor-icon` 那條 16px 覆寫。它原本與基準同值、屬無作用規則；基準上調後若留著，會讓 `--xs` 與 `--sm`（兩者框都是 32×32）出現兩種字符大小。移除後統一吃基準。
+- **牽動範圍**：`.btn--icon.btn--sm` 36 處／12 頁、`.btn--icon.btn--xs` 74 處／9 頁、`.btn--icon-circle` 14 處／1 頁、單獨 `.btn--icon` 19 處／2 頁，合計約 143 顆按鈕。全部走元件層一次改完，無頁面級覆寫。
+- **【B】** DS 文件同步：`design-system.md` §4.9 Sizes 與 `design-system.html` 的 `.ztor-icon` 尺寸矩陣說明，原本明寫「icon buttons 維持 16px 基準字符」，已改為 20px `--md` 並註明調整原因。
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**，143 顆按鈕的實際觀感尚未逐頁確認。
+
+
 ## 2026-07-21 · Icon 圖庫由 Lucide 全面換成 Tabler（D infra）
 
 使用者指示「全部換成 Tabler」。改法選擇「只換皮、不換名」：registry 的 key 一律沿用換庫前的舊名（`trash-2`、`more-horizontal`、`check-circle`…），`data-lucide` 屬性名也不動，只把 key 底下的 SVG 內容換成 Tabler 的。因此 **39 頁、2,630 處 icon 引用一行都沒改**，風險集中在單一檔案而不是散在全站。兩套圖庫同為 24×24 網格、2px 線條基準，幾何相容，`applyIcons()` 注入的 1.2px stroke 維持不變。
