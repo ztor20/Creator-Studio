@@ -9,9 +9,12 @@
      <details class="dropdown">
        <summary class="btn btn--primary">＋ New ▾</summary>
        <div class="dropdown__menu" role="menu">
-         <a class="dropdown__item" role="menuitem" href="…">Create new product</a>
+         <a class="dropdown__item" role="menuitem" href="…"><i data-lucide="plus" class="ztor-icon"></i>Create new product</a>
        </div>
      </details>
+   Every .dropdown__item leads with a matching .ztor-icon (2026-07-21 使用者裁示) — the only
+   exception is .dropdown__item--toggle (a switch row, not an action item, e.g. e-shop's
+   「在商店上架」List-in-shop toggle).
    ============================================================ */
 
 .dropdown {
@@ -23,7 +26,10 @@
 .dropdown > summary { list-style: none; }
 .dropdown > summary::-webkit-details-marker { display: none; }
 
-/* floating panel — below trigger, right-aligned */
+/* floating panel — below trigger, right-aligned.
+   2026-07-21 使用者裁示：去掉外框線——面板已有 --shadow-float，那顆 token 本來就內建一圈
+   0 0 0 1px 的軟性描邊負責畫出邊緣（見 design-system.md「multi-layer shadows to define
+   edges without ever drawing a border」），再疊一條真正的 border 是重複畫兩次邊。 */
 .dropdown__menu {
   position: absolute;
   right: 0;
@@ -32,14 +38,19 @@
   min-width: 230px;
   padding: var(--sp-6);
   background: var(--card);
-  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-float);
 }
 
-/* menu item */
+/* menu item · 2026-07-21 使用者裁示：每個選項前面都要有對應 icon（唯一例外是
+   --toggle 變體，如 e-shop 列的「在商店上架」——那是開關列、不是一般動作項，見下方）。
+   改 display:flex 讓 icon（.ztor-icon，16px，預設 currentColor）跟文字同一行對齊；
+   icon 顏色不額外指定、直接吃 currentColor——一般項跟著 --foreground、--danger 項自動變紅，
+   不用另外覆寫。 */
 .dropdown__item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
   padding: 9px var(--sp-10);
   border-radius: var(--radius-md);
   color: var(--foreground);
@@ -73,12 +84,22 @@ button.dropdown__item {
 
 /* --toggle：選單內的「開關列」變體（menuitemcheckbox）——左短標籤、右控件（switch）。
    點列＝切換，通常配 data-keep-open 不收選單。用於 E-Shop 商品列的「在商店上架」開關。
-   Promoted 2026-07-01 from e-shop.html inline（列操作 kebab 內上架/下架切換）。 */
-.dropdown__item--toggle {
+   Promoted 2026-07-01 from e-shop.html inline（列操作 kebab 內上架/下架切換）。
+   2026-07-21 使用者裁示：跟下面的一般動作項之間要有分隔線——開關是切換狀態、其餘是會跑
+   導頁／JS 的動作，語意不同的兩組不該連在一起看不出界線。用 border-bottom＋margin-bottom
+   （不用 padding-bottom，維持跟其他項一致的 9px 內距）。目前 markup 裡 --toggle 一律是選單
+   第一項、後面必定還有其他項，故不需要 :last-child 例外。
+   選擇器刻意寫 `.dropdown__item.dropdown__item--toggle`（兩個 class）而非單一
+   `.dropdown__item--toggle`：這個變體的 markup 一律是 `<button>`，上面 `button.dropdown__item`
+   有 `border: 0` 把四邊全部歸零，其 specificity（元素+class）比單一 class 高，會贏過原本寫法、
+   讓 border-bottom 完全不生效（實測發生過）；改兩個 class 疊加，specificity 更高，才穩定蓋過去。 */
+.dropdown__item.dropdown__item--toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-16);
+  margin-bottom: var(--sp-6);
+  border-bottom: 1px solid var(--border-soft);
 }
 .dropdown__item--toggle .switch { flex: none; }
 
