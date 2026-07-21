@@ -154,7 +154,11 @@
 @keyframes upl-spin { to { transform: rotate(360deg); } }
 
 /* 已上傳 hover：替換／AI 優化／刪除 */
-.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: color-mix(in srgb, var(--foreground) 42%, transparent); opacity: 0; transition: opacity .15s ease; z-index: 4; }
+/* 遮罩＝深色壓暗＋毛玻璃（2026-07-21 使用者裁示）。原本混 --foreground 42%，
+   暗色模式下 --foreground 是亮色，遮罩會變成一層灰白霧、圖片反而被洗淡。
+   改用既有的浮層配方 --overlay-tint（黑 45%）＋ --overlay-blur，與 modal 背景同一套語彙，
+   兩個主題都得到「圖片退到後面、按鈕站到前面」的效果。 */
+.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: var(--overlay-tint); -webkit-backdrop-filter: var(--overlay-blur); backdrop-filter: var(--overlay-blur); opacity: 0; transition: opacity .15s ease; z-index: 4; }
 .upload-tile[data-upload].is-filled .upload-tile__actions,
 .upload-tile[data-upload].is-optimized .upload-tile__actions { display: flex; }
 .upload-tile[data-upload].is-filled:hover .upload-tile__actions,

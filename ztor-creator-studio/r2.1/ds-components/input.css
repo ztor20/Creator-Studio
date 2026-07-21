@@ -7,8 +7,14 @@
    design-system.html 的 demo 同輪已改用真身 .input / .textarea。
    真身規則原住 shared.css:805-835，後續依元件對齊調整為陰影邊線與 4px focus glow。此檔本身非棄用檔，持續使用中。 */
 
+/* 高度 2026-07-21（STYLE-DECISIONS Q25）：由「padding 撐開」改成「吃 --control-h-* token」。
+   舊做法是 padding 9×2 ＋ font-size 14 × line-height 1.5 = 39px——算出來一定有零頭，
+   而且各元件各自調 padding 就會長出 41.5／37.5／35.5 這些對不起來的高度（盤點見 docs/input高度盤點-2026-07-21.md）。
+   單行控件一律 height: var(--control-h-sm)＝36px，與 .btn 同值：工具列裡搜尋框與按鈕必須齊平，
+   這也讓 _tokens.css「同尺寸的 input 與 button 等高」那句註解由空話變成事實。
+   多行的 .textarea 不吃固定高度（見下方，維持 padding ＋ min-height）。 */
 .input, .textarea, .select {
-  --input-pad-y: 9px;
+  --input-pad-y: 0px;
   --input-pad-x: var(--sp-12);
   --input-prefix-pad-x: var(--sp-32);
   --select-arrow-pad-x: 34px;
@@ -29,7 +35,9 @@
 .input:focus, .textarea:focus, .select:focus {
   box-shadow: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
 }
-.textarea { --input-pad-y: var(--sp-12); min-height: 100px; resize: vertical; }
+/* 單行控件＝固定高度（Q25）。textarea 例外：多行必須靠 padding ＋ min-height 撐開。 */
+.input, .select { height: var(--control-h-sm); }
+.textarea { --input-pad-y: var(--sp-12); min-height: 100px; resize: vertical; height: auto; }
 .input--with-prefix { padding-left: var(--input-prefix-pad-x); }
 
 /* disabled — 建立後固定不可編輯（D137）等鎖定欄位的唯讀呈現：靜音底、不可操作游標，
