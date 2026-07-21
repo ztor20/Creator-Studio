@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-07-21 · 電子商店商品清單移除規格數／限量徽章（C 撤除）
+
+使用者看過上一輪（UIA-066 那筆）改完的畫面後回饋：Coastline tee／hoodie 名稱後的「4 種規格」「6 種規格」徽章、Coastline acetate 名稱後的「限量」徽章都是多餘的——庫存欄已經是「21 / 50」能直接看出限量，規格種類則已經由名稱下方的灰色副標（`__meta`，「顏色（Black/Sand）× 尺寸（S/M/L）」這類文字）呈現，徽章與這兩者是重複資訊。
+
+- **【C】** `e-shop.html` 移除三個 `badge badge--neutral badge--inline` 徽章（`e-shop.row2.variants`／`e-shop.rowH.variants`／`e-shop.row.limited`），連同 `js/i18n.js` 對應三個 key 一併刪除（皆已確認無其他頁面引用）。`__meta` 副標與 `__stock` 格式維持 UIA-066 那筆的內容不變，本次只拿掉徽章，不影響規格副標與庫存的文字規則本身。
+- `.badge--inline` 元件本身不受影響（`order-detail.html`「Limit 2/person」「Awaiting pickup」、`orders.html` 取貨提醒仍在用），只是 E-Shop 這個特定用法被撤除；`design-system.html` Class API 的 `--inline` 示範改用 order-detail 的真實案例，`design-system.md` 的 Badge 條目與 Product list Variants 條目同步註記。
+- 影響範圍：僅 Coastline tee／hoodie／acetate 三列的商品名稱；分類欄、庫存欄、JS 動態填充的 21 筆商品皆未變動（那批本來就沒有這個徽章）。
+
 ## 2026-07-20 · 電子商店商品清單三處內容對齊 Figma（A 規格補齊 · UIA-066）
 
 使用者提供 Figma 參考（node 845-12576），要求電子商店「商品」分頁清單三處內容規則對齊：商品名稱副標、分類欄、庫存欄。
