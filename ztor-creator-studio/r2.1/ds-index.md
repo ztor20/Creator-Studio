@@ -286,7 +286,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 76 支；主 class 前 5 個）
+## 元件（ds-components/，共 77 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -313,6 +313,7 @@
 - `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
 - `fan-store.css` — .preview-panel__body, .fan-store, .fan-store__overline, .fan-store__phone, .fan-store__screen ｜ Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同
+- `field-more.css` — .field-more, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
 - `field-system.css` — .field, .field__label, .field__hint, .field__req ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na

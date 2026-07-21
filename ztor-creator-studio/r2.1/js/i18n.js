@@ -993,12 +993,14 @@
     'e-shop.cat.digital':     { en: 'Digital goods',                       zh: '虛擬商品' },
     /* 規格副標（2026-07-20，Figma node 845-12576）：單一規格商品固定顯示此字串 */
     'e-shop.variant.single':  { en: 'Single variant',                      zh: '單一選項' },
-    'e-shop.status.all':      { en: 'All status',                          zh: '全部狀態' },
+    /* 2026-07-21 使用者指示，全站狀態詞彙一起改（規格見 5.1.5-電子商店.md §2）：
+       全部狀態→全部商品／上架中→販售中／庫存過低→急需補貨／草稿→未完成。內部狀態概念不變，只換顯示字詞。 */
+    'e-shop.status.all':      { en: 'All products',                        zh: '全部商品' },
     /* 商品狀態篩選詞彙對齊規格 §7.2（2026-06-11 D023）；key 名沿用、只改值 */
-    'e-shop.status.in':       { en: 'Live',                                zh: '上架中' },
-    'e-shop.status.low':      { en: 'Low Stock',                           zh: '庫存過低' },
+    'e-shop.status.in':       { en: 'Selling',                             zh: '販售中' },
+    'e-shop.status.low':      { en: 'Needs restock',                       zh: '急需補貨' },
     'e-shop.status.out':      { en: 'Sold Out',                            zh: '已售完' },
-    'e-shop.status.draft':    { en: 'Draft',                               zh: '草稿' },
+    'e-shop.status.draft':    { en: 'Incomplete',                          zh: '未完成' },
     'e-shop.draft.untitled':  { en: 'Untitled',                            zh: '未命名' },
     'e-shop.loadmore':        { en: 'Load more',                           zh: '載入更多' },
     'e-shop.status.sealed':   { en: 'Sealed',                              zh: '密封中' },
@@ -1008,8 +1010,8 @@
     'e-shop.row2.cat':        { en: 'Apparel',                             zh: '服飾' },
     'e-shop.row3.cat':        { en: 'Album',                               zh: '音樂專輯' },
     'e-shop.row4.cat':        { en: 'Collectibles',                        zh: '收藏品' },
-    'e-shop.row.low':         { en: 'Low Stock',                           zh: '庫存過低' },
-    'e-shop.row.active':      { en: 'Live',                                zh: '上架中' },
+    'e-shop.row.low':         { en: 'Needs restock',                       zh: '急需補貨' },
+    'e-shop.row.active':      { en: 'Selling',                             zh: '販售中' },
     'e-shop.row.out':         { en: 'Sold Out',                            zh: '已售完' },
     'e-shop.row.hidden':      { en: 'Unlisted',                            zh: '已下架' },
     'e-shop.row.restocking':  { en: 'Restocking',                          zh: '補貨中' },
@@ -1166,7 +1168,7 @@
     /* ─── Product detail page ─────────────────────────────── */
     'product-detail.crumb.eshop':   { en: 'E-Shop',       zh: '電子商店' },
     'product-detail.crumb.products':{ en: 'Products',     zh: '商品' },
-    'product-detail.badge.live':    { en: 'Live',         zh: '上架中' },
+    'product-detail.badge.live':    { en: 'Selling',      zh: '販售中' },
     'product-detail.badge.low':     { en: 'Low Stock · 3 left', zh: '庫存過低 · 剩 3 件' },
     'product-detail.badge.physical':{ en: 'Physical merch', zh: '實體周邊' },
     'product-detail.badge.zine':    { en: 'Books',        zh: '書籍' },
@@ -1247,7 +1249,7 @@
     'product-detail.content.sub':   { en: 'Photos on one side, the details buyers read on the other.', zh: '素材放一側，買家會讀到的資訊放另一側。' },
     'product-detail.price2.title':  { en: 'Price', zh: '價格' },
     'product-detail.price2.sub':    { en: 'How this product is priced.', zh: '這個商品怎麼定價。' },
-    'product-detail.stock2.title':  { en: 'Stock &amp; restock', zh: '庫存與補貨' },
+    'product-detail.stock2.title':  { en: 'Stock', zh: '庫存' },
     'product-detail.stock2.sub':    { en: 'How much is left and how you refill it.', zh: '還剩多少、以及怎麼補貨。' },
     'product-detail.delivery2.title': { en: 'Delivery &amp; pickup', zh: '取貨與交付' },
     'product-detail.limit2.title':  { en: 'Purchase limit', zh: '每人限購' },
@@ -1265,7 +1267,7 @@
     'product-detail.health.thr-meta': { en: 'Auto · 10% of stock cap', zh: '自動 · 庫存上限的 10%' },
     'product-detail.health.cta':      { en: 'Adjust stock →',  zh: '調整庫存 →' },
     /* 資料驅動：狀態 badge（generic）＋數位內容檔依次分類的上傳格標題／提示＋IP 素材槽 placeholder */
-    'product-detail.badge.low2':      { en: 'Low Stock',       zh: '庫存過低' },
+    'product-detail.badge.low2':      { en: 'Needs restock',   zh: '急需補貨' },
     'product-detail.badge.soldout':   { en: 'Sold Out',        zh: '已售完' },
     'pd.cfile.video.title':           { en: 'Upload the video file buyers get', zh: '上傳買家取得的影片檔' },
     'pd.cfile.video.hint':            { en: 'MP4 · MOV · WEBM — up to 1.8GB', zh: 'MP4 · MOV · WEBM，最大 1.8GB' },

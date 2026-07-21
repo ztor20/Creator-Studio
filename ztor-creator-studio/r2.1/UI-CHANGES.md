@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-07-21 · 電子商店商品狀態顯示文案改版（A 規格對齊，規格與 UI 一起改）
+
+使用者指示「全站狀態調整（規格一起改）」：全部狀態→全部商品、草稿→未完成、庫存過低→急需補貨、上架中→販售中。這是呈現文案調整，不是狀態機改名——`documents/5.1.5-電子商店.md` §7.2 對齊的內部狀態概念（Draft／Live／Low Stock）維持不變，只換使用者看到的中文字。
+
+- **【A】** `documents/5.1.5-電子商店.md` §2 狀態徽章行同步改字（先於 `documents/backup_plan.md` 記 Plan211 存底稿），F3 狀態篩選選項集列舉行（純英文內部狀態名）不受影響、維持原樣。
+- **【A】** `js/i18n.js` 8 個 key 同步中英文顯示值：`e-shop.status.all/in/low/draft`（Products／Bundles／Auctions 三分頁共用的篩選 tab，全部商品／販售中／急需補貨／未完成）、`e-shop.row.active/low`（清單列狀態徽章）、`product-detail.badge.live/low2`（商品細節頁狀態徽章）。英文對應（All products／Selling／Needs restock／Incomplete）為本輪 project-ui-creator 譯法決定，規格條目本身未指定英文字詞。
+- **牽動範圍確認**：`e-shop.status.all/in/draft` 三個 key 是 Products／Bundles／Auctions 三分頁篩選 tab 共用（既有架構、非本次新增），改字後三分頁一併套用；「已售完」（Sold Out）與拍賣分頁自己的「競標中」等詞彙未受影響、使用者未要求變動。訂單管理的「全部狀態」（`orders.status.all`，語意是訂單狀態非商品狀態）、我的IP／專案／活動的「草稿」（不同領域語意）皆為不同 key、確認不受影響。
+- 驗證：Playwright 讀出 Products／Bundles／Auctions 三分頁篩選 tab 文字與商品列狀態徽章文字，逐一核對「全部商品／販售中／急需補貨／已售完／未完成」；product-detail.html 狀態徽章同步核對「販售中」；check_ds_sync 全 PASS；`Skills/design-spec-writer/scripts/validate_spec.py` 確認規格結構未破壞。
+
 ## 2026-07-21 · 電子商店清單縮圖去邊框放大＋kebab 新增「複製商店連結」（B 反饋導入）
 
 使用者附兩張圖：已上架商品的 kebab 選單要多一項「複製商店連結」；清單縮圖（不管是真實照片還是 icon placeholder 狀態）都不要邊框、再放大一點。
@@ -30,6 +39,18 @@
 - **【B】** `.product-list--eshop .product-list__row:hover` 併入原本只給 `.product-list--ip` 的浮起規則（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging`），兩者合併成同一條 CSS 規則，不重複定義。`.product-list--eshop` 是 Products／Bundles／Auctions 三分頁共用的 class，三頁的清單列 hover 一併套用；`--orders`／`--pickup` 兩個清單仍維持原本只換底色（未被要求變動）。
 - STYLE-DECISIONS.md Q5 與 design-system.md 的 Product list Variants 條目同步更新例外範圍。
 - 驗證：Playwright hover Coastline acetate 列，量測 computed background/border-radius/box-shadow 與拖曳態數值一致；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 物流欄位收進「顯示更多」＋出貨分類 placeholder＋購買限制與標籤拆兩區（B 反饋導入）
+
+使用者三項指示：(1) 取貨方式的物流配送只顯示重量，其餘用「顯示更多」按鈕展開；(2) 出貨分類下拉的 placeholder 寫「選擇貨物類型」；(3)「購買限制與標籤」拆成「購買限制」與「商品標籤」兩個 section。
+
+- **【B】** 新元件 [field-more.css](./ds-components/field-more.css) ＋ [partials/field-more.js](./partials/field-more.js)：`.field-more__toggle`（chevron ＋顯示更多／收合）＋ `.field-more__body[hidden]`。物流配送只留「重量」在外層，出貨分類／尺寸／寄件地收進去。
+- **關鍵設計判斷——收合區有值就自動展開**：同一段 markup 在建立商品是空表單（收起來合理），在商品明細是編輯頁、欄位帶著真實資料（尺寸 21/15/2、寄件地台南）。若照樣收起來等於把使用者填過的東西藏起來。改由 JS 依「收合區內有沒有值」決定初始狀態，兩頁就能共用同一支元件、不必分岔成兩種寫法——這也是不用原生 `<details>` 的原因。實測：建立商品初始收合、商品明細初始展開。
+- **【B】** 出貨分類下拉新增空值 option `cp.delivery.shipcat.ph`（選擇貨物類型／Select cargo type）取代原本的空白 option；create-product 與 product-detail 同步。
+- **【B】** `create-product.html` 的「購買限制與標籤」拆成兩個 `form-section--outlined`：「購買限制」（`cp.limits.title`，新 key）與「商品標籤」（沿用 `cp.tags` 當區塊標題，原本的說明文字改掛 `form-section__sub`）。`product-detail.html` 本來就是分開的兩區，未動。`cp.shared.title`（購買限制與標籤）已無消費頁，保留定義不刪。
+- i18n 新增 4 個 key：`field.show-more`／`field.show-less`（通用元件文案）、`cp.delivery.shipcat.ph`、`cp.limits.title`。
+- 施工中踩到的坑（同一類問題連續三次，記下來）：**新元件的資源掛載漏了三處**。(1) `create-product.html` 的 `<script src="partials/field-more.js">` 沒寫進去（批次插入時被同時在改這批檔的其他 session 覆蓋，版本號一路被別人 bump 到 zf），按鈕點了沒反應；(2) `design-system.html` 漏掛同一支 JS，元件卡的 demo 不會動；(3) `design-system.html` 連 `field-more.css` 的 `<link>` 都沒有——chevron 不會轉向。**第 (3) 點暴露 check_ds_sync 檢查 1 的盲點**：它判斷「元件 CSS 有沒有進 DS 頁」是比對檔名字串，而 `field-more.css` 這個字串本來就出現在元件卡的 `<code>` 說明裡，於是誤判為已連入。三處都已補上並實測（DS 頁與產品頁的 chevron 皆正確轉 180°、開合與文案切換正常）。**教訓：批次掛資源後要逐檔 grep 真正的 `<link>`／`<script>` 標籤，不能只看腳本回報成功，也不能只信 check_ds_sync 的 PASS。**
+- 驗證：Playwright 實測 create-product 收合→展開→再收合三態（`data-open` 與按鈕文案同步切換）、外層只剩「重量 *」一欄；product-detail 初始即 `data-open="true"`、收合區內確實有值（一般包裹／21／15／2）；出貨分類第一個 option 顯示「選擇貨物類型」；兩個 section 標題為「購買限制」與「商品標籤」；兩頁 div／section 平衡（HTMLParser 檢查 0 錯）。
 
 ## 2026-07-21 · 「規格」術語收斂成「選項」＋成本價欄位精簡（B 反饋導入，全站文案）
 
