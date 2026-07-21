@@ -1209,6 +1209,12 @@
     'product-detail.qr.session':    { en: 'Pickup session', zh: '領取場次' },
     'product-detail.rail.inuse':    { en: 'In use',        zh: '使用中' },
     'product-detail.rail.bundle':   { en: 'Bundle',        zh: '組合' },
+    /* 2026-07-20 選項收合列（Webflow 樣式） */
+    'pd.var.opt.size':      { en: 'Size',            zh: '尺寸' },
+    'cp.var.opt.edit':      { en: 'Edit',            zh: '編輯' },
+    'cp.var.opt.done':      { en: 'Done',            zh: '完成' },
+    'cp.var.opt.unnamed':   { en: 'Untitled option', zh: '未命名選項' },
+    'cp.var.opt.novalue':   { en: 'no values yet',   zh: '尚未設定值' },
     'product-detail.ref.label':     { en: 'Project',       zh: '專案' },
     'product-detail.sales.source':  { en: 'Source · Earnings', zh: '來源 · 收入管理' },
     'product-detail.kpi.units':     { en: 'Units sold',     zh: '銷售件數' },

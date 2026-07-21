@@ -24,6 +24,90 @@
 /* [hidden] 必須蓋過上面的 display:flex，否則單一規格模式下建構器仍會露出（含「新增選項」）*/
 .variant-builder[hidden] { display: none; }
 
+
+/* ---- option set rows（收合態，2026-07-20；Mobbin: Webflow Ecommerce）----
+   多規格常有 2–3 組選項（顏色 × 尺寸 × 材質），每組都完整展開會把版面撐得很長，
+   而下面還接著逐規格表。改成「設定好的選項收成一行、只有正在編輯的展開」：
+     .option-set                  外框容器，逐列 hairline 分隔
+       .option-set__row           一組選項一行：圖示＋名稱＋值摘要＋編輯
+         .option-set__name        選項名（如 尺寸）
+         .option-set__values      值摘要，以逗號串接（如 S、M、L）
+         .option-set__action      編輯入口（唯讀情境不出現）
+       .option-set__add           最後一列＝新增選項（唯讀情境不出現）
+   唯讀情境（商品明細，選項建立後鎖定 UIA-056）只渲染 __row、不給 __action／__add。
+   ------------------------------------------------------------------ */
+.option-set {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.option-set__row,
+.option-set__add {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12);
+  background: var(--muted);
+  border-top: 1px solid var(--border);
+}
+.option-set__row:first-child,
+.option-set__add:first-child { border-top: 0; }
+
+.option-set__row .ztor-icon,
+.option-set__add .ztor-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--muted-foreground);
+}
+.option-set__name {
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+  flex: none;
+}
+.option-set__values {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.option-set__action {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.option-set__action:hover { color: var(--foreground); background: var(--accent); }
+
+.option-set__add {
+  width: 100%;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.option-set__add:hover { color: var(--foreground); background: var(--accent); }
+
+/* 展開編輯中的那一組：沿用 .variant-option 編輯器，但塞進容器裡不重複外框 */
+.option-set .variant-option {
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+}
+.option-set .variant-option:first-child { border-top: 0; }
+
 /* ---- option rows ---- */
 .variant-option {
   display: flex;

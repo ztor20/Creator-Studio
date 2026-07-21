@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 218 條）
+## Tokens（_tokens.css，亮色，共 219 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -173,6 +173,7 @@
 - `--status-info`: #266DF0
 - `--status-warning`: #F8D749
 - `--status-accent`: #8B5CF6
+- `--status-error`: #DA314A
 
 ### --surface-*
 - `--surface-shell`: #F0F0EE
@@ -341,7 +342,7 @@
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper__labels, .progress-stepper__label ｜ ── Progress stepper
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__project, .project-list__icon ｜ Project list — borderless table list for the Pro
 - `radio-card.css` — .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text, .radio-card__title ｜ radio-card.css · 並排可選卡（radio 卡）
-- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__dot, .radio-list__item--active, .radio-list__text ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
+- `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
 - `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
 - `restock-modal.css` — .restock-lines, .restock-lines__group, .restock-line, .restock-line__main, .restock-line__img
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
@@ -359,6 +360,6 @@
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--brand ｜ Tabs — horizontal tab bar with hairline underlin
 - `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
 - `upload-tile.css` — .upload-tile, .upload-tile--hero, .upload-tile--file, .upload-tile__icon, .upload-tile__title ｜ Upload tile · dashed upload affordance for creat
-- `variant-builder.css` — .variant-builder, .variant-option, .variant-option__head, .variant-option__name, .variant-option__remove ｜ Variant builder · Shopify-style options + per-va
+- `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
