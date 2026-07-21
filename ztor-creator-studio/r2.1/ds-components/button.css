@@ -5,102 +5,24 @@
    is unchanged (token-driven).
    ============================================================ */
 
-.ztor-btn {
-  --ztor-btn-pad-y: var(--sp-14);
-  --ztor-btn-pad-x: var(--sp-20);
+/* ============================================================
+   .ztor-btn — 退場 2026-07-21（STYLE-DECISIONS Q25 延伸，使用者裁示）
+   ------------------------------------------------------------
+   墓碑：`.ztor-btn` / `--outline` / `--xs` / `--sm` / `--lg` / `--xl`
+   曾是「design-system 文件用的 canonical 按鈕」，預設 44px（--control-h-md），
+   與產品頁實際使用的 `.btn`（預設 36px）並存成兩個家族。
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-8);   /* icon ↔ label spacing (§4.2) */
+   為什麼退場：使用者檢視元件的唯一入口是 design-system.html，那裡把 44px 標成
+   「預設按鈕」，但 236+ 處真實頁面渲染的都是 36px——DS 頁在按鈕這一項與出貨結果不符。
+   退場時全站已無任何 markup 消費它（僅剩 design-system.html 一行 class API 說明），
+   等於這個家族早就只剩 CSS 與文件。比照 2026-07-10 `.ztor-input` 替身退場的前例。
 
-  font-family: var(--font-ui);
-  font-size: var(--fs-15);
-  font-weight: var(--fw-medium);
-  letter-spacing: -0.3px;
-  line-height: var(--lh-none);
+   替代：一律用 `.btn`——orange primary＝`.btn.btn--primary`、外框＝`.btn.btn--outline`、
+   尺寸＝`.btn--sm`(28) / 預設(36) / `.btn--lg`(44)。
+   副作用：`--control-h-lg`(52) 與 `--control-h-xl`(60) 隨之失去唯一消費者，
+   已在 design-system.md 標為「待採用」（定義保留，尚無元件使用）。
+   ============================================================ */
 
-  height: var(--control-h-md);
-  padding: var(--ztor-btn-pad-y) var(--ztor-btn-pad-x);
-
-  background: var(--primary);
-  color: var(--primary-foreground);
-  border: 0;
-  border-radius: var(--radius);
-  cursor: pointer;
-  user-select: none;
-  text-decoration: none;
-
-  transition: all var(--duration) var(--easing);
-}
-
-.ztor-btn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.ztor-btn:active {
-  transform: translateY(0);
-}
-
-.ztor-btn:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-.ztor-btn:disabled,
-.ztor-btn[aria-disabled="true"] {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-/* ---------- Outline variant ----------
-   2026-06-12：改為真 1px 線框（border: var(--border)），平面無陰影。
-   舊版「白填色＋微陰影當邊」是 2026-05-28 暖灰 canvas 時代的解法；
-   06-09 canvas 改純白後，白填色按鈕在白底上近乎隱形（使用者反饋）。
-   實線框在白底與灰底都成立——這也才是 outline 的本義；邊由 border 負責，
-   不再加 shadow（border + micro-shadow 同時存在會顯得陰影過重，使用者反饋）。 */
-.ztor-btn--outline {
-  background: var(--card);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-.ztor-btn--outline:hover {
-  background: var(--accent);   /* Q9 2026-07-13：hover 統一用 accent（與 .btn--outline 一致）*/
-}
-
-/* ---------- Sizes — 共用 control-size 級（與 input 同高度 token，2026-06-25）---------- */
-.ztor-btn--xs {
-  --ztor-btn-pad-y: var(--sp-4);
-  --ztor-btn-pad-x: var(--sp-10);
-  height: var(--control-h-xs);
-  font-size: var(--fs-12);
-}
-.ztor-btn--sm {
-  --ztor-btn-pad-y: var(--sp-10);
-  --ztor-btn-pad-x: var(--sp-14);
-  height: var(--control-h-sm);
-  font-size: var(--fs-13);
-}
-.ztor-btn--lg {
-  --ztor-btn-pad-y: var(--sp-16);
-  --ztor-btn-pad-x: var(--sp-28);
-  height: var(--control-h-lg);
-  font-size: var(--fs-16);
-}
-.ztor-btn--xl {
-  --ztor-btn-pad-y: var(--sp-18);
-  --ztor-btn-pad-x: var(--sp-32);
-  height: var(--control-h-xl);
-  font-size: var(--fs-18);
-}
-
-/* ---------- Reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .ztor-btn { transition: none; }
-  .ztor-btn:hover { transform: none; }
-}
 
 /* ============================================================
    .btn — product-page button (app density). Same dual-namespace
