@@ -34,7 +34,7 @@
   min-height: 88px;
   padding: var(--sp-14) var(--sp-10);
   border-bottom: 1px solid var(--border-soft);
-  transition: background-color var(--duration) var(--easing);
+  transition: background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
 }
 
 .product-list__row:hover {
@@ -48,19 +48,26 @@
   min-width: 0;
 }
 
+/* 2026-07-18 使用者裁示、2026-07-20 修正對齊對象：列縮圖統一成描邊框，取代原本的 --muted
+   填色無邊框。原本誤對齊到 .product-list__image 的「基礎規則」（--card/--border/52px），
+   但 .product-list__image 全站 28 處使用皆搭配 --placeholder 變體、基礎規則從未單獨呈現過——
+   真正畫面上看到的是 --placeholder 覆蓋後的值（--muted 底／--border-soft 邊／52px／
+   --muted-foreground icon）。改對齊那組真實呈現值，訂單/取貨列的縮圖才會跟電子商店一致。 */
 .product-list__thumb {
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   flex: none;
   display: inline-grid;
   place-items: center;
   border-radius: var(--radius);
   background: var(--muted);
-  color: var(--foreground-muted);
+  border: 1px solid var(--border-soft);
+  color: var(--muted-foreground);
 }
 
 .product-list__thumb--cover {
   background: var(--foreground);
+  border-color: var(--foreground);   /* 反白變體：邊框跟自身填色一致，不露出中性描邊 */
   color: var(--background);
 }
 
@@ -75,11 +82,10 @@
 }
 
 .product-list__image {
-  width: 52px;
-  height: 52px;
+  width: 60px;
+  height: 60px;
   overflow: hidden;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
   background: var(--card);
   display: inline-grid;
   place-items: center;
@@ -95,7 +101,6 @@
 
 .product-list__image--placeholder {
   background: var(--muted);
-  border-color: var(--border-soft);
 }
 
 .product-list__image-placeholder-mark {
@@ -150,6 +155,11 @@
   color: var(--foreground-muted);
   font-weight: var(--fw-medium);
 }
+
+/* 2026-07-20（Figma node 845-12576）：分類欄改兩行——子分類（具體，如「書籍」）白字在上，
+   主分類（大類，如「實體商品」）灰字在下，比照 __title/__meta 的主副字階。 */
+.product-list__cat-sub { display: block; color: var(--foreground); }
+.product-list__cat-main { display: block; margin-top: 1px; color: var(--muted-foreground); font-size: var(--fs-12); }
 
 .product-list__cell {
   min-width: 0;
@@ -292,7 +302,7 @@
   z-index: 3;
   background: var(--card);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-lift-flat);   /* 2026-07-21：改用去 rim 版，理由與 hover 浮起同一條（見下方） */
   cursor: grabbing;
   will-change: transform;
 }
@@ -338,4 +348,67 @@
   .product-list--orders .product-list__price,
   .product-list--pickup .product-list__cell,
   .product-list--pickup .product-list__status { grid-column: 1; padding-left: var(--sp-56); }
+}
+
+/* ============================================================
+   我的 IP 清單欄位版型（2026-07-20，spec 5.1.4 §F6「清單欄位」）
+   ------------------------------------------------------------
+   同 --orders／--pickup 手法：只換欄位模板疊在 base grid 上、不改 base。
+   欄位：IP(icon+名稱+標籤(+登記日期 meta)) / Rights / Rented / Revenue /
+         Price / Mktplace(開關) / Actions(Manage)。重用
+   product-list__thumb(icon) / __product / __body / __title / __meta /
+   __cell(通用文字欄)；Mktplace 與 Actions 為本變體新增的專屬欄。
+   ============================================================ */
+.product-list--ip .product-list__head,
+.product-list--ip .product-list__row {
+  /* 名稱欄需要吸收較長 IP 名稱＋類型徽章，給足最小寬度；租出數/收入/操作欄收窄
+     （文字短、不需要 e-shop 那種寬裕）；Mktplace 欄只放切換鈕（標籤在表頭，列內不重複），
+     不需要 96px，釋出空間給租金欄避免「$480 / 6 個月」中途換行。 */
+  grid-template-columns: 60px minmax(220px, 1.3fr) minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+}
+.product-list--ip .product-list__cell { color: var(--foreground); }
+
+/* 2026-07-20 使用者裁示（--ip）、2026-07-21 使用者再指定擴大到 --eshop（含共用其 class 的
+   --bundles／--auctions 兩分頁）：hover 改成跟拖曳抬起態（.is-dragging）同一種「浮起」視覺，
+   取代 base 的純換底色（--accent）——卡底＋圓角＋E3 陰影，列從清單裡浮出來，
+   而不只是變色。position:relative＋z-index 避免陰影被相鄰列的分隔線蓋住（z-index 低於
+   is-dragging 的 3，因為這裡是常態 hover、不是被拖起）。
+   2026-07-21 使用者反饋：浮起的卡片上緣仍看得到「上一列」的 border-bottom 分隔線切過去——
+   z-index 只能讓陰影疊在分隔線之上，蓋不掉分隔線本身（分隔線屬於上一列自己的框、不在這列的
+   繪製範圍內，兩者是「相鄰貼齊」不是「疊在一起」）。修法：hover 時連自己的 border-bottom 也
+   一併透明（讓浮起的卡片四邊乾淨、不被自己下緣的線切到），並用 :has() 把「上一列」的
+   border-bottom 也透明掉——這是目前唯一能選中「下一個手足是 hover 狀態」的寫法，此專案已有
+   同類用法（見 .form-section--outlined:has(> .nest)）。
+   2026-07-21 使用者再反饋「hover 不要 border」：改用 --shadow-lift-flat（去掉 --shadow-float
+   內建的 1px rim）。原本以為分隔線是唯一問題，但 rim 本身在白／近白背景上也會被讀成一圈框——
+   淺色列表背景色差已經夠明顯，不需要 rim 再補一次輪廓；.is-dragging 一併換成同一個 token，
+   維持「hover＝drag」的既定規則不分岔（見上方）。深色不受影響（token 深色沿用完整
+   --shadow-float，見 _tokens.css 註解）。 */
+.product-list--eshop .product-list__row:hover,
+.product-list--ip .product-list__row:hover {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+  box-shadow: var(--shadow-lift-flat);
+  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.product-list--eshop .product-list__row:has(+ .product-list__row:hover),
+.product-list--ip .product-list__row:has(+ .product-list__row:hover) {
+  border-bottom-color: transparent;
+}
+
+.product-list__mktplace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ≤760px：退回堆疊模式（同 --orders／--pickup 手法） */
+@media (max-width: 760px) {
+  .product-list--ip .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--ip .product-list__product { padding-left: var(--sp-72); }
+  .product-list--ip .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
+  .product-list--ip .product-list__mktplace { grid-column: 2; justify-content: flex-end; }
 }
