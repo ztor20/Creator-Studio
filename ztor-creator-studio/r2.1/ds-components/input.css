@@ -13,7 +13,6 @@
   --input-prefix-pad-x: var(--sp-32);
   --select-arrow-pad-x: 34px;
   --select-wrap-arrow-pad-x: var(--sp-40);
-  --select-icon-inset: var(--sp-12);
 
   font-family: var(--font-body);
   font-size: var(--fs-14);
@@ -21,7 +20,7 @@
   border-radius: var(--radius);
   border: 0;
   box-shadow: 0 0 0 1px var(--border);
-  background: var(--card);
+  background: var(--input-surface);   /* 2026-07-17 Q19：暗色比卡亮一階＝filled 欄位；亮色仍＝白卡 */
   color: var(--foreground);
   width: 100%;
   outline: none;
@@ -57,4 +56,6 @@
 
 .select-wrap { position: relative; display: block; width: 100%; }
 .select-wrap .select { background-image: none; padding-right: var(--select-wrap-arrow-pad-x); }
-.select-wrap__icon { position: absolute; top: 50%; right: var(--select-icon-inset); width: 16px; height: 16px; color: var(--muted-foreground); pointer-events: none; transform: translateY(-50%); }
+/* right 直接用 --sp-12 token：原本繞 --select-icon-inset，但該變數定義在 .select（本 icon 的兄弟）上，
+   CSS 變數不從兄弟繼承→icon 拿不到值、right 失效跑到框外（2026-07-18 修）。 */
+.select-wrap__icon { position: absolute; top: 50%; right: var(--sp-12); width: 16px; height: 16px; color: var(--muted-foreground); pointer-events: none; transform: translateY(-50%); }

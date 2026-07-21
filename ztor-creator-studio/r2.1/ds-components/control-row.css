@@ -24,3 +24,35 @@
 
 .control-row__main { font-size: var(--fs-14); font-weight: var(--fw-medium); }
 .control-row__sub { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+
+/* ── control-group · 開關列＋它揭示出來的表單，包成同一個外框（2026-07-21）──────────
+   為什麼：開關打開後跑出來的欄位，原本是散在外框列下方的裸欄位，看起來像獨立的
+   另一件事；實際上它是這個開關的附屬設定。包成一個框＋一條分隔線，讓「開關管這塊」
+   的從屬關係讀得出來（使用者裁示，附圖為低庫存提醒那組）。
+   anatomy
+     .control-group                 外框容器（radius-xl，1px 內描邊）
+       .control-row                 開關列（在群組內去掉自己的框與圓角）
+       .control-group__body[hidden] 揭示區（上緣分隔線＋內距）
+   ------------------------------------------------------------------- */
+
+.control-group {
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.control-group[hidden] { display: none; }
+
+/* 群組內的開關列交出外框與圓角，邊界由群組承擔 */
+.control-group .control-row {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.control-group__body {
+  padding: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+.control-group__body[hidden] { display: none; }
+/* 揭示區內第一個欄位不要再帶自己的上外距，間距一律由 __body 的內距決定 */
+.control-group__body > :first-child { margin-top: 0; }
+.control-group__body > .field:last-child,
+.control-group__body > .form-grid:last-child { margin-bottom: 0; }
