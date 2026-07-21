@@ -298,7 +298,7 @@
 - `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `bento.css` — .bento ｜ Bento — 12-column grid utility for dashboard / p
-- `button.css` — .ztor-btn, .ztor-btn--outline, .ztor-btn--xs, .ztor-btn--sm, .ztor-btn--lg ｜ Ztor Creator Studio · R 2.1 — Button
+- `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--soft ｜ Ztor Creator Studio · R 2.1 — Button
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
 - `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip--value ｜ Chip — clickable filter pill with active state +

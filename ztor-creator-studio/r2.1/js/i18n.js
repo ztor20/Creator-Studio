@@ -1766,6 +1766,7 @@
     'cp.media.uploading':   { en: 'Uploading…',                       zh: '上傳中…' },
     'cp.media.optimizing':  { en: 'Optimizing…',                      zh: '優化中…' },
     'cp.media.optimized':   { en: 'Optimized to spec',                zh: '已依規格優化' },
+    'cp.media.add':         { en: 'Add image',                        zh: '新增圖片' },
     'cp.media.replace':     { en: 'Replace image',                    zh: '替換圖片' },
     'cp.media.optimize':    { en: 'AI optimize',                      zh: 'AI 優化' },
     'cp.media.remove':      { en: 'Remove image',                     zh: '刪除圖片' },
