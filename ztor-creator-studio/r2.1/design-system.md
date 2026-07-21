@@ -578,7 +578,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Button | 🟢 atom | ✓ App | Primary CTAs, wizard action bar, header actions (primary / outline / ghost) | [button.css](./ds-components/button.css) |
 | Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral。`--inline`：接在標題文字後的安靜限定詞（regular 字重、middle 對齊、左 6px），如訂單「Limit 2/person」「Awaiting pickup」（2026-07-21：E-Shop 清單的「N variants／限量」用法已移除，規格數與限量狀態改由 `__meta` 副標與 `__stock` 欄本身呈現，見下方 Product list Variants） | [badge.css](./ds-components/badge.css) |
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
-| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions | [chip.css](./ds-components/chip.css) |
+| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`--active` 反白（篩選已選，Q8）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多規格選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。三種「創作者自建值」的分工：`--value` 灰＝剛建立的值、`.tag-input .chip--active` 橘＝已套用的分類（Q19）、`--active` 反白＝篩選已選（Q8） | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
 | Info banner | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](./ds-components/info-banner.css) |
 | Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent） | [upload-tile.css](./ds-components/upload-tile.css) |
@@ -612,7 +612,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Amount field | 🟡 molecule | ✓ App | money input with a unit affix — normally a static read-only symbol (`$` prefix); built on Input. The affix can also be an interactive unit toggle (`[data-price-sync]` marks a shared-unit member and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to switch the unit across the group); that toggle shipped for the cash/POPCORN pricing unit, **removed in spec 5.1.5.2 · D144** (was D127), so no page uses it today — the chrome is kept as a reusable capability。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
 | Review row | 🟡 molecule | ✓ App | 流程 Review 步驟摘要列（無卡片、hairline 分隔）：欄位名＋值＋右側 Edit →。正規化自 create-event.html `.ce-review-row`、register-ip.html `.ri-summary`、create-project.html Review 步驟的扁平化 `.card`（該頁 2026-06-25 註解已預告「這批歸第三批 review-row」）。詳見 §4.49 | [review-row.css](./ds-components/review-row.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
-| Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel | [preview-column.css](./ds-components/preview-column.css) |
+| Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel。**卡邊界 2026-07-21**：`.preview-col .card` 與 `.preview-col .preview-card` 改 `border:0` ＋ `--shadow-card, --shadow-edge-top`，與左欄 `form-section--outlined`（Q14／Q18 已去邊框改浮起）一致——原本左欄無邊框、右欄 1px 邊框，同一畫面兩種卡邊界（使用者裁示）。scope 限 `.preview-col` 內，全站其他 `.card` 仍照 Q3 用 1px 邊框、未推翻 Q3。消費頁＝create-product／create-bundle／create-auction（各 2 個盒子）＋create-campaign（僅預覽卡），4 頁共 7 處 | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
 | Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源），**2026-07-02 改呈現為深色手機**（`.fan-store__phone`＞`__screen` 自捲動；版型參考 endgame creator 商店手機版，僅視覺證據）：app 頂列＋hero（名字壓深色漸層＋社群＋加入社群）＋sticky app 分頁列＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。螢幕＝fan app 固定深色面（scoped `--fst-*`，主題例外見 §1.5；accent＝`var(--primary)`）。追蹤數/社群/加入社群/精選/立即購買/補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
 | Pickup management | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列。`.scanner-access`（F6：`__qr`/`__main`/`__label`/`__url`/`__actions`/`__pw`）＋`.qr-box`(`--lg`/`--disabled`，faux QR via `window.ztorFauxQr()`)＋`.pickup-detail__header`/`__meta`＋`.pickup-stats`＋`.pickup-select`＞`.pickup-select__row`(`.is-checked`·`__box`/`__img`/`__text`)。場次清單／可核銷項目／名單／核銷紀錄重用 `.data-list`。共用建立場次 popup＝`partials/pickup-session-modal.js`（F3，亦掛 create-product.html／product-detail.html）：表單分成三個自由切換頁籤（重用 Tabs 的 `.tabs`＋`.tab-panel`，spec 5.1.5.12 §4：基本資訊／取貨項目／密碼），取代原疊直填色面板；`[data-pks-panels]` 保 `min-height` 免切換塌陷、`.pks-panel__intro` 為項目頁引言、取貨項目頁計數用 `.tabs__item-count`，按「建立」時驗證並自動跳到出錯的頁籤（藏在別頁的必填不會沉默）。camera 視窗用 `--surface-inverse` role token、無裸色 | [pickup.css](./ds-components/pickup.css) |
@@ -653,7 +653,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
 | Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--accent`（2026-07-21 由 `--muted` 改回 Q9 裁決值——暗色 `--muted` 比卡還深、hover 像凹下去）, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title. **變體 `--collapsible`（2026-07-21 · Figma 856-22782）**：收合式，`.radio-list__trigger`（圓點＋文字＋`.radio-list__chevron`）＋`.radio-list__options[hidden]`，外框 1px `--border` ＋ `--radius-xl`，展開時觸發列填 `--input-surface`、chevron 轉 180°、`[data-open]` 標開合；展開時已選項在觸發列與清單各出現一次（Figma 原設計、使用者裁示保留）。行為由 [partials/radio-list.js](./partials/radio-list.js) 統一接線（開合、觸發列文字＋`data-i18n` 同步、外點與 Esc 關閉、派發 `radio-list:change`），頁面只留自己的欄位揭示邏輯。Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock)，五頁 2026-07-21 起一律用 `--collapsible` | [radio-list.css](./ds-components/radio-list.css) |
 | Date input placeholder | 🔵 atom | ✓ Project | 原生 `<input type="date|datetime-local|time">` 的 placeholder 裝飾層（2026-07-21）：原生欄位不吃 `placeholder`、空值時自己畫「年/月/日 --:--」且用一般內文色，看起來像已填值。`[data-empty="true"]`＝日曆 icon（`--sp-12`）＋淡灰「選擇日期」（`--sp-40`、`--muted-foreground`），原生 `::-webkit-datetime-edit` 藏起來、input 內距推到 `--sp-40`；`[data-empty="false"]`＝icon 與 placeholder 都收掉、內距回基礎 `--sp-12`、日期用 `--foreground`（常駐 icon 會吃掉 28px，設定頁 120px 的窄時間欄會被切字）。date／datetime-local／time 三型共用同一句文案 `field.pick-date`（使用者 2026-07-21 裁示）。原生日曆鈕攤平成整格透明覆蓋層，點整格用 `showPicker()` 開選單。由 [partials/date-input.js](./partials/date-input.js) 執行期自動包裝全站約 40 個欄位（含 MutationObserver 接住 modal 這類後注入的節點），頁面 markup 維持乾淨的 `.input`，不得手寫 `.date-input` 外層 | [date-input.css](./ds-components/date-input.css) |
-| Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button) | [control-row.css](./ds-components/control-row.css) |
+| Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button)。**`.control-group`（2026-07-21 新增）**：開關列＋它揭示出來的表單包成同一個外框（`--radius-xl` 外框、群組內的 `.control-row` 交出自己的框與圓角、揭示區 `.control-group__body` 帶 1px 上分隔線＋`--sp-16` 內距）——原本揭示欄位是裸的散在框外，讀起來像另一件事，包起來才看得出「這塊歸這個開關管」（使用者裁示）。可巢狀（開啟折扣 ▸ 開啟限時折扣）。寬度限制要下在內層欄位、不能下在 `__body`，否則分隔線會跟著縮短。11 組分佈於 create-product／create-bundle／bundle-detail／product-detail；沒有揭示表單的開關列維持單獨 `.control-row`（create-auction、create-project） | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
 | Edge shadow（工具）| ⚪ utility | ✓ Project | `.edge-shadow`：把 `--shadow-header` 變成「只露下緣、內縮、兩端漸淡」的邊緣陰影（`::before`＋clip）。wizard header／電子商店庫存條共用；其他元素加 class 即覆用 | [shared.css](./shared.css) |
@@ -915,7 +915,7 @@ No interactive states — purely decorative.
         └ .chip__count (│ + faded number)
 ```
 
-**Variants** — Base `.chip`, `.chip--active` (inverted), `.chip--static` (read-only, no hover). Container `.chip-group`; row wrapper `.filter-row` + `.filter-row__actions`.
+**Variants** — Base `.chip`, `.chip--active` (inverted), `.chip--static` (read-only, no hover), `.chip--value` (quiet fill for a creator-entered value, 2026-07-21). Container `.chip-group`; row wrapper `.filter-row` + `.filter-row__actions`.
 
 **Sizes** — Single size (6 × 12px padding, 12px / 500).
 
@@ -927,6 +927,7 @@ No interactive states — purely decorative.
 | hover | `:hover` | bg `--muted`, text `--foreground` |
 | active | `.chip--active` | bg `--foreground`, text `--background`, border `--foreground` (hover unchanged) |
 | static | `.chip--static` | `cursor: default`, hover reverts to default look |
+| value | `.chip--value` | bg `--input-surface`, text `--foreground`, border `--border` (hover unchanged — it is entered data, not a control) |
 
 **Class API** (CSS classes — Props/API = N/A, this is a static CSS prototype)
 
@@ -936,13 +937,14 @@ No interactive states — purely decorative.
 | `.chip` | Interactive filter pill |
 | `.chip--active` | Inverted selected state |
 | `.chip--static` | Read-only chip (e.g. supported-regions list) |
+| `.chip--value` | A value the creator just entered (variant option values) — quiet fill, never inverted. Distinct from `--active` (a chosen filter) and from `.tag-input .chip--active` (an applied tag, orange per Q19) |
 | `.chip__count` | Faded count after a vertical separator |
 | `.chip--removable` / `.chip__remove` | Selected / creator-added value with an inline × (tag-input, variant option values) |
 | `.filter-row` / `.filter-row__actions` | Chip-group paired with right-aligned actions |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` / `--muted` · active bg `--foreground`, text `--background` · text `--foreground-muted` → `--foreground` · count `--muted-foreground` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--card` / `--muted` · active bg `--foreground`, text `--background` · `--value` bg `--input-surface`, text `--foreground` · text `--foreground-muted` → `--foreground` · count `--muted-foreground` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage** — Use for filterable taxonomies (Earnings transaction filters, Tax-docs year filter). Avoid for read-only status — use Badge (§4.3).
 
@@ -950,7 +952,9 @@ No interactive states — purely decorative.
 
 - ✅ Do keep exactly one `.chip--active` per group at a time.
 - ✅ Do use `.chip--static` when a chip is informational, not a filter.
+- ✅ Do use `.chip--value` for values the creator just typed in; keep them quieter than the surrounding controls.
 - ❌ Don't use a chip to display non-filterable status.
+- ❌ Don't use `.chip--active` (inverted) for a creator-entered value — inverted is reserved for a chosen filter.
 - ❌ Don't put more than one active chip in a single-select group.
 - ❌ Don't render an action (Export / Print / Download) as a chip — those are Buttons (§4.2). In a `.filter-row`, chips filter and the right-aligned action (e.g. Export CSV `.btn--outline`) is a Button.
 

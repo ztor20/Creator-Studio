@@ -298,11 +298,11 @@
 - `button.css` — .ztor-btn, .ztor-btn--outline, .ztor-btn--xs, .ztor-btn--sm, .ztor-btn--lg ｜ Ztor Creator Studio · R 2.1 — Button
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
-- `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip__count ｜ Chip — clickable filter pill with active state +
+- `chip.css` — .chip-group, .chip, .chip--active, .chip--static, .chip--value ｜ Chip — clickable filter pill with active state +
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
 - `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
-- `control-row.css` — .control-row, .control-row__main, .control-row__sub ｜ control-row.css · 有外框的「左文字右控件」獨立列
+- `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group__body ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `cookie-banner.css` — .ztor-cookie-banner, .ztor-cookie-banner__copy, .ztor-cookie-banner__actions, .ztor-cookie-banner__settings ｜ Ztor — Cookie Banner
 - `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__icon, .data-list__icon--success ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07

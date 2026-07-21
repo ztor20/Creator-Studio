@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-07-21 · 電子商店商品清單縮圖改真實照片，保留 icon placeholder 示範（B 反饋導入）
+
+使用者指出全站商品縮圖都是「尚未上傳」的分類 icon placeholder，要求電子商店的商品/組合/競標清單改用真實商品照片，並提供參考站 `ztor-eshop-fe.vercel.app/shop.html`。討論後範圍收斂為「只改電子商店」（不動 orders／pickup／my-ip 等其他頁面共用同款 icon placeholder 的清單，那些留待之後視需要再議）。
+
+- **【B】** 新增 `images/products/`（29 張 `.webp`，共 412KB），取自參考站的商品攝影素材（`assets/images/shop/g/t/*.webp`，經 `assets/shop-data-imgmap.js` 找到實際路徑；該站與本站同屬 Ztor 產品家族，圖檔重新命名為語意化檔名如 `coastline-tee.webp`，不沿用來源站的泛用檔名）。
+- **【B】** `e-shop.html` 商品分頁：9 個具名商品列＋Bundles 2 列＋Auctions 3 列，`.product-list__image--placeholder`＋分類 icon 改成 `.product-list__image`＋`<img>` 真實照片；JS 動態生成的 20 筆填充商品中，前 15 筆（Sticker sheet ~ Wristband）比照辦理，**刻意保留最後 5 筆（Bandana／Pennant／Lyric booklet／Photo set／Bookmark）維持原本的 icon placeholder**（使用者指定，示範「尚未上傳圖片」的原始樣式仍在，不是全部換掉）。三個分頁的草稿列（Untitled，各分頁各 1 列）維持 icon——草稿本來就沒有素材，符合「尚未上傳」語意，不算在保留名額內。
+- **【B】** 數位商品（單曲／電影／專輯／會員卡）依使用者指定也換照片（原本用 music/film/disc/id-card 語意化 icon）；會員卡用參考站的卡片攝影（`cards-3.webp`）視覺上最貼近「會員卡」概念。「古董合成器」拍賣品找不到貼切素材，用通用道具照代替（`vintage-synth.webp`，來源檔 `prop-3.webp`），為一處已知的不完美配對。
+- 影響範圍：僅 `e-shop.html`；`.product-list__image`／`.product-list__image--placeholder`／`.product-list__image img` 三個共用 class 定義本身未變動，其他頁面沿用同款元件的地方不受影響。
+- 驗證：Playwright 逐列檢查 `hasImg`／`hasIcon` 布林值，商品分頁 30 列中 24 張圖＋1 草稿 icon＋5 保留 icon，組合/競標分頁真實列全數換圖、草稿列維持 icon，圖片全數 200（`loading="lazy"` 未進視窗前 `naturalWidth` 為 0 屬正常延遲載入、非壞圖）；check_ds_sync 全 PASS。
+
 ## 2026-07-21 · 電子商店清單 hover 擴大套用浮起效果（B 反饋導入，Q5 例外擴大）
 
 使用者先前（2026-07-20）已指定「我的 IP」清單 hover 要跟拖曳抬起態一樣浮起，這次再指定電子商店清單也要一樣。
@@ -13,6 +23,35 @@
 - **【B】** `.product-list--eshop .product-list__row:hover` 併入原本只給 `.product-list--ip` 的浮起規則（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging`），兩者合併成同一條 CSS 規則，不重複定義。`.product-list--eshop` 是 Products／Bundles／Auctions 三分頁共用的 class，三頁的清單列 hover 一併套用；`--orders`／`--pickup` 兩個清單仍維持原本只換底色（未被要求變動）。
 - STYLE-DECISIONS.md Q5 與 design-system.md 的 Product list Variants 條目同步更新例外範圍。
 - 驗證：Playwright hover Coastline acetate 列，量測 computed background/border-radius/box-shadow 與拖曳態數值一致；check_ds_sync 全 PASS。
+
+## 2026-07-21 · 建立流程右側預覽欄的卡去邊框，與左欄一致（B 反饋導入）
+
+使用者指出上架設定的外框不該有線、要跟左邊的 section 一致。查證後確認是站上兩條裁決撞在一起：左欄的 `form-section--outlined` 早在 Q14／Q18 就改成「填色＋E2 陰影＋頂緣高光、無邊框」，右欄的卡卻還是 Q3 的「填色＋1px 邊框」——同一個畫面兩種卡邊界。
+
+- **【B】** `preview-column.css` 新增 scoped 規則：`.preview-col .card` 與 `.preview-col .preview-card` 改 `border: 0` ＋ `box-shadow: var(--shadow-card), var(--shadow-edge-top)`，與左欄完全同一組值。
+- 範圍由使用者裁示為「右側預覽欄全部」而非只改上架設定卡——只改一張的話，它正上方的商店預覽卡還是有線，同一欄會出現兩種做法。實際受影響 **4 頁共 7 個盒子**，經元件層一次生效：create-product／create-bundle／create-auction 各 2（預覽卡＋上架設定卡），外加 **create-campaign 的預覽卡 1 個**——這頁同樣用 `.preview-col`，首版回報時漏列，收尾驗收抓出後補上（該頁預覽欄只有預覽卡、沒有第二張卡）。
+- **未推翻 Q3**：規則 scope 在 `.preview-col` 內，全站其他約 40 處 `.card`（儀表板、收入、訂單…）維持 1px 邊框不變。
+- 欄內收合式上架設定選單自己的 1px 外框保留——那是控制項層級的邊界（Q4：控制項用真 border），與卡片邊界是兩個角色。
+- 驗證：Playwright 量測上架設定卡／商店預覽卡／左側 section 三者的 border 與 box-shadow，三組值完全相同（`0px none` ＋ `rgba(0,0,0,0.4) 0 2px 6px` ＋ 頂緣高光）；create-bundle／create-auction 各確認 2 個盒子都在 scope 內。
+
+## 2026-07-21 · 開關揭示的表單包進外框：新增 `.control-group`；多規格選項列圓角放大（B 反饋導入）
+
+使用者附兩張圖：(1) 低庫存提醒那組——開關列與它揭示的「自訂低庫存門檻」要包在同一個框內，並指名「開啟折扣這類開關開啟後會有表單出現的設計都要」比照；(2) 多規格選項列的圓角要更大。
+
+- **【B】** `control-row.css` 新增 `.control-group`（`--radius-xl` 外框＋1px 內描邊）與 `.control-group__body`（1px 上分隔線＋`--sp-16` 內距）。群組內的 `.control-row` 交出自己的邊框與圓角，邊界由群組承擔。原本揭示欄位是裸的散在外框列下方，看起來像獨立的另一件事；包成一框＋一條分隔線，「這塊歸這個開關管」的從屬關係才讀得出來。
+- **【B】** 全站 11 組「開關→揭示表單」一次包完：create-product（開啟折扣 ▸ 限時折扣、多規格折扣 ▸ 限時折扣、低庫存提醒、每人限購）、create-bundle 與 bundle-detail（限時折扣）、product-detail（開啟折扣 ▸ 限時折扣、每人限購）。**群組可巢狀**——折扣的揭示區裡本來就包著限時折扣的開關，現在呈現為外框內再一框。沒有揭示表單的單純開關列（create-auction 密封終局／得標者付運費、create-project 直播／廣告）維持單獨 `.control-row`，未動。
+- **【B】** `variant-builder.css` 的 `.option-set__row`／`.option-set__add` 圓角由 `--radius`(6) 放大到 `--radius-xl`(16)；編輯態的 `.variant-option` 一併由 `--radius-md`(6) 改 16——兩者是同一列的收合／展開兩態，圓角不同會在切換時跳一下。與收合式 radio-list 的列同階（見 STYLE-DECISIONS Q22）。**收尾驗收抓到一個漏改**：同檔另有一條優先權更高的 `.option-set .variant-option{border-radius:var(--radius)}`（兩個 class）把編輯態蓋回 6px；由於 `renderOptions()` 一定把 `.variant-option` append 進 `.option-set`，正式頁面實際渲染的是被蓋掉的 6px，只有收合列真的變 16。已一併改為 16。
+- 落地時修掉一個副作用：低庫存那組的揭示欄位原本帶 `max-width:300px` 的行內樣式，包進群組後會讓分隔線只有 300px 寬、切在半途；把寬度限制移到內層 `input`，容器保持滿版。這條規則已寫進元件卡（寬度限制下在欄位、不下在 `__body`）。
+- 連帶修正 DS demo 的還原度：`design-system.html` 的 variant-builder demo 原本沒把 `.variant-option` 包進 `.option-set`，與真實 DOM 不符，正好繞過上述那條覆寫規則、讓 demo「看起來是對的」而掩蓋 bug。demo 已補上 `.option-set` 外層並加註解，DS demo 須還原真實巢狀結構這條規則寫進該段註解。
+- 驗證：Playwright 量測 `.control-group` 圓角 16px／內描邊 `rgb(51,52,53)`、`__body` 上分隔線 1px＋內距 16px、群組內 `.control-row` box-shadow 為 none；四頁 div 平衡以 HTMLParser 逐檔核對（未閉合 0、多餘關閉 0）；巢狀折扣組與低庫存組各截圖確認。
+
+## 2026-07-21 · 多規格選項值 chip 改中性淡填：chip 新增 `--value` 變體（B 反饋導入）
+
+使用者附圖指出建立商品「多規格」裡剛輸入的選項值標籤是白底黑字、太搶眼，並要求參照 Webflow 的做法。查 Webflow Designer 的 class chip（Mobbin screen `eb345f20`）：淡色填底、低對比，安靜待在深色面板上，不會反白。
+
+- **【B】** `chip.css` 新增 `.chip--value`：`--input-surface` 底＋`--foreground` 字＋1px `--border`，hover 不變色。語意是「創作者剛輸入的值」——正在輸入的資料不該比頁面上任何東西都搶眼。`create-product.html` 的多規格選項值由 `chip--active`（反白）改用 `chip--value`；圓角維持 `--radius-pill`（Q1「可點＝全圓」不動）。
+- 三種「創作者自建值 chip」的分工同輪寫進 `design-system.md`：`--value` 中性灰＝剛建立的值、`.tag-input .chip--active` 橘＝已套用的分類（Q19）、`--active` 反白＝篩選已選（Q8）。使用者選中性灰而非併入橘色，理由是選項值與商品標籤的語意不同。
+- 影響範圍：`create-product.html` 多規格選項值一處（全站唯一消費點）＋ `design-system.html` 的 chip 卡（新增 `--value` 矩陣與三者對照）與 variant-builder demo。商品標籤、電影關聯、篩選 chip 全部不動。
 
 ## 2026-07-21 · 日期／時間欄位補 placeholder：新元件 date-input（B 反饋導入，全站約 40 個欄位）
 

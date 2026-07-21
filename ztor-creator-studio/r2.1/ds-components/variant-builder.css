@@ -48,6 +48,8 @@
   flex-direction: column;
   gap: var(--sp-8);
 }
+/* 圓角 2026-07-21 由 --radius(6) 放大到 --radius-xl(16)（使用者裁示：這幾條列的圓角要更大），
+   與收合式 radio-list 的列同一階（見 STYLE-DECISIONS Q22）。 */
 .option-set__row,
 .option-set__add {
   display: flex;
@@ -56,7 +58,7 @@
   padding: var(--sp-12);
   background: var(--input-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
 }
 
 .option-set__row .ztor-icon,
@@ -106,10 +108,13 @@
 }
 .option-set__add:hover { color: var(--foreground); background: var(--accent); }
 
-/* 展開編輯中的那一組：沿用 .variant-option 編輯器，圓角與底色對齊同一族 */
+/* 展開編輯中的那一組：沿用 .variant-option 編輯器，圓角與底色對齊同一族。
+   圓角 2026-07-21 跟著 .option-set__row 一起放大到 --radius-xl——編輯中的列一定被
+   .option-set 包住（renderOptions() 把 .variant-option append 進 .option-set），
+   這條兩個 class 的規則優先權高於 .variant-option 本體，漏改會讓收合 16／編輯 6 對不上。 */
 .option-set .variant-option {
   background: var(--input-surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
 }
 
 /* 值輸入＝有邊框的實體欄位，已加入的值排在框外下方（2026-07-21；
@@ -142,7 +147,9 @@
   padding: var(--sp-12);
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  /* 與收合態的 .option-set__row 同階（2026-07-21 一併放大到 16）：兩者是同一列的兩個狀態，
+     圓角不同會在切換編輯／完成時跳一下。 */
+  border-radius: var(--radius-xl);
 }
 .variant-option__head { display: flex; align-items: center; gap: var(--sp-8); }
 .variant-option__name { flex: 1; }
@@ -188,11 +195,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   overflow-x: auto;
-  /* 外框貼齊表格實際內容寬、靠左，不再撐滿整個 preview-split 表單欄
-     （否則第一欄 fr 會吃掉多餘寬度、規格組合被撐得過寬）；
-     更窄視窗回退到滿寬＋水平捲動（min-width 560 觸發 overflow-x）。 */
-  width: fit-content;
-  max-width: 100%;
+  /* 2026-07-21：改回滿寬。原本 fit-content 是為了避免「規格組合」欄用 fr 把多餘寬度
+     全吃掉；現在改成多餘寬度只分給價格與單件成本（見下方 1fr），規格組合仍是內容寬，
+     所以可以安心撐滿容器。更窄視窗回退水平捲動（min-width 560 觸發 overflow-x）。 */
+  width: 100%;
 }
 .variant-table {
   display: flex;
@@ -202,15 +208,16 @@
 .variant-table__head,
 .variant-table__row {
   display: grid;
-  /* 規格組合欄＝內容寬（max-content）＋110px 下限，不用 fr 吃滿剩餘寬度 */
-  grid-template-columns: minmax(110px, max-content) 96px 78px 116px 92px 34px;
+  /* 規格組合＝內容寬（max-content）＋110px 下限；庫存／SKU／刪除＝固定寬；
+     多餘寬度只分給價格與單件成本這兩個金額欄（金額欄位最需要呼吸空間）。 */
+  grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 116px minmax(92px, 1fr) 34px;
   gap: var(--sp-8);
   align-items: center;
   padding: 9px var(--sp-12);
 }
 .variant-table--limited .variant-table__head,
 .variant-table--limited .variant-table__row {
-  grid-template-columns: minmax(110px, max-content) 96px 78px 84px 116px 92px 34px;
+  grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
 .variant-table__head {
   background: var(--muted);
