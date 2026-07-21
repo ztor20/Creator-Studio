@@ -6,6 +6,15 @@
 
 ---
 
+## 2026-07-21 · 電子商店主工作列改實色殼卡（A 規格對齊，取代 720:2165 版）
+
+使用者提供新版 Figma 參考（node 845:11081），指出「商品/組合/競標」分頁列＋右側動作圖示這條工作列的底色樣式跟目前不一樣。
+
+- **【A】** `.eshop-list-topbar` 主體從「與頁面同色（`--surface-page`）＋只有下緣圓角 12px＋向下柔影撐出圓角視覺」，改成「實色殼層（`--surface-shell`，比頁面亮一階）＋四角全圓角 16px」；顏色本身的階差已經讓卡片輪廓讀得出來，不再需要陰影撐圓角，box-shadow（含暗色覆寫）一併移除。Figma 量到的 `#1a1c1c` 對應既有 token `--surface-shell`（暗色 `#1C1D1E`，數值差在 Figma 匯出誤差內），亮色沿用同 token（`#F0F0EE`），不必新增 token。
+- 2026-06-26 那筆「照 Figma 720:2165 兩層陰影結構」的紀錄視為被本次取代——該版 Figma 節點已更新為新結構，不再是同色卡＋陰影的做法。
+- 影響範圍：僅 `e-shop.html` 頁面內 `<style>`（`.eshop-list-topbar` 頁面專屬樣式，未跨頁共用，不動 ds-components）。下方狀態篩選列（`全部狀態／上架中…`）背景仍是 `--surface-page`，維持與頁面同色、不受影響。
+- 驗證：Playwright 量測 `.eshop-list-topbar` computed background/border-radius/box-shadow，暗色 `rgb(28,29,30)`／`16px`／`none`，亮色 `rgb(240,240,238)`／`16px`，兩色階與 Figma 對齊；check_ds_sync 全 PASS。
+
 ## 2026-07-21 · 電子商店商品清單移除規格數／限量徽章（C 撤除）
 
 使用者看過上一輪（UIA-066 那筆）改完的畫面後回饋：Coastline tee／hoodie 名稱後的「4 種規格」「6 種規格」徽章、Coastline acetate 名稱後的「限量」徽章都是多餘的——庫存欄已經是「21 / 50」能直接看出限量，規格種類則已經由名稱下方的灰色副標（`__meta`，「顏色（Black/Sand）× 尺寸（S/M/L）」這類文字）呈現，徽章與這兩者是重複資訊。
