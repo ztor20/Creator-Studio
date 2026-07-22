@@ -386,7 +386,32 @@
       <ul class="app-sidebar__nav">${sidebarNavHtml(isAdminPlatform)}</ul>
     </nav>
 
-    <div class="app-sidebar__actions">
+    <div class="app-sidebar__actions">${isAdminPlatform ? `
+      <!-- Admin Creator Studio 下方：只留幣別（預設港幣）＋顯示模式＋登出（不含搜尋/通知/帳戶選單）-->
+      <div class="app-sidebar__group" data-state="closed" data-currency>
+        <button class="app-sidebar__action app-sidebar__group-toggle" type="button" aria-expanded="false" aria-label="Currency" data-i18n-aria-label="nav.currency">
+          <i data-lucide="dollar-sign" class="ztor-icon"></i>
+          <span class="app-sidebar__action-label" data-i18n="nav.currency">Currency</span>
+          <span class="app-sidebar__action-value" data-currency-current style="margin-left:auto;color:var(--muted-foreground)">HKD</span>
+          <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-sidebar__chevron"></i>
+        </button>
+        <ul class="app-sidebar__subnav"><div>
+          <li><a class="app-sidebar__sub-link" href="#" data-currency-pick="HKD" data-i18n="nav.currency.hkd">HKD (HK$)</a></li>
+          <li><a class="app-sidebar__sub-link" href="#" data-currency-pick="TWD" data-i18n="nav.currency.twd">TWD (NT$)</a></li>
+        </div></ul>
+      </div>
+
+      <button class="app-sidebar__action" type="button" data-nav-toggle aria-label="Display mode" data-i18n-aria-label="nav.navmode-label">
+        <i data-lucide="panel-left" class="ztor-icon"></i>
+        <i data-lucide="panel-top" class="ztor-icon"></i>
+        <span class="app-sidebar__action-label" data-i18n="nav.navmode-label">Display mode</span>
+      </button>
+
+      <a class="app-sidebar__action" href="#" aria-label="Log out" data-i18n-aria-label="nav.logout" style="color:var(--destructive)">
+        <i data-lucide="log-out" class="ztor-icon"></i>
+        <span class="app-sidebar__action-label" data-i18n="nav.logout">Log out</span>
+      </a>
+` : `
       <label class="app-sidebar__action app-sidebar__search">
         <i data-lucide="search" class="ztor-icon"></i>
         <input type="search" class="app-sidebar__search-input" placeholder="Search…" data-i18n-placeholder="nav.search-placeholder">
@@ -420,6 +445,7 @@
           <li><a class="app-sidebar__sub-link" href="#" data-i18n="nav.logout" style="color:var(--destructive)">Log out</a></li>
         </div></ul>
       </div>
+`}
     </div>
   `;
   }
@@ -570,14 +596,36 @@
     toggle.setAttribute("aria-expanded", open ? "false" : "true");
   });
 
+  /* Currency picker (Admin footer) — 選幣別即更新標籤＋記住，收合群組。預設港幣。 */
+  document.addEventListener("click", e => {
+    const pick = e.target.closest("[data-currency-pick]");
+    if (!pick) return;
+    e.preventDefault();
+    const cur = pick.getAttribute("data-currency-pick");
+    document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
+    try { localStorage.setItem("ztor-currency", cur); } catch (err) {}
+    const group = pick.closest(".app-sidebar__group");
+    if (group) {
+      group.setAttribute("data-state", "closed");
+      const t = group.querySelector(".app-sidebar__group-toggle");
+      if (t) t.setAttribute("aria-expanded", "false");
+    }
+  });
+  function applySavedCurrency() {
+    let cur = null;
+    try { cur = localStorage.getItem("ztor-currency"); } catch (err) {}
+    if (cur) document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
+  }
+
   /* ESC closes any open topbar dropdown. */
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") closeAll();
   });
 
   /* Initial mount + re-mount when the display mode or active creator changes. */
-  mount();
-  document.addEventListener("ztor:navmode-changed", mount);
-  document.addEventListener("ztor:creator-changed", mount);
-  document.addEventListener("ztor:devstate-changed", mount);
+  function mountAndRestore() { mount(); applySavedCurrency(); }
+  mountAndRestore();
+  document.addEventListener("ztor:navmode-changed", mountAndRestore);
+  document.addEventListener("ztor:creator-changed", mountAndRestore);
+  document.addEventListener("ztor:devstate-changed", mountAndRestore);
 })();
