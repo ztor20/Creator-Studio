@@ -287,12 +287,21 @@
   min-height: 0;
   overflow-y: auto;
 }
-/* 費率例外彈窗：平台費樹撐滿整個彈窗寬度（抵銷 body 左右內距 --sp-20），
-   表格 edge-to-edge，其餘欄位維持內距。2026-07-22 B 反饋。 */
-[data-fx-modal] [data-fx-tree] {
-  margin-left: calc(-1 * var(--sp-20));
-  margin-right: calc(-1 * var(--sp-20));
-}
+/* 費率例外彈窗：平台費樹填滿 body 可用寬度即可，維持 body 左右內距。
+   2026-07-22 撤回先前的負 margin edge-to-edge——body 是 overflow-y:auto，
+   一旦內容戳出左右內距，overflow-x 會從 visible 變 auto、長出不必要的橫向捲軸；
+   表格本身 width:100% 已填滿內距框，不需貼到彈窗邊。 */
+
+/* E-Shop 逐商品例外列（產品範圍提案 UIA-076；demo-only）：選商品＋該商品平台費＋移除。
+   容器左右內距為 0，讓列與「新增例外商品」鈕貼齊 fee-tree__panel＝與上方費率表等寬。 */
+.fee-exc-prod { padding: var(--sp-8) 0 var(--sp-12); }
+.fee-exc-prod__rows { display: flex; flex-direction: column; gap: var(--sp-8); }
+.fee-exc-prod__row { display: flex; align-items: center; gap: var(--sp-8); }
+.fee-exc-prod__row [data-prod-select] { flex: 1 1 auto; min-width: 0; }
+.fee-exc-prod__row .amount-field { flex: none; width: 116px; }
+/* 「新增例外商品」＝整寬實線外框鈕（.btn.btn--outline，站上既有的線框語彙），與上方費率表等寬。
+   2026-07-22 使用者裁示：改線框、非虛線。整寬與置中由這裡覆寫，邊框／底色／高度由 .btn--outline 提供。 */
+.fee-exc-prod__add { width: 100%; justify-content: center; margin-top: var(--sp-8); }
 
 /* Body scroll lock while any modal is open (toggled by the loader) */
 .is-modal-open {

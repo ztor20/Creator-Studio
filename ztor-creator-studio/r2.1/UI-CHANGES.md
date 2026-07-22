@@ -6,12 +6,20 @@
 
 ---
 
+## 2026-07-22 · 費率例外彈窗微調：欄頭「費率」、新增鈕線框等寬、去維度分隔線、支付固定額幣別跟隨平台（B 反饋導入）
+
+- **【B】** 例外編輯器費率欄欄頭「此 Creator（空＝繼承預設）」→「**費率**」（`i18n.js fees.exc.col-rate`；彈窗 clone 的 fallback 同步為 `Rate`）。「空＝繼承」的說明保留在每個輸入框的 placeholder 與 badge，欄頭精簡。
+- **【B】** 「新增例外商品」由虛線改**實線外框鈕**（`.btn.btn--outline`＋`.fee-exc-prod__add` 只覆寫整寬置中），並讓 `.fee-exc-prod` 左右內距歸零，使按鈕與商品列**與上方費率表等寬**（貼齊 `fee-tree__panel` 邊）。
+- **【B】** 費率樹**各維度手風琴之間不畫分隔線**（`table.css`：`.ztor-accordion__item:has(.fee-tree__panel)` 解除全域 `.ztor-accordion__item` 的上下 1px border；用 `:has` 只命中費率維度、不動站上其他手風琴；各維度已用 `.admin-table-wrap` 外框自成一塊）。
+- **【B】** 支付手續費的**每筆固定金額幣別跟隨平台幣別**（不再寫死 HK$）：Admin 側欄已有全站幣別（`localStorage 'ztor-currency'`，預設 HKD），設定分頁與例外彈窗兩處固定額的單位符號改讀該設定（HKD→HK$／TWD→NT$，`data-fee-cur`＋`applyFeeCurrency()`），同頁切換即時跟隨。
+- 驗證：Playwright 確認欄頭「費率」、外框鈕寬 580＝表寬、五維度 border-top 皆 0、HKD→HK$／TWD→NT$；`check_ds_sync.py` 全 PASS。
+
 ## 2026-07-22 · Admin 側欄精簡＋幣別、費率樹全展開/去分隔線/彈窗滿版、E-Shop 逐商品例外（B 反饋導入）
 
 - **【B】** Admin Creator Studio 側欄下方精簡（`js/sidebar.js` 依 `isAdminPlatform` 分流，不動 creator 頁）：只留**幣別**（新增，預設港幣 HKD，可切 TWD、`localStorage` 記住）＋**顯示模式**＋**登出**；移除搜尋、通知、帳戶選單。`js/icons.js` 補 `log-out` icon；`js/i18n.js` 新增 `nav.currency*`。
 - **【B】** 費率樹**預設全部維度展開**（設定分頁 5 維度 markup 改 `data-state="open"`；例外彈窗 `renderTreeInto` 改一律展開）。
 - **【B】** 費率樹**各交易項之間不畫分隔線**（`table.css`：`.fee-tree__panel .ztor-table tbody td { border-bottom:0 }`）。
-- **【B】** 例外彈窗的**平台費表格撐滿彈窗寬度**（`payout-modal.css`：`[data-fx-modal] [data-fx-tree]` 左右負邊距抵銷 body 內距，edge-to-edge）。
+- **【B】** 例外彈窗的**平台費表格填滿 body 可用寬度**（`table.css`：在 `.fee-tree__panel` 範圍解除 `.admin-table-wrap` 借來的 `min-width:840px`——那是給寬的 admin IP 銀行表設的，費率樹只有 2–3 欄不需要，在窄彈窗會被撐出橫向捲軸）。同日撤回先前「左右負邊距 edge-to-edge」做法：body 是 `overflow-y:auto`，內容戳出左右內距會讓 `overflow-x` 變 `auto`、長出多餘橫向捲軸。「新增例外商品」改用站上既有整寬虛線「新增列」語彙（`.fee-exc-prod__add`，同 `.variant-option__add-value`），不再是裸 ghost 鈕。
 - **【B／產品範圍提案】** 例外彈窗 E-Shop 下加「**新增例外商品**」：選商品＋填該商品平台費，可加多列／移除。**超出文件資料模型**（`FeeException` 只有逐葉，無逐商品）——本輪為前端 demo（假商品池、不寫入 overrides、不進儲存），記 `ASSUMPTIONS.md UIA-076` 待上游裁決。
 - 驗證：Playwright 確認側欄三項＋幣別 HKD→TWD 切換、樹全展開無分隔線、彈窗滿版、E-Shop 可加商品例外列；`check_ds_sync.py` 全 PASS。
 

@@ -54,10 +54,20 @@
    同時作用於設定分頁預設樹與例外彈窗 clone——兩者都包在 .fee-tree__panel 內。
    相鄰選擇器（非首欄）避開數字型 nth-child；不用 #id 選擇器（會被裸色檢查誤判成 #hex）。 */
 .fee-tree__panel .ztor-table { table-layout: fixed; width: 100%; }
+/* 費率樹借用 .admin-table-wrap（取其外框＋圓角），但那支給寬的 admin IP 銀行表設了
+   min-width:840px；費率樹只有 2–3 欄、不需要，且在窄的例外彈窗（≈580px）會被撐出
+   橫向捲軸。這裡在費率樹範圍內解除該最小寬（多一個 class，特異度壓過 .admin-table-wrap
+   .ztor-table，且不動 admin 銀行表本身）。2026-07-22 */
+.fee-tree__panel .admin-table-wrap .ztor-table { min-width: 0; }
 .fee-tree__panel .ztor-table th + th,
 .fee-tree__panel .ztor-table td + td { text-align: right; }
 /* 費率樹各交易項之間不畫分隔線（2026-07-22 B 反饋）*/
 .fee-tree__panel .ztor-table tbody td { border-bottom: 0; }
+/* 費率樹「各維度手風琴之間」也不畫分隔線（2026-07-22 B 反饋）：全域 .ztor-accordion__item
+   本來上下各有 1px border 當分隔，這裡只在費率維度（含 fee-tree__panel 的 item）解除，
+   用 :has 精準命中、不動站上其他手風琴；各維度已用 .admin-table-wrap 的外框自成一塊。 */
+.ztor-accordion__item:has(.fee-tree__panel) { border-top: 0; }
+.ztor-accordion__item:has(.fee-tree__panel):last-child { border-bottom: 0; }
 
 .ztor-table__check {
   color: var(--status-success);

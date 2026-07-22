@@ -4,24 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>平台費率設定 · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260722y"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/button.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/input.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/field-system.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260722y"><link rel="stylesheet" href="ds-components/accordion.css?v=20260722y"><link rel="stylesheet" href="ds-components/table.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/card.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260722y">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260722y">
-<link rel="stylesheet" href="shared.css?v=20260722y">
+<script src="js/theme.js?v=20260722zb"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/button.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/input.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/field-system.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260722zb"><link rel="stylesheet" href="ds-components/accordion.css?v=20260722zb"><link rel="stylesheet" href="ds-components/table.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/card.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260722zb">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260722zb">
+<link rel="stylesheet" href="shared.css?v=20260722zb">
 </head>
 <body>
 <div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
@@ -78,7 +78,7 @@
   <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
     <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
     <span class="text-sub" aria-hidden="true">＋</span>
-    <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit">HK$</span><input class="input amount-field__input" id="fee-payment-fixed" type="number" inputmode="decimal" value="2.40" style="padding-left:48px"></span>
+    <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit" data-fee-cur>HK$</span><input class="input amount-field__input" id="fee-payment-fixed" type="number" inputmode="decimal" value="2.40" style="padding-left:48px"></span>
   </div>
 </section>
 
@@ -250,11 +250,11 @@
   </section>
 </div>
 
-<script src="js/icons.js?v=20260722y"></script>
-<script src="js/i18n.js?v=20260722y"></script>
-<script src="partials/date-input.js?v=20260722y"></script>
-<script src="js/sidebar.js?v=20260722y"></script>
-<script src="partials/fee-exception-modal.js?v=20260722y"></script>
+<script src="js/icons.js?v=20260722zb"></script>
+<script src="js/i18n.js?v=20260722zb"></script>
+<script src="partials/date-input.js?v=20260722zb"></script>
+<script src="js/sidebar.js?v=20260722zb"></script>
+<script src="partials/fee-exception-modal.js?v=20260722zb"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫、逐葉粒度，D141）。
@@ -318,13 +318,12 @@
         var rows = addBtn.parentNode.querySelector('.fee-exc-prod__rows');
         var row = document.createElement('div');
         row.className = 'fee-exc-prod__row';
-        row.setAttribute('style', 'display:flex;align-items:center;gap:var(--sp-8);margin-bottom:var(--sp-8)');
         row.innerHTML =
-          '<select class="input" data-prod-select style="flex:1 1 auto;min-width:0">' +
+          '<select class="input" data-prod-select>' +
             '<option value="">' + t('fees.exc.pick-product', 'Choose a product…') + '</option>' +
             ESHOP_PRODUCTS.map(function (p) { return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('') +
           '</select>' +
-          '<span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" type="number" inputmode="decimal" placeholder="5" data-prod-rate><span class="amount-field__unit">%</span></span>' +
+          '<span class="amount-field amount-field--suffix"><input class="input amount-field__input" type="number" inputmode="decimal" placeholder="5" data-prod-rate><span class="amount-field__unit">%</span></span>' +
           '<button type="button" class="btn btn--ghost btn--sm btn--icon" data-prod-remove aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
         rows.appendChild(row);
         if (window.ztorIcons) window.ztorIcons.applyIcons(row);
@@ -364,6 +363,23 @@
     /* 版本歷史 append-only：儲存（立即／延遲／某例外）都插一列。
        eff＝生效日 ISO；未傳＝今天（立即生效）。生效日在未來時，該版本標「待生效」。
        頁面已無「目前版本」徽章（Figma 865-100 撤除該卡），版本資訊只留在版本歷史分頁。 */
+    /* 支付手續費固定金額的幣別符號跟隨平台幣別（側欄設定，localStorage 'ztor-currency'，預設 HKD）。
+       使用者裁示：平台已有全站幣別指定，這裡不再寫死 HK$。設定分頁與例外彈窗兩處鏡射同一符號。 */
+    var FEE_CUR_SYM = { HKD: 'HK$', TWD: 'NT$' };
+    function feeCurSym() {
+      var c = 'HKD'; try { c = localStorage.getItem('ztor-currency') || 'HKD'; } catch (e) {}
+      return FEE_CUR_SYM[c] || FEE_CUR_SYM.HKD;
+    }
+    function applyFeeCurrency(scope) {
+      var sym = feeCurSym();
+      Array.prototype.forEach.call((scope || document).querySelectorAll('[data-fee-cur]'), function (el) { el.textContent = sym; });
+    }
+    applyFeeCurrency(document);
+    /* 在同頁側欄切換平台幣別時即時跟隨（側欄 handler 已同步寫入 localStorage，microtask 後讀得到）*/
+    document.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-currency-pick]')) setTimeout(function () { applyFeeCurrency(document); }, 0);
+    });
+
     function todayISO() { var d = new Date(); d.setHours(0, 0, 0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
     function addHistory(scope, change, eff) {
       eff = eff || todayISO();
@@ -404,7 +420,7 @@
         if (th.classList.contains('fee-src')) th.hidden = false;
         if (th.getAttribute('data-i18n') === 'fees.col.rate') {
           th.setAttribute('data-i18n', 'fees.exc.col-rate');
-          th.textContent = t('fees.exc.col-rate', 'This Creator');
+          th.textContent = t('fees.exc.col-rate', 'Rate');
         }
       });
       /* 預設全部維度展開（與設定分頁一致）*/
@@ -422,9 +438,8 @@
         var eshopPanel = eshopItem.querySelector('.fee-tree__panel');
         var prodWrap = document.createElement('div');
         prodWrap.className = 'fee-exc-prod';
-        prodWrap.setAttribute('style', 'padding:var(--sp-4) var(--sp-16) var(--sp-8)');
         prodWrap.innerHTML = '<div class="fee-exc-prod__rows"></div>' +
-          '<button type="button" class="btn btn--ghost btn--sm" data-add-prod-exc><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="fees.exc.add-product">Add product exception</span></button>';
+          '<button type="button" class="btn btn--outline fee-exc-prod__add" data-add-prod-exc><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="fees.exc.add-product">Add product exception</span></button>';
         eshopPanel.appendChild(prodWrap);
       }
       container.appendChild(clone);
@@ -551,7 +566,8 @@
         var pay = document.getElementById('fee-payment'),
             payFix = document.getElementById('fee-payment-fixed');
         if (paymentEl && pay) paymentEl.value = pay.value;                 // 支付 % 唯讀鏡射、取設定分頁值
-        if (paymentFixedEl && payFix) paymentFixedEl.value = payFix.value; // 每筆固定 HK$ 唯讀鏡射
+        if (paymentFixedEl && payFix) paymentFixedEl.value = payFix.value; // 每筆固定金額唯讀鏡射
+        applyFeeCurrency(modal);                                           // 幣別符號跟隨平台幣別
         if (m === 'edit' && ex) {
           creatorField.hidden = true;
           readOv = renderTreeInto(treeHost, ex.ov);
@@ -661,6 +677,6 @@
     i18n(excBody);
   }());
 </script>
-<script src="js/devtools.js?v=20260722y"></script>
+<script src="js/devtools.js?v=20260722zb"></script>
 </body>
 </html>
