@@ -364,7 +364,7 @@
 - `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
 - `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
 - `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
-- `table.css` — .ztor-table, .ztor-table__feature, .ztor-table__check, .ztor-table__cross, .ztor-table__partial ｜ Ztor — Table
+- `table.css` — .ztor-table, .ztor-table__feature, .fee-tree__panel, .ztor-table__check, .ztor-table__cross ｜ Ztor — Table
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--brand ｜ Tabs — horizontal tab bar with hairline underlin
 - `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
 - `upload-tile.css` — .upload-tile, .upload-tile--hero, .upload-tile--file, .upload-tile__icon, .upload-tile__title ｜ Upload tile · dashed upload affordance for creat
