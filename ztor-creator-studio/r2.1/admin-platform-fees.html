@@ -4,22 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>平台費率設定 · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260721zzu"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/button.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/input.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/field-system.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260721zzu"><link rel="stylesheet" href="ds-components/accordion.css?v=20260721zzu"><link rel="stylesheet" href="ds-components/table.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/card.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260721zzu">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260721zzu">
-<link rel="stylesheet" href="shared.css?v=20260721zzu">
+<script src="js/theme.js?v=20260722i"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/button.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/input.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/field-system.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260722i"><link rel="stylesheet" href="ds-components/accordion.css?v=20260722i"><link rel="stylesheet" href="ds-components/table.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/card.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260722i">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260722i">
+<link rel="stylesheet" href="shared.css?v=20260722i">
 </head>
 <body>
 <div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
@@ -47,13 +48,18 @@
 <!-- ===== Tab 1：費率設定（支付手續費＋預設費率樹＋版本設定）===== -->
 <div class="tab-panel tab-panel--active" data-panel="settings">
 
-<!-- 支付手續費：全站單一費率、不隨維度分葉（spec 5.1.0.3 F2）；置頂＋輕量單列＝最單純的配角 -->
+<!-- 支付手續費：全站單一費率、不隨維度分葉（spec 5.1.0.3 F2）；置頂＋輕量單列＝最單純的配角
+     支付手續費＝百分比＋每筆固定金額（3.4% ＋ HK$2.40） -->
 <section class="form-section form-section--outlined" style="display:flex;align-items:center;gap:var(--sp-16) var(--sp-18);flex-wrap:wrap">
   <div style="flex:1;min-width:var(--w-220)">
     <h3 class="form-section__title" style="margin:0" data-i18n="fees.payment.title">Payment fee</h3>
     <p class="text-sub" style="margin:var(--sp-8) 0 0" data-i18n="fees.payment.sub">One rate for every transaction, whatever the type.</p>
   </div>
-  <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" id="fee-payment" type="number" inputmode="decimal" value="2.4"><span class="amount-field__unit">%</span></span>
+  <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
+    <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
+    <span class="text-sub" aria-hidden="true">＋</span>
+    <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit">HK$</span><input class="input amount-field__input" id="fee-payment-fixed" type="number" inputmode="decimal" value="2.40" style="padding-left:48px"></span>
+  </div>
 </section>
 
 <!-- F2 預設費率樹（全平台通用）＋F3 費率例外（逐 Creator 覆寫）（spec 5.1.0.3 F2–F3）-->
@@ -72,10 +78,10 @@
         <div class="admin-table-wrap"><table class="ztor-table">
           <thead><tr><th data-i18n="fees.col.type">Transaction type</th><th data-i18n="fees.col.rate">Platform fee</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
           <tbody>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.physical">Direct sale · physical</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.digital">Direct sale · digital</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.bundle">Bundle</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.auction">Auction (on close)</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="10" data-general="10"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.physical">Direct sale · physical</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.digital">Direct sale · digital</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.bundle">Bundle</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.eshop.auction">Auction (on close)</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
           </tbody>
         </table></div>
       </div>
@@ -88,8 +94,8 @@
         <div class="admin-table-wrap"><table class="ztor-table">
           <thead><tr><th data-i18n="fees.col.type">Transaction type</th><th data-i18n="fees.col.rate">Platform fee</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
           <tbody>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.events.onsite">On-site event ticket</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.events.online">Online event ticket</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.events.onsite">On-site event ticket</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.events.online">Online event ticket</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
             <tr><td class="ztor-table__feature" data-i18n="fees.leaf.events.signup">Sign-up / free-event fee</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="0" data-general="0"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
           </tbody>
         </table></div>
@@ -103,10 +109,10 @@
         <div class="admin-table-wrap"><table class="ztor-table">
           <thead><tr><th data-i18n="fees.col.type">Transaction type</th><th data-i18n="fees.col.rate">Platform fee</th><th class="fee-src" hidden data-i18n="fees.col.source">Source</th></tr></thead>
           <tbody>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.funding">Crowdfunding success</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.preorder">Pre-order</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.rphys">Physical reward fulfilment</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
-            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.rdigi">Digital reward fulfilment</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="15" data-general="15"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.funding">Crowdfunding success</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.preorder">Pre-order</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.rphys">Physical reward fulfilment</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
+            <tr><td class="ztor-table__feature" data-i18n="fees.leaf.projects.rdigi">Digital reward fulfilment</td><td><span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input fee-rate-input" type="number" inputmode="decimal" value="5" data-general="5"><span class="amount-field__unit">%</span></span></td><td class="fee-src" hidden><span class="badge badge--neutral fee-source" data-i18n="fees.source.inherit">Inherited</span></td></tr>
           </tbody>
         </table></div>
       </div>
@@ -136,10 +142,12 @@
   <div class="form-section__head">
     <h3 class="form-section__title" data-i18n="fees.version.title">Rate version &amp; effective scope</h3>
   </div>
-  <div style="display:flex;align-items:center;gap:var(--sp-8);margin-bottom:var(--sp-16)">
+  <div style="display:flex;align-items:center;gap:var(--sp-8);margin-bottom:var(--sp-4)">
     <span class="field__label" style="margin:0" data-i18n="fees.version.current">Current version</span>
     <span class="badge badge--neutral" id="fee-cur-version">cfg-2026.02</span>
   </div>
+  <!-- 生效日在未來時：主徽章維持現行、此副行顯示待生效版本；到生效日才切換（spec 5.1.0.3 F4）-->
+  <p class="text-sub" id="fee-next-note" hidden style="margin:0 0 var(--sp-16)"></p>
   <div style="display:flex;gap:var(--sp-18);flex-wrap:wrap;align-items:flex-end">
     <label class="field">
       <span class="field__label" data-i18n="fees.version.effective">Effective from</span>
@@ -209,11 +217,11 @@
 <!-- 費率例外編輯彈窗掛載點（partial 注入）-->
 <div data-fee-exc-modal-host></div>
 
-<script src="js/icons.js?v=20260721zzu"></script>
-<script src="js/i18n.js?v=20260721zzu"></script>
-<script src="partials/date-input.js?v=20260721zzu"></script>
-<script src="js/sidebar.js?v=20260721zzu"></script>
-<script src="partials/fee-exception-modal.js?v=20260721zzu"></script>
+<script src="js/icons.js?v=20260722i"></script>
+<script src="js/i18n.js?v=20260722i"></script>
+<script src="partials/date-input.js?v=20260722i"></script>
+<script src="js/sidebar.js?v=20260722i"></script>
+<script src="partials/fee-exception-modal.js?v=20260722i"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫、逐葉粒度，D141）。
@@ -293,13 +301,22 @@
           eff = effEl ? effEl.value : '',
           ver = 'cfg-' + (eff ? eff.slice(0, 7).replace('-', '.') : 'new'),
           cur = document.getElementById('fee-cur-version'),
+          note = document.getElementById('fee-next-note'),
           hist = document.getElementById('fee-history-body');
-      if (cur) cur.textContent = ver;
+      /* 生效日在未來→主徽章維持現行、副行顯示待生效版本；否則才把徽章切成新版本（spec 5.1.0.3 F4）*/
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var isFuture = eff && (new Date(eff + 'T00:00:00') > today);
+      if (isFuture) {
+        if (note) { note.hidden = false; note.textContent = t('fees.version.next', 'next: {v} · from {d}').replace('{v}', ver).replace('{d}', eff); }
+      } else {
+        if (cur) cur.textContent = ver;
+        if (note) note.hidden = true;
+      }
       if (!hist) return;
       var tr = document.createElement('tr'),
           c0 = document.createElement('td'), c1 = document.createElement('td'),
           c2 = document.createElement('td'), c3 = document.createElement('td');
-      c0.className = 'ztor-table__feature'; c0.textContent = ver;
+      c0.className = 'ztor-table__feature'; c0.textContent = ver + (isFuture ? ' · ' + t('fees.version.pending', 'pending') : '');
       c1.textContent = (eff || '—') + ' →';
       c2.textContent = scope;
       c3.className = 'text-sub'; c3.textContent = change || '—';
@@ -392,7 +409,14 @@
       if (!btn) return;
       var id = btn.closest('tr.fee-exc-row').getAttribute('data-id'), idx = findIdx(id);
       if (idx < 0) return;
-      if (btn.getAttribute('data-act') === 'remove') { state.splice(idx, 1); render(); return; }
+      if (btn.getAttribute('data-act') === 'remove') {
+        /* 移除例外也建新版本＋寫入版本歷史（金流規則變更須可稽核，spec 5.1.0.3 F4）*/
+        var removed = state[idx];
+        state.splice(idx, 1);
+        addHistory(t('fees.scope.exc', 'Exception') + ' · ' + removed.name, t('fees.exc.removed', 'Removed exception'));
+        render();
+        return;
+      }
       openModal('edit', state[idx]);
     });
 
@@ -420,6 +444,7 @@
           suggestEl = root.querySelector('[data-fx-suggest]'),
           noneEl = root.querySelector('[data-fx-none]'),
           paymentEl = root.querySelector('[data-fx-payment]'),
+          paymentFixedEl = root.querySelector('[data-fx-payment-fixed]'),
           treeHost = root.querySelector('[data-fx-tree]'),
           saveEl = root.querySelector('[data-fx-save]');
       var mode = 'add', current = null, pickedId = null, pickedName = '', readOv = null;
@@ -433,8 +458,10 @@
       function renderSuggest() {
         if (!suggestEl) return;
         var q = (searchEl.value || '').trim().toLowerCase();
-        var avail = ALL_CREATORS.filter(function (c) { return findIdx(c.id) < 0 && (!q || c.name.toLowerCase().indexOf(q) >= 0); });
         suggestEl.innerHTML = '';
+        /* 空查詢不列任何選項（打字才篩，像創建 creator 的搜尋）*/
+        if (!q) { if (noneEl) noneEl.hidden = true; return; }
+        var avail = ALL_CREATORS.filter(function (c) { return findIdx(c.id) < 0 && c.name.toLowerCase().indexOf(q) >= 0; });
         avail.forEach(function (c) {
           var b = document.createElement('button');
           b.type = 'button';
@@ -458,8 +485,10 @@
 
       function open(m, ex) {
         mode = m; current = ex || null; readOv = null; pickedId = null; pickedName = '';
-        var pay = document.getElementById('fee-payment');
-        if (paymentEl && pay) paymentEl.value = pay.value;   // 支付手續費唯讀、取設定分頁值
+        var pay = document.getElementById('fee-payment'),
+            payFix = document.getElementById('fee-payment-fixed');
+        if (paymentEl && pay) paymentEl.value = pay.value;                 // 支付 % 唯讀鏡射、取設定分頁值
+        if (paymentFixedEl && payFix) paymentFixedEl.value = payFix.value; // 每筆固定 HK$ 唯讀鏡射
         if (m === 'edit' && ex) {
           creatorField.hidden = true;
           readOv = renderTreeInto(treeHost, ex.ov);
@@ -530,6 +559,6 @@
     i18n(excBody);
   }());
 </script>
-<script src="js/devtools.js?v=20260721zzu"></script>
+<script src="js/devtools.js?v=20260722i"></script>
 </body>
 </html>
