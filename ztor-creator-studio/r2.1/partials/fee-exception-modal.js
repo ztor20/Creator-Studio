@@ -34,7 +34,7 @@ window.ZTOR_PARTIALS.feeExceptionModal = String.raw`
         <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
           <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" data-fx-payment type="number" value="3.4" disabled><span class="amount-field__unit">%</span></span>
           <span class="text-sub" aria-hidden="true">＋</span>
-          <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit">HK$</span><input class="input amount-field__input" data-fx-payment-fixed type="number" value="2.40" style="padding-left:48px" disabled></span>
+          <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit" data-fee-cur>HK$</span><input class="input amount-field__input" data-fx-payment-fixed type="number" value="2.40" style="padding-left:48px" disabled></span>
         </div>
       </div>
 

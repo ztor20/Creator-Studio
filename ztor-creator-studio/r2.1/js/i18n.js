@@ -80,7 +80,7 @@
     'fees.exc.col-creator':  { en: 'Creator', zh: 'Creator' },
     'fees.exc.col-override': { en: 'Overrides', zh: '覆寫項目' },
     'fees.exc.col-actions':  { en: '', zh: '' },
-    'fees.exc.col-rate':  { en: 'This Creator (blank = inherit)', zh: '此 Creator（空＝繼承預設）' },
+    'fees.exc.col-rate':  { en: 'Rate', zh: '費率' },
     'fees.exc.edit':      { en: 'Edit', zh: '編輯' },
     'fees.exc.remove':    { en: 'Remove', zh: '移除' },
     'fees.exc.removed':   { en: 'Removed exception', zh: '移除例外' },
