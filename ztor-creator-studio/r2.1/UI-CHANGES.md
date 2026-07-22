@@ -6,6 +6,26 @@
 
 ---
 
+## 2026-07-22 · Admin 側欄精簡＋幣別、費率樹全展開/去分隔線/彈窗滿版、E-Shop 逐商品例外（B 反饋導入）
+
+- **【B】** Admin Creator Studio 側欄下方精簡（`js/sidebar.js` 依 `isAdminPlatform` 分流，不動 creator 頁）：只留**幣別**（新增，預設港幣 HKD，可切 TWD、`localStorage` 記住）＋**顯示模式**＋**登出**；移除搜尋、通知、帳戶選單。`js/icons.js` 補 `log-out` icon；`js/i18n.js` 新增 `nav.currency*`。
+- **【B】** 費率樹**預設全部維度展開**（設定分頁 5 維度 markup 改 `data-state="open"`；例外彈窗 `renderTreeInto` 改一律展開）。
+- **【B】** 費率樹**各交易項之間不畫分隔線**（`table.css`：`.fee-tree__panel .ztor-table tbody td { border-bottom:0 }`）。
+- **【B】** 例外彈窗的**平台費表格撐滿彈窗寬度**（`payout-modal.css`：`[data-fx-modal] [data-fx-tree]` 左右負邊距抵銷 body 內距，edge-to-edge）。
+- **【B／產品範圍提案】** 例外彈窗 E-Shop 下加「**新增例外商品**」：選商品＋填該商品平台費，可加多列／移除。**超出文件資料模型**（`FeeException` 只有逐葉，無逐商品）——本輪為前端 demo（假商品池、不寫入 overrides、不進儲存），記 `ASSUMPTIONS.md UIA-076` 待上游裁決。
+- 驗證：Playwright 確認側欄三項＋幣別 HKD→TWD 切換、樹全展開無分隔線、彈窗滿版、E-Shop 可加商品例外列；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-22 · 平台費率頁補 OTT 維度（A spec-derived，feature_description v1.1）
+
+需求 v1.1 把 OTT/PPV 納入範圍（roadmap 票由「; not PPV」改「+ PPV」）。費率樹補第 5 個維度，達文件要求的 15 葉。
+
+- **【A】** 新增「OTT · 線上影音」手風琴（置於專案 Projects 與 IP 之間），單葉 `ott.ppv`＝單次付費觀看（PPV），預設 **40%**；費率欄掛「**All-in**」badge，`title`／i18n 說明「費率已含金流手續費，不另計 3.4% + HK$2.40」（對應 `FeeRate.allIn=true`：此葉結算不另收支付手續費）。
+- **【A】** 支付手續費卡副標（`fees.payment.sub`）補「OTT 除外，其費率已含金流」——符合文件 §4.1「支付手續費套用所有交易，但 allIn 葉（OTT）除外」。
+- **【D】** `js/i18n.js` 新增 `fees.dim.ott`／`fees.leaf.ott.ppv`／`fees.ott.allin`／`fees.ott.allin.tip`。
+- badge 放在費率欄（非葉標籤 `td`），避免 applyI18n 覆寫掉 badge；例外彈窗 clone 會一併帶入此葉（達 15 葉逐 Creator 覆寫）。
+- 尚未做（另列，待你決定）：IP 三葉停用＋「待業務確認」標；生效日「≥ 今天」驗證；目前版本徽章／分頁名稱與順序跟文件的差異。
+- 驗證：Playwright 截圖確認 OTT 手風琴可展開、40% + All-in badge、例外彈窗含 OTT 葉；`check_ds_sync.py` 全 PASS。
+
 ## 2026-07-22 · 建立 creator 改「搜尋前台帳號 → 選取後就地建檔」單面板（B 反饋導入，對齊 BR-02）
 
 使用者反饋：Admin Creator 管理的「建立 creator」不該憑空填表，要改成先搜尋帳號、選到後就地帶出建檔表單、按建立。此流程正好對齊規格 §5.1.0 頁面定位「開店前置（BR-02）」——creator 來源是本人先在 ztor 前台自助註冊帳號，Admin 在此以該已註冊帳號為對象建檔（承接、非憑空開號）。同日經幾輪反饋收斂成下述單面板形態（去 stepper、不分兩步）。
