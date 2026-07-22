@@ -271,6 +271,23 @@
   display: block;
 }
 
+/* 費率例外彈窗（[data-fx-modal]）：dialog 改 flex 直列、只讓 body 捲動、head/foot 固定。
+   費率樹展開後內容變長，預設 .payout-dialog 是整框 overflow:auto（head/body/foot 一起捲），
+   會讓 footer（取消／儲存例外）跟著捲到內容下方；改成只捲 body、footer 釘在框底。
+   只 scope 到費率例外彈窗，不影響 earnings 的 payout modal。2026-07-22 */
+[data-fx-modal] .payout-dialog {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+[data-fx-modal] .payout-dialog__head,
+[data-fx-modal] .payout-dialog__foot { flex: none; }
+[data-fx-modal] .payout-dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* Body scroll lock while any modal is open (toggled by the loader) */
 .is-modal-open {
   overflow: hidden;

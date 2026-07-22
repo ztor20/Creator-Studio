@@ -17,26 +17,30 @@ window.ZTOR_PARTIALS.feeExceptionModal = String.raw`
 
     <div class="payout-dialog__body">
 
-      <!-- Creator 搜尋（僅 add 模式顯示）-->
+      <!-- 選擇創作者（僅 add 模式顯示）：field-pill 搜尋、打字才列出結果，不預設列出全部 -->
       <label class="field" data-fx-creator-field style="margin-bottom:var(--sp-18)">
-        <span class="field__label" data-i18n="fees.exc.creator">Creator</span>
-        <input class="input" type="search" data-fx-search data-i18n-placeholder="fees.exc.search" placeholder="Search a Creator by name…">
+        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="fees.exc.creator">Select creator</span>
+        <span class="field-pill" style="width:100%;margin-top:var(--sp-8)">
+          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+          <input class="field-pill__input" type="search" data-fx-search autocomplete="off" data-i18n-placeholder="fees.exc.search" placeholder="Search a Creator by name…">
+        </span>
         <div data-fx-suggest style="margin-top:var(--sp-8);display:flex;flex-direction:column;gap:var(--sp-8)"></div>
         <p class="field__hint" data-fx-none hidden data-i18n="fees.exc.search-none">No matching Creator.</p>
       </label>
 
       <!-- 支付手續費：唯讀、全站統一（不逐 Creator，D141）-->
       <div class="field" style="margin-bottom:var(--sp-18)">
-        <span class="field__label" data-i18n="fees.payment.title">Payment fee</span>
+        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="fees.payment.title">Payment fee</span>
         <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
-          <span class="amount-field amount-field--suffix" style="width:120px"><input class="input amount-field__input" data-fx-payment type="number" value="2.4" disabled><span class="amount-field__unit">%</span></span>
-          <span class="badge badge--neutral" data-i18n="fees.exc.payment-locked">Site-wide · read-only</span>
+          <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" data-fx-payment type="number" value="3.4" disabled><span class="amount-field__unit">%</span></span>
+          <span class="text-sub" aria-hidden="true">＋</span>
+          <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit">HK$</span><input class="input amount-field__input" data-fx-payment-fixed type="number" value="2.40" style="padding-left:48px" disabled></span>
         </div>
       </div>
 
       <!-- 平台費：逐交易子類覆寫（樹由頁面注入）-->
       <div class="field">
-        <span class="field__label" data-i18n="fees.tree.title">Platform fee</span>
+        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="fees.tree.title">Platform fee</span>
         <p class="text-sub" style="margin:var(--sp-4) 0 var(--sp-8)" data-i18n="fees.exc.editor-hint">Blank inherits the default; enter a value to override just that transaction type.</p>
         <div data-fx-tree></div>
       </div>

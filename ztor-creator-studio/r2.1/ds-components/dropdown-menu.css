@@ -29,14 +29,17 @@
 /* floating panel — below trigger, right-aligned.
    2026-07-21 使用者裁示：去掉外框線——面板已有 --shadow-float，那顆 token 本來就內建一圈
    0 0 0 1px 的軟性描邊負責畫出邊緣（見 design-system.md「multi-layer shadows to define
-   edges without ever drawing a border」），再疊一條真正的 border 是重複畫兩次邊。 */
+   edges without ever drawing a border」），再疊一條真正的 border 是重複畫兩次邊。
+   2026-07-22 使用者裁示（Figma node 861:34183 比對）：水平方向不留 padding——面板只留上下
+   --sp-6，讓每個 .dropdown__item 自己撐滿面板寬度，hover 高亮才會頂到面板左右內緣（Figma
+   稿子的 Menu frame 就是 px-0／py-6，選項自己帶 16px 左右內距，不是面板統一留白）。 */
 .dropdown__menu {
   position: absolute;
   right: 0;
   top: calc(100% + 6px);
   z-index: 30;
   min-width: 230px;
-  padding: var(--sp-6);
+  padding: var(--sp-6) 0;
   background: var(--card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-float);
@@ -46,13 +49,15 @@
    --toggle 變體，如 e-shop 列的「在商店上架」——那是開關列、不是一般動作項，見下方）。
    改 display:flex 讓 icon（.ztor-icon，16px，預設 currentColor）跟文字同一行對齊；
    icon 顏色不額外指定、直接吃 currentColor——一般項跟著 --foreground、--danger 項自動變紅，
-   不用另外覆寫。 */
-/* 2026-07-21 使用者裁示（來回確認兩次）：選項四周內距整個拿掉（原本 9px var(--sp-10)）。 */
+   不用另外覆寫。
+   2026-07-22 使用者裁示（Figma node 861:34183 比對）：水平內距由 --sp-10（10px）改
+   --sp-16（16px）——面板不再留水平 padding（見上方 .dropdown__menu），內距全部移到選項自己
+   身上，數值抄 Figma 選項 frame 的 px-16。 */
 .dropdown__item {
   display: flex;
   align-items: center;
   gap: var(--sp-10);
-  padding: 0;
+  padding: 9px var(--sp-16);
   border-radius: var(--radius-md);
   color: var(--foreground);
   text-decoration: none;
@@ -93,14 +98,23 @@ button.dropdown__item {
    選擇器刻意寫 `.dropdown__item.dropdown__item--toggle`（兩個 class）而非單一
    `.dropdown__item--toggle`：這個變體的 markup 一律是 `<button>`，上面 `button.dropdown__item`
    有 `border: 0` 把四邊全部歸零，其 specificity（元素+class）比單一 class 高，會贏過原本寫法、
-   讓 border-bottom 完全不生效（實測發生過）；改兩個 class 疊加，specificity 更高，才穩定蓋過去。 */
+   讓 border-bottom 完全不生效（實測發生過）；改兩個 class 疊加，specificity 更高，才穩定蓋過去。
+   2026-07-22 使用者裁示（Figma node 861:34177 比對）：分隔線改用 --border 而非 --border-soft
+   ——深色模式下 --border-soft（#202122）跟面板底色 --card（#212223）只差 1 個色階，等於畫了一條
+   看不見的線；--border 是 Q22 已經為同樣「深色 hairline 太淡看不出來」理由全站提亮過的 token
+   （#333435），語意就是「要看得見的分隔線」，比另外新開一個色階或調 --border-soft（會動到全站
+   其他消費點）風險小。同輪再裁示：這一列 hover/選取時不應該有圓角（跟下面一般動作項不同）——
+   Figma 稿子裡「編輯」「補貨」那幾個 Menu Item frame 都個別掛了 6px 圓角 class，唯獨這個
+   toggle 的 Button frame 沒有；顯式歸零覆蓋掉從 .dropdown__item 繼承來的 --radius-md，對齊
+   Figma 對這一列「不用圓角」的明確設計。 */
 .dropdown__item.dropdown__item--toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-16);
   margin-bottom: var(--sp-6);
-  border-bottom: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
 }
 .dropdown__item--toggle .switch { flex: none; }
 

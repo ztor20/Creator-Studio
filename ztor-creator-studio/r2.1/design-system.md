@@ -3091,7 +3091,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 **Variants** — `.dropdown` (default, panel right-aligned), `.dropdown--left` (panel anchors to the trigger's left edge).
 
-**Sizes** — Single size: panel `min-width: 230px`, 6px padding; items no padding of their own (2026-07-21, 使用者裁示), 13px text, spacing comes entirely from the panel's own 6px padding + `gap` between icon/label.
+**Sizes** — Single size: panel `min-width: 230px`, 6px vertical padding only（水平不留白，2026-07-22 改，見下方 Class API）; items 9×16 padding, 13px text.
 
 **States**
 
@@ -3107,14 +3107,14 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | Class / modifier | Effect |
 |---|---|
 | `.dropdown` | Positioning context (`<details>`); strips native marker from summary |
-| `.dropdown__menu` | Floating panel — right-aligned, `min-width: 230px`, `--radius-lg`, `--shadow-float` (E3) |
-| `.dropdown__item` | Flex action row, no padding (2026-07-21, 使用者裁示 — 原本 9×10 padding 已拿掉), `--radius-md`; leads with a `.ztor-icon` (2026-07-21, 使用者裁示) — icon color inherits `currentColor`, no override needed even on `--danger`. Only exception: `.dropdown__item--toggle` (a switch row, not an action, e.g. E-Shop's List-in-shop toggle) |
+| `.dropdown__menu` | Floating panel — right-aligned, `min-width: 230px`, `--radius-lg`, `--shadow-float` (E3); padding `--sp-6` 上下、水平 0（2026-07-22 使用者裁示，Figma node 861:34183 比對——面板不留水平白，白留給選項自己） |
+| `.dropdown__item` | Flex action row, 9×16 padding（水平由 `--sp-10` 改 `--sp-16`，2026-07-22，見上）, `--radius-md`; leads with a `.ztor-icon` (2026-07-21, 使用者裁示) — icon color inherits `currentColor`, no override needed even on `--danger`. Only exception: `.dropdown__item--toggle` (a switch row, not an action, e.g. E-Shop's List-in-shop toggle) |
 | `.dropdown--left` | Panel anchors to the trigger's left edge instead |
-| `.dropdown__item--toggle` | Switch row (menuitemcheckbox), no icon; 2026-07-21 使用者裁示加 `border-bottom` + `margin-bottom` — 跟後面的一般動作項分隔（切換狀態 vs. 會跑導頁／JS 的動作，語意不同） |
+| `.dropdown__item--toggle` | Switch row (menuitemcheckbox), no icon; 2026-07-21 使用者裁示加 `border-bottom` + `margin-bottom` — 跟後面的一般動作項分隔（切換狀態 vs. 會跑導頁／JS 的動作，語意不同）。分隔線色改 `--border`（2026-07-22，見下方 Token usage）；同輪再裁示 `border-radius: 0`（覆蓋掉繼承自 `.dropdown__item` 的 `--radius-md`）——這一列 hover 不用圓角，跟下面一般動作項的圓角 hover 高亮不同 |
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` / hover `--muted` · text `--foreground` · radius `--radius-lg` / `--radius-md` · shadow `--shadow-float`（面板邊緣靠這顆 token 內建的軟性描邊，2026-07-21 拿掉多餘的 `border`）· toggle 分隔線 `--border-soft` · focus `--ring` · font `--font-ui` (inherited)
+- bg `--card` / hover `--muted` · text `--foreground` · radius `--radius-lg` / `--radius-md`（`.dropdown__item--toggle` 例外，顯式歸零，見上方 Class API）· shadow `--shadow-float`（面板邊緣靠這顆 token 內建的軟性描邊，2026-07-21 拿掉多餘的 `border`）· toggle 分隔線 `--border`（2026-07-22 使用者裁示，由 `--border-soft` 改：深色模式下 `--border-soft`＝`#202122` 跟面板底 `--card`＝`#212223` 只差 1 色階，線幾乎看不見；`--border` 是 Q22 已經為同理由全站提亮過的 hairline token（深色 `#333435`），比另開新色階或動 `--border-soft`（全站多處消費）風險小） · focus `--ring` · font `--font-ui` (inherited)
 
 **Usage** — "Create / more actions" menus in toolbars (first consumer: E-Shop "＋ New" → product / bundle / auction). Avoid for nav mega-dropdowns — use NavigationMenu (§4.10) — and for form value selection — use a select / Input (§4.8).
 
