@@ -6,13 +6,53 @@
 
 ---
 
-## 2026-07-21 · 下拉選單選項拿掉四周內距（B 反饋導入，來回確認兩次定案）
+## 2026-07-22 · 建立 creator 改「搜尋前台帳號 → 選取後就地建檔」單面板（B 反饋導入，對齊 BR-02）
 
-使用者反饋選項四周不要有 padding；中間一度誤判成別的問題而加回去，經使用者用截圖標紅箭頭指認同一個位置、再次確認後定案拿掉。
+使用者反饋：Admin Creator 管理的「建立 creator」不該憑空填表，要改成先搜尋帳號、選到後就地帶出建檔表單、按建立。此流程正好對齊規格 §5.1.0 頁面定位「開店前置（BR-02）」——creator 來源是本人先在 ztor 前台自助註冊帳號，Admin 在此以該已註冊帳號為對象建檔（承接、非憑空開號）。同日經幾輪反饋收斂成下述單面板形態（去 stepper、不分兩步）。
 
-- **【B】** `ds-components/dropdown-menu.css`：`.dropdown__item` 的 `padding: 9px var(--sp-10)` 改 `padding: 0`。選項的間距現在全靠面板自身 `--sp-6` 內距＋icon／文字的 `gap` 撐出來。
-- **【D】** `design-system.md`／`.html` 同步：Sizes／Class API 兩處「9×10 padding」的描述改為「無內距」。
-- 驗證：`check_ds_sync.py` 全 PASS。
+- **【B】** `creators.html` 建立 creator 彈窗由單張憑空表單改為**搜尋帳號＋就地建檔的單面板**（續用 `payout-dialog` 殼）：
+  - 搜尋——續用 IP Bank Entry「權利人」同款 `owner-lookup` 元件（即時 typeahead）：輸入即比對前台已註冊、尚未建檔的帳號池，依**人名／username／email** 顯示下拉結果（頭像＋名稱＋`@username · email · 註冊日`），點一筆＝選定並顯示「已選擇…」狀態。使用者反饋此框要能像 IP entry 那樣搜到人名或 email，故由原本的 `field-pill` 改為 `owner-lookup`。
+  - 建檔表單——選定帳號後，下方即出現建檔欄位（**逐列排版、一欄一列**）：放大頭像（64px，沿用選定帳號首字母，無說明文字）、名稱／Email 沿用帳號唯讀、店鋪網址（`ztor.com/shop/…` 即時預覽、平台唯一擋重複）、電話（選填、帶入可改）；底部按鈕「建立」（選定前 disabled）。重新編輯搜尋框會收起表單、清除選定。
+  - 反覆修正紀錄：先做成「search→下一步→列出清單→帶入→再下一步建立」的兩步精靈，使用者續反饋「搜尋框要用 owner-lookup」，再反饋「不要 stepper、不要分兩步、搜尋到後下方直接出表單、欄位逐列、頭像放大、拿掉『沿用註冊帳號的頭像』字樣」，最終收斂為本單面板。移除 `progress-stepper` 與 step foot 切換。
+  - 與 IP entry 版差異：`owner-lookup` 原模組（`partials/owner-lookup.js`）帶「未註冊 email→建立待寄送邀請」路徑，屬 IP 權利人語意；creator 必須來自已註冊帳號（BR-02），故此頁只借用 `owner-lookup.css` 視覺與結果列樣式、另寫在地 typeahead（無 invite 路徑）。
+- **【B】** 建立＝把選定帳號 onboard 進名冊（`list.push`，status active、created＝今日），並自註冊池 `splice` 移除，避免重複建立。
+- **【D】** `js/sidebar.js` 新增 `REGISTERED` 前台已註冊帳號池（6 筆 demo，含 id／name／username／email／phone／registered），`window.ztorCreator` 增 `registered`。
+- **【D】** `js/i18n.js` 新增 `creators.search-hint`／`search2-ph`／`no-account`／`acc-registered`／`acc-label`／`lookup-selected`（收斂過程曾加的 `step-search`／`step-confirm`／`next`／`back`／`avatar-inherited` 已無引用、留待下輪清）。
+- 依歸屬：流程改動屬呈現＋對齊既有 BR-02 產品規則；名冊／帳號池／自動生成店鋪皆前端 demo（UIA-029／045）。把名稱·Email 改「沿用註冊帳號、唯讀」是對 D107 建立欄位的**呈現詮釋**，記 ASSUMPTIONS（UIA-071），規格 §5.1.0 F2 建立欄位（D107）宜回頭與此對齊。
+- 驗證：inline script／i18n.js／sidebar.js `node --check` 皆 OK、fresh-context 讀檔核對、`check_ds_sync.py` 全 PASS；瀏覽器實機走查待補（Playwright 佔用中）。
+
+## 2026-07-22 · 平台費率頁 4 項視覺／互動修正（B 反饋導入）
+
+使用者截圖反饋，針對前一項費率改動的呈現問題。
+
+- **【B】** 費率樹費率欄對齊：`ds-components/table.css` 新增 `#fee-tree` 的費率欄（第 2 欄）靠右規則——四個維度表（E-Shop／Events／Projects／IP）各自依左側標籤寬度自動排版，導致費率輸入框右緣錯位；改靠右後對齊同一右緣。只作用設定分頁預設樹，例外彈窗 clone 去 id 不受影響。
+- **【B】** 例外彈窗搜尋改 `field-pill`（`partials/fee-exception-modal.js`＋頁面補 `field-pill.css` 連結）：與「創建 creator」搜尋一致（放大鏡 icon）；`admin-platform-fees.html` 的 `renderSuggest()` 改為空查詢不列任何選項（打字才篩），移除預設把全部 Creator 列在下方的行為。
+- **【B】** 例外彈窗標題字級階層修正：Creator／支付手續費／平台費 三個區塊主標由 `field__label`（`--fs-12`）提到 `--fs-18` semibold，讓其大於樹內維度標題 `.ztor-accordion__trigger`（`--fs-16`）——原本子層 E-Shop 比主標還大。
+- **【C】** 例外彈窗支付列移除「全站統一 · 唯讀」badge（`fees.exc.payment-locked`）：唯讀語意已由欄位 disabled 呈現，badge 冗餘。
+- **【D】** `js/i18n.js`：`fees.exc.creator` 由「Creator」改「選擇創作者」（en `Select creator`）。
+- 驗證：Playwright 截圖確認四維度費率欄對齊、彈窗搜尋空狀態不列選項＋打字可篩、字級階層、badge 已移除；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-22 · 平台費率頁對齊 2026-07-17 確認費率＋三項規則呈現（A spec-derived）
+
+費率於 2026-07-17 由 Susan/biz 確認，需求文件（`requirement/` CS/EN、`feature_description.md §Assumptions「Prototype deltas」`）已更新；原型 `admin-platform-fees.html` 落後，補齊其中 4 項（第 5 項 IP bank fee 上游 pending，本輪不動）。
+
+- **【A】** 支付手續費由「單一 %」改為「% ＋ 每筆固定金額」：設定卡新增唯讀前綴 `HK$` 欄（`#fee-payment-fixed`，`amount-field--readonly`），值 3.4% ＋ HK$2.40；例外編輯彈窗（`partials/fee-exception-modal.js`）的支付列同步鏡射此固定金額（唯讀、全站統一，D141）。彈窗開啟時由 `open()` 取設定分頁的 `#fee-payment` 與 `#fee-payment-fixed` 值鏡射。
+- **【A】** 預設費率樹初始值改用確認費率：E-Shop 各葉 5%、活動票券（onsite／online）5%、專案眾籌成功 5%、活動報名費 0%。需求未逐一點名的葉節點依「繼承上一層、無上層則保持原值」處理→專案的預購／實體回饋／數位回饋隨眾籌 5%；IP 維度 pending、無確認上層，保持原值（licensing 15%、royalty 10%、rental 10%）。`data-general`（繼承基準）同步更新。
+- **【A】** 版本徽章延後切換：`addHistory()` 改為判斷生效日，生效日在未來時主徽章（`#fee-cur-version`）維持現行版本、新增副行 `#fee-next-note` 顯示「待生效：cfg-XXXX.XX · 日期起」、歷史列標「待生效」；到生效日（或生效日非未來）才把徽章切成新版本。
+- **【A】** 移除費率例外也寫入版本歷史：例外清單的 remove 由「直接消失」改為同步 `addHistory()` 建新版本＋歷史列（金流規則變更須可稽核，與其他儲存一致）。
+- **【D】** `js/i18n.js` 新增 `fees.version.next`／`fees.version.pending`／`fees.exc.removed`，並更新 `fees.payment.sub`（補「＋每筆固定金額」語意）。
+- 依歸屬：以上為需求既有規則的呈現補齊，`site/` 未新增或改寫產品規則；費率數值與規則的權威在 `requirement/` 與 `documents/5.1.0.3`。
+- 驗證：Playwright 逐頁截圖確認（支付欄、費率樹、例外彈窗鏡射、移除→歷史列待生效）；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-22 · 下拉選單依 Figma 調整校正三輪：分隔線、圓角、內距（B 反饋導入，Figma 比對）
+
+使用者在 Figma 把先前匯出的下拉選單 capture（node 861:34177／861:34183）做了調整，回傳連結請依此修正，分三輪修：
+
+- **【B】第一輪·分隔線顏色** `ds-components/dropdown-menu.css`：`.dropdown__item--toggle` 的 `border-bottom` 由 `var(--border-soft)` 改 `var(--border)`。深色模式下 `--border-soft`（`#202122`）跟面板底色 `--card`（`#212223`）只差 1 個色階，等於畫了一條幾乎看不見的線；`--border` 是 Q22 已經為同一個「深色 hairline 太淡看不出來」理由全站提亮過的 token（`#333435`），比另開新色階或動 `--border-soft`（全站多處消費、動了影響範圍太大）風險小。（此輪誤判面板陰影 spread 與選項間距差異是 html-to-design 轉換誤差、未跟進——第三輪證實其中內距那部分判斷錯了，見下。）
+- **【B】第二輪·開關列圓角** 使用者截圖回饋「在商店上架」那個 frame 沒有圓角，同一規則加 `border-radius: 0`，覆蓋掉繼承自 `.dropdown__item` 的 `--radius-md`。回頭比對 Figma 原始碼發現：「編輯」「補貨」等一般動作項的 Menu Item frame 都個別掛了 6px 圓角 class，唯獨這個 toggle 用的 Button frame 沒有掛——即這一列 hover 高亮設計上就是直角，跟下面一般動作項的圓角 hover 不同。Playwright 灌強制 hover 樣式截圖確認：直角高亮框內縮於面板 6px padding 之內，不會被面板自己的 8px 圓角裁到，視覺乾淨。
+- **【B】第三輪·面板／選項內距** 使用者再點名面板節點（861:34183）指出 padding 仍不對，重新比對確認第一輪的判斷有誤——這不是轉換誤差，是真的設計差異。`.dropdown__menu` 的水平 padding 拿掉（`padding: var(--sp-6) 0`，原本四邊都留 `var(--sp-6)`），改由 `.dropdown__item` 自己承擔水平內距（`--sp-10`→`--sp-16`）。效果：選項的 hover 高亮框頂到面板左右內緣、不再有 6px 的面板級留白溝，跟 Figma 的 Menu frame（`px-0 py-6`，選項自帶 `px-16`）一致。Playwright 截圖比對兩種狀態（開關列分隔線、一般選項 hover 底部圓角）確認跟 Figma 截圖視覺一致，且面板圓角不被選項的直角/圓角邊緣裁出鋸齒。
+- **【D】** `design-system.md`／`.html` 同步 Class API、Sizes、Token usage 各處（三輪皆同步）。
+- 驗證：Playwright 截圖比對深色模式下分隔線可見度、開關列 hover 直角、一般選項 hover 圓角是否被面板裁到；`check_ds_sync.py` 全 PASS。
 
 ## 2026-07-21 · 下拉選單去外框線＋開關列跟動作項加分隔線（B 反饋導入）
 
