@@ -160,12 +160,11 @@
         state.type = chip.getAttribute('data-fin-type');
         /* 圖表聚焦：'all' 全亮；有線的類型只亮該線；無線的類型全暗 */
         if (chart) {
-          chart.querySelectorAll('.linechart__line').forEach(function (l) { l.classList.remove('is-focus'); });
+          chart.querySelectorAll('[data-fin-line]').forEach(function (l) { l.classList.remove('is-focus'); });
           if (state.type === 'all') { chart.removeAttribute('data-focus'); }
           else {
             chart.setAttribute('data-focus', state.type);
-            var line = chart.querySelector('.linechart__line[data-fin-line="' + state.type + '"]');
-            if (line) line.classList.add('is-focus');
+            chart.querySelectorAll('[data-fin-line="' + state.type + '"]').forEach(function (el) { el.classList.add('is-focus'); });
           }
         }
         if (table) { /* refilter 定義在 table 區塊內，透過事件重呼 */ }

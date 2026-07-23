@@ -8,26 +8,26 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Finance Overview · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260723zh"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/button.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/chart.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/card.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/table.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/icon.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260723zh">
-<link rel="stylesheet" href="ds-components/pager.css?v=20260723zh">
-<link rel="stylesheet" href="shared.css?v=20260723zh">
+<script src="js/theme.js?v=20260723zi"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/button.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/chart.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/card.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/table.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/icon.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260723zi">
+<link rel="stylesheet" href="ds-components/pager.css?v=20260723zi">
+<link rel="stylesheet" href="shared.css?v=20260723zi">
 <style>
   /* finance-overview 專屬一次性版面：只做這頁的排版，不覆寫共用 class／token；
      色彩・字級一律走 token，無裸 hex/rgb/font-size。 */
@@ -38,8 +38,21 @@
   .fin-dot { width:8px; height:8px; border-radius:var(--radius-pill); background:var(--dot,var(--muted-foreground)); flex:none; display:inline-block; margin-right:var(--sp-6); }
   .fin-chart svg text { fill:var(--muted-foreground); font-size:var(--fs-11); }
   .fin-chart__grid { stroke:var(--border); stroke-width:1; }
-  .fin-chart[data-focus] .linechart__line { opacity:.16; transition:opacity var(--duration) var(--easing); }
-  .fin-chart[data-focus] .linechart__line.is-focus { opacity:1; }
+  .fin-chart[data-focus] .linechart__line, .fin-chart[data-focus] .fin-area { opacity:.16; transition:opacity var(--duration) var(--easing); }
+  .fin-chart[data-focus] .linechart__line.is-focus, .fin-chart[data-focus] .fin-area.is-focus { opacity:1; }
+  /* 線色對齊圖例圓點（chart-1..5，蓋過 linechart__line--sN 預設）*/
+  .fin-chart .linechart__line[data-fin-line="cocreate"] { stroke:var(--chart-1); }
+  .fin-chart .linechart__line[data-fin-line="ott"] { stroke:var(--chart-2); }
+  .fin-chart .linechart__line[data-fin-line="commission"] { stroke:var(--chart-3); }
+  .fin-chart .linechart__line[data-fin-line="advance"] { stroke:var(--chart-4); }
+  .fin-chart .linechart__line[data-fin-line="licence"] { stroke:var(--chart-5); }
+  /* 平滑曲線下的淡色面積填色（比照截圖的填色效果）*/
+  .fin-chart .fin-area { stroke:none; }
+  .fin-chart .fin-area[data-fin-line="cocreate"] { fill:color-mix(in srgb, var(--chart-1) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="ott"] { fill:color-mix(in srgb, var(--chart-2) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="commission"] { fill:color-mix(in srgb, var(--chart-3) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="advance"] { fill:color-mix(in srgb, var(--chart-4) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="licence"] { fill:color-mix(in srgb, var(--chart-5) 13%, transparent); }
   .fin-ledgerbar { display:flex; gap:var(--sp-12); align-items:center; flex-wrap:wrap; margin:var(--sp-16) 0; }
   .fin-ledgerbar__count { font-size:var(--fs-13); color:var(--muted-foreground); }
   .fin-ledgerbar__total { margin-left:auto; font-size:var(--fs-13); color:var(--muted-foreground); }
@@ -163,11 +176,18 @@
               <line class="linechart__grid" x1="24" y1="90"  x2="672" y2="90"></line>
               <line class="linechart__grid" x1="24" y1="150" x2="672" y2="150"></line>
               <line class="linechart__grid" x1="24" y1="210" x2="672" y2="210"></line>
-              <polyline class="linechart__line linechart__line--s1" data-fin-line="cocreate" points="24,196 130,190 240,168 360,160 470,96 560,66 672,58"></polyline>
-              <polyline class="linechart__line linechart__line--s2" data-fin-line="ott" points="24,206 130,172 240,120 360,118 470,116 560,108 672,100"></polyline>
-              <polyline class="linechart__line linechart__line--s3" data-fin-line="commission" points="24,214 130,210 240,204 360,178 470,150 560,138 672,146"></polyline>
-              <polyline class="linechart__line linechart__line--s4" data-fin-line="advance" points="24,216 130,214 240,212 360,206 470,198 560,192 672,188"></polyline>
-              <polyline class="linechart__line linechart__line--s5" data-fin-line="licence" points="24,218 130,217 240,215 360,214 470,212 560,211 672,210"></polyline>
+              <!-- 平滑面積填色（在線之下）；填到 viewBox 底 -->
+              <path class="fin-area" data-fin-line="cocreate" d="M 24,196 C 41.7,195 94,194.7 130,190 C 166,185.3 201.7,173 240,168 C 278.3,163 321.7,172 360,160 C 398.3,148 436.7,111.7 470,96 C 503.3,80.3 526.3,72.3 560,66 C 593.7,59.7 653.3,59.3 672,58 L 672,240 L 24,240 Z"></path>
+              <path class="fin-area" data-fin-line="ott" d="M 24,206 C 41.7,200.3 94,186.3 130,172 C 166,157.7 201.7,129 240,120 C 278.3,111 321.7,118.7 360,118 C 398.3,117.3 436.7,117.7 470,116 C 503.3,114.3 526.3,110.7 560,108 C 593.7,105.3 653.3,101.3 672,100 L 672,240 L 24,240 Z"></path>
+              <path class="fin-area" data-fin-line="commission" d="M 24,214 C 41.7,213.3 94,211.7 130,210 C 166,208.3 201.7,209.3 240,204 C 278.3,198.7 321.7,187 360,178 C 398.3,169 436.7,156.7 470,150 C 503.3,143.3 526.3,138.7 560,138 C 593.7,137.3 653.3,144.7 672,146 L 672,240 L 24,240 Z"></path>
+              <path class="fin-area" data-fin-line="advance" d="M 24,216 C 41.7,215.7 94,214.7 130,214 C 166,213.3 201.7,213.3 240,212 C 278.3,210.7 321.7,208.3 360,206 C 398.3,203.7 436.7,200.3 470,198 C 503.3,195.7 526.3,193.7 560,192 C 593.7,190.3 653.3,188.7 672,188 L 672,240 L 24,240 Z"></path>
+              <path class="fin-area" data-fin-line="licence" d="M 24,218 C 41.7,217.8 94,217.5 130,217 C 166,216.5 201.7,215.5 240,215 C 278.3,214.5 321.7,214.5 360,214 C 398.3,213.5 436.7,212.5 470,212 C 503.3,211.5 526.3,211.3 560,211 C 593.7,210.7 653.3,210.2 672,210 L 672,240 L 24,240 Z"></path>
+              <!-- 平滑曲線（Catmull-Rom→bezier）；線色以 data-fin-line 對齊圖例圓點 -->
+              <path class="linechart__line linechart__line--s1" data-fin-line="cocreate" d="M 24,196 C 41.7,195 94,194.7 130,190 C 166,185.3 201.7,173 240,168 C 278.3,163 321.7,172 360,160 C 398.3,148 436.7,111.7 470,96 C 503.3,80.3 526.3,72.3 560,66 C 593.7,59.7 653.3,59.3 672,58"></path>
+              <path class="linechart__line linechart__line--s2" data-fin-line="ott" d="M 24,206 C 41.7,200.3 94,186.3 130,172 C 166,157.7 201.7,129 240,120 C 278.3,111 321.7,118.7 360,118 C 398.3,117.3 436.7,117.7 470,116 C 503.3,114.3 526.3,110.7 560,108 C 593.7,105.3 653.3,101.3 672,100"></path>
+              <path class="linechart__line linechart__line--s3" data-fin-line="commission" d="M 24,214 C 41.7,213.3 94,211.7 130,210 C 166,208.3 201.7,209.3 240,204 C 278.3,198.7 321.7,187 360,178 C 398.3,169 436.7,156.7 470,150 C 503.3,143.3 526.3,138.7 560,138 C 593.7,137.3 653.3,144.7 672,146"></path>
+              <path class="linechart__line linechart__line--s4" data-fin-line="advance" d="M 24,216 C 41.7,215.7 94,214.7 130,214 C 166,213.3 201.7,213.3 240,212 C 278.3,210.7 321.7,208.3 360,206 C 398.3,203.7 436.7,200.3 470,198 C 503.3,195.7 526.3,193.7 560,192 C 593.7,190.3 653.3,188.7 672,188"></path>
+              <path class="linechart__line linechart__line--s5" data-fin-line="licence" d="M 24,218 C 41.7,217.8 94,217.5 130,217 C 166,216.5 201.7,215.5 240,215 C 278.3,214.5 321.7,214.5 360,214 C 398.3,213.5 436.7,212.5 470,212 C 503.3,211.5 526.3,211.3 560,211 C 593.7,210.7 653.3,210.2 672,210"></path>
             </svg>
             <div class="linechart__labels--sparse"><span>Sep 26</span><span>Sep 27</span><span>Sep 28</span><span>Sep 29</span><span>Sep 30</span></div>
           </div>
@@ -356,11 +376,11 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260723zh"></script>
-<script src="js/i18n.js?v=20260723zh"></script>
-<script src="js/sidebar.js?v=20260723zh"></script>
-<script src="partials/finance-overview.js?v=20260723zh"></script>
-<script src="js/reveal.js?v=20260723zh"></script>
-<script src="js/devtools.js?v=20260723zh"></script>
+<script src="js/icons.js?v=20260723zi"></script>
+<script src="js/i18n.js?v=20260723zi"></script>
+<script src="js/sidebar.js?v=20260723zi"></script>
+<script src="partials/finance-overview.js?v=20260723zi"></script>
+<script src="js/reveal.js?v=20260723zi"></script>
+<script src="js/devtools.js?v=20260723zi"></script>
 </body>
 </html>
