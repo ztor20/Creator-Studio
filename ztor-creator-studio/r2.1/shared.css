@@ -875,9 +875,15 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    col2 中＝進度條 .wizard__progress（max 820 內容寬、置中對齊下方 .wizard__body 內容欄；無 stepper 頁此欄空）｜
    col3 右＝.wizard__top-actions（自動儲存狀態＋預覽）。
    中欄固定為內容寬、兩側 1fr 對稱 → 進度條在視窗置中、對齊內容欄。 */
+/* 2026-07-24：col1 補下限 `--wizard-lead-min`。原本兩側都是純 1fr，但左欄的標題塊
+   min-width:0＋ellipsis＝最小可以縮到 0，右欄的儲存狀態＋按鈕不能縮＝最小 ~196px；
+   視窗一窄，中欄的 820px 就把左欄整個吃成 0，標題溢出欄外壓在進度條上（1058px 實測 col1=0）。
+   給左欄一個下限後，擠壓由中間的進度條吸收；寬螢幕（兩側都大於下限）版面完全不變。 */
 .wizard__top-bar {
+  --wizard-lead-min: 180px;
+
   display: grid;
-  grid-template-columns: 1fr minmax(0, 820px) 1fr;
+  grid-template-columns: minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr);
   align-items: center;
   gap: var(--sp-16);
   padding: var(--sp-20) var(--sp-28);   /* 上下 padding 加大（2026-06-23 使用者指定）*/
@@ -1128,16 +1134,12 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    card-view grid + card. Project-owned per SPEC §5.5 (lives in shared.css until promoted). */
 
 /* List ↔ card view switch — segmented control in page-intro actions */
-.view-switch { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
-.view-switch__btn {
-  display: inline-grid; place-items: center; width: 38px; height: 34px;
-  background: var(--card); color: var(--foreground-muted); border: 0; cursor: pointer;
-  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
-}
-.view-switch__btn + .view-switch__btn { border-left: 1px solid var(--border); }
-.view-switch__btn:hover { background: var(--accent); color: var(--foreground); }
-.view-switch__btn--active { background: var(--foreground); color: var(--background); }
-.view-switch__btn .ztor-icon { width: 18px; height: 18px; }
+/* ✝ tombstone · .view-switch / .view-switch__btn（2026-07-23 退場）
+   實心黑填的膠囊式檢視切換，唯一消費者是 projects 的清單／卡片切換。使用者反饋「很醜、
+   和 design system 不搭」——實心黑 active 是站上第三種「已選中」畫法，與 segmented 的白
+   浮起 pill 打架（見 STYLE-DECISIONS 已選狀態一題）。角色本來就是 segmented 定義的
+   「同一資料的視角切換」，故收斂：改用 ds-components/segmented.css 的 `.segmented__btn--icon`
+   純圖示變體，不再保留第二套。 */
 
 /* Incomplete-tasks tooltip — secondary hover hint per project (spec F1 未完成提示).
    Hover / keyboard-focus only; touch can't trigger and that is acceptable (secondary info). */
