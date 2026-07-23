@@ -6,6 +6,106 @@
 
 ---
 
+## 2026-07-23 · Co-create 整合 Slice 2b：cocreate-dashboard.html 退場（C 撤除 · 使用者確認）
+
+`project-detail.html` 共創金流分頁（Slice 2）已完整承接統一模型內容，`cocreate-dashboard.html` 成為冗餘頁；使用者確認後刪除。
+
+- **【C】** 刪除 `cocreate-dashboard.html`；解除三處註冊——`js/devtools.js` FULL_ROUTES、`js/sidebar.js` FULL_ROUTES、projects NAV `match`。
+- **【D】** `cocreate.*` i18n 鍵**保留**（project-detail 共創金流分頁續用中，i18n.js 註解已改指向）；`avatar-stack` 的 DS 文件 evidence（design-system.html/md）由 cocreate-dashboard 改指 project-detail。
+- 驗證：`check_ds_sync.py` 全 PASS；全站 grep `cocreate-dashboard` 僅剩文件敘述（UI-CHANGES／ASSUMPTIONS 歷史紀錄），無活連結。
+
+## 2026-07-23 · Deck for Sony 收入管理視覺回饋修正一輪（B 反饋導入 · D infra）
+
+使用者逐點回饋 earnings-sony.html 的呈現，六項修正：
+
+- **【B】** 收益走勢圖改為隨寬度延展：`.linechart` 改用 `.linechart--axes` 標準結構（Y 軸刻度 `.linechart__y-axis` 與 X 軸 `.linechart__labels--sparse` 移出 SVG 成 HTML），SVG 加 `preserveAspectRatio="none"` 填滿卡寬（原本無此屬性→依 3:1 比例置中留白）。刻度移出 SVG 避免被橫向拉伸變形。
+- **【B】** 影評人佣金比例條由 `insight-row`（品牌淡橘）改為 `info-banner`（中性線框＋圓圈 ⓘ），比照使用者指定的元件；本頁不再用 insight-row。
+- **【B】** 「我的項目」表加線框：外層 `.fin-tablecard`（`--border` 1px＋`--radius-xl`＋overflow hidden），比照 DS 其他資料表外框。
+- **【B】** 類別／身分／日期三個篩選鈕由 `btn--ghost` 改 `btn--outline`（線框）。
+- **【B】** 提領歷史／如何運作由右側滑出抽屜改為**置中彈窗**，改用 canonical `.payout-modal` / `.payout-dialog` 殼（`__head`／`__title`／`__body`）；`finance-overview.js` 開關改成切 `.payout-modal[hidden]`＋點遮罩／Esc 關閉。彈窗內 `.ztor-table` 儲存格加 `white-space:nowrap`，修正窄欄把日期／狀態擠成多行的變形。連帶：本頁不再載入／使用 `drawer.css`（該元件若無其他 consumer 將由治理巡檢標為退場候選）。
+- **【D】** `ds-components/empty-card.css` 補 `.empty-card[hidden]{display:none}`：原本 `.empty-card{display:flex}` 蓋掉 `[hidden]`，導致以 hidden 屬性切換的每類型空狀態「有資料時仍常駐顯示」。此為元件層修正，惠及所有以 hidden 切換 empty-card 的 consumer。
+
+第二輪追加四項：
+
+- **【B】** 收益走勢改用完整 `chart-card` 元件（`__head` 標題＋副標「依收益類型」＋`.segmented`(`__item`) 期間切換＋`__icon-btn` 匯出鈕＋`__body`＋`__foot` 資料範圍），承載 5 條不同顏色的線（沿用 `--chart-1..5`／`linechart__line--s1..s5`）。period 切換 JS 由 `.segmented__btn` 改對 `.segmented__item`。本頁改載 `chart.css`＋`segmented.css`。
+- **【B】** Coming soon 三 chip 呈現為 disabled 狀態（`.fin-soon .chip{opacity:.5;cursor:not-allowed}`）。
+- **【B】** 「我的項目」金額欄表頭改右對齊對齊數值（`.ztor-table th.fin-amt{text-align:right}` 蓋過 `.ztor-table thead th` 的預設 left）。
+- 新增 i18n `fin.trend.sub`／`fin.trend.range` 兩鍵。
+- 驗證：`check_ds_sync` 全 PASS；http 起站實測——chart-card 標題／副標／期間切換（可切）／匯出鈕／頁腳齊全、5 色線填滿卡寬、Coming soon 淡化、金額表頭右對齊、佣金條 info-banner、表線框、三篩選鈕線框、空狀態預設隱藏、提領歷史置中彈窗不變形、i18n 0 raw key。
+
+## 2026-07-23 · Deck for Sony 版收入管理＝finance-overview 忠實移植（A 新增 · D infra）
+
+「Deck for Sony」（Presentation demo 版本）的收入管理頁改為 ztor cocreate 站 `finance-overview.html`「財務總覽」的**忠實內容移植、改套 R2.1 設計系統**。只在該版本經 `route:earnings.html=earnings-sony.html` 顯示，不動 Phase 1–4 的 `earnings.html`。範圍界定見 [ASSUMPTIONS.md](ASSUMPTIONS.md) UIA-082（呈現／簡報 demo，收入模型未納入 R2.1 產品規格）。來源：`ztor20/Frontend` feature/cocreate-flow。
+
+- **【A】** `earnings-sony.html` 全頁重建：頁首＋副標（開「如何運作」抽屜）、3 張 KPI（總收益／本月收益／可提領＋提領鈕＋提領歷史）、影評人佣金比例 15% 一列、7 類存入類型分段篩選（兼圖例）、Coming soon 三 chip、收益走勢 5 線圖＋期間 tabs、「我的項目」表（類別／身分／日期篩選、6 列、發起標、點列前往、存入總和、分頁）、每類型空狀態（8 種文案）、提領歷史抽屜（18 列＋狀態標＋分頁）、如何運作抽屜（8 種收益類型定義）。元件對應：`kpi`／`insight-row`／`chip`（+`fin-dot` 圖例點）／`tabs`／`chart`（`linechart--s1..s5`）／`card`／`ztor-table`／`dropdown`／`badge`／`empty-card`／新 `drawer`／新 `pager`。頁面 `<style>` 僅放 finance 專屬一次性版面，全走 token、無裸值、不覆寫共用 class／token。
+- **【D】** 新增兩支元件：`ds-components/drawer.css`（右側滑出抽屜）＋ `ds-components/pager.css`（數字分頁，頁碼沿用 `.btn`）。三件套的 `design-system.html` demo／`design-system.md` 條目由並行的「Co-create 整合」工作串補入並經 `check_ds_sync` 檢查 1/4/9 驗證對齊。
+- **【D】** `partials/finance-overview.js`（新）：自包含 vanilla JS（無 fetch、file:// 可跑）接四類互動——類型分段篩選連動走勢圖聚焦＋表格列篩選＋金額欄改標＋對應空狀態；類別／身分下拉疊加篩選；兩表數字分頁；兩抽屜開關（scrim／關閉鈕／Esc）。
+- **【D】** `js/i18n.js` 新增 `fin.*` 一組雙語鍵（en＋faithful zh，zh 即來源繁中文案）。`js/sidebar.js` 的收入管理項 `match` 已含 `earnings-sony.html`（前一輪）。
+- 驗證：`node --check` 過 finance-overview.js／i18n.js；`check_ds_sync.py` 全 PASS（棘輪存量裸值 54、未增）；http 起站實測——版本切 Deck for Sony 後 navbar 0 隱藏、i18n 0 raw key、KPI/chip/列/線/抽屜齊全、類型篩選連動圖表聚焦＋列篩選＋金額改標＋空狀態、兩抽屜開關與提領歷史分頁（3 頁）皆正常。
+
+## 2026-07-23 · Co-create 整合 Slice 2：project-detail 併入統一模型金流＋內容區可編輯化（B 反饋導入 · C 撤除 · 依 CCR-007）
+
+使用者裁決把 r2.1 專案詳情與 cocreate preview 內容**整合成單一專案詳情頁**：preview 的排版/UI 可借用、token 用本站、元件擇優。本筆為合併主刀。
+
+- **【B】** `project-detail.html` Money 分頁改「共創金流」（`project-detail.tab.money` 值改 Co-creation & money／共創金流，`data-tab="money"` hash 不變）：統一模型說明條＋4 格 KPI（134 人/$8,420·56%/$9,713 含自付/撥款 0%）＋共創金額卡（支持者募資＋**發起人自付額 $2,000**＋資金池＋系統費−$707＋應撥，Late Bloom 口徑）＋上映後分潤卡（70/30，保留「Trigger distribution」手動觸發）＋撥款三期卡（預算 5 萬以下 40/30/30，交付 gated）＋支持者分層卡（3 tiers＋avatar-stack＋名額進度）＋支持者明細卡（達標才扣款/扣款重試中）。
+- **【C】** 撤除舊 NFT 模型區塊：Revenue waterfall（60/40）、Distribution（NFT holders 60/40 列）、NFT holder governance 卡——由統一模型取代（backer＝NFT holder 併軸，CCR-007 使用者裁決）。i18n 舊鍵保留未刪（僅 markup 移除）。
+- **【B】** 內容區可編輯化（原型級，改動作用本頁、不持久化）：關於專案 Edit／合作者 ＋Add／里程碑 ＋Milestone（新增鈕）／發布更新（操作 rail 與 Updates 卡兩處）→ 各開對應 **drawer 編輯面板**（重用 `ds-components/drawer.css`；表單用既有 `.input`/`.textarea`/`.select`）。儲存即回寫頁面：改標題與描述、新增合作者列（Pending confirmation）、新增里程碑列、置頂新公告列（Just now·受眾）。受眾選項照 spec §2.2.9（Everyone/Backers only/Superfan+）。
+- **【B】** `<head>` 補掛 `drawer.css`＋`avatar-stack.css`；`js/i18n.js` 新增 `pd-cf.*` 18 鍵＋`pd-edit.*` 22 鍵（en/zh）。
+- 驗證：`check_ds_sync.py` 全 PASS；本機 http 實測——共創金流分頁渲染正確、About Edit drawer 滑出/表單/儲存正常（截圖 merged-money-tab.png／edit-drawer-about.png）。`cocreate-dashboard.html` 暫留（退場屬治理動作，待使用者確認後走墓碑機制）。
+
+## 2026-07-23 · Co-create 整合 Slice 1b：cocreate-dashboard 改「統一模型」＋補 drawer/pager 進 DS 頁（B 反饋導入 · D infra）
+
+使用者裁決把 NFT/淨利池 與 股權/70-30 兩模型**收斂成單一「統一模型」**（見 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-007 2026-07-23 更新）。
+
+- **【B】** `cocreate-dashboard.html`：財務兩張卡改統一模型。共創金額卡新增「發起人自付額」列（`sliders-horizontal` icon，$0＝純預購・可設 0～任意）＋「資金池合計」列（支持者募資＋自付）；淨收益卡改標題「上映後淨收益分潤」、badge「股權模型→統一模型」、支持者列標「支持者（NFT 持有者）」、註記改為自付額可調分潤＋可手動提早觸發；頂部說明條改述統一模型。
+- **【B】** `js/i18n.js`：改 5 個既有 `cocreate.*` 值（explore-note／split.title／split.model／split.backers／split.note）＋新增 6 鍵（payout.backers／backers-meta／selffund／selffund-meta／pool／pool-meta），en/zh 雙語。
+- **【D】** 補並行新增的 `drawer.css`（🟠 organism，右側滑出面板）與 `pager.css`（🟡 molecule，數字分頁）進 `design-system.html`（head link＋4.33d/4.33e demo 卡＋TOC 錨點 `#drawer`／`#pager`，drawer demo 可互動開合）與 `design-system.md`（清單各一列）。此二元件由 earnings 財務整合並行加入、當時漏同步 DS 頁，本輪補齊清掉 check_ds_sync FAIL（非本人新建，DS 三件套補全）。
+- 驗證：`check_ds_sync.py` 全 PASS（86 元件全連入·每支有 demo·TOC 全解析·無新裸值）。本機 http 截圖確認統一模型財務區渲染正確。
+
+## 2026-07-23 · Co-create 整合 Slice 1：新增「共創依專案儀表板」後台頁 cocreate-dashboard.html（A spec-derived · 依 ASSUMPTIONS CCR-007，探索原型）
+
+使用者裁決把 ztor cocreate 前台（來源＝GitHub `ztor20/Frontend` 分支 `feature/cocreate-flow`）缺在後台的管理功能整套補齊、兩財務模型（NFT/淨利池 vs 股權/70-30）並存、看畫面再決定模型。四刀計劃見 [docs/共創後台-執行計劃-2026-07-23.md](../../docs/共創後台-執行計劃-2026-07-23.md)、落差分析見 [docs/共創後台落差分析-2026-07-23.md](../../docs/共創後台落差分析-2026-07-23.md)。本筆為 Slice 1（模型預覽頁），內容為探索原型、非已定案產品行為（見 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-007）。
+
+- **【A】** 新頁 `cocreate-dashboard.html`：後台版共創專案儀表板，鏡像前台 `my-cocreate-proposal.html`「共創進度」＋撥款。區塊＝麵包屑／探索提示 info-banner／`.ip-hero`（封面·狀態·募資摘要·操作 rail）／4 格 KPI（`.kpi`＋`.bento--span-3`）／共創金額（`.project-bar`＋`.data-list`：支持總金額−系統費＝應撥）／淨收益 70/30 分配（重用 `.waterfall__row--distribution`）／支持者分層總覽（`.data-list`＋新元件 avatar-stack）／撥款三期（`.data-list` icon 態）／支持者付款明細（`.data-list`＋狀態 `.badge`）／活動公告。全用既有 token 與元件，無寫死值。
+- **【A】** 版本 gating：`<html data-page-feat="full">`＋登記 `js/devtools.js` 與 `js/sidebar.js` 兩處 `FULL_ROUTES`（低版本直連回 E-Shop、跨頁入口隱藏）；掛進 `projects` NAV 的 `match`（側欄「專案」高亮）。歸 Phase 4，低版本不出現。
+- **【D】** 新元件 `ds-components/avatar-stack.css`（🟡 molecule，重疊頭像＋`+N` 更多膠囊；28px 圓·`--card` 分隔環·`--muted`/`--accent` 填·`--radius-pill`）：第一次出現即 promote。同步 `design-system.html`（4.33c demo 卡＋TOC 錨點 `#avatar-stack`）＋`design-system.md`（元件清單表新增一列）。
+- **【A】** `js/i18n.js`：新增 `cocreate.*` 共 75 鍵（en/zh 雙語，zh 對齊頁面文字，接於 `project-detail.*` 區塊後）。
+- 驗證：`check_ds_sync.py` 全 PASS（棘輪存量裸值 57 未增、無新裸值；84 元件全進 DS 頁；116 TOC 錨點解析；md↔html 對齊）。本機 http 開頁截圖確認全區塊 DS 風格內渲染正確。cache-bust 全站 bump 留待 Slice 收束前跑。fresh-context read-back 由 `ui-closeout-verifier` 另派。
+
+## 2026-07-23 · Co-create 整合 批次 1b：收入管理加影評人佣金比例 strip（B 反饋導入 · ASSUMPTIONS CCR-002 提案）
+
+依 preview `finance-overview.html` 的 `.fin-ratio` strip，在收入管理頂部 KPI 列下方加一條影評人佣金比例 callout。忠於 preview 做法（strip 而非第 5 張 KPI 卡），不動現有 4 張 KPI 排版。
+
+- **【B】** `earnings.html`：4 張金額 KPI 的 `bento` 下方新增一條 `when-data` 包住的 `insight-row`（既有元件，品牌橘 tint 單行 callout）：`percent` icon ＋「Your tastemaker commission rate is 15%, applied to net income · View terms」。`<head>` 補掛既有 `insight-row.css`。
+- **【B】** `js/i18n.js`：新增 `earnings.ratio`（en/zh，值含 `<strong>15%</strong>` 與條款連結，連結暫指 `#`——影評人條款頁在 R2.1 尚不存在）。
+- 影評人身分與佣金比例屬提案（CCR-002），未定案。
+- 未新增元件。驗證：`check_ds_sync.py` PASS（版本一致、棘輪 57 未增）、`percent` icon 在 registry；`bump_ver.py` 統一 `?v=20260723zc`。
+
+## 2026-07-23 · Co-create 整合 批次 1a：收入管理新增「How it works」分頁（B 反饋導入 · 依 ASSUMPTIONS CCR-001 提案）
+
+使用者要求把 ztor cocreate 原型（來源＝GitHub `ztor20/Frontend` 分支 `draft/dashboard-merge-demo` 的 `finance-overview.html`「如何運作」drawer）的財務能力整合進 R 2.1 收入管理，此為三批工程第一塊。收入分類合併地基見 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-001（14 類詞彙表）。內容為提案、非已定案產品行為。
+
+- **【B】** `earnings.html`：分頁列（§5.1.8.2）新增第 6 個 tab「How it works」（`data-tab="howto"`、無 `data-feat` gate、常顯）＋對應 `tab-panel`——一張 `card` 內用共用 `ztor-accordion` 列 14 種收入類型（R2.1 §7.3 既有 8 類 ＋ cocreate 新增 6 類：共創計畫／OTT 版稅／音樂版稅／影評人佣金／影評人預付金／共創派對收益），每類點擊展開白話定義；卡尾 `info-banner` 標「提案、未定案」。`<head>` 補掛既有 `accordion.css`。
+- **【B】** `earnings.html` JS 兩處：tab hash 白名單加 `howto`；新增手風琴展開／收合 IIFE（scope 限 `[data-panel="howto"]`，toggle `data-state`＋`aria-expanded`）。
+- **【B】** `js/i18n.js`：新增 9 個收入類名稱鍵（`src.cocreate`／`collaborator`／`fanvestor`／`ott`／`music`／`commission`／`advance`／`bonus`／`party`，供本頁與後續交易明細／收益來源擴充共用）＋`earnings.tab.howto`＋`howto.title/sub/note`＋14 條 `howto.d.*` 定義，皆 en/zh 雙語。cocreate 6 類 zh 沿用 preview drawer 原文、r2.1 8 類依 §7.3 措辭；英文為本輪翻譯、語意統一 USD。
+- 未新增元件（用既有 accordion），design-system 無需同步。
+- 驗證：`check_ds_sync.py` 全 PASS（棘輪存量裸值 57 未增、無新裸值）；`bump_ver.py` 全站統一 `?v=20260723zb`。tab 切換／i18n 切語言 0 raw key 的 fresh-context read-back 留待批次 1 全數（1b 影評人 KPI／1c 交易·來源分類擴充）完成後一起派工。
+
+## 2026-07-23 · cheat code 新增「Presentation demo」組與 Deck for Sony 版本（D infra）
+
+新增一個以 Phase 4 為基底的簡報 demo 版本 Deck for Sony：其餘頁面全同 Phase 4，只有收入管理頁改接到新的 Sony 簡報版。同時把版本面板分組從「開發／測試」寫死改成依「類型」欄動態分組，之後加組免動渲染程式。
+
+- **【D】** `feature-scope-map.md`：「開發版本配置」表新增一列 `deck-for-sony`（顯示名 Deck for Sony、類型 `Demo`、規則 `route:earnings.html=earnings-sony.html`）；表下說明補上「類型欄＝面板分組鍵」與「特殊版需登記 `isFullBaseVersion()`」兩點。
+- **【D】** `js/devtools.js` 三處：
+  - `VERSIONS` 後備陣列同步加 deck-for-sony 一列。
+  - `verRows()` 由寫死 dev/test 兩組改為依 `v[2]` 類型動態分組，配 `VER_GROUP_LABEL`（`Demo`→「Presentation demo」）與 `VER_GROUP_ORDER`。
+  - 新增 `isFullBaseVersion()` 收斂「以 Phase 4 為基底」白名單（full／funding-test／deck-for-sony）；`applyRouteAvailability()` 與 `guardPageFeature()` 兩處改用它，取代原本硬比 full／funding-test，否則新版會被當低版本藏掉 full-only 頁。
+- **【D】** `js/sidebar.js` 兩處：
+  - 收入管理 nav item 加 `match: ["earnings-sony.html"]`，讓變體頁 active 高亮正常。
+  - `fullVersion()` 白名單補上 `deck-for-sony`（navbar 有獨立於 devtools 的 route gate，`fullVersion()` 是 `isFullBaseVersion()` 的重複份；初版漏補，導致 Deck for Sony 下 navbar 誤藏所有 Phase 4 選項）。feature-scope-map 說明已標注此白名單須兩處同步。
+- **【D】** 新增 `earnings-sony.html`：目前為 `earnings.html` 的忠實複本佔位（頂層放置，資產路徑免改），內容待 Sony 簡報版規格確定後重建；`ds-baseline.json` 對應登記 3（＝複本自 earnings.html 繼承的既有例外裸值，非新增技術債）。
+- 驗證：`node --check js/devtools.js`／`js/sidebar.js` 語法過；`check_ds_sync.py` 全 PASS（棘輪存量裸值 57，未增）；版本切換／改接行為由 fresh-context subagent 讀檔核對。
+
 ## 2026-07-23 · 電子商店商品清單移除低庫存門檻 tooltip（C 撤除）
 
 使用者裁示：單一選項商品（zine／acetate／pin）hover 狀態／庫存欄時，浮卡只留「目前庫存」一行，拿掉當天稍早才加的「低庫存門檻」那一行。

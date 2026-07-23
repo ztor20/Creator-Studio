@@ -105,7 +105,7 @@
     /* Events / Fans = flat top-level links; sub-pages reached in-page. */
     { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html"] },
     { href: "fans-crm.html", key: "nav.fans",     icon: "users" },
-    { href: "earnings.html", key: "nav.earnings", icon: "banknote" },
+    { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
 
   /* feature-scope-map 未列的整頁功能在低版本不可作為任何入口。
@@ -119,7 +119,9 @@
   function fullVersion() {
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)
       || document.documentElement.getAttribute("data-version") || "full";
-    return v === "full" || v === "funding-test";
+    /* 以 Phase 4 為基底的版本（不減功能、只改接個別頁面）：nav 全開。
+       與 devtools.js 的 isFullBaseVersion() 同一份白名單，新增同型特殊版時兩處都要加。 */
+    return v === "full" || v === "funding-test" || v === "deck-for-sony";
   }
   function routeAllowed(href) {
     const route = (href || "").split(/[?#]/)[0].toLowerCase();
