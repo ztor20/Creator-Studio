@@ -1,0 +1,49 @@
+/* ============================================================
+   KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
+
+   Composition pattern: 一組「欄位名：值」的唯讀摘要，用在詳情頁側欄
+   meta 卡、狀態摘要卡這類「只看不改」的區塊。可編輯的欄位請用
+   field-system（.field / .input），不要用本元件偽裝成表單。
+
+   Anatomy:
+     .kv                 一列（flex，左右對齊、baseline 對齊）
+       .kv__k            鍵（輔助色）
+       .kv__v            值（前景色、右對齊、medium）
+
+   Modifier:
+     .kv--lead           視為群組首列：去掉上分隔線與上內距。
+                         條件顯示（例如取貨方式二選一）時，被 [hidden]
+                         隱藏的列仍算 :first-child，需手動標這個 class。
+
+   Notes:
+     - `.kv[hidden]` 必須顯式歸零 display：本元件用 flex，會蓋過瀏覽器
+       對 hidden 屬性的預設 display:none。
+     - 值過長時由 consumer 自行加 max-width；本元件不預設寬度上限。
+
+   Consumers: product-detail.html（右側 meta 欄三張卡）
+   ============================================================ */
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-12);
+  padding: var(--sp-8) 0;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+
+.kv[hidden] { display: none; }
+
+.kv:first-child,
+.kv--lead {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.kv__k { color: var(--muted-foreground); }
+
+.kv__v {
+  text-align: right;
+  font-weight: var(--fw-medium);
+}

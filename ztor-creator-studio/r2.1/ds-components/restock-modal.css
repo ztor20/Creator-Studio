@@ -4,12 +4,13 @@
 
    A restock = ONE order. The popup reuses the canonical dialog shell
    (.payout-modal / .payout-dialog) + form helpers:
-     · document layer — method (.segmented) + supplier / ETA / notes
-       (.form-grid / .field, field-system.css + form-grid.css), filled ONCE
-       per order
-     · item layer — one .restock-line per restockable item; a multi-variant
-       product or a bundle member gets a .restock-lines__group header, its
-       variants listed as lines beneath (no tabs, no per-item re-entry)
+     · document layer — method (.segmented.radio-cards) + supplier / ETA /
+       notes (stacked .payout-field), filled ONCE per order. 2026-07-22:
+       reordered so the item table sits right below the method, supplier/
+       ETA/notes moved BELOW the table (Figma node 861-28842).
+     · item layer — one .restock-table per restockable item (3 number columns:
+       當前/補貨/補後數量); a multi-variant product or a bundle member gets a
+       .restock-table__group header, its variants as .restock-table__row beneath
    The restock HISTORY log on product-detail reuses .data-list.
    Restock-specific CSS here = the item quantity lines. All values are tokens.
    2026-07-11: converged onto .field / .form-grid (field-system.css /
@@ -22,74 +23,82 @@
    display:flex, so restore hiding (D106). Member panels use .tab-panel
    (class-driven display) so they need no guard. */
 [data-restock-modal] [data-restock-tabs][hidden] { display: none; }
-/* Breathing room between the "Items to restock" label and the member tab bar. */
+/* Breathing room between the "商品名稱" label and the member tab bar. */
 [data-restock-modal] [data-restock-tabs] { margin-top: var(--sp-14); }
 
-.restock-lines { display: flex; flex-direction: column; margin-top: var(--sp-6); }
+/* Footer 釘框底＝2026-07-23 已收斂到元件層 payout-modal.css（.payout-dialog 自己 flex column、
+   head/foot flex:none、body overflow-y:auto）；本檔原本 scope 到補貨彈窗的那三條已移除、不再重複。 */
 
-/* Group header — multi-variant product name / bundle member name */
-.restock-lines__group {
-  font-family: var(--font-ui);
-  font-size: var(--fs-12);
-  font-weight: var(--fw-medium);
-  color: var(--muted-foreground);
-  padding: var(--sp-12) 0 var(--sp-4);
+/* 區塊間距一律 24（Figma node 866-1179：body gap 24），只有「商品名稱」標題→逐選項表為同一組＝gap 8。
+   .field 的預設 margin-bottom 歸零，垂直節奏一律交給 margin-top。 */
+[data-restock-modal] .payout-dialog__body > .field,
+[data-restock-modal] .payout-dialog__body > .field__label,
+[data-restock-modal] .payout-dialog__body > .radio-cards { margin-top: var(--sp-24); }
+[data-restock-modal] .payout-dialog__body > .radio-cards:first-child { margin-top: 0; }
+[data-restock-modal] .payout-dialog__body > .field { margin-bottom: 0; }
+[data-restock-modal] [data-restock-members] { margin-top: var(--sp-8); }
+/* 補貨方式兩張卡的間距對齊 Figma（gap 16，元件預設 12）。 */
+[data-restock-modal] .radio-cards { gap: var(--sp-16); }
+
+/* ---- 逐選項補貨表：三欄數量（當前／補貨／補後），依第一個選項分組 ----
+   取代舊 .restock-line 卡片列（2026-07-22，Figma node 861-28842）。
+   當前數量／補後數量＝唯讀（靜音底、不可打字）；補貨數量＝可編輯。
+   補後數量由 recalc() 隨補貨數量即時更新。 */
+.restock-table {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
-.restock-lines__group:first-child { padding-top: var(--sp-2); }
-
-/* One restockable item: identity + quantity input + after-restock readout */
-.restock-line {
+.restock-table__head,
+.restock-table__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 92px auto;
-  gap: var(--sp-12);
+  grid-template-columns: minmax(0, 1fr) 84px 84px 84px;
+  gap: var(--sp-10);
   align-items: center;
-  padding: var(--sp-10) 0;
+  padding: var(--sp-10) var(--sp-14);
+}
+.restock-table__head {
+  background: var(--muted);
   border-bottom: 1px solid var(--border);
 }
-.restock-line:last-child { border-bottom: 0; }
-.restock-line__main { display: flex; align-items: center; gap: var(--sp-10); min-width: 0; }
-.restock-line__img {
-  width: 34px; height: 34px; flex: none;
-  border-radius: 9px;
-  background: var(--muted);
-  color: var(--foreground-muted);
+.restock-table__col {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+  text-align: center;
+}
+/* 分組標題（第一個選項值，如 Small / Medium） */
+.restock-table__group {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  padding: var(--sp-10) var(--sp-14) var(--sp-4);
+}
+.restock-table__row + .restock-table__row { border-top: 1px solid var(--border); }
+.restock-table__id { display: flex; align-items: center; gap: var(--sp-10); min-width: 0; }
+.restock-table__img {
+  width: 40px; height: 40px; flex: none;
+  border-radius: var(--radius);
+  background: var(--input-surface);
+  color: var(--muted-foreground);
   display: inline-grid; place-items: center;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px var(--border);
 }
-.restock-line__img .ztor-icon { width: 18px; height: 18px; }
-.restock-line__img img { width: 100%; height: 100%; object-fit: cover; }
-.restock-line__text { min-width: 0; }
-.restock-line__name {
+.restock-table__img .ztor-icon { width: 18px; height: 18px; }
+.restock-table__img img { width: 100%; height: 100%; object-fit: cover; }
+.restock-table__name {
   font-family: var(--font-ui);
   font-size: var(--fs-14);
   font-weight: var(--fw-medium);
-  line-height: var(--lh-normal);
-  display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.restock-line__meta {
-  margin-top: 3px;
-  color: var(--muted-foreground);
-  font-size: var(--fs-12);
-}
-.restock-line__meta b { color: var(--foreground); font-weight: var(--fw-medium); }
-.input.restock-line__qty { width: 100%; text-align: center; }
-.restock-line__after {
-  font-size: var(--fs-13);
-  color: var(--muted-foreground);
-  white-space: nowrap;
-  text-align: right;
-  min-width: 52px;
-}
-.restock-line__after b {
-  color: var(--foreground);
-  font-family: var(--font-display);
-  font-weight: var(--fw-medium);
-  letter-spacing: -0.2px;
-}
+.restock-table .input { text-align: center; padding: var(--sp-8) var(--sp-6); }
+.restock-table__ro.input { background: transparent; color: var(--muted-foreground); }
 
-/* Narrow: drop the after column below the row */
+/* Narrow: 欄寬收窄、名稱欄仍可撐 */
 @media (max-width: 560px) {
-  .restock-line { grid-template-columns: minmax(0, 1fr) 76px; }
-  .restock-line__after { grid-column: 1 / -1; text-align: left; min-width: 0; margin-top: var(--sp-2); }
+  .restock-table__head,
+  .restock-table__row { grid-template-columns: minmax(0, 1fr) 60px 60px 60px; gap: var(--sp-6); padding: var(--sp-10); }
 }

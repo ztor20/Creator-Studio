@@ -1,0 +1,109 @@
+/* ============================================================
+   combobox.css · multi-select typeahead (search-to-add)
+   ------------------------------------------------------------
+   A .tag-input field (reused: selected chips + grow entry) whose
+   suggestions appear in a focus-triggered dropdown menu — unlike
+   .tag-input's always-visible .chip-group suggestion row. Options
+   can be grouped (e.g. products / tickets). Reuses .tag-input,
+   .chip(.--active.--removable) and tokens; adds only the menu.
+   Used by the pickup session modal's "add pickup items" picker.
+     .combobox                      — positioning wrapper (relative)
+       .tag-input__field            — field: selected chips + entry (reused)
+       .combobox__menu[hidden]      — floating suggestion list (on focus)
+         .combobox__group           — optional group label
+         .combobox__opt             — one suggestion (icon + text)
+           .combobox__opt-icon
+           .combobox__opt-text > .combobox__opt-name + __opt-meta
+         .combobox__empty           — no-match message
+   ============================================================ */
+
+.combobox { position: relative; }
+
+.combobox__menu {
+  position: absolute;
+  z-index: 30;                       /* matches .dropdown__menu */
+  top: calc(100% + var(--sp-8));
+  left: 0;
+  right: 0;
+  max-height: 264px;
+  overflow-y: auto;
+  padding: var(--sp-6);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-float);
+}
+.combobox__menu[hidden] { display: none; }
+
+.combobox__group {
+  padding: var(--sp-6) var(--sp-8) var(--sp-4);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+
+.combobox__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  width: 100%;
+  padding: var(--sp-8);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font: inherit;
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+}
+.combobox__opt:hover,
+.combobox__opt.is-active { background: var(--muted); }
+
+.combobox__opt-icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  color: var(--foreground-muted);
+}
+.combobox__opt:hover .combobox__opt-icon,
+.combobox__opt.is-active .combobox__opt-icon { background: var(--card); }
+
+.combobox__opt-text { display: flex; flex-direction: column; min-width: 0; }
+.combobox__opt-name { font-size: var(--fs-13); font-weight: var(--fw-medium); }
+.combobox__opt-meta {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combobox__empty {
+  padding: var(--sp-10) var(--sp-8);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+/* Selected tokens read as a neutral grey pill (not the stark inverted
+   `.chip--active` white), so committed items sit quietly in the field. */
+.combobox .tag-input__field .chip {
+  background: var(--accent);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Dropdown affordance — a chevron on the right of the field that flips when the
+   menu is open. pointer-events:none so clicking it still focuses the entry. */
+.combobox__chevron {
+  flex: none;
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  transition: transform var(--duration) var(--easing);
+}
+.tag-input__field [aria-expanded="true"] ~ .combobox__chevron { transform: rotate(180deg); }

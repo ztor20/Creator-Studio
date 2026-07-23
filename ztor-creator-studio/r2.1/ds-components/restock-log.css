@@ -1,0 +1,89 @@
+/* ============================================================
+   Restock Log — 補貨紀錄表（逐欄對齊的歷史清單）
+
+   Composition pattern: 每一筆補貨一列，欄位各自成欄。取代原本用
+   .data-list 把「數量／日期／供應商」擠成一行標題＋一行 meta 的寫法——
+   補貨紀錄是要被比對的（這批比上批多幾件、上次補貨隔多久），欄位對齊
+   才掃得動，擠成句子只能一筆一筆讀。
+
+   Anatomy:
+     .restock-log(.--with-option)
+       .restock-log__head          欄位名列
+       .restock-log__row           一筆補貨
+         .restock-log__opt         選項組合（單一選項商品不顯示此欄）
+         .restock-log__qty         補貨數量（+N，等寬數字）
+         其餘儲存格為純文字（日期／供應商）與 .badge（狀態）
+
+   Modifier:
+     .restock-log--with-option     多選項商品：開出「選項組合」欄。
+                                   不掛此 class 時該欄整欄不顯示（含表頭）。
+
+   Notes:
+     - 欄寬與 .variant-table 同樣走 grid，但兩者欄位語意無關，故不共用：
+       變體表是可編輯的設定，本元件是唯讀的歷史。
+     - 窄視窗由外層 .restock-log-wrap 提供水平捲動。
+
+   Consumers: product-detail.html（補貨紀錄卡）
+   ============================================================ */
+
+.restock-log-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow-x: auto;
+  width: 100%;
+}
+
+.restock-log {
+  display: flex;
+  flex-direction: column;
+  min-width: 480px;
+}
+
+.restock-log__head,
+.restock-log__row {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.8fr) minmax(120px, 1fr) minmax(110px, 1fr) 90px;
+  gap: var(--sp-8);
+  align-items: center;
+  padding: 9px var(--sp-12);
+}
+
+.restock-log--with-option .restock-log__head,
+.restock-log--with-option .restock-log__row {
+  grid-template-columns: minmax(90px, 0.7fr) minmax(80px, 0.8fr) minmax(120px, 1fr) minmax(110px, 1fr) 90px;
+}
+
+/* 沒有 --with-option 時，選項組合欄整欄退場（表頭與每一列同時） */
+.restock-log__opt { display: none; }
+.restock-log--with-option .restock-log__opt { display: block; }
+
+.restock-log__head {
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+}
+
+.restock-log__row {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+.restock-log__row:last-child { border-bottom: 0; }
+
+.restock-log__opt {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+
+.restock-log__qty {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.restock-log__muted { color: var(--muted-foreground); }

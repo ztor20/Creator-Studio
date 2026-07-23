@@ -1,0 +1,40 @@
+/* ============================================================
+   Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
+
+   Composition pattern: 一個「不能直接改、只能透過某個動作改變」的數量，
+   在表單卡裡以讀數呈現而非輸入框。商品明細的庫存用它——庫存只能靠補貨
+   增加（每筆留紀錄），做成 .input 會讓人以為可以打字覆蓋。
+
+   Anatomy:
+     .stock-readout
+       .stock-readout__num     數值（顯示字體、28px）
+       .stock-readout__unit    單位／分母（如「/ 50 件」，輔助色）
+       .badge                  狀態徽章（低庫存／售罄；由 consumer 決定要不要放）
+
+   Notes:
+     - 分母（限量的上限）與單位都放在 __unit 裡，讓數值本身維持單一焦點。
+     - 這不是 KPI：.kpi 是有邊框的獨立方塊、用在儀表列；本元件是表單卡內
+       的一行讀數，沒有自己的容器樣式。
+
+   Consumers: product-detail.html（單一規格的庫存）
+   ============================================================ */
+
+.stock-readout {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  padding: var(--sp-6) 0;
+}
+
+.stock-readout__num {
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.6px;
+  color: var(--foreground);
+}
+
+.stock-readout__unit {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}

@@ -4,24 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>平台費率設定 · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260722zb"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/button.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/input.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/field-system.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260722zb"><link rel="stylesheet" href="ds-components/accordion.css?v=20260722zb"><link rel="stylesheet" href="ds-components/table.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/card.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/page-intro.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260722zb">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260722zb">
-<link rel="stylesheet" href="shared.css?v=20260722zb">
+<script src="js/theme.js?v=20260723y"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/button.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/input.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/field-system.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260723y"><link rel="stylesheet" href="ds-components/accordion.css?v=20260723y"><link rel="stylesheet" href="ds-components/table.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/card.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260723y">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260723y">
+<link rel="stylesheet" href="shared.css?v=20260723y">
 </head>
 <body>
 <div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
@@ -68,17 +68,27 @@
 <!-- ===== Tab 1：費率設定（支付手續費＋預設費率樹＋版本設定）===== -->
 <div class="tab-panel tab-panel--active" data-panel="settings">
 
-<!-- 支付手續費：全站單一費率、不隨維度分葉（spec 5.1.0.3 F2）；置頂＋輕量單列＝最單純的配角
-     支付手續費＝百分比＋每筆固定金額（3.4% ＋ HK$2.40） -->
-<section class="form-section form-section--outlined" style="display:flex;align-items:center;gap:var(--sp-16) var(--sp-18);flex-wrap:wrap">
-  <div style="flex:1;min-width:var(--w-220)">
-    <h3 class="form-section__title" style="margin:0" data-i18n="fees.payment.title">Payment fee</h3>
-    <p class="text-sub" style="margin:var(--sp-8) 0 0" data-i18n="fees.payment.sub">One rate for every transaction, whatever the type.</p>
+<!-- 支付手續費：逐金流商（Atom／Stripe）各自的百分比＋每筆固定額，套用所有交易（OTT 除外）。
+     雙金流商＝產品範圍提案（現行 spec 5.1.0.3 為單一費率），記 ASSUMPTIONS UIA-081。
+     固定額只掛靜態「$」符號（不寫死 HK$／NT$）——實際幣別由 Admin 側欄的全站幣別統一，現只 HKD（使用者裁示 2026-07-23）。 -->
+<section class="form-section form-section--outlined">
+  <div class="form-section__head">
+    <h3 class="form-section__title" data-i18n="fees.payment.title">Payment fee</h3>
   </div>
-  <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
-    <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
-    <span class="text-sub" aria-hidden="true">＋</span>
-    <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit" data-fee-cur>HK$</span><input class="input amount-field__input" id="fee-payment-fixed" type="number" inputmode="decimal" value="2.40" style="padding-left:48px"></span>
+  <p class="text-sub" style="margin:0 0 var(--sp-16)" data-i18n="fees.payment.sub">Each payment provider has its own rate.</p>
+  <div style="display:flex;flex-direction:column;gap:var(--sp-12)">
+    <div style="display:flex;align-items:center;gap:var(--sp-12);flex-wrap:wrap">
+      <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-medium)">Atom</span>
+      <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-atom" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
+      <span class="text-sub" aria-hidden="true">＋</span>
+      <span class="amount-field amount-field--readonly" style="width:110px"><span class="amount-field__unit">$</span><input class="input amount-field__input" id="fee-payment-atom-fixed" type="number" inputmode="decimal" value="2.40" aria-label="Atom fixed fee per transaction"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:var(--sp-12);flex-wrap:wrap">
+      <span style="width:72px;font-family:var(--font-ui);font-size:var(--fs-14);font-weight:var(--fw-medium)">Stripe</span>
+      <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" id="fee-payment-stripe" type="number" inputmode="decimal" value="3.4"><span class="amount-field__unit">%</span></span>
+      <span class="text-sub" aria-hidden="true">＋</span>
+      <span class="amount-field amount-field--readonly" style="width:110px"><span class="amount-field__unit">$</span><input class="input amount-field__input" id="fee-payment-stripe-fixed" type="number" inputmode="decimal" value="2.35" aria-label="Stripe fixed fee per transaction"></span>
+    </div>
   </div>
 </section>
 
@@ -250,11 +260,11 @@
   </section>
 </div>
 
-<script src="js/icons.js?v=20260722zb"></script>
-<script src="js/i18n.js?v=20260722zb"></script>
-<script src="partials/date-input.js?v=20260722zb"></script>
-<script src="js/sidebar.js?v=20260722zb"></script>
-<script src="partials/fee-exception-modal.js?v=20260722zb"></script>
+<script src="js/icons.js?v=20260723y"></script>
+<script src="js/i18n.js?v=20260723y"></script>
+<script src="partials/date-input.js?v=20260723y"></script>
+<script src="js/sidebar.js?v=20260723y"></script>
+<script src="partials/fee-exception-modal.js?v=20260723y"></script>
 <script>
   /* 平台費率頁互動（spec 5.1.0.3 F2–F4）——demo，非真後端。
      結構：預設費率樹（全平台通用）＋費率例外清單（逐 Creator 覆寫、逐葉粒度，D141）。
@@ -363,23 +373,6 @@
     /* 版本歷史 append-only：儲存（立即／延遲／某例外）都插一列。
        eff＝生效日 ISO；未傳＝今天（立即生效）。生效日在未來時，該版本標「待生效」。
        頁面已無「目前版本」徽章（Figma 865-100 撤除該卡），版本資訊只留在版本歷史分頁。 */
-    /* 支付手續費固定金額的幣別符號跟隨平台幣別（側欄設定，localStorage 'ztor-currency'，預設 HKD）。
-       使用者裁示：平台已有全站幣別指定，這裡不再寫死 HK$。設定分頁與例外彈窗兩處鏡射同一符號。 */
-    var FEE_CUR_SYM = { HKD: 'HK$', TWD: 'NT$' };
-    function feeCurSym() {
-      var c = 'HKD'; try { c = localStorage.getItem('ztor-currency') || 'HKD'; } catch (e) {}
-      return FEE_CUR_SYM[c] || FEE_CUR_SYM.HKD;
-    }
-    function applyFeeCurrency(scope) {
-      var sym = feeCurSym();
-      Array.prototype.forEach.call((scope || document).querySelectorAll('[data-fee-cur]'), function (el) { el.textContent = sym; });
-    }
-    applyFeeCurrency(document);
-    /* 在同頁側欄切換平台幣別時即時跟隨（側欄 handler 已同步寫入 localStorage，microtask 後讀得到）*/
-    document.addEventListener('click', function (e) {
-      if (e.target.closest && e.target.closest('[data-currency-pick]')) setTimeout(function () { applyFeeCurrency(document); }, 0);
-    });
-
     function todayISO() { var d = new Date(); d.setHours(0, 0, 0, 0); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
     function addHistory(scope, change, eff) {
       eff = eff || todayISO();
@@ -521,8 +514,6 @@
           searchEl = root.querySelector('[data-fx-search]'),
           suggestEl = root.querySelector('[data-fx-suggest]'),
           noneEl = root.querySelector('[data-fx-none]'),
-          paymentEl = root.querySelector('[data-fx-payment]'),
-          paymentFixedEl = root.querySelector('[data-fx-payment-fixed]'),
           treeHost = root.querySelector('[data-fx-tree]'),
           saveEl = root.querySelector('[data-fx-save]');
       var mode = 'add', current = null, pickedId = null, pickedName = '', readOv = null;
@@ -563,11 +554,6 @@
 
       function open(m, ex) {
         mode = m; current = ex || null; readOv = null; pickedId = null; pickedName = '';
-        var pay = document.getElementById('fee-payment'),
-            payFix = document.getElementById('fee-payment-fixed');
-        if (paymentEl && pay) paymentEl.value = pay.value;                 // 支付 % 唯讀鏡射、取設定分頁值
-        if (paymentFixedEl && payFix) paymentFixedEl.value = payFix.value; // 每筆固定金額唯讀鏡射
-        applyFeeCurrency(modal);                                           // 幣別符號跟隨平台幣別
         if (m === 'edit' && ex) {
           creatorField.hidden = true;
           readOv = renderTreeInto(treeHost, ex.ov);
@@ -677,6 +663,6 @@
     i18n(excBody);
   }());
 </script>
-<script src="js/devtools.js?v=20260722zb"></script>
+<script src="js/devtools.js?v=20260723y"></script>
 </body>
 </html>
