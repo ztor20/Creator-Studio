@@ -208,6 +208,22 @@
      所以可以安心撐滿容器。更窄視窗回退水平捲動（min-width 560 觸發 overflow-x）。 */
   width: 100%;
 }
+/* --menu：列尾動作改用浮動下拉（商品明細的「單獨下架／重新上架」kebab）時，外框不可裁切選單。
+   桌面寬度表格本就撐得下、不需橫捲，放行 overflow 讓選單浮出；窄視窗（<560，表格觸發 min-width
+   橫捲）才恢復 overflow-x:auto，此時 kebab 選單罕用、被捲動裁切可接受。 */
+.variant-table-wrap--menu { overflow: visible; }
+@media (max-width: 560px) { .variant-table-wrap--menu { overflow-x: auto; } }
+/* overflow:visible 會讓外框圓角不再 clip 內容 → 表頭（--muted 底）與末列的方角戳出圓角。
+   改由內容自己貼齊：首列（表頭）補上圓角、末列補下圓角（半徑扣掉 1px 邊框、貼齊外框內緣曲線）。
+   只作用在 --menu（放行 overflow 的情形）；一般 overflow-x:auto 的表格靠 clip、不需要（2026-07-23）。 */
+.variant-table-wrap--menu .variant-table__head {
+  border-top-left-radius: calc(var(--radius-xl) - 1px);
+  border-top-right-radius: calc(var(--radius-xl) - 1px);
+}
+.variant-table-wrap--menu .variant-table__row:last-child {
+  border-bottom-left-radius: calc(var(--radius-xl) - 1px);
+  border-bottom-right-radius: calc(var(--radius-xl) - 1px);
+}
 .variant-table {
   display: flex;
   flex-direction: column;
@@ -227,6 +243,12 @@
 .variant-table--limited .variant-table__row {
   grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
+/* --preview（2026-07-23）：編輯 popup 內的規格組合唯讀預覽表——5 欄（規格／價格／庫存／SKU／成本），
+   無總量欄、無列尾動作欄（動作在上方選項值管理區）。與頁面主表分開一套欄寬。 */
+.variant-table--preview .variant-table__head,
+.variant-table--preview .variant-table__row {
+  grid-template-columns: minmax(96px, max-content) minmax(80px, 1fr) 72px minmax(92px, 1fr) minmax(72px, 1fr);
+}
 .variant-table__head {
   background: var(--muted);
   border-bottom: 1px solid var(--border);
@@ -239,8 +261,24 @@
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
+/* 兩階層（顏色 × 尺寸）分組標題列（2026-07-23）：以第一個選項（顏色）分組，
+   組名撐滿整列、下方接該顏色的尺寸列；與補貨彈窗矩陣 .restock-table__group 同語彙。
+   非 grid，坐在 .variant-table（flex column）裡當一整條 full-width 標題。 */
+.variant-table__group {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-8) var(--sp-12);
+}
 .variant-table__row:last-child { border-bottom: 0; }
 .variant-table__row.is-excluded { opacity: 0.42; }
+/* --delisted：商品明細「單獨下架」某一規格——該列在表單上停用（灰階＋輸入 disabled，disabled 由
+   JS 加在 .input 上），但列尾 kebab 維持可用（切「重新上架」）。因 opacity 會連子代一起壓暗、
+   無法只用 opacity:1 把 kebab 救回（合成階段會相乘），改成只壓「除下拉以外的直接子代」。 */
+.variant-table__row--delisted > :not(.dropdown) { opacity: 0.42; }
 
 .variant-cell--variant {
   font-family: var(--font-ui);
@@ -258,6 +296,16 @@
   font-family: var(--font-ui);
   font-size: var(--fs-13);
   color: var(--foreground);
+}
+/* 唯讀顯示格（2026-07-22）：商品明細把逐規格表改唯讀（改值走編輯 popup）時，
+   價格／SKU／成本／總量欄由 .input 換成純文字，用它統一呈現（與 --stock 同族、語意中性）。 */
+.variant-cell--ro {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .variant-cell--stock-low {
   color: var(--destructive);

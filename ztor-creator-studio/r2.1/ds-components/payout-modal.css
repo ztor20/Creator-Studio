@@ -94,16 +94,24 @@
   background: color-mix(in srgb, var(--background) 68%, var(--overlay-tint));
   backdrop-filter: blur(14px);
 }
+/* Footer/header 釘住、只捲 body（2026-07-23，收斂到元件層）：
+   原本整個 dialog `overflow:auto`＝head／body／foot 一起捲，內容一長 footer（送出/取消）
+   就跟著捲到看不到，每個 popup 都得各自補一次（restock 曾經 scope 修過）。改成 dialog 自己
+   是 flex column＋overflow:hidden，head／foot `flex:none` 釘在上下、body `flex:1＋overflow-y:auto`
+   吃掉剩餘高度並內捲。所有 .payout-dialog 消費者（補貨／編輯／費率／出款…）一次到位。 */
 .payout-dialog {
   width: min(620px, 100%);
   max-height: min(760px, calc(100vh - 48px));
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: var(--radius-xl);
   background: var(--card);
   box-shadow: var(--shadow-overlay);
 }
 .payout-dialog__head,
 .payout-dialog__foot {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -126,6 +134,21 @@
 }
 .payout-dialog__body {
   padding: var(--sp-20);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* 中間隔一層 wrapper 的情形（請款彈窗的 .payout-view 步驟、creators 的 <form>）：head/body/foot
+   不是 .payout-dialog 的直接子層，flex column 傳不下去。讓這層 wrapper 接手成為撐滿的 flex column，
+   footer-pin 才穿得到它底下的 head/body/foot；否則 dialog 的 overflow:hidden 會把過長內容直接裁掉、
+   連捲軸都沒有（2026-07-23，補元件層 footer-pin 的漏網結構）。 */
+.payout-dialog > .payout-view:not([hidden]),
+.payout-dialog > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 .payout-view[hidden] {
   display: none;
@@ -271,22 +294,8 @@
   display: block;
 }
 
-/* 費率例外彈窗（[data-fx-modal]）：dialog 改 flex 直列、只讓 body 捲動、head/foot 固定。
-   費率樹展開後內容變長，預設 .payout-dialog 是整框 overflow:auto（head/body/foot 一起捲），
-   會讓 footer（取消／儲存例外）跟著捲到內容下方；改成只捲 body、footer 釘在框底。
-   只 scope 到費率例外彈窗，不影響 earnings 的 payout modal。2026-07-22 */
-[data-fx-modal] .payout-dialog {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-[data-fx-modal] .payout-dialog__head,
-[data-fx-modal] .payout-dialog__foot { flex: none; }
-[data-fx-modal] .payout-dialog__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
+/* 費率例外彈窗（[data-fx-modal]）的 footer-pin 原本 scope 在此，2026-07-23 已收斂到元件層
+   （.payout-dialog 基底規則），這組重複已移除。 */
 /* 費率例外彈窗：平台費樹填滿 body 可用寬度即可，維持 body 左右內距。
    2026-07-22 撤回先前的負 margin edge-to-edge——body 是 overflow-y:auto，
    一旦內容戳出左右內距，overflow-x 會從 visible 變 auto、長出不必要的橫向捲軸；

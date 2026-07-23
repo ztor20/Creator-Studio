@@ -324,11 +324,29 @@
    ============================================================ */
 .product-list--orders .product-list__head,
 .product-list--orders .product-list__row {
-  grid-template-columns: 44px minmax(220px, 1fr) 84px minmax(148px, auto) 92px 40px;
+  /* 2026-07-23 使用者裁示：訂單身分與狀態雙軸全部拆成獨立欄。8 欄，欄序＝
+     訂單編號(+複製鈕) / 訂單內容(多行) / 買家 / 金額 / 付款狀態 / 出貨狀態 / 日期 / actions。
+     2026-07-23 使用者再裁示：訂單列表不放商品圖片，移除縮圖欄（原第 1 欄 68px）。
+     出貨欄較寬（minmax 148）＝混合訂單同時放「待出貨＋待取貨」兩顆徽章、水平不換行。 */
+  grid-template-columns: 120px minmax(160px, 1.4fr) minmax(76px, 0.7fr) 84px 92px minmax(148px, auto) 92px 40px;
 }
+/* 整列可點＝開啟訂單（互動元素 kebab／複製鈕另行 stopPropagation；比照 creators 列） */
+.product-list--orders .product-list__row { cursor: pointer; }
 .product-list--orders .product-list__price,
 .product-list--orders .product-list__cell { color: var(--foreground); }
-.product-list--orders .product-list__status { display: flex; align-items: center; }
+/* 訂單編號欄：編號＋很小的複製 icon 鈕並排 */
+.product-list--orders .product-list__order-id { display: flex; align-items: center; gap: var(--sp-4); font-weight: var(--fw-medium); }
+.product-list--orders .product-list__copy { color: var(--muted-foreground); flex: none; }
+.product-list--orders .product-list__copy:hover { color: var(--foreground); }
+.product-list--orders .product-list__copy .ztor-icon { width: 13px; height: 13px; }
+/* 訂單內容欄：白字、與其他欄同字級(fs-13)、每項商品一行；最多 4 行、超過第 4 行以 … 截斷 */
+.product-list--orders .product-list__items { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+.product-list--orders .product-list__line { display: block; color: var(--foreground); font-size: var(--fs-13); line-height: var(--lh-normal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 各品項行之間加大間距（使用者裁示：訂單內容每行間距要大一點） */
+.product-list--orders .product-list__line + .product-list__line { margin-top: var(--sp-6); }
+.product-list--orders .product-list__pay { display: flex; align-items: center; }
+/* 出貨狀態欄：配送＋取貨兩軸值並排，水平不換行 */
+.product-list--orders .product-list__ship { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: nowrap; }
 
 .product-list--pickup .product-list__head,
 .product-list--pickup .product-list__row {
@@ -341,13 +359,14 @@
 @media (max-width: 760px) {
   .product-list--orders .product-list__row,
   .product-list--pickup .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
-  .product-list--orders .product-list__product,
   .product-list--pickup .product-list__product { padding-left: var(--sp-56); }
-  .product-list--orders .product-list__cell,
-  .product-list--orders .product-list__status,
-  .product-list--orders .product-list__price,
+  /* 訂單列表無縮圖，堆疊時各欄不需清縮圖、靠左不縮排 */
+  .product-list--orders .product-list__cell { grid-column: 1; }
   .product-list--pickup .product-list__cell,
-  .product-list--pickup .product-list__status { grid-column: 1; padding-left: var(--sp-56); }
+  .product-list--pickup .product-list__status,
+  .product-list--pickup .product-list__price { grid-column: 1; padding-left: var(--sp-56); }
+  /* 訂單編號＝堆疊卡的第一列識別；其餘欄依序堆在下方 */
+  .product-list--orders .product-list__order-id { grid-row: 1; }
 }
 
 /* ============================================================
@@ -394,6 +413,9 @@
   box-shadow: var(--shadow-lift-flat);
   transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
+/* 2026-07-23 使用者反饋：點列直接進編輯（草稿進建立頁、已建立商品進細節頁，見 e-shop.html
+   點擊委派邏輯）。只有 --eshop 有這個點擊行為，--ip 沒有，游標提示不能共用上面的 hover 規則。 */
+.product-list--eshop .product-list__row { cursor: pointer; }
 .product-list--eshop .product-list__row:has(+ .product-list__row:hover),
 .product-list--ip .product-list__row:has(+ .product-list__row:hover) {
   border-bottom-color: transparent;

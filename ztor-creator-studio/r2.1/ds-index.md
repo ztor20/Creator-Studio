@@ -289,7 +289,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 80 支；主 class 前 5 個）
+## 元件（ds-components/，共 81 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -309,7 +309,7 @@
 - `cookie-banner.css` — .ztor-cookie-banner, .ztor-cookie-banner__copy, .ztor-cookie-banner__actions, .ztor-cookie-banner__settings ｜ Ztor — Cookie Banner
 - `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__icon, .data-list__icon--success ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
-- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
+- `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-grid--norail, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
 - `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__title, .empty-card__text, .empty-card__cta ｜ Empty card — in-card empty state for a loaded-bu
@@ -318,11 +318,11 @@
 - `fan-store.css` — .preview-panel__body, .fan-store, .fan-store__overline, .fan-store__phone, .fan-store__screen ｜ Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同
 - `field-more.css` — .field-more, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
-- `field-system.css` — .field, .field__label, .field__hint, .field__req ｜ Ztor Creator Studio - Field system molecule
+- `field-system.css` — .field, .field__label, .field__hint, .field__req, .field-readout ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
 - `footer.css` — .ztor-footer, .ztor-footer__inner, .ztor-footer__brand, .ztor-footer__wordmark, .ztor-footer__tagline ｜ Ztor — Footer
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
-- `form-section.css` — .form-section, .form-section--outlined, .form-section__head, .form-section__title, .form-section__sub ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
+- `form-section.css` — .form-section, .form-section--outlined, .form-section__head, .form-section__head--actions, .form-section__head-actions ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom
 - `info-banner.css` — .info-banner ｜ Neutral informational banner — for contextual ex
@@ -347,11 +347,11 @@
 - `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper__labels, .progress-stepper__label ｜ ── Progress stepper
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__project, .project-list__icon ｜ Project list — borderless table list for the Pro
-- `radio-card.css` — .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text, .radio-card__title ｜ radio-card.css · 並排可選卡（radio 卡）
+- `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡）
 - `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）
 - `readiness.css` — .readiness, .readiness__head, .readiness__title, .readiness__list, .readiness__item ｜ Readiness Card · 就緒檢查卡（spec 5.1.5.2 §4.4「Ready t
 - `restock-log.css` — .restock-log-wrap, .restock-log, .restock-log__head, .restock-log__row, .restock-log--with-option ｜ Restock Log — 補貨紀錄表（逐欄對齊的歷史清單）
-- `restock-modal.css` — .restock-lines, .restock-lines__group, .restock-line, .restock-line__main, .restock-line__img
+- `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__brand, .scanner-top__title ｜ Mobile scanner · spec 5.1.5.11 F7 (standalone ph
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
@@ -362,6 +362,7 @@
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
 - `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例）
 - `stock-readout.css` — .stock-readout, .stock-readout__num, .stock-readout__unit ｜ Stock Readout — 唯讀數量讀數（大數字＋單位＋狀態徽章）
+- `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ Ztor — Stock tip (extra stock info on hover)
 - `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
 - `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
 - `table.css` — .ztor-table, .ztor-table__feature, .fee-tree__panel, .ztor-accordion__item, .ztor-table__check ｜ Ztor — Table

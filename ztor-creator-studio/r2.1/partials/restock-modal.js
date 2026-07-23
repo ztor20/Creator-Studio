@@ -3,14 +3,16 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    D106 bundle member tabs). Loaded as a <script> on e-shop.html and
    product-detail.html (file:// safe).
 
-   One restock = one ORDER. Two layers + one grouping rule:
-     · DOCUMENT layer (filled once): method .segmented (now/scheduled) +
-       supplier / ETA / notes.
-     · ITEM layer: quantity lines .restock-line.
+   One restock = one ORDER. Two layers + one grouping rule (2026-07-22 Figma
+   node 861-28842: method = radio-cards; item table sits right below it;
+   supplier / ETA / notes moved BELOW the table):
+     · DOCUMENT layer (filled once): method .segmented.radio-cards
+       (now/scheduled) + supplier / ETA / notes.
+     · ITEM layer: a .restock-table with 3 number columns (當前/補貨/補後數量).
    Grouping (D106):
-     · A PRODUCT's variants are always a MATRIX of lines (single-variant = 1
-       line; multi-variant = lines, sub-grouped by option-1 via
-       .restock-lines__group for a 2-option matrix). No tabs.
+     · A PRODUCT's variants are a MATRIX of rows (single-variant = 1 row;
+       multi-variant = rows, sub-grouped by option-1 via
+       .restock-table__group for a 2-option matrix). No tabs.
      · A BUNDLE separates its MEMBER PRODUCTS with .tabs (one tab per member);
        each tab panel holds that member's variant matrix. Only ONE tab level
        (members) — variants never use tabs. Quantities persist across tabs
@@ -32,40 +34,32 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       <button class="btn btn--icon" type="button" aria-label="Close restock" data-i18n-aria-label="restock.close" data-restock-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <!-- Document layer — method + supplier / ETA / notes, filled once per order -->
-      <div class="payout-field">
-        <span class="payout-field__label"><span data-i18n="restock.method">Restock method</span> <span class="field__req">*</span></span>
-        <div class="segmented" role="tablist" data-restock-method>
-          <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-restock-mode="now" data-i18n="restock.method.now">Restock now</button>
-          <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-restock-mode="scheduled" data-i18n="restock.method.scheduled">Scheduled</button>
-        </div>
-        <span class="payout-field__hint" data-restock-method-hint data-i18n="restock.method.now-hint">Stock is on hand — adds to inventory immediately.</span>
-      </div>
-      <div class="payout-form-grid mt-16">
-        <label class="payout-field" data-restock-eta hidden>
-          <span class="payout-field__label"><span data-i18n="restock.f.eta">Expected arrival</span> <span class="field__req">*</span></span>
-          <input class="input" type="date" value="2026-07-08">
-        </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="restock.f.supplier">Supplier (optional)</span>
-          <input class="input" placeholder="—" data-restock-supplier>
-        </label>
-        <label class="payout-field">
-          <span class="payout-field__label" data-i18n="restock.f.notes">Notes (optional)</span>
-          <input class="input" placeholder="—">
-        </label>
+      <!-- 補貨方式（radio-cards：兩張並排卡＋右上橘點，Figma node 861-28842）。body 為 flex 直列、gap 24
+           （Figma 866-1179）；本區塊直接當 body 子項，不再包 .payout-field（已退役、無樣式）。 -->
+      <div class="segmented radio-cards" role="tablist" data-restock-method>
+        <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-restock-mode="now"><span class="radio-card__text"><span class="radio-card__title" data-i18n="restock.method.now">Restock now</span></span></button>
+        <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-restock-mode="scheduled"><span class="radio-card__text"><span class="radio-card__title" data-i18n="restock.method.scheduled">Scheduled</span></span></button>
       </div>
 
-      <!-- Item layer — bundle members become tabs; each panel holds a variant matrix -->
-      <div class="payout-field__label mt-16"><span data-i18n="restock.items">Items to restock</span> <span class="text-sub" style="font-weight:var(--fw-regular)" data-i18n="restock.items-hint">— leave blank to skip an item</span></div>
+      <!-- 商品名稱 + 逐選項表（商品名稱→表 gap 8，其餘區塊 gap 24；bundle members become tabs）-->
+      <div class="field__label" data-i18n="restock.product-name">Product name</div>
       <div class="tabs" role="tablist" data-restock-tabs hidden></div>
       <div data-restock-members></div>
       <div data-restock-empty hidden style="padding:16px;text-align:center;font-size:12.5px;color:var(--foreground-subtle)" data-i18n="restock.empty">All your products are sufficiently stocked.</div>
 
-      <div class="stickynote mt-16">
-        <span class="stickynote__mark">!</span>
-        <span data-i18n="restock.note"><strong>Restock now</strong> adds stock immediately; <strong>Scheduled</strong> marks items Restocking until you Mark received (§7.2). Each restocked item is logged on the product page. Digital / unlimited items can't be restocked.</span>
-      </div>
+      <!-- 預計到貨時間（僅定時補貨）→ 供應商 → 備註（Figma：表格下方，改用 .field＝有 label→input 間距）-->
+      <label class="field" data-restock-eta hidden>
+        <span class="field__label"><span data-i18n="restock.f.eta">Expected arrival</span> <span class="field__req">*</span></span>
+        <input class="input" type="date" value="2026-07-08">
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="restock.f.supplier">Supplier (optional)</span>
+        <input class="input" placeholder="—" data-restock-supplier>
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="restock.f.notes">Notes (optional)</span>
+        <input class="input" placeholder="—">
+      </label>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost" type="button" data-restock-close data-i18n="payout.cancel">Cancel</button>
@@ -91,39 +85,36 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var on = modal && modal.querySelector('[data-restock-method] .segmented__btn--active');
       return on ? on.getAttribute('data-restock-mode') : 'now';
     }
-    function badgeFor(status) {
-      return status === 'out' ? ['badge--neutral', 'e-shop.row.out', 'Sold Out']
-           : status === 'ok'  ? ['badge--success', 'e-shop.row.instock', 'In stock']
-           :                    ['badge--error', 'e-shop.row.low', 'Low Stock'];
-    }
+    /* 一列＝一個選項組合：縮圖＋名稱 ｜ 當前數量(唯讀) ｜ 補貨數量(可填) ｜ 補後數量(唯讀，＝當前＋補貨) */
     function lineHTML(item) {
       var cur = num(item.current);
-      var b = badgeFor(item.status);
       var imgInner = item.img ? '<img src="' + esc(item.img) + '" alt="">' : '<i data-lucide="package" class="ztor-icon"></i>';
       return '' +
-        '<div class="restock-line" data-restock-line data-current="' + cur + '" data-name="' + esc(item.name) + '">' +
-          '<div class="restock-line__main">' +
-            '<span class="restock-line__img">' + imgInner + '</span>' +
-            '<div class="restock-line__text">' +
-              '<div class="restock-line__name">' + esc(item.name) +
-                ' <span class="badge ' + b[0] + '"><span data-i18n="' + b[1] + '">' + b[2] + '</span></span></div>' +
-              '<div class="restock-line__meta"><span data-i18n="restock.current">Current stock</span> <b>' + cur + '</b>' +
-                (item.threshold != null ? ' · <span data-i18n="restock.threshold">threshold</span> ' + num(item.threshold) : '') +
-              '</div>' +
-            '</div>' +
+        '<div class="restock-table__row" data-restock-line data-current="' + cur + '" data-name="' + esc(item.name) + '">' +
+          '<div class="restock-table__id">' +
+            '<span class="restock-table__img">' + imgInner + '</span>' +
+            '<span class="restock-table__name">' + esc(item.name) + '</span>' +
           '</div>' +
-          '<input class="input restock-line__qty" inputmode="numeric" placeholder="0" data-restock-qty aria-label="Restock quantity">' +
-          '<div class="restock-line__after">→ <b data-restock-after>' + cur + '</b></div>' +
+          '<input class="input restock-table__ro" value="' + cur + '" readonly tabindex="-1" aria-label="Current stock">' +
+          '<input class="input" inputmode="numeric" placeholder="0" data-restock-qty aria-label="Restock quantity">' +
+          '<input class="input restock-table__ro" value="' + cur + '" readonly tabindex="-1" data-restock-after aria-label="After restock">' +
         '</div>';
     }
-    /* A member's variant matrix: groups = [{label, items}] → .restock-lines */
+    /* A member's variant matrix: groups = [{label, items}] → .restock-table（含一次欄名列） */
     function matrixHTML(groups) {
-      var html = '';
+      var head =
+        '<div class="restock-table__head">' +
+          '<span></span>' +
+          '<span class="restock-table__col" data-i18n="restock.col.current">Current</span>' +
+          '<span class="restock-table__col" data-i18n="restock.col.qty">Restock</span>' +
+          '<span class="restock-table__col" data-i18n="restock.col.after">After</span>' +
+        '</div>';
+      var body = '';
       (groups || []).forEach(function (g) {
-        if (g.label) html += '<div class="restock-lines__group">' + esc(g.label) + '</div>';
-        (g.items || []).forEach(function (it) { html += lineHTML(it); });
+        if (g.label) body += '<div class="restock-table__group">' + esc(g.label) + '</div>';
+        (g.items || []).forEach(function (it) { body += lineHTML(it); });
       });
-      return '<div class="restock-lines">' + html + '</div>';
+      return '<div class="restock-table">' + head + body + '</div>';
     }
     /* members = [{name, groups}]; tabbed = bundle (member tabs) vs product (one panel) */
     function renderMembers(members, tabbed) {
@@ -149,7 +140,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       var cur = num(line.getAttribute('data-current'));
       var q = num((line.querySelector('[data-restock-qty]') || {}).value);
       var out = line.querySelector('[data-restock-after]');
-      if (out) out.textContent = cur + q;
+      if (out) out.value = cur + q;   /* 補後數量欄現在是唯讀 input，設 value 而非 textContent */
     }
     function setMode(m) {
       modal.querySelectorAll('[data-restock-method] .segmented__btn').forEach(function (b) {
@@ -159,11 +150,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       var eta = modal.querySelector('[data-restock-eta]');
       if (eta) eta.hidden = m !== 'scheduled';
-      var hint = modal.querySelector('[data-restock-method-hint]');
-      if (hint) {
-        hint.setAttribute('data-i18n', m === 'scheduled' ? 'restock.method.scheduled-hint' : 'restock.method.now-hint');
-        if (window.applyI18n) window.applyI18n(hint);
-      }
+      /* 方式提示行已隨 radio-cards 改版移除（Figma 無此行），不再切換 hint 文案 */
       var recv = modal.querySelector('[data-restock-receive]');
       if (recv) recv.hidden = m !== 'scheduled';
     }
@@ -226,11 +213,27 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       return true;
     }
+    /* 高度鎖定：定時補貨會多出「預計到貨」欄而變高，彈窗又置中 → 切換方式時整框上下跳。
+       開窗時先量「定時」狀態（最高）的實際高度，鎖成 .payout-dialog 的 min-height，之後切「立即」
+       也維持這個高度（body flex 撐開、footer 仍釘底），不再跳。量測在 modal 顯示後、同一幀 paint 前
+       同步完成，看不到閃動；每次開窗先歸零重量、自動適應單/多規格不同內容高度。 */
+    function lockHeight() {
+      var dlg = modal.querySelector('.payout-dialog');
+      var eta = modal.querySelector('[data-restock-eta]');
+      if (!dlg) return;
+      dlg.style.minHeight = '';
+      var wasHidden = eta ? eta.hidden : true;
+      if (eta) eta.hidden = false;               // 暫時展開「預計到貨」量最高狀態
+      var h = dlg.offsetHeight;                  // 受 max-height 上限自動封頂
+      if (eta) eta.hidden = wasHidden;           // 還原目前方式
+      dlg.style.minHeight = h + 'px';
+    }
     function open() {
       lastFocused = document.activeElement;
       modal.hidden = false;
       document.body.classList.add('is-modal-open');
       setMode('now');
+      lockHeight();
       var supEl = modal.querySelector('[data-restock-supplier]');
       if (supEl) supEl.value = '';
       var f = modal.querySelector('input, button');
