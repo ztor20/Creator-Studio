@@ -6,6 +6,70 @@
 
 ---
 
+## 2026-07-23 · `.view-switch` 退場、收斂進 segmented icon 變體（C 撤除）
+
+使用者反饋清單／卡片切換器「很醜、和 design system 不搭」。問題不在細節而在角色重複：`.view-switch` 選中側是實心填 `--foreground`，這是站上第三種「已選中」畫法，與 segmented 的白浮起 pill 打架（見 [STYLE-DECISIONS](STYLE-DECISIONS.md) 已選狀態一題）；而「切換同一資料的視角」本來就是 segmented 定義的角色。故不另調樣式，直接收斂成 segmented 的純圖示變體。
+
+- **【C】** `shared.css` 的 `.view-switch` / `.view-switch__btn`（含 `--active`）規則移除，原處留墓碑註解說明去向。唯一消費者是 projects，無其他頁受影響。
+- **【A/元件變體】** `segmented.css` 新增 `.segmented__btn--icon`：32px 正方段、`--sp-6` 內距、18px 圖示。文字段靠左右內距撐寬，圖示段得改正方，否則 14px 內距會把圖示擠扁。
+- **【C】** `design-system.html` §4.60 View switch 改為墓碑段（保留錨點免斷 TOC，標 ✝ retired 並指向 Segmented control）；`design-system.md` 於 §4.22d Segmented 補 Class API 一列與「接收 `.view-switch` 退場」註記。segmented DS demo 加 icon 變體示例卡。
+- **【D】** i18n 新增 `projects.view.label`（en `View`／zh `檢視方式`）供 segmented 群組的無障礙標籤。
+- **【Bug 例外記一筆——因為它改的是元件行為不是修錯字】** `.list-toolbar__actions` 由絕對定位改成 `margin-left:auto` 的流內排列，`.list-toolbar > .tabs` 補 `flex:1 1 auto; min-width:0; overflow-x:auto`。原本絕對定位時 tabs 仍佔滿整條，projects 的 6 個 tab 在 1280px 以下會捲到動作群底下疊字（實測撞到）；改流內後 tabs 只吃剩餘寬度、裝不下就橫捲。e-shop 因動作群本來就靠右、垂直置中，改後位置不變（已實測）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 剩 5／7／11 皆存量）；棘輪檢查 10 PASS；`bump_ver` → `20260723zt`。projects 於 800／1440 兩種寬度、e-shop 於 1440 皆已實測。
+
+## 2026-07-23 · projects 頁頭整理成 e-shop 同款兩層骨架＋promote `list-toolbar`（B 反饋導入）
+
+使用者圈起 projects 頁頭整塊（頁頭動作群＋狀態 tabs＋篩選列）說「整理，可以參考電子商店的設計」。三段控制項本來各自佔一條、彼此沒有層級關係；改成 e-shop 那套「殼層工作列＋次層篩選列」後收成兩層。
+
+- **【B/元件 promote】** e-shop 頁內的 `.eshop-list-topbar`／`.eshop-list-toolbar__actions`／`.eshop-status-row` promote 成共用元件 [list-toolbar.css](./ds-components/list-toolbar.css)（`.list-toolbar`／`.list-toolbar__actions`／`.list-status-row`），projects 為第二個消費者。CSS 規則值原樣搬移未改。sticky 貼頂留在各頁 `<style>`（依各頁捲動容器決定），e-shop 的 sticky 規則改指新 class 名。
+- **【B】** `projects.html` 頁頭重組：狀態 tabs 移進殼層工作列左側（加 `tabs--underline-short`，底線貼齊容器下緣）；檢視切換與「＋建立專案」自 `page-intro__actions` 移進工作列右側動作群；搜尋改用共用 `.search-collapse`（收合成放大鏡、✕/Esc 收起並清空關鍵字），與 e-shop／orders／pickup 一致；發行模式與內容類別兩個 select 落在第二層 `.list-status-row`。`page-intro` 只剩標題與說明（同 e-shop）。
+- **【B】** tabs 補 `role="tablist"`／`role="tab"`，render 時同步 `aria-selected`。
+- **【D】** 三件套同步：新增 `list-toolbar.css`＋`design-system.md` §4.90 條目與元件清單一列＋`design-system.html` §4.90 區段（含 rendered preview、TOC 連結、head 載入）。`design-system.md` Pillar 3 那條「`.eshop-list-topbar` 頁內覆寫例外」改記為已解除。
+- **【D】** `projects.html` head 補載 `list-toolbar.css`／`search-collapse.css`；i18n 新增 `projects.search.{open,close}` 2 鍵（en/zh）。
+- **順帶修掉一個存量 WARN**：`check_ds_sync` 檢查 8（DS 級覆寫不留頁面）原本長期標記 `e-shop.html` 的 `.eshop-list-topbar`，promote 後改 PASS。
+- 驗證：`check_ds_sync.py` 檢查 8 由 WARN 轉 PASS，其餘全 PASS（WARN 剩 5／7／11 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zr`。深淺兩色主題與搜尋收合互動皆已在瀏覽器實測。
+
+## 2026-07-23 · projects 發行模式篩選由 chip 收成下拉（B 反饋導入）
+
+使用者問「狀態與發行模式兩排篩選，哪個該全列展開」。裁決：狀態全列、發行模式收起。理由三條——狀態是後台的日常主軸（草稿要補、進行中要盯、失敗要善後），發行模式是專案建立時就定死的屬性、只在偶發情境才篩；狀態 tab 帶計數、不點也有資訊價值，發行模式 chip 不點等於白佔一列；tabs 與 chips 都是橫向膠囊排、視覺重量接近，兩排並置看不出主次。
+
+- **【B】** `projects.html` 的發行模式由 `chip-group`（`#proj-types`，4 顆 chip）改成 `.select`（`#proj-type`），與內容類別 select、搜尋框同列；JS 的 `chipsEl` 點擊監聽改為 `typeEl` change 監聽，render 改同步 `select.value`。狀態 tabs 維持全列展開＋計數不動。
+- **【B/元件文件】** `.filter-row` 的 chip-group 那半確立為**可選**：低頻篩選收成 select 後整條列只留 `.filter-row__actions`（放 select 與 `.field-pill` 搜尋），內容左靠。三件套同步：`chip.css` 註解＋`design-system.md` class 表＋`design-system.html` Filter row 加 actions-only 示例卡與 Anatomy 改寫。CSS 本身未改。
+- **【D】** i18n 新增 `projects.type.label`（en `Release mode`／zh `發行模式`，供 select 的 aria-label）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zp`。
+
+## 2026-07-23 · projects 撤除身分維度篩選（C 撤除）
+
+使用者裁決：Creator Studio 是創作者自己的後台，Projects 的範圍就是「我發起的專案」，不該出現支持者／影評人視角——那是消費端共創前台（`cocreate-src/finance-overview.html`）的軸，同日批次 3 搬進後台屬誤植。ASSUMPTIONS [CCR-005](ASSUMPTIONS.md) 該項結案為「不納入」。
+
+- **【C】** `projects.html` 移除身分 `chip-group`（`#proj-identity`：All／Creator／Backer／Tastemaker）、demo 提示 `info-banner`（`#proj-identity-note`）、`identity` 篩選狀態（`match()` 條件、render 同步、事件監聽、清除篩選重置）與資料的 `roles` 欄位。
+- **【C】** 移除 3 筆「別人的專案」樣本列：Dragon Gate Nights／First to the Line／Paper Boats。樣本資料回到 8 筆、全為帳號本人發起。
+- **【C】** `js/i18n.js` 移除 `projects.identity.{label,all,creator,backer,tastemaker,explore}` 6 鍵（en/zh）；`projects.html` 移除已無消費者的 `info-banner.css` 載入。
+- **保留**：內容類別軸（`#proj-cat` select ＋ `cat2` 資料欄）不動，改併入第一列 `filter-row__actions`（搜尋框左側），版面回到單列篩選。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zo`。
+
+## 2026-07-23 · Co-create 整合 批次 3：projects 加內容類別＋身分兩維度篩選（B 反饋導入）
+
+`projects.html` 新增兩個獨立篩選維度，接上既有 projects 篩選機制（status tab × type chip × search 同一 `match()`）。對照原始碼 `cocreate-src/finance-overview.html` 的 `[data-fin-dd="cat"]`（影視/音樂為不可選群組標頭）與 `[data-fin-dd="role"]`（發起人/支持者/影評人，`data-fin-role` 空白分隔集合語意）。登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-005。**未新增任何元件**——全部重用既有 chip／select／info-banner。
+
+- **【B】內容類別（新軸，獨立於發行模式 type，不取代它）**：第二列 `filter-row` 右側放原生 `.select`（`#proj-cat`）＋optgroup 呈現階層——群組標頭 Film & TV（影視）／Music（音樂）用 `<optgroup>` 為**不可選**（對齊 cocreate），可選葉節點 Film 電影／Short drama 短劇／Series 連續劇／Single 單曲／Album 專輯。資料每列加 `cat2` 葉值（`CAT_GROUP` 對應群組）；既有樣本列顯示類別文字不動、僅另掛 `cat2` 供篩選。
+- **【B】身分維度（R2.1 projects 新概念）**：第二列 `filter-row` 左側 `chip-group`（`#proj-identity`：All／Creator／Backer／Tastemaker），沿用既有 type-chip 機制（`chip--active` 反白）。資料每列加 `roles` 集合（一列可 backer+tastemaker）；新增 3 筆標記 backer／tastemaker 的樣本列（Dragon Gate Nights／First to the Line／Paper Boats＝別人的專案、meta 自帶「你支持／評論的專案」自我標示，幣別 USD）。
+- **【B】探索性原型明確標示**：選到非 Creator 視角（含混合 All）時顯示 `info-banner`（info 圖示）標「僅為 demo、未定案」；`match()` 加 `cat`／`identity` 兩條件、清除篩選一併重置；render 同步 chip active／select value／optgroup label（optgroup label 為屬性、無 `[data-i18n]` handler，於 render 以 `i18nT` 設定）。
+- **【D】** `projects.html` head 補載 `input.css`（`.select`）／`info-banner.css`（原本未載）。
+- **【D】** i18n 新增 15 鍵（en/zh）：`projects.cat.{label,all,grp.filmtv,grp.music,film,short,series,single,album}`（9）、`projects.identity.{label,all,creator,backer,tastemaker,explore}`（6）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量：fan-store 裸色、control-h 待採用 token、e-shop leak、cookie-banner/footer 零消費，非本輪引入）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zn`。
+
+## 2026-07-23 · Co-create 整合 Slice 2-B：project-detail Music 型版稅分析（B 反饋導入）
+
+`project-detail.html` Money 分頁補「Film / Music」兩型切換與音樂型版稅分析區塊。對照原始碼 `cocreate-src/my-cocreate-proposal.html` 的版稅分頁（`data-tab-panel="royalty"`，第 1340–1456 行），幣別原始碼即 USD、照抄示意值；提案性質，標「提案 · 未定案」，登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-006。
+
+- **【B】** money 分頁頂部加 `segmented`（`__btn`／canonical）Film／Music 切換，`data-money-type` + 小段 IIFE（比照 earnings breakdown toggle 寫法）；Film＝隱藏版稅區塊（預設，Late Bloom 為短片）、Music＝顯示。
+- **【B】** 新增音樂型版稅分析區塊（`[data-money-section="music"]`，`hidden` 由 IIFE 切換）：(1) 季度版稅總額用既有 `kpi`（US$1,590 · Q2 2026）；(2) 地區佔比 11 條、(3) 平台佔比 8 條，皆用既有 `rank-bars`；(4) Top 10 歌曲用既有 `ztor-table`，兩排序（依版稅金額／依播放次數）以第二個 `segmented`＋`data-song-sort` IIFE 切兩張預排表。頂部一條 `info-banner`（alert-triangle）標提案未定案。
+- **【B/元件變體】** `rank-bars` 加 `--amount` 變體：既有 rank-bar 只有「名稱＋%」，地區／平台需「名稱＋%＋金額」，故 `chart.css` 加 `.rank-bar--amount`（grid 改 `1fr auto 48px`）＋`.rank-bar__amt` 值欄。三件套同步：`chart.css`＋`design-system.md`（anatomy 行＋class 表）＋`design-system.html`（rank-bars demo 加 `--amount` 示例卡＋class API 列）。
+- **【D】** `project-detail.html` head 補載 `segmented.css`／`chart.css`／`table.css`（原本未載）。
+- **【D】** i18n 新增 40 鍵（en/zh）：`pd-cf.type-film`／`type-music`、`pd-roy.*`（proposal-note／total-label／total-meta／byrev／region.title／platform.title／rg.{tw,jp,us,hk,sg,my,kr,th,ca,au,other}／pf.friday／top.{title,byrev,byplays,col-song,col-royalty,col-plays}／song.s1–s10）。歌名 zh 存原題、en 為譯名。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量：fan-store 裸色、control-h 待採用 token、e-shop leak、cookie-banner/footer 零消費，非本輪引入）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zm`。
+
 ## 2026-07-23 · Co-create 整合 Slice 2b：cocreate-dashboard.html 退場（C 撤除 · 使用者確認）
 
 `project-detail.html` 共創金流分頁（Slice 2）已完整承接統一模型內容，`cocreate-dashboard.html` 成為冗餘頁；使用者確認後刪除。
@@ -71,6 +135,23 @@
 - **【D】** 新元件 `ds-components/avatar-stack.css`（🟡 molecule，重疊頭像＋`+N` 更多膠囊；28px 圓·`--card` 分隔環·`--muted`/`--accent` 填·`--radius-pill`）：第一次出現即 promote。同步 `design-system.html`（4.33c demo 卡＋TOC 錨點 `#avatar-stack`）＋`design-system.md`（元件清單表新增一列）。
 - **【A】** `js/i18n.js`：新增 `cocreate.*` 共 75 鍵（en/zh 雙語，zh 對齊頁面文字，接於 `project-detail.*` 區塊後）。
 - 驗證：`check_ds_sync.py` 全 PASS（棘輪存量裸值 57 未增、無新裸值；84 元件全進 DS 頁；116 TOC 錨點解析；md↔html 對齊）。本機 http 開頁截圖確認全區塊 DS 風格內渲染正確。cache-bust 全站 bump 留待 Slice 收束前跑。fresh-context read-back 由 `ui-closeout-verifier` 另派。
+
+## 2026-07-23 · Co-create 整合 批次 2-A：收入管理依專案接到共創儀表板（B 反饋導入）
+
+使用者要的「收益拆解 → 依專案＝單一專案儀表板」。單一專案共創金流儀表板已由另一 session 建在 `project-detail.html` 的 Money 分頁（集資／三層分層／支持者名單／70-30 分潤／分期撥款）；本 slice 把 earnings 依專案接過去，不重做內容。
+
+- **【B】** `earnings.html`：收益拆解 → 依專案（`data-bd-section="project"`）的動作鈕由通用「View project」（`href="#"`）改為 primary「View co-creation dashboard →」，deep-link 到 `project-detail.html#money`。project-detail 的 tab JS 支援 hash（`location.hash` → activate），會直接開 Money 共創金流分頁。
+- **【B】** `js/i18n.js`：`breakdown.action.project` 文案改；`breakdown.project.sub` 補一句指引「完整集資／支持者／撥款儀表板在共創金流分頁」。
+- earnings 依專案保留其財務 waterfall（收益拆解語意），完整專案管理儀表板走連結接通，避免重複。check PASS、bump `zl`。
+- **未做（批次 2-B）**：project-detail 共創儀表板仍缺 film/music 兩型切換與音樂版稅分析（地區／平台／Top10 歌曲）。
+
+## 2026-07-23 · Co-create 整合 批次 1c：收入管理收益來源＋交易篩選擴充成 14 類（B 反饋導入 · ASSUMPTIONS CCR-001）
+
+把合併分類體系（CCR-001）落到收入管理的兩個顯示點。
+
+- **【B】** `earnings.html` Overview「Revenue by source」rank-bars 由 6 條擴為 9 條，加入 3 個 cocreate 提案類（Co-creation funding 20%／Tastemaker commission 11%／OTT royalties 9%），百分比重排為示意 demo（9 條總和 100%）；新類 dot 用 `--chart-2/5/3` token（非裸值）。既有 6 類的 `data-feat` gate 保留。
+- **【B】** `earnings.html` 交易明細篩選 chip 加 3 個 cocreate 類（`cocreate`／`commission`／`ott`，重用既有 `src.*` label）。chip 是既有的純視覺單選切換（不實際篩表格），故未加對應示範交易列——交易明細示範資料維持原樣，待有真實 cocreate 交易口徑再補（記此限制於此）。
+- 未改 i18n（沿用 CCR-001 已建的 `src.*` key）、未新增元件。驗證：`check_ds_sync.py` PASS（棘輪存量裸值未增、無新裸 hex）；`bump_ver.py` 全站統一。
 
 ## 2026-07-23 · Co-create 整合 批次 1b：收入管理加影評人佣金比例 strip（B 反饋導入 · ASSUMPTIONS CCR-002 提案）
 

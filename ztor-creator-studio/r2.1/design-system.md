@@ -337,7 +337,7 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
 
-**Page-scoped `[data-theme]` override exception (acknowledged WARN)** — `check_ds_sync` 檢查 8（DS 級覆寫不留頁面）標記 `e-shop.html` 的 `.eshop-list-topbar`：這顆 class 只在 `e-shop.html` 自己的 `<style>` 裡定義（含 light-mode 覆寫），全站唯一消費頁；因為只有一個消費者、沒有跨頁一致性風險，維持頁內 `<style>` 而不硬 promote 進 `ds-components/`（promote 的價值是給多個消費頁共用，這裡不成立）。若未來有第二個頁面需要同樣的 sticky 白底頂欄樣式，才需要抽成共用元件。
+**Page-scoped `[data-theme]` override exception（2026-07-23 已解除）** — `check_ds_sync` 檢查 8 原本標記 `e-shop.html` 的 `.eshop-list-topbar`（含 light-mode 覆寫留在頁內 `<style>`），當時的裁決是「全站唯一消費頁、沒有跨頁一致性風險，等第二個頁面要用同樣的樣式再抽共用元件」。2026-07-23 projects 整理頁頭時正好觸發那個條件，整組已 promote 成 [`list-toolbar.css`](./ds-components/list-toolbar.css)（`.list-toolbar` / `.list-toolbar__actions` / `.list-status-row`，見 Pillar 4 條目），light-mode 覆寫隨之進元件層，這條例外不再適用。
 
 ### 1.6 Motion
 
@@ -646,7 +646,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Field pill | 🟡 molecule | ✓ App | Inline filter pill — search / select / dropdown-trigger | [field-pill.css](./ds-components/field-pill.css) |
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
 | Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
-| Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active | [segmented.css](./ds-components/segmented.css) |
+| List toolbar | 🟠 organism | ✓ App | 清單頁頭的兩層控制骨架：`.list-toolbar` 殼層工作列（實色 `--surface-shell`、四角 16px、固定 58px 高，左放主軸 tabs、右放 `.list-toolbar__actions` 動作群）＋ `.list-status-row` 次層篩選列（透明、放 pill 篩選或 select）。2026-07-23 由 e-shop 頁內 `.eshop-list-topbar` promote（projects 為第二個消費者）；sticky 貼頂屬各頁捲動容器決定，留在頁面 `<style>`。詳見 §4.90。Evidence／使用頁：e-shop、projects | [list-toolbar.css](./ds-components/list-toolbar.css) |
+| Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active；`--icon` 變體為純圖示段（2026-07-23 接收退場的 `.view-switch`，清單／卡片檢視切換） | [segmented.css](./ds-components/segmented.css) |
 | Amount field | 🟡 molecule | ✓ App | money input with a unit affix — normally a static read-only symbol (`$` prefix); built on Input. The affix can also be an interactive unit toggle (`[data-price-sync]` marks a shared-unit member and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to switch the unit across the group); that toggle shipped for the cash/POPCORN pricing unit, **removed in spec 5.1.5.2 · D144** (was D127), so no page uses it today — the chrome is kept as a reusable capability。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
 | Review row | 🟡 molecule | ✓ App | 流程 Review 步驟摘要列（無卡片、hairline 分隔）：欄位名＋值＋右側 Edit →。正規化自 create-event.html `.ce-review-row`、register-ip.html `.ri-summary`、create-project.html Review 步驟的扁平化 `.card`（該頁 2026-06-25 註解已預告「這批歸第三批 review-row」）。詳見 §4.49 | [review-row.css](./ds-components/review-row.css) |
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
@@ -979,7 +980,7 @@ No interactive states — purely decorative.
 | `.chip--value` | A value the creator just entered — quiet fill, never inverted. Distinct from `--active` (a chosen filter) and from `.tag-input .chip--active` (an applied tag, orange per Q19). **⚠ 零消費（2026-07-21）**：唯一消費者是建立商品的選項值，同日改成逐值 `.input`（見 Variant builder 條目）後這個變體失去用途，只剩 DS 頁 demo。**退場候選、待使用者裁決**，未經確認前不移除 |
 | `.chip__count` | Faded count after a vertical separator |
 | `.chip--removable` / `.chip__remove` | Selected / creator-added value with an inline × (tag-input、商品標籤、電影關聯 film-picker、取貨場次多選；2026-07-21 起不再用於選項值) |
-| `.filter-row` / `.filter-row__actions` | Chip-group paired with right-aligned actions |
+| `.filter-row` / `.filter-row__actions` | Chip-group paired with right-aligned actions. The chip-group half is **optional**：低頻篩選收成 `.select` 時，整條列只留 `__actions`（放 select／`.field-pill` 搜尋），內容左靠（Projects 2026-07-23 起即此形） |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -2539,9 +2540,12 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.segmented` | 灰軌道容器（`--muted` 底 + 1px `--border`；2026-07-16 由 `color-mix --foreground 5%` 改純 `--muted`＋加真 border，修正深色下軌道被提亮到接近 `--card`、控制融進 popover 背景的缺陷，落實 §Surface-layer contrast 通則），radius-lg，3px padding |
 | `.segmented__btn` | 段；靜音文字 |
 | `.segmented__btn--active` | 白浮起 pill |
+| `.segmented__btn--icon` | 純圖示段（32px 正方、`--sp-6` 內距、18px icon）。文字段靠左右內距撐寬，圖示段得改正方，否則 14px 內距會把圖示擠扁。2026-07-23 取代已退場的 `.view-switch`（見下方退場註記），用於 projects 的清單／卡片檢視切換 |
 | `.segmented--locked` | 鎖定修飾：整組不可點（`pointer-events:none`）、`opacity .6`，仍保留 `--active` 高亮呈現當前值。建立後固定不可編輯欄位（D137，如商品細節頁的規格模式／庫存版本）唯讀呈現用；搭 `aria-disabled="true"` ＋各 `__btn` 的 `disabled` |
 
 **Token usage** — track `--muted` ＋ 1px `--border`（2026-07-16 由 `color-mix(--foreground 5%, --muted)` 改純 `--muted`＋加真 border，修正深色下軌道融進 popover 背景的缺陷）· active `--card` ＋ `--border` · text `--foreground-muted` → `--foreground` · radius `--radius-lg`/`--radius-md`
+
+**接收 `.view-switch` 退場（2026-07-23）** — `shared.css` 原有一組 `.view-switch`／`.view-switch__btn`：膠囊外框、選中側實心填 `--foreground`，唯一消費者是 projects 的清單／卡片切換。使用者反饋「很醜、和 design system 不搭」。問題不在細節而在角色重複：實心填是站上第三種「已選中」畫法，與 segmented 的白浮起 pill 打架（見 [STYLE-DECISIONS](./STYLE-DECISIONS.md) 已選狀態一題），而「切換同一資料的視角」本來就是 segmented 的定義。故收斂成 `.segmented__btn--icon`，`shared.css` 規則移除、原處留墓碑註解，DS 頁 §4.60 改為墓碑段。
 
 **Usage** — 同一資料 2–4 個互斥視角。頁面導覽用 `.tabs`；段數超過 ~4 改用 `.field-pill__select` 下拉。
 
@@ -2878,7 +2882,7 @@ table.ztor-table (width 100%, border-collapse separate, --card, radius-md, shado
 LINECHART  .linechart > .linechart__svg (180px) [grid · area · line(--prev/--s1…s5) · dot(--accent)] + .linechart__labels
 STACKED-BAR  .stacked-bar (14px pill) > .stacked-bar__seg ×N (inline width % + inline color)
 SOURCE-LIST  .source-list > .source-row (grid 14px 1fr auto auto) [__swatch · label · __amt · __pct]
-RANK-BARS  ul.rank-bars > li.rank-bar (grid 1fr 48px) > .rank-bar__track [__fill + __content(dot+label)] + .rank-bar__pct
+RANK-BARS  ul.rank-bars > li.rank-bar (grid 1fr 48px) > .rank-bar__track [__fill + __content(dot+label)] + .rank-bar__pct; variant .rank-bar--amount (grid 1fr auto 48px) inserts .rank-bar__amt value column (name · % · amount)
 CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + __icon-btn) · __body · __foot
 ```
 
@@ -2908,6 +2912,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | `.stacked-bar` / `__seg` | Proportion pill; segment width + color set inline |
 | `.source-list` / `.source-row` / `__swatch` / `__amt` / `__pct` | Color-keyed legend rows below a stacked-bar |
 | `.rank-bars` / `.rank-bar` / `__track` / `__fill` / `__content` / `__dot` / `__pct` | Ranked proportional list; fill scaled so max = 100% |
+| `.rank-bar--amount` / `.rank-bar__amt` | Variant adding a value column between track and pct (name · % · amount) — royalty region / platform breakdowns |
 | `.barchart` / `__bar` / `--s1…s5` | Vertical bar view (gridlines baked into background) |
 | `.chart-card` (`.card.chart-card`) | Full-bleed shell (`padding:0`); `__head` / `__body` / `__foot` |
 | `.segmented` / `__item` / `__item--active` | D/W/M range toggle in the card head |
@@ -3867,7 +3872,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
   - 組合商品 → 攤到成員的選項組合（如 `Coastline hoodie · S/Black`），單一選項成員只列成員名稱。
 - **無選項資料**（單一選項商品，如 zine／acetate／pin）：一行——**目前庫存**（讀該列狀態，`data-status="low"／"out"` 對應上色，其餘視為健康）。原本還多一行「低庫存門檻」，2026-07-23 當天先加後拆：先加是使用者反饋「應該要列出庫存數量」（原本只顯示門檻，跟列上「急需補貨」徽章的視覺語境對不上）；同一天使用者再指示整條門檻行移除，只留庫存數量本身——`lowThr()` 與門檻換算邏輯仍保留在共用資料層（補貨彈窗還在用），只是 stock-tip 這顆浮卡不再顯示。
 
-**為什麼定位是 JS 算、不是純 CSS `:hover`** — 這份清單在一個會捲動、頂部有 sticky 篩選列（`.eshop-list-topbar`／`.eshop-status-row`）的容器裡；固定往同一個方向開，viewport 上緣的列會被 sticky 頂欄蓋到、下緣的列會超出可視範圍。改用 JS 在 `mouseenter`／`focusin` 量測觸發格的 `getBoundingClientRect()`，viewport 上半部的列往下開、下半部的列往上開，並用 `position: fixed` 直接設座標（純 CSS 看不到 viewport 位置，做不到這層判斷）。
+**為什麼定位是 JS 算、不是純 CSS `:hover`** — 這份清單在一個會捲動、頂部有 sticky 篩選列（`.list-toolbar`／`.list-status-row`）的容器裡；固定往同一個方向開，viewport 上緣的列會被 sticky 頂欄蓋到、下緣的列會超出可視範圍。改用 JS 在 `mouseenter`／`focusin` 量測觸發格的 `getBoundingClientRect()`，viewport 上半部的列往下開、下半部的列往上開，並用 `position: fixed` 直接設座標（純 CSS 看不到 viewport 位置，做不到這層判斷）。
 
 **Class API**
 
@@ -3912,6 +3917,42 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 **Consumers** — `e-shop.html`（Products 全部 5 列＋Bundles 兩列）。
 
 **CSS** — [`stock-tip.css`](./ds-components/stock-tip.css)
+
+### 4.90 List toolbar
+
+**Purpose** — 清單頁（e-shop、projects）頁頭的控制骨架。把「主軸切換／搜尋／檢視切換／主 CTA／次要篩選」這些原本各自散在頁頭、tabs 列、篩選列的控制項，收成固定的兩層：一層殼層工作列、一層次要篩選列。
+
+**Anatomy**
+
+- `.list-toolbar` — 殼層工作列。實色 `--surface-shell`（淺色主題改 `--card` ＋ `--shadow-card`）、四角 `--radius-xl` 16px、固定 58px 高、`align-items: stretch`。
+- `.list-toolbar > .tabs` — 主軸 tab，撐滿整個 58px；active 橘色底線因此貼齊容器下緣而不是浮在中間。
+- `.list-toolbar__actions` — 右側動作群，絕對定位、垂直置中，所以 tab 數量變動不會推擠動作。
+- `.list-status-row` — 次層篩選列，透明、行內流，放 pill 篩選（e-shop 狀態）或 select（projects 發行模式／內容類別）。
+
+**為什麼工作列要固定高度** — active 底線貼在 `.tabs__item` 下緣，只有讓 tabs 撐滿 58px，底線才會落在殼層最底部。
+
+**不屬於本元件的部分** — sticky 貼頂（`position: sticky` ＋ top 位移）依各頁捲動容器的高度與層疊決定，留在各頁 `<style>`：e-shop 兩層都貼頂（狀態列 top 74px＝58px 工作列＋摺疊後 16px 間距），projects 目前不貼頂。
+
+**Consumers** — `e-shop.html`（類型 tab ＋ 商店設定／預覽／建立分割按鈕 ＋ 狀態 pill 列）、`projects.html`（狀態 tab ＋ 收合搜尋／檢視切換／建立專案 ＋ 兩個篩選 select）。
+
+**Code example**
+
+```html
+<div class="list-toolbar">
+  <nav class="tabs tabs--underline-short" role="tablist">
+    <div class="tabs__item tabs__item--active" role="tab" aria-selected="true">All <span class="tabs__item-count">8</span></div>
+  </nav>
+  <div class="list-toolbar__actions">
+    <div class="search-collapse">…</div>
+    <a class="btn btn--primary btn--sm" href="#">＋ New project</a>
+  </div>
+</div>
+<div class="list-status-row">
+  <select class="select">…</select>
+</div>
+```
+
+**CSS** — [`list-toolbar.css`](./ds-components/list-toolbar.css)
 
 ### 4.?? Owner lookup
 

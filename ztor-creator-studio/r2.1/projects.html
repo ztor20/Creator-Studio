@@ -4,19 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Projects · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260723zj"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/button.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/project-list.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/card.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/list-footer.css?v=20260723zj">
-<link rel="stylesheet" href="shared.css?v=20260723zj">
+<script src="js/theme.js?v=20260723zt"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/button.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/input.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/project-list.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/card.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260723zt">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=20260723zt">
+<link rel="stylesheet" href="shared.css?v=20260723zt">
 </head>
 <body>
 <div class="app">
@@ -34,39 +38,65 @@
           <h1 class="page-intro__title" data-i18n="projects.h1">Projects</h1>
           <p class="page-intro__sub" data-i18n="projects.sub">Album, film, event series — the working frame for everything you publish.</p>
         </div>
-        <div class="page-intro__actions">
-          <div class="view-switch" role="group" aria-label="View">
-            <button class="view-switch__btn view-switch__btn--active" data-view="list" aria-label="List view" data-i18n-aria-label="projects.view.list"><i data-lucide="list" class="ztor-icon"></i></button>
-            <button class="view-switch__btn" data-view="card" aria-label="Card view" data-i18n-aria-label="projects.view.card"><i data-lucide="layout-grid" class="ztor-icon"></i></button>
+      </div>
+
+      <!-- 2026-07-23 整理：原本散成三段（頁頭動作群／狀態 tabs／篩選列）的控制項，收進 e-shop
+           同款兩層骨架 .list-toolbar + .list-status-row（已 promote 至 ds-components/list-toolbar.css）。
+           第一層＝殼層工作列：左邊放主軸（狀態 tabs，附計數），右邊放動作群（收合搜尋／檢視切換／
+           建立專案）。第二層＝次要篩選（發行模式、內容類別兩個下拉）。 -->
+      <div class="list-toolbar">
+        <!-- F1 status filter (spec §7.2 · Funded folds into Live · Failed+Cancelled merged · decisions D005) -->
+        <nav class="tabs tabs--underline-short" id="proj-tabs" role="tablist">
+          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="projects.tab.all">All</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="projects.tab.draft">Draft</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="projects.tab.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="projects.tab.live">Live</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="completed"><span data-i18n="projects.tab.completed">Completed</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="failed"><span data-i18n="projects.tab.failed">Failed / Cancelled</span> <span class="tabs__item-count"></span></div>
+        </nav>
+
+        <div class="list-toolbar__actions">
+          <!-- 搜尋收合成放大鏡（重用 .search-collapse，同 e-shop／orders／pickup），把橫向空間讓給 tabs -->
+          <div class="search-collapse" id="proj-search-wrap">
+            <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" id="proj-search-toggle" aria-expanded="false" aria-label="Search" title="Search" data-i18n-aria-label="projects.search.open" data-i18n-title="projects.search.open"><i data-lucide="search" class="ztor-icon"></i></button>
+            <label class="field-pill search-collapse__field" aria-label="Search projects">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" id="proj-search" placeholder="Search projects…" data-i18n-placeholder="projects.search">
+              <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="proj-search-close" aria-label="Close search" title="Close search" data-i18n-aria-label="projects.search.close" data-i18n-title="projects.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </label>
           </div>
-          <a class="btn btn--primary" href="create-project.html" data-i18n="projects.btn.new">＋ New project</a>
+          <!-- 檢視切換＝segmented 的 icon-only 變體（2026-07-23 由 .view-switch 收斂而來，
+               同一資料的視角切換全站只留 segmented 一種做法）-->
+          <div class="segmented" role="group" aria-label="View" data-i18n-aria-label="projects.view.label">
+            <button class="segmented__btn segmented__btn--icon segmented__btn--active" type="button" data-view="list" aria-label="List view" data-i18n-aria-label="projects.view.list"><i data-lucide="list" class="ztor-icon"></i></button>
+            <button class="segmented__btn segmented__btn--icon" type="button" data-view="card" aria-label="Card view" data-i18n-aria-label="projects.view.card"><i data-lucide="layout-grid" class="ztor-icon"></i></button>
+          </div>
+          <a class="btn btn--primary btn--sm" href="create-project.html" data-i18n="projects.btn.new">＋ New project</a>
         </div>
       </div>
 
-      <!-- F1 status filter (spec §7.2 · Funded folds into Live · Failed+Cancelled merged · decisions D005) -->
-      <nav class="tabs" id="proj-tabs">
-        <div class="tabs__item tabs__item--active" data-tab="all"><span data-i18n="projects.tab.all">All</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="draft"><span data-i18n="projects.tab.draft">Draft</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="scheduled"><span data-i18n="projects.tab.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="live"><span data-i18n="projects.tab.live">Live</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="completed"><span data-i18n="projects.tab.completed">Completed</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="failed"><span data-i18n="projects.tab.failed">Failed / Cancelled</span> <span class="tabs__item-count"></span></div>
-      </nav>
-
-      <!-- F1 type filter + project-scoped search -->
-      <div class="filter-row">
-        <div class="chip-group" id="proj-types">
-          <button class="chip chip--active" data-type="all"><span data-i18n="projects.type.all">All types</span></button>
-          <button class="chip" data-type="go-live"><span data-i18n="projects.type.go-live">Go live</span></button>
-          <button class="chip" data-type="fund"><span data-i18n="projects.type.fund">Fund it first</span></button>
-          <button class="chip" data-type="preorder"><span data-i18n="projects.type.preorder">Pre-order</span></button>
-        </div>
-        <div class="filter-row__actions">
-          <label class="field-pill" aria-label="Search projects" style="max-width:240px">
-            <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
-            <input class="field-pill__input" id="proj-search" placeholder="Search projects…" data-i18n-placeholder="projects.search">
-          </label>
-        </div>
+      <!-- F1 次要篩選：發行模式（專案建立時定死的屬性、使用頻率低，2026-07-23 由 chip 收成下拉）
+           ＋ CCR-005 內容類別（新軸，獨立於發行模式，影視／音樂為不可選群組標頭，對照 cocreate
+           finance-overview.html 的 [data-fin-dd="cat"]）。 -->
+      <div class="list-status-row">
+        <select class="select" id="proj-type" aria-label="Release mode" data-i18n-aria-label="projects.type.label" style="width:auto;min-width:160px">
+          <option value="all" data-i18n="projects.type.all">All types</option>
+          <option value="go-live" data-i18n="projects.type.go-live">Go live</option>
+          <option value="fund" data-i18n="projects.type.fund">Fund it first</option>
+          <option value="preorder" data-i18n="projects.type.preorder">Pre-order</option>
+        </select>
+        <select class="select" id="proj-cat" aria-label="Content category" data-i18n-aria-label="projects.cat.label" style="width:auto;min-width:184px">
+          <option value="all" data-i18n="projects.cat.all">All categories</option>
+          <optgroup id="proj-cat-grp-filmtv" label="Film &amp; TV">
+            <option value="film" data-i18n="projects.cat.film">Film</option>
+            <option value="short" data-i18n="projects.cat.short">Short drama</option>
+            <option value="series" data-i18n="projects.cat.series">Series</option>
+          </optgroup>
+          <optgroup id="proj-cat-grp-music" label="Music">
+            <option value="single" data-i18n="projects.cat.single">Single</option>
+            <option value="album" data-i18n="projects.cat.album">Album</option>
+          </optgroup>
+        </select>
       </div>
 
       <!-- F3 data body (account has projects) — list / card / filter-empty.
@@ -124,41 +154,51 @@
     </div>
   </main>
 </div>
-<script src="js/icons.js?v=20260723zj"></script>
-<script src="js/i18n.js?v=20260723zj"></script>
-<script src="js/sidebar.js?v=20260723zj"></script>
+<script src="js/icons.js?v=20260723zt"></script>
+<script src="js/i18n.js?v=20260723zt"></script>
+<script src="js/sidebar.js?v=20260723zt"></script>
 <script>
-/* Projects F1 — single data source renders both list & card views; status tab + type chip +
-   search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
+/* Projects F1 — single data source renders both list & card views; status tab + type select +
+   category select + search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
    Per-item display depends on project type × status (spec 5.1.2 F1). Detail link →
    project-detail.html?id=<id> (5.1.2.2). */
 (function () {
+  /* cat2 = content category (leaf of Film&TV / Music taxonomy), added 2026-07-23 (CCR-005,
+     mirrors cocreate finance-overview.html) — a NEW axis, orthogonal to `type` (release mode:
+     go-live / fund / preorder). Both coexist.
+     The sibling identity axis (creator / backer / tastemaker) from the same CCR was removed
+     2026-07-23 by user decision: Creator Studio is the creator's own back office, so Projects
+     only ever lists projects the account owner started. See UI-CHANGES 撤除 C. */
   const PROJECTS = [
-    { id:'coastline-ep', name:'Coastline EP', icon:'music', cat:{en:'Album',zh:'專輯'}, type:'preorder',
+    { id:'coastline-ep', name:'Coastline EP', icon:'music', cat:{en:'Album',zh:'專輯'}, cat2:'album', type:'preorder',
       status:'live', meta:{en:'62 / 100 pre-orders · $28 each · 9 days left', zh:'62 / 100 筆預購 · 單價 $28 · 剩 9 天'},
       bar:{pct:62}, todo:{en:'Confirm vinyl press quote', zh:'確認黑膠製版報價'} },
-    { id:'late-bloom', name:'Late Bloom', icon:'film', cat:{en:'Short film',zh:'短片'}, type:'fund',
+    { id:'late-bloom', name:'Late Bloom', icon:'film', cat:{en:'Short film',zh:'短片'}, cat2:'film', type:'fund',
       status:'live', meta:{en:'$8,420 of $15,000 · 134 backers · 21 days left', zh:'$8,420 / $15,000 · 134 位支持者 · 剩 21 天'},
       bar:{pct:56}, todo:{en:'Link IP rental', zh:'綁定 IP 租借'} },
-    { id:'neon-dreams', name:'Neon Dreams', icon:'film', cat:{en:'Documentary',zh:'紀錄片'}, type:'fund',
+    { id:'neon-dreams', name:'Neon Dreams', icon:'film', cat:{en:'Documentary',zh:'紀錄片'}, cat2:'film', type:'fund',
       status:'funded', meta:{en:'$50,000 of $50,000 reached · delivery in progress', zh:'$50,000 / $50,000 已達標 · 交付進行中'},
       bar:{pct:100, variant:'success'}, todo:{en:'Post a backer update', zh:'發布支持者進度更新'} },
-    { id:'quiet-hours', name:'Quiet Hours', icon:'music', cat:{en:'Playlist',zh:'歌單'}, type:'go-live',
+    { id:'quiet-hours', name:'Quiet Hours', icon:'music', cat:{en:'Playlist',zh:'歌單'}, cat2:'album', type:'go-live',
       status:'scheduled', meta:{en:'Goes live Dec 01 · cover art uploaded', zh:'12/01 上線 · 封面已上傳'},
       bar:null, todo:{en:'Set monetization', zh:'設定變現方式'} },
-    { id:'midnight-sessions', name:'Midnight Sessions EP', icon:'music', cat:{en:'Album',zh:'專輯'}, type:'go-live',
+    { id:'midnight-sessions', name:'Midnight Sessions EP', icon:'music', cat:{en:'Album',zh:'專輯'}, cat2:'album', type:'go-live',
       status:'live', meta:{en:'US$12,500 lifetime · 45,000 views', zh:'累計 US$12,500 · 45,000 次觀看'},
       bar:null, todo:null },
-    { id:'behind-the-scenes', name:'Behind The Scenes', icon:'film', cat:{en:'Series',zh:'影集'}, type:'go-live',
+    { id:'behind-the-scenes', name:'Behind The Scenes', icon:'film', cat:{en:'Series',zh:'影集'}, cat2:'series', type:'go-live',
       status:'draft', meta:{en:'Created Mar 15, 2026', zh:'建立於 2026/03/15'},
       bar:null, todo:{en:'Add showcase assets', zh:'補上展示素材'} },
-    { id:'salt-bitumen', name:'Salt & Bitumen', icon:'film', cat:{en:'Documentary',zh:'紀錄片'}, type:'go-live',
+    { id:'salt-bitumen', name:'Salt & Bitumen', icon:'film', cat:{en:'Documentary',zh:'紀錄片'}, cat2:'film', type:'go-live',
       status:'completed', meta:{en:'Released Oct 14 · 38,402 views · US$6,318 gross', zh:'10/14 上線 · 38,402 次觀看 · 毛收 US$6,318'},
       bar:null, todo:null },
-    { id:'lost-tapes', name:'Lost Tapes', icon:'music', cat:{en:'Album',zh:'專輯'}, type:'preorder',
+    { id:'lost-tapes', name:'Lost Tapes', icon:'music', cat:{en:'Album',zh:'專輯'}, cat2:'album', type:'preorder',
       status:'failed', meta:{en:"Pre-order didn't reach 50-order minimum · refunded", zh:'預購未達 50 筆門檻 · 已退款'},
       bar:null, todo:null },
   ];
+
+  /* Content-category leaf → its group (Film&TV / Music). Group headers are the optgroups
+     in markup (non-selectable, matching cocreate). Only leaves are filter values. */
+  const CAT_GROUP = { film:'filmtv', short:'filmtv', series:'filmtv', single:'music', album:'music' };
 
   const STATUS = {
     draft:     { label:{en:'Draft',zh:'草稿'},      badge:'badge--neutral' },
@@ -184,20 +224,22 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
 
-  let view = 'list', tab = 'all', type = 'all', q = '';
+  let view = 'list', tab = 'all', type = 'all', cat = 'all', q = '';
 
-  const listEl   = document.getElementById('proj-list');
-  const gridEl   = document.getElementById('proj-grid');
-  const emptyEl  = document.getElementById('proj-empty');
-  const tabsEl   = document.getElementById('proj-tabs');
-  const chipsEl  = document.getElementById('proj-types');
-  const searchEl = document.getElementById('proj-search');
-  const footerEl = document.getElementById('proj-footer');
-  const countEl  = document.getElementById('proj-count');
+  const listEl     = document.getElementById('proj-list');
+  const gridEl     = document.getElementById('proj-grid');
+  const emptyEl    = document.getElementById('proj-empty');
+  const tabsEl     = document.getElementById('proj-tabs');
+  const typeEl     = document.getElementById('proj-type');
+  const catEl      = document.getElementById('proj-cat');
+  const searchEl   = document.getElementById('proj-search');
+  const footerEl   = document.getElementById('proj-footer');
+  const countEl    = document.getElementById('proj-count');
 
   function match(p) {
     if (tab !== 'all' && !(TAB[tab] || []).includes(p.status)) return false;
     if (type !== 'all' && p.type !== type) return false;
+    if (cat !== 'all' && p.cat2 !== cat) return false;
     if (q) {
       const hay = (p.name + ' ' + t(p.cat) + ' ' + t(p.meta)).toLowerCase();
       if (!hay.includes(q.toLowerCase())) return false;
@@ -243,9 +285,16 @@
       const cnt = el.querySelector('.tabs__item-count');
       if (cnt) cnt.textContent = key === 'all' ? PROJECTS.length : PROJECTS.filter(p => (TAB[key] || []).includes(p.status)).length;
       el.classList.toggle('tabs__item--active', key === tab);
+      el.setAttribute('aria-selected', String(key === tab));
     });
-    chipsEl.querySelectorAll('[data-type]').forEach(el => el.classList.toggle('chip--active', el.getAttribute('data-type') === type));
-    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('view-switch__btn--active', b.getAttribute('data-view') === view));
+    if (typeEl.value !== type) typeEl.value = type;
+    if (catEl.value !== cat) catEl.value = cat;
+    /* optgroup label is an attribute (no [data-i18n] handler), localize here */
+    const grpFilm = document.getElementById('proj-cat-grp-filmtv');
+    const grpMusic = document.getElementById('proj-cat-grp-music');
+    if (grpFilm)  grpFilm.label  = T('projects.cat.grp.filmtv', 'Film & TV');
+    if (grpMusic) grpMusic.label = T('projects.cat.grp.music', 'Music');
+    document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('segmented__btn--active', b.getAttribute('data-view') === view));
 
     const items = PROJECTS.filter(match);
     const isList = view === 'list';
@@ -273,21 +322,32 @@
   }
 
   tabsEl.addEventListener('click', e => { const el = e.target.closest('[data-tab]'); if (el) { tab = el.getAttribute('data-tab'); render(); } });
-  chipsEl.addEventListener('click', e => { const el = e.target.closest('[data-type]'); if (el) { type = el.getAttribute('data-type'); render(); } });
+  typeEl.addEventListener('change', () => { type = typeEl.value; render(); });
+  catEl.addEventListener('change', () => { cat = catEl.value; render(); });
   document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { view = b.getAttribute('data-view'); render(); }));
   searchEl.addEventListener('input', () => { q = searchEl.value.trim(); render(); });
+
+  /* 收合搜尋（比照 e-shop／orders／pickup）：放大鏡展開 field-pill、✕/Esc 收起並清空關鍵字 */
+  const searchWrap   = document.getElementById('proj-search-wrap');
+  const searchToggle = document.getElementById('proj-search-toggle');
+  const searchClose  = document.getElementById('proj-search-close');
+  const openSearch  = () => { searchWrap.classList.add('is-open'); searchToggle.setAttribute('aria-expanded', 'true'); searchEl.focus(); };
+  const closeSearch = () => { searchWrap.classList.remove('is-open'); searchToggle.setAttribute('aria-expanded', 'false'); searchEl.value = ''; q = ''; render(); };
+  searchToggle.addEventListener('click', openSearch);
+  searchClose.addEventListener('click', closeSearch);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && searchWrap.classList.contains('is-open')) closeSearch(); });
   emptyEl.addEventListener('click', e => {
     if (!e.target.closest('[data-proj-clear]')) return;
-    tab = 'all'; type = 'all'; q = '';
+    tab = 'all'; type = 'all'; cat = 'all'; q = '';
     searchEl.value = '';
-    render();
+    closeSearch();
   });
   new MutationObserver(() => render()).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   render();
 })();
 </script>
-<script src="js/reveal.js?v=20260723zj"></script>
-<script src="js/devtools.js?v=20260723zj"></script>
+<script src="js/reveal.js?v=20260723zt"></script>
+<script src="js/devtools.js?v=20260723zt"></script>
 </body>
 </html>
