@@ -30,7 +30,14 @@
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '32.00', cost: '11.00', stock: '42', threshold: '6',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      variantName: 'Size / 尺寸', variantValues: ['S', 'M', 'L', 'XL']
+      // 單階層（僅尺寸）：options 一組、variants 逐值一列（combo 只有一個值）。
+      options: [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }],
+      variants: [
+        { combo: ['S'],  sku: 'TEE-S',  stock: '2' },
+        { combo: ['M'],  sku: 'TEE-M',  stock: '18' },
+        { combo: ['L'],  sku: 'TEE-L',  stock: '15' },
+        { combo: ['XL'], sku: 'TEE-XL', stock: '7' }
+      ]
     },
     hoodie: {
       name: 'Coastline hoodie',
@@ -38,13 +45,27 @@
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'low', price: '58.00', cost: '22.00', stock: '48', threshold: '8',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
-      variantName: 'Size / 尺寸', variantValues: ['XS', 'S', 'M', 'L', 'XL', '2XL']
+      // 兩階層（顏色 × 尺寸）：options 兩組、variants ＝ 笛卡兒積 2×3＝6 列，
+      // 顯示時依 options[0]（顏色）分組。與 e-shop 補貨 HOODIE_MATRIX 同源。
+      options: [
+        { name: 'Colour / 顏色', values: ['Black', 'Sand'] },
+        { name: 'Size / 尺寸', values: ['S', 'M', 'L'] }
+      ],
+      variants: [
+        { combo: ['Black', 'S'], sku: 'HOOD-BK-S', stock: '3' },
+        { combo: ['Black', 'M'], sku: 'HOOD-BK-M', stock: '12' },
+        { combo: ['Black', 'L'], sku: 'HOOD-BK-L', stock: '8' },
+        { combo: ['Sand', 'S'],  sku: 'HOOD-SD-S', stock: '0' },
+        { combo: ['Sand', 'M'],  sku: 'HOOD-SD-M', stock: '5' },
+        { combo: ['Sand', 'L'],  sku: 'HOOD-SD-L', stock: '20' }
+      ]
     },
     acetate: {
       name: 'Coastline acetate · numbered 1/50',
-      sub: 'Hand-numbered acetate LP — limited run of 50, signed.',
+      sub: 'Hand-numbered acetate LP — limited run of 50, signed. Collect on-site at the signing session.',
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
       status: 'live', price: '120.00', cost: '38.00', stock: '29', cap: '50', sold: '21', threshold: '5',
+      delivery: 'qr',   /* 現場 QR 領取示範：簽名場次現場領取的限量收藏品（唯一一筆 QR 領取商品）*/
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品'
     },
     pin: {

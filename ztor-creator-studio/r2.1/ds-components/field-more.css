@@ -1,0 +1,45 @@
+/* ============================================================
+   field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
+
+   一組欄位裡只有一兩個是每次都要填的，其餘屬次要或多數情況用預設值時，
+   把次要的收在一個文字按鈕後面，讓表單第一眼只剩必要欄位。
+   首次用於：建立商品 → 取貨方式 → 物流配送（只留「重量」，
+   出貨分類／尺寸／寄件地收起來）。
+
+   為什麼不用 <details>：需要在「收起來的欄位已經有值」時自動展開
+   （商品明細是編輯頁、欄位帶著真實資料，藏起來等於藏資料），
+   這段判斷要 JS，見 partials/field-more.js。
+
+   anatomy
+     .field-more[data-open]
+       .field-more__toggle     文字按鈕（＋／－ icon ＋ 顯示更多／收合）
+       .field-more__body[hidden]  被收起來的欄位群
+   ============================================================ */
+
+/* margin-bottom 讓它吃跟 .field 同一套表單節奏（16px）。
+   2026-07-21：改成滿寬線框鈕後才浮現的問題——上方的 16px 是前一個 .field 的下外距給的，
+   自己沒有下外距，所以後面的元素（如取貨方式的 info-banner）會直接貼上來；
+   文字鈕時代不明顯，變成一個實心方塊後就讀成黏在一起。 */
+.field-more { display: flex; flex-direction: column; gap: var(--sp-12); margin-bottom: var(--sp-16); }
+/* 收在區塊尾端時不留尾巴（商品明細的物流欄位群就是這個情形）*/
+.field-more:last-child { margin-bottom: 0; }
+
+/* 2026-07-21 使用者裁示：由「靠左的無框文字鈕」改成**滿寬的線框按鈕**。
+   外觀一律重用 Button atom（markup 掛 `.btn.btn--outline`），本檔只擁有
+   「滿寬＋置中」這兩件版面事——不自己刻一顆長得像 outline 的按鈕，
+   免得 Button 的邊框／圓角／hover 日後改了這裡不會跟著動。 */
+.field-more__toggle {
+  width: 100%;
+  justify-content: center;
+}
+
+.field-more__icon {
+  width: 14px; height: 14px;
+  transition: transform var(--duration) var(--easing);
+}
+.field-more[data-open="true"] .field-more__icon { transform: rotate(180deg); }
+
+.field-more__body { display: flex; flex-direction: column; }
+.field-more__body[hidden] { display: none; }
+/* 收合區內最後一個欄位不留下外距，避免展開時底部多一段空白 */
+.field-more__body > :last-child { margin-bottom: 0; }

@@ -28,15 +28,8 @@ window.ZTOR_PARTIALS.feeExceptionModal = String.raw`
         <p class="field__hint" data-fx-none hidden data-i18n="fees.exc.search-none">No matching Creator.</p>
       </label>
 
-      <!-- 支付手續費：唯讀、全站統一（不逐 Creator，D141）-->
-      <div class="field" style="margin-bottom:var(--sp-18)">
-        <span class="field__label" style="font-size:var(--fs-18);font-weight:var(--fw-semibold)" data-i18n="fees.payment.title">Payment fee</span>
-        <div style="display:flex;align-items:center;gap:var(--sp-8);flex-wrap:wrap">
-          <span class="amount-field amount-field--suffix" style="width:110px"><input class="input amount-field__input" data-fx-payment type="number" value="3.4" disabled><span class="amount-field__unit">%</span></span>
-          <span class="text-sub" aria-hidden="true">＋</span>
-          <span class="amount-field amount-field--readonly" style="width:132px"><span class="amount-field__unit" data-fee-cur>HK$</span><input class="input amount-field__input" data-fx-payment-fixed type="number" value="2.40" style="padding-left:48px" disabled></span>
-        </div>
-      </div>
+      <!-- 支付手續費不在此彈窗：全站統一、不逐 Creator（D141），例外只覆寫平台費。
+           參考值請見「基本設定」分頁；2026-07-23 使用者裁示自例外彈窗移除。 -->
 
       <!-- 平台費：逐交易子類覆寫（樹由頁面注入）-->
       <div class="field">

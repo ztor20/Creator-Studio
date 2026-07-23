@@ -1,0 +1,72 @@
+/* ============================================================
+   Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
+
+   Composition pattern: 詳情／編輯頁的兩欄骨架。左欄放可編輯內容
+   （常是 tabs + tab-panel），右欄放跨分頁常駐的卡，讓使用者在任何分頁
+   都看得到庫存、交付、關聯這類「改東西前要先知道」的資訊。
+
+   右欄放什麼（2026-07-21 放寬，STYLE-DECISIONS Q25）：
+     - 唯讀狀態卡（主要用途）
+     - 跨分頁層級的可互動設定——判準是「這個設定管的是整個物件、不隸屬
+       任何一個分頁」，如商品明細的上架設定
+   隸屬單一分頁的欄位一律留在該分頁，右欄不做成第二個表單。
+
+   Anatomy:
+     .detail-grid            兩欄 grid（1fr / 300px）
+       .detail-main          主欄（min-width:0 防長內容撐破）
+       .detail-rail          右欄（sticky、卡片以 gap 分隔）
+
+   Notes:
+     - 右欄卡片間距由 .detail-rail 的 gap 決定；元件層
+       `.form-section--outlined:not([hidden]) ~ …` 的 margin-top 會疊加，
+       故在此顯式歸零，避免右欄間距變成左欄的兩倍。
+     - 右欄卡較矮，form-section__head 的 24px 下間距顯得過鬆，收成 12px。
+     - ≤1100px 收成單欄、rail 取消 sticky（右欄改排在主欄之後）。
+
+   Pattern 卡（何時用、右欄該放什麼）見 design-system.html Pillar 5。
+
+   Consumers: product-detail.html, order-detail.html
+   ============================================================ */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--sp-16);
+  align-items: start;
+}
+
+.detail-main { min-width: 0; }
+
+/* 單欄變體（2026-07-21）：某些分頁的內容已經自帶完整狀態、右欄再放一次等於重複，
+   或內容需要整頁寬度（寬表格）。掛在 .detail-grid 上收起右欄、主欄吃滿。
+   由 consumer 的分頁切換邏輯依當前分頁決定何時掛，元件層不判斷。 */
+.detail-grid--full { grid-template-columns: minmax(0, 1fr); }
+/* 直接子代選擇器：只收起「這一層」的常駐右欄，不誤傷分頁內部自建的巢狀 detail-grid
+   （商品明細定價與庫存分頁：外層 --full 收全域右欄，分頁內部另有自己的 main/rail 兩欄）。 */
+.detail-grid--full > .detail-rail { display: none; }
+
+/* --norail：收起常駐右欄，但**保留兩欄軌道**——主欄維持原本 1fr 寬度、不撐滿，
+   右側 300px 留白（某些分頁不需要右欄，但要與有右欄的分頁對齊主欄寬度）。 */
+.detail-grid--norail > .detail-rail { display: none; }
+
+.detail-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);
+  position: sticky;
+  top: var(--sp-24);
+}
+
+.detail-rail .form-section { margin: 0; }
+
+/* 元件層相鄰 outlined 卡的 24px margin-top 會疊上 flex gap → 歸零，間距只由 gap 決定 */
+.detail-rail .form-section--outlined:not([hidden]) ~ .form-section--outlined:not([hidden]) {
+  margin-top: 0;
+}
+
+.detail-rail .form-section__head { margin-bottom: var(--sp-12); }
+
+@media (max-width: 1100px) {
+  .detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-rail { position: static; }
+}

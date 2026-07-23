@@ -337,6 +337,8 @@ Ztor's radius system is **fine-grained subtle** at the chrome layer (6–8px but
 
 All other former ad-hoc shadow/border colors were tokenized on 2026-06-15 (`--shadow-raise` / `--shadow-raise-strong` / `--border-inverse` / `--overlay-tint`).
 
+**Page-scoped `[data-theme]` override exception (acknowledged WARN)** — `check_ds_sync` 檢查 8（DS 級覆寫不留頁面）標記 `e-shop.html` 的 `.eshop-list-topbar`：這顆 class 只在 `e-shop.html` 自己的 `<style>` 裡定義（含 light-mode 覆寫），全站唯一消費頁；因為只有一個消費者、沒有跨頁一致性風險，維持頁內 `<style>` 而不硬 promote 進 `ds-components/`（promote 的價值是給多個消費頁共用，這裡不成立）。若未來有第二個頁面需要同樣的 sticky 白底頂欄樣式，才需要抽成共用元件。
+
 ### 1.6 Motion
 
 Durations sit in the `150–300ms` range with ease-out curves; `transition: all` is common on interactive elements. Entrance animations are gated behind `@media (prefers-reduced-motion: reduce)` and shown immediately when motion is reduced.
@@ -667,9 +669,9 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → net profit pool ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
 | Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup | [payout-modal.css](./ds-components/payout-modal.css) |
-| Restock order (lines) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs) — document layer (method + supplier/ETA/notes) + item quantity lines (`.restock-lines` / `.restock-line`); product variants = matrix (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
+| Restock order (table) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs). 2026-07-22 layout (Figma 861-28842): method as `.segmented.radio-cards` → product-name label → `.restock-table` (3 number columns current/restock/after, `__group`/`__row`/`__id`/`__img`/`__name`/`__col`/`__ro`) → supplier/notes/ETA below → footer pinned to dialog bottom (body scrolls); under-method hint + yellow stickynote removed. Product variants = matrix rows (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.amount-field`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
-| Variant builder | 🟠 organism | ✓ App | 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多選項 + `.option-set`（設定好的選項收成一行 `__row`，只有編輯中的展開成 `.variant-option`）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；可編輯格重用 `.input`。**2026-07-21 庫存欄改唯讀**：庫存格是讀數 `.variant-cell--stock`（`--font-ui`／`--fs-13`／`--foreground`），低於低庫存門檻再加 `.variant-cell--stock-low` 轉 `--destructive` ＋ `--fw-medium`；庫存只能靠留有紀錄的補貨增加，做成 `.input` 會讓人以為可以直接打字覆蓋，轉紅則讓「哪一個規格快沒了」在表上一眼可見。**2026-07-21 逐值 input 改版（使用者裁示）**：值由 chip 膠囊改成「一個值一個 `.input`」（`__value` > `.input` ＋ `__value-remove`），可就地改字——設定選項時最常做的是改一個字，chip 得先刪再重打；底部 `__add-value` 虛線鈕再長一列，Enter 亦可。編輯態欄位加 `.field` 標籤（選項名稱／選項值），底部 `__actions` 靠右放「刪除」（`.btn--ghost.btn--destructive`，破壞性只用透明底）＋「儲存」（`.btn--outline`）。**列的外觀＝Q24 的 L3 規則首次落地**：整組坐在 `.nest`（L2）裡，所以 `__row`／`.variant-option` 去掉 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`；兩顆新增鈕（`__add`／`__add-value`）用 1px **虛線** `--border`（沿用 upload-tile／payout-modal 的「這裡還沒有東西」語彙）。表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、選項組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16） | [variant-builder.css](./ds-components/variant-builder.css) |
+| Variant builder | 🟠 organism | ✓ App | 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多選項 + `.option-set`（設定好的選項收成一行 `__row`，只有編輯中的展開成 `.variant-option`）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；可編輯格重用 `.input`。**2026-07-21 庫存欄改唯讀**：庫存格是讀數 `.variant-cell--stock`（`--font-ui`／`--fs-13`／`--foreground`），低於低庫存門檻再加 `.variant-cell--stock-low` 轉 `--destructive` ＋ `--fw-medium`；庫存只能靠留有紀錄的補貨增加，做成 `.input` 會讓人以為可以直接打字覆蓋，轉紅則讓「哪一個規格快沒了」在表上一眼可見。**2026-07-21 逐值 input 改版（使用者裁示）**：值由 chip 膠囊改成「一個值一個 `.input`」（`__value` > `.input` ＋ `__value-remove`），可就地改字——設定選項時最常做的是改一個字，chip 得先刪再重打；底部 `__add-value` 虛線鈕再長一列，Enter 亦可。編輯態欄位加 `.field` 標籤（選項名稱／選項值），底部 `__actions` 靠右放「刪除」（`.btn--ghost.btn--destructive`，破壞性只用透明底）＋「儲存」（`.btn--outline`）。**列的外觀＝Q24 的 L3 規則首次落地**：整組坐在 `.nest`（L2）裡，所以 `__row`／`.variant-option` 去掉 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`；兩顆新增鈕（`__add`／`__add-value`）用 1px **虛線** `--border`（沿用 upload-tile／payout-modal 的「這裡還沒有東西」語彙）。表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、選項組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16）。**2026-07-22 列尾動作分兩種消費**：建立流程用 `.variant-row__remove`（X，把組合排除在建立集合外）；商品明細規格鎖定後不可移除，改列尾 `.dropdown` kebab 選單「單獨下架／重新上架」，下架列加 `.variant-table__row--delisted`（只壓「除下拉外的直接子代」灰階、輸入由 JS 加 `disabled`，kebab 仍可用來重新上架）。列尾用浮動選單的外框要加 `.variant-table-wrap--menu`：基礎 `.variant-table-wrap` 的 `overflow-x:auto` 會裁掉浮出的選單，此修飾在桌面寬度放行 `overflow:visible`（表格本就撐得下），只在 <560px 恢復 `overflow-x:auto` 橫捲。**放行 overflow 後外框圓角不再 clip 內容**（2026-07-23）：表頭（`--muted` 底）與末列的方角會戳出圓角，故改由內容自己貼齊——`--menu` 下給 `.variant-table__head` 上圓角、`.variant-table__row:last-child` 下圓角（半徑 `calc(--radius-xl - 1px)` 貼齊外框內緣）。**2026-07-22 商品明細整張表改唯讀**：價格／SKU／成本／總量欄由 `.input` 換成 `.variant-cell--ro`（純文字、與 `--stock` 同族、`text-overflow:ellipsis`），改值走「⋯ → 編輯」popup；每格加 `data-vc` 標角色（name/price/total/sku/cost）供 popup 讀寫回填。**2026-07-23 兩階層（顏色×尺寸）＋資料驅動**：商品明細的規格表改由 `products-store` 的 `options`／`variants` 驅動——單階層逐值一列、兩階層依第一個選項（顏色）用 `.variant-table__group`（撐滿整列的分組標題、同補貨矩陣語彙）分組、尺寸列在組底下。編輯 popup 用 `.variant-table--preview`（5 欄唯讀組合預覽：規格／價格／庫存／SKU／成本，無總量、無列尾動作），改選項值（加/改名/移除）時笛卡兒積即時重算 | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤。已選標籤 chip（`.tag-input .chip--active`＝field 內已選＋建議列已加入的 chip 皆涵蓋）用**品牌橘外框＋橘字＋淡橘底**（2026-07-17 Q19；2026-07-18 scope 由只 field 放寬到整個 tag-input，讓建議列已加入的標籤也是橘、不再反白）；全站一般 `.chip--active` 仍為反白黑底（見 Q8） | [tag-input.css](./ds-components/tag-input.css) |
 | Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2） | [combobox.css](./ds-components/combobox.css) |
 | Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1） | [partials/film-picker.js](./partials/film-picker.js) |
@@ -679,11 +681,11 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
 | Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
-| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`（`.page` max-width 1280px）. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner。**窄版變體 `.page--narrow`（1056px，2026-07-20 Q21）**：只給 Detail rail（§4.52）的兩欄詳情頁——右欄固定 300px，容器留在 1280 會讓左欄行長過長；其餘頁面維持 1280。Q21 原裁全站收窄，同日改為僅變體套用。Consumer 目前只有 product-detail.html | [shared.css](./shared.css) |
+| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`（`.page` max-width 1280px）. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner。**窄版變體 `.page--narrow`（1056px，2026-07-20 Q21）**：只給 Detail rail（§4.52）的兩欄詳情頁——右欄固定 300px，容器留在 1280 會讓左欄行長過長；其餘頁面維持 1280。Q21 原裁全站收窄，同日改為僅變體套用。Consumer：product-detail.html、order-detail.html | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field more | 🟡 molecule | ✓ Project | 把一組欄位裡的次要欄位收在「顯示更多」按鈕後（2026-07-21）：`.field-more` > `.btn.btn--outline.field-more__toggle`（**2026-07-21 使用者裁示改滿寬線框鈕**，原為靠左無框文字鈕；外觀重用 Button atom，本元件只擁有 `width:100%` ＋ `justify-content:center`，不自刻邊框/hover）。`margin-bottom: --sp-16` 吃 `.field` 同一套表單節奏、`:last-child` 歸零免留尾巴（2026-07-21：改滿寬鈕後才浮現——原本只有上方靠前一個 `.field` 的下外距撐開、自己沒有下外距，後面元素會貼上來）（chevron ＋ `field.show-more`／`field.show-less` 文案）＋ `.field-more__body[hidden]`。**收合區內任一欄位已有值就自動展開**——建立商品是空表單、收起來合理；商品明細是編輯頁、欄位帶真實資料，藏起來等於藏使用者填過的東西。這個判斷是用 JS（[partials/field-more.js](./partials/field-more.js)）而非 `<details>` 的原因，兩頁因此能共用同一段 markup。首次用於建立商品／商品明細的取貨方式 ▸ 物流配送（只留「重量」在外，出貨分類／尺寸／寄件地收起來）。收在裡面的必填欄仍保留 `*` 標記 | [field-more.css](./ds-components/field-more.css) |
-| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊 | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
-| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立） | [form-section.css](./ds-components/form-section.css) |
+| Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊。**2026-07-22 追加 `.field-readout`**：欄位改「只顯示、不可填」時用它取代 `.input`／`.amount-field`（ui 字體／`--fs-14`／`--foreground`、不畫框不留 input 內距，讀起來是文字不是空欄）；用於商品明細把價格／成本／總量上限改唯讀，改值一律走編輯 popup | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
+| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜同樣以 `--card`（`#212223`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 改，原暗色用 `--muted`——壓暗後 `--muted` 與頁底過近、區塊會消失，改 `--card` 與亮色行為一致）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立）。**2026-07-22 追加 `.form-section__head--actions`**：標題列帶右側動作的變體——把標題群包進 `.form-section__head-titles`、動作群放 `.form-section__head-actions`（按鈕／⋯選單），head 改 flex 兩端對齊；只在需要動作的區段啟用（預設 head 仍是堆疊 title＋sub）。用於商品明細庫存卡（補貨紀錄鈕＋新增/編輯/補貨選單） | [form-section.css](./ds-components/form-section.css) |
 | Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant | [radio-card.css](./ds-components/radio-card.css) |
 | Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--accent`（2026-07-21 由 `--muted` 改回 Q9 裁決值——暗色 `--muted` 比卡還深、hover 像凹下去）, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title. **變體 `--collapsible`（2026-07-21 · Figma 856-22782）**：收合式，`.radio-list__trigger`（圓點＋文字＋`.radio-list__chevron`）＋`.radio-list__options[hidden]`，外框 1px `--border` ＋ `--radius-xl`，展開時觸發列填 `--input-surface`、chevron 轉 180°、`[data-open]` 標開合；展開時已選項在觸發列與清單各出現一次（Figma 原設計、使用者裁示保留）。行為由 [partials/radio-list.js](./partials/radio-list.js) 統一接線（開合、觸發列文字＋`data-i18n` 同步、外點與 Esc 關閉、派發 `radio-list:change`），頁面只留自己的欄位揭示邏輯。Used by create-product/-bundle/-auction (Listing settings under the preview card) + product-detail/bundle-detail (Listing settings in price-stock)，五頁 2026-07-21 起一律用 `--collapsible` | [radio-list.css](./ds-components/radio-list.css) |
 | Date input placeholder | 🔵 atom | ✓ Project | 原生 `<input type="date|datetime-local|time">` 的 placeholder 裝飾層（2026-07-21）：原生欄位不吃 `placeholder`、空值時自己畫「年/月/日 --:--」且用一般內文色，看起來像已填值。`[data-empty="true"]`＝日曆 icon（`--sp-12`）＋淡灰「選擇日期」（`--sp-40`、`--muted-foreground`），原生 `::-webkit-datetime-edit` 藏起來、input 內距推到 `--sp-40`；`[data-empty="false"]`＝icon 與 placeholder 都收掉、內距回基礎 `--sp-12`、日期用 `--foreground`（常駐 icon 會吃掉 28px，設定頁 120px 的窄時間欄會被切字）。date／datetime-local／time 三型共用同一句文案 `field.pick-date`（使用者 2026-07-21 裁示）。原生日曆鈕攤平成整格透明覆蓋層，點整格用 `showPicker()` 開選單。由 [partials/date-input.js](./partials/date-input.js) 執行期自動包裝全站約 40 個欄位（含 MutationObserver 接住 modal 這類後注入的節點），頁面 markup 維持乾淨的 `.input`，不得手寫 `.date-input` 外層 | [date-input.css](./ds-components/date-input.css) |
@@ -707,6 +709,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Detail rail | 🟠 organism | ✓ Project | 詳情頁兩欄殼：可編輯主欄（Tabs＋分頁）＋ sticky 唯讀 meta 右欄（1fr / 300px，≤1100px 收單欄並取消 sticky）。元件段只講殼；「何時用、右欄放什麼」見 Pillar 5 §5.1 *Detail + persistent rail*。詳見 §4.52 | [detail-rail.css](./ds-components/detail-rail.css) |
 | Stock readout | 🔵 atom | ✓ Project | 唯讀數量讀數（`__num` 大數字＋`__unit` 單位/分母＋可選 Badge），用在「只能透過某個動作改變」的值——商品明細的庫存只能靠補貨增加（每筆留紀錄），做成 `.input` 會讓人以為可以打字覆蓋。不是 KPI（那是儀表列用的有框方塊，本元件是表單卡內的一行、無自有容器樣式）。詳見 §4.54 | [stock-readout.css](./ds-components/stock-readout.css) |
 | Restock log | 🟡 molecule | ✓ Project | 補貨紀錄表：逐筆補貨一列、欄位各自成欄（選項組合／補貨數量／日期／供應商／狀態），數量走等寬數字方便跨列比對。外層 `.restock-log-wrap` 負責邊框、圓角與水平捲動。多選項商品掛 `.restock-log--with-option` 才開出「選項組合」欄（不掛時該欄含表頭整欄不顯示）。取代原本用 `.data-list` 把數量／日期／供應商擠成一行標題＋一行 meta 的寫法。詳見 §4.55 | [restock-log.css](./ds-components/restock-log.css) |
+| Stock tip | 🟢 atom | ✓ App | E-Shop 商品清單「狀態」／「庫存」欄 hover/focus 浮出的資訊卡：多選項商品攤到單一選項組合、組合商品攤到「成員 · 選項組合」；單一選項商品顯示目前庫存一行（原本還有低庫存門檻，2026-07-23 使用者裁示移除）。列徽章為「急需補貨」時，選項清單只留真的需要補貨的項目（此規則不影響單一選項那一行）。定位由 JS 算（`position: fixed`），viewport 上半部往下開、下半部往上開，避免被 sticky 頂欄擋到或超出視窗。詳見 §4.56 | [stock-tip.css](./ds-components/stock-tip.css) |
 | Nest | 🔵 atom | ✓ Project | 嵌在卡片底緣的滿版子層（左右下三邊切齊母卡外緣＋向上陰影），用於「切換模式後長出一整組設定」。層級系統只有兩層填色，L3+ 改邊框。與 `.card--muted`（卡片內單純換底色的靜態子區塊）分工不同、不可混用。詳見 §4.53 | [nest.css](./ds-components/nest.css) |
 | Chart card | 🟠 organism | ✓ Project | Chart surface with title, controls, body | [chart.css](./ds-components/chart.css) |
 | Rank bars / source breakdown | 🟡 molecule | ✓ Project | Ranked bar rows and source distribution legends | [chart.css](./ds-components/chart.css) |
@@ -3159,7 +3162,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __actions > __edit (Icon)
 ```
 
-**Variants** — Base columns; page-level column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (covers all three E-Shop panels — Products/Bundles/Auctions all share this class；**hover 浮起**——2026-07-21 使用者再次指定「hover 要跟 drag 的 style 一樣」，`:hover` 改 `--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態，為 Q5「清單列 hover 只換底色」的 scoped 例外，與 `--ip` 共用同一條規則；Products: drag / image / name / category / price / status / stock — 2026-07-20，Figma node 845-12576 三處內容規則：① `__meta`＝規格副標，單一選項商品固定顯示「單一選項」（`e-shop.variant.single`）、多選項顯示「維度（選項）× 維度（選項）」如「顏色（Black/Sand）× 尺寸（S/M/L）」，取代原本的商品格式描述文字；數位商品`__meta` 不變（沿用格式描述，數位商品無規格概念）；② `category-cell` 改兩行——`.product-list__cat-sub`（子分類，白字 `--foreground`）在上、`.product-list__cat-main`（主分類，灰字 `--muted-foreground`，共用 `e-shop.cat.physical`／`e-shop.cat.digital` 兩個 i18n key）在下；③ `__stock` 改「剩餘數量 / ∞」（無限量）或「剩餘數量 / 上限」（限量），取代原本的「X left」；**數位商品庫存維持純 `∞`、不加剩餘數量**——Figma 稿子的數位列雖顯示「48 / ∞」，但三列數字相同、疑似佔位假資料，且數位商品無實體庫存概念，經使用者確認不採用，記入 UIA-066；2026-07-21：`__title` 內原掛在商品名稱後的「N variants／限量」`badge--inline` 已移除——規格數已由上述①的 `__meta` 副標呈現、限量狀態已由③的「剩餘/上限」格式呈現，徽章與兩者重複，使用者要求拿掉）, `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity), `.product-list--orders` (Orders: icon / order+buyer / amount / status / date), `.product-list--pickup` (Pickup sessions), `.product-list--ip` (2026-07-20，My IP: icon / IP name+badges / rights / rented / revenue / price / mktplace toggle / manage — spec 5.1.4 §F6 8 欄；`__mktplace` cell 為本變體專屬，`display:flex;justify-content:center` 置中開關；**hover 浮起**——`:hover` 改 `--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態，使用者裁示，為 Q5「清單列 hover 只換底色」的 scoped 例外（2026-07-21 起與 `--eshop` 共用同一條規則，見上）). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--muted-foreground` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package). **2026-07-21**：商品清單縮圖改真實照片（`images/products/`，取自參考站 ztor-eshop-fe），`.product-list__image`／`--placeholder` 同步改 60×60、拿掉 1px 邊框（原 52×52＋`--border`／`--border-soft`）——此改動使 `.product-list__image` 與 Q20 統一的 `.product-list__thumb`／`.project-list__icon`／`.data-list__icon` 家族（見 Project list、Data list 條目）**視覺上分家**：後者角色是純 icon chip（orders/pickup/my-ip/projects/14 頁），前者現在要承載真實商品照，使用者指定改版、不回頭同步其餘家族成員。連動 `events.html`（唯一另一個消費 `.product-list__image` 的頁面）的 grid-template-columns 縮圖欄寬同步 52px→60px，避免裁切。同一輪：Products/Bundles/Auctions 分頁的 kebab 選單新增「複製商店連結」（`e-shop.a.copystorelink`），緊接在「在商店上架」開關之後、「編輯」之前；純展示、無實際複製邏輯（比照既有「編輯」等項目皆為 demo）；Auctions 分頁維持原有獨立的「複製連結」（`e-shop.a.copylink`）不變、未套用此新增項目。
+**Variants** — Base columns; page-level column layouts in `product-list.css` (layered on the base grid — not edits to it): `.product-list--eshop` (covers all three E-Shop panels — Products/Bundles/Auctions all share this class；**hover 浮起**——2026-07-21 使用者再次指定「hover 要跟 drag 的 style 一樣」，`:hover` 改 `--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態，為 Q5「清單列 hover 只換底色」的 scoped 例外，與 `--ip` 共用同一條規則；Products: drag / image / name / category / price / status / stock — 2026-07-20，Figma node 845-12576 三處內容規則：① `__meta`＝規格副標，單一選項商品固定顯示「單一選項」（`e-shop.variant.single`）、多選項顯示「維度（選項）× 維度（選項）」如「顏色（Black/Sand）× 尺寸（S/M/L）」，取代原本的商品格式描述文字；數位商品`__meta` 不變（沿用格式描述，數位商品無規格概念）；② `category-cell` 改兩行——`.product-list__cat-sub`（子分類，白字 `--foreground`）在上、`.product-list__cat-main`（主分類，灰字 `--muted-foreground`，共用 `e-shop.cat.physical`／`e-shop.cat.digital` 兩個 i18n key）在下；③ `__stock` 改「剩餘數量 / ∞」（無限量）或「剩餘數量 / 上限」（限量），取代原本的「X left」；**數位商品庫存維持純 `∞`、不加剩餘數量**——Figma 稿子的數位列雖顯示「48 / ∞」，但三列數字相同、疑似佔位假資料，且數位商品無實體庫存概念，經使用者確認不採用，記入 UIA-066；2026-07-21：`__title` 內原掛在商品名稱後的「N variants／限量」`badge--inline` 已移除——規格數已由上述①的 `__meta` 副標呈現、限量狀態已由③的「剩餘/上限」格式呈現，徽章與兩者重複，使用者要求拿掉）, `.product-list--bundles` (Bundles: image / bundle / members / price / status / stock), `.product-list--auctions` (Auctions: image / item / category / bid / status / activity), `.product-list--orders` (Orders — **2026-07-23 使用者裁示，8 欄（訂單列表不放商品圖片，2026-07-23 移除縮圖欄）**，欄序＝訂單編號(`__order-id`，含很小的複製鈕 `__copy`) / 訂單內容(`__items`) / 買家(`__customer`) / 金額 / 付款狀態(`__pay`) / 出貨狀態(`__ship`) / 日期 / actions。**訂單內容欄** `__line` 每項商品一行、白字＋同欄字級(fs-13)、各行間距加大(`__line + __line` margin-top `--sp-6`)、最多 4 行超過以 … 截斷；**整列可點開啟訂單**（`__row` cursor:pointer，kebab／複製鈕 stopPropagation，比照 creators 列）。訂單身分與狀態雙軸各自成欄（原「編號+買家+商品」擠一格、「出貨+付款」`.status-axes` 並排一格）。**出貨狀態欄承載履約雙值**——配送用 待出貨/已出貨/已交付、現場取貨用 待取貨(`orders.status.pickup`)；混合訂單（配送＋取貨）兩顆徽章水平並排不換行(`__ship` gap＋nowrap、欄寬 minmax 148)；取貨徽章由原「品項層 meta」升為此軸的履約狀態值——**重新詮釋 D111，見 ASSUMPTIONS UIA**。付款軸仍與履約軸分離不混用（§7.2）), `.product-list--pickup` (Pickup sessions), `.product-list--ip` (2026-07-20，My IP: icon / IP name+badges / rights / rented / revenue / price / mktplace toggle / manage — spec 5.1.4 §F6 8 欄；`__mktplace` cell 為本變體專屬，`display:flex;justify-content:center` 置中開關；**hover 浮起**——`:hover` 改 `--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態，使用者裁示，為 Q5「清單列 hover 只換底色」的 scoped 例外（2026-07-21 起與 `--eshop` 共用同一條規則，見上）). E-Shop page-level behavior (drag-reorder, filter-empty, panel switching, row kebab) stays in `e-shop.html`. `__thumb--cover` inverts to foreground/background; `__image--placeholder` holds either the "ztor." text mark (generic) or a category icon (`.ztor-icon`, 20px, `--muted-foreground` — E-Shop rows map 服飾→shirt / 書籍→book-open / 音樂專輯→disc / 收藏品→gem / 配件→tag / 居家生活→house / 海報與印刷→image / 草稿→package). **2026-07-21**：商品清單縮圖改真實照片（`images/products/`，取自參考站 ztor-eshop-fe），`.product-list__image`／`--placeholder` 同步改 60×60、拿掉 1px 邊框（原 52×52＋`--border`／`--border-soft`）——此改動使 `.product-list__image` 與 Q20 統一的 `.product-list__thumb`／`.project-list__icon`／`.data-list__icon` 家族（見 Project list、Data list 條目）**視覺上分家**：後者角色是純 icon chip（orders/pickup/my-ip/projects/14 頁），前者現在要承載真實商品照，使用者指定改版、不回頭同步其餘家族成員。連動 `events.html`（唯一另一個消費 `.product-list__image` 的頁面）的 grid-template-columns 縮圖欄寬同步 52px→60px，避免裁切。同一輪：Products/Bundles/Auctions 分頁的 kebab 選單新增「複製商店連結」（`e-shop.a.copystorelink`），緊接在「在商店上架」開關之後、「編輯」之前；純展示、無實際複製邏輯（比照既有「編輯」等項目皆為 demo）；Auctions 分頁維持原有獨立的「複製連結」（`e-shop.a.copylink`）不變、未套用此新增項目。**2026-07-23 使用者反饋：整列可點開啟編輯**（比照 Orders／Creators 列既有的整列可點模式，見上方 `--orders` 條目）——`.product-list--eshop` 三個分頁（Products／Bundles／Auctions）點列即導頁，目的地讀該列 kebab 選單裡「編輯」那個 `<a href>`（跟選單本身同一份資料，不另開一份判斷邏輯）：草稿列進對應建立頁（`create-product.html`／`create-bundle.html`／`create-auction.html`），已建立商品進對應細節頁；沒有編輯項的列（如已出貨的 ended 拍賣，kebab 只有「追蹤履約」）點列不做任何事，不會誤導去追蹤履約頁。點擊排除握把（`.product-list__drag`）、operations 欄（`.product-list__actions`，含 kebab 選單本身與 stock tip 浮卡的觸發格）與任何 `<a>`/`<button>`。`cursor: pointer` 只加在 `--eshop`，`--ip` 沒有這個點擊行為、游標不共用。
 
 **Status badges** (Products `__status` column, spec 5.1.5 F4 / D093) — uses Badge variants: Live → `badge--success`, Low Stock → `badge--error`, Sold Out / Draft / Hidden → `badge--neutral`. Sold Out (stock = 0) and Low Stock (below threshold, still in stock) are distinct states, never conflated.
 
@@ -3235,7 +3238,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.29 Payout bank picker & dialog
 
-**`_layer`** · organism — Two-part payout flow (spec §5.1.8): a page-side bank picker card grid (`.payout-bank-*`) on Earnings · Payouts, plus the request-payout modal (`.payout-modal` blurred backdrop + `.payout-dialog` shell with head / body / foot, 34px display-type amount input, fee summary, step views and success view). Mounted from `partials/payout-request-modal.js`; promoted out of earnings.html inline styles on 2026-06-09.
+**`_layer`** · organism — Two-part payout flow (spec §5.1.8): a page-side bank picker card grid (`.payout-bank-*`) on Earnings · Payouts, plus the request-payout modal (`.payout-modal` blurred backdrop + `.payout-dialog` shell with head / body / foot, 34px display-type amount input, fee summary, step views and success view). Mounted from `partials/payout-request-modal.js`; promoted out of earnings.html inline styles on 2026-06-09. **2026-07-23 footer/header 釘住收斂到元件層**：`.payout-dialog` 改成 flex column＋`overflow:hidden`，`__head`／`__foot` `flex:none` 釘在上下、`__body` `flex:1＋overflow-y:auto` 只捲內容——原本整框 `overflow:auto` 會讓 footer 隨內容捲走，各 popup 得各自補救（restock 曾 scope 修過，已移除）；現在所有 `.payout-dialog` 消費者一次到位。
 
 **Anatomy**
 
@@ -3286,61 +3289,63 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ---
 
-### 4.29c Restock order (lines)
+### 4.29c Restock order (table)
 
-**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6, D104 order model + D106 member tabs). A restock = one **order**: a **document layer** (method via `.segmented` + supplier / ETA / notes on `.field`, filled once) and an **item layer** of `.restock-line` quantity rows. A **product's variants are always a matrix** (single-variant = 1 line; 2-option = sub-grouped by option-1 via `.restock-lines__group`) — no tabs. A **bundle separates its member products with `.tabs`** (one tab per member; each `.tab-panel` holds that member's variant matrix). Only one tab level (members) — variants never use tabs (D106); quantities persist across tabs (all member panels stay in the DOM). Blank quantity = skip that item. History log on product-detail reuses `.data-list`. Each line's `__meta` shows the low-stock **threshold**, whose default is **10% of that item's stock cap** (spec §7.2 / D105) — derived per item, not a flat number; hidden when a cap is unknown. Mounted from `partials/restock-modal.js`.
+**`_layer`** · molecule — restock popup for the E-Shop restock sub-flow (spec §5.1.5.6, D104 order model + D106 member tabs). A restock = one **order**: a **document layer** (method + supplier / notes / ETA, filled once) and an **item layer** that is a **`.restock-table`** of variant rows. **2026-07-22 layout (Figma node 861-28842):** the method switched from a plain `.segmented` track to `.segmented.radio-cards` (two side-by-side cards + top-right orange dot); the item table sits **right below the method** (product-name label then table); supplier / notes / ETA move **below the table**; the footer is **pinned to the dialog bottom** and only the body scrolls (same footer-pin pattern as the platform-fee modal `[data-fx-modal]`); the old under-method hint row and the yellow stickynote were removed. Each row carries three number columns: **current** (read-only), **restock** (typeable), **after** (read-only, live = current + restock). A **product's variants are a matrix of rows** (single-variant = 1 row; 2-option = sub-grouped by option-1 via `.restock-table__group`) — no tabs. A **bundle separates its member products with `.tabs`** (one tab per member; each `.tab-panel` holds that member's variant table). Only one tab level (members) — variants never use tabs (D106); quantities persist across tabs (all member panels stay in the DOM). Blank restock quantity = skip that item. History log on product-detail reuses `.data-list`. Mounted from `partials/restock-modal.js`.
 
 **Anatomy**
 
 ```
-.payout-dialog (reused shell)
-├─ document layer: .field > .segmented (Restock now / Scheduled) + hint
-│                  .form-grid > .field × (Expected arrival[scheduled] / Supplier / Notes)
-└─ item layer:
-   ├─ [PRODUCT] .restock-lines  (no tabs)
-   │      └─ (.restock-lines__group ×option-1, for 2-option) .restock-line × N
-   └─ [BUNDLE]  .tabs (one .tabs__item per member product)  →  .tab-panel × member
-          └─ .restock-lines  (that member's variant matrix; single member = 1 line)
-   .restock-line: __main > __img (34px chip) + __text(__name + Badge, __meta: current/threshold)
-                  · input.restock-line__qty (blank = skip) · .restock-line__after (→ current + qty, live)
-   — footer = Cancel / Mark received (scheduled only) / Submit restock
+.payout-dialog (reused shell; flex column + footer pinned + body scrolls — 元件層 2026-07-23)
+├─ document layer: .payout-field > .segmented.radio-cards (Restock now / Scheduled)
+│                  product-name label + (bundle only) .tabs member switch
+└─ item layer: .restock-table
+│  ├─ .restock-table__head: <span/> + .restock-table__col ×3 (Current / Restock / After)
+│  ├─ [PRODUCT] (.restock-table__group ×option-1, for 2-option) .restock-table__row × N  (no tabs)
+│  └─ [BUNDLE]  .tabs (one .tabs__item per member)  →  .tab-panel × member
+│         └─ .restock-table (that member's variant table; single member = 1 row)
+│  .restock-table__row: __id > __img (40px chip) + __name · input(current, .__ro)
+│                       · input(restock, typeable) · input(after, .__ro, → current + restock live)
+├─ below the table: supplier / notes / ETA[scheduled only] on .payout-field
+└─ footer = Cancel / Mark received (scheduled only) / Submit restock  (pinned to bottom)
    — restock HISTORY on product-detail = .data-list rows (+qty · date · supplier + status Badge)
 ```
 
-**Variants** — Method (document layer): Restock now (immediate) / Scheduled (Restocking until Mark received). Item shape by entry: single-variant product (1 line) / multi-variant product (matrix lines, 2-option sub-grouped) — no tabs / bundle (`.tabs` per member product; each `.tab-panel` = that member's variant matrix).
+**Variants** — Method (document layer, `.segmented.radio-cards`): Restock now (immediate) / Scheduled (Restocking until Mark received; adds the expected-arrival field). Item shape by entry: single-variant product (1 row) / multi-variant product (matrix rows, 2-option sub-grouped) — no tabs / bundle (`.tabs` per member product; each `.tab-panel` = that member's variant table).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
 | method = now | `.segmented__btn--active` on "Restock now" | Expected-arrival hidden; Mark received hidden; Submit → In stock |
-| method = scheduled | `.segmented__btn--active` on "Scheduled" | Expected-arrival shown (required); Mark received shown; Submit → Restocking |
-| line status | `.restock-line__name > .badge--error / --neutral / --success` | Low Stock / Sold Out / In stock (stock axis §7.2) |
-| line skipped | empty `.restock-line__qty` | not restocked; after = current |
+| method = scheduled | `.segmented__btn--active` on "Scheduled" | Expected-arrival shown (required, below the table); Mark received shown; Submit → Restocking |
+| current / after cells | `.input.restock-table__ro` | Read-only (transparent surface, muted text, not typeable); after = current + restock |
+| row skipped | empty restock `.input` in `.restock-table__row` | not restocked; after = current |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
 
 | Class / modifier | Effect |
 |---|---|
-| `.restock-lines` | Item list container (column of quantity rows) |
-| `.restock-lines__group` | Group header — multi-variant product name / bundle member name |
-| `.restock-line` (`__main` / `__img` / `__text` / `__name` / `__meta`) | One item: 34px chip + name + status badge + current/threshold; grid [identity · qty · after] |
-| `.input.restock-line__qty` / `.restock-line__after` | Centered quantity input · live "→ N" after-restock readout (current + qty) |
-| (reuse) `.tabs` / `.tabs__item` / `.tab-panel` | Bundle only — one tab per member product; each panel a `.restock-lines` matrix. `[data-restock-tabs][hidden]` hides the bar for single-product restock (D106) |
+| `.restock-table` | Item layer of one order: bordered, `--radius-xl` table of variant rows with 3 number columns |
+| `.restock-table__head` / `.restock-table__col` | Header row (grid: name · Current · Restock · After); each column label is a `.restock-table__col` on a `--muted` band |
+| `.restock-table__group` | Sub-group header — option-1 value (Small / Medium) for a multi-variant product; also the bundle member context |
+| `.restock-table__row` (`__id` / `__img` / `__name`) | One variant row: 40px image chip + option name, then three number inputs; rows divide with a top hairline |
+| `.input.restock-table__ro` | Read-only number cell (current / after) — transparent surface, muted text; after = current + restock, live |
+| (reuse) `.tabs` / `.tabs__item` / `.tab-panel` | Bundle only — one tab per member product; each panel a `.restock-table`. `[data-restock-tabs][hidden]` hides the bar for single-product restock (D106) |
 
 **Token usage** (→ Pillar 2 Role)
 
-- chip `--muted` + inset `--border` · row divider `--border` · `--font-ui` / `--font-display` (qty/after) · text `--foreground` / `--muted-foreground` · badges via badge.css · ETA field hiding is `.field[hidden]{display:none}` from field-system.css (no page-local override needed)
+- table border / row divider `--border` · corner `--radius-xl` · header band `--muted` · img chip `--input-surface` + inset `--border` + `--radius` · `--font-ui` · read-only cell text `--muted-foreground` · text `--foreground` / `--muted-foreground` · sizes `--fs-11` / `--fs-12` / `--fs-14` · spacing `--sp-4` / `--sp-6` / `--sp-8` / `--sp-10` / `--sp-14` / `--sp-20` · badges via badge.css · footer pin + ETA `[hidden]` handled by field-system.css / payout shell (no page-local override)
 
-**Usage** — E-Shop restock popup (spec §5.1.5.6, D104 + D106): single-variant product row / product-detail = one line; multi-variant product row = matrix (no tabs); bundle row = `.tabs` per member product, each panel that member's variant matrix; each restocked line (qty>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented + Tabs + Data list; the lines are restock-specific.
+**Usage** — E-Shop restock popup (spec §5.1.5.6, D104 + D106): single-variant product row / product-detail = one row; multi-variant product row = matrix (no tabs); bundle row = `.tabs` per member product, each panel that member's variant table; each restocked row (restock>0) is logged to `.data-list` on product-detail. Reuse the payout dialog shell + Segmented (radio-cards) + Tabs + Data list; the table is restock-specific.
 
 **Do & Don't**
 
-- ✅ Do keep method / supplier / ETA / notes at the document layer (filled once); per-item quantities on lines.
-- ✅ Do group a multi-variant product or bundle member with `.restock-lines__group`.
-- ❌ Don't put method / supplier / ETA on each line, and don't reintroduce per-item tabs — that's what the order model removed.
+- ✅ Do keep the 2026-07-22 order: method (radio-cards) → product-name label → `.restock-table` → supplier / notes / ETA below; footer pinned, body scrolls.
+- ✅ Do keep current + after read-only (`.restock-table__ro`); only restock is typeable; group a multi-variant product or bundle member with `.restock-table__group`.
+- ❌ Don't put method / supplier / ETA on each row, don't reintroduce per-item tabs, and don't bring back the under-method hint row or the yellow stickynote — the 2026-07-22 layout removed them.
 
-**Dependencies** — composes Badge (§4.3), Field system, Form grid; reuses Segmented (§4.x) + Data list (§4.x, history); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
+**Dependencies** — composes Badge (§4.3), Field system, Form grid; reuses Segmented (§4.x, `.radio-cards`) + Data list (§4.x, history); mounts inside the Payout dialog shell (§4.29); used by E-Shop restock flow.
 
 **CSS** — [`restock-modal.css`](./ds-components/restock-modal.css) · [`partials/restock-modal.js`](./partials/restock-modal.js) · document-layer fields use [`field-system.css`](./ds-components/field-system.css) · [`form-grid.css`](./ds-components/form-grid.css)
 
@@ -3702,7 +3707,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 
 **Dependencies** — composes Form section, Tabs, KPI, KV list (§4.50), Stock bar (§4.51). Assembly rules: Pillar 5 §5.1 *Detail + persistent rail*.
 
-**Consumers** — `product-detail.html`.
+**Consumers** — `product-detail.html` (tabbed editing main + read-only meta rail); `order-detail.html` (read-only order summary main + buyer-info rail — no tabs, but the same main + persistent read-only rail shell).
 
 **CSS** — [`detail-rail.css`](./ds-components/detail-rail.css)
 
@@ -3844,6 +3849,66 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 **Consumers** — `product-detail.html`（補貨紀錄卡）。
 
 **CSS** — [`restock-log.css`](./ds-components/restock-log.css)
+
+### 4.56 Stock tip
+
+**`_layer`** · atom — hover/focus E-Shop 商品清單一列的「狀態」或「庫存」儲存格，浮出一張卡列出額外的庫存細節。Promoted 2026-07-23（使用者反饋：想在這兩欄看到逐選項庫存，而不用另外開補貨彈窗才看得到）。全站每一列都掛這顆——2026-07-23 當天原本只打算給多選項／組合商品，使用者追問「為什麼不是每一列都有」後擴大到單一選項商品，內容依商品是否有選項資料分兩種。
+
+**Anatomy** — `.stock-tip`（`position:relative` 的觸發格，直接掛在既有的 `.product-list__status`／`.product-list__stock` 儲存格上）> `.stock-tip__pop`（`position:fixed` 浮卡，`role="tooltip"`）> 逐行 `.stock-tip__row`（`__name` 標籤 ＋ `__qty` 數字，`--low`／`--out` 修飾子上色）。
+
+**資料來源與範圍** — 內容由 `e-shop.html` 的 JS 產生，依商品是否有選項資料分兩種：
+
+- **有選項資料**（讀 `PRODUCT_MATRIX`／`PRODUCT_VARIANTS`／`BUNDLE_MEMBERS`，跟補貨彈窗共用同一份，不是另外抄一份數字）：
+  - 1 軸多選項（如 tee 的尺寸）→ 逐選項一行。
+  - 2 軸矩陣（如 hoodie 的顏色×尺寸）→ 攤成單一選項組合一行（如 `S/Black`）。
+  - 組合商品 → 攤到成員的選項組合（如 `Coastline hoodie · S/Black`），單一選項成員只列成員名稱。
+- **無選項資料**（單一選項商品，如 zine／acetate／pin）：一行——**目前庫存**（讀該列狀態，`data-status="low"／"out"` 對應上色，其餘視為健康）。原本還多一行「低庫存門檻」，2026-07-23 當天先加後拆：先加是使用者反饋「應該要列出庫存數量」（原本只顯示門檻，跟列上「急需補貨」徽章的視覺語境對不上）；同一天使用者再指示整條門檻行移除，只留庫存數量本身——`lowThr()` 與門檻換算邏輯仍保留在共用資料層（補貨彈窗還在用），只是 stock-tip 這顆浮卡不再顯示。
+
+**為什麼定位是 JS 算、不是純 CSS `:hover`** — 這份清單在一個會捲動、頂部有 sticky 篩選列（`.eshop-list-topbar`／`.eshop-status-row`）的容器裡；固定往同一個方向開，viewport 上緣的列會被 sticky 頂欄蓋到、下緣的列會超出可視範圍。改用 JS 在 `mouseenter`／`focusin` 量測觸發格的 `getBoundingClientRect()`，viewport 上半部的列往下開、下半部的列往上開，並用 `position: fixed` 直接設座標（純 CSS 看不到 viewport 位置，做不到這層判斷）。
+
+**Class API**
+
+| Class / modifier | Effect |
+|---|---|
+| `.stock-tip` | 觸發格，`position: relative`；JS 在 `mouseenter`/`focusin` 加 `.is-open`、`mouseleave`/`focusout` 移除 |
+| `.stock-tip__pop` | 浮卡本體，`position: fixed`、`--shadow-float`、`--radius-md`；預設 `opacity:0; visibility:hidden`，`.is-open` 時淡入 |
+| `.stock-tip__row` | 一行——`flex; justify-content:space-between`，選項標籤靠左、數字靠右 |
+| `.stock-tip__qty--low` / `--out` | 數字上色 `--status-warning` / `--status-error`；預設（充足）不額外上色 |
+
+**Token usage**（→ Pillar 2 Role）
+
+- bg `--card` · shadow `--shadow-float`（E3，跟 dropdown／readiness pop 同一階）· radius `--radius-md` · text `--foreground` / `--foreground-muted`（標籤）· status `--status-warning` / `--status-error` · font `--fs-12` / `--fw-medium` / `--lh-normal`
+
+**Notes / gotchas**
+
+- **兩個觸發格（狀態欄、庫存欄）內容目前故意一樣**——都是同一份逐選項清單，沒有依欄位分流成「狀態摘要」跟「數字明細」兩種內容（2026-07-23 使用者裁示先求一致，之後要分流再回來改）。
+- **列徽章是「急需補貨」（`e-shop.row.low`）時，選項清單只留 `low`／`out` 的選項**（2026-07-23 使用者裁示）——這種列 hover 是要立刻看到哪裡出問題，健康（`ok`）的選項不佔位置；徽章是其他狀態（Live／Sold Out）時清單維持完整、不過濾。判斷依據是該列狀態格裡有沒有 `[data-i18n="e-shop.row.low"]`，不是看選項本身的 status——避免徽章語意以後改了但濾掉的條件沒跟著同步。**這條規則不適用單一選項商品**——那條只有「目前庫存」一行，跟「選項健不健康」無關，不會被這條規則濾掉。
+- **`.stock-tip__pop` 是空殼，內容由 JS 在頁面載入時一次性填入兩個觸發格**（狀態欄與庫存欄各自的 `.stock-tip__pop`），不是每次 hover 才重算內容——只有座標是每次 hover 重算。
+- **`data-i18n` 不能掛在 `.stock-tip` 本身**：i18n.js 用 `el.innerHTML = v` 套翻譯，會連 `.stock-tip__pop` 這個子節點一起清掉（同一個坑 2026-07-21 在 dropdown icon 上踩過一次）。庫存欄的可翻譯文字（如 `42 / ∞`）要包一層 `<span data-i18n="…">`，`.stock-tip__pop` 當它的手足、不當它的子節點的子節點。
+- **別在掛了 `.stock-tip` 的儲存格上留原生 `title` 屬性**：acetate 列的庫存欄原本有 `title="In stock / edition cap"`（限量版說明文字），加了 `.stock-tip` 後兩套 hover 提示同時掛在同一格上會互相競爭、疊出瀏覽器原生 tooltip 跟自訂浮卡兩層（2026-07-23 使用者截圖抓到後移除）。
+
+**Usage** — 掛在 E-Shop 商品清單每一列的「狀態」／「庫存」儲存格；別的頁面若要做類似「hover 看明細」，先確認資料是否真的有選項層級（或其他值得補充的資訊如門檻）可拆，沒有就別硬套。
+
+**Do & Don't**
+
+- ✅ 有選項資料的商品，內容一律從既有的選項資料即時產生，不手key第二份數字。
+- ❌ 別把 `.stock-tip__pop` 直接當某個 `data-i18n` 元素的子節點塞——會被 i18n 的 `innerHTML` 覆寫清掉。
+
+**Code example**
+
+```html
+<div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0">
+  <span data-i18n="e-shop.row2.stock">42 / ∞</span>
+  <div class="stock-tip__pop" role="tooltip">
+    <div class="stock-tip__row"><span class="stock-tip__name">S</span><span class="stock-tip__qty stock-tip__qty--low">2</span></div>
+    <div class="stock-tip__row"><span class="stock-tip__name">M</span><span class="stock-tip__qty">18</span></div>
+  </div>
+</div>
+```
+
+**Consumers** — `e-shop.html`（Products 全部 5 列＋Bundles 兩列）。
+
+**CSS** — [`stock-tip.css`](./ds-components/stock-tip.css)
 
 ### 4.?? Owner lookup
 
@@ -4067,7 +4132,7 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 
 - **12-col bento grid** (`.bento`) — primary layout for dashboard / earnings rows. Children use `.bento--span-{3,4,5,6,7,8,9,12}` to set columns. Below 900px breakpoint all children fall back to span 12 (mobile single-column). See [§4.25 Bento grid](#424-bento-grid).
 - **Page container** — `max-width: 1280px`, centered; padding 32 24 96 (top-x-bottom).
-- **`.page--narrow` 窄版變體** — `max-width: 1056px`（2026-07-20 Q21）。**用途**：只給「主欄＋右側常駐 meta 欄」的兩欄詳情頁（Detail rail §4.52）。**為什麼需要**：右欄固定 300px，容器若維持 1280，左欄會寬到行長過長、讀起來吃力；收成 1056 讓左欄回到舒適行長，右欄寬度不變。**基準不動**：其餘所有頁面維持 1280——Q21 原本裁定全站 1280→1056，同日經使用者實看結果後改為僅此變體套用。**Consumer**：目前只有 `product-detail.html`（`<div class="page page--narrow">`）。定義在 `shared.css`。
+- **`.page--narrow` 窄版變體** — `max-width: 1056px`（2026-07-20 Q21）。**用途**：只給「主欄＋右側常駐 meta 欄」的兩欄詳情頁（Detail rail §4.52）。**為什麼需要**：右欄固定 300px，容器若維持 1280，左欄會寬到行長過長、讀起來吃力；收成 1056 讓左欄回到舒適行長，右欄寬度不變。**基準不動**：其餘所有頁面維持 1280——Q21 原本裁定全站 1280→1056，同日經使用者實看結果後改為僅此變體套用。**Consumer**：`product-detail.html` 與 `order-detail.html`（皆 `<div class="page page--narrow">`）。定義在 `shared.css`。
 - **Section vertical rhythm** — `mt-24` (24px) for top-level section gap; `gap: 16px` for bento children; `gap: 8px` for topbar action cluster.
 
 ### 6.2 Page Templates
@@ -4285,7 +4350,7 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
   - **`form-section.css`** — `.form-section__title` `--fs-18` → `--fs-14` (level with `.field__label`; hierarchy now carried by the card edge, not by heading size); `.form-section__sub` `--fs-14` → `--fs-11` and `--foreground-muted` → `--muted-foreground` (level with `.field__hint` — section sub and field hint are the same supporting-explanation role). Affects every form-section consumer page at once.
   - **`field-system.css`** — `.field__hint` `--foreground-muted` → `--muted-foreground`, reversing the 2026-07-16 lightening decision; hints return to the supporting tier and re-align with `.form-section__sub`. Site-wide.
   - **`kpi.css`** — `.kpi` background `--card` → `--input-surface`. KPI tiles are frequently nested inside `--card`-filled outlined Form sections, where two identical fills merged into one flat surface; one step brighter lets the inner tile sit on top of the card (visible mainly in dark mode, where `--input-surface` is a step above `--card`).
-  - **`shared.css`** — 頁寬**改為變體、不做全站收窄**（同日兩次裁決）：`.page` 的 `max-width` 維持 **1280px**；新增窄版變體 **`.page--narrow` = 1056px**，只給 Detail rail（§4.52）的兩欄詳情頁使用——右欄固定 300px，容器留在 1280 會讓左欄行長過長。Q21 原本裁定全站 1280→1056，使用者實看結果後同日改為僅此變體套用，其餘頁面一律維持 1280。目前唯一 consumer 是 `product-detail.html`。文件連動：Pillar 1 §1.9、Pillar 6 §6.0 `grid.max-width`、§6.1（新增 `.page--narrow` 條目）、§4.1 Inventory 的 App shell 列；順帶校正這三處原本停留在更舊的 1248px 數字。
+  - **`shared.css`** — 頁寬**改為變體、不做全站收窄**（同日兩次裁決）：`.page` 的 `max-width` 維持 **1280px**；新增窄版變體 **`.page--narrow` = 1056px**，只給 Detail rail（§4.52）的兩欄詳情頁使用——右欄固定 300px，容器留在 1280 會讓左欄行長過長。Q21 原本裁定全站 1280→1056，使用者實看結果後同日改為僅此變體套用，其餘頁面一律維持 1280。consumer：`product-detail.html`、`order-detail.html`（2026-07-23 訂單明細改主欄＋買家資訊右欄）。文件連動：Pillar 1 §1.9、Pillar 6 §6.0 `grid.max-width`、§6.1（新增 `.page--narrow` 條目）、§4.1 Inventory 的 App shell 列；順帶校正這三處原本停留在更舊的 1248px 數字。
 
 - **2026-06-01** — De-branded + cleaned of upstream-source residue to align with `project-ui-creator` skill rules (DSS v1.4).
   - Identity, §5.2 Voice, §5.1 patterns, §5.3 States, §5.5 Workflow rewritten from the upstream source-system (GEO) framing to **Ztor Creator Studio** (creator-economy operations dashboard).

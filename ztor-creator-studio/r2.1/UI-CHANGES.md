@@ -6,6 +6,213 @@
 
 ---
 
+## 2026-07-23 · 電子商店商品清單移除低庫存門檻 tooltip（C 撤除）
+
+使用者裁示：單一選項商品（zine／acetate／pin）hover 狀態／庫存欄時，浮卡只留「目前庫存」一行，拿掉當天稍早才加的「低庫存門檻」那一行。
+
+- **【C】** `e-shop.html`：`thresholdLine()` 改名 `currentStockLine()`，回傳值只剩目前庫存一行；門檻換算（`lowThr()`／limited 版讀 cap／unlimited 版「無固定門檻」文案）整段移除，不影響補貨彈窗共用的 `lowThr()` 本體（該函式仍在，供 `TEE_VARIANTS`／`HOODIE_MATRIX` 等資料算門檻用）。多選項／組合商品的逐選項庫存明細 hover 不受影響。
+- **【C】** `js/i18n.js`：移除已無消費者的 `e-shop.stocktip.threshold`／`e-shop.stocktip.unlimited` 兩個 key；`e-shop.stocktip.currentstock` 保留（仍在用）。
+- **【D】** `design-system.md`／`.html` §4.56 Stock tip 同步：說明文字、Do & Don't、Rendered preview demo（合併原本兩個單一選項 demo 成一個，只顯示目前庫存）、規格表 Behavior 欄全部改寫，不再提低庫存門檻。
+- 驗證：`node --check` 過 JS 語法；`check_ds_sync.py` 待跑確認全 PASS。
+
+## 2026-07-23 · 取貨清單場次欄拆欄＋名稱三行（B 反饋導入）
+
+使用者要求：取貨管理清單（`pickup.html` F4）的場次欄，把「場次名稱」與「內容（商品·票券）」拆成兩個獨立欄位；並在場次名稱下用灰字分兩行顯示取貨地點與時間，連名稱共三行。
+
+- **【B】** `pickup.html`：F4 `product-list--pickup` 第 2 欄（場次）改為三行——第一行場次名稱連結（`__title`）、第二行取貨地點、第三行時間（皆 `__meta` 灰字、各自一行）；原本疊在名稱下的「內容」meta（如「2 商品 · 1 活動票券」）獨立成第 3 欄，第 3 欄由原「取貨地點與時間」改為「內容」。欄數不變（仍 8 欄），原獨立的「取貨地點與時間」欄併入名稱欄後移除。純 markup 重組，沿用既有 `__title`／`__meta`／`__cell` class，無新增 CSS 或元件。
+- **【B】** `js/i18n.js`：`pk.col.loctime` 表頭改為 `pk.col.content`（Contents／內容）；每列 `pk.rowN.loctime` 單一字串拆成 `pk.rowN.loc`（地點）＋`pk.rowN.time`（時間）兩鍵；內容欄沿用既有 `pk.rowN.meta`。
+
+## 2026-07-23 · 支付手續費拆雙金流商 Atom／Stripe＋固定額移除幣別前綴（B 反饋導入／產品範圍提案 UIA-081）
+
+- **【B／產品範圍提案】** 支付手續費由**單一費率**改成**兩個金流商各自的費率**：Atom（3.4%＋2.40）、Stripe（3.4%＋2.35），每個各有「百分比＋每筆固定額」，只在「基本設定」分頁（`fee-payment-atom`／`-atom-fixed`／`fee-payment-stripe`／`-stripe-fixed`）。**超出現行規格單一費率**——記 `ASSUMPTIONS.md UIA-081`（示意值、前端 demo，結算未接）。
+- **【C】** 例外彈窗（`fee-exception-modal.js`）**移除支付手續費整塊**（原唯讀鏡射）：支付手續費全站統一、不逐 Creator（D141），例外只覆寫平台費，放在彈窗只是雜訊；連帶刪掉 `open()` 的鏡射邏輯。參考值改看「基本設定」分頁（2026-07-23 使用者裁示）。
+- **【B】** 固定額前綴**只留靜態「$」**（原 HK$ 拿掉 HK、保留 $；`.amount-field.amount-field--readonly` ＋ `__unit`＝「$」，input 仍可編）：實際幣別由 Admin 側欄的全站幣別統一。連帶**撤回前一版的「固定額幣別跟隨平台」機制**（`data-fee-cur`／`FEE_CUR_SYM`／`applyFeeCurrency()`／side listener 全刪）。
+- **【B】** Admin 側欄幣別**只留 HKD**（`sidebar.js` 移除 TWD 選項；`applySavedCurrency()` 加護欄：非 HKD 的舊存值一律回退 HKD，避免卡在無法切換的狀態）。
+- 副標 `fees.payment.sub` 改為「每個金流商各自的費率……」。
+- 驗證：Playwright 確認設定頁兩列可編、彈窗兩列唯讀且值鏡射自設定頁、無 HK$ 前綴；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-23 · 電子商店商品清單整列可點開啟編輯（B 反饋導入）
+
+使用者要求：商品清單每一行點擊時直接進入編輯——草稿進對應建立頁、已建立商品進對應細節頁。這正是 Orders／Creators 列既有的「整列可點」模式，本次是 E-Shop 商品清單第一次套用。
+
+- **【B】** `e-shop.html`：`.product-list--eshop`（涵蓋 Products／Bundles／Auctions 三分頁）新增整列點擊委派。目的地不另外判斷草稿/已建立邏輯，直接讀該列 kebab 選單裡標籤為「編輯」的 `<a href>`（用 `:has([data-i18n="e-shop.edit"])` 精準鎖定，不是抓第一個 `<a>`——已出貨的 ended 拍賣列 kebab 唯一連結是「追蹤履約 → orders.html」，抓錯會點去訂單頁）；沒有編輯項的列（如該 ended 拍賣）點列不做任何事。排除握把（拖曳重排用）、operations 欄（kebab 選單本身，含 stock tip 的觸發格）與任何 `<a>`/`<button>`。
+- **【B】** `ds-components/product-list.css`：`.product-list--eshop .product-list__row` 加 `cursor: pointer`——只有 `--eshop` 有這個點擊行為，`--ip`（My IP 清單，共用同一份 hover 樣式）沒有，游標提示不能共用。
+- **【D】** `design-system.md`／`.html` §4.27／§4.26 Product list 同步補上這條行為說明與 Do 條目。
+- 驗證：`node --check` 過 JS 語法；逐列稽核 kebab 選單是否含「編輯」項確認只有 2 列（Stage-worn leather jacket、Vintage synth，皆為已出貨 ended 拍賣）沒有編輯項，符合設計、點擊安全 no-op；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-23 · 訂單清單移除商品縮圖欄、訂單內容行距加大（C 撤除／B 反饋導入）
+
+同日第四輪，使用者裁示「訂單管理列表不需要商品圖片」，並要訂單內容各行間距大一點。
+
+- **【C】** **移除訂單縮圖欄**：`product-list--orders` 由 9 欄改 8 欄，拿掉本輪稍早才加的首欄縮圖（`.product-list__image`／表頭空 Icon 欄／每列 image-cell 全移除）。欄序改＝訂單編號／訂單內容／買家／金額／付款狀態／出貨狀態／日期／actions。連帶移除 `.product-list--orders .product-list__image-cell` 右內距規則；≤760px 堆疊左內距由 sp-72 收回（無縮圖不需清位）。這也讓「訂單清單改真實照」的 Q20 scoped 例外失效——訂單清單不再是縮圖家族 consumer（STYLE-DECISIONS Q20 註記已更新）。
+- **【B】** **訂單內容行距加大**：`__line` 各品項行之間加 `margin-top:var(--sp-6)`（`.product-list__line + .product-list__line`），多品項訂單各行不再貼太緊。
+- **【D】** DS 兩份文件 `--orders` 條目同步（8 欄、無縮圖、行距）。純呈現層。
+- 驗證：check_ds_sync 全 PASS（棘輪未升）；fresh-context 讀檔驗收。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 訂單清單縮圖真實照、訂單內容多行、編號複製鈕、整列可點（B 反饋導入）
+
+同日第三輪，使用者對訂單清單再指定五點呈現調整。
+
+- **【B】** **訂單內容改多行**：`__items` 欄由單行 `__meta`（fs-12 灰字、各品項 ` · ` 串一行）改為每項商品一行的 `__line`（白字 `--foreground`＋與其他欄同字級 fs-13）；欄位 `-webkit-line-clamp:4`＝最多 4 行、超過第 4 行以 … 截斷。row1（#ZT-10482）示範兩品項兩行（新增 `orders.row1.item1`／`item2`）。
+- **【B】** **縮圖換真實商品照**：訂單列縮圖由 `.product-list__thumb`（icon chip）改用 e-shop 同款 `.product-list__image`（60×60 真實 `images/products/*.webp`）——tour-zine／coastline-ep／coastline-acetate 對應各單。此為 **Q20「清單縮圖 icon chip 單一標準」的訂單 scoped 例外**（記入 STYLE-DECISIONS Q20），`--pickup`／projects／data-list 仍維持 icon chip。
+- **【B】** **縮圖與訂單編號拉開距離**：縮圖欄加 `padding-right:var(--sp-8)`，縮圖列首欄寬 44→68px（容 60 照＋內距），與編號約 28px 間距。
+- **【B】** **訂單編號旁加很小的複製鈕**：`__order-id` 內加 `btn--icon btn--xs .product-list__copy`（icon 13px、muted→hover foreground），點擊複製編號、`title` 短暫顯示「已複製」（新增 `orders.a.copied`）、`stopPropagation` 不觸發整列開啟。編號欄寬 88→120px 容納。
+- **【B】** **整列可點開啟訂單**：`__row` 加 `cursor:pointer`，清單層委派 click → `order-detail.html`；點 kebab／複製鈕／連結不觸發（`closest('.dropdown')`／`[data-copy]`／`a` 跳過）。**比照 creators 列的既有整列點擊慣例**，不新增第三種做法。
+- **【D】** ≤760px 堆疊：訂單列左內距 56→72px 才清得過 60px 縮圖。DS 兩份文件 `--orders` 條目同步上述五點。純呈現／互動層，未動產品規則。
+- 驗證：check_ds_sync 全 PASS（棘輪未升）；fresh-context 讀檔驗收。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 訂單清單欄位重排＋現場取貨升為出貨狀態徽章（B 反饋導入）
+
+承同日「訂單清單每項資訊各自成欄」，使用者再指定兩件事：欄位重排、把「1 項待現場取貨」升成出貨狀態軸的一顆徽章。
+
+- **【B】** **欄位重排**：`product-list--orders` 9 欄改為 icon／訂單編號／**訂單內容**／買家／金額／**付款狀態**／**出貨狀態**／日期／actions（原順序把買家排在訂單內容前、出貨排在付款前）；「商品」欄改名「訂單內容」（`orders.col.items` en `Contents`／zh `訂單內容`）。
+- **【B】** **現場取貨升為出貨狀態軸的履約值**：原本掛在訂單內容欄品項層 meta 的「1 項待現場取貨」小字徽章移除，改為出貨狀態欄的狀態徽章「待取貨」（新增 `orders.status.pickup`，en `Awaiting pickup`／zh `待取貨`、`badge--warning`）。混合訂單（配送＋現場取貨，如 #ZT-10482）在出貨狀態欄同時出現「待出貨＋待取貨」兩顆徽章，`__ship` 設 `gap＋flex-wrap:nowrap`、欄寬 `minmax(148px,auto)` 容兩顆水平不換行。
+- **【D】** 這把取貨狀態由 D111 的「品項層、不改訂單層狀態」提升為訂單層出貨（履約）軸的狀態值＝**重新詮釋 D111**，記入 ASSUMPTIONS UIA-080、待上游回寫 spec 5.1.5.3；`orders.pickup.note` 頁尾說明同步改寫（品項層→出貨狀態欄徽章）。付款軸仍與履約軸分離（§7.2 不變）。DS 兩份文件的 `--orders` 條目同步新欄序與取貨軸說明。
+- 驗證：check_ds_sync 全 PASS（棘輪未升）；fresh-context 讀檔驗收。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 訂單明細改主欄＋買家資訊右欄，金額拆解併入品項明細（B 反饋導入）
+
+使用者要求把訂單明細（`order-detail.html`）改成左主欄／右側欄兩欄版型，並精簡區塊。
+
+- **【B】** 版型改用既有 `detail-rail` 版型殼（`.page--narrow` 1056 窄版＋`.detail-grid` 主欄/300px 右欄）：**左主欄＝品項明細**、**右欄＝買家資訊**。原本四個 `form-section` 由上而下堆疊（品項明細／金額拆解／收入對帳／買家）改成兩欄。純呈現層重組，商品內容、金額口徑、買家資料一律不變。
+- **【B／C】** **品項列改五欄表**（幾輪反饋收斂的最終形態）：使用者要求逐欄拆開、限購不顯示、出貨狀態簡化。品項列由單格改成五欄表（表頭＋列）：**商品名稱（名稱＋底下灰色字分類）｜數量｜單價｜出貨狀態（含取貨）｜小計**。
+  - 分類由原本與單價合併的 `data-list__meta` 拆出、改放品名底下當灰色副標（`data-list__meta`）；數量（原品名旁 `×1`）獨立成純數字欄。
+  - **【C】限購不再顯示**：`每人限購` 徽章從品項列移除（使用者指定；限購 enforcement／資料口徑不受影響，僅這頁不呈現）。
+  - **出貨狀態欄（含取貨）簡化**：每列只顯示單一狀態——寄送品項＝`待配送`（`od.item.deliver`）；現場取貨品項＝`待取貨`＋`前往取貨場次`連結（`od.item.pickup.goto`，連 pickup.html）。原本的場次名稱（`od.item.pickup.session`）與核銷紀錄連結（`od.item.pickup.log`）移除。
+  - 僅頁內 `.od-items` 範圍覆寫 `.data-list__row` 欄軌（商品／出貨兩欄 `minmax(0,fr)` 可收縮換行防溢出），**不動全站 `data-list`**（其餘 15 個消費頁不受影響）；page-specific class `.od-items__head`／`.od-cell`／`.od-col-r`／`.od-item-pickup`，皆吃 token。i18n 新增 `od.col.item`（改 zh 商品名稱）／`qty`／`unit`／`fulfil`／`subtotal`＋`od.item.deliver`／`od.item.pickup.goto`；`od.col.category`／`limit`／`pickup` 與 `od.item.limit`／`pickup.session`／`pickup.log`、`od.item1.meta`／`od.item2.meta` 改為未消費、保留未刪。
+- **【B】** **金額拆解併入品項明細**：原 §2.3.2 獨立區塊撤除，其內容（逐項金額 `.od-amt`＋跨幣別提示＋對帳提示）移到品項明細的商品列表下，以細線（`.od-amt-group` 上緣 `--border`）分隔。
+- **【C】** **收入對帳（§2.3.3）獨立區塊撤除**：原本整塊 form-section＋滿版 `View in Earnings` 按鈕，改成品項明細右下角一個常駐文字入口 `.od-amt-foot`（`card__link`，i18n 沿用 `od.amt.cta`「在收入管理查看 →」）。
+- **【C】** **移除品項明細下方的限購說明句**（`od.limit.note`「限購商品於結帳時依買家累計購買量檢查；本頁僅呈現結果」）：每品項列上的 `Limit 2/person` 徽章仍在，限購結果照舊呈現，只撤說明長句。
+- **【B】** **買家 → 買家資訊**：`od.buyer.title` 由「買家／Buyer」改「買家資訊／Buyer info」。
+- **【D】** 新增 page-specific class `.od-amt-group`／`.od-amt-foot`（一次性版面，留頁面 `<style>`，皆吃 token 無裸值）；`order-detail.html` 新增 `detail-rail.css` 引用並改 `.page--narrow`。`detail-rail`／`page--narrow` 的 consumer 清單同步加入 order-detail（`detail-rail.css`、`design-system.md`、`design-system.html`）——`detail-rail` 首次用於「無 tabs、主欄為唯讀摘要」的情境，已在 design-system.md consumer 註記。舊 i18n key `od.items.sub.amount`／`od.sec.amount.sub`／`od.items.sub.recon`／`od.sec.recon.sub`／`od.limit.note` 保留未刪（無害、避免誤傷）。
+- **spec 對照**：spec 5.1.5.3.1 仍以 §2.3.1/§2.3.2/§2.3.3＋§2.4 描述內容責任；本次只重組畫面分區與相對位置，不動產品內容口徑，未回寫上游 spec。
+- 驗證：check_ds_sync 全 PASS；fresh-context 讀檔驗收逐條核對。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 電子商店商品清單新增「逐選項庫存」hover 浮卡（B 反饋導入）
+
+使用者反饋：多選項商品／組合商品在清單上只看得到一個彙總庫存數字，想在「狀態」跟「庫存」兩欄 hover 時看到每個選項各自的庫存，不用另外點開補貨彈窗。先出規劃請使用者裁決三個開放問題（組合商品攤到哪一層、兩欄內容是否一樣、遮擋怎麼處理），使用者確認：組合商品攤到選項組合層級、兩欄內容先一樣、遮擋問題可以做。
+
+- **【B】** 新增 `ds-components/stock-tip.css`（🟢 atom）：hover/focus 觸發格 `.stock-tip` + `position:fixed` 浮卡 `.stock-tip__pop`，逐行列出名稱與數字（`--low`/`--out` 修飾子上色）。多選項或組合商品列（tee／hoodie／兩個 Bundle）顯示逐選項庫存明細。
+- **【B】** 使用者追問「為什麼不是每一列都有這個 hover」後擴大範圍：單一選項商品（zine／acetate／pin）也掛上，改顯示「低庫存門檻」——限量版（acetate）從列上的「在庫/上限」算出真實門檻（`lowThr(上限)`）；不限量版（zine、pin）沒有固定上限可以算 10%（spec §7.2／D105 本來就標「產品待確認」），如實顯示「不限量，無固定門檻」，不捏造數字。新增 2 個 i18n key：`e-shop.stocktip.threshold`／`e-shop.stocktip.unlimited`。
+- **【B】** 同輪再修正：使用者截圖回饋 zine 列（急需補貨、3/∞）的浮卡只寫「不限量，無固定門檻」，跟目前庫存數字顯示衝突、答非所問。改成兩行——先「目前庫存」（依 `data-status` 上色，跟選項健康狀態同一套顏色規則）再「低庫存門檻」。新增 i18n key `e-shop.stocktip.currentstock`。順手抓到並修掉一個潛在衝突：acetate 庫存欄原本留著舊的原生 `title="In stock / edition cap"`，跟新掛的 `.stock-tip` 兩套 hover 提示會疊在一起，已移除原生 `title`。
+- **【B】** `e-shop.html`：把原本鎖在補貨彈窗 IIFE 裡的 `TEE_VARIANTS`／`HOODIE_MATRIX`／`PRODUCT_MATRIX`／`PRODUCT_VARIANTS`／`BUNDLE_MEMBERS` 資料常數搬到共用作用域，新增一個獨立 IIFE 讀同一份資料產生浮卡內容——組合商品攤到「成員 · 選項組合」（如 `Coastline hoodie · S/Black`），矩陣型商品攤到「選項組合」（如 `S/Black`），不手key第二份數字。
+- **【B】** 定位改 JS 算、不用純 CSS `:hover`：清單在 sticky 篩選列（`.eshop-list-topbar`／`.eshop-status-row`）下捲動，固定往同一方向開會被頂欄擋到或超出視窗；JS 在 `mouseenter`/`focusin` 量測觸發格位置，viewport 上半部往下開、下半部往上開。
+- **【B】** 使用者接續反饋：徽章是「急需補貨」的列，浮卡只留真的需要補貨的選項（`low`／`out`），健康選項直接不列——這種列 hover 是要立刻看到哪裡出問題，不是看全部選項總覽。判斷依據是該列狀態格有沒有 `[data-i18n="e-shop.row.low"]`，不看選項本身的 status，避免徽章語意以後改了但濾掉條件沒跟著同步。目前資料裡只有 hoodie 列符合（S/Black、S/Sand 兩個問題選項留下，其餘 4 個健康選項濾掉）；tee／兩個 Bundle 徽章都是「Live」，浮卡維持完整清單不受影響。
+- **【D】** `design-system.md`／`.html` 新增 §4.56／§4.89 Stock tip 條目（Class API、Token usage、rendered demo 三種情境：單軸、雙軸矩陣攤平且套用急需補貨過濾、組合攤平）；TOC 與元件總覽表同步。
+- 順手記一筆既有 WARN 的裁決：`check_ds_sync` 檢查 8 標記 `.eshop-list-topbar`（頁內 `[data-theme]` 覆寫）——這顆 class 全站唯一消費頁是 `e-shop.html` 自己，沒有跨頁一致性風險，暫不 promote，已在 design-system.md 註記例外。
+- 驗證：`check_ds_sync.py` 全 PASS（含新 WARN 例外註記）；JS 語法另以 `node --check` 過（Playwright 瀏覽器當時被佔用，尚待實機截圖複核 hover 定位翻轉與組合攤平格式）。
+
+## 2026-07-23 · 訂單清單每項資訊各自成欄，狀態雙軸拆兩欄（B 反饋導入）
+
+使用者指出訂單清單把「訂單編號＋買家＋商品」擠在一格、「出貨＋付款」兩顆徽章擠在同一「狀態」欄，要求每項資訊各自獨立成欄。
+
+- **【B】** `product-list--orders` 由 6 欄改 **9 欄**：icon／訂單編號／買家／商品（取貨徽章仍掛品項層 meta）／金額／出貨狀態／付款狀態／日期／actions。編號原本是 `__title`＋買家是其中 `text-sub`、商品是 `__meta`，三者拆成三個獨立 `__cell`（編號 `__order-id` 字重 medium、買家 `__customer`、商品 `__items`）；狀態欄的 `.status-axes` 雙徽章拆成 `__ship`／`__pay` 兩欄各放一顆。純呈現層變更、不動產品規則——反而更貼合 spec §7.2「履約與付款兩軸分開、絕不混用」（reconcile 提示原文已如此聲明）。
+- **【B】** 元件層只改 `--orders` 變體 grid 模板（疊在 base grid 上、不動 base，e-shop／bundles／auctions／pickup／ip 各變體不受影響）；`status-axes` 元件本身保留（order-detail.html 與 design-system.html 仍消費）。≤760px 堆疊模式：訂單編號當識別列貼縮圖右側，其餘欄依序堆下方。
+- **【D】** i18n 新增欄名 `orders.col.orderid`／`customer`／`items`／`fulfilment`／`payment`（買家沿用全站慣例「買家」）；舊 `orders.col.order`／`status` 保留未刪（無害、避免誤傷其他引用）。
+- 驗證：check_ds_sync 全 PASS（棘輪檢查 10 未新增裸值）；fresh-context 讀檔驗收逐條核對。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 補貨彈窗高度鎖定，切換方式不再跳動（B 反饋導入）
+
+- **【B】** 補貨彈窗置中，但「定時補貨」比「立即補貨」多一欄「預計到貨」而變高，切換方式時整框上下跳。開窗時先量「定時」狀態（最高）的實際高度、鎖成 `.payout-dialog` 的 `min-height`，之後切「立即」維持同高（body flex 撐開、footer 仍釘底），不再跳。量測在同一幀 paint 前同步完成、看不到閃動；每次開窗重量，自動適應單/多規格不同內容高度（restock-modal.js `lockHeight()`）。
+
+## 2026-07-23 · 補貨方式改用 radio-cards 元件＋「計時」正名「定時」（B 反饋導入）
+
+使用者指出補貨彈窗的「立即補貨／計時補貨」還是舊的 segmented pill、應改用 Figma node 866-1191 的 radio-cards 卡片元件。
+
+- **【B】** 根因是**漏連 CSS**：補貨彈窗 markup 早已是 `.segmented.radio-cards`，但 `radio-card.css` 沒連在承載彈窗的頁面上（product-detail、e-shop），退化成基礎 segmented pill。補上 `radio-card.css` 連結後即呈現 Figma 的兩張並排卡＋右上橘點（e-shop 連 `segmented.css` 也一起補，它原本兩支都沒連）。
+- **【B】** 文案正名：`計時補貨` → `定時補貨`（restock.method.scheduled 與相關說明句，對齊 Figma）。
+- **【D】** 卡片外圈多一層框的修正：`.radio-cards` 與 `.segmented` 同權重（各一個 class），product-detail 先連 radio-card 後連 segmented → 後載入的 `.segmented` 軌道底＋邊框蓋回去、露出外框。把容器覆寫規則提權成 `.segmented.radio-cards`（0,2,0），穩定蓋過不受連結順序影響（元件層根治，所有消費頁一致）。比對 Figma node 866-1190 確認無外框。
+- 驗證：check_ds_sync 全 PASS；比對 Figma node 866-1191／866-1190 確認卡片樣式、文案與無外框。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 彈窗 footer 釘住收斂到元件層＋編輯加「新增選項」（B 反饋導入／D infra）
+
+- **【D】** **footer/header 釘住改在 `.payout-dialog` 元件層**（payout-modal.css）：dialog 改 flex column＋`overflow:hidden`，`__head`/`__foot` `flex:none`、`__body` `flex:1＋overflow-y:auto`。原本整框 `overflow:auto` 會讓 footer 隨內容捲走、每個 popup 各自補救（restock／費率例外 `[data-fx-modal]` 曾 scope 修過，本輪兩處重複都移除）。**所有 `.payout-dialog` 消費者一次到位**。中間隔一層 wrapper 的兩種結構（請款彈窗的 `.payout-view` 步驟、creators 的 `<form>`）另加一條規則讓 wrapper 也成為撐滿的 flex column，footer-pin 才穿得到它底下的 head/body/foot（否則會被 `overflow:hidden` 裁掉、連捲軸都沒有）。
+- **【B】** 編輯 popup 的選項管理補上**「新增選項」**（維度）：先前只能「新增選項值」；現在每個選項可改名／移除整個選項，底部「新增選項」可再加一個維度（如再加「材質」），組合表笛卡兒積即時重算、支援 3 層以上。收尾自動清掉空值/空選項。
+- **【D】** i18n 新增 edit.addoption／optname.ph；DS 兩份文件的 Payout dialog（§4.29）補「釘住頭尾」行為；ASSUMPTIONS UIA-079 更新為「可增減選項值與選項維度」。
+- 驗證：check_ds_sync 全 PASS，div/section 平衡，9 段 inline JS 語法通過。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-23 · 多規格改資料驅動＋兩階層（顏色×尺寸）、編輯改「管理選項值」（B 反饋導入）
+
+使用者指出：電子商店的兩階層商品（hoodie：顏色 Black/Sand × 尺寸 S/M/L）開商品細節頁後只顯示單階層；且「新增組合」流程對兩階層不成立。
+
+- **【B】** 商品明細規格表改**資料驅動**：由 `products-store` 的 `options`／`variants` 渲染。hoodie 建模成真正兩階層（顏色×尺寸＝6 組合，依顏色分組）、tee 維持單階層（尺寸）。新增 `.variant-table__group`（撐滿整列的分組標題，與補貨矩陣同語彙）。
+- **【B】** 「編輯」改成**管理選項值**模型（取代錯誤的「單一組合新增」）：popup 內每個選項一塊、值可加/改名/移除，底下組合表笛卡兒積即時重算（`.variant-table--preview` 5 欄唯讀預覽）；價格/成本為全組合共用。儲存才寫回、取消丟棄草稿。
+- **【C】** 移除「⋯ → 新增」選單項與整個「新增組合」popup（併入編輯）。
+- **【D】** i18n：新增 edit.options/options-hint/combos/addvalue；移除已死的 add.* 與 stock.add。DS 兩份文件的 Variant builder 條目同步 `.variant-table__group`／`--preview`。產品缺口更新 ASSUMPTIONS **UIA-079**（事後增減選項值與 UIA-056／D137 鎖定衝突；兩階層 store 資料屬呈現、非產品規則）。
+- 驗證：check_ds_sync 全 PASS，div/section 平衡，9 段 inline JS 語法通過。**瀏覽器目視驗證待補**（Playwright 被佔用）。示範：`?id=hoodie`（兩階層 顏色×尺寸）／`?id=tee`（單階層 尺寸）。
+
+## 2026-07-23 · 銷售設定分頁：庫存卡改「唯讀＋彈窗編輯」、分頁改名（B 反饋導入）
+
+- **【B】** 頁籤改名：定價與庫存→**銷售設定**、關聯→**商品推廣**（i18n `product-detail.tab.price-stock`／`.relations`；交付分頁維持依取貨方式動態命名）。
+- **【B】** 當前庫存卡標題列加右側動作：**補貨紀錄**鈕（開 popup）＋ **⋯ 選單**（新增[多規格才有]／編輯／補貨）。新增 `.form-section__head--actions` 變體承載標題列動作。
+- **【B】** 頁面表格改**唯讀**：多規格表的價格/SKU/成本/總量欄由 input 換成 `.variant-cell--ro` 純文字（`data-vc` 標角色）；單規格的價格/成本/總量上限改 `.field-readout` 唯讀文字。改值一律走 ⋯ → 編輯 popup。列尾「單獨下架」kebab 保留。
+- **【B】** 三個新 popup（重用 `.payout-dialog` 殼）：**補貨紀錄**（內容＝原補貨紀錄 section，`data-restock-log` 仍在此，logRow 照舊寫得到）／**編輯**（單規格＝價格+成本；多規格＝逐組合表，列由 JS 依頁面表格即時複製，儲存寫回頁面）／**新增**（填組合名+價格+成本+起始庫存+SKU，送出 append 一列唯讀列）。
+- **【C】** 移除頁面上獨立的「補貨紀錄」section 與庫存卡底部的整寬「補貨」鈕（補貨紀錄進 popup、補貨進 ⋯ 選單）。
+- **【D】** 新元件：`.form-section__head--actions`（form-section.css）、`.field-readout`（field-system.css）、`.variant-cell--ro`（variant-builder.css），DS 兩份文件同步。產品缺口記 ASSUMPTIONS **UIA-079**（頁面唯讀＋彈窗編輯、事後新增／改名規格組合與 UIA-056／D137「規格建立後鎖定」衝突，前端 demo）。i18n 新增 stock.history/add/edit、edit.title、add.* 等鍵。
+- 驗證：check_ds_sync 全 PASS，div 257/257、section 17/17，9 段 inline JS 語法通過。**瀏覽器目視驗證待補**（Playwright 被佔用）。示範：`?id=tee`（多規格）／`?id=zine`（單規格）銷售設定分頁。
+
+## 2026-07-22 · 多規格表列尾改 kebab「單獨下架／重新上架」（B 反饋導入）
+
+- **【B】** 定價與庫存·多規格表列尾的「X（移除）」改為三點 kebab 下拉（沿用 `.dropdown` 元件、`more-vertical`），選單一項「單獨下架／重新上架」。商品明細的規格建立後鎖定、不可移除，用「下架」而非「刪除」才對。
+- **【B】** 下架後該規格列灰階＋輸入 `disabled`（新增 `.variant-table__row--delisted`，只壓「除 kebab 外的直接子代」，kebab 仍可用來重新上架）；選單項隨狀態切「單獨下架」↔「重新上架」。
+- **【D】** 浮動選單防裁切：`.variant-table-wrap` 的 `overflow-x:auto` 會裁掉浮出的選單，新增 `.variant-table-wrap--menu` 在桌面寬度放行 `overflow:visible`、<560px 才恢復橫捲；product-detail 與 DS demo 的表格外框都掛上。
+- **【D】** 產品缺口記 ASSUMPTIONS **UIA-078**（逐規格上下架非現有規格範圍，前端 demo）；DS 兩份文件的 Variant builder 條目同步兩種列尾消費（建立＝X 排除／明細＝kebab 下架）。i18n 新增 `product-detail.var.delist`／`.relist`。
+- 驗證：check_ds_sync 全 PASS，div 219/219、section 15/15，8 段 inline JS 語法通過。**瀏覽器目視驗證待補**（Playwright 被佔用）。示範：`?id=tee`（多規格）定價與庫存分頁。
+
+## 2026-07-22 · 定價與庫存·當前庫存精簡（C 撤除）
+
+- **【C】** 多規格庫存表上方的「總計／選項組合數」兩行摘要（`kv--lead` Total／Options）移除——庫存數字已逐列在表格內呈現，表頭再給一次加總是重複。
+- **【C】** 移除庫存版本（Unlimited／Limited edition）唯讀一行——限量與否已由單規格讀數的「/ 50」與 limited 進度條表達，多規格情境不需再列一行。
+- **【C】** 移除「庫存欄唯讀——要增加數量請用右側的補貨」提示句：補貨按鈕就在同區塊、行為自明，提示句多餘。
+- 驗證：check_ds_sync 全 PASS，div 216/216、section 15/15。**瀏覽器目視驗證待補**（Playwright 被佔用）。
+
+## 2026-07-22 · 交付分頁標題＝取貨方式本身、頁籤連動（B 反饋導入）
+
+- **【B】** 交付與取貨 section 的標題改為取貨方式本身：實體＝物流配送／現場 QR 領取、數位＝交付與存取，由 `applyProduct` 依商品資料設定（同時設 data-i18n 與文字，語言切換仍正確）。
+- **【C】** 移除區塊內的「取貨方式」唯讀欄位（標題已表達）；數位區塊內重複的「交付與存取」小標一併移除、只留說明橫幅。
+- **【B】** 上方頁籤原「交付與取貨」改為與 section 同名的取貨方式（物流配送／現場 QR 領取／交付與存取）。
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（Playwright 全程被佔用）。示範：`?id=zine`＝物流配送、`?id=acetate`＝現場 QR 領取、`?id=song`＝交付與存取。
+
+## 2026-07-22 · 補貨彈窗間距對齊 Figma 866-1179（B 反饋導入）
+
+使用者反映補貨彈窗表單間距不對。比對 Figma node 866-1179 的實測值修正。
+
+- **【B】** 區塊間距由 20px 改 24px（Figma body gap 24）；「商品名稱」標題→逐選項表維持 8px（同一組）。
+- **【B】** 供應商／備註／預計到貨時間由已退役的 `.payout-field`（2026-07-11 起無樣式、label 與 input 貼在一起）改用現行 `.field`／`.field__label`，恢復 label→input 間距與標籤字級。
+- **【B】** 補貨方式兩張 radio-cards 的間距對齊 Figma（gap 16，元件預設 12；scope 在補貨彈窗、不動其他頁的 radio-cards）。
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（Playwright 全程被佔用）。
+
+## 2026-07-22 · 定價與庫存分頁重配版面、交付分頁取貨方式唯讀（B 反饋導入）
+
+依使用者指定的 wireframe 分配重排商品明細兩個分頁。
+
+**定價與庫存分頁** — 分頁內部自建 main／rail 兩欄（外層全域右欄仍以 `.detail-grid--full` 收起）：
+- **【B】** 左主欄：價格（單選項）／當前庫存（單選項＝讀數、多選項＝逐選項組合表）／補貨紀錄。
+- **【B】** 右欄：折扣設定、低庫存提醒設定（兩者自左主欄移入），加上每人限購（自交付分頁移入）。
+- **【D】** `detail-rail.css`：`.detail-grid--full .detail-rail` 改直接子代 `> .detail-rail`，只收起本層全域右欄、不誤傷分頁內部新建的巢狀 rail。
+
+**交付與取貨分頁**：
+- **【B】** 取貨方式改唯讀顯示（物流配送／現場 QR 領取），移除切換器——商品明細不可更改取貨方式。**隱含「建立後固定」的產品規則，已記 ASSUMPTIONS UIA-077，未寫回 `documents/`。**
+- **【B】** 物流配送欄位全部展開，移除「顯示更多」收合——重量／運送分類／尺寸／取貨地點一律直接呈現。
+- **【C】** 每人限購自本分頁移出（併入定價與庫存右欄）。
+- **【D】** i18n.js 新增 `data-i18n-value` 屬性支援（唯讀 input 的 value 可翻譯，通用）；移除 `wireSeg('pd-delivery')` 互動綁定。
+
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（Playwright 全程被佔用）；單／多選項兩種版面、取貨方式唯讀顯示、footer 與 sticky rail 的實際行為尚未確認。
+
+## 2026-07-22 · 補貨彈窗改版對齊 Figma（B 反饋導入）
+
+依 Figma（node 861-28842 立即補貨 / 866-1179 定時補貨）重排補貨彈窗版型。共用元件——`product-detail` 與 `e-shop` 都開同一個。
+
+- **【B】** 補貨方式由普通 `.segmented`（軌道膠囊）改成 `.segmented.radio-cards`（兩張並排卡＋右上橘點）；方式下方的灰色提示行移除。
+- **【B】** 版型重排：逐選項表移到「補貨方式」正下方（商品名稱標題＋表格）；供應商／備註／預計到貨時間（僅定時）移到表格**下方**。
+- **【B】** item layer 由 `.restock-line` 卡片列改成 `.restock-table` 三欄數字表：當前數量（唯讀）／補貨數量（可填）／補後數量（唯讀，＝當前＋補貨，即時算），依第一個選項分組（Small／Medium）。
+- **【C】** 移除底部黃色 stickynote 提示框（Figma 無）；一併移除每列的低庫存徽章與門檻文字——每列改由「當前數量」欄顯示各選項現貨，比原本的徽章更精確。
+- **【B】** footer 釘在框底：`[data-restock-modal] .payout-dialog` 改 flex 直列、只捲 body、head/foot 固定（與平台費率彈窗 `[data-fx-modal]` 同一套做法）。
+- **【D】** `restock-modal.css` 以 `.restock-table*` 取代 `.restock-line*`；`partials/restock-modal.js` 的 `lineHTML`／`matrixHTML`／`recalc` 改吐表格結構（`data-restock-line`／`data-restock-qty`／`data-restock-after` 資料契約保留，`collect()` 不變）；`badgeFor()` 與方式提示切換退場。i18n 新增 `restock.product-name`／`restock.col.current`／`restock.col.after`（`restock.col.qty` 沿用補貨紀錄表既有 key）。
+- **DS 文件**：`design-system.md` §4.29c 與 `design-system.html` 補貨彈窗 demo 卡由 `.restock-line` 改寫成 `.restock-table`。
+- 驗證：check_ds_sync 全 PASS。**瀏覽器目視驗證待補**（Playwright 全程被佔用）；落地前已用獨立預覽 `docs/補貨彈窗-Figma版-預覽.html` 逐輪與使用者確認版型（radio-cards 方式、間距、footer 釘底）。
+
+
 ## 2026-07-22 · 費率例外彈窗微調：欄頭「費率」、新增鈕線框等寬、去維度分隔線、支付固定額幣別跟隨平台（B 反饋導入）
 
 - **【B】** 例外編輯器費率欄欄頭「此 Creator（空＝繼承預設）」→「**費率**」（`i18n.js fees.exc.col-rate`；彈窗 clone 的 fallback 同步為 `Rate`）。「空＝繼承」的說明保留在每個輸入框的 placeholder 與 badge，欄頭精簡。

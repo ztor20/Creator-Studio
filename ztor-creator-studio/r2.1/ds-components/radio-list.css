@@ -1,0 +1,120 @@
+/* ============================================================
+   radio-list.css · 輕量單選列（1-of-N，資料選擇）
+   ------------------------------------------------------------
+   一組垂直排列的可選列：每列＝左側 radio 圓點＋標題（可帶一句描述），
+   選中＝圓點填橘實心。比 selection-card 輕（無卡框陰影）、比 segmented
+   直觀（選項恆展開、不藏在軌道切換裡）。
+   語意分工：segmented＝同一資料的「視角切換」（grid/list…）；
+   radio-list＝互斥的「資料選擇」（上架時機：不上架／立刻／定時…）。
+   surface：列本體透明、hover 上淺灰（--muted），設計坐在白卡（--card）上；
+   放到 --muted 灰底時 hover 會與底同色，仍靠橘點指示選中（見 design-system.md）。
+   JS：點列 → 移除同組 --active、給當前列加 --active（見各頁 wiring）。
+   anatomy
+     .radio-list
+       .radio-list__item  (.radio-list__item--active)
+         .radio-list__dot
+         .radio-list__text
+           .radio-list__title
+           .radio-list__sub   (選配描述)
+
+   變體 --collapsible（2026-07-21，Figma node 856-22782）：收合式。
+   收起＝只顯示已選項＋chevron；展開＝同一個外框內再列出全部選項
+   （已選項因此在觸發列與選單各出現一次，屬 Figma 原設計、使用者裁示保留）。
+   行為由 partials/radio-list.js 統一接線（開合、觸發列同步、外點關閉、Esc）。
+   anatomy
+     .radio-list.radio-list--collapsible[data-open]
+       .radio-list__trigger        （＝一列的外觀＋右側 .radio-list__chevron）
+       .radio-list__options[hidden]（展開才顯示，內含 .radio-list__item）
+   ============================================================ */
+
+.radio-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.radio-list__item,
+.radio-list__trigger {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  font-family: var(--font-ui);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-8);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--foreground);
+  transition: background-color var(--duration) var(--easing);
+}
+/* hover 底色：2026-07-21 由 --muted 改 --accent，回到 Q9「互動 hover 統一 accent」的裁決
+   （暗色 --muted #161718 比卡 #212223 還深、hover 反而像凹下去；Figma 856-22782 的 hover 也是亮一階）*/
+.radio-list__item:hover,
+.radio-list__trigger:hover { background: var(--accent); }
+.radio-list__item:focus-visible,
+.radio-list__trigger:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* 單行列（無描述）：圓點與文字垂直置中；有描述的維持置頂對齊第一行 */
+.radio-list__item:not(:has(.radio-list__sub)) { align-items: center; }
+.radio-list__item:not(:has(.radio-list__sub)) .radio-list__dot { margin-top: 0; }
+
+/* 2026-07-17 Q19：精巧小點——未選＝13px 細環（1.25px）、已選＝粗環消失只留 8px 實心橘點
+   （midnight 探索頁選中指示器 A 案；原 16px 環＋已選仍留橘環）。 */
+.radio-list__dot {
+  flex: 0 0 auto;
+  width: 13px; height: 13px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 1.25px solid var(--border);
+  display: grid; place-items: center;
+  transition: border-color var(--duration) var(--easing);
+}
+.radio-list__item--active .radio-list__dot { border-color: transparent; }
+.radio-list__item--active .radio-list__dot::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.radio-list__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.radio-list__title { font-size: var(--fs-14); font-weight: var(--fw-medium); }
+.radio-list__sub { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
+
+/* ── 變體：收合式 --collapsible（2026-07-21 · Figma 856-22782）────────── */
+
+.radio-list--collapsible {
+  gap: var(--sp-10);
+  padding: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+/* 觸發列與選項列都吃卡片級圓角，貼齊外框內緣（Figma 為 18，站上取既有 --radius-xl 16）*/
+.radio-list--collapsible .radio-list__item,
+.radio-list--collapsible .radio-list__trigger { border-radius: var(--radius-xl); }
+
+/* 觸發列＝目前選項：文字撐開把 chevron 推到右側；圓點恆為已選態（一定有一項被選中）*/
+.radio-list__trigger .radio-list__text { flex: 1 1 auto; }
+.radio-list__trigger .radio-list__dot { border-color: transparent; }
+.radio-list__trigger .radio-list__dot::after {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* 展開時觸發列填 --input-surface（比卡亮一階＝目前作用中的控制面，同 Q19 的 filled 欄位語言）*/
+.radio-list--collapsible[data-open="true"] .radio-list__trigger,
+.radio-list--collapsible[data-open="true"] .radio-list__trigger:hover { background: var(--input-surface); }
+
+.radio-list__chevron {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--muted-foreground);
+  transition: transform var(--duration) var(--easing);
+}
+.radio-list--collapsible[data-open="true"] .radio-list__chevron { transform: rotate(180deg); }
+
+.radio-list__options { display: flex; flex-direction: column; gap: var(--sp-10); }
+.radio-list__options[hidden] { display: none; }

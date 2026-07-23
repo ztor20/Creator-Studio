@@ -396,8 +396,8 @@
           <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-sidebar__chevron"></i>
         </button>
         <ul class="app-sidebar__subnav"><div>
+          <!-- 2026-07-23 使用者裁示：幣別只留 HKD（移除 TWD）-->
           <li><a class="app-sidebar__sub-link" href="#" data-currency-pick="HKD" data-i18n="nav.currency.hkd">HKD (HK$)</a></li>
-          <li><a class="app-sidebar__sub-link" href="#" data-currency-pick="TWD" data-i18n="nav.currency.twd">TWD (NT$)</a></li>
         </div></ul>
       </div>
 
@@ -614,7 +614,9 @@
   function applySavedCurrency() {
     let cur = null;
     try { cur = localStorage.getItem("ztor-currency"); } catch (err) {}
-    if (cur) document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
+    /* 幣別現只支援 HKD（2026-07-23 移除 TWD）：非 HKD 的舊存值一律回退 HKD，避免卡在無法切換的狀態 */
+    if (cur !== "HKD") { cur = "HKD"; try { localStorage.setItem("ztor-currency", "HKD"); } catch (err) {} }
+    document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
   }
 
   /* ESC closes any open topbar dropdown. */
