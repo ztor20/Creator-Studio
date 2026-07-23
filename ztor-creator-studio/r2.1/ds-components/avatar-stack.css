@@ -1,0 +1,47 @@
+/* ==========================================================================
+   avatar-stack — overlapping backer/member avatars with an optional "+N" more chip
+   --------------------------------------------------------------------------
+   Anatomy : .avatar-stack > .avatar-stack__item* [ + .avatar-stack__more ]
+   Use     : per-tier backer counts, collaborator rows, anywhere a compact
+             "who's in" cue is needed. Each item shows an initial or image.
+   Surface : sits on card (white) and muted rows; ring uses --card so avatars
+             read as separated on any list background.
+   Tokens  : --muted / --border / --foreground-muted / --card / --radius-pill
+   ======================================================================== */
+.avatar-stack { display: inline-flex; align-items: center; }
+
+.avatar-stack__item,
+.avatar-stack__more {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-pill);
+  display: inline-grid; place-items: center;
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  background: var(--muted);
+  color: var(--foreground-muted);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 2px var(--card); /* ring separates overlapping avatars from the row */
+  flex: none;
+}
+
+/* overlap all but the first */
+.avatar-stack__item + .avatar-stack__item,
+.avatar-stack__item + .avatar-stack__more,
+.avatar-stack__more { margin-left: -8px; }
+
+/* "+N" more chip reads as a count, not a person */
+.avatar-stack__more {
+  background: var(--accent);
+  color: var(--muted-foreground);
+  font-size: var(--fs-11);
+  padding: 0 var(--sp-2);
+  min-width: 28px; width: auto;
+}
+
+/* avatars carrying a photo */
+.avatar-stack__item img {
+  width: 100%; height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}

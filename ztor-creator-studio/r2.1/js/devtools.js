@@ -68,6 +68,7 @@
     ['p1-next-tbd', 'Phase 3（Phase 1 ＋ Next ＋ TBD）', '開發', 'tier:p1,next,tbd', '＋商務待定（TBD）'],
     ['full', 'Phase 4（最終完整版）', '開發', 'all', '全部功能（預設）'],
     ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
+    ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同 Phase 4'],
   ];
   /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
      必須在 md 尚未載入或 fetch 失敗時也成立，否則 Phase 1 會短暫漏顯 full-only 功能。 */
@@ -117,8 +118,12 @@
     });
     return out;
   }
+  /* 以 Phase 4（最終完整版）為基底的版本：full 本身，以及只改接個別頁面、
+     其餘同 Phase 4 的特殊版（funding-test、deck-for-sony）。這些版本不減功能，
+     故 full-only 頁面與跨頁連結照常可見。新增同型特殊版時把 key 加進這裡。 */
+  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony'; }
   function applyRouteAvailability() {
-    var allowFull = state.version === 'full' || state.version === 'funding-test';
+    var allowFull = isFullBaseVersion(state.version);
     document.querySelectorAll('a[href]').forEach(function (a) {
       var route = (a.getAttribute('href') || '').split(/[?#]/)[0].toLowerCase();
       if (!FULL_ROUTES[route]) return;
@@ -145,17 +150,33 @@
   }
   /* 版本選項渲染：一行一個、依類型分「開發版本／測試版」兩組。
      mode='onb' 給首次 popup（data-onb 暫存選擇）；否則面板（data-kind=version 立即套用）。*/
+  /* 版本依「類型」欄（v[2]）分組：已知類型給友善標題與固定排序，未知類型
+     照其在 VERSIONS 中首次出現的順序接在已知組之後。加新組只要在
+     feature-scope-map 的「開發版本配置」表填新類型即可，不必再動這裡。 */
+  var VER_GROUP_LABEL = { '開發': '開發版本', '測試': '測試版', 'Demo': 'Presentation demo' };
+  var VER_GROUP_ORDER = ['開發', '測試', 'Demo'];
   function verRows(current, mode) {
     function attrs(k) { return mode === 'onb' ? 'data-onb="' + k + '"' : 'data-kind="version" data-val="' + k + '"'; }
     function row(v) {
       return '<button class="ztd__optrow' + (v[0] === current ? ' is-active' : '') + '" ' + attrs(v[0]) + '>'
         + '<span class="ztd__optrow-name">' + v[1] + '</span><span class="ztd__optrow-desc">' + (v[4] || '') + '</span></button>';
     }
-    var dev = [], test = [];
-    VERSIONS.forEach(function (v) { (v[2] === '測試' ? test : dev).push(v); });
-    var h = '<div class="ztd__subgroup">開發版本</div><div class="ztd__rows-v">' + dev.map(row).join('') + '</div>';
-    if (test.length) h += '<div class="ztd__subgroup">測試版</div><div class="ztd__rows-v">' + test.map(row).join('') + '</div>';
-    return h;
+    var groups = {}, seen = [];
+    VERSIONS.forEach(function (v) {
+      var t = v[2] || '開發';
+      if (!groups[t]) { groups[t] = []; seen.push(t); }
+      groups[t].push(v);
+    });
+    seen.sort(function (a, b) {
+      var ia = VER_GROUP_ORDER.indexOf(a), ib = VER_GROUP_ORDER.indexOf(b);
+      ia = ia < 0 ? VER_GROUP_ORDER.length + seen.indexOf(a) : ia;
+      ib = ib < 0 ? VER_GROUP_ORDER.length + seen.indexOf(b) : ib;
+      return ia - ib;
+    });
+    return seen.map(function (t) {
+      return '<div class="ztd__subgroup">' + (VER_GROUP_LABEL[t] || t) + '</div>'
+        + '<div class="ztd__rows-v">' + groups[t].map(row).join('') + '</div>';
+    }).join('');
   }
   function applyVersion() {
     var rule = curVersionRule();
@@ -189,7 +210,14 @@
       var sib = t.parentElement.querySelector('.tabs__item:not(.ztd-ver-hidden), .filter-tabs__item:not(.ztd-ver-hidden)');
       if (sib && sib !== t) sib.click();
     });
-    /* 2) 改接：route:來源=目標——先把上次改過的全還原，再套當前版本（標 data-route-keep 的不動）*/
+    /* 2) 改接：route:來源=目標（連結改接抽成 applyRouteRedirects，供 DOM 變動後重跑）*/
+    applyRouteRedirects();
+    applyRouteAvailability();
+  }
+  /* route 連結改接：先把上次改過的還原，再套當前版本（標 data-route-keep 的不動）。
+     抽成獨立函式，讓 sidebar／i18n 事後重繪注入的新連結（MutationObserver）也能重新改接。 */
+  function applyRouteRedirects() {
+    var rule = curVersionRule();
     document.querySelectorAll('a[data-route-orig]').forEach(function (a) {
       a.setAttribute('href', a.getAttribute('data-route-orig'));
       a.removeAttribute('data-route-orig');
@@ -205,14 +233,13 @@
         }
       });
     });
-    applyRouteAvailability();
   }
   /* 全頁功能（scope 未列＝full-only）不能只靠 data-feat：直接輸入 URL 時，
      該頁沒有可見產品內容才是正確的低版本行為。導向 P1 可用的 E-Shop，保留
      version/query/hash；funding-test 明確定義為其餘同 Phase 4，故可通過。 */
   function guardPageFeature() {
     var pageFeat = document.documentElement.getAttribute('data-page-feat');
-    if (!pageFeat || state.version === 'full' || state.version === 'funding-test') return false;
+    if (!pageFeat || isFullBaseVersion(state.version)) return false;
     var allow = tiersForRule(curVersionRule());
     if (!allow || allow.indexOf(featTier(pageFeat)) >= 0) return false;
     var here = (location.pathname.split('/').pop() || '').toLowerCase();
@@ -220,6 +247,34 @@
     var target = 'e-shop.html' + location.search + location.hash;
     location.replace(target);
     return true;
+  }
+  /* route 頁級改接：連結改接只影響「點擊」，但你可能已停在來源頁（或直接輸入 URL）。
+     切到 deck-for-sony 卻還停在 earnings.html 就看不到 Sony 版——故在此把整頁換過去。
+     掃全部版本的 route 規則，雙向處理：
+       1) 停在「作用中版本」的來源頁 → 換到目標頁（earnings.html → earnings-sony.html）
+       2) 停在某變體目標頁、但該版本沒作用、且無作用版本也指向此頁 → 導回來源頁
+          （earnings-sony.html 在非 deck-for-sony 版 → 回 earnings.html）
+     保留 query／hash；earnings-sony.html 不是任何來源，故無迴圈。 */
+  function guardRoutePage() {
+    var here = (location.pathname.split('/').pop() || '').toLowerCase();
+    var pairs = [];
+    VERSIONS.forEach(function (v) {
+      routesForRule(v[3]).forEach(function (p) {
+        pairs.push({ from: p[0].toLowerCase(), to: p[1].toLowerCase(), fromRaw: p[0], toRaw: p[1], ver: v[0] });
+      });
+    });
+    for (var i = 0; i < pairs.length; i++) {
+      if (pairs[i].ver === state.version && pairs[i].from === here) {
+        location.replace(pairs[i].toRaw + location.search + location.hash); return true;
+      }
+    }
+    for (var j = 0; j < pairs.length; j++) {
+      if (pairs[j].to === here && pairs[j].ver !== state.version) {
+        var stillActive = pairs.some(function (p) { return p.to === here && p.ver === state.version; });
+        if (!stillActive) { location.replace(pairs[j].fromRaw + location.search + location.hash); return true; }
+      }
+    }
+    return false;
   }
   function loadVersions() {
     try {
@@ -297,6 +352,7 @@
     el.setAttribute('data-skip-validation', state.skipValidation ? '1' : '0');
     el.setAttribute('data-version', state.version);
     if (guardPageFeature()) return;
+    if (guardRoutePage()) return;
     applyVersion();
     listeners.forEach(function (f) { try { f(d); } catch (e) {} });
     document.dispatchEvent(new CustomEvent('ztor:devstate-changed', { detail: d }));
@@ -707,7 +763,7 @@
   loadVersions();
   /* partials/i18n 會在初次 applyVersion 後注入連結；新節點也必須遵守 full-only route gate。 */
   if (window.MutationObserver) {
-    new MutationObserver(function () { applyRouteAvailability(); })
+    new MutationObserver(function () { applyRouteRedirects(); applyRouteAvailability(); })
       .observe(document.body, { childList: true, subtree: true });
   }
   /* 首次進站：跳 popup 選版本 → 確定進入（每裝置第一次；手機免 Alt＋右鍵也能設版本）*/

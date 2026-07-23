@@ -289,13 +289,14 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 81 支；主 class 前 5 個）
+## 元件（ds-components/，共 84 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
 - `album-tracks.css` — .album-tracks, .album-tracks__upload, .album-tracks__upload-label, .album-tracks__req, .album-tracks__upload-hint ｜ Album tracks · 數位商品「音樂專輯」的多曲目管理器
 - `alert.css` — .alert, .alert--card, .alert--snoozed, .alert--row, .alert--banner ｜ Alert — inline notice with status indicator, ico
 - `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre
+- `avatar-stack.css` — .avatar-stack, .avatar-stack__item, .avatar-stack__more ｜ avatar-stack — overlapping backer/member avatars
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `bento.css` — .bento ｜ Bento — 12-column grid utility for dashboard / p
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--soft ｜ Ztor Creator Studio · R 2.1 — Button
@@ -310,6 +311,7 @@
 - `data-list.css` — .data-list, .data-list__row, .data-list__row-main, .data-list__icon, .data-list__icon--success ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
 - `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-grid--norail, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
+- `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer__head, .drawer__title
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
 - `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__title, .empty-card__text, .empty-card__cta ｜ Empty card — in-card empty state for a loaded-bu
@@ -337,6 +339,7 @@
 - `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
 - `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__avatar ｜ SiteSpecific Owner lookup — registered user sele
 - `page-intro.css` — .page-intro, .page-intro__title, .page-intro__sub, .page-intro__actions ｜ Ztor Creator Studio - Page intro molecule
+- `pager.css` — .pager, .pager__ellipsis
 - `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
 - `picker.css` — .picker, .picker__search, .picker__search-input, .picker__new, .picker__list ｜ Picker · search box + scrollable pick-list conta
 - `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access__main, .scanner-access__label, .scanner-access__url ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick

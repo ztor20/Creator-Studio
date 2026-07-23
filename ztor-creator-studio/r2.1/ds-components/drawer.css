@@ -1,0 +1,76 @@
+/* ----------------------------------------------------------------
+   Drawer — 右側滑出面板（overlay drawer）
+   一個 scrim + 一個貼右緣的直向面板；用於「側邊看詳情／歷史／說明」
+   這類不需離開當前頁、內容較長可捲動的情境。
+
+   首見於 earnings-sony.html（Deck for Sony 版收入管理）的「提領歷史」與
+   「如何運作」兩個抽屜；由 partials/finance-overview.js 以 data-drawer-* 掛勾
+   控制開關（scrim / 關閉鈕 / Esc 皆關閉）。
+
+   結構：
+     .drawer            殼（fixed 覆蓋全視窗，預設 aria-hidden 收起）
+       .drawer__scrim   半透明遮罩（點擊關閉）
+       .drawer__panel   貼右緣的面板（未開時 translateX 滑出視窗外）
+         .drawer__head  標題列 + 關閉鈕
+         .drawer__body  可捲動內容區
+
+   開關：外層加 .is-open（面板滑入、scrim 淡入）。全值引用 _tokens.css。
+   ---------------------------------------------------------------- */
+
+.drawer {
+  position: fixed; inset: 0; z-index: 200;
+  visibility: hidden;
+  pointer-events: none;
+}
+.drawer.is-open { visibility: visible; pointer-events: auto; }
+
+.drawer__scrim {
+  position: absolute; inset: 0;
+  background: var(--overlay-tint);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  backdrop-filter: var(--overlay-blur);
+  opacity: 0;
+  transition: opacity var(--duration) var(--easing);
+}
+.drawer.is-open .drawer__scrim { opacity: 1; }
+
+.drawer__panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(480px, calc(100vw - var(--sp-40)));
+  display: flex; flex-direction: column;
+  background: var(--card); color: var(--foreground);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-overlay);
+  transform: translateX(100%);
+  transition: transform var(--duration) var(--easing);
+}
+.drawer.is-open .drawer__panel { transform: translateX(0); }
+
+.drawer__head {
+  flex: none;
+  display: flex; align-items: center; gap: var(--sp-12);
+  padding: var(--sp-20) var(--sp-24);
+  border-bottom: 1px solid var(--border);
+}
+.drawer__title {
+  flex: 1; margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-18); font-weight: var(--fw-semibold);
+  letter-spacing: -0.3px;
+}
+.drawer__close {
+  display: inline-grid; place-items: center; width: 32px; height: 32px;
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--foreground-muted); border-radius: var(--radius-sm);
+}
+.drawer__close:hover { color: var(--foreground); background: var(--accent); }
+
+.drawer__body {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: var(--sp-20) var(--sp-24) var(--sp-24);
+}
+
+/* 尊重減動效偏好：直接顯隱、不滑動 */
+@media (prefers-reduced-motion: reduce) {
+  .drawer__scrim, .drawer__panel { transition: none; }
+}
