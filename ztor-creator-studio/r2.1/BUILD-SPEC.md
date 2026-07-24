@@ -158,7 +158,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | Data list | `.data-list / .data-list__row` | Row-divider 為主，沒有 card-per-row；`.data-list__end` 右欄堆疊金額 + 狀態 pill（Dashboard F3）|
 | Insight split | `.insight-split / .insight-split__col / .insight-eyebrow` | Dashboard F7 一卡雙洞察欄（粉絲關係 Fans CRM ｜ 受眾趨勢 Audience Intelligence）· 中央 hairline 分隔 · <900px 收合單欄 |
 | Info banner | `.info-banner` | 中性灰底 + `info` 圖示 · inline 情境資訊提示 |
-| Upload tile | `.upload-tile / --hero / --file / .upload-grid` | 建立流程虛線上傳格（主圖／縮圖列／檔案）· spec 5.1.5.2 |
+| Upload tile | `.upload-tile / --hero / --file / --1x1 / --3x4 / --3x2 / --16x9 / .upload-grid / .upload-assets` | 建立流程虛線上傳格（主圖／縮圖列／檔案／具名素材槽列）· spec 5.1.5.2 |
 | Picker | `.picker / __search / __search-input / __new / __list` | 搜尋＋可捲動挑選清單（列復用 data-list）· spec 5.1.5.4 |
 | Preview card | `.preview-card / __media / __row / __name / __price / __desc / __dots / __meta / __cta / .is-empty` | 粉絲端即時預覽卡（商品／拍賣）· spec §5.2.5 |
 | Preview panel | `.preview-panel / .is-open / --inset / __sheet / __head / __title / __body` + `body.preview-open` | 畫面分割預覽面板（非浮層遮蓋）：開啟時壓窄頁面——建立流程壓 `.wizard`（Preview 鈕，§5.2.5）、商店設定壓 `.main` 並以 `--inset` 自 64px topbar 下展開（See as fan，5.1.5.5 F1）。**E-Shop 也重用**（See as fan，5.1.5 F3，`.preview-panel--inset`＋`.ss-fan`）|

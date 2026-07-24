@@ -12,6 +12,9 @@
      .upload-tile__hint    — 限制說明（Min 尺寸／檔型）
    layout helper
      .upload-grid          — 4 格縮圖列（附圖）
+     .upload-assets        — 具名素材槽列（縮圖／海報／橫幅／相簿，各自比例）
+   shape modifiers
+     .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 固定長寬比
    ============================================================ */
 
 .upload-tile {
@@ -74,6 +77,35 @@
   margin-top: var(--sp-10);
 }
 .upload-grid .upload-tile { aspect-ratio: 1 / 1; min-height: 0; }
+
+/* ---- assets：具名素材槽列（縮圖／直式海報／橫幅／相簿，每格比例不同）----
+   尺寸由「固定高度」推導寬度，不是由欄寬推導高度。
+   原因（2026-07-24 修 create-project Showcase 溢出）：grid `1fr` 的最小尺寸是 auto，
+   格子一旦帶 aspect-ratio，瀏覽器會拿「比例換算出的內容尺寸」回頭撐開欄寬，
+   四格互相拉扯後整排寬過容器、每格高到半個螢幕。改用固定高度就沒有這條回饋迴路。 */
+.upload-assets {
+  --upload-asset-h: 200px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+}
+.upload-assets .upload-tile {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--upload-asset-h);
+  min-height: 0;
+  max-width: 100%;
+}
+@media (max-width: 640px) {
+  .upload-assets { --upload-asset-h: 148px; }
+}
+
+/* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用 */
+.upload-tile--1x1  { aspect-ratio: 1 / 1; }
+.upload-tile--3x4  { aspect-ratio: 3 / 4; }
+.upload-tile--3x2  { aspect-ratio: 3 / 2; }
+.upload-tile--16x9 { aspect-ratio: 16 / 9; }
 
 /* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
    附圖格在此排成 2×2，總高度與 1:1 主圖一致（create-product 主圖 + 附圖）。 */

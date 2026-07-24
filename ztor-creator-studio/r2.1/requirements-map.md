@@ -31,7 +31,7 @@
 | 5.1.1 Dashboard | `index.html` | F1–F8 已覆蓋（五列佈局）。2026-06-14 對齊規格新約束：F3 近期收入只列已結算收入、移除狀態欄（`hideStatus`）；F2 總收入環比改週粒度＋顯示最後更新＋深連結 Earnings；F4 補 Snoozed（軟關、排除 F2 計數）與阻斷型 disabled 關閉。F2 待處理／F4 「View all」缺「完整待辦視圖」頁、F5 缺「完整動態視圖」頁（PG-006）|
 | 5.1.2 Projects | `projects.html` | 已有清單與建立入口 |
 | 5.1.2.1 Create Project | `create-project.html` | 已實作；需複查模式規則與費率引用 |
-| 5.1.2.2 Project Detail | `project-detail.html` | 2026-06-15 新建：Overview/Content/Public details/Money 四分頁，含狀態時間軸、合作者分潤、收益瀑布、淨利池手動分配、募資監看、NFT 治理唯讀；金額引用 Earnings §7.3 不重算。由 projects.html 列進入。多專案資料綁定與狀態轉換確認流程待後續 |
+| 5.1.2.2 Project Detail | `project-detail.html` | 2026-06-15 新建：Overview/Content/Public details/Money 四分頁，含狀態時間軸、合作者分潤、收益瀑布、淨利池手動分配、募資監看、NFT 治理唯讀；金額引用 Earnings §7.3 不重算。由 projects.html 列進入。多專案資料綁定與狀態轉換確認流程待後續。2026-07-24 版型改版：新增 `.page-intro` 頁首承接標題與全部操作（原 hero 右側 Actions rail 撤除），hero 改 `.ip-hero--project` 兩欄＋新元件 `.funding-panel`，比照公開端共創計畫詳情頁。同日四個分頁重新分類為 專案總覽／方案與承諾／關於專案／專案收益（「狀態」卡改名專案歷程），五個編輯彈窗由 drawer 改中央彈窗（STYLE-DECISIONS Q27）。同日移除收益頁的「影視／音樂」segmented，專案內容類型改由清單點進來的專案決定：新增共用資料層 `js/projects-store.js`（清單與詳情頁同源），詳情頁讀 `?id=` 渲染名稱／封面／徽章／募資數字並依內容類型家族決定音樂版稅區塊顯隱；demo 專案補到 11 筆、覆蓋 5.1.2.1 §4.1 F3 的十種內容類型（UIA-083）（依「這件事在做什麼」分，非資料型態），新增支持方案卡與 `pd-edit-tier` 抽屜；發布後可編輯範圍待上游裁決（PG-018）。2026-07-24 再調整：hero 改 GoFundMe wireframe（.pd-hero）、移除重複的收益概況、新增「製作進度」tab（整合專案時間與里程碑＋作品進度）、展示內容改建立流程同款上傳格 |
 | 5.1.3 IP Market | `ip-market.html` | 已有探索；2026-06-15 補 F1 搜尋、F2 Availability 三態篩選、F3 素材包完整度（§7.7）、冷啟動／無結果空狀態 |
 | 5.1.3.1 IP Detail | `ip-detail.html` | 2026-06-15 交易呈現降級為「權利資訊＋詢問」：估價非扣款、Send＝建 Draft 進核准佇列、競標僅預覽（對齊 §3.3.5／§3.4，PCR-003／PG-010 已解決） |
 | 5.1.4 My IP（含 F6 Add your IP 入口） | `my-ip.html` | 部分覆蓋；Add your IP 入口 → register-ip.html（5.1.4.1） |

@@ -3,33 +3,44 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Earnings · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260723zj"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/button.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/chart.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/waterfall.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/insight-row.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/card.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/input.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/accordion.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/table.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/field-system.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260723zj">
-<link rel="stylesheet" href="shared.css?v=20260723zj">
+<script src="js/theme.js?v=20260724zn"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/button.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/chart.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/waterfall.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/insight-row.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/card.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/input.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/accordion.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/table.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/field-system.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260724zn">
+<link rel="stylesheet" href="shared.css?v=20260724zn">
+<style>
+  /* Breakdown 分頁一次性版面：全部收入摘要列＋我的項目表。色彩／字級一律走 token，無裸 hex/rgb/font-size。 */
+  .bd-tablecard { border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+  .bd-tablecard .ztor-table { border-radius:0; }
+  .bd-amt, th.bd-amt { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .src-legend { margin-bottom: var(--sp-12); }
+  .src-dot { width:8px; height:8px; border-radius:var(--radius-pill); background:var(--dot,var(--muted-foreground)); display:inline-block; margin-right:var(--sp-6); flex:none; }
+  .src-line { transition: opacity var(--duration) var(--easing); }
+  [data-src-chart][data-focus] .src-line { opacity: .14; }
+  [data-src-chart][data-focus] .src-line.is-focus { opacity: 1; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -106,9 +117,23 @@
              .when-empty below; toggled by Cheat Codes Empty. -->
         <div class="when-data">
 
+        <!-- Revenue-source filter (F5 sources) · picks one source line at a time -->
+        <div class="chip-group src-legend" role="group" aria-label="Revenue source filter" data-src-legend>
+          <button class="chip chip--active" type="button" data-src-type="all" data-i18n="src.filter.all">All</button>
+          <button class="chip" type="button" data-src-type="eshop"><span class="src-dot" style="--dot:var(--primary)" aria-hidden="true"></span><span data-i18n="src.eshop">E-Shop sales</span></button>
+          <button class="chip" type="button" data-src-type="cocreate"><span class="src-dot" style="--dot:var(--chart-2)" aria-hidden="true"></span><span data-i18n="src.cocreate">Co-creation funding</span></button>
+          <button class="chip" type="button" data-src-type="events"><span class="src-dot" style="--dot:var(--chart-4)" aria-hidden="true"></span><span data-i18n="src.events">Event tickets</span></button>
+          <button class="chip" type="button" data-src-type="commission"><span class="src-dot" style="--dot:var(--chart-5)" aria-hidden="true"></span><span data-i18n="src.commission">Tastemaker commission</span></button>
+          <button class="chip" type="button" data-src-type="ott"><span class="src-dot" style="--dot:var(--chart-3)" aria-hidden="true"></span><span data-i18n="src.ott">OTT royalties</span></button>
+          <button class="chip" type="button" data-src-type="ip"><span class="src-dot" style="--dot:var(--status-success)" aria-hidden="true"></span><span data-i18n="src.ip">IP royalties</span></button>
+          <button class="chip" type="button" data-src-type="streaming"><span class="src-dot" style="--dot:var(--status-info)" aria-hidden="true"></span><span data-i18n="src.streaming">Platform / streaming</span></button>
+          <button class="chip" type="button" data-src-type="licensing"><span class="src-dot" style="--dot:var(--destructive)" aria-hidden="true"></span><span data-i18n="src.licensing">Licensing</span></button>
+          <button class="chip" type="button" data-src-type="other"><span class="src-dot" style="--dot:var(--muted-foreground)" aria-hidden="true"></span><span data-i18n="src.other">Project support · other</span></button>
+        </div>
+
         <!-- Trend + sources · spec §5.1.8.4–5 -->
         <div class="bento">
-          <section class="card chart-card bento--span-12" data-chart-view="line" data-chart-name="Revenue" data-chart-series='[{"label":"Dec 2024","value":12000,"y":100},{"label":"Jan 2025","value":14000,"y":90},{"label":"Feb 2025","value":13000,"y":95},{"label":"Mar 2025","value":16000,"y":81},{"label":"Apr 2025","value":15000,"y":86},{"label":"May 2025","value":18000,"y":71},{"label":"Jun 2025","value":17000,"y":76},{"label":"Jul 2025","value":19000,"y":66},{"label":"Aug 2025","value":18000,"y":71},{"label":"Sep 2025","value":21000,"y":57},{"label":"Oct 2025","value":23000,"y":47},{"label":"Nov 2025","value":24830,"y":38}]'>
+          <section class="card chart-card bento--span-12" data-chart-view="line" data-chart-name="Revenue" data-src-chart data-chart-series='[{"label":"Dec 2024","value":12000,"y":100},{"label":"Jan 2025","value":14000,"y":90},{"label":"Feb 2025","value":13000,"y":95},{"label":"Mar 2025","value":16000,"y":81},{"label":"Apr 2025","value":15000,"y":86},{"label":"May 2025","value":18000,"y":71},{"label":"Jun 2025","value":17000,"y":76},{"label":"Jul 2025","value":19000,"y":66},{"label":"Aug 2025","value":18000,"y":71},{"label":"Sep 2025","value":21000,"y":57},{"label":"Oct 2025","value":23000,"y":47},{"label":"Nov 2025","value":24830,"y":38}]'>
             <!-- Header: title group (left) + segmented + export (right) -->
             <div class="chart-card__head">
               <div class="chart-card__title-group">
@@ -141,8 +166,16 @@
                     <line class="linechart__grid" x1="0" y1="68"  x2="600" y2="68" />
                     <line class="linechart__grid" x1="0" y1="113" x2="600" y2="113" />
                     <line class="linechart__grid" x1="0" y1="158" x2="600" y2="158" />
-                    <path class="linechart__area" d="M 0,100 C 9.08333,98.3333 36.3167,90.8333 54.5,90 C 72.6833,89.1667 90.9167,96.5 109.1,95 C 127.283,93.5 145.417,82.5 163.6,81 C 181.783,79.5 200.017,87.6667 218.2,86 C 236.383,84.3333 254.517,72.6667 272.7,71 C 290.883,69.3333 309.117,76.8333 327.3,76 C 345.483,75.1667 363.617,66.8333 381.8,66 C 399.983,65.1667 418.217,72.5 436.4,71 C 454.583,69.5 472.717,61 490.9,57 C 509.083,53 527.317,50.1667 545.5,47 C 563.683,43.8333 590.917,39.5 600,38 L 600,180 L 0,180 Z" />
-                  <path class="linechart__line" d="M 0,100 C 9.08333,98.3333 36.3167,90.8333 54.5,90 C 72.6833,89.1667 90.9167,96.5 109.1,95 C 127.283,93.5 145.417,82.5 163.6,81 C 181.783,79.5 200.017,87.6667 218.2,86 C 236.383,84.3333 254.517,72.6667 272.7,71 C 290.883,69.3333 309.117,76.8333 327.3,76 C 345.483,75.1667 363.617,66.8333 381.8,66 C 399.983,65.1667 418.217,72.5 436.4,71 C 454.583,69.5 472.717,61 490.9,57 C 509.083,53 527.317,50.1667 545.5,47 C 563.683,43.8333 590.917,39.5 600,38" />
+                  <path class="linechart__line src-line" data-src-line="eshop" style="stroke:var(--primary);stroke-width:2" d="M 0.0,141.61 C 9.09,141.21 36.37,139.44 54.55,139.2 C 72.73,138.96 90.91,140.48 109.09,140.16 C 127.27,139.84 145.46,137.67 163.64,137.27 C 181.82,136.87 200.0,138.15 218.18,137.75 C 236.36,137.35 254.55,135.42 272.73,134.86 C 290.91,134.3 309.09,134.78 327.27,134.38 C 345.45,133.98 363.64,132.93 381.82,132.45 C 400.0,131.97 418.18,132.04 436.36,131.48 C 454.54,130.92 472.73,129.87 490.91,129.07 C 509.09,128.27 527.27,127.42 545.45,126.66 C 563.63,125.89 590.91,124.84 600.0,124.48" />
+                  <path class="linechart__line src-line" data-src-line="cocreate" style="stroke:var(--chart-2);stroke-width:2" d="M 0.0,147.39 C 9.09,147.07 36.37,145.62 54.55,145.46 C 72.73,145.3 90.91,146.83 109.09,146.43 C 127.27,146.03 145.46,143.45 163.64,143.05 C 181.82,142.65 200.0,144.34 218.18,144.02 C 236.36,143.7 254.55,141.52 272.73,141.12 C 290.91,140.72 309.09,141.93 327.27,141.61 C 345.45,141.29 363.64,139.52 381.82,139.2 C 400.0,138.88 418.18,140.0 436.36,139.68 C 454.54,139.36 472.73,137.99 490.91,137.27 C 509.09,136.55 527.27,135.88 545.45,135.34 C 563.63,134.81 590.91,134.27 600.0,134.06" />
+                  <path class="linechart__line src-line" data-src-line="events" style="stroke:var(--chart-4);stroke-width:2" d="M 0.0,153.66 C 9.09,153.5 36.37,153.1 54.55,152.7 C 72.73,152.3 90.91,151.33 109.09,151.25 C 127.27,151.17 145.46,152.53 163.64,152.21 C 181.82,151.89 200.0,149.64 218.18,149.32 C 236.36,149.0 254.55,150.61 272.73,150.29 C 290.91,149.97 309.09,147.71 327.27,147.39 C 345.45,147.07 363.64,148.68 381.82,148.36 C 400.0,148.04 418.18,146.18 436.36,145.46 C 454.54,144.74 472.73,144.5 490.91,144.02 C 509.09,143.54 527.27,143.03 545.45,142.57 C 563.63,142.11 590.91,141.46 600.0,141.24" />
+                  <path class="linechart__line src-line" data-src-line="commission" style="stroke:var(--chart-5);stroke-width:2" d="M 0.0,152.21 C 9.09,152.13 36.37,151.77 54.55,151.73 C 72.73,151.69 90.91,152.13 109.09,151.97 C 127.27,151.81 145.46,150.93 163.64,150.77 C 181.82,150.61 200.0,151.17 218.18,151.01 C 236.36,150.85 254.55,149.96 272.73,149.8 C 290.91,149.64 309.09,150.2 327.27,150.04 C 345.45,149.88 363.64,149.16 381.82,148.84 C 400.0,148.52 418.18,148.44 436.36,148.12 C 454.54,147.8 472.73,147.31 490.91,146.91 C 509.09,146.51 527.27,146.06 545.45,145.71 C 563.63,145.36 590.91,144.98 600.0,144.83" />
+                  <path class="linechart__line src-line" data-src-line="ott" style="stroke:var(--chart-3);stroke-width:2" d="M 0.0,156.55 C 9.09,156.47 36.37,156.23 54.55,156.07 C 72.73,155.91 90.91,155.83 109.09,155.59 C 127.27,155.35 145.46,154.94 163.64,154.62 C 181.82,154.3 200.0,153.98 218.18,153.66 C 236.36,153.34 254.55,153.02 272.73,152.7 C 290.91,152.38 309.09,152.05 327.27,151.73 C 345.45,151.41 363.64,151.09 381.82,150.77 C 400.0,150.45 418.18,150.12 436.36,149.8 C 454.54,149.48 472.73,149.16 490.91,148.84 C 509.09,148.52 527.27,148.15 545.45,147.88 C 563.63,147.61 590.91,147.33 600.0,147.22" />
+                  <path class="linechart__line src-line" data-src-line="ip" style="stroke:var(--status-success);stroke-width:2" d="M 0.0,155.59 C 9.09,155.51 36.37,155.23 54.55,155.11 C 72.73,154.99 90.91,155.03 109.09,154.87 C 127.27,154.71 145.46,154.3 163.64,154.14 C 181.82,153.98 200.0,154.06 218.18,153.9 C 236.36,153.74 254.55,153.38 272.73,153.18 C 290.91,152.98 309.09,152.9 327.27,152.7 C 345.45,152.5 363.64,152.17 381.82,151.97 C 400.0,151.77 418.18,151.69 436.36,151.49 C 454.54,151.29 472.73,151.01 490.91,150.77 C 509.09,150.53 527.27,150.23 545.45,150.04 C 563.63,149.85 590.91,149.69 600.0,149.62" />
+                  <path class="linechart__line src-line" data-src-line="streaming" style="stroke:var(--status-info);stroke-width:2" d="M 0.0,157.04 C 9.09,156.96 36.37,156.71 54.55,156.55 C 72.73,156.39 90.91,156.23 109.09,156.07 C 127.27,155.91 145.46,155.79 163.64,155.59 C 181.82,155.39 200.0,155.07 218.18,154.87 C 236.36,154.67 254.55,154.58 272.73,154.38 C 290.91,154.18 309.09,153.86 327.27,153.66 C 345.45,153.46 363.64,153.38 381.82,153.18 C 400.0,152.98 418.18,152.7 436.36,152.46 C 454.54,152.22 472.73,151.93 490.91,151.73 C 509.09,151.53 527.27,151.4 545.45,151.25 C 563.63,151.1 590.91,150.89 600.0,150.82" />
+                  <path class="linechart__line src-line" data-src-line="licensing" style="stroke:var(--destructive);stroke-width:2" d="M 0.0,157.42 C 9.09,157.37 36.37,157.16 54.55,157.13 C 72.73,157.1 90.91,157.29 109.09,157.23 C 127.27,157.17 145.46,156.9 163.64,156.79 C 181.82,156.68 200.0,156.63 218.18,156.55 C 236.36,156.47 254.55,156.41 272.73,156.31 C 290.91,156.21 309.09,156.07 327.27,155.97 C 345.45,155.87 363.64,155.78 381.82,155.69 C 400.0,155.59 418.18,155.51 436.36,155.4 C 454.54,155.29 472.73,155.14 490.91,155.01 C 509.09,154.88 527.27,154.72 545.45,154.62 C 563.63,154.52 590.91,154.44 600.0,154.41" />
+                  <path class="linechart__line src-line" data-src-line="other" style="stroke:var(--muted-foreground);stroke-width:2" d="M 0.0,157.61 C 9.09,157.58 36.37,157.47 54.55,157.42 C 72.73,157.37 90.91,157.37 109.09,157.32 C 127.27,157.27 145.46,157.18 163.64,157.13 C 181.82,157.08 200.0,157.09 218.18,157.04 C 236.36,156.99 254.55,156.91 272.73,156.84 C 290.91,156.78 309.09,156.71 327.27,156.65 C 345.45,156.59 363.64,156.53 381.82,156.46 C 400.0,156.4 418.18,156.34 436.36,156.26 C 454.54,156.18 472.73,156.06 490.91,155.97 C 509.09,155.88 527.27,155.79 545.45,155.73 C 563.63,155.67 590.91,155.62 600.0,155.6" />
+                  <path class="linechart__line src-line" data-src-line="total" style="stroke:var(--foreground);stroke-width:2.5" stroke-dasharray="5 4" d="M 0.0,100.14 C 9.09,98.53 36.37,91.3 54.55,90.5 C 72.73,89.7 90.91,96.93 109.09,95.32 C 127.27,93.71 145.46,82.47 163.64,80.86 C 181.82,79.25 200.0,87.29 218.18,85.68 C 236.36,84.07 254.55,72.82 272.73,71.21 C 290.91,69.6 309.09,76.84 327.27,76.04 C 345.45,75.24 363.64,67.2 381.82,66.39 C 400.0,65.58 418.18,72.82 436.36,71.21 C 454.54,69.6 472.73,60.77 490.91,56.75 C 509.09,52.73 527.27,50.19 545.45,47.11 C 563.63,44.03 590.91,39.75 600.0,38.28" />
                   </svg>
                   <div class="linechart__labels--sparse"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span></div>
                 </div>
@@ -203,6 +236,9 @@
             <div class="card__head">
               <h3 class="card__title" data-i18n="section.revenue-source">Revenue by source</h3>
             </div>
+            <!-- Revenue by source · extended to the merged 14-type taxonomy (ASSUMPTIONS CCR-001).
+                 cocreate types (Co-creation funding / Tastemaker commission / OTT royalties) added
+                 as proposed sources; percentages are illustrative demo splits summing to 100%. -->
             <ul class="rank-bars">
               <li class="rank-bar">
                 <div class="rank-bar__track">
@@ -212,57 +248,87 @@
                     <span class="rank-bar__label" data-i18n="src.eshop">E-Shop sales</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">40%</span>
+                <span class="rank-bar__pct">28%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:71%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-2)"></span>
+                    <span class="rank-bar__label" data-i18n="src.cocreate">Co-creation funding</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">20%</span>
               </li>
               <li class="rank-bar" data-feat="E13">
                 <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:55%"></div>
+                  <div class="rank-bar__fill" style="width:50%"></div>
                   <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:#000"></span>
+                    <span class="rank-bar__dot" style="background:var(--chart-4)"></span>
                     <span class="rank-bar__label" data-i18n="src.events">Event tickets</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">22%</span>
+                <span class="rank-bar__pct">14%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:39%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-5)"></span>
+                    <span class="rank-bar__label" data-i18n="src.commission">Tastemaker commission</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">11%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:32%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-3)"></span>
+                    <span class="rank-bar__label" data-i18n="src.ott">OTT royalties</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">9%</span>
               </li>
               <li class="rank-bar" data-feat="E14">
                 <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:33%"></div>
+                  <div class="rank-bar__fill" style="width:25%"></div>
                   <div class="rank-bar__content">
                     <span class="rank-bar__dot" style="background:var(--status-success)"></span>
                     <span class="rank-bar__label" data-i18n="src.ip">IP royalties</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">13%</span>
+                <span class="rank-bar__pct">7%</span>
               </li>
               <li class="rank-bar" data-feat="E16">
                 <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:28%"></div>
+                  <div class="rank-bar__fill" style="width:21%"></div>
                   <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:#1db954"></span>
+                    <span class="rank-bar__dot" style="background:var(--status-info)"></span>
                     <span class="rank-bar__label" data-i18n="src.streaming">Platform / streaming</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">11%</span>
+                <span class="rank-bar__pct">6%</span>
               </li>
               <li class="rank-bar" data-feat="E15">
                 <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:23%"></div>
+                  <div class="rank-bar__fill" style="width:11%"></div>
                   <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:var(--status-info)"></span>
+                    <span class="rank-bar__dot" style="background:var(--destructive)"></span>
                     <span class="rank-bar__label" data-i18n="src.licensing">Licensing</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">9%</span>
+                <span class="rank-bar__pct">3%</span>
               </li>
               <li class="rank-bar" data-feat="E17">
                 <div class="rank-bar__track">
-                  <div class="rank-bar__fill" style="width:13%"></div>
+                  <div class="rank-bar__fill" style="width:7%"></div>
                   <div class="rank-bar__content">
-                    <span class="rank-bar__dot" style="background:#999"></span>
+                    <span class="rank-bar__dot" style="background:var(--muted-foreground)"></span>
                     <span class="rank-bar__label" data-i18n="src.other">Project support · other</span>
                   </div>
                 </div>
-                <span class="rank-bar__pct">5%</span>
+                <span class="rank-bar__pct">2%</span>
               </li>
             </ul>
           </section>
@@ -302,6 +368,10 @@
             <button class="chip" data-filter="licensing" data-feat="E15"><span data-i18n="tx.filter.licensing">Licensing</span></button>
             <button class="chip" data-filter="streaming" data-feat="E16"><span data-i18n="tx.filter.streaming">Platform / streaming</span></button>
             <button class="chip" data-filter="project" data-feat="E17"><span data-i18n="tx.filter.project">Project support</span></button>
+            <!-- cocreate income types (ASSUMPTIONS CCR-001) — reuse canonical src.* labels -->
+            <button class="chip" data-filter="cocreate"><span data-i18n="src.cocreate">Co-creation funding</span></button>
+            <button class="chip" data-filter="commission"><span data-i18n="src.commission">Tastemaker commission</span></button>
+            <button class="chip" data-filter="ott"><span data-i18n="src.ott">OTT royalties</span></button>
             <button class="chip" data-filter="payout" data-feat="E18"><span data-i18n="tx.filter.payouts">Payouts &amp; refunds</span></button>
           </div>
           <div class="filter-row__actions">
@@ -499,189 +569,78 @@
              sibling .when-empty below; toggled by Cheat Codes Empty. -->
         <div class="when-data">
 
-        <!-- View toggle · show one breakdown at a time (this period / by project) -->
-        <div style="margin-bottom:18px">
-          <div class="segmented" role="tablist" aria-label="Breakdown view" data-breakdown-toggle>
-            <button class="segmented__item segmented__item--active" role="tab" aria-selected="true" data-bd-view="period" data-i18n="breakdown.toggle.period">This period</button>
-            <button class="segmented__item" role="tab" aria-selected="false" data-bd-view="project" data-i18n="breakdown.toggle.project">By project</button>
+
+        <!-- ① 全部收入 · one-line summary; opens the full F12 收入去向 waterfall popup -->
+        <section class="card">
+          <div class="card__head">
+            <div>
+              <h3 class="card__title" data-i18n="breakdown.all.title">All income</h3>
+              <p class="text-sub" style="margin-top:6px;font-size: var(--fs-13)" data-i18n="breakdown.all.sub">Every source this period, from gross revenue down to what you can distribute.</p>
+            </div>
+            <button class="btn btn--outline btn--sm" type="button" data-bd-open="waterfall" data-i18n="breakdown.all.more">See full breakdown →</button>
           </div>
-        </div>
+          <div class="bento mt-16">
+            <div class="kpi bento--span-6">
+              <div class="kpi__label" data-i18n="earnings.waterfall.gross">Gross revenue</div>
+              <div class="kpi__value">$24,830</div>
+              <div class="kpi__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</div>
+            </div>
+            <div class="kpi bento--span-6">
+              <div class="kpi__label" data-i18n="earnings.waterfall.pool">Distributable profit</div>
+              <div class="kpi__value">$16,721</div>
+              <div class="kpi__meta" data-i18n="breakdown.all.meta">After direct costs, platform &amp; payment fees, IP royalties and the Ztor cut.</div>
+            </div>
+          </div>
+        </section>
 
-        <div data-bd-section="period">
-        <!-- F12 Earnings waterfall · this period (§7.3) -->
-        <div class="bento">
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="earnings.waterfall.title">Earnings waterfall</h3>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.sub">Gross revenue → net profit pool · this period</span>
+        <!-- ② 我的項目 · one row per project; each row opens its F11 profit-ladder popup -->
+        <section class="card mt-24">
+          <div class="card__head">
+            <div>
+              <h3 class="card__title" data-i18n="breakdown.project.title">My projects</h3>
+              <p class="text-sub" style="margin-top:6px;font-size: var(--fs-13)" data-i18n="breakdown.project.sub">Each project's net income. Open a row for its full profit ladder.</p>
             </div>
-            <div class="waterfall">
-              <div class="waterfall__row waterfall__row--income">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.gross">Gross revenue</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</span>
-                </div>
-                <span class="waterfall__amt">$24,830</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.cost">Direct costs</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.cost-meta">Fulfilment · manufacturing</span>
-                </div>
-                <span class="waterfall__amt">−$2,180</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:91.2%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--subtotal">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.gross-profit">Gross profit</span>
-                </div>
-                <span class="waterfall__amt">$22,650</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:91.2%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.fees">Platform &amp; payment fees</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.fees-meta">5% platform + 3% Stripe</span>
-                </div>
-                <span class="waterfall__amt">−$1,820</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:83.9%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.ip">IP royalties</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.ip-meta">Licensed character usage</span>
-                </div>
-                <span class="waterfall__amt">−$760</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:80.8%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.referral">Referral / affiliate</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.referral-meta">Partner-driven sales</span>
-                </div>
-                <span class="waterfall__amt">−$398</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:79.2%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--subtotal">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.net-revenue">Net revenue</span>
-                </div>
-                <span class="waterfall__amt">$19,672</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:79.2%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.ztor">Ztor cut</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.ztor-meta">15% · rate cfg-2026.02</span>
-                </div>
-                <span class="waterfall__amt">−$2,951</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:67.3%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--pool">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.pool">Net profit pool</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.pool-meta">Distributable this period</span>
-                </div>
-                <span class="waterfall__amt">$16,721</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:67.3%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--distribution">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.creator">Creator</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.creator-meta">60% · founding creator</span>
-                </div>
-                <span class="waterfall__amt">$10,033</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:40.4%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--distribution">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="earnings.waterfall.nft">NFT holders</span>
-                  <span class="waterfall__meta" data-i18n="earnings.waterfall.nft-meta">40% · 1,000 backers</span>
-                </div>
-                <span class="waterfall__amt">$6,688</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:26.9%"></span></div>
-              </div>
-            </div>
-            <p class="text-sub mt-16" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.foot">Only settled income counts · figures follow §7.3.</p>
-          </section>
-        </div>
-        </div><!-- /data-bd-section="period" -->
-
-        <div data-bd-section="project" hidden>
-        <!-- F11 Per-project breakdown · spec §5.1.8 F11 (§5.2.2 / §7.3 financial ladder) -->
-        <div class="bento">
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <div>
-                <h3 class="card__title" data-i18n="breakdown.project.title">Per-project breakdown</h3>
-                <p class="text-sub" style="margin-top:6px;font-size: var(--fs-13)" data-i18n="breakdown.project.sub">Pick a project to see its profit ladder and where each line comes from.</p>
-              </div>
-              <select class="select" style="max-width:230px" aria-label="Project">
-                <option>Coastline EP</option>
-                <option>Tide Pool zine vol. 02</option>
-                <option>Late Bloom · licensing</option>
-                <option>Taipei Live 2026</option>
-              </select>
-            </div>
-            <div class="waterfall">
-              <div class="waterfall__row waterfall__row--income">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.revenue">Project revenue</span>
-                  <span class="waterfall__meta" data-i18n="breakdown.ladder.revenue-meta">Pre-orders · merch · streaming</span>
-                </div>
-                <span class="waterfall__amt">$8,420</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:100%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.cost">Direct costs</span>
-                  <span class="waterfall__meta" data-i18n="breakdown.ladder.cost-meta">Vinyl pressing · shipping</span>
-                </div>
-                <span class="waterfall__amt">−$1,180</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:86.0%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--subtotal">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.gross">Gross profit</span>
-                </div>
-                <span class="waterfall__amt">$7,240</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:86.0%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.fees">Platform &amp; payment fees</span>
-                  <span class="waterfall__meta" data-i18n="breakdown.ladder.fees-meta">5% platform + 3% Stripe</span>
-                </div>
-                <span class="waterfall__amt">−$612</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:78.7%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--deduct">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.collab">Collaborator royalties</span>
-                  <span class="waterfall__meta" data-i18n="breakdown.ladder.collab-meta">2 collaborators · 15%</span>
-                </div>
-                <span class="waterfall__amt">−$1,086</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:65.8%"></span></div>
-              </div>
-              <div class="waterfall__row waterfall__row--pool">
-                <div class="waterfall__head">
-                  <span class="waterfall__name" data-i18n="breakdown.ladder.net">Project net income</span>
-                  <span class="waterfall__meta" data-i18n="breakdown.ladder.net-meta">vs. $5,000 projected · +10.8%</span>
-                </div>
-                <span class="waterfall__amt">$5,542</span>
-                <div class="waterfall__bar"><span class="waterfall__fill" style="width:65.8%"></span></div>
-              </div>
-            </div>
-            <div class="filter-row__actions mt-16">
-              <span class="text-sub" style="font-size: var(--fs-12);margin-right:auto" data-i18n="breakdown.trace">Each line traces back to its transactions, products, or tiers.</span>
-              <a class="btn btn--outline btn--sm" href="#" data-i18n="breakdown.action.project">View project</a>
-              <a class="btn btn--outline btn--sm" href="#transactions" data-tab-jump="transactions" data-i18n="breakdown.action.tx">View transactions</a>
-              <button class="btn btn--outline btn--sm" data-i18n="btn.export">Export</button>
-            </div>
-          </section>
-        </div>
-        </div><!-- /data-bd-section="project" -->
+          </div>
+          <div class="bd-tablecard mt-16">
+            <table class="ztor-table">
+              <thead>
+                <tr>
+                  <th data-i18n="breakdown.col.project">Project</th>
+                  <th data-i18n="breakdown.col.type">Type</th>
+                  <th class="bd-amt" data-i18n="breakdown.col.net">Net income</th>
+                  <th aria-hidden="true"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="ztor-table__row" data-bd-open="project" data-proj="coastline">
+                  <td class="ztor-table__feature">Coastline EP</td>
+                  <td data-i18n="breakdown.type.music">Music</td>
+                  <td class="bd-amt">$5,542</td>
+                  <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
+                </tr>
+                <tr class="ztor-table__row" data-bd-open="project" data-proj="tidepool">
+                  <td class="ztor-table__feature">Tide Pool zine vol. 02</td>
+                  <td data-i18n="breakdown.type.goods">Merch</td>
+                  <td class="bd-amt">$2,086</td>
+                  <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
+                </tr>
+                <tr class="ztor-table__row" data-bd-open="project" data-proj="latebloom">
+                  <td class="ztor-table__feature">Late Bloom · licensing</td>
+                  <td data-i18n="breakdown.type.licensing">Licensing</td>
+                  <td class="bd-amt">$3,280</td>
+                  <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
+                </tr>
+                <tr class="ztor-table__row" data-bd-open="project" data-proj="taipeilive">
+                  <td class="ztor-table__feature">Taipei Live 2026</td>
+                  <td data-i18n="breakdown.type.event">Event</td>
+                  <td class="bd-amt">$3,180</td>
+                  <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-sub mt-16" style="font-size: var(--fs-12)" data-i18n="breakdown.trace">Each line traces back to its transactions, products, or tiers.</p>
+        </section>
 
         </div><!-- /.when-data -->
 
@@ -690,7 +649,7 @@
           <section class="card"><div class="empty-card">
             <span class="empty-card__icon"><i data-lucide="chart-column" class="ztor-icon"></i></span>
             <h3 class="empty-card__title" data-i18n="earnings.empty.breakdown.title">Nothing to break down yet</h3>
-            <p class="empty-card__text" data-i18n="earnings.empty.breakdown.text">Once you have settled income, the earnings waterfall and per-project ladder show how revenue becomes net profit.</p>
+            <p class="empty-card__text" data-i18n="earnings.empty.breakdown.text">Once you have settled income, this tab shows where the money goes and how each project builds its own profit.</p>
           </div></section>
         </div>
       </div>
@@ -764,17 +723,17 @@
           </div>
         </section>
 
-        <!-- Net profit pool & refund reserve · spec §5.1.8 F8 (§7.3 / §5.2.2) -->
+        <!-- Distributable profit & refund reserve · spec §5.1.8 F8 (§7.3 / §5.2.2) -->
         <section class="card mt-24">
           <div class="card__head">
-            <h3 class="card__title" data-i18n="payouts.pool-title">Net profit pool &amp; refund reserve</h3>
-            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="payouts.pool-sub">Distributable balance · §7.3 / §5.2.2</span>
+            <h3 class="card__title" data-i18n="payouts.pool-title">Distributable profit &amp; refund reserve</h3>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="payouts.pool-sub">Basis · §7.3 / §5.2.2</span>
           </div>
           <div class="bento mt-16">
             <div class="kpi bento--span-6">
-              <div class="kpi__label" data-i18n="payouts.pool.net">Net profit pool</div>
+              <div class="kpi__label" data-i18n="payouts.pool.net">Distributable profit</div>
               <div class="kpi__value">$16,721</div>
-              <div class="kpi__meta" data-i18n="payouts.pool.net-meta">Distributable this period · §7.3</div>
+              <div class="kpi__meta" data-i18n="payouts.pool.net-meta">What you can distribute this period · §7.3</div>
             </div>
             <div class="kpi bento--span-6">
               <div class="kpi__label" data-i18n="payouts.pool.reserve">Refund reserve</div>
@@ -784,7 +743,7 @@
           </div>
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="payouts.pool-note"><strong>The pool ends the waterfall.</strong> If the net profit pool turns negative, distribution pauses and the loss carries forward — already-paid funds are never clawed back (§7.3).</span>
+            <span data-i18n="payouts.pool-note"><strong>Distributable profit is the last line of the ladder.</strong> If it turns negative, distribution pauses and the loss carries forward — already-paid funds are never clawed back (§7.3).</span>
           </div>
         </section>
 
@@ -1068,13 +1027,122 @@
 
   <div data-payout-modal-host></div>
   <div data-manual-modal-host></div>
+
+  <!-- ══ 全部收入 · full F12 收入去向 waterfall — canonical .payout-modal popup ══ -->
+  <div class="payout-modal" data-bd-modal="waterfall" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="bd-wf-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="bd-wf-title" data-i18n="earnings.waterfall.title">Where the money goes</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.sub">From gross revenue to distributable profit · this period</span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="waterfall">
+          <div class="waterfall__row waterfall__row--income">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.gross">Gross revenue</span><span class="waterfall__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</span></div>
+            <span class="waterfall__amt">$24,830</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.cost">Direct costs</span><span class="waterfall__meta" data-i18n="earnings.waterfall.cost-meta">Fulfilment · manufacturing</span></div>
+            <span class="waterfall__amt">−$2,180</span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.gross-profit">Gross profit</span></div>
+            <span class="waterfall__amt">$22,650</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.fees">Platform &amp; payment fees</span><span class="waterfall__meta" data-i18n="earnings.waterfall.fees-meta">5% platform + 3% Stripe</span></div>
+            <span class="waterfall__amt">−$1,820</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.ip">IP royalties</span><span class="waterfall__meta" data-i18n="earnings.waterfall.ip-meta">Licensed character usage</span></div>
+            <span class="waterfall__amt">−$760</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.referral">Referral / affiliate</span><span class="waterfall__meta" data-i18n="earnings.waterfall.referral-meta">Partner-driven sales</span></div>
+            <span class="waterfall__amt">−$398</span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.net-revenue">Net revenue</span></div>
+            <span class="waterfall__amt">$19,672</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.ztor">Ztor cut</span><span class="waterfall__meta" data-i18n="earnings.waterfall.ztor-meta">15% · rate cfg-2026.02</span></div>
+            <span class="waterfall__amt">−$2,951</span>
+          </div>
+          <div class="waterfall__row waterfall__row--pool">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.pool">Distributable profit</span><span class="waterfall__meta" data-i18n="earnings.waterfall.pool-meta">What you can distribute this period</span></div>
+            <span class="waterfall__amt">$16,721</span>
+          </div>
+          <div class="waterfall__row waterfall__row--distribution">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.creator">Creator</span><span class="waterfall__meta" data-i18n="earnings.waterfall.creator-meta">60% · founding creator</span></div>
+            <span class="waterfall__amt">$10,033</span>
+          </div>
+          <div class="waterfall__row waterfall__row--distribution">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.nft">NFT holders</span><span class="waterfall__meta" data-i18n="earnings.waterfall.nft-meta">40% · 1,000 backers</span></div>
+            <span class="waterfall__amt">$6,688</span>
+          </div>
+        </div>
+        <p class="text-sub mt-16" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.foot">Only settled income counts · figures follow §7.3.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══ 我的項目 · single project F11 profit ladder — canonical .payout-modal popup (content filled by JS) ══ -->
+  <div class="payout-modal" data-bd-modal="project" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="bd-pl-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="bd-pl-title" data-bd-pl-title>Project</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="breakdown.ladder.sub">Where this project's money goes · full lifetime</span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="waterfall" data-bd-ladder>
+          <div class="waterfall__row waterfall__row--income">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.revenue">Project revenue</span><span class="waterfall__meta" data-pl-meta="revenue"></span></div>
+            <span class="waterfall__amt" data-pl-amt="revenue"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.cost">Direct costs</span><span class="waterfall__meta" data-pl-meta="cost"></span></div>
+            <span class="waterfall__amt" data-pl-amt="cost"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.gross">Gross profit</span></div>
+            <span class="waterfall__amt" data-pl-amt="gross"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.fees">Platform &amp; payment fees</span><span class="waterfall__meta" data-pl-meta="fees"></span></div>
+            <span class="waterfall__amt" data-pl-amt="fees"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.collab">Collaborator royalties</span><span class="waterfall__meta" data-pl-meta="collab"></span></div>
+            <span class="waterfall__amt" data-pl-amt="collab"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--pool">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.net">Project net income</span><span class="waterfall__meta" data-pl-meta="net"></span></div>
+            <span class="waterfall__amt" data-pl-amt="net"></span>
+          </div>
+        </div>
+        <div class="filter-row__actions mt-16">
+          <span class="text-sub" style="font-size: var(--fs-12);margin-right:auto" data-i18n="breakdown.trace">Each line traces back to its transactions, products, or tiers.</span>
+          <a class="btn btn--primary btn--sm" href="project-detail.html#money" data-bd-pl-dash data-i18n="breakdown.action.project">View co-creation dashboard →</a>
+          <a class="btn btn--outline btn--sm" href="#transactions" data-tab-jump="transactions" data-bd-close data-i18n="breakdown.action.tx">View transactions</a>
+          <button class="btn btn--outline btn--sm" data-i18n="btn.export">Export</button>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
-<script src="js/icons.js?v=20260723zj"></script>
-<script src="js/i18n.js?v=20260723zj"></script>
-<script src="partials/date-input.js?v=20260723zj"></script>
-<script src="js/sidebar.js?v=20260723zj"></script>
-<script src="partials/payout-request-modal.js?v=20260723zj"></script>
-<script src="partials/manual-entry-modal.js?v=20260723zj"></script>
+<script src="js/icons.js?v=20260724zn"></script>
+<script src="js/i18n.js?v=20260724zn"></script>
+<script src="partials/date-input.js?v=20260724zn"></script>
+<script src="js/sidebar.js?v=20260724zn"></script>
+<script src="partials/payout-request-modal.js?v=20260724zn"></script>
+<script src="partials/manual-entry-modal.js?v=20260724zn"></script>
 <script>
   /* Earnings tabs · spec §5.1.8.2 — switch active state + visible panel */
   (function () {
@@ -1120,6 +1188,27 @@
 
   })();
 
+  /* Revenue-source filter · Deck-for-Sony style focus (F5 sources).
+     "All" shows every source line plus the dashed total; picking a source
+     focuses it and dims the rest via [data-focus] on the chart. */
+  (function () {
+    var legend = document.querySelector('[data-src-legend]');
+    var chart = document.querySelector('[data-src-chart]');
+    if (!legend || !chart) return;
+    legend.addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-src-type]');
+      if (!chip) return;
+      var type = chip.getAttribute('data-src-type');
+      chart.querySelectorAll('[data-src-line]').forEach(function (l) { l.classList.remove('is-focus'); });
+      if (type === 'all') {
+        chart.removeAttribute('data-focus');
+      } else {
+        chart.setAttribute('data-focus', type);
+        chart.querySelectorAll('[data-src-line="' + type + '"]').forEach(function (l) { l.classList.add('is-focus'); });
+      }
+    });
+  })();
+
   /* How it works · accordion expand/collapse (shared ztor-accordion) */
   (function () {
     document.querySelectorAll('[data-panel="howto"] .ztor-accordion__trigger').forEach(function (t) {
@@ -1132,21 +1221,107 @@
     });
   })();
 
-  /* Breakdown view toggle · show one breakdown at a time (this period F12 / by project F11) */
+  /* Breakdown popups · spec §5.1.8 F11/F12 — 全部收入 waterfall + per-project ladder.
+     全部收入 opens the full F12 收入去向 waterfall; each 我的項目 row opens its F11
+     ladder, filled from BD_PROJECTS. Reuses the canonical .payout-modal shell. */
   (function () {
-    const toggle = document.querySelector('[data-breakdown-toggle]');
-    if (!toggle) return;
-    const sections = document.querySelectorAll('[data-bd-section]');
-    toggle.addEventListener('click', e => {
-      const btn = e.target.closest('[data-bd-view]');
-      if (!btn) return;
-      const view = btn.dataset.bdView;
-      toggle.querySelectorAll('.segmented__item').forEach(b => {
-        const on = b === btn;
-        b.classList.toggle('segmented__item--active', on);
-        b.setAttribute('aria-selected', on ? 'true' : 'false');
+    /* Per-project demo ladders. revenue − cost − fees − collab = net; gross = revenue − cost.
+       Metas carry [en, zh] so the dynamic cells localize without i18n keys. */
+    const BD_PROJECTS = {
+      coastline:  { name:'Coastline EP',            revenue:8420, cost:1180, fees:612, collab:1086, projected:5000,
+                    dash:'project-detail.html?id=coastline-ep#money',
+                    meta:{ revenue:['Pre-orders · merch · streaming','預購 · 周邊 · 串流'],
+                           cost:['Vinyl pressing · shipping','黑膠壓製 · 運費'],
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['2 collaborators · 15%','2 位合作者 · 15%'] } },
+      tidepool:   { name:'Tide Pool zine vol. 02',  revenue:3120, cost:640, fees:214, collab:180, projected:2000,
+                    dash:'project-detail.html?id=tide-pool-zine#money',
+                    meta:{ revenue:['Pre-orders · merch','預購 · 周邊'],
+                           cost:['Printing · shipping','印刷 · 運費'],
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['1 collaborator · 10%','1 位合作者 · 10%'] } },
+      latebloom:  { name:'Late Bloom · licensing',  revenue:4600, cost:120, fees:300, collab:900, projected:3500,
+                    dash:'project-detail.html?id=late-bloom#money',
+                    meta:{ revenue:['Licensing · derivatives','授權金 · 衍生'],
+                           cost:['Production','製作'],
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['Licensor share','授權方分潤'] } },
+      taipeilive: { name:'Taipei Live 2026',        revenue:5200, cost:1400, fees:420, collab:200, projected:2800,
+                    dash:'project-detail.html?id=taipei-live-2026#money',
+                    meta:{ revenue:['Tickets · merch','票務 · 周邊'],
+                           cost:['Venue · production','場地 · 製作'],
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['Co-performer share','共演分潤'] } }
+    };
+
+    const projModal = document.querySelector('[data-bd-modal="project"]');
+    let currentKey = null;
+
+    function fmt(n) { return '$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+    function langIdx() { return (document.documentElement.lang === 'en') ? 0 : 1; }
+
+    function renderProject(key) {
+      const p = BD_PROJECTS[key];
+      if (!p || !projModal) return;
+      currentKey = key;
+      const gross = p.revenue - p.cost;
+      const net = gross - p.fees - p.collab;
+      const run = { revenue:p.revenue, cost:gross, gross:gross, fees:gross - p.fees, collab:net, net:net };
+      const amt = { revenue:fmt(p.revenue), cost:'−'+fmt(p.cost), gross:fmt(gross),
+                    fees:'−'+fmt(p.fees), collab:'−'+fmt(p.collab), net:fmt(net) };
+      const li = langIdx();
+      const pct = (net - p.projected) / p.projected * 100;
+      const pctStr = (pct >= 0 ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
+      const netMeta = li === 0
+        ? ('vs. ' + fmt(p.projected) + ' projected · ' + pctStr)
+        : ('對比預期 ' + fmt(p.projected) + ' · ' + pctStr);
+
+      Object.keys(amt).forEach(k => {
+        const a = projModal.querySelector('[data-pl-amt="' + k + '"]');
+        if (a) a.textContent = amt[k];
+        const f = projModal.querySelector('[data-pl-fill="' + k + '"]');
+        if (f) f.style.width = Math.max(0, run[k] / p.revenue * 100).toFixed(1) + '%';
       });
-      sections.forEach(s => { s.hidden = s.dataset.bdSection !== view; });
+      ['revenue','cost','fees','collab'].forEach(k => {
+        const m = projModal.querySelector('[data-pl-meta="' + k + '"]');
+        if (m) m.textContent = p.meta[k][li];
+      });
+      const nm = projModal.querySelector('[data-pl-meta="net"]');
+      if (nm) nm.textContent = netMeta;
+      const title = projModal.querySelector('[data-bd-pl-title]');
+      if (title) title.textContent = p.name;
+      const dash = projModal.querySelector('[data-bd-pl-dash]');
+      if (dash) dash.setAttribute('href', p.dash);
+    }
+
+    function openModal(which) {
+      const m = document.querySelector('[data-bd-modal="' + which + '"]');
+      if (!m) return;
+      m.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+    function closeAll() {
+      document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(m => { m.hidden = true; });
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', e => {
+      const opener = e.target.closest('[data-bd-open]');
+      if (opener) {
+        const which = opener.dataset.bdOpen;
+        if (which === 'project') renderProject(opener.dataset.proj);
+        openModal(which);
+        return;
+      }
+      if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
+      if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.querySelector('.payout-modal[data-bd-modal]:not([hidden])')) closeAll();
+    });
+    /* Re-localize the open project ladder when the language flips. */
+    document.addEventListener('i18n:applied', () => {
+      if (currentKey && projModal && !projModal.hidden) renderProject(currentKey);
     });
   })();
 
@@ -1389,9 +1564,9 @@
     });
   })();
 </script>
-<script src="js/chart.js?v=20260723zj"></script>
-<script src="js/components.js?v=20260723zj"></script>
-<script src="js/reveal.js?v=20260723zj"></script>
-<script src="js/devtools.js?v=20260723zj"></script>
+<script src="js/chart.js?v=20260724zn"></script>
+<script src="js/components.js?v=20260724zn"></script>
+<script src="js/reveal.js?v=20260724zn"></script>
+<script src="js/devtools.js?v=20260724zn"></script>
 </body>
 </html>
