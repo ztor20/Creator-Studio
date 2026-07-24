@@ -6,6 +6,122 @@
 
 ---
 
+## 2026-07-24 · 專案詳情表單與支持方案改用既有元件（B 反饋導入）
+
+使用者確認支持方案採建立流程的卡片式編輯方向，但維持既有價格、E-Shop 商品引用與額外權益的資訊邊界。
+
+- **【B/表單】** 基本資料、排程、合作者、里程碑與發布更新 popup 的欄位統一改用 `.field`，成對資料改用 `.form-grid`；保留 `.payout-modal/.payout-dialog` 外殼、既有 ID、儲存 hook 與本頁原型行為。
+- **【B/支持方案】** 方案由單一 `pd-edit-tier` popup 改為頁內多組 `.form-section--outlined` 編輯器；每組明確呈現方案名稱、價格、E-Shop 商品引用、名額／不限量與額外權益，商品只從既有 E-Shop picker 選取，不建立自由商品欄位。
+- **【B/下限與互動】** 預填三組既有方案，可新增／移除方案與新增／移除額外權益；只有三組時移除方案按鈕停用並顯示最低三組提示。所有操作仍是本頁、不持久化的 demo，不新增價格／分潤計算或發布後限制。
+- **【D】** 重用既有 `field-system`、`form-grid`、`form-section`、`picker`、`upload-tile` 與 button 元件，未新增 CSS 或 design-system 元件；新文案及動態 editor 標籤均補雙語 i18n。
+
+## 2026-07-24 · 專案類型名稱精簡（B 反饋導入）
+
+使用者確認專案頁類型統一使用短而對稱的名稱，保留既有 type key 與篩選行為。
+
+- **【B】** projects 的清單類型標示與篩選選項由「先募資／直接上線／預購」改為「募資／直接發佈／預購」；僅改繁中呈現文案，不改專案資料、篩選或建立流程。
+- **【D】** `BUILD-SPEC.md` 同步記錄。
+
+## 2026-07-24 · 建立專案的專案類型改為圖示直列選單（B 反饋導入）
+
+使用者指定先處理「專案類型」：移除已選大卡的橘色框，改用圖示引導的深色直列選項面板；內容類型、付費模式與發布時間維持原樣。
+
+- **【B】** `create-project.html` 的流程前閘門與 About 內「專案類型」同步改為 `.radio-list--menu`；前者保留模式說明，表單內使用 compact 版。選中狀態改為列底色＋右側橘點，仍由既有 `chooseType` 驅動 FLOWS。
+- **【D】** `radio-list.css` 新增 `--menu`／`--menu-compact` 變體，design-system、`BUILD-SPEC.md`、`requirements-map.md`、`STYLE-DECISIONS.md` 同步記錄；未改任何產品規則。
+
+## 2026-07-24 · 專案狀態分頁計數改為純文字（B 反饋導入）
+
+使用者指定專案頁狀態分頁的筆數不要自成黑色 pill，而是直接顯示為較高對比的文字；保留標籤與數字之間的節奏。
+
+- **【B】** Tabs 新增 opt-in `.tabs--count-plain`，移除 `.tabs__item-count` 的填色與內距、改用 `--foreground-muted`；只套用至 projects 狀態列，其他計數徽章維持原樣。
+- **【D】** Tabs 三件套與 `BUILD-SPEC.md` 同步記錄。
+
+## 2026-07-24 · 專案清單目標格加上左右內距（B 反饋導入）
+
+使用者指定「當前目標」欄的內容不要貼齊兩側；既有欄寬與欄間距維持不變，改由格內留白處理。
+
+- **【B】** `project-list.css` 的 `.project-list__goal` 新增 `padding-inline: var(--sp-4)`，左右各 4px；三排資訊與非 campaign 的「—」沿用相同內距。
+- **【D】** design-system 三件套、`BUILD-SPEC.md` 與 `requirements-map.md` 同步記錄。
+
+## 2026-07-24 · 專案清單加大欄間留白（B 反饋導入）
+
+使用者希望加寬「當前目標」後，欄位兩側也保有呼吸空間；桌機／中寬版的欄間距微增，窄版既有兩維 gap 不動。
+
+- **【B】** `project-list.css` 將共用列的 `gap` 拆為列距 `--sp-16` 與欄距 `--sp-20`，讓所有桌機欄位左右多出 4px 留白。
+- **【D】** design-system 三件套、`BUILD-SPEC.md` 與 `requirements-map.md` 同步記錄此間距規則。
+
+## 2026-07-24 · 設定區入口按鈕統一為線框（B 反饋導入）
+
+- **【B】**「發布更新」「＋ 新增合作者」與「前往我的 IP 連結」統一為滿寬、文字置中的 outline 按鈕；合作者新增入口從卡頭移到卡底，與發布更新採相同位置與視覺層級。行為與連結目的地不變。
+
+## 2026-07-24 · 移除 IP Rental 未綁定提示（C 反饋導入）
+
+- **【C】** 使用者指定移除專案設定 IP Rental 卡中的「尚未綁定 IP／權利揭露」提示橫幅；保留卡標題與「從 IP 資產庫連結」操作，不改綁定流程或產品規則。
+
+## 2026-07-24 · IP Rental 入口改為前往按鈕（B 反饋導入）
+
+- **【B】** 保留既有 `my-ip.html` 連結目的地，按鈕由 outline 改為 primary，文案改「前往我的 IP 連結」；僅強化入口層級，不改 IP 綁定流程。
+
+## 2026-07-24 · 專案詳情設定分頁的更新與合作者改為欄位式清單（B 反饋導入）
+
+使用者要求更新與合作者的資料欄位清楚分開並有表頭；發布更新改為區塊下方的正式主按鈕，專案完成則在發佈時一併選擇。
+
+- **【B/更新】** `project-detail.html` 的「發布更新」重用既有 `.ztor-table`，拆為更新內容／受眾／發布日期／通知四欄；header 的 ghost 按鈕改為表格下方滿寬 primary「發布更新」按鈕。動態更新直接產生 `<tr>`，不再依賴 data-list row。
+- **【B/完成選項】** 移除常駐「標記專案完成」按鈕；`pd-edit-update` popup 增加「此更新同時標記專案完成」checkbox。送出時保留新增更新列，勾選才把狀態 badge 轉為完成，沿用既有 prototype 的非持久化行為。
+- **【B/合作者】** 合作者卡擴為 `bento--span-12`，重用 `.ztor-table` 並拆成合作者／角色／確認狀態／分潤四欄；新增合作者後同樣以 table row 呈現待確認與分潤。
+- **【D】** 全部重用既有 table、button、modal 與 token，未新增 design-system 元件或改變產品規則；新增欄位與動態狀態字串皆補雙語 i18n。
+
+## 2026-07-24 · 專案清單加寬當前目標欄（B 反饋導入）
+
+使用者指出三排目標資訊需要更多橫向空間，降低金額被截斷的機率；桌機與中寬版同步微增欄寬，名稱欄繼續吸收剩餘空間。
+
+- **【B】** `project-list.css` 的目標軌由 128px 增為 144px，≤1180px 由 120px 增為 136px；窄版堆疊規則不變。
+- **【D】** design-system 三件套、`BUILD-SPEC.md` 與 `requirements-map.md` 同步記錄兩個 breakpoint 的欄寬。
+
+## 2026-07-24 · 專案詳情操作鈕移至麵包屑同列（B 反饋導入）
+
+使用者指定「編輯／在 Ztor 上預覽／發布更新」應與「專案／專案名稱」麵包屑在同一列，讓 hero 標題保持單純、閱讀不被操作鈕切開。
+
+- **【B/版面】** `project-detail.html` 用僅此頁的 `.pd-detail__topbar` 包住 breadcrumb 與既有 `.pd-hero__actions`；桌面版左側保留專案脈絡、右側保留原三鈕的文字、順序與 hooks。`.pd-hero__head` 只保留標題。
+- **【B/RWD】** `shared.css` 的 topbar 使用 flex 對齊與 `flex-wrap`；窄螢幕時麵包屑與按鈕群自然換列，按鈕群本身亦可換行，避免擠壓或溢出。
+- **【D】** 純 page-specific layout，沿用既有 button／token，未新增 design-system 元件或產品行為。
+
+## 2026-07-24 · 專案清單目標資訊改為三排（B 反饋導入）
+
+使用者指定進度條應固定落在第二排，並把百分比縮小一級：三排依序為「百分比／橘色進度條／已募／目標金額」，讓比例、視覺進度與實際金額逐行閱讀。
+
+- **【B】** 移除先前的 `.project-list__goal-main` 首排包裝；既有 `.project-bar` 維持共用，固定承接目標格的第二排。
+- **【B】** `.project-list__goal-pct` 由 `--fs-16` 改為既有 `--fs-14` token，仍保留 bold；金額與非 campaign 的「—」規則不變。
+- **【D】** `projects.html` renderer、design-system 三件套 demo／anatomy／Class API、`BUILD-SPEC.md` 與 `requirements-map.md` 同步更新。
+
+## 2026-07-24 · 專案清單把類型併入專案識別區（B 反饋導入）
+
+使用者指定類型應貼近專案名稱閱讀，而不是獨立佔一欄：每列改為「類型／名稱／描述」三層識別，讓目標、倒數、類別與狀態保留更多空間。
+
+- **【B】** `projects.html` 將既有類型文字移入 `.project-list__project` 最上方的 `__kind`；`project-list.css` 以既有字級與間距 token 定義其弱於名稱、強於描述的層級。
+- **【C】** 移除清單表頭與列中的獨立 `__type`／`__col-type`，桌機 grid 由 8 軌收為 7 軌；≤1180px 不再隱藏類型，因為類型已是專案識別的一部分。
+- **【D】** `design-system.md`／`design-system.html` 的 demo、anatomy、Class API、RWD 說明與 `BUILD-SPEC.md`／`requirements-map.md` 同步。
+
+## 2026-07-24 · 專案清單的當前目標加入細進度條（B 反饋導入）
+
+使用者以「金額在上、深色軌道下方、橘色填滿」的參考圖指定專案清單當前目標欄的呈現；既有百分比與已募／目標金額保留，讓比例與實際金額都能直接讀到。
+
+- **【B】** `projects.html` 的 `projectBarData()` 統一驗證 `p.bar.pct`（限制在 0–100%、保留既有 `success` 變體），卡片與清單共用；`goalCell()` 在既有目標資料同時有有效百分比時，於百分比與金額下方重用 `.project-bar`。缺少 campaign 資料或有效百分比時不補數字、不輸出進度條，非 campaign 列維持 muted「—」。
+- **【B/a11y】** 進度條標 `aria-hidden="true"`，因為百分比與已募／目標金額已是可讀文字，避免重複朗讀。
+- **【B/RWD】** ≤760px 的 `.project-list__status` 不再與目標共用第二行格位，改用右側獨立軌道；chevron 隨之移到最右軌，避免 badge 壓住金額或進度條。
+- **【D】** `design-system.md` §4.28／元件清單與 `design-system.html` Project list demo、Class API、程式碼示例同步，明確記錄 `.project-bar` 是既有可重用元件而非另造樣式；`BUILD-SPEC.md`／`requirements-map.md` 同步此呈現決策。
+
+
+## 2026-07-24 · 已上線募資音樂專案改用獨立「版稅」tab（B 反饋導入）
+
+已上線的募資音樂專案需要可查版稅，依 cocreate preview 的既有內容與視覺方向，把原本混在 Money（backup）的音樂版稅分析搬為獨立入口，讓共創金流與版稅資料不再混讀。
+
+- **【B/tab＋搬移】** `project-detail.html` 在「我的收益」後新增「版稅」tab，完整 `[data-money-section="music"]` 區塊移入新的 `data-panel="royalty"`，Money（backup）不再保留副本，既有非音樂內容完全不動。
+- **【B/gate】** tab 與 panel 共用 `data-royalty`，只在 `fund + published + music` 顯示；深連結到不合條件專案的 `#royalty` 會沿既有 fallback 回到專案總覽，不留空白面板。
+- **【B/demo 資料】** `adia-chan` 改為唯一已上線募資音樂示意樣本，募資摘要／倒數／期間改為已募足、已上線的示意文字，供驗收季度／地區／平台／Top 10 內容；不新增資料欄位、不調整價格或分帳規則。
+- **【D/邊界】** 版稅資料、彙入頻率與是否與募資分帳仍是 CCR-006 待確認；`published` 狀態仍是 UIA-084 產品範圍提案。兩者皆不因本輪示意樣本而成為正式產品規則。
+- **【D/i18n】** 僅新增 `project-detail.tab.royalty`，完整重用既有 `pd-roy.*` 鍵；無新增 CSS 或 design-system 三件套改動。
+
 ## 2026-07-24 · 建立活動新增第 6 型「共看派對（Watch Party）」＋type 分支欄位（A spec-derived · D149）
 
 依 `documents/decisions.md` D149（新增第 6 種活動類型），把共看派對接進建立活動流程與活動清單。欄位集照使用者確認範圍（選影片／房間名稱／開始＋預估結束時間／人數上限［不限／設定上限］／可觀看地區［全球／指定／排除］／隱私［公開／私密］／入場券［免費／自訂價］），不套演出型的表演陣容／四張圖／實體場地／票種階層。
