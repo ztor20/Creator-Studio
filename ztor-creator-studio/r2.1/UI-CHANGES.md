@@ -6,6 +6,303 @@
 
 ---
 
+## 2026-07-24 · projects 主篩選新增「已上線」狀態 tab（B 反饋導入 · ASSUMPTIONS UIA-084）
+
+使用者指定：主狀態篩選在「已完成」後加「已上線」。經確認語意＝募資／預購專案交付完成後上架販售的階段；直接上線類型天生為此狀態。**§7.2 狀態語言原本沒有這個狀態**，屬產品範圍提案，登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) UIA-084（待上游確認是否正式納入 §7.2）。
+
+- **【B】** 新增專案狀態 `published`（label 已上線、`badge--success` 綠）：`projects.html` 的 STATUS map、`TAB.published=['published']`、狀態 tab（在 completed 後 failed 前）；`project-detail.html` 的 STATUS／STATUS_TONE 同步加 `published`（badge 也會顯示已上線）。
+- **【B/資料】** `js/projects-store.js` 把 3 個「直接上線且正在上線」的作品（海上霸姬鄭一嫂／九龍夜行 片尾曲／海上霸姬 幕後紀錄）狀態由 `live` 改 `published`。進行中（live tab＝live+funded）連帶 8 → 5，已上線＝3。**尚未指派任何募資型專案**——旺角狙擊仍交付中（funded）、廟街為已完成收尾（completed），樣本暫無募資型走到「上架販售」子狀態，故已完成 tab 維持 1（未出現空分頁）。
+- **【D】** i18n 新增 `projects.tab.published`（en Published／zh 已上線）。
+- 驗證：tab 計數實測 全部12／草稿1／已排程1／進行中5／已完成1／已上線3／失敗1（加總＝12）；已上線 tab 3 列皆綠 badge、類型直接上線；project-detail STATUS 對映驗證 published→已上線／badge--success。`check_ds_sync.py` 全 PASS（WARN 皆存量）。
+
+## 2026-07-24 · projects 清單列改真圖縮圖＋把 meta 拆成真欄位（B 反饋導入）
+
+使用者指定：清單縮圖用專案詳情的圖、樣式比照電子商店商品列；把原本擠在名稱下一行的 meta（`類別 · $8,420/$15,000 · 134 位支持者 · 剩 21 天`）拆成獨立欄位；那顆「i」提示圖示獨立成一欄。經確認：非募資專案的目標／倒數欄顯示「—」，i 欄標題＝「待辦」。
+
+- **【B】** `project-list.css` 重寫成 e-shop 視覺語言的 9 欄 grid：圖片(56px `poster||cover`，object-fit cover) · 專案(名稱＋一行簡介) · 當前目標 · 剩餘時間 · 類別(內容類型疊家族，比照 e-shop 兩行分類格) · 類型 · 狀態 · 待辦(tip i 圖示) · chevron。列 hover `--accent`、整列連進明細。
+- **【B】** 縮圖用 `poster||cover`（與 project-detail hero 同源，點進去看到的圖一致）；無圖退 `.project-list__image--placeholder`（muted 方塊＋類型 icon）。原 52×52 icon chip `__icon` 退場，**project-list 就此離開 Q20 icon-chip 家族**（`.product-list__thumb`／`.data-list__icon` 不受影響）。
+- **【B】** 當前目標／剩餘時間只有募資／預購專案有值，非募資列用 `.project-list__cell--empty` 顯示 muted 破折號——忠實呈現、不編造數字。
+- **【B/資料】** `js/projects-store.js` 的 5 個募資／預購專案加 `list:{ goal, left }` 雙語顯示欄位（示意值，與既有 `meta`／`fund` 同批 demo 數字，不新增產品規則）；其餘專案不加、渲染顯示「—」。
+- **【B/響應式】** ≤1180px 收掉次要欄（剩餘時間／類別／類型），保留圖片＋名稱＋目標＋狀態＋待辦；≤760px 列重新堆疊（目標＋狀態落第二行）。
+- **【D】** i18n 新增 `projects.col.{goal,time,category,todo}`（en/zh）；`projects.col.type/status/project` 沿用。
+- **【D】** 三件套同步：`project-list.css`＋`design-system.md` §4.28／元件清單表＋`design-system.html` §4.27（rendered preview 改新九欄、含 campaign 列與 `—` 列兩種）。Data list 條目與 Project list 條目補註「project-list 2026-07-24 退出 Q20 icon-chip 家族」。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 未新增裸值；12 列於深／淺主題、1440／1100 寬度實測，圖片零破圖、篩選與卡片檢視未受影響。
+
+## 2026-07-24 · 總覽收入趨勢加「收入來源」篩選（B 反饋導入）
+
+使用者指定：把 Deck for Sony 財務總覽那種圖表上方 chip 篩選搬到 earnings 總覽的收入趨勢，篩選項目用本頁「收入來源分布」的 9 個來源。行為經兩輪定案——先試「只留一條＋各來源自算刻度」，使用者改要**忠於 sony 的聚焦式**：全部線都在、點一個把其他淡化。同一輪內直接改到位（下方為最終狀態，不另立條目）。
+
+- **【B】** 收入趨勢圖上方新增 chip 篩選列（`data-src-legend`）：全部＋9 個收入來源（電商／共創／活動票券／影評人佣金／OTT／IP／平台串流／授權／專案支持其他），每個 chip 帶對應色點。沿用站上 `.chip-group` 既有單選 active 邏輯。
+- **【B · 聚焦式最終形態】** 圖表由單一「總收入」線改為**多線＋聚焦**：「全部」同時畫 9 條來源線＋1 條加總線（加總＝白色虛線，讀作 sum 參考）；點某來源就把該線標 `is-focus`、其餘（含加總）淡化到 opacity .14，靠 `[data-src-chart][data-focus]` 控制，機制與 sony 相同。所有線共用單一 y 軸（$0–28k），故小額來源（如授權 3%）是靠底部的低矮線——忠實反映占比，聚焦時靠淡化其他線讓它可追。10 條線為靜態 `<path>`（Catmull-Rom 平滑），JS 只切 focus class、不再換 `d`／刻度。
+- **【B/一致性】** 9 個來源各給一個「深色底可見」的 token 色，chip 色點、趨勢線、右側「收入來源分布」清單色點三者統一。順手修掉清單裡 3 個深色底不可見的裸色（`#000`→`--chart-4`、`#1db954`→`--status-info`、`#999`→`--muted-foreground`；授權改 `--destructive` 避免與平台串流同藍），全站頁面裸值 54→51。
+- **【D】** i18n 新增 `src.filter.all`（全部／All）；趨勢圖副標由「總收入趨勢」改「依收入來源 · 加總為虛線」（`earnings.legend.sub`），貼合多線呈現。頁面級 `<style>` 加 `.src-legend`／`.src-dot`／`.src-line` 聚焦規則（純 token、只覆寫自建 class，不動共用元件）。
+- **範圍**：聚焦作用於線圖；長條圖檢視（line/bar 切換的 bar）仍顯示總收入、不隨來源篩選（與 sony 同為線圖專屬）。data-chart-series 的既有 hover 標記保留（顯示加總，與虛線加總線一致）。
+- 驗證：起站實測——10 個 chip 中英標籤正確；點電商聚焦時電商線亮、其餘與加總虛線淡化；點小額來源（授權）仍正確 `is-focus`、其他不 focus；「全部」清除 focus 全部復原；來源清單色點與 chip 一致；語言切換後仍運作；console 無錯。`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zh`。
+
+## 2026-07-24 · 項目收益分頁微調：全部收入改 bento、彈窗去進度條、分頁改名（B 反饋導入）
+
+承前一則改版後的三點收斂：
+
+- **【B】** 「全部收入」卡的摘要列改成 **bento 兩格 KPI**（總收入／可分配淨利），拿掉原本的箭頭與並排文字；把「已扣直接成本…」那句收進可分配淨利格的 `kpi__meta`、總收入格 meta 用「212 筆已結算收入」。用站上既有 `.bento`＋`.kpi`，無新元件。原 `.bd-summary*` 版面與其頁面級 CSS 一併移除。
+- **【B】** 兩個彈窗（全部收入瀑布 F12／專案階梯 F11）**移除 running-balance 進度條**：只刪這兩個彈窗實例裡的 `.waterfall__bar` 節點（17 個），共用元件 `waterfall.css` 不動、其他消費頁（design-system／project-detail／交易小階梯）照舊有條。彈窗改讀成純損益表帳本（名稱＋說明＋金額），里程碑仍靠 `--subtotal`／`--pool` 的上分隔線與粗體區分。填值 JS 有 guard，條移除後不報錯。
+- **【B】** 分頁名稱「收益拆解 / Breakdown」改「**項目收益 / Project income**」（`earnings.tab.breakdown`）。內部 `data-tab="breakdown"` 與 hash 錨點不變。`documents/5.1.8-收入管理.md` 的分頁列與 F2 條目同步標註「功能名稱 Breakdown、介面顯示項目收益」。
+- 驗證：起站實測——分頁標籤顯示「項目收益」；bento 兩格 label／value／meta 正確；全部收入瀑布彈窗 0 條進度條、11 列保留；專案階梯彈窗 0 條、6 列、Coastline +10.8% 差異正確；console 無錯。`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zb`。
+
+## 2026-07-24 · 收益拆解改「全部收入摘要＋我的項目表格」，瀑布與階梯收進彈窗（B 反饋導入）
+
+使用者裁示：收益拆解分頁的「本期間／依專案」切換鈕看不懂，改成 earnings-sony「我的項目」那種上下兩塊、表格點列開彈窗的結構。切換鈕退場，「本期間」這個詞只留在瀑布彈窗副標裡。
+
+- **【C】** 移除 Breakdown 的「本期間／依專案」segmented 切換鈕（`data-breakdown-toggle`）與其 JS、兩個 `data-bd-section` 常駐區塊。原本切到哪塊就整塊換掉的做法退場。
+- **【B】** 上塊「全部收入」＝一行概述（總收入 $24,830 → 可分配淨利 $16,721 ＋「已扣直接成本、平台與支付費、IP 版稅與 Ztor 抽成」），右邊「查看完整拆解 →」開**中央彈窗**呈現原本的完整 F12 收入去向瀑布（11 階，內容與口徑不變）。
+- **【B】** 下塊「我的項目」＝原「依專案」下拉選單攤平成 `.ztor-table` 表格，一列一個專案（專案／類型／專案淨收入／chevron），4 個 demo 專案。點任一列開**中央彈窗**呈現該專案的 F11 收益階梯（總收入 → 直接成本 → 毛利 → 平台費 → 合作者分潤 → 專案淨利），底部保留「查看共創儀表板 →／查看交易／匯出」出口。
+- **【A/資料層】** 專案階梯改資料化：`BD_PROJECTS`（4 專案，各含收入／成本／費用／分潤／預期＋雙語 meta）為單一來源，JS 依點選的列填入金額、running-balance 條寬與「對比預期」差異（正負號動態），語言切換時 re-render。動態欄位不掛 `data-i18n`，避免 i18n 覆寫 JS 寫入值（比照 project-detail 資料化的作法）。
+- **【D】** 兩個彈窗都用站上共用中央彈窗殼（`.payout-modal`／`.payout-dialog`，標準寬，未新增變體），開關吃 `hidden`＋`data-bd-open`／`data-bd-close`，✕／點灰底／Esc 三種關閉都在；符合 Q27（編輯用中央彈窗、唯讀詳情沿用同殼，比照 sony 的提領歷史／如何運作）。
+- **【D】** i18n 新增「全部收入」摘要、表格欄位、專案類型（音樂／商品／授權／活動）、階梯副標共 11 鍵；移除退場的 `breakdown.toggle.*` 與改由 JS 帶雙語後孤兒的 5 個 `breakdown.ladder.*-meta` 鍵。
+- **【D/規格】** `documents/5.1.8-收入管理.md` 的 Breakdown 佈局段與 F11 進入點同步改為「全部收入摘要＋我的項目表格＋彈窗」，明註 F11／F12 內容與口徑不變、僅呈現由常駐區塊改為觸發式彈窗。
+- **一次性版面**：earnings.html 新增頁面級 `<style>`（`.bd-summary`／`.bd-tablecard`／`.bd-amt`），色彩字級全走 token、無裸值，比照 sony finance-overview 的一次性版面做法。
+- 驗證：本機起站中英雙語實測——上下兩塊版面正常、4 列數字正確；點列開專案階梯（含 Late Bloom 負向差異 −6.3%、Taipei Live +13.6%）金額／條寬／差異正負號皆對；「查看完整拆解」瀑布彈窗 11 階完整；✕／灰底／Esc 三種關閉有效；英文切換階梯 re-render 正確；console 無錯。`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724v`。
+
+## 2026-07-24 · 「金流瀑布」與「淨利池」改用創作者看得懂的名字（B 反饋導入）
+
+使用者指出「金流瀑布根本看不懂」，要求全站改名。裁決後採用：圖表標題＝**收入去向**（Where the money goes）、末端那階＝**可分配淨利**（Distributable profit）。「瀑布」和「池」都是財務內部術語，創作者要的是「我的錢跑哪去了」與「最後能分多少」。
+
+- **【B】** Earnings · Breakdown 的 F12 標題由「金流瀑布／Earnings waterfall」改「收入去向／Where the money goes」，副標由「總收入 → 淨利池 · 本期間」改「從總收入到可分配淨利 · 本期間」。
+- **【B】** 「淨利池／Net profit pool」全站改「可分配淨利／Distributable profit」，共 13 處 i18n 鍵：earnings 的瀑布末階與 Payouts 分頁（標題／KPI／說明橫幅）、project-detail 的三個鍵、event-detail 的退款吸收順序與「錢在哪」說明。附屬說明「本期可分配」改成更白話的「這段期間可以分的錢」。
+- **【B】** Payouts 說明橫幅改寫：「淨利池是瀑布的末端」→「可分配淨利是收入去向的最後一階」。Breakdown 空狀態同步改寫，不再出現「金流瀑布」。
+- **【B】** project-detail 共創金流的「收益瀑布／Revenue waterfall」改「專案收入去向／Where this project's money goes」。
+- **【D】** `design-system.html` 4.72 與 `design-system.md` 4.24b 的敘述、demo 文字、do/don't、modifier 說明同步改用新用語。**元件條目名 `Earnings waterfall` 與 class `.waterfall`／`--pool` 一律不動**——那是工程識別名，對應 CSS 檔名，改了會讓文件與程式碼脫節，且使用者看不到。
+- **【D/規格】** 依裁決在 `documents/0-設計規格書.md` §7.3「金流瀑布與淨利池」加一段呈現名稱對照（規格用語不變、介面用新名、class 與 i18n 鍵不隨之改），`documents/5.1.8-收入管理.md` F12 補「區塊標題：收入去向」與淨利池的呈現名稱對照。規格編號與 D041 等既有決策的引用鏈因此不斷。
+- **未動**：`my-ip.html`／`ip-detail.html` 的 "waterfall"（Import waterfall data、Awaiting waterfall verification）是音樂產業講的**版稅分帳流程**，與這個圖表同名純屬巧合，屬業界標準用語，維持原樣。
+- **發現未處理**：`project-detail.money.waterfall.*`／`.wf.pool`／`.money.kpi.pool` 三組 i18n 鍵**全站無人使用**（該頁實際用的是 `cocreate.split.*`，且分潤模型是 70/30 不是 60/40）。本輪照樣同步了字串，但這批孤兒鍵與兩套分潤比例的落差留待後續釐清。
+- **【B】** Payouts 那張卡的右上副標由「可分配餘額 · §7.3 / §5.2.2」改「口徑依 §7.3 / §5.2.2」——改名後「可分配」在同一張卡出現三次（標題／副標／KPI 標籤），副標本來就只是標口徑，讓掉重複。
+- 驗證：本機起站實測中英雙語，Breakdown 標題／副標／末階與 Payouts 卡片文字皆為新用語、無破版；`check_ds_sync.py` 全 PASS（3 個 WARN 為既有存量，非本輪引入）；`bump_ver` → `20260724o`。
+
+## 2026-07-24 · 專案收益改備份＋新增我的收益／共創進度 tab（依專案類型顯示）（B 反饋導入）
+
+使用者裁示：把現在的專案收益改成備份、依專案類型補上三種類型的行為、加「我的收益」「共創進度」兩個 tab（內容提取自 ztor 公開端 `my-cocreate-proposal.html`）。
+
+- **【B】**「專案收益」tab 改名「專案收益備份」（`data-panel` 仍為 `money`，內容不動，當探索原型的備份保留）。
+- **【B/新 tab】** 新增「我的收益」（`data-panel="earnings"`）：提取自公開端「我的收益」分頁——計畫項目收益（收入 − 支出 ＝ 淨收益）、淨收益分配（發起人 70%／支持者 30%）、收益明細 ledger（日期／金額／活動類型，`ztor-table`）。
+- **【B/新 tab】** 新增「共創進度」（`data-panel="cofund"`）：提取自公開端「共創進度」分頁——KPI（已參與人數／支持方案／上架日期）、共創金額（已收取／應撥 80%）、撥款進度、方案支持統計表、支持者明細表。
+- **【B/類型維度】** 補上專案「類型」維度（直接上線／募資／預購）：我的收益與共創進度是共創（募資型）專屬，render JS 依 `store` 的 `p.type === 'fund'` 顯隱這兩個 tab 與面板（`data-fund-only`）；非募資型（如直接上線的海上霸姬）自動隱藏、若正停在被隱藏分頁則退回專案總覽。實測 fund 型顯示、go-live 型隱藏。
+- **【D】** i18n 新增 earnings／cofund 兩 tab、`pd-earn.*`（約 20 鍵）、`pd-cofund.*`（約 12 鍵）；`project-detail.tab.money` 值改「專案收益備份」。方案沿用白話名（數位版／實體＋數位版／尊享版）。
+- **內容取捨**：公開端「我的收益」的收益走勢圖（多篩選＋時間範圍）本輪未移植（純呈現、資料量大），先做卡片與 ledger；ledger 取樣本 5 列（原 23 筆）。版稅（royalty）分頁未新增——音樂版稅已在專案收益備份的音樂區塊。
+- **待確認（回報使用者）**：(1) 三種類型中目前只做 fund 型的兩個 tab，直接上線／預購要顯示什麼收益／進度尚未定義；(2) tab 數量達 7 個（含備份），備份確認可移除後可降到 6。
+- 驗證：fund 型七 tab 全顯示、go-live 型隱藏兩 tab、兩新 tab 內容與表格正常、console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zl`。
+
+## 2026-07-24 · 專案收益重排＋支持者兩表格化＋方案改白話名稱（B 反饋導入）
+
+- **【B】** 專案收益分頁重排：KPI 統計條 → 方案支持統計 → 支持者明細 → 其他（共創金額／上映後淨收益分潤／撥款進度）→ 音樂版稅。
+- **【B】**「支持者總覽」改名「方案支持統計」（`cocreate.tiers.title`：en `Support by plan`／zh `方案支持統計`）——它顯示的是各方案幾人支持，原名容易與「支持者明細」混淆。
+- **【B】** 方案支持統計與支持者明細由 `.data-list` 改成 `.ztor-table` 表格、欄位分開：方案支持統計＝方案／價格／內容／名額／支持人數；支持者明細＝#／支持者／方案／NFT／日期／扣款狀態。兩表都包 `overflow-x:auto` 供窄螢幕橫捲。
+- **【B】** 方案改成看得懂的白話名稱（`project-detail.plan.digital/bundle/premium`）：Believer→數位版、Champion→實體＋數位版、Inner Circle→尊享版；三處同步——方案與承諾的支持方案卡、專案收益的方案支持統計與支持者明細、`pd-edit-tier` 彈窗預設值。
+- **【D】** i18n 新增方案白話名 3 個、表格欄位標題 8 個、名額「不限」與尊享版內容說明；`cocreate.tiers.title` 值改「方案支持統計」。原逐列 meta 鍵（pd-cf.b1/b2/b3-meta、pd-cf.t3-meta、pd-cf.ppl）因改表格已無引用，保留未刪。
+- **未做（回答使用者提問）**：「上映後淨收益分潤」是否併進「共創金額」當展開詳情——技術上可行、也建議做（兩者是同一筆錢的製作期 vs 上映後兩段），但本輪照使用者的排序把它留在「其他」區獨立呈現，等使用者確認要不要合併再動。
+- 驗證：收益分頁新順序、兩表格欄位分開、方案白話名三處一致、深連結與 console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zj`。
+
+## 2026-07-24 · 總覽去重＋新增「製作進度」tab＋展示內容攤開成上傳格（B 反饋導入）
+
+使用者四點裁示：收益概況與 hero 重複可移除、專案時間與里程碑整合、展示內容比照建立流程攤開、里程碑與內容項目（改名作品進度）獨立成新 tab。
+
+- **【C】** 移除總覽的「收益概況」卡（與上方 hero 的募資資訊重複）。渲染 JS 對 pd-rev-* 已加空值防呆，元素不存在不報錯。
+- **【B/新 tab】** 新增 **製作進度**（`data-panel="progress"`，排在關於專案與專案收益之間），收兩張卡：
+  - **專案時間與里程碑**（整合）：原「專案時間」的排程事件（建立／發布／截止）與原「里程碑」的製作里程碑（殺青／調光／首映）合成單一時間軸、依時序交錯，里程碑列標「里程碑」徽章；卡頭兩個動作＝編輯日期（`pd-edit-schedule`）＋＋里程碑（`pd-edit-milestone`），自動轉換說明與退款開關留在卡底。＋里程碑仍寫進同一條 `#pd-ms-list`（實測可新增）。
+  - **作品進度**（原「內容項目」改名，`project-detail.items.title`：en `Work progress`／zh `作品進度`）。
+- **【C】**「專案時間」卡從總覽移出、「里程碑」卡從方案與承諾移出——都併入製作進度。移出後：總覽剩 發布更新／合作者／IP Rental；方案與承諾剩 支持方案。
+- **【B】** 關於專案的「展示內容」由 `.data-list` 壓縮清單改成建立流程同款的 `.upload-assets` 上傳格：已上傳（縮圖／海報）用 `is-filled`＋真實縮圖攤開、待補（橫幅／相簿）維持虛線 ＋ 格，另加預告影片 file-drop 格。project-detail 補掛 `upload-tile.css`。卡改滿版（span-12）讓格子攤得開。
+- **【D】** i18n 新增製作進度 tab／整合時間軸標題／里程碑徽章／編輯日期鈕／展示內容各格標籤共 11 鍵；`project-detail.items.title` 值改「作品進度」。
+- **命名**：新 tab 取「製作進度」（Production progress），與卡片「作品進度」「專案時間與里程碑」區隔；備選 專案進度／時程與進度（見回報，易改）。
+- 驗證：五個 tab 內容逐一確認、＋里程碑寫回整合時間軸、展示內容格 200px 正常攤開無破圖、console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zd`。
+
+## 2026-07-24 · 專案詳情 hero 改 GoFundMe 募款預覽 wireframe（B 反饋導入）
+
+使用者指定參考 Mobbin 上 GoFundMe 募款預覽的 wireframe（標題在上、封面在左、募資資訊獨立成右側卡）改 hero。
+
+- **【B/版型】** 新增 `.pd-hero` 版型（shared.css，取代專案詳情原本的 `.ip-hero--project`）：無外層填色容器，封面（放大到 300px 直式）在左、右欄放「募資卡＋簡介＋下一步」。標題／徽章／建立脈絡維持在頁首 `.page-intro`＝wireframe 的「標題在上」。
+- **【A/元件變體】** `funding-panel.css` 加 `.funding-panel--card`：把巢狀襯底面板變成獨立有框卡（Q3 邊框、無疊色陰影）。因為它現在坐在頁背景上＝L1 卡，用邊框而非 `--nest-surface`（不違反 Q24——Q24 管的是卡中卡；這裡不是卡中卡）。
+- **【B】**「下一步」info-banner 由 hero 下方移進右欄底部，填補直式海報造成的高度落差（右欄＝募資卡＋簡介＋下一步，高度接近海報）。
+- **【A】** 募資卡資料化補非先募資分支：直接上線／預購專案沒有「已募 / 目標 / 進度」語意，改顯示 meta 摘要（如「累計 US$12,500 · 45,000 次觀看」）並隱藏目標／進度條／支持人數／募資期間，避免露出 Late Bloom 的預設值。
+- **【C】** 移除 `.ip-hero--project`、`.ip-hero__cover--photo`（唯一消費者是專案詳情，已改用 `.pd-hero`）；`.ip-hero` 基底維持給 ip-detail 用。design-system.md／html 的 ip-hero 條目還原、funding-panel 補 `--card` 變體。
+- 驗證：先募資（陳松伶）顯示完整募資卡、直接上線（海上霸姬）顯示累計摘要且隱藏募資限定欄；深／淺色與 760／1440 寬實測無破版、無橫向捲動、console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724z`。
+
+## 2026-07-24 · 「專案更新」改名「發布更新」並移到總覽第一項（B 反饋導入）
+
+- **【B】**「專案更新」卡改名「發布更新」（`project-detail.updates.title`：en `Published updates`／zh `發布更新`），並移到「專案總覽」分頁第一張卡。新順序：發布更新（滿版）→ 收益概況（滿版）→ 專案時間＋合作者（各半）→ IP Rental（滿版）。
+- **【D】** 卡內原「發布更新」按鈕與新卡標題同字，改用站上 ＋ 新增 樣式的 `＋ 發布更新`（`project-detail.updates.add`），與合作者「＋ 新增」、里程碑「＋ 里程碑」一致；頁首的「發布更新」按鈕不動。
+- 驗證：總覽第一張卡為發布更新、按鈕文案正確；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724v`。
+
+## 2026-07-24 · 專案總覽改成 landing、拿掉發布狀態下拉、時間設定獨立（B 反饋導入）
+
+使用者三點裁示：(1) 發布狀態下拉不需要，那些時間應在專案建立後自動照時間跑；(2)「已完成」的動作放在專案更新裡按；(3) 專案總覽該是創作者一進來就看到資訊與所需操作——更新專案、知道進度與收益（進度／狀態已在 tab 上方）。
+
+- **【C】** 移除頁首的「發布狀態」select 與「儲存變更」按鈕。理由：七個狀態裡只有「取消」需要人主動決定，其餘由時間與募資結果自動轉（草稿→進行中→已達標／失敗）；下拉還會允許非法轉換（例如把失敗改回進行中）。狀態改以標題上方的唯讀徽章呈現。「儲存變更」拿掉是因為每個區塊的編輯都在自己的彈窗按儲存，頁首那顆沒有對應的儲存對象。
+- **【B】** 頁首操作改成 編輯（basics，→ `pd-edit-about`）／在 Ztor 上預覽／發布更新。基本資料已顯示在標題與徽章，編輯鈕依使用者指示移到頁首右上角。
+- **【C】** 移除總覽的「專案基本資料」卡（內容與頁首重複）。其存取與價格欄、專案類型鎖定徽章、D041 鎖定說明移進 `pd-edit-about` 彈窗。
+- **【B】**「狀態」卡改「專案時間（Schedule）」，加編輯鈕開新彈窗 `pd-edit-schedule`（募資發布時間／募資截止／未達標退款開關）——回應「要有地方放專案時間設定」。卡內補一行自動轉換說明：到截止時達標轉已達標、未達標轉失敗並自動退款，只有取消要人決定。
+- **【A】** 新增「收益概況」卡（滿版橫向短卡）：先募資顯示已承諾金額＋「達標後開始撥款」，其他類型顯示累計收益摘要，右側「查看專案收益 →」跳到收益分頁。撥款分期／分潤／費用明細仍在收益分頁，這裡只給一行摘要與入口。
+- **【B】**「專案更新」卡加「標記專案完成」按鈕——回應「已完成在專案更新中可以按」。原型示意：附一則「專案已完成」更新並把狀態徽章轉為已完成。
+- **【B】** 總覽版面重排成 landing：收益概況（滿版）→ 專案時間＋合作者（各半）→ 專案更新（滿版）→ IP Rental（滿版）。
+- **【B】** 依前一輪裁示，「暫停／下架」按鈕先不做（使用者：先不用）。
+- **【D】** i18n 新增 schedule／rev／updates.complete 與 `pd-edit.schedule.*` 共 11 鍵。原 `project-detail.publish.*`、`project-detail.status.draft/scheduled/live/...`、`pd-cf.type-film/music` 等鍵因下拉與 segmented 移除已無引用，鍵值保留未刪（不影響其他頁）。
+- 驗證：先募資／go-live 兩類專案的收益概況分別顯示已承諾與累計收益；編輯／專案時間彈窗開關正常、標記完成會附更新並翻徽章、收益概況入口正確跳分頁；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724r`。
+
+## 2026-07-24 · 專案類型改由清單決定、詳情頁資料化，demo 補齊十種內容類型（B 反饋導入）
+
+使用者指出：專案收益裡那顆「影視／音樂」切換是假的——專案類型本來就有很多種，該由清單上點進來的是哪個專案決定，不是在詳情頁自己切。連帶要求清單上要看得到不同類型、demo 名稱與圖片用公開端共創計畫預覽站的素材。
+
+- **【C】** 移除專案收益的「影視／音樂」segmented 與其 JS。音樂版稅分析區塊改由專案本身的內容類型決定是否顯示。
+- **【A/資料層】** 新增 [js/projects-store.js](./js/projects-store.js)：專案 demo 資料的單一來源，清單與詳情頁同吃一份。原本清單資料寫死在 `projects.html` 的 inline script、詳情頁是另一份寫死的樣本，兩邊對不起來。
+- **【A】** project-detail 改資料化：讀 `?id=` 帶出名稱、簡介、封面、內容類型／發行模式／狀態三顆徽章、創作者與日期、募資面板數字（已募／目標／人數／百分比／倒數／期間），音樂家族才顯示版稅分析。沒帶 id 或 id 不存在時退回清單第一個專案。四個被資料接管的欄位已拿掉 `data-i18n`，避免 i18n 覆寫掉 JS 剛寫進去的值（實測過這個衝突）。
+- **【B/資料】** demo 專案由 8 筆改成 **12 筆、覆蓋上游 spec 5.1.2.1 §4.1 F3 的全部十種內容類型**：電影／短劇／影集（影視）＋音樂／音樂專輯／MV（音樂）＋活動／其他商品／文檔／自訂（其他）。名稱、簡介與圖片取自 ztor 公開端共創計畫預覽站；影視與音樂以外的四種該站沒有樣本，名稱依同一世界觀補寫（見 ASSUMPTIONS UIA-083）。
+- **【B】** 清單的內容類別篩選補齊：原本只有影視三項＋音樂兩項，現在對齊十種類型，新增「其他」群組（活動／其他商品／文檔／自訂），並修正兩處與上游用語不一致的舊值（`film`→`movie`、`single`→`song`；影集的中文由「連續劇」改「影集」、短劇由「短片」改「短劇」）。
+- **【D】** i18n 新增／改寫 11 個內容類別鍵與「其他」群組標籤。
+- 驗證：12 筆專案在清單與卡片檢視都正確渲染、無破圖；逐一開啟音樂／影視／其他三類詳情頁確認徽章、封面、募資數字與版稅區塊顯隱皆隨專案改變；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724l`。
+
+## 2026-07-24 · 編輯／新增一律改中央彈窗，drawer 退出編輯場景（B 反饋導入）
+
+使用者裁示：所有「編輯／新增」的開啟方式都不要側邊滑出，改用站上原本的中央彈窗。站上編輯流程本來就以中央彈窗為主（出貨、退款、補貨、費率例外、請款），project-detail 的五個 drawer 是少數例外，本輪收斂成單一答案。
+
+- **【B】** project-detail 的五個彈窗（專案基本資料／合作者／里程碑／專案更新／支持方案）由 `.drawer` 改成站上共用的中央彈窗殼 `.payout-modal` ＞ `.payout-dialog`（`__head`／`__title`／`__body`），開關改吃 `hidden` 屬性、掛勾由 `data-drawer-*` 改名 `data-modal-*`；關閉方式三種都在：右上 ✕、點灰底、Esc。頁面改掛 `payout-modal.css`、移除 `drawer.css`。
+- **【D/裁決】** [STYLE-DECISIONS](STYLE-DECISIONS.md) 新增 **Q27**：編輯／新增流程的殼層＝中央彈窗，`.drawer` 只保留給「不離開當前頁看詳情／歷史／說明」的唯讀用途。
+- **未動**：`earnings-sony.html` 的提領歷史與「如何運作」仍是 drawer——那兩個是唯讀說明、不是編輯或新增，符合 Q27 保留的用途。`design-system.md` 的 Drawer 條目已補註本輪的界線。
+- 驗證：五個彈窗逐一開關實測（✕／灰底／Esc 三種關閉都有效），里程碑新增流程實測寫回列表且彈窗自動關閉；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724i`。
+
+## 2026-07-24 · 分頁再調整：專案設定改名專案總覽、專案更新歸位、狀態改名專案歷程（B 反饋導入）
+
+- **【B】** 分頁「專案設定」改名 **專案總覽**（`data-panel` 仍為 `settings`，深連結不變）。
+- **【B】** 「專案更新」由「方案與承諾」搬回「專案總覽」；「方案與承諾」現在只剩支持方案與里程碑。
+- **【B】** 「狀態」卡改名 **專案歷程**——卡內三列（建立草稿／募資發布／募資截止）本來就是已發生與已排定的事件紀錄，原名容易與頁首的發布狀態下拉混淆。卡內的「未達標時自動全額退款」開關**是設定不是紀錄**，本輪先留在原處（它掛在募資截止這條時間軸上最好讀），若之後覺得混就搬去專案基本資料。
+- 驗證：四個分頁內容逐一實測；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724i`。
+
+## 2026-07-24 · 專案詳情四個分頁重新分類（B 反饋導入）
+
+原本的分頁（總覽／內容／公開資訊／共創金流）是按「資料型態」分的，使用者要求改成按「這件事在做什麼」分。經三輪討論定案成四個分頁，每個都能用一句話說完。
+
+- **【B】** 分頁與歸位（`data-panel` 一併改名，深連結 hash 同步）：
+  - **專案設定**（`settings`）＝規則與權利：專案基本資料（原「關於專案」卡，同名易與分頁混淆，卡標題改「專案基本資料」）、狀態與時間軸、合作者與分潤、IP Rental
+  - **方案與承諾**（`pledges`）＝賣什麼、答應什麼、說了什麼：支持方案定義（新卡）、里程碑、專案更新
+  - **關於專案**（`about`）＝作品長什麼樣：展示內容、內容項目、公開資訊（原「內容」與「公開資訊」兩分頁合併）
+  - **專案收益**（`money`）＝錢到哪了，全部唯讀：共創金額、撥款進度、上映後分潤、支持者總覽與明細、音樂類版稅
+- **【A】** 新增「支持方案」卡（`project-detail.tiers.*`）：三個方案的名稱／價格／名額／內容，逐列與卡頭都有編輯入口，接新抽屜 `pd-edit-tier`。原本方案定義與支持人數混在收益頁的「支持者總覽」，現在定義歸設定側、收益頁只留人數與名單。
+- **【B】** 撥款進度卡補一行規則說明（`pd-cf.tranche-rule`）：「預算 5 萬以下這一級距分三期撥款 40/30/30，第一期之後每期都要先遞交對應物料」。**級距與比例由平台依預算決定、創作者不可改**，所以整塊留在收益頁，規則當說明文字、進度當內容，不拆成兩個分頁。
+- **【D】** i18n：新增四個分頁鍵、支持方案卡與抽屜共 12 鍵；`project-detail.tab.overview`／`.content`／`.details` 三個舊鍵移除（已無引用）。`project-detail.about.title` 值由「關於專案」改「專案基本資料」。
+- **【D/規格】** `documents/5.1.2.2-專案詳情.md` §3 原寫「本頁顯示序與編號序一致」，重新分組後不成立，改成「顯示序不必等於編號序，分組屬呈現決策」。§2.x 區段定義與編號未動。
+- **【D/假設】** 新增產品缺口 PG-018：支持方案發布後能否編輯未定。依使用者指示**先保留編輯功能**，抽屜內以提示文字標明「已有 28 人支持、發布後能否更動待產品裁決」，等上游裁決。
+- **刻意沒做**：里程碑同時被三處使用（設定維護／公開端呈現／撥款觸發），使用者裁示先維持現狀，正典定在「方案與承諾」分頁；對外資訊分散在兩個分頁（公開資訊在關於、里程碑與更新在方案與承諾）也維持現狀。
+- 驗證：四個分頁逐一實測內容正確、深連結 hash 可用；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724g`。
+
+## 2026-07-24 · 專案假資料改用公開端的真實海報（B 反饋導入）
+
+使用者指定專案的假資料圖片一律取自 ztor 公開端共創計畫預覽站（`ztor-cocreate-preview.vercel.app`）。原本專案在兩個地方都只有圖示佔位（詳情頁 hero 是漸層底＋專案名文字、清單卡片檢視是灰底 lucide 圖示），換成真實海報後才看得出「這是一部作品」。
+
+- **【D/素材】** 15 張圖存進 [images/projects/](./images/projects/)：7 張 2:3 直式海報（6 部片＋1 張音樂）、7 張 16:9 橫式卡圖、1 張情境圖，共 2.2MB。目前實際被引用的是 9 張（hero 1＋卡片 8），其餘 6 張直式海報先備著，等專案詳情頁改成吃資料、每個 demo 專案都有自己的海報時接上。兩張原始 PNG（2.7MB／2.2MB）以 `cwebp -q 80` 轉成 webp（160KB／123KB）並縮到 800／1200 寬，其餘來源本身就是 webp／jpg，原樣保留。
+- **【B】** project-detail hero 封面由漸層文字佔位改成 `<img class="ip-hero__cover ip-hero__cover--photo">`。
+- **【A/元件變體】** `shared.css` 新增 `.ip-hero__cover--photo`（`padding:0`／`background:none`／`object-fit:cover`）。規則必須排在 `.ip-hero__cover` 之後——兩者同權重，先寫會被佔位樣式蓋掉，實測會在海報四周露出 16px 內距的漸層框。
+- **【B】** projects 卡片檢視封面改放真實海報：`PROJECTS` 資料每筆加 `cover` 欄位，render 端有 `cover` 才出 `<img class="project-card__cover-img" loading="lazy">`，沒有的專案（例如新建、還沒上傳素材）仍走原本的圖示佔位。
+- **【A/元件變體】** `shared.css` 新增 `.project-card__cover-img`（鋪滿 16:9 封面格並裁切）。
+- **未動**：清單檢視的 `.project-list__icon` 與 my-ip／訂單等頁的縮圖晶片仍是圖示，維持 [STYLE-DECISIONS](STYLE-DECISIONS.md) Q20 的單一標準；那批要不要改放真實圖片屬另一題。
+- **假資料的名實不符**：demo 專案名（Late Bloom、Coastline EP…）與海報上的片名（我要衝線、陳松伶精選…）對不起來，這是借用他站 demo 素材的必然結果。要一致的話得改專案名或另備素材，屬產品層決定，此處不自行更動。
+- 驗證：詳情頁與清單卡片檢視實測海報正常裁切、無漸層殘框；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724e`。
+
+## 2026-07-24 · 專案詳情 hero 比照公開端共創計畫版型＋promote `funding-panel`（B 反饋導入）
+
+使用者給了 ztor 公開端共創計畫詳情頁（`ztor-cocreate-preview.vercel.app/cocreate-project.html`）的截圖與連結，要求專案詳情 hero「比照這個排版」，並指定：原本 hero 裡的東西一件都不能少、tab 以下不動、右側 Actions rail 改成「和其他詳情頁一樣的頁首」、工具放頁首該放的位置。
+
+- **【B】** 新增 `.page-intro` 頁首（麵包屑之下、hero 之上），比照 order-detail／event-detail 的既有骨架：左側狀態徽章列（進行中／短片／先募資）＋ `h1` 專案名 ＋ 建立與募資脈絡副標；右側 `.page-intro__actions` 放發布狀態（`.field` ＋ `.select` ＋ `.field__hint`，保住原本的「具金流或支持者承諾影響的狀態轉換需確認」說明）與三顆操作（發布更新 ghost／在 Ztor 上預覽 outline／儲存變更 primary）。標題與副標從 hero 上移到這裡，避免同頁出現兩個標題。
+- **【C】** hero 右側 `.ip-hero__side` Actions 卡撤除——內容整批搬進上述頁首，無遺漏項目。
+- **【A/元件變體】** `shared.css` 新增 `.ip-hero--project`：兩欄（240px 海報｜內容）、海報改 2:3 直式、`align-items:center`。基底 `.ip-hero`（ip-detail 使用中）完全未動。900px 以下沿用既有單欄規則，另補 `max-width:220px` 免得 2:3 海報變成滿版超高直幅（實測 860px 已驗）。
+- **【A/元件 promote】** 新增 [funding-panel.css](./ds-components/funding-panel.css)：已募金額＋支持人數同列／目標行／進度條＋百分比藥丸／倒數＋募資期間／底部口徑註記。取代原本「四格 `meta-cell` ＋裸 `.project-bar` ＋註記」的攤平寫法，四個數字一個都沒少，只是換成與粉絲端相同的讀法。進度條內層直接重用 `.project-bar`，不重造量條。
+- **層級與邊界的取捨**：參考來源的面板有可見 1px 邊框，此處刻意不照抄——面板坐在 `.ip-hero`（L1 卡）內＝L2 巢狀層，依 [STYLE-DECISIONS](STYLE-DECISIONS.md) Q24 只用 `--nest-surface` ＋ `--shadow-nest-up` 分層。照抄邊框會讓「卡內第二層」出現第二種答案。百分比藥丸沿用進度條的 `--primary`（同一個進度讀數角色，不觸及 Q8 的品牌橘範圍）。
+- **【D】** `design-system.html` 新增 §4.91 Funding panel（TOC＋demo＋規格表）、ip-hero 規格表補 `--project` 變體列；`design-system.md` 補元件表一列與 §4.91 完整條目。
+- **【D】** i18n 新增 `project-detail.fund.backers`／`.goal`／`.left`／`.period` 四鍵。原 `project-detail.meta.raised`／`.goal`／`.backers`／`.left`／`.left-val`／`actions.title` 因版型改變不再被消費，鍵值保留未刪。
+- **未做**：公開端的全幅模糊背景、返回列、發起人頭像列、關鍵字 chips 未移植（後台頁沒有這些角色；發起人資訊已在頁首副標）。tab 以下四個分頁完全未動。
+- 驗證：dark／light 兩主題與 1292／860 兩寬度實測無破版、無橫向捲動、console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724c`。
+
+## 2026-07-24 · 建立流程頂欄左欄補下限＋募資頁上傳格收進 `.upload-assets`（D infra／元件）
+
+承上一則的同一輪反饋，兩處都是「共用版面在窄視窗下失控」，故一併從元件層收。
+
+- **【D/元件】** `shared.css` `.wizard__top-bar` 三欄軌道改 `minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`，新增 `--wizard-lead-min: 180px`。原本兩側都是純 `1fr`：左欄標題塊有 `min-width:0`＋ellipsis、最小能縮到 0，右欄的儲存狀態＋按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄整個吃掉，標題溢出欄外壓在進度條上。實測 1058px 時 col1＝0、標題與 stepper 重疊；補下限後 col1＝180、進度條退到 224 起，重疊消失。1440px 實測 266/820/266 與改前相同，寬螢幕零影響。六個建立頁共用同一骨架，一次生效。
+- **【B】** create-campaign 與 funding-test 的海報／橫幅上傳格改用 `.upload-assets` ＋ `.upload-tile--3x4`，移除 inline `aspect-ratio`。原本兩格各 314×419（同比例所以沒溢出，但投放區高得誇張），現為 150×200。維持原有 3:4 比例未動——「橫幅」標籤配直式比例看起來像上游的呈現筆誤，屬產品層判斷，僅記於此不自行更改。
+- **【D】** 同兩頁的頁內 `@media (max-width:1180px)` 原本把 `.wizard__top-bar` 整組軌道覆寫成 `1fr minmax(0,520px) 1fr`，會繞過上面那條下限、在 1180px 以下重現同一個重疊。改成只收窄中欄、兩側沿用 shared.css 的軌道。
+- **【D】** `funding-test/create-campaign.html` 的資產版本字串手動對齊到 `20260724b`。`bump_ver.py` 與 `check_ds_sync.py` 都只掃 site 根層的 `*.html`、不遞迴子目錄，所以這個沙盒頁一直停在 `20260714b`，檢查 3 也看不到它——本輪先手動補齊，腳本的遞迴問題留給下一輪處理。
+- 驗證：1058／1440／820 三個寬度實測頂欄無重疊、無橫向捲動；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724b`。
+
+## 2026-07-24 · promote `.upload-assets` 具名素材槽列（D infra／元件）
+
+create-project「作品呈現」的四個素材格（縮圖／直式海報／橫幅／相簿）原本是寫在頁面裡的臨時 grid（`repeat(2,1fr)` ＋逐格 inline `aspect-ratio`），實測整排寬 852px 撐破 732px 的容器、單格高到 568px。成因是 grid `1fr` 的最小尺寸為 auto：格子帶了 `aspect-ratio` 後，瀏覽器拿比例換算出的內容尺寸回頭撐開欄寬，四格互相拉扯就衝出容器。這是元件缺角（DS 只有等比的 `.upload-grid`／`.upload-showcase`，沒有「每格比例都不同」的排法），不是單頁筆誤，故走元件層而非就地補 CSS。
+
+- **【D/元件】** `upload-tile.css` 新增 `.upload-assets`：flex-wrap 列，格子高度＝共用 `--upload-asset-h`（200px，≤640px 收 148px）、寬度由比例推導。改成「固定高度推寬度」就沒有那條回饋迴路，格子在任何容器寬度下都不可能溢出。
+- **【D/元件】** 新增形狀修飾詞 `.upload-tile--1x1`／`--3x4`／`--3x2`／`--16x9`，取代 inline `aspect-ratio`。
+- **【D】** create-project 步驟 2 圖片區改用上述 class，移除該區全部 inline 樣式。1058px 實測：200／150／356 三格排第一列（右緣 893 ≤ 容器 895）、相簿 300 換行，整區高 412px、完全收在 section 內。
+- **【D】** `design-system.html` §Upload tile 補「具名素材槽」demo 卡與中英說明；`design-system.md` 補 Layout helper 段、Class API 兩列與「別把 `aspect-ratio` 加在 grid `1fr` 格子上」的成因註記。
+- 未動 create-campaign／funding-test 同款 inline `aspect-ratio:3/4`：兩格同比例、實測 314×419 未溢出，屬另一個「投放區過高」的議題，留待反饋。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 5／7／11 皆存量、基準未動）；`bump_ver` → `20260724a`。
+
+## 2026-07-23 · `.view-switch` 退場、收斂進 segmented icon 變體（C 撤除）
+
+使用者反饋清單／卡片切換器「很醜、和 design system 不搭」。問題不在細節而在角色重複：`.view-switch` 選中側是實心填 `--foreground`，這是站上第三種「已選中」畫法，與 segmented 的白浮起 pill 打架（見 [STYLE-DECISIONS](STYLE-DECISIONS.md) 已選狀態一題）；而「切換同一資料的視角」本來就是 segmented 定義的角色。故不另調樣式，直接收斂成 segmented 的純圖示變體。
+
+- **【C】** `shared.css` 的 `.view-switch` / `.view-switch__btn`（含 `--active`）規則移除，原處留墓碑註解說明去向。唯一消費者是 projects，無其他頁受影響。
+- **【A/元件變體】** `segmented.css` 新增 `.segmented__btn--icon`：32px 正方段、`--sp-6` 內距、18px 圖示。文字段靠左右內距撐寬，圖示段得改正方，否則 14px 內距會把圖示擠扁。
+- **【C】** `design-system.html` §4.60 View switch 改為墓碑段（保留錨點免斷 TOC，標 ✝ retired 並指向 Segmented control）；`design-system.md` 於 §4.22d Segmented 補 Class API 一列與「接收 `.view-switch` 退場」註記。segmented DS demo 加 icon 變體示例卡。
+- **【D】** i18n 新增 `projects.view.label`（en `View`／zh `檢視方式`）供 segmented 群組的無障礙標籤。
+- **【Bug 例外記一筆——因為它改的是元件行為不是修錯字】** `.list-toolbar__actions` 由絕對定位改成 `margin-left:auto` 的流內排列，`.list-toolbar > .tabs` 補 `flex:1 1 auto; min-width:0; overflow-x:auto`。原本絕對定位時 tabs 仍佔滿整條，projects 的 6 個 tab 在 1280px 以下會捲到動作群底下疊字（實測撞到）；改流內後 tabs 只吃剩餘寬度、裝不下就橫捲。e-shop 因動作群本來就靠右、垂直置中，改後位置不變（已實測）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 剩 5／7／11 皆存量）；棘輪檢查 10 PASS；`bump_ver` → `20260723zt`。projects 於 800／1440 兩種寬度、e-shop 於 1440 皆已實測。
+
+## 2026-07-23 · projects 頁頭整理成 e-shop 同款兩層骨架＋promote `list-toolbar`（B 反饋導入）
+
+使用者圈起 projects 頁頭整塊（頁頭動作群＋狀態 tabs＋篩選列）說「整理，可以參考電子商店的設計」。三段控制項本來各自佔一條、彼此沒有層級關係；改成 e-shop 那套「殼層工作列＋次層篩選列」後收成兩層。
+
+- **【B/元件 promote】** e-shop 頁內的 `.eshop-list-topbar`／`.eshop-list-toolbar__actions`／`.eshop-status-row` promote 成共用元件 [list-toolbar.css](./ds-components/list-toolbar.css)（`.list-toolbar`／`.list-toolbar__actions`／`.list-status-row`），projects 為第二個消費者。CSS 規則值原樣搬移未改。sticky 貼頂留在各頁 `<style>`（依各頁捲動容器決定），e-shop 的 sticky 規則改指新 class 名。
+- **【B】** `projects.html` 頁頭重組：狀態 tabs 移進殼層工作列左側（加 `tabs--underline-short`，底線貼齊容器下緣）；檢視切換與「＋建立專案」自 `page-intro__actions` 移進工作列右側動作群；搜尋改用共用 `.search-collapse`（收合成放大鏡、✕/Esc 收起並清空關鍵字），與 e-shop／orders／pickup 一致；發行模式與內容類別兩個 select 落在第二層 `.list-status-row`。`page-intro` 只剩標題與說明（同 e-shop）。
+- **【B】** tabs 補 `role="tablist"`／`role="tab"`，render 時同步 `aria-selected`。
+- **【D】** 三件套同步：新增 `list-toolbar.css`＋`design-system.md` §4.90 條目與元件清單一列＋`design-system.html` §4.90 區段（含 rendered preview、TOC 連結、head 載入）。`design-system.md` Pillar 3 那條「`.eshop-list-topbar` 頁內覆寫例外」改記為已解除。
+- **【D】** `projects.html` head 補載 `list-toolbar.css`／`search-collapse.css`；i18n 新增 `projects.search.{open,close}` 2 鍵（en/zh）。
+- **順帶修掉一個存量 WARN**：`check_ds_sync` 檢查 8（DS 級覆寫不留頁面）原本長期標記 `e-shop.html` 的 `.eshop-list-topbar`，promote 後改 PASS。
+- 驗證：`check_ds_sync.py` 檢查 8 由 WARN 轉 PASS，其餘全 PASS（WARN 剩 5／7／11 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zr`。深淺兩色主題與搜尋收合互動皆已在瀏覽器實測。
+
+## 2026-07-23 · projects 發行模式篩選由 chip 收成下拉（B 反饋導入）
+
+使用者問「狀態與發行模式兩排篩選，哪個該全列展開」。裁決：狀態全列、發行模式收起。理由三條——狀態是後台的日常主軸（草稿要補、進行中要盯、失敗要善後），發行模式是專案建立時就定死的屬性、只在偶發情境才篩；狀態 tab 帶計數、不點也有資訊價值，發行模式 chip 不點等於白佔一列；tabs 與 chips 都是橫向膠囊排、視覺重量接近，兩排並置看不出主次。
+
+- **【B】** `projects.html` 的發行模式由 `chip-group`（`#proj-types`，4 顆 chip）改成 `.select`（`#proj-type`），與內容類別 select、搜尋框同列；JS 的 `chipsEl` 點擊監聽改為 `typeEl` change 監聽，render 改同步 `select.value`。狀態 tabs 維持全列展開＋計數不動。
+- **【B/元件文件】** `.filter-row` 的 chip-group 那半確立為**可選**：低頻篩選收成 select 後整條列只留 `.filter-row__actions`（放 select 與 `.field-pill` 搜尋），內容左靠。三件套同步：`chip.css` 註解＋`design-system.md` class 表＋`design-system.html` Filter row 加 actions-only 示例卡與 Anatomy 改寫。CSS 本身未改。
+- **【D】** i18n 新增 `projects.type.label`（en `Release mode`／zh `發行模式`，供 select 的 aria-label）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zp`。
+
+## 2026-07-23 · projects 撤除身分維度篩選（C 撤除）
+
+使用者裁決：Creator Studio 是創作者自己的後台，Projects 的範圍就是「我發起的專案」，不該出現支持者／影評人視角——那是消費端共創前台（`cocreate-src/finance-overview.html`）的軸，同日批次 3 搬進後台屬誤植。ASSUMPTIONS [CCR-005](ASSUMPTIONS.md) 該項結案為「不納入」。
+
+- **【C】** `projects.html` 移除身分 `chip-group`（`#proj-identity`：All／Creator／Backer／Tastemaker）、demo 提示 `info-banner`（`#proj-identity-note`）、`identity` 篩選狀態（`match()` 條件、render 同步、事件監聽、清除篩選重置）與資料的 `roles` 欄位。
+- **【C】** 移除 3 筆「別人的專案」樣本列：Dragon Gate Nights／First to the Line／Paper Boats。樣本資料回到 8 筆、全為帳號本人發起。
+- **【C】** `js/i18n.js` 移除 `projects.identity.{label,all,creator,backer,tastemaker,explore}` 6 鍵（en/zh）；`projects.html` 移除已無消費者的 `info-banner.css` 載入。
+- **保留**：內容類別軸（`#proj-cat` select ＋ `cat2` 資料欄）不動，改併入第一列 `filter-row__actions`（搜尋框左側），版面回到單列篩選。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zo`。
+
+## 2026-07-23 · Co-create 整合 批次 3：projects 加內容類別＋身分兩維度篩選（B 反饋導入）
+
+`projects.html` 新增兩個獨立篩選維度，接上既有 projects 篩選機制（status tab × type chip × search 同一 `match()`）。對照原始碼 `cocreate-src/finance-overview.html` 的 `[data-fin-dd="cat"]`（影視/音樂為不可選群組標頭）與 `[data-fin-dd="role"]`（發起人/支持者/影評人，`data-fin-role` 空白分隔集合語意）。登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-005。**未新增任何元件**——全部重用既有 chip／select／info-banner。
+
+- **【B】內容類別（新軸，獨立於發行模式 type，不取代它）**：第二列 `filter-row` 右側放原生 `.select`（`#proj-cat`）＋optgroup 呈現階層——群組標頭 Film & TV（影視）／Music（音樂）用 `<optgroup>` 為**不可選**（對齊 cocreate），可選葉節點 Film 電影／Short drama 短劇／Series 連續劇／Single 單曲／Album 專輯。資料每列加 `cat2` 葉值（`CAT_GROUP` 對應群組）；既有樣本列顯示類別文字不動、僅另掛 `cat2` 供篩選。
+- **【B】身分維度（R2.1 projects 新概念）**：第二列 `filter-row` 左側 `chip-group`（`#proj-identity`：All／Creator／Backer／Tastemaker），沿用既有 type-chip 機制（`chip--active` 反白）。資料每列加 `roles` 集合（一列可 backer+tastemaker）；新增 3 筆標記 backer／tastemaker 的樣本列（Dragon Gate Nights／First to the Line／Paper Boats＝別人的專案、meta 自帶「你支持／評論的專案」自我標示，幣別 USD）。
+- **【B】探索性原型明確標示**：選到非 Creator 視角（含混合 All）時顯示 `info-banner`（info 圖示）標「僅為 demo、未定案」；`match()` 加 `cat`／`identity` 兩條件、清除篩選一併重置；render 同步 chip active／select value／optgroup label（optgroup label 為屬性、無 `[data-i18n]` handler，於 render 以 `i18nT` 設定）。
+- **【D】** `projects.html` head 補載 `input.css`（`.select`）／`info-banner.css`（原本未載）。
+- **【D】** i18n 新增 15 鍵（en/zh）：`projects.cat.{label,all,grp.filmtv,grp.music,film,short,series,single,album}`（9）、`projects.identity.{label,all,creator,backer,tastemaker,explore}`（6）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量：fan-store 裸色、control-h 待採用 token、e-shop leak、cookie-banner/footer 零消費，非本輪引入）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zn`。
+
+## 2026-07-23 · Co-create 整合 Slice 2-B：project-detail Music 型版稅分析（B 反饋導入）
+
+`project-detail.html` Money 分頁補「Film / Music」兩型切換與音樂型版稅分析區塊。對照原始碼 `cocreate-src/my-cocreate-proposal.html` 的版稅分頁（`data-tab-panel="royalty"`，第 1340–1456 行），幣別原始碼即 USD、照抄示意值；提案性質，標「提案 · 未定案」，登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) CCR-006。
+
+- **【B】** money 分頁頂部加 `segmented`（`__btn`／canonical）Film／Music 切換，`data-money-type` + 小段 IIFE（比照 earnings breakdown toggle 寫法）；Film＝隱藏版稅區塊（預設，Late Bloom 為短片）、Music＝顯示。
+- **【B】** 新增音樂型版稅分析區塊（`[data-money-section="music"]`，`hidden` 由 IIFE 切換）：(1) 季度版稅總額用既有 `kpi`（US$1,590 · Q2 2026）；(2) 地區佔比 11 條、(3) 平台佔比 8 條，皆用既有 `rank-bars`；(4) Top 10 歌曲用既有 `ztor-table`，兩排序（依版稅金額／依播放次數）以第二個 `segmented`＋`data-song-sort` IIFE 切兩張預排表。頂部一條 `info-banner`（alert-triangle）標提案未定案。
+- **【B/元件變體】** `rank-bars` 加 `--amount` 變體：既有 rank-bar 只有「名稱＋%」，地區／平台需「名稱＋%＋金額」，故 `chart.css` 加 `.rank-bar--amount`（grid 改 `1fr auto 48px`）＋`.rank-bar__amt` 值欄。三件套同步：`chart.css`＋`design-system.md`（anatomy 行＋class 表）＋`design-system.html`（rank-bars demo 加 `--amount` 示例卡＋class API 列）。
+- **【D】** `project-detail.html` head 補載 `segmented.css`／`chart.css`／`table.css`（原本未載）。
+- **【D】** i18n 新增 40 鍵（en/zh）：`pd-cf.type-film`／`type-music`、`pd-roy.*`（proposal-note／total-label／total-meta／byrev／region.title／platform.title／rg.{tw,jp,us,hk,sg,my,kr,th,ca,au,other}／pf.friday／top.{title,byrev,byplays,col-song,col-royalty,col-plays}／song.s1–s10）。歌名 zh 存原題、en 為譯名。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量：fan-store 裸色、control-h 待採用 token、e-shop leak、cookie-banner/footer 零消費，非本輪引入）；棘輪檢查 10 PASS 未新增裸值；`bump_ver` → `20260723zm`。
+
 ## 2026-07-23 · Co-create 整合 Slice 2b：cocreate-dashboard.html 退場（C 撤除 · 使用者確認）
 
 `project-detail.html` 共創金流分頁（Slice 2）已完整承接統一模型內容，`cocreate-dashboard.html` 成為冗餘頁；使用者確認後刪除。
@@ -71,6 +368,23 @@
 - **【D】** 新元件 `ds-components/avatar-stack.css`（🟡 molecule，重疊頭像＋`+N` 更多膠囊；28px 圓·`--card` 分隔環·`--muted`/`--accent` 填·`--radius-pill`）：第一次出現即 promote。同步 `design-system.html`（4.33c demo 卡＋TOC 錨點 `#avatar-stack`）＋`design-system.md`（元件清單表新增一列）。
 - **【A】** `js/i18n.js`：新增 `cocreate.*` 共 75 鍵（en/zh 雙語，zh 對齊頁面文字，接於 `project-detail.*` 區塊後）。
 - 驗證：`check_ds_sync.py` 全 PASS（棘輪存量裸值 57 未增、無新裸值；84 元件全進 DS 頁；116 TOC 錨點解析；md↔html 對齊）。本機 http 開頁截圖確認全區塊 DS 風格內渲染正確。cache-bust 全站 bump 留待 Slice 收束前跑。fresh-context read-back 由 `ui-closeout-verifier` 另派。
+
+## 2026-07-23 · Co-create 整合 批次 2-A：收入管理依專案接到共創儀表板（B 反饋導入）
+
+使用者要的「收益拆解 → 依專案＝單一專案儀表板」。單一專案共創金流儀表板已由另一 session 建在 `project-detail.html` 的 Money 分頁（集資／三層分層／支持者名單／70-30 分潤／分期撥款）；本 slice 把 earnings 依專案接過去，不重做內容。
+
+- **【B】** `earnings.html`：收益拆解 → 依專案（`data-bd-section="project"`）的動作鈕由通用「View project」（`href="#"`）改為 primary「View co-creation dashboard →」，deep-link 到 `project-detail.html#money`。project-detail 的 tab JS 支援 hash（`location.hash` → activate），會直接開 Money 共創金流分頁。
+- **【B】** `js/i18n.js`：`breakdown.action.project` 文案改；`breakdown.project.sub` 補一句指引「完整集資／支持者／撥款儀表板在共創金流分頁」。
+- earnings 依專案保留其財務 waterfall（收益拆解語意），完整專案管理儀表板走連結接通，避免重複。check PASS、bump `zl`。
+- **未做（批次 2-B）**：project-detail 共創儀表板仍缺 film/music 兩型切換與音樂版稅分析（地區／平台／Top10 歌曲）。
+
+## 2026-07-23 · Co-create 整合 批次 1c：收入管理收益來源＋交易篩選擴充成 14 類（B 反饋導入 · ASSUMPTIONS CCR-001）
+
+把合併分類體系（CCR-001）落到收入管理的兩個顯示點。
+
+- **【B】** `earnings.html` Overview「Revenue by source」rank-bars 由 6 條擴為 9 條，加入 3 個 cocreate 提案類（Co-creation funding 20%／Tastemaker commission 11%／OTT royalties 9%），百分比重排為示意 demo（9 條總和 100%）；新類 dot 用 `--chart-2/5/3` token（非裸值）。既有 6 類的 `data-feat` gate 保留。
+- **【B】** `earnings.html` 交易明細篩選 chip 加 3 個 cocreate 類（`cocreate`／`commission`／`ott`，重用既有 `src.*` label）。chip 是既有的純視覺單選切換（不實際篩表格），故未加對應示範交易列——交易明細示範資料維持原樣，待有真實 cocreate 交易口徑再補（記此限制於此）。
+- 未改 i18n（沿用 CCR-001 已建的 `src.*` key）、未新增元件。驗證：`check_ds_sync.py` PASS（棘輪存量裸值未增、無新裸 hex）；`bump_ver.py` 全站統一。
 
 ## 2026-07-23 · Co-create 整合 批次 1b：收入管理加影評人佣金比例 strip（B 反饋導入 · ASSUMPTIONS CCR-002 提案）
 

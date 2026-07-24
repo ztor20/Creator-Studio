@@ -4,24 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Late Bloom · Project detail · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260723zj"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/button.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/card.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/input.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/waterfall.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/settings.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/drawer.css?v=20260723zj">
-<link rel="stylesheet" href="ds-components/avatar-stack.css?v=20260723zj">
-<link rel="stylesheet" href="shared.css?v=20260723zj">
+<script src="js/theme.js?v=20260724zn"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/button.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/chart.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/table.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/card.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/input.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/waterfall.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/settings.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/avatar-stack.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/funding-panel.css?v=20260724zn">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260724zn">
+<link rel="stylesheet" href="shared.css?v=20260724zn">
 </head>
 <body>
 <div class="app">
@@ -35,191 +40,121 @@
       <div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px">
         <a href="projects.html" class="card__link" data-i18n="project-detail.crumb.projects">Projects</a>
         <span style="margin:0 6px">/</span>
-        <span>Late Bloom</span>
+        <span id="pd-crumb-name">Late Bloom</span>
       </div>
 
-      <!-- 3. Project overview (identity · status · operating summary · next steps) -->
-      <section class="ip-hero">
-        <div class="ip-hero__cover">
-          Late<br>Bloom
-        </div>
-
+      <!-- Page header — 比照其他詳情頁（order-detail / event-detail）的 .page-intro：
+           狀態徽章 + 標題 + 建立/募資脈絡在左，工具（發布狀態 + 三個操作）在右。
+           2026-07-24 由原 hero 右側 Actions rail 上移。 -->
+      <div class="page-intro">
         <div>
-          <div class="flex-row" style="gap:8px;flex-wrap:wrap">
-            <span class="badge badge--orange"><span data-i18n="project-detail.badge.live">Live</span></span>
-            <span class="badge"><span data-i18n="project-detail.badge.cat">Short film</span></span>
-            <span class="badge badge--info"><span data-i18n="project-detail.badge.type">Fund it first</span></span>
+          <div class="flex-row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <span class="badge badge--orange" id="pd-badge-status"><span data-i18n="project-detail.badge.live">Live</span></span>
+            <span class="badge" id="pd-badge-cat"><span data-i18n="projects.cat.movie">Movie</span></span>
+            <span class="badge badge--info" id="pd-badge-type"><span data-i18n="project-detail.badge.type">Fund it first</span></span>
           </div>
-          <h1 class="ip-hero__title" id="pd-title">Late Bloom</h1>
-          <div class="ip-hero__owner" data-i18n="project-detail.owner-line">By Maya Chou · Created Mar 02, 2026 · Funding live since May 18, 2026</div>
+          <h1 class="page-intro__title" id="pd-title">Late Bloom</h1>
+          <p class="page-intro__sub" id="pd-owner-line">By Maya Chou · Created Mar 02, 2026 · Funding live since May 18, 2026</p>
+        </div>
+        <!-- 2026-07-24：拿掉「發布狀態」下拉——七個狀態裡只有取消需要人主動決定，其餘由時間／
+             募資結果自動轉（見專案時間卡的說明）；狀態改在標題上方以唯讀徽章呈現。也拿掉「儲存變更」
+             （各區塊的編輯都在自己的彈窗按儲存）。基本資料已顯示在標題與徽章，編輯鈕移到這裡的右上角。 -->
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" data-modal-open="pd-edit-about" data-i18n="project-detail.btn.edit">Edit</button>
+          <button class="btn btn--ghost" data-i18n="project-detail.btn.preview">Preview on Ztor</button>
+          <button class="btn btn--primary" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
+        </div>
+      </div>
 
-          <p style="margin:0 0 12px;max-width:540px;color:var(--foreground-muted)" id="pd-desc" data-i18n="project-detail.desc">
+            <!-- Hero — wireframe 參考 GoFundMe 募款預覽：標題／徽章／建立脈絡在頁首（.page-intro）＝
+           「標題在上」；此區＝封面在左（放大直式海報），募資資訊獨立成右側有框卡，簡介置於卡下。 -->
+      <section class="pd-hero">
+        <img class="pd-hero__cover" id="pd-poster" src="images/projects/f-i-am-speed.webp" alt="">
+        <div class="pd-hero__main">
+          <div class="funding-panel funding-panel--card">
+            <div class="funding-panel__amount-row">
+              <div class="funding-panel__amount" id="pd-fund-raised">$8,420</div>
+              <span class="funding-panel__backers">
+                <i data-lucide="users" class="ztor-icon ztor-icon--sm"></i>
+                <span id="pd-fund-backers">134 backers</span>
+              </span>
+            </div>
+            <span class="funding-panel__goal" id="pd-fund-goal">Goal $15,000</span>
+            <div class="funding-panel__bar-row">
+              <div class="project-bar"><div class="project-bar__fill" id="pd-fund-bar" style="width:56%"></div></div>
+              <span class="funding-panel__pct" id="pd-fund-pct">56%</span>
+            </div>
+            <div class="funding-panel__status-row">
+              <span class="funding-panel__countdown" id="pd-fund-left">21 days left</span>
+              <span class="funding-panel__period" id="pd-fund-period">Campaign May 18 – Jul 06, 2026</span>
+            </div>
+            <p class="funding-panel__note">
+              <i data-lucide="info" class="ztor-icon ztor-icon--xs"></i>
+              <span data-i18n="project-detail.meta.figures-note">Figures reference Earnings (spec §7.3) — not recomputed here.</span>
+            </p>
+          </div>
+          <p class="pd-hero__desc" id="pd-desc">
             A coming-of-age short film about a florist who only blooms at night. Funding the final color grade and a limited NFT collectible for backers.
           </p>
-
-          <!-- Operating summary — type-dependent (Fund it first shows raised / goal / backers / time) -->
-          <div class="ip-hero__meta">
-            <div class="meta-cell">
-              <div class="meta-cell__label" data-i18n="project-detail.meta.raised">Raised</div>
-              <div class="meta-cell__value">$8,420</div>
-            </div>
-            <div class="meta-cell">
-              <div class="meta-cell__label" data-i18n="project-detail.meta.goal">Goal</div>
-              <div class="meta-cell__value">$15,000</div>
-            </div>
-            <div class="meta-cell">
-              <div class="meta-cell__label" data-i18n="project-detail.meta.backers">Backers</div>
-              <div class="meta-cell__value">134</div>
-            </div>
-            <div class="meta-cell">
-              <div class="meta-cell__label" data-i18n="project-detail.meta.left">Time left</div>
-              <div class="meta-cell__value" data-i18n="project-detail.meta.left-val">21 days</div>
-            </div>
+          <div class="info-banner">
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="project-detail.nextstep"><strong>Next steps —</strong> IP rental not yet linked · 2 showcase assets pending · 1 milestone update due to backers.</span>
           </div>
-          <div class="project-bar" style="margin-top:14px;max-width:540px"><div class="project-bar__fill" style="width:56%"></div></div>
-          <div class="text-sub" style="font-size: var(--fs-11);margin-top:6px" data-i18n="project-detail.meta.figures-note">Figures reference Earnings (spec §7.3) — not recomputed here.</div>
         </div>
-
-        <!-- Actions rail (spec §5) -->
-        <aside class="ip-hero__side">
-          <div class="card">
-            <div class="card__head"><h3 class="card__title" data-i18n="project-detail.actions.title">Actions</h3></div>
-            <button class="btn btn--primary" style="width:100%;margin-top:10px" data-i18n="project-detail.btn.save">Save changes</button>
-            <button class="btn btn--outline" style="width:100%;margin-top:6px" data-i18n="project-detail.btn.preview">Preview on Ztor</button>
-            <button class="btn btn--ghost btn--sm" style="width:100%;margin-top:6px" data-drawer-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
-            <div class="settings-row" style="border:0;padding:10px 0 2px">
-              <div>
-                <div class="settings-row__label" data-i18n="project-detail.publish.label">Publish status</div>
-                <div class="settings-row__hint" data-i18n="project-detail.publish.hint">Status changes with money or backer impact need confirmation.</div>
-              </div>
-            </div>
-            <select class="select" aria-label="Publish status" data-i18n-aria-label="project-detail.publish.label">
-              <option data-i18n="project-detail.status.draft">Draft</option>
-              <option data-i18n="project-detail.status.scheduled">Scheduled</option>
-              <option selected data-i18n="project-detail.status.live">Live</option>
-              <option data-i18n="project-detail.status.funded">Funded</option>
-              <option data-i18n="project-detail.status.completed">Completed</option>
-              <option data-i18n="project-detail.status.cancelled">Cancelled</option>
-              <option data-i18n="project-detail.status.failed">Failed</option>
-            </select>
-          </div>
-        </aside>
       </section>
-
-      <!-- Next steps to handle (spec §3.3) -->
-      <div class="info-banner mt-16">
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="project-detail.nextstep"><strong>Next steps —</strong> IP rental not yet linked · 2 showcase assets pending · 1 milestone update due to backers.</span>
-      </div>
 
       <!-- Tabs: Total / Content / Public details / Money (spec resource grouping) -->
       <nav class="tabs mt-24" role="tablist" data-tabs>
-        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="project-detail.tab.overview">Overview</button>
-        <button class="tabs__item" role="tab" data-tab="content" aria-selected="false" data-i18n="project-detail.tab.content">Content</button>
-        <button class="tabs__item" role="tab" data-tab="details" aria-selected="false" data-i18n="project-detail.tab.details">Public details</button>
-        <button class="tabs__item" role="tab" data-tab="money" aria-selected="false" data-i18n="project-detail.tab.money">Money</button>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="settings" aria-selected="true" data-i18n="project-detail.tab.settings">Project overview</button>
+        <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges">Plans &amp; promises</button>
+        <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
+        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress">Production progress</button>
+        <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings" data-fund-only>My earnings</button>
+        <button class="tabs__item" role="tab" data-tab="cofund" aria-selected="false" data-i18n="project-detail.tab.cofund" data-fund-only>Co-creation progress</button>
+        <button class="tabs__item" role="tab" data-tab="money" aria-selected="false" data-i18n="project-detail.tab.money">Revenue (backup)</button>
       </nav>
 
-      <!-- ===================== OVERVIEW ===================== -->
-      <div class="tab-panel tab-panel--active" data-panel="overview">
+      <!-- ===================== 1 · PROJECT SETTINGS（規則與權利）===================== -->
+      <div class="tab-panel tab-panel--active" data-panel="settings">
         <div class="bento">
-
-          <!-- 4.1 About + 4.3 Monetization (editable, sample values) -->
-          <section class="card bento--span-7">
+<!-- 4.9 Updates -->
+          <section class="card">
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.about.title">About this project</h3>
-              <button class="btn btn--ghost btn--sm" data-drawer-open="pd-edit-about" data-i18n="project-detail.btn.edit">Edit</button>
+              <h3 class="card__title" data-i18n="project-detail.updates.title">Project updates</h3>
+              <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-update" data-i18n="project-detail.updates.add">＋ New update</button>
             </div>
-            <div class="data-list">
+            <div class="data-list" id="pd-upd-list">
               <div class="data-list__row">
                 <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--info"><i data-lucide="megaphone" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.about.name">Project name</div>
-                    <div class="data-list__meta">Late Bloom</div>
+                    <div class="data-list__title" data-i18n="project-detail.updates.row1">Color grade locked — first look inside</div>
+                    <div class="data-list__meta" data-i18n="project-detail.updates.row1-meta">Jun 10 · Backers only · 134 notified</div>
                   </div>
                 </div>
               </div>
               <div class="data-list__row">
                 <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--info"><i data-lucide="megaphone" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.about.contenttype">Content type</div>
-                    <div class="data-list__meta" data-i18n="project-detail.about.contenttype-val">Short film</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.about.projecttype">Project type</div>
-                    <div class="data-list__meta" data-i18n="project-detail.about.projecttype-val">Fund it first</div>
-                  </div>
-                </div>
-                <span class="badge badge--neutral"><span data-i18n="project-detail.about.locked">Locked after publish</span></span>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.about.access">Access &amp; price</div>
-                    <div class="data-list__meta" data-i18n="project-detail.about.access-val">Paid · $12 rental · ad-free</div>
+                    <div class="data-list__title" data-i18n="project-detail.updates.row2">We hit 50% of our goal</div>
+                    <div class="data-list__meta" data-i18n="project-detail.updates.row2-meta">Jun 01 · Everyone · milestone update</div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="info-banner mt-16">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="project-detail.about.lock-note"><strong>Project type is locked.</strong> Funding model can't change after publish — it protects the backer contract and NFT holder rights (D041). Platform &amp; payment fees follow Earnings (§7.3) and aren't editable here.</span>
-            </div>
+            <button class="btn btn--outline btn--sm mt-16" type="button" data-pd-complete data-i18n="project-detail.updates.complete">Mark project complete</button>
           </section>
 
-          <!-- 4.4 Publish status timeline (illustrative) -->
-          <section class="card bento--span-5">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.status.title">Status</h3>
-              <span class="badge badge--orange"><span data-i18n="project-detail.badge.live">Live</span></span>
-            </div>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.created">Draft created</div>
-                    <div class="data-list__meta">Mar 02, 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.published">Funding published</div>
-                    <div class="data-list__meta">May 18, 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="clock" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.deadline">Funding deadline</div>
-                    <div class="data-list__meta" data-i18n="project-detail.tl.deadline-val">Jul 06, 2026 · 21 days left</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)">
-              <div>
-                <div class="settings-row__label" data-i18n="project-detail.refund.label">Auto full refund if goal missed</div>
-                <div class="settings-row__hint" data-i18n="project-detail.refund.hint">Crowdfunding-only · refunds follow §7.3.</div>
-              </div>
-              <div class="switch switch--on"></div>
-            </div>
-          </section>
+          
 
-          <!-- 4.6 Collaborators -->
-          <section class="card bento--span-7">
+
+
+<!-- 4.6 Collaborators -->
+          <section class="card bento--span-6">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.collab.title">Collaborators</h3>
-              <button class="btn btn--ghost btn--sm" data-drawer-open="pd-edit-collab" data-i18n="project-detail.collab.add">＋ Add</button>
+              <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-collab" data-i18n="project-detail.collab.add">＋ Add</button>
             </div>
             <div class="data-list" id="pd-collab-list">
               <div class="data-list__row">
@@ -256,8 +191,10 @@
             <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.collab.note">Split amounts reference Earnings &amp; Project Net Income — not recomputed here.</div>
           </section>
 
-          <!-- 4.7 IP Rental -->
-          <section class="card bento--span-5">
+
+
+<!-- 4.7 IP Rental -->
+          <section class="card bento--span-12">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.ip.title">IP Rental</h3>
             </div>
@@ -267,134 +204,127 @@
             </div>
             <a class="btn btn--outline mt-16" style="width:100%" href="my-ip.html" data-i18n="project-detail.ip.link">Link from IP Bank</a>
           </section>
+          
 
-          <!-- 4.9 Updates -->
-          <section class="card">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.updates.title">Project updates</h3>
-              <button class="btn btn--ghost btn--sm" data-drawer-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
-            </div>
-            <div class="data-list" id="pd-upd-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="megaphone" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.updates.row1">Color grade locked — first look inside</div>
-                    <div class="data-list__meta" data-i18n="project-detail.updates.row1-meta">Jun 10 · Backers only · 134 notified</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="megaphone" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.updates.row2">We hit 50% of our goal</div>
-                    <div class="data-list__meta" data-i18n="project-detail.updates.row2-meta">Jun 01 · Everyone · milestone update</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+
+
+
+
+
+
+
+
+          
+
+          
+
+          
+
+          
+
+          
 
         </div>
       </div>
 
-      <!-- ===================== CONTENT ===================== -->
-      <div class="tab-panel" data-panel="content">
+      <!-- ============ 2 · PLANS & PROMISES（賣什麼、答應什麼、說了什麼）============ -->
+      <div class="tab-panel" data-panel="pledges">
         <div class="bento">
 
-          <!-- 4.2 Showcase assets -->
+          <!-- Support plans (tier definitions) — moved here 2026-07-24; the per-tier
+               backer counts stay in 專案收益. Editable after publish for now: whether
+               price / slots may change post-publish is a product decision still open
+               (see ASSUMPTIONS.md). -->
           <section class="card bento--span-7">
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.showcase.title">Showcase</h3>
-              <button class="btn btn--ghost btn--sm" data-i18n="project-detail.btn.edit">Edit</button>
+              <h3 class="card__title" data-i18n="project-detail.tiers.title">Support plans</h3>
+              <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-tier" data-i18n="project-detail.btn.edit">Edit</button>
             </div>
             <div class="data-list">
               <div class="data-list__row">
                 <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="image" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.showcase.thumb">Thumbnail</div>
-                    <div class="data-list__meta" data-i18n="project-detail.showcase.uploaded">Uploaded</div>
+                    <div class="data-list__title"><span data-i18n="project-detail.plan.digital">Digital</span> · $12</div>
+                    <div class="data-list__meta" data-i18n="cocreate.tiers.t1-meta">Unlimited · digital</div>
                   </div>
                 </div>
+                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-tier" data-i18n="project-detail.btn.edit">Edit</button>
               </div>
               <div class="data-list__row">
                 <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="image" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.showcase.poster">Poster</div>
-                    <div class="data-list__meta" data-i18n="project-detail.showcase.uploaded">Uploaded</div>
+                    <div class="data-list__title"><span data-i18n="project-detail.plan.bundle">Physical + digital</span> · $45</div>
+                    <div class="data-list__meta"><span data-i18n="cocreate.tiers.t2-meta">Unlimited · physical + digital</span> · <span class="badge badge--orange"><span data-i18n="cocreate.tiers.popular">Most chosen</span></span></div>
                   </div>
                 </div>
+                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-tier" data-i18n="project-detail.btn.edit">Edit</button>
               </div>
               <div class="data-list__row">
                 <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="image" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.showcase.banner">Banner</div>
-                    <div class="data-list__meta" data-i18n="project-detail.showcase.pending">Pending</div>
+                    <div class="data-list__title"><span data-i18n="project-detail.plan.premium">Premium</span> · $250</div>
+                    <div class="data-list__meta" data-i18n="pd-cf.t3-meta">10 slots · physical + premiere invite</div>
                   </div>
                 </div>
-                <span class="badge badge--warning"><span data-i18n="project-detail.showcase.missing">Missing</span></span>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="film" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.showcase.trailer">Trailer / story video</div>
-                    <div class="data-list__meta" data-i18n="project-detail.showcase.pending">Pending</div>
-                  </div>
-                </div>
-                <span class="badge badge--warning"><span data-i18n="project-detail.showcase.missing">Missing</span></span>
+                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-tier" data-i18n="project-detail.btn.edit">Edit</button>
               </div>
             </div>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.tiers.note">Plan pricing and slots are a promise to existing backers — changes after publish are still under product review.</div>
+          </section>
+
+          
+
+        </div>
+      </div>
+
+      <!-- ===================== 3 · ABOUT THE WORK（作品長什麼樣）===================== -->
+      <div class="tab-panel" data-panel="about">
+        <div class="bento">
+
+                    <!-- 展示內容——比照建立流程把素材攤開成上傳格（.upload-assets / .upload-tile），
+               不再是壓縮的清單。已上傳的用 is-filled＋縮圖，待補的維持虛線 ＋ 格。 -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="project-detail.showcase.title">Showcase</h3>
+            </div>
+            <div class="field__label" style="margin-bottom:10px"><span data-i18n="project-detail.showcase.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.four-req">· all four required</span></div>
+            <div class="upload-assets">
+              <button type="button" class="upload-tile upload-tile--1x1 is-filled" data-upload aria-label="Thumbnail">
+                <img class="upload-tile__thumb" src="images/products/coastline-ep.webp" alt="">
+                <span class="upload-tile__title" data-i18n="project-detail.showcase.thumb">Thumbnail</span>
+                <span class="upload-tile__hint" data-i18n="project-detail.showcase.uploaded">Uploaded</span>
+              </button>
+              <button type="button" class="upload-tile upload-tile--3x4 is-filled" data-upload aria-label="Poster">
+                <img class="upload-tile__thumb" src="images/projects/f-i-am-speed.webp" alt="">
+                <span class="upload-tile__title" data-i18n="project-detail.showcase.poster">Poster</span>
+                <span class="upload-tile__hint" data-i18n="project-detail.showcase.uploaded">Uploaded</span>
+              </button>
+              <button type="button" class="upload-tile upload-tile--16x9">
+                <span class="upload-tile__icon">＋</span>
+                <span class="upload-tile__title" data-i18n="project-detail.showcase.banner">Banner</span>
+                <span class="upload-tile__hint" data-i18n="project-detail.showcase.pending">Pending · 1920 × 1080</span>
+              </button>
+              <button type="button" class="upload-tile upload-tile--3x2">
+                <span class="upload-tile__icon">＋</span>
+                <span class="upload-tile__title" data-i18n="project-detail.showcase.gallery">Gallery</span>
+                <span class="upload-tile__hint" data-i18n="project-detail.showcase.gallery-hint">1200 × 800 · 1–8 images</span>
+              </button>
+            </div>
+            <div class="field__label" style="margin:18px 0 10px"><span data-i18n="project-detail.showcase.video">Trailer / story video</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
+            <button type="button" class="upload-tile upload-tile--file">
+              <span class="upload-tile__title" data-i18n="project-detail.showcase.trailer-drop">Drop an MP4 or MOV</span>
+              <span class="upload-tile__hint" data-i18n="project-detail.showcase.trailer-hint">Up to 2 GB · pending</span>
+            </button>
             <div class="info-banner mt-16">
               <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
               <span data-i18n="project-detail.showcase.note">Swapping primary assets on a published project changes what fans see — you'll be warned before it goes live.</span>
             </div>
           </section>
 
-          <!-- 4.2 Content items (type-dependent: film = episodes; sample) -->
-          <section class="card bento--span-5">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.items.title">Content items</h3>
-              <span class="badge badge--info"><span data-i18n="project-detail.items.kind">Episodes</span></span>
-            </div>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">1</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.items.ep1">Bloom at Dusk</div>
-                    <div class="data-list__meta" data-i18n="project-detail.items.ep1-meta">12:40 · Encoded</div>
-                  </div>
-                </div>
-                <span class="badge badge--success"><span data-i18n="project-detail.items.ready">Ready</span></span>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">2</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.items.ep2">Director's cut</div>
-                    <div class="data-list__meta" data-i18n="project-detail.items.ep2-meta">Uploading · 64%</div>
-                  </div>
-                </div>
-                <span class="badge badge--warning"><span data-i18n="project-detail.items.processing">Processing</span></span>
-              </div>
-            </div>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.items.note">Content item schema lives in another module — fields shown are illustrative (待確認).</div>
-          </section>
-
-        </div>
-      </div>
-
-      <!-- ===================== PUBLIC DETAILS ===================== -->
-      <div class="tab-panel" data-panel="details">
-        <div class="bento">
+          
 
           <!-- 4.8 Public metadata -->
-          <section class="card bento--span-7">
+          <section class="card bento--span-12">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.details.title">Public details</h3>
               <button class="btn btn--ghost btn--sm" data-i18n="project-detail.btn.edit">Edit</button>
@@ -444,19 +374,49 @@
             </div>
           </section>
 
-          <!-- 4.8 Timeline milestones -->
-          <section class="card bento--span-5">
+        </div>
+      </div>
+
+      <!-- ===================== 4 · PRODUCTION PROGRESS（製作進度）===================== -->
+      <div class="tab-panel" data-panel="progress">
+        <div class="bento">
+
+          <!-- 專案時間 + 里程碑整合成單一時間軸（2026-07-24 使用者裁示）：
+               募資排程事件與製作里程碑依時序交錯，編輯日期走 pd-edit-schedule、＋里程碑走 pd-edit-milestone。 -->
+          <section class="card bento--span-7">
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.milestones.title">Timeline milestones</h3>
-              <button class="btn btn--ghost btn--sm" data-drawer-open="pd-edit-milestone" data-i18n="pd-edit.milestone.add">＋ Milestone</button>
+              <h3 class="card__title" data-i18n="project-detail.progress.timeline">Schedule &amp; milestones</h3>
+              <div class="flex-row" style="gap:6px">
+                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-schedule" data-i18n="project-detail.schedule.editbtn">Edit dates</button>
+                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-milestone" data-i18n="pd-edit.milestone.add">＋ Milestone</button>
+              </div>
             </div>
             <div class="data-list" id="pd-ms-list">
               <div class="data-list__row">
                 <div class="data-list__row-main">
                   <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
                   <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="project-detail.tl.created">Draft created</div>
+                    <div class="data-list__meta">Mar 02, 2026</div>
+                  </div>
+                </div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
                     <div class="data-list__title" data-i18n="project-detail.milestones.m1">Principal shoot wrapped</div>
                     <div class="data-list__meta">Apr 2026</div>
+                  </div>
+                </div>
+                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="project-detail.tl.published">Funding published</div>
+                    <div class="data-list__meta">May 18, 2026</div>
                   </div>
                 </div>
               </div>
@@ -468,6 +428,16 @@
                     <div class="data-list__meta" data-i18n="project-detail.milestones.m2-meta">In progress</div>
                   </div>
                 </div>
+                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--info"><i data-lucide="clock" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="project-detail.tl.deadline">Funding deadline</div>
+                    <div class="data-list__meta" data-i18n="project-detail.tl.deadline-val">Jul 06, 2026 · 21 days left</div>
+                  </div>
+                </div>
               </div>
               <div class="data-list__row">
                 <div class="data-list__row-main">
@@ -477,8 +447,237 @@
                     <div class="data-list__meta" data-i18n="project-detail.milestones.m3-meta">Planned Aug 2026</div>
                   </div>
                 </div>
+                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
               </div>
             </div>
+            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-i18n="project-detail.schedule.autonote">On the funding deadline the project advances on its own — reaching the goal turns it Funded, missing it turns it Failed with an automatic full refund when the switch below is on. Only cancelling is a manual decision.</p>
+            <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)">
+              <div>
+                <div class="settings-row__label" data-i18n="project-detail.refund.label">Auto full refund if goal missed</div>
+                <div class="settings-row__hint" data-i18n="project-detail.refund.hint">Crowdfunding-only · refunds follow §7.3.</div>
+              </div>
+              <div class="switch switch--on"></div>
+            </div>
+          </section>
+
+<!-- 4.2 Content items (type-dependent: film = episodes; sample) -->
+          <section class="card bento--span-5">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="project-detail.items.title">Content items</h3>
+              <span class="badge badge--info"><span data-i18n="project-detail.items.kind">Episodes</span></span>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon">1</div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="project-detail.items.ep1">Bloom at Dusk</div>
+                    <div class="data-list__meta" data-i18n="project-detail.items.ep1-meta">12:40 · Encoded</div>
+                  </div>
+                </div>
+                <span class="badge badge--success"><span data-i18n="project-detail.items.ready">Ready</span></span>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon">2</div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="project-detail.items.ep2">Director's cut</div>
+                    <div class="data-list__meta" data-i18n="project-detail.items.ep2-meta">Uploading · 64%</div>
+                  </div>
+                </div>
+                <span class="badge badge--warning"><span data-i18n="project-detail.items.processing">Processing</span></span>
+              </div>
+            </div>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.items.note">Content item schema lives in another module — fields shown are illustrative (待確認).</div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ===================== 6 · MY EARNINGS（我的收益，僅募資型）===================== -->
+      <!-- 內容提取自 ztor 公開端 my-cocreate-proposal.html「我的收益」分頁，改套 R2.1 設計系統。
+           數字為示意、待產品裁決（統一模型探索原型）。 -->
+      <div class="tab-panel" data-panel="earnings">
+        <div class="info-banner">
+          <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="pd-earn.note"><strong>探索原型 —</strong> 收益模型提取自共創計畫，數字為示意、待產品裁決。</span>
+        </div>
+        <div class="bento mt-16">
+
+          <!-- 計畫項目收益：收入 − 支出 ＝ 淨收益 -->
+          <section class="card bento--span-7">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="pd-earn.items.title">Project item earnings</h3>
+              <span class="text-sub" style="font-size:var(--fs-12)" data-i18n="pd-earn.last-month">Last 30 days</span>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.income">Income subtotal</div></div></div>
+                <div class="data-list__amount">USD 520,000</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" style="padding-left:12px" data-i18n="pd-earn.income.royalty">Item royalties · USD 500,000</div></div></div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" style="padding-left:12px" data-i18n="pd-earn.income.merch">Item merch · USD 10,000</div></div></div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" style="padding-left:12px" data-i18n="pd-earn.income.tickets">Item tickets · USD 10,000</div></div></div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.expense">− Expense subtotal</div></div></div>
+                <div class="data-list__amount">−USD 100,000</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__meta" style="padding-left:12px" data-i18n="pd-earn.expense.platform">Platform fee · USD 50,000 · Promotion · USD 25,000 · Critic commission · USD 25,000</div></div></div>
+              </div>
+            </div>
+            <div class="settings-row mt-16" style="padding:14px 0 0;border-top:1px solid var(--border)">
+              <div class="settings-row__label" data-i18n="pd-earn.net">= Net income</div>
+              <div class="funding-panel__amount" style="font-size:var(--fs-24)">USD 400,000</div>
+            </div>
+          </section>
+
+          <!-- 淨收益分配 70/30 -->
+          <section class="card bento--span-5">
+            <div class="card__head"><h3 class="card__title" data-i18n="pd-earn.dist.title">Net income distribution</h3></div>
+            <div class="kpi" style="background:var(--input-surface)">
+              <div class="kpi__label" data-i18n="pd-earn.net">= Net income</div>
+              <div class="kpi__value">USD 400,000</div>
+            </div>
+            <div class="data-list mt-16">
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.dist.creator">Creator · 70%</div></div></div>
+                <div class="data-list__amount">USD 280,000</div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.dist.backers">Backers · 30%</div></div></div>
+                <div class="data-list__amount">USD 120,000</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 收益明細 ledger -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="pd-earn.ledger.title">Earnings ledger</h3>
+              <span class="text-sub" style="font-size:var(--fs-12)" data-i18n="pd-earn.ledger.sub">Last 30 days · 23 entries · USD 5,860 in</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead><tr>
+                  <th style="width:150px" data-i18n="pd-earn.col.date">Date</th>
+                  <th style="text-align:right;width:110px" data-i18n="pd-earn.col.amount">Amount</th>
+                  <th data-i18n="pd-earn.col.type">Activity type</th>
+                </tr></thead>
+                <tbody>
+                  <tr class="ztor-table__row"><td>2026-09-11</td><td style="text-align:right;font-weight:var(--fw-medium)">USD 40</td><td data-i18n="pd-earn.act.critic15">Critic commission (15%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-09-10</td><td style="text-align:right;font-weight:var(--fw-medium)">USD 30</td><td data-i18n="pd-earn.act.ott">OTT royalty (2%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-09-08</td><td style="text-align:right;font-weight:var(--fw-medium)">USD 10</td><td data-i18n="pd-earn.act.license">Licensing (2%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-09-07</td><td style="text-align:right;font-weight:var(--fw-medium)">USD 200</td><td data-i18n="pd-earn.act.critic12">Critic commission (12%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-09-04</td><td style="text-align:right;font-weight:var(--fw-medium)">USD 10</td><td data-i18n="pd-earn.act.advance">Critic advance</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ===================== 7 · CO-CREATION PROGRESS（共創進度，僅募資型）===================== -->
+      <!-- 內容提取自 my-cocreate-proposal.html「共創進度」分頁，改套 R2.1 設計系統。數字示意。 -->
+      <div class="tab-panel" data-panel="cofund">
+        <div class="bento mt-16">
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="pd-cofund.kpi.people">Backers</div>
+            <div class="kpi__value">5,525</div>
+            <div class="kpi__meta" data-i18n="pd-cofund.kpi.people-meta">All charge states included</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="pd-cofund.kpi.plans">Support plans</div>
+            <div class="kpi__value">3</div>
+            <div class="kpi__meta" data-i18n="pd-cofund.kpi.plans-meta">Digital · Physical + digital · Premium</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="pd-cofund.kpi.live">Live since</div>
+            <div class="kpi__value">2026-06-01</div>
+            <div class="kpi__meta" data-i18n="pd-cofund.kpi.live-meta">Open to view</div>
+          </div>
+        </div>
+        <div class="bento mt-24">
+
+          <!-- 共創金額 -->
+          <section class="card bento--span-7">
+            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.payout.title">Co-creation funds</h3></div>
+            <div class="funding-panel funding-panel--card" style="margin:0">
+              <div class="funding-panel__amount-row">
+                <div class="funding-panel__amount">USD 7,200</div>
+                <span class="funding-panel__backers" data-i18n="pd-cofund.payable">/ payable USD 9,000</span>
+              </div>
+              <span class="funding-panel__goal" data-i18n="pd-cofund.collected">Collected · after 8.4% + HKD$2.40 fees</span>
+              <div class="funding-panel__bar-row">
+                <div class="project-bar"><div class="project-bar__fill" style="width:80%"></div></div>
+                <span class="funding-panel__pct">80%</span>
+              </div>
+              <div class="funding-panel__status-row">
+                <span class="funding-panel__countdown" data-i18n="pd-cofund.pledged">Pledged USD 10,000</span>
+                <span class="funding-panel__period" data-i18n="pd-cofund.goal">Goal USD 10,000</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 撥款進度（沿用 tranche 規則）-->
+          <section class="card bento--span-5">
+            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.tranche.title">Payout progress</h3><span class="badge badge--info"><span data-i18n="pd-cf.tranche-tier">Budget under 50k</span></span></div>
+            <p class="field-text" style="margin:0 0 12px" data-i18n="pd-cf.tranche-rule">Budget tier under 50k pays out in three tranches — 40% / 30% / 30%. Each tranche after the first is released once its materials are submitted.</p>
+            <div class="data-list">
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="clock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s1">All backer charges completed</div><div class="data-list__meta" data-i18n="pd-cf.s1-meta">40% · after goal reached</div></div></div><div class="data-list__amount">USD 3,600</div></div>
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="file-check" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s2">Submit script / cast / schedule / materials</div><div class="data-list__meta" data-i18n="pd-cf.s2-meta">30% · pending submission</div></div></div><div class="data-list__amount">USD 2,700</div></div>
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s3">Release &amp; distribution</div><div class="data-list__meta" data-i18n="pd-cf.s3-meta">30% · planned Aug 2026</div></div></div><div class="data-list__amount">USD 2,700</div></div>
+            </div>
+          </section>
+
+          <!-- 方案支持統計 -->
+          <section class="card bento--span-12">
+            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.tiers.title">Support by plan</h3></div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead><tr>
+                  <th data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:80px" data-i18n="pd-cf.col.price">Price</th>
+                  <th style="width:130px" data-i18n="pd-cf.col.slots">Slots</th>
+                  <th style="width:120px" data-i18n="pd-cofund.col.pct">Filled</th>
+                  <th style="text-align:right;width:110px" data-i18n="pd-cf.col.backers">Backers</th>
+                </tr></thead>
+                <tbody>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)" data-i18n="project-detail.plan.digital">Digital</td><td>$13</td><td data-i18n="pd-cf.slots.unlimited">Unlimited</td><td>—</td><td style="text-align:right;font-weight:var(--fw-medium)">500</td></tr>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)" data-i18n="project-detail.plan.bundle">Physical + digital</td><td>$65</td><td>5,000</td><td>100%</td><td style="text-align:right;font-weight:var(--fw-medium)">5,000</td></tr>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)" data-i18n="project-detail.plan.premium">Premium</td><td>$385</td><td>50</td><td>50%</td><td style="text-align:right;font-weight:var(--fw-medium)">25</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 支持者明細 -->
+          <section class="card bento--span-12">
+            <div class="card__head"><h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3><button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button></div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead><tr>
+                  <th data-i18n="pd-cf.col.backer">Backer</th>
+                  <th data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:170px" data-i18n="pd-cf.col.date">Date</th>
+                  <th style="text-align:right;width:130px" data-i18n="pd-cf.col.charge">Charge</th>
+                </tr></thead>
+                <tbody>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)">Gary</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-30 09:30</td><td style="text-align:right"><span class="badge badge--success"><span data-i18n="pd-cofund.charged">Charged</span></span></td></tr>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)">Mary Ann</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-29 09:30</td><td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span></td></tr>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)">王立揚</td><td data-i18n="project-detail.plan.premium">Premium</td><td>2026-04-28 09:30</td><td style="text-align:right"><span class="badge badge--warning"><span data-i18n="cocreate.backers.retry">Retrying charge</span></span></td></tr>
+                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-medium)">Mr JJJ</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-27 09:30</td><td style="text-align:right"><span class="badge"><span data-i18n="pd-cofund.refunded">Refunded</span></span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="pd-cf.charge-note">Cards verified on pledge · charged only when the goal is reached.</div>
           </section>
 
         </div>
@@ -492,6 +691,10 @@
           <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
           <span data-i18n="pd-cf.explore-note"><strong>統一模型（探索原型）—</strong> 支持者＝NFT 持有者；發起人自付額 0～任意（0＝純預購）；製作期依交付分期撥款、上映後分潤（可手動提早）。數字為示意、待產品裁決。</span>
         </div>
+
+        <!-- 2026-07-24：原本這裡有一顆「影視／音樂」segmented，用來假裝切換專案類型。
+             專案類型是專案本身的屬性、由清單上點進來的是哪個專案決定，不該在詳情頁自己切——
+             改由 js/projects-store.js 的 family 決定音樂版稅區塊出不出現。 -->
         <div class="bento mt-16">
           <div class="kpi bento--span-3">
             <div class="kpi__label" data-i18n="cocreate.kpi.members">Backers</div>
@@ -517,7 +720,96 @@
 
         <div class="bento mt-24">
 
-          <!-- Co-creation funds · pool composition (unified model) -->
+          <!-- 方案支持統計（原「支持者總覽」）——改表格、欄位分開，方案改看得懂的名稱 -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="cocreate.tiers.title">Support by plan</h3>
+              <a class="card__link" href="#" data-i18n="cocreate.tiers.public">View public page →</a>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead><tr>
+                  <th data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:80px" data-i18n="pd-cf.col.price">Price</th>
+                  <th data-i18n="pd-cf.col.includes">Includes</th>
+                  <th style="width:96px" data-i18n="pd-cf.col.slots">Slots</th>
+                  <th style="text-align:right;width:110px" data-i18n="pd-cf.col.backers">Backers</th>
+                </tr></thead>
+                <tbody>
+                  <tr class="ztor-table__row">
+                    <td style="font-weight:var(--fw-medium)" data-i18n="project-detail.plan.digital">Digital</td>
+                    <td>$12</td>
+                    <td data-i18n="cocreate.tiers.t1-meta">Unlimited · digital</td>
+                    <td data-i18n="pd-cf.slots.unlimited">Unlimited</td>
+                    <td style="text-align:right;font-weight:var(--fw-medium)">98</td>
+                  </tr>
+                  <tr class="ztor-table__row">
+                    <td style="font-weight:var(--fw-medium)"><span data-i18n="project-detail.plan.bundle">Physical + digital</span> <span class="badge badge--orange"><span data-i18n="cocreate.tiers.popular">Most chosen</span></span></td>
+                    <td>$45</td>
+                    <td data-i18n="cocreate.tiers.t2-meta">Unlimited · physical + digital</td>
+                    <td data-i18n="pd-cf.slots.unlimited">Unlimited</td>
+                    <td style="text-align:right;font-weight:var(--fw-medium)">28</td>
+                  </tr>
+                  <tr class="ztor-table__row">
+                    <td style="font-weight:var(--fw-medium)" data-i18n="project-detail.plan.premium">Premium</td>
+                    <td>$250</td>
+                    <td data-i18n="pd-cf.tiers.t3-includes">Physical + premiere invite</td>
+                    <td>8 / 10</td>
+                    <td style="text-align:right;font-weight:var(--fw-medium)">8</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 支持者明細（購買紀錄）——改表格、欄位分開 -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3>
+              <button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="ztor-table">
+                <thead><tr>
+                  <th style="width:52px">#</th>
+                  <th data-i18n="pd-cf.col.backer">Backer</th>
+                  <th data-i18n="pd-cf.col.plan">Plan</th>
+                  <th style="width:80px">NFT</th>
+                  <th style="width:96px" data-i18n="pd-cf.col.date">Date</th>
+                  <th style="text-align:right;width:140px" data-i18n="pd-cf.col.charge">Charge</th>
+                </tr></thead>
+                <tbody>
+                  <tr class="ztor-table__row">
+                    <td>#27</td>
+                    <td style="font-weight:var(--fw-medium)">Studio Yiu</td>
+                    <td data-i18n="project-detail.plan.premium">Premium</td>
+                    <td>#027</td>
+                    <td>06/11</td>
+                    <td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span></td>
+                  </tr>
+                  <tr class="ztor-table__row">
+                    <td>#26</td>
+                    <td style="font-weight:var(--fw-medium)">Liminal Films</td>
+                    <td data-i18n="project-detail.plan.bundle">Physical + digital</td>
+                    <td>#026</td>
+                    <td>06/10</td>
+                    <td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span></td>
+                  </tr>
+                  <tr class="ztor-table__row">
+                    <td>#25</td>
+                    <td style="font-weight:var(--fw-medium)">Rae Lin</td>
+                    <td data-i18n="project-detail.plan.digital">Digital</td>
+                    <td>#025</td>
+                    <td>06/09</td>
+                    <td style="text-align:right"><span class="badge badge--warning"><span data-i18n="cocreate.backers.retry">Retrying charge</span></span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="pd-cf.charge-note">Cards verified on pledge · charged only when the goal is reached.</div>
+          </section>
+
+<!-- Co-creation funds · pool composition (unified model) -->
           <section class="card bento--span-7">
             <div class="card__head">
               <h3 class="card__title" data-i18n="cocreate.payout.title">Co-creation funds</h3>
@@ -579,7 +871,7 @@
             </div>
           </section>
 
-          <!-- Post-release profit share (unified model · 70/30) -->
+<!-- Post-release profit share (unified model · 70/30) -->
           <section class="card bento--span-5">
             <div class="card__head">
               <h3 class="card__title" data-i18n="cocreate.split.title">Post-release profit share</h3>
@@ -607,12 +899,14 @@
             <div class="text-sub" style="font-size: var(--fs-11);margin-top:8px" data-i18n="pd-cf.trigger-note">Manual early trigger · shows pool, per-recipient detail and fee version before you confirm.</div>
           </section>
 
-          <!-- Payout tranches (deliverable-gated) -->
-          <section class="card bento--span-5">
+<!-- Payout tranches (deliverable-gated) -->
+          <section class="card bento--span-12">
             <div class="card__head">
               <h3 class="card__title" data-i18n="cocreate.tranche.title">Payout progress</h3>
               <span class="badge badge--info"><span data-i18n="pd-cf.tranche-tier">Budget under 50k</span></span>
             </div>
+            <!-- 規則說明（平台依預算級距決定，創作者不可編輯）與下方的進度分開讀 -->
+            <p class="field-text" style="margin:0 0 12px" data-i18n="pd-cf.tranche-rule">Budget tier under 50k pays out in three tranches — 40% / 30% / 30%. Each tranche after the first is released once its materials are submitted.</p>
             <div class="data-list">
               <div class="data-list__row">
                 <div class="data-list__row-main">
@@ -648,108 +942,185 @@
             <button class="btn btn--outline mt-16" style="width:100%" data-i18n="cocreate.tranche.deliver">Submit materials to release next tranche</button>
           </section>
 
-          <!-- Backers by tier (avatar-stack) -->
-          <section class="card bento--span-7">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="cocreate.tiers.title">Backers by tier</h3>
-              <a class="card__link" href="#" data-i18n="cocreate.tiers.public">View public page →</a>
-            </div>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__body">
-                    <div class="data-list__title">Believer · $12</div>
-                    <div class="data-list__meta" data-i18n="cocreate.tiers.t1-meta">Unlimited · digital</div>
-                    <div class="project-bar" style="margin-top:8px;max-width:280px"><div class="project-bar__fill" style="width:72%"></div></div>
-                  </div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-                  <div class="data-list__amount">98 <span data-i18n="pd-cf.ppl">backers</span></div>
-                  <div class="avatar-stack">
-                    <span class="avatar-stack__item">A</span>
-                    <span class="avatar-stack__item">K</span>
-                    <span class="avatar-stack__item">M</span>
-                    <span class="avatar-stack__more">+95</span>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__body">
-                    <div class="data-list__title">Champion · $45</div>
-                    <div class="data-list__meta"><span data-i18n="cocreate.tiers.t2-meta">Unlimited · physical + digital</span> · <span class="badge badge--orange"><span data-i18n="cocreate.tiers.popular">Most chosen</span></span></div>
-                    <div class="project-bar" style="margin-top:8px;max-width:280px"><div class="project-bar__fill" style="width:44%"></div></div>
-                  </div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-                  <div class="data-list__amount">28 <span data-i18n="pd-cf.ppl">backers</span></div>
-                  <div class="avatar-stack">
-                    <span class="avatar-stack__item">C</span>
-                    <span class="avatar-stack__item">J</span>
-                    <span class="avatar-stack__more">+25</span>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__body">
-                    <div class="data-list__title">Inner Circle · $250</div>
-                    <div class="data-list__meta" data-i18n="pd-cf.t3-meta">10 slots · physical + premiere invite</div>
-                    <div class="project-bar" style="margin-top:8px;max-width:280px"><div class="project-bar__fill" style="width:80%"></div></div>
-                  </div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-                  <div class="data-list__amount">8 / 10</div>
-                  <div class="avatar-stack">
-                    <span class="avatar-stack__item">S</span>
-                    <span class="avatar-stack__item">W</span>
-                    <span class="avatar-stack__more">+6</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
 
-          <!-- Backer detail (charge states) -->
-          <section class="card bento--span-5">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3>
-              <button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button>
+          
+
+          
+
+          
+
+          
+
+          
+
+        </div>
+
+        <!-- ===== Music-type royalty analysis (CCR-006) · only shown when project kind = Music ===== -->
+        <div data-money-section="music" hidden>
+
+          <div class="info-banner mt-24">
+            <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="pd-roy.proposal-note"><strong>Proposal · not finalized —</strong> royalty reporting for music-type co-creation projects. Distributors deliver reports periodically (some sources lag ~a quarter), counted separately from funding. Figures illustrative, pending product decision.</span>
+          </div>
+
+          <!-- Quarterly royalty total -->
+          <div class="bento mt-16">
+            <div class="kpi bento--span-12">
+              <div class="kpi__label" data-i18n="pd-roy.total-label">Q2 2026 royalties</div>
+              <div class="kpi__value">US$1,590</div>
+              <div class="kpi__meta" data-i18n="pd-roy.total-meta">Total royalties · Apr–Jun 2026 · all songs, platforms & regions · as of Jun 30</div>
             </div>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">#27</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title">Studio Yiu</div>
-                    <div class="data-list__meta" data-i18n="pd-cf.b1-meta">Inner Circle · NFT #027 · Jun 11</div>
-                  </div>
-                </div>
-                <span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span>
+          </div>
+
+          <div class="bento mt-16">
+
+            <!-- Regional breakdown -->
+            <section class="card bento--span-6">
+              <div class="card__head">
+                <h3 class="card__title" data-i18n="pd-roy.region.title">Regional performance</h3>
+                <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
               </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">#26</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title">Liminal Films</div>
-                    <div class="data-list__meta" data-i18n="pd-cf.b2-meta">Champion · NFT #026 · Jun 10</div>
-                  </div>
-                </div>
-                <span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span>
+              <ul class="rank-bars mt-16">
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.tw">Taiwan</span></div></div>
+                  <span class="rank-bar__amt">US$612</span><span class="rank-bar__pct">38.5%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:47%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-2)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.jp">Japan</span></div></div>
+                  <span class="rank-bar__amt">US$288</span><span class="rank-bar__pct">18.1%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:28%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.us">United States</span></div></div>
+                  <span class="rank-bar__amt">US$173</span><span class="rank-bar__pct">10.9%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:21%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.hk">Hong Kong</span></div></div>
+                  <span class="rank-bar__amt">US$129</span><span class="rank-bar__pct">8.1%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:14%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.sg">Singapore</span></div></div>
+                  <span class="rank-bar__amt">US$87</span><span class="rank-bar__pct">5.5%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:12%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.my">Malaysia</span></div></div>
+                  <span class="rank-bar__amt">US$74</span><span class="rank-bar__pct">4.7%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:9%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.kr">South Korea</span></div></div>
+                  <span class="rank-bar__amt">US$58</span><span class="rank-bar__pct">3.6%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:7%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-accent)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.th">Thailand</span></div></div>
+                  <span class="rank-bar__amt">US$43</span><span class="rank-bar__pct">2.7%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:5%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--muted-foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.ca">Canada</span></div></div>
+                  <span class="rank-bar__amt">US$32</span><span class="rank-bar__pct">2.0%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:4%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.au">Australia</span></div></div>
+                  <span class="rank-bar__amt">US$26</span><span class="rank-bar__pct">1.6%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:11%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--border)"></span><span class="rank-bar__label" data-i18n="pd-roy.rg.other">Other regions</span></div></div>
+                  <span class="rank-bar__amt">US$68</span><span class="rank-bar__pct">4.3%</span>
+                </li>
+              </ul>
+            </section>
+
+            <!-- Platform breakdown -->
+            <section class="card bento--span-6">
+              <div class="card__head">
+                <h3 class="card__title" data-i18n="pd-roy.platform.title">Streaming platforms</h3>
+                <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="pd-roy.byrev">By royalty</span>
               </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">#25</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title">Rae Lin</div>
-                    <div class="data-list__meta" data-i18n="pd-cf.b3-meta">Believer · NFT #025 · Jun 09</div>
-                  </div>
+              <ul class="rank-bars mt-16">
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:100%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-success)"></span><span class="rank-bar__label">Spotify</span></div></div>
+                  <span class="rank-bar__amt">US$486</span><span class="rank-bar__pct">30.6%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:70%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--destructive)"></span><span class="rank-bar__label">YouTube</span></div></div>
+                  <span class="rank-bar__amt">US$342</span><span class="rank-bar__pct">21.5%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:61%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--status-info)"></span><span class="rank-bar__label">KKBOX</span></div></div>
+                  <span class="rank-bar__amt">US$297</span><span class="rank-bar__pct">18.7%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:44%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--foreground)"></span><span class="rank-bar__label">Apple Music</span></div></div>
+                  <span class="rank-bar__amt">US$214</span><span class="rank-bar__pct">13.5%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:24%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-3)"></span><span class="rank-bar__label">LINE MUSIC</span></div></div>
+                  <span class="rank-bar__amt">US$118</span><span class="rank-bar__pct">7.4%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:13%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--primary)"></span><span class="rank-bar__label" data-i18n="pd-roy.pf.friday">friDay Music</span></div></div>
+                  <span class="rank-bar__amt">US$62</span><span class="rank-bar__pct">3.9%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:8%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-4)"></span><span class="rank-bar__label">Amazon Music</span></div></div>
+                  <span class="rank-bar__amt">US$41</span><span class="rank-bar__pct">2.6%</span>
+                </li>
+                <li class="rank-bar rank-bar--amount">
+                  <div class="rank-bar__track"><div class="rank-bar__fill" style="width:6%"></div><div class="rank-bar__content"><span class="rank-bar__dot" style="background:var(--chart-5)"></span><span class="rank-bar__label">Deezer</span></div></div>
+                  <span class="rank-bar__amt">US$30</span><span class="rank-bar__pct">1.9%</span>
+                </li>
+              </ul>
+            </section>
+
+          </div>
+
+          <!-- Top 10 songs · two sort orders -->
+          <div class="bento mt-16">
+            <section class="card bento--span-12">
+              <div class="card__head">
+                <h3 class="card__title" data-i18n="pd-roy.top.title">Top 10 songs</h3>
+                <div class="segmented" role="tablist" aria-label="Sort songs" data-song-sort>
+                  <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-sort-view="royalty" data-i18n="pd-roy.top.byrev">By royalty</button>
+                  <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-sort-view="plays" data-i18n="pd-roy.top.byplays">By plays</button>
                 </div>
-                <span class="badge badge--warning"><span data-i18n="cocreate.backers.retry">Retrying charge</span></span>
               </div>
-            </div>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="pd-cf.charge-note">Cards verified on pledge · charged only when the goal is reached.</div>
-          </section>
+
+              <div data-sort-section="royalty" class="mt-16">
+                <table class="ztor-table">
+                  <thead><tr><th style="width:40px">#</th><th data-i18n="pd-roy.top.col-song">Song</th><th style="text-align:right" data-i18n="pd-roy.top.col-royalty">Royalty</th></tr></thead>
+                  <tbody>
+                    <tr class="ztor-table__row"><td>1</td><td data-i18n="pd-roy.song.s1">Girls My Age</td><td style="text-align:right;font-weight:var(--fw-medium)">US$412</td></tr>
+                    <tr class="ztor-table__row"><td>2</td><td data-i18n="pd-roy.song.s2">Man of the World</td><td style="text-align:right;font-weight:var(--fw-medium)">US$385</td></tr>
+                    <tr class="ztor-table__row"><td>3</td><td data-i18n="pd-roy.song.s3">Backup Love</td><td style="text-align:right;font-weight:var(--fw-medium)">US$231</td></tr>
+                    <tr class="ztor-table__row"><td>4</td><td data-i18n="pd-roy.song.s4">Lonely Birthday</td><td style="text-align:right;font-weight:var(--fw-medium)">US$189</td></tr>
+                    <tr class="ztor-table__row"><td>5</td><td data-i18n="pd-roy.song.s5">Dream Analysis</td><td style="text-align:right;font-weight:var(--fw-medium)">US$152</td></tr>
+                    <tr class="ztor-table__row"><td>6</td><td data-i18n="pd-roy.song.s6">Ferris Wheel</td><td style="text-align:right;font-weight:var(--fw-medium)">US$98</td></tr>
+                    <tr class="ztor-table__row"><td>7</td><td data-i18n="pd-roy.song.s7">Quarrel</td><td style="text-align:right;font-weight:var(--fw-medium)">US$47</td></tr>
+                    <tr class="ztor-table__row"><td>8</td><td data-i18n="pd-roy.song.s8">Love Like a Shadow</td><td style="text-align:right;font-weight:var(--fw-medium)">US$31</td></tr>
+                    <tr class="ztor-table__row"><td>9</td><td data-i18n="pd-roy.song.s9">Sunny Day</td><td style="text-align:right;font-weight:var(--fw-medium)">US$24</td></tr>
+                    <tr class="ztor-table__row"><td>10</td><td data-i18n="pd-roy.song.s10">On the Road</td><td style="text-align:right;font-weight:var(--fw-medium)">US$21</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div data-sort-section="plays" class="mt-16" hidden>
+                <table class="ztor-table">
+                  <thead><tr><th style="width:40px">#</th><th data-i18n="pd-roy.top.col-song">Song</th><th style="text-align:right" data-i18n="pd-roy.top.col-plays">Plays</th></tr></thead>
+                  <tbody>
+                    <tr class="ztor-table__row"><td>1</td><td data-i18n="pd-roy.song.s2">Man of the World</td><td style="text-align:right;font-weight:var(--fw-medium)">128,400</td></tr>
+                    <tr class="ztor-table__row"><td>2</td><td data-i18n="pd-roy.song.s1">Girls My Age</td><td style="text-align:right;font-weight:var(--fw-medium)">117,900</td></tr>
+                    <tr class="ztor-table__row"><td>3</td><td data-i18n="pd-roy.song.s4">Lonely Birthday</td><td style="text-align:right;font-weight:var(--fw-medium)">89,300</td></tr>
+                    <tr class="ztor-table__row"><td>4</td><td data-i18n="pd-roy.song.s3">Backup Love</td><td style="text-align:right;font-weight:var(--fw-medium)">74,100</td></tr>
+                    <tr class="ztor-table__row"><td>5</td><td data-i18n="pd-roy.song.s7">Quarrel</td><td style="text-align:right;font-weight:var(--fw-medium)">52,800</td></tr>
+                    <tr class="ztor-table__row"><td>6</td><td data-i18n="pd-roy.song.s5">Dream Analysis</td><td style="text-align:right;font-weight:var(--fw-medium)">48,200</td></tr>
+                    <tr class="ztor-table__row"><td>7</td><td data-i18n="pd-roy.song.s6">Ferris Wheel</td><td style="text-align:right;font-weight:var(--fw-medium)">31,500</td></tr>
+                    <tr class="ztor-table__row"><td>8</td><td data-i18n="pd-roy.song.s9">Sunny Day</td><td style="text-align:right;font-weight:var(--fw-medium)">22,700</td></tr>
+                    <tr class="ztor-table__row"><td>9</td><td data-i18n="pd-roy.song.s8">Love Like a Shadow</td><td style="text-align:right;font-weight:var(--fw-medium)">14,100</td></tr>
+                    <tr class="ztor-table__row"><td>10</td><td data-i18n="pd-roy.song.s10">On the Road</td><td style="text-align:right;font-weight:var(--fw-medium)">9,800</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+            </section>
+          </div>
 
         </div>
       </div>
@@ -764,35 +1135,69 @@
   </main>
 </div>
 
-<!-- ===== Edit drawers (prototype-level: applies to page, no persistence) ===== -->
-<div class="drawer" id="pd-edit-about">
-  <div class="drawer__scrim" data-drawer-close></div>
-  <div class="drawer__panel" role="dialog" aria-modal="true">
-    <div class="drawer__head">
-      <h3 class="drawer__title" data-i18n="pd-edit.about.title">Edit project info</h3>
-      <button class="drawer__close" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+<!-- ===== Edit popups（中央彈窗殼 .payout-modal/.payout-dialog；prototype-level: applies to page, no persistence）===== -->
+<div class="payout-modal" id="pd-edit-about" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-about-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-about-title" data-i18n="pd-edit.about.title">Edit basics</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
-    <div class="drawer__body">
+    <div class="payout-dialog__body">
       <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="project-detail.about.name">Project name</label>
       <input class="input" id="pd-f-name" value="Late Bloom">
       <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.about.desc">Description</label>
       <textarea class="textarea" id="pd-f-desc">A coming-of-age short film about a florist who only blooms at night. Funding the final color grade and a limited NFT collectible for backers.</textarea>
+      <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="project-detail.about.access">Access &amp; price</label>
+      <input class="input" id="pd-f-access" value="Paid · $12 rental · ad-free">
+      <div class="settings-row" style="border:0;padding:14px 0 0">
+        <div>
+          <div class="settings-row__label" data-i18n="project-detail.about.projecttype">Project type</div>
+          <div class="settings-row__hint" data-i18n="project-detail.about.projecttype-val">Fund it first</div>
+        </div>
+        <span class="badge badge--neutral"><span data-i18n="project-detail.about.locked">Locked after publish</span></span>
+      </div>
       <div class="info-banner mt-16">
         <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="pd-edit.proto-note">Prototype editing — changes apply to this page only and aren't saved.</span>
+        <span data-i18n="project-detail.about.lock-note"><strong>Project type is locked.</strong> Funding model can't change after publish — it protects the backer contract and NFT holder rights (D041). Platform &amp; payment fees follow Earnings (§7.3) and aren't editable here.</span>
       </div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="about" data-i18n="project-detail.btn.save">Save changes</button>
     </div>
   </div>
 </div>
-<div class="drawer" id="pd-edit-collab">
-  <div class="drawer__scrim" data-drawer-close></div>
-  <div class="drawer__panel" role="dialog" aria-modal="true">
-    <div class="drawer__head">
-      <h3 class="drawer__title" data-i18n="pd-edit.collab.title">Add collaborator</h3>
-      <button class="drawer__close" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+<div class="payout-modal" id="pd-edit-schedule" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-schedule-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-schedule-title" data-i18n="pd-edit.schedule.title">Edit schedule</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
-    <div class="drawer__body">
+    <div class="payout-dialog__body">
+      <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="pd-edit.schedule.publish">Funding publish time</label>
+      <input class="input" id="pd-f-publish" value="May 18, 2026 · 10:00">
+      <p class="field__hint" style="margin-top:6px" data-i18n="pd-edit.schedule.publish-hint">Set a future time to schedule, or publish now. A scheduled project goes live automatically at this time.</p>
+      <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.schedule.deadline">Funding deadline</label>
+      <input class="input" id="pd-f-deadline" value="Jul 06, 2026 · 23:59">
+      <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)">
+        <div>
+          <div class="settings-row__label" data-i18n="project-detail.refund.label">Auto full refund if goal missed</div>
+          <div class="settings-row__hint" data-i18n="project-detail.refund.hint">Crowdfunding-only · refunds follow §7.3.</div>
+        </div>
+        <div class="switch switch--on" id="pd-f-refund"></div>
+      </div>
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="pd-edit.schedule.note">These times drive the automatic Draft → Live → Funded / Failed transitions. Changing dates after publish affects the backer commitment — a real change would ask to confirm.</span>
+      </div>
+      <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="schedule" data-i18n="project-detail.btn.save">Save changes</button>
+    </div>
+  </div>
+</div>
+<div class="payout-modal" id="pd-edit-collab" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-collab-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-collab-title" data-i18n="pd-edit.collab.title">Add collaborator</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
       <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="pd-edit.collab.name">Name</label>
       <input class="input" id="pd-f-cname" placeholder="Kai Wen">
       <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.collab.role">Role</label>
@@ -807,14 +1212,13 @@
     </div>
   </div>
 </div>
-<div class="drawer" id="pd-edit-milestone">
-  <div class="drawer__scrim" data-drawer-close></div>
-  <div class="drawer__panel" role="dialog" aria-modal="true">
-    <div class="drawer__head">
-      <h3 class="drawer__title" data-i18n="pd-edit.milestone.title">Add milestone</h3>
-      <button class="drawer__close" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+<div class="payout-modal" id="pd-edit-milestone" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-milestone-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-milestone-title" data-i18n="pd-edit.milestone.title">Add milestone</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
-    <div class="drawer__body">
+    <div class="payout-dialog__body">
       <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="pd-edit.milestone.name">Milestone</label>
       <input class="input" id="pd-f-mname" placeholder="Festival submission">
       <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.milestone.date">Target date</label>
@@ -823,14 +1227,33 @@
     </div>
   </div>
 </div>
-<div class="drawer" id="pd-edit-update">
-  <div class="drawer__scrim" data-drawer-close></div>
-  <div class="drawer__panel" role="dialog" aria-modal="true">
-    <div class="drawer__head">
-      <h3 class="drawer__title" data-i18n="pd-edit.update.title">Post an update</h3>
-      <button class="drawer__close" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+<div class="payout-modal" id="pd-edit-tier" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-tier-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-tier-title" data-i18n="pd-edit.tier.title">Edit support plan</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
-    <div class="drawer__body">
+    <div class="payout-dialog__body">
+      <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="pd-edit.tier.name">Plan name</label>
+      <input class="input" id="pd-f-tname" value="Physical + digital">
+      <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.tier.price">Price</label>
+      <input class="input" id="pd-f-tprice" value="45">
+      <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.tier.slots">Slots</label>
+      <input class="input" id="pd-f-tslots" placeholder="Unlimited">
+      <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.tier.body">What backers get</label>
+      <textarea class="textarea" id="pd-f-tbody">Physical + digital bundle, name in credits.</textarea>
+      <p class="field__hint" style="margin-top:8px" data-i18n="pd-edit.tier.note">28 backers have already pledged on this plan. Whether price and slots may change after publish is still under product review.</p>
+      <button class="btn btn--primary mt-16" style="width:100%" data-i18n="pd-edit.tier.submit">Save plan</button>
+    </div>
+  </div>
+</div>
+<div class="payout-modal" id="pd-edit-update" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-update-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-edit-update-title" data-i18n="pd-edit.update.title">Post an update</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
       <label class="settings-row__label" style="display:block;margin-bottom:6px" data-i18n="pd-edit.update.name">Title</label>
       <input class="input" id="pd-f-utitle" placeholder="Sound mix is locked">
       <label class="settings-row__label" style="display:block;margin:16px 0 6px" data-i18n="pd-edit.update.audience">Audience</label>
@@ -845,9 +1268,10 @@
     </div>
   </div>
 </div>
-<script src="js/icons.js?v=20260723zj"></script>
-<script src="js/i18n.js?v=20260723zj"></script>
-<script src="js/sidebar.js?v=20260723zj"></script>
+<script src="js/icons.js?v=20260724zn"></script>
+<script src="js/projects-store.js?v=20260724zn"></script>
+<script src="js/i18n.js?v=20260724zn"></script>
+<script src="js/sidebar.js?v=20260724zn"></script>
 <script>
   /* Project detail tabs · spec 5.1.2.2 — switch active state + visible panel.
      Same pattern as earnings.html. Hash deep-link supported (#money etc.). */
@@ -856,7 +1280,7 @@
     if (!tablist) return;
     const tabs = tablist.querySelectorAll('.tabs__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
-    const NAMES = ['overview', 'content', 'details', 'money'];
+    const NAMES = ['settings', 'pledges', 'about', 'progress', 'earnings', 'cofund', 'money'];
 
     function activate(name) {
       tabs.forEach(t => {
@@ -873,20 +1297,31 @@
       if (btn && btn.dataset.tab) activate(btn.dataset.tab);
     });
 
+    /* 卡片上的「前往專案收益 →」等入口：跳到對應分頁並捲回 tab 列 */
+    document.addEventListener('click', e => {
+      const g = e.target.closest('[data-goto-tab]');
+      if (!g) return;
+      const name = g.getAttribute('data-goto-tab');
+      if (NAMES.includes(name)) { activate(name); tablist.scrollIntoView({ block: 'start' }); }
+    });
+
     const initial = (location.hash || '').replace('#', '');
     if (NAMES.includes(initial)) activate(initial);
   })();
 
-  /* Edit drawers (CCR-007 prototype) — open/close + apply values to the page.
+  /* Edit popups (CCR-007 prototype) — 2026-07-24 由側邊 drawer 改成站上共用的中央彈窗殼
+     （.payout-modal / .payout-dialog）。open/close + apply values to the page.
      No persistence: refresh resets. Save handlers write into the same
      data-list patterns the static rows use, so styling stays DS-native. */
   (function () {
-    function open(id) { const d = document.getElementById(id); if (d) d.classList.add('is-open'); }
-    function closeAll() { document.querySelectorAll('.drawer.is-open').forEach(d => d.classList.remove('is-open')); }
+    function open(id) { const d = document.getElementById(id); if (d) d.hidden = false; }
+    function closeAll() { document.querySelectorAll('.payout-modal:not([hidden])').forEach(d => { d.hidden = true; }); }
     document.addEventListener('click', e => {
-      const t = e.target.closest('[data-drawer-open]');
-      if (t) { open(t.getAttribute('data-drawer-open')); return; }
-      if (e.target.closest('[data-drawer-close]')) closeAll();
+      const t = e.target.closest('[data-modal-open]');
+      if (t) { open(t.getAttribute('data-modal-open')); return; }
+      if (e.target.closest('[data-modal-close]')) { closeAll(); return; }
+      /* 點灰底關閉：.payout-modal 自己就是覆蓋層，點到它本身＝點在對話框外 */
+      if (e.target.classList && e.target.classList.contains('payout-modal')) closeAll();
     });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
 
@@ -902,8 +1337,12 @@
     }
     const SAVE = {
       about() {
-        if (v('pd-f-name')) document.getElementById('pd-title').textContent = v('pd-f-name');
+        if (v('pd-f-name')) { document.getElementById('pd-title').textContent = v('pd-f-name'); document.getElementById('pd-crumb-name').textContent = v('pd-f-name'); }
         if (v('pd-f-desc')) document.getElementById('pd-desc').textContent = v('pd-f-desc');
+        /* 存取與價格是 demo 唯讀顯示點，改了只在編輯彈窗裡留著（原型不落地） */
+      },
+      schedule() {
+        /* 專案時間為 demo：改了值不真的驅動狀態機，僅示意這裡是排程設定的入口 */
       },
       collab() {
         if (!v('pd-f-cname')) return;
@@ -937,9 +1376,147 @@
       if (fn) fn();
       closeAll();
     });
+
+    /* 標記專案完成（使用者裁示：完成的動作放在專案更新裡按，不是狀態下拉）。
+       原型示意：附一則「專案已完成」更新，並把狀態徽章轉為已完成。 */
+    document.addEventListener('click', e => {
+      if (!e.target.closest('[data-pd-complete]')) return;
+      const zh = document.documentElement.lang === 'zh-Hant';
+      const icon = '<div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>';
+      const list = document.getElementById('pd-upd-list');
+      const el = row(icon, zh ? '專案已完成' : 'Project completed', (zh ? '剛剛 · 全部' : 'Just now · Everyone'));
+      list.insertBefore(el, list.firstChild);
+      if (window.ztorIcons) window.ztorIcons.applyIcons(el);
+      const badge = document.getElementById('pd-badge-status');
+      if (badge) { badge.className = 'badge badge--success'; badge.textContent = zh ? '已完成' : 'Completed'; }
+    });
+  })();
+
+  /* 依 ?id= 帶出的專案渲染本頁（2026-07-24）——名稱、封面、內容類型／發行模式／狀態徽章、
+     募資數字，全部來自共用 store js/projects-store.js；音樂家族才顯示版稅分析區塊。
+     沒帶 id 或 id 不存在時退回清單第一個專案。 */
+  (function () {
+    const store = window.ztorProjects;
+    if (!store) return;
+    const id = new URLSearchParams(location.search).get('id');
+    const p = (id && store.get(id)) || store.first();
+    const zh = () => document.documentElement.lang === 'zh-Hant';
+    const t = o => (o ? (zh() ? o.zh : o.en) : '');
+    const set = (elId, text) => { const el = document.getElementById(elId); if (el && text) el.textContent = text; };
+
+    const TYPE = { 'go-live': { en: 'Go live', zh: '直接上線' }, fund: { en: 'Fund it first', zh: '先募資' }, preorder: { en: 'Pre-order', zh: '預購' } };
+    const STATUS = {
+      draft:     { en: 'Draft', zh: '草稿' },      scheduled: { en: 'Scheduled', zh: '已排程' },
+      live:      { en: 'Live', zh: '進行中' },      funded:    { en: 'Funded', zh: '已達標' },
+      completed: { en: 'Completed', zh: '已完成' }, published:  { en: 'Published', zh: '已上線' },
+      failed:    { en: 'Failed', zh: '失敗' }
+    };
+    const STATUS_TONE = { draft: '', scheduled: 'badge--info', live: 'badge--orange', funded: 'badge--success', completed: 'badge--success', published: 'badge--success', failed: 'badge--error' };
+
+    function render() {
+      document.title = p.name + ' · Project detail · Ztor Creator Studio';
+      set('pd-crumb-name', p.name);
+      set('pd-title', p.name);
+      set('pd-desc', t(p.desc));
+      /* 創作者與日期：同一個 Creator Studio 帳號，日期逐專案不同 */
+      set('pd-owner-line', zh()
+        ? '創作者 ' + store.owner() + ' · 建立於 ' + p.created + (p.fundFrom ? ' · 募資自 ' + p.fundFrom + ' 起' : '')
+        : 'By ' + store.owner() + ' · Created ' + p.created + (p.fundFrom ? ' · Funding since ' + p.fundFrom : ''));
+
+      const badge = (elId, text, tone) => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.innerHTML = '';
+        el.textContent = text;
+        if (tone !== undefined) el.className = 'badge' + (tone ? ' ' + tone : '');
+      };
+      badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
+      badge('pd-badge-cat', t(store.catLabel(p.cat)), '');
+      badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
+
+      const poster = document.getElementById('pd-poster');
+      if (poster) { poster.src = p.poster || p.cover; poster.alt = p.name; }
+
+      /* 募資面板：有 fund 資料的專案（先募資）才換數字，其餘沿用示意值 */
+      if (p.fund) {
+        set('pd-fund-raised', p.fund.raised);
+        set('pd-fund-backers', p.fund.backers + (zh() ? ' 人支持' : ' backers'));
+        set('pd-fund-goal', (zh() ? '目標 ' : 'Goal ') + p.fund.goal);
+        set('pd-fund-pct', p.fund.pct + '%');
+        set('pd-fund-left', t(p.fund.left));
+        set('pd-fund-period', t(p.fund.period));
+        const bar = document.getElementById('pd-fund-bar');
+        if (bar) bar.style.width = p.fund.pct + '%';
+      } else {
+        /* 非先募資（直接上線／預購）沒有「已募 / 目標 / 進度」的募資語意——改用 meta 摘要，
+           並隱藏募資限定的欄位（目標、進度條、支持人數），避免顯示到 Late Bloom 的預設值。 */
+        const parts = t(p.meta).split(' · ');
+        set('pd-fund-raised', parts[0] || '—');
+        set('pd-fund-left', parts.slice(1).join(' · '));
+        const pe = document.getElementById('pd-fund-period'); if (pe) pe.textContent = '';
+        const hide = sel => { const el = document.querySelector('.funding-panel--card ' + sel); if (el) el.style.display = 'none'; };
+        hide('.funding-panel__goal');
+        hide('.funding-panel__bar-row');
+        hide('.funding-panel__backers');
+      }
+
+      /* 收益概況（landing 一行摘要，明細在專案收益分頁）：
+         先募資有 fund 資料就顯示已承諾金額，其餘類型顯示 meta 摘要 */
+      const head = document.getElementById('pd-rev-headline');
+      const sub = document.getElementById('pd-rev-sub');
+      if (head && sub) {
+        if (p.fund) {
+          head.textContent = p.fund.raised;
+          sub.textContent = zh() ? '已承諾 · 達標後開始撥款' : 'Pledged so far · payout starts once the goal is reached';
+        } else {
+          head.textContent = t(p.meta).split(' · ')[0];
+          sub.textContent = t(p.meta).split(' · ').slice(1).join(' · ') || (zh() ? '累計收益' : 'Lifetime revenue');
+        }
+      }
+
+      /* 音樂家族才有版稅分析（原本靠頁內 segmented 切，現在由專案的內容類型決定） */
+      const musicBlock = document.querySelector('[data-money-section="music"]');
+      if (musicBlock) musicBlock.hidden = store.family(p.cat) !== 'music';
+
+      /* 專案「類型」維度：我的收益／共創進度是共創（募資型）專屬，直接上線／預購不顯示。
+         同時把對應的分頁與 tab 按鈕一起隱藏；若當前正停在被隱藏的分頁，退回專案總覽。 */
+      const fundOnly = p.type === 'fund';
+      document.querySelectorAll('[data-fund-only]').forEach(btn => { btn.hidden = !fundOnly; });
+      ['earnings', 'cofund'].forEach(name => {
+        const panel = document.querySelector('.tab-panel[data-panel="' + name + '"]');
+        if (panel && !fundOnly) {
+          panel.hidden = true;
+          if (panel.classList.contains('tab-panel--active')) {
+            const s = document.querySelector('.tabs__item[data-tab="settings"]'); if (s) s.click();
+          }
+        }
+      });
+    }
+
+    render();
+    document.addEventListener('ztor:langchange', render);
+    new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  })();
+
+  /* Top-10 songs sort toggle — by royalty vs by plays (two pre-sorted tables). */
+  (function () {
+    const toggle = document.querySelector('[data-song-sort]');
+    if (!toggle) return;
+    const sections = document.querySelectorAll('[data-sort-section]');
+    toggle.addEventListener('click', e => {
+      const btn = e.target.closest('[data-sort-view]');
+      if (!btn) return;
+      const view = btn.dataset.sortView;
+      toggle.querySelectorAll('.segmented__btn').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('segmented__btn--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      sections.forEach(s => { s.hidden = s.dataset.sortSection !== view; });
+    });
   })();
 </script>
-<script src="js/reveal.js?v=20260723zj"></script>
-<script src="js/devtools.js?v=20260723zj"></script>
+<script src="js/reveal.js?v=20260724zn"></script>
+<script src="js/devtools.js?v=20260724zn"></script>
 </body>
 </html>

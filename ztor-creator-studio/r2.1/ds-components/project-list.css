@@ -1,6 +1,12 @@
 /* ============================================================
    Project list — borderless table list for the Projects page.
-   Uses existing color, type, spacing, radius, and motion tokens.
+   Visual language mirrors E-Shop's .product-list (real image
+   thumbnail, borderless rows, accent hover, muted column heads).
+   Columns (2026-07-24, user split the crammed meta line into
+   real columns): image · 專案(name+desc) · 當前目標 · 剩餘時間 ·
+   類別(內容/家族兩行) · 類型 · 狀態 · 待辦(tip icon) · chevron.
+   Non-campaign rows show "—" in 當前目標/剩餘時間 (no goal/countdown).
+   Uses existing color, type, spacing, radius, motion tokens.
    ============================================================ */
 
 .project-list {
@@ -11,10 +17,15 @@
 .project-list__head,
 .project-list__row {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) 132px 132px 64px;
-  gap: var(--sp-20);
+  /* image · project · goal · time · category · type · status · todo · chevron */
+  grid-template-columns: 56px minmax(200px, 1fr) 128px 88px 100px 84px 88px 52px 24px;
+  gap: var(--sp-16);
   align-items: center;
 }
+
+/* [hidden] 要蓋過 display:grid，否則被篩選隱藏的列仍會顯示 */
+.project-list__head[hidden],
+.project-list__row[hidden] { display: none; }
 
 .project-list__head {
   min-height: 44px;
@@ -29,7 +40,7 @@
 .project-list__row {
   min-height: 88px;
   padding: var(--sp-14) var(--sp-10);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
   color: inherit;
   text-decoration: none;
   transition:
@@ -46,34 +57,39 @@
   outline-offset: -2px;
 }
 
-.project-list__project {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-14);
-  min-width: 0;
-}
-
-/* 2026-07-18：與 .product-list__thumb 同一「列縮圖」角色，一併統一成描邊框；2026-07-20 修正
-   對齊值——比照 .product-list__image--placeholder 的真實呈現（--muted 底／--border-soft 邊／
-   52px／--muted-foreground icon），而非 .product-list__image 從未單獨呈現過的基礎規則。 */
-.project-list__icon {
-  width: 52px;
-  height: 52px;
+/* ── image thumbnail（比照 e-shop .product-list__image；用專案詳情同一張圖 poster||cover）── */
+.project-list__image {
+  width: 56px;
+  height: 56px;
   flex: none;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--card);
   display: inline-grid;
   place-items: center;
-  border-radius: var(--radius);
+}
+
+.project-list__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 無圖退位：類型 icon 佔位（新建專案還沒上傳素材時），沿用 e-shop placeholder 調性 */
+.project-list__image--placeholder {
   background: var(--muted);
   border: 1px solid var(--border-soft);
   color: var(--muted-foreground);
 }
 
-.project-list__icon .ztor-icon {
+.project-list__image--placeholder .ztor-icon {
   width: 20px;
   height: 20px;
 }
 
-.project-list__body {
+/* ── 專案名稱（名稱＋一行簡介）── */
+.project-list__project {
   min-width: 0;
 }
 
@@ -88,7 +104,7 @@
   white-space: nowrap;
 }
 
-.project-list__meta {
+.project-list__desc {
   overflow: hidden;
   margin-top: var(--sp-2);
   color: var(--muted-foreground);
@@ -98,32 +114,63 @@
   white-space: nowrap;
 }
 
-.project-list__category {
-  color: var(--foreground-muted);
-  font-weight: var(--fw-medium);
-}
-
+/* ── 一般資料格（當前目標／剩餘時間／類型）── */
 .project-list__cell {
   min-width: 0;
+  overflow: hidden;
   color: var(--foreground-muted);
   font-size: var(--fs-13);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.project-list__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sp-12);
+/* 空值（非募資列的目標／倒數）以 --muted-foreground 破折號呈現，弱於有值的格 */
+.project-list__cell--empty {
   color: var(--muted-foreground);
 }
 
-.project-list__actions .tip {
+/* ── 類別：內容類型（電影）疊在家族（影視）上，比照 e-shop 兩行分類格 ── */
+.project-list__category {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+.project-list__cat-main {
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: var(--fs-13);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-list__cat-family {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 待辦格：只放 tip（i）圖示，置左對齊欄頭 ── */
+.project-list__todo {
+  display: flex;
+  align-items: center;
+  color: var(--muted-foreground);
+}
+
+.project-list__todo .tip {
   display: inline-flex;
 }
 
+/* ── chevron：點列開詳情的提示（此頁列＝連結，與 e-shop 的 ⋯ 選單不同）── */
 .project-list__go {
   display: inline-grid;
   place-items: center;
+  color: var(--muted-foreground);
 }
 
 .project-list__go .ztor-icon {
@@ -135,37 +182,50 @@
   color: var(--foreground);
 }
 
+/* ── 中寬螢幕：先收掉次要欄（類別／類型／倒數），保住名稱＋目標＋狀態＋待辦 ── */
+@media (max-width: 1180px) {
+  .project-list__head,
+  .project-list__row {
+    grid-template-columns: 56px minmax(180px, 1fr) 120px 88px 52px 24px;
+  }
+  .project-list__col-time,
+  .project-list__col-category,
+  .project-list__col-type,
+  .project-list__time,
+  .project-list__category,
+  .project-list__type { display: none; }
+}
+
+/* ── 窄螢幕：改堆疊，名稱主行＋目標/狀態次行，待辦與 chevron 靠右 ── */
 @media (max-width: 760px) {
   .project-list__head {
     display: none;
   }
 
   .project-list__row {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--sp-10) var(--sp-14);
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    gap: var(--sp-8) var(--sp-14);
     min-height: 0;
     padding: var(--sp-16) var(--sp-4);
+    align-items: start;
   }
 
-  .project-list__project {
-    grid-column: 1;
-    grid-row: 1;
-  }
+  .project-list__image { grid-column: 1; grid-row: 1 / span 2; }
+  .project-list__project { grid-column: 2; grid-row: 1; }
 
-  .project-list__type {
-    grid-column: 1;
-    grid-row: 2;
-    padding-left: 58px;
-  }
-
+  .project-list__goal,
   .project-list__status {
-    grid-column: 1;
-    grid-row: 3;
-    padding-left: 58px;
-  }
-
-  .project-list__actions {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 2;
+    font-size: var(--fs-12);
   }
+  .project-list__status { align-self: center; }
+
+  /* 次要欄在窄螢幕收起（資料仍在詳情頁） */
+  .project-list__time,
+  .project-list__category,
+  .project-list__type { display: none; }
+
+  .project-list__todo { grid-column: 3; grid-row: 1; justify-content: flex-end; }
+  .project-list__go   { grid-column: 3; grid-row: 2; justify-self: end; }
 }

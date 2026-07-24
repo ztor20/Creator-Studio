@@ -1,0 +1,90 @@
+/* List toolbar · 清單頁頭的兩層控制骨架
+   ────────────────────────────────────────────────────────────────────────
+   2026-07-23 由 e-shop 的 `.eshop-list-topbar` / `.eshop-status-row` promote 而來（第一次被
+   第二頁重用即 promote）。原始版型對齊 Figma node 845:11081／845:11082／671-2309。
+
+   兩層結構（由上而下）：
+     .list-toolbar        殼層工作列——實色 --surface-shell、四角 16px、固定 58px 高。
+       └ .tabs              主軸 tab 撐滿容器高度，底線自然貼齊容器下緣
+       └ .list-toolbar__actions   絕對定位靠右、垂直置中的動作群（搜尋／切換／主 CTA）
+     .list-status-row     次層篩選列——透明、行內流，放 pill 篩選或 select
+
+   為什麼工作列要固定高度＋align-items:stretch：tab 的 active 橘色底線貼在 .tabs__item 下緣，
+   只有讓 tabs 撐滿整個 58px，底線才會落在容器最底部而不是浮在中間。
+
+   消費者：e-shop（類型 tab ＋ 商店設定／預覽／建立分割按鈕）、projects（狀態 tab ＋ 搜尋／
+   檢視切換／建立專案）。sticky 貼頂屬各頁捲動容器的版面決定，留在頁面 <style>，不進本檔。 */
+
+.list-toolbar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: stretch;
+  height: 58px;
+  margin-bottom: var(--sp-8);
+  padding-inline: var(--sp-8);
+  background: var(--surface-shell);
+  border-radius: var(--radius-xl);   /* 16px */
+}
+/* 淺色主題：--surface-shell 與頁面底色差在白天不夠讀，改白底＋卡片陰影撐出層次
+   （比照低庫存通知條，2026-07-21 使用者反饋）。深色維持色差、不加陰影。 */
+html[data-theme="light"] .list-toolbar {
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+/* tabs 吃掉動作群以外的所有寬度；min-width:0 讓它在窄容器下真的能縮
+   （flex 子項預設 min-width:auto，不設 0 的話會撐破容器去撞右側動作群）。
+   縮到裝不下時改成橫向捲動，捲軸隱藏——tab 數量各頁不同（e-shop 3 個、projects 6 個），
+   不能假設塞得下。 */
+.list-toolbar > .tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.list-toolbar > .tabs::-webkit-scrollbar { display: none; }
+.list-toolbar .tabs__item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* 右側動作群：靠 margin-left:auto 推到底，不用絕對定位——絕對定位時 tabs 仍佔滿整條，
+   tab 一多就會捲到動作群底下疊字（projects 6 個 tab 實測撞到）。 */
+.list-toolbar__actions {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+/* 次層篩選列（pill 篩選或 select）。margin-bottom 是本列到清單的間距。 */
+.list-status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  margin-top: var(--sp-16);
+  margin-bottom: var(--sp-24);
+}
+
+/* 窄螢幕：工作列改直向堆疊、取消固定高度，動作群回到流內靠右 */
+@media (max-width: 900px) {
+  .list-toolbar {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .list-toolbar__actions {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    align-self: stretch;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
