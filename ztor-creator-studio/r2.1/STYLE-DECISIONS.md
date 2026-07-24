@@ -84,7 +84,7 @@ Figma node 856-22782 把上架設定畫成收合式：外框 1px 邊、圓角 18
 
 - **selection-card**（`ds-components/selection-card.css`）：grid 大卡，title＋sub（＋可選 icon／swatch），已選＝橘 outline。用於顯眼的主選擇（商品型別、組合 edition、主題）。證據：`create-auction.html` 種類卡。
 - **radio-card**（`ds-components/radio-card.css`）：2-up 並排卡，建在 segmented 上，已選＝橘點。用於表單內二選一（單一/多規格、不限量/限量、取貨方式）。證據：`create-product.html` variant/edition/delivery。
-- **radio-list**（`ds-components/radio-list.css`，2026-07-17 新增）：垂直輕量列，radio 點＋標題＋可選描述，已選＝填橘點、無卡框。用於窄欄的資料選擇（上架設定）。證據：三創建頁預覽欄＋兩細節頁。
+- **radio-list**（`ds-components/radio-list.css`，2026-07-17 新增）：垂直輕量列，radio 點＋標題＋可選描述，已選＝填橘點、無卡框。用於窄欄的資料選擇（上架設定）。**2026-07-24 使用者指定建立專案的專案類型對齊深色直列選單，新增 `--menu` 圖示面板變體；仍是資料選擇，不擴及 access／發布等其他卡式選項。**證據：三創建頁預覽欄＋兩細節頁＋create-project 專案類型。
 
 選項：**A** 維持三支、把「何時用哪支」寫成 design-system.md 的明確分工表（依版面：grid 大卡／2-up 並排／vertical 窄欄）；**B** 收斂成兩支（e.g. 卡式一支＋列式一支）；**C** 全部收斂成單一可配置元件。暫依 **A**（三支分工並存，現行做法），標 Q17；裁決權在使用者。
 

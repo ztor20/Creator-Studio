@@ -3,8 +3,8 @@
    Visual language mirrors E-Shop's .product-list (real image
    thumbnail, borderless rows, accent hover, muted column heads).
    Columns (2026-07-24, user split the crammed meta line into
-   real columns): image · 專案(name+desc) · 當前目標 · 剩餘時間 ·
-   類別(內容/家族兩行) · 類型 · 狀態 · 待辦(tip icon) · chevron.
+   real columns): image · 專案(type+name+desc) · 當前目標 · 剩餘時間 ·
+   類別(內容/家族兩行) · 狀態 · chevron；類型置於專案名稱上方。
    Non-campaign rows show "—" in 當前目標/剩餘時間 (no goal/countdown).
    Uses existing color, type, spacing, radius, motion tokens.
    ============================================================ */
@@ -17,9 +17,10 @@
 .project-list__head,
 .project-list__row {
   display: grid;
-  /* image · project · goal · time · category · type · status · chevron */
-  grid-template-columns: 56px minmax(200px, 1fr) 128px 88px 100px 84px 88px 24px;
-  gap: var(--sp-16);
+  /* image · project · goal · time · category · status · chevron */
+  grid-template-columns: 56px minmax(200px, 1fr) 144px 88px 100px 88px 24px;
+  row-gap: var(--sp-16);
+  column-gap: var(--sp-20);
   align-items: center;
 }
 
@@ -88,9 +89,17 @@
   height: 20px;
 }
 
-/* ── 專案名稱（名稱＋一行簡介）── */
+/* ── 專案識別（類型／名稱／一行簡介）── */
 .project-list__project {
   min-width: 0;
+}
+
+.project-list__kind {
+  margin-bottom: var(--sp-4);
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-none);
 }
 
 .project-list__title {
@@ -114,7 +123,7 @@
   white-space: nowrap;
 }
 
-/* ── 一般資料格（當前目標／剩餘時間／類型）── */
+/* ── 一般資料格（當前目標／剩餘時間）── */
 .project-list__cell {
   min-width: 0;
   overflow: hidden;
@@ -129,13 +138,14 @@
   color: var(--muted-foreground);
 }
 
-/* ── 當前目標：百分比（粗、大字）疊在實際金額上（使用者 2026-07-24）。
+/* ── 當前目標：百分比／進度條／實際金額各占一排（使用者 2026-07-24）。
    非募資列改走 .project-list__cell--empty 單行破折號 ── */
 .project-list__goal {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);   /* 百分比↔金額兩行間距（2026-07-24 使用者反饋：2px 太擠） */
+  gap: var(--sp-4);
   min-width: 0;
+  padding-inline: var(--sp-4);
 }
 .project-list__goal.project-list__cell--empty {
   color: var(--muted-foreground);
@@ -143,7 +153,7 @@
 }
 .project-list__goal-pct {
   color: var(--foreground);
-  font-size: var(--fs-16);
+  font-size: var(--fs-14);
   font-weight: var(--fw-bold);
   line-height: var(--lh-none);
 }
@@ -198,29 +208,27 @@
   color: var(--foreground);
 }
 
-/* ── 中寬螢幕：先收掉次要欄（類別／類型／倒數），保住名稱＋目標＋狀態 ── */
+/* ── 中寬螢幕：先收掉次要欄（類別／倒數），保住名稱＋目標＋狀態 ── */
 @media (max-width: 1180px) {
   .project-list__head,
   .project-list__row {
-    grid-template-columns: 56px minmax(180px, 1fr) 120px 88px 24px;
+    grid-template-columns: 56px minmax(180px, 1fr) 136px 88px 24px;
   }
   .project-list__col-time,
   .project-list__col-category,
-  .project-list__col-type,
   .project-list__time,
-  .project-list__category,
-  .project-list__type { display: none; }
+  .project-list__category { display: none; }
 }
 
-/* ── 窄螢幕：改堆疊，名稱主行＋目標/狀態次行，chevron 靠右 ── */
+/* ── 窄螢幕：改堆疊，名稱主行＋目標次行，狀態與 chevron 各自靠右 ── */
 @media (max-width: 760px) {
   .project-list__head {
     display: none;
   }
 
   .project-list__row {
-    grid-template-columns: 56px minmax(0, 1fr) auto;
-    gap: var(--sp-8) var(--sp-14);
+    grid-template-columns: 56px minmax(0, 1fr) auto 24px;
+    gap: var(--sp-8) var(--sp-10);
     min-height: 0;
     padding: var(--sp-16) var(--sp-4);
     align-items: start;
@@ -229,18 +237,16 @@
   .project-list__image { grid-column: 1; grid-row: 1 / span 2; }
   .project-list__project { grid-column: 2; grid-row: 1; }
 
-  .project-list__goal,
-  .project-list__status {
+  .project-list__goal {
     grid-column: 2;
     grid-row: 2;
     font-size: var(--fs-12);
   }
-  .project-list__status { align-self: center; }
+  .project-list__status { grid-column: 3; grid-row: 2; align-self: center; }
 
   /* 次要欄在窄螢幕收起（資料仍在詳情頁） */
   .project-list__time,
-  .project-list__category,
-  .project-list__type { display: none; }
+  .project-list__category { display: none; }
 
-  .project-list__go   { grid-column: 3; grid-row: 1 / span 2; align-self: center; justify-self: end; }
+  .project-list__go   { grid-column: 4; grid-row: 1 / span 2; align-self: center; justify-self: end; }
 }
