@@ -3,25 +3,27 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create New Event · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260724zn"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/button.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/readiness.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/card.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/input.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/event-preview-card.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/review-row.css?v=20260724zn">
-<link rel="stylesheet" href="shared.css?v=20260724zn">
+<script src="js/theme.js?v=20260724zzi"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/button.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/readiness.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/card.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/input.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/event-preview-card.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/review-row.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260724zzi">
+<link rel="stylesheet" href="shared.css?v=20260724zzi">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
      區段骨架／欄位網格／類型卡圖示／自動儲存 pill 已改用基準元件（2026-07-10）：
@@ -109,15 +111,40 @@
           <span class="selection-card__title" data-i18n="ce.type.virtual">Virtual Event</span>
           <span class="selection-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span>
         </button>
+        <button type="button" class="selection-card selection-card--icon" data-choice="watchparty">
+          <span class="selection-card__ic"><i data-lucide="film" class="ztor-icon"></i></span>
+          <span class="selection-card__title" data-i18n="ce.type.watchparty">Watch Party</span>
+          <span class="selection-card__sub" data-i18n="ce.type.watchparty-sub">Watch a video together, in sync</span>
+        </button>
       </div>
     </section>
 
     <!-- STEP 2 · Details -->
     <section data-step-panel="2" class="hidden">
-      <h1 class="wizard__step-title" data-i18n="ce.s2.h1">Make them feel it</h1>
-      <p class="wizard__step-sub" data-i18n="ce.s2.sub">What will fans experience?</p>
+      <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Make them feel it</h1>
+      <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s2.sub">What will fans experience?</p>
+      <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s2.h1" hidden>Pick what you'll watch</h1>
+      <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s2.sub" hidden>Choose a video and name the room.</p>
 
-      <div class="form-section form-section--outlined">
+      <!-- 共看派對分支（D149 §4.7）：F13 播放內容 + F14 房間名稱 -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.content">Watch content</h3>
+          <p class="form-section__sub" data-i18n="ce.wp.content.sub">Pick one video for everyone to watch together.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <select class="select" data-ce="film" data-wp-required id="ce-film"></select>
+          <p class="ce-field-error" data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.wp.room">Room name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ce="room" data-wp-required placeholder="e.g., Friday movie night" data-i18n-placeholder="ce.wp.room.ph">
+          <p class="ce-field-error" data-i18n="ce.wp.err.room">Room name is required.</p>
+        </div>
+      </div>
+
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
           <input class="input" data-ce="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
@@ -130,7 +157,7 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.lineup">Lineup / performers</h3>
           <p class="form-section__sub" data-i18n="ce.lineup.sub">Search Ztor users or type external names.</p>
@@ -138,7 +165,7 @@
         <button type="button" class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
       </div>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
           <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
@@ -167,7 +194,7 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
         </div>
@@ -181,10 +208,75 @@
 
     <!-- STEP 3 · Venue & Time -->
     <section data-step-panel="3" class="hidden">
-      <h1 class="wizard__step-title" data-i18n="ce.s3.h1">Where and when</h1>
-      <p class="wizard__step-sub" data-i18n="ce.s3.sub">Where are fans going?</p>
+      <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s3.h1">Where and when</h1>
+      <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s3.sub">Where are fans going?</p>
+      <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s3.h1" hidden>When, who, and where they can watch</h1>
+      <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s3.sub" hidden>Set the time, capacity, region and privacy.</p>
 
-      <div class="form-section form-section--outlined">
+      <!-- 共看派對分支（D149 §4.7）：F15 時間 -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.schedule">Schedule</h3>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.wp.start">Party start</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <div class="form-grid form-grid--2">
+            <input class="input" data-ce="wpstart" data-wp-required type="date">
+            <input class="input" type="time">
+          </div>
+          <p class="ce-field-error" data-i18n="ce.wp.err.start">Start time is required.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.wp.end">Estimated end</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <div class="form-grid form-grid--2">
+            <input class="input" type="date">
+            <input class="input" type="time">
+          </div>
+          <p class="field__hint" data-i18n="ce.wp.end.hint">The room won't auto-close — the host ends it. This just helps guests plan.</p>
+        </div>
+      </div>
+
+      <!-- 共看派對分支：F16 人數上限 -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.cap">Capacity</h3>
+        </div>
+        <div class="segmented" data-seg="wpcap" data-value="unlimited">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="unlimited" data-i18n="ce.wp.cap.unlimited">No limit</button>
+          <button class="segmented__btn" type="button" data-val="limited" data-i18n="ce.wp.cap.limited">Set a limit</button>
+        </div>
+        <div class="field" data-when="wpcap" data-when-val="limited" hidden style="margin-top:var(--sp-12)">
+          <input class="input" type="number" min="1" data-ce="wpcaplimit" placeholder="e.g., 200" data-i18n-placeholder="ce.wp.cap.limit.ph">
+        </div>
+        <p class="field__hint" data-i18n="ce.wp.cap.hint">When full, new guests see "Room full" and can't join. Platform cap is 1,000 per party.</p>
+      </div>
+
+      <!-- 共看派對分支：F17 可觀看地區 -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.region">Where fans can watch</h3>
+        </div>
+        <div class="segmented" data-seg="wpregion" data-value="global">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="global" data-i18n="ce.wp.region.global">Worldwide</button>
+          <button class="segmented__btn" type="button" data-val="include" data-i18n="ce.wp.region.include">Selected regions</button>
+          <button class="segmented__btn" type="button" data-val="exclude" data-i18n="ce.wp.region.exclude">Exclude regions</button>
+        </div>
+        <p class="field__hint" data-i18n="ce.wp.region.hint">Controls who can claim a ticket and enter, by region.</p>
+      </div>
+
+      <!-- 共看派對分支：F18 隱私 -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.privacy">Party privacy</h3>
+        </div>
+        <div class="segmented" data-seg="wppriv" data-value="public">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="public" data-i18n="ce.wp.privacy.public">Public</button>
+          <button class="segmented__btn" type="button" data-val="private" data-i18n="ce.wp.privacy.private">Private</button>
+        </div>
+        <p class="field__hint" data-i18n="ce.wp.privacy.hint">Anyone with the share link can enter the room.</p>
+      </div>
+
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.venue">Venue</h3>
         </div>
@@ -203,7 +295,7 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.time">Time</h3>
         </div>
@@ -228,7 +320,7 @@
         </div>
       </div>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.capacity">Capacity</h3>
         </div>
@@ -242,16 +334,37 @@
 
     <!-- STEP 4 · Tickets -->
     <section data-step-panel="4" class="hidden">
-      <h1 class="wizard__step-title" data-i18n="ce.s4.h1">Set your tickets</h1>
-      <p class="wizard__step-sub" data-i18n="ce.s4.sub">Create ticket tiers. Minimum 1.</p>
+      <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s4.h1">Set your tickets</h1>
+      <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s4.sub">Create ticket tiers. Minimum 1.</p>
+      <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s4.h1" hidden>Set your ticket</h1>
+      <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s4.sub" hidden>Free, or set one price to enter.</p>
 
-      <div class="form-section form-section--outlined">
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <button type="button" class="upload-tile" id="ce-tier-add" style="min-height:120px">
           <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
           <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
           <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity, eligibility</span>
         </button>
         <div class="ce-tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
+      </div>
+
+      <!-- 共看派對分支（D149 §4.7）：F19 入場券（單一價，無票種階層、無 QR） -->
+      <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.wp.ticket">Admission</h3>
+        </div>
+        <div class="segmented" data-seg="wpticket" data-value="free">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="free" data-i18n="ce.wp.ticket.free">Free</button>
+          <button class="segmented__btn" type="button" data-val="paid" data-i18n="ce.wp.ticket.paid">Set a price</button>
+        </div>
+        <div class="field" data-when="wpticket" data-when-val="paid" hidden style="margin-top:var(--sp-12)">
+          <label class="field__label"><span data-i18n="ce.wp.ticket.price">Ticket price</span></label>
+          <span class="amount-field amount-field--readonly">
+            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <input class="input amount-field__input" type="number" min="0" data-ce="wpprice" placeholder="0" data-i18n-placeholder="ce.wp.ticket.price.ph">
+          </span>
+        </div>
+        <p class="field__hint" data-i18n="ce.wp.hosthint">Hosting needs desktop Chrome or Edge. You can set up on mobile and open the room on a computer at showtime.</p>
       </div>
     </section>
 
@@ -260,7 +373,46 @@
       <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
       <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
 
-      <div class="review-row" style="margin-bottom:18px">
+      <!-- 共看派對分支（D149 §4.7）：Review 摘要 -->
+      <div class="review-row" style="margin-bottom:18px" data-show-type="watchparty" hidden>
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
+            <a class="review-row__action" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="wp-type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+        </div>
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.wp.rev.content">Watch content</h3>
+            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="wp-content" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
+        </div>
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.wp.rev.room">Room name</h3>
+            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="wp-room" data-ph-key="ce.ph.notentered"><span data-i18n="ce.ph.notentered">Not entered</span></div>
+        </div>
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.wp.rev.schedule">Schedule</h3>
+            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="wp-schedule" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
+        </div>
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.wp.rev.ticket">Admission</h3>
+            <a class="review-row__action" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="wp-ticket" data-ph-key="ce.ph.notset"><span data-i18n="ce.ph.notset">Not set</span></div>
+        </div>
+      </div>
+
+      <div class="review-row" style="margin-bottom:18px" data-hide-type="watchparty">
         <div class="review-row__item">
           <div class="review-row__head">
             <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
@@ -294,7 +446,7 @@
         </div>
       </div>
 
-      <section class="readiness">
+      <section class="readiness" data-hide-type="watchparty">
         <div class="readiness__head"><h3 class="readiness__title" data-i18n="ce.qc.title">Quality check</h3></div>
         <ul class="readiness__list">
           <li class="readiness__item" data-qc="type"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.type">Event type selected</span></li>
@@ -304,6 +456,21 @@
           <li class="readiness__item" data-qc="ticket"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.qc.ticket">At least 1 ticket tier</span></li>
         </ul>
         <div class="readiness__banner" id="ce-qc-banner" data-i18n="ce.qc.banner">5 items needed before publishing</div>
+      </section>
+
+      <!-- 共看派對分支（D149 §4.7）：發布前檢核 7 項 -->
+      <section class="readiness" data-show-type="watchparty" hidden>
+        <div class="readiness__head"><h3 class="readiness__title" data-i18n="ce.qc.title">Quality check</h3></div>
+        <ul class="readiness__list">
+          <li class="readiness__item" data-qc="wp-video"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.video">Video selected</span></li>
+          <li class="readiness__item" data-qc="wp-room"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.room">Room name filled</span></li>
+          <li class="readiness__item" data-qc="wp-start"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.start">Start time set</span></li>
+          <li class="readiness__item" data-qc="wp-capacity"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.capacity">Capacity set</span></li>
+          <li class="readiness__item" data-qc="wp-region"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.region">Region set</span></li>
+          <li class="readiness__item" data-qc="wp-privacy"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.privacy">Privacy set</span></li>
+          <li class="readiness__item" data-qc="wp-ticket"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ce.wp.qc.ticket">Admission set</span></li>
+        </ul>
+        <div class="readiness__banner" id="ce-wp-qc-banner" data-i18n="ce.wp.qc.banner">7 items needed before publishing</div>
       </section>
     </section>
 
@@ -347,15 +514,18 @@
   </div>
 </div>
 
-<script src="js/icons.js?v=20260724zn"></script>
-<script src="js/i18n.js?v=20260724zn"></script>
-<script src="partials/date-input.js?v=20260724zn"></script>
-<script src="partials/wizard-chrome.js?v=20260724zn"></script>
+<script src="js/icons.js?v=20260724zzi"></script>
+<script src="js/i18n.js?v=20260724zzi"></script>
+<script src="partials/date-input.js?v=20260724zzi"></script>
+<script src="partials/wizard-chrome.js?v=20260724zzi"></script>
+<script src="js/films-store.js?v=20260724zzi"></script>
 <script>
 (function () {
   let step = 1;
   const total = 5;
   const nextKeys = ["", "ce.next.1", "ce.next.2", "ce.next.3", "ce.next.4", "ce.publish"];
+  let eventType = "";                          // 選定的活動類型（D149：watchparty 走共看派對分支）
+  const isWP = () => eventType === "watchparty";
 
   function nextLabel(s) {
     const k = nextKeys[s];
@@ -406,6 +576,7 @@
   }
 
   function syncReview() {
+    if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬摘要/檢核
     const s = readState();
 
     // A3 — 摘要回填（未填顯佔位）
@@ -466,6 +637,7 @@
     else { el.textContent = T(fallbackKey, fallback); el.classList.add("is-empty"); }
   }
   function renderPreview(s) {
+    if (isWP()) { renderPreviewWP(); return; }   // D149：共看派對預覽
     s = s || readState();
     // 海報：已傳 Vertical poster／Landscape banner 時換實色背景示意，未傳顯 icon 佔位
     const poster = document.getElementById("ce-pv-poster");
@@ -519,6 +691,8 @@
     c.addEventListener("click", () => {
       c.parentElement.querySelectorAll(".selection-card").forEach(s => s.classList.remove("selection-card--active"));
       c.classList.add("selection-card--active");
+      eventType = c.dataset.choice || "";
+      applyTypeVisibility();                    // D149：切換共看派對 vs 演出型的欄位集
       syncReview();
       scheduleSave();
     });
@@ -567,7 +741,10 @@
     el.setAttribute("aria-invalid", "false");
     if (wrap) wrap.classList.remove("is-invalid");
   }
-  const requiredEls = Array.from(document.querySelectorAll("[data-required]"));
+  const requiredEls = Array.from(document.querySelectorAll("[data-required],[data-wp-required]"));
+  function activeRequired() {                    // D149：依類型取當前必填集（隱藏分支不誤擋）
+    return Array.from(document.querySelectorAll(isWP() ? "[data-wp-required]" : "[data-required]"));
+  }
   requiredEls.forEach(el => {
     el.addEventListener("blur", () => validateField(el));
     el.addEventListener("input", () => { if (el.value.trim()) clearFieldError(el); });
@@ -583,14 +760,16 @@
 
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
-    const stepOf = { name: 2, desc: 2, venue: 3, date: 3, capacity: 3 };
+    const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
+                          : { name: 2, desc: 2, venue: 3, date: 3, capacity: 3 };
+    const reqEls = activeRequired();
     let firstBad = null;
-    requiredEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
+    reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
     if (firstBad) {
       const key = firstBad.getAttribute("data-ce");
       const goStep = stepOf[key] || step;
       step = goStep; render();
-      const badInStep = requiredEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
+      const badInStep = reqEls.find(el => (stepOf[el.getAttribute("data-ce")] || 0) === goStep && !el.value.trim());
       if (badInStep) { badInStep.focus(); }
       alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
       return;
@@ -621,10 +800,136 @@
     });
   }
 
+  /* ===== 共看派對（Watch Party）分支 — D149 §4.7 ===== */
+
+  // 依 eventType 切換：show-type 只在對應類型顯示、hide-type 在該類型隱藏
+  function applyTypeVisibility() {
+    document.querySelectorAll("[data-show-type]").forEach(el => {
+      el.hidden = el.dataset.showType !== eventType;
+    });
+    document.querySelectorAll("[data-hide-type]").forEach(el => {
+      el.hidden = el.dataset.hideType.split(/\s+/).indexOf(eventType) >= 0;
+    });
+    const sub = document.getElementById("ce-subtitle");
+    if (sub) {
+      const k = isWP() ? "ce.subtitle.wp" : "ce.subtitle";
+      sub.setAttribute("data-i18n", k);
+      sub.textContent = T(k, isWP() ? "Watch party" : "Offline event");
+    }
+  }
+
+  // 選影片下拉：從 films-store 灌候選（原型 mock；真正來源＝待確認，見 ASSUMPTIONS）
+  (function fillFilms() {
+    const sel = document.getElementById("ce-film");
+    if (!sel || !window.ztorFilms) return;
+    const ph = document.createElement("option");
+    ph.value = ""; ph.setAttribute("data-i18n", "ce.wp.film.ph");
+    ph.textContent = T("ce.wp.film.ph", "Choose a video…");
+    sel.appendChild(ph);
+    window.ztorFilms.list().forEach(f => {
+      const o = document.createElement("option");
+      o.value = f.id; o.textContent = f.title;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", () => { syncReview(); scheduleSave(); });
+  })();
+
+  // segmented 二/三選一 ＋ 揭露對應子欄位（data-when / data-when-val）
+  document.querySelectorAll("[data-seg]").forEach(group => {
+    group.querySelectorAll(".segmented__btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        group.querySelectorAll(".segmented__btn").forEach(b => b.classList.remove("segmented__btn--active"));
+        btn.classList.add("segmented__btn--active");
+        group.dataset.value = btn.dataset.val;
+        const seg = group.dataset.seg;
+        document.querySelectorAll('[data-when="' + seg + '"]').forEach(sub => {
+          sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
+        });
+        syncReview(); scheduleSave();
+      });
+    });
+  });
+
+  function readWP() {
+    const card = document.querySelector(".selection-card--active");
+    const typeName = card ? (card.querySelector(".selection-card__title")?.textContent || "").trim() : "";
+    const film = document.getElementById("ce-film");
+    const filmName = film && film.value ? (film.options[film.selectedIndex]?.textContent || "").trim() : "";
+    return {
+      typeName, filmName,
+      room:    (document.querySelector("[data-ce=room]")?.value || "").trim(),
+      start:   (document.querySelector("[data-ce=wpstart]")?.value || "").trim(),
+      cap:     document.querySelector('[data-seg="wpcap"]')?.dataset.value || "",
+      region:  document.querySelector('[data-seg="wpregion"]')?.dataset.value || "",
+      privacy: document.querySelector('[data-seg="wppriv"]')?.dataset.value || "",
+      ticket:  document.querySelector('[data-seg="wpticket"]')?.dataset.value || "",
+      price:   (document.querySelector("[data-ce=wpprice]")?.value || "").trim()
+    };
+  }
+
+  function wpTicketLabel(w) {
+    if (w.ticket === "paid") return "$" + (w.price || "0");
+    if (w.ticket === "free") return T("ce.wp.ticket.free", "Free");
+    return "";
+  }
+
+  function syncReviewWP() {
+    const w = readWP();
+    setRev("wp-type",     w.typeName,        "ce.ph.notsel",     "Not selected");
+    setRev("wp-content",  w.filmName,        "ce.ph.notsel",     "Not selected");
+    setRev("wp-room",     w.room,            "ce.ph.notentered", "Not entered");
+    setRev("wp-schedule", w.start,           "ce.ph.notset",     "Not set");
+    setRev("wp-ticket",   wpTicketLabel(w),  "ce.ph.notset",     "Not set");
+
+    const checks = {
+      "wp-video":    !!w.filmName,
+      "wp-room":     !!w.room,
+      "wp-start":    !!w.start,
+      "wp-capacity": !!w.cap,
+      "wp-region":   !!w.region,
+      "wp-privacy":  !!w.privacy,
+      "wp-ticket":   !!w.ticket
+    };
+    let done = 0;
+    Object.keys(checks).forEach(k => {
+      const li = document.querySelector('[data-qc="' + k + '"]');
+      if (li) li.classList.toggle("readiness__item--done", checks[k]);
+      if (checks[k]) done++;
+    });
+    const left = 7 - done, allOk = left === 0;
+    const banner = document.getElementById("ce-wp-qc-banner");
+    if (banner) {
+      banner.classList.toggle("readiness__banner--ready", allOk);
+      banner.removeAttribute("data-i18n");
+      banner.textContent = allOk
+        ? T("ce.qc.ready", "All set — ready to publish")
+        : T("ce.qc.left", "{n} items needed before publishing").replace("{n}", left);
+    }
+    const next = document.querySelector("[data-action=next]");
+    next.disabled = (step === total) && !allOk;
+    renderPreviewWP(w);
+  }
+
+  function renderPreviewWP(w) {
+    w = w || readWP();
+    const poster = document.getElementById("ce-pv-poster");
+    const posterIcon = document.getElementById("ce-pv-poster-icon");
+    if (poster) { poster.style.background = ""; if (posterIcon) posterIcon.style.display = ""; }
+    const typeTag = document.getElementById("ce-pv-type");
+    if (typeTag) {
+      if (w.typeName) { typeTag.textContent = w.typeName; typeTag.hidden = false; }
+      else typeTag.hidden = true;
+    }
+    setPv("ce-pv-name",    w.room,           "ce.pv.name",    "Event name");
+    setPv("ce-pv-date",    w.start,          "ce.pv.date",    "Date to be set");
+    setPv("ce-pv-venue",   w.filmName,       "ce.pv.venue",   "Venue to be set");
+    setPv("ce-pv-tickets", wpTicketLabel(w), "ce.pv.tickets", "Tickets coming soon");
+  }
+
   document.addEventListener('i18n:applied', render);
 })();
 </script>
-<script src="js/reveal.js?v=20260724zn"></script>
-<script src="js/devtools.js?v=20260724zn"></script>
+<script src="js/reveal.js?v=20260724zzi"></script>
+<script src="js/devtools.js?v=20260724zzi"></script>
 </body>
 </html>

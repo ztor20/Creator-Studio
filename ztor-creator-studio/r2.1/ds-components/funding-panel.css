@@ -1,0 +1,117 @@
+/* ============================================================
+   Funding panel · 募資概況面板（2026-07-24 promote）
+   ------------------------------------------------------------
+   一個區塊講完「募了多少／目標多少／幾人支持／進度／還剩多久」，
+   取代專案詳情 hero 原本「四格 meta-cell ＋ 裸進度條 ＋ 註記」的攤平寫法。
+   版型參考 ztor 公開端共創計畫詳情頁（cocreate-project.html）的募資面板，
+   讓後台看到的募資概況與粉絲端看到的是同一種讀法。
+
+   anatomy
+     .funding-panel__amount-row — 大金額列（左：已募金額；右：支持人數）
+     .funding-panel__amount     — 已募金額（display 字級，本面板的主角）
+     .funding-panel__backers    — 支持人數（icon ＋ 文字）
+     .funding-panel__goal       — 目標金額行
+     .funding-panel__bar-row    — 進度條 ＋ 百分比藥丸（進度條沿用 .project-bar）
+     .funding-panel__pct        — 百分比藥丸（riding 在進度條右端）
+     .funding-panel__status-row — 左：倒數；右：募資期間
+     .funding-panel__countdown  — 倒數（剩餘天數）
+     .funding-panel__period     — 募資期間（起訖日）
+     .funding-panel__note       — 底部口徑註記（icon ＋ 文字）
+
+   層級 — 本面板坐在 `.ip-hero`（L1 卡）裡＝L2 巢狀層，依 Q24 用
+   `--nest-surface` ＋ `--shadow-nest-up` 分層，不另加 1px 邊框。
+   ============================================================ */
+
+/* 寬度交給容器決定（面板本身撐滿），與參考版型一致：hero 右欄多寬、面板就多寬。 */
+.funding-panel {
+  margin-top: var(--sp-18);
+  padding: var(--sp-18) var(--sp-20);
+  border-radius: var(--radius-xl);
+  background: var(--nest-surface);
+  box-shadow: var(--shadow-nest-up);
+}
+
+.funding-panel__amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-16);
+}
+
+.funding-panel__amount {
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.8px;
+}
+
+.funding-panel__backers {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  white-space: nowrap;
+}
+
+.funding-panel__goal {
+  display: block;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+.funding-panel__bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
+}
+.funding-panel__bar-row .project-bar { flex: 1; margin-top: 0; }
+
+/* 百分比藥丸＝進度條的讀數，沿用進度條本身的品牌橘（同一個資料指示角色，
+   不是新的 active 標示，故不觸及 Q8 的品牌橘範圍）。 */
+.funding-panel__pct {
+  flex: none;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-display);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+}
+
+.funding-panel__status-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  flex-wrap: wrap;
+  margin-top: var(--sp-10);
+}
+.funding-panel__countdown { font-size: var(--fs-13); font-weight: var(--fw-medium); }
+.funding-panel__period { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+.funding-panel__note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  margin: var(--sp-14) 0 0;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.funding-panel__note .ztor-icon { flex: none; margin-top: var(--sp-2); }
+
+@media (max-width: 700px) {
+  .funding-panel__amount-row { flex-direction: column; align-items: flex-start; gap: var(--sp-4); }
+}
+
+/* --card 變體（2026-07-24）：把巢狀襯底面板變成獨立有框卡（Q3 邊框、扁平無疊色陰影），
+   供專案詳情 hero 當右側募資卡用——此時它是 L1 卡、不在別的卡裡，故用邊框而非 nest-surface。 */
+.funding-panel--card {
+  margin-top: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
