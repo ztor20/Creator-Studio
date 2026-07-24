@@ -4,6 +4,16 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-24 · 活動清單整列可點進詳情、編輯改連詳情頁、縮圖換真實活動圖片（B 反饋導入）
+
+使用者反饋：活動清單點整條都要能進入活動詳情；三個點點選單的「編輯」也應該進活動詳情（而非建立活動精靈）；縮圖不要停在空狀態的日曆圖示，要換成真的活動圖片。
+
+- **【B/互動】** `events.html` 新增整列可點（比照 `orders.html` 既有慣例）：`.product-list--events .product-list__row { cursor: pointer }` ＋ JS 在 `#ev-list` 委派 click，排除點在 `.dropdown` 或 `a` 上的情況，其餘一律導向 `event-detail.html`；含無標題連結的草稿列（row6／row7）在內全部可點。
+- **【B/連結】** 8 列「⋯ → 編輯」的 `href` 由 `create-event.html` 改為 `event-detail.html`（Duplicate／Delete 仍是無導向按鈕，未動）；頁首與空狀態的「＋ 新增活動」按鈕維持指向 `create-event.html`，未誤改。
+- **【B/縮圖】** 8 列縮圖由 `.product-list__image--placeholder`＋calendar/film icon 換成真實 `<img>`（沿用既有 `.product-list__image img` 樣式，無新 CSS）：row1／row2 用 `images/projects/nick-realive.jpg`／`nick-baipa.jpg`（REALIVE 巡演海報）、Watch Party 用 `images/hero-event.jpg`、row3 用 `nick-mxw.jpg`、row4 用 `nick-r2.jpg`（(R2) REALIVE 海報）、row5 用 `nick-lrh.jpg`（LOVE RAGE HOPE 封面）、row6 用 `nick-flames.jpg`、row7 用 `nick-wln.jpg`，皆為既有素材庫既有圖片、無新增檔案。
+- **範圍**：只動 `events.html`；未改活動資料欄位、狀態機或 event-detail 頁本身。
+- **驗證**：本機 server 實測——點資料列非連結區域（如日期時間欄）與無連結的草稿列標題皆正確導向 `event-detail.html`；kebab 選單「編輯」連結原生 href 已指向 `event-detail.html`；8 列縮圖皆顯示對應真實圖片、無空狀態圖示殘留；無 console error。`check_ds_sync.py` PASS（WARN 皆存量）；`bump_ver` 已跑。
+
 ---
 
 ## 2026-07-24 · 專案詳情表單與支持方案改用既有元件（B 反饋導入）
