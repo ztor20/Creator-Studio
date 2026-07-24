@@ -4,28 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>New project · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260724zn"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/button.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/switch.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/selection-card.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/form-section.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/form-grid.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/control-row.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/data-list.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/card.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/input.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/date-input.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/amount-field.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/review-row.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/alert.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260724zn">
-<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260724zn">
-<link rel="stylesheet" href="shared.css?v=20260724zn">
+<script src="js/theme.js?v=20260724zzi"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/button.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/switch.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/form-section.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/control-row.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/data-list.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/card.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/input.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/date-input.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/review-row.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/alert.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=20260724zzi">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=20260724zzi">
+<link rel="stylesheet" href="shared.css?v=20260724zzi">
 <style>
   /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
      settings-row 裸 HTML 改用 ds-components/control-row.css；revenue estimate 卡改用
@@ -40,8 +41,37 @@
 <body>
 <div class="wizard">
 
+  <!-- 專案類型閘門（D150，2026-07-24）：整個建立流程從這裡開始，畫面只有三張型別卡＋返回。選定後 JS 隱藏本閘門、顯示下方 [data-sheet] 分步表單。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned wizard__gate" data-gate>
+    <div class="wizard__gate-inner">
+      <button class="btn btn--ghost wizard__gate-back" type="button" data-gate-back>
+        <i data-lucide="chevron-left" class="ztor-icon"></i>
+        <span data-i18n="cpp.gate.back">Back</span>
+      </button>
+      <h1 class="wizard__step-title" data-i18n="cpp.s1.h1">What are you making?</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s1.sub">Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.</p>
+      <div class="selection-grid">
+        <button type="button" class="selection-card selection-card--active" data-gate-type="golive">
+          <span class="selection-card__tag" data-i18n="cpp.golive.tag">Fastest</span>
+          <span class="selection-card__title" data-i18n="cpp.golive.title">Go live</span>
+          <span class="selection-card__sub" data-i18n="cpp.golive.sub">Content is ready and fans can watch or buy right away.</span>
+        </button>
+        <button type="button" class="selection-card" data-gate-type="fund">
+          <span class="selection-card__tag" data-i18n="cpp.fund.tag">Crowdfund</span>
+          <span class="selection-card__title" data-i18n="cpp.fund.title">Fund it first</span>
+          <span class="selection-card__sub" data-i18n="cpp.fund.sub">Fans back you first; you deliver once the goal is met. Refunded if not.</span>
+        </button>
+        <button type="button" class="selection-card" data-gate-type="preorder">
+          <span class="selection-card__tag" data-i18n="cpp.pre.tag">Pre-order</span>
+          <span class="selection-card__title" data-i18n="cpp.pre.title">Open pre-orders</span>
+          <span class="selection-card__sub" data-i18n="cpp.pre.sub">Fans order early; you produce once the minimum is hit. Refunded if not.</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬，JS 建構）；右＝自動儲存。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet wizard__sheet--sectioned hidden" data-sheet>
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -67,27 +97,16 @@
 
     <!-- ───────────────────────── STEP · About (shared) ───────────────────────── -->
     <section data-panel="about">
-      <h1 class="wizard__step-title" data-i18n="cpp.s1.h1">What are you making?</h1>
-      <p class="wizard__step-sub" data-i18n="cpp.s1.sub">Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.</p>
+      <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
 
+      <!-- 型別已在閘門選定；此處僅保留標題級切換（無說明，D150）。 -->
       <div class="field form-section form-section--outlined">
         <div class="field__label" data-i18n="cpp.s1.type">Project type</div>
-        <div class="selection-grid">
-          <button type="button" class="selection-card selection-card--active" data-type="golive">
-            <span class="selection-card__tag" data-i18n="cpp.golive.tag">Fastest</span>
-            <span class="selection-card__title" data-i18n="cpp.golive.title">Go live</span>
-            <span class="selection-card__sub" data-i18n="cpp.golive.sub">Content is ready and fans can watch or buy right away.</span>
-          </button>
-          <button type="button" class="selection-card" data-type="fund">
-            <span class="selection-card__tag" data-i18n="cpp.fund.tag">Crowdfund</span>
-            <span class="selection-card__title" data-i18n="cpp.fund.title">Fund it first</span>
-            <span class="selection-card__sub" data-i18n="cpp.fund.sub">Fans back you first; you deliver once the goal is met. Refunded if not.</span>
-          </button>
-          <button type="button" class="selection-card" data-type="preorder">
-            <span class="selection-card__tag" data-i18n="cpp.pre.tag">Pre-order</span>
-            <span class="selection-card__title" data-i18n="cpp.pre.title">Open pre-orders</span>
-            <span class="selection-card__sub" data-i18n="cpp.pre.sub">Fans order early; you produce once the minimum is hit. Refunded if not.</span>
-          </button>
+        <div class="segmented" role="tablist" data-type-seg>
+          <button type="button" class="segmented__btn segmented__btn--active" role="tab" data-type="golive" data-i18n="cpp.golive.title">Go live</button>
+          <button type="button" class="segmented__btn" role="tab" data-type="fund" data-i18n="cpp.fund.title">Fund it first</button>
+          <button type="button" class="segmented__btn" role="tab" data-type="preorder" data-i18n="cpp.pre.title">Open pre-orders</button>
         </div>
       </div>
 
@@ -735,7 +754,7 @@
   </div>
   </div><!-- /.wizard__sheet -->
 
-  <footer class="wizard__bottom" style="justify-content:flex-end">
+  <footer class="wizard__bottom" style="justify-content:flex-end" data-footer>
     <div class="wizard__bottom-actions">
       <button class="btn btn--outline" data-action="back" data-i18n="wiz.back">Back</button>
       <button class="btn btn--primary" data-action="next">Continue</button>
@@ -744,10 +763,10 @@
 
 </div>
 
-<script src="js/icons.js?v=20260724zn"></script>
-<script src="js/i18n.js?v=20260724zn"></script>
-<script src="partials/date-input.js?v=20260724zn"></script>
-<script src="partials/wizard-chrome.js?v=20260724zn"></script>
+<script src="js/icons.js?v=20260724zzi"></script>
+<script src="js/i18n.js?v=20260724zzi"></script>
+<script src="partials/date-input.js?v=20260724zzi"></script>
+<script src="partials/wizard-chrome.js?v=20260724zzi"></script>
 <script>
 (function () {
   const FLOWS = {
@@ -821,15 +840,21 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  // Project type
-  document.querySelectorAll('[data-type]').forEach(c => {
-    c.addEventListener('click', () => {
-      document.querySelectorAll('[data-type]').forEach(s => s.classList.remove('selection-card--active'));
-      c.classList.add('selection-card--active');
-      type = c.dataset.type;
-      render();
-    });
-  });
+  // Project type — 閘門卡（含說明）與表單 segmented（僅標題）共同驅動 type（D150）
+  const gate   = document.querySelector('[data-gate]');
+  const sheet  = document.querySelector('[data-sheet]');
+  const footer = document.querySelector('[data-footer]');
+  function syncTypeUI(t) {
+    document.querySelectorAll('[data-gate-type]').forEach(s => s.classList.toggle('selection-card--active', s.dataset.gateType === t));
+    document.querySelectorAll('[data-type]').forEach(s => s.classList.toggle('segmented__btn--active', s.dataset.type === t));
+  }
+  function chooseType(t) { type = t; idx = 0; syncTypeUI(t); render(); }
+  function enterWizard() { gate.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function showGate()    { gate.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); }
+
+  document.querySelectorAll('[data-gate-type]').forEach(c => c.addEventListener('click', () => { chooseType(c.dataset.gateType); enterWizard(); }));
+  document.querySelectorAll('[data-type]').forEach(c => c.addEventListener('click', () => chooseType(c.dataset.type)));
+  document.querySelector('[data-gate-back]').addEventListener('click', () => { if (history.length > 1) history.back(); else location.href = 'projects.html'; });
 
   // Content type chips → toggle field group
   document.querySelectorAll('#cat-group .chip').forEach(c => {
@@ -922,9 +947,11 @@
 
   document.addEventListener('i18n:applied', render);
   render();
+  syncTypeUI(type);
+  showGate();   // 流程從專案類型閘門開始（D150）
 })();
 </script>
-<script src="js/reveal.js?v=20260724zn"></script>
-<script src="js/devtools.js?v=20260724zn"></script>
+<script src="js/reveal.js?v=20260724zzi"></script>
+<script src="js/devtools.js?v=20260724zzi"></script>
 </body>
 </html>

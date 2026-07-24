@@ -17,8 +17,8 @@
 .project-list__head,
 .project-list__row {
   display: grid;
-  /* image · project · goal · time · category · type · status · todo · chevron */
-  grid-template-columns: 56px minmax(200px, 1fr) 128px 88px 100px 84px 88px 52px 24px;
+  /* image · project · goal · time · category · type · status · chevron */
+  grid-template-columns: 56px minmax(200px, 1fr) 128px 88px 100px 84px 88px 24px;
   gap: var(--sp-16);
   align-items: center;
 }
@@ -129,11 +129,38 @@
   color: var(--muted-foreground);
 }
 
+/* ── 當前目標：百分比（粗、大字）疊在實際金額上（使用者 2026-07-24）。
+   非募資列改走 .project-list__cell--empty 單行破折號 ── */
+.project-list__goal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);   /* 百分比↔金額兩行間距（2026-07-24 使用者反饋：2px 太擠） */
+  min-width: 0;
+}
+.project-list__goal.project-list__cell--empty {
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+}
+.project-list__goal-pct {
+  color: var(--foreground);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-none);
+}
+.project-list__goal-amt {
+  overflow: hidden;
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── 類別：內容類型（電影）疊在家族（影視）上，比照 e-shop 兩行分類格 ── */
 .project-list__category {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-4);   /* 內容類型↔家族兩行間距（2026-07-24 使用者反饋：2px 太擠） */
   min-width: 0;
 }
 
@@ -155,17 +182,6 @@
   white-space: nowrap;
 }
 
-/* ── 待辦格：只放 tip（i）圖示，置左對齊欄頭 ── */
-.project-list__todo {
-  display: flex;
-  align-items: center;
-  color: var(--muted-foreground);
-}
-
-.project-list__todo .tip {
-  display: inline-flex;
-}
-
 /* ── chevron：點列開詳情的提示（此頁列＝連結，與 e-shop 的 ⋯ 選單不同）── */
 .project-list__go {
   display: inline-grid;
@@ -182,11 +198,11 @@
   color: var(--foreground);
 }
 
-/* ── 中寬螢幕：先收掉次要欄（類別／類型／倒數），保住名稱＋目標＋狀態＋待辦 ── */
+/* ── 中寬螢幕：先收掉次要欄（類別／類型／倒數），保住名稱＋目標＋狀態 ── */
 @media (max-width: 1180px) {
   .project-list__head,
   .project-list__row {
-    grid-template-columns: 56px minmax(180px, 1fr) 120px 88px 52px 24px;
+    grid-template-columns: 56px minmax(180px, 1fr) 120px 88px 24px;
   }
   .project-list__col-time,
   .project-list__col-category,
@@ -196,7 +212,7 @@
   .project-list__type { display: none; }
 }
 
-/* ── 窄螢幕：改堆疊，名稱主行＋目標/狀態次行，待辦與 chevron 靠右 ── */
+/* ── 窄螢幕：改堆疊，名稱主行＋目標/狀態次行，chevron 靠右 ── */
 @media (max-width: 760px) {
   .project-list__head {
     display: none;
@@ -226,6 +242,5 @@
   .project-list__category,
   .project-list__type { display: none; }
 
-  .project-list__todo { grid-column: 3; grid-row: 1; justify-content: flex-end; }
-  .project-list__go   { grid-column: 3; grid-row: 2; justify-self: end; }
+  .project-list__go   { grid-column: 3; grid-row: 1 / span 2; align-self: center; justify-self: end; }
 }

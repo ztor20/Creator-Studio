@@ -15,9 +15,14 @@
    ============================================================ */
 .search-collapse { display: flex; align-items: center; }
 
-.search-collapse__field {
+/* 收合態：兩個 class 選擇器 (.search-collapse .search-collapse__field) 的優先級要壓過
+   後載入的 .field-pill 基礎 padding（單 class、同優先級時載入順序輸）——否則收合時 field-pill
+   的 14px 內距＋1px 邊框沒被歸零，殘留約 30px 幽靈寬度，把觸發鈕往左推、與右鄰控制項間距不一致
+   （2026-07-24 修正）。 */
+.search-collapse .search-collapse__field {
   width: 0; min-width: 0;
   padding-left: 0; padding-right: 0;
+  border-width: 0;
   opacity: 0; overflow: hidden;
   border-color: transparent;
   transition: width var(--duration) var(--easing),
@@ -27,6 +32,7 @@
 .search-collapse.is-open .search-collapse__field {
   width: 240px;
   padding-left: var(--sp-12); padding-right: var(--sp-4);
+  border-width: 1px;
   opacity: 1;
   border-color: var(--border);
 }

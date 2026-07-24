@@ -13,6 +13,21 @@
   const STORAGE_KEY = 'ztor-r21-lang';
   const DEFAULT_LANG = 'zh-Hant';  // D108: v1 單一語言＝繁體中文，不提供語言切換
 
+  /* ── Persona（cheat-code「User」切換）───────────────────────────
+     一個 localStorage 值決定「現在把假資料當成誰」。default＝現有素材；
+     nick＝周湯豪；userB＝佔位空殼。persona 同時驅動兩支資料檔（projects-store /
+     products-store，各自讀同一個 key）與下面的 PERSONA_DICT 覆蓋層——切到非 default
+     時，t() 先問覆蓋層、有值就用它蓋掉寫死在 i18n key 的 demo 內容（收入 / IP /
+     活動 / 粉絲 / 商店列表）。只蓋「資料值」，欄位標籤／按鈕文案不進覆蓋層故不受影響。
+     切換由 window.ztorPersona.set() 寫值後 location.reload()，每頁載入時重新讀，
+     所以周湯豪的全部內容只集中在「兩支資料檔的 nick 區塊」＋「本檔 PERSONA_DICT」。 */
+  const PERSONA_KEY = 'ztor.persona';
+  const PERSONAS = ['default', 'nick', 'userB'];
+  function currentPersona() {
+    try { const p = localStorage.getItem(PERSONA_KEY); if (PERSONAS.indexOf(p) >= 0) return p; } catch (_) {}
+    return 'default';
+  }
+
   const DICT = {
     /* ─── Hero slideshow controls ──────────────────────────── */
     'hero.pause':       { en: 'Pause slideshow', zh: '暫停輪播' },
@@ -805,7 +820,6 @@
     'projects.col.category':      { en: 'Category',                               zh: '類別' },
     'projects.col.type':          { en: 'Type',                                   zh: '類型' },
     'projects.col.status':        { en: 'Status',                                 zh: '狀態' },
-    'projects.col.todo':          { en: 'To-do',                                  zh: '待辦' },
     'projects.tab.all':           { en: 'All',                                   zh: '全部' },
     'projects.tab.draft':         { en: 'Draft',                                 zh: '草稿' },
     'projects.tab.scheduled':     { en: 'Scheduled',                             zh: '已排程' },
@@ -857,6 +871,41 @@
     'my-ip.kpi.rentals-meta':{ en: 'Active licenses out',        zh: '進行中授權' },
     'my-ip.kpi.revenue':     { en: 'Total IP revenue',           zh: 'IP 總收入' },
     'my-ip.kpi.revenue-meta':{ en: 'Year to date · USD',         zh: '年初至今 · USD' },
+    /* KPI 金額值與 IP 名稱原為寫死文字，2026-07-24 data-i18n 化以支援 persona 覆蓋；預設＝原值 */
+    'my-ip.kpi.revenue-val': { en: '$14,820',                    zh: '$14,820' },
+    'my-ip.row1.name':       { en: 'Coastline EP',               zh: 'Coastline EP' },
+    'my-ip.row2.name':       { en: 'Late Bloom story world',     zh: 'Late Bloom story world' },
+    'my-ip.row3.name':       { en: 'Quiet Hours playlist',       zh: 'Quiet Hours playlist' },
+    /* 2026-07-24 persona：earnings / events / fans 原本寫死在 HTML 的「名字」data-i18n 化，
+       此處為 default 值（＝原畫面文字，en=zh），周湯豪版在 PERSONA_DICT.nick。數字不在此、未動。 */
+    'earnings.name.coastline':    { en: 'Coastline EP',           zh: 'Coastline EP' },
+    'earnings.name.tidepool':     { en: 'Tide Pool zine vol. 02', zh: 'Tide Pool zine vol. 02' },
+    'earnings.name.latebloom':    { en: 'Late Bloom',             zh: 'Late Bloom' },
+    'earnings.name.studioyiu':    { en: 'Studio Yiu',             zh: 'Studio Yiu' },
+    'earnings.name.neontide':     { en: 'Neon Tide',              zh: 'Neon Tide' },
+    'earnings.name.studiomira':   { en: 'Studio Mira',            zh: 'Studio Mira' },
+    'earnings.name.springlaunch': { en: 'Spring Launch',          zh: 'Spring Launch' },
+    'earnings.name.taipeilive':   { en: 'Taipei Live 2026',       zh: 'Taipei Live 2026' },
+    'earnings.name.holder':       { en: 'Maya Chou',              zh: 'Maya Chou' },
+    'event-detail.ov.lineup-val': { en: 'Mika L · Coastline (band)', zh: 'Mika L · Coastline (band)' },
+    'event-detail.att.holder1':   { en: 'Aki Tanaka',            zh: 'Aki Tanaka' },
+    'event-detail.att.holder2':   { en: 'Lena Wu',               zh: 'Lena Wu' },
+    'event-detail.att.holder4':   { en: 'Coastline (comp)',      zh: 'Coastline (comp)' },
+    'event-detail.comp.holder1':  { en: 'Coastline (band)',      zh: 'Coastline (band)' },
+    'fans.row1.name':     { en: 'Wei Yu-han',    zh: 'Wei Yu-han' },
+    'fans.row2.name':     { en: 'Lin Yiwen',     zh: 'Lin Yiwen' },
+    'fans.row3.name':     { en: 'Ahmed Said',    zh: 'Ahmed Said' },
+    'fans.row4.name':     { en: 'Chen Mei-ling', zh: 'Chen Mei-ling' },
+    'fans.row5.name':     { en: 'James Carter',  zh: 'James Carter' },
+    'fans.row6.name':     { en: 'Park Ji-woo',   zh: 'Park Ji-woo' },
+    'fans.row7.name':     { en: 'Sofia Rossi',   zh: 'Sofia Rossi' },
+    'fans.row8.name':     { en: 'Liam Nguyen',   zh: 'Liam Nguyen' },
+    'fans.row9.name':     { en: 'Emma Müller',   zh: 'Emma Müller' },
+    'fans.hof.row1.name': { en: 'Wei Yu-han',    zh: 'Wei Yu-han' },
+    'fans.hof.row2.name': { en: 'Ahmed Said',    zh: 'Ahmed Said' },
+    'fans.hof.row3.name': { en: 'Lin Yiwen',     zh: 'Lin Yiwen' },
+    'fan-detail.name':    { en: 'Wei Yu-han',    zh: 'Wei Yu-han' },
+    'fan-detail.avatar':  { en: 'W',             zh: 'W' },
     'my-ip.tab.my':          { en: 'My IP',                      zh: '我的 IP' },
     'my-ip.tab.rented':      { en: 'Rented',                     zh: '租入' },
     'my-ip.info-banner':      { en: 'Publishing a project auto-creates an IP record. To register existing rights from outside Ztor, use <strong>Add your IP</strong> — these become eligible for the marketplace.', zh: '專案上架時會自動建立 IP 紀錄。要登錄 Ztor 之外既有的權利，請用 <strong>新增 IP</strong>——之後便可上架到市場。' },
@@ -1505,6 +1554,10 @@
     'events.row1.meta':        { en: 'Concert · Series 1/3',                zh: '演出 · 系列 1/3' },
     'events.row1.datetime':    { en: 'Apr 12, 2026 · 8:00 PM',             zh: '2026/4/12 · 晚上 8:00' },
     'events.row1.venue':       { en: 'Legacy Taipei · Taipei',             zh: 'Legacy Taipei · 台北' },
+    'events.rowWP.title':      { en: 'Friday Movie Night — Neon Harbor watch-along', zh: '週五電影夜 — 霓虹港灣共看' },
+    'events.rowWP.meta':       { en: 'Watch Party',                        zh: '共看派對' },
+    'events.rowWP.datetime':   { en: 'Aug 1, 2026 · 9:00 PM',              zh: '2026/8/1 · 晚上 9:00' },
+    'events.rowWP.venue':      { en: 'Online · Neon Harbor',               zh: '線上 · 霓虹港灣' },
     'events.row2.title':       { en: 'Spring Launch — Hualien encore',      zh: 'Spring Launch — 花蓮加場' },
     'events.row2.meta':        { en: 'Concert · Series 2/3',                zh: '演出 · 系列 2/3' },
     'events.row2.datetime':    { en: 'Apr 19, 2026 · 7:30 PM',             zh: '2026/4/19 · 晚上 7:30' },
@@ -1769,6 +1822,8 @@
     'ce.type.launch-sub':   { en: 'Celebrate a release',              zh: '慶祝新作品發行' },
     'ce.type.virtual':      { en: 'Virtual Event',                    zh: '線上活動' },
     'ce.type.virtual-sub':  { en: 'Online-only experience',           zh: '純線上體驗' },
+    'ce.type.watchparty':   { en: 'Watch Party',                      zh: '共看派對' },
+    'ce.type.watchparty-sub': { en: 'Watch a video together, in sync', zh: '同步共看一支影片' },
     /* Step 2 · Details */
     'ce.s2.h1':             { en: 'Make them feel it',                zh: '讓粉絲有感' },
     'ce.s2.sub':            { en: 'What will fans experience?',       zh: '粉絲會體驗到什麼？' },
@@ -1835,6 +1890,59 @@
     'ce.qc.venue':          { en: 'Venue set',                        zh: '已設場地' },
     'ce.qc.ticket':         { en: 'At least 1 ticket tier',           zh: '至少 1 種票種' },
     'ce.qc.banner':         { en: '5 items needed before publishing', zh: '還差 5 項才能發布' },
+    /* Watch Party 分支（D149 §4.7） */
+    'ce.subtitle.wp':       { en: 'Watch party',                      zh: '共看派對' },
+    'ce.wp.s2.h1':          { en: 'Pick your video',                  zh: '選擇共看內容' },
+    'ce.wp.s2.sub':         { en: 'Choose a video and name the room.', zh: '選一支影片、為房間命名。' },
+    'ce.wp.s3.h1':          { en: 'When, who, and where they watch',  zh: '時間、人數與可觀看範圍' },
+    'ce.wp.s3.sub':         { en: 'Set the time, capacity, region and privacy.', zh: '設定時間、人數上限、地區與隱私。' },
+    'ce.wp.s4.h1':          { en: 'Set your ticket',                  zh: '設定入場券' },
+    'ce.wp.s4.sub':         { en: 'Free, or set one price to enter.', zh: '免費，或設定單一入場價格。' },
+    'ce.wp.content':        { en: 'Watch content',                    zh: '播放內容' },
+    'ce.wp.content.sub':    { en: 'Pick one video for everyone to watch together.', zh: '選一支大家一起同步觀看的影片。' },
+    'ce.wp.film':           { en: 'Select video',                     zh: '選擇影片' },
+    'ce.wp.film.ph':        { en: 'Choose a video…',                  zh: '選擇要共看的影片…' },
+    'ce.wp.err.film':       { en: 'Please choose a video to watch.',  zh: '請選擇要共看的影片。' },
+    'ce.wp.room':           { en: 'Room name',                        zh: '房間名稱' },
+    'ce.wp.room.ph':        { en: 'e.g., Friday movie night',         zh: '例如：週五電影夜' },
+    'ce.wp.err.room':       { en: 'Room name is required.',           zh: '房間名稱為必填。' },
+    'ce.wp.schedule':       { en: 'Schedule',                         zh: '時間' },
+    'ce.wp.start':          { en: 'Party start',                      zh: '派對開始時間' },
+    'ce.wp.err.start':      { en: 'Start time is required.',          zh: '開始時間為必填。' },
+    'ce.wp.end':            { en: 'Estimated end',                    zh: '預估結束時間' },
+    'ce.wp.end.hint':       { en: 'The room will not auto-close — the host ends it. This just helps guests plan.', zh: '房間不會自動關閉，實際由主持人結束；此為方便來賓安排的預估。' },
+    'ce.wp.cap':            { en: 'Capacity',                         zh: '人數上限' },
+    'ce.wp.cap.unlimited':  { en: 'No limit',                         zh: '不限人數' },
+    'ce.wp.cap.limited':    { en: 'Set a limit',                      zh: '設定上限' },
+    'ce.wp.cap.limit.ph':   { en: 'e.g., 200',                        zh: '例如：200' },
+    'ce.wp.cap.hint':       { en: 'When full, new guests see "Room full" and cannot join. Platform cap is 1,000 per party.', zh: '達上限後新來賓會看到「已額滿」、無法加入；平台單場上限 1,000 人。' },
+    'ce.wp.region':         { en: 'Where fans can watch',             zh: '可觀看地區' },
+    'ce.wp.region.global':  { en: 'Worldwide',                        zh: '全球開放' },
+    'ce.wp.region.include': { en: 'Selected regions',                 zh: '僅指定地區' },
+    'ce.wp.region.exclude': { en: 'Exclude regions',                  zh: '排除特定地區' },
+    'ce.wp.region.hint':    { en: 'Controls who can claim a ticket and enter, by region.', zh: '控制哪些地區可領票、進場。' },
+    'ce.wp.privacy':        { en: 'Party privacy',                    zh: '派對隱私' },
+    'ce.wp.privacy.public': { en: 'Public',                           zh: '公開' },
+    'ce.wp.privacy.private':{ en: 'Private',                          zh: '私密' },
+    'ce.wp.privacy.hint':   { en: 'Anyone with the share link can enter the room.', zh: '任何人憑分享連結都能進入房間。' },
+    'ce.wp.ticket':         { en: 'Admission',                        zh: '入場券' },
+    'ce.wp.ticket.free':    { en: 'Free',                             zh: '免費' },
+    'ce.wp.ticket.paid':    { en: 'Set a price',                      zh: '自訂價格' },
+    'ce.wp.ticket.price':   { en: 'Ticket price',                     zh: '入場券價格' },
+    'ce.wp.ticket.price.ph':{ en: '0',                                zh: '0' },
+    'ce.wp.hosthint':       { en: 'Hosting needs desktop Chrome or Edge. You can set up on mobile and open the room on a computer at showtime.', zh: '開播需使用電腦版 Chrome 或 Edge；可先用手機建立，開演時再用電腦開啟房間。' },
+    'ce.wp.rev.content':    { en: 'Watch content',                    zh: '播放內容' },
+    'ce.wp.rev.room':       { en: 'Room name',                        zh: '房間名稱' },
+    'ce.wp.rev.schedule':   { en: 'Schedule',                         zh: '時間' },
+    'ce.wp.rev.ticket':     { en: 'Admission',                        zh: '入場券' },
+    'ce.wp.qc.video':       { en: 'Video selected',                   zh: '已選影片' },
+    'ce.wp.qc.room':        { en: 'Room name filled',                 zh: '已填房間名稱' },
+    'ce.wp.qc.start':       { en: 'Start time set',                   zh: '已設開始時間' },
+    'ce.wp.qc.capacity':    { en: 'Capacity set',                     zh: '已設人數上限' },
+    'ce.wp.qc.region':      { en: 'Region set',                       zh: '已設可觀看地區' },
+    'ce.wp.qc.privacy':     { en: 'Privacy set',                      zh: '已設隱私' },
+    'ce.wp.qc.ticket':      { en: 'Admission set',                    zh: '已設入場券' },
+    'ce.wp.qc.banner':      { en: '7 items needed before publishing', zh: '還差 7 項才能發布' },
     /* Footer · nav */
     'ce.next.1':            { en: 'Next: Details',                    zh: '下一步：細節' },
     'ce.next.2':            { en: 'Next: Venue & Time',               zh: '下一步：場地與時間' },
@@ -2317,6 +2425,9 @@
     'cpp.s1.h1':            { en: 'What are you making?',             zh: '你正在做的是什麼？' },
     'cpp.s1.sub':           { en: 'Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.', zh: '選一種專案類型，告訴我們基本資訊。一切都可之後再調整——目前只需足以存草稿的內容。' },
     'cpp.s1.type':          { en: 'Project type',                     zh: '專案類型' },
+    'cpp.gate.back':        { en: 'Back',                             zh: '返回上一頁' },
+    'cpp.about.h1':         { en: 'Project basics',                   zh: '基本資料' },
+    'cpp.about.sub':        { en: 'Tell us the essentials — you can refine everything later.', zh: '填寫必要資訊，細節都可之後再調整。' },
     'cpp.golive.tag':       { en: 'Fastest',                          zh: '最快' },
     'cpp.golive.title':     { en: 'Go live',                          zh: '直接上線' },
     'cpp.golive.sub':       { en: 'Publish now. Best when the content is finished and you want fans to consume or buy today.', zh: '立即發布。內容已完成、想讓粉絲今天就消費時用。' },
@@ -3217,6 +3328,43 @@
     'project-detail.tab.progress':{en:'Production progress',zh:'製作進度'},
     'project-detail.tab.earnings':{en:'My earnings',zh:'我的收益'},
     'project-detail.tab.cofund':{en:'Co-creation progress',zh:'共創進度'},
+    'project-detail.tab.preorder':{en:'Pre-order progress',zh:'預購進度'},
+    'project-detail.tl.pre-open':{en:'Pre-order opened',zh:'預購開始'},
+    'project-detail.tl.pre-deadline':{en:'Pre-order deadline',zh:'預購截止'},
+    'project-detail.tl.pre-deadline-val':{en:'Jul 06, 2026 · 9 days left',zh:'2026/07/06 · 剩 9 天'},
+    'project-detail.tl.delivery':{en:'Expected delivery',zh:'預期交付'},
+    'project-detail.tl.delivery-val':{en:'Oct 2026',zh:'2026/10'},
+    'project-detail.schedule.autonote-pre':{en:'On the pre-order deadline: reaching the minimum order quantity moves it into production, missing it fails the project with an automatic full refund when the switch below is on.',zh:'到預購截止時：達最少訂購數就進入生產，未達量則專案失敗、並在下方開關開啟時自動全額退款。'},
+    'project-detail.golive.title':{en:'Publish timeline',zh:'上線時間'},
+    'project-detail.golive.badge':{en:'Live',zh:'已上線'},
+    'project-detail.golive.published':{en:'Published live',zh:'正式上線'},
+    'project-detail.golive.note':{en:'Go-live projects publish immediately — no funding or order threshold, no refund. Revenue is shared on earnings after release.',zh:'直接上線的專案立即發布——無募資／訂購門檻、無退款；上線後依營收分潤。'},
+    'pd-pre.kpi.orders':{en:'Pre-orders',zh:'已下單'},
+    'pd-pre.kpi.orders-meta':{en:'Cards verified · charged when the minimum is met',zh:'卡片已驗證 · 達量才扣款'},
+    'pd-pre.kpi.min':{en:'Minimum quantity',zh:'最少訂購數'},
+    'pd-pre.kpi.min-meta':{en:'Below the minimum = full refund',zh:'未達量＝全額退款'},
+    'pd-pre.kpi.deadline':{en:'Pre-order deadline',zh:'預購截止'},
+    'pd-pre.kpi.deadline-meta':{en:'9 days left',zh:'剩 9 天'},
+    'pd-pre.progress.title':{en:'Order progress',zh:'訂購進度'},
+    'pd-pre.unit':{en:'Unit price $28',zh:'單價 $28'},
+    'pd-pre.progress.goal':{en:'Reaches the minimum to go into production',zh:'達最少訂購數才進入生產'},
+    'pd-pre.progress.left':{en:'9 days left',zh:'剩 9 天'},
+    'pd-pre.progress.delivery':{en:'Expected delivery Oct 2026',zh:'預期交付 2026/10'},
+    'pd-pre.progress.note':{en:'Cards verified on order · charged only when the minimum quantity is met; below it, all orders are refunded in full.',zh:'下單僅驗證卡片 · 達最少訂購數才實際扣款；未達量則全部訂單全額退款。'},
+    'pd-pre.refund.title':{en:'If the minimum is missed',zh:'未達量時'},
+    'pd-pre.refund.body':{en:'<strong>Full refund guaranteed.</strong> If pre-orders don\'t reach 100 by the deadline, every order is refunded in full (§7.3). Buyers are only charged once the minimum is met.',zh:'<strong>保證全額退款。</strong> 若預購到截止未達 100 筆，每筆訂單全額退款（§7.3）；達量才向買家扣款。'},
+    'pd-pre.orders.title':{en:'Pre-order detail',zh:'預購訂單明細'},
+    'pd-pre.charge.min':{en:'Charge on minimum',zh:'達量才扣款'},
+    'pd-earn.trend.title':{en:'Revenue trend',zh:'收益走勢'},
+    'pd-earn.period.day':{en:'Day',zh:'天'},
+    'pd-earn.period.month':{en:'Month',zh:'月'},
+    'pd-earn.period.q':{en:'Quarter',zh:'三個月'},
+    'pd-earn.period.year':{en:'Year',zh:'年'},
+    'pd-earn.filter.all':{en:'All',zh:'全部'},
+    'pd-earn.filter.ott':{en:'OTT royalty',zh:'OTT版稅收益'},
+    'pd-earn.filter.critic':{en:'Critic commission',zh:'影評人佣金'},
+    'pd-earn.filter.advance':{en:'Critic advance',zh:'影評人預付金'},
+    'pd-earn.filter.license':{en:'Licensing',zh:'授權收益'},
     'pd-earn.note':{en:'<strong>Exploratory prototype —</strong> the earnings model is drawn from co-creation; figures are illustrative, pending product decision.',zh:'<strong>探索原型 —</strong> 收益模型提取自共創計畫，數字為示意、待產品裁決。'},
     'pd-earn.items.title':{en:'Project item earnings',zh:'計畫項目收益'},
     'pd-earn.last-month':{en:'Last 30 days',zh:'近一個月'},
@@ -4116,14 +4264,148 @@
     'fin.how.party':          { en: 'Profit-share income from co-creation parties (screenings, meet-ups and other in-person events) you host or join.', zh: '您發起或參與的共創派對（放映、見面會等實體活動）產生的分潤收益。' },
   };
 
+  /* ── PERSONA_DICT：persona 專屬內容覆蓋層 ───────────────────────
+     結構同 DICT：{ persona: { 'i18n.key': { zh, en }, … } }。只列「要換成該 persona
+     的資料值」的 key；沒列到的 key 走原 DICT（欄位標籤、按鈕等不受影響）。
+     nick＝周湯豪；分頁批次填入（第一批：電子商店列表；第二批：收入/IP/活動/粉絲）。
+     userB＝佔位空殼，先不覆蓋任何 key（切 User B 時全站沿用 default 資料）。 */
+  const PERSONA_DICT = {
+    /* 電子商店 9 主商品的名／圖／價因寫死在 HTML，改由 products-store.js 就地改列；
+       此處只放「本來就是 i18n key 的資料值」。寫死在各頁 HTML 的資料值（earnings/fans/
+       events/my-ip 的 KPI 數字、人名、金額等）另由各頁 data-i18n 化後併入下方 key。 */
+    nick: {
+      /* ── 電子商店 bundles / auctions（名＋含後援會名的 meta）── */
+      'e-shop.b1.name': { zh: 'REALIVE 入門組', en: 'REALIVE starter pack' },
+      'e-shop.b2.name': { zh: 'LOVE RAGE HOPE 黑膠＋海報組', en: 'LOVE RAGE HOPE vinyl + poster set' },
+      'e-shop.a1.name': { zh: 'REALIVE 舞台穿著皮衣', en: 'REALIVE stage-worn jacket' },
+      'e-shop.a1.meta': { zh: '良好 · NICKTHEREAL Club', en: 'Good · NICKTHEREAL Club' },
+      'e-shop.a2.name': { zh: 'REALIVE 親簽巡演海報 · 1/1', en: 'REALIVE signed tour poster · 1 of 1' },
+      'e-shop.a3.name': { zh: '工作室古董合成器', en: 'Studio vintage synth' },
+
+      /* ── 我的 IP ── */
+      'my-ip.row1.rights':  { en: 'NICKTHEREAL · 100%', zh: '周湯豪 · 100%' },
+      'my-ip.row1.rented':  { en: '12', zh: '12' },
+      'my-ip.row1.revenue': { en: '$48,600', zh: '$48,600' },
+      'my-ip.row1.price':   { en: '$6,800 / 6mo', zh: '$6,800 / 6 個月' },
+      'my-ip.row2.rights':  { en: '周湯豪 + 陳彥廷 · 70/30', zh: '周湯豪 + 陳彥廷 · 70/30' },
+      'my-ip.row2.rented':  { en: '5', zh: '5' },
+      'my-ip.row2.revenue': { en: '$22,400', zh: '$22,400' },
+      'my-ip.row2.price':   { en: '$18,000 flat', zh: '$18,000 一次性' },
+      'my-ip.row3.rights':  { en: 'NICKTHEREAL · 100%', zh: '周湯豪 · 100%' },
+      'my-ip.row4.title':   { en: 'REALIVE concert film masters', zh: 'REALIVE (R2) 演唱會 影像母帶' },
+      'my-ip.row4.meta':    { en: 'Registered Sep 18, 2025 · Awaiting waterfall verification', zh: '2025/09/18 登錄 · 等待 waterfall 驗證' },
+      /* my-ip 寫死值 data-i18n 化後併入（見 my-ip.html 的 data-i18n 補標） */
+      'my-ip.row1.name':      { en: 'LOVE RAGE HOPE master rights', zh: 'LOVE RAGE HOPE 音樂版權' },
+      'my-ip.row2.name':      { en: 'REALIVE tour visual identity', zh: 'REALIVE 巡迴視覺' },
+      'my-ip.row3.name':      { en: '“我的i” official MV footage', zh: '我的i 官方 MV 影像' },
+      'my-ip.kpi.revenue-val': { en: '$86,400', zh: '$86,400' },
+
+      /* ── 收入管理（i18n 可覆蓋的少數；寫死值見 earnings.html data-i18n 補標）── */
+      'earnings.kpi.gross-meta':       { zh: '較上月 +22.6%', en: '+22.6% MoM' },
+      'earnings.waterfall.gross-meta': { zh: '248 筆已結算收入', en: '248 settled events' },
+      'earnings.waterfall.ip-meta':    { zh: '取樣曲目授權使用', en: 'Sampled track licensing' },
+      'earnings.waterfall.nft-meta':   { zh: '40% · 1,240 位支持者', en: '40% · 1,240 backers' },
+      'tx.showing':                    { zh: '顯示 271 筆中的 7 筆 ·', en: 'Showing 7 of 271 transactions ·' },
+
+      /* ── 活動（列表 + 詳情）── */
+      'events.row1.title':  { zh: 'REALIVE 巡迴演唱會 — 台北 Legacy 場', en: 'REALIVE Tour — Taipei Legacy show' },
+      'events.row2.title':  { zh: 'REALIVE 巡迴演唱會 — 台中場', en: 'REALIVE Tour — Taichung show' },
+      'events.row3.title':  { zh: 'NICKTHEREAL 官方後援會 — 線上 Q&amp;A', en: 'NICKTHEREAL Fan Club — Online Q&amp;A' },
+      'events.row4.title':  { zh: 'REALIVE (R2) 演唱會 — 特映會', en: 'REALIVE Concert Film — Premiere screening' },
+      'events.row5.title':  { zh: 'LOVE RAGE HOPE — 東京快閃簽名會', en: 'LOVE RAGE HOPE — Tokyo pop-up signing' },
+      'events.row6.title':  { zh: 'REALIVE 巡迴演唱會 — 高雄場', en: 'REALIVE Tour — Kaohsiung show' },
+      'events.row7.title':  { zh: '週末編舞工作坊', en: 'Weekend choreography workshop' },
+      'events.row3.meta':   { zh: '後援會 · 線上', en: 'Fan club · online' },
+      'events.row4.meta':   { zh: '放映會', en: 'Screening' },
+      'events.row5.meta':   { zh: '簽名會', en: 'Signing' },
+      'events.row6.meta':   { zh: '演出', en: 'Concert' },
+      'events.row7.meta':   { zh: '工作坊', en: 'Workshop' },
+      'events.row2.venue':  { zh: 'Legacy Taichung · 台中', en: 'Legacy Taichung · Taichung' },
+      'events.row4.venue':  { zh: 'in89 豪華影城 · 台北', en: 'in89 Cinemas · Taipei' },
+      'events.row5.venue':  { zh: 'Tower Records 澀谷 · 東京', en: 'Tower Records Shibuya · Tokyo' },
+      'event-detail.h1':                { zh: 'REALIVE 巡迴演唱會 — 台北 Legacy 場', en: 'REALIVE Tour — Taipei Legacy show' },
+      'event-detail.ov.series-val':     { zh: 'REALIVE 巡迴 · 第 1 場（共 3 場）', en: 'REALIVE Tour · 1 of 3' },
+      'event-detail.series.row1.title': { zh: 'REALIVE 巡迴演唱會 — 台北 Legacy 場', en: 'REALIVE Tour — Taipei Legacy show' },
+      'event-detail.series.row2.title': { zh: 'REALIVE 巡迴演唱會 — 台中場', en: 'REALIVE Tour — Taichung show' },
+      'event-detail.series.row3.title': { zh: 'REALIVE 巡迴演唱會 — 線上加場', en: 'REALIVE Tour — Online encore' },
+      'event-detail.footer1':           { zh: 'REALIVE 巡迴演唱會 · 系列第 1 場（共 3 場）', en: 'REALIVE Tour · Series 1 of 3' },
+
+      /* ── 粉絲（CRM + 詳情）── */
+      'fans.row1.meta': { en: 'shihan@studio · Taipei', zh: 'shihan@studio · 台北' },
+      'fans.row2.meta': { en: 'boyu@gmail · Taichung', zh: 'boyu@gmail · 台中' },
+      'fans.row3.meta': { en: 'vivian.w@hey · Singapore', zh: 'vivian.w@hey · 新加坡' },
+      'fans.row4.meta': { en: 'yuchieh@mail · Kaohsiung', zh: 'yuchieh@mail · 高雄' },
+      'fans.row5.meta': { en: 'jamie@studio · London', zh: 'jamie@studio · 倫敦' },
+      'fans.row6.meta': { en: 'jiaen@mail · Seoul', zh: 'jiaen@mail · 首爾' },
+      'fans.row7.meta': { en: 'weiwei@mail · Tokyo', zh: 'weiwei@mail · 東京' },
+      'fans.row8.meta': { en: 'chenghan@mail · Sydney', zh: 'chenghan@mail · 雪梨' },
+      'fans.row9.meta': { en: 'ziqing@mail · Vancouver', zh: 'ziqing@mail · 溫哥華' },
+      'fans.hof.row1.meta': { en: 'shihan@studio · Taipei', zh: 'shihan@studio · 台北' },
+      'fans.hof.row2.meta': { en: 'vivian.w@hey · Singapore', zh: 'vivian.w@hey · 新加坡' },
+      'fans.hof.row3.meta': { en: 'boyu@gmail · Taichung', zh: 'boyu@gmail · 台中' },
+      'fan-detail.identity': { en: 'shihan@studio · Taipei, Taiwan · Fan since Mar 2024', zh: 'shihan@studio · 台灣台北 · 自 2024 年 3 月起的粉絲' },
+      'fan-detail.kpi.last-active-meta': { en: 'Opened the “LOVE RAGE HOPE” album drop', zh: '開啟了《LOVE RAGE HOPE》上架通知' },
+      'fan-detail.tl.eshop1':    { en: 'Pre-ordered “LOVE RAGE HOPE” vinyl', zh: '預購了《LOVE RAGE HOPE》黑膠' },
+      'fan-detail.tl.interact1': { en: 'Commented on a NICKTHEREAL Club post', zh: '在 NICKTHEREAL 後援會貼文留言' },
+      'fan-detail.tl.event1':    { en: 'Checked in · “REALIVE Tour · Taipei”', zh: '已報到 ·「REALIVE 巡迴演唱會 台北場」' },
+      'fan-detail.tl.project1':  { en: 'Backed the “我的i” MV fund', zh: '支持了「我的i」MV 集資' },
+      'fan-detail.spend.r1': { en: '“LOVE RAGE HOPE” vinyl (pre-order)', zh: '《LOVE RAGE HOPE》黑膠（預購）' },
+      'fan-detail.spend.r2': { en: '“REALIVE Tour · Taipei” · 1 ticket', zh: '「REALIVE 巡迴演唱會 台北場」· 1 張票' },
+      'fan-detail.spend.r3': { en: '“我的i” MV fund · backer tier 2', zh: '「我的i」MV 集資 · 支持者級別 2' },
+      'fan-detail.spend.r4': { en: 'NICKTHEREAL merch bundle', zh: 'NICKTHEREAL 官方週邊組合' },
+      'fan-detail.events.r1': { en: 'REALIVE Tour · Taipei', zh: 'REALIVE 巡迴演唱會 台北場' },
+      'fan-detail.events.r2': { en: '“LOVE RAGE HOPE” Listening Party · Vol. 3', zh: '「LOVE RAGE HOPE」搶聽會 · 第 3 場' },
+      'fan-detail.projects.r1': { en: '“我的i” MV (fund)', zh: '「我的i」MV（集資）' },
+      'fan-detail.projects.r2': { en: 'LOVE RAGE HOPE (creative project)', zh: 'LOVE RAGE HOPE（創作企劃）' },
+
+      /* ── 名字（原寫死於 HTML，2026-07-24 data-i18n 化）：earnings / events / fans ── */
+      'earnings.name.coastline':    { en: 'LOVE RAGE HOPE',           zh: 'LOVE RAGE HOPE' },
+      'earnings.name.tidepool':     { en: 'REALIVE tour zine',     zh: 'REALIVE 巡迴寫真誌' },
+      'earnings.name.latebloom':    { en: '“我的i”',                   zh: '我的i' },
+      'earnings.name.studioyiu':    { en: 'Studio Yiu',              zh: '耀映工作室' },
+      'earnings.name.neontide':     { en: 'REALIVE tour visuals',  zh: 'REALIVE 巡迴視覺' },
+      'earnings.name.studiomira':   { en: 'Studio Mira',             zh: 'Mira 影像' },
+      'earnings.name.springlaunch': { en: 'REALIVE show',          zh: 'REALIVE 場次' },
+      'earnings.name.taipeilive':   { en: 'REALIVE Tour · Taipei', zh: 'REALIVE 巡迴演唱會 台北場' },
+      'earnings.name.holder':       { en: 'Nick Chou',               zh: '周湯豪' },
+      'event-detail.ov.lineup-val': { en: 'NICKTHEREAL · full band', zh: '周湯豪 NICKTHEREAL · 全編制樂團' },
+      'event-detail.att.holder1':   { en: 'Lin Yen-ting',   zh: '林彥廷' },
+      'event-detail.att.holder2':   { en: 'Wang Si-ying',   zh: '王思穎' },
+      'event-detail.att.holder4':   { en: 'Fan club comp',  zh: '後援會招待' },
+      'event-detail.comp.holder1':  { en: 'Backing band ×4', zh: '隨行樂團 ×4' },
+      'fans.row1.name': { en: 'Lin Shih-han',     zh: '林詩涵' },
+      'fans.row2.name': { en: 'Chen Po-yu',       zh: '陳柏宇' },
+      'fans.row3.name': { en: 'Wang Kai-hsin',    zh: '王凱昕' },
+      'fans.row4.name': { en: 'Huang Yu-chieh',   zh: '黃于潔' },
+      'fans.row5.name': { en: 'Chang Yung-ching', zh: '張詠晴' },
+      'fans.row6.name': { en: 'Li Chia-en',       zh: '李佳恩' },
+      'fans.row7.name': { en: 'Su Hsiao-wei',     zh: '蘇曉薇' },
+      'fans.row8.name': { en: 'Wu Cheng-han',     zh: '吳承翰' },
+      'fans.row9.name': { en: 'Kao Tzu-ching',    zh: '高子晴' },
+      'fans.hof.row1.name': { en: 'Lin Shih-han',  zh: '林詩涵' },
+      'fans.hof.row2.name': { en: 'Wang Kai-hsin', zh: '王凱昕' },
+      'fans.hof.row3.name': { en: 'Chen Po-yu',    zh: '陳柏宇' },
+      'fan-detail.name':   { en: 'Lin Shih-han', zh: '林詩涵' },
+      'fan-detail.avatar': { en: 'L',            zh: '林' }
+    },
+    userB: {}
+  };
+
   function currentLang() {
     return document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en';
   }
 
   function t(key) {
+    const lang = currentLang();
+    /* persona 覆蓋層優先：非 default persona 且該 key 有覆蓋值就用它（見檔頭 Persona 說明）。 */
+    const persona = currentPersona();
+    if (persona !== 'default') {
+      const ov = PERSONA_DICT[persona];
+      if (ov && ov[key] && ov[key][lang] != null) return ov[key][lang];
+    }
     const entry = DICT[key];
     if (!entry) return null;
-    return entry[currentLang()];
+    return entry[lang];
   }
 
   function apply(root) {
@@ -4199,4 +4481,44 @@
   window.setLang    = setLang;
   window.toggleLang = toggleLang;
   window.i18nT      = t;     /* translate a key in the current language (or null) */
+
+  /* ── Persona API（cheat code 的「User」組呼叫）──────────────────
+     get()＝目前資料 persona（default/nick/userB）。set(id) 接受四個 cheat 選項：
+       default User → 資料 default、無 admin chrome
+       admin        → 資料 default、套 admin 代管 chrome（沿用 ztorCreator 名冊首位）
+       nick / userB → 對應資料 persona、無 admin chrome
+     set() 寫 localStorage 後 location.reload()，讓資料檔與覆蓋層在下次載入生效。 */
+  window.ztorPersona = {
+    /* [id, 顯示名, 說明]；devtools 直接渲染成 User 組四顆 */
+    list: function () {
+      return [
+        ['default', 'default User', '平台預設帳號 · 現有 demo 資料'],
+        ['admin',   'admin',        'admin 代管視角 · 資料維持 default'],
+        ['nick',    'User A · 周湯豪', '全站 demo 資料切為周湯豪'],
+        ['userB',   'User B',        '佔位（資料待補，暫沿用 default）']
+      ];
+    },
+    get: currentPersona,
+    /* 目前 cheat 高亮用：資料是 nick/userB 直接回；default 資料下若有 admin 代管回 'admin' */
+    current: function () {
+      const p = currentPersona();
+      if (p === 'nick' || p === 'userB') return p;
+      const c = window.ztorCreator && window.ztorCreator.get && window.ztorCreator.get();
+      return c ? 'admin' : 'default';
+    },
+    set: function (id) {
+      const dataPersona = (id === 'nick' || id === 'userB') ? id : 'default';
+      try { localStorage.setItem(PERSONA_KEY, dataPersona); } catch (_) {}
+      /* chrome：admin 選項套用「代管名冊首位」的 admin chrome；其餘清成一般創作者 */
+      if (window.ztorCreator && window.ztorCreator.set) {
+        if (id === 'admin') {
+          const first = (window.ztorCreator.list && window.ztorCreator.list[0]) || null;
+          window.ztorCreator.set(first ? first.handle : null);
+        } else {
+          window.ztorCreator.set(null);
+        }
+      }
+      location.reload();
+    }
+  };
 })();

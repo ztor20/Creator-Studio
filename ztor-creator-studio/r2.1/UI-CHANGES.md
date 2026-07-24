@@ -6,7 +6,75 @@
 
 ---
 
-## 2026-07-24 · projects 主篩選新增「已上線」狀態 tab（B 反饋導入 · ASSUMPTIONS UIA-084）
+## 2026-07-24 · 建立活動新增第 6 型「共看派對（Watch Party）」＋type 分支欄位（A spec-derived · D149）
+
+依 `documents/decisions.md` D149（新增第 6 種活動類型），把共看派對接進建立活動流程與活動清單。欄位集照使用者確認範圍（選影片／房間名稱／開始＋預估結束時間／人數上限［不限／設定上限］／可觀看地區［全球／指定／排除］／隱私［公開／私密］／入場券［免費／自訂價］），不套演出型的表演陣容／四張圖／實體場地／票種階層。
+
+- **【A/型別卡】** `create-event.html` step 1 新增第 6 張 `.selection-card--icon`（`data-choice="watchparty"`、icon `film`），沿用既有型別卡樣式（STYLE-DECISIONS Q13／Q18／Q19），不新增卡片做法。
+- **【A/type 分支】** 新增 type-driven 顯隱機制：共看派對專屬區塊標 `data-show-type="watchparty"`、演出型區塊標 `data-hide-type="watchparty"`，選卡時 `applyTypeVisibility()` 依 `eventType` 切換；F1 類型與 F10–F12 Review 兩型共用。這是全站首個 type 分支（先前 5 型共用同一套 step）。
+- **【A/欄位】** step 2＝選影片（`<select class="select">` 從 `js/films-store.js` 灌候選）＋房間名稱；step 3＝時間（開始＋預估結束，附「房間不自動關閉」註記）／人數上限（`.segmented` 不限／設定上限＋reveal 數字）／可觀看地區（`.segmented` 三選一）／隱私（`.segmented` 公開／私密）；step 4＝入場券（`.segmented` 免費／自訂價＋reveal `amount-field`，單一價、無票種階層、無 QR）。全部重用既有元件，無新增 ds-component。
+- **【A/Review】** step 5 加共看派對版摘要（4 列）＋發布前檢核（7 項：影片／房間名稱／開始時間／人數上限／地區／隱私／入場券），與演出型 5 項並存、依類型顯隱。
+- **【A/活動清單】** `events.html` Upcoming 新增一筆共看派對樣本列（週五電影夜 — 霓虹港灣共看，Watch Party，線上，142／200，$710，On Sale），KPI Total events 11→12。
+- **【A/i18n】** `js/i18n.js` 新增 `ce.type.watchparty(-sub)`＋`ce.wp.*`（約 45 鍵）＋`events.rowWP.*`（4 鍵），皆雙語。
+- **範圍**：只動 `create-event.html`／`events.html`／`js/i18n.js`；`create-event.html` 補掛 `segmented.css`＋`amount-field.css`＋`js/films-store.js`。深度未定項（影片來源、人數上限數字、票價區間、收入分類）記 ASSUMPTIONS 待上游，不寫死。
+- **驗證**：本機 server 實測——選共看派對卡後副標變「共看派對」，step 2 只顯示選影片＋房間名稱（演出欄位隱藏），step 3 四組 segmented 全渲染，影片下拉灌入 6 部；活動清單多一筆共看派對列。無 console error；`check_ds_sync.py` PASS（WARN 皆存量）；`bump_ver` 已跑。
+
+## 2026-07-24 · 建立專案流程前置「專案類型閘門」＋表單型別選擇器降級為標題級（B 反饋導入 · D150）
+
+使用者要求：整個建立專案流程開始前，先出現一個只有三張型別卡（直接上線／先募資／開放預購）＋「返回上一頁」的畫面；選定後才進入現在的分步表單，且表單內的「專案類型」欄位只保留標題級切換、不再顯示每型說明。
+
+- **【B/流程】** `create-project.html` 在分步 `.wizard__sheet`（改標 `data-sheet`）之前新增一個 `.wizard__gate`（`data-gate`）閘門畫面：只含返回鈕（`data-gate-back`）＋沿用原 `cpp.s1.h1/sub` 標題＋三張 `.selection-card`（含 tag/title/**說明**，`data-gate-type`）。流程從閘門開始（`showGate()`），選卡後 `enterWizard()` 隱藏閘門、顯示表單與底部導覽（footer 標 `data-footer` 一併切換）。返回鈕 `history.back()`，無歷史時回 `projects.html`。
+- **【B/元件套用】** 表單 step-1 的「專案類型」由三張 `.selection-card`（含說明）換成 `.segmented`（`ds-components/segmented.css`）三段純標題切換（直接上線／先募資／開放預購），無說明。閘門卡與 segmented 共用 `chooseType()` 驅動同一 `type`、雙向同步高亮（`syncTypeUI`），型別仍決定 FLOWS 分步。step-1 標題改用新鍵 `cpp.about.h1/sub`（「基本資料／填寫必要資訊…」），避免與閘門的「你正在做的是什麼？」重複。
+- **【D/CSS】** `shared.css` 新增 `.wizard__gate`（沿用 `.wizard__sheet` 白卡底＋圓角，僅 `justify-content:center`）＋ `.wizard__gate-inner`（max 760、置中、`--sp-32/--sp-24` 內距）＋ `.wizard__gate-back`。`create-project.html` 補掛 `segmented.css`（原先漏掛，segmented 軌道無底色）。新增 i18n 鍵 `cpp.gate.back`／`cpp.about.h1`／`cpp.about.sub`。
+- **範圍**：只動 `create-project.html`（募資專案有三型別）；其他 create-* 流程不變。三型別、各自 FLOWS、各步欄位、產品規則均未改——僅把既有的「選型別」動作前置成獨立畫面、並把表單內型別選擇器降成標題級（呈現重組，非產品變更；記 ASSUMPTIONS）。
+- **驗證**：瀏覽器實測——進站先見閘門（只三卡＋返回，無 stepper/存草稿/footer）；點卡進表單，segmented 高亮與所選型別一致、stepper 依型別展開（fund 5 步、preorder 4 步）；DOM 核對 `activeSeg=fund/preorder`、`gateHidden/sheetHidden` 切換正確。`check_ds_sync.py` PASS（WARN 皆存量）；`bump_ver` 已跑。
+
+## 2026-07-24 · 專案詳情 hero 改「封面在左、標題與資訊在右欄並排」（B 反饋導入）
+
+使用者附參考截圖（ztor-cocreate-preview 募資預覽卡），要求把 hero 排版調成同款並排結構——「除了麵包屑不用改」。原本標題／徽章／創作者脈絡橫在頁首（`.page-intro`）、封面與募資卡才在下方左右並排（「標題在上」wireframe）；改為封面在左單欄，右欄由上而下堆疊全部資訊。
+
+- **【B/版面】** 移除 `project-detail.html` 的 `.page-intro` 頁首區塊，內容併入 `.pd-hero__main` 右欄。右欄由上而下＝`.pd-hero__head`（標題靠左＋操作鈕群靠右，同一列）→ `.pd-hero__desc`（簡介）→ `.pd-hero__badges`（狀態／類別／型別徽章列）→ `.funding-panel--card`（募資卡）→ `.info-banner`（下一步）。**標題與簡介在框外**；**創作者脈絡（`.pd-hero__owner`）搬進募資卡框內最下面，取代原 `.funding-panel__note`（§7.3 口徑註記，已移除）**。卡內＝金額／目標／進度／倒數＋末行創作者脈絡。徽章／標題／owner 的 id（`pd-badge-*`／`pd-title`／`pd-owner-line`）不變，render JS 照舊資料驅動。
+- **【B/CSS】** `shared.css` 的 `.pd-hero` 區塊：`.pd-hero__main` gap 20→16；新增 `.pd-hero__head`（space-between、flex-wrap，標題＋鈕同列）、`.pd-hero__actions`；`.pd-hero__title`（display 字級 fs-40／900px 降 fs-32，無下 margin）、`.pd-hero__owner`（框內頁腳行，muted fs-13、上留一格）、`.pd-hero__desc`。麵包屑（`.text-sub` 那行）完全未動。
+- **範圍**：只動 hero 版面與其樣式；tab 列以下所有面板、資料驅動邏輯、三型別 gating 均不變。`.page-intro` 元件本身保留（其他詳情頁仍在用）。
+- **驗證**：本機 server 切 nick／adia 實測——右欄徽章列＋鈕靠右、創作者脈絡貼標題、募資卡與簡介依序在下，麵包屑不變。`check_ds_sync.py` PASS＋存量 WARN；`bump_ver` 已跑。
+
+## 2026-07-24 · User A（周湯豪）persona 換上真實作品＋真封面（B 反饋導入 · 延續 UIA-085）
+
+承前的 persona 機制，使用者要求把周湯豪 persona 的**佔位內容（NIGHT RUN／失控 OUTTA CONTROL／凌晨三點 3AM 等先前示意名）換成他的真實作品**，並用真實封面／海報／商品圖。素材與彙整見 vault 的 `persona/NICKTHEREAL/`（研究檔＋畫廊＋圖庫；資料以維基＋Apple Music＋官方售票／媒體多來源查證）。
+
+- **【B/資料】** `js/projects-store.js` 的 `PROJECTS_NICK` 11 筆改為真實作品：LOVE RAGE HOPE（2025 專輯・募資中）／REALIVE（2023 EP・已達標）／REAL LIFE（2022 專輯・已上線）／我的i・FLAMES・你說的都對・為了你・罵醒我（單曲/MV）／REALIVE (R2) 演唱會・LOVE·RAGE·HOPE Live House Tour（活動）／REALIVE 白趴官方周邊；cover/poster→`images/projects/nick-*.jpg`（真封面/海報）。
+- **【B/資料】** `js/products-store.js` 的 `P_NICK` 9 商品（id 不變，維持 e-shop `?id=`／product-detail 對應）改為真實周邊/數位：REALIVE 寫真誌／白趴 Tee／祝你好命連帽外套／CASETiFY 好命限定禮盒（限量 100）／BEARBRICK 公仔／我的i 單曲／R2 演唱會影像／LOVE RAGE HOPE 數位專輯／NICKTHEREAL 後援會；img→`images/products/nick-*`；albumSeed 換真實 LOVE RAGE HOPE 曲目。
+- **【B/i18n】** `js/i18n.js` 的 `PERSONA_DICT.nick` 與 `earnings.html` 內嵌 BD_PROJECTS 的佔位名全數替換為真實作品（NIGHT RUN→REALIVE、失控 OUTTA CONTROL→LOVE RAGE HOPE、凌晨三點 3AM→我的i）；涵蓋 my-ip IP 名、events 活動名、earnings 項目/交易名、fan-detail 消費/活動名。殘留佔位 0。
+- **【B/圖】** 新增 20 張真圖進 `images/projects/`（12）與 `images/products/`（8），命名 `nick-*`。**版權素材、僅供原型 demo 參考**；default（Coastline/Maya Chou）資料與圖完全未動。
+- **範圍**：只換 nick persona 的內容與圖；數字（募資/票數/金額）仍為原型示意值。周邊「高雄站／R2 周邊」與早期巡演海報公開無實拍，未納入。
+- **驗證**：起本機 server 切 nick 實測——projects 11 筆真封面、e-shop 9 真商品、my-ip 4 真 IP 名，圖 0 破圖；切 default 完整復原。`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zx`；fresh-context 驗收核對真實性/缺圖/佔位殘留/default 零回歸/語法。
+
+## 2026-07-24 · projects 清單四項微調：移除待辦欄、目標改百分比+金額、搜尋等距、tab 底線只等文字寬（B 反饋導入）
+
+使用者圈選四處逐項指定。
+
+- **【C】移除待辦欄**：`projects.html` 清單列與表頭移除「待辦」欄（tip「i」圖示）；`project-list.css` grid 由 9 軌降為 8 軌、刪 `.project-list__todo` 規則與響應式引用；`js/i18n.js` 移除 `projects.col.todo` 鍵。tip pattern 本身保留（卡片檢視仍用）。
+- **【B】當前目標改兩行**：`.project-list__goal` 由單行金額改成「百分比（粗體、`fs-16` 大字，`__goal-pct`）換行實際金額（`__goal-amt`）」；百分比取 `p.bar.pct`。非募資列仍走 `__cell--empty` 破折號。
+- **【B/元件 bugfix】搜尋收合間距**：`search-collapse.css` 的收合態 padding 被後載入的 `field-pill.css` 同優先級覆蓋（14px 內距＋1px 邊框殘留約 30px 幽靈寬），把觸發鈕往左推、與右鄰控制項間距不一致。提高收合規則選擇器優先級（`.search-collapse .search-collapse__field`）＋收合歸零 `border-width`、展開補回，收合寬回到＝觸發鈕寬（32px），全站消費者（e-shop／orders／pickup）一致受益。
+- **【B/元件變體】tab 底線只等文字寬**：新增 opt-in `.tabs--underline-label`（搭 `--underline-short`），active 底線改掛在標籤 span 上、只等文字寬、**不含尾隨計數徽章**；projects 狀態列加此 class。標籤為 `<button>` 直接文字的分頁（product-detail／admin-platform-fees）**不加**、維持整條 item 底線——已驗證這些頁底線未受影響。
+- **【D】** 三件套同步：`project-list.css`／`tabs.css`／`search-collapse.css`＋`design-system.md`（§4.28 anatomy 改 8 軌＋goal 兩行、Tabs Variants/Class API 補 `--underline-label`）＋`design-system.html`（§4.27 demo 去待辦欄＋goal 兩行、Tabs 新增 `--underline-label` demo 卡與 Class API 列）。
+- **收尾追加（同輪，使用者反饋）**：(a) 當前目標／類別兩行間距由 `--sp-2` 加大為 `--sp-4`（原 2px 太擠）；(b) `.tabs--underline-label` 底線由標籤 span 正下方（`bottom:0`，被 item 底內距頂高、離卡緣約 12px）下移到 `bottom: calc(-1 * var(--sp-12))`＝貼齊卡片底緣（實測底線底緣 261＝卡片底緣 261）。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪未新增裸值；瀏覽器實測——搜尋↔切換↔建立三段間距皆 12px、active tab 底線＝標籤寬 26px（不含計數）且貼卡片底緣、product-detail 底線仍整條 item、goal 兩行百分比粗大字、兩行間距 4px。
+
+## 2026-07-24 · cheat code「User」改為 persona 切換：User A＝周湯豪 全站 demo 資料換人（B 反饋導入 · ASSUMPTIONS UIA-085）
+
+使用者指定：cheat code 原本的「User」組（一般創作者＋3 個 admin 代管）改成四顆 **default User / admin / User A（周湯豪 NICKTHEREAL）/ User B**；切到 User A 時，**專案、電子商店、我的 IP、活動、粉絲、收入管理**（含各詳情頁）的假資料整組換成周湯豪的版本；default＝原本這批（Maya Chou 世界觀）、User B＝佔位空殼（暫沿用 default）。數字部分經使用者裁決「只換名字、數字維持現狀」。
+
+- **【B/機制】** 新增 persona 維度：一個 `localStorage['ztor.persona']`（default/nick/userB）為單一真相，切換由 `window.ztorPersona.set()` 寫值後 `location.reload()`，每頁載入時重讀。它同時驅動兩支資料檔與一層 i18n 覆蓋，**周湯豪內容只集中在「兩支資料檔的 nick 區塊」＋「i18n 的 PERSONA_DICT.nick」**，不散落各頁。
+- **【B/資料】** `js/projects-store.js`／`js/products-store.js` 由單一資料集改為 `{ default, nick }`（userB 未列＝fallback default），對外 API 不變、內部依 persona 回傳。專案列表/詳情、商品詳情本就資料驅動，故 reload 後自動換；nick 商品沿用相同 9 個 id 讓 `?id=` 連結與詳情頁對上。
+- **【B/資料】** 電子商店列表的商品名／圖寫死在 HTML（非 i18n），故 `products-store.js` 加 `patchEshopList()`：persona≠default 時就地改 9 主商品列（名＋圖＋價＋分類＋庫存），**不動 `data-name`**（那是補貨模組 PRODUCT_MATRIX 的查表鍵）。e-shop 延伸目錄的通用小物（貼紙/馬克杯/托特包…）persona 無關、保留；bundles/auctions 名走 i18n 覆蓋。
+- **【D/i18n】** `js/i18n.js` 加 `PERSONA_DICT` 覆蓋層：`t()` 在 persona≠default 時先查該表、有值即蓋掉原 DICT。收入/我的 IP/活動/粉絲/商店 bundles 裡「本就是 i18n key」的資料值（約 69 個）直接放 nick 覆蓋。
+- **【B/名字】** 上述四頁另有大量「寫死在 HTML 的名字」（買家 Maya Chou、9 位粉絲、演出陣容、參加者、專案名、IP 名等）——就地 data-i18n 化（default 值＝原文入 DICT、周湯豪值入 PERSONA_DICT.nick，共約 28 組），維持 default 逐字不變。`fan-detail.html` 的 `<title>`、`earnings.html` 內嵌 JS `BD_PROJECTS`（含 dash slug 對映到 nick 專案 id）改為依 persona 切換。
+- **【B/cheat】** `js/devtools.js` 的 User 組改用 `window.ztorPersona`（渲染四選項＋handler `kind==='persona'`）。admin 選項沿用 `ztorCreator` 名冊首位套代管 chrome、資料維持 default。
+- **範圍與已知限制**：**只換名字，各頁 KPI/票數/金額/百分比等數字維持原 demo 值**（使用者裁決，避免勾稽數字改一動十）。nick 的專案/商品縮圖沿用現有 `images/` 檔（非周湯豪本人素材，待替換）。User B 為空殼佔位（見 ASSUMPTIONS UIA-085）。
+- **驗證**：起本機 server 實測——切 nick 後 projects（11 筆全換）、e-shop 列表 9 主商品、product-detail、my-ip（IP 名＋收入 $86,400）、events（活動標題）、fans-crm（9 位台灣粉絲）、earnings（交易項目/買家周湯豪/BD_PROJECTS）全數換人；切 default 逐字復原（Maya Chou／Coastline／Wei Yu-han 原封不動）；五頁 console 無錯。fresh-context 驗收員逐條 1–9 全 PASS（default 零回歸、nick 覆蓋 0 孤兒、只換名字數字未動、四支 JS＋兩段 inline script `node --check` 皆過）。`check_ds_sync.py` 全 PASS（未動 ds-components/CSS，WARN 皆存量、裸值棘輪維持 51）。
+
+
 
 使用者指定：主狀態篩選在「已完成」後加「已上線」。經確認語意＝募資／預購專案交付完成後上架販售的階段；直接上線類型天生為此狀態。**§7.2 狀態語言原本沒有這個狀態**，屬產品範圍提案，登記於 [ASSUMPTIONS.md](ASSUMPTIONS.md) UIA-084（待上游確認是否正式納入 §7.2）。
 
@@ -76,6 +144,33 @@
 - **發現未處理**：`project-detail.money.waterfall.*`／`.wf.pool`／`.money.kpi.pool` 三組 i18n 鍵**全站無人使用**（該頁實際用的是 `cocreate.split.*`，且分潤模型是 70/30 不是 60/40）。本輪照樣同步了字串，但這批孤兒鍵與兩套分潤比例的落差留待後續釐清。
 - **【B】** Payouts 那張卡的右上副標由「可分配餘額 · §7.3 / §5.2.2」改「口徑依 §7.3 / §5.2.2」——改名後「可分配」在同一張卡出現三次（標題／副標／KPI 標籤），副標本來就只是標口徑，讓掉重複。
 - 驗證：本機起站實測中英雙語，Breakdown 標題／副標／末階與 Payouts 卡片文字皆為新用語、無破版；`check_ds_sync.py` 全 PASS（3 個 WARN 為既有存量，非本輪引入）；`bump_ver` → `20260724o`。
+
+## 2026-07-24 · 專案詳情頁依三種類型（直接上線／募資／預購）完整區分（B 反饋導入）
+
+使用者裁示照規格 §3.1／§5 的差異，把三種專案類型的詳情頁做出完整區分（先前只做了募資型、另外兩型是把募資的東西藏掉、不合身）。使用者另裁決：預購＝單一商品（無多方案）、我的收益用簡版。
+
+- **【B/gating 系統】** 建立通用 `data-type` 顯示機制取代原 `data-fund-only`：任何帶 `data-type="<類型清單>"` 的元素（tab 按鈕／面板／卡片／時間軸列）只在列出的類型顯示，無屬性＝全部類型。render JS 依 `p.type` 一次套用；若當前停在被隱藏分頁則退回專案總覽。
+- **【B】** 分頁矩陣（依規格）：
+  - **直接上線**：專案總覽（含新的「上線時間」卡）／關於專案／我的收益／專案收益備份。無門檻無退款，故無方案與承諾、製作進度、共創進度。
+  - **募資**：全部七分頁（原樣）。
+  - **預購**：專案總覽／關於專案／製作進度／我的收益／**預購進度**（新）／專案收益備份。無方案與承諾（單一商品）、無共創進度。
+- **【A/新 tab】** 預購進度（`data-panel="preorder"`）：KPI（已下單／最少訂購數／預購截止）＋訂購進度（62/100、單價、預期交付）＋未達量全額退款保證＋預購訂單明細表。對齊規格 §5.3「達最少訂購數再生產、未達量全額退款」。
+- **【A】** 新增 go-live 專屬「上線時間」卡（`data-type="go-live"`，收在專案總覽）：因 go-live 無製作進度分頁，其簡單時程（建立→上線）收在這裡；註明無門檻無退款、上線後分潤。
+- **【B】** 製作進度的時間軸依類型換列：募資顯示 募資發布／募資截止＋達標退款說明；預購顯示 預購開始／預購截止／預期交付＋未達量退款說明（各列 `data-type` 控制）。
+- **【B】** 我的收益「淨收益分配（70/30 支持者分潤）」卡標 `data-type="fund"`——只有募資型有支持者分潤；直接上線／預購顯示簡版（計畫項目收益＋走勢圖＋收益明細，無支持者分潤）。
+- **【D】** i18n 新增預購進度 tab／時間軸預購列／go-live 上線時間／`pd-pre.*` 共約 30 鍵。
+- **未做（回報）**：基本資料編輯彈窗的欄位（存取價格 vs 募資目標 vs 預購條件）尚未依類型換——目前共用；hero 的預購型仍用 meta 摘要（未做獨立進度條，預購進度分頁已完整呈現）。專案收益備份仍三型皆留，待確認可移除。
+- 驗證：三型各自的分頁組合、預購時間軸換列、go-live 上線時間卡、預購進度分頁、淨收益分配僅募資顯示，皆實測正確；console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zq`。
+
+## 2026-07-24 · 我的收益補上收益走勢圖＋類型篩選 chips（B 反饋導入）
+
+上一輪新增的「我的收益」略過了公開端的收益走勢圖，本輪補齊——內容直接對照 `my-cocreate-proposal.html`「我的收益」分頁。
+
+- **【B】** 我的收益分頁最上方補「類型篩選 chips」：全部／OTT版稅收益／影評人佣金／影評人預付金／授權收益，各帶對應顏色圓點（`.earn-dot`，色用 `--chart-5`／`--chart-2`／`--destructive`／`--muted-foreground`），兼作圖表圖例。
+- **【B】** 補「收益走勢」圖卡：R2.1 多線圖元件 `.linechart--axes`（y 軸 1,500／1,000／500／0）＋四條走勢線（對應四種收益類型）＋期間切換 `.segmented`（天／月／三個月／年，月為預設）。
+- **【D/JS】** chips 與期間切換做純視覺 active 切換（資料為示意、不重算，與公開端圖表同為靜態 demo）。project-detail 補掛 `chip.css`；`shared.css` 新增 `.earn-dot` 圓點。
+- **【D】** i18n 新增走勢圖標題／四個期間／五個篩選類型共 10 鍵。
+- 驗證：四線圖與 chips／期間切換渲染正常、active 可切、console 無錯誤；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zp`。
 
 ## 2026-07-24 · 專案收益改備份＋新增我的收益／共創進度 tab（依專案類型顯示）（B 反饋導入）
 

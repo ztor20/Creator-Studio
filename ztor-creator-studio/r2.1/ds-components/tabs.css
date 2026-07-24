@@ -112,6 +112,35 @@
   border-radius: 2px;
 }
 
+/* ── .tabs--underline-label — opt-in：active 底線只和「第一個子元素（標籤 span）」等寬、
+     不含尾隨的計數徽章（.tabs__item-count）。用於標籤後帶計數的分頁（如 projects 狀態列）。
+     搭 .tabs--underline-short 使用；底線改掛在標籤 span 上（撐成整列高、文字置中，::after
+     bottom:0 才落在分頁底緣）。**只適用「標籤包在子元素裡」的分頁**——標籤為 <button> 直接
+     文字的分頁（product-detail／admin-platform-fees）不加此 class，維持整條 item 底線。
+     2026-07-24 使用者反饋：projects 狀態列底線不要延伸到計數數字下方。 ── */
+.tabs--underline-label.tabs--underline-short .tabs__item--active::after {
+  content: none;
+}
+.tabs--underline-label .tabs__item > :first-child {
+  position: relative;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+}
+.tabs--underline-label .tabs__item--active > :first-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* 標籤 span 因 align-self:stretch 撐滿 item 內容框、底緣在 item 底內距（--sp-10）之上；
+     下移 --sp-12 讓底線貼齊 item／卡片底緣（比 --sp-10 多的 2px 補標籤框未完全填滿內容框的
+     算繪誤差），而非浮在標籤正下方（2026-07-24 使用者反饋「底線要貼底邊」）。 */
+  bottom: calc(-1 * var(--sp-12));
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
 /* ── .tabs--card — opt-in variant that puts the tab bar on its own filled
      card instead of a bare hairline row: same surface treatment as
      `.form-section--outlined` (fill + resting shadow + top edge highlight,

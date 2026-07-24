@@ -156,11 +156,7 @@
   var VER_GROUP_LABEL = { '開發': '開發版本', '測試': '測試版', 'Demo': 'Presentation demo' };
   var VER_GROUP_ORDER = ['開發', '測試', 'Demo'];
   function verRows(current, mode) {
-    function attrs(k) { return mode === 'onb' ? 'data-onb="' + k + '"' : 'data-kind="version" data-val="' + k + '"'; }
-    function row(v) {
-      return '<button class="ztd__optrow' + (v[0] === current ? ' is-active' : '') + '" ' + attrs(v[0]) + '>'
-        + '<span class="ztd__optrow-name">' + v[1] + '</span><span class="ztd__optrow-desc">' + (v[4] || '') + '</span></button>';
-    }
+    /* 依類型分組＋排序（面板 dropdown 與首次 popup 大卡片共用同一份分組）*/
     var groups = {}, seen = [];
     VERSIONS.forEach(function (v) {
       var t = v[2] || '開發';
@@ -173,6 +169,25 @@
       ib = ib < 0 ? VER_GROUP_ORDER.length + seen.indexOf(b) : ib;
       return ia - ib;
     });
+    /* 面板：原生 <select>＋optgroup（省空間），下方顯示當前版本說明。
+       首次 popup（onb）維持大卡片一行一個（進站主選擇，卡片較好點）。*/
+    if (mode !== 'onb') {
+      var curDesc = '';
+      var opts = seen.map(function (t) {
+        return '<optgroup label="' + (VER_GROUP_LABEL[t] || t) + '">'
+          + groups[t].map(function (v) {
+              if (v[0] === current) curDesc = v[4] || '';
+              return '<option value="' + v[0] + '"' + (v[0] === current ? ' selected' : '') + '>' + v[1] + '</option>';
+            }).join('')
+          + '</optgroup>';
+      }).join('');
+      return '<select class="ztd__select" data-ver-select aria-label="Build version">' + opts + '</select>'
+        + '<div class="ztd__select-desc">' + curDesc + '</div>';
+    }
+    function row(v) {
+      return '<button class="ztd__optrow' + (v[0] === current ? ' is-active' : '') + '" data-onb="' + v[0] + '">'
+        + '<span class="ztd__optrow-name">' + v[1] + '</span><span class="ztd__optrow-desc">' + (v[4] || '') + '</span></button>';
+    }
     return seen.map(function (t) {
       return '<div class="ztd__subgroup">' + (VER_GROUP_LABEL[t] || t) + '</div>'
         + '<div class="ztd__rows-v">' + groups[t].map(row).join('') + '</div>';
@@ -375,6 +390,20 @@
     + '.ztd__iconbtn:hover{background:var(--muted);color:var(--foreground)}'
     + '.ztd__iconbtn.is-on{background:var(--primary);color:var(--primary-foreground)}'
     + '.ztd__body{padding:14px 16px 4px}'
+    /* 三 tab 分頁列（情境/開發/設置）：底線 accent，橘只出現在作用中底線 */
+    + '.ztd__tabs{display:flex;gap:2px;margin:-2px 0 14px;border-bottom:1px solid var(--border)}'
+    + '.ztd__tab{flex:1;padding:9px 6px;border:0;background:transparent;color:var(--muted-foreground);'
+    + 'font:inherit;font-size:var(--fs-13);font-weight:var(--fw-medium);cursor:pointer;'
+    + 'border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:var(--radius-sm,5px) var(--radius-sm,5px) 0 0}'
+    + '.ztd__tab:hover{color:var(--foreground);background:var(--muted)}'
+    + '.ztd__tab.is-active{color:var(--foreground);border-bottom-color:var(--primary)}'
+    + '.ztd__tabpanel[hidden]{display:none}'
+    /* 版本 dropdown（面板版；首次 popup 仍用大卡片）*/
+    + '.ztd__select{width:100%;padding:10px 30px 10px 12px;border:1px solid var(--border);border-radius:var(--radius-md,7px);'
+    + 'background:var(--card);color:var(--foreground);font:inherit;font-size:var(--fs-13);font-weight:var(--fw-medium);cursor:pointer;'
+    + "-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 11px center}"
+    + '.ztd__select:focus{outline:2px solid var(--primary);outline-offset:1px}'
+    + '.ztd__select-desc{font-size:var(--fs-11);color:var(--muted-foreground);margin-top:6px;line-height:1.4}'
     + '.ztd__group{margin-bottom:16px}'
     + '.ztd__group-label{font-size: var(--fs-11);font-weight: var(--fw-semibold);letter-spacing:.06em;color:var(--muted-foreground);text-transform:uppercase;margin:0 0 9px}'
     /* 開關列＝標籤＋真 switch（橘只出現在滑軌，量很小）。比照 ds switch.css */
@@ -495,31 +524,47 @@
       +     '<button class="ztd__iconbtn" data-act="close" aria-label="Close">' + CLOSE + '</button>'
       +   '</div>'
       +   '<div class="ztd__body">'
-      +     '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
-      +       verRows(state.version, 'panel')
-      +       '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
+      /* 三 tab：情境（要模擬什麼狀況）／開發（檢查工具）／設置（外觀基本）。切 tab 只改顯示、
+         狀態存 localStorage 跨頁記住。Reset 維持底部全域按鈕（跨 tab 皆適用）。 */
+      +     '<div class="ztd__tabs" role="tablist">'
+      +       '<button class="ztd__tab' + (activeTab === 'scenario' ? ' is-active' : '') + '" data-act="tab" data-tab="scenario" role="tab">情境</button>'
+      +       '<button class="ztd__tab' + (activeTab === 'dev' ? ' is-active' : '') + '" data-act="tab" data-tab="dev" role="tab">開發</button>'
+      +       '<button class="ztd__tab' + (activeTab === 'settings' ? ' is-active' : '') + '" data-act="tab" data-tab="settings" role="tab">設置</button>'
       +     '</div>'
-      +     pageGroupsHtml()
-      +     '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
-      +       '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
-      +       '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
+      /* ── 情境：版本（最高級 gate，保留強調框）＋顯示未來功能＋User＋Data State＋Event Day ── */
+      +     '<div class="ztd__tabpanel" data-tab-panel="scenario"' + (activeTab !== 'scenario' ? ' hidden' : '') + '>'
+      +       '<div class="ztd__group ztd__group--top"><p class="ztd__group-label">版本 · Build version</p>'
+      +         verRows(state.version, 'panel')
+      +         '<button class="ztd__row' + (state.showFuture ? ' is-on' : '') + '" data-act="toggle-future" style="margin-top:9px"><span>顯示未來功能（淡色標記）</span><span class="ztd__sw"></span></button>'
+      +       '</div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">User</p>'
+      +         '<div class="ztd__grid">' + optsHtml((window.ztorPersona ? window.ztorPersona.list() : creatorOpts()), (window.ztorPersona ? window.ztorPersona.current() : curCreator()), 'persona') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Data State</p>'
+      +         '<div class="ztd__grid">' + optsHtml(DATA, state.data, 'data') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Event Day</p>'
+      +         '<div class="ztd__grid">' + optsHtml(EVENTDAY, state.eventDay, 'eventDay') + '</div></div>'
       +     '</div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Validation</p>'
-      +       '<button class="ztd__row' + (state.skipValidation ? ' is-on' : '') + '" data-act="toggle-skip"><span>Skip validation</span><span class="ztd__sw"></span></button>'
+      /* ── 開發：本頁預覽開關（pageGroups，逐頁才有）＋Inspect＋Validation ── */
+      +     '<div class="ztd__tabpanel" data-tab-panel="dev"' + (activeTab !== 'dev' ? ' hidden' : '') + '>'
+      +       pageGroupsHtml()
+      +       '<div class="ztd__group"><p class="ztd__group-label">Inspect</p>'
+      +         '<button class="ztd__row' + (inspecting ? ' is-on' : '') + '" data-act="toggle-inspect"><span>Inspect element</span><span class="ztd__sw"></span></button>'
+      +         '<div class="ztd__inspect" id="ztd-inspect" style="margin-top:8px"><div class="ztd__inspect-empty">開啟後把游標移到頁面元素；點擊鎖定。橘框＝已建立元件、藍框＝非元件。</div></div>'
+      +       '</div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Validation</p>'
+      +         '<button class="ztd__row' + (state.skipValidation ? ' is-on' : '') + '" data-act="toggle-skip"><span>Skip validation</span><span class="ztd__sw"></span></button>'
+      +       '</div>'
       +     '</div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">User</p>'
-      +       '<div class="ztd__grid">' + optsHtml(creatorOpts(), curCreator(), 'creator') + '</div></div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Data State</p>'
-      +       '<div class="ztd__grid">' + optsHtml(DATA, state.data, 'data') + '</div></div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Event Day</p>'
-      +       '<div class="ztd__grid">' + optsHtml(EVENTDAY, state.eventDay, 'eventDay') + '</div></div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Theme</p>'
-      +       '<div class="ztd__grid">' + optsHtml(THEME, curTheme(), 'theme') + '</div></div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Language</p>'
-      +       '<div class="ztd__grid">' + optsHtml(LANG, curLang(), 'lang') + '</div></div>'
-      +     '<div class="ztd__group"><p class="ztd__group-label">Display mode · 版面</p>'
-      +       '<div class="ztd__grid">' + optsHtml(NAV, curNav(), 'nav') + '</div></div>'
-      +     '<div class="ztd__group"><button class="ztd__row" data-act="reonboard"><span>重新顯示首次 popup</span></button></div>'
+      /* ── 設置：外觀基本（Theme／Language／Display）＋重新顯示首次 popup ── */
+      +     '<div class="ztd__tabpanel" data-tab-panel="settings"' + (activeTab !== 'settings' ? ' hidden' : '') + '>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Theme</p>'
+      +         '<div class="ztd__grid">' + optsHtml(THEME, curTheme(), 'theme') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Language</p>'
+      +         '<div class="ztd__grid">' + optsHtml(LANG, curLang(), 'lang') + '</div></div>'
+      +       '<div class="ztd__group"><p class="ztd__group-label">Display mode · 版面</p>'
+      +         '<div class="ztd__grid">' + optsHtml(NAV, curNav(), 'nav') + '</div></div>'
+      +       '<div class="ztd__group"><button class="ztd__row" data-act="reonboard"><span>重新顯示首次 popup</span></button></div>'
+      +     '</div>'
       +   '</div>'
       +   '<div class="ztd__foot"><button class="ztd__reset" data-act="reset">Reset</button>'
       +     '<span class="ztd__muted">Alt＋右鍵 開關 · 拖標題移動 · 拉底邊調高</span></div>'
@@ -528,6 +573,11 @@
   }
   var OPEN_LS = 'ztor.devtools.open';   // 跨頁記住開/關，換頁不被重置
   var MIN_LS = 'ztor.devtools.min';     // 跨頁記住縮小/展開
+  var TAB_LS = 'ztor.devtools.tab';     // 跨頁記住目前 tab（情境/開發/設置）
+  var activeTab = (function () {
+    try { var t = localStorage.getItem(TAB_LS); if (t === 'scenario' || t === 'dev' || t === 'settings') return t; } catch (e) {}
+    return 'scenario';
+  })();
   try { if (localStorage.getItem(MIN_LS) === '1') root.classList.add('is-min'); } catch (e) {}
   paint();
   document.body.appendChild(root);
@@ -692,6 +742,7 @@
     var act = btn.getAttribute('data-act');
     if (act === 'close') return close();
     if (act === 'minimize') { var m = root.classList.toggle('is-min'); try { localStorage.setItem(MIN_LS, m ? '1' : '0'); } catch (e) {} return paint(); }
+    if (act === 'tab') { activeTab = btn.getAttribute('data-tab'); try { localStorage.setItem(TAB_LS, activeTab); } catch (e) {} return paint(); }
     if (act === 'reset') { state = Object.assign({}, DEFAULTS); state.pageOpts = {}; seedPageOpts(); setInspect(false); return update(); }
     if (act === 'reonboard') { try { localStorage.removeItem(ONBOARD_LS); } catch (e) {} showOnboarding(); return; }
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
@@ -706,8 +757,17 @@
     if (kind === 'theme') { if (window.ztorTheme) window.ztorTheme.setPreference(val); return paint(); }
     if (kind === 'lang')  { if (window.setLang) window.setLang(val); return paint(); }
     if (kind === 'nav')   { if (window.ztorNavMode) window.ztorNavMode.set(val); return paint(); }
+    /* persona＝cheat「User」組：切換資料人格（default/admin/nick/userB）；set() 內部 reload */
+    if (kind === 'persona') { if (window.ztorPersona) window.ztorPersona.set(val); return; }
     if (kind === 'creator') { if (window.ztorCreator) window.ztorCreator.set(val === '__none__' ? null : val); return paint(); }
     state[kind] = val; update();
+  });
+
+  /* 版本 dropdown（原生 select 觸發 change 而非 click）：套用選定版本 */
+  root.addEventListener('change', function (e) {
+    var sel = e.target.closest('select[data-ver-select]');
+    if (!sel) return;
+    state.version = sel.value; update();
   });
 
   /* 拖移：標題列為把手（避開頭部按鈕）。拖移後改用 left/top 定位 */

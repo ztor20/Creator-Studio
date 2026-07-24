@@ -646,7 +646,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Field pill | 🟡 molecule | ✓ App | Inline filter pill — search / select / dropdown-trigger | [field-pill.css](./ds-components/field-pill.css) |
 | Search (collapsible) | 🟡 molecule | ✓ App | 收合於工具列的搜尋：平常只見放大鏡、點擊滑開成 field-pill（重用 field-pill、不重造輸入）；`.is-open` 由頁面切換、支援 reduced-motion。E-Shop F3 | [search-collapse.css](./ds-components/search-collapse.css) |
 | Search collapse | 🟡 molecule | ✓ App | 工具列收合式搜尋（電子商店 F3）：收合只見放大鏡、`.is-open` 滑開成 `.field-pill`（內層重用 field-pill）；`.search-collapse__toggle`/`__field`/`__close`；開合由頁面 JS 切換、respects reduced-motion | [search-collapse.css](./ds-components/search-collapse.css) |
-| List toolbar | 🟠 organism | ✓ App | 清單頁頭的兩層控制骨架：`.list-toolbar` 殼層工作列（實色 `--surface-shell`、四角 16px、固定 58px 高，左放主軸 tabs、右放 `.list-toolbar__actions` 動作群）＋ `.list-status-row` 次層篩選列（透明、放 pill 篩選或 select）。2026-07-23 由 e-shop 頁內 `.eshop-list-topbar` promote（projects 為第二個消費者）；sticky 貼頂屬各頁捲動容器決定，留在頁面 `<style>`。詳見 §4.90。Evidence／使用頁：e-shop、projects | [list-toolbar.css](./ds-components/list-toolbar.css) |
+| List toolbar | 🟠 organism | ✓ App | 清單頁頭的兩層控制骨架：`.list-toolbar` 殼層工作列（實色 `--surface-shell`、四角 16px、固定 58px 高，左放主軸 tabs、右放 `.list-toolbar__actions` 動作群）＋ `.list-status-row` 次層篩選列（透明、放 pill 篩選或 select），`--end` 變體把篩選推到右側（projects 兩個下拉用）。2026-07-23 由 e-shop 頁內 `.eshop-list-topbar` promote（projects 為第二個消費者）；sticky 貼頂屬各頁捲動容器決定，留在頁面 `<style>`。詳見 §4.90。Evidence／使用頁：e-shop、projects | [list-toolbar.css](./ds-components/list-toolbar.css) |
 | Segmented | 🟡 molecule | ✓ App | 2/3-way text toggle, white-raised active；`--icon` 變體為純圖示段（2026-07-23 接收退場的 `.view-switch`，清單／卡片檢視切換） | [segmented.css](./ds-components/segmented.css) |
 | Amount field | 🟡 molecule | ✓ App | money input with a unit affix — normally a static read-only symbol (`$` prefix); built on Input. The affix can also be an interactive unit toggle (`[data-price-sync]` marks a shared-unit member and fixes the affix to a 46px centered column; `[data-amount-unit]` is the click hook on the affix `<button>` that page JS uses to switch the unit across the group); that toggle shipped for the cash/POPCORN pricing unit, **removed in spec 5.1.5.2 · D144** (was D127), so no page uses it today — the chrome is kept as a reusable capability。**Suffix mode**（2026-07-11）：`.amount-field--suffix` 把 `__unit` 移到右側（如 `50 [%]`、`6 [mo]`），搭 `--readonly` 給靜態非互動後綴（register-ip.html 版稅 % / 最短租期、bundle-detail.html 折扣 %）；input 內距改讓右邊。**Hero size**：`.amount-field--hero` 是彈窗主角級大尺寸（70px 高／32px display 字），視覺基準原 `payout-modal.css` 的 `.payout-amount-wrap`／`.payout-amount-prefix`／`.input.payout-amount-input`；2026-07-11 起 `partials/payout-request-modal.js` 已改用本變體，`payout-modal.css` 的舊規則已移除（留 tombstone 註解指回本檔）；`height:70px`／`padding-left:42px` 無對應 `--sp-N` 級距，記錄為 token 例外，其餘值皆走 token（`--fs-28`/`--fs-32`/`--sp-16`） | [amount-field.css](./ds-components/amount-field.css) |
 | Review row | 🟡 molecule | ✓ App | 流程 Review 步驟摘要列（無卡片、hairline 分隔）：欄位名＋值＋右側 Edit →。正規化自 create-event.html `.ce-review-row`、register-ip.html `.ri-summary`、create-project.html Review 步驟的扁平化 `.card`（該頁 2026-06-25 註解已預告「這批歸第三批 review-row」）。詳見 §4.49 | [review-row.css](./ds-components/review-row.css) |
@@ -667,7 +667,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Token chip | 🟡 molecule | ✓ App | 點擊插入個人化變數 | [message-modal.css](./ds-components/message-modal.css) |
 | Event preview card | 🟡 molecule | ✓ App | 建立活動粉絲視角活動卡（即時預覽） | [event-preview-card.css](./ds-components/event-preview-card.css) |
 | Product list | 🟠 organism | ✓ App | E-Shop inventory table: product identity + status + stock + visibility + edit action, borderless row-divider layout。變體：`--eshop`/`--bundles`/`--auctions`/`--orders`/`--pickup`/`--ip`（2026-07-20 新增，spec 5.1.4 §F6：IP 清單欄位，8 欄——icon／名稱＋標籤／權利資訊／租出數／收入／租金／Mktplace 開關／Manage；`my-ip.html` 由原本 `.data-list` 卡片式清單改用此變體，對齊 e-shop 表格版面，同時把原本擠成一行的 meta 字串拆成獨立欄位）；拖曳握把 `__drag`（grip，抓它才重排）＋抬起態 `.product-list__row.is-dragging`（抬升陰影＋置頂，僅 --eshop Products 分頁；跟手 transform 由頁面 JS 控制）。草稿列（`[data-status="draft"]`）握把隱藏、不可拖曳（無粉絲端陳列順序），頁面 JS 置頂。列縮圖 `__thumb` 統一成描邊框，對齊 `__image--placeholder` 的**真實呈現值**：52×52／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`（2026-07-20 二次修正——首版誤對齊 `__image` 從未單獨呈現過的基礎規則，已用 Playwright 逐項核對訂單/取貨與電子商店一致，Q20）；反白變體 `__thumb--cover` 邊框同色不露描邊 | [product-list.css](./ds-components/product-list.css) |
-| Project list | 🟠 organism | ✓ App | Projects table，欄位＝圖片／專案(名稱+簡介)／當前目標／剩餘時間／類別(內容+家族)／類型／狀態／待辦／chevron，整列連進明細，borderless row-divider。**2026-07-24 由單行 meta 拆成真欄位、並比照 e-shop 改真圖縮圖**：原 52×52 icon chip `__icon` 退場、改 56px `__image`（`poster||cover`，object-fit cover；無圖退 `--placeholder` muted 方塊＋類型 icon），**就此離開 Q20 icon-chip 家族**（`.product-list__thumb`／`.data-list__icon` 仍是純 icon chip、不受影響）。非募資列的目標／倒數用 `__cell--empty` 破折號。詳見 §4.28 | [project-list.css](./ds-components/project-list.css) |
+| Project list | 🟠 organism | ✓ App | Projects table，欄位＝圖片／專案(名稱+簡介)／當前目標(百分比+金額兩行)／剩餘時間／類別(內容+家族)／類型／狀態／chevron，整列連進明細，borderless row-divider。**2026-07-24 由單行 meta 拆成真欄位、並比照 e-shop 改真圖縮圖**：原 52×52 icon chip `__icon` 退場、改 56px `__image`（`poster||cover`，object-fit cover；無圖退 `--placeholder` muted 方塊＋類型 icon），**就此離開 Q20 icon-chip 家族**（`.product-list__thumb`／`.data-list__icon` 仍是純 icon chip、不受影響）。當前目標為 `__goal-pct`(粗大字)+`__goal-amt` 兩行；非募資列的目標／倒數用 `__cell--empty` 破折號。**待辦 tip 欄 2026-07-24 移除**。詳見 §4.28 | [project-list.css](./ds-components/project-list.css) |
 | Table | 🟠 organism | ✓ App | Earnings transactions 9-col table | [table.css](./ds-components/table.css) |
 | Chart | 🟠 organism | ✓ App | Linechart (Dashboard / Earnings trends) + stacked-bar + source-list legend + rank-bars | [chart.css](./ds-components/chart.css) |
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → distributable profit ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
@@ -854,7 +854,7 @@ No hover/focus/disabled — display-only.
 |---|---|
 | `.badge` | Flat neutral tag, `--radius-md`, no dot / no ring |
 | `.badge__dot` | `display:none` (legacy; the soft-tag look carries no dot) |
-| `.badge--orange` | `color-mix(--primary 30%, surface)` + dark text |
+| `.badge--orange` | `color-mix(--primary 16%, surface)` + `--primary` text (same soft-tag recipe as the status variants; 2026-07-24 fixed from 30% tint + `--primary-foreground` dark text) |
 | `.badge--success` / `--error` / `--info` / `--accent` | Tinted soft tag, text = matching hue (`--accent` = purple `--status-accent`; `--error` = `--status-error`, **not** `--destructive`, since 2026-07-21) |
 | `.badge--warning` | 22% warning tint; text = `color-mix(--status-warning 60%, --foreground)` (hue too light for direct text; 2026-07-16 對比優化 18→22% tint、50→60% text，text 與 checkin-stat 黃一致) — added 2026-06-11 |
 | `.badge--neutral` | `--muted` background |
@@ -863,7 +863,7 @@ No hover/focus/disabled — display-only.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--muted` + `color-mix` of `--status-success` / `--status-error` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text status tokens / `--primary-foreground` / `--foreground-muted` · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
+- bg `--muted` + `color-mix` of `--status-success` / `--status-error` / `--status-info` / `--status-accent` / `--primary` against `--card` (tints track light/dark automatically) · text = matching hue tokens (`--status-*` / `--primary` for orange) or darkened for warning / `--foreground-muted` for neutral · radius `--radius-md` (badge) / `--radius` (ztor-badge) · font `--font-ui` · **no box-shadow**
 
 **Usage** — Surface a state or a category at a glance (payout status, transaction state, live/draft; IP type, fan tier). Avoid for clickable filters — use Chip (§4.5) — and never as a button.
 
@@ -1806,7 +1806,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 .tab-panel--active       (display:block)
 ```
 
-**Variants** — Base underline style, plus two opt-in modifiers: `.tabs--brand` (soft orange pill active fill instead of the underline) and `.tabs--underline-short` (base divider off, active underline shortened + centered to ~text width instead of full-width — E-Shop F3 type switch, Figma node 671-2337/671-2295; separator is left to the consuming context, e.g. a downward toolbar shadow). Optional `.tabs__item-count` pill badge on an item. Items may render as `<button>` (programmatic) which strips default button chrome.
+**Variants** — Base underline style, plus opt-in modifiers: `.tabs--brand` (soft orange pill active fill instead of the underline), `.tabs--underline-short` (base divider off, active underline shortened + centered to ~text width instead of full-width — E-Shop F3 type switch, Figma node 671-2337/671-2295; separator is left to the consuming context, e.g. a downward toolbar shadow), and `.tabs--underline-label` (pairs with `--underline-short`; active underline hugs the label span only, **excluding a trailing `.tabs__item-count`** — for count-bearing status tabs like Projects; needs the label wrapped in a child element, so tabs whose label is direct `<button>` text keep the full-item underline). Optional `.tabs__item-count` pill badge on an item. Items may render as `<button>` (programmatic) which strips default button chrome.
 
 **Sizes** — Single size (`.tabs__item` pad `10px 14px`, 13px / 500).
 
@@ -1828,6 +1828,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 | `.tabs__item--active` | Foreground color + orange `--primary` underline |
 | `.tabs__item-count` | Optional 11px count pill in `--muted` |
 | `.tabs--underline-short` | Opt-in modifier: base gray divider off, active underline shortened + centered (`--sp-12` inset each side) instead of full-width. Separator left to the consuming context (E-Shop F3 type switch) |
+| `.tabs--underline-label` | Opt-in, pairs with `--underline-short`: active underline spans only the label span, excluding a trailing `.tabs__item-count`. Needs the label wrapped in a child element (Projects status tabs, 2026-07-24) |
 | `button.tabs__item` | Strips native button chrome when rendered as `<button>` |
 | `.tab-panel` | Hidden panel (display:none) |
 | `.tab-panel--active` | Shown panel (display:block) |
@@ -3209,20 +3210,21 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.28 Project list
 
-**`_layer`** · organism — Borderless table list for Projects, sharing Product list's visual DNA (real image thumbnail, row-divider, `--accent` hover) but with project columns and whole-row `<a>` links to the detail page. **2026-07-24** the crammed one-line meta was split into real columns: image · project (name + one-line desc) · current goal · time left · category (content type over family) · type · status · to-do · chevron. Only funding / pre-order campaigns carry a goal + countdown; every other kind shows a muted em-dash (`__cell--empty`) in those two columns. The 56px thumbnail uses the same `poster||cover` source as the detail-page hero. This departs from the Q20 icon-chip family (`.data-list__icon` etc.) the row thumbnail once belonged to — the identity cell now leads with a real poster, matching `.product-list__image`.
+**`_layer`** · organism — Borderless table list for Projects, sharing Product list's visual DNA (real image thumbnail, row-divider, `--accent` hover) but with project columns and whole-row `<a>` links to the detail page. Columns: image · project (name + one-line desc) · current goal · time left · category (content type over family) · type · status · chevron. **Current goal is two-line**: a bold, larger percentage (`__goal-pct`, `fs-16`/bold) over the raised/target amount (`__goal-amt`). Only funding / pre-order campaigns carry a goal + countdown; every other kind shows a muted em-dash (`__cell--empty`) in the goal + time columns. The 56px thumbnail uses the same `poster||cover` source as the detail-page hero. This departs from the Q20 icon-chip family (`.data-list__icon` etc.) the row thumbnail once belonged to — the identity cell now leads with a real poster, matching `.product-list__image`. **2026-07-24**: the to-do tip column was removed (per user) and the goal cell became two-line.
 
 **Anatomy**
 
 ```
-.project-list (grid table · 9 tracks)
+.project-list (grid table · 8 tracks)
 ├─ .project-list__head                 44px column headers (__col-time/-category/-type drop ≤1180px)
 └─ <a>.project-list__row × N           88px link-row, --accent hover, focus ring
    ├─ __image (56px poster||cover · --placeholder = muted tile + type icon)
    ├─ __project > __title + __desc
-   ├─ __cell __goal · __cell __time  (__cell--empty → em-dash when no campaign)
+   ├─ __goal > __goal-pct + __goal-amt  (or .__cell--empty em-dash when no campaign)
+   ├─ __cell __time                     (__cell--empty → em-dash when no campaign)
    ├─ __category > __cat-main + __cat-family    (content type over family)
    ├─ __cell __type · __cell __status (Badge)
-   └─ __cell __todo (tip) · __go (chevron Icon)
+   └─ __go (chevron Icon)
 ```
 
 **Variants** — Single layout; status conveyed by Badge variants (Live / Draft / Ended…); goal/time cells take `__cell--empty` for non-campaign kinds.
@@ -3245,7 +3247,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 **Do & Don't**
 
 - ✅ Do keep the whole row as one `<a>` — the chevron is a hint, not the only target.
-- ❌ Don't nest buttons inside the row link — use the tip pattern for hints.
+- ❌ Don't nest buttons or other links inside the row link — the whole row is one target.
 
 **Dependencies** — composes Badge (§4.3), Icon (§4.9); used by projects.html.
 
