@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Projects · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260724zzi"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/button.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/input.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/project-list.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/card.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260724zzi">
-<link rel="stylesheet" href="ds-components/list-footer.css?v=20260724zzi">
-<link rel="stylesheet" href="shared.css?v=20260724zzi">
+<script src="js/theme.js?v=20260724zzzg"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/button.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/input.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/project-list.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/card.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260724zzzg">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=20260724zzzg">
+<link rel="stylesheet" href="shared.css?v=20260724zzzg">
 </head>
 <body>
 <div class="app">
@@ -46,7 +46,7 @@
            建立專案）。第二層＝次要篩選（發行模式、內容類別兩個下拉）。 -->
       <div class="list-toolbar">
         <!-- F1 status filter (spec §7.2 · Funded folds into Live · Failed+Cancelled merged · decisions D005) -->
-        <nav class="tabs tabs--underline-short tabs--underline-label" id="proj-tabs" role="tablist">
+        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="proj-tabs" role="tablist">
           <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="projects.tab.all">All</span> <span class="tabs__item-count"></span></div>
           <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="projects.tab.draft">Draft</span> <span class="tabs__item-count"></span></div>
           <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="projects.tab.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
@@ -121,7 +121,6 @@
           <div role="columnheader" data-i18n="projects.col.goal">Current goal</div>
           <div role="columnheader" class="project-list__col-time" data-i18n="projects.col.time">Time left</div>
           <div role="columnheader" class="project-list__col-category" data-i18n="projects.col.category">Category</div>
-          <div role="columnheader" class="project-list__col-type" data-i18n="projects.col.type">Type</div>
           <div role="columnheader" data-i18n="projects.col.status">Status</div>
           <div role="columnheader" aria-hidden="true"></div>
         </div>
@@ -167,10 +166,10 @@
     </div>
   </main>
 </div>
-<script src="js/icons.js?v=20260724zzi"></script>
-<script src="js/projects-store.js?v=20260724zzi"></script>
-<script src="js/i18n.js?v=20260724zzi"></script>
-<script src="js/sidebar.js?v=20260724zzi"></script>
+<script src="js/icons.js?v=20260724zzzg"></script>
+<script src="js/projects-store.js?v=20260724zzzg"></script>
+<script src="js/i18n.js?v=20260724zzzg"></script>
+<script src="js/sidebar.js?v=20260724zzzg"></script>
 <script>
 /* Projects F1 — single data source renders both list & card views; status tab + type select +
    category select + search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
@@ -202,8 +201,8 @@
     failed:    { label:{en:'Failed',zh:'失敗'},      badge:'badge--error' },
   };
   const TYPE = {
-    'go-live':  {en:'Go live',zh:'直接上線'},
-    'fund':     {en:'Fund it first',zh:'先募資'},
+    'go-live':  {en:'Go live',zh:'直接發佈'},
+    'fund':     {en:'Fund it first',zh:'募資'},
     'preorder': {en:'Pre-order',zh:'預購'},
   };
   /* status tab → which item statuses it includes (Funded folds into Live · decisions D005).
@@ -243,7 +242,19 @@
   }
   const kindStr = (p) => '· ' + t(p.cat) + ' · ' + t(TYPE[p.type]);
   const badgeHtml = (p) => '<span class="badge ' + STATUS[p.status].badge + '">' + esc(t(STATUS[p.status].label)) + '</span>';
-  const barHtml = (p) => p.bar ? '<div class="project-bar"><div class="project-bar__fill' + (p.bar.variant ? ' project-bar__fill--' + p.bar.variant : '') + '" style="width:' + p.bar.pct + '%"></div></div>' : '';
+  function projectBarData(p) {
+    if (!p.bar || typeof p.bar.pct !== 'number' || !Number.isFinite(p.bar.pct)) return null;
+    return {
+      pct: Math.min(100, Math.max(0, p.bar.pct)),
+      variant: p.bar.variant || ''
+    };
+  }
+  function barHtml(bar, decorative) {
+    if (!bar) return '';
+    return '<div class="project-bar"' + (decorative ? ' aria-hidden="true"' : '') + '><div class="project-bar__fill'
+      + (bar.variant ? ' project-bar__fill--' + bar.variant : '')
+      + '" style="width:' + bar.pct + '%"></div></div>';
+  }
   function tipHtml(p) {
     if (!p.todo) return '';
     const todo = esc(t(p.todo));
@@ -269,13 +280,15 @@
     return '<div class="project-list__cell ' + extraClass + (has ? '' : ' project-list__cell--empty') + '" role="cell">'
       + (has ? esc(v) : '—') + '</div>';
   }
-  /* 當前目標＝百分比（粗、大字）換行實際金額（使用者 2026-07-24）；非募資列顯示破折號 */
+  /* 當前目標＝百分比、實際金額與對應進度條；非 campaign 列顯示破折號 */
   function goalCell(p) {
     const amt = p.list && p.list.goal ? t(p.list.goal) : null;
     if (!amt) return '<div class="project-list__goal project-list__cell--empty" role="cell">—</div>';
-    const pct = (p.bar && p.bar.pct != null) ? p.bar.pct + '%' : '';
+    const bar = projectBarData(p);
+    const pct = bar ? bar.pct : null;
     return '<div class="project-list__goal" role="cell">'
-      + (pct ? '<span class="project-list__goal-pct">' + esc(pct) + '</span>' : '')
+      + (pct !== null ? '<span class="project-list__goal-pct">' + esc(pct + '%') + '</span>' : '')
+      + barHtml(bar, true)
       + '<span class="project-list__goal-amt">' + esc(amt) + '</span>'
     + '</div>';
   }
@@ -284,6 +297,7 @@
     return '<a class="project-list__row" role="row" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
       + imgHtml(p)
       + '<div class="project-list__project" role="cell">'
+        + '<div class="project-list__kind">' + esc(t(TYPE[p.type])) + '</div>'
         + '<div class="project-list__title">' + esc(p.name) + '</div>'
         + '<div class="project-list__desc">' + esc(t(p.desc)) + '</div>'
       + '</div>'
@@ -293,12 +307,12 @@
         + '<span class="project-list__cat-main">' + esc(t(p.cat)) + '</span>'
         + '<span class="project-list__cat-family">' + esc(famLabel(p.cat2)) + '</span>'
       + '</div>'
-      + '<div class="project-list__cell project-list__type" role="cell">' + esc(t(TYPE[p.type])) + '</div>'
       + '<div class="project-list__cell project-list__status" role="cell">' + badgeHtml(p) + '</div>'
       + '<div class="project-list__go" role="cell" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></div>'
     + '</a>';
   }
   function cardHtml(p) {
+    const bar = projectBarData(p);
     return '<a class="project-card" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
       /* 有海報就放海報，沒有的專案退回原本的圖示佔位（新建專案還沒上傳素材時會走這條） */
       + '<div class="project-card__cover">'
@@ -309,7 +323,7 @@
       + '<div class="project-card__body">'
         + '<div class="project-card__head"><h3 class="project-card__title">' + esc(p.name) + '</h3>' + tipHtml(p) + '</div>'
         + '<div class="project-card__kind">' + esc(kindStr(p)) + '</div>'
-        + barHtml(p)
+        + barHtml(bar)
         + '<div class="project-card__meta">' + esc(t(p.meta)) + '</div>'
       + '</div></a>';
   }
@@ -384,7 +398,7 @@
   render();
 })();
 </script>
-<script src="js/reveal.js?v=20260724zzi"></script>
-<script src="js/devtools.js?v=20260724zzi"></script>
+<script src="js/reveal.js?v=20260724zzzg"></script>
+<script src="js/devtools.js?v=20260724zzzg"></script>
 </body>
 </html>

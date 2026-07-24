@@ -49,13 +49,13 @@
     },
     {
       id: 'adia-chan', created: '2026/04/18', fundFrom: '2026/06/01', name: '陳松伶精選',
-      cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'live',
+      cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'published',
       cover: IMG + 'adia-chan-card.webp', poster: IMG + 'adia-chan.webp',
       desc: { en: 'Cantopop classics re-recorded with a new string arrangement, including live session takes.', zh: '經典重唱 × 全新弦樂編制，收錄 Live Session 現場版本。' },
-      meta: { en: '$4,100 of $10,000 · 6 backers · 40 days left', zh: '$4,100 / $10,000 · 6 位支持者 · 剩 40 天' },
-      fund: { raised: '$4,100', goal: '$10,000', backers: '6', pct: 41, left: { en: '40 days left', zh: '剩餘 40 天' }, period: { en: 'Campaign Jun 01 – Sep 01, 2026', zh: '募資期間 2026/06/01 – 09/01' } },
-      list: { goal: { en: '$4,100 / $10,000', zh: '$4,100 / $10,000' }, left: { en: '40 days left', zh: '剩 40 天' } },
-      bar: { pct: 41 }, todo: { en: 'Confirm string session studio', zh: '確認弦樂錄音室檔期' }
+      meta: { en: '$10,000 funded · 176 backers · Now released', zh: '$10,000 已募足 · 176 位支持者 · 現已上線' },
+      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Jun 01 – Sep 01, 2026 · Released', zh: '募資期間 2026/06/01 – 09/01 · 已上線' } },
+      list: { goal: { en: '$10,000 / $10,000', zh: '$10,000 / $10,000' }, left: { en: 'Released', zh: '已上線' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
     {
       id: 'mong-kok-shootout', created: '2025/12/08', fundFrom: '2026/02/10', name: '旺角狙擊',
