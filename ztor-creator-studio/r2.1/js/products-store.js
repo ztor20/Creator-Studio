@@ -126,6 +126,36 @@
       status: 'live', price: '8.00', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Membership / VIP card · 會員卡',
       vipName: 'Inner Circle'
+    },
+    /* cap／shoes（2026-07-25 新增）：為「服飾四件組」的成員而開的兩個新商品 id。
+       default persona 也要有對應資料，否則這兩列在 default 下點編輯會查不到商品。 */
+    cap: {
+      name: 'Logo cap · six-panel', img: 'cap.webp',
+      sub: 'Embroidered six-panel cap with adjustable strap. Four colours.',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '26.00', cost: '9.00', stock: '98', threshold: '12',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [{ name: 'Colour / 顏色', values: ['Grey', 'Black', 'Navy', 'Cream'] }],
+      variants: [
+        { combo: ['Grey'],  sku: 'CL-CAP-GY', stock: '24' },
+        { combo: ['Black'], sku: 'CL-CAP-BK', stock: '33' },
+        { combo: ['Navy'],  sku: 'CL-CAP-NV', stock: '22' },
+        { combo: ['Cream'], sku: 'CL-CAP-CR', stock: '19' }
+      ]
+    },
+    shoes: {
+      name: 'Canvas low-top', img: 'nick-nike.jpg',
+      sub: 'Canvas low-top sneaker, rubber cup sole. Four sizes.',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '64.00', cost: '27.00', stock: '72', threshold: '10',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [{ name: 'Size / 尺碼', values: ['US 8', 'US 9', 'US 10', 'US 11'] }],
+      variants: [
+        { combo: ['US 8'],  sku: 'CL-SHO-08', stock: '15' },
+        { combo: ['US 9'],  sku: 'CL-SHO-09', stock: '23' },
+        { combo: ['US 10'], sku: 'CL-SHO-10', stock: '21' },
+        { combo: ['US 11'], sku: 'CL-SHO-11', stock: '13' }
+      ]
     }
   };
 
@@ -181,10 +211,42 @@
       status: 'live', price: '68.00', cost: '26.00', stock: '312', cap: '500', sold: '188', threshold: '25',
       catLabel: 'Physical Merchandise', subLabel: 'Music · 黑膠唱片'
     },
-    /* 褲子單品（2026-07-25 使用者指定）：與 Tee 一起被組進「衣服褲子組合包」。
-       ⚠ 圖沿用既有 nick-nike.jpg，之後可替換。 */
+    /* 帽子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
+       ⚠ 圖沿用既有 cap.webp（非周湯豪本人素材），之後可替換。 */
+    cap: {
+      name: '祝你好命 刺繡 Logo 老帽', img: 'cap.webp',
+      sub: '周湯豪主理品牌「祝你好命」刺繡 Logo 六片老帽，可調式金屬後扣。4 色。',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '32.00', cost: '11.00', stock: '124', threshold: '12',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [{ name: 'Colour / 顏色', values: ['霧灰', '墨黑', '海軍藍', '米白'] }],
+      variants: [
+        { combo: ['霧灰'],   sku: 'WY-CAP-GY', stock: '31' },
+        { combo: ['墨黑'],   sku: 'WY-CAP-BK', stock: '42' },
+        { combo: ['海軍藍'], sku: 'WY-CAP-NV', stock: '28' },
+        { combo: ['米白'],   sku: 'WY-CAP-CR', stock: '23' }
+      ]
+    },
+    /* 鞋子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
+       圖＝nick-nike.jpg（祝你好命聯名球鞋實拍，紅包主題），由褲子那筆讓出、放回鞋款本身。 */
+    shoes: {
+      name: '祝你好命 紅包主題低筒球鞋', img: 'nick-nike.jpg',
+      sub: '周湯豪主理品牌「祝你好命」紅包主題低筒球鞋，紅／白／螢光綠配色，附品牌鞋盒。',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '78.00', cost: '32.00', stock: '86', threshold: '10',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [{ name: 'Size / 尺碼', values: ['US 8', 'US 9', 'US 10', 'US 11'] }],
+      variants: [
+        { combo: ['US 8'],  sku: 'WY-SHO-08', stock: '18' },
+        { combo: ['US 9'],  sku: 'WY-SHO-09', stock: '27' },
+        { combo: ['US 10'], sku: 'WY-SHO-10', stock: '25' },
+        { combo: ['US 11'], sku: 'WY-SHO-11', stock: '16' }
+      ]
+    },
+    /* 褲子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
+       ⚠ 圖：站上無棉褲實拍，暫用 socks.webp（同為下身著用品）佔位，之後可替換。 */
     pin: {
-      name: '祝你好命 束口工裝褲', img: 'nick-nike.jpg',
+      name: '祝你好命 束口工裝褲', img: 'socks.webp',
       sub: '周湯豪主理品牌「祝你好命」水洗棉束口工裝褲，側邊立體口袋。4 種腰圍 × 2 色。',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '58.00', cost: '21.00', stock: '96', threshold: '10',
@@ -252,9 +314,12 @@
      組合包結構參考公開端 shop-item.html?id=fan-selection-set：一組多件、每件各自選規格、
      組合價低於單買加總。⚠ 圖沿用既有 images/products/ 檔，之後可替換。 */
   var BUNDLES_NICK = {
+    /* 2026-07-25 使用者指定：改成公開端「影迷選物四件組」（shop-item.html?id=fan-selection-set）
+       的同型組合——Tee／帽／褲／鞋各自挑尺寸顏色，組合價低於單買加總（206→178，省 $28）。
+       四件在 e-shop 都是可單買的獨立商品（cap／shoes／tee／pin，狀態皆販售中）。 */
     'Coastline starter pack': {
-      name: '祝你好命 衣褲二件組', img: 'nick-tee.jpg',
-      members: 'Tee ＋ 束口工裝褲 · 2 件', price: '$88', stock: '24 組（最少件數）'
+      name: '祝你好命 選物四件組', img: 'nick-nike.jpg',
+      members: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件', price: '$178', stock: '16 組（最少件數）'
     },
     'Vinyl + poster set': {
       name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
