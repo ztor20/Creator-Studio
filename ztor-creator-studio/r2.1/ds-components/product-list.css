@@ -37,8 +37,34 @@
   transition: background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
 }
 
+/* 2026-07-26 使用者：「有商品列表的都要改成這樣」——縮圖放大後，有縮圖的清單列
+   上下留白比照專案列表加大到 --sp-20、列高改 116px（76px 縮圖＋上下 20）。
+   --orders 2026-07-23 已移除縮圖欄、--creators 走頭像，兩者維持 base 的 88/--sp-14。 */
+.product-list--eshop .product-list__row,
+.product-list--bundles .product-list__row,
+.product-list--auctions .product-list__row,
+.product-list--pickup .product-list__row,
+.product-list--ip .product-list__row,
+.product-list--events .product-list__row {
+  min-height: 116px;
+  padding-block: var(--sp-20);
+}
+
+/* 2026-07-26 使用者：「所有列表的 hover 都要改成像電子商店的商品列表一樣」——原本只有 --eshop／--ip
+   兩個變體用「浮起」hover（2026-07-20/21 使用者裁示，見下方沿革），base（--orders／--pickup／--events
+   等其餘變體）維持 Q9 2026-07-13 的純換底色。本輪把浮起處理拉成 base 預設，取代 Q9，全部變體統一；
+   下方原本 --eshop／--ip 專屬的 scoped 規則因此變成單純重複，已移除。 */
 .product-list__row:hover {
-  background: var(--accent);   /* Q9 2026-07-13：列 hover 統一用 accent */
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+  box-shadow: var(--shadow-lift-flat);
+  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.product-list__row:has(+ .product-list__row:hover) {
+  border-bottom-color: transparent;
 }
 
 .product-list__product {
@@ -54,8 +80,9 @@
    真正畫面上看到的是 --placeholder 覆蓋後的值（--muted 底／--border-soft 邊／52px／
    --muted-foreground icon）。改對齊那組真實呈現值，訂單/取貨列的縮圖才會跟電子商店一致。 */
 .product-list__thumb {
-  width: 52px;
-  height: 52px;
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 52px）*/
+  width: 76px;
+  height: 76px;
   flex: none;
   display: inline-grid;
   place-items: center;
@@ -72,8 +99,8 @@
 }
 
 .product-list__thumb .ztor-icon {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
 }
 
 .product-list__image-cell {
@@ -82,8 +109,9 @@
 }
 
 .product-list__image {
-  width: 60px;
-  height: 60px;
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 60px）*/
+  width: 76px;
+  height: 76px;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--card);
@@ -116,8 +144,8 @@
 
 /* 無圖占位・分類 icon 變體：以商品分類 icon 取代文字 mark（e-shop F4） */
 .product-list__image--placeholder .ztor-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   color: var(--muted-foreground);
 }
 
@@ -247,7 +275,7 @@
 .product-list--eshop .product-list__row {
   /* 後方資料欄收窄：分類/價格/狀態/庫存不過寬、右側更緊湊；名稱欄(1.6fr)吸收釋出空間。
      狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。 */
-  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
 }
 .product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
 .product-list--eshop .product-list__price,
@@ -258,14 +286,14 @@
 /* 套組分頁 — 同 product-list 外觀，較寬的成員欄；欄位：Image / Bundle / Members / Price / Status / Stock / Actions */
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
-  grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 84px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
 }
 
 /* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。
    單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
 .product-list--auctions .product-list__head,
 .product-list--auctions .product-list__row {
-  grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+  grid-template-columns: 84px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
 }
 .product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
 .product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-content: center; }
@@ -350,7 +378,7 @@
 
 .product-list--pickup .product-list__head,
 .product-list--pickup .product-list__row {
-  grid-template-columns: 44px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 108px 40px;
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 108px 40px;
 }
 .product-list--pickup .product-list__cell { color: var(--foreground); }
 
@@ -383,7 +411,7 @@
   /* 2026-07-25（使用者裁示）：來源改純文字放名稱上方（見 __source），類型徽章（原創／衍生／
      驗證中）獨立成一欄——名稱欄不再需要吸收徽章，收窄回單純文字寬度；新增 Type 欄固定寬度
      （最長字樣「Verifying」）。租出數/收入/操作欄維持窄（文字短）；Mktplace 欄只放切換鈕。 */
-  grid-template-columns: 60px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+  grid-template-columns: 76px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
 }
 .product-list--ip .product-list__cell { color: var(--foreground); }
 
@@ -401,39 +429,15 @@
 /* 類型（原創／衍生／驗證中）獨立成一欄，置中對齊；無類型的列（多數站外登錄）留空。 */
 .product-list__type { display: flex; align-items: center; }
 
-/* 2026-07-20 使用者裁示（--ip）、2026-07-21 使用者再指定擴大到 --eshop（含共用其 class 的
-   --bundles／--auctions 兩分頁）：hover 改成跟拖曳抬起態（.is-dragging）同一種「浮起」視覺，
-   取代 base 的純換底色（--accent）——卡底＋圓角＋E3 陰影，列從清單裡浮出來，
-   而不只是變色。position:relative＋z-index 避免陰影被相鄰列的分隔線蓋住（z-index 低於
-   is-dragging 的 3，因為這裡是常態 hover、不是被拖起）。
-   2026-07-21 使用者反饋：浮起的卡片上緣仍看得到「上一列」的 border-bottom 分隔線切過去——
-   z-index 只能讓陰影疊在分隔線之上，蓋不掉分隔線本身（分隔線屬於上一列自己的框、不在這列的
-   繪製範圍內，兩者是「相鄰貼齊」不是「疊在一起」）。修法：hover 時連自己的 border-bottom 也
-   一併透明（讓浮起的卡片四邊乾淨、不被自己下緣的線切到），並用 :has() 把「上一列」的
-   border-bottom 也透明掉——這是目前唯一能選中「下一個手足是 hover 狀態」的寫法，此專案已有
-   同類用法（見 .form-section--outlined:has(> .nest)）。
-   2026-07-21 使用者再反饋「hover 不要 border」：改用 --shadow-lift-flat（去掉 --shadow-float
-   內建的 1px rim）。原本以為分隔線是唯一問題，但 rim 本身在白／近白背景上也會被讀成一圈框——
-   淺色列表背景色差已經夠明顯，不需要 rim 再補一次輪廓；.is-dragging 一併換成同一個 token，
-   維持「hover＝drag」的既定規則不分岔（見上方）。深色不受影響（token 深色沿用完整
-   --shadow-float，見 _tokens.css 註解）。 */
-.product-list--eshop .product-list__row:hover,
-.product-list--ip .product-list__row:hover {
-  position: relative;
-  z-index: 1;
-  background: var(--card);
-  border-radius: var(--radius-md);
-  border-bottom-color: transparent;
-  box-shadow: var(--shadow-lift-flat);
-  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
-}
-/* 2026-07-23 使用者反饋：點列直接進編輯（草稿進建立頁、已建立商品進細節頁，見 e-shop.html
-   點擊委派邏輯）。只有 --eshop 有這個點擊行為，--ip 沒有，游標提示不能共用上面的 hover 規則。 */
+/* 浮起 hover 的原始沿革（現已升為 base，見上方）：2026-07-20 使用者裁示（--ip）、2026-07-21 擴大到
+   --eshop（含共用其 class 的 --bundles／--auctions 兩分頁）——取代原 Q9 2026-07-13 純換底色；
+   position:relative＋z-index 避免陰影被相鄰列的分隔線蓋住（z-index 低於 is-dragging 的 3，因為這裡
+   是常態 hover、不是被拖起）；hover 時連自己與「上一列」的 border-bottom 都透明，讓浮起的卡片四邊
+   乾淨不被分隔線切到（`:has()` 選中「下一個手足是 hover 狀態」）；`--shadow-lift-flat` 去掉
+   `--shadow-float` 內建的 1px rim（淺色背景色差已夠明顯，rim 會被讀成一圈框）。
+   2026-07-23 使用者反饋：點列直接進編輯（草稿進建立頁、已建立商品進細節頁，見 e-shop.html
+   點擊委派邏輯）。只有 --eshop 有這個點擊行為，游標提示保留 scoped、不隨 hover 視覺一起變成 base。 */
 .product-list--eshop .product-list__row { cursor: pointer; }
-.product-list--eshop .product-list__row:has(+ .product-list__row:hover),
-.product-list--ip .product-list__row:has(+ .product-list__row:hover) {
-  border-bottom-color: transparent;
-}
 
 .product-list__mktplace {
   display: flex;

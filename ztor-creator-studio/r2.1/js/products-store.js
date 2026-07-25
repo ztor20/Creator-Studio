@@ -267,7 +267,7 @@
       ]
     },
     song: {
-      name: '我的i · 單曲', img: 'nick-single.jpg',
+      name: '帥到分手 · 單曲', img: 'nick-single.jpg',
       sub: 'LOVE RAGE HOPE 首波主打，購買後立即下載。',
       cat: 'digital', subKey: 'song', content: 'song', variant: 'single', edition: 'unlimited',
       status: 'live', price: '1.50', cost: '', stock: '∞',
@@ -289,7 +289,7 @@
       albumSeed: [
         { name: '未完成的夢', meta: 'weiwan-de-meng.mp3 · 3.4 MB · 2025', lyrics: true },
         { name: 'FLAMES', meta: 'flames.mp3 · 8.2 MB', lyrics: true },
-        { name: '我的i', meta: 'wo-de-i.mp3 · 7.6 MB', lyrics: true },
+        { name: '帥到分手', meta: 'shuai-dao-fen-shou.mp3 · 7.6 MB', lyrics: true },
         { name: 'SO SICK', meta: 'so-sick.mp3 · 6.8 MB', lyrics: false },
         { name: 'TIL THE END', meta: 'til-the-end.mp3 · 4.4 MB', lyrics: true }
       ]
@@ -336,7 +336,7 @@
       img: 'signed-tour-poster.webp', cat: '紀念品', price: '起標 $120'
     },
     'Vintage synth': {
-      name: '《我的i》錄音室母帶盤帶', meta: '收藏品 · 已結標',
+      name: '《帥到分手》錄音室母帶盤帶', meta: '收藏品 · 已結標',
       img: 'nick-realive-cd.jpg', cat: '紀念品', price: '$860'
     }
   };

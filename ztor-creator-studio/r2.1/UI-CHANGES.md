@@ -4,6 +4,124 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-26 · 我的 IP 列操作改三點選單（B 反饋導入）
+
+使用者裁示：`my-ip.html` 每列的「管理」文字連結改用三點（⋯）設計，比照 orders／pickup 既有的列操作 kebab pattern，全站列操作收斂成單一答案。
+
+- **【B】** 8 列的 `<a class="card__link">管理</a>` 全部改成 `<details class="dropdown"><summary class="btn btn--icon btn--xs">⋯</summary>` ＋ `.dropdown__menu`，選單內單一項目「管理」（`<a href="ip-detail.html">`，圖示 `settings`），行為與連結目標不變。重用既有 `dropdown-menu.css`（未修改元件本身），補上該頁原本沒有的 `<link>`。
+- **【D】** 新增 i18n 鍵 `my-ip.a.more`（More actions／更多操作），比照 orders.a.more／pk.a.more／events.a.more 的既有命名慣例。
+- **【D】** 補上該頁原本缺的 kebab 收合邏輯（點選項或點外部關閉），複製 orders.html 的既有寫法，不重新發明。
+- 驗證：起站實測——8 列 kebab 皆可展開／點外部關閉／再次展開；選單項「管理」連結 `ip-detail.html` 不變；中英文 aria-label／title／選單文字皆正確；console 無錯；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260726x`。
+
+## 2026-07-26 · 專案詳情「我的收益」篩選由 chip-group 換成收入管理同款 filter-tabs--source（B 反饋導入）
+
+使用者附兩張截圖（專案詳情 › 我的收益 vs 收入管理），指定「第一個的元件要用第二個的」。
+
+- **【B/元件套用】** `project-detail.html` 收益分頁的篩選由 `.chip-group`＋`.chip`（自捲 `.earn-dot` 內聯色）換成 `.filter-tabs.filter-tabs--source`（＋`.filter-tabs__dot`，色值改走 `--dot` 自訂屬性），與收入管理 `earnings.html` F5 收益來源篩選、財務頁 `fin-legend` 同一支元件與同一視覺語彙：選中時藥丸底色＝該項自身顏色 12% 淡底＋同色文字（`--source` 變體），未選為靜音文字＋色點。容器由 `<div>` 改語意化 `<nav role="tablist">`，各項補 `role="tab"`／`aria-selected`。
+- **【B/JS】** 篩選事件的選取器由 `.chip`／`chip--active` 改 `.filter-tabs__item`／`filter-tabs__item--active`，並同步切換 `aria-selected`；「選 OTT 版稅才顯示共創深度明細」的既有連動邏輯（`data-earn-series="ott"`）不變。
+- **【D/依賴】** `project-detail.html` 補掛 `ds-components/filter-tabs.css`（原未載入）。`.earn-dot`（shared.css）仍為其他處使用、未動。
+- **範圍**：只動 `project-detail.html` 收益分頁篩選一處；篩選項目、順序、顏色對應與深度明細行為皆不變，屬元件替換的呈現決策。
+- **驗證**：本機 server 實測——五項渲染正常、色點 4 顆；點 OTT 版稅時底色 `color(srgb 0.19 0.18 0.24)`＋文字 `rgb(167,139,250)`（紫，與其色點同色）、`aria-selected=true`、共創深度明細展開；切到授權收益時深度明細收起；回「全部」正常。無 console error；`check_ds_sync.py` PASS。
+
+## 2026-07-26 · `.card`／`.kpi` 全站改陰影浮起、去 1px 邊框（解決 STYLE-DECISIONS Q23，新增 Q32 裁決）（B 反饋導入）
+
+使用者選了專案詳情頁三種 `.card` 系卡型（組合包卡／募資狀態卡／發布更新卡）比對「現況邊框」vs「陰影浮起」demo 後裁示「全站都改」；接著再選一個 `.kpi` 指出「底色應該和 section 一樣，且都改成無 border 的」。這其實是站上已登記的開放問題（`STYLE-DECISIONS.md` Q23）：`.card` 系（Q3 2026-07-13 裁決＝邊框）與 `form-section--outlined`（Q14/Q18 裁決＝陰影浮起）是同一視覺角色的兩種答案，先前只在建立流程預覽欄做過 scope 例外。本輪由使用者裁示 **Q23 選項 C：全站統一**，登記為新裁決 **Q32**。
+
+- **【B】** `ds-components/card.css` `.card` 基底：`border: 1px solid var(--border)` → `border: 0` ＋ `box-shadow: var(--shadow-card), var(--shadow-edge-top)`，跟 `form-section--outlined` 統一做法。`.funding-panel--card`（`ds-components/funding-panel.css`）同步；`.fc-bundle` 本就吃 `.card` 基底，自動套用不用另改。
+- **【B】** `ds-components/kpi.css` `.kpi`：邊框同步去除、改陰影；預設底色順便由 `--input-surface`（2026-07-20 Q21）還原成 `--card`——派 agent 稽核全站 24 處 `.kpi` 用法後發現：16 處直接放在 `.bento`／`.tab-panel` 上（沒有卡包著，跟外層同色才是常態），只有 8 處（`event-detail.html` Overview 分頁、`earnings.html` Breakdown／Payouts、`auction-detail.html`、`bundle-detail.html`、`product-detail.html`、`admin-ip-bank-entry.html`、`ip-detail.html`）真的疊在 `.card`／`.form-section--outlined`／`.ip-hero` 內，需要保留 Q21 的「亮一階避免糊色」處理。這 8 處用 scoped selector `.card .kpi, .form-section--outlined .kpi, .ip-hero .kpi` 改回 `--input-surface`，其餘 16 處吃新預設 `--card`。
+- **未動**：`.ztor-card`（docs-only，未上產品頁，仍照 Q3）；input／table／dropdown／picker／modal 等控制項或清單類的 1px 邊框（Q3/Q4 對這些角色仍有效，本輪只處理「大容器卡」這個視覺角色，範圍不無限擴大）。
+- **文件同步**：`STYLE-DECISIONS.md` 新增 Q32（登記本次裁決）、Q23 標記「上層問題已由 Q32 解決」、Q3 加註「`.card`／`.kpi` 已被 Q32 取代」；`design-system.md`／`design-system.html` 同步 4.11b Section card、4.12 KPI 兩節的 States／Class API／Token usage，以及 Pillar 2 的 Card shadow 說明列。
+- 驗證：dev server 上分別量測三類實例的 `getComputedStyle`——`.funding-panel--card` border 0px＋box-shadow 有值；共創進度 tab 的獨立 `.kpi`（無卡包著）背景 `rgb(33,34,35)`＝`--card`、border 0；product-detail Sales summary 的巢狀 `.kpi`（`.form-section--outlined` 內）背景 `rgb(42,43,45)`＝`--input-surface`、border 0，三種情境皆符合預期；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726u`。
+
+## 2026-07-26 · 我的項目移除「身分」篩選＋發起徽章（B 反饋導入）
+
+使用者裁示：「移除，在 Creator Studio 應該都是發起人」——`earnings-sony.html` 我的項目原本沿用公開端 cocreate 站的「身分」概念（發起人／支持者／影評人，用來分辨你在某計畫裡扮演的角色），但 Creator Studio 底下這張表列的永遠是使用者自己發起的專案，身分永遠是同一個值，區分／篩選都沒有意義。
+
+- **【C】** 移除「全部身分」`details.dropdown`（含發起人／支持者／影評人三個選項）；`fin-ledgerbar` 現在只剩全部類別／期間兩個下拉。
+- **【C】** 移除每列的「發起」徽章（`ztor-badge--info fin-role`）——先前只在部分列顯示，隱含「其餘列不是發起人」的錯誤訊息；拿掉篩選後這個區分本來就不該再局部顯示。
+- **【B】** `partials/finance-overview.js`：`state` 拿掉 `role`、`rowMatches()` 拿掉身分比對、下拉 change handler 拿掉 `role` 分支；`SLOTS` 簡化成只剩 `types`／`amt`（不再帶 `role`）；`renderMyItems()` 不再輸出 `data-fin-role` 屬性與徽章 span。
+- **【D/清理】** 移除死掉的 4 個 `fin.role.*` i18n 鍵與已無人引用的 `fin.badge.creator` 鍵；移除頁面級 `.fin-role` CSS（僅服務已刪除的徽章）。
+- 驗證：起站實測——身分下拉已消失、`fin-ledgerbar` 只剩類別／期間兩個下拉；6 列徽章數＝0；類別篩選（測「專輯」）仍正確篩出 2 筆並同步計數；點列仍正確導向 `project-detail.html?id=...#earnings`；兩個 persona（nick／default）皆確認；console 無錯；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260726s`。
+
+## 2026-07-26 · 暗色 hairline 邊框跟著填色底調亮（`--border`／`--input`，全站 token）（B 反饋導入）
+
+上一輪把 `--input-surface` 調亮後，使用者追問邊框是不是也要跟著等比調——算過對比度：填色底調亮前「填色底 → 邊框」對比 ≈1.21，調亮後掉到 ≈1.15，邊框相對變得不明顯。做了 3 階候選（A 現行 `#333435`／B `#373839`／C `#3C3D3F`）demo，選定 **B**。
+
+- **【B】** `ds-components/_tokens.css` 暗色區塊 `--border` 與 `--input`（維持同值）：`#333435` → `#373839`，對填色底的對比回到 ≈1.21（調亮前的分離感）。`--border` 是全站共用 token（卡片外框、下拉選單、表格分隔線、彈窗…58 支元件 CSS／72 個頁面在用），非只有輸入框，本輪連動影響全站 hairline。
+- **未動**：`--sidebar-border`（側欄分隔線，另一個獨立 token，7/21 Q22 時與 `--border` 同步過，但這次的候選 demo 只呈現 `--border` 情境、使用者也只針對輸入框反饋來的，故先不動——如需一併調亮再另外確認）。
+- 驗證：dev server 上量測欄位 `box-shadow` 實際色值 `rgb(55, 56, 57)`＝`#373839`；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726p`。
+
+## 2026-07-26 · 暗色控件填色底對比加大（`--input-surface`，全站 token）（B 反饋導入）
+
+使用者反饋暗色主題下 `.input`／`.textarea`／`.upload-tile` 的填色底跟卡片背景色差太小、看不出是可填欄位。做了 5 階候選值（A 現行 `#262729` ～ E `#3D3E40`）demo 給使用者比對，選定 **B `#2A2B2D`**。
+
+- **【B】** `ds-components/_tokens.css` 暗色區塊 `--input-surface`：`#262729` → `#2A2B2D`。純 token 值調整，無新增 CSS 規則；全站消費此 token 的 `.input`／`.textarea`／`.select`／`.upload-tile` 一次套用，無需逐頁改。亮色主題 `--input-surface`（＝`var(--card)`）未動，僅暗色。
+- 驗證：dev server（`localhost:4325`）nick persona 下的支持方案套組編輯器 `getComputedStyle` 確認欄位底色為 `rgb(42, 43, 45)`＝`#2A2B2D`；螢幕截圖比對卡面／欄位分層明顯浮出；console 無錯；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726m`。
+
+## 2026-07-26 · 專案詳情頁四項清理：展示內容撤除混雜舊圖／OTT 收益深度明細改滿版／支持方案套組更名組合包／我的收益撤除探索原型橫幅（B 反饋導入 · C 撤除）
+
+- **【C/撤除】** `project-detail.html` 「關於專案 › 展示內容」相簿的第 2、3 張圖是與本專案無關的舊假資料——`adia-chan.webp`（另一部電影專案的海報）與 `shuangyan-zhijian.webp`（《雙眼之間》海報），兩張皆非 JS 動態帶入（只有封面格 `#pd-gallery-cover` 有接 `p.poster`），任何專案開啟都會看到同樣兩張不相干的圖。直接移除這兩格靜態 tile，相簿只留封面格（動態、正確）＋新增圖片鈕。
+- **【B】** 「我的收益 › 共創計畫．深度明細」的「計畫項目收益」與「淨收益分配 70/30」兩張卡由 `bento--span-7`／`bento--span-5`（並排半版）改 `bento--span-12`（各自滿版一整列），使用者反饋這區要 fill 整個畫面。
+- **【B】** 「方案與承諾 › 支持方案」套組編輯器全面更名「組合包」：`js/i18n.js` 的 `pd-bundle.*` 系列 zh 文案（標題／名稱／描述／商品／新增鈕）由「套組」改「組合包」（僅此頁 `pd-bundle.*` 命名空間；create-campaign 流程用的是自己另一套 `fc.*` 副本，維持既有「套組」用語，未改）。卡片標頭原本固定顯示「組合包 N」，現在依「組合包名稱」欄位即時反應：有填名稱時顯示「組合包：{名稱}」、清空則退回「組合包 N」（新增 i18n key `pd-bundle.head-named`，`project-detail.html` 的 `refresh()`／`headline()` 加上 `data-b-name` 的 `input` 監聽）。同時卡頭與欄位間距 `.fc-bundle__head { margin-bottom }` 由 `--sp-6` 加大到 `--sp-16`（`ds-components/bundle-editor.css`），對齊使用者反饋的「間距加大」。
+- **【C/撤除】** 「我的收益」分頁頂部的「⚠ 探索原型 — 收益模型提取自共創計畫，數字為示意、待產品裁決」橫幅整塊移除（使用者反饋直接撤除，非改文案）。
+- 驗證：改走本機 dev server（`http://localhost:4325`，先前誤用 `file://` 直開曾吃到瀏覽器層級快取、跟 disk 內容不同步，改用 dev server＋硬重整後複測皆正確）——展示內容只剩封面格；深度明細兩卡 `getComputedStyle` 確認 `grid-column: span 12`；組合包卡標頭空名稱時顯示「組合包 1」、輸入後即時變「組合包：{名稱}」、頭尾間距量測 16px；我的收益分頁首元素改為篩選 chip-group、無 banner；console 無錯；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726c`。
+
+## 2026-07-26 · 周湯豪專案假資料改名＋補一筆 MV（B 反饋導入）
+
+- **【B/資料】** `js/projects-store.js` 的 `PROJECTS_NICK` 依使用者指定改名（id 保持不變，避免既有深連結失效）：我的i → **帥到分手**／為了你 → **罵醒我**／走三關 → **愛上你算我賤**／你說的都對 MV → **帥到分手 MV**。
+- **【B/資料】** 新增第 13 筆 **帥到分手 MV**（`nick-sdfs-mv-live`，直接發佈／已上線／MV／影視家族，沿用 `nick-i.jpg`）。與上一筆同名同曲、差在發行模式：募資型那筆有版稅分頁，這筆沒有，剛好補上「MV × 直接發佈 × 已上線」這格樣本。**同名為使用者指定**，需要區隔再加副標。
+- **【B/資料一致性】** 「愛上你算我賤」原本沿用〈走三關〉的介紹說它出自 REALIVE，但同一份資料裡 REAL LIFE 的介紹已寫明收錄此曲——改成 REAL LIFE，去掉互相打架的敘述。
+- **【B/資料一致性】** 專案改名後，nick persona 其他頁面殘留的「我的i」一併換成「帥到分手」：`js/i18n.js` 的 `my-ip.row3.name`／`fan-detail.tl.project1`／`fan-detail.spend.r3`／`fan-detail.projects.r1`／`earnings.name.latebloom`、`earnings.html` 的取樣授權列名稱、`js/products-store.js` 的數位單曲／專輯曲目／母帶盤帶拍賣。
+- **【D/修 bug】** `earnings.html` 的 9 處 `project-detail.html?id=…#money` 深連結改指 `#earnings`——「專案收益」分頁已於 2026-07-25 退場，這些連結自那時起就落在不存在的 anchor 上。
+- 驗證：專案頁實測 13 筆、名稱與發行模式如上；`node --check` 三支 store/i18n 語法通過。
+
+## 2026-07-26 · 清單頁工作列分頁統一成同一組配方（B 反饋導入）
+
+- **【B】** 使用者發現 my-ip 與 events 的工作列分頁跟 projects「有些微不同」，問是不是沒元件化。查證：四頁用的是**同一個元件** `.tabs.tabs--underline-short`，差別在兩個修飾 class 只有 projects 有——`tabs--underline-label`（底線只等標籤寬、不含計數）與 `tabs--count-plain`（計數不用藥丸、改 `--muted-foreground` 純文字）。
+- **處置（使用者裁示，STYLE-DECISIONS Q26）**：`.list-toolbar` 主軸分頁一律 `tabs tabs--underline-short tabs--underline-label tabs--count-plain`。補上 `my-ip.html:54`、`events.html:119`、`e-shop.html:309`；projects 原本就有。e-shop 沒有計數，`--count-plain` 不影響外觀仍照寫，之後要加計數不必再改 class。
+- **【D/文件】** `design-system.md` §Tabs 與 `design-system.html` 的 Tabs demo 由「Projects 專用 opt-in」改寫成「list-toolbar 的標準配方」，並順手修掉 `--count-plain` 的文件漂移（文件寫 `--foreground-muted`，實作 2026-07-24 起已是 `--muted-foreground`）。
+- **範圍界線**：`tabs--underline-label` 需要標籤包在子元素裡；product-detail、admin-platform-fees 的分頁標籤是 `<button>` 直接文字、也不是 list-toolbar，維持原樣不動。
+- 驗證：三頁實測 class 已套用、active 底線色 `rgb(255,163,63)` 掛在標籤 span 上、item 自身 `::after` 為 `none`、計數色 `rgb(117,117,117)` 無填色；e-shop 底線由 30px（item 內縮）收成 26px（實際標籤寬）。
+
+## 2026-07-26 · 建立專案閘門的關閉鈕提亮（B 反饋導入）
+
+- **【B】** `.wizard__gate-close`（`create-project.html` 閘門底部的 ✕）在暗底上幾乎看不見，使用者反饋「亮一點，元件是這麼暗嗎？」。查證：`.btn--icon-circle` 預設 `--muted`(#161718) 底＋`--muted-foreground` 圖示，這組值假設鈕坐在 `--card`(#212223) 上；閘門用的是 `.wizard__sheet--sectioned` 的 `--surface-page`(#0C0D0D)，兩者只差一階，圓形等於消失。
+- **處置**：在 `shared.css` 的閘門段 scope 提亮——`--card` 底＋1px `--border` 描邊＋`--foreground-muted` 圖示，hover 仍回 `--accent`＋`--foreground`。**不動元件預設**，composer 的送出鈕坐在卡片上、維持原樣。
+- 同步在 `design-system.md` Button 章節記下「`--icon-circle` 的底色有面向假設」與這個已知案例，避免下次又踩。
+- 驗證：實測 bg `rgb(33,34,35)`／border `rgb(55,56,57)`／icon `rgb(185,185,185)`，截圖可見。
+
+## 2026-07-26 · 專案卡片封面補齊正方形素材（B 反饋導入）
+
+- **【B/素材】** `images/projects/nick-baipa-goods.jpg` 880×1100（直式）→ **880×880**（取上緣）。周湯豪 12 個專案的封面只有這張不是正方形，卡片檢視下該張的封面比其他卡高一截、整列參差；使用者框選要求改成方的。原圖可從 git 還原。
+
+## 2026-07-26 · 六個清單頁縮圖統一 76px、列留白加大、篩選列到清單的間距 24→40（B 反饋導入）
+
+- **【B】** `ds-components/product-list.css`：`.product-list__image` 60px → **76px**、`.product-list__thumb` 52px → **76px**（使用者：「我的 IP／電子商店／取貨管理／活動，有商品列表的都要改成這樣」）。首版誤照各自 +1/3 算成 80／68，使用者當場更正「全部都跟專案列表一樣 76」，已改為統一值。內含 icon 同步放大（`__image--placeholder` 20→28px、`__thumb` 20→26px）。
+- **【B】** 同檔各變體欄軌第一格跟著放寬：`--eshop`／`--bundles`／`--auctions` 68→84px、`--ip` 60→76px、`--pickup` 44→76px；`events.html` 頁內的 `--events` 欄軌 60→76px（桌機與 ≤760px 兩組）。
+- **【B】** 有縮圖的變體（`--eshop`／`--bundles`／`--auctions`／`--pickup`／`--ip`／`--events`）列高改 **116px**、上下留白改 **`--sp-20`**。`--orders`（2026-07-23 已移除縮圖欄）與 `--creators`（走頭像）維持 base 的 88px／`--sp-14`，不受影響。
+- **【B】** 次層篩選列到清單的間距由 24px → **40px**（使用者框選該處空白要求加大）：`ds-components/list-toolbar.css` 的 `.list-status-row { margin-bottom }` 一處改到位，涵蓋專案／我的 IP／電子商店／活動；訂單與取貨兩頁未用共用元件、各自的 `.ord-list-controls`／`.pk-list-controls` 同步改成 `var(--sp-40)`。
+- **待裁決**：`.ord-status-row`／`.pk-status-row` 是 `.list-status-row` 的頁內同構複本（同樣 `flex／align-items:center／gap:12px／flex-wrap`），這輪只同步了間距、沒有合併。已記入 `STYLE-DECISIONS.md`。
+- 驗證：六頁實測——e-shop 縮圖 76×76／間距 40px；my-ip 76×76；pickup 76px QR 晶片；orders 無縮圖列高不變；events 縮圖放大不裁切；`check_ds_sync.py` 全 PASS。
+
+## 2026-07-26 · 專案列表縮圖放大三分之一＋列上下留白加大；周湯豪三張封面裁成正方形（B 反饋導入）
+
+- **【B】** `ds-components/project-list.css`：`.project-list__image` 56px → **76px**（先照使用者指示放大兩倍成 112px，同輪回饋「太大，加三分之一即可」，落在 56×4/3≈75、取 4 的倍數 76），桌機／≤1180px／≤760px 三組 `grid-template-columns` 的第一軌同步；`--placeholder` 的類型 icon 20px → 28px 等比跟上。
+- **【B】** 同檔 `.project-list__row` 上下留白 `--sp-14` → **`--sp-20`**（使用者：「上下的 padding 要再大一點」），`min-height` 88px → **116px**（76 縮圖 ＋ 上下 20）。
+- **【B/素材】** `images/projects/` 三張周湯豪封面依使用者框選裁成正方形（原 16:9，保留框選側、取最大正方形）：`nick-baipa.jpg` 1200×675 → 675×675（取右）、`nick-r2.jpg` 1000×562 → 562×562（取右）、`nick-lwh.jpg` 1100×618 → 618×618（取左）。三張同時餵給列表方形縮圖與 `.project-card__cover`（16:9，`object-fit: cover` 取正方形中央帶），原圖可從 git 還原。
+- 同步 `design-system.md` §4.28 與元件表的 56px／88px 描述。
+- 驗證：實測 `.project-list__image` 76×76、三張圖 naturalSize 皆為正方形；`check_ds_sync.py` 全 PASS（餘 WARN 皆為既有存量）；`bump_ver` → `20260726f`。
+
+## 2026-07-26 · sony 版「我的項目」改吃真專案資料＋整列可點進該專案的我的收益；修三個篩選下拉開錯邊（B 反饋導入）
+
+- **【B/資料】** `earnings-sony.html` 的「我的項目」6 列由寫死的假名稱（塑膠花／Tr33: 有綫耳機…）改為**依 persona 從 `js/projects-store.js` 動態渲染**（`renderMyItems()` 於 `partials/finance-overview.js`，取當前 persona 的前 6 個專案）。第一版先換成 default persona 的港片專案、仍寫死在 markup，使用者指出「周湯豪 user 下也要換成他的假資料」後改為動態：default → 我要衝線／陳松伶精選／旺角狙擊／海上霸姬鄭一嫂／龍虎門外傳：九龍夜行／深水埗的月光；nick（周湯豪）→ 我的i／為了你／走三關／LOVE RAGE HOPE／你說的都對 MV／REALIVE。身分（發起／支持／影評人）、收益類型與金額用固定示意值 `SLOTS` 依序套用，讓上方類型 chips 與身分篩選維持可用；金額與存入總和不動。
+- **【B】** 類別欄與篩選改用 store 的 **cat 代碼**（`movie`／`song`／`album`／`mv`…）比對：`data-fin-cat` 帶代碼、類別下拉改由 JS 依「這批列實際出現的類別」重建（default 顯示電影／專輯／連續劇／短劇；nick 顯示單曲／專輯／MV），換 persona 不會出現對不上的選項。顯示文字仍走 i18n（新增 `fin.cat.mv`／`event`／`merch`／`doc`／`custom` 五個鍵）。sony 頁補載 `js/projects-store.js`。
+- **【B】** 整列可點 → `project-detail.html?id=<專案>#earnings`，直接落在該專案的「我的收益」分頁。**`data-fin-go` 屬性原本就寫在 markup 上、但從來沒有接線**（列點了沒反應），本輪在 `partials/finance-overview.js` 補上事件委派（列內若有連結／按鈕則讓它自己處理，不搶走）。
+- **【B/修 bug】** 「全部類別／全部身分／迄今」三個 `details.dropdown` 缺 `dropdown--left`，面板預設 `right:0` 對窄觸發器會往左溢出到卡片外（使用者截圖：展開後是一塊空白框）。三個都補上 `dropdown--left`，改為對齊觸發器左緣。
+- **依賴說明**：港片那批專案屬 `projects-store` 的 **default persona**（Maya Chou 世界觀），與 sony deck 的內容世界一致；cheat code 切到 `nick` persona 時這些 id 查無資料、會退回該 persona 的第一個專案（store 現行行為，非本輪引入）。
+- **【B/新增共用樣式】** 列名稱前面加 36px 方形縮圖（取專案的 `poster || cover`；無圖時留 muted 方塊）。這個「表格列首小縮圖」promote 進共用 `ds-components/table.css`：`.ztor-table__media`（內層 flex wrapper，gap `--sp-10`）＋ `.ztor-table__thumb`（36px、`--radius-sm`、muted 底、1px 邊框、`object-fit:cover`），尺寸沿用 admin IP Bank 表格自有的縮圖規格、改為任何 `.ztor-table` 都能用。DS 三件套同步（`table.css` 註解＋`design-system.html` class 表＋`design-system.md` 條目）。
+- **【D/踩雷紀錄】** flex **不可**直接放在 `<td>`（第一版把 `display:flex` 加在 `.ztor-table__feature` 上）：儲存格會脫離表格排版，`table-layout:fixed` 的欄寬因此失效——實測第一欄由 409px 塌成 180px、四欄總和 700 ≠ 表寬 932，長名稱（LOVE RAGE HOPE）被迫折行。改成內層 wrapper 後欄寬恢復 409/223/223/74（總和＝表寬）、名稱單行。此限制已寫進 `table.css` 註解與 DS 兩份文件，避免再犯。
+- 驗證：下拉展開與觸發器左緣對齊（left 297 = 297）、選項只列實際類別；兩個 persona 各自渲染正確（nick 6 列全為周湯豪作品、類別下拉＝單曲／專輯／MV；default 6 列為港片專案）；nick 下按類別「專輯」篩出 2 筆、計數同步；點列實測 default→`?id=pirate-queen#earnings`（標題 海上霸姬鄭一嫂）、nick→`?id=nick-lrh#earnings`（標題 LOVE RAGE HOPE），皆落在「我的收益」分頁；console 無錯；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260726k`。
+
 ## 2026-07-25 · ≤900px 導覽收進 burger（新增 `.app-nav-burger`，全站 shell）（B 反饋導入）
 
 使用者指出窄螢幕下側邊欄那一整排選項擠成一團（10 幾個項目換行、「通知與待辦」被壓成直排）、要收進 burger。原本 ≤900px 的做法是把 rail 攤成橫排（`shared.css` 舊註解自己寫著「full drawer/hamburger is R 2.1.x」），topbar 模式則更糟——直接 `display:none` 藏掉 nav、窄螢幕**完全沒有導覽入口**。本輪把 burger 補上，兩個 shell 一起處理。
