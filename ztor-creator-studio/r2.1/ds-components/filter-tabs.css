@@ -97,3 +97,33 @@
   background: transparent;
   color: var(--primary);
 }
+
+/* ── .filter-tabs--source — opt-in variant: the active pill takes the COLOUR OF
+     ITS OWN ITEM, passed per-button as `--dot` (e.g. style="--dot:var(--chart-2)").
+     Same soft-tint recipe as --brand (12% fill + coloured label), but instead of
+     one brand orange each item tints with the colour it represents, so the
+     selection matches the series it filters. Built for Earnings F5 revenue-source
+     filter, where each source already owns a colour shared by its chart line and
+     the "Revenue by source" list dot. Set --dot on the item that has no colour of
+     its own (e.g. "All") to the brand orange. (2026-07-25)
+
+     Anatomy adds an optional leading colour dot:
+       .filter-tabs__item[style="--dot:…"]
+         .filter-tabs__dot   (8px colour dot, reads --dot)
+         <text>
+     ── */
+.filter-tabs__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--dot, var(--muted-foreground));
+  display: inline-block;
+  flex: none;
+}
+.filter-tabs--source .filter-tabs__item--active {
+  background: color-mix(in srgb, var(--dot, var(--primary)) 12%, var(--card));
+  color: var(--dot, var(--primary));
+}
+.filter-tabs--source .filter-tabs__item--active:hover {
+  background: color-mix(in srgb, var(--dot, var(--primary)) 18%, var(--card));
+}

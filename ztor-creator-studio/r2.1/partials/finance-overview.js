@@ -155,8 +155,11 @@
   if (legend) {
     legend.querySelectorAll('[data-fin-type]').forEach(function (chip) {
       chip.addEventListener('click', function () {
-        legend.querySelectorAll('[data-fin-type]').forEach(function (c) { c.classList.remove('chip--active'); });
-        chip.classList.add('chip--active');
+        legend.querySelectorAll('[data-fin-type]').forEach(function (c) {
+          var on = c === chip;
+          c.classList.toggle('filter-tabs__item--active', on);
+          c.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
         state.type = chip.getAttribute('data-fin-type');
         /* 圖表聚焦：'all' 全亮；有線的類型只亮該線；無線的類型全暗 */
         if (chart) {

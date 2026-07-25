@@ -4,6 +4,30 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-25 · 收入來源篩選改 filter-tabs、選中色跟該來源色（新增 `--source` 變體）（B 反饋導入）
+
+使用者裁決（看過 A／B 兩案 demo 後選 A）：收入來源篩選的選中狀態改成電子商店那排 `filter-tabs` 的做法（淡色底 pill），但選中色**跟著該來源的點點顏色**走、「全部」用品牌橘。另指定授權收入的紅要改用電子商店「急需補貨」徽章那個紅（全站紅標籤只有這一個配色）。
+
+- **【B/新變體】** `filter-tabs.css` 新增 `.filter-tabs--source`：active pill 以該項自己的顏色上色（`color-mix(--dot 12%, --card)` 淡底＋同色標籤，hover 18%），顏色由每顆按鈕以 inline `--dot` 傳入；同時新增 `.filter-tabs__dot`（8px 前置色點，讀同一個 `--dot`）。本身無色的項目（「全部」）`--dot` 給 `--primary`。配方與既有 `--brand` 同源（12% 淡底＋同色字），差別只在「一色 vs 每項自己的色」。
+- **【B】** earnings 的來源篩選由 `.chip-group` ＋ `.chip` 換成 `nav.filter-tabs.filter-tabs--source` ＋ `.filter-tabs__item`（`role="tablist"`／`aria-selected`），色點改用 DS 的 `.filter-tabs__dot`，頁面級自刻 `.src-dot` 退場。active 切換改在來源篩選的 JS 內處理（原本靠全頁通用 `.chip-group` handler 切 `.chip--active`，換元件後不再適用）。
+- **【B/色彩】** 授權收入由 `--destructive`（#E7000B，深、小字不易讀）改 **`--status-error`**（#FF3D47，＝`badge--error`／急需補貨徽章用色），三處同步：chip 色點、趨勢線＋面積填色、右側「收入來源分布」清單色點。earnings 其餘 4 處 `--destructive` 是交易明細的負數金額（提款／退款），語意不同、不動。
+- **【D】** DS 三件套同步：`filter-tabs.css` 變體註解＋`design-system.html` 新增「Filter tabs · source」demo 卡（All／共創藍／OTT 綠／授權紅 各 default+active 對照）與 class 表一列＋`design-system.md` Filter tabs 條目補述。
+- **待裁決（已回報使用者）**：9 個來源目前有兩組深色主題下**完全同色**——OTT 版稅與 IP 版稅皆 `#4ADE80`、共創計畫與平台／串流皆 `#5896F3`。改成彩色選中後兩組 pill 會長得一樣；處理需連圖表線與來源清單色點一起改，使用者尚未裁決。
+- **【B】Deck for Sony 版同步**：`earnings-sony.html` 的存入類型篩選（`data-fin-legend`）同樣由 `.chip-group`＋`.chip` 換成 `nav.filter-tabs.filter-tabs--source`＋`.filter-tabs__item`（`role="tablist"`／`aria-selected`），8 個類型各帶自己的 `--dot`（共創橘／OTT 藍／佣金綠／預付金黃／授權紫／獎金・派對灰），色點改用 DS `.filter-tabs__dot`；`partials/finance-overview.js` 的 active 切換由 `chip--active` 改 `filter-tabs__item--active`＋同步 `aria-selected`。頁面級 `.fin-legend` 收斂成只留外距（排列交給 `.filter-tabs`）；`.fin-dot` 保留給「如何運作」彈窗的類型說明列，「即將推出」那排維持 `.chip--static` 的 disabled 灰。
+- 驗證（sony）：起站實測——選 OTT＝淡藍底＋藍字、active 與 `aria-selected` 互斥、圖表聚焦 `data-focus=ott`、我的項目表同步篩成 4 列、即將推出仍為 disabled 灰；console 無錯。
+- 驗證：起站實測——選授權收入＝淡紅底＋#FF3D47 紅字（與急需補貨徽章同色）、選全部＝淡橘底＋橘字、切換時 active class 與 `aria-selected` 正確互斥、趨勢線與清單色點同步為新紅；console 無錯；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260725zv`。
+
+## 2026-07-25 · 周湯豪組合包改「選物四件組」＋帽/鞋補成可單買商品（B 反饋導入）
+
+使用者指定參考公開端 `shop-item.html?id=fan-selection-set`（實際內容：**影迷選物四件組**，NT$2,760／原價 3,320，四件＝觀影社 Logo Tee／刺繡 Logo 老帽／棉質束口棉褲／帆布低筒鞋，每件各自挑尺寸顏色），把該組合加進周湯豪的組合包，**並把裡面的衣／帽／褲／鞋拆成單一商品、狀態都設為販售中**；追加指示「用『祝你好命 衣褲二件組』做替換、名稱也改一下」＝拿既有那筆二件組的位子換成這個四件組並改名。
+
+- **【B/資料】** `js/products-store.js` 的 `BUNDLES_NICK`：原「祝你好命 衣褲二件組」（Tee＋褲 2 件／$88）改為 **「祝你好命 選物四件組」**（Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件／$178／16 組），比照參考站「組合價低於單買加總」（單買 38+32+58+78＝206，省 $28）。
+- **【B/資料】** `P_NICK` 新增兩個單品，狀態皆 `live`：**祝你好命 刺繡 Logo 老帽**（$32／4 色）、**祝你好命 紅包主題低筒球鞋**（$78／US 8–11）。連同既有的 `tee`（$38，live）與 `pin`＝祝你好命 束口工裝褲（$58，live），四件在 e-shop 商品分頁都可單買且都是販售中。
+- **【B/圖】** `nick-nike.jpg` 實際是「祝你好命」紅包主題聯名球鞋實拍，原本被掛在**褲子**上，改掛回**鞋子**；帽子用既有 `cap.webp`。褲子改用 `socks.webp` 佔位（站上無棉褲實拍，同為下身著用品），**已在檔內註記 ⚠ 待替換**。
+- **【D】** `e-shop.html` 新增兩列商品列（`?id=cap`／`?id=shoes`，`data-status="live"`＋販售中徽章），default persona 對應資料一併補進 `P_DEFAULT`（Logo cap · six-panel／Canvas low-top），否則這兩列在 default 下點編輯會查無商品；`js/i18n.js` 補 `e-shop.rowCap.*`／`e-shop.rowSho.*` 共 8 鍵（依站上逐列 key 慣例）。
+- **範圍**：只動示意資料與列表列，未改商品狀態機、費率或補貨邏輯。狀態徽章沿用既有的 `patchEshopList()` STATUS_MAP 自動由 store 的 `status` 推導，未另外寫死。
+- **驗證**：本機切 nick persona 實測 e-shop——商品分頁四件皆顯示「販售中」（Tee $38／老帽 $32／束口工裝褲 $58／球鞋 $78），規格副標分別為尺寸(S/M/L/XL)、顏色(霧灰/墨黑/海軍藍/米白)、顏色×腰圍、尺碼(US 8–11)；組合分頁顯示「祝你好命 選物四件組 · Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件 · $178 · 販售中」。console 無錯，`check_ds_sync.py` 全 PASS。
+
 ## 2026-07-25 · 專案詳情分頁矩陣調整（版稅適用範圍／製作進度／收益備份退場）＋周湯豪假資料補齊（B 反饋導入 · C 撤除）
 
 使用者盤點「階段 × 類型 × 類別」三軸下詳情頁該有哪些分頁後的一批裁決。
@@ -51,6 +75,29 @@
 - **【D】** `project-detail.html` 補掛 `tag-input.css`；`js/i18n.js` 加 `project-detail.details.sub/synopsis-ph/cast-add/cast-role/cast-name/faq-add/faq-q/faq-a/language/tags-ph/tags-suggest` 11 鍵（舊 `*-val`／`done` 摘要鍵保留未刪、無害）。
 - **驗證**：本機 `?id=f-i-am-speed` 切「關於專案」實測——簡介＝專案簡介、演職 6 列、FAQ 4 則、年齡分級/語言 2 欄、標籤 3 chip＋建議，console 無錯。`check_ds_sync.py` 全 PASS。
 
+## 2026-07-25 · 我的 IP 改電子商店同款工具列＋兩段清單合併為「來源」篩選（B 反饋導入）
+
+使用者截圖圈選並指定：(1) 改得和電子商店的設計一樣；(2) 把「在 ZTOR 上產出的 IP」「ZTOR 之外的 IP」兩段合併成用分類篩選、預設全部，並在 IP 名稱上加來源標記。
+
+- **【B/版面】** `my-ip.html` 改用 e-shop 兩層工具列：上排 `.list-toolbar`（自有／租入底線 `tabs--underline-short` 在左｜`.list-toolbar__actions`＝收合搜尋 `search-collapse` ＋匯入 waterfall（改 upload 圖示鈕）＋「＋新增 IP」primary），下排 `.list-status-row` 的 `.filter-tabs--brand` 來源藥丸。原 page-intro 的兩顆按鈕移入工具列（比照 e-shop／events／IP 市場）。
+- **【B/資訊架構】** 兩段 `<h3>` 標題分組（「在 ZTOR 上產出的 IP · 5」「ZTOR 之外的 IP · 3」）退場，清單**合併成單一 `.product-list`**；每列加 `data-source="ztor|external"`，改由來源 filter-tabs 篩選（**全部／Ztor 產出／站外登錄**，預設全部、各帶即時計數，隨搜尋重算）。i18n 鍵 `my-ip.section.on-ztor`／`.outside-ztor` 移除。
+- **【B/命名】** 來源命名採 **「Ztor 產出」／「站外登錄」**（en: Made on Ztor／Registered externally）：兩者字數對稱、語意精準——一個是**在站上產出**（專案上架時自動建立 IP 紀錄），一個是**把站外既有權利登錄進來**；且不必每列重複品牌名。名稱後加 `badge--neutral` 來源徽章（比原創／衍生／驗證中的彩色徽章安靜一階，不搶既有型別徽章）。
+- **【B/內容】** 補齊示例列到 **8 筆（站內 5＋站外 3）**：原兩段標題宣稱 5＋3、實際只寫了 3＋1，計數與 KPI「自有 8」對不上。新增 Coastline 演出視覺／Harbour Nights 美術手冊（站內）、Northline 試聽母帶（站外·已驗證，示範站外也能有租金與收入）／Coastline zine vol.01 插畫（站外·待驗證）。i18n 補 en＋zh。
+- **【B/功能】** 新增收合式搜尋（比照 e-shop／IP 市場）與「無符合」空狀態＋一鍵清除；頁尾計數改為「顯示 {總數} 筆中的 {目前} 筆」隨篩選即時更新。租入分頁無示例列，切過去時一併隱藏來源篩選列。
+- **【B/元件】** `product-list.css` 的 `--ip` 變體新增 `.product-list__title` 可換行規則（flex-wrap、取消 nowrap／ellipsis）：名稱列現在帶兩顆徽章，基礎的單行截斷會把第二顆切成「…」。**僅限 `--ip`**，orders／pickup／e-shop 維持單行截斷。欄寬未改（一度加寬到 260px 造成整頁水平溢出，已回退為原本的 220px，改由換行解決）。
+- **範圍**：呈現層與示例資料，未動權利／版稅／市場開關語意與任何商業規則。
+- **驗證**：1440px 實測——來源計數 全部 8／Ztor 產出 5／站外登錄 3，點站內→5 筆、站外→3 筆、回全部→8 筆；搜尋「northline」→1 筆且計數同步變 1／0／1；無結果顯空狀態、清除後回 8 筆；名稱列 0 截斷、列高一致 89px、無水平溢出。`check_ds_sync.py` 全 PASS、`bump_ver` 已跑。
+- **修訂（同日）**：來源命名「站內產出」改「**Ztor 產出**」（使用者指定），英文 `Made on Ztor` 不變。
+- **修訂（同日，使用者截圖圈選）**：來源改**純文字**、移到**名稱正上方**（`.product-list__source`，比照站上既有的大寫小字 eyebrow 語彙——kpi__label／rent-block__label 同一套），不再是徽章；類型（原創／衍生／驗證中）**獨立成一欄**（新增 Type 表頭＋`.product-list__type`），不再擠在名稱旁邊。名稱欄因此收窄回單純文字寬度（`minmax(180px,1.1fr)`），新增 Type 欄固定 92px。站外登錄的列在類型欄顯示 `—`（本來就沒有原創／衍生分類）。
+
+## 2026-07-25 · 我的 IP 移除分頁下方的 info-banner（C 撤除）
+
+使用者在畫面上圈選該說明條並指定移除。
+
+- **【C/撤除】** `my-ip.html` 移除 `我的 IP／租入` 分頁下方的 `.info-banner`（原文：「專案上架時會自動建立 IP 紀錄。要登錄 Ztor 之外既有的權利，請用**新增 IP**——之後便可上架到市場。」），原位置留註解。該頁已無其他 `.info-banner` 消費者，一併移除本頁的 `info-banner.css` 連結；**元件本身保留**（earnings／project-detail／register-ip 等 10+ 頁仍在用）。孤兒 i18n 鍵 `my-ip.info-banner`（en＋zh）一併刪除。
+- **範圍**：只動 my-ip 的這一條說明；分頁計數、清單、空狀態與其餘版面未動。
+- **驗證**：`check_ds_sync.py` 全 PASS；`bump_ver` 已跑；瀏覽器實測見回報。
+
 ## 2026-07-25 · IP 市場篩選區改用電子商店同款 list-toolbar＋filter-tabs、清單補到 10 筆、移除 R 2.1.1 佔位（B 反饋導入）
 
 使用者截圖指定「這些做得和電子商店的 UI 一樣」，並要求刪掉「完整列表、排序與儲存搜尋」佔位塊、補更多假資料。比照 2026-07-24 活動頁的同款轉換，全部重用既有元件、無新增元件。
@@ -61,7 +108,7 @@
 - **【C/撤除】** 移除「完整列表、排序與儲存搜尋」的 R 2.1.1 建置進度 `empty-stub`（使用者指定；清單已補齊，佔位說明不再需要），原位置留註解說明。
 - **【B/封面接線】** 十張卡的封面加上 `<img class="ipm-card__cover-img" src="images/ip/<slug>.jpg" onerror="this.remove()">`：**檔案放進 `images/ip/` 就自動鋪滿，沒放則移除 `<img>` 退回漸層＋IP 名佔位**，不會出現破圖。**本 repo 不內建任何版權素材**——角色圖／劇照／藝人照由使用者自備放入（站台會部署到公開 Vercel 網址與共用 GitHub repo）。
 - **【B/素材】** 使用者自備並指定放入 8 張封面圖至 `images/ip/`（哈利波特／A-Lin／佩佩豬／寶可夢／五月天／七龍珠／超級瑪利歐／葉問），檔名正規化為 IP slug（原檔含空白與 `é`，公開網址會有編碼問題）；ip-detail 的 hero 封面同步接上哈利波特。**封面一律「等比滿版」**（使用者裁示）——全部用預設 `object-fit:cover`，當日一度新增的 `--contain` 變體同日退場留墓碑；Pokémon 由方形 wordmark logo 換成使用者提供的直式主視覺，改用換素材而非改 fit 解決裁切。無檔的 2 張（戴愛玲／我是歌手）維持 `onerror` 退回漸層佔位。**素材為使用者提供的第三方版權／商標／肖像資產、ztor 未取得授權，公開發布前建議替換——詳見 ASSUMPTIONS UIA-088 追記。**
-- **【B/內容】** 活動形式示例兩度更換：先由「超級星光大道 Super Idol（金星娛樂）」改「我是歌手 Singer（湖南衛視）」，使用者再問「是否有香港或台灣的活動 IP」後定案為「**簡單生活節 Simple Life（中子創新 Neowave）**」——台灣原生的音樂／生活風格節慶品牌，本身就有向外授權辦節的實例，比電視選秀更貼「活動形式授權」語意，也與站上其他港台 IP（葉問／五月天／A-Lin／戴愛玲）同一市場脈絡。i18n `card10.meta` 同步。
+- **【B/內容】** 活動形式示例數度更換，最終由使用者指定為「**請世界吃桌 Have A Seat**」（台灣辦桌飲食文化活動）：沿革為 超級星光大道 → 我是歌手（使用者要求換別的活動）→ 簡單生活節（使用者問「是否有香港或台灣的活動 IP」）→ 請世界吃桌（使用者指定）。i18n `card10.meta` 同步；封面 `images/ip/have-a-seat.jpg` 待使用者放入，未放前由 `onerror` 退回漸層佔位。
 - **範圍**：呈現層重構＋示例資料，未動價格／版稅／名額／狀態語意與商業規則；空狀態三態（帳號無資料／冷啟動／無搜尋結果）維持不變。
 - **驗證**：瀏覽器實測——類型計數 全部10／故事3／音樂2／人物1／品牌3／活動1，狀態 可租用5／競標3／獨家2；點「音樂」→2 筆、再點「可租用」→1 筆、搜尋「任天堂」→1 筆、清空回 10 筆；進階面板開合正常；`check_ds_sync.py` 全 PASS、`bump_ver` 已跑。
 
