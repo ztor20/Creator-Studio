@@ -3,12 +3,22 @@
 # 在 vault 的 site/ 編輯 → 同步進 monorepo 的 ztor-creator-studio/ 子目錄 → 開 PR。
 # 用法: ./collab.sh "簡短變更說明"
 #
-# 背景（2026-06-18 起）：站點搬進 monorepo ztor20/Creator-Studio（git subtree），
-#   站內容位於該 repo 的 `ztor-creator-studio/` 子目錄；舊 repo ztor20/ztor-creator-studio 已封存（唯讀）。
-#   本機 vault 的 site/ 仍是你編輯的工作目錄，但因層級對不上（site/ 根 = monorepo 子目錄）不能直接 push，
-#   故本腳本改成：clone monorepo → 把 site/ 的「git 追蹤檔（含未提交編輯）」同步進子目錄 → commit → push → 開 PR。
-#   ⚠ 約定：所有人都在 vault site/ 編輯、走本腳本發版；不要直接在 monorepo 的 ztor-creator-studio/ 內改檔，
-#     否則本腳本的「清空再灌」同步會覆蓋掉那些直接改動。
+# 背景（2026-06-18 起）：站點在 monorepo ztor20/Creator-Studio 的 `ztor-creator-studio/`
+#   子目錄；本機 site/ 的 repo 根對應該子目錄，層級對不上所以不能直接 push。
+#
+# 2026-07-26 改寫（舊版備份在 collab-legacy.sh）——修掉「兩人並行會靜默還原對方工作」：
+#   舊版直接 clone 最新 main、清空子目錄、灌入本機整包快照，再從最新 main 開分支。
+#   因為分支永遠是 main 的線性子代、沒有分歧點，git 永遠不會報衝突：本機任何一個
+#   落後的檔，在 PR 裡都長成「你刻意改成這樣」，merge 後對方已合併的改動就沒了。
+#
+#   現在改成：發版前**強制**先跑 ./pull.sh 做真正的 git merge，把 monorepo 最新內容
+#   合進本機（撞到同一行會停下來要人解）。合併成功後，本機 = 遠端 ⊕ 本機改動，
+#   此時再送快照就不可能還原掉別人的東西。
+#   若 pull 期間有人又合併了，我們的分支基準會落後於 main，GitHub 會做真三方比對
+#   並標出衝突——最後那道窗口由 GitHub 自己擋。
+#
+#   ⚠ 約定不變：所有人都在各自的 site/ 編輯、走本腳本發版；不要直接改 monorepo 的
+#     ztor-creator-studio/ 子目錄，否則會被同步覆蓋。
 #
 # 認證：讀中央倉 ~/AI/cfg/personal.env 的 ZTOR20_GH_TOKEN（需對 Creator-Studio 有寫入權）。
 #   repo 內不留明文 token。
@@ -26,10 +36,10 @@ fi
 
 SITE="$(git rev-parse --show-toplevel)"   # vault 的 site/ 工作目錄（本機 git repo）
 
-# 認證來源
 # 中央倉：優先新路徑 ~/AI/cfg/，找不到再退回舊路徑（相容尚未搬遷的機器）
 CENTRAL="$HOME/AI/cfg/personal.env"
 [ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
+# shellcheck disable=SC1090
 [ -f "$CENTRAL" ] && source "$CENTRAL" || true
 TOKEN="${ZTOR20_GH_TOKEN:-}"
 if [ -z "$TOKEN" ]; then
@@ -37,6 +47,21 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 AUTH="https://x-access-token:${TOKEN}@${HOST}/${REPO_SLUG}.git"
+
+# ── 0) 強制先同步：這是「不會洗掉別人工作」的唯一保證，不可跳過 ──
+echo "→ 發版前先同步 monorepo（真 git merge）…"
+if ! "$SITE/pull.sh"; then
+  echo ""
+  echo "✗ 同步沒過，發版中止。先把上面列出的衝突解掉再重跑 collab.sh。"
+  exit 1
+fi
+
+# 同步後本機必須沒有共同祖先以外的落差；再確認一次 mono/main 已是祖先
+if ! git -C "$SITE" merge-base --is-ancestor refs/remotes/mono/main HEAD 2>/dev/null; then
+  echo ""
+  echo "✗ 同步後 monorepo 仍不是本機的祖先——不要發版，這代表橋接有問題。"
+  exit 1
+fi
 
 # 暫存 clone，結束時清掉
 WORK="$(mktemp -d)"
@@ -52,7 +77,8 @@ if [ ! -d "$DEST" ]; then
 fi
 
 # 2) 把 site/ 的「追蹤檔（含未提交編輯）」同步進子目錄。
-#    清空子目錄再灌，讓 git 正確反映 新增／修改／刪除；未追蹤檔（如 e-shop-test.html、fonts/）不會被帶上。
+#    清空子目錄再灌，讓 git 正確反映 新增／修改／刪除；未追蹤檔（scratch、fonts/）不會被帶上。
+#    ——這一步之所以安全，前提是上面第 0 步已經把遠端改動合進本機了。
 echo "→ 同步 site/ 追蹤檔 → ${SUBDIR}/ …"
 find "$DEST" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 TREEISH="$(git -C "$SITE" stash create || true)"
@@ -66,6 +92,15 @@ if [ -z "$(git status --porcelain)" ]; then
   exit 0
 fi
 
+# 3.5) 體檢：這次發版會刪掉／還原多少東西？純新增或修改是常態，大量刪除要人看一眼。
+
+if [ -n "$(git diff --name-only --diff-filter=D -- "$SUBDIR")" ]; then
+  echo ""
+  echo "  ⓘ 本次發版會刪除以下檔案（確認是刻意的）："
+  git diff --name-only --diff-filter=D -- "$SUBDIR" | sed 's/^/     - /'
+  echo ""
+fi
+
 # 4) 開分支 → commit（固定身分 lern2317）→ push → 開 PR
 BR="edit/$(date +%Y%m%d-%H%M%S)"
 git switch -c "$BR" >/dev/null
@@ -73,10 +108,11 @@ git add -A
 git -c user.name="lern2317" -c user.email="lern2317@gmail.com" commit -q -m "$MSG"
 git push "$AUTH" "$BR" >/dev/null 2>&1
 PR_URL="$(GH_TOKEN="$TOKEN" gh pr create --repo "$REPO_SLUG" --base main --head "$BR" \
-          --title "$MSG" --body "由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。" 2>&1 | tail -1)" \
+          --title "$MSG" --body "由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。" 2>&1 | tail -1)" \
   || PR_URL="(PR 自動建立失敗，手動開: https://github.com/${REPO_SLUG}/pull/new/${BR})"
 
 echo ""
 echo "✓ 分支 ${BR} 已推上 ${REPO_SLUG}"
 echo "  PR: ${PR_URL}"
 echo "  → 在 GitHub 審查後合併進 main（上線最後關卡在使用者手上）。"
+echo "  → 若 GitHub 顯示有衝突，代表你發版期間有人又合併了：重跑 collab.sh 即可。"
