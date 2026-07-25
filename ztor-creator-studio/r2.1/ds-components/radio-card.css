@@ -75,3 +75,24 @@
 .radio-card__text { display: flex; flex-direction: column; gap: 3px; text-align: left; min-width: 0; }
 .radio-card__title { font-weight: var(--fw-medium); }
 .radio-card__sub { font-size: var(--fs-12); font-weight: var(--fw-regular); color: var(--foreground-muted); line-height: var(--lh-comfy); white-space: normal; }
+
+/* 3-up 變體（建立專案的專案類型 picker）：預設 radio-cards 為 2 欄，本變體改 3 欄等寬。
+   雙 class 提權（0,2,0）以蓋過 .segmented.radio-cards 的 grid 設定。已選＝右上小橘點（Q13）
+   ＋卡底提亮（使用者裁示 2026-07-25，讓流程內選取更明顯）。 */
+.radio-cards.radio-cards--3 { grid-template-columns: repeat(3, 1fr); }
+/* 已選卡底提亮——僅流程內表單（`--3` 不含 `--gate`）；閘門無持久選取態、不套。 */
+.radio-cards--3:not(.radio-cards--gate) .segmented__btn--active { background: color-mix(in srgb, var(--foreground) 6%, var(--accent)); }
+
+/* --gate 變體（建立專案閘門，Q28 2026-07-24）：卡內加頂部引導圖示（`.radio-card__lead`）、
+   內容縱向堆疊（圖示→標題→描述），標題／描述間距加大；radio 點維持右上角（::after 絕對定位）。
+   僅閘門使用，流程內表單（純標題）不套。 */
+.radio-cards--gate .segmented__btn { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--sp-10); position: relative; }
+.radio-cards--gate .segmented__btn::after { position: absolute; top: var(--sp-14); right: var(--sp-16); margin-top: 0; }
+.radio-cards--gate .radio-card__lead { width: 24px; height: 24px; color: var(--muted-foreground); }
+/* 閘門是「選了就進下一步」的 picker，無持久選取態（Q28，對齊使用者兩張截圖：
+   default＝無點、hover＝右上橘點）：resting 覆蓋掉 base 的已選橘點＝完全無指示點；
+   hover 任一卡時右上（`::after`）才冒橘點。 */
+.radio-cards--gate .segmented__btn--active::after { background: none; }
+.radio-cards--gate .segmented__btn:hover { background: color-mix(in srgb, var(--foreground) 6%, var(--accent)); }   /* hover 底色比 Q9 --accent 亮一點（閘門專用，使用者裁示） */
+.radio-cards--gate .segmented__btn:hover::after { background: radial-gradient(circle at center, var(--primary) 0 3px, transparent 3.5px); }
+.radio-cards--gate .radio-card__text { gap: var(--sp-6); }

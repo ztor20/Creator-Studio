@@ -844,7 +844,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* Gate — 建立流程進入前的專案類型選擇畫面（D149，2026-07-24）：與 [data-sheet] 分步表單互斥（JS 切 .hidden）。復用 .wizard__sheet 白卡底＋圓角，僅加內容置中。 */
 .wizard__gate { justify-content: center; }
 .wizard__gate-inner { width: 100%; max-width: 760px; margin-inline: auto; padding: var(--sp-32) var(--sp-24); }
-.wizard__gate-back { margin-bottom: var(--sp-24); margin-inline-start: calc(var(--sp-12) * -1); }
+.wizard__gate-foot { display: flex; justify-content: center; margin-top: var(--sp-32); }
 .wizard__top {
   position: sticky;
   top: 0;
@@ -1022,9 +1022,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 
 /* ---------- IP detail page ---------- */
+/* 2026-07-25（Q31）：由「封面｜內容｜租用側欄」三欄改為兩欄——封面獨佔左欄，
+   其餘全部（徽章／標題／KPI meta／租用區）走右欄。原 280px 側欄會把內容欄擠窄
+   （標題折行、meta 塌成單欄），且封面較高時側欄旁留死空間。
+   封面寬 200（3:4→267 高）刻意貼近右欄文字的自然高度，兩欄底部相近不留空洞。 */
 .ip-hero {
   display: grid;
-  grid-template-columns: 280px 1fr auto;
+  grid-template-columns: 200px minmax(0, 1fr);
   gap: var(--sp-24);
   padding: var(--sp-24);
   border-radius: var(--radius-md);
@@ -1033,7 +1037,8 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   margin-bottom: var(--sp-24);
 }
 .ip-hero__cover {
-  width: 100%; aspect-ratio: 3/4;
+  position: relative; overflow: hidden;
+  width: 100%; aspect-ratio: 3/4; align-self: start;
   border-radius: var(--radius-md);
   background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
   display: grid; place-items: center;
@@ -1045,6 +1050,29 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   padding: var(--sp-16);
   text-align: center;
 }
+/* Real cover art overlays the gradient placeholder when present (empty in static
+   HTML → gradient + IP name shows through; add <img> → art fills). object-fit:cover
+   matches the site-wide cover convention (project-card__cover-img). */
+.ip-hero__cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* IP Market card cover (ip-market.html · spec 5.1.3) — promoted from inline gradient
+   divs so the three listing cards share one cover treatment and can carry real cover
+   art. Same gradient placeholder as .ip-hero__cover; add .ipm-card__cover-img to fill. */
+.ipm-card__cover {
+  position: relative; overflow: hidden;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
+  display: grid; place-items: center;
+  color: var(--primary-foreground);
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.5px;
+  padding: var(--sp-10);
+  text-align: center;
+}
+.ipm-card__cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .ip-hero__title {
   font-family: var(--font-display);
   font-size: var(--fs-32);
@@ -1053,14 +1081,19 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   margin: var(--sp-6) 0 var(--sp-4);
 }
 .ip-hero__owner { color: var(--foreground-muted); font-size: var(--fs-14); margin-bottom: var(--sp-14); }
-.ip-hero__meta {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--sp-16);
-  margin-top: var(--sp-18);
-}
+/* ✝ tombstone · .ip-hero__meta（2026-07-25 退場，Q31）
+   IP hero 的四格事實列（版稅／起租費／租期／獨家）原本是自成一套的 auto-fit 網格＋
+   .meta-cell 純文字。使用者裁示改用站上既有的 bento ＋ kpi 磚（`.bento > .kpi.bento--span-3`），
+   與儀表板／收入管理等頁的指標列同一套讀法，不再為 hero 自建第二種事實列版型。
+   `.meta-cell` 本身保留——create-project 仍在消費。 */
+
+/* ✝ tombstone · .ip-hero__side（2026-07-25 退場，Q31）
+   280px 的租用側欄。移除原因見 .ip-hero 註解與 ds-components/rent-block.css：
+   租用內容改走 `.rent-block`、置於內容欄底部。 */
+
 .meta-cell { display: flex; flex-direction: column; gap: var(--sp-2); }
 .meta-cell__label { font-size: var(--fs-11); letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted-foreground); }
 .meta-cell__value { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-medium); letter-spacing: -0.3px; }
-.ip-hero__side { width: 280px; }
 .rental-card { padding: var(--sp-16); }
 .rental-card__total {
   font-family: var(--font-display);
@@ -1093,7 +1126,6 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 @media (max-width: 900px) {
   .ip-hero { grid-template-columns: 1fr; }
-  .ip-hero__side { width: 100%; }
 }
 
 /* 收益走勢圖例小圓點（我的收益分頁的類型 chips）。顏色由 inline var(--token) 給。 */
@@ -1170,6 +1202,73 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   .pd-hero__cover { max-width: 260px; }
 }
 
+/* ---------- Project detail · Showcase 直式相簿（沿用 .upload-assets ＋ .upload-tile--3x4）----------
+   比照商品詳情的圖片格：直式縮圖，hover 顯示「編輯／刪除」動作列（沿用 .upload-tile__actions/__act）。
+   這裡不掛 data-upload（不要互動上傳增強），故在 .pd-gallery 作用域補：定位、顯示縮圖、中和 is-filled
+   綠框、以及 hover 顯示動作列。「編輯」開方形裁切彈窗 #pd-edit-crop（下方 .pd-crop-edit）。 */
+.pd-gallery .upload-tile { position: relative; overflow: hidden; }
+.pd-gallery .upload-tile__thumb { display: block; }
+.pd-gallery .upload-tile.is-filled { border-color: var(--border); color: inherit; }   /* 圖已滿版，不套「完成綠框」 */
+.pd-gallery .upload-tile.is-filled .upload-tile__actions { display: flex; }
+.pd-gallery .upload-tile.is-filled:hover .upload-tile__actions,
+.pd-gallery .upload-tile.is-filled:focus-within .upload-tile__actions { opacity: 1; }
+/* 封面藥丸：疊在第一格左上；品牌橘＝主資產標示 */
+.pd-crop__badge {
+  position: absolute; top: var(--sp-8); left: var(--sp-8); z-index: 5;
+  padding: var(--sp-2) var(--sp-8); border-radius: var(--radius-md);
+  background: var(--primary); color: var(--primary-foreground);
+  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-medium);
+}
+
+/* ---------- 方形裁切彈窗（#pd-edit-crop 內容）----------
+   左：直式舞台＋可移動＋可縮放的方形選框（框外壓暗）；右：方形即時預覽。JS 在 project-detail.html。 */
+.pd-crop-edit { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start; margin-top: var(--sp-16); }
+.pd-crop-edit__stage {
+  position: relative; width: 100%; max-width: 260px; margin-top: var(--sp-8);
+  border-radius: var(--radius-lg); overflow: hidden; background: var(--input-surface);
+  touch-action: none; user-select: none;
+}
+.pd-crop-edit__img { display: block; width: 100%; height: auto; -webkit-user-drag: none; }
+.pd-crop-edit__box {
+  position: absolute; left: 0; top: 0; box-sizing: border-box;
+  cursor: move; touch-action: none;
+  --pd-crop-line: color-mix(in srgb, var(--foreground) 28%, transparent);
+  border: 2px solid var(--foreground);
+  background-image:
+    linear-gradient(var(--pd-crop-line) 0 0), linear-gradient(var(--pd-crop-line) 0 0),
+    linear-gradient(var(--pd-crop-line) 0 0), linear-gradient(var(--pd-crop-line) 0 0);
+  background-size: 100% 1px, 100% 1px, 1px 100%, 1px 100%;
+  background-position: 0 33.33%, 0 66.66%, 33.33% 0, 66.66% 0;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--background) 55%, transparent);   /* 框外壓暗 */
+}
+.pd-crop-edit__handle {
+  position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px;
+  border-radius: var(--radius-pill); background: var(--foreground);
+  box-shadow: 0 0 0 2px var(--background); cursor: nwse-resize; touch-action: none;
+}
+.pd-crop-edit__preview {
+  width: 100%; max-width: 220px; aspect-ratio: 1 / 1; margin-top: var(--sp-8);
+  border-radius: var(--radius-lg); background: var(--input-surface) no-repeat center / cover;
+}
+@media (max-width: 640px) { .pd-crop-edit { grid-template-columns: 1fr; } }
+
+/* ---------- Project detail · 我的收益「共創計畫 · 深度明細」----------
+   2026-07-25：僅在收益類型篩選切到「OTT 版稅收益」時出現（版型參考共創前台，元件用本站 DS）。
+   外層是無卡片的區段（Q24 不做卡中卡）：區段抬頭＋收合鈕＋期間選單，內容才是兩張真卡。
+   展開鈕沿用站上慣例——aria-expanded=true 時箭頭轉 180°（同 accordion／field-more／header）。 */
+.pd-deep__head { display: flex; align-items: center; gap: var(--sp-8); }
+.pd-deep__head .card__title { margin-right: auto; }
+.pd-deep [aria-expanded] .ztor-icon { transition: transform .15s ease; }
+.pd-deep [aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+/* 小計列右側：金額＋展開鈕同一組 */
+.pd-deep__amount-group { display: flex; align-items: center; gap: var(--sp-8); }
+/* 展開鈕佔的欄寬（.btn--icon.btn--sm 32px ＋ 與金額的 gap）——沒有展開鈕的列補等寬右內距，
+   讓「明細子列」與「淨收益」的金額和小計列金額共用同一條右基準線。 */
+.pd-deep { --pd-deep-toggle-col: calc(32px + var(--sp-8)); --data-list-child-indent: 44px; }
+.pd-deep .data-list__row--child,
+.pd-deep .data-list__row:last-child { padding-inline-end: var(--pd-deep-toggle-col); }
+
 /* ---------- Footer bar ---------- */
 .app-footer {
   padding: var(--sp-18) var(--sp-28);
@@ -1237,7 +1336,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .tip:hover .tip__bubble, .tip:focus-visible .tip__bubble { opacity: 1; transform: translateY(0); }
 
 /* Card view — responsive grid of project cards (alternative to the data-list view) */
-.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-16); }
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-20); }
 .project-card {
   display: flex; flex-direction: column;
   background: var(--card); border-radius: var(--radius-md);

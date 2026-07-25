@@ -4,23 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Projects · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260724zzzj"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/button.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/chip.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/input.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/project-list.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/card.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/list-footer.css?v=20260724zzzj">
-<link rel="stylesheet" href="shared.css?v=20260724zzzj">
+<script src="js/theme.js?v=20260725zc"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/button.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/segmented.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/chip.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/input.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/project-list.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/card.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=20260725zc">
+<link rel="stylesheet" href="shared.css?v=20260725zc">
 </head>
 <body>
 <div class="app">
@@ -79,24 +80,26 @@
       <!-- F1 次要篩選：發行模式（專案建立時定死的屬性、使用頻率低，2026-07-23 由 chip 收成下拉）
            ＋ CCR-005 內容類別（新軸，獨立於發行模式，影視／音樂為不可選群組標頭，對照 cocreate
            finance-overview.html 的 [data-fin-dd="cat"]）。 -->
-      <div class="list-status-row list-status-row--end">
-        <select class="select" id="proj-type" aria-label="Release mode" data-i18n-aria-label="projects.type.label" style="width:auto;min-width:160px">
-          <option value="all" data-i18n="projects.type.all">All types</option>
-          <option value="go-live" data-i18n="projects.type.go-live">Go live</option>
-          <option value="fund" data-i18n="projects.type.fund">Fund it first</option>
-          <option value="preorder" data-i18n="projects.type.preorder">Pre-order</option>
-        </select>
-        <select class="select" id="proj-cat" aria-label="Content category" data-i18n-aria-label="projects.cat.label" style="width:auto;min-width:184px">
+      <div class="list-status-row">
+        <!-- 發行模式：2026-07-24 由下拉改攤成一整排 filter-tabs（使用者指定「像截圖一樣攤開、同一行靠左」，
+             對照 e-shop 狀態列 .filter-tabs--brand）。靠左；內容類別 select 以 margin-left:auto 推到右邊。 -->
+        <nav class="filter-tabs filter-tabs--brand" id="proj-types" role="tablist" aria-label="Release mode" data-i18n-aria-label="projects.type.label">
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-type="all"><span data-i18n="projects.type.all">All types</span><span class="filter-tabs__count" data-type-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="go-live"><span data-i18n="projects.type.go-live">Go live</span><span class="filter-tabs__count" data-type-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="fund"><span data-i18n="projects.type.fund">Fund it first</span><span class="filter-tabs__count" data-type-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="preorder"><span data-i18n="projects.type.preorder">Pre-order</span><span class="filter-tabs__count" data-type-count>0</span></button>
+        </nav>
+        <select class="select" id="proj-cat" aria-label="Content category" data-i18n-aria-label="projects.cat.label" style="width:auto;min-width:184px;margin-left:auto">
           <option value="all" data-i18n="projects.cat.all">All categories</option>
           <optgroup id="proj-cat-grp-filmtv" label="Film &amp; TV">
             <option value="movie" data-i18n="projects.cat.movie">Movie</option>
             <option value="short" data-i18n="projects.cat.short">Short film</option>
             <option value="series" data-i18n="projects.cat.series">Series</option>
+            <option value="mv" data-i18n="projects.cat.mv">MV</option>
           </optgroup>
           <optgroup id="proj-cat-grp-music" label="Music">
             <option value="song" data-i18n="projects.cat.song">Song</option>
             <option value="album" data-i18n="projects.cat.album">Album</option>
-            <option value="mv" data-i18n="projects.cat.mv">MV</option>
           </optgroup>
           <!-- 影視／音樂以外的內容類型（spec 5.1.2.1 §4.1 F3）：活動／其他商品／文檔／自訂 -->
           <optgroup id="proj-cat-grp-other" label="Other">
@@ -118,9 +121,9 @@
         <div class="project-list__head" role="row">
           <div role="columnheader" aria-hidden="true"></div>
           <div role="columnheader" data-i18n="projects.col.project">Project</div>
+          <div role="columnheader" class="project-list__col-category" data-i18n="projects.col.category">Category</div>
           <div role="columnheader" data-i18n="projects.col.goal">Current goal</div>
           <div role="columnheader" class="project-list__col-time" data-i18n="projects.col.time">Time left</div>
-          <div role="columnheader" class="project-list__col-category" data-i18n="projects.col.category">Category</div>
           <div role="columnheader" data-i18n="projects.col.status">Status</div>
           <div role="columnheader" aria-hidden="true"></div>
         </div>
@@ -166,10 +169,10 @@
     </div>
   </main>
 </div>
-<script src="js/icons.js?v=20260724zzzj"></script>
-<script src="js/projects-store.js?v=20260724zzzj"></script>
-<script src="js/i18n.js?v=20260724zzzj"></script>
-<script src="js/sidebar.js?v=20260724zzzj"></script>
+<script src="js/icons.js?v=20260725zc"></script>
+<script src="js/projects-store.js?v=20260725zc"></script>
+<script src="js/i18n.js?v=20260725zc"></script>
+<script src="js/sidebar.js?v=20260725zc"></script>
 <script>
 /* Projects F1 — single data source renders both list & card views; status tab + type select +
    category select + search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
@@ -187,8 +190,8 @@
 
   /* Content-category leaf → its group (Film&TV / Music). Group headers are the optgroups
      in markup (non-selectable, matching cocreate). Only leaves are filter values. */
-  const CAT_GROUP = { movie:'filmtv', short:'filmtv', series:'filmtv',
-                     song:'music', album:'music', mv:'music',
+  const CAT_GROUP = { movie:'filmtv', short:'filmtv', series:'filmtv', mv:'filmtv',
+                     song:'music', album:'music',
                      event:'other', merch:'other', document:'other', custom:'other' };
 
   const STATUS = {
@@ -224,7 +227,7 @@
   const gridEl     = document.getElementById('proj-grid');
   const emptyEl    = document.getElementById('proj-empty');
   const tabsEl     = document.getElementById('proj-tabs');
-  const typeEl     = document.getElementById('proj-type');
+  const typesEl    = document.getElementById('proj-types');
   const catEl      = document.getElementById('proj-cat');
   const searchEl   = document.getElementById('proj-search');
   const footerEl   = document.getElementById('proj-footer');
@@ -301,12 +304,12 @@
         + '<div class="project-list__title">' + esc(p.name) + '</div>'
         + '<div class="project-list__desc">' + esc(t(p.desc)) + '</div>'
       + '</div>'
-      + goalCell(p)
-      + valCell(left, 'project-list__time')
       + '<div class="project-list__category" role="cell">'
         + '<span class="project-list__cat-main">' + esc(t(p.cat)) + '</span>'
         + '<span class="project-list__cat-family">' + esc(famLabel(p.cat2)) + '</span>'
       + '</div>'
+      + goalCell(p)
+      + valCell(left, 'project-list__time')
       + '<div class="project-list__cell project-list__status" role="cell">' + badgeHtml(p) + '</div>'
       + '<div class="project-list__go" role="cell" aria-hidden="true"><i data-lucide="chevron-right" class="ztor-icon"></i></div>'
     + '</a>';
@@ -336,7 +339,15 @@
       el.classList.toggle('tabs__item--active', key === tab);
       el.setAttribute('aria-selected', String(key === tab));
     });
-    if (typeEl.value !== type) typeEl.value = type;
+    /* 發行模式 filter-tabs：同步 active＋每型計數（全部＝總數，其餘＝該發行模式的專案數） */
+    typesEl.querySelectorAll('[data-type]').forEach(el => {
+      const val = el.getAttribute('data-type');
+      const on = val === type;
+      el.classList.toggle('filter-tabs__item--active', on);
+      el.setAttribute('aria-selected', String(on));
+      const cnt = el.querySelector('[data-type-count]');
+      if (cnt) cnt.textContent = val === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.type === val).length;
+    });
     if (catEl.value !== cat) catEl.value = cat;
     /* optgroup label is an attribute (no [data-i18n] handler), localize here */
     const grpFilm = document.getElementById('proj-cat-grp-filmtv');
@@ -373,7 +384,7 @@
   }
 
   tabsEl.addEventListener('click', e => { const el = e.target.closest('[data-tab]'); if (el) { tab = el.getAttribute('data-tab'); render(); } });
-  typeEl.addEventListener('change', () => { type = typeEl.value; render(); });
+  typesEl.addEventListener('click', e => { const el = e.target.closest('[data-type]'); if (el) { type = el.getAttribute('data-type'); render(); } });
   catEl.addEventListener('change', () => { cat = catEl.value; render(); });
   document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { view = b.getAttribute('data-view'); render(); }));
   searchEl.addEventListener('input', () => { q = searchEl.value.trim(); render(); });
@@ -398,7 +409,7 @@
   render();
 })();
 </script>
-<script src="js/reveal.js?v=20260724zzzj"></script>
-<script src="js/devtools.js?v=20260724zzzj"></script>
+<script src="js/reveal.js?v=20260725zc"></script>
+<script src="js/devtools.js?v=20260725zc"></script>
 </body>
 </html>

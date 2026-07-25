@@ -423,7 +423,7 @@
     + '.ztd__opt.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
     + '.ztd__opt-desc{display:block;font-size: var(--fs-11);font-weight: var(--fw-regular);color:var(--muted-foreground);margin-top:4px;line-height:1.4}'   /* 說明預設常駐 */
     /* 版本（最高級別 gate）：組強調框＋版本外功能的隱藏/標記樣式（全站套用）*/
-    + '.ztd__group--top{border:1px solid color-mix(in srgb,var(--primary) 55%,var(--border));background:color-mix(in srgb,var(--primary) 7%,var(--card));border-radius:var(--radius-md,7px);padding:12px 13px 4px;margin-bottom:18px}'
+    + '.ztd__group--top{border:1px solid var(--border);background:var(--card);border-radius:var(--radius-md,7px);padding:12px 13px 4px;margin-bottom:18px}'
     /* 版本選項：一行一個＋分組小標題（開發版本／測試版）*/
     + '.ztd__subgroup{font-size:var(--fs-11);font-weight:var(--fw-semibold);color:var(--muted-foreground);letter-spacing:.04em;margin:2px 0 7px}'
     + '.ztd__subgroup:not(:first-child){margin-top:13px}'
