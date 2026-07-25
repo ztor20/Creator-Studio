@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | Q1 | 膠囊型元件圓角形狀 | **B**：可篩選/可點＝全圓（chip、filter-tabs），純顯示徽章＝小圓角矩形（badge、field-pill、metric-pill）。形狀＝「可否互動」的線索，須寫進 design-system.md | 2026-07-13 | 形狀當 affordance 比全統一更有資訊量 | ✅ 已執行 2026-07-13 |
 | Q2 | 控制項圓角級距（6 vs 7px） | **統一 6px**：`--radius`/`--radius-md` 合併成 6px；`.btn--icon-circle` 裸值 9999 改 `--radius-pill`。全圓 pill(9999)、shell(28) 不動 | 2026-07-13 | 1px 是假精度 | ✅ 已執行 2026-07-13 |
-| Q3 | 卡片邊界：陰影 vs 邊框 | **C（規則版）**：預設卡片用 1px 純邊框（平、乾淨）；只有要強調可點/浮起的主卡才升級純陰影 | 2026-07-13 | 邊框優先＝editorial，陰影收窄成「強調」訊號 | ✅ 已執行 2026-07-13 |
+| Q3 | 卡片邊界：陰影 vs 邊框 | **C（規則版）**：預設卡片用 1px 純邊框（平、乾淨）；只有要強調可點/浮起的主卡才升級純陰影〔**`.card`／`.kpi` 這兩支已被 Q32（2026-07-26）取代，改陰影浮起；`.ztor-card`（docs-only）與其餘控制項/清單類 1px 邊框角色不受影響，仍照本條**〕 | 2026-07-13 | 邊框優先＝editorial，陰影收窄成「強調」訊號 | ✅ 已執行 2026-07-13（部分被 Q32 取代）|
 | Q4 | 控制項邊界：真 border vs 陰影模擬 | **A**：input／textarea／select／switch／metric-pill 全改 `border:1px solid var(--border)`，跟 2026-06-12 按鈕決定一致 | 2026-07-13 | 白底上真 border 較清楚；與 Q3 一致 | ✅ 已執行 2026-07-13 |
 | Q5 | hover 浮起規則 | **A**：可點卡片 hover 浮起（借 `--shadow-float`），清單列 hover 只換底色。先在 design-system.md 定義「什麼算卡片、什麼算列」〔**scoped 例外**：`.product-list--ip`（2026-07-20）與 `.product-list--eshop`（含共用其 class 的 `--bundles`／`--auctions` 兩分頁，2026-07-21 使用者再次指定擴大）的 `.product-list__row:hover` 改浮起（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態），使用者兩次都明確指定「hover 要跟 drag 的 style 一樣」——僅這幾個變體，`--orders`／`--pickup` 清單列仍維持 A 原規則（只換底色）〕 | 2026-07-13（07-20 加 `--ip` 例外，07-21 擴大到 `--eshop`）| 卡片＝浮起、列＝換底的標準區分 | ✅ 已執行 2026-07-13（`--ip` 例外 07-20、`--eshop` 擴大 07-21 皆使用者裁示）|
 | Q6 | 表單欄位垂直節奏 | **以 .field 為準**（欄位間距 16px、form-section 不再局部覆寫）。折衷選項：長建立流程「欄位↔欄位」改用刻度值 24 保留呼吸感——此折衷待使用者最終確認 | 2026-07-13 | 統一節奏；26 裸值退場 | ✅ 已執行 2026-07-13（統一 16px；「長流程 24」折衷未採用，日後需要可加 `.form-section .field{margin-bottom:var(--sp-24)}`）|
@@ -41,6 +41,7 @@
 | Q30 | IP 卡／IP hero 封面：漸層色塊 vs 真實封面圖 | **漸層佔位＋可疊真實圖**：`.ipm-card__cover`（IP Market 三張上架卡，2026-07-25 由無 class 的 inline 漸層 div promote）與既有 `.ip-hero__cover`（IP 詳情）統一——預設品牌漸層佔位（3:4）＋IP 名文字，放上 `.ipm-card__cover-img`／`.ip-hero__cover-img`（`object-fit:cover`、絕對定位疊在佔位上）即改真實封面圖鋪滿，比照站上既有 `.project-card__cover-img` 慣例。真實授權圖由使用者提供、非站上內建；角色圖／藝人照等受版權素材不由 AI 生成或代抓（版權／肖像界線）。順帶消掉 card2／card3 的兩組 inline 裸 hex 漸層 | 2026-07-25 | 使用者要「圖片也要換」；與站上其他列表卡（project-card／product-list）用真實圖鋪滿的做法收斂為單一答案 | ✅ 已執行 2026-07-25（`shared.css` 新增 `.ipm-card__cover`＋兩支 `__cover-img`；ip-market 三卡與 ip-detail hero 改用；design-system.md／html 同步）|
 
 | Q31 | IP 詳情 hero：租用資訊放右側窄欄，還是收進內容欄 | **收進內容欄、hero 改兩欄**：`.ip-hero` 由「封面 248｜內容 1fr｜側欄 auto(280)」三欄改為 **`200px minmax(0,1fr)` 兩欄**——封面獨佔左欄（3:4、頂對齊、寬度刻意配合右欄文字自然高度），其餘全部走右欄。連帶三項：(1) 四格事實（版稅／起租費／租期／獨家）由自建的 `.ip-hero__meta` auto-fit 網格＋`.meta-cell` 純文字，改用**站上標準 `.bento > .kpi.bento--span-3`**，與儀表板／收入管理的指標列同一套讀法（使用者裁示「這些做成 bento」）；(2) 租用 UI 由 `.ip-hero__side > .card.rental-card` 改為新元件 **`.rent-block`**，垂直兩組（組 1 租期｜獨家、組 2 費用明細｜結算），組內 `1.3fr 1fr` 讓兩組左右欄上下對齊；(3) `.ip-hero__meta`／`.ip-hero__side` 退場留墓碑（`.meta-cell` 保留，create-project 仍消費）。**動機**：280px 側欄把內容欄壓到 217px（標題硬折行、meta 塌成單欄），且封面較高時側欄旁留一塊死空間；使用者連續三輪圈出空白要求修正。過程中兩個被否決的做法一併記錄——封面拉長填滿高度（變成與站上其他圖不同比例的長條，使用者否決）、租用區跨滿整張卡寬度（封面下方仍空，使用者指定「全部放右邊、照片在左邊不動」）。探索頁 `docs/ip-detail-hero-demo.html` | 2026-07-25 | 使用者裁示（逐輪截圖圈選：先要移出側欄、再要收回卡內垂直排 1→2、再要全部靠右、最後要四格改 bento）| ✅ 已執行 2026-07-25（`shared.css` 兩欄＋兩個墓碑、新增 `ds-components/rent-block.css`、`ip-detail.html` 改版、`design-system.md`／`.html` 同步含新章節 4.75b＋TOC）|
+| Q32 | 卡片邊界更上層問題（Q23 留待裁決）：`.card` 系（Q3 邊框）vs `form-section--outlined`（Q14/Q18 陰影）同一視覺角色兩種答案，要不要全站統一 | **C（全站統一成陰影版）**：`.card` 基底（連同 `.funding-panel--card`／`.fc-bundle`，後者本就吃 `.card`）與 `.kpi` 改為 `border:0` ＋ `box-shadow: var(--shadow-card), var(--shadow-edge-top)`，跟 `form-section--outlined` 統一做法。`.kpi` 額外處理：預設底色同步由 `--input-surface`（Q21）還原成 `--card`——多數 KPI 直接放在 `.bento`／`.tab-panel` 上、沒有卡包著，跟外層同色才是常見情境；真的疊在 `--card` 系容器內的 8 處（`event-detail.html` Overview 分頁、`earnings.html` Breakdown／Payouts、`auction-detail.html`、`bundle-detail.html`、`product-detail.html`、`admin-ip-bank-entry.html`、`ip-detail.html`）用 scoped selector `.card .kpi, .form-section--outlined .kpi, .ip-hero .kpi` 改回 `--input-surface` 維持跟外層卡的區隔（Q21 的原始理由只在這 8 處仍成立）。**未動**：`.ztor-card`（docs-only，未上產品頁）、控制項/清單類 1px 邊框（input／table／dropdown／picker／modal 等，Q3/Q4 對它們仍有效，這次只處理「大容器卡」這個視覺角色）。 | 2026-07-26 | 使用者看過 `.card` 三種卡型（組合包卡／募資狀態卡／發布更新卡）與 `.kpi` 的無邊框＋陰影 demo 後裁示「全站都改」；解決 Q23 記錄的「每次並排才發現不一致、要再開一次例外」的重複成本 | ✅ 已執行 2026-07-26（`card.css`／`funding-panel.css`／`kpi.css` 元件層一次生效；`design-system.md`／`.html` 同步 4.11b Section card、4.12 KPI、Pillar 2 陰影表；bump_ver＋check_ds_sync 見 UI-CHANGES.md）|
 
 ---
 
@@ -58,7 +59,38 @@
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
 
-### Q23：卡片邊界在建立流程出現兩種答案（2026-07-21 提出，已依使用者裁示落地，登記備查）
+### Q26：清單頁工作列的主軸分頁有兩種寫法（2026-07-26 提出，同日依使用者裁示落地）
+
+四個清單頁的 `.list-toolbar` 主軸分頁都是同一個元件 `.tabs.tabs--underline-short`，但兩個修飾 class 只有 projects 有：
+
+- `tabs--underline-label`（active 底線只等標籤寬、不含計數）
+- `tabs--count-plain`（計數不用 pill、改 `--muted-foreground` 純文字）
+
+結果 my-ip、events 有計數但底線會延伸到數字下方、計數還是深色藥丸，跟 projects 差一截；e-shop 沒有計數但底線寬度算法也不同。使用者：「所有頁面有這種設計的都要用一樣的元件……和電子商店的差別只在於沒有計數，其他都應該一樣。」
+
+**裁決（A）**：`.list-toolbar` 裡的主軸分頁一律寫成
+`class="tabs tabs--underline-short tabs--underline-label tabs--count-plain"`，四頁一致。e-shop 沒有計數，`--count-plain` 在那裡不影響外觀，仍照寫以保持同一組配方、之後要加計數也不必再改 class。
+
+已落地：my-ip.html:54、events.html:119、e-shop.html:309 補上兩個修飾（projects 原本就有）。DS 文件（`design-system.md` §Tabs 與 `design-system.html` 的 Tabs demo）已改寫成「這是 list-toolbar 的標準配方」，不再寫成「Projects 專用的 opt-in」。
+
+**注意**：`tabs--underline-label` 需要標籤包在子元素裡。標籤是 `<button>` 直接文字的分頁（product-detail、admin-platform-fees）**不在此範圍**，維持整條 item 底線——那些不是 list-toolbar。
+
+### Q25：次層篩選列有三份同構實作（2026-07-26 提出，待裁決）
+
+同一個視覺角色「工作列下方那排狀態／類型篩選 pill」，站上有三個 class 名、樣式規則完全一樣（`display:flex; align-items:center; gap:12px; flex-wrap:wrap`）：
+
+- `.list-status-row` — 共用元件，`ds-components/list-toolbar.css:74`；消費頁：projects、my-ip、e-shop、events
+- `.ord-status-row` — 頁內複本，`orders.html:29`
+- `.pk-status-row` — 頁內複本，`pickup.html:39`
+
+2026-07-26 使用者要求「篩選列到清單的間距加大」時，共用元件改一處即涵蓋四頁，兩個頁內複本得各自再改一次（`.ord-list-controls`／`.pk-list-controls` 的 `margin-bottom`）——這就是分岔的成本。
+
+- **A（建議）**：orders／pickup 改用 `.list-status-row`，刪掉兩份頁內複本與各自的外層 margin。需一併確認上排到篩選列的間距（元件是 `margin-top: --sp-16`，兩頁現在是 topbar 的 `margin-bottom: 8px`）。
+- **B**：維持現狀，接受三處各改。
+
+暫依現狀（B），本輪只同步了間距值。
+
+### Q23：卡片邊界在建立流程出現兩種答案（2026-07-21 提出，已依使用者裁示落地，登記備查；**上層問題已於 2026-07-26 由 Q32 裁決 C 解決，全站統一陰影版**）
 
 建立流程是左右兩欄並排，兩欄的盒子用了兩種邊界做法：
 

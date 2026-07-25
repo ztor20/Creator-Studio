@@ -169,3 +169,38 @@
   color: var(--foreground-muted);
 }
 .tx-detail__ladder { max-width: 540px; }
+
+/* ── Media feature cell — a small square thumbnail leading the row's name
+   (2026-07-25 promoted from the sony finance table; 32px square, one step
+   up in radius; started from the admin IP-bank table's 36px thumb and was
+   shrunk a notch on review, now shared so any .ztor-table can use it).
+   The flex row is an INNER wrapper, never the <td> itself: `display:flex` on a
+   table cell drops it out of the table formatting context, so fixed column
+   widths collapse (learned the hard way — column 1 shrank to its content).
+   Markup: <td class="ztor-table__feature"><span class="ztor-table__media">
+             <img class="ztor-table__thumb">…<span>name + badge</span></span></td> ── */
+.ztor-table__media {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  min-width: 0;
+}
+/* Header for a media column — pushes the label past the thumbnail so the column
+   title lines up with the row's NAME, not with the image (2026-07-26 使用者)。
+   Offset = cell left padding (--sp-20) + thumb (--sp-32) + media gap (--sp-10).
+   Specificity is deliberately `.ztor-table thead th.…` so it beats the base
+   `.ztor-table thead th` padding without !important. */
+.ztor-table thead th.ztor-table__media-head {
+  padding-left: calc(var(--sp-20) + var(--sp-32) + var(--sp-10));
+}
+
+.ztor-table__thumb {
+  /* 2026-07-26 使用者：縮圖再小一階（36→32）、圓角上一階（--radius-sm 3px → --radius 6px） */
+  width: var(--sp-32);
+  height: var(--sp-32);
+  flex: none;
+  border-radius: var(--radius);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  object-fit: cover;
+}

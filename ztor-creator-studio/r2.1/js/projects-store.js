@@ -158,7 +158,7 @@
   const PROJECTS_NICK = [
     /* ── ① 直接上線單曲 ×3（已上線）────────────────────────────── */
     {
-      id: 'nick-wo-de-i', created: '2025/08/10', name: '我的i',
+      id: 'nick-wo-de-i', created: '2025/08/10', name: '帥到分手',
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
       cover: IMG + 'nick-i.jpg', poster: IMG + 'nick-i.jpg',
       desc: { en: 'The lead single from LOVE RAGE HOPE — official MV released Aug 22.', zh: 'LOVE RAGE HOPE 首波主打，官方 MV 於 8/22 上線。' },
@@ -166,7 +166,7 @@
       bar: null, todo: null
     },
     {
-      id: 'nick-wei-le-ni', created: '2024/07/25', name: '為了你',
+      id: 'nick-wei-le-ni', created: '2024/07/25', name: '罵醒我',
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
       cover: IMG + 'nick-wln.jpg', poster: IMG + 'nick-wln.jpg',
       desc: { en: 'A 2024 standalone single — released Aug 02, 2024.', zh: '2024 獨立單曲，2024/08/02 發行。' },
@@ -174,10 +174,10 @@
       bar: null, todo: null
     },
     {
-      id: 'nick-zou-san-guan', created: '2023/02/14', name: '走三關',
+      id: 'nick-zou-san-guan', created: '2023/02/14', name: '愛上你算我賤',
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
       cover: IMG + 'nick-baipa.jpg', poster: IMG + 'nick-baipa.jpg',
-      desc: { en: 'The REALIVE stand-out track released as its own single — a trap-flavoured take on a folk melody.', zh: 'REALIVE 中最受歡迎的一軌獨立發行，以 trap 重塑民謠旋律。' },
+      desc: { en: 'The REAL LIFE stand-out track released as its own single — a slow-burn R&B breakup cut.', zh: 'REAL LIFE 中最受歡迎的一軌獨立發行，慢燒 R&B 分手情歌。' },
       meta: { en: 'US$6,750 lifetime · 480,000 streams', zh: '累計 US$6,750 · 480,000 次串流' },
       bar: null, todo: null
     },
@@ -196,7 +196,7 @@
 
     /* ── ③ MV 募資（已上線）＝影視家族版稅樣本 ──────────────────── */
     {
-      id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: '你說的都對 MV',
+      id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: '帥到分手 MV',
       cat: 'mv', family: 'film', icon: 'film', type: 'fund', status: 'published',
       cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
       desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '集資拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
@@ -204,6 +204,18 @@
       fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Jul 01 – Aug 15, 2024 · Released', zh: '募資期間 2024/07/01 – 08/15 · 已上線' } },
       list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
+    },
+
+    {
+      /* 2026-07-26 使用者：「再加一個 帥到分手MV」。與上面那筆同名、同一首歌，差在發行模式——
+         上面是募資型（有版稅分頁），這筆是直接發佈型（無版稅），剛好補上 MV×直接發佈×已上線
+         這一格樣本。名稱刻意與上筆相同（使用者指定），如需區隔再加副標。 */
+      id: 'nick-sdfs-mv-live', created: '2025/08/22', name: '帥到分手 MV',
+      cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'published',
+      cover: IMG + 'nick-i.jpg', poster: IMG + 'nick-i.jpg',
+      desc: { en: 'The official MV for 帥到分手 — self-funded, released straight to the channel on Aug 22.', zh: '〈帥到分手〉官方 MV，自費製作、8/22 直接上線頻道。' },
+      meta: { en: 'US$5,400 lifetime · 1.9M views', zh: '累計 US$5,400 · 190 萬次觀看' },
+      bar: null, todo: null
     },
 
     /* ── 其餘專案 ─────────────────────────────────────────────── */

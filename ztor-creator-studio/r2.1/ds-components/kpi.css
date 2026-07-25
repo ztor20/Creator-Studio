@@ -18,12 +18,22 @@
   flex-direction: column;
   gap: var(--sp-6);
   padding: var(--sp-16) var(--sp-18);
-  /* 2026-07-20（Q21）：--card → --input-surface。KPI 常被放在 form-section 卡內，
-     兩層同為 --card 會糊在一起；改亮一階後內層方塊浮在卡面上。 */
-  background: var(--input-surface);
-  border: 1px solid var(--border);   /* Q3 2026-07-13：預設卡改純邊框，取代 --shadow-card */
+  /* 2026-07-26（B 反饋 + Q23 決 C）：預設底色改回跟 .card 一樣（此前 2026-07-20 Q21 改 --input-surface，
+     是為了避免 KPI 疊在 form-section 卡內時兩層同為 --card 糊在一起——但站上多數 KPI 其實直接放在
+     .bento／.tab-panel 上、沒有卡包著，跟外層底色一樣才是常見情境）；邊框同步比照 .card 改陰影浮起。
+     真的疊在 --card 系容器內的 8 處（.card/.form-section--outlined/.ip-hero 內）用下方 scoped override
+     還原 --input-surface，維持「浮在卡面上」的區隔。 */
+  background: var(--card);
+  border: 0;
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
   border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 .card / form-section 統一 */
   min-height: 96px;
+}
+/* 疊在 --card 系容器內的 KPI：改回較亮的 --input-surface，避免跟外層卡同色糊掉（沿用 2026-07-20 Q21 的理由，
+   scope 縮小成「真的巢狀在卡內」才套用）。8 個實際位置：event-detail（Overview 分頁）、earnings（Breakdown／
+   Payouts）、auction-detail、bundle-detail、product-detail、admin-ip-bank-entry、ip-detail。 */
+.card .kpi, .form-section--outlined .kpi, .ip-hero .kpi {
+  background: var(--input-surface);
 }
 .kpi__label {
   font-family: var(--font-ui);
