@@ -4,6 +4,25 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-26 · 所有列表 hover 統一改浮起版（解決 STYLE-DECISIONS Q34）（B 反饋導入）
+
+使用者指名電子商店商品列表的 hover（截圖示範：卡底＋圓角＋陰影，列從清單裡浮出來）要套到「所有列表」。查了一輪：站上真正有「列 hover」語意的只有兩支——`product-list.css`（電子商店／取貨／活動／IP 市場等 7 頁共用）與 `project-list.css`（專案列表），兩者原本都是 Q9 2026-07-13 的純換底色，只有 `--eshop`／`--ip` 兩個 product-list 變體先前（2026-07-20/21）已改浮起。radio-list／ztor-table／data-list 等其餘清單本來就沒有「列 hover 浮起」這個語意（選取態或純資料表），不屬於這次的「商品列表」角色，未動。
+
+- **【B】** `ds-components/product-list.css`：`.product-list__row:hover` base 規則由 `background: var(--accent)` 改為浮起版（`--card` 底＋`--radius-md`＋`--shadow-lift-flat`＋自身與上一列 `border-bottom` 透明），7 個變體（`--orders`／`--pickup`／`--events`／`--auctions`／`--bundles`／`--eshop`／`--ip`）統一。原本 `--eshop`／`--ip` 專屬的 scoped 規則因此變成單純重複，已刪除、併回 base；`--eshop` 的 `cursor:pointer`（點列進編輯的點擊行為，非 hover 視覺）維持 scoped 不動。
+- **【B】** `ds-components/project-list.css`：`.project-list__row:hover` 同步比照改寫，跟 product-list 用同一套視覺語言。
+- **文件同步**：`STYLE-DECISIONS.md` 新增 Q34（登記本次裁決），Q5／Q9 加註「清單列 hover 部分已被 Q34 取代」。
+- 驗證：dev server 上 hover 專案列表任一列，視覺確認卡底浮起＋圓角＋陰影，跟電子商店列表一致；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）。
+
+## 2026-07-26 · 控制項邊框新規則：不在卡片／section 內的 select 改無邊框（新增 `.select--bare`，解決 STYLE-DECISIONS Q33）（B 反饋導入）
+
+使用者選了 `projects.html` 列表工具列的內容類別下拉，指出它不該有 border（跟旁邊無邊框的 `.filter-tabs` 並排卻自己戴一圈框），並定調新規則：「section 內的才要 border」。稽核全站後發現這是目前唯一一處「select 直接坐在工具列上、沒有卡片包著」的情境（其餘 `.list-status-row` consumer 頁沒有這個 pattern，ip-market 的六個 select 在進階篩選面板內、不受影響）。
+
+- **【B/新變體】** `ds-components/input.css` 新增 `.select--bare`（疊加在 `.select` 上）：`box-shadow:none`、`background:transparent`、pill 圓角、`--fs-12`／`--fw-medium`（比照同列 `.filter-tabs__item`），hover 才浮出 `--muted` 底＋`--foreground` 字。
+- **【B】** `projects.html` 的 `#proj-cat` 加上 `select--bare`。
+- **文件同步**：`STYLE-DECISIONS.md` 新增 Q33，Q4 加註條件；`design-system.md`／`design-system.html` 同步 Input/Select 組件的 Variants／States／Class API／Do & Don't／Code example。
+- **範圍聲明**：這次只稽核並套用了 `.select`；`.input`／`.textarea`／`.switch`／`.metric-pill` 尚未逐一比照，若之後出現同款「不在卡片內」的情境再處理，不代表這條規則已對其他控件類型全面套用。
+- 驗證：dev server 上量測 `#proj-cat` 的 `getComputedStyle`——`box-shadow:none`、背景透明、`border-radius:9999px`；截圖確認跟旁邊 filter-tabs 視覺一致；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726za`。
+
 ## 2026-07-26 · 我的 IP 列操作改三點選單（B 反饋導入）
 
 使用者裁示：`my-ip.html` 每列的「管理」文字連結改用三點（⋯）設計，比照 orders／pickup 既有的列操作 kebab pattern，全站列操作收斂成單一答案。
@@ -65,6 +84,18 @@
 - **【B】** 「方案與承諾 › 支持方案」套組編輯器全面更名「組合包」：`js/i18n.js` 的 `pd-bundle.*` 系列 zh 文案（標題／名稱／描述／商品／新增鈕）由「套組」改「組合包」（僅此頁 `pd-bundle.*` 命名空間；create-campaign 流程用的是自己另一套 `fc.*` 副本，維持既有「套組」用語，未改）。卡片標頭原本固定顯示「組合包 N」，現在依「組合包名稱」欄位即時反應：有填名稱時顯示「組合包：{名稱}」、清空則退回「組合包 N」（新增 i18n key `pd-bundle.head-named`，`project-detail.html` 的 `refresh()`／`headline()` 加上 `data-b-name` 的 `input` 監聽）。同時卡頭與欄位間距 `.fc-bundle__head { margin-bottom }` 由 `--sp-6` 加大到 `--sp-16`（`ds-components/bundle-editor.css`），對齊使用者反饋的「間距加大」。
 - **【C/撤除】** 「我的收益」分頁頂部的「⚠ 探索原型 — 收益模型提取自共創計畫，數字為示意、待產品裁決」橫幅整塊移除（使用者反饋直接撤除，非改文案）。
 - 驗證：改走本機 dev server（`http://localhost:4325`，先前誤用 `file://` 直開曾吃到瀏覽器層級快取、跟 disk 內容不同步，改用 dev server＋硬重整後複測皆正確）——展示內容只剩封面格；深度明細兩卡 `getComputedStyle` 確認 `grid-column: span 12`；組合包卡標頭空名稱時顯示「組合包 1」、輸入後即時變「組合包：{名稱}」、頭尾間距量測 16px；我的收益分頁首元素改為篩選 chip-group、無 banner；console 無錯；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726c`。
+
+## 2026-07-26 · 改名後的專案換上正確封面（B 反饋導入）
+
+- **【B/素材】** 改名時只換了名字沒換圖，使用者指出後從 `persona/NICKTHEREAL/images/`（周湯豪素材庫，含 `manifest.json` 與 `gallery.html` 對照表）取正確封面，複製進 `images/projects/`：
+  - **帥到分手** → `nick-sdfs.jpg`（來源 `single_2016-09-30_x.jpg`，gallery 標註 alt=帥到分手）；兩筆「帥到分手 MV」同曲共用同一張
+  - **愛上你算我賤** → `nick-asn.jpg`（來源 `single_2022-02-11_acoustic-version.jpg`，Acoustic Version 單曲封面）
+  - **罵醒我** → `nick-mxw.jpg`（repo 內本來就是〈罵醒我 (Reimagined)〉的封面，與同名草稿專案共用＝同一首歌的兩個版本）
+  - 兩張新圖原本就是 400×400，不需再裁。
+- **【B/一致性】** `my-ip.html` 第 3 列「帥到分手 官方 MV 影像」的 nick persona 圖同步換成 `nick-sdfs.jpg`（原為〈我的i〉封面）。
+- **【B/一致性】** 帥到分手的簡介原本沿用〈我的i〉的文案說它是「LOVE RAGE HOPE 首波主打」，與 2016 年的封面互相矛盾，改成 REAL 時期的代表單曲。
+- 留下的舊圖 `nick-i.jpg`／`nick-wln.jpg`／`nick-baipa.jpg` 仍被 my-ip／events 引用，未刪；`nick-nsddd.jpg` 目前全站無人使用、保留備用。
+- 驗證：專案頁實測三筆封面與名稱相符；`node --check` 通過。
 
 ## 2026-07-26 · 周湯豪專案假資料改名＋補一筆 MV（B 反饋導入）
 

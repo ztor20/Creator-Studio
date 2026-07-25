@@ -5,9 +5,10 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 ## 編輯 → 提交流程（鐵律）
 
 - **開工前先跑 `./pull.sh`**：智慧三方同步——你沒動過的檔自動更新成 monorepo 最新版、你的編輯一律保留，只有「你和同事改到同一檔」才列出來請你決定（覆寫前都先備份到 `.git/collab-backup-…`）。確保在最新基礎上編輯（collab.sh 是全量發版，本機落後就會洗掉他人剛合併的改動）。未追蹤檔（`fonts/`、scratch）不會被碰；首次執行只建基準。
-- **每次編輯完 `site/` 的檔，主動詢問使用者「要 commit 嗎？」**——不要自動 commit，先問。
+- **本地 commit 自動做、不問**：改完 `site/` 的檔就直接在本層 commit，訊息寫清楚改了什麼。理由——`collab.sh` 送出去的是工作目錄快照（含未提交編輯），本地有沒有 commit 不影響發版內容；本地 commit 純粹是還原點。
+- **要問的是後面三關**：開 PR（`collab.sh`）／merge／上線——這三個才會被別人看到或影響線上，一律先問、取得明確指示才做。
 - 在 vault `site/`（本層）編輯；**不要直接改 monorepo 的 `ztor-creator-studio/` 子目錄**（collab.sh 會「清空再灌」同步、直接改動會被覆蓋）。
-- 使用者要 commit 時，跑 `./collab.sh "<變更說明>"`：clone monorepo → 把 `site/` 的 git 追蹤檔（含未提交編輯）同步進 `ztor-creator-studio/` 子目錄 → 開 `edit/<時間戳>` 分支 → commit → push → 自動在 `ztor20/Creator-Studio` 開 PR，並把連結回報給使用者。未追蹤檔（scratch、`fonts/` 等）不會被帶上。
+- **使用者要發版（開 PR）時**，跑 `./collab.sh "<變更說明>"`：clone monorepo → 把 `site/` 的 git 追蹤檔（含未提交編輯）同步進 `ztor-creator-studio/` 子目錄 → 開 `edit/<時間戳>` 分支 → commit → push → 自動在 `ztor20/Creator-Studio` 開 PR，並把連結回報給使用者。未追蹤檔（scratch、`fonts/` 等）不會被帶上。
 - **不要直接 commit/push `main`**；變更一律走 PR，到 GitHub 審查後合併。
 - 變更說明先跟使用者確認；一次編輯一個主題就跑一次流程。
 - 開好 PR 後可由使用者在 GitHub 按 Merge 上線；若使用者明確授權，也可由 AI 代為合併（上線的最後關卡仍以使用者授權為準）。
