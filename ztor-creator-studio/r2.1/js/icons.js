@@ -22,6 +22,8 @@
 const REGISTRY = {
   // 標準 Tabler icon —————————————————————————————————————
   'plus':           '<path d="M12 5l0 14" /> <path d="M5 12l14 0" />',                              // 建立 / 新增
+  'minus':          '<path d="M5 12l14 0" />',                                                      // 收支明細的「支出小計」列（減項）
+  'equal':          '<path d="M5 10l14 0" /> <path d="M5 14l14 0" />',                              // 收支明細的「淨收益」列（等式結果）
   'arrow-left':     '<path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" />',                        // 返回 Creator 名冊（Admin 全域導航 · §4.1/D086）
   'shield-check':   '<path d="M11.46 20.846a12 12 0 0 1 -7.96 -14.846a12 12 0 0 0 8.5 -3a12 12 0 0 0 8.5 3a12 12 0 0 1 -.09 7.06" /> <path d="M15 19l2 2l4 -4" />',  // Creator Management（Admin 標記）
   'bell':           '<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /> <path d="M9 17v1a3 3 0 0 0 6 0v-1" />', // 通知

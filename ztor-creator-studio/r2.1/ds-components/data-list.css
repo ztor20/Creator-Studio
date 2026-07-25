@@ -40,6 +40,18 @@
    (e.g. list/history filters) stay visible (promoted from pickup-detail.html
    page-local override, 2026-07-11). */
 .data-list__row[hidden] { display: none; }
+/* --child：小計列展開後的明細子列（縮排、無 icon、字級降一階、無下框線與上一列連成一組）。
+   2026-07-25 取代各頁 inline `padding-left:12px` 的散裝寫法；用於收支小計展開（專案詳情 ›
+   我的收益 › 計畫項目收益）。父列自己帶展開鈕，子列以 [hidden] 收合。 */
+.data-list__row--child {
+  padding-block: var(--sp-8);
+  /* 縮排＝對齊父列 icon＋gap 後的文字起點；父列用 --sm 圖示時，容器覆寫本變數（見 .pd-deep）。 */
+  padding-inline-start: var(--data-list-child-indent, 64px);   /* 預設對齊 52px icon ＋ 12px gap */
+  border-bottom: 0;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.data-list__row--child + .data-list__row:not(.data-list__row--child) { border-top: 1px solid var(--border); }
 .data-list__row-main {
   display: flex; align-items: center; gap: var(--sp-12); min-width: 0;
 }
@@ -59,6 +71,11 @@
   font-size: var(--fs-14); flex: none;
 }
 .data-list__icon .ztor-icon { width: 20px; height: 20px; }
+/* --sm：只是「一個圖示」而非清單縮圖的場合用小晶片（32px，與同列的 .btn--icon.btn--sm 等高）。
+   2026-07-25 新增：收支小計列的 ＋／−／＝ 記號——那裡的圖示是運算符號、不是內容縮圖，
+   52px 縮圖尺寸會讓框看起來過大。搭配容器覆寫 --data-list-child-indent 讓子列縮排跟著對齊。 */
+.data-list__icon--sm { width: 32px; height: 32px; }
+.data-list__icon--sm .ztor-icon { width: 16px; height: 16px; }
 /* Monochrome icon variants — colored fills retired per user feedback (2026-05-25);
    size unified with alert--card icon (2026-05-27). Semantic variants kept as
    class names for amount/status cues elsewhere, but the chip itself is neutral. */

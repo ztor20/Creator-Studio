@@ -513,3 +513,45 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ── 4. Donut chart（比例圓環）──────────────────────────────
+   兩段式比例圓環，中央放結果數字（如「淨收益」總額），下方圖例沿用同檔的
+   .source-list / .source-row（色塊＋名稱＋金額＋百分比）。
+   2026-07-25 新增：專案詳情「我的收益 › 淨收益分配」（發起人／支持者 70/30）。
+
+   用法：外層設 --donut-p（第一段百分比，0–100），色彩用 --donut-a / --donut-b
+   覆寫（預設 --chart-3 綠／--chart-5 紫）。圓心挖空色由 --donut-hole 控制，
+   預設 --card，放在別的底色上時一併覆寫。
+   兩段以上的比例改用 .stacked-bar / .rank-bar，不要硬塞進本元件。 */
+.donut {
+  position: relative;
+  width: var(--donut-size, 220px);
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+  border-radius: var(--radius-pill);
+  background: conic-gradient(
+    var(--donut-a, var(--chart-3)) 0 calc(var(--donut-p, 70) * 1%),
+    var(--donut-b, var(--chart-5)) 0
+  );
+}
+/* 圓心挖空＝甜甜圈；厚度由 inset 決定 */
+.donut::after {
+  content: "";
+  position: absolute;
+  inset: var(--donut-thickness, 28px);
+  border-radius: var(--radius-pill);
+  background: var(--donut-hole, var(--card));
+}
+/* 中央結果：限制在挖空區內（左右各留一個厚度＋一格），長數字換行不溢出圓環 */
+.donut__center {
+  position: absolute;
+  inset: var(--donut-thickness, 28px);
+  z-index: 1;                      /* 疊在挖空層之上 */
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding-inline: var(--sp-8);
+}
+.donut__label { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground); }
+.donut__value { font-family: var(--font-display); font-size: var(--fs-20); font-weight: var(--fw-medium); }

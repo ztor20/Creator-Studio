@@ -4,6 +4,205 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-25 · 我的收益：兩區塊改「共創計畫 · 深度明細」＋只在 OTT 版稅收益時出現（B 反饋導入）
+
+使用者指定參考共創前台（`my-cocreate-proposal.html?kind=music&filter=all`）：那邊要切到版稅收益系列才會出現「共創計畫 · 深度明細」與「淨收益分配」；r2.1 對應的是「計畫項目收益」與「淨收益分配」，**出現時機照連結調整、UI wireframe 照連結、design system 用本站自己的**。
+
+- **【B/出現時機】** 兩區塊包進新的 `#pd-earn-deep`（`.pd-deep`），預設 `hidden`；收益類型 chips 點擊時只有 `[data-earn-series="ott"]`（OTT 版稅收益）會顯示，其餘（全部／影評人佣金／影評人預付金／授權收益）隱藏——共創收支拆解與 70/30 分配是版稅這條收益線才有的語意。
+- **【B/版型】** 外層＝**無卡片**區段（Q24 不做卡中卡，同本站慣例）：區段抬頭「共創計畫 · 深度明細」＋收合鈕（`aria-expanded` 控整區）＋期間 `select`（近一個月／三個月／一年）；內容才是兩張真卡（span-7／span-5）。
+  - **計畫項目收益**：三列＝`+ 收入總和（小計）`／`− 支出總和（小計）`／`= 淨收益`，各帶 `data-list__icon` 圖示晶片（本站單色，不採參考站的彩色底）；前兩列右側金額旁有展開鈕，展開顯示明細子列（收入→項目版稅收入；支出→平台費用／推廣及宣傳費／影評人佣金）。**數字改為自洽的 500,000 − 100,000 = 400,000**（原本 520,000 − 100,000 卻寫 400,000，算式對不上；且此區已限定 OTT 版稅收益，收入即項目版稅 500,000）。
+  - **淨收益分配**：改用**圓環**＋圖例（發起人 70% / USD 280,000、支持者 30% / USD 120,000），取代原本的 KPI 方塊＋兩列清單。
+- **【D/元件】** 兩項擴充既有元件（不新增元件檔）：`chart.css` 新增 `.donut` 家族（`--donut-p` 比例／`--donut-a|b` 色／`--donut-size` 220px／`--donut-thickness` 28px／`--donut-hole`；圖例沿用同檔 `.source-list`，三段以上改用 stacked-bar／rank-bar）；`data-list.css` 新增 `.data-list__row--child`（小計展開的明細子列，縮排 64px、無 icon、13px muted、去下框線），**取代各頁 inline `padding-left:12px` 的散裝寫法**（頁面裸值 51→49）。`js/icons.js` 補 `minus`／`equal`。
+- **【D】** `design-system.html` 加 donut demo＋Class API 列、data-list 加 `--child` demo 列與 API 列；`design-system.md` 同步 Chart 與 Data list 兩條；`shared.css` 加 `.pd-deep`（抬頭列、`aria-expanded` 箭頭轉 180°、金額＋展開鈕群組）；i18n 加 `pd-earn.deep.*`／`pd-earn.range.*`／`pd-earn.item.*`／`pd-earn.dist.founder|supporter` 等 17 鍵。
+- **【B/微調（同輪二稿）】** 使用者反饋兩點：(1)「圖示框太大，那只是一個 icon」→ `data-list.css` 新增 `.data-list__icon--sm`（32px 晶片＋16px 圖示，與同列 `.btn--icon.btn--sm` 等高），三條小計列改用之；(2)「數字要靠右對齊，以 `USD 500,000` 的最右邊為基準線」→ `.data-list__row--child` 的縮排改吃 `--data-list-child-indent`（預設 64px，`.pd-deep` 覆寫 44px＝對齊 32px 圖示＋12px gap），並讓**沒有展開鈕的列**（明細子列＋淨收益列）補上 `--pd-deep-toggle-col`（32px 鈕＋8px gap）的右內距，使七個金額共用同一條右基準線。
+- **驗證**：本機 `?id=adia-chan` 實測——五個 chips 逐一點擊結果為「全部→隱藏／OTT→顯示／佣金→隱藏／預付金→隱藏／授權→隱藏」；兩個小計展開後 4 條子列全出；整區收合／再展開 `aria-expanded` 與 body 同步；圓環中央數字不溢出。二稿後量測：七個金額的 `getBoundingClientRect().right` 全等於 762、圖示晶片 32×32。console 無錯，`check_ds_sync.py` 全 PASS。
+
+## 2026-07-25 · 建立專案流程內「專案類型」已選卡加卡底提亮（B 反饋導入 · Q28）
+
+使用者裁示：流程內表單（`radio-cards--3`）的專案類型已選卡背景要亮一點，讓選取更明顯。
+
+- **【B/微互動】** `radio-card.css` 新增 `.radio-cards--3:not(.radio-cards--gate) .segmented__btn--active { background: color-mix(--foreground 6%, --accent) }`——流程內表單已選卡在 Q13 右上小橘點外再加卡底提亮（與閘門 hover 同亮度）。閘門（`--gate`）無持久選取態、不套。
+- **【D】** `design-system.md`（Radio card `--3` 條目）、`STYLE-DECISIONS.md` Q28 同步。
+- **範圍**：只動 `radio-card.css` 與文件；HTML 不變。
+- **驗證**：瀏覽器實測——流程內先募資已選卡明顯比另兩張亮；閘門仍維持 default 無點無底。`check_ds_sync.py` PASS；`bump_ver` 已跑。
+
+## 2026-07-25 · 專案詳情「關於專案 › 公開資訊」由摘要清單改「全部攤開＋inline 可編輯」（B 反饋導入）
+
+使用者要公開資訊「全部列出來、可編輯像截圖那樣」。原本是 `.data-list` 五列摘要（簡介「必填·180字」、演職名單「6 位列名」…只有數量、看不到內容），改成攤開的 inline 可編輯欄位，沿用建立流程風格與 DS 既有元件。
+
+- **【B/版面】** `project-detail.html` 公開資訊卡重寫：拿掉 header 的「編輯」鈕（改 inline 可編輯）＋卡標題下加灰色說明。欄位＝**簡介**（`.textarea`，帶專案簡介）→ **演職名單**（逐列 職稱/姓名＋移除，`＋新增列名`）→ **常見問答**（逐則 問題/回答＋移除，`＋新增問答`）→ **年齡分級**（`.select`）＋**語言**（`.input`，`.form-grid` 2 欄）→ **標籤**（DS `tag-input`：可移除 chip＋輸入 Enter 新增＋建議 chip 切換）。
+- **【B/JS】** 內嵌 IIFE：演職名單／常見問答用 starter demo 資料生成、逐列增刪；標籤 tag-input 自行接線（Enter 加、chip × 移除、建議 chip toggle）。簡介由 render JS 用專案 `p.desc` 帶入（與 hero 同源、換專案自動換）。原型：不落地、重整還原。
+- **【B/資料】** 演職名單（導演/監製/主演×2/攝影/剪輯）與常見問答（發放時程/改方案/海外/數位取得）為 demo 示意文字，非產品規格；年齡分級選項（G/PG/PG-13/R/NC-17）與語言值同為示意。
+- **【D】** `project-detail.html` 補掛 `tag-input.css`；`js/i18n.js` 加 `project-detail.details.sub/synopsis-ph/cast-add/cast-role/cast-name/faq-add/faq-q/faq-a/language/tags-ph/tags-suggest` 11 鍵（舊 `*-val`／`done` 摘要鍵保留未刪、無害）。
+- **驗證**：本機 `?id=f-i-am-speed` 切「關於專案」實測——簡介＝專案簡介、演職 6 列、FAQ 4 則、年齡分級/語言 2 欄、標籤 3 chip＋建議，console 無錯。`check_ds_sync.py` 全 PASS。
+
+## 2026-07-25 · IP 詳情 hero 改兩欄：租用側欄收進內容欄（新元件 rent-block）＋四格事實改 bento KPI（B 反饋導入 · Q31）
+
+使用者連續三輪圈出 hero 的空白與擠壓要求修正，最後裁示「全部放在右邊、照片在左邊不動」＋「這些做成 bento」＋「直接做在正式的」。
+
+- **【B/版面】** `shared.css` `.ip-hero` 由三欄（封面 248｜內容 1fr｜側欄 auto 280）改 **兩欄 `200px minmax(0,1fr)`**：封面獨佔左欄（3:4、頂對齊，寬度刻意配合右欄文字自然高度，兩欄底部相近不留空洞），其餘全部走右欄。原 280px 側欄把內容欄壓到 217px——標題硬折行、meta 塌成單欄。
+- **【B/元件套用】** 四格事實（版稅／起租費／租期／獨家）由自建的 `.ip-hero__meta` auto-fit 網格＋`.meta-cell` 純文字，改用站上標準 **`.bento > .kpi.bento--span-3`**，與儀表板／收入管理的指標列同一套讀法。
+- **【A/新元件】** 新增 `ds-components/rent-block.css`（🟡 molecule）：hero 內的租用配置區，垂直兩組——組 1 租期（duration-chip）｜獨家（settings-row＋switch）、組 2 費用明細（`rental-card__breakdown`）｜結算（總額＋CTA）；組內 `1.3fr 1fr` 使兩組左右欄上下對齊，620px 以下改單欄。全部由既有元件組成，未新增視覺語彙。
+- **【C/撤除】** `.ip-hero__meta`、`.ip-hero__side` 退場，`shared.css` 留墓碑並註明替代方案（`.meta-cell` 保留——create-project 仍消費）；`design-system.html` 的 `.ds-preview .ip-hero__side` 覆寫一併移除、hero preview 改三欄→兩欄。
+- **【B/i18n】** 新增 `ip-detail.bd.title`（費用明細）、`ip-detail.checkout.title`（結算）兩鍵，en＋zh 皆補。
+- **【D】** `design-system.html` 新增 4.75b Rent block 章節（demo＋規格表）＋TOC＋關係圖 chip 更新、IP hero 章節的 Anatomy／Classes／Layout 同步；`design-system.md` 新增 Rent block 條目＋IP hero 條目改寫；`STYLE-DECISIONS.md` Q31（含兩個被否決做法：封面拉長填滿、租用區跨滿卡寬）；探索頁 `docs/ip-detail-hero-demo.html`。
+- **範圍**：純版面與元件重組，未動價格／版稅／名額／狀態／文案語意與任何商業規則。
+- **驗證**：`check_ds_sync.py` 全 PASS；`bump_ver` 已跑；瀏覽器實測見回報。
+
+## 2026-07-25 · IP Market 示例改真實知名 IP 名＋封面 promote 成可放真實圖（B 反饋導入 · Q30 · 附 ASSUMPTIONS UIA-088）
+
+延續同日「IP Market 換示例卡」那筆：使用者改要真實知名 IP 名、且「圖片也要換」。本輪把三卡與詳情頁的示例名換成真實 IP，並把封面由漸層色塊 promote 成可放真實封面圖的結構。**版權／肖像界線**：真實 IP 名只作純文字提及、描述為原創通用措辭；受版權角色圖與真人藝人照不由 AI 生成或代抓，真實授權圖一律由使用者自備放入 `images/`（見 ASSUMPTIONS UIA-088）。
+
+- **【B/元件】** `shared.css` 新增 `.ipm-card__cover`（IP Market 卡封面，由 ip-market 三個無 class 的 inline 漸層 div promote：3:4、品牌漸層佔位、`position:relative;overflow:hidden`）＋ `.ipm-card__cover-img`／`.ip-hero__cover-img`（`object-fit:cover`、絕對定位疊在佔位上）；`.ip-hero__cover` 加 `position:relative;overflow:hidden` 承接疊圖。無圖時顯示漸層＋IP 名，加 `<img class="…__cover-img" src="images/…">` 即鋪滿。比照站上 `.project-card__cover-img` 慣例。**Q30 裁決**。
+- **【B/內容】** `ip-market.html` 三卡改真實 IP 名：① 哈利波特 Harry Potter（Story World·Warner Bros.·Available）② A-Lin（Music·Sony Music·Bidding）③ 佩佩豬 Peppa Pig（Brand·Hasbro·Exclusive）；封面 div 改用 `.ipm-card__cover`、更新 `data-search`；順帶消掉 card2／card3 的兩組 inline 裸 hex 漸層（頁面裸值降）。
+- **【B/內容】** `ip-detail.html`（三卡共用詳情頁，對齊 card1）改哈利波特：title／麵包屑／hero 封面＋標題／owner 卡（avatar 首字→W、姓名→Warner Bros.）；描述改魔法世界通用措辭（保留 14 位角色以對齊 Assets 計數 14）。
+- **【B/i18n】** `js/i18n.js` 同步 en＋zh：`ip-market.card1.meta`／`card2.title`／`card2.meta`／`card3.title`／`card3.meta`、`ip-detail.owner-line`／`desc`／`owner.bio`／`footer1`；HTML fallback 一併同步。
+- **【D】** `design-system.md`（IP hero 條目補 `__cover-img`＋新增「IP market card cover」條目）／`design-system.html`（IP hero spec 表補 Classes＋Cover art 說明）／`STYLE-DECISIONS.md` Q30／`ASSUMPTIONS.md` UIA-088 同步。
+- **範圍**：純示例資料＋封面結構，未動價格／royalty／名額／狀態／商業規則；三卡數量維持 3。取代同日前一筆的「擬真原創命名」（墨海江湖／島語聲景／香境識別）。**跨頁舊 IP 名仍未動**（my-ip／e-shop／通知／fan-detail）。
+- **驗證**：`check_ds_sync.py` 全 PASS；`bump_ver` 已跑；瀏覽器實測見回報。
+
+## 2026-07-25 · 專案詳情「關於專案 › 展示內容」改直式相簿＋方形裁切＋展示媒體（B 反饋導入 · 附 ASSUMPTIONS CCR-009）
+
+使用者要展示內容照參考截圖的排版做，並把「相簿」改成**直式（portrait）多圖、第一張＝封面、每張可設定方形裁切位置**、可編輯。原本的固定素材槽（縮圖 1:1／海報 3:4／橫幅 16:9／相簿 3:2）換成單一直式相簿＋展示媒體兩區。**改到素材模型，另記 ASSUMPTIONS CCR-009。**
+
+- **【B/版面】** `project-detail.html` 展示內容卡重寫：卡標題下加灰色說明；**圖片素材沿用 DS 既有元件** `.upload-assets`＋`.upload-tile--3x4`（直式，非自製）——加作用域 `.pd-crop-gallery`：第一格帶「封面」藥丸（`.pd-crop__badge`）＋方形裁切窗（`.pd-crop`）、末格空 `upload-tile--3x4`＝「＋新增圖片」；**展示媒體**＝展示影片／展示音樂兩格（`upload-tile--file`，`.form-grid` 並排）。原固定四槽 upload-assets（縮圖/海報/橫幅/相簿）與預告單格移除。
+- **【B/互動】** 方形裁切窗 `.pd-crop`：滿寬正方形＋九宮格細線＋中央握把（讀作裁切工具、非空框），可**上下拖**（直式切方形寬滿版、只需選上下位置）：pointer 事件、位置限制在 [0, 圖高−框高]、存成 top%。內嵌 JS，支援滑鼠＋觸控。
+- **【B/資料】** 相簿第一張（封面）由 render JS 用專案海報（`p.poster`／與 hero 同源）；其餘為直式 demo 圖。
+- **【D/CSS】** `.pd-crop*` 與 `.pd-crop-gallery` 作用域進 `shared.css`（project-detail 專屬，比照 `.pd-hero`）：`.pd-crop-gallery` 內讓 `.upload-tile` 定位＋顯示縮圖（不走 data-upload 增強）、並中和 `.is-filled` 的「完成綠框」為中性邊；裁切窗用 `--foreground`＋九宮格 `color-mix` 細線、不觸品牌橘；封面藥丸沿用 `--primary`。i18n 加 `project-detail.showcase.*` 10 鍵。
+- **修正（同輪二稿）**：初版用自製 `.pd-gallery`＋裸白框，被指「壞掉且沒照元件」→改沿用 `.upload-tile--3x4`＋乾淨裁切窗（九宮格＋握把）＋中和綠框。
+- **修正（同輪三稿·現行）**：使用者要「用商品詳情那顆圖片元件（hover 顯示編輯/刪除），編輯開 popup 同時看到直與方、可調尺寸與位置」。→ 圖格改沿用商品詳情的 `.upload-tile.is-filled` ＋ hover `.upload-tile__actions`（編輯 `pencil`／刪除 `trash-2`，作用域補顯示、frosted 覆蓋層＝同一顆元件）；移除格上常駐裁切窗。**「編輯」開方形裁切彈窗 `#pd-edit-crop`（`.payout-modal`/`.payout-dialog`）**：左＝直式舞台＋可**移動**（拖框身）＋可**縮放**（拖右下握把）的方形選框、框外壓暗；右＝方形即時預覽（`background-size/position` 換算），左右即時連動。「刪除」移除該格。i18n 補 `project-detail.showcase.edit/delete`＋`pd-crop.title/sub/portrait/square`。原型：不落地。
+- **驗證**：本機 `?id=f-i-am-speed` 切「關於專案」實測——直式三圖（無綠框）＋封面藥丸＋各自裁切窗、＋新增圖片格、展示影片/音樂兩格；實拖第一張裁切窗成功位移，console 無錯。`check_ds_sync.py` 全 PASS。**「公開資訊」卡的攤開＋可編輯下一輪做。**
+
+## 2026-07-25 · 建立專案閘門卡：圖示不變色＋hover 左緣可選提示點（B 反饋導入 · Q28）
+
+使用者裁示：閘門專案類型卡的引導圖示已選時不用變色（維持灰）；已選指示點維持右上、預設顯示；滑過未選卡時左緣冒一顆小橘點當「可選」提示。
+
+- **【C】** `radio-card.css` `.radio-cards--gate` 移除「已選圖示轉 `--foreground`」規則——`.radio-card__lead` 恆為 `--muted-foreground`。
+- **【B/微互動】** 閘門＝「選了就進下一步」的 picker、無持久選取態（對齊使用者兩張截圖：default 無點、hover 右上橘點）：resting 用 `.radio-cards--gate .segmented__btn--active::after { background: none }` 覆蓋掉 base 的已選橘點＝完全無指示點；`.radio-cards--gate .segmented__btn:hover::after` 才在右上冒橘點，並 `:hover` 把卡底提亮到比 Q9 `--accent` 再亮一階的 `color-mix(--foreground 6%, --accent)`（閘門 scoped，使用者要更亮）＝橘點＋亮底一起當 hover 提示。
+- **【D】** `design-system.md`／`design-system.html`（radio-card `--gate` 說明）＋ `STYLE-DECISIONS.md` Q28 同步。
+- **範圍**：只動 `radio-card.css` 與文件；`create-project.html` 標記不變。
+- **驗證**：瀏覽器實測——已選卡圖示灰、右上橘點；hover 先募資左緣冒橘點；`check_ds_sync.py` PASS；`bump_ver` 已跑。
+
+## 2026-07-25 · 全站資料表收斂到 variant-table 樣式（Q29 · 元件層）＋專案詳情三處呈現微調（B 反饋）
+
+使用者兩輪並排比較後裁示「全站資料表都收斂成商品明細 `variant-table` 那個看」。資料表過去有兩支長相不同的元件（`ztor-table` 陰影 vs `variant-table` 自帶邊框），此輪把 `ztor-table` 的**框型**收斂成 `variant-table`（自帶邊框），站上資料表框型單一答案。密度先一併收斂、經 demo 後回退（見下）。同輪處理 project-detail hero 三處小調整。
+
+- **【A/元件收斂】** `ds-components/table.css`：`.ztor-table` 由 `box-shadow` 改 **1px `--border` 自框**（對齊 `.variant-table-wrap` 自框做法）。**間距／字級維持原樣**（padding `sp-16/sp-20`、表頭 fs-13、內文 fs-14）——首版連密度一起收斂到 `sp-10/sp-12`＋fs-11/fs-13，使用者看密度 demo（`_demo-table-density.html`）後選「框型收斂、間距復原」，故回退密度、只留邊框。詳見 STYLE-DECISIONS Q29。
+- **【A/防雙框】** 三種容器脈絡各自處理：(1) 新增規則 `.card > .ztor-table { border:0; border-radius:0 }`——flush 表（earnings／event-detail，表格是出框 `.card` 直接子代）由卡出框、取消表格自框；(2) inset／standalone 表（project-detail 發布更新／合作者包在 `overflow-x` 容器、earnings `.bd-tablecard`）保留自框；(3) `ds-components/admin-ip-bank-table.css` 的 `.admin-table-wrap .ztor-table` 由 `box-shadow:none` 改 `border:0`（wrap 出框）。
+- **【B/版面】** `project-detail.html`：預覽鍵 `btn--ghost`→`btn--outline`（與「編輯」同款）、加 `eye` icon、文案 `在 Ztor 上預覽`→`預覽`（i18n `project-detail.btn.preview` en `Preview on Ztor`→`Preview`、zh 同步）。
+- **【B/版面】** `project-detail.html`：hero 徽章列（`.pd-hero__badges`，狀態＋型別）由「標題／簡介下方」移到**標題上方**（`.pd-hero__head` 之前）。
+- **【D/文件】** `design-system.md` §4.23 Table 與 `design-system.html` table demo 說明同步改寫（自框／密度／字級／三脈絡防雙框）；`STYLE-DECISIONS.md` 新增 Q29。
+- **範圍**：只動呈現層，未改 `variant-table` 本身、未動 `.ztor-table__feature`／狀態格／可展開列等既有語意與各頁欄位。7 個 `ztor-table` 消費頁全部沿用同一元件、無逐頁改。
+- **驗證**：`check_ds_sync.py` 全 PASS；`bump_ver`→`20260725a`；瀏覽器實測 project-detail（inset 自框）、earnings 交易明細（flush 卡出框＋可展開列）、admin-platform-fees（wrap 出框費率樹）、event-detail（3 表 computed `border:0`）逐一確認無雙框、密度正常。
+
+## 2026-07-25 · IP Market 三張示例卡換成擬真原創華人風 IP（B 反饋導入）
+
+使用者要 IP Market 套用「更像華人市場有名 IP」的示例資料。決策取「擬真原創、華人風格」而非真實知名名號——貼近華人熟悉題材與命名，但為原創虛構，避免把真實權利人虛構成在 ztor 平台掛牌授權。維持既有三型（Story World／Music／Brand）、三狀態（Available／Bidding／Exclusive）與所有價格／版稅／名額／素材包數字不動，只換名稱、封面字、權利人、題材與 `data-search` 關鍵字。
+
+- **【B/內容】** `ip-market.html` 三張卡換名，封面字改中文兩字（CJK 經 fonts.css 三 stack fallback 到 Noto Sans TC）、更新 `data-search` 中英＋權利人關鍵字；card3 封面字級由 fs-22 回正 fs-24（新名較短）。三卡內容：
+    - 墨海江湖 Ink Sea Chronicles（水墨武俠故事世界 · 柳三川）
+    - 島語聲景 Island Tongues（台客語器樂庫 · 海風錄）
+    - 香境識別 Incense Realm（宮廟常民美學視覺系統 · 三合院設計所）
+- **【B/內容】** `ip-detail.html`（三卡共用的詳情頁，對齊 card1）：title／麵包屑／hero 封面＋標題／owner 卡（avatar 首字 H→柳、姓名→柳三川 Liu San-chuan）全部改成墨海江湖；描述改水墨武俠 jianghu 題材（保留 14 位具名角色以對齊 Assets 分頁計數 14）。
+- **【B/i18n】** `js/i18n.js` 同步 en＋zh：`ip-market.card1.meta`／`card2.title`／`card2.meta`／`card3.title`／`card3.meta`、`ip-detail.owner-line`／`desc`／`footer1`；HTML fallback 文字一併同步成新 en 值。
+- **範圍**：純示例資料替換，未動任何 token／元件／版面／商業規則／狀態；三卡數量維持 3（規格「3 sample listings」不變）。**跨頁未改**（見下）。
+- **待決**：舊 IP 名（Goldfish Patterns／Salt & Bitumen）另散見於 `my-ip`／`e-shop`／通知／`fan-detail` 的 i18n，屬各頁自有示例，本輪不動；是否全站對齊待使用者裁決。
+- **驗證**：`check_ds_sync.py` 全 PASS；`bump_ver` 已跑；瀏覽器實測見回報。
+
+## 2026-07-24 · 專案詳情麵包屑加入內容分類（專案／分類／專案名），移除 hero 分類徽章（B 反饋導入）
+
+使用者要麵包屑帶內容分類、形成「專案 / 分類 / 專案名」三段；既然分類已進麵包屑，hero 徽章列那顆分類徽章（原 `#pd-badge-cat`）就重複，移除。
+
+- **【B/版面】** `project-detail.html` 麵包屑（`.pd-detail__breadcrumb`）在「專案」與專案名之間插入 `#pd-crumb-cat` 一段（含分隔線）；hero 徽章列（`.pd-hero__badges`）刪掉 `#pd-badge-cat`，剩狀態（`badge--orange`）＋型別（`badge--info`）兩顆。
+- **【B/JS】** render：原 `badge('pd-badge-cat', …)` 改為 `set('pd-crumb-cat', t(store.catLabel(p.cat)))`，分類值資料驅動放進麵包屑；狀態／型別徽章與其餘渲染不變。
+- **驗證**：本機 `?id=adia-chan` 實測——麵包屑「專案 / 電影 / 陳松伶精選」三段，hero 徽章只剩「已上線・先募資」，console 無錯，`check_ds_sync.py` 全 PASS。
+
+## 2026-07-24 · 建立專案閘門卡加回頂部圖示＋標題/描述間距加大（B 反饋導入 · Q28 · radio-cards `--gate`）
+
+使用者指定：閘門（第一頁）的專案類型卡上面要把圖示加回來，且卡內標題與描述的間距要大一點；流程內表單維持純標題不動。
+
+- **【B/元件變體】** `radio-card.css` 新增 `.radio-cards--gate`：卡內改縱向堆疊（頂部引導圖示 `.radio-card__lead` → 標題 → 描述），`.radio-card__text` 間距由 3px 加大到 `--sp-6`，radio 點（::after）改絕對定位固定右上；`.radio-card__lead` 24px、色 `--muted-foreground` 恆定（已選不變色）。僅閘門套用。
+- **【B】** `create-project.html` 閘門容器加 `radio-cards--gate`，三張卡各加回 lucide 圖示（rocket／trending-up／calendar）。流程內表單（`radio-cards--3`、無 `--gate`）維持純標題、無圖示。
+- **【D】** `design-system.md`／`design-system.html`（radio-card 條目＋Classes＋新增 `--gate` demo 卡）、`STYLE-DECISIONS.md` Q28 同步；`.radio-cards--3` 的 Classes 說明順手清掉先前已撤的「橘底」字樣。
+- **範圍**：只動 `create-project.html` 閘門與 `radio-card.css`＋DS 文件；型別 key、FLOWS、產品規則未改。
+- **驗證**：瀏覽器實測——閘門三卡皆有頂部圖示、標題/描述間距變寬、已選右上小橘點；表單維持純標題。`check_ds_sync.py` PASS；`bump_ver` 已跑。
+
+## 2026-07-24 · 活動頁篩選區改用電子商店同款 list-toolbar＋filter-tabs（B 反饋導入）
+
+使用者附兩張截圖（活動 vs 電子商店），要求活動頁的篩選區「改成和電子商店一樣的設計」。
+
+- **【B/版面】** `events.html` 篩選區由「時段 tabs 一列＋segmented 狀態切換＋滿版搜尋 field-pill 一列」重構為 e-shop 兩層結構：上層 `.list-toolbar`（時段底線式 `tabs--underline-short` 在左｜`.list-toolbar__actions`＝搜尋收合 `search-collapse`＋`＋新增活動` primary 鈕在右），下層 `.list-status-row` 的 `.filter-tabs.filter-tabs--brand` 淡橘藥丸狀態篩選（全部／售票中／草稿，各帶即時計數）。「＋新增活動」由 page-intro 移入工具列（比照 e-shop 無 page-intro 建立鈕）。全部重用既有 ds-components（list-toolbar／filter-tabs／search-collapse／tabs），移除本頁 segmented.css 依賴。
+- **【B/元件套用】** 狀態切換由 `segmented` 改 `filter-tabs`：新增 `statusCount()` 依目前時段重算每項數量（全部＝時段內非草稿、售票中＝時段內售票中、草稿＝跨時段全部），填入 `.filter-tabs__count`；active 由 `filter-tabs__item--active`＋`aria-selected` 表示。搜尋改收合式（`search-collapse`）：點放大鏡展開、✕／Esc／點外部無字收起，移除舊的常駐 field-pill 與 `#ev-search-clear`。
+- **【B/sticky】** 比照 e-shop：wrapper `.ev-list-controls` 併吞清單，桌機（≥901px）`.list-toolbar` 貼頂 top:0、`.list-status-row` 貼 top:74px（58 tab 列高＋16 間距），屬本頁捲動容器版面、非元件。
+- **【B/搜尋修正】** 搜尋比對由「僅 `data-search`」改「`data-search`＋當前渲染文字」，讓各 persona 覆蓋後的真實名稱（如周湯豪「重慶」「成都」）也搜得到——原本 data-search 只含 default persona 關鍵字。
+- **範圍**：只動 `events.html`＋i18n 兩鍵（`events.btn.search`／`events.search.close`）；未改活動資料、狀態機或列結構。
+- **驗證**：本機 server 實測（nick persona）——上下兩排版面與 e-shop 一致；搜「重慶」命中重慶場、售票中／草稿切換正確、計數 全部4／售票中3／草稿2、搜尋收合展開正常；`check_ds_sync.py` PASS；`bump_ver` 已跑。
+
+## 2026-07-24 · 建立專案「專案類型」picker 收斂為建立商品同款 radio-cards、`--menu` 系列退場（B 反饋導入 · Q28 修訂）
+
+使用者比對建立商品的「商品選項」（`.segmented.radio-cards`，灰卡＋右上小橘點），指出建立專案的專案類型 picker「根本長不一樣」，要求改用那個元件、並把先前用的 list-menu 樣式從元件庫刪掉。
+
+- **【C】撤回上一輪的 `.radio-list--menu`／`--menu-compact`／`--menu-row` 變體**：`radio-list.css` 相關規則整段移除、留 tombstone；`design-system.html` 的 `--menu` demo 卡移除；`design-system.md` Radio list 條目改記退場。base `.radio-list` 與 `--collapsible`（上架設定用）不受影響。
+- **【B/元件套用】** `create-project.html` 閘門與流程內表單的專案類型都改用 `.segmented.radio-cards radio-cards--3`：閘門帶標題＋描述（`.radio-card__sub`）、表單只標題；`data-gate-type`／`data-type` hook 不變，`syncTypeUI` 兩個分支都改 toggle `segmented__btn--active`。閘門移除原本的 lucide 圖示（radio-cards 無內容圖示槽、與建立商品一致）。
+- **【C】移除橘色已選底（修訂本日稍早的 Q28）**：`radio-card.css` 的 `.radio-cards--3` 已選底色覆寫（40% 橘）刪除，`--3` 收斂成純 3 欄版面變體；已選一律回到 radio-cards 基準（Q13：灰邊框卡＋右上小橘點、無底色），與建立商品「商品選項」完全一致。
+- **【D】** `STYLE-DECISIONS.md` Q28 改寫為「專案類型 picker 統一用 radio-cards、無橘底、`--menu` 退場」；`design-system.md`（Radio list／Radio card）、`design-system.html` 同步。
+- **範圍**：只動 `create-project.html` 兩個 picker、`radio-list.css`、`radio-card.css` 與 DS 文件；型別 key、FLOWS、產品規則未改。
+- **驗證**：瀏覽器實測——閘門與表單皆為灰卡＋右上小橘點、無橘底，與建立商品一致；閘門選卡→表單同步、stepper 依型別展開（preorder 4 步）。`check_ds_sync.py` PASS；`bump_ver` 已跑。
+
+## 2026-07-24 · 支持方案改「共創套組編輯器」＋promote bundle-editor 元件（B 反饋導入 · 附 ASSUMPTIONS CCR-008）
+
+使用者指定：Phase 4（`full` 完整版）中，專案詳情「方案與承諾 › 支持方案」要照建立流程 create-campaign 的「新增套組」編輯器做。原本欄位（方案名稱／價格／E-Shop 商品引用／名額／額外權益）換成共創套組模型。**牽涉產品資料欄位，另記 ASSUMPTIONS CCR-008。**
+
+- **【D/元件】** promote `ds-components/bundle-editor.css`（`.fc-bundle`／`.fc-bundle__head`／`.fc-item-row`／`.fc-item-fields`／`.fc-add`／`.fc-add-item`）——由 create-campaign 頁內 `.fc-*` 樣式升進，tokenize 間距（sp-6/8/10/12/16/18）、固定尺寸保留（96px 縮圖、56/48px 鈕高）。第二消費者＝project-detail。**create-campaign 仍保留頁內同名副本，待遷移（治理待辦，已記 design-system.md）**——該檔正被另一 session 編輯，暫不動以免衝突；兩份不同頁、不同載入，無 runtime 衝突（check 8 只抓 [data-theme]／token 洩漏，plain class 不觸發）。
+- **【B/版面＋JS】** `project-detail.html` 的 pledges 面板：mount 由 `#pd-tier-editor`→`#pd-bundle-editor`；編輯器 JS 整段換成套組版：每張套組＝`.card.fc-bundle`（套組名稱／套組描述 `.form-grid` 2 欄 → 含股份／名額 `.form-grid` 2 欄 → 套組商品多件 `.fc-item-row`：`.upload-tile`＋名稱/描述＋移除），滿版新增鈕 `.fc-add`（新增套組）／`.fc-add-item`（新增商品）。至少 1 個套組（原至少 3）。原型：不持久化、不計算。
+- **【B/i18n】** `js/i18n.js` 新增 `pd-bundle.*` 17 鍵；舊 `pd-tier.*` 鍵保留未刪（無害）。
+- **【D/DS】** design-system.html 加 4.15b Bundle editor（link＋TOC＋demo 卡＋spec 表）；design-system.md Pillar 4 加 Bundle editor 條目。
+- **【B/資料】** 起始套組假資料改**依當前專案**產生（不再是 Early-bird/Vinyl 泛用值）：由 `?id=` 對應共用 `ztorProjects`（與 hero 同一物件），套組/商品名稱帶專案名、描述用專案語意，字樣依語言中英切換；**套組商品縮圖先用專案封面／海報**（`is-filled`＋`data-upload`＋`.upload-tile__thumb`，純 CSS 顯圖）。新增的空商品格維持可加圖「＋」。
+- **驗證**：本機切「方案與承諾」（LOVE RAGE HOPE）實測——套組名稱「數位版」、描述帶專案名、商品列縮圖顯示專案封面，console 無錯。`check_ds_sync.py` 全 PASS（89 元件；WARN 5/7/11 存量）。
+
+## 2026-07-24 · 建立專案「專案類型」picker 改橫排＋表單改用 radio-cards＋已選更明顯（B 反饋導入 · Q28）
+
+使用者截圖指定：閘門的專案類型清單要橫向排列、已選顏色再明顯一點；進入內頁後表單的「專案類型」要改用「建立商品」的並排卡元件（`.segmented.radio-cards`）。
+
+- **【B/元件套用】** `create-project.html` 表單 step-1 的「專案類型」由 `.radio-list--menu-compact` 改成建立商品同款 `.segmented.radio-cards radio-cards--3`（三張並排卡、僅標題），`data-type` hook 不變；`syncTypeUI` 的表單分支改 toggle `segmented__btn--active`（閘門仍用 `radio-list__item--active`）。補掛 `radio-card.css`。
+- **【B/元件變體】** 閘門的 `.radio-list--menu` 加 `--menu-row` 變體＝橫向三欄等寬卡（卡內 icon→標題→描述縱堆、radio 點置右上）。
+- **【B/已選強度 · Q28】** 兩個專案類型 picker 的已選由灰底／小橘點加強為淡橘底 `color-mix(--primary 40%, --input-surface)`：`radio-list.css` 改 `.radio-list--menu ...--active`（原 `--accent`）、`radio-card.css` 新增 scoped `.radio-cards.radio-cards--3 .segmented__btn--active`。**只影響這兩個 picker**，全站其他 `.radio-cards` 維持 Q13 已選呈現（灰邊框＋小橘點）。
+- **【D】** `radio-card.css` 新增 `.radio-cards--3`（3 欄，雙 class 提權蓋過預設 2 欄）；`design-system.md`（Radio list／Radio card 條目）、`design-system.html`（radio-card Classes）、`STYLE-DECISIONS.md` Q28 同步。`radio-list--menu-compact` 變體 CSS 暫留（無 consumer，未 tombstone）。
+- **範圍**：只動 `create-project.html` 兩個 picker 與 `radio-list.css`／`radio-card.css`；型別 key、FLOWS、產品規則均未改。
+- **驗證**：瀏覽器實測——閘門三卡橫排、已選淡橘底明顯；點卡進表單，表單「專案類型」為三張並排卡、已選同款淡橘底，stepper 依型別展開（fund 5 步）；DOM 核對 `formActive` 對應 `segmented__btn--active`、`radio-cards--3` grid=3 欄、`--menu-row` display=grid、radio-card.css 已掛。`check_ds_sync.py` PASS（WARN 皆存量）；`bump_ver` 已跑。
+
+## 2026-07-24 · 活動頁假資料改用周湯豪真實演出史（nick persona，B 反饋導入）
+
+使用者反饋：活動頁的假資料都用周湯豪的演唱會資訊，本地有資料可調用（`persona/NICKTHEREAL/資料彙整.md` 二、演唱會/活動史）。
+
+- **【B/i18n】** `js/i18n.js` 的 `PERSONA_DICT.nick` 活動覆蓋層整段換成真實演出：即將舉辦＝REALIVE 世界巡迴・中國段（成都 2026/3/28 東郊記憶 BPM／重慶 2026/4/25 蜚聲 LIVEHOUSE）＋台灣祭墾丁大灣演唱嘉賓（2026/4/4 屏東）；共看派對列改為 REALIVE (R2) 演唱會電影線上共看；已舉辦＝motorola REALIVE (R2) 特仕版臺北小巨蛋（2024/11/23）、LOVE·RAGE·HOPE Live House Tour 臺北 Legacy MAX（2025/9/19）；草稿＝REALIVE 世界巡迴廣州場、屏東黑鮪魚文化觀光季海洋音樂會。每列補真實日期（`row*.datetime`）、場館（`row*.venue`）、類型（`row*.meta`），event-detail 系列頁同步改中國段成都/重慶/廣州。**只動 nick persona 覆蓋層，default persona 通用假資料不變**（符合「周湯豪內容只集中在 nick 區塊」的架構）。
+- **【B/縮圖】** `events.html` 三列縮圖重新配對真實作品：共看派對→`nick-r2.jpg`（R2 海報）、墾丁音樂節→`hero-event.jpg`（演唱會人群）、小巨蛋 R2 特仕版→`nick-mxw.jpg`（現場照）；其餘沿用（成都 REALIVE→`nick-realive.jpg`、重慶→`nick-baipa.jpg`「白趴」、LOVE RAGE HOPE→`nick-lrh.jpg`）。
+- **範圍**：只動 `js/i18n.js`（nick 覆蓋層）與 `events.html`（3 張圖）；資料為真實演出史、屬 demo persona 內容，非產品規則。
+- **驗證**：本機 server 切 nick persona 實測——四列即將舉辦全部顯示真實巡演名稱、日期、場館，圖片 4 張皆 200 OK 並解碼；無 console error；`check_ds_sync.py` PASS。
+
+## 2026-07-24 · projects 發行模式由下拉改攤成 filter-tabs 一整排、＋cheat code 版本框去橘（B 反饋導入）
+
+- **【B】** `projects.html` 的發行模式（`#proj-type` select）改成一整排 `.filter-tabs.filter-tabs--brand`（`#proj-types`：所有類型／直接發佈／募資／預購，各帶計數），同一行靠左，對照 e-shop 狀態列（使用者指定「像截圖一樣攤開、同一行靠左」）。內容類別 select 以 `margin-left:auto` 推到右邊；`.list-status-row` 移除 `--end`。JS：`#proj-type` 的 change 監聽改為 `#proj-types` 的 click 監聽，render 同步 active＋每型計數（全部＝總數、其餘＝該發行模式的專案數）。head 補載 `filter-tabs.css`。此為前一輪「chip→下拉」的再反轉（發行模式現以攤開陳列為準）。
+- **【B】** cheat code 面板「版本 · Build version」外框（`js/devtools.js` 的 `.ztd__group--top`）去掉品牌橘：border 由 `color-mix(--primary 55%,--border)` 改 `--border`、背景由 `color-mix(--primary 7%,--card)` 改 `--card`（使用者「不要橘色框框」）。屬 devtools 面板樣式、非 DS 元件。
+- **【B】** 狀態 tabs 計數（`.tabs--count-plain .tabs__item-count`）顏色由 `--foreground-muted`（偏亮）改最暗文字 token `--muted-foreground`（使用者「顏色再深一點」）；`tabs.css`，同步 DS 註記。
+- **【B】** 清單欄序：類別欄移到當前目標之前（`project-list.css` grid 由 image·project·goal·time·category·status·chevron 改 image·project·**category·goal**·time·status·chevron；`projects.html` head 與 rowHtml、DS demo/anatomy 三處同步）。
+- **【B】** 當前目標的金額（`.project-list__goal-amt`）加 `margin-top:var(--sp-4)`，與上方進度條再拉開（使用者反饋，疊在 column gap 上）。
+- **【B】** 三處字型微調（使用者反饋）：百分比 `.project-list__goal-pct` 字重 `--fw-bold`→`--fw-semibold`；類型標籤 `.project-list__kind` 顏色 `--foreground-muted`→`--muted-foreground`（深）＋字重 `--fw-medium`→`--fw-regular`（細）。
+- **【B】** 欄名「當前目標」改「專案目標」（i18n `projects.col.goal`：zh 專案目標／en Project goal；DS demo columnheader 同步）。
+- **【B】** 卡片檢視格線間距 `.project-grid` gap `--sp-16`→`--sp-20`（使用者「間距稍微大一點」）；`shared.css`。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；發行模式點擊實測（募資→5 列、所有類型→12）、靠左 0px／內容類別靠右 0px；cheat code 版本框 border=`--border`／底=`--card`。
+
+## 2026-07-24 · 建立專案閘門：移除左上返回鈕、改表單底部置中關閉鈕（B 反饋導入）
+
+使用者指定：把閘門畫面左上角的「返回上一頁」鈕刪除，改在型別清單下方置中放一個帶「✕」圖示的關閉鈕。
+
+- **【C／B】** `create-project.html` 閘門移除左上 `.wizard__gate-back`（`btn--ghost`＋chevron＋「返回上一頁」文字），改在 `.radio-list--menu` 下方新增 `.wizard__gate-foot`（置中）內含 `.wizard__gate-close`（`btn--icon-circle`＋`x` 圖示）。`data-gate-back` hook 移到關閉鈕、離開行為不變（`history.back()`，無歷史回 `projects.html`）；`cpp.gate.back` 保留為關閉鈕 aria-label（行為＝返回上一頁）。
+- **【D/CSS】** `shared.css` 的 `.wizard__gate-back` 規則換成 `.wizard__gate-foot { display:flex; justify-content:center; margin-top: var(--sp-32); }`；關閉鈕沿用既有 `btn--icon-circle`（button.css），無新元件 CSS。
+- **範圍**：只動 `create-project.html` 閘門與其 `shared.css` 版面；型別 radio-list、表單、FLOWS、產品規則均未動。
+- **驗證**：瀏覽器實測——閘門左上已無返回鈕，型別清單下方置中一顆圓形 ✕ 關閉鈕；DOM 核對 `[data-gate-back]` 僅 1 個（＝關閉鈕）、`.wizard__gate-foot` justify-content=center、舊 `.wizard__gate-back` 已無。`check_ds_sync.py` PASS（WARN 皆存量）；`bump_ver` 已跑。
+
+---
+
 ## 2026-07-24 · 活動清單整列可點進詳情、編輯改連詳情頁、縮圖換真實活動圖片（B 反饋導入）
 
 使用者反饋：活動清單點整條都要能進入活動詳情；三個點點選單的「編輯」也應該進活動詳情（而非建立活動精靈）；縮圖不要停在空狀態的日曆圖示，要換成真的活動圖片。
@@ -222,6 +421,12 @@
 - **【D】** 三件套同步：`project-list.css`＋`design-system.md` §4.28／元件清單表＋`design-system.html` §4.27（rendered preview 改新九欄、含 campaign 列與 `—` 列兩種）。Data list 條目與 Project list 條目補註「project-list 2026-07-24 退出 Q20 icon-chip 家族」。
 - 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；棘輪檢查 10 未新增裸值；12 列於深／淺主題、1440／1100 寬度實測，圖片零破圖、篩選與卡片檢視未受影響。
 
+## 2026-07-24 · 佣金比例提示改用中性 info-banner（對齊 Deck for Sony）（B 反饋導入）
+
+- **【B】** 使用者指定 earnings 總覽的「影評人佣金比例 15%」提示要像 Deck for Sony 一樣。sony 用中性 `.info-banner`（accent 底＋細框＋灰字＋info 圓圈圖示），earnings 原本用 `.insight-row`（品牌橘 12% 調底＋percent 圖示）。改這一處 instance＝`.insight-row`→`.info-banner mt-16`、`percent` 圖示→`info`、`<p class="insight-row__text">`→`<span>`，文案（`earnings.ratio` i18n）不動。
+- **【C/清理】** earnings 移除已無用的 `insight-row.css` `<link>`。**`.insight-row` 元件本身不動**——fans-crm F3 Pareto 洞察仍在用（非零消費），不退場。
+- 驗證：起站實測提示改為中性深色 banner（無橘調）、info 圖示、文案與連結不變；`check_ds_sync.py` 全 PASS。
+
 ## 2026-07-24 · 總覽收入趨勢加「收入來源」篩選（B 反饋導入）
 
 使用者指定：把 Deck for Sony 財務總覽那種圖表上方 chip 篩選搬到 earnings 總覽的收入趨勢，篩選項目用本頁「收入來源分布」的 9 個來源。行為經兩輪定案——先試「只留一條＋各來源自算刻度」，使用者改要**忠於 sony 的聚焦式**：全部線都在、點一個把其他淡化。同一輪內直接改到位（下方為最終狀態，不另立條目）。
@@ -230,7 +435,10 @@
 - **【B · 聚焦式最終形態】** 圖表由單一「總收入」線改為**多線＋聚焦**：「全部」同時畫 9 條來源線＋1 條加總線（加總＝白色虛線，讀作 sum 參考）；點某來源就把該線標 `is-focus`、其餘（含加總）淡化到 opacity .14，靠 `[data-src-chart][data-focus]` 控制，機制與 sony 相同。所有線共用單一 y 軸（$0–28k），故小額來源（如授權 3%）是靠底部的低矮線——忠實反映占比，聚焦時靠淡化其他線讓它可追。10 條線為靜態 `<path>`（Catmull-Rom 平滑），JS 只切 focus class、不再換 `d`／刻度。
 - **【B/一致性】** 9 個來源各給一個「深色底可見」的 token 色，chip 色點、趨勢線、右側「收入來源分布」清單色點三者統一。順手修掉清單裡 3 個深色底不可見的裸色（`#000`→`--chart-4`、`#1db954`→`--status-info`、`#999`→`--muted-foreground`；授權改 `--destructive` 避免與平台串流同藍），全站頁面裸值 54→51。
 - **【D】** i18n 新增 `src.filter.all`（全部／All）；趨勢圖副標由「總收入趨勢」改「依收入來源 · 加總為虛線」（`earnings.legend.sub`），貼合多線呈現。頁面級 `<style>` 加 `.src-legend`／`.src-dot`／`.src-line` 聚焦規則（純 token、只覆寫自建 class，不動共用元件）。
-- **範圍**：聚焦作用於線圖；長條圖檢視（line/bar 切換的 bar）仍顯示總收入、不隨來源篩選（與 sony 同為線圖專屬）。data-chart-series 的既有 hover 標記保留（顯示加總，與虛線加總線一致）。
+- **【B · sony 化樣式】** 依使用者「這曲線圖要像 Deck for Sony 一樣 style」：9 條來源線各補一層半透明面積填色（`.src-area`，`fill:color-mix(來源色 15%)`，畫在線之下、聚焦時與線一起淡化），比照 sony 的 `.fin-area` 疊層山脈感。加總線依使用者「保留但不要這麼粗」由 2.5px 白實虛線改 **1.25px `--muted-foreground` 虛線**，退為淡參考線。已向使用者說明：因保留加總（撐大 y 軸到 $28k），來源仍會壓在底部、無法完全鋪滿如 sony——此為保留加總的必然取捨、使用者已接受。
+- **【B · 拿掉加總線＋來源尺度最終形態】** 使用者反映「選單一來源時所有曲線都被壓在下面、看不出差異」，並裁示「看不到全部（加總）而已，其他項目只是變淡」。定案：**移除加總虛線**（它在 $12k–25k、把 y 軸撐到 $28k 是壓扁來源的元兇），y 軸改用**來源高標** $7.5k／$5k／$2.5k／$0（電商峰值 ~$7k）。9 條來源就鋪滿整個高度、彼此可比、疊出 sony 山脈感。互動回到**淡化式**（非隔離）：「全部」＝9 條全亮；選某來源＝其餘**變淡**（opacity .14、仍可見）、選中高亮。曾短暫做成「隔離＋各來源自算刻度」（藏掉其餘），依使用者回饋改回淡化＋單一來源尺度。實作：9 條線／面積改以 topTick 7500 生成靜態 path；JS 回到單純 focus toggle（切 `is-focus`）；CSS 回到 dim 非 focus。
+- **【D】** 趨勢圖副標由「依收入來源 · 加總為虛線」改「依收入來源」（`earnings.legend.sub`），因加總線已移除。
+- **範圍**：淡化作用於線圖；長條圖檢視（line/bar 切換的 bar）仍顯示總收入、不隨來源篩選（與 sony 同為線圖專屬）。
 - 驗證：起站實測——10 個 chip 中英標籤正確；點電商聚焦時電商線亮、其餘與加總虛線淡化；點小額來源（授權）仍正確 `is-focus`、其他不 focus；「全部」清除 focus 全部復原；來源清單色點與 chip 一致；語言切換後仍運作；console 無錯。`check_ds_sync.py` 全 PASS；`bump_ver` → `20260724zh`。
 
 ## 2026-07-24 · 項目收益分頁微調：全部收入改 bento、彈窗去進度條、分頁改名（B 反饋導入）

@@ -3,6 +3,10 @@
    Source: /comparison/* feature-by-feature comparison tables.
    ============================================================ */
 
+/* 2026-07-25 Q29：全站資料表收斂到 variant-table（商品明細規格庫存表）的「自帶 1px 邊框」框型
+   （取代陰影，對齊 .variant-table-wrap 的自框做法）。**間距／字級維持原樣**——使用者看過 demo 後
+   裁決「線框對了，但欄位間距要像之前那樣大」，故只收斂邊框、不收斂密度（padding 16/20、表頭 fs-13、
+   內文 fs-14 皆保留舊值）。使 ztor-table 與 variant-table 的框型一致、但保留較鬆的閱讀節奏。 */
 .ztor-table {
   width: 100%;
   border-collapse: separate;
@@ -10,9 +14,9 @@
   font-family: var(--font-body);
   font-size: var(--fs-14);
   background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: var(--shadow-card);
 }
 
 .ztor-table thead th {
@@ -33,6 +37,14 @@
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   color: var(--foreground);
+}
+
+/* flush 情境：表格直接坐進出框的 .card（padding:0；如 earnings／event-detail 的表格卡）時，
+   卡已提供 1px 邊框，取消表格自框以免雙框。inset 情境（發布更新／協作者）的表格包在
+   overflow-x 容器裡、非 .card 直接子代，不受此規則影響、保留自框。2026-07-25 Q29 */
+.card > .ztor-table {
+  border: 0;
+  border-radius: 0;
 }
 
 .ztor-table tbody tr:last-child td {

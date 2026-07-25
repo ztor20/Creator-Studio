@@ -3,38 +3,37 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Events · Ztor Creator Studio</title>
-<script src="js/theme.js?v=20260724zzzj"></script>
-<link rel="stylesheet" href="ds-components/_tokens.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/fonts.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/button.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/badge.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/bento.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/tabs.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/segmented.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/field-pill.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/kpi.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/product-list.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/card.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/empty-card.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260724zzzj">
-<link rel="stylesheet" href="ds-components/list-footer.css?v=20260724zzzj">
-<link rel="stylesheet" href="shared.css?v=20260724zzzj">
+<script src="js/theme.js?v=20260725zc"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/fonts.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/button.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/badge.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/bento.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/tabs.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/kpi.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/product-list.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/card.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=20260725zc">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=20260725zc">
+<link rel="stylesheet" href="shared.css?v=20260725zc">
 <style>
-  /* 篩選工具列：時段分頁底下的「狀態切換＋關鍵字搜尋」(F3)。
-     pill/segmented chrome 由 ds-components 提供；此處只留 events 專屬 layout hook。 */
-  .events-toolbar {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: 16px;
+  /* F3 工作列＋狀態列（比照電子商店 e-shop）：list-toolbar（時段 tabs＋搜尋收合＋建立鈕）在上、
+     filter-tabs 狀態列在下。骨架來自 ds-components（list-toolbar / filter-tabs / search-collapse），
+     此處只留本頁捲動容器的 sticky 貼頂——與 e-shop 同一手法（top 位移＝tab 列高 58＋間距 16＝74）。 */
+  /* 與上方 KPI（bento）留間距——原時段 tabs 的 mt-24 併入 wrapper 後補回 */
+  .ev-list-controls { margin-top: var(--sp-24); }
+  @media (min-width: 901px) {
+    .ev-list-controls .list-toolbar { position: sticky; top: 0; z-index: 6; }
+    .ev-list-controls .list-status-row {
+      position: sticky; top: 74px; z-index: 5;
+      padding: 8px 0; background: var(--surface-page);
+    }
   }
-  .events-toolbar .field-pill--grow { flex: 1 1 360px; }
-  .events-search-clear {
-    border: 0; background: transparent; cursor: pointer; flex: none;
-    color: var(--muted-foreground); font-size: var(--fs-15); line-height: 1; padding: 2px 0;
-  }
-  .events-search-clear:hover { color: var(--foreground); }
 
   /* events 活動清單 8 欄覆寫 (F1)：縮圖｜活動｜日期時間｜場地｜票券｜收入｜狀態｜操作。
      欄數為本頁專屬，比照 e-shop 留頁內。 */
@@ -66,7 +65,6 @@
   .event-tickets--unlimited { color: var(--muted-foreground); }
 
   @media (max-width: 760px) {
-    .events-toolbar .field-pill { width: 100%; flex-basis: auto; }
     .product-list--events .product-list__head { display: none; }
     .product-list--events .product-list__row {
       grid-template-columns: 60px minmax(0, 1fr) auto;
@@ -99,9 +97,6 @@
           <h1 class="page-intro__title" data-i18n="events.h1">Events</h1>
           <p class="page-intro__sub" data-i18n="events.sub2">Manage your concerts, meet &amp; greets, and live events.</p>
         </div>
-        <div class="page-intro__actions">
-          <a class="btn btn--primary" href="create-event.html" data-i18n="events.btn.new">＋ New event</a>
-        </div>
       </div>
 
       <!-- F1/F2/F3 data body (account has events). The account-level "no events yet"
@@ -117,27 +112,38 @@
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.avg">Avg attendance</div><div class="kpi__value">76</div><div class="kpi__meta" data-i18n="events.kpi.avg-meta">From check-in data</div></div>
       </div>
 
-      <!-- F3 ① 時段分頁（預設 Upcoming）；計數由 JS 依實際列數填入 -->
-      <nav class="tabs mt-24" id="ev-tabs">
-        <div class="tabs__item tabs__item--active" data-tab="upcoming"><span data-i18n="events.tab.upcoming">Upcoming</span> <span class="tabs__item-count"></span></div>
-        <div class="tabs__item" data-tab="past"><span data-i18n="events.tab.past">Past</span> <span class="tabs__item-count"></span></div>
-      </nav>
-
-      <!-- F3 ② 狀態切換 + ③ 活動搜尋（名稱／場地／Lineup） -->
-      <div class="events-toolbar">
-        <div class="segmented" id="ev-status" role="group" aria-label="Filter by sale status">
-          <button class="segmented__btn segmented__btn--active" type="button" data-status="all" data-i18n="events.status.all">All</button>
-          <button class="segmented__btn" type="button" data-status="on-sale" data-i18n="events.status.on-sale">On Sale</button>
-          <button class="segmented__btn" type="button" data-status="draft" data-i18n="events.status.draft">Draft</button>
+      <!-- F3 工作列＋狀態列（比照電子商店 e-shop）：整塊 sticky，故 wrapper 併吞清單（見頁內 style 說明）。 -->
+      <div class="ev-list-controls">
+        <div class="list-toolbar">
+          <!-- 時段分頁（Upcoming／Past，底線式 tabs；計數由 JS 填入）-->
+          <nav class="tabs tabs--underline-short" id="ev-tabs" role="tablist">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="upcoming"><span data-i18n="events.tab.upcoming">Upcoming</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="past"><span data-i18n="events.tab.past">Past</span> <span class="tabs__item-count"></span></div>
+          </nav>
+          <div class="list-toolbar__actions">
+            <!-- 搜尋收合（點放大鏡展開成 field-pill；比照 e-shop）-->
+            <div class="search-collapse" data-ev-search-wrap>
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-ev-search-toggle aria-expanded="false" aria-label="Search" title="Search" data-i18n-aria-label="events.btn.search" data-i18n-title="events.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search events">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" id="ev-search" placeholder="Search by name, venue, performer" data-i18n-placeholder="events.filter.placeholder">
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-ev-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="events.search.close" data-i18n-title="events.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+            <a class="btn btn--primary" href="create-event.html" data-i18n="events.btn.new">＋ New event</a>
+          </div>
         </div>
-        <label class="field-pill field-pill--grow" aria-label="Search events">
-          <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
-          <input class="field-pill__input" id="ev-search" placeholder="Search by name, venue, performer" data-i18n-placeholder="events.filter.placeholder">
-          <button class="events-search-clear hidden" id="ev-search-clear" type="button" aria-label="Clear search" data-i18n-aria-label="events.search.clear">✕</button>
-        </label>
-      </div>
 
-      <section class="product-list product-list--events mt-16" id="ev-list" role="table" aria-label="Events">
+        <!-- 狀態篩選 · 第二排 filter-tabs（每項附數量，隨時段重算）-->
+        <div class="list-status-row">
+          <nav class="filter-tabs filter-tabs--brand" id="ev-status" role="tablist" aria-label="Filter by sale status">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status="all"><span data-i18n="events.status.all">All</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status="on-sale"><span data-i18n="events.status.on-sale">On Sale</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status="draft"><span data-i18n="events.status.draft">Draft</span><span class="filter-tabs__count" data-status-count>0</span></button>
+          </nav>
+        </div>
+
+        <section class="product-list product-list--events mt-16" id="ev-list" role="table" aria-label="Events">
         <div class="product-list__head" role="row">
           <div role="columnheader" aria-label="Thumbnail"></div>
           <div role="columnheader" data-i18n="events.col.event">Event</div>
@@ -182,7 +188,7 @@
         <!-- 共看派對（Watch Party，D149 §4.7）：線上同步共看、單一入場券、以人數上限計 -->
         <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="watch party 共看派對 friday movie night 週五電影夜 neon harbor 霓虹港灣 online 線上 co-watch nickthereal 周湯豪">
           <div class="product-list__image-cell" role="cell">
-            <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
+            <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
           </div>
           <div class="product-list__product" role="cell">
             <div class="product-list__body">
@@ -240,7 +246,7 @@
 
         <div class="product-list__row" role="row" data-period="upcoming" data-status="scheduled" data-search="online q&a with fanvestors 問答會 online zoom 線上 coastline nickthereal 周湯豪 nick chou 後援會 fan club q&a">
           <div class="product-list__image-cell" role="cell">
-            <div class="product-list__image"><img src="images/projects/nick-mxw.jpg" alt="" loading="lazy"></div>
+            <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
           </div>
           <div class="product-list__product" role="cell">
             <div class="product-list__body">
@@ -270,7 +276,7 @@
         <!-- Past -->
         <div class="product-list__row" role="row" data-period="past" data-status="ended" data-search="winter acoustic night 冬季原聲之夜 the wall taipei 台北 coastline rei nickthereal 周湯豪 nick chou realive 演唱會電影 concert film premiere 特映 in89">
           <div class="product-list__image-cell" role="cell">
-            <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
+            <div class="product-list__image"><img src="images/projects/nick-mxw.jpg" alt="" loading="lazy"></div>
           </div>
           <div class="product-list__product" role="cell">
             <div class="product-list__body">
@@ -397,6 +403,8 @@
         </div>
       </section>
 
+      </div><!-- /.ev-list-controls -->
+
       </div><!-- /.when-data -->
 
       <!-- Account-level empty state (no events created on this account) · spec 5.1.6
@@ -413,9 +421,9 @@
     </div>
   </main>
 </div>
-<script src="js/icons.js?v=20260724zzzj"></script>
-<script src="js/i18n.js?v=20260724zzzj"></script>
-<script src="js/sidebar.js?v=20260724zzzj"></script>
+<script src="js/icons.js?v=20260725zc"></script>
+<script src="js/i18n.js?v=20260725zc"></script>
+<script src="js/sidebar.js?v=20260725zc"></script>
 <script>
 /* Events F3 — 時段分頁 × 狀態切換 × 活動搜尋（名稱／場地／Lineup）三者 AND 過濾目前清單。
    靜態列各帶 data-period / data-status / data-search（含中英＋表演者名）；search 即時、可清除、無結果顯空狀態。
@@ -425,9 +433,9 @@
   const rows      = Array.from(list.querySelectorAll('.product-list__row'));
   const tabsEl    = document.getElementById('ev-tabs');
   const tabs      = Array.from(tabsEl.querySelectorAll('[data-tab]'));
-  const statusBtns= Array.from(document.querySelectorAll('#ev-status [data-status]'));
+  const statusBtns= Array.from(document.querySelectorAll('#ev-status .filter-tabs__item'));
   const searchEl  = document.getElementById('ev-search');
-  const clearEl   = document.getElementById('ev-search-clear');
+  const searchWrap= document.querySelector('[data-ev-search-wrap]');
   const emptyEl   = document.getElementById('ev-empty');
   const emptyClr  = document.getElementById('ev-empty-clear');
   const footerEl  = document.getElementById('ev-footer');
@@ -436,10 +444,20 @@
 
   let period = 'upcoming', status = 'all', q = '';
 
+  /* 狀態 filter-tabs 的每項計數（隨時段重算）：all＝目前時段非草稿、on-sale＝目前時段售票中、
+     draft＝跨時段所有草稿（比照 apply 的過濾邏輯）。 */
+  function statusCount(val) {
+    if (val === 'draft') return rows.filter(r => r.dataset.status === 'draft').length;
+    if (val === 'all')   return rows.filter(r => r.dataset.period === period && r.dataset.status !== 'draft').length;
+    return rows.filter(r => r.dataset.period === period && r.dataset.status === val).length;
+  }
+
   function apply() {
     let shown = 0;
     rows.forEach(r => {
-      const okQ = !q || (r.dataset.search || '').indexOf(q) !== -1;
+      // 比對 data-search（含中英別名）＋當前渲染文字，確保各 persona 覆蓋後的真實名稱也搜得到
+      const hay = ((r.dataset.search || '') + ' ' + (r.textContent || '')).toLowerCase();
+      const okQ = !q || hay.indexOf(q) !== -1;
       // D060/D033 (c): Draft is a status across time, not a time tab.
       // status=draft → show all drafts regardless of period; otherwise →
       // match active time tab + sale status, drafts excluded (unpublished).
@@ -456,10 +474,17 @@
     tabs.forEach(t => {
       const cnt = t.querySelector('.tabs__item-count');
       if (cnt) cnt.textContent = rows.filter(r => r.dataset.period === t.dataset.tab).length;
-      t.classList.toggle('tabs__item--active', t.dataset.tab === period);
+      const on = t.dataset.tab === period;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    statusBtns.forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.status === status));
-    clearEl.classList.toggle('hidden', !q);
+    statusBtns.forEach(b => {
+      const on = b.dataset.status === status;
+      b.classList.toggle('filter-tabs__item--active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      const cntEl = b.querySelector('[data-status-count]');
+      if (cntEl) cntEl.textContent = statusCount(b.dataset.status);
+    });
     list.classList.toggle('hidden', shown === 0);
     emptyEl.classList.toggle('hidden', shown !== 0);
     footerEl.classList.toggle('hidden', shown === 0);
@@ -469,9 +494,31 @@
   tabs.forEach(t => t.addEventListener('click', () => { period = t.dataset.tab; apply(); }));
   statusBtns.forEach(b => b.addEventListener('click', () => { status = b.dataset.status; apply(); }));
   searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
-  function clearSearch() { searchEl.value = ''; q = ''; searchEl.focus(); apply(); }
-  clearEl.addEventListener('click', clearSearch);
-  emptyClr.addEventListener('click', clearSearch);
+
+  /* 搜尋收合（比照 e-shop）：點放大鏡展開；✕／Esc／點外部（無字）收起並清空 */
+  const searchToggle = searchWrap && searchWrap.querySelector('[data-ev-search-toggle]');
+  const searchClose  = searchWrap && searchWrap.querySelector('[data-ev-search-close]');
+  function collapseSearch(clear) {
+    if (!searchWrap) return;
+    searchWrap.classList.remove('is-open');
+    if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+    if (clear) { searchEl.value = ''; q = ''; apply(); }
+  }
+  function clearSearch() { collapseSearch(true); }
+  if (searchToggle) searchToggle.addEventListener('click', () => {
+    searchWrap.classList.add('is-open');
+    searchToggle.setAttribute('aria-expanded', 'true');
+    searchEl.focus();
+  });
+  if (searchClose) searchClose.addEventListener('click', () => collapseSearch(true));
+  searchEl.addEventListener('keydown', e => { if (e.key === 'Escape') collapseSearch(true); });
+  document.addEventListener('click', e => {
+    if (!searchWrap || !searchWrap.classList.contains('is-open')) return;
+    if (searchWrap.contains(e.target)) return;
+    if (searchEl.value.trim()) return;   // 有字保持展開
+    collapseSearch(false);
+  });
+  if (emptyClr) emptyClr.addEventListener('click', clearSearch);
 
   /* kebab dropdown（⋯）：點外部關閉；點選項後關閉（比照電子商店列操作）*/
   document.addEventListener('click', e => {
@@ -492,8 +539,8 @@
   apply();
 })();
 </script>
-<script src="js/reveal.js?v=20260724zzzj"></script>
-<script src="js/devtools.js?v=20260724zzzj"></script>
-<script src="js/scenario.js?v=20260724zzzj"></script>
+<script src="js/reveal.js?v=20260725zc"></script>
+<script src="js/devtools.js?v=20260725zc"></script>
+<script src="js/scenario.js?v=20260725zc"></script>
 </body>
 </html>

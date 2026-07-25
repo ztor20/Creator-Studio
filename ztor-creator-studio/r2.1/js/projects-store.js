@@ -94,7 +94,7 @@
     },
     {
       id: 'moonlight-mv', created: '2026/04/02', name: '深水埗的月光 主題曲 MV',
-      cat: 'mv', family: 'music', icon: 'music', type: 'go-live', status: 'scheduled',
+      cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
       cover: IMG + 'cc-video-1.jpg', poster: IMG + 'ruguo-wo-keyi-dongmian.webp',
       desc: { en: 'The title-track music video, shot on the same night market set as the short film.', zh: '主題曲 MV，與短片共用同一組夜市場景拍攝。' },
       meta: { en: 'Goes live Dec 01 · cover art uploaded', zh: '12/01 上線 · 封面已上傳' },
@@ -189,7 +189,7 @@
     },
     {
       id: 'nick-flames', created: '2025/09/05', name: 'FLAMES',
-      cat: 'mv', family: 'music', icon: 'music', type: 'go-live', status: 'scheduled',
+      cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
       cover: IMG + 'nick-flames.jpg', poster: IMG + 'nick-flames.jpg',
       desc: { en: 'FLAMES — second single off LOVE RAGE HOPE. Official MV scheduled Sep 19.', zh: 'FLAMES，LOVE RAGE HOPE 第二主打；官方 MV 9/19 上線。' },
       meta: { en: 'Goes live Sep 19 · cover art uploaded', zh: '9/19 上線 · 封面已上傳' },
@@ -197,7 +197,7 @@
     },
     {
       id: 'nick-ni-shuo', created: '2024/08/20', name: '你說的都對',
-      cat: 'mv', family: 'music', icon: 'music', type: 'go-live', status: 'published',
+      cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'published',
       cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
       desc: { en: 'The 2024 single later included on LOVE RAGE HOPE — official MV Sep 2024.', zh: '2024 單曲，後收入 LOVE RAGE HOPE；官方 MV 於 2024/09 發布。' },
       meta: { en: 'US$5,400 lifetime · 410,000 streams', zh: '累計 US$5,400 · 410,000 次串流' },
@@ -267,8 +267,9 @@
     custom:   { en: 'Custom',     zh: '自訂' }
   };
 
-  /* cat → family（呈現層分組；音樂家族才顯示版稅分析區塊） */
-  const FAMILY = { movie: 'film', short: 'film', series: 'film', song: 'music', album: 'music', mv: 'music' };
+  /* cat → family（呈現層分組；音樂家族才顯示版稅分析區塊）。
+     2026-07-24 使用者裁示：MV 歸影視家族（拍攝／製作屬性接近影視，非音樂發行本體）。 */
+  const FAMILY = { movie: 'film', short: 'film', series: 'film', mv: 'film', song: 'music', album: 'music' };
 
   window.ztorProjects = {
     list: () => active().projects.slice(),
