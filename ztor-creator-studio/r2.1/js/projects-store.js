@@ -59,13 +59,15 @@
     },
     {
       id: 'mong-kok-shootout', created: '2025/12/08', fundFrom: '2026/02/10', name: '旺角狙擊',
-      cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'funded',
+      /* 2026-07-25：由 funded 推進到 published——募資達標、交付完成後上線，
+         是影視版版稅面板（募資＋已上線）唯一的樣本專案。 */
+      cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'published',
       cover: IMG + 'mong-kok-shootout-card.webp', poster: IMG + 'shuangyan-zhijian.webp',
       desc: { en: 'A rookie negotiator has 24 hours to close a kidnapping — against the mentor who vanished ten years ago.', zh: '一場 24 小時內必須結案的綁架案，菜鳥談判專家對上失蹤十年的師父。' },
-      meta: { en: '$50,000 of $50,000 reached · delivery in progress', zh: '$50,000 / $50,000 已達標 · 交付進行中' },
-      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Funding closed', zh: '募資已結束' }, period: { en: 'Campaign Feb 10 – May 10, 2026', zh: '募資期間 2026/02/10 – 05/10' } },
-      list: { goal: { en: '$50,000 / $50,000', zh: '$50,000 / $50,000' } },
-      bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
+      meta: { en: '$50,000 funded · 612 backers · Now streaming', zh: '$50,000 已募足 · 612 位支持者 · 現已上線' },
+      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Feb 10 – May 10, 2026 · Released', zh: '募資期間 2026/02/10 – 05/10 · 已上線' } },
+      list: { goal: { en: '$50,000 / $50,000', zh: '$50,000 / $50,000' }, left: { en: 'Released', zh: '已上線' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
     {
       id: 'pirate-queen', created: '2025/09/20', name: '海上霸姬鄭一嫂',
@@ -150,7 +152,37 @@
      專輯/單曲/MV/巡演/周邊取自其真實作品年表（見 persona/NICKTHEREAL/資料彙整.md），
      封面為真實素材（Apple Music／官方售票／媒體，僅供 demo 參考）；金額／募資狀態
      為示意值（原型演示各版面用，非真實銷售）。 */
+  /* 2026-07-25 使用者指定：以下五筆為指定要有的樣本，排在最前面（順序照指定）——
+       直接上線三首單曲（已上線）／募資一張專輯（募資中）／MV 募資（已上線）。
+     其中「你說的都對」由直接上線改為募資型，成為 MV（影視家族）＋已上線的版稅樣本。 */
   const PROJECTS_NICK = [
+    /* ── ① 直接上線單曲 ×3（已上線）────────────────────────────── */
+    {
+      id: 'nick-wo-de-i', created: '2025/08/10', name: '我的i',
+      cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
+      cover: IMG + 'nick-i.jpg', poster: IMG + 'nick-i.jpg',
+      desc: { en: 'The lead single from LOVE RAGE HOPE — official MV released Aug 22.', zh: 'LOVE RAGE HOPE 首波主打，官方 MV 於 8/22 上線。' },
+      meta: { en: 'US$9,200 lifetime · 620,000 streams', zh: '累計 US$9,200 · 620,000 次串流' },
+      bar: null, todo: null
+    },
+    {
+      id: 'nick-wei-le-ni', created: '2024/07/25', name: '為了你',
+      cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
+      cover: IMG + 'nick-wln.jpg', poster: IMG + 'nick-wln.jpg',
+      desc: { en: 'A 2024 standalone single — released Aug 02, 2024.', zh: '2024 獨立單曲，2024/08/02 發行。' },
+      meta: { en: 'US$3,180 lifetime · 240,000 streams', zh: '累計 US$3,180 · 240,000 次串流' },
+      bar: null, todo: null
+    },
+    {
+      id: 'nick-zou-san-guan', created: '2023/02/14', name: '走三關',
+      cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
+      cover: IMG + 'nick-baipa.jpg', poster: IMG + 'nick-baipa.jpg',
+      desc: { en: 'The REALIVE stand-out track released as its own single — a trap-flavoured take on a folk melody.', zh: 'REALIVE 中最受歡迎的一軌獨立發行，以 trap 重塑民謠旋律。' },
+      meta: { en: 'US$6,750 lifetime · 480,000 streams', zh: '累計 US$6,750 · 480,000 次串流' },
+      bar: null, todo: null
+    },
+
+    /* ── ② 募資專輯（募資中）───────────────────────────────────── */
     {
       id: 'nick-lrh', created: '2025/08/01', fundFrom: '2025/09/01', name: 'LOVE RAGE HOPE',
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'live',
@@ -161,6 +193,20 @@
       list: { goal: { en: '$88,600 / $120,000', zh: '$88,600 / $120,000' }, left: { en: '20 days left', zh: '剩 20 天' } },
       bar: { pct: 74 }, todo: { en: 'Approve vinyl test pressing', zh: '確認黑膠試壓樣' }
     },
+
+    /* ── ③ MV 募資（已上線）＝影視家族版稅樣本 ──────────────────── */
+    {
+      id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: '你說的都對 MV',
+      cat: 'mv', family: 'film', icon: 'film', type: 'fund', status: 'published',
+      cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
+      desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '集資拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
+      meta: { en: '$45,000 funded · 980 backers · Now streaming', zh: '$45,000 已募足 · 980 位支持者 · 現已上線' },
+      fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Jul 01 – Aug 15, 2024 · Released', zh: '募資期間 2024/07/01 – 08/15 · 已上線' } },
+      list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
+    },
+
+    /* ── 其餘專案 ─────────────────────────────────────────────── */
     {
       id: 'nick-realive', created: '2023/01/10', fundFrom: '2023/01/20', name: 'REALIVE',
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'funded',
@@ -180,36 +226,12 @@
       bar: null, todo: null
     },
     {
-      id: 'nick-wo-de-i', created: '2025/08/10', name: '我的i',
-      cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
-      cover: IMG + 'nick-i.jpg', poster: IMG + 'nick-i.jpg',
-      desc: { en: 'The lead single from LOVE RAGE HOPE — official MV released Aug 22.', zh: 'LOVE RAGE HOPE 首波主打，官方 MV 於 8/22 上線。' },
-      meta: { en: 'US$9,200 lifetime · 620,000 streams', zh: '累計 US$9,200 · 620,000 次串流' },
-      bar: null, todo: null
-    },
-    {
       id: 'nick-flames', created: '2025/09/05', name: 'FLAMES',
       cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
       cover: IMG + 'nick-flames.jpg', poster: IMG + 'nick-flames.jpg',
       desc: { en: 'FLAMES — second single off LOVE RAGE HOPE. Official MV scheduled Sep 19.', zh: 'FLAMES，LOVE RAGE HOPE 第二主打；官方 MV 9/19 上線。' },
       meta: { en: 'Goes live Sep 19 · cover art uploaded', zh: '9/19 上線 · 封面已上傳' },
       bar: null, todo: { en: 'Set monetization', zh: '設定變現方式' }
-    },
-    {
-      id: 'nick-ni-shuo', created: '2024/08/20', name: '你說的都對',
-      cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'published',
-      cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
-      desc: { en: 'The 2024 single later included on LOVE RAGE HOPE — official MV Sep 2024.', zh: '2024 單曲，後收入 LOVE RAGE HOPE；官方 MV 於 2024/09 發布。' },
-      meta: { en: 'US$5,400 lifetime · 410,000 streams', zh: '累計 US$5,400 · 410,000 次串流' },
-      bar: null, todo: null
-    },
-    {
-      id: 'nick-wei-le-ni', created: '2024/07/25', name: '為了你',
-      cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'published',
-      cover: IMG + 'nick-wln.jpg', poster: IMG + 'nick-wln.jpg',
-      desc: { en: 'A 2024 standalone single — released Aug 02, 2024.', zh: '2024 獨立單曲，2024/08/02 發行。' },
-      meta: { en: 'US$3,180 lifetime · 240,000 streams', zh: '累計 US$3,180 · 240,000 次串流' },
-      bar: null, todo: null
     },
     {
       id: 'nick-ma-xing-wo', created: '2025/07/01', name: '罵醒我 (Reimagined)',

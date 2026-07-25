@@ -4,6 +4,21 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-25 · 專案詳情分頁矩陣調整（版稅適用範圍／製作進度／收益備份退場）＋周湯豪假資料補齊（B 反饋導入 · C 撤除）
+
+使用者盤點「階段 × 類型 × 類別」三軸下詳情頁該有哪些分頁後的一批裁決。
+
+- **【C】「專案收益備份」分頁退場**：`project-detail.html` 移除分頁按鈕與整個 `data-panel="money"` 面板（270 行），連同 15 個只剩它在用的 i18n 鍵（`project-detail.tab.money`、`pd-cf.*` 共 14 鍵）。移除前先原樣備份成 [docs/專案收益備份-money-panel-20260725.html](docs/專案收益備份-money-panel-20260725.html)（`docs/` 不在部署範圍、僅供 repo 查閱）。
+- **【B/產品規則】版稅適用範圍改「募資型全類別」**：條件由 `type==='fund' && status==='published' && family==='music'` 改為 `type==='fund' && status==='published'`。使用者裁決理由——版稅是股份分潤的產物，只有募資型有股份；直接發佈與預購沒有股份，因此任何階段任何類別都不該有版稅。影視與音樂都有版稅，差別在面板內容。仍屬 CCR-006 待上游裁決範圍。
+- **【B/新版型】影視版版稅面板**：版稅面板改家族切版（`data-royalty-common` 共用 ＋ `data-royalty-fam="music|film"` 兩版）。共用＝季度版稅總額＋地區佔比；音樂版維持串流平台佔比＋Top 10 歌曲；**影視版新做 OTT 平台佔比（Netflix／Disney+／愛奇藝／Prime Video／CATCHPLAY+／friDay）＋授權明細表（平台／授權地區／授權期間／授權金／入帳狀態，6 筆）**。理由：一部電影沒有「Top 10 歌曲」，影視版稅的實際形態是逐筆 OTT 授權合約。i18n 新增 `pd-roy.ott.*`／`pd-roy.deal.*` 共 18 鍵。
+- **【C】「製作進度」改成只有募資才有**：`data-type` 由 `fund preorder` 改 `fund`（分頁按鈕與面板同步）。使用者裁決：**預購不需要對外交代製作進度，之後需要時再加**。
+- **【B/資料】** 旺角狙擊 `funded`→`published`（募資達標、交付完成後上線），成為影視版版稅面板的樣本；陳松伶精選已是募資＋音樂＋已上線，為音樂版樣本。
+- **【B/資料】周湯豪專案假資料**：依使用者指定補齊並把指定項排到最前——直接上線單曲 ×3（我的i／為了你／**走三關**為新增）、募資專輯 ×1（LOVE RAGE HOPE，募資中）、**MV 募資已上線**（你說的都對 MV，由直接上線改募資型；MV 屬影視家族，故為影視版版稅的第二個樣本）。其餘專案排在後面。
+- **【B/資料】周湯豪 eShop 假資料**：`pin` 改為「祝你好命 束口工裝褲」（顏色 ×腰圍 8 組變體）、`acetate` 改為「LOVE RAGE HOPE 限量黑膠 1/500」；新增 persona 版的組合包與拍賣資料——組合包「祝你好命 衣褲二件組」（Tee ＋工裝褲）與「LOVE RAGE HOPE 黑膠典藏組」、拍賣「REALIVE 巡演主吉他（親簽）」。組合包結構參考公開端 `shop-item.html?id=fan-selection-set`（一組多件、每件各自選規格、組合價低於單買）。
+- **【B/修正】persona 切換的三處資料不一致**：(a) 組合與競標兩分頁的列原本完全沒有 persona 支援，切到周湯豪仍顯示 Coastline 名稱——新增 `patchBundlesAndAuctions()` 以 `data-name` 為鍵替換；(b) 商品列的規格副標、狀態徽章與 `data-status` 未跟著換，會出現「已售完」卻顯示 96 件的矛盾——`patchEshopList()` 補上 meta／badge／data-status／limited 版庫存；(c) 低庫存通知條的商品名寫死 Coastline，改為依 persona 取名單。
+- **【D】MV 歸類修正**：MV 由音樂家族改歸影視家族（使用者指定）——`projects.html` 的類別下拉分組與 `CAT_GROUP`、`projects-store.js` 的 `FAMILY` 與 3 筆 MV 資料的 `family`／`icon` 同步。
+- 驗證：`check_ds_sync.py` 全 PASS（WARN 皆存量）；HTML 結構解析器驗證 `project-detail.html` 標籤完全平衡（移除面板時修掉 2 個殘留 `</div>`、補回 1 個 `.page` 收尾）；兩種版稅版型於瀏覽器實測切換正確；eShop 商品／組合／競標三分頁與低庫存通知條實測一致。
+
 ## 2026-07-25 · 我的收益：兩區塊改「共創計畫 · 深度明細」＋只在 OTT 版稅收益時出現（B 反饋導入）
 
 使用者指定參考共創前台（`my-cocreate-proposal.html?kind=music&filter=all`）：那邊要切到版稅收益系列才會出現「共創計畫 · 深度明細」與「淨收益分配」；r2.1 對應的是「計畫項目收益」與「淨收益分配」，**出現時機照連結調整、UI wireframe 照連結、design system 用本站自己的**。
@@ -35,6 +50,20 @@
 - **【B/資料】** 演職名單（導演/監製/主演×2/攝影/剪輯）與常見問答（發放時程/改方案/海外/數位取得）為 demo 示意文字，非產品規格；年齡分級選項（G/PG/PG-13/R/NC-17）與語言值同為示意。
 - **【D】** `project-detail.html` 補掛 `tag-input.css`；`js/i18n.js` 加 `project-detail.details.sub/synopsis-ph/cast-add/cast-role/cast-name/faq-add/faq-q/faq-a/language/tags-ph/tags-suggest` 11 鍵（舊 `*-val`／`done` 摘要鍵保留未刪、無害）。
 - **驗證**：本機 `?id=f-i-am-speed` 切「關於專案」實測——簡介＝專案簡介、演職 6 列、FAQ 4 則、年齡分級/語言 2 欄、標籤 3 chip＋建議，console 無錯。`check_ds_sync.py` 全 PASS。
+
+## 2026-07-25 · IP 市場篩選區改用電子商店同款 list-toolbar＋filter-tabs、清單補到 10 筆、移除 R 2.1.1 佔位（B 反饋導入）
+
+使用者截圖指定「這些做得和電子商店的 UI 一樣」，並要求刪掉「完整列表、排序與儲存搜尋」佔位塊、補更多假資料。比照 2026-07-24 活動頁的同款轉換，全部重用既有元件、無新增元件。
+
+- **【B/版面】** `ip-market.html` 篩選區由「滿版搜尋 field-pill ＋ 六格 select 卡」重構為 e-shop 兩層結構：上層 `.list-toolbar`（類型底線式 `tabs--underline-short` 在左、各帶即時計數｜`.list-toolbar__actions`＝收合搜尋 `search-collapse` ＋進階篩選 sliders 圖示 ＋「＋上架我的 IP」primary 鈕），下層 `.list-status-row` 的 `.filter-tabs--brand` 淡橘藥丸狀態篩選（不限狀態／可租用／競標中／獨家，各帶計數）。「＋上架我的 IP」由 page-intro 移入工具列（比照 e-shop／events）；「我的篩選」改為工具列的 sliders 圖示。
+- **【B/元件套用】** 類型與狀態由 `<select>` 改成 tabs／filter-tabs：新增計數邏輯——類型計數＝該類型 × 關鍵字（不含狀態，避免兩維度互相歸零）、狀態計數＝目前類型 × 關鍵字下各狀態數。搜尋改收合式（點放大鏡展開、✕／Esc／點外部無字收起），移除舊的常駐 field-pill 與 `#ipm-search-clear` 及其頁面 `<style>`。進階條件（版稅／租期／地區／可立即租用）保留、收進 `#ipm-adv` 面板由 sliders 圖示開合。
+- **【B/內容】** 示例卡由 3 筆補到 **10 筆**，覆蓋全部五型與三態：新增 寶可夢 Pokémon（品牌·可租用）／五月天 Mayday（音樂·可租用）／七龍珠 Dragon Ball（故事·競標）／超級瑪利歐 Super Mario（品牌·獨家）／葉問 Ip Man（故事·可租用）／戴愛玲 Princess Ai（人物角色·可租用）／超級星光大道 Super Idol（活動形式·競標）。各帶 `data-type`／`data-availability`／中英 `data-search`，i18n 補 en＋zh 共 21 鍵。**同 UIA-088 口徑：真實 IP 名為使用者指定的 demo 填充、非真實授權關係。**
+- **【C/撤除】** 移除「完整列表、排序與儲存搜尋」的 R 2.1.1 建置進度 `empty-stub`（使用者指定；清單已補齊，佔位說明不再需要），原位置留註解說明。
+- **【B/封面接線】** 十張卡的封面加上 `<img class="ipm-card__cover-img" src="images/ip/<slug>.jpg" onerror="this.remove()">`：**檔案放進 `images/ip/` 就自動鋪滿，沒放則移除 `<img>` 退回漸層＋IP 名佔位**，不會出現破圖。**本 repo 不內建任何版權素材**——角色圖／劇照／藝人照由使用者自備放入（站台會部署到公開 Vercel 網址與共用 GitHub repo）。
+- **【B/素材】** 使用者自備並指定放入 8 張封面圖至 `images/ip/`（哈利波特／A-Lin／佩佩豬／寶可夢／五月天／七龍珠／超級瑪利歐／葉問），檔名正規化為 IP slug（原檔含空白與 `é`，公開網址會有編碼問題）；ip-detail 的 hero 封面同步接上哈利波特。**封面一律「等比滿版」**（使用者裁示）——全部用預設 `object-fit:cover`，當日一度新增的 `--contain` 變體同日退場留墓碑；Pokémon 由方形 wordmark logo 換成使用者提供的直式主視覺，改用換素材而非改 fit 解決裁切。無檔的 2 張（戴愛玲／我是歌手）維持 `onerror` 退回漸層佔位。**素材為使用者提供的第三方版權／商標／肖像資產、ztor 未取得授權，公開發布前建議替換——詳見 ASSUMPTIONS UIA-088 追記。**
+- **【B/內容】** 活動形式示例兩度更換：先由「超級星光大道 Super Idol（金星娛樂）」改「我是歌手 Singer（湖南衛視）」，使用者再問「是否有香港或台灣的活動 IP」後定案為「**簡單生活節 Simple Life（中子創新 Neowave）**」——台灣原生的音樂／生活風格節慶品牌，本身就有向外授權辦節的實例，比電視選秀更貼「活動形式授權」語意，也與站上其他港台 IP（葉問／五月天／A-Lin／戴愛玲）同一市場脈絡。i18n `card10.meta` 同步。
+- **範圍**：呈現層重構＋示例資料，未動價格／版稅／名額／狀態語意與商業規則；空狀態三態（帳號無資料／冷啟動／無搜尋結果）維持不變。
+- **驗證**：瀏覽器實測——類型計數 全部10／故事3／音樂2／人物1／品牌3／活動1，狀態 可租用5／競標3／獨家2；點「音樂」→2 筆、再點「可租用」→1 筆、搜尋「任天堂」→1 筆、清空回 10 筆；進階面板開合正常；`check_ds_sync.py` 全 PASS、`bump_ver` 已跑。
 
 ## 2026-07-25 · IP 詳情 hero 改兩欄：租用側欄收進內容欄（新元件 rent-block）＋四格事實改 bento KPI（B 反饋導入 · Q31）
 
