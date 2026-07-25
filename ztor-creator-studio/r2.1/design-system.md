@@ -1233,7 +1233,7 @@ Static callout — no interactive states.
 └──────────────────────────────────────┘
 ```
 
-**Variants** — `.input` (line field), `.input--with-prefix` (extra left padding for a leading glyph), `.textarea` (multi-line, vertical resize), `.select` (native select, custom chevron, no OS arrow).
+**Variants** — `.input` (line field), `.input--with-prefix` (extra left padding for a leading glyph), `.textarea` (multi-line, vertical resize), `.select` (native select, custom chevron, no OS arrow), `.select--bare` (2026-07-26: no border/fill, for a select sitting directly on the page/toolbar — not inside any card/section — see below).
 
 **Sizes** — Single size only across all three (no sm/lg/xl size variants — that ladder existed only in the deleted `.ztor-input` replica, never in the real component).
 
@@ -1244,6 +1244,8 @@ Static callout — no interactive states.
 | default | — | bg `--card`, `0 0 0 1px var(--border)` shadow edge, text `--foreground` |
 | focus | `:focus` | `outline: none`; `0 0 0 1px var(--ring)` + `0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent)` soft glow |
 | disabled | `:disabled` | 靜音底 `--muted`、文字 `--foreground-muted`、`cursor:not-allowed`、`opacity .75`；鎖定欄位唯讀呈現（建立後固定不可編輯，D137，如商品細節頁的主分類 disabled select） |
+| `.select--bare` default | — | 無邊框無填色（`box-shadow:none`、`background:transparent`）、pill 圓角、`--foreground-muted` 文字、`--fs-12`／`--fw-medium`（比照同列 `.filter-tabs__item`） |
+| `.select--bare` hover | `:hover` | 浮出 `--muted` 底、文字轉 `--foreground` |
 
 **狀態缺口** — `aria-invalid`（錯誤 ring）樣式尚未在 `input.css` 實作；design-system.html 不示範，待補。（`:disabled` 已於 2026-07-16 補上，見上表）
 
@@ -1255,6 +1257,7 @@ Static callout — no interactive states.
 | `.input--with-prefix` | Extra left padding (`--sp-32`) for a leading glyph (currency, unit) |
 | `.textarea` | Multi-line field, vertical resize, min-height 100px |
 | `.select` | Native `<select>`, OS arrow dropped; pair with `.select-wrap` + `.select-wrap__icon` for a registered Tabler chevron |
+| `.select--bare` | 2026-07-26 新增：疊加在 `.select` 上（`class="select select--bare"`），去邊框去填色、pill 圓角，只在 hover 浮出 `--muted` 底——給不在任何卡片／section 內、直接坐在頁面工具列上的 select（如 projects.html 列表工具列的內容類別篩選，跟旁邊 `.filter-tabs` 同列） |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -1268,6 +1271,8 @@ Static callout — no interactive states.
 - ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
 - ✅ Do rely on the component's 1px `--border` shadow edge; do not add a second border.
 - ❌ Don't invent a size variant — the real component ships one size only.
+- ✅ Do use `.select--bare` only when the select has no card/section ancestor (新設計規則 2026-07-26：border 只留給疊在卡片／section 內的控件；不在任何卡片內、直接坐在頁面或工具列上的控件改無邊框，貼合旁邊 filter-tabs 等同列元件）。
+- ❌ Don't use `.select--bare` for a select sitting inside a `.card`/`.form-section--outlined`/form — it needs the 1px edge to read as a field there.
 
 
 **Code example**
@@ -1277,6 +1282,8 @@ Static callout — no interactive states.
 <input id="email" class="input" type="email" placeholder="you@studio.com">
 <textarea class="textarea" placeholder="Notes…"></textarea>
 <select class="select"><option>Choose one</option></select>
+<!-- 2026-07-26：不在卡片內、坐在工具列上的 select -->
+<select class="select select--bare"><option>All categories</option></select>
 ```
 
 **CSS** — [`input.css`](./ds-components/input.css)（原住 `shared.css`，2026-07-10 搬入）
