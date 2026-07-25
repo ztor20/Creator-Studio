@@ -4,6 +4,18 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-25 · ≤900px 導覽收進 burger（新增 `.app-nav-burger`，全站 shell）（B 反饋導入）
+
+使用者指出窄螢幕下側邊欄那一整排選項擠成一團（10 幾個項目換行、「通知與待辦」被壓成直排）、要收進 burger。原本 ≤900px 的做法是把 rail 攤成橫排（`shared.css` 舊註解自己寫著「full drawer/hamburger is R 2.1.x」），topbar 模式則更糟——直接 `display:none` 藏掉 nav、窄螢幕**完全沒有導覽入口**。本輪把 burger 補上，兩個 shell 一起處理。
+
+- **【A/新元件】** `header.css` 新增 `.app-nav-burger`：36px（`--control-h-sm`）方形圖示鈕，`display:none`，只在 ≤900px 顯示；`margin-left:auto` 靠右；圖示 menu ↔ x 依 `[data-nav-open]` 互換。
+- **【A】** `js/sidebar.js`：兩個 shell 的 markup 都在 logo 之後插入 burger（帶 `aria-expanded`／`data-i18n-aria-label="nav.menu"`），新增 `wireBurger()`——切 shell 根元素的 `[data-nav-open]`、點選項／Esc 自動關閉、寬度回到 >900px 清除旗標（matchMedia＋resize 雙保險）。
+- **【A】** ≤900px 收合規則：**sidebar 模式**（`shared.css`，因其載入順序在 ds-components 之後）隱藏 `> nav` 與 `.app-sidebar__actions`，展開時各佔滿一列、直向堆疊、`max-height:60vh` 自身可捲；**topbar 模式**（`header.css`）改為隱藏 `> nav` 包裝層（原本只藏 `ul`，包裝層仍佔位導致展開後卡在中間），展開時 `flex:1 1 100%` 落到自己一列。
+- **【A】** topbar 面板內的 mega-dropdown 改成 inline 常開（`position:static`、去陰影去邊框、縮排 24px）——桌機靠 hover 展開，觸控打不開會讓子頁完全點不到。
+- **【D/修 bug 級 infra】** `shared.css` 的 5 條 `@import`（header／icon／page-intro／field-system／settings）版本被寫死在 `?v=20260702a`，`bump_ver.py` 只改 HTML 的 `<link>`、不動 CSS 內的 @import，所以這五支元件 CSS 自 7/02 起改動**在瀏覽器端一直吃舊快取**（本輪 burger 樣式完全沒生效才發現）。已同步為當前版本；後續每次 bump 需一併更新（check 3 只掃頁面、抓不到這類 @import 陳舊版本）。
+- **【D】** i18n 新增 `nav.menu`（選單／Menu）；DS 文件同步：`design-system.html` 的 App shell 規格表補 burger 行為＋class 欄、`design-system.md` 的 Header (topbar) 條目補述。
+- 驗證：820／760px 兩種寬度、sidebar 與 topbar 兩種模式實測——收起只留 logo＋burger（sidebar 79px／topbar 61px 高）、展開為滿版直向面板（707／577px）、子選單可點、Esc／點選項／再按 burger 三種關閉皆有效、放大回 1280px burger 自動隱藏且 nav 恢復正常、`data-nav-open` 不殘留；console 無錯；`check_ds_sync.py` 全 PASS；`bump_ver` → `20260725zy`。
+
 ## 2026-07-25 · 收入來源篩選改 filter-tabs、選中色跟該來源色（新增 `--source` 變體）（B 反饋導入）
 
 使用者裁決（看過 A／B 兩案 demo 後選 A）：收入來源篩選的選中狀態改成電子商店那排 `filter-tabs` 的做法（淡色底 pill），但選中色**跟著該來源的點點顏色**走、「全部」用品牌橘。另指定授權收入的紅要改用電子商店「急需補貨」徽章那個紅（全站紅標籤只有這一個配色）。

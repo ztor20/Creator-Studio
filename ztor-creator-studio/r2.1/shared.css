@@ -16,11 +16,11 @@
 /* Header is the canonical DS component — single source in ds-components/header.css.
    All product pages load shared.css, so this @import gives every page the topbar
    from the one place; design-system.html links header.css directly. */
-@import url("ds-components/header.css?v=20260702a");
-@import url("ds-components/icon.css?v=20260702a");
-@import url("ds-components/page-intro.css?v=20260702a");
-@import url("ds-components/field-system.css?v=20260702a");
-@import url("ds-components/settings.css?v=20260702a");
+@import url("ds-components/header.css?v=20260725zy");
+@import url("ds-components/icon.css?v=20260725zy");
+@import url("ds-components/page-intro.css?v=20260725zy");
+@import url("ds-components/field-system.css?v=20260725zy");
+@import url("ds-components/settings.css?v=20260725zy");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -317,8 +317,21 @@ html[data-nav-mode="sidebar"] .app-notif__panel--rail {
     background: var(--sidebar);
     border-right: 0; border-bottom: 1px solid var(--border); }
   .app-sidebar__brand { padding: var(--sp-4) var(--sp-8); }
-  .app-sidebar__nav { flex-direction: row; flex-wrap: wrap; flex: 1 1 100%; }
-  .app-sidebar__actions { margin-top: 0; padding-top: 0; border-top: 0; flex-direction: row; }
+  /* 2026-07-25：改由 burger 收合（原本 nav＋actions 直接攤成橫排，10 幾個項目
+     會換行擠成一團、「通知與待辦」等長標籤還被壓成直排）。收起時只留 logo＋burger；
+     展開＝各自佔滿一整列、直向堆疊、過高時自身捲動。burger 樣式見 header.css。 */
+  .app-sidebar > nav,
+  .app-sidebar__actions { display: none; }
+  .app-sidebar[data-nav-open] > nav,
+  .app-sidebar[data-nav-open] .app-sidebar__actions {
+    display: flex;
+    flex: 1 1 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .app-sidebar[data-nav-open] > nav { padding-top: var(--sp-8); border-top: 1px solid var(--border); }
+  .app-sidebar__nav { flex-direction: column; flex-wrap: nowrap; flex: 1 1 100%; }
+  .app-sidebar__actions { margin-top: 0; padding-top: 0; border-top: 0; flex-direction: column; align-items: stretch; }
   .app-sidebar__subnav { padding-left: var(--sp-12); }
 }
 
