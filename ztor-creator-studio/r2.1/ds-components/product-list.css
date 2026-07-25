@@ -37,6 +37,19 @@
   transition: background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
 }
 
+/* 2026-07-26 使用者：「有商品列表的都要改成這樣」——縮圖放大後，有縮圖的清單列
+   上下留白比照專案列表加大到 --sp-20、列高改 116px（76px 縮圖＋上下 20）。
+   --orders 2026-07-23 已移除縮圖欄、--creators 走頭像，兩者維持 base 的 88/--sp-14。 */
+.product-list--eshop .product-list__row,
+.product-list--bundles .product-list__row,
+.product-list--auctions .product-list__row,
+.product-list--pickup .product-list__row,
+.product-list--ip .product-list__row,
+.product-list--events .product-list__row {
+  min-height: 116px;
+  padding-block: var(--sp-20);
+}
+
 .product-list__row:hover {
   background: var(--accent);   /* Q9 2026-07-13：列 hover 統一用 accent */
 }
@@ -54,8 +67,9 @@
    真正畫面上看到的是 --placeholder 覆蓋後的值（--muted 底／--border-soft 邊／52px／
    --muted-foreground icon）。改對齊那組真實呈現值，訂單/取貨列的縮圖才會跟電子商店一致。 */
 .product-list__thumb {
-  width: 52px;
-  height: 52px;
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 52px）*/
+  width: 76px;
+  height: 76px;
   flex: none;
   display: inline-grid;
   place-items: center;
@@ -72,8 +86,8 @@
 }
 
 .product-list__thumb .ztor-icon {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
 }
 
 .product-list__image-cell {
@@ -82,8 +96,9 @@
 }
 
 .product-list__image {
-  width: 60px;
-  height: 60px;
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 60px）*/
+  width: 76px;
+  height: 76px;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--card);
@@ -116,8 +131,8 @@
 
 /* 無圖占位・分類 icon 變體：以商品分類 icon 取代文字 mark（e-shop F4） */
 .product-list__image--placeholder .ztor-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   color: var(--muted-foreground);
 }
 
@@ -247,7 +262,7 @@
 .product-list--eshop .product-list__row {
   /* 後方資料欄收窄：分類/價格/狀態/庫存不過寬、右側更緊湊；名稱欄(1.6fr)吸收釋出空間。
      狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。 */
-  grid-template-columns: 26px 68px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
 }
 .product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
 .product-list--eshop .product-list__price,
@@ -258,14 +273,14 @@
 /* 套組分頁 — 同 product-list 外觀，較寬的成員欄；欄位：Image / Bundle / Members / Price / Status / Stock / Actions */
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
-  grid-template-columns: 68px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 84px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
 }
 
 /* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。
    單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
 .product-list--auctions .product-list__head,
 .product-list--auctions .product-list__row {
-  grid-template-columns: 68px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+  grid-template-columns: 84px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
 }
 .product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
 .product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-content: center; }
@@ -350,7 +365,7 @@
 
 .product-list--pickup .product-list__head,
 .product-list--pickup .product-list__row {
-  grid-template-columns: 44px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 108px 40px;
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 108px 40px;
 }
 .product-list--pickup .product-list__cell { color: var(--foreground); }
 
@@ -383,7 +398,7 @@
   /* 2026-07-25（使用者裁示）：來源改純文字放名稱上方（見 __source），類型徽章（原創／衍生／
      驗證中）獨立成一欄——名稱欄不再需要吸收徽章，收窄回單純文字寬度；新增 Type 欄固定寬度
      （最長字樣「Verifying」）。租出數/收入/操作欄維持窄（文字短）；Mktplace 欄只放切換鈕。 */
-  grid-template-columns: 60px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+  grid-template-columns: 76px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
 }
 .product-list--ip .product-list__cell { color: var(--foreground); }
 

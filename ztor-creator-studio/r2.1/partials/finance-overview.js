@@ -81,7 +81,72 @@
   var table = document.querySelector('[data-fin-table]');
   var legend = document.querySelector('[data-fin-legend]');
   var chart = document.querySelector('.fin-chart');
-  var state = { type: 'all', cat: 'all', role: 'all' };
+  var state = { type: 'all', cat: 'all' };
+
+  /* ---------- 我的項目：依 persona 從 projects-store 產生列 ----------
+     2026-07-26：原本 6 列名稱寫死在 markup（港片那批＝default persona），切到
+     周湯豪（nick）persona 時名稱不會跟著換。改由 window.ztorProjects.list() 取
+     當前 persona 的前 6 個專案渲染；收益類型／金額仍用固定示意值（SLOTS，依序
+     套用），好讓上方的類型 chips 維持可用。類別欄用專案自己的 cat
+     （movie/song/album…），data-fin-cat 與下拉選項一律用 cat 代碼比對，所以換
+     persona 也不會對不上。persona 切換由 cheat code 觸發整頁 reload。
+     2026-07-26 使用者：拿掉「身分」（發起人／支持者／影評人）——Creator Studio
+     底下列出的都是使用者自己發起的專案，不需要身分區分，SLOTS 隨之簡化。 */
+  var CAT_I18N = {
+    movie: 'fin.cat.film', short: 'fin.cat.short', series: 'fin.cat.series',
+    song: 'fin.cat.single', album: 'fin.cat.album', mv: 'fin.cat.mv',
+    event: 'fin.cat.event', merch: 'fin.cat.merch', document: 'fin.cat.doc',
+    custom: 'fin.cat.custom'
+  };
+  var SLOTS = [
+    { types: 'cocreate ott licence',   amt: 'NTD 1,000' },
+    { types: 'ott commission party',   amt: 'NTD 1,000' },
+    { types: 'ott commission advance', amt: 'NTD 100'   },
+    { types: 'ott',                    amt: 'NTD 100'   },
+    { types: 'cocreate licence',       amt: 'NTD 100'   },
+    { types: 'cocreate',               amt: 'NTD 1,590' }
+  ];
+  function renderMyItems(tableEl) {
+    var store = window.ztorProjects;
+    var body = tableEl && tableEl.querySelector('[data-fin-rows]');
+    if (!store || !body) return;                 /* 沒有 store 就保留 markup 既有列 */
+    var projects = store.list().slice(0, SLOTS.length);
+    if (!projects.length) return;
+    var html = '', cats = [];
+    projects.forEach(function (p, i) {
+      var slot = SLOTS[i];
+      var key = CAT_I18N[p.cat] || 'fin.cat.custom';
+      var label = store.catLabel(p.cat);
+      if (cats.indexOf(p.cat) < 0) cats.push(p.cat);
+      var img = p.poster || p.cover || '';
+      html += '<tr class="fin-rowlink" data-fin-cat="' + p.cat +
+              '" data-fin-types="' + slot.types + '" data-fin-go="project-detail.html?id=' + p.id + '#earnings">' +
+              '<td class="ztor-table__feature"><span class="ztor-table__media">' +
+                (img ? '<img class="ztor-table__thumb" src="' + img + '" alt="" loading="lazy">'
+                     : '<span class="ztor-table__thumb"></span>') +
+                '<span>' + p.name + '</span>' +
+              '</span></td>' +
+              '<td data-i18n="' + key + '">' + label.en + '</td>' +
+              '<td class="fin-amt">' + slot.amt + '</td>' +
+              '<td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>';
+    });
+    body.innerHTML = html;
+
+    /* 類別下拉重建：只列出當前 persona 這幾列真正出現的類別 */
+    var menu = tableEl.querySelector('[data-fin-dd="cat"] .dropdown__menu');
+    if (menu) {
+      var opts = '<button class="dropdown__item" type="button" role="option" data-fin-opt="all" data-i18n="fin.cat.all">All categories</button>';
+      cats.forEach(function (c) {
+        var k = CAT_I18N[c] || 'fin.cat.custom';
+        opts += '<button class="dropdown__item" type="button" role="option" data-fin-opt="' + c +
+                '" data-i18n="' + k + '">' + store.catLabel(c).en + '</button>';
+      });
+      menu.innerHTML = opts;
+    }
+    if (window.ztorIcons) window.ztorIcons.applyIcons(tableEl);
+    if (window.applyI18n) window.applyI18n(tableEl);
+  }
+  renderMyItems(table);
 
   if (table) {
     var allRows = Array.prototype.slice.call(table.querySelectorAll('[data-fin-rows] > tr'));
@@ -95,10 +160,8 @@
 
     function rowMatches(r) {
       var types = (r.getAttribute('data-fin-types') || '').split(/\s+/);
-      var roles = (r.getAttribute('data-fin-role') || '').split(/\s+/);
       if (state.type !== 'all' && types.indexOf(state.type) < 0) return false;
       if (state.cat !== 'all' && r.getAttribute('data-fin-cat') !== state.cat) return false;
-      if (state.role !== 'all' && roles.indexOf(state.role) < 0) return false;
       return true;
     }
     var matched = allRows.slice();
@@ -144,12 +207,23 @@
           if (label) { label.textContent = opt.textContent; label.removeAttribute('data-i18n'); }
           dd.open = false;
           if (kind === 'cat') state.cat = val;
-          else if (kind === 'role') state.role = val;
           if (kind !== 'date') refilter();   // 日期為展示用，不改列
         });
       });
     });
   }
+
+  /* ---------- 我的項目：整列可點 → 該專案的「我的收益」分頁 ----------
+     列上帶 data-fin-go（project-detail.html?id=<專案>#earnings）。2026-07-26：
+     屬性原本就在 markup 上、但從來沒有接線，所以列點了沒反應。 */
+  document.addEventListener('click', function (e) {
+    var row = e.target.closest('[data-fin-go]');
+    if (!row) return;
+    /* 列內若有連結／按鈕，讓它自己處理，不搶走 */
+    if (e.target.closest('a[href], button')) return;
+    var href = row.getAttribute('data-fin-go');
+    if (href) window.location.href = href;
+  });
 
   /* ---------- 類型分段篩選（圖表聚焦 + 表格篩選）---------- */
   if (legend) {
