@@ -172,20 +172,37 @@
         { combo: ['Cream', 'L'], sku: 'WY-HD-CR-L', stock: '14' }
       ]
     },
+    /* 黑膠單品（2026-07-25 使用者指定）：限量編號版，同時是「黑膠＋海報」組合包的成員。
+       ⚠ 圖沿用既有 coastline-acetate.webp（黑膠實拍），非周湯豪本人素材，之後可替換。 */
     acetate: {
-      name: 'CASETiFY ×祝你好命 好命限定禮盒 1/100', img: 'nick-casetify.jpg',
-      sub: '全球限量 100 份聯名禮盒，含 2 款鏡面殼＋磁吸支架＋卡套。附獨立編號。',
+      name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'coastline-acetate.webp',
+      sub: '第五張專輯 180g 雙碟裝黑膠，透明橘膠、內含歌詞海報。全球限量 500 張，附獨立編號。',
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
-      status: 'live', price: '338.00', cost: '120.00', stock: '64', cap: '100', sold: '36', threshold: '8',
-      delivery: 'qr',
-      catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品'
+      status: 'live', price: '68.00', cost: '26.00', stock: '312', cap: '500', sold: '188', threshold: '25',
+      catLabel: 'Physical Merchandise', subLabel: 'Music · 黑膠唱片'
     },
+    /* 褲子單品（2026-07-25 使用者指定）：與 Tee 一起被組進「衣服褲子組合包」。
+       ⚠ 圖沿用既有 nick-nike.jpg，之後可替換。 */
     pin: {
-      name: 'BEARBRICK ×祝你好命 1000%', img: 'nick-bearbrick.png',
-      sub: '周湯豪聯名 BE@RBRICK 1000% 積木公仔。',
-      cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
-      status: 'soldout', price: '260.00', cost: '90.00', stock: '0', threshold: '10',
-      catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
+      name: '祝你好命 束口工裝褲', img: 'nick-nike.jpg',
+      sub: '周湯豪主理品牌「祝你好命」水洗棉束口工裝褲，側邊立體口袋。4 種腰圍 × 2 色。',
+      cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
+      status: 'live', price: '58.00', cost: '21.00', stock: '96', threshold: '10',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
+      options: [
+        { name: 'Colour / 顏色', values: ['Black', 'Olive'] },
+        { name: 'Waist / 腰圍', values: ['28', '30', '32', '34'] }
+      ],
+      variants: [
+        { combo: ['Black', '28'], sku: 'WY-PT-BK-28', stock: '9' },
+        { combo: ['Black', '30'], sku: 'WY-PT-BK-30', stock: '18' },
+        { combo: ['Black', '32'], sku: 'WY-PT-BK-32', stock: '16' },
+        { combo: ['Black', '34'], sku: 'WY-PT-BK-34', stock: '7' },
+        { combo: ['Olive', '28'], sku: 'WY-PT-OL-28', stock: '8' },
+        { combo: ['Olive', '30'], sku: 'WY-PT-OL-30', stock: '15' },
+        { combo: ['Olive', '32'], sku: 'WY-PT-OL-32', stock: '17' },
+        { combo: ['Olive', '34'], sku: 'WY-PT-OL-34', stock: '6' }
+      ]
     },
     song: {
       name: '我的i · 單曲', img: 'nick-single.jpg',
@@ -228,6 +245,62 @@
   var DATASETS = { default: P_DEFAULT, nick: P_NICK /* userB 未列＝沿用 default */ };
   function active() { return DATASETS[persona()] || DATASETS.default; }
 
+  /* ── 組合包與拍賣（2026-07-25）──────────────────────────────────
+     e-shop 的「組合」與「競標」兩個分頁，列是寫死在 e-shop.html 的（沒有 ?id= 連結可查），
+     因此 persona 切換時原本不會跟著換，會露出 Coastline 的名字。這裡用列的 data-name
+     （內部查表鍵、不會被 i18n 覆寫）當 key，替換可見的名稱／圖／成員／價格／庫存。
+     組合包結構參考公開端 shop-item.html?id=fan-selection-set：一組多件、每件各自選規格、
+     組合價低於單買加總。⚠ 圖沿用既有 images/products/ 檔，之後可替換。 */
+  var BUNDLES_NICK = {
+    'Coastline starter pack': {
+      name: '祝你好命 衣褲二件組', img: 'nick-tee.jpg',
+      members: 'Tee ＋ 束口工裝褲 · 2 件', price: '$88', stock: '24 組（最少件數）'
+    },
+    'Vinyl + poster set': {
+      name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
+      members: '限量黑膠 ＋ 巡演寫真誌 · 2 件', price: '$92', stock: '18 組（最少件數）'
+    }
+  };
+  var AUCTIONS_NICK = {
+    'Stage-worn leather jacket': {
+      name: 'REALIVE 巡演主吉他（親簽）', meta: '九成新 · Inner Circle',
+      img: 'vintage-synth.webp', cat: '樂器', price: '$1,280'
+    },
+    'Signed tour poster 1 of 1': {
+      name: '白趴主舞台親簽海報 1 of 1', meta: '全新 · Superfan 以上',
+      img: 'signed-tour-poster.webp', cat: '紀念品', price: '起標 $120'
+    },
+    'Vintage synth': {
+      name: '《我的i》錄音室母帶盤帶', meta: '收藏品 · 已結標',
+      img: 'nick-realive-cd.jpg', cat: '紀念品', price: '$860'
+    }
+  };
+  function patchBundlesAndAuctions() {
+    if (persona() !== 'nick') return;
+    document.querySelectorAll('.product-list__row[data-type="bundle"]').forEach(function (row) {
+      var b = BUNDLES_NICK[row.getAttribute('data-name') || ''];
+      if (!b) return;
+      var t = row.querySelector('.product-list__title'); if (t) t.textContent = b.name;
+      var img = row.querySelector('.product-list__image img');
+      if (img) { img.setAttribute('src', 'images/products/' + b.img); img.setAttribute('alt', ''); }
+      var mem = row.querySelector('.product-list__category-cell'); if (mem) mem.textContent = b.members;
+      var pr = row.querySelector('.product-list__price'); if (pr) pr.textContent = b.price;
+      var st = row.querySelector('.product-list__stock');
+      if (st && !st.querySelector('.stock-tip__pop')) st.textContent = b.stock;
+      else if (st) { var sp = st.querySelector('span[data-i18n]'); if (sp) sp.textContent = b.stock; }
+    });
+    document.querySelectorAll('.product-list__row[data-type="auction"]').forEach(function (row) {
+      var a = AUCTIONS_NICK[row.getAttribute('data-name') || ''];
+      if (!a) return;
+      var t = row.querySelector('.product-list__title'); if (t) t.textContent = a.name;
+      var mt = row.querySelector('.product-list__meta'); if (mt) mt.textContent = a.meta;
+      var img = row.querySelector('.product-list__image img');
+      if (img) { img.setAttribute('src', 'images/products/' + a.img); img.setAttribute('alt', ''); }
+      var c = row.querySelector('.product-list__category-cell'); if (c) c.textContent = a.cat;
+      var pr = row.querySelector('.product-list__price'); if (pr) pr.textContent = a.price;
+    });
+  }
+
   var P = active();
   window.ZTOR_PRODUCTS = P;
   // 由 ?id 取商品；找不到回 null（頁面自帶預設 zine）。
@@ -265,12 +338,49 @@
       if (price) price.textContent = priceText(p);
       var catSub = row.querySelector('.product-list__cat-sub');
       if (catSub && p.subLabel) catSub.textContent = p.subLabel.split(' · ')[0];
+
+      /* 規格副標：persona 的規格模式可能與 default 那列不同（例：default 的 pin 是單一選項，
+         nick 換成有顏色×腰圍的工裝褲），沿用寫死的字會自相矛盾，故一併重寫。 */
+      var meta = row.querySelector('.product-list__meta');
+      if (meta && p.cat === 'physical') {
+        meta.textContent = (p.options && p.options.length)
+          ? p.options.map(function (o) {
+              return o.name.split(' / ').pop() + '（' + o.values.join('/') + '）';
+            }).join(' × ')
+          : '單一選項';
+      }
+
+      /* 狀態徽章與 data-status：同理，nick 的售罄／低量狀態與 default 不同（例：default 的
+         pin 售罄、nick 的工裝褲有貨），不換的話會出現「已售完」卻顯示 96 件的矛盾。
+         data-status 一併改，狀態篩選 tab 的分류與計數才會對。 */
+      var STATUS_MAP = {
+        live:    { ds: 'live', cls: 'badge--success', key: 'e-shop.row.active', zh: '販售中' },
+        low:     { ds: 'low',  cls: 'badge--error',   key: 'e-shop.row.low',    zh: '急需補貨' },
+        soldout: { ds: 'out',  cls: 'badge--neutral', key: 'e-shop.row.out',    zh: '已售完' }
+      };
+      var st = STATUS_MAP[p.status];
+      if (st && row.getAttribute('data-status') !== 'draft') {
+        row.setAttribute('data-status', st.ds);
+        var badge = row.querySelector('.product-list__status .badge');
+        if (badge) {
+          badge.className = 'badge ' + st.cls;
+          var bs = badge.querySelector('span[data-i18n]');
+          if (bs) { bs.setAttribute('data-i18n', st.key); bs.textContent = st.zh; }
+          else badge.textContent = st.zh;
+        }
+      }
+
       var stockCell = row.querySelector('.product-list__stock span[data-i18n], .product-list__stock');
       if (stockCell && stockCell.querySelector('.stock-tip__pop') == null) stockCell.textContent = stockText(p);
+      else if (stockCell) {
+        var sp = stockCell.querySelector('span[data-i18n]');
+        if (sp) sp.textContent = stockText(p);
+      }
     });
   }
+  function patchAll() { patchEshopList(); patchBundlesAndAuctions(); }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', patchEshopList);
-  } else { patchEshopList(); }
-  document.addEventListener('i18n:applied', patchEshopList);
+    document.addEventListener('DOMContentLoaded', patchAll);
+  } else { patchAll(); }
+  document.addEventListener('i18n:applied', patchAll);
 })();
