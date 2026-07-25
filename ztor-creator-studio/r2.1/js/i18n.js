@@ -240,6 +240,7 @@
     'nav.campaigns':          { en: 'Campaigns',             zh: '粉絲活動' },
     'nav.campaigns-sub':      { en: 'Fan engagement · TBD',  zh: '粉絲互動 · 規劃中' },
 
+    'nav.menu':               { en: 'Menu',                  zh: '選單' },
     'nav.search-label':       { en: 'Open search',           zh: '開啟搜尋' },
     'nav.search-placeholder': { en: 'Search projects, IP, fans, transactions…', zh: '搜尋專案、IP、粉絲、交易…' },
     'nav.search-hint':        { en: 'Type a keyword, then press Enter', zh: '輸入關鍵字後按 Enter' },

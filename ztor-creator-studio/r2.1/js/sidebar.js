@@ -268,6 +268,10 @@
     ${back}
     <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-topbar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
     ${marker}
+    <button class="app-nav-burger" type="button" aria-expanded="false" aria-label="Menu" data-i18n-aria-label="nav.menu" data-nav-burger>
+      <i data-lucide="menu" class="ztor-icon"></i>
+      <i data-lucide="x" class="ztor-icon"></i>
+    </button>
 
     <nav aria-label="Primary">
       <ul class="app-topbar__nav"><span class="app-topbar__nav-highlight" aria-hidden="true"></span>${topbarNavHtml(isAdminPlatform)}</ul>
@@ -383,6 +387,10 @@
     return `
     <a href="${isAdminPlatform ? ROSTER_PAGE : "index.html"}" class="app-sidebar__brand" aria-label="Ztor Creator Studio">${LOGO_SVG}</a>
     ${lead}
+    <button class="app-nav-burger" type="button" aria-expanded="false" aria-label="Menu" data-i18n-aria-label="nav.menu" data-nav-burger>
+      <i data-lucide="menu" class="ztor-icon"></i>
+      <i data-lucide="x" class="ztor-icon"></i>
+    </button>
 
     <nav aria-label="Primary">
       <ul class="app-sidebar__nav">${sidebarNavHtml(isAdminPlatform)}</ul>
@@ -481,6 +489,42 @@
       wireHighlight();
       wireHoverGroups();
     }
+    wireBurger(root);
+  }
+
+  /* ── Narrow-screen burger (≤900px, spec §6.8) ──────────────────
+     Both shells hide their nav (and, in sidebar mode, the action rail)
+     below 900px; this button expands them as a full-width stacked panel
+     under the top row. Above 900px the button is display:none and the
+     open flag is cleared, so the desktop rail/topbar is never affected. */
+  function wireBurger(root) {
+    const burger = root.querySelector("[data-nav-burger]");
+    if (!burger) return;
+    const setOpen = on => {
+      root.toggleAttribute("data-nav-open", on);
+      burger.setAttribute("aria-expanded", on ? "true" : "false");
+    };
+    burger.addEventListener("click", () => {
+      setOpen(!root.hasAttribute("data-nav-open"));
+    });
+    /* Navigating away or picking an item closes the panel. */
+    root.addEventListener("click", e => {
+      if (e.target.closest("[data-nav-burger]")) return;
+      if (e.target.closest("a[href]") && root.hasAttribute("data-nav-open")) setOpen(false);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && root.hasAttribute("data-nav-open")) setOpen(false);
+    });
+    /* Crossing back to desktop width must not leave a stale open flag.
+       matchMedia covers normal resizes; the resize listener is a fallback for
+       environments where the media-query change event does not fire. */
+    const syncWidth = () => { if (window.innerWidth > 900) setOpen(false); };
+    if (window.matchMedia) {
+      const mq = window.matchMedia("(min-width: 901px)");
+      mq.addEventListener ? mq.addEventListener("change", syncWidth) : mq.addListener(syncWidth);
+    }
+    window.addEventListener("resize", syncWidth, { passive: true });
+    syncWidth();
   }
 
   /* Scrolled state — topbar switches to a frosted backdrop blur once the
