@@ -163,14 +163,14 @@
      圖沿用現有 images/products/ 檔（非本人素材），價格為示意值。 */
   var P_NICK = {
     zine: {
-      name: 'REALIVE 巡演精裝寫真誌', img: 'nick-realive-cd.jpg',
+      name: 'REALIVE 巡演精裝寫真誌', img: 'tour-zine-vol-02.webp',
       sub: '48 頁巡演幕後寫真＋精裝 EP 卡冊。',
       cat: 'physical', subKey: 'zine', variant: 'single', edition: 'unlimited',
       status: 'low', price: '32.00', cost: '11.00', stock: '5', threshold: '6',
       catLabel: 'Physical Merchandise', subLabel: 'Books · 書籍'
     },
     tee: {
-      name: 'REALIVE 白趴 官方 Tee', img: 'nick-tee.jpg',
+      name: 'REALIVE 白趴 官方 Tee', img: 'tee-black.webp',
       sub: '白趴演唱會官方純棉 Tee，與「祝你好命」共同設計。4 種尺寸。',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '38.00', cost: '13.00', stock: '160', threshold: '12',
@@ -184,7 +184,7 @@
       ]
     },
     hoodie: {
-      name: '祝你好命 連帽外套', img: 'nick-hoodie.webp',
+      name: '祝你好命 連帽外套', img: 'zip-hoodie.webp',
       sub: '周湯豪主理品牌「祝你好命」刷毛連帽外套。6 種組合。',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'low', price: '78.00', cost: '30.00', stock: '58', threshold: '10',
@@ -295,7 +295,7 @@
       ]
     },
     membership: {
-      name: 'NICKTHEREAL 官方後援會', img: 'nick-member.jpg',
+      name: 'NICKTHEREAL 官方後援會', img: 'inner-circle-membership.webp',
       sub: '定期訂閱會員卡：搶先聽、優先購票、專屬社群。',
       cat: 'digital', subKey: 'membership', content: 'membership', variant: 'single', edition: 'unlimited',
       status: 'live', price: '10.00', cost: '', stock: '∞',
@@ -318,7 +318,7 @@
        的同型組合——Tee／帽／褲／鞋各自挑尺寸顏色，組合價低於單買加總（206→178，省 $28）。
        四件在 e-shop 都是可單買的獨立商品（cap／shoes／tee／pin，狀態皆販售中）。 */
     'Coastline starter pack': {
-      name: '祝你好命 選物四件組', img: 'nick-nike.jpg',
+      name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
       members: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件', price: '$178', stock: '16 組（最少件數）'
     },
     'Vinyl + poster set': {
@@ -327,9 +327,12 @@
     }
   };
   var AUCTIONS_NICK = {
+    /* 2026-07-26：改用使用者提供的 PRS Custom24 10-Top 實拍（PRS 10-Top.webp）。
+       ⚠ 該圖帶 PRS 官方品牌 logo 浮水印，屬廠商商品照非本人素材；僅供內部原型預覽，
+       對外展示／公開發布前需替換成無品牌標示或已授權的素材。 */
     'Stage-worn leather jacket': {
       name: 'REALIVE 巡演主吉他（親簽）', meta: '九成新 · Inner Circle',
-      img: 'vintage-synth.webp', cat: '樂器', price: '$1,280'
+      img: 'PRS 10-Top.webp', cat: '樂器', price: '$1,280'
     },
     'Signed tour poster 1 of 1': {
       name: '白趴主舞台親簽海報 1 of 1', meta: '全新 · Superfan 以上',
@@ -337,7 +340,7 @@
     },
     'Vintage synth': {
       name: '《帥到分手》錄音室母帶盤帶', meta: '收藏品 · 已結標',
-      img: 'nick-realive-cd.jpg', cat: '紀念品', price: '$860'
+      img: 'coastline-single.webp', cat: '紀念品', price: '$860'
     }
   };
   function patchBundlesAndAuctions() {
