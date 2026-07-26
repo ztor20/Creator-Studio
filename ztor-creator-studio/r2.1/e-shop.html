@@ -91,36 +91,8 @@
   .eshop-stock-bar__link { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
   .eshop-stock-bar__link:hover { color: var(--primary); }
   #eshop-stock-bar .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
-  .eshop-stock-bar-outer {
-    position: sticky;
-    /* top 給實際偏移量（不是 0）：跟頂緣的距離改成這個元素自己撐出來，不依賴
-       `.main` 的外部 margin-top（`--space-shell-gutter`）——那個 margin 只在桌機生效，
-       ≤900px 斷點會被歸零（見 shared.css `@media (max-width:900px)` 對 `.main` 的覆寫），
-       捲動後 sticky 貼齊變成完全貼頂、無間距（2026-07-21 使用者截圖回報）。改在這裡直接
-       給 --sp-16，不論 `.main` 那邊的 margin 是否還在都保證有間距。 */
-    top: var(--sp-16);
-    z-index: 6;
-    width: 100%;   /* 必須顯式設，靠 flex 預設 stretch 撐不滿（跟 .page 同一套寫法，見上方註解） */
-    max-width: 1280px;
-    margin-inline: auto;
-    padding-inline: 28px;
-    margin-bottom: 8px;
-  }
-  .eshop-stock-bar__card {
-    padding: 12px 16px;
-    background: var(--surface-shell);
-    border-radius: var(--radius-xl);
-    box-shadow: none;
-  }
-  /* 2026-07-21 使用者反饋（白天版）：低庫存通知條要改白底＋陰影，取代原本的 --surface-shell
-     灰底。只在淺色生效——深色 --surface-shell 本來就明顯亮於 --surface-page（見上方兩者色值
-     定義），色差已經夠分區，不需要改色再加陰影；淺色的 shell(#F0F0EE)／page(#FAFAFA) 色差
-     很淺，改白＋陰影才分得出來。陰影用 --shadow-card（E2 resting card 階，token 註解本來就
-     把「sticky 工作列」列為這階的用途之一，見 _tokens.css）。 */
-  html[data-theme="light"] .eshop-stock-bar__card {
-    background: var(--card);
-    box-shadow: var(--shadow-card);
-  }
+  /* 定位殼與視覺卡已 promote 至 ds-components/alert.css（.alert-inset ／ .alert--inset-card，
+     2026-07-26，活動頁情境提醒為第二個消費者）；此處只留 e-shop 專屬的句內元素樣式。 */
   /* 工作列殼層＋狀態列骨架（.list-toolbar / .list-toolbar__actions / .list-status-row）已 promote
      至 ds-components/list-toolbar.css（2026-07-23，projects 為第二個消費者）。本頁只留 sticky 貼頂——
      那是本頁捲動容器的版面決定，不屬元件。 */
@@ -271,8 +243,8 @@
          外層 #eshop-stock-bar 只管定位（跟 .page 同一套 max-width+margin:auto+padding，寬螢幕下經測
          `margin-inline: max(28px, calc(...))` 在這個 flex 直欄容器裡量到的寬度不會扣掉 margin、
          導致右側溢出，改用 .page 已驗證沒問題的寫法）；視覺卡（底色＋圓角＋內距）交給內層 __card。 -->
-    <div class="eshop-stock-bar-outer when-data" id="eshop-stock-bar">
-      <div class="alert alert--bar eshop-stock-bar__card" role="status">
+    <div class="alert-inset when-data" id="eshop-stock-bar">
+      <div class="alert alert--bar alert--inset-card" role="status">
         <div class="alert__body">
           <!-- 單句格式（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。 由 JS 組句、隨語言重建 -->
           <div class="alert__title" data-eshop-stock-msg></div>

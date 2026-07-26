@@ -30,17 +30,24 @@
     'no-event':   null,
   };
 
+  /* 兩層結構＝與 e-shop 低庫存通知條同款（.alert-inset 定位殼 ＋ .alert--inset-card 視覺卡，
+     ds-components/alert.css）：收窄置中對齊內容欄、實色卡、無 icon、無警示色。
+     2026-07-26 使用者裁示「活動的通知要用電子商店的通知」，取代原本的 alert--warning + alert--page-top 滿版版。 */
+  var outer = document.createElement('div');
+  outer.className = 'alert-inset when-data';
+  outer.hidden = true;
+
   var banner = document.createElement('div');
-  banner.className = 'alert alert--bar alert--warning alert--page-top when-data';
+  banner.className = 'alert alert--bar alert--inset-card';
   banner.setAttribute('role', 'status');
-  banner.hidden = true;
+  outer.appendChild(banner);
 
   var dismissedState = null;   // 記住被 × 關閉的那個狀態；切到別的狀態就再顯示
 
-  /* 掛載點：.main 第一個子元素（比照 e-shop 通知條，貼頂滿版需在 .page 之外） */
+  /* 掛載點：.main 第一個子元素（比照 e-shop 通知條，須在 .page 之外） */
   (function mount() {
     var main = document.querySelector('.main') || document.body;
-    main.insertBefore(banner, main.firstChild);
+    main.insertBefore(outer, main.firstChild);
   })();
 
   function curVal() {
@@ -52,13 +59,12 @@
   function render() {
     var state = curVal();
     var entry = STATES[state];
-    if (!entry || dismissedState === state) { banner.hidden = true; return; }
-    banner.hidden = false;
+    if (!entry || dismissedState === state) { outer.hidden = true; return; }
+    outer.hidden = false;
 
     var base = 'events.scenario.' + entry.k;
     banner.innerHTML =
-        '<span class="alert__icon"><i data-lucide="bell" class="ztor-icon"></i></span>'
-      + '<div class="alert__body">'
+        '<div class="alert__body">'
       +   '<span class="alert__title">' + T(base + '.title') + '</span>'
       +   '<span class="alert__meta">' + T(base + '.desc') + '</span>'
       + '</div>'
@@ -67,7 +73,7 @@
 
     banner.querySelector('.alert__dismiss').addEventListener('click', function () {
       dismissedState = state;
-      banner.hidden = true;
+      outer.hidden = true;
     });
     if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(banner);
   }
