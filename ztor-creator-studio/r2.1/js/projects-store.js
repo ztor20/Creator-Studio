@@ -212,13 +212,13 @@
     },
 
     {
-      /* 2026-07-26 使用者：「再加一個 帥到分手MV」。與上面那筆同名、同一首歌，差在發行模式——
-         上面是募資型（有版稅分頁），這筆是直接發佈型（無版稅），剛好補上 MV×直接發佈×已上線
-         這一格樣本。名稱刻意與上筆相同（使用者指定），如需區隔再加副標。 */
-      id: 'nick-sdfs-mv-live', created: '2025/08/22', name: '帥到分手 MV',
+      /* 直接發佈型 MV（無版稅），與上面那筆募資型 MV 對照，補上 MV×直接發佈×已上線這一格樣本。
+         2026-07-26 使用者：由原本的第二筆「帥到分手 MV」改成〈什麼都不必說〉，封面同步換成
+         persona 素材庫的 single_2022-07-15_2022-remix.jpg。 */
+      id: 'nick-sdfs-mv-live', created: '2025/08/22', name: '什麼都不必說',
       cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'published',
-      cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
-      desc: { en: 'The official MV for 帥到分手 — self-funded, released straight to the channel on Aug 22.', zh: '〈帥到分手〉官方 MV，自費製作、8/22 直接上線頻道。' },
+      cover: IMG + 'nick-smdbbs.jpg', poster: IMG + 'nick-smdbbs.jpg',
+      desc: { en: 'The official MV for 什麼都不必說 — self-funded, released straight to the channel.', zh: '〈什麼都不必說〉官方 MV，自費製作、直接上線頻道。' },
       meta: { en: 'US$5,400 lifetime · 1.9M views', zh: '累計 US$5,400 · 190 萬次觀看' },
       bar: null, todo: null
     },
