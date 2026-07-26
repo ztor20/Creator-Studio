@@ -85,6 +85,13 @@
 - **【C/撤除】** 「我的收益」分頁頂部的「⚠ 探索原型 — 收益模型提取自共創計畫，數字為示意、待產品裁決」橫幅整塊移除（使用者反饋直接撤除，非改文案）。
 - 驗證：改走本機 dev server（`http://localhost:4325`，先前誤用 `file://` 直開曾吃到瀏覽器層級快取、跟 disk 內容不同步，改用 dev server＋硬重整後複測皆正確）——展示內容只剩封面格；深度明細兩卡 `getComputedStyle` 確認 `grid-column: span 12`；組合包卡標頭空名稱時顯示「組合包 1」、輸入後即時變「組合包：{名稱}」、頭尾間距量測 16px；我的收益分頁首元素改為篩選 chip-group、無 banner；console 無錯；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726c`。
 
+## 2026-07-26 · 直接發佈的第二支 MV 改成〈什麼都不必說〉（B 反饋導入）
+
+- **【B/資料】** `js/projects-store.js` 的 `nick-sdfs-mv-live`（直接發佈／已上線／MV）由「帥到分手 MV」改名為 **什麼都不必說**，簡介同步改寫。原本兩支 MV 同名（差別只在發行模式），現在各自獨立：帥到分手 MV＝募資型（有版稅分頁）、什麼都不必說＝直接發佈型（無版稅），剛好各佔矩陣一格。
+- **【B/素材】** 封面換成 `images/projects/nick-smdbbs.jpg`（來源 `persona/NICKTHEREAL/images/single_2022-07-15_2022-remix.jpg`，gallery 標註為〈什麼都不必說 (2022 Remix)〉），原本 400×400 不需再裁。
+- 名稱依使用者字面採「什麼都不必說」未加「MV」字樣；類別欄仍顯示 MV／影視。
+- 驗證：專案頁實測 13 筆、該列名稱與封面正確；`node --check` 通過。**本輪未跑 bump_ver**——版本已凍結成 `?v=r2.1`，這是版本凍結後第一次發版，改動不再擴散到全站 1099 條連結。
+
 ## 2026-07-26 · 改名後的專案換上正確封面（B 反饋導入）
 
 - **【B/素材】** 改名時只換了名字沒換圖，使用者指出後從 `persona/NICKTHEREAL/images/`（周湯豪素材庫，含 `manifest.json` 與 `gallery.html` 對照表）取正確封面，複製進 `images/projects/`：
