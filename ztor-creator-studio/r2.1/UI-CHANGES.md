@@ -4,6 +4,39 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-26 · 活動頁所有演出時間整體後移 6 個月（B 反饋導入）
+
+承前一輪的時間軸重排，使用者要求「所有活動往後推移 6 個月」。位移後有三場由已舉辦翻成即將舉辦，分桶與排序一併重算。
+
+- **【B/資料】** 各場 +6 個月：墾丁 4/4→**2026/10/4**、重慶 4/25→**2026/10/25**、屏東黑鮪魚 5/2→**2026/11/2**、共看派對 2026/8/1→**2027/2/1**、LOVE·RAGE·HOPE 臺中 2025/10/11→**2026/4/11**、R2 特仕版 2024/11/23→**2025/5/23**。**跨年場維持 12/31**（日期語意鎖定於年末，位移後仍是未來場，改動反而不成立）。
+- **【B/分桶】** 相對今日（2026-07-26）重算：**即將舉辦 5**（墾丁 10/4 → 重慶 10/25 → 屏東 11/2 → 跨年 12/31 → 共看派對 2027/2/1，由近到遠）、**已舉辦 2**（LRH 臺中 2026/4/11 → R2 特仕版 2025/5/23）、**草稿 1**。DOM 順序實體重排（共看派對由第一列移到即將舉辦末列），確保各桶內仍是由近到遠。
+- **【B/狀態】** 由已舉辦翻為未來的三場，狀態與票務改回售前語意：重慶＝售票中 84/120（$2,520）；墾丁、屏東為音樂節嘉賓場＝預定、不限名額、無票收。
+- **【B/i18n】** nick 與 default 兩個字典的 `events.row*.datetime` 同步位移（default 亦整體 +6 個月以維持與分桶一致）。
+- **範圍**：只動 `events.html` 與 `js/i18n.js` 的日期／狀態／列順序；元件、版面、篩選邏輯未動。
+- **驗證**：本機 devserver 切 nick persona 實測——八列 period／status／日期逐列核對正確，即將舉辦 5、售票中 2、草稿 1，各桶內由近到遠；無 console error；`check_ds_sync.py` PASS。
+
+## 2026-07-26 · 活動頁依真實時間軸重排周湯豪演出（nick persona，B 反饋導入）
+
+使用者要求「周湯豪的活動頁按照時間重新上活動」，並指定參考 `persona/NICKTHEREAL/gallery.html`（43 場演出史）；另指定兩張主視覺素材。
+
+- **【B/資料】** 發現先前放在「即將舉辦」的成都(3/28)、墾丁(4/4)、重慶(4/25) **實際上都早於今天（2026-07-26）**，分桶錯誤。依真實日期重排八列：
+  - **即將舉辦（2，由近到遠）**：REALIVE (R2) 演唱會電影線上共看場（2026/8/1，共看派對）→ 臺北最High新年城跨年演出（2026/12/31，預定）。
+  - **已舉辦（5，由近到遠）**：屏東黑鮪魚文化觀光季海洋音樂會（2026/5/2）→ REALIVE 世界巡迴・中國段重慶場（2026/4/25 蜚聲 LIVEHOUSE）→ 台灣祭墾丁大灣演唱嘉賓（2026/4/4）→ LOVE·RAGE·HOPE Live House Tour 臺中場（2025/10/11 Legacy Taichung）→ motorola 呈獻 REALIVE (R2) 特仕版臺北小巨蛋（2024/11/23）。
+  - **草稿（1）**：REALIVE 世界巡迴新場次規劃（日期未定）。
+  - 共看派對列移到 DOM 最前，確保「即將舉辦」內部也是由近到遠；票券／收入依性質調整（音樂節嘉賓場＝不限名額無票收、巡演場＝售罄）。
+- **【B/素材】** 依使用者指定新增兩張官方主視覺（自 `persona/NICKTHEREAL/images/` 複製進 site）：`artwork-440x440.jpg` → `images/projects/nick-lrh-tour.jpg`（LOVE·RAGE·HOPE Live House Tour）、`REALIVE R2 特仕版.jpeg` → `images/projects/nick-r2-special.jpg`（R2 特仕版）。其餘列沿用既有素材。
+- **【B/i18n】** `PERSONA_DICT.nick` 活動區塊整段依新分桶改寫（row1＝跨年、row2–row6＝已舉辦、row7＝草稿），補齊各列 datetime／venue／tickets；event-detail 系列頁改指重慶場（第 2 場／共 3 場）。**default persona 同步調整** row1（改年末場，才符合 upcoming）與 row6（改已舉辦日期），避免非 nick 檢視出現「未來日期卻在已舉辦」的矛盾。
+- **範圍**：只動 `events.html`（列順序／分桶／圖片／票券欄）與 `js/i18n.js`（兩個字典的活動區塊）；未改元件、版面或篩選邏輯。
+- **驗證**：本機 devserver 切 nick persona 實測——八列 period／status／日期／場地／圖片逐列核對正確（即將舉辦 2、已舉辦 5、草稿 1，各桶內由近到遠）；兩張指定素材皆 200 且成功解碼（440px／399px）；無 console error；`check_ds_sync.py` PASS。
+
+## 2026-07-26 · 修好活動頁情境提醒橫幅（漏載 alert.css 導致無樣式）（B 反饋導入）
+
+使用者回報活動頁頂部的「下一場活動快開始了」提醒橫幅版面壞掉（圖示／標題／說明／✕ 垂直散開），要求修成與電子商店低庫存提示一致。
+
+- **【B/修正】** 根因＝`events.html` **未載入 `ds-components/alert.css`**。該橫幅由 `js/scenario.js` 依 Cheat Codes 的 Event Day 狀態動態注入（class `alert alert--bar alert--warning alert--page-top`），markup 本身正確，但頁面缺樣式表，元素退化成無樣式的垂直堆疊。補掛 `alert.css` 即復原為單行通知條（鈴鐺 icon＋標題＋同行說明＋右側 ✕、貼頂滿版 sticky），與 e-shop 低庫存通知條共用同一支元件。
+- **範圍**：只在 `events.html` `<head>` 補一行 `<link>`；未動 `scenario.js`、`alert.css` 或任何 markup／行為。
+- **驗證**：本機 server 切 Event Day＝Pre-Event 實測——橫幅 `display:flex`／`align-items:center`／`position:sticky` 皆生效、單行呈現、✕ 可關閉（`hidden=true`）；無 console error；`check_ds_sync.py` PASS。
+
 ## 2026-07-26 · 所有列表 hover 統一改浮起版（解決 STYLE-DECISIONS Q34）（B 反饋導入）
 
 使用者指名電子商店商品列表的 hover（截圖示範：卡底＋圓角＋陰影，列從清單裡浮出來）要套到「所有列表」。查了一輪：站上真正有「列 hover」語意的只有兩支——`product-list.css`（電子商店／取貨／活動／IP 市場等 7 頁共用）與 `project-list.css`（專案列表），兩者原本都是 Q9 2026-07-13 的純換底色，只有 `--eshop`／`--ip` 兩個 product-list 變體先前（2026-07-20/21）已改浮起。radio-list／ztor-table／data-list 等其餘清單本來就沒有「列 hover 浮起」這個語意（選取態或純資料表），不屬於這次的「商品列表」角色，未動。
@@ -84,6 +117,13 @@
 - **【B】** 「方案與承諾 › 支持方案」套組編輯器全面更名「組合包」：`js/i18n.js` 的 `pd-bundle.*` 系列 zh 文案（標題／名稱／描述／商品／新增鈕）由「套組」改「組合包」（僅此頁 `pd-bundle.*` 命名空間；create-campaign 流程用的是自己另一套 `fc.*` 副本，維持既有「套組」用語，未改）。卡片標頭原本固定顯示「組合包 N」，現在依「組合包名稱」欄位即時反應：有填名稱時顯示「組合包：{名稱}」、清空則退回「組合包 N」（新增 i18n key `pd-bundle.head-named`，`project-detail.html` 的 `refresh()`／`headline()` 加上 `data-b-name` 的 `input` 監聽）。同時卡頭與欄位間距 `.fc-bundle__head { margin-bottom }` 由 `--sp-6` 加大到 `--sp-16`（`ds-components/bundle-editor.css`），對齊使用者反饋的「間距加大」。
 - **【C/撤除】** 「我的收益」分頁頂部的「⚠ 探索原型 — 收益模型提取自共創計畫，數字為示意、待產品裁決」橫幅整塊移除（使用者反饋直接撤除，非改文案）。
 - 驗證：改走本機 dev server（`http://localhost:4325`，先前誤用 `file://` 直開曾吃到瀏覽器層級快取、跟 disk 內容不同步，改用 dev server＋硬重整後複測皆正確）——展示內容只剩封面格；深度明細兩卡 `getComputedStyle` 確認 `grid-column: span 12`；組合包卡標頭空名稱時顯示「組合包 1」、輸入後即時變「組合包：{名稱}」、頭尾間距量測 16px；我的收益分頁首元素改為篩選 chip-group、無 banner；console 無錯；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）；`bump_ver` → `20260726c`。
+
+## 2026-07-26 · 工作列右側留白加大、建立專案鈕尺寸修齊（B 反饋導入）
+
+- **【B】** `ds-components/list-toolbar.css` 的 `.list-toolbar` 內距由 `padding-inline: var(--sp-8)` 改成 **`var(--sp-8) var(--sp-20)`**（左 8／右 20）。左右刻意不對稱：第一個 tab 自己還有 14px 內距，左側視覺留白本來就有 22px；右側動作群沒有內距，8px 會讓建立鈕貼著殼層邊緣。實測改後 22 / 20，視覺對齊。四個消費頁（projects／my-ip／e-shop／events）一起受惠。
+- **【B】** `projects.html` 的「＋ 建立專案」拿掉 `btn--sm`。使用者指出電子商店的尺寸才對——全站清單頁的主 CTA 都是 `.btn.btn--primary`（36px／`fs-13`／`0 14px`），只有 projects 掛了 `--sm` 變成 28px／`fs-12`／`0 10px`。orders／pickup／my-ip／events 逐頁核對過，都沒有這個問題。
+- **【D/文件】** `design-system.md` 的 List toolbar 條目補上這兩條：不對稱內距的理由、以及「右側主 CTA 不要加 `btn--sm`」。
+- 驗證：實測左 22／右 20、按鈕 36px／13px／`0 14px`，與 e-shop 的 `split-button__main` 完全一致。
 
 ## 2026-07-26 · 直接發佈的第二支 MV 改成〈什麼都不必說〉（B 反饋導入）
 
