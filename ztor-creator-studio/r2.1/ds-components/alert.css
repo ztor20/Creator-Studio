@@ -394,3 +394,40 @@
 .alert--error   .alert__cta { color: var(--destructive); }
 .alert--success .alert__cta { color: var(--status-success); }
 .alert--info    .alert__cta { color: var(--status-info); }
+
+/* ── .alert-inset ＋ .alert--inset-card ── 收窄置中的頁面通知條（取代 .alert--page-top 滿版版）
+   Promoted 2026-07-26 自 e-shop 頁內 `#eshop-stock-bar`／`.eshop-stock-bar__card`（Figma 856:25546）：
+   活動頁的情境提醒（js/scenario.js）要與電子商店低庫存提醒同一款，兩處消費 → 升為元件。
+
+   兩層結構（缺一不可）：
+     .alert-inset                       外層＝定位殼，只管貼頂與對齊內容欄，無視覺
+       .alert.alert--bar.alert--inset-card   內層＝視覺卡（實色底＋圓角＋內距）
+
+   為什麼分兩層：外層用 `.page` 同一套 max-width+margin:auto+padding-inline 配方對齊內容欄。
+   單層寫 `margin-inline: max(...)` 在 `.main` 這個 flex 直欄容器裡量到的寬度不會扣掉 margin，
+   寬螢幕會右側溢出（2026-07-21 於 e-shop 實測）。
+   `top` 給實際偏移量而非 0：≤900px 斷點 `.main` 的 margin-top 會被歸零，靠自己撐間距才不會貼死。
+   須為 `.main` 的第一個子元素。 */
+.alert-inset {
+  position: sticky;
+  top: var(--sp-16);
+  z-index: 6;
+  width: 100%;              /* 顯式設；靠 flex 預設 stretch 撐不滿 */
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 28px;
+  margin-bottom: 8px;
+}
+.alert--inset-card {
+  padding: 12px 16px;
+  background: var(--surface-shell);
+  border-radius: var(--radius-xl);
+  box-shadow: none;
+}
+/* 淺色：shell(#F0F0EE)／page(#FAFAFA) 色差太淺，改白底＋E2 卡陰影才分得出層；
+   深色的 --surface-shell 本來就明顯亮於 --surface-page，不需再加。 */
+html[data-theme="light"] .alert--inset-card {
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.alert--inset-card .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }

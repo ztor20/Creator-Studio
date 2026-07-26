@@ -1627,6 +1627,11 @@
     'events.rowWP.meta':       { en: 'Watch Party',                        zh: '共看派對' },
     'events.rowWP.datetime':   { en: 'Feb 1, 2027 · 9:00 PM',              zh: '2027/2/1 · 晚上 9:00' },
     'events.rowWP.venue':      { en: 'Online · Neon Harbor',               zh: '線上 · 霓虹港灣' },
+    /* 第二場共看派對：一同回顧既有演出實錄（共看內容＝該場 live house 巡演） */
+    'events.rowWP2.title':     { en: 'Live house tour — Watch-back party', zh: 'Live House 巡演 — 線上一同回顧' },
+    'events.rowWP2.meta':      { en: 'Watch Party',                        zh: '共看派對' },
+    'events.rowWP2.datetime':  { en: 'Aug 08, 2026 · 9:00 PM',            zh: '2026/8/8 · 晚上 9:00' },
+    'events.rowWP2.venue':     { en: 'Online · Tour recording',            zh: '線上 · 巡演實錄' },
     'events.row2.title':       { en: 'Spring Launch — Hualien encore',      zh: 'Spring Launch — 花蓮加場' },
     'events.row2.meta':        { en: 'Concert · Series 2/3',                zh: '演出 · 系列 2/3' },
     'events.row2.datetime':    { en: 'Oct 19, 2026 · 7:30 PM',             zh: '2026/10/19 · 晚上 7:30' },
@@ -4487,6 +4492,8 @@
          已舉辦＝5/2 屏東黑鮪魚 → 4/25 重慶 → 4/4 墾丁 → 2025/10/11 LRH 臺中 → 2024/11/23 R2 特仕版；草稿＝規劃中新場次 */
       'events.rowWP.title':   { zh: 'REALIVE (R2) 演唱會電影 — 線上共看場', en: 'REALIVE (R2) Concert Film — Watch party' },
       'events.rowWP.venue':   { zh: '線上 · REALIVE (R2) 演唱會電影', en: 'Online · REALIVE (R2) Concert Film' },
+      'events.rowWP2.title':  { zh: 'LOVE·RAGE·HOPE 臺中場 — 線上一同回顧', en: 'LOVE·RAGE·HOPE Taichung — Watch-back party' },
+      'events.rowWP2.venue':  { zh: '線上 · LOVE·RAGE·HOPE 臺中場實錄', en: 'Online · LOVE·RAGE·HOPE Taichung recording' },
       'events.row1.title':    { zh: '臺北最High新年城 — 跨年演出', en: 'Taipei New Year\'s Eve countdown' },
       'events.row1.meta':     { zh: '音樂節 · 跨年', en: 'Festival · countdown' },
       'events.row1.datetime': { zh: '2026/12/31 · 晚上 10:00', en: 'Dec 31, 2026 · 10:00 PM' },

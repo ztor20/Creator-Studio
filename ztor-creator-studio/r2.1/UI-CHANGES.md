@@ -4,6 +4,17 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-26 · 新增「一同回顧」共看派對＋活動通知條改用電子商店同款（B 反饋導入）
+
+使用者兩項指示：(1) 比照 LOVE·RAGE·HOPE 臺中場再新增一個共看派對、時間即將到來、性質是「一同回顧」；(2)「活動的通知要用電子商店的通知」。
+
+- **【A/新活動】** `events.html` 即將舉辦最前新增一列共看派對：**LOVE·RAGE·HOPE 臺中場 — 線上一同回顧**（2026/8/8 · 晚上 9:00、線上 · 臺中場實錄、售票中 38/300、$190），沿用該場的巡演主視覺 `nick-lrh-tour.jpg`；新增 i18n 鍵 `events.rowWP2.*`（default 給通用版、nick 覆蓋為 LRH 專名）。KPI 活動總數 12→13。此列與既有的 R2 演唱會電影共看場並列，示範共看派對的第二種用途＝回顧自己既有演出實錄。
+- **【D/元件 promote】** 「收窄置中的頁面通知條」原為 e-shop 頁內私有樣式（`#eshop-stock-bar` / `.eshop-stock-bar__card`），活動頁要用同一款＝第二個消費者，依鐵律 1 **promote 進 `ds-components/alert.css`**：新增 `.alert-inset`（外層定位殼：sticky `top:--sp-16`、`max-width:1280` + `margin-inline:auto` + `padding-inline:28px`）＋ `.alert--inset-card`（內層視覺卡：`--surface-shell` 底、`--radius-xl`、12/16 內距；淺色改白底＋`--shadow-card`）。e-shop 改吃共用元件、頁內重複規則刪除，只留該頁專屬的句內元素樣式（`__names` / `__link`）。
+- **【B/活動通知】** `js/scenario.js` 由單層 `alert--bar alert--warning alert--page-top`（滿版、黃色警示、鈴鐺 icon）改為兩層 `.alert-inset` + `.alert--bar.alert--inset-card`，**移除 icon 與狀態色**，與電子商店低庫存提醒完全同款；× 關閉改切外層 `hidden`。`.alert--page-top` 現無人消費，於 DS 文件標為保留變體。
+- **【D/DS 同步】** `design-system.md` 更新 `.alert--page-top` 條目並新增 `.alert-inset` ＋ `.alert--inset-card` 規格；`design-system.html` 更新通知條說明並新增「頁面貼頂變體」demo 卡（雙語）。
+- **驗證**：本機 devserver（`devserver.py`，送 no-store）實測——活動頁通知條無 icon、`--surface-shell` 實色底、16px 圓角、max-width 1280、sticky，文案與 × 關閉正常；e-shop 通知條重量：寬度 1280、右緣較 `.main` 內縮 36px、**無溢出**（即原註解警告的 flex 百分比 margin 問題未重現）；新活動列渲染正確（即將舉辦 6／售票中 3）。無 console error；`check_ds_sync.py` PASS。
+  - 過程註記：先前在被占用的 port 上驗證，實際跑的是別人的 `http.server`（不送 no-store），瀏覽器吃到舊 JS 導致誤判；改用乾淨 port 起 `devserver.py` 後才驗到真實結果。
+
 ## 2026-07-26 · 活動頁所有演出時間整體後移 6 個月（B 反饋導入）
 
 承前一輪的時間軸重排，使用者要求「所有活動往後推移 6 個月」。位移後有三場由已舉辦翻成即將舉辦，分桶與排序一併重算。
