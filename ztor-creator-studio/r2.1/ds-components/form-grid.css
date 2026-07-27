@@ -6,6 +6,15 @@
    單一 .field 留在格內時自然佔半寬。
    ============================================================ */
 
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-14); }
+/* 2026-07-28 L：「everything is still cramped together」site-wide。
+   列距／欄距分開宣告——欄是「同一組並排的同儕」(14/10px，緊)，列是「兩件不同的事」
+   (28px，鬆)；同一個 gap 值套在兩個軸上，正是 layout 上「所有東西等重」的來源。
+   28 也讓原本有照契約用 .field 的頁面（create-product…）維持既有節奏：
+   舊值＝gap 14 ＋ .field 自帶 margin-bottom 16 ＝ 30px，新值 28，差 2px 不可見。 */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-28) var(--sp-14); }
 .form-grid[hidden] { display: none; }   /* display:grid 會蓋掉 [hidden] 的 none，需顯式還原（條件隱藏的整組欄位，如排程特價起訖日）*/
-.form-grid--3 { grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-10); }
+.form-grid--3 { grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-28) var(--sp-10); }
+/* 格線自己負責列距，格內的 .field 不再另外加下緣——否則兩者疊加，且最後一列會在
+   卡片底部多出 16px，讓卡片上下內距不對稱（上 24／下 40）。
+   取代 create-product / create-project 散落的 inline `style="margin-bottom:0"`。 */
+.form-grid > .field { margin-bottom: 0; }

@@ -40,6 +40,10 @@
     'hero.slide-4':     { en: 'Go to slide 4',   zh: '跳到第 4 張' },
     /* ─── Topbar ───────────────────────────────────────────── */
     'nav.dashboard':    { en: 'Dashboard',  zh: '總覽' },
+    /* 儀表板頁首（2026-07-28）。標題刻意不叫 Dashboard——側欄與麵包屑已經說了兩次。
+       副標依序點名這一頁的四個帶狀區，讀完就知道往下會看到什麼。 */
+    'dash.h1':          { en: 'Studio',     zh: '工作室' },
+    'dash.sub':         { en: 'What came in, what needs you, and where your work is playing right now.', zh: '進來的錢、需要你處理的事，以及你的作品現在正在哪裡被聽見、被看見。' },
     'nav.projects':     { en: 'Projects',   zh: '項目' },
     'nav.ip-bank':      { en: 'IP Bank',    zh: 'IP 資產' },
     'nav.eshop':        { en: 'E-Shop',     zh: '電子商店' },

@@ -46,7 +46,8 @@
    ============================================================ */
 (function preloadCriticalFonts() {
   var faces = [
-    "fonts/AlumniSans-Variable.woff2",
+    /* Alumni Sans 於 2026-07-28 第二次裁示中退場（標題改回 Satoshi ＋ 全大寫），
+       字檔仍留在 /fonts 但已無人引用，故不再預載。 */
     "fonts/Satoshi-400.woff2",
     "fonts/Satoshi-500.woff2",
     /* 700 也在第一畫面上（實測 document.fonts 顯示它在專案詳情頁就已載入：

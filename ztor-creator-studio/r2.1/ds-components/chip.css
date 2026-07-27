@@ -98,14 +98,28 @@
    Used by .tag-input (product tags) and the variant builder's option values
    (spec 5.1.5.2 §4.1④ / §4.5). Color inherits from the chip so it works on
    both neutral and --active (inverted) chips. */
-.chip--removable { padding-right: var(--sp-6); }
+/* 2026-07-28 使用者裁示：「字沒有置中」。量到的是 9px——可移除 chip 的左內距 12px，
+   右邊卻是 6px 內距＋16px 按鈕＋gap／margin 共 8px，所以標籤被推到左邊 9px。
+   （一般 chip 沒有這個問題：實測左右都是 12.67px、上下都是 9px，本來就正中。）
+
+   做法：× 改成絕對定位、不再佔版面，chip 兩側內距對稱 → 文字真的在正中央。
+   代價是 chip 變寬約 14px：右內距要留得下按鈕，長標籤才不會壓到 ×。
+   對稱值 = 6px 邊距 + 16px 按鈕 + 4px 間隙 = 26px，兩側同值。 */
+.chip--removable {
+  position: relative;
+  padding-inline: 26px;
+  justify-content: center;
+}
 .chip__remove {
+  position: absolute;
+  right: var(--sp-6);
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
-  margin-left: var(--sp-2);
   padding: 0;
   border: 0;
   background: transparent;

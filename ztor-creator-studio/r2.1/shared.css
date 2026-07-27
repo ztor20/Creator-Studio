@@ -108,10 +108,11 @@ html, body { margin: 0; padding: 0; }
    fine with CJK first. */
 /* 2026-07-28：--font-cjk 現在是 LINE Seed TW（見 fonts.css），所以這三條自動
    讓中文語系整套走 LINE Seed TW——標題與內文都是它，符合「中文全系統用 LINE Seed TW」。
-   後面的拉丁字面只服務中文句子裡夾雜的英數字，因此比照英文版換成 Alumni Sans（標題）
-   ／Satoshi（UI、內文），Geist／Inter 留作字檔到位前的過渡回退。 */
+   後面的拉丁字面只服務中文句子裡夾雜的英數字，因此比照英文版一律用 Satoshi，
+   Geist／Inter 留作字檔到位前的過渡回退。
+   （2026-07-28 第二次裁示：標題退回 Satoshi，Alumni Sans 從三條堆疊中撤除。） */
 :lang(zh-Hant) {
-  --font-display: var(--font-cjk), 'Alumni Sans', 'Geist', system-ui, sans-serif;
+  --font-display: var(--font-cjk), 'Satoshi', 'Geist', system-ui, sans-serif;
   --font-ui:      var(--font-cjk), 'Satoshi', 'Geist', system-ui, sans-serif;
   --font-body:    var(--font-cjk), 'Satoshi', 'Inter', system-ui, sans-serif;
 
@@ -1076,7 +1077,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* 標題塊靠左堆疊 */
 .wizard__top-titlewrap { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; max-width: 100%; }
 .wizard__top-title { font-weight: var(--fw-semibold); font-family: var(--font-display);
-  font-size: var(--fs-20); line-height: var(--lh-comfy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  font-size: var(--fs-16); line-height: var(--lh-comfy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .wizard__top-sub { font-size: var(--fs-13); color: var(--foreground-muted); line-height: var(--lh-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 /* 自動儲存狀態（各 wizard 頁共用）。兩態：saved（綠點＋已儲存）／saving（轉圈＋儲存中…）。
    fallback：沒有 autosave 的頁面（.wizard[data-autosave="false"]）→ 渲染成可點的「儲存」鈕（--button）。 */
@@ -1576,7 +1577,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .project-card__badge { position: absolute; top: 12px; right: 12px; }
 .project-card__body { display: flex; flex-direction: column; gap: var(--sp-6); padding: var(--sp-14) var(--sp-16) var(--sp-16); }
 .project-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-8); }
-.project-card__title { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-medium); line-height: var(--lh-snug); margin: 0; }
+.project-card__title { font-family: var(--font-display); font-size: var(--fs-15); font-weight: var(--fw-medium); line-height: var(--lh-snug); margin: 0; }
 .project-card__kind { font-size: var(--fs-12); color: var(--muted-foreground); }
 .project-card__desc { font-family: var(--font-body); font-size: var(--fs-13); color: var(--muted-foreground); margin: 0; }
 .project-card__meta { font-size: var(--fs-12); color: var(--foreground-muted); margin-top: var(--sp-2); }
@@ -1712,4 +1713,65 @@ html[data-data-state="empty"] .when-data { display: none; }
 .insight-split .insight-split__toast {
   grid-column: 1 / -1;
   margin-top: var(--sp-16);
+}
+
+/* ============================================================
+   標題＝全大寫（2026-07-28 使用者裁示，取代 Alumni Sans 那一版）
+
+   前一版用「換一個字面」（Alumni Sans）來區分標題與內文。退回單一字面之後，
+   那個區分改由大小寫與字距承擔——參照使用者給的 .kpi__label 配方：
+       text-transform: uppercase; letter-spacing: .4px;
+   小寫轉大寫會讓字距變擠（大寫字母本來就比小寫寬、又少了 x-height 的呼吸），
+   所以正字距不是裝飾而是必需。這也是為什麼標題原本為 Alumni 大字做的「負字距
+   光學收緊」在這裡全部被蓋掉——那是為小寫大字調的，大寫要的是反方向。
+
+   放在 shared.css 最後、且是這一份的最後一段：它必須贏過各元件檔裡同權重的
+   letter-spacing 宣告，而 shared.css 是每一頁 <head> 的最後一支樣式表。
+
+   ── 哪些算「標題」──────────────────────────────────────────
+   只有「介面自己的字」進來：頁面標題、卡片／區段／面板／彈窗／精靈的標題。
+   刻意排除三類，全大寫會傷到它們：
+     · 使用者內容：專案名、IP 名、商店名、粉絲名、方案名、銀行名
+       （「Mong Kok Sniper」變「MONG KOK SNIPER」＝竄改別人取的名字）
+     · 數值與價格：.funding-panel__pct／.rent-block__price／amount-field
+       （數字沒有大小寫，只會平白多出字距）
+     · 字母標記與 logo：.empty-stub__mark／各種 __avatar／__cover／wordmark
+       （它們本來就已經是設計好的單字造型）
+     · 通知訊息 .alert__title：那是一整句話，不是標題
+   ============================================================ */
+:root { --title-caps-tracking: 0.4px; }
+/* 中文沒有大小寫，uppercase 不生效；字距則沿用本檔上方「CJK 字距歸零」的原則——
+   方塊字本來就貼著走，多加 0.4px 會鬆掉。 */
+:lang(zh-Hant) { --title-caps-tracking: 0; }
+
+.page-intro__title,
+.hero__title,
+.section-head__title,
+.card__title,
+.ztor-card__title,
+.chart-card__title,
+.form-section__title,
+.settings-section__title,
+.ztor-accordion__trigger,
+.drawer__title,
+.payout-dialog__title,
+.embed-modal__title,
+.leave-dialog__title,
+.msg-schedule__title,
+.preview-col__title,
+.preview-panel__title,
+.readiness__title,
+.empty-card__title,
+.empty-stub__title,
+.explain__title,
+.selection-card__title,
+.fan-store__section-title,
+.wizard__top-title,
+.wizard__step-title,
+.fd-ov__title,
+.scanner-top__title,
+.scanner-pw__title,
+.ss-status__title {
+  text-transform: uppercase;
+  letter-spacing: var(--title-caps-tracking);
 }

@@ -36,27 +36,11 @@
   font-display: swap;
 }
 
-/* ── Alumni Sans — 英文標題字面（2026-07-28 使用者裁示）──────────────
-   Google Fonts，SIL OFL，可自行託管。取 latin 子集的 variable 版（wght 100–900 單檔 22KB），
-   所以四個標題字重共用一個檔、不必分檔載入。
-   來源：fonts.gstatic.com/s/alumnisans/v20（unicode-range 含 U+0000-00FF 的那個子集）。
-   Alumni Sans 是窄長字面，與 LINE Seed TW（正常寬度幾何黑體）並置時，
-   同字級下英文標題會明顯比中文標題窄——這是兩個字面本身的比例差，不是 bug。 */
-/* font-display: block（2026-07-28）——不是 swap。
-   swap ＝「先用後備字畫，字到了再換掉」，那一下換字就是使用者回報的標題閃爍。
-   block ＝「字沒到就先不畫這段文字」，畫出來的一定已經是 Alumni，永遠不會換。
-   之所以敢用 block，是因為這個檔在 js/theme.js 被 <link rel=preload> 提前請求，
-   而且只有 22KB：本機下實測趕得上第一次算繪，看不到空白期。
-   萬一字檔真的掛了，block 的封鎖期上限是 3 秒，之後仍會回退到 Geist，
-   不會變成永遠看不到標題。 */
-@font-face {
-  font-family: "Alumni Sans";
-  src: url("../fonts/AlumniSans-Variable.woff2") format("woff2-variations"),
-       url("../fonts/AlumniSans-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: block;
-}
+/* ── Alumni Sans — 已退場（2026-07-28 第二次裁示）─────────────────
+   標題改回 Satoshi ＋ 全大寫（見下方 --font-display 與 shared.css 末段的
+   「標題＝全大寫」）。@font-face 一併移除：留著雖然不會觸發下載（沒有人引用
+   就不會載），但會讓下一個讀這支檔的人以為站上還有第三個拉丁字面。
+   字檔本身保留在 /fonts/AlumniSans-Variable.woff2，要回復只需把宣告加回來。 */
 
 /* ── Satoshi — 英文內文／UI 字面（2026-07-28 使用者裁示）──────────────
    Fontshare（Indian Type Foundry），個人與商用皆免費。非變數字體，
@@ -129,8 +113,8 @@
  * TC while Latin glyphs stay on Geist / Inter. ztor's _tokens.css declares
  * these but without CJK fallback. */
 :root {
-  /* 2026-07-28 使用者裁示的字體分工：
-       英文 標題 → Alumni Sans
+  /* 2026-07-28 使用者裁示的字體分工（同日第二次裁示後的定案）：
+       英文 標題 → Satoshi ＋ 全大寫（原為 Alumni Sans，已退場）
        英文 內文／UI → Satoshi
        中文 全系統 → LINE Seed TW
      --font-cjk 由 Noto Sans TC 改成 LINE Seed TW 優先，Noto 退為後備
@@ -140,14 +124,20 @@
      字體現已實際生效。Geist／Inter 留在堆疊裡當第二順位回退——字檔萬一載入失敗時
      不會直接掉到系統預設字。 */
   --font-cjk:     "LINE Seed TW", "Noto Sans TC", sans-serif;
-  /* 2026-07-28 使用者裁示：金額／數字用 Satoshi，不要用標題字面。
-     理由是 Alumni Sans 是窄長的展示字面——同一串 48px 拉丁字它只有 377px、Geist 是 589px。
-     那個比例當標題很好看，但金額欄要的是「同寬數字上下對齊」，窄體＋非等寬數字會讓
-     $684.32 與 $1,560.00 的小數點對不齊、掃讀變慢。
-     這支 token 給所有「要被讀成數量的字」用（金額、KPI 數值、統計），
-     tabular-nums 強制等寬數字，確保直行對齊。 */
+  /* 這支 token 給所有「要被讀成數量的字」用（金額、KPI 數值、統計）。
+     標題退回 Satoshi 之後它與 --font-display 同字面，看似多餘——但保留，因為它的
+     契約不是「哪個字面」而是「這串字是數量」：消費端一律搭 tabular-nums 讓
+     $684.32 與 $1,560.00 的小數點對齊，而且標題那條規則會套全大寫＋正字距，
+     數字不該跟著走。兩個角色分開命名，下次換字面才不會誤傷其中一邊。 */
   --font-numeric: "Satoshi", "Inter", system-ui, sans-serif;
-  --font-display: "Alumni Sans", "Geist", var(--font-cjk), system-ui, sans-serif;
+  /* 2026-07-28（第二次裁示）：標題退回 Satoshi，改用「全大寫」建立標題性。
+     Alumni 的做法是靠一個不同的字面來區分標題與內文；退回單一字面之後，那個區分改由
+     大小寫與字距承擔——見下方「標題＝全大寫」一節。整站因此只剩兩個拉丁字面
+     （Satoshi 內文與標題、Geist 後備），中文仍是 LINE Seed TW。
+     字級也同步退回：先前為了補償 Alumni 偏小的 cap-height 把 26 個標題角色 ×1.22
+     （12→14、13→16、14→16、15→18、16→20、18→22），Satoshi 的 cap-height 本來就正常，
+     那批補償全數還原，否則標題會整體大一號。 */
+  --font-display: "Satoshi", "Geist", var(--font-cjk), system-ui, sans-serif;
   --font-ui:      "Satoshi", "Geist", var(--font-cjk), system-ui, sans-serif;
   --font-body:    "Satoshi", "Inter", var(--font-cjk), system-ui, sans-serif;
   --font-mono:    "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
