@@ -136,9 +136,33 @@
   --destructive-fill:    color-mix(in srgb, var(--destructive) 12%, transparent);
   /* 深階實色版（給「坐在實色暖底上」的膠囊用，見 kpi.css 的 .kpi--hero）。
      12% 的淡染在飽和橘上幾乎看不出色相，綠只能靠墨色撐；改成深綠實底之後
-     「綠」由底本身承載，字換白，兩件事都變強。 */
-  --status-success-deep: #14532D;
-  --destructive-deep:    #881337;
+     「綠」由底本身承載，字換白，兩件事都變強。
+
+     2026-07-28 L：「can we use a different green, this green never appears
+     anywhere in the site, and it doesn't really compliment our accent color」
+     ——兩點都成立，查證如下：
+       · 舊值 #14532D（green-900）與 #881337（rose-900）各自只被引用一次，
+         就是 kpi.css 的 .kpi--hero，全站沒有第二個消費者。它們是「另外挑的顏色」，
+         不屬於站上任何一條色階。相對的，站上真正的綠膠囊是 .badge--success
+         （--status-success 的 16% 淡染），用了 170 次。
+       · 色相上，#14532D 是 hsl(144°)、品牌橘是 hsl(31°)——差 113°。既不是互補
+         也不是類比，就是不協調：一塊冷調瓶綠打在飽和暖橘上。
+
+     改成「由站上那支狀態色推導」而不是另外挑一個：
+       35% 的 --status-success ＋ 65% 的暖黑 #1a1208
+       → 亮色 #1D5126 hsl(130, 47%, 22%)｜暗色 #2B5932 hsl(129, 35%, 26%)
+     色相從 144° 移到 130°（往橘走 14°）、彩度也降下來，於是綠不再跟橘互打；
+     暖黑而不是中性黑，是為了讓這塊綠讀起來像「長在這張橘卡上」。
+     白字對比：亮 9.30:1／暗 8.15:1（紅版 12.64:1），全部 AAA。
+
+     用 color-mix 從 --status-success／--status-error 推導的另一個好處：
+     那兩支色一旦調整，這裡自動跟著走，不會再變成孤兒。
+
+     沒有 dark override 是對的，不是漏調：.kpi--hero 的底是 --primary，
+     而 --primary 在亮暗兩個主題都是 #ffa33f，膠囊坐的面根本沒變。
+     （深階值本身仍隨 --status-success 的主題值變化，見上。）*/
+  --status-success-deep: color-mix(in srgb, var(--status-success) 35%, #1a1208);
+  --destructive-deep:    color-mix(in srgb, var(--status-error)   35%, #1a1208);
   --status-info:       #266DF0;
   --status-warning:    #F8D749;
   /* 2026-07-28：黃色當「文字」用在亮底上是先天不可能——#F8D749 對白只有 1.42:1。
