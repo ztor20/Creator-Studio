@@ -10,7 +10,7 @@
 //   subKey     次分類（對應 §2.6 次分類 select 的值；只影響顯示）
 //   content    數位內容檔形態 video|song|album|membership|document|ip（僅數位；決定 §2.7 表單）
 //   variant    規格模式 single | multiple（僅實體；§2.8）
-//   edition    庫存版本 unlimited | limited（§2.10）
+//   edition    庫存版本 unlimited | limited
 //   status     live | low | soldout（狀態 badge 與庫存呈現）
 //   price/cost 現金字串；stock 目前庫存；cap 限量上限（limited 才有）；sold 已售（limited 才有）
 //   albumSeed  數位·專輯的預置曲目（餵給 album-tracks 的 data-album-seed）
@@ -365,7 +365,7 @@
       id: 'wish-you-good-life-four-piece',
       name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
       description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',
-      members: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件', price: 'NT$5,980', priceAmount: 5980, stock: '16 組（最少件數）',
+      membersKey: 'e-shop.bnick.set.members', price: 'NT$5,980', priceAmount: 5980, stockAvail: 16,
       memberItems: [
         { id: 'wy-26ms-tshirt-white', name: '26MS T-Shirt (白)', meta: 'Wish You A Good Life · NT$1,880', price: 'NT$1,880', img: '26ms-t-shirt-w-01.jpeg' },
         { id: 'wy-bundle-cap', name: '祝你好命 刺繡 Logo 老帽', meta: '組合包延伸單品 · 價格待確認', price: '待確認', img: 'wyagl-cap-generated.webp' },
@@ -375,29 +375,32 @@
     },
     'Vinyl + poster set': {
       name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
-      members: '限量黑膠 ＋ 巡演寫真誌 · 2 件', price: '$92', stock: '18 組（最少件數）'
+      membersKey: 'e-shop.bnick.vinyl.members', price: '$92', stockAvail: 18
     }
   };
   var AUCTIONS_NICK = {
     /* 2026-07-26：改用使用者提供的 PRS Custom24 10-Top 實拍（PRS 10-Top.webp）。
        ⚠ 該圖帶 PRS 官方品牌 logo 浮水印，屬廠商商品照非本人素材；僅供內部原型預覽，
        對外展示／公開發布前需替換成無品牌標示或已授權的素材。 */
+    /* 2026-07-27：meta／cat／「起標」原本寫死繁中，英文語系整片漏譯。改成 metaKey／catKey
+       ＋ priceFrom 旗標——品名（name）維持中文，那是賣家自己的商品名，與商品分頁的處理一致；
+       其餘（狀況、分類、起標）都是系統詞彙，一律走 i18n。 */
     'Stage-worn leather jacket': {
-      name: 'REALIVE 巡演主吉他（親簽）', meta: '九成新 · Inner Circle',
-      img: 'PRS 10-Top.webp', cat: '樂器', price: '$1,280'
+      name: 'REALIVE 巡演主吉他（親簽）', metaKey: 'e-shop.anick.guitar.meta',
+      img: 'PRS 10-Top.webp', catKey: 'e-shop.cat.instruments', price: '$1,280'
     },
     'Signed tour poster 1 of 1': {
-      name: '白趴主舞台親簽海報 1 of 1', meta: '全新 · Superfan 以上',
-      img: 'signed-tour-poster.webp', cat: '紀念品', price: '起標 $120'
+      name: '白趴主舞台親簽海報 1 of 1', metaKey: 'e-shop.anick.poster.meta',
+      img: 'signed-tour-poster.webp', catKey: 'e-shop.cat.memorabilia', price: '$120', priceFrom: true
     },
     'Vintage synth': {
-      name: '《帥到分手》錄音室母帶盤帶', meta: '收藏品 · 已結標',
-      img: 'coastline-single.webp', cat: '紀念品', price: '$860'
+      name: '《帥到分手》錄音室母帶盤帶', metaKey: 'e-shop.anick.tape.meta',
+      img: 'coastline-single.webp', catKey: 'e-shop.cat.memorabilia', price: '$860'
     },
     'WYAGL Nike Dunk Low Pro SB': {
-      name: 'Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋', meta: '全新 · 限量客製',
-      img: 'nick-nike-00.jpg', cat: '鞋款', price: '起標 NT$12,800',
-      activity: '即將開始 · 26 人關注', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
+      name: 'Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋', metaKey: 'e-shop.anick.dunk.meta',
+      img: 'nick-nike-00.jpg', catKey: 'e-shop.cat.footwear', price: 'NT$12,800', priceFrom: true,
+      activityKey: 'e-shop.aNick.activity', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
     }
   };
   function patchBundlesAndAuctions() {
@@ -407,25 +410,46 @@
       if (!b) return;
       var detail = row.querySelector('a[href*="bundle-detail.html"]');
       if (detail && b.id) detail.setAttribute('href', 'bundle-detail.html?id=' + b.id);
-      var t = row.querySelector('.product-list__title'); if (t) t.textContent = b.name;
+      /* 組合名＝賣家內容（維持中文）；成員組成是系統敘述（品項＋件數）故走 key。 */
+      var t = row.querySelector('.product-list__title');
+      if (t) { t.removeAttribute('data-i18n'); t.textContent = b.name; }
       var img = row.querySelector('.product-list__image img');
       if (img) { img.setAttribute('src', 'images/products/' + b.img); img.setAttribute('alt', ''); }
-      var mem = row.querySelector('.product-list__category-cell'); if (mem) mem.textContent = b.members;
-      var pr = row.querySelector('.product-list__price'); if (pr) pr.textContent = b.price;
-      var st = row.querySelector('.product-list__stock');
-      if (st && !st.querySelector('.stock-tip__pop')) st.textContent = b.stock;
-      else if (st) { var sp = st.querySelector('span[data-i18n]'); if (sp) sp.textContent = b.stock; }
+      var mem = row.querySelector('.product-list__category-cell');
+      if (mem && b.membersKey) { mem.setAttribute('data-i18n', b.membersKey); mem.textContent = tr(b.membersKey); }
+      var pr = row.querySelector('.product-list__price');
+      if (pr) { pr.removeAttribute('data-i18n'); pr.textContent = b.price; }
+      /* 庫存改走結構化數字＋共用格式器（xx / xx），與商品分頁一致；不再寫「16 組（最少件數）」
+         這種散文。實際的「取成員最低庫存」說明由 stock-tip 浮卡逐項列出。 */
+      if (b.stockAvail != null) {
+        row.setAttribute('data-stock-avail', b.stockAvail);
+        if (b.stockCap != null) row.setAttribute('data-stock-cap', b.stockCap);
+        if (window.ztorEshopStatus && window.ztorEshopStatus.renderStock) window.ztorEshopStatus.renderStock(row);
+      }
     });
     document.querySelectorAll('.product-list__row[data-type="auction"]').forEach(function (row) {
       var a = AUCTIONS_NICK[row.getAttribute('data-name') || ''];
       if (!a) return;
-      var t = row.querySelector('.product-list__title'); if (t) t.textContent = a.name;
-      var mt = row.querySelector('.product-list__meta'); if (mt) mt.textContent = a.meta;
+      /* 品名＝賣家內容，維持原值並移除原本那格的 key（示意英文名已不代表這一列）。 */
+      var t = row.querySelector('.product-list__title');
+      if (t) { t.removeAttribute('data-i18n'); t.textContent = a.name; }
+      /* 以下都掛上 data-i18n，切語言時由 applyI18n 直接重譯，不必等本函式再跑一次。 */
+      var mt = row.querySelector('.product-list__meta');
+      if (mt && a.metaKey) { mt.setAttribute('data-i18n', a.metaKey); mt.textContent = tr(a.metaKey); }
       var img = row.querySelector('.product-list__image img');
       if (img) { img.setAttribute('src', 'images/products/' + a.img); img.setAttribute('alt', ''); }
-      var c = row.querySelector('.product-list__category-cell'); if (c) c.textContent = a.cat;
-      var pr = row.querySelector('.product-list__price'); if (pr) pr.textContent = a.price;
-      var activity = row.querySelector('.product-list__activity'); if (activity && a.activity) activity.textContent = a.activity;
+      var c = row.querySelector('.product-list__category-cell');
+      if (c && a.catKey) { c.setAttribute('data-i18n', a.catKey); c.textContent = tr(a.catKey); }
+      /* 「起標」是系統字＋金額是資料：組起來寫，並清掉舊 key 以免被示意價蓋回去。 */
+      var pr = row.querySelector('.product-list__price');
+      if (pr) {
+        pr.removeAttribute('data-i18n');
+        pr.textContent = a.priceFrom ? (tr('e-shop.bid.from') + ' ' + a.price) : a.price;
+      }
+      /* activityKey（i18n）優先；仍留 a.activity 字面值分支給尚未轉 key 的舊資料。 */
+      var activity = row.querySelector('.product-list__activity');
+      if (activity && a.activityKey) { activity.setAttribute('data-i18n', a.activityKey); activity.textContent = tr(a.activityKey); }
+      else if (activity && a.activity) activity.textContent = a.activity;
     });
   }
 
@@ -449,8 +473,31 @@
      依當前 persona 的商品資料把每列覆蓋一致（名＋圖＋價＋分類＋庫存）。用列內
      product-detail.html?id=<key> 連結取得該列的商品 id。變體數／狀態 badge 等深層
      欄位維持原樣（第一批範圍）。監聽 i18n:applied 以免語言切換後被還原。 */
+  /* ── i18n 小工具（2026-07-27）────────────────────────────────────
+     這支檔案在 i18n:applied 之後改列，等於最後一手；凡是它寫進 DOM 的字都必須自己
+     負責語言，否則就會蓋掉剛翻好的內容（正是「英文語系仍顯示販售中」的成因）。
+       tr(key)        → 走 i18n.js 對外的 i18nT；key 缺漏時回空字串而非寫死語言
+       isZh()         → 目前語系是否繁中（與 i18n.js 的 currentLang 同一判準：html[lang]）
+       bilingual(s)   → 資料層的雙語合併字串取對應語言那一邊
+                        （'Apparel · 服飾' 以 ' · ' 分隔、'Colour / 顏色' 以 ' / ' 分隔，
+                         一律「英文在前、中文在後」）。舊寫法用固定索引 [0] / .pop()
+                         取邊，等於把語言寫死在索引裡——分類永遠英文、選項名永遠中文。
+       paren(a,b)     → 括號依語系：中文全形（），英文半形 ( )。 */
+  function tr(key) { return (window.i18nT && window.i18nT(key)) || ''; }
+  function isZh() { return document.documentElement.lang === 'zh-Hant'; }
+  function bilingual(s, sep) {
+    var parts = String(s == null ? '' : s).split(sep || ' · ');
+    if (parts.length < 2) return parts[0] || '';
+    return isZh() ? parts[parts.length - 1].trim() : parts[0].trim();
+  }
+  function paren(label, inner) {
+    return isZh() ? label + '（' + inner + '）' : label + ' (' + inner + ')';
+  }
+  /* 資料層用來表示「價格未定」的佔位值。是系統字串、不是賣家填的內容，故要翻譯。 */
+  var PRICE_TBC = '待確認';
   function priceText(p) {
     var raw = String(p.price).replace(/\.00$/, '');
+    if (raw === PRICE_TBC) return tr('e-shop.price.tbc') || raw;
     if (!/^\d+(?:\.\d+)?$/.test(raw)) return raw;
     if (persona() === 'nick') return 'NT$' + raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     return '$' + raw;
@@ -498,9 +545,17 @@
       /* 不動 data-name：它是補貨模組（PRODUCT_MATRIX/PRODUCT_VARIANTS）的內部查表鍵，
          改了會讓該列補貨查不到變體。只換可見標題即可。 */
       var price = row.querySelector('.product-list__price');
-      if (price) price.textContent = priceText(p);
+      /* 同 catSub：靜態列的價格格帶著 e-shop.rowN.price key（示意值 $24），一旦改成
+         persona 的真實價格，那個 key 就不再代表這格，留著只會讓下一輪 applyI18n 蓋回示意值。 */
+      if (price) { price.removeAttribute('data-i18n'); price.textContent = priceText(p); }
       var catSub = row.querySelector('.product-list__cat-sub');
-      if (catSub && p.subLabel) catSub.textContent = p.subLabel.split(' · ')[0];
+      /* subLabel 是 'Apparel · 服飾' 雙語字串；原本固定取 [0]＝永遠英文，中文語系漏譯。
+         這裡覆寫的是靜態列上帶 data-i18n 的 span，改寫後該 key 已不適用，一併移除，
+         否則下次 applyI18n 會用舊 key 把資料值蓋掉。 */
+      if (catSub && p.subLabel) {
+        catSub.removeAttribute('data-i18n');
+        catSub.textContent = bilingual(p.subLabel, ' · ');
+      }
 
       /* 規格副標：persona 的規格模式可能與 default 那列不同（例：default 的 pin 是單一選項，
          nick 換成有顏色×腰圍的工裝褲），沿用寫死的字會自相矛盾，故一併重寫。 */
@@ -508,28 +563,38 @@
       if (meta && p.cat === 'physical') {
         meta.textContent = (p.options && p.options.length)
           ? p.options.map(function (o) {
-              return o.name.split(' / ').pop() + '（' + o.values.join('/') + '）';
+              /* o.name 是 'Colour / 顏色' 這種雙語字串——取對應語言那一邊，
+                 括號也跟著語系走（中文全形、英文半形）。 */
+              return paren(bilingual(o.name, ' / '), o.values.join('/'));
             }).join(' × ')
-          : '單一選項';
+          : tr('e-shop.variant.single');
       }
 
       /* 狀態徽章與 data-status：同理，nick 的售罄／低量狀態與 default 不同（例：default 的
          pin 售罄、nick 的工裝褲有貨），不換的話會出現「已售完」卻顯示 96 件的矛盾。
          data-status 一併改，狀態篩選 tab 的分류與計數才會對。 */
-      var STATUS_MAP = {
-        live:    { ds: 'live', cls: 'badge--success', key: 'e-shop.row.active', zh: '販售中' },
-        low:     { ds: 'low',  cls: 'badge--error',   key: 'e-shop.row.low',    zh: '急需補貨' },
-        soldout: { ds: 'out',  cls: 'badge--neutral', key: 'e-shop.row.out',    zh: '已售完' }
-      };
-      var st = STATUS_MAP[p.status];
-      if (st && row.getAttribute('data-status') !== 'draft') {
-        row.setAttribute('data-status', st.ds);
-        var badge = row.querySelector('.product-list__status .badge');
-        if (badge) {
-          badge.className = 'badge ' + st.cls;
-          var bs = badge.querySelector('span[data-i18n]');
-          if (bs) { bs.setAttribute('data-i18n', st.key); bs.textContent = st.zh; }
-          else badge.textContent = st.zh;
+      /* 2026-07-27：本函式掛在 i18n:applied 上，是「翻譯之後」的最後一手。原本它直接寫
+         data-status ＋ 自己畫徽章，於是每次切語言都會把使用者剛按下的「下架」洗回販售中。
+         現在只負責回報「商品本身的庫存狀態」（data-stock-status），徽章與 data-status 交給
+         e-shop.html 的 renderStatus 推導——上架與否是使用者的決定，不該被資料層覆寫。 */
+      var STOCK_DS = { live: 'live', low: 'low', soldout: 'out' };
+      var ds = STOCK_DS[p.status];
+      if (ds && row.getAttribute('data-status') !== 'draft') {
+        row.setAttribute('data-stock-status', ds);
+        if (window.ztorEshopStatus && window.ztorEshopStatus.render) {
+          window.ztorEshopStatus.render(row);
+        } else {
+          /* e-shop 以外的頁面沒有那個推導層：退回直接標示，文字一樣走 i18n key。 */
+          var FALLBACK = { live: 'e-shop.row.active', low: 'e-shop.row.low', out: 'e-shop.row.out' };
+          var CLS = { live: 'badge--success', low: 'badge--error', out: 'badge--neutral' };
+          row.setAttribute('data-status', ds);
+          var badge = row.querySelector('.product-list__status .badge');
+          if (badge) {
+            badge.className = 'badge ' + CLS[ds];
+            var bs = badge.querySelector('span[data-i18n]');
+            if (bs) { bs.setAttribute('data-i18n', FALLBACK[ds]); bs.textContent = tr(FALLBACK[ds]); }
+            else badge.textContent = tr(FALLBACK[ds]);
+          }
         }
       }
 

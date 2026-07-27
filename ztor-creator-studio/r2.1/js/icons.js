@@ -24,7 +24,7 @@ const REGISTRY = {
   'plus':           '<path d="M12 5l0 14" /> <path d="M5 12l14 0" />',                              // 建立 / 新增
   'minus':          '<path d="M5 12l14 0" />',                                                      // 收支明細的「支出小計」列（減項）
   'equal':          '<path d="M5 10l14 0" /> <path d="M5 14l14 0" />',                              // 收支明細的「淨收益」列（等式結果）
-  'arrow-left':     '<path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" />',                        // 返回 Creator 名冊（Admin 全域導航 · §4.1/D086）
+  'arrow-left':     '<path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" />',                        // 返回 Creator 名冊（Admin 全域導航/D086）
   'shield-check':   '<path d="M11.46 20.846a12 12 0 0 1 -7.96 -14.846a12 12 0 0 0 8.5 -3a12 12 0 0 0 8.5 3a12 12 0 0 1 -.09 7.06" /> <path d="M15 19l2 2l4 -4" />',  // Creator Management（Admin 標記）
   'bell':           '<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /> <path d="M9 17v1a3 3 0 0 0 6 0v-1" />', // 通知
   'flag':           '<path d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9" /> <path d="M5 21v-7" />', // 公告 / Announcements
@@ -40,6 +40,7 @@ const REGISTRY = {
   'chevron-left':   '<path d="M15 6l-6 6l6 6" />',                                              // 上一張 / 返回
   'chevron-right':  '<path d="M9 6l6 6l-6 6" />',                                               // 下一張 / next
   'chevron-down':   '<path d="M6 9l6 6l6 -6" />',                                                // dropdown / select 展開
+  'chevron-up':     '<path d="M6 15l6 -6l6 6" />',                                               // 數字欄位的加值鈕（ds-components/stepper.css）；2026-07-27 補上——registry 原本只有 left/right/down，缺 up 的那顆鈕就整個沒圖示
   'upload':         '<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /> <path d="M7 9l5 -5l5 5" /> <path d="M12 4l0 12" />', // 上傳
   'play':           '<path d="M7 4v16l13 -8l-13 -8" />',         // 播放
   'pause':          '<path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" /> <path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />',      // 暫停（Album 曲目封面播放控制）

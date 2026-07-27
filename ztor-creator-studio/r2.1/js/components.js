@@ -72,10 +72,23 @@
     if (t.delta) sub += '<div class="kpi__delta' + (t.delta.neg ? ' kpi__delta--neg' : '') + '"' + di18n(t.delta.key) + '>' + s(t.delta.text) + '</div>';
     if (t.metaLink) sub += '<div class="kpi__meta"><a class="card__link" href="' + t.metaLink.href + '"' + di18n(t.metaLink.key) + '>' + s(t.metaLink.text) + '</a></div>';
     else if (!t.delta && t.meta) sub += '<div class="kpi__meta"' + di18n(t.meta.key) + '>' + s(t.meta.text) + '</div>';
-    return '<div class="kpi bento--span-4">'
+    /* t.open = key of a .payout-modal on the page (data-bd-modal). The whole tile
+       becomes a <button> that opens it — an in-place detail popup instead of a
+       cross-page jump (L directive 2026-07-27: consistent UX, clear next step).
+       A trailing chevron in the label row is the tap affordance (same glyph the
+       alert cards / data-list rows use for "this opens something"). */
+    /* Chevron sits OUTSIDE .kpi__label (absolutely positioned top-right) — the label
+       carries data-i18n, and a language apply rewrites its innerHTML, which would
+       wipe an inline icon. */
+    var chev = t.open ? '<i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>' : '';
+    var inner = chev
       + '<div class="kpi__label"' + di18n(t.labelKey) + '>' + s(t.label) + '</div>'
       + '<div class="kpi__value">' + s(t.value) + '</div>'
-      + sub + '</div>';
+      + sub;
+    /* t.hero = 這一列的主角數字（.kpi--hero → 數字染 --brand-ink 橘）。一列只給一個。 */
+    var hero = t.hero ? ' kpi--hero' : '';
+    if (t.open) return '<button type="button" class="kpi kpi--tappable bento--span-4' + hero + '" data-bd-open="' + t.open + '">' + inner + '</button>';
+    return '<div class="kpi bento--span-4' + hero + '">' + inner + '</div>';
   }
 
   // F4 — alert / action card. Processing state lives in a.meta (severity · object · Open/In progress/Snoozed).
@@ -85,7 +98,12 @@
     var close = a.blocking
       ? '<button class="alert__close btn btn--icon btn--xs" type="button" disabled aria-label="Resolve in source module" title="Resolve in the source module"><i data-lucide="lock" class="ztor-icon"></i></button>'
       : '<button class="alert__close btn btn--icon btn--xs" type="button" aria-label="Open"><i data-lucide="chevron-right" class="ztor-icon"></i></button>';
-    return '<div class="alert alert--card alert--' + a.variant + (a.snoozed ? ' alert--snoozed' : '') + '">'
+    /* data-go：整張卡都可點、去 CTA 的同一個深連結（L directive 2026-07-27 —— 點擊目標
+       不只那行小字）。委派 handler 在 mount 下方；內部 <a>（CTA）維持原生導航不重複處理。
+       鍵盤：tabindex + Enter（handler 同處）。blocking 卡照樣可點——lock 鎖的是「關閉」，
+       不是「前往處理」。 */
+    return '<div class="alert alert--card alert--' + a.variant + (a.snoozed ? ' alert--snoozed' : '')
+      + (a.ctaHref ? '" data-go="' + a.ctaHref + '" tabindex="0" role="link' : '') + '">'
       + '<div class="alert__icon"><i data-lucide="' + a.icon + '" class="ztor-icon"></i></div>'
       + '<div class="alert__body">'
       +   '<div class="alert__title"' + di18n(a.titleKey) + '>' + s(a.title) + '</div>'
@@ -124,7 +142,11 @@
       + '</div>'
       + '<div class="data-list__end data-list__end--row">'
       +   badge(r.status)
-      +   '<a class="data-list__go" href="' + r.go + '" aria-label="Open"><i data-lucide="chevron-right" class="ztor-icon"></i></a>'
+      /* r.cta = labelled action button instead of the bare chevron — used by the
+         F2 Active-projects popup where every row must state its next step. */
+      +   (r.cta
+            ? '<a class="btn btn--outline btn--sm" href="' + r.go + '"' + di18n(r.cta.key) + '>' + s(r.cta.text) + '</a>'
+            : '<a class="data-list__go" href="' + r.go + '" aria-label="Open"><i data-lucide="chevron-right" class="ztor-icon"></i></a>')
       + '</div>'
       + '</div>';
   }
@@ -170,10 +192,22 @@
       + '<div class="kpi__value" style="margin-bottom:4px">' + s(f.value) + '</div>'
       + '<div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px"' + di18n(f.subKey) + '>' + s(f.sub) + '</div>'
       + '<div style="display:flex;flex-direction:column;gap:8px;font-family:var(--font-ui);font-size: var(--fs-12)">' + tiers + '</div>'
-      + '<div class="info-banner mt-16"><i data-lucide="info" class="ztor-icon info-banner__icon"></i>'
-      +   '<span' + di18n(f.warnKey) + '>' + s(f.warn) + '</span></div>'
       + '<div class="mt-16"><a class="card__link" href="' + f.linkHref + '"' + di18n(f.linkKey) + '>' + s(f.link) + '</a></div>'
       + '</div>';
+    /* Risk toast（2026-07-28 L 裁示）：原本欄中段的 info-banner 改成卡底、跨兩欄的
+       actionable toast——同 fans-crm 頁自己的 #fans-risk-alert 視覺（alert--banner
+       alert--error），整條可點（data-go，同 alert 卡的整卡可點手勢），落地直接
+       開啟訊息 composer、收件對象預選「At risk (5)」（fans-crm ?msg=risk）。 */
+    var toast = f.risk
+      ? '<div class="alert alert--banner alert--error insight-split__toast" data-go="' + f.risk.href + '" role="link" tabindex="0">'
+        + '<div class="alert__icon">!</div>'
+        + '<div class="alert__body">'
+        +   '<div class="alert__title"' + di18n(f.risk.titleKey) + '>' + s(f.risk.title) + '</div>'
+        +   '<div class="alert__meta"' + di18n(f.risk.metaKey) + '>' + s(f.risk.meta) + '</div>'
+        + '</div>'
+        + '<span class="alert__cta"' + di18n(f.risk.ctaKey) + '>' + s(f.risk.cta) + '</span>'
+        + '</div>'
+      : '';
     var audCol = '<div class="insight-split__col">'
       + '<div class="insight-eyebrow"><span' + di18n(a.eyebrowKey) + '>' + s(a.eyebrow) + '</span>'
       +   '<span class="insight-eyebrow__src"' + di18n(a.syncKey) + '>' + s(a.sync) + '</span></div>'
@@ -183,7 +217,7 @@
       + '<div class="text-sub" style="font-size: var(--fs-11);margin-top:14px"><span' + di18n(a.noteKey) + '>' + s(a.note) + '</span> '
       +   '<a class="card__link" href="' + a.fixHref + '"' + di18n(a.fixKey) + '>' + s(a.fix) + '</a></div>'
       + '</div>';
-    return fansCol + audCol;
+    return fansCol + audCol + toast;
   }
 
   var RENDERERS = {
@@ -221,18 +255,26 @@
     // Earnings Overview — full recent ledger (income + a payout). Same renderer ⇒ identical format.
     'earn-recent': { rows: [TX.preorder, TX.spotify, TX.merch, TX.licensing, TX.tickets, TX.payout] },
 
-    // F2 — operations summary.
+    // F2 — operations summary. The two count tiles open in-place popups (data-bd-modal
+    // on index.html) instead of jumping pages — the popup lists each item WITH its own
+    // labelled CTA so the next step needs no guessing (L directive 2026-07-27).
     'dash-ops': { tiles: [
-      { labelKey: 'ops.revenue',  label: 'Total revenue',   value: '$24,830', delta: { key: 'ops.revenue-delta', text: '+12.6% vs last week' }, metaLink: { href: 'earnings.html', key: 'ops.revenue-meta', text: 'Updated 2h ago · view in Earnings' } },
-      { labelKey: 'ops.pending',  label: 'Pending actions', value: '4',       metaLink: { href: '#f4-alerts',  key: 'ops.pending-meta',  text: '3 open · 1 in progress' } },
-      { labelKey: 'ops.projects', label: 'Active projects', value: '3',       metaLink: { href: 'projects.html', key: 'ops.projects-meta', text: 'Live · funding · scheduled' } }
+      /* hero:true — 使用者裁示 2026-07-27「這是本頁最重要的數據」，數字染品牌橘（.kpi--hero）。這一列只有這一塊是 hero。 */
+      { labelKey: 'ops.revenue',  label: 'Total revenue',   value: '$24,830', hero: true, delta: { key: 'ops.revenue-delta', text: '+12.6% vs last week' }, metaLink: { href: 'earnings.html', key: 'ops.revenue-meta', text: 'Updated 2h ago · view in Earnings' } },
+      { labelKey: 'ops.pending',  label: 'Pending actions', value: '4',       meta: { key: 'ops.pending-meta',  text: '3 open · 1 in progress' },  open: 'ops-pending' },
+      { labelKey: 'ops.projects', label: 'Active projects', value: '3',       meta: { key: 'ops.projects-meta', text: 'Live · funding · scheduled' }, open: 'ops-projects' }
     ] },
 
-    // F4 — today's actions.
+    // F4 — today's actions. CTA hrefs are DEEP LINKS with the landing state preset
+    // (L directive 2026-07-27: the user finishes in the overlay or lands with filters
+    // applied — never on a generic page): my-ip #rented + ?ip= flashes the license row;
+    // e-shop ?status=low pre-activates the Low Stock chip; event-detail #refunds opens
+    // the tab holding the Pre-flight checklist card; settings #tax aliases to Payments
+    // and flashes the three tax rows.
     'dash-alerts': { items: [
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Neon Tide</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html' },
-      { variant: 'error',   icon: 'x-circle-fill',       titleKey: 'alert.stock.title',     title: 'Low stock · 3 items',             descKey: 'alert.stock.desc',     desc: '<em>Tide Pool</em> vinyl, <em>Cartridge 04</em> zine, and tour T-shirt are below restock threshold.',   metaKey: 'alert.stock.meta',     meta: 'Critical · E-Shop · Open',      ctaKey: 'alert.stock.cta',     cta: 'Restock',            ctaHref: 'e-shop.html' },
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>Tide Pool · 14 Jun</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'events.html' },
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Neon Tide</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented' },
+      { variant: 'error',   icon: 'x-circle-fill',       titleKey: 'alert.stock.title',     title: 'Low stock · 3 items',             descKey: 'alert.stock.desc',     desc: '<em>Tour zine vol. 02</em>, <em>Coastline tee (S)</em>, and the Salt &amp; Bitumen poster are below restock threshold.',   metaKey: 'alert.stock.meta',     meta: 'Critical · E-Shop · Open',      ctaKey: 'alert.stock.cta',     cta: 'Restock',            ctaHref: 'e-shop.html?status=low' },
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>Spring Launch · Apr 12</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html#refunds' },
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).
       { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax' },
       // Snoozed (info, soft-closed) — excluded from F2 pending count; reappears in ~7 days (spec §F4).
@@ -247,11 +289,14 @@
       { icon: 'file-text',                            titleKey: 'dash.recent.row4.title', title: 'Brand partnership signed — Cypress Audio',         metaKey: 'dash.recent.row4.meta', meta: 'Income · Earnings · Nov 17', status: { key: 'status.signed',    fallback: 'Signed',    variant: 'neutral' } }
     ] },
 
-    // F6 — recent events & ongoing projects (source-aware entry: event → events.html, project → projects.html).
+    // F6 — recent events & ongoing projects. `go` links are per-item deep links (2026-07-27):
+    // project rows → project-detail.html?id=<the store project whose numbers these rows cite>
+    // (established format, projects.html uses it; unknown id degrades to store.first());
+    // Spring Launch → event-detail.html, which IS that event's page.
     'dash-events': { rows: [
-      { icon: 'circle', titleKey: 'dash.progress.row1.title', title: '<em>Coastline EP</em> · pre-order',        metaKey: 'dash.progress.row1.meta', meta: 'Project · Projects · 62 / 100 supporters · ends Dec 14', status: { key: 'status.live',      fallback: 'Live',      variant: 'orange' },  go: 'projects.html' },
-      { icon: 'circle', titleKey: 'dash.progress.row2.title', title: '<em>Late Bloom</em> short film · funding', metaKey: 'dash.progress.row2.meta', meta: 'Project · Projects · $8,420 / $15,000 · 21 days left',   status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' },    go: 'projects.html' },
-      { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>Spring Launch</em> show · in-person',  metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'events.html' },
+      { icon: 'circle', titleKey: 'dash.progress.row1.title', title: '<em>Coastline EP</em> · pre-order',        metaKey: 'dash.progress.row1.meta', meta: 'Project · Projects · 62 / 100 supporters · ends Dec 14', status: { key: 'status.live',      fallback: 'Live',      variant: 'orange' },  go: 'project-detail.html?id=dragon-tiger-gate' },
+      { icon: 'circle', titleKey: 'dash.progress.row2.title', title: '<em>Late Bloom</em> short film · funding', metaKey: 'dash.progress.row2.meta', meta: 'Project · Projects · $8,420 / $15,000 · 21 days left',   status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' },    go: 'project-detail.html?id=f-i-am-speed' },
+      { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>Spring Launch</em> show · in-person',  metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'event-detail.html' },
       { icon: 'circle', titleKey: 'dash.progress.row4.title', title: '<em>Quiet Hours</em> playlist · go live',  metaKey: 'dash.progress.row4.meta', meta: 'Project · Projects · scheduled to launch Dec 01',        status: { key: 'status.draft',     fallback: 'Draft',     variant: '' },        go: 'projects.html' }
     ] },
 
@@ -273,10 +318,17 @@
         tiers: [
           { key: 'dash.fans.tier.inner',   label: 'Inner Circle', pct: '12%', rev: '$8,420' },
           { key: 'dash.fans.tier.super',   label: 'Superfan',     pct: '28%', rev: '$6,180' },
-          { key: 'dash.fans.tier.devoted', label: 'Devoted',      pct: '37%', rev: '$4,890' },
+          { key: 'dash.fans.tier.devoted', label: 'Ranked fans', pct: '37%', rev: '$4,890' },
           { key: 'dash.fans.tier.fan',     label: 'Fan',          pct: '23%', rev: '$1,210' }
         ],
-        warnKey: 'dash.fans.warning', warn: '<strong>5 Superfans at risk of dropping.</strong> 14+ days without a touchpoint. Send a private update?',
+        /* risk → 卡底 actionable toast（2026-07-28）：整條可點，落地 fans-crm 直接開
+           composer、收件對象預選 At risk (5)。文案與 fans-crm #fans-risk-alert 同源。 */
+        risk: {
+          href: 'fans-crm.html?msg=risk',
+          titleKey: 'dash.fans.risk.title', title: '5 Superfans at risk of dropping',
+          metaKey: 'dash.fans.risk.meta',   meta: '14+ days without a touchpoint',
+          ctaKey: 'dash.fans.risk.cta',     cta: 'Send a private update'
+        },
         linkKey: 'dash.fans.link', link: 'Open Fans', linkHref: 'fans-crm.html'
       },
       audience: {
@@ -294,6 +346,21 @@
       }
     }
   };
+
+  /* F2 popup datasets — DERIVED from the F4/F6 sources above (never restated), so the
+     popup can only ever show what the cards below already show. Pending = F4 minus
+     snoozed (matching the tile's count rule); Active projects = F6 minus drafts, each
+     row upgraded to a labelled CTA (Open project / Open event). */
+  DATA['ops-pending-list'] = { items: DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; }) };
+  DATA['ops-projects-list'] = { rows: DATA['dash-events'].rows
+    .filter(function (r) { return r.status.key !== 'status.draft'; })
+    .map(function (r) {
+      var isEvent = r.go === 'events.html';
+      return Object.assign({}, r, { cta: {
+        key: isEvent ? 'ops.modal.open-event' : 'ops.modal.open-project',
+        text: isEvent ? 'Open event' : 'Open project'
+      } });
+    }) };
 
   /* ===========================================================
      Runtime
@@ -316,6 +383,23 @@
   }
 
   mount(document); // synchronous, before reveal.js
+
+  /* Alert 卡整卡可點（data-go，2026-07-27）：委派一次、F4 與 F2 popup 共用。
+     內部 <a>（CTA 文字連結）走原生導航、不重複處理；disabled 按鈕（blocking 卡的
+     lock 關閉鈕）不觸發；chevron「Open」鈕落入整卡導航。Enter＝鍵盤等價。 */
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('[data-go]');
+    if (!card) return;
+    if (e.target.closest('a')) return;
+    var btn = e.target.closest('button');
+    if (btn && btn.disabled) return;
+    location.href = card.getAttribute('data-go');
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var card = e.target && e.target.closest && e.target.closest('[data-go]');
+    if (card && e.target === card) location.href = card.getAttribute('data-go');
+  });
 
   window.ZtorComponents = { mount: mount, RENDERERS: RENDERERS, DATA: DATA };
 })();

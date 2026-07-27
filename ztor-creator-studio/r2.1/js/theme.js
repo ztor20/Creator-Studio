@@ -24,6 +24,50 @@
 })();
 
 /* ============================================================
+   字型預載（2026-07-28 使用者回報：「每次重新整理，標題都會先閃一下別的字
+   才變成 Alumni」）
+
+   為什麼會閃：@font-face 是在 CSS 被解析完之後才發出字型請求，而 CSS 本身
+   還要先下載。所以第一次算繪時 Alumni Sans 根本還沒到，瀏覽器先用堆疊裡的
+   第二順位（Geist）畫一次標題，字型到了再換掉——那一下換字就是使用者看到的閃爍。
+
+   為什麼放在這裡：theme.js 是 43 個頁面 <head> 裡的第一支 script，跑在任何
+   stylesheet 之前。在這裡塞 <link rel=preload>，字型請求會和 CSS 同時出發，
+   而不是排在 CSS 後面。一支檔案修好全站，不必動 43 個 <head>。
+
+   只預載「第一次算繪就會用到、而且小」的字面：
+     · Alumni Sans variable（22KB）＝ 所有標題
+     · Satoshi 400 / 500（各 25KB）＝ 內文與 UI
+   LINE Seed TW 刻意不預載——那四個檔各約 3.4MB（未做子集化的全字集），
+   預載反而會把頻寬從關鍵路徑上搶走。中文仍走 swap，第一次進站換一次字。
+
+   搭配 fonts.css 把這三個字面改成 font-display: block：預載之後它們幾乎必定
+   趕得上第一次算繪，block 保證「要嘛就是對的字，要嘛還沒畫」，不會換字。
+   ============================================================ */
+(function preloadCriticalFonts() {
+  var faces = [
+    "fonts/AlumniSans-Variable.woff2",
+    "fonts/Satoshi-400.woff2",
+    "fonts/Satoshi-500.woff2"
+  ];
+  /* 路徑從 theme.js 自己的 src 推回站台根目錄——docs/、funding-test/ 這些
+     子目錄頁面若用相對路徑 "fonts/…" 會指到不存在的位置，預載就白做了
+     （而且會在 console 留下一則「preloaded but not used」警告）。 */
+  var me = document.currentScript && document.currentScript.src;
+  var base = me ? me.replace(/js\/theme\.js.*$/, "") : "";
+  /* theme.js 在 <head> 裡，document.head 此時必定存在 */
+  for (var i = 0; i < faces.length; i++) {
+    var l = document.createElement("link");
+    l.rel = "preload";
+    l.as = "font";
+    l.type = "font/woff2";
+    l.href = base + faces[i];
+    l.crossOrigin = "anonymous";   /* 字型請求一律 CORS，少了這行預載不會被重用 */
+    document.head.appendChild(l);
+  }
+})();
+
+/* ============================================================
    Ztor Creator Studio R 2.0 — Theme manager
 
    Drives the `data-theme` attribute on <html>. Three states:
@@ -157,7 +201,7 @@
      · "topbar"  — horizontal top bar (default)
      · "sidebar" — vertical left rail
 
-   Same nav model / IA in both (§6.9): only the placement changes.
+   Same nav model / IA in both: only the placement changes.
    Storage key: ztor.nav.mode. Applied here in <head> so the layout
    is correct before first paint (no flash from topbar → sidebar).
    sidebar.js reads data-nav-mode to pick which markup to render and

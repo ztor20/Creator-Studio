@@ -42,22 +42,32 @@
    來源：fonts.gstatic.com/s/alumnisans/v20（unicode-range 含 U+0000-00FF 的那個子集）。
    Alumni Sans 是窄長字面，與 LINE Seed TW（正常寬度幾何黑體）並置時，
    同字級下英文標題會明顯比中文標題窄——這是兩個字面本身的比例差，不是 bug。 */
+/* font-display: block（2026-07-28）——不是 swap。
+   swap ＝「先用後備字畫，字到了再換掉」，那一下換字就是使用者回報的標題閃爍。
+   block ＝「字沒到就先不畫這段文字」，畫出來的一定已經是 Alumni，永遠不會換。
+   之所以敢用 block，是因為這個檔在 js/theme.js 被 <link rel=preload> 提前請求，
+   而且只有 22KB：本機下實測趕得上第一次算繪，看不到空白期。
+   萬一字檔真的掛了，block 的封鎖期上限是 3 秒，之後仍會回退到 Geist，
+   不會變成永遠看不到標題。 */
 @font-face {
   font-family: "Alumni Sans";
   src: url("../fonts/AlumniSans-Variable.woff2") format("woff2-variations"),
        url("../fonts/AlumniSans-Variable.woff2") format("woff2");
   font-weight: 100 900;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* ── Satoshi — 英文內文／UI 字面（2026-07-28 使用者裁示）──────────────
    Fontshare（Indian Type Foundry），個人與商用皆免費。非變數字體，
    五個字重各一檔（300/400/500/700/900，各約 23–26KB）。
    與 LINE Seed TW 的分工：拉丁走 Satoshi、中文走 LINE Seed（unicode-range 已釘死）。 */
+/* 400 / 500 是內文與 UI 的實際用字，和 Alumni 同樣被 theme.js 預載，故同樣改 block
+   （理由見上）。300 / 700 / 900 用量零星、沒有預載，維持 swap——沒預載又 block，
+   冷啟動時那幾個字重可能空白到封鎖期結束，那是拿一個問題換另一個。 */
 @font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-300.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
-@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: block; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: block; }
 @font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
 @font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-900.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
 

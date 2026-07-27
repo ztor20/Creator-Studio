@@ -1,0 +1,142 @@
+/* ============================================================
+   Wizard split — content column + sticky summary rail
+   (2026-07-27, L directive "realtime set up overview floating panel")
+
+   Why a grid and not `position: fixed`:
+     `.wizard` is height:100vh/overflow:hidden and `.wizard__sheet` is the
+     element that scrolls (flex:1 + overflow-y:auto). A fixed panel is
+     viewport-anchored, so it would ignore the sheet's bounds, float over the
+     in-flow footer, and need a hard-coded left offset derived from the body's
+     820px centring — a magic number that breaks at every window width.
+     A sticky child of the scrolling ancestor sticks correctly with no magic
+     numbers and reflows on its own.
+
+   The consuming step must widen the body (`.wizard__body--mid`, 1140px) —
+   that width already exists for exactly this shape (content + ~320px rail).
+
+   Anatomy:
+     section.wizard-split
+       aside.wizard-split__rail   → sticky summary (grid-column 2)
+       div.wizard-split__main     → the form (grid-column 1)
+   Rail is FIRST in source order so it reads before the form on small screens
+   and for screen readers; grid-column puts it visually on the right.
+   ============================================================ */
+.wizard-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--sp-32);
+  align-items: start;
+}
+/* grid-row:1 on BOTH is load-bearing, not decoration. The rail is first in
+   source order and claims column 2; without an explicit row the main column
+   auto-places into the NEXT free cell — row 2, column 1 — and the card renders
+   above the step title instead of beside it. Pinning both to row 1 is what puts
+   them side by side. */
+.wizard-split__main { grid-column: 1; grid-row: 1; min-width: 0; }
+.wizard-split__rail {
+  grid-column: 2;
+  grid-row: 1;
+  position: sticky;
+  /* `.wizard__top` is position:sticky INSIDE .wizard__sheet — the same scroll
+     container as this rail — and sits at z-index 30. So a rail pinned at
+     top:24px slides UNDERNEATH the header and gets visually clipped (L caught
+     this: "that floating box shouldn't be blocked by the header"). The offset
+     has to clear the header's full height, not just leave a gap.
+     --wizard-top-h is measured at runtime by create-project.html, because the
+     header's height changes with locale (zh-Hant wraps differently) — a
+     hardcoded number would silently drift. 80px is the observed desktop value
+     and only a fallback. */
+  top: calc(var(--wizard-top-h, 80px) + var(--sp-16));
+  /* Never let the card be taller than the space it has: if it grows (more
+     rows, a longer locale) it scrolls inside itself instead of being cut off
+     at the bottom, which is the same clipping bug from the other end. */
+  max-height: calc(100vh - var(--wizard-top-h, 80px) - var(--sp-56));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  min-width: 0;
+}
+
+/* ── Setup overview card ─────────────────────────────────────────────────── */
+.fd-ov { padding: var(--sp-20); }
+.fd-ov__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* Hero = the one number a fan actually sees, so it gets the size. */
+.fd-ov__hero {
+  margin: var(--sp-14) 0 var(--sp-16);
+  padding-bottom: var(--sp-16);
+  border-bottom: 1px solid var(--border);
+}
+.fd-ov__hero-label {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  margin-bottom: var(--sp-4);
+}
+.fd-ov__hero-value {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  /* tabular so the value does not re-flow its own width while you type */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.fd-ov__list .data-list__row { padding-block: var(--sp-8); }
+.fd-ov__v {
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+}
+/* The bottom line of the money story gets weight, not colour — colour in this
+   card is reserved for the budget badge's pass/fail verdict. */
+.fd-ov__row--total .data-list__row-main,
+.fd-ov__row--total .fd-ov__v { font-weight: var(--fw-semibold); }
+.fd-ov__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-14);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.fd-ov__note { margin-top: var(--sp-10); }
+
+/* NO transition/animation on the values. They change on every keystroke, and
+   per the house frequency rule anything seen that often must not animate —
+   a count-up or flash here would read as jitter, not feedback. The only motion
+   in the card is the budget badge's colour, which is a meaningful state change
+   and inherits its transition from .badge. */
+
+/* ── Under 1024: stop being a rail ───────────────────────────────────────── */
+@media (max-width: 1023.98px) {
+  .wizard-split { grid-template-columns: minmax(0, 1fr); gap: var(--sp-20); }
+  /* Stacked in flow — drop the sticky offset and the height cap, or the card
+     would carry a viewport-derived max-height it no longer needs. */
+  .wizard-split__rail { top: auto; max-height: none; overflow: visible; }
+  /* Source order already puts the rail first, so it lands above the form —
+     a summary you read before filling in, rather than one stranded below the
+     fold where it would never be seen. */
+  /* grid-row back to auto so they stack in source order (rail first) instead of
+     fighting over row 1. */
+  .wizard-split__rail {
+    grid-column: 1; grid-row: auto; position: static;
+    /* Don't let the card stretch the full content width when stacked: at ~830px
+       the gap between a row's label and its value becomes a long eye-travel for
+       no benefit. Keep it near the rail's own measure. */
+    width: 100%;
+    max-width: 520px;
+  }
+  .wizard-split__main { grid-column: 1; grid-row: auto; }
+}

@@ -1,0 +1,77 @@
+/* ============================================================
+   Sticky page actions — keep a page's top CTAs reachable after scroll.
+
+   使用者裁示 2026-07-27：「頁面上方的 CTA 捲下去就看不到了。捲動後應該固定在
+   頂端，或收進一條吸底的動作列。site wide 都要檢查。」
+
+   為什麼是吸底而不是吸頂：
+     · app 外殼已經有一條 position:sticky 的頂列（shared.css）。動作列再吸頂要
+       疊在它下面，兩層固定物互相卡位。
+     · 更關鍵：position:sticky 只在「父層還在畫面內」時有效。這些按鈕住在
+       .page-intro / .pd-hero 裡，那整塊會整個捲走，按鈕跟著消失——除非把按鈕
+       搬出原本的容器，而那要動到 17 個頁面的版型。
+   所以改成：原本那排按鈕捲出畫面時，複製一份到吸底列；捲回來就收掉。
+   版面零改動，行為全站一致。
+
+   Anatomy:
+     <div class="sticky-actions" data-sticky-actions hidden>
+       <div class="sticky-actions__inner">…複製的按鈕…</div>
+     </div>
+
+   表面沿用 .ss-actionbar 的語彙（--card ＋ 上緣 hairline），讓站上兩處吸附式
+   動作列看起來是同一個東西。刻意用實色而非毛玻璃：DESIGN.md 明令
+   backdrop-filter 表面不可淡入淡出，實色才能安心做透明度動畫。
+   ============================================================ */
+.sticky-actions {
+  position: fixed;
+  bottom: 0;
+  z-index: 30;                 /* 高於內容、低於 drawer(300)/modal(1200) */
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.08);
+  /* left/right 由 JS 依 .main 的實際位置設定——側欄模式與頂列模式的內容起點
+     不同，寫死寬度在其中一種模式一定會歪。 */
+}
+.sticky-actions[hidden] {
+  display: none;               /* 收起時整個移出無障礙樹與 Tab 順序，
+                                  否則畫面上看不到、鍵盤卻還會走到一份複製品 */
+}
+.sticky-actions__inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;   /* 與原本那排靠右對齊一致，肌肉記憶不變 */
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  padding: var(--sp-12) var(--sp-24);
+}
+
+/* 進場：位移＋淡入，不超過 200ms（DESIGN.md：回饋 <200ms、退場比進場快）。 */
+.sticky-actions {
+  transform: translateY(0);
+  opacity: 1;
+  transition:
+    transform var(--duration, 180ms) var(--easing, ease-out),
+    opacity var(--duration, 180ms) var(--easing, ease-out);
+}
+.sticky-actions[data-enter] {
+  transform: translateY(100%);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticky-actions { transition: none; }
+}
+
+/* 吸底列會蓋住頁面最底部的內容（長表格的最後一列），顯示時把內容墊高。
+   由 JS 依實際高度設定，不寫死——按鈕換行時高度會變。 */
+.main[data-sticky-pad] {
+  padding-bottom: var(--sticky-actions-pad, 0);
+}
+
+@media (max-width: 767.98px) {
+  .sticky-actions__inner {
+    padding: var(--sp-10) var(--sp-16);
+    justify-content: stretch;
+  }
+  /* 窄螢幕按鈕平分一列，指頭好按；超過兩顆就換行 */
+  .sticky-actions__inner > * { flex: 1 1 auto; justify-content: center; }
+}

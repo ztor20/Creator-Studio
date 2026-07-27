@@ -1,0 +1,200 @@
+/* ============================================================
+   Ztor — Explainer
+
+   An info icon beside a field label that opens a proper dialog with
+   the full explanation.
+
+   使用者裁示 2026-07-27：repeating the same one-line hint under every
+   instance of a field is noise — three tiers × two gates was six lines
+   saying the same two things. The rule this encodes: **an explanation
+   that is identical everywhere it appears belongs in ONE dialog, reached
+   from an icon, not inlined N times.** Inline hints stay only where the
+   text differs per instance.
+
+   Shell (overlay tint, blur, radius, shadow, head/body pinning) is
+   deliberately the same vocabulary as .payout-modal / .payout-dialog —
+   an explanation is a lighter dialog, not a different species. It is
+   narrower, has no footer, and no destructive action: read and dismiss.
+
+   Markup:
+     <div class="settings-row__label">Top %
+       <button class="explain-btn" type="button" data-explain="explain-toppct"
+               aria-label="How “Top %” works">
+         <i data-lucide="info" class="ztor-icon"></i>
+       </button>
+     </div>
+     …
+     <div class="explain" id="explain-toppct" hidden> … </div>
+
+   Behaviour lives in js/explainer.js.
+   ============================================================ */
+
+/* ── The trigger ───────────────────────────────────────────── */
+.explain-btn {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  vertical-align: middle;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition-property: color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.explain-btn .ztor-icon { width: 15px; height: 15px; }
+.explain-btn:hover { color: var(--foreground); }
+.explain-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* 40px hit area without a 40px inkblot next to the label. The label owns
+   its own line, so a pseudo this size cannot overlap a neighbouring
+   control. */
+.explain-btn::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+}
+
+/* ── The dialog ────────────────────────────────────────────── */
+.explain[hidden] { display: none; }   /* must beat display:grid below */
+.explain {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-24);
+  background: color-mix(in srgb, var(--background) 68%, var(--overlay-tint));
+  backdrop-filter: blur(14px);
+}
+
+.explain__dialog {
+  width: min(460px, 100%);
+  max-height: min(640px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-overlay);
+  /* Entrance: rises a little and settles. Exit is handled by simply
+     hiding — an explanation should leave faster than it arrived. */
+  animation: explain-in 260ms var(--easing);
+}
+@keyframes explain-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.explain__head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-12);
+  padding: var(--sp-20) var(--sp-20) var(--sp-12);
+}
+.explain__title {
+  margin: 0;
+  flex: 1 1 auto;
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  text-wrap: balance;
+}
+.explain__close {
+  position: relative;
+  flex: none;
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--sp-4);
+  margin: calc(var(--sp-4) * -1);
+  /* --muted-foreground measured 3.46:1 on --card here: legal for a
+     graphic but visibly faint, and this is the only way out of the
+     dialog besides Esc. One step brighter. */
+  color: var(--foreground-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: inline-grid;
+  place-items: center;
+  transition-property: color, background-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+/* The visible glyph is 16px; the target must not be. */
+.explain__close::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+}
+.explain__close .ztor-icon { width: 16px; height: 16px; }
+.explain__close:hover { color: var(--foreground); background: var(--accent); }
+.explain__close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Only the body scrolls — the title stays put on a short screen. */
+.explain__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 0 var(--sp-20) var(--sp-20);
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+}
+.explain__body > * + * { margin-top: var(--sp-12); }
+.explain__body p { margin: 0; text-wrap: pretty; }
+.explain__lead { color: var(--foreground); }
+
+/* Numbered method — "how is it calculated" reads as steps, not prose. */
+.explain__steps {
+  margin: 0;
+  padding-left: var(--sp-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.explain__steps li { padding-left: var(--sp-2); }
+
+/* A worked example, set apart so the abstract rule and the concrete
+   case never blur into one paragraph. */
+.explain__example {
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+  padding: var(--sp-12) var(--sp-12) var(--sp-12) var(--sp-14);
+  border-left: 2px solid var(--primary);
+}
+.explain__example-label {
+  display: block;
+  margin-bottom: var(--sp-4);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  /* 11px uppercase needs the 4.5:1 text threshold, not the 3:1 graphic
+     one — --muted-foreground measured 3.90:1 against --muted here. */
+  color: var(--foreground-muted);
+}
+.explain__example strong { color: var(--foreground); font-weight: var(--fw-medium); }
+
+/* The one sentence a reader must not miss. */
+.explain__rule {
+  color: var(--foreground);
+  font-weight: var(--fw-regular);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explain__dialog { animation-duration: 1ms; }
+  .explain-btn, .explain__close { transition-duration: 1ms; }
+}

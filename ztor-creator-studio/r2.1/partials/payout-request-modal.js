@@ -67,7 +67,7 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
           <div class="payout-summary__row"><span data-i18n="payout.summary.deposit">Estimated deposit</span><strong>$8,937.50</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.fx">FX rate</span><strong>1.00</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.eta">ETA</span><strong>Nov 27 · T+3</strong></div>
-          <div class="payout-summary__row"><span data-i18n="payout.summary.settled">Settled sources</span><strong>12 settled events · §7.3</strong></div>
+          <div class="payout-summary__row"><span data-i18n="payout.summary.settled">Settled sources</span><strong>12 settled events</strong></div>
           <div class="payout-summary__row"><span data-i18n="payout.summary.cfgver">Rate version</span><strong>cfg-2026.02</strong></div>
         </div>
 

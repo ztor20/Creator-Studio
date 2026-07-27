@@ -1,0 +1,226 @@
+/* ============================================================
+   perf-rank — 表現排行（Performance ranking）
+
+   One row grammar for every ranked-bar block on the Performance
+   tab and the Dashboard performance cards:
+
+     idx · name · bar track · [pct] · value
+
+   Why a new component instead of .rank-bar (chart.css)：
+   .rank-bar 把名稱壓在色塊「上面」，適合 4–6 列的來源佔比；
+   表現排行一次要讀 8–11 列、而且要能「用眼睛沿著同一條基準線
+   比長度」。名稱與長條分欄之後，所有長條共用同一個起點，
+   排序關係一眼可讀——這正是參考稿（共創提案 › 版稅頁）的作法。
+   兩者並存：佔比用 .rank-bar，排行用 .perf-rank。
+
+   Anatomy:
+     <ol class="perf-rank">
+       <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-3)">
+         <span class="perf-rank__idx">1</span>
+         <span class="perf-rank__name">Spotify</span>
+         <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+         <span class="perf-rank__pct">30.6%</span>
+         <span class="perf-rank__val">486,200</span>
+       </li>
+     </ol>
+
+   Modifiers:
+     .perf-rank--nopct   4 欄（無百分比）——Top 10 作品用
+     .perf-rank__row--rest  「其他」彙總列（去強調）
+
+   長條寬度是資料：--w = 該列 / 最大列 × 100%（呼叫端算好）。
+   色相是分類：--hue 由區塊指定（作品綠／時長藍／地區紫／平台桃）。
+   ============================================================ */
+
+.perf-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.perf-rank__row {
+  display: grid;
+  grid-template-columns: 20px minmax(64px, 148px) minmax(0, 1fr) 52px auto;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-6) var(--sp-8);
+  margin-inline: calc(var(--sp-8) * -1);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  /* 掃描用的列高亮：只在指標裝置上，觸控裝置的 :hover 會黏住 */
+  transition: background-color 140ms ease-out;
+}
+@media (hover: hover) {
+  .perf-rank__row:hover {
+    background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  }
+}
+.perf-rank--nopct .perf-rank__row {
+  grid-template-columns: 20px minmax(64px, 148px) minmax(0, 1fr) auto;
+}
+
+.perf-rank__idx {
+  color: var(--muted-foreground);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.perf-rank__name {
+  color: var(--foreground);
+  font-weight: var(--fw-regular);
+  /* 長片名／長歌名不換行撐高整列——超出就省略，完整值留在 title 屬性 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perf-rank__track {
+  position: relative;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  /* 用 color-mix 而不是 --muted：這條軌道要在深淺兩個主題下都看得見，
+     --muted 在淺色主題幾乎等於卡面本身 */
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+  overflow: hidden;
+}
+.perf-rank__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--w, 0%);
+  border-radius: inherit;
+  background: var(--hue, var(--chart-3));
+}
+
+.perf-rank__pct {
+  color: var(--muted-foreground);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.perf-rank__val {
+  color: var(--foreground);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  min-width: 74px;
+}
+
+/* 「其他地區／其他平台」——是尾巴不是名次，整列降一階 */
+.perf-rank__row--rest .perf-rank__name,
+.perf-rank__row--rest .perf-rank__val { color: var(--muted-foreground); }
+.perf-rank__row--rest .perf-rank__fill { opacity: 0.45; }
+
+/* ── 區塊小標（雙欄 Top 10 的兩個欄頭）────────────────────
+   色點沿用圖表圖例的語彙：這一欄的長條是什麼顏色，點就是什麼顏色。 */
+.perf-cap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin: 0 0 var(--sp-12);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--muted-foreground);
+}
+.perf-cap__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hue, var(--chart-3));
+  flex-shrink: 0;
+}
+
+/* 雙欄排行（依 A 排 ／ 依 B 排 並置）。
+   兩份排序真的不一樣才並置——這正是要讀的資訊：
+   「最多人聽的」與「聽最久的」不是同一首。 */
+.perf-twin {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-32);
+}
+@media (max-width: 1080px) {
+  .perf-twin { grid-template-columns: minmax(0, 1fr); gap: var(--sp-28); }
+}
+
+/* ── Hero 數字（總播放／總觀看）──────────────────────────── */
+.perf-hero__value {
+  display: block;
+  margin-top: var(--sp-4);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-40);
+  font-weight: var(--fw-medium);
+  letter-spacing: -1px;
+  line-height: 1.1;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.perf-hero__cap {
+  display: block;
+  margin-top: var(--sp-8);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+/* Hero 卡底部的三個副指標（聽眾數／完播率／收藏）——
+   同一張卡內的次要事實，不各自開一張卡：它們是這個數字的註腳。 */
+.perf-hero__sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-32);
+  margin-top: var(--sp-24);
+  padding-top: var(--sp-20);
+  border-top: 1px solid var(--border);
+}
+.perf-hero__sub-item { display: flex; flex-direction: column; gap: var(--sp-4); }
+.perf-hero__sub-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.perf-hero__sub-value {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 進場：長條從 0 長到資料寬度 ──────────────────────────
+   一次、有節奏的展開，讓「誰比誰長」在動作結束時被看見；
+   之後切分頁不再重播（class 只加一次）。--i 是列序，呼叫端給。 */
+.perf-rank--animate .perf-rank__fill {
+  animation: perf-grow 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 32ms);
+}
+@keyframes perf-grow {
+  from { width: 0%; }
+  to   { width: var(--w, 0%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .perf-rank--animate .perf-rank__fill { animation: none; }
+  .perf-rank__row { transition: none; }
+}
+
+/* ── 窄螢幕：名稱欄先讓位，百分比在最窄時收起 ──────────── */
+@media (max-width: 720px) {
+  .perf-rank__row { grid-template-columns: 18px minmax(56px, 104px) minmax(0, 1fr) 44px auto; gap: var(--sp-8); }
+  .perf-rank--nopct .perf-rank__row { grid-template-columns: 18px minmax(56px, 104px) minmax(0, 1fr) auto; }
+  .perf-rank__val { min-width: 0; }
+}
+@media (max-width: 520px) {
+  .perf-rank__row { grid-template-columns: 18px minmax(0, 1fr) 40px auto; }
+  .perf-rank--nopct .perf-rank__row { grid-template-columns: 18px minmax(0, 1fr) auto; }
+  /* 軌道在這個寬度已經短到讀不出長度差，讓位給名稱與數字 */
+  .perf-rank__track { display: none; }
+  .perf-hero__sub { gap: var(--sp-20); }
+}

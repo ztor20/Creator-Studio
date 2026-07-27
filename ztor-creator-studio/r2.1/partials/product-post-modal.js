@@ -8,7 +8,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    Broadcast composer fields (.msg-*, message-modal.css) because the sending
    system — audience, title≤120 / body≤2000, personalization tokens, schedule
    (now / +15min), in-app + Email channels, §7.8 wording — is the SAME as
-   群發訊息 (5.1.7.1) and is NOT redefined here. Post-specific bits only:
+   群發訊息 and is NOT redefined here. Post-specific bits only:
    the F2 attached-product card (.npp-product) + Skip path.
 
    Title/close live on the popup frame (no page header, D067). Sample audience
@@ -98,7 +98,7 @@ window.ZTOR_PARTIALS.productPostModal = String.raw`
             </div>
             <p class="msg-schedule-when__tz" data-i18n="msg.schedule.tz">Earliest is now + 15 min · account time zone</p>
           </div>
-          <p class="msg-schedule-when__tz" data-i18n="npp.delivery">Fans are notified in-app and by Email per their preferences (5.1.7.1).</p>
+          <p class="msg-schedule-when__tz" data-i18n="npp.delivery">Fans are notified in-app and by Email per their preferences.</p>
         </div>
       </div>
     </div>

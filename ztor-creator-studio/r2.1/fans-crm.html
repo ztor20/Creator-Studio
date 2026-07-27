@@ -872,6 +872,14 @@
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 
+  /* Deep link ?msg=<audience>（2026-07-28）：Dashboard F7 risk toast 落地即開 composer、
+     收件對象預選（如 ?msg=risk → At risk (5)）——使用者一鍵從提醒直達可執行的動作，
+     不用自己再找入口。值必須是 AUDIENCE 的合法鍵，否則忽略。 */
+  try {
+    const mq = new URLSearchParams(location.search).get('msg');
+    if (mq && AUDIENCE[mq]) openModal(mq);
+  } catch (err) {}
+
   /* ---- tabs ---- */
   function selectTab(name) {
     tabBtns.forEach(b => {

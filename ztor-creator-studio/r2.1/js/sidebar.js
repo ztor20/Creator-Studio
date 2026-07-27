@@ -256,7 +256,7 @@
   function buildTopbar() {
     const creator = getCreator();                 // null = 一般創作者（無 admin 代管）
     const adminScope = !isAdminPlatform && !!creator;    // admin 正在代管某個 creator
-    /* Three nav faces (spec §4.1):
+    /* Three nav faces:
        · Tier 0 roster (creators.html): "Creator Management" marker + locked Tier-1.
        · Admin 代管 (Tier-1, a creator selected): back-to-roster icon BEFORE the logo
          (使用者裁示, D086) + "Managing <creator>" chip + full nav.
@@ -333,7 +333,7 @@
 
   /* ─────────────────────────────────────────────────────────
      SIDEBAR mode — vertical rail markup. Same NAV, dropdowns become
-     expandable accordion groups (§6.9). Actions sit at the bottom.
+     expandable accordion groups. Actions sit at the bottom.
      ───────────────────────────────────────────────────────── */
   function sidebarNavHtml(locked) {
     /* 現役樣式＝可收合 accordion（2026-06-13 使用者反饋改回原樣）。

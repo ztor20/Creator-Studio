@@ -59,7 +59,7 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
 
       <div class="stickynote mt-16">
         <span class="stickynote__mark">!</span>
-        <span data-i18n="manual.note"><strong>Marked unverified.</strong> Manual income never counts toward Available, payouts, or tax documents — at most it shows in display stats (§7.3).</span>
+        <span data-i18n="manual.note"><strong>Marked unverified.</strong> Manual income never counts toward Available, payouts, or tax documents — at most it shows in display stats.</span>
       </div>
     </div>
     <div class="payout-dialog__foot">

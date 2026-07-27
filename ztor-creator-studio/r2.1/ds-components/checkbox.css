@@ -1,0 +1,164 @@
+/* ============================================================
+   Checkbox — the house choice control
+   (2026-07-27, L: "we need our own checkbox design according to our
+   design system")
+
+   NOT a new design. This is a PORT of the canonical checkbox already
+   specified in the unified design system
+   (`design-system/components/ds-form.css`, .ds-checkbox), translated onto
+   r2.1's token names. Two details in there were earned and are carried over
+   verbatim rather than re-derived:
+     · the tick is grid-centered instead of nudged with magic offsets
+     · plus a −2px optical nudge, because a rotated tick's tail pulls the eye
+       low so geometric centre reads high
+   Both were accepted by L on 2026-07-24 ("tick not centered"). Do not
+   "simplify" them back out.
+
+   Why a drawn box over a real input, rather than styling the <input>:
+     appearance:none can recolour the native box, but the tick needs a second
+     paint layer on top of the fill — and the only ways to get one on an
+     <input> are a pseudo-element (undefined for replaced elements; Firefox
+     does not support it) or a colour baked into a data-URI (which puts a raw
+     hex in component CSS and stops tracking the theme). Layering a drawn
+     <span> under a transparent-but-real input keeps click, keyboard, form
+     submission and screen-reader semantics 100% native while the visual is
+     entirely ours.
+
+   ── Markup contract ─────────────────────────────────────────────────────
+   With a label:
+     <label class="zcheck">
+       <span class="zcheck__control">
+         <input class="zcheck__input" type="checkbox">
+         <span class="zcheck__box"></span>
+       </span>
+       <span class="zcheck__label">Digital</span>
+     </label>
+
+   Bare (inside a table cell / already labelled by a nearby heading) — the
+   control span alone, no label span:
+     <span class="zcheck__control">
+       <input class="zcheck__input" type="checkbox" aria-label="…">
+       <span class="zcheck__box"></span>
+     </span>
+
+   The .zcheck__input keeps any existing hook class/id, so page JS that
+   queries it is unaffected.
+   ============================================================ */
+.zcheck {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  cursor: pointer;
+  user-select: none;
+}
+.zcheck__control {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;   /* optical alignment with the label's first line */
+}
+/* The real control: invisible, but still the thing that is clicked, tabbed
+   to, toggled by space, and submitted. Never `display:none` or
+   `visibility:hidden` — both remove it from the tab order. */
+.zcheck__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.zcheck__box {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  /* r2.1 has no white-alpha scale, so compose the DS's --white-alpha-4 from
+     the foreground token — this keeps working when the theme flips. */
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  border: 1px solid var(--border);
+  transition: background-color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing);
+}
+.zcheck:hover .zcheck__box { border-color: var(--foreground-muted); }
+
+/* Checked — solid brand fill with a dark ink tick.
+   The ink is a local literal, deliberately: --primary-foreground flips to
+   #FFFFFF in the light theme, and a white tick on #ffa33f is ~1.9:1. This is
+   the same value the unified DS uses for --yellow-ink, and orange is light in
+   BOTH themes, so the ink must not flip with the theme. */
+.zcheck {
+  --zcheck-ink: #271302;
+}
+.zcheck__input:checked + .zcheck__box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.zcheck__box::after {
+  content: "";
+  width: 6px;
+  height: 10px;
+  margin-top: -2px;   /* the optical nudge — see header note */
+  border: solid var(--zcheck-ink, #271302);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0;
+  transition: transform var(--duration) var(--easing), opacity 120ms var(--easing);
+}
+.zcheck__input:checked + .zcheck__box::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+/* Indeterminate — a bar, not a tick. Used for "some children selected". */
+.zcheck__input:indeterminate + .zcheck__box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.zcheck__input:indeterminate + .zcheck__box::after {
+  opacity: 1;
+  width: 8px;
+  height: 0;
+  margin-top: 0;
+  border-width: 0 0 2.5px 0;
+  transform: none;
+}
+
+/* Focus ring goes on the drawn box, since the real input is transparent.
+   :focus-visible only — clicking should not leave a ring behind. */
+.zcheck__input:focus-visible + .zcheck__box {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.zcheck__input:disabled + .zcheck__box { opacity: 0.5; }
+.zcheck__input:disabled,
+.zcheck:has(.zcheck__input:disabled) { cursor: not-allowed; }
+.zcheck:has(.zcheck__input:disabled) .zcheck__label { color: var(--muted-foreground); }
+
+.zcheck__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal, 1.5);
+  color: var(--foreground);
+}
+
+/* Reduced motion — same end states, no tween. */
+@media (prefers-reduced-motion: reduce) {
+  .zcheck__box,
+  .zcheck__box::after { transition: none; }
+}
+
+/* ── Safety net ───────────────────────────────────────────────────────────
+   Any checkbox that has NOT been converted to the markup above would
+   otherwise render as the OS control — a light-grey box with a blue tick on
+   our dark canvas, which is the exact bug that prompted this component.
+   `accent-color` + `color-scheme` costs two lines and makes a stray native
+   checkbox at least brand-coloured and dark-themed instead of alien.
+   This is a fallback, not the API — new checkboxes use .zcheck. */
+input[type="checkbox"]:not(.zcheck__input),
+input[type="radio"]:not(.zcheck__input) {
+  accent-color: var(--primary);
+  color-scheme: dark;
+}

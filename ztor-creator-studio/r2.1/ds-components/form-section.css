@@ -26,8 +26,16 @@
    否則相鄰 outlined 卡頂端會殘留一條分隔線。 */
 /* 2026-07-17（使用者裁示，Q14 修訂）：無邊框填色卡再加「浮起感」——resting card 陰影(E2)＋頂緣高光，
    讓區塊像浮在內容底上的卡（midnight 探索頁做法）。仍無 1px 邊框；填色＋陰影＋上緣光共同分區。 */
+/* 2026-07-27 L 回報「這兩張卡好擠」＋「我們有設 design token，但它沒在跟」——確認屬實。
+   這個區塊在視覺上就是一張卡（--card 底、--radius-xl、卡陰影，第 18 行的註解也寫明
+   圓角是刻意「與 form-section--outlined 統一」的），但內距卻寫死 var(--sp-16)＝16px，
+   完全沒有接上卡片的 --card-pad token。旁邊真正的 .card（右側設定總覽）算出來是 20px，
+   .ztor-card 是 24px——所以同一個畫面上三種卡有三種內距，而這一張是最擠的那個，
+   而且不管未來怎麼調 --card-pad 都不會跟著動。
+   改成宣告並消費 --card-pad：內距回到 DESIGN.md 記載的卡片 24px，之後也跟著 token 走。 */
 .form-section.form-section--outlined {
-  padding: var(--sp-16);
+  --card-pad: var(--sp-24);
+  padding: var(--card-pad);
   background: var(--card);
   border: 0;   /* 2026-07-16：去外框線（原 1px solid --border）*/
   border-radius: var(--radius-xl);   /* 16px — 對齊 Figma node 781-4166（2026-07-16 使用者裁示全站統一）*/

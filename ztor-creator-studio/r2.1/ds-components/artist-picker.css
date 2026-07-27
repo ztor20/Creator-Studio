@@ -1,0 +1,52 @@
+/* ============================================================
+   Artist picker — added-artist list under the search field.
+   (2026-07-27, the "＋ Add artist" flow)
+
+   Only the ADDED-LIST rows live here. The search field and its results
+   popover deliberately reuse `.owner-lookup__*` (ds-components/owner-lookup.css)
+   so the two lookup surfaces in this product stay visually identical — one
+   lookup language, not two.
+   ============================================================ */
+.artist-picker__list:empty { display: none; }
+.artist-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin-top: var(--sp-10);
+}
+.artist-picker__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  min-width: 0;                /* lets .owner-lookup__meta ellipsis actually work */
+  padding: var(--sp-8) var(--sp-10);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+/* Pending rows read one step back from linked ones: the person is not on the
+   platform yet, so the row should not carry the same visual weight as a
+   resolved account. Dashed edge = "not settled", and it survives greyscale. */
+.artist-picker__row--pending {
+  background: transparent;
+  border-style: dashed;
+}
+.artist-picker__row .owner-lookup__avatar .ztor-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--foreground-muted);
+}
+/* Remove control sits at the far end. Same icon button + trash-2 as the budget
+   rows on this page, so there is one delete idiom per screen. */
+.artist-picker__remove { margin-left: auto; flex: none; }
+
+/* "Already added" tag inside a result row — a quiet inline qualifier, not a
+   status badge, because it describes the option rather than the artist. */
+.owner-lookup__tag {
+  margin-left: var(--sp-6);
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular, 400);
+}
+.owner-lookup__result[disabled] { cursor: default; opacity: 0.6; }
+.owner-lookup__result[disabled]:hover { background: transparent; }

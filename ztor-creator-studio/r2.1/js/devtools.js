@@ -67,7 +67,7 @@
     ['p1-next', 'Phase 2（Phase 1 ＋ Next）', '開發', 'tier:p1,next', '首發＋規劃追加'],
     ['p1-next-tbd', 'Phase 3（Phase 1 ＋ Next ＋ TBD）', '開發', 'tier:p1,next,tbd', '＋商務待定（TBD）'],
     ['full', 'Phase 4（最終完整版）', '開發', 'all', '全部功能（預設）'],
-    ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立專案改接募資建立流程'],
+    ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同 Phase 4'],
   ];
   /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
@@ -324,7 +324,10 @@
      仍能預覽替代版面（如 product-detail 的實體/數位、單一/多規格、限量）。*/
   var PAGE_GROUPS = (window.ZTOR_DEV_PAGE_GROUPS && window.ZTOR_DEV_PAGE_GROUPS.length) ? window.ZTOR_DEV_PAGE_GROUPS : [];
 
-  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'no-event', version: 'full', showFuture: false };
+  /* [local-default] 本機預覽預設情境：周湯豪 · 有資料 · 多場活動 · Deck for Sony。
+     上游預設為 eventDay:'no-event' / version:'full'；此處為本機 clone 的在地覆寫，
+     與 i18n.js 的 [local-default]（persona=nick、語言=en）成一組。 */
+  var DEFAULTS = { skipValidation: false, data: 'has-data', eventDay: 'multi-event', version: 'deck-for-sony', showFuture: false };
   var LS = 'ztor.devstate';
 
   function load() {

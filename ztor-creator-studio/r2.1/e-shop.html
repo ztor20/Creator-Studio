@@ -96,26 +96,9 @@
   /* 工作列殼層＋狀態列骨架（.list-toolbar / .list-toolbar__actions / .list-status-row）已 promote
      至 ds-components/list-toolbar.css（2026-07-23，projects 為第二個消費者）。本頁只留 sticky 貼頂——
      那是本頁捲動容器的版面決定，不屬元件。 */
-  /* 桌機：類型 tab 列＋狀態篩選列一起 sticky 貼在捲動容器頂，兩層堆疊、商品清單在下方繼續捲動
-     （2026-07-21 使用者反饋：捲到此處時圖2整塊要固定，之前只有狀態列會黏、tab 列會被捲走）。
-     狀態列 top 位移量＝tab 列高度(58px)+兩者相鄰 margin 摺疊後的間距——topbar margin-bottom:8px
-     與 status-row margin-top:var(--sp-16, 16px) 是相鄰區塊的 margin，會摺疊取較大值 16px（不是
-     兩者相加），實測 topbar 下緣到 status-row 上緣正好 16px，故 58+16=74px。
-     tab 列本身已有實色底（--surface-shell）＋圓角，貼頂時本來就是完整不透明卡片，不需另補背景；
-     狀態列平時透明（僅 pill），貼頂時補 --surface-page 遮住捲過的列。z-index 皆低於 app-topbar(50)。 */
-  @media (min-width: 901px) {
-    .list-toolbar {
-      position: sticky;
-      top: 0;
-    }
-    .list-status-row {
-      position: sticky;
-      top: 74px;
-      z-index: 5;
-      padding: 8px 0;
-      background: var(--surface-page);
-    }
-  }
+  /* 2026-07-28：本頁專屬的 sticky 規則退場——貼頂已收進元件（ds-components/list-toolbar.css
+     的 Snap dock 段）＋共用行為 js/sticky-dock.js，五個清單頁同一份。留在這裡會變成
+     第二套實作，兩邊各自漂移。 */
 
   /* F3 搜尋 · 收合式搜尋已 promote 至 ds-components/search-collapse.css（.search-collapse，內層重用 field-pill）。 */
 
@@ -275,7 +258,7 @@
            aria-label="Main list filters" 隨舊 <section> 一併移除：這層現在涵蓋整個清單、不只篩選，
            改由內層每個 product-list panel 自帶的 role="table" aria-label="Products/Bundles/Auctions"
            承擔語意，不需要外層再重複標一次。 -->
-      <div class="eshop-list-controls">
+      <div class="eshop-list-controls list-dock">
         <div class="list-toolbar">
           <!-- 類型切換 · 預設底線式 tabs（active 橘色底線；2026-06-22 由淡橘 pill 改回底線，與下排 pill 狀態篩選分層）-->
           <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist">
@@ -759,6 +742,7 @@
 <script src="js/products-store.js?v=r2.1"></script>
 <script src="partials/date-input.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-dock.js?v=r2.1"></script>
 <script src="js/reveal.js?v=r2.1"></script>
 <script src="partials/restock-modal.js?v=r2.1"></script>
 <script src="partials/product-post-modal.js?v=r2.1"></script>

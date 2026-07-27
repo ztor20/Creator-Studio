@@ -42,8 +42,17 @@ class NoStoreHandler(http.server.SimpleHTTPRequestHandler):
             super().log_message(fmt, *args)
 
 
-class ReusableServer(socketserver.TCPServer):
+class ReusableServer(socketserver.ThreadingTCPServer):
+    """多執行緒：一個卡住的連線不能拖垮整台 server。
+
+    2026-07-27：原本繼承 TCPServer（單執行緒），一次只服務一個連線。瀏覽器同時
+    開好幾條連線抓 css/js，只要其中一條沒收完（分頁卡住、預覽面板沒回應），
+    後面全部排隊等它 —— 表現出來就是「port 明明在 LISTENING，但頁面永遠載不完」。
+    改成 ThreadingTCPServer 後各連線互不影響；daemon_threads 讓 Ctrl+C 能直接收工。
+    """
+
     allow_reuse_address = True   # 重啟時不用等 TIME_WAIT 過期
+    daemon_threads = True
 
 
 def main() -> int:

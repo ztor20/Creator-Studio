@@ -103,3 +103,100 @@ html[data-theme="light"] .list-toolbar {
     flex-wrap: wrap;
   }
 }
+
+/* ============================================================
+   Snap dock（2026-07-28 使用者裁示）
+   ------------------------------------------------------------
+   使用者反饋三件事：(a) 我的 IP／IP 市場的工作列根本沒有貼頂；(b) 電子商店有貼頂
+   但「很醜」；(c) 貼頂狀態要重新設計成盡量少佔空間，並用動畫轉場過去。
+
+   為什麼原本只有電子商店會貼頂：sticky 一直被當成「各頁捲動容器的版面決定」寫在
+   頁面 <style>（見本檔開頭），所以只有實作過的那一頁有。這次把它收進元件——貼頂是
+   這個元件的行為，不是某一頁的巧合；收進來之後五個清單頁一次到位、也只有一份可調。
+
+   原本貼頂的樣子（電子商店）：工作列 58px 實色卡 ＋ 16px 間距 ＋ 狀態列 44px 滿版
+   底色，合計約 118px 永久佔住畫面上緣，兩塊各自為政、切換時沒有任何過渡。
+
+   重新設計後的貼頂態（.is-snapped，由 js/sticky-dock.js 掛上）：
+     · 兩排併成「一條」——外層 .list-dock 變 flex 橫排，工作列與狀態列同一行，
+       中間一道 1px 分隔線。高度 58＋16＋44 → 44，省下約 6 成垂直空間。
+     · 一整條變成浮起的 dock：半透明 --surface-shell ＋ backdrop blur（內容從底下
+       捲過去時看得出層次，這裡的毛玻璃是為了「有東西在後面經過」而存在，不是裝飾），
+       圓角、帶偏移與模糊的陰影。
+     · 動畫：高度／內距／圓角／底色／陰影一起過渡，exponential ease-out。
+       reduced-motion 下直接切換、不做過渡。
+   ≤900px 不貼頂（沿用電子商店原本的桌機限定），窄螢幕垂直空間更珍貴，
+   但一行塞不下 tabs＋動作群＋篩選，硬併會比不貼頂更糟。
+   ============================================================ */
+
+.list-dock__sentinel {
+  height: 1px;
+  margin-bottom: -1px;   /* 純量測用的哨兵，不佔版面 */
+  pointer-events: none;
+}
+
+@media (min-width: 901px) {
+  .list-dock {
+    position: sticky;
+    top: 0;
+    z-index: 20;            /* 低於 app-topbar(50)，高於列 hover 的 z-index:1 */
+    border-radius: var(--radius-lg);
+    transition:
+      background-color 260ms cubic-bezier(.16, 1, .3, 1),
+      box-shadow       260ms cubic-bezier(.16, 1, .3, 1),
+      padding          260ms cubic-bezier(.16, 1, .3, 1);
+  }
+
+  /* 貼頂態：整條 dock 自己是那張卡，內層兩排都變透明、併成一行。 */
+  .list-dock.is-snapped {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-12);
+    padding: var(--sp-6) var(--sp-12);
+    background: color-mix(in srgb, var(--surface-shell) 86%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: 0 6px 20px -10px rgb(0 0 0 / 0.5);
+  }
+  html[data-theme="light"] .list-dock.is-snapped {
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    box-shadow: 0 6px 20px -12px rgb(0 0 0 / 0.28);
+  }
+
+  /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。 */
+  .list-dock.is-snapped .list-toolbar {
+    height: 44px;
+    margin-bottom: 0;
+    padding-inline: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* 狀態列收成 dock 右段：去掉自己的留白與底色，用一道分隔線和左段分開。
+     篩選數量各頁不同（電子商店 5 個、IP 市場 4 個），塞不下就在自己那段橫向捲。 */
+  .list-dock.is-snapped .list-status-row {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0 0 0 var(--sp-12);
+    border-left: 1px solid var(--border-soft);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .list-dock.is-snapped .list-status-row::-webkit-scrollbar { display: none; }
+
+  .list-dock.is-snapped .list-toolbar,
+  .list-dock.is-snapped .list-status-row {
+    transition: height 260ms cubic-bezier(.16, 1, .3, 1),
+                padding 260ms cubic-bezier(.16, 1, .3, 1),
+                margin  260ms cubic-bezier(.16, 1, .3, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-dock,
+  .list-dock .list-toolbar,
+  .list-dock .list-status-row { transition: none; }
+}

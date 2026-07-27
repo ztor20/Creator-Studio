@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.1">
@@ -123,6 +125,11 @@
         <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
         <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund">Production progress</button>
         <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings">My earnings</button>
+        <!-- 表現 · 緊接在「我的收益」之後（2026-07-28 使用者裁示）。
+             收益回答「賺了多少」，表現回答「多少人看／聽、在哪些平台、在哪些地區」；
+             量綱不同（USD vs 次數）不可同卡並列，所以是相鄰的兩個分頁。
+             只有作品已上線（status=live）才出現——還沒上線就沒有觀看數可談。 -->
+        <button class="tabs__item" role="tab" data-tab="performance" aria-selected="false" data-i18n="project-detail.tab.performance" data-perf-tab hidden>Performance</button>
         <button class="tabs__item" role="tab" data-tab="royalty" aria-selected="false" data-i18n="project-detail.tab.royalty" data-royalty hidden>Royalty</button>
         <button class="tabs__item" role="tab" data-tab="cofund" aria-selected="false" data-i18n="project-detail.tab.cofund" data-type="fund">Co-creation progress</button>
         <button class="tabs__item" role="tab" data-tab="preorder" aria-selected="false" data-i18n="project-detail.tab.preorder" data-type="preorder">Pre-order progress</button>
@@ -912,6 +919,24 @@
         </div>
       </div>
 
+      <!-- ═══════════ 表現 Performance · 已上線項目 ═══════════
+           內容與版面沿用共創提案站的「版稅」頁（總量 hero + 期間切換 ·
+           雙欄 Top 10 · 地區排行 · 平台排行），但量綱換成觀看／串流次數，
+           金額留在「我的收益」與「版稅」兩個分頁。
+
+           面板整段由 js/performance-store.js 依家族繪出，不寫死在 HTML：
+             影視 → Ztor／YouTube／Netflix 等 OTT，量綱＝觀看次數
+             音樂 → Spotify／QQ 音樂／SoundCloud 等，量綱＝串流次數
+             其他 → 沒有串流通路，出空狀態
+           一份資料同時餵這裡與 Dashboard 的兩張平台卡，所以兩邊永遠一致。 -->
+      <div class="tab-panel" data-panel="performance" data-perf-tab hidden>
+        <div class="info-banner mt-24">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="perf.source-note">Audience figures are reported by each distribution platform and refresh daily — separate from the settlement figures on My earnings and Royalty. Demo data.</span>
+        </div>
+        <div data-perf="panel"></div>
+      </div>
+
       <!-- ===== Music-type royalty analysis (CCR-006) · only shown for published fund + music ===== -->
       <div class="tab-panel" data-panel="royalty" data-royalty hidden>
         <div data-royalty-common>
@@ -1306,6 +1331,8 @@
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/projects-store.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
+<!-- 表現分頁的資料與繪製器。放在 i18n 之後：繪完會呼叫 applyI18n 把新節點翻好。 -->
+<script src="js/performance-store.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
 <script src="js/sticky-actions.js?v=r2.1"></script>
 <script>
@@ -1316,7 +1343,7 @@
     if (!tablist) return;
     const tabs = tablist.querySelectorAll('.tabs__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
-    const NAMES = ['settings', 'pledges', 'about', 'progress', 'earnings', 'royalty', 'cofund', 'preorder', 'money'];
+    const NAMES = ['settings', 'pledges', 'about', 'progress', 'earnings', 'performance', 'royalty', 'cofund', 'preorder', 'money'];
 
     function activate(name) {
       tabs.forEach(t => {
@@ -1936,6 +1963,24 @@
          資料來源、彙入頻率與分帳規則仍待 CCR-006 裁決。 */
       const royaltyReady = p.type === 'fund' && p.status === 'published';
       document.querySelectorAll('[data-royalty]').forEach(el => { el.hidden = !royaltyReady; });
+
+      /* ── 表現 Performance（2026-07-28）──────────────────────────────
+         條件與版稅不同，而且刻意不同：版稅綁「募資型＋有股份」，表現綁的是
+         「作品出來了沒有」——直接上線（go-live）的 MV 一樣有人看，它沒有股份
+         但有觀看數。依 projects-store 的狀態模型，live ＝ 已交付、正在賺錢，
+         那正是第一筆觀看數存在的時點。
+         家族決定平台清單與量綱；cat 決定要不要有 Top 10（專輯有曲目、影集有
+         集數，單曲／電影／短片／MV 是單一作品，一列的排行榜沒有意義）。 */
+      const perfFam = store.family(p.cat);              /* film | music | other */
+      const perfLive = p.status === 'live';
+      /* 影視／音樂且已上線才掛分頁；活動／商品／文檔沒有串流通路，連分頁都不長出來，
+         而不是長出來再給一張空卡——後者等於承諾一個不存在的資料源。 */
+      const perfReady = perfLive && perfFam !== 'other';
+      document.querySelectorAll('[data-perf-tab]').forEach(el => { el.hidden = !perfReady; });
+      const perfHost = document.querySelector('[data-perf="panel"]');
+      if (perfHost && perfReady && window.ztorPerformance) {
+        window.ztorPerformance.renderPanel(perfHost, { family: perfFam, cat: p.cat, period: 'q' });
+      }
       /* 版稅面板依家族切版：音樂＝串流平台佔比＋Top 10 歌曲；影視＝OTT 平台佔比＋授權明細 */
       const royaltyFam = store.family(p.cat) === 'music' ? 'music' : 'film';
       document.querySelectorAll('[data-royalty-fam]').forEach(el => {
