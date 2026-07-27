@@ -3036,6 +3036,33 @@
     'cpp.tf.featured':      { en: 'Featured artists',                 zh: '合作藝術家' },
     'cpp.tf.featured.add':  { en: '+ Add artist',                    zh: '＋ 新增藝術家' },
     'cpp.tf.duration':      { en: 'Duration',                         zh: '時長' },
+    /* Story 的範例刻意是「結構」不是「內容」：沒有人想在游標後面看到一篇假的
+       三段式故事，但「先講為什麼、再講做到哪、最後講錢解鎖什麼」是可以照著寫的。 */
+    'cpp.s2.story.ph':      { en: 'e.g. Why this project exists, what you have finished so far, and what the money unlocks.',
+                              zh: '例：這個專案為什麼存在、目前完成到哪裡、這筆錢會解鎖什麼。' },
+    /* 預算分類名：「新增項目」是複製一列再清空名稱，所以空狀態是使用者真的會看到的。 */
+    'cpp.fd.budget.name.ph':{ en: 'e.g. Production',                zh: '例：製作' },
+
+    /* 2026-07-28（L：「we need to make sure all forms has sample inputs」）
+       每一則都回答標籤回答不了的事——格式、分隔符、或什麼算是答案；
+       只是把標籤再講一次的（「例：類型」）一律不寫。
+       中文用頓號、不是逗號：這些範例正在教分隔符，用錯的那個等於教錯。 */
+    'cpp.tf.director.ph':       { en: 'e.g. Chung Mong-hong', zh: '例：鍾孟宏' },
+    'cpp.tf.location.ph':       { en: 'e.g. Hualien, Taiwan', zh: '例：台灣花蓮' },
+    'cpp.tf.cast.ph':           { en: 'e.g. Ann Hsu, Kai Ko', zh: '例：許瑋甯、柯震東' },
+    'cpp.tf.genre.ph':          { en: 'e.g. Indie rock, Dream pop', zh: '例：獨立搖滾、夢幻流行' },
+    'cpp.tf.artists.ph':        { en: 'e.g. Sunset Rollercoaster', zh: '例：落日飛車' },
+    'cpp.tf.producer.ph':       { en: 'e.g. Howard Lee', zh: '例：李伯恩' },
+    'cpp.tf.featured.ph':       { en: 'e.g. 9m88, Leo Wang', zh: '例：9m88、李英宏' },
+    'cpp.tf.tracks.ph':         { en: 'e.g. 5', zh: '例：5' },
+    'cpp.tf.subject.ph':        { en: 'e.g. The last cassette shop in Hualien', zh: '例：花蓮最後一間卡帶行' },
+    'cpp.tf.distribution.ph':   { en: 'e.g. Festival run, then streaming', zh: '例：先影展巡迴，再上串流' },
+    'cpp.tf.venue.ph':          { en: 'e.g. Legacy Taipei', zh: '例：Legacy Taipei' },
+    'cpp.tf.capacity.ph':       { en: 'e.g. 300', zh: '例：300' },
+    'cpp.tf.performers.ph':     { en: 'e.g. Sunset Rollercoaster, Elephant Gym', zh: '例：落日飛車、大象體操' },
+    'cpp.tf.manufacturer.ph':   { en: 'e.g. Yuan Cheng Printing, Tainan', zh: '例：台南元成印刷' },
+    'cpp.tf.materials.ph':      { en: 'e.g. 100% cotton, water-based ink', zh: '例：100% 純棉、水性印墨' },
+    'cpp.tf.sizes.ph':          { en: 'e.g. S, M, L, XL', zh: '例：S、M、L、XL' },
     'cpp.tf.duration.ph':   { en: 'e.g. 3:45',                        zh: '例：3:45' },
     'cpp.tf.tracks':        { en: 'Track count',                      zh: '曲目數' },
     'cpp.tf.platforms':     { en: 'Platforms',                        zh: '發佈平台' },
@@ -3923,6 +3950,15 @@
     'perf.empty.pending.text':{en:'Views and streams start arriving once the work is released on its distribution platforms.',zh:'作品在發行平台上線之後，觀看與串流數才會開始進來。'},
     /* 中國大陸——版稅區原有的地區清單沒有這一筆，音樂家族因為 QQ 音樂才需要 */
     'pd-roy.rg.cn':{en:'Chinese mainland',zh:'中國大陸'},
+
+    /* 收益走勢圖的滑過浮層與類型明細（2026-07-28） */
+    'pd-earn.tip.hint':{en:'Click a row for the breakdown',zh:'點任一列看該類型明細'},
+    'pd-earn.detail.scope':{en:'This project only · current chart range',zh:'僅此專案 · 目前圖表期間'},
+    'pd-earn.detail.platform':{en:'Platform',zh:'平台'},
+    'pd-earn.detail.critic':{en:'Critic',zh:'影評人'},
+    'pd-earn.detail.licensee':{en:'Licensee · territory',zh:'被授權方 · 地區'},
+    'pd-earn.detail.amount':{en:'Amount',zh:'金額'},
+    'pd-earn.detail.share':{en:'Share',zh:'佔比'},
 
     /* Dashboard · 平台表現兩張卡 */
     'dash.perf.pf.title':{en:'Platform reach',zh:'平台觸及'},

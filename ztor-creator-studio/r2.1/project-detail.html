@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/chart-tip.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.1">
@@ -584,9 +585,9 @@
         <nav class="filter-tabs filter-tabs--source" role="tablist" aria-label="Earnings type filter" data-earn-filter>
           <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" style="--dot:var(--primary)" data-i18n="pd-earn.filter.all">All</button>
           <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-5)" data-earn-series="ott"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.ott">OTT royalty</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-2)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.critic">Critic commission</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--destructive)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.advance">Critic advance</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--muted-foreground)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.license">Licensing</span></button>
+          <button data-earn-series="critic" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-2)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.critic">Critic commission</span></button>
+          <button data-earn-series="advance" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--destructive)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.advance">Critic advance</span></button>
+          <button data-earn-series="license" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--muted-foreground)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.license">Licensing</span></button>
         </nav>
         <div class="bento mt-16">
           <section class="card bento--span-12">
@@ -599,25 +600,13 @@
                 <button class="segmented__btn" type="button" data-i18n="pd-earn.period.year">Year</button>
               </div>
             </div>
-            <div class="linechart linechart--axes mt-16">
-              <div class="linechart__y-axis">
-                <span class="linechart__y-tick" style="top:9%">1,500</span>
-                <span class="linechart__y-tick" style="top:37%">1,000</span>
-                <span class="linechart__y-tick" style="top:65%">500</span>
-                <span class="linechart__y-tick" style="top:90%">0</span>
-              </div>
-              <div class="linechart__main">
-                <svg class="linechart__svg" viewBox="0 0 600 180" preserveAspectRatio="none" role="img" aria-label="Revenue trend by type">
-                  <line class="linechart__grid" x1="0" y1="20"  x2="600" y2="20" />
-                  <line class="linechart__grid" x1="0" y1="66"  x2="600" y2="66" />
-                  <line class="linechart__grid" x1="0" y1="113" x2="600" y2="113" />
-                  <line class="linechart__grid" x1="0" y1="160" x2="600" y2="160" />
-                  <path class="linechart__line" style="stroke:var(--muted-foreground);stroke-width:2;fill:none" d="M 24.0,152.5 L 102.9,151.6 L 181.7,149.7 L 260.6,150.7 L 339.4,147.9 L 418.3,146.9 L 497.1,146.0 L 576.0,145.1" />
-                  <path class="linechart__line" style="stroke:var(--destructive);stroke-width:2;fill:none" d="M 24.0,148.8 L 102.9,146.0 L 181.7,143.2 L 260.6,145.1 L 339.4,139.5 L 418.3,137.6 L 497.1,140.4 L 576.0,135.7" />
-                  <path class="linechart__line" style="stroke:var(--chart-2);stroke-width:2;fill:none" d="M 24.0,141.3 L 102.9,135.7 L 181.7,128.3 L 260.6,120.8 L 339.4,113.3 L 418.3,107.7 L 497.1,100.3 L 576.0,94.7" />
-                  <path class="linechart__line" style="stroke:var(--chart-5);stroke-width:2;fill:none" d="M 24.0,132.0 L 102.9,118.0 L 181.7,104.0 L 260.6,85.3 L 339.4,66.7 L 418.3,52.7 L 497.1,38.7 L 576.0,36.8" />
-                </svg>
-              </div>
+            <!-- 座標軸・格線・折線・熱區・浮層全部由 js/project-earnings-chart.js 依資料產生
+                 （2026-07-28 使用者裁示：比照財務總覽，要能滑過看金額、點線看明細）。
+                 原本這裡是四條寫死的 <path>——`d` 裡只有座標、沒有金額，
+                 沒有底層數值就做不出 tooltip。這裡只留容器。 -->
+            <div class="linechart linechart--axes mt-16" data-earn-chart>
+              <div class="linechart__y-axis"></div>
+              <div class="linechart__main"></div>
             </div>
           </section>
         </div>
@@ -1239,6 +1228,20 @@
      其餘彈窗刻意保留——裁切要畫布、排程日期會驅動 Draft→Live 轉換、發佈進度更新
      是發佈行為，都不是單純的欄位編輯。 -->
 <!-- 方形裁切彈窗：左直式舞台（可移動＋縮放的方形選框）＋右方形即時預覽。原型：不落地。 -->
+<!-- 收益類型明細（2026-07-28）：從收益走勢圖點一條線、或點浮層裡的某一列進來。
+     維度依類型而不同——OTT 看平台、佣金／預付看影評人、授權看被授權方，
+     因為「這筆錢是誰給的」才回答得了「要再多賺就去找誰」。
+     範圍是這一個專案、當前圖表期間，抬頭寫明白，避免與財務總覽的跨專案數字混淆。 -->
+<div class="payout-modal" id="pd-earn-detail" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-earn-detail-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-earn-detail-title" data-earn-detail-title></h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" data-earn-detail-body></div>
+  </div>
+</div>
+
 <div class="payout-modal" id="pd-edit-crop" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-crop-title">
     <div class="payout-dialog__head">
@@ -1334,6 +1337,9 @@
 <script src="js/i18n.js?v=r2.1"></script>
 <!-- 表現分頁的資料與繪製器。放在 i18n 之後：繪完會呼叫 applyI18n 把新節點翻好。 -->
 <script src="js/performance-store.js?v=r2.1"></script>
+<!-- 收益走勢的互動圖表。放在 performance-store 之後：明細裡的 OTT 平台名單直接沿用
+     表現分頁那一份，兩個分頁看到的平台必須是同一組。 -->
+<script src="js/project-earnings-chart.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
 <script src="js/sticky-actions.js?v=r2.1"></script>
 <script>
