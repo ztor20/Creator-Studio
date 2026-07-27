@@ -4,6 +4,19 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-27 · Q8 反轉：「已選中」狀態全站統一用品牌橘（B 反饋導入）
+
+使用者截圖圈出側欄的已選項（Dashboard），裁示「highlighted features must use our accent color across all pages or tabs」。這推翻了 2026-07-13 的 Q8-B（橘只給主操作、導覽／篩選已選一律中性灰）。反轉前站上同一件事「這個被選中了」有**四種答案**：側欄／settings-nav 中性灰底、`.chip--active` 反白黑底、`.segmented__btn--active` 白色浮起 pill、`.filter-tabs__item--active` 灰底（16 個 consumer 頁裡只有 9 個加了 `--brand` 修飾類才是橘）——只有 `.tabs` 一直是橘。
+
+- **【B】** `_tokens.css` 新增三個 token × 亮暗兩套：`--selected-surface`（`color-mix(--primary 14%, transparent)`）／`--selected-surface-hover`（20%）／`--selected-ink`。用 `transparent` 混色而非混 `--card`，所以同一個 token 疊在 rail、card、page 任何底色上都自動貼合，不必分別調。
+- **【B】** tint 形態改吃新 token：`shared.css` 的 `.app-sidebar__link[aria-current]`／`--active`／`.app-sidebar__sub-link[aria-current]`（各補一條 active-hover，否則已選項滑過去沒有回饋）、`settings.css` 的 `.settings-nav__item--active`、`filter-tabs.css` 的 `.filter-tabs__item--active` 與其計數泡泡、`chip.css` 的 `.chip--active`。icon 走 `currentColor`，跟著文字一起變橘、不必另寫。
+- **【B】** `segmented.css` `.segmented__btn--active` 與 `chart.css` `.segmented__item--active` **只換字色、保留白色浮起 pill**。浮起是這個元件的結構語彙（iOS segmented 的實體隱喻），把底染橘會讓「一塊被抬起來」讀成「一塊被塗色」。`header.css` 的 `.app-topbar__link[aria-current]` 改橘字、底色仍留給滑動 highlight pill，不疊第二層底。
+- **【為什麼是 tint 不是實色】** 實色橘保留給主 CTA 與 solid 形態（`.pager` 目前頁）。導覽＋篩選＋分頁若全用實色橘，一個頁面會同時出現三四塊實色橘跟 CTA 互搶，DESIGN.md 的 One Spotlight Rule（橘 ≤ 10% 畫面）當場破功。tint＋橘墨水讓「橘一定在場」與「實色橘只有一個」兩件事同時成立。
+- **【a11y 硬需求】** `--selected-ink` 必須亮暗分色。`#ffa33f` 對亮色 rail（`#FBFBFB`）只有 **1.92:1**，遠低於 WCAG AA——這個坑站上已經踩過一次（`tag-input` 的 `color: var(--primary)`）。亮色版壓深成同色相 32° 的 `#8F4E00`：對 `--sidebar` **6.23:1**、對 14% 橘 tint 合成底 **5.70:1**，且過 APCA body-text。深色版維持 `#ffa33f`：**8.49:1**／**6.44:1**。
+- **【C 撤除】** 橘變成基底後兩組覆寫變成純重複，已刪：`filter-tabs.css` 的 `--brand` 四條顏色規則（只留它真正獨有的「計數不加泡泡」，9 個 consumer 頁的 class 不必動）、`tag-input.css` 的 `.chip--active` 三行（Q19 的意圖由基底承接，順帶修掉上述亮色對比 bug）。
+- **【刻意不動】** `.radio-card` 的標題維持 `--foreground`（`.radio-cards .segmented__btn` 的 `color` 以 0,2,0 壓過 active 的 0,1,0）——卡片有標題＋副標，整段染橘等於在讀橘色內文；它的橘落在右上實心標記點與 `.radio-card__icon`，所以「已選一定有橘」仍成立，已在 `radio-card.css` 加註解避免日後被當成漏改。`.filter-tabs--source` 不受管轄（每項取自己資料序列的顏色，色彩＝該筆資料本身，不是選取記號）。`.tabs` 的橘底線／橘 `::after` 與 `.pager` 實色橘本來就合規，未動。
+- **【驗證】** dev server `localhost:7777`。36 頁 same-origin iframe 掃描（cache-busted）：tint 形態全數量到 `rgb(255, 163, 63)`，`.tabs` 的橘在 `::after`／`border-bottom`、`.selection-card` 的橘在 `outline`、`.radio-list` 的橘在 `::after` — 皆確認在場。亮暗雙主題各截圖確認。`check_ds_sync.py` **本機不存在（未執行）**。版本字串沿用凍結的 `?v=r2.1`。
+
 ## 2026-07-27 · 活動頁「平均出席」KPI 改成百分比率（B 反饋導入）
 
 使用者在 `events.html` 的 KPI 列點名第四塊：平均出席應該是百分比。原本顯示絕對人頭數 `76`，標籤「平均出席」、註腳「來自報到資料」——人頭數跨場地不可比（120 人 livehouse 的 76 人跟 10,000 人小巨蛋的 76 人是兩件事），同一列的另外三塊（活動總數／已售票數／總收入）各自是可加總的量，只有這塊需要的是比率。

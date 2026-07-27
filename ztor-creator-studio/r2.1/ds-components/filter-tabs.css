@@ -54,11 +54,15 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+/* 2026-07-27 Q8 裁決 A：已選＝品牌橘 tint（原中性 --muted 灰底）。
+   這條原本只有加 .filter-tabs--brand 的頁面才是橘，16 個頁面裡 7 個是灰的——現在基底就是橘，
+   --brand 修飾類只剩「計數不加泡泡」這一項差異。*/
 .filter-tabs__item--active {
-  background: var(--muted);
-  color: var(--foreground);
+  background: var(--selected-surface);
+  color: var(--selected-ink);
   font-weight: var(--fw-semibold);
 }
+.filter-tabs__item--active:hover { background: var(--selected-surface-hover); color: var(--selected-ink); }
 .filter-tabs__count {
   font-size: var(--fs-11);
   font-weight: var(--fw-medium);
@@ -70,23 +74,17 @@
   min-width: 16px;
   text-align: center;
 }
+/* 已選的計數泡泡跟著走橘：底用橘 tint 再深一階，字吃 --selected-ink（亮色版是壓深的 #8F4E00，
+   不是 --primary——白底上的 --primary 只有 1.92:1）。*/
 .filter-tabs__item--active .filter-tabs__count {
-  background: color-mix(in srgb, var(--foreground) 12%, var(--card));
-  color: var(--foreground-muted);
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  color: var(--selected-ink);
 }
 
-/* ── .filter-tabs--brand — opt-in variant: soft orange active fill + orange
-     label/count, and plain (bubble-less) counts. Use where the status row
-     should echo the brand accent and pair with underline type tabs above
-     (E-Shop F3). Base .filter-tabs stays grey-muted elsewhere (orders,
-     auction-detail). (2026-06-22) ── */
-.filter-tabs--brand .filter-tabs__item--active {
-  background: color-mix(in srgb, var(--primary) 9%, var(--card));
-  color: var(--primary);
-}
-.filter-tabs--brand .filter-tabs__item--active:hover {
-  background: color-mix(in srgb, var(--primary) 14%, var(--card));
-}
+/* ── .filter-tabs--brand — 2026-07-27 Q8 裁決 A 後大幅縮編：橘色已選態變成全站基底，
+     這個修飾類原本的四條顏色覆寫（橘底／橘字／橘 hover／橘計數）全部與基底重複，已刪。
+     只留下它真正獨有的那一項：計數不套泡泡、平鋪顯示。9 個消費頁的 class 不必動。
+     （原始意圖見 2026-06-22；當時橘是 opt-in，現在是預設。）── */
 .filter-tabs--brand .filter-tabs__count {
   background: transparent;
   padding: 0;
@@ -95,7 +93,7 @@
 }
 .filter-tabs--brand .filter-tabs__item--active .filter-tabs__count {
   background: transparent;
-  color: var(--primary);
+  color: var(--selected-ink);
 }
 
 /* ── .filter-tabs--source — opt-in variant: the active pill takes the COLOUR OF

@@ -50,6 +50,9 @@
   font-size: var(--fs-28);
   font-weight: var(--fw-medium);
   letter-spacing: -0.6px;
+  /* 2026-07-27：明確宣告，不再靠繼承。原本沒有 color，包在 --tappable（<button>）裡時
+     會繼承到 UA 的 buttontext＝純黑，深色卡面上整個數字黑掉（使用者回報）。*/
+  color: var(--foreground);
 }
 /* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
    膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
@@ -70,6 +73,49 @@
   background: color-mix(in srgb, var(--destructive) 12%, var(--card));
 }
 .kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* --tappable：整塊 tile 是一顆 <button>，點了開 in-place popup（F2 兩張計數 tile）。
+   互動語彙全部借既有階梯：hover ＝ .ztor-card--clickable 的 −2px 浮起＋E3 陰影；
+   focus ＝ 全站 focus ring；label 尾端 chevron ＝ alert 卡／data-list 列的
+   「這會打開東西」記號，hover 時往右 2px。不自創新視覺。 */
+.kpi--tappable {
+  position: relative;   /* anchors .kpi__chevron（絕對定位，避開 data-i18n 重寫 label innerHTML）*/
+  font: inherit;
+  /* 2026-07-27：<button> 的 UA color=buttontext（純黑）不會被 font: inherit 帶進來，
+     少了這行，整塊 tile 的文字都從黑色起跳。凡是把 <button> 當容器用的元件都要補。*/
+  color: inherit;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+  transition: box-shadow var(--duration) var(--easing),
+              transform  var(--duration) var(--easing);
+}
+.kpi--tappable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover), var(--shadow-edge-top);
+}
+.kpi--tappable:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.kpi__chevron {
+  position: absolute;
+  top: var(--sp-16);
+  right: var(--sp-18);
+  width: 16px;
+  height: 16px;
+  color: var(--muted-foreground);
+  transition: transform var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+.kpi--tappable:hover .kpi__chevron {
+  transform: translateX(2px);
+  color: var(--foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi--tappable, .kpi--tappable:hover,
+  .kpi__chevron, .kpi--tappable:hover .kpi__chevron { transition: none; transform: none; }
+}
 
 /* Quiet "view more" link on a metric tile — e.g. Net income → Breakdown,
    Available → Request payout. Reusable across kpi cards. */

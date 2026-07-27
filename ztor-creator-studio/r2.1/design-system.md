@@ -58,7 +58,8 @@ System-level discipline. Component-level Do / Don't lives inside each component 
 
 ### Don't
 
-- Do not use `--primary` as a fill for nav active states, KPI cards, or row accents — nav active states use `--sidebar-active` (neutral gray, Q8), interactive hover uses `--accent` (Q9), KPI/row backgrounds stay neutral `--card`/`--muted`.
+- Do not use `--primary` as a **solid** fill for nav active states, KPI cards, or row accents — solid orange is reserved for the primary CTA and for discrete committed choices (`.pager` current page). Selected states use the **tint** form instead: `--selected-surface` fill + `--selected-ink` text (Q8, reversed to A on 2026-07-27 — was neutral `--sidebar-active` grey). Interactive hover is still `--accent` (Q9); KPI/row backgrounds stay neutral `--card`/`--muted`.
+- Do not write `color: var(--primary)` for selected text on a light surface — it measures 1.92:1, far below WCAG AA. Always go through `--selected-ink`, which resolves to the deepened `#8F4E00` in light mode and `#ffa33f` in dark.
 - Content surfaces top out at E2 `--shadow-card`; `--shadow-float` / `--shadow-overlay` are reserved for transient layers (dropdowns, dialogs) — never for resting content. Interaction borrows the rung above (card hover → float); no ad-hoc shadow values. Only the hero carries deep light and it does so via gradient veil, not box-shadow.
 - Do not introduce fonts outside the four-font stack (`Geist`, `Geist`, `Geist Mono`, `Inter`, `Noto Sans TC`). The CJK fallback is non-negotiable.
 - Do not give data-list icons semantic color. List icons stay monochrome (`--muted` bg + `--foreground-muted` color); semantic color lives in the **amount** text, not the icon chip.
@@ -100,9 +101,14 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   `.selection-card` 14/16px。
   `.empty-card` 32/24px。
   未來新卡片對號入座，不要隨機挑數字。
-- **Q8 品牌橘範圍**
-  橘只給主操作／主分類（Tabs、選擇卡已選）。
-  導覽／篩選的已選一律中性灰（`.settings-nav--active`、`.app-sidebar` 已對齊，用 `--sidebar-active`）。
+- **Q8 品牌橘範圍**（2026-07-27 使用者裁決反轉為 A，原 B 中性灰版作廢）
+  **「已選中」一律用品牌橘**，一套配方三種形態、橘永遠在場：
+  **tint**＝安靜的持續選取（sidebar／sub-link／settings-nav／filter-tabs／chip）→ `--selected-surface` 底＋`--selected-ink` 字。
+  **underline**＝主要檢視切換（`.tabs`）→ 橘底線（或 `--underline-short` 的橘 `::after`）。
+  **solid**＝離散且已提交的選擇（`.pager` 目前頁、主 CTA）→ 實色 `--primary`。
+  導覽／篩選只走 tint，實色橘保留給 CTA 與 solid，橘不與 CTA 搶焦。
+  橘不一定落在文字上：`.segmented` 保留白色浮起 pill 只換字色；`.radio-card` 的橘在右上標記點與 icon、標題維持 `--foreground`。
+  `--sidebar-active` 已退居回退用途，不再是導覽已選的答案。
 - **Q9 hover 底色**
   互動 hover 一律 `--accent`（亮 `#F3F3F3` / 暗 `#2A2B2C`，2026-07-17 midnight-v2 壓暗）。
   `--muted` 只給斑馬紋／襯底，不做 hover。
@@ -199,7 +205,10 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `surface-page` | `#FAFAFA` | One continuous opaque route page containing hero, content, and footer（2026-07-14 降低明度） |
 | `sidebar` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
-| `sidebar-active` | `#ECECEC` | Sidebar selected item — full-pill（9999px）capsule fill, one step deeper than hover so the current page is unmistakable（2026-06-12，dark: rgba 253/0.12） |
+| `sidebar-active` | `#ECECEC` | ~~Sidebar selected item~~ — **退居回退用途（2026-07-27 Q8-A）**：導覽已選改吃 `--selected-surface` ＋ `--selected-ink`，本 token 不再是任何已選態的答案 |
+| `selected-surface` | `color-mix(--primary 14%, transparent)` | **已選態填色（Q8-A，2026-07-27）** — 所有 tint 形態的已選（sidebar／sub-link／settings-nav／filter-tabs／chip）共用；用 `transparent` 混色所以會自動貼合底下的 rail／card／page 任何底色 |
+| `selected-surface-hover` | `color-mix(--primary 20%, transparent)` | 已選態的 hover：同色再深一階，讓「已選且滑過」仍有回饋 |
+| `selected-ink` | light `#8F4E00` · dark `#ffa33f` | **已選態字色／icon 色（Q8-A）** — 亮暗必須分色：`#ffa33f` 對近白底僅 1.92:1（低於 WCAG AA），亮色版壓深成同色相 32° 的 `#8F4E00`（對 `--sidebar` 6.23:1、對 14% tint 5.70:1）；深色版 `#ffa33f`（8.49:1／6.44:1）|
 | `background-surface` | `#FFFFFF` | Cards, nav-dropdown panels, dashboard mockup frames |
 | `background-card` | `#FAFAFA` | Muted card variant (slightly cooler than surface) |
 | `background-footer` | `#000000` | Pure black footer — the only place black appears as a fill |
@@ -613,7 +622,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Button | 🟢 atom | ✓ App | Primary CTAs, wizard action bar, header actions (primary / outline / ghost) | [button.css](./ds-components/button.css) |
 | Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral。`--inline`：接在標題文字後的安靜限定詞（regular 字重、middle 對齊、左 6px），如訂單「Limit 2/person」「Awaiting pickup」（2026-07-21：E-Shop 清單的「N variants／限量」用法已移除，規格數與限量狀態改由 `__meta` 副標與 `__stock` 欄本身呈現，見下方 Product list Variants） | [badge.css](./ds-components/badge.css) |
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
-| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`--active` 反白（篩選已選，Q8）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多選項選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。三種「創作者自建值」的分工：`--value` 灰＝剛建立的值、`.tag-input .chip--active` 橘＝已套用的分類（Q19）、`--active` 反白＝篩選已選（Q8） | [chip.css](./ds-components/chip.css) |
+| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`--active` 品牌橘 tint（篩選已選，Q8-A 2026-07-27；原反白黑底作廢）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多選項選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。分工（2026-07-27 Q8-A 後）：`--value` 灰＝剛建立的值、`--active` 橘 tint＝已選（篩選已選與 tag-input 的已套用分類現在同一個外觀，Q19 的專屬覆寫已刪） | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
 | Info banner | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](./ds-components/info-banner.css) |
 | Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent） | [upload-tile.css](./ds-components/upload-tile.css) |
@@ -677,7 +686,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Restock order (table) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs). 2026-07-22 layout (Figma 861-28842): method as `.segmented.radio-cards` → product-name label → `.restock-table` (3 number columns current/restock/after, `__group`/`__row`/`__id`/`__img`/`__name`/`__col`/`__ro`) → supplier/notes/ETA below → footer pinned to dialog bottom (body scrolls); under-method hint + yellow stickynote removed. Product variants = matrix rows (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.amount-field`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多選項 + `.option-set`（設定好的選項收成一行 `__row`，只有編輯中的展開成 `.variant-option`）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；可編輯格重用 `.input`。**2026-07-21 庫存欄改唯讀**：庫存格是讀數 `.variant-cell--stock`（`--font-ui`／`--fs-13`／`--foreground`），低於低庫存門檻再加 `.variant-cell--stock-low` 轉 `--destructive` ＋ `--fw-medium`；庫存只能靠留有紀錄的補貨增加，做成 `.input` 會讓人以為可以直接打字覆蓋，轉紅則讓「哪一個規格快沒了」在表上一眼可見。**2026-07-21 逐值 input 改版（使用者裁示）**：值由 chip 膠囊改成「一個值一個 `.input`」（`__value` > `.input` ＋ `__value-remove`），可就地改字——設定選項時最常做的是改一個字，chip 得先刪再重打；底部 `__add-value` 虛線鈕再長一列，Enter 亦可。編輯態欄位加 `.field` 標籤（選項名稱／選項值），底部 `__actions` 靠右放「刪除」（`.btn--ghost.btn--destructive`，破壞性只用透明底）＋「儲存」（`.btn--outline`）。**列的外觀＝Q24 的 L3 規則首次落地**：整組坐在 `.nest`（L2）裡，所以 `__row`／`.variant-option` 去掉 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`；兩顆新增鈕（`__add`／`__add-value`）用 1px **虛線** `--border`（沿用 upload-tile／payout-modal 的「這裡還沒有東西」語彙）。表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、選項組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16）。**2026-07-22 列尾動作分兩種消費**：建立流程用 `.variant-row__remove`（X，把組合排除在建立集合外）；商品明細規格鎖定後不可移除，改列尾 `.dropdown` kebab 選單「單獨下架／重新上架」，下架列加 `.variant-table__row--delisted`（只壓「除下拉外的直接子代」灰階、輸入由 JS 加 `disabled`，kebab 仍可用來重新上架）。列尾用浮動選單的外框要加 `.variant-table-wrap--menu`：基礎 `.variant-table-wrap` 的 `overflow-x:auto` 會裁掉浮出的選單，此修飾在桌面寬度放行 `overflow:visible`（表格本就撐得下），只在 <560px 恢復 `overflow-x:auto` 橫捲。**放行 overflow 後外框圓角不再 clip 內容**（2026-07-23）：表頭（`--muted` 底）與末列的方角會戳出圓角，故改由內容自己貼齊——`--menu` 下給 `.variant-table__head` 上圓角、`.variant-table__row:last-child` 下圓角（半徑 `calc(--radius-xl - 1px)` 貼齊外框內緣）。**2026-07-22 商品明細整張表改唯讀**：價格／SKU／成本／總量欄由 `.input` 換成 `.variant-cell--ro`（純文字、與 `--stock` 同族、`text-overflow:ellipsis`），改值走「⋯ → 編輯」popup；每格加 `data-vc` 標角色（name/price/total/sku/cost）供 popup 讀寫回填。**2026-07-23 兩階層（顏色×尺寸）＋資料驅動**：商品明細的規格表改由 `products-store` 的 `options`／`variants` 驅動——單階層逐值一列、兩階層依第一個選項（顏色）用 `.variant-table__group`（撐滿整列的分組標題、同補貨矩陣語彙）分組、尺寸列在組底下。編輯 popup 用 `.variant-table--preview`（5 欄唯讀組合預覽：規格／價格／庫存／SKU／成本，無總量、無列尾動作），改選項值（加/改名/移除）時笛卡兒積即時重算 | [variant-builder.css](./ds-components/variant-builder.css) |
-| Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤。已選標籤 chip（`.tag-input .chip--active`＝field 內已選＋建議列已加入的 chip 皆涵蓋）用**品牌橘外框＋橘字＋淡橘底**（2026-07-17 Q19；2026-07-18 scope 由只 field 放寬到整個 tag-input，讓建議列已加入的標籤也是橘、不再反白）；全站一般 `.chip--active` 仍為反白黑底（見 Q8） | [tag-input.css](./ds-components/tag-input.css) |
+| Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤。已選標籤 chip 用**品牌橘 tint**——Q19（2026-07-17）當初為此寫的 `.tag-input .chip--active` 專屬覆寫已於 **2026-07-27 Q8-A 刪除**：全站 `.chip--active` 本身就是橘了，覆寫變成純重複。Q19 的意圖（標籤＝已套用的分類，用橘標）完全保留，只是改由基底承接；順帶修掉原覆寫 `color: var(--primary)` 在亮色模式僅 1.92:1 的對比 bug（基底走 `--selected-ink`） | [tag-input.css](./ds-components/tag-input.css) |
 | Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2） | [combobox.css](./ds-components/combobox.css) |
 | Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1） | [partials/film-picker.js](./partials/film-picker.js) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
@@ -971,7 +980,7 @@ No interactive states — purely decorative.
 |---|---|---|
 | default | — | bg `--card`, text `--foreground-muted`, `1px solid --border`, `--radius-pill` |
 | hover | `:hover` | bg `--muted`, text `--foreground` |
-| active | `.chip--active` | bg `--foreground`, text `--background`, border `--foreground` (hover unchanged) |
+| active | `.chip--active` | bg `--selected-surface`, text `--selected-ink`, border `--primary` @45% (hover deepens to `--selected-surface-hover`) — 2026-07-27 Q8-A，原反白黑底作廢 |
 | static | `.chip--static` | `cursor: default`, hover reverts to default look |
 | value | `.chip--value` | bg `--input-surface`, text `--foreground`, border `--border` (hover unchanged — it is entered data, not a control) |
 
@@ -981,7 +990,7 @@ No interactive states — purely decorative.
 |---|---|
 | `.chip-group` | inline-flex wrap container, 6px gap |
 | `.chip` | Interactive filter pill |
-| `.chip--active` | Inverted selected state |
+| `.chip--active` | Selected state — brand-orange tint (Q8-A, 2026-07-27) |
 | `.chip--static` | Read-only chip (e.g. supported-regions list) |
 | `.chip--value` | A value the creator just entered — quiet fill, never inverted. Distinct from `--active` (a chosen filter) and from `.tag-input .chip--active` (an applied tag, orange per Q19). **⚠ 零消費（2026-07-21）**：唯一消費者是建立商品的選項值，同日改成逐值 `.input`（見 Variant builder 條目）後這個變體失去用途，只剩 DS 頁 demo。**退場候選、待使用者裁決**，未經確認前不移除 |
 | `.chip__count` | Faded count after a vertical separator |
@@ -990,7 +999,7 @@ No interactive states — purely decorative.
 
 **Token usage** (→ Pillar 2 Role)
 
-- bg `--card` / `--muted` · active bg `--foreground`, text `--background` · `--value` bg `--input-surface`, text `--foreground` · text `--foreground-muted` → `--foreground` · count `--muted-foreground` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
+- bg `--card` / `--muted` · active bg `--selected-surface`, text `--selected-ink` · `--value` bg `--input-surface`, text `--foreground` · text `--foreground-muted` → `--foreground` · count `--muted-foreground` · border `--border` · radius `--radius-pill` · motion `--duration` / `--easing` · font `--font-ui`
 
 **Usage** — Use for filterable taxonomies (Earnings transaction filters, Tax-docs year filter). Avoid for read-only status — use Badge (§4.3).
 
@@ -1000,7 +1009,7 @@ No interactive states — purely decorative.
 - ✅ Do use `.chip--static` when a chip is informational, not a filter.
 - ✅ Do use `.chip--value` for values the creator just typed in; keep them quieter than the surrounding controls.
 - ❌ Don't use a chip to display non-filterable status.
-- ❌ Don't use `.chip--active` (inverted) for a creator-entered value — inverted is reserved for a chosen filter.
+- ❌ Don't use `.chip--active` (orange tint) for a creator-entered value — the orange selected state is reserved for a chosen filter.
 - ❌ Don't put more than one active chip in a single-select group.
 - ❌ Don't render an action (Export / Print / Download) as a chip — those are Buttons (§4.2). In a `.filter-row`, chips filter and the right-aligned action (e.g. Export CSV `.btn--outline`) is a Button.
 
