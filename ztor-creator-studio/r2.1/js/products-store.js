@@ -304,6 +304,50 @@
     }
   };
 
+  /* 2026-07-27：Nick 商店改用 wishyouagoodlife.com/products 的實際商品資料。
+     原有 id 保留作為舊連結相容；新商品以 wy-* id 對應來源子頁。 */
+  function wishProduct(name, img, price, sub, options, stock, sourceUrl, gallery) {
+    return {
+      name: name, img: img, gallery: gallery || [img], sourceUrl: sourceUrl,
+      currency: 'TWD',
+      sub: sub, cat: 'physical', subKey: 'apparel', variant: options && options.length ? 'multiple' : 'single',
+      edition: 'unlimited', status: stock === 0 ? 'live' : 'live', price: String(price), cost: '', stock: String(stock), threshold: '10',
+      catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾', options: options || []
+    };
+  }
+  var WISHYOU_PRODUCTS = {
+    'wy-26ms-hoodie': wishProduct('26MS Hoodie', '26ms-hoodie-01.jpeg', 3680, '注意事項：不可水洗、緩和乾洗；50%棉50%滌綸。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 3, 'https://www.wishyouagoodlife.com/products/26ms-hoodie', ['26ms-hoodie-01.jpeg', '26ms-hoodie-02.jpeg']),
+    'wy-26ms-socks': wishProduct('26MS Socks', '26ms-socks-01.jpeg', 688, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Size / 尺寸', values: ['F'] }], 425, 'https://www.wishyouagoodlife.com/products/26ms-socks'),
+    'wy-26ms-tshirt-white': wishProduct('26MS T-Shirt (白)', '26ms-t-shirt-w-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/26ms-t-shirt-w', ['26ms-t-shirt-w-01.jpeg', '26ms-t-shirt-w-02.jpeg']),
+    'wy-26ms-tshirt-red': wishProduct('26MS T-Shirt (紅)', '26ms-t-shirt-r-01.jpeg', 1880, '注意事項：不可水洗、緩和乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/26ms-t-shirt-r', ['26ms-t-shirt-r-01.jpeg', '26ms-t-shirt-r-02.jpeg']),
+    'wy-24ce-pillow': wishProduct('WYAGL Pillow', 'wyagl-pillow-01.jpg', 1580, '材質：聚酯纖維；尺寸：40cm ±5%；可機洗、不可漂白、不可熨燙。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-pillow-1', ['wyagl-pillow-01.jpg', 'wyagl-pillow-02.jpg', 'wyagl-pillow-03.jpg']),
+    'wy-24ce-jersey': wishProduct('24CE High Shine Football Jersey', '24ce-high-shine-football-jersey-01.jpg', 3680, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wish-you-a-good-life-high-shine-football-jersey', ['24ce-high-shine-football-jersey-01.jpg', '24ce-high-shine-football-jersey-02.jpg', '24ce-high-shine-football-jersey-03.jpg', '24ce-high-shine-football-jersey-04.jpg']),
+    'wy-24ce-skateboard': wishProduct('24CE Skateboard', '24ce-skateboard-01.jpg', 2880, '尺寸：8.0 吋；材質：加拿大楓木七層壓合。', [], 0, 'https://www.wishyouagoodlife.com/products/wyagl-24ce-skateboard', ['24ce-skateboard-01.jpg', '24ce-skateboard-02.jpg']),
+    'wy-24ce-mesh': wishProduct('WYAGL Mesh T-shirt', 'wyagl-mesh-t-shirt-01.jpg', 3580, '注意事項：冷水溫和洗滌、不可漂白；尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-mesh-t-shirt', ['wyagl-mesh-t-shirt-01.jpg', 'wyagl-mesh-t-shirt-02.jpg', 'wyagl-mesh-t-shirt-03.jpg']),
+    'wy-24ce-rug': wishProduct('WYAGL RUG', 'wyagl-rug-01.jpg', 5680, '直徑90公分（±2公分）；100%聚酯纖維。建議使用地毯專用清潔劑清潔。', [{ name: 'Size / 尺寸', values: ['F'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-24ce-rug'),
+    'wy-24ce-sock': wishProduct('WYAGL Sock', 'wyagl-sock-01.jpg', 1280, '材質：棉 82%、彈性纖維 13%、彈性纖維 5%。', [{ name: 'Colour / 顏色', values: ['一黑一白一紅組合'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-sock', ['wyagl-sock-01.jpg', 'wyagl-sock-02.jpg']),
+    'wy-24ce-wyagl-tee': wishProduct('Wish You A Good Life T-SHIRT', 'wish-you-a-good-life-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wish-you-a-good-life-t-shirt', ['wish-you-a-good-life-t-shirt-01.jpg', 'wish-you-a-good-life-t-shirt-02.jpg', 'wish-you-a-good-life-t-shirt-03.jpg']),
+    'wy-24ce-tee': wishProduct('WYAGL T-SHIRT', 'wyagl-t-shirt-01.jpg', 1680, '低溫30°C洗滌、不可乾洗；100%純棉。尺寸為手工水平測量，實際產品尺寸誤差±2cm。', [{ name: 'Size / 尺寸', values: ['L', 'M', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-t-shirt', ['wyagl-t-shirt-01.jpg', 'wyagl-t-shirt-02.jpg', 'wyagl-t-shirt-03.jpg']),
+    'wy-24ce-dupont-bag': wishProduct('Dupont Bag', 'wyagl-dupont-bag-01.jpg', 1080, '尺寸 M/L/XL；銀色；杜邦紙材質，防水可水洗。尺寸皆為水平手工測量。', [{ name: 'Size / 尺寸', values: ['M', 'L', 'XL'] }], 0, 'https://www.wishyouagoodlife.com/products/wyagl-dupont-bag', ['wyagl-dupont-bag-01.jpg', 'wyagl-dupont-bag-02.jpg', 'wyagl-dupont-bag-03.jpg']),
+    'wy-bundle-cap': wishProduct('祝你好命 刺繡 Logo 老帽', 'wyagl-cap-generated.webp', '待確認', '以組合包紅白黑配色延伸的黑色六片老帽，紅色刺繡圓章細節。', [{ name: 'Colour / 顏色', values: ['Black'] }], 0, '', ['wyagl-cap-generated.webp']),
+    'wy-bundle-cargo-pants': wishProduct('祝你好命 束口工裝褲', 'wyagl-cargo-pants-generated.webp', '待確認', '以組合包配色延伸的黑色水洗束口工裝褲，側邊口袋與紅色車線細節。', [{ name: 'Size / 尺寸', values: ['S', 'M', 'L', 'XL'] }], 0, '', ['wyagl-cargo-pants-generated.webp']),
+    'wy-bundle-lowtop-sneakers': wishProduct('祝你好命 紅白低筒球鞋', 'wyagl-lowtop-sneakers-generated.webp', '待確認', '以組合包配色延伸的紅白黑低筒球鞋，鞋跟有螢光綠點綴。', [{ name: 'Size / 尺寸', values: ['US 8', 'US 9', 'US 10', 'US 11'] }], 0, '', ['wyagl-lowtop-sneakers-generated.webp'])
+  };
+  /* 既有入口保留，但內容與來源商品同步。 */
+  /* 2026-07-27 使用者指定的列表排序：這四筆置頂（白 Tee → 老帽 → 束口褲 → 球鞋），
+     其餘沿用 WISHYOU_PRODUCTS 的定義順序。只影響 e-shop 列表的產列順序，不動商品內容。 */
+  var WISH_TOP_IDS = ['wy-26ms-tshirt-white', 'wy-bundle-cap', 'wy-bundle-cargo-pants', 'wy-bundle-lowtop-sneakers'];
+  var WISH_IDS = WISH_TOP_IDS.concat(Object.keys(WISHYOU_PRODUCTS).filter(function (id) {
+    return WISH_TOP_IDS.indexOf(id) === -1;
+  }));
+  P_NICK = Object.assign({}, WISHYOU_PRODUCTS, {
+    zine: WISHYOU_PRODUCTS['wy-26ms-hoodie'], tee: WISHYOU_PRODUCTS['wy-26ms-tshirt-white'],
+    hoodie: WISHYOU_PRODUCTS['wy-26ms-hoodie'], acetate: WISHYOU_PRODUCTS['wy-24ce-pillow'],
+    cap: WISHYOU_PRODUCTS['wy-bundle-cap'], shoes: WISHYOU_PRODUCTS['wy-bundle-lowtop-sneakers'],
+    pin: WISHYOU_PRODUCTS['wy-bundle-cargo-pants'], song: WISHYOU_PRODUCTS['wy-26ms-socks'],
+    movie: WISHYOU_PRODUCTS['wy-24ce-jersey'], album: WISHYOU_PRODUCTS['wy-24ce-mesh'],
+    membership: WISHYOU_PRODUCTS['wy-24ce-dupont-bag']
+  });
   var DATASETS = { default: P_DEFAULT, nick: P_NICK /* userB 未列＝沿用 default */ };
   function active() { return DATASETS[persona()] || DATASETS.default; }
 
@@ -318,8 +362,16 @@
        的同型組合——Tee／帽／褲／鞋各自挑尺寸顏色，組合價低於單買加總（206→178，省 $28）。
        四件在 e-shop 都是可單買的獨立商品（cap／shoes／tee／pin，狀態皆販售中）。 */
     'Coastline starter pack': {
+      id: 'wish-you-good-life-four-piece',
       name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
-      members: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件', price: '$178', stock: '16 組（最少件數）'
+      description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',
+      members: 'Tee ＋ 老帽 ＋ 束口褲 ＋ 球鞋 · 4 件', price: 'NT$5,980', priceAmount: 5980, stock: '16 組（最少件數）',
+      memberItems: [
+        { id: 'wy-26ms-tshirt-white', name: '26MS T-Shirt (白)', meta: 'Wish You A Good Life · NT$1,880', price: 'NT$1,880', img: '26ms-t-shirt-w-01.jpeg' },
+        { id: 'wy-bundle-cap', name: '祝你好命 刺繡 Logo 老帽', meta: '組合包延伸單品 · 價格待確認', price: '待確認', img: 'wyagl-cap-generated.webp' },
+        { id: 'wy-bundle-cargo-pants', name: '祝你好命 束口工裝褲', meta: '組合包延伸單品 · 價格待確認', price: '待確認', img: 'wyagl-cargo-pants-generated.webp' },
+        { id: 'wy-bundle-lowtop-sneakers', name: '祝你好命 紅白低筒球鞋', meta: '組合包延伸單品 · 價格待確認', price: '待確認', img: 'wyagl-lowtop-sneakers-generated.webp' }
+      ]
     },
     'Vinyl + poster set': {
       name: 'LOVE RAGE HOPE 黑膠典藏組', img: 'coastline-acetate.webp',
@@ -341,6 +393,11 @@
     'Vintage synth': {
       name: '《帥到分手》錄音室母帶盤帶', meta: '收藏品 · 已結標',
       img: 'coastline-single.webp', cat: '紀念品', price: '$860'
+    },
+    'WYAGL Nike Dunk Low Pro SB': {
+      name: 'Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋', meta: '全新 · 限量客製',
+      img: 'nick-nike-00.jpg', cat: '鞋款', price: '起標 NT$12,800',
+      activity: '即將開始 · 26 人關注', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
     }
   };
   function patchBundlesAndAuctions() {
@@ -348,6 +405,8 @@
     document.querySelectorAll('.product-list__row[data-type="bundle"]').forEach(function (row) {
       var b = BUNDLES_NICK[row.getAttribute('data-name') || ''];
       if (!b) return;
+      var detail = row.querySelector('a[href*="bundle-detail.html"]');
+      if (detail && b.id) detail.setAttribute('href', 'bundle-detail.html?id=' + b.id);
       var t = row.querySelector('.product-list__title'); if (t) t.textContent = b.name;
       var img = row.querySelector('.product-list__image img');
       if (img) { img.setAttribute('src', 'images/products/' + b.img); img.setAttribute('alt', ''); }
@@ -366,6 +425,7 @@
       if (img) { img.setAttribute('src', 'images/products/' + a.img); img.setAttribute('alt', ''); }
       var c = row.querySelector('.product-list__category-cell'); if (c) c.textContent = a.cat;
       var pr = row.querySelector('.product-list__price'); if (pr) pr.textContent = a.price;
+      var activity = row.querySelector('.product-list__activity'); if (activity && a.activity) activity.textContent = a.activity;
     });
   }
 
@@ -373,13 +433,28 @@
   window.ZTOR_PRODUCTS = P;
   // 由 ?id 取商品；找不到回 null（頁面自帶預設 zine）。
   window.ztorGetProduct = function (id) { return (id && P[id]) ? P[id] : null; };
+  window.ztorGetBundle = function (id) {
+    if (persona() !== 'nick') return null;
+    var bundles = Object.keys(BUNDLES_NICK).map(function (key) { return BUNDLES_NICK[key]; });
+    return bundles.find(function (bundle) { return bundle.id === id; }) || (id == null ? bundles[0] : null);
+  };
+  window.ztorGetAuction = function (id) {
+    if (persona() !== 'nick') return null;
+    if (id === 'wyagl-nike-dunk') return AUCTIONS_NICK['WYAGL Nike Dunk Low Pro SB'];
+    return null;
+  };
 
   /* ── e-shop 列表就地改列（persona ≠ default 時）──────────────────
      e-shop.html 的商品名／圖寫死在 HTML、價/庫存/分類走 i18n key；i18n apply 後由此
      依當前 persona 的商品資料把每列覆蓋一致（名＋圖＋價＋分類＋庫存）。用列內
      product-detail.html?id=<key> 連結取得該列的商品 id。變體數／狀態 badge 等深層
      欄位維持原樣（第一批範圍）。監聽 i18n:applied 以免語言切換後被還原。 */
-  function priceText(p) { return '$' + String(p.price).replace(/\.00$/, ''); }
+  function priceText(p) {
+    var raw = String(p.price).replace(/\.00$/, '');
+    if (!/^\d+(?:\.\d+)?$/.test(raw)) return raw;
+    if (persona() === 'nick') return 'NT$' + raw.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return '$' + raw;
+  }
   function stockText(p) {
     if (p.edition === 'limited') return (p.sold || '0') + ' / ' + (p.cap || '∞');
     if (p.stock === '∞' || p.cat === 'digital') return '∞';
@@ -390,8 +465,28 @@
     var list = document.querySelector('.product-list, [data-eshop-list]') ||
                (document.querySelector('.product-list__row') && document.body);
     if (!list) return;
+    /* Nick 商店以來源頁 13 筆實體商品取代原本 11 筆示意列；保留 draft 列與表頭，
+       使用既有 row 結構讓篩選、搜尋、分頁與列操作維持原行為。 */
+    if (persona() === 'nick' && !list.__wishyouRows) {
+      var panel = document.querySelector('[data-eshop-panel="products"]') || list;
+      var template = panel.querySelector('.product-list__row:not([data-status="draft"])');
+      if (template) {
+        panel.querySelectorAll('.product-list__row:not([data-status="draft"])').forEach(function (row) { row.remove(); });
+        var draft = panel.querySelector('.product-list__row[data-status="draft"]');
+        WISH_IDS.forEach(function (id) {
+          var row = template.cloneNode(true);
+          row.setAttribute('data-wishyou-id', id);
+          row.setAttribute('data-type', 'physical');
+          row.setAttribute('data-name', WISHYOU_PRODUCTS[id].name);
+          if (draft) panel.insertBefore(row, draft); else panel.appendChild(row);
+        });
+        list.__wishyouRows = true;
+      }
+    }
     document.querySelectorAll('.product-list__row').forEach(function (row) {
       var link = row.querySelector('a[href*="product-detail.html?id="]');
+      var wishId = row.getAttribute('data-wishyou-id');
+      if (wishId && link) link.setAttribute('href', 'product-detail.html?id=' + wishId);
       if (!link) return;
       var m = /[?&]id=([^&]+)/.exec(link.getAttribute('href'));
       var p = m && active()[m[1]];

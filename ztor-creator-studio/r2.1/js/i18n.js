@@ -1410,6 +1410,9 @@
     'product-detail.sales.title':   { en: 'Sales summary',  zh: '銷售摘要' },
     /* 2026-07-20 商品明細改版（Q21 版型＋Figma 845-10300）新增字串 */
     'product-detail.crumb.physical': { en: 'Physical merch', zh: '實體商品' },
+    /* 2026-07-26 新增：商品詳情的麵包屑原本固定寫「實體商品」，打開數位商品也照樣顯示；
+       改由 applyProduct 依 p.cat 在這兩個 key 之間切換。 */
+    'product-detail.crumb.digital': { en: 'Digital merch', zh: '數位商品' },
     'product-detail.sales.sub':     { en: 'Reconciled with Earnings; not recalculated here.', zh: '數字與收入管理對帳，本頁不重算。' },
     'product-detail.sales.more':    { en: 'View more →',   zh: '查看更多 →' },
     'product-detail.kpi.sold':      { en: 'Units sold',    zh: '已售' },
@@ -3414,6 +3417,8 @@
     'project-detail.golive.badge':{en:'Live',zh:'已上線'},
     'project-detail.golive.published':{en:'Published live',zh:'正式上線'},
     'project-detail.golive.note':{en:'Go-live projects publish immediately — no funding or order threshold, no refund. Revenue is shared on earnings after release.',zh:'直接上線的專案立即發布——無募資／訂購門檻、無退款；上線後依營收分潤。'},
+    'project-detail.golive.field.name':{en:'Name',zh:'名稱'},
+    'project-detail.golive.field.date':{en:'Date',zh:'日期'},
     'pd-pre.kpi.orders':{en:'Pre-orders',zh:'已下單'},
     'pd-pre.kpi.orders-meta':{en:'Cards verified · charged when the minimum is met',zh:'卡片已驗證 · 達量才扣款'},
     'pd-pre.kpi.min':{en:'Minimum quantity',zh:'最少訂購數'},

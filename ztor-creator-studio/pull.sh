@@ -60,6 +60,14 @@ restore_stash() {
   fi
 }
 
+# 順手清掉已合併／已關閉 PR 留下的殘留分支。
+# 放在這裡的理由：文件要求「PR merge 之後立刻跑一次 pull.sh」，那正好就是分支變成殘骸的時刻。
+# 清理規則與兩人並行的安全性說明見 cleanup.sh 開頭；--prune-only 只刪分支、不碰任何 PR，
+# 失敗也不影響同步結果，所以一律吞掉錯誤。
+prune_branches() {
+  [ -x "$SITE/cleanup.sh" ] && "$SITE/cleanup.sh" --prune-only || true
+}
+
 echo "→ clone ${REPO_SLUG} …"
 git clone -q "$AUTH" "$WORK/mono"
 if [ ! -d "$WORK/mono/$SUBDIR" ]; then
@@ -84,6 +92,7 @@ fi
 if git merge-base --is-ancestor mono/main HEAD; then
   echo "✓ 已經是最新（monorepo 沒有本機還沒有的改動）"
   restore_stash
+  prune_branches
   exit 0
 fi
 
@@ -129,5 +138,6 @@ else
 fi
 
 restore_stash
+prune_branches
 echo ""
 echo "本機已包含 monorepo 最新內容。要發版就跑 ./collab.sh \"<變更說明>\"。"

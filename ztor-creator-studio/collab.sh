@@ -101,6 +101,38 @@ if [ -n "$(git diff --name-only --diff-filter=D -- "$SUBDIR")" ]; then
   echo ""
 fi
 
+# 3.6) 防重複：這包內容是不是已經有一個我開的 open PR 了？
+#   本腳本每跑一次就開一個新的時間戳分支＋新 PR，不會回頭看有沒有等效的 PR 存在。
+#   同一個改動連跑幾次（重試、兩個 session 各跑一次），就會長出好幾個一字不差的 PR。
+#   這裡用 ztor-creator-studio/ 的 tree SHA（git 對「這包檔案內容」的指紋）比對：
+#   相同就是逐位元組相同。只比子目錄不比 repo root，所以 main 在兩次發版之間有沒有
+#   前進都不影響判斷；也只比自己開的 PR，別人的 PR 一律不看、不動。
+git add -A
+NEW_SUBTREE="$(git ls-tree "$(git write-tree)" "$SUBDIR" | awk '{print $3}')"
+if [ -n "$NEW_SUBTREE" ] && command -v gh >/dev/null 2>&1; then
+  ME="$(GH_TOKEN="$TOKEN" gh api user --jq .login 2>/dev/null || true)"
+  if [ -n "$ME" ]; then
+    while IFS=$'\t' read -r pr_num pr_br; do
+      [ -z "${pr_num:-}" ] && continue
+      oid="$(GH_TOKEN="$TOKEN" gh api "repos/$REPO_SLUG/git/ref/heads/$pr_br" --jq .object.sha 2>/dev/null || true)"
+      [ -z "$oid" ] && continue
+      root="$(GH_TOKEN="$TOKEN" gh api "repos/$REPO_SLUG/git/commits/$oid" --jq .tree.sha 2>/dev/null || true)"
+      [ -z "$root" ] && continue
+      sub="$(GH_TOKEN="$TOKEN" gh api "repos/$REPO_SLUG/git/trees/$root" \
+             --jq ".tree[] | select(.path==\"$SUBDIR\") | .sha" 2>/dev/null || true)"
+      if [ "$sub" = "$NEW_SUBTREE" ]; then
+        echo ""
+        echo "ⓘ 這包內容跟你已經開著的 PR #${pr_num} 完全相同，沒有再開一個的必要。"
+        echo "  https://github.com/${REPO_SLUG}/pull/${pr_num}"
+        echo "  → 要改變更說明或補內容，直接編輯那個 PR；改完檔案再跑一次本腳本即可。"
+        exit 0
+      fi
+    done < <(GH_TOKEN="$TOKEN" gh pr list --repo "$REPO_SLUG" --state open --limit 100 \
+             --json number,headRefName,author \
+             --jq ".[] | select(.author.login==\"$ME\") | [.number, .headRefName] | @tsv" 2>/dev/null || true)
+  fi
+fi
+
 # 4) 開分支 → commit（固定身分 lern2317）→ push → 開 PR
 BR="edit/$(date +%Y%m%d-%H%M%S)"
 git switch -c "$BR" >/dev/null
