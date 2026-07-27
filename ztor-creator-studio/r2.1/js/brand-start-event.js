@@ -22,6 +22,15 @@
    · 沒有送審／待核准狀態。模型明說 no approval step——這是從贊助類產品帶過來
      的反射動作，加了就與模型矛盾。
    · 沒有「立即上線／排程」開關。開始日期在未來就是排程，可以推導，不必再問一次。
+   · 沒有「可用回饋碼數量」。碼由品牌在櫃檯依消費金額發，池子是品牌的、所有創作者
+     共用，創作者攔不到——第 501 位客人買咖啡，機器照樣印。
+     取而代之的是「名額上限」＝歸屬給我的掃碼數上限。使用者 2026-07-28 說明了實際
+     行為：掃碼綁的是創作者帳號，設 10 就只有前 10 次掃碼算給他，第 11 次對粉絲
+     顯示「已額滿」。那一刻發生在 Ztor 之內，所以這是唯一守得住的閘門。
+     額滿之後被擋下的粉絲人已經在店裡了——這個代價要寫在欄位旁邊，
+     不能只講限量的好處。開啟「需要事先報名」可以把爭搶移到線上，避免白跑。
+   · 沒有「目標」欄位（2026-07-28 由上限取代）。兩者單位相同、只有一個真的會結束活動，
+     並排必被混淆；而上限本身就給了報表判準（500 個名額用掉 487）。
 
    ── 期間的邊界 ─────────────────────────────────────────
    創作者的檔期必須落在品牌合約窗之內：合約 2026-12-31 到期，就不可能排到 2027。
@@ -185,25 +194,52 @@
           surfaceRow("events", T("活動頁", "Event pages"), false) +
         '</div>' +
 
-        '<div class="field"><span class="field__label">' + T("上線時通知粉絲", "Announce on launch") + '</span>' +
-          '<div class="flex-row" style="justify-content:space-between;gap:var(--sp-12)">' +
-            '<span class="field__hint">' +
-              T("自動草擬一則貼文並推播給粉絲。先搶到追蹤者，之後的掃碼才有人歸屬給你。",
-                "Drafts a post and notifies your fans. You win followers first; attribution follows.") + '</span>' +
-            '<div class="switch switch--on" data-bs-announce></div></div></div>' +
-
-        '<div class="field"><label class="field__label" for="bs-goal">' +
-          T("目標（選填）", "Goal (optional)") + '</label>' +
-          '<div class="form-grid">' +
-            '<input class="input" type="number" min="0" id="bs-goal" name="goal" data-bs-goal placeholder="500">' +
-            '<select class="select" id="bs-goaltype" name="goalType" aria-label="' + T("目標類型", "Goal type") + '" data-bs-goaltype>' +
-              '<option value="scans">' + T("次掃碼歸屬給我", "scans attributed to me") + '</option>' +
-              '<option value="fans">' + T("位新粉絲", "new fans") + '</option>' +
-            '</select>' +
-          '</div>' +
+        /* 公佈（2026-07-28 使用者裁示，原本叫「上線時通知粉絲」）。
+           兩種模式：自動＝活動一上線就公佈；關掉則自己挑一天公佈（留空＝不公佈）。
+           挑日子是有意義的：限量活動通常要先造勢再開賣，公佈日早於開始日才有預熱。 */
+        toggleRow("announce", T("自動公佈活動", "Announce automatically"), true,
+          T("活動一上線就自動草擬貼文並推播給粉絲。先搶到追蹤者，之後的掃碼才有人歸屬給你。",
+            "Drafts a post and notifies your fans the moment it goes live. You win followers first; attribution follows.")) +
+        '<div class="field" data-bs-announce-date hidden>' +
+          '<label class="field__label" for="bs-adate">' + T("公佈日期", "Announce on") + '</label>' +
+          '<input class="input" type="date" id="bs-adate" name="announceOn" data-bs-adate>' +
           '<p class="field__hint">' +
-            T("沒有目標，之後報表上的數字就只是數字，沒有「達成與否」可言。",
-              "Without a target the report is just numbers — nothing to judge them against.") + '</p></div>' +
+            T("留空＝不公佈，活動安靜上線。公佈日可以早於開始日，用來預熱。",
+              "Leave empty to launch quietly. The announce date may precede the start date, to build anticipation.") + '</p></div>' +
+
+        /* 名額上限＝饑餓行銷（英文是 scarcity marketing／limited drop，不是 hunger marketing）。
+           取代原本的「目標」欄位（2026-07-28 使用者裁示）：兩者單位相同卻只有一個會
+           真的結束活動，並排放著必定被搞混；而且上限本身就給了報表判準
+           （「500 個名額用掉 487」），目標欄因此是多餘的。
+
+           ⚠ 這裡刻意「不是」可用回饋碼數量。創作者管不到回饋碼的發放：
+           碼是品牌在櫃檯依消費金額印的，池子是品牌的、所有創作者共用
+           （見 brand-store.js）。第 501 位客人買咖啡，星巴克的機器照樣印一張碼——
+           Ztor 沒有任何一個環節能攔。寫成「可用回饋碼 500 張」會變成
+           創作者對粉絲做出系統兌現不了的承諾，也會讓創作者以為自己擁有一批碼。
+
+           真正稀缺、而且 Ztor 完全掌握的是「掃碼歸屬」那一刻：粉絲在 App 裡選一位
+           創作者，這個動作發生在 Ztor 之內。所以上限鎖在「歸屬給我的掃碼數」。
+           對粉絲沒有任何損失：碼照拿、點數照給，只是這位創作者的名額滿了就不再出現
+           在選單裡。稀缺的是創作者的名額，不是粉絲的回饋。 */
+        '<div class="field"><label class="field__label" for="bs-limit">' +
+          T("名額上限（選填）", "Limit (optional)") + '</label>' +
+          '<input class="input" type="number" min="1" id="bs-limit" name="limit" data-bs-limit placeholder="' +
+            T("不填＝不限名額", "Leave empty for no limit") + '">' +
+          '<p class="field__hint">' +
+            T("達到之後活動自動結束。限量會讓粉絲現在就行動，而不是想著「之後再說」。",
+              "The event ends automatically when it fills. A cap makes fans act now instead of later.") + '</p>' +
+          '<p class="field__hint" data-bs-limitnote></p></div>' +
+
+        /* 事先報名（2026-07-28 使用者裁示）。開＝粉絲必須先在線上報名，
+           才能到門市掃碼歸屬給你。這條會改變整個活動的性質，所以 hint 要講清楚代價：
+           報名這一步會擋掉一部分人，換來的是名單與確定的歸屬。 */
+        toggleRow("optin", T("需要事先報名", "Require sign-up first"), false,
+          T("粉絲必須先在 App 報名，才能在門市掃碼歸屬給你。會少掉一些隨手掃的人，換到的是一份名單與確定的歸屬。",
+            "Fans must sign up in the app before their in-store scan can be credited to you. You lose the casual scanners; you gain a list and certain attribution.")) +
+        '<p class="field__hint" data-bs-optinnote></p>' +
+
+
       '</div>' +
 
       /* ── 3. 這個模型最違反直覺的一點 ─────────────────────
@@ -220,6 +256,23 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(body);
     if (window.ztorSelect) window.ztorSelect.mount(body);
     sync(el);
+  }
+
+  /* 開關列。用 <button role="switch"> 而不是 <div>——原本寫 <div class="switch">，
+     沒有語意也沒有事件，使用者回報「點不動」。這裡比照 js/benefit-matrix.js 的
+     canonical 寫法：button ＋ role=switch ＋ aria-checked，鍵盤與輔助技術都吃得到。 */
+  function toggleRow(key, label, on, hint) {
+    return '<div class="field"><div class="flex-row" style="justify-content:space-between;gap:var(--sp-12);align-items:flex-start">' +
+        '<span><span class="field__label" style="display:block">' + esc(label) + '</span>' +
+          '<span class="field__hint">' + esc(hint) + '</span></span>' +
+        '<button class="switch' + (on ? " switch--on" : "") + '" type="button" role="switch"' +
+          ' aria-checked="' + (on ? "true" : "false") + '" aria-label="' + esc(label) + '"' +
+          ' data-bs-toggle="' + key + '"></button>' +
+      '</div></div>';
+  }
+  function isOn(el, key) {
+    var b = $('[data-bs-toggle="' + key + '"]', el || document);
+    return !!b && b.classList.contains("switch--on");
   }
 
   function surfaceRow(key, label, on) {
@@ -255,11 +308,62 @@
     }
     var w = $("[data-bs-window]", el); if (w) w.textContent = note;
 
+    /* 名額上限：說清楚它對粉絲的意思，並給出可直接拿去用的宣傳句。
+       這一句是這個功能的重點——創作者要的是「限量 500 名」這句話，不是一個數字欄位。 */
+    var limitEl = $("[data-bs-limit]", el);
+    var limit = limitEl && parseInt(limitEl.value, 10);
+    var lnote = $("[data-bs-limitnote]", el);
+    var optin = isOn(el, "optin");
+    if (lnote) {
+      /* 額滿之後第 N+1 位掃碼的粉絲會看到「已額滿」（使用者說明的實際行為）。
+         這是創作者自己選的代價，必須寫出來——限量的另一面就是有人會被擋下，
+         只寫「限量很好用」而不寫這件事，等於把負面體驗藏起來讓創作者事後才發現。
+         開了事先報名就不會發生：名額在線上就被搶完，粉絲不會白跑一趟到門市。 */
+      lnote.textContent = limit > 0
+        ? (optin
+            ? T("粉絲端會看到「限量 " + limit + " 名」，名額在線上報名時就被搶完——額滿之後就報不了名，不會有人白跑一趟門市。",
+                "Fans see “First " + limit + " only”. Slots are claimed at sign-up, so once it fills nobody makes a wasted trip to the store.")
+            : T("粉絲端會看到「限量 " + limit + " 名」。品牌仍照常發碼，但第 " + (limit + 1) +
+                " 位之後掃碼會顯示「已額滿」——他們人已經在店裡了，這是限量的代價。開啟「需要事先報名」可以避免。",
+                "Fans see “First " + limit + " only”. The brand still issues codes, but scan number " + (limit + 1) +
+                " onward is rejected — and those fans are already standing in the shop. That is the cost of a cap; “Require sign-up first” avoids it."))
+        : "";
+    }
+
+    /* 事先報名 × 名額上限：兩者合起來才是真正的限量搶位。 */
+    var onote = $("[data-bs-optinnote]", el);
+    if (onote) {
+      onote.textContent = optin
+        ? (limit > 0
+            ? T("和名額上限搭配時，" + limit + " 個名額是在線上被搶走的——這才是完整的限量搶位。",
+                "Paired with the limit, those " + limit + " slots are claimed online — that is a proper limited drop.")
+            : T("目前沒有設名額上限，所以報名不設限、只是先收名單。",
+                "No limit is set, so sign-up is uncapped — it just collects the list."))
+        : "";
+    }
+
+    /* 自動公佈關掉時才問日期。 */
+    var autoAnnounce = isOn(el, "announce");
+    var dateBox = $("[data-bs-announce-date]", el);
+    if (dateBox) {
+      dateBox.hidden = autoAnnounce;
+      var a = $("[data-bs-adate]", el);
+      if (a) { a.min = today(); a.max = to; }
+    }
+
     var scheduled = from > today();
     var sum = $("[data-bs-summary]", el);
-    if (sum) sum.textContent = scheduled
-      ? T("將於 " + human(from) + " 自動上線", "Goes live automatically on " + human(from))
-      : T("立即上線", "Goes live immediately");
+    if (sum) {
+      var base = scheduled
+        ? T("將於 " + human(from) + " 自動上線", "Goes live automatically on " + human(from))
+        : T("立即上線", "Goes live immediately");
+      /* 有上限就有「兩個結束條件」。不寫明哪個先到，創作者會不知道誰說了算。 */
+      if (limit > 0) {
+        base += T("　·　" + human(to) + " 或滿 " + limit + " 名，先到者為準",
+                  " · ends " + human(to) + " or at " + limit + ", whichever comes first");
+      }
+      sum.textContent = base;
+    }
 
     /* 同類別撞期：允許，但要講一聲。 */
     var host = $("[data-bs-clash]", el);
@@ -287,6 +391,14 @@
       if (b) open(b);
       return;
     }
+    var tg = e.target.closest && e.target.closest("[data-bs-toggle]");
+    if (tg) {
+      var on = !tg.classList.contains("switch--on");
+      tg.classList.toggle("switch--on", on);
+      tg.setAttribute("aria-checked", on ? "true" : "false");
+      sync();
+      return;
+    }
     if (e.target.closest && e.target.closest("[data-bs-close]")) { close(); return; }
     var el = $("#brand-start");
     if (el && !el.hidden && e.target === el) close();          /* 點灰底關閉 */
@@ -296,11 +408,17 @@
     }
   });
   document.addEventListener("input", function (e) {
-    if (e.target.closest && e.target.closest("[data-bs-from],[data-bs-to]")) sync();
+    if (e.target.closest && e.target.closest("[data-bs-from],[data-bs-to],[data-bs-limit],[data-bs-adate]")) sync();
   });
   document.addEventListener("keydown", function (e) {
     var el = $("#brand-start");
     if (e.key === "Escape" && el && !el.hidden) close();
+    /* role=switch 的鍵盤契約：Space／Enter 切換。button 本來就會把 Space 變成
+       click，但 Enter 在某些情況不會，所以兩個都明確接。 */
+    if ((e.key === " " || e.key === "Enter") && e.target.closest && e.target.closest("[data-bs-toggle]")) {
+      e.preventDefault();
+      e.target.click();
+    }
   });
 
   window.ztorBrandStart = { open: open, close: close };
