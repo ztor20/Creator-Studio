@@ -383,6 +383,7 @@
        ⚠ 該圖帶 PRS 官方品牌 logo 浮水印，屬廠商商品照非本人素材；僅供內部原型預覽，
        對外展示／公開發布前需替換成無品牌標示或已授權的素材。 */
     'Stage-worn leather jacket': {
+      id: 'realive-tour-guitar',
       name: 'REALIVE 巡演主吉他（親簽）', meta: '九成新 · Inner Circle',
       img: 'PRS 10-Top.webp', cat: '樂器', price: '$1,280'
     },
@@ -395,6 +396,7 @@
       img: 'coastline-single.webp', cat: '紀念品', price: '$860'
     },
     'WYAGL Nike Dunk Low Pro SB': {
+      id: 'wyagl-nike-dunk',
       name: 'Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋', meta: '全新 · 限量客製',
       img: 'nick-nike-00.jpg', cat: '鞋款', price: '起標 NT$12,800',
       activity: '即將開始 · 26 人關注', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
@@ -419,6 +421,8 @@
     document.querySelectorAll('.product-list__row[data-type="auction"]').forEach(function (row) {
       var a = AUCTIONS_NICK[row.getAttribute('data-name') || ''];
       if (!a) return;
+      var detail = row.querySelector('a[href*="auction-detail.html"]');
+      if (detail && a.id) detail.setAttribute('href', 'auction-detail.html?id=' + a.id);
       var t = row.querySelector('.product-list__title'); if (t) t.textContent = a.name;
       var mt = row.querySelector('.product-list__meta'); if (mt) mt.textContent = a.meta;
       var img = row.querySelector('.product-list__image img');
@@ -439,9 +443,9 @@
     return bundles.find(function (bundle) { return bundle.id === id; }) || (id == null ? bundles[0] : null);
   };
   window.ztorGetAuction = function (id) {
-    if (persona() !== 'nick') return null;
-    if (id === 'wyagl-nike-dunk') return AUCTIONS_NICK['WYAGL Nike Dunk Low Pro SB'];
-    return null;
+    if (persona() !== 'nick' || !id) return null;
+    var auctions = Object.keys(AUCTIONS_NICK).map(function (key) { return AUCTIONS_NICK[key]; });
+    return auctions.find(function (auction) { return auction.id === id; }) || null;
   };
 
   /* ── e-shop 列表就地改列（persona ≠ default 時）──────────────────
