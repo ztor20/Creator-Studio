@@ -13,6 +13,15 @@
    而不是四個空的上傳框；gallery 是 1–8 張的陣列。每筆刻意沿用活動清單那一列在用的圖檔，
    同一場活動不該在兩個畫面長著兩張不同的臉。
 
+   category ＝ 活動清單第二排篩選的三分法（2026-07-27，使用者裁示）。判準是「核心是不是一場
+   實體聚集」：實體演出的線上直播仍算演唱會（錨點是那場實體演出），純線上才算線上活動。
+   建立流程的六個 type 對應到三個 category（**此表是唯一出處**，events.html 的列只帶結果）：
+     concert  → concert     ｜ festival → concert      （實體現場演出）
+     meet     → fans-meet   ｜ launch   → fans-meet    （近距離接觸／發片慶祝；launch 屬判斷題，見 UI-CHANGES）
+     virtual  → online      ｜ watchparty → online     （純線上）
+   邊界說明：fans-meet 是以「實體的近距離接觸」定義，online 是以「媒介」定義，故線上的粉絲互動
+   依使用者的定義歸 online。
+
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
@@ -25,6 +34,7 @@
       id: 'realive-chongqing',
       type: 'concert',                       // 對應 create-event 的 selection-card data-choice
       typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'REALIVE World Tour (China) — Chongqing',
       desc: 'The China leg opener. Full band, new staging, and the first live airing of three unreleased tracks.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -50,6 +60,7 @@
       id: 'taiwan-fest-kenting',
       type: 'festival',
       typeLabelKey: 'ce.type.festival',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'Taiwan Fest Kenting — Guest set',
       desc: 'Guest appearance on the main stage, 40-minute set.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -72,6 +83,7 @@
       id: 'lrh-taichung-watchback',
       type: 'watchparty',
       typeLabelKey: 'ce.type.watchparty',
+      category: 'online',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'LOVE·RAGE·HOPE Taichung — Watch-back party',
       desc: 'Watch the Taichung night back together, with the band in chat.',
       lineup: [],
@@ -91,9 +103,33 @@
       video: false
     },
     {
+      id: 'album-signing-taipei',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      name: 'Album signing — Taipei',
+      desc: 'In-store signing for the new record. 150 numbered slots, one item signed per slot.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Eslite Xinyi',
+      city: 'Taipei, Taiwan',
+      address: 'No. 11 Songgao Rd, Xinyi District',
+      date: '2026-09-12',
+      start: '14:00',
+      end: '16:00',
+      doors: '13:30',
+      capacity: 150,
+      tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 }],
+      sold: 118,
+      revenue: 590,
+      status: 'on-sale',
+      images: { thumb: 'images/projects/nick-baipa-goods.jpg', poster: '', banner: '', gallery: [] },
+      video: false
+    },
+    {
       id: 'pingtung-bluefin',
       type: 'festival',
       typeLabelKey: 'ce.type.festival',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'Pingtung Bluefin Festival — Ocean concert',
       desc: 'Ocean-side stage as part of the Bluefin Tuna Cultural Tourism Festival.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -116,6 +152,7 @@
       id: 'taipei-nye',
       type: 'festival',
       typeLabelKey: 'ce.type.festival',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: "Taipei New Year's Eve countdown",
       desc: "Countdown stage set for Taipei's New Year's Eve city party.",
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -138,6 +175,7 @@
       id: 'realive-r2-watchparty',
       type: 'watchparty',
       typeLabelKey: 'ce.type.watchparty',
+      category: 'online',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'REALIVE (R2) Concert Film — Watch party',
       desc: 'Stream the concert film together, with a live chat room.',
       lineup: [],
@@ -160,6 +198,7 @@
       id: 'lrh-taichung',
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'LOVE·RAGE·HOPE Live House Tour — Taichung',
       desc: 'Taichung stop of the LOVE·RAGE·HOPE live house tour.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -182,6 +221,7 @@
       id: 'realive-r2-arena',
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'REALIVE (R2) Special Ed. — Taipei Arena',
       desc: 'Hometown finale at Taipei Arena, presented with motorola.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -204,6 +244,7 @@
       id: 'next-leg-draft',
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
       name: 'REALIVE World Tour — Next leg (planning)',
       desc: '',
       lineup: [],

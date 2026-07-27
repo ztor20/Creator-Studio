@@ -1703,6 +1703,25 @@
     'events.scenario.multi.title': { en: 'Multiple events are running',      zh: '多場活動同時進行' },
     'events.scenario.multi.desc':  { en: 'Manage them all from the list below.', zh: '從下方清單統一管理。' },
 
+    /* 活動清單兩排篩選（2026-07-27 改版）：上排＝生命週期階段，下排＝活動類型。
+       舊的 events.tab.upcoming／past 與 events.status.* 由這兩組取代。 */
+    'events.stage.all':       { en: 'All',           zh: '全部' },
+    'events.stage.live':      { en: 'Live',          zh: '進行中' },
+    'events.stage.on-sale':   { en: 'On sale',       zh: '售票中' },
+    'events.stage.scheduled': { en: 'Scheduled',     zh: '已排程' },
+    'events.stage.draft':     { en: 'Draft',         zh: '草稿' },
+    'events.stage.past':      { en: 'Past',          zh: '已結束' },
+    'events.cat.aria':        { en: 'Filter by event type', zh: '依活動類型篩選' },
+    'events.cat.all':         { en: 'All',           zh: '全部' },
+    'events.cat.concert':     { en: 'Concerts',      zh: '演唱會' },
+    'events.cat.fans-meet':   { en: 'Fans meet',     zh: '粉絲見面會' },
+    'events.cat.online':      { en: 'Online events', zh: '線上活動' },
+    /* 示範用的粉絲見面會場次（讓該類型有可評估的內容；不需要時連同 events.html 的列一起刪） */
+    'events.rowFM.title':     { en: 'Album signing — Taipei',   zh: '專輯簽名會 — 臺北' },
+    'events.rowFM.meta':      { en: 'Fans meet · signing',      zh: '粉絲見面會 · 簽名' },
+    'events.rowFM.datetime':  { en: 'Sep 12, 2026 · 2:00 PM',   zh: '2026/9/12 · 下午 2:00' },
+    'events.rowFM.venue':     { en: 'Eslite Xinyi · Taipei',    zh: '誠品信義 · 臺北' },
+
     /* ─── Edit event（編輯活動 · edit-event.html）─────────────
        建立用 ce.*，編輯用 ee.*。共用的欄位標籤（活動名稱／場地／時間…）刻意沿用 ce.*，
        同一個欄位在兩個流程不該有兩套譯法；ee.* 只收編輯態自己的語彙。 */

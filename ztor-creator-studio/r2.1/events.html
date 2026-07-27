@@ -116,10 +116,20 @@
       <!-- F3 工作列＋狀態列（比照電子商店 e-shop）：整塊 sticky，故 wrapper 併吞清單（見頁內 style 說明）。 -->
       <div class="ev-list-controls">
         <div class="list-toolbar">
-          <!-- 時段分頁（Upcoming／Past，底線式 tabs；計數由 JS 填入）-->
+          <!-- 生命週期分頁（2026-07-27 改版）：草稿 → 已排程 → 售票中 → 進行中 → 已結束，
+               是同一條軸上的五個階段，彼此互斥（規則：取「走到最遠的那一階」——當天開演的場次
+               即使現場還在售票也算進行中）。原本第一排是時段（Upcoming／Past）、第二排混了銷售狀態
+               與草稿，草稿沒有日期、兩個時段分頁都放不下，才需要 D060/D033(c) 的「草稿跨時段」特例，
+               計數也因此對不起來（實測 Past 檢視：All 2、On Sale 0、Draft 1，0+1≠2）。收斂成單一軸後
+               特例消失、每一格都是單純的過濾。
+               排序＝注意力優先（不是生命週期順序）：進行中最急，已結束只供回顧故墊底。 -->
           <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="ev-tabs" role="tablist">
-            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="upcoming"><span data-i18n="events.tab.upcoming">Upcoming</span> <span class="tabs__item-count"></span></div>
-            <div class="tabs__item" role="tab" aria-selected="false" data-tab="past"><span data-i18n="events.tab.past">Past</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="events.stage.all">All</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="events.stage.live">Live</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="on-sale"><span data-i18n="events.stage.on-sale">On sale</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="events.stage.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="events.stage.draft">Draft</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="past"><span data-i18n="events.stage.past">Past</span> <span class="tabs__item-count"></span></div>
           </nav>
           <div class="list-toolbar__actions">
             <!-- 搜尋收合（點放大鏡展開成 field-pill；比照 e-shop）-->
@@ -135,12 +145,18 @@
           </div>
         </div>
 
-        <!-- 狀態篩選 · 第二排 filter-tabs（每項附數量，隨時段重算）-->
+        <!-- 活動類型 · 第二排 filter-tabs（2026-07-27 改版；每項附數量，隨上排階段重算）。
+             與上排是兩條互相獨立的軸：上排＝這場活動走到哪一階，這排＝它是哪一種活動。
+             三分法的判準＝「核心是不是一場實體聚集」：實體演出的線上直播仍歸演唱會（錨點是那場實體演出），
+             純線上才歸線上活動；粉絲見面會＝實體的近距離接觸（內圈晚宴、簽名會）。
+             建立流程既有六型別對應：concert／festival → 演唱會｜meet／launch → 粉絲見面會｜
+             virtual／watchparty → 線上活動（對應表寫在 js/events-store.js，單一出處）。 -->
         <div class="list-status-row">
-          <nav class="filter-tabs filter-tabs--brand" id="ev-status" role="tablist" aria-label="Filter by sale status">
-            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status="all"><span data-i18n="events.status.all">All</span><span class="filter-tabs__count" data-status-count>0</span></button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status="on-sale"><span data-i18n="events.status.on-sale">On Sale</span><span class="filter-tabs__count" data-status-count>0</span></button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status="draft"><span data-i18n="events.status.draft">Draft</span><span class="filter-tabs__count" data-status-count>0</span></button>
+          <nav class="filter-tabs filter-tabs--brand" id="ev-status" role="tablist" aria-label="Filter by event type" data-i18n-aria-label="events.cat.aria">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="events.cat.all">All</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="concert"><span data-i18n="events.cat.concert">Concerts</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="fans-meet"><span data-i18n="events.cat.fans-meet">Fans meet</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="online"><span data-i18n="events.cat.online">Online events</span><span class="filter-tabs__count" data-cat-count>0</span></button>
           </nav>
         </div>
 
@@ -158,7 +174,7 @@
 
         <!-- Upcoming（依日期由近到遠排序）-->
         <!-- 共看派對（Watch Party，D149 §4.7）：一同回顧既有演出實錄；共看內容＝LOVE·RAGE·HOPE 臺中場 -->
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="watch party 共看派對 一同回顧 watch back love rage hope live house tour 臺中 台中 taichung 線上共看 online nickthereal 周湯豪 nick chou">
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 一同回顧 watch back love rage hope live house tour 臺中 台中 taichung 線上共看 online nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
           </div>
@@ -187,7 +203,38 @@
           </div>
         </div>
 
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="scheduled" data-search="台灣祭 墾丁大灣 taiwan fest kenting 屏東 pingtung 演唱嘉賓 guest nickthereal 周湯豪 nick chou">
+        <!-- 粉絲見面會 · 簽名會（2026-07-27 為了讓「粉絲見面會」類型有可評估的內容而加的示範資料；
+             不需要時整段刪掉即可，對應紀錄在 js/events-store.js 的 album-signing-taipei）。 -->
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="fans-meet" data-search="簽名會 專輯簽名 album signing 見面會 fans meet 誠品信義 eslite xinyi 台北 臺北 taipei nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-baipa-goods.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.rowFM.title">Album signing — Taipei</a></div>
+              <div class="product-list__meta" data-i18n="events.rowFM.meta">Fans meet · signing</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowFM.datetime">Sep 12, 2026 · 2:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowFM.venue">Eslite Xinyi · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">118 / 150<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:79%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$590</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=album-signing-taipei" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="台灣祭 墾丁大灣 taiwan fest kenting 屏東 pingtung 演唱嘉賓 guest nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-wln.jpg" alt="" loading="lazy"></div>
           </div>
@@ -216,7 +263,7 @@
           </div>
         </div>
 
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="realive 世界巡迴 中國段 重慶 chongqing 蜚聲 livehouse world tour nickthereal 周湯豪 nick chou">
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="concert" data-search="realive 世界巡迴 中國段 重慶 chongqing 蜚聲 livehouse world tour nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-baipa.jpg" alt="" loading="lazy"></div>
           </div>
@@ -245,7 +292,7 @@
           </div>
         </div>
 
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="scheduled" data-search="屏東黑鮪魚文化觀光季 海洋音樂會 pingtung bluefin 屏東 ocean concert nickthereal 周湯豪 nick chou">
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="屏東黑鮪魚文化觀光季 海洋音樂會 pingtung bluefin 屏東 ocean concert nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
           </div>
@@ -274,7 +321,7 @@
           </div>
         </div>
 
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="scheduled" data-search="跨年 new year countdown 臺北最high新年城 台北 taipei nickthereal 周湯豪 nick chou 年末 跨年演出">
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="跨年 new year countdown 臺北最high新年城 台北 taipei nickthereal 周湯豪 nick chou 年末 跨年演出">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
           </div>
@@ -304,7 +351,7 @@
         </div>
 
         <!-- 共看派對（Watch Party，D149 §4.7）：線上同步共看、單一入場券、以人數上限計 -->
-        <div class="product-list__row" role="row" data-period="upcoming" data-status="on-sale" data-search="watch party 共看派對 realive r2 演唱會電影 concert film 線上共看 online co-watch nickthereal 周湯豪">
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 realive r2 演唱會電影 concert film 線上共看 online co-watch nickthereal 周湯豪">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
           </div>
@@ -334,7 +381,7 @@
         </div>
 
         <!-- Past（依日期由近到遠）-->
-        <div class="product-list__row" role="row" data-period="past" data-status="ended" data-search="love rage hope live house tour 臺中 台中 taichung legacy nickthereal 周湯豪 nick chou 巡演">
+        <div class="product-list__row" role="row" data-stage="past" data-category="concert" data-search="love rage hope live house tour 臺中 台中 taichung legacy nickthereal 周湯豪 nick chou 巡演">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
           </div>
@@ -363,7 +410,7 @@
           </div>
         </div>
 
-        <div class="product-list__row" role="row" data-period="past" data-status="ended" data-search="motorola realive r2 特仕版 臺北小巨蛋 台北 taipei arena 加開返航場 nickthereal 周湯豪 nick chou">
+        <div class="product-list__row" role="row" data-stage="past" data-category="concert" data-search="motorola realive r2 特仕版 臺北小巨蛋 台北 taipei arena 加開返航場 nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-r2-special.jpg" alt="" loading="lazy"></div>
           </div>
@@ -393,7 +440,7 @@
         </div>
 
         <!-- Drafts -->
-        <div class="product-list__row" role="row" data-period="drafts" data-status="draft" data-search="realive 世界巡迴 新場次 規劃中 draft world tour next leg nickthereal 周湯豪 nick chou">
+        <div class="product-list__row" role="row" data-stage="draft" data-category="concert" data-search="realive 世界巡迴 新場次 規劃中 draft world tour next leg nickthereal 周湯豪 nick chou">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/projects/nick-mxw.jpg" alt="" loading="lazy"></div>
           </div>
@@ -458,15 +505,23 @@
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
 <script>
-/* Events F3 — 時段分頁 × 狀態切換 × 活動搜尋（名稱／場地／Lineup）三者 AND 過濾目前清單。
-   靜態列各帶 data-period / data-status / data-search（含中英＋表演者名）；search 即時、可清除、無結果顯空狀態。
-   時段分頁計數依實際列數填入。草稿改由狀態軸管（D060/D033 c）：選 Draft 跨時段顯示所有草稿、其餘狀態不含草稿。 */
+/* Events F3（2026-07-27 改版）— 生命週期階段 × 活動類型 × 搜尋，三者 AND 過濾。
+   兩排是兩條互相獨立的軸，每列在每條軸上都只有一個值（data-stage / data-category），
+   所以不再有任何特例：舊版第一排是時段、第二排混了銷售狀態與草稿，草稿沒有日期、
+   哪個時段都放不下，才需要 D060/D033(c) 的「草稿跨時段」例外——那條例外連同它造成的
+   計數矛盾（Past 檢視 All 2 而 Draft 1）一起隨舊軸移除。
+
+   計數規則（兩排各有各的基準，刻意不同）：
+     · 上排＝整份清單裡各階段的總數，不隨下排類型變動——這樣切換類型時上排數字不會在游標下亂跳。
+     · 下排＝目前選定階段之內的類型分佈。
+   因此恆等式必然成立：下排各類型相加 ＝ 下排 All ＝ 上排選定分頁的數字。
+   搜尋是第三個 AND 條件，但刻意「不」改寫任何計數——會默默改掉分頁宣稱數字的過濾器，比不改更糟。 */
 (function () {
   const list      = document.getElementById('ev-list');
   const rows      = Array.from(list.querySelectorAll('.product-list__row'));
   const tabsEl    = document.getElementById('ev-tabs');
   const tabs      = Array.from(tabsEl.querySelectorAll('[data-tab]'));
-  const statusBtns= Array.from(document.querySelectorAll('#ev-status .filter-tabs__item'));
+  const catBtns   = Array.from(document.querySelectorAll('#ev-status .filter-tabs__item'));
   const searchEl  = document.getElementById('ev-search');
   const searchWrap= document.querySelector('[data-ev-search-wrap]');
   const emptyEl   = document.getElementById('ev-empty');
@@ -475,15 +530,21 @@
   const countEl   = document.getElementById('ev-count');
   const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
 
-  let period = 'upcoming', status = 'all', q = '';
+  let stage = 'all', cat = 'all', q = '';
 
-  /* 狀態 filter-tabs 的每項計數（隨時段重算）：all＝目前時段非草稿、on-sale＝目前時段售票中、
-     draft＝跨時段所有草稿（比照 apply 的過濾邏輯）。 */
-  function statusCount(val) {
-    if (val === 'draft') return rows.filter(r => r.dataset.status === 'draft').length;
-    if (val === 'all')   return rows.filter(r => r.dataset.period === period && r.dataset.status !== 'draft').length;
-    return rows.filter(r => r.dataset.period === period && r.dataset.status === val).length;
+  /* 「進行中」＝今天就是開演日。清單是靜態的、所有場次都在未來，硬把某一列寫死成進行中
+     會跟它自己顯示的日期打架（Oct 25, 2026 不可能是今天）。改接既有的 Cheat Codes
+     情境開關（ztorDevState.eventDay，js/scenario.js 同一個來源）：設成 'live' 時，
+     把最近一場售票中的場次視為進行中。沒開這個情境時，Live 分頁誠實顯示 0。 */
+  function liveRow() {
+    const st = (window.ztorDevState && window.ztorDevState.get()) || {};
+    if (st.eventDay !== 'live') return null;
+    return rows.find(r => r.dataset.stage === 'on-sale') || null;
   }
+  function stageOf(r) { return r === liveRow() ? 'live' : r.dataset.stage; }
+
+  const inStage = (r, s) => s === 'all' || stageOf(r) === s;
+  const inCat   = (r, c) => c === 'all' || r.dataset.category === c;
 
   function apply() {
     let shown = 0;
@@ -491,32 +552,23 @@
       // 比對 data-search（含中英別名）＋當前渲染文字，確保各 persona 覆蓋後的真實名稱也搜得到
       const hay = ((r.dataset.search || '') + ' ' + (r.textContent || '')).toLowerCase();
       const okQ = !q || hay.indexOf(q) !== -1;
-      // D060/D033 (c): Draft is a status across time, not a time tab.
-      // status=draft → show all drafts regardless of period; otherwise →
-      // match active time tab + sale status, drafts excluded (unpublished).
-      let vis;
-      if (status === 'draft') {
-        vis = r.dataset.status === 'draft' && okQ;
-      } else {
-        vis = r.dataset.period === period && r.dataset.status !== 'draft'
-              && (status === 'all' || r.dataset.status === status) && okQ;
-      }
+      const vis = inStage(r, stage) && inCat(r, cat) && okQ;
       r.classList.toggle('hidden', !vis);
       if (vis) shown++;
     });
     tabs.forEach(t => {
       const cnt = t.querySelector('.tabs__item-count');
-      if (cnt) cnt.textContent = rows.filter(r => r.dataset.period === t.dataset.tab).length;
-      const on = t.dataset.tab === period;
+      if (cnt) cnt.textContent = rows.filter(r => inStage(r, t.dataset.tab)).length;
+      const on = t.dataset.tab === stage;
       t.classList.toggle('tabs__item--active', on);
       t.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    statusBtns.forEach(b => {
-      const on = b.dataset.status === status;
+    catBtns.forEach(b => {
+      const on = b.dataset.cat === cat;
       b.classList.toggle('filter-tabs__item--active', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
-      const cntEl = b.querySelector('[data-status-count]');
-      if (cntEl) cntEl.textContent = statusCount(b.dataset.status);
+      const cntEl = b.querySelector('[data-cat-count]');
+      if (cntEl) cntEl.textContent = rows.filter(r => inStage(r, stage) && inCat(r, b.dataset.cat)).length;
     });
     list.classList.toggle('hidden', shown === 0);
     emptyEl.classList.toggle('hidden', shown !== 0);
@@ -524,8 +576,10 @@
     if (shown !== 0) countEl.textContent = T('events.footer.count', 'Showing {n} of {m} events').replace('{n}', shown).replace('{m}', rows.length);
   }
 
-  tabs.forEach(t => t.addEventListener('click', () => { period = t.dataset.tab; apply(); }));
-  statusBtns.forEach(b => b.addEventListener('click', () => { status = b.dataset.status; apply(); }));
+  tabs.forEach(t => t.addEventListener('click', () => { stage = t.dataset.tab; apply(); }));
+  catBtns.forEach(b => b.addEventListener('click', () => { cat = b.dataset.cat; apply(); }));
+  /* Cheat Codes 切換情境（含 eventDay=live）時重算——Live 分頁的內容由那個狀態決定 */
+  document.addEventListener('ztor:devstate-changed', apply);
   searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
 
   /* 搜尋收合（比照 e-shop）：點放大鏡展開；✕／Esc／點外部（無字）收起並清空 */
