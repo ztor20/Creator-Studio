@@ -172,6 +172,37 @@
           <div role="columnheader" aria-label="Actions"></div>
         </div>
 
+        <!-- 進行中永遠排最前：現場正在發生的事優先於任何未來場次 -->
+        <!-- 進行中（2026-07-27 ＝ 今天）：唯一的 live 場次，現場報到台面在 event-detail 的即時面板。 -->
+        <div class="product-list__row" role="row" data-stage="live" data-category="fans-meet" data-search="inner circle fan meet 內圈 見面會 粉絲見面會 neo studio 台北 臺北 taipei 進行中 live nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-asn.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html?id=inner-circle-taipei" data-i18n="events.rowLIVE.title">Inner Circle Fan Meet — Taipei</a></div>
+              <div class="product-list__meta" data-i18n="events.rowLIVE.meta">Fans meet · happening now</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowLIVE.datetime">Today · 2:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowLIVE.venue">Neo Studio · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">200 / 200<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$50,000</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--warning"><span data-i18n="events.badge.live">Live</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="event-detail.html?id=inner-circle-taipei" ><i data-lucide="scan" class="ztor-icon"></i><span data-i18n="events.act.livedesk">Live check-in desk</span></a>
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=inner-circle-taipei" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
         <!-- Upcoming（依日期由近到遠排序）-->
         <!-- 共看派對（Watch Party，D149 §4.7）：一同回顧既有演出實錄；共看內容＝LOVE·RAGE·HOPE 臺中場 -->
         <div class="product-list__row" role="row" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 一同回顧 watch back love rage hope live house tour 臺中 台中 taichung 線上共看 online nickthereal 周湯豪 nick chou">
@@ -532,18 +563,10 @@
 
   let stage = 'all', cat = 'all', q = '';
 
-  /* 「進行中」＝今天就是開演日。清單是靜態的、所有場次都在未來，硬把某一列寫死成進行中
-     會跟它自己顯示的日期打架（Oct 25, 2026 不可能是今天）。改接既有的 Cheat Codes
-     情境開關（ztorDevState.eventDay，js/scenario.js 同一個來源）：設成 'live' 時，
-     把最近一場售票中的場次視為進行中。沒開這個情境時，Live 分頁誠實顯示 0。 */
-  function liveRow() {
-    const st = (window.ztorDevState && window.ztorDevState.get()) || {};
-    if (st.eventDay !== 'live') return null;
-    return rows.find(r => r.dataset.stage === 'on-sale') || null;
-  }
-  function stageOf(r) { return r === liveRow() ? 'live' : r.dataset.stage; }
-
-  const inStage = (r, s) => s === 'all' || stageOf(r) === s;
+  /* 「進行中」現在是清單裡真實存在的一列（data-stage="live"，日期＝今天），
+     所以不再由 Cheat Codes 的 eventDay 情境推導出來——同一件事不留兩個真相來源。
+     eventDay 仍然驅動頁面上方的情境橫幅（js/scenario.js），只是不再偷改任何一列的階段。 */
+  const inStage = (r, s) => s === 'all' || r.dataset.stage === s;
   const inCat   = (r, c) => c === 'all' || r.dataset.category === c;
 
   function apply() {
@@ -578,8 +601,6 @@
 
   tabs.forEach(t => t.addEventListener('click', () => { stage = t.dataset.tab; apply(); }));
   catBtns.forEach(b => b.addEventListener('click', () => { cat = b.dataset.cat; apply(); }));
-  /* Cheat Codes 切換情境（含 eventDay=live）時重算——Live 分頁的內容由那個狀態決定 */
-  document.addEventListener('ztor:devstate-changed', apply);
   searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
 
   /* 搜尋收合（比照 e-shop）：點放大鏡展開；✕／Esc／點外部（無字）收起並清空 */

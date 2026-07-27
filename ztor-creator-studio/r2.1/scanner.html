@@ -280,5 +280,20 @@
 </script>
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
+<script src="js/events-store.js?v=r2.1"></script>
+<script>
+/* ?event=<id>（2026-07-27）：從活動的現場報到台分享出來的連結會帶上場次 id。
+   收到連結的現場人員第一眼要知道「這是哪一場的掃碼器」，故把頂列的場次名稱換成該活動。
+   沒帶 event 參數時維持原本的取貨場次標題，行為不變。 */
+(function () {
+  var id = new URLSearchParams(location.search).get('event');
+  if (!id || !window.ztorEvents) return;
+  var ev = window.ztorEvents.get(id);
+  if (!ev) return;
+  var el = document.querySelector('[data-sc-session]');
+  if (el) { el.removeAttribute('data-i18n'); el.textContent = ev.name; }
+  document.title = ev.name + ' · Scanner · Ztor';
+}());
+</script>
 </body>
 </html>

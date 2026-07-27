@@ -103,6 +103,37 @@
       video: false
     },
     {
+      /* 進行中的場次（2026-07-27）——今天就是開演日，所以 stage/status 是 'live'。
+         必須是「今天」：日期寫未來卻標進行中，會跟它自己顯示的日期打架。
+         這是唯一帶 roster（到場名單）的一筆，現場報到台面就靠它。 */
+      id: 'inner-circle-taipei',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      name: 'Inner Circle Fan Meet — Taipei',
+      desc: 'Two hours with the inner circle: acoustic set, Q&A, and a signed polaroid for every guest.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Neo Studio',
+      city: 'Taipei, Taiwan',
+      address: 'No. 88 Bade Rd Sec 4, Songshan District',
+      date: '2026-07-27',
+      start: '14:00',
+      end: '16:00',
+      doors: '13:30',
+      capacity: 200,
+      tiers: [
+        { id: 'tier-inner', name: 'Inner Circle seat', price: 250, qty: 180, sold: 180 },
+        { id: 'tier-plus',  name: 'Inner Circle + polaroid', price: 250, qty: 20, sold: 20 }
+      ],
+      sold: 200,
+      revenue: 50000,
+      status: 'live',
+      startedMinutesAgo: 42,          // 現場已進行時間（原型固定值，不接真實時鐘）
+      arrivedAtOpen: 132,             // 開頁當下的到場數；其餘由頁面的即時計數往上跑
+      images: { thumb: 'images/projects/nick-asn.jpg', poster: '', banner: '', gallery: [] },
+      video: false
+    },
+    {
       id: 'album-signing-taipei',
       type: 'meet',
       typeLabelKey: 'ce.type.meet',
@@ -265,6 +296,37 @@
     }
   ];
 
+
+  /* ── 到場名單（roster）─────────────────────────────────────
+     現場報到台需要「誰到了、誰還沒到」，而不只是一個總數。200 筆手寫沒有意義，
+     故由固定名單池決定性地生成（不用 Math.random：同樣的輸入永遠得到同樣的名單，
+     截圖與計數斷言才穩定）。前 arrivedAtOpen 筆標記為已到場，其餘未到。
+     真實資料來源是票務系統，此處為原型 mock（見 ASSUMPTIONS.md）。 */
+  var GIVEN = ['Yuchen','Mika','Sora','Diego','Priya','Noel','Hana','Ken','Ada','Lucas',
+               'Wei','Nina','Ravi','Sam','Iris','Tomo','Lena','Jun','Maya','Owen',
+               'Chloe','Ethan','Rina','Kai','Vera','Leo','Suki','Marco','Yuki','Ines'];
+  var FAMILY = ['Lin','Tanaka','Kim','Alvarez','Nair','Chen','Wu','Sato','Park','Silva',
+                'Huang','Ito','Patel','Costa','Yang','Mori','Cheng','Ono','Reyes','Tsai'];
+  var TIERS_LABEL = ['Inner Circle seat', 'Inner Circle + polaroid'];
+
+  function buildRoster(ev) {
+    var n = ev.sold || 0, arrived = ev.arrivedAtOpen || 0, out = [];
+    for (var i = 0; i < n; i++) {
+      var g = GIVEN[i % GIVEN.length];
+      var f = FAMILY[(i * 7 + 3) % FAMILY.length];
+      out.push({
+        seq: i + 1,
+        name: g + ' ' + f,
+        tier: TIERS_LABEL[i % 17 === 0 ? 1 : 0],          // 約每 17 位一位是加購 polaroid
+        code: 'ZT-' + String(4200 + i * 13).slice(-4),
+        arrived: i < arrived,
+        /* 到場時間：開場前後散開，僅供顯示（原型不接真實時鐘） */
+        at: i < arrived ? (13 * 60 + 30 + Math.floor(i * 0.62)) : null
+      });
+    }
+    return out;
+  }
+
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   window.ztorEvents = {
@@ -274,6 +336,11 @@
         if (EVENTS[i].id === id) return clone(EVENTS[i]);
       }
       return clone(EVENTS[0]);               // 未知 id → 首筆，編輯頁永遠有東西可顯示
+    },
+    /* 到場名單：只有進行中的場次會用到（現場報到台面） */
+    roster: function (id) {
+      var ev = window.ztorEvents.get(id);
+      return ev && ev.status === 'live' ? buildRoster(ev) : [];
     },
     /* 票種已售出的張數（容量下限與「可否刪除票種」都靠它） */
     soldOf: function (ev) {
