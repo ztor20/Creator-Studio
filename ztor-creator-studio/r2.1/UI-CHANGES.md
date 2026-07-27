@@ -4,6 +4,71 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-27 · 電子商店「商品」與「競標」分頁置頂列順序調整（B 反饋導入）
+
+使用者指定 Nick persona 下這兩個清單要先看到哪幾筆，僅調整列出現的先後，未改任何商品內容、價格、庫存、狀態或成員。
+
+- **【B】** 商品分頁：`js/products-store.js` 新增 `WISH_TOP_IDS` 置頂清單（26MS T-Shirt (白) → 祝你好命 刺繡 Logo 老帽 → 祝你好命 束口工裝褲 → 祝你好命 紅白低筒球鞋），其餘商品沿用 `WISHYOU_PRODUCTS` 的定義順序接在後面。產列邏輯（`patchEshopList` 以 `WISH_IDS` 逐一 clone 模板列）不變。
+- **【B】** 競標分頁：`e-shop.html` 把「Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋」那一列（`data-name="WYAGL Nike Dunk Low Pro SB"`）整塊搬到「REALIVE 巡演主吉他（親簽）」（`data-name="Stage-worn leather jacket"`）之後，親簽海報與母帶盤帶依序後移。列內容與 `data-status` 皆未動。
+- 說明：清單最上方的「未命名」草稿列不受影響——e-shop 頁本來就會把草稿列浮到第一個非草稿列之前（`e-shop.html:859`），屬既有行為。
+- **【驗證】** dev server（`localhost:4326`，`devserver.py` no-store）＋ `ztor.persona=nick`：DOM 讀出商品列依序為 未命名（草稿）→ 白 Tee → 老帽 → 束口褲 → 球鞋 → 其餘；競標列依序為 主吉他 → Nike Dunk → 親簽海報 → 母帶盤帶 → 未命名。`check_ds_sync.py` 全 PASS（僅既有基準 WARN）。版本字串沿用凍結的 `?v=r2.1`。
+
+## 2026-07-27 · 上線時間卡改滿版寬、時程點改跟合作者同款 `.ztor-table`（B 反饋導入）
+
+使用者選了「關於專案」分頁的「上線時間」卡（`data-type="go-live"`，直接上線類專案專屬），原本是 `bento--span-6` 半版寬、旁邊沒有另一張 span-6 的卡搭配、右側留白；兩個時程點（建立草稿／正式上線）擠在同一支 `.data-list` 裡上下疊放。使用者要求滿版寬＋名稱／日期欄位分開，先試過兩版（並排 `.data-list` 欄位、`.form-grid` 唯讀 field）皆不是要的效果，最後指名「合作者」卡的 `.ztor-table` 為範本，改成同款有表頭的表格。
+
+- **【B】** `project-detail.html` 的 go-live 卡由 `bento--span-6` 改 `bento--span-12` 滿版寬。
+- **【B】** 內容由 `.data-list` 時間軸改成 `.ztor-table`（跟同頁「合作者」卡一致的表格元件）：表頭「名稱」「日期」兩欄，兩列資料（建立草稿／Sep 20, 2025、正式上線／Oct 05, 2025），外層加 `overflow-x:auto` 比照合作者卡。新增 i18n key `project-detail.golive.field.name`／`.date`。沒有新增元件，純重用既有 `.ztor-table`。
+- 驗證：dev server（`localhost:4325`，走 `devserver.py` no-store）上用 `nick-wo-de-i`（go-live 類型專案）＋ nick persona 檢查，DOM 讀出表頭與兩列資料正確、`grid`／`table` 皆滿版寬；截圖比對跟合作者卡視覺一致；`check_ds_sync.py` 全 PASS（僅既有基準 WARN）。**版本字串沿用凍結的 `?v=r2.1`，本輪未跑 `bump_ver`**（2026-07-26 起的新規則，見 CLAUDE.md）。
+
+## 2026-07-27 · 「祝你好命」選物四件組改用來源商品參考重製主圖（B 反饋導入）
+
+使用者指定主圖須以剛下載的 Wish You A Good Life 商品圖為參考；來源商品未包含老帽、束口褲與球鞋，故補齊與 Tee 配色一致的搭配單品。
+
+- **【B/素材】** `images/products/set-outfit-model.webp` 覆蓋為 1:1 方形深炭灰棚拍平鋪，採用 26MS 白 Tee 與足球衫的紅／白／黑視覺語言；畫面清楚呈現白 Tee、黑色刺繡老帽、黑色束口工裝褲與紅白低筒球鞋。
+- **【B/缺漏補齊】** 老帽、束口褲與球鞋未在來源目錄中，僅作組合包主視覺的相搭示意，沒有新增為單一可售商品或改動既有組合成員、價格、庫存與上架狀態。
+- **【驗證】** 輸出為 1254×1254 WebP，黑色衣物與深色背景保有輪廓、縫線和口袋可讀性。
+
+## 2026-07-27 · 「祝你好命」選物四件組詳情接線與缺件單品補齊（B 反饋導入）
+
+修正 Bundles 列未傳入 bundle id、詳情頁未載入 bundle 資料，導致開啟後顯示預設示意內容且沒有主圖的問題。
+
+- **【B/資料接線】** E-Shop 的 Nick 組合列改連至 `bundle-detail.html?id=wish-you-good-life-four-piece`；詳情頁讀相同資料源，填入組合名稱、說明、4 件成員、NT$ 組合價、主圖和四張成員附圖。
+- **【B/缺件單品】** 新增老帽、束口工裝褲、紅白低筒球鞋三筆單一商品與各自 1:1 商品圖，讓四件組每個成員皆可從詳情頁連回商品頁；三者為組合包延伸視覺單品，價格明示「待確認」，不偽稱來源網站商品。
+- **【驗證】** 需檢查 bundle id、4 個 member link、4 張 gallery 圖與三個新增商品圖均可解析。
+
+## 2026-07-27 · Auctions 新增 WYAGL / 祝你好命客製鞋（B 反饋導入）
+
+使用者指定在拍賣清單加入 Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋，並使用既有 `nick-nike-00`～`03` 素材。
+
+- **【B/清單】** Nick persona Auctions 新增即將開始的客製鞋拍賣列，顯示商品名稱、全新／限量客製、鞋款、起標 NT$12,800 與關注數。
+- **【B/詳情】** `auction-detail.html?id=wyagl-nike-dunk` 讀同一拍賣資料，主圖使用 `nick-nike-00.jpg`，附圖載入 `nick-nike-01.jpg`、`nick-nike-02.jpg`、`nick-nike-03.jpg`。
+- **【範圍】** 只在 Nick persona 顯示新的客製鞋資料；Default／userB 的既有拍賣內容不變。
+- **【驗證】** 以實際 HTML runtime 驗證清單列、詳情標題、主圖與 4 張附圖均成功渲染，無 console error。
+
+## 2026-07-27 · 四件組詳情頁素材 fallback 修正（B 反饋導入）
+
+使用者回報組合詳情頁出現空白上傳格與異常狀態；原因是舊連結沒有 bundle id 時，動態資料未命中。
+
+- **【B/相容】** `ztorGetBundle()` 支援舊版無 query 的四件組入口；詳情頁 HTML 同時預置主圖與四張成員圖，避免快取或初始化順序造成空白。
+- **【驗證】** 以無 query 的 Nick bundle-detail runtime 驗證主圖、4 張附圖、4 個成員列均存在，無 console error。
+
+## 2026-07-27 · 四件組詳情頁圖片顯示修正（Bug fix）
+
+截圖驗證發現縮圖雖已寫入 DOM，但 `upload-tile` 元件只會對帶有 `data-upload` 的已填入格顯示 `.upload-tile__thumb`；詳情頁使用自訂資料屬性，導致全部縮圖被 CSS 隱藏。
+
+- **【修正】** 主圖與四個附圖格同時保留 bundle 資料 hook 並加上 `data-upload`，套用既有已上傳狀態，圖片滿版顯示且不再出現空白上傳提示與綠框。
+- **【驗證】** runtime computed style：5 個 `.upload-tile__thumb` 均為 `display:block`，主圖與四張附圖路徑正確、無 console error。
+
+## 2026-07-27 · Nick 商店同步 Wish You A Good Life 商品資料（B 反饋導入）
+
+使用者指定以公開商品頁及其子頁替換周湯豪電子商店的示意商品，並沿用已下載至 `images/products/` 的本地商品圖。
+
+- **【B/資料】** Nick persona Products 分頁改為 13 筆來源商品，包含商品名稱、NT$ 售價、繁中摘要、規格、來源庫存與商品分類。
+- **【B/素材】** 每筆商品使用來源頁對應的本地首圖；商品詳情頁載入同商品的全部本地圖，並提供原商品頁連結。
+- **【範圍】** 只替換 Nick persona；Default／userB 資料集與既有組合包、拍賣列不變。來源頁未提供成本資料，成本欄保留空值。
+- **【驗證】** 13 筆商品 id、31 張本地圖、詳情頁多圖與來源連結需以靜態檢查及 `check_ds_sync.py` 驗證。
+
 ## 2026-07-26 · 「祝你好命」選物四件組改用實物合成主視覺（B 反饋導入）
 
 使用者指定組合包不可再沿用灰色模特模板，需以商品本身整合成一張可辨識四件內容的主圖。

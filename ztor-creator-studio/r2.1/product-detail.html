@@ -61,8 +61,10 @@
 
       <div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px">
         <a href="e-shop.html" class="card__link" data-i18n="product-detail.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
-        <a href="e-shop.html" class="card__link" data-i18n="product-detail.crumb.physical">Physical merch</a> <span style="margin:0 6px">/</span>
-        <span>Tour zine vol. 02</span>
+        <!-- 分類與商品名由 applyProduct 依 ?id 帶入（2026-07-26 修）：原本固定寫「實體商品／Tour zine vol. 02」，
+             打開任何商品（含數位商品）麵包屑都顯示同一組。 -->
+        <a href="e-shop.html" class="card__link" data-pd-crumb-cat data-i18n="product-detail.crumb.physical">Physical merch</a> <span style="margin:0 6px">/</span>
+        <span data-pd-crumb-name>Tour zine vol. 02</span>
       </div>
 
       <!-- 頁首（Figma 845-10300）：無縮圖、單一狀態徽章、無描述 -->
@@ -137,10 +139,12 @@
           <div class="field" data-pd-cat="physical">
             <div class="field__label" data-i18n="product-detail.field.media2">Product images</div>
             <div class="upload-grid">
-              <!-- 已編輯中的商品本來就有圖：主圖與第一張附圖給成已上傳狀態（is-filled ＋ __thumb），
-                   空白格才是還能再加的位置。圖檔沿用電子商店清單同一張，兩處看到的是同一個商品。 -->
+              <!-- 已編輯中的商品本來就有主圖：主圖給成已上傳狀態（is-filled ＋ __thumb），空白格才是還能再加的位置。
+                   主圖 src 由 applyProduct 依 ?id 從 products-store 的 p.img 設定（2026-07-26 修）——
+                   原本這裡寫死 coastline-tee.webp／coastline-hoodie.webp，不論打開哪個商品都顯示同兩張，
+                   跟電子商店清單對不起來。商品資料一個商品只有一張圖，所以第二格起一律留空。 -->
               <div class="upload-tile is-filled" data-upload>
-                <img class="upload-tile__thumb" src="images/products/coastline-tee.webp" alt="">
+                <img class="upload-tile__thumb" data-pd-hero src="" alt="">
                 <span class="upload-tile__icon"><svg class="up-stack" width="28" height="28" viewBox="0 0 48 48" fill="none"><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
                 <span class="upload-tile__title" data-i18n="product-detail.media.hero">Hero image</span>
                 <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
@@ -149,13 +153,10 @@
                   <button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" title="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
                 </div>
               </div>
-              <div class="upload-tile is-filled" data-upload>
-                <img class="upload-tile__thumb" src="images/products/coastline-hoodie.webp" alt="">
-                <span class="upload-tile__icon">＋</span><span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
-                <div class="upload-tile__actions">
-                  <button type="button" class="upload-tile__act" data-pd-media-replace aria-label="Replace image" title="Replace image" data-i18n-title="cp.media.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" title="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                </div>
+              <div class="upload-tile is-empty" data-upload>
+                <span class="upload-tile__icon">＋</span>
+                <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
+                <span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
@@ -168,10 +169,17 @@
           <div class="field" data-pd-cat="digital" hidden>
             <div class="field__label" data-i18n="product-detail.field.media2">Product images</div>
             <div class="upload-grid">
-              <div class="upload-tile">
+              <!-- 數位商品的封面同樣由 applyProduct 從 p.img 帶入（2026-07-26 修）——原本這格完全沒有 <img>，
+                   數位專輯／單曲／演唱會影像／會員卡打開來是空的上傳格，看不到清單上那張封面。 -->
+              <div class="upload-tile is-filled" data-upload>
+                <img class="upload-tile__thumb" data-pd-hero src="" alt="">
                 <span class="upload-tile__icon"><svg class="up-stack" width="28" height="28" viewBox="0 0 48 48" fill="none"><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
                 <span class="upload-tile__title" data-i18n="product-detail.media.hero">Hero image</span>
                 <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+                <div class="upload-tile__actions">
+                  <button type="button" class="upload-tile__act" data-pd-media-replace aria-label="Replace image" title="Replace image" data-i18n-title="cp.media.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
+                  <button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" title="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                </div>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
@@ -191,7 +199,9 @@
           </div>
           <div class="field">
             <div class="field__label" data-i18n="product-detail.field.desc">Description</div>
-            <textarea class="textarea" data-i18n="product-detail.desc-val">A 32-page photo zine documenting two weeks across the east coast. Letterpress cover printed in Tainan. Each copy ships with a hand-signed insert and a download code for unreleased audio.</textarea>
+            <!-- 內容由 applyProduct 依 ?id 從 products-store 的 p.sub 帶入（2026-07-26 修）：原本寫死 Coastline
+                 寫真誌那段，不論打開哪個商品都顯示同一段文案。帶入時會一併移掉 data-i18n，避免語言切換又蓋回去。 -->
+            <textarea class="textarea" id="pd-desc" data-i18n="product-detail.desc-val">A 32-page photo zine documenting two weeks across the east coast. Letterpress cover printed in Tainan. Each copy ships with a hand-signed insert and a download code for unreleased audio.</textarea>
           </div>
           <div class="form-grid">
             <div class="field">
@@ -864,8 +874,16 @@
     const host = document.querySelector('[data-restock-modal-host]');
     if (!host || !window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.createRestock) return;
     const log = document.querySelector('[data-restock-log]');
-    /* threshold = 10% of stock cap (spec §7.2 / D105); demo cap 40 → 4. current 3 < 4 → Low Stock. */
-    const PRODUCT = { name: 'Tour zine vol. 02', current: 3, threshold: 4, status: 'low' };
+    /* threshold = 10% of stock cap (spec §7.2 / D105); demo cap 40 → 4. current 3 < 4 → Low Stock.
+       2026-07-26 修：改讀 products-store 的同一筆商品，原本這裡寫死 Tour zine 的名稱與庫存數字，
+       補貨面板因此跟頁面上方、跟電子商店清單三邊對不起來。讀不到才退回原本的示範值。 */
+    const _p = window.ztorGetProduct && window.ztorGetProduct(new URLSearchParams(location.search).get('id'));
+    const PRODUCT = _p
+      ? { name: _p.name,
+          current: parseInt(_p.stock, 10) || 0,
+          threshold: parseInt(_p.threshold, 10) || 0,
+          status: _p.status }
+      : { name: 'Tour zine vol. 02', current: 3, threshold: 4, status: 'low' };
 
     function T(key, fallback) { return (window.i18nT && window.i18nT(key)) || fallback; }
     function logRow(entry, state) {
@@ -1007,6 +1025,53 @@
       })();
       // 頁首：標題／副標／badge
       setText('pd-title', p.name); setVal('pd-title-input', p.name); setText('pd-sub', p.sub);
+      // 瀏覽器分頁標題也跟著商品走（原本固定寫死第一個商品名）
+      if (p.name) document.title = p.name + ' · Product detail · Ztor';
+      // 麵包屑：分類段依主分類切 key，末段換成商品名
+      (function () {
+        var ck = p.cat === 'digital' ? 'product-detail.crumb.digital' : 'product-detail.crumb.physical';
+        var cfb = p.cat === 'digital' ? 'Digital merch' : 'Physical merch';
+        var cc = document.querySelector('[data-pd-crumb-cat]');
+        if (cc) { cc.setAttribute('data-i18n', ck); cc.textContent = (window.i18nT && window.i18nT(ck)) || cfb; }
+        var cn = document.querySelector('[data-pd-crumb-name]');
+        if (cn && p.name) cn.textContent = p.name;
+      })();
+      /* 商品圖：跟電子商店清單同一張（p.img），實體與數位都設，顯示哪一區由 applyCat 決定。
+         2026-07-26 修：原本主圖 src 寫死在 HTML（實體是 coastline-tee／coastline-hoodie、數位根本沒有圖），
+         不論打開哪個商品看到的都一樣，跟清單對不起來。 */
+      if (p.img) {
+        document.querySelectorAll('[data-pd-hero]').forEach(function (im) {
+          im.src = 'images/products/' + p.img;
+          im.alt = p.name || '';
+        });
+      }
+      /* 來源子頁的所有本地商品圖填入既有素材格，讓詳情頁與清單共用同一組圖片。 */
+      if (p.gallery && p.gallery.length) {
+        var mediaGrids = document.querySelectorAll('[data-pd-cat="physical"] .upload-grid, [data-pd-cat="digital"] .upload-grid');
+        mediaGrids.forEach(function (grid) {
+          var tiles = grid.querySelectorAll('.upload-tile[data-upload]');
+          p.gallery.forEach(function (file, i) {
+            var tile = tiles[i]; if (!tile) return;
+            var thumb = tile.querySelector('.upload-tile__thumb');
+            if (!thumb) { thumb = document.createElement('img'); thumb.className = 'upload-tile__thumb'; tile.insertBefore(thumb, tile.firstChild); }
+            thumb.src = 'images/products/' + file; thumb.alt = p.name || '';
+            tile.classList.remove('is-empty'); tile.classList.add('is-filled');
+          });
+        });
+      }
+      /* 商品描述：用 p.sub（商品自己的描述句，清單沒有顯示它、詳情頁原本也沒接上）。
+         移掉 data-i18n，否則語言切換時 i18n 會把寫死的示範文案蓋回來。 */
+      const descEl = document.getElementById('pd-desc');
+      if (descEl && p.sub) { descEl.removeAttribute('data-i18n'); descEl.value = p.sub; }
+      if (p.sourceUrl) {
+        var sourceLink = document.getElementById('pd-source-link');
+        if (!sourceLink) {
+          sourceLink = document.createElement('a'); sourceLink.id = 'pd-source-link'; sourceLink.className = 'btn btn--ghost btn--sm';
+          sourceLink.textContent = '查看原商品頁';
+          var titleEl = document.getElementById('pd-title'); if (titleEl && titleEl.parentElement) titleEl.parentElement.appendChild(sourceLink);
+        }
+        sourceLink.href = p.sourceUrl; sourceLink.target = '_blank'; sourceLink.rel = 'noopener';
+      }
       const badges = document.getElementById('pd-badges');
       if (badges) {
         /* 狀態色對齊電子商店清單（2026-07-21 使用者裁示）：販售中＝success、急需補貨＝error、
@@ -1023,7 +1088,12 @@
       // 價格／成本／庫存（頁面唯讀呈現；改價走 ⋯ → 編輯 popup）
       setText('pd-stock', p.stock);
       const priceRO = document.querySelector('[data-pd-price-ro]');
-      if (priceRO && p.price) priceRO.textContent = '$' + p.price;
+      if (priceRO && p.price) {
+        var priceRaw = String(p.price);
+        priceRO.textContent = /^\d+(?:\.\d+)?$/.test(priceRaw)
+          ? (p.currency === 'TWD' ? 'NT$' + priceRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '$' + priceRaw)
+          : priceRaw;
+      }
       const costRO = document.querySelector('[data-pd-cost-ro]');
       if (costRO) costRO.textContent = p.cost ? '$' + p.cost : '—';
       const capRO = document.querySelector('[data-pd-cap-ro]');
