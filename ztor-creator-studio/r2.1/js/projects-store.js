@@ -54,6 +54,9 @@
   const IMG = 'images/projects/';
   const PERSONA_KEY = 'ztor.persona';
   function persona() {
+    /* 單一真相見 js/theme.js 的 seedPersona()。原本這裡的退路是 'default'，
+       而 i18n.js 是 'nick'——沒存過值時兩邊就會指向不同的人。 */
+    if (typeof window.ztorPersonaId === 'function') return window.ztorPersonaId();
     try { const p = localStorage.getItem(PERSONA_KEY); if (p === 'nick' || p === 'userB') return p; } catch (_) {}
     return 'default';
   }

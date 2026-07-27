@@ -26,8 +26,12 @@
   const PERSONA_KEY = 'ztor.persona';
   const PERSONAS = ['default', 'nick', 'userB'];
   function currentPersona() {
+    /* 單一真相在 js/theme.js 的 seedPersona()（每頁第一支 script，已把值寫回
+       localStorage）。這裡不再自帶退路——三支檔案各寫各的退路，正是
+       「面板顯示周湯豪、資料卻是預設帳號」那個 bug 的成因。 */
+    if (typeof window.ztorPersonaId === 'function') return window.ztorPersonaId();
     try { const p = localStorage.getItem(PERSONA_KEY); if (PERSONAS.indexOf(p) >= 0) return p; } catch (_) {}
-    return 'nick';   /* [local-default] 本機預覽預設人格＝周湯豪（上游為 'default'） */
+    return 'nick';
   }
 
   const DICT = {

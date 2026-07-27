@@ -24,6 +24,43 @@
 })();
 
 /* ============================================================
+   Persona 的單一真相（2026-07-28 修，使用者回報「有時候要再點一次周湯豪，
+   資料才對，不然不知道是哪個使用者的」）
+
+   ── 病因 ────────────────────────────────────────────────
+   同一個 localStorage key（ztor.persona）有三個讀取者，而它們在「沒有存過值」
+   時的退路不一樣：
+     js/i18n.js          → 'nick'      ← cheat code 面板的高亮也是讀這支
+     js/projects-store.js→ 'default'
+     js/products-store.js→ 'default'
+   所以全新的瀏覽器（或清過站台資料）第一次開站時：面板高亮在「周湯豪」，
+   專案與商品卻是預設帳號的那一批——畫面同時是兩個人的資料。
+   使用者點一次「周湯豪」會呼叫 set() 把值寫進 localStorage，三方從此一致，
+   看起來就「修好了」。這正是「明明已經選了還要再點一次」的成因。
+
+   ── 修法 ────────────────────────────────────────────────
+   在這裡（每一頁 <head> 的第一支 script，早於所有 store）解析一次並「寫回」
+   localStorage。之後任何讀取者拿到的都是實際存在的值，退路根本不會被觸發——
+   就算日後有人新增第四個 store 又寫了不同的退路，也不會再分岐。
+   ============================================================ */
+(function seedPersona() {
+  var KEY = "ztor.persona";
+  var VALID = ["default", "nick", "userB"];
+  /* 本機／demo 的預設人格＝周湯豪（沿用 i18n.js 原本的 [local-default]，
+     也是 cheat code 面板本來就高亮的那一個）。上游為 'default'。 */
+  var FALLBACK = "nick";
+  try {
+    var p = localStorage.getItem(KEY);
+    if (VALID.indexOf(p) < 0) { p = FALLBACK; localStorage.setItem(KEY, p); }
+    window.ztorPersonaId = function () { return p; };
+  } catch (_) {
+    /* localStorage 被封鎖（無痕／第三方 cookie 政策）時仍要有一致的答案，
+       否則就退回原本各自為政的狀態。 */
+    window.ztorPersonaId = function () { return FALLBACK; };
+  }
+})();
+
+/* ============================================================
    內嵌模式（2026-07-28 使用者裁示：清單點進細節要用覆蓋層，不要導航離開）
 
    任何頁面帶 ?embed=1 載入時，在 <html> 標上 data-embed。詳情頁被 detail-sheet
