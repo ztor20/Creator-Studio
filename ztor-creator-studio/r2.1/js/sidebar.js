@@ -103,7 +103,7 @@
       { href: "pickup.html", icon: "qr-code",  titleKey: "nav.pickup",       descKey: "nav.pickup-sub" },
     ], match: ["product-detail.html", "create-product.html", "create-auction.html", "create-bundle.html", "auction-detail.html", "bundle-detail.html", "order-detail.html", "store-settings.html"] },
     /* Events / Fans = flat top-level links; sub-pages reached in-page. */
-    { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html"] },
+    { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html", "edit-event.html"] },
     { href: "fans-crm.html", key: "nav.fans",     icon: "users" },
     { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
@@ -112,7 +112,7 @@
      完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
   const FULL_ROUTES = new Set([
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
-    "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html",
+    "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "my-ip.html", "ip-detail.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
   ]);

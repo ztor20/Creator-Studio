@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Event · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.1"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/event-preview-card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/review-row.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.1">
+<link rel="stylesheet" href="shared.css?v=r2.1">
+<style>
+  /* edit-event 專屬 layout hooks，非跨頁重用，比照 create-event／events 留頁內。
+
+     設計決定（2026-07-27）——編輯 ≠ 建立，三處刻意與 create-event 不同：
+     ① 進度條 → 區段導覽。建立是有序的（型別→細節→…→發布），編輯沒有「進度」只有「位置」，
+        故中欄改掛 .tabs（同儕destinations），不是 .progress-stepper（序列）。
+     ② 落地畫面 ＝ 建立流程的最後一頁。create-event 的 Review（review-row：區段名＋現值＋Edit →）
+        正好就是編輯流程最好的大門，故直接沿用同一個元件當 Overview，不另造 hub 元件。
+     ③ 不自動儲存。活動已公開販售，邊打字邊推播給已購票者是不可接受的，故 .wizard[data-autosave="false"]
+        （wizard-chrome.js 既有的 fallback 開關），主動作改成明確的「儲存變更」＋髒值才可按。 */
+
+  /* Overview 列的「已變更」記號：只有動過的區段會出現，供離開前自我核對（無新元件，badge 既有） */
+  .ee-row-flag { margin-left: var(--sp-8); vertical-align: middle; }
+  .review-row__item[data-changed] .review-row__name { color: var(--primary); }
+
+  /* 鎖定列（活動類型）：說明為什麼不能改，而不是把它藏起來——消失會讓人以為壞了 */
+  .ee-locked-note { display: flex; align-items: center; gap: var(--sp-6); margin-top: var(--sp-4); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .ee-locked-note .ztor-icon { width: 13px; height: 13px; }
+
+  /* 高影響欄位的後果說明（改日期／場地會通知到已購票者）。用既有 alert--row 細條版，不自創樣式 */
+  .ee-consequence { margin-top: var(--sp-12); }
+
+  /* 票種列：既有票種 = 一張 form-section，售出張數唯讀，已售出者不可刪 */
+  .ee-tier__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); margin-bottom: var(--sp-12); }
+  .ee-tier__sold { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .ee-tier__del[disabled] { opacity: .4; cursor: not-allowed; }
+
+  /* ＊ 必填 inline 驗證與容量下限訊息（沿用 create-event 的 .ce-field-error 作法） */
+  .ee-field-error { display: none; margin-top: 6px; font-size: var(--fs-12); color: var(--destructive); }
+  .field.is-invalid .ee-field-error { display: block; }
+
+  .ee-section { display: block; }
+  .ee-section.hidden { display: none; }
+
+  /* 頂列副標＝活動名稱（動態、可能很長），會撞到中欄的區段導覽。
+     成因不是 min-width（shared.css 已經給了 min-width:0），是 .wizard__top-lead 的
+     `justify-self: start`——grid item 一旦不是 stretch 就改用 shrink-to-fit（max-content）
+     計寬，於是整塊以文字的 max-content 撐開並溢出自己的軌道；子層 .wizard__top-titlewrap
+     的 max-width:100% 又是對這個被撐開的寬度求值，等於沒有上限。實測：軌道 ~204px、
+     lead 320px、副標右緣 324 蓋過導覽左緣 224。建立流程副標是固定短字（"Offline event"）
+     所以七個建立頁都沒踩到。
+     解法：給 lead 一個對「軌道寬」求值的上限，shrink-to-fit 就被夾在軌道內，
+     副標的 ellipsis 才會生效；hover 膠囊在標題短時仍維持原本的貼合寬度、不改觀感。
+     未收斂：同一個 latent bug 仍在 shared.css，任何副標夠長的 wizard 都會複現——
+     跨 7 頁的共用改動另案處理（見 UI-CHANGES 2026-07-27 本筆的「已知債」）。 */
+  .wizard__top-lead { max-width: 100%; }
+</style>
+</head>
+<body>
+<div class="wizard" data-autosave="false">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="ee.h1">Edit event</span>
+          <span class="wizard__top-sub" id="ee-subtitle">—</span>
+        </div>
+      </div>
+      <!-- 區段導覽（取代建立流程的進度條）：四個平等的去處，全部解鎖、無填充條 -->
+      <div class="wizard__progress">
+        <nav class="tabs tabs--underline-short tabs--underline-label" id="ee-nav" role="tablist">
+          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-sec="overview"><span data-i18n="ee.nav.overview">Overview</span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-sec="details"><span data-i18n="ee.nav.details">Details</span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-sec="venue"><span data-i18n="ee.nav.venue">Venue &amp; time</span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-sec="tickets"><span data-i18n="ee.nav.tickets">Tickets</span></div>
+        </nav>
+      </div>
+      <div class="wizard__top-actions">
+        <button class="btn btn--outline" type="button" id="ee-preview-open"><i data-lucide="eye" class="ztor-icon"></i> <span data-i18n="ee.preview">Preview</span></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body wizard__body--form">
+
+    <!-- 這場活動現在的狀態，只講一次。各區段只帶自己的後果說明，不重複同一句警告。 -->
+    <div class="alert alert--row alert--info" id="ee-live-state">
+      <span class="alert__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
+      <div class="alert__body">
+        <div class="alert__title" id="ee-live-title">—</div>
+        <div class="alert__meta" id="ee-live-meta">—</div>
+      </div>
+      <a class="alert__cta" id="ee-live-cta" href="event-detail.html" data-i18n="ee.live.cta">Open event</a>
+    </div>
+
+    <!-- ══════════ OVERVIEW（落地區段＝建立流程 Review 的反向使用）══════════ -->
+    <section class="ee-section" data-sec-panel="overview">
+      <h1 class="wizard__step-title" data-i18n="ee.ov.h1">What would you like to change?</h1>
+      <p class="wizard__step-sub" data-i18n="ee.ov.sub">Pick any section. Everything is already filled in with what you entered.</p>
+
+      <div class="review-row">
+        <div class="review-row__item" data-row="type">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.type">Event type</h3>
+          </div>
+          <div class="review-row__value" data-val="type">—</div>
+          <div class="ee-locked-note"><i data-lucide="lock" class="ztor-icon"></i><span data-i18n="ee.ov.type.locked">Can't change after tickets are on sale — the whole form below depends on it.</span></div>
+        </div>
+
+        <div class="review-row__item" data-row="details">
+          <div class="review-row__head">
+            <h3 class="review-row__name"><span data-i18n="ee.ov.name">Name &amp; description</span></h3>
+            <a class="review-row__action" href="#" data-goto="details" data-focus="name" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="details">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="lineup">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.lineup">Lineup</h3>
+            <a class="review-row__action" href="#" data-goto="details" data-focus="lineup" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="lineup">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="images">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.images">Images</h3>
+            <a class="review-row__action" href="#" data-goto="details" data-focus="images" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="images">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="venue">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.venue">Venue</h3>
+            <a class="review-row__action" href="#" data-goto="venue" data-focus="venue" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="venue">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="time">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.time">Date &amp; time</h3>
+            <a class="review-row__action" href="#" data-goto="venue" data-focus="date" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="time">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="capacity">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.capacity">Capacity</h3>
+            <a class="review-row__action" href="#" data-goto="venue" data-focus="capacity" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="capacity">—</div>
+        </div>
+
+        <div class="review-row__item" data-row="tickets">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ee.ov.tickets">Ticket tiers</h3>
+            <a class="review-row__action" href="#" data-goto="tickets" data-i18n="ee.ov.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-val="tickets">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ DETAILS ══════════ -->
+    <section class="ee-section hidden" data-sec-panel="details">
+      <h1 class="wizard__step-title" data-i18n="ee.det.h1">Details</h1>
+      <p class="wizard__step-sub" data-i18n="ee.det.sub">Copy and artwork. Safe to change at any time — fans see the update immediately.</p>
+
+      <div class="form-section form-section--outlined">
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ee="name" data-required id="ee-name">
+          <p class="ee-field-error" data-i18n="ee.err.name">Event name can't be empty.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <textarea class="textarea" data-ee="desc" data-required id="ee-desc"></textarea>
+          <p class="ee-field-error" data-i18n="ee.err.desc">Description can't be empty.</p>
+        </div>
+      </div>
+
+      <div class="form-section form-section--outlined" id="ee-lineup-sec">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.lineup">Lineup / performers</h3>
+          <p class="form-section__sub" data-i18n="ce.lineup.sub">Search Ztor users or type external names.</p>
+        </div>
+        <div class="form-grid" id="ee-lineup-list"></div>
+        <button type="button" class="btn btn--outline btn--sm" id="ee-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
+      </div>
+
+      <div class="form-section form-section--outlined" id="ee-images-sec">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
+          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
+        </div>
+        <div class="form-grid">
+          <div class="upload-tile" data-asset="thumb">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+          </div>
+          <div class="upload-tile" data-asset="poster">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
+          </div>
+          <div class="upload-tile" data-asset="banner">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
+          </div>
+          <div class="upload-tile" data-asset="gallery">
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ VENUE & TIME ══════════ -->
+    <section class="ee-section hidden" data-sec-panel="venue">
+      <h1 class="wizard__step-title" data-i18n="ee.ven.h1">Venue &amp; time</h1>
+      <p class="wizard__step-sub" data-i18n="ee.ven.sub">Where and when fans show up.</p>
+
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.venue">Venue</h3>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ee="venue" data-required data-impact id="ee-venue">
+          <p class="ee-field-error" data-i18n="ee.err.venue">Venue name can't be empty.</p>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.city">City / Country</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <input class="input" data-ee="city" data-impact id="ee-city">
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+          <input class="input" data-ee="address" data-impact id="ee-address">
+        </div>
+        <div class="alert alert--row alert--warning ee-consequence" data-impact-note hidden>
+          <span class="alert__icon"><i data-lucide="bell" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="ee.impact.venue">Ticket holders will be notified</div>
+            <div class="alert__meta" id="ee-impact-venue-meta">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.time">Time</h3>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.date">Event date</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ee="date" data-required data-impact type="date" id="ee-date">
+          <p class="ee-field-error" data-i18n="ee.err.date">Event date can't be empty.</p>
+        </div>
+        <div class="form-grid form-grid--3">
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.start">Start time</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" data-ee="start" data-impact type="time" id="ee-start">
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.end">End time</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" data-ee="end" type="time" id="ee-end">
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.doors">Doors open</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" data-ee="doors" type="time" id="ee-doors">
+          </div>
+        </div>
+        <div class="alert alert--row alert--warning ee-consequence" data-impact-note hidden>
+          <span class="alert__icon"><i data-lucide="bell" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="ee.impact.time">Ticket holders will be notified</div>
+            <div class="alert__meta" id="ee-impact-time-meta">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.capacity">Capacity</h3>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="ce.capacity.label">Capacity</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <input class="input" data-ee="capacity" data-required type="number" id="ee-capacity">
+          <p class="field__hint" id="ee-capacity-hint">—</p>
+          <p class="ee-field-error" id="ee-capacity-err">—</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ TICKETS ══════════ -->
+    <section class="ee-section hidden" data-sec-panel="tickets">
+      <h1 class="wizard__step-title" data-i18n="ee.tix.h1">Tickets</h1>
+      <p class="wizard__step-sub" data-i18n="ee.tix.sub">Tiers that already sold can be closed, but not deleted — buyers hold them.</p>
+
+      <div id="ee-tier-list"></div>
+
+      <button type="button" class="btn btn--outline btn--sm" id="ee-tier-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ee.tix.add">Add ticket tier</span></button>
+    </section>
+
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom">
+    <button class="btn btn--ghost btn--destructive" type="button" id="ee-delete" data-i18n="ee.delete">Delete event</button>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" type="button" id="ee-discard" disabled data-i18n="ee.discard">Discard changes</button>
+      <button class="btn btn--primary" type="button" id="ee-save" disabled data-i18n="ee.save">Save changes</button>
+    </div>
+  </footer>
+
+</div>
+
+<!-- 粉絲視角預覽：編輯態一律以「現有資料」開場，不是空殼（沿用 create-event 的面板與卡片元件） -->
+<div class="preview-panel" id="ee-preview">
+  <div class="preview-panel__backdrop" data-ee-preview-close></div>
+  <div class="preview-panel__sheet">
+    <div class="preview-panel__head">
+      <h3 class="preview-panel__title" data-i18n="ce.preview.title">How fans see your event</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-ee-preview-close aria-label="Close preview" data-i18n-aria-label="ee.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="preview-panel__body">
+      <div class="event-preview-card">
+        <div class="event-preview-card__poster" id="ee-pv-poster">
+          <span class="badge event-preview-card__type-tag" id="ee-pv-type" hidden></span>
+          <i data-lucide="image" class="ztor-icon" id="ee-pv-poster-icon"></i>
+        </div>
+        <div class="event-preview-card__body">
+          <h4 class="event-preview-card__name" id="ee-pv-name">—</h4>
+          <div class="event-preview-card__meta">
+            <span class="event-preview-card__meta-row"><i data-lucide="calendar" class="ztor-icon"></i><span id="ee-pv-date">—</span></span>
+            <span class="event-preview-card__meta-row"><i data-lucide="globe" class="ztor-icon"></i><span id="ee-pv-venue">—</span></span>
+          </div>
+          <div class="event-preview-card__tickets" id="ee-pv-tickets">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.1"></script>
+<script src="js/i18n.js?v=r2.1"></script>
+<script src="partials/date-input.js?v=r2.1"></script>
+<script src="js/events-store.js?v=r2.1"></script>
+<script src="partials/wizard-chrome.js?v=r2.1"></script>
+<script>
+(function () {
+  'use strict';
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
+
+  /* ── 載入紀錄：?id= 指定，未知 id 由 store 回首筆（編輯頁永遠有東西可顯示）── */
+  const params = new URLSearchParams(location.search);
+  const ev = window.ztorEvents.get(params.get('id') || '');
+  const soldTotal = window.ztorEvents.soldOf(ev) || ev.sold || 0;
+  const isLive = ev.status === 'on-sale' && soldTotal > 0;
+
+  /* baseline ＝ 開頁時的值。之後每次比對都對 baseline，不是對上一次輸入——
+     這樣把值改回原樣時，「已變更」記號會自己消失（改了又改回來，不算改）。 */
+  let baseline = {};
+  let tiers = ev.tiers.map(t => Object.assign({}, t));
+  let lineup = ev.lineup.slice();
+  let images = Object.assign({}, ev.images);
+
+  /* ── 欄位 → Overview 列的對應：一列可由多個欄位餵養 ── */
+  const ROW_OF = {
+    name: 'details', desc: 'details',
+    venue: 'venue', city: 'venue', address: 'venue',
+    date: 'time', start: 'time', end: 'time', doors: 'time',
+    capacity: 'capacity'
+  };
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+  const fieldEls = () => $$('[data-ee]');
+
+  /* 日期／時間顯示比照活動清單的既有寫法，兩個語系各自的慣例（events.row*.datetime）：
+       en → 'Oct 25, 2026 · 8:00 PM'    zh → '2026/10/25 · 晚上 8:00'
+     欄位本身仍是原生 date/time input（值恆為 ISO 與 24 小時制）；只有「顯示用」的
+     Overview 摘要與預覽卡走這兩支格式化，才不會出現清單寫 8:00 PM、編輯頁寫 20:00。 */
+  const isZh = () => !/^en/i.test(document.documentElement.lang || '');
+
+  /* 千分位：清單寫 10,000 / 10,000，編輯頁不能寫 10000（同一場活動、同一個數字） */
+  const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  function fmtDate(d) {
+    if (!d) return '';
+    const parts = String(d).split('-');
+    if (parts.length !== 3) return d;
+    const y = parts[0], m = Number(parts[1]), day = Number(parts[2]);
+    if (isZh()) return y + '/' + m + '/' + day;
+    const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return MON[m - 1] + ' ' + day + ', ' + y;
+  }
+
+  function fmtTime(t) {
+    if (!t) return '';
+    const parts = String(t).split(':');
+    if (parts.length < 2) return t;
+    const h = Number(parts[0]), min = parts[1];
+    const h12 = (h % 12) || 12;
+    if (isZh()) {
+      const period = h < 12 ? '上午' : (h < 18 ? '下午' : '晚上');
+      return period + ' ' + h12 + ':' + min;
+    }
+    return h12 + ':' + min + ' ' + (h < 12 ? 'AM' : 'PM');
+  }
+
+  function fmtWhen(d, t) {
+    const dd = fmtDate(d);
+    if (!dd) return '';
+    const tt = fmtTime(t);
+    return tt ? dd + ' · ' + tt : dd;
+  }
+
+  /* ── 預填 ── */
+  function fill() {
+    $('#ee-name').value = ev.name;
+    $('#ee-desc').value = ev.desc;
+    $('#ee-venue').value = ev.venue;
+    $('#ee-city').value = ev.city;
+    $('#ee-address').value = ev.address;
+    $('#ee-date').value = ev.date;
+    $('#ee-start').value = ev.start;
+    $('#ee-end').value = ev.end;
+    $('#ee-doors').value = ev.doors;
+    $('#ee-capacity').value = ev.capacity || '';
+    fieldEls().forEach(el => { baseline[el.dataset.ee] = el.value; });
+    baseline._tiers = JSON.stringify(tiers);
+    baseline._lineup = JSON.stringify(lineup);
+    baseline._images = JSON.stringify(images);
+
+    const sub = $('#ee-subtitle');
+    if (sub) sub.textContent = ev.name;
+
+    // 容量下限＝已售出張數；輸入元件自帶 min，hint 說明為什麼有這個下限
+    const cap = $('#ee-capacity');
+    if (cap && soldTotal > 0) cap.min = String(soldTotal);
+    const capHint = $('#ee-capacity-hint');
+    if (capHint) {
+      capHint.textContent = soldTotal > 0
+        ? T('ee.cap.hint', 'At least {n} — tickets already sold.').replace('{n}', fmtNum(soldTotal))
+        : T('ee.cap.hint.free', 'Total seats or standing.');
+    }
+
+    $$('.upload-tile[data-asset]').forEach(tile => {
+      tile.classList.toggle('is-filled', !!images[tile.dataset.asset]);
+    });
+
+    renderLiveState();
+    renderLineup();
+    renderTiers();
+  }
+
+  function renderLiveState() {
+    const bar = $('#ee-live-state');
+    const title = $('#ee-live-title');
+    const meta = $('#ee-live-meta');
+    if (!bar) return;
+    const statusLabel = ev.status === 'on-sale' ? T('events.badge.on-sale', 'On Sale')
+                      : ev.status === 'draft'   ? T('events.status.draft', 'Draft')
+                      : ev.status === 'ended'   ? T('events.badge.ended', 'Ended')
+                      : T('events.badge.scheduled', 'Scheduled');
+    title.textContent = statusLabel;
+    if (soldTotal > 0) {
+      meta.textContent = T('ee.live.sold', '{n} tickets sold · {d}')
+        .replace('{n}', fmtNum(soldTotal)).replace('{d}', fmtDate(ev.date));
+      bar.classList.remove('alert--info');
+      bar.classList.add('alert--warning');
+    } else {
+      meta.textContent = T('ee.live.nosales', 'No tickets sold yet · {d}').replace('{d}', fmtDate(ev.date));
+    }
+    const cta = $('#ee-live-cta');
+    if (cta) cta.href = 'event-detail.html?id=' + encodeURIComponent(ev.id);
+  }
+
+  function renderLineup() {
+    const wrap = $('#ee-lineup-list');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    lineup.forEach((nm, i) => {
+      const f = document.createElement('div');
+      f.className = 'field';
+      const input = document.createElement('input');
+      input.className = 'input';
+      input.value = nm;
+      input.addEventListener('input', () => { lineup[i] = input.value; sync(); });
+      f.appendChild(input);
+      wrap.appendChild(f);
+    });
+  }
+
+  /* ── 票種：已售出的不可刪（買方持有），只能關閉銷售 ── */
+  function renderTiers() {
+    const list = $('#ee-tier-list');
+    if (!list) return;
+    list.innerHTML = '';
+    tiers.forEach((t, i) => {
+      const sec = document.createElement('div');
+      sec.className = 'form-section form-section--outlined';
+      const sold = t.sold || 0;
+
+      const head = document.createElement('div');
+      head.className = 'ee-tier__head';
+      const soldEl = document.createElement('span');
+      soldEl.className = 'ee-tier__sold';
+      soldEl.textContent = T('ee.tix.sold', '{n} of {q} sold').replace('{n}', fmtNum(sold)).replace('{q}', fmtNum(t.qty));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn--icon btn--xs ee-tier__del';
+      del.innerHTML = '<i data-lucide="trash-2" class="ztor-icon"></i>';
+      if (sold > 0) {
+        del.disabled = true;
+        del.title = T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold));
+      } else {
+        del.addEventListener('click', () => { tiers.splice(i, 1); renderTiers(); sync(); });
+      }
+      head.appendChild(soldEl);
+      head.appendChild(del);
+      sec.appendChild(head);
+
+      const grid = document.createElement('div');
+      grid.className = 'form-grid form-grid--3';
+      grid.appendChild(tierField(T('ee.tix.name', 'Tier name'), t.name, v => { t.name = v; }));
+      grid.appendChild(tierField(T('ee.tix.price', 'Price'), t.price, v => { t.price = v; }, 'number'));
+      grid.appendChild(tierField(T('ee.tix.qty', 'Quantity'), t.qty, v => { t.qty = v; }, 'number', sold));
+      sec.appendChild(grid);
+      list.appendChild(sec);
+    });
+    if (typeof applyIcons === 'function') applyIcons(list);
+  }
+
+  function tierField(label, value, onInput, type, min) {
+    const f = document.createElement('div');
+    f.className = 'field';
+    const l = document.createElement('label');
+    l.className = 'field__label';
+    l.textContent = label;
+    const inp = document.createElement('input');
+    inp.className = 'input';
+    inp.value = value;
+    if (type) inp.type = type;
+    if (min != null && min > 0) inp.min = String(min);
+    inp.addEventListener('input', () => { onInput(inp.value); sync(); });
+    f.appendChild(l);
+    f.appendChild(inp);
+    return f;
+  }
+
+  /* ── 髒值追蹤：每次輸入都對 baseline 重算，回填 Overview 值、打「已變更」記號、
+        更新主動作的計數與可按狀態。這是「離開前看得到自己改了什麼」那個工作。 ── */
+  function changedKeys() {
+    const out = [];
+    fieldEls().forEach(el => {
+      if (el.value !== baseline[el.dataset.ee]) out.push(el.dataset.ee);
+    });
+    if (JSON.stringify(tiers) !== baseline._tiers) out.push('tiers');
+    if (JSON.stringify(lineup) !== baseline._lineup) out.push('lineup');
+    if (JSON.stringify(images) !== baseline._images) out.push('images');
+    return out;
+  }
+
+  function changedRows() {
+    const rows = new Set();
+    changedKeys().forEach(k => {
+      if (k === 'tiers') rows.add('tickets');
+      else if (k === 'lineup') rows.add('lineup');
+      else if (k === 'images') rows.add('images');
+      else if (ROW_OF[k]) rows.add(ROW_OF[k]);
+    });
+    return rows;
+  }
+
+  function val(k) { const el = $('[data-ee="' + k + '"]'); return el ? el.value.trim() : ''; }
+
+  function setVal(row, text) {
+    const el = $('[data-val="' + row + '"]');
+    if (el) el.textContent = text || T('ee.ov.empty', 'Not set');
+  }
+
+  function syncOverview() {
+    setVal('type', T(ev.typeLabelKey, ev.type));
+    const nm = val('name');
+    const ds = val('desc');
+    setVal('details', nm ? (ds ? nm + ' — ' + (ds.length > 70 ? ds.slice(0, 70) + '…' : ds) : nm) : '');
+    setVal('lineup', lineup.filter(Boolean).length ? lineup.filter(Boolean).join(' · ') : '');
+    const imgN = Object.keys(images).filter(k => images[k]).length;
+    setVal('images', T('ee.ov.imagesn', '{n} of 4 uploaded').replace('{n}', imgN));
+    const cityPart = val('city');
+    setVal('venue', val('venue') ? (cityPart ? val('venue') + ' · ' + cityPart : val('venue')) : '');
+    setVal('time', fmtWhen(val('date'), val('start')));
+    const cap = val('capacity');
+    setVal('capacity', cap ? T('ee.ov.capn', '{n} capacity · {s} sold').replace('{n}', fmtNum(cap)).replace('{s}', fmtNum(soldTotal)) : '');
+    setVal('tickets', tiers.length ? T('ee.ov.tiersn', '{n} tiers').replace('{n}', tiers.length) : '');
+
+    const rows = changedRows();
+    $$('.review-row__item[data-row]').forEach(item => {
+      const on = rows.has(item.dataset.row);
+      if (on) item.setAttribute('data-changed', ''); else item.removeAttribute('data-changed');
+      let flag = item.querySelector('.ee-row-flag');
+      if (on && !flag) {
+        flag = document.createElement('span');
+        flag.className = 'badge badge--warning ee-row-flag';
+        flag.textContent = T('ee.changed', 'Changed');
+        item.querySelector('.review-row__name').appendChild(flag);
+      } else if (!on && flag) {
+        flag.remove();
+      }
+    });
+  }
+
+  /* 高影響欄位（日期／時間／場地）：改動後才顯示後果說明——沒改就不嘮叨 */
+  function syncImpact() {
+    const ks = changedKeys();
+    const venueChanged = ['venue', 'city', 'address'].some(k => ks.includes(k));
+    const timeChanged = ['date', 'start'].some(k => ks.includes(k));
+    const notes = $$('[data-impact-note]');
+    if (notes[0]) notes[0].hidden = !(venueChanged && soldTotal > 0);
+    if (notes[1]) notes[1].hidden = !(timeChanged && soldTotal > 0);
+    const msg = T('ee.impact.meta', '{n} people already bought a ticket to the current details.').replace('{n}', fmtNum(soldTotal));
+    const m1 = $('#ee-impact-venue-meta'); if (m1) m1.textContent = msg;
+    const m2 = $('#ee-impact-time-meta'); if (m2) m2.textContent = msg;
+  }
+
+  /* 容量硬限制：不能低於已售出張數。這是驗證、不是提醒——賣了 84 張就不可能只剩 50 個位子。 */
+  function validateCapacity() {
+    const el = $('[data-ee="capacity"]');
+    if (!el) return true;
+    const wrap = el.closest('.field');
+    const err = $('#ee-capacity-err');
+    const n = Number(el.value || 0);
+    const bad = soldTotal > 0 && n > 0 && n < soldTotal;
+    if (wrap) wrap.classList.toggle('is-invalid', bad);
+    el.setAttribute('aria-invalid', bad ? 'true' : 'false');
+    if (err) err.textContent = T('ee.err.capacity', "Can't go below {n} — that many tickets are already sold.").replace('{n}', fmtNum(soldTotal));
+    return !bad;
+  }
+
+  function validateRequired() {
+    let ok = true;
+    $$('[data-required]').forEach(el => {
+      const empty = !el.value.trim();
+      const wrap = el.closest('.field');
+      if (wrap) wrap.classList.toggle('is-invalid', empty);
+      el.setAttribute('aria-invalid', empty ? 'true' : 'false');
+      if (empty) ok = false;
+    });
+    return ok;
+  }
+
+  function sync() {
+    syncOverview();
+    syncImpact();
+    validateCapacity();
+    renderPreview();
+    const n = changedKeys().length;
+    const save = $('#ee-save');
+    const discard = $('#ee-discard');
+    save.disabled = n === 0;
+    discard.disabled = n === 0;
+    save.removeAttribute('data-i18n');
+    save.textContent = n === 0 ? T('ee.save', 'Save changes')
+                     : n === 1 ? T('ee.save.n1', 'Save 1 change')
+                               : T('ee.save.n', 'Save {n} changes').replace('{n}', n);
+  }
+
+  function renderPreview() {
+    const poster = $('#ee-pv-poster');
+    const icon = $('#ee-pv-poster-icon');
+    const filled = !!(images.poster || images.banner);
+    if (poster) poster.style.background = filled ? 'var(--surface-inverse)' : '';
+    if (icon) icon.style.display = filled ? 'none' : '';
+    const tag = $('#ee-pv-type');
+    if (tag) { tag.textContent = T(ev.typeLabelKey, ev.type); tag.hidden = false; }
+    $('#ee-pv-name').textContent = val('name') || T('ce.pv.name', 'Event name');
+    $('#ee-pv-date').textContent = fmtWhen(val('date'), val('start')) || T('ce.pv.date', 'Date to be set');
+    const v = val('venue');
+    $('#ee-pv-venue').textContent = v ? (val('city') ? v + ' · ' + val('city') : v) : T('ce.pv.venue', 'Venue to be set');
+    $('#ee-pv-tickets').textContent = tiers.length
+      ? T('ce.pv.tiersn', '{n} ticket tiers').replace('{n}', tiers.length)
+      : T('ce.pv.tickets', 'Tickets coming soon');
+  }
+
+  /* ── 區段切換：全部解鎖、沒有順序。Overview 的 Edit → 直接跳到欄位並聚焦。 ── */
+  function show(sec, focusKey) {
+    $$('[data-sec-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.secPanel !== sec));
+    $$('#ee-nav .tabs__item').forEach(t => {
+      const on = t.dataset.sec === sec;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (focusKey) {
+      const target = focusKey === 'images' ? $('#ee-images-sec')
+                   : focusKey === 'lineup' ? $('#ee-lineup-sec')
+                   : $('[data-ee="' + focusKey + '"]');
+      if (target && target.focus) { try { target.focus({ preventScroll: false }); } catch (e) { target.focus(); } }
+      else if (target && target.scrollIntoView) target.scrollIntoView({ block: 'center' });
+    }
+  }
+
+  $$('#ee-nav .tabs__item').forEach(t => t.addEventListener('click', () => show(t.dataset.sec)));
+  $$('[data-goto]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    show(a.dataset.goto, a.dataset.focus || '');
+  }));
+
+  document.addEventListener('input', e => { if (e.target.matches('[data-ee]')) sync(); });
+  $$('[data-required]').forEach(el => el.addEventListener('blur', () => validateRequired()));
+
+  $$('.upload-tile[data-asset]').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const k = tile.dataset.asset;
+      images[k] = !images[k];
+      tile.classList.toggle('is-filled', !!images[k]);
+      sync();
+    });
+  });
+
+  const lineupAdd = $('#ee-lineup-add');
+  if (lineupAdd) lineupAdd.addEventListener('click', () => { lineup.push(''); renderLineup(); sync(); });
+
+  const tierAdd = $('#ee-tier-add');
+  if (tierAdd) tierAdd.addEventListener('click', () => {
+    tiers.push({ id: 'tier-new-' + tiers.length, name: '', price: 0, qty: 0, sold: 0 });
+    renderTiers(); sync();
+  });
+
+  /* ── 儲存／捨棄／刪除 ── */
+  $('#ee-save').addEventListener('click', () => {
+    if (!validateRequired()) { alert(T('ee.save.blocked', 'Some required fields are empty.')); return; }
+    if (!validateCapacity()) { alert(T('ee.save.capacity', "Capacity can't be below tickets already sold.")); return; }
+    alert(T('ee.save.done', 'Changes would be saved here. (Prototype)'));
+    location.href = 'event-detail.html?id=' + encodeURIComponent(ev.id);
+  });
+
+  $('#ee-discard').addEventListener('click', () => {
+    if (!window.confirm(T('ee.discard.confirm', 'Discard your changes? The event goes back to how it was.'))) return;
+    tiers = ev.tiers.map(t => Object.assign({}, t));
+    lineup = ev.lineup.slice();
+    images = Object.assign({}, ev.images);
+    fill();
+    sync();
+  });
+
+  $('#ee-delete').addEventListener('click', () => {
+    const warn = soldTotal > 0
+      ? T('ee.delete.confirm.sold', 'Delete this event? {n} people hold tickets and would be refunded. This cannot be undone.').replace('{n}', fmtNum(soldTotal))
+      : T('ee.delete.confirm', 'Delete this event? This cannot be undone.');
+    if (window.confirm(warn)) location.href = 'events.html';
+  });
+
+  /* 預覽面板：與 create-event 同樣的分割畫面開關 */
+  const panel = $('#ee-preview');
+  $('#ee-preview-open').addEventListener('click', () => {
+    renderPreview();
+    panel.classList.add('is-open');
+    document.body.classList.add('preview-open');
+  });
+  $$('[data-ee-preview-close]').forEach(el => el.addEventListener('click', () => {
+    panel.classList.remove('is-open');
+    document.body.classList.remove('preview-open');
+  }));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { panel.classList.remove('is-open'); document.body.classList.remove('preview-open'); }
+  });
+
+  fill();
+  sync();
+  document.addEventListener('i18n:applied', () => { renderLiveState(); sync(); });
+}());
+</script>
+<script src="js/reveal.js?v=r2.1"></script>
+<script src="js/devtools.js?v=r2.1"></script>
+</body>
+</html>

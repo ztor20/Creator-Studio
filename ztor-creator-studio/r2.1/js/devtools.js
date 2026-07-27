@@ -80,7 +80,7 @@
   };   // { S30:'p1', … } 由 md 功能表填
   var FULL_ROUTES = {
     'index.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
-    'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1,
+    'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
     'ip-market.html': 1, 'register-ip.html': 1, 'pickup.html': 1, 'pickup-detail.html': 1, 'scanner.html': 1, 'settings.html': 1
   };
