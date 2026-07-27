@@ -36,6 +36,43 @@
   font-display: swap;
 }
 
+/* ── LINE Seed TW — 全站中文字面（2026-07-28 使用者裁示）──────────────
+   「中文整套系統都用 LINE Seed TW」：標題與內文都是它，不分角色。
+   .woff2 檔本來就躺在 /fonts 裡（Th／Rg／Bd／Eb），但先前從未被 @font-face 宣告過，
+   所以中文實際上一直是 Noto Sans TC 在畫。這次把它接上，Noto 退為後備。
+
+   四個字重對應：Th 100／Rg 400／Bd 700／Eb 800。**LINE Seed TW 沒有 500**——
+   CSS 字重比對規則對 500 的請求會先找 500、找不到就往下找 400，因此 fw-medium
+   會落在 Rg 而不是合成假粗體。這條先前記在 DESIGN.md 的「No-Medium Rule」，
+   在這裡由字重表本身保證，不需要元件端再處理。
+
+   unicode-range 釘在 CJK 區塊：拉丁字母永遠不會落到 LINE Seed，維持
+   「拉丁走拉丁字面、中文走中文字面」的逐字回退模型。 */
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW_OTF_Th.woff2") format("woff2");
+  font-weight: 100 300; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW_OTF_Rg.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW_OTF_Bd.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW_OTF_Eb.woff2") format("woff2");
+  font-weight: 800 900; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+
 /* CJK — Noto Sans TC, self-hosted & subsetted (R 2.1.40).
    Subset = only the 中文/全形 glyphs actually used across the served
    html/js/css (~1.25k glyphs → ~375KB woff2), variable wght 100–900 so every
@@ -57,9 +94,22 @@
  * TC while Latin glyphs stay on Geist / Inter. ztor's _tokens.css declares
  * these but without CJK fallback. */
 :root {
-  --font-display: "Geist", var(--font-cjk), system-ui, sans-serif;
-  --font-ui:      "Geist", var(--font-cjk), system-ui, sans-serif;
-  --font-body:    "Inter", var(--font-cjk), system-ui, sans-serif;
+  /* 2026-07-28 使用者裁示的字體分工：
+       英文 標題 → Alumni Sans
+       英文 內文／UI → Satoshi
+       中文 全系統 → LINE Seed TW
+     --font-cjk 由 Noto Sans TC 改成 LINE Seed TW 優先，Noto 退為後備
+     （LINE Seed 沒有的字——例如 earnings.html 的日文漢字「払」——仍逐字回退到 Noto）。
+
+     Geist／Inter 刻意留在堆疊裡當**過渡回退**：Alumni Sans 與 Satoshi 的 .woff2
+     目前不在 /fonts 裡（全機找過，D:\Ztor. 2.0 底下沒有任何 alumni／satoshi 檔案）。
+     沒有 @font-face 的字體名會被瀏覽器直接略過，所以在字檔到位前，英文會安靜地
+     維持現在的 Geist／Inter 外觀、不會掉到系統預設字，畫面不會壞；字檔一放進 /fonts
+     並補上 @font-face，就自動生效、不需要再改任何一支元件。 */
+  --font-cjk:     "LINE Seed TW", "Noto Sans TC", sans-serif;
+  --font-display: "Alumni Sans", "Geist", var(--font-cjk), system-ui, sans-serif;
+  --font-ui:      "Satoshi", "Geist", var(--font-cjk), system-ui, sans-serif;
+  --font-body:    "Satoshi", "Inter", var(--font-cjk), system-ui, sans-serif;
   --font-mono:    "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 

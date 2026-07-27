@@ -106,10 +106,14 @@ html, body { margin: 0; padding: 0; }
    (`feedback_weasyprint_cjk_fonts.md`: PingFang first nukes 中文 in macOS
    weasyprint). That's a print-engine bug; browser per-glyph fallback works
    fine with CJK first. */
+/* 2026-07-28：--font-cjk 現在是 LINE Seed TW（見 fonts.css），所以這三條自動
+   讓中文語系整套走 LINE Seed TW——標題與內文都是它，符合「中文全系統用 LINE Seed TW」。
+   後面的拉丁字面只服務中文句子裡夾雜的英數字，因此比照英文版換成 Alumni Sans（標題）
+   ／Satoshi（UI、內文），Geist／Inter 留作字檔到位前的過渡回退。 */
 :lang(zh-Hant) {
-  --font-display: var(--font-cjk), 'Geist', system-ui, sans-serif;
-  --font-ui:      var(--font-cjk), 'Geist', system-ui, sans-serif;
-  --font-body:    var(--font-cjk), 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-cjk), 'Alumni Sans', 'Geist', system-ui, sans-serif;
+  --font-ui:      var(--font-cjk), 'Satoshi', 'Geist', system-ui, sans-serif;
+  --font-body:    var(--font-cjk), 'Satoshi', 'Inter', system-ui, sans-serif;
 
   /* CJK 字距歸零（2026-06-23）：display/title/label 的負 letter-spacing（~−0.02em）
      是為拉丁大字做的光學收緊，但方塊字本就貼著走，套負字距會把中文擠在一起。
@@ -1295,6 +1299,76 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   flex-wrap: wrap;
   margin-left: auto;
 }
+/* ── 專案詳情：分頁列 ＋ 檢視／編輯切換（2026-07-27 使用者裁示）──────────────
+   「專案總覽」「關於這個專案」兩個分頁預設唯讀，右上角有一顆「編輯」才進入可改狀態。
+   底線改由 .pd-tabbar 畫：.tabs 自己帶 border-bottom，若讓它保留，那條線只會畫到
+   分頁那一段、右邊的按鈕會脫離同一條基準線。 */
+.pd-tabbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-20);
+}
+.pd-tabbar .tabs {
+  border-bottom: 0;
+  margin-bottom: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;            /* 八個分頁在窄螢幕橫向捲，不擠壓右側按鈕 */
+  scrollbar-width: none;
+}
+.pd-tabbar .tabs::-webkit-scrollbar { display: none; }
+.pd-tabbar__action { flex: none; margin-bottom: var(--sp-8); }
+
+/* ── 檢視模式：保留「編輯時的版面」，只是不能改 ──────────────────────────
+   用 readonly 而非 disabled——disabled 會把文字打灰、也從無障礙樹拿掉，
+   但檢視模式下那些「值」正是使用者要讀的內容，必須維持可讀、可選取。
+
+   2026-07-27 L 裁示改版：這裡原本把欄位「攤平成值」——清掉背景、外框
+   （其實是 box-shadow 畫的 1px inset ring）與左右內距。L 的評語是那個結果很醜，
+   要求「回到編輯畫面的格式，只是不能編輯」。
+   為什麼攤平會醜：那些框同時在做版面工作，不只是裝飾。內距一清，角色／姓名兩欄
+   就不再對齊；FAQ 的 textarea 塌成內容高度，項目之間的間隔變成沒有節奏的空洞。
+   所以現在幾何完全不動（內距、高度、外框粗細都保留），只把「可以打字」的訊號拿掉。
+   附帶好處：切換模式時版面完全不位移，因為沒有任何尺寸改變。 */
+[data-mode="view"] .input,
+[data-mode="view"] .textarea,
+[data-mode="view"] .tag-input,
+[data-mode="view"] .select {
+  /* 幾何不動：不覆蓋 background／box-shadow／padding，框就留在原地。
+     只表明這裡點下去不會變成輸入狀態。 */
+  cursor: default;
+}
+/* 唯讀的長文不該給拖曳把手 */
+[data-mode="view"] .textarea { resize: none; }
+/* select 沒有 readonly，JS 是用 disabled 擋（見 project-detail.html 的
+   applyReadonly），瀏覽器自己會處理外觀，這裡不再另外壓平。 */
+[data-mode="view"] .select { pointer-events: none; }
+/* 鎖住的欄位不該閃一個它無法履行的 focus ring，但仍可用鍵盤走到、供閱讀。 */
+[data-mode="view"] .input:focus,
+[data-mode="view"] .input:focus-visible,
+[data-mode="view"] .textarea:focus,
+[data-mode="view"] .textarea:focus-visible { outline: none; }
+/* 會改動內容的入口在檢視模式一律不出現：上傳圖磚的替換／裁切／刪除、
+   ＋新增類按鈕、開啟編輯彈窗的按鈕。純導覽或唯讀的按鈕不受影響。 */
+/* 白名單，不是黑名單：檢視模式下「所有按鈕」一律不出現，只放行明確標記為
+   唯讀用途的（排序表頭、data-view-safe）。
+   第一版是逐一列舉要藏的東西，結果漏掉卡司與 FAQ 的刪除鈕——面板裡還留著 18 顆
+   可以砍資料的按鈕。凡是「列舉要禁止的」都會漏，改成列舉「允許的」才收得乾淨。 */
+[data-mode="view"] button:not(.sort-th):not([data-view-safe]),
+[data-mode="view"] a[data-modal-open],
+[data-mode="view"] .upload-tile__actions,
+[data-mode="view"] .upload-tile:not(.is-filled),
+[data-mode="view"] .tag-input__entry { display: none; }
+/* 表單填寫用的提示語（「拖曳可換順序」「在這裡直接編輯」）在唯讀狀態是誤導 */
+[data-mode="view"] .field__hint { display: none; }
+/* 展示相簿的操作層另有一條 .pd-gallery .upload-tile.is-filled .upload-tile__actions
+   （見下方相簿區塊）優先權比上面那條高，會把封面圖的替換／裁切／刪除留在畫面上。
+   這裡補一條更明確的，確保檢視模式下真的沒有任何可改動的入口。 */
+[data-mode="view"] .pd-gallery .upload-tile.is-filled .upload-tile__actions { display: none; }
+
 /* 標題單獨留在 hero header，間距交給 .pd-hero__main 的 flex gap。 */
 .pd-hero__title {
   margin: 0;
