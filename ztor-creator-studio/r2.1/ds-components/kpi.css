@@ -56,7 +56,8 @@
 }
 /* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
    膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
-   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix 對 --card，亮暗自動跟隨。 */
+   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix 對 --card，亮暗自動跟隨。
+   （2026-07-27 曾短暫改為「純黑底＋彩色墨」，使用者看過實機後裁示不好看、全站回退本版。） */
 .kpi__delta {
   font-family: var(--font-ui);
   font-size: var(--fs-12);
@@ -172,11 +173,19 @@
 .kpi--hero .kpi__meta .card__link { color: color-mix(in srgb, var(--on-primary) 75%, transparent); }
 .kpi--hero .kpi__chevron { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
 .kpi--hero.kpi--tappable:hover .kpi__chevron { color: var(--on-primary); }
-/* delta 膠囊：原本是 color-mix(綠, --card)，卡面變橘之後那個綠會跟橘互相震盪、而且它混的是
-   --card（已經不是這張卡的底色了）。改成白色薄膜＋深墨字——漲跌方向由 "+" 與文案承載，
-   不再靠色相。這是 --hero 唯一一處讓出狀態色的地方，且只在這個變體內 scoped。 */
+/* delta 在 hero 卡上「不要膠囊」（2026-07-27 L 裁示）。base 的 tint 是 color-mix 對 --card，
+   而 --card 已經不是這張卡的底色了——混出來是深墨綠 rgb(38,57,46)，鋪在橘上就是一塊黑斑。
+   （改成純黑底也一樣被否決；問題不在哪一種深色，而在「這裡不該有一塊深色」。）
+   解法是拿掉膠囊本身：無底、深墨字、左右內距歸零讓文字與 label／value 切齊同一條左緣。
+   漲跌方向由 +／− 與文案承載——橘底上綠字只有 ~1.4:1，本來就放不了狀態色。
+   只 scope 在 --hero；其他卡的 delta 維持原本的染色膠囊不動。 */
 .kpi--hero .kpi__delta,
 .kpi--hero .kpi__delta--neg {
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
   color: var(--on-primary);
-  background: color-mix(in srgb, #fff 58%, transparent);
 }
+/* delta 膠囊（hero 卡）：不再另開例外（2026-07-27 L 裁示——綠＝漲、紅＝跌、黑底，全站一致）。
+   先前的白膜＋深墨版是因為「綠混 --card 的 tint 在橘底上震盪」；base 改成純黑底之後，
+   墨色不再與卡面相混，黑膜把狀態色從橘場中隔出來，原衝突不存在，hero 卡直接吃 base 規則。 */
