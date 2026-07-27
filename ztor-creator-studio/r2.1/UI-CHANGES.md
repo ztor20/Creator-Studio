@@ -13,6 +13,28 @@
 - 說明：清單最上方的「未命名」草稿列不受影響——e-shop 頁本來就會把草稿列浮到第一個非草稿列之前（`e-shop.html:859`），屬既有行為。
 - **【驗證】** dev server（`localhost:4326`，`devserver.py` no-store）＋ `ztor.persona=nick`：DOM 讀出商品列依序為 未命名（草稿）→ 白 Tee → 老帽 → 束口褲 → 球鞋 → 其餘；競標列依序為 主吉他 → Nike Dunk → 親簽海報 → 母帶盤帶 → 未命名。`check_ds_sync.py` 全 PASS（僅既有基準 WARN）。版本字串沿用凍結的 `?v=r2.1`。
 
+## 2026-07-27 · 拍賣詳情頁撤除「競標生命週期階段」列（C 撤除）
+
+使用者選了拍賣詳情頁的三階段列（預展／開放競標／結果，目前階段加框），指出它跟頁首那顆「競標中」徽章講的是同一件事，留徽章就夠。判斷同意：創作者端要知道的是「現在能不能改、還剩多久」，這由徽章＋右欄「競標狀態」卡（狀態／目前出價／剩餘時間／結束／保留價）完整回答；階段列多出來的只有「前後還有哪些階段」，屬粉絲端敘事而非管理資訊。
+
+- **【C】** `auction-detail.html` 移除 `.ad-phases` 整個區塊（原位置在頁首與頁籤之間）。
+- **【C】** 同步移除頁面 `<style>` 內的 `.ad-phases`／`.ad-phase`／`.ad-phase__dot`／`--done`／`--current` 五條規則——全站只有這頁在用，不留死樣式。
+- **【C】** 移除 i18n key `ad.phase.preview`／`ad.phase.open`／`ad.phase.result`（grep 確認全站無其他消費者）。
+- **⚠ 規格衝突已登記，未回寫 `documents/`**：規格 5.1.5.8 §2.3 仍把「競標生命週期階段」列為頁面內容、§3 顯示順序第 3 項也還在，所以原型目前未覆蓋 §2.3。已記入 `ASSUMPTIONS.md` PG-019，待上游裁決要移除規格 §2.3 還是要求原型復原。依權威鏈「使用者當次明確指示」最優先，原型先照裁示撤除。
+- 驗證：dev server 實跑，頁首徽章與右欄競標狀態卡不受影響、頁籤位置上移接在頁首之後、三個分頁切換正常；`grep` 確認站上已無 `ad-phase` 殘留；`check_ds_sync.py` PASS。
+
+## 2026-07-27 · 組合／拍賣詳情頁的版型骨架改成與商品詳情頁一致（B 反饋導入）
+
+使用者指出組合包詳情頁與競標詳情頁的 wireframe 要跟商品詳情頁一致。三頁原本是兩套骨架：商品明細早已是 `page--narrow` ＋ 頁籤 ＋ Detail rail（主欄＋右側常駐欄）＋ `form-section--outlined`；另兩頁停在一排 bento `card`、徽章在標題上方、頁寬 1280。組合頁尤其嚴重——名稱／描述／素材／成員／價格／庫存／折扣／上架設定八件事全塞在同一張 `bento--span-7` 卡裡往下捲。兩份規格（5.1.5.8／5.1.5.9）的 §3 都明寫「實際分欄／版面／RWD 由 project-ui-creator 決定，非約束」，所以這是呈現層裁量、不動上游。分頁切法經使用者選定後才施工。
+
+- **【B】** `bundle-detail.html` 換上商品明細同一套殼，內容一項未增減、只重新分組：分頁 **總覽**（§2.4 銷售摘要＋§2.3 名稱描述＋§2.3 素材）｜**銷售設定**（§2.3 組合價格・折扣設定・庫存）｜**成員**（§2.3 成員清單＋§2.5 成員影響）。§2.3 的上架設定依 STYLE-DECISIONS Q25「管整個物件、不隸屬任一分頁」移入右側常駐欄，右欄另加一張唯讀「組合概況」卡（組合價／目前在庫／組合內含，數值鏡射主欄、不可就地編輯）。成員分頁掛 `--norail`（清單要整頁寬，右欄再放一次組合概況等於重複）。頁首的 `page-intro__sub`（原組合描述）移除——商品明細頁首無描述，且描述本來就在總覽分頁的欄位裡；同時撤掉 Cancel 鈕，動作列與商品明細一致（See as fan ｜ 儲存變更）。
+- **【B】** `auction-detail.html` 同套殼：分頁 **總覽**（§2.5 競標概況 KPI＋§2.4 物品摘要）｜**出價**（§2.6 出價活動）｜**拍賣資訊**（§2.7 設定一覽＋結標與履約）。§2.3 競標生命週期三階段列留在頁籤上方不隨分頁消失（規格顯示序第 3，屬頁層級狀態）。右欄放唯讀「競標狀態」卡（狀態／目前出價／剩餘時間／結束／保留價）。出價分頁掛 `--norail`。
+- **【D】** 兩頁原本都用了 `.field`／`.field__label`／`.field__hint` 卻沒載入 `field-system.css`（全站唯一定義處），欄位標籤與說明文字一直吃預設樣式；本輪一併補上。
+- **【D】** `product-detail.html` 頁首徽章列的 class `pd-id__meta` 全站無 CSS 定義（死類名，等於沒有間距），改用既有 utility，讓三頁徽章列寫法一致。
+- **【D】** 新增 11 個 i18n key（`bd.tab.members`／`bd.rail.summary`／`ad.tab.bids`／`ad.tab.info`／`ad.stats.title`／`ad.stats.sub`／`ad.item.title`／`ad.bids.sub`／`ad.info.sub`／`ad.fulfil.title`／`ad.rail.status`）；分頁名沿用商品明細既有 key（`product-detail.tab.overview`／`.price-stock`）以免同一概念兩套用語。
+- **【D】** DS 文件同步 consumer 清單：`detail-rail.css`／`tabs.css`（`--card` 變體）檔頭、`design-system.md` §4.50 KV list／§4.52 Detail rail／§4.1 App shell 列／§6.1 `.page--narrow`、`design-system.html` 對應三處。無新增元件、無元件 CSS 行為改動。
+- 驗證：本 session 自建 dev server（`localhost:48311`，走 `devserver.py` no-store）＋ nick persona。組合頁：三個分頁逐一切換確認 panel 顯隱／`--norail` 生效／`#hash` 深連結、標題與麵包屑帶入組合名、主圖與四張成員附圖、成員 4 列、右欄三個唯讀值與主欄一致、折扣 10% 重算 NT$5,980→NT$5,382 且右欄同步。拍賣頁：三分頁切換、階段列在頁籤上方、hero＋4 張 gallery、右欄五列狀態。兩頁 0 console error、0 水平溢出、`.field__label` 樣式生效（14px/11px）。中英切換確認 11 個新 key 兩語皆解析。`check_ds_sync.py` 結果 PASS + WARN（raw-color／token-reality／zero-consume 三項為既有基準、與本輪無關）。**版本字串沿用凍結的 `?v=r2.1`，未跑 `bump_ver`**。
+
 ## 2026-07-27 · 上線時間卡改滿版寬、時程點改跟合作者同款 `.ztor-table`（B 反饋導入）
 
 使用者選了「關於專案」分頁的「上線時間」卡（`data-type="go-live"`，直接上線類專案專屬），原本是 `bento--span-6` 半版寬、旁邊沒有另一張 span-6 的卡搭配、右側留白；兩個時程點（建立草稿／正式上線）擠在同一支 `.data-list` 裡上下疊放。使用者要求滿版寬＋名稱／日期欄位分開，先試過兩版（並排 `.data-list` 欄位、`.form-grid` 唯讀 field）皆不是要的效果，最後指名「合作者」卡的 `.ztor-table` 為範本，改成同款有表頭的表格。
