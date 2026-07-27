@@ -1736,6 +1736,11 @@
     'ee.ov.tiersn':       { en: '{n} tiers',                      zh: '{n} 種票' },
     'ee.changed':         { en: 'Changed',                        zh: '已變更' },
 
+    'ee.img.sub':         { en: 'These are live right now. Hover any image to replace or remove it.', zh: '這些是目前上線中的圖。將游標移到圖上可替換或移除。' },
+    'ee.img.add':         { en: 'Add image',                      zh: '新增圖片' },
+    'ee.img.n':           { en: 'Image {n}',                      zh: '第 {n} 張' },
+    'ee.img.galleryn':    { en: '{n} of 8',                       zh: '{n} / 8' },
+
     'ee.det.h1':          { en: 'Details',                        zh: '活動內容' },
     'ee.det.sub':         { en: 'Copy and artwork. Safe to change at any time — fans see the update immediately.', zh: '文案與視覺。隨時可改——粉絲端會立即看到更新。' },
     'ee.ven.h1':          { en: 'Venue & time',                   zh: '場地與時間' },

@@ -9,6 +9,10 @@
    尚未接線：events.html 的清單列與 event-detail.html 仍是靜態 HTML——值刻意與本檔一致，
    但尚未改由本檔渲染（屬後續重構，見 UI-CHANGES 2026-07-27 該筆的「已知債」）。
 
+   images 是「已上傳素材」的真實路徑（不是 true/false）：編輯頁必須顯示創作者當初上傳的圖，
+   而不是四個空的上傳框；gallery 是 1–8 張的陣列。每筆刻意沿用活動清單那一列在用的圖檔，
+   同一場活動不該在兩個畫面長著兩張不同的臉。
+
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
@@ -39,7 +43,7 @@
       sold: 84,
       revenue: 2520,
       status: 'on-sale',
-      images: { thumb: true, poster: true, banner: true, gallery: false },
+      images: { thumb: 'images/projects/nick-baipa.jpg', poster: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
       video: false
     },
     {
@@ -61,7 +65,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: true, poster: false, banner: false, gallery: false },
+      images: { thumb: 'images/projects/nick-wln.jpg', poster: '', banner: '', gallery: [] },
       video: false
     },
     {
@@ -83,7 +87,7 @@
       sold: 38,
       revenue: 190,
       status: 'on-sale',
-      images: { thumb: true, poster: false, banner: true, gallery: false },
+      images: { thumb: 'images/projects/nick-lrh-tour.jpg', poster: '', banner: 'images/projects/nick-lrh.jpg', gallery: [] },
       video: false
     },
     {
@@ -105,7 +109,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: true, poster: false, banner: false, gallery: false },
+      images: { thumb: 'images/projects/nick-flames.jpg', poster: '', banner: '', gallery: [] },
       video: false
     },
     {
@@ -127,7 +131,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: true, poster: false, banner: false, gallery: false },
+      images: { thumb: 'images/hero-event.jpg', poster: '', banner: '', gallery: [] },
       video: false
     },
     {
@@ -149,7 +153,7 @@
       sold: 142,
       revenue: 710,
       status: 'on-sale',
-      images: { thumb: true, poster: true, banner: true, gallery: false },
+      images: { thumb: 'images/projects/nick-r2.jpg', poster: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-r2.jpg', gallery: [] },
       video: false
     },
     {
@@ -171,7 +175,7 @@
       sold: 600,
       revenue: 18000,
       status: 'ended',
-      images: { thumb: true, poster: true, banner: true, gallery: true },
+      images: { thumb: 'images/projects/nick-lrh-tour.jpg', poster: 'images/projects/nick-lrh.jpg', banner: 'images/projects/nick-lrh-tour.jpg', gallery: ['images/projects/nick-realive.jpg'] },
       video: false
     },
     {
@@ -193,7 +197,7 @@
       sold: 10000,
       revenue: 320000,
       status: 'ended',
-      images: { thumb: true, poster: true, banner: true, gallery: true },
+      images: { thumb: 'images/projects/nick-r2-special.jpg', poster: 'images/projects/nick-r2.jpg', banner: 'images/projects/nick-r2-special.jpg', gallery: ['images/projects/nick-real-life.jpg'] },
       video: false
     },
     {
@@ -215,7 +219,7 @@
       sold: 0,
       revenue: 0,
       status: 'draft',
-      images: { thumb: false, poster: false, banner: false, gallery: false },
+      images: { thumb: '', poster: '', banner: '', gallery: [] },
       video: false
     }
   ];

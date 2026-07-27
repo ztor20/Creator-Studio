@@ -122,6 +122,14 @@
     }
     function pickAccept() { input.accept = content ? (tile.getAttribute('data-upload-accept') || '*/*') : 'image/*'; }
 
+    /* 既有素材預填（data-upload-src，2026-07-27）——編輯態專用的起始狀態。
+       此前這支只認得「使用者剛選的檔案」（createObjectURL），沒有「這格在伺服器上本來就有一張圖」
+       這個狀態；但那正是所有編輯流程的常態（edit-event 是第一個消費者，edit-product／
+       edit-auction 出現時需要的是同一件事）。故加一個屬性：有值就直接進 is-filled 並掛上縮圖，
+       不跑假上傳計時。沒有這個屬性的 tile 行為與先前完全相同，既有五個消費頁不受影響。 */
+    var preset = tile.getAttribute('data-upload-src');
+    if (preset) { thumb.src = preset; setState('is-filled'); }
+
     input.addEventListener('change', function () { if (input.files && input.files[0]) startUpload(input.files[0]); });
     tile.addEventListener('click', function (e) {
       if (e.target.closest('[data-upload-play],[data-upload-replace],[data-upload-optimize],[data-upload-remove]')) return;

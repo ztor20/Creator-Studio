@@ -48,6 +48,28 @@
   .ee-tier__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); margin-bottom: var(--sp-12); }
   .ee-tier__sold { font-size: var(--fs-12); color: var(--muted-foreground); }
   .ee-tier__del[disabled] { opacity: .4; cursor: not-allowed; }
+  /* 「新增票種」鈕貼死在最後一張票種卡的下緣（實測間距 0）。區段間距來自
+     `.form-section--outlined ~ .form-section--outlined { margin-top: --sp-24 }`，
+     那條只在兩個 outlined section 之間生效，而這顆是 .btn，故完全沒吃到。
+     用同一個節奏補回去，不另訂數值。 */
+  #ee-tier-add { margin-top: var(--sp-24); }
+
+  /* 素材槽＋說明字：沿用元件的 .upload-assets 版面配方（固定高推導寬、不用 aspect-ratio 撐欄），
+     額外加一行 caption——編輯態特有的需求：tile 一旦有圖，元件就會隱藏它自己的 __title，
+     三張圖並排時就認不出哪張是海報、哪張是橫幅。建立流程沒這問題（空框都有標題）。
+     高度沿用元件的 --upload-asset-h，兩邊不會各走各的。 */
+  .ee-assets { display: flex; flex-wrap: wrap; gap: var(--sp-12); --upload-asset-h: 200px; }
+  .ee-asset { display: flex; flex-direction: column; gap: var(--sp-6); max-width: 100%; }
+  .ee-asset .upload-tile { flex: 0 0 auto; width: auto; height: var(--upload-asset-h); min-height: 0; max-width: 100%; }
+  .ee-asset__cap { font-size: var(--fs-11); color: var(--muted-foreground); }
+  @media (max-width: 640px) { .ee-assets { --upload-asset-h: 148px; } }
+
+  .ee-gallery-head {
+    display: flex; align-items: baseline; gap: var(--sp-8);
+    margin: var(--sp-24) 0 var(--sp-10);
+    font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--foreground);
+  }
+  .ee-gallery-count { font-size: var(--fs-11); font-weight: var(--fw-regular); color: var(--muted-foreground); }
 
   /* ＊ 必填 inline 驗證與容量下限訊息（沿用 create-event 的 .ce-field-error 作法） */
   .ee-field-error { display: none; margin-top: 6px; font-size: var(--fs-12); color: var(--destructive); }
@@ -208,33 +230,48 @@
         <button type="button" class="btn btn--outline btn--sm" id="ee-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
       </div>
 
+      <!-- 編輯態的圖片區＝「看見現在上線中的圖」，不是四個空上傳框。
+           三個具名槽各自帶自己的比例（1:1／3:4／16:9），相簿是 1–8 張、獨立一列。
+           互動全部沿用 ds-components/upload-tile.css ＋ partials/upload-tile.js 的
+           [data-upload] 增強器（縮圖／hover 替換／AI 優化／移除），不自造。 -->
       <div class="form-section form-section--outlined" id="ee-images-sec">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
-          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
+          <p class="form-section__sub" data-i18n="ee.img.sub">These are live right now. Hover any image to replace or remove it.</p>
         </div>
-        <div class="form-grid">
-          <div class="upload-tile" data-asset="thumb">
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+
+        <div class="ee-assets">
+          <div class="ee-asset">
+            <div class="upload-tile upload-tile--1x1" data-upload data-asset="thumb">
+              <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+              <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
+              <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+            </div>
+            <span class="ee-asset__cap"><span data-i18n="ce.img.thumb">Thumbnail</span> · 1:1</span>
           </div>
-          <div class="upload-tile" data-asset="poster">
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
+          <div class="ee-asset">
+            <div class="upload-tile upload-tile--3x4" data-upload data-asset="poster">
+              <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+              <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
+              <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
+            </div>
+            <span class="ee-asset__cap"><span data-i18n="ce.img.poster">Vertical poster</span> · 3:4</span>
           </div>
-          <div class="upload-tile" data-asset="banner">
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
-          </div>
-          <div class="upload-tile" data-asset="gallery">
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>
+          <div class="ee-asset">
+            <div class="upload-tile upload-tile--16x9" data-upload data-asset="banner">
+              <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+              <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
+              <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
+            </div>
+            <span class="ee-asset__cap"><span data-i18n="ce.img.banner">Landscape banner</span> · 16:9</span>
           </div>
         </div>
+
+        <div class="ee-gallery-head">
+          <span data-i18n="ce.img.gallery">Gallery images</span>
+          <span class="ee-gallery-count" id="ee-gallery-count">—</span>
+        </div>
+        <div class="ee-assets" id="ee-gallery"></div>
       </div>
     </section>
 
@@ -367,6 +404,7 @@
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="partials/date-input.js?v=r2.1"></script>
+<script src="partials/upload-tile.js?v=r2.1"></script>
 <script src="js/events-store.js?v=r2.1"></script>
 <script src="partials/wizard-chrome.js?v=r2.1"></script>
 <script>
@@ -468,13 +506,54 @@
         : T('ee.cap.hint.free', 'Total seats or standing.');
     }
 
-    $$('.upload-tile[data-asset]').forEach(tile => {
-      tile.classList.toggle('is-filled', !!images[tile.dataset.asset]);
-    });
-
+    seedAssets();
+    renderGallery();
     renderLiveState();
     renderLineup();
     renderTiers();
+  }
+
+  /* 三個具名槽：把「已上傳的圖」交給元件的 data-upload-src（2026-07-27 新增於 partials/upload-tile.js）。
+     必須在 upload-tile.js 的 init 之前設好——本段在 DOMContentLoaded 之前跑，故增強器
+     enhance() 時就會看到屬性、直接進 is-filled。空字串＝那個槽本來就沒圖，維持空狀態提示。 */
+  function seedAssets() {
+    $$('.upload-tile[data-asset]').forEach(tile => {
+      const src = images[tile.dataset.asset];
+      if (src) tile.setAttribute('data-upload-src', src);
+      else tile.removeAttribute('data-upload-src');
+    });
+  }
+
+  /* 相簿是 1–8 張，單一格表達不了：每張圖一格，尾端永遠留一個空格可再加。
+     移除某張＝該格轉空，於是尾端會有兩個空格——重繪把多餘的收掉。 */
+  function renderGallery() {
+    const wrap = $('#ee-gallery');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const list = images.gallery || [];
+    list.concat(['']).forEach((src, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'ee-asset';
+      const tile = document.createElement('div');
+      tile.className = 'upload-tile upload-tile--3x2';
+      tile.setAttribute('data-upload', '');
+      tile.setAttribute('data-gallery-index', String(i));
+      if (src) tile.setAttribute('data-upload-src', src);
+      tile.innerHTML =
+        '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+        '<span class="upload-tile__title">' + T('ee.img.add', 'Add image') + '</span>' +
+        '<span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>';
+      const cap = document.createElement('span');
+      cap.className = 'ee-asset__cap';
+      cap.textContent = src ? T('ee.img.n', 'Image {n}').replace('{n}', i + 1) : T('ee.img.add', 'Add image');
+      cell.appendChild(tile);
+      cell.appendChild(cap);
+      wrap.appendChild(cell);
+    });
+    if (typeof applyIcons === 'function') applyIcons(wrap);
+    if (window.ztorUploadTile) window.ztorUploadTile.init();
+    const countEl = $('#ee-gallery-count');
+    if (countEl) countEl.textContent = T('ee.img.galleryn', '{n} of 8').replace('{n}', list.length);
   }
 
   function renderLiveState() {
@@ -609,7 +688,10 @@
     const ds = val('desc');
     setVal('details', nm ? (ds ? nm + ' — ' + (ds.length > 70 ? ds.slice(0, 70) + '…' : ds) : nm) : '');
     setVal('lineup', lineup.filter(Boolean).length ? lineup.filter(Boolean).join(' · ') : '');
-    const imgN = Object.keys(images).filter(k => images[k]).length;
+    /* 四個素材位＝縮圖／海報／橫幅／相簿；相簿算「有沒有至少一張」，不是陣列本身是否存在
+       （空陣列也是 truthy，直接數 key 會永遠多算一個）。 */
+    const imgN = ['thumb', 'poster', 'banner'].filter(k => images[k]).length
+               + ((images.gallery || []).length ? 1 : 0);
     setVal('images', T('ee.ov.imagesn', '{n} of 4 uploaded').replace('{n}', imgN));
     const cityPart = val('city');
     setVal('venue', val('venue') ? (cityPart ? val('venue') + ' · ' + cityPart : val('venue')) : '');
@@ -692,9 +774,17 @@
   function renderPreview() {
     const poster = $('#ee-pv-poster');
     const icon = $('#ee-pv-poster-icon');
-    const filled = !!(images.poster || images.banner);
-    if (poster) poster.style.background = filled ? 'var(--surface-inverse)' : '';
-    if (icon) icon.style.display = filled ? 'none' : '';
+    /* 預覽卡放真正的海報圖（建立流程只能塗一塊實色，因為那時還沒有圖；編輯態有）。
+       新選、尚未存檔的檔案沒有可顯示的路徑，退回實色示意而不是掛一個壞掉的 <img>。 */
+    const src = images.poster || images.banner || '';
+    const real = src && src !== NEW_UPLOAD;
+    if (poster) {
+      poster.style.backgroundImage = real ? 'url("' + src + '")' : '';
+      poster.style.backgroundSize = real ? 'cover' : '';
+      poster.style.backgroundPosition = real ? 'center' : '';
+      poster.style.background = real ? poster.style.background : (src ? 'var(--surface-inverse)' : '');
+    }
+    if (icon) icon.style.display = src ? 'none' : '';
     const tag = $('#ee-pv-type');
     if (tag) { tag.textContent = T(ev.typeLabelKey, ev.type); tag.hidden = false; }
     $('#ee-pv-name').textContent = val('name') || T('ce.pv.name', 'Event name');
@@ -733,13 +823,25 @@
   document.addEventListener('input', e => { if (e.target.matches('[data-ee]')) sync(); });
   $$('[data-required]').forEach(el => el.addEventListener('blur', () => validateRequired()));
 
-  $$('.upload-tile[data-asset]').forEach(tile => {
-    tile.addEventListener('click', () => {
-      const k = tile.dataset.asset;
-      images[k] = !images[k];
-      tile.classList.toggle('is-filled', !!images[k]);
-      sync();
-    });
+  /* 圖片變動一律由元件回報（upload:change 會冒泡，detail.filled 已是最終狀態），
+     頁面只負責把結果寫回 images 並重算髒值——不自己攔點擊，替換／移除才不會有兩套真相。
+     原型不真的上傳，故新選的檔案記成 sentinel（不是假造一個 URL 佯稱已存檔）。 */
+  const NEW_UPLOAD = '(new upload)';
+  $('#ee-images-sec').addEventListener('upload:change', e => {
+    const tile = e.target.closest('.upload-tile');
+    if (!tile) return;
+    const filled = !!(e.detail && e.detail.filled);
+    if (tile.hasAttribute('data-gallery-index')) {
+      const i = Number(tile.getAttribute('data-gallery-index'));
+      const list = (images.gallery || []).slice();
+      if (filled) list[i] = list[i] || NEW_UPLOAD;
+      else list.splice(i, 1);
+      images.gallery = list.filter(Boolean);
+      renderGallery();
+    } else if (tile.dataset.asset) {
+      images[tile.dataset.asset] = filled ? (images[tile.dataset.asset] || NEW_UPLOAD) : '';
+    }
+    sync();
   });
 
   const lineupAdd = $('#ee-lineup-add');
@@ -792,7 +894,9 @@
 
   fill();
   sync();
-  document.addEventListener('i18n:applied', () => { renderLiveState(); sync(); });
+  /* 語言切換後要重繪所有「由 JS 寫進 textContent」的字：i18n.js 只會重寫帶 data-i18n 的節點，
+     相簿格與票種列是動態生成的，不重繪就會留在舊語言（實測切 en 後相簿仍是「第 1 張／新增圖片」）。 */
+  document.addEventListener('i18n:applied', () => { renderLiveState(); renderGallery(); renderTiers(); sync(); });
 }());
 </script>
 <script src="js/reveal.js?v=r2.1"></script>
