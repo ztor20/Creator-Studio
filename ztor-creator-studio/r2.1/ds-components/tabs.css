@@ -173,6 +173,85 @@
    留著只會讓底線多凸出卡片 1px。 */
 .tabs--card .tabs__item { margin-bottom: 0; }
 
+/* ── .live-dot — ambient activity dot for the one state that means "happening
+     right now and earning" (Projects Live / 已上線). Opt-in per item.
+     (2026-07-27, L directive "a breathing dot")
+
+     Rides `.tabs__item--live` OR `.filter-tabs__item--live`, so it follows the
+     MEANING rather than a position: after the 2026-07-27 restructure the Live
+     control is a state pill on row 2, not a tab on row 1.
+
+     Colour: --primary (orange), NOT green. The same projects wear
+     .badge--orange in the Status column, and green is already spoken for by
+     Published (.badge--success). One concept, one colour — a green dot here
+     would be the Published colour pointing at Live rows.
+
+     Motion: ambient, not a UI transition, so it sits outside the 150–300ms
+     feedback budget — 2.6s at low amplitude reads as breathing rather than
+     blinking. Only transform+opacity animate (GPU; no layout, no paint of the
+     tab itself). The solid core never moves so the dot stays legible; only the
+     halo breathes.
+
+     Why looping is allowed here at all: the house rule is that persistent
+     chrome does not animate (see the side-rail's zero-entrance-animation
+     spec), and Vercel's Status Dot animates only in TRANSITIONAL states and
+     goes static at terminal ones. Live is where money is actively moving — that
+     is what earns the motion. Every settled state (Draft/Scheduled/Succeeded/
+     Cancelled) stays still.
+
+     Three guards keep it honest:
+       1. data-live="0"  → the dot is removed entirely. It can never imply
+          activity that does not exist.
+       2. prefers-reduced-motion → static ring, no movement.
+       3. html[data-hidden] (set on visibilitychange) → paused off-screen, so
+          a backgrounded tab costs nothing.
+     The dot is aria-hidden: the control already says "Live" + a count, so
+     liveness is never carried by colour alone (WCAG 1.4.1). ── */
+.tabs__item--live .live-dot,
+.filter-tabs__item--live .live-dot {
+  /* Renders before the label. DOM order stays [label][count][dot] so
+     .tabs--underline-label's `> :first-child` is still the label span and the
+     active underline keeps measuring the label only. */
+  order: -1;
+  position: relative;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+/* .tabs__item has no gap, so the dot buys its own spacing; .filter-tabs__item
+   already sets gap:--sp-6 between children, so adding a margin there would
+   double-space it. */
+.tabs__item--live .live-dot { margin-right: var(--sp-8); }
+.tabs__item--live .live-dot::after,
+.filter-tabs__item--live .live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: tabs-live-breathe 2600ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes tabs-live-breathe {
+  0%, 100% { transform: scale(1);   opacity: 0.5; }
+  50%      { transform: scale(2.2); opacity: 0;   }
+}
+/* Nothing live ⇒ no indicator. */
+.tabs__item--live[data-live="0"] .live-dot,
+.filter-tabs__item--live[data-live="0"] .live-dot { display: none; }
+/* Off-screen ⇒ stop burning frames (paired with the visibilitychange hook). */
+html[data-hidden] .tabs__item--live .live-dot::after,
+html[data-hidden] .filter-tabs__item--live .live-dot::after { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .tabs__item--live .live-dot::after,
+  .filter-tabs__item--live .live-dot::after {
+    animation: none;
+    opacity: 0.32;
+    transform: scale(1.8);
+  }
+}
+
 /* When .tabs__item is rendered as <button> (programmatic tabs),
    strip default button chrome. */
 button.tabs__item {

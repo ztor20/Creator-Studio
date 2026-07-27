@@ -86,6 +86,20 @@
 /* Destructive ghost：紅字＋hover 淡紅底。綁 ghost 防止誤掛 primary（2026-07-09 自 create-product/auction 頁內樣式 promote） */
 .btn--ghost.btn--destructive { color: var(--destructive); }
 .btn--ghost.btn--destructive:hover { background: color-mix(in srgb, var(--destructive) 10%, transparent); color: var(--destructive); }
+/* Destructive 實心（2026-07-27）：只給「確認彈窗裡真正執行破壞」的那一顆——入口用上面的 ghost 版
+   （紅字、不搶眼），真的要按下去的那一步才給實心紅。
+   ⚠ 必須 :not(.btn--ghost)。ghost 版只設 color、沒設 background，兩條規則管的是不同屬性，
+   光靠特異度不會互相取代——第一版沒排除 ghost，結果紅底＋紅字，整顆按鈕變成看不見字的紅方塊。 */
+.btn--destructive:not(.btn--ghost) {
+  background: var(--destructive);
+  color: var(--destructive-foreground, #fff);
+  border-color: transparent;
+}
+.btn--destructive:not(.btn--ghost):hover {
+  background: color-mix(in srgb, var(--destructive) 86%, #000);
+  color: var(--destructive-foreground, #fff);
+}
+.btn--destructive:not(.btn--ghost):disabled { opacity: .5; cursor: not-allowed; }
 /* Soft / tonal secondary (2026-06-12) — resting light-grey fill, no border.
    Sits between ghost (transparent until hover) and outline (white + border):
    use for a quiet-but-always-visible secondary like a toolbar Export. */

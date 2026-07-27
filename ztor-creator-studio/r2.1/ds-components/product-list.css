@@ -158,7 +158,7 @@
   color: var(--foreground);
   font-family: var(--font-ui);
   font-size: var(--fs-14);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-regular);
   line-height: var(--lh-normal);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -439,6 +439,13 @@
    點擊委派邏輯）。只有 --eshop 有這個點擊行為，游標提示保留 scoped、不隨 hover 視覺一起變成 base。 */
 .product-list--eshop .product-list__row { cursor: pointer; }
 
+/* 2026-07-27 使用者裁示：--ip 的整列也可點＝進 IP 細節頁（比照 --eshop／--orders）。
+   Mktplace 開關與 actions 兩欄是列內互動元素、不參與導向（見 my-ip.html 點擊委派），
+   游標在那兩欄還原成預設，免得看起來整欄都會導頁。承租列（--rented）沒有細節頁、不套。 */
+.product-list--ip .product-list__row { cursor: pointer; }
+.product-list--ip .product-list__mktplace,
+.product-list--ip .product-list__actions { cursor: default; }
+
 .product-list__mktplace {
   display: flex;
   align-items: center;
@@ -451,4 +458,27 @@
   .product-list--ip .product-list__product { padding-left: var(--sp-72); }
   .product-list--ip .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
   .product-list--ip .product-list__mktplace { grid-column: 2; justify-content: flex-end; }
+}
+
+/* ============================================================
+   --rented 變體（My IP · Rented 分頁，2026-07-27）
+   租入授權清單：Icon / IP(名稱＋licensor 小標) / Type(徽章) /
+   Licensor / Term / Expires(狀態徽章) / Price / Action(續約鈕)。
+   由 Dashboard「IP 租約即將到期」CTA 深連結（my-ip.html?ip=<slug>#rented）
+   落地；列以 data-ip 標記供 highlight。與 --ip 同法：專屬欄寬＋
+   ≤760px 退回堆疊。
+   ============================================================ */
+.product-list--rented .product-list__head,
+.product-list--rented .product-list__row {
+  /* 欄寬總和須 ≤ --ip 變體（同一容器寬）：76+170+84+100+112+112+72+88=814，與 --ip 的
+     814 對齊；首版 900px 會把 Action 欄擠出容器（Renew 鈕被裁掉半顆）。 */
+  grid-template-columns: 76px minmax(170px, 1.1fr) 84px minmax(100px, 0.6fr) minmax(112px, 0.6fr) minmax(112px, 0.55fr) minmax(72px, 0.4fr) 88px;
+}
+.product-list--rented .product-list__cell { color: var(--foreground); }
+
+@media (max-width: 760px) {
+  .product-list--rented .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--rented .product-list__product { padding-left: var(--sp-72); }
+  .product-list--rented .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
+  .product-list--rented .product-list__actions { grid-column: 2; justify-content: flex-end; }
 }
