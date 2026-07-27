@@ -11,7 +11,9 @@
  * --------------------------------------------------------------------------- */
 (function () {
   const STORAGE_KEY = 'ztor-r21-lang';
-  const DEFAULT_LANG = 'zh-Hant';  // D108: v1 單一語言＝繁體中文，不提供語言切換
+  /* [local-default] 本機預覽預設語言＝英文。上游為 'zh-Hant'（D108: v1 單一語言＝繁體中文，
+     不提供語言切換）；已存過語言的瀏覽器仍以 localStorage 的值優先。 */
+  const DEFAULT_LANG = 'en';
 
   /* ── Persona（cheat-code「User」切換）───────────────────────────
      一個 localStorage 值決定「現在把假資料當成誰」。default＝現有素材；
@@ -25,7 +27,7 @@
   const PERSONAS = ['default', 'nick', 'userB'];
   function currentPersona() {
     try { const p = localStorage.getItem(PERSONA_KEY); if (PERSONAS.indexOf(p) >= 0) return p; } catch (_) {}
-    return 'default';
+    return 'nick';   /* [local-default] 本機預覽預設人格＝周湯豪（上游為 'default'） */
   }
 
   const DICT = {
@@ -378,6 +380,15 @@
     'ops.pending-meta':       { en: '3 open · 1 in progress', zh: '3 件待處理 · 1 件處理中' },
     'ops.projects':           { en: 'Active projects',       zh: '進行中專案' },
     'ops.projects-meta':      { en: 'Live · funding · scheduled', zh: '上線 · 募資 · 排程中' },
+    /* F2 tile popups（2026-07-27）— in-place 明細彈窗，每項自帶 CTA */
+    'ops.modal.pending-title':  { en: 'Pending actions',                    zh: '待處理事項' },
+    'ops.modal.pending-sub':    { en: 'Each item has one clear next step',  zh: '每一項都有明確的下一步' },
+    'ops.modal.view-alerts':    { en: 'View in Alerts & actions',           zh: '在今日待處理查看' },
+    'ops.modal.projects-title': { en: 'Active projects',                    zh: '進行中專案' },
+    'ops.modal.projects-sub':   { en: 'Live, funding and scheduled right now', zh: '目前上線、募資與排程中的項目' },
+    'ops.modal.open-project':   { en: 'Open project',                       zh: '打開專案' },
+    'ops.modal.open-event':     { en: 'Open event',                         zh: '打開活動' },
+    'ops.modal.go-projects':    { en: 'Go to Projects',                     zh: '前往專案' },
 
     /* F3 · added Event-tickets income row (replaced the excluded payout row) */
     'tx.tickets.title':       { en: 'Event tickets · <em>Spring Launch</em> show × 38', zh: '活動票券 · <em>Spring Launch</em> 演出 × 38' },
@@ -433,11 +444,15 @@
     'alert.ip-rental.src':    { en: 'From · My IP',           zh: '來自 · 我的 IP' },
     'alert.ip-rental.cta':    { en: 'Renew',                  zh: '續租' },
     'alert.stock.title':      { en: 'Low stock · 3 items',    zh: '庫存過低 · 3 項商品' },
-    'alert.stock.desc':       { en: '<em>Tide Pool</em> vinyl, <em>Cartridge 04</em> zine, and tour T-shirt are below restock threshold.', zh: '「<em>Tide Pool</em>」黑膠、「<em>Cartridge 04</em>」雜誌書與巡演 T-Shirt 低於補貨門檻。' },
+    /* 2026-07-27：品名對齊 e-shop 自身低庫存橫條（PERSONA_ITEMS）——CTA 深連結落地後
+       看到的品項要跟告警說的一致，不能再用落地頁不存在的名字。 */
+    'alert.stock.desc':       { en: '<em>Tour zine vol. 02</em>, <em>Coastline tee (S)</em>, and the Salt &amp; Bitumen poster are below restock threshold.', zh: '「<em>Tour zine vol. 02</em>」、「<em>Coastline tee (S)</em>」與 Salt &amp; Bitumen 海報低於補貨門檻。' },
     'alert.stock.src':        { en: 'From · E-Shop',          zh: '來自 · 電子商店' },
     'alert.stock.cta':        { en: 'Restock',                zh: '補貨' },
     'alert.event.title':      { en: 'Event pre-flight incomplete', zh: '活動檢核尚未完成' },
-    'alert.event.desc':       { en: '<em>Tide Pool · 14 Jun</em> still needs refund policy and on-site staffing confirmed.', zh: '「<em>Tide Pool · 14 Jun</em>」尚未確認退款規則與現場人力配置。' },
+    /* 2026-07-27：活動名對齊落地頁——event-detail.html 就是 Spring Launch（Apr 12），
+       原文案的「Tide Pool · 14 Jun」在任何 persona 資料裡都不存在。 */
+    'alert.event.desc':       { en: '<em>Spring Launch · Apr 12</em> still needs refund policy and on-site staffing confirmed.', zh: '「<em>Spring Launch · Apr 12</em>」尚未確認退款規則與現場人力配置。' },
     'alert.event.src':        { en: 'From · Events',          zh: '來自 · 活動' },
     'alert.event.cta':        { en: 'Complete checklist',     zh: '完成檢核' },
     'alert.payout-block.title':{ en: 'Payouts on hold — tax form required', zh: '提款已暫停 — 需補稅務表單' },
@@ -971,6 +986,20 @@
     'my-ip.col.rented':      { en: 'Rented',                     zh: '租出數' },
     'my-ip.col.revenue':     { en: 'Revenue',                    zh: '收入' },
     'my-ip.col.price':       { en: 'Price',                      zh: '租金' },
+    /* 租入分頁（2026-07-27）— Dashboard「IP 租約即將到期」CTA 的深連結落地列 */
+    'my-ip.rented.col.licensor':  { en: 'Licensor',              zh: '授權方' },
+    'my-ip.rented.col.term':      { en: 'Term',                  zh: '租期' },
+    'my-ip.rented.col.expires':   { en: 'Expires',               zh: '到期' },
+    'my-ip.badge.licensed':       { en: 'Licensed',              zh: '授權租入' },
+    'my-ip.rented.neon.source':   { en: 'Licensed in',           zh: '租入授權' },
+    'my-ip.rented.neon.name':     { en: 'Neon Tide brand license', zh: '「Neon Tide」品牌授權' },
+    'my-ip.rented.neon.licensor': { en: 'Neon Tide Studio',      zh: 'Neon Tide 工作室' },
+    'my-ip.rented.neon.term':     { en: 'Nov 25 – May 25 · 6 mo', zh: '11/25 – 5/25 · 6 個月' },
+    'my-ip.rented.neon.price':    { en: '$120 / mo',             zh: '$120 / 月' },
+    'my-ip.rented.badge.expiring':{ en: 'Expires May 25',        zh: '5 月 25 日到期' },
+    'my-ip.rented.badge.renewed': { en: 'Renewed',               zh: '已續約' },
+    'my-ip.rented.renew':         { en: 'Renew',                 zh: '續約' },
+    'my-ip.rented.renewed':       { en: 'Renewed ✓',             zh: '已續約 ✓' },
     /* 逐列欄位值（2026-07-20 由原本擠成一行的 rowN.meta 拆開，資料內容不變、只拆欄） */
     'my-ip.row1.rights':     { en: 'Maya Chou · 100%',           zh: 'Maya Chou · 100%' },
     'my-ip.row1.rented':     { en: '3',                          zh: '3' },
@@ -1592,8 +1621,8 @@
     'events.kpi.tickets-meta': { en: '+18% YoY',                            zh: '年增 +18%' },
     'events.kpi.revenue':      { en: 'Total revenue',                       zh: '總收入' },
     'events.kpi.revenue-meta': { en: '+12% YoY',                            zh: '年增 +12%' },
-    'events.kpi.avg':          { en: 'Avg attendance',                      zh: '平均出席' },
-    'events.kpi.avg-meta':     { en: 'From check-in data',                  zh: '來自報到資料' },
+    'events.kpi.avg':          { en: 'Attendance rate',                     zh: '出席率' },
+    'events.kpi.avg-meta':     { en: 'Checked in ÷ sold',                   zh: '已報到 ÷ 售出' },
     'events.tab.upcoming':     { en: 'Upcoming',                            zh: '即將舉辦' },
     'events.tab.past':         { en: 'Past',                                zh: '已舉辦' },
     'events.tab.drafts':       { en: 'Drafts',                              zh: '草稿' },
@@ -4114,6 +4143,20 @@
     'event-detail.att.export': { en: 'Export attendee list', zh: '匯出參加者名單' },
     'event-detail.att.scanner': { en: 'Open scanner', zh: '開啟掃描器' },
     'event-detail.att.note': { en: '<strong>A valid scan is irreversible.</strong> The ticket moves issued → used; only the creator can reverse it. Scanner runs offline ~4 h and re-syncs on reconnect; on a double scan the earliest scan wins. For online events, external-platform data may be incomplete.', zh: '<strong>有效掃描不可逆。</strong>票券由 issued → used；僅創作者可回復。掃描器可離線運作約 4 小時，重新連線後同步；重複掃描以最早一次為準。線上活動的外部平台資料可能不完整。' },
+    /* Pre-flight checklist（2026-07-27）— Dashboard「完成檢核」CTA 的落地卡 */
+    'event-detail.preflight.title':       { en: 'Pre-flight checklist',    zh: '開演前檢核' },
+    'event-detail.preflight.sub':         { en: '2 items left before doors', zh: '開場前還有 2 項待完成' },
+    'event-detail.preflight.refund.title':{ en: 'Refund policy',           zh: '退款規則' },
+    'event-detail.preflight.refund.meta': { en: 'Not set · fans see "contact organizer" until confirmed', zh: '尚未設定 · 確認前粉絲只會看到「請聯絡主辦方」' },
+    'event-detail.preflight.refund.cta':  { en: 'Set refund policy',       zh: '設定退款規則' },
+    'event-detail.preflight.staff.title': { en: 'On-site staffing',        zh: '現場人力' },
+    'event-detail.preflight.staff.meta':  { en: '2 of 4 roles unconfirmed · door scan & merch desk', zh: '4 個崗位尚有 2 個未確認 · 入場掃描與週邊攤位' },
+    'event-detail.preflight.staff.cta':   { en: 'Confirm staffing',        zh: '確認人力配置' },
+    'event-detail.preflight.missing':     { en: 'Missing',                 zh: '未設定' },
+    'event-detail.preflight.unconfirmed': { en: 'Unconfirmed',             zh: '未確認' },
+    'event-detail.preflight.done':        { en: 'Done',                    zh: '已完成' },
+    'event-detail.preflight.completed':   { en: 'Completed ✓',             zh: '已完成 ✓' },
+    'event-detail.preflight.clear':       { en: 'All clear — ready for doors', zh: '全部完成，可以開場' },
     'event-detail.ref.title': { en: 'Refunds & comps', zh: '退款與招待票' },
     'event-detail.ref.sub': { en: 'Refund queue and complimentary tickets (§5.1.6 F5 · §7.3).', zh: '退款佇列與招待票（§5.1.6 F5 · §7.3）。' },
     'event-detail.ref.queue.title': { en: 'Refund queue', zh: '退款佇列' },
