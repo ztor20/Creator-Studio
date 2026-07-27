@@ -22,6 +22,16 @@
 
   /* 四條線＝頁面上那排篩選 chip 的四種類型。顏色必須與 chip 的 --dot 一致，
      否則圖例對不上線——這是這張圖唯一的圖例。 */
+  /* 2026-07-28：第一條線的名字依專案家族而定——歌曲／專輯沒有 OTT（線上影音）版稅，
+     那是影視通路的收入，音樂端叫音樂版稅。資料鍵維持 'ott'（同一條線、同一份資料），
+     只有顯示名稱換；家族由 <html data-project-family> 提供（project-detail 初始化時寫入）。 */
+  function projectFamily() {
+    return document.documentElement.getAttribute('data-project-family') || 'film';
+  }
+  function typeI18n(t) {
+    if (t.key !== 'ott') return t.i18n;
+    return projectFamily() === 'music' ? 'pd-earn.filter.music' : 'pd-earn.filter.ott';
+  }
   var TYPES = [
     { key: 'ott',     i18n: 'pd-earn.filter.ott',     hue: 'var(--chart-5)' },
     { key: 'critic',  i18n: 'pd-earn.filter.critic',  hue: 'var(--chart-2)' },
@@ -200,7 +210,7 @@
     types.forEach(function (t) {
       html += '<button type="button" class="fin-tip__row" data-earn-open="' + t.key + '">'
         + '<span class="fin-dot" style="--dot:' + t.hue + '"></span>'
-        + '<span>' + esc(T(t.i18n)) + '</span>'
+        + '<span>' + esc(T(typeI18n(t))) + '</span>'
         + '<span class="fin-tip__amt">' + usd(view.series[t.key][idx]) + '</span></button>';
     });
     html += '<div class="fin-tip__hint">' + esc(T('pd-earn.tip.hint', 'Click a row for the breakdown')) + '</div>';
@@ -251,7 +261,7 @@
        影評人預付 → 付給哪位影評人
        授權收益   → 授權給誰、哪個地區
      用「這筆錢是誰給的」當維度，明細才回答得了「要再多賺就去找誰」。 */
-  var CRITICS = ['Aria Lam', 'Kenji Watanabe', 'Priya Nair', 'Marco Bellini', 'Sofia Reyes',
+  var TASTEMAKERS = ['Aria Lam', 'Kenji Watanabe', 'Priya Nair', 'Marco Bellini', 'Sofia Reyes',
                  'Daniel Okafor', 'Hana Kim', 'Tomas Vidal'];
   var LICENSEES = ['Studio Yiu · Taiwan', 'Neon Tide Media · Hong Kong', 'Kanata Films · Japan',
                    'Northbound · Singapore', 'Rojak Pictures · Malaysia', 'Halcyon · Worldwide'];
@@ -282,7 +292,7 @@
     var total = state.view.series[type].reduce(function (a, b) { return a + b; }, 0);
     var names = type === 'ott' ? platformsFor()
               : type === 'license' ? LICENSEES
-              : CRITICS;
+              : TASTEMAKERS;
     var r = rng(state.id + ':detail:' + type);
     var w = names.map(function () { return 0.25 + r(); });
     var amts = splitExact(total, w);
@@ -299,9 +309,9 @@
     var tenths = splitExact(1000, rows.map(function (r) { return r.amount; }));
     var dimKey = type === 'ott' ? 'pd-earn.detail.platform'
                : type === 'license' ? 'pd-earn.detail.licensee'
-               : 'pd-earn.detail.critic';
+               : 'pd-earn.detail.tastemaker';
 
-    modal.querySelector('[data-earn-detail-title]').textContent = T(t.i18n);
+    modal.querySelector('[data-earn-detail-title]').textContent = T(typeI18n(t));
     modal.querySelector('[data-earn-detail-body]').innerHTML =
       '<div class="fin-detail__head"><span class="fin-dot" style="--dot:' + t.hue + '"></span>'
       + '<span class="fin-detail__total">' + usd(total) + '</span></div>'

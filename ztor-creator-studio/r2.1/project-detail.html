@@ -581,10 +581,69 @@
       <!-- 內容提取自 ztor 公開端 my-cocreate-proposal.html「我的收益」分頁，改套 R2.1 設計系統。
            數字為示意、待產品裁決（統一模型探索原型）。 -->
       <div class="tab-panel" data-panel="earnings">
+
+        <!-- 未上線的說明卡（2026-07-28 使用者裁示）：專案還沒上線就沒有任何收益，
+             原本照樣畫走勢圖與帳目是編造數字。這張卡回答三件事——這一頁之後會顯示
+             什麼、這個專案適用哪些收入類型（依家族只列真的適用的）、以及從哪一刻
+             開始有數字。不是空狀態插圖，是一份預先說明。 -->
+        <div data-earn-pending hidden>
+          <section class="card">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="info" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="pd-earn.pending.title">Earnings start once this project is live</h3>
+              </div>
+              <span class="badge"><span data-i18n="pd-earn.pending.badge">Not live yet</span></span>
+            </div>
+            <p class="text-sub" style="font-size: var(--fs-13);margin:0 0 var(--sp-16)" data-i18n="pd-earn.pending.lead">Nothing has been earned yet, so there is no trend or ledger to show. Here is what will appear on this tab, and when.</p>
+
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--info"><i data-lucide="trending-up" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-earn-fam="film" data-i18n="pd-earn.pending.ott.title">OTT royalty</div>
+                    <div class="data-list__title" data-earn-fam="music" data-i18n="pd-earn.pending.music.title" hidden>Music royalty</div>
+                    <div class="data-list__meta" data-earn-fam="film" data-i18n="pd-earn.pending.ott.desc">Your share of streaming income by equity stake, once the work is released.</div>
+                    <div class="data-list__meta" data-earn-fam="music" data-i18n="pd-earn.pending.music.desc" hidden>Your share of streaming and download income by equity stake, once the release is out.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="badge-check" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="pd-earn.pending.commission.title">Tastemaker commission</div>
+                    <div class="data-list__meta" data-i18n="pd-earn.pending.commission.desc">Spending driven by tastemaker recommendations, returned at their commission rate.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon"><i data-lucide="file-text" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="pd-earn.pending.license.title">Licensing</div>
+                    <div class="data-list__meta" data-i18n="pd-earn.pending.license.desc">Income from licensing this work to other studios or platforms.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-banner mt-16">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="pd-earn.pending.note">Figures appear here after the project goes live and its first settled income clears. Funding raised before release is tracked in Co-creation progress, not here.</span>
+            </div>
+          </section>
+        </div>
+
+        <!-- 已上線才顯示的真實收益內容 -->
+        <div data-earn-live hidden>
         <!-- 收益篩選 chips（＝圖表圖例）＋收益走勢圖，提取自公開端「我的收益」分頁 -->
         <nav class="filter-tabs filter-tabs--source" role="tablist" aria-label="Earnings type filter" data-earn-filter>
           <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" style="--dot:var(--primary)" data-i18n="pd-earn.filter.all">All</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-5)" data-earn-series="ott"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.ott">OTT royalty</span></button>
+          <!-- 這顆 chip 的名稱依家族在初始化時改寫（影視＝OTT 版稅／音樂＝音樂版稅），
+               見下方 data-earn-royalty-label 的處理。資料鍵維持 ott（同一條資料線）。 -->
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-5)" data-earn-series="ott"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.ott" data-earn-royalty-label>OTT royalty</span></button>
           <button data-earn-series="critic" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-2)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.critic">Critic commission</span></button>
           <button data-earn-series="advance" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--destructive)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.advance">Critic advance</span></button>
           <button data-earn-series="license" class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--muted-foreground)"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="pd-earn.filter.license">Licensing</span></button>
@@ -727,7 +786,7 @@
                 </tr></thead>
                 <tbody>
                   <tr class="ztor-table__row"><td>2026-09-11</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 40</td><td data-i18n="pd-earn.act.critic15">Critic commission (15%)</td></tr>
-                  <tr class="ztor-table__row"><td>2026-09-10</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 30</td><td data-i18n="pd-earn.act.ott">OTT royalty (2%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-09-10</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 30</td><td data-i18n="pd-earn.act.ott" data-earn-royalty-act>OTT royalty (2%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-09-08</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.license">Licensing (2%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-09-07</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 200</td><td data-i18n="pd-earn.act.critic12">Critic commission (12%)</td></tr>
                   <tr class="ztor-table__row"><td>2026-09-04</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.advance">Critic advance</td></tr>
@@ -737,6 +796,7 @@
           </section>
 
         </div>
+        </div><!-- /[data-earn-live] -->
       </div>
 
       <!-- ===================== 7 · CO-CREATION PROGRESS（共創進度，僅募資型）===================== -->
@@ -1985,6 +2045,30 @@
          集數，單曲／電影／短片／MV 是單一作品，一列的排行榜沒有意義）。 */
       const perfFam = store.family(p.cat);              /* film | music | other */
       const perfLive = p.status === 'live';
+
+      /* ── 收益分頁的家族與上線狀態（2026-07-28 使用者裁示）─────────────────
+         (1) 家族掛到 <html>：收益圖表要據此把第一條線改叫「音樂版稅收益」——
+             歌曲／專輯沒有 OTT（線上影音）版稅，那是影視通路的收入。掛在 root
+             而不是靠表現面板的 data-perf-family，是因為後者只有已上線的影視／
+             音樂專案才會渲染出來，未上線的專案讀不到。
+         (2) 還沒上線就沒有收益：原本會照樣畫出走勢圖與帳目，那是編造。改成
+             說明卡——講清楚這一頁之後會有什麼、這個專案適用哪些收入類型、
+             以及什麼時候開始有數字。 */
+      document.documentElement.setAttribute('data-project-family', perfFam);
+      document.querySelectorAll('[data-earn-royalty-label]').forEach(el => {
+        el.setAttribute('data-i18n', perfFam === 'music' ? 'pd-earn.filter.music' : 'pd-earn.filter.ott');
+      });
+      /* 帳目列的版稅列同理——chip 改了名字、底下明細還寫 OTT 就自相矛盾 */
+      document.querySelectorAll('[data-earn-royalty-act]').forEach(el => {
+        el.setAttribute('data-i18n', perfFam === 'music' ? 'pd-earn.act.music' : 'pd-earn.act.ott');
+      });
+      const earnLive = p.status === 'live';
+      document.querySelectorAll('[data-earn-live]').forEach(el => { el.hidden = !earnLive; });
+      document.querySelectorAll('[data-earn-pending]').forEach(el => { el.hidden = earnLive; });
+      /* 說明卡裡「這個專案會有哪些收入」那一列，依家族與專案類型只列真的適用的 */
+      document.querySelectorAll('[data-earn-fam]').forEach(el => {
+        el.hidden = el.getAttribute('data-earn-fam') !== (perfFam === 'music' ? 'music' : 'film');
+      });
       /* 影視／音樂且已上線才掛分頁；活動／商品／文檔沒有串流通路，連分頁都不長出來，
          而不是長出來再給一張空卡——後者等於承諾一個不存在的資料源。 */
       const perfReady = perfLive && perfFam !== 'other';

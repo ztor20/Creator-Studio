@@ -24,6 +24,24 @@
 })();
 
 /* ============================================================
+   內嵌模式（2026-07-28 使用者裁示：清單點進細節要用覆蓋層，不要導航離開）
+
+   任何頁面帶 ?embed=1 載入時，在 <html> 標上 data-embed。詳情頁被 detail-sheet
+   放進 iframe 時就是這樣載入的：全域導覽與外殼留白由 CSS 收掉（見 shared.css
+   「內嵌模式」一節），頁面本身的內容一行都不用改——覆蓋層裡看到的就是同一頁。
+
+   為什麼標在 <html> 而不是等 JS 跑完再加 class：這支是每頁 <head> 的第一支
+   script，標在這裡的話 CSS 在第一次算繪前就知道要收掉導覽，
+   不會先閃一下側欄再消失。 */
+(function markEmbedMode() {
+  try {
+    if (new URLSearchParams(location.search).get('embed') === '1') {
+      document.documentElement.setAttribute('data-embed', '1');
+    }
+  } catch (_) {}
+})();
+
+/* ============================================================
    字型預載（2026-07-28 使用者回報：「每次重新整理，標題都會先閃一下別的字
    才變成 Alumni」）
 

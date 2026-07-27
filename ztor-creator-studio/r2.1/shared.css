@@ -1786,3 +1786,37 @@ html[data-data-state="empty"] .when-data { display: none; }
    注意：**不動 <strong>/<b>**——那兩個的粗體是語意，不是裝飾。
    ============================================================ */
 h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-regular); }
+
+/* ============================================================
+   內嵌模式 · html[data-embed]（2026-07-28 使用者裁示）
+
+   詳情頁被 detail-sheet 覆蓋層放進 iframe 時，用 ?embed=1 載入。
+   使用者的要求是「不要發明新的詳情頁設計，就用同一頁」——所以這裡不改版面、
+   不隱藏內容，只收掉在覆蓋層裡會重複或礙事的三樣東西：
+
+     · 全域導覽：覆蓋層是從某一頁「疊上來」的，底下那頁的側欄還在。
+       再畫一份導覽等於同一個畫面有兩套導航，而且點了會把使用者帶離覆蓋層。
+     · 外殼留白與圓角：那是 app shell 的形狀，覆蓋層自己已經是一張卡。
+     · 吸底動作列：覆蓋層有自己的關閉鈕在頂部；再貼一條吸底列會蓋住內容。
+
+   捲動改回 <body>：桌機版 .app 是 height:100vh + overflow:hidden、只有 .main
+   內捲。在 iframe 裡那個 100vh 是 iframe 自己的高度，兩層捲動容器會疊在一起
+   （外框一條、.main 一條）。改成單層捲動，覆蓋層裡就只有一條捲軸。
+   ============================================================ */
+html[data-embed] .app-topbar,
+html[data-embed] .app-sidebar,
+html[data-embed] .app-footer,
+html[data-embed] .sticky-actions { display: none !important; }
+
+html[data-embed],
+html[data-embed] body { height: auto; }
+html[data-embed] .app { height: auto; min-height: 0; overflow: visible; display: block; }
+html[data-embed] .main {
+  margin: 0;
+  border-radius: 0;
+  overflow: visible;
+  min-height: 0;
+  background: var(--surface-page);
+}
+/* 頁面欄的上緣留白在覆蓋層裡不需要——標題列已經在正上方 24px 處。 */
+html[data-embed] .page { padding-top: var(--sp-8); }

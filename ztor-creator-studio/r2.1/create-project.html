@@ -1121,7 +1121,7 @@
       id: 'b' + bdSeq,
       name: '', desc: '', price: '',
       slots: 0,
-      avail: 'unlimited',   // unlimited | limited
+      avail: 'auto',        // auto | limited（2026-07-28：unlimited → auto，見 bdMaxUnits）
       cap: '',
       items: [],            // [{id, name, img, price}] — 引用，不是自由文字
       perks: [],            // [string] — 自由文字，見 bundle-editor.css 的說明
@@ -1161,16 +1161,51 @@
   function bdValid(b) {
     return String(b.name).trim().length > 0 && bdNum(b.price) > 0;
   }
-  /* 這張套組最多能賣幾份：Limited 吃 cap；Unlimited 沒有上限。
-     含名額的套組必須 Limited——不然是無上限的分潤承諾，這是唯一真正危險的狀態，
-     所以 UI 用結構擋（選了名額就停用 Unlimited），不是事後報錯。 */
+  /* ── 販售上限（2026-07-28 使用者裁示改制）─────────────────────────────
+     舊制：含名額就強制 Limited、要創作者自己打一個數字，否則算成「無上限的分潤承諾」。
+     那是把一個算得出來的數字丟回去給人填——名額本來就有一個共用池（募資頁的
+     Supporter slots），賣掉多少就少多少，每張套組能賣幾份是**除出來的**，不是填的。
+
+     新制兩種模式：
+       auto    ＝ 從池子推導。可賣份數 = floor(剩餘池 ÷ 每份含的名額)。
+                 含 0 名額（純回饋不分潤）不吃池子 → 真正無上限。
+       limited ＝ 創作者主動點選、手動輸入的硬上限（想更早收手時才用）。
+
+     使用者的例子：池 100、A 每份 10 名額、B 每份 50。
+     B 賣掉 1 份 → 池剩 50 → A 還能賣 5 份（50÷10）。兩張卡共享同一個池，
+     所以 auto 不預先佔用名額（committed = 0）；只有 limited 會把 cap×slots 鎖起來，
+     auto 再從沒被鎖走的餘額裡推導。這樣就不可能超賣，也就不需要舊的 unbounded 錯誤態。 */
+  function bdPool() {
+    const el = document.getElementById('fd-slots');
+    const n = el ? bdNum(el.value) : NaN;
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : NaN;
+  }
+  /* Limited 卡硬鎖走的名額總數——auto 只能用剩下的。 */
+  function bdReservedSlots() {
+    return BUNDLES.reduce((sum, b) => {
+      if (b.avail !== 'limited') return sum;
+      const s = bdNum(b.slots), c = bdNum(b.cap);
+      return sum + (Number.isFinite(s) && s > 0 && Number.isFinite(c) && c > 0 ? s * c : 0);
+    }, 0);
+  }
+  /* auto 模式推導出的可賣份數。池子沒填 → 先當無上限（募資頁填了就會重算）。 */
+  function bdAutoUnits(b) {
+    const s = bdNum(b.slots);
+    if (!Number.isFinite(s) || s <= 0) return Infinity;   // 不含名額＝不吃池子
+    const pool = bdPool();
+    if (!Number.isFinite(pool)) return Infinity;
+    return Math.max(0, Math.floor((pool - bdReservedSlots()) / s));
+  }
   function bdMaxUnits(b) {
     if (b.avail === 'limited') { const c = bdNum(b.cap); return Number.isFinite(c) && c > 0 ? c : 0; }
-    return Infinity;
+    return bdAutoUnits(b);
   }
+  /* 「已承諾的名額」只算 limited：auto 是從池子裡拿，不會把池子撐破，
+     把它的理論最大值也加總進來會重複計算（A 100 ＋ B 100 ＞ 池 100）。 */
   function bdCommittedSlots(b) {
     const s = bdNum(b.slots);
     if (!Number.isFinite(s) || s <= 0) return 0;
+    if (b.avail !== 'limited') return 0;
     const u = bdMaxUnits(b);
     return u === Infinity ? Infinity : s * u;
   }
@@ -1218,8 +1253,9 @@
     const hasSlots = Number.isFinite(slotsN) && slotsN > 0;
     const invalid = !bdValid(b);
 
-    /* 名額 → 強制 Limited。停用 Unlimited 而不是選了再罵人。 */
-    const unlimDisabled = hasSlots ? ' disabled' : '';
+    /* 2026-07-28：不再因為填了名額就強制 Limited。auto 由池子推導，兩顆都永遠可點。 */
+    const autoUnits = bdAutoUnits(b);
+    const poolN = bdPool();
 
     return '' +
     '<div class="card fc-bundle' + (b.collapsed ? ' fc-bundle--collapsed' : '') +
@@ -1267,9 +1303,9 @@
           '<div class="field">' +
             '<div class="field__label">' + bdEsc(T('cpp.bd.avail')) + '</div>' +
             '<div class="segmented" role="radiogroup" aria-label="' + bdEsc(T('cpp.bd.avail')) + '">' +
-              '<button type="button" class="segmented__btn' + (b.avail === 'unlimited' ? ' segmented__btn--active' : '') +
-                '" role="radio" aria-checked="' + (b.avail === 'unlimited') + '" data-bd-avail="unlimited"' + unlimDisabled + '>' +
-                bdEsc(T('cpp.bd.avail.unlimited')) + '</button>' +
+              '<button type="button" class="segmented__btn' + (b.avail === 'auto' ? ' segmented__btn--active' : '') +
+                '" role="radio" aria-checked="' + (b.avail === 'auto') + '" data-bd-avail="auto">' +
+                bdEsc(T('cpp.bd.avail.auto')) + '</button>' +
               '<button type="button" class="segmented__btn' + (b.avail === 'limited' ? ' segmented__btn--active' : '') +
                 '" role="radio" aria-checked="' + (b.avail === 'limited') + '" data-bd-avail="limited">' +
                 bdEsc(T('cpp.bd.avail.limited')) + '</button>' +
@@ -1279,9 +1315,11 @@
             (b.avail === 'limited'
               ? '<label class="field__label mt-8">' + bdEsc(T('cpp.bd.cap')) + '</label>' +
                 '<input class="input" type="number" min="1" step="1" data-bd-f="cap" value="' + bdEsc(b.cap) +
-                  '" placeholder="' + bdEsc(T('cpp.bd.cap.ph')) + '">'
-              : '') +
-            (hasSlots ? '<div class="field__hint">' + bdEsc(T('cpp.bd.slots.forced')) + '</div>' : '') +
+                  '" placeholder="' + bdEsc(T('cpp.bd.cap.ph')) + '">' +
+                '<div class="field__hint">' + bdEsc(T('cpp.bd.cap.hint')) + '</div>'
+              /* auto：把算出來的份數直接寫出來。這一格不是輸入框——它是結果，
+                 讓創作者看得到「池子除下來是幾份」，而不是自己去猜一個數字。 */
+              : '<div class="field__hint mt-8" data-bd-auto-hint>' + bdEsc(bdAutoHintText(b)) + '</div>') +
           '</div>' +
         '</div>' +
 
@@ -1416,12 +1454,36 @@
     if (next) next.disabled = valid.length === 0;
   }
 
-  /* 名額是否跨越了 0（0↔正數）——那是唯一會改變卡片結構的數值變化：
-     Unlimited 鈕的 disabled、cap 欄位的存廢、強制說明的顯示都掛在它身上。
-     用 DOM 目前的樣子當「之前」的證據，避免另外維護一份影子狀態。 */
+  /* auto 模式下，那行推導出來的份數會隨著名額每打一個字就變，所以「要不要重畫」
+     不能再看舊的 disabled 旗標（已經沒有了），改成比對畫面上現在寫的那句話跟
+     重算後的那句話是否一致。用 DOM 當「之前」的證據，不另外維護影子狀態。
+     limited 模式與結構無關（cap 欄位是否存在只跟 avail 有關），直接回 false。 */
+  function bdAutoHintText(b) {
+    const s = bdNum(b.slots);
+    const hasSlots = Number.isFinite(s) && s > 0;
+    const poolN = bdPool();
+    const u = bdAutoUnits(b);
+    if (!hasSlots || u === Infinity) return T('cpp.bd.avail.auto.noslots');
+    if (!Number.isFinite(poolN)) return T('cpp.bd.avail.auto.nopool');
+    return T('cpp.bd.avail.auto.hint')
+      .replace('{n}', u.toLocaleString('en-US'))
+      .replace('{pool}', poolN.toLocaleString('en-US'));
+  }
   function bdSlotsCrossedZero(card, b) {
-    const shownForced = !!card.querySelector('[data-bd-avail="unlimited"]').disabled;
-    return shownForced !== (bdNum(b.slots) > 0);
+    if (b.avail !== 'auto') return false;
+    const shown = card.querySelector('[data-bd-auto-hint]');
+    return !shown || shown.textContent !== bdAutoHintText(b);
+  }
+
+  /* auto 推導吃的是「全域」剩餘名額，所以任何一張卡改了 slots／cap／模式，
+     其他每一張 auto 卡的數字都會過期（B 鎖走 50 → A 從 10 份掉到 5 份）。
+     就地改文字、不整塊重畫——重畫會把游標從正在打字的欄位踢掉。 */
+  function bdRefreshAutoHints() {
+    document.querySelectorAll('[data-bd-card]').forEach(card => {
+      const b = bdGet(card.dataset.bdCard);
+      const el = card.querySelector('[data-bd-auto-hint]');
+      if (b && el) el.textContent = bdAutoHintText(b);
+    });
   }
 
   /* 不重畫的就地同步：摘要列與收合狀態下看得到的東西。 */
@@ -1452,8 +1514,8 @@
         const f = e.target.dataset.bdF;
         const wasAvail = b.avail;
         b[f] = e.target.value;
-        /* 名額 > 0 ⇒ 立刻切成 Limited（結構性約束，不是事後驗證）。 */
-        if (f === 'slots' && bdNum(b.slots) > 0 && b.avail === 'unlimited') b.avail = 'limited';
+        /* 2026-07-28（使用者裁示）：填了名額不再自動切 Limited。份數由池子算出來，
+           auto 就是預設；Limited 只有創作者自己點下去、想設硬上限時才進去。 */
 
         /* 只有「卡片結構會變」時才整塊重畫——也就是名額跨越 0（切換 Limited 強制、
            顯示/隱藏強制說明）的那一刻。打字本身不重畫：每個字元重建一次 DOM 又把
@@ -1462,6 +1524,7 @@
         if (structural) { renderBundles(); return; }
 
         bdSyncCard(card, b);
+        bdRefreshAutoHints();   /* 這張卡的 slots/cap 會改變別張 auto 卡的推導 */
         renderBundleOverview();
         return;
       }

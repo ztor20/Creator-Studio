@@ -402,7 +402,7 @@
       + '<section class="card bento--span-6">'
       +   '<div class="card__head">'
       +     '<div class="card__title-group">'
-      +       '<span class="card__title-icon card__title-icon--accent"><i data-lucide="radio" class="ztor-icon"></i></span>'
+      +       '<span class="card__title-icon card__title-icon--accent"><i data-lucide="bar-chart-3" class="ztor-icon"></i></span>'
       +       '<h3 class="card__title" data-i18n="dash.perf.pf.title"></h3>'
       +     '</div>'
       +     '<a class="card__link" href="projects.html" data-i18n="dash.perf.link"></a>'
