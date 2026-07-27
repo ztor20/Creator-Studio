@@ -4,6 +4,17 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。
 
+## 2026-07-27 · 儀表板「總收入」升為主角數字 · 新增 `.kpi--hero` ＋ `--brand-ink`（B 反饋導入）
+
+使用者圈選儀表板第一塊 KPI 卡（總收入 `$24,830`）裁示「這是本頁最重要的數據，用橘色 accent」。同一列三塊 KPI 的數值原本都是 `--fs-28` 白字、權重完全相同，看不出哪個是主角。
+
+- **【B】** `kpi.css` 新增 `.kpi--hero`：只染 `.kpi__value` 為 `--brand-ink`。併入既有的顏色修飾類家族（`--success`／`--warning`／`--destructive`），不另造機制。兩者不同軸：那三個是「這個數字**狀態**好不好」（verdict），`--hero` 是「這個數字**最重要**」（編輯權重）。
+- **【B】** `js/components.js` `kpiTile()` 支援 `t.hero` 旗標吐出 class；儀表板 tile 定義的總收入那筆加 `hero: true`。一列只給一個，否則沒有主角。
+- **【為什麼只染數字、不染卡面】** Q8-A 之後橘色 tint 底已經專指「已選中」。把 hero 卡整片染橘會被讀成「這張卡被選取了」。所以三個意思改用**機制**區分、且互斥：**實色填底**＝動作（主 CTA／`.pager` 目前頁）、**tint 填底＋橘字**＝已選中、**只有墨水、底完全不動**＝主角數字。填底方式互斥，三者永遠不會撞在一起。
+- **【不動 delta】** `.kpi__delta` 維持綠色膠囊。漲跌是 verdict、屬狀態色家族，不能為了跟主角配色改掉（gel-not-verdict）。label 與 meta 也維持中性——整張卡只有一個東西變。
+- **【B/token】** `_tokens.css` 新增 `--brand-ink`（light `#8F4E00`／dark `#ffa33f`）＝唯一「可當文字用的品牌橘」，`--selected-ink` 改為它的語意別名（值不變，站上視覺零差異）。拆成兩個名字是為了讓「這個橘代表已選中」與「這個橘只是可讀的品牌橘」在讀 code 時分得開。**新規則：任何當字或 icon 的橘一律走 `--brand-ink`，不得直接 `var(--primary)`**——白底上的 `--primary` 只有 1.92:1，站上已經踩過一次（tag-input）。
+- **【驗證】** dev server `localhost:7777`。DOM 量到 `$24,830` → `rgb(255,163,63)`＋`kpi--hero`，同列 `4`／`3` 維持 `rgb(253,253,253)` 且無 hero class。對比：深卡 `#212223` **8.02:1**、亮色白卡 **6.45:1**（28px 屬 large text，門檻 3:1），APCA 亮色 Lc 81.5 過 body-text。亮暗雙主題截圖確認主角關係成立。版本字串沿用凍結的 `?v=r2.1`。
+
 ## 2026-07-27 · Q8 反轉：「已選中」狀態全站統一用品牌橘（B 反饋導入）
 
 使用者截圖圈出側欄的已選項（Dashboard），裁示「highlighted features must use our accent color across all pages or tabs」。這推翻了 2026-07-13 的 Q8-B（橘只給主操作、導覽／篩選已選一律中性灰）。反轉前站上同一件事「這個被選中了」有**四種答案**：側欄／settings-nav 中性灰底、`.chip--active` 反白黑底、`.segmented__btn--active` 白色浮起 pill、`.filter-tabs__item--active` 灰底（16 個 consumer 頁裡只有 9 個加了 `--brand` 修飾類才是橘）——只有 `.tabs` 一直是橘。

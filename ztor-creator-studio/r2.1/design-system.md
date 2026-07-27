@@ -109,6 +109,18 @@ System-level discipline. Component-level Do / Don't lives inside each component 
   導覽／篩選只走 tint，實色橘保留給 CTA 與 solid，橘不與 CTA 搶焦。
   橘不一定落在文字上：`.segmented` 保留白色浮起 pill 只換字色；`.radio-card` 的橘在右上標記點與 icon、標題維持 `--foreground`。
   `--sidebar-active` 已退居回退用途，不再是導覽已選的答案。
+
+  **橘的三個意思，靠「機制」分辨，不靠色票（2026-07-27 補）：**
+
+  | 意思 | 機制 | 範例 |
+  |---|---|---|
+  | 這是**動作** | 實色橘填底 `--primary` | 主 CTA、`.pager` 目前頁 |
+  | 這是**已選中** | 橘 tint 填底 `--selected-surface` ＋ `--selected-ink` 字 | sidebar／settings-nav／filter-tabs／chip |
+  | 這是**主角數字** | 只有墨水 `--brand-ink`，**底完全不動** | `.kpi--hero`（儀表板總收入）|
+
+  三者永遠不會撞在一起，因為填底方式互斥：實色／tint／無。
+  這也是 `.kpi--hero` 刻意不染卡面的原因——染了就變成第二種意思（「這張卡被選取了」）。
+  **任何要當字或 icon 的橘一律走 `--brand-ink`，不得直接寫 `var(--primary)`**（白底 1.92:1）。
 - **Q9 hover 底色**
   互動 hover 一律 `--accent`（亮 `#F3F3F3` / 暗 `#2A2B2C`，2026-07-17 midnight-v2 壓暗）。
   `--muted` 只給斑馬紋／襯底，不做 hover。
@@ -206,9 +218,10 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `sidebar` | `#FBFBFB` | Sidebar display-mode rail — near-white neutral (warmth removed 2026-06-09); separates from the white canvas via a very light tone + hairline |
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
 | `sidebar-active` | `#ECECEC` | ~~Sidebar selected item~~ — **退居回退用途（2026-07-27 Q8-A）**：導覽已選改吃 `--selected-surface` ＋ `--selected-ink`，本 token 不再是任何已選態的答案 |
+| `brand-ink` | light `#8F4E00` · dark `#ffa33f` | **可當文字用的品牌橘（2026-07-27）** — `--primary` 對近白底僅 1.92:1，任何要當**字或 icon** 的橘一律走這個 token，不得直接寫 `var(--primary)`。亮色為同色相 32° 的壓深版。對比：`--sidebar` 6.23:1／14% tint 5.70:1／白卡 6.45:1／深卡 8.02:1。目前兩個語意角色讀它：`--selected-ink`（已選中）與 `.kpi--hero`（主角數字） |
 | `selected-surface` | `color-mix(--primary 14%, transparent)` | **已選態填色（Q8-A，2026-07-27）** — 所有 tint 形態的已選（sidebar／sub-link／settings-nav／filter-tabs／chip）共用；用 `transparent` 混色所以會自動貼合底下的 rail／card／page 任何底色 |
 | `selected-surface-hover` | `color-mix(--primary 20%, transparent)` | 已選態的 hover：同色再深一階，讓「已選且滑過」仍有回饋 |
-| `selected-ink` | light `#8F4E00` · dark `#ffa33f` | **已選態字色／icon 色（Q8-A）** — 亮暗必須分色：`#ffa33f` 對近白底僅 1.92:1（低於 WCAG AA），亮色版壓深成同色相 32° 的 `#8F4E00`（對 `--sidebar` 6.23:1、對 14% tint 5.70:1）；深色版 `#ffa33f`（8.49:1／6.44:1）|
+| `selected-ink` | `var(--brand-ink)` | **已選態字色／icon 色（Q8-A）** — 語意別名，值來自 `--brand-ink`。分成兩個名字是為了讓「這個橘代表已選中」與「這個橘只是可讀的品牌橘」在讀 code 時分得開 |
 | `background-surface` | `#FFFFFF` | Cards, nav-dropdown panels, dashboard mockup frames |
 | `background-card` | `#FAFAFA` | Muted card variant (slightly cooler than surface) |
 | `background-footer` | `#000000` | Pure black footer — the only place black appears as a fill |
@@ -633,7 +646,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Icon | 🟢 atom | ✓ App | Every glyph — buttons, nav, alerts, data rows (full Tabler set in `icons-all.js`; 111 curated, rest registered) | [icon.css](./ds-components/icon.css) · [icons.js](./icons.js) · [icons-all.js](./icons-all.js) |
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages。圓角 `--radius-xl`（16px，Q16 2026-07-17；原 6px）。邊界 2026-07-26 由 1px 邊框改陰影浮起（Q23 決 C） | [card.css](./ds-components/card.css) |
-| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary）。圓角 `--radius-xl`（16px，Q16 2026-07-17）；`.kpi__delta` 為染色膠囊 chip（Q15） | [kpi.css](./ds-components/kpi.css) |
+| KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary）／`--tappable`（整塊是 `<button>`、開 in-place popup）／狀態染色 `--success`｜`--warning`｜`--destructive`（染 `.kpi__value`＝這個數字的**狀態**好不好）／**`--hero`（2026-07-27 新增）** 染 `.kpi__value` 為 `--brand-ink` 品牌橘＝這個數字**最重要**（編輯權重，與狀態不同軸）。**一列只給一個 `--hero`**，否則沒有主角。刻意只染數字不染卡面——橘色 tint 底在 Q8-A 之後專指「已選中」，染整片會被讀成這張卡被選取了。首用：儀表板總收入（`js/components.js` `kpiTile()` 的 `hero: true`）。圓角 `--radius-xl`（16px，Q16 2026-07-17）；`.kpi__delta` 為染色膠囊 chip（Q15），`--hero` 不影響 delta——漲跌是 verdict、維持狀態色 | [kpi.css](./ds-components/kpi.css) |
 | Admin IP Bank table | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列；共用 token-driven table wrapper、owner identity 與日期範圍操作列 | [admin-ip-bank-table.css](./ds-components/admin-ip-bank-table.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
