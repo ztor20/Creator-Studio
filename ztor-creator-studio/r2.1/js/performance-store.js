@@ -263,18 +263,24 @@
      長條寬度＝該列 / 最大列（不是 / 總和）。用最大值當基準，第一名才會滿格，
      排行榜要比的是彼此的長短，不是每一列佔總量多少——佔比另有百分比欄在講。 */
   function rowHTML(o) {
-    var label = o.i18n
-      ? '<span class="perf-rank__name" data-i18n="' + o.i18n + '">' + esc(o.name || '') + '</span>'
-      : '<span class="perf-rank__name" title="' + esc(o.name) + '">' + esc(o.name) + '</span>';
     /* 家族標籤：只有「錢」那一欄需要——它把影視與音樂混在同一排，不標的話
-       看不出某一列是哪一種作品。觀眾欄已依家族分節，不需要重複標。 */
+       看不出某一列是哪一種作品。觀眾欄已依家族分節，不需要重複標。
+       標籤必須放在名稱格「裡面」：.perf-rank__row 是固定欄數的 grid
+       （idx／名稱／長條／百分比／數值），多一個子元素就會把數值擠到下一行。
+       宣告必須在 label 之前——var 提升會讓 label 讀到 undefined，
+       結果是列上印出字串 "undefined" 而不是標籤。 */
     var tag = o.tag
       ? '<span class="perf-rank__tag" data-i18n="dash.top.fam.' + o.tag + '"></span>'
       : '';
+    var label = o.i18n
+      ? '<span class="perf-rank__name" data-i18n="' + o.i18n + '">' + esc(o.name || '') + '</span>'
+      : '<span class="perf-rank__name' + (o.tag ? ' perf-rank__name--tagged' : '')
+        + '" title="' + esc(o.name) + '"><span class="perf-rank__nametext">'
+        + esc(o.name) + '</span>' + tag + '</span>';
     return '<li class="perf-rank__row' + (o.rest ? ' perf-rank__row--rest' : '') + '"'
       + ' style="--w:' + o.w.toFixed(1) + '%;--hue:' + o.hue + ';--i:' + o.i + '">'
       + '<span class="perf-rank__idx">' + (o.rest ? '—' : o.i + 1) + '</span>'
-      + label + tag
+      + label
       + '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>'
       + (o.pct == null ? '' : '<span class="perf-rank__pct">' + o.pct.toFixed(1) + '%</span>')
       + '<span class="perf-rank__val">' + o.val + '</span>'
@@ -532,7 +538,7 @@
       +     '<a class="card__link" href="projects.html" data-i18n="dash.perf.link"></a>'
       +   '</div>'
       +   '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="dash.top.meta"></p>'
-      +   '<div class="perf-units mt-16">'
+      +   '<div class="perf-twin mt-16">'
       +     '<div>'
       +       '<p class="perf-cap" style="--hue:var(--chart-1)">'
       +         '<span class="perf-cap__dot"></span><span data-i18n="dash.top.money"></span></p>'

@@ -135,6 +135,22 @@ html[data-theme="light"] .list-toolbar {
   pointer-events: none;
 }
 
+/* ── 貼頂時不要讓捲動位置被「捲動錨定」拉回去（2026-07-28）──────────
+   使用者回報：電子商店往下捲到貼頂那一刻會彈來彈去，除非用力捲否則卡在那裡下不去。
+
+   實測（Playwright，捲到 220 → 240）：
+     220px：未貼頂，bars 高 106，文件高 3521
+     240px：貼頂，  bars 高  71，文件高 3446   ← scrollTop 被改回 165
+   兩排併成一行時整份文件矮了 75px，而瀏覽器的 scroll anchoring 為了讓「畫面上那一列
+   商品看起來不要動」，把 scrollTop 往回拉了剛好 75px。結果是：捲過門檻 → 高度縮 →
+   被拉回門檻上方 → 解除貼頂 → 高度長回來 → 再捲過去……在門檻附近來回震盪。
+   「用力捲」＝一次跨過整個震盪帶，所以只有大力捲才過得去。
+
+   關掉這個捲動容器的錨定即可：高度仍然會變（那正是貼頂要省下的空間），但捲動位置
+   不再被回捲，門檻只會被穿過一次。:has() 把範圍限定在真的有貼頂列的清單頁，
+   其他頁面的錨定行為不動。 */
+.main:has(.list-dock) { overflow-anchor: none; }
+
 /* 分工（2026-07-28 修，完整說明見 js/sticky-dock.js）：
      .list-dock        ＝ 可黏貼「範圍」。它可以很高、可以往下包住整個清單
                          （電子商店就是這樣，sticky 才黏得住整段捲動）。
@@ -174,6 +190,11 @@ html[data-theme="light"] .list-toolbar {
     display: flex;
     align-items: center;
     gap: var(--sp-14);
+    /* 一行到底，不換行。試過「塞不下就讓篩選段掉到第二行」，但專案頁實測會回到 106px
+       ——與靜止態同高，等於這個貼頂態一點空間也沒省，那就沒有存在的理由了。
+       控制項多的頁面改由各段自己橫向捲（見下方 .list-status-row 的 overflow-x），
+       並在右緣加一道漸隱提示還有東西。 */
+    flex-wrap: nowrap;
     padding: var(--sp-6) var(--sp-16);
     /* 94% 而不是 86%：清單列從底下捲過去時，只差 14% 明度的半透明面板會和列糊在一起，
        讀不出「這條在前面」。毛玻璃在這裡是為了讓底下的移動看得見一點，不是要看穿。 */
@@ -201,22 +222,42 @@ html[data-theme="light"] .list-toolbar {
     background: transparent;
     border-radius: 0;
     box-shadow: none;
-    flex: 1 1 auto;
+    /* 0 1 auto（不是 1 1 auto）：這一段先照內容寬拿到空間，剩下的才給篩選段。
+       兩段都能捲的時候必須決定「誰先被犧牲」——主軸 tab（發行模式）與主要動作
+       （＋新增專案）是這一頁的骨架，狀態 pill 是可篩可不篩的細節。
+       實測未分優先序時，四個模式 tab 的「直接發行」被捲出畫面，那是最不該藏的東西。 */
+    flex: 0 1 auto;
     min-width: 0;
   }
 
   /* 狀態列收成 dock 右段：去掉自己的留白與底色，用一道分隔線和左段分開。
      篩選數量各頁不同（電子商店 5 個、IP 市場 4 個），塞不下就在自己那段橫向捲。 */
   .list-dock.is-snapped .list-status-row {
-    flex: 0 1 auto;
+    /* 1 1 0：吸收工作列拿完之後剩下的寬度，也是先被壓縮的那一段（理由見上）。 */
+    flex: 1 1 0;
     min-width: 0;
     margin: 0;
+    /* 這一列自己不換行：它要嘛整段留在第一行右側、要嘛整段掉到第二行（由上面 bars 的
+       flex-wrap 決定），中間狀態（下拉自己折下去、pill 留在上面）讀起來只是壞掉。 */
+    flex-wrap: nowrap;
     padding: 0 0 0 var(--sp-12);
     border-left: 1px solid var(--border);
+    /* 右緣漸隱：這一段塞不下時會橫向捲，沒有這道提示，被捲在外面的篩選等於不存在。
+       遮罩只吃右緣 24px，捲到底時仍然會有一小段淡出——那是可接受的代價，
+       換來的是「這裡還有東西」這個訊息一直都在。 */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
     overflow-x: auto;
     scrollbar-width: none;
   }
   .list-dock.is-snapped .list-status-row::-webkit-scrollbar { display: none; }
+  /* 貼頂時篩選 nav 改「照內容寬」，不再吸收剩餘寬度（2026-07-28 修）。
+     基礎樣式給它 flex:1 1 0（basis 0）是為了靜止態讓右側的下拉留在第一行；但併成一行
+     之後那條規則會把 nav 壓到接近 0 寬，而 nav 自己沒有 overflow、內容又被設成 nowrap
+     ——於是 pill 直接畫到後面的下拉上面（專案頁實測：「Live 8」與「All categories」
+     疊字，使用者回報）。改成 0 0 auto：nav 撐回內容寬，塞不下就由外層 .list-status-row
+     的 overflow-x 橫向捲——那本來就是這個貼頂態設計好的退路。 */
+  .list-dock.is-snapped .list-status-row > nav:first-child { flex: 0 0 auto; }
   /* 篩選群本身要不換行——併成一行後右段寬度有限，預設的 flex-wrap 會讓 pill 折成兩排
      （IP 市場實測 4 顆 pill 折行後整條 dock 從 57px 變 83px，等於白省了）。
      改成不換行＋外層橫向捲：塞不下就用捲的，高度永遠是一排。 */
