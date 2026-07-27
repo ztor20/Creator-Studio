@@ -1,4 +1,29 @@
 /* ============================================================
+   file:// guard —— 直接開 .html 檔會看到一個「壞掉」的頁面，自動轉回 dev server。
+   （2026-07-27 使用者回報：截圖是一片沒有樣式、沒有側欄的頁面，網址是
+   D:/…/r2.1/order-detail.html。那不是 bug，是根本沒經過 server。）
+
+   為什麼 file:// 一定不能用：
+     · 沒有 dev server ＝ 沒有 no-store 標頭，改了 CSS 也可能吃到舊的
+     · fetch()／XHR 在 file: origin 會被 CORS 擋掉 —— 側欄、i18n、元件渲染全部失效
+       （所以截圖裡連側欄都沒有）
+   與其每次提醒「請用 localhost」，不如讓它自己轉過去。
+
+   放在 theme.js 最上面是因為它是 43 個頁面共同載入、且在 <head> 裡的第一支 script，
+   轉址發生在任何算繪之前。轉址後 protocol 變 http:，這段直接 return，不會有迴圈。
+   若 server 沒開，瀏覽器會顯示「無法連線 localhost:7777」——比一個沒有樣式、
+   看起來像壞掉的頁面清楚得多。
+   ============================================================ */
+(function redirectFileProtocolToDevServer() {
+  if (location.protocol !== "file:") return;
+  /* serve-local.py 以 r2.1 為根目錄，所以取 /r2.1/ 之後的相對路徑即可
+     （docs/、funding-test/ 這類子目錄也一併正確對應）。 */
+  var rel = location.pathname.match(/\/r2\.1\/(.*)$/);
+  if (!rel) return;
+  location.replace("http://localhost:7777/" + rel[1] + location.search + location.hash);
+})();
+
+/* ============================================================
    Ztor Creator Studio R 2.0 — Theme manager
 
    Drives the `data-theme` attribute on <html>. Three states:
