@@ -3038,6 +3038,27 @@
     'cpp.tf.duration':      { en: 'Duration',                         zh: '時長' },
     /* Story 的範例刻意是「結構」不是「內容」：沒有人想在游標後面看到一篇假的
        三段式故事，但「先講為什麼、再講做到哪、最後講錢解鎖什麼」是可以照著寫的。 */
+    /* 2026-07-28 範例輸入 · 第二批（其餘表單頁）。同一條規則：
+       只寫「標籤回答不了的事」，且中英各自是該語言使用者真的會打的內容。 */
+    'ee.name.ph':              { en: 'e.g. Coastline EP Release Party', zh: '例：海線 EP 發行派對' },
+    'ee.venue.ph':             { en: 'e.g. Legacy Taipei', zh: '例：Legacy Taipei' },
+    'ee.city.ph':              { en: 'e.g. Taipei', zh: '例：台北' },
+    'ee.address.ph':           { en: 'e.g. No. 1, Bade Rd Sec 1, Zhongzheng District', zh: '例：中正區八德路一段 1 號' },
+    'ee.capacity.ph':          { en: 'e.g. 300', zh: '例：300' },
+    'bd.name.ph':              { en: 'e.g. Ultimate Fan Bundle', zh: '例：鐵粉終極套組' },
+    'bd.desc.ph':              { en: 'e.g. What is inside and why it is worth more together than apart.', zh: '例：裡面有什麼，以及為什麼一起買比分開買值得。' },
+    'ss.slug.ph':              { en: 'e.g. coastline-studio', zh: '例：coastline-studio' },
+    'ss.bio.ph':               { en: 'e.g. Records, prints and tour merch from the east coast.', zh: '例：來自東海岸的唱片、版畫與巡演週邊。' },
+    'aib.title.ph':            { en: 'e.g. “Room by the Sea” theme song', zh: '例：《海邊的房間》主題曲' },
+    'ee.desc.ph':              { en: 'e.g. Who is playing, what the night looks like, and what a ticket includes.', zh: '例：誰會演出、當晚的樣子，以及一張票包含什麼。' },
+    'ss.name.ph':              { en: 'e.g. Coastline Studio', zh: '例：海線工作室' },
+    'set.name.ph':             { en: 'e.g. Maya Chou', zh: '例：周家瑋' },
+    'set.handle.ph':           { en: 'e.g. @mayachou', zh: '例：@mayachou' },
+    'set.email.ph':            { en: 'e.g. you@studio.com', zh: '例：you@studio.com' },
+    'set.location.ph':         { en: 'e.g. Tainan, Taiwan', zh: '例：台灣台南' },
+    'pd.title.ph':             { en: 'e.g. Tour zine vol. 02', zh: '例：巡演誌 vol. 02' },
+    'pd.desc.ph':              { en: 'e.g. What it is, how it was made, and what ships in the box.', zh: '例：這是什麼、怎麼做的，以及盒子裡會寄出什麼。' },
+    'pdp.language.ph':         { en: 'e.g. Mandarin, Cantonese', zh: '例：國語、粵語' },
     'cpp.s2.story.ph':      { en: 'e.g. Why this project exists, what you have finished so far, and what the money unlocks.',
                               zh: '例：這個專案為什麼存在、目前完成到哪裡、這筆錢會解鎖什麼。' },
     /* 預算分類名：「新增項目」是複製一列再清空名稱，所以空狀態是使用者真的會看到的。 */

@@ -1775,3 +1775,14 @@ html[data-data-state="empty"] .when-data { display: none; }
   text-transform: uppercase;
   letter-spacing: var(--title-caps-tracking);
 }
+
+/* ============================================================
+   Heading weight normalisation（2026-07-28 · L 裁示「全站字重上限 400」）
+   ------------------------------------------------------------
+   瀏覽器 UA 樣式把 h1–h6 一律畫成 bold(700)。站上元件多半自己宣告字重，
+   但只要有一個標題忘了寫（例：.payout-dialog__title 只設了 family/size/
+   line-height），它就會靜靜掉回 UA 的 700 ——審計時實測到 5 個這種洩漏點。
+   在這裡把標題基準拉回 400，元件要更重再自行覆寫（specificity 高於元素選擇器）。
+   注意：**不動 <strong>/<b>**——那兩個的粗體是語意，不是裝飾。
+   ============================================================ */
+h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-regular); }
