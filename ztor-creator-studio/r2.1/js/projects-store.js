@@ -384,8 +384,13 @@
   ];
 
   const DATASETS = {
-    default: { owner: 'Maya Chou', projects: PROJECTS_DEFAULT },
-    nick:    { owner: '周湯豪 NICKTHEREAL', projects: PROJECTS_NICK }
+    /* display ＝ 對「人」講話時用的名字（問候語、頭像縮寫），與 owner 分開。
+       owner 是資料欄位（「創作者 X · 建立於…」），display 是招呼用的稱謂，
+       兩者在中英文下的最佳寫法不同：周湯豪的英文是 Nick Chou（本名），
+       NICKTHEREAL 是藝名——跟人打招呼不會叫藝名全稱。
+       2026-07-28 使用者裁示：預設帳號的稱謂是 Gary。 */
+    default: { owner: 'Maya Chou', display: { zh: 'Gary', en: 'Gary' }, projects: PROJECTS_DEFAULT },
+    nick:    { owner: '周湯豪 NICKTHEREAL', display: { zh: '周湯豪', en: 'Nick Chou' }, projects: PROJECTS_NICK }
     /* userB 未列＝沿用 default（佔位空殼）*/
   };
   function active() { return DATASETS[persona()] || DATASETS.default; }
@@ -412,6 +417,12 @@
     get: id => active().projects.find(p => p.id === id) || null,
     first: () => active().projects[0],
     owner: () => active().owner,
+    /* 稱謂。依目前語系回傳；缺 display 就退回 owner，不會變成空字串。 */
+    displayName: () => {
+      const a = active();
+      const zh = (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0;
+      return (a.display && (zh ? a.display.zh : a.display.en)) || a.owner;
+    },
     catLabel: cat => CAT_LABEL[cat] || { en: cat, zh: cat },
     /* 2026-07-28 使用者裁示：英文版要看到英文片名／歌名。作品名沿用 catLabel 的雙語物件
        形狀，英文缺漏時回退中文原名（本來就是英文的如 REALIVE 兩邊同值）。 */

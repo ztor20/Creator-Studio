@@ -55,6 +55,10 @@
           <h1 class="page-intro__title" data-i18n="dash.h1">Studio</h1>
           <p class="page-intro__sub" data-i18n="dash.sub">What came in, what needs you, and where your work is playing right now.</p>
         </div>
+        <!-- 問候語（2026-07-28 使用者裁示）。名字跟著 persona 走，由
+             js/projects-store.js 的 displayName() 提供——整個 demo 換人時
+             資料集全部會換，這裡寫死名字會立刻穿幫。內容在下方 script 產生。 -->
+        <div class="page-intro__actions"><p class="greeting" data-greeting></p></div>
       </div>
 
       <!-- F2 · Operations summary · spec 5.1.1 §F2 — an operational (not financial) overview.
@@ -313,5 +317,47 @@
 })();
 </script>
 <script src="js/detail-sheet.js?v=r2.1"></script>
+<script>
+/* 儀表板問候語（2026-07-28 使用者裁示）。
+   兩件事跟著環境走，所以不寫死：
+     · 名字 → persona（周湯豪／Gary），由 projects-store 的 displayName() 提供
+     · 招呼 → 時段。早上開工和深夜結帳看到同一句「歡迎回來」，會讓人覺得這個介面
+       沒在看現在幾點；時段問候是最低成本的「它知道我在」。
+   第二行放日期：儀表板上的數字都帶時間語意（今日待處理、近 30 天），
+   先講今天是哪一天，那些相對時間才有參考點。 */
+(function () {
+  function zh() { return (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0; }
+  function greet(h) {
+    if (h < 5)  return zh() ? '夜深了'   : 'Still up';
+    if (h < 11) return zh() ? '早安'     : 'Good morning';
+    if (h < 17) return zh() ? '午安'     : 'Good afternoon';
+    return         zh() ? '晚安'     : 'Good evening';
+  }
+  function dateLine(d) {
+    if (zh()) {
+      var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+      return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 週' + wk;
+    }
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function paint() {
+    var el = document.querySelector('[data-greeting]');
+    if (!el) return;
+    var name = (window.ztorProjects && window.ztorProjects.displayName && window.ztorProjects.displayName()) || '';
+    var d = new Date();
+    /* 中文「早安，周湯豪」用全形逗號；英文用半形加空格。 */
+    var sep = zh() ? '，' : ', ';
+    el.innerHTML =
+      '<span class="greeting__hi">' + greet(d.getHours()) + (name ? sep + '<span class="greeting__name"></span>' : '') + '</span>' +
+      '<span class="greeting__meta"></span>';
+    var n = el.querySelector('.greeting__name');
+    if (n) n.textContent = name;                 /* textContent：名字是資料，不進 HTML */
+    el.querySelector('.greeting__meta').textContent = dateLine(d);
+  }
+  paint();
+  /* 換語言、換 persona 之後都要重寫——兩者都會改名字或招呼語。 */
+  document.addEventListener('i18n:applied', paint);
+})();
+</script>
 </body>
 </html>
