@@ -69,7 +69,7 @@
   font-size: var(--fs-12);
   font-weight: var(--fw-semibold);
   color: var(--status-success-ink);
-  background: color-mix(in srgb, var(--status-success) 12%, transparent);
+  background: var(--status-success-fill);
   border-radius: var(--radius-pill);
   padding: 2px var(--sp-8);
   display: inline-block;
@@ -77,7 +77,7 @@
 }
 .kpi__delta--neg {
   color: var(--destructive-ink);
-  background: color-mix(in srgb, var(--destructive) 12%, transparent);
+  background: var(--destructive-fill);
 }
 .kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
 
@@ -179,20 +179,27 @@
 .kpi--hero .kpi__meta .card__link { color: color-mix(in srgb, var(--on-primary) 75%, transparent); }
 .kpi--hero .kpi__chevron { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
 .kpi--hero.kpi--tappable:hover .kpi__chevron { color: var(--on-primary); }
-/* delta 在 hero 卡上：**膠囊配方一個字都不改**（12% 半透明染色＋pill，L 裁示要保留），
-   只把「墨色」換成深階。手法是在卡片這一層重新定義 token，而不是去覆寫 .kpi__delta 的 color——
-   custom property 會往下繼承，所以膠囊自己讀到的就是深墨版，亮暗兩個主題都成立、
-   不必比特異性也不用 !important。
+/* delta 在 hero 卡上：**深綠半透明底＋白字**（2026-07-27 L 裁示）。
+   形狀語彙完全不動（pill＋同樣內距＋仍然是半透明染色），改的是染得多深、以及字色。
 
-   為什麼不能靠主題 token 解決：實色橘卡在**深色主題底下依然是一個亮底**。墨色要跟著
-   「坐在什麼面上」走，不是跟著主題走——這就是把它做成可被面覆寫的 token 的原因。
+   為什麼是「更深的綠」而不是原本的 12% 淡染：12% 疊在飽和橘上色相幾乎不位移
+   （合成 #e9aa47 vs 卡的 #ffa33f），綠完全撐不起來、只能靠墨色暗示。改成深綠實底之後
+   「綠」由底本身承載，字換白，識別與對比同時變強——而且不再需要把墨色壓到 green-950
+   那種近黑的深度。
 
-   底不動的代價（誠實記錄）：12% 綠疊在飽和橘上，色相位移很小（rgb(233,170,71) vs 卡的
-   rgb(255,163,63)），所以在 hero 卡上「綠」主要由墨色承載、不太靠底色。不刻意調高 alpha 去
-   逼出綠——那會把半透明膠囊變成實色色塊，反而犧牲掉 L 要保留的設計。 */
+   仍然保留半透明：90% 而非 100%，讓橘從底下透 10% 上來，綠會被暖化一點、像是長在這張卡上，
+   而不是貼上去的色塊。這也是它跟先前被否決的「純黑底」的本質差異——那個是中性黑、
+   讀起來就是一塊黑斑；這個是**有色相的深綠**，一眼還是綠的。
+
+   手法是在卡片這一層重新定義 fill/ink 四個 token，而不是覆寫 .kpi__delta 的個別屬性——
+   custom property 往下繼承，亮暗兩主題同時成立，不必比特異性也不用 !important。
+   關鍵認知：實色橘卡在**深色主題底下依然是一個亮底**，所以墨色要跟著「坐在什麼面上」走、
+   不是跟著主題走。 */
 .kpi--hero {
-  --status-success-ink: #052E16;
-  --destructive-ink:    #4C0519;
+  --status-success-fill: color-mix(in srgb, var(--status-success-deep) 90%, transparent);
+  --status-success-ink:  #fff;
+  --destructive-fill:    color-mix(in srgb, var(--destructive-deep) 90%, transparent);
+  --destructive-ink:     #fff;
 }
 /* delta 膠囊（hero 卡）：不再另開例外（2026-07-27 L 裁示——綠＝漲、紅＝跌、黑底，全站一致）。
    先前的白膜＋深墨版是因為「綠混 --card 的 tint 在橘底上震盪」；base 改成純黑底之後，
