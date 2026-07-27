@@ -107,21 +107,21 @@
     /* Events = flat top-level link; sub-pages reached in-page. */
     { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html", "edit-event.html"] },
     /* Fans dropdown (2026-07-27 使用者裁示，比照 E-Shop／IP Bank 的 accordion)：
-       總覽 Overview ＋ 分級權益 Benefits。Benefits 原本是 tier-settings 的頁內分頁，
-       現在升格成左側導航的正式目的地、自成一頁——同一個入口不該同時存在於兩層導航。
-       tier-settings（門檻／行為加權／規則）仍從總覽頁內進入，列在 match 讓群組維持
-       highlight；fan-detail 同理。 */
+       總覽 ＋ 分級權益 ＋ 分級設定 ＋ 品牌合作。原本是 tier-settings 頁內分頁的
+       Benefits，升格成左側導航的正式目的地、自成一頁——同一個入口不該同時存在
+       於兩層導航。fan-detail 由總覽頁內進入，列在 match 讓群組維持 highlight。
+
+       品牌合作歸在粉絲底下（2026-07-28 使用者裁示）：它的燃料是粉絲——由粉絲
+       掃碼、由粉絲指定歸屬給誰、成效也用「新增粉絲」與「主動選你」來衡量。
+       放在頂層會讓它看起來像獨立的廣告模組，實際上它是粉絲關係的變現方式。
+       刻意不叫 "Campaign"：create-campaign.html 已經是「募資活動」的意思，
+       同一個字指兩件事會永久混淆。 */
     { key: "nav.fans", icon: "users", panel: [
-      { href: "fans-crm.html",      icon: "users",    titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
-      { href: "tier-benefits.html", icon: "gift",     titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
-      { href: "tier-settings.html", icon: "sliders",  titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
-    ], match: ["fan-detail.html"] },
-    /* Brand campaigns (2026-07-28)。刻意不叫 "Campaign"——本專案的
-       create-campaign.html 已經是「募資活動」的意思，同一個字指兩件事會
-       永久混淆。這裡一律用「品牌合作」。
-       單一入口（使用者裁示）：品牌挑選收進同一頁，不再另開 accordion。 */
-    { href: "brand-campaigns.html", key: "nav.brandcmp", icon: "handshake",
-      match: ["brand-campaign-detail.html"] },
+      { href: "fans-crm.html",         icon: "users",     titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
+      { href: "tier-benefits.html",    icon: "gift",      titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
+      { href: "tier-settings.html",    icon: "sliders",   titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
+      { href: "brand-campaigns.html",  icon: "handshake", titleKey: "nav.brandcmp",      descKey: "nav.brandcmp-sub" },
+    ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html"] },
     { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
 
@@ -131,7 +131,7 @@
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html",
-    "brand-campaigns.html", "brand-campaign-detail.html", "my-ip.html", "ip-detail.html",
+    "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
   ]);

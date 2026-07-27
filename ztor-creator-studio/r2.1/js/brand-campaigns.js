@@ -90,8 +90,13 @@
     return isZh() ? ("每" + per + " $" + b.share.value) : ("$" + b.share.value + " per " + per);
   }
   function shortDate(s) { var p = s.split("-"); return isZh() ? (p[0] + "/" + p[1]) : (p[1] + "/" + p[0].slice(2)); }
+  /* icon 由 printer 改 id-card：printer 沒有註冊在 js/icons.js 的 REGISTRY 裡，
+     每張卡都會在 console 丟一次 unknown icon（實測 10 次）。id-card 已註冊，
+     語意也更準——這裡講的是「一張預先印好、發到客人手上的卡」，不是列印這個動作。 */
   function methodText(b) {
-    if (b.method === "batch") return { icon: "printer", text: isZh() ? "預印卡片，門市直接發放" : "Pre-printed cards, handed out in store" };
+    if (b.method === "batch") {
+      return { icon: "id-card", text: isZh() ? "預印卡片，門市直接發放" : "Pre-printed cards, handed out in store" };
+    }
     return { icon: "receipt", text: isZh() ? "結帳時印在收據上" : "Printed on the receipt at checkout" };
   }
 
@@ -100,7 +105,7 @@
     var perSpend = isZh() ? ("每消費 $" + b.issue.perSpend + " 發一組") : ("1 code per $" + b.issue.perSpend + " spent");
     return '<article class="brand-card">' +
       '<div class="brand-card__head">' + logo(b, 48) +
-        '<span style="min-width:0">' +
+        '<span class="brand-card__title">' +
           '<span class="brand-card__name">' + b.name + '</span>' +
           '<span class="brand-card__cat">' + tr(CAT, b.category) + '</span>' +
         '</span>' +
@@ -116,11 +121,20 @@
           '<span class="brand-deal__value">' + perSpend + '</span></span>' +
         '<span class="brand-deal__row"><span>' + (isZh() ? "粉絲可得點數" : "Fan earns") + '</span>' +
           '<span class="brand-deal__value">' + b.points + (isZh() ? " 點" : " pts") + '</span></span>' +
-        '<span class="brand-deal__row"><span>' + (isZh() ? "合作期間" : "Deal runs") + '</span>' +
+        /* 「品牌開放期間」不是「你的活動期間」（2026-07-28 使用者指出）。
+           這一欄是 Ztor 與品牌簽的合約窗，唯讀；創作者自己的活動期間是另一個值，
+           在發起活動時才決定，而且必須落在這個範圍內。原本寫「合作期間」，
+           在一張全是唯讀條件的卡上，很容易被讀成「我這檔要跑這麼久」。 */
+        '<span class="brand-deal__row"><span>' + (isZh() ? "品牌開放期間" : "Brand available") + '</span>' +
           '<span class="brand-deal__value">' + shortDate(b.contract.from) + " – " + shortDate(b.contract.to) + '</span></span>' +
       '</div>' +
       '<div class="brand-card__foot">' +
-        '<button class="btn btn--primary btn--sm" type="button">' + (isZh() ? "發起合作" : "Start a campaign") + '</button>' +
+        /* 中英文原本各說各話：中文「發起合作」、英文「Start a campaign」。
+           統一成「發起活動 / Start event」（2026-07-28 使用者裁示）。
+           不用「合作」是因為這個模型裡沒有合作可談——不需品牌同意、無合約、
+           無獨佔（見 brand-store.js 開頭）；叫合作會讓創作者以為要等品牌點頭。 */
+        '<button class="btn btn--primary btn--sm" type="button" data-brand-start="' + b.id + '">' +
+          (isZh() ? "發起活動" : "Start event") + '</button>' +
         '<span class="brand-card__method"><i data-lucide="' + m.icon + '" class="ztor-icon"></i>' + m.text + '</span>' +
       '</div>' +
     '</article>';
