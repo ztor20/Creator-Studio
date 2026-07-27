@@ -380,17 +380,17 @@
 }
 
 /* ── Status variants (shared across densities) ── */
-.alert--warning.alert--row { border-left-color: var(--status-warning); }
+.alert--warning.alert--row { border-left-color: var(--status-warning-ink); }
 .alert--error.alert--row   { border-left-color: var(--destructive); }
 .alert--info.alert--row    { border-left-color: var(--status-info); }
 .alert--success.alert--row { border-left-color: var(--status-success); }
 
-.alert--warning .alert__icon { background: color-mix(in srgb, var(--status-warning) 10%, var(--card)); color: var(--status-warning); }
+.alert--warning .alert__icon { background: color-mix(in srgb, var(--status-warning) 10%, var(--card)); color: var(--status-warning-ink); }
 .alert--error   .alert__icon { background: color-mix(in srgb, var(--destructive)    8%, var(--card)); color: var(--destructive); }
 .alert--success .alert__icon { background: color-mix(in srgb, var(--status-success)  8%, var(--card)); color: var(--status-success); }
 .alert--info    .alert__icon { background: color-mix(in srgb, var(--status-info)     8%, var(--card)); color: var(--status-info); }
 
-.alert--warning .alert__cta { color: var(--status-warning); }
+.alert--warning .alert__cta { color: var(--status-warning-ink); }
 .alert--error   .alert__cta { color: var(--destructive); }
 .alert--success .alert__cta { color: var(--status-success); }
 .alert--info    .alert__cta { color: var(--status-info); }
@@ -431,3 +431,26 @@ html[data-theme="light"] .alert--inset-card {
   box-shadow: var(--shadow-card);
 }
 .alert--inset-card .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
+
+/* ── 整卡可點（data-go，2026-07-27）──────────────────────────
+   Dashboard F4 與 F2 popup 的 alert 卡整張都是點擊目標（不只 CTA 小字）。
+   hover 用全站互動統一底色 --accent（此卡是卡面上的分隔列，浮起陰影在同色
+   dialog 面上讀不出來）；分隔線處理比照 product-list 列 hover（自身與前一列
+   的 border 一併隱藏，圓角底色才不會被線切過）。鍵盤焦點＝全站 focus ring。 */
+.alert--card[data-go] {
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.alert--card[data-go]:hover {
+  background: var(--accent);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+}
+.alert--card[data-go]:has(+ .alert--card[data-go]:hover) {
+  border-bottom-color: transparent;
+}
+.alert--card[data-go]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}

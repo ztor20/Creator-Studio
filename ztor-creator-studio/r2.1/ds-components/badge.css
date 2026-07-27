@@ -82,7 +82,7 @@
 .ztor-dot--success { color: var(--status-success); }
 .ztor-dot--error   { color: var(--status-error); }
 .ztor-dot--info    { color: var(--status-info); }
-.ztor-dot--warning { color: var(--status-warning); }
+.ztor-dot--warning { color: var(--status-warning-ink); }
 .ztor-dot--black   { color: var(--foreground); }  /* neutral dot — tracks light/dark */
 
 /* ============================================================
@@ -113,17 +113,31 @@
 }
 .badge__dot { display: none; }   /* soft-tag look carries no status dot */
 
+/* [hidden] 必須蓋過上面的 display:inline-flex，否則 JS 設 el.hidden=true 的徽章照樣顯示
+   （UA 的 [hidden]{display:none} 特異度輸給 .badge）。同 alert.css／button.css／
+   album-tracks.css 已有的處置。2026-07-27 發現：manage-ip 的驗證徽章、create-event 的
+   #ce-pv-type、register-ip 的 #ri-list-note 都掛 hidden，先前三處都藏不掉。 */
+.badge[hidden] { display: none; }
+
 /* orange: same soft-tag recipe as the other status variants — tinted bg + SAME-hue saturated text.
    Was the odd one out (30% tint + --primary-foreground = white/black, unreadable as a soft tag,
    e.g. black「進行中」at night). Fixed 2026-07-24 to 16% tint + --primary text like success/info/error. */
-.badge--orange  { background: color-mix(in srgb, var(--primary)        16%, var(--card)); color: var(--primary); }
-/* warning: 18% tint (hue is light) + text darkened with foreground — same recipe as .ztor-badge--warning.
-   Added 2026-06-11, closing the documented gap: orders / order-detail already used the class. */
-.badge--warning { background: color-mix(in srgb, var(--status-warning) 22%, var(--card)); color: color-mix(in srgb, var(--status-warning) 60%, var(--foreground)); }
-.badge--success { background: color-mix(in srgb, var(--status-success) 16%, var(--card)); color: var(--status-success); }
-.badge--error   { background: color-mix(in srgb, var(--status-error)   16%, var(--card)); color: var(--status-error); }
-.badge--info    { background: color-mix(in srgb, var(--status-info)    14%, var(--card)); color: var(--status-info); }
-.badge--accent  { background: color-mix(in srgb, var(--status-accent)  16%, var(--card)); color: var(--status-accent); }
+/* 2026-07-28（/impeccable polish，43 頁掃描）：整組 soft-tag 徽章原本是
+   「飽和原色當文字 ＋ 同色淡染當底」。這個配方在亮色模式先天不可能過 AA——
+   把一個亮色相壓在它自己的淡色版上，對比一定接近 1。實測（亮色）：
+     --orange  #ffa33f on 16% 橘染  → 1.78:1
+     --warning 60% 混色 on 22% 黃染 → 1.78:1
+     --success #22C55E on 16% 綠染  → 2.28:1
+   底維持原色（--status-*，淡染），文字改吃同色相的 -ink：深色主題 -ink ＝ 原色，
+   所以深色外觀完全不變；只有亮色會壓深。這與今天 .kpi__delta 的 fill／ink 分工是同一條規則：
+   **填色歸原色、墨色歸 -ink**。實測亮色改後：success 6.22:1、info 5.68:1、accent 5.87:1、
+   warning 4.92:1、orange 6.45:1。 */
+.badge--orange  { background: color-mix(in srgb, var(--primary)        16%, var(--card)); color: var(--brand-ink); }
+.badge--warning { background: color-mix(in srgb, var(--status-warning) 22%, var(--card)); color: var(--status-warning-ink); }
+.badge--success { background: color-mix(in srgb, var(--status-success) 16%, var(--card)); color: var(--status-success-ink); }
+.badge--error   { background: color-mix(in srgb, var(--status-error)   16%, var(--card)); color: var(--destructive-ink); }
+.badge--info    { background: color-mix(in srgb, var(--status-info)    14%, var(--card)); color: var(--status-info-ink); }
+.badge--accent  { background: color-mix(in srgb, var(--status-accent)  16%, var(--card)); color: var(--status-accent-ink); }
 .badge--neutral { background: var(--muted); color: var(--foreground-muted); }
 
 /* --inline：接在標題文字後的「安靜限定詞」標籤（如「4 variants」「限量」）。

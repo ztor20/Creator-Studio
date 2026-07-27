@@ -38,7 +38,13 @@
 
   /* Primary action (highlighter orange) */
   --primary:            #ffa33f;
-  --primary-foreground: #FFFFFF;   /* 白天白字（使用者指定 2026-06-22；夜間黑字見 dark override）*/
+  /* 2026-07-28（/impeccable polish）：由 #FFFFFF 改 #171717。
+     這推翻 2026-06-22「白天白字」的指定——那條當時就在本檔註記為「白字在淡橘上對比僅 ~1.9:1，
+     低於 WCAG AA」，本次 43 頁掃描把它量成實際缺陷：`.btn--primary` 標籤 1.99:1，連 large text
+     的 3:1 都不到，是全站按鈕文字。深墨對 #ffa33f 是 9.02:1（過 AAA），且與夜間版同值，
+     主要按鈕從此兩個主題長得一致。凡是鋪在實色橘上的文字都吃這一支（btn--primary、
+     pager 目前頁、selection-card__tag）。使用者 2026-07-28 授權「只保留品牌橘，其餘可自行決定」。 */
+  --primary-foreground: #171717;
   /* --on-primary（2026-07-27 新增）＝「鋪在實色橘上、保證讀得到」的墨色，亮暗同值。
      不能用 --primary-foreground：它亮色是白字，白對 #ffa33f 只有 1.99:1（連 large text 3:1 都不到）。
      深墨 #171717 對 #ffa33f 是 9.02:1、過 AAA。小面積的按鈕文字沿用使用者 2026-06-22 指定的
@@ -135,6 +141,13 @@
   --destructive-deep:    #881337;
   --status-info:       #266DF0;
   --status-warning:    #F8D749;
+  /* 2026-07-28：黃色當「文字」用在亮底上是先天不可能——#F8D749 對白只有 1.42:1。
+     警示黃在亮色模式必須另有一支可讀的墨色（同 --status-success-ink／--destructive-ink 的分工：
+     填色歸填色、墨色歸墨色）。#8A6D00 對白 4.92:1 過 AA，仍在同一條琥珀色相上。
+     深色模式不需要壓深——#F3CF58 在深卡上本來就高對比，見 dark override。 */
+  --status-warning-ink: #8A6D00;
+  --status-info-ink:    #1D4ED8;
+  --status-accent-ink:  #6D28D9;
   --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
   --status-error:      #DA314A;   /* 2026-07-21 補回：狀態徽章的錯誤色，與 --destructive（刪除等破壞性操作）語意分開；值暫同 --destructive，暗色見 override（Figma 845:11071 兩色分歧） */
 
@@ -496,7 +509,16 @@
   --popover:           #212223;   /* midnight-v2（原 #303131）＝卡同層 */
   --popover-foreground:#FDFDFD;
   --muted:             #161718;   /* midnight-v2（原 #272828）嵌套襯底：比卡深、比 content 亮一階 */
-  --muted-foreground:  #757575;   /* 原 foreground-subtle rgba(.4) */
+  /* 2026-07-28 全站 43 頁掃描（/impeccable polish）：#757575 在深色模式的**四種**面上全部不到 AA——
+       --input-surface #2A2B2D → 3.08:1
+       --card          #212223 → 3.46:1
+       --sidebar       #1C1D1E → 3.66:1
+       --surface-page  #0C0D0D → 4.32:1
+     這是全站最大的單一缺陷：所有次級文字（kpi__label／kpi__meta／data-list__meta／text-sub／
+     field__hint／form-section__sub／tabs__item 未選／product-list__meta／kv__k…）都吃這一支，
+     等於 43 個頁面的說明文字都低於 AA。改 #979797：對最亮的那個面（--input-surface）4.85:1、
+     對畫布 6.66:1，四個面全過且留有餘裕。只動深色版——亮色版 #6E6E68 對白卡 5.0:1 本來就過。 */
+  --muted-foreground:  #979797;
   /* --secondary 已於 Q9 2026-07-13 退役（見亮色區塊註解）*/
   --accent:            #2A2B2C;   /* midnight-v2（原 #383839）hover / 選單項底 · 互動 hover 統一色（Q9 2026-07-13）*/
   --accent-foreground: #FDFDFD;
@@ -576,6 +598,11 @@
   --destructive-ink:    color-mix(in srgb, var(--status-error) 88%, #fff);
   --status-info:       #5896F3;
   --status-warning:    #F3CF58;
+  /* 深底上飽和色本來就讀得到，墨色＝原色，不必壓深。留這三行是為了讓
+     「元件永遠寫 -ink、由主題決定要不要壓深」這條規則在兩個主題都成立。 */
+  --status-warning-ink: var(--status-warning);
+  --status-info-ink:    var(--status-info);
+  --status-accent-ink:  var(--status-accent);
   --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
   --status-error:      #FF3D47;   /* 2026-07-21 對齊 Figma 845:11071：暗色 --destructive #E7000B 太深、徽章小字不易讀，狀態徽章改用較亮的紅，破壞性操作（刪除鈕等）維持原 --destructive 不變 */
 
@@ -625,6 +652,17 @@
   --shadow-header:
     0 3px 16px rgba(0, 0, 0, 0.45);
 }
+
+/* ── color-scheme：讓「瀏覽器自己畫的」東西跟著主題走（2026-07-27，L 回報）──────
+   症狀：<select> 展開後的選單是白底、選取列是系統藍——因為那顆彈出選單不是我們的
+   DOM，是作業系統畫的，只有 CSS 的 color-scheme 能影響它。整個專案從來沒有宣告過
+   這個屬性，所以所有原生控制項都用淺色主題算繪：select 彈窗、日期選擇器、捲軸、
+   自動填入的黃底、拼字檢查底線。只改 .select 的外觀是修不到彈窗的。
+
+   注意這不是「加了就有深色下拉」的萬靈丹——DESIGN.md 仍要求原生 select 彈窗最終要
+   換成自家的 popover。這條是讓現況不再破圖的底線，不是那個工作的替代品。 */
+:root { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
 
 /* Smooth transition on theme switch */
 html, body {
