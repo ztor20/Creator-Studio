@@ -51,12 +51,38 @@
   cursor: pointer;
   user-select: none;
 }
+/* ── 2026-07-28（L：「the check box is still too big and ugly」）─────────────
+   量到的事實，不是品味：box 是 18px，而它自己標籤的行框只有 16.9px
+   （--fs-13 × --lh-normal）——控件比它要說明的那行字還高，所以在一排
+   Digital／Vinyl／CD 裡，最搶眼的是三個方塊而不是三個字。
+   勾的筆畫 2.5px，旁邊每一顆 lucide 圖示是 1.2——同一個表單裡最重的一筆線
+   落在最不重要的控件上，那就是「ugly」的來源。
+
+   三個調整，其餘（drawn box under a real input、grid 置中、光學上移、
+   ink 不隨主題翻轉）全部保留：
+     18px → 16px      比行框略小，方塊退回標籤的從屬位置
+     2.5px → 2px 筆畫  與 icon family 同一個重量級
+     6×10 → 5×9 勾    18px 裡的 10px 勾旋轉後外接盒約 11.3px，幾乎頂到邊；
+                      縮到 5×9 後四周各留約 3px，勾才像放在盒子裡而不是塞進去
+   ------------------------------------------------------------------------ */
 .zcheck__control {
   position: relative;
   flex: none;
-  width: 18px;
-  height: 18px;
-  margin-top: 1px;   /* optical alignment with the label's first line */
+  width: 16px;
+  height: 16px;
+  /* 與標籤第一行光學對齊：(16.9 行框 − 16 box) ÷ 2 ≒ 0.5，取 1px 讓方塊
+     略低於幾何中心——大寫字母的視覺重心本來就偏上。 */
+  margin-top: 1px;
+}
+/* 觸控命中區：視覺 16px，但實際可點區域補到 24px。
+   有標籤時整個 .zcheck 就是命中區，這條是為了「表格儲存格裡的裸 control」
+   那種用法——那裡沒有標籤可以點，16px 對手指太小。
+   用 ::before 撐開而不是加 padding：加 padding 會改變版面。 */
+.zcheck__control::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: var(--radius-sm);
 }
 /* The real control: invisible, but still the thing that is clicked, tabbed
    to, toggled by space, and submitted. Never `display:none` or
@@ -97,11 +123,15 @@
 }
 .zcheck__box::after {
   content: "";
-  width: 6px;
-  height: 10px;
-  margin-top: -2px;   /* the optical nudge — see header note */
+  width: 5px;
+  height: 9px;
+  /* 光學上移（2026-07-24 L 裁示保留）：旋轉後的勾，尾巴把視線往下拉，
+     幾何置中會看起來偏高。box 從 18→16 後這個補償也跟著等比收：−2 → −1.5。 */
+  margin-top: -1.5px;
   border: solid var(--zcheck-ink, #271302);
-  border-width: 0 2.5px 2.5px 0;
+  /* 2px：與同畫面 lucide 圖示的 1.2 stroke 同一個重量級（勾比圖示短，
+     略粗才等重）。原本的 2.5px 讓它變成整張表單裡最重的一筆線。 */
+  border-width: 0 2px 2px 0;
   transform: rotate(45deg) scale(0.6);
   opacity: 0;
   transition: transform var(--duration) var(--easing), opacity 120ms var(--easing);
@@ -118,10 +148,10 @@
 }
 .zcheck__input:indeterminate + .zcheck__box::after {
   opacity: 1;
-  width: 8px;
+  width: 7px;   /* 16px box 的 ~44%，與勾的視覺份量相當 */
   height: 0;
   margin-top: 0;
-  border-width: 0 0 2.5px 0;
+  border-width: 0 0 2px 0;
   transform: none;
 }
 

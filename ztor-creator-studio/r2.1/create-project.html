@@ -31,6 +31,7 @@
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
@@ -596,7 +597,7 @@
 
       <div class="wizard-split__main">
         <h1 class="wizard__step-title" data-i18n="cpp.bd.h1">Build your backer bundles.</h1>
-        <p class="wizard__step-sub" data-i18n="cpp.bd.sub">A bundle is what a backer actually gets for their money — items from your shop, extra perks, and optionally a share of the revenue.</p>
+        <p class="wizard__step-sub" data-i18n="cpp.bd.sub">A bundle is what a backer actually gets for their money: items from your shop, extra perks, and optionally a share of the revenue.</p>
 
         <!-- 卡片由 JS 依狀態渲染。空狀態也由 JS 出（第一次進來自動給一張空卡，
              因為「新增第一張」永遠是使用者要做的事，不該讓他先按一次按鈕）。 -->
@@ -834,6 +835,8 @@
 
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
+<!-- 回饋套組的商品挑選器讀這支的 window.ZTOR_PRODUCTS（persona-aware 的真實商品目錄）。 -->
+<script src="js/products-store.js?v=r2.1"></script>
 <script src="partials/date-input.js?v=r2.1"></script>
 <script src="partials/wizard-chrome.js?v=r2.1"></script>
 <script src="partials/stepper.js?v=r2.1"></script>
@@ -909,6 +912,10 @@
     const body = document.querySelector('.wizard__body');
     if (body) body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
     if (cur === 'funding') renderFundingOverview();
+    /* Continue 的 disabled 只由 Bundles 那步管；離開這步一定要放開，
+       否則其他步驟會被上一步的驗證狀態卡住。 */
+    const nextBtn = document.querySelector('[data-action=next]');
+    if (nextBtn && cur !== 'tiers') nextBtn.disabled = false;
     if (cur === 'tiers' && typeof ensureBundles === 'function') ensureBundles();
 
     // Review per-type blocks
@@ -1130,13 +1137,24 @@
   /* 目錄：persona-aware 的既有商品源。沒有它就退回空目錄，picker 只剩「新增商品」出口。 */
   function catalogue() {
     const P = window.ZTOR_PRODUCTS || {};
-    return Object.keys(P).map(k => ({
-      id: k,
-      name: P[k].name,
-      img: P[k].img ? 'images/products/' + P[k].img : '',
-      price: P[k].price || '',
-      meta: P[k].catLabel || '',
-    }));
+    /* 依名稱去重：ZTOR_PRODUCTS 把多個 persona 的商品併在同一個物件裡，所以同一件
+       商品會以不同 key 出現好幾次（實測 27 筆裡「26MS Hoodie」出現 3 次）。
+       key 不同＝技術上是不同列，但對創作者而言那是同一件商品——請人在三個一模一樣的
+       選項之間挑一個，是把資料層的瑕疵當成使用者的問題。 */
+    const seen = new Set();
+    return Object.keys(P).reduce((acc, k) => {
+      const name = P[k].name;
+      if (!name || seen.has(name)) return acc;
+      seen.add(name);
+      acc.push({
+        id: k,
+        name: name,
+        img: P[k].img ? 'images/products/' + P[k].img : '',
+        price: P[k].price || '',
+        meta: P[k].catLabel || '',
+      });
+      return acc;
+    }, []);
   }
 
   /* ── 一張套組卡是否可用：有名字、有正價 ────────────────────────────────── */
@@ -1225,29 +1243,29 @@
       '<div class="fc-bundle__body">' +
         '<div class="form-grid" style="grid-template-columns:2fr 1fr">' +
           '<div class="field">' +
-            '<label class="field__label"><span data-i18n="cpp.bd.name">Bundle name</span> <span class="field__req">*</span></label>' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
             '<input class="input" data-bd-f="name" value="' + bdEsc(b.name) + '" placeholder="' + bdEsc(T('cpp.bd.name.ph')) + '">' +
           '</div>' +
           '<div class="field">' +
-            '<label class="field__label"><span data-i18n="cpp.bd.price">Price · USD</span> <span class="field__req">*</span></label>' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.price')) + ' <span class="field__req">*</span></label>' +
             '<div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
               '<input class="amount-field__input input" type="number" min="0" step="1" data-bd-f="price" value="' + bdEsc(b.price) + '" placeholder="0"></div>' +
           '</div>' +
         '</div>' +
 
         '<div class="field">' +
-          '<label class="field__label" data-i18n="cpp.bd.desc">What backers get, in one line</label>' +
+          '<label class="field__label">' + bdEsc(T('cpp.bd.desc')) + '</label>' +
           '<input class="input" data-bd-f="desc" value="' + bdEsc(b.desc) + '" placeholder="' + bdEsc(T('cpp.bd.desc.ph')) + '">' +
         '</div>' +
 
         '<div class="form-grid">' +
           '<div class="field">' +
-            '<label class="field__label" data-i18n="cpp.bd.slots">Revenue-share slots included</label>' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.slots')) + '</label>' +
             '<input class="input" type="number" min="0" step="1" data-bd-f="slots" value="' + bdEsc(b.slots) + '">' +
-            '<div class="field__hint" data-i18n="cpp.bd.slots.hint">0 = a reward with no revenue share</div>' +
+            '<div class="field__hint">' + bdEsc(T('cpp.bd.slots.hint')) + '</div>' +
           '</div>' +
           '<div class="field">' +
-            '<div class="field__label" data-i18n="cpp.bd.avail">Availability</div>' +
+            '<div class="field__label">' + bdEsc(T('cpp.bd.avail')) + '</div>' +
             '<div class="segmented" role="radiogroup" aria-label="' + bdEsc(T('cpp.bd.avail')) + '">' +
               '<button type="button" class="segmented__btn' + (b.avail === 'unlimited' ? ' segmented__btn--active' : '') +
                 '" role="radio" aria-checked="' + (b.avail === 'unlimited') + '" data-bd-avail="unlimited"' + unlimDisabled + '>' +
@@ -1256,28 +1274,31 @@
                 '" role="radio" aria-checked="' + (b.avail === 'limited') + '" data-bd-avail="limited">' +
                 bdEsc(T('cpp.bd.avail.limited')) + '</button>' +
             '</div>' +
+            /* cap 需要自己的標籤：一旦填了值，placeholder 就不再說明它是什麼，
+               這個輸入框會變成 segmented 底下一個沒有名字的數字。 */
             (b.avail === 'limited'
-              ? '<input class="input mt-8" type="number" min="1" step="1" data-bd-f="cap" value="' + bdEsc(b.cap) +
+              ? '<label class="field__label mt-8">' + bdEsc(T('cpp.bd.cap')) + '</label>' +
+                '<input class="input" type="number" min="1" step="1" data-bd-f="cap" value="' + bdEsc(b.cap) +
                   '" placeholder="' + bdEsc(T('cpp.bd.cap.ph')) + '">'
               : '') +
-            (hasSlots ? '<div class="field__hint" data-i18n="cpp.bd.slots.forced">Bundles that include slots must be limited — an uncapped share is an open-ended promise.</div>' : '') +
+            (hasSlots ? '<div class="field__hint">' + bdEsc(T('cpp.bd.slots.forced')) + '</div>' : '') +
           '</div>' +
         '</div>' +
 
         '<div class="field">' +
-          '<div class="field__label"><span data-i18n="cpp.bd.items">Items from your shop</span></div>' +
+          '<div class="field__label">' + bdEsc(T('cpp.bd.items')) + '</div>' +
           '<div class="fc-pick" data-bd-pick>' +
             '<input class="input" data-bd-search placeholder="' + bdEsc(T('cpp.bd.search')) + '" autocomplete="off">' +
             '<div class="fc-pick__results" data-bd-results hidden></div>' +
           '</div>' +
           (b.items.length ? '<div class="mt-8">' + bdItemsHTML(b) + '</div>' : '') +
-          '<div class="field__hint" data-i18n="cpp.bd.items.hint">Everything here is a real product, so Orders and Pickup can fulfil it.</div>' +
+          '<div class="field__hint">' + bdEsc(T('cpp.bd.items.hint')) + '</div>' +
         '</div>' +
 
         '<div class="field" style="margin-bottom:0">' +
-          '<div class="field__label"><span data-i18n="cpp.bd.perks">Perks</span> <span class="text-sub" data-i18n="cpp.bd.perks.sub">· things with no SKU — a Discord role, a credit</span></div>' +
+          '<div class="field__label">' + bdEsc(T('cpp.bd.perks')) + ' <span class="text-sub">' + bdEsc(T('cpp.bd.perks.sub')) + '</span></div>' +
           (b.perks.length ? bdPerksHTML(b) : '') +
-          '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add><span data-i18n="cpp.bd.perk.add">＋ Add perk</span></button>' +
+          '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add>' + bdEsc(T('cpp.bd.perk.add')) + '</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -1303,7 +1324,6 @@
 
     list.innerHTML = BUNDLES.map(bdCardHTML).join('');
     if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(list);
-    if (window.i18nApply) window.i18nApply(list);
 
     if (keep && keep.sel && !(opts && opts.blur)) {
       const el = list.querySelector('[data-bd-card="' + keep.id + '"] ' + keep.sel);
@@ -1341,8 +1361,12 @@
     set('bd-ov-committed', unbounded ? T('cpp.bd.ov.unbounded') : committed.toLocaleString('en-US'));
 
     const unalloc = Number.isFinite(offered) ? offered - committed : NaN;
+    /* 真正的減號 U+2212，與 funding 右軌的 −$1,600 同字形；hyphen 在 tabular 數字
+       裡會比數字窄一截，一整欄對齊會歪。 */
     set('bd-ov-unalloc', unbounded ? DASH
-      : Number.isFinite(unalloc) ? unalloc.toLocaleString('en-US') : DASH);
+      : Number.isFinite(unalloc)
+        ? (unalloc < 0 ? '−' + Math.abs(unalloc).toLocaleString('en-US') : unalloc.toLocaleString('en-US'))
+        : DASH);
 
     /* 賣光能募到多少：無上限的套組不能計入天花板，否則是編造數字。 */
     let ceiling = 0, ceilingUnbounded = false;
@@ -1376,7 +1400,8 @@
       }
     }
 
-    /* 教練提示（不擋關）：三個方案是建議，不是規則。 */
+    /* 教練提示：三個套組是建議，不是規則——平台沒有立場因為創作者只想開一個
+       $50 方案就不讓他繼續。真正擋關的只有「一個有效套組都沒有」。 */
     const coach = document.getElementById('bd-coach');
     if (coach) {
       const n = valid.length;
@@ -1384,6 +1409,32 @@
         : n < 3 ? T('cpp.bd.coach.few').replace('{n}', String(3 - n))
         : T('cpp.bd.coach.ok');
     }
+
+    /* 停用 Continue 而不是讓人按下去再彈 alert：按鈕的狀態就是答案，
+       旁邊的教練行已經寫著為什麼。 */
+    const next = document.querySelector('[data-action=next]');
+    if (next) next.disabled = valid.length === 0;
+  }
+
+  /* 名額是否跨越了 0（0↔正數）——那是唯一會改變卡片結構的數值變化：
+     Unlimited 鈕的 disabled、cap 欄位的存廢、強制說明的顯示都掛在它身上。
+     用 DOM 目前的樣子當「之前」的證據，避免另外維護一份影子狀態。 */
+  function bdSlotsCrossedZero(card, b) {
+    const shownForced = !!card.querySelector('[data-bd-avail="unlimited"]').disabled;
+    return shownForced !== (bdNum(b.slots) > 0);
+  }
+
+  /* 不重畫的就地同步：摘要列與收合狀態下看得到的東西。 */
+  function bdSyncCard(card, b) {
+    const priceN = bdNum(b.price);
+    const nameEl = card.querySelector('.fc-sum__name');
+    const idx = nameEl.querySelector('.fc-bundle__index');
+    nameEl.textContent = b.name || T('cpp.bd.untitled');
+    if (idx) nameEl.insertBefore(idx, nameEl.firstChild);
+    card.querySelector('.fc-sum__meta').textContent = bdSummaryMeta(b);
+    card.querySelector('.fc-sum__price').textContent =
+      Number.isFinite(priceN) && priceN > 0 ? '$' + priceN.toLocaleString('en-US') : '—';
+    card.classList.toggle('fc-bundle--invalid', !bdValid(b));
   }
 
   /* ── 事件（全部委派到 #bd-list，卡片是重畫出來的，直接綁會掉） ──────────── */
@@ -1399,10 +1450,19 @@
 
       if (e.target.dataset.bdF) {
         const f = e.target.dataset.bdF;
+        const wasAvail = b.avail;
         b[f] = e.target.value;
         /* 名額 > 0 ⇒ 立刻切成 Limited（結構性約束，不是事後驗證）。 */
         if (f === 'slots' && bdNum(b.slots) > 0 && b.avail === 'unlimited') b.avail = 'limited';
-        renderBundles();
+
+        /* 只有「卡片結構會變」時才整塊重畫——也就是名額跨越 0（切換 Limited 強制、
+           顯示/隱藏強制說明）的那一刻。打字本身不重畫：每個字元重建一次 DOM 又把
+           游標還原回去，是在跟自己打架，而且任何持有節點參照的程式都會拿到斷開的節點。 */
+        const structural = (f === 'slots') && (b.avail !== wasAvail || bdSlotsCrossedZero(card, b));
+        if (structural) { renderBundles(); return; }
+
+        bdSyncCard(card, b);
+        renderBundleOverview();
         return;
       }
       if (e.target.dataset.bdPerk != null) {
@@ -1524,9 +1584,10 @@
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', renderBundleOverview);
   });
-  /* JS 生成的節點不帶 data-i18n 的部分要在語言切換後重畫——UI-CHANGES L105
-     記錄過同一個 bug（切 en 後票種列仍留著中文）。 */
-  document.addEventListener('i18n:applied', () => { if (BUNDLES.length) renderBundles({ blur: true }); });
+  /* JS 生成的節點在語言切換後要重畫（UI-CHANGES L105 記錄過同一個 bug：切 en 後
+     票種列仍留著中文）。這裡不另外掛 i18n:applied——頁尾已經有
+     `document.addEventListener('i18n:applied', render)`，而 render() 在這一步會
+     再進 ensureBundles() → renderBundles()。多掛一個只會讓同一件事做兩次。 */
 
   // Nav
   document.querySelector('[data-action=next]').addEventListener('click', () => {
