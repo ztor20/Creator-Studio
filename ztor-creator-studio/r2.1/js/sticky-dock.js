@@ -113,7 +113,128 @@
         }, { root: scrollRoot, threshold: 0 });
         observer.observe(sentinel);
       });
+
+      setupFilterCollapse(dock);
     });
+  }
+
+  /* ── 貼頂態的篩選段：放得下靠右，放不下收進圖示鈕（2026-07-28 L 裁示）─────────
+     量測而不是猜斷點：pill 的數量會隨模式改變（沒有符合的狀態會被藏起來），文字寬度
+     又隨語系變，任何寫死的 media query 都會在某個組合上猜錯。這裡直接比對
+     「篩選段要多寬」與「這一行還剩多寬」。 */
+  function setupFilterCollapse(dock) {
+    var bars   = dock.querySelector('.list-dock__bars') || dock;
+    var row    = dock.querySelector('.list-status-row');
+    var bar    = dock.querySelector('.list-toolbar');
+    var btn    = dock.querySelector('.list-toolbar__filter');
+    if (!row || !bar || !btn) return;
+
+    var badge = btn.querySelector('.list-toolbar__filter-count');
+
+    function close() {
+      dock.classList.remove('is-filters-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    /* 迴圈防護，三道，缺一不可——第一版只有同步重入閘，實測直接把 renderer 卡死：
+         1) measure() 會改 dock 的 class → 版面改變 → ResizeObserver 下一幀再叫一次
+            measure()。ResizeObserver 是非同步的，同步閘擋不住跨幀的自我觸發。
+         2) 所以真正的閘是「寬度沒變就什麼都不做」——自我觸發的那一次寬度必然相同，
+            於是鏈條在第二次就斷掉。
+         3) 再加遲滯（hysteresis）：收合後版面會空出空間，若用同一個門檻判斷就會
+            立刻覺得「放得下」而展開、展開後又放不下……在臨界寬度上無限抖動。
+            展開的門檻比收合的門檻多留 24px，臨界點附近就穩定了。 */
+    var lastW = -1, raf = 0;
+    function run() {
+      var w = bars.clientWidth;
+      if (w === lastW) return;
+      lastW = w;
+      doMeasure(w);
+    }
+    /* force ＝同步跑，不排 rAF。
+       原因（實測）：分頁不在前景時瀏覽器會暫停 requestAnimationFrame，整條量測鏈
+       就停在那裡——頁面在背景分頁載入、之後才被切到前景時，初次量測永遠不會發生，
+       而那時也不會有 resize 事件來補救，於是 dock 一直停在未量測的狀態。
+       非同步只用來合併 observer 的連發，那種情況本來就只在前景才有意義。 */
+    function measure(force) {
+      if (force) { lastW = -1; run(); return; }
+      if (raf) return;
+      raf = requestAnimationFrame(function () { raf = 0; run(); });
+    }
+    function doMeasure(w) {
+      if (!dock.classList.contains('is-snapped')) {
+        dock.classList.remove('is-filters-collapsed');
+        close();
+        return;
+      }
+      var collapsed = dock.classList.contains('is-filters-collapsed');
+      /* 收合時 row 是浮層，量不到它在行內要多寬。用 nav + select 的內容寬相加代替，
+         不必為了量測把 class 拆掉再裝回去（那本身就是一次會觸發 observer 的版面變動）。 */
+      var need = 0;
+      Array.prototype.forEach.call(row.children, function (c) { need += c.scrollWidth; });
+      need += 24;                                  /* row 自己的 gap ＋ 左分隔線留白 */
+      var have = w - bar.scrollWidth - 28;
+      var collapse = collapsed ? need > have - 24  /* 遲滯：展開要比收合多 24px 餘裕 */
+                               : need > have;
+      if (collapse === collapsed) return;
+      dock.classList.toggle('is-filters-collapsed', collapse);
+      if (!collapse) close();
+    }
+
+    /* 有幾個篩選正在生效——收起來的東西如果正在作用卻看不出來，那不是收納是隱瞞。
+       只數「不是 all／不是預設」的：狀態 pill 的 active 值不是 all，加上分類下拉不是 all。 */
+    function syncCount() {
+      if (!badge) return;
+      var n = 0;
+      var active = row.querySelector('.filter-tabs__item--active');
+      if (active && active.dataset.state && active.dataset.state !== 'all') n++;
+      row.querySelectorAll('select').forEach(function (s) {
+        if (s.value && s.value !== 'all') n++;
+      });
+      badge.textContent = String(n);
+      badge.hidden = n === 0;
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = !dock.classList.contains('is-filters-open');
+      dock.classList.toggle('is-filters-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    /* 點外面關掉；Esc 關掉並把焦點還給鈕（浮層的標準行為，同 dropdown）。 */
+    document.addEventListener('click', function (e) {
+      if (!dock.classList.contains('is-filters-open')) return;
+      if (row.contains(e.target) || btn.contains(e.target)) return;
+      close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && dock.classList.contains('is-filters-open')) { close(); btn.focus(); }
+    });
+    /* 選了一個篩選就關起來——浮層的工作結束了，繼續擋著清單只會礙事。 */
+    row.addEventListener('click', function (e) {
+      if (e.target.closest('.filter-tabs__item')) { syncCount(); close(); }
+    });
+    row.addEventListener('change', syncCount);
+
+    if (window.ResizeObserver) new ResizeObserver(function () { measure(); }).observe(bars);
+    window.addEventListener('resize', function () { measure(true); });
+    /* 語系換了字寬會變，但容器寬度不變 → 必須 force，否則被「寬度沒變」那道閘擋掉。 */
+    document.addEventListener('i18n:applied', function () { measure(true); syncCount(); });
+    /* 貼頂／脫黏改變可用寬度。只在 is-snapped 真的變了才重量，避免我們自己切
+       is-filters-collapsed／is-filters-open 時又把自己叫醒一次。 */
+    var wasSnapped = dock.classList.contains('is-snapped');
+    new MutationObserver(function () {
+      var now = dock.classList.contains('is-snapped');
+      if (now === wasSnapped) return;
+      wasSnapped = now;
+      measure(true);
+    }).observe(dock, { attributes: true, attributeFilter: ['class'] });
+    /* 回到前景時補量一次：在背景分頁裡發生的寬度變化沒有 rAF 也沒有 resize 通知。 */
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) measure(true);
+    });
+    measure(true);
+    syncCount();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

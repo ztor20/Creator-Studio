@@ -901,6 +901,8 @@
     'projects.cat.custom':        { en: 'Custom',                               zh: '自訂' },
     'projects.search':            { en: 'Search projects…',                      zh: '搜尋項目…' },
     'projects.search.open':       { en: 'Search projects',                       zh: '搜尋項目' },
+    /* 貼頂態塞不下時，狀態篩選收進這顆鈕（2026-07-28）。 */
+    'projects.filters.open':      { en: 'Filters',                               zh: '篩選' },
     'projects.search.close':      { en: 'Close search',                          zh: '關閉搜尋' },
     'projects.empty.none.title':  { en: 'No projects yet',                       zh: '尚未建立任何項目' },
     'projects.empty.none.sub':    { en: 'Create your first project to start publishing, funding, or taking pre-orders.', zh: '建立第一個項目，開始發布、募資或開放預購。' },
@@ -4975,7 +4977,8 @@
     'tier-settings.thresh.preview': { en: '<strong>Before saving:</strong> a live preview shows “will re-tier N fans”. Both ladders must stay monotonic — the top % increasing and the points floor decreasing as you go down. <em>Validation logic — TBC; the exact rule and preview count are owned upstream and not invented here.</em>', zh: '<strong>儲存前：</strong>即時預覽會顯示「將重新分級 N 位粉絲」。兩道階梯都必須單調——往下走時前 % 名遞增、最低點數遞減——才能儲存。<em>驗證邏輯──待確認；確切規則與預覽數字由上游掌管，此處不自行發明。</em>' },
     'tier-settings.thresh.batch': { en: 'Loyalty points and tiers are recomputed by the nightly batch. Threshold changes take effect at the next recompute, not immediately.', zh: '忠誠點數與分級由每晚批次重新計算。門檻變更於下次重算時生效，非立即生效。' },
     'tier-settings.mult.title': { en: 'Behavior multipliers', zh: '行為加權' },
-    'tier-settings.mult.sub': { en: 'Weight how much each behavior contributes to reputation. <em>How multipliers feed the score is owned by the scoring engine — TBC, shown for setup only.</em>', zh: '設定各種行為對聲望的貢獻權重。<em>加權如何計入分數由評分引擎掌管──待確認，此處僅供設定。</em>' },
+    /* 2026-07-28 使用者裁示：原句 24 字、一半在講免責，讀完還是不知道這欄在幹嘛。改成先說白話——每種行為值多少忠誠積分、調高會怎樣；評分公式歸屬只留三個字，頁面上方已有「示例數值」的說明，不必再講一次。 */
+    'tier-settings.mult.sub': { en: 'How many loyalty points each behavior earns. Raise one to rank those fans higher. <em>Scoring formula — TBC.</em>', zh: '每種行為各能賺多少忠誠積分。調高一項，做這件事的粉絲排名就往前。<em>計分公式待確認。</em>' },
     'tier-settings.mult.purchase': { en: 'Purchases', zh: '購買' },
     'tier-settings.mult.purchase-hint': { en: 'Shop orders, tickets, project backing.', zh: '商店訂單、票券、企劃支持。' },
     'tier-settings.mult.event': { en: 'Event check-ins', zh: '活動報到' },

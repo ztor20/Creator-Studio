@@ -65,6 +65,33 @@ html[data-theme="light"] .list-toolbar {
   align-items: center;
 }
 
+/* 「更多篩選」鈕（2026-07-28）：只在貼頂且篩選段塞不下時出現，見下方
+   .is-filters-collapsed。平時 display:none，所以靜止態的動作群完全不變。
+   帶一顆計數徽章——收起來的東西如果正在生效卻看不出來，那不是收納是隱瞞。 */
+.list-toolbar__filter {
+  display: none;
+  position: relative;
+  flex: 0 0 auto;
+}
+.list-toolbar__filter-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+.list-toolbar__filter-count[hidden] { display: none; }
+
 /* 次層篩選列（pill 篩選或 select）。margin-bottom 是本列到清單的間距——
    2026-07-26 使用者指定加大（24→40），六個清單頁（專案／我的 IP／電子商店／訂單／取貨／活動）一致。 */
 .list-status-row {
@@ -265,6 +292,70 @@ html[data-theme="light"] .list-toolbar {
     flex-wrap: nowrap;
     white-space: nowrap;
   }
+
+  /* ══ 塞不下時怎麼辦（2026-07-28 L：「how do we fix this problem when theres too
+        many sub nav? use a filter icon to expand? and i want all those sub nav to
+        stick to the right when there are enough space」）══════════════════════
+
+     問題：貼頂態把兩排併成一排之後，專案頁要在同一行放 4 個模式 tab ＋ 3 個動作
+     ＋ 7 顆狀態 pill ＋ 1 個分類下拉＝13 個可點目標。橫向捲＋24px 漸隱是目前的
+     退路，但實測就是把「Cancelled」從字中間切斷（L 截圖），而且捲動這件事在一條
+     只有 44px 高的 bar 上沒有人會發現。這條縫已經補過三次（pill 疊到下拉上、
+     模式 tab 被捲出畫面），每一次都只是把不足換個地方，因為 13 個目標本來就放不下。
+
+     兩段式，由 sticky-dock.js 量測後掛 class：
+       放得下 → 篩選段靠右（margin-left:auto），與左邊的主軸拉開距離；
+       放不下 → 整段收進一顆 sliders 圖示鈕，點開變成錨在鈕下方的浮層。
+
+     為什麼是 margin-left:auto 而不是 justify-content:flex-end：
+     兩者「放得下」時看起來一樣，但溢出時 flex-end 會讓內容往左邊溢出，先被藏起來的
+     是最左邊的「All states」，而且橫向捲會從中間開始。auto margin 在空間不足時
+     自動塌成 0，溢出方向與捲動起點都維持正常。
+
+     為什麼收合只發生在貼頂態：狀態 pill 帶著計數（All states 16／Draft 1／Live 8），
+     那些數字是「一眼看完」的資訊，全部藏進圖示等於把它丟掉。靜止態的兩排版面空間
+     充足、該全部顯示；貼頂態那條 bar 的工作是「讓你知道自己在哪、還能動手」，
+     不是當儀表板——那裡才值得收。
+
+     圖示沿用站上既有的 sliders-horizontal 進階篩選鈕（ip-market #ipm-adv-toggle、
+     e-shop 同款），不自創第二種「更多篩選」的長相。 */
+
+  /* 放得下：靠右。nav 是 .list-status-row 的第一個子元素，右邊還有分類下拉。 */
+  .list-dock.is-snapped .list-status-row > nav:first-child { margin-left: auto; }
+
+  /* 放不下：整段變成錨在篩選鈕下的浮層。用「移動同一個節點」而不是複製一份，
+     所以 id、事件、計數更新全部沿用原本那一套，沒有第二份要同步。 */
+  .list-dock.is-snapped.is-filters-collapsed .list-status-row {
+    display: none;
+    position: absolute;
+    top: calc(100% + var(--sp-8));
+    right: var(--sp-16);
+    z-index: 30;
+    width: max-content;
+    max-width: min(560px, calc(100vw - var(--sp-32)));
+    flex-wrap: wrap;
+    padding: var(--sp-12);
+    border: 1px solid var(--border);
+    border-left: 1px solid var(--border);   /* 蓋掉貼頂態那條左分隔線 */
+    border-radius: var(--radius-lg);
+    background: var(--popover, var(--card));
+    box-shadow: var(--shadow-float, 0 12px 32px -12px rgb(0 0 0 / 0.5));
+    /* 浮層裡不需要橫向捲與右緣漸隱——它有自己的寬度可以換行 */
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .list-dock.is-snapped.is-filters-collapsed .list-status-row > nav:first-child {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+  .list-dock.is-snapped.is-filters-collapsed .list-status-row > * { flex-wrap: wrap; }
+  .list-dock.is-snapped.is-filters-collapsed.is-filters-open .list-status-row { display: flex; }
+  /* bars 要能當浮層的定位參考 */
+  .list-dock.is-snapped .list-dock__bars { position: relative; }
+
+  /* 篩選鈕只在收合時出現 */
+  .list-dock.is-snapped.is-filters-collapsed .list-toolbar__filter { display: inline-flex; }
 
   /* 只過渡 height 一個版面屬性（padding／margin 改成瞬間切換）。
      detect.mjs 會標 layout-transition：動版面屬性會觸發重排。這裡刻意保留 height——
