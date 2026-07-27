@@ -44,7 +44,11 @@
      contents of assets/brands/. onload marks the well so the fallback
      hides; onerror drops the broken image so it never shows a torn icon. */
   function logo(b, size) {
-    return '<span class="brand-card__logo" style="width:' + size + 'px;height:' + size + 'px;background:' + b.colour + '">' +
+    /* 底色一律黑（2026-07-28 使用者裁示）。原本用 b.colour ＝ 各品牌的企業色，
+       五張卡就五個色塊，讀起來像五個不同的按鈕而不是同一種東西；而且棕色／深藍
+       這類企業色在深色卡面上會糊掉。五個品牌的商標 SVG 全部是純白（已逐一確認），
+       黑底對每一個都成立，也讓商標自己成為唯一的識別。 */
+    return '<span class="brand-card__logo" style="width:' + size + 'px;height:' + size + 'px;background:#000">' +
       '<img src="assets/brands/' + b.id + '.svg" alt="" ' +
         'onload="this.parentElement.classList.add(\'has-logo\')" ' +
         'onerror="this.remove()">' +
