@@ -116,6 +116,14 @@
       { href: "tier-benefits.html", icon: "gift",     titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
       { href: "tier-settings.html", icon: "sliders",  titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
     ], match: ["fan-detail.html"] },
+    /* Brand campaigns (2026-07-28)。刻意不叫 "Campaign"——本專案的
+       create-campaign.html 已經是「募資活動」的意思，同一個字指兩件事會
+       永久混淆。這裡一律用「品牌合作 Brand campaigns」。
+       合作報告 brand-campaign-detail 由列表頁內進入，列在 match。 */
+    { key: "nav.brandcmp", icon: "handshake", panel: [
+      { href: "brand-campaigns.html", icon: "megaphone", titleKey: "nav.bc-list",   descKey: "nav.bc-list-sub" },
+      { href: "brand-partners.html",  icon: "store",     titleKey: "nav.bc-brands", descKey: "nav.bc-brands-sub" },
+    ], match: ["brand-campaign-detail.html"] },
     { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
 
@@ -124,7 +132,8 @@
   const FULL_ROUTES = new Set([
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
-    "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "my-ip.html", "ip-detail.html",
+    "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html",
+    "brand-campaigns.html", "brand-partners.html", "brand-campaign-detail.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
   ]);

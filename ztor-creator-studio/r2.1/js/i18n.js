@@ -55,6 +55,11 @@
     'nav.fans-benefits':     { en: 'Benefits',  zh: '分級權益' },
     'nav.fans-benefits-sub': { en: 'What each tier unlocks',         zh: '每個分級解鎖什麼' },
     'nav.fans-tiers':        { en: 'Tier settings', zh: '分級設定' },
+    'nav.brandcmp':     { en: 'Brand campaigns', zh: '品牌合作' },
+    'nav.bc-list':      { en: 'My campaigns',    zh: '我的合作' },
+    'nav.bc-list-sub':  { en: 'Performance & earnings', zh: '成效與收益' },
+    'nav.bc-brands':    { en: 'Brand partners',  zh: '合作品牌' },
+    'nav.bc-brands-sub':{ en: 'Browse & start a collab', zh: '瀏覽並發起合作' },
     'nav.fans-tiers-sub':    { en: 'Thresholds, multipliers & rules', zh: '門檻、行為加權與規則' },
     'nav.earnings':     { en: 'Earnings',   zh: '收入管理' },
 
