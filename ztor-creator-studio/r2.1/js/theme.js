@@ -48,7 +48,11 @@
   var faces = [
     "fonts/AlumniSans-Variable.woff2",
     "fonts/Satoshi-400.woff2",
-    "fonts/Satoshi-500.woff2"
+    "fonts/Satoshi-500.woff2",
+    /* 700 也在第一畫面上（實測 document.fonts 顯示它在專案詳情頁就已載入：
+       粗體標籤、表格數值等處用得到）。少了它，其他字都不閃、只有粗體那幾個字閃，
+       反而更明顯。 */
+    "fonts/Satoshi-700.woff2"
   ];
   /* 路徑從 theme.js 自己的 src 推回站台根目錄——docs/、funding-test/ 這些
      子目錄頁面若用相對路徑 "fonts/…" 會指到不存在的位置，預載就白做了

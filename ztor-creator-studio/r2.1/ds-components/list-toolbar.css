@@ -135,30 +135,61 @@ html[data-theme="light"] .list-toolbar {
   pointer-events: none;
 }
 
+/* 分工（2026-07-28 修，完整說明見 js/sticky-dock.js）：
+     .list-dock        ＝ 可黏貼「範圍」。它可以很高、可以往下包住整個清單
+                         （電子商店就是這樣，sticky 才黏得住整段捲動）。
+                         它自己不 sticky，尤其不能在貼頂態變成 flex 容器。
+     .list-dock__bars  ＝ 真正貼頂、真正變成 dock 的那一條。腳本在執行期包出來，
+                         裡面只有 .list-toolbar ＋ .list-status-row。
+   之前兩個角色由同一個 box 兼差，於是 `display:flex` 一下去，被那層包住的三個
+   商品清單分頁也成了 flex item——工作列被壓成 124px、篩選 pill 直排，
+   整個清單擠成一條窄柱（使用者回報的畫面）。角色分開就不會再發生。 */
 @media (min-width: 901px) {
-  .list-dock {
+  /* sticky 掛哪一層，取決於這頁的殼包到哪裡（分類由 js/sticky-dock.js 掛 --tall/--thin）：
+       厚殼（電子商店／活動，殼往下包住整個清單）→ 掛內層那一條，外層只當可黏貼範圍；
+       薄殼（我的 IP／IP 市場／專案，殼只有兩排約 106px 高）→ 掛外層自己，
+       因為 sticky 只能在親層 box 裡移動，掛內層的話捲過那 106px 就脫黏。
+     只有厚殼那頁能用內層——這是上面那次修的前提，薄殼要補這條才會真的黏住。 */
+  .list-dock--tall .list-dock__bars,
+  .list-dock--thin {
     position: sticky;
     top: 0;
     z-index: 20;            /* 低於 app-topbar(50)，高於列 hover 的 z-index:1 */
-    border-radius: var(--radius-lg);
+  }
+
+  .list-dock__bars {
+    /* --radius-xl（16px）＝靜止態工作列卡的同一個圓角：貼頂後形狀是「同一張卡收窄」，
+       不是換了一個新形狀。（初版寫 --radius-lg，實測只有 8px，讀起來像被裁掉的方條。） */
+    border-radius: var(--radius-xl);
     transition:
       background-color 260ms cubic-bezier(.16, 1, .3, 1),
       box-shadow       260ms cubic-bezier(.16, 1, .3, 1),
-      padding          260ms cubic-bezier(.16, 1, .3, 1);
+      border-color     260ms cubic-bezier(.16, 1, .3, 1),
+      /* 上圓角在貼頂時收成 0——一起過渡，否則會在轉場中途「啪」地換形狀 */
+      border-radius    260ms cubic-bezier(.16, 1, .3, 1);
   }
 
   /* 貼頂態：整條 dock 自己是那張卡，內層兩排都變透明、併成一行。 */
-  .list-dock.is-snapped {
+  .list-dock.is-snapped .list-dock__bars {
     display: flex;
     align-items: center;
-    gap: var(--sp-12);
-    padding: var(--sp-6) var(--sp-12);
-    background: color-mix(in srgb, var(--surface-shell) 86%, transparent);
+    gap: var(--sp-14);
+    padding: var(--sp-6) var(--sp-16);
+    /* 94% 而不是 86%：清單列從底下捲過去時，只差 14% 明度的半透明面板會和列糊在一起，
+       讀不出「這條在前面」。毛玻璃在這裡是為了讓底下的移動看得見一點，不是要看穿。 */
+    background: color-mix(in srgb, var(--surface-shell) 94%, transparent);
     backdrop-filter: blur(14px) saturate(140%);
+    /* 上緣切平（2026-07-28 使用者裁示：「拿掉貼頂態的上圓角，讓它看起來是頁首外框的延伸」）。
+       貼頂之後這一條的上緣正好切齊頁面外框的內側——留著 16px 圓角就會在兩個角各露出一小塊
+       底色，讀起來像一張「浮在框裡的卡」；切平之後它是那個外框往下長出來的一段。
+       下緣的圓角留著：下面是會捲動的內容，那一側仍然是這條自己的邊界。 */
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    /* 下緣要有一條實線：捲動的內容正好從這裡通過，沒有邊界就沒有「上面／下面」。 */
+    border-bottom: 1px solid var(--border);
     box-shadow: 0 6px 20px -10px rgb(0 0 0 / 0.5);
   }
-  html[data-theme="light"] .list-dock.is-snapped {
-    background: color-mix(in srgb, var(--card) 88%, transparent);
+  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars {
+    background: color-mix(in srgb, var(--card) 94%, transparent);
     box-shadow: 0 6px 20px -12px rgb(0 0 0 / 0.28);
   }
 
@@ -181,17 +212,27 @@ html[data-theme="light"] .list-toolbar {
     min-width: 0;
     margin: 0;
     padding: 0 0 0 var(--sp-12);
-    border-left: 1px solid var(--border-soft);
+    border-left: 1px solid var(--border);
     overflow-x: auto;
     scrollbar-width: none;
   }
   .list-dock.is-snapped .list-status-row::-webkit-scrollbar { display: none; }
+  /* 篩選群本身要不換行——併成一行後右段寬度有限，預設的 flex-wrap 會讓 pill 折成兩排
+     （IP 市場實測 4 顆 pill 折行後整條 dock 從 57px 變 83px，等於白省了）。
+     改成不換行＋外層橫向捲：塞不下就用捲的，高度永遠是一排。 */
+  .list-dock.is-snapped .list-status-row > * {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
 
+  /* 只過渡 height 一個版面屬性（padding／margin 改成瞬間切換）。
+     detect.mjs 會標 layout-transition：動版面屬性會觸發重排。這裡刻意保留 height——
+     它是「收合」這個動作本身，拿掉就變成瞬間跳一格、L 要的轉場就不存在了；
+     而且這是捲動方向改變時才跑一次的一次性過渡、只作用在一個元素上，
+     不是逐幀動畫，重排成本是一次而非每幀。padding/margin 對觀感沒有貢獻，故移出。 */
   .list-dock.is-snapped .list-toolbar,
   .list-dock.is-snapped .list-status-row {
-    transition: height 260ms cubic-bezier(.16, 1, .3, 1),
-                padding 260ms cubic-bezier(.16, 1, .3, 1),
-                margin  260ms cubic-bezier(.16, 1, .3, 1);
+    transition: height 260ms cubic-bezier(.16, 1, .3, 1);
   }
 }
 

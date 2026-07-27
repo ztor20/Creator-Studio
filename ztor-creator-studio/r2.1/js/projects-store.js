@@ -73,6 +73,8 @@
     {
       id: 'adia-chan', created: '2026/04/18', fundFrom: '2026/06/01', name: '陳松伶精選', nameEn: "Nadia Chan: Greatest Hits",
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'live', goalMet: true, delivered: true,
+      /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
+      perf: { usd: 4200, audience: 96000, kind: 'streams' },
       cover: IMG + 'adia-chan-card.webp', poster: IMG + 'adia-chan.webp',
       desc: { en: 'Cantopop classics re-recorded with a new string arrangement, including live session takes.', zh: '經典重唱 × 全新弦樂編制，收錄 Live Session 現場版本。' },
       meta: { en: '$10,000 funded · 176 backers · Now released', zh: '$10,000 已募足 · 176 位支持者 · 現已上線' },
@@ -85,6 +87,8 @@
       /* 2026-07-25：募資達標、交付完成後上線，是影視版版稅面板（募資＋已上線）
          唯一的樣本項目。2026-07-27 新模型下＝live（已交付），succeeded 留作徽章。 */
       cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'live', goalMet: true, delivered: true,
+      /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
+      perf: { usd: 21400, audience: 187000, kind: 'views' },
       cover: IMG + 'mong-kok-shootout-card.webp', poster: IMG + 'shuangyan-zhijian.webp',
       desc: { en: 'A rookie negotiator has 24 hours to close a kidnapping — against the mentor who vanished ten years ago.', zh: '一場 24 小時內必須結案的綁架案，菜鳥談判專家對上失蹤十年的師父。' },
       meta: { en: '$50,000 funded · 612 backers · Now streaming', zh: '$50,000 已募足 · 612 位支持者 · 現已上線' },
@@ -95,6 +99,8 @@
     {
       id: 'pirate-queen', created: '2025/09/20', name: '海上霸姬鄭一嫂', nameEn: "Ching Shih: Pirate Queen",
       cat: 'series', family: 'film', icon: 'film', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 12500, audience: 45000, kind: 'views' },
       cover: IMG + 'pirate-queen-zheng-yi-sao-card.webp', poster: IMG + 'yangtai-shang-de-huai-nuhai.webp',
       desc: { en: 'From dance-hall girl to commander of seventy thousand — the true legend of a Qing-dynasty pirate queen.', zh: '清朝真實女海盜傳奇，從舞女到統領七萬眾的海上霸主。' },
       meta: { en: 'US$12,500 lifetime · 45,000 views', zh: '累計 US$12,500 · 45,000 次觀看' },
@@ -128,6 +134,8 @@
     {
       id: 'kowloon-night-theme', created: '2026/04/26', name: '九龍夜行 片尾曲', nameEn: "Kowloon After Dark — End Title",
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 3180, audience: 128000, kind: 'streams' },
       cover: IMG + 'cc-video-3.jpg', poster: null,
       desc: { en: 'The end-credits single from the martial-arts feature, released on its own.', zh: '武打片的片尾曲，單曲獨立發行。' },
       meta: { en: 'US$3,180 lifetime · 128,000 streams', zh: '累計 US$3,180 · 128,000 次串流' },
@@ -205,6 +213,8 @@
     {
       id: 'nick-wo-de-i', created: '2025/08/10', name: '帥到分手', nameEn: "Too Handsome to Stay",
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 9200, audience: 620000, kind: 'streams' },
       /* 2026-07-26 改名後換上正確封面：persona/NICKTHEREAL/images/single_2016-09-30_x.jpg */
       cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
       desc: { en: 'The REAL-era breakout single — re-released on its own with a remastered MV.', zh: 'REAL 時期的代表單曲，獨立重新發行並重製 MV。' },
@@ -214,6 +224,8 @@
     {
       id: 'nick-wei-le-ni', created: '2024/07/25', name: '罵醒我', nameEn: "Wake Me Up",
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 3180, audience: 240000, kind: 'streams' },
       /* 2026-07-26：改名後換上 repo 裡本來就對應〈罵醒我〉的封面（原為〈為了你〉的 nick-wln.jpg）。
          與下方「罵醒我 (Reimagined)」共用同一張＝同一首歌的兩個版本，刻意相同。 */
       cover: IMG + 'nick-mxw.jpg', poster: IMG + 'nick-mxw.jpg',
@@ -224,6 +236,8 @@
     {
       id: 'nick-zou-san-guan', created: '2023/02/14', name: '愛上你算我賤', nameEn: "Loving You Was My Mistake",
       cat: 'song', family: 'music', icon: 'music', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 6750, audience: 480000, kind: 'streams' },
       /* 2026-07-26 改名後換上正確封面：persona 素材庫的 Acoustic Version 單曲封面 */
       cover: IMG + 'nick-asn.jpg', poster: IMG + 'nick-asn.jpg',
       desc: { en: 'The REAL LIFE stand-out track released as its own single — a slow-burn R&B breakup cut.', zh: 'REAL LIFE 中最受歡迎的一軌獨立發行，慢燒 R&B 分手情歌。' },
@@ -247,6 +261,8 @@
     {
       id: 'nick-ni-shuo', created: '2024/06/10', fundFrom: '2024/07/01', name: '帥到分手 MV', nameEn: "Too Handsome to Stay (MV)",
       cat: 'mv', family: 'film', icon: 'film', type: 'fund', status: 'live', goalMet: true, delivered: true,
+      /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
+      perf: { usd: 7300, audience: 2400000, kind: 'views' },
       /* MV 沿用單曲主視覺（同一首歌），與下方直接發佈版同圖 */
       cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
       desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '集資拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
@@ -262,6 +278,8 @@
          persona 素材庫的 single_2022-07-15_2022-remix.jpg。 */
       id: 'nick-sdfs-mv-live', created: '2025/08/22', name: '什麼都不必說', nameEn: "Nothing Left to Say",
       cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 5400, audience: 1900000, kind: 'views' },
       cover: IMG + 'nick-smdbbs.jpg', poster: IMG + 'nick-smdbbs.jpg',
       desc: { en: 'The official MV for 什麼都不必說 — self-funded, released straight to the channel.', zh: '〈什麼都不必說〉官方 MV，自費製作、直接上線頻道。' },
       meta: { en: 'US$5,400 lifetime · 1.9M views', zh: '累計 US$5,400 · 190 萬次觀看' },
@@ -273,6 +291,8 @@
       id: 'nick-realive', created: '2023/01/10', fundFrom: '2023/01/20', name: 'REALIVE', nameEn: "REALIVE",
       /* meta 明寫「已交付」⇒ 新模型下是 live（succeeded 成為隨身徽章），不是 succeeded。 */
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'live', goalMet: true, delivered: true,
+      /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
+      perf: { usd: 18600, audience: 1450000, kind: 'streams' },
       cover: IMG + 'nick-realive.jpg', poster: IMG + 'nick-realive.jpg',
       desc: { en: 'The REALIVE EP tied to the arena tour — five tracks including GET REAL and 走三關.', zh: '與小巨蛋巡演同名的 EP，收錄 GET REAL、走三關等五軌。' },
       meta: { en: '$60,000 of $60,000 reached · delivered', zh: '$60,000 / $60,000 已達標 · 已交付' },
@@ -283,6 +303,8 @@
     {
       id: 'nick-real-life', created: '2021/12/01', name: 'REAL LIFE', nameEn: "REAL LIFE",
       cat: 'album', family: 'music', icon: 'music', type: 'go-live', status: 'live',
+      /* 表現彙總用（自身 meta 已載明）*/
+      perf: { usd: 42800, audience: 3600000, kind: 'streams' },
       cover: IMG + 'nick-real-life.jpg', poster: IMG + 'nick-real-life.jpg',
       desc: { en: 'The fourth studio album — ten C-pop / R&B tracks including 愛上你算我賤 and HEALTHY MIND.', zh: '第四張錄音室專輯，十軌華語 R&B，收錄〈愛上你算我賤〉〈HEALTHY MIND〉。' },
       meta: { en: 'US$42,800 lifetime · 3.6M streams', zh: '累計 US$42,800 · 360 萬次串流' },

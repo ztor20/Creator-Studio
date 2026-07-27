@@ -47,6 +47,47 @@
       if (dock.dataset.stickyDockReady === '1') return;
       dock.dataset.stickyDockReady = '1';
 
+      /* ── 把兩排包進一層 .list-dock__bars（2026-07-28 修）──────────────
+         使用者回報：電子商店捲到貼頂時整個清單被擠成一條窄柱、篩選 pill 直排。
+
+         原因：貼頂態的 CSS 是 `.list-dock.is-snapped { display: flex }`，而
+         .list-dock 在電子商店身上並不是「只包兩排」的薄殼——那一層是刻意往下
+         併吞整個商品清單的（見 e-shop.html 的註解：sticky 的可黏貼範圍受親層
+         box 高度限制，親層要跟清單一樣高才黏得住整段捲動）。所以 display:flex
+         一下去，三個 product-list 分頁、footer、空狀態卡全部變成同一列的 flex
+         item：工作列被壓到 124px、狀態列 92px 於是 pill 直排，清單佔走其餘寬度。
+
+         修法不是把那層改小（會讓貼頂只撐 120px 就脫黏，退回舊 bug），
+         而是分工：外層繼續當「可黏貼範圍」——高、包住整個清單；
+         真正 sticky 且會變成 dock 的是新的內層 .list-dock__bars，它只包兩排。
+
+         在 JS 裡包而不是改五份 HTML：這是元件的內部結構，不是頁面的內容決定；
+         而且是「移動」既有節點、不是重建，所以既有的事件監聽與
+         `.myip-list-controls .list-status-row` 這類後代選擇器都不受影響。 */
+      var toolbar = dock.querySelector(':scope > .list-toolbar');
+      var statusRow = dock.querySelector(':scope > .list-status-row');
+      if (!toolbar || !statusRow) return;   /* 骨架不符就不貼頂，也不要弄壞版面 */
+      var bars = document.createElement('div');
+      bars.className = 'list-dock__bars';
+      dock.insertBefore(bars, toolbar);
+      bars.appendChild(toolbar);
+      bars.appendChild(statusRow);
+
+      /* ── 兩種殼，兩個 sticky 落點（2026-07-28）──────────────────
+         sticky 元素只能在「親層的 box」裡移動，所以貼頂該掛在哪一層，取決於這頁的
+         .list-dock 到底包到哪裡——兩種都真實存在，不能一套打死：
+
+           · 厚殼（電子商店／活動）：外層刻意往下包住整個清單（這樣可黏貼範圍才夠長）。
+             這種若把外層自己設成 sticky，等於整包清單一起釘住＝畫面凍結；
+             所以 sticky 掛內層 .list-dock__bars，外層只當「可黏貼範圍」。
+           · 薄殼（我的 IP／IP 市場／專案）：外層只包兩排、高度約 106px。
+             這種若把 sticky 掛內層，內層捲過那 106px 就脫黏；
+             所以 sticky 掛外層自己，讓它在 .page 這個高容器裡travel。
+
+         用「這個殼裡有沒有清單」來判斷，而不是寫死頁面名單——之後新增清單頁自動歸類。 */
+      var isTall = !!dock.querySelector('.product-list, .project-list, .bento, [id$="-grid"]');
+      dock.classList.add(isTall ? 'list-dock--tall' : 'list-dock--thin');
+
       var sentinel = document.createElement('div');
       sentinel.className = 'list-dock__sentinel';
       sentinel.setAttribute('aria-hidden', 'true');

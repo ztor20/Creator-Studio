@@ -133,12 +133,15 @@
        所以「十首歌加起來 ＝ hero 的總串流數」「收藏欄加起來 ＝ 上面的收藏數」
        這兩件事是算出來的，不是靠人工對帳。 */
     units: [
-      { i18n: 'pd-roy.song.s2',  a: 128400, b: 7880 },
-      { i18n: 'pd-roy.song.s1',  a: 117900, b: 9420 },
-      { i18n: 'pd-roy.song.s4',  a:  89300, b: 8160 },
-      { i18n: 'pd-roy.song.s3',  a:  74100, b: 4910 },
+      /* b 刻意與 a 分歧：播放量最高的主打（天地男兒）收藏率反而偏低，
+         被收藏最多的是排第三的抒情曲——這正是這張卡要說的話，
+         如果兩欄排出來一樣，並置兩份排行就沒有意義了。 */
+      { i18n: 'pd-roy.song.s2',  a: 128400, b: 4900 },
+      { i18n: 'pd-roy.song.s1',  a: 117900, b: 8200 },
+      { i18n: 'pd-roy.song.s4',  a:  89300, b: 9600 },
+      { i18n: 'pd-roy.song.s3',  a:  74100, b: 5400 },
       { i18n: 'pd-roy.song.s7',  a:  52800, b: 2140 },
-      { i18n: 'pd-roy.song.s5',  a:  48200, b: 5340 },
+      { i18n: 'pd-roy.song.s5',  a:  48200, b: 7300 },
       { i18n: 'pd-roy.song.s6',  a:  31500, b: 2880 },
       { i18n: 'pd-roy.song.s9',  a:  22700, b: 3270 },
       { i18n: 'pd-roy.song.s8',  a:  14100, b: 1120 },
@@ -160,7 +163,7 @@
      手寫兩組數字遲早會對不上——第一版就對不上（十首歌加起來 588,800，
      hero 只有 214,700），而那是讀的人一加就會看見的矛盾。
 
-     skew ＝ 由列序決定的固定偏移（±12%），讓三個期間的名次會換位——時間拉長
+     skew ＝ 由列序決定的固定偏移（±6%），讓三個期間的名次會換位——時間拉長
      之後長尾作品被聽回來本來就會換位；每列乘同一個係數會讓三個期間長得一樣。
      用列序而不是亂數，是為了每次重繪都得到相同結果。
      十列的 skew 加總剛好為 0，所以分配後的總和仍然精確等於池子。 */
@@ -190,7 +193,9 @@
 
     var weights = family.units.map(function (u, i) {
       var w = which === 'a' ? u.a : u.b;
-      var skew = period === 'm' ? 1 : 1 + ((((i * 7) + off) % 5) - 2) * 0.06;
+      /* ±6%（初版 ±12% 太大：它會把刻意排在第一的「被收藏最多」那首推下來，
+         結果兩欄的第一名又變成同一首，正好抵銷這張卡想說的話）。 */
+      var skew = period === 'm' ? 1 : 1 + ((((i * 7) + off) % 5) - 2) * 0.03;
       return w * skew;
     });
     var sum = weights.reduce(function (s, w) { return s + w; }, 0) || 1;
@@ -243,6 +248,10 @@
   function fmtVal(v, fmt) {
     if (fmt === 'pct') return (Math.round(v * 10) / 10).toFixed(1) + '%';
     if (fmt === 'hrs') return num(v) + ' h';
+    /* 金額要帶幣別，否則「9,200」和隔欄的「620,000」看起來是同一種量。
+       觀眾數維持裸數字（fmt:'num'）——單位由欄位標題講（依觀看次數／依串流次數），
+       不在 JS 裡寫死中文量詞。 */
+    if (fmt === 'usd') return 'USD ' + num(v);
     return num(v);
   }
   function esc(s) {
@@ -257,10 +266,15 @@
     var label = o.i18n
       ? '<span class="perf-rank__name" data-i18n="' + o.i18n + '">' + esc(o.name || '') + '</span>'
       : '<span class="perf-rank__name" title="' + esc(o.name) + '">' + esc(o.name) + '</span>';
+    /* 家族標籤：只有「錢」那一欄需要——它把影視與音樂混在同一排，不標的話
+       看不出某一列是哪一種作品。觀眾欄已依家族分節，不需要重複標。 */
+    var tag = o.tag
+      ? '<span class="perf-rank__tag" data-i18n="dash.top.fam.' + o.tag + '"></span>'
+      : '';
     return '<li class="perf-rank__row' + (o.rest ? ' perf-rank__row--rest' : '') + '"'
       + ' style="--w:' + o.w.toFixed(1) + '%;--hue:' + o.hue + ';--i:' + o.i + '">'
       + '<span class="perf-rank__idx">' + (o.rest ? '—' : o.i + 1) + '</span>'
-      + label
+      + label + tag
       + '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>'
       + (o.pct == null ? '' : '<span class="perf-rank__pct">' + o.pct.toFixed(1) + '%</span>')
       + '<span class="perf-rank__val">' + o.val + '</span>'
@@ -280,6 +294,7 @@
         name: r.name,
         i18n: r.i18n,
         rest: r.rest,
+        tag: r.tag,
         w: (r.value / max) * 100,
         pct: withPct && sum ? (r.value / sum) * 100 : null,
         val: fmtVal(r.value, opts.fmt),
@@ -444,9 +459,93 @@
     });
   });
 
+  /* ══════════════ Dashboard「表現最佳作品」（2026-07-27 使用者裁示）══════════════
+     原本 Dashboard 只有「平台觸及」與「觀眾在哪裡」——排的是平台與地區，沒有一張卡
+     在排「哪一個作品表現最好」。使用者：「你完全漏掉了表現最佳的歌曲或影片，如果那個
+     創作者兩種都有的話。」
+
+     為什麼一邊合併、一邊分開（不是我想對稱，是量綱決定的）：
+       · 錢可以跨家族比較 —— USD 就是 USD，影視與音樂的版稅放同一排才看得出真正的排名。
+         把錢也按家族切開，等於藏起「我最賺錢的作品是哪一個」這個答案。
+       · 觀眾不能跨家族比較 —— 影視是觀看次數、音樂是串流次數，本檔開頭就寫明「量綱不同
+         不可互相加總」。所以觀眾那一欄依家族分節，各自排各自的。
+     只有創作者真的有那個家族才會長出那一節；兩種都沒有就整張卡不出現。
+
+     資料來自 projects-store 的 perf 欄位（單一來源），只取 status==='live'——
+     還沒上線的作品沒有觀看數可談，這也是 project-detail 表現分頁的同一條件。 */
+  function liveWorks() {
+    var store = window.ztorProjects;
+    if (!store || !store.list) return [];
+    return store.list().filter(function (p) {
+      var famName = store.family ? store.family(p.cat) : null;
+      return p.status === 'live' && p.perf && (famName === 'film' || famName === 'music');
+    }).map(function (p) {
+      return {
+        name: p.name,
+        fam: store.family(p.cat),
+        usd: p.perf.usd,
+        audience: p.perf.audience,
+        kind: p.perf.kind
+      };
+    });
+  }
+
+  function byDesc(key) {
+    return function (a, b) { return b[key] - a[key]; };
+  }
+
+  function topWorksHTML() {
+    var works = liveWorks();
+    if (!works.length) return '';
+
+    var fams = ['film', 'music'].filter(function (f) {
+      return works.some(function (w) { return w.fam === f; });
+    });
+
+    /* 左欄：錢，跨家族合併。列尾掛家族標籤，才知道那一列是影視還是音樂。 */
+    var money = works.slice().sort(byDesc('usd')).slice(0, 10).map(function (w) {
+      return { name: w.name, value: w.usd, tag: w.fam };
+    });
+
+    /* 右欄：觀眾，依家族分節。兩個家族都有時各取 5，只有一個時取 10——
+       兩節各 10 列會讓這張卡比整個 Dashboard 還高。 */
+    var perFam = fams.length > 1 ? 5 : 10;
+    var audienceSections = fams.map(function (f) {
+      var rows = works.filter(function (w) { return w.fam === f; })
+        .sort(byDesc('audience')).slice(0, perFam)
+        .map(function (w) { return { name: w.name, value: w.audience }; });
+      return ''
+        + '<p class="perf-cap" style="--hue:var(--chart-2)">'
+        +   '<span class="perf-cap__dot"></span>'
+        +   '<span data-i18n="dash.top.' + (f === 'film' ? 'views' : 'streams') + '"></span>'
+        + '</p>'
+        + rankHTML(rows, { pct: false, fmt: 'num', hue: 'var(--chart-2)' });
+    }).join('<div class="mt-16"></div>');
+
+    return ''
+      + '<section class="card bento--span-12">'
+      +   '<div class="card__head">'
+      +     '<div class="card__title-group">'
+      +       '<span class="card__title-icon card__title-icon--accent"><i data-lucide="trending-up" class="ztor-icon"></i></span>'
+      +       '<h3 class="card__title" data-i18n="dash.top.title"></h3>'
+      +     '</div>'
+      +     '<a class="card__link" href="projects.html" data-i18n="dash.perf.link"></a>'
+      +   '</div>'
+      +   '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0" data-i18n="dash.top.meta"></p>'
+      +   '<div class="perf-units mt-16">'
+      +     '<div>'
+      +       '<p class="perf-cap" style="--hue:var(--chart-1)">'
+      +         '<span class="perf-cap__dot"></span><span data-i18n="dash.top.money"></span></p>'
+      +       rankHTML(money, { pct: false, fmt: 'usd', hue: 'var(--chart-1)' })
+      +     '</div>'
+      +     '<div>' + audienceSections + '</div>'
+      +   '</div>'
+      + '</section>';
+  }
+
   function mount() {
     var dash = document.querySelector('[data-perf="dash"]');
-    if (dash) { dash.innerHTML = dashHTML(); refresh(dash); }
+    if (dash) { dash.innerHTML = topWorksHTML() + dashHTML(); refresh(dash); }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);

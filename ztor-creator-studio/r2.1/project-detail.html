@@ -1959,9 +1959,14 @@
       }
 
       /* 版稅＝股份分潤的產物，只有募資型項目有股份，直接上線／預購沒有（2026-07-25 使用者裁決）。
-         因此條件＝募資＋已上線；影視與音樂都有，只是面板內容不同（見下方 famKind 切版）。
-         資料來源、彙入頻率與分帳規則仍待 CCR-006 裁決。 */
-      const royaltyReady = p.type === 'fund' && p.status === 'published';
+         因此條件＝募資＋作品已上線；影視與音樂都有，只是面板內容不同（見下方 famKind 切版）。
+         資料來源、彙入頻率與分帳規則仍待 CCR-006 裁決。
+
+         2026-07-27 修正：原本寫 status === 'published'。在舊語意裡 published＝「作品已上線」，
+         所以那是對的；但狀態模型重寫後 published＝「集資中、作品還沒出來」，這條件就整個反了
+         ——會對「還在募資、根本還沒有任何版稅」的項目顯示版稅分頁。改為 live（＝作品已上線、
+         正在賺錢），才是原本想表達的意思。 */
+      const royaltyReady = p.type === 'fund' && p.status === 'live';
       document.querySelectorAll('[data-royalty]').forEach(el => { el.hidden = !royaltyReady; });
 
       /* ── 表現 Performance（2026-07-28）──────────────────────────────
