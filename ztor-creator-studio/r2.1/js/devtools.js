@@ -387,7 +387,7 @@
     + 'box-shadow:0 16px 48px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.06)}'
     + '.ztd.is-open .ztd__panel{display:block}'
     + '.ztd__head{display:flex;align-items:center;gap:10px;padding:15px 16px;border-bottom:1px solid var(--border);cursor:move;user-select:none}'  /* 標題列＝拖移把手 */
-    + '.ztd__title{font-size: var(--fs-14);font-weight: var(--fw-semibold);flex:1}'
+    + '.ztd__title{font-size: var(--fs-14);font-weight: var(--fw-regular);flex:1}'
     + '.ztd__head svg,.ztd__iconbtn svg{width:18px;height:18px}'
     + '.ztd__iconbtn{width:30px;height:30px;display:inline-grid;place-items:center;border:0;border-radius:var(--radius-md,7px);background:transparent;color:var(--foreground-muted);cursor:pointer}'
     + '.ztd__iconbtn:hover{background:var(--muted);color:var(--foreground)}'
@@ -396,23 +396,23 @@
     /* 三 tab 分頁列（情境/開發/設置）：底線 accent，橘只出現在作用中底線 */
     + '.ztd__tabs{display:flex;gap:2px;margin:-2px 0 14px;border-bottom:1px solid var(--border)}'
     + '.ztd__tab{flex:1;padding:9px 6px;border:0;background:transparent;color:var(--muted-foreground);'
-    + 'font:inherit;font-size:var(--fs-13);font-weight:var(--fw-medium);cursor:pointer;'
+    + 'font:inherit;font-size:var(--fs-13);font-weight:var(--fw-regular);cursor:pointer;'
     + 'border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:var(--radius-sm,5px) var(--radius-sm,5px) 0 0}'
     + '.ztd__tab:hover{color:var(--foreground);background:var(--muted)}'
     + '.ztd__tab.is-active{color:var(--foreground);border-bottom-color:var(--primary)}'
     + '.ztd__tabpanel[hidden]{display:none}'
     /* 版本 dropdown（面板版；首次 popup 仍用大卡片）*/
     + '.ztd__select{width:100%;padding:10px 30px 10px 12px;border:1px solid var(--border);border-radius:var(--radius-md,7px);'
-    + 'background:var(--card);color:var(--foreground);font:inherit;font-size:var(--fs-13);font-weight:var(--fw-medium);cursor:pointer;'
+    + 'background:var(--card);color:var(--foreground);font:inherit;font-size:var(--fs-13);font-weight:var(--fw-regular);cursor:pointer;'
     + "-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 11px center}"
     + '.ztd__select:focus{outline:2px solid var(--primary);outline-offset:1px}'
     + '.ztd__select-desc{font-size:var(--fs-11);color:var(--muted-foreground);margin-top:6px;line-height:1.4}'
     + '.ztd__group{margin-bottom:16px}'
-    + '.ztd__group-label{font-size: var(--fs-11);font-weight: var(--fw-semibold);letter-spacing:.06em;color:var(--muted-foreground);text-transform:uppercase;margin:0 0 9px}'
+    + '.ztd__group-label{font-size: var(--fs-11);font-weight: var(--fw-regular);letter-spacing:.06em;color:var(--muted-foreground);text-transform:uppercase;margin:0 0 9px}'
     /* 開關列＝標籤＋真 switch（橘只出現在滑軌，量很小）。比照 ds switch.css */
     + '.ztd__row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:11px 13px;'
     + 'border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--card);color:var(--foreground);'
-    + 'font:inherit;font-size: var(--fs-13);font-weight: var(--fw-medium);cursor:pointer;text-align:left}'
+    + 'font:inherit;font-size: var(--fs-13);font-weight: var(--fw-regular);cursor:pointer;text-align:left}'
     + '.ztd__row:hover{background:var(--muted)}'
     + '.ztd__sw{position:relative;width:36px;height:20px;flex:none;background:var(--muted);border-radius:999px;box-shadow:0 0 0 1px var(--border);transition:background .2s ease}'
     + '.ztd__sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.15);transition:left .15s ease}'
@@ -421,20 +421,20 @@
     /* 單選選項：選中＝淡橘 tint＋細橘環（比照 ds selection-card--active），不再整塊橘 */
     + '.ztd__grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}'
     + '.ztd__opt{padding:11px 13px;border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--card);'
-    + 'color:var(--foreground);font:inherit;font-size: var(--fs-13);font-weight: var(--fw-medium);cursor:pointer;text-align:left}'
+    + 'color:var(--foreground);font:inherit;font-size: var(--fs-13);font-weight: var(--fw-regular);cursor:pointer;text-align:left}'
     + '.ztd__opt:hover{background:var(--muted)}'
     + '.ztd__opt.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
     + '.ztd__opt-desc{display:block;font-size: var(--fs-11);font-weight: var(--fw-regular);color:var(--muted-foreground);margin-top:4px;line-height:1.4}'   /* 說明預設常駐 */
     /* 版本（最高級別 gate）：組強調框＋版本外功能的隱藏/標記樣式（全站套用）*/
     + '.ztd__group--top{border:1px solid var(--border);background:var(--card);border-radius:var(--radius-md,7px);padding:12px 13px 4px;margin-bottom:18px}'
     /* 版本選項：一行一個＋分組小標題（開發版本／測試版）*/
-    + '.ztd__subgroup{font-size:var(--fs-11);font-weight:var(--fw-semibold);color:var(--muted-foreground);letter-spacing:.04em;margin:2px 0 7px}'
+    + '.ztd__subgroup{font-size:var(--fs-11);font-weight:var(--fw-regular);color:var(--muted-foreground);letter-spacing:.04em;margin:2px 0 7px}'
     + '.ztd__subgroup:not(:first-child){margin-top:13px}'
     + '.ztd__rows-v{display:flex;flex-direction:column;gap:6px}'
     + '.ztd__optrow{display:block;width:100%;text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-md,7px);background:var(--card);color:var(--foreground);font:inherit;cursor:pointer;transition:.15s}'
     + '.ztd__optrow:hover{background:var(--muted)}'
     + '.ztd__optrow.is-active{background:color-mix(in srgb,var(--primary) 14%,var(--card));box-shadow:inset 0 0 0 1.5px var(--primary);border-color:transparent}'
-    + '.ztd__optrow-name{display:block;font-size:var(--fs-13);font-weight:var(--fw-medium)}'
+    + '.ztd__optrow-name{display:block;font-size:var(--fs-13);font-weight:var(--fw-regular)}'
     + '.ztd__optrow-desc{display:block;font-size:var(--fs-11);color:var(--muted-foreground);margin-top:3px;line-height:1.4}'
     + '.ztd-ver-hidden{display:none!important}'
     + '.ztd-ver-future{opacity:.42!important;outline:1px dashed var(--primary);outline-offset:2px}'
@@ -454,7 +454,7 @@
     + '.ztd__inspect-k{flex:0 0 64px;color:var(--muted-foreground)}'
     + '.ztd__inspect-v{flex:1;min-width:0;color:var(--foreground);font-family:var(--font-mono,ui-monospace,monospace);word-break:break-all}'
     + '.ztd__inspect.is-locked{outline:2px solid var(--primary);outline-offset:-1px}'
-    + '.ztd__badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-weight: var(--fw-semibold)}'
+    + '.ztd__badge{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--primary);color:var(--primary-foreground);font-weight: var(--fw-regular)}'
     + '.ztd__muted{color:var(--muted-foreground)}'
     /* highlight overlay：非元件＝藍框；是元件＝橘框（一眼分辨）*/
     + '.ztd-hl{position:fixed;z-index:2147482999;pointer-events:none;border:1.5px solid var(--status-info,#266DF0);'
@@ -467,11 +467,11 @@
     /* 首次進站 onboarding popup：選版本 → 確定 → 進入（之後不再跳）*/
     + '.ztd-onb{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.45);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);font-family:var(--font-ui,system-ui,sans-serif)}'
     + '.ztd-onb__card{width:min(440px,100%);max-height:calc(100vh - 40px);overflow:auto;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:var(--radius-xl,16px);padding:22px 22px 20px;box-shadow:0 16px 48px rgba(0,0,0,.28)}'
-    + '.ztd-onb__title{display:flex;align-items:center;gap:8px;font-size:var(--fs-18,18px);font-weight:var(--fw-semibold);margin-bottom:6px}'
+    + '.ztd-onb__title{display:flex;align-items:center;gap:8px;font-size:var(--fs-18,18px);font-weight:var(--fw-regular);margin-bottom:6px}'
     + '.ztd-onb__title svg{width:20px;height:20px;color:var(--primary)}'
     + '.ztd-onb__sub{font-size:var(--fs-13);color:var(--muted-foreground);margin-bottom:16px;line-height:1.5}'
     + '.ztd-onb__opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}'
-    + '.ztd-onb__ok{width:100%;padding:12px;border:0;border-radius:var(--radius-md,7px);background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:var(--fw-semibold);font-size:var(--fs-14);cursor:pointer}'
+    + '.ztd-onb__ok{width:100%;padding:12px;border:0;border-radius:var(--radius-md,7px);background:var(--primary);color:var(--primary-foreground);font:inherit;font-weight:var(--fw-regular);font-size:var(--fs-14);cursor:pointer}'
     + '.ztd-onb__ok:hover{filter:brightness(.96)}'
     + '@media (max-width:420px){.ztd-onb__opts{grid-template-columns:1fr}}';
   var style = document.createElement('style');

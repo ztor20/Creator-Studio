@@ -26,6 +26,18 @@
 
     var els = Array.prototype.slice.call(document.querySelectorAll(SELECTOR));
 
+    /* 2026-07-28（L 回報 create-project 有兩條捲軸；追下去才發現是這裡）
+       只處理「此刻真的有被渲染」的元素。載入當下位於 display:none 子樹裡的目標
+       （多步驟表單裡尚未輪到的步驟、分頁面板、預設收合的區塊）永遠不會 intersect，
+       於是被永久留在起始狀態：opacity:0 ＋ translateY(10px)。
+       兩個後果，都在 create-project 的募資步驟上同時發生：
+         · 那張 Setup overview 卡片切過去之後是「看不見」的——不是動畫沒播，是沒播完；
+         · 那 10px 位移讓卡片底部超出 .wizard-split__rail 十個像素，
+           rail 因此長出一條只捲 10px 的捲軸，疊在 sheet 的捲軸旁邊＝使用者看到的兩條。
+       不 tag 它們＝它們維持完全可見的預設狀態。少一次進場動畫，換掉一整類
+       「切到那一步就是空白」的 bug；反正使用者也不是在捲動中遇見它們的。 */
+    els = els.filter(function (el) { return el.getClientRects().length > 0; });
+
     // Drop any element nested inside another matched target (avoid double fade).
     els = els.filter(function (el) {
       var p = el.parentElement;

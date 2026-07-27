@@ -154,7 +154,7 @@
   // F8 — external data-status row: brand chip · platform · type·sync / impact · status badge + optional Settings CTA.
   function extRow(r) {
     var L = r.logo || {};
-    var style = 'font-weight: var(--fw-bold);font-size:' + (L.fs || 'var(--fs-13)') + ';';
+    var style = 'font-weight: var(--fw-regular);font-size:' + (L.fs || 'var(--fs-13)') + ';';
     if (L.bg) style += 'background:' + L.bg + ';';
     if (L.fg) style += 'color:' + L.fg + ';';
     var cta = r.cta ? '<a class="card__link" href="' + r.cta.href + '"' + di18n(r.cta.key) + '>' + s(r.cta.text) + '</a>' : '';
@@ -178,12 +178,12 @@
       return '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">'
         + '<span' + di18n(t.key) + '>' + s(t.label) + '</span>'
         + '<span class="text-sub">' + s(t.pct) + '</span>'
-        + '<span style="font-weight: var(--fw-medium)">' + s(t.rev) + '</span></div>';
+        + '<span style="font-weight: var(--fw-regular)">' + s(t.rev) + '</span></div>';
     }).join('');
     var plats = (a.platforms || []).map(function (p) {
       var val = p.muted
         ? '<span class="text-sub"' + di18n(p.valKey) + '>' + s(p.val) + '</span>'
-        : '<span style="font-weight: var(--fw-medium)">' + s(p.val) + '</span>';
+        : '<span style="font-weight: var(--fw-regular)">' + s(p.val) + '</span>';
       return '<div style="display:grid;grid-template-columns:1fr auto;gap:8px"><span>' + s(p.name) + '</span>' + val + '</div>';
     }).join('');
     var fansCol = '<div class="insight-split__col">'

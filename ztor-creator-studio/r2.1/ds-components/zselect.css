@@ -20,8 +20,23 @@
 
 /* 原生 select：留著但不顯示。用 clip 而非 display:none——display:none 會讓它
    從表單的可提交欄位裡消失，也讓 el.offsetWidth 之類的量測歸零。 */
+/* 2026-07-28 L 回報「double scroll bar」——成因就在這一條。
+   `position:absolute` 沒有配 top/left 時，元素會停在它的「靜態位置」，也就是原本
+   在文件流裡的那一點；而 create-project 的 <select> 那一點在捲動中的
+   .wizard__sheet 裡，文件座標 y≒1456。
+   關鍵在於 .wizard／.wizard__sheet 都是 position:static，所以它們不是這個絕對定位
+   元素的 containing block——containing block 變成 initial containing block，
+   兩層 overflow 都夾不住它。於是這顆 1px 的隱形 select 把「文件」撐到 1456 高，
+   外層長出一條什麼都沒有的捲軸，疊在 sheet 自己那條上面＝兩條捲軸。
+   （視覺上完全看不出來，因為它 1px 又被 clip 掉；只有捲軸洩漏了它的存在。）
+
+   補上 top/left:0 就解決：元素釘在 containing block 的原點，不再撐開任何東西。
+   仍然是 absolute（不是 display:none），所以它照樣可提交、可對焦、可被量測——
+   那是這條規則原本就寫明的用意，不動它。 */
 .zselect__native {
   position: absolute !important;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   padding: 0;
@@ -141,7 +156,7 @@
   padding: var(--sp-10) var(--sp-16) var(--sp-4);
   font-family: var(--font-ui);
   font-size: var(--fs-11);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-regular);
   letter-spacing: .4px;
   text-transform: uppercase;
   color: var(--muted-foreground);
