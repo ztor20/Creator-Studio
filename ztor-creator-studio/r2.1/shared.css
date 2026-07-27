@@ -25,6 +25,69 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 
+/* ============================================================
+   Scrollbar — 全站自訂捲軸（2026-07-27，使用者裁示：不用 OS 預設）
+
+   放在 shared.css 而不是新開一支 ds-components/scrollbar.css：這不是「元件」而是
+   一條全域規則，而 43 個頁面全部都已經載入 shared.css（已核對）。開成元件檔的話
+   等於要去改 47 個 .html 的 <link> 清單。
+
+   用 `*` 讓每一個現有**與未來**的捲動容器自動吃到，不必逐一接線——站上有 ~20 個
+   捲動面（drawer／combobox／picker／payout-modal body／preview-panel／header 下拉／
+   通知面板／explainer／readiness／stock-tip／scanner…），逐一維護必然會漂。
+   捲軸偽元素只會匹配到真的可捲動的元素，`*` 不會有效能問題。
+
+   行為（使用者選定）：靜止時極淡、hover 容器才提亮。不做「完全隱形」——通知面板、
+   modal body 這種面必須讓人看得出「這裡還有內容」，affordance 不能省。
+
+   為什麼不做 JS 覆蓋式捲軸：本站是無 build step 的靜態原型，JS 捲軸要在 ~20 個容器
+   ＋components.js 執行期注入的節點上初始化，還會接管原生慣性捲動／鍵盤翻頁／
+   螢幕閱讀器的捲動行為。代價不划算。
+   換來的取捨：::-webkit-scrollbar 會佔版面寬度、不是真的 overlay。所以這裡把「軌道寬」
+   固定住、只動顏色與 thumb 的內縮，hover 時 thumb 在固定寬度內長大 → 零 reflow。
+   ============================================================ */
+/* Firefox 專用回退，**必須** 用 @supports 關在 Chromium 之外。
+   踩過的坑：Chrome 121+ 也認得 scrollbar-width，而且一旦指定了它，整組
+   ::-webkit-scrollbar-* 就會被忽略——結果 Chrome 畫的是它自己的 thin 捲軸
+   （實測軌道寬 10px，而不是設計的 12px），pill 圓角與內縮全部失效。
+   Firefox 不支援 selector(::-webkit-scrollbar)，所以這個 @supports 剛好把兩邊分開：
+   Chromium/Safari 走下面的 ::-webkit 規則（完整控制），Firefox 走這裡（能做多少算多少）。 */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;   /* thumb / track */
+  }
+  *:hover { scrollbar-color: var(--scrollbar-thumb-hover) transparent; }
+}
+
+*::-webkit-scrollbar { width: var(--scrollbar-size); height: var(--scrollbar-size); }
+/* 軌道不畫任何東西：捲軸讀起來是「浮在面上的一個物件」，而不是一條刻進去的溝，
+   跟本系統用色階分層、不用 chrome 分層的作法一致。 */
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  /* 透明 border ＋ background-clip 把 thumb 從 12px 軌道內縮成 6px 視覺寬度：
+     命中區維持 12px 好拖，但看起來只有一條細線。 */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration) var(--easing);
+}
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-hover);
+  border-width: 2px;   /* 6px → 8px，在固定的 12px 軌道內長大，不推動版面 */
+}
+@media (prefers-reduced-motion: reduce) {
+  *::-webkit-scrollbar-thumb { transition: none; }
+}
+/* 這三處是「刻意隱藏捲軸」的橫向滑軌（不是給使用者拖的捲動區），維持原本的隱藏。
+   它們各自的 ::-webkit-scrollbar{display:none} 本來就會贏過上面的 `*`，這裡只是把
+   意圖寫明，避免日後有人以為是漏網。 */
+.fan-store__screen::-webkit-scrollbar,
+.fan-store__fans-row::-webkit-scrollbar,
+.list-toolbar > .tabs::-webkit-scrollbar { display: none; }
+
 /* zh-Hant locale: put Noto Sans TC FIRST in every font-family token so
    the line box (line-height / baseline / x-height) is driven by the CJK face,
    not by Geist. Without this, mixed 英文+中文 lines look uneven — Latin
@@ -133,11 +196,26 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   padding: var(--sp-20) var(--sp-14);
   background: transparent;
   border-right: 0;
-  overflow-y: auto;
+  /* 2026-07-27：overflow 從整條側欄移到 .app-sidebar__nav（見下方）。
+     原本整條捲動有個實際缺陷——視窗一矮，底部的帳號／設定叢集會跟著捲出畫面外、
+     點不到。改成品牌與 actions 釘住、只有 nav 區在極端情況下才讓步。 */
+  overflow: hidden;
 }
-.app-sidebar__brand { display: block; padding: var(--sp-4) var(--sp-10) var(--sp-16); color: var(--foreground); }
+.app-sidebar__brand { display: block; flex: none; padding: var(--sp-4) var(--sp-10) var(--sp-16); color: var(--foreground); }
 .app-sidebar__brand-logo { height: 26px; width: auto; }
 
+/* 2026-07-27：側欄裡唯一有彈性的區塊。
+   **要掛在這個無 class 的 <nav> 包裝層上，不是裡面的 ul。** sidebar.js 產生的結構是
+   .app-sidebar > a.brand ／ button.burger ／ nav ／ div.actions，真正的 flex item 是這個
+   <nav>；把 flex/overflow 寫在裡面的 ul.app-sidebar__nav 上完全無效——ul 的 flex 是相對於
+   <nav>、不是相對於側欄，於是 <nav> 仍以 min-height:auto 撐滿內容、側欄照樣溢出被裁掉。
+   （這條實測踩過：ul 版本在 560px 視窗下 sbOverflow 仍是 12px、nav 完全沒縮。）
+
+   min-height:0 是必要的——沒有它，flex 子項的預設 min-height:auto 會拒絕縮到內容以下。
+   overflow-y:auto 是**安全閥而非常態**：accordion 化之後（見 sidebar.js，只展開當前群組）
+   700px 視窗還有約 190px 餘裕，正常尺寸不會出現捲軸；只有在 150% 縮放或 ~560px 高的
+   視窗下才會啟動，確保底部的帳號／設定永遠點得到。真的啟動時，它長得跟全站其他捲軸一樣。 */
+.app-sidebar > nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 .app-sidebar__nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-6); }  /* 2026-06-13：加大項目間距 */
 .app-sidebar__nav > li { list-style: none; }
 
@@ -201,6 +279,9 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 
 /* Bottom action cluster — search / notifications / language / theme / account */
 .app-sidebar__actions {
+  /* 2026-07-27：flex:none ＝ 釘在底部、永遠不參與捲動（nav 才是讓步的那一區）。
+     margin-top:auto 保留，nav 若沒撐滿時仍把 actions 推到底。 */
+  flex: none;
   margin-top: auto; padding-top: var(--sp-12); border-top: 1px solid var(--border);
   display: flex; flex-direction: column; gap: var(--sp-2);
 }
@@ -309,6 +390,9 @@ html[data-nav-mode="sidebar"] .app-notif__panel--rail {
 @media (max-width: 900px) {
   /* Small screens: collapse the rail to a top row so content keeps full width.
      (Basic responsive per spec §6.8 — full drawer/hamburger is R 2.1.x.) */
+  /* 2026-07-27：小螢幕的側欄變成頂部橫列（height:auto、flex-flow:wrap），
+     桌機版那條「nav 是可伸縮捲動區」的規則在這裡沒有意義、還可能夾出多餘捲軸，故歸零。 */
+  .app-sidebar > nav { flex: none; min-height: auto; overflow-y: visible; }
   html[data-nav-mode="sidebar"] body,
   html[data-nav-mode="sidebar"] .app { background: var(--background); }
   html[data-nav-mode="sidebar"] .app {

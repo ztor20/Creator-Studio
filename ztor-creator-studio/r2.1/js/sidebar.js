@@ -82,12 +82,14 @@
     { href: "index.html",    key: "nav.dashboard", icon: "layout-grid" },
     { href: "projects.html", key: "nav.projects",  icon: "rocket",
       match: ["create-project.html"] },
-    /* IP Bank dropdown (D013): My IP + IP Market. IP detail is a detail page
-       reached in-page → not a dropdown item, but still highlights via match. */
+    /* IP Bank dropdown (D013): My IP + IP Market. Detail pages are reached
+       in-page → not dropdown items, but still highlight via match:
+       ip-detail = the renter-facing market page (spec 5.1.3.1);
+       manage-ip = the owner-facing page reached from a My IP row (2026-07-27). */
     { key: "nav.ip-bank", icon: "landmark", panel: [
       { href: "my-ip.html",     icon: "tag",    titleKey: "nav.my-ip",     descKey: "nav.my-ip-sub" },
       { href: "ip-market.html", icon: "search", titleKey: "nav.ip-market", descKey: "nav.ip-market-sub" },
-    ], match: ["ip-detail.html"] },
+    ], match: ["ip-detail.html", "manage-ip.html"] },
     /* E-Shop dropdown (D065, partial rollback of D028; +取貨管理 D111): three
        items — 電子商店 E-Shop (landing page) + 訂單管理 Orders + 取貨管理
        Pickup management (on-site QR redemption workspace, sibling of Orders).
@@ -102,9 +104,18 @@
       { href: "orders.html", icon: "receipt",  titleKey: "nav.orders",       descKey: "nav.orders-sub" },
       { href: "pickup.html", icon: "qr-code",  titleKey: "nav.pickup",       descKey: "nav.pickup-sub" },
     ], match: ["product-detail.html", "create-product.html", "create-auction.html", "create-bundle.html", "auction-detail.html", "bundle-detail.html", "order-detail.html", "store-settings.html"] },
-    /* Events / Fans = flat top-level links; sub-pages reached in-page. */
+    /* Events = flat top-level link; sub-pages reached in-page. */
     { href: "events.html",   key: "nav.events",   icon: "ticket", match: ["create-event.html", "edit-event.html"] },
-    { href: "fans-crm.html", key: "nav.fans",     icon: "users" },
+    /* Fans dropdown (2026-07-27 使用者裁示，比照 E-Shop／IP Bank 的 accordion)：
+       總覽 Overview ＋ 分級權益 Benefits。Benefits 原本是 tier-settings 的頁內分頁，
+       現在升格成左側導航的正式目的地、自成一頁——同一個入口不該同時存在於兩層導航。
+       tier-settings（門檻／行為加權／規則）仍從總覽頁內進入，列在 match 讓群組維持
+       highlight；fan-detail 同理。 */
+    { key: "nav.fans", icon: "users", panel: [
+      { href: "fans-crm.html",      icon: "users",    titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
+      { href: "tier-benefits.html", icon: "gift",     titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
+      { href: "tier-settings.html", icon: "sliders",  titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
+    ], match: ["fan-detail.html"] },
     { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
 
@@ -113,7 +124,8 @@
   const FULL_ROUTES = new Set([
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
-    "fans-crm.html", "fan-detail.html", "tier-settings.html", "my-ip.html", "ip-detail.html",
+    "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "my-ip.html", "ip-detail.html",
+    "manage-ip.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
   ]);
   function fullVersion() {
@@ -342,9 +354,14 @@
     for (const it of NAV) {
       const active = isActive(it);
       if (it.panel) {
-        /* 2026-06-13：群組預設展開（const open = true，仍可點 toggle 收合）；
+        /* 2026-07-27（使用者裁示，取代 2026-06-13 的「全部預設展開」）：
+           只有「包含當前頁」的群組預設展開，其餘收合。理由是量出來的——三個群組
+           同時展開時側欄內容 848px，在 700px 視窗下溢出 148px、逼出第二條捲軸；
+           accordion 化收回約 336px，700px 下還剩約 190px 餘裕。
+           這是減法而不是壓縮：少給幾個同時可見的選項，而不是把每個選項變小
+           （壓縮版只能收回 ~150px，且會動到 2026-07-21 對齊搜尋列的 36px 控件高）。
            父項（群組標題）不顯示已選態——只有實際 current 子項 highlight。 */
-        const open = true;
+        const open = isActive(it) || (it.panel || []).some(sub => sub.href === path);
         html += `<li class="app-sidebar__group" data-state="${open ? "open" : "closed"}">
           <button class="app-sidebar__link app-sidebar__group-toggle" type="button" aria-expanded="${open ? "true" : "false"}">
             <i data-lucide="${it.icon}" class="ztor-icon"></i>
@@ -638,6 +655,19 @@
     e.preventDefault();
     const group = toggle.closest(".app-sidebar__group");
     const open = group.getAttribute("data-state") === "open";
+    /* 2026-07-27：真正的 accordion——展開一個就收合同層的其他群組，側欄高度因此有上限、
+       不會因為使用者逐一點開而重新溢出（這是「側欄不捲動」能成立的另一半）。
+       scope 限定 .app-sidebar__nav 內的導覽群組：底部 actions 的帳號／幣別群組
+       （同樣用 .app-sidebar__group）不受影響，它們與導覽互不相干。 */
+    const nav = group.closest(".app-sidebar__nav");
+    if (nav && !open) {
+      nav.querySelectorAll(".app-sidebar__group[data-state='open']").forEach(sib => {
+        if (sib === group) return;
+        sib.setAttribute("data-state", "closed");
+        const t = sib.querySelector(".app-sidebar__group-toggle");
+        if (t) t.setAttribute("aria-expanded", "false");
+      });
+    }
     group.setAttribute("data-state", open ? "closed" : "open");
     toggle.setAttribute("aria-expanded", open ? "false" : "true");
   });
