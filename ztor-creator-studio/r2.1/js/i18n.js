@@ -1015,6 +1015,8 @@
     'my-ip.row3.price':      { en: '$—',                         zh: '$—' },
     'my-ip.row4.title':      { en: 'Salt & Bitumen documentary footage', zh: 'Salt & Bitumen 紀錄片影像' },
     'my-ip.row4.meta':       { en: 'Registered Oct 2, 2025 · Awaiting waterfall verification', zh: '2025/10/02 登錄 · 等待 waterfall 驗證' },
+    'my-ip.mktplace.locked': { en: 'Finish verification before listing on IP Market', zh: '完成驗證後才能在 IP 市集上架' },
+    'my-ip.mktplace.aria':   { en: 'List on IP Market',        zh: '在 IP 市集上架' },
     'my-ip.mktplace':        { en: 'Mktplace',                   zh: '市場' },
     'my-ip.manage':          { en: 'Manage',                     zh: '管理' },
     'my-ip.a.more':          { en: 'More actions',               zh: '更多操作' },
