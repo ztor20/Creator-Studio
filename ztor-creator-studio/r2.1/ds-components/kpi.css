@@ -56,22 +56,28 @@
 }
 /* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
    膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
-   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix 對 --card，亮暗自動跟隨。
-   （2026-07-27 曾短暫改為「純黑底＋彩色墨」，使用者看過實機後裁示不好看、全站回退本版。） */
+   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix，亮暗自動跟隨。
+   （2026-07-27 曾短暫改為「純黑底＋彩色墨」，使用者看過實機後裁示不好看、全站回退本版。）
+
+   2026-07-27：混色基底由 var(--card) 改成 transparent。數學上對一般卡片是 no-op——
+   12% 綠混不透明的 --card，與 12% alpha 的綠疊在 --card 上，合成結果完全相同；
+   但改成 transparent 之後這個膠囊就「跟著它實際坐的那個面走」，而不是把 --card 的深色
+   烤進自己的底色裡。這正是 hero 卡（實色橘）上會出現黑斑的原因：--card 早就不是那張卡
+   的底色了。同 --selected-surface 的作法。 */
 .kpi__delta {
   font-family: var(--font-ui);
   font-size: var(--fs-12);
   font-weight: var(--fw-semibold);
-  color: var(--status-success);
-  background: color-mix(in srgb, var(--status-success) 12%, var(--card));
+  color: var(--status-success-ink);
+  background: color-mix(in srgb, var(--status-success) 12%, transparent);
   border-radius: var(--radius-pill);
   padding: 2px var(--sp-8);
   display: inline-block;
   width: fit-content;
 }
 .kpi__delta--neg {
-  color: var(--destructive);
-  background: color-mix(in srgb, var(--destructive) 12%, var(--card));
+  color: var(--destructive-ink);
+  background: color-mix(in srgb, var(--destructive) 12%, transparent);
 }
 .kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
 
@@ -173,18 +179,20 @@
 .kpi--hero .kpi__meta .card__link { color: color-mix(in srgb, var(--on-primary) 75%, transparent); }
 .kpi--hero .kpi__chevron { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
 .kpi--hero.kpi--tappable:hover .kpi__chevron { color: var(--on-primary); }
-/* delta 在 hero 卡上「不要膠囊」（2026-07-27 L 裁示）。base 的 tint 是 color-mix 對 --card，
-   而 --card 已經不是這張卡的底色了——混出來是深墨綠 rgb(38,57,46)，鋪在橘上就是一塊黑斑。
-   （改成純黑底也一樣被否決；問題不在哪一種深色，而在「這裡不該有一塊深色」。）
-   解法是拿掉膠囊本身：無底、深墨字、左右內距歸零讓文字與 label／value 切齊同一條左緣。
-   漲跌方向由 +／− 與文案承載——橘底上綠字只有 ~1.4:1，本來就放不了狀態色。
-   只 scope 在 --hero；其他卡的 delta 維持原本的染色膠囊不動。 */
-.kpi--hero .kpi__delta,
-.kpi--hero .kpi__delta--neg {
-  background: transparent;
-  padding-left: 0;
-  padding-right: 0;
-  color: var(--on-primary);
+/* delta 在 hero 卡上：**膠囊配方一個字都不改**（12% 半透明染色＋pill，L 裁示要保留），
+   只把「墨色」換成深階。手法是在卡片這一層重新定義 token，而不是去覆寫 .kpi__delta 的 color——
+   custom property 會往下繼承，所以膠囊自己讀到的就是深墨版，亮暗兩個主題都成立、
+   不必比特異性也不用 !important。
+
+   為什麼不能靠主題 token 解決：實色橘卡在**深色主題底下依然是一個亮底**。墨色要跟著
+   「坐在什麼面上」走，不是跟著主題走——這就是把它做成可被面覆寫的 token 的原因。
+
+   底不動的代價（誠實記錄）：12% 綠疊在飽和橘上，色相位移很小（rgb(233,170,71) vs 卡的
+   rgb(255,163,63)），所以在 hero 卡上「綠」主要由墨色承載、不太靠底色。不刻意調高 alpha 去
+   逼出綠——那會把半透明膠囊變成實色色塊，反而犧牲掉 L 要保留的設計。 */
+.kpi--hero {
+  --status-success-ink: #052E16;
+  --destructive-ink:    #4C0519;
 }
 /* delta 膠囊（hero 卡）：不再另開例外（2026-07-27 L 裁示——綠＝漲、紅＝跌、黑底，全站一致）。
    先前的白膜＋深墨版是因為「綠混 --card 的 tint 在橘底上震盪」；base 改成純黑底之後，

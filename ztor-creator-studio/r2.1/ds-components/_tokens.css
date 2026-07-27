@@ -109,6 +109,19 @@
 
   /* Status accents [ext]（shadcn 只有 destructive；其餘為 creator extension）*/
   --status-success:    #22C55E;
+  /* ── 染色膠囊「墨色」（2026-07-27）──────────────────────────────
+     .kpi__delta 這類「狀態色 12% 半透明底 ＋ 同色文字」的膠囊，只有在底是「深的」時候
+     才成立。膠囊實際的背景是它坐的那個面：
+        深卡  → 合成 rgb(38,57,46)   亮綠字 7.06:1  ✓
+        白卡  → 合成 rgb(228,248,236) 亮綠字 2.05:1  ✗（此為既有缺陷，非本次新增）
+        橘卡  → 合成 rgb(233,170,71)  亮綠字 1.17:1  ✗
+     所以墨色不能跟著「主題」走，要跟著「這張膠囊坐在什麼面上」走——實色橘卡在深色主題下
+     依然是一個「亮底」。作法：把墨色抽成 token，由擁有那個面的人去覆寫（見 kpi.css 的
+     .kpi--hero）。色相不動，只往下走明度：#052E16／#4C0519 是同一條綠／玫瑰色階的最深階，
+     維持「一眼看出是綠的／紅的」這個設計意圖。文字 12px semibold 屬 normal text，門檻 4.5:1
+     （不是 3:1）——green-900 #14532D 在橘膠囊上只有 4.47:1，差一點就是不行，故取 green-950。*/
+  --status-success-ink: #052E16;
+  --destructive-ink:    #4C0519;
   --status-info:       #266DF0;
   --status-warning:    #F8D749;
   --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
@@ -528,6 +541,16 @@
 
   /* Status accents [ext] — pure-RGB dark variants */
   --status-success:    #4ADE80;   /* 2026-07-13 體檢：暗色綠提亮，向「暗色其他狀態色都變亮」看齊；Paid 綠徽章在深底才讀得清 */
+  /* 深色主題的染色膠囊坐在深卡上 → 墨色維持原本的亮色狀態色，與 2026-07-27 之前完全一致
+     （深卡實測 7.06:1）。只有「坐在亮底上」的膠囊需要覆寫，見 kpi.css 的 .kpi--hero。*/
+  --status-success-ink: var(--status-success);
+  /* 紅色墨走 --status-error 而非 --destructive：這正是 2026-07-21 新增 --status-error 的理由
+     （「深底小字徽章的 #E7000B 太深不易讀」）。delta 膠囊就是小字狀態徽章，只是當初漏接。
+     實測階梯（深色膠囊 rgb(57,30,32) 上）：--destructive #E7000B → 3.19:1 ✗；
+     --status-error #FF3D47 → 4.35:1 ✗（12px semibold 屬 normal text，門檻是 4.5 不是 3）；
+     再往上提一階才過 → 5.05:1 ✓。用 color-mix 從 --status-error 推導而不是再寫死一個紅，
+     這樣 --status-error 之後若被調整，這支墨色會跟著走。 */
+  --destructive-ink:    color-mix(in srgb, var(--status-error) 88%, #fff);
   --status-info:       #5896F3;
   --status-warning:    #F3CF58;
   --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
