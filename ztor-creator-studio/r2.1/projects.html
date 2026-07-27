@@ -44,17 +44,21 @@
       <!-- 2026-07-23 整理：原本散成三段（頁頭動作群／狀態 tabs／篩選列）的控制項，收進 e-shop
            同款兩層骨架 .list-toolbar + .list-status-row（已 promote 至 ds-components/list-toolbar.css）。
            第一層＝殼層工作列：左邊放主軸（狀態 tabs，附計數），右邊放動作群（收合搜尋／檢視切換／
-           建立專案）。第二層＝次要篩選（發行模式、內容類別兩個下拉）。 -->
+           建立項目）。第二層＝次要篩選（發行模式、內容類別兩個下拉）。 -->
       <div class="list-toolbar">
-        <!-- F1 status filter (spec §7.2 · Funded folds into Live · Failed+Cancelled merged · decisions D005) -->
-        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="proj-tabs" role="tablist">
-          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="projects.tab.all">All</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="projects.tab.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="projects.tab.live">Live</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="completed"><span data-i18n="projects.tab.completed">Completed</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="published"><span data-i18n="projects.tab.published">Published</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="failed"><span data-i18n="projects.tab.failed">Failed / Cancelled</span> <span class="tabs__item-count"></span></div>
-          <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="projects.tab.draft">Draft</span> <span class="tabs__item-count"></span></div>
+        <!-- ── Row 1 = RELEASE MODE (primary axis, L 2026-07-27 restructure) ──────────
+             Was the status row. Mode goes first because the three modes have genuinely
+             DIFFERENT lifecycles: a direct release has no campaign, so "Published"
+             (＝campaign open for pledging) and "Succeeded" are meaningless for it. With
+             mode primary, row 2 can offer only the states that mode can actually be in.
+             "All" is kept because "what's earning right now, across everything" is the
+             single most important question this page answers — mode-first would
+             otherwise scatter that across three tabs. -->
+        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="proj-modes" role="tablist" aria-label="Release mode" data-i18n-aria-label="projects.mode.label">
+          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-mode="all"><span data-i18n="projects.mode.all">All</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-mode="fund"><span data-i18n="projects.mode.fund">Co-create</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-mode="preorder"><span data-i18n="projects.mode.preorder">Presale</span> <span class="tabs__item-count"></span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-mode="go-live"><span data-i18n="projects.mode.golive">Direct release</span> <span class="tabs__item-count"></span></div>
         </nav>
 
         <div class="list-toolbar__actions">
@@ -77,17 +81,29 @@
         </div>
       </div>
 
-      <!-- F1 次要篩選：發行模式（專案建立時定死的屬性、使用頻率低，2026-07-23 由 chip 收成下拉）
+      <!-- F1 次要篩選：發行模式（項目建立時定死的屬性、使用頻率低，2026-07-23 由 chip 收成下拉）
            ＋ CCR-005 內容類別（新軸，獨立於發行模式，影視／音樂為不可選群組標頭，對照 cocreate
            finance-overview.html 的 [data-fin-dd="cat"]）。 -->
       <div class="list-status-row">
-        <!-- 發行模式：2026-07-24 由下拉改攤成一整排 filter-tabs（使用者指定「像截圖一樣攤開、同一行靠左」，
-             對照 e-shop 狀態列 .filter-tabs--brand）。靠左；內容類別 select 以 margin-left:auto 推到右邊。 -->
-        <nav class="filter-tabs filter-tabs--brand" id="proj-types" role="tablist" aria-label="Release mode" data-i18n-aria-label="projects.type.label">
-          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-type="all"><span data-i18n="projects.type.all">All types</span><span class="filter-tabs__count" data-type-count>0</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="go-live"><span data-i18n="projects.type.go-live">Go live</span><span class="filter-tabs__count" data-type-count>0</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="fund"><span data-i18n="projects.type.fund">Fund it first</span><span class="filter-tabs__count" data-type-count>0</span></button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-type="preorder"><span data-i18n="projects.type.preorder">Pre-order</span><span class="filter-tabs__count" data-type-count>0</span></button>
+        <!-- ── Row 2 = STATE (secondary axis) ────────────────────────────────────────
+             Lifecycle order left→right (draft → scheduled → published → succeeded →
+             live), with cancelled parked at the end as the dead branch. Chips with zero
+             matches in the current mode are hidden, so each mode shows only its own
+             vocabulary: direct release never shows Published or Succeeded.
+             "Goal met" is deliberately NOT a chip — a campaign that hits target is still
+             open and still collecting (often overfunding), so making it a state would
+             pull it out of Published and hide the creator's best-performing campaign.
+             It renders as a badge on the row instead. -->
+        <nav class="filter-tabs filter-tabs--brand" id="proj-states" role="tablist" aria-label="Project state" data-i18n-aria-label="projects.state.label">
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-state="all"><span data-i18n="projects.state.all">All states</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="draft"><span data-i18n="projects.state.draft">Draft</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="scheduled"><span data-i18n="projects.state.scheduled">Scheduled</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="published"><span data-i18n="projects.state.published">Published</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="succeeded"><span data-i18n="projects.state.succeeded">Succeeded</span><span class="filter-tabs__count" data-state-count>0</span></button>
+          <!-- Live carries the ambient activity dot: the only state that means "happening
+               right now", so the only one allowed to move (see tabs.css .is-live). -->
+          <button class="filter-tabs__item filter-tabs__item--live" type="button" role="tab" aria-selected="false" data-state="live" data-live="0"><span data-i18n="projects.state.live">Live</span><span class="filter-tabs__count" data-state-count>0</span><span class="live-dot" aria-hidden="true"></span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-state="cancelled"><span data-i18n="projects.state.cancelled">Cancelled</span><span class="filter-tabs__count" data-state-count>0</span></button>
         </nav>
         <select class="select select--bare" id="proj-cat" aria-label="Content category" data-i18n-aria-label="projects.cat.label" style="width:auto;min-width:184px;margin-left:auto">
           <option value="all" data-i18n="projects.cat.all">All categories</option>
@@ -177,10 +193,16 @@
 /* Projects F1 — single data source renders both list & card views; status tab + type select +
    category select + search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
    Per-item display depends on project type × status (spec 5.1.2 F1). Detail link →
-   project-detail.html?id=<id> (5.1.2.2). */
+   project-detail.html?id=<id>. */
 (function () {
-  /* 專案資料改吃共用 store（js/projects-store.js，2026-07-24）——清單與專案詳情同一份，
-     詳情頁的內容類型不再由頁內 segmented 假切換，而是「清單上點了哪個專案」決定。
+  /* Live 指示燈在分頁切到背景時停止動畫（tabs.css 讀 html[data-hidden]）。
+     瀏覽器不會替 CSS 動畫做這件事，背景分頁會一直合成畫面。 */
+  const syncHidden = () => document.documentElement.toggleAttribute('data-hidden', document.hidden);
+  document.addEventListener('visibilitychange', syncHidden);
+  syncHidden();
+
+  /* 項目資料改吃共用 store（js/projects-store.js，2026-07-24）——清單與項目詳情同一份，
+     詳情頁的內容類型不再由頁內 segmented 假切換，而是「清單上點了哪個項目」決定。
      cat = 內容類型（上游 spec 5.1.2.1 §4.1 F3 的可見選項），與 type（發行模式：
      go-live / fund / preorder）是兩條獨立的軸，並存不互斥。 */
   const PROJECTS = window.ztorProjects.list().map(p => Object.assign({}, p, {
@@ -194,48 +216,57 @@
                      song:'music', album:'music',
                      event:'other', merch:'other', document:'other', custom:'other' };
 
-  const STATUS = {
+  /* ── 狀態字典（2026-07-27 重構，模型說明見 js/projects-store.js 檔頭）──────
+     live      ＝作品已上線、正在賺錢（終點）→ 品牌橘，與 Live chip 的活動點同色
+     published ＝集資中、開放支持（作品還沒出來）→ info 藍
+     succeeded ＝達標、已結束、未交付（你還欠支持者東西）→ success 綠
+     cancelled ＝集資失敗或中止（取代舊 failed）→ error 紅
+     舊值 funded / completed / failed 已退役。 */
+  const STATE = {
     draft:     { label:{en:'Draft',zh:'草稿'},      badge:'badge--neutral' },
     scheduled: { label:{en:'Scheduled',zh:'已排程'}, badge:'badge--info' },
-    live:      { label:{en:'Live',zh:'進行中'},      badge:'badge--orange' },
-    funded:    { label:{en:'Funded',zh:'已達標'},    badge:'badge--success' },
-    completed: { label:{en:'Completed',zh:'已完成'}, badge:'badge--neutral' },
-    published: { label:{en:'Published',zh:'已上線'}, badge:'badge--success' },
-    failed:    { label:{en:'Failed',zh:'失敗'},      badge:'badge--error' },
+    published: { label:{en:'Published',zh:'集資中'}, badge:'badge--info' },
+    succeeded: { label:{en:'Succeeded',zh:'已成立'}, badge:'badge--success' },
+    live:      { label:{en:'Live',zh:'已上線'},      badge:'badge--orange' },
+    cancelled: { label:{en:'Cancelled',zh:'已取消'}, badge:'badge--error' },
   };
-  const TYPE = {
-    'go-live':  {en:'Go live',zh:'直接發佈'},
-    'fund':     {en:'Fund it first',zh:'募資'},
-    'preorder': {en:'Pre-order',zh:'預購'},
+  /* 發行模式（不可變，建立時決定）。第三個由「Live」正名為 Direct release——
+     Live 現在只當狀態用，兩個 Live 的撞名從根本消失。 */
+  const MODE = {
+    'fund':     {en:'Co-create',zh:'共創'},
+    'preorder': {en:'Presale',zh:'預購'},
+    'go-live':  {en:'Direct release',zh:'直接發佈'},
   };
-  /* status tab → which item statuses it includes (Funded folds into Live · decisions D005).
-     published（已上線）＝作品正式上架/串流的階段（新狀態，非 §7.2 既有語言，見 ASSUMPTIONS）：
-     直接上線類型天生落在這裡；募資/預購型交付完成後轉入。live tab 維持 live+funded（募資/預購中）。 */
-  const TAB = {
-    all:null, draft:['draft'], scheduled:['scheduled'],
-    live:['live','funded'], completed:['completed'], published:['published'], failed:['failed','cancelled'],
+  /* 每個模式實際會經過的狀態（順序＝生命週期，chip 依此排序後再隱藏計數為 0 的）。
+     直接發佈沒有集資階段，所以 published／succeeded 不在它的字典裡。 */
+  const MODE_STATES = {
+    'fund':     ['draft','scheduled','published','succeeded','live','cancelled'],
+    'preorder': ['draft','scheduled','published','succeeded','live','cancelled'],
+    'go-live':  ['draft','scheduled','live','cancelled'],
   };
+  const ALL_STATES = ['draft','scheduled','published','succeeded','live','cancelled'];
+  const statesFor = (m) => (m === 'all' ? ALL_STATES : (MODE_STATES[m] || ALL_STATES));
 
   const L = () => (document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en');
   const t = (o) => o ? (o[L()] != null ? o[L()] : o.en) : '';
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
 
-  let view = 'list', tab = 'all', type = 'all', cat = 'all', q = '';
+  let view = 'list', mode = 'all', state = 'all', cat = 'all', q = '';
 
   const listEl     = document.getElementById('proj-list');
   const gridEl     = document.getElementById('proj-grid');
   const emptyEl    = document.getElementById('proj-empty');
-  const tabsEl     = document.getElementById('proj-tabs');
-  const typesEl    = document.getElementById('proj-types');
+  const modesEl    = document.getElementById('proj-modes');
+  const statesEl   = document.getElementById('proj-states');
   const catEl      = document.getElementById('proj-cat');
   const searchEl   = document.getElementById('proj-search');
   const footerEl   = document.getElementById('proj-footer');
   const countEl    = document.getElementById('proj-count');
 
   function match(p) {
-    if (tab !== 'all' && !(TAB[tab] || []).includes(p.status)) return false;
-    if (type !== 'all' && p.type !== type) return false;
+    if (mode !== 'all' && p.type !== mode) return false;
+    if (state !== 'all' && p.status !== state) return false;
     if (cat !== 'all' && p.cat2 !== cat) return false;
     if (q) {
       const hay = (p.name + ' ' + t(p.cat) + ' ' + t(p.meta)).toLowerCase();
@@ -243,8 +274,21 @@
     }
     return true;
   }
-  const kindStr = (p) => '· ' + t(p.cat) + ' · ' + t(TYPE[p.type]);
-  const badgeHtml = (p) => '<span class="badge ' + STATUS[p.status].badge + '">' + esc(t(STATUS[p.status].label)) + '</span>';
+  const kindStr = (p) => '· ' + t(p.cat) + ' · ' + t(MODE[p.type]);
+  /* 狀態徽章，外加兩個「事實」徽章——它們不是狀態，所以不佔 chip：
+       Goal met  ＝集資中且已達標（仍在收單、常見超募）
+       Succeeded ＝已成立這件事永遠留著，即使狀態已經前進到 live
+     這正是「一個項目同時只有一個狀態」與「共創成功永遠留著」兩句話並存的地方。 */
+  function badgeHtml(p) {
+    const s = STATE[p.status] || STATE.draft;
+    let html = '<span class="badge ' + s.badge + '">' + esc(t(s.label)) + '</span>';
+    if (p.status === 'published' && p.goalMet) {
+      html += ' <span class="badge badge--success">' + esc(T('projects.flag.goalmet', 'Goal met')) + '</span>';
+    } else if (p.status === 'live' && p.goalMet) {
+      html += ' <span class="badge badge--neutral">' + esc(T('projects.flag.succeeded', 'Succeeded')) + '</span>';
+    }
+    return html;
+  }
   function projectBarData(p) {
     if (!p.bar || typeof p.bar.pct !== 'number' || !Number.isFinite(p.bar.pct)) return null;
     return {
@@ -263,7 +307,7 @@
     const todo = esc(t(p.todo));
     return '<span class="tip" tabindex="0" aria-label="' + todo + '"><i data-lucide="alert-circle" class="ztor-icon"></i><span class="tip__bubble" role="tooltip">' + todo + '</span></span>';
   }
-  /* 縮圖用專案詳情同一張圖（poster 為空退回 cover，與 project-detail 一致）；皆無則類型 icon 佔位 */
+  /* 縮圖用項目詳情同一張圖（poster 為空退回 cover，與 project-detail 一致）；皆無則類型 icon 佔位 */
   function imgHtml(p) {
     const src = p.poster || p.cover;
     return src
@@ -277,7 +321,7 @@
          : f === 'music' ? T('projects.cat.grp.music', 'Music')
          : T('projects.cat.grp.other', 'Other');
   }
-  /* 剩餘時間：只有募資／預購專案有值（store 的 p.list），其餘顯示破折號 */
+  /* 剩餘時間：只有募資／預購項目有值（store 的 p.list），其餘顯示破折號 */
   function valCell(v, extraClass) {
     const has = v != null && v !== '';
     return '<div class="project-list__cell ' + extraClass + (has ? '' : ' project-list__cell--empty') + '" role="cell">'
@@ -300,7 +344,7 @@
     return '<a class="project-list__row" role="row" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
       + imgHtml(p)
       + '<div class="project-list__project" role="cell">'
-        + '<div class="project-list__kind">' + esc(t(TYPE[p.type])) + '</div>'
+        + '<div class="project-list__kind">' + esc(t(MODE[p.type])) + '</div>'
         + '<div class="project-list__title">' + esc(p.name) + '</div>'
         + '<div class="project-list__desc">' + esc(t(p.desc)) + '</div>'
       + '</div>'
@@ -317,7 +361,7 @@
   function cardHtml(p) {
     const bar = projectBarData(p);
     return '<a class="project-card" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
-      /* 有海報就放海報，沒有的專案退回原本的圖示佔位（新建專案還沒上傳素材時會走這條） */
+      /* 有海報就放海報，沒有的項目退回原本的圖示佔位（新建項目還沒上傳素材時會走這條） */
       + '<div class="project-card__cover">'
         + (p.cover
             ? '<img class="project-card__cover-img" src="' + p.cover + '" alt="" loading="lazy">'
@@ -331,22 +375,44 @@
       + '</div></a>';
   }
 
+  /* 目前模式涵蓋的項目（不含狀態／類別／搜尋條件）——狀態列的計數與顯示都以此為準。 */
+  function inCurrentMode() {
+    return mode === 'all' ? PROJECTS : PROJECTS.filter(p => p.type === mode);
+  }
+  function stateCountIn(scope, val) {
+    return val === 'all' ? scope.length : scope.filter(p => p.status === val).length;
+  }
+
   function render() {
-    tabsEl.querySelectorAll('[data-tab]').forEach(el => {
-      const key = el.getAttribute('data-tab');
+    /* Row 1 — 發行模式（主軸）。計數是全域的：模式是項目的固有屬性，不會因為
+       目前看哪個狀態而改變，所以這裡不該跟著狀態縮放。 */
+    modesEl.querySelectorAll('[data-mode]').forEach(el => {
+      const key = el.getAttribute('data-mode');
+      const n = key === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.type === key).length;
       const cnt = el.querySelector('.tabs__item-count');
-      if (cnt) cnt.textContent = key === 'all' ? PROJECTS.length : PROJECTS.filter(p => (TAB[key] || []).includes(p.status)).length;
-      el.classList.toggle('tabs__item--active', key === tab);
-      el.setAttribute('aria-selected', String(key === tab));
+      if (cnt) cnt.textContent = n;
+      el.classList.toggle('tabs__item--active', key === mode);
+      el.setAttribute('aria-selected', String(key === mode));
     });
-    /* 發行模式 filter-tabs：同步 active＋每型計數（全部＝總數，其餘＝該發行模式的專案數） */
-    typesEl.querySelectorAll('[data-type]').forEach(el => {
-      const val = el.getAttribute('data-type');
-      const on = val === type;
+    /* Row 2 — 狀態（次軸）。只顯示「這個模式真的會經過」且「目前有項目」的狀態：
+       直接發佈永遠不會出現 集資中／已成立，而任何模式下計數為 0 的 chip 都隱藏，
+       不留一個按下去必然空手而回的篩選鈕。 */
+    const modeScope = inCurrentMode();
+    const allowed = statesFor(mode);
+    /* 選取的狀態在新模式下不存在或沒有項目時會被隱藏；不重設就會卡在
+       「空清單＋看不到的篩選器」的死路。 */
+    if (state !== 'all' && (!allowed.includes(state) || stateCountIn(modeScope, state) === 0)) state = 'all';
+    statesEl.querySelectorAll('[data-state]').forEach(el => {
+      const val = el.getAttribute('data-state');
+      const n = stateCountIn(modeScope, val);
+      el.hidden = val !== 'all' && (!allowed.includes(val) || n === 0);
+      const on = val === state;
       el.classList.toggle('filter-tabs__item--active', on);
       el.setAttribute('aria-selected', String(on));
-      const cnt = el.querySelector('[data-type-count]');
-      if (cnt) cnt.textContent = val === 'all' ? PROJECTS.length : PROJECTS.filter(p => p.type === val).length;
+      const cnt = el.querySelector('[data-state-count]');
+      if (cnt) cnt.textContent = n;
+      /* 活動點只在真的有已上線項目時出現（見 tabs.css .filter-tabs__item--live）。 */
+      if (val === 'live') el.setAttribute('data-live', String(n));
     });
     if (catEl.value !== cat) catEl.value = cat;
     /* optgroup label is an attribute (no [data-i18n] handler), localize here */
@@ -383,8 +449,8 @@
     if (window.applyI18n) window.applyI18n(scope);
   }
 
-  tabsEl.addEventListener('click', e => { const el = e.target.closest('[data-tab]'); if (el) { tab = el.getAttribute('data-tab'); render(); } });
-  typesEl.addEventListener('click', e => { const el = e.target.closest('[data-type]'); if (el) { type = el.getAttribute('data-type'); render(); } });
+  modesEl.addEventListener('click', e => { const el = e.target.closest('[data-mode]'); if (el) { mode = el.getAttribute('data-mode'); render(); } });
+  statesEl.addEventListener('click', e => { const el = e.target.closest('[data-state]'); if (el) { state = el.getAttribute('data-state'); render(); } });
   catEl.addEventListener('change', () => { cat = catEl.value; render(); });
   document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => { view = b.getAttribute('data-view'); render(); }));
   searchEl.addEventListener('input', () => { q = searchEl.value.trim(); render(); });
@@ -400,7 +466,7 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && searchWrap.classList.contains('is-open')) closeSearch(); });
   emptyEl.addEventListener('click', e => {
     if (!e.target.closest('[data-proj-clear]')) return;
-    tab = 'all'; type = 'all'; cat = 'all'; q = '';
+    mode = 'all'; state = 'all'; cat = 'all'; q = '';
     searchEl.value = '';
     closeSearch();
   });

@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.1">
@@ -25,31 +26,49 @@
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/message-modal.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
   /* fans-crm 專屬 layout hooks（非可重用樣式留頁內）。
-     粉絲清單 7 欄：序號｜粉絲｜分級｜聲望｜消費｜進度｜狀態＋操作。 */
+     2026-07-27 使用者裁示：粉絲清單是一張真表格 —— 有欄位標題、地區獨立成欄。
+     9 欄：序號｜粉絲(姓名+email)｜國家｜分級｜聲望｜消費｜升級進度｜狀態｜操作。
+     標題列與資料列共用這一條 grid-template-columns（一次宣告、兩個選擇器），
+     所以標題不可能跟它命名的那一欄跑掉。 */
+  .table-head.fan-row,
   .fan-row {
-    grid-template-columns: auto minmax(0,1fr) auto auto auto auto auto;
+    grid-template-columns: 36px minmax(150px,1fr) 116px 108px 78px 84px 104px 96px 62px;
+    min-width: 900px;   /* 低於此寬度由 .table-scroll 橫向捲動，不重排成卡片 */
   }
   .fan-row__rank {
     width:36px; height:36px; border-radius:50%;
     display:inline-grid; place-items:center;
     font-family:var(--font-display); font-weight: var(--fw-medium);
   }
-  .fan-row__num { font-family:var(--font-display); font-weight: var(--fw-medium); }
-  .fan-row__end { display:flex; align-items:center; gap:10px; }
-  .fan-row__actions { display:flex; gap:2px; }
-  /* Hall of fame 名人堂列：peak tier + 達成年份（唯讀示意）。 */
-  .hof-row { grid-template-columns: auto minmax(0,1fr) auto auto; }
-  @media (max-width: 760px) {
-    .fan-row { grid-template-columns: auto minmax(0,1fr) auto; gap:8px 12px; }
-    .fan-row__rank { grid-column:1; grid-row:1; }
-    .fan-row .data-list__body { grid-column:2; grid-row:1; }
-    .fan-row__tier { grid-column:2; grid-row:2; }
-    .fan-row__rep, .fan-row__spent, .fan-row__progress { grid-column:2; }
-    .fan-row__end { grid-column:3; grid-row:1; align-self:start; }
+  /* 數字欄靠右並用等寬數字：排序時每一列的位數不同，比例數字會讓整欄左右跳動。 */
+  .fan-row__num, .fan-row__progress {
+    font-variant-numeric: tabular-nums;
   }
+  .fan-row__num {
+    font-family:var(--font-display); font-weight: var(--fw-medium);
+    text-align: right;
+  }
+  .fan-row__progress { text-align: right; }
+  .fan-row__country {
+    font-size: var(--fs-13);
+    color: var(--foreground-muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .fan-row__status { display:flex; align-items:center; }
+  .fan-row__since { text-align: right; font-variant-numeric: tabular-nums; }
+  .fan-row__actions { display:flex; align-items:center; gap:2px; }
+  /* Hall of fame 名人堂列：peak tier + 達成年份（唯讀示意）。同樣拆出國家欄。 */
+  .table-head.hof-row,
+  .hof-row {
+    grid-template-columns: 36px minmax(150px,1fr) 116px 148px 108px;
+    min-width: 620px;
+  }
+  /* 表頭與第一列之間留一口氣，標題才不會黏在資料上。 */
+  .table-head + .data-list > .data-list__row:first-child { padding-top: var(--sp-12); }
 </style>
 </head>
 <body>
@@ -102,19 +121,19 @@
       <section class="card mt-24">
         <div class="card__head">
           <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
-          <div class="flex-row"><a class="btn btn--ghost btn--sm" href="tier-settings.html" data-i18n="fans.who.tier">Tier settings</a><a class="btn btn--ghost btn--sm" href="tier-settings.html#benefits" data-i18n="fans.who.benefits">Edit benefits</a></div>
+          <div class="flex-row"><a class="btn btn--ghost btn--sm" href="tier-settings.html" data-i18n="fans.who.tier">Tier settings</a><a class="btn btn--ghost btn--sm" href="tier-benefits.html" data-i18n="fans.who.benefits">Edit benefits</a></div>
         </div>
         <div class="stacked-bar" style="height:18px">
           <div class="stacked-bar__seg" style="width:12%;background:var(--primary)"></div>
-          <div class="stacked-bar__seg" style="width:28%;background:#000"></div>
+          <div class="stacked-bar__seg" style="width:28%;background:var(--status-info)"></div>
           <div class="stacked-bar__seg" style="width:37%;background:var(--status-success)"></div>
-          <div class="stacked-bar__seg" style="width:23%;background:#999"></div>
+          <div class="stacked-bar__seg" style="width:23%;background:var(--foreground-muted)"></div>
         </div>
         <div class="source-list" id="fans-tier-list">
           <div class="source-row" data-tier-share="12" data-rev="8420"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
-          <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:#000"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
-          <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Devoted · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
-          <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:#999"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+          <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+          <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+          <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
         </div>
         <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden（見頁尾腳本） -->
         <div class="insight-row hidden" id="fans-pareto" hidden>
@@ -151,7 +170,7 @@
             <option value="all" data-i18n="fans.filter.all">All fans</option>
             <option value="inner" data-i18n="fans.tier.inner">Inner Circle</option>
             <option value="super" data-i18n="fans.tier.super">Superfan</option>
-            <option value="devoted" data-i18n="fans.tier.devoted">Devoted</option>
+            <option value="devoted" data-i18n="fans.tier.devoted">Ranked fans</option>
             <option value="fan" data-i18n="fans.tier.fan">Fan</option>
           </select>
           <div class="chip-group" id="fans-chips" role="group" aria-label="Fan tags">
@@ -162,153 +181,185 @@
           </div>
         </div>
 
-        <section class="card">
-          <div class="data-list" id="fans-list">
+        <!-- F5 粉絲排行榜 — 真正的表格（2026-07-27 使用者裁示）。
+             欄位標題列 .table-head 與資料列 .fan-row 共用同一組 grid-template-columns
+             （見頁內 <style>，一次宣告兩個選擇器），所以標題永遠對齊它命名的那一欄。
+             點欄名排序由 js/table-sort.js 提供（全站共用）：第一次高→低／A→Z，
+             第二次低→高／Z→A，第三次回到預設排名順序。
+             排名章 ①②③ 不重編號——它焊死在該粉絲身上，所以改用「消費」排序時，
+             看得出第 3 名的粉絲其實花得最多。 -->
+        <section class="card" data-sort-table>
+          <div class="table-scroll">
+          <div class="table-head fan-row">
+            <!-- 排名欄的標題只給輔助技術用。隱藏樣式是 position:absolute，
+                 直接掛在格線子項上會讓它退出格線流、整排標題左移一格 ——
+                 所以外面一定要包一個真正佔位的格子。 -->
+            <span><span class="u-visually-hidden" data-i18n="fans.col.rank">Rank</span></span>
+            <span data-sort="text" data-sort-key="name" data-i18n="fans.col.fan">Fan</span>
+            <span data-sort="text" data-sort-key="country" data-i18n="fans.col.country">Country</span>
+            <span data-sort="num" data-sort-key="tier" data-i18n="fans.col.tier">Tier</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="rep" data-i18n="fans.col.rep">Reputation</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="spent" data-i18n="fans.col.spent">Spent</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="next" data-i18n="fans.col.next">Next tier</span>
+            <span data-sort="num" data-sort-key="status" data-i18n="fans.col.status">Status</span>
+            <span aria-hidden="true"></span>
+          </div>
+          <div class="data-list" id="fans-list" data-sort-rows>
 
-            <div class="data-list__row fan-row" data-tier="inner" data-tags="vip high-spender" data-search="wei yu-han yuhan@studio taipei 台北 林詩涵 lin shih-han shihan">
+            <div class="data-list__row fan-row" data-tier="inner" data-tags="vip high-spender" data-search="wei yu-han yuhan@studio taipei 台北 台灣 taiwan 林詩涵 lin shih-han shihan">
               <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 30%, var(--card))">①</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.row1.meta">yuhan@studio · Taipei</div></div>
-              <span class="badge badge--orange fan-row__tier"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
-              <span class="fan-row__num fan-row__rep">874</span>
-              <span class="fan-row__num fan-row__spent">$1,420</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row1.next">↗ next tier 92%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.row1.meta">yuhan@studio</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row1.country">Taiwan</span>
+              <span class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">874</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$1,420</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row1.next">↗ next tier 92%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="inner" data-tags="high-spender" data-search="lin yiwen yiwen@gmail tainan 台南 陳柏宇 chen po-yu boyu 台中 taichung">
+            <div class="data-list__row fan-row" data-tier="inner" data-tags="high-spender" data-search="lin yiwen yiwen@gmail tainan 台南 台灣 taiwan 陳柏宇 chen po-yu boyu 台中 taichung">
               <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 20%, var(--card))">②</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row2.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.row2.meta">yiwen@gmail · Tainan</div></div>
-              <span class="badge badge--orange fan-row__tier"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
-              <span class="fan-row__num fan-row__rep">821</span>
-              <span class="fan-row__num fan-row__spent">$980</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row2.next">↗ next tier 84%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row2.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.row2.meta">yiwen@gmail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row2.country">Taiwan</span>
+              <span class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">821</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$980</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row2.next">↗ next tier 84%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
             <div class="data-list__row fan-row" data-tier="super" data-tags="event intl" data-search="ahmed said ahmed@hey singapore 新加坡 王凱昕 wang kai-hsin vivian">
               <span class="fan-row__rank" style="background:var(--muted)">③</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row3.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.row3.meta">ahmed@hey · Singapore</div></div>
-              <span class="badge fan-row__tier"><span data-i18n="fans.tier.super">Superfan</span></span>
-              <span class="fan-row__num fan-row__rep">692</span>
-              <span class="fan-row__num fan-row__spent">$740</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row3.next">↗ next tier 62%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row3.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.row3.meta">ahmed@hey</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row3.country">Singapore</span>
+              <span class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Superfan</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">692</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$740</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row3.next">↗ next tier 62%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="3">
                 <span class="badge badge--error"><span data-i18n="fans.status.risk">At risk</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="super" data-tags="event" data-search="chen mei-ling meiling@mail kaohsiung 高雄 黃于潔 huang yu-chieh yuchieh">
+            <div class="data-list__row fan-row" data-tier="super" data-tags="event" data-search="chen mei-ling meiling@mail kaohsiung 高雄 台灣 taiwan 黃于潔 huang yu-chieh yuchieh">
               <span class="fan-row__rank" style="background:var(--muted)">④</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row4.name">Chen Mei-ling</div><div class="data-list__meta" data-i18n="fans.row4.meta">meiling@mail · Kaohsiung</div></div>
-              <span class="badge fan-row__tier"><span data-i18n="fans.tier.super">Superfan</span></span>
-              <span class="fan-row__num fan-row__rep">655</span>
-              <span class="fan-row__num fan-row__spent">$610</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row4.next">↗ next tier 48%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row4.name">Chen Mei-ling</div><div class="data-list__meta" data-i18n="fans.row4.meta">meiling@mail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row4.country">Taiwan</span>
+              <span class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Superfan</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">655</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$610</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row4.next">↗ next tier 48%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="2">
                 <span class="badge badge--info"><span data-i18n="fans.status.recovered">Recovered</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="devoted" data-tags="intl" data-search="james carter james@studio london 倫敦 張詠晴 chang yung-ching jamie">
+            <div class="data-list__row fan-row" data-tier="devoted" data-tags="intl" data-search="james carter james@studio london 倫敦 英國 united kingdom 張詠晴 chang yung-ching jamie">
               <span class="fan-row__rank" style="background:var(--muted)">⑤</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row5.name">James Carter</div><div class="data-list__meta" data-i18n="fans.row5.meta">james@studio · London</div></div>
-              <span class="badge badge--success fan-row__tier"><span data-i18n="fans.tier.devoted">Devoted</span></span>
-              <span class="fan-row__num fan-row__rep">540</span>
-              <span class="fan-row__num fan-row__spent">$420</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row5.next">↗ next tier 71%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row5.name">James Carter</div><div class="data-list__meta" data-i18n="fans.row5.meta">james@studio</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row5.country">United Kingdom</span>
+              <span class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked fans</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">540</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$420</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row5.next">↗ next tier 71%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="devoted" data-tags="" data-search="park ji-woo jiwoo@mail seoul 首爾 李佳恩 li chia-en jiaen">
+            <div class="data-list__row fan-row" data-tier="devoted" data-tags="" data-search="park ji-woo jiwoo@mail seoul 首爾 南韓 south korea 李佳恩 li chia-en jiaen">
               <span class="fan-row__rank" style="background:var(--muted)">⑥</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row6.name">Park Ji-woo</div><div class="data-list__meta" data-i18n="fans.row6.meta">jiwoo@mail · Seoul</div></div>
-              <span class="badge badge--success fan-row__tier"><span data-i18n="fans.tier.devoted">Devoted</span></span>
-              <span class="fan-row__num fan-row__rep">498</span>
-              <span class="fan-row__num fan-row__spent">$360</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row6.next">↗ next tier 55%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row6.name">Park Ji-woo</div><div class="data-list__meta" data-i18n="fans.row6.meta">jiwoo@mail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row6.country">South Korea</span>
+              <span class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked fans</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">498</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$360</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row6.next">↗ next tier 55%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="3">
                 <span class="badge badge--error"><span data-i18n="fans.status.risk">At risk</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="fan" data-tags="event" data-search="sofia rossi sofia@mail milan 米蘭 蘇曉薇 su hsiao-wei weiwei 東京 tokyo">
+            <div class="data-list__row fan-row" data-tier="fan" data-tags="event" data-search="sofia rossi sofia@mail milan 米蘭 日本 japan 蘇曉薇 su hsiao-wei weiwei 東京 tokyo">
               <span class="fan-row__rank" style="background:var(--muted)">⑦</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row7.name">Sofia Rossi</div><div class="data-list__meta" data-i18n="fans.row7.meta">sofia@mail · Milan</div></div>
-              <span class="badge badge--neutral fan-row__tier"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span class="fan-row__num fan-row__rep">312</span>
-              <span class="fan-row__num fan-row__spent">$120</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row7.next">↗ next tier 34%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row7.name">Sofia Rossi</div><div class="data-list__meta" data-i18n="fans.row7.meta">sofia@mail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row7.country">Japan</span>
+              <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">312</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$120</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row7.next">↗ next tier 34%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="fan" data-tags="intl" data-search="liam nguyen liam@mail sydney 雪梨 吳承翰 wu cheng-han chenghan">
+            <div class="data-list__row fan-row" data-tier="fan" data-tags="intl" data-search="liam nguyen liam@mail sydney 雪梨 澳洲 australia 吳承翰 wu cheng-han chenghan">
               <span class="fan-row__rank" style="background:var(--muted)">⑧</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row8.name">Liam Nguyen</div><div class="data-list__meta" data-i18n="fans.row8.meta">liam@mail · Sydney</div></div>
-              <span class="badge badge--neutral fan-row__tier"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span class="fan-row__num fan-row__rep">288</span>
-              <span class="fan-row__num fan-row__spent">$95</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row8.next">↗ next tier 28%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row8.name">Liam Nguyen</div><div class="data-list__meta" data-i18n="fans.row8.meta">liam@mail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row8.country">Australia</span>
+              <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">288</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$95</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row8.next">↗ next tier 28%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
-            <div class="data-list__row fan-row" data-tier="fan" data-tags="" data-search="emma müller emma@mail berlin 柏林 高子晴 kao tzu-ching ziqing 溫哥華 vancouver">
+            <div class="data-list__row fan-row" data-tier="fan" data-tags="" data-search="emma müller emma@mail berlin 柏林 加拿大 canada 高子晴 kao tzu-ching ziqing 溫哥華 vancouver">
               <span class="fan-row__rank" style="background:var(--muted)">⑨</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.row9.name">Emma Müller</div><div class="data-list__meta" data-i18n="fans.row9.meta">emma@mail · Berlin</div></div>
-              <span class="badge badge--neutral fan-row__tier"><span data-i18n="fans.tier.fan">Fan</span></span>
-              <span class="fan-row__num fan-row__rep">241</span>
-              <span class="fan-row__num fan-row__spent">$60</span>
-              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-i18n="fans.row9.next">↗ next tier 19%</span>
-              <span class="fan-row__end">
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row9.name">Emma Müller</div><div class="data-list__meta" data-i18n="fans.row9.meta">emma@mail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row9.country">Canada</span>
+              <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
+              <span class="fan-row__num fan-row__rep" data-sort-key="rep">241</span>
+              <span class="fan-row__num fan-row__spent" data-sort-key="spent">$60</span>
+              <span class="text-sub fan-row__progress" style="font-size: var(--fs-12)" data-sort-key="next" data-i18n="fans.row9.next">↗ next tier 19%</span>
+              <span class="fan-row__status" data-sort-key="status" data-sort-value="1">
                 <span class="badge badge--success"><span data-i18n="fans.status.active">Active</span></span>
-                <span class="fan-row__actions">
-                  <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
-                  <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
-                </span>
+              </span>
+              <span class="fan-row__actions">
+                <a class="btn btn--icon btn--xs fan-row__msg" href="#" data-msg-open aria-label="Message" data-i18n-aria-label="fans.row.message"><i data-lucide="send" class="ztor-icon"></i></a>
+                <a class="btn btn--icon btn--xs" href="fan-detail.html" aria-label="Details" data-i18n-aria-label="fans.row.detail"><i data-lucide="chevron-right" class="ztor-icon"></i></a>
               </span>
             </div>
 
+          </div>
           </div>
         </section>
 
@@ -333,26 +384,40 @@
       <!-- ── Hall of fame panel (F12 名人堂佔位：peak tier + 達成年份，唯讀) ── -->
       <div class="tab-panel" data-panel="hof" role="tabpanel">
         <p class="text-sub mb-16" style="font-size: var(--fs-13)" data-i18n="fans.hof.intro">Long-term top contributors, by the highest tier they ever reached. Read-only — this does not change with current tier.</p>
-        <section class="card">
-          <div class="data-list">
+        <!-- 名人堂同樣是表格：與排行榜同一組欄位標題＋排序行為，
+             一個區塊裡不容許兩種清單長相（peer-sweep）。 -->
+        <section class="card" data-sort-table>
+          <div class="table-scroll">
+          <div class="table-head hof-row">
+            <span><span class="u-visually-hidden" data-i18n="fans.col.rank">Rank</span></span>
+            <span data-sort="text" data-sort-key="name" data-i18n="fans.col.fan">Fan</span>
+            <span data-sort="text" data-sort-key="country" data-i18n="fans.col.country">Country</span>
+            <span data-sort="num" data-sort-key="peak" data-i18n="fans.col.peak">Peak tier</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="since" data-i18n="fans.col.since">Since</span>
+          </div>
+          <div class="data-list" data-sort-rows>
             <div class="data-list__row hof-row" data-search="">
               <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 30%, var(--card))">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.hof.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.hof.row1.meta">yuhan@studio · Taipei</div></div>
-              <span class="badge badge--orange fan-row__tier"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fans.hof.row1.year">Since 2024</span>
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.hof.row1.meta">yuhan@studio</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row1.country">Taiwan</span>
+              <span class="badge badge--orange fan-row__tier" data-sort-key="peak" data-sort-value="4"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
+              <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row1.year">Since 2024</span>
             </div>
             <div class="data-list__row hof-row" data-search="">
               <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 20%, var(--card))">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.hof.row2.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.hof.row2.meta">ahmed@hey · Singapore</div></div>
-              <span class="badge fan-row__tier"><span data-i18n="fans.hof.peak.super">Peak · Superfan</span></span>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fans.hof.row2.year">Since 2025</span>
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row2.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.hof.row2.meta">ahmed@hey</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row2.country">Singapore</span>
+              <span class="badge badge--info fan-row__tier" data-sort-key="peak" data-sort-value="3"><span data-i18n="fans.hof.peak.super">Peak · Superfan</span></span>
+              <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row2.year">Since 2025</span>
             </div>
             <div class="data-list__row hof-row" data-search="">
               <span class="fan-row__rank" style="background:var(--muted)">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-i18n="fans.hof.row3.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.hof.row3.meta">yiwen@gmail · Tainan</div></div>
-              <span class="badge badge--orange fan-row__tier"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="fans.hof.row3.year">Since 2025</span>
+              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row3.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.hof.row3.meta">yiwen@gmail</div></div>
+              <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row3.country">Taiwan</span>
+              <span class="badge badge--orange fan-row__tier" data-sort-key="peak" data-sort-value="4"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
+              <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row3.year">Since 2025</span>
             </div>
+          </div>
           </div>
         </section>
       </div>
@@ -406,7 +471,7 @@
               <option value="all" data-i18n="msg.to.all">All fans (1,840)</option>
               <option value="inner" data-i18n="msg.to.inner">Inner Circle (154)</option>
               <option value="super" data-i18n="msg.to.super">Superfan (359)</option>
-              <option value="devoted" data-i18n="msg.to.devoted">Devoted (475)</option>
+              <option value="devoted" data-i18n="msg.to.devoted">Ranked fans (475)</option>
               <option value="fan" data-i18n="msg.to.fan">Fan (295)</option>
               <option value="risk" data-i18n="msg.to.risk">At risk (5)</option>
               <option value="recovered" data-i18n="msg.to.recovered">Recovered (18)</option>
@@ -465,60 +530,63 @@
 
       <!-- ===== History ===== -->
       <div class="payout-view" data-msg-panel="history" role="tabpanel" hidden>
-        <div class="msg-history">
-          <div class="msg-history__head">
-            <span data-i18n="msg.hist.time">Time</span>
-            <span data-i18n="msg.hist.subject">Subject</span>
-            <span data-i18n="msg.hist.audience">Audience</span>
-            <span data-i18n="msg.hist.recipients" style="text-align:right">Recipients</span>
-            <span data-i18n="msg.hist.openrate" style="text-align:right">Open rate</span>
-            <span data-i18n="msg.hist.status">Status</span>
+        <!-- 寄送紀錄也吃同一套排序（欄名可點）。時間欄的字面是「2h ago／in 2d」，
+             文字排不出時序，故每列帶 data-sort-value＝相對分鐘數（未來為正、過去為負），
+             第一次點 = 最新（含已排程）在前。 -->
+        <div class="msg-history" data-sort-table>
+          <div class="msg-history__head table-head">
+            <span data-sort="num" data-sort-key="time" data-i18n="msg.hist.time">Time</span>
+            <span data-sort="text" data-sort-key="subject" data-i18n="msg.hist.subject">Subject</span>
+            <span data-sort="text" data-sort-key="audience" data-i18n="msg.hist.audience">Audience</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="recipients" data-i18n="msg.hist.recipients">Recipients</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="openrate" data-i18n="msg.hist.openrate">Open rate</span>
+            <span data-sort="text" data-sort-key="status" data-i18n="msg.hist.status">Status</span>
           </div>
-          <div class="data-list" id="msg-history-list">
+          <div class="data-list" id="msg-history-list" data-sort-rows>
 
             <div class="data-list__row msg-row">
-              <span class="msg-row__time" data-i18n="msg.hist.t.2h">2h ago</span>
-              <span class="msg-row__subject">New drop this Friday — early access for you</span>
-              <span class="msg-row__audience"><span class="badge badge--orange" data-i18n="msg.to.inner.tag">Inner Circle</span></span>
-              <span class="msg-row__num">154</span>
-              <span class="msg-row__num">83%</span>
-              <span class="msg-row__status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
+              <span class="msg-row__time" data-sort-key="time" data-sort-value="-120" data-i18n="msg.hist.t.2h">2h ago</span>
+              <span class="msg-row__subject" data-sort-key="subject">New drop this Friday — early access for you</span>
+              <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--orange" data-i18n="msg.to.inner.tag">Inner Circle</span></span>
+              <span class="msg-row__num" data-sort-key="recipients">154</span>
+              <span class="msg-row__num" data-sort-key="openrate">83%</span>
+              <span class="msg-row__status" data-sort-key="status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
             </div>
 
             <div class="data-list__row msg-row">
-              <span class="msg-row__time" data-i18n="msg.hist.t.1d">1d ago</span>
-              <span class="msg-row__subject">We miss you — here's 20% off your next order</span>
-              <span class="msg-row__audience"><span class="badge badge--error" data-i18n="msg.to.risk.tag">At risk</span></span>
-              <span class="msg-row__num">5</span>
-              <span class="msg-row__num">60%</span>
-              <span class="msg-row__status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
+              <span class="msg-row__time" data-sort-key="time" data-sort-value="-1440" data-i18n="msg.hist.t.1d">1d ago</span>
+              <span class="msg-row__subject" data-sort-key="subject">We miss you — here's 20% off your next order</span>
+              <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--error" data-i18n="msg.to.risk.tag">At risk</span></span>
+              <span class="msg-row__num" data-sort-key="recipients">5</span>
+              <span class="msg-row__num" data-sort-key="openrate">60%</span>
+              <span class="msg-row__status" data-sort-key="status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
             </div>
 
             <div class="data-list__row msg-row">
-              <span class="msg-row__time" data-i18n="msg.hist.t.in2d">in 2d</span>
-              <span class="msg-row__subject">Live Q&amp;A announcement — save the date</span>
-              <span class="msg-row__audience"><span class="badge" data-i18n="msg.to.super.tag">Superfan</span></span>
-              <span class="msg-row__num">359</span>
-              <span class="msg-row__num msg-row__num--muted">—</span>
-              <span class="msg-row__status"><span class="badge badge--info" data-i18n="msg.status.scheduled">Scheduled</span></span>
+              <span class="msg-row__time" data-sort-key="time" data-sort-value="2880" data-i18n="msg.hist.t.in2d">in 2d</span>
+              <span class="msg-row__subject" data-sort-key="subject">Live Q&amp;A announcement — save the date</span>
+              <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--info" data-i18n="msg.to.super.tag">Superfan</span></span>
+              <span class="msg-row__num" data-sort-key="recipients">359</span>
+              <span class="msg-row__num msg-row__num--muted" data-sort-key="openrate">—</span>
+              <span class="msg-row__status" data-sort-key="status"><span class="badge badge--info" data-i18n="msg.status.scheduled">Scheduled</span></span>
             </div>
 
             <div class="data-list__row msg-row">
-              <span class="msg-row__time" data-i18n="msg.hist.t.3d">3d ago</span>
-              <span class="msg-row__subject">Thank you — a note for my whole community</span>
-              <span class="msg-row__audience"><span class="badge badge--neutral" data-i18n="msg.to.all.tag">All fans</span></span>
-              <span class="msg-row__num">1,840</span>
-              <span class="msg-row__num">71%</span>
-              <span class="msg-row__status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
+              <span class="msg-row__time" data-sort-key="time" data-sort-value="-4320" data-i18n="msg.hist.t.3d">3d ago</span>
+              <span class="msg-row__subject" data-sort-key="subject">Thank you — a note for my whole community</span>
+              <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--neutral" data-i18n="msg.to.all.tag">All fans</span></span>
+              <span class="msg-row__num" data-sort-key="recipients">1,840</span>
+              <span class="msg-row__num" data-sort-key="openrate">71%</span>
+              <span class="msg-row__status" data-sort-key="status"><span class="badge badge--success" data-i18n="msg.status.sent">Sent</span></span>
             </div>
 
             <div class="data-list__row msg-row">
-              <span class="msg-row__time" data-i18n="msg.hist.t.5d">5d ago</span>
-              <span class="msg-row__subject">Behind the scenes — studio tour video</span>
-              <span class="msg-row__audience"><span class="badge badge--success" data-i18n="msg.to.devoted.tag">Devoted</span></span>
-              <span class="msg-row__num">0</span>
-              <span class="msg-row__num msg-row__num--muted">—</span>
-              <span class="msg-row__status"><span class="badge badge--error" data-i18n="msg.status.failed">Failed</span></span>
+              <span class="msg-row__time" data-sort-key="time" data-sort-value="-7200" data-i18n="msg.hist.t.5d">5d ago</span>
+              <span class="msg-row__subject" data-sort-key="subject">Behind the scenes — studio tour video</span>
+              <span class="msg-row__audience" data-sort-key="audience"><span class="badge badge--success" data-i18n="msg.to.devoted.tag">Ranked fans</span></span>
+              <span class="msg-row__num" data-sort-key="recipients">0</span>
+              <span class="msg-row__num msg-row__num--muted" data-sort-key="openrate">—</span>
+              <span class="msg-row__status" data-sort-key="status"><span class="badge badge--error" data-i18n="msg.status.failed">Failed</span></span>
               <div class="msg-row__fail">
                 <i data-lucide="alert-triangle" class="ztor-icon" style="width:14px;height:14px"></i>
                 <span data-i18n="msg.fail.reason">Delivery provider timed out</span>
@@ -540,8 +608,10 @@
 
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
+<script src="js/table-sort.js?v=r2.1"></script>
 <script src="partials/date-input.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script>
 /* ───────────────────────────────────────────────────────────
    Fans CRM 互動（demo 級，靜態資料；無真實後端）
@@ -633,7 +703,9 @@
     const PER_LOAD = 4;
     const list   = document.getElementById('fans-list');
     if (!list) return;
-    const rows   = Array.from(list.querySelectorAll('.fan-row'));
+    /* 每次都重讀 DOM 順序，不快取 —— 點欄名排序會實際搬動節點，
+       若沿用初始化時的陣列，「載入更多」會取到排序前的那幾列。 */
+    const rowsNow = () => Array.from(list.querySelectorAll('.fan-row'));
     const search = document.getElementById('fans-search');
     const tierF  = document.getElementById('fans-tier-filter');
     const chips  = Array.from(document.querySelectorAll('#fans-chips .chip'));
@@ -656,6 +728,7 @@
     }
 
     function render() {
+      const rows = rowsNow();
       const matched = rows.filter(matches);
       const total = matched.length;
       // 隱藏全部，再依 limit 顯示符合者
@@ -697,6 +770,9 @@
 
     render();
     document.addEventListener('i18n:applied', render);   // 語言切換後重算「Showing N of M」
+    /* 排序搬動節點後重新套用篩選＋分頁：排序是排「全部符合的列」，
+       顯示的仍是新順序的前 N 列（table-sort.js 發出此事件）。 */
+    document.addEventListener('ztor:sorted', render);
   })();
 
 })();
@@ -734,8 +810,8 @@
   const AUDIENCE = {
     all:       { en: 'All fans',     zh: '全部粉絲',   badge: 'badge--neutral' },
     inner:     { en: 'Inner Circle', zh: '核心圈',     badge: 'badge--orange'  },
-    super:     { en: 'Superfan',     zh: '超級粉絲',   badge: ''               },
-    devoted:   { en: 'Devoted',      zh: '忠實',       badge: 'badge--success' },
+    super:     { en: 'Superfan',     zh: '超級粉絲',   badge: 'badge--info'    },
+    devoted:   { en: 'Ranked fans',  zh: '上榜粉絲',   badge: 'badge--success' },
     fan:       { en: 'Fan',          zh: '粉絲',       badge: 'badge--neutral' },
     risk:      { en: 'At risk',      zh: '流失風險',   badge: 'badge--error'   },
     recovered: { en: 'Recovered',    zh: '已挽回',     badge: 'badge--info'    },

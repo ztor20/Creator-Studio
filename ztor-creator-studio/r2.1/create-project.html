@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.1">
@@ -28,6 +29,8 @@
 <link rel="stylesheet" href="ds-components/alert.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
   /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
@@ -43,7 +46,7 @@
 <body>
 <div class="wizard">
 
-  <!-- 專案類型閘門（D150，2026-07-24）：整個建立流程從這裡開始，畫面只有三張型別卡＋返回。選定後 JS 隱藏本閘門、顯示下方 [data-sheet] 分步表單。 -->
+  <!-- 項目類型閘門（D150，2026-07-24）：整個建立流程從這裡開始，畫面只有三張型別卡＋返回。選定後 JS 隱藏本閘門、顯示下方 [data-sheet] 分步表單。 -->
   <div class="wizard__sheet wizard__sheet--sectioned wizard__gate" data-gate>
     <div class="wizard__gate-inner">
       <h1 class="wizard__step-title" data-i18n="cpp.s1.h1">What are you making?</h1>
@@ -153,9 +156,9 @@
           <div style="grid-column:span 2">
             <div class="field__label" data-i18n="cpp.tf.format">Format</div>
             <div class="flex-row" style="gap:16px;font-family:var(--font-ui);font-size: var(--fs-13)">
-              <label class="flex-row" style="gap:6px"><input type="checkbox" checked> <span data-i18n="cpp.tf.format.digital">Digital</span></label>
-              <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.tf.format.vinyl">Vinyl</span></label>
-              <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.tf.format.cd">CD</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.digital">Digital</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.vinyl">Vinyl</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.cd">CD</span></label>
             </div>
           </div>
           <div><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input"></div>
@@ -337,10 +340,10 @@
           <div class="switch"></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
-          <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.pre">Pre-roll</span></label>
-          <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.mid">Mid-roll</span></label>
-          <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.post">Post-roll</span></label>
-          <label class="flex-row" style="gap:6px"><input type="checkbox"> <span data-i18n="cpp.s3.ads.banner">Banner</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.pre">Pre-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.mid">Mid-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.post">Post-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.banner">Banner</span></label>
         </div>
         <div class="field__hint" data-i18n="cpp.s3.ads.note">Placement options &amp; rules TBD.</div>
       </div>
@@ -382,7 +385,39 @@
     </section>
 
     <!-- ───────────────────────── STEP · Funding (Fund it first) ───────────────────────── -->
-    <section data-panel="funding" class="hidden">
+    <section data-panel="funding" class="hidden wizard-split">
+      <!-- ── Realtime setup overview (L 2026-07-27) ────────────────────────────────
+           The form takes raw inputs; this rail shows what they MEAN. Everything in it
+           is derived — nothing is a second copy of a field. The one number that did not
+           exist anywhere before is "you receive if funded": the fee note states 5% + 3%
+           but never did the arithmetic, so the creator had to.
+           Sticky, not fixed: .wizard__sheet is the scroll container, so a sticky child
+           tracks it correctly and never floats over the footer. Under 1024px the split
+           collapses and this card sits ABOVE the form (a summary you read first). -->
+      <aside class="wizard-split__rail" id="fd-overview" aria-labelledby="fd-ov-title">
+        <div class="card fd-ov">
+          <div class="fd-ov__title" id="fd-ov-title" data-i18n="cpp.fd.ov.title">Setup overview</div>
+          <div class="fd-ov__hero">
+            <div class="fd-ov__hero-label" data-i18n="cpp.fd.ov.perslot">Price per slot</div>
+            <div class="fd-ov__hero-value" id="fd-ov-perslot">—</div>
+          </div>
+          <div class="data-list fd-ov__list">
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.keep">You keep</div><div class="fd-ov__v" id="fd-ov-keep">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.offered">Offered to fans</div><div class="fd-ov__v" id="fd-ov-offered">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.slots">Slots open</div><div class="fd-ov__v" id="fd-ov-slots">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.window">Campaign window</div><div class="fd-ov__v" id="fd-ov-window">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.fees">Fees if funded</div><div class="fd-ov__v" id="fd-ov-fees">—</div></div>
+            <div class="data-list__row fd-ov__row--total"><div class="data-list__row-main" data-i18n="cpp.fd.ov.net">You receive if funded</div><div class="fd-ov__v" id="fd-ov-net">—</div></div>
+          </div>
+          <div class="fd-ov__foot">
+            <span data-i18n="cpp.fd.ov.budget">Budget allocated</span>
+            <span class="badge badge--success" id="fd-ov-budget">100%</span>
+          </div>
+          <div class="field__hint fd-ov__note" data-i18n="cpp.fd.ov.note">Estimated from what you have entered. No fees if the goal is not met.</div>
+        </div>
+      </aside>
+
+      <div class="wizard-split__main">
       <h1 class="wizard__step-title" data-i18n="cpp.fd.h1">Set your funding goal.</h1>
       <p class="wizard__step-sub" data-i18n="cpp.fd.sub">Goal, length, and how the money is split. This is what fans see and what the platform bills against.</p>
 
@@ -409,11 +444,34 @@
       <div class="field form-section form-section--outlined">
         <div class="field__label" data-i18n="cpp.fd.dist">Distribution settings</div>
         <div class="form-grid form-grid--3">
-          <div><div class="field__label" data-i18n="cpp.fd.pool">Pool %</div><input class="input" value="10"><div class="field__hint" data-i18n="cpp.fd.pool.hint">Your final share of the net</div></div>
-          <div><div class="field__label" data-i18n="cpp.fd.slots">Supporter slots</div><input class="input" value="100"><div class="field__hint" data-i18n="cpp.fd.slots.hint">Max number of backers</div></div>
-          <div><div class="field__label" data-i18n="cpp.fd.perslot">Per slot</div><div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" value="200" disabled></div><div class="field__hint" data-i18n="cpp.fd.perslot.hint">Auto · goal ÷ slots</div></div>
+          <!-- % is shown as a unit suffix rather than left to the label, so the
+               number can never be read as a dollar amount or a raw count
+               (L, 2026-07-27). The suffix reuses .amount-field--suffix, which
+               amount-field.css already promoted for exactly this "50 [%]" case. -->
+          <div><div class="field__label" data-i18n="cpp.fd.pool">Revenue share offered</div>
+            <div class="amount-field amount-field--suffix amount-field--readonly zstep">
+              <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+              <input id="fd-pool" class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="10">
+              <span class="zstep__btns">
+                <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+              </span>
+            </div>
+            <div class="field__hint" data-i18n="cpp.fd.pool.hint">The % of net revenue fans can buy into</div></div>
+          <div><div class="field__label" data-i18n="cpp.fd.slots">Supporter slots</div>
+            <div class="amount-field zstep zstep--nounit">
+              <input id="fd-slots" class="amount-field__input input zstep__input" type="number" min="1" step="1" value="100">
+              <span class="zstep__btns">
+                <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+              </span>
+            </div>
+            <div class="field__hint" data-i18n="cpp.fd.slots.hint">Max number of slots available</div></div>
+          <div><div class="field__label" data-i18n="cpp.fd.perslot">Per slot</div><div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="fd-perslot" class="amount-field__input input" value="200" disabled></div><div class="field__hint" data-i18n="cpp.fd.perslot.hint">Price per slot · auto</div></div>
         </div>
-        <div class="field__hint" data-i18n="cpp.fd.dist.note">If $200k net, each slot = $200.</div>
+        <!-- 2026-07-27：刪掉原本的「If $200k net, each slot = $200.」——它是寫死的例子，
+             跟表單當下的值（目標 $20,000）不符，而且用的是被講反的舊語意。右側總覽卡改用
+             真實輸入值即時算給你看，這行沒有存在的理由。 -->
         <div class="field__hint" data-i18n="cpp.fd.fee.note">5% platform fee (only if goal met) + 3% Stripe. No fees if goal not met.</div>
       </div>
 
@@ -432,24 +490,25 @@
         <div class="data-list" id="budget-rows">
           <div class="data-list__row" data-budget-row>
             <div class="data-list__row-main"><input class="input input--inline" value="Production" style="max-width:200px"></div>
-            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="50" style="max-width:74px"><span class="text-sub">%</span><button class="card__link" data-budget-remove>×</button></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="50" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
           </div>
           <div class="data-list__row" data-budget-row>
             <div class="data-list__row-main"><input class="input input--inline" value="Marketing" style="max-width:200px"></div>
-            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="25" style="max-width:74px"><span class="text-sub">%</span><button class="card__link" data-budget-remove>×</button></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="25" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
           </div>
           <div class="data-list__row" data-budget-row>
             <div class="data-list__row-main"><input class="input input--inline" value="Talent" style="max-width:200px"></div>
-            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="15" style="max-width:74px"><span class="text-sub">%</span><button class="card__link" data-budget-remove>×</button></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="15" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
           </div>
           <div class="data-list__row" data-budget-row>
             <div class="data-list__row-main"><input class="input input--inline" value="Operations" style="max-width:200px"></div>
-            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="10" style="max-width:74px"><span class="text-sub">%</span><button class="card__link" data-budget-remove>×</button></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="10" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
           </div>
         </div>
         <button class="btn btn--outline btn--sm mt-8" id="budget-add" data-i18n="cpp.fd.budget.add">＋ Add category</button>
         <div class="field__hint" data-i18n="cpp.fd.budget.hint">Must total 100% before you continue.</div>
       </div>
+      </div><!-- /.wizard-split__main -->
     </section>
 
     <!-- ───────────────────────── STEP · Tiers (Fund it first) ───────────────────────── -->
@@ -756,8 +815,26 @@
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="partials/date-input.js?v=r2.1"></script>
 <script src="partials/wizard-chrome.js?v=r2.1"></script>
+<script src="partials/stepper.js?v=r2.1"></script>
 <script>
 (function () {
+  /* Publish the wizard header's real height so the sticky overview rail can
+     clear it (ds-components/wizard-split.css reads --wizard-top-h). Measured
+     rather than hardcoded because the header's height changes with locale and
+     window width — a fixed number drifts and the rail slides under the header
+     again. Re-measured on resize and after i18n swaps the copy. */
+  const syncTopH = () => {
+    const bar = document.querySelector('.wizard__top');
+    if (bar) document.documentElement.style.setProperty('--wizard-top-h', bar.offsetHeight + 'px');
+  };
+  syncTopH();
+  window.addEventListener('resize', syncTopH);
+  document.addEventListener('i18n:applied', syncTopH);
+  if (window.ResizeObserver) {
+    const bar = document.querySelector('.wizard__top');
+    if (bar) new ResizeObserver(syncTopH).observe(bar);
+  }
+
   const FLOWS = {
     golive:   ['about', 'showcase', 'monetization', 'review'],
     fund:     ['about', 'showcase', 'funding', 'tiers', 'review'],
@@ -802,6 +879,13 @@
     document.querySelectorAll('[data-panel]').forEach(p => {
       p.classList.toggle('hidden', p.dataset.panel !== cur);
     });
+
+    /* 只有募資步驟是「表單＋右側總覽」兩欄，需要比 820 更寬的內容欄；其餘步驟維持
+       原本寬度。--mid(1140) 本來就是為「內容＋約 320 側欄」這個形狀存在的（見
+       shared.css 註解），所以沿用而不另訂寬度。 */
+    const body = document.querySelector('.wizard__body');
+    if (body) body.classList.toggle('wizard__body--mid', cur === 'funding');
+    if (cur === 'funding') renderFundingOverview();
 
     // Review per-type blocks
     document.querySelectorAll('[data-review-mid]').forEach(b => b.classList.toggle('hidden', b.dataset.reviewMid !== type));
@@ -882,11 +966,70 @@
     });
   });
 
+  /* ── Realtime setup overview (L 2026-07-27) ──────────────────────────────────
+     只顯示「由輸入值推導出來的結果」，不重複欄位本身。費率引用同頁 fee note
+     的 5% 平台 + 3% Stripe（BUILD-SPEC D029），且未達標不收費——所以每一個金額
+     列都標明「達標後」，不能寫成無條件的費用。
+     所有空值／除以零一律回 '—'：顯示 $0 或 NaN 等於對創作者做一個假陳述。 */
+  const FEE_PLATFORM = 0.05, FEE_STRIPE = 0.03;
+  const DASH = '—';
+  const num = (id) => { const el = document.getElementById(id); const v = el ? parseFloat(el.value) : NaN; return Number.isFinite(v) ? v : NaN; };
+  const money = (v) => Number.isFinite(v) ? '$' + Math.round(v).toLocaleString('en-US') : DASH;
+  const pctStr = (v) => Number.isFinite(v) ? (Math.round(v * 10) / 10) + '%' : DASH;
+  const setTxt = (id, s) => { const el = document.getElementById(id); if (el) el.textContent = s; };
+
+  function budgetSum() {
+    let sum = 0;
+    document.querySelectorAll('#budget-rows [data-budget-row]').forEach(r => {
+      sum += Number(r.querySelector('.budget-pct').value) || 0;
+    });
+    return sum;
+  }
+
+  function renderFundingOverview() {
+    if (!document.getElementById('fd-overview')) return;
+    const goal  = num('fd-goal');
+    const days  = num('fd-length');
+    const pool  = num('fd-pool');
+    const slots = num('fd-slots');
+
+    /* 每個名額價格＝目標 ÷ 名額數。名額為 0／空 ⇒ 不是 Infinity，是「還沒得算」。 */
+    const perSlot = (Number.isFinite(goal) && Number.isFinite(slots) && slots > 0) ? goal / slots : NaN;
+    setTxt('fd-ov-perslot', money(perSlot));
+    /* 唯讀欄位過去寫死 200、永遠不動。總覽即時算而欄位不動會自相矛盾，所以一起接上。 */
+    const perSlotField = document.getElementById('fd-perslot');
+    if (perSlotField) perSlotField.value = Number.isFinite(perSlot) ? Math.round(perSlot).toLocaleString('en-US') : '';
+
+    const offered = Number.isFinite(pool) ? Math.min(100, Math.max(0, pool)) : NaN;
+    setTxt('fd-ov-offered', pctStr(offered));
+    setTxt('fd-ov-keep', Number.isFinite(offered) ? pctStr(100 - offered) : DASH);
+    setTxt('fd-ov-slots', Number.isFinite(slots) && slots > 0 ? Math.round(slots).toLocaleString('en-US') : DASH);
+
+    /* 期間顯示成真正的日期區間——「30」本身不回答「什麼時候結束」。 */
+    if (Number.isFinite(days) && days > 0) {
+      const start = new Date();
+      const end = new Date(start.getTime() + days * 86400000);
+      const fmt = new Intl.DateTimeFormat(document.documentElement.lang === 'zh-Hant' ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+      setTxt('fd-ov-window', fmt.format(start) + ' – ' + fmt.format(end) + ' · ' + Math.round(days) + ' ' + T('cpp.fd.ov.days'));
+    } else setTxt('fd-ov-window', DASH);
+
+    const fees = Number.isFinite(goal) ? goal * (FEE_PLATFORM + FEE_STRIPE) : NaN;
+    setTxt('fd-ov-fees', Number.isFinite(fees) ? '−' + money(fees) : DASH);
+    setTxt('fd-ov-net', Number.isFinite(goal) ? money(goal - fees) : DASH);
+
+    const sum = budgetSum();
+    const ovBadge = document.getElementById('fd-ov-budget');
+    if (ovBadge) {
+      ovBadge.textContent = sum + '%';
+      ovBadge.classList.toggle('badge--success', sum === 100);
+      ovBadge.classList.toggle('badge--warning', sum !== 100);
+    }
+  }
+
   // Budget allocation total
   function recalcBudget() {
     const rows = document.querySelectorAll('#budget-rows [data-budget-row]');
-    let sum = 0;
-    rows.forEach(r => { sum += Number(r.querySelector('.budget-pct').value) || 0; });
+    const sum = budgetSum();
     const badge = document.getElementById('budget-total');
     if (!badge) return;
     badge.querySelector('span:last-child').textContent = sum + '%';
@@ -902,8 +1045,18 @@
       seg.style.background = colors[i % colors.length];
       bar.appendChild(seg);
     });
+    /* 預算總和只算一次、兩處共用，避免總覽自己再加一遍而漂移。 */
+    renderFundingOverview();
   }
   document.getElementById('budget-rows').addEventListener('input', recalcBudget);
+  /* input（非 change）＝邊打邊更新，這才是 realtime。 */
+  ['fd-goal', 'fd-length', 'fd-pool', 'fd-slots'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderFundingOverview);
+  });
+  /* 語言切換時日期格式與「天」都要跟著換 */
+  new MutationObserver(() => renderFundingOverview())
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   document.querySelectorAll('[data-budget-remove]').forEach(b => b.addEventListener('click', e => {
     e.preventDefault(); b.closest('[data-budget-row]').remove(); recalcBudget();
   }));
@@ -945,7 +1098,7 @@
   document.addEventListener('i18n:applied', render);
   render();
   syncTypeUI(type);
-  showGate();   // 流程從專案類型閘門開始（D150）
+  showGate();   // 流程從項目類型閘門開始（D150）
 })();
 </script>
 <script src="js/reveal.js?v=r2.1"></script>

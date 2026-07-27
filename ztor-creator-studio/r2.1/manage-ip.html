@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage IP · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.1"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
+<link rel="stylesheet" href="shared.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/manage-ip.css?v=r2.1">
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- 麵包屑：IP Bank / My IP / <這筆 IP>。第三段由 JS 填入 IP 名稱。 -->
+      <div class="text-sub" style="font-size: var(--fs-12);margin-bottom:14px">
+        <a href="my-ip.html" class="card__link" data-i18n="my-ip.crumb.bank">IP Bank</a> <span style="margin:0 6px">/</span>
+        <a href="my-ip.html" class="card__link" data-i18n="my-ip.crumb.self">My IP</a> <span style="margin:0 6px">/</span>
+        <span id="mi-crumb" aria-current="page">—</span>
+      </div>
+
+      <!-- 驗證橫幅（參考 Zillow「送審中」的做法）：未驗證的資產要在讀到名字之前先講清楚
+           自己的狀態，所以是滿版橫幅、不是標題列裡的小徽章。已驗證時整條不渲染。 -->
+      <div class="info-banner mi-verify" id="mi-verify" hidden>
+        <i data-lucide="alert-triangle" class="ztor-icon" aria-hidden="true"></i>
+        <div>
+          <div class="mi-verify__title" id="mi-verify-title">—</div>
+          <div class="mi-verify__text" id="mi-verify-text">—</div>
+        </div>
+      </div>
+
+      <!-- 身分列：名稱＋類型＋上架狀態；右側是「以承租方視角檢視」——這是本頁與
+           ip-detail.html（IP 市場那一面）唯一的連結點，兩頁不再互相假裝是對方。 -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" id="mi-title">—</h1>
+          <p class="page-intro__sub">
+            <span id="mi-type">—</span>
+            <span class="mi-dot" aria-hidden="true">·</span>
+            <span id="mi-source">—</span>
+          </p>
+          <div class="mi-chips">
+            <span class="badge" id="mi-listed-badge">—</span>
+            <span class="badge badge--neutral" id="mi-verify-badge" hidden>—</span>
+          </div>
+        </div>
+        <div class="page-intro__actions">
+          <a class="btn btn--outline" id="mi-view-renter" href="ip-detail.html">
+            <i data-lucide="eye" class="ztor-icon ztor-icon--sm"></i>
+            <span data-i18n="manage-ip.view-renter">View as renter</span>
+          </a>
+        </div>
+      </div>
+
+      <nav class="tabs tabs--card tabs--underline-short mt-24" role="tablist" data-tabs>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="manage-ip.tab.overview">Overview</button>
+        <button class="tabs__item" role="tab" data-tab="licensing" aria-selected="false" data-i18n="manage-ip.tab.licensing">Licensing &amp; pricing</button>
+        <button class="tabs__item" role="tab" data-tab="rentals" aria-selected="false" data-i18n="manage-ip.tab.rentals">Rentals</button>
+        <button class="tabs__item" role="tab" data-tab="settings" aria-selected="false" data-i18n="manage-ip.tab.settings">Settings</button>
+      </nav>
+
+      <!-- ══ 總覽：全部唯讀。錢與權利先講，設定一律不在這一頁。 ══ -->
+      <div class="tab-panel tab-panel--active" data-panel="overview">
+
+        <div class="bento mt-24">
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="manage-ip.kpi.revenue">IP revenue</div>
+            <div class="kpi__value" id="mi-kpi-revenue">—</div>
+            <div class="kpi__meta" data-i18n="manage-ip.kpi.revenue-meta">Year to date · USD</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="manage-ip.kpi.rentals">Active rentals</div>
+            <div class="kpi__value" id="mi-kpi-rentals">—</div>
+            <div class="kpi__meta" data-i18n="manage-ip.kpi.rentals-meta">Licences currently out</div>
+          </div>
+          <div class="kpi bento--span-4">
+            <div class="kpi__label" data-i18n="manage-ip.kpi.rate">Current rate</div>
+            <div class="kpi__value" id="mi-kpi-rate">—</div>
+            <div class="kpi__meta" data-i18n="manage-ip.kpi.rate-meta">One-off fee + royalty</div>
+          </div>
+        </div>
+
+        <!-- 權利歸屬擺在明細之前：IP bank 裡「你擁有的」是一個主張，不是一張商品卡。
+             這是本頁的簽名——別的後台開場是表單，這一頁開場是這筆資產屬於誰。 -->
+        <section class="form-section form-section--outlined mt-24">
+          <div class="form-section__head">
+            <h2 class="form-section__title" data-i18n="manage-ip.rights.title">Rights &amp; ownership</h2>
+            <p class="form-section__sub" data-i18n="manage-ip.rights.sub">Who holds this IP, and where the licence can travel.</p>
+          </div>
+          <div class="kv kv--lead">
+            <span class="kv__k" data-i18n="manage-ip.rights.holders">Rights holders</span>
+            <span class="kv__v" id="mi-rights">—</span>
+          </div>
+          <div class="kv">
+            <span class="kv__k" data-i18n="manage-ip.rights.territory">Territory</span>
+            <span class="kv__v" id="mi-territory">—</span>
+          </div>
+          <div class="kv">
+            <span class="kv__k" data-i18n="manage-ip.rights.proof">Proof of ownership</span>
+            <span class="kv__v" id="mi-proof">—</span>
+          </div>
+          <div class="kv">
+            <span class="kv__k" data-i18n="manage-ip.rights.usage">Permitted usage</span>
+            <span class="kv__v" id="mi-usage">—</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- ══ 授權與定價：唯一會動到錢的分頁，一個儲存。 ══ -->
+      <div class="tab-panel" data-panel="licensing">
+
+        <section class="form-section form-section--outlined mt-24">
+          <div class="form-section__head">
+            <h2 class="form-section__title" data-i18n="manage-ip.listing.title">Marketplace listing</h2>
+            <p class="form-section__sub" data-i18n="manage-ip.listing.sub">Off keeps waterfall tracking running, but nobody can rent it.</p>
+          </div>
+          <div class="settings-row" style="border-bottom:0">
+            <div>
+              <div class="settings-row__label" data-i18n="manage-ip.listing.label">List in IP Market</div>
+              <div class="settings-row__hint" data-i18n="manage-ip.listing.hint">Controls the same switch shown in the My IP list.</div>
+            </div>
+            <div class="switch" id="mi-listed" role="switch" tabindex="0" aria-checked="false"></div>
+          </div>
+        </section>
+
+        <!-- 定價欄位由上架開關 gate（Rarible 的做法）：沒上架卻攤開一排空價格欄，
+             讀起來像壞掉，而不是像「這筆沒有在賣」。 -->
+        <section class="form-section form-section--outlined mt-24" id="mi-terms">
+          <div class="form-section__head">
+            <h2 class="form-section__title" data-i18n="manage-ip.terms.title">Licence pricing</h2>
+            <p class="form-section__sub" data-i18n="manage-ip.terms.sub">A one-off fee to use the IP, plus a royalty on top. Leave either as “on request” to keep the figure private.</p>
+          </div>
+
+          <!-- 每個金額欄自己帶一顆「請洽詢」開關：使用者指定一次性費用與分潤各自可不公開，
+               所以這是欄位層級的狀態、不是整頁一個開關。開著時輸入框收起，避免出現
+               「洽詢中卻還攤著一個數字」這種自相矛盾的畫面。 -->
+          <div class="form-grid">
+            <div class="field">
+              <span class="field__label" data-i18n="manage-ip.terms.fee">One-off licence fee</span>
+              <span class="amount-field amount-field--readonly mi-amount" data-amount-for="fee">
+                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                <input class="input amount-field__input" id="mi-fee" type="number" min="0" placeholder="5,000">
+              </span>
+              <label class="mi-onreq">
+                <input type="checkbox" id="mi-fee-req">
+                <span data-i18n="manage-ip.terms.on-request">Price on request</span>
+              </label>
+            </div>
+            <div class="field">
+              <span class="field__label" data-i18n="manage-ip.terms.royalty">Royalty on revenue</span>
+              <span class="amount-field amount-field--suffix amount-field--readonly mi-amount" data-amount-for="royalty">
+                <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+                <input class="input amount-field__input" id="mi-royalty" type="number" min="0" max="100" step="0.5" placeholder="12">
+              </span>
+              <label class="mi-onreq">
+                <input type="checkbox" id="mi-royalty-req">
+                <span data-i18n="manage-ip.terms.on-request">Price on request</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <span class="field__label" data-i18n="manage-ip.terms.exclusive">Exclusive licence fee</span>
+              <span class="amount-field amount-field--readonly mi-amount" data-amount-for="exclusive">
+                <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                <input class="input amount-field__input" id="mi-exclusive" type="number" min="0" placeholder="34,000">
+              </span>
+              <label class="mi-onreq">
+                <input type="checkbox" id="mi-exclusive-req">
+                <span data-i18n="manage-ip.terms.on-request">Price on request</span>
+              </label>
+              <span class="field__hint" data-i18n="manage-ip.terms.exclusive-hint">Leave empty if you do not offer exclusivity.</span>
+            </div>
+            <div class="field mi-pricepreview">
+              <span class="field__label" data-i18n="manage-ip.terms.preview">Renters will see</span>
+              <div class="mi-preview" id="mi-price-preview">—</div>
+            </div>
+          </div>
+          <p class="text-sub mi-note" id="mi-locked-note" hidden data-i18n="manage-ip.terms.locked">
+            This IP has active rentals. Changes apply to new rentals only — live contracts keep the terms they were signed on. (Prototype: not enforced; product rule pending — ASSUMPTIONS UIA-091.)
+          </p>
+        </section>
+
+        <div class="mi-savebar">
+          <button class="btn btn--primary" type="button" id="mi-save" data-i18n="manage-ip.save">Save licensing changes</button>
+          <span class="text-sub mi-saved" id="mi-saved" hidden data-i18n="manage-ip.saved">Saved (prototype — not persisted)</span>
+        </div>
+      </div>
+
+      <!-- ══ 租賃紀錄：逐筆合約。沒有資料時給 fallback，不留空白。 ══ -->
+      <div class="tab-panel" data-panel="rentals">
+        <div class="data-list mt-24" id="mi-deals"></div>
+        <p class="text-sub mi-note" id="mi-deals-note" hidden data-i18n="manage-ip.rentals.note">
+          Per-rental fields are a prototype sample — upstream defines the rental count only (ASSUMPTIONS UIA-090).
+        </p>
+      </div>
+
+      <!-- ══ 設定：ip-detail 的 owner panel 搬過來的三顆，加上結束上架。 ══ -->
+      <div class="tab-panel" data-panel="settings">
+
+        <section class="form-section form-section--outlined mt-24">
+          <div class="form-section__head">
+            <h2 class="form-section__title" data-i18n="manage-ip.ops.title">Rental operations</h2>
+            <p class="form-section__sub" data-i18n="manage-ip.ops.sub">Day-to-day control that does not change your published price.</p>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="manage-ip.ops.accept">Accept new rentals</div>
+              <div class="settings-row__hint" data-i18n="manage-ip.ops.accept-hint">Pauses inbound requests without delisting.</div>
+            </div>
+            <div class="switch" id="mi-accepting" role="switch" tabindex="0" aria-checked="false"></div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="manage-ip.ops.bidding">Bidding mode</div>
+              <div class="settings-row__hint" data-i18n="manage-ip.ops.bidding-hint">Flat rental, or a timed auction for the next available slot.</div>
+            </div>
+            <div class="mi-inline">
+              <span class="badge badge--orange" id="mi-bidding-badge">—</span>
+              <button class="btn btn--ghost btn--sm" type="button" id="mi-bidding-switch" data-i18n="manage-ip.ops.switch">Switch</button>
+            </div>
+          </div>
+          <div class="settings-row" style="border-bottom:0">
+            <div>
+              <div class="settings-row__label" data-i18n="manage-ip.ops.alerts">Expiration alerts</div>
+              <div class="settings-row__hint" data-i18n="manage-ip.ops.alerts-hint">14 / 7 / 1 days before any rental ends · routes to Dashboard alerts.</div>
+            </div>
+            <div class="switch" id="mi-alerts" role="switch" tabindex="0" aria-checked="false"></div>
+          </div>
+        </section>
+
+        <!-- 危險區只放真正不可逆的那一件事：刪除這筆 IP。
+             「下架」是可逆的狀態，已經由「授權與定價」的上架開關承擔，這裡不再重複一顆
+             單向紅鈕（2026-07-27 使用者裁示：開關歸開關、刪除歸刪除，用「刪除」這個詞）。
+             有進行中租約時不給刪——對方手上的授權是合約，不能被單方面消滅。 -->
+        <section class="form-section form-section--outlined mt-24 mi-danger">
+          <div class="form-section__head">
+            <h2 class="form-section__title" data-i18n="manage-ip.delete.title">Delete this IP</h2>
+            <p class="form-section__sub" data-i18n="manage-ip.delete.sub">Permanently removes the IP record, its licensing terms and its waterfall history. This cannot be undone.</p>
+          </div>
+          <button class="btn btn--ghost btn--destructive" type="button" id="mi-delete" data-i18n="manage-ip.delete.action">Delete IP</button>
+        </section>
+      </div>
+
+    </div>
+
+    <!-- 刪除確認彈窗 · 沿用全站 canonical dialog shell（payout-modal / payout-dialog，
+         見 ds-components/payout-modal.css），不另造殼。要求輸入密碼＝二次確認：
+         打錯字很難救的操作，需要一個「只有本人做得到」的動作，而不是再按一次 OK。
+         ⚠ 原型層級：沒有後端、不做任何驗證、不儲存也不送出輸入值（ASSUMPTIONS UIA-092）。 -->
+    <div class="payout-modal" id="mi-del-modal" hidden>
+      <section class="payout-dialog mi-del-dialog" role="dialog" aria-modal="true" aria-labelledby="mi-del-title">
+        <div class="payout-dialog__head">
+          <h2 class="payout-dialog__title" id="mi-del-title" data-i18n="manage-ip.delete.modal.title">Delete this IP?</h2>
+          <button class="btn btn--icon" type="button" id="mi-del-x" aria-label="Close" data-i18n-aria-label="manage-ip.delete.modal.close">
+            <i data-lucide="x" class="ztor-icon"></i>
+          </button>
+        </div>
+        <div class="payout-dialog__body">
+          <!-- 有進行中租約時的後果講在這裡，不是把入口鈕鎖死：停用的按鈕只是死路，
+               真正該說的話要出現在「準備按下去」的那一刻（2026-07-27 使用者反饋）。 -->
+          <div class="alert alert--row alert--warning mi-del-warn" id="mi-del-warn" role="alert" hidden>
+            <div class="alert__icon">!</div>
+            <div class="alert__body">
+              <div class="alert__title" id="mi-del-warn-title">—</div>
+              <div class="alert__meta" data-i18n="manage-ip.delete.modal.warn-desc">Renters keep contractual rights until their end date. Settle or let these run out before deleting.</div>
+            </div>
+          </div>
+          <p class="mi-del-lede" id="mi-del-lede">—</p>
+          <ul class="mi-del-list">
+            <li data-i18n="manage-ip.delete.modal.li1">The IP record, its licensing terms and pricing</li>
+            <li data-i18n="manage-ip.delete.modal.li2">Its waterfall history and revenue attribution</li>
+            <li data-i18n="manage-ip.delete.modal.li3">Its listing in IP Market, if listed</li>
+          </ul>
+          <label class="field mi-del-field">
+            <span class="field__label" data-i18n="manage-ip.delete.modal.pw">Confirm with your password</span>
+            <input class="input" id="mi-del-pw" type="password" autocomplete="current-password"
+                   spellcheck="false" placeholder="••••••••" data-i18n-placeholder="manage-ip.delete.modal.pw-ph">
+            <span class="field__hint" data-i18n="manage-ip.delete.modal.pw-hint">Prototype: nothing is verified, stored or sent. Real deletion is checked server-side.</span>
+          </label>
+        </div>
+        <div class="payout-dialog__foot">
+          <button class="btn btn--outline" type="button" id="mi-del-cancel" data-i18n="manage-ip.delete.modal.cancel">Cancel</button>
+          <button class="btn btn--destructive" type="button" id="mi-del-confirm" disabled data-i18n="manage-ip.delete.modal.confirm">Delete permanently</button>
+        </div>
+      </section>
+    </div>
+
+    <footer class="app-footer">
+      <span>Ztor Creator Studio · R 2.1 prototype</span>
+      <span>·</span>
+      <span data-i18n="manage-ip.footer">Rental revenue rolls up to Earnings → IP Royalties</span>
+    </footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.1"></script>
+<script src="js/i18n.js?v=r2.1"></script>
+<script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
+<script src="js/ip-price.js?v=r2.1"></script>
+<script src="js/ip-store.js?v=r2.1"></script>
+<script src="js/devtools.js?v=r2.1"></script>
+<script>
+/* 管理我的 IP —— 由 my-ip.html 的列以 ?id=row<N> 開啟。
+   顯示內容的來源分兩層，不重複儲存同一個事實：
+     · 名稱／權利／租出數／收益／價格 → 掛回 my-ip 清單用的同一組 i18n key（跟著人格走）
+     · 類型／地區／授權範圍／定價／驗證／逐筆租賃 → js/ip-store.js 的結構欄位
+   查無 id 時退回清單，不渲染半張空頁。 */
+(function () {
+  'use strict';
+
+  var params = new URLSearchParams(location.search);
+  var id = params.get('id') || 'row1';
+  var ip = window.ztorGetIp && window.ztorGetIp(id);
+  if (!ip) { location.replace('my-ip.html'); return; }
+
+  function T(key, fallback) {
+    return (window.i18nT && window.i18nT(key)) || fallback || '';
+  }
+  /* 讓元素跟著語言／人格切換走：掛 data-i18n 再交給 applyI18n，而不是寫死 textContent。 */
+  function bindKey(el, key, fallback) {
+    if (!el) return;
+    el.setAttribute('data-i18n', key);
+    el.textContent = T(key, fallback);
+  }
+  function setText(el, value) { if (el) el.textContent = value; }
+  function $(sel) { return document.getElementById(sel); }
+
+  var K = ip.i18nKey;                       /* 'my-ip.row1' */
+  var nameKey = K + '.' + ip.nameKey;       /* ztor 列是 .name、外部登錄列是 .title */
+
+  /* ── 身分列 ─────────────────────────────────────────── */
+  bindKey($('mi-title'), nameKey, 'IP');
+  bindKey($('mi-crumb'), nameKey, 'IP');
+  document.title = T(nameKey, 'IP') + ' · Manage IP · Ztor Creator Studio';
+  setText($('mi-type'), ip.ipType);
+  bindKey($('mi-source'), ip.source === 'ztor' ? 'my-ip.source.ztor' : 'my-ip.source.external',
+          ip.source === 'ztor' ? 'Made on Ztor' : 'Registered externally');
+
+  /* 上架徽章：綠＝上架中、暫停接單＝橘、未上架＝中性。三態各講各的，不共用顏色。 */
+  var listedBadge = $('mi-listed-badge');
+  function paintListedBadge() {
+    var cls = 'badge', key, fb;
+    if (!ip.listed)          { cls += ' badge--neutral'; key = 'manage-ip.state.unlisted'; fb = 'Not listed'; }
+    else if (!ip.accepting)  { cls += ' badge--warning'; key = 'manage-ip.state.paused';   fb = 'Paused'; }
+    else                     { cls += ' badge--success'; key = 'manage-ip.state.listed';   fb = 'Listed in IP Market'; }
+    listedBadge.className = cls;
+    bindKey(listedBadge, key, fb);
+  }
+  paintListedBadge();
+
+  /* ── 驗證狀態 ───────────────────────────────────────── */
+  var VERIFY = {
+    verifying: { title: 'manage-ip.verify.verifying.title', text: 'manage-ip.verify.verifying.text',
+                 tfb: 'Verification in progress',
+                 xfb: 'This IP cannot be listed or earn until waterfall verification completes.' },
+    awaiting:  { title: 'manage-ip.verify.awaiting.title',  text: 'manage-ip.verify.awaiting.text',
+                 tfb: 'Awaiting waterfall verification',
+                 xfb: 'Externally registered IP needs verification before it can be listed for rental.' }
+  };
+  if (VERIFY[ip.verify]) {
+    var v = VERIFY[ip.verify];
+    $('mi-verify').hidden = false;
+    bindKey($('mi-verify-title'), v.title, v.tfb);
+    bindKey($('mi-verify-text'), v.text, v.xfb);
+  } else {
+    var vb = $('mi-verify-badge');
+    vb.hidden = false;
+    bindKey(vb, 'manage-ip.state.verified', 'Waterfall verified');
+  }
+
+  /* 以承租方視角：未上架就沒有市場那一面可看，鈕收起來而不是連到空頁。 */
+  var viewRenter = $('mi-view-renter');
+  if (!ip.listed) viewRenter.hidden = true;
+
+  /* ── 總覽 KPI（收益／租出數走清單的同一組 key）──────────── */
+  bindKey($('mi-kpi-revenue'), K + '.revenue', '$0');
+  bindKey($('mi-kpi-rentals'), K + '.rented', '0');
+  /* 費率 KPI 不綁 i18n 的靜態價格字串——改由 paintRateKpi() 從 ip.price 算出來，
+     和承租端／清單同一支格式化器，才不會兩邊各說各的。 */
+
+  /* ── 權利與歸屬 ─────────────────────────────────────── */
+  bindKey($('mi-rights'), K + '.rights', '—');
+  setText($('mi-territory'), ip.territory);
+  setText($('mi-proof'), ip.proof || T('manage-ip.rights.no-proof', 'Not uploaded'));
+
+  var usageHost = $('mi-usage');
+  if (ip.usage.length) {
+    usageHost.innerHTML = ip.usage.map(function (u) {
+      return '<span class="chip chip--static">' + u + '</span>';
+    }).join('');
+    usageHost.classList.add('mi-chiprow');
+  } else {
+    setText(usageHost, T('manage-ip.rights.no-usage', 'Not set yet'));
+  }
+
+  /* ── 授權與定價（2026-07-27 新模型：一次性費用＋分潤，各自可「請洽詢」）──
+     三個欄位共用一套接線：數字輸入 ＋ 一顆「請洽詢」勾選；勾起來就把輸入框收掉，
+     並把該欄位的 mode 切成 on-request。所有顯示（KPI／預覽／清單）一律走
+     js/ip-price.js 的格式化器，不在這裡自己拼字串。 */
+  var P = window.ztorIpPrice;
+
+  function wirePriceField(key, inputId, checkId, valueProp) {
+    var input = $(inputId), check = $(checkId);
+    var wrap  = document.querySelector('[data-amount-for="' + key + '"]');
+    var slot  = ip.price[key] || (ip.price[key] = { mode: 'amount' });
+
+    if (slot.mode !== 'on-request' && slot[valueProp] != null) input.value = slot[valueProp];
+    check.checked = slot.mode === 'on-request';
+
+    function paint() {
+      wrap.hidden = check.checked;          /* 洽詢中就不攤數字欄 */
+      slot.mode = check.checked ? 'on-request'
+                : (key === 'royalty' ? 'percent' : 'amount');
+      if (!check.checked) slot[valueProp] = input.value === '' ? null : Number(input.value);
+      paintPricePreview();
+      paintRateKpi();
+    }
+    check.addEventListener('change', paint);
+    input.addEventListener('input', paint);
+    paint();
+  }
+
+  /* 「承租方會看到」——把 owner 正在編的東西，用承租端同一支格式化器即時印出來，
+     所以定價頁不可能和市場頁講出不同的話。 */
+  function paintPricePreview() {
+    $('mi-price-preview').textContent = P.summary(ip.price);
+  }
+  function paintRateKpi() {
+    var kpi = $('mi-kpi-rate');
+    if (kpi) { kpi.removeAttribute('data-i18n'); kpi.textContent = P.summary(ip.price); }
+  }
+
+  wirePriceField('fee',       'mi-fee',       'mi-fee-req',       'amount');
+  wirePriceField('royalty',   'mi-royalty',   'mi-royalty-req',   'percent');
+  wirePriceField('exclusive', 'mi-exclusive', 'mi-exclusive-req', 'amount');
+
+  /* 開關是純呈現的 div（比照全站 .switch 用法），這裡補上可點與鍵盤可達。 */
+  function wireSwitch(el, initial, onChange) {
+    function paint(on) {
+      el.classList.toggle('switch--on', on);
+      el.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    paint(initial);
+    function toggle() {
+      var next = el.getAttribute('aria-checked') !== 'true';
+      paint(next);
+      if (onChange) onChange(next);
+    }
+    el.addEventListener('click', toggle);
+    el.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+    });
+    return { set: paint };
+  }
+
+  var terms = $('mi-terms');
+  function paintTermsGate() {
+    terms.hidden = !ip.listed;                 /* 沒上架＝不渲染價格欄（Rarible） */
+  }
+  paintTermsGate();
+
+  wireSwitch($('mi-listed'), ip.listed, function (on) {
+    ip.listed = on;
+    if (!on) ip.accepting = false;
+    paintTermsGate();
+    paintListedBadge();
+    viewRenter.hidden = !on;
+    acceptSwitch.set(ip.accepting);
+  });
+
+  /* 有進行中的租約時，提醒改動只對新租約生效。產品規則未定，原型不強制。 */
+  if (ip.deals.length) $('mi-locked-note').hidden = false;
+
+  $('mi-save').addEventListener('click', function () {
+    var saved = $('mi-saved');
+    saved.hidden = false;
+    setTimeout(function () { saved.hidden = true; }, 2400);
+  });
+
+  /* ── 租賃紀錄 ───────────────────────────────────────── */
+  var STATUS = {
+    active: { cls: 'badge--success', key: 'manage-ip.deal.active', fb: 'Active' },
+    ending: { cls: 'badge--warning', key: 'manage-ip.deal.ending', fb: 'Ending soon' }
+  };
+  var dealsHost = $('mi-deals');
+  if (ip.deals.length) {
+    dealsHost.innerHTML = ip.deals.map(function (d) {
+      var s = STATUS[d.status] || STATUS.active;
+      /* 結構照 data-list.css 開頭的 anatomy：icon 與 body 都在 __row-main 裡（grid 第 1 欄），
+         右欄才是 __end。把 icon 拉出來當 __row 的直接子元素會多佔一欄、整列排版散掉。 */
+      return '<div class="data-list__row">' +
+        '<div class="data-list__row-main">' +
+          '<div class="data-list__icon data-list__icon--neutral"><i data-lucide="file-text" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body">' +
+            '<div class="data-list__title">' + d.who + '</div>' +
+            '<div class="data-list__meta">' + d.term + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="data-list__end data-list__end--row">' +
+          '<span class="badge ' + s.cls + '" data-i18n="' + s.key + '">' + T(s.key, s.fb) + '</span>' +
+          '<span class="data-list__amount">' + d.amount + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    $('mi-deals-note').hidden = false;
+  } else {
+    dealsHost.innerHTML =
+      '<div class="empty-card">' +
+        '<div class="empty-card__icon"><i data-lucide="file-text" class="ztor-icon"></i></div>' +
+        '<h2 class="empty-card__title">' + T('manage-ip.rentals.empty-title', 'No rentals yet') + '</h2>' +
+        '<p class="empty-card__text">' + T('manage-ip.rentals.empty-text',
+            'Once this IP is listed and verified, rental contracts appear here.') + '</p>' +
+      '</div>';
+  }
+
+  /* ── 設定 ───────────────────────────────────────────── */
+  var acceptSwitch = wireSwitch($('mi-accepting'), ip.accepting, function (on) {
+    ip.accepting = on;
+    paintListedBadge();
+  });
+  wireSwitch($('mi-alerts'), ip.alerts);
+
+  var biddingBadge = $('mi-bidding-badge');
+  function paintBidding() {
+    var auction = ip.bidding === 'auction';
+    biddingBadge.className = 'badge ' + (auction ? 'badge--orange' : 'badge--neutral');
+    bindKey(biddingBadge, auction ? 'manage-ip.ops.auction' : 'manage-ip.ops.flat',
+            auction ? 'Auction' : 'Flat rental');
+  }
+  paintBidding();
+  $('mi-bidding-switch').addEventListener('click', function () {
+    ip.bidding = ip.bidding === 'auction' ? 'flat' : 'auction';
+    paintBidding();
+  });
+
+  /* ── 刪除 IP ─────────────────────────────────────────
+     入口鈕一律可按（2026-07-27 使用者反饋：鎖死的按鈕讀起來像壞了）。
+     有進行中租約時，後果改在確認彈窗裡用警告條講清楚，並仍要求輸入密碼二次確認。 */
+  var delBtn = $('mi-delete');
+  var delModal   = $('mi-del-modal');
+  var delPw      = $('mi-del-pw');
+  var delConfirm = $('mi-del-confirm');
+  var lastFocus  = null;
+
+  function closeDelete() {
+    delModal.hidden = true;
+    document.body.classList.remove('is-modal-open');
+    delPw.value = '';                 /* 輸入值不留在 DOM 裡 */
+    delConfirm.disabled = true;
+    if (lastFocus) lastFocus.focus();
+  }
+  function openDelete() {
+    lastFocus = document.activeElement;
+    /* 有租約才顯示警告條，並把筆數講出來。 */
+    var warn = $('mi-del-warn');
+    if (ip.deals.length) {
+      warn.hidden = false;
+      $('mi-del-warn-title').textContent =
+        T('manage-ip.delete.modal.warn', '{n} active rental(s) will be affected')
+          .replace('{n}', ip.deals.length);
+    } else {
+      warn.hidden = true;
+    }
+    delModal.hidden = false;
+    document.body.classList.add('is-modal-open');
+    /* 名稱用 <strong> 標出、不用引號包（IP 名可能自帶引號）。以 text node 組裝，
+       名稱是資料、不進 innerHTML。 */
+    var lede = $('mi-del-lede');
+    var parts = T('manage-ip.delete.modal.lede', 'This permanently deletes {name}. You will lose:')
+                  .split('{name}');
+    var strong = document.createElement('strong');
+    strong.textContent = T(nameKey, 'this IP');
+    lede.textContent = '';
+    lede.appendChild(document.createTextNode(parts[0]));
+    lede.appendChild(strong);
+    lede.appendChild(document.createTextNode(parts[1] || ''));
+    delPw.value = '';
+    delConfirm.disabled = true;
+    delPw.focus();
+  }
+
+  delBtn.addEventListener('click', openDelete);
+  $('mi-del-x').addEventListener('click', closeDelete);
+  $('mi-del-cancel').addEventListener('click', closeDelete);
+  delModal.addEventListener('click', function (e) {
+    if (e.target === delModal) closeDelete();      /* 點背景關閉 */
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !delModal.hidden) closeDelete();
+  });
+  /* 確認鈕在密碼欄有內容前一律停用——沒有後端可驗證，至少不讓它變成「再按一次 OK」。 */
+  delPw.addEventListener('input', function () {
+    delConfirm.disabled = delPw.value.length === 0;
+  });
+  delConfirm.addEventListener('click', function () {
+    /* 原型：不驗證、不送出、不保存密碼；只演示刪除後回到清單。 */
+    delPw.value = '';
+    closeDelete();
+    location.href = 'my-ip.html';
+  });
+
+  /* ── 分頁切換（比照 product-detail / earnings，各頁 inline，無共用 tabs.js）── */
+  (function () {
+    var tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    var tabs = tablist.querySelectorAll('.tabs__item');
+    var panels = document.querySelectorAll('.tab-panel[data-panel]');
+    function activate(name, push) {
+      var matched = false;
+      tabs.forEach(function (t) {
+        var on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) matched = true;
+      });
+      if (!matched) return;
+      panels.forEach(function (p) { p.classList.toggle('tab-panel--active', p.dataset.panel === name); });
+      if (push && window.history && history.replaceState) history.replaceState(null, '', location.pathname + location.search + '#' + name);
+    }
+    tablist.addEventListener('click', function (e) {
+      var btn = e.target.closest('.tabs__item');
+      if (btn) activate(btn.dataset.tab, true);
+    });
+    if (location.hash) activate(location.hash.slice(1), false);
+    /* 只改 hash 不會重載文件，所以「從 #licensing 連到 #rentals」得靠這個才會換頁——
+       少了它，網址換了、分頁沒動，看起來像連結壞掉。 */
+    window.addEventListener('hashchange', function () {
+      if (location.hash) activate(location.hash.slice(1), false);
+    });
+  }());
+
+  if (window.applyI18n) window.applyI18n(document);
+  if (window.ztorIcons) window.ztorIcons.render();
+}());
+</script>
+</body>
+</html>

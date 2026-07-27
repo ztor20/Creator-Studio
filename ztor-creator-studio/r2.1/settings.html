@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.1"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 </head>
 <body>
@@ -529,6 +530,7 @@
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script><script src="partials/date-input.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script>
 (function () {
   // Settings local navigation behaves like tabs: only one section contributes
@@ -537,9 +539,27 @@
   const sections = Array.from(document.querySelectorAll(".settings-section[id]"));
   const validIds = new Set(sections.map(section => section.id));
 
+  /* Hash aliases（2026-07-27）：#tax 是 Dashboard「補交稅務表單」CTA 的既定連結，
+     但稅務資訊是 #payments 區塊裡的一段、不是獨立 section——此前無別名時會靜默
+     fallback 到 Profile（壞深連結）。別名落地後再由下方 focusTax() 把三列稅務
+     資訊捲入視野並 flash 標出。 */
+  const HASH_ALIASES = { tax: "payments" };
+
   function requestedSection() {
-    const id = (location.hash || "").replace("#", "");
+    const raw = (location.hash || "").replace("#", "");
+    const id = HASH_ALIASES[raw] || raw;
     return validIds.has(id) ? id : "profile";
+  }
+
+  /* #tax 落地強調：稅務三列（Tax ID type / Tax residency / Verification status）
+     flash＋捲動置中——使用者一眼看到要補的東西（deep-link-flash 見 shared.css）。 */
+  function focusTax() {
+    if ((location.hash || "").replace("#", "") !== "tax") return;
+    const rows = ["settings.pay.tax-id", "settings.pay.tax-res", "settings.pay.verify"]
+      .map(k => { const el = document.querySelector('[data-i18n="' + k + '"]'); return el && el.closest(".settings-row"); })
+      .filter(Boolean);
+    rows.forEach(r => r.classList.add("deep-link-flash"));
+    if (rows[0]) rows[0].scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   function activateSection(id) {
@@ -605,8 +625,9 @@
   });
 
   activateSection(requestedSection());
+  focusTax();
   window.addEventListener("popstate", () => activateSection(requestedSection()));
-  window.addEventListener("hashchange", () => activateSection(requestedSection()));
+  window.addEventListener("hashchange", () => { activateSection(requestedSection()); focusTax(); });
 
   // Appearance cards reflect resolved theme
   function refreshAppearance() {
@@ -618,7 +639,7 @@
   refreshAppearance();
   document.addEventListener("ztor:theme-changed", refreshAppearance);
 
-  // Display-mode cards reflect the current nav mode (spec §6.9)
+  // Display-mode cards reflect the current nav mode
   function refreshNavMode() {
     const mode = window.ztorNavMode ? window.ztorNavMode.get() : "topbar";
     document.querySelectorAll("[data-nav-set]").forEach(c => {

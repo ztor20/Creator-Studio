@@ -23,6 +23,11 @@
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
+/* 「請洽詢」勾選（2026-07-27 定價改版）：貼在金額欄下方，語氣比欄位標籤輕一階。 */
+.ri-onreq { display:flex; align-items:center; gap:var(--sp-8); margin-top:var(--sp-8);
+            font-size:var(--fs-12); color:var(--muted-foreground); cursor:pointer; }
+.ri-onreq input { accent-color:var(--primary); cursor:pointer; }
+
   /* register-ip 專屬 layout hooks，非跨頁重用，比照 create-event 留頁內。
      區段骨架／多選標籤／用途多選卡／$ 前綴／% 與 months 後綴／Review 摘要列已改用 ds-components 的
      form-section／chip／selection-card／amount-field／review-row（2026-07-10、2026-07-11）。 */
@@ -172,10 +177,11 @@
       <section class="form-section form-section--outlined">
         <div class="field">
           <label class="field__label"><span data-i18n="ri.royalty">Royalty rate</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
-          <span class="amount-field amount-field--suffix amount-field--readonly">
+          <span class="amount-field amount-field--suffix amount-field--readonly" data-ri-amount="royalty">
             <input class="input amount-field__input" data-ri="royalty" data-required type="number" min="0" max="30" step="0.5" placeholder="12" data-i18n-placeholder="ri.royalty.ph">
             <span class="amount-field__unit">%</span>
           </span>
+            <label class="ri-onreq"><input type="checkbox" data-ri-req="royalty"><span data-i18n="ri.royalty.on-request">Royalty on request</span></label>
           <div class="field__hint" data-i18n="ri.royalty.hint">The percentage you earn from gross revenue of every project that uses your IP. Industry range: 5–15%. Allowed: 0–30%.</div>
           <p class="ri-field-error" data-i18n="ri.err.royalty">Enter a royalty rate between 0 and 30%.</p>
         </div>
@@ -195,34 +201,29 @@
       <section class="form-section form-section--outlined" id="ri-pricing" hidden>
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ri.pricing">Pricing</h3>
-          <p class="form-section__sub" data-i18n="ri.pricing.sub">What renters pay upfront. Currency follows your Earnings settings. (Pricing unit — one-off vs term — pending product confirmation.)</p>
+          <p class="form-section__sub" data-i18n="ri.pricing.sub">A one-off fee to use this IP, plus a royalty on top. Currency follows your Earnings settings.</p>
         </div>
         <div class="form-grid">
           <div class="field">
-            <label class="field__label"><span data-i18n="ri.price.standard">Standard license</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
-            <span class="amount-field amount-field--readonly">
+            <label class="field__label"><span data-i18n="ri.price.standard">One-off licence fee</span> <span class="text-sub" data-i18n="ri.req">· required</span></label>
+            <span class="amount-field amount-field--readonly" data-ri-amount="standard">
               <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
               <input class="input amount-field__input" data-ri="standard" type="number" min="0" placeholder="5,000" data-i18n-placeholder="ri.price.standard.ph">
             </span>
-            <p class="ri-field-error" data-i18n="ri.err.standard">Standard license price is required when listing for rental.</p>
+            <label class="ri-onreq"><input type="checkbox" data-ri-req="standard"><span data-i18n="ri.price.on-request">Price on request</span></label>
+            <p class="ri-field-error" data-i18n="ri.err.standard">Set a fee, or mark it as price on request, when listing for rental.</p>
           </div>
           <div class="field">
             <label class="field__label"><span data-i18n="ri.price.exclusive">Exclusive license</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
-            <span class="amount-field amount-field--readonly">
+            <span class="amount-field amount-field--readonly" data-ri-amount="exclusive">
               <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
               <input class="input amount-field__input" data-ri="exclusive" type="number" min="0" placeholder="7,000" data-i18n-placeholder="ri.price.exclusive.ph">
             </span>
+            <label class="ri-onreq"><input type="checkbox" data-ri-req="exclusive"><span data-i18n="ri.price.on-request">Price on request</span></label>
             <div class="field__hint" data-i18n="ri.price.exclusive.hint">Leave empty if not offered.</div>
           </div>
         </div>
-        <div class="field" style="max-width:240px">
-          <label class="field__label"><span data-i18n="ri.price.min">Minimum rental term</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
-          <span class="amount-field amount-field--suffix amount-field--readonly">
-            <input class="input amount-field__input" data-ri="minterm" type="number" min="1" placeholder="1" data-i18n-placeholder="ri.price.min.ph" style="padding-right:62px">
-            <span class="amount-field__unit" data-i18n="ri.price.min.unit">months</span>
-          </span>
-        </div>
-        <div class="info-banner" style="margin-top:6px">
+<div class="info-banner" style="margin-top:6px">
           <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
           <span data-i18n="ri.list.lifecycle">Once listed, rentals run through the license lifecycle: renter requests → you approve → terms complete before going Active. Marketplace visibility is OFF by default; your media pack is frozen when a license activates.</span>
         </div>
@@ -359,7 +360,12 @@
       list: listCard ? listCard.dataset.list : "",
       standard: val('[data-ri="standard"]'),
       exclusive: val('[data-ri="exclusive"]'),
-      minterm: val('[data-ri="minterm"]'),
+      /* 2026-07-27：最短租期退場（期間不再是計價單位）。改記三個「請洽詢」旗標。 */
+      req: {
+        standard:  !!document.querySelector('[data-ri-req="standard"]:checked'),
+        exclusive: !!document.querySelector('[data-ri-req="exclusive"]:checked'),
+        royalty:   !!document.querySelector('[data-ri-req="royalty"]:checked')
+      },
     };
   }
 
@@ -370,6 +376,16 @@
     else { el.textContent = T(phKey, phFallback); el.classList.add("review-row__value--empty"); }
   }
 
+  /* 「請洽詢」勾選：收起對應的金額欄（洽詢中還攤著一個數字會自相矛盾），並重算摘要。
+     2026-07-27 定價改版，欄位層級開關（費用／獨家／分潤各自可洽詢）。 */
+  document.querySelectorAll('[data-ri-req]').forEach(function (box) {
+    box.addEventListener('change', function () {
+      var wrap = document.querySelector('[data-ri-amount="' + box.getAttribute('data-ri-req') + '"]');
+      if (wrap) wrap.hidden = box.checked;
+      syncReview();
+    });
+  });
+
   function syncReview() {
     const s = readState();
 
@@ -379,7 +395,10 @@
     setRev("proof", s.proof ? T("ri.proof.uploaded", "Uploaded") : "", "ri.ph.proof", "Not uploaded");
     setRev("usage", s.usage.map(u => USAGE_LABEL[u]).join(", "), "ri.ph.none", "None selected");
     setRev("territory", s.territory.map(t => TERR_LABEL[t]).join(", "), "ri.ph.none", "None selected");
-    setRev("royalty", s.royalty !== "" ? (s.royalty + T("ri.rev.royalty.suffix", "% of gross revenue")) : "", "ri.ph.notset", "Not set");
+    setRev("royalty",
+      s.req.royalty ? T("ri.royalty.on-request", "Royalty on request")
+                    : (s.royalty !== "" ? (s.royalty + T("ri.rev.royalty.suffix", "% of gross revenue")) : ""),
+      "ri.ph.notset", "Not set");
 
     // Listed 狀態
     let listedVal = "";
@@ -392,9 +411,11 @@
     const priceVal = document.querySelector('[data-rev="prices"]');
     if (s.list === "rental") {
       const parts = [];
-      if (s.standard)  parts.push(T("ri.rev.std", "Standard") + " $" + s.standard);
-      if (s.exclusive) parts.push(T("ri.rev.exc", "Exclusive") + " $" + s.exclusive);
-      if (s.minterm)   parts.push(T("ri.rev.minn", "Min {n}mo").replace("{n}", s.minterm));
+      const onReq = T("ri.price.on-request", "Price on request");
+      if (s.req.standard)   parts.push(T("ri.rev.std", "Fee") + " · " + onReq);
+      else if (s.standard)  parts.push(T("ri.rev.std", "Fee") + " $" + s.standard);
+      if (s.req.exclusive)  parts.push(T("ri.rev.exc", "Exclusive") + " · " + onReq);
+      else if (s.exclusive) parts.push(T("ri.rev.exc", "Exclusive") + " $" + s.exclusive);
       priceRow.hidden = parts.length === 0;
       priceVal.textContent = parts.join(" · ");
     } else {

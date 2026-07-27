@@ -43,6 +43,7 @@
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/album-tracks.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/vip-card.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
   /* product-detail 專屬：條件揭露子欄位的顯隱膠水。
@@ -83,10 +84,10 @@
 
       <!-- 兩欄版型：左＝銷售摘要（常駐）＋編輯分頁；右＝唯讀 meta 欄（跨分頁常駐）-->
 
-      <!-- §3-2 · §2.3 銷售摘要（首排；D137 反饋：去 section 外框＝裸露一排 bento；查看紀錄＝右下小型文字連結）-->
+      <!-- §3-2 銷售摘要（首排；D137 反饋：去 section 外框＝裸露一排 bento；查看紀錄＝右下小型文字連結）-->
 
       <!-- ★ §3 頁面佈局：呈現由「單欄長捲」改為分頁式（tabs，呈現決策；§3 顯示順序為「呈現參考、非約束」）。
-           tab 對應：總覽（§2.3 銷售摘要＋庫存健康快照＋§2.4 專案引用，皆唯讀管理視角）／
+           tab 對應：總覽（§2.3 銷售摘要＋庫存健康快照＋§2.4 項目引用，皆唯讀管理視角）／
            基本資訊（§2.5 素材＋§2.6 資訊＋§2.7 內容檔）／定價與庫存（§2.8 規格＋§2.9 價格＋§2.10 庫存）／
            交付與取貨（§2.11 取貨＋§2.12 限購）／關聯（§2.13 標籤＋§2.14 電影）。
            §2.x 產品內容與各 data-feat／devtools 鎖定欄位邏輯不變，只重新分組進 tab-panel。tabs 為既有 DS 元件（earnings canonical）。 -->
@@ -132,7 +133,7 @@
 
       <!-- 以下併入總覽：§2.5 素材＋§2.6 資訊＋§2.7 內容檔 -->
 
-      <!-- §3-3 · §2.5 商品素材（左）／§2.6 商品資訊（右）兩張獨立卡並排 -->
+      <!-- §3-3 商品素材（左）／§2.6 商品資訊（右）兩張獨立卡並排 -->
       <section class="form-section form-section--outlined">
           <!-- §2.5 商品圖片／素材 Media（實體＝主圖＋附圖；數位＝封面＋附圖）· 重用建立商品 5.1.5.2 §4 F1 的 upload-showcase · D096 -->
           <!-- 實體：主圖（第一行）＋ 4 附圖（第二行）· upload-showcase--stacked 縱向堆疊 -->
@@ -243,13 +244,13 @@
           </div>
       </section>
 
-      <!-- §3-4 · §2.7 數位內容檔案（僅數位，獨立一區；買家下載／存取的內容檔，上傳格依數位次分類）· 重用建立商品 5.1.5.2 §4.2 F11 · D096 -->
+      <!-- §3-4 數位內容檔案（僅數位，獨立一區；買家下載／存取的內容檔，上傳格依數位次分類）· 重用建立商品 5.1.5.2 §4.2 F11 · D096 -->
       <section class="form-section form-section--outlined" data-pd-cat="digital" hidden>
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.cfile.title">Content file</h3>
           <p class="form-section__sub" data-i18n="cp.cfile.sub">The file buyers download — the upload format follows your sub-category.</p>
         </div>
-        <!-- 內容檔管理形態依數位次分類切換（§2.7）：影視/單曲/文檔＝上傳格；專輯＝多曲目管理器；會員卡＝卡面自訂器；IP＝素材槽。
+        <!-- 內容檔管理形態依數位次分類切換：影視/單曲/文檔＝上傳格；專輯＝多曲目管理器；會員卡＝卡面自訂器；IP＝素材槽。
              由 products-store 的 content 欄位驅動（applyContentFile）；一次只顯示一種。 -->
 
         <!-- 影視 / 單曲 / 文檔：單檔上傳格（標題/提示依次分類切換）· 重用建立商品 §4.2 F11 -->
@@ -310,7 +311,7 @@
           </div>
         </div>
 
-        <!-- IP 資產：依 IP 類型的素材槽（§2.7）· 產品缺口——建立頁與規格皆未定素材明細（§7.7 待補），此為明確標註的探索性 placeholder（ASSUMPTIONS PG） -->
+        <!-- IP 資產：依 IP 類型的素材槽· 產品缺口——建立頁與規格皆未定素材明細（§7.7 待補），此為明確標註的探索性 placeholder（ASSUMPTIONS PG） -->
         <div data-pd-cfile="ip" hidden>
           <div class="info-banner">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
@@ -337,7 +338,7 @@
       <div class="detail-grid">
       <div class="detail-main">
 
-      <!-- §3-6 · §2.9 價格（獨立一區；D136 拆自舊 Price & stock 卡）。
+      <!-- §3-6 價格（獨立一區；D136 拆自舊 Price & stock 卡）。
            2026-07-21 加 data-when-var="single"：多規格的定價與成本逐規格填在庫存卡的逐規格表裡，
            再另開一個單一價格欄會出現兩個互相矛盾的答案。 -->
       <section class="form-section form-section--outlined" data-when-var="single">
@@ -510,7 +511,7 @@
         </div>
       </section>
 
-      <!-- §3-9 · §2.12 每人限購（獨立一區；D136；F9）-->
+      <!-- §3-9 每人限購（獨立一區；D136；F9）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="product-detail.limit2.title">Purchase limit</h3>
@@ -538,7 +539,7 @@
       <!-- ════════ TAB · 交付與取貨（Delivery）：§2.11 取貨＋§2.12 限購 ════════ -->
       <div class="tab-panel" data-panel="delivery" role="tabpanel">
 
-      <!-- §3-8 · §2.11 取貨與交付（獨立一區；D136 拆自舊 Delivery & buyer settings 卡；F4）-->
+      <!-- §3-8 取貨與交付（獨立一區；D136 拆自舊 Delivery & buyer settings 卡；F4）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <!-- 2026-07-22（使用者裁決）：section 標題＝取貨方式本身（物流配送／現場 QR 領取／數位＝交付與存取），
@@ -593,16 +594,16 @@
               </select>
               <button class="btn btn--outline" type="button" data-pd-new-session><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="cp.delivery.session.new">Create pickup session</span></button>
             </div>
-            <div class="field__hint" data-i18n="pd.delivery.session.hint">This product redeems at a pickup session's scanner. Scanner URL, password, roster and log live in Pickup management (5.1.5.11).</div>
+            <div class="field__hint" data-i18n="pd.delivery.session.hint">This product redeems at a pickup session's scanner. Scanner URL, password, roster and log live in Pickup management.</div>
           </div>
           <div class="info-banner">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="cp.delivery.qr-note">Buyers get a QR per order; staff scan it at the session's scanner URL to redeem. Manage sessions, scanner and log in Pickup management (5.1.5.11).</span>
+            <span data-i18n="cp.delivery.qr-note">Buyers get a QR per order; staff scan it at the session's scanner URL to redeem. Manage sessions, scanner and log in Pickup management.</span>
           </div>
         </div>
         </div>
 
-        <!-- 數位交付：購買後即時下載／存取（內容檔於商品內容卡管理）· §2.3 數位下載／存取規則。
+        <!-- 數位交付：購買後即時下載／存取（內容檔於商品內容卡管理） 數位下載／存取規則。
              section 標題已改為「交付與存取」，此處不再重複標題、只留說明橫幅。 -->
         <div data-pd-cat="digital" hidden>
           <div class="field" style="margin-top:8px;margin-bottom:0">
@@ -620,7 +621,7 @@
       <!-- ════════ TAB · 關聯（Relations）：§2.13 標籤＋§2.14 電影 ════════ -->
       <div class="tab-panel" data-panel="relations" role="tabpanel">
 
-      <!-- §3-10 · §2.13 商品標籤（獨立一區；D136；F10）-->
+      <!-- §3-10 商品標籤（獨立一區；D136；F10）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="cp.tags">Product tags</h3>
@@ -637,7 +638,7 @@
         </div>
       </section>
 
-      <!-- §3-10b · §2.14 電影關聯（可多部、選填；F12；D138；候選＝前台已上架電影 films-store）-->
+      <!-- §3-10b 電影關聯（可多部、選填；F12；D138；候選＝前台已上架電影 films-store）-->
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="pd.films.title">Linked movies</h3>
@@ -710,7 +711,7 @@
                 <a class="card__link" href="create-project.html" data-route-keep data-i18n="product-detail.ref.row1">Coastline EP · pre-order reward $50 tier</a>
               </span>
             </div>
-            <!-- 組合引用：規格 §2.4 只定義「專案引用」，組合尚未納入＝產品缺口，待上游確認 -->
+            <!-- 組合引用：規格 §2.4 只定義「項目引用」，組合尚未納入＝產品缺口，待上游確認 -->
             <div class="kv" style="align-items:flex-start">
               <span class="kv__k" data-i18n="product-detail.rail.bundle">Bundle</span>
               <span class="kv__v" style="max-width:170px">
@@ -836,6 +837,7 @@
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="partials/field-more.js?v=r2.1"></script><script src="partials/date-input.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script src="js/reveal.js?v=r2.1"></script>
 <script src="partials/restock-modal.js?v=r2.1"></script>
 <script src="partials/radio-list.js?v=r2.1"></script>
@@ -1067,7 +1069,10 @@
         var sourceLink = document.getElementById('pd-source-link');
         if (!sourceLink) {
           sourceLink = document.createElement('a'); sourceLink.id = 'pd-source-link'; sourceLink.className = 'btn btn--ghost btn--sm';
-          sourceLink.textContent = '查看原商品頁';
+          /* 2026-07-27：原本寫死繁中，英文語系漏譯。掛 data-i18n 讓 applyI18n 在
+             每次切語言時重譯（這顆只建立一次，沒有 key 就永遠停在建立當下的語言）。 */
+          sourceLink.setAttribute('data-i18n', 'product-detail.source-link');
+          sourceLink.textContent = (window.i18nT && window.i18nT('product-detail.source-link')) || '';
           var titleEl = document.getElementById('pd-title'); if (titleEl && titleEl.parentElement) titleEl.parentElement.appendChild(sourceLink);
         }
         sourceLink.href = p.sourceUrl; sourceLink.target = '_blank'; sourceLink.rel = 'noopener';
@@ -1277,7 +1282,7 @@
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.1"></script>
 <script>
-  /* D111 · §2.5 現場 QR 領取 → 建立取貨場次共用 popup（本商品預先加入）。 */
+  /* D111 現場 QR 領取 → 建立取貨場次共用 popup（本商品預先加入）。 */
   window.ztorFauxQr = window.ztorFauxQr || function (seed) {
     seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
     function fnd(ox, oy) {

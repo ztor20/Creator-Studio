@@ -18,6 +18,8 @@
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/status-axes.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
@@ -47,7 +49,9 @@
   /* §2.6 退款 popup：整筆／部分分支＋品項勾選 */
   .od-refund-branch[hidden] { display:none; }
   .od-refund-pick { cursor:pointer; }
-  .od-refund-check { width:16px; height:16px; flex:none; accent-color: var(--primary); }
+  /* 2026-07-27：原本這裡用 width/height + accent-color 手動修原生 checkbox。
+     現在改用 ds-components/checkbox.css 的 .zcheck 元件（畫出來的框＋原生 input），
+     尺寸與顏色都歸元件；留著這條會跟 .zcheck__input 的 inset:0 打架。 */
 </style>
 </head>
 <body>
@@ -111,9 +115,9 @@
                 <div class="data-list__row-main">
                   <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <!-- §2.3.1 品項名稱點擊開商品快照 popup（§2.7 / D143），不直接連活商品；快照資料為下單當時 demo 值 -->
-                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Tour zine vol. 02" data-snap-price="$24.00" data-snap-cat="書籍（Books）" data-snap-desc="32-page photo zine documenting the east-coast tour. Letterpress cover." data-snap-manage="product-detail.html">Tour zine vol. 02</a></div>
-                    <div class="data-list__meta">書籍（Books）</div>
+                    <!-- §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品；快照資料為下單當時 demo 值 -->
+                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Tour zine vol. 02" data-snap-price="$24.00" data-snap-cat-key="e-shop.cat.books" data-snap-desc="32-page photo zine documenting the east-coast tour. Letterpress cover." data-snap-manage="product-detail.html">Tour zine vol. 02</a></div>
+                    <div class="data-list__meta" data-i18n="e-shop.cat.books">Books</div>
                   </div>
                 </div>
                 <span class="od-cell">1</span>
@@ -128,8 +132,8 @@
                 <div class="data-list__row-main">
                   <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
                   <div class="data-list__body">
-                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Coastline tee" data-snap-price="$32.00" data-snap-cat="服飾（Apparel）" data-snap-variant="M" data-snap-desc="Soft-washed cotton tee with a coastline print. Unisex fit." data-snap-manage="product-detail.html">Coastline tee (M)</a></div>
-                    <div class="data-list__meta">服飾（Apparel）</div>
+                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Coastline tee" data-snap-price="$32.00" data-snap-cat-key="e-shop.cat.apparel" data-snap-variant="M" data-snap-desc="Soft-washed cotton tee with a coastline print. Unisex fit." data-snap-manage="product-detail.html">Coastline tee (M)</a></div>
+                    <div class="data-list__meta" data-i18n="e-shop.cat.apparel">Apparel</div>
                   </div>
                 </div>
                 <span class="od-cell">1</span>
@@ -151,9 +155,9 @@
               <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.payment">Payment fee · 2.4%</span><span class="od-amt__neg">−$1.30</span></div>
               <div class="od-amt"><span data-i18n="od.amt.net">Net to you</span><span>$51.30</span></div>
             </div>
-            <!-- §2.3 跨幣別呈現（§7.3）：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
+            <!-- §2.3 跨幣別呈現：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
             <div class="field__hint mt-8" data-i18n="od.amt.fx">Buyer paid NT$1,764 · converted to $56.00 at 1 USD = 31.5 TWD (2026-06-08).</div>
-            <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings (§7.3) — order detail never recomputes amounts.</div>
+            <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings — order detail never recomputes amounts.</div>
 
             <!-- §2.3.3 收入對帳降為右下角常駐入口（取代原獨立區塊）：到收入管理查看此訂單入帳 -->
             <div class="od-amt-foot">
@@ -233,7 +237,7 @@
           <div class="field__label" data-i18n="od.ful.carrier.custom">Custom carrier</div>
           <input class="input" placeholder="Enter carrier name" data-i18n-placeholder="od.ful.carrier.custom.ph">
         </div>
-        <div class="field__hint" data-i18n="od.ful.note">Marking shipped logs a fulfilment event — it never changes amounts (§7.6).</div>
+        <div class="field__hint" data-i18n="od.ful.note">Marking shipped logs a fulfilment event — it never changes amounts.</div>
       </div>
 
       <!-- 現場 QR 領取（D111：核銷改由取貨管理 scanner，此處不手動 Mark received）-->
@@ -253,7 +257,7 @@
             <a class="btn btn--outline btn--sm" href="pickup.html" data-i18n="od.qr.manage">Open in Pickup management</a>
           </div>
         </div>
-        <div class="field__hint mt-8" data-i18n="od.qr.note">On-site QR items can't be marked received here — redemption happens at the session scanner and writes back automatically (§2.5 / 5.1.5.11).</div>
+        <div class="field__hint mt-8" data-i18n="od.qr.note">On-site QR items can't be marked received here — redemption happens at the session scanner and writes back automatically.</div>
       </div>
 
       <!-- 數位交付 -->
@@ -305,7 +309,7 @@
         <div class="data-list">
           <label class="data-list__row od-refund-pick">
             <div class="data-list__row-main">
-              <input type="checkbox" class="od-refund-check" data-amt="24" checked>
+              <span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="24" checked><span class="zcheck__box"></span></span>
               <div class="data-list__body">
                 <div class="data-list__title">Tour zine vol. 02 ×1</div>
                 <div class="data-list__meta" data-i18n="od.item1.meta">書籍（Books） · $24.00</div>
@@ -315,7 +319,7 @@
           </label>
           <label class="data-list__row od-refund-pick">
             <div class="data-list__row-main">
-              <input type="checkbox" class="od-refund-check" data-amt="32">
+              <span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="32"><span class="zcheck__box"></span></span>
               <div class="data-list__body">
                 <div class="data-list__title">Coastline tee (M) ×1</div>
                 <div class="data-list__meta" data-i18n="od.item2.meta">服飾（Apparel） · $32.00</div>
@@ -331,8 +335,8 @@
         <div class="od-amt"><span data-i18n="od.refund.amount">Refund amount</span><span id="od-refund-total">$56.00</span></div>
       </div>
 
-      <div class="field__hint mt-8" data-i18n="od.refund.restock">Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings (§7.3) and posted as an adjustment — the original revenue event is never edited (§7.6).</div>
-      <div class="field__hint mt-8" data-i18n="od.refund.dispute">Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it (§7.3).</div>
+      <div class="field__hint mt-8" data-i18n="od.refund.restock">Approved refunds restock physical items (digital items are non-restockable); the refund is absorbed per Earnings and posted as an adjustment — the original revenue event is never edited.</div>
+      <div class="field__hint mt-8" data-i18n="od.refund.dispute">Disputes are buyer-initiated, not issued here: a disputed order shows Disputed on its Payment · settlement axis and the amount is held from Available until Earnings resolves it.</div>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" data-od-refund-close data-i18n="od.refund.cancel">Cancel</button>
@@ -371,7 +375,7 @@
           <span class="text-sub" id="od-snap-cat" style="font-size: var(--fs-13)">—</span>
         </div>
       </div>
-      <div class="field__hint mt-8" data-i18n="od.snap.freeze">This snapshot preserves how the item looked when ordered — it doesn't change if the product is later edited or unlisted (§2.7).</div>
+      <div class="field__hint mt-8" data-i18n="od.snap.freeze">This snapshot preserves how the item looked when ordered — it doesn't change if the product is later edited or unlisted.</div>
     </div>
     <div class="payout-dialog__foot">
       <button class="btn btn--ghost btn--sm" type="button" data-od-snap-close data-i18n="od.snap.close">Close</button>
@@ -383,6 +387,7 @@
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script src="js/reveal.js?v=r2.1"></script>
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
@@ -502,7 +507,12 @@
       nameEl.textContent = d.snapName || '—';
       priceEl.textContent = d.snapPrice || '—';
       descEl.textContent = d.snapDesc || '';
-      catEl.textContent = d.snapCat || '—';
+      /* 2026-07-27：快照分類改帶 i18n key（data-snap-cat-key），不再帶寫死的
+         「中文（English）」合併字串；掛上 data-i18n 讓 popup 開著時切語言也會跟著換。 */
+      if (d.snapCatKey) {
+        catEl.setAttribute('data-i18n', d.snapCatKey);
+        catEl.textContent = (window.i18nT && window.i18nT(d.snapCatKey)) || '—';
+      } else { catEl.removeAttribute('data-i18n'); catEl.textContent = d.snapCat || '—'; }
       if (d.snapVariant) { varEl.textContent = d.snapVariant; varRow.hidden = false; }
       else { varRow.hidden = true; }
       if (d.snapManage) manage.setAttribute('href', d.snapManage);

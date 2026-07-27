@@ -34,6 +34,8 @@
 <link rel="stylesheet" href="ds-components/picker.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 </head>
 <body>
@@ -54,7 +56,14 @@
           <span id="pd-crumb-name">Late Bloom</span>
         </div>
         <div class="pd-hero__actions">
-          <button class="btn btn--outline" data-modal-open="pd-edit-about" data-i18n="project-detail.btn.edit">Edit</button>
+          <!-- 2026-07-27 L 裁示：這顆原本開中央彈窗（#pd-edit-about，已移除）。改成
+               直接把目前分頁切進就地編輯——同一份介面上編，不再跳視窗。與分頁列那顆
+               是同一個狀態的兩張臉，都由 syncEditMode() 驅動，不各自維護。 -->
+          <button class="btn btn--outline" type="button" data-pd-editmode aria-pressed="false" hidden>
+            <i data-lucide="pencil" class="ztor-icon"></i>
+            <span data-pd-editmode-label data-i18n="project-detail.btn.edit">Edit</span>
+          </button>
+          <button class="btn btn--ghost" type="button" data-pd-editcancel hidden data-i18n="project-detail.btn.cancel">Cancel</button>
           <button class="btn btn--outline"><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="project-detail.btn.preview">Preview</span></button>
           <button class="btn btn--primary" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
         </div>
@@ -105,7 +114,10 @@
       </section>
 
       <!-- Tabs: Total / Content / Public details / Money (spec resource grouping) -->
-      <nav class="tabs mt-24" role="tablist" data-tabs>
+      <!-- 分頁列＋右側「編輯」切換（2026-07-27 使用者裁示：這兩個分頁預設唯讀，
+           要按編輯才能改）。按鈕只在「可編輯」的分頁出現，狀態逐分頁各自記。 -->
+      <div class="pd-tabbar mt-24">
+      <nav class="tabs" role="tablist" data-tabs>
         <button class="tabs__item tabs__item--active" role="tab" data-tab="settings" aria-selected="true" data-i18n="project-detail.tab.settings">Project overview</button>
         <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges" data-type="fund">Plans &amp; promises</button>
         <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
@@ -115,9 +127,15 @@
         <button class="tabs__item" role="tab" data-tab="cofund" aria-selected="false" data-i18n="project-detail.tab.cofund" data-type="fund">Co-creation progress</button>
         <button class="tabs__item" role="tab" data-tab="preorder" aria-selected="false" data-i18n="project-detail.tab.preorder" data-type="preorder">Pre-order progress</button>
       </nav>
+        <button class="btn btn--outline btn--sm pd-tabbar__action" type="button"
+                data-pd-editmode aria-pressed="false" hidden>
+          <i data-lucide="pencil" class="ztor-icon ztor-icon--sm"></i>
+          <span data-pd-editmode-label data-i18n="project-detail.btn.edit">Edit</span>
+        </button>
+      </div>
 
       <!-- ===================== 1 · PROJECT SETTINGS（規則與權利）===================== -->
-      <div class="tab-panel tab-panel--active" data-panel="settings">
+      <div class="tab-panel tab-panel--active" data-panel="settings" data-editable data-mode="view">
         <div class="bento">
 <!-- 4.9 Updates -->
           <section class="card">
@@ -268,7 +286,7 @@
         <div class="bento">
 
           <!-- Support plans (tier definitions) — moved here 2026-07-24; the per-tier
-               backer counts stay in 專案收益. Editable after publish for now: whether
+               backer counts stay in 項目收益. Editable after publish for now: whether
                price / slots may change post-publish is a product decision still open
                (see ASSUMPTIONS.md).
                2026-07-24：拿掉最外層 .card 外框——每個「套組」自己已是 .form-section--outlined 有框，
@@ -292,7 +310,7 @@
       </div>
 
       <!-- ===================== 3 · ABOUT THE WORK（作品長什麼樣）===================== -->
-      <div class="tab-panel" data-panel="about">
+      <div class="tab-panel" data-panel="about" data-editable data-mode="view">
         <div class="bento">
 
                     <!-- 展示內容（2026-07-24 重做）：直式相簿，第一張＝封面；每張圖上有可上下拖的
@@ -345,7 +363,7 @@
           
 
           <!-- 4.8 公開資訊——2026-07-25 由摘要清單改「全部攤開＋inline 可編輯」（照建立流程風格）。
-               簡介來自專案 store；演職名單／常見問答／標籤為可增刪的 demo，原型不落地。 -->
+               簡介來自項目 store；演職名單／常見問答／標籤為可增刪的 demo，原型不落地。 -->
           <section class="card bento--span-12">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.details.title">Public details</h3>
@@ -409,7 +427,7 @@
       <div class="tab-panel" data-panel="progress" data-type="fund">
         <div class="bento">
 
-          <!-- 專案時間 + 里程碑整合成單一時間軸（2026-07-24 使用者裁示）：
+          <!-- 項目時間 + 里程碑整合成單一時間軸（2026-07-24 使用者裁示）：
                募資排程事件與製作里程碑依時序交錯，編輯日期走 pd-edit-schedule、＋里程碑走 pd-edit-milestone。 -->
           <section class="card bento--span-7">
             <div class="card__head">
@@ -870,7 +888,7 @@
             <div class="card__head"><h3 class="card__title" data-i18n="pd-pre.refund.title">If the minimum is missed</h3></div>
             <div class="info-banner">
               <i data-lucide="shield-check" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="pd-pre.refund.body"><strong>Full refund guaranteed.</strong> If pre-orders don't reach 100 by the deadline, every order is refunded in full (§7.3). Buyers are only charged once the minimum is met.</span>
+              <span data-i18n="pd-pre.refund.body"><strong>Full refund guaranteed.</strong> If pre-orders don't reach 100 by the deadline, every order is refunded in full. Buyers are only charged once the minimum is met.</span>
             </div>
           </section>
           <section class="card bento--span-12">
@@ -1188,28 +1206,12 @@
 </div>
 
 <!-- ===== Edit popups（中央彈窗殼 .payout-modal/.payout-dialog；prototype-level: applies to page, no persistence）===== -->
-<div class="payout-modal" id="pd-edit-about" hidden>
-  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-about-title">
-    <div class="payout-dialog__head">
-      <h3 class="payout-dialog__title" id="pd-edit-about-title" data-i18n="pd-edit.about.title">Edit basics</h3>
-      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body">
-      <div class="field"><label class="field__label" for="pd-f-name" data-i18n="project-detail.about.name">Project name</label><input class="input" id="pd-f-name" value="Late Bloom"></div>
-      <div class="field"><label class="field__label" for="pd-f-desc" data-i18n="pd-edit.about.desc">Description</label><textarea class="textarea" id="pd-f-desc">A coming-of-age short film about a florist who only blooms at night. Funding the final color grade and a limited NFT collectible for backers.</textarea></div>
-      <div class="field"><label class="field__label" for="pd-f-access" data-i18n="project-detail.about.access">Access &amp; price</label><input class="input" id="pd-f-access" value="Paid · $12 rental · ad-free"></div>
-      <div class="field">
-        <span class="field__label" data-i18n="project-detail.about.projecttype">Project type</span>
-        <div class="flex-row" style="justify-content:space-between;gap:var(--sp-12)"><span class="field-readout" data-i18n="project-detail.about.projecttype-val">Fund it first</span><span class="badge badge--neutral"><span data-i18n="project-detail.about.locked">Locked after publish</span></span></div>
-      </div>
-      <div class="info-banner mt-16">
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="project-detail.about.lock-note"><strong>Project type is locked.</strong> Funding model can't change after publish — it protects the backer contract and NFT holder rights (D041). Platform &amp; payment fees follow Earnings (§7.3) and aren't editable here.</span>
-      </div>
-      <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="about" data-i18n="project-detail.btn.save">Save changes</button>
-    </div>
-  </div>
-</div>
+<!-- ✝ #pd-edit-about 已移除（2026-07-27，L 裁示「不要彈窗，就在同一份介面上編」）。
+     專案總覽與關於項目兩個分頁改走就地編輯（panel 上的 data-editable / data-mode，
+     檢視／編輯兩態的樣式見 shared.css「檢視模式」一節）。整塊刪掉而不是留著不接線的原因：它的
+     #pd-f-desc 與頁內的 synopsis 是同一份資料的兩個欄位，留著遲早有人存錯那一個。
+     其餘彈窗刻意保留——裁切要畫布、排程日期會驅動 Draft→Live 轉換、發佈進度更新
+     是發佈行為，都不是單純的欄位編輯。 -->
 <!-- 方形裁切彈窗：左直式舞台（可移動＋縮放的方形選框）＋右方形即時預覽。原型：不落地。 -->
 <div class="payout-modal" id="pd-edit-crop" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-crop-title">
@@ -1296,7 +1298,7 @@
     <div class="payout-dialog__body">
       <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-utitle" data-i18n="pd-edit.update.name">Title</label><input class="input" id="pd-f-utitle" data-i18n-placeholder="pd-edit.update.name-ph" placeholder="Sound mix is locked"></div><div class="field"><label class="field__label" for="pd-f-uaud" data-i18n="pd-edit.update.audience">Audience</label><select class="select" id="pd-f-uaud"><option data-i18n="pd-edit.update.aud-everyone">Everyone</option><option data-i18n="pd-edit.update.aud-backers">Backers only</option><option data-i18n="pd-edit.update.aud-superfan">Superfan+</option></select></div></div>
       <div class="field"><label class="field__label" for="pd-f-ubody" data-i18n="pd-edit.update.body">Body</label><textarea class="textarea" id="pd-f-ubody" data-i18n-placeholder="pd-edit.update.body-ph" placeholder="Share progress with your backers…"></textarea></div>
-      <div class="field"><label class="flex-row" style="gap:var(--sp-8)"><input type="checkbox" id="pd-f-ucomplete"><span data-i18n="pd-edit.update.complete">Mark project complete with this update</span></label></div>
+      <div class="field"><label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="pd-f-ucomplete"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="pd-edit.update.complete">Mark project complete with this update</span></label></div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="update" data-i18n="pd-edit.update.submit">Publish update</button>
     </div>
   </div>
@@ -1305,6 +1307,7 @@
 <script src="js/projects-store.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script>
   /* Project detail tabs · spec 5.1.2.2 — switch active state + visible panel.
      Same pattern as earnings.html. Hash deep-link supported (#money etc.). */
@@ -1321,8 +1324,124 @@
         t.classList.toggle('tabs__item--active', on);
         t.setAttribute('aria-selected', on ? 'true' : 'false');
       });
+      /* 離開分頁＝離開這個編輯階段（見下方 leaveEditMode 的說明）。
+         宣告在後面，但函式宣告會提升，這裡呼叫沒問題。 */
+      if (typeof leaveEditMode === 'function') leaveEditMode();
       panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      syncEditMode();
       try { history.replaceState(null, '', '#' + name); } catch (_) {}
+    }
+
+    /* ── 檢視／編輯切換（2026-07-27 使用者裁示）──────────────────────────
+       模式記在各自的 panel 上（逐分頁獨立），共用的那顆按鈕只是「目前這個分頁」
+       的表現層。所以每次切分頁都要重新同步一次——否則會出現「人在唯讀分頁、
+       按鈕卻還寫著完成」這種對不上的狀態。 */
+    /* 「編輯」不只兩顆：頁首 hero 一顆、分頁列一顆，而 sticky-actions.js 在按鈕捲出
+       畫面時會再「複製」一份到吸底列——所以實際上有三顆，而且第三顆是執行期才出現的。
+       因此這裡不能把 NodeList 快取起來：快取只會同步到當初那兩顆，複製品會停在舊狀態
+       （實測：切到不可編輯的分頁時，複製品仍留著一顆寫著「編輯」的鈕）。
+       兩個對策：同步時「即時查詢」，點擊用事件委派——複製節點不會帶著 addEventListener
+       綁上的監聽器，委派才接得到。 */
+    const editBtns = () => [...document.querySelectorAll('[data-pd-editmode]')];
+    const cancelBtns = () => [...document.querySelectorAll('[data-pd-editcancel]')];
+    function activePanel() {
+      return document.querySelector('.tab-panel--active[data-panel]');
+    }
+    /* 進編輯模式時先拍一份快照，取消時原值放回去。
+       以前是彈窗，關掉就等於放棄；改成就地編輯之後，如果沒有這一步，「取消」這條
+       路就整個消失了——那是把一個修好的地方換成另一個壞掉的地方。 */
+    const snapshots = new WeakMap();
+    function snapshot(panel) {
+      const fields = [...panel.querySelectorAll('input, textarea, select')];
+      snapshots.set(panel, fields.map(el => ({
+        el: el,
+        value: el.value,
+        checked: el.checked
+      })));
+    }
+    function restore(panel) {
+      const snap = snapshots.get(panel);
+      if (!snap) return;
+      snap.forEach(rec => {
+        /* 快照後被刪掉的列就跳過——硬寫回去會炸。 */
+        if (!rec.el.isConnected) return;
+        rec.el.value = rec.value;
+        rec.el.checked = rec.checked;
+      });
+      snapshots.delete(panel);
+    }
+    function syncEditMode() {
+      const panel = activePanel();
+      const editable = !!(panel && panel.hasAttribute('data-editable'));
+      const editing = editable && panel.getAttribute('data-mode') === 'edit';
+      editBtns().forEach(btn => {
+        btn.hidden = !editable;                 /* 其餘分頁不長出這顆按鈕 */
+        if (!editable) return;
+        btn.setAttribute('aria-pressed', editing ? 'true' : 'false');
+        btn.classList.toggle('btn--primary', editing);
+        btn.classList.toggle('btn--outline', !editing);
+        const icon = btn.querySelector('[data-lucide]');
+        if (icon) icon.setAttribute('data-lucide', editing ? 'check' : 'pencil');
+        const label = btn.querySelector('[data-pd-editmode-label]');
+        if (label) label.setAttribute('data-i18n', editing ? 'project-detail.btn.done' : 'project-detail.btn.edit');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(btn);
+        if (window.applyI18n) window.applyI18n(btn);
+      });
+      /* 取消只在真的在編輯時出現——檢視模式下沒有東西可以取消。 */
+      cancelBtns().forEach(btn => { btn.hidden = !editing; });
+      if (editable) applyReadonly(panel, !editing);
+    }
+    /* 唯讀要「真的」唯讀，不能只靠樣式看起來像純文字——不然照樣打得進去。
+       用 readonly 而不是 disabled：disabled 會把文字變灰、也從無障礙樹移除，
+       但檢視模式下那些值正是要讀的內容，必須保持可讀、可選取、可複製。
+       <select> 沒有 readonly，只能停用（外觀與互動由 CSS 一起處理）。 */
+    function applyReadonly(panel, ro) {
+      panel.querySelectorAll('input, textarea').forEach(el => {
+        if (ro) el.setAttribute('readonly', ''); else el.removeAttribute('readonly');
+      });
+      panel.querySelectorAll('select').forEach(el => {
+        if (ro) el.setAttribute('disabled', ''); else el.removeAttribute('disabled');
+      });
+    }
+    /* 兩個可編輯面板一載入就先鎖成唯讀（預設 data-mode="view"）。
+       要跑兩次：頁面上的卡司／FAQ／標籤等列是由其他腳本稍後才render 出來的，
+       只在這裡鎖一次會漏掉那些後生成的欄位（實測有 20 個仍可輸入）。
+       window load 之後再補一次，確保晚到的欄位也鎖上。 */
+    function lockViewPanels() {
+      document.querySelectorAll('.tab-panel[data-editable]').forEach(p => {
+        if (p.getAttribute('data-mode') !== 'edit') applyReadonly(p, true);
+      });
+    }
+    lockViewPanels();
+    window.addEventListener('load', lockViewPanels);
+    /* 事件委派：sticky-actions 的複製鈕沒有監聽器，只有委派接得到。 */
+    document.addEventListener('click', e => {
+      if (e.target.closest('[data-pd-editmode]')) {
+        const panel = activePanel();
+        if (!panel || !panel.hasAttribute('data-editable')) return;
+        const wasEditing = panel.getAttribute('data-mode') === 'edit';
+        if (!wasEditing) snapshot(panel);          /* 進編輯：先存原值 */
+        else snapshots.delete(panel);              /* 完成：放棄快照，保留現值 */
+        panel.setAttribute('data-mode', wasEditing ? 'view' : 'edit');
+        syncEditMode();
+        return;
+      }
+      if (e.target.closest('[data-pd-editcancel]')) {
+        const panel = activePanel();
+        if (!panel || panel.getAttribute('data-mode') !== 'edit') return;
+        restore(panel);
+        panel.setAttribute('data-mode', 'view');
+        syncEditMode();
+      }
+    });
+    /* 切分頁時如果還在編輯，等於離開這個編輯階段——把值收掉並回到檢視，
+       否則回來會看到一個「已經在編輯、但你不記得按過編輯」的面板。 */
+    function leaveEditMode() {
+      document.querySelectorAll('.tab-panel[data-editable][data-mode="edit"]').forEach(p => {
+        restore(p);
+        p.setAttribute('data-mode', 'view');
+        applyReadonly(p, true);
+      });
     }
 
     tablist.addEventListener('click', e => {
@@ -1330,7 +1449,7 @@
       if (btn && btn.dataset.tab) activate(btn.dataset.tab);
     });
 
-    /* 卡片上的「前往專案收益 →」等入口：跳到對應分頁並捲回 tab 列 */
+    /* 卡片上的「前往項目收益 →」等入口：跳到對應分頁並捲回 tab 列 */
     document.addEventListener('click', e => {
       const g = e.target.closest('[data-goto-tab]');
       if (!g) return;
@@ -1340,6 +1459,9 @@
 
     const initial = (location.hash || '').replace('#', '');
     if (NAMES.includes(initial)) activate(initial);
+    /* 初次載入若沒有 hash，activate() 不會被呼叫，按鈕就會停在 markup 的 hidden 狀態
+       ——第一眼看到的分頁反而沒有「編輯」。故無論如何都同步一次。 */
+    else syncEditMode();
   })();
 
   /* Edit popups (CCR-007 prototype) — 2026-07-24 由側邊 drawer 改成站上共用的中央彈窗殼
@@ -1385,13 +1507,11 @@
       return tr;
     }
     const SAVE = {
-      about() {
-        if (v('pd-f-name')) { document.getElementById('pd-title').textContent = v('pd-f-name'); document.getElementById('pd-crumb-name').textContent = v('pd-f-name'); }
-        if (v('pd-f-desc')) document.getElementById('pd-desc').textContent = v('pd-f-desc');
-        /* 存取與價格是 demo 唯讀顯示點，改了只在編輯彈窗裡留著（原型不落地） */
-      },
+      /* ✝ about() 已移除（2026-07-27）：它讀的 #pd-f-name / #pd-f-desc 屬於已刪掉的
+         #pd-edit-about 彈窗，而且沒有任何 [data-pd-save="about"] 會呼叫它——留著就是
+         一段看起來還活著的死碼。基本資料現在在頁面上就地編輯。 */
       schedule() {
-        /* 專案時間為 demo：改了值不真的驅動狀態機，僅示意這裡是排程設定的入口 */
+        /* 項目時間為 demo：改了值不真的驅動狀態機，僅示意這裡是排程設定的入口 */
       },
       collab() {
         if (!v('pd-f-cname')) return;
@@ -1449,8 +1569,8 @@
     if (!root) return;
     const t = (key, fallback) => (window.i18nT && window.i18nT(key)) || fallback;
 
-    /* 起始套組用「本專案」的資料：名稱／描述帶專案名、商品縮圖先用專案封面／海報。
-       專案由 ?id= 對應共用 store（與本頁 hero 同一個），字樣依當前語言。 */
+    /* 起始套組用「本項目」的資料：名稱／描述帶項目名、商品縮圖先用項目封面／海報。
+       項目由 ?id= 對應共用 store（與本頁 hero 同一個），字樣依當前語言。 */
     const store = window.ztorProjects;
     const pid = new URLSearchParams(location.search).get('id');
     const proj = store ? ((pid && store.get(pid)) || store.first()) : null;
@@ -1476,7 +1596,7 @@
       row.className = 'fc-item-row';
       row.dataset.bItem = '';
       const img = data && data.img;
-      /* 有圖＝填色格顯示專案縮圖（純 CSS：data-upload + 非 is-empty 即顯示 __thumb）；無圖＝可加圖的空格 */
+      /* 有圖＝填色格顯示項目縮圖（純 CSS：data-upload + 非 is-empty 即顯示 __thumb）；無圖＝可加圖的空格 */
       const tile = img
         ? '<div class="upload-tile is-filled" data-upload><img class="upload-tile__thumb" src="' + img + '" alt=""><span class="upload-tile__icon">＋</span></div>'
         : '<button type="button" class="upload-tile"><span class="upload-tile__icon">＋</span></button>';
@@ -1644,7 +1764,7 @@
   })();
 
   /* 公開資訊·可編輯清單（2026-07-25）：演職名單／常見問答逐列可增刪、標籤 tag-input。
-     簡介由下方 render JS 帶入專案簡介。原型：不落地、重整還原。 */
+     簡介由下方 render JS 帶入項目簡介。原型：不落地、重整還原。 */
   (function () {
     const t = (k, f) => (window.i18nT && window.i18nT(k)) || f;
     const icons = el => { if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(el); else if (window.applyIcons) window.applyIcons(el); };
@@ -1689,7 +1809,7 @@
       [['預計何時開始發放回饋？', '募資結束後 30 天內開始，實體品依製程分批寄出，出貨會發通知。'],
        ['支持後可以更改方案嗎？', '募資期間可於「我的支持」自行調整；結束後恕不更動。'],
        ['海外支持者可以參加嗎？', '可以，實體品另計國際運費，結帳時顯示。'],
-       ['數位內容如何取得？', '專案上線後於帳號「我的收藏」下載，永久保存。']]
+       ['數位內容如何取得？', '項目上線後於帳號「我的收藏」下載，永久保存。']]
         .forEach(f => faqList.appendChild(faqRow(f[0], f[1])));
       icons(faqList);
       document.querySelector('[data-faq-add]').addEventListener('click', () => { const r = faqRow('', ''); faqList.appendChild(r); icons(r); });
@@ -1722,9 +1842,9 @@
     }
   })();
 
-  /* 依 ?id= 帶出的專案渲染本頁（2026-07-24）——名稱、封面、內容類型／發行模式／狀態徽章、
-     募資數字，全部來自共用 store js/projects-store.js；已上線的募資音樂專案才顯示版稅 tab。
-     沒帶 id 或 id 不存在時退回清單第一個專案。 */
+  /* 依 ?id= 帶出的項目渲染本頁（2026-07-24）——名稱、封面、內容類型／發行模式／狀態徽章、
+     募資數字，全部來自共用 store js/projects-store.js；已上線的募資音樂項目才顯示版稅 tab。
+     沒帶 id 或 id 不存在時退回清單第一個項目。 */
   (function () {
     const store = window.ztorProjects;
     if (!store) return;
@@ -1748,10 +1868,10 @@
       set('pd-crumb-name', p.name);
       set('pd-title', p.name);
       set('pd-desc', t(p.desc));
-      /* 公開資訊·簡介用專案簡介（可編輯 textarea） */
+      /* 公開資訊·簡介用項目簡介（可編輯 textarea） */
       const syn = document.getElementById('pd-about-synopsis');
       if (syn) syn.value = t(p.desc);
-      /* 創作者與日期：同一個 Creator Studio 帳號，日期逐專案不同 */
+      /* 創作者與日期：同一個 Creator Studio 帳號，日期逐項目不同 */
       set('pd-owner-line', zh()
         ? '創作者 ' + store.owner() + ' · 建立於 ' + p.created + (p.fundFrom ? ' · 募資自 ' + p.fundFrom + ' 起' : '')
         : 'By ' + store.owner() + ' · Created ' + p.created + (p.fundFrom ? ' · Funding since ' + p.fundFrom : ''));
@@ -1765,16 +1885,16 @@
       };
       badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
       badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
-      /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：專案 / 分類 / 專案名 */
+      /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：項目 / 分類 / 項目名 */
       set('pd-crumb-cat', t(store.catLabel(p.cat)));
 
       const poster = document.getElementById('pd-poster');
       if (poster) { poster.src = p.poster || p.cover; poster.alt = p.name; }
-      /* 展示內容相簿的第一張（封面）用專案海報，跟 hero 一致 */
+      /* 展示內容相簿的第一張（封面）用項目海報，跟 hero 一致 */
       const galleryCover = document.getElementById('pd-gallery-cover');
       if (galleryCover) { galleryCover.src = p.poster || p.cover; galleryCover.alt = p.name; }
 
-      /* 募資面板：有 fund 資料的專案（先募資）才換數字，其餘沿用示意值 */
+      /* 募資面板：有 fund 資料的項目（先募資）才換數字，其餘沿用示意值 */
       if (p.fund) {
         set('pd-fund-raised', p.fund.raised);
         set('pd-fund-backers', p.fund.backers + (zh() ? ' 人支持' : ' backers'));
@@ -1797,7 +1917,7 @@
         hide('.funding-panel__backers');
       }
 
-      /* 收益概況（landing 一行摘要，明細在專案收益分頁）：
+      /* 收益概況（landing 一行摘要，明細在項目收益分頁）：
          先募資有 fund 資料就顯示已承諾金額，其餘類型顯示 meta 摘要 */
       const head = document.getElementById('pd-rev-headline');
       const sub = document.getElementById('pd-rev-sub');
@@ -1811,7 +1931,7 @@
         }
       }
 
-      /* 版稅＝股份分潤的產物，只有募資型專案有股份，直接上線／預購沒有（2026-07-25 使用者裁決）。
+      /* 版稅＝股份分潤的產物，只有募資型項目有股份，直接上線／預購沒有（2026-07-25 使用者裁決）。
          因此條件＝募資＋已上線；影視與音樂都有，只是面板內容不同（見下方 famKind 切版）。
          資料來源、彙入頻率與分帳規則仍待 CCR-006 裁決。 */
       const royaltyReady = p.type === 'fund' && p.status === 'published';
@@ -1822,7 +1942,7 @@
         el.hidden = el.getAttribute('data-royalty-fam') !== royaltyFam;
       });
 
-      /* 專案「類型」維度（直接上線 go-live／募資 fund／預購 preorder）：
+      /* 項目「類型」維度（直接上線 go-live／募資 fund／預購 preorder）：
          任何帶 data-type 的元素（tab 按鈕、面板、卡片、時間軸列）只在其列出的類型顯示。
          規格 §3.1／§5：go-live 無門檻無退款；fund 有募資方案＋共創；preorder 有訂購門檻。 */
       const ptype = p.type;
@@ -1868,7 +1988,7 @@
         period.querySelectorAll('.segmented__btn').forEach(c => c.classList.toggle('segmented__btn--active', c === b));
       });
 
-      /* 若當前停在被本類型隱藏的分頁，退回專案總覽 */
+      /* 若當前停在被本類型隱藏的分頁，退回項目總覽 */
       const activePanel = document.querySelector('.tab-panel--active');
       if (activePanel && activePanel.hidden) {
         const home = document.querySelector('.tabs__item[data-tab="settings"]'); if (home) home.click();

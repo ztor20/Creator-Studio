@@ -20,6 +20,7 @@
 <!-- 現場報到台的掃碼連結沿用取貨場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 <style>
   /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
@@ -152,7 +153,7 @@
 
             <div class="info-banner mt-16">
               <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling auto-triggers refunds on all valid tickets (§7.2 · §5.1.6 F5).</span>
+              <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling auto-triggers refunds on all valid tickets (§7.2 F5).</span>
             </div>
           </section>
 
@@ -327,7 +328,7 @@
       <div class="tab-panel" data-panel="transactions" role="tabpanel">
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.tx.title">Transactions</h2>
-          <div class="section-head__sub" data-i18n="event-detail.tx.sub">Every ticket payment for this event. One row per order; platform fee is 10% (§7.6).</div>
+          <div class="section-head__sub" data-i18n="event-detail.tx.sub">Every ticket payment for this event. One row per order; platform fee is 10%.</div>
         </div>
 
         <div class="bento">
@@ -453,7 +454,7 @@
       <div class="tab-panel" data-panel="refunds" role="tabpanel">
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.ref.title">Refunds &amp; comps</h2>
-          <div class="section-head__sub" data-i18n="event-detail.ref.sub">Refund queue and complimentary tickets (§5.1.6 F5 · §7.3).</div>
+          <div class="section-head__sub" data-i18n="event-detail.ref.sub">Refund queue and complimentary tickets (§5.1.6 F5).</div>
         </div>
 
         <!-- Pre-flight checklist（2026-07-27）：Dashboard「活動檢核尚未完成 → 完成檢核」CTA
@@ -572,7 +573,7 @@
       <div class="tab-panel" data-panel="finance" role="tabpanel">
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.fin.title">Cost &amp; revenue summary</h2>
-          <div class="section-head__sub" data-i18n="event-detail.fin.sub">Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings &amp; Project Net Income (§5.1.6 F5 · §7.3).</div>
+          <div class="section-head__sub" data-i18n="event-detail.fin.sub">Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings &amp; Project Net Income (§5.1.6 F5).</div>
         </div>
 
         <section class="card" style="padding:0;overflow:hidden">
@@ -610,12 +611,12 @@
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.gross">Gross ticket revenue</span></div><span>$2,520.00</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.accrued">Of which accrued (待結算)</span></div><span>$780.00</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.settled">Of which settled (已結算)</span></div><span>$1,740.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing (§7.3)</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing</span></div>
             </div>
           </section>
           <section class="card bento--span-5">
             <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.where.title">Where this rolls up</h3></div>
-            <p class="text-sub" style="font-size: var(--fs-13)" data-i18n="event-detail.fin.where.body">Only settled revenue counts toward Available and the project distributable profit (§5.2.2). Accrued does not. Costs and revenue flow to Earnings and Project Net Income; this page does not recompute.</p>
+            <p class="text-sub" style="font-size: var(--fs-13)" data-i18n="event-detail.fin.where.body">Only settled revenue counts toward Available and the project distributable profit. Accrued does not. Costs and revenue flow to Earnings and Project Net Income; this page does not recompute.</p>
             <div class="flex-row mt-16" style="gap:8px">
               <a class="btn btn--outline btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
               <a class="btn btn--ghost btn--sm" href="projects.html" data-i18n="event-detail.fin.link.netincome">Project net income</a>
@@ -697,6 +698,7 @@
 <script src="js/icons.js?v=r2.1"></script>
 <script src="js/i18n.js?v=r2.1"></script>
 <script src="js/sidebar.js?v=r2.1"></script>
+<script src="js/sticky-actions.js?v=r2.1"></script>
 <script src="js/events-store.js?v=r2.1"></script>
 <script>
   /* 假 QR（與 pickup-detail／create-product 同一支；此處守衛以免重複定義） */
@@ -1055,7 +1057,7 @@
 })();
 </script>
 <script>
-  /* event-detail tabs · §5.1.6 F5 — switch active state + visible panel (pattern from earnings.html) */
+  /* event-detail tabs F5 — switch active state + visible panel (pattern from earnings.html) */
   (function () {
     const tablist = document.querySelector('[data-tabs]');
     if (!tablist) return;
