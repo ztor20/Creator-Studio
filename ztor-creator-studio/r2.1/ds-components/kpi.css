@@ -146,18 +146,37 @@
 .kpi--warning .kpi__value { color: color-mix(in srgb, var(--status-warning) 60%, var(--foreground)); }
 .kpi--destructive .kpi__value { color: var(--destructive); }
 
-/* --hero — 這一列裡「最重要的那個數字」（使用者裁示 2026-07-27：儀表板的總收入）。
-   上面三個修飾類是「這個數字的狀態好不好」（綠/黃/紅＝verdict），--hero 是「這個數字最重要」
-   （編輯權重），兩者不同軸、可以並存但通常不會同時用。
+/* --hero — 這一列裡「最重要的那一張卡」（使用者裁示 2026-07-27：儀表板的總收入）。
+   上面三個修飾類是「這個數字的狀態好不好」（綠/黃/紅＝verdict），--hero 是「這張卡最重要」
+   （編輯權重），兩者不同軸。
 
-   刻意只染數字、不染卡面：橘色 tint 底在 Q8-A 之後已經專指「已選中」，
-   把 hero 卡整片染橘會被讀成「這張卡被選取了」。所以
-     tint 底  ＝ 已選中
-     橘墨水   ＝ 這是主角數字
-   兩種訊號兩種機制，不打架。label／delta／meta 全部不動——delta 是綠色的漲跌
-   verdict（gel-not-verdict 規則），不能為了配色改掉。
+   整張卡實色橘。與 Q8-A 的「已選中」不衝突——已選中是 **tint**（14% 半透明）且只出現在
+   pill／nav 這類小控件上；--hero 是 **實色**且是一整張卡。實色橘在本系統一直代表
+   「主角／主要動作」（主 CTA、.pager 目前頁），一張實色橘的卡＝這是本頁主角，語彙一致。
+   一列 KPI 只給一個 --hero，否則就沒有主角了。
 
-   走 --brand-ink 不是 --primary：白卡上的 --primary 只有 1.92:1。
-   --brand-ink 對 --card 深色 8.02:1、亮色白卡 6.45:1（28px 屬 large text，門檻 3:1）。
-   一列 KPI 只給一個 --hero，否則就沒有主角了。 */
-.kpi--hero .kpi__value { color: var(--brand-ink); }
+   卡內所有文字改吃 --on-primary（深墨），**不吃 --primary-foreground**：後者在亮色是白字，
+   白字對 #ffa33f 只有 1.99:1（_tokens.css 自己就標註了這個問題），拿來鋪滿一整張卡會不能讀。
+   深墨 #171717 對 #ffa33f 是 9.02:1（過 AAA），亮暗同一個值。
+
+   用 .kpi.kpi--hero（0,2,0）而非 .kpi--hero（0,1,0）：要贏過 `.card .kpi` 那條巢狀底色覆寫，
+   否則 hero 卡若被放進 .card 系容器內會被改回 --input-surface。 */
+.kpi.kpi--hero {
+  background: var(--primary);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+.kpi--hero .kpi__value { color: var(--on-primary); }
+/* label／meta 用同一支深墨壓透明度做層級，不另外挑灰——灰在橘底上會發濁。 */
+.kpi--hero .kpi__label { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
+.kpi--hero .kpi__meta,
+.kpi--hero .kpi__meta .card__link { color: color-mix(in srgb, var(--on-primary) 75%, transparent); }
+.kpi--hero .kpi__chevron { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
+.kpi--hero.kpi--tappable:hover .kpi__chevron { color: var(--on-primary); }
+/* delta 膠囊：原本是 color-mix(綠, --card)，卡面變橘之後那個綠會跟橘互相震盪、而且它混的是
+   --card（已經不是這張卡的底色了）。改成白色薄膜＋深墨字——漲跌方向由 "+" 與文案承載，
+   不再靠色相。這是 --hero 唯一一處讓出狀態色的地方，且只在這個變體內 scoped。 */
+.kpi--hero .kpi__delta,
+.kpi--hero .kpi__delta--neg {
+  color: var(--on-primary);
+  background: color-mix(in srgb, #fff 58%, transparent);
+}
