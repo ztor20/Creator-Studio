@@ -556,6 +556,27 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
 }
 
+/* 2026-07-28（使用者回報「這個 div 太貼邊」）：直接掛在 .main 底下、不在 .page 內的
+   區塊完全拿不到頁面留白——.main 的 padding 是 0，實測該卡左側間距 0px（右側那 12px
+   只是捲軸），等於整張卡貼著面板左緣，也沒有 .page 的 max-width 與置中。
+   earnings-sony 的 [data-fin-table] 就是這個情況。與其改 HTML 結構（風險較高、
+   而且下次有人再放一個就會重犯），這裡讓 .main 的直接子卡片鏡射 .page 的水平度量：
+     width      = 100% - 28px*2   （窄視窗時等同 .page 的左右留白）
+     max-width  = 1280 - 28*2 = 1224px（寬視窗時內容寬與 .page 完全對齊）
+     margin-inline: auto            （置中）
+   結果是它與頁面其餘內容切齊同一條左右邊界，而不是各走各的。 */
+.main > .card,
+.main > section.card {
+  width: calc(100% - var(--sp-28) * 2);
+  max-width: 1224px;
+  margin-inline: auto;
+}
+@media (max-width: 900px) {
+  /* .page 在窄screen 改吃 16px 左右留白，直接子卡片同步。 */
+  .main > .card,
+  .main > section.card { width: calc(100% - var(--sp-16) * 2); }
+}
+
 .page {
   /* Top padding bumped 32 → 48px on 2026-05-28 after .page-intro__eyebrow was
      retired — title needs more breathing room above without the eyebrow row. */
