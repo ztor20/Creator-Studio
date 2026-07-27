@@ -36,6 +36,31 @@
   font-display: swap;
 }
 
+/* ── Alumni Sans — 英文標題字面（2026-07-28 使用者裁示）──────────────
+   Google Fonts，SIL OFL，可自行託管。取 latin 子集的 variable 版（wght 100–900 單檔 22KB），
+   所以四個標題字重共用一個檔、不必分檔載入。
+   來源：fonts.gstatic.com/s/alumnisans/v20（unicode-range 含 U+0000-00FF 的那個子集）。
+   Alumni Sans 是窄長字面，與 LINE Seed TW（正常寬度幾何黑體）並置時，
+   同字級下英文標題會明顯比中文標題窄——這是兩個字面本身的比例差，不是 bug。 */
+@font-face {
+  font-family: "Alumni Sans";
+  src: url("../fonts/AlumniSans-Variable.woff2") format("woff2-variations"),
+       url("../fonts/AlumniSans-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Satoshi — 英文內文／UI 字面（2026-07-28 使用者裁示）──────────────
+   Fontshare（Indian Type Foundry），個人與商用皆免費。非變數字體，
+   五個字重各一檔（300/400/500/700/900，各約 23–26KB）。
+   與 LINE Seed TW 的分工：拉丁走 Satoshi、中文走 LINE Seed（unicode-range 已釘死）。 */
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-300.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-900.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+
 /* ── LINE Seed TW — 全站中文字面（2026-07-28 使用者裁示）──────────────
    「中文整套系統都用 LINE Seed TW」：標題與內文都是它，不分角色。
    .woff2 檔本來就躺在 /fonts 裡（Th／Rg／Bd／Eb），但先前從未被 @font-face 宣告過，
@@ -101,11 +126,9 @@
      --font-cjk 由 Noto Sans TC 改成 LINE Seed TW 優先，Noto 退為後備
      （LINE Seed 沒有的字——例如 earnings.html 的日文漢字「払」——仍逐字回退到 Noto）。
 
-     Geist／Inter 刻意留在堆疊裡當**過渡回退**：Alumni Sans 與 Satoshi 的 .woff2
-     目前不在 /fonts 裡（全機找過，D:\Ztor. 2.0 底下沒有任何 alumni／satoshi 檔案）。
-     沒有 @font-face 的字體名會被瀏覽器直接略過，所以在字檔到位前，英文會安靜地
-     維持現在的 Geist／Inter 外觀、不會掉到系統預設字，畫面不會壞；字檔一放進 /fonts
-     並補上 @font-face，就自動生效、不需要再改任何一支元件。 */
+     2026-07-28 追加：Alumni Sans 與 Satoshi 的 .woff2 已下載自託管（見上方 @font-face），
+     字體現已實際生效。Geist／Inter 留在堆疊裡當第二順位回退——字檔萬一載入失敗時
+     不會直接掉到系統預設字。 */
   --font-cjk:     "LINE Seed TW", "Noto Sans TC", sans-serif;
   --font-display: "Alumni Sans", "Geist", var(--font-cjk), system-ui, sans-serif;
   --font-ui:      "Satoshi", "Geist", var(--font-cjk), system-ui, sans-serif;
