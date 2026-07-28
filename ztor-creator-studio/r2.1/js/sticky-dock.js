@@ -173,7 +173,13 @@
       var need = 0;
       Array.prototype.forEach.call(row.children, function (c) { need += c.scrollWidth; });
       need += 24;                                  /* row 自己的 gap ＋ 左分隔線留白 */
-      var have = w - bar.scrollWidth - 28;
+      /* 工作列要多寬，不能直接讀 bar.scrollWidth：收合態它被拉滿整條（list-toolbar.css
+         把 flex 改成 1 1 auto，動作群才會靠右），量到的是「這一行有多寬」而不是「它要
+         多寬」，have 於是恆為負數、再寬的螢幕也回不到展開態。
+         改成加總子項的內容寬——tabs 與動作群在兩種狀態下都維持內容寬，量到的是同一件事。 */
+      var barNeed = 0;
+      Array.prototype.forEach.call(bar.children, function (c) { barNeed += c.scrollWidth; });
+      var have = w - barNeed - 28;
       var collapse = collapsed ? need > have - 24  /* 遲滯：展開要比收合多 24px 餘裕 */
                                : need > have;
       if (collapse === collapsed) return;

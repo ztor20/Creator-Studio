@@ -345,6 +345,17 @@ html[data-theme="light"] .list-toolbar {
     -webkit-mask-image: none;
     mask-image: none;
   }
+  /* 收合之後工作列要吃滿整條，動作群才會停在最右邊（2026-07-28 L 截圖：搜尋／檢視／
+     篩選／＋新增專案卡在模式 tab 旁邊，右半條整片空白）。收合態的狀態列是絕對定位的
+     浮層、已經離開版面流，此時工作列若仍照內容寬（flex:0 1 auto，那是為了「兩段併排時
+     誰先拿空間」而設）就只佔左半邊，右邊沒有東西把它推開。
+     同時要把 tabs 的 flex-grow 收掉：flex-grow 在 auto margin 之前吃光剩餘空間，不收的話
+     被拉長的是 tabs、動作群依舊貼著 tabs。空間改由 .list-toolbar__actions 既有的
+     margin-left:auto 吸收；tabs 維持內容寬，量測那邊才量得到它真正要多寬
+     （見 js/sticky-dock.js 的 barNeed）。 */
+  .list-dock.is-snapped.is-filters-collapsed .list-toolbar { flex: 1 1 auto; }
+  .list-dock.is-snapped.is-filters-collapsed .list-toolbar > .tabs { flex: 0 1 auto; }
+
   .list-dock.is-snapped.is-filters-collapsed .list-status-row > nav:first-child {
     margin-left: 0;
     flex-wrap: wrap;
