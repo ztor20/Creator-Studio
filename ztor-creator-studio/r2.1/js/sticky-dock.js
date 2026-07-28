@@ -114,8 +114,29 @@
         observer.observe(sentinel);
       });
 
+      setupScrollHint(dock);
       setupFilterCollapse(dock);
     });
+  }
+
+  /* ── 右緣漸隱只在真的捲得動時才掛 ─────────────────────────────────
+     必須獨立於 setupFilterCollapse：那支需要 .list-toolbar__filter 鈕才會往下跑，
+     而那顆鈕目前只有 projects.html 有（2026-07-28 的收合功能只接了一頁）。掛在裡面
+     的話，其餘四頁（電子商店／活動／我的 IP／IP 市場）永遠拿不到這個 class——
+     偏偏 IP 市場正是會溢出的那一頁（貼頂實測溢出 7px），提示等於白做。 */
+  function setupScrollHint(dock) {
+    var row = dock.querySelector('.list-status-row');
+    if (!row) return;
+    function sync() {
+      row.classList.toggle('is-scrollable', row.scrollWidth > row.clientWidth + 1);
+    }
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(row);
+    window.addEventListener('resize', sync);
+    document.addEventListener('i18n:applied', sync);
+    /* 貼頂／脫黏會改變這一列的寬度，class 要跟著重判。 */
+    new MutationObserver(sync).observe(dock, { attributes: true, attributeFilter: ['class'] });
+    row.addEventListener('scroll', sync, { passive: true });
+    sync();
   }
 
   /* ── 貼頂態的篩選段：放得下靠右，放不下收進圖示鈕（2026-07-28 L 裁示）─────────

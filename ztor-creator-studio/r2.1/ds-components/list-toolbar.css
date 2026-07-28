@@ -249,19 +249,30 @@ html[data-theme="light"] .list-toolbar {
     background: transparent;
     border-radius: 0;
     box-shadow: none;
-    /* 0 1 auto（不是 1 1 auto）：這一段先照內容寬拿到空間，剩下的才給篩選段。
-       兩段都能捲的時候必須決定「誰先被犧牲」——主軸 tab（發行模式）與主要動作
-       （＋新增專案）是這一頁的骨架，狀態 pill 是可篩可不篩的細節。
-       實測未分優先序時，四個模式 tab 的「直接發行」被捲出畫面，那是最不該藏的東西。 */
-    flex: 0 1 auto;
+    /* 1 1 auto（2026-07-28 L 裁示，兩張截圖：專案頁收合態、電子商店貼頂態，動作群都
+       卡在 tab 旁邊、右邊一大片空白）：剩餘空間交給這一段，動作群才會被自己的
+       margin-left:auto 推到這一段的右緣——收合態＝整條的最右邊，未收合態＝緊貼右段
+       篩選列的分隔線。空白因此落在 tab 與動作群之間（那裡本來就該是留白），
+       而不是夾在動作群與篩選列中間。
+       原本寫 0 1 auto 是為了決定「兩段都塞不下時誰先被犧牲」（主軸 tab 與＋新增專案
+       是骨架，狀態 pill 是細節）。那個優先序改由篩選段的 flex 表達（見下方
+       .list-status-row 的 0 1 auto）：它照內容寬、先被壓縮，效果相同。
+       min-width:0 保留：真的塞不下時這一段仍要能縮，讓 tabs 自己橫向捲。 */
+    flex: 1 1 auto;
     min-width: 0;
   }
+  /* tabs 不吃剩餘空間：flex-grow 在 auto margin 之前分配自由空間，不把它收掉的話
+     被拉長的是 tabs、動作群依舊貼著最後一個 tab。收成內容寬還有第二個好處——
+     量測拿得到「tabs 真正要多寬」（見 js/sticky-dock.js 的 barNeed）。 */
+  .list-dock.is-snapped .list-toolbar > .tabs { flex: 0 1 auto; }
 
   /* 狀態列收成 dock 右段：去掉自己的留白與底色，用一道分隔線和左段分開。
      篩選數量各頁不同（電子商店 5 個、IP 市場 4 個），塞不下就在自己那段橫向捲。 */
   .list-dock.is-snapped .list-status-row {
-    /* 1 1 0：吸收工作列拿完之後剩下的寬度，也是先被壓縮的那一段（理由見上）。 */
-    flex: 1 1 0;
+    /* 0 1 auto（2026-07-28 改，原本 1 1 0）：照內容寬，不再吸收剩餘寬度——剩餘寬度
+       現在歸左段（見上），這一段就自然被推到整條的最右緣。shrink 留著＝仍然是
+       「兩段都塞不下時先被壓縮」的那一段，優先序不變。 */
+    flex: 0 1 auto;
     min-width: 0;
     margin: 0;
     /* 這一列自己不換行：它要嘛整段留在第一行右側、要嘛整段掉到第二行（由上面 bars 的
@@ -269,15 +280,19 @@ html[data-theme="light"] .list-toolbar {
     flex-wrap: nowrap;
     padding: 0 0 0 var(--sp-12);
     border-left: 1px solid var(--border);
-    /* 右緣漸隱：這一段塞不下時會橫向捲，沒有這道提示，被捲在外面的篩選等於不存在。
-       遮罩只吃右緣 24px，捲到底時仍然會有一小段淡出——那是可接受的代價，
-       換來的是「這裡還有東西」這個訊息一直都在。 */
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
-    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
     overflow-x: auto;
     scrollbar-width: none;
   }
   .list-dock.is-snapped .list-status-row::-webkit-scrollbar { display: none; }
+  /* 右緣漸隱：這一段塞不下時會橫向捲，沒有這道提示，被捲在外面的篩選等於不存在。
+     2026-07-28 改成「真的會捲才掛」（class 由 js/sticky-dock.js 依 scrollWidth 判斷）：
+     這一列改成照內容寬之後，它的右緣就是最後一顆 pill／下拉的右緣，無條件掛遮罩
+     等於把沒有溢出的最後一個控制項也淡掉——本來設計成「淡的是被捲出去的東西」，
+     那樣會變成「淡的是還在畫面上的東西」。 */
+  .list-dock.is-snapped .list-status-row.is-scrollable {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  }
   /* 貼頂時篩選 nav 改「照內容寬」，不再吸收剩餘寬度（2026-07-28 修）。
      基礎樣式給它 flex:1 1 0（basis 0）是為了靜止態讓右側的下拉留在第一行；但併成一行
      之後那條規則會把 nav 壓到接近 0 寬，而 nav 自己沒有 overflow、內容又被設成 nowrap
@@ -304,13 +319,13 @@ html[data-theme="light"] .list-toolbar {
      模式 tab 被捲出畫面），每一次都只是把不足換個地方，因為 13 個目標本來就放不下。
 
      兩段式，由 sticky-dock.js 量測後掛 class：
-       放得下 → 篩選段靠右（margin-left:auto），與左邊的主軸拉開距離；
+       放得下 → 篩選段靠右（左段吃掉剩餘寬度，見上方兩條 flex），與主軸拉開距離；
        放不下 → 整段收進一顆 sliders 圖示鈕，點開變成錨在鈕下方的浮層。
 
-     為什麼是 margin-left:auto 而不是 justify-content:flex-end：
-     兩者「放得下」時看起來一樣，但溢出時 flex-end 會讓內容往左邊溢出，先被藏起來的
-     是最左邊的「All states」，而且橫向捲會從中間開始。auto margin 在空間不足時
-     自動塌成 0，溢出方向與捲動起點都維持正常。
+     靠右為什麼不用 justify-content:flex-end：溢出時 flex-end 會讓內容往左邊溢出，
+     先被藏起來的是最左邊的「All states」，橫向捲也會從中間開始。改用
+     「左段 grow、右段照內容寬」，空間不足時 grow 自然塌成 0，溢出方向與捲動起點
+     都維持正常，而且同一條規則同時把工作列自己的動作群也推到了它那一段的右緣。
 
      為什麼收合只發生在貼頂態：狀態 pill 帶著計數（All states 16／Draft 1／Live 8），
      那些數字是「一眼看完」的資訊，全部藏進圖示等於把它丟掉。靜止態的兩排版面空間
@@ -319,9 +334,6 @@ html[data-theme="light"] .list-toolbar {
 
      圖示沿用站上既有的 sliders-horizontal 進階篩選鈕（ip-market #ipm-adv-toggle、
      e-shop 同款），不自創第二種「更多篩選」的長相。 */
-
-  /* 放得下：靠右。nav 是 .list-status-row 的第一個子元素，右邊還有分類下拉。 */
-  .list-dock.is-snapped .list-status-row > nav:first-child { margin-left: auto; }
 
   /* 放不下：整段變成錨在篩選鈕下的浮層。用「移動同一個節點」而不是複製一份，
      所以 id、事件、計數更新全部沿用原本那一套，沒有第二份要同步。 */
@@ -345,19 +357,14 @@ html[data-theme="light"] .list-toolbar {
     -webkit-mask-image: none;
     mask-image: none;
   }
-  /* 收合之後工作列要吃滿整條，動作群才會停在最右邊（2026-07-28 L 截圖：搜尋／檢視／
-     篩選／＋新增專案卡在模式 tab 旁邊，右半條整片空白）。收合態的狀態列是絕對定位的
-     浮層、已經離開版面流，此時工作列若仍照內容寬（flex:0 1 auto，那是為了「兩段併排時
-     誰先拿空間」而設）就只佔左半邊，右邊沒有東西把它推開。
-     同時要把 tabs 的 flex-grow 收掉：flex-grow 在 auto margin 之前吃光剩餘空間，不收的話
-     被拉長的是 tabs、動作群依舊貼著 tabs。空間改由 .list-toolbar__actions 既有的
-     margin-left:auto 吸收；tabs 維持內容寬，量測那邊才量得到它真正要多寬
-     （見 js/sticky-dock.js 的 barNeed）。 */
-  .list-dock.is-snapped.is-filters-collapsed .list-toolbar { flex: 1 1 auto; }
-  .list-dock.is-snapped.is-filters-collapsed .list-toolbar > .tabs { flex: 0 1 auto; }
-
+  /* 浮層裡的 pill 群要能換行。基礎貼頂態把 nav 設成 flex:0 0 auto（照內容寬、不縮，
+     讓塞不下時由外層橫向捲）——那條規則跟進浮層就會出事：專案頁 7 顆 pill 的內容寬
+     是 599px，浮層上限 560px，nav 不能縮於是整片超出浮層右緣 52px，「Cancelled 1」
+     被畫在浮層外面（2026-07-28 L 截圖圈出）。浮層有自己的寬度可以換行，這裡要的是
+     「縮到浮層寬、然後 wrap」，所以 shrink 打開、min-width 歸零。 */
   .list-dock.is-snapped.is-filters-collapsed .list-status-row > nav:first-child {
-    margin-left: 0;
+    flex: 0 1 auto;
+    min-width: 0;
     flex-wrap: wrap;
   }
   .list-dock.is-snapped.is-filters-collapsed .list-status-row > * { flex-wrap: wrap; }
