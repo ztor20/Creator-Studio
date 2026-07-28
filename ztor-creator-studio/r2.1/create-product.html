@@ -91,6 +91,28 @@
   <div class="wizard__body wizard__body--form wizard__body--mid preview-split">
     <div class="preview-split__form">
 
+    <!-- Media Vault 交棒（2026-07-29）：從庫房的「做成 NFC 商品」過來時，網址帶
+         ?vaultkey=<代號>。這裡把那把鑰匙顯示出來——否則「已附帶鑰匙」只是分享
+         抽屜單方面的說法，這一頁根本不知道有這回事。 -->
+    <div class="info-banner mb-16" id="cp-vaultkey" hidden>
+      <i data-lucide="key" class="ztor-icon info-banner__icon"></i>
+      <span>
+        <strong data-i18n="cp.vaultkey.title">This product carries a vault key</strong> ·
+        <code id="cp-vaultkey-code" style="font-family:var(--font-mono);letter-spacing:.08em"></code><br>
+        <span data-i18n="cp.vaultkey.body">Write this code onto the product’s NFC tag. A fan who taps it unlocks the vault it came from — one tap, one use.</span>
+      </span>
+    </div>
+    <script>
+      (function () {
+        var code = new URLSearchParams(location.search).get("vaultkey");
+        if (!code) return;
+        var box = document.getElementById("cp-vaultkey");
+        document.getElementById("cp-vaultkey-code").textContent = code;
+        box.hidden = false;
+      })();
+    </script>
+
+
     <!-- §3 商品類型：實體／數位 二選一，預設實體（拍賣已獨立為 create-auction.html，spec 5.1.5.2 v5.0 / D081）-->
     <section class="form-section form-section--outlined">
       <div class="form-section__head">

@@ -33,13 +33,16 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/explainer.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/drawer.css?v=r2.1">
 <link rel="stylesheet" href="ds-components/media-vault.css?v=r2.1">
+<link rel="stylesheet" href="ds-components/vault-share.css?v=r2.1">
 <link rel="stylesheet" href="shared.css?v=r2.1">
 </head>
 <body>
@@ -117,6 +120,11 @@
               <h2 class="vault-head__title" data-vault-title></h2>
               <p class="vault-head__note" data-vault-note></p>
             </div>
+            <div class="vault-head__actions">
+              <button class="btn btn--outline" type="button" data-vault-share>
+                <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
+              </button>
+            </div>
           </div>
 
           <!-- 門條。左因右果：條件在左，那組條件放進來的人在右。 -->
@@ -140,6 +148,23 @@
               </p>
               <div class="vault-door__bar" data-vault-bar></div>
               <div class="vault-door__legend" data-vault-legend></div>
+              <div class="vault-door__breakdown" data-vault-breakdown></div>
+            </div>
+
+            <!-- 鑰匙：條件之外的第二條路。條件是「哪一群人自動符合」，鑰匙是
+                 創作者親手交出去的那幾把（加密連結／NFC 商品）。同一條門條、
+                 不同一列，因為兩者都是進門的路但不是同一種東西。 -->
+            <div class="vault-door__keyrow">
+              <div class="vault-door__keyleft">
+                <div class="vault-door__label">
+                  <i data-lucide="key" class="ztor-icon"></i>
+                  <span data-i18n="vault.door.keys">Keys issued</span>
+                </div>
+                <div class="vault-door__keys" data-vault-keys></div>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" data-vault-share>
+                <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
+              </button>
             </div>
           </section>
 
@@ -169,6 +194,21 @@
 
     </div>
   </main>
+</div>
+
+<!-- 分享抽屜。用抽屜不用 modal：發鑰匙的時候創作者要一直看得到自己在對
+     哪一座庫房動手，以及那個「誰進得來」的數字；modal 會把上下文整個拿走。 -->
+<div class="drawer" data-vault-drawer aria-hidden="true">
+  <div class="drawer__scrim" data-drawer-close></div>
+  <section class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="vshare-title">
+    <div class="drawer__head">
+      <h2 class="drawer__title" id="vshare-title" data-i18n="vault.share.title">Share access</h2>
+      <button class="drawer__close" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close" data-drawer-close>
+        <i data-lucide="x" class="ztor-icon"></i>
+      </button>
+    </div>
+    <div class="drawer__body" data-vault-drawerbody></div>
+  </section>
 </div>
 
 <!-- 新增條件的 popover（掛在 body 下、position:fixed：門條所在的欄有自己的

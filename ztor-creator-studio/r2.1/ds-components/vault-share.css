@@ -1,0 +1,218 @@
+/* ============================================================
+   Vault share · 加密連結／NFC 鑰匙的發放面板
+   ------------------------------------------------------------
+   住在 .drawer 裡（drawer.css 提供殼、scrim、滑入）。本檔只管抽屜內容。
+
+   為什麼是抽屜不是 modal：發鑰匙的時候，創作者要一直看得到自己在對哪一座
+   庫房動手、以及那個「誰進得來」的數字。modal 會把整個畫面蓋掉，等於在做
+   權限決定的當下把上下文拿走。
+
+   兩個意圖擺在最前面，因為它們的產物不同（使用者裁示 2026-07-29）：
+     送給一位粉絲 → 一次性鑰匙，終點是「複製連結」
+     做成 NFC 商品 → 多次鑰匙，終點是「去 E-Shop 建立商品」
+   同一個物件、同一個 uses 旋鈕，只是預設值與收尾動作不同。
+
+   anatomy
+     .vshare__intent      — 兩個意圖的選擇（沿用 .selection-card 家族）
+     .vshare__form        — 依意圖切換的欄位
+     .vshare__link        — 產生後的連結列（唯讀輸入框 ＋ 複製鈕）
+     .vshare__keys        — 已發出的鑰匙清單
+       .vkey              — 一把鑰匙（代號 / 名稱 / 領取進度 / 動作）
+         .vkey--revoked   — 已撤銷（保留紀錄，不刪）
+
+   全值引用 _tokens.css。
+   ============================================================ */
+
+.vshare { display: flex; flex-direction: column; gap: var(--sp-24); }
+
+.vshare__section { display: flex; flex-direction: column; gap: var(--sp-10); }
+.vshare__label {
+  display: flex; align-items: center; gap: var(--sp-6);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.vshare__label .ztor-icon { width: 13px; height: 13px; }
+.vshare__hint { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0; }
+
+/* ── 意圖選擇 ─────────────────────────────────────────── */
+.vshare__intent { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-10); }
+.vshare__opt {
+  display: flex; flex-direction: column; gap: var(--sp-4);
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing), background-color var(--duration) var(--easing);
+}
+.vshare__opt:hover { border-color: var(--muted-foreground); }
+.vshare__opt--active,
+.vshare__opt--active:hover {
+  border-color: var(--primary);
+  background: var(--selected-surface);
+}
+.vshare__opt-icon { color: var(--muted-foreground); }
+.vshare__opt--active .vshare__opt-icon { color: var(--primary); }
+.vshare__opt-icon .ztor-icon { width: 18px; height: 18px; }
+.vshare__opt-title { font-size: var(--fs-13); color: var(--foreground); }
+.vshare__opt-sub { font-size: var(--fs-11); color: var(--muted-foreground); line-height: var(--lh-normal); }
+
+/* ── 產生後的連結列 ───────────────────────────────────── */
+.vshare__link {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-6);
+  padding: var(--sp-6);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  background: var(--selected-surface);
+}
+.vshare__link .input {
+  flex: 1; min-width: 0;
+  height: var(--control-h-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  border-color: transparent;
+  background: transparent;
+}
+/* 複製鈕自己帶一個「已複製」的字，不用 toast：手剛離開的地方就是眼睛
+   在看的地方，回饋跑到畫面角落等於沒有回饋。 */
+.vshare__copy { flex: none; min-width: 92px; justify-content: center; }
+.vshare__copy .ztor-icon { width: 14px; height: 14px; }
+
+/* ── 鑰匙清單 ─────────────────────────────────────────── */
+.vshare__keys { display: flex; flex-direction: column; gap: var(--sp-8); }
+
+.vkey {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-6) var(--sp-12);
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+.vkey__head { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.vkey__name {
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* 代號是要被唸出來、也要被雷雕在鑰匙圈背面的，所以走等寬字並拉開字距。 */
+.vkey__code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+}
+.vkey__actions { display: flex; align-items: flex-start; gap: var(--sp-4); }
+.vkey__act {
+  width: 30px; height: 30px;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--foreground-muted);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.vkey__act:hover { background: var(--accent); color: var(--foreground); }
+.vkey__act--danger:hover {
+  background: color-mix(in srgb, var(--destructive) 14%, var(--card));
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+}
+.vkey__act .ztor-icon { width: 14px; height: 14px; }
+
+/* 領取進度：uses 是產能，claimed 才是人——所以量條量的是「已經變成人的
+   比例」，右邊的字把兩個數字都寫出來，不讓量條自己去暗示。 */
+.vkey__meter { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--sp-10); }
+.vkey__track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  overflow: hidden;
+}
+.vkey__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms var(--easing);
+}
+.vkey__count {
+  flex: none;
+  font-size: var(--fs-11);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vkey--revoked { opacity: 0.55; }
+.vkey--revoked .vkey__fill { background: var(--muted-foreground); }
+.vkey--revoked .vkey__name { text-decoration: line-through; }
+
+/* 已附在商品上的鑰匙：把商品名帶出來，否則創作者無從知道這批 500 支
+   到底掛在哪一個商品底下。 */
+.vkey__product {
+  grid-column: 1 / -1;
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.vkey__product .ztor-icon { width: 12px; height: 12px; }
+
+/* ── 門條裡的鑰匙那一段 ─────────────────────────────────
+   橫跨整條門條、壓在條件那一列下面，中間隔一道髮絲線。這個位置是有意思
+   的：條件是「哪一群人自動符合」，鑰匙是「我親手交出去的那幾把」，兩者
+   都是進門的路，但不是同一種東西，所以同一條門條、不同一列。 */
+.vault-door__keyrow {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  padding-top: var(--sp-14);
+  border-top: 1px solid var(--border);
+}
+.vault-door__keyleft { display: flex; align-items: center; gap: var(--sp-10); flex-wrap: wrap; min-width: 0; }
+
+.vault-door__keys { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-6); }
+.vault-door__keychip {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  height: 28px;
+  padding: 0 var(--sp-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+.vault-door__keychip .ztor-icon { width: 13px; height: 13px; color: var(--muted-foreground); }
+.vault-door__keychip--none { color: var(--muted-foreground); }
+
+/* 觸及讀數的第二行：條件帶進來幾個、鑰匙帶進來幾個、重疊幾個。
+   重疊要寫出來，否則 513 ＋ 137 讀起來像 650，而它不是。 */
+.vault-door__breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--sp-10);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.vault-door__breakdown b { font-weight: var(--fw-regular); color: var(--foreground-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vshare__opt,
+  .vkey__act,
+  .vkey__fill { transition: none; }
+}

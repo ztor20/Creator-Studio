@@ -153,6 +153,96 @@
     return n;
   }
 
+  /* ── 鑰匙（加密連結／NFC）─────────────────────────────────
+     2026-07-29 使用者裁示：創作者可以發出一條加密連結，直接送給某位粉絲
+     當禮物，或把它寫進 NFC 商品（鑰匙圈、小家具），粉絲買到之後手機一碰
+     就取得這座庫房的權限。
+
+     鑰匙是「持有者憑證」(bearer credential)，跟條件不是同一種東西：
+       · 條件回答「哪一群人符合」——是可以算的集合。
+       · 鑰匙回答「誰拿到了這一把」——在有人領取之前，它不對應任何人。
+     所以未領取的次數永遠不進人數；`uses` 是產能，`claimed` 才是人。
+     已領取的那些是真的指向母體裡的某幾筆粉絲紀錄，所以「條件 ∪ 鑰匙」
+     仍然是一次真的聯集，重疊會自己去掉（有人本來就符合條件，又拿到鑰匙，
+     只會被算一次）。
+
+     revoked ＝ 連結外流時的煞車。撤銷後那把鑰匙的持有者立刻失去權限，
+     所以人數會往下掉——這正是撤銷該有的樣子。 */
+  function keyHolders(vault) {
+    var set = {};
+    (vault.keys || []).forEach(function (k) {
+      if (k.revoked) return;
+      (k.claimed || []).forEach(function (idx) { set[idx] = 1; });
+    });
+    return set;
+  }
+  /* 這座庫房現在真正打得開的人數＝符合任一條件 ∪ 持有有效鑰匙。 */
+  function reachAll(vault) {
+    var held = keyHolders(vault);
+    var rules = vault.rules || [];
+    var n = 0;
+    for (var i = 0; i < FANS.length; i++) {
+      if (held[i]) { n++; continue; }
+      for (var j = 0; j < rules.length; j++) {
+        if (matches(rules[j], FANS[i])) { n++; break; }
+      }
+    }
+    return n;
+  }
+  /* 拆給門條讀的三個數：條件帶進來的、鑰匙帶進來的、兩者重疊的。
+     重疊要單獨報出來，否則 513 ＋ 137 看起來像 650，實際上不是。 */
+  function reachSplit(vault) {
+    var held = keyHolders(vault);
+    var rules = vault.rules || [];
+    var byRule = 0, byKey = 0, both = 0;
+    for (var i = 0; i < FANS.length; i++) {
+      var r = false;
+      for (var j = 0; j < rules.length; j++) { if (matches(rules[j], FANS[i])) { r = true; break; } }
+      var k = !!held[i];
+      if (r) byRule++;
+      if (k) byKey++;
+      if (r && k) both++;
+    }
+    return { byRule: byRule, byKey: byKey, both: both, total: byRule + byKey - both };
+  }
+  function reachInTierAll(vault, tierKey) {
+    var held = keyHolders(vault);
+    var rules = vault.rules || [];
+    var n = 0;
+    for (var i = 0; i < FANS.length; i++) {
+      if (FANS[i].tier !== tierKey) continue;
+      if (held[i]) { n++; continue; }
+      for (var j = 0; j < rules.length; j++) { if (matches(rules[j], FANS[i])) { n++; break; } }
+    }
+    return n;
+  }
+  /* 鑰匙統計：發出的次數、已領取、還剩幾次。 */
+  function keyStats(vault) {
+    var issued = 0, claimed = 0, live = 0;
+    (vault.keys || []).forEach(function (k) {
+      if (k.revoked) return;
+      live++;
+      issued += k.uses;
+      claimed += (k.claimed || []).length;
+    });
+    return { live: live, issued: issued, claimed: claimed, left: issued - claimed };
+  }
+
+  /* 鑰匙代號：人要唸得出來、也要能印在鑰匙圈背面，所以不用 UUID。
+     去掉 0/O/1/I 這幾個在雷射雕刻上分不出來的字元。 */
+  var CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var codeSeq = 0;
+  function newCode(seedRnd) {
+    var r = seedRnd || Math.random;
+    var out = "";
+    for (var i = 0; i < 8; i++) out += CODE_ALPHABET[Math.floor(r() * CODE_ALPHABET.length)];
+    codeSeq++;
+    return out.slice(0, 4) + "-" + out.slice(4);
+  }
+  /* 展示用的連結。原型沒有後端，網域固定寫成粉絲端的正式網域，讓創作者
+     看到的就是他真的會貼出去的那一串，而不是 localhost。 */
+  function keyUrl(code) { return "https://ztor.com/k/" + code.replace("-", "").toLowerCase(); }
+
   function ruleLabel(rule) {
     if (rule.t === "tier") {
       var tier = TIERS.filter(function (x) { return x.key === rule.v; })[0];
@@ -182,6 +272,11 @@
       name: { en: "Unreleased demos & stems", zh: "未發行 Demo 與分軌" },
       note: { en: "Rough mixes and separated stems. Not licensed for redistribution.", zh: "粗混與分軌檔。未授權再散布。" },
       rules: [{ t: "tier", v: "super" }, { t: "bought", v: "acetate" }],
+      /* 送出去當禮物的單次鑰匙：uses 1、已被領走。 */
+      keys: [
+        { id: "k-demo-1", code: "HQ7M-3XKD", uses: 1, claimedN: 1, born: "2026/07/26",
+          label: { en: "Gift · for the fan who mailed the tape", zh: "禮物 · 給那位寄卡帶來的粉絲" } }
+      ],
       items: [
         { id: "d1", kind: "audio", name: { en: "Tidewater — rough mix v4", zh: "Tidewater 粗混 v4" }, dur: "4:12", size: "9.8 MB", added: "2026/07/22" },
         { id: "d2", kind: "audio", name: { en: "Undertow — drum stem", zh: "Undertow 鼓組分軌" }, dur: "5:03", size: "12.1 MB", added: "2026/07/22" },
@@ -195,6 +290,16 @@
       name: { en: "East-coast tour · backstage", zh: "東岸巡迴 · 幕後" },
       note: { en: "Everything that did not make the documentary.", zh: "沒有進紀錄片的那些。" },
       rules: [{ t: "tier", v: "devoted" }],
+      /* NFC 鑰匙圈的量產批次（500 支）＋ 一把外流後被撤銷的連結。
+         撤銷那把刻意留在資料裡：撤銷不是把紀錄刪掉，創作者要看得到
+         「這把發生過、現在停用了、當時有 12 個人領過」。 */
+      keys: [
+        { id: "k-bs-1", code: "KC26-A4VP", uses: 500, claimedN: 137, born: "2026/07/12",
+          label: { en: "NFC keychain · east-coast tour", zh: "NFC 鑰匙圈 · 東岸巡迴" },
+          product: { id: "nfc-keychain", name: { en: "Coastline NFC keychain", zh: "Coastline NFC 鑰匙圈" } } },
+        { id: "k-bs-2", code: "TMP9-2QRS", uses: 50, claimedN: 12, born: "2026/06/30", revoked: "2026/07/08",
+          label: { en: "Press preview · leaked, revoked", zh: "媒體預覽 · 外流後已撤銷" } }
+      ],
       items: [
         { id: "b1", kind: "clip",  name: { en: "Soundcheck — full take", zh: "彩排 全片段" }, img: "images/projects/nick-lrh-tour.jpg", dur: "12:40", size: "840 MB", added: "2026/07/25" },
         { id: "b2", kind: "image", name: { en: "Stage-worn jacket, night 6", zh: "第六場 演出服" }, img: "images/products/stage-worn-jacket.webp", size: "4.2 MB", added: "2026/07/24" },
@@ -251,6 +356,26 @@
     }
   ];
 
+  /* ── 把 claimedN 展開成真的「哪幾個粉絲領走了」──────────────
+     只存一個數字的話，「條件 ∪ 鑰匙」就沒辦法去重，門條上那個數字會變成
+     兩個數字硬加起來的假貨。所以這裡把它展開成母體裡的實際索引。
+
+     權重刻意偏向低分級：NFC 鑰匙圈存在的意義，就是讓一個爬不上分級階梯
+     的人也能進來。權重若偏向核心圈，重疊會大到讓這條路看起來沒有用——
+     那不是這個功能在現實中的樣子。 */
+  (function assignClaims() {
+    var r = rng(80260729);
+    var w = [0.15, 0.5, 1.0, 1.2];          /* inner · super · devoted · fan */
+    VAULTS.forEach(function (v) {
+      (v.keys || []).forEach(function (k) {
+        var want = Math.min(k.claimedN || 0, k.uses);
+        var scored = FANS.map(function (f, i) { return { i: i, s: w[f.ti] * r() }; });
+        scored.sort(function (a, b) { return b.s - a.s; });
+        k.claimed = scored.slice(0, want).map(function (x) { return x.i; });
+      });
+    });
+  })();
+
   /* 庫房封面＝第一張有圖的內容。沒有圖的庫房（純語音）走圖示，
      不放灰色佔位圖：一個永遠不會有封面的房間不該假裝它在等圖。 */
   function cover(vault) {
@@ -270,6 +395,12 @@
     vaults: VAULTS,
     reach: reach,
     reachInTier: reachInTier,
+    reachAll: reachAll,
+    reachSplit: reachSplit,
+    reachInTierAll: reachInTierAll,
+    keyStats: keyStats,
+    newCode: newCode,
+    keyUrl: keyUrl,
     ruleLabel: ruleLabel,
     ruleText: ruleText,
     cover: cover,

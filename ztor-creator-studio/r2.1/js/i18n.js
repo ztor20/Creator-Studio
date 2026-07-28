@@ -5097,8 +5097,15 @@
     'vault.viewer.fan':     { en: 'View as: Fan',               zh: '檢視身分：一般粉絲' },
     'vault.door.rules': { en: 'Unlock conditions', zh: '解鎖條件' },
     'vault.door.who':   { en: 'Who gets in', zh: '誰進得來' },
+    /* 分享／鑰匙（2026-07-29 使用者裁示）：加密連結可以直接送給粉絲當禮物，
+       也可以寫進 NFC 商品，粉絲買到之後手機一碰就取得權限。 */
+    'vault.door.keys':  { en: 'Keys issued', zh: '已發出的鑰匙' },
+    'vault.btn.share':  { en: 'Share access', zh: '分享權限' },
+    'vault.share.title':{ en: 'Share access', zh: '分享權限' },
     'vault.grid.label': { en: 'In this vault', zh: '這座庫房裡' },
     'vault.note.tiers': { en: 'Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.', zh: '分級條件在每晚的分級重算時重新判定——掉出分級的粉絲在那之前仍然打得開。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事，權限不會過期。' },
+    'cp.vaultkey.title': { en: 'This product carries a vault key', zh: '這件商品會附帶一把庫房鑰匙' },
+    'cp.vaultkey.body':  { en: 'Write this code onto the product’s NFC tag. A fan who taps it unlocks the vault it came from — one tap, one use.', zh: '把這組代號寫進商品的 NFC 標籤。粉絲碰一下就解鎖它來自的那座庫房——碰一次、用掉一次。' },
     'vault.note.demo':  { en: 'Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.', zh: '庫房內容與粉絲人數為原型示範資料。粉絲總數與粉絲總覽一致（1,283 位），所有限量數字都以實際售出量為上限。' },
 
     'tier-settings.gate.toppct': { en: 'Top %', zh: '前 % 名' },

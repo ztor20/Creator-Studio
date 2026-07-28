@@ -425,9 +425,10 @@
 }
 .vault-tile__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* 音檔沒有影像，就不要硬給它一張假的波形圖。改成把曲名排成標籤紙——
-   內容本身（名字＋長度）就是這一格要傳達的東西。 */
-.vault-tile--audio {
+/* 沒有影格的內容（音檔，以及剛上傳還沒轉檔的影片）不要硬給它一張假的
+   波形圖或破圖框。改成把檔名排成標籤紙——內容本身（名字＋長度）就是這
+   一格要傳達的東西。 */
+.vault-tile--label {
   background: color-mix(in srgb, var(--primary) 7%, var(--card));
   border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
 }
@@ -477,8 +478,8 @@
 .vault-tile__chip--kind { left: var(--sp-8); }
 .vault-tile__chip--dur  { right: var(--sp-8); }
 .vault-tile__chip .ztor-icon { width: 12px; height: 12px; }
-/* 音檔格是淺底，黑晶片會過重——同一個晶片在那裡換成描邊版。 */
-.vault-tile--audio .vault-tile__chip {
+/* 標籤紙格是淺底，黑晶片會過重——同一個晶片在那裡換成描邊版。 */
+.vault-tile--label .vault-tile__chip {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--foreground-muted);
@@ -529,7 +530,7 @@
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   pointer-events: none;
 }
-.vault-tile--audio .vault-tile__name { display: none; }
+.vault-tile--label .vault-tile__name { display: none; }
 
 /* 就地改名。不用 window.prompt：那是作業系統畫的框，DS 明令每個控制項都要
    有自己的聲音，而且它會把使用者的視線從那一格拉走——改的是這一格的名字，
@@ -551,6 +552,40 @@
 }
 .vault-tile.is-renaming .vault-tile__actions,
 .vault-tile.is-renaming .vault-tile__chip { opacity: 0; pointer-events: none; }
+
+/* 就地刪除確認。問句蓋滿整格，因為要確認的就是「這一格」——把問題放在
+   被問的東西上面，比放到畫面正中央的系統對話框準確。 */
+.vault-tile__confirm {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12);
+  text-align: center;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  backdrop-filter: var(--overlay-blur);
+}
+.vault-tile__confirm-q {
+  margin: 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--foreground);
+}
+.vault-tile__confirm-row { display: flex; gap: var(--sp-6); }
+.vault-tile.is-confirming .vault-tile__actions,
+.vault-tile.is-confirming .vault-tile__chip { opacity: 0; pointer-events: none; }
+
+/* 拖放中：整個格子是投放區，不是那一個虛線方框。所以回饋也給整個格子。 */
+.vault-grid.is-dropping {
+  outline: 2px dashed var(--primary);
+  outline-offset: var(--sp-8);
+  border-radius: var(--radius-lg);
+}
 .vault-tile:hover .vault-tile__name { opacity: 0; transition: opacity var(--duration) var(--easing); }
 
 /* ── 窄版 ──────────────────────────────────────────────── */
