@@ -20,7 +20,7 @@
 
    ── Markup contract ────────────────────────────────────────────
    Real tables — <table class="ztor-table"> with a <thead>:
-     <th data-sort>Reputation</th>            ← auto-detects type
+     <th data-sort>Loyalty points</th>            ← auto-detects type
      <th data-sort="text">Country</th>        ← or state it
      <th>#</th>                               ← no data-sort = not sortable
    Rows are `tbody > tr`. A `.ztor-table__detail` expansion row is NOT a
@@ -29,7 +29,7 @@
    Grid tables — a `.table-head` whose grid-template-columns matches its
    rows, inside a container marked `data-sort-table`:
      <div data-sort-table>
-       <div class="table-head"><span data-sort="num" data-sort-key="rep">Reputation</span>…</div>
+       <div class="table-head"><span data-sort="num" data-sort-key="rep">Loyalty points</span>…</div>
        <div class="data-list">
          <div class="data-list__row"><span data-sort-key="rep">874</span>…</div>
 

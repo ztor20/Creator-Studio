@@ -34,14 +34,17 @@
 <style>
   /* fans-crm 專屬 layout hooks（非可重用樣式留頁內）。
      2026-07-27 使用者裁示：粉絲清單是一張真表格 —— 有欄位標題、地區獨立成欄。
-     9 欄：序號｜粉絲(姓名+email)｜國家｜分級｜聲望｜消費｜升級進度｜狀態｜操作。
+     9 欄：序號｜粉絲(姓名+email)｜國家｜分級｜忠誠點數｜消費｜升級進度｜狀態｜操作。
      標題列與資料列共用這一條 grid-template-columns（一次宣告、兩個選擇器），
      所以標題不可能跟它命名的那一欄跑掉。 */
   .table-head.fan-row,
   .fan-row {
-    grid-template-columns: 36px minmax(150px,1fr) 116px 108px 78px 84px 104px 96px 62px;
-    min-width: 900px;   /* 低於此寬度由 .table-scroll 橫向捲動，不重排成卡片 */
+    /* 忠誠點數欄 96px：欄名「Loyalty points」單行需 90px，原本的 78px 會斷成兩行。 */
+    grid-template-columns: 36px minmax(150px,1fr) 116px 108px 96px 84px 104px 96px 62px;
+    min-width: 920px;   /* 低於此寬度由 .table-scroll 橫向捲動，不重排成卡片 */
   }
+  /* 欄名一律單行：兩個字的欄名斷行後會比鄰欄矮半行，整條標題列看起來沒對齊。 */
+  .table-head.fan-row > * { white-space: nowrap; }
   .fan-row__rank {
     width:36px; height:36px; border-radius:50%;
     display:inline-grid; place-items:center;
@@ -89,7 +92,7 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="fans.h1">Your fans, ranked.</h1>
-          <p class="page-intro__sub" data-i18n="fans.sub">High-value first. Sort by spend, reputation, recency, or tier. Message or export any segment.</p>
+          <p class="page-intro__sub" data-i18n="fans.sub">High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.</p>
         </div>
         <div class="page-intro__actions">
           <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
@@ -117,8 +120,8 @@
         </div><div class="kpi__value">5</div><div class="kpi__delta kpi__delta--neg" data-i18n="fans.kpi.risk-meta">5 Superfans &gt;14d quiet</div></div>
         <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="fans.kpi.revenue">Revenue (active)</div><div class="kpi__value">$20,700</div><div class="kpi__meta" data-i18n="fans.kpi.revenue-meta">Trailing 90 days</div></div>
         <div class="kpi bento--span-3"><div class="kpi__label">
-          <span data-i18n="fans.kpi.rep">Avg reputation</span>
-          <span class="tip fans-tip" tabindex="0" aria-label="A fan's overall value score." hidden><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.rep.tip">Reputation is a fan's overall value score, recomputed nightly.</span></span>
+          <span data-i18n="fans.kpi.rep">Avg loyalty points</span>
+          <span class="tip fans-tip" tabindex="0" aria-label="A fan's overall value score." hidden><i data-lucide="info" class="ztor-icon"></i><span class="tip__bubble" role="tooltip" data-i18n="fans.kpi.rep.tip">Loyalty points are a fan's overall value score, recomputed nightly.</span></span>
         </div><div class="kpi__value">642</div><div class="kpi__delta" data-i18n="fans.kpi.rep-meta">+12 vs last month</div></div>
       </div>
 
@@ -202,7 +205,7 @@
             <span data-sort="text" data-sort-key="name" data-i18n="fans.col.fan">Fan</span>
             <span data-sort="text" data-sort-key="country" data-i18n="fans.col.country">Country</span>
             <span data-sort="num" data-sort-key="tier" data-i18n="fans.col.tier">Tier</span>
-            <span class="table-head__end" data-sort="num" data-sort-key="rep" data-i18n="fans.col.rep">Reputation</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="rep" data-i18n="fans.col.rep">Loyalty points</span>
             <span class="table-head__end" data-sort="num" data-sort-key="spent" data-i18n="fans.col.spent">Spent</span>
             <span class="table-head__end" data-sort="num" data-sort-key="next" data-i18n="fans.col.next">Next tier</span>
             <span data-sort="num" data-sort-key="status" data-i18n="fans.col.status">Status</span>

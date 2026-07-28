@@ -319,7 +319,7 @@ Figma node 856-22782 把上架設定畫成收合式：外框 1px 邊、圓角 18
 #### Q12　欄位/列標籤：大寫小標 vs 一般 label，同頁同角色卻給了不同答案
 
 現況：`tier-settings.html` 同一頁面內，「欄位名稱標籤」這個角色出現兩種樣式：
-- `tier-settings.html:44-51`（頁內 `<style>` 自訂的 `.gate-field__label`）→ 12px、**大寫（`text-transform: uppercase`）**、字距 0.3px，用在「Reputation gate」「Spend gate」「Early access (days)」「Merch discount (%)」等欄位名稱
+- `tier-settings.html:44-51`（頁內 `<style>` 自訂的 `.gate-field__label`）→ 12px、**大寫（`text-transform: uppercase`）**、字距 0.3px，用在「Top %」「Min. loyalty points」「Early access (days)」「Merch discount (%)」等欄位名稱
 - `ds-components/settings.css:67-71`（DS 元件 `.settings-row__label`）→ 13px、**一般大小寫**、無字距特調，用在同頁的「Purchases」「Event check-ins」「Dual-gate upgrade」「Versioned, non-retroactive」等列標籤
 
 兩者都是「說明這一列/這一欄是什麼」的標籤角色，只因為 Gates／Benefits 區塊用了頁面自訂 class、Multipliers／Rules 區塊用了 DS 元件，就長得不一樣。

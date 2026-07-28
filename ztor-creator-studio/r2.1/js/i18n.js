@@ -2129,7 +2129,7 @@
     /* ─── Fans CRM page ───────────────────────────────────── */
     'fans.h1':               { en: 'Your fans, ranked.',                    zh: '你的粉絲，依價值排序' },
     'fans.crumb.self':       { en: 'Fans',                                  zh: '粉絲' },
-    'fans.sub':              { en: 'High-value first. Sort by spend, reputation, recency, or tier. Message or export any segment.', zh: '高價值優先。依消費、聲望、近期或等級排序，任一區段都可發訊或匯出。' },
+    'fans.sub':              { en: 'High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.', zh: '高價值優先。依消費、忠誠點數、近期或等級排序，任一區段都可發訊或匯出。' },
     'fans.btn.csv':          { en: 'Export CSV',                            zh: '匯出 CSV' },
     'fans.btn.message':      { en: 'Message segment',                       zh: '群發訊息' },
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
@@ -2138,7 +2138,7 @@
     'fans.kpi.risk-meta':    { en: '5 Superfans &gt;14d quiet',             zh: '5 位超級粉絲 >14 天未互動' },
     'fans.kpi.revenue':      { en: 'Revenue (active)',                      zh: '活躍粉絲收入' },
     'fans.kpi.revenue-meta': { en: 'Trailing 90 days',                      zh: '近 90 天' },
-    'fans.kpi.rep':          { en: 'Avg reputation',                        zh: '平均聲望' },
+    'fans.kpi.rep':          { en: 'Avg loyalty points',                    zh: '平均忠誠點數' },
     'fans.kpi.rep-meta':     { en: '+12 vs last month',                     zh: '較上月 +12' },
     'fans.who.title':        { en: "Who's who",                             zh: '粉絲組成' },
     'fans.who.tier':         { en: 'Tier settings',                         zh: '等級設定' },
@@ -2180,7 +2180,7 @@
     'fans.col.fan':      { en: 'Fan',         zh: '粉絲' },
     'fans.col.country':  { en: 'Country',     zh: '國家' },
     'fans.col.tier':     { en: 'Tier',        zh: '分級' },
-    'fans.col.rep':      { en: 'Reputation',  zh: '聲望' },
+    'fans.col.rep':      { en: 'Loyalty points', zh: '忠誠點數' },
     'fans.col.spent':    { en: 'Spent',       zh: '消費' },
     'fans.col.next':     { en: 'Next tier',   zh: '升級進度' },
     'fans.col.status':   { en: 'Status',      zh: '狀態' },
@@ -3871,7 +3871,7 @@
     'fans.btn.explain':      { en: 'How this works', zh: '系統說明' },
     'fans.kpi.active.tip':     { en: 'Fans active in the trailing 90 days.', zh: '近 90 天內活躍的粉絲。' },
     'fans.kpi.risk.tip':       { en: 'Valuable fans whose recent engagement dropped sharply (a flag, not a score).', zh: '近期互動驟降的有價值粉絲（布林旗標，非機率分數）。' },
-    'fans.kpi.rep.tip':        { en: "Reputation is a fan's overall value score, recomputed nightly.", zh: 'Reputation 是粉絲的整體價值分，每夜重算。' },
+    'fans.kpi.rep.tip':        { en: "Loyalty points are a fan's overall value score, recomputed nightly.", zh: '忠誠點數是粉絲的整體價值分，每夜重算。' },
     'fans.status.recovered':   { en: 'Recovered', zh: '已挽回' },
     'fans.row.message':        { en: 'Message', zh: '發訊息' },
     'fans.row.detail':         { en: 'Details', zh: '詳情' },
@@ -4918,8 +4918,8 @@
     'fan-detail.identity': { en: 'yuhan@studio · Taipei, Taiwan · Fan since Mar 2024', zh: 'yuhan@studio · 台灣台北 · 自 2024 年 3 月起的粉絲' },
     'fan-detail.btn.message': { en: 'Message', zh: '傳訊息' },
     'fan-detail.btn.tier-settings': { en: 'Tier settings', zh: '分級設定' },
-    'fan-detail.kpi.reputation': { en: 'Reputation', zh: '聲望' },
-    'fan-detail.kpi.reputation-delta': { en: '+38 vs last batch', zh: '+38（對比上次批次）' },
+    'fan-detail.kpi.points': { en: 'Loyalty points', zh: '忠誠點數' },
+    'fan-detail.kpi.points-delta': { en: '+38 vs last batch', zh: '+38（對比上次批次）' },
     'fan-detail.kpi.spent': { en: 'Spent', zh: '消費額' },
     'fan-detail.kpi.spent-meta': { en: 'Lifetime · 18 orders', zh: '累計 · 18 筆訂單' },
     'fan-detail.kpi.progress': { en: 'Next tier progress', zh: '下一級進度' },
@@ -4927,7 +4927,7 @@
     'fan-detail.kpi.last-active': { en: 'Last active', zh: '最近活躍' },
     'fan-detail.kpi.last-active-val': { en: '2 days ago', zh: '2 天前' },
     'fan-detail.kpi.last-active-meta': { en: 'Opened the Coastline EP drop', zh: '開啟了 Coastline EP 上架通知' },
-    'fan-detail.batch-note': { en: 'Reputation and tier are recomputed by the nightly batch — values reflect the last run, not live activity.', zh: '聲望與分級由每晚批次重新計算──數值反映上次執行結果，非即時活動。' },
+    'fan-detail.batch-note': { en: 'Loyalty points and tier are recomputed by the nightly batch — values reflect the last run, not live activity.', zh: '忠誠點數與分級由每晚批次重新計算──數值反映上次執行結果，非即時活動。' },
     'fan-detail.tab.timeline': { en: 'Behavior timeline', zh: '行為時間軸' },
     'fan-detail.tab.spending': { en: 'Spending', zh: '消費' },
     'fan-detail.tab.participation': { en: 'Events & projects', zh: '活動與企劃' },
@@ -4946,7 +4946,7 @@
     'fan-detail.tl.project1-meta': { en: 'Projects · Mar 02', zh: '企劃 · 3/02' },
     'fan-detail.tl.referral1': { en: 'Referred 2 new fans', zh: '推薦了 2 位新粉絲' },
     'fan-detail.tl.referral1-meta': { en: 'Referral · Feb 20', zh: '推薦 · 2/20' },
-    'fan-detail.repmix.title': { en: 'What drives this reputation', zh: '聲望的來源' },
+    'fan-detail.repmix.title': { en: 'What drives these loyalty points', zh: '忠誠點數的來源' },
     'fan-detail.repmix.sub': { en: 'Behavior signals weighted into the score. Recent activity weighs more and decays over time.', zh: '計入分數的行為訊號。近期活動權重較高，並隨時間衰減。' },
     'fan-detail.repmix.spend': { en: 'Purchases', zh: '購買' },
     'fan-detail.repmix.events': { en: 'Event check-ins', zh: '活動報到' },
@@ -4994,7 +4994,7 @@
     'fan-detail.contrib.peak': { en: 'Hall of fame · peak tier', zh: '名人堂 · 最高級別' },
     'fan-detail.contrib.note': { en: '<strong>Hall of fame is read-only.</strong> Peak tier records the highest tier ever reached and the year it happened — it does not change when the current tier moves (F12).', zh: '<strong>名人堂為唯讀。</strong>最高級別記錄曾達到的最高分級與發生年份──當前分級變動時不會更動（F12）。' },
     'fan-detail.footer1': { en: 'Fan profile · part of Fans CRM', zh: '粉絲檔案 · Fans CRM 的一部分' },
-    'fan-detail.footer2': { en: 'Reputation & tier recomputed nightly', zh: '聲望與分級每晚重新計算' },
+    'fan-detail.footer2': { en: 'Loyalty points & tier recomputed nightly', zh: '忠誠點數與分級每晚重新計算' },
 
     /* Tier settings & benefits (5.1.7 F8) */
     'tier-settings.crumb.fans': { en: 'Fans', zh: '粉絲' },
@@ -5014,7 +5014,8 @@
     'tier-settings.tier.inner-count': { en: '359 fans today', zh: '今日 359 位粉絲' },
     /* 2026-07-27 使用者裁示：分級門檻改成「Top %＋最低忠誠點數」兩欄。
        消費門檻移除——忠誠點數本身已經反映消費，兩個閘門會重複計算同一件事。
-       reputation／spend 兩個舊 key 保留，其他頁面（fan-detail、報表）仍在引用。 */
+       2026-07-28：全站對外名稱統一為「忠誠點數 / Loyalty points」，舊詞「聲望 /
+       Reputation」不再出現於任何介面文案；未使用的 gate.reputation key 已移除。 */
     /* ─── 分級權益 tier-benefits.html（2026-07-27 改版）───────────
        舊版是「四張分級卡各自帶一份 chip 清單＋自訂權益欄」，同一個權益
        被複製到多張卡、狀態各自獨立，所以「新增」無處可加。改成
@@ -5069,7 +5070,6 @@
     'tier-settings.explain.points.lead': { en: 'An <strong>absolute</strong> gate. A percentile always produces a top 1% — even in a tiny audience. The floor is what stops a tier being handed out to someone who has not earned it.', zh: '這是<strong>絕對</strong>門檻。百分位一定算得出「前 1%」——就算總共只有幾十個人也一樣。點數下限就是用來擋住「還沒真的達標卻被發了分級」。' },
     'tier-settings.explain.points.eg': { en: 'A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> and Inner Circle’s floor is <strong>800</strong>, they still do not enter. The tier stays empty until someone genuinely reaches it.', zh: '一位創作者只有 <strong>40 位</strong>粉絲：前 1% 就是一個人。若這位粉絲只有 <strong>120 點</strong>，而核心圈的下限是 <strong>800</strong>，他仍然進不去。這個分級會一直空著，直到有人真的達標。' },
     'tier-settings.explain.points.rule': { en: 'A fan must clear both gates. Being top 1% is not enough on its own, and neither is a high score outside the percentile.', zh: '兩道門檻都要通過。只在前 1% 不夠，點數再高但排不進百分位也不夠。' },
-    'tier-settings.gate.reputation': { en: 'Reputation gate', zh: '聲望門檻' },
     'tier-settings.gate.spend': { en: 'Spend gate (USD)', zh: '消費門檻（USD）' },
     'tier-settings.tier.superfan': { en: 'Superfan', zh: '超級粉絲' },
     'tier-settings.tier.superfan-count': { en: '512 fans today', zh: '今日 512 位粉絲' },
@@ -5107,7 +5107,7 @@
     'tier-settings.rules.title': { en: 'Rules & versioning', zh: '規則與版本' },
     'tier-settings.rules.sub': { en: 'How the tier system behaves. These are product rules — surfaced here, owned upstream.', zh: '分級系統的運作方式。這些是產品規則──在此呈現，由上游掌管。' },
     'tier-settings.rules.dualgate': { en: 'Dual-gate upgrade', zh: '雙重門檻升級' },
-    'tier-settings.rules.dualgate-hint': { en: 'A fan upgrades only when reputation AND spend both pass the tier’s gates.', zh: '粉絲只有在聲望與消費同時通過該級別門檻時才會升級。' },
+    'tier-settings.rules.dualgate-hint': { en: 'A fan upgrades only when they clear both of the tier’s gates — the top % AND the loyalty-points floor.', zh: '粉絲必須同時通過該級別的兩道門檻──前 % 名與最低忠誠點數──才會升級。' },
     'tier-settings.rules.monotonic': { en: 'Monotonic thresholds', zh: '單調遞減門檻' },
     'tier-settings.rules.monotonic-hint': { en: 'Higher tiers must require strictly more than lower tiers, or the save is blocked. <em>Exact validation — TBC, not invented here.</em>', zh: '較高級別的要求必須嚴格高於較低級別，否則無法儲存。<em>確切驗證──待確認，此處不自行發明。</em>' },
     'tier-settings.rules.version': { en: 'Versioned, non-retroactive', zh: '版本化、不溯及既往' },
