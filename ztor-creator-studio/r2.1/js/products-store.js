@@ -388,6 +388,7 @@
        ＋ priceFrom 旗標——品名（name）維持中文，那是賣家自己的商品名，與商品分頁的處理一致；
        其餘（狀況、分類、起標）都是系統詞彙，一律走 i18n。 */
     'Stage-worn leather jacket': {
+      id: 'realive-tour-guitar',
       name: 'REALIVE 巡演主吉他（親簽）', metaKey: 'e-shop.anick.guitar.meta',
       img: 'PRS 10-Top.webp', catKey: 'e-shop.cat.instruments', price: '$1,280'
     },
@@ -400,6 +401,7 @@
       img: 'coastline-single.webp', catKey: 'e-shop.cat.memorabilia', price: '$860'
     },
     'WYAGL Nike Dunk Low Pro SB': {
+      id: 'wyagl-nike-dunk',
       name: 'Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋', metaKey: 'e-shop.anick.dunk.meta',
       img: 'nick-nike-00.jpg', catKey: 'e-shop.cat.footwear', price: 'NT$12,800', priceFrom: true,
       activityKey: 'e-shop.aNick.activity', gallery: ['nick-nike-00.jpg', 'nick-nike-01.jpg', 'nick-nike-02.jpg', 'nick-nike-03.jpg']
@@ -432,6 +434,9 @@
     document.querySelectorAll('.product-list__row[data-type="auction"]').forEach(function (row) {
       var a = AUCTIONS_NICK[row.getAttribute('data-name') || ''];
       if (!a) return;
+      /* 上游 2026-07-27 的詳情頁連結修復——必須保留，否則拍賣列點進去會開到錯的頁。 */
+      var detail = row.querySelector('a[href*="auction-detail.html"]');
+      if (detail && a.id) detail.setAttribute('href', 'auction-detail.html?id=' + a.id);
       /* 品名＝賣家內容，維持原值並移除原本那格的 key（示意英文名已不代表這一列）。 */
       var t = row.querySelector('.product-list__title');
       if (t) { t.removeAttribute('data-i18n'); t.textContent = a.name; }
@@ -465,9 +470,9 @@
     return bundles.find(function (bundle) { return bundle.id === id; }) || (id == null ? bundles[0] : null);
   };
   window.ztorGetAuction = function (id) {
-    if (persona() !== 'nick') return null;
-    if (id === 'wyagl-nike-dunk') return AUCTIONS_NICK['WYAGL Nike Dunk Low Pro SB'];
-    return null;
+    if (persona() !== 'nick' || !id) return null;
+    var auctions = Object.keys(AUCTIONS_NICK).map(function (key) { return AUCTIONS_NICK[key]; });
+    return auctions.find(function (auction) { return auction.id === id; }) || null;
   };
 
   /* ── e-shop 列表就地改列（persona ≠ default 時）──────────────────

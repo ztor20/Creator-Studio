@@ -1851,7 +1851,12 @@
     'bd.impact.note':       { en: "Editing a member's price, stock or visibility can affect this bundle's sellable quantity and pricing validity — a sold-out or hidden member makes the bundle unsellable and pulls it from your shop; a member price rise can push the fixed price above members' total.", zh: '修改成員的價格、庫存或可見狀態，可能影響本組合的可售量與定價有效性——成員售罄或下架會使組合不可售並一併下架；成員漲價可能使固定價高於成員合計。' },
     'bd.kpi.sold':          { en: 'Bundles sold',            zh: '已售組數' },
     'bd.sales.empty':       { en: 'No sales yet. Revenue appears here once fans buy this bundle.', zh: '尚無銷售紀錄。粉絲購買後，收入會顯示在這裡。' },
+    /* 合併 2026-07-29：hint 取本機版（不帶規格編號，使用者可見字串不出現 §），
+       上游同批新增的兩個 key 保留——新版組合明細版型要用。 */
     'bd.sales.hint':        { en: 'Net figures pulled from Earnings; member revenue split is settled by Earnings.', zh: '淨額來自收入管理；成員收入分攤由收入管理結算。' },
+    /* 2026-07-27 版型改成與商品明細同構（頁籤＋右側常駐欄）後新增 */
+    'bd.tab.members':       { en: 'Members',                 zh: '成員' },
+    'bd.rail.summary':      { en: 'Bundle at a glance',      zh: '組合概況' },
 
     /* ─── Auction detail (spec 5.1.5.8 拍賣商品細節頁) ─────────── */
     'ad.crumb.eshop':       { en: 'E-Shop',                  zh: '電子商店' },
@@ -1861,9 +1866,8 @@
     'ad.sub':               { en: 'Upcoming auctions are editable; once live, edits are limited.', zh: '尚未開始的拍賣可編輯；進入競標後可改範圍受限。' },
     'ad.btn.copy':          { en: 'Copy link',               zh: '複製連結' },
     'ad.btn.preview':       { en: 'Preview',                 zh: '預覽' },
-    'ad.phase.preview':     { en: 'Preview',                 zh: '預展' },
-    'ad.phase.open':        { en: 'Open bidding',            zh: '開放競標' },
-    'ad.phase.result':      { en: 'Result',                  zh: '結果' },
+    /* 2026-07-27 移除 ad.phase.preview／.open／.result：競標生命週期三階段列已撤除
+       （與頁首狀態徽章重複，使用者裁示），全站無其他消費者。 */
     'ad.tag.clothing':      { en: 'Clothing',                zh: '服飾' },
     'ad.tag.cond':          { en: 'Well-loved',              zh: '使用痕跡明顯' },
     'ad.tag.elig':          { en: 'Inner Circle',            zh: '核心圈' },
@@ -1898,6 +1902,16 @@
     'ad.info.fulfil':       { en: 'After the auction ends, the winning order, shipping and fulfilment are handled in Order management.', zh: '結標後，得標訂單、出貨與履約由訂單管理承接。' },
     'ad.info.fulfil-cta':   { en: 'Go to order management →', zh: '前往訂單管理 →' },
     'ad.preview.title':     { en: 'How fans see this auction', zh: '粉絲看到此拍賣的樣子' },
+    /* 2026-07-27 版型改成與商品明細同構（頁籤＋右側常駐欄）後新增 */
+    'ad.tab.bids':          { en: 'Bids',                    zh: '出價' },
+    'ad.tab.info':          { en: 'Auction info',            zh: '拍賣資訊' },
+    'ad.stats.title':       { en: 'Bidding stats',           zh: '競標概況' },
+    'ad.stats.sub':         { en: 'Live figures from the bidding engine; not editable here.', zh: '競標即時數字，不在本頁編輯。' },
+    'ad.item.title':        { en: 'Item summary',            zh: '物品摘要' },
+    'ad.bids.sub':          { en: 'Every bid on this item, newest first.', zh: '本件所有出價，新到舊排序。' },
+    'ad.info.sub':          { en: 'Set when the auction was created; locked once bidding is live.', zh: '於建立拍賣時設定；進入競標後鎖定。' },
+    'ad.fulfil.title':      { en: 'Settlement & fulfilment', zh: '結標與履約' },
+    'ad.rail.status':       { en: 'Auction status',          zh: '競標狀態' },
 
     /* ─── Events page ─────────────────────────────────────── */
     'events.h1':               { en: 'Events',                              zh: '活動' },

@@ -715,7 +715,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
 | Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
-| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`（`.page` max-width 1280px）. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner。**窄版變體 `.page--narrow`（1056px，2026-07-20 Q21）**：只給 Detail rail（§4.52）的兩欄詳情頁——右欄固定 300px，容器留在 1280 會讓左欄行長過長；其餘頁面維持 1280。Q21 原裁全站收窄，同日改為僅變體套用。Consumer：product-detail.html、order-detail.html | [shared.css](./shared.css) |
+| App shell | 🟠 organism | ✓ Project | Global page frame: `.app` + `.main` + `.page`（`.page` max-width 1280px）. Sidebar mode makes `.main` one continuous `--surface-page` sheet on `--surface-shell`, with a 16px top gap and 28px top-left corner。**窄版變體 `.page--narrow`（1056px，2026-07-20 Q21）**：只給 Detail rail（§4.52）的兩欄詳情頁——右欄固定 300px，容器留在 1280 會讓左欄行長過長；其餘頁面維持 1280。Q21 原裁全站收窄，同日改為僅變體套用。Consumer：product-detail.html、order-detail.html、bundle-detail.html、auction-detail.html | [shared.css](./shared.css) |
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field more | 🟡 molecule | ✓ Project | 把一組欄位裡的次要欄位收在「顯示更多」按鈕後（2026-07-21）：`.field-more` > `.btn.btn--outline.field-more__toggle`（**2026-07-21 使用者裁示改滿寬線框鈕**，原為靠左無框文字鈕；外觀重用 Button atom，本元件只擁有 `width:100%` ＋ `justify-content:center`，不自刻邊框/hover）。`margin-bottom: --sp-16` 吃 `.field` 同一套表單節奏、`:last-child` 歸零免留尾巴（2026-07-21：改滿寬鈕後才浮現——原本只有上方靠前一個 `.field` 的下外距撐開、自己沒有下外距，後面元素會貼上來）（chevron ＋ `field.show-more`／`field.show-less` 文案）＋ `.field-more__body[hidden]`。**收合區內任一欄位已有值就自動展開**——建立商品是空表單、收起來合理；商品明細是編輯頁、欄位帶真實資料，藏起來等於藏使用者填過的東西。這個判斷是用 JS（[partials/field-more.js](./partials/field-more.js)）而非 `<details>` 的原因，兩頁因此能共用同一段 markup。首次用於建立商品／商品明細的取貨方式 ▸ 物流配送（只留「重量」在外，出貨分類／尺寸／寄件地收起來）。收在裡面的必填欄仍保留 `*` 標記 | [field-more.css](./ds-components/field-more.css) |
 | Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊。**2026-07-22 追加 `.field-readout`**：欄位改「只顯示、不可填」時用它取代 `.input`／`.amount-field`（ui 字體／`--fs-14`／`--foreground`、不畫框不留 input 內距，讀起來是文字不是空欄）；用於商品明細把價格／成本／總量上限改唯讀，改值一律走編輯 popup | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
@@ -3627,7 +3627,7 @@ The component is entirely static; it has no interactive state.
 <div class="kv kv--lead"><span class="kv__k">Pickup window</span><span class="kv__v">Aug 16 · 14:00–18:00</span></div>
 ```
 
-**Consumers** — `product-detail.html` (the three right-rail meta cards).
+**Consumers** — `product-detail.html` (the three right-rail meta cards); `bundle-detail.html` (right-rail "組合概況" card); `auction-detail.html` (right-rail "競標狀態" card).
 
 **CSS** — [`kv-list.css`](./ds-components/kv-list.css)
 
@@ -3774,7 +3774,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 
 **Dependencies** — composes Form section, Tabs, KPI, KV list (§4.50), Stock bar (§4.51). Assembly rules: Pillar 5 §5.1 *Detail + persistent rail*.
 
-**Consumers** — `product-detail.html` (tabbed editing main + read-only meta rail); `order-detail.html` (read-only order summary main + buyer-info rail — no tabs, but the same main + persistent read-only rail shell).
+**Consumers** — `product-detail.html` (tabbed editing main + read-only meta rail); `order-detail.html` (read-only order summary main + buyer-info rail — no tabs, but the same main + persistent read-only rail shell); `bundle-detail.html` (2026-07-27，分頁 總覽／銷售設定／成員，右欄＝上架設定＋唯讀組合概況；成員分頁掛 `--norail`); `auction-detail.html` (2026-07-27，分頁 總覽／出價／拍賣資訊，右欄＝唯讀競標狀態；出價分頁掛 `--norail`).
 
 **CSS** — [`detail-rail.css`](./ds-components/detail-rail.css)
 
@@ -4279,7 +4279,7 @@ All use the `wizard-focus` template (no main topbar), a centered `stepper`, a st
 
 - **12-col bento grid** (`.bento`) — primary layout for dashboard / earnings rows. Children use `.bento--span-{3,4,5,6,7,8,9,12}` to set columns. Below 900px breakpoint all children fall back to span 12 (mobile single-column). See [§4.25 Bento grid](#424-bento-grid).
 - **Page container** — `max-width: 1280px`, centered; padding 32 24 96 (top-x-bottom).
-- **`.page--narrow` 窄版變體** — `max-width: 1056px`（2026-07-20 Q21）。**用途**：只給「主欄＋右側常駐 meta 欄」的兩欄詳情頁（Detail rail §4.52）。**為什麼需要**：右欄固定 300px，容器若維持 1280，左欄會寬到行長過長、讀起來吃力；收成 1056 讓左欄回到舒適行長，右欄寬度不變。**基準不動**：其餘所有頁面維持 1280——Q21 原本裁定全站 1280→1056，同日經使用者實看結果後改為僅此變體套用。**Consumer**：`product-detail.html` 與 `order-detail.html`（皆 `<div class="page page--narrow">`）。定義在 `shared.css`。
+- **`.page--narrow` 窄版變體** — `max-width: 1056px`（2026-07-20 Q21）。**用途**：只給「主欄＋右側常駐 meta 欄」的兩欄詳情頁（Detail rail §4.52）。**為什麼需要**：右欄固定 300px，容器若維持 1280，左欄會寬到行長過長、讀起來吃力；收成 1056 讓左欄回到舒適行長，右欄寬度不變。**基準不動**：其餘所有頁面維持 1280——Q21 原本裁定全站 1280→1056，同日經使用者實看結果後改為僅此變體套用。**Consumer**：`product-detail.html`、`order-detail.html`、`bundle-detail.html`、`auction-detail.html`（皆 `<div class="page page--narrow">`；後兩者 2026-07-27 改用同一套詳情頁殼）。定義在 `shared.css`。
 - **Section vertical rhythm** — `mt-24` (24px) for top-level section gap; `gap: 16px` for bento children; `gap: 8px` for topbar action cluster.
 
 ### 6.2 Page Templates
