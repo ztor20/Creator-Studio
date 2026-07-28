@@ -274,8 +274,11 @@
 .product-list--eshop .product-list__head,
 .product-list--eshop .product-list__row {
   /* 後方資料欄收窄：分類/價格/狀態/庫存不過寬、右側更緊湊；名稱欄(1.6fr)吸收釋出空間。
-     狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。 */
-  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+     狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。
+     2026-07-29：名稱與分類之間插入粉絲分級欄（144px）。寬度取自最長的值
+     「Superfan or above」——這一欄的值是徽章或短句，不換行才讀得快；名稱欄的
+     1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
+  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
 }
 .product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
 .product-list--eshop .product-list__price,
@@ -283,10 +286,51 @@
 .product-list--eshop .product-list__category-cell { color: var(--foreground); }
 .product-list--eshop .product-list__actions { display: flex; justify-content: flex-end; }
 
-/* 套組分頁 — 同 product-list 外觀，較寬的成員欄；欄位：Image / Bundle / Members / Price / Status / Stock / Actions */
+/* 套組分頁 — 同 product-list 外觀，較寬的成員欄；
+   欄位：Image / Bundle / Fan tier / Members / Price / Status / Stock / Actions
+   （2026-07-29 加入粉絲分級，與商品分頁同一個位置：名稱之後、其餘資料欄之前，
+   兩個分頁掃起來是同一條線）。 */
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
-  grid-template-columns: 84px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
+  grid-template-columns: 84px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
+}
+
+/* ── 粉絲分級門檻欄（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）─────────
+   靜止態就是值本身，不是一個等著被點的控制項：有門檻＝該分級的徽章（顏色沿用
+   tier-settings 的分派，核心圈橘／超級粉絲藍／上榜粉絲綠，同一套語彙不另立第二種），
+   沒門檻＝一句安靜的「全部分級」灰字。
+   為什麼「全部分級」不給徽章：30 列裡多數商品本來就人人可買，全部塗成徽章之後，
+   真正有門檻的那幾件反而淹沒了。這一欄要讓人一眼看見的是「哪幾件被鎖住」，
+   所以沒鎖的要安靜。 */
+.product-list__tier { min-width: 0; }
+.product-list__tier .dropdown { display: block; }
+.product-list__tier-btn {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  max-width: 100%;
+  padding: 0; border: 0; background: transparent;
+  font: inherit; font-size: var(--fs-13); line-height: var(--lh-snug);
+  color: var(--muted-foreground); text-align: left; cursor: pointer;
+  border-radius: var(--radius-md);
+}
+.product-list__tier-btn > .badge { max-width: 100%; }
+/* 「全部分級」＝沒有門檻。刻意不是徽章：徽章在這一欄的意思是「這件被鎖住了」，
+   把沒鎖的也塗上去，等於讓整欄都在喊，該被看見的那幾件就消失在裡面。 */
+.product-list__tier-none { color: var(--muted-foreground); }
+/* chevron 只在 hover／focus／開啟時出現：欄位平常是資訊，滑過去才顯示它可以改。
+   常駐一排 chevron 會把這一欄變成「三十個下拉」，那是控制項的樣子、不是資料的樣子。 */
+.product-list__tier-chev {
+  width: 14px; height: 14px; flex: 0 0 auto;
+  opacity: 0; transition: opacity .14s ease, transform .18s ease;
+}
+.product-list__row:hover .product-list__tier-chev,
+.product-list__tier-btn:focus-visible .product-list__tier-chev,
+.product-list__tier .dropdown[open] .product-list__tier-chev { opacity: .8; }
+.product-list__tier .dropdown[open] .product-list__tier-chev { transform: rotate(180deg); }
+.product-list__tier-btn:focus-visible {
+  outline: 2px solid var(--ring); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-list__tier-chev { transition: none; }
 }
 
 /* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。

@@ -1434,6 +1434,16 @@
     'e-shop.col.product':        { en: 'Product',                          zh: '商品' },
     'e-shop.col.category':      { en: 'Category',                         zh: '分類' },
     'e-shop.col.price':         { en: 'Price',                            zh: '價格' },
+    /* 粉絲分級門檻（2026-07-29）：這一格答的是「誰買得到」，值＝可購買的最低分級。
+       用站上既有的「分級 / tier」用語，不新造「Level」——分級階梯與名稱的唯一真相在
+       tier-settings（核心圈 > 超級粉絲 > 上榜粉絲 > 粉絲），這裡只是引用它。
+       「粉絲」是基礎分級、人人都有，所以「粉絲以上」＝沒有門檻＝全部分級，不另列。 */
+    'e-shop.col.tier':           { en: 'Fan tier',                         zh: '粉絲分級' },
+    'e-shop.tier.aria':          { en: 'Who can buy this',                 zh: '誰買得到' },
+    'e-shop.tier.all':           { en: 'All tiers',                        zh: '全部分級' },
+    'e-shop.tier.devoted':       { en: 'Ranked fans or above',             zh: '上榜粉絲以上' },
+    'e-shop.tier.superfan':      { en: 'Superfan or above',                zh: '超級粉絲以上' },
+    'e-shop.tier.inner':         { en: 'Inner Circle only',                zh: '僅核心圈' },
     'e-shop.col.status':         { en: 'Status',                           zh: '狀態' },
     'e-shop.col.stock':          { en: 'Stock',                            zh: '庫存' },
     'e-shop.col.shop':          { en: 'Shop',                              zh: '上架開關' },
