@@ -143,10 +143,16 @@
        掃碼、由粉絲指定歸屬給誰、成效也用「新增粉絲」與「主動選你」來衡量。
        放在頂層會讓它看起來像獨立的廣告模組，實際上它是粉絲關係的變現方式。
        刻意不叫 "Campaign"：create-campaign.html 已經是「募資活動」的意思，
-       同一個字指兩件事會永久混淆。 */
+       同一個字指兩件事會永久混淆。
+
+       媒體庫排在權益之後（2026-07-29 使用者裁示）：它是「權益」那一格被打開
+       之後，粉絲真正拿到的東西——先定義給什麼（Benefits）、再決定誰進得來並
+       把東西放進去（Media Vault）。放在分級設定之前，因為它跟權益是同一件事
+       的兩半，分級設定則是門檻本身的計算規則。 */
     { key: "nav.fans", icon: "users", panel: [
       { href: "fans-crm.html",         icon: "users",     titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
       { href: "tier-benefits.html",    icon: "gift",      titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
+      { href: "media-vault.html",      icon: "key",       titleKey: "nav.fans-vault",    descKey: "nav.fans-vault-sub" },
       { href: "tier-settings.html",    icon: "sliders",   titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
       { href: "brand-campaigns.html",  icon: "handshake", titleKey: "nav.brandcmp",      descKey: "nav.brandcmp-sub" },
     ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html"] },
@@ -158,7 +164,7 @@
   const FULL_ROUTES = new Set([
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
-    "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html",
+    "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
     "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"

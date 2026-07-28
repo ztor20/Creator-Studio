@@ -59,6 +59,9 @@
     'nav.fans-benefits':     { en: 'Benefits',  zh: '分級權益' },
     'nav.fans-benefits-sub': { en: 'What each tier unlocks',         zh: '每個分級解鎖什麼' },
     'nav.fans-tiers':        { en: 'Tier settings', zh: '分級設定' },
+    /* Media Vault（2026-07-29）：權益定義「給什麼」，媒體庫是那個東西本身。 */
+    'nav.fans-vault':        { en: 'Media Vault', zh: '媒體庫' },
+    'nav.fans-vault-sub':    { en: 'Gated vaults of media',           zh: '有門檻的媒體庫房' },
     'fg.crumb.fans':  { en: 'Fans', zh: '粉絲' },
     'fg.crumb.self':  { en: 'How this works', zh: '系統說明' },
     'fg.kicker':      { en: 'The fan system', zh: '粉絲系統' },
@@ -5070,10 +5073,33 @@
     'ben.item.demos':      { en: 'Demo tracks',                    zh: 'Demo 音檔' },
     'ben.item.bts':        { en: 'Behind the scenes',              zh: '幕後花絮' },
     'ben.item.livestream': { en: 'Private livestreams',            zh: '私人直播' },
-    /* 庫房是產品概念、不是不言自明的標籤，所以配一個說明彈窗 */
-    'ben.vault.title': { en: 'What is the creator’s vault?', zh: '什麼是創作者庫房？' },
-    'ben.vault.lead':  { en: 'A gated cloud drive that belongs to you. Upload media of any kind — stems, raw footage, photo dumps, unreleased mixes — and only fans in an eligible tier can open it.', zh: '一個屬於你的加密雲端空間。任何媒體檔都能上傳——分軌、未剪素材、整批照片、未發行的混音——只有符合分級的粉絲打得開。' },
-    'ben.vault.body':  { en: 'Switching it on for a tier grants that tier access to the whole vault, not to individual files. Use the tier ladder to decide how deep into your archive someone gets.', zh: '為某個分級開啟，等於把整個庫房開給該分級，不是單一檔案。用分級階梯決定誰能進到你檔案庫的多深處。' },
+    /* 庫房是產品概念、不是不言自明的標籤，所以配一個說明彈窗。
+       2026-07-29 改寫：媒體庫改成「資料夾 × 解鎖條件」模型後，原本這段
+       「整座庫房一起開給某個分級」的說法已經不成立，留著會直接誤導。 */
+    'ben.vault.title': { en: 'What is the Media Vault?', zh: '什麼是媒體庫？' },
+    'ben.vault.lead':  { en: 'A gated media library that belongs to you, kept in vaults. Upload anything — stems, raw footage, photo dumps, unreleased mixes — and each vault decides for itself who can open it.', zh: '一座屬於你的加密媒體庫，內容分成一座座庫房存放。什麼都能上傳——分軌、未剪素材、整批照片、未發行的混音——每座庫房自己決定誰打得開。' },
+    'ben.vault.body':  { en: 'A vault opens for a fan who meets any one of its conditions: a tier, something they bought, a project they backed, an event they attended, or something they achieved. Switching a tier on here is the promise fans read on the ladder; the vaults and their conditions are set in Media Vault.', zh: '粉絲只要符合庫房的任一條件就進得去：分級、買過什麼、支持過哪個專案、出席過哪一場、或達成了什麼。在這裡為某個分級開啟，是粉絲在階梯上讀到的承諾；庫房與條件本身在「媒體庫」裡設定。' },
+    'ben.vault.where': { en: 'Open Media Vault', zh: '前往媒體庫' },
+
+    /* ── Media Vault（2026-07-29）─────────────────────────────
+       頁面本身的字。JS 渲染的字（chips／人數句／格子標籤）走 media-vault.js
+       的 tx()，與 brand-campaigns.js 同一套做法；這裡只放靜態骨架的字。 */
+    'vault.crumb.fans': { en: 'Fans', zh: '粉絲' },
+    'vault.crumb.self': { en: 'Media Vault', zh: '媒體庫' },
+    'vault.h1':         { en: 'Media Vault', zh: '媒體庫' },
+    'vault.sub':        { en: 'Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it. Every vault shows how many fans can open it right now.', zh: '一組擋在粉絲分級後面的媒體庫房。開一座庫房、決定誰進得來，再把東西放進去。每座庫房都會顯示現在有幾位粉絲打得開。' },
+    'vault.btn.new':    { en: 'New vault', zh: '新增庫房' },
+    'vault.rail.label': { en: 'Vaults', zh: '庫房' },
+    'vault.viewer.me':      { en: 'View as: you (all vaults)', zh: '檢視身分：你（全部庫房）' },
+    'vault.viewer.inner':   { en: 'View as: Inner Circle',      zh: '檢視身分：Inner Circle' },
+    'vault.viewer.super':   { en: 'View as: Superfan',          zh: '檢視身分：超級粉絲' },
+    'vault.viewer.devoted': { en: 'View as: Ranked fan',        zh: '檢視身分：上榜粉絲' },
+    'vault.viewer.fan':     { en: 'View as: Fan',               zh: '檢視身分：一般粉絲' },
+    'vault.door.rules': { en: 'Unlock conditions', zh: '解鎖條件' },
+    'vault.door.who':   { en: 'Who gets in', zh: '誰進得來' },
+    'vault.grid.label': { en: 'In this vault', zh: '這座庫房裡' },
+    'vault.note.tiers': { en: 'Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.', zh: '分級條件在每晚的分級重算時重新判定——掉出分級的粉絲在那之前仍然打得開。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事，權限不會過期。' },
+    'vault.note.demo':  { en: 'Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.', zh: '庫房內容與粉絲人數為原型示範資料。粉絲總數與粉絲總覽一致（1,283 位），所有限量數字都以實際售出量為上限。' },
 
     'tier-settings.gate.toppct': { en: 'Top %', zh: '前 % 名' },
     'tier-settings.gate.points': { en: 'Min. loyalty points', zh: '最低忠誠點數' },

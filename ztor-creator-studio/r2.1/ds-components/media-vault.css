@@ -1,0 +1,584 @@
+/* ============================================================
+   Media Vault · 加密媒體庫（Fans → 媒體庫）
+   ------------------------------------------------------------
+   這支元件的主題不是檔案，是「門」。
+
+   一般雲端硬碟把分享權限藏在選單第二層，於是「這座庫房現在誰打得開」
+   永遠要多按兩下才知道——未發行的素材外流，幾乎都是這樣發生的。這裡把
+   它翻過來：每個庫房在側欄就掛著一個鑰匙數（現在有幾位粉絲打得開），
+   進到庫房則有一條 .vault-door「門條」，解鎖條件與觸及人數並排，改一
+   個條件、人數當場跟著動。門是版面的一部分，不是設定頁的一個分頁。
+
+   anatomy
+     .vault-layout          — 兩欄殼（庫房側欄 + 主欄）
+       .vault-rail          — 庫房側欄（sticky）
+         .vault-rail__head  — 標題列 ＋「以粉絲身分檢視」選擇器
+         .vault-row         — 一列庫房（封面 / 名稱 / 鑰匙數）
+           --active         — 目前開著的庫房
+           .is-locked       — 檢視器模式下：該分級打不開（變暗＋鎖頭）
+         .vault-rail__new   — 新增庫房（就地輸入，不開 modal）
+       .vault-main          — 主欄
+         .vault-head        — 庫房標題／說明／動作
+         .vault-door        — 門條：條件 chips ＋ 觸及讀數 ＋ 分級覆蓋條
+         .vault-grid        — 內容格（含第一格上傳投放區）
+           .vault-tile      — 一件內容（image / clip / audio 混放）
+
+   為什麼主欄不是一張 .card：門條與內容格各自是一層，包進同一張卡就會
+   變成卡中卡（DS 禁止），而且門條需要自己的邊界才讀得出「這是門」。
+
+   全值引用 _tokens.css。
+   ============================================================ */
+
+/* ── 殼 ────────────────────────────────────────────────── */
+.vault-layout {
+  display: grid;
+  grid-template-columns: 276px minmax(0, 1fr);
+  gap: var(--sp-24);
+  align-items: start;
+}
+
+/* ── 側欄 ──────────────────────────────────────────────── */
+.vault-rail {
+  position: sticky;
+  top: 78px;                       /* 與 .settings-nav 同一個貼頂高度 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  min-width: 0;
+}
+
+.vault-rail__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.vault-rail__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.vault-rail__count { font-variant-numeric: tabular-nums; letter-spacing: 0; }
+
+/* 檢視器：整支功能的簽名互動。選一個分級，側欄立刻把該分級打不開的
+   庫房壓暗——「我設的這組門，從粉絲那一側看起來是什麼樣子」一眼看完。 */
+.vault-viewer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+}
+.vault-viewer__icon { color: var(--muted-foreground); flex: none; }
+.vault-viewer__icon .ztor-icon { width: 15px; height: 15px; }
+.vault-viewer .select {
+  flex: 1;
+  min-width: 0;
+  height: var(--control-h-xs);
+  border: 0;
+  background: transparent;
+  padding: 0 var(--sp-18) 0 0;
+  font-size: var(--fs-13);
+}
+.vault-viewer.is-on { border-color: var(--primary); background: var(--selected-surface); }
+.vault-viewer.is-on .vault-viewer__icon { color: var(--primary); }
+
+.vault-rail__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* ── 庫房列 ──────────────────────────────────────────── */
+.vault-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-10);
+  width: 100%;
+  padding: var(--sp-8);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--duration) var(--easing),
+    border-color var(--duration) var(--easing),
+    opacity var(--duration) var(--easing);
+}
+.vault-row:hover { background: var(--accent); }
+.vault-row--active,
+.vault-row--active:hover {
+  background: var(--selected-surface);
+  border-color: color-mix(in srgb, var(--primary) 32%, transparent);
+}
+.vault-row--active .vault-row__name { color: var(--selected-ink); font-weight: var(--fw-medium); }
+
+.vault-row__cover {
+  width: 40px; height: 40px;
+  flex: none;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--muted);
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+}
+.vault-row__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vault-row__cover .ztor-icon { width: 17px; height: 17px; }
+
+.vault-row__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vault-row__name {
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vault-row__meta {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* 鑰匙數：側欄唯一的數字，也是這支功能存在的理由。tabular-nums 讓它
+   在切換庫房時不會左右跳動。 */
+.vault-row__keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground-muted);
+  white-space: nowrap;
+}
+.vault-row__keys .ztor-icon { width: 12px; height: 12px; color: var(--muted-foreground); }
+.vault-row--active .vault-row__keys,
+.vault-row--active .vault-row__keys .ztor-icon { color: var(--selected-ink); }
+/* 沒有任何條件＝沒有人進得來。這是錯誤，不是「零」，所以走 destructive。 */
+.vault-row__keys--none,
+.vault-row__keys--none .ztor-icon { color: var(--destructive); }
+
+/* 檢視器：這個分級打不開。壓暗但不隱藏——創作者要看見「他們看不見」。 */
+.vault-row.is-locked { opacity: 0.42; }
+.vault-row.is-locked .vault-row__cover img { filter: grayscale(1); }
+
+.vault-rail__new {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  width: 100%;
+  padding: var(--sp-10);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.vault-rail__new:hover { border-color: var(--muted-foreground); color: var(--foreground); }
+.vault-rail__new .ztor-icon { width: 15px; height: 15px; }
+
+/* 就地新增：不開 modal。建立庫房只有一個必填欄位（名稱），把整個畫面
+   蓋掉去問一個字，是把中斷當成儀式。 */
+.vault-rail__draft {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+}
+.vault-rail__draft .input { height: var(--control-h-sm); font-size: var(--fs-13); }
+
+/* ── 主欄 ──────────────────────────────────────────────── */
+.vault-main { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-16); }
+
+.vault-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  flex-wrap: wrap;
+}
+.vault-head__text { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-4); }
+.vault-head__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.4px;
+}
+.vault-head__note {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  max-width: 62ch;
+}
+.vault-head__actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+
+/* ── 門條 ──────────────────────────────────────────────
+   左：解鎖條件（可移除的 chips ＋ 新增）
+   右：觸及讀數（一句話帶一個大數字）＋ 分級覆蓋條
+   兩欄之間有一道細分隔線——它們是同一件事的因與果。 */
+.vault-door {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 288px;
+  gap: var(--sp-20);
+  padding: var(--sp-16) var(--sp-18);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.vault-door__col { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-10); }
+.vault-door__col--reach {
+  padding-left: var(--sp-20);
+  border-left: 1px solid var(--border);
+}
+.vault-door__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.vault-door__label .ztor-icon { width: 13px; height: 13px; }
+
+.vault-door__rules { display: flex; flex-wrap: wrap; gap: var(--sp-6); align-items: center; }
+.vault-door__any {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-top: var(--sp-2);
+}
+
+/* 條件 chip：沿用 .chip / .chip--removable，這裡只補圖示與動詞的排版。 */
+.vault-rule__verb { color: var(--muted-foreground); }
+.vault-rule .ztor-icon:first-child { width: 13px; height: 13px; color: var(--muted-foreground); }
+
+.vault-door__add {
+  height: 28px;
+  padding: 0 var(--sp-10);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+  display: inline-flex; align-items: center; gap: var(--sp-4);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.vault-door__add:hover { border-color: var(--primary); color: var(--foreground); }
+.vault-door__add .ztor-icon { width: 12px; height: 12px; }
+
+/* 讀數：一句話中間放一個大數字。刻意不做成 KPI 磚——它是「條件」那一欄
+   的結果，不是一個獨立指標。 */
+.vault-door__reach { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap; }
+.vault-door__num {
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-none);
+  letter-spacing: -0.8px;
+  font-variant-numeric: tabular-nums;
+}
+.vault-door__of { font-size: var(--fs-13); color: var(--foreground-muted); }
+.vault-door--empty .vault-door__num { color: var(--destructive); }
+.vault-door--empty .vault-door__col--reach { border-left-color: color-mix(in srgb, var(--destructive) 40%, var(--border)); }
+
+/* 分級覆蓋條：四段，段寬＝該分級人數佔比，填色＝該分級被涵蓋的比例。
+   這不是裝飾用的量條——每一格都是集合運算的結果，回答的是「進得來的
+   是哪一群人」，那才是創作者真正在問的問題。 */
+.vault-door__bar { display: flex; gap: 3px; }
+.vault-door__seg {
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  overflow: hidden;
+  min-width: 4px;
+}
+/* 填色動的是 transform 不是 width：width 每一幀都要重排，scaleX 只走合成。
+   圓角交給父層的 overflow:hidden 去裁——自己帶 border-radius 會被 scaleX
+   一起拉扁成橢圓。 */
+.vault-door__seg-fill {
+  display: block;               /* span 預設是 inline，寬高會被整個忽略 */
+  height: 100%;
+  width: 100%;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms var(--easing);
+}
+/* 圖例刻意「不」跟著段寬對齊：最高分級只佔母體 12%，對齊過去就只剩
+   30px，四個名字全部被截成「Inne…」。寧可放棄對齊，換每一項都讀得完
+   ——分級名稱是唯一能讓那條量條被理解的東西。 */
+.vault-door__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--sp-10);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.vault-door__leg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.vault-door__leg b {
+  font-weight: var(--fw-regular);
+  color: var(--foreground-muted);
+}
+
+/* ── 條件選單（新增條件的 popover）───────────────────────── */
+.vault-rulemenu {
+  position: fixed;
+  z-index: 200;
+  width: 320px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: var(--sp-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--shadow-overlay);
+}
+.vault-rulemenu[hidden] { display: none; }
+.vault-rulemenu__group {
+  padding: var(--sp-8) var(--sp-10) var(--sp-4);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.vault-rulemenu__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  width: 100%;
+  padding: var(--sp-8) var(--sp-10);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  font-size: var(--fs-13);
+  text-align: left;
+  cursor: pointer;
+}
+.vault-rulemenu__opt:hover:not(:disabled) { background: var(--accent); }
+.vault-rulemenu__opt:disabled { opacity: 0.4; cursor: default; }
+.vault-rulemenu__opt .ztor-icon { width: 14px; height: 14px; color: var(--muted-foreground); flex: none; }
+.vault-rulemenu__n {
+  margin-left: auto;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 內容格 ────────────────────────────────────────────── */
+.vault-gridwrap { display: flex; flex-direction: column; gap: var(--sp-10); }
+.vault-gridbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+}
+.vault-gridbar__meta { font-size: var(--fs-12); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+.vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: var(--sp-12);
+}
+/* 上傳格排在第一位、比例與內容格對齊：投放區屬於這座庫房，不是頁尾
+   的一個附件欄。 */
+.vault-grid .upload-tile { aspect-ratio: 4 / 3; min-height: 0; border-radius: var(--radius-lg); }
+
+.vault-tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--muted);
+  cursor: pointer;
+}
+.vault-tile__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 音檔沒有影像，就不要硬給它一張假的波形圖。改成把曲名排成標籤紙——
+   內容本身（名字＋長度）就是這一格要傳達的東西。 */
+.vault-tile--audio {
+  background: color-mix(in srgb, var(--primary) 7%, var(--card));
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+}
+/* 底部留出晶片列的高度（22px 晶片 ＋ 8px 邊距 ＋ 8px 呼吸）：曲名與
+   「音檔 / 時長」兩顆晶片同住一格，不留位就會疊在一起。 */
+.vault-tile__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--sp-4);
+  padding: var(--sp-12) var(--sp-12) 46px;
+}
+.vault-tile__labeltitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.2px;
+  color: var(--foreground);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.vault-tile__labelmark {
+  position: absolute; top: var(--sp-12); left: var(--sp-12);
+  color: color-mix(in srgb, var(--primary) 70%, var(--foreground));
+}
+.vault-tile__labelmark .ztor-icon { width: 18px; height: 18px; }
+
+/* 影音的長度與類型晶片：壓在影像上，所以要自己的底，不能只靠文字色。 */
+.vault-tile__chip {
+  position: absolute;
+  bottom: var(--sp-8);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  height: 22px;
+  padding: 0 var(--sp-8);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, #000 62%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: var(--fs-11);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.vault-tile__chip--kind { left: var(--sp-8); }
+.vault-tile__chip--dur  { right: var(--sp-8); }
+.vault-tile__chip .ztor-icon { width: 12px; height: 12px; }
+/* 音檔格是淺底，黑晶片會過重——同一個晶片在那裡換成描邊版。 */
+.vault-tile--audio .vault-tile__chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--foreground-muted);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* hover 動作層：沿用 upload-tile 的配方（--overlay-tint ＋ --overlay-blur），
+   深淺主題都能把內容推到後面、按鈕留在前面。 */
+.vault-tile__actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  background: var(--overlay-tint);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  backdrop-filter: var(--overlay-blur);
+  opacity: 0;
+  transition: opacity var(--duration) var(--easing);
+}
+.vault-tile:hover .vault-tile__actions,
+.vault-tile:focus-within .vault-tile__actions { opacity: 1; }
+.vault-tile__act {
+  width: 34px; height: 34px;
+  display: inline-grid; place-items: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing);
+}
+.vault-tile__act:hover { background: var(--accent); }
+.vault-tile__act--danger:hover { background: color-mix(in srgb, var(--destructive) 16%, var(--card)); color: var(--destructive); }
+.vault-tile__act .ztor-icon { width: 16px; height: 16px; }
+
+.vault-tile__name {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: var(--sp-20) var(--sp-10) var(--sp-8);
+  background: linear-gradient(to top, color-mix(in srgb, #000 76%, transparent), transparent);
+  color: #fff;
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  pointer-events: none;
+}
+.vault-tile--audio .vault-tile__name { display: none; }
+
+/* 就地改名。不用 window.prompt：那是作業系統畫的框，DS 明令每個控制項都要
+   有自己的聲音，而且它會把使用者的視線從那一格拉走——改的是這一格的名字，
+   輸入框就該長在這一格上。 */
+.vault-tile__rename {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: var(--sp-8);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  z-index: 6;
+}
+.vault-tile__rename .input {
+  width: 100%;
+  height: var(--control-h-xs);
+  font-size: var(--fs-12);
+}
+.vault-tile.is-renaming .vault-tile__actions,
+.vault-tile.is-renaming .vault-tile__chip { opacity: 0; pointer-events: none; }
+.vault-tile:hover .vault-tile__name { opacity: 0; transition: opacity var(--duration) var(--easing); }
+
+/* ── 窄版 ──────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .vault-door { grid-template-columns: minmax(0, 1fr); gap: var(--sp-14); }
+  .vault-door__col--reach {
+    padding-left: 0;
+    padding-top: var(--sp-14);
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .vault-door--empty .vault-door__col--reach {
+    border-left-color: var(--border);
+    border-top-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+  }
+}
+/* 單欄時側欄變成頁面最上面的一段。刻意「不」給清單自己的 max-height ＋
+   overflow：那會在頁面裡塞出一個 262px 的內捲區，手指落在上面時捲的是
+   清單、不是頁面，使用者會以為頁面卡住了。庫房數量本來就是個位數，讓它
+   直接長高、跟著頁面捲最誠實。 */
+@media (max-width: 900px) {
+  .vault-layout { grid-template-columns: minmax(0, 1fr); }
+  .vault-rail { position: static; }
+  .vault-grid { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault-row,
+  .vault-door__seg-fill,
+  .vault-tile__actions,
+  .vault-tile__name,
+  .vault-tile__act,
+  .vault-rail__new,
+  .vault-door__add { transition: none; }
+}
