@@ -50,7 +50,7 @@
            上排 .list-toolbar＝類型底線 tabs 在左｜動作群（收合搜尋／進階篩選／＋上架我的 IP）在右；
            下排 .list-status-row＝狀態 filter-tabs 淡橘藥丸（各帶即時計數）。
            原本的滿版搜尋 field-pill 與六格 select 卡片退場，進階條件（版稅／租期／地區／可立即租用）
-           收進 #ipm-adv 面板、由工具列的漏斗（filter）圖示開合。 -->
+           與狀態 pill 併在同一條次層篩選列（2026-07-29，原本另開 #ipm-adv 收合卡片）。 -->
       <div class="ipm-list-controls when-data list-dock">
         <div class="list-toolbar">
           <nav class="tabs tabs--underline-short" id="ipm-tabs" role="tablist" aria-label="Filter by type">
@@ -61,6 +61,17 @@
             <div class="tabs__item" role="tab" aria-selected="false" data-type-val="brand"><span data-i18n="ip-market.type.brand">Brand</span> <span class="tabs__item-count"></span></div>
             <div class="tabs__item" role="tab" aria-selected="false" data-type-val="event"><span data-i18n="ip-market.type.event">Event Format</span> <span class="tabs__item-count"></span></div>
           </nav>
+        <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
+             靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
+             下方的浮層。行為見 js/sticky-dock.js，樣式見 ds-components/list-toolbar.css。 -->
+        <button class="btn btn--icon btn--sm list-toolbar__filter" type="button"
+                aria-expanded="false" aria-controls="ipm-states"
+                aria-label="Filters" title="Filters"
+                data-i18n-aria-label="list.filters" data-i18n-title="list.filters">
+          <i data-lucide="filter" class="ztor-icon"></i>
+          <span class="list-toolbar__filter-count" hidden></span>
+        </button>
+
 
           <div class="list-toolbar__actions">
             <div class="search-collapse" id="ipm-search-wrap">
@@ -71,39 +82,45 @@
                 <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="ipm-search-close" aria-label="Clear search" title="Clear search" data-i18n-aria-label="ip-market.search.clear" data-i18n-title="ip-market.search.clear"><i data-lucide="x" class="ztor-icon"></i></button>
               </label>
             </div>
-            <!-- 2026-07-29：圖示由推桿改漏斗（'filter'）。這顆按鈕開的是進階篩選條件，
-                 不是設定——推桿在站上同時代表商店設定與 IP 管理，用在這裡會撞義。 -->
-            <button class="btn btn--icon btn--sm" type="button" id="ipm-adv-toggle" aria-expanded="false" aria-controls="ipm-adv" aria-label="More filters" title="More filters" data-i18n-aria-label="ip-market.btn.my-filters" data-i18n-title="ip-market.btn.my-filters"><i data-lucide="filter" class="ztor-icon"></i></button>
             <button class="btn btn--primary" data-i18n="ip-market.btn.list-ip">＋ List my IP</button>
           </div>
         </div>
 
         <!-- 狀態篩選 · 第二排 filter-tabs（各帶即時計數，隨類型重算） -->
-        <div class="list-status-row">
+        <div class="list-status-row" id="ipm-states">
           <nav class="filter-tabs filter-tabs--brand" id="ipm-status" role="tablist" aria-label="Filter by availability">
             <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all"><span data-i18n="ip-market.avail.all">Any status</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="available"><span data-i18n="ip-market.status.available">Available</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="bidding"><span data-i18n="ip-market.status.bidding">Bidding</span><span class="filter-tabs__count" data-status-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="exclusive"><span data-i18n="ip-market.status.exclusive">Exclusive</span><span class="filter-tabs__count" data-status-count>0</span></button>
           </nav>
-        </div>
-
-        <!-- 進階條件（預設收合，由工具列漏斗（filter）圖示開合）。呈現用示意，未接實際過濾。 -->
-        <section class="card mb-16 hidden" id="ipm-adv">
-          <!-- 2026-07-27 定價改版：「Term（租期）」篩選移除——價格不再按期計算，權利人端也沒有任何欄位可以設定租期，這個下拉沒有可篩的資料。四欄改三欄。 -->
-        <!-- 2026-07-28：裸 grid ＋ 裸 div 改用 .form-grid--3 ＋ .field——原本標籤與 select
-             之間算出來是 0px（.field__label 沒有下緣，垂直節奏住在 .field 身上）。 -->
-        <div class="form-grid form-grid--3" style="align-items:end">
-            <div class="field"><div class="field__label" data-i18n="ip-market.filter.royalty">Royalty ≤</div><select class="select"><option>20%</option><option>15%</option><option selected>12%</option><option>9%</option><option>5%</option></select></div>
-            <div class="field"><div class="field__label" data-i18n="ip-market.filter.region">Region</div><select class="select">
+          <!-- 進階條件（2026-07-29 L 裁示「merge into one filter panel」）：原本是收合在
+               #ipm-adv 卡片裡、由工具列第二顆鈕開合。篩選鈕移到 tab 旁之後，那顆鈕會變成
+               同一條 bar 上的第二個漏斗——同一件事兩個入口、長得還一樣。改成併進次層篩選列：
+               靜止態與狀態 pill 同列攤開，貼頂態一起收進那一顆漏斗浮層。
+               控制項採本元件既有的 .select--bare ＋ aria-label（同 projects 的分類下拉），
+               不用堆疊式 .field——這一列的節奏是水平的，堆疊標籤會把行高從 pill 的一排
+               撐成兩排。呈現用示意，未接實際過濾。 -->
+          <span class="list-status-row__sep" aria-hidden="true"></span>
+          <span class="list-status-row__field">
+            <span data-i18n="ip-market.filter.royalty">Royalty ≤</span>
+            <select class="select select--bare" id="ipm-royalty" aria-label="Royalty at most" data-i18n-aria-label="ip-market.filter.royalty" style="width:auto">
+              <option>20%</option><option>15%</option><option selected>12%</option><option>9%</option><option>5%</option>
+            </select>
+          </span>
+          <span class="list-status-row__field">
+            <span data-i18n="ip-market.filter.region">Region</span>
+            <select class="select select--bare" id="ipm-region" aria-label="Region" data-i18n-aria-label="ip-market.filter.region" style="width:auto">
               <option selected data-i18n="ip-market.region.world">Worldwide</option>
               <option data-i18n="ip-market.region.asia">Asia</option>
               <option data-i18n="ip-market.region.americas">Americas</option>
               <option data-i18n="ip-market.region.eu">EU</option>
-            </select></div>
-            <div class="field"><div class="field__label" data-i18n="ip-market.filter.rentable">Rentable now</div><label class="zcheck" style="padding:9px 0"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ip-market.only-rentable">Only rentable now</span></label></div>
-          </div>
-        </section>
+            </select>
+          </span>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ip-market.only-rentable">Only rentable now</span></label>
+        </div>
+
+
       </div>
 
       <!-- 帳號層級「無資料」空狀態（Cheat Codes · Data State = Empty）：帳號尚未探索／租過任何 IP，引導開始探索。
@@ -281,8 +298,6 @@
   const searchWrap   = document.getElementById('ipm-search-wrap');
   const searchToggle = document.getElementById('ipm-search-toggle');
   const searchClose  = document.getElementById('ipm-search-close');
-  const advToggle = document.getElementById('ipm-adv-toggle');
-  const advPanel  = document.getElementById('ipm-adv');
   const noresult = document.getElementById('ipm-noresult');
   const nrClear  = document.getElementById('ipm-noresult-clear');
   const cold     = document.getElementById('ipm-coldstart');
@@ -386,11 +401,8 @@
     if (!searchWrap.contains(e.target) && !searchEl.value.trim()) collapseSearch(false);
   });
 
-  /* 進階條件面板開合 */
-  if (advToggle && advPanel) advToggle.addEventListener('click', () => {
-    const open = advPanel.classList.toggle('hidden') === false;
-    advToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
+  /* 進階條件不再有自己的開合鈕（2026-07-29）：條件已併進次層篩選列，
+     靜止態直接可見，貼頂態隨整列收進工具列的漏斗浮層。 */
 
   /* 無結果 → 一鍵清空全部條件 */
   if (nrClear) nrClear.addEventListener('click', () => {

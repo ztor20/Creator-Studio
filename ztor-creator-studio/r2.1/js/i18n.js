@@ -1010,6 +1010,9 @@
     'projects.search.open':       { en: 'Search projects',                       zh: '搜尋項目' },
     /* 貼頂態塞不下時，狀態篩選收進這顆鈕（2026-07-28）。 */
     'projects.filters.open':      { en: 'Filters',                               zh: '篩選' },
+    /* 共用：清單工作列的篩選鈕（2026-07-29 起五個清單頁同一顆，見 list-toolbar.css）。
+       projects.filters.open 是本鍵出現前 projects 自己的那份，保留不動以免動到既有標記。 */
+    'list.filters':               { en: 'Filters',                               zh: '篩選' },
     'projects.search.close':      { en: 'Close search',                          zh: '關閉搜尋' },
     'projects.empty.none.title':  { en: 'No projects yet',                       zh: '尚未建立任何項目' },
     'projects.empty.none.sub':    { en: 'Create your first project to start publishing, funding, or taking pre-orders.', zh: '建立第一個項目，開始發布、募資或開放預購。' },

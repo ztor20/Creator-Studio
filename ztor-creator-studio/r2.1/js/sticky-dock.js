@@ -114,41 +114,23 @@
         observer.observe(sentinel);
       });
 
-      setupScrollHint(dock);
-      setupFilterCollapse(dock);
+      setupFilters(dock);
     });
   }
 
-  /* ── 右緣漸隱只在真的捲得動時才掛 ─────────────────────────────────
-     必須獨立於 setupFilterCollapse：那支需要 .list-toolbar__filter 鈕才會往下跑，
-     而那顆鈕目前只有 projects.html 有（2026-07-28 的收合功能只接了一頁）。掛在裡面
-     的話，其餘四頁（電子商店／活動／我的 IP／IP 市場）永遠拿不到這個 class——
-     偏偏 IP 市場正是會溢出的那一頁（貼頂實測溢出 7px），提示等於白做。 */
-  function setupScrollHint(dock) {
-    var row = dock.querySelector('.list-status-row');
-    if (!row) return;
-    function sync() {
-      row.classList.toggle('is-scrollable', row.scrollWidth > row.clientWidth + 1);
-    }
-    if (window.ResizeObserver) new ResizeObserver(sync).observe(row);
-    window.addEventListener('resize', sync);
-    document.addEventListener('i18n:applied', sync);
-    /* 貼頂／脫黏會改變這一列的寬度，class 要跟著重判。 */
-    new MutationObserver(sync).observe(dock, { attributes: true, attributeFilter: ['class'] });
-    row.addEventListener('scroll', sync, { passive: true });
-    sync();
-  }
+  /* ── 貼頂態的次層篩選：一律收進篩選鈕（2026-07-29 L 裁示）───────────────────
+     取代 2026-07-28 的量測版（放得下靠右、放不下才收）。那一版要在執行期比對
+     「篩選段要多寬」與「這一行還剩多寬」，為此帶著遲滯、三道迴圈防護、rAF 與
+     visibilitychange 補量——全部是為了馴服一個答案會變的設計：同一個元件在不同頁、
+     不同語系、不同資料下長成不同的樣子。現在規則是常數（貼頂＝收合），那些全部不需要，
+     這支只剩「開關浮層」與「把浮層錨到鈕下面」兩件事。
 
-  /* ── 貼頂態的篩選段：放得下靠右，放不下收進圖示鈕（2026-07-28 L 裁示）─────────
-     量測而不是猜斷點：pill 的數量會隨模式改變（沒有符合的狀態會被藏起來），文字寬度
-     又隨語系變，任何寫死的 media query 都會在某個組合上猜錯。這裡直接比對
-     「篩選段要多寬」與「這一行還剩多寬」。 */
-  function setupFilterCollapse(dock) {
-    var bars   = dock.querySelector('.list-dock__bars') || dock;
-    var row    = dock.querySelector('.list-status-row');
-    var bar    = dock.querySelector('.list-toolbar');
-    var btn    = dock.querySelector('.list-toolbar__filter');
-    if (!row || !bar || !btn) return;
+     這裡不再有 is-filters-collapsed：狀態少一個，CSS 也少一層組合。 */
+  function setupFilters(dock) {
+    var bars = dock.querySelector('.list-dock__bars') || dock;
+    var row  = dock.querySelector('.list-status-row');
+    var btn  = dock.querySelector('.list-toolbar__filter');
+    if (!row || !btn) return;
 
     var badge = btn.querySelector('.list-toolbar__filter-count');
 
@@ -157,66 +139,40 @@
       btn.setAttribute('aria-expanded', 'false');
     }
 
-    /* 迴圈防護，三道，缺一不可——第一版只有同步重入閘，實測直接把 renderer 卡死：
-         1) measure() 會改 dock 的 class → 版面改變 → ResizeObserver 下一幀再叫一次
-            measure()。ResizeObserver 是非同步的，同步閘擋不住跨幀的自我觸發。
-         2) 所以真正的閘是「寬度沒變就什麼都不做」——自我觸發的那一次寬度必然相同，
-            於是鏈條在第二次就斷掉。
-         3) 再加遲滯（hysteresis）：收合後版面會空出空間，若用同一個門檻判斷就會
-            立刻覺得「放得下」而展開、展開後又放不下……在臨界寬度上無限抖動。
-            展開的門檻比收合的門檻多留 24px，臨界點附近就穩定了。 */
-    var lastW = -1, raf = 0;
-    function run() {
-      var w = bars.clientWidth;
-      if (w === lastW) return;
-      lastW = w;
-      doMeasure(w);
-    }
-    /* force ＝同步跑，不排 rAF。
-       原因（實測）：分頁不在前景時瀏覽器會暫停 requestAnimationFrame，整條量測鏈
-       就停在那裡——頁面在背景分頁載入、之後才被切到前景時，初次量測永遠不會發生，
-       而那時也不會有 resize 事件來補救，於是 dock 一直停在未量測的狀態。
-       非同步只用來合併 observer 的連發，那種情況本來就只在前景才有意義。 */
-    function measure(force) {
-      if (force) { lastW = -1; run(); return; }
-      if (raf) return;
-      raf = requestAnimationFrame(function () { raf = 0; run(); });
-    }
-    function doMeasure(w) {
-      if (!dock.classList.contains('is-snapped')) {
-        dock.classList.remove('is-filters-collapsed');
-        close();
-        return;
-      }
-      var collapsed = dock.classList.contains('is-filters-collapsed');
-      /* 收合時 row 是浮層，量不到它在行內要多寬。用 nav + select 的內容寬相加代替，
-         不必為了量測把 class 拆掉再裝回去（那本身就是一次會觸發 observer 的版面變動）。 */
-      var need = 0;
-      Array.prototype.forEach.call(row.children, function (c) { need += c.scrollWidth; });
-      need += 24;                                  /* row 自己的 gap ＋ 左分隔線留白 */
-      /* 工作列要多寬，不能直接讀 bar.scrollWidth：收合態它被拉滿整條（list-toolbar.css
-         把 flex 改成 1 1 auto，動作群才會靠右），量到的是「這一行有多寬」而不是「它要
-         多寬」，have 於是恆為負數、再寬的螢幕也回不到展開態。
-         改成加總子項的內容寬——tabs 與動作群在兩種狀態下都維持內容寬，量到的是同一件事。 */
-      var barNeed = 0;
-      Array.prototype.forEach.call(bar.children, function (c) { barNeed += c.scrollWidth; });
-      var have = w - barNeed - 28;
-      var collapse = collapsed ? need > have - 24  /* 遲滯：展開要比收合多 24px 餘裕 */
-                               : need > have;
-      if (collapse === collapsed) return;
-      dock.classList.toggle('is-filters-collapsed', collapse);
-      if (!collapse) close();
+    /* 浮層錨點：鈕在 bars 內的左緣。鈕移到 tab 旁之後位置會隨 tab 文字寬變動
+       （語系、計數都會改），所以量一次寫進 CSS 變數，而不是猜一個固定值。
+       只在貼頂態量得到——非貼頂時鈕是 display:none，offsetLeft 為 0。 */
+    function anchor() {
+      if (!dock.classList.contains('is-snapped')) return;
+      var x = btn.offsetLeft;
+      var host = btn.offsetParent;
+      while (host && host !== bars) { x += host.offsetLeft; host = host.offsetParent; }
+      bars.style.setProperty('--dock-filter-x', x + 'px');
     }
 
     /* 有幾個篩選正在生效——收起來的東西如果正在作用卻看不出來，那不是收納是隱瞞。
-       只數「不是 all／不是預設」的：狀態 pill 的 active 值不是 all，加上分類下拉不是 all。 */
+       「生效」＝偏離預設，不是「有值」。
+       2026-07-29 修：原本數的是 select.value !== 'all'。那條規則是照 projects 的分類
+       下拉寫的（它真的有一個 value='all' 的選項），IP 市場的條件併進本列之後就失準——
+       租金上限 12%、地區 Worldwide 都是預設值，卻各被算成一個生效中的篩選，
+       徽章在什麼都沒篩的情況下顯示 2（實測截圖）。改成比對 defaultSelected／
+       defaultChecked：不管那一頁的選項叫什麼，「跟預設不一樣」才算數。
+       pill 的鍵各頁不同（projects 用 data-state、IP 市場用 data-status-val），兩個都認。 */
     function syncCount() {
       if (!badge) return;
       var n = 0;
       var active = row.querySelector('.filter-tabs__item--active');
-      if (active && active.dataset.state && active.dataset.state !== 'all') n++;
+      if (active) {
+        var v = active.dataset.state || active.dataset.statusVal;
+        if (v && v !== 'all') n++;
+      }
       row.querySelectorAll('select').forEach(function (s) {
-        if (s.value && s.value !== 'all') n++;
+        var def = 0;
+        for (var i = 0; i < s.options.length; i++) if (s.options[i].defaultSelected) { def = i; break; }
+        if (s.selectedIndex !== def) n++;
+      });
+      row.querySelectorAll('input[type="checkbox"]').forEach(function (c) {
+        if (c.checked !== c.defaultChecked) n++;
       });
       badge.textContent = String(n);
       badge.hidden = n === 0;
@@ -225,6 +181,7 @@
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       var open = !dock.classList.contains('is-filters-open');
+      if (open) anchor();          /* 開之前重量一次：tab 計數／語系可能已經改過鈕的位置 */
       dock.classList.toggle('is-filters-open', open);
       btn.setAttribute('aria-expanded', String(open));
     });
@@ -243,24 +200,17 @@
     });
     row.addEventListener('change', syncCount);
 
-    if (window.ResizeObserver) new ResizeObserver(function () { measure(); }).observe(bars);
-    window.addEventListener('resize', function () { measure(true); });
-    /* 語系換了字寬會變，但容器寬度不變 → 必須 force，否則被「寬度沒變」那道閘擋掉。 */
-    document.addEventListener('i18n:applied', function () { measure(true); syncCount(); });
-    /* 貼頂／脫黏改變可用寬度。只在 is-snapped 真的變了才重量，避免我們自己切
-       is-filters-collapsed／is-filters-open 時又把自己叫醒一次。 */
+    window.addEventListener('resize', anchor);
+    /* 換語系 tab 字寬會變，鈕跟著移位，錨點要重量。 */
+    document.addEventListener('i18n:applied', function () { anchor(); syncCount(); });
+    /* 脫黏時把浮層關掉——靜止態那兩排本來就攤開了，留一個開著的浮層蓋在上面沒有意義。 */
     var wasSnapped = dock.classList.contains('is-snapped');
     new MutationObserver(function () {
       var now = dock.classList.contains('is-snapped');
       if (now === wasSnapped) return;
       wasSnapped = now;
-      measure(true);
+      if (now) anchor(); else close();
     }).observe(dock, { attributes: true, attributeFilter: ['class'] });
-    /* 回到前景時補量一次：在背景分頁裡發生的寬度變化沒有 rAF 也沒有 resize 通知。 */
-    document.addEventListener('visibilitychange', function () {
-      if (!document.hidden) measure(true);
-    });
-    measure(true);
     syncCount();
   }
 
