@@ -362,8 +362,15 @@ html[data-theme="light"] .list-toolbar {
   }
   .list-dock.is-snapped.is-filters-collapsed .list-status-row > * { flex-wrap: wrap; }
   .list-dock.is-snapped.is-filters-collapsed.is-filters-open .list-status-row { display: flex; }
-  /* bars 要能當浮層的定位參考 */
-  .list-dock.is-snapped .list-dock__bars { position: relative; }
+  /* bars 要能當浮層的定位參考。只掛在薄殼上——厚殼（電子商店／活動）的 bars 本身就是
+     sticky，而 sticky 已經是 positioned box、本來就能當絕對定位的容器。
+     2026-07-28 修：初版寫成 `.list-dock.is-snapped .list-dock__bars`，權重（0,3,0）
+     壓過上面的 `.list-dock--tall .list-dock__bars`（0,2,0），於是厚殼一貼頂 position
+     就從 sticky 被改回 relative——整條 dock 當場脫黏往上捲走，而哨兵仍在畫面外、
+     is-snapped 不會解除，所以它是「一貼頂就永遠消失」。實測 e-shop 捲到 700px 時
+     bars 的 top 是 -436。薄殼（專案／我的 IP／IP 市場）sticky 掛在外層，看不出問題，
+     所以昨天那次只在專案頁驗證時沒被抓到。 */
+  .list-dock--thin.is-snapped .list-dock__bars { position: relative; }
 
   /* 篩選鈕只在收合時出現 */
   .list-dock.is-snapped.is-filters-collapsed .list-toolbar__filter { display: inline-flex; }
