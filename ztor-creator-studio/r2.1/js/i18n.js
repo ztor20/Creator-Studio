@@ -4946,7 +4946,9 @@
     'fan-detail.tl.project1-meta': { en: 'Projects · Mar 02', zh: '企劃 · 3/02' },
     'fan-detail.tl.referral1': { en: 'Referred 2 new fans', zh: '推薦了 2 位新粉絲' },
     'fan-detail.tl.referral1-meta': { en: 'Referral · Feb 20', zh: '推薦 · 2/20' },
-    'fan-detail.repmix.title': { en: 'What drives these loyalty points', zh: '忠誠點數的來源' },
+    /* 標題寫「these points」而非「these loyalty points」：正上方的 KPI 已經寫明
+       Loyalty points，全稱在 364px 的卡片裡會斷成兩行、比鄰卡標題矮一截。 */
+    'fan-detail.repmix.title': { en: 'What drives these points', zh: '忠誠點數的來源' },
     'fan-detail.repmix.sub': { en: 'Behavior signals weighted into the score. Recent activity weighs more and decays over time.', zh: '計入分數的行為訊號。近期活動權重較高，並隨時間衰減。' },
     'fan-detail.repmix.spend': { en: 'Purchases', zh: '購買' },
     'fan-detail.repmix.events': { en: 'Event check-ins', zh: '活動報到' },

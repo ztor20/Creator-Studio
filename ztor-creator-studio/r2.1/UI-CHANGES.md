@@ -8,11 +8,11 @@
 
 使用者圈選 Fans CRM 的「AVG REPUTATION」KPI 裁示：**這個東西全站都叫 loyalty points，不要自己發明名詞**。站上原本一個概念兩個名字——品牌合作報告、分級設定、粉絲指南三處早就寫「忠誠點數 / Loyalty points」（點數餵養分級），只有 Fans CRM 與粉絲檔案兩頁還留著舊詞「聲望 / Reputation」，讀者要自己推論兩者是同一個分數。
 
-- **【B】** 對外文案改名（en＋zh 成對改，未新增任何 key）：`fans.sub`（排序依據）、`fans.kpi.rep`「Avg loyalty points／平均忠誠點數」、`fans.kpi.rep.tip`、`fans.col.rep` 欄名、`fan-detail.kpi.points`、`fan-detail.batch-note`、`fan-detail.repmix.title`「What drives these loyalty points／忠誠點數的來源」、`fan-detail.footer2`。HTML 內的 fallback 文字同步改（i18n 套用前那一幀不會閃舊詞）。
+- **【B】** 對外文案改名（en＋zh 成對改，未新增任何 key）：`fans.sub`（排序依據）、`fans.kpi.rep`「Avg loyalty points／平均忠誠點數」、`fans.kpi.rep.tip`、`fans.col.rep` 欄名、`fan-detail.kpi.points`、`fan-detail.batch-note`、`fan-detail.repmix.title`「What drives these points／忠誠點數的來源」（英文標題不寫全稱：正上方 KPI 已寫明 Loyalty points，全稱在 364px 的卡片裡會斷成兩行、比鄰卡標題矮一截）、`fan-detail.footer2`。HTML 內的 fallback 文字同步改（i18n 套用前那一幀不會閃舊詞）。
 - **【B/連帶】** `tier-settings.rules.dualgate-hint` 原文「reputation AND spend 兩道門檻」是**雙重過期**——2026-07-27 已把消費門檻移除、改成「Top %＋最低忠誠點數」，這行卻還在描述舊規則。改寫成實際的兩道門檻。
 - **【C】** 移除死 key `tier-settings.gate.reputation`（消費門檻改版後就沒有任何頁面引用，留著只會把退役的詞餵給下一個接手的人）。內部 key `fan-detail.kpi.reputation(-delta)` → `.points(-delta)`，同樣是不讓舊詞在程式碼裡復活；`fans.*.rep` 這組縮寫 key 不動（`data-sort-key="rep"` 綁在九列資料上，改了得動排序接線，而 `rep` 本身不是對外名詞）。
 - **【欄寬】** 忠誠點數欄 `78px → 96px`：「LOYALTY POINTS」單行需 90px，78px 會斷成兩行、標題比鄰欄矮半行。同時給 `.table-head.fan-row > *` 加 `white-space: nowrap`（欄名不該斷行），表格 `min-width` 900 → 920px。
-- **【驗證】** dev server `localhost:7777`，`fans-crm` / `fan-detail` / `tier-settings` 三頁 × en / zh-Hant 雙語逐字量測：全站已無「Reputation／聲望」字樣（只剩 i18n.js 這條變更註記本身）；欄名單行 17px、標題列各欄同高 40px、欄名右緣與數值右緣同為 1128px；無 console error、無橫向溢位。
+- **【驗證】** dev server `localhost:7777`，`fans-crm` / `fan-detail` / `tier-settings` 三頁 × en / zh-Hant 雙語，量測＋1440×900 實際截圖逐頁看過：全站已無「Reputation／聲望」字樣（只剩 i18n.js 這條變更註記本身）；欄名單行 17px、標題列各欄同高 40px、欄名右緣與數值右緣同為 1128px；fan-detail 兩張並排卡片標題同一條基線；無 console error、無橫向溢位。
 
 ## 2026-07-27 · 儀表板「總收入」卡升為主角卡 · 新增 `.kpi--hero` ＋ `--on-primary`／`--brand-ink`（B 反饋導入）
 
