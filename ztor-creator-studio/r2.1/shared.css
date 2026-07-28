@@ -305,8 +305,38 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 .app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
 .app-topbar__badge-dot[data-read="true"] { display: none; }
-.app-sidebar__lang [data-lang] { font-weight: var(--fw-regular); }
-.app-sidebar__lang [data-lang][aria-current="false"] { color: var(--foreground-muted); font-weight: var(--fw-regular); }
+/* ── Language picker inside the Account menu (2026-07-28 使用者裁示) ──────────
+   一份樣式、兩個 shell：側欄的帳號群組與 topbar 的帳號 dropdown 用同一個
+   .nav-lang（兩種版面「同一份 sitemap、只換位置」的規矩，語言列也照辦）。
+   兩個語言就兩顆並排、直接選——不為兩個選項多開一層 accordion。 */
+.nav-lang { display: inline-flex; align-items: center; gap: var(--sp-6); }
+.nav-lang__sep { color: var(--border); }
+.nav-lang__pick {
+  border: 0; background: transparent; padding: 0; cursor: pointer;
+  font: inherit; font-size: var(--fs-13); line-height: var(--lh-snug);
+  color: var(--foreground-muted); font-weight: var(--fw-regular);
+  transition: color .14s ease;
+}
+.nav-lang__pick:hover { color: var(--foreground); }
+.nav-lang__pick[aria-current="false"] { color: var(--foreground-muted); }
+/* 已選＝品牌橘，與導航其他「已選」語彙（.app-sidebar__link[aria-current]）同一個 ink token。 */
+.nav-lang__pick[aria-current="true"] { color: var(--selected-ink); }
+
+/* 側欄版：與 .app-sidebar__sub-link 同一組幾何（同高、同左縮排 40px、同右內距），
+   差別只在右側多一個選擇器——讀起來仍是帳號選單的一列，不是外掛上去的控件。 */
+.app-sidebar__sub-lang {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-12) 0 var(--sp-40);
+  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
+}
+/* Topbar 版：吃 .app-topbar__dropdown-option 的內距，但不是連結、沒有 hover 底
+   （它本身不導航，可點的只有右邊那兩顆）。 */
+.app-topbar__dropdown-lang {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
+}
 .app-sidebar__search { gap: var(--sp-8); cursor: text; }
 .app-sidebar__search-input {
   flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
@@ -1295,7 +1325,9 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   flex-wrap: wrap;
   margin-bottom: var(--sp-14);
 }
-.pd-detail__breadcrumb { min-width: 0; }
+/* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
+   所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
+.pd-detail__breadcrumb { min-width: 0; margin-bottom: 0; }
 .pd-hero {
   display: grid;
   grid-template-columns: 300px minmax(0, 1fr);

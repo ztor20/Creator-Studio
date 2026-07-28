@@ -51,7 +51,8 @@
      「Your fans, ranked.」，接成「Back to Your fans, ranked.」就不成句了），
      麵包屑寫的才是這個地方的名字（「Fans」）。h1 退居第二、句號去掉。 */
   function hereName() {
-    var crumb = document.querySelector('.page > .text-sub [data-i18n], .page > .text-sub');
+    /* 2026-07-28：麵包屑收成 .page-crumb（原本是 .text-sub ＋ inline style），選擇器跟著改。 */
+    var crumb = document.querySelector('.page > .page-crumb [data-i18n], .page > .page-crumb');
     if (crumb && crumb.textContent.trim()) return crumb.textContent.trim();
     var nav = document.querySelector('[aria-current="page"]');
     if (nav && nav.textContent.trim()) return nav.textContent.trim();

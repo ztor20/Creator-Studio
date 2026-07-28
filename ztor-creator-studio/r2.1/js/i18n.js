@@ -364,6 +364,9 @@
     'nav.notif-label':        { en: 'Notifications & to-dos', zh: '通知與待辦' },
     'nav.theme-label':        { en: 'Toggle theme',          zh: '切換主題' },
     'nav.lang-label':         { en: 'Language',              zh: '語言切換' },
+    /* 側欄帳號群組裡的語言列標籤（2026-07-28）。與 nav.lang-label 分開：那個是
+       按鈕的 aria-label（動作＝切換），這個是欄位標籤（名詞＝語言）。 */
+    'nav.lang':               { en: 'Language',              zh: '語言' },
     'nav.account-label':      { en: 'Account',               zh: '帳戶選單' },
     'nav.profile':            { en: 'Profile',               zh: '個人資料' },
     'nav.settings':           { en: 'Settings',              zh: '設定' },
@@ -5483,8 +5486,9 @@
       const v = t(el.dataset.i18nValue);
       if (v != null) el.value = v;
     });
-    /* Topbar lang button: highlight active language span via [data-lang] markers */
-    document.querySelectorAll('.app-topbar__lang').forEach(btn => {
+    /* Lang pickers (topbar button + sidebar account row): highlight the active
+       language via [data-lang] markers. */
+    document.querySelectorAll('.app-topbar__lang, .nav-lang').forEach(btn => {
       const lang = currentLang();
       btn.querySelectorAll('[data-lang]').forEach(span => {
         span.setAttribute('aria-current', span.dataset.lang === lang ? 'true' : 'false');
@@ -5522,6 +5526,15 @@
     if (!btn) return;
     e.preventDefault();
     toggleLang();
+  });
+
+  /* Explicit language pick (側欄帳號群組的 EN · 中)。與上面的 toggle 不同：
+     使用者按的是「哪一個語言」，不是「換一個」——按已選中的那顆不該把語言換掉。 */
+  document.addEventListener('click', e => {
+    const pick = e.target.closest('[data-lang-pick]');
+    if (!pick) return;
+    e.preventDefault();
+    setLang(pick.getAttribute('data-lang-pick'));
   });
 
   if (document.readyState === 'loading') {
