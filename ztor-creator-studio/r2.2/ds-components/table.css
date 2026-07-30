@@ -1,0 +1,211 @@
+/* ============================================================
+   Ztor — Table
+   Source: /comparison/* feature-by-feature comparison tables.
+   ============================================================ */
+
+/* 2026-07-25 Q29：全站資料表收斂到 variant-table（商品明細規格庫存表）的「自帶 1px 邊框」框型
+   （取代陰影，對齊 .variant-table-wrap 的自框做法）。**間距／字級維持原樣**——使用者看過 demo 後
+   裁決「線框對了，但欄位間距要像之前那樣大」，故只收斂邊框、不收斂密度（padding 16/20、表頭 fs-13、
+   內文 fs-14 皆保留舊值）。使 ztor-table 與 variant-table 的框型一致、但保留較鬆的閱讀節奏。 */
+.ztor-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  /* 2026-07-28（使用者裁示「每張卡都要有細微陰影」）：本元件原本只有底色＋圓角、
+     沒有任何 box-shadow，在深色畫布上與背景幾乎貼平、讀不出「這是一張浮起的卡」。
+     深色版的 --shadow-card 帶 rgba(253,253,253,0.08) 的亮色 rim——深底上真正看得見的
+     是那圈 rim 而不是黑色陰影，這也是為什麼不能只加純黑 drop。 */
+  box-shadow: var(--shadow-card);
+}
+
+.ztor-table thead th {
+  text-align: left;
+  padding: var(--sp-16) var(--sp-20);
+
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.ztor-table tbody td {
+  padding: var(--sp-16) var(--sp-20);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--foreground);
+}
+
+/* flush 情境：表格直接坐進出框的 .card（padding:0；如 earnings／event-detail 的表格卡）時，
+   卡已提供 1px 邊框，取消表格自框以免雙框。inset 情境（發布更新／協作者）的表格包在
+   overflow-x 容器裡、非 .card 直接子代，不受此規則影響、保留自框。2026-07-25 Q29 */
+.card > .ztor-table {
+  border: 0;
+  border-radius: 0;
+}
+
+.ztor-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ztor-table tbody tr:hover td {
+  background: var(--accent);   /* Q9 2026-07-13：列 hover 統一用 accent */
+}
+
+.ztor-table__feature {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-regular);
+}
+
+/* 費率樹：讓四個維度表（E-Shop／Events／Projects／IP）的費率輸入框對齊同一位置，
+   不因各表左側標籤長度不同而錯位（平台費率頁 2026-07-22 B 反饋）。
+   table-layout:fixed 使欄寬固定（不隨內容變動），費率欄＋來源欄靠右；
+   同時作用於設定分頁預設樹與例外彈窗 clone——兩者都包在 .fee-tree__panel 內。
+   相鄰選擇器（非首欄）避開數字型 nth-child；不用 #id 選擇器（會被裸色檢查誤判成 #hex）。 */
+.fee-tree__panel .ztor-table { table-layout: fixed; width: 100%; }
+/* 費率樹借用 .admin-table-wrap（取其外框＋圓角），但那支給寬的 admin IP 銀行表設了
+   min-width:840px；費率樹只有 2–3 欄、不需要，且在窄的例外彈窗（≈580px）會被撐出
+   橫向捲軸。這裡在費率樹範圍內解除該最小寬（多一個 class，特異度壓過 .admin-table-wrap
+   .ztor-table，且不動 admin 銀行表本身）。2026-07-22 */
+.fee-tree__panel .admin-table-wrap .ztor-table { min-width: 0; }
+.fee-tree__panel .ztor-table th + th,
+.fee-tree__panel .ztor-table td + td { text-align: right; }
+/* 費率樹各交易項之間不畫分隔線（2026-07-22 B 反饋）*/
+.fee-tree__panel .ztor-table tbody td { border-bottom: 0; }
+/* 費率樹「各維度手風琴之間」也不畫分隔線（2026-07-22 B 反饋）：全域 .ztor-accordion__item
+   本來上下各有 1px border 當分隔，這裡只在費率維度（含 fee-tree__panel 的 item）解除，
+   用 :has 精準命中、不動站上其他手風琴；各維度已用 .admin-table-wrap 的外框自成一塊。 */
+.ztor-accordion__item:has(.fee-tree__panel) { border-top: 0; }
+.ztor-accordion__item:has(.fee-tree__panel):last-child { border-bottom: 0; }
+
+.ztor-table__check {
+  color: var(--status-success);
+  display: inline-flex;
+  align-items: center;
+}
+.ztor-table__cross {
+  color: var(--destructive);
+  display: inline-flex;
+  align-items: center;
+}
+
+.ztor-table__partial {
+  color: var(--status-warning-ink);
+}
+
+/* ------------------------------------------------------------------
+   Expandable rows — per-transaction trace (Earnings · spec §5.1.8 F7)
+   A clickable row toggles a sibling detail row that carries the
+   Event ID, the applied rate version (§7.6) and the transaction's
+   own money waterfall (reuses .waterfall). All token-driven.
+   ------------------------------------------------------------------ */
+.ztor-table__row { cursor: pointer; }
+.ztor-table__chev {
+  width: 13px;
+  height: 13px;
+  color: var(--muted-foreground);
+  vertical-align: middle;
+  transition: transform var(--duration) var(--easing);
+}
+.ztor-table__row[aria-expanded="true"] .ztor-table__chev { transform: rotate(90deg); }
+/* 展開箭頭移到列尾獨立欄（2026-07-13：原內嵌在日期格最前、把日期擠到換行）。表頭補等寬空欄，內容才與表頭對齊。 */
+.ztor-table__chevcell { width: 32px; text-align: right; white-space: nowrap; }
+.ztor-table__datecell { white-space: nowrap; }
+.ztor-table__row[aria-expanded="true"] td { background: var(--muted); }
+
+.ztor-table__detail[hidden] { display: none; }
+.ztor-table__detail > td {
+  padding: 0;
+  background: var(--muted);
+}
+
+.tx-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: var(--sp-2) var(--sp-20) var(--sp-18) 42px;
+}
+.tx-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-8) var(--sp-24);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.tx-detail__id {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+.tx-detail__id code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--fs-12);
+  color: var(--foreground);
+  background: var(--card);
+  padding: var(--sp-2) 7px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.tx-detail__copy {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: var(--sp-2);
+  border-radius: var(--radius-sm);
+}
+.tx-detail__copy:hover { color: var(--foreground); background: var(--card); }
+.tx-detail__copy .ztor-icon { width: 13px; height: 13px; }
+.tx-detail__note {
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+}
+.tx-detail__ladder { max-width: 540px; }
+
+/* ── Media feature cell — a small square thumbnail leading the row's name
+   (2026-07-25 promoted from the sony finance table; 32px square, one step
+   up in radius; started from the admin IP-bank table's 36px thumb and was
+   shrunk a notch on review, now shared so any .ztor-table can use it).
+   The flex row is an INNER wrapper, never the <td> itself: `display:flex` on a
+   table cell drops it out of the table formatting context, so fixed column
+   widths collapse (learned the hard way — column 1 shrank to its content).
+   Markup: <td class="ztor-table__feature"><span class="ztor-table__media">
+             <img class="ztor-table__thumb">…<span>name + badge</span></span></td> ── */
+.ztor-table__media {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  min-width: 0;
+}
+/* Header for a media column — pushes the label past the thumbnail so the column
+   title lines up with the row's NAME, not with the image (2026-07-26 使用者)。
+   Offset = cell left padding (--sp-20) + thumb (--sp-32) + media gap (--sp-10).
+   Specificity is deliberately `.ztor-table thead th.…` so it beats the base
+   `.ztor-table thead th` padding without !important. */
+.ztor-table thead th.ztor-table__media-head {
+  padding-left: calc(var(--sp-20) + var(--sp-32) + var(--sp-10));
+}
+
+.ztor-table__thumb {
+  /* 2026-07-26 使用者：縮圖再小一階（36→32）、圓角上一階（--radius-sm 3px → --radius 6px） */
+  width: var(--sp-32);
+  height: var(--sp-32);
+  flex: none;
+  border-radius: var(--radius);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  object-fit: cover;
+}

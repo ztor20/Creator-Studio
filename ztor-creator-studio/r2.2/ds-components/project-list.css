@@ -1,0 +1,279 @@
+/* ============================================================
+   Project list — borderless table list for the Projects page.
+   Visual language mirrors E-Shop's .product-list (real image
+   thumbnail, borderless rows, accent hover, muted column heads).
+   Columns (2026-07-24, user split the crammed meta line into
+   real columns): image · 專案(type+name+desc) · 當前目標 · 剩餘時間 ·
+   類別(內容/家族兩行) · 狀態 · chevron；類型置於專案名稱上方。
+   Non-campaign rows show "—" in 當前目標/剩餘時間 (no goal/countdown).
+   Uses existing color, type, spacing, radius, motion tokens.
+   ============================================================ */
+
+.project-list {
+  width: 100%;
+  color: var(--foreground);
+}
+
+.project-list__head,
+.project-list__row {
+  display: grid;
+  /* image · project · category · goal · time · status · chevron（2026-07-24：類別移到目標之前）*/
+  grid-template-columns: 76px minmax(200px, 1fr) 100px 144px 88px 88px 24px;
+  row-gap: var(--sp-16);
+  column-gap: var(--sp-20);
+  align-items: center;
+}
+
+/* [hidden] 要蓋過 display:grid，否則被篩選隱藏的列仍會顯示 */
+.project-list__head[hidden],
+.project-list__row[hidden] { display: none; }
+
+/* 狀態欄可以帶第二顆「事實」徽章（已達標／已成立，見 projects.html badgeHtml）。
+   欄寬固定 88px，兩顆並排會溢出（實測外溢 41–62px），所以改直向堆疊——列高 116px
+   本來就有垂直空間。2026-07-27。 */
+.project-list__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.project-list__status .badge { max-width: 100%; }
+
+.project-list__head {
+  min-height: 44px;
+  padding: 0 var(--sp-10);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+}
+
+.project-list__row {
+  min-height: 116px;   /* 76px 縮圖 + 上下 --sp-20 */
+  padding: var(--sp-20) var(--sp-10);
+  border-bottom: 1px solid var(--border-soft);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+
+/* 2026-07-26（Q34）：跟 .product-list__row 統一，Q9 純換底色改浮起版——卡底＋圓角＋陰影，
+   列從清單裡浮出來；自身與上一列的 border-bottom 透明避免分隔線切過浮起的列（見 product-list.css
+   同款規則的完整沿革註解）。 */
+.project-list__row:hover {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+  box-shadow: var(--shadow-lift-flat);
+  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.project-list__row:has(+ .project-list__row:hover) {
+  border-bottom-color: transparent;
+}
+
+.project-list__row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* ── image thumbnail（比照 e-shop .product-list__image；用專案詳情同一張圖 poster||cover）── */
+.project-list__image {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--card);
+  display: inline-grid;
+  place-items: center;
+}
+
+.project-list__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 無圖退位：類型 icon 佔位（新建專案還沒上傳素材時），沿用 e-shop placeholder 調性 */
+.project-list__image--placeholder {
+  background: var(--muted);
+  border: 1px solid var(--border-soft);
+  color: var(--muted-foreground);
+}
+
+.project-list__image--placeholder .ztor-icon {
+  width: 28px;
+  height: 28px;
+}
+
+/* ── 專案識別（類型／名稱／一行簡介）── */
+.project-list__project {
+  min-width: 0;
+}
+
+.project-list__kind {
+  margin-bottom: var(--sp-4);
+  color: var(--muted-foreground);   /* 2026-07-24 使用者：顏色深一點 */
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);    /* 2026-07-24 使用者：字重細一點（medium→regular）*/
+  line-height: var(--lh-none);
+}
+
+.project-list__title {
+  overflow: hidden;
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-list__desc {
+  overflow: hidden;
+  margin-top: var(--sp-2);
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 一般資料格（當前目標／剩餘時間）── */
+.project-list__cell {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 空值（非募資列的目標／倒數）以 --muted-foreground 破折號呈現，弱於有值的格 */
+.project-list__cell--empty {
+  color: var(--muted-foreground);
+}
+
+/* ── 當前目標：百分比／進度條／實際金額各占一排（使用者 2026-07-24）。
+   非募資列改走 .project-list__cell--empty 單行破折號 ── */
+.project-list__goal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+  padding-inline: var(--sp-4);
+}
+.project-list__goal.project-list__cell--empty {
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+}
+.project-list__goal-pct {
+  color: var(--foreground);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);   /* 2026-07-24 使用者：字重稍微小一點（bold→semibold）*/
+  line-height: var(--lh-none);
+  font-variant-numeric: tabular-nums;
+}
+.project-list__goal-amt {
+  overflow: hidden;
+  margin-top: var(--sp-4);   /* 與上方進度條再拉開一點（2026-07-24 使用者反饋）——疊在 column gap 上 */
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 類別：內容類型（電影）疊在家族（影視）上，比照 e-shop 兩行分類格 ── */
+.project-list__category {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);   /* 內容類型↔家族兩行間距（2026-07-24 使用者反饋：2px 太擠） */
+  min-width: 0;
+}
+
+.project-list__cat-main {
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: var(--fs-13);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-list__cat-family {
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── chevron：點列開詳情的提示（此頁列＝連結，與 e-shop 的 ⋯ 選單不同）── */
+.project-list__go {
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted-foreground);
+}
+
+.project-list__go .ztor-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.project-list__row:hover .project-list__go {
+  color: var(--foreground);
+}
+
+/* ── 中寬螢幕：先收掉次要欄（類別／倒數），保住名稱＋目標＋狀態 ── */
+@media (max-width: 1180px) {
+  .project-list__head,
+  .project-list__row {
+    grid-template-columns: 76px minmax(180px, 1fr) 136px 88px 24px;
+  }
+  .project-list__col-time,
+  .project-list__col-category,
+  .project-list__time,
+  .project-list__category { display: none; }
+}
+
+/* ── 窄螢幕：改堆疊，名稱主行＋目標次行，狀態與 chevron 各自靠右 ── */
+@media (max-width: 760px) {
+  .project-list__head {
+    display: none;
+  }
+
+  .project-list__row {
+    grid-template-columns: 76px minmax(0, 1fr) auto 24px;
+    gap: var(--sp-8) var(--sp-10);
+    min-height: 0;
+    padding: var(--sp-16) var(--sp-4);
+    align-items: start;
+  }
+
+  .project-list__image { grid-column: 1; grid-row: 1 / span 2; }
+  .project-list__project { grid-column: 2; grid-row: 1; }
+
+  .project-list__goal {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: var(--fs-12);
+  }
+  .project-list__status { grid-column: 3; grid-row: 2; align-self: center; }
+
+  /* 次要欄在窄螢幕收起（資料仍在詳情頁） */
+  .project-list__time,
+  .project-list__category { display: none; }
+
+  .project-list__go   { grid-column: 4; grid-row: 1 / span 2; align-self: center; justify-self: end; }
+}

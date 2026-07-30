@@ -1,0 +1,168 @@
+<!doctype html>
+<!-- DEMO ONLY（scratch，不進 git／不部署）：收入來源篩選的「選中狀態」改用電子商店 filter-tabs 風格，
+     選中色跟隨各來源的點點顏色；全部＝品牌橘。給使用者挑選 A／B 兩案。 -->
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 收入來源篩選選中狀態</title>
+<link rel="stylesheet" href="../ds-components/_tokens.css">
+<link rel="stylesheet" href="../ds-components/fonts.css">
+<link rel="stylesheet" href="../ds-components/chip.css">
+<link rel="stylesheet" href="../ds-components/filter-tabs.css">
+<link rel="stylesheet" href="../ds-components/card.css">
+<style>
+  body { background: var(--background); color: var(--foreground); font-family: var(--font-ui); margin: 0; padding: var(--sp-32); }
+  h1 { font-size: var(--fs-24); margin: 0 0 var(--sp-8); }
+  h2 { font-size: var(--fs-16); margin: var(--sp-32) 0 var(--sp-4); }
+  .lead, .note { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 var(--sp-16); line-height: var(--lh-relaxed); }
+  .demo-block { padding: var(--sp-16); border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--card); margin-bottom: var(--sp-12); }
+  .demo-label { font-size: var(--fs-11); font-weight: var(--fw-semibold); letter-spacing: .05em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: var(--sp-10); }
+
+  /* 來源點點：吃該項的 --dot */
+  .src-dot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--dot, var(--muted-foreground)); display: inline-block; flex: none; }
+
+  /* ── 案 A：淡色底＋同色文字（電子商店 filter-tabs--brand 的做法，改吃 --dot）── */
+  .srcfilter--a .filter-tabs__item--active {
+    background: color-mix(in srgb, var(--dot) 12%, var(--card));
+    color: var(--dot);
+  }
+  .srcfilter--a .filter-tabs__item--active .src-dot { background: var(--dot); }
+
+  /* ── 案 B：案 A ＋ 1px 同色細框（輪廓更明確）── */
+  .srcfilter--b .filter-tabs__item--active {
+    background: color-mix(in srgb, var(--dot) 12%, var(--card));
+    color: var(--dot);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--dot) 45%, transparent);
+  }
+
+  /* 兩案共用：pill 高度與間距沿用 filter-tabs，dot 與文字間距 */
+  .srcfilter .filter-tabs__item { gap: var(--sp-6); }
+</style>
+</head>
+<body>
+
+<h1>收入來源篩選 · 選中狀態 demo</h1>
+<p class="lead">
+  改成電子商店那排 <code>filter-tabs</code> 的做法（淡色底 pill），但選中色<strong>跟著該來源的點點顏色</strong>走；「全部」用品牌橘。<br>
+  下面每一排都示範「不同項目被選中」的樣子，方便一次看完各來源的顏色表現。
+</p>
+
+<h2>案 A · 淡色底＋同色文字</h2>
+<p class="note">最貼近電子商店現況（那排就是淡橘底＋橘字），只是把橘色換成該來源的色。</p>
+
+<div class="demo-block srcfilter srcfilter--a">
+  <div class="demo-label">選中：全部（品牌橘）</div>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--primary)" role="tab" aria-selected="true">全部</button>
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab"><span class="src-dot"></span>電子商店銷售</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-2)" role="tab"><span class="src-dot"></span>共創計畫</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-4)" role="tab"><span class="src-dot"></span>活動票券</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-5)" role="tab"><span class="src-dot"></span>影評人佣金</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-3)" role="tab"><span class="src-dot"></span>OTT 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-success)" role="tab"><span class="src-dot"></span>IP 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-info)" role="tab"><span class="src-dot"></span>平台 / 串流版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--destructive)" role="tab"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--muted-foreground)" role="tab"><span class="src-dot"></span>專案支持 · 其他</button>
+  </nav>
+</div>
+
+<div class="demo-block srcfilter srcfilter--a">
+  <div class="demo-label">選中：共創計畫（藍）</div>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab">全部</button>
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab"><span class="src-dot"></span>電子商店銷售</button>
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--chart-2)" role="tab" aria-selected="true"><span class="src-dot"></span>共創計畫</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-4)" role="tab"><span class="src-dot"></span>活動票券</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-5)" role="tab"><span class="src-dot"></span>影評人佣金</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-3)" role="tab"><span class="src-dot"></span>OTT 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-success)" role="tab"><span class="src-dot"></span>IP 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-info)" role="tab"><span class="src-dot"></span>平台 / 串流版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--destructive)" role="tab"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--muted-foreground)" role="tab"><span class="src-dot"></span>專案支持 · 其他</button>
+  </nav>
+</div>
+
+<div class="demo-block srcfilter srcfilter--a">
+  <div class="demo-label">選中：OTT 版稅（綠）</div>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab">全部</button>
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab"><span class="src-dot"></span>電子商店銷售</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-2)" role="tab"><span class="src-dot"></span>共創計畫</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-4)" role="tab"><span class="src-dot"></span>活動票券</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-5)" role="tab"><span class="src-dot"></span>影評人佣金</button>
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--chart-3)" role="tab" aria-selected="true"><span class="src-dot"></span>OTT 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-success)" role="tab"><span class="src-dot"></span>IP 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-info)" role="tab"><span class="src-dot"></span>平台 / 串流版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--destructive)" role="tab"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--muted-foreground)" role="tab"><span class="src-dot"></span>專案支持 · 其他</button>
+  </nav>
+</div>
+
+<div class="demo-block srcfilter srcfilter--a">
+  <div class="demo-label">選中：授權收入（紅）／專案支持 · 其他（灰）— 兩個極端色一起看</div>
+  <nav class="filter-tabs" role="tablist" style="margin-bottom:var(--sp-10)">
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab">全部</button>
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--destructive)" role="tab" aria-selected="true"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-2)" role="tab"><span class="src-dot"></span>共創計畫</button>
+  </nav>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab">全部</button>
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--muted-foreground)" role="tab" aria-selected="true"><span class="src-dot"></span>專案支持 · 其他</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-2)" role="tab"><span class="src-dot"></span>共創計畫</button>
+  </nav>
+</div>
+
+<h2>案 B · 案 A ＋ 1px 同色細框</h2>
+<p class="note">同樣淡底＋同色字，多一圈同色細框，選中輪廓更明確（深色底上淡底色較弱時比較站得住）。</p>
+
+<div class="demo-block srcfilter srcfilter--b">
+  <div class="demo-label">選中：全部（品牌橘）</div>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--primary)" role="tab" aria-selected="true">全部</button>
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab"><span class="src-dot"></span>電子商店銷售</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-2)" role="tab"><span class="src-dot"></span>共創計畫</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-4)" role="tab"><span class="src-dot"></span>活動票券</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-5)" role="tab"><span class="src-dot"></span>影評人佣金</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-3)" role="tab"><span class="src-dot"></span>OTT 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-success)" role="tab"><span class="src-dot"></span>IP 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-info)" role="tab"><span class="src-dot"></span>平台 / 串流版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--destructive)" role="tab"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--muted-foreground)" role="tab"><span class="src-dot"></span>專案支持 · 其他</button>
+  </nav>
+</div>
+
+<div class="demo-block srcfilter srcfilter--b">
+  <div class="demo-label">選中：共創計畫（藍）</div>
+  <nav class="filter-tabs" role="tablist">
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab">全部</button>
+    <button class="filter-tabs__item" style="--dot:var(--primary)" role="tab"><span class="src-dot"></span>電子商店銷售</button>
+    <button class="filter-tabs__item filter-tabs__item--active" style="--dot:var(--chart-2)" role="tab" aria-selected="true"><span class="src-dot"></span>共創計畫</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-4)" role="tab"><span class="src-dot"></span>活動票券</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-5)" role="tab"><span class="src-dot"></span>影評人佣金</button>
+    <button class="filter-tabs__item" style="--dot:var(--chart-3)" role="tab"><span class="src-dot"></span>OTT 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-success)" role="tab"><span class="src-dot"></span>IP 版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--status-info)" role="tab"><span class="src-dot"></span>平台 / 串流版稅</button>
+    <button class="filter-tabs__item" style="--dot:var(--destructive)" role="tab"><span class="src-dot"></span>授權收入</button>
+    <button class="filter-tabs__item" style="--dot:var(--muted-foreground)" role="tab"><span class="src-dot"></span>專案支持 · 其他</button>
+  </nav>
+</div>
+
+<h2>對照 · 現在站上的樣子</h2>
+<p class="note">目前是 <code>chip</code>：選中＝白底黑字（反白），跟來源顏色無關。</p>
+<div class="demo-block">
+  <div class="chip-group" style="display:flex;flex-wrap:wrap;gap:var(--sp-8)">
+    <button class="chip chip--active" type="button">全部</button>
+    <button class="chip" type="button"><span class="src-dot" style="--dot:var(--primary);margin-right:var(--sp-6)"></span>電子商店銷售</button>
+    <button class="chip" type="button"><span class="src-dot" style="--dot:var(--chart-2);margin-right:var(--sp-6)"></span>共創計畫</button>
+    <button class="chip" type="button"><span class="src-dot" style="--dot:var(--chart-3);margin-right:var(--sp-6)"></span>OTT 版稅</button>
+  </div>
+</div>
+
+<h2>要注意的一點</h2>
+<p class="note">
+  「全部」與「電子商店銷售」都是品牌橘（來源清單裡電商本來就用橘），所以兩者選中時顏色相同。<br>
+  實際上一次只會有一個被選中，不會同時出現兩個橘色 pill，所以不影響辨識；如果你想讓它們有差別，可以把電商改成別的顏色（但要連圖表線與來源清單的點一起改）。
+</p>
+
+</body>
+</html>

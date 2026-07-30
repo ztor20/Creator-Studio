@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="S11">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage-worn leather jacket · Auction detail · Ztor</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* auction-detail · 競標進程／出價活動／拍賣資訊（spec 5.1.5.8）。display-only demo。
+     2026-07-27：版型改與商品明細（product-detail）同一套殼——page--narrow ＋ 頁籤 ＋
+     detail-grid（主欄＋右側常駐欄）＋ form-section--outlined 卡；原本是一排 bento card。
+     內容一項未增減，只重新分組進 tab-panel（規格 §3 明定分欄與版面由 UI 端決定、非約束）。 */
+  /* 2026-07-27：`.ad-phases` / `.ad-phase*`（競標生命週期三階段列）隨區塊一併撤除，
+     樣式只有本頁在用，不留死規則。 */
+  /* §2.5 物品大圖占位 */
+  .ad-hero { aspect-ratio:4/3; border-radius:var(--radius-md); background:var(--muted); display:grid; place-items:center; color:var(--muted-foreground); }
+  .ad-hero .ztor-icon { width:48px; height:48px; }
+  .ad-hero img { width:100%;height:100%;object-fit:contain;border-radius:inherit; }
+  .ad-gallery { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px; }
+  .ad-gallery img { width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius-sm);background:var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page page--narrow">
+
+      <!-- §2.1 導航與返回脈絡 -->
+      <div class="page-crumb">
+        <a href="e-shop.html" class="card__link" data-i18n="ad.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <a href="e-shop.html" class="card__link" data-i18n="ad.crumb.auctions">Auctions</a> <span style="margin:0 6px">/</span>
+        <span id="ad-crumb-name">Stage-worn leather jacket</span>
+      </div>
+
+      <!-- §2.2 頁首與狀態（與商品明細同構：標題在上、狀態徽章在標題下、動作在右）-->
+      <div class="page-intro">
+        <div style="min-width:0">
+          <h1 class="page-intro__title" id="ad-title" style="margin:0">Stage-worn leather jacket</h1>
+          <div class="flex-row" style="gap:6px;margin-top:8px">
+            <span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span>
+            <span class="badge"><span data-i18n="ad.badge.auction">Auction</span></span>
+          </div>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button" data-i18n="ad.btn.copy"><i data-lucide="link" class="ztor-icon"></i> Copy link</button>
+          <button class="btn btn--outline" type="button" data-ad-preview-open data-i18n="ad.btn.preview"><i data-lucide="eye" class="ztor-icon"></i> Preview</button>
+        </div>
+      </div>
+
+      <!-- §2.3 競標生命週期三階段列（預展／開放競標／結果）已於 2026-07-27 撤除（使用者裁示）：
+           它顯示的「目前處於哪一階段」與 §2.2 頁首的狀態徽章（競標中）是同一件事，
+           創作者端不需要再看一次前後階段。狀態單一來源＝頁首徽章＋右欄「競標狀態」卡。
+           規格 5.1.5.8 §2.3 仍定義本區塊，屬待上游確認的產品變更提案（見 ASSUMPTIONS.md）。 -->
+
+      <!-- 分頁（與商品明細同一組 DS 元件與切換邏輯）：
+           總覽＝§2.5 競標概況＋§2.4 物品摘要／出價＝§2.6 出價活動／拍賣資訊＝§2.7。 -->
+      <nav class="tabs tabs--card tabs--underline-short mt-24" role="tablist" data-tabs>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
+        <button class="tabs__item" role="tab" data-tab="bids" aria-selected="false" data-i18n="ad.tab.bids">Bids</button>
+        <button class="tabs__item" role="tab" data-tab="info" aria-selected="false" data-i18n="ad.tab.info">Auction info</button>
+      </nav>
+
+      <div class="detail-grid mt-16">
+      <div class="detail-main">
+
+      <!-- ════════ TAB · 總覽：§2.5 競標概況 ＋ §2.4 物品摘要 ════════ -->
+      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
+
+        <!-- §2.5 競標概況 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.stats.title">Bidding stats</h3>
+            <p class="form-section__sub" data-i18n="ad.stats.sub">Live figures from the bidding engine; not editable here.</p>
+          </div>
+          <div class="bento" style="gap:var(--sp-10)">
+            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.current">Current bid</div><div class="kpi__value" style="font-size: var(--fs-22)">$385</div></div>
+            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.bids">Bids</div><div class="kpi__value" style="font-size: var(--fs-22)">18</div></div>
+            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.bidders">Bidders</div><div class="kpi__value" style="font-size: var(--fs-22)">9</div></div>
+            <div class="kpi kpi--compact bento--span-3"><div class="kpi__label" data-i18n="ad.stat.timeleft">Time left</div><div class="kpi__value" style="font-size: var(--fs-22)">2d 4h</div></div>
+          </div>
+        </section>
+
+        <!-- §2.4 物品摘要（縮圖／品名／創作者／標籤／故事）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.item.title">Item summary</h3>
+            <p class="form-section__sub" data-i18n="ad.by">by Creator</p>
+          </div>
+          <div class="ad-hero" id="ad-hero"><i data-lucide="image" class="ztor-icon"></i></div>
+          <div class="ad-gallery" id="ad-gallery" aria-label="Auction product images"></div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap;margin:16px 0 8px">
+            <span class="badge badge--neutral" data-i18n="ad.tag.clothing">Clothing</span>
+            <span class="badge badge--neutral" data-i18n="ad.tag.cond">Well-loved</span>
+            <span class="badge badge--neutral" data-i18n="ad.tag.elig">Inner Circle</span>
+          </div>
+          <p style="font-size: var(--fs-13);line-height:1.6;margin:0" data-i18n="ad.story">Wore this during the entire 2024 world tour — every show, every encore. Smells faintly of stage smoke. Comes with a hand-signed setlist from the final night.</p>
+        </section>
+
+      </div><!-- /tab-panel overview -->
+
+      <!-- ════════ TAB · 出價：§2.6 出價活動 ════════ -->
+      <div class="tab-panel" data-panel="bids" role="tabpanel">
+
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.bids.title">Bid activity</h3>
+            <p class="form-section__sub" data-i18n="ad.bids.sub">Every bid on this item, newest first.</p>
+          </div>
+          <nav class="filter-tabs" role="tablist" aria-label="Bid filter" data-ad-bidfilter style="margin-bottom:12px">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-bid-val="all" data-i18n="ad.bids.all">All</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-bid-val="open" data-i18n="ad.bids.open">Open</button>
+          </nav>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">yuki_stan <span class="badge badge--success" style="margin-left:4px" data-i18n="ad.bids.highest">New highest</span></div><div class="data-list__meta" data-i18n="ad.bids.time1">2h ago</div></div>
+              </div>
+              <span style="font-size: var(--fs-13)">$385</span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">mar.co</div><div class="data-list__meta" data-i18n="ad.bids.time2">5h ago</div></div>
+              </div>
+              <span style="font-size: var(--fs-13)">$360</span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title">devon.w</div><div class="data-list__meta" data-i18n="ad.bids.time3">8h ago</div></div>
+              </div>
+              <span style="font-size: var(--fs-13)">$330</span>
+            </div>
+          </div>
+          <a class="card__link" href="#" style="display:inline-block;margin-top:10px;font-size: var(--fs-13)" data-i18n="ad.bids.viewall">View all 8 bids</a>
+          <div class="badge badge--success" style="margin-top:12px"><span data-i18n="ad.bids.reserve">Reserve met</span></div>
+        </section>
+
+      </div><!-- /tab-panel bids -->
+
+      <!-- ════════ TAB · 拍賣資訊：§2.7（拍賣設定一覽 ＋ 結標與履約）════════ -->
+      <div class="tab-panel" data-panel="info" role="tabpanel">
+
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.info.title">Auction info</h3>
+            <p class="form-section__sub" data-i18n="ad.info.sub">Set when the auction was created; locked once bidding is live.</p>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.status">Status</span></div><span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.duration">Duration</span></div><span data-i18n="ad.info.duration-v">7 days</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.started">Started</span></div><span>Jun 10 2026</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.ends">Ends</span></div><span>Jun 17 2026</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.sealed">Sealed final round</span></div><span data-i18n="ad.info.off">OFF</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.elig">Eligibility</span></div><span data-i18n="ad.tag.elig">Inner Circle</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.start">Starting price</span></div><span>$100</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.reserve">Reserve</span></div><span>$300</span></div>
+            <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ad.info.fee">Platform fee</span></div><span data-i18n="ad.info.fee-v">10%</span></div>
+          </div>
+        </section>
+
+        <!-- §2.7 結標與履約 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.fulfil.title">Settlement &amp; fulfilment</h3>
+          </div>
+          <div class="field__hint" data-i18n="ad.info.fulfil">After the auction ends, the winning order, shipping and fulfilment are handled in Order management.</div>
+          <a class="btn btn--outline btn--sm mt-8" href="orders.html" style="width:100%" data-i18n="ad.info.fulfil-cta">Go to order management →</a>
+        </section>
+
+      </div><!-- /tab-panel info -->
+
+      </div><!-- /detail-main -->
+
+      <!-- 右側常駐欄（跨分頁）：唯讀競標狀態，比照商品明細右欄「改東西前要先知道」的狀態卡 -->
+      <aside class="detail-rail">
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ad.rail.status">Auction status</h3>
+          </div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.info.status">Status</span><span class="kv__v"><span class="badge badge--orange"><span data-i18n="ad.badge.live">Live</span></span></span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.stat.current">Current bid</span><span class="kv__v">$385</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.stat.timeleft">Time left</span><span class="kv__v">2d 4h</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.info.ends">Ends</span><span class="kv__v">Jun 17 2026</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="ad.info.reserve">Reserve</span><span class="kv__v"><span class="badge badge--success"><span data-i18n="ad.bids.reserve">Reserve met</span></span></span></div>
+        </section>
+      </aside>
+      </div><!-- /detail-grid -->
+
+    </div>
+  </main>
+</div>
+
+<!-- §2.1 Preview · 畫面分割預覽（§6.7 同源，共用 partials/fan-store.js）-->
+<div class="preview-panel preview-panel--inset" id="ad-preview">
+  <div class="preview-panel__backdrop" data-ad-preview-close></div>
+  <div class="preview-panel__sheet">
+    <div class="preview-panel__head">
+      <h3 class="preview-panel__title" data-i18n="ad.preview.title">How fans see this auction</h3>
+      <button class="btn btn--icon btn--sm" data-ad-preview-close aria-label="Close preview"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="preview-panel__body">
+      <div data-fan-store-host></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="partials/fan-store.js?v=r2.2"></script>
+<script>
+  /* auction-detail 互動：出價活動 All/Open filter（demo）+ Preview 分割預覽（§6.7 同源）。 */
+  (function () {
+    const auction = window.ztorGetAuction && window.ztorGetAuction(new URLSearchParams(window.location.search).get('id'));
+    if (auction) {
+      const name = document.getElementById('ad-title'); if (name) name.textContent = auction.name;
+      const crumb = document.getElementById('ad-crumb-name'); if (crumb) crumb.textContent = auction.name;
+      const hero = document.getElementById('ad-hero'); if (hero) hero.innerHTML = '<img src="images/products/' + auction.img + '" alt="' + auction.name.replace(/"/g, '&quot;') + '">';
+      const gallery = document.getElementById('ad-gallery');
+      if (gallery && auction.gallery) gallery.innerHTML = auction.gallery.map(file => '<img src="images/products/' + file + '" alt="' + auction.name.replace(/"/g, '&quot;') + '">').join('');
+      document.title = auction.name + ' · Auction detail · Ztor';
+    }
+    const bf = document.querySelector('[data-ad-bidfilter]');
+    if (bf) bf.querySelectorAll('.filter-tabs__item').forEach(btn => btn.addEventListener('click', () => {
+      bf.querySelectorAll('.filter-tabs__item').forEach(b => { const on = b === btn; b.classList.toggle('filter-tabs__item--active', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    }));
+
+    const panel = document.getElementById('ad-preview');
+    if (panel) {
+      (function mountFanStore() {
+        const host = panel.querySelector('[data-fan-store-host]');
+        const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.fanStore;
+        if (!host || !html) { if (host) console.warn('[auction-detail] fan-store template missing'); return; }
+        host.innerHTML = html;
+        if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+        if (window.applyI18n) window.applyI18n(host);
+      })();
+      const open = () => { panel.classList.add('is-open'); document.body.classList.add('preview-open'); };
+      const close = () => { panel.classList.remove('is-open'); document.body.classList.remove('preview-open'); };
+      document.querySelectorAll('[data-ad-preview-open]').forEach(b => b.addEventListener('click', open));
+      panel.querySelectorAll('[data-ad-preview-close]').forEach(b => b.addEventListener('click', close));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    }
+  })();
+</script>
+<script>
+  /* Auction detail · in-page tabs（與 product-detail 同一套：canonical pattern per earnings.html，無共用 tabs.js）。
+     出價分頁的清單要整頁寬（右欄的競標狀態在該分頁等於重複）→ --norail；其餘分頁維持常駐右欄。 */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    function activate(name, push) {
+      let matched = false;
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) matched = true;
+      });
+      if (!matched) return;
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      const grid = document.querySelector('.detail-grid');
+      if (grid) grid.classList.toggle('detail-grid--norail', name === 'bids');
+      if (push && window.history && history.replaceState) history.replaceState(null, '', '#' + name);
+    }
+    tablist.addEventListener('click', e => {
+      const btn = e.target.closest('.tabs__item');
+      if (btn) activate(btn.dataset.tab, true);
+    });
+    const initial = (location.hash || '').replace('#', '');
+    if (initial) activate(initial, false);
+  })();
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

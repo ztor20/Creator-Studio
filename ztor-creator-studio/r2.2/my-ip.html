@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My IP · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+      <div class="page-crumb">
+        <a href="my-ip.html" class="card__link" data-i18n="my-ip.crumb.bank">IP Bank</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="my-ip.crumb.self">My IP</span>
+      </div>
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="my-ip.h1">My IP</h1>
+          <p class="page-intro__sub" data-i18n="my-ip.sub">Your intellectual property on Ztor — owned, rented, and licensed out.</p>
+        </div>
+      </div>
+
+      <div class="bento">
+        <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="my-ip.kpi.total">Total IP</div><div class="kpi__value">12</div><div class="kpi__meta" data-i18n="my-ip.kpi.total-meta">8 own · 4 rented in</div></div>
+        <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="my-ip.kpi.rentals">Total rentals</div><div class="kpi__value">26</div><div class="kpi__meta" data-i18n="my-ip.kpi.rentals-meta">Active licenses out</div></div>
+        <div class="kpi bento--span-4"><div class="kpi__label" data-i18n="my-ip.kpi.revenue">Total IP revenue</div><div class="kpi__value" data-i18n="my-ip.kpi.revenue-val">$14,820</div><div class="kpi__meta" data-i18n="my-ip.kpi.revenue-meta">Year to date · USD</div></div>
+      </div>
+
+      <!-- F1 清單控制（2026-07-25）：改用電子商店同款兩層工具列——
+           上排 .list-toolbar＝自有／租入底線 tabs 在左｜動作群（收合搜尋／匯入 waterfall／＋新增 IP）在右；
+           下排 .list-status-row＝來源 filter-tabs 淡橘藥丸（全部／Ztor 產出／站外登錄，各帶即時計數）。
+           來源篩選取代原本「在 ZTOR 上產出的 IP」「ZTOR 之外的 IP」兩段標題分組，清單合併成一張。 -->
+      <div class="myip-list-controls mt-24 list-dock">
+        <div class="list-toolbar">
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="ip-tabs" role="tablist">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="my"><span data-i18n="my-ip.tab.my">My IP</span> <span class="tabs__item-count">8</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="rented"><span data-i18n="my-ip.tab.rented">Rented</span> <span class="tabs__item-count">1</span></div>
+          </nav>
+        <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
+             靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
+             下方的浮層。行為見 js/sticky-dock.js，樣式見 ds-components/list-toolbar.css。 -->
+        <button class="btn btn--icon btn--sm list-toolbar__filter" type="button"
+                aria-expanded="false" aria-controls="myip-states"
+                aria-label="Filters" title="Filters"
+                data-i18n-aria-label="list.filters" data-i18n-title="list.filters">
+          <i data-lucide="filter" class="ztor-icon"></i>
+          <span class="list-toolbar__filter-count" hidden></span>
+        </button>
+
+
+          <div class="list-toolbar__actions">
+            <div class="search-collapse" id="ip-search-wrap">
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" id="ip-search-toggle" aria-expanded="false" aria-label="Search IP" title="Search IP" data-i18n-aria-label="my-ip.search.aria" data-i18n-title="my-ip.search.aria"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search IP" data-i18n-aria-label="my-ip.search.aria">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" id="ip-search" placeholder="Search by IP name or rights holder" data-i18n-placeholder="my-ip.search.placeholder">
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="ip-search-close" aria-label="Clear search" title="Clear search" data-i18n-aria-label="my-ip.search.clear" data-i18n-title="my-ip.search.clear"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+            <button class="btn btn--icon btn--sm" type="button" aria-label="Import waterfall data" title="Import waterfall data" data-i18n-aria-label="my-ip.btn.import" data-i18n-title="my-ip.btn.import"><i data-lucide="upload" class="ztor-icon"></i></button>
+            <a class="btn btn--primary" href="register-ip.html" data-i18n="my-ip.btn.add">＋ Add your IP</a>
+          </div>
+        </div>
+
+        <!-- 來源篩選 · 第二排 filter-tabs（各帶即時計數，隨搜尋重算） -->
+        <div class="list-status-row" id="myip-states">
+          <nav class="filter-tabs filter-tabs--brand" id="ip-source" role="tablist" aria-label="Filter by source">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-source-val="all"><span data-i18n="my-ip.filter.all">All</span><span class="filter-tabs__count" data-source-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-source-val="ztor"><span data-i18n="my-ip.filter.ztor">Made on Ztor</span><span class="filter-tabs__count" data-source-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-source-val="external"><span data-i18n="my-ip.filter.external">Registered externally</span><span class="filter-tabs__count" data-source-count>0</span></button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- ✝ 2026-07-25 移除分頁下方的 info-banner（使用者指定）：原本說明「項目上架會自動建立 IP 紀錄、
+           站外既有權利用『新增 IP』登錄」。i18n 鍵 `my-ip.info-banner` 一併移除。 -->
+
+      <!-- F1/F2 list body · spec 5.1.4 §F1–§F2「其他狀態·無資料」 — toggled via the
+           neutral <html data-data-state> switch (shared.css .when-data / .when-empty,
+           Cheat Codes Empty). Has-data shows the owned/rented IP lists; empty shows an
+           empty-card with the same "Add your IP" CTA as the page header. -->
+      <div class="when-data">
+      <div id="ip-group-my">
+      <!-- ✝ 2026-07-25 兩段標題分組（「在 ZTOR 上產出的 IP」／「ZTOR 之外的 IP」）退場：改由上方
+           來源 filter-tabs 篩選，清單合併成單一 .product-list，每列以 data-source 標記來源。
+           i18n 鍵 my-ip.section.on-ztor／.outside-ztor 一併移除。
+           【同日修訂】來源改純文字（.product-list__source）放名稱正上方，不再用徽章；
+           類型（原創／衍生／驗證中）獨立成一欄（.product-list__type），不再擠在名稱旁（使用者裁示）。 -->
+      <section class="product-list product-list--ip" role="table" aria-label="My IP">
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Icon"></div>
+          <div role="columnheader" data-i18n="my-ip.col.ip">IP</div>
+          <div role="columnheader" data-i18n="my-ip.col.type">Type</div>
+          <div role="columnheader" data-i18n="my-ip.col.rights">Rights</div>
+          <div role="columnheader" data-i18n="my-ip.col.rented">Rented</div>
+          <div role="columnheader" data-i18n="my-ip.col.revenue">Revenue</div>
+          <div role="columnheader" data-i18n="my-ip.col.price">Price</div>
+          <div role="columnheader" data-i18n="my-ip.mktplace">Active</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="ztor" data-search="coastline ep 原創 maya chou">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-ep.webp" data-nick-img="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.ztor">Made on Ztor</div>
+            <div class="product-list__title" data-i18n="my-ip.row1.name">Coastline EP</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge badge--orange"><span data-i18n="my-ip.badge.original">Original</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row1.rights">Maya Chou · 100%</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row1.rented">3</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row1.revenue">$2,180</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row1">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row1"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="ztor" data-search="late bloom story world 衍生 maya chou lin yiwen">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/tour-documentary.webp" data-nick-img="images/projects/nick-realive.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.ztor">Made on Ztor</div>
+            <div class="product-list__title" data-i18n="my-ip.row2.name">Late Bloom story world</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge"><span data-i18n="my-ip.badge.derivative">Derivative</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row2.rights">Maya Chou + Lin Yiwen · 60/40</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row2.rented">1</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row2.revenue">$2,400</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row2">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row2"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="ztor" data-search="quiet hours playlist 驗證中 maya chou">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-single.webp" data-nick-img="images/projects/nick-sdfs.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.ztor">Made on Ztor</div>
+            <div class="product-list__title" data-i18n="my-ip.row3.name">Quiet Hours playlist</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge badge--info"><span data-i18n="my-ip.badge.verifying">Verifying</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row3.rights">Maya Chou · 100%</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row3.rented">Pending publish</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row3.revenue">$0</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row3">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row3"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+        <div class="product-list__row" role="row" data-source="ztor" data-search="coastline live visuals 原創 maya chou 演出視覺">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-acetate.webp" data-nick-img="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.ztor">Made on Ztor</div>
+            <div class="product-list__title" data-i18n="my-ip.row5.name">Coastline live visuals</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge badge--orange"><span data-i18n="my-ip.badge.original">Original</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row5.rights">Maya Chou · 100%</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row5.rented">4</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row5.revenue">$1,860</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row5">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row5"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="ztor" data-search="harbour nights art bible 衍生 maya chou sasha lin 美術手冊">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-hoodie.webp" data-nick-img="images/projects/nick-realive.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.ztor">Made on Ztor</div>
+            <div class="product-list__title" data-i18n="my-ip.row6.name">Harbour Nights art bible</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge"><span data-i18n="my-ip.badge.derivative">Derivative</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row6.rights">Maya Chou + Sasha Lin · 70/30</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row6.rented">2</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row6.revenue">$980</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row6">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row6"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="external" data-search="salt bitumen documentary footage 紀錄片 外部 等待驗證">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/tour-documentary.webp" data-nick-img="images/projects/nick-r2.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.external">Registered externally</div>
+            <div class="product-list__title" data-i18n="my-ip.row4.title">Salt &amp; Bitumen documentary footage</div>
+            <div class="product-list__meta" data-i18n="my-ip.row4.meta">Registered Oct 2, 2025 · Awaiting waterfall verification</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row4"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="external" data-search="northline demo tapes 母帶 外部 已驗證 maya chou">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-starter-pack.webp" data-nick-img="images/projects/nick-i.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.external">Registered externally</div>
+            <div class="product-list__title" data-i18n="my-ip.row7.name">Northline demo tapes (2019)</div>
+            <div class="product-list__meta" data-i18n="my-ip.row7.meta">Registered Sep 18, 2025 · Waterfall verified</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell">—</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row7.rights">Maya Chou · 100%</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row7.rented">1</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.row7.revenue">$640</div>
+          <div class="product-list__cell" role="cell" data-ip-price="row7">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch switch--on" role="switch" aria-checked="true" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row7"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-source="external" data-search="coastline zine artwork 插畫 外部 等待驗證">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/coastline-tee.webp" data-nick-img="images/projects/nick-lrh.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.source.external">Registered externally</div>
+            <div class="product-list__title" data-i18n="my-ip.row8.name">Coastline zine vol.01 artwork</div>
+            <div class="product-list__meta" data-i18n="my-ip.row8.meta">Registered Aug 3, 2025 · Awaiting waterfall verification</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__cell" role="cell">—</div>
+          <div class="product-list__mktplace" role="cell"><div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="List on IP Market" data-i18n-aria-label="my-ip.mktplace.aria"></div></div>
+          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="my-ip.a.more" data-i18n-title="my-ip.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="manage-ip.html?id=row8"><i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="my-ip.manage">Manage</span></a></div></details></div>
+        </div>
+
+      </section>
+
+      <!-- F1/F2 來源＋搜尋無結果空狀態（清單合併後新增） -->
+      <div class="card mb-16 hidden" id="ip-noresult-card">
+        <div class="empty-card">
+          <div class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></div>
+          <p class="empty-card__title" data-i18n="my-ip.noresult.title">No IP matches</p>
+          <p class="empty-card__text" data-i18n="my-ip.noresult.text">Try a different source or search term.</p>
+          <button class="btn btn--outline btn--sm empty-card__cta" id="ip-noresult-clear" type="button" data-i18n="my-ip.noresult.clear">Clear filters</button>
+        </div>
+      </div>
+
+      <!-- F1 頁尾計數（對齊 orders/pickup 共用 list-footer；此頁靜態清單，只留 end-cap 計數；巢狀在 #ip-group-my 內，跟著 tab 切換自動隱藏）-->
+      <div class="list-footer list-footer--center" id="ip-footer">
+        <span class="list-footer__count" id="ip-count"></span>
+      </div>
+      </div><!-- /#ip-group-my -->
+
+      <!-- F2 租入分頁（2026-07-27）：原型此前無示例列；Dashboard「IP 租約即將到期」CTA 深連結
+           （my-ip.html?ip=neon-tide#rented）落地於此，列上自帶 Renew 完成動作（原型層級：
+           點了徽章翻成已續約），符合「CTA 落地即見要處理的項目」的裁示。 -->
+      <div id="ip-group-rented" class="hidden">
+      <section class="product-list product-list--rented" role="table" aria-label="Rented IP">
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Icon"></div>
+          <div role="columnheader" data-i18n="my-ip.col.ip">IP</div>
+          <div role="columnheader" data-i18n="my-ip.col.type">Type</div>
+          <div role="columnheader" data-i18n="my-ip.rented.col.licensor">Licensor</div>
+          <div role="columnheader" data-i18n="my-ip.rented.col.term">Term</div>
+          <div role="columnheader" data-i18n="my-ip.rented.col.expires">Expires</div>
+          <div role="columnheader" data-i18n="my-ip.col.price">Price</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-ip="neon-tide">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No image"><i data-lucide="tag" class="ztor-icon" aria-hidden="true"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body">
+            <div class="product-list__source" data-i18n="my-ip.rented.neon.source">Licensed in</div>
+            <div class="product-list__title" data-i18n="my-ip.rented.neon.name">Neon Tide brand license</div>
+          </div></div>
+          <div class="product-list__cell product-list__type" role="cell"><span class="badge"><span data-i18n="my-ip.badge.licensed">Licensed</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.rented.neon.licensor">Neon Tide Studio</div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.rented.neon.term">Nov 25 – May 25 · 6 mo</div>
+          <div class="product-list__cell" role="cell"><span class="badge badge--warning" data-renew-badge><span data-i18n="my-ip.rented.badge.expiring">Expires May 25</span></span></div>
+          <div class="product-list__cell" role="cell" data-i18n="my-ip.rented.neon.price">$120 / mo</div>
+          <div class="product-list__actions" role="cell"><button class="btn btn--primary btn--sm" type="button" data-renew="neon-tide" data-i18n="my-ip.rented.renew">Renew</button></div>
+        </div>
+      </section>
+      </div><!-- /#ip-group-rented -->
+
+      <div class="text-sub" style="font-size: var(--fs-12);margin-top:18px" data-i18n="my-ip.legend">
+        <strong>Mktplace ON</strong> · other creators can find &amp; rent. <strong>OFF</strong> · waterfall tracking only, not rentable.
+      </div>
+      </div><!-- /.when-data -->
+
+      <!-- Empty state · spec 5.1.4 §F1「其他狀態·無資料」 — no IP registered or rented yet. -->
+      <div class="when-empty">
+        <section class="card"><div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="file-text" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="my-ip.empty.title">No IP yet</h3>
+          <p class="empty-card__text" data-i18n="my-ip.empty.text">Publishing a project auto-creates an IP record. To register rights you already own from outside Ztor, add them here.</p>
+          <a class="btn btn--primary empty-card__cta" href="register-ip.html" data-i18n="my-ip.empty.cta">＋ Add your IP</a>
+        </div></section>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-dock.js?v=r2.2"></script>
+<script src="js/ip-price.js?v=r2.2"></script>
+<script src="js/ip-store.js?v=r2.2"></script>
+<script>
+/* My IP（F1）· 2026-07-25 改電子商店同款兩層工具列：
+   上排＝自有／租入底線 tabs；下排＝來源 filter-tabs（全部／Ztor 產出／站外登錄，計數即時重算）＋收合搜尋。
+   原本用兩段 <h3> 標題把清單切成「Ztor 產出」「站外登錄」兩張表，現合併成單一 .product-list，
+   每列以 data-source 標記，篩選＝顯示／隱藏列。自有分頁的 tab 計數維持 demo 值（8），
+   租入分頁在本原型無示例列。 */
+(function () {
+  const tabsEl  = document.getElementById('ip-tabs');
+  if (!tabsEl) return;
+  const tabs    = Array.from(tabsEl.querySelectorAll('[data-tab]'));
+  const myGroup = document.getElementById('ip-group-my');
+  const countEl = document.getElementById('ip-count');
+  const srcNav  = document.getElementById('ip-source');
+  const rows    = Array.from(myGroup.querySelectorAll('.product-list__row'));
+  const listEl  = myGroup.querySelector('.product-list');
+  const noresult   = document.getElementById('ip-noresult-card');
+  const nrClear    = document.getElementById('ip-noresult-clear');
+  const searchEl   = document.getElementById('ip-search');
+  const searchWrap = document.getElementById('ip-search-wrap');
+  const searchTgl  = document.getElementById('ip-search-toggle');
+  const searchCls  = document.getElementById('ip-search-close');
+  const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+
+  let source = 'all', q = '';
+
+  const matchQ = r => !q || (r.dataset.search || '').indexOf(q) !== -1
+                         || r.textContent.toLowerCase().indexOf(q) !== -1;
+
+  /* 來源藥丸計數＝目前關鍵字之下，各來源的列數 */
+  function renderSourceCounts() {
+    if (!srcNav) return;
+    srcNav.querySelectorAll('.filter-tabs__item').forEach(b => {
+      const val = b.getAttribute('data-source-val');
+      const n = rows.filter(r => (val === 'all' || r.dataset.source === val) && matchQ(r)).length;
+      const slot = b.querySelector('[data-source-count]');
+      if (slot) slot.textContent = n;
+    });
+  }
+
+  function apply() {
+    let shown = 0;
+    rows.forEach(r => {
+      const vis = (source === 'all' || r.dataset.source === source) && matchQ(r);
+      r.classList.toggle('hidden', !vis);
+      if (vis) shown++;
+    });
+    renderSourceCounts();
+    if (listEl)   listEl.classList.toggle('hidden', shown === 0);
+    if (noresult) noresult.classList.toggle('hidden', shown !== 0);
+    if (countEl) {
+      countEl.textContent = T('my-ip.footer.count', 'Showing {n} of {m} IP')
+        .replace('{n}', shown).replace('{m}', rows.length);
+    }
+  }
+
+  /* 來源藥丸 */
+  if (srcNav) srcNav.addEventListener('click', e => {
+    const item = e.target.closest('.filter-tabs__item');
+    if (!item) return;
+    srcNav.querySelectorAll('.filter-tabs__item').forEach(b => {
+      const on = b === item;
+      b.classList.toggle('filter-tabs__item--active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    source = item.getAttribute('data-source-val');
+    apply();
+  });
+
+  /* 收合式搜尋（比照 e-shop／IP 市場） */
+  const collapseSearch = clear => {
+    if (!searchWrap) return;
+    searchWrap.classList.remove('is-open');
+    if (searchTgl) searchTgl.setAttribute('aria-expanded', 'false');
+    if (clear) { searchEl.value = ''; q = ''; apply(); }
+  };
+  if (searchTgl) searchTgl.addEventListener('click', () => {
+    searchWrap.classList.add('is-open');
+    searchTgl.setAttribute('aria-expanded', 'true');
+    searchEl.focus();
+  });
+  if (searchCls) searchCls.addEventListener('click', () => collapseSearch(true));
+  if (searchEl) {
+    searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
+    searchEl.addEventListener('keydown', e => { if (e.key === 'Escape') collapseSearch(true); });
+  }
+  document.addEventListener('click', e => {
+    if (!searchWrap || !searchWrap.classList.contains('is-open')) return;
+    if (!searchWrap.contains(e.target) && !searchEl.value.trim()) collapseSearch(false);
+  });
+
+  /* 無結果 → 清空來源＋關鍵字 */
+  if (nrClear) nrClear.addEventListener('click', () => {
+    source = 'all'; q = '';
+    if (searchEl) searchEl.value = '';
+    if (srcNav) srcNav.querySelectorAll('.filter-tabs__item').forEach((b, i) => {
+      b.classList.toggle('filter-tabs__item--active', i === 0);
+      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    });
+    collapseSearch(false);
+    apply();
+  });
+
+  /* 自有／租入分頁 */
+  const rentedGroup = document.getElementById('ip-group-rented');
+  function applyTab(tab) {
+    tabs.forEach(t => {
+      const on = t.dataset.tab === tab;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    myGroup.classList.toggle('hidden', tab !== 'my');
+    if (rentedGroup) rentedGroup.classList.toggle('hidden', tab !== 'rented');
+    // 來源篩選只屬於自有清單（租入列無 data-source）→ 租入分頁隱藏
+    const ctrls = document.querySelector('.myip-list-controls .list-status-row');
+    if (ctrls) ctrls.classList.toggle('hidden', tab !== 'my');
+  }
+
+  tabsEl.addEventListener('click', e => {
+    const el = e.target.closest('[data-tab]');
+    if (el) applyTab(el.getAttribute('data-tab'));
+  });
+
+  apply();
+  /* Deep link（2026-07-27）：#rented 直接落在租入分頁；?ip=<slug> 再把該列 flash 標出
+     （Dashboard「IP 租約即將到期 → Renew」CTA）。hash 與外來 query 都能存活
+     devtools persist() 的 URL 重寫。 */
+  const wantRented = location.hash === '#rented';
+  applyTab(wantRented ? 'rented' : 'my');
+  try {
+    const slug = new URLSearchParams(location.search).get('ip');
+    if (slug) {
+      const target = document.querySelector('[data-ip="' + slug.replace(/[^\w-]/g, '') + '"]');
+      if (target) {
+        target.classList.add('deep-link-flash');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  } catch (e) {}
+
+  /* 價格欄由 js/ip-store.js 的 price 物件算出來（2026-07-27 定價改版），
+     不再各自寫死在 i18n 字串裡——清單與管理頁因此不可能講出不同的價格。 */
+  (function () {
+    if (!window.ztorGetIp || !window.ztorIpPrice) return;
+    document.querySelectorAll('[data-ip-price]').forEach(function (cell) {
+      var rec = window.ztorGetIp(cell.getAttribute('data-ip-price'));
+      if (rec && rec.price) cell.textContent = window.ztorIpPrice.summary(rec.price);
+    });
+  }());
+
+  /* 整列可點＝進「管理我的 IP」（2026-07-27 使用者裁示；比照 e-shop／orders／events 列）。
+     目的地取該列 kebab 裡「管理」那個連結（manage-ip.html?id=row<N>），不寫死——
+     沒有管理頁的列（承租列只有 Renew 鈕）因此自然不導向，逐列指向不同 id 也不用改這段。
+     排除：actions 欄（kebab 本身與選單裡的連結）、Mktplace 開關欄（上下架是列內動作，
+     不該被整列點擊搶走），以及任何 <a>/<button>。 */
+  document.querySelectorAll('.product-list--ip').forEach(list => {
+    list.addEventListener('click', e => {
+      if (e.target.closest('.product-list__actions, .product-list__mktplace, a, button')) return;
+      const row = e.target.closest('.product-list__row');
+      const link = row && row.querySelector('a.dropdown__item[href]');
+      if (link) location.href = link.getAttribute('href');
+    });
+  });
+
+
+  /* 上架開關（2026-07-27 修）：這 8 個 .switch 原本只是純展示的 <div>——沒有點擊處理、
+     沒有 role、也無法用鍵盤聚焦，所以點下去完全沒有反應。整列點擊那段當初就刻意把
+     .product-list__mktplace 排除掉（見上方註解「上下架是列內動作，不該被整列點擊搶走」），
+     於是這一格的點擊什麼都不會發生。這裡補上真正的行為與語意。
+     原型層級：只翻自己的狀態，不寫回任何資料來源。 */
+  /* 尚在驗證中的 IP 不能上架：把開關做成可點之後，原本「不可能發生」的狀態
+     （未驗證卻在市集上架）就變成一個點擊之遙。故驗證中的列鎖住開關並說明原因——
+     停用且講清楚為什麼，比讓人做出無效動作好。
+     **這是我依畫面語意推斷的規則（該列徽章＝Verifying、租用欄＝Pending publish），
+     不是取自規格。** 若產品上其實允許，刪掉 isLocked 這段即可恢復。 */
+  function isLocked(el) {
+    const row = el.closest('.product-list__row');
+    return !!(row && /verifying|驗證/i.test(row.textContent));
+  }
+  function toggleSwitch(el) {
+    if (isLocked(el)) return;
+    const on = el.classList.toggle('switch--on');
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+  /* 鎖住的列：視覺上淡化、游標改成禁止、補上原因（hover 可見） */
+  document.querySelectorAll('.product-list__mktplace .switch').forEach(el => {
+    if (!isLocked(el)) return;
+    el.setAttribute('aria-disabled', 'true');
+    el.removeAttribute('tabindex');
+    el.style.opacity = '.45';
+    el.style.cursor = 'not-allowed';
+    el.title = (window.i18nT && window.i18nT('my-ip.mktplace.locked')) || 'Finish verification before listing on IP Market';
+    el.setAttribute('data-i18n-title', 'my-ip.mktplace.locked');
+  });
+  document.addEventListener('click', e => {
+    const sw = e.target.closest('.product-list__mktplace .switch');
+    if (sw) toggleSwitch(sw);
+  });
+  /* 鍵盤：role="switch" 的慣例是空白鍵切換；Enter 一併支援（避免使用者按了沒反應） */
+  document.addEventListener('keydown', e => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    const sw = e.target.closest && e.target.closest('.product-list__mktplace .switch');
+    if (!sw) return;
+    e.preventDefault();            // 空白鍵預設會捲動頁面
+    toggleSwitch(sw);
+  });
+
+  /* Renew（原型完成動作）：徽章翻成已續約、按鈕收成完成態——流程在落地列上直接結束 */
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-renew]');
+    if (!btn) return;
+    const row = btn.closest('.product-list__row');
+    const badge = row && row.querySelector('[data-renew-badge]');
+    if (badge) {
+      badge.classList.remove('badge--warning');
+      badge.classList.add('badge--success');
+      badge.innerHTML = '<span data-i18n="my-ip.rented.badge.renewed">' + T('my-ip.rented.badge.renewed', 'Renewed') + '</span>';
+    }
+    btn.disabled = true;
+    btn.classList.remove('btn--primary');
+    btn.classList.add('btn--outline');
+    btn.innerHTML = '<span data-i18n="my-ip.rented.renewed">' + T('my-ip.rented.renewed', 'Renewed ✓') + '</span>';
+  });
+})();
+</script>
+<script>
+  /* 列操作 kebab（⋯）：點外部關閉；點選項後關閉（比照 orders/pickup 列操作）。
+     2026-07-26 使用者：「管理」文字連結改三點選單。 */
+  document.addEventListener('click', e => {
+    const item = e.target.closest && e.target.closest('.dropdown__item');
+    document.querySelectorAll('details.dropdown[open]').forEach(d => {
+      if (!d.contains(e.target)) { d.removeAttribute('open'); return; }
+      if (item && d.contains(item) && !item.hasAttribute('data-keep-open')) d.removeAttribute('open');
+    });
+  });
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script>
+  /* persona 圖片：nick（周湯豪）時把 IP 縮圖換成真實封面；default 沿用 data-src 的 Coastline 圖。
+     圖片為 e-shop 列表同樣式（.product-list__image > img）。 */
+  (function () {
+    try {
+      if (localStorage.getItem('ztor.persona') === 'nick') {
+        document.querySelectorAll('img[data-nick-img]').forEach(function (i) {
+          i.setAttribute('src', i.getAttribute('data-nick-img'));
+        });
+      }
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>

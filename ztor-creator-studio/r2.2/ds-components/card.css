@@ -1,0 +1,182 @@
+/* ============================================================
+   Ztor — Card
+   Q3 2026-07-13：預設卡＝1px 純邊框（平、乾淨）。只有可點/浮起的強調卡
+   （.ztor-card--clickable、selection-card）hover 時才升級純陰影。
+   ============================================================ */
+
+.ztor-card {
+  --card-pad: var(--sp-24);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+
+  padding: var(--card-pad);
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 form-section--outlined 統一 */
+
+  transition: box-shadow var(--duration) var(--easing),
+              transform  var(--duration) var(--easing);
+}
+
+.ztor-card--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.ztor-card--clickable:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.ztor-card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  margin: 0;
+}
+
+.ztor-card__meta {
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  margin: 0;
+}
+
+.ztor-card__body {
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+  margin: 0;
+}
+
+/* Muted variant — alternative card bg */
+.ztor-card--muted {
+  background: var(--muted);
+}
+
+/* Dashboard-frame variant — used to wrap product mockups */
+.ztor-card--frame {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-card,
+  .ztor-card--clickable:hover { transition: none; transform: none; }
+}
+
+/* ============================================================
+   Card (project namespace) — section wrapper used across product pages
+   API differs from .ztor-card: head/title/link/hint composition for
+   "section card" pattern (KPI rows, Recent earnings, Alerts panel,
+   Earnings sub-sections, etc.). Both namespaces coexist:
+   .ztor-card = canonical design-system reference (docs)
+   .card      = product-page usage (head + body composition)
+   ============================================================ */
+.card {
+  --card-pad: var(--sp-20);
+
+  background: var(--card);
+  border: 0;   /* 2026-07-26（Q23 裁決 C）：改用陰影浮起，取代 Q3 2026-07-13 的純邊框，統一到 form-section--outlined 已用的 Q14/Q18 處理 */
+  border-radius: var(--radius-xl);
+  padding: var(--card-pad);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+.card--muted { background: var(--muted); }
+.card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-14);
+}
+.card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-regular);
+  margin: 0;
+}
+/* Title-side icon slot — mirrors chart-card__title-group/-icon (chart.css)
+   so a section card can lead its title with a small glyph the same way a
+   chart-card does; card__head's title-slot/link-slot space-between layout
+   is unaffected (title-group is just one flex child, same as a bare title
+   was before). Neutral by default; color modifiers name a semantic accent
+   (one card's icon may take --primary — the page's single spotlight, per
+   DESIGN.md's "orange on ≤10% of a screen" rule — never more than one). */
+.card__title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  min-width: 0;
+}
+.card__title-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.card__title-icon .ztor-icon { width: 16px; height: 16px; }
+.card__title-icon--primary { color: var(--primary); }
+.card__title-icon--warning { color: var(--status-warning-ink); }
+.card__title-icon--info    { color: var(--status-info); }
+.card__title-icon--accent  { color: var(--status-accent); }
+.card__title-icon--success { color: var(--status-success); }
+.card__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+.card__link {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--foreground-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1px;
+  text-decoration: none;
+}
+/* Accent variant (2026-07-28 使用者裁示). For a link that OFFERS something
+   rather than navigating inside the current context — the 粉絲 pages' 系統說明
+   entry, sitting in an actions row beside Save and Discard. As a button it
+   carried the same visual authority as the page's real actions, which is the
+   wrong hierarchy for an explainer; accent + underline says "this is here if
+   you want it" without competing. The underline stays because it is the
+   textual affordance this system already uses for links. */
+.card__link--accent {
+  align-self: center;
+  font-size: var(--fs-13);
+  color: var(--primary);
+  border-bottom-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  transition-property: color, border-bottom-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.card__link--accent:hover { border-bottom-color: var(--primary); }
+.card__link--accent:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .card__link--accent { transition-duration: 1ms; } }
+
+/* Title-side variant of .card__link (inside .card__head): no underline + a
+   trailing chevron-right icon (Tabler path, rendered via mask + currentColor
+   so it tracks link color & hover). Scope is .card__head only — breadcrumbs,
+   row-level edit/manage links and inline body links keep the canonical
+   underline as a textual affordance. */
+.card__head .card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.card__head .card__link::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>") center/contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='9 18 15 12 9 6'/></svg>") center/contain no-repeat;
+  flex-shrink: 0;
+}
+.card__head .card__link:hover { color: var(--foreground); }

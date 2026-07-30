@@ -1,0 +1,64 @@
+/* ============================================================
+   Empty card — in-card empty state for a loaded-but-no-data view.
+
+   Differs from `empty-stub` (a full-page "route not built yet"
+   placeholder): this sits INSIDE a dashboard card / section when the
+   account has no data yet — a muted icon + short title + one line of
+   guidance + an optional primary CTA. Spec 5.1.1 §F2–F8「其他狀態 ·
+   無資料」. Toggled per page via <html data-data-state="empty"> (see
+   shared.css .dash-empty-only / .dash-data-only).
+
+   Anatomy:
+     .empty-card                (centered column stack, card padding)
+       .empty-card__icon        (40×40 muted chip · Tabler glyph)
+       .empty-card__title       (14 / 600)
+       .empty-card__text        (muted, max 320, 1–2 lines)
+       .empty-card__cta         (optional · uses .btn)
+   ============================================================ */
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-8);
+  padding: var(--sp-32) var(--sp-24);
+}
+/* [hidden] 要能收起：class 直接寫 display 會蓋掉 [hidden] 的 display:none，
+   故補這條，讓以 hidden 屬性切換顯隱（如每類型空狀態）的用法正確收起。 */
+.empty-card[hidden] { display: none; }
+.empty-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  color: var(--foreground-muted);
+  display: grid;
+  place-items: center;
+}
+.empty-card__icon .ztor-icon { width: 20px; height: 20px; }
+/* Color modifiers — for a card whose header already carries a matching
+   .card__title-icon accent (card.css): tints the empty-state icon to the
+   SAME hue so the box reads as one continuous accent region across its
+   data/empty states, not a second spotlight (kept to the same 5 semantic
+   tokens as .card__title-icon, plus the color-mix recipe already used by
+   .kpi__delta). Sections without a colored header icon keep the plain
+   muted default above — don't apply a modifier just for variety. */
+.empty-card__icon--primary { background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--primary); }
+.empty-card__icon--warning { background: color-mix(in srgb, var(--status-warning) 14%, var(--card)); color: var(--status-warning-ink); }
+.empty-card__icon--info    { background: color-mix(in srgb, var(--status-info) 14%, var(--card)); color: var(--status-info); }
+.empty-card__icon--accent  { background: color-mix(in srgb, var(--status-accent) 14%, var(--card)); color: var(--status-accent); }
+.empty-card__icon--success { background: color-mix(in srgb, var(--status-success) 14%, var(--card)); color: var(--status-success); }
+.empty-card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  margin: 0;
+}
+.empty-card__text {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  line-height: var(--lh-relaxed);
+  margin: 0;
+  max-width: 320px;
+}
+.empty-card__cta { margin-top: var(--sp-4); }

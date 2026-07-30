@@ -1,0 +1,298 @@
+/* ----------------------------------------------------------------
+   Store settings — E-Shop store-level settings field types
+   spec 5.1.5.5 (documents/5.1.5.5-商店設定.md)
+
+   Store settings is a popup (D067): opened from E-Shop F3 as an embed-modal
+   iframe, so store-settings.html carries no global nav / breadcrumb / page
+   header — the modal frame owns the title + close. Built on the Settings
+   layout (.settings-row) + the shared .input / .textarea / .select controls.
+   This file adds only the field types those components don't cover:
+   the Shop URL prefix affix (.ss-url), the read-only Stripe status card
+   (.ss-status), and the popup submit bar (.ss-actionbar). The $ amount
+   field now uses ds-components/amount-field.css (.amount-field
+   .amount-field--readonly) — see tombstone below. All token-driven.
+   ---------------------------------------------------------------- */
+
+/* Stack of section cards (store-settings page layout). No own max-width —
+   fills the standard .page column (≤1280px) like every other page, so the
+   storefront card and the product list read at the same width as E-Shop. */
+.ss-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-18);
+}
+.ss-stack .card__title {
+  font-size: var(--fs-18);
+}
+.ss-stack .card__sub {
+  margin: var(--sp-4) 0 var(--sp-4);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+/* Section cards reuse .settings-row; trim the first row's top padding so it
+   sits tight under the section title, and drop the last row's divider. */
+.ss-stack .settings-row:first-of-type {
+  padding-top: var(--sp-4);
+}
+.ss-stack .settings-row:last-of-type {
+  border-bottom: 0;
+  padding-bottom: var(--sp-2);
+}
+
+/* ----------------------------------------------------------------
+   Storefront identity (F2) — Base44 / Facebook-style identity band.
+   Cover + overlapping logo avatar + shop name / URL / bio shown as
+   TEXT; each field is click-to-edit in place (see .ss-edit). The brand
+   assets ARE the cover + avatar (edited via their own buttons), so there
+   are no separate upload tiles. Reads like the actual storefront and
+   keeps the card short.
+   ---------------------------------------------------------------- */
+.ss-identity-card { padding: 0; overflow: hidden; }   /* cover bleeds to card edges */
+
+.ss-band__cover {
+  position: relative;
+  height: 104px;
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--primary) 24%, var(--muted)), var(--muted));
+}
+.ss-band__cover-edit { position: absolute; top: 12px; right: 12px; }
+
+.ss-band__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-14);
+  padding: 0 22px;
+}
+.ss-band__avatar {
+  position: relative;
+  z-index: 1;
+  margin-top: -32px;            /* only the avatar overlaps the cover */
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-24);
+  box-shadow: 0 0 0 4px var(--card);
+}
+.ss-band__avatar-edit {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--card);
+}
+.ss-band__namewrap { min-width: 0; flex: 1; padding-top: var(--sp-12); }
+.ss-band__body { padding: var(--sp-12) 22px var(--sp-20); }
+.ss-band__meta { margin-top: var(--sp-12); }
+
+/* ---- Inline edit-in-place field (read text ↔ inline editor) ---- */
+.ss-edit { display: block; }
+.ss-edit__read {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  max-width: 100%;
+  padding: 3px var(--sp-8);
+  margin: -3px -8px;
+  border-radius: var(--radius-sm);
+  cursor: text;
+}
+.ss-edit__read:hover { background: var(--accent); }
+.ss-edit__value { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-edit--bio .ss-edit__value { white-space: normal; }
+.ss-edit__value:empty::before { content: attr(data-placeholder); color: var(--muted-foreground); }
+.ss-edit__pencil {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--muted-foreground);
+  opacity: 0;
+  transition: opacity .12s var(--easing);
+}
+.ss-edit__read:hover .ss-edit__pencil,
+.ss-edit.is-editing .ss-edit__pencil { opacity: 1; }
+.ss-edit__pencil .ztor-icon { width: 14px; height: 14px; }
+
+.ss-edit__form { display: none; gap: var(--sp-8); align-items: center; }
+.ss-edit.is-editing .ss-edit__read { display: none; }
+.ss-edit.is-editing .ss-edit__form { display: flex; }
+.ss-edit--bio .ss-edit__form { flex-direction: column; align-items: stretch; }
+.ss-edit__actions { display: inline-flex; gap: var(--sp-4); flex: none; align-self: flex-end; }
+.ss-edit__count { font-size: var(--fs-11); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.ss-edit--bio .ss-edit__formrow { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); }
+
+/* read-text flavours per field */
+.ss-edit--name .ss-edit__value { font-family: var(--font-display); font-size: var(--fs-22); font-weight: var(--fw-regular); letter-spacing: -0.4px; }
+.ss-edit--url .ss-edit__read { color: var(--foreground-muted); font-size: var(--fs-13); }
+.ss-edit--bio .ss-edit__value { font-size: var(--fs-13); color: var(--foreground); line-height: var(--lh-relaxed); }
+.ss-edit--currency .ss-edit__read { font-size: var(--fs-13); }
+.ss-edit--currency .ss-edit__label { color: var(--muted-foreground); }
+
+/* Shop URL: fixed domain prefix glued to an editable slug input */
+.ss-url {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--border);
+  overflow: hidden;
+}
+.ss-url:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.ss-url__prefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px var(--sp-4) 9px var(--sp-12);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.ss-url__input.input {
+  box-shadow: none;
+  border-radius: 0;
+  padding-left: 0;
+  flex: 1;
+  min-width: 0;
+}
+.ss-url__input.input:focus {
+  box-shadow: none;
+}
+
+/* Tombstone — .ss-amount ($ prefix money input) retired 2026-07-11: replaced
+   by ds-components/amount-field.css (.amount-field .amount-field--readonly),
+   full DS token roll-out third batch. store-settings.html now uses
+   .amount-field for the free-shipping-threshold field; no other page
+   referenced .ss-amount. Safe to delete this comment once confirmed unused
+   for a while longer. */
+
+/* Read-only Stripe connection status card (spec §2.3) */
+.ss-status {
+  display: flex;
+  gap: var(--sp-12);
+  align-items: flex-start;
+  padding: var(--sp-14);
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.ss-status__icon {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: var(--radius-md);
+  display: inline-grid;
+  place-items: center;
+  background: var(--card);
+  box-shadow: var(--shadow-hairline);
+}
+.ss-status__main {
+  min-width: 0;
+  flex: 1;
+}
+.ss-status__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-comfy);
+}
+.ss-status__meta {
+  margin-top: var(--sp-4);
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+}
+
+/* §2.5 Product display 拖曳排序清單已於 2026-06-18（D083）移出本頁：
+   粉絲端陳列排序改由電子商店 5.1.5 F4 的商品清單本身管理——商品列直接拖曳重排
+   （spec §59／§69，列順序即陳列順序），不再是獨立清單。本檔不再含該清單。 */
+
+/* ----------------------------------------------------------------
+   Settings groups as tabs (D035 IA): storefront identity stays on top;
+   payment / shipping switch one at a time below it (F3 商品陳列 已移出, D083).
+   Presentation reference per spec §2 (non-binding); see BUILD-SPEC.
+   ---------------------------------------------------------------- */
+.ss-tabpanel[hidden] { display: none; }
+
+/* ----------------------------------------------------------------
+   See-as-fan preview body (§2.5) — fan-side storefront inside the
+   split preview panel: shop header + product grid in display order.
+   ---------------------------------------------------------------- */
+.ss-fan { display: flex; flex-direction: column; gap: var(--sp-16); }
+.ss-fan__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+.ss-fan__avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-18);
+}
+.ss-fan__name { font-family: var(--font-ui); font-size: var(--fs-16); font-weight: var(--fw-regular); margin: 0; }
+.ss-fan__bio { color: var(--muted-foreground); font-size: var(--fs-12); line-height: var(--lh-comfy); margin: var(--sp-2) 0 0; }
+.ss-fan__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-12);
+}
+.ss-fan__card {
+  background: var(--card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.ss-fan__thumb {
+  aspect-ratio: 1 / 1;
+  background: var(--muted);
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+}
+.ss-fan__thumb .ztor-icon { width: 28px; height: 28px; stroke-width: 1; }
+.ss-fan__body { padding: var(--sp-10) var(--sp-12) var(--sp-12); }
+.ss-fan__title { font-size: var(--fs-13); font-weight: var(--fw-regular); line-height: var(--lh-normal); }
+.ss-fan__price { margin-top: var(--sp-4); font-family: var(--font-numeric);
+  font-size: var(--fs-13); font-weight: var(--fw-regular);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----------------------------------------------------------------
+   Popup submit bar (D067) — Save / Discard / See-as-fan as the popup's
+   submit zone (spec 5.1.5.5 F1 設定動作與預覽). Sticky to the scroll
+   container bottom so actions stay reachable on long settings forms.
+   ---------------------------------------------------------------- */
+.ss-actionbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  margin-top: var(--sp-18);
+  padding: var(--sp-14) 0 var(--sp-4);
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+.ss-actionbar__spacer { flex: 1; }

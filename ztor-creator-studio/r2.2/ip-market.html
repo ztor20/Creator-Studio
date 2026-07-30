@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IP Market · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/completeness.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <a href="my-ip.html" class="card__link" data-i18n="ip-market.crumb.bank">IP Bank</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="ip-market.crumb.self">IP Market</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="ip-market.h1">IP Market</h1>
+          <p class="page-intro__sub" data-i18n="ip-market.sub">License other creators' worlds, music, and brands for your next project.</p>
+        </div>
+      </div>
+
+      <!-- F1/F2 清單控制（2026-07-25）：改用電子商店同款兩層工具列——
+           上排 .list-toolbar＝類型底線 tabs 在左｜動作群（收合搜尋／進階篩選／＋上架我的 IP）在右；
+           下排 .list-status-row＝狀態 filter-tabs 淡橘藥丸（各帶即時計數）。
+           原本的滿版搜尋 field-pill 與六格 select 卡片退場，進階條件（版稅／租期／地區／可立即租用）
+           與狀態 pill 併在同一條次層篩選列（2026-07-29，原本另開 #ipm-adv 收合卡片）。 -->
+      <div class="ipm-list-controls when-data list-dock">
+        <div class="list-toolbar">
+          <nav class="tabs tabs--underline-short" id="ipm-tabs" role="tablist" aria-label="Filter by type">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-type-val="all"><span data-i18n="ip-market.type.all">All types</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-type-val="story"><span data-i18n="ip-market.type.story">Story World</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-type-val="music"><span data-i18n="ip-market.type.music">Music</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-type-val="person"><span data-i18n="ip-market.type.person">Person-Based</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-type-val="brand"><span data-i18n="ip-market.type.brand">Brand</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-type-val="event"><span data-i18n="ip-market.type.event">Event Format</span> <span class="tabs__item-count"></span></div>
+          </nav>
+        <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
+             靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
+             下方的浮層。行為見 js/sticky-dock.js，樣式見 ds-components/list-toolbar.css。 -->
+        <button class="btn btn--icon btn--sm list-toolbar__filter" type="button"
+                aria-expanded="false" aria-controls="ipm-states"
+                aria-label="Filters" title="Filters"
+                data-i18n-aria-label="list.filters" data-i18n-title="list.filters">
+          <i data-lucide="filter" class="ztor-icon"></i>
+          <span class="list-toolbar__filter-count" hidden></span>
+        </button>
+
+
+          <div class="list-toolbar__actions">
+            <div class="search-collapse" id="ipm-search-wrap">
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" id="ipm-search-toggle" aria-expanded="false" aria-label="Search IP" title="Search IP" data-i18n-aria-label="ip-market.search.aria" data-i18n-title="ip-market.search.aria"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search IP" data-i18n-aria-label="ip-market.search.aria">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" id="ipm-search" placeholder="Search by name, rights holder, keyword" data-i18n-placeholder="ip-market.search.placeholder">
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="ipm-search-close" aria-label="Clear search" title="Clear search" data-i18n-aria-label="ip-market.search.clear" data-i18n-title="ip-market.search.clear"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+            <button class="btn btn--primary" data-i18n="ip-market.btn.list-ip">＋ List my IP</button>
+          </div>
+        </div>
+
+        <!-- 狀態篩選 · 第二排 filter-tabs（各帶即時計數，隨類型重算） -->
+        <div class="list-status-row" id="ipm-states">
+          <nav class="filter-tabs filter-tabs--brand" id="ipm-status" role="tablist" aria-label="Filter by availability">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all"><span data-i18n="ip-market.avail.all">Any status</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="available"><span data-i18n="ip-market.status.available">Available</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="bidding"><span data-i18n="ip-market.status.bidding">Bidding</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="exclusive"><span data-i18n="ip-market.status.exclusive">Exclusive</span><span class="filter-tabs__count" data-status-count>0</span></button>
+          </nav>
+          <!-- 進階條件（2026-07-29 L 裁示「merge into one filter panel」）：原本是收合在
+               #ipm-adv 卡片裡、由工具列第二顆鈕開合。篩選鈕移到 tab 旁之後，那顆鈕會變成
+               同一條 bar 上的第二個漏斗——同一件事兩個入口、長得還一樣。改成併進次層篩選列：
+               靜止態與狀態 pill 同列攤開，貼頂態一起收進那一顆漏斗浮層。
+               控制項採本元件既有的 .select--bare ＋ aria-label（同 projects 的分類下拉），
+               不用堆疊式 .field——這一列的節奏是水平的，堆疊標籤會把行高從 pill 的一排
+               撐成兩排。呈現用示意，未接實際過濾。 -->
+          <span class="list-status-row__sep" aria-hidden="true"></span>
+          <span class="list-status-row__field">
+            <span data-i18n="ip-market.filter.royalty">Royalty ≤</span>
+            <select class="select select--bare" id="ipm-royalty" aria-label="Royalty at most" data-i18n-aria-label="ip-market.filter.royalty" style="width:auto">
+              <option>20%</option><option>15%</option><option selected>12%</option><option>9%</option><option>5%</option>
+            </select>
+          </span>
+          <span class="list-status-row__field">
+            <span data-i18n="ip-market.filter.region">Region</span>
+            <select class="select select--bare" id="ipm-region" aria-label="Region" data-i18n-aria-label="ip-market.filter.region" style="width:auto">
+              <option selected data-i18n="ip-market.region.world">Worldwide</option>
+              <option data-i18n="ip-market.region.asia">Asia</option>
+              <option data-i18n="ip-market.region.americas">Americas</option>
+              <option data-i18n="ip-market.region.eu">EU</option>
+            </select>
+          </span>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="ip-market.only-rentable">Only rentable now</span></label>
+        </div>
+
+
+      </div>
+
+      <!-- 帳號層級「無資料」空狀態（Cheat Codes · Data State = Empty）：帳號尚未探索／租過任何 IP，引導開始探索。
+           與下方「冷啟動」（市場無貨，#ipm-coldstart）語意分開：冷啟動引導上架，這裡引導探索。靠全站 data-data-state 切換。 -->
+      <div class="when-empty">
+        <section class="card mb-16"><div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="tag" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="ip-market.acct-empty.title">Start exploring IP to license</h3>
+          <p class="empty-card__text" data-i18n="ip-market.acct-empty.text">Browse worlds, music and brands from other creators, then rent the rights you need for your next project.</p>
+        </div></section>
+      </div>
+
+      <div class="bento when-data" id="ipm-grid">
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="story" data-availability="available"
+           data-search="harry potter 哈利波特 wizarding world 魔法世界 warner bros story world 故事世界 available">
+          <!-- 封面圖：檔案放進 images/ip/ 就自動鋪滿，沒放則 onerror 移除 <img>、退回漸層＋IP 名佔位。
+               真實授權圖由使用者自備放入（本 repo 不內建版權素材）。 -->
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/harry-potter.jpg" alt="" loading="lazy" onerror="this.remove()">哈利<br>波特</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge badge--orange"><span data-i18n="ip-market.status.available">Available</span></span><span class="badge"><span data-i18n="ip-market.type.story">Story World</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">哈利波特 Harry Potter</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card1.meta">Warner Bros. · 3 of 5 slots</div></div>
+          <div class="completeness completeness--ready">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">9/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:90%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card1.price">From $420</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card1.royalty">12% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="music" data-availability="bidding"
+           data-search="a-lin 黃麗玲 華語流行 mandopop music 音樂 instrumental library 曲庫 bidding 競標">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/a-lin.webp" alt="" loading="lazy" onerror="this.remove()">A-Lin</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge"><span data-i18n="ip-market.type.music">Music</span></span><span class="badge badge--info"><span data-i18n="ip-market.status.bidding">Bidding</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)" data-i18n="ip-market.card2.title">A-Lin — licensed music library</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card2.meta">Sony Music · 1 slot · bid open</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">6/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:60%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card2.price">Bid $2,140+</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card2.royalty">9% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="brand" data-availability="available"
+           data-search="pokemon 寶可夢 神奇寶貝 pikachu 皮卡丘 the pokemon company brand 品牌 available 可租用">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/pokemon.jpg" alt="" loading="lazy" onerror="this.remove()">寶可<br>夢</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge badge--orange"><span data-i18n="ip-market.status.available">Available</span></span><span class="badge"><span data-i18n="ip-market.type.brand">Brand</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">寶可夢 Pokémon</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card4.meta">The Pokémon Company · 5 of 8 slots</div></div>
+          <div class="completeness completeness--ready">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">10/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:100%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card4.price">From $9,600</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card4.royalty">18% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="music" data-availability="available"
+           data-search="mayday 五月天 相信音樂 b-in music rock band 搖滾 music 音樂 available 可租用">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/mayday.jpg" alt="" loading="lazy" onerror="this.remove()">五月<br>天</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge badge--orange"><span data-i18n="ip-market.status.available">Available</span></span><span class="badge"><span data-i18n="ip-market.type.music">Music</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">五月天 Mayday</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card5.meta">B'in Music · 2 of 3 slots</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">8/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:80%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card5.price">From $3,200</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card5.royalty">14% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="story" data-availability="bidding"
+           data-search="dragon ball 七龍珠 悟空 goku toei animation story world 故事世界 bidding 競標">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/dragon-ball.jpg" alt="" loading="lazy" onerror="this.remove()">七龍<br>珠</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge"><span data-i18n="ip-market.type.story">Story World</span></span><span class="badge badge--info"><span data-i18n="ip-market.status.bidding">Bidding</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">七龍珠 Dragon Ball</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card6.meta">Toei Animation · 2 slots · bid open</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">7/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:70%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card6.price">Bid $6,400+</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card6.royalty">16% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="brand" data-availability="exclusive"
+           data-search="super mario 超級瑪利歐 瑪利歐 nintendo 任天堂 brand 品牌 exclusive 獨家">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/super-mario.jpg" alt="" loading="lazy" onerror="this.remove()">瑪利<br>歐</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge"><span data-i18n="ip-market.type.brand">Brand</span></span><span class="badge badge--neutral"><span data-i18n="ip-market.status.exclusive">Exclusive</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">超級瑪利歐 Super Mario</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card7.meta">Nintendo · 0 of 1 slots</div></div>
+          <div class="completeness completeness--ready">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">10/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:100%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card7.price">From $12,000</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card7.royalty">20% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="story" data-availability="available"
+           data-search="ip man 葉問 詠春 wing chun 香港電影 hong kong film story world 故事世界 available 可租用">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/ip-man.jpg" alt="" loading="lazy" onerror="this.remove()">葉問</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge badge--orange"><span data-i18n="ip-market.status.available">Available</span></span><span class="badge"><span data-i18n="ip-market.type.story">Story World</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">葉問 Ip Man</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card8.meta">Mandarin Films · 4 of 4 slots</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">6/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:60%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card8.price">From $1,850</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card8.royalty">10% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="person" data-availability="available"
+           data-search="princess ai 戴愛玲 種子音樂 seed music 人物角色 person-based available 可租用">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/princess-ai.jpg" alt="" loading="lazy" onerror="this.remove()">戴愛<br>玲</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge badge--orange"><span data-i18n="ip-market.status.available">Available</span></span><span class="badge"><span data-i18n="ip-market.type.person">Person-Based</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">戴愛玲 Princess Ai</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card9.meta">Seed Music · 1 of 2 slots</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">7/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:70%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card9.price">From $2,400</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card9.royalty">12% royalty</span></div>
+        </a>
+
+        <a class="card bento--span-4 ipm-card" href="ip-detail.html" style="display:flex;flex-direction:column;gap:10px"
+           data-type="event" data-availability="bidding"
+           data-search="have a seat 請世界吃桌 辦桌 總舖師 台灣 taiwan 飲食文化 banquet 活動形式 event format bidding 競標">
+          <div class="ipm-card__cover"><img class="ipm-card__cover-img" src="images/ip/have-a-seat.jpg" alt="" loading="lazy" onerror="this.remove()">請世界<br>吃桌</div>
+          <div class="flex-row" style="gap:6px;flex-wrap:wrap"><span class="badge"><span data-i18n="ip-market.type.event">Event Format</span></span><span class="badge badge--info"><span data-i18n="ip-market.status.bidding">Bidding</span></span></div>
+          <div><div style="font-family:var(--font-ui);font-weight: var(--fw-regular);font-size: var(--fs-14)">請世界吃桌 Have A Seat</div><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card10.meta">Golden Star Ent. · 1 slot · bid open</div></div>
+          <div class="completeness">
+            <div class="completeness__head"><span class="completeness__label" data-i18n="ip-market.completeness.label">Media pack</span><span class="completeness__count">5/10</span></div>
+            <div class="completeness__track"><div class="completeness__fill" style="width:50%"></div></div>
+          </div>
+          <div class="flex-row" style="justify-content:space-between"><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card10.price">Bid $4,500+</span><span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-market.card10.royalty">11% royalty</span></div>
+        </a>
+
+      </div>
+
+      <!-- F1/F2 搜尋＋篩選無結果空狀態（與下方「冷啟動」「R 2.1.1 建置進度」「帳號無資料」語意分開）。屬資料模式內狀態，故掛 .when-data -->
+      <div class="card mb-16 hidden when-data" id="ipm-noresult">
+        <div class="empty-card">
+          <div class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></div>
+          <p class="empty-card__title" data-i18n="ip-market.noresult.title">No IP matches</p>
+          <p class="empty-card__text" data-i18n="ip-market.noresult.text">Try a different type, availability, or search term.</p>
+          <button class="btn btn--outline btn--sm empty-card__cta" id="ipm-noresult-clear" type="button" data-i18n="ip-market.noresult.clear">Clear filters</button>
+        </div>
+      </div>
+
+      <!-- 冷啟動空狀態（F3）：市場上還沒有人上架時引導成為第一個上架者；非「無搜尋結果」、非「R 2.1.1 建置進度」、非「帳號無資料」。預設隱藏（目前有示例 IP）。屬市場有貨與否的資料模式內狀態，故掛 .when-data -->
+      <div class="card mb-16 hidden when-data" id="ipm-coldstart">
+        <div class="empty-card">
+          <div class="empty-card__icon"><i data-lucide="store" class="ztor-icon"></i></div>
+          <p class="empty-card__title" data-i18n="ip-market.coldstart.title">No IP listed yet</p>
+          <p class="empty-card__text" data-i18n="ip-market.coldstart.text">The marketplace is just getting started. Be the first creator to list your IP for others to license.</p>
+          <a class="btn btn--primary btn--sm empty-card__cta" href="register-ip.html" data-i18n="ip-market.coldstart.cta">List your IP</a>
+        </div>
+      </div>
+
+      <!-- ✝ 2026-07-25 移除「完整列表、排序與儲存搜尋」R 2.1.1 建置進度 empty-stub（使用者指定）。
+           清單已補到 10 筆示例、五型三態齊備，佔位說明不再需要。 -->
+
+    </div>
+  </main>
+</div>
+<script>
+/* IP Market F1+F2 — 關鍵字搜尋 × 類型 tabs × 狀態 filter-tabs 三者 AND 過濾（純前端 demo）。
+   2026-07-25 改用電子商店同款兩層工具列：類型＝上排底線 tabs（各帶計數）、狀態＝下排 filter-tabs
+   淡橘藥丸（計數隨目前類型重算）、搜尋＝收合式（點放大鏡展開、✕／Esc／點外部無字收起）。
+   每張卡帶 data-search（含中英＋權利人）/ data-type / data-availability。
+   無結果顯「無符合」空狀態；#ipm-coldstart 是「市場尚無人上架」的冷啟動引導，由 data-ip-market 旗標觸發。 */
+(function () {
+  const grid     = document.getElementById('ipm-grid');
+  if (!grid) return;
+  const cards    = Array.from(grid.querySelectorAll('.ipm-card'));
+  const typeNav  = document.getElementById('ipm-tabs');
+  const statNav  = document.getElementById('ipm-status');
+  const searchEl = document.getElementById('ipm-search');
+  const searchWrap   = document.getElementById('ipm-search-wrap');
+  const searchToggle = document.getElementById('ipm-search-toggle');
+  const searchClose  = document.getElementById('ipm-search-close');
+  const noresult = document.getElementById('ipm-noresult');
+  const nrClear  = document.getElementById('ipm-noresult-clear');
+  const cold     = document.getElementById('ipm-coldstart');
+
+  // 冷啟動旗標：市場上沒有任何 IP（demo 用 <html data-ip-market="empty"> 觸發）。
+  const coldStart = document.documentElement.dataset.ipMarket === 'empty';
+
+  let q = '', type = 'all', status = 'all';
+
+  const matchQ = c => !q || (c.dataset.search || '').indexOf(q) !== -1;
+
+  /* 類型分頁計數＝該類型下、符合關鍵字的卡數（不含狀態，避免兩個維度互相歸零） */
+  function renderTypeCounts() {
+    if (!typeNav) return;
+    typeNav.querySelectorAll('.tabs__item').forEach(t => {
+      const val = t.getAttribute('data-type-val');
+      const n = cards.filter(c => (val === 'all' || c.dataset.type === val) && matchQ(c)).length;
+      const slot = t.querySelector('.tabs__item-count');
+      if (slot) slot.textContent = n;
+    });
+  }
+
+  /* 狀態藥丸計數＝目前類型 × 關鍵字之下，各狀態的卡數 */
+  function renderStatusCounts() {
+    if (!statNav) return;
+    statNav.querySelectorAll('.filter-tabs__item').forEach(b => {
+      const val = b.getAttribute('data-status-val');
+      const n = cards.filter(c =>
+        (type === 'all' || c.dataset.type === type) &&
+        (val === 'all' || c.dataset.availability === val) && matchQ(c)).length;
+      const slot = b.querySelector('[data-status-count]');
+      if (slot) slot.textContent = n;
+    });
+  }
+
+  function apply() {
+    if (coldStart) {
+      grid.classList.add('hidden');
+      noresult.classList.add('hidden');
+      cold.classList.remove('hidden');
+      return;
+    }
+    cold.classList.add('hidden');
+    let shown = 0;
+    cards.forEach(c => {
+      const vis = (type === 'all' || c.dataset.type === type)
+               && (status === 'all' || c.dataset.availability === status)
+               && matchQ(c);
+      c.classList.toggle('hidden', !vis);
+      if (vis) shown++;
+    });
+    renderTypeCounts();
+    renderStatusCounts();
+    grid.classList.toggle('hidden', shown === 0);
+    noresult.classList.toggle('hidden', shown !== 0);
+  }
+
+  /* 類型分頁 */
+  if (typeNav) typeNav.addEventListener('click', e => {
+    const item = e.target.closest('.tabs__item');
+    if (!item) return;
+    typeNav.querySelectorAll('.tabs__item').forEach(t => {
+      const on = t === item;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    type = item.getAttribute('data-type-val');
+    apply();
+  });
+
+  /* 狀態藥丸 */
+  if (statNav) statNav.addEventListener('click', e => {
+    const item = e.target.closest('.filter-tabs__item');
+    if (!item) return;
+    statNav.querySelectorAll('.filter-tabs__item').forEach(b => {
+      const on = b === item;
+      b.classList.toggle('filter-tabs__item--active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    status = item.getAttribute('data-status-val');
+    apply();
+  });
+
+  /* 收合式搜尋（比照 e-shop：點放大鏡展開、✕／Esc／點外部無字收起） */
+  const collapseSearch = clear => {
+    if (!searchWrap) return;
+    searchWrap.classList.remove('is-open');
+    if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+    if (clear) { searchEl.value = ''; q = ''; apply(); }
+  };
+  if (searchToggle) searchToggle.addEventListener('click', () => {
+    searchWrap.classList.add('is-open');
+    searchToggle.setAttribute('aria-expanded', 'true');
+    searchEl.focus();
+  });
+  if (searchClose) searchClose.addEventListener('click', () => collapseSearch(true));
+  searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
+  searchEl.addEventListener('keydown', e => { if (e.key === 'Escape') collapseSearch(true); });
+  document.addEventListener('click', e => {
+    if (!searchWrap || !searchWrap.classList.contains('is-open')) return;
+    if (!searchWrap.contains(e.target) && !searchEl.value.trim()) collapseSearch(false);
+  });
+
+  /* 進階條件不再有自己的開合鈕（2026-07-29）：條件已併進次層篩選列，
+     靜止態直接可見，貼頂態隨整列收進工具列的漏斗浮層。 */
+
+  /* 無結果 → 一鍵清空全部條件 */
+  if (nrClear) nrClear.addEventListener('click', () => {
+    searchEl.value = ''; q = ''; type = 'all'; status = 'all';
+    if (typeNav) typeNav.querySelectorAll('.tabs__item').forEach((t, i) => {
+      t.classList.toggle('tabs__item--active', i === 0);
+      t.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    });
+    if (statNav) statNav.querySelectorAll('.filter-tabs__item').forEach((b, i) => {
+      b.classList.toggle('filter-tabs__item--active', i === 0);
+      b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    });
+    collapseSearch(false);
+    apply();
+  });
+
+  apply();
+})();
+</script>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-dock.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
+</body>
+</html>

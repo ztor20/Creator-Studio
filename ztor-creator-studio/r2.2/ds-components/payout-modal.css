@@ -1,0 +1,337 @@
+/* ----------------------------------------------------------------
+   Payout — bank picker + request-payout modal
+   spec §5.1.8 (Earnings · Payouts)
+
+   Single consumer today: earnings.html (Payouts tab card + the
+   request-payout modal mounted from partials/payout-request-modal.js).
+   Promoted out of earnings.html inline <style> on 2026-06-09 so the
+   reusable component appearance lives in a token-driven component file
+   (per project rule: no long-term page-inline component CSS).
+   All values reference design tokens from _tokens.css.
+   ---------------------------------------------------------------- */
+
+/* Page-side bank picker (Payouts tab "Choose payout bank" card) */
+.payout-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--sp-12);
+  margin-top: var(--sp-16);
+}
+.payout-bank-card {
+  min-height: 132px;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  padding: var(--sp-16);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  color: var(--foreground);
+  text-align: left;
+  text-decoration: none;
+}
+.payout-bank-card--selected {
+  background: var(--card);
+  box-shadow:
+    inset 0 0 0 2px var(--foreground),
+    var(--shadow-card);
+}
+.payout-bank-card--add {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--border);
+  box-shadow: none;
+}
+.payout-bank-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  align-items: flex-start;
+}
+.payout-bank-card__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: inline-grid;
+  place-items: center;
+  background: var(--card);
+  box-shadow: var(--shadow-hairline);
+  flex: none;
+}
+.payout-bank-card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-comfy);
+}
+.payout-bank-card__meta {
+  margin-top: 5px;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+}
+.payout-bank-empty {
+  margin-top: var(--sp-16);
+  padding: var(--sp-18);
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+}
+
+/* Modal shell + backdrop */
+.payout-modal[hidden] {
+  display: none;
+}
+.payout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-24);
+  background: color-mix(in srgb, var(--background) 68%, var(--overlay-tint));
+  backdrop-filter: blur(14px);
+}
+/* Footer/header 釘住、只捲 body（2026-07-23，收斂到元件層）：
+   原本整個 dialog `overflow:auto`＝head／body／foot 一起捲，內容一長 footer（送出/取消）
+   就跟著捲到看不到，每個 popup 都得各自補一次（restock 曾經 scope 修過）。改成 dialog 自己
+   是 flex column＋overflow:hidden，head／foot `flex:none` 釘在上下、body `flex:1＋overflow-y:auto`
+   吃掉剩餘高度並內捲。所有 .payout-dialog 消費者（補貨／編輯／費率／出款…）一次到位。 */
+.payout-dialog {
+  width: min(620px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-overlay);
+}
+.payout-dialog__head,
+.payout-dialog__foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  padding: var(--sp-18) var(--sp-20);
+}
+.payout-dialog__foot[hidden] { display: none; }   /* step-specific foots toggle via [hidden]; display:flex above would otherwise leak the inactive step's foot (e.g. result "Done" showing on the form step) */
+.payout-dialog__head {
+  border-bottom: 1px solid var(--border);
+}
+.payout-dialog__foot {
+  border-top: 1px solid var(--border);
+}
+.payout-dialog__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  line-height: var(--lh-snug);
+  letter-spacing: 0;
+}
+.payout-dialog__body {
+  padding: var(--sp-20);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* 中間隔一層 wrapper 的情形（請款彈窗的 .payout-view 步驟、creators 的 <form>）：head/body/foot
+   不是 .payout-dialog 的直接子層，flex column 傳不下去。讓這層 wrapper 接手成為撐滿的 flex column，
+   footer-pin 才穿得到它底下的 head/body/foot；否則 dialog 的 overflow:hidden 會把過長內容直接裁掉、
+   連捲軸都沒有（2026-07-23，補元件層 footer-pin 的漏網結構）。 */
+.payout-dialog > .payout-view:not([hidden]),
+.payout-dialog > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.payout-view[hidden] {
+  display: none;
+}
+/* .payout-form-grid / .payout-field(__label/__hint) / .payout-form-grid--single —
+   retired 2026-07-11. Their last three consumers (partials/restock-modal.js,
+   partials/pickup-session-modal.js, creators.html) converged onto
+   .form-grid / .field (field-system.css / form-grid.css), matching what
+   earnings.html's two payout modals already did. No remaining callers —
+   rules removed instead of kept dormant. */
+.payout-selected-bank,
+.payout-bank-option {
+  display: flex;
+  gap: var(--sp-12);
+  align-items: flex-start;
+  padding: var(--sp-14);
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.payout-bank-option {
+  width: 100%;
+  border: 0;
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+}
+.payout-bank-option.is-active {
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--foreground);
+}
+.payout-selected-bank__main,
+.payout-bank-option__main {
+  min-width: 0;
+  flex: 1;
+}
+.payout-selected-bank__title,
+.payout-bank-option__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-comfy);
+}
+.payout-selected-bank__meta,
+.payout-bank-option__meta {
+  margin-top: var(--sp-4);
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+}
+.payout-bank-options {
+  display: grid;
+  gap: var(--sp-10);
+  margin-top: var(--sp-12);
+}
+/* .payout-amount-wrap / .payout-amount-prefix / .input.payout-amount-input 已於
+   2026-07-11 收斂進 .amount-field.amount-field--hero（ds-components/amount-field.css）——
+   樣式定義移至該檔，此處不再定義；唯一 consumer partials/payout-request-modal.js
+   已改用新結構。*/
+.payout-summary {
+  display: grid;
+  gap: var(--sp-10);
+  margin-top: var(--sp-18);
+  padding: var(--sp-14);
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+}
+.payout-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  font-size: var(--fs-13);
+}
+.payout-summary__row span:first-child {
+  color: var(--muted-foreground);
+}
+
+/* Irreversible-payout confirmation gate (spec §5.1.8.1 §4.5) —
+   the submit Button stays [disabled] until this box is checked. */
+.payout-confirm {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: var(--sp-16);
+  padding: 13px var(--sp-14);
+  border-radius: var(--radius-xl);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  cursor: pointer;
+}
+.payout-confirm__box {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  accent-color: var(--foreground);
+  cursor: pointer;
+}
+.payout-confirm__text {
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+}
+
+/* .payout-inline-control — retired 2026-07-11 alongside .payout-field.
+   No remaining consumer (restock-modal.js / pickup-session-modal.js never
+   actually used it — the two earnings modals had already moved to
+   .control-row, ds-components/control-row.css) — rule removed. */
+.payout-result {
+  display: grid;
+  gap: var(--sp-14);
+  text-align: center;
+  padding: var(--sp-18) 0 var(--sp-4);
+}
+.payout-result__icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--status-success) 14%, var(--card));
+  color: var(--status-success);
+}
+
+/* Embed variant (2026-06-17) — hosts a full page (e.g. create-product) in an
+   iframe instead of inline form content. Near-fullscreen so the embedded
+   multi-section form keeps its width; no head/foot (the embedded page owns its
+   own top bar + close). First consumer: create-bundle's "New item" → opens
+   create-product.html?embed=1 as a popup, product posts back via postMessage. */
+.payout-dialog--embed {
+  width: min(1040px, 100%);
+  height: calc(100vh - 48px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.payout-dialog--embed .embed-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  display: block;
+}
+
+/* 費率例外彈窗（[data-fx-modal]）的 footer-pin 原本 scope 在此，2026-07-23 已收斂到元件層
+   （.payout-dialog 基底規則），這組重複已移除。 */
+/* 費率例外彈窗：平台費樹填滿 body 可用寬度即可，維持 body 左右內距。
+   2026-07-22 撤回先前的負 margin edge-to-edge——body 是 overflow-y:auto，
+   一旦內容戳出左右內距，overflow-x 會從 visible 變 auto、長出不必要的橫向捲軸；
+   表格本身 width:100% 已填滿內距框，不需貼到彈窗邊。 */
+
+/* E-Shop 逐商品例外列（產品範圍提案 UIA-076；demo-only）：選商品＋該商品平台費＋移除。
+   容器左右內距為 0，讓列與「新增例外商品」鈕貼齊 fee-tree__panel＝與上方費率表等寬。 */
+.fee-exc-prod { padding: var(--sp-8) 0 var(--sp-12); }
+.fee-exc-prod__rows { display: flex; flex-direction: column; gap: var(--sp-8); }
+.fee-exc-prod__row { display: flex; align-items: center; gap: var(--sp-8); }
+.fee-exc-prod__row [data-prod-select] { flex: 1 1 auto; min-width: 0; }
+.fee-exc-prod__row .amount-field { flex: none; width: 116px; }
+/* 「新增例外商品」＝整寬實線外框鈕（.btn.btn--outline，站上既有的線框語彙），與上方費率表等寬。
+   2026-07-22 使用者裁示：改線框、非虛線。整寬與置中由這裡覆寫，邊框／底色／高度由 .btn--outline 提供。 */
+.fee-exc-prod__add { width: 100%; justify-content: center; margin-top: var(--sp-8); }
+
+/* Body scroll lock while any modal is open (toggled by the loader) */
+.is-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .payout-modal {
+    align-items: end;
+    padding: var(--sp-12);
+  }
+  .payout-dialog {
+    max-height: calc(100vh - 24px);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .payout-dialog .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .payout-dialog--embed {
+    height: calc(100vh - 24px);
+    max-height: calc(100vh - 24px);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+}

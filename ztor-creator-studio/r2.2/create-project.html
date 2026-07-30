@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New project · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/review-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
+     settings-row 裸 HTML 改用 ds-components/control-row.css；revenue estimate 卡改用
+     ds-components/form-section.css（2026-07-10，全站元件統一）。 */
+
+  /* 全頁無卡片化（使用者指定 2026-06-25）：Review 摘要卡／tier 卡／tier editor 已改用
+     ds-components/review-row.css（第三批元件統一，2026-07-11），呈現「標題＋Edit 一行＋
+     底線分隔」的無卡片摘要列；.card 全頁恢復標準卡面語意，不再需要頁內覆寫。 */
+  /* 上內距改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），與 create-product 一致 */
+</style>
+</head>
+<body>
+<div class="wizard">
+
+  <!-- 項目類型閘門（D150，2026-07-24）：整個建立流程從這裡開始，畫面只有三張型別卡＋返回。選定後 JS 隱藏本閘門、顯示下方 [data-sheet] 分步表單。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned wizard__gate" data-gate>
+    <div class="wizard__gate-inner">
+      <h1 class="wizard__step-title" data-i18n="cpp.s1.h1">What are you making?</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s1.sub">Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.</p>
+      <div class="segmented radio-cards radio-cards--3 radio-cards--gate" data-gate-seg role="radiogroup" aria-label="Project type">
+        <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-gate-type="golive"><i data-lucide="rocket" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.golive.title">Go live</span><span class="radio-card__sub" data-i18n="cpp.golive.sub">Content is ready and fans can watch or buy right away.</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="fund"><i data-lucide="trending-up" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.fund.title">Fund it first</span><span class="radio-card__sub" data-i18n="cpp.fund.sub">Fans back you first; you deliver once the goal is met. Refunded if not.</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="preorder"><i data-lucide="calendar" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.pre.title">Open pre-orders</span><span class="radio-card__sub" data-i18n="cpp.pre.sub">Fans order early; you produce once the minimum is hit. Refunded if not.</span></span></button>
+      </div>
+      <div class="wizard__gate-foot">
+        <button class="btn btn--icon-circle wizard__gate-close" type="button" data-gate-back data-i18n-aria-label="cpp.gate.back" aria-label="返回上一頁"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬，JS 建構）；右＝自動儲存。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned hidden" data-sheet>
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="cpp.h1">Create project</span>
+          <span class="wizard__top-sub" data-i18n="cpp.subtitle">Crowdfunding project</span>
+        </div>
+      </div>
+
+      <div class="wizard__progress">
+        <div class="progress-stepper" id="stepper"><!-- built by JS from the active project type's flow --></div>
+      </div>
+
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body wizard__body--form">
+
+    <!-- ───────────────────────── STEP · About (shared) ───────────────────────── -->
+    <section data-panel="about">
+      <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
+
+      <!-- 型別已在閘門選定；此處用建立商品同款並排可選卡（radio-cards）供流程中改選，僅標題（D151）。 -->
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s1.type">Project type</div>
+        <div class="segmented radio-cards radio-cards--3" data-type-seg role="radiogroup" aria-label="Project type">
+          <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-type="golive"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.golive.title">Go live</span></span></button>
+          <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-type="fund"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.fund.title">Fund it first</span></span></button>
+          <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-type="preorder"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.pre.title">Open pre-orders</span></span></button>
+        </div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <label class="field__label" for="proj-title"><span data-i18n="cpp.s1.title">Project title</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+        <input id="proj-title" class="input" placeholder="A name fans will remember" value="Coastline EP" data-i18n-placeholder="cpp.s1.title.ph">
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label"><span data-i18n="cpp.s1.content">Content type</span> <span class="text-sub" data-i18n="cpp.required">· required</span></div>
+        <div class="chip-group" id="cat-group">
+          <button type="button" class="chip" data-cat="movie"  data-group="film"  data-i18n="cpp.content.movie">Movie</button>
+          <button type="button" class="chip" data-cat="short"  data-group="film"  data-i18n="cpp.content.short">Short film</button>
+          <button type="button" class="chip" data-cat="series" data-group="film"  data-i18n="cpp.content.series">Series</button>
+          <button type="button" class="chip chip--active" data-cat="song" data-group="music" data-i18n="cpp.content.song">Song</button>
+          <button type="button" class="chip" data-cat="album"  data-group="music" data-i18n="cpp.content.album">Album</button>
+          <button type="button" class="chip" data-cat="mv"     data-group="mvdoc" data-i18n="cpp.content.mv">MV</button>
+          <button type="button" class="chip" data-cat="event"  data-group="event" data-i18n="cpp.content.event">Event</button>
+          <button type="button" class="chip" data-cat="merch"  data-group="merch" data-i18n="cpp.content.merch">Merch</button>
+          <button type="button" class="chip" data-cat="doc"    data-group="mvdoc" data-i18n="cpp.content.doc">Documentary</button>
+          <button type="button" class="chip" data-cat="custom" data-group="custom" data-i18n="cpp.content.custom">Custom</button>
+        </div>
+        <div class="field__hint" data-i18n="cpp.s1.content-hint">Fans see the content type label. Subcategory only — main category is auto-assigned in E-Shop.</div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <label class="field__label" for="proj-desc"><span data-i18n="cpp.s1.desc">Description</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+        <textarea id="proj-desc" class="textarea" placeholder="Two sentences to pull fans in." data-i18n-placeholder="cpp.s1.desc.ph" data-i18n="cpp.s1.desc-val">A five-track EP recorded between Tainan and Hualien, released alongside a tour zine and seven limited screen prints. Pre-orders fund the vinyl pressing run.</textarea>
+      </div>
+
+      <!-- ④ Category-specific fields · one group shown per content type -->
+      <!-- 這張卡的標題底下還有一整組各自有標籤的欄位，所以它是「區段標題」不是「欄位標籤」：
+           用 .form-section__head + .form-section__title（16px display）建立層級。
+           其餘 one-card-one-field 的卡片仍維持 .field + .field__label，那裡卡內只有一個標籤，
+           不存在層級問題。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-i18n="cpp.s1.type-fields">Type-specific fields</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></h3>
+        </div>
+
+        <!-- film · movie / short / series -->
+        <div class="form-grid hidden" data-fieldgroup="film">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.director">Director</div><input class="input" placeholder="e.g. Chung Mong-hong" data-i18n-placeholder="cpp.tf.director.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.runtime">Runtime</div><input class="input" placeholder="e.g. 90 min" data-i18n-placeholder="cpp.tf.runtime.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.location">Shooting location</div><input class="input" placeholder="e.g. Hualien, Taiwan" data-i18n-placeholder="cpp.tf.location.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.rating">Rating target</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.cast">Cast</div><input class="input" placeholder="e.g. Ann Hsu, Kai Ko" data-i18n-placeholder="cpp.tf.cast.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.cast.add">＋ Add cast member</button></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.territory">Territory</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+        </div>
+
+        <!-- music · song / album -->
+        <div class="form-grid" data-fieldgroup="music">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.artists">Artists</div><input class="input" placeholder="e.g. Sunset Rollercoaster" data-i18n-placeholder="cpp.tf.artists.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.producer">Producer</div><input class="input" placeholder="e.g. Howard Lee" data-i18n-placeholder="cpp.tf.producer.ph"></div>
+          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.featured">Featured artists</div><input class="input" placeholder="e.g. 9m88, Leo Wang" data-i18n-placeholder="cpp.tf.featured.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.featured.add">＋ Add artist</button></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.duration">Duration</div><input class="input" placeholder="e.g. 3:45" data-i18n-placeholder="cpp.tf.duration.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.tracks">Track count</div><input class="input" placeholder="e.g. 5" data-i18n-placeholder="cpp.tf.tracks.ph"></div>
+          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.platforms">Platforms</div><input class="input" placeholder="e.g. Spotify, Apple Music" data-i18n-placeholder="cpp.tf.platforms.ph"></div>
+          <div class="field" style="grid-column:span 2">
+            <div class="field__label" data-i18n="cpp.tf.format">Format</div>
+            <div class="flex-row" style="gap:16px;font-family:var(--font-ui);font-size: var(--fs-13)">
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" checked><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.digital">Digital</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.vinyl">Vinyl</span></label>
+              <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.tf.format.cd">CD</span></label>
+            </div>
+          </div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+        </div>
+
+        <!-- mv / documentary -->
+        <div class="form-grid hidden" data-fieldgroup="mvdoc">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.director">Director</div><input class="input" placeholder="e.g. Chung Mong-hong" data-i18n-placeholder="cpp.tf.director.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.subject">Subject</div><input class="input" placeholder="e.g. The last cassette shop in Hualien" data-i18n-placeholder="cpp.tf.subject.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.runtime">Runtime</div><input class="input" placeholder="e.g. 90 min" data-i18n-placeholder="cpp.tf.runtime.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.location">Shooting location</div><input class="input" placeholder="e.g. Hualien, Taiwan" data-i18n-placeholder="cpp.tf.location.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.style">Style</div><input class="input" placeholder="e.g. cinematic, vérité" data-i18n-placeholder="cpp.tf.style.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.distribution">Distribution</div><input class="input" placeholder="e.g. Festival run, then streaming" data-i18n-placeholder="cpp.tf.distribution.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+        </div>
+
+        <!-- event -->
+        <div class="form-grid hidden" data-fieldgroup="event">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.venue">Venue</div><input class="input" placeholder="e.g. Legacy Taipei" data-i18n-placeholder="cpp.tf.venue.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.datetime">Date &amp; Time</div><input class="input" type="datetime-local"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.capacity">Capacity</div><input class="input" placeholder="e.g. 300" data-i18n-placeholder="cpp.tf.capacity.ph"></div>
+          <div class="field" style="grid-column:span 1"><div class="field__label" data-i18n="cpp.tf.performers">Performers</div><input class="input" placeholder="e.g. Sunset Rollercoaster, Elephant Gym" data-i18n-placeholder="cpp.tf.performers.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.performers.add">＋ Add performer</button></div>
+          <div style="grid-column:span 2">
+            <div class="control-row">
+              <div><div class="control-row__main" data-i18n="cpp.tf.livestream">Livestream available</div></div>
+              <div class="switch"></div>
+            </div>
+          </div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.territory">Territory</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+        </div>
+
+        <!-- merch -->
+        <div class="form-grid hidden" data-fieldgroup="merch">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.ptype">Product type</div><input class="input" placeholder="e.g. T-shirt, Poster" data-i18n-placeholder="cpp.tf.ptype.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.manufacturer">Manufacturer</div><input class="input" placeholder="e.g. Yuan Cheng Printing, Tainan" data-i18n-placeholder="cpp.tf.manufacturer.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.prodtime">Est. production time</div><input class="input" placeholder="e.g. 4-6 weeks" data-i18n-placeholder="cpp.tf.prodtime.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.materials">Materials</div><input class="input" placeholder="e.g. 100% cotton, water-based ink" data-i18n-placeholder="cpp.tf.materials.ph"></div>
+          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.sizes">Sizes</div><input class="input" placeholder="e.g. S, M, L, XL" data-i18n-placeholder="cpp.tf.sizes.ph"></div>
+        </div>
+
+        <!-- custom -->
+        <div class="form-grid hidden" data-fieldgroup="custom">
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.genre">Genre</div><input class="input" placeholder="e.g. Indie rock, Dream pop" data-i18n-placeholder="cpp.tf.genre.ph"></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.tf.territory">Territory</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
+        </div>
+
+        <div class="field__hint" style="margin-top:8px" data-i18n="cpp.tf.hint">All optional — completing these builds fan trust. Fields adapt to the content type you picked.</div>
+      </div>
+
+      <!-- ⑤ IP rental -->
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s1.iprent">IP Rental · disclose other rights you're using</div>
+        <div>
+          <div class="flex-row" style="justify-content:space-between">
+            <div>
+              <div class="data-list__title" data-i18n="cpp.s1.iprent.empty">No IP rentals attached yet</div>
+              <div class="data-list__meta" data-i18n="cpp.s1.iprent.meta">Sampling someone's work, using a licensed character, or covering a song? Link the rental here.</div>
+            </div>
+            <a class="btn btn--outline btn--sm" href="my-ip.html" data-i18n="cpp.s1.iprent.link">＋ Link from IP Bank</a>
+          </div>
+        </div>
+        <div class="field__hint" data-i18n="cpp.s1.iprent.hint">IP Rental is a rights disclosure, not a monetization model. Brand &amp; Ads live in Monetization.</div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── STEP · Showcase (shared) ───────────────────────── -->
+    <section data-panel="showcase" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="cpp.s2.h1">Show fans why this matters.</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s2.sub">Cover, poster, banner, gallery. One short story. A video if you have it. We accept files up to 2 GB.</p>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label"><span data-i18n="cpp.s2.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.four-req">· all four required</span></div>
+        <div class="upload-assets">
+          <button type="button" class="upload-tile upload-tile--1x1">
+            <span class="upload-tile__icon">＋</span>
+            <span class="upload-tile__title" data-i18n="cpp.s2.thumb">Thumbnail</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.thumb-size">800 × 800 · 1:1</span>
+          </button>
+          <button type="button" class="upload-tile upload-tile--3x4">
+            <span class="upload-tile__icon">＋</span>
+            <span class="upload-tile__title" data-i18n="cpp.s2.poster">Vertical poster</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.poster-size">900 × 1200 · 3:4</span>
+          </button>
+          <button type="button" class="upload-tile upload-tile--16x9">
+            <span class="upload-tile__icon">＋</span>
+            <span class="upload-tile__title" data-i18n="cpp.s2.banner">Landscape banner</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.banner-size">1920 × 1080 · 16:9</span>
+          </button>
+          <button type="button" class="upload-tile upload-tile--3x2">
+            <span class="upload-tile__icon">＋</span>
+            <span class="upload-tile__title" data-i18n="cpp.s2.gallery">Gallery</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">1200 × 800 · 3:2 · 1–8 images</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label"><span data-i18n="cpp.s2.trailer">Video</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
+        <button type="button" class="upload-tile upload-tile--file">
+          <span class="upload-tile__title" data-i18n="cpp.s2.trailer-drop">Drop an MP4 or MOV</span>
+          <span class="upload-tile__hint" data-i18n="cpp.s2.trailer-size">Up to 2 GB · campaigns with video raise 3× more</span>
+        </button>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <label class="field__label" for="proj-story"><span data-i18n="cpp.s2.story">Story</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+        <textarea id="proj-story" class="textarea" style="min-height:180px" placeholder="e.g. Why this project exists, what you have finished so far, and what the money unlocks." data-i18n-placeholder="cpp.s2.story.ph" data-i18n="cpp.s2.story-val">Last winter I spent three weeks driving the east coast in a borrowed van, recording on a 4-track between roadside concerts and quiet mornings. The EP is the second half of that road. The first half is on the cassette I lost in Hualien.</textarea>
+        <div class="flex-row" style="justify-content:space-between;margin-top:6px">
+          <div class="field__hint" style="margin:0" data-i18n="cpp.s2.story-hint">Rich text · bold, italic, links and images supported.</div>
+          <span class="badge badge--success" id="story-count"><span data-i18n="cpp.s2.story.ok">✓ 100 character minimum met</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── STEP · Monetization (Go live) ───────────────────────── -->
+    <section data-panel="monetization" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="cpp.s3.h1">How fans get it. How you get paid.</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s3.sub">Set access, price and platform fee. Ads and brand partnerships are optional. Net income shows up in Earnings as soon as money lands.</p>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s3.access">Access model</div>
+        <div class="selection-grid">
+          <button type="button" class="selection-card" data-access="free">
+            <span class="selection-card__tag" data-i18n="cpp.free.tag">Ad-supported</span>
+            <span class="selection-card__title" data-i18n="cpp.free.title">Free</span>
+            <span class="selection-card__sub" data-i18n="cpp.free.sub">Everyone watches. Monetize via ads &amp; brand partnerships.</span>
+          </button>
+          <button type="button" class="selection-card selection-card--active" data-access="ppv">
+            <span class="selection-card__tag" data-i18n="cpp.ppv.tag">One-time purchase</span>
+            <span class="selection-card__title" data-i18n="cpp.ppv.title">Pay per view</span>
+            <span class="selection-card__sub" data-i18n="cpp.ppv.sub">A one-off purchase grants permanent access.</span>
+          </button>
+          <button type="button" class="selection-card" data-access="hybrid">
+            <span class="selection-card__tag" data-i18n="cpp.hybrid.tag">First free, rest paid</span>
+            <span class="selection-card__title" data-i18n="cpp.hybrid.title">Hybrid</span>
+            <span class="selection-card__sub" data-i18n="cpp.hybrid.sub">Part free, the rest paid. Set the paid rule below.</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-grid form-section form-section--outlined">
+        <div class="field" data-price-field>
+          <label class="field__label" for="price" data-i18n="cpp.s3.price">Price · USD</label>
+          <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="price" class="amount-field__input input" placeholder="9.99" value="12.00"></div>
+          <div class="field__hint" data-i18n="cpp.s3.price-hint">Stripe handles currency conversion at checkout.</div>
+        </div>
+        <div class="field">
+          <label class="field__label" data-i18n="cpp.s3.fee">Platform fee</label>
+          <input class="input" value="5% + 3% Stripe" disabled data-i18n-value="cpp.s3.fee.val">
+          <div class="field__hint" data-i18n="cpp.s3.fee-hint">5% platform fee + 3% Stripe processing, charged on revenue.</div>
+        </div>
+      </div>
+
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cpp.s3.expected">Revenue estimate · your number</h3>
+          <p class="form-section__sub" data-i18n="cpp.s3.expected-sub">Saved for Earnings comparison</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+          <div><div class="meta-cell__label" data-i18n="cpp.s3.buyers">Estimated buyers</div><div class="meta-cell__value">450</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s3.gross">Gross @ $12</div><div class="meta-cell__value">$5,400</div></div>
+          <div><div class="meta-cell__label" data-i18n="cpp.s3.net">Net after 8% fees</div><div class="meta-cell__value">$4,968</div></div>
+        </div>
+        <div class="field__hint" style="margin-top:8px" data-i18n="cpp.s3.expected-hint">Reflects 5% platform fee + 3% Stripe. Marked as <em>creator estimate</em> in Project Net Income — not a platform forecast.</div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s3.ads">Ads</div>
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="cpp.s3.ads.enable">Enable ads</div>
+            <div class="control-row__sub" data-i18n="cpp.s3.ads.hint">Earn additional revenue from ad placements.</div>
+          </div>
+          <div class="switch"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.pre">Pre-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.mid">Mid-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.post">Post-roll</span></label>
+          <label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="cpp.s3.ads.banner">Banner</span></label>
+        </div>
+        <div class="field__hint" data-i18n="cpp.s3.ads.note">Placement options &amp; rules TBD.</div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s3.brand">Brand partnerships</div>
+        <div class="data-list">
+          <div class="data-list__row">
+            <div class="data-list__row-main">
+              <div class="data-list__icon"><i data-lucide="file-text" class="ztor-icon"></i></div>
+              <div class="data-list__body">
+                <div class="data-list__title" data-i18n="cpp.s3.brand1">Cypress Audio · monitor speaker placement</div>
+                <div class="data-list__meta" data-i18n="cpp.s3.brand1-meta">$1,200 flat · pending signature</div>
+              </div>
+            </div>
+            <a class="card__link" href="#" data-i18n="cpp.edit">Edit</a>
+          </div>
+        </div>
+        <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.s3.add-brand">＋ Add brand partnership</button>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s3.publish">Publish timing</div>
+        <div class="selection-grid">
+          <button type="button" class="selection-card selection-card--active" data-publish="now">
+            <span class="selection-card__title" data-i18n="cpp.s3.now">Immediately</span>
+            <span class="selection-card__sub" data-i18n="cpp.s3.now-sub">Publish the moment you finish Review.</span>
+          </button>
+          <button type="button" class="selection-card" data-publish="schedule">
+            <span class="selection-card__title" data-i18n="cpp.s3.sched">Schedule for later</span>
+            <span class="selection-card__sub" data-i18n="cpp.s3.sched-sub">Pick a date and time — we'll publish for you.</span>
+          </button>
+        </div>
+        <div class="field hidden" data-schedule-field style="margin-top:12px">
+          <label class="field__label" data-i18n="cpp.s3.sched.when">Publish date &amp; time</label>
+          <input class="input" type="datetime-local">
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── STEP · Funding (Fund it first) ───────────────────────── -->
+    <section data-panel="funding" class="hidden wizard-split">
+      <!-- ── Realtime setup overview (L 2026-07-27) ────────────────────────────────
+           The form takes raw inputs; this rail shows what they MEAN. Everything in it
+           is derived — nothing is a second copy of a field. The one number that did not
+           exist anywhere before is "you receive if funded": the fee note states 5% + 3%
+           but never did the arithmetic, so the creator had to.
+           Sticky, not fixed: .wizard__sheet is the scroll container, so a sticky child
+           tracks it correctly and never floats over the footer. Under 1024px the split
+           collapses and this card sits ABOVE the form (a summary you read first). -->
+      <aside class="wizard-split__rail" id="fd-overview" aria-labelledby="fd-ov-title">
+        <div class="card fd-ov">
+          <div class="fd-ov__title" id="fd-ov-title" data-i18n="cpp.fd.ov.title">Setup overview</div>
+          <div class="fd-ov__hero">
+            <div class="fd-ov__hero-label" data-i18n="cpp.fd.ov.perslot">Price per slot</div>
+            <div class="fd-ov__hero-value" id="fd-ov-perslot">—</div>
+          </div>
+          <div class="data-list fd-ov__list">
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.keep">You keep</div><div class="fd-ov__v" id="fd-ov-keep">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.offered">Offered to fans</div><div class="fd-ov__v" id="fd-ov-offered">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.slots">Slots open</div><div class="fd-ov__v" id="fd-ov-slots">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.window">Campaign window</div><div class="fd-ov__v" id="fd-ov-window">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.fd.ov.fees">Fees if funded</div><div class="fd-ov__v" id="fd-ov-fees">—</div></div>
+            <div class="data-list__row fd-ov__row--total"><div class="data-list__row-main" data-i18n="cpp.fd.ov.net">You receive if funded</div><div class="fd-ov__v" id="fd-ov-net">—</div></div>
+          </div>
+          <div class="fd-ov__foot">
+            <span data-i18n="cpp.fd.ov.budget">Budget allocated</span>
+            <span class="badge badge--success" id="fd-ov-budget">100%</span>
+          </div>
+          <div class="field__hint fd-ov__note" data-i18n="cpp.fd.ov.note">Estimated from what you have entered. No fees if the goal is not met.</div>
+        </div>
+      </aside>
+
+      <div class="wizard-split__main">
+      <h1 class="wizard__step-title" data-i18n="cpp.fd.h1">Set your funding goal.</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.fd.sub">Goal, length, and how the money is split. This is what fans see and what the platform bills against.</p>
+
+      <div class="alert alert--banner alert--success" role="status" style="margin-bottom:18px">
+        <!-- 2026-07-27 L：這顆原本是純文字「✓」放在 42px 圓角方塊裡，看起來就是一個
+             勾選框（尤其在 .zcheck 也是圓角方塊＋勾之後，兩者更難分）。alert.css 的
+             元件契約本來就寫明 .alert__icon 放「填色圖示」，design-system.html 的
+             alert--success 用的也是 check-circle-fill——這裡只是沒照元件用。
+             換成圓形勾圖示：圓形不會被讀成 checkbox（checkbox 是方的）。 -->
+        <div class="alert__icon"><i data-lucide="check-circle-fill" class="ztor-icon"></i></div>
+        <div class="alert__body">
+          <div class="alert__title" data-i18n="cpp.fd.hint">Your backers take zero risk. If the goal isn't met, every backer is refunded.</div>
+        </div>
+      </div>
+
+      <!-- 2026-07-28 L 回報「everything is still cramped together」——07-27 修好卡內距(16→24)
+           之後仍然擠，因為擠的不是卡片外圍而是卡片「裡面」：這一區的每個欄位都是裸 <div>，
+           label／控件／hint 直接堆疊，計算後三者之間是 0px。
+           form-grid.css 的元件契約寫明「把兩、三個 .field 並排成等寬欄」，field-system.css 的
+           .field 才是提供 flex-column＋gap --sp-6 垂直節奏的那一層——這裡從來沒套上 .field，
+           所以設計 token 再怎麼調都不會跟。改回契約用法。
+           inline margin-bottom:0：格線 gap 已負責欄位之間的距離，.field 自帶的 --sp-16 下緣
+           會讓卡片上下內距不對稱（上 24／下 40）。沿用 create-product.html 折扣卡的既有做法。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="fd-goal"><span data-i18n="cpp.fd.goal">Funding goal · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+            <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="fd-goal" class="amount-field__input input" placeholder="10000" value="20000"></div>
+            <div class="field__hint" data-i18n="cpp.fd.goal.hint">Minimum $500</div>
+          </div>
+          <div class="field">
+            <label class="field__label" for="fd-length"><span data-i18n="cpp.fd.length">Campaign length</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+            <input id="fd-length" class="input" type="number" min="7" max="90" value="30">
+            <div class="field__hint" data-i18n="cpp.fd.length.hint">7–90 days · default 30</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 區塊標題改用 .form-section__head + .form-section__title（16px display）。
+           原本用 .field__label（14px UI regular）＝與底下的欄位標籤同字級同色，兩行標籤只隔
+           6px 疊在一起，讀起來就是一團；標題層級與 24px 的 head 下緣都由元件負責。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="cpp.fd.dist">Distribution settings</h3>
+        </div>
+        <div class="form-grid form-grid--3">
+          <!-- % is shown as a unit suffix rather than left to the label, so the
+               number can never be read as a dollar amount or a raw count
+               (L, 2026-07-27). The suffix reuses .amount-field--suffix, which
+               amount-field.css already promoted for exactly this "50 [%]" case. -->
+          <div class="field"><div class="field__label" data-i18n="cpp.fd.pool">Revenue share offered</div>
+            <div class="amount-field amount-field--suffix amount-field--readonly zstep">
+              <span class="amount-field__unit"><span class="amount-field__sym">%</span></span>
+              <input id="fd-pool" class="amount-field__input input zstep__input" type="number" min="0" max="100" step="1" value="10">
+              <span class="zstep__btns">
+                <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+              </span>
+            </div>
+            <div class="field__hint" data-i18n="cpp.fd.pool.hint">The % of net revenue fans can buy into</div></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.fd.slots">Supporter slots</div>
+            <div class="amount-field zstep zstep--nounit">
+              <input id="fd-slots" class="amount-field__input input zstep__input" type="number" min="1" step="1" value="100">
+              <span class="zstep__btns">
+                <button class="zstep__btn" type="button" data-step="up" tabindex="-1" aria-label="Increase" data-i18n-aria-label="cpp.step.up"><i data-lucide="chevron-up" class="ztor-icon"></i></button>
+                <button class="zstep__btn" type="button" data-step="down" tabindex="-1" aria-label="Decrease" data-i18n-aria-label="cpp.step.down"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
+              </span>
+            </div>
+            <div class="field__hint" data-i18n="cpp.fd.slots.hint">Max number of slots available</div></div>
+          <div class="field"><div class="field__label" data-i18n="cpp.fd.perslot">Per slot</div><div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="fd-perslot" class="amount-field__input input" value="200" disabled></div><div class="field__hint" data-i18n="cpp.fd.perslot.hint">Price per slot · auto</div></div>
+        </div>
+        <!-- 2026-07-27：刪掉原本的「If $200k net, each slot = $200.」——它是寫死的例子，
+             跟表單當下的值（目標 $20,000）不符，而且用的是被講反的舊語意。右側總覽卡改用
+             真實輸入值即時算給你看，這行沒有存在的理由。 -->
+        <!-- 卡片級註腳（費用揭露），不是欄位 hint：與上方欄位群拉開 --sp-16，
+             否則它會貼在 Per slot 的 hint 下方被誤讀成第四欄的說明。 -->
+        <div class="field__hint mt-16" data-i18n="cpp.fd.fee.note">5% platform fee (only if goal met) + 3% Stripe. No fees if goal not met.</div>
+      </div>
+
+      <!-- 標題列帶右側徽章＝form-section__head--actions 的既有用途（form-section.css）。
+           原本是裸 .flex-row + .field__label，標題與底下的預算長條只隔 6px。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles">
+            <h3 class="form-section__title" data-i18n="cpp.fd.budget">Budget allocation</h3>
+          </div>
+          <span class="badge badge--success" id="budget-total"><span>100%</span></span>
+        </div>
+        <!-- page-specific stacked allocation bar · colors via status role tokens -->
+        <div id="budget-bar" style="display:flex;height:14px;border-radius:var(--radius-pill);overflow:hidden;margin:0 0 var(--sp-16)">
+          <div style="width:50%;background:var(--status-success)"></div>
+          <div style="width:25%;background:var(--status-info)"></div>
+          <div style="width:15%;background:var(--status-accent)"></div>
+          <div style="width:10%;background:var(--status-warning)"></div>
+        </div>
+        <div class="data-list" id="budget-rows">
+          <div class="data-list__row" data-budget-row>
+            <div class="data-list__row-main"><input class="input input--inline" value="Production" placeholder="e.g. Production" data-i18n-placeholder="cpp.fd.budget.name.ph" style="max-width:200px"></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="50" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
+          </div>
+          <div class="data-list__row" data-budget-row>
+            <div class="data-list__row-main"><input class="input input--inline" value="Marketing" placeholder="e.g. Production" data-i18n-placeholder="cpp.fd.budget.name.ph" style="max-width:200px"></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="25" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
+          </div>
+          <div class="data-list__row" data-budget-row>
+            <div class="data-list__row-main"><input class="input input--inline" value="Talent" placeholder="e.g. Production" data-i18n-placeholder="cpp.fd.budget.name.ph" style="max-width:200px"></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="15" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
+          </div>
+          <div class="data-list__row" data-budget-row>
+            <div class="data-list__row-main"><input class="input input--inline" value="Operations" placeholder="e.g. Production" data-i18n-placeholder="cpp.fd.budget.name.ph" style="max-width:200px"></div>
+            <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="10" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
+          </div>
+        </div>
+        <button class="btn btn--outline btn--sm mt-16" id="budget-add" data-i18n="cpp.fd.budget.add">＋ Add category</button>
+        <div class="field__hint mt-8" data-i18n="cpp.fd.budget.hint">Must total 100% before you continue.</div>
+      </div>
+      </div><!-- /.wizard-split__main -->
+    </section>
+
+    <!-- ───────────────────────── STEP · Bundles (Fund it first) ─────────────────────────
+         2026-07-28（L：「the edit tier is not working at all i told you to design and fix」）
+         整步重做。原本這裡是：一個 3 欄卡片格 ＋ 一個寫死的 inline「Edit tier」面板，
+         data-tier-open 只是 remove('hidden')、data-tier-close 只是 add('hidden')。
+         按既有方案的 Edit 會開出空白表單（沒有任何資料繫結）、按 Add tier 會開出同一張
+         寫死著別人商品的表單、Save tier 什麼都不存、"1 of 3 required" 永遠不動。
+
+         三個決定（L 2026-07-28 裁示）：
+         1) 命名 tier → bundle（套組）。與 project-detail 的 #pd-bundle-editor／pd-bundle.*
+            對齊（UI-CHANGES 2026-07-24 的最新裁示），並把 "tier" 這個字留給
+            tier-settings.html 的粉絲分級——同一個產品裡兩種 tier 是命名 bug。
+         2) 商品＝從既有商品目錄引用（window.ZTOR_PRODUCTS），找不到就地開草稿商品。
+            回填 UI-CHANGES L745 的裁示；自由文字品項沒有 SKU，訂單端無法履約。
+         3) 與 Funding 步驟同一個 .wizard-split 兩欄：右軌承載名額分帳的即時算式。
+            Funding 定義了「100 個名額 × $200，每個名額 0.1% 淨收益」，在這步之前
+            沒有任何東西檢查你設計的回饋有沒有超賣那些名額。
+
+         互動模型＝堆疊式常駐編輯卡（非 open/close 面板）。建立回饋是比較式寫作：
+         $25／$60／$150 是相對定出來的，一次只能看一張的編輯器會直接對抗這件事；
+         而且沒有 open/close 狀態就沒有「我在編哪一張」這整類 bug——正是壞掉的那類。
+         有效且未聚焦的卡片收合成一行摘要，讓比較在同一屏成立。 -->
+    <section data-panel="tiers" class="hidden wizard-split">
+      <!-- 軌在 source order 第一位＝wizard-split 的元件契約（小螢幕先讀摘要、SR 先讀摘要）。
+           沿用 funding 那張 .fd-ov 卡的結構與樣式：兩步的右軌行為必須一致，
+           不然它們會讀起來像兩個不同的產品。 -->
+      <aside class="wizard-split__rail" id="bd-overview" aria-labelledby="bd-ov-title">
+        <div class="card fd-ov">
+          <div class="fd-ov__title" id="bd-ov-title" data-i18n="cpp.bd.ov.title">Reward overview</div>
+          <div class="fd-ov__hero">
+            <!-- 這一格回答創作者真正的問題：「我設計的這組回饋，賣光了到得了目標嗎？」
+                 產品裡在此之前沒有任何地方回答它。 -->
+            <div class="fd-ov__hero-label" data-i18n="cpp.bd.ov.raise">If every bundle sells out</div>
+            <div class="fd-ov__hero-value" id="bd-ov-raise">—</div>
+          </div>
+          <div class="data-list fd-ov__list">
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.bd.ov.goal">Funding goal</div><div class="fd-ov__v" id="bd-ov-goal">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.bd.ov.count">Bundles</div><div class="fd-ov__v" id="bd-ov-count">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.bd.ov.range">Price range</div><div class="fd-ov__v" id="bd-ov-range">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.bd.ov.slots">Slots offered</div><div class="fd-ov__v" id="bd-ov-slots">—</div></div>
+            <div class="data-list__row"><div class="data-list__row-main" data-i18n="cpp.bd.ov.committed">Committed by bundles</div><div class="fd-ov__v" id="bd-ov-committed">—</div></div>
+            <div class="data-list__row fd-ov__row--total"><div class="data-list__row-main" data-i18n="cpp.bd.ov.unalloc">Unallocated</div><div class="fd-ov__v" id="bd-ov-unalloc">—</div></div>
+          </div>
+          <div class="fd-ov__foot">
+            <span data-i18n="cpp.bd.ov.cover">Goal coverage</span>
+            <span class="badge" id="bd-ov-cover">—</span>
+          </div>
+          <div class="field__hint fd-ov__note" id="bd-ov-note" data-i18n="cpp.bd.ov.note">Sell-out totals are a ceiling, not a forecast. Fees apply only if the goal is met.</div>
+        </div>
+      </aside>
+
+      <div class="wizard-split__main">
+        <h1 class="wizard__step-title" data-i18n="cpp.bd.h1">Build your backer bundles.</h1>
+        <p class="wizard__step-sub" data-i18n="cpp.bd.sub">A bundle is what a backer actually gets for their money: items from your shop, extra perks, and optionally a share of the revenue.</p>
+
+        <!-- 卡片由 JS 依狀態渲染。空狀態也由 JS 出（第一次進來自動給一張空卡，
+             因為「新增第一張」永遠是使用者要做的事，不該讓他先按一次按鈕）。 -->
+        <div id="bd-list"></div>
+
+        <button class="btn btn--outline fc-add" type="button" id="bd-add" style="margin-top:var(--sp-12)"><span data-i18n="cpp.bd.add">＋ Add bundle</span></button>
+
+        <!-- 「最少 3 個」原本是硬性擋關。那是 Kickstarter 的建議穿上驗證規則的衣服——
+             平台沒有立場因為創作者只想開一個 $50 方案就不讓他繼續，而且較新的
+             #pd-bundle-editor 已裁示「至少 1 個」。改成教練式提示，不擋關。 -->
+        <div class="field__hint mt-16" id="bd-coach">—</div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── STEP · Pre-order ───────────────────────── -->
+    <section data-panel="preorder" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="cpp.po.h1">Set your pre-order terms.</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.po.sub">Price, minimum orders, deadline and expected delivery. This is the promise fans commit to.</p>
+
+      <div class="alert alert--banner alert--success" role="status" style="margin-bottom:18px">
+        <!-- 2026-07-27 L：這顆原本是純文字「✓」放在 42px 圓角方塊裡，看起來就是一個
+             勾選框（尤其在 .zcheck 也是圓角方塊＋勾之後，兩者更難分）。alert.css 的
+             元件契約本來就寫明 .alert__icon 放「填色圖示」，design-system.html 的
+             alert--success 用的也是 check-circle-fill——這裡只是沒照元件用。
+             換成圓形勾圖示：圓形不會被讀成 checkbox（checkbox 是方的）。 -->
+        <div class="alert__icon"><i data-lucide="check-circle-fill" class="ztor-icon"></i></div>
+        <div class="alert__body">
+          <div class="alert__title" data-i18n="cpp.po.hint">If minimum orders aren't met, every pre-order is refunded.</div>
+        </div>
+      </div>
+
+      <div class="form-grid form-section form-section--outlined">
+        <div class="field">
+          <label class="field__label"><span data-i18n="cpp.po.price">Price per unit · USD</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+          <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" placeholder="29.99" value="29.99"></div>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="cpp.po.min">Minimum orders</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+          <input class="input" type="number" placeholder="100" value="100">
+          <div class="field__hint" data-i18n="cpp.po.min.hint">Pre-order succeeds when total orders reach this.</div>
+        </div>
+      </div>
+
+      <div class="form-grid form-section form-section--outlined">
+        <div class="field">
+          <label class="field__label"><span data-i18n="cpp.po.deadline">Pre-order deadline</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+          <input class="input" type="number" placeholder="30" value="30">
+          <div class="field__hint" data-i18n="cpp.po.deadline.hint">Days open from launch.</div>
+        </div>
+        <div class="field">
+          <label class="field__label"><span data-i18n="cpp.po.delivery">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+          <input class="input" type="date">
+          <div class="field__hint" data-i18n="cpp.po.delivery.hint">Should be after the deadline plus production time.</div>
+        </div>
+      </div>
+
+      <div class="field form-section form-section--outlined">
+        <div class="field__label"><span data-i18n="cpp.po.included">What's included</span> <span class="text-sub" data-i18n="cpp.po.included.sub">· Merch items</span> <span class="text-sub" data-i18n="cpp.required">· required</span></div>
+        <div class="data-list">
+          <div class="data-list__row">
+            <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="cpp.po.included.eg1">Vinyl LP · numbered</div></div></div>
+            <a class="card__link" href="#">×</a>
+          </div>
+          <div class="data-list__row">
+            <div class="data-list__row-main"><div class="data-list__body"><div class="data-list__title" data-i18n="cpp.po.included.eg2">Tour zine</div></div></div>
+            <a class="card__link" href="#">×</a>
+          </div>
+        </div>
+        <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.po.included.add">＋ Add item</button>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── STEP · Review (shared, per-type blocks) ───────────────────────── -->
+    <section data-panel="review" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="cpp.s4.h1">Ready to publish.</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s4.sub">Verify what fans will see and what kicks off behind the scenes. You can step back into any section without losing progress.</p>
+
+      <div class="review-row">
+        <!-- About summary -->
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.step.about">About</h3>
+            <a class="review-row__action" data-goto-step="about" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <div><div class="meta-cell__label" data-i18n="cpp.s1.type">Project type</div><div class="meta-cell__value" id="rv-type" data-i18n="cpp.golive.title">Go live</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s1.title">Title</div><div class="meta-cell__value">Coastline EP</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s1.content">Content type</div><div class="meta-cell__value" data-i18n="cpp.content.song">Song</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s4.iprents">IP rentals</div><div class="meta-cell__value" data-i18n="cpp.s4.none">None</div></div>
+          </div>
+        </div>
+
+        <!-- Showcase summary -->
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.step.showcase">Showcase</h3>
+            <a class="review-row__action" data-goto-step="showcase" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" style="display:flex;flex-direction:column;gap:6px">
+            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s2.story">Story</span><span class="badge badge--success"><span data-i18n="cpp.s4.complete">✓ Completed</span></span></div>
+            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Thumbnail · poster · banner · gallery</span><span class="badge badge--success"><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
+            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.trailer">Video</span><span class="badge badge--neutral"><span data-i18n="cpp.s4.no-trailer">Not uploaded</span></span></div>
+          </div>
+        </div>
+
+        <!-- Middle summary · Go live -->
+        <div class="review-row__item hidden" data-review-mid="golive">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.step.money">Monetization</h3>
+            <a class="review-row__action" data-goto-step="monetization" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <div><div class="meta-cell__label" data-i18n="cpp.s4.access">Access</div><div class="meta-cell__value" data-i18n="cpp.ppv.title">Pay per view</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s4.price">Price</div><div class="meta-cell__value">$12.00</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s3.fee">Platform fee</div><div class="meta-cell__value">5% + 3%</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s3.ads">Ads</div><div class="meta-cell__value" data-i18n="cpp.s4.off">Off</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s4.brand">Brand deals</div><div class="meta-cell__value" data-i18n="cpp.s4.brand-val">1 attached</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.s4.publish">Publish</div><div class="meta-cell__value" data-i18n="cpp.s3.now">Immediately</div></div>
+          </div>
+        </div>
+
+        <!-- Middle summary · Fund it first -->
+        <div class="review-row__item hidden" data-review-mid="fund">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.rv.fund.title">Funding</h3>
+            <a class="review-row__action" data-goto-step="funding" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+          </div>
+          <div class="review-row__value">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:10px">
+              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.goal">Goal</div><div class="meta-cell__value">$20,000</div></div>
+              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.length">Length</div><div class="meta-cell__value">30 days</div></div>
+              <div><div class="meta-cell__label" data-i18n="cpp.rv.fund.dist">Distribution</div><div class="meta-cell__value">10% · 100 slots</div></div>
+            </div>
+            <div class="flex-row" style="justify-content:space-between;border-top:1px solid var(--border-soft);padding-top:10px">
+              <span class="meta-cell__label" data-i18n="cpp.rv.tiers.title">Tiers</span>
+              <span class="badge badge--success"><span data-i18n="cpp.rv.tiers.val">3 tiers</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle summary · Pre-order -->
+        <div class="review-row__item hidden" data-review-mid="preorder">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.rv.pre.title">Pre-order</h3>
+            <a class="review-row__action" data-goto-step="preorder" href="#" data-i18n="cpp.s4.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.price">Unit price</div><div class="meta-cell__value">$29.99</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.min">Min orders</div><div class="meta-cell__value">100</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.deadline">Deadline</div><div class="meta-cell__value">30 days</div></div>
+            <div><div class="meta-cell__label" data-i18n="cpp.rv.pre.delivery">Expected delivery</div><div class="meta-cell__value">—</div></div>
+          </div>
+        </div>
+
+        <!-- Delivery timeline · Fund / Pre-order only -->
+        <div class="review-row__item hidden" data-review-delivery>
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.rv.delivery">Delivery timeline</h3>
+          </div>
+          <div class="review-row__value">
+            <div class="data-list__meta" style="margin-bottom:10px" data-i18n="cpp.rv.delivery.sub">When backers can expect the final product.</div>
+            <div class="field" style="max-width:280px">
+              <label class="field__label"><span data-i18n="cpp.rv.delivery.expected">Expected delivery</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+              <input class="input" type="date">
+            </div>
+            <div class="field" style="margin-top:8px;margin-bottom:0">
+            <div class="field__label" data-i18n="cpp.rv.milestones">Milestones</div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
+              <div class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.ms1">Campaign funded</span></div>
+              <div class="flex-row" style="gap:8px"><span class="text-sub">◔</span><span data-i18n="cpp.rv.ms2">Pre-production complete</span></div>
+              <div class="flex-row" style="gap:8px"><span class="text-sub">○</span><span data-i18n="cpp.rv.ms3">Delivery to backers</span></div>
+            </div>
+            <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- What happens next · per type -->
+        <div class="review-row__item">
+          <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="cpp.rv.next.title">What happens next</h3>
+          </div>
+          <div class="review-row__value">
+            <ul class="hidden" data-review-next="golive" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl1">Your project goes live immediately (or at the scheduled time).</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl2">Fans watch, or pay per view / unlock paid content.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl3">You earn from views, pay-per-view, and ad placements.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.gl4">5% platform fee + 3% Stripe on revenue.</span></li>
+            </ul>
+            <ul class="hidden" data-review-next="fund" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd1">Campaign goes live.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd2">Fans back your project.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd3">If the goal is met, funds are released.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd4">If not, everyone is refunded.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.fd5">5% platform fee + 3% Stripe (only if funded).</span></li>
+            </ul>
+            <ul class="hidden" data-review-next="preorder" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po1">Pre-orders open.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po2">Fans commit to buy.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po3">If the threshold is met, you deliver.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po4">If not, everyone is refunded.</span></li>
+              <li class="flex-row" style="gap:8px"><span style="color:var(--status-success)">✓</span><span data-i18n="cpp.rv.po5">5% platform fee + 3% Stripe (only if threshold met).</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pre-flight check -->
+      <div class="field mt-16 form-section form-section--outlined">
+        <div class="field__label" data-i18n="cpp.s4.preflight">Pre-flight check</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:var(--font-ui);font-size: var(--fs-13)">
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk1">Required fields complete (Title · Category · Description)</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.chk2">Required images uploaded · story meets minimum</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between" data-review-pf="golive"><span data-i18n="cpp.rv.pf.mid.golive">Monetization set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.mid.fund">Funding set · budget totals 100%</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="fund"><span data-i18n="cpp.rv.pf.tiers">3+ tiers created</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="preorder"><span data-i18n="cpp.rv.pf.mid.pre">Pre-order set</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row hidden" style="justify-content:space-between" data-review-pf="delivery"><span data-i18n="cpp.rv.pf.delivery">Delivery timeline clear</span><span class="badge badge--success"><span data-i18n="cpp.s4.yes">Yes</span></span></div>
+          <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.rv.pf.ip">IP rental linked (if other IP is used)</span><span class="badge"><span data-i18n="cpp.s4.na">N/A</span></span></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom" style="justify-content:flex-end" data-footer>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" data-action="back" data-i18n="wiz.back">Back</button>
+      <button class="btn btn--primary" data-action="next">Continue</button>
+    </div>
+  </footer>
+
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<!-- 回饋套組的商品挑選器讀這支的 window.ZTOR_PRODUCTS（persona-aware 的真實商品目錄）。 -->
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/stepper.js?v=r2.2"></script>
+<script>
+(function () {
+  /* Publish the wizard header's real height so the sticky overview rail can
+     clear it (ds-components/wizard-split.css reads --wizard-top-h). Measured
+     rather than hardcoded because the header's height changes with locale and
+     window width — a fixed number drifts and the rail slides under the header
+     again. Re-measured on resize and after i18n swaps the copy. */
+  const syncTopH = () => {
+    const bar = document.querySelector('.wizard__top');
+    if (bar) document.documentElement.style.setProperty('--wizard-top-h', bar.offsetHeight + 'px');
+  };
+  syncTopH();
+  window.addEventListener('resize', syncTopH);
+  document.addEventListener('i18n:applied', syncTopH);
+  if (window.ResizeObserver) {
+    const bar = document.querySelector('.wizard__top');
+    if (bar) new ResizeObserver(syncTopH).observe(bar);
+  }
+
+  const FLOWS = {
+    golive:   ['about', 'showcase', 'monetization', 'review'],
+    fund:     ['about', 'showcase', 'funding', 'tiers', 'review'],
+    preorder: ['about', 'showcase', 'preorder', 'review'],
+  };
+  const STEP_LABEL = {
+    about: 'cpp.step.about', showcase: 'cpp.step.showcase',
+    monetization: 'cpp.step.money', funding: 'cpp.step.funding',
+    tiers: 'cpp.step.tiers', preorder: 'cpp.step.preorder',
+    review: 'cpp.step.review',
+  };
+  const TYPE_TITLE = { golive: 'cpp.golive.title', fund: 'cpp.fund.title', preorder: 'cpp.pre.title' };
+
+  let type = 'golive';
+  let idx = 0;
+
+  const T = k => (window.i18nT && window.i18nT(k)) || k;
+  const flow = () => FLOWS[type];
+
+  function buildStepper() {
+    const el = document.getElementById('stepper');
+    const f = flow();
+    el.style.setProperty('--progress', Math.round((idx + 1) / f.length * 100) + '%');
+    el.innerHTML =
+      '<div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>' +
+      '<div class="progress-stepper__labels">' +
+      f.map((s, i) => {
+        const cls = 'progress-stepper__label' + (i === idx ? ' progress-stepper__label--current' : '') + (i < idx ? ' progress-stepper__label--done' : '');
+        return `<span class="${cls}" data-jump="${i}">${T(STEP_LABEL[s])}</span>`;
+      }).join('') +
+      '</div>';
+    el.querySelectorAll('[data-jump]').forEach(it => {
+      it.addEventListener('click', () => { idx = Number(it.dataset.jump); render(); });
+    });
+  }
+
+  function render() {
+    const f = flow();
+    if (idx >= f.length) idx = f.length - 1;
+    const cur = f[idx];
+
+    document.querySelectorAll('[data-panel]').forEach(p => {
+      p.classList.toggle('hidden', p.dataset.panel !== cur);
+    });
+
+    /* 只有募資步驟是「表單＋右側總覽」兩欄，需要比 820 更寬的內容欄；其餘步驟維持
+       原本寬度。--mid(1140) 本來就是為「內容＋約 320 側欄」這個形狀存在的（見
+       shared.css 註解），所以沿用而不另訂寬度。 */
+    /* 2026-07-28：Bundles 步驟也改成兩欄（表單＋名額分帳右軌），所以一起吃 --mid。
+       兩個募資步驟用同一個形狀，不然它們會讀起來像兩個不同的產品。 */
+    const body = document.querySelector('.wizard__body');
+    if (body) body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
+    if (cur === 'funding') renderFundingOverview();
+    /* Continue 的 disabled 只由 Bundles 那步管；離開這步一定要放開，
+       否則其他步驟會被上一步的驗證狀態卡住。 */
+    const nextBtn = document.querySelector('[data-action=next]');
+    if (nextBtn && cur !== 'tiers') nextBtn.disabled = false;
+    if (cur === 'tiers' && typeof ensureBundles === 'function') ensureBundles();
+
+    // Review per-type blocks
+    document.querySelectorAll('[data-review-mid]').forEach(b => b.classList.toggle('hidden', b.dataset.reviewMid !== type));
+    document.querySelectorAll('[data-review-next]').forEach(b => b.classList.toggle('hidden', b.dataset.reviewNext !== type));
+    document.querySelectorAll('[data-review-pf]').forEach(b => {
+      const show = b.dataset.reviewPf === type || (b.dataset.reviewPf === 'delivery' && type !== 'golive');
+      b.classList.toggle('hidden', !show);
+    });
+    const delivery = document.querySelector('[data-review-delivery]');
+    if (delivery) delivery.classList.toggle('hidden', type === 'golive');
+    const rvType = document.getElementById('rv-type');
+    if (rvType) { rvType.dataset.i18n = TYPE_TITLE[type]; rvType.textContent = T(TYPE_TITLE[type]); }
+
+    buildStepper();
+
+    document.querySelector('[data-action=back]').style.display = idx === 0 ? 'none' : '';
+    const next = document.querySelector('[data-action=next]');
+    if (idx === f.length - 1) {
+      next.dataset.i18n = 'cpp.next.publish';
+      next.textContent = T('cpp.next.publish');
+    } else {
+      next.removeAttribute('data-i18n');
+      next.textContent = T('cpp.next.continue') + ' ' + T(STEP_LABEL[f[idx + 1]]);
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  // Project type — 閘門與表單的同款 radio-list 共同驅動 type（D150）
+  const gate   = document.querySelector('[data-gate]');
+  const sheet  = document.querySelector('[data-sheet]');
+  const footer = document.querySelector('[data-footer]');
+  function syncTypeUI(t) {
+    document.querySelectorAll('[data-gate-type]').forEach(s => {
+      const active = s.dataset.gateType === t;
+      s.classList.toggle('segmented__btn--active', active);   // 閘門也改用 radio-cards（D152）
+      s.setAttribute('aria-checked', String(active));
+    });
+    document.querySelectorAll('[data-type]').forEach(s => {
+      const active = s.dataset.type === t;
+      s.classList.toggle('segmented__btn--active', active);   // 表單改用 radio-cards（D151）
+      s.setAttribute('aria-checked', String(active));
+    });
+  }
+  function chooseType(t) { type = t; idx = 0; syncTypeUI(t); render(); }
+  function enterWizard() { gate.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function showGate()    { gate.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); }
+
+  document.querySelectorAll('[data-gate-type]').forEach(c => c.addEventListener('click', () => { chooseType(c.dataset.gateType); enterWizard(); }));
+  document.querySelectorAll('[data-type]').forEach(c => c.addEventListener('click', () => chooseType(c.dataset.type)));
+  document.querySelector('[data-gate-back]').addEventListener('click', () => { if (history.length > 1) history.back(); else location.href = 'projects.html'; });
+
+  // Content type chips → toggle field group
+  document.querySelectorAll('#cat-group .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#cat-group .chip').forEach(s => s.classList.remove('chip--active'));
+      c.classList.add('chip--active');
+      const g = c.dataset.group;
+      document.querySelectorAll('[data-fieldgroup]').forEach(fg => fg.classList.toggle('hidden', fg.dataset.fieldgroup !== g));
+    });
+  });
+
+  // Access model → price field visibility
+  document.querySelectorAll('[data-access]').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('[data-access]').forEach(s => s.classList.remove('selection-card--active'));
+      c.classList.add('selection-card--active');
+      const showPrice = c.dataset.access !== 'free';
+      document.querySelector('[data-price-field]').classList.toggle('hidden', !showPrice);
+    });
+  });
+
+  // Publish timing → schedule field
+  document.querySelectorAll('[data-publish]').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('[data-publish]').forEach(s => s.classList.remove('selection-card--active'));
+      c.classList.add('selection-card--active');
+      document.querySelector('[data-schedule-field]').classList.toggle('hidden', c.dataset.publish !== 'schedule');
+    });
+  });
+
+  /* ── Realtime setup overview (L 2026-07-27) ──────────────────────────────────
+     只顯示「由輸入值推導出來的結果」，不重複欄位本身。費率引用同頁 fee note
+     的 5% 平台 + 3% Stripe（BUILD-SPEC D029），且未達標不收費——所以每一個金額
+     列都標明「達標後」，不能寫成無條件的費用。
+     所有空值／除以零一律回 '—'：顯示 $0 或 NaN 等於對創作者做一個假陳述。 */
+  const FEE_PLATFORM = 0.05, FEE_STRIPE = 0.03;
+  const DASH = '—';
+  const num = (id) => { const el = document.getElementById(id); const v = el ? parseFloat(el.value) : NaN; return Number.isFinite(v) ? v : NaN; };
+  const money = (v) => Number.isFinite(v) ? '$' + Math.round(v).toLocaleString('en-US') : DASH;
+  const pctStr = (v) => Number.isFinite(v) ? (Math.round(v * 10) / 10) + '%' : DASH;
+  const setTxt = (id, s) => { const el = document.getElementById(id); if (el) el.textContent = s; };
+
+  function budgetSum() {
+    let sum = 0;
+    document.querySelectorAll('#budget-rows [data-budget-row]').forEach(r => {
+      sum += Number(r.querySelector('.budget-pct').value) || 0;
+    });
+    return sum;
+  }
+
+  function renderFundingOverview() {
+    if (!document.getElementById('fd-overview')) return;
+    const goal  = num('fd-goal');
+    const days  = num('fd-length');
+    const pool  = num('fd-pool');
+    const slots = num('fd-slots');
+
+    /* 每個名額價格＝目標 ÷ 名額數。名額為 0／空 ⇒ 不是 Infinity，是「還沒得算」。 */
+    const perSlot = (Number.isFinite(goal) && Number.isFinite(slots) && slots > 0) ? goal / slots : NaN;
+    setTxt('fd-ov-perslot', money(perSlot));
+    /* 唯讀欄位過去寫死 200、永遠不動。總覽即時算而欄位不動會自相矛盾，所以一起接上。 */
+    const perSlotField = document.getElementById('fd-perslot');
+    if (perSlotField) perSlotField.value = Number.isFinite(perSlot) ? Math.round(perSlot).toLocaleString('en-US') : '';
+
+    const offered = Number.isFinite(pool) ? Math.min(100, Math.max(0, pool)) : NaN;
+    setTxt('fd-ov-offered', pctStr(offered));
+    setTxt('fd-ov-keep', Number.isFinite(offered) ? pctStr(100 - offered) : DASH);
+    setTxt('fd-ov-slots', Number.isFinite(slots) && slots > 0 ? Math.round(slots).toLocaleString('en-US') : DASH);
+
+    /* 期間顯示成真正的日期區間——「30」本身不回答「什麼時候結束」。 */
+    if (Number.isFinite(days) && days > 0) {
+      const start = new Date();
+      const end = new Date(start.getTime() + days * 86400000);
+      const fmt = new Intl.DateTimeFormat(document.documentElement.lang === 'zh-Hant' ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+      setTxt('fd-ov-window', fmt.format(start) + ' – ' + fmt.format(end) + ' · ' + Math.round(days) + ' ' + T('cpp.fd.ov.days'));
+    } else setTxt('fd-ov-window', DASH);
+
+    const fees = Number.isFinite(goal) ? goal * (FEE_PLATFORM + FEE_STRIPE) : NaN;
+    setTxt('fd-ov-fees', Number.isFinite(fees) ? '−' + money(fees) : DASH);
+    setTxt('fd-ov-net', Number.isFinite(goal) ? money(goal - fees) : DASH);
+
+    const sum = budgetSum();
+    const ovBadge = document.getElementById('fd-ov-budget');
+    if (ovBadge) {
+      ovBadge.textContent = sum + '%';
+      ovBadge.classList.toggle('badge--success', sum === 100);
+      ovBadge.classList.toggle('badge--warning', sum !== 100);
+    }
+  }
+
+  // Budget allocation total
+  function recalcBudget() {
+    const rows = document.querySelectorAll('#budget-rows [data-budget-row]');
+    const sum = budgetSum();
+    const badge = document.getElementById('budget-total');
+    if (!badge) return;
+    badge.querySelector('span:last-child').textContent = sum + '%';
+    badge.classList.toggle('badge--success', sum === 100);
+    badge.classList.toggle('badge--warning', sum !== 100);
+    const bar = document.getElementById('budget-bar');
+    const colors = ['var(--status-success)', 'var(--status-info)', 'var(--status-accent)', 'var(--status-warning)', 'var(--destructive)'];
+    bar.innerHTML = '';
+    rows.forEach((r, i) => {
+      const v = Number(r.querySelector('.budget-pct').value) || 0;
+      const seg = document.createElement('div');
+      seg.style.width = (sum ? (v / sum * 100) : 0) + '%';
+      seg.style.background = colors[i % colors.length];
+      bar.appendChild(seg);
+    });
+    /* 預算總和只算一次、兩處共用，避免總覽自己再加一遍而漂移。 */
+    renderFundingOverview();
+  }
+  document.getElementById('budget-rows').addEventListener('input', recalcBudget);
+  /* input（非 change）＝邊打邊更新，這才是 realtime。 */
+  ['fd-goal', 'fd-length', 'fd-pool', 'fd-slots'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderFundingOverview);
+  });
+  /* 語言切換時日期格式與「天」都要跟著換 */
+  new MutationObserver(() => renderFundingOverview())
+    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+  document.querySelectorAll('[data-budget-remove]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault(); b.closest('[data-budget-row]').remove(); recalcBudget();
+  }));
+  document.getElementById('budget-add').addEventListener('click', () => {
+    const rows = document.getElementById('budget-rows');
+    const r = rows.firstElementChild.cloneNode(true);
+    r.querySelector('.input--inline').value = '';
+    r.querySelector('.budget-pct').value = 0;
+    r.querySelector('[data-budget-remove]').addEventListener('click', e => { e.preventDefault(); r.remove(); recalcBudget(); });
+    rows.appendChild(r);
+    recalcBudget();
+  });
+
+  /* ══ Backer bundles (募資回饋套組) ══════════════════════════════════════════
+     2026-07-28 全新。取代原本的 tier open/close stub（見 [data-panel="tiers"] 上方註解）。
+
+     狀態→渲染單向流：所有互動只改 BUNDLES，然後 renderBundles() 重畫。
+     不做局部 DOM 手術——「編輯器顯示的東西與實際狀態不同步」正是原本壞掉的方式。
+
+     唯一例外：正在輸入的欄位不重畫（見 renderBundles 的 focus 保留），否則每打一個字
+     游標就跳回開頭。
+     ──────────────────────────────────────────────────────────────────────── */
+
+  let BUNDLES = [];
+  let bdSeq = 0;
+
+  /* 名額＝分潤單位。included slots = 0 代表「純回饋、不分潤」，這是合法且常見的。 */
+  function newBundle(seed) {
+    bdSeq += 1;
+    return Object.assign({
+      id: 'b' + bdSeq,
+      name: '', desc: '', price: '',
+      slots: 0,
+      avail: 'auto',        // auto | limited（2026-07-28：unlimited → auto，見 bdMaxUnits）
+      cap: '',
+      items: [],            // [{id, name, img, price}] — 引用，不是自由文字
+      perks: [],            // [string] — 自由文字，見 bundle-editor.css 的說明
+      collapsed: false,
+    }, seed || {});
+  }
+
+  const bdEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const bdGet = id => BUNDLES.find(b => b.id === id);
+  const bdNum = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : NaN; };
+
+  /* 目錄：persona-aware 的既有商品源。沒有它就退回空目錄，picker 只剩「新增商品」出口。 */
+  function catalogue() {
+    const P = window.ZTOR_PRODUCTS || {};
+    /* 依名稱去重：ZTOR_PRODUCTS 把多個 persona 的商品併在同一個物件裡，所以同一件
+       商品會以不同 key 出現好幾次（實測 27 筆裡「26MS Hoodie」出現 3 次）。
+       key 不同＝技術上是不同列，但對創作者而言那是同一件商品——請人在三個一模一樣的
+       選項之間挑一個，是把資料層的瑕疵當成使用者的問題。 */
+    const seen = new Set();
+    return Object.keys(P).reduce((acc, k) => {
+      const name = P[k].name;
+      if (!name || seen.has(name)) return acc;
+      seen.add(name);
+      acc.push({
+        id: k,
+        name: name,
+        img: P[k].img ? 'images/products/' + P[k].img : '',
+        price: P[k].price || '',
+        meta: P[k].catLabel || '',
+      });
+      return acc;
+    }, []);
+  }
+
+  /* ── 一張套組卡是否可用：有名字、有正價 ────────────────────────────────── */
+  function bdValid(b) {
+    return String(b.name).trim().length > 0 && bdNum(b.price) > 0;
+  }
+  /* ── 販售上限（2026-07-28 使用者裁示改制）─────────────────────────────
+     舊制：含名額就強制 Limited、要創作者自己打一個數字，否則算成「無上限的分潤承諾」。
+     那是把一個算得出來的數字丟回去給人填——名額本來就有一個共用池（募資頁的
+     Supporter slots），賣掉多少就少多少，每張套組能賣幾份是**除出來的**，不是填的。
+
+     新制兩種模式：
+       auto    ＝ 從池子推導。可賣份數 = floor(剩餘池 ÷ 每份含的名額)。
+                 含 0 名額（純回饋不分潤）不吃池子 → 真正無上限。
+       limited ＝ 創作者主動點選、手動輸入的硬上限（想更早收手時才用）。
+
+     使用者的例子：池 100、A 每份 10 名額、B 每份 50。
+     B 賣掉 1 份 → 池剩 50 → A 還能賣 5 份（50÷10）。兩張卡共享同一個池，
+     所以 auto 不預先佔用名額（committed = 0）；只有 limited 會把 cap×slots 鎖起來，
+     auto 再從沒被鎖走的餘額裡推導。這樣就不可能超賣，也就不需要舊的 unbounded 錯誤態。 */
+  function bdPool() {
+    const el = document.getElementById('fd-slots');
+    const n = el ? bdNum(el.value) : NaN;
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : NaN;
+  }
+  /* Limited 卡硬鎖走的名額總數——auto 只能用剩下的。 */
+  function bdReservedSlots() {
+    return BUNDLES.reduce((sum, b) => {
+      if (b.avail !== 'limited') return sum;
+      const s = bdNum(b.slots), c = bdNum(b.cap);
+      return sum + (Number.isFinite(s) && s > 0 && Number.isFinite(c) && c > 0 ? s * c : 0);
+    }, 0);
+  }
+  /* auto 模式推導出的可賣份數。池子沒填 → 先當無上限（募資頁填了就會重算）。 */
+  function bdAutoUnits(b) {
+    const s = bdNum(b.slots);
+    if (!Number.isFinite(s) || s <= 0) return Infinity;   // 不含名額＝不吃池子
+    const pool = bdPool();
+    if (!Number.isFinite(pool)) return Infinity;
+    return Math.max(0, Math.floor((pool - bdReservedSlots()) / s));
+  }
+  function bdMaxUnits(b) {
+    if (b.avail === 'limited') { const c = bdNum(b.cap); return Number.isFinite(c) && c > 0 ? c : 0; }
+    return bdAutoUnits(b);
+  }
+  /* 「已承諾的名額」只算 limited：auto 是從池子裡拿，不會把池子撐破，
+     把它的理論最大值也加總進來會重複計算（A 100 ＋ B 100 ＞ 池 100）。 */
+  function bdCommittedSlots(b) {
+    const s = bdNum(b.slots);
+    if (!Number.isFinite(s) || s <= 0) return 0;
+    if (b.avail !== 'limited') return 0;
+    const u = bdMaxUnits(b);
+    return u === Infinity ? Infinity : s * u;
+  }
+
+  /* ── 渲染 ───────────────────────────────────────────────────────────── */
+  function bdItemsHTML(b) {
+    if (!b.items.length) return '';
+    return b.items.map(it =>
+      '<div class="fc-ref" data-bd-ref="' + bdEsc(it.id) + '">' +
+        (it.img ? '<img class="fc-ref__thumb" src="' + bdEsc(it.img) + '" alt="" loading="lazy">'
+                : '<span class="fc-ref__thumb"></span>') +
+        '<div><div class="fc-ref__name">' + bdEsc(it.name) + '</div>' +
+          (it.meta ? '<div class="fc-ref__meta">' + bdEsc(it.meta) + '</div>' : '') + '</div>' +
+        '<button class="btn btn--icon btn--xs" type="button" data-bd-item-remove aria-label="' +
+          bdEsc(T('cpp.bd.item.remove')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>'
+    ).join('');
+  }
+
+  function bdPerksHTML(b) {
+    return b.perks.map((p, i) =>
+      '<div class="fc-perk">' +
+        '<input class="input" data-bd-perk="' + i + '" value="' + bdEsc(p) + '" placeholder="' +
+          bdEsc(T('cpp.bd.perk.ph')) + '">' +
+        '<button class="btn btn--icon btn--xs" type="button" data-bd-perk-remove="' + i + '" aria-label="' +
+          bdEsc(T('cpp.bd.perk.remove')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>'
+    ).join('');
+  }
+
+  /* 收合摘要：名稱 · 內容物 · 名額｜價格。內容物寫成人看得懂的一句，不是計數器。 */
+  function bdSummaryMeta(b) {
+    const bits = [];
+    if (b.items.length) bits.push(b.items.length + ' ' + T(b.items.length === 1 ? 'cpp.bd.n.item' : 'cpp.bd.n.items'));
+    if (b.perks.length) bits.push(b.perks.length + ' ' + T(b.perks.length === 1 ? 'cpp.bd.n.perk' : 'cpp.bd.n.perks'));
+    const s = bdNum(b.slots);
+    if (Number.isFinite(s) && s > 0) bits.push(s + ' ' + T(s === 1 ? 'cpp.bd.n.slot' : 'cpp.bd.n.slots'));
+    if (b.avail === 'limited' && bdNum(b.cap) > 0) bits.push(bdNum(b.cap) + ' ' + T('cpp.bd.n.available'));
+    return bits.length ? bits.join(' · ') : T('cpp.bd.sum.empty');
+  }
+
+  function bdCardHTML(b, i) {
+    const priceN = bdNum(b.price);
+    const slotsN = bdNum(b.slots);
+    const hasSlots = Number.isFinite(slotsN) && slotsN > 0;
+    const invalid = !bdValid(b);
+
+    /* 2026-07-28：不再因為填了名額就強制 Limited。auto 由池子推導，兩顆都永遠可點。 */
+    const autoUnits = bdAutoUnits(b);
+    const poolN = bdPool();
+
+    return '' +
+    '<div class="card fc-bundle' + (b.collapsed ? ' fc-bundle--collapsed' : '') +
+        (invalid ? ' fc-bundle--invalid' : '') + '" data-bd-card="' + b.id + '">' +
+      '<div class="fc-bundle__head">' +
+        '<div class="fc-sum" data-bd-expand>' +
+          '<div>' +
+            '<div class="fc-sum__name"><span class="fc-bundle__index">' + String(i + 1).padStart(2, '0') + '</span>' +
+              bdEsc(b.name || T('cpp.bd.untitled')) + '</div>' +
+            '<div class="fc-sum__meta">' + bdEsc(bdSummaryMeta(b)) + '</div>' +
+          '</div>' +
+          '<div class="fc-sum__price">' + (Number.isFinite(priceN) && priceN > 0 ? '$' + priceN.toLocaleString('en-US') : '—') + '</div>' +
+          '<span></span>' +
+        '</div>' +
+        '<div class="fc-bundle__actions">' +
+          '<a class="card__link" href="#" data-bd-toggle>' + bdEsc(T(b.collapsed ? 'cpp.bd.edit' : 'cpp.bd.collapse')) + '</a>' +
+          (BUNDLES.length > 1 ? '<a class="card__link" href="#" data-bd-remove>' + bdEsc(T('cpp.bd.remove')) + '</a>' : '') +
+        '</div>' +
+      '</div>' +
+
+      '<div class="fc-bundle__body">' +
+        '<div class="form-grid" style="grid-template-columns:2fr 1fr">' +
+          '<div class="field">' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
+            '<input class="input" data-bd-f="name" value="' + bdEsc(b.name) + '" placeholder="' + bdEsc(T('cpp.bd.name.ph')) + '">' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.price')) + ' <span class="field__req">*</span></label>' +
+            '<div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+              '<input class="amount-field__input input" type="number" min="0" step="1" data-bd-f="price" value="' + bdEsc(b.price) + '" placeholder="0"></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="field">' +
+          '<label class="field__label">' + bdEsc(T('cpp.bd.desc')) + '</label>' +
+          '<input class="input" data-bd-f="desc" value="' + bdEsc(b.desc) + '" placeholder="' + bdEsc(T('cpp.bd.desc.ph')) + '">' +
+        '</div>' +
+
+        '<div class="form-grid">' +
+          '<div class="field">' +
+            '<label class="field__label">' + bdEsc(T('cpp.bd.slots')) + '</label>' +
+            '<input class="input" type="number" min="0" step="1" data-bd-f="slots" value="' + bdEsc(b.slots) + '">' +
+            '<div class="field__hint">' + bdEsc(T('cpp.bd.slots.hint')) + '</div>' +
+          '</div>' +
+          '<div class="field">' +
+            '<div class="field__label">' + bdEsc(T('cpp.bd.avail')) + '</div>' +
+            '<div class="segmented" role="radiogroup" aria-label="' + bdEsc(T('cpp.bd.avail')) + '">' +
+              '<button type="button" class="segmented__btn' + (b.avail === 'auto' ? ' segmented__btn--active' : '') +
+                '" role="radio" aria-checked="' + (b.avail === 'auto') + '" data-bd-avail="auto">' +
+                bdEsc(T('cpp.bd.avail.auto')) + '</button>' +
+              '<button type="button" class="segmented__btn' + (b.avail === 'limited' ? ' segmented__btn--active' : '') +
+                '" role="radio" aria-checked="' + (b.avail === 'limited') + '" data-bd-avail="limited">' +
+                bdEsc(T('cpp.bd.avail.limited')) + '</button>' +
+            '</div>' +
+            /* cap 需要自己的標籤：一旦填了值，placeholder 就不再說明它是什麼，
+               這個輸入框會變成 segmented 底下一個沒有名字的數字。 */
+            (b.avail === 'limited'
+              ? '<label class="field__label mt-8">' + bdEsc(T('cpp.bd.cap')) + '</label>' +
+                '<input class="input" type="number" min="1" step="1" data-bd-f="cap" value="' + bdEsc(b.cap) +
+                  '" placeholder="' + bdEsc(T('cpp.bd.cap.ph')) + '">' +
+                '<div class="field__hint">' + bdEsc(T('cpp.bd.cap.hint')) + '</div>'
+              /* auto：把算出來的份數直接寫出來。這一格不是輸入框——它是結果，
+                 讓創作者看得到「池子除下來是幾份」，而不是自己去猜一個數字。 */
+              : '<div class="field__hint mt-8" data-bd-auto-hint>' + bdEsc(bdAutoHintText(b)) + '</div>') +
+          '</div>' +
+        '</div>' +
+
+        '<div class="field">' +
+          '<div class="field__label">' + bdEsc(T('cpp.bd.items')) + '</div>' +
+          '<div class="fc-pick" data-bd-pick>' +
+            '<input class="input" data-bd-search placeholder="' + bdEsc(T('cpp.bd.search')) + '" autocomplete="off">' +
+            '<div class="fc-pick__results" data-bd-results hidden></div>' +
+          '</div>' +
+          (b.items.length ? '<div class="mt-8">' + bdItemsHTML(b) + '</div>' : '') +
+          '<div class="field__hint">' + bdEsc(T('cpp.bd.items.hint')) + '</div>' +
+        '</div>' +
+
+        '<div class="field" style="margin-bottom:0">' +
+          '<div class="field__label">' + bdEsc(T('cpp.bd.perks')) + ' <span class="text-sub">' + bdEsc(T('cpp.bd.perks.sub')) + '</span></div>' +
+          (b.perks.length ? bdPerksHTML(b) : '') +
+          '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add>' + bdEsc(T('cpp.bd.perk.add')) + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderBundles(opts) {
+    const list = document.getElementById('bd-list');
+    if (!list) return;
+
+    /* 重畫會殺掉焦點與游標位置。先記下「哪張卡的哪個欄位、游標在第幾個字」，畫完還原。 */
+    const ae = document.activeElement;
+    let keep = null;
+    if (ae && list.contains(ae)) {
+      const card = ae.closest('[data-bd-card]');
+      if (card) keep = {
+        id: card.dataset.bdCard,
+        sel: ae.dataset.bdF ? '[data-bd-f="' + ae.dataset.bdF + '"]'
+           : ae.hasAttribute('data-bd-search') ? '[data-bd-search]'
+           : ae.dataset.bdPerk != null ? '[data-bd-perk="' + ae.dataset.bdPerk + '"]' : null,
+        start: ae.selectionStart, end: ae.selectionEnd,
+      };
+    }
+
+    list.innerHTML = BUNDLES.map(bdCardHTML).join('');
+    if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(list);
+
+    if (keep && keep.sel && !(opts && opts.blur)) {
+      const el = list.querySelector('[data-bd-card="' + keep.id + '"] ' + keep.sel);
+      if (el) {
+        el.focus();
+        try { el.setSelectionRange(keep.start, keep.end); } catch (_) { /* number inputs 不支援 */ }
+      }
+    }
+    renderBundleOverview();
+  }
+
+  /* ── 右軌：名額分帳與目標覆蓋率 ─────────────────────────────────────── */
+  function renderBundleOverview() {
+    if (!document.getElementById('bd-overview')) return;
+    const set = (id, s) => { const el = document.getElementById(id); if (el) el.textContent = s; };
+    const goal = bdNum(document.getElementById('fd-goal') && document.getElementById('fd-goal').value);
+    const offered = bdNum(document.getElementById('fd-slots') && document.getElementById('fd-slots').value);
+
+    const valid = BUNDLES.filter(bdValid);
+    const prices = valid.map(b => bdNum(b.price)).filter(Number.isFinite);
+
+    set('bd-ov-goal', Number.isFinite(goal) ? money(goal) : DASH);
+    set('bd-ov-count', String(BUNDLES.length));
+    set('bd-ov-range', prices.length
+      ? (Math.min(...prices) === Math.max(...prices)
+          ? money(Math.min(...prices))
+          : money(Math.min(...prices)) + ' – ' + money(Math.max(...prices)))
+      : DASH);
+    set('bd-ov-slots', Number.isFinite(offered) && offered > 0 ? Math.round(offered).toLocaleString('en-US') : DASH);
+
+    /* 承諾出去的名額：Σ(每份含的名額 × 這張套組最多賣幾份)。
+       任何一張「含名額但無上限」的套組會讓總量無限——那正是要擋的狀態。 */
+    let committed = 0, unbounded = false;
+    valid.forEach(b => { const c = bdCommittedSlots(b); if (c === Infinity) unbounded = true; else committed += c; });
+    set('bd-ov-committed', unbounded ? T('cpp.bd.ov.unbounded') : committed.toLocaleString('en-US'));
+
+    const unalloc = Number.isFinite(offered) ? offered - committed : NaN;
+    /* 真正的減號 U+2212，與 funding 右軌的 −$1,600 同字形；hyphen 在 tabular 數字
+       裡會比數字窄一截，一整欄對齊會歪。 */
+    set('bd-ov-unalloc', unbounded ? DASH
+      : Number.isFinite(unalloc)
+        ? (unalloc < 0 ? '−' + Math.abs(unalloc).toLocaleString('en-US') : unalloc.toLocaleString('en-US'))
+        : DASH);
+
+    /* 賣光能募到多少：無上限的套組不能計入天花板，否則是編造數字。 */
+    let ceiling = 0, ceilingUnbounded = false;
+    valid.forEach(b => {
+      const u = bdMaxUnits(b), p = bdNum(b.price);
+      if (!Number.isFinite(p)) return;
+      if (u === Infinity) ceilingUnbounded = true; else ceiling += u * p;
+    });
+    set('bd-ov-raise', ceilingUnbounded ? T('cpp.bd.ov.uncapped') : (ceiling > 0 ? money(ceiling) : DASH));
+
+    const badge = document.getElementById('bd-ov-cover');
+    const note = document.getElementById('bd-ov-note');
+    if (badge) {
+      badge.classList.remove('badge--success', 'badge--warning', 'badge--error');
+      if (unbounded || (Number.isFinite(unalloc) && unalloc < 0)) {
+        badge.textContent = T('cpp.bd.ov.over');
+        badge.classList.add('badge--error');
+        if (note) note.textContent = T('cpp.bd.ov.note.over');
+      } else if (ceilingUnbounded) {
+        badge.textContent = T('cpp.bd.ov.uncapped');
+        badge.classList.add('badge--warning');
+        if (note) note.textContent = T('cpp.bd.ov.note.uncapped');
+      } else if (Number.isFinite(goal) && goal > 0 && ceiling > 0) {
+        const pct = Math.round(ceiling / goal * 100);
+        badge.textContent = pct + '%';
+        badge.classList.add(pct >= 100 ? 'badge--success' : 'badge--warning');
+        if (note) note.textContent = pct >= 100 ? T('cpp.bd.ov.note.ok') : T('cpp.bd.ov.note.short');
+      } else {
+        badge.textContent = DASH;
+        if (note) note.textContent = T('cpp.bd.ov.note');
+      }
+    }
+
+    /* 教練提示：三個套組是建議，不是規則——平台沒有立場因為創作者只想開一個
+       $50 方案就不讓他繼續。真正擋關的只有「一個有效套組都沒有」。 */
+    const coach = document.getElementById('bd-coach');
+    if (coach) {
+      const n = valid.length;
+      coach.textContent = n === 0 ? T('cpp.bd.coach.none')
+        : n < 3 ? T('cpp.bd.coach.few').replace('{n}', String(3 - n))
+        : T('cpp.bd.coach.ok');
+    }
+
+    /* 停用 Continue 而不是讓人按下去再彈 alert：按鈕的狀態就是答案，
+       旁邊的教練行已經寫著為什麼。 */
+    const next = document.querySelector('[data-action=next]');
+    if (next) next.disabled = valid.length === 0;
+  }
+
+  /* auto 模式下，那行推導出來的份數會隨著名額每打一個字就變，所以「要不要重畫」
+     不能再看舊的 disabled 旗標（已經沒有了），改成比對畫面上現在寫的那句話跟
+     重算後的那句話是否一致。用 DOM 當「之前」的證據，不另外維護影子狀態。
+     limited 模式與結構無關（cap 欄位是否存在只跟 avail 有關），直接回 false。 */
+  function bdAutoHintText(b) {
+    const s = bdNum(b.slots);
+    const hasSlots = Number.isFinite(s) && s > 0;
+    const poolN = bdPool();
+    const u = bdAutoUnits(b);
+    if (!hasSlots || u === Infinity) return T('cpp.bd.avail.auto.noslots');
+    if (!Number.isFinite(poolN)) return T('cpp.bd.avail.auto.nopool');
+    return T('cpp.bd.avail.auto.hint')
+      .replace('{n}', u.toLocaleString('en-US'))
+      .replace('{pool}', poolN.toLocaleString('en-US'));
+  }
+  function bdSlotsCrossedZero(card, b) {
+    if (b.avail !== 'auto') return false;
+    const shown = card.querySelector('[data-bd-auto-hint]');
+    return !shown || shown.textContent !== bdAutoHintText(b);
+  }
+
+  /* auto 推導吃的是「全域」剩餘名額，所以任何一張卡改了 slots／cap／模式，
+     其他每一張 auto 卡的數字都會過期（B 鎖走 50 → A 從 10 份掉到 5 份）。
+     就地改文字、不整塊重畫——重畫會把游標從正在打字的欄位踢掉。 */
+  function bdRefreshAutoHints() {
+    document.querySelectorAll('[data-bd-card]').forEach(card => {
+      const b = bdGet(card.dataset.bdCard);
+      const el = card.querySelector('[data-bd-auto-hint]');
+      if (b && el) el.textContent = bdAutoHintText(b);
+    });
+  }
+
+  /* 不重畫的就地同步：摘要列與收合狀態下看得到的東西。 */
+  function bdSyncCard(card, b) {
+    const priceN = bdNum(b.price);
+    const nameEl = card.querySelector('.fc-sum__name');
+    const idx = nameEl.querySelector('.fc-bundle__index');
+    nameEl.textContent = b.name || T('cpp.bd.untitled');
+    if (idx) nameEl.insertBefore(idx, nameEl.firstChild);
+    card.querySelector('.fc-sum__meta').textContent = bdSummaryMeta(b);
+    card.querySelector('.fc-sum__price').textContent =
+      Number.isFinite(priceN) && priceN > 0 ? '$' + priceN.toLocaleString('en-US') : '—';
+    card.classList.toggle('fc-bundle--invalid', !bdValid(b));
+  }
+
+  /* ── 事件（全部委派到 #bd-list，卡片是重畫出來的，直接綁會掉） ──────────── */
+  (function bindBundles() {
+    const list = document.getElementById('bd-list');
+    if (!list) return;
+
+    list.addEventListener('input', e => {
+      const card = e.target.closest('[data-bd-card]');
+      if (!card) return;
+      const b = bdGet(card.dataset.bdCard);
+      if (!b) return;
+
+      if (e.target.dataset.bdF) {
+        const f = e.target.dataset.bdF;
+        const wasAvail = b.avail;
+        b[f] = e.target.value;
+        /* 2026-07-28（使用者裁示）：填了名額不再自動切 Limited。份數由池子算出來，
+           auto 就是預設；Limited 只有創作者自己點下去、想設硬上限時才進去。 */
+
+        /* 只有「卡片結構會變」時才整塊重畫——也就是名額跨越 0（切換 Limited 強制、
+           顯示/隱藏強制說明）的那一刻。打字本身不重畫：每個字元重建一次 DOM 又把
+           游標還原回去，是在跟自己打架，而且任何持有節點參照的程式都會拿到斷開的節點。 */
+        const structural = (f === 'slots') && (b.avail !== wasAvail || bdSlotsCrossedZero(card, b));
+        if (structural) { renderBundles(); return; }
+
+        bdSyncCard(card, b);
+        bdRefreshAutoHints();   /* 這張卡的 slots/cap 會改變別張 auto 卡的推導 */
+        renderBundleOverview();
+        return;
+      }
+      if (e.target.dataset.bdPerk != null) {
+        b.perks[Number(e.target.dataset.bdPerk)] = e.target.value;
+        renderBundleOverview();   /* perks 不影響卡片結構，不必重畫 */
+        return;
+      }
+      if (e.target.hasAttribute('data-bd-search')) {
+        bdRenderResults(card, b, e.target.value);
+      }
+    });
+
+    /* 搜尋框失焦時收起結果；用 mousedown 之前的 blur 會吃掉點擊，所以延遲一拍。 */
+    list.addEventListener('focusout', e => {
+      if (!e.target.hasAttribute || !e.target.hasAttribute('data-bd-search')) return;
+      const pick = e.target.closest('[data-bd-pick]');
+      setTimeout(() => { if (pick && !pick.contains(document.activeElement)) {
+        const r = pick.querySelector('[data-bd-results]'); if (r) r.hidden = true;
+      } }, 120);
+    });
+
+    list.addEventListener('click', e => {
+      const card = e.target.closest('[data-bd-card]');
+      if (!card) return;
+      const b = bdGet(card.dataset.bdCard);
+      if (!b) return;
+
+      const avail = e.target.closest('[data-bd-avail]');
+      if (avail) {
+        if (avail.disabled) return;
+        b.avail = avail.dataset.bdAvail;
+        renderBundles({ blur: true });
+        return;
+      }
+      if (e.target.closest('[data-bd-toggle]')) {
+        e.preventDefault(); b.collapsed = !b.collapsed; renderBundles({ blur: true }); return;
+      }
+      if (e.target.closest('[data-bd-expand]') && b.collapsed) {
+        b.collapsed = false; renderBundles({ blur: true }); return;
+      }
+      if (e.target.closest('[data-bd-remove]')) {
+        e.preventDefault();
+        BUNDLES = BUNDLES.filter(x => x.id !== b.id);
+        renderBundles({ blur: true });
+        return;
+      }
+      const ref = e.target.closest('[data-bd-item-remove]');
+      if (ref) {
+        const row = ref.closest('[data-bd-ref]');
+        b.items = b.items.filter(it => it.id !== row.dataset.bdRef);
+        renderBundles({ blur: true });
+        return;
+      }
+      if (e.target.closest('[data-bd-perk-add]')) {
+        b.perks.push(''); renderBundles({ blur: true });
+        const el = list.querySelector('[data-bd-card="' + b.id + '"] [data-bd-perk="' + (b.perks.length - 1) + '"]');
+        if (el) el.focus();
+        return;
+      }
+      const prm = e.target.closest('[data-bd-perk-remove]');
+      if (prm) {
+        b.perks.splice(Number(prm.dataset.bdPerkRemove), 1); renderBundles({ blur: true }); return;
+      }
+      const opt = e.target.closest('[data-bd-opt]');
+      if (opt) {
+        const id = opt.dataset.bdOpt;
+        if (id === '__new') {
+          /* 目錄裡沒有＝還沒壓出來的黑膠。就地開一個草稿商品，仍然是一筆真的目錄列，
+             只是狀態是草稿——不是退回自由文字。 */
+          const q = card.querySelector('[data-bd-search]').value.trim();
+          if (q) b.items.push({ id: 'draft:' + q.toLowerCase().replace(/\s+/g, '-'), name: q, img: '', meta: T('cpp.bd.item.draft') });
+        } else if (!b.items.some(it => it.id === id)) {
+          const p = catalogue().find(x => x.id === id);
+          if (p) b.items.push({ id: p.id, name: p.name, img: p.img, meta: p.price ? '$' + p.price : p.meta });
+        }
+        renderBundles({ blur: true });
+        return;
+      }
+    });
+
+    document.getElementById('bd-add').addEventListener('click', () => {
+      BUNDLES.forEach(b => { if (bdValid(b)) b.collapsed = true; });
+      BUNDLES.push(newBundle());
+      renderBundles({ blur: true });
+      const cards = list.querySelectorAll('[data-bd-card]');
+      const last = cards[cards.length - 1];
+      if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); const i = last.querySelector('[data-bd-f="name"]'); if (i) i.focus(); }
+    });
+  })();
+
+  function bdRenderResults(card, b, q) {
+    const box = card.querySelector('[data-bd-results]');
+    if (!box) return;
+    const term = String(q || '').trim().toLowerCase();
+    if (!term) { box.hidden = true; box.innerHTML = ''; return; }
+    const taken = new Set(b.items.map(i => i.id));
+    const hits = catalogue().filter(p => !taken.has(p.id) && p.name.toLowerCase().includes(term)).slice(0, 6);
+    box.innerHTML =
+      hits.map(p =>
+        '<button type="button" class="fc-pick__opt" data-bd-opt="' + bdEsc(p.id) + '">' +
+          (p.img ? '<img src="' + bdEsc(p.img) + '" alt="" loading="lazy">' : '<span></span>') +
+          '<span>' + bdEsc(p.name) + '</span>' +
+          '<span class="fc-pick__opt-price">' + (p.price ? '$' + bdEsc(p.price) : '') + '</span>' +
+        '</button>').join('') +
+      (hits.length ? '' : '<div class="fc-pick__empty">' + bdEsc(T('cpp.bd.search.none')) + '</div>') +
+      '<button type="button" class="fc-pick__opt" data-bd-opt="__new"><span></span>' +
+        '<span>' + bdEsc(T('cpp.bd.search.new').replace('{q}', q)) + '</span><span></span></button>';
+    box.hidden = false;
+  }
+
+  /* 第一次進到這步就給一張空卡：「新增第一張」永遠是使用者要做的事。 */
+  function ensureBundles() {
+    if (!BUNDLES.length) BUNDLES.push(newBundle());
+    renderBundles({ blur: true });
+  }
+
+  /* 右軌吃 funding 步驟的值，所以那邊一改就要重算。 */
+  ['fd-goal', 'fd-slots'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderBundleOverview);
+  });
+  /* JS 生成的節點在語言切換後要重畫（UI-CHANGES L105 記錄過同一個 bug：切 en 後
+     票種列仍留著中文）。這裡不另外掛 i18n:applied——頁尾已經有
+     `document.addEventListener('i18n:applied', render)`，而 render() 在這一步會
+     再進 ensureBundles() → renderBundles()。多掛一個只會讓同一件事做兩次。 */
+
+  // Nav
+  document.querySelector('[data-action=next]').addEventListener('click', () => {
+    const f = flow();
+    if (idx < f.length - 1) { idx++; render(); }
+    else { alert(T('cpp.publish-alert')); }
+  });
+  document.querySelector('[data-action=back]').addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
+  /* footer 的「Save draft」已移除（與 header 的 Save as draft 重複）；存草稿走 header data-wizard-savedraft（wizard-chrome.js）*/
+  /* 返回離開確認改由共用 partials/wizard-chrome.js（[data-wizard-back] + 彈窗）處理；舊 confirm() 已移除（2026-06-23）。 */
+  document.querySelectorAll('[data-goto-step]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    const i = flow().indexOf(a.dataset.gotoStep);
+    if (i >= 0) { idx = i; render(); }
+  }));
+
+  document.addEventListener('i18n:applied', render);
+  render();
+  syncTypeUI(type);
+  showGate();   // 流程從項目類型閘門開始（D150）
+})();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>

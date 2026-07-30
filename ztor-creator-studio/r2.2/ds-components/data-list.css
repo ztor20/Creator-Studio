@@ -1,0 +1,118 @@
+/* ============================================================
+   Data list — row-divider list (no card per row).
+
+   Used in dashboard recent earnings, earnings transactions,
+   payout history, tax documents, products list, in-progress
+   projects list, etc.
+
+   Anatomy:
+     .data-list
+       .data-list__row
+         .data-list__row-main
+           .data-list__icon          (52 px rounded-square chip; 2026-07-20 unified with the
+                                       product-list/project-list thumbnail family, no longer
+                                       matches .alert--card icon)
+             <i data-lucide="…" class="ztor-icon">  (20 px outline lucide icon)
+             .data-list__icon--neutral|success|error|info (monochrome — variants kept for semantics only)
+           .data-list__body
+             .data-list__title       (truncated, font-ui 13.5/500)
+             .data-list__meta        (12px muted-foreground)
+         .data-list__amount          (right-aligned, font-display 15px)
+           .data-list__amount--neg   (status-error red)
+
+   Icon variants are monochrome (semantic class kept for hook
+   purposes but visual tone is neutral). Amount uses semantic color.
+   ============================================================ */
+.data-list {
+  display: flex;
+  flex-direction: column;
+}
+.data-list__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-12) 0;
+  border-bottom: 1px solid var(--border);
+}
+.data-list__row:last-child { border-bottom: 0; }
+/* [hidden] must win over the display:grid above, or filtered-out rows
+   (e.g. list/history filters) stay visible (promoted from pickup-detail.html
+   page-local override, 2026-07-11). */
+.data-list__row[hidden] { display: none; }
+/* --child：小計列展開後的明細子列（縮排、無 icon、字級降一階、無下框線與上一列連成一組）。
+   2026-07-25 取代各頁 inline `padding-left:12px` 的散裝寫法；用於收支小計展開（專案詳情 ›
+   我的收益 › 計畫項目收益）。父列自己帶展開鈕，子列以 [hidden] 收合。 */
+.data-list__row--child {
+  padding-block: var(--sp-8);
+  /* 縮排＝對齊父列 icon＋gap 後的文字起點；父列用 --sm 圖示時，容器覆寫本變數（見 .pd-deep）。 */
+  padding-inline-start: var(--data-list-child-indent, 64px);   /* 預設對齊 52px icon ＋ 12px gap */
+  border-bottom: 0;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.data-list__row--child + .data-list__row:not(.data-list__row--child) { border-top: 1px solid var(--border); }
+.data-list__row-main {
+  display: flex; align-items: center; gap: var(--sp-12); min-width: 0;
+}
+/* 2026-07-20 使用者裁示：不再與 alert--card 圖示同族，改完全併入「清單列縮圖」家族
+   （.product-list__thumb；.project-list__icon 曾同族，2026-07-24 project-list 改真圖縮圖後退出），對齊 .product-list__image--placeholder
+   的真實呈現值——52×52／radius var(--radius)／--muted 底／1px --border-soft／icon 色
+   --muted-foreground。圓角改用共用 token（原寫死 10px，與另三者的 6px 不同、肉眼可辨），
+   達到真正逐像素一致，非僅色值相同。（前一版曾改成 --card／--border／40px，維持獨立家族；
+   使用者這次明確要求「我的 IP」也要跟電子商店長得一樣，故取消區隔，四者現在是同一組數值。） */
+.data-list__icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius);
+  background: var(--muted);
+  border: 1px solid var(--border-soft);
+  color: var(--muted-foreground);
+  display: inline-grid; place-items: center;
+  font-size: var(--fs-14); flex: none;
+}
+.data-list__icon .ztor-icon { width: 20px; height: 20px; }
+/* --sm：只是「一個圖示」而非清單縮圖的場合用小晶片（32px，與同列的 .btn--icon.btn--sm 等高）。
+   2026-07-25 新增：收支小計列的 ＋／−／＝ 記號——那裡的圖示是運算符號、不是內容縮圖，
+   52px 縮圖尺寸會讓框看起來過大。搭配容器覆寫 --data-list-child-indent 讓子列縮排跟著對齊。 */
+.data-list__icon--sm { width: 32px; height: 32px; }
+.data-list__icon--sm .ztor-icon { width: 16px; height: 16px; }
+/* Monochrome icon variants — colored fills retired per user feedback (2026-05-25);
+   size unified with alert--card icon (2026-05-27). Semantic variants kept as
+   class names for amount/status cues elsewhere, but the chip itself is neutral. */
+.data-list__icon--success,
+.data-list__icon--error,
+.data-list__icon--info,
+.data-list__icon--neutral {
+  background: var(--muted);
+  color: var(--foreground-muted);
+}
+.data-list__body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.data-list__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.data-list__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
+.data-list__amount {
+  /* 2026-07-28：由 --font-display（Alumni Sans）改 --font-numeric（Satoshi）。
+     金額是一整欄要上下對齊掃讀的數字，不是標題——窄長展示字面＋非等寬數字會讓
+     小數點對不齊。tabular-nums 鎖等寬數字，letter-spacing 歸零（負字距是為
+     Alumni 的大字光學收緊做的，等寬數字不需要，反而破壞對齊）。 */
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-15);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0;
+  text-align: right;
+}
+.data-list__amount--neg { color: var(--destructive); }
+/* End cap — right column stacking amount over a status pill (Dashboard Recent earnings F3). */
+.data-list__end { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+/* Row entry — status pill + source-aware deep-link chevron in one right cell (Dashboard F6). */
+.data-list__end--row { flex-direction: row; align-items: center; gap: var(--sp-12); }
+.data-list__go { display: inline-grid; place-items: center; color: var(--muted-foreground); flex: none; text-decoration: none; }
+.data-list__go .ztor-icon { width: 18px; height: 18px; }
+.data-list__go:hover { color: var(--foreground); }

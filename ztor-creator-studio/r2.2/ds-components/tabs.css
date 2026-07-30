@@ -1,0 +1,272 @@
+/* ============================================================
+   Tabs — horizontal tab bar with hairline underline + orange
+   active accent · paired with .tab-panel switching.
+
+   Promoted from project pattern on 2026-05-26 (was shared.css).
+   Used on Earnings page (Overview / Transactions / Payouts / Tax),
+   E-Shop (Products / Bundles / Auctions), Projects (status filter
+   tabs), Fans CRM (Leaderboard / Hall of fame).
+
+   Anatomy:
+     .tabs (role="tablist")
+       .tabs__item              (button, default style)
+         <text>
+         .tabs__item-count      (optional pill badge with number)
+       .tabs__item--active      (foreground color + orange underline)
+     .tab-panel                 (hidden by default)
+       .tab-panel--active       (display: block)
+
+   The tab → panel mapping is wired by inline JS on the consuming
+   page (see earnings.html for canonical example).
+   ============================================================ */
+.tabs {
+  display: flex;
+  gap: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-20);
+}
+.tabs__item {
+  padding: var(--sp-10) var(--sp-14);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs__item:hover { color: var(--foreground); }
+.tabs__item--active {
+  color: var(--foreground);
+  border-bottom-color: var(--primary);
+}
+.tabs__item-count {
+  margin-left: var(--sp-6);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+/* Opt-in plain count: keep the label/count rhythm without a separate pill.
+   計數色用最暗文字 token --muted-foreground（原 --foreground-muted 偏亮），讓計數更退後、
+   不與標籤爭焦（2026-07-24 使用者反饋「顏色再深一點」）。 */
+.tabs--count-plain .tabs__item-count {
+  padding: 0;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+/* ── .tabs--brand — opt-in pill variant with a soft brand (orange) active
+     fill instead of the underline. Used as a primary type switch where a
+     little brand colour is wanted without a saturated block (E-Shop F3
+     Products / Bundles / Auctions). Does NOT change the default .tabs, so
+     other pages keep the underline style. (2026-06-15) ── */
+.tabs--brand {
+  gap: var(--sp-8);
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+.tabs--brand .tabs__item {
+  padding: 9px var(--sp-16);
+  border-bottom: 0;
+  margin-bottom: 0;
+  border-radius: var(--radius-pill);
+  color: var(--foreground-muted);
+  transition:
+    background-color var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+.tabs--brand .tabs__item:hover {
+  background: var(--accent);   /* Q9 2026-07-13：未選項 hover 統一用 accent */
+  color: var(--foreground);
+}
+.tabs--brand .tabs__item--active {
+  background: color-mix(in srgb, var(--primary) 18%, var(--card));
+  color: var(--foreground);
+  border-bottom: 0;
+}
+.tabs--brand .tabs__item--active:hover {
+  background: color-mix(in srgb, var(--primary) 24%, var(--card));
+}
+
+/* ── .tabs--underline-short — variant with the base gray divider off and the
+     active underline shortened + centered (≈ text width, not full item pad)
+     instead of full-width. Separator is left to the consuming context (e.g.
+     a downward toolbar shadow) rather than the base `.tabs` gray border.
+     Promoted from an E-Shop page override (Figma node 671-2337/671-2295,
+     E-Shop F3 type switch). (2026-07-10) ── */
+.tabs--underline-short {
+  border-bottom-color: transparent;
+}
+.tabs--underline-short .tabs__item {
+  position: relative;
+  /* 讓分頁被拉高時（例如收進較高的工具列卡），文字垂直置中、底線仍靠分頁底緣（::after bottom:0）。
+     2026-07-22：平台費率頁工具列卡需要「文字置中＋底線貼卡底邊」。 */
+  display: inline-flex;
+  align-items: center;
+}
+.tabs--underline-short .tabs__item--active {
+  border-bottom-color: transparent;
+}
+.tabs--underline-short .tabs__item--active::after {
+  content: "";
+  position: absolute;
+  left: var(--sp-12);
+  right: var(--sp-12);
+  bottom: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* ── .tabs--underline-label — opt-in：active 底線只和「第一個子元素（標籤 span）」等寬、
+     不含尾隨的計數徽章（.tabs__item-count）。用於標籤後帶計數的分頁（如 projects 狀態列）。
+     搭 .tabs--underline-short 使用；底線改掛在標籤 span 上（撐成整列高、文字置中，::after
+     bottom:0 才落在分頁底緣）。**只適用「標籤包在子元素裡」的分頁**——標籤為 <button> 直接
+     文字的分頁（product-detail／admin-platform-fees）不加此 class，維持整條 item 底線。
+     2026-07-24 使用者反饋：projects 狀態列底線不要延伸到計數數字下方。 ── */
+.tabs--underline-label.tabs--underline-short .tabs__item--active::after {
+  content: none;
+}
+.tabs--underline-label .tabs__item > :first-child {
+  position: relative;
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+}
+.tabs--underline-label .tabs__item--active > :first-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* 標籤 span 因 align-self:stretch 撐滿 item 內容框、底緣在 item 底內距（--sp-10）之上；
+     下移 --sp-12 讓底線貼齊 item／卡片底緣（比 --sp-10 多的 2px 補標籤框未完全填滿內容框的
+     算繪誤差），而非浮在標籤正下方（2026-07-24 使用者反饋「底線要貼底邊」）。 */
+  bottom: calc(-1 * var(--sp-12));
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* ── .tabs--card — opt-in variant that puts the tab bar on its own filled
+     card instead of a bare hairline row: same surface treatment as
+     `.form-section--outlined` (fill + resting shadow + top edge highlight,
+     Q18), so the tab bar reads as the first card of the page rather than a
+     divider line. The base gray border-bottom is dropped — separation comes
+     from the card edge. Pair with `.tabs--underline-short` so the orange
+     active marker sits under the label instead of spanning the whole item.
+     Does NOT change the default .tabs; the other 15 consumer pages keep the
+     hairline style. (2026-07-20, Figma node 849-19673)
+     Consumers: product-detail.html, bundle-detail.html, auction-detail.html
+     （後兩者 2026-07-27 改用與商品明細同一套詳情頁殼）── */
+.tabs--card {
+  background: var(--card);
+  border-bottom: 0;
+  border-radius: var(--radius-xl);
+  /* 下內距歸零（2026-07-21 使用者裁示）：橘色底線畫在 .tabs__item 的 bottom:0，
+     卡片若留下內距，底線就會浮在卡面中間而非貼著卡片下緣。 */
+  padding: var(--sp-6) var(--sp-12) 0;
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  margin-bottom: var(--sp-16);
+}
+/* base 的 -1px 是用來把 item 壓在 .tabs 的 hairline 上；card 變體沒有那條 hairline，
+   留著只會讓底線多凸出卡片 1px。 */
+.tabs--card .tabs__item { margin-bottom: 0; }
+
+/* ── .live-dot — ambient activity dot for the one state that means "happening
+     right now and earning" (Projects Live / 已上線). Opt-in per item.
+     (2026-07-27, L directive "a breathing dot")
+
+     Rides `.tabs__item--live` OR `.filter-tabs__item--live`, so it follows the
+     MEANING rather than a position: after the 2026-07-27 restructure the Live
+     control is a state pill on row 2, not a tab on row 1.
+
+     Colour: --primary (orange), NOT green. The same projects wear
+     .badge--orange in the Status column, and green is already spoken for by
+     Published (.badge--success). One concept, one colour — a green dot here
+     would be the Published colour pointing at Live rows.
+
+     Motion: ambient, not a UI transition, so it sits outside the 150–300ms
+     feedback budget — 2.6s at low amplitude reads as breathing rather than
+     blinking. Only transform+opacity animate (GPU; no layout, no paint of the
+     tab itself). The solid core never moves so the dot stays legible; only the
+     halo breathes.
+
+     Why looping is allowed here at all: the house rule is that persistent
+     chrome does not animate (see the side-rail's zero-entrance-animation
+     spec), and Vercel's Status Dot animates only in TRANSITIONAL states and
+     goes static at terminal ones. Live is where money is actively moving — that
+     is what earns the motion. Every settled state (Draft/Scheduled/Succeeded/
+     Cancelled) stays still.
+
+     Three guards keep it honest:
+       1. data-live="0"  → the dot is removed entirely. It can never imply
+          activity that does not exist.
+       2. prefers-reduced-motion → static ring, no movement.
+       3. html[data-hidden] (set on visibilitychange) → paused off-screen, so
+          a backgrounded tab costs nothing.
+     The dot is aria-hidden: the control already says "Live" + a count, so
+     liveness is never carried by colour alone (WCAG 1.4.1). ── */
+.tabs__item--live .live-dot,
+.filter-tabs__item--live .live-dot {
+  /* Renders before the label. DOM order stays [label][count][dot] so
+     .tabs--underline-label's `> :first-child` is still the label span and the
+     active underline keeps measuring the label only. */
+  order: -1;
+  position: relative;
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+/* .tabs__item has no gap, so the dot buys its own spacing; .filter-tabs__item
+   already sets gap:--sp-6 between children, so adding a margin there would
+   double-space it. */
+.tabs__item--live .live-dot { margin-right: var(--sp-8); }
+.tabs__item--live .live-dot::after,
+.filter-tabs__item--live .live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: tabs-live-breathe 2600ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes tabs-live-breathe {
+  0%, 100% { transform: scale(1);   opacity: 0.5; }
+  50%      { transform: scale(2.2); opacity: 0;   }
+}
+/* Nothing live ⇒ no indicator. */
+.tabs__item--live[data-live="0"] .live-dot,
+.filter-tabs__item--live[data-live="0"] .live-dot { display: none; }
+/* Off-screen ⇒ stop burning frames (paired with the visibilitychange hook). */
+html[data-hidden] .tabs__item--live .live-dot::after,
+html[data-hidden] .filter-tabs__item--live .live-dot::after { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .tabs__item--live .live-dot::after,
+  .filter-tabs__item--live .live-dot::after {
+    animation: none;
+    opacity: 0.32;
+    transform: scale(1.8);
+  }
+}
+
+/* When .tabs__item is rendered as <button> (programmatic tabs),
+   strip default button chrome. */
+button.tabs__item {
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  outline: none;
+}
+button.tabs__item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Panel — switched in sync with .tabs__item--active by inline JS */
+.tab-panel { display: none; }
+.tab-panel--active { display: block; }

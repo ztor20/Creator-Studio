@@ -1,0 +1,68 @@
+/* ============================================================
+   Picker · search box + scrollable pick-list container
+   spec 5.1.5.4 — Create bundle「Items」(也供 IP rental linker 等
+   「從既有清單挑選」情境復用)
+   ------------------------------------------------------------
+   anatomy
+     .picker                 — bordered container
+       .picker__search       — top row: search input + action
+         .picker__search-input — borderless flex input
+         .picker__new          — right action（＋ New item，accent）
+       .picker__list         — scrollable area（內含 .data-list rows）
+   rows reuse .data-list / .data-list__row（icon · body · end price）
+   ============================================================ */
+
+.picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--card);
+  /* 2026-07-28（使用者裁示「每張卡都要有細微陰影」）：本元件原本只有底色＋圓角、
+     沒有任何 box-shadow，在深色畫布上與背景幾乎貼平、讀不出「這是一張浮起的卡」。
+     深色版的 --shadow-card 帶 rgba(253,253,253,0.08) 的亮色 rim——深底上真正看得見的
+     是那圈 rim 而不是黑色陰影，這也是為什麼不能只加純黑 drop。 */
+  box-shadow: var(--shadow-float);
+}
+
+.picker__search {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+}
+.picker__search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  /* 2026-07-21 Q25：原 padding 11px 撐出 41.5px，改吃 token 固定 36 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-14);
+  font: inherit;
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  outline: none;
+}
+.picker__search-input::placeholder { color: var(--muted-foreground); }
+
+.picker__new {
+  appearance: none;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  padding: 0 var(--sp-16);
+  font: inherit;
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  color: var(--primary-foreground, var(--foreground));
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.picker__new:hover { background: var(--accent); }
+
+.picker__list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+/* 列內 data-list 取消外框、靠 picker 容器收邊 */
+.picker__list .data-list__row { padding-left: var(--sp-14); padding-right: var(--sp-14); }

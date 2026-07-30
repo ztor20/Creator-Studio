@@ -1,0 +1,370 @@
+/* List toolbar · 清單頁頭的兩層控制骨架
+   ────────────────────────────────────────────────────────────────────────
+   2026-07-23 由 e-shop 的 `.eshop-list-topbar` / `.eshop-status-row` promote 而來（第一次被
+   第二頁重用即 promote）。原始版型對齊 Figma node 845:11081／845:11082／671-2309。
+
+   兩層結構（由上而下）：
+     .list-toolbar        殼層工作列——實色 --surface-shell、四角 16px、固定 58px 高。
+       └ .tabs              主軸 tab 撐滿容器高度，底線自然貼齊容器下緣
+       └ .list-toolbar__actions   絕對定位靠右、垂直置中的動作群（搜尋／切換／主 CTA）
+     .list-status-row     次層篩選列——透明、行內流，放 pill 篩選或 select
+
+   為什麼工作列要固定高度＋align-items:stretch：tab 的 active 橘色底線貼在 .tabs__item 下緣，
+   只有讓 tabs 撐滿整個 58px，底線才會落在容器最底部而不是浮在中間。
+
+   消費者：e-shop（類型 tab ＋ 商店設定／預覽／建立分割按鈕）、projects（狀態 tab ＋ 搜尋／
+   檢視切換／建立專案）。sticky 貼頂屬各頁捲動容器的版面決定，留在頁面 <style>，不進本檔。 */
+
+.list-toolbar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: stretch;
+  height: 58px;
+  margin-bottom: var(--sp-8);
+  /* 左右不對稱是刻意的（2026-07-26 使用者：建立鈕旁邊太擠）：左邊 8px 之外，第一個 tab
+     自己還有 14px 內距，視覺留白其實是 22px；右邊的動作群沒有內距，8px 就會貼著邊。
+     右側補到 20px 讓兩邊視覺對齊。 */
+  padding-inline: var(--sp-8) var(--sp-20);
+  background: var(--surface-shell);
+  border-radius: var(--radius-xl);   /* 16px */
+}
+/* 淺色主題：--surface-shell 與頁面底色差在白天不夠讀，改白底＋卡片陰影撐出層次
+   （比照低庫存通知條，2026-07-21 使用者反饋）。深色維持色差、不加陰影。 */
+html[data-theme="light"] .list-toolbar {
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+/* tabs 照內容寬（2026-07-29 由 1 1 auto 改 0 1 auto，L 裁示「篩選鈕移到 tab 旁邊」）：
+   grow 會讓 tabs 吃掉整條，緊接在它後面的篩選鈕就被推到動作群旁邊——那正是要離開的位置。
+   收成內容寬之後，鈕貼在最後一個 tab 右側，剩餘空白落在鈕與動作群之間，
+   動作群仍由自己的 margin-left:auto 靠右。
+   min-width:0 保留，讓它在窄容器下真的能縮（flex 子項預設 min-width:auto，
+   不設 0 會撐破容器去撞動作群）；縮到裝不下時橫向捲，捲軸隱藏——tab 數量各頁不同
+   （e-shop 3 個、projects 6 個），不能假設塞得下。 */
+.list-toolbar > .tabs {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-bottom: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.list-toolbar > .tabs::-webkit-scrollbar { display: none; }
+.list-toolbar .tabs__item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* 右側動作群：靠 margin-left:auto 推到底，不用絕對定位——絕對定位時 tabs 仍佔滿整條，
+   tab 一多就會捲到動作群底下疊字（projects 6 個 tab 實測撞到）。 */
+.list-toolbar__actions {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+/* 篩選鈕（2026-07-29 L 裁示：移到 tab 旁邊，全站清單頁一致）。
+   位置在 tabs 之後、動作群之前——tab 選「看哪一類」、篩選鈕選「其中哪些」，
+   兩者是同一件事的兩個刻度，該相鄰；右側動作群留給工具與主 CTA。
+   靜止態仍 display:none（次層篩選列自己就攤在下面，兩個入口指同一組篩選是重複）；
+   貼頂態才出現，見下方 Snap dock 段。
+   帶一顆計數徽章——收起來的東西如果正在生效卻看不出來，那不是收納是隱瞞。 */
+.list-toolbar__filter {
+  display: none;
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  margin-left: var(--sp-12);
+}
+.list-toolbar__filter-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+.list-toolbar__filter-count[hidden] { display: none; }
+
+/* 次層篩選列（pill 篩選或 select）。margin-bottom 是本列到清單的間距——
+   2026-07-26 使用者指定加大（24→40），六個清單頁（專案／我的 IP／電子商店／訂單／取貨／活動）一致。 */
+.list-status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+  margin-top: var(--sp-16);
+  margin-bottom: var(--sp-40);
+}
+/* 第一個 nav 吸收剩餘寬度，讓右側的 select 留在第一行：pill 多起來時（projects 的
+   狀態列從 4 顆長到 7 顆）原本會整個 nav 換行、把 select 擠到第二行。改由 nav 自己
+   內部 wrap，select 位置不動。min-width:0 讓它真的能縮。2026-07-27。 */
+.list-status-row > nav:first-child {
+  /* basis 0（不是 auto）才會真的縮到內容寬以下——auto 時 flex-shrink 從 641px 的內容
+     寬算起，仍舊寬到把 select 擠掉。nav 自己是 flex-wrap:wrap，縮窄後 pill 內部換行。 */
+  flex: 1 1 0;
+  min-width: 0;
+}
+/* --end：把次層篩選推到右側（projects 的兩個下拉；e-shop 的狀態 pill 仍靠左）。 */
+.list-status-row--end { justify-content: flex-end; }
+
+/* 同一列裡兩組不同性質的篩選之間的分隔（2026-07-29，IP 市場：狀態 pill ｜ 進階條件）。
+   pill 是「選一個分類」，進階是「設一個值」——中間需要一道停頓，否則讀起來像一串
+   長短不一的控制項。1px 直線而不是留白：留白在 wrap 之後就消失了，線不會。 */
+.list-status-row__sep {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 1px;
+  min-height: 20px;
+  background: var(--border);
+}
+/* 具名控制項：標籤與控制項同一行（不是堆疊式 .field）。
+   這一列的節奏是水平的——堆疊標籤會把行高從 pill 的一排撐成兩排，一列裡兩種高度
+   讀起來像兩列。標籤要看得見而不只是 aria-label：單獨一顆「12%」不會告訴任何人
+   它在篩什麼（實測截圖確認），控制項得自己說出它管的是哪件事。 */
+.list-status-row__field {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+/* 窄螢幕：工作列改直向堆疊、取消固定高度，動作群回到流內靠右 */
+@media (max-width: 900px) {
+  .list-toolbar {
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .list-toolbar__actions {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 10px;
+    align-self: stretch;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================
+   Snap dock（2026-07-28 使用者裁示）
+   ------------------------------------------------------------
+   使用者反饋三件事：(a) 我的 IP／IP 市場的工作列根本沒有貼頂；(b) 電子商店有貼頂
+   但「很醜」；(c) 貼頂狀態要重新設計成盡量少佔空間，並用動畫轉場過去。
+
+   為什麼原本只有電子商店會貼頂：sticky 一直被當成「各頁捲動容器的版面決定」寫在
+   頁面 <style>（見本檔開頭），所以只有實作過的那一頁有。這次把它收進元件——貼頂是
+   這個元件的行為，不是某一頁的巧合；收進來之後五個清單頁一次到位、也只有一份可調。
+
+   原本貼頂的樣子（電子商店）：工作列 58px 實色卡 ＋ 16px 間距 ＋ 狀態列 44px 滿版
+   底色，合計約 118px 永久佔住畫面上緣，兩塊各自為政、切換時沒有任何過渡。
+
+   重新設計後的貼頂態（.is-snapped，由 js/sticky-dock.js 掛上）：
+     · 兩排併成「一條」——外層 .list-dock 變 flex 橫排，工作列與狀態列同一行，
+       中間一道 1px 分隔線。高度 58＋16＋44 → 44，省下約 6 成垂直空間。
+     · 一整條變成浮起的 dock：半透明 --surface-shell ＋ backdrop blur（內容從底下
+       捲過去時看得出層次，這裡的毛玻璃是為了「有東西在後面經過」而存在，不是裝飾），
+       圓角、帶偏移與模糊的陰影。
+     · 動畫：高度／內距／圓角／底色／陰影一起過渡，exponential ease-out。
+       reduced-motion 下直接切換、不做過渡。
+   ≤900px 不貼頂（沿用電子商店原本的桌機限定），窄螢幕垂直空間更珍貴，
+   但一行塞不下 tabs＋動作群＋篩選，硬併會比不貼頂更糟。
+   ============================================================ */
+
+.list-dock__sentinel {
+  height: 1px;
+  margin-bottom: -1px;   /* 純量測用的哨兵，不佔版面 */
+  pointer-events: none;
+}
+
+/* ── 貼頂時不要讓捲動位置被「捲動錨定」拉回去（2026-07-28）──────────
+   使用者回報：電子商店往下捲到貼頂那一刻會彈來彈去，除非用力捲否則卡在那裡下不去。
+
+   實測（Playwright，捲到 220 → 240）：
+     220px：未貼頂，bars 高 106，文件高 3521
+     240px：貼頂，  bars 高  71，文件高 3446   ← scrollTop 被改回 165
+   兩排併成一行時整份文件矮了 75px，而瀏覽器的 scroll anchoring 為了讓「畫面上那一列
+   商品看起來不要動」，把 scrollTop 往回拉了剛好 75px。結果是：捲過門檻 → 高度縮 →
+   被拉回門檻上方 → 解除貼頂 → 高度長回來 → 再捲過去……在門檻附近來回震盪。
+   「用力捲」＝一次跨過整個震盪帶，所以只有大力捲才過得去。
+
+   關掉這個捲動容器的錨定即可：高度仍然會變（那正是貼頂要省下的空間），但捲動位置
+   不再被回捲，門檻只會被穿過一次。:has() 把範圍限定在真的有貼頂列的清單頁，
+   其他頁面的錨定行為不動。 */
+.main:has(.list-dock) { overflow-anchor: none; }
+
+/* 分工（2026-07-28 修，完整說明見 js/sticky-dock.js）：
+     .list-dock        ＝ 可黏貼「範圍」。它可以很高、可以往下包住整個清單
+                         （電子商店就是這樣，sticky 才黏得住整段捲動）。
+                         它自己不 sticky，尤其不能在貼頂態變成 flex 容器。
+     .list-dock__bars  ＝ 真正貼頂、真正變成 dock 的那一條。腳本在執行期包出來，
+                         裡面只有 .list-toolbar ＋ .list-status-row。
+   之前兩個角色由同一個 box 兼差，於是 `display:flex` 一下去，被那層包住的三個
+   商品清單分頁也成了 flex item——工作列被壓成 124px、篩選 pill 直排，
+   整個清單擠成一條窄柱（使用者回報的畫面）。角色分開就不會再發生。 */
+@media (min-width: 901px) {
+  /* sticky 掛哪一層，取決於這頁的殼包到哪裡（分類由 js/sticky-dock.js 掛 --tall/--thin）：
+       厚殼（電子商店／活動，殼往下包住整個清單）→ 掛內層那一條，外層只當可黏貼範圍；
+       薄殼（我的 IP／IP 市場／專案，殼只有兩排約 106px 高）→ 掛外層自己，
+       因為 sticky 只能在親層 box 裡移動，掛內層的話捲過那 106px 就脫黏。
+     只有厚殼那頁能用內層——這是上面那次修的前提，薄殼要補這條才會真的黏住。 */
+  .list-dock--tall .list-dock__bars,
+  .list-dock--thin {
+    position: sticky;
+    top: 0;
+    z-index: 20;            /* 低於 app-topbar(50)，高於列 hover 的 z-index:1 */
+  }
+
+  .list-dock__bars {
+    /* --radius-xl（16px）＝靜止態工作列卡的同一個圓角：貼頂後形狀是「同一張卡收窄」，
+       不是換了一個新形狀。（初版寫 --radius-lg，實測只有 8px，讀起來像被裁掉的方條。） */
+    border-radius: var(--radius-xl);
+    transition:
+      background-color 260ms cubic-bezier(.16, 1, .3, 1),
+      box-shadow       260ms cubic-bezier(.16, 1, .3, 1),
+      border-color     260ms cubic-bezier(.16, 1, .3, 1),
+      /* 上圓角在貼頂時收成 0——一起過渡，否則會在轉場中途「啪」地換形狀 */
+      border-radius    260ms cubic-bezier(.16, 1, .3, 1);
+  }
+
+  /* 貼頂態：整條 dock 自己是那張卡，內層兩排都變透明、併成一行。 */
+  .list-dock.is-snapped .list-dock__bars {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-14);
+    /* 一行到底，不換行。試過「塞不下就讓篩選段掉到第二行」，但專案頁實測會回到 106px
+       ——與靜止態同高，等於這個貼頂態一點空間也沒省，那就沒有存在的理由了。
+       控制項多的頁面改由各段自己橫向捲（見下方 .list-status-row 的 overflow-x），
+       並在右緣加一道漸隱提示還有東西。 */
+    flex-wrap: nowrap;
+    padding: var(--sp-6) var(--sp-16);
+    /* 94% 而不是 86%：清單列從底下捲過去時，只差 14% 明度的半透明面板會和列糊在一起，
+       讀不出「這條在前面」。毛玻璃在這裡是為了讓底下的移動看得見一點，不是要看穿。 */
+    background: color-mix(in srgb, var(--surface-shell) 94%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+    /* 上緣切平（2026-07-28 使用者裁示：「拿掉貼頂態的上圓角，讓它看起來是頁首外框的延伸」）。
+       貼頂之後這一條的上緣正好切齊頁面外框的內側——留著 16px 圓角就會在兩個角各露出一小塊
+       底色，讀起來像一張「浮在框裡的卡」；切平之後它是那個外框往下長出來的一段。
+       下緣的圓角留著：下面是會捲動的內容，那一側仍然是這條自己的邊界。 */
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    /* 下緣要有一條實線：捲動的內容正好從這裡通過，沒有邊界就沒有「上面／下面」。 */
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 6px 20px -10px rgb(0 0 0 / 0.5);
+  }
+  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars {
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    box-shadow: 0 6px 20px -12px rgb(0 0 0 / 0.28);
+  }
+
+  /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。 */
+  .list-dock.is-snapped .list-toolbar {
+    height: 44px;
+    margin-bottom: 0;
+    padding-inline: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    /* 1 1 auto（2026-07-28 L 裁示，兩張截圖：專案頁收合態、電子商店貼頂態，動作群都
+       卡在 tab 旁邊、右邊一大片空白）：剩餘空間交給這一段，動作群才會被自己的
+       margin-left:auto 推到這一段的右緣——收合態＝整條的最右邊，未收合態＝緊貼右段
+       篩選列的分隔線。空白因此落在 tab 與動作群之間（那裡本來就該是留白），
+       而不是夾在動作群與篩選列中間。
+       原本寫 0 1 auto 是為了決定「兩段都塞不下時誰先被犧牲」（主軸 tab 與＋新增專案
+       是骨架，狀態 pill 是細節）。那個優先序改由篩選段的 flex 表達（見下方
+       .list-status-row 的 0 1 auto）：它照內容寬、先被壓縮，效果相同。
+       min-width:0 保留：真的塞不下時這一段仍要能縮，讓 tabs 自己橫向捲。 */
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* ══ 貼頂態的次層篩選：一律收進篩選鈕（2026-07-29 L 裁示）════════════════════
+     「should we move the filter icon beside the tabs and keep it that way for all
+      navigation bar doesnt matter if its too long for the snapped nav bar. we just
+      keep sub nav as an icon when it snapped. and we keep the cta button always on
+      the right so the whole nav bar is cleaner and doesnt drift in design」
+
+     取代 2026-07-28 的「放得下就靠右、放不下才收」。那一版由 sticky-dock.js 在執行期
+     量測寬度決定版型，於是同一個元件在不同頁、不同語系、不同資料下會長成不同的樣子：
+     電子商店 5 顆 pill 放得下、專案 7 顆放不下，兩頁的貼頂列因此不同構；換語系字寬一變
+     又可能翻面。量測本身也不便宜——遲滯、三道迴圈防護、rAF 與可見性補量，都是為了
+     馴服一個「答案會變」的設計。這一版把變數拿掉：貼頂＝收合，沒有例外，五頁同一個形狀。
+
+     代價是寬螢幕貼頂時看不到本來塞得下的 pill 計數。這是有意的取捨，而且與這個貼頂態
+     原本的理由一致——那條 44px 的 bar 的工作是「讓你知道自己在哪、還能動手」，不是當
+     儀表板；計數該看的地方是靜止態那兩排，那裡空間充足、全部攤開。
+
+     浮層錨在篩選鈕正下方（--dock-filter-x 由 js/sticky-dock.js 量鈕的位置寫入）：
+     鈕移到 tab 旁之後，原本的 right:16px 會讓面板開在整條的另一端，與觸發它的東西
+     失去關聯。max-width 用 100% - x 夾住，面板不會越過 dock 右緣。 */
+  .list-dock.is-snapped .list-status-row {
+    display: none;
+    position: absolute;
+    top: calc(100% + var(--sp-8));
+    left: var(--dock-filter-x, var(--sp-16));
+    z-index: 30;
+    width: max-content;
+    max-width: min(560px, calc(100% - var(--dock-filter-x, 0px)));
+    margin: 0;
+    flex-wrap: wrap;
+    padding: var(--sp-12);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--popover, var(--card));
+    box-shadow: var(--shadow-float, 0 12px 32px -12px rgb(0 0 0 / 0.5));
+  }
+  /* 浮層裡的 pill 群要能換行縮到面板寬（專案頁 7 顆 pill 的內容寬 599px > 面板上限
+     560px，不給 shrink 就會有 pill 被畫在面板外面——2026-07-28 L 截圖圈過）。 */
+  .list-dock.is-snapped .list-status-row > nav:first-child {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .list-dock.is-snapped .list-status-row > * { flex-wrap: wrap; }
+  .list-dock.is-snapped.is-filters-open .list-status-row { display: flex; }
+  /* bars 要能當浮層的定位參考。只掛在薄殼上——厚殼（電子商店／活動）的 bars 本身就是
+     sticky，而 sticky 已經是 positioned box、本來就能當絕對定位的容器。
+     2026-07-28 修：初版寫成 `.list-dock.is-snapped .list-dock__bars`，權重（0,3,0）
+     壓過上面的 `.list-dock--tall .list-dock__bars`（0,2,0），於是厚殼一貼頂 position
+     就從 sticky 被改回 relative——整條 dock 當場脫黏往上捲走，而哨兵仍在畫面外、
+     is-snapped 不會解除，所以它是「一貼頂就永遠消失」。實測 e-shop 捲到 700px 時
+     bars 的 top 是 -436。薄殼（專案／我的 IP／IP 市場）sticky 掛在外層，看不出問題，
+     所以昨天那次只在專案頁驗證時沒被抓到。 */
+  .list-dock--thin.is-snapped .list-dock__bars { position: relative; }
+
+  /* 篩選鈕在貼頂態出現（無條件，見上）。位置由 HTML 決定＝tabs 之後、動作群之前。 */
+  .list-dock.is-snapped .list-toolbar__filter { display: inline-flex; }
+
+  /* 只過渡 height 一個版面屬性（padding／margin 改成瞬間切換）。
+     detect.mjs 會標 layout-transition：動版面屬性會觸發重排。這裡刻意保留 height——
+     它是「收合」這個動作本身，拿掉就變成瞬間跳一格、L 要的轉場就不存在了；
+     而且這是捲動方向改變時才跑一次的一次性過渡、只作用在一個元素上，
+     不是逐幀動畫，重排成本是一次而非每幀。padding/margin 對觀感沒有貢獻，故移出。 */
+  .list-dock.is-snapped .list-toolbar,
+  .list-dock.is-snapped .list-status-row {
+    transition: height 260ms cubic-bezier(.16, 1, .3, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-dock,
+  .list-dock .list-toolbar,
+  .list-dock .list-status-row { transition: none; }
+}

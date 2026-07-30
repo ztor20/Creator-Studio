@@ -1,0 +1,491 @@
+<!doctype html>
+<!-- ⚠ Deck for Sony（Presentation demo）版收入管理頁。cheat code「版本」選 Deck for Sony
+     時，收入管理連結經 devtools.js route:earnings.html=earnings-sony.html 改接到本頁。
+     內容＝ztor cocreate 站 finance-overview.html「財務總覽」的忠實移植，改套 R2.1 設計系統
+     （tokens／ds-components）；保留 R2.1 app 外殼（頂列／側欄／主題／i18n／cheat code）。
+     來源：ztor20/Frontend feature/cocreate-flow。移植紀錄見 UI-CHANGES.md 2026-07-23 條。 -->
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance Overview · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* finance-overview 專屬一次性版面：只做這頁的排版，不覆寫共用 class／token；
+     色彩・字級一律走 token，無裸 hex/rgb/font-size。 */
+  .fin-actions { display:flex; gap:var(--sp-8); align-items:center; margin-top:var(--sp-12); flex-wrap:wrap; }
+  /* 只留外距；排列交給 DS 的 .filter-tabs（gap／wrap／align 由元件負責） */
+  /* 2026-07-27：「即將推出」條移除（三型皆已上線），.fin-soon 一族樣式隨之刪除。
+     legend 下方原本靠 .fin-soon 的 margin-bottom 撐出與圖表的距離，故補到 .fin-legend。 */
+  .fin-legend { margin:var(--sp-24) 0 var(--sp-20); }
+  .fin-dot { width:8px; height:8px; border-radius:var(--radius-pill); background:var(--dot,var(--muted-foreground)); flex:none; display:inline-block; margin-right:var(--sp-6); }
+  .fin-chart svg text { fill:var(--muted-foreground); font-size:var(--fs-11); }
+  .fin-chart__grid { stroke:var(--border); stroke-width:1; }
+  .fin-chart[data-focus] .linechart__line, .fin-chart[data-focus] .fin-area { opacity:.16; transition:opacity var(--duration) var(--easing); }
+  .fin-chart[data-focus] .linechart__line.is-focus, .fin-chart[data-focus] .fin-area.is-focus { opacity:1; }
+  /* 線色對齊圖例圓點（chart-1..7，蓋過 linechart__line--sN 預設）
+     2026-07-27 使用者裁示：影評人預付金／獎金／共創派對三型自本頁下架；
+     音樂版稅・商品收益・門票收益由「即將推出」升為正式可篩類型。
+     chart-4（黃）由 advance 釋出後改配給 music。*/
+  .fin-chart .linechart__line[data-fin-line="cocreate"] { stroke:var(--chart-1); }
+  .fin-chart .linechart__line[data-fin-line="ott"] { stroke:var(--chart-2); }
+  .fin-chart .linechart__line[data-fin-line="commission"] { stroke:var(--chart-3); }
+  .fin-chart .linechart__line[data-fin-line="music"] { stroke:var(--chart-4); }
+  .fin-chart .linechart__line[data-fin-line="licence"] { stroke:var(--chart-5); }
+  .fin-chart .linechart__line[data-fin-line="goods"] { stroke:var(--chart-6); }
+  .fin-chart .linechart__line[data-fin-line="ticket"] { stroke:var(--chart-7); }
+  /* 平滑曲線下的淡色面積填色。
+     2026-07-27：預設不畫。七條線各鋪一層 13% 面積會互相疊加成一片灰塊，把線全蓋掉
+     （原本的寫死資料七條分得開才看不出來；改成真實量級後七條擠在同一帶，一疊就糊）。
+     面積填色只在「聚焦單一類型」時出現——一條線配一片面積才是它該有的用法。 */
+  .fin-chart .fin-area { stroke:none; display:none; }
+  .fin-chart[data-focus] .fin-area.is-focus { display:block; }
+  .fin-chart .fin-area[data-fin-line="cocreate"] { fill:color-mix(in srgb, var(--chart-1) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="ott"] { fill:color-mix(in srgb, var(--chart-2) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="commission"] { fill:color-mix(in srgb, var(--chart-3) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="music"] { fill:color-mix(in srgb, var(--chart-4) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="licence"] { fill:color-mix(in srgb, var(--chart-5) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="goods"] { fill:color-mix(in srgb, var(--chart-6) 13%, transparent); }
+  .fin-chart .fin-area[data-fin-line="ticket"] { fill:color-mix(in srgb, var(--chart-7) 13%, transparent); }
+  /* ── 互動圖表（2026-07-27）── 滑過看當日金額、點線看該類型明細 */
+  .linechart__main[data-fin-plot] { position:relative; }
+  /* 線本身只有 2px，直接當點擊目標很難命中；每條線疊一條透明粗線當熱區。 */
+  .fin-hitline { fill:none; stroke:transparent; stroke-width:14; cursor:pointer; pointer-events:stroke; vector-effect:non-scaling-stroke; }
+  /* 聚焦某類型時，被淡化的線不可點——否則會點到看不見的線、開錯類型的明細。 */
+  .fin-chart[data-focus] .fin-hitline { pointer-events:none; }
+  .fin-chart[data-focus] .fin-hitline.is-focus { pointer-events:stroke; }
+  .fin-guide { stroke:var(--border); stroke-width:1; pointer-events:none; }
+  .fin-marker { pointer-events:none; }
+  /* pointer-events:auto —— 浮層自己要可以被點（2026-07-27 使用者裁示：
+     「全部」分頁七條線互相重疊，2px 的線根本點不準，改由浮層列表當主要入口）。
+     浮層是 .linechart__main 的子層，滑進去不會觸發外層的 mouseleave，所以不會自己消失。 */
+  .fin-tip {
+    position:absolute; z-index:5; min-width:172px; pointer-events:auto;
+    background:var(--popover); color:var(--foreground);
+    border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:var(--sp-10) var(--sp-12);
+    box-shadow:0 1px 5px rgba(0,0,0,.10), 0 6px 16px rgba(0,0,0,.08);
+    font-size:var(--fs-12);
+  }
+  /* 高度要壓在繪圖區內：.chart-card 是 overflow:hidden，浮層太高會被卡片裁掉
+     （2026-07-27 初版 line-height 1.9 ＋七列，底部的提示行就被切掉了）。 */
+  .fin-tip__date { color:var(--muted-foreground); font-size:var(--fs-11); margin-bottom:var(--sp-4); }
+  /* 每一列都是按鈕：點它＝開該類型的明細。外觀維持一般文字列，不做成按鈕樣子。 */
+  .fin-tip__row {
+    display:grid; grid-template-columns:8px 1fr auto; align-items:center; gap:var(--sp-8);
+    line-height:1.6; appearance:none; -webkit-appearance:none;
+    border:0; background:none; font:inherit; color:inherit; text-align:left;
+    /* 往外撐 6px 再往內墊 6px：hover 底色比文字寬一點，但內容可用寬度與加按鈕前一致。
+       只寫 width:100% 會少掉左右 padding 的 12px，最長的「Tastemaker commission」就被擠到換行。 */
+    padding:0 var(--sp-6); margin:0 calc(var(--sp-6) * -1);
+    width:calc(100% + (var(--sp-6) * 2));
+    border-radius:var(--radius-sm); cursor:pointer;
+    transition:background-color var(--duration) var(--easing);
+  }
+  .fin-tip__row:hover { background:var(--accent); }
+  .fin-tip__row:focus-visible { outline:2px solid var(--primary); outline-offset:-2px; }
+  .fin-tip__amt { font-variant-numeric:tabular-nums; font-weight:var(--fw-regular); }
+  .fin-tip__hint { color:var(--muted-foreground); font-size:var(--fs-11); margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--border); }
+  /* 圖表標題列的類型總額：標籤淡、數字亮，讓數字自己說話 */
+  .fin-charttotal { display:inline-flex; align-items:baseline; gap:var(--sp-6); margin-left:var(--sp-8); }
+  .fin-charttotal[hidden] { display:none; }
+  .fin-charttotal__label { font-size:var(--fs-12); color:var(--muted-foreground); }
+  .fin-charttotal__value { font-size:var(--fs-16); font-weight:var(--fw-regular); color:var(--foreground); font-variant-numeric:tabular-nums; }
+  /* ── 類型明細彈窗 ── */
+  .fin-detail__head { display:flex; align-items:baseline; gap:var(--sp-8); flex-wrap:wrap; margin-bottom:var(--sp-4); }
+  .fin-detail__total { font-size:var(--fs-22); font-weight:var(--fw-regular); font-variant-numeric:tabular-nums; }
+  .fin-detail__scope { color:var(--muted-foreground); font-size:var(--fs-12); margin-bottom:var(--sp-16); }
+  .fin-detail__rank { color:var(--muted-foreground); font-variant-numeric:tabular-nums; width:2.5rem; }
+  .fin-detail__share { color:var(--muted-foreground); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+  .fin-detail__foot { display:flex; justify-content:center; margin-top:var(--sp-12); }
+  /* 音樂版稅有兩張並排的表（發行平台／單曲・專輯），620px 的對話框塞不下 → 加寬變體。
+     其餘類型只有一張表，維持原寬度。 */
+  /* 2026-07-27 使用者裁示：兩表並排時左右留白太多，把對話框放寬吃掉那段空間。 */
+  .payout-modal[data-modal="typedetail"] .payout-dialog.fin-dialog--wide { width:min(1180px, 100%); }
+  .fin-detail__cols { display:grid; grid-template-columns:1fr; gap:var(--sp-24); }
+  .fin-detail__cols--2 { grid-template-columns:1fr 1fr; }
+  /* grid 子項預設 min-width:auto，長標題（LOVE RAGE HOPE 黑膠典藏版）會把整欄撐寬、
+     連帶把右表的「佔比」欄擠出對話框外。min-width:0 讓欄可以縮，表格才由下面的
+     table-layout:fixed 分配欄寬、長字改為換行。 */
+  .fin-detail__col { min-width:0; }
+  .fin-detail__col .ztor-table { table-layout:fixed; width:100%; }
+  /* 四欄（發行平台：# · 名稱 · 金額 · 佔比） */
+  .fin-detail__col .ztor-table th:nth-child(1), .fin-detail__col .ztor-table td:nth-child(1) { width:10%; }
+  .fin-detail__col .ztor-table th:nth-child(2), .fin-detail__col .ztor-table td:nth-child(2) { width:44%; }
+  .fin-detail__col .ztor-table th:nth-child(3), .fin-detail__col .ztor-table td:nth-child(3) { width:27%; }
+  .fin-detail__col .ztor-table th:nth-child(4), .fin-detail__col .ztor-table td:nth-child(4) { width:19%; }
+  /* 五欄（項目：# · 名稱 · 類別 · 金額 · 佔比）——類別自成一欄後重新分配 */
+  .fin-detail__col--cat .ztor-table th:nth-child(1), .fin-detail__col--cat .ztor-table td:nth-child(1) { width:8%; }
+  .fin-detail__col--cat .ztor-table th:nth-child(2), .fin-detail__col--cat .ztor-table td:nth-child(2) { width:38%; }
+  .fin-detail__col--cat .ztor-table th:nth-child(3), .fin-detail__col--cat .ztor-table td:nth-child(3) { width:18%; }
+  .fin-detail__col--cat .ztor-table th:nth-child(4), .fin-detail__col--cat .ztor-table td:nth-child(4) { width:22%; }
+  .fin-detail__col--cat .ztor-table th:nth-child(5), .fin-detail__col--cat .ztor-table td:nth-child(5) { width:14%; }
+  .fin-detail__cat { color:var(--muted-foreground); }
+  .fin-detail__col .ztor-table__feature { white-space:normal; overflow-wrap:anywhere; }
+  .fin-detail__colhead { font-size:var(--fs-12); font-weight:var(--fw-regular); letter-spacing:.04em; text-transform:uppercase; color:var(--muted-foreground); margin-bottom:var(--sp-8); }
+  /* 單一斷點與全站一致（767.98px 避開 iPad 直式）：窄螢幕兩表改上下堆疊 */
+  @media (max-width: 767.98px) { .fin-detail__cols--2 { grid-template-columns:1fr; } }
+  /* 「我的項目 · <類型>」——副標與圖表卡的 .chart-card__subtitle 同一種語氣 */
+  .fin-items__head { display:flex; align-items:baseline; gap:var(--sp-8); flex-wrap:wrap; }
+  .fin-items__scope { font-size:var(--fs-13); color:var(--muted-foreground); }
+  .fin-ledgerbar { display:flex; gap:var(--sp-12); align-items:center; flex-wrap:wrap; margin:var(--sp-16) 0; }
+  .fin-ledgerbar__count { font-size:var(--fs-13); color:var(--muted-foreground); }
+  /* 存入總和是這張表的結論，2026-07-27 使用者裁示要更亮更大：
+     標籤維持淡色，數字本身提到 fs-18＋前景色，讓數字自己說話（不是整條都變大聲）。 */
+  .fin-ledgerbar__total { margin-left:auto; font-size:var(--fs-14); color:var(--muted-foreground); }
+  .fin-ledgerbar__total strong {
+    margin-left:var(--sp-6);
+    font-size:var(--fs-18);
+    font-weight:var(--fw-regular);
+    color:var(--foreground);
+    font-variant-numeric:tabular-nums;
+  }
+  .fin-scroll { overflow-x:auto; }
+  .fin-amt { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .fin-rowlink { cursor:pointer; }
+  .fin-how { display:flex; flex-direction:column; gap:var(--sp-16); margin:0; }
+  .fin-how__subtitle { font-size:var(--fs-13); font-weight:var(--fw-regular); color:var(--muted-foreground); margin:0 0 var(--sp-4); }
+  .fin-how dt { display:flex; align-items:center; gap:var(--sp-4); font-weight:var(--fw-regular); margin-bottom:var(--sp-4); }
+  .fin-how dd { margin:0; color:var(--foreground-muted); font-size:var(--fs-14); line-height:var(--lh-relaxed); }
+  .fin-drawerbar { display:flex; gap:var(--sp-12); align-items:center; flex-wrap:wrap; margin-bottom:var(--sp-16); }
+  /* 我的項目表：加線框（比照 DS 其他資料表的外框呈現）*/
+  .fin-tablecard { border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
+  .fin-tablecard .ztor-table { border-radius:0; table-layout:fixed; }
+  /* 欄寬分配：項目最寬、類別／金額等分、前往箭頭獨立一欄且不與金額相貼 */
+  .fin-tablecard .ztor-table th:nth-child(1), .fin-tablecard .ztor-table td:nth-child(1) { width:44%; }
+  .fin-tablecard .ztor-table th:nth-child(2), .fin-tablecard .ztor-table td:nth-child(2) { width:24%; }
+  .fin-tablecard .ztor-table th:nth-child(3), .fin-tablecard .ztor-table td:nth-child(3) { width:24%; padding-right:var(--sp-24); }
+  .fin-tablecard .ztor-table th:nth-child(4), .fin-tablecard .ztor-table td:nth-child(4) { width:8%; }
+  /* 提領歷史彈窗表格：欄位不換行，避免窄欄把日期／狀態擠成多行。
+     2026-07-27 收斂範圍：原本寫成 .payout-dialog（＝所有彈窗內的表格都吃到），
+     新的類型明細彈窗因此長標題不換行、直接壓到金額欄上。只留給提領歷史。 */
+  .payout-modal[data-modal="history"] .ztor-table th,
+  .payout-modal[data-modal="history"] .ztor-table td { white-space:nowrap; }
+  /* 金額欄表頭與數值同為右對齊（蓋過 .ztor-table thead th 的預設 left）*/
+  .ztor-table th.fin-amt { text-align:right; }
+</style>
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <span data-i18n="fin.crumb">Finance overview</span>
+      </div>
+
+      <!-- Page head + sub (如何運作 opens the how-it-works drawer) -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="fin.h1">Finance overview</h1>
+          <p class="page-intro__sub" data-i18n="fin.sub">A roll-up of every deposit and payout across your work on Ztor. See <a class="card__link" href="#" data-drawer-open="how">how it works</a> to learn more.</p>
+        </div>
+      </div>
+
+      <!-- Global stats — 3 KPI tiles. 可提領 tile carries the withdraw button + history link. -->
+      <div class="bento">
+        <div class="kpi bento--span-4">
+          <div class="kpi__label" data-i18n="fin.kpi.total">Total earnings</div>
+          <div class="kpi__value" data-fin-kpi="total">NTD 15,860</div>
+          <div class="kpi__meta"><span data-i18n="fin.kpi.total-meta">What you've earned in total</span> <i data-lucide="info" class="ztor-icon ztor-icon--xs" data-i18n-title="fin.kpi.tip" title="Excludes deposits from Co-creation projects"></i></div>
+        </div>
+        <div class="kpi bento--span-4">
+          <div class="kpi__label" data-i18n="fin.kpi.month">This month</div>
+          <div class="kpi__value" data-fin-kpi="month">NTD 1,500</div>
+          <div class="kpi__meta"><span data-i18n="fin.kpi.month-meta">Earned this month</span> <i data-lucide="info" class="ztor-icon ztor-icon--xs" data-i18n-title="fin.kpi.tip" title="Excludes deposits from Co-creation projects"></i></div>
+        </div>
+        <div class="kpi bento--span-4">
+          <div class="kpi__label" data-i18n="fin.kpi.available">Available to withdraw</div>
+          <div class="kpi__value">NTD 2,200</div>
+          <div class="kpi__meta" data-i18n="fin.kpi.available-meta">Withdrawable once you reach NTD 2,200</div>
+          <div class="fin-actions">
+            <button class="btn btn--primary btn--sm" type="button" data-i18n="fin.withdraw">Withdraw</button>
+            <button class="btn btn--ghost btn--sm" type="button" data-drawer-open="history"><span data-i18n="fin.history">Withdrawal history</span><i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tastemaker commission-rate strip (neutral info-banner) -->
+      <div class="info-banner info-banner--dismissible" style="margin-top:var(--sp-16)" data-dismiss-key="fin-ratio">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="fin.ratio">Your tastemaker commission rate is <strong>15%</strong>. <a class="card__link" href="https://www.ztor.com/zh-hk/tastemaker-terms-and-conditions" target="_blank" rel="noopener">View details →</a></span>
+        <button class="info-banner__close btn btn--icon btn--xs" type="button" data-dismiss aria-label="Dismiss" data-i18n-aria-label="fin.ratio.dismiss">
+          <i data-lucide="x" class="ztor-icon ztor-icon--sm"></i>
+        </button>
+      </div>
+
+      <!-- Segmented TYPE filter — the single control for revenue type; doubles as the legend.
+           Focuses the trend line and filters the 我的項目 rows via data-fin-types. -->
+      <nav class="filter-tabs filter-tabs--source fin-legend" role="tablist" aria-label="Deposit type filter" data-fin-legend>
+        <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" style="--dot:var(--primary)" data-fin-type="all"><span data-i18n="fin.type.all">All</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-1)" data-fin-type="cocreate"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.cocreate">Co-creation</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-2)" data-fin-type="ott"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.ott">OTT royalties</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-4)" data-fin-type="music"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.music">Music royalties</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-3)" data-fin-type="commission"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.commission">Tastemaker commission</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-5)" data-fin-type="licence"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.licence">My IP</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-6)" data-fin-type="goods"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.goods">Merch income</span></button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-7)" data-fin-type="ticket"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="fin.type.ticket">Ticket income</span></button>
+      </nav>
+
+      <!-- Revenue trend — chart-card component, one coloured line per revenue type -->
+      <section class="card chart-card" data-chart-view="line">
+        <div class="chart-card__head">
+          <div class="chart-card__title-group">
+            <h3 class="chart-card__title" data-i18n="fin.trend.title">Revenue trend</h3>
+            <span class="chart-card__subtitle">· <span data-i18n="fin.trend.sub">By revenue type</span></span>
+            <!-- 選了單一類型時，在圖表標題列顯示該類型的累計總額（2026-07-27 使用者裁示）。
+                 「全部」時隱藏——上方 KPI 磚已經是同一個數字，重複顯示只是雜訊。 -->
+            <span class="fin-charttotal" data-fin-charttotal hidden></span>
+          </div>
+          <div class="chart-card__controls">
+            <div class="segmented" role="tablist" aria-label="Trend period" data-fin-period>
+              <button class="segmented__item" role="tab" type="button" data-i18n="fin.period.day">Day</button>
+              <button class="segmented__item segmented__item--active" role="tab" type="button" aria-selected="true" data-i18n="fin.period.month">Month</button>
+              <button class="segmented__item" role="tab" type="button" data-i18n="fin.period.quarter">3 months</button>
+              <button class="segmented__item" role="tab" type="button" data-i18n="fin.period.year">Year</button>
+            </div>
+            <button class="chart-card__icon-btn btn btn--icon btn--xs" type="button" aria-label="Export"><i data-lucide="upload" class="ztor-icon"></i></button>
+          </div>
+        </div>
+        <div class="chart-card__body">
+        <div class="linechart linechart--axes fin-chart">
+          <!-- 2026-07-27：座標軸・格線・折線・面積全部改由 finance-overview.js 依資料產生
+               （原本是寫死的 bezier 路徑，沒有底層數值就做不出「滑過看到當日金額」）。
+               這裡只保留容器；內容在 renderChart() 產生。 -->
+          <div class="linechart__y-axis" data-fin-yaxis></div>
+          <div class="linechart__main" data-fin-plot>
+            <svg class="linechart__svg" viewBox="24 0 648 240" preserveAspectRatio="none" role="img" data-fin-svg
+                 aria-label="Revenue trend by revenue type"></svg>
+            <div class="linechart__labels--sparse" data-fin-xlabels></div>
+            <div class="fin-tip" data-fin-tip hidden></div>
+          </div>
+          </div>
+        </div>
+        </div>
+        <div class="chart-card__foot">
+          <span data-i18n="fin.trend.range">Showing the last 5 days</span>
+        </div>
+      </section>
+
+      <!-- 我的項目 — project-based table, rows click through to that project's 我的收益.
+           2026-07-26 使用者：拿掉「身分」篩選（發起人／支持者／影評人）——Creator Studio 底下的
+           使用者對自己列出的每個項目永遠是發起人，這裡不需要區分身分，也不再顯示發起徽章。 -->
+      <section class="card mt-24" data-fin-table>
+        <!-- 標題跟著上方類型 chip 走（2026-07-27 使用者裁示：選了哪一型要和下面的清單對得起來）。
+             沿用本頁圖表卡已有的「標題 · 淡色副標」寫法，不另造樣式語彙。 -->
+        <div class="fin-items__head">
+          <h3 class="card__title" data-i18n="fin.items.title">My projects</h3>
+          <span class="fin-items__scope" data-fin-scope hidden></span>
+        </div>
+        <div class="fin-ledgerbar">
+          <details class="dropdown dropdown--left" data-fin-dd="cat">
+            <summary class="btn btn--outline btn--sm"><span data-fin-dd-label data-i18n="fin.cat.all">All categories</span><i data-lucide="chevron-down" class="ztor-icon ztor-icon--xs"></i></summary>
+            <div class="dropdown__menu" role="listbox">
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="all" data-i18n="fin.cat.all">All categories</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="電影" data-i18n="fin.cat.film">Film</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="短劇" data-i18n="fin.cat.short">Short drama</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="連續劇" data-i18n="fin.cat.series">Series</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="單曲" data-i18n="fin.cat.single">Single</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="專輯" data-i18n="fin.cat.album">Album</button>
+            </div>
+          </details>
+          <details class="dropdown dropdown--left" data-fin-dd="date">
+            <summary class="btn btn--outline btn--sm"><span data-fin-dd-label data-i18n="fin.date.todate">To date</span><i data-lucide="chevron-down" class="ztor-icon ztor-icon--xs"></i></summary>
+            <div class="dropdown__menu" role="listbox">
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="迄今" data-i18n="fin.date.todate">To date</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="近三個月" data-i18n="fin.date.3m">Last 3 months</button>
+              <button class="dropdown__item" type="button" role="option" data-fin-opt="今年" data-i18n="fin.date.year">This year</button>
+            </div>
+          </details>
+          <span class="fin-ledgerbar__count"><span data-fin-count>6</span> <span data-i18n="fin.count">items</span></span>
+          <span class="fin-ledgerbar__total"><span data-i18n="fin.total">Total deposits</span> <strong>NTD 15,860</strong></span>
+        </div>
+
+        <div class="fin-tablecard">
+        <div class="fin-scroll">
+          <table class="ztor-table">
+            <thead>
+              <!-- data-sort → js/table-sort.js 把標題換成可點的 .sort-th（三段循環）。
+                   前往箭頭欄沒有標題也沒有值，不參與排序。 -->
+              <tr><th class="ztor-table__media-head" data-sort="text" data-i18n="fin.col.item">Item</th><th data-sort="text" data-i18n="fin.col.cat">Category</th><th class="fin-amt sort-th--end" data-sort="num" data-fin-amt-head data-i18n="fin.col.amount">Amount</th><th aria-hidden="true"></th></tr>
+            </thead>
+            <tbody data-fin-rows>
+              <tr class="fin-rowlink" data-fin-cat="電影" data-fin-types="cocreate ott music" data-fin-go="project-detail.html?id=dragon-tiger-gate#earnings">
+                <td class="ztor-table__feature">龍虎門外傳：九龍夜行</td>
+                <td data-i18n="fin.cat.film">Film</td><td class="fin-amt">NTD 1,000</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+              <tr class="fin-rowlink" data-fin-cat="電影" data-fin-types="ott commission ticket" data-fin-go="project-detail.html?id=f-i-am-speed#earnings">
+                <td class="ztor-table__feature">我要衝線</td>
+                <td data-i18n="fin.cat.film">Film</td><td class="fin-amt">NTD 1,000</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+              <tr class="fin-rowlink" data-fin-cat="連續劇" data-fin-types="ott music goods" data-fin-go="project-detail.html?id=pirate-queen#earnings">
+                <td class="ztor-table__feature">海上霸姬鄭一嫂</td>
+                <td data-i18n="fin.cat.series">Series</td><td class="fin-amt">NTD 100</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+              <tr class="fin-rowlink" data-fin-cat="短劇" data-fin-types="ott ticket" data-fin-go="project-detail.html?id=shamshuipo-moonlight#earnings">
+                <td class="ztor-table__feature">深水埗的月光</td>
+                <td data-i18n="fin.cat.short">Short drama</td><td class="fin-amt">NTD 100</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+              <tr class="fin-rowlink" data-fin-cat="單曲" data-fin-types="cocreate licence goods" data-fin-go="project-detail.html?id=kowloon-night-theme#earnings">
+                <td class="ztor-table__feature">九龍夜行 片尾曲</td>
+                <td data-i18n="fin.cat.single">Single</td><td class="fin-amt">NTD 100</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+              <tr class="fin-rowlink" data-fin-cat="專輯" data-fin-types="cocreate music" data-fin-go="project-detail.html?id=adia-chan#earnings">
+                <td class="ztor-table__feature">陳松伶精選</td>
+                <td data-i18n="fin.cat.album">Album</td><td class="fin-amt">NTD 1,590</td>
+                <td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
+
+        <!-- Per-type empty state — shown when the active filter matches no row. Copy swapped by JS. -->
+        <div class="empty-card" data-fin-empty hidden>
+          <span class="empty-card__icon"><i data-lucide="banknote" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-fin-empty-title data-i18n="fin.empty.title.all">No matching items</h3>
+          <p class="empty-card__text" data-fin-empty-text data-i18n="fin.empty.text.all">Adjust the category or role filter above to see your projects.</p>
+          <button class="btn btn--ghost btn--sm empty-card__cta" type="button" data-drawer-open="how" data-i18n="fin.empty.cta">See how it works</button>
+        </div>
+
+        <nav class="pager" data-fin-pager aria-label="My projects pagination"></nav>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ══ Withdrawal history — canonical .payout-modal / .payout-dialog popup ══ -->
+  <div class="payout-modal" data-modal="history" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-label="Withdrawal history">
+      <div class="payout-dialog__head">
+        <h2 class="payout-dialog__title" data-i18n="fin.history">Withdrawal history</h2>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="fin-drawerbar">
+          <button class="btn btn--ghost btn--sm" type="button" data-i18n="fin.hist.allstatus">All statuses</button>
+          <button class="btn btn--ghost btn--sm" type="button"><span data-i18n="fin.date.3m">Last 3 months</span><i data-lucide="chevron-down" class="ztor-icon ztor-icon--xs"></i></button>
+        </div>
+        <div class="fin-scroll">
+          <table class="ztor-table">
+            <thead>
+              <tr><th data-sort="text" data-i18n="fin.hist.date">Date</th><th class="fin-amt sort-th--end" data-sort="num" data-i18n="fin.hist.amount">Amount</th><th data-sort="text" data-i18n="fin.hist.account">Account</th><th data-sort="text" data-i18n="fin.hist.status">Status</th></tr>
+            </thead>
+            <tbody data-fin-histrows>
+              <tr><td>2026-06-28</td><td class="fin-amt">NTD 4,110</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--warning" data-i18n="fin.status.pending">Pending</span></td></tr>
+              <tr><td>2026-06-07</td><td class="fin-amt">NTD 5,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-06-06</td><td class="fin-amt">NTD 4,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-06-05</td><td class="fin-amt">NTD 4,200</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-05-30</td><td class="fin-amt">NTD 4,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-04-30</td><td class="fin-amt">NTD 12,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-04-02</td><td class="fin-amt">NTD 3,800</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-03-31</td><td class="fin-amt">NTD 5,200</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-03-05</td><td class="fin-amt">NTD 2,400</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-02-27</td><td class="fin-amt">NTD 6,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-02-02</td><td class="fin-amt">NTD 4,500</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-01-30</td><td class="fin-amt">NTD 3,200</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2026-01-05</td><td class="fin-amt">NTD 7,100</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2025-12-29</td><td class="fin-amt">NTD 5,600</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2025-12-01</td><td class="fin-amt">NTD 4,800</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2025-11-28</td><td class="fin-amt">NTD 3,900</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2025-11-03</td><td class="fin-amt">NTD 6,400</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+              <tr><td>2025-10-30</td><td class="fin-amt">NTD 5,000</td><td>Bank ****5678</td><td><span class="ztor-badge ztor-badge--success" data-i18n="fin.status.done">Completed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <nav class="pager" data-fin-histpager aria-label="Withdrawal history pagination"></nav>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══ 類型明細（2026-07-27）— 點圖表上的線開啟；內容由 finance-overview.js 產生。
+       沿用同一組 .payout-modal / .payout-dialog，因此 Esc／點遮罩／鎖捲動全部沿用既有行為。══ -->
+  <div class="payout-modal" data-modal="typedetail" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fin-detail-title">
+      <div class="payout-dialog__head">
+        <h2 class="payout-dialog__title" id="fin-detail-title" data-fin-detail-title>—</h2>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="fin.detail.close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body" data-fin-detail-body></div>
+    </section>
+  </div>
+
+  <!-- ══ How it works — canonical .payout-modal / .payout-dialog popup ══ -->
+  <div class="payout-modal" data-modal="how" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-label="How it works">
+      <div class="payout-dialog__head">
+        <h2 class="payout-dialog__title" data-i18n="fin.how.title">How it works</h2>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <h3 class="fin-how__subtitle" data-i18n="fin.how.sub">Deposit types</h3>
+        <dl class="fin-how">
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-1)" aria-hidden="true"></span><span data-i18n="fin.type.cocreate">Co-creation</span></dt>
+            <dd data-i18n="fin.how.cocreate">Support raised once a co-creation project you started is confirmed, released to you in stages.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-2)" aria-hidden="true"></span><span data-i18n="fin.type.ott">OTT royalties</span></dt>
+            <dd data-i18n="fin.how.ott">After a project you backed is released, your share of the OTT royalty income by equity stake.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-4)" aria-hidden="true"></span><span data-i18n="fin.type.music">Music royalties</span></dt>
+            <dd data-i18n="fin.how.music">Your share of distributor royalty statements (streaming / downloads) for music projects you started or backed; statements are batched in periodically, not real-time.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-3)" aria-hidden="true"></span><span data-i18n="fin.type.commission">Tastemaker commission</span></dt>
+            <dd data-i18n="fin.how.commission">Spending driven by your reviews, returned at your personal commission rate; applies to net income only.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-5)" aria-hidden="true"></span><span data-i18n="fin.type.licence">My IP</span></dt>
+            <dd data-i18n="fin.how.licence">Income from licensing and derivative use of your original IP on the platform. This type is shared on a net-profit basis — payouts begin only after related costs are deducted and net profit is actually made.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-6)" aria-hidden="true"></span><span data-i18n="fin.type.goods">Merch income</span></dt>
+            <dd data-i18n="fin.how.goods">Your share of merchandise sold through your storefront — physical goods and digital items alike, settled after fulfilment and the refund window closes.</dd>
+          </div>
+          <div>
+            <dt><span class="fin-dot" style="--dot:var(--chart-7)" aria-hidden="true"></span><span data-i18n="fin.type.ticket">Ticket income</span></dt>
+            <dd data-i18n="fin.how.ticket">Box-office takings from events you host, net of platform and payment fees; released after the event date once no-show and refund claims are settled.</dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/projects-store.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<!-- table-sort 必須排在 finance-overview 之前：後者在解析階段就渲染表格，
+     渲染完會立刻呼叫 window.ztorTableSort.scan() 把排序掛上去。 -->
+<script src="js/table-sort.js?v=r2.2"></script>
+<script src="partials/finance-overview.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
+</body>
+</html>

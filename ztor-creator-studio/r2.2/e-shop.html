@@ -1,0 +1,1699 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Shop · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-tip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/store-settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/restock-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/split-button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-post-modal.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* E-Shop add-new dropdown (spec §5.1.5 F3) → promoted to ds-components/dropdown-menu.css (2026-06-11) */
+
+  /* F2 低庫存通知條的貼頂滿版定位已 promote 至 ds-components/alert.css `.alert--page-top`
+     （2026-06-16，events 情境橫幅共用）。本頁 markup 改用該 class；保留下方 corner-mask
+     負責「× 關閉後仍補右上角」（元件 ::after 只在 bar 存在時補角）。 */
+  /* .main 是捲動容器（overflow-y:auto）、右上角可能變方。corner-mask 在右上角外側三角塗一塊
+     「與角後面露出的底色相同」的色，讓方角看起來變圓——填色必須＝角後面的底色才會融進去。
+     main 右上角後面露出的永遠是灰 canvas（預覽欄貼在右側、非疊在此角後方；main 與預覽無重疊），
+     故填色一律 --surface-shell（灰）。先前誤判成「白色預覽在後」改白，導致灰底上多一塊白三角＝假直角。 */
+  .eshop-corner-mask { position: sticky; top: 0; height: 0; z-index: 6; pointer-events: none; --corner-fill: var(--surface-shell); }
+  @media (min-width: 901px) {
+    .eshop-corner-mask::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: var(--radius-shell);
+      height: var(--radius-shell);
+      background: radial-gradient(circle var(--radius-shell) at bottom left,
+        transparent calc(var(--radius-shell) - 1px), var(--corner-fill) var(--radius-shell));
+    }
+  }
+
+  /* F3 list controls · 類型切換(底線式 tabs) + 動作列；狀態篩選第二排 filter-tabs(淡橘 pill)。
+     群組策略（無外框列表，靠「區帶邊界」而非框）：
+       ① topbar 下加分隔線，界定「上＝換資料集（類別）／下＝列表模組（狀態＋列表）」；
+       ② 間距反轉——類別↔狀態拉開、狀態↔列表貼緊，讓狀態用鄰近律歸進列表組；
+       ③ 狀態列 sticky，捲動時固定、行為上「擁有」這個列表。 */
+  /* 區段間距加大：頁首 → 主工作列 → 商品清單三段各自留白（2026-06-22）*/
+  /* margin-bottom 原本掛在 .eshop-list-controls（那時它是窄 <section>、product-list 是下一個
+     兄弟元素，靠這個 margin 撐出狀態列↔清單的間距）；2026-07-21 因 sticky 需要而把 product-list
+     併進同一層變成子元素後，這個 margin 不再落在「狀態列與清單之間」，改移到 .list-status-row
+     自己的 margin-bottom（見下方），視覺間距數字不變（仍 24px）。 */
+  .eshop-list-controls { margin-top: 20px; }
+
+  /* F2 低庫存提醒：單句格式（x 件商品 ( 名稱… ) 低於庫存門檻，前往查看。）。
+     名稱淡色、前往查看為底線連結（2026-06-22）。
+     2026-07-21 改照 Figma node 856:25546：撤掉原本「跟頁面同色、貼頂滿版、方底邊＋edge-shadow」
+     的處理（取代舊 .alert--page-top／.edge-shadow／⚠ icon 那套），改成跟工作列同語言的實色殼卡——
+     `--surface-shell` 底＋四角全圓角 16px＋自身 12/16 內距，不再需要 icon 或陰影撐視覺。
+     兩層結構：外層 `#eshop-stock-bar` 只負責定位（跟 `.page` 同一套 max-width(1280)+margin:auto+
+     padding-inline(28) 配方），內層 `__card` 才是視覺卡（底色＋圓角＋自身內距）。
+     （2026-07-21 修正：原本單層用 `margin-inline: max(28px, calc((100% - 1280px)/2 + 28px))` 在
+     寬螢幕下量到 bug——`.main` 是 flex 直欄容器，這個元素被 stretch 撐開時，瀏覽器算出的寬度沒有扣掉
+     這個 margin，導致卡片右側溢出 `.main`（實測：viewport 2400px 時 barWidth 等於整個 mainWidth、
+     完全沒扣掉左右 margin，右緣溢出視窗）。`.page` 本身用的 max-width+margin:auto+padding 是全站已
+     驗證沒有這個問題的寫法，改採同一配方即可避開，不必再猜瀏覽器的 flex 百分比 margin 解析順序。） */
+  #eshop-stock-bar .alert__title { font-weight: var(--fw-regular); }
+  .eshop-stock-bar__names { color: color-mix(in srgb, var(--muted-foreground) 62%, var(--card)); }
+  .eshop-stock-bar__link { color: var(--foreground); text-decoration: underline; text-underline-offset: 2px; }
+  .eshop-stock-bar__link:hover { color: var(--primary); }
+  #eshop-stock-bar .alert__dismiss { width: 32px; height: 32px; font-size: var(--fs-24); }
+  /* 定位殼與視覺卡已 promote 至 ds-components/alert.css（.alert-inset ／ .alert--inset-card，
+     2026-07-26，活動頁情境提醒為第二個消費者）；此處只留 e-shop 專屬的句內元素樣式。 */
+  /* 工作列殼層＋狀態列骨架（.list-toolbar / .list-toolbar__actions / .list-status-row）已 promote
+     至 ds-components/list-toolbar.css（2026-07-23，projects 為第二個消費者）。本頁只留 sticky 貼頂——
+     那是本頁捲動容器的版面決定，不屬元件。 */
+  /* 2026-07-28：本頁專屬的 sticky 規則退場——貼頂已收進元件（ds-components/list-toolbar.css
+     的 Snap dock 段）＋共用行為 js/sticky-dock.js，五個清單頁同一份。留在這裡會變成
+     第二套實作，兩邊各自漂移。 */
+
+  /* F3 搜尋 · 收合式搜尋已 promote 至 ds-components/search-collapse.css（.search-collapse，內層重用 field-pill）。 */
+
+  /* F5 商店預覽 · 可開關、預設關閉（spec F5 / D084）。開啟時版面＝兩塊各自圓角面板、貼合無縫隙；
+     主面板疊在預覽之上（z 45），向右投 --shadow-seam 蓋到預覽上、順著主面板圓角填滿接縫凹口。
+     桌機（≥1101px）兩塊頂對齊、四個外角＋接縫側角皆圓；窄螢幕（≤1100px）改靜態堆疊在下方。 */
+  @media (min-width: 1101px) {
+    #eshop-preview {
+      /* 頂對齊 main：頂欄模式 main 自 64px 頂欄下 + gutter 開始；側邊欄模式無頂欄、
+         main 只自 gutter 開始（見 shared.css .main 兩模式 margin-top）。 */
+      top: calc(64px + var(--space-shell-gutter));
+      right: 0;
+      bottom: 0;
+      width: var(--preview-w);
+    }
+    html[data-nav-mode="sidebar"] #eshop-preview {
+      top: var(--space-shell-gutter);
+    }
+    #eshop-preview .preview-panel__sheet {
+      border: 0;
+      border-radius: var(--radius-shell) var(--radius-shell) 0 0;   /* 兩上角圓（含接縫側左上）*/
+      overflow: hidden;
+    }
+    /* 主面板疊在預覽之上（z 45 > 預覽 40，仍 < 頂欄 50）、兩塊貼合（無灰隙）。
+       main 右上角靠 corner-mask 補圓（角後露出 canvas，填灰 --surface-shell）。
+       ⚠ 陰影不可掛在 main：main 是捲動容器，瀏覽器把右上角畫成「方角」（圓角是 mask 補色假裝的），
+          box-shadow 會跟著真方角走 → 方角陰影。改用下方透明輔助層投影。 */
+    body.preview-open .main {
+      margin-right: var(--preview-w);
+      position: relative;
+      z-index: 45;
+    }
+    /* 接縫陰影輔助層：透明、真圓角、非捲動容器 → box-shadow 順著圓角走。貼在 main 右緣（右邊＝接縫），
+       向右投 --shadow-seam 蓋到預覽上（z 44：預覽 40 < 此層 < main 45，故 main 本體仍在最上、
+       陰影只落在預覽側）。讀作「主面板蓋在預覽之上」。 */
+    body.preview-open .eshop-seam-shadow {
+      display: block;
+      position: fixed;
+      top: calc(64px + var(--space-shell-gutter));
+      bottom: 0;
+      right: var(--preview-w);   /* 右緣＝接縫 */
+      width: 56px;
+      border-top-right-radius: var(--radius-shell);
+      box-shadow: var(--shadow-seam);
+      z-index: 44;
+      pointer-events: none;
+    }
+    html[data-nav-mode="sidebar"] body.preview-open .eshop-seam-shadow {
+      top: var(--space-shell-gutter);
+    }
+  }
+  .eshop-seam-shadow { display: none; }
+  @media (max-width: 1100px) {
+    body.preview-open .main { margin-right: 0; }
+    #eshop-preview {
+      position: static;
+      width: auto;
+      transform: none;
+      visibility: visible;
+      z-index: auto;
+      margin-top: 20px;
+    }
+    #eshop-preview .preview-panel__sheet {
+      position: relative;   /* 仍在流內堆疊，但作為浮動關閉鈕的定位基準 */
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    #eshop-preview .preview-panel__body { overflow: visible; }
+  }
+  /* F5 預覽右上角浮動關閉鈕（headerless 預覽的關閉入口；spec F5 / D084）。
+     桌機 sheet 為 absolute（preview-panel.css）、窄螢幕改 relative，皆作為定位基準。 */
+  .eshop-preview-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    background: var(--card);
+    box-shadow: var(--shadow-hairline);
+  }
+  /* 預覽移出 main 後成 .app 子項；側邊欄 901–1100px 時 .app 為 row（sidebar｜main），
+     讓預覽換行到主面板下方（而非並排右側）。topbar 與 ≤900 的 .app 本為 column，自然堆疊。 */
+  @media (min-width: 901px) and (max-width: 1100px) {
+    html[data-nav-mode="sidebar"] .app { flex-wrap: wrap; }
+    html[data-nav-mode="sidebar"] #eshop-preview { flex-basis: 100%; }
+  }
+
+  /* 商店預覽內容＝fan-store 元件（ds-components/fan-store.css，2026-07-02 起為深色手機呈現）。
+     無 header bar：「商店預覽」為手機上方置中 overline（mount JS 填字）；與 store-settings 同源。 */
+
+  /* product-list 的 E-Shop 分頁欄位版型（--eshop/--bundles/--auctions grid＋欄色＋760px 重排）
+     已 promote 至 ds-components/product-list.css（單一來源，design-system.html 同源 demo）。 */
+  /* 列操作收進 kebab（⋯）下拉：點 ⋯ 列出該列的工具（上架/下架商品／Edit／Restock／Copy link／Track）。2026-06-22 */
+  .product-list__actions .dropdown__menu { min-width: 168px; }   /* 列選單比 +New 窄 */
+  /* 上架/下架開關列（.dropdown__item--toggle）已 promote 至 ds-components/dropdown-menu.css。 */
+
+  /* F6 拍賣即時橫條：行內（非 page-top sticky），僅 Auctions 分頁有 live 時顯示 */
+  .eshop-live-banner { margin-bottom: 12px; }
+  .eshop-live-banner[hidden] { display: none; }
+
+  /* F3/F4 查無符合（搜尋／篩選無結果）：列為 0 時整張清單（含表頭/拖曳提示）收起，只留空狀態卡，
+     不讓「空清單表頭 + 空狀態卡」並存成兩個東西。用 class 不用 [hidden]，以免動到 activePanel() 的判斷。 */
+  .eshop-noresult[hidden] { display: none; }
+  .product-list--eshop.is-filtered-empty { display: none; }
+
+  /* F4 分批載入頁尾（D094）已改用共用元件 .list-footer（--center 置中變體）＝ds-components/list-footer.css。 */
+
+  /* F4 商品清單列拖曳重排（握把 .product-list__drag ＋抬起態 .is-dragging）已 promote 至 ds-components/product-list.css。
+     跟手 transform 仍由頁面 JS 即時控制。 */
+
+  /* Bundles／Auctions 分頁的欄位版型（grid＋auctions activity/status）已 promote 至 ds-components/product-list.css。 */
+
+</style>
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+
+    <!-- 常駐右上圓角遮罩（補捲動容器的方角；與通知條存廢無關）-->
+    <div class="eshop-corner-mask" aria-hidden="true"></div>
+
+    <!-- F2 低庫存通知條 · spec §5.1.5 F2（alert--bar，sticky 常駐、× 關閉）。
+         .main 第一個子元素 → 頂欄之下、白色面板頂端、全寬；分割預覽開啟時隨左主欄壓縮。
+         外層 #eshop-stock-bar 只管定位（跟 .page 同一套 max-width+margin:auto+padding，寬螢幕下經測
+         `margin-inline: max(28px, calc(...))` 在這個 flex 直欄容器裡量到的寬度不會扣掉 margin、
+         導致右側溢出，改用 .page 已驗證沒問題的寫法）；視覺卡（底色＋圓角＋內距）交給內層 __card。 -->
+    <div class="alert-inset when-data" id="eshop-stock-bar">
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <!-- 單句格式（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。 由 JS 組句、隨語言重建 -->
+          <div class="alert__title" data-eshop-stock-msg></div>
+        </div>
+        <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#eshop-stock-bar').remove()">×</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- D065: 電子商店為 E-Shop 群組落地頁 → 麵包屑單節（§3.2.1：頂層模組頁只顯示模組自身一節） -->
+      <div class="page-crumb">
+        <span data-i18n="e-shop.crumb.eshop">E-Shop</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="e-shop.h1">E-Shop</h1>
+        </div>
+      </div>
+
+      <!-- 2026-07-21：外層改 <div>、往下併吞三個 product-list 分頁＋list-footer＋noresult／empty 卡，
+           不再是只包工作列+狀態列的窄 <section>。原因：position:sticky 的「可黏貼範圍」受限於
+           該元素自己的親層 box 高度，親層多高、才能黏多久——topbar/status-row 原本的親層只有自身
+           那 ~120px 高，捲過這個高度就會脫黏跟著捲走（實測：捲 600px 後兩者 y 座標雙雙變負值、
+           不再貼頂）。要讓它們在整張清單捲動期間全程貼頂，親層 box 必須跟清單一樣高——故把清單
+           併進同一層，兩個 sticky 列表頭本身仍在最上面、清單接在後面繼續往下捲。
+           aria-label="Main list filters" 隨舊 <section> 一併移除：這層現在涵蓋整個清單、不只篩選，
+           改由內層每個 product-list panel 自帶的 role="table" aria-label="Products/Bundles/Auctions"
+           承擔語意，不需要外層再重複標一次。 -->
+      <div class="eshop-list-controls list-dock">
+        <div class="list-toolbar">
+          <!-- 類型切換 · 預設底線式 tabs（active 橘色底線；2026-06-22 由淡橘 pill 改回底線，與下排 pill 狀態篩選分層）-->
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-eshop-tab="products"><span data-i18n="e-shop.tab.products">Products</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-eshop-tab="bundles"><span data-i18n="e-shop.tab.bundles">Bundles</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-eshop-tab="auctions" data-feat="S11"><span data-i18n="e-shop.tab.auctions">Auctions</span></div>
+          </nav>
+        <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
+             靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
+             下方的浮層。行為見 js/sticky-dock.js，樣式見 ds-components/list-toolbar.css。 -->
+        <button class="btn btn--icon btn--sm list-toolbar__filter" type="button"
+                aria-expanded="false" aria-controls="eshop-states"
+                aria-label="Filters" title="Filters"
+                data-i18n-aria-label="list.filters" data-i18n-title="list.filters">
+          <i data-lucide="filter" class="ztor-icon"></i>
+          <span class="list-toolbar__filter-count" hidden></span>
+        </button>
+
+
+          <div class="list-toolbar__actions">
+            <!-- F3 工作列操作改 icon（呈現決定，spec F3 圖示/文字非約束）：商店設定 popup（D065）；
+                 預覽商店（See as fan）切換 F5（預設關閉，spec F5 / D084）；搜尋收合、點放大鏡展開 -->
+            <!-- 搜尋放在動作群第一個（使用者指定 2026-06-22） -->
+            <div class="search-collapse" data-eshop-search-wrap>
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-eshop-search-toggle aria-expanded="false" aria-label="Search" title="Search" data-i18n-aria-label="e-shop.btn.search" data-i18n-title="e-shop.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search products">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" placeholder="Filter products" data-i18n-placeholder="e-shop.filter.placeholder" data-eshop-search>
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-eshop-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="e-shop.search.close" data-i18n-title="e-shop.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+            <button class="btn btn--icon btn--sm" type="button" data-eshop-storeset-open aria-label="Store settings" title="Store settings" data-i18n-aria-label="e-shop.btn.storeset" data-i18n-title="e-shop.btn.storeset"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></button>
+            <button class="btn btn--icon btn--sm" type="button" id="eshop-preview-toggle" data-eshop-preview-toggle aria-pressed="false" aria-label="Store preview" title="Store preview" data-i18n-aria-label="e-shop.btn.preview" data-i18n-title="e-shop.btn.preview"><i data-lucide="eye" class="ztor-icon"></i></button>
+            <div class="split-button" id="eshop-create">
+              <a class="btn btn--primary split-button__main" id="eshop-create-main" href="create-product.html" data-i18n="e-shop.create.product">Create product</a>
+              <details class="dropdown">
+                <summary class="btn btn--primary split-button__caret" aria-label="More create options" data-i18n-aria-label="e-shop.create.more"><i data-lucide="chevron-down" class="ztor-icon"></i></summary>
+                <div class="dropdown__menu" role="menu">
+                  <a class="dropdown__item" href="create-product.html" role="menuitem" ><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="e-shop.btn.new-product">Create new product</span></a>
+                  <a class="dropdown__item" href="create-bundle.html" role="menuitem" ><i data-lucide="boxes" class="ztor-icon"></i><span data-i18n="e-shop.btn.new-bundle">Create bundle from products</span></a>
+                  <a class="dropdown__item" href="create-auction.html" role="menuitem" data-feat="S11" ><i data-lucide="gavel" class="ztor-icon"></i><span data-i18n="e-shop.btn.new-auction">Create auction</span></a>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
+        <!-- 狀態篩選 · 第二排 filter-tabs（每項附數量，隨類型重算；spec 5.1.5 F3，②）。搜尋移到上排工作列。 -->
+        <div class="list-status-row" id="eshop-states">
+          <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by status" data-eshop-status>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-status-val="all"><span data-i18n="e-shop.status.all">All status</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="live"><span data-i18n="e-shop.status.in">Live</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="low"><span data-i18n="e-shop.status.low">Low Stock</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="out"><span data-i18n="e-shop.status.out">Sold Out</span><span class="filter-tabs__count" data-status-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="draft"><span data-i18n="e-shop.status.draft">Draft</span><span class="filter-tabs__count" data-status-count>0</span></button>
+          </nav>
+        </div>
+
+        <section class="product-list product-list--eshop when-data" role="table" aria-label="Products" data-eshop-panel="products">
+        <!-- F4 商品列順序＝粉絲端陳列順序：直接拖曳商品列重排（D083，spec §59/§69）。單一表格、不另設排序清單。 -->
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Reorder"></div>
+          <div role="columnheader" aria-label="Image"></div>
+          <div role="columnheader" data-i18n="e-shop.col.product">Product</div>
+          <div role="columnheader" data-i18n="e-shop.col.tier">Fan tier</div>
+          <div role="columnheader" data-i18n="e-shop.col.category">Category</div>
+          <div role="columnheader" data-i18n="e-shop.col.price">Price</div>
+          <div role="columnheader" data-i18n="e-shop.col.status">Status</div>
+          <div role="columnheader" data-i18n="e-shop.col.stock">Stock</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="low" data-type="physical" data-name="Tour zine vol. 02" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/tour-zine-vol-02.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Tour zine vol. 02</div>
+              <div class="product-list__meta" data-i18n="e-shop.variant.single">Single variant</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.row1.cat">Books</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.row1.price">$24</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--error"><span data-i18n="e-shop.row.low">Low Stock</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.row1.stock">3 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=zine" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-edition="unlimited" data-variants="4" data-name="Coastline tee" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-tee.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Coastline tee</div>
+              <div class="product-list__meta" data-i18n="e-shop.row2.meta">Size (S/M/L/XL)</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.row2.cat">Apparel</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.row2.price">$32</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.row2.stock">42 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=tee" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <!-- 多規格矩陣示範（D104 補貨單）：2 選項 × 3 值 = 2×3=6 規格（顏色 Black/Sand × 尺寸 S/M/L）-->
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-edition="unlimited" data-variants="6" data-name="Coastline hoodie" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-hoodie.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Coastline hoodie</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowH.meta">Colour (Black/Sand) × Size (S/M/L)</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowH.cat">Apparel</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowH.price">$58</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--error"><span data-i18n="e-shop.row.low">Low Stock</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.rowH.stock">48 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=hoodie" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-edition="limited" data-name="Coastline acetate · numbered 1/50" data-tiers="inner superfan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-acetate.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Coastline acetate · numbered 1/50</div>
+              <div class="product-list__meta" data-i18n="e-shop.variant.single">Single variant</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.row4.cat">Collectibles</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.row4.price">$180</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.row4.stock">21 / 50</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=acetate" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <!-- 售罄列（spec F4 Products 狀態欄 / D093）：售罄＝庫存歸零（Sold Out），與低庫存（仍有貨）不同狀態、不可混用；徽章 neutral 灰、有別於 Low Stock 紅；實體售罄可補貨。 -->
+        <div class="product-list__row" role="row" data-status="out" data-type="physical" data-name="Enamel pin · wave" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/enamel-pin-wave.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Enamel pin · wave</div>
+              <div class="product-list__meta" data-i18n="e-shop.variant.single">Single variant</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.row5.cat">Accessories</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.row5.price">$14</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--neutral"><span data-i18n="e-shop.row.out">Sold Out</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.row5.stock">0 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=pin" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <!-- 數位商品列（實體列之後集中呈現；demo 樣本排列＝呈現假設 UIA，非強制排序，見 ASSUMPTIONS）：音樂單曲 → 電影 → 音樂專輯 → 會員卡。四類覆蓋數位次分類。 -->
+        <!-- 數位：音樂單曲 Song -->
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-name="Logo cap · six-panel" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/cap.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Logo cap · six-panel</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowCap.meta">Colour (4)</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowCap.cat">Apparel</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowCap.price">$26</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.rowCap.stock">98 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=cap" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <!-- 數位商品列（實體列之後集中呈現；demo 樣本排列＝呈現假設 UIA，非強制排序，見 ASSUMPTIONS）：音樂單曲 → 電影 → 音樂專輯 → 會員卡。四類覆蓋數位次分類。 -->
+        <!-- 數位：音樂單曲 Song -->
+        <div class="product-list__row" role="row" data-status="live" data-type="physical" data-name="Canvas low-top" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/nick-nike.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Canvas low-top</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowSho.meta">Size (US 8–11)</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowSho.cat">Apparel</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">Physical goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowSho.price">$64</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.rowSho.stock">72 / ∞</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=shoes" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button></div></details></div>
+        </div>
+
+        <!-- 數位商品列（實體列之後集中呈現；demo 樣本排列＝呈現假設 UIA，非強制排序，見 ASSUMPTIONS）：音樂單曲 → 電影 → 音樂專輯 → 會員卡。四類覆蓋數位次分類。 -->
+        <!-- 數位：音樂單曲 Song -->
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Coastline · single" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-single.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Coastline · single</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowSong.meta">Single · MP3 + FLAC</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowSong.cat">Song</span><span class="product-list__cat-main" data-i18n="e-shop.cat.digital">Digital goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowSong.price">$1.99</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=song" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- 數位：電影 Movie -->
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Tour documentary" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/tour-documentary.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Tour documentary</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowMovie.meta">Documentary · MP4 1080p</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowMovie.cat">Movie</span><span class="product-list__cat-main" data-i18n="e-shop.cat.digital">Digital goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowMovie.price">$6.99</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=movie" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- 數位：音樂專輯 Album（EP）-->
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Coastline EP — digital download" data-tiers="inner superfan devoted fan">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-ep.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Coastline EP — digital download</div>
+              <div class="product-list__meta" data-i18n="e-shop.row3.meta">Album · FLAC + MP3</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.row3.cat">Album</span><span class="product-list__cat-main" data-i18n="e-shop.cat.digital">Digital goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.row3.price">$12</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=album" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- 數位：會員卡 Membership（VIPCard）-->
+        <div class="product-list__row" role="row" data-status="live" data-type="digital" data-name="Inner circle · membership" data-tiers="inner">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/inner-circle-membership.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title">Inner circle · membership</div>
+              <div class="product-list__meta" data-i18n="e-shop.rowVip.meta">Membership · monthly</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="e-shop.rowVip.cat">Membership</span><span class="product-list__cat-main" data-i18n="e-shop.cat.digital">Digital goods</span></div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.rowVip.price">$30</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span></div>
+          <div class="product-list__cell product-list__stock" role="cell">∞</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html?id=membership" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- 草稿列（spec F4 三類共通「草稿空值占位」/ D092）：每一欄都以占位呈現未填值——名稱「未命名」、圖片預設、其餘「—」；上架關閉。 -->
+        <div class="product-list__row" role="row" data-status="draft" data-type="physical" data-name="">
+          <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No product image">
+              <i data-lucide="package" class="ztor-icon" aria-hidden="true"></i>
+            </div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title product-list__title--draft" data-i18n="e-shop.draft.untitled">Untitled</div>
+              <div class="product-list__meta product-list__empty">—</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__tier product-list__empty" role="cell">—</div><div class="product-list__cell product-list__category-cell product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__price product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.status.draft">Draft</span></span></div>
+          <div class="product-list__cell product-list__stock product-list__empty" role="cell">—</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="create-product.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-eshop-delete ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="e-shop.delete">Delete</span></button></div></details></div>
+        </div>
+      </section>
+
+      <!-- Bundles tab · spec §5.1.5 F3 · 套組清單（庫存＝min 成員，D031） -->
+      <section class="product-list product-list--eshop product-list--bundles when-data" role="table" aria-label="Bundles" data-eshop-panel="bundles" hidden>
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Image"></div>
+          <div role="columnheader" data-i18n="e-shop.col.bundle">Bundle</div>
+          <div role="columnheader" data-i18n="e-shop.col.tier">Fan tier</div>
+          <div role="columnheader" data-i18n="e-shop.col.members">Members</div>
+          <div role="columnheader" data-i18n="e-shop.col.bundleprice">Bundle price</div>
+          <div role="columnheader" data-i18n="e-shop.col.status">Status</div>
+          <div role="columnheader" data-i18n="e-shop.col.stock">Stock</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="bundle" data-stock-avail="3" data-name="Coastline starter pack" data-tiers="inner superfan devoted">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/coastline-starter-pack.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.b1.name">Coastline starter pack</div></div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.b1.members">Tee + EP + zine · 3 items</div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.b1.price">$56</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.b1.stock">3 left (min)</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button><a class="dropdown__item" role="menuitem" href="bundle-detail.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <div class="product-list__row" role="row" data-status="live" data-type="bundle" data-stock-avail="21" data-name="Vinyl + poster set" data-tiers="inner superfan devoted fan">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/products/vinyl-poster-set.webp" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.b2.name">Vinyl + poster set</div></div>
+          </div>
+          <div class="product-list__cell product-list__tier" role="cell"><details class="dropdown"><summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="Who can buy this" data-i18n-aria-label="e-shop.tier.aria"><span data-tier-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="inner" data-keep-open><span class="badge badge--orange" data-i18n="tier-settings.tier.inner">Inner Circle</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="superfan" data-keep-open><span class="badge badge--info" data-i18n="tier-settings.tier.superfan">Superfan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="devoted" data-keep-open><span class="badge badge--success" data-i18n="tier-settings.tier.devoted">Ranked fans</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button><button class="dropdown__item dropdown__item--choice" type="button" role="menuitemcheckbox" aria-checked="true" data-tier-pick="fan" data-keep-open><span class="badge badge--neutral" data-i18n="tier-settings.tier.fan">Fan</span><i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i></button></div></details></div><div class="product-list__cell product-list__category-cell" role="cell" data-i18n="e-shop.b2.members">Acetate LP + poster · 2 items</div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.b2.price">$120</div>
+          <div class="product-list__cell product-list__status stock-tip" role="cell" tabindex="0"><span class="badge badge--success"><span data-i18n="e-shop.row.active">Live</span></span><div class="stock-tip__pop" role="tooltip"></div></div>
+          <div class="product-list__cell product-list__stock stock-tip" role="cell" tabindex="0"><span data-i18n="e-shop.b2.stock">21 left (min)</span><div class="stock-tip__pop" role="tooltip"></div></div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><button class="dropdown__item" type="button" role="menuitem" data-eshop-restock ><i data-lucide="package" class="ztor-icon"></i><span data-i18n="e-shop.restock">Restock</span></button><a class="dropdown__item" role="menuitem" href="bundle-detail.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- 草稿組合列（D092 三類共通）：名稱「未命名」、其餘欄「—」、上架關閉 -->
+        <div class="product-list__row" role="row" data-status="draft" data-type="bundle" data-name="">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image product-list__image--placeholder" aria-label="No bundle image"><i data-lucide="boxes" class="ztor-icon"></i></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body"><div class="product-list__title product-list__title--draft" data-i18n="e-shop.draft.untitled">Untitled</div></div>
+          </div>
+          <div class="product-list__cell product-list__tier product-list__empty" role="cell">—</div><div class="product-list__cell product-list__category-cell product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__price product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.status.draft">Draft</span></span></div>
+          <div class="product-list__cell product-list__stock product-list__empty" role="cell">—</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="create-bundle.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-eshop-delete ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="e-shop.delete">Delete</span></button></div></details></div>
+        </div>
+      </section>
+
+      <!-- F6 拍賣即時橫條（spec §124–128）：僅 Auctions 分頁、有進行中競標才顯示；置於狀態篩選與清單之間。
+           重點拍賣挑選規則待確認，先取第一筆 live。重用 .alert--bar。JS 於切到 Auctions 且有 live 列時 unhide。 -->
+      <div class="alert alert--bar eshop-live-banner" role="status" data-eshop-live-banner data-feat="S11" hidden>
+        <div class="alert__icon"><i data-lucide="gavel" class="ztor-icon"></i></div>
+        <div class="alert__body">
+          <div class="alert__title" data-eshop-live-count data-i18n="e-shop.live.count">1 auction live</div>
+          <div class="alert__sub" style="font-size: var(--fs-12);color:var(--foreground-muted);margin-top:var(--sp-2)" data-eshop-live-feature data-i18n="e-shop.live.feature">Stage-worn leather jacket · $385 · Live</div>
+        </div>
+        <a class="alert__cta" href="auction-detail.html" data-i18n="e-shop.live.view">View →</a>
+      </div>
+
+      <!-- Auctions tab · 拍賣清單（一物一拍）；每列 → 拍賣商品細節頁 5.1.5.8。建立走 ＋New → create-auction.html-->
+      <section class="product-list product-list--eshop product-list--auctions when-data" role="table" aria-label="Auctions" data-eshop-panel="auctions" data-feat="S11" hidden>
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Image"></div>
+          <div role="columnheader" data-i18n="e-shop.col.item">Item</div>
+          <div role="columnheader" data-i18n="e-shop.col.category">Category</div>
+          <div role="columnheader" data-i18n="e-shop.col.bid">Bid</div>
+          <div role="columnheader" data-i18n="e-shop.col.status">Status</div>
+          <div role="columnheader" data-i18n="e-shop.col.activity">Activity</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <!-- Live：目前出價／出價·人數·剩餘時間；列操作＝複製連結（spec §89）-->
+        <div class="product-list__row" role="row" data-status="live" data-type="auction" data-name="Stage-worn leather jacket">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/stage-worn-jacket.webp" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a1.name">Stage-worn leather jacket</div><div class="product-list__meta" data-i18n="e-shop.a1.meta">Good · Inner Circle</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.clothing">Clothing</div>
+          <div class="product-list__cell product-list__price" role="cell">$385</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.astatus.live">Live</span></span></div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a1.activity">18 bids · 12 bidders · 1d left</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="auction-detail.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copylink">Copy link</span></button></div></details></div>
+        </div>
+
+        <!-- Nick persona：WYAGL / 祝你好命客製鞋拍賣，圖片由 products-store.js 依 persona 覆寫 -->
+        <div class="product-list__row" role="row" data-status="upcoming" data-type="auction" data-name="WYAGL Nike Dunk Low Pro SB">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/nick-nike-00.jpg" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Nike Dunk Low Pro SB「WYAGL / 祝你好命」客製鞋</div><div class="product-list__meta">全新 · 限量客製</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell">鞋款</div>
+          <div class="product-list__cell product-list__price" role="cell">起標 NT$12,800</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.upcoming">Upcoming</span></span></div>
+          <div class="product-list__cell product-list__activity" role="cell">即將開始 · 26 人關注</div><div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="auction-detail.html?id=wyagl-nike-dunk"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- Upcoming：起標價／距開始倒數·關注數；列操作＝編輯（spec §88）-->
+        <div class="product-list__row" role="row" data-status="upcoming" data-type="auction" data-name="Signed tour poster 1 of 1">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/signed-tour-poster.webp" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a2.name">Signed tour poster · 1 of 1</div><div class="product-list__meta" data-i18n="e-shop.a2.meta">New · Superfan+</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.memorabilia">Memorabilia</div>
+          <div class="product-list__cell product-list__price" role="cell" data-i18n="e-shop.a2.bid">From $50</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.upcoming">Upcoming</span></span></div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a2.activity">Starts in 2d · 14 watching</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="auction-detail.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>
+        </div>
+
+        <!-- Ended（已出貨）：成交價／得標者·實收；Shipped 徽章；列操作＝追蹤履約 → 訂單管理（spec §90）-->
+        <div class="product-list__row" role="row" data-status="ended" data-type="auction" data-name="Vintage synth">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image"><img src="images/products/vintage-synth.webp" alt="" loading="lazy"></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title" data-i18n="e-shop.a3.name">Vintage synth</div><div class="product-list__meta" data-i18n="e-shop.a3.meta">Well-loved · All fans</div></div></div>
+          <div class="product-list__cell product-list__category-cell" role="cell" data-i18n="cp.acat.equipment">Equipment</div>
+          <div class="product-list__cell product-list__price" role="cell">$1,240</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.astatus.ended">Ended</span></span><span class="badge badge--success"><span data-i18n="e-shop.astatus.shipped">Shipped</span></span></div>
+          <div class="product-list__cell product-list__activity" role="cell" data-i18n="e-shop.a3.activity">Winner @luna · Earnings $1,116</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="false" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch" aria-hidden="true"></span></button><a class="dropdown__item" role="menuitem" href="orders.html" ><i data-lucide="truck" class="ztor-icon"></i><span data-i18n="e-shop.a.track">Track fulfilment</span></a></div></details></div>
+        </div>
+
+        <!-- 草稿拍賣列（D092 三類共通）：未排程的拍賣草稿，每欄占位；列操作＝編輯（回建立拍賣補齊）-->
+        <div class="product-list__row" role="row" data-status="draft" data-type="auction" data-name="">
+          <div class="product-list__image-cell" role="cell"><div class="product-list__image product-list__image--placeholder" aria-label="No image"><i data-lucide="gavel" class="ztor-icon"></i></div></div>
+          <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title product-list__title--draft" data-i18n="e-shop.draft.untitled">Untitled</div><div class="product-list__meta product-list__empty">—</div></div></div>
+          <div class="product-list__cell product-list__category-cell product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__price product-list__empty" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--neutral"><span data-i18n="e-shop.status.draft">Draft</span></span></div>
+          <div class="product-list__cell product-list__activity product-list__empty" role="cell">—</div>          <div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><a class="dropdown__item" role="menuitem" href="create-auction.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-eshop-delete ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="e-shop.delete">Delete</span></button></div></details></div>
+        </div>
+      </section>
+
+      <!-- F4 三類共通·分批載入（spec §三類共通 / D094）：未載完顯示「載入更多」；全部載完顯示 end-cap「已顯示全部 N 筆」（N＝目前篩選總數）。0 筆走查無符合（下方卡），與 end-cap 分流。共用一個頁尾，貼在目前可見分頁下方。 -->
+      <div class="list-footer list-footer--center when-data" data-eshop-foot hidden>
+        <button class="btn btn--ghost btn--sm" type="button" data-eshop-loadmore data-i18n="e-shop.loadmore" hidden>Load more</button>
+        <span class="list-footer__count" data-eshop-endcap hidden></span>
+      </div>
+
+      <!-- F4/F3 查無符合（搜尋／狀態篩選無結果）· spec §96。沿用 orders 的 noresult 模式；
+           JS 於 active 面板可見列數＝0 時顯示，Clear 重置搜尋＋狀態回 All。與帳號層級「無資料」分流。 -->
+      <section class="card eshop-noresult when-data" data-eshop-noresult hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="e-shop.noresult.title">No matching items</h3>
+          <p class="empty-card__text" data-i18n="e-shop.noresult.text">No items match your search or status filter. Try a different keyword or clear the filters.</p>
+          <button class="btn btn--outline empty-card__cta" type="button" data-eshop-clear data-i18n="e-shop.noresult.clear">Clear filters</button>
+        </div>
+      </section>
+
+      <!-- Account-level empty state (Cheat Codes · data=empty) · spec 5.1.5 §頁面狀態「無資料」
+           + F4 其他狀態·無資料：帳號尚未建立任何商品（含 Products／Bundles／Auctions 皆無）→
+           顯示空狀態與「新增商品」建立引導。不同於 F3 搜尋／篩選的「查無符合」（那屬有資料內，
+           由 JS 切換 row.hidden）。toggled by <html data-data-state="empty">（shared.css .when-empty）。 -->
+      <section class="card when-empty">
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="e-shop.empty.account.title">No products yet</h3>
+          <p class="empty-card__text" data-i18n="e-shop.empty.account.text">Add your first product, bundle or auction to start selling merch, digital goods and special editions.</p>
+          <a class="btn btn--primary empty-card__cta" href="create-product.html" data-i18n="e-shop.empty.account.cta">Add product</a>
+        </div>
+      </section>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- F5 · 商店預覽 · 常駐畫面分割、不可關閉（spec 5.1.5 F5「常駐右側欄」）。
+       移出 .main、改為 .app 直接子層（sibling）：子元素無法被父層內容蓋住，要讓桌機
+       主內容頁「疊在預覽上」，必須兩者同層、再用 z-index 比序（main 45 > 預覽 40）。
+       桌機 ≥1101px fixed 脫離流；窄螢幕 ≤1100px static 堆疊在主面板下方（見 <style>）。
+       同一粉絲視角；可開關、預設關閉（spec F5 / D084，由工作列「預覽商店」鈕開啟）。 -->
+  <div class="preview-panel preview-panel--inset" id="eshop-preview">
+    <div class="preview-panel__sheet">
+      <!-- 無 header bar：「商店預覽」改成 fan-store hero 內、店名上方的 overline 小字（由下方 mount JS 填）。
+           關閉入口＝右上角浮動 ✕（headerless 預覽；spec F5 / D084）。 -->
+      <button class="btn btn--icon btn--sm eshop-preview-close" type="button" data-eshop-preview-close aria-label="Close preview" data-i18n-aria-label="e-shop.preview.close"><i data-lucide="x" class="ztor-icon"></i></button>
+      <div class="preview-panel__body">
+        <!-- F5 商店預覽內容＝粉絲端店面（§6.7 同源）→ ds-components/fan-store.css，
+             markup 由 partials/fan-store.js 注入，store-settings F1 共用同一份 -->
+        <div data-fan-store-host></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 接縫右向分隔陰影（桌機 ≥1101px）：固定細條、自 main 圓角下方起，右投影到預覽上 -->
+  <div class="eshop-seam-shadow" aria-hidden="true"></div>
+</div>
+
+<div data-restock-modal-host></div>
+<!-- 新品貼文 composer popup（spec 5.1.5.7 / D068）：建立商品完成後回清單以 ?posted=1 開啟 -->
+<div data-product-post-host></div>
+
+<!-- 商店設定 popup（spec 5.1.5 F3 / D065）：full-screen modal 內嵌 store-settings.html，不離開電子商店脈絡 -->
+<div class="embed-modal" id="eshop-storeset" hidden>
+  <div class="embed-modal__sheet">
+    <div class="embed-modal__head">
+      <h2 class="embed-modal__title" data-i18n="e-shop.storeset.title">Store settings</h2>
+      <button class="embed-modal__close" type="button" data-eshop-storeset-close aria-label="Close store settings" data-i18n-aria-label="e-shop.storeset.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <iframe class="embed-modal__frame" title="Store settings" data-eshop-storeset-frame></iframe>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-dock.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="partials/restock-modal.js?v=r2.2"></script>
+<script src="partials/product-post-modal.js?v=r2.2"></script>
+<script src="partials/fan-store.js?v=r2.2"></script>
+<script>
+  /* E-Shop · spec 5.1.5 F3/F4. Demo interactions only (no backend):
+     tab switch · search + status filter (scoped to active tab) ·
+     Shop toggle → Hidden status · See as fan split preview · Restock popup. */
+  (function () {
+    const tabs   = [...document.querySelectorAll('[data-eshop-tab]')];
+    const panels = [...document.querySelectorAll('[data-eshop-panel]')];
+    const search = document.querySelector('[data-eshop-search]');
+    const statusNav  = document.querySelector('[data-eshop-status]');
+    let   statusTabs = statusNav ? [...statusNav.querySelectorAll('.filter-tabs__item')] : [];   // 隨類型重建（renderStatusTabs）
+    const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+
+    const activePanel = () => panels.find(p => !p.hidden);
+    const activeTabKey = () => { const t = tabs.find(x => x.classList.contains('tabs__item--active')); return t ? t.getAttribute('data-eshop-tab') : 'products'; };
+    const activeStatus = () => { const t = statusTabs.find(x => x.classList.contains('filter-tabs__item--active')); return t ? t.getAttribute('data-status-val') : 'all'; };
+
+    /* Demo 填充（D094 展示用）：把 Products 補滿至 30 筆，讓 25/批 的「載入更多」真的出現（25 顯示＋5 待載）。
+       純 demo 樣本、狀態 Live、無圖佔位；先於下方所有 binding 生成，故 shop 開關／狀態計數／篩選／拖曳皆涵蓋。
+       生成後套 icons／i18n（icons.js、i18n.js 已於本 inline script 之前載入）。 */
+    (function fillDemoProducts() {
+      const pp = document.querySelector('[data-eshop-panel="products"]');
+      if (!pp) return;
+      const TARGET = 30, have = pp.querySelectorAll('.product-list__row').length;
+      /* 粉絲分級欄的 markup 只authored 一次（在上面的靜態列裡），這裡整段複製沿用。
+         第二份手寫模板遲早會跟第一份漂移——選項增減、i18n key 換名時只改到一邊。 */
+      const TIER_CELL = (function () {
+        const c = pp.querySelector('.product-list__row:not([data-status="draft"]) .product-list__tier');
+        return c ? c.outerHTML : '';
+      })();
+      /* 逐件指定 分類（繁中 葉節點）＋分類 icon＋價格＋庫存，避免等差假資料與名稱分類錯配。
+         2026-07-20（Figma node 845-12576）：規格副標欄改「單一規格」或「規格名稱（規格變體）」——
+         這批填充商品多數無真實規格資料，一律單一規格；僅 Tee 兩款有明確尺寸選項，標 variant。 */
+      /* 2026-07-21 使用者指定：商品清單改真實照片（取自 ztor-eshop-fe 參考站，圖存
+         images/products/），但列表最後 5 筆（Bandana／Pennant／Lyric booklet／Photo set／
+         Bookmark，索引 15-19）刻意保留 icon placeholder，示範「尚未上傳圖片」的原始樣式仍在。 */
+      /* 2026-07-27：cat 由寫死繁中字面值改為 catKey（指向 i18n 的 e-shop.cat.* taxonomy）。
+         舊寫法讓這批列在英文語系整欄維持中文——列是 JS 產生的，沒有 data-i18n 就永遠不會被
+         applyI18n 翻譯。同理 variant 改 variantKey。任何新增列一律給 key、不給字面值。 */
+      const ITEMS = [
+        { nm: 'Sticker sheet',   catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 6,  stock: 132, img: 'sticker-sheet.webp' },
+        { nm: 'Logo mug',        catKey: 'e-shop.cat.home',        icon: 'house',     price: 18, stock: 47,  img: 'logo-mug.webp' },
+        { nm: 'Tote bag',        catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 22, stock: 64,  img: 'tote-bag.webp' },
+        { nm: 'Beanie',          catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 28, stock: 23,  img: 'beanie.webp' },
+        { nm: 'Notebook',        catKey: 'e-shop.cat.books',       icon: 'book-open', price: 14, stock: 85,  img: 'notebook.webp' },
+        { nm: 'Keychain',        catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 9,  stock: 210, img: 'keychain.webp' },
+        { nm: 'Patch set',       catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 12, stock: 58,  img: 'patch-set.webp' },
+        { nm: 'Coaster pack',    catKey: 'e-shop.cat.home',        icon: 'house',     price: 16, stock: 39,  img: 'coaster-pack.webp' },
+        { nm: 'Postcard set',    catKey: 'e-shop.cat.prints',      icon: 'image',     price: 11, stock: 173, img: 'postcard-set.webp' },
+        { nm: 'Tee — black',     catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 32, stock: 96,  variantKey: 'e-shop.variant.size-smlxl', img: 'tee-black.webp' },
+        { nm: 'Tee — sand',      catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 32, stock: 71,  variantKey: 'e-shop.variant.size-smlxl', img: 'tee-sand.webp' },
+        { nm: 'Zip hoodie',      catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 58, stock: 34,  img: 'zip-hoodie.webp' },
+        { nm: 'Socks',           catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 13, stock: 118, img: 'socks.webp' },
+        { nm: 'Cap',             catKey: 'e-shop.cat.apparel',     icon: 'shirt',     price: 26, stock: 42,  img: 'cap.webp' },
+        { nm: 'Wristband',       catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 7,  stock: 260, img: 'wristband.webp' },
+        { nm: 'Bandana',         catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 15, stock: 88 },
+        { nm: 'Pennant',         catKey: 'e-shop.cat.home',        icon: 'house',     price: 19, stock: 31 },
+        { nm: 'Lyric booklet',   catKey: 'e-shop.cat.books',       icon: 'book-open', price: 17, stock: 66 },
+        { nm: 'Photo set',       catKey: 'e-shop.cat.prints',      icon: 'image',     price: 21, stock: 54 },
+        { nm: 'Bookmark',        catKey: 'e-shop.cat.books',       icon: 'book-open', price: 5,  stock: 149 },
+        { nm: 'Pin set',         catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 24, stock: 37 },
+        { nm: 'Fridge magnet',   catKey: 'e-shop.cat.home',        icon: 'house',     price: 8,  stock: 93 },
+        { nm: 'Lanyard',         catKey: 'e-shop.cat.accessories', icon: 'tag',       price: 10, stock: 127 },
+        { nm: 'Water bottle',    catKey: 'e-shop.cat.home',        icon: 'house',     price: 27, stock: 45 }
+      ];
+      const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      /* 產列當下就用目前語言把字寫進去（i18nT＝i18n.js 對外的翻譯函式），同時保留 data-i18n
+         讓之後切語言時 applyI18n 能重譯。只留空字串會在 key 漏掉時變成空白格，
+         只寫死英文則切中文前會閃一格英文——兩者都不要。 */
+      const T = k => (window.i18nT && window.i18nT(k)) || '';
+      let html = '';
+      for (let i = 0; have + i < TARGET; i++) {
+        const it = ITEMS[i % ITEMS.length];
+        html +=
+          '<div class="product-list__row" role="row" data-status="live" data-type="physical" data-tiers="' + (it.tiers || 'inner superfan devoted fan') + '" data-name="' + esc(it.nm) + '">'
+          + '<div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>'
+          + '<div class="product-list__image-cell" role="cell">' + (it.img
+              ? '<div class="product-list__image"><img src="images/products/' + it.img + '" alt="" loading="lazy"></div>'
+              : '<div class="product-list__image product-list__image--placeholder" aria-label="No product image"><i data-lucide="' + it.icon + '" class="ztor-icon" aria-hidden="true"></i></div>')
+            + '</div>'
+          + '<div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">' + esc(it.nm) + '</div>'
+            /* 沒有自訂變體字串時走 i18n key，別寫死中文——2026-07-21 術語由「規格」改「選項」時，
+               這裡的 fallback 漏改造成同一頁「單一選項」與「單一規格」並存（收尾驗收抓到）。 */
+            + '<div class="product-list__meta" data-i18n="' + (it.variantKey || 'e-shop.variant.single') + '">' + esc(T(it.variantKey || 'e-shop.variant.single')) + '</div>'
+            + '</div></div>'
+          + TIER_CELL
+          + '<div class="product-list__cell product-list__category-cell" role="cell"><span class="product-list__cat-sub" data-i18n="' + esc(it.catKey) + '">' + esc(T(it.catKey)) + '</span><span class="product-list__cat-main" data-i18n="e-shop.cat.physical">' + esc(T('e-shop.cat.physical')) + '</span></div>'
+          + '<div class="product-list__cell product-list__price" role="cell">$' + it.price + '</div>'
+          + '<div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="e-shop.row.active">' + esc(T('e-shop.row.active')) + '</span></span></div>'
+          + '<div class="product-list__cell product-list__stock" role="cell">' + it.stock + ' / ∞</div>'
+          + '<div class="product-list__actions" role="cell"><details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="e-shop.a.more" data-i18n-title="e-shop.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item dropdown__item--toggle" type="button" role="menuitemcheckbox" aria-checked="true" data-eshop-shop data-keep-open><span data-i18n="e-shop.a.shoplist">List in shop</span><span class="switch switch--on" aria-hidden="true"></span></button><button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="e-shop.a.copystorelink">Copy store link</span></button><a class="dropdown__item" role="menuitem" href="product-detail.html" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="e-shop.edit">Edit</span></a></div></details></div>'
+          + '</div>';
+      }
+      pp.insertAdjacentHTML('beforeend', html);
+      if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(pp);
+      if (window.applyI18n) window.applyI18n(pp);
+    })();
+
+    /* 草稿列置頂：草稿未對粉絲顯示、無粉絲端陳列順序，故排除於拖曳排序區、集中在清單最前供創作者補齊
+       （呈現決定，UIA-038；拖曳＝粉絲陳列順序 D083、草稿佔位 D092）。 */
+    (function pinDrafts() {
+      const pp = document.querySelector('[data-eshop-panel="products"]');
+      if (!pp) return;
+      const rows = [...pp.querySelectorAll('.product-list__row')];
+      const firstNonDraft = rows.find(r => (r.dataset.status || '') !== 'draft');
+      rows.filter(r => (r.dataset.status || '') === 'draft').forEach(d => {
+        if (firstNonDraft) pp.insertBefore(d, firstNonDraft); else pp.insertBefore(d, pp.querySelector('.product-list__row'));
+      });
+    })();
+
+    /* F4 三類共通·分批載入（D094）：每批 BATCH 筆，「載入更多」載下一批，全部載完顯示 end-cap。
+       BATCH＝25（規格預設，使用者裁示，原 10）。樣本列數 < 25 → 一批全載、不出現「載入更多」、直接顯示 end-cap（與真實 25 批量行為一致；先前 demo 取 4 會在 6 筆時誤現「載入更多」，已校正）。Load more 僅在某分頁 > 25 筆時出現。
+       縮圖 lazy load（D094）：真實縮圖 `.product-list__image img` 採 `loading="lazy"`、僅捲入視窗才抓圖；本 demo 清單為無圖 CSS 佔位（自架、無 CDN 縮圖），故 lazy-load 記為慣例、demo 無可見效果。 */
+    const BATCH = 25;
+    let shownCount = BATCH;
+    const resetBatch = () => { shownCount = BATCH; };
+
+    function applyFilter() {
+      const q = (search && search.value || '').trim().toLowerCase();
+      const s = activeStatus();
+      const panel = activePanel();
+      if (!panel) return;
+      let matched = 0, shown = 0;
+      panel.querySelectorAll('.product-list__row').forEach(row => {
+        const name = (row.getAttribute('data-name') || '').toLowerCase();
+        const st = row.getAttribute('data-status') || '';
+        const ok = (!q || name.includes(q)) && (s === 'all' || st === s);
+        if (!ok) { row.hidden = true; return; }
+        matched++;
+        const within = matched <= shownCount;   // 分批：只顯示前 shownCount 筆相符列（D094）
+        row.hidden = !within;
+        if (within) shown++;
+      });
+      /* F3/F4 查無符合（spec §96）：有篩選條件且 active 面板 0 列相符 → 顯示空狀態，
+         同時把整張清單（表頭＋拖曳提示）收起，只留空狀態卡（避免兩個東西並存）。 */
+      const empty = (q || s !== 'all') && matched === 0;
+      const noResult = document.querySelector('[data-eshop-noresult]');
+      if (noResult) noResult.hidden = !empty;
+      panel.classList.toggle('is-filtered-empty', empty);
+      updateListFoot(matched, shown, empty);
+    }
+
+    /* D094 分批載入頁尾：未載完→「載入更多」；載完→ end-cap「已顯示全部 N 筆」（N＝相符總數，對齊狀態篩選）；
+       0 筆→走查無符合、頁尾收起，與 end-cap 分流。 */
+    function endcapText(n) {
+      const zh = document.documentElement.lang === 'zh-Hant';
+      return zh ? ('已顯示全部 ' + n + ' 筆') : ('Showing all ' + n + (n === 1 ? ' item' : ' items'));
+    }
+    function updateListFoot(matched, shown, empty) {
+      const foot = document.querySelector('[data-eshop-foot]');
+      if (!foot) return;
+      if (empty || matched === 0) { foot.hidden = true; return; }
+      foot.hidden = false;
+      const more = matched > shown;   // 還有未載入的相符列
+      const btn = foot.querySelector('[data-eshop-loadmore]');
+      const cap = foot.querySelector('[data-eshop-endcap]');
+      if (btn) btn.hidden = !more;
+      if (cap) { cap.hidden = more; if (!more) cap.textContent = endcapText(matched); }
+    }
+
+    /* F3 狀態篩選每項顯示目前類型的商品數（spec / D066）；數量隨 tab 重算，是否隨搜尋連動產品待確認 */
+    function updateStatusCounts() {
+      const panel = activePanel();
+      if (!panel) return;
+      const rows = [...panel.querySelectorAll('.product-list__row')];
+      statusTabs.forEach(item => {
+        const v = item.getAttribute('data-status-val');
+        const n = v === 'all' ? rows.length : rows.filter(r => (r.getAttribute('data-status') || '') === v).length;
+        const badge = item.querySelector('[data-status-count]');
+        if (badge) badge.textContent = n;
+      });
+    }
+    /* 點狀態分頁（filter-tabs）→ 設 active + 重新套用篩選 */
+    function setStatus(item) {
+      statusTabs.forEach(t => { const on = t === item; t.classList.toggle('filter-tabs__item--active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      resetBatch();   // 改狀態篩選→分批重置回第 1 批（D094）
+      applyFilter();
+    }
+    /* 事件委派（狀態 tab 會隨類型重建，不能綁在個別 tab 上）*/
+    if (statusNav) statusNav.addEventListener('click', e => { const item = e.target.closest('.filter-tabs__item'); if (item) setStatus(item); });
+
+    /* 狀態篩選選項集隨類型切換（spec §F3）：Products＝全部/上架中/庫存過低/已售完/草稿；
+       Bundles＝全部/上架中/已售完/草稿（無低庫存）；Auctions＝全部/上架中/密封/即將/已結束。 */
+    const STATUS_SETS = {
+      products: [['all', 'e-shop.status.all'], ['live', 'e-shop.status.in'], ['low', 'e-shop.status.low'], ['out', 'e-shop.status.out'], ['draft', 'e-shop.status.draft']],
+      bundles:  [['all', 'e-shop.status.all'], ['live', 'e-shop.status.in'], ['out', 'e-shop.status.out'], ['draft', 'e-shop.status.draft']],
+      auctions: [['all', 'e-shop.status.all'], ['live', 'e-shop.status.in'], ['sealed', 'e-shop.status.sealed'], ['upcoming', 'e-shop.status.upcoming'], ['ended', 'e-shop.status.ended'], ['draft', 'e-shop.status.draft']],
+    };
+    function renderStatusTabs(typeKey) {
+      if (!statusNav) return;
+      const set = STATUS_SETS[typeKey] || STATUS_SETS.products;
+      statusNav.innerHTML = set.map(([val, key], i) =>
+        '<button class="filter-tabs__item' + (i === 0 ? ' filter-tabs__item--active' : '') + '" type="button" role="tab" aria-selected="' + (i === 0 ? 'true' : 'false') + '" data-status-val="' + val + '">'
+        + '<span data-i18n="' + key + '">' + T(key, val) + '</span><span class="filter-tabs__count" data-status-count>0</span></button>'
+      ).join('');
+      statusTabs = [...statusNav.querySelectorAll('.filter-tabs__item')];
+      updateStatusCounts();
+    }
+
+    /* F2 低庫存橫條「前往查看」入口 → 切到 Low Stock 篩選並捲到清單（事件委派：連結由 JS 動態組出）。 */
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-eshop-view-low]');
+      if (!el) return;
+      e.preventDefault();
+      const prodTab = tabs.find(t => t.getAttribute('data-eshop-tab') === 'products');
+      if (prodTab && !prodTab.classList.contains('tabs__item--active')) prodTab.click();   // 低庫存屬商品；先切到 Products 分頁（重建狀態選項集）
+      const low = statusTabs.find(t => t.getAttribute('data-status-val') === 'low');
+      if (low) { setStatus(low); const list = document.querySelector('[data-eshop-panel="products"]') || low; list.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    });
+
+    /* F2 低庫存提醒文案（公式）：x 件商品 ( 名稱·最多前三·多的… ) 低於庫存門檻，前往查看。
+       名稱與件數為帳號層級示意資料（與清單列分離）；隨語言重建。 */
+    (function () {
+      const msg = document.querySelector('[data-eshop-stock-msg]');
+      if (!msg) return;
+      /* 名單依 persona 換（2026-07-25）——原本寫死 Coastline 的商品名，切到周湯豪
+         persona 後這條通知會與下方清單自相矛盾。 */
+      const PERSONA_ITEMS = {
+        default: {
+          en: ['Tour zine vol. 02', 'Coastline tee (S)', 'Salt & Bitumen poster'],
+          zh: ['Tour zine vol. 02', 'Coastline tee (S)', 'Salt & Bitumen 海報']
+        },
+        nick: {
+          en: ['REALIVE tour photobook', 'Wish You A Good Life hoodie (Cream S)'],
+          zh: ['REALIVE 巡演精裝寫真誌', '祝你好命 連帽外套（Cream S）']
+        }
+      };
+      const personaKey = (function () {
+        try { const p = localStorage.getItem('ztor.persona'); if (p === 'nick') return 'nick'; } catch (_) {}
+        return 'default';
+      })();
+      const ITEMS = PERSONA_ITEMS[personaKey] || PERSONA_ITEMS.default;
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const TT = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+      function render() {
+        const zh = document.documentElement.lang === 'zh-Hant';
+        const names = ITEMS[zh ? 'zh' : 'en'];
+        const count = names.length;                       // 示意件數＝名單長度
+        const shown = names.slice(0, 3).map(esc).join(' · ') + (count > 3 ? ' · …' : '');
+        const unit = TT('e-shop.alert.unit', zh ? '件商品' : 'products');
+        const threshold = TT('e-shop.alert.threshold', zh ? '低於庫存門檻，' : 'below low-stock threshold.');
+        const view = TT('e-shop.alert.goview', zh ? '前往查看' : 'View low stock');
+        const namesHtml = '<span class="eshop-stock-bar__names">( ' + shown + ' )</span>';   // 括號併入灰色 span
+        const link = '<a href="#" class="eshop-stock-bar__link" data-eshop-view-low>' + esc(view) + '</a>';
+        msg.innerHTML = zh
+          ? count + ' ' + unit + ' ' + namesHtml + ' ' + threshold + link + '。'
+          : count + ' ' + unit + ' ' + namesHtml + ' ' + threshold + ' ' + link;
+      }
+      render();
+      document.addEventListener('i18n:applied', render);
+    })();
+
+    /* F3 建立鈕＝context-aware 分割按鈕（D066）：主鈕標籤與連結隨目前 tab */
+    const CREATE = {
+      products: { key: 'e-shop.create.product', href: 'create-product.html' },
+      bundles:  { key: 'e-shop.create.bundle',  href: 'create-bundle.html' },
+      auctions: { key: 'e-shop.create.auction', href: 'create-auction.html' },
+    };
+    const createMain = document.getElementById('eshop-create-main');
+    function setCreate(key) {
+      const c = CREATE[key]; if (!createMain || !c) return;
+      createMain.setAttribute('data-i18n', c.key);
+      createMain.textContent = T(c.key, createMain.textContent);
+      createMain.setAttribute('href', c.href);
+    }
+
+    /* F6 拍賣即時橫條：僅 Auctions 分頁、且有進行中（data-status="live"）拍賣才顯示（spec §124–128）*/
+    const liveBanner = document.querySelector('[data-eshop-live-banner]');
+    function updateLiveBanner(key) {
+      if (!liveBanner) return;
+      const auctions = document.querySelector('[data-eshop-panel="auctions"]');
+      const hasLive = auctions ? auctions.querySelector('.product-list__row[data-status="live"]') : null;
+      liveBanner.hidden = !(key === 'auctions' && hasLive);
+    }
+
+    /* Tabs (type switch) — reset status to All and recompute counts for the new type */
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      const key = tab.getAttribute('data-eshop-tab');
+      tabs.forEach(t => { const on = t === tab; t.classList.toggle('tabs__item--active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
+      panels.forEach(p => { p.hidden = p.getAttribute('data-eshop-panel') !== key; });
+      renderStatusTabs(key);   // 依類型重建狀態選項集並重置為「全部」
+      setCreate(key);
+      updateLiveBanner(key);
+      resetBatch();   // 切換類型分頁→分批重置回第 1 批（D094）
+      applyFilter();
+    }));
+
+    /* Search — 改關鍵字→分批重置回第 1 批（D094）*/
+    search && search.addEventListener('input', () => { resetBatch(); applyFilter(); });
+
+    /* D094 載入更多：載下一批（shownCount += BATCH），重套篩選顯示更多相符列 */
+    const loadMoreBtn = document.querySelector('[data-eshop-loadmore]');
+    if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => { shownCount += BATCH; applyFilter(); });
+    /* 語言切換時重算 end-cap 文案（JS 生成、非 data-i18n）*/
+    document.addEventListener('i18n:applied', () => applyFilter());
+
+    /* F3 搜尋收合／展開：放大鏡鈕展開 field-pill、自動聚焦；✕ 或 Esc 收起並清空；
+       點外部且無查詢字串時收起（呈現決定，spec 搜尋位置非約束）。 */
+    const searchWrap   = document.querySelector('[data-eshop-search-wrap]');
+    const searchToggle = searchWrap && searchWrap.querySelector('[data-eshop-search-toggle]');
+    const collapseSearch = (clear) => {
+      if (!searchWrap) return;
+      searchWrap.classList.remove('is-open');
+      if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+      if (clear && search) { search.value = ''; applyFilter(); }
+    };
+    if (searchToggle) {
+      searchToggle.addEventListener('click', () => {
+        searchWrap.classList.add('is-open');
+        searchToggle.setAttribute('aria-expanded', 'true');
+        if (search) search.focus();
+      });
+    }
+    const searchClose = searchWrap && searchWrap.querySelector('[data-eshop-search-close]');
+    if (searchClose) searchClose.addEventListener('click', () => collapseSearch(true));
+    if (search) search.addEventListener('keydown', e => { if (e.key === 'Escape') collapseSearch(true); });
+    document.addEventListener('click', e => {
+      if (!searchWrap || !searchWrap.classList.contains('is-open')) return;
+      if (searchWrap.contains(e.target)) return;
+      if (search && search.value.trim()) return;   // 有字保持開啟
+      collapseSearch(false);
+    });
+
+    /* 列操作 kebab（⋯）下拉：原生 <details> 不會自動收，補上「點選單項收起」「點外部收起」「一次只開一個」 */
+    document.addEventListener('click', e => {
+      const item = e.target.closest('.dropdown__item');
+      document.querySelectorAll('details.dropdown[open]').forEach(d => {
+        if (item && d.contains(item)) { if (!item.hasAttribute('data-keep-open')) d.open = false; return; }   // 點選單項 → 收起（開關列保持開著看 switch 翻動）
+        if (!d.contains(e.target)) d.open = false;                  // 點外部（含另一個 kebab）→ 收起
+      });
+    });
+
+    /* 草稿列「刪除」（破壞性、紅字）：demo 直接移除該草稿列並重算清單（分批/end-cap/計數）。
+       完整 destructive 樣式與確認流程待規格（比照 create-product 的 .btn--ghost.btn--destructive 註記）。 */
+    document.addEventListener('click', e => {
+      const del = e.target.closest('[data-eshop-delete]');
+      if (!del) return;
+      const row = del.closest('.product-list__row');
+      if (row) { row.remove(); applyFilter(); updateStatusCounts(); }
+    });
+
+    /* F3/F4 查無符合 → 「Clear filters」：清空搜尋＋狀態回 All（spec §96）*/
+    document.querySelectorAll('[data-eshop-clear]').forEach(btn => btn.addEventListener('click', () => {
+      collapseSearch(false);
+      if (search) search.value = '';
+      const all = statusTabs.find(t => t.getAttribute('data-status-val') === 'all');
+      if (all) setStatus(all); else applyFilter();
+    }));
+
+    /* F4 粉絲端陳列排序 — 商品列拖曳重排（順序＝粉絲端商店陳列順序，D083 / spec §59）。
+       單一表格、無另設排序清單；只 Products 分頁、且只由每列最前的 grip 握把（.product-list__drag）起拖。
+       用 Pointer Events（非原生 HTML5 DnD）：原生 dragstart 的 target 是 draggable 列、無法用 e.target 限定握把，
+       原生 DnD 也較難自動測；pointer 版可靠且可測。 */
+    (function () {
+      const list = document.querySelector('.product-list--eshop[data-eshop-panel="products"]');
+      if (!list) return;
+      let dragging = null, grabDY = 0;   // grabDY＝抓取點在列內的縱向偏移，讓抓的點剛好黏在游標上
+
+      /* 依游標位置：①底下清單即時讓位（insertBefore）②把被拖的列 translateY 到游標、跟手移動 */
+      function follow(clientY) {
+        /* 只把「非草稿列」當讓位對象——草稿置頂、不可被插到其上方（草稿無陳列順序）。 */
+        const rows = [...list.querySelectorAll('.product-list__row')].filter(r => (r.dataset.status || '') !== 'draft');
+        const over = rows.find(r => { if (r === dragging) return false; const b = r.getBoundingClientRect(); return clientY >= b.top && clientY <= b.bottom; });
+        if (over) {
+          const b = over.getBoundingClientRect();
+          const ref = clientY > b.top + b.height / 2 ? over.nextSibling : over;
+          if (ref !== dragging) list.insertBefore(dragging, ref);
+        }
+        dragging.style.transform = 'none';                         // 先還原以量到「在流位置」
+        const natTop = dragging.getBoundingClientRect().top;
+        dragging.style.transform = 'translateY(' + (clientY - grabDY - natTop) + 'px) scale(1.01)';
+      }
+
+      list.addEventListener('pointerdown', e => {
+        const handle = e.target.closest('.product-list__drag');
+        if (!handle) return;                       // 只有抓握把才開始拖曳
+        const row = handle.closest('.product-list__row');
+        if (!row || (row.dataset.status || '') === 'draft') return;   // 草稿列不可拖曳（無粉絲端陳列順序）
+        e.preventDefault();
+        dragging = row;
+        grabDY = e.clientY - row.getBoundingClientRect().top;
+        row.classList.add('is-dragging');
+        try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+        follow(e.clientY);
+      });
+      list.addEventListener('pointermove', e => { if (dragging) follow(e.clientY); });
+      const end = () => { if (!dragging) return; dragging.style.transform = ''; dragging.classList.remove('is-dragging'); dragging = null; };
+      list.addEventListener('pointerup', end);
+      list.addEventListener('pointercancel', end);
+    })();
+
+    /* 點列直接進編輯（2026-07-23 使用者反饋）：草稿列進對應建立頁、已建立商品進對應細節頁。
+       不另外判斷草稿/已建立邏輯——直接讀該列 kebab 選單裡「編輯」那個 <a href> 當唯一目的地
+       來源（跟選單本身同一份資料，不會兩邊各自維護一份判斷邏輯而互相漂移）。涵蓋 Products／
+       Bundles／Auctions 三個分頁（都共用 `.product-list--eshop`）。
+       排除：握把（拖曳重排用）、operations 欄（kebab 選單本身，含選單裡的開關／按鈕／連結）、
+       粉絲分級欄（2026-07-29：它的觸發器是 <summary>，不是 <a>/<button>，不列進來的話
+       點它會被整列點擊搶走、直接跳去商品細節頁——實測過）、任何 <a>/<button>。 */
+    document.querySelectorAll('.product-list--eshop').forEach(list => {
+      list.addEventListener('click', e => {
+        if (e.target.closest('.product-list__drag, .product-list__actions, .product-list__tier, a, button')) return;
+        const row = e.target.closest('.product-list__row');
+        if (!row) return;
+        /* 只認標籤是「編輯」的那個 <a>——有些列（如已出貨的 ended 拍賣）kebab 裡唯一的
+           連結是「追蹤履約 → orders.html」，不是編輯，抓「第一個 <a>」會點錯地方。 */
+        const editLink = row.querySelector('a.dropdown__item[href]:has([data-i18n="e-shop.edit"])');
+        if (editLink) window.location.href = editLink.getAttribute('href');
+      });
+    });
+
+    /* ── 商品狀態模型（2026-07-27 重寫）─────────────────────────────
+       舊版把「上架與否」和「庫存狀態」擠在同一個 data-status 上，下架時先把整顆徽章的
+       outerHTML 存進 dataset 再貼回來還原。三個問題：(1) 徽章 HTML 寫死在 JS 字串裡，
+       文案還與字典不一致（寫 Hidden、字典是 Unlisted）；(2) 快照會過期——下架期間庫存
+       變了，上架還原的是舊徽章；(3) products-store 在 i18n:applied 時會重寫 data-status，
+       等於切個語言就把「已下架」洗回「販售中」。
+
+       改成單向推導，一個輸出、兩個各自獨立的輸入：
+         data-stock-status  live|low|out|draft  ← 商品本身的狀態（庫存／完成度）
+         data-listed        "true"|"false"      ← 創作者的上架決定
+                    ↓ deriveStatus()
+         data-status        徽章、篩選 tab、計數三者共讀的唯一值
+       徽章文字一律查 STATUS_META 的 i18n key，不寫死任何語言的字面值。 */
+    const STATUS_META = {
+      live:   { key: 'e-shop.row.active',   cls: 'badge--success' },
+      low:    { key: 'e-shop.row.low',      cls: 'badge--error'   },
+      out:    { key: 'e-shop.row.out',      cls: 'badge--neutral' },
+      draft:  { key: 'e-shop.status.draft', cls: 'badge--neutral' },
+      hidden: { key: 'e-shop.row.hidden',   cls: 'badge--neutral' }
+    };
+    /* 首次見到這一列時，把舊的單一 data-status 拆成兩個輸入。之後 data-status 只由推導寫入。 */
+    function seedRowState(row) {
+      if (!row.dataset.stockStatus) {
+        const s = row.dataset.status || 'live';
+        row.dataset.stockStatus = (s === 'hidden') ? 'live' : s;
+      }
+      if (!row.dataset.listed) {
+        const t = row.querySelector('[data-eshop-shop]');
+        /* 沒有開關的列（草稿）＝尚未上架；有開關就以開關現值為準。 */
+        row.dataset.listed = t ? String(t.getAttribute('aria-checked') === 'true')
+                               : String(row.dataset.status !== 'draft');
+      }
+    }
+    function deriveStatus(row) {
+      const stock = row.dataset.stockStatus || 'live';
+      /* 未完成的商品根本還不能上架，completeness 優先於上架與否。 */
+      if (stock === 'draft') return 'draft';
+      return row.dataset.listed === 'false' ? 'hidden' : stock;
+    }
+    /* 只重畫這一列的徽章——不重繪列、不重載頁（使用者要求：即時、只更新那顆 tag）。 */
+    function renderStatus(row) {
+      seedRowState(row);
+      const st = deriveStatus(row);
+      row.dataset.status = st;
+      const badge = row.querySelector('.product-list__status .badge');
+      if (!badge) return st;
+      const meta = STATUS_META[st] || STATUS_META.live;
+      badge.className = 'badge ' + meta.cls;
+      let span = badge.querySelector('span[data-i18n]');
+      if (!span) { span = document.createElement('span'); badge.textContent = ''; badge.appendChild(span); }
+      span.setAttribute('data-i18n', meta.key);
+      span.textContent = (window.i18nT && window.i18nT(meta.key)) || span.textContent;
+      return st;
+    }
+    /* 庫存欄格式（2026-07-27 使用者反饋：組合的「16 組（最少件數）」與商品表的「0 / ∞」不一致）。
+       庫存是數字不是句子——三張表共用這一個格式器，語言中立所以不需要 i18n key。
+       cap 空／null＝不限量＝∞（與商品列 stockText 同一套寫法）。
+       「取成員最低庫存」這件事由 stock-tip 浮卡逐一列出成員庫存來說明，不再塞進欄位文字。 */
+    function formatStock(avail, cap) {
+      const a = (avail === '' || avail == null) ? '—' : avail;
+      const c = (cap === '' || cap == null) ? '∞' : cap;
+      return a + ' / ' + c;
+    }
+    function renderStock(row) {
+      const avail = row.dataset.stockAvail;
+      if (avail == null) return;                    // 沒有結構化庫存的列不碰（草稿等）
+      const cell = row.querySelector('.product-list__stock');
+      if (!cell) return;
+      const span = cell.querySelector('span[data-i18n], span') || cell;
+      /* 舊的 e-shop.bN.stock key 是整句散文（"3 left (min)"），一旦改成數字格式那個 key
+         就不再代表這格，留著會讓下一輪 applyI18n 把句子貼回來。 */
+      span.removeAttribute('data-i18n');
+      span.textContent = formatStock(avail, row.dataset.stockCap);
+    }
+    function refreshRow(row) { renderStatus(row); renderStock(row); applyFilter(); updateStatusCounts(); }
+    function setShopState(row, on) {
+      row.dataset.listed = String(!!on);
+      const toggle = row.querySelector('[data-eshop-shop]');
+      if (toggle) {
+        toggle.setAttribute('aria-checked', on ? 'true' : 'false');
+        const sw = toggle.querySelector('.switch');
+        if (sw) sw.classList.toggle('switch--on', on);
+      }
+      refreshRow(row);
+    }
+    /* 事件委派：清單會分批插入新列（載入更多／persona 換列），逐顆綁定會漏掉後來的列。 */
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('[data-eshop-shop]');
+      if (!btn) return;
+      const row = btn.closest('.product-list__row');
+      if (!row) return;
+      setShopState(row, btn.getAttribute('aria-checked') !== 'true');
+    });
+    /* ── 粉絲分級門檻（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）──────────
+       值＝「買得到這件的最低分級」，存在列自己的 data-tier 上（與 data-status 同一種做法）。
+       階梯與名稱的唯一真相在 tier-settings：核心圈 > 超級粉絲 > 上榜粉絲 > 粉絲。
+       「粉絲」是基礎級、人人都有，所以沒有「粉絲以上」這一項——那就是「全部分級」。
+       徽章顏色沿用 tier-settings 對每一級的分派，不另立第二套配色。 */
+    /* 階梯由高到低，與 tier-settings 的排序一致；名稱直接引用它的 key，不複製第二份。 */
+    const TIER_LADDER = [
+      { v: 'inner',    key: 'tier-settings.tier.inner',    cls: 'badge badge--orange' },
+      { v: 'superfan', key: 'tier-settings.tier.superfan', cls: 'badge badge--info' },
+      { v: 'devoted',  key: 'tier-settings.tier.devoted',  cls: 'badge badge--success' },
+      { v: 'fan',      key: 'tier-settings.tier.fan',      cls: 'badge badge--neutral' }
+    ];
+    const ALL_TIERS = TIER_LADDER.map(t => t.v);
+    function tiersOf(row) {
+      const raw = (row.dataset.tiers || '').trim();
+      const set = raw ? raw.split(/\s+/).filter(v => ALL_TIERS.indexOf(v) !== -1) : [];
+      return set.length ? set : ALL_TIERS.slice();   /* 沒寫＝全部可買 */
+    }
+    /* 摘要標籤（L 指定的四種寫法）。四種寫法涵蓋的正好是「從頂端往下連續」的四個集合——
+       階梯只有四級，> 超級粉絲 的結果就是「僅核心圈」，所以不會有第五種。
+       勾選不連續時（例如只給粉絲和核心圈）沒有簡寫可用，就逐項列出——硬套一個
+       「> 某級」會說謊。 */
+    function tierSummary(set) {
+      const on = ALL_TIERS.filter(v => set.indexOf(v) !== -1);   /* 依階梯排序 */
+      if (on.length === ALL_TIERS.length) return { key: 'e-shop.tier.all', cls: 'product-list__tier-none' };
+      if (!on.length)                     return { key: 'e-shop.tier.all', cls: 'product-list__tier-none' };
+      const contiguousFromTop = on.every((v, i) => v === ALL_TIERS[i]);
+      const lowest = on[on.length - 1];
+      const cls = (TIER_LADDER.find(t => t.v === lowest) || {}).cls;
+      if (contiguousFromTop) {
+        if (on.length === 3) return { key: 'e-shop.tier.gt-fan',     cls };
+        if (on.length === 2) return { key: 'e-shop.tier.gt-ranked',  cls };
+        if (on.length === 1) return { key: 'e-shop.tier.inner-only', cls };
+      }
+      /* 非連續：列出來。文字自己組，所以不掛 data-i18n，改由 renderAllTiers 在
+         i18n:applied 時重算（各分級名稱本身仍是 i18n 來的）。 */
+      return { text: on.map(v => T((TIER_LADDER.find(t => t.v === v) || {}).key, v)).join(' · '), cls };
+    }
+    function renderTier(row) {
+      const cell = row.querySelector('.product-list__tier');
+      if (!cell) return;
+      const label = cell.querySelector('[data-tier-label]');
+      if (!label) return;                       /* 草稿列只有一個「—」，沒有控制項 */
+      const set = tiersOf(row);
+      const sum = tierSummary(set);
+      label.className = sum.cls;
+      if (sum.key) { label.setAttribute('data-i18n', sum.key); label.textContent = T(sum.key, ''); }
+      else { label.removeAttribute('data-i18n'); label.textContent = sum.text; }
+      /* 最後一個勾選項不能取消——全部取消＝這件商品沒有人買得到，那不是一個
+         creator 會想要的設定，而且從那個狀態看不出原本想給誰。停用它比事後
+         吃掉一次點擊誠實：使用者看得到為什麼不能點。 */
+      const only = set.length === 1;
+      cell.querySelectorAll('[data-tier-pick]').forEach(b => {
+        const on = set.indexOf(b.dataset.tierPick) !== -1;
+        b.setAttribute('aria-checked', String(on));
+        b.disabled = on && only;
+        b.setAttribute('aria-disabled', String(on && only));
+      });
+    }
+    /* 委派：列是動態生成的（demo 填充、persona 換人），逐列綁事件會漏掉之後才出現的列。
+       多選——點一項只切換那一項，選單不收（data-keep-open，見上方 dropdown 收合邏輯）。 */
+    document.addEventListener('click', e => {
+      const pick = e.target.closest('[data-tier-pick]');
+      if (!pick || pick.disabled) return;
+      const row = pick.closest('.product-list__row');
+      if (!row) return;
+      const v = pick.dataset.tierPick;
+      const set = tiersOf(row);
+      const i = set.indexOf(v);
+      if (i === -1) set.push(v); else set.splice(i, 1);
+      row.dataset.tiers = ALL_TIERS.filter(t => set.indexOf(t) !== -1).join(' ');
+      renderTier(row);
+    });
+    function renderAllTiers() { document.querySelectorAll('.product-list__row').forEach(renderTier); }
+    renderAllTiers();
+    /* 換語言後標籤要重寫：applyI18n 只換得掉 data-i18n 的文字，換不掉徽章 class——
+       但 class 本來就不隨語言變，這裡真正要補的是 demo 填充列在 i18n 尚未套用時
+       產生的空標籤。 */
+    document.addEventListener('i18n:applied', renderAllTiers);
+
+    /* products-store 換完列（persona／語言切換）後由它呼叫，讓推導重新跑一遍。 */
+    window.ztorEshopStatus = {
+      render: renderStatus,
+      renderStock: renderStock,
+      refreshAll: () => {
+        document.querySelectorAll('.product-list__row').forEach(r => { renderStatus(r); renderStock(r); renderTier(r); });
+        applyFilter(); updateStatusCounts();
+      }
+    };
+
+    /* F5 商店預覽（See as fan）— 可開關、預設關閉（spec 5.1.5 F5 / D084）：由工作列「預覽商店」鈕
+       開啟、面板 ✕ 或 Esc 關閉。開啟時 body.preview-open 壓窄 .main；窄螢幕（≤1100px）CSS 改靜態堆疊。 */
+    (function () {
+      const panel = document.getElementById('eshop-preview');
+      const toggle = document.getElementById('eshop-preview-toggle');
+      if (!panel || !toggle) return;
+      const sync = on => { panel.classList.toggle('is-open', on); document.body.classList.toggle('preview-open', on); toggle.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+      toggle.addEventListener('click', () => sync(!panel.classList.contains('is-open')));
+      panel.querySelectorAll('[data-eshop-preview-close]').forEach(b => b.addEventListener('click', () => sync(false)));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel.classList.contains('is-open')) sync(false); });
+    })();
+
+    /* F5 預覽內容＝fan-store 元件（§6.7 同源，與 store-settings 共用 partials/fan-store.js） */
+    (function mountFanStore() {
+      const host = document.querySelector('[data-fan-store-host]');
+      const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.fanStore;
+      if (!host || !html) { if (host) console.warn('[e-shop] fan-store template missing — is partials/fan-store.js loaded?'); return; }
+      host.innerHTML = html;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+      if (window.applyI18n) window.applyI18n(host);
+      /* 「商店預覽」overline：放在 hero 內、店名上方（e-shop 專屬，store-settings 用自己的 header） */
+      const ol = host.querySelector('[data-fan-overline]');
+      if (ol) { ol.textContent = T('e-shop.preview.title', 'Store preview'); ol.hidden = false; }
+    })();
+
+    /* Per-variant stock demo data (spec 5.1.5.6 · order model D104 + member
+       tabs D106) — shared by the Restock popup below AND the stock-tip hover
+       breakdown (2026-07-23, D-次要 使用者反饋). Hoisted out of the restock
+       IIFE so the tooltip doesn't depend on the restock modal host existing. */
+
+    /* Low-stock threshold = 10% of an item's stock cap (Total Quantity), per
+       spec §7.2 / D105 (was a flat 5). v1 uses this fixed default — per-product
+       override is deferred (feature-scope-map S31.1). Each demo item derives its
+       threshold from its cap so the 10% rule is visible in the data. */
+    const LOW_STOCK_PCT = 0.10;
+    const lowThr = cap => Math.max(1, Math.ceil(cap * LOW_STOCK_PCT));
+
+    /* Physical members per bundle (demo) — each filled separately via tabs. */
+    /* Enabled variants of the multi-variant tee (per-variant stock; sums to
+       the row's aggregate 42). Reused both as a product and as a bundle member. */
+    const TEE_VARIANTS = [
+      { name: 'S',  current: 2,  threshold: lowThr(30), status: 'low' },
+      { name: 'M',  current: 18, threshold: lowThr(40), status: 'ok' },
+      { name: 'L',  current: 15, threshold: lowThr(40), status: 'ok' },
+      { name: 'XL', current: 7,  threshold: lowThr(30), status: 'ok' }
+    ];
+    /* 2-option variant matrix (2 colours × 3 sizes = 6 variants), sub-grouped
+       by option-1 (colour) so the matrix stays legible (option 1 = group,
+       option 2 = lines). Per-variant stock. */
+    const HOODIE_MATRIX = [
+      { label: 'Black', items: [
+        { name: 'S',  current: 3,  threshold: lowThr(40), status: 'low' },
+        { name: 'M',  current: 12, threshold: lowThr(50), status: 'ok' },
+        { name: 'L',  current: 8,  threshold: lowThr(40), status: 'ok' }
+      ] },
+      { label: 'Sand', items: [
+        { name: 'S',  current: 0,  threshold: lowThr(30), status: 'out' },
+        { name: 'M',  current: 5,  threshold: lowThr(50), status: 'ok' },
+        { name: 'L',  current: 20, threshold: lowThr(60), status: 'ok' }
+      ] }
+    ];
+    const PRODUCT_MATRIX   = { 'Coastline hoodie': HOODIE_MATRIX };
+    const PRODUCT_VARIANTS = { 'Coastline tee': TEE_VARIANTS };
+    /* Bundle members (D106): each member PRODUCT is a tab; its variants show
+       as a matrix inside that tab. A member may be single-variant, 1-option
+       multi-variant (`.variants`), or a 2-option matrix (`.matrix`). Demo pack
+       mixes all three to show member-tabs + per-member variant matrix. */
+    const BUNDLE_MEMBERS = {
+      'Coastline starter pack': [
+        { name: 'Coastline tee', variants: TEE_VARIANTS },
+        { name: 'Coastline hoodie', matrix: HOODIE_MATRIX },
+        { name: 'Sticker sheet', current: 0, threshold: lowThr(50), status: 'out' }
+      ],
+      'Vinyl + poster set': [
+        { name: 'Live vinyl LP', current: 21, threshold: lowThr(150), status: 'ok' },
+        { name: 'Tour poster', current: 12, threshold: lowThr(100), status: 'ok' }
+      ]
+    };
+
+    /* Restock popup — mounts partials/restock-modal.js. One order = document
+       layer (method / supplier / ETA / notes) + item lines. PRODUCT restock
+       (single or multi-variant) = variant MATRIX lines, no tabs (2-option →
+       colour sub-groups). BUNDLE restock = one TAB per member product; each
+       tab holds that member's variant matrix. Demo pack = tee (4 variants) +
+       hoodie (2×3 matrix) + sticker (single). Submit (qty>0 lines) → origin
+       row Restocking (scheduled) / In stock (now); Mark received → In stock. */
+    (function () {
+      const rhost = document.querySelector('[data-restock-modal-host]');
+      if (!rhost || !window.ZTOR_PARTIALS || !window.ZTOR_PARTIALS.createRestock) return;
+      const restock = window.ZTOR_PARTIALS.createRestock(rhost);
+
+      function rowItem(row) {
+        const name = row.getAttribute('data-name') || 'Product';
+        const stockTxt = (row.querySelector('.product-list__stock') || {}).textContent || '';
+        const m = stockTxt.match(/\d+/);
+        const current = m ? parseInt(m[0], 10) : 0;
+        const status = (row.getAttribute('data-status') === 'out' || current === 0) ? 'out' : 'low';
+        /* No cap on a generic list row → threshold unknown; the restock line
+           hides the "· threshold N" meta when threshold is absent (D105). */
+        return { name: name.trim(), current, status };
+      }
+
+      document.addEventListener('click', e => {
+        const trig = e.target.closest('[data-eshop-restock]');
+        if (!trig) return;
+        e.preventDefault();
+        const row = trig.closest('.product-list__row');
+        if (!row) return;
+        const name = row.getAttribute('data-name');
+        if (row.getAttribute('data-type') === 'bundle') {
+          restock.openBundle(BUNDLE_MEMBERS[name] || [], row);
+        } else if (PRODUCT_MATRIX[name]) {
+          restock.openProduct(PRODUCT_MATRIX[name], row);   /* 2-option matrix → colour groups × size lines, no tabs */
+        } else if (row.hasAttribute('data-variants')) {
+          restock.openVariants(name, PRODUCT_VARIANTS[name] || [], row);
+        } else {
+          restock.openSingle(rowItem(row), row);
+        }
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') restock.close(); });
+    })();
+
+    /* Stock tip (2026-07-23 使用者反饋) — hover/focus a multi-option product's
+       or bundle's 狀態／庫存 cell → floating card lists every option
+       combination's own stock, flattened all the way down (bundle member ×
+       its own options, e.g. "Coastline hoodie · S/Black"). Single-variant
+       rows (zine, acetate, pin) have no .stock-tip trigger in the markup —
+       their one aggregate number already IS the option's number. See
+       ds-components/stock-tip.css for the visual spec and why positioning
+       is JS-driven instead of pure `:hover`. */
+    (function () {
+      const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+      function statusClass(status) {
+        if (status === 'out') return 'stock-tip__qty--out';
+        if (status === 'low') return 'stock-tip__qty--low';
+        return '';
+      }
+      function flattenMember(member) {
+        if (member.matrix) {
+          return member.matrix.flatMap(g => g.items.map(it => ({
+            label: member.name + ' · ' + it.name + '/' + g.label,
+            current: it.current, status: it.status
+          })));
+        }
+        if (member.variants) {
+          return member.variants.map(v => ({
+            label: member.name + ' · ' + v.name,
+            current: v.current, status: v.status
+          }));
+        }
+        return [{ label: member.name, current: member.current, status: member.status }];
+      }
+      /* Option-level breakdown — only for products/bundles that actually have
+         option data. Returns null for single-variant rows (zine/acetate/pin). */
+      function optionLines(name) {
+        if (PRODUCT_MATRIX[name]) {
+          return PRODUCT_MATRIX[name].flatMap(g => g.items.map(it => ({
+            label: it.name + '/' + g.label, current: it.current, status: it.status
+          })));
+        }
+        if (PRODUCT_VARIANTS[name]) {
+          return PRODUCT_VARIANTS[name].map(v => ({ label: v.name, current: v.current, status: v.status }));
+        }
+        if (BUNDLE_MEMBERS[name]) {
+          return BUNDLE_MEMBERS[name].flatMap(flattenMember);
+        }
+        return null;
+      }
+      /* Single-variant fallback (2026-07-23 使用者反饋：單一選項商品也要有這個 hover) —
+         no options to break down, so just restate current stock with its real
+         health. 低庫存門檻那一行已於 2026-07-23 依使用者指示移除（只留庫存數量本身）。 */
+      function currentStockLine(row) {
+        const stockTxt = (row.querySelector('.product-list__stock') || {}).textContent || '';
+        const cm = stockTxt.match(/(\d+)/);
+        const current = cm ? parseInt(cm[1], 10) : 0;
+        const rowStatus = row.getAttribute('data-status');
+        const stockStatus = rowStatus === 'out' ? 'out' : (rowStatus === 'low' ? 'low' : 'ok');
+        return [{ label: T('e-shop.stocktip.currentstock', 'Current stock'), current, status: stockStatus }];
+      }
+      function popHTML(lines) {
+        return lines.map(l =>
+          '<div class="stock-tip__row"><span class="stock-tip__name">' + l.label +
+          '</span><span class="stock-tip__qty ' + statusClass(l.status) + '">' + l.current + '</span></div>'
+        ).join('');
+      }
+      function place(trigger, pop) {
+        const r = trigger.getBoundingClientRect();
+        const openUp = r.top > window.innerHeight / 2;
+        pop.style.top = openUp ? 'auto' : (r.bottom + 6) + 'px';
+        pop.style.bottom = openUp ? (window.innerHeight - r.top + 6) + 'px' : 'auto';
+        const left = Math.min(r.left, window.innerWidth - pop.offsetWidth - 8);
+        pop.style.left = Math.max(8, left) + 'px';
+      }
+      document.querySelectorAll('.product-list__row[data-name]').forEach(row => {
+        const pops = row.querySelectorAll('.stock-tip__pop');
+        if (!pops.length) return;
+        let lines = optionLines(row.getAttribute('data-name'));
+        if (lines) {
+          /* 2026-07-23 使用者裁示：row 徽章是「急需補貨」（e-shop.row.low）時，浮卡只留
+             真的需要補貨的選項（low／out），健康的選項不佔位置——這種列 hover 是要立刻看到
+             哪裡出問題，不是要看全部選項的庫存總覽。單一選項的門檻資訊（下面 else 分支）
+             不受這條篩選規則影響——它本來就只有一行、跟「選項健康與否」無關。 */
+          if (row.querySelector('[data-i18n="e-shop.row.low"]')) {
+            lines = lines.filter(l => l.status !== 'ok');
+          }
+        } else {
+          lines = currentStockLine(row);
+        }
+        const html = popHTML(lines);
+        pops.forEach(pop => {
+          pop.innerHTML = html;
+          const trigger = pop.closest('.stock-tip');
+          const open = () => { place(trigger, pop); trigger.classList.add('is-open'); };
+          const close = () => trigger.classList.remove('is-open');
+          trigger.addEventListener('mouseenter', open);
+          trigger.addEventListener('mouseleave', close);
+          trigger.addEventListener('focusin', open);
+          trigger.addEventListener('focusout', close);
+        });
+      });
+    })();
+
+    /* Store settings popup (spec 5.1.5 F3 / D065) — full-screen modal that
+       embeds store-settings.html in an iframe; opens in-context, closing keeps
+       the list's filter/search. src is set on open (lazy) and cleared on close. */
+    const storeset = document.getElementById('eshop-storeset');
+    if (storeset) {
+      const frame = storeset.querySelector('[data-eshop-storeset-frame]');
+      const openSet = () => { if (frame && !frame.getAttribute('src')) frame.setAttribute('src', 'store-settings.html'); storeset.hidden = false; document.body.classList.add('is-modal-open'); };
+      const closeSet = () => { storeset.hidden = true; document.body.classList.remove('is-modal-open'); };
+      document.querySelectorAll('[data-eshop-storeset-open]').forEach(b => b.addEventListener('click', openSet));
+      storeset.querySelectorAll('[data-eshop-storeset-close]').forEach(b => b.addEventListener('click', closeSet));
+      storeset.addEventListener('click', e => { if (e.target === storeset) closeSet(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !storeset.hidden) closeSet(); });
+      /* D067: store-settings (in the iframe) posts this to close after Save / Discard. */
+      window.addEventListener('message', e => { if (e.data === 'ztor:storeset-close') closeSet(); });
+    }
+
+    /* New Product Post composer (spec 5.1.5.7 / D068) — mounts
+       partials/product-post-modal.js and reuses the Broadcast composer fields.
+       Opens on the list when reached with ?posted=1 right after creating a
+       product (name/price come from the query, demo). Publish = notify fans +
+       write Fans CRM (5.1.7.1 / 5.1.2.2 §4.9), demo only; Skip just closes and
+       leaves the product listed. Title/close on the popup frame (no header). */
+    const pphost = document.querySelector('[data-product-post-host]');
+    let pp = null, ppLast = null;
+    function wireCountPP(input, el, max) {
+      if (!input || !el) return;
+      const upd = () => { const n = input.value.length; el.textContent = n + ' / ' + max; el.classList.toggle('is-over', n >= max); };
+      input.addEventListener('input', upd); upd();
+    }
+    function ensurePP() {
+      if (pp) return true;
+      const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.productPostModal;
+      if (!html) { console.warn('[e-shop] product-post template missing — is partials/product-post-modal.js loaded?'); return false; }
+      pphost.innerHTML = html;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(pphost);
+      if (window.applyI18n) window.applyI18n(pphost);
+      pp = pphost.querySelector('[data-npp-modal]');
+      pp.addEventListener('click', e => {
+        if (e.target === pp || e.target.closest('[data-npp-close]') || e.target.closest('[data-npp-skip]') || e.target.closest('[data-npp-publish]')) closePP();
+      });
+      wireCountPP(pp.querySelector('[data-npp-title]'), pp.querySelector('[data-npp-title-count]'), 120);
+      wireCountPP(pp.querySelector('[data-npp-body]'),  pp.querySelector('[data-npp-body-count]'), 2000);
+      const ppBody = pp.querySelector('[data-npp-body]');
+      pp.querySelectorAll('[data-npp-token]').forEach(btn => btn.addEventListener('click', () => {
+        const tok = btn.getAttribute('data-npp-token');
+        const s = ppBody.selectionStart ?? ppBody.value.length, en = ppBody.selectionEnd ?? ppBody.value.length;
+        ppBody.value = ppBody.value.slice(0, s) + tok + ppBody.value.slice(en);
+        const pos = s + tok.length; ppBody.focus(); ppBody.setSelectionRange(pos, pos);
+        ppBody.dispatchEvent(new Event('input'));
+      }));
+      const sched = pp.querySelector('[data-npp-sched]'), when = pp.querySelector('[data-npp-when]'), pub = pp.querySelector('[data-npp-publish]');
+      let scheduledPP = false;
+      sched && sched.addEventListener('click', () => {
+        scheduledPP = !scheduledPP;
+        sched.classList.toggle('switch--on', scheduledPP);
+        sched.setAttribute('aria-checked', scheduledPP ? 'true' : 'false');
+        if (when) when.hidden = !scheduledPP;
+        const key = scheduledPP ? 'npp.schedule' : 'npp.publish';
+        pub.setAttribute('data-i18n', key);
+        pub.textContent = T(key, scheduledPP ? 'Schedule post' : 'Publish post');
+      });
+      return true;
+    }
+    function openPP(name, price) {
+      if (!ensurePP()) return;
+      ppLast = document.activeElement;
+      if (name)  { const n = pp.querySelector('[data-npp-prod-name]');  if (n) n.textContent = name; }
+      if (price) { const p = pp.querySelector('[data-npp-prod-price]'); if (p) p.textContent = price; }
+      pp.hidden = false;
+      document.body.classList.add('is-modal-open');
+      const f = pp.querySelector('[data-npp-title]'); if (f) f.focus();
+    }
+    function closePP() {
+      if (!pp) return;
+      pp.hidden = true;
+      document.body.classList.remove('is-modal-open');
+      if (ppLast && ppLast.focus) ppLast.focus();
+    }
+    document.addEventListener('keydown', e => { if (pp && !pp.hidden && e.key === 'Escape') closePP(); });
+    if (pphost) {
+      try {
+        const qs = new URLSearchParams(location.search);
+        if (qs.get('posted') === '1') openPP(qs.get('name') || null, qs.get('price') || null);
+      } catch (err) {}
+    }
+
+    /* Init: 先把每一列的狀態輸入拆好並推導一次（徽章／篩選／計數才有一致來源），
+       再算 F3 計數與 create 標籤；語言切換時重跑。 */
+    window.ztorEshopStatus.refreshAll();
+    updateStatusCounts();
+    setCreate('products');
+    /* Deep link ?status=<val>（2026-07-27）：Dashboard「Restock」CTA 落地即套好篩選——
+       與 [data-eshop-view-low] 同一套動作（切 Products 分頁＋點狀態 chip＋捲到清單），
+       只是改由 URL 觸發。devtools persist() 重寫 query 時保留外來參數，連結可分享。
+       ⚠ 必須等 DOMContentLoaded 之後：products-store.js 的 persona patch（patchAll）在
+       DOMContentLoaded 才就地換列，太早套篩選會被 patch 後的新列蓋掉（列全裸奔＋
+       no-result 卡同時出現的殭屍狀態）。本 <script> 在頁尾、products-store 之後載入，
+       兩個 DOMContentLoaded listener 依註冊序執行，此處排在 patch 之後。 */
+    try {
+      const dq = new URLSearchParams(location.search).get('status');
+      if (dq) {
+        const applyDeepLink = () => {
+          const chip = statusTabs.find(t => t.getAttribute('data-status-val') === dq);
+          if (chip) {
+            setStatus(chip);
+            const list = document.querySelector('[data-eshop-panel="products"]');
+            if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyDeepLink);
+        else applyDeepLink();
+      }
+    } catch (err) {}
+    document.addEventListener('click', e => {
+      if (e.target.closest('.app-topbar__lang, .nav-lang')) setTimeout(() => { updateStatusCounts(); setCreate(activeTabKey()); }, 60);
+    });
+  })();
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
+</body>
+</html>

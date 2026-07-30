@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spring Launch · Event detail · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<!-- 現場報到台的掃碼連結沿用取貨場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
+<link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
+     報到三色直接重用 badge--success / --warning / --error（§7.2 valid/already_used/invalid），不另開元件。 */
+
+  /* 票種售票進度條（F5 票種設定：可標示售票進度 80% 黃 / 95% 紅）。
+     與 events.html 清單列的 .event-tickets 同一視覺語言；events.html 為頁內樣式、不可改，
+     故此處保留 detail 專屬一份，待後續一併 promote 成 ds-component（見 ASSUMPTIONS / 待確認）。 */
+  .tier-progress { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+  .tier-progress__bar {
+    margin-top: 6px; width: 100%; max-width: 220px; height: 6px;
+    background: var(--muted); border-radius: 9999px; overflow: hidden;
+  }
+  .tier-progress__fill { height: 100%; background: var(--primary); border-radius: 9999px; transition: width .3s ease; }
+  /* 80% 黃 / 95% 紅 警示色 (§7.2 票種售票進度) */
+  .tier-progress--warn .tier-progress__fill { background: var(--status-warning); }
+  .tier-progress--danger .tier-progress__fill { background: var(--destructive); }
+  .tier-progress--unlimited { color: var(--muted-foreground); }
+
+  /* 報到三色統計小列（總覽 + 名單分頁複用）已改用 ds-components/kpi.css 的
+     .kpi--success/--warning/--destructive 色態變體（2026-07-11）。 */
+
+  .ed-hero__meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
+
+  /* ── 現場報到台（活動進行中）──────────────────────────────
+     只在 status='live' 的場次出現。數字本身是主角，故 headline 走 display 字級；
+     其餘全部沿用既有元件（kpi / scanner-access / qr-box / badge），沒有新增 ds 元件。 */
+  .ed-live__dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--status-warning);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-warning) 60%, transparent);
+    animation: ed-live-pulse 2s ease-out infinite;
+    flex: none;
+  }
+  @keyframes ed-live-pulse {
+    70%  { box-shadow: 0 0 0 7px color-mix(in srgb, var(--status-warning) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-warning) 0%, transparent); }
+  }
+  .ed-live__headline { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12); margin-top: var(--sp-8); }
+  .ed-live__big { font-family: var(--font-display); font-size: var(--fs-44); line-height: 1.05; letter-spacing: -1.2px; font-variant-numeric: tabular-nums; }
+  .ed-live__of  { font-size: var(--fs-18); color: var(--muted-foreground); margin-left: var(--sp-6); letter-spacing: 0; }
+  .ed-live__pct { font-family: var(--font-ui); font-size: var(--fs-15); font-weight: var(--fw-regular); color: var(--status-success); font-variant-numeric: tabular-nums; }
+  .ed-live__bar { margin-top: var(--sp-10); height: 8px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; }
+  .ed-live__fill { height: 100%; border-radius: inherit; background: var(--status-success); transition: width 600ms var(--easing); }
+  .ed-live__scanner .scanner-access { margin-bottom: 0; }
+  /* 報到人數跳動時的短暫強調——只在數字真的改變時加上，不是常駐動畫 */
+  .ed-live__big.is-bumped { animation: ed-live-bump 420ms var(--easing); }
+  @keyframes ed-live-bump { 0% { transform: none; } 35% { transform: translateY(-3px); } 100% { transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ed-live__dot { animation: none; }
+    .ed-live__fill { transition: none; }
+    .ed-live__big.is-bumped { animation: none; }
+  }
+
+  /* 名單分頁：到場／未到場篩選（進行中才有意義，其餘場次隱藏） */
+  .ed-att-filter { display: flex; gap: var(--sp-8); margin-bottom: var(--sp-12); }
+  .ed-att-row--new { background: color-mix(in srgb, var(--status-success) 10%, transparent); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- Breadcrumb -->
+      <div class="page-crumb">
+        <a href="events.html" class="card__link" data-i18n="event-detail.crumb.events">Events</a>
+        <span style="margin:0 6px">/</span>
+        <span>Spring Launch — Coastline EP listening party</span>
+      </div>
+
+      <!-- ═══ Hero / 頁首 ═══ -->
+      <div class="page-intro">
+        <div>
+          <div class="flex-row" style="gap:8px;margin-bottom:8px">
+            <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+            <span class="badge"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
+            <span class="badge badge--info"><span data-i18n="event-detail.badge.type">Concert</span></span>
+          </div>
+          <h1 class="page-intro__title" data-i18n="event-detail.h1">Spring Launch — Coastline EP listening party</h1>
+          <p class="page-intro__sub" data-i18n="event-detail.sub">Apr 12, 2026 · 8:00 PM · Legacy Taipei, Taipei</p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="btn btn--outline" href="edit-event.html?id=realive-chongqing" data-i18n="event-detail.btn.edit">Edit event</a>
+          <button class="btn btn--ghost" type="button" data-i18n="event-detail.btn.preview">View ticket page</button>
+        </div>
+      </div>
+
+      <!-- 樣本資料說明橫幅已移除（2026-07-27，使用者指示）。 -->
+
+      <!-- ═══ KPI 快照 ═══ -->
+      <div class="bento mt-16">
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.sold">Tickets sold</div><div class="kpi__value">84 / 200</div><div class="kpi__meta" data-i18n="event-detail.kpi.sold-meta">Across 3 tiers</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.revenue">Event revenue</div><div class="kpi__value">$2,520</div><div class="kpi__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.checkedin">Checked in</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="event-detail.kpi.checkedin-meta">Opens on event day</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.refunds">Refund queue</div><div class="kpi__value">0</div><div class="kpi__meta" data-i18n="event-detail.kpi.refunds-meta">v1 refunds disabled (D041)</div></div>
+      </div>
+
+      <!-- ═══ Tabs ═══ -->
+      <nav class="tabs mt-24" role="tablist" data-tabs>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="event-detail.tab.overview">Overview</button>
+        <button class="tabs__item" role="tab" data-tab="tiers" aria-selected="false" data-i18n="event-detail.tab.tiers">Ticket tiers</button>
+        <button class="tabs__item" role="tab" data-tab="transactions" aria-selected="false" data-i18n="event-detail.tab.transactions">Transactions</button>
+        <button class="tabs__item" role="tab" data-tab="attendees" aria-selected="false" data-i18n="event-detail.tab.attendees">Attendees &amp; check-in</button>
+        <button class="tabs__item" role="tab" data-tab="refunds" aria-selected="false" data-i18n="event-detail.tab.refunds">Refunds &amp; comps</button>
+        <button class="tabs__item" role="tab" data-tab="notifications" aria-selected="false" data-i18n="event-detail.tab.notifications">Notifications</button>
+        <button class="tabs__item" role="tab" data-tab="finance" aria-selected="false" data-i18n="event-detail.tab.finance">Cost &amp; revenue</button>
+        <button class="tabs__item" role="tab" data-tab="series" aria-selected="false" data-i18n="event-detail.tab.series">Series</button>
+      </nav>
+
+      <!-- ════════════════ Overview ════════════════ -->
+      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
+        <div class="bento">
+
+          <!-- 活動詳情 -->
+          <section class="card bento--span-7">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="event-detail.ov.details.title">Event details</h3>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.datetime">Date &amp; time</span></div><span>Apr 12, 2026 · 8:00 PM (GMT+8)</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.venue">Venue</span></div><span>Legacy Taipei · Taipei</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.lineup">Lineup</span></div><span data-i18n="event-detail.ov.lineup-val">Mika L · Coastline (band)</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Spring Launch · 1 of 3</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.stream">Stream entitlement</span></div><span data-i18n="event-detail.ov.stream-val">VIP tier includes live stream</span></div>
+            </div>
+
+            <div class="info-banner mt-16">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="event-detail.ov.statemachine"><strong>Status follows a one-way state machine.</strong> Draft → Scheduled / On Sale → (event runs) → Completed. Only Draft → Cancelled is allowed as a reversal; cancelling auto-triggers refunds on all valid tickets (§7.2 F5).</span>
+            </div>
+          </section>
+
+          <!-- ═══ 現場報到台（活動進行中才出現；由 ?id= 指到 status='live' 的場次啟用）═══
+               為什麼另開一張卡而不是把「報到快照」改一改：非進行中的場次，這張卡的正確內容
+               就是「活動當天才開」；進行中的場次要回答的則是完全不同的問題——現在有多少人到了、
+               誰還沒到、掃碼連結怎麼發給現場人員。兩種狀態互斥，故兩張卡互斥顯示。 -->
+          <section class="card bento--span-5 ed-live" id="ed-live" hidden>
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="ed-live__dot" aria-hidden="true"></span>
+                <h3 class="card__title" data-i18n="event-detail.live.title">Check-in desk</h3>
+              </div>
+              <span class="badge badge--warning" id="ed-live-since">—</span>
+            </div>
+
+            <!-- 到場率＝現場當下唯一會動的數字（已售出 100% 的場次，售出率是常數、沒有資訊量） -->
+            <div class="ed-live__headline">
+              <div class="ed-live__big"><span id="ed-live-arrived">—</span><span class="ed-live__of" id="ed-live-of">/ —</span></div>
+              <div class="ed-live__pct" id="ed-live-pct">—</div>
+            </div>
+            <div class="ed-live__bar"><div class="ed-live__fill" id="ed-live-fill" style="width:0%"></div></div>
+
+            <div class="bento mt-16">
+              <div class="kpi kpi--success bento--span-6">
+                <div class="kpi__label" data-i18n="event-detail.live.arrived">Arrived</div>
+                <div class="kpi__value" id="ed-live-arrived-2">—</div>
+                <div class="kpi__meta" id="ed-live-rate">—</div>
+              </div>
+              <div class="kpi bento--span-6">
+                <div class="kpi__label" data-i18n="event-detail.live.notarrived">Not arrived</div>
+                <div class="kpi__value" id="ed-live-missing">—</div>
+                <div class="kpi__meta" data-i18n="event-detail.live.notarrived-meta">Still expected at the door</div>
+              </div>
+            </div>
+
+            <!-- 掃碼連結：沿用取貨場次同一個 .scanner-access 元件，現場人員兩邊看到的是同一個東西。
+                 「送到任何通訊軟體」＝ navigator.share 叫出系統分享面板（裡面是那台手機真正裝了的
+                 通訊軟體），而不是我列一排 WhatsApp/Line/Telegram 按鈕——那種清單永遠會漏、深連結也
+                 各平台各壞法。沒有 share API 的環境退回複製，並明講已改為複製。 -->
+            <div class="ed-live__scanner">
+              <div class="data-list__title" style="margin:18px 0 8px;font-size: var(--fs-14)"><span data-i18n="event-detail.live.scanner.title">Scanner access</span></div>
+              <div class="scanner-access">
+                <div class="scanner-access__qr"><div class="qr-box" data-qr id="ed-live-qr"></div></div>
+                <div class="scanner-access__main">
+                  <div class="scanner-access__label" data-i18n="event-detail.live.scanner.url">Scanner link</div>
+                  <div class="scanner-access__url">
+                    <code id="ed-live-url">—</code>
+                    <span class="badge badge--success"><span data-i18n="event-detail.live.scanner.on">Enabled</span></span>
+                  </div>
+                  <div class="scanner-access__actions">
+                    <button class="btn btn--primary btn--sm" type="button" id="ed-live-share"><i data-lucide="send" class="ztor-icon"></i> <span data-i18n="event-detail.live.scanner.share">Send to staff</span></button>
+                    <button class="btn btn--outline btn--sm" type="button" id="ed-live-copy"><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.live.scanner.copy">Copy link</span></button>
+                    <a class="btn btn--outline btn--sm" id="ed-live-open" href="#" target="_blank" rel="noopener"><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="event-detail.live.scanner.open">Open scanner</span></a>
+                  </div>
+                  <div class="scanner-access__pw">
+                    <i data-lucide="key" class="ztor-icon" style="width:15px;height:15px"></i>
+                    <span data-i18n="event-detail.live.scanner.pw">Scanner password</span>
+                    <code>••••••</code>
+                  </div>
+                  <div class="field__hint mt-8" data-i18n="event-detail.live.scanner.hint">Staff open the link, enter the password, then scan. The scanner only redeems — it never shows amounts, Earnings or fan data.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 報到三色快照 + 售票概況（非進行中場次；進行中時由上方的現場報到台取代） -->
+          <section class="card bento--span-5" id="ed-checkin-snapshot">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="event-detail.ov.checkin.title">Check-in snapshot</h3>
+              <span class="badge badge--neutral"><span data-i18n="event-detail.ov.checkin.pending">Opens on event day</span></span>
+            </div>
+            <!-- 報到三色：valid 綠 / already_used 黃 / invalid 紅（§5.1.6 F5、§7.2） -->
+            <div class="bento">
+              <div class="kpi kpi--success bento--span-4">
+                <div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div>
+                <div class="kpi__value">—</div>
+              </div>
+              <div class="kpi kpi--warning bento--span-4">
+                <div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div>
+                <div class="kpi__value">—</div>
+              </div>
+              <div class="kpi kpi--destructive bento--span-4">
+                <div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div>
+                <div class="kpi__value">—</div>
+              </div>
+            </div>
+            <p class="text-sub" style="font-size: var(--fs-12);margin-top:12px" data-i18n="event-detail.ov.checkin.note">Scanning a QR returns one of three states. A valid scan moves the ticket issued → used (irreversible; only the creator can reverse). Scanner works offline (~4 h) and re-syncs; on double scan the earliest wins.</p>
+          </section>
+        </div>
+      </div>
+
+      <!-- ════════════════ Ticket tiers ════════════════ -->
+      <div class="tab-panel" data-panel="tiers" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.tiers.title">Ticket tiers</h2>
+          <div class="section-head__sub" data-i18n="event-detail.tiers.sub">1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).</div>
+        </div>
+
+        <section class="card" style="padding:0;overflow:hidden">
+          <table class="ztor-table">
+            <thead>
+              <tr>
+                <th data-i18n="event-detail.tiers.col.tier">Tier</th>
+                <th data-i18n="event-detail.tiers.col.price">Price</th>
+                <th data-i18n="event-detail.tiers.col.entitlement">Entitlement</th>
+                <th data-i18n="event-detail.tiers.col.progress">Sold / cap</th>
+                <th data-i18n="event-detail.tiers.col.status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ztor-table__row">
+                <td><strong>General Admission</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.ga.window">Sale Mar 01 – Apr 12</div></td>
+                <td>$30 USD</td>
+                <td><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.ent.inperson">In-person</span></span></td>
+                <td>
+                  <div class="tier-progress">62 / 120
+                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:52%"></div></div>
+                  </div>
+                </td>
+                <td><span class="badge badge--success"><span data-i18n="event-detail.tiers.st.onsale">On sale</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td><strong>VIP + Live stream</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.vip.window">Sale Mar 01 – Apr 11 · Top Fan priority</div></td>
+                <td>$80 USD</td>
+                <td><span class="badge badge--info"><span data-i18n="event-detail.tiers.ent.both">In-person + stream</span></span></td>
+                <td>
+                  <!-- 80% → 黃警示 -->
+                  <div class="tier-progress tier-progress--warn">17 / 20
+                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:85%"></div></div>
+                  </div>
+                </td>
+                <td><span class="badge badge--warning"><span data-i18n="event-detail.tiers.st.almost">Almost sold out</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td><strong>Livestream only</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.stream.window">Sale Mar 01 – Apr 12 · replay 48 h</div></td>
+                <td>$15 USD</td>
+                <td><span class="badge badge--accent"><span data-i18n="event-detail.tiers.ent.stream">Stream only</span></span></td>
+                <td>
+                  <!-- 95% → 紅警示 -->
+                  <div class="tier-progress tier-progress--danger">58 / 60
+                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:97%"></div></div>
+                  </div>
+                </td>
+                <td><span class="badge badge--error"><span data-i18n="event-detail.tiers.st.nearfull">Near capacity</span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card mt-16">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="event-detail.tiers.rules.title">Sale rules</h3>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--info"><i data-lucide="lock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.cap">Hard inventory cap — no overselling</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.cap-meta">Concurrent sales use atomic decrement; the N+1 purchase fails with tier_sold_out and emits no revenue event.</div></div></div></div>
+            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="pause" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.pause">Pause sales (Paused)</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.pause-meta">Rejects new purchases; existing tickets stay valid.</div></div></div><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.rule.pause-state">All active</span></span></div>
+          </div>
+          <div class="info-banner mt-16">
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="event-detail.tiers.tbd"><strong>TBD:</strong> Full per-tier field editor (purchase eligibility detail, currency list, sale-window picker) lands with the R 2.1.1 tier setup UI. Fields shown here illustrate defined attributes only.</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- ════════════════ Attendees & check-in ════════════════ -->
+      <!-- ════════════════ Transactions（交易明細）════════════════
+           與其他分頁回答的問題不同：名單問「誰會來」、收支問「這場賺不賺」，
+           這裡問「收入 KPI 上那個數字由哪些筆款項組成、每一筆後來怎麼了」——對帳與爭議處理面。
+           一列＝一筆訂單（不是一張票；很少有人只買一張）。金額由 store 依票種產生，
+           已結算加總恆等於該場次的 revenue，否則這張表會跟上方 KPI 互相打架。 -->
+      <div class="tab-panel" data-panel="transactions" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.tx.title">Transactions</h2>
+          <div class="section-head__sub" data-i18n="event-detail.tx.sub">Every ticket payment for this event. One row per order; platform fee is 10%.</div>
+        </div>
+
+        <div class="bento">
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.gross">Gross</div><div class="kpi__value" id="ed-tx-gross">—</div><div class="kpi__meta" id="ed-tx-orders">—</div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.fee">Platform fee</div><div class="kpi__value" id="ed-tx-fee">—</div><div class="kpi__meta" data-i18n="event-detail.tx.fee-meta">10% of gross</div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.net">Net to you</div><div class="kpi__value" id="ed-tx-net">—</div><div class="kpi__meta" data-i18n="event-detail.tx.net-meta">Settles to Earnings</div></div>
+          <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.tx.refunded">Refunded</div><div class="kpi__value" id="ed-tx-refunded">—</div><div class="kpi__meta" data-i18n="event-detail.tx.refunded-meta">Returned to inventory</div></div>
+        </div>
+
+        <div class="ed-att-filter mt-16">
+          <button class="btn btn--outline btn--sm" type="button" data-tx-filter="all" aria-pressed="true"><span data-i18n="event-detail.tx.f.all">All</span> <span data-tx-count="all">0</span></button>
+          <button class="btn btn--outline btn--sm" type="button" data-tx-filter="paid" aria-pressed="false"><span data-i18n="event-detail.tx.f.paid">Paid</span> <span data-tx-count="paid">0</span></button>
+          <button class="btn btn--outline btn--sm" type="button" data-tx-filter="refunded" aria-pressed="false"><span data-i18n="event-detail.tx.f.refunded">Refunded</span> <span data-tx-count="refunded">0</span></button>
+        </div>
+
+        <section class="card" style="padding:0;overflow:hidden">
+          <div style="overflow-x:auto">
+            <table class="ztor-table">
+              <thead>
+                <tr>
+                  <th data-i18n="event-detail.tx.col.order">Order</th>
+                  <th data-i18n="event-detail.tx.col.buyer">Buyer</th>
+                  <th data-i18n="event-detail.tx.col.tier">Tier</th>
+                  <th data-i18n="event-detail.tx.col.qty">Qty</th>
+                  <th data-i18n="event-detail.tx.col.gross">Gross</th>
+                  <th data-i18n="event-detail.tx.col.fee">Fee</th>
+                  <th data-i18n="event-detail.tx.col.net">Net</th>
+                  <th data-i18n="event-detail.tx.col.method">Method</th>
+                  <th data-i18n="event-detail.tx.col.status">Status</th>
+                </tr>
+              </thead>
+              <tbody id="ed-tx-body"></tbody>
+            </table>
+          </div>
+        </section>
+        <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" id="ed-tx-note">—</p>
+
+        <div class="flex-row mt-16" style="gap:8px">
+          <button class="btn btn--outline" type="button" data-i18n="event-detail.tx.export">Export transactions</button>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="attendees" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.att.title">Attendees &amp; check-in</h2>
+          <div class="section-head__sub" data-i18n="event-detail.att.sub">Purchase, registration, attendance and export status. Scan returns three states (§5.1.6 F5).</div>
+        </div>
+
+        <!-- 報到三色圖例 -->
+        <div class="bento">
+          <div class="kpi kpi--success bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div><div class="kpi__value">—</div></div>
+          <div class="kpi kpi--warning bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div><div class="kpi__value">—</div></div>
+          <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div><div class="kpi__value">—</div></div>
+        </div>
+
+        <!-- 進行中場次的即時名單（其餘場次維持下方的靜態示例表）。
+             「誰到了、誰還沒到」＝現場真正要回答的問題，故篩選只有這三格。 -->
+        <div id="ed-live-roster" hidden>
+          <div class="ed-att-filter mt-16">
+            <button class="btn btn--outline btn--sm" type="button" data-att-filter="all" aria-pressed="true"><span data-i18n="event-detail.att.f.all">All</span> <span data-att-count="all">0</span></button>
+            <button class="btn btn--outline btn--sm" type="button" data-att-filter="arrived" aria-pressed="false"><span data-i18n="event-detail.live.arrived">Arrived</span> <span data-att-count="arrived">0</span></button>
+            <button class="btn btn--outline btn--sm" type="button" data-att-filter="missing" aria-pressed="false"><span data-i18n="event-detail.live.notarrived">Not arrived</span> <span data-att-count="missing">0</span></button>
+          </div>
+          <section class="card" style="padding:0;overflow:hidden">
+            <table class="ztor-table">
+              <thead>
+                <tr>
+                  <th data-i18n="event-detail.att.col.holder">Ticket holder</th>
+                  <th data-i18n="event-detail.att.col.tier">Tier</th>
+                  <th data-i18n="event-detail.att.col.ticketid">Ticket ID</th>
+                  <th data-i18n="event-detail.att.col.state">Check-in</th>
+                </tr>
+              </thead>
+              <tbody id="ed-live-roster-body"></tbody>
+            </table>
+          </section>
+          <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" id="ed-live-roster-note">—</p>
+        </div>
+
+        <section class="card mt-16" id="ed-att-sample" style="padding:0;overflow:hidden">
+          <table class="ztor-table">
+            <thead>
+              <tr>
+                <th data-i18n="event-detail.att.col.holder">Ticket holder</th>
+                <th data-i18n="event-detail.att.col.tier">Tier</th>
+                <th data-i18n="event-detail.att.col.ticketid">Ticket ID</th>
+                <th data-i18n="event-detail.att.col.state">Check-in</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ztor-table__row">
+                <td data-i18n="event-detail.att.holder1">Aki Tanaka</td><td>VIP + Live stream</td><td><code>tkt_9F2A1</code></td>
+                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td data-i18n="event-detail.att.holder2">Lena Wu</td><td>General Admission</td><td><code>tkt_7C4B8</code></td>
+                <td><span class="badge badge--warning"><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td><span class="text-sub" data-i18n="event-detail.att.unknown">Unrecognised QR</span></td><td>—</td><td><code>—</code></td>
+                <td><span class="badge badge--error"><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td data-i18n="event-detail.att.holder4">Coastline (comp)</td><td>VIP + Live stream</td><td><code>tkt_C0MP3</code></td>
+                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <div class="flex-row mt-16" style="gap:8px">
+          <button class="btn btn--outline" type="button" data-i18n="event-detail.att.export">Export attendee list</button>
+          <button class="btn btn--ghost" type="button" data-i18n="event-detail.att.scanner">Open scanner</button>
+        </div>
+
+        <div class="info-banner mt-16">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="event-detail.att.note"><strong>A valid scan is irreversible.</strong> The ticket moves issued → used; only the creator can reverse it. Scanner runs offline ~4 h and re-syncs on reconnect; on a double scan the earliest scan wins. For online events, external-platform data may be incomplete.</span>
+        </div>
+      </div>
+
+      <!-- ════════════════ Refunds & comps ════════════════ -->
+      <div class="tab-panel" data-panel="refunds" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.ref.title">Refunds &amp; comps</h2>
+          <div class="section-head__sub" data-i18n="event-detail.ref.sub">Refund queue and complimentary tickets (§5.1.6 F5).</div>
+        </div>
+
+        <!-- Pre-flight checklist（2026-07-27）：Dashboard「活動檢核尚未完成 → 完成檢核」CTA
+             深連結（event-detail.html#refunds）的落地面。兩個未完成項（退款規則／現場人力）
+             各自帶完成鈕，點了即在原地翻成已完成（原型層級 state flip）——流程在檢核卡上
+             直接走完，不再叫使用者自己找。列格式＝data-list（F4/F6 同款）。 -->
+        <section class="card mb-16" id="preflight">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--warning"><i data-lucide="alert-triangle" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="event-detail.preflight.title">Pre-flight checklist</h3>
+            </div>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.preflight.sub">2 items left before doors</span>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="banknote" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.preflight.refund.title">Refund policy</div>
+                  <div class="data-list__meta" data-i18n="event-detail.preflight.refund.meta">Not set · fans see "contact organizer" until confirmed</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row">
+                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.missing">Missing</span></span>
+                <button class="btn btn--outline btn--sm" type="button" data-preflight-done data-i18n="event-detail.preflight.refund.cta">Set refund policy</button>
+              </div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="users" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.preflight.staff.title">On-site staffing</div>
+                  <div class="data-list__meta" data-i18n="event-detail.preflight.staff.meta">2 of 4 roles unconfirmed · door scan &amp; merch desk</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row">
+                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.unconfirmed">Unconfirmed</span></span>
+                <button class="btn btn--outline btn--sm" type="button" data-preflight-done data-i18n="event-detail.preflight.staff.cta">Confirm staffing</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bento">
+          <section class="card bento--span-7">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="event-detail.ref.queue.title">Refund queue</h3>
+              <span class="badge badge--neutral"><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
+            </div>
+            <div class="empty-card">
+              <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
+              <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
+              <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
+            </div>
+            <div class="info-banner">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
+            </div>
+          </section>
+
+          <section class="card bento--span-5">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="event-detail.comp.title">Comp tickets</h3>
+            </div>
+            <div class="data-list">
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.comp.holder1">Coastline (band)</div><div class="data-list__meta" data-i18n="event-detail.comp.row1">VIP + Live stream · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Venue staff x2</div><div class="data-list__meta" data-i18n="event-detail.comp.row2">General Admission · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
+            </div>
+            <button class="btn btn--outline mt-16" style="width:100%" type="button" data-i18n="event-detail.comp.issue">Issue comp ticket</button>
+            <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" data-i18n="event-detail.comp.note">Comp tickets emit a $0 revenue event for audit but never enter net-profit distribution.</p>
+          </section>
+        </div>
+      </div>
+
+      <!-- ════════════════ Notifications ════════════════ -->
+      <div class="tab-panel" data-panel="notifications" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.notif.title">Notifications</h2>
+          <div class="section-head__sub" data-i18n="event-detail.notif.sub">Purchase confirmation, pre-event reminder and change notices (§5.1.6 F5).</div>
+        </div>
+
+        <section class="card">
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="event-detail.notif.purchase.label">Purchase confirmation</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.purchase.hint">Sent automatically when a ticket is bought.</div>
+            </div>
+            <div class="switch switch--on"></div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="event-detail.notif.reminder.label">Pre-event reminder</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.reminder.hint">Reminds ticket holders before doors open.</div>
+            </div>
+            <div class="switch switch--on"></div>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="event-detail.notif.change.label">Event-change notice</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.change.hint">Notifies holders of time, venue or lineup changes.</div>
+            </div>
+            <div class="switch switch--on"></div>
+          </div>
+          <div class="settings-row" style="border-bottom:0">
+            <div>
+              <div class="settings-row__label" data-i18n="event-detail.notif.cancel.label">Cancellation auto-refund</div>
+              <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, all valid tickets are auto-refunded per the refund flow. Always on.</div>
+            </div>
+            <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
+          </div>
+        </section>
+      </div>
+
+      <!-- ════════════════ Cost & revenue ════════════════ -->
+      <div class="tab-panel" data-panel="finance" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.fin.title">Cost &amp; revenue summary</h2>
+          <div class="section-head__sub" data-i18n="event-detail.fin.sub">Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings &amp; Project Net Income (§5.1.6 F5).</div>
+        </div>
+
+        <section class="card" style="padding:0;overflow:hidden">
+          <table class="ztor-table">
+            <thead>
+              <tr>
+                <th data-i18n="event-detail.fin.col.event">Revenue event</th>
+                <th data-i18n="event-detail.fin.col.tier">Tier</th>
+                <th data-i18n="event-detail.fin.col.amount">Amount</th>
+                <th data-i18n="event-detail.fin.col.cfgver">Rate version</th>
+                <th data-i18n="event-detail.fin.col.status">Settlement</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="ztor-table__row">
+                <td><code>rev_8H2KQ4</code></td><td>VIP + Live stream</td><td>$80.00</td><td>cfg-2026.02</td>
+                <td><span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">Settled</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td><code>rev_7C4B81</code></td><td>General Admission</td><td>$30.00</td><td>cfg-2026.02</td>
+                <td><span class="badge badge--orange"><span data-i18n="event-detail.fin.st.accrued">Accrued</span></span></td>
+              </tr>
+              <tr class="ztor-table__row">
+                <td><code>rev_C0MP30</code></td><td>VIP (comp)</td><td>$0.00</td><td>cfg-2026.02</td>
+                <td><span class="badge badge--neutral"><span data-i18n="event-detail.fin.st.comp">Comp · audit only</span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <div class="bento mt-16">
+          <section class="card bento--span-7">
+            <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.summary.title">Summary</h3></div>
+            <div class="data-list">
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.gross">Gross ticket revenue</span></div><span>$2,520.00</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.accrued">Of which accrued (待結算)</span></div><span>$780.00</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.settled">Of which settled (已結算)</span></div><span>$1,740.00</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing</span></div>
+            </div>
+          </section>
+          <section class="card bento--span-5">
+            <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.where.title">Where this rolls up</h3></div>
+            <p class="text-sub" style="font-size: var(--fs-13)" data-i18n="event-detail.fin.where.body">Only settled revenue counts toward Available and the project distributable profit. Accrued does not. Costs and revenue flow to Earnings and Project Net Income; this page does not recompute.</p>
+            <div class="flex-row mt-16" style="gap:8px">
+              <a class="btn btn--outline btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
+              <a class="btn btn--ghost btn--sm" href="projects.html" data-i18n="event-detail.fin.link.netincome">Project net income</a>
+            </div>
+          </section>
+        </div>
+
+        <div class="info-banner mt-16">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="event-detail.fin.note"><strong>Settlement state machine:</strong> accrued → settled → (refunded / disputed) per §7.2. Refund / cancel effects on revenue follow the §7.3 absorption order; v1 refund scope is in §8.6.</span>
+        </div>
+      </div>
+
+      <!-- ════════════════ Series ════════════════ -->
+      <div class="tab-panel" data-panel="series" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.series.title">Series management</h2>
+          <div class="section-head__sub" data-i18n="event-detail.series.sub">How this single date relates to the whole series (§5.1.6 F5).</div>
+        </div>
+
+        <section class="card">
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.series.row1.title">Spring Launch — Coastline EP listening party</div>
+                  <div class="data-list__meta">Apr 12, 2026 · Legacy Taipei · <span data-i18n="event-detail.series.this">this event</span></div>
+                </div>
+              </div>
+              <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="calendar" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.series.row2.title">Spring Launch — Hualien encore</div>
+                  <div class="data-list__meta">Apr 19, 2026 · Hualien Cultural Center</div>
+                </div>
+              </div>
+              <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--neutral"><i data-lucide="calendar" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.series.row3.title">Spring Launch — Online encore</div>
+                  <div class="data-list__meta">TBD · Online (Zoom)</div>
+                </div>
+              </div>
+              <span class="badge"><span data-i18n="event-detail.badge.scheduled">Scheduled</span></span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 轉售 P2 — 已定義產品規則、明確標 Phase 2、不落地 -->
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="event-detail.resale.title">Resale</h2>
+          <div class="section-head__sub"><span class="badge badge--neutral"><span data-i18n="event-detail.resale.p2">Phase 2</span></span></div>
+        </div>
+        <section class="card">
+          <div class="info-banner">
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="event-detail.resale.note"><strong>Resale is Phase 2 — not available in this build.</strong> Per-event modes Allowed / Blocked (default) / Limited; Limited sets a price-cap multiple and platform cut, a successful resale atomically transfers the holder and emits a resale_fee revenue event, Blocked rejects all transfers (§5.1.6 F5).</span>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span data-i18n="event-detail.footer1">Spring Launch — Coastline EP · Series 1 of 3</span>
+      <span>·</span>
+      <span data-i18n="event-detail.footer2">Ticket revenue rolls up to Earnings → Event ticketing</span>
+    </footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script>
+<script>
+  /* 假 QR（與 pickup-detail／create-product 同一支；此處守衛以免重複定義） */
+  window.ztorFauxQr = window.ztorFauxQr || function (seed) {
+    seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
+    function fnd(ox, oy) {
+      r += '<rect x="' + (pad + ox * cell) + '" y="' + (pad + oy * cell) + '" width="' + (7 * cell) + '" height="' + (7 * cell) + '" fill="currentColor"/>';
+      r += '<rect x="' + (pad + (ox + 1) * cell) + '" y="' + (pad + (oy + 1) * cell) + '" width="' + (5 * cell) + '" height="' + (5 * cell) + '" fill="var(--card)"/>';
+      r += '<rect x="' + (pad + (ox + 2) * cell) + '" y="' + (pad + (oy + 2) * cell) + '" width="' + (3 * cell) + '" height="' + (3 * cell) + '" fill="currentColor"/>';
+    }
+    function inF(x, y) { return (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9); }
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      if (inF(x, y)) continue;
+      var v = (x * 7 + y * 13 + seed * 31) % 11;
+      if (v > 4) r += '<rect x="' + (pad + x * cell) + '" y="' + (pad + y * cell) + '" width="' + cell + '" height="' + cell + '" fill="currentColor"/>';
+    }
+    fnd(0, 0); fnd(N - 7, 0); fnd(0, N - 7);
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="100%" height="100%" role="img" aria-label="QR">' + r + '</svg>';
+  };
+</script>
+<script>
+/* ══ 依 ?id= 帶入該場活動 ＋ 進行中場次的現場報到台（2026-07-27）══════════════
+
+   在此之前這頁完全不看 ?id=，不論從清單點哪一場，看到的都是同一份寫死的示例活動。
+   本段把「store 真的有的欄位」接上：頁首（徽章／標題／日期場地）、KPI 列、總覽的報到卡、
+   名單分頁。其餘分頁（票種明細／退款／通知／收支／系列）仍是示例內容——頁面上方的
+   樣本資料說明已據此改寫，明講哪些是這場活動的真實數字、哪些還是示例。
+
+   進行中的場次額外啟用現場報到台：到場人數即時往上跑、誰到了誰還沒到、掃碼連結可複製與分享。
+   計時器是原型示意（每 4 秒一位左右），不接真實票務系統。 */
+(function () {
+  'use strict';
+  if (!window.ztorEvents) return;
+  const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+  const $ = s => document.querySelector(s);
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  if (!id) return;                       // 沒帶 id＝維持原本的靜態示例頁，不動它
+  const ev = window.ztorEvents.get(id);
+  const isLive = ev.status === 'live';
+
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const isZh = () => !/^en/i.test(document.documentElement.lang || '');
+  const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  function fmtDate(d) {
+    if (!d) return '';
+    const p = String(d).split('-'); if (p.length !== 3) return d;
+    return isZh() ? `${p[0]}/${Number(p[1])}/${Number(p[2])}` : `${MON[Number(p[1]) - 1]} ${Number(p[2])}, ${p[0]}`;
+  }
+  function fmtTime(t) {
+    if (!t) return '';
+    const p = String(t).split(':'); if (p.length < 2) return t;
+    const h = Number(p[0]), h12 = (h % 12) || 12;
+    return isZh() ? `${h < 12 ? '上午' : (h < 18 ? '下午' : '晚上')} ${h12}:${p[1]}` : `${h12}:${p[1]} ${h < 12 ? 'AM' : 'PM'}`;
+  }
+  const STAGE_KEY = { 'live': 'events.badge.live', 'on-sale': 'events.badge.on-sale',
+                      'draft': 'events.status.draft', 'ended': 'events.badge.ended', 'scheduled': 'events.badge.scheduled' };
+
+  /* ── 頁首／KPI／總覽：填入這一場的真實欄位 ── */
+  function hydrate() {
+    /* 2026-07-28：麵包屑收成 .page-crumb（原本是 .text-sub ＋ inline style）。 */
+    const crumb = document.querySelector('.page-crumb span:last-child');
+    if (crumb && !crumb.hasAttribute('data-i18n')) crumb.textContent = ev.name;
+    const h1 = $('.page-intro__title');
+    if (h1) { h1.removeAttribute('data-i18n'); h1.textContent = ev.name; }
+    const sub = $('.page-intro__sub');
+    if (sub) {
+      sub.removeAttribute('data-i18n');
+      const when = [fmtDate(ev.date), fmtTime(ev.start)].filter(Boolean).join(' · ');
+      sub.textContent = [when, [ev.venue, ev.city].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+    }
+    const badges = document.querySelectorAll('.page-intro .badge');
+    if (badges[0]) {
+      badges[0].className = 'badge ' + (isLive ? 'badge--warning' : ev.status === 'on-sale' ? 'badge--success' : '');
+      const sp = badges[0].querySelector('span');
+      if (sp) { sp.setAttribute('data-i18n', STAGE_KEY[ev.status] || 'events.badge.scheduled'); sp.innerHTML = T(STAGE_KEY[ev.status] || 'events.badge.scheduled', ev.status); }
+    }
+    /* 系列徽章：store 沒有「系列」這個欄位，掛著寫死的「Series 1/3」等於對這場活動說謊，故收起來。 */
+    if (badges[1]) badges[1].hidden = true;
+    if (badges[2]) {
+      const sp = badges[2].querySelector('span');
+      /* 用 innerHTML 而非 textContent：字典值本身帶 HTML entity（ce.type.meet = "Meet &amp; Greet"），
+         textContent 會把它原樣印成「Meet &amp;amp; Greet」。字典是自家可信內容。 */
+      if (sp) { sp.setAttribute('data-i18n', ev.typeLabelKey); sp.innerHTML = T(ev.typeLabelKey, ev.type); }
+    }
+    const edit = $('.page-intro__actions a[href^="edit-event"]');
+    if (edit) edit.href = 'edit-event.html?id=' + encodeURIComponent(ev.id);
+
+    const kpis = document.querySelectorAll('.bento .kpi .kpi__value');
+    if (kpis[0]) kpis[0].textContent = fmtNum(ev.sold) + ' / ' + fmtNum(ev.capacity || ev.sold);
+    if (kpis[1]) kpis[1].textContent = '$' + fmtNum(ev.revenue);
+    /* 「Across 3 tiers」是寫死的示例值——這場只有 2 個票種，數字要跟著資料走 */
+    const soldMeta = document.querySelectorAll('.bento .kpi .kpi__meta')[0];
+    if (soldMeta) {
+      soldMeta.removeAttribute('data-i18n');
+      const nTiers = (ev.tiers || []).length;
+      soldMeta.textContent = nTiers === 1
+        ? T('event-detail.kpi.tiers1', 'Across 1 tier')
+        : T('event-detail.kpi.tiersn', 'Across {n} tiers').replace('{n}', nTiers);
+    }
+
+    /* 總覽「活動詳情」：類型／日期／場地三列填真實值。
+       選擇器必須是「列的直接子 span」——`.data-list__row span:last-child` 會連
+       .data-list__row-main 裡的標籤 span 一起選中，於是值寫進了標籤格（實測：Type 那列的值
+       變成日期、第二列的標籤變成場地字串）。用 `>` 限定直接子層才只命中值。 */
+    const vals = document.querySelectorAll('[data-panel="overview"] .data-list__row > span:last-child');
+    if (vals[0]) { vals[0].removeAttribute('data-i18n'); vals[0].innerHTML = T(ev.typeLabelKey, ev.type); }
+    if (vals[1]) { vals[1].removeAttribute('data-i18n'); vals[1].textContent = [fmtDate(ev.date), fmtTime(ev.start)].filter(Boolean).join(' · '); }
+    if (vals[2]) { vals[2].removeAttribute('data-i18n'); vals[2].textContent = [ev.venue, ev.city].filter(Boolean).join(' · '); }
+    if (vals[3]) { vals[3].removeAttribute('data-i18n'); vals[3].textContent = (ev.lineup || []).join(' · ') || '—'; }
+    /* 系列：store 現在有 series 欄位——有值就填真實的巡演資訊，沒有就整列收起
+       （粉絲見面會顯示「Series 2 of 3」是對這場活動陳述不實）。
+       直播權益 store 沒有這個欄位，一律收起。 */
+    if (vals[4] && vals[4].closest('.data-list__row')) {
+      const row = vals[4].closest('.data-list__row');
+      if (ev.series) {
+        row.hidden = false;
+        vals[4].removeAttribute('data-i18n');
+        vals[4].textContent = T('event-detail.series.val', '{name} · {i} of {n}')
+          .replace('{name}', ev.series.name).replace('{i}', ev.series.index).replace('{n}', ev.series.total);
+      } else row.hidden = true;
+    }
+    if (vals[5] && vals[5].closest('.data-list__row')) vals[5].closest('.data-list__row').hidden = true;
+    /* 頁首的系列徽章同理：有系列才顯示，內容用真實的巡演名稱 */
+    const seriesBadge = document.querySelectorAll('.page-intro .badge')[1];
+    if (seriesBadge) {
+      if (ev.series) {
+        seriesBadge.hidden = false;
+        const sp = seriesBadge.querySelector('span');
+        if (sp) { sp.removeAttribute('data-i18n'); sp.textContent = ev.series.index + '/' + ev.series.total; }
+      } else seriesBadge.hidden = true;
+    }
+    /* 頁尾同樣寫著示例的系列資訊（「Spring Launch — Coastline EP · Series 1 of 3」），
+       對這場活動一樣是錯的；改成這場活動的名稱。 */
+    const foot = $('.app-footer [data-i18n="event-detail.footer1"]');
+    if (foot) { foot.removeAttribute('data-i18n'); foot.textContent = ev.name; }
+  }
+
+  /* ── 現場報到台 ───────────────────────────────────────── */
+  let roster = [], arrived = 0, timer = null, recent = [];
+
+  function paintLive() {
+    const sold = ev.sold || 0;
+    const missing = sold - arrived;
+    const pct = sold ? Math.round(arrived / sold * 100) : 0;
+    const big = $('#ed-live-arrived');
+    if (big && big.textContent !== fmtNum(arrived)) {
+      big.textContent = fmtNum(arrived);
+      const wrap = $('.ed-live__big');
+      if (wrap) { wrap.classList.remove('is-bumped'); void wrap.offsetWidth; wrap.classList.add('is-bumped'); }
+    }
+    $('#ed-live-of').textContent = '/ ' + fmtNum(sold);
+    $('#ed-live-pct').textContent = pct + '%';
+    $('#ed-live-fill').style.width = pct + '%';
+    $('#ed-live-arrived-2').textContent = fmtNum(arrived);
+    $('#ed-live-missing').textContent = fmtNum(missing);
+    $('#ed-live-rate').textContent = T('event-detail.live.rate', '{n} in the last 5 min').replace('{n}', recent.length);
+    $('#ed-live-since').textContent = T('event-detail.live.since', 'Started {n} min ago').replace('{n}', ev.startedMinutesAgo || 0);
+    // KPI 列的「已報到」在進行中場次改成真實數字
+    const kpis = document.querySelectorAll('.bento .kpi');
+    if (kpis[2]) {
+      const v = kpis[2].querySelector('.kpi__value'), m = kpis[2].querySelector('.kpi__meta');
+      if (v) v.textContent = fmtNum(arrived) + ' / ' + fmtNum(sold);
+      if (m) { m.removeAttribute('data-i18n'); m.textContent = T('event-detail.live.kpimeta', '{n}% arrived · updating live').replace('{n}', pct); }
+    }
+    paintRoster();
+  }
+
+  let attFilter = 'all';
+  function paintRoster() {
+    const body = $('#ed-live-roster-body');
+    if (!body) return;
+    /* 排序＝現場真正的閱讀順序：最新報到的排最前（那是剛剛掃進來的那個人，
+       要能立刻確認），未到場的接在後面。原本照 seq 排，剛報到的人在第 145 位、
+       落在只渲染 40 列的視窗外，於是「剛到」的標記永遠看不到——等於做了沒用。
+       未到場名單本身用「未到場」篩選看，維持原順序（那是等候清單，不是動態）。 */
+    const arrivedDesc = roster.filter(r => r.arrived).slice().reverse();
+    const missingList = roster.filter(r => !r.arrived);
+    const list = attFilter === 'arrived' ? arrivedDesc
+               : attFilter === 'missing' ? missingList
+               : arrivedDesc.concat(missingList);
+    const CAP = 40;                     // 只渲染前 40 列，避免 200 列 DOM；下方註記說明還有多少
+    body.innerHTML = '';
+    list.slice(0, CAP).forEach(r => {
+      const tr = document.createElement('tr');
+      tr.className = 'ztor-table__row' + (r.isNew ? ' ed-att-row--new' : '');
+      tr.innerHTML =
+        '<td>' + r.name + '</td><td>' + r.tier + '</td><td><code>' + r.code + '</code></td>' +
+        '<td>' + (r.arrived
+          ? '<span class="badge badge--success"><span>' + T('event-detail.live.arrived', 'Arrived') + '</span></span>'
+          : '<span class="badge"><span>' + T('event-detail.live.notarrived', 'Not arrived') + '</span></span>') + '</td>';
+      body.appendChild(tr);
+    });
+    document.querySelector('[data-att-count="all"]').textContent = roster.length;
+    document.querySelector('[data-att-count="arrived"]').textContent = roster.filter(r => r.arrived).length;
+    document.querySelector('[data-att-count="missing"]').textContent = roster.filter(r => !r.arrived).length;
+    const note = $('#ed-live-roster-note');
+    if (note) note.textContent = list.length > CAP
+      ? T('event-detail.live.more', 'Showing {n} of {m} — use the scanner or export for the full list').replace('{n}', CAP).replace('{m}', list.length)
+      : T('event-detail.live.showingall', 'Showing all {m}').replace('{m}', list.length);
+  }
+
+  function tick() {
+    if (arrived >= (ev.sold || 0)) { clearInterval(timer); timer = null; return; }   // 到齊就停：人數不可能超過售出張數
+    const next = roster.find(r => !r.arrived);
+    if (!next) { clearInterval(timer); timer = null; return; }
+    roster.forEach(r => { r.isNew = false; });
+    next.arrived = true; next.isNew = true;
+    arrived++;
+    recent.push(1);
+    if (recent.length > 6) recent.shift();     // 「最近 5 分鐘」的示意窗
+    paintLive();
+  }
+
+  function initLive() {
+    $('#ed-live').hidden = false;
+    $('#ed-checkin-snapshot').hidden = true;
+    $('#ed-live-roster').hidden = false;
+    $('#ed-att-sample').hidden = true;
+    roster = window.ztorEvents.roster(ev.id);
+    arrived = roster.filter(r => r.arrived).length;
+    recent = [1, 1, 1];
+
+    // 掃碼連結：顯示的就是真的可以開的絕對網址（顯示一個、複製另一個＝小小的謊）
+    const url = new URL('scanner.html', location.href);
+    url.searchParams.set('event', ev.id);
+    const abs = url.href;
+    $('#ed-live-url').textContent = abs;
+    $('#ed-live-open').href = abs;
+    const qr = $('#ed-live-qr');
+    if (qr && window.ztorFauxQr) qr.innerHTML = window.ztorFauxQr(11);
+
+    function flash(btn, key, fb) {
+      const sp = btn.querySelector('span'); if (!sp) return;
+      const prev = sp.getAttribute('data-i18n');
+      sp.removeAttribute('data-i18n');
+      sp.textContent = T(key, fb);
+      setTimeout(() => { if (prev) { sp.setAttribute('data-i18n', prev); if (window.applyI18n) window.applyI18n(sp); } }, 1600);
+    }
+    $('#ed-live-copy').addEventListener('click', () => {
+      if (navigator.clipboard) navigator.clipboard.writeText(abs).catch(() => {});
+      flash($('#ed-live-copy'), 'event-detail.live.scanner.copied', 'Link copied');
+    });
+    /* 「送到任何通訊軟體」＝系統分享面板，裡面是那台裝置真的裝了的 App。
+       沒有 share API（多數桌機）就退回複製，並明講已改為複製——按了沒反應比沒有這顆按鈕更糟。 */
+    $('#ed-live-share').addEventListener('click', async () => {
+      const payload = {
+        title: T('event-detail.live.scanner.sharetitle', 'Ztor scanner'),
+        text: T('event-detail.live.scanner.sharetext', 'Check-in scanner for {name}').replace('{name}', ev.name),
+        url: abs
+      };
+      if (navigator.share) {
+        try { await navigator.share(payload); return; }
+        catch (e) { if (e && e.name === 'AbortError') return; }   // 使用者自己取消，不要再彈複製
+      }
+      if (navigator.clipboard) navigator.clipboard.writeText(abs).catch(() => {});
+      flash($('#ed-live-share'), 'event-detail.live.scanner.copiedfallback', 'Copied — paste it to your staff');
+    });
+
+    document.querySelectorAll('[data-att-filter]').forEach(b => b.addEventListener('click', () => {
+      attFilter = b.dataset.attFilter;
+      document.querySelectorAll('[data-att-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      paintRoster();
+    }));
+
+    paintLive();
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    timer = setInterval(tick, reduce ? 9000 : 4000);   // 原型示意速度
+  }
+
+  /* ── 分頁可見性：一個分頁只在「它管的東西可能存在」時才出現 ─────────────
+     每個分頁都是一句「這裡有東西可看」的宣稱。草稿顯示「名單與報到」是一句資料兌現不了的承諾，
+     久了使用者就不信任這排導覽。前置條件：
+       總覽／票種      → 永遠（草稿是在編輯票種，之後是在看它）
+       通知            → 要有可通知的對象：草稿沒有觀眾
+       交易明細／名單／退款／收支 → 要有金流或持票人：售票中之後才有
+       系列            → 這場活動真的屬於某個系列時才有（store 的 series 欄位）
+     沒有 ?id= 時維持顯示全部（舊連結不受影響）。 */
+  const TABS_BY_STAGE = {
+    draft:       ['overview', 'tiers'],
+    scheduled:   ['overview', 'tiers', 'notifications'],
+    'on-sale':   ['overview', 'tiers', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
+    live:        ['overview', 'tiers', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
+    ended:       ['overview', 'tiers', 'transactions', 'attendees', 'refunds', 'notifications', 'finance']
+  };
+  function applyTabs() {
+    const allowed = (TABS_BY_STAGE[ev.status] || TABS_BY_STAGE['on-sale']).slice();
+    if (ev.series) allowed.push('series');          // 系列分頁只在真的有系列時出現
+    document.querySelectorAll('[data-tabs] .tabs__item').forEach(btn => {
+      const on = allowed.indexOf(btn.dataset.tab) >= 0;
+      btn.hidden = !on;
+      const panel = document.querySelector('[data-panel="' + btn.dataset.tab + '"]');
+      if (panel && !on) { panel.classList.remove('tab-panel--active'); panel.hidden = true; }
+      else if (panel) panel.hidden = false;
+    });
+    /* 「哪個分頁是作用中」只由頁尾的分頁控制器決定（它跑在本段之後，且已處理
+       hash 指向被藏起來的分頁時退回第一個可見分頁）。這裡只負責可見性，不搶著設定作用狀態——
+       兩邊都想決定同一件事，就會出現「我點了它又被改掉」這種對打。 */
+  }
+
+  /* ── 交易明細 ─────────────────────────────────────────────── */
+  let txAll = [], txFilter = 'all';
+  const money = n => '$' + fmtNum(n);
+  function renderTx() {
+    const body = $('#ed-tx-body');
+    if (!body) return;
+    const paid = txAll.filter(t => t.status === 'paid');
+    const refunded = txAll.filter(t => t.status === 'refunded');
+    const gross = paid.reduce((a, t) => a + t.gross, 0);
+    const fee = paid.reduce((a, t) => a + t.fee, 0);
+    $('#ed-tx-gross').textContent = money(gross);
+    $('#ed-tx-orders').textContent = T('event-detail.tx.orders', '{n} orders · {q} tickets')
+      .replace('{n}', fmtNum(paid.length)).replace('{q}', fmtNum(paid.reduce((a, t) => a + t.qty, 0)));
+    $('#ed-tx-fee').textContent = '−' + money(fee);
+    $('#ed-tx-net').textContent = money(gross - fee);
+    $('#ed-tx-refunded').textContent = fmtNum(refunded.length);
+    document.querySelector('[data-tx-count="all"]').textContent = txAll.length;
+    document.querySelector('[data-tx-count="paid"]').textContent = paid.length;
+    document.querySelector('[data-tx-count="refunded"]').textContent = refunded.length;
+
+    const list = txFilter === 'all' ? txAll : txAll.filter(t => t.status === txFilter);
+    const CAP = 50;
+    body.innerHTML = '';
+    list.slice(0, CAP).forEach(t => {
+      const tr = document.createElement('tr');
+      tr.className = 'ztor-table__row';
+      tr.innerHTML =
+        '<td><code>' + t.id + '</code></td><td>' + t.buyer + '</td><td>' + t.tier + '</td>' +
+        '<td>' + t.qty + '</td><td>' + money(t.gross) + '</td><td class="text-sub">−' + money(t.fee) + '</td>' +
+        '<td>' + money(t.net) + '</td><td class="text-sub">' + t.method + '</td>' +
+        '<td>' + (t.status === 'paid'
+          ? '<span class="badge badge--success"><span>' + T('event-detail.tx.paid', 'Paid') + '</span></span>'
+          : '<span class="badge badge--warning"><span>' + T('event-detail.tx.refundedbadge', 'Refunded') + '</span></span>') + '</td>';
+      body.appendChild(tr);
+    });
+    const note = $('#ed-tx-note');
+    if (note) note.textContent = list.length > CAP
+      ? T('event-detail.tx.more', 'Showing {n} of {m} orders — export for the full ledger').replace('{n}', CAP).replace('{m}', fmtNum(list.length))
+      : T('event-detail.tx.showingall', 'Showing all {m} orders').replace('{m}', fmtNum(list.length));
+  }
+  function initTx() {
+    txAll = window.ztorEvents.transactions(ev.id);
+    if (!txAll.length) return;
+    document.querySelectorAll('[data-tx-filter]').forEach(b => b.addEventListener('click', () => {
+      txFilter = b.dataset.txFilter;
+      document.querySelectorAll('[data-tx-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      renderTx();
+    }));
+    renderTx();
+  }
+
+  hydrate();
+  applyTabs();
+  initTx();
+  if (isLive) initLive();
+  document.addEventListener('i18n:applied', () => { hydrate(); if (isLive) paintLive(); });
+})();
+</script>
+<script>
+  /* event-detail tabs F5 — switch active state + visible panel (pattern from earnings.html) */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    /* 分頁名單改為從 DOM 推導（2026-07-27）：原本是寫死的字串陣列，新增「交易明細」分頁後
+       #transactions 這個 hash 會被這份名單擋掉而不生效。從按鈕本身讀，日後新增分頁不必再回來改這裡。 */
+    const names = Array.from(tabs).map(t => t.dataset.tab).filter(Boolean);
+    /* 只有「目前可見」的分頁能被啟用：階段矩陣會把不適用的分頁藏起來（草稿沒有退款分頁），
+       若 hash 指向被藏起來的分頁就退回第一個可見分頁，否則整頁會沒有任何面板顯示。 */
+    const visibleNames = () => Array.from(tabs).filter(t => !t.hidden).map(t => t.dataset.tab);
+
+    function activate(name) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      try { history.replaceState(null, '', '#' + name); } catch (_) {}
+    }
+
+    tablist.addEventListener('click', e => {
+      const btn = e.target.closest('.tabs__item');
+      if (btn && btn.dataset.tab) activate(btn.dataset.tab);
+    });
+
+    const initial = (location.hash || '').replace('#', '');
+    const vis = visibleNames();
+    if (names.includes(initial) && vis.includes(initial)) activate(initial);
+    else if (!vis.includes((document.querySelector('[data-tabs] .tabs__item--active') || {}).dataset?.tab)) activate(vis[0]);
+  })();
+</script>
+<script>
+  /* Pre-flight checklist（2026-07-27）：完成鈕原地翻狀態（原型層級）——徽章翻綠、
+     按鈕收成完成態；兩項都完成時卡片標題列 sub 同步翻成 all-clear。 */
+  (function () {
+    const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('[data-preflight-done]');
+      if (!btn) return;
+      const row = btn.closest('.data-list__row');
+      const badge = row && row.querySelector('[data-preflight-badge]');
+      if (badge) {
+        badge.classList.remove('badge--warning');
+        badge.classList.add('badge--success');
+        badge.innerHTML = '<span data-i18n="event-detail.preflight.done">' + T('event-detail.preflight.done', 'Done') + '</span>';
+      }
+      btn.disabled = true;
+      btn.classList.remove('btn--primary');
+      btn.classList.add('btn--outline');
+      btn.innerHTML = '<span data-i18n="event-detail.preflight.completed">' + T('event-detail.preflight.completed', 'Completed ✓') + '</span>';
+      const card = btn.closest('#preflight');
+      if (card && !card.querySelector('.badge--warning')) {
+        const sub = card.querySelector('.card__head .text-sub');
+        if (sub) sub.innerHTML = '<span data-i18n="event-detail.preflight.clear">' + T('event-detail.preflight.clear', 'All clear — ready for doors') + '</span>';
+        const icon = card.querySelector('.card__title-icon');
+        if (icon) { icon.classList.remove('card__title-icon--warning'); icon.classList.add('card__title-icon--success'); }
+      }
+    });
+  })();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

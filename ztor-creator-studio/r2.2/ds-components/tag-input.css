@@ -1,0 +1,61 @@
+/* ============================================================
+   Tag input · creator-built / selectable tags
+   (spec 5.1.5.2 §4.5 「Product Tags」). Composes .chip — picked /
+   custom tags render as .chip--active .chip--removable inside a
+   bordered field; a borderless entry adds new ones; an optional
+   suggestion row offers existing tags to pick. Reusable for project
+   (5.1.2.2) / fan (5.1.7) tags later.
+     .tag-input
+       .tag-input__field        — bordered box: selected chips + entry
+         .chip.chip--active.chip--removable > text + .chip__remove
+         .tag-input__entry      — borderless, grows to fill
+       .tag-input__suggest-label
+       .chip-group              — existing tags to pick (reuses chip.css)
+   ============================================================ */
+
+.tag-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+
+.tag-input__field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: var(--control-h-sm);   /* 2026-07-21 Q25：44→36，與 .input／.btn 齊平 */
+  padding: 7px var(--sp-10);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--duration) var(--easing),
+              border-color var(--duration) var(--easing);
+}
+.tag-input__field:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.tag-input__entry {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  padding: var(--sp-4) var(--sp-2);
+}
+.tag-input__entry::placeholder { color: var(--muted-foreground); }
+
+.tag-input__suggest-label {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+
+/* 2026-07-27 Q8 裁決 A：這組覆寫已刪除，全站 .chip--active 本身就是橘了（見 chip.css）。
+   Q19「標籤用橘標更像已套用」的意圖完全保留，只是不再需要 tag-input 自己寫一份。
+   附帶修掉一個亮色模式的對比 bug：原本的 color: var(--primary) 在白底只有 1.92:1，
+   基底版改吃 --selected-ink（亮色壓深成 #8F4E00，5.70:1 過 AA）。 */

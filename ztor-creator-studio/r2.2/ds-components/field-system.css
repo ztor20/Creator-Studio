@@ -1,0 +1,38 @@
+/* Ztor Creator Studio - Field system molecule */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-16);
+}
+/* [hidden] 必須蓋過上面的 display:flex，否則條件隱藏的欄位（如限量才有的上限數量、數位才有的剩餘份數）仍會露出 */
+.field[hidden] { display: none; }
+
+.field__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+
+.field__hint {
+  font-size: var(--fs-11);
+  /* 2026-07-20（Q21）：改回 --muted-foreground 壓暗，讓說明文字明確退到輔助層。
+     2026-07-16 曾反向提亮成 --foreground-muted（理由：卡背景上要讀得清楚）——本次由使用者裁示改回。 */
+  color: var(--muted-foreground);
+  margin: 0; /* 防呆(2026-07-10)：p 或 div 元素都不受預設 margin 影響，視覺一致 */
+}
+
+/* 必填標記（label 內的 *）：統一收斂散落各頁的 inline `color:var(--error,#c00)`。 */
+.field__req { color: var(--destructive); }
+
+/* 唯讀欄位值（2026-07-22）：欄位改成「只顯示、不可填」時用它取代 .input／.amount-field。
+   讀數呈現＝ui 字體、14、foreground；不畫框、不留 input 內距，讓它讀起來是文字不是空欄。
+   用於商品明細把價格／成本／總量上限改唯讀（改值走編輯 popup）。 */
+.field-readout {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  line-height: var(--lh-normal);
+}

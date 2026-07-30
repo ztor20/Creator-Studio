@@ -1,0 +1,160 @@
+/* ============================================================
+   bundle-editor.css · 套組編輯器（共創募資回饋方案）
+   ------------------------------------------------------------
+   2026-07-24 promote：由 create-campaign.html 的頁內 `.fc-*` 樣式升進，
+   第二個消費者是 project-detail 的「方案與承諾 › 支持方案」（照建立流程重做）。
+
+   一張套組＝`.card.fc-bundle`（沿用填色卡），卡內欄位用 .field / .form-grid；
+   套組商品用 `.fc-item-row`（左縮圖格＝.upload-tile／中間名稱+描述兩行／右移除鈕）。
+   兩顆滿版加高「新增」鈕（新增套組 .fc-add／新增商品 .fc-add-item）。
+   class 名保留 `fc-` 前綴＝與 create-campaign 既有 JG 生成的 class 一致，兩頁共用同一支。
+   ============================================================ */
+
+/* 套組卡：在 .card 基礎上收一點內距、卡間距 */
+.fc-bundle { padding: var(--sp-16) var(--sp-18); margin-bottom: var(--sp-12); }
+.fc-bundle__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-16); }
+
+/* 套組商品列：縮圖(96) ＋ 名稱/描述兩行 ＋ 移除鈕 */
+.fc-item-row { display: grid; grid-template-columns: 96px 1fr auto; gap: var(--sp-10); align-items: start; margin-top: var(--sp-8); }
+.fc-item-row .upload-tile { min-height: 96px; aspect-ratio: 1 / 1; }
+.fc-item-fields { display: flex; flex-direction: column; gap: var(--sp-8); }
+
+/* 滿版加高的「新增」按鈕（新增套組／新增商品） */
+.fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
+.fc-add { min-height: 56px; font-weight: var(--fw-regular); }
+.fc-add-item { min-height: 48px; margin-top: var(--sp-10); }
+
+/* ============================================================
+   2026-07-28（L：「the edit tier is not working at all」）
+   第三個消費者：create-project.html 的募資回饋步驟。原本那裡是一個
+   寫死的 inline panel（開/關以外什麼都不做），現在改成與 project-detail
+   同一species 的堆疊式卡片編輯器，所以需要的新零件放這裡、不落頁內。
+
+   兩個關鍵差異，都是刻意的：
+   1) 商品用「引用」不用自由輸入（.fc-ref 取代 .fc-item-row）。
+      UI-CHANGES L745 已裁示「商品只從既有 E-Shop picker 選取，不建立自由
+      商品欄位」——自由文字的品項沒有 SKU／庫存／成本／運送設定，訂單與取貨
+      端沒有任何東西可以對它履約。L679 重做時退回自由輸入，這裡改回裁示版。
+      （project-detail 仍在用 .fc-item-row，待同批回填。）
+   2) 有效且未聚焦的套組收合成一行摘要（.fc-bundle--collapsed）。
+      建立回饋是「比較式」寫作——$25／$60／$150 是相對定出來的，三張全展開
+      根本同屏看不到，收合摘要才讓比較成立。不是為了省高度的優化。
+   ============================================================ */
+
+/* ── 套組卡的頭：序號徽章＋標題＋右側動作 ─────────────────────────── */
+.fc-bundle__index {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-right: var(--sp-8);
+}
+.fc-bundle__actions { display: flex; align-items: center; gap: var(--sp-12); }
+
+/* 無效（缺名稱／價格）的卡片留一條左緣提示。1px＝craft floor 允許的極限，
+   再粗就變成裝飾性色條。 */
+.fc-bundle--invalid { border-left: 1px solid var(--status-warning); }
+
+/* ── 收合摘要列 ───────────────────────────────────────────────────
+   收合時整張卡變成一列可點的摘要：名稱 · 價格 · 內容物摘要 · 名額。
+   用 grid 而不是 flex，讓多張卡的價格欄對齊成一直行——比較的前提是對齊。 */
+.fc-bundle--collapsed { padding: var(--sp-12) var(--sp-18); cursor: pointer; }
+.fc-bundle--collapsed .fc-bundle__body { display: none; }
+.fc-bundle--collapsed .fc-bundle__head { margin-bottom: 0; }
+.fc-sum {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--sp-14);
+  width: 100%;
+}
+.fc-sum__name { font-family: var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-regular); color: var(--foreground); }
+.fc-sum__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+.fc-sum__price {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-15);
+  color: var(--foreground);
+}
+/* 展開時只留名稱當卡片標題：內容摘要與價格此時就在下面的欄位裡，
+   重複顯示會變成兩個可能互相矛盾的真相來源。名稱留著，讓收合↔展開有連續性。 */
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__meta,
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__price { display: none; }
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum { cursor: default; }
+.fc-bundle--collapsed .fc-sum { cursor: pointer; }
+
+/* ── 商品引用列 ───────────────────────────────────────────────────
+   縮圖 44 ＋ 名稱/次要資訊 ＋ 移除。可讀不可改：品項的真相住在商品自己的
+   頁面，就地改名等於默默分岔一個 SKU。 */
+.fc-ref {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-8) 0;
+  border-bottom: 1px solid var(--border);
+}
+.fc-ref:last-of-type { border-bottom: 0; }
+.fc-ref__thumb {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--muted);
+  display: block;
+}
+.fc-ref__name { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+.fc-ref__meta { font-size: var(--fs-11); color: var(--muted-foreground); margin-top: var(--sp-2); }
+
+/* ── 商品挑選器 ───────────────────────────────────────────────────
+   搜尋框＋結果清單。結果用 absolute popover 而不是把版面推開——推開會讓
+   下面的欄位在你每打一個字時跳一次。 */
+.fc-pick { position: relative; }
+.fc-pick__results {
+  position: absolute;
+  z-index: 20;
+  left: 0; right: 0; top: calc(100% + var(--sp-4));
+  max-height: 264px;
+  overflow-y: auto;
+  background: var(--popover, var(--card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--sp-4);
+}
+.fc-pick__results[hidden] { display: none; }
+.fc-pick__opt {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-10);
+  width: 100%;
+  padding: var(--sp-8);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+}
+.fc-pick__opt:hover, .fc-pick__opt:focus-visible { background: var(--accent); }
+.fc-pick__opt img { width: 32px; height: 32px; border-radius: var(--radius-sm); object-fit: cover; background: var(--muted); }
+.fc-pick__opt-price { font-variant-numeric: tabular-nums; color: var(--muted-foreground); font-size: var(--fs-12); }
+/* 找不到商品時的出口：現在就開一個草稿商品，而不是逼人改用自由文字。
+   （黑膠還沒壓出來就是還沒有 SKU——這是真實情境，不是使用者的錯。）*/
+.fc-pick__empty { padding: var(--sp-10) var(--sp-8); font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* ── 額外權益列 ───────────────────────────────────────────────────
+   權益「應該」是自由文字：Discord 身分組、名字進片尾字卡，都沒有 SKU、
+   也不需要履約紀錄。這就是自由輸入與引用之間那條誠實的線。 */
+.fc-perk { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-8); align-items: center; margin-top: var(--sp-8); }
+.fc-perk:first-of-type { margin-top: 0; }
+
+/* ── 名額分帳的即時提示 ──────────────────────────────────────────── */
+.fc-slotnote { margin-top: var(--sp-6); }
+.fc-slotnote--over { color: var(--status-error); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fc-bundle { transition: border-color 160ms var(--ease-out, ease-out); }
+}
