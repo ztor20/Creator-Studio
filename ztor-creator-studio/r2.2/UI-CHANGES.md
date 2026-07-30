@@ -12,6 +12,7 @@
 - **【B】** 文字照既有兩層 persona 架構落位：主 `DICT` 放 default 人格（Coastline 世界）的通用版「肖像權／聲音」，`PERSONA_DICT.nick` 放「周湯豪的肖像權／周湯豪的聲音」＋權利人「周湯豪 · 100%」。**周湯豪的內容不寫進主 DICT**，維持 `js/i18n.js` 檔頭那條「周湯豪內容只集中在兩支資料檔的 nick 區塊＋PERSONA_DICT」的架構。
 - **【B】** `js/ip-store.js` 補 row9／row10 的結構欄位，讓 `manage-ip.html` 點進去不是空頁、清單租金欄有數字：`ipType` 取語意最近的 `Character / Likeness`（聲音無專屬型別，屬將就）、verified、已上架、一次性費用＋分潤（$6,400＋15%／$3,200＋12%）。`deals` 筆數對齊 nick 人格的租出數（6／3），與 row1 同慣例。
 - **【B】** 計數同步：自有分頁 tab 計數 8→10、KPI「IP 總數」12→14、`my-ip.kpi.total-meta`「自有 8」→「自有 10」。來源 filter 計數與頁尾「顯示 n 筆」是 JS 即時算、未動。「租出數 26」與「IP 總收入」屬人工設定的展示值（本來就不等於逐列加總），本輪不動。
+- **【B · 追加】** 使用者指定把這兩列**移到清單第一、第二位**。連帶效果：清單不再是「Ztor 產出五列在前、站外登錄五列在後」的順序，DOM 順序改為肖像權／聲音 → Ztor 五列 → 其餘站外登錄三列。原分組順序本來就沒有承載語意（來源分組由上方 filter-tabs 即時篩選承擔，每列自帶 `data-source`），故不需改篩選邏輯；`js/ip-store.js` 的物件順序與其「順序同清單 DOM」的註解一併同步（順序對查表無功能影響，同步只為讓註解說的是真話）。
 - **【D】** 新資產 `images/ip/nick-portrait.jpg`（440×440）：由 `persona/NICKTHEREAL/images/artist_2024_nick.jpg` 裁出頭肩方形，兩列的 `data-nick-img` 共用。既有 `images/projects/nick-*.jpg` 都是專輯／海報構圖（`nick-r2.jpg` 還壓著「LIVE 11.23」字樣），拿來當肖像權與聲音的縮圖讀不出「這是這個人本人」。
 
 ## 2026-07-29 · 版本切版：R 2.1 → R 2.2，併入外部協作者改版快照（D infra / 文件）
