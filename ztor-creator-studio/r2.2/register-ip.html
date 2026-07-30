@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
 /* 「請洽詢」勾選（2026-07-27 定價改版）：貼在金額欄下方，語氣比欄位標籤輕一階。 */
@@ -159,6 +160,29 @@
         </div>
       </section>
 
+      <!-- ✝ 2026-07-30 素材包（Media Pack，主規格 §7.7）：依 IP 類型給不同素材槽（使用者指定）。
+           §7.7 只確立「每種 IP 類型有對應素材槽與完整度計算」，**各型槽位明細被 §8.10.3 明列為
+           待決**，故下方 JS 的 ASSET_SLOTS 是產品變更提案（ASSUMPTIONS UIA-096），未回寫 documents/。
+           **與下方「所有權證明」刻意分成兩個 section**：證明檔是給平台驗證的法務文件，素材包是
+           承租方實際拿到的資產——兩者疊在一起最容易被當成同一件事，故副標直接說明用途（使用者裁示）。
+           全部選填（使用者裁示）：登錄門檻保持低。
+           **2026-07-30 同日改版（使用者指定）**：原本是每個素材槽各一格上傳格，改成
+           **單一上傳區＋已上傳檔案列表**，各型的槽位清單降級成「建議上傳什麼」的提示文字。
+           槽位表（ASSET_SLOTS）留著沒退場——它現在的角色是提示來源與 demo 檔名來源。 -->
+      <section class="form-section form-section--outlined" id="ri-assets">
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-i18n="ri.assets">Asset upload</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
+          <p class="form-section__sub" data-i18n="ri.assets.sub">The files a licensee actually receives — different from the ownership proof below, which only the platform sees. What to include depends on your IP type; the hint under the upload area lists it. All optional.</p>
+        </div>
+        <div class="upload-tile upload-tile--file" id="ri-assets-drop">
+          <span class="upload-tile__icon"><i data-lucide="upload" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="ri.assets.cta">Upload files</span>
+          <span class="upload-tile__sub" data-i18n="ri.assets.dnd">Drag &amp; drop or click to browse</span>
+        </div>
+        <p class="field__hint" id="ri-assets-types"></p>
+        <div class="data-list mt-16" id="ri-assets-list"></div>
+      </section>
+
       <section class="form-section form-section--outlined">
         <div class="form-section__head">
           <h3 class="form-section__title"><span data-i18n="ri.proof">Proof of ownership</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></h3>
@@ -287,6 +311,7 @@
           <!-- ✝ 2026-07-30 真人形象專屬兩列：非真人形象時整列收起（比照 prices 列的做法）。 -->
           <div class="review-row__item review-row__item--kv" data-rev-row="person" hidden><span class="review-row__name" data-i18n="ri.rev.person">Rights covered</span><span class="review-row__value" data-rev="person"></span></div>
           <div class="review-row__item review-row__item--kv" data-rev-row="age" hidden><span class="review-row__name" data-i18n="ri.rev.age">Age range</span><span class="review-row__value" data-rev="age"></span></div>
+          <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.assets">Media pack</span><span class="review-row__value review-row__value--empty" data-rev="assets" data-i18n="ri.ph.none">None selected</span></div>
           <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.proof">Proof</span><span class="review-row__value review-row__value--empty" data-rev="proof" data-i18n="ri.ph.proof">Not uploaded</span></div>
         </div>
       </div>
@@ -368,6 +393,82 @@
   const TERR_LABEL = { worldwide:"Worldwide", hk:"Hong Kong", tw:"Taiwan", jp:"Japan", kr:"Korea", sea:"Southeast Asia", na:"North America", eu:"Europe", other:"Other" };
   /* 2026-07-30 真人形象子類型（i18n 缺鍵時的英文退路，格式同上三行）。 */
   const PERSON_LABEL = { likeness:"Likeness", voice:"Voice", other:"Other" };
+
+  /* ── 素材包槽位表（Media Pack §7.7；2026-07-30 使用者指定，明細屬提案 UIA-096）──
+     每個項目＝[slot id, 圖示]，文案走 i18n `ri.asset.<id>`（標題）與 `ri.asset.<id>-h`（檔型）。
+     圖示一律取自 icons REGISTRY 已註冊的名稱——沒註冊的名字會渲染成空白，不會報錯，很難發現。
+     COMMON 兩槽每型都有；真人形象再依子類型（肖像／聲音／其他）換一組。 */
+  const ASSET_COMMON = [["cover","image","jpg"], ["gallery","layout-grid","zip"]];
+  const ASSET_SLOTS = {
+    story:  [["bible","book-open","pdf"], ["characters","users","pdf"], ["concept","image","jpg"], ["timeline","list","pdf"], ["styleguide","file-text","pdf"]],
+    music:  [["master","disc-3","wav"], ["stems","music","zip"], ["score","file-text","pdf"], ["lyrics","file","txt"], ["preview","play","mp3"]],
+    brand:  [["logosrc","gem","ai"], ["logovariants","layout-grid","zip"], ["guideline","book-open","pdf"], ["colortype","file-text","pdf"]],
+    event:  [["rundown","list","pdf"], ["stageplan","map-pin","pdf"], ["kv","image","jpg"], ["archive","film","mp4"], ["sop","book-open","pdf"]],
+    other:  [["freeform","paperclip","pdf"]],
+    /* 真人形象沒有單一組建議清單——肖像是影像、聲音是音檔，混在一起兩邊都不對。 */
+    person_likeness: [["cutout","scan","png"], ["angles","camera","zip"], ["press","image","jpg"], ["poses","users","pdf"], ["model3d","boxes","glb"], ["retouch","shield-check","pdf"]],
+    person_voice:    [["sample","mic","wav"], ["emotions","disc","zip"], ["diction","file-text","pdf"], ["ailimit","shield-check","pdf"]],
+    person_other:    [["signature","pencil","png"], ["motion","video","mp4"], ["persona","id-card","pdf"]],
+  };
+  /* 「沒有槽位」有兩種狀態，要給不同的 key——共用同一個 key 的話，重繪的守衛會把
+     兩者當成同一件事而跳過，空狀態文案就永遠停在先出現的那一句。 */
+  function assetKey(type, person) {
+    if (!type) return "";                                   /* 還沒選 IP 類型 */
+    if (type !== "person") return type;
+    return person ? "person_" + person : "person_pending";  /* 選了真人形象，還沒選子類型 */
+  }
+
+  /* 已上傳檔案（原型狀態，不持久化）。換 IP 類型時清空——建議清單換了一組，
+     留著上一型的檔案會讓列表跟提示互相矛盾。 */
+  let assetFiles = [];
+  let lastAssetKey = null;
+
+  /* 提示文字＝這一型建議上傳什麼。槽位清單降級成提示後，這是它唯一的呈現出口。 */
+  function renderAssetHint(key) {
+    const hint = document.getElementById("ri-assets-types");
+    const pending = !key || key === "person_pending";
+    if (pending) {
+      /* 沒東西可提示有兩種原因，講錯會讓人以為自己漏選了上面的 IP 類型。 */
+      hint.textContent = T(key === "person_pending" ? "ri.assets.picksub" : "ri.assets.picktype", "");
+      return;
+    }
+    const names = ASSET_COMMON.concat(ASSET_SLOTS[key] || [])
+      .map(([id]) => T("ri.asset." + id, id));
+    hint.textContent = T("ri.assets.suggest", "Suggested for this IP type: {list}").replace("{list}", names.join("、"));
+  }
+
+  function renderAssetList() {
+    const box = document.getElementById("ri-assets-list");
+    box.innerHTML = assetFiles.map((f, i) =>
+      '<div class="data-list__row">' +
+        '<div class="data-list__row-main">' +
+          '<div class="data-list__icon"><i data-lucide="' + f.icon + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body">' +
+            '<div class="data-list__title">' + f.name + '</div>' +
+            '<div class="data-list__meta">' + f.size + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button class="btn btn--icon btn--xs" type="button" data-ri-rmfile="' + i + '" ' +
+          'aria-label="Remove" data-i18n-aria-label="ri.assets.remove">' +
+          '<i data-lucide="trash-2" class="ztor-icon"></i></button>' +
+      '</div>').join("");
+    if (window.applyI18n) window.applyI18n();
+    if (window.ztorIcons) window.ztorIcons.applyIcons(box);
+  }
+
+  /* 點上傳區＝加一個檔。原型沒有真的檔案，所以照這一型的建議清單依序生成檔名——
+     比清一色「檔案 1.pdf」更能讓人看出「填滿之後長什麼樣」；建議項用完才給通用名。 */
+  function addAssetFile(key) {
+    if (!key || key === "person_pending") return;
+    const slots = ASSET_COMMON.concat(ASSET_SLOTS[key] || []);
+    const next = slots[assetFiles.length];
+    const n = assetFiles.length + 1;
+    assetFiles.push(next
+      ? { name: T("ri.asset." + next[0], next[0]) + "." + next[2], icon: next[1], size: (1 + (n * 7) % 40) + ".0 MB" }
+      : { name: T("ri.assets.extra", "Additional file") + " " + n + ".pdf", icon: "paperclip", size: (1 + (n * 7) % 40) + ".0 MB" });
+    renderAssetList();
+    syncReview();
+  }
 
   /* 年齡起／迄的 1～100 選項就地生成（不寫死 200 行 markup）。第一項「不限」＝value ""，
      已在 markup 裡（要掛 data-i18n 才跟得上語言切換），這裡只補數字。
@@ -458,6 +559,20 @@
     const isLikeness = isPerson && s.person === "likeness";
     document.getElementById("ri-person").hidden = !isPerson;
     document.getElementById("ri-age").hidden = !isLikeness;
+
+    /* 素材上傳：換 IP 類型（或真人形象換子類型）就換一組建議，已上傳清單一併清空——
+       建議換了一組，留著上一型的檔案會讓列表跟提示互相矛盾。 */
+    const aKey = assetKey(s.type, s.person);
+    if (aKey !== lastAssetKey) {
+      lastAssetKey = aKey;
+      assetFiles = [];
+      renderAssetList();
+    }
+    renderAssetHint(aKey);
+    document.getElementById("ri-assets-drop").hidden = !aKey || aKey === "person_pending";
+    setRev("assets", assetFiles.length
+      ? T("ri.assets.count", "{n} files").replace("{n}", assetFiles.length) : "",
+      "ri.ph.none", "None selected");
 
     const personRow = document.querySelector('[data-rev-row="person"]');
     const ageRow    = document.querySelector('[data-rev-row="age"]');
@@ -678,6 +793,18 @@
   /* ---- 上傳格：點擊模擬上傳 ---- */
   document.querySelectorAll(".upload-tile[data-ri-asset]").forEach(tile => {
     tile.addEventListener("click", () => { tile.classList.toggle("is-filled"); syncReview(); });
+  });
+
+  /* 素材上傳：點上傳區加一個檔；列表是動態重繪的，刪除鈕用委派綁在容器上。 */
+  document.getElementById("ri-assets-drop").addEventListener("click", () => {
+    addAssetFile(assetKey(readState().type, readState().person));
+  });
+  document.getElementById("ri-assets-list").addEventListener("click", e => {
+    const btn = e.target.closest("[data-ri-rmfile]");
+    if (!btn) return;
+    assetFiles.splice(Number(btn.dataset.riRmfile), 1);
+    renderAssetList();
+    syncReview();
   });
 
   /* ---- ＊ 必填 inline 驗證（on blur）---- */

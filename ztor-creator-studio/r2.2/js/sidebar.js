@@ -161,13 +161,15 @@
 
   /* feature-scope-map 未列的整頁功能在低版本不可作為任何入口。
      完整清單也供 notification/account/link 這類 NAV 以外的錨點使用。 */
+  /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
+     這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   const FULL_ROUTES = new Set([
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
-    "ip-market.html", "register-ip.html", "pickup.html", "pickup-detail.html", "scanner.html", "settings.html"
+    "ip-market.html", "register-ip.html", "settings.html"
   ]);
   function fullVersion() {
     const v = (window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get().version)

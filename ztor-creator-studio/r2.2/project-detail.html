@@ -37,6 +37,8 @@
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<!-- 套組卡的價格欄用 .amount-field（與建立流程同一支）；少了它 $ 前綴會掉到輸入框上方。 -->
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
@@ -329,17 +331,16 @@
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.showcase.title">Showcase</h3>
             </div>
-            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first is the cover; drag the square on each to set its square crop for shop &amp; thumbnail slots.</p>
+            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first one is the cover.</p>
 
             <div class="field__label" style="margin-bottom:10px"><span data-i18n="project-detail.showcase.images">Images</span> <span class="text-sub" data-i18n="project-detail.showcase.images-hint">· portrait 750 × 930 · first is the cover</span></div>
             <div class="upload-assets pd-gallery" id="pd-gallery">
-              <div class="upload-tile upload-tile--3x4 is-filled" data-crop-tile>
-                <span class="pd-crop__badge" data-i18n="project-detail.showcase.cover">Cover</span>
+              <div class="upload-tile upload-tile--3x4 is-filled" data-gallery-tile>
+                <span class="pd-gallery__badge" data-i18n="project-detail.showcase.cover">Cover</span>
                 <img class="upload-tile__thumb" id="pd-gallery-cover" src="images/projects/f-i-am-speed.webp" alt="">
                 <div class="upload-tile__actions">
-                  <button type="button" class="upload-tile__act" data-crop-replace aria-label="Replace image" title="Replace image" data-i18n-title="project-detail.showcase.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-crop-edit data-modal-open="pd-edit-crop" aria-label="Edit crop" title="Edit crop" data-i18n-title="project-detail.showcase.edit"><i data-lucide="pencil" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-crop-del aria-label="Delete image" title="Delete" data-i18n-title="project-detail.showcase.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  <button type="button" class="upload-tile__act" data-gallery-replace aria-label="Replace image" title="Replace image" data-i18n-title="project-detail.showcase.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
+                  <button type="button" class="upload-tile__act" data-gallery-del aria-label="Delete image" title="Delete" data-i18n-title="project-detail.showcase.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
                 </div>
               </div>
               <button type="button" class="upload-tile upload-tile--3x4 is-empty">
@@ -347,7 +348,7 @@
                 <span class="upload-tile__title" data-i18n="project-detail.showcase.add-image">Add image</span>
               </button>
             </div>
-            <p class="field__hint" style="margin-top:10px" data-i18n="project-detail.showcase.crop-hint">Hover an image to edit or delete. Edit opens a crop tool to set its square framing.</p>
+            <p class="field__hint" style="margin-top:10px" data-i18n="project-detail.showcase.hint">Hover an image to replace or delete it.</p>
 
             <div class="field__label" style="margin:20px 0 10px"><span data-i18n="project-detail.showcase.demo">Demo media</span> <span class="text-sub" data-i18n="cpp.optional">· optional</span></div>
             <div class="form-grid">
@@ -1302,33 +1303,8 @@
   </div>
 </div>
 
-<div class="payout-modal" id="pd-edit-crop" hidden>
-  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-crop-title">
-    <div class="payout-dialog__head">
-      <h3 class="payout-dialog__title" id="pd-edit-crop-title" data-i18n="pd-crop.title">Adjust square crop</h3>
-      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <div class="payout-dialog__body">
-      <p class="field__hint" data-i18n="pd-crop.sub">Drag the square to move it, drag the corner to resize. Left is the full portrait; right previews the square used in shop &amp; thumbnail slots.</p>
-      <div class="pd-crop-edit">
-        <div class="field pd-crop-edit__col">
-          <div class="field__label" data-i18n="pd-crop.portrait">Portrait · original</div>
-          <div class="pd-crop-edit__stage" id="pd-crop-stage">
-            <img class="pd-crop-edit__img" id="pd-crop-img" src="" alt="">
-            <div class="pd-crop-edit__box" id="pd-crop-box">
-              <span class="pd-crop-edit__handle" data-crop-handle></span>
-            </div>
-          </div>
-        </div>
-        <div class="field pd-crop-edit__col">
-          <div class="field__label" data-i18n="pd-crop.square">Square · crop preview</div>
-          <div class="pd-crop-edit__preview" id="pd-crop-preview"></div>
-        </div>
-      </div>
-      <button class="btn btn--primary mt-16" style="width:100%" type="button" data-modal-close data-i18n="project-detail.btn.save">Save changes</button>
-    </div>
-  </div>
-</div>
+<!-- ✝ 2026-07-30 移除「調整方形裁切」彈窗 #pd-edit-crop（使用者裁示：展示圖片維持單一直式尺寸，
+     不再需要方形裁切）。原 markup 與選框拖曳邏輯見 git 歷史（本檔 2026-07-30 之前的版本）；決策見 D156。 -->
 <div class="payout-modal" id="pd-edit-schedule" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-schedule-title">
     <div class="payout-dialog__head">
@@ -1395,6 +1371,10 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/projects-store.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<!-- 商品目錄＝「方案與承諾」分頁的套組編輯器要引用的既有 SKU（與建立流程同一個來源）。
+     順序照 create-project：i18n 先，products-store 的列改寫會查翻譯。 -->
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/bundle-editor.js?v=r2.2"></script>
 <!-- 表現分頁的資料與繪製器。放在 i18n 之後：繪完會呼叫 applyI18n 把新節點翻好。 -->
 <script src="js/performance-store.js?v=r2.2"></script>
 <!-- 收益走勢的互動圖表。放在 performance-store 之後：明細裡的 OTT 平台名單直接沿用
@@ -1655,175 +1635,105 @@
     });
   })();
 
-  /* 支持方案＝共創套組編輯器（2026-07-24 改：照建立流程 create-campaign 的「新增套組」重做）。
-     每張套組＝一件回饋方案，含股份（分潤）＋名額＋多件套組商品（照片＋名稱＋描述）。
-     沿用 bundle-editor.css（.fc-bundle / .fc-item-row）與 upload-tile。原型：不持久化、不計算。 */
+  /* 支持方案＝回饋套組編輯器。2026-07-30 改：改用共用模組 js/bundle-editor.js，
+     跟建立項目流程（create-project 的「回饋套組」步驟）是完全同一款卡——同欄位、
+     同視覺、同互動。原本這裡是第一代編輯器（自由輸入商品＋照片上傳、沒有價格、
+     沒有販售上限、沒有額外權益、不能收合），跟建立流程對不上；同一件事在站上有
+     兩種長相，等於逼使用者學兩次。第一代的 .fc-item-row 產生程式碼已整段移除。
+
+     兩處與建立頁刻意不同：
+       1) 卡片預設收合成摘要列（序號＋名稱＋摘要＋價格），點「編輯」才展開。
+          這頁是「看既有方案」的情境，不是從零寫，所以先給全貌再進單張。
+       2) 名額池與每名額單價是推導值（見下方 PER_SLOT／SLOT_POOL）——這頁沒有分潤設定欄位。 */
   (function () {
-    const root = document.getElementById('pd-bundle-editor');
-    if (!root) return;
-    const t = (key, fallback) => (window.i18nT && window.i18nT(key)) || fallback;
+    var root = document.getElementById('pd-bundle-editor');
+    if (!root || !window.ZtorBundleEditor) return;
+    var T = function (k) { return (window.i18nT && window.i18nT(k)) || k; };
 
-    /* 起始套組用「本項目」的資料：名稱／描述帶項目名、商品縮圖先用項目封面／海報。
-       項目由 ?id= 對應共用 store（與本頁 hero 同一個），字樣依當前語言。 */
-    const store = window.ztorProjects;
-    const pid = new URLSearchParams(location.search).get('id');
-    const proj = store ? ((pid && store.get(pid)) || store.first()) : null;
-    const pname = proj ? proj.name : '';
-    const pimg = proj ? (proj.poster || proj.cover) : '';
-    const zhUI = document.documentElement.lang === 'zh-Hant';
-    const L = (zh, en) => (zhUI ? zh : en);
-    const starter = pname ? [
-      { name: L('數位版', 'Digital edition'), desc: L(pname + '・數位下載', pname + ' · digital download'), shares: '', cap: '0',
-        items: [{ name: L(pname + '（數位）', pname + ' (digital)'), desc: L('完整作品・數位下載', 'Full work · digital download'), img: pimg }] },
-      { name: L('實體＋數位版', 'Physical + digital'), desc: L(pname + '・實體＋數位', pname + ' · physical + digital'), shares: '', cap: '200',
-        items: [
-          { name: L(pname + '（實體）', pname + ' (physical)'), desc: L('實體商品', 'Physical item'), img: pimg },
-          { name: L(pname + '（數位）', pname + ' (digital)'), desc: L('數位下載', 'Digital download'), img: pimg }
-        ] }
-    ] : [
-      { name: L('數位版', 'Digital edition'), desc: '', shares: '', cap: '0', items: [{}] }
+    /* 種子套組同樣是原型假資料：三張已填好的方案，示範「純回饋（0 名額）／自動上限／
+       限量上限＋額外權益」三種形態。
+
+       商品不寫死 id，改成從目錄依序取前幾件：products-store 的商品是 persona-aware 的，
+       而且部分 persona 把 movie／zine／album 這類語意 key 設成別名指到同一批實體商品
+       （見 products-store.js 的 P_NICK 對照表）。寫死 id 會讓「數位版」在某些 persona 下
+       裝著一件球衣。依目錄取件則保證每一件都是當前創作者自己的真實商品，調性自然對得上。
+       套組名稱因此也用「級距」而不是「格式」——級距在任何商品組合下都成立。 */
+    var proj = window.ztorProjects
+      ? ((new URLSearchParams(location.search).get('id') && window.ztorProjects.get(new URLSearchParams(location.search).get('id'))) || window.ztorProjects.first())
+      : null;
+    var zhUI = document.documentElement.lang === 'zh-Hant';
+    var L = function (zh, en) { return zhUI ? zh : en; };
+    var pname = proj ? (zhUI ? proj.name : (proj.nameEn || proj.name)) : '';
+
+    /* ⚠ 原型假資料：分潤名額共用池與每名額單價。建立流程是從募資步驟的「支持者名額」
+       與「每名額單價」兩個欄位讀，這頁的專案資料只有目標金額（fund.goal，字串如
+       "$120,000"），沒有名額欄位。所以反過來從目標金額推：每名額固定 $200（＝建立
+       流程的預設值），名額池 ＝ 目標金額 ÷ 200。這樣示範數字才會跟建立頁同一個量級，
+       不會出現「$15,000 的專案賣 100 個 $500 名額」這種對不上的畫面。
+       真實來源（已發布專案的名額池與單價該由哪個欄位／API 提供）待上游定義——
+       ASSUMPTIONS.md 既有缺口編號 PG-020。 */
+    var PER_SLOT = 200;
+    var goalAmt = proj && proj.fund && proj.fund.goal
+      ? (parseFloat(String(proj.fund.goal).replace(/[^0-9.]/g, '')) || 0) : 0;
+    var SLOT_POOL = goalAmt > 0 ? Math.floor(goalAmt / PER_SLOT) : 100;
+
+    var cat = window.ZtorBundleEditor.catalogue();
+    var pick = function (i) { return cat[i] ? { id: cat[i].id } : null; };
+    var some = function () {
+      return [].slice.call(arguments).map(pick).filter(Boolean);
+    };
+
+    /* 價格不寫在種子裡：它由模組從「名額 × 每名額單價 ＋ 商品定價加總」算出來
+       （2026-07-30 使用者裁決）。中間那張帶一個套組優惠示範值，讓折扣態（摘要列的
+       原價刪除線）在畫面上看得到。
+       ⚠ discount 的單位是**百分比**不是金額（2026-07-30 同日改制），15 ＝ 打 85 折。 */
+    var seed = [
+      {
+        name: L('入門支持', 'Supporter'),
+        desc: L(pname + '・純回饋，不含分潤名額', pname + ' · reward only, no revenue share'),
+        slots: 0, avail: 'auto',
+        items: some(0),
+      },
+      {
+        name: L('標準組合', 'Standard bundle'),
+        desc: L(pname + '・主要週邊組合，含分潤名額', pname + ' · the main merch set, with revenue share'),
+        slots: 2, avail: 'auto', discount: '15',
+        items: some(0, 1, 2),
+      },
+      {
+        name: L('典藏支持者', "Collector's edition"),
+        desc: L(pname + '・限量典藏，含較多分潤名額', pname + ' · limited collector set, larger revenue share'),
+        slots: 5, avail: 'limited', cap: '10',
+        items: some(0, 3, 4),
+        perks: [
+          L('幕後線上放映會邀請', 'Invitation to the behind-the-scenes screening'),
+          L('片尾字卡署名', 'Your name in the end credits'),
+        ],
+      },
     ];
-    let seq = 0;
 
-    function itemRow(data) {
-      const row = document.createElement('div');
-      row.className = 'fc-item-row';
-      row.dataset.bItem = '';
-      const img = data && data.img;
-      /* 有圖＝填色格顯示項目縮圖（純 CSS：data-upload + 非 is-empty 即顯示 __thumb）；無圖＝可加圖的空格 */
-      const tile = img
-        ? '<div class="upload-tile is-filled" data-upload><img class="upload-tile__thumb" src="' + img + '" alt=""><span class="upload-tile__icon">＋</span></div>'
-        : '<button type="button" class="upload-tile"><span class="upload-tile__icon">＋</span></button>';
-      row.innerHTML =
-        tile +
-        '<div class="fc-item-fields">' +
-          '<input class="input" data-b-item-name data-i18n-placeholder="pd-bundle.item-name-ph" placeholder="' + t('pd-bundle.item-name-ph', 'Item name') + '">' +
-          '<input class="input" data-b-item-desc data-i18n-placeholder="pd-bundle.item-desc-ph" placeholder="' + t('pd-bundle.item-desc-ph', 'Item description') + '">' +
-        '</div>' +
-        '<button type="button" class="btn btn--ghost btn--sm" data-item-remove aria-label="remove"><i data-lucide="x" class="ztor-icon"></i></button>';
-      row.querySelector('[data-b-item-name]').value = (data && data.name) || '';
-      row.querySelector('[data-b-item-desc]').value = (data && data.desc) || '';
-      return row;
-    }
-
-    function bundleCard(data) {
-      seq++;
-      const card = document.createElement('section');
-      card.className = 'card fc-bundle';
-      card.dataset.bundle = '';
-      card.innerHTML =
-        '<div class="fc-bundle__head"><h3 class="card__title" data-bundle-headline></h3>' +
-          '<a class="card__link" href="#" data-bundle-remove><span data-i18n="pd-bundle.remove">' + t('pd-bundle.remove', 'Remove') + '</span></a></div>' +
-        '<div class="form-grid">' +
-          '<div class="field"><label class="field__label" data-i18n="pd-bundle.name">' + t('pd-bundle.name', 'Bundle name') + '</label><input class="input" data-b-name data-i18n-placeholder="pd-bundle.name-ph" placeholder="' + t('pd-bundle.name-ph', 'e.g. Early-bird supporter') + '"></div>' +
-          '<div class="field"><label class="field__label" data-i18n="pd-bundle.desc">' + t('pd-bundle.desc', 'Bundle description') + '</label><input class="input" data-b-desc data-i18n-placeholder="pd-bundle.desc-ph" placeholder="' + t('pd-bundle.desc-ph', 'What is in this bundle?') + '"></div>' +
-        '</div>' +
-        '<div class="form-grid">' +
-          '<div class="field"><label class="field__label" data-i18n="pd-bundle.shares">' + t('pd-bundle.shares', 'Included shares') + '</label><input class="input" type="number" min="0" data-b-shares data-i18n-placeholder="pd-bundle.shares-ph" placeholder="' + t('pd-bundle.shares-ph', 'Leave blank if not profit-sharing') + '"></div>' +
-          '<div class="field"><label class="field__label" data-i18n="pd-bundle.cap">' + t('pd-bundle.cap', 'Slots') + '</label><input class="input" type="number" min="0" data-b-cap data-i18n-placeholder="pd-bundle.cap-ph" placeholder="' + t('pd-bundle.cap-ph', '0 = unlimited') + '"></div>' +
-        '</div>' +
-        '<div class="field" style="margin-bottom:0"><div class="field__label" data-i18n="pd-bundle.items">' + t('pd-bundle.items', 'Bundle items (photo + name + description, multiple)') + '</div>' +
-          '<div data-items></div>' +
-          '<button type="button" class="btn btn--outline fc-add-item" data-item-add><span data-i18n="pd-bundle.item-add">' + t('pd-bundle.item-add', '＋ Add item') + '</span></button>' +
-        '</div>';
-      card.querySelector('[data-b-name]').value = (data && data.name) || '';
-      card.querySelector('[data-b-desc]').value = (data && data.desc) || '';
-      card.querySelector('[data-b-shares]').value = (data && data.shares) || '';
-      card.querySelector('[data-b-cap]').value = (data && data.cap != null) ? data.cap : '0';
-      const items = card.querySelector('[data-items]');
-      (((data && data.items) && data.items.length) ? data.items : [{}]).forEach(it => items.appendChild(itemRow(it)));
-      root.appendChild(card);
-      if (window.applyIcons) window.applyIcons(card);
-      if (window.applyI18n) window.applyI18n(card);
-      refresh();
-      return card;
-    }
-
-    /* 標頭文字：有輸入組合包名稱時顯示「組合包：名稱」，否則顯示「組合包 N」 */
-    function headline(card, index) {
-      const name = (card.querySelector('[data-b-name]').value || '').trim();
-      return name
-        ? t('pd-bundle.head-named', 'Bundle: {name}').replace('{name}', name)
-        : t('pd-bundle.title', 'Bundle') + ' ' + index;
-    }
-
-    function refresh() {
-      const cards = root.querySelectorAll('[data-bundle]');
-      const atMin = cards.length <= 1;   // 至少一個組合包
-      cards.forEach((card, index) => {
-        const head = card.querySelector('[data-bundle-headline]');
-        if (head) head.textContent = headline(card, index + 1);
-        const remove = card.querySelector('[data-bundle-remove]');
-        if (remove) { remove.style.pointerEvents = atMin ? 'none' : ''; remove.style.opacity = atMin ? '.4' : ''; remove.setAttribute('aria-disabled', atMin ? 'true' : 'false'); }
-      });
-    }
-
-    root.addEventListener('click', e => {
-      const addItem = e.target.closest('[data-item-add]');
-      if (addItem) { const b = addItem.closest('[data-bundle]'); b.querySelector('[data-items]').appendChild(itemRow()); if (window.applyIcons) window.applyIcons(b); return; }
-      const removeItem = e.target.closest('[data-item-remove]');
-      if (removeItem) { removeItem.closest('[data-b-item]').remove(); return; }
-      const removeBundle = e.target.closest('[data-bundle-remove]');
-      if (removeBundle) { e.preventDefault(); if (root.querySelectorAll('[data-bundle]').length > 1) { removeBundle.closest('[data-bundle]').remove(); refresh(); } return; }
+    var BD = window.ZtorBundleEditor.mount({
+      list: root,
+      addBtn: '[data-bundle-add]',
+      t: T,
+      pool: SLOT_POOL,
+      perSlot: PER_SLOT,
+      initial: seed,
+      collapsedByDefault: true,
     });
 
-    root.addEventListener('input', e => {
-      if (e.target.matches('[data-b-name]')) refresh();
-    });
-
-    document.querySelector('[data-bundle-add]').addEventListener('click', () => bundleCard({ cap: '0', items: [{}] }));
-    starter.forEach(bundleCard);
+    /* 卡片文案由 JS 產生（不是 data-i18n），所以語言一切就要重畫。
+       建立頁靠它自己的 render() 帶到，這頁沒有那層，得自己掛。 */
+    document.addEventListener('i18n:applied', function () { if (BD) BD.render({ blur: true }); });
   })();
 
-  /* 展示內容·直式相簿：每格 hover 顯示「編輯／刪除」。編輯 → 開方形裁切彈窗，把該圖載進舞台，
-     用可移動＋可縮放的方形選框設定裁切範圍，右側方形即時預覽；刪除 → 移除該格。原型：不落地。 */
+  /* 展示內容·直式相簿：每格 hover 顯示「替換／刪除」。替換 → 換掉該格縮圖；刪除 → 移除該格。
+     ✝ 2026-07-30 移除「編輯（方形裁切）」：展示圖片維持單一直式尺寸，不再需要方形裁切（D156）。
+     原本的選框拖曳／等比縮放／即時預覽邏輯見 git 歷史。原型：不落地、重整還原。 */
   (function () {
     const gallery = document.getElementById('pd-gallery');
-    const stage = document.getElementById('pd-crop-stage');
-    const cimg = document.getElementById('pd-crop-img');
-    const box = document.getElementById('pd-crop-box');
-    const preview = document.getElementById('pd-crop-preview');
-    if (!gallery || !stage || !box) return;
-    const handle = box.querySelector('[data-crop-handle]');
-    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-    function applyBox(left, top, side) {
-      const w = stage.clientWidth, h = stage.clientHeight;
-      side = clamp(side, 40, Math.min(w, h));
-      left = clamp(left, 0, w - side);
-      top = clamp(top, 0, h - side);
-      box.style.left = left + 'px'; box.style.top = top + 'px';
-      box.style.width = side + 'px'; box.style.height = side + 'px';
-      if (preview) {
-        const p = preview.clientWidth || 1, scale = p / side;
-        preview.style.backgroundImage = 'url("' + cimg.src + '")';
-        preview.style.backgroundSize = (w * scale) + 'px ' + (h * scale) + 'px';
-        preview.style.backgroundPosition = (-left * scale) + 'px ' + (-top * scale) + 'px';
-      }
-    }
-    function initBox() {
-      const w = stage.clientWidth, h = stage.clientHeight;
-      if (!w || !h) return;
-      const side = Math.min(w, h) * 0.82;
-      applyBox((w - side) / 2, (h - side) / 2, side);
-    }
-
-    /* 選框拖曳：框身＝移動、右下握把＝等比縮放（維持正方形） */
-    let mode = null, sx = 0, sy = 0, bx = 0, by = 0, bs = 0;
-    box.addEventListener('pointerdown', e => {
-      mode = (e.target === handle) ? 'resize' : 'move';
-      sx = e.clientX; sy = e.clientY; bx = box.offsetLeft; by = box.offsetTop; bs = box.offsetWidth;
-      box.setPointerCapture(e.pointerId); e.preventDefault();
-    });
-    box.addEventListener('pointermove', e => {
-      if (!mode) return;
-      const dx = e.clientX - sx, dy = e.clientY - sy;
-      if (mode === 'move') applyBox(bx + dx, by + dy, bs);
-      else applyBox(bx, by, bs + Math.max(dx, dy));
-    });
-    const end = () => { mode = null; };
-    box.addEventListener('pointerup', end);
-    box.addEventListener('pointercancel', end);
+    if (!gallery) return;   /* 原本的 guard 還檢查裁切舞台與選框，拆掉彈窗後那兩個必為 null，
+                               若不改這行，替換與刪除會一起被提早 return 掉 */
 
     /* 替換圖片：隱藏 file input，選檔後把該格縮圖換成選的圖（object URL；原型不落地）。 */
     let replaceTile = null;
@@ -1840,20 +1750,10 @@
     });
 
     gallery.addEventListener('click', e => {
-      const replace = e.target.closest('[data-crop-replace]');
-      if (replace) { replaceTile = replace.closest('[data-crop-tile]'); fileInput.click(); return; }
-      const edit = e.target.closest('[data-crop-edit]');
-      if (edit) {
-        const thumb = edit.closest('[data-crop-tile]').querySelector('.upload-tile__thumb');
-        const src = thumb ? thumb.src : '';
-        const ready = () => requestAnimationFrame(() => requestAnimationFrame(initBox));   /* 等彈窗顯示＋圖載入後再量舞台 */
-        cimg.onload = ready;
-        cimg.src = src;
-        if (cimg.complete && cimg.naturalWidth) ready();
-        return;   /* 彈窗由按鈕上的 data-modal-open 開 */
-      }
-      const del = e.target.closest('[data-crop-del]');
-      if (del) { const tile = del.closest('[data-crop-tile]'); if (tile) tile.remove(); }
+      const replace = e.target.closest('[data-gallery-replace]');
+      if (replace) { replaceTile = replace.closest('[data-gallery-tile]'); fileInput.click(); return; }
+      const del = e.target.closest('[data-gallery-del]');
+      if (del) { const tile = del.closest('[data-gallery-tile]'); if (tile) tile.remove(); }
     });
   })();
 

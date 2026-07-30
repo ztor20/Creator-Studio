@@ -78,11 +78,17 @@
     O04: 'tbd', O09: 'tbd', O17: 'next', O18: 'tbd', O22: 'next', O23: 'next',
     E08: 'next', E09: 'next', E13: 'tbd', E14: 'tbd', E15: 'tbd', E16: 'tbd', E17: 'tbd', E18: 'next', E20: 'next', E22: 'tbd', E23: 'next', E24: 'tbd'
   };   // { S30:'p1', … } 由 md 功能表填
+  /* ✝ 2026-07-30：pickup.html／pickup-detail.html／scanner.html 移出本清單——取貨管理已列進
+     feature-scope-map（O24–O30，🟢 Phase 1），不再是「未列 scope 的整頁功能」，各版本皆可進入（D157）。 */
   var FULL_ROUTES = {
     'index.html': 1, 'creators.html': 1, 'projects.html': 1, 'project-detail.html': 1, 'create-project.html': 1,
     'create-campaign.html': 1, 'funding-simulate.html': 1, 'events.html': 1, 'event-detail.html': 1, 'create-event.html': 1, 'edit-event.html': 1,
     'fans-crm.html': 1, 'fan-detail.html': 1, 'tier-settings.html': 1, 'my-ip.html': 1, 'ip-detail.html': 1,
-    'ip-market.html': 1, 'register-ip.html': 1, 'pickup.html': 1, 'pickup-detail.html': 1, 'scanner.html': 1, 'settings.html': 1
+    'ip-market.html': 1, 'register-ip.html': 1, 'settings.html': 1,
+    /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，
+       導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
+    'tier-benefits.html': 1, 'media-vault.html': 1, 'brand-campaigns.html': 1,
+    'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1
   };
   function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'p1'); }
   function parseScopeMd(txt) {
