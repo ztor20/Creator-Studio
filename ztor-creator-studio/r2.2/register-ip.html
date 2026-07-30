@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
 /* 「請洽詢」勾選（2026-07-27 定價改版）：貼在金額欄下方，語氣比欄位標籤輕一階。 */
@@ -101,6 +102,45 @@
           <button type="button" class="selection-card" data-choice="brand"><span class="selection-card__title" data-i18n="ri.type.brand">Brand</span><span class="selection-card__sub" data-i18n="ri.type.brand-sub">Names, marks, visual identity</span></button>
           <button type="button" class="selection-card" data-choice="event"><span class="selection-card__title" data-i18n="ri.type.event">Event Format</span><span class="selection-card__sub" data-i18n="ri.type.event-sub">Show or experience concept</span></button>
           <button type="button" class="selection-card" data-choice="other"><span class="selection-card__title" data-i18n="ri.type.other">Other</span><span class="selection-card__sub" data-i18n="ri.type.other-sub">Something else you own</span></button>
+        </div>
+      </section>
+
+      <!-- ✝ 2026-07-30 真人形象的權利子類型與肖像年齡（使用者指定）：只在 IP 類型選「真人形象」時出現。
+           規格 5.1.4.1 §① 只定義「類型 → 名稱 → 描述 → 證明檔」、沒有依類型分流的欄位，故本區屬
+           產品變更提案（ASSUMPTIONS UIA-095），未回寫 documents/。
+           元件全部沿用既有的：子類型用 selection-grid／selection-card（同上方 IP 類型卡的互動語彙）、
+           年齡用原生 select＋`.select`＋zselect（同站上其他下拉），不新增 CSS。 -->
+      <section class="form-section form-section--outlined" id="ri-person" hidden>
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-i18n="ri.person">Rights covered</span> <span class="text-sub" data-i18n="ri.req">· required</span></h3>
+          <p class="form-section__sub" data-i18n="ri.person.sub">Likeness and voice are licensed and priced separately, so pick the one this record covers. Use Other for any person-based right not listed here.</p>
+        </div>
+        <div class="selection-grid" id="ri-person-grid">
+          <button type="button" class="selection-card" data-person="likeness"><span class="selection-card__title" data-i18n="ri.person.likeness">Likeness</span><span class="selection-card__sub" data-i18n="ri.person.likeness-sub">Face, image, appearance</span></button>
+          <button type="button" class="selection-card" data-person="voice"><span class="selection-card__title" data-i18n="ri.person.voice">Voice</span><span class="selection-card__sub" data-i18n="ri.person.voice-sub">Speaking voice, voiceprint</span></button>
+          <button type="button" class="selection-card" data-person="other"><span class="selection-card__title" data-i18n="ri.person.other">Other</span><span class="selection-card__sub" data-i18n="ri.person.other-sub">Persona, name, signature, mannerisms</span></button>
+        </div>
+
+        <!-- 2026-07-30 使用者指定：年齡區間由可複選 chips 改為兩個下拉（起／迄）。
+             1～100 的 <option> 由下方 JS 產生，不寫死 200 行 markup；產生完才載 zselect.js，
+             它才吃得到完整清單（zselect 是載入時一次性升級原生 select）。 -->
+        <div class="mt-24" id="ri-age" hidden>
+          <label class="field__label"><span data-i18n="ri.age">Likeness age range</span> <span class="text-sub" data-i18n="ri.opt">(optional)</span></label>
+          <div class="form-grid">
+            <div class="field">
+              <div class="field__label" data-i18n="ri.age.from">From</div>
+              <select class="select" id="ri-age-from" data-ri-age="from">
+                <option value="" data-i18n="ri.age.any">No limit</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="ri.age.to">To</div>
+              <select class="select" id="ri-age-to" data-ri-age="to">
+                <option value="" data-i18n="ri.age.any">No limit</option>
+              </select>
+            </div>
+          </div>
+          <div class="field__hint" data-i18n="ri.age.hint">Which period of your appearance this material covers. Leave both at “No limit” if it spans every period.</div>
         </div>
       </section>
 
@@ -244,6 +284,9 @@
         <div class="review-row">
           <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.name">Name</span><span class="review-row__value review-row__value--empty" data-rev="name" data-i18n="ri.ph.name">Not entered</span></div>
           <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.type">Type</span><span class="review-row__value review-row__value--empty" data-rev="type" data-i18n="ri.ph.notsel">Not selected</span></div>
+          <!-- ✝ 2026-07-30 真人形象專屬兩列：非真人形象時整列收起（比照 prices 列的做法）。 -->
+          <div class="review-row__item review-row__item--kv" data-rev-row="person" hidden><span class="review-row__name" data-i18n="ri.rev.person">Rights covered</span><span class="review-row__value" data-rev="person"></span></div>
+          <div class="review-row__item review-row__item--kv" data-rev-row="age" hidden><span class="review-row__name" data-i18n="ri.rev.age">Age range</span><span class="review-row__value" data-rev="age"></span></div>
           <div class="review-row__item review-row__item--kv"><span class="review-row__name" data-i18n="ri.rev.proof">Proof</span><span class="review-row__value review-row__value--empty" data-rev="proof" data-i18n="ri.ph.proof">Not uploaded</span></div>
         </div>
       </div>
@@ -278,6 +321,7 @@
         <div class="readiness__head"><h3 class="readiness__title" data-i18n="ri.qc.title">Before you register</h3></div>
         <ul class="readiness__list">
           <li class="readiness__item" data-qc="type"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.type">IP type selected</span></li>
+          <li class="readiness__item" data-qc="person"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.person">Likeness or voice (if Person-Based)</span></li>
           <li class="readiness__item" data-qc="name"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.name">Name (2–100 characters)</span></li>
           <li class="readiness__item" data-qc="desc"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.desc">Description (10–2000 characters)</span></li>
           <li class="readiness__item" data-qc="usage"><span class="readiness__mark"><i data-lucide="check" class="ztor-icon"></i></span><span data-i18n="ri.qc.usage">At least one permitted usage</span></li>
@@ -322,6 +366,15 @@
   const TYPE_LABEL = { story:"Story World", music:"Music", person:"Person-Based", brand:"Brand", event:"Event Format", other:"Other" };
   const USAGE_LABEL = { streaming:"Streaming", adaptation:"Adaptation", promotion:"Promotion only", merch:"Merchandise", live:"Live events" };
   const TERR_LABEL = { worldwide:"Worldwide", hk:"Hong Kong", tw:"Taiwan", jp:"Japan", kr:"Korea", sea:"Southeast Asia", na:"North America", eu:"Europe", other:"Other" };
+  /* 2026-07-30 真人形象子類型（i18n 缺鍵時的英文退路，格式同上三行）。 */
+  const PERSON_LABEL = { likeness:"Likeness", voice:"Voice", other:"Other" };
+
+  /* 年齡起／迄的 1～100 選項就地生成（不寫死 200 行 markup）。第一項「不限」＝value ""，
+     已在 markup 裡（要掛 data-i18n 才跟得上語言切換），這裡只補數字。
+     必須在 zselect.js 載入前跑完——zselect 是載入時一次性把原生 select 升級成自繪清單。 */
+  document.querySelectorAll('[data-ri-age]').forEach(sel => {
+    for (let n = 1; n <= 100; n++) sel.add(new Option(String(n), String(n)));
+  });
 
   function nextLabel(s) { const k = nextKeys[s]; return (window.i18nT && window.i18nT(k)) || k; }
 
@@ -350,8 +403,12 @@
   function readState() {
     const typeCard = document.querySelector("#ri-type-grid .selection-card--active");
     const listCard = document.querySelector("#ri-list-grid .selection-card--active");
+    const personCard = document.querySelector("#ri-person-grid .selection-card--active");
     return {
       type: typeCard ? typeCard.dataset.choice : "",
+      /* 2026-07-30 真人形象專屬：權利子類型（肖像／聲音）與肖像年齡區間（可複選） */
+      person: personCard ? personCard.dataset.person : "",
+      age: { from: val('#ri-age-from'), to: val('#ri-age-to') },
       name: val('[data-ri="name"]'),
       desc: val('[data-ri="desc"]'),
       proof: !!document.querySelector('.upload-tile.is-filled[data-ri-asset="proof"]'),
@@ -394,6 +451,28 @@
     setRev("name", s.name, "ri.ph.name", "Not entered");
     setRev("type", s.type ? T("ri.type." + s.type, TYPE_LABEL[s.type]) : "", "ri.ph.notsel", "Not selected");
     setRev("proof", s.proof ? T("ri.proof.uploaded", "Uploaded") : "", "ri.ph.proof", "Not uploaded");
+
+    /* 2026-07-30 真人形象分流：整個 #ri-person 區塊、其中的年齡欄、以及摘要兩列都跟著走。
+       顯隱條件是階梯式的——真人形象 → 才有子類型；子類型＝肖像 → 才有年齡。 */
+    const isPerson = s.type === "person";
+    const isLikeness = isPerson && s.person === "likeness";
+    document.getElementById("ri-person").hidden = !isPerson;
+    document.getElementById("ri-age").hidden = !isLikeness;
+
+    const personRow = document.querySelector('[data-rev-row="person"]');
+    const ageRow    = document.querySelector('[data-rev-row="age"]');
+    personRow.hidden = !isPerson || !s.person;
+    if (!personRow.hidden) {
+      document.querySelector('[data-rev="person"]').textContent =
+        T("ri.person." + s.person, PERSON_LABEL[s.person]);
+    }
+    /* 兩端都「不限」＝沒給資訊，整列收起（等同原本沒選任何 chip）。 */
+    ageRow.hidden = !isLikeness || (!s.age.from && !s.age.to);
+    if (!ageRow.hidden) {
+      const any = T("ri.age.any", "No limit");
+      document.querySelector('[data-rev="age"]').textContent =
+        (s.age.from || any) + " – " + (s.age.to || any);
+    }
     setRev("usage", s.usage.map(u => USAGE_LABEL[u]).join(", "), "ri.ph.none", "None selected");
     setRev("territory", s.territory.map(t => TERR_LABEL[t]).join(", "), "ri.ph.none", "None selected");
     setRev("royalty",
@@ -443,6 +522,9 @@
     // 發布前檢核
     const checks = {
       type:         !!s.type,
+      /* 選了真人形象才要求子類型；其他類型視為通過（比照 standard 只在 rental 時要求）。
+         年齡區間為選填，不列入檢核。 */
+      person:       s.type !== "person" || !!s.person,
       name:         s.name.length >= 2 && s.name.length <= 100,
       desc:         s.desc.length >= 10 && s.desc.length <= 2000,
       usage:        s.usage.length > 0,
@@ -499,6 +581,51 @@
     c.addEventListener("click", () => {
       document.querySelectorAll("#ri-type-grid .selection-card").forEach(x => x.classList.remove("selection-card--active"));
       c.classList.add("selection-card--active");
+      /* 2026-07-30：換成非「真人形象」時清掉子類型與年齡的既有選擇，否則收起來的欄位
+         會帶著看不見的值進到摘要與檢核（使用者改主意後留下的幽靈資料）。 */
+      if (c.dataset.choice !== "person") {
+        document.querySelectorAll("#ri-person-grid .selection-card").forEach(x => x.classList.remove("selection-card--active"));
+        resetAge();
+      }
+      syncReview();
+    });
+  });
+
+  /* ---- 單選卡：真人形象的權利子類型（肖像／聲音）---- */
+  document.querySelectorAll("#ri-person-grid .selection-card").forEach(c => {
+    c.addEventListener("click", () => {
+      document.querySelectorAll("#ri-person-grid .selection-card").forEach(x => x.classList.remove("selection-card--active"));
+      c.classList.add("selection-card--active");
+      /* 改選「聲音」或「其他」時清掉年齡：年齡是肖像的屬性，留著會變成聲音也有年齡區間。 */
+      if (c.dataset.person !== "likeness") {
+        resetAge();
+      }
+      syncReview();
+    });
+  });
+
+  /* ---- 肖像年齡區間：起／迄兩個下拉（2026-07-30 由可複選 chips 改成，使用者指定）----
+     resetAge 要清 value「並且」派 change——zselect 靠 change 事件重繪觸發鈕上的字，
+     只設 value 的話資料是對的、但按鈕還顯示著舊數字，看起來像沒清掉。 */
+  function resetAge() {
+    document.querySelectorAll('[data-ri-age]').forEach(sel => {
+      if (sel.value === "") return;
+      sel.value = "";
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+  document.querySelectorAll('[data-ri-age]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      /* 起 > 迄 是講不通的區間。把另一端拉到同一個值就地修正，比擋下來或標紅字好——
+         這是選錯順序，不是需要被糾正的錯誤。任一端為「不限」時不比較。 */
+      const from = document.getElementById('ri-age-from');
+      const to   = document.getElementById('ri-age-to');
+      if (from.value && to.value && Number(to.value) < Number(from.value)) {
+        const other = sel === from ? to : from;
+        other.value = sel.value;
+        other.dispatchEvent(new Event('change', { bubbles: true }));
+        return;   /* 那次 change 會再進來一遍並收尾 syncReview */
+      }
       syncReview();
     });
   });
@@ -583,6 +710,7 @@
   render();
 })();
 </script>
+<script src="js/zselect.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 </body>
