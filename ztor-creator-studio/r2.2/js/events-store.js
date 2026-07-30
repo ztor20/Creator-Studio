@@ -390,11 +390,16 @@
 
   window.ztorEvents = {
     list: function () { return clone(EVENTS); },
+    /* id 有帶但查不到 → 回 null，由呼叫端顯示「找不到活動」。
+       2026-07-30 修正：原本一律退回首筆，等於把「別人的活動」當成使用者點的那一場
+       靜默顯示出來——在編輯頁與 scanner 上尤其危險（會改到／掃到錯的場次）。
+       完全沒帶 id 仍回首筆，那是原型的示例頁預設值、不是查詢失敗。 */
     get: function (id) {
+      if (!id) return clone(EVENTS[0]);      // 無 id＝示例頁預設
       for (var i = 0; i < EVENTS.length; i++) {
         if (EVENTS[i].id === id) return clone(EVENTS[i]);
       }
-      return clone(EVENTS[0]);               // 未知 id → 首筆，編輯頁永遠有東西可顯示
+      return null;                           // 有 id 但查不到＝查詢失敗
     },
     /* 交易明細：有金流的階段才有（售票中／進行中／已結束） */
     transactions: function (id) {

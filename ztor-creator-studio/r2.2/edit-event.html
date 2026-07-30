@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/event-preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/review-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
@@ -194,7 +195,7 @@
           <div class="review-row__value" data-val="capacity">—</div>
         </div>
 
-        <div class="review-row__item" data-row="tickets">
+        <div class="review-row__item" data-row="tickets" data-hide-type="watchparty">
           <div class="review-row__head">
             <h3 class="review-row__name" data-i18n="ee.ov.tickets">Ticket tiers</h3>
             <a class="review-row__action" href="#" data-goto="tickets" data-i18n="ee.ov.edit">Edit →</a>
@@ -353,7 +354,7 @@
     </section>
 
     <!-- ══════════ TICKETS ══════════ -->
-    <section class="ee-section hidden" data-sec-panel="tickets">
+    <section class="ee-section hidden" data-sec-panel="tickets" data-hide-type="watchparty">
       <h1 class="wizard__step-title" data-i18n="ee.tix.h1">Tickets</h1>
       <p class="wizard__step-sub" data-i18n="ee.tix.sub">Tiers that already sold can be closed, but not deleted — buyers hold them.</p>
 
@@ -413,9 +414,31 @@
   'use strict';
   const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb || k;
 
-  /* ── 載入紀錄：?id= 指定，未知 id 由 store 回首筆（編輯頁永遠有東西可顯示）── */
+  /* ── 載入紀錄：?id= 指定。未帶 id 用示例首筆；有帶但查不到則顯示「找不到活動」，
+     不再靜默退回首筆——那會讓創作者以為自己在編輯 A、其實改的是 B。 */
   const params = new URLSearchParams(location.search);
   const ev = window.ztorEvents.get(params.get('id') || '');
+  if (!ev) {                             // id 有帶但查不到：不顯示別人的活動，改顯示查詢失敗
+    const page = document.querySelector('.page');
+    if (page) {
+      page.innerHTML =
+        '<div class="empty-stub"><div class="empty-stub__inner">' +
+        '<div class="empty-stub__mark">!</div>' +
+        '<h2 class="empty-stub__title" data-i18n="event.notfound.title">Event not found</h2>' +
+        '<p class="empty-stub__sub" data-i18n="event.notfound.sub">This link may be out of date, or the event was removed. Go back to the list and pick one.</p>' +
+        '<div class="empty-stub__refs"><a class="btn btn--primary" href="events.html" data-i18n="event.notfound.back">Back to events</a></div>' +
+        '</div></div>';
+      if (window.applyI18n) window.applyI18n(page);
+    }
+    document.title = ((window.i18nT && window.i18nT('event.notfound.title')) || 'Event not found') + ' · Ztor Creator Studio';
+    const foot = document.querySelector('.app-footer');
+    if (foot) foot.hidden = true;
+    return;
+  }
+  /* 依活動類型收起不適用的區塊（D149：共看派對無票種）；慣例沿用 create-event.html */
+  document.querySelectorAll('[data-hide-type]').forEach(el => {
+    if (el.dataset.hideType.split(/\s+/).indexOf(ev.type) >= 0) el.hidden = true;
+  });
   const soldTotal = window.ztorEvents.soldOf(ev) || ev.sold || 0;
   const isLive = ev.status === 'on-sale' && soldTotal > 0;
 
