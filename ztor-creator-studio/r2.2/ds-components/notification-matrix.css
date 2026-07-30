@@ -1,0 +1,123 @@
+/* ============================================================
+   Notification matrix — event-type (rows) × channel (columns)
+   per-cell independent toggles. Built for Settings → Notifications
+   (spec 5.1.9 F3): each event can be switched on/off per channel
+   (Email / Push / In-App). Some channels are compliance-locked
+   (kyc_state_change / compliance_alert / payout_confirmed · Email
+   always on, disabled) and render a lock affordance instead of a
+   live switch.
+
+   Anatomy:
+     .notif-matrix                          (CSS grid · label col + 3 channel cols)
+       .notif-matrix__corner                (top-left empty header cell)
+       .notif-matrix__chead                 (channel column header · Email/Push/In-App)
+       .notif-matrix__label                 (row label cell · name + hint)
+         .notif-matrix__label-title
+         .notif-matrix__label-hint
+       .notif-matrix__cell                  (toggle cell · centers a .switch)
+         .notif-matrix__cell--locked        (compliance-locked · shows lock + on switch)
+       .notif-matrix__lock                  (lock glyph shown in a locked cell)
+     .switch / .switch--on / .switch--locked   (reused form control)
+
+   Locked cells reuse .switch.switch--on plus .switch--locked (defined
+   below) so the visual stays consistent with every other toggle; the
+   lock icon sits beside it and the title attribute carries the reason.
+   ============================================================ */
+
+.notif-matrix {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, 84px);
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--card);
+  /* 2026-07-28（使用者裁示「每張卡都要有細微陰影」）：本元件原本只有底色＋圓角、
+     沒有任何 box-shadow，在深色畫布上與背景幾乎貼平、讀不出「這是一張浮起的卡」。
+     深色版的 --shadow-card 帶 rgba(253,253,253,0.08) 的亮色 rim——深底上真正看得見的
+     是那圈 rim 而不是黑色陰影，這也是為什麼不能只加純黑 drop。 */
+  box-shadow: var(--shadow-card);
+}
+
+/* Header row */
+.notif-matrix__corner,
+.notif-matrix__chead {
+  padding: var(--sp-10) var(--sp-12);
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.notif-matrix__chead {
+  text-align: center;
+  border-left: 1px solid var(--border);
+}
+
+/* Row label cell */
+.notif-matrix__label {
+  padding: var(--sp-12);
+  border-bottom: 1px solid var(--border-soft);
+  min-width: 0;
+}
+.notif-matrix__label-title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+.notif-matrix__label-hint {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-top: var(--sp-2);
+}
+
+/* Toggle cell */
+.notif-matrix__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+  padding: var(--sp-12);
+  border-left: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* Last visual row: drop the bottom hairline */
+.notif-matrix__label:last-of-type,
+.notif-matrix__row:last-child .notif-matrix__label,
+.notif-matrix__row:last-child .notif-matrix__cell {
+  border-bottom: 0;
+}
+
+/* Locked (compliance) cell — switch is forced on + non-interactive,
+   lock glyph signals why. Reason lives in the title attribute. */
+.switch--locked {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.notif-matrix__cell--locked {
+  cursor: not-allowed;
+}
+.notif-matrix__lock {
+  width: 13px;
+  height: 13px;
+  color: var(--muted-foreground);
+  flex: none;
+}
+
+/* Compact stacking on narrow widths: collapse the channel header to
+   short labels; the grid columns shrink rather than wrap. */
+@media (max-width: 560px) {
+  .notif-matrix {
+    grid-template-columns: minmax(0, 1fr) repeat(3, 56px);
+  }
+  .notif-matrix__chead,
+  .notif-matrix__cell {
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
+  }
+}

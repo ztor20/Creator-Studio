@@ -1,0 +1,127 @@
+/* ============================================================
+   chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28）
+
+   由 earnings-sony.html 的內嵌 <style>（2026-07-27 那版互動圖表）抽出通用部分，
+   供第二個消費者使用：project-detail.html 的「我的收益 › 收益走勢」。
+   使用者裁示：專案的收益折線圖要有跟財務總覽同一套 tooltip 與點擊看明細。
+
+   通用／不通用的分界：
+     通用（進本檔）＝ 熱區、導引線、標記點、浮層、聚焦淡化的機制
+     不通用（留頁內）＝ 每一條線是什麼顏色。收益類型各頁不同
+                       （財務總覽 7 種、專案 4 種），顏色由消費端自己指定。
+   本檔一律用 .is-focus / [data-focus] 這類與類型名無關的鉤子，
+   顏色則吃行內 style 或 --hue，所以換一組類型不必改這裡。
+
+   ⚠ earnings-sony.html 目前仍保留自己那份內嵌複本（規則相同）。沒有一併移除是為了
+   不在同一輪動到那頁的互動——待它下次改動時再切過來，屆時本檔即為唯一來源。
+   ============================================================ */
+
+/* 浮層是絕對定位在繪圖區內，所以繪圖區要當定位基準 */
+.linechart__main[data-fin-plot] { position: relative; }
+
+/* 線只有 2px，直接當點擊目標很難命中；每條線疊一條透明粗線當熱區。
+   vector-effect 讓 14px 不隨 viewBox 縮放——preserveAspectRatio="none" 會橫向拉伸，
+   沒有這一行，熱區在寬螢幕上會變成一條很胖的帶子。 */
+.fin-hitline {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  cursor: pointer;
+  pointer-events: stroke;
+  vector-effect: non-scaling-stroke;
+}
+
+/* 聚焦某一類型時，其餘線淡出；被淡化的線同時不可點——
+   否則會點到一條看不見的線、開出另一個類型的明細。 */
+[data-focus] .linechart__line,
+[data-focus] .fin-area { opacity: .16; transition: opacity var(--duration) var(--easing); }
+[data-focus] .linechart__line.is-focus,
+[data-focus] .fin-area.is-focus { opacity: 1; }
+[data-focus] .fin-hitline { pointer-events: none; }
+[data-focus] .fin-hitline.is-focus { pointer-events: stroke; }
+
+/* 面積填色只在聚焦單一類型時出現——一條線配一片面積才是它該有的用法；
+   七條線各配一片面積會糊成一團。填色由消費端給 --hue。 */
+.fin-area { stroke: none; display: none; }
+[data-focus] .fin-area.is-focus { display: block; }
+.fin-area.is-focus { fill: color-mix(in srgb, var(--hue, var(--chart-1)) 13%, transparent); }
+
+.fin-guide { stroke: var(--border); stroke-width: 1; pointer-events: none; }
+.fin-marker { pointer-events: none; }
+
+/* pointer-events:auto —— 浮層自己要可以被點。
+   「全部」時多條線互相重疊，2px 的線根本點不準，所以浮層列表才是開明細的主要入口。
+   浮層是 .linechart__main 的子層，滑進去不會觸發外層的 mouseleave，不會自己消失。 */
+.fin-tip {
+  position: absolute;
+  z-index: 5;
+  min-width: 172px;
+  pointer-events: auto;
+  background: var(--popover);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-10) var(--sp-12);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .10), 0 6px 16px rgba(0, 0, 0, .08);
+  font-size: var(--fs-12);
+}
+.fin-tip[hidden] { display: none; }
+.fin-tip__date { color: var(--muted-foreground); font-size: var(--fs-11); margin-bottom: var(--sp-4); }
+
+/* 每一列都是按鈕：點它＝開該類型的明細。外觀維持一般文字列，不做成按鈕樣子——
+   浮層裡塞四顆看起來像按鈕的東西，會把「這是資料」讀成「這是選單」。 */
+.fin-tip__row {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: var(--sp-8);
+  line-height: 1.6;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  /* 往外撐 6px 再往內墊 6px：hover 底色比文字寬一點，內容可用寬度卻與加按鈕前一致。
+     只寫 width:100% 會少掉左右 padding 的 12px，長類型名就被擠到換行。 */
+  padding: 0 var(--sp-6);
+  margin: 0 calc(var(--sp-6) * -1);
+  width: calc(100% + (var(--sp-6) * 2));
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing);
+}
+.fin-tip__row:hover { background: var(--accent); }
+.fin-tip__row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.fin-tip__amt { font-variant-numeric: tabular-nums; font-weight: var(--fw-regular); }
+.fin-tip__hint {
+  color: var(--muted-foreground);
+  font-size: var(--fs-11);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+
+/* 圖例圓點（浮層列、明細抬頭共用）。--dot 由消費端給。 */
+.fin-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dot, var(--chart-1));
+  display: inline-block;
+  flex: none;
+}
+
+/* ── 類型明細彈窗的內容版面 ────────────────────────────── */
+.fin-detail__head { display: flex; align-items: baseline; gap: var(--sp-8); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+.fin-detail__total {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-regular);
+  font-variant-numeric: tabular-nums;
+}
+.fin-detail__scope { color: var(--muted-foreground); font-size: var(--fs-12); margin-bottom: var(--sp-16); }
+.fin-detail__rank { width: 40px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.fin-detail__share { text-align: right; color: var(--muted-foreground); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fin-amt { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }

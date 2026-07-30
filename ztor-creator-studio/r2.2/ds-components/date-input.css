@@ -1,0 +1,66 @@
+/* ============================================================
+   date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07-21）
+
+   為什麼要這支：原生 <input type="date|datetime-local|time"> 不吃 placeholder，
+   空值時瀏覽器會自己畫「年/月/日 --:--」，而且是一般內文色——看起來像已經填了值。
+   本元件把空值狀態改成站上其他欄位一致的 placeholder 語言：
+     空值＝日曆 icon ＋ 淡灰「選擇日期」（原生的 年/月/日 藏起來）
+     已填＝正常內文色的日期，版面與改版前完全相同（使用者裁示 2026-07-21）
+   icon 與文字都只在空值時出現（＝placeholder 的一部分）：常駐 icon 會吃掉 28px 橫向
+   空間，窄欄如設定頁 120px 的勿擾時段會被切字。原生右側的 calendar-picker-indicator
+   收掉、攤平成整格的透明點擊層，所以填值後仍可點整格開選單（見 partials/date-input.js）。
+
+   套用方式：不用改頁面 markup。partials/date-input.js 會掃全站的日期類 input，
+   包一層 .date-input 並注入 icon 與 placeholder，再依 value 切 [data-empty]。
+
+   anatomy
+     .date-input[data-empty]
+       .date-input__icon      （日曆 icon，常駐）
+       .input                 （原生 input，本體）
+       .date-input__ph        （空值時才顯示的「選擇日期」）
+   ============================================================ */
+
+.date-input { position: relative; display: block; width: 100%; }
+
+/* 只有空值時才把左側讓給 icon＋placeholder。已填值就回到 .input 原本的內距——
+   常駐 icon 會讓窄欄（如設定頁 120px 的勿擾時段）內容被切掉（2026-07-21 實測）。 */
+.date-input[data-empty="true"] .input { padding-left: var(--sp-40); }
+.date-input[data-empty="false"] .date-input__icon { display: none; }
+
+.date-input__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--sp-12);
+  width: 16px; height: 16px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.date-input__ph {
+  position: absolute;
+  top: 50%;
+  left: var(--sp-40);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  color: var(--muted-foreground);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.date-input[data-empty="false"] .date-input__ph { display: none; }
+
+/* 空值時藏掉原生的「年/月/日 --:--」，位置讓給上面的 placeholder。
+   用 opacity 而非 display，保留原生欄位的鍵盤操作與寬度計算。 */
+.date-input[data-empty="true"] .input::-webkit-datetime-edit { opacity: 0; }
+
+/* 原生右側日曆鈕收掉：icon 已改由 .date-input__icon 常駐在左側，
+   整格點擊開選單由 JS 的 showPicker() 承接。 */
+.date-input .input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}

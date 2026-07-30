@@ -1,0 +1,194 @@
+/* ============================================================
+   Checkbox — the house choice control
+   (2026-07-27, L: "we need our own checkbox design according to our
+   design system")
+
+   NOT a new design. This is a PORT of the canonical checkbox already
+   specified in the unified design system
+   (`design-system/components/ds-form.css`, .ds-checkbox), translated onto
+   r2.1's token names. Two details in there were earned and are carried over
+   verbatim rather than re-derived:
+     · the tick is grid-centered instead of nudged with magic offsets
+     · plus a −2px optical nudge, because a rotated tick's tail pulls the eye
+       low so geometric centre reads high
+   Both were accepted by L on 2026-07-24 ("tick not centered"). Do not
+   "simplify" them back out.
+
+   Why a drawn box over a real input, rather than styling the <input>:
+     appearance:none can recolour the native box, but the tick needs a second
+     paint layer on top of the fill — and the only ways to get one on an
+     <input> are a pseudo-element (undefined for replaced elements; Firefox
+     does not support it) or a colour baked into a data-URI (which puts a raw
+     hex in component CSS and stops tracking the theme). Layering a drawn
+     <span> under a transparent-but-real input keeps click, keyboard, form
+     submission and screen-reader semantics 100% native while the visual is
+     entirely ours.
+
+   ── Markup contract ─────────────────────────────────────────────────────
+   With a label:
+     <label class="zcheck">
+       <span class="zcheck__control">
+         <input class="zcheck__input" type="checkbox">
+         <span class="zcheck__box"></span>
+       </span>
+       <span class="zcheck__label">Digital</span>
+     </label>
+
+   Bare (inside a table cell / already labelled by a nearby heading) — the
+   control span alone, no label span:
+     <span class="zcheck__control">
+       <input class="zcheck__input" type="checkbox" aria-label="…">
+       <span class="zcheck__box"></span>
+     </span>
+
+   The .zcheck__input keeps any existing hook class/id, so page JS that
+   queries it is unaffected.
+   ============================================================ */
+.zcheck {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+  cursor: pointer;
+  user-select: none;
+}
+/* ── 2026-07-28（L：「the check box is still too big and ugly」）─────────────
+   量到的事實，不是品味：box 是 18px，而它自己標籤的行框只有 16.9px
+   （--fs-13 × --lh-normal）——控件比它要說明的那行字還高，所以在一排
+   Digital／Vinyl／CD 裡，最搶眼的是三個方塊而不是三個字。
+   勾的筆畫 2.5px，旁邊每一顆 lucide 圖示是 1.2——同一個表單裡最重的一筆線
+   落在最不重要的控件上，那就是「ugly」的來源。
+
+   三個調整，其餘（drawn box under a real input、grid 置中、光學上移、
+   ink 不隨主題翻轉）全部保留：
+     18px → 16px      比行框略小，方塊退回標籤的從屬位置
+     2.5px → 2px 筆畫  與 icon family 同一個重量級
+     6×10 → 5×9 勾    18px 裡的 10px 勾旋轉後外接盒約 11.3px，幾乎頂到邊；
+                      縮到 5×9 後四周各留約 3px，勾才像放在盒子裡而不是塞進去
+   ------------------------------------------------------------------------ */
+.zcheck__control {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  /* 與標籤第一行光學對齊：(16.9 行框 − 16 box) ÷ 2 ≒ 0.5，取 1px 讓方塊
+     略低於幾何中心——大寫字母的視覺重心本來就偏上。 */
+  margin-top: 1px;
+}
+/* 觸控命中區：視覺 16px，但實際可點區域補到 24px。
+   有標籤時整個 .zcheck 就是命中區，這條是為了「表格儲存格裡的裸 control」
+   那種用法——那裡沒有標籤可以點，16px 對手指太小。
+   用 ::before 撐開而不是加 padding：加 padding 會改變版面。 */
+.zcheck__control::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: var(--radius-sm);
+}
+/* The real control: invisible, but still the thing that is clicked, tabbed
+   to, toggled by space, and submitted. Never `display:none` or
+   `visibility:hidden` — both remove it from the tab order. */
+.zcheck__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.zcheck__box {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  /* r2.1 has no white-alpha scale, so compose the DS's --white-alpha-4 from
+     the foreground token — this keeps working when the theme flips. */
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  border: 1px solid var(--border);
+  transition: background-color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing);
+}
+.zcheck:hover .zcheck__box { border-color: var(--foreground-muted); }
+
+/* Checked — solid brand fill with a dark ink tick.
+   The ink is a local literal, deliberately: --primary-foreground flips to
+   #FFFFFF in the light theme, and a white tick on #ffa33f is ~1.9:1. This is
+   the same value the unified DS uses for --yellow-ink, and orange is light in
+   BOTH themes, so the ink must not flip with the theme. */
+.zcheck {
+  --zcheck-ink: #271302;
+}
+.zcheck__input:checked + .zcheck__box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.zcheck__box::after {
+  content: "";
+  width: 5px;
+  height: 9px;
+  /* 光學上移（2026-07-24 L 裁示保留）：旋轉後的勾，尾巴把視線往下拉，
+     幾何置中會看起來偏高。box 從 18→16 後這個補償也跟著等比收：−2 → −1.5。 */
+  margin-top: -1.5px;
+  border: solid var(--zcheck-ink, #271302);
+  /* 2px：與同畫面 lucide 圖示的 1.2 stroke 同一個重量級（勾比圖示短，
+     略粗才等重）。原本的 2.5px 讓它變成整張表單裡最重的一筆線。 */
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0;
+  transition: transform var(--duration) var(--easing), opacity 120ms var(--easing);
+}
+.zcheck__input:checked + .zcheck__box::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+/* Indeterminate — a bar, not a tick. Used for "some children selected". */
+.zcheck__input:indeterminate + .zcheck__box {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.zcheck__input:indeterminate + .zcheck__box::after {
+  opacity: 1;
+  width: 7px;   /* 16px box 的 ~44%，與勾的視覺份量相當 */
+  height: 0;
+  margin-top: 0;
+  border-width: 0 0 2px 0;
+  transform: none;
+}
+
+/* Focus ring goes on the drawn box, since the real input is transparent.
+   :focus-visible only — clicking should not leave a ring behind. */
+.zcheck__input:focus-visible + .zcheck__box {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.zcheck__input:disabled + .zcheck__box { opacity: 0.5; }
+.zcheck__input:disabled,
+.zcheck:has(.zcheck__input:disabled) { cursor: not-allowed; }
+.zcheck:has(.zcheck__input:disabled) .zcheck__label { color: var(--muted-foreground); }
+
+.zcheck__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal, 1.5);
+  color: var(--foreground);
+}
+
+/* Reduced motion — same end states, no tween. */
+@media (prefers-reduced-motion: reduce) {
+  .zcheck__box,
+  .zcheck__box::after { transition: none; }
+}
+
+/* ── Safety net ───────────────────────────────────────────────────────────
+   Any checkbox that has NOT been converted to the markup above would
+   otherwise render as the OS control — a light-grey box with a blue tick on
+   our dark canvas, which is the exact bug that prompted this component.
+   `accent-color` + `color-scheme` costs two lines and makes a stray native
+   checkbox at least brand-coloured and dark-themed instead of alien.
+   This is a fallback, not the API — new checkboxes use .zcheck. */
+input[type="checkbox"]:not(.zcheck__input),
+input[type="radio"]:not(.zcheck__input) {
+  accent-color: var(--primary);
+  color-scheme: dark;
+}

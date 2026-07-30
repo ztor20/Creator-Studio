@@ -1,0 +1,60 @@
+/* ============================================================
+   Switch — binary on/off toggle (form control).
+
+   36 × 20 pill with a 16 × 16 knob that slides between left
+   (off) and right (on). On state fills with `--primary` orange.
+
+   Used in Settings (Notifications, Privacy & Security, Payouts
+   auto-payout toggle), E-Shop (product visibility), My IP
+   (marketplace visibility), Earnings, IP detail.
+
+   Anatomy:
+     .switch                  (off · neutral track)
+     .switch.switch--on       (on  · orange track, knob shifted right)
+
+   The element is typically a `<div>` or `<button>` styled as a
+   toggle; pair with `role="switch" aria-checked="true|false"`
+   for assistive-tech support when promoted to interactive use.
+   ============================================================ */
+.switch {
+  position: relative;
+  width: 36px; height: 20px;
+  /* off track one step darker than --muted so the white knob reads (ramp:
+     …#FAFAFA → #F3F3F3 → #E5E5E5). Dark-mode --accent == --muted,
+     so this only deepens light mode. */
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);   /* Q4 2026-07-13：真 border 取代陰影模擬；knob 內移 1px 補償 border-box */
+  cursor: pointer;
+  flex: none;
+  /* 2026-07-27：如上面 Anatomy 所述，這個元件 <div>／<button> 兩種寫法都有。
+     目前沒有文字子節點所以看不出來，但 <button> 版現在其實吃著 UA 的黑字；
+     補 inherit 讓兩種寫法一致，未來加上文字也不會突然黑掉。*/
+  color: inherit;
+  transition: background-color var(--duration) var(--easing);
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-raise-strong);
+  transition: left 150ms ease;
+}
+.switch--on {
+  background: var(--primary);
+}
+.switch--on::after {
+  left: 17px;
+  background: var(--card);
+}
+
+/* Dark mode: knob stays opaque white. Light-mode --card is solid white, but
+   dark-mode --card is translucent (rgba .10) → the knob would show the track
+   (orange when on) through it. Force an opaque near-white in dark for both states. */
+[data-theme="dark"] .switch::after,
+[data-theme="dark"] .switch--on::after {
+  background: var(--foreground);
+}

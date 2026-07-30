@@ -1,0 +1,776 @@
+/* ============================================================
+   Ztor Creator Studio · R 2.1 — Design Tokens
+   Differs from ztor:
+     --background        #F7F7F7 → #FFFFFF   (clean white canvas)
+     --surface-rail      #FBFBFB             (near-white sidebar rail)
+     --primary           #171717 → #ffa33f   (highlighter orange CTA)
+     --primary-hover     #000000 → #ffb866   (brighter orange on hover)
+     --primary-foreground light=#FFFFFF / dark=#171717  (使用者指定 2026-06-22：白天白字、黑夜黑字。注意白字在淡橘上對比僅 ~1.9:1，低於 WCAG AA)
+     --ring                            orange (=var(--primary)) by request 2026-06-02 — note ~1.3:1 on light canvas, below WCAG AA 3:1
+   Dark mode primary also shifts to #ffa33f to keep visual language paired.
+   R 2.1 light-mode token deltas from the Ztor parent design system (recorded 2026-05-22).
+   Border updated 2026-05-25: reverted from #D1D1C7 → #E5E5E5 (cooler hairline,
+   matches base ztor; warmer canvas + cooler hairline reads cleaner per user feedback).
+   ============================================================ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────
+     Pillar 2 Role — 命名對齊 shadcn/ui（2026-06-25, issue #11 jaskang）
+     shadcn 通用 role 為主層；creator 多出來的當 extension（標 [ext]），
+     不蓋掉 shadcn 名。對齊語意、不對齊數值——品牌橘照樣是 --primary。
+     舊名→新名：surface→card · surface-muted→muted · foreground-subtle→
+     muted-foreground · surface-rail→sidebar · surface-rail-hover→accent ·
+     status-error→destructive。
+     ───────────────────────────────────────────────────────────── */
+
+  /* Base surfaces / text */
+  --background:        #FFFFFF;   /* canvas / body */
+  --foreground:        #1A1A1A;   /* off-black（2026-07-13 體檢：純黑殺層次，改 off-black；taste/minimalist/soft 共識）*/
+  --card:              #FFFFFF;   /* cards / panels（原 --surface）*/
+  --card-foreground:   #000000;
+  --popover:           #FFFFFF;   /* popovers / nav 浮層 */
+  --popover-foreground:#000000;
+  --muted:             #FAFAFA;   /* 次級底（原 --surface-muted）*/
+  --muted-foreground:  #6E6E68;   /* 輔助文字（原 --foreground-subtle）· 2026-07-13 微暖 */
+  /* --secondary 已於 Q9 2026-07-13 退役：全站零消費，hover 一律用 --accent */
+  --accent:            #F3F3F3;   /* hover / 選單項底 · 互動 hover 統一色（Q9 2026-07-13）*/
+  --accent-foreground: #000000;
+
+  /* Primary action (highlighter orange) */
+  --primary:            #ffa33f;
+  /* 2026-07-28（/impeccable polish）：由 #FFFFFF 改 #171717。
+     這推翻 2026-06-22「白天白字」的指定——那條當時就在本檔註記為「白字在淡橘上對比僅 ~1.9:1，
+     低於 WCAG AA」，本次 43 頁掃描把它量成實際缺陷：`.btn--primary` 標籤 1.99:1，連 large text
+     的 3:1 都不到，是全站按鈕文字。深墨對 #ffa33f 是 9.02:1（過 AAA），且與夜間版同值，
+     主要按鈕從此兩個主題長得一致。凡是鋪在實色橘上的文字都吃這一支（btn--primary、
+     pager 目前頁、selection-card__tag）。使用者 2026-07-28 授權「只保留品牌橘，其餘可自行決定」。 */
+  --primary-foreground: #171717;
+  /* --on-primary（2026-07-27 新增）＝「鋪在實色橘上、保證讀得到」的墨色，亮暗同值。
+     不能用 --primary-foreground：它亮色是白字，白對 #ffa33f 只有 1.99:1（連 large text 3:1 都不到）。
+     深墨 #171717 對 #ffa33f 是 9.02:1、過 AAA。小面積的按鈕文字沿用使用者 2026-06-22 指定的
+     --primary-foreground 不動；大面積橘底（.kpi--hero 整張卡）一律走這個 token。*/
+  --on-primary:         #171717;
+  --primary-hover:      #ffb866;   /* [ext] shadcn 用 /90，我們保留具名 hover */
+
+  /* Destructive（原 --status-error）*/
+  --destructive:        #DA314A;
+  --destructive-foreground: #FFFFFF;
+
+  /* Edges */
+  --border:            #EAEAEA;   /* hairline · 2026-07-13 體檢：更淡，配微暖畫布靠色階分層（minimalist）*/
+  --input:             #EAEAEA;   /* 控件邊（= border）*/
+  --input-surface:     var(--card);   /* 控件填色底：亮色＝白卡（靠 border 分界）；暗色改亮一階讓 filled 欄位浮出卡面（見 dark override，Q19）*/
+  /* 巢狀層填色（.nest）：疊在卡片上的第二層 surface。亮色＝透明——卡與 nest 同為白，
+     單靠 --shadow-nest-up 的向上陰影分層就夠（2026-07-21 使用者裁示）。深色才真的疊一層薄膜。 */
+  --nest-surface:      transparent;
+  --ring:              var(--primary);   /* 品牌橘 focus ring；亮暗同色（2026-06-25）。a11y：白底約 1.3:1 低於 WCAG，依「無障礙僅建議」保留 */
+
+  /* Charts — 品牌＋status 色序 */
+  --chart-1:           #ffa33f;   /* 橘 */
+  --chart-2:           #266DF0;   /* 藍 */
+  --chart-3:           #22C55E;   /* 綠 */
+  --chart-4:           #F8D749;   /* 黃 */
+  --chart-5:           #8B5CF6;   /* 紫 */
+  --chart-6:           #EC4899;   /* 玫紅 · 2026-07-27 新增：收益類型擴充到 7 種（商品收益）*/
+  --chart-7:           #06B6D4;   /* 青 · 2026-07-27 新增：門票收益 */
+
+  /* Sidebar（原 --surface-rail 一家）*/
+  --sidebar:                   #FBFBFB;
+  --sidebar-foreground:        #000000;
+  --sidebar-primary:           #ffa33f;
+  --sidebar-primary-foreground:#FFFFFF;
+  --sidebar-accent:            #F3F3F3;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border:            #EAEAEA;
+  --sidebar-ring:              var(--primary);
+  --sidebar-active:            #ECECEC;   /* [ext] 已選 pill（原 --surface-rail-active）· Q8 裁決 A 後僅餘回退用，導覽已選改吃 --selected-* */
+
+  /* ── Selected / active — Q8 2026-07-27 使用者裁決 A：「已選中」狀態全站一律用品牌橘 ──
+     一套配方、三種形態；橘色永遠在場，只是強度隨控件份量調整：
+       tint      ＝ 安靜的持續選取（側欄／次層導覽／篩選 pill／segment／chip）→ 吃下面這組 token
+       underline ＝ 主要檢視切換（.tabs）→ --primary 當底線色，維持原樣
+       solid     ＝ 離散且已提交的選擇（.pager 目前頁／主 CTA）→ --primary 實色，維持原樣
+     實色橘保留給 CTA 與 solid 形態，導覽／篩選一律走 tint，橘才不會與 CTA 搶焦
+     （守住 DESIGN.md 的 One Spotlight Rule：橘 ≤ 10% 畫面）。
+     --selected-ink 亮暗分色是硬需求：#ffa33f 對近白底只有 1.92:1，遠低於 WCAG AA，
+     亮色版壓深成 #8F4E00（同色相 32°；對 --sidebar #FBFBFB 6.23:1、對 14% 橘 tint 5.70:1，皆過 AA）。*/
+  /* --brand-ink ＝「品牌橘，但可以當文字用」的那一版。--primary(#ffa33f) 對近白底只有 1.92:1，
+     任何要當字／icon 的橘都必須走這個 token，不能直接用 --primary。亮色壓深成同色相 32° 的
+     #8F4E00（對 --sidebar 6.23:1、對 14% tint 5.70:1、對白卡 6.45:1，皆過 WCAG AA）。 */
+  --brand-ink:              #8F4E00;
+  --selected-surface:       color-mix(in srgb, var(--primary) 14%, transparent);
+  --selected-surface-hover: color-mix(in srgb, var(--primary) 20%, transparent);
+  --selected-ink:           var(--brand-ink);   /* 語意別名：這個橘代表「已選中」*/
+
+  /* ── creator extensions（shadcn 沒有；保留）── */
+  --surface-shell:     #F0F0EE;   /* [ext] app shell 外層 canvas · 2026-07-14 再降一階，保留與 route page 的層次 */
+  --surface-page:      #FAFAFA;   /* [ext] shell 內的 route page · 2026-07-14 降低明度 */
+  --surface-inverse:   #000000;   /* [ext] footer / hi-contrast slab */
+  --foreground-muted:  #4D4D4D;   /* [ext] 中階文字（原 rgba(0,0,0,.7) 實色化 2026-06-25）*/
+  --foreground-on-inverse:       #FFFFFF;   /* [ext] footer 文字 */
+  --foreground-on-inverse-muted: rgba(255, 255, 255, 0.6);  /* [ext] footer 次文字（恆在黑 slab 上）*/
+  --border-soft:       #EFEFEF;   /* [ext] 更淡的分隔線 */
+  --border-inverse:    rgba(255, 255, 255, 0.1);   /* [ext] 黑 slab 上的 hairline（兩主題同值）*/
+  --gradient-brand:    linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%);   /* [ext] 進度條品牌漸層 */
+
+  /* Status accents [ext]（shadcn 只有 destructive；其餘為 creator extension）*/
+  --status-success:    #22C55E;
+  /* ── 染色膠囊「墨色」（2026-07-27）──────────────────────────────
+     .kpi__delta 這類「狀態色 12% 半透明底 ＋ 同色文字」的膠囊，只有在底是「深的」時候
+     才成立。膠囊實際的背景是它坐的那個面：
+        深卡  → 合成 rgb(38,57,46)   亮綠字 7.06:1  ✓
+        白卡  → 合成 rgb(228,248,236) 亮綠字 2.05:1  ✗（此為既有缺陷，非本次新增）
+        橘卡  → 合成 rgb(233,170,71)  亮綠字 1.17:1  ✗
+     所以墨色不能跟著「主題」走，要跟著「這張膠囊坐在什麼面上」走——實色橘卡在深色主題下
+     依然是一個「亮底」。作法：把墨色抽成 token，由擁有那個面的人去覆寫（見 kpi.css 的
+     .kpi--hero）。色相不動，只往下走明度：#052E16／#4C0519 是同一條綠／玫瑰色階的最深階，
+     維持「一眼看出是綠的／紅的」這個設計意圖。文字 12px semibold 屬 normal text，門檻 4.5:1
+     （不是 3:1）——green-900 #14532D 在橘膠囊上只有 4.47:1，差一點就是不行，故取 green-950。*/
+  --status-success-ink: #052E16;
+  --destructive-ink:    #4C0519;
+  /* 膠囊的「底」也抽成 token（跟墨色成對），這樣擁有某個面的元件可以整組換掉、
+     而不是去覆寫 .kpi__delta 的個別屬性。base ＝原本的 12% 半透明染色，配方沒變。
+     這裡引用 var(--status-success)，而 custom property 是延遲解析的——深色主題覆寫
+     --status-success 之後，這條 fill 會自動跟著變，所以只需要定義一次。 */
+  --status-success-fill: color-mix(in srgb, var(--status-success) 12%, transparent);
+  --destructive-fill:    color-mix(in srgb, var(--destructive) 12%, transparent);
+  /* 深階實色版（給「坐在實色暖底上」的膠囊用，見 kpi.css 的 .kpi--hero）。
+     12% 的淡染在飽和橘上幾乎看不出色相，綠只能靠墨色撐；改成深綠實底之後
+     「綠」由底本身承載，字換白，兩件事都變強。
+
+     2026-07-28 L：「can we use a different green, this green never appears
+     anywhere in the site, and it doesn't really compliment our accent color」
+     ——兩點都成立，查證如下：
+       · 舊值 #14532D（green-900）與 #881337（rose-900）各自只被引用一次，
+         就是 kpi.css 的 .kpi--hero，全站沒有第二個消費者。它們是「另外挑的顏色」，
+         不屬於站上任何一條色階。相對的，站上真正的綠膠囊是 .badge--success
+         （--status-success 的 16% 淡染），用了 170 次。
+       · 色相上，#14532D 是 hsl(144°)、品牌橘是 hsl(31°)——差 113°。既不是互補
+         也不是類比，就是不協調：一塊冷調瓶綠打在飽和暖橘上。
+
+     改成「由站上那支狀態色推導」而不是另外挑一個：
+       35% 的 --status-success ＋ 65% 的暖黑 #1a1208
+       → 亮色 #1D5126 hsl(130, 47%, 22%)｜暗色 #2B5932 hsl(129, 35%, 26%)
+     色相從 144° 移到 130°（往橘走 14°）、彩度也降下來，於是綠不再跟橘互打；
+     暖黑而不是中性黑，是為了讓這塊綠讀起來像「長在這張橘卡上」。
+     白字對比：亮 9.30:1／暗 8.15:1（紅版 12.64:1），全部 AAA。
+
+     用 color-mix 從 --status-success／--status-error 推導的另一個好處：
+     那兩支色一旦調整，這裡自動跟著走，不會再變成孤兒。
+
+     沒有 dark override 是對的，不是漏調：.kpi--hero 的底是 --primary，
+     而 --primary 在亮暗兩個主題都是 #ffa33f，膠囊坐的面根本沒變。
+     （深階值本身仍隨 --status-success 的主題值變化，見上。）*/
+  --status-success-deep: color-mix(in srgb, var(--status-success) 35%, #1a1208);
+  --destructive-deep:    color-mix(in srgb, var(--status-error)   35%, #1a1208);
+  --status-info:       #266DF0;
+  --status-warning:    #F8D749;
+  /* 2026-07-28：黃色當「文字」用在亮底上是先天不可能——#F8D749 對白只有 1.42:1。
+     警示黃在亮色模式必須另有一支可讀的墨色（同 --status-success-ink／--destructive-ink 的分工：
+     填色歸填色、墨色歸墨色）。#8A6D00 對白 4.92:1 過 AA，仍在同一條琥珀色相上。
+     深色模式不需要壓深——#F3CF58 在深卡上本來就高對比，見 dark override。 */
+  --status-warning-ink: #8A6D00;
+  --status-info-ink:    #1D4ED8;
+  --status-accent-ink:  #6D28D9;
+  --status-accent:     #8B5CF6;   /* purple — extra category-tag hue (2026-06-05) */
+  --status-error:      #DA314A;   /* 2026-07-21 補回：狀態徽章的錯誤色，與 --destructive（刪除等破壞性操作）語意分開；值暫同 --destructive，暗色見 override（Figma 845:11071 兩色分歧） */
+
+  /* Geometry */
+  --radius-sm:         3px;
+  --radius:            6px;       /* primary buttons */
+  --radius-md:         var(--radius);  /* merged → 6px (Q2 2026-07-13；原 7px，保留別名避免 67 處呼叫點 churn) */
+  --radius-lg:         8px;       /* nav panels */
+  --radius-xl:         16px;      /* cookie banner */
+  --radius-shell:      28px;      /* route-page corner inside sidebar app shell */
+  --radius-pill:       9999px;
+
+  /* ── Scrollbar（2026-07-27）────────────────────────────────
+     全站自訂捲軸。只定義一次、不分主題——顏色由 --foreground 混 transparent 推導，
+     --foreground 本來就會跟著主題翻，所以兩個主題自動成立。
+     **混 transparent 而不是混某個 surface token** 是關鍵：同一支捲軸會出現在側欄軌、
+     白色 modal、深色卡、甚至實色橘的 hero 卡上；混死某個面等於把錯的底色烤進自己身上
+     （同日 .kpi__delta 混 --card 就是這樣在橘卡上變成黑斑的）。
+     size 是「軌道寬」＝可拖曳的命中區，thumb 的視覺寬度由透明 border 內縮出來，
+     所以 hover 變粗是在固定寬度內長大、不會造成 reflow。 */
+  --scrollbar-size:        12px;
+  --scrollbar-thumb:       color-mix(in srgb, var(--foreground) 14%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--foreground) 32%, transparent);
+  --space-shell-gutter:16px;      /* desktop gap above the route page */
+
+  /* Control sizes — 表單控件＋按鈕共用高度級（全部 4 的倍數，2026-06-25 issue #11）
+     同尺寸的 input 與 button 等高；驅動 button / input / select / segmented…。
+     ⚠ 2026-07-21（Q25）之前這句是空話：`.input` 當時靠 padding 撐開＝39px、`.btn` 是 36px，
+     只有 field-pill／tag-input 真的吃這套 token。單行控件改吃 token 後才真正成立。
+     **新增或修改任何單行控件，高度一律從這裡取，不要用 padding 去湊**——padding×2 ＋
+     font-size×line-height 幾乎一定算出小數（站上曾因此長出 41.5／37.5／35.5 三種對不齊的搜尋框）。 */
+  --control-h-xs:      28px;   /* 密集：表格內欄位 */
+  --control-h-sm:      36px;   /* **單行控件實際預設**：.input / .select / .btn / field-pill / tag-input / 各處搜尋框（Q25）*/
+  --control-h-md:      44px;   /* 註記為 default 是刻度層的命名，非站上實際預設；目前 .ztor-btn(DS 展示用) 與 .btn--lg 在這階 */
+  --control-h-lg:      52px;
+  --control-h-xl:      60px;
+
+  /* ── Spacing scale --sp-*（px 直命名，2026-07-02）──
+     間距唯一刻度：數字＝px（與 --fs-14=14px 同邏輯），涵蓋全站實際使用的密集節奏
+     （2 4 6 8 10 12 14 16 18 20 24 28 32 40 48 56 64 72 80 96；取自 ~443 處實值統計）。
+     元件的 gap / padding / margin 一律 var(--sp-N)；奇數微調值（1/3/5/7/9/11/13px）
+     屬 optical adjustment、保留字面值不入刻度；負值 margin 亦保留字面值。
+     舊 --space-1..16（N×4px 制，幾乎未被採用）已於同日退役，只留下方 shell-gutter。 */
+  --sp-2:  2px;
+  --sp-4:  4px;
+  --sp-6:  6px;
+  --sp-8:  8px;
+  --sp-10: 10px;
+  --sp-12: 12px;
+  --sp-14: 14px;
+  --sp-16: 16px;
+  --sp-18: 18px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  --sp-28: 28px;
+  --sp-32: 32px;
+  --sp-40: 40px;
+  --sp-48: 48px;
+  --sp-56: 56px;
+  --sp-64: 64px;
+  --sp-72: 72px;
+  --sp-80: 80px;
+  --sp-96: 96px;
+
+  /* ── Width scale --w-*（px 直命名，2026-07-10）──
+     欄位／小元件的 max-width（或 flex-basis）刻度家族，主題無關；起點兩個值，後續依實際
+     使用值按需擴充（不預先鋪滿）。與 --sp-* 同邏輯：數字＝px。 */
+  --w-220: 220px;
+  --w-300: 300px;
+
+  /* ── Shadow tokens · Elevation 海拔階梯（E0–E4）──────────────────────
+     扁平為底，陰影只表達「浮起的層級」；同層分隔一律用 hairline／surface 色階。
+       E0 貼底＝無陰影（頁底、側欄、表格列；邊緣用 --shadow-hairline）
+       E1 微浮 --shadow-raise（按鈕、輸入框、switch knob）
+       E2 卡片 --shadow-card（card、清單容器、KPI、sticky 工作列）
+       E3 懸浮 --shadow-float（下拉、popover、tooltip、拖曳中的列；card hover 升到這階）
+       E4 覆蓋 --shadow-overlay（modal、對話框、抽屜）
+     規則：一元件一階；互動＝借上一階 token（不自創 hover 陰影）；
+     越高越大而淡（offset/blur↑、alpha 收斂）；全站僅此階梯、不寫裸陰影值。 */
+  --shadow-micro:
+    0 4px 4px rgba(23, 23, 23, 0.04);
+
+  /* E1 · Low-elevation control raise (buttons, inputs, segmented, switch knob,
+     chart marker). Replaced the per-component ad-hoc `0 1px 2px rgba(...)`
+     shadows on 2026-06-15 so they tokenize + adapt to dark mode. */
+  --shadow-raise:
+    0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-raise-strong:
+    0 1px 2px rgba(0, 0, 0, 0.16);
+
+  /* E2 · resting card（rim + drop）*/
+  --shadow-card:
+    0 2px 8px -1px rgba(12, 10, 9, 0.05),
+    0 0 0 1px rgba(23, 23, 23, 0.05);   /* 2026-07-13 柔化：更擴散、更淡（minimalist/soft）*/
+
+  /* E3 · floating — 下拉／popover／tooltip／拖曳列；card hover 借用本階 */
+  --shadow-float:
+    0 8px 24px -8px rgba(12, 10, 9, 0.08),
+    0 2px 6px -2px rgba(12, 10, 9, 0.05),
+    0 0 0 1px rgba(23, 23, 23, 0.05);   /* 2026-07-13 柔化：層次擴散、低透明 */
+  --shadow-card-hover: var(--shadow-float);
+
+  /* E3 變體 · 去 rim 版（product-list 列 hover/drag 浮起專用，2026-07-21 使用者反饋「hover 不要
+     border」）：--shadow-float 的 `0 0 0 1px` 那層是刻意畫的軟性描邊（見下方 Pattern 說明），
+     用來在 dropdown/popover 這類疊在任意底色上的浮層補輪廓；但列表列的浮起卡背景（--card 白）
+     跟頁面背景（--surface-page 米白）色差已經夠明顯，再疊一圈描邊會被誤讀成「有 border」。
+     淺色拿掉 rim、只留 drop；深色維持完整 --shadow-float（見下方 dark override 註解，深底陰影
+     本身不夠明顯，rim 是唯一可靠的浮起提示，不能拿掉）。 */
+  --shadow-lift-flat:
+    0 8px 24px -8px rgba(12, 10, 9, 0.08),
+    0 2px 6px -2px rgba(12, 10, 9, 0.05);
+
+  /* E4 · overlay — modal／對話框／抽屜（scrim 之上）*/
+  --shadow-overlay:
+    0 16px 40px -8px rgba(12, 10, 9, 0.18),
+    0 0 0 1px rgba(23, 23, 23, 0.08);
+
+  /* E0 邊緣 · sub-pixel rim（分隔用，非浮起）*/
+  --shadow-hairline:
+    0 0 1px rgba(0, 0, 0, 0.2);
+
+  /* Top-edge highlight — 疊在浮起面頂緣的 1px 內光，給無邊框卡一道「被光打到的上緣」，
+     與 --shadow-card 併用做出微立體感（2026-07-17，form-section--outlined 採用；midnight 探索）。
+     亮色白底上幾乎不可見（無害）；深底才顯出上緣高光。 */
+  --shadow-edge-top:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  /* Nest shadow — 向上柔投影，由「嵌在卡片底部的巢狀層」往上打在母卡面上，做出 nest 疊在卡片之上的感覺
+     （2026-07-21，.nest 採用；Figma node 856:27798）。⚠ 模糊會往左右外溢，母卡必須 overflow:hidden。
+     亮色版：卡與 nest 同為白，這道陰影是唯一的分層線索，所以不能再更淡。 */
+  --shadow-nest-up:
+    0 -6px 8px rgba(0, 0, 0, 0.05);
+
+  /* Seam shadow — 向右柔投影，由「上層的主面板」蓋向相鄰的下層面板（E-Shop 主面板疊在商店預覽之上），
+     順著主面板圓角填滿接縫凹口。⚠ 不可掛在捲動容器（其圓角被瀏覽器畫成方角→方角陰影）；
+     掛在一個透明、真圓角的輔助層（貼上層面板右緣）向右投到下層上。 */
+  --shadow-seam:
+    7px 0 20px -4px rgba(12, 10, 9, 0.16);
+
+  /* Header shadow — sticky 建立流程 header 下緣的柔和投影（由 header 後方等高、內縮、下方大圓角的
+     色塊投出，只露下緣；見 .wizard__top）。把 header 與下方捲動內容分開。 */
+  --shadow-header:
+    0 3px 16px rgba(0, 0, 0, 0.10);
+
+  /* Motion */
+  --duration:          200ms;
+  --easing:            cubic-bezier(0.32, 0.72, 0, 1);  /* common Framer ease-out-quart */
+
+  /* Frosted overlay recipe — 浮層毛玻璃。暗色模式 --surface 是半透明，浮層需靠它
+     模糊背景才不會透出後方內容（見檔尾 .overlay-surface 集中規則）。 */
+  --overlay-blur:      blur(14px) saturate(140%);
+  --overlay-tint:      rgba(0, 0, 0, 0.45);   /* darkening mixed into modal backdrops (see .payout-modal) */
+
+  /* Typography */
+
+  /* Font families — base (Latin-first) declaration.
+     四個家族：Geist（display＋UI）· Inter（body）· Geist Mono（mono）。
+     ⚠ 三層 cascade，別只看這裡：
+       1) 這裡＝拉丁優先的 base；
+       2) ds-components/fonts.css 重新宣告 --font-display/ui/body，於每個 stack 末端
+          補上自架的 'Noto Sans TC'（CJK per-glyph fallback），並擁有所有 @font-face；
+       3) shared.css 的 :lang(zh-Hant) 把 'Noto Sans TC' 提到第一位（繁中行高/基線）。
+     有效字體堆＝本宣告 + Noto fallback。詳見 ds-components/fonts.css。 */
+  --font-display: 'Geist', system-ui, sans-serif;
+  --font-ui:      'Geist', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* 中文那一套 — 自架 Noto Sans TC，獨立成 token。接在每個拉丁 stack 末端做 CJK
+     per-glyph fallback（見 fonts.css）；繁中模式由 shared.css :lang(zh-Hant) 提到第一位。 */
+  --font-cjk:     'Noto Sans TC';
+
+  /* ── Font-size scale — 整數級，全站唯一來源（2026-06-23）──
+     所有 font-size 一律 var(--fs-N)；半 px 已收斂（.5 無條件捨去、<11 併 11）。
+     級距：11 12 13 14 15 16 18 22 24 28 32 40 44 56 64。 */
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-22: 22px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+  --fs-44: 44px;
+  --fs-56: 56px;
+  --fs-64: 64px;
+
+  /* ── Font-weight scale — 全站唯一來源（2026-06-23；2026-07-28 重訂）──
+     載入的 Satoshi 只有 300/400/500/700/900（**沒有 600**），刻度就照實際檔案走。
+
+     ▍2026-07-28 L 裁示：全站字重上限 400，除非非重不可。
+     階層改由「字級 × 顏色 × 留白」承載，不再靠加粗——這正是 Satoshi 變輕之後
+     好看的原因：它的字面本來就開闊，一加粗就把那份開闊壓掉了。
+     遷移結果：CSS 呼叫點 medium 119→31、semibold 59→0、regular 57→202。
+
+     只有兩個例外層級，各自有明確的存在理由（見 07-design-pipeline 的 role 說明）：
+       500 ＝「不加重就失去意義」：與同尺寸同色的未選中兄弟並排的 active/selected
+             狀態，以及 11–12px 燒在染色底上的微型字（badge／chip／monogram）。
+       700 ＝「重量本身就是語意」：品牌字標、財務小計／總計列、掃描結果橫幅、語意 <b>。
+     兩者以外一律 400；新元件預設 400，要用例外請先對照上面兩條理由。 */
+  --fw-light:    300;   /* 大字級專用（44px＋）——見下方 display role */
+  --fw-regular:  400;   /* 預設。標題、控件、表頭、數值 */
+  /* 內文專用字重（2026-07-28 使用者裁示：「body 要 200，最多 300」）。
+     從 --fw-regular 拆出來，因為那支同時餵標題（.card__title 等）與控件，
+     一起調下去標題也會變細——而使用者說標題現在是對的。
+
+     ⚠ 實際算繪值會被字檔的軸下限夾住，三支字面各不相同：
+        昭源黑體（中文內文）  可變軸 250–900 → 200 夾成 250（這已是它最細）
+        Satoshi（拉丁內文）   靜態 300/400/500/700/900 → 200 夾成 300
+        Noto Sans TC（後備）  可變軸 100–900 → 真的能到 200
+     宣告 200 時畫面上是「中文 250 ／ 英數 300」——兩支字面不同重，中文偏虛。
+
+     2026-07-28 使用者看過實機後裁示：250 太細 → 300；再看一次仍偏細 → 350。
+     350 是「內文最細不得低於此」的下限（本檔以外沒有更細的內文角色；
+     --fw-light 300 只用在頁面標題與 44px＋ 的 display 角色，不是內文）。
+
+     350 在三支字面上的實際落點（CSS 字重比對規則：小於 400 時先往下找）：
+       昭源黑體  可變軸 250–900 → 真的畫 350
+       Satoshi   靜態 300/400/… → 往下落在 300
+     也就是中文 350、英數 300。這個數字上的落差是刻意留著的，不是 bug：
+     同一個數值下方塊字的筆畫密度遠高於拉丁字母，看起來本來就比較細，
+     中文多 50 反而讓兩者在視覺上等重。（300 那一版兩邊數字相同，
+     使用者的回饋正是「中文還是偏細」。） */
+  --fw-body:     350;
+  --fw-medium:   500;   /* 例外一：active/selected ＋ 染色底微型字 */
+  --fw-bold:     700;   /* 例外二：字標／總計／掃描橫幅／語意 <b> */
+  /* @deprecated 2026-07-28 — Satoshi 無 600，此鍵長年實際渲染成 700（假層級）。
+     呼叫點已全數清空（59→0）；保留別名僅為外部/舊碼相容，新程式碼不要再用。 */
+  --fw-semibold: var(--fw-bold);
+
+  /* ── Line-height (leading) scale — 全站唯一來源（2026-06-30）──
+     第 4 個原始字型維度（繼字體／字級／字重）。所有 line-height 一律引用這 6 階。
+     命名對齊 shadcn/Tailwind 的 leading-*，數值為本資料密集 UI 調過、比 Tailwind 預設更緊。
+     unitless（隨字級縮放）。Foundation 只放刻度；哪個 role 綁哪階見 Pillar 2 Role。 */
+  --lh-none:     1;      /* set solid — display 標題、按鈕標籤（單行）*/
+  --lh-tight:    1.1;    /* 大標題 — display-44 / h2 / h3 */
+  --lh-snug:     1.2;    /* 小標題 / 標籤 — h4、section label */
+  --lh-normal:   1.3;    /* caption / meta */
+  --lh-comfy:    1.4;    /* 元件內多行說明 / 密集列表（2026-07-02 第 7 階，收斂原 1.35/1.4/1.45）*/
+  --lh-relaxed:  1.5;    /* 內文 body */
+  --lh-loose:    1.6;    /* 大內文 / 長文 body-16 */
+
+  /* Typography foundation scale */
+  --type-display-64-family: var(--font-display);
+  --type-display-64-size: var(--fs-64);
+  --type-display-64-weight: var(--fw-light);
+  --type-display-64-line-height: var(--lh-none);
+  --type-display-64-tracking: -1.28px;
+
+  --type-display-44-family: var(--font-display);
+  --type-display-44-size: var(--fs-44);
+  --type-display-44-weight: var(--fw-light);
+  --type-display-44-line-height: var(--lh-tight);
+  --type-display-44-tracking: -1px;
+
+  --type-title-40-family: var(--font-ui);
+  --type-title-40-size: var(--fs-40);
+  --type-title-40-weight: var(--fw-regular);
+  --type-title-40-line-height: var(--lh-tight);
+  --type-title-40-tracking: -0.8px;
+
+  --type-title-32-family: var(--font-ui);
+  --type-title-32-size: var(--fs-32);
+  --type-title-32-weight: var(--fw-regular);
+  --type-title-32-line-height: var(--lh-tight);
+  --type-title-32-tracking: -0.6px;
+
+  --type-title-24-family: var(--font-ui);
+  --type-title-24-size: var(--fs-24);
+  --type-title-24-weight: var(--fw-regular);
+  --type-title-24-line-height: var(--lh-snug);
+  --type-title-24-tracking: -0.48px;
+
+  --type-label-15-family: var(--font-ui);
+  --type-label-15-size: var(--fs-15);
+  --type-label-15-weight: var(--fw-regular);
+  --type-label-15-line-height: var(--lh-none);
+  --type-label-15-tracking: -0.3px;
+
+  --type-label-14-family: var(--font-ui);
+  --type-label-14-size: var(--fs-14);
+  --type-label-14-weight: var(--fw-regular);
+  --type-label-14-line-height: var(--lh-snug);
+  --type-label-14-tracking: 0;
+
+  --type-body-16-family: var(--font-body);
+  --type-body-16-size: var(--fs-16);
+  --type-body-16-weight: var(--fw-regular);
+  --type-body-16-line-height: var(--lh-loose);
+  --type-body-16-tracking: 0;
+
+  --type-body-14-family: var(--font-body);
+  --type-body-14-size: var(--fs-14);
+  --type-body-14-weight: var(--fw-regular);
+  --type-body-14-line-height: var(--lh-relaxed);
+  --type-body-14-tracking: 0;
+
+  --type-caption-12-family: var(--font-ui);
+  --type-caption-12-size: var(--fs-12);
+  --type-caption-12-weight: var(--fw-regular);
+  --type-caption-12-line-height: var(--lh-normal);
+  --type-caption-12-tracking: 0.05em;
+
+  /* Typography role aliases */
+  --type-display-1-family: var(--type-display-64-family);
+  --type-display-1-size: var(--type-display-64-size);
+  --type-display-1-weight: var(--type-display-64-weight);
+  --type-display-1-line-height: var(--type-display-64-line-height);
+  --type-display-1-tracking: var(--type-display-64-tracking);
+
+  --type-page-title-family: var(--type-display-44-family);
+  --type-page-title-size: var(--type-display-44-size);
+  --type-page-title-weight: var(--type-display-44-weight);
+  --type-page-title-line-height: var(--type-display-44-line-height);
+  --type-page-title-tracking: var(--type-display-44-tracking);
+
+  --type-h2-family: var(--type-title-40-family);
+  --type-h2-size: var(--type-title-40-size);
+  --type-h2-weight: var(--type-title-40-weight);
+  --type-h2-line-height: var(--type-title-40-line-height);
+  --type-h2-tracking: var(--type-title-40-tracking);
+
+  --type-h3-family: var(--type-title-32-family);
+  --type-h3-size: var(--type-title-32-size);
+  --type-h3-weight: var(--type-title-32-weight);
+  --type-h3-line-height: var(--type-title-32-line-height);
+  --type-h3-tracking: var(--type-title-32-tracking);
+
+  --type-h4-family: var(--type-title-24-family);
+  --type-h4-size: var(--type-title-24-size);
+  --type-h4-weight: var(--type-title-24-weight);
+  --type-h4-line-height: var(--type-title-24-line-height);
+  --type-h4-tracking: var(--type-title-24-tracking);
+
+  --type-section-label-family: var(--type-label-14-family);
+  --type-section-label-size: var(--type-label-14-size);
+  --type-section-label-weight: var(--type-label-14-weight);
+  --type-section-label-line-height: var(--type-label-14-line-height);
+  --type-section-label-tracking: var(--type-label-14-tracking);
+
+  --type-body-lg-family: var(--type-body-16-family);
+  --type-body-lg-size: var(--type-body-16-size);
+  --type-body-lg-weight: var(--type-body-16-weight);
+  --type-body-lg-line-height: var(--type-body-16-line-height);
+  --type-body-lg-tracking: var(--type-body-16-tracking);
+
+  --type-body-family: var(--type-body-14-family);
+  --type-body-size: var(--type-body-14-size);
+  --type-body-weight: var(--type-body-14-weight);
+  --type-body-line-height: var(--type-body-14-line-height);
+  --type-body-tracking: var(--type-body-14-tracking);
+
+  --type-caption-family: var(--type-caption-12-family);
+  --type-caption-size: var(--type-caption-12-size);
+  --type-caption-weight: var(--type-caption-12-weight);
+  --type-caption-line-height: var(--type-caption-12-line-height);
+  --type-caption-tracking: var(--type-caption-12-tracking);
+
+  --type-button-label-family: var(--type-label-15-family);
+  --type-button-label-size: var(--type-label-15-size);
+  --type-button-label-weight: var(--type-label-15-weight);
+  --type-button-label-line-height: var(--type-label-15-line-height);
+  --type-button-label-tracking: var(--type-label-15-tracking);
+}
+
+/* ============================================================
+   Dark theme overrides — translucent-overlay surface model (see design-system.md §3 Mode), 2026-05-25.
+   Surface pattern: translucent white overlays on near-black canvas
+   (NOT stepped opaque greys). Brand accents shift to pure RGB
+   greens/reds in dark — see §6.5.5 of design-system.md.
+   Activate by setting [data-theme="dark"] on <html> or <body>.
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* ── Mode override — 暗色實色面（2026-06-25 issue #11：主要面與卡片不用半透明）──
+     值由原半透明疊層在 #191A1A（content）/ #2B2B2C（shell）上算出，外觀近乎不變、改為實色。
+     半透明只剩真正浮在內容上的 overlay（見檔尾 .overlay-surface）。
+     ── midnight 壓暗（2026-07-17 使用者裁示，Mobbin 參照 Whop/Posh/Substack）──
+     v2（2026-07-17 使用者回饋）：保留 r2.1 的 shell 層次語意——**content(surface-page) 最深、
+     外殼(surface-shell) 明顯較淺、兩者拉開對比**（v1 一度反轉成殼最深、且與 content 太相近，已改回）。
+     由深到淺：content #0C0D0D → muted 襯底 #161718 → 外殼/rail #1C1D1E → 卡 #212223 → hover #2A2B2C。
+     整體比原 r2.1 壓暗（原 shell #2B2B2C/content #191A1A/card #303131），但相對關係與內凹視覺不變。舊值留註解。 */
+
+  /* Base surfaces / text */
+  --background:        #0C0D0D;   /* midnight-v2（原 #191A1A）content-level，最深、與 --surface-page 同階 */
+  --foreground:        #FDFDFD;
+  --card:              #212223;   /* midnight-v2（原 #303131）浮在 content 上的卡，略亮於外殼 */
+  --card-foreground:   #FDFDFD;
+  --popover:           #212223;   /* midnight-v2（原 #303131）＝卡同層 */
+  --popover-foreground:#FDFDFD;
+  --muted:             #161718;   /* midnight-v2（原 #272828）嵌套襯底：比卡深、比 content 亮一階 */
+  /* 2026-07-28 全站 43 頁掃描（/impeccable polish）：#757575 在深色模式的**四種**面上全部不到 AA——
+       --input-surface #2A2B2D → 3.08:1
+       --card          #212223 → 3.46:1
+       --sidebar       #1C1D1E → 3.66:1
+       --surface-page  #0C0D0D → 4.32:1
+     這是全站最大的單一缺陷：所有次級文字（kpi__label／kpi__meta／data-list__meta／text-sub／
+     field__hint／form-section__sub／tabs__item 未選／product-list__meta／kv__k…）都吃這一支，
+     等於 43 個頁面的說明文字都低於 AA。改 #979797：對最亮的那個面（--input-surface）4.85:1、
+     對畫布 6.66:1，四個面全過且留有餘裕。只動深色版——亮色版 #6E6E68 對白卡 5.0:1 本來就過。 */
+  --muted-foreground:  #979797;
+  /* --secondary 已於 Q9 2026-07-13 退役（見亮色區塊註解）*/
+  --accent:            #2A2B2C;   /* midnight-v2（原 #383839）hover / 選單項底 · 互動 hover 統一色（Q9 2026-07-13）*/
+  --accent-foreground: #FDFDFD;
+
+  /* Primary — orange stays in dark */
+  --primary:            #ffa33f;
+  --primary-foreground: #171717;   /* 夜間黑字（使用者指定 2026-06-22）*/
+  --on-primary:         #171717;   /* 同亮色版：實色橘上一律深墨（9.02:1）。夜間剛好與 --primary-foreground 同值 */
+  --primary-hover:      #ffb866;
+
+  /* Destructive */
+  --destructive:        #E7000B;
+  --destructive-foreground: #FFFFFF;
+
+  /* Edges */
+  --border:            #373839;   /* hairline。2026-07-21（Q22）：#2C2D2E → #333435 提亮（先試 #3A3B3C 太亮，回退一階）——midnight-v2 當初壓到 #2C2D2E 後邊界讀不出來，使用者裁示全站深色 hairline 一起提亮（等於回到 midnight 之前的量級）。2026-07-26：--input-surface 調亮後對填色底的對比從 ≈1.21 掉到 ≈1.15，3 階候選 demo（A #333435／B #373839／C #3C3D3F）選定 B，回到填色底調整前的分離感*/
+  --input:             #373839;   /* 控件邊（維持＝border）· 2026-07-26 同步提亮 */
+  --input-surface:     #2A2B2D;   /* 控件填色底：比卡 #212223 亮，filled 欄位在卡面上讀得出（2026-07-17 Q19；midnight 探索）。2026-07-26 使用者反饋對比不夠明顯，5 階候選 demo（A #262729～E #3D3E40）選定 B */
+  /* 巢狀層填色（.nest）· 2026-07-21：疊在 --card(#212223) 上的半透明薄膜，合成後 ≈ #292A2B。
+     刻意用冷調淺灰 rgb(222,223,233) 而非純白——純白會把畫布的冷色調洗掉（B−R 由 +2 掉到 +0.8），
+     這個 tint 疊上去反而把冷調推到 +3.0，與 midnight 畫布同溫。值與 Figma node 856:27796 相同。 */
+  --nest-surface:      rgba(222, 223, 233, 0.04);
+  /* --ring 不覆寫 → 繼承 var(--primary)=橘，亮暗同色（2026-06-25）*/
+
+  /* Charts — dark variants */
+  --chart-1:           #ffa33f;
+  --chart-2:           #5896F3;
+  --chart-3:           #4ADE80;   /* 2026-07-13 體檢：暗色綠提亮（原 #00A63E 反向變暗、與其他狀態色方向相反，屬漏調）*/
+  --chart-4:           #F3CF58;
+  --chart-5:           #A78BFA;
+  --chart-6:           #F472B6;   /* 玫紅 · 2026-07-27 新增（暗色提亮一階，同 chart-3/5 慣例）*/
+  --chart-7:           #22D3EE;   /* 青 · 2026-07-27 新增。與 chart-2 藍 ΔE2000≈26、chart-3 綠≈34，暗卡面對比 8.8:1 */
+
+  /* Sidebar */
+  --sidebar:                   #1C1D1E;   /* midnight-v2（原 #2B2B2C）rail＝外殼色，明顯亮於 content */
+  --sidebar-foreground:        #FDFDFD;
+  --sidebar-primary:           #ffa33f;
+  --sidebar-primary-foreground:#171717;
+  --sidebar-accent:            #262728;   /* midnight-v2（原 #383839）rail hover over #1C1D1E */
+  --sidebar-accent-foreground: #FDFDFD;
+  --sidebar-border:            #333435;   /* 2026-07-21 Q22 同步提亮 */
+  --sidebar-ring:              var(--primary);
+  --sidebar-active:            #303132;   /* midnight-v2（原 #444445）[ext] 已選 pill · Q8 裁決 A 後僅餘回退用 */
+
+  /* Selected / active — Q8 裁決 A（見亮色版註解）。深底可直接用品牌橘：
+     #ffa33f 對 --sidebar #1C1D1E 8.49:1、對 14% 橘 tint 合成底（≈#3C3023）6.44:1，皆過 WCAG AA。*/
+  /* 深底可直接用品牌橘：對 --sidebar #1C1D1E 8.49:1、對 tint 合成底 6.44:1、對 --card #212223 8.02:1 */
+  --brand-ink:              #ffa33f;
+  --selected-surface:       color-mix(in srgb, var(--primary) 14%, transparent);
+  --selected-surface-hover: color-mix(in srgb, var(--primary) 20%, transparent);
+  --selected-ink:           var(--brand-ink);
+
+  /* creator extensions */
+  --surface-shell:     #1C1D1E;   /* midnight-v2（原 #2B2B2C）[ext] app shell（rail＋canvas）明顯亮於 content、與其拉開 */
+  --surface-page:      #0C0D0D;   /* midnight-v2（原 #191A1A）[ext] route page = content 底，最深、內凹在較淺外殼裡 */
+  --surface-inverse:   #000000;   /* [ext] footer slab */
+  --foreground-muted:  #B9B9B9;   /* [ext] 中階文字（原 rgba(.7) 實色化）*/
+  --foreground-on-inverse:        #FDFDFD;                    /* footer text stays white on the dark slab */
+  --foreground-on-inverse-muted:  rgba(253, 253, 253, 0.6);
+  --border-soft:       #202122;   /* midnight-v2（原 #2A2A2A）*/
+
+  /* 2026-07-13 體檢：暗色缺的 override 補上 */
+  --overlay-tint:      rgba(0, 0, 0, 0.6);   /* 深底上遮罩要更濃才有存在感（亮色 0.45 太弱）*/
+  --gradient-brand:    linear-gradient(90deg, #ffb866 0%, #ffa33f 55%, #ff7a4d 100%);   /* 拿掉亮色的淡膚起點 #ffd9a0，深底才讀得出漸層 */
+
+  /* Status accents [ext] — pure-RGB dark variants */
+  --status-success:    #4ADE80;   /* 2026-07-13 體檢：暗色綠提亮，向「暗色其他狀態色都變亮」看齊；Paid 綠徽章在深底才讀得清 */
+  /* 深色主題的染色膠囊坐在深卡上 → 墨色維持原本的亮色狀態色，與 2026-07-27 之前完全一致
+     （深卡實測 7.06:1）。只有「坐在亮底上」的膠囊需要覆寫，見 kpi.css 的 .kpi--hero。*/
+  --status-success-ink: var(--status-success);
+  /* 紅色墨走 --status-error 而非 --destructive：這正是 2026-07-21 新增 --status-error 的理由
+     （「深底小字徽章的 #E7000B 太深不易讀」）。delta 膠囊就是小字狀態徽章，只是當初漏接。
+     實測階梯（深色膠囊 rgb(57,30,32) 上）：--destructive #E7000B → 3.19:1 ✗；
+     --status-error #FF3D47 → 4.35:1 ✗（12px semibold 屬 normal text，門檻是 4.5 不是 3）；
+     再往上提一階才過 → 5.05:1 ✓。用 color-mix 從 --status-error 推導而不是再寫死一個紅，
+     這樣 --status-error 之後若被調整，這支墨色會跟著走。 */
+  --destructive-ink:    color-mix(in srgb, var(--status-error) 88%, #fff);
+  --status-info:       #5896F3;
+  --status-warning:    #F3CF58;
+  /* 深底上飽和色本來就讀得到，墨色＝原色，不必壓深。留這三行是為了讓
+     「元件永遠寫 -ink、由主題決定要不要壓深」這條規則在兩個主題都成立。 */
+  --status-warning-ink: var(--status-warning);
+  --status-info-ink:    var(--status-info);
+  --status-accent-ink:  var(--status-accent);
+  --status-accent:     #A78BFA;   /* purple — dark variant (2026-06-05) */
+  --status-error:      #FF3D47;   /* 2026-07-21 對齊 Figma 845:11071：暗色 --destructive #E7000B 太深、徽章小字不易讀，狀態徽章改用較亮的紅，破壞性操作（刪除鈕等）維持原 --destructive 不變 */
+
+  /* Shadows — softer drops, white hairline ring inverted */
+  --shadow-micro:
+    0 4px 4px rgba(0, 0, 0, 0.3);
+
+  /* Low-elevation control raise — stronger alpha so it stays visible on the dark canvas */
+  --shadow-raise:
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-raise-strong:
+    0 1px 2px rgba(0, 0, 0, 0.6);
+
+  --shadow-card:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(253, 253, 253, 0.08);
+
+  /* E3／E4（dark）— 深底陰影失效，提高 alpha＋亮色內框補輪廓（階梯規則見淺色區）*/
+  --shadow-float:
+    0 6px 16px -4px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(253, 253, 253, 0.10);
+  --shadow-card-hover: var(--shadow-float);
+  /* 深色沿用完整 --shadow-float（含 rim）：深底本來就無法靠純陰影表現浮起，rim 是唯一可見的
+     提示，淺色版拿掉 rim 的理由在這裡不成立，不跟著拿掉。 */
+  --shadow-lift-flat: var(--shadow-float);
+
+  --shadow-overlay:
+    0 16px 40px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(253, 253, 253, 0.12);
+
+  --shadow-hairline:
+    0 0 1px rgba(253, 253, 253, 0.2);
+
+  /* Top-edge highlight（dark）— 深底才顯的上緣內光（= midnight --edge）*/
+  --shadow-edge-top:
+    inset 0 1px 0 rgba(253, 253, 253, 0.05);
+
+  /* Nest shadow（dark）— 深底上加深、加大位移；值取自 Figma node 856:27798 */
+  --shadow-nest-up:
+    0 -8px 8px rgba(0, 0, 0, 0.08);
+
+  /* Seam shadow（dark）— 主面板＝最深 #0A0A0A，用較強黑向右蓋在預覽上、壓出層疊深度 */
+  --shadow-seam:
+    7px 0 22px -2px rgba(0, 0, 0, 0.6);
+
+  /* Header shadow（dark）— 深底上加強 alpha 才看得見 */
+  --shadow-header:
+    0 3px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* ── color-scheme：讓「瀏覽器自己畫的」東西跟著主題走（2026-07-27，L 回報）──────
+   症狀：<select> 展開後的選單是白底、選取列是系統藍——因為那顆彈出選單不是我們的
+   DOM，是作業系統畫的，只有 CSS 的 color-scheme 能影響它。整個專案從來沒有宣告過
+   這個屬性，所以所有原生控制項都用淺色主題算繪：select 彈窗、日期選擇器、捲軸、
+   自動填入的黃底、拼字檢查底線。只改 .select 的外觀是修不到彈窗的。
+
+   注意這不是「加了就有深色下拉」的萬靈丹——DESIGN.md 仍要求原生 select 彈窗最終要
+   換成自家的 popover。這條是讓現況不再破圖的底線，不是那個工作的替代品。 */
+:root { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+
+/* Smooth transition on theme switch */
+html, body {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Theme toggle button — fixed top-right on any page that includes _tokens.css */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-16);
+  line-height: 1;
+  padding: 0;
+  font-family: var(--font-ui);
+  transition: filter 150ms ease;
+}
+.theme-toggle:hover { filter: brightness(0.96); }
+[data-theme="dark"] .theme-toggle:hover { filter: brightness(1.15); }
+
+.theme-toggle__icon-sun  { display: none; }
+.theme-toggle__icon-moon { display: inline; }
+[data-theme="dark"] .theme-toggle__icon-sun  { display: inline; }
+[data-theme="dark"] .theme-toggle__icon-moon { display: none; }
+
+/* ============================================================
+   Foundation · Frosted overlay surfaces（全域、一處治理）
+   ------------------------------------------------------------
+   2026-06-25 起主要面（card / popover / muted）已改實色，浮層不再會透出後方內容。
+   此 backdrop-blur 保留給「真正浮在內容上」的浮層作毛玻璃質感（modal / dropdown /
+   popover）；新浮層加 .overlay-surface，既有浮層集中列下，改一次全部生效。
+   （此前只有 header dropdown 自己解過，現統一收斂到 --overlay-blur。）
+   ============================================================ */
+.overlay-surface,
+.dropdown__menu,
+.preview-panel__sheet,
+.payout-dialog {
+  -webkit-backdrop-filter: var(--overlay-blur);
+  backdrop-filter: var(--overlay-blur);
+}

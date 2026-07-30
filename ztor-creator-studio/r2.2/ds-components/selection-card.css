@@ -1,0 +1,118 @@
+/* ============================================================
+   Selection card — click-to-select 1-of-N card with optional
+   slots (title + sub + tag + swatch).
+
+   Merged from project-level `.choice-card` (wizard radio cards)
+   and `.appearance-card` (settings theme picker) on 2026-05-26.
+
+   Anatomy:
+     .selection-grid                    (auto-fit min 220px grid)
+       OR .selection-grid--3            (forced 3-column · used by theme picker)
+       .selection-card
+         .selection-card__swatch        (optional · 64 px preview block)
+           .selection-card__swatch--theme-light|dark|system  (theme picker variants)
+         .selection-card__title         (required · 14.5 px / 500)
+         .selection-card__sub           (optional · 12.5 px muted desc)
+         .selection-card__tag           (optional · corner uppercase chip)
+       .selection-card--active          (orange outline + tinted bg)
+
+   Two canonical compositions:
+   1) Wizard radio card: title + sub + tag (no swatch)
+   2) Settings theme picker: swatch + title (+ optional sub)
+   ============================================================ */
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-12);
+}
+.selection-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.selection-card {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  padding: var(--sp-14) var(--sp-16);
+  background: var(--card);
+  border: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  position: relative;
+  transition: box-shadow 150ms ease, background 150ms ease, outline-color 150ms ease;
+}
+.selection-card:hover { box-shadow: var(--shadow-card-hover); }
+/* 已選預設＝橘色「線框」（outline，不放進陰影）＋卡面陰影維持中性、不換底色——
+   建立流程選擇卡的標準（2026-06-24／06-25 使用者指定：陰影不帶橘色，橘色是線匡）。
+   用 outline+offset 不撐版面、跟隨圓角。 */
+.selection-card--active {
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  outline: 1px solid var(--primary);
+  outline-offset: -1px;
+}
+/* 例外：含 swatch 的卡（Settings 主題挑選器）維持淡橘底＋2px 外框（維持原樣，不用線框）。 */
+.selection-card--active:has(.selection-card__swatch) {
+  background: color-mix(in srgb, var(--primary) 16%, var(--card));
+  box-shadow: 0 0 0 2px var(--primary);
+  outline: 0;
+}
+
+.selection-card__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+}
+.selection-card__sub {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+}
+.selection-card__tag {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.selection-card--active .selection-card__tag { color: var(--primary-foreground); }
+
+/* Theme-picker variant — 64 px tall preview swatch with diagonal gradients */
+.selection-card__swatch {
+  height: 64px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: var(--sp-8);
+}
+.selection-card__swatch--theme-light  { background: linear-gradient(135deg, #FAFAF7 50%, #ffa33f 50%); }
+.selection-card__swatch--theme-dark   { background: linear-gradient(135deg, #191A1A 50%, #ffa33f 50%); }
+.selection-card__swatch--theme-system { background: linear-gradient(135deg, #FAFAF7 0%, #FAFAF7 47%, #ffa33f 47%, #ffa33f 53%, #191A1A 53%, #191A1A 100%); }
+
+/* ---- icon variant（建立流程型別/方式卡）----
+   icon 置中、統一灰（--muted-foreground，較淺）、不隨 hover/已選換色；
+   已選的橘色＝線框（outline），由全域 .selection-card--active 提供，不另寫。 */
+/* 2026-07-17 使用者裁示：型別磚整體縮小（icon 晶片 42→36、內 icon 28→24、上下內距 22→14、gap 10→8），
+   比原 Figma 781-4166 尺寸更緊湊。僅動 --icon 變體，swatch／其他 selection-card 尺寸不變。 */
+.selection-card__ic { width: 36px; height: 36px; display: grid; place-items: center; color: var(--muted-foreground); }
+.selection-card__ic .ztor-icon { width: 24px; height: 24px; stroke-width: 1.4; }
+
+.selection-card--icon { align-items: center; text-align: center; gap: var(--sp-8); padding: var(--sp-14) var(--sp-16); }
+.selection-card--icon:hover .selection-card__ic,
+.selection-card--icon.selection-card--active .selection-card__ic { color: var(--muted-foreground); }
+/* Q3 部分裁決（2026-07-16，使用者指定對齊 Figma node 781-4166）：icon 型別選擇卡走「純邊框」——
+   1px 實線 --border、扁平無陰影（取代 base .selection-card 的 --shadow-card）；已選仍是橘色 outline 線框。
+   base .selection-card 其他用途（拍賣 kind／組合 edition／主題 swatch…）維持純陰影，不在此波動。 */
+.selection-grid:has(.selection-card--icon) { gap: var(--sp-8); }   /* 卡間距 8（Figma）*/
+/* 2026-07-18：型別卡底色用 --input-surface（暗色比 section 卡亮一階＝浮出的填色選項；亮色仍白卡）——對齊 midnight「選項比 section 亮一階」。 */
+.selection-card--icon { border: 1px solid var(--border); box-shadow: none; background: var(--input-surface); }
+.selection-card--icon:hover { box-shadow: none; border-color: var(--muted-foreground); }
+/* 2026-07-18 使用者裁示：已選型別卡除橘 outline 外，再加淡橘底（對齊 midnight 探索頁）；
+   icon 維持中性、不加勾。僅 --icon 變體。 */
+.selection-card--icon.selection-card--active { box-shadow: none; background: color-mix(in srgb, var(--primary) 5%, var(--input-surface)); }

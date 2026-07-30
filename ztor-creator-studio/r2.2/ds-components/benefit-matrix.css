@@ -1,0 +1,171 @@
+/* ============================================================
+   Ztor — Benefit matrix
+
+   使用者裁示 2026-07-27。The old shape was tier-first: four cards, each
+   owning a private copy of its perks. "Demo tracks" existed twice, with
+   two independent states, and the Add button had nowhere coherent to add
+   TO. That is why adding did nothing.
+
+   This is benefit-first: ONE catalogue of benefit rows, four tier
+   columns, a cell where they meet. Adding a row makes it appear on every
+   tier automatically — not because anything syncs, but because the row
+   IS the shared object. That is the whole redesign in one sentence.
+
+   It also absorbs the old "Custom perk" free-text field: a custom perk
+   is just a row the creator named themselves. One list, some rows
+   seeded, some authored — no second section.
+
+   Rows come in two kinds, because perks are not all binary:
+     · toggle — VIP e-shop, vault access, birthday message …  (switch)
+     · value  — early access (days), merch discount (%)        (number+unit)
+   Flattening the graded ones to checkboxes would have thrown away the
+   working 7/3/1-day and 20/10/5-% ladders.
+
+   Grid columns are declared ONCE and shared by the head and every row
+   (same discipline as .table-head in sortable.css), so a tier column and
+   its title can never drift apart.
+   ============================================================ */
+
+.bmx {
+  /* label | Inner Circle | Superfan | Devoted | Fan */
+  --bmx-cols: minmax(220px, 1fr) repeat(4, 132px);
+  min-width: 760px;
+}
+
+/* ── Head: tier badges as column titles ────────────────────── */
+.bmx__head {
+  display: grid;
+  grid-template-columns: var(--bmx-cols);
+  align-items: end;
+  gap: var(--sp-12);
+  padding-bottom: var(--sp-10);
+  border-bottom: 1px solid var(--border);
+}
+.bmx__head-label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+}
+.bmx__tier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+  text-align: center;
+}
+/* Live count of what this tier unlocks — the column read. The creator
+   authors by row, but a fan experiences a column, so the column has to
+   say something on its own. */
+.bmx__tier-count {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Rows ──────────────────────────────────────────────────── */
+.bmx__row {
+  display: grid;
+  grid-template-columns: var(--bmx-cols);
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-12) 0;
+  border-bottom: 1px solid var(--border);
+}
+.bmx__row:last-child { border-bottom: 0; }
+
+.bmx__label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-width: 0;
+  font-size: var(--fs-13);
+  color: var(--foreground);
+}
+.bmx__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Marks a row the creator authored, so the seeded catalogue and their
+   own additions stay tellable apart at a glance. */
+.bmx__own {
+  flex: none;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+
+.bmx__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Value cells carry their own unit, so a column can mix days and % */
+.bmx__cell .amount-field { width: 100px; }
+.bmx__cell .input {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Remove control — only meaningful on hover/focus, never competing with
+   the data for attention. Kept in flow so nothing shifts when it fades in. */
+.bmx__remove {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--sp-4);
+  margin-left: auto;
+  flex: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition-property: opacity, color, background-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.bmx__remove .ztor-icon { width: 14px; height: 14px; }
+.bmx__row:hover .bmx__remove,
+.bmx__remove:focus-visible { opacity: 1; }
+.bmx__remove:hover { color: var(--destructive); background: var(--accent); }
+.bmx__remove:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ── Ladder coherence notice ───────────────────────────────────
+   Putting the tiers side by side makes one mistake possible to SEE that
+   the old stacked cards hid completely: a lower tier holding something a
+   higher tier does not. Non-blocking — the creator may mean it (a perk
+   aimed at a mid tier) — but it should never happen silently. */
+.bmx__warn {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin-top: var(--sp-6);
+  font-size: var(--fs-12);
+  color: var(--status-warning-ink);
+}
+.bmx__warn .ztor-icon { width: 13px; height: 13px; flex: none; }
+.bmx__row:not(.is-broken) .bmx__warn { display: none; }
+
+/* ── The add row ───────────────────────────────────────────── */
+.bmx__add {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding-top: var(--sp-14);
+}
+/* While a new row is being named it sits in the matrix already, with all
+   four tier cells visible and off — the creator sees the payoff of
+   "define once, choose per tier" during the act of adding. */
+.bmx__row--new .bmx__label { gap: var(--sp-8); }
+.bmx__name-input { width: 100%; }
+.bmx__type {
+  flex: none;
+  font-size: var(--fs-12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bmx__remove { transition-duration: 1ms; }
+}

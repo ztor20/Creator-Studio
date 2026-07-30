@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fan campaigns · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<script src="js/fans-guide-firstrun.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sortable.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/brand-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* brand-campaigns 專屬 layout hooks。標題列與資料列共用同一組欄寬
+     （sortable.css 的規矩），欄名不可能跟它命名的那一欄跑掉。 */
+  .table-head.cmp-row,
+  .cmp-row {
+    grid-template-columns: minmax(220px,1fr) 150px 90px 92px 90px 100px 96px 56px;
+    min-width: 940px;
+  }
+  .cmp-row__brand { display:flex; align-items:center; gap:var(--sp-10); min-width:0; }
+  .cmp-row__names { display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .cmp-row__name { text-decoration:none; }
+  .cmp-row__name:hover { text-decoration:underline; }
+  .cmp-row__dates { font-size:var(--fs-12); color:var(--muted-foreground); font-variant-numeric:tabular-nums; }
+  .cmp-row__na { color:var(--muted-foreground); }
+  .cmp-row .fan-row__num {
+    font-family:var(--font-display); font-weight:var(--fw-medium);
+    text-align:right; font-variant-numeric:tabular-nums;
+  }
+  .cmp-row .fan-row__actions { display:flex; justify-content:flex-end; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <span data-i18n="bc.crumb.self">Fan campaigns</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="bc.h1">Fan campaigns</h1>
+          <p class="page-intro__sub" data-i18n="bc.sub">Promote a partner brand to your fans and earn a share of what they spend. Pick a brand, choose your window, and tell your fans to scan.</p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          <a class="btn btn--primary" href="#pick" data-i18n="bc.btn.browse">Browse brands</a>
+        </div>
+      </div>
+
+      <div class="bento">
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bc.kpi.scans">Scans credited to you</div><div class="kpi__value" id="kpi-scans">—</div><div class="kpi__meta" data-i18n="bc.kpi.scans-meta">All campaigns, all time</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bc.kpi.rev">Revenue share</div><div class="kpi__value" id="kpi-rev">—</div><div class="kpi__meta" id="kpi-rev-meta">—</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bc.kpi.fans">New fans</div><div class="kpi__value" id="kpi-fans">—</div><div class="kpi__meta" data-i18n="bc.kpi.fans-meta">Followed you during a campaign</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="bc.kpi.live">Live campaigns</div><div class="kpi__value" id="kpi-live">—</div><div class="kpi__meta" data-i18n="bc.kpi.live-meta">Running right now</div></div>
+      </div>
+
+      <section class="card mt-24" data-sort-table>
+        <div class="table-scroll">
+          <div class="table-head cmp-row">
+            <span data-sort="text" data-sort-key="name" data-i18n="bc.col.campaign">Campaign</span>
+            <span data-sort="num" data-sort-key="dates" data-i18n="bc.col.window">Window</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="scans" data-i18n="bc.col.scans">Scans</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="sov" data-i18n="bc.col.sov">Share of voice</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="fans" data-i18n="bc.col.fans">New fans</span>
+            <span class="table-head__end" data-sort="num" data-sort-key="rev" data-i18n="bc.col.rev">Earned</span>
+            <span data-sort="num" data-sort-key="status" data-i18n="bc.col.status">Status</span>
+            <span aria-hidden="true"></span>
+          </div>
+          <div class="data-list" data-campaign-rows data-sort-rows></div>
+        </div>
+      </section>
+
+      <!-- The brand picker lives on this page (使用者裁示): one
+           destination for brand collabs, no second page, no accordion.
+           Your running campaigns above, the brands you could add below. -->
+      <h2 class="settings-section__title mt-24" id="pick" data-i18n="bc.pick.title">Start a new campaign</h2>
+      <p class="text-sub" style="font-size:var(--fs-13);margin:-4px 0 16px" data-i18n="bc.pick.sub">Brands that already have a deal with Ztor. No contract to sign, no approval to wait for — pick one and promote it.
+        <button class="explain-btn" type="button" data-explain="explain-howitworks" aria-label="How brand campaigns work"><i data-lucide="info" class="ztor-icon"></i></button>
+      </p>
+      <div class="brand-grid" data-brand-grid></div>
+
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="bc.sov-note"><strong>Share of voice</strong> is how many of the brand’s scans named you, out of every scan of that brand while your campaign ran. Fans choose who gets credited, so this is the number you are actually competing on.</span>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="explain" id="explain-howitworks" hidden>
+  <div class="explain__dialog" role="dialog" aria-modal="true" aria-labelledby="explain-hiw-title">
+    <div class="explain__head">
+      <h2 class="explain__title" id="explain-hiw-title" data-i18n="bp.hiw.title">How brand campaigns work</h2>
+      <button class="explain__close" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="explain__body">
+      <p class="explain__lead" data-i18n="bp.hiw.lead">Ztor signs the deal with the brand — once, centrally. You just opt in for a window you choose. No contract with the brand, no approval, and no exclusivity.</p>
+      <ol class="explain__steps">
+        <li data-i18n="bp.hiw.s1">A fan buys as normal in store and gets a reward code with their purchase.</li>
+        <li data-i18n="bp.hiw.s2">They scan it in the Ztor app. It credits <strong>you</strong> by default — they can switch to another creator they follow.</li>
+        <li data-i18n="bp.hiw.s3">The fan collects loyalty points, and your share of that purchase is released.</li>
+      </ol>
+      <div class="explain__example">
+        <span class="explain__example-label" data-i18n="tier-settings.explain.example">Example</span>
+        <p data-i18n="bp.hiw.eg">A fan spends <strong>$10</strong> at Starbucks and gets one code. They scan it, take <strong>50 points</strong>, and <strong>$1</strong> lands in your earnings.</p>
+      </div>
+      <p class="explain__rule" data-i18n="bp.hiw.rule">The rate is set between Ztor and the brand, so it is the same for every creator and you cannot edit it. What you control is which brands you back and for how long.</p>
+      <p data-i18n="bp.hiw.note">A reward code is not a discount — the fan has already paid. It is proof of purchase that turns into points for them and a share for you.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/explainer.js?v=r2.2"></script>
+<script src="js/brand-store.js?v=r2.2"></script>
+<script src="js/table-sort.js?v=r2.2"></script>
+<script src="js/brand-campaigns.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+<script src="js/brand-start-event.js?v=r2.2"></script>
+</body>
+</html>

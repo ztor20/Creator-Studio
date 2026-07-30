@@ -1,0 +1,105 @@
+/* ============================================================
+   Rent block — in-hero rental configurator (ip-detail).
+
+   Sits inside the IP hero's content column, under the KPI meta row.
+   Two vertically stacked groups, each split into two cells:
+     group 1   租期 duration chips  |  獨家 exclusive switch
+     group 2   費用明細 breakdown   |  結算 total + CTA
+
+   Replaces the former narrow right rail (.ip-hero__side > .rental-card),
+   retired 2026-07-25 per STYLE-DECISIONS Q31: the 280 px rail squeezed
+   the content column (title wrapped, meta collapsed to one column) and
+   left dead space beside the 3:4 cover. Everything now reads left→right
+   in one content column, cover alone on the left.
+
+   Anatomy:
+     .rent-block
+       .rent-block__eyebrow          (uppercase section eyebrow)
+       .rent-block__group            (2 cells; divider above 2nd group)
+         .rent-block__sub
+           .rent-block__label        (uppercase cell label)
+           .rent-block__terms        (duration-chip row, equal width)
+           .rent-block__total        (display-size price)
+           .rent-block__legal        (footnote)
+
+   Composes: duration-chip / settings-row / switch / rental-card__breakdown
+   / btn (all pre-existing). Consumers: ip-detail.html.
+   ============================================================ */
+.rent-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  margin-top: var(--sp-18);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+
+.rent-block__eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Group = one row of the configurator. Cells keep the same split across
+   groups so 租期/費用明細 and 獨家/結算 line up vertically. */
+.rent-block__group {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: var(--sp-24);
+  align-items: start;
+  min-width: 0;
+}
+.rent-block__group + .rent-block__group {
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+
+.rent-block__sub { min-width: 0; }
+
+.rent-block__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-8);
+}
+
+/* Duration chips share the row evenly instead of the rail's 3-up grid. */
+.rent-block__terms { display: flex; gap: var(--sp-8); }
+.rent-block__terms .duration-chip { flex: 1; }
+
+/* 2026-07-27 定價改版：價格不再按期分級，逐期 chip 退場，改成單行的金額／比例。
+   .rent-block__terms 與 .duration-chip 暫時保留（design-system 圖庫仍在展示），
+   但 ip-detail 已不再使用。 */
+.rent-block__price {
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+}
+.rent-block__price--request {
+  font-size: var(--fs-16);
+  color: var(--muted-foreground);
+}
+
+.rent-block__total {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rent-block__legal {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  margin-top: var(--sp-8);
+}
+
+/* Below the bento breakpoint the two cells stack so neither is squeezed. */
+@media (max-width: 620px) {
+  .rent-block__group { grid-template-columns: 1fr; gap: var(--sp-16); }
+}

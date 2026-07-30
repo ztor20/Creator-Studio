@@ -1,0 +1,1928 @@
+/* ============================================================
+   Ztor Creator Studio · R 2.1 · shared.css
+   Project-level patterns built on top of ds-components (ztor orange).
+
+   Design-language delta from R 2.0:
+   - Horizontal topbar (canonical ztor-header pattern, 80 px relative)
+     with hover-open dropdown nav panels for IP Bank / E-Shop / Fans
+   - Editorial bento layout for Dashboard
+   - Orange as structural element (active-nav underline, hero accents,
+     KPI highlight tile)
+   - Larger Geist display for page headlines
+   - Denser tables with row dividers, fewer card frames
+   - Sticky bottom action bar on wizards
+   ============================================================ */
+
+/* Header is the canonical DS component — single source in ds-components/header.css.
+   All product pages load shared.css, so this @import gives every page the topbar
+   from the one place; design-system.html links header.css directly. */
+@import url("ds-components/header.css?v=20260726x");
+@import url("ds-components/icon.css?v=20260726x");
+@import url("ds-components/page-intro.css?v=20260726x");
+@import url("ds-components/field-system.css?v=20260726x");
+@import url("ds-components/settings.css?v=20260726x");
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+/* ============================================================
+   Scrollbar — 全站自訂捲軸（2026-07-27，使用者裁示：不用 OS 預設）
+
+   放在 shared.css 而不是新開一支 ds-components/scrollbar.css：這不是「元件」而是
+   一條全域規則，而 43 個頁面全部都已經載入 shared.css（已核對）。開成元件檔的話
+   等於要去改 47 個 .html 的 <link> 清單。
+
+   用 `*` 讓每一個現有**與未來**的捲動容器自動吃到，不必逐一接線——站上有 ~20 個
+   捲動面（drawer／combobox／picker／payout-modal body／preview-panel／header 下拉／
+   通知面板／explainer／readiness／stock-tip／scanner…），逐一維護必然會漂。
+   捲軸偽元素只會匹配到真的可捲動的元素，`*` 不會有效能問題。
+
+   行為（使用者選定）：靜止時極淡、hover 容器才提亮。不做「完全隱形」——通知面板、
+   modal body 這種面必須讓人看得出「這裡還有內容」，affordance 不能省。
+
+   為什麼不做 JS 覆蓋式捲軸：本站是無 build step 的靜態原型，JS 捲軸要在 ~20 個容器
+   ＋components.js 執行期注入的節點上初始化，還會接管原生慣性捲動／鍵盤翻頁／
+   螢幕閱讀器的捲動行為。代價不划算。
+   換來的取捨：::-webkit-scrollbar 會佔版面寬度、不是真的 overlay。所以這裡把「軌道寬」
+   固定住、只動顏色與 thumb 的內縮，hover 時 thumb 在固定寬度內長大 → 零 reflow。
+   ============================================================ */
+/* Firefox 專用回退，**必須** 用 @supports 關在 Chromium 之外。
+   踩過的坑：Chrome 121+ 也認得 scrollbar-width，而且一旦指定了它，整組
+   ::-webkit-scrollbar-* 就會被忽略——結果 Chrome 畫的是它自己的 thin 捲軸
+   （實測軌道寬 10px，而不是設計的 12px），pill 圓角與內縮全部失效。
+   Firefox 不支援 selector(::-webkit-scrollbar)，所以這個 @supports 剛好把兩邊分開：
+   Chromium/Safari 走下面的 ::-webkit 規則（完整控制），Firefox 走這裡（能做多少算多少）。 */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;   /* thumb / track */
+  }
+  *:hover { scrollbar-color: var(--scrollbar-thumb-hover) transparent; }
+}
+
+*::-webkit-scrollbar { width: var(--scrollbar-size); height: var(--scrollbar-size); }
+/* 軌道不畫任何東西：捲軸讀起來是「浮在面上的一個物件」，而不是一條刻進去的溝，
+   跟本系統用色階分層、不用 chrome 分層的作法一致。 */
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  /* 透明 border ＋ background-clip 把 thumb 從 12px 軌道內縮成 6px 視覺寬度：
+     命中區維持 12px 好拖，但看起來只有一條細線。 */
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--duration) var(--easing);
+}
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-hover);
+  border-width: 2px;   /* 6px → 8px，在固定的 12px 軌道內長大，不推動版面 */
+}
+@media (prefers-reduced-motion: reduce) {
+  *::-webkit-scrollbar-thumb { transition: none; }
+}
+/* 這三處是「刻意隱藏捲軸」的橫向滑軌（不是給使用者拖的捲動區），維持原本的隱藏。
+   它們各自的 ::-webkit-scrollbar{display:none} 本來就會贏過上面的 `*`，這裡只是把
+   意圖寫明，避免日後有人以為是漏網。 */
+.fan-store__screen::-webkit-scrollbar,
+.fan-store__fans-row::-webkit-scrollbar,
+.list-toolbar > .tabs::-webkit-scrollbar { display: none; }
+
+/* zh-Hant locale: put Noto Sans TC FIRST in every font-family token so
+   the line box (line-height / baseline / x-height) is driven by the CJK face,
+   not by Geist. Without this, mixed 英文+中文 lines look uneven — Latin
+   fallback in Geist controls metrics and Chinese glyphs sit small + tight.
+   i18n.js toggles `document.documentElement.lang = 'zh-Hant'` so :lang() fires.
+   Override is project-level (not in _tokens.css) — the DS tokens stay
+   English-first as their canonical declaration.
+
+   R 2.1.40: Noto Sans TC is the primary CJK face and is now self-hosted —
+   subsetted .woff2 + @font-face live in ds-components/fonts.css, so 中文
+   renders as Noto on every machine (no reliance on OS install). One glyph,
+   払 (earnings.html «支払調書», a JP kanji absent from Noto Sans TC), still
+   per-glyph falls back. (R 2.1.39 removed Taipei Sans TC Beta.)
+
+   NOTE: opposite trade-off from the weasyprint PDF rule
+   (`feedback_weasyprint_cjk_fonts.md`: PingFang first nukes 中文 in macOS
+   weasyprint). That's a print-engine bug; browser per-glyph fallback works
+   fine with CJK first. */
+/* 2026-07-28：--font-cjk 現在是 LINE Seed TW（見 fonts.css），所以這三條自動
+   讓中文語系整套走 LINE Seed TW——標題與內文都是它，符合「中文全系統用 LINE Seed TW」。
+   後面的拉丁字面只服務中文句子裡夾雜的英數字，因此比照英文版一律用 Satoshi，
+   Geist／Inter 留作字檔到位前的過渡回退。
+   （2026-07-28 第二次裁示：標題退回 Satoshi，Alumni Sans 從三條堆疊中撤除。） */
+:lang(zh-Hant) {
+  /* 2026-07-28 第三次裁示：中文分兩支——標題 LINE Seed、內文／UI 昭源黑體。
+     這裡三條的差別只有第一順位是哪一支中文字面，拉丁後備維持不變。 */
+  --font-display: var(--font-cjk-display), 'Satoshi', 'Geist', system-ui, sans-serif;
+  --font-ui:      var(--font-cjk), 'Satoshi', 'Geist', system-ui, sans-serif;
+  --font-body:    var(--font-cjk), 'Satoshi', 'Inter', system-ui, sans-serif;
+
+  /* CJK 字距歸零（2026-06-23）：display/title/label 的負 letter-spacing（~−0.02em）
+     是為拉丁大字做的光學收緊，但方塊字本就貼著走，套負字距會把中文擠在一起。
+     繁中模式把這些 tracking token 歸零 → 中文回到自然間距；英文模式（lang=en）
+     不匹配本規則、維持 Geist 緊收。混排標題在中文模式一起歸零（可接受）。
+     只動有負值的 token；body/caption 本來就 0 或正值，不需覆寫。 */
+  --type-display-64-tracking: 0;
+  --type-display-44-tracking: 0;
+  --type-title-40-tracking:   0;
+  --type-title-32-tracking:   0;
+  --type-title-24-tracking:   0;
+  --type-label-15-tracking:   0;
+}
+
+/* CJK 標題/名稱/數值的負字距是寫死在各 class 上（沒走 tracking token），繁中模式逐一歸零。
+   shared.css 最後載入 + :lang 提高 specificity（0,2,0 > 各元件的 0,1,0／頁內 <style> 單 class），
+   蓋過那些負值；英文模式（lang=en）不匹配、維持 Geist 緊收。
+   只列「會擠到中文」的（≥約 −0.3px）；em 級的小負值（alert/header/fan-store ~−0.005～−0.01em）
+   肉眼無感、Latin-only 的 inline（IP 分類磚、金額數字）無中文，皆略過。 */
+:lang(zh-Hant) :is(
+  .page-intro__title, .hero__title, .ip-hero__title, .ip-hero__cover,
+  .wizard__step-title, .section-head__title, .empty-stub__title, .settings-section__title,
+  .kpi__value, .meta-cell__value, .ss-edit__value, .rental-card__total, .data-list__amount,
+  .ztor-footer__wordmark, .fan-hero__name, .tier-card__name, .ztor-btn, .btn
+) {
+  letter-spacing: 0;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: var(--fs-14);
+  line-height: var(--lh-relaxed);
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ---------- App shell ---------- */
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+/* 桌機：app shell 固定滿版、不隨文件捲動；只有 .main 內部捲動（2026-06-14）。
+   窄螢幕（≤900px）維持一般文件捲動（見各 @media）。 */
+@media (min-width: 901px) {
+  .app { height: 100vh; overflow: hidden; }
+  /* .main 是 flex column；變成固定高捲動容器後，子項預設會被 flex-shrink 壓扁
+     （例如 Hero 被擠成 0 高）。鎖定不收縮，讓子項保持自然高度、改由 .main 內捲。 */
+  .app .main > * { flex-shrink: 0; }
+}
+/* Hero（fullbleed）有被合成的 transform 圖層，會逃出 .main 圓角+overflow 的裁切，
+   且自身 border-radius:0 → 角變方。讓它直接繼承 .main 的圓角（topbar 上兩角、sidebar 左上角、
+   ≤900px 為 0），用自身 overflow:hidden 把內容裁圓。 */
+.app .main > .hero--fullbleed { border-radius: inherit; }
+
+/* ════════════════════════════════════════════════════════════
+ * Display mode: Sidebar — spec §6.9 / decisions D016
+ * ────────────────────────────────────────────────────────────
+ * Same nav model as the topbar (sidebar.js renders .app-sidebar
+ * instead of .app-topbar when html[data-nav-mode="sidebar"]).
+ * Only placement changes; IA is identical. theme.js sets the
+ * attribute in <head> so the row layout is correct before paint.
+ * ════════════════════════════════════════════════════════════ */
+html[data-nav-mode="sidebar"] body { background: var(--surface-shell); }
+html[data-nav-mode="sidebar"] .app {
+  flex-direction: row;
+  align-items: flex-start;
+  background: var(--surface-shell);
+}
+/* Reserve the rail width before sidebar.js renders → no shift. */
+html[data-nav-mode="sidebar"] #sidebar,
+html[data-nav-mode="sidebar"] #topbar { flex: 0 0 248px; }
+/* Full-bleed hero breaks out to the viewport (-50vw) in topbar mode; with a
+   248px rail that would overlap the sidebar and overflow right. The hero is a
+   child of .main, so in sidebar mode we just neutralise the breakout and let it
+   fill .main edge-to-edge (rail → viewport right), the sidebar-mode equivalent
+   of edge-to-edge. */
+html[data-nav-mode="sidebar"] .hero--fullbleed {
+  width: auto; left: auto; right: auto;
+  margin-left: 0; margin-right: 0;
+}
+
+.app-sidebar {
+  position: sticky; top: 0; z-index: 50; align-self: stretch;
+  width: 248px; height: 100vh; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--sp-4);
+  padding: var(--sp-20) var(--sp-14);
+  background: transparent;
+  border-right: 0;
+  /* 2026-07-27：overflow 從整條側欄移到 .app-sidebar__nav（見下方）。
+     原本整條捲動有個實際缺陷——視窗一矮，底部的帳號／設定叢集會跟著捲出畫面外、
+     點不到。改成品牌與 actions 釘住、只有 nav 區在極端情況下才讓步。 */
+  overflow: hidden;
+}
+.app-sidebar__brand { display: block; flex: none; padding: var(--sp-4) var(--sp-10) var(--sp-16); color: var(--foreground); }
+.app-sidebar__brand-logo { height: 26px; width: auto; }
+
+/* 2026-07-27：側欄裡唯一有彈性的區塊。
+   **要掛在這個無 class 的 <nav> 包裝層上，不是裡面的 ul。** sidebar.js 產生的結構是
+   .app-sidebar > a.brand ／ button.burger ／ nav ／ div.actions，真正的 flex item 是這個
+   <nav>；把 flex/overflow 寫在裡面的 ul.app-sidebar__nav 上完全無效——ul 的 flex 是相對於
+   <nav>、不是相對於側欄，於是 <nav> 仍以 min-height:auto 撐滿內容、側欄照樣溢出被裁掉。
+   （這條實測踩過：ul 版本在 560px 視窗下 sbOverflow 仍是 12px、nav 完全沒縮。）
+
+   min-height:0 是必要的——沒有它，flex 子項的預設 min-height:auto 會拒絕縮到內容以下。
+   overflow-y:auto 是**安全閥而非常態**：accordion 化之後（見 sidebar.js，只展開當前群組）
+   700px 視窗還有約 190px 餘裕，正常尺寸不會出現捲軸；只有在 150% 縮放或 ~560px 高的
+   視窗下才會啟動，確保底部的帳號／設定永遠點得到。真的啟動時，它長得跟全站其他捲軸一樣。 */
+.app-sidebar > nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.app-sidebar__nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-6); }  /* 2026-06-13：加大項目間距 */
+.app-sidebar__nav > li { list-style: none; }
+
+.app-sidebar__link {
+  display: flex; align-items: center; gap: var(--sp-10); width: 100%;
+  /* 2026-07-21 Q25：原 padding 9px ＋ fs-14 × lh-snug(1.2) 撐出 34.8px，改吃 token 固定 36，
+     與同一條側欄裡的 .app-sidebar__action（含搜尋列）齊平。 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-12); border: 0; background: transparent; cursor: pointer;
+  border-radius: var(--radius-lg); text-align: left;  /* 已選/hover 圓角矩形（2026-06-13：pill 變高後全膠囊 9999px 顯得太圓，改回較小圓角 --radius-lg 8px） */
+  font-size: var(--fs-14); line-height: var(--lh-snug); font-weight: var(--fw-regular);
+  color: var(--foreground-muted); text-decoration: none;
+  font-family: inherit;
+}
+.app-sidebar__link:hover { background: var(--accent); color: var(--foreground); }
+/* 2026-07-27 Q8 裁決 A：已選＝品牌橘 tint 底＋橘字；icon 走 currentColor 一起變橘。
+   原本是中性灰底（--sidebar-active），與同角色的 .settings-nav 各給一種答案。*/
+.app-sidebar__link[aria-current="page"],
+.app-sidebar__link--active { background: var(--selected-surface); color: var(--selected-ink); }
+.app-sidebar__link[aria-current="page"]:hover,
+.app-sidebar__link--active:hover { background: var(--selected-surface-hover); color: var(--selected-ink); }
+.app-sidebar__link .ztor-icon { flex: 0 0 auto; width: 18px; height: 18px; }
+.app-sidebar__link-label { flex: 1 1 auto; }
+
+/* Section-label group 變體（分組標題＋子項平鋪）— 2026-06-13 做過、使用者選擇改回 accordion，
+   樣式保留為可隨時切回的變體（sidebar.js 目前不渲染這些 class；demo 見 design-system）。
+   label 與項目 icon 同一左緣（padding-left 12px）；上方留白做分組分隔。 */
+.app-sidebar__section { list-style: none; }
+.app-sidebar__nav-gap { margin-top: var(--sp-14); }   /* 分組之後的平鋪頂層項：上方留白，與前一組分離 */
+.app-sidebar__section-label {
+  display: block;
+  padding: 0 var(--sp-12);
+  margin: var(--sp-16) 0 var(--sp-4);
+  font-size: var(--fs-12); font-weight: var(--fw-regular); line-height: var(--lh-snug);
+  letter-spacing: 0.02em;
+  color: var(--muted-foreground);
+}
+
+/* Expandable group (IP Bank / E-Shop) — 舊收合樣式，sidebar 改 section-label 後保留供回退 */
+.app-sidebar__group-toggle .app-sidebar__chevron { transition: transform .18s ease; }
+.app-sidebar__group[data-state="open"] .app-sidebar__chevron { transform: rotate(180deg); }
+.app-sidebar__subnav {
+  list-style: none; margin: var(--sp-6) 0 0; padding: 0;   /* 2026-06-13：移除左縮排，子項 pill 改全寬（與主項同尺寸）*/
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows .2s ease;
+}
+.app-sidebar__group[data-state="open"] .app-sidebar__subnav { grid-template-rows: 1fr; }
+.app-sidebar__subnav > div { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-6); }  /* 2026-06-13：加大子項間距 */
+/* 子項：pill 與主項同尺寸（同 padding-y/全寬/圓角）；文字 padding-left 40px 對齊主項(12+18 icon+10 gap)，靠縮排與無 icon 區分層級 */
+.app-sidebar__sub-link {
+  /* 2026-07-21 Q25：原 padding 9px ＋ fs-13 × lh-snug(1.2) 撐出 33.6px，改吃 token 固定 36＝與主項同高。
+     display 由 block 改 flex：鎖高之後 block 的文字會貼齊頂端、不會自動垂直置中。
+     子項與主項的區別交給縮排（padding-left 40）與字級，不靠高度差。 */
+  display: flex; align-items: center; height: var(--control-h-sm);
+  padding: 0 var(--sp-12) 0 var(--sp-40); border-radius: var(--radius-lg);  /* 同主項圓角（2026-06-13） */
+  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted); text-decoration: none;
+}
+.app-sidebar__sub-link:hover { background: var(--accent); color: var(--foreground); }
+.app-sidebar__sub-link[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
+.app-sidebar__sub-link[aria-current="page"]:hover { background: var(--selected-surface-hover); color: var(--selected-ink); }
+
+/* Bottom action cluster — search / notifications / language / theme / account */
+.app-sidebar__actions {
+  /* 2026-07-27：flex:none ＝ 釘在底部、永遠不參與捲動（nav 才是讓步的那一區）。
+     margin-top:auto 保留，nav 若沒撐滿時仍把 actions 推到底。 */
+  flex: none;
+  margin-top: auto; padding-top: var(--sp-12); border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.app-sidebar__action {
+  display: flex; align-items: center; gap: var(--sp-10); width: 100%;
+  /* 2026-07-21 Q25：原 padding 9px 撐出 37.5px（側欄搜尋也吃這條），改吃 token 固定 36 */
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-10); border: 0; background: transparent; cursor: pointer;
+  border-radius: var(--radius-md); text-align: left;
+  font-size: var(--fs-13); color: var(--foreground-muted); font-family: inherit;
+  text-decoration: none; position: relative;
+}
+.app-sidebar__action:hover { background: var(--accent); color: var(--foreground); }
+.app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
+.app-topbar__badge-dot[data-read="true"] { display: none; }
+/* ── Language picker inside the Account menu (2026-07-28 使用者裁示) ──────────
+   一份樣式、兩個 shell：側欄的帳號群組與 topbar 的帳號 dropdown 用同一個
+   .nav-lang（兩種版面「同一份 sitemap、只換位置」的規矩，語言列也照辦）。
+   兩個語言就兩顆並排、直接選——不為兩個選項多開一層 accordion。 */
+.nav-lang { display: inline-flex; align-items: center; gap: var(--sp-6); }
+.nav-lang__sep { color: var(--border); }
+.nav-lang__pick {
+  border: 0; background: transparent; padding: 0; cursor: pointer;
+  font: inherit; font-size: var(--fs-13); line-height: var(--lh-snug);
+  color: var(--foreground-muted); font-weight: var(--fw-regular);
+  transition: color .14s ease;
+}
+.nav-lang__pick:hover { color: var(--foreground); }
+.nav-lang__pick[aria-current="false"] { color: var(--foreground-muted); }
+/* 已選＝品牌橘，與導航其他「已選」語彙（.app-sidebar__link[aria-current]）同一個 ink token。 */
+.nav-lang__pick[aria-current="true"] { color: var(--selected-ink); }
+
+/* 側欄版：與 .app-sidebar__sub-link 同一組幾何（同高、同左縮排 40px、同右內距），
+   差別只在右側多一個選擇器——讀起來仍是帳號選單的一列，不是外掛上去的控件。 */
+.app-sidebar__sub-lang {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-12) 0 var(--sp-40);
+  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
+}
+/* Topbar 版：吃 .app-topbar__dropdown-option 的內距，但不是連結、沒有 hover 底
+   （它本身不導航，可點的只有右邊那兩顆）。 */
+.app-topbar__dropdown-lang {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
+}
+.app-sidebar__search { gap: var(--sp-8); cursor: text; }
+.app-sidebar__search-input {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent;
+  color: var(--foreground); font: inherit; font-size: var(--fs-13); outline: none;
+}
+.app-sidebar__avatar {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--muted); color: var(--foreground);
+  font-size: var(--fs-12); font-weight: var(--fw-medium);
+}
+
+/* Sidebar theme toggle reuses the topbar sun/moon visibility rules
+   (those selectors key off [data-theme-toggle], not .app-topbar). */
+
+/* ════════════════════════════════════════════════════════════
+ * Notification & to-do center — spec §5.2.1 / decisions D019
+ * Shared panel; opens as a topbar dropdown OR a sidebar-right flyout.
+ * Base surface + open/close animation come from .app-topbar__dropdown.
+ * ════════════════════════════════════════════════════════════ */
+.app-notif { position: relative; }
+.app-notif__panel { width: 360px; max-width: calc(100vw - 32px); padding: 0; overflow: hidden; }
+.app-notif__head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-12) var(--sp-14); border-bottom: 1px solid var(--border);
+}
+.app-notif__title { font-weight: var(--fw-regular); font-size: var(--fs-14); }
+.app-notif__markread {
+  border: 0; background: transparent; cursor: pointer; font: inherit;
+  font-size: var(--fs-12); color: var(--foreground-muted);
+}
+.app-notif__markread:hover { color: var(--foreground); }
+.app-notif__scroll { max-height: min(64vh, 520px); overflow-y: auto; padding: var(--sp-6); }
+.app-notif__section-label {
+  font-size: var(--fs-11); letter-spacing: 0.4px; text-transform: uppercase;
+  color: var(--muted-foreground); padding: var(--sp-10) var(--sp-8) var(--sp-4);
+}
+.app-notif__item {
+  display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-10); align-items: start;
+  padding: 9px var(--sp-8); border-radius: var(--radius-md); text-decoration: none; color: var(--foreground);
+}
+.app-notif__item:hover { background: var(--accent); }
+.app-notif__item[data-unread="true"] { background: color-mix(in srgb, var(--primary) 7%, transparent); }
+.app-notif__item[data-unread="true"]:hover { background: color-mix(in srgb, var(--primary) 11%, var(--muted)); }
+.app-notif__item-icon {
+  width: 30px; height: 30px; border-radius: var(--radius); flex-shrink: 0;
+  background: var(--muted); display: inline-flex; align-items: center; justify-content: center;
+  color: var(--foreground-muted);
+}
+.app-notif__item--todo .app-notif__item-icon { color: var(--foreground); background: color-mix(in srgb, var(--primary) 26%, var(--card)); }
+.app-notif__item-body { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.app-notif__item-title { font-size: var(--fs-13); line-height: var(--lh-normal); font-weight: var(--fw-regular); }
+.app-notif__item[data-unread="true"] .app-notif__item-title::before {
+  content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--primary); margin-right: var(--sp-6); vertical-align: middle;
+}
+.app-notif__item-meta {
+  font-size: var(--fs-12); line-height: var(--lh-normal); color: var(--foreground-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.app-notif__item-source {
+  width: max-content; max-width: 100%;
+  margin-top: 3px; padding: var(--sp-2) var(--sp-6); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); color: var(--foreground-muted); background: var(--card);
+  font-size: var(--fs-11); line-height: var(--lh-snug); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.app-notif__item-time { font-size: var(--fs-11); color: var(--muted-foreground); white-space: nowrap; }
+.app-notif__foot {
+  display: block; text-align: center; padding: 11px; border-top: 1px solid var(--border);
+  font-size: var(--fs-13); color: var(--foreground-muted); text-decoration: none;
+}
+.app-notif__foot:hover { color: var(--foreground); background: var(--accent); }
+
+/* Sidebar mode: open as a fixed flyout to the right of the rail (the rail is
+   overflow-y:auto and would clip an absolutely-positioned child). */
+html[data-nav-mode="sidebar"] .app-notif__panel--rail {
+  position: fixed; left: 256px; bottom: 16px; top: auto; right: auto;
+  transform-origin: bottom left;
+}
+@media (max-width: 900px) {
+  /* Rail collapses to a top row on small screens → drop the notif flyout below it. */
+  html[data-nav-mode="sidebar"] .app-notif__panel--rail {
+    position: absolute; left: auto; right: 0; bottom: auto; top: calc(100% + 8px);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Small screens: collapse the rail to a top row so content keeps full width.
+     (Basic responsive per spec §6.8 — full drawer/hamburger is R 2.1.x.) */
+  /* 2026-07-27：小螢幕的側欄變成頂部橫列（height:auto、flex-flow:wrap），
+     桌機版那條「nav 是可伸縮捲動區」的規則在這裡沒有意義、還可能夾出多餘捲軸，故歸零。 */
+  .app-sidebar > nav { flex: none; min-height: auto; overflow-y: visible; }
+  html[data-nav-mode="sidebar"] body,
+  html[data-nav-mode="sidebar"] .app { background: var(--background); }
+  html[data-nav-mode="sidebar"] .app {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  html[data-nav-mode="sidebar"] #sidebar,
+  html[data-nav-mode="sidebar"] #topbar { flex: 0 0 auto; width: 100%; }
+  .app-sidebar { width: 100%; height: auto; position: sticky; top: 0; z-index: 40;
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--sp-8);
+    background: var(--sidebar);
+    border-right: 0; border-bottom: 1px solid var(--border); }
+  .app-sidebar__brand { padding: var(--sp-4) var(--sp-8); }
+  /* 2026-07-25：改由 burger 收合（原本 nav＋actions 直接攤成橫排，10 幾個項目
+     會換行擠成一團、「通知與待辦」等長標籤還被壓成直排）。收起時只留 logo＋burger；
+     展開＝各自佔滿一整列、直向堆疊、過高時自身捲動。burger 樣式見 header.css。 */
+  .app-sidebar > nav,
+  .app-sidebar__actions { display: none; }
+  .app-sidebar[data-nav-open] > nav,
+  .app-sidebar[data-nav-open] .app-sidebar__actions {
+    display: flex;
+    flex: 1 1 100%;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .app-sidebar[data-nav-open] > nav { padding-top: var(--sp-8); border-top: 1px solid var(--border); }
+  .app-sidebar__nav { flex-direction: column; flex-wrap: nowrap; flex: 1 1 100%; }
+  .app-sidebar__actions { margin-top: 0; padding-top: 0; border-top: 0; flex-direction: column; align-items: stretch; }
+  .app-sidebar__subnav { padding-left: var(--sp-12); }
+}
+
+
+/* Theme toggle: show only the icon matching resolved theme. */
+[data-theme-toggle] [data-lucide="sun"],
+[data-theme-toggle] [data-lucide="moon"] { display: none; }
+html[data-theme="light"] [data-theme-toggle] [data-lucide="moon"] { display: inline-block; }
+html[data-theme="dark"]  [data-theme-toggle] [data-lucide="sun"]  { display: inline-block; }
+
+/* Display-mode toggle: show the icon of the mode you'll switch TO
+   (topbar now → panel-left hints sidebar; sidebar now → panel-top hints topbar). */
+[data-nav-toggle] [data-lucide="panel-left"],
+[data-nav-toggle] [data-lucide="panel-top"] { display: none; }
+html:not([data-nav-mode="sidebar"]) [data-nav-toggle] [data-lucide="panel-left"] { display: inline-block; }
+html[data-nav-mode="sidebar"]       [data-nav-toggle] [data-lucide="panel-top"]  { display: inline-block; }
+
+/* ---------- Main content ---------- */
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+html[data-nav-mode="sidebar"] .main {
+  min-height: 0;
+  align-self: stretch;   /* row 版 .app 為 flex-start，需撐滿高度，內捲才有作用 */
+  margin-top: var(--space-shell-gutter);
+  background: var(--surface-page);
+  border-radius: var(--radius-shell) 0 0 0;
+  overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
+}
+@media (max-width: 900px) {
+  html[data-nav-mode="sidebar"] .main {
+    min-height: 0;
+    margin-top: 0;
+    background: var(--background);
+    border-radius: 0;
+    overflow: visible;
+  }
+}
+
+/* ---- Topbar-mode app shell（2026-06-14，依使用者反饋）----
+   topbar 坐在灰色 canvas（--surface-shell）上，內容為白色圓角面板（上方兩角圓），
+   與 sidebar 模式同一套 shell token。Hero 收進面板（overflow:clip 裁圓角）。
+   只作用於 topbar 模式；wizard 頁（.wizard，無 .app/.main）不受影響。 */
+html:not([data-nav-mode="sidebar"]) .app { background: var(--surface-shell); }  /* 只灰 .app；wizard 頁無 .app、不受影響 */
+html:not([data-nav-mode="sidebar"]) .app-topbar {
+  background: var(--surface-shell);
+  border-bottom: 0;
+}
+html:not([data-nav-mode="sidebar"]) .app-topbar.is-scrolled {
+  background: var(--surface-shell);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow: 0 1px 0 var(--border);   /* 內容捲到 topbar 下方時的淡分隔 */
+}
+html:not([data-nav-mode="sidebar"]) .main {
+  margin-top: var(--space-shell-gutter);
+  min-height: 0;
+  background: var(--surface-page);
+  border-radius: var(--radius-shell) var(--radius-shell) 0 0;   /* 上方兩角圓（sidebar 只圓左上）*/
+  overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
+}
+/* Hero 收進面板：取消滿版 breakout，填滿面板、上緣跟著面板圓角被裁 */
+html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
+  width: auto; left: auto; right: auto; margin-left: 0; margin-right: 0;
+}
+@media (max-width: 900px) {
+  /* 窄螢幕收掉 shell，回到滿版白底 */
+  html:not([data-nav-mode="sidebar"]) .app { background: var(--background); }
+  html:not([data-nav-mode="sidebar"]) .app-topbar { background: var(--card); border-bottom: 1px solid var(--border); }
+  html:not([data-nav-mode="sidebar"]) .main {
+    margin-top: 0; min-height: 0;
+    background: var(--background); border-radius: 0; overflow: visible;
+  }
+}
+/* ---- Platform-operator (Admin) layer nav · spec §4.1 / D086 ----
+   Back-to-roster icon before the logo + "Managing <creator>" context chip
+   (creator scope); "Creator Management" marker + locked Tier-1 items (roster).
+   Lives with the nav shell; the Header DS section documents it. */
+.app-topbar__back {
+  display: inline-grid; place-items: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.app-topbar__back:hover { background: var(--accent); color: var(--foreground); }
+.app-topbar__context {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  padding: var(--sp-4) var(--sp-10) var(--sp-4) var(--sp-8); border-radius: var(--radius-pill);
+  background: var(--muted); color: var(--foreground);
+  font-size: var(--fs-13); font-weight: var(--fw-regular);
+  white-space: nowrap; flex-shrink: 0;
+}
+.app-topbar__context-label { color: var(--muted-foreground); font-weight: var(--fw-regular); }
+.app-topbar__context--admin {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--foreground);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+.app-topbar__context--admin .ztor-icon { color: var(--primary); }
+.app-topbar__link--locked {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  height: 36px; padding: 0 var(--sp-10);
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+.app-topbar__link--locked .ztor-icon { color: var(--muted-foreground); }
+/* Sidebar-mode equivalents */
+.app-sidebar__back {
+  display: flex; align-items: center; gap: var(--sp-10);
+  padding: var(--sp-8) var(--sp-12); margin: 0 0 var(--sp-4); border-radius: var(--radius-md);
+  color: var(--foreground-muted); text-decoration: none;
+  font-size: var(--fs-13); font-weight: var(--fw-regular);
+}
+.app-sidebar__back:hover { background: var(--accent); color: var(--foreground); }
+.app-sidebar__context { display: flex; flex-direction: column; gap: 1px; padding: var(--sp-6) var(--sp-12) var(--sp-12); }
+.app-sidebar__context-label { font-size: var(--fs-11); color: var(--muted-foreground); }
+.app-sidebar__context-name { font-size: var(--fs-14); font-weight: var(--fw-regular); color: var(--foreground); }
+.app-sidebar__context--admin {
+  flex-direction: row; align-items: center; gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-12); margin: 0 0 var(--sp-8); border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent);
+  font-size: var(--fs-13); font-weight: var(--fw-medium);
+}
+.app-sidebar__context--admin .ztor-icon { color: var(--primary); }
+.app-sidebar__link--locked {
+  display: flex; align-items: center; gap: var(--sp-10); padding: var(--sp-8) var(--sp-12);
+  color: var(--muted-foreground); cursor: not-allowed; opacity: .65;
+}
+
+/* 2026-07-28（使用者回報「這個 div 太貼邊」）：直接掛在 .main 底下、不在 .page 內的
+   區塊完全拿不到頁面留白——.main 的 padding 是 0，實測該卡左側間距 0px（右側那 12px
+   只是捲軸），等於整張卡貼著面板左緣，也沒有 .page 的 max-width 與置中。
+   earnings-sony 的 [data-fin-table] 就是這個情況。與其改 HTML 結構（風險較高、
+   而且下次有人再放一個就會重犯），這裡讓 .main 的直接子卡片鏡射 .page 的水平度量：
+     width      = 100% - 28px*2   （窄視窗時等同 .page 的左右留白）
+     max-width  = 1280 - 28*2 = 1224px（寬視窗時內容寬與 .page 完全對齊）
+     margin-inline: auto            （置中）
+   結果是它與頁面其餘內容切齊同一條左右邊界，而不是各走各的。 */
+.main > .card,
+.main > section.card {
+  width: calc(100% - var(--sp-28) * 2);
+  max-width: 1224px;
+  margin-inline: auto;
+}
+@media (max-width: 900px) {
+  /* .page 在窄screen 改吃 16px 左右留白，直接子卡片同步。 */
+  .main > .card,
+  .main > section.card { width: calc(100% - var(--sp-16) * 2); }
+}
+
+.page {
+  /* Top padding bumped 32 → 48px on 2026-05-28 after .page-intro__eyebrow was
+     retired — title needs more breathing room above without the eyebrow row. */
+  padding: var(--sp-48) var(--sp-28) var(--sp-96);
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 窄版容器（2026-07-20 Q21 修訂）：只給「主欄＋右側常駐 meta 欄」的詳情頁用。
+   兩欄版型下 1280 會讓左欄行長過長；1056 是使用者裁定的窄版寬度。
+   Q21 原本裁全站 1280→1056，同日改為僅此變體套用、其餘頁維持 1280。
+   Consumers: product-detail.html */
+.page--narrow { max-width: 1056px; }
+/* Buttons live in the component library — see ds-components/button.css
+   (.btn product-density variants + .ztor-btn canonical). Only hero-context
+   overrides for the light-on-dark variant remain below. */
+
+/* ════════════════════════════════════════════════════════════
+ * Components promoted to ds-components/ on 2026-05-26
+ * ────────────────────────────────────────────────────────────
+ *   .card      → ds-components/card.css        (was .surface)
+ *   .badge     → ds-components/badge.css       (was .pill)
+ *   .alert     → ds-components/alert.css       (was .alert-card + .alert-row)
+ *   .kpi       → ds-components/kpi.css
+ *   .data-list → ds-components/data-list.css
+ *   .info-banner→ ds-components/info-banner.css
+ *   .tabs      → ds-components/tabs.css
+ *   .chip      → ds-components/chip.css        (with .filter-row layout)
+ *   .linechart → ds-components/chart.css       (with .stacked-bar + .source-list)
+ *   .bento     → ds-components/bento.css
+ *   .empty-stub→ ds-components/empty-stub.css
+ *   .switch    → ds-components/switch.css
+ *   .selection-card → ds-components/selection-card.css  (merged .choice-card + .appearance-card)
+ *
+ * Remaining shared.css patterns are project-level / page-specific
+ * (hero, wizard, settings layout, ip-hero, etc).
+ * ════════════════════════════════════════════════════════════ */
+
+/* ---------- Hero banner carousel (Dashboard signature) ---------- */
+.hero {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  padding: 0;
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.hero__slide {
+  position: relative;
+  z-index: 0;            /* establish a stacking context so inner layers
+                            (incl. the z-index:3 bottom blur-veil) stay BELOW
+                            the sibling .hero__nav carousel controls (z-index:2) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--muted);
+  overflow: hidden;
+}
+/* Full-cover media (video or image layers) sit at the very back of a slide. */
+.hero__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+/* Cut-out performer layers for the "audience" composite slide — vertically
+   centred (not bottom-anchored) so when the height clamp() shrinks at narrower
+   viewports (≲ 1450px) the figures contract symmetrically around the middle
+   instead of piling at the bottom edge with empty space above. Horizontal slot
+   stays via .hero__layer--* left/right per the assembly reference. They sit
+   under the .hero__copy text (z-index 2) and the bottom blur-veil (z-index 3).
+
+   WAAPI entrance (hero.js runHeroIntro) MUST carry translateY(-50%) in every
+   keyframe — otherwise the inline transform clobbers this rule and the figures
+   snap to top:50% (= visually 50% lower) during/after the animation. */
+.hero__layer {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 0;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+}
+/* DOM order paints left-back first, then left-front on top of it. All three
+   are nudged toward the edges to widen the centre gap for the copy. */
+/* Heights scale with viewport WIDTH (vw) — clamped — so the performers shrink
+   as the banner narrows instead of crowding the centre copy. The max caps
+   keep the wide-screen look (~previous 94/80/86% of the 720px slide). */
+.hero__layer--left-back    { left: 10%;  height: clamp(430px, 48vw, 680px); }
+.hero__layer--left-front   { left: -16%; height: clamp(400px, 44vw, 640px); }
+.hero__layer--right-singer { right: -15%; height: clamp(390px, 43vw, 620px); }
+
+/* Audience slide: dim the bright corridor background WITHOUT dimming the cut-out
+   performers. The pseudo sits between the slide background-image and the
+   <img>.hero__layer children — z-index 0 + ::before being the first generated
+   sibling means the layers (also z-index 0 but later in DOM) paint on top,
+   leaving people crisp while the wall behind them goes ~40% darker. The
+   centred white .hero__copy (z-index 2) is now legible against the dimmed bg
+   so text-shadow is no longer needed (and was bleeding into the CTA labels,
+   breaking DS parity with .btn--primary).
+   Two-class selector outranks the base .hero__slide::before regardless of
+   source order; position:absolute/inset:0/content:"" inherit from the base. */
+.hero__slide.hero__slide--audience::before {
+  background: rgba(0, 0, 0, 0.06);
+  z-index: 0;
+}
+
+/* Bottom blur-veil — frosts + fades the bottom of the scene into the page
+   background (var(--background)) so the hero dissolves seamlessly into the
+   site below it. Sits on TOP of everything in the slide (z-index 3); the mask
+   confines the backdrop blur to the lower band and fades it upward. The
+   carousel dots live in .hero__nav (a sibling of the slides) so they stay
+   above this and remain visible. */
+.hero__slide--audience::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36%;
+  z-index: 3;
+  background: linear-gradient(to top,
+    var(--background) 0%,
+    color-mix(in srgb, var(--background) 55%, transparent) 42%,
+    transparent 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 32%, transparent 100%);
+          mask-image: linear-gradient(to top, #000 0%, #000 32%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Centred radial veil — darkest behind the centred copy, fading to the edges
+   so the photo still reads, while keeping overlaid white text ≥ 5:1 contrast. */
+.hero__slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(ellipse 95% 85% at 50% 48%,
+    rgba(0,0,0,0.62) 0%,
+    rgba(0,0,0,0.34) 60%,
+    rgba(0,0,0,0.18) 100%);
+  pointer-events: none;
+}
+.hero__copy {
+  position: relative;
+  z-index: 2;
+  padding: var(--sp-56) var(--sp-32);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-14);
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  color: #FFFFFF;
+}
+.hero__copy .hero__eyebrow { color: rgba(255,255,255,0.75); }
+.hero__copy .hero__eyebrow-dot { background: var(--primary); }
+.hero__copy .hero__title { color: #FFFFFF; }
+.hero__copy .hero__sub { color: rgba(255,255,255,0.85); }
+/* Hero secondary = .btn--outline component. The hero photo is dark in BOTH
+   themes, so this button is theme-independent (fixed light fill + dark text),
+   not token-driven — otherwise dark mode flips --card to a muddy translucent
+   fill. Same light-button-with-edge look as the §4.2 Outline demo. */
+.hero__actions .btn--outline {
+  background: #FAFAF7;
+  color: #171717;
+  box-shadow: var(--shadow-micro);
+}
+.hero__actions .btn--outline:hover {
+  background: #FFFFFF;
+}
+.hero__eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-8);
+}
+.hero__eyebrow-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary);
+}
+.hero__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-44);
+  line-height: var(--lh-tight);
+  letter-spacing: -1px;
+  font-weight: var(--fw-regular);
+  margin: 0;
+  max-width: 560px;
+}
+.hero__sub {
+  margin: 0;
+  color: var(--foreground-muted);
+  font-size: var(--fs-14);
+  max-width: 480px;
+}
+.hero__actions { display: flex; justify-content: center; gap: var(--sp-8); margin-top: var(--sp-6); }
+/* Legacy visual column — no longer rendered; replaced by background-image on .hero__slide.
+   Kept declarations commented to document the migration. */
+/* .hero__visual { … } removed 2026-05-25 — slide is now a single image container. */
+
+/* Full-bleed variant — pulls hero edge-to-edge of the viewport */
+.hero--fullbleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 0;        /* no hairline — the hero dissolves into the page */
+}
+.hero--fullbleed .hero__slide { min-height: 720px; }
+.hero--fullbleed .hero__copy {
+  max-width: 760px;
+  padding: var(--sp-96) var(--sp-24);
+}
+.hero--fullbleed .hero__title { font-size: var(--fs-56); max-width: 720px; }
+.hero--fullbleed .hero__nav {
+  justify-content: center;
+  padding-left: var(--sp-24);
+  padding-right: var(--sp-24);
+}
+/* Framer-style slideshow indicator — a frosted dark pill holding the dots,
+   where the active dot grows into a progress capsule (JS-driven fill synced
+   to the 8 s timer), plus a separate frosted play/pause circle. */
+.hero__nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-12);
+  padding: var(--sp-24);
+}
+.hero__nav .hero__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: 11px var(--sp-16);
+  background: rgba(20,20,22,0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-pill);
+}
+.hero__nav .hero__dot {
+  position: relative;
+  width: 8px; height: 8px;
+  padding: 0; border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,0.38);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: none;
+  transition: width var(--duration) var(--easing),
+              background var(--duration) var(--easing);
+}
+.hero__nav .hero__dot:hover { background: rgba(255,255,255,0.6); }
+.hero__nav .hero__dot--active {
+  width: 46px;
+  background: rgba(255,255,255,0.28);   /* track behind the progress fill */
+  cursor: default;
+}
+.hero__dot-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: #FFFFFF;
+  border-radius: var(--radius-pill);
+}
+.hero__playpause {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0; border: 0;
+  border-radius: 50%;
+  background: rgba(20,20,22,0.62);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background var(--duration) var(--easing);
+}
+.hero__playpause:hover { background: rgba(44,44,48,0.72); }
+.hero__playpause svg { width: 14px; height: 14px; display: block; }
+.hero__playpause .hero__icon-play { display: none; }
+.hero__playpause[aria-pressed="true"] .hero__icon-pause { display: none; }
+.hero__playpause[aria-pressed="true"] .hero__icon-play { display: block; }
+@media (prefers-reduced-motion: reduce) {
+  .hero__nav .hero__dot { transition: none; }
+}
+.hero__dot {
+  width: 18px; height: 4px; border-radius: 2px;
+  background: var(--border);
+  cursor: pointer;
+}
+.hero__dot--active { background: var(--foreground); }
+@media (max-width: 720px) {
+  .hero__slide { grid-template-columns: 1fr; }
+  .hero__visual { min-height: 120px; }
+}
+
+/* ---------- Status pill / badge ---------- */
+/* `.alert / .alert--{card|row} / .alert--{warning|error|success|info} /
+   .alert__{icon|body|title|desc|meta|cta|close}` promoted to
+   ds-components/alert.css on 2026-05-26 (was .alert-card + .alert-row). */
+
+/* ---------- Trend / chart placeholder ---------- */
+.trend {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-6);
+  height: 140px;
+  padding: var(--sp-10) 0;
+}
+.trend__bar {
+  flex: 1;
+  background: color-mix(in srgb, var(--primary) 60%, var(--card));
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 8px;
+  position: relative;
+}
+.trend__bar--accent { background: var(--primary); }
+.trend__bar::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.trend-wrap { padding-bottom: 26px; }
+
+/* ---------- Section divider (subtle inline editorial header) ---------- */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 36px 0 var(--sp-14);
+}
+.section-head__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.section-head__sub { color: var(--muted-foreground); font-size: var(--fs-13); }
+
+/* .input / .textarea / .select 已搬到 ds-components/input.css（2026-07-10，元件三件套整併）。 */
+
+/* ---------- Wizard frame ---------- */
+/* §5.2.4 建立流程框架 v3（2026-06-24，對齊 .main「灰 canvas 上白色圓角卡」語言）：
+   .wizard＝灰 canvas（滿版固定高、不捲）；.wizard__sheet＝白色圓角 content 卡（內部捲動、圓角誠實歸自己）；
+   .wizard__bottom＝其下的平面灰 footer。取代舊的 footer::before 白卡 hack（圓角不再做在 footer 上）。 */
+.wizard {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-shell);   /* 灰 canvas */
+}
+.wizard__sheet {
+  flex: 1 1 auto;
+  min-height: 0;                 /* 允許收縮，內部捲動 */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);     /* 白色 content 卡 */
+  border-radius: 0 0 var(--radius-shell) var(--radius-shell);   /* 圓角歸 content 卡自己（下緣）*/
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.12);             /* 浮在灰 footer 上的向下投影 */
+}
+.wizard__sheet--sectioned { background: var(--surface-page); }
+/* Gate — 建立流程進入前的專案類型選擇畫面（D149，2026-07-24）：與 [data-sheet] 分步表單互斥（JS 切 .hidden）。復用 .wizard__sheet 白卡底＋圓角，僅加內容置中。 */
+.wizard__gate { justify-content: center; }
+.wizard__gate-inner { width: 100%; max-width: 760px; margin-inline: auto; padding: var(--sp-32) var(--sp-24); }
+.wizard__gate-foot { display: flex; justify-content: center; margin-top: var(--sp-32); }
+/* 關閉鈕提亮（2026-07-26 使用者反饋「太暗」）：`.btn--icon-circle` 預設是 --muted 底，
+   那組值假設鈕坐在 --card 之上；閘門是 --sectioned 的 --surface-page（全站最暗的面），
+   --muted(#161718) 與它只差一階、圓形幾乎看不見。此處改 --card 底＋1px --border 描邊，
+   與同頁其他坐在暗底上的控制項同一套讀法；hover 仍回 --accent。只給閘門，composer 的
+   送出鈕仍坐在卡片上、維持元件預設。 */
+.wizard__gate-close { background: var(--card); border: 1px solid var(--border); color: var(--foreground-muted); }
+.wizard__gate-close:hover { background: var(--accent); border-color: var(--border); color: var(--foreground); }
+.wizard__top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background: var(--card);   /* 無底部分隔線；改用下層 Header shadow 色塊 */
+}
+/* ── Edge shadow（可覆用工具）─────────────────────────────────────────
+   在元素「下緣」產生一道柔和、內縮、兩端圓角漸淡(taper)、不外漏的陰影。
+   作法：一個與元素等高、左右內縮、下方大圓角的透明圖層投 --shadow-header，
+   再用 clip-path 只露出元素「下方」那一段 → 只看到下緣陰影、兩端因圓角收尾、
+   上緣與兩側都不外漏（不需另做不透明上層遮蓋）。套在任何「已定位」元素上即可。
+   可調：--edge-shadow-inset（左右內縮，預設 28px）、--edge-shadow-radius（圓角，預設 64px）。
+   忠實照 Figma 720:1763 的分層結構（色塊藏在元素後、只露下緣）。 */
+.edge-shadow { position: relative; }
+.edge-shadow::before,
+.wizard__top::before {   /* 用 ::before（避開 .alert--page-top 等用 ::after 的元件）；.wizard__top 已 sticky */
+  content: "";
+  position: absolute;
+  left: var(--edge-shadow-inset, 28px);
+  right: var(--edge-shadow-inset, 28px);
+  top: 0;
+  bottom: 0;
+  border-radius: 0 0 var(--edge-shadow-radius, 64px) var(--edge-shadow-radius, 64px);
+  box-shadow: var(--shadow-header);
+  clip-path: inset(100% 0 -40px 0);   /* 只露出元素下方那段陰影 */
+  pointer-events: none;
+}
+/* §5.2.4 建立流程頂部框架（2026-06-23 改版 v2）：單列三欄。
+   col1 左＝.wizard__top-lead（返回箭頭＋標題/副標，靠左）｜
+   col2 中＝進度條 .wizard__progress（max 820 內容寬、置中對齊下方 .wizard__body 內容欄；無 stepper 頁此欄空）｜
+   col3 右＝.wizard__top-actions（自動儲存狀態＋預覽）。
+   中欄固定為內容寬、兩側 1fr 對稱 → 進度條在視窗置中、對齊內容欄。 */
+/* 2026-07-24：col1 補下限 `--wizard-lead-min`。原本兩側都是純 1fr，但左欄的標題塊
+   min-width:0＋ellipsis＝最小可以縮到 0，右欄的儲存狀態＋按鈕不能縮＝最小 ~196px；
+   視窗一窄，中欄的 820px 就把左欄整個吃成 0，標題溢出欄外壓在進度條上（1058px 實測 col1=0）。
+   給左欄一個下限後，擠壓由中間的進度條吸收；寬螢幕（兩側都大於下限）版面完全不變。 */
+.wizard__top-bar {
+  --wizard-lead-min: 180px;
+
+  display: grid;
+  grid-template-columns: minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr);
+  align-items: center;
+  gap: var(--sp-16);
+  padding: var(--sp-20) var(--sp-28);   /* 上下 padding 加大（2026-06-23 使用者指定）*/
+}
+/* col1：返回箭頭＋標題塊，靠左（含舊 .wizard__close 向後相容）。
+   箭頭對齊「主標題那一行」（align-items:flex-start＋箭頭高度≈標題行高），副標在標題下方。 */
+/* 2026-07-16：整組（返回箭頭＋標題/副標）合併為單一返回按鈕（Figma 781:4142）。
+   .wizard__top-lead 當可 hover 的膠囊面：常態透明、hover 套 --accent 圓角底（Q9 hover 統一色、--radius-lg 8px、內距 8/16/8/8 皆照 Figma）；
+   padding 用等量負 margin 抵銷 → 維持箭頭原本靠左位置、hover 不位移。
+   實際可點/可聚焦的仍是內層 .wizard__back <button>，用 stretched ::after 把命中區與焦點環撐滿整個 lead，
+   點標題也回上一頁——免動 10 個消費頁 markup。 */
+.wizard__top-lead {
+  grid-column: 1; justify-self: start;
+  position: relative;
+  display: flex; align-items: flex-start; gap: var(--sp-12);   /* Figma=12（原 14）*/
+  min-width: 0;
+  padding: var(--sp-8) var(--sp-16) var(--sp-8) var(--sp-8);
+  margin: calc(-1 * var(--sp-8)) calc(-1 * var(--sp-16)) calc(-1 * var(--sp-8)) calc(-1 * var(--sp-8));
+  border-radius: var(--radius-lg);
+  transition: background-color var(--duration) var(--easing);
+}
+.wizard__top-lead:hover { background: var(--accent); }
+.wizard__close { grid-column: 1; justify-self: start; }
+.wizard__back {
+  flex: 0 0 auto;
+  display: inline-grid; place-items: center;
+  width: 24px; height: var(--fs-22);   /* 高度≈主標題行高，與標題同高並列 */
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--foreground);
+}
+/* stretched hit area：把 .wizard__back 的命中區＋焦點環撐滿整個 .wizard__top-lead（含標題）。
+   inset:0 以 position:relative 的 .wizard__top-lead 為基準，非小箭頭本身。 */
+.wizard__back::after {
+  content: ""; position: absolute; inset: 0;
+  border-radius: var(--radius-lg);
+}
+.wizard__back:focus-visible { outline: none; }
+.wizard__back:focus-visible::after { outline: 2px solid var(--ring); outline-offset: 2px; }
+.wizard__back .ztor-icon { width: 22px; height: 22px; }
+.wizard__close {
+  font-family: var(--font-ui); font-size: var(--fs-13); font-weight: var(--fw-regular);
+  color: var(--foreground-muted); background: transparent; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: var(--sp-6); white-space: nowrap;
+}
+.wizard__close:hover { color: var(--foreground); }
+/* col3：右側工具 */
+.wizard__top-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: var(--sp-8); }
+/* col2：進度條／舊中央槽（向後相容）。內容寬靠中欄 minmax(0,820) 撐起、padding 28 對齊 .wizard__body 內距 */
+.wizard__progress, .wizard__stepper-slot { grid-column: 2; }
+.wizard__progress { justify-self: stretch; width: 100%; padding-inline: var(--sp-28); }
+.wizard__stepper-slot { justify-self: stretch; display: flex; align-items: center; justify-content: center; min-width: 0; }
+/* 標題塊靠左堆疊 */
+.wizard__top-titlewrap { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-width: 0; max-width: 100%; }
+.wizard__top-title { font-weight: var(--fw-regular); font-family: var(--font-display);
+  font-size: var(--fs-16); line-height: var(--lh-comfy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.wizard__top-sub { font-size: var(--fs-13); color: var(--foreground-muted); line-height: var(--lh-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* 自動儲存狀態（各 wizard 頁共用）。兩態：saved（綠點＋已儲存）／saving（轉圈＋儲存中…）。
+   fallback：沒有 autosave 的頁面（.wizard[data-autosave="false"]）→ 渲染成可點的「儲存」鈕（--button）。 */
+.wizard__save-status { display: inline-flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-12); color: var(--foreground-muted); white-space: nowrap; font-family: inherit; }
+.wizard__save-status__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--status-success); flex: 0 0 auto; }
+.wizard__save-status[data-state="saving"] { color: var(--foreground-muted); }
+.wizard__save-status[data-state="saving"] .wizard__save-status__dot {
+  width: 12px; height: 12px; background: transparent;
+  border: 2px solid var(--border); border-top-color: var(--foreground-muted);
+  animation: wiz-spin .6s linear infinite;
+}
+@keyframes wiz-spin { to { transform: rotate(360deg); } }
+/* 手動儲存鈕變體（autosave 不可用時）*/
+.wizard__save-status--button {
+  border: 0; cursor: pointer; color: var(--foreground); font-weight: var(--fw-regular);
+  padding: 5px var(--sp-12); border-radius: var(--radius-md); box-shadow: 0 0 0 1px var(--border);
+  background: var(--card);
+}
+.wizard__save-status--button:hover { background: var(--accent); }
+.wizard__save-status--button .wizard__save-status__dot { display: none; }
+/* 自動儲存狀態與預覽鈕之間加大間距（2026-06-23 使用者指定）：在 8px gap 外再補右邊距 */
+.wizard__top-actions .wizard__save-status,
+.wizard__top-actions .ce-save-status { margin-inline-end: var(--sp-12); }
+
+/* 返回離開確認彈窗已 promote 成元件 → ds-components/leave-dialog.css（2026-06-29）*/
+
+/* .stepper（舊：數字圓圈＋分隔線）已於 2026-06-23 退役 → 改用
+   ds-components/progress-stepper.css 的 .progress-stepper（細軌＋漸層填充）。
+   create-event / create-project / register-ip 皆已遷移。 */
+.wizard__body {
+  flex: 1;
+  padding: var(--sp-40) var(--sp-28) var(--sp-56);   /* 不再需要為 fixed footer 預留 140px（footer 已改 in-flow）*/
+  max-width: 820px;
+  margin: 0 auto;
+  width: 100%;
+}
+/* wizard__body 表單版修飾類（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：
+   --form 頂距、--narrow/--wide 內容寬。已知分岔未收：funding-simulate(32px)、funding-test/create-campaign(44px) */
+.wizard__body--form { padding-top: var(--sp-72); }
+.wizard__body--narrow { max-width: 1000px; }
+.wizard__body--mid { max-width: 1140px; }   /* narrow 與 wide 之間；create-product：剛好容下逐規格表(≈682)＋320 預覽欄，比 wide 收斂又不溢出捲動（floor≈1100）*/
+.wizard__body--wide { max-width: 1240px; }
+.wizard__step-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.6px;
+  margin: 0 0 var(--sp-6);
+}
+.wizard__step-sub { color: var(--foreground-muted); margin: 0 0 var(--sp-24); max-width: 560px; }
+/* footer：in-flow、平面灰條（在 .wizard 灰 canvas 上、content 卡下方）。圓角已歸 content 卡，footer 不再做假圓角。 */
+.wizard__bottom {
+  flex: 0 0 auto;
+  padding: var(--sp-16) var(--sp-28);
+  background: var(--surface-shell);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wizard__bottom-actions { display: flex; gap: var(--sp-8); }
+
+/* 黑夜版 wizard 配色（2026-06-30 改版，升進 DS）：content＋header＝最深的 #191A1A（沉下的內容卡），
+   footer＋其下 canvas＝較淺的 #2B2B2C（卡浮在較淺底上）。此為 create-flow 全頁標準，
+   原 create-product 的頁內覆寫已移除、改由此處統一提供。
+   用 dark token 覆寫（--surface-shell=#2B2B2C／--surface-page=#191A1A），不寫裸 hex、不動全域 token；
+   只在 dark mode 生效，淺色模式維持 content=白／footer=#F5F5F5。
+   2026-06-24 原版為相反配色（content #2B2B2C 淺、canvas #191A1A 深）；本次依使用者確認以 create-product 配色為準。 */
+[data-theme="dark"] .wizard { background: var(--surface-shell); }          /* canvas #2B2B2C（較淺，卡浮其上）*/
+[data-theme="dark"] .wizard__sheet { background: var(--surface-page); }     /* content 卡 #191A1A（最深）*/
+[data-theme="dark"] .wizard__top { background: var(--surface-page); }       /* header 同 content #191A1A */
+[data-theme="dark"] .wizard__bottom { background: var(--surface-shell); }   /* footer #2B2B2C */
+
+/* 窄螢幕 fallback：回到一般文件捲動（content 卡不內捲、footer 黏底、不做圓角）。 */
+@media (max-width: 900px) {
+  .wizard { height: auto; min-height: 100vh; overflow: visible; }
+  .wizard__sheet { overflow: visible; border-radius: 0; box-shadow: none; }
+  .wizard__bottom { position: sticky; bottom: 0; }
+}
+
+/* ---------- IP detail page ---------- */
+/* 2026-07-25（Q31）：由「封面｜內容｜租用側欄」三欄改為兩欄——封面獨佔左欄，
+   其餘全部（徽章／標題／KPI meta／租用區）走右欄。原 280px 側欄會把內容欄擠窄
+   （標題折行、meta 塌成單欄），且封面較高時側欄旁留死空間。
+   封面寬 200（3:4→267 高）刻意貼近右欄文字的自然高度，兩欄底部相近不留空洞。 */
+.ip-hero {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--sp-24);
+  padding: var(--sp-24);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--sp-24);
+}
+.ip-hero__cover {
+  position: relative; overflow: hidden;
+  width: 100%; aspect-ratio: 3/4; align-self: start;
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
+  display: grid; place-items: center;
+  color: var(--primary-foreground);
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.6px;
+  padding: var(--sp-16);
+  text-align: center;
+}
+/* Real cover art overlays the gradient placeholder when present (empty in static
+   HTML → gradient + IP name shows through; add <img> → art fills). object-fit:cover
+   matches the site-wide cover convention (project-card__cover-img). */
+.ip-hero__cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* IP Market card cover (ip-market.html · spec 5.1.3) — promoted from inline gradient
+   divs so the three listing cards share one cover treatment and can carry real cover
+   art. Same gradient placeholder as .ip-hero__cover; add .ipm-card__cover-img to fill. */
+.ipm-card__cover {
+  position: relative; overflow: hidden;
+  aspect-ratio: 3/4;
+  border-radius: var(--radius-md);
+  background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
+  display: grid; place-items: center;
+  color: var(--primary-foreground);
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.5px;
+  padding: var(--sp-10);
+  text-align: center;
+}
+.ipm-card__cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* ✝ tombstone · .ipm-card__cover-img--contain（2026-07-25 當日新增、同日退場）
+   一度給寬版素材（wordmark logo、16:9 團體照）用 contain 避免裁切，但會留出上下空白帶。
+   使用者裁示封面一律「等比滿版」——全部回到預設 cover 鋪滿裁切，不留白、不分變體。
+   寬版素材若裁切過頭，改換直式素材解決（例如 Pokémon 由方形 logo 換成直式主視覺）。 */
+.ip-hero__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.8px;
+  margin: var(--sp-6) 0 var(--sp-4);
+}
+.ip-hero__owner { color: var(--foreground-muted); font-size: var(--fs-14); margin-bottom: var(--sp-14); }
+/* ✝ tombstone · .ip-hero__meta（2026-07-25 退場，Q31）
+   IP hero 的四格事實列（版稅／起租費／租期／獨家）原本是自成一套的 auto-fit 網格＋
+   .meta-cell 純文字。使用者裁示改用站上既有的 bento ＋ kpi 磚（`.bento > .kpi.bento--span-3`），
+   與儀表板／收入管理等頁的指標列同一套讀法，不再為 hero 自建第二種事實列版型。
+   `.meta-cell` 本身保留——create-project 仍在消費。 */
+
+/* ✝ tombstone · .ip-hero__side（2026-07-25 退場，Q31）
+   280px 的租用側欄。移除原因見 .ip-hero 註解與 ds-components/rent-block.css：
+   租用內容改走 `.rent-block`、置於內容欄底部。 */
+
+.meta-cell { display: flex; flex-direction: column; gap: var(--sp-2); }
+.meta-cell__label { font-size: var(--fs-11); letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted-foreground); }
+.meta-cell__value { font-family: var(--font-numeric); font-size: var(--fs-18); font-weight: var(--fw-regular); letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
+}
+.rental-card { padding: var(--sp-16); }
+.rental-card__total {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.6px;
+  margin: var(--sp-8) 0 var(--sp-4);
+  font-variant-numeric: tabular-nums;
+}
+.rental-card__breakdown { display: flex; flex-direction: column; gap: var(--sp-6); margin: var(--sp-12) 0; font-size: var(--fs-12); color: var(--foreground-muted); }
+.rental-card__breakdown-row { display: flex; justify-content: space-between; }
+.duration-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6);
+  margin: var(--sp-10) 0 var(--sp-14);
+}
+.duration-chip {
+  text-align: center;
+  padding: 9px var(--sp-6);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--border);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  /* 2026-07-27：站上這個 chip 有兩種寫法——ip-detail 用 <div>、design-system 用 <button>。
+     沒有這行的話 <button> 版會吃到 UA 的 buttontext（純黑），深色卡面上整顆 chip 的字黑掉；
+     <div> 版卻正常。補 inherit 讓元件與標籤無關。（同 kpi--tappable 的同一類 bug）*/
+  color: inherit;
+}
+.duration-chip__price { font-family: var(--font-numeric); font-size: var(--fs-14); display: block; margin-top: var(--sp-2); font-weight: var(--fw-regular);
+  font-variant-numeric: tabular-nums;
+}
+.duration-chip--active {
+  background: color-mix(in srgb, var(--primary) 18%, var(--card));
+  box-shadow: 0 0 0 2px var(--primary);
+}
+@media (max-width: 900px) {
+  .ip-hero { grid-template-columns: 1fr; }
+}
+
+/* 收益走勢圖例小圓點（我的收益分頁的類型 chips）。顏色由 inline var(--token) 給。 */
+.earn-dot { display:inline-block; width:8px; height:8px; border-radius:var(--radius-pill); margin-right:var(--sp-6); vertical-align:middle; }
+
+/* ---------- Project detail hero（參考 ztor-cocreate-preview 募資預覽卡）----------
+   頁首麵包屑與操作鈕同列；封面在左；右欄由上而下＝標題 → 簡介 → 徽章列 → 募資有框卡 → 下一步。
+   標題／簡介在框外；創作者脈絡搬進募資卡（.funding-panel--card）框內最下面（取代原 §7.3 註記）。
+   募資卡框內：金額／目標／進度／倒數＋末行創作者脈絡。標題／徽章 2026-07-24 由頁首併入右欄。
+   沒有外層填色容器——募資卡自己就是 L1 卡（Q3 邊框、Q24 不疊色）。 */
+.pd-detail__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-14);
+}
+/* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
+   所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
+.pd-detail__breadcrumb { min-width: 0; margin-bottom: 0; }
+.pd-hero {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--sp-24);
+  align-items: start;
+  margin-bottom: var(--sp-24);
+}
+.pd-hero__cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-xl);
+  object-fit: cover;
+  display: block;
+}
+.pd-hero__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+/* Hero header 只承擔標題；操作鈕在上方的 project context row。 */
+.pd-hero__head {
+  min-width: 0;
+}
+.pd-hero__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-8);
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+/* ── 專案詳情：分頁列 ＋ 檢視／編輯切換（2026-07-27 使用者裁示）──────────────
+   「專案總覽」「關於這個專案」兩個分頁預設唯讀，右上角有一顆「編輯」才進入可改狀態。
+   底線改由 .pd-tabbar 畫：.tabs 自己帶 border-bottom，若讓它保留，那條線只會畫到
+   分頁那一段、右邊的按鈕會脫離同一條基準線。 */
+.pd-tabbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-20);
+}
+.pd-tabbar .tabs {
+  border-bottom: 0;
+  margin-bottom: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;            /* 八個分頁在窄螢幕橫向捲，不擠壓右側按鈕 */
+  scrollbar-width: none;
+}
+.pd-tabbar .tabs::-webkit-scrollbar { display: none; }
+.pd-tabbar__action { flex: none; margin-bottom: var(--sp-8); }
+
+/* ── 檢視模式：保留「編輯時的版面」，只是不能改 ──────────────────────────
+   用 readonly 而非 disabled——disabled 會把文字打灰、也從無障礙樹拿掉，
+   但檢視模式下那些「值」正是使用者要讀的內容，必須維持可讀、可選取。
+
+   2026-07-27 L 裁示改版：這裡原本把欄位「攤平成值」——清掉背景、外框
+   （其實是 box-shadow 畫的 1px inset ring）與左右內距。L 的評語是那個結果很醜，
+   要求「回到編輯畫面的格式，只是不能編輯」。
+   為什麼攤平會醜：那些框同時在做版面工作，不只是裝飾。內距一清，角色／姓名兩欄
+   就不再對齊；FAQ 的 textarea 塌成內容高度，項目之間的間隔變成沒有節奏的空洞。
+   所以現在幾何完全不動（內距、高度、外框粗細都保留），只把「可以打字」的訊號拿掉。
+   附帶好處：切換模式時版面完全不位移，因為沒有任何尺寸改變。 */
+[data-mode="view"] .input,
+[data-mode="view"] .textarea,
+[data-mode="view"] .tag-input,
+[data-mode="view"] .select {
+  /* 幾何不動：不覆蓋 background／box-shadow／padding，框就留在原地。
+     只表明這裡點下去不會變成輸入狀態。 */
+  cursor: default;
+}
+/* 唯讀的長文不該給拖曳把手 */
+[data-mode="view"] .textarea { resize: none; }
+/* select 沒有 readonly，JS 是用 disabled 擋（見 project-detail.html 的
+   applyReadonly），瀏覽器自己會處理外觀，這裡不再另外壓平。 */
+[data-mode="view"] .select { pointer-events: none; }
+/* 鎖住的欄位不該閃一個它無法履行的 focus ring，但仍可用鍵盤走到、供閱讀。 */
+[data-mode="view"] .input:focus,
+[data-mode="view"] .input:focus-visible,
+[data-mode="view"] .textarea:focus,
+[data-mode="view"] .textarea:focus-visible { outline: none; }
+/* 會改動內容的入口在檢視模式一律不出現：上傳圖磚的替換／裁切／刪除、
+   ＋新增類按鈕、開啟編輯彈窗的按鈕。純導覽或唯讀的按鈕不受影響。 */
+/* 白名單，不是黑名單：檢視模式下「所有按鈕」一律不出現，只放行明確標記為
+   唯讀用途的（排序表頭、data-view-safe）。
+   第一版是逐一列舉要藏的東西，結果漏掉卡司與 FAQ 的刪除鈕——面板裡還留著 18 顆
+   可以砍資料的按鈕。凡是「列舉要禁止的」都會漏，改成列舉「允許的」才收得乾淨。 */
+[data-mode="view"] button:not(.sort-th):not([data-view-safe]),
+[data-mode="view"] a[data-modal-open],
+[data-mode="view"] .upload-tile__actions,
+[data-mode="view"] .upload-tile:not(.is-filled),
+[data-mode="view"] .tag-input__entry { display: none; }
+/* 表單填寫用的提示語（「拖曳可換順序」「在這裡直接編輯」）在唯讀狀態是誤導 */
+[data-mode="view"] .field__hint { display: none; }
+/* 展示相簿的操作層另有一條 .pd-gallery .upload-tile.is-filled .upload-tile__actions
+   （見下方相簿區塊）優先權比上面那條高，會把封面圖的替換／裁切／刪除留在畫面上。
+   這裡補一條更明確的，確保檢視模式下真的沒有任何可改動的入口。 */
+[data-mode="view"] .pd-gallery .upload-tile.is-filled .upload-tile__actions { display: none; }
+
+/* 標題單獨留在 hero header，間距交給 .pd-hero__main 的 flex gap。 */
+.pd-hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-40);
+  line-height: var(--lh-tight);
+  letter-spacing: -1px;
+}
+.pd-hero__desc { margin: 0; color: var(--foreground-muted); max-width: 720px; }
+/* 創作者脈絡＝募資卡框內最下面的頁腳行（取代原 §7.3 口徑註記）；與募資數字間留一格。 */
+.pd-hero__owner {
+  margin: var(--sp-14) 0 0;
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+}
+@media (max-width: 900px) {
+  .pd-hero__title { font-size: var(--fs-32); }
+}
+@media (max-width: 820px) {
+  .pd-hero { grid-template-columns: 1fr; }
+  .pd-hero__cover { max-width: 260px; }
+}
+
+/* ---------- Project detail · Showcase 直式相簿（沿用 .upload-assets ＋ .upload-tile--3x4）----------
+   比照商品詳情的圖片格：直式縮圖，hover 顯示「編輯／刪除」動作列（沿用 .upload-tile__actions/__act）。
+   這裡不掛 data-upload（不要互動上傳增強），故在 .pd-gallery 作用域補：定位、顯示縮圖、中和 is-filled
+   綠框、以及 hover 顯示動作列。「編輯」開方形裁切彈窗 #pd-edit-crop（下方 .pd-crop-edit）。 */
+.pd-gallery .upload-tile { position: relative; overflow: hidden; }
+.pd-gallery .upload-tile__thumb { display: block; }
+.pd-gallery .upload-tile.is-filled { border-color: var(--border); color: inherit; }   /* 圖已滿版，不套「完成綠框」 */
+.pd-gallery .upload-tile.is-filled .upload-tile__actions { display: flex; }
+.pd-gallery .upload-tile.is-filled:hover .upload-tile__actions,
+.pd-gallery .upload-tile.is-filled:focus-within .upload-tile__actions { opacity: 1; }
+/* 封面藥丸：疊在第一格左上；品牌橘＝主資產標示 */
+.pd-crop__badge {
+  position: absolute; top: var(--sp-8); left: var(--sp-8); z-index: 5;
+  padding: var(--sp-2) var(--sp-8); border-radius: var(--radius-md);
+  background: var(--primary); color: var(--primary-foreground);
+  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-medium);
+}
+
+/* ---------- 方形裁切彈窗（#pd-edit-crop 內容）----------
+   左：直式舞台＋可移動＋可縮放的方形選框（框外壓暗）；右：方形即時預覽。JS 在 project-detail.html。 */
+.pd-crop-edit { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start; margin-top: var(--sp-16); }
+.pd-crop-edit__stage {
+  position: relative; width: 100%; max-width: 260px; margin-top: var(--sp-8);
+  border-radius: var(--radius-lg); overflow: hidden; background: var(--input-surface);
+  touch-action: none; user-select: none;
+}
+.pd-crop-edit__img { display: block; width: 100%; height: auto; -webkit-user-drag: none; }
+.pd-crop-edit__box {
+  position: absolute; left: 0; top: 0; box-sizing: border-box;
+  cursor: move; touch-action: none;
+  --pd-crop-line: color-mix(in srgb, var(--foreground) 28%, transparent);
+  border: 2px solid var(--foreground);
+  background-image:
+    linear-gradient(var(--pd-crop-line) 0 0), linear-gradient(var(--pd-crop-line) 0 0),
+    linear-gradient(var(--pd-crop-line) 0 0), linear-gradient(var(--pd-crop-line) 0 0);
+  background-size: 100% 1px, 100% 1px, 1px 100%, 1px 100%;
+  background-position: 0 33.33%, 0 66.66%, 33.33% 0, 66.66% 0;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--background) 55%, transparent);   /* 框外壓暗 */
+}
+.pd-crop-edit__handle {
+  position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px;
+  border-radius: var(--radius-pill); background: var(--foreground);
+  box-shadow: 0 0 0 2px var(--background); cursor: nwse-resize; touch-action: none;
+}
+.pd-crop-edit__preview {
+  width: 100%; max-width: 220px; aspect-ratio: 1 / 1; margin-top: var(--sp-8);
+  border-radius: var(--radius-lg); background: var(--input-surface) no-repeat center / cover;
+}
+@media (max-width: 640px) { .pd-crop-edit { grid-template-columns: 1fr; } }
+
+/* ---------- Project detail · 我的收益「共創計畫 · 深度明細」----------
+   2026-07-25：僅在收益類型篩選切到「OTT 版稅收益」時出現（版型參考共創前台，元件用本站 DS）。
+   外層是無卡片的區段（Q24 不做卡中卡）：區段抬頭＋收合鈕＋期間選單，內容才是兩張真卡。
+   展開鈕沿用站上慣例——aria-expanded=true 時箭頭轉 180°（同 accordion／field-more／header）。 */
+.pd-deep__head { display: flex; align-items: center; gap: var(--sp-8); }
+.pd-deep__head .card__title { margin-right: auto; }
+.pd-deep [aria-expanded] .ztor-icon { transition: transform .15s ease; }
+.pd-deep [aria-expanded="true"] .ztor-icon { transform: rotate(180deg); }
+/* 小計列右側：金額＋展開鈕同一組 */
+.pd-deep__amount-group { display: flex; align-items: center; gap: var(--sp-8); }
+/* 展開鈕佔的欄寬（.btn--icon.btn--sm 32px ＋ 與金額的 gap）——沒有展開鈕的列補等寬右內距，
+   讓「明細子列」與「淨收益」的金額和小計列金額共用同一條右基準線。 */
+.pd-deep { --pd-deep-toggle-col: calc(32px + var(--sp-8)); --data-list-child-indent: 44px; }
+.pd-deep .data-list__row--child,
+.pd-deep .data-list__row:last-child { padding-inline-end: var(--pd-deep-toggle-col); }
+
+/* ---------- Footer bar ---------- */
+.app-footer {
+  padding: var(--sp-18) var(--sp-28);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  display: flex; gap: var(--sp-14); flex-wrap: wrap;
+}
+
+/* ---------- Utility ---------- */
+.text-mono { font-family: var(--font-mono); }
+.text-sub  { color: var(--muted-foreground); }
+.text-muted { color: var(--foreground-muted); }
+.text-right { text-align: right; }
+.flex-row { display: flex; gap: var(--sp-8); align-items: center; }
+.gap-12 { gap: var(--sp-12); }
+.mt-8 { margin-top: var(--sp-8); } .mt-16 { margin-top: var(--sp-16); } .mt-24 { margin-top: var(--sp-24); }
+.mb-8 { margin-bottom: var(--sp-8); } .mb-16 { margin-bottom: var(--sp-16); } .mb-24 { margin-bottom: var(--sp-24); }
+.hidden { display: none !important; }
+
+/* ---------- Insight split (Dashboard F7 — two labelled insight groups in one card) ----------
+   Fan relations (Fans CRM) | Audience trends (Audience Intelligence). Centered hairline
+   divider with symmetric breathing room; collapses to a single stacked column < 900px. */
+.insight-split { display: grid; grid-template-columns: 1fr 1fr; }
+.insight-split__col { min-width: 0; padding: 0 26px; }
+.insight-split__col:first-child { padding-left: 0; }
+.insight-split__col:last-child  { padding-right: 0; border-left: 1px solid var(--border); }
+.insight-eyebrow {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-8);
+  margin-bottom: var(--sp-12);
+  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-regular);
+  letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted-foreground);
+}
+.insight-eyebrow__src { font-weight: var(--fw-regular); text-transform: none; letter-spacing: 0; white-space: nowrap; }
+
+/* ---------- Projects · F1 extras (spec 5.1.2) ----------
+   projects.html composes existing components (tabs = status filter · chip-group = type
+   filter · input = search · data-list = list view · badge = status). These three are
+   project-owned additions: a list/card view switch, a hover "incomplete" tooltip, and a
+   card-view grid + card. Project-owned per SPEC §5.5 (lives in shared.css until promoted). */
+
+/* List ↔ card view switch — segmented control in page-intro actions */
+/* ✝ tombstone · .view-switch / .view-switch__btn（2026-07-23 退場）
+   實心黑填的膠囊式檢視切換，唯一消費者是 projects 的清單／卡片切換。使用者反饋「很醜、
+   和 design system 不搭」——實心黑 active 是站上第三種「已選中」畫法，與 segmented 的白
+   浮起 pill 打架（見 STYLE-DECISIONS 已選狀態一題）。角色本來就是 segmented 定義的
+   「同一資料的視角切換」，故收斂：改用 ds-components/segmented.css 的 `.segmented__btn--icon`
+   純圖示變體，不再保留第二套。 */
+
+/* Incomplete-tasks tooltip — secondary hover hint per project (spec F1 未完成提示).
+   Hover / keyboard-focus only; touch can't trigger and that is acceptable (secondary info). */
+.tip { position: relative; display: inline-grid; place-items: center; color: var(--muted-foreground); cursor: help; }
+.tip .ztor-icon { width: 15px; height: 15px; }
+.tip:hover, .tip:focus-visible { color: var(--foreground); outline: none; }
+.tip__bubble {
+  position: absolute; bottom: calc(100% + 8px); right: 0;
+  z-index: 30; width: max-content; max-width: 240px;
+  padding: var(--sp-8) var(--sp-10); border-radius: var(--radius-sm);
+  background: var(--foreground); color: var(--background);
+  font-family: var(--font-body); font-size: var(--fs-12); line-height: var(--lh-comfy); text-align: left;
+  box-shadow: var(--shadow-float);
+  opacity: 0; pointer-events: none; transform: translateY(4px);
+  transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing);
+}
+.tip:hover .tip__bubble, .tip:focus-visible .tip__bubble { opacity: 1; transform: translateY(0); }
+
+/* Card view — responsive grid of project cards (alternative to the data-list view) */
+.project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-20); }
+.project-card {
+  display: flex; flex-direction: column;
+  background: var(--card); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card); overflow: hidden;
+  text-decoration: none; color: inherit;
+  transition: box-shadow var(--duration) var(--easing), transform var(--duration) var(--easing);
+}
+.project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+.project-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.project-card__cover {
+  position: relative; aspect-ratio: 16 / 9;
+  display: grid; place-items: center;
+  background: var(--muted); color: var(--muted-foreground);
+  border-bottom: 1px solid var(--border);
+}
+.project-card__cover .ztor-icon { width: 30px; height: 30px; }
+/* 真實海報：鋪滿 16:9 封面格並裁切（無素材的專案仍走上面的圖示佔位） */
+.project-card__cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.project-card__badge { position: absolute; top: 12px; right: 12px; }
+.project-card__body { display: flex; flex-direction: column; gap: var(--sp-6); padding: var(--sp-14) var(--sp-16) var(--sp-16); }
+.project-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-8); }
+.project-card__title { font-family: var(--font-display); font-size: var(--fs-15); font-weight: var(--fw-regular); line-height: var(--lh-snug); margin: 0; }
+.project-card__kind { font-size: var(--fs-12); color: var(--muted-foreground); }
+.project-card__desc { font-family: var(--font-body); font-size: var(--fs-13); color: var(--muted-foreground); margin: 0; }
+.project-card__meta { font-size: var(--fs-12); color: var(--foreground-muted); margin-top: var(--sp-2); }
+/* progress track (fund / pre-order while live or funded) */
+.project-bar { height: 6px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; margin-top: var(--sp-4); }
+.project-bar__fill { height: 100%; border-radius: var(--radius-pill); background: var(--primary); }
+.project-bar__fill--info { background: var(--status-info); }
+.project-bar__fill--success { background: var(--status-success); }
+/* data-list rows are clickable anchors on this page → strip link chrome, add hover */
+a.data-list__row { text-decoration: none; color: inherit; }
+a.data-list__row:hover { background: var(--accent); }
+a.data-list__row:hover .data-list__title { color: var(--foreground); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .page { padding: var(--sp-32) var(--sp-16) var(--sp-80); }
+  .hero--fullbleed { margin-left: -16px; margin-right: -16px; border-radius: 0; }
+  .hero__slide { grid-template-columns: 1fr; }
+  .hero__copy { padding: var(--sp-24) var(--sp-20); }
+  .hero__title { font-size: var(--fs-24); }
+  .insight-split { grid-template-columns: 1fr; }
+  .insight-split__col { padding: 0; }
+  .insight-split__col:last-child { border-left: 0; border-top: 1px solid var(--border); margin-top: var(--sp-18); padding-top: var(--sp-18); }
+}
+
+/* ============================================================
+   Scroll reveal — fade + slight rise as blocks enter the viewport.
+   Driven by reveal.js (IntersectionObserver). The hidden start-state
+   only applies once reveal.js adds `.reveal-on` to <html> and tags
+   blocks with `.reveal`, so no-JS / load-failure leaves content fully
+   visible. Honors prefers-reduced-motion (shown instantly, no motion).
+   ============================================================ */
+html.reveal-on .reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s var(--easing), transform 0.5s var(--easing);
+  will-change: opacity, transform;
+}
+html.reveal-on .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+/* Audience-slide layers and hero copy children: pre-hidden here, then driven
+   in by JS Web Animations API in hero.js (runHeroIntro). CSS animations and
+   transitions on <img> + heading <h2> were inconsistent in this engine —
+   stuck at "from" values; WAAPI works reliably. */
+.hero__slide--audience .hero__layer,
+.hero__slide--audience .hero__copy > * {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero__slide--audience .hero__layer,
+  .hero__slide--audience .hero__copy > * { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Hero copy — the container itself stays visible (not animated by reveal).
+   Children are driven by JS WAAPI in hero.js (see runHeroIntro). */
+html.reveal-on .hero__copy.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* KPI bento cards — rise + fade on .reveal, staggered. Animation (not the
+   shared transition) so all 4 cards animate on load even if they're below the
+   fold (IO may not fire .is-in on a short viewport otherwise). */
+@keyframes kpiRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+html.reveal-on .kpi.reveal {
+  animation: kpiRise 0.7s var(--easing) both;
+  transition: none;
+}
+html.reveal-on .kpi.reveal:nth-child(1) { animation-delay: 0.08s; }
+html.reveal-on .kpi.reveal:nth-child(2) { animation-delay: 0.22s; }
+html.reveal-on .kpi.reveal:nth-child(3) { animation-delay: 0.36s; }
+html.reveal-on .kpi.reveal:nth-child(4) { animation-delay: 0.50s; }
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on .kpi.reveal { animation: none; }
+}
+
+/* ============================================================
+   Dashboard data-state toggle (Cheat Codes · spec 5.1.1 §頁面狀態)
+   Swap the data view ↔ empty-state view via <html data-data-state>.
+   devtools.js sets the attribute (empty | has-data) globally.
+   ============================================================ */
+.dash-empty-only { display: none; }
+html[data-data-state="empty"] .dash-empty-only { display: block; }
+html[data-data-state="empty"] .dash-data-only { display: none; }
+
+/* .input invalid state (＊ inline validation) — promoted 2026-06-16 from
+   create-event / register-ip page <style>; .input itself lives here in shared.css. */
+.input[aria-invalid="true"] {
+  box-shadow: 0 0 0 1px var(--destructive), 0 0 0 4px color-mix(in srgb, var(--destructive) 14%, transparent);
+}
+
+/* Neutral data-state toggle (Cheat Codes Empty) — page-agnostic siblings of
+   the dashboard's .dash-empty-only/.dash-data-only, for module list pages.
+   Show .when-empty only when account has no data; hide .when-data then. */
+.when-empty { display: none; }
+html[data-data-state="empty"] .when-empty { display: block; }
+html[data-data-state="empty"] .when-data { display: none; }
+
+/* ============================================================
+   Deep-link flash（2026-07-27）— Dashboard CTA 深連結落地時，
+   把「要處理的那一列／那一塊」閃亮標出，使用者不用再找。
+   一套動畫全站共用（my-ip 租約列、settings 稅務列…）；焦點圈
+   用全站 focus ring 同色（--ring），2.4s 後自然退場。
+   Reduced motion：不動畫，改留一圈靜態 ring（仍有指示、不閃）。
+   ============================================================ */
+@keyframes deepLinkFlash {
+  0%, 55% {
+    box-shadow: inset 0 0 0 2px var(--ring);
+    background-color: color-mix(in srgb, var(--primary) 9%, transparent);
+  }
+  100% { box-shadow: inset 0 0 0 2px transparent; background-color: transparent; }
+}
+.deep-link-flash {
+  animation: deepLinkFlash 2.4s var(--easing) 0.15s 1 both;
+  border-radius: var(--radius-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .deep-link-flash { animation: none; box-shadow: inset 0 0 0 2px var(--ring); }
+}
+
+/* Insight-split · risk toast（2026-07-28 L 裁示）：F7 卡底、跨兩欄的 actionable
+   提醒條——原本欄中段的 info-banner 升級成整條可點的 CTA（data-go 深連結，
+   落地 fans-crm 直接開 composer 預選 At risk）。手機單欄時自動跟著 1fr。 */
+.insight-split .insight-split__toast {
+  grid-column: 1 / -1;
+  margin-top: var(--sp-16);
+}
+
+/* ============================================================
+   標題＝全大寫（2026-07-28 使用者裁示，取代 Alumni Sans 那一版）
+
+   前一版用「換一個字面」（Alumni Sans）來區分標題與內文。退回單一字面之後，
+   那個區分改由大小寫與字距承擔——參照使用者給的 .kpi__label 配方：
+       text-transform: uppercase; letter-spacing: .4px;
+   小寫轉大寫會讓字距變擠（大寫字母本來就比小寫寬、又少了 x-height 的呼吸），
+   所以正字距不是裝飾而是必需。這也是為什麼標題原本為 Alumni 大字做的「負字距
+   光學收緊」在這裡全部被蓋掉——那是為小寫大字調的，大寫要的是反方向。
+
+   放在 shared.css 最後、且是這一份的最後一段：它必須贏過各元件檔裡同權重的
+   letter-spacing 宣告，而 shared.css 是每一頁 <head> 的最後一支樣式表。
+
+   ── 哪些算「標題」──────────────────────────────────────────
+   只有「介面自己的字」進來：頁面標題、卡片／區段／面板／彈窗／精靈的標題。
+   刻意排除三類，全大寫會傷到它們：
+     · 使用者內容：專案名、IP 名、商店名、粉絲名、方案名、銀行名
+       （「Mong Kok Sniper」變「MONG KOK SNIPER」＝竄改別人取的名字）
+     · 數值與價格：.funding-panel__pct／.rent-block__price／amount-field
+       （數字沒有大小寫，只會平白多出字距）
+     · 字母標記與 logo：.empty-stub__mark／各種 __avatar／__cover／wordmark
+       （它們本來就已經是設計好的單字造型）
+     · 通知訊息 .alert__title：那是一整句話，不是標題
+   ============================================================ */
+:root { --title-caps-tracking: 0.4px; }
+/* 中文沒有大小寫，uppercase 不生效；字距則沿用本檔上方「CJK 字距歸零」的原則——
+   方塊字本來就貼著走，多加 0.4px 會鬆掉。 */
+:lang(zh-Hant) { --title-caps-tracking: 0; }
+
+.page-intro__title,
+.hero__title,
+.section-head__title,
+.card__title,
+.ztor-card__title,
+.chart-card__title,
+.form-section__title,
+.settings-section__title,
+.ztor-accordion__trigger,
+.drawer__title,
+.payout-dialog__title,
+.embed-modal__title,
+.leave-dialog__title,
+.msg-schedule__title,
+.preview-col__title,
+.preview-panel__title,
+.readiness__title,
+.empty-card__title,
+.empty-stub__title,
+.explain__title,
+.selection-card__title,
+.fan-store__section-title,
+.wizard__top-title,
+.wizard__step-title,
+.fd-ov__title,
+.scanner-top__title,
+.scanner-pw__title,
+.ss-status__title {
+  text-transform: uppercase;
+  letter-spacing: var(--title-caps-tracking);
+}
+
+/* ============================================================
+   Heading weight normalisation（2026-07-28 · L 裁示「全站字重上限 400」）
+   ------------------------------------------------------------
+   瀏覽器 UA 樣式把 h1–h6 一律畫成 bold(700)。站上元件多半自己宣告字重，
+   但只要有一個標題忘了寫（例：.payout-dialog__title 只設了 family/size/
+   line-height），它就會靜靜掉回 UA 的 700 ——審計時實測到 5 個這種洩漏點。
+   在這裡把標題基準拉回 400，元件要更重再自行覆寫（specificity 高於元素選擇器）。
+   注意：**不動 <strong>/<b>**——那兩個的粗體是語意，不是裝飾。
+   ============================================================ */
+h1, h2, h3, h4, h5, h6 { font-weight: var(--fw-regular); }
+
+/* ============================================================
+   內嵌模式 · html[data-embed]（2026-07-28 使用者裁示）
+
+   詳情頁被 detail-sheet 覆蓋層放進 iframe 時，用 ?embed=1 載入。
+   使用者的要求是「不要發明新的詳情頁設計，就用同一頁」——所以這裡不改版面、
+   不隱藏內容，只收掉在覆蓋層裡會重複或礙事的三樣東西：
+
+     · 全域導覽：覆蓋層是從某一頁「疊上來」的，底下那頁的側欄還在。
+       再畫一份導覽等於同一個畫面有兩套導航，而且點了會把使用者帶離覆蓋層。
+     · 外殼留白與圓角：那是 app shell 的形狀，覆蓋層自己已經是一張卡。
+     · 吸底動作列：覆蓋層有自己的關閉鈕在頂部；再貼一條吸底列會蓋住內容。
+
+   捲動改回 <body>：桌機版 .app 是 height:100vh + overflow:hidden、只有 .main
+   內捲。在 iframe 裡那個 100vh 是 iframe 自己的高度，兩層捲動容器會疊在一起
+   （外框一條、.main 一條）。改成單層捲動，覆蓋層裡就只有一條捲軸。
+   ============================================================ */
+html[data-embed] .app-topbar,
+html[data-embed] .app-sidebar,
+html[data-embed] .app-footer,
+html[data-embed] .sticky-actions { display: none !important; }
+
+html[data-embed],
+html[data-embed] body { height: auto; }
+html[data-embed] .app { height: auto; min-height: 0; overflow: visible; display: block; }
+html[data-embed] .main {
+  margin: 0;
+  border-radius: 0;
+  overflow: visible;
+  min-height: 0;
+  background: var(--surface-page);
+}
+/* 頁面欄的上緣留白在覆蓋層裡不需要——標題列已經在正上方 24px 處。 */
+html[data-embed] .page { padding-top: var(--sp-8); }
+
+/* ============================================================
+   內文字重 200（2026-07-28 使用者裁示：「body 要 200，最多 300」）
+
+   只動「內文」這一群，不動標題與控件——使用者說標題現在是對的，而
+   --fw-regular 同時餵標題（.card__title）、按鈕、表頭，一起調下去會把它們也拉細。
+   所以新增 --fw-body（見 _tokens.css），在這裡指名套到真正的內文角色。
+
+   ⚠ 宣告 200，畫面上不會三支字面都是 200——各自被字檔的軸下限夾住：
+       昭源黑體（中文內文）→ 250（軸下限，已是最細）
+       Satoshi（拉丁內文） → 300（最細的靜態檔）
+       Noto Sans TC（後備）→ 200（軸到 100，唯一真的做得到的）
+   放在 shared.css 最後，才贏得過各元件檔裡同權重的 font-weight 宣告。 */
+body,
+.page-intro__sub,
+.text-sub,
+.data-list__title,
+.data-list__meta,
+.ztor-table td,
+.field__hint,
+.info-banner span,
+.empty-card__text,
+.alert__body,
+.perf-rank__name,
+.perf-rank__val,
+.perf-hero__cap,
+.fin-tip,
+.zselect__option,
+.tabs__item,
+.filter-tabs__item,
+.segmented__btn,
+.data-list__amount {
+  font-weight: var(--fw-body);
+}
+
+/* ============================================================
+   問候語 · 儀表板頁首右側（2026-07-28 使用者裁示）
+
+   放在 .page-intro 的右欄——那塊空間本來是空的，而頁首是唯一「這一頁屬於誰」
+   說得通的位置。名字跟著 persona 走（周湯豪／預設帳號），因為整個 demo 的
+   資料集都會換人，只有問候語寫死名字會立刻穿幫。
+
+   刻意做得比標題弱：它是招呼，不是這一頁的主角。字級與副標同階、顏色再降一階，
+   靠右對齊讓它和左邊的標題形成一組對位，而不是第二個標題。 */
+.greeting {
+  text-align: right;
+  line-height: 1.5;
+}
+.greeting__hi {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  font-weight: var(--fw-body);
+  color: var(--foreground);
+}
+.greeting__name {
+  /* 名字是這一行唯一要被認出來的東西，用重量而不是顏色——
+     染色會讓它變成一個看起來可以點的東西。 */
+  font-weight: var(--fw-medium);
+}
+.greeting__meta {
+  display: block;
+  margin-top: var(--sp-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 900px) {
+  /* 窄螢幕時 .page-intro 會換行，問候語跟著標題靠左，右對齊在那裡讀起來像沒對齊 */
+  .greeting { text-align: left; }
+}

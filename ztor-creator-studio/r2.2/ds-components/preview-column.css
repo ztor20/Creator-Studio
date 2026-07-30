@@ -1,0 +1,55 @@
+/* ============================================================
+   preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
+   ------------------------------------------------------------
+   建立流程（create-product / create-auction…）的「表單｜預覽」兩欄版面：
+   左欄表單、右欄一條 sticky 預覽欄（標題＋描述＋預覽內容）。
+   取代舊的滑出式 preview-panel；欄內的卡用 preview-card 元件。
+   anatomy
+     .preview-split            (套在 wizard__body：表單｜預覽 兩欄 grid)
+       .preview-split__form    (左：表單欄)
+       .preview-col            (右：sticky 預覽欄)
+         .preview-col__head    (標題＋描述，緊排)
+           .preview-col__title (= 區段標題 title role / 18px)
+           .preview-col__sub   (灰色描述 / fs-14)
+         <preview-card …>
+   sticky top 預設 96px（wizard header 80＋body 上內距 16）；
+   頁面可用 --preview-col-top 覆寫。窄螢幕（≤1040px）改堆疊、取消 sticky。
+   ============================================================ */
+
+.preview-split { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--sp-40); align-items: start; }
+.preview-split__form { min-width: 0; }
+
+.preview-col {
+  position: sticky;
+  top: var(--preview-col-top, 96px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  align-self: start;
+}
+.preview-col__head { display: block; }
+.preview-col__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--type-title-24-weight);
+  letter-spacing: var(--type-title-24-tracking);
+  line-height: var(--lh-normal);
+  margin: 0;
+}
+.preview-col__sub { font-size: var(--fs-14); color: var(--foreground-muted); margin: var(--sp-4) 0 0; }
+
+/* ── 預覽欄裡的盒子＝浮起卡，不用邊框（2026-07-21 使用者裁示）────────────────
+   建立流程是左右兩欄並排：左欄的 .form-section--outlined 早在 Q14／Q18 就改成
+   「填色＋E2 陰影＋頂緣高光、無邊框」，右欄的預覽卡與上架設定卡卻還是 Q3 的
+   「填色＋1px 邊框」——同一個畫面兩種卡邊界。這裡把右欄對齊左欄。
+   scope 限 .preview-col 內：全站其他 .card 仍照 Q3 用 1px 邊框（未推翻 Q3）。 */
+.preview-col .card,
+.preview-col .preview-card {
+  border: 0;
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+
+@media (max-width: 1040px) {
+  .preview-split { grid-template-columns: 1fr; gap: var(--sp-28); }
+  .preview-col { position: static; }
+}

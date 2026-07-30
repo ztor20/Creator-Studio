@@ -1,0 +1,361 @@
+# r2.1 風格裁決紀錄
+
+同一視覺角色站上只能有一個答案。本檔記錄呈現層的風格裁決：已裁決條目是法律，動 UI 前先查；發現站上同一件事有兩種做法時，記入待裁決（附證據檔:行號），暫依最新確認的做法並標註題號，不得默默新增第三種。裁決權在使用者；裁決後要開執行工單全庫同步，並在 UI-CHANGES.md 記錄。
+
+---
+
+## 已裁決
+
+| 編號 | 角色/題目 | 裁決 | 日期 | 理由 | 執行狀態 |
+|---|---|---|---|---|---|
+| Q1 | 膠囊型元件圓角形狀 | **B**：可篩選/可點＝全圓（chip、filter-tabs），純顯示徽章＝小圓角矩形（badge、field-pill、metric-pill）。形狀＝「可否互動」的線索，須寫進 design-system.md | 2026-07-13 | 形狀當 affordance 比全統一更有資訊量 | ✅ 已執行 2026-07-13 |
+| Q2 | 控制項圓角級距（6 vs 7px） | **統一 6px**：`--radius`/`--radius-md` 合併成 6px；`.btn--icon-circle` 裸值 9999 改 `--radius-pill`。全圓 pill(9999)、shell(28) 不動 | 2026-07-13 | 1px 是假精度 | ✅ 已執行 2026-07-13 |
+| Q3 | 卡片邊界：陰影 vs 邊框 | **C（規則版）**：預設卡片用 1px 純邊框（平、乾淨）；只有要強調可點/浮起的主卡才升級純陰影〔**`.card`／`.kpi` 這兩支已被 Q32（2026-07-26）取代，改陰影浮起；`.ztor-card`（docs-only）與其餘控制項/清單類 1px 邊框角色不受影響，仍照本條**〕 | 2026-07-13 | 邊框優先＝editorial，陰影收窄成「強調」訊號 | ✅ 已執行 2026-07-13（部分被 Q32 取代）|
+| Q4 | 控制項邊界：真 border vs 陰影模擬 | **A**：input／textarea／select／switch／metric-pill 全改 `border:1px solid var(--border)`，跟 2026-06-12 按鈕決定一致〔**Q33（2026-07-26）加條件**：僅疊在卡片／section 內的控件仍照本條；不在卡片內、直接坐頁面或工具列上的控件改無邊框（首例 `.select--bare`）〕 | 2026-07-13 | 白底上真 border 較清楚；與 Q3 一致 | ✅ 已執行 2026-07-13（部分情境已被 Q33 加註條件）|
+| Q5 | hover 浮起規則 | **A**：可點卡片 hover 浮起（借 `--shadow-float`），清單列 hover 只換底色。先在 design-system.md 定義「什麼算卡片、什麼算列」〔**scoped 例外**：`.product-list--ip`（2026-07-20）與 `.product-list--eshop`（含共用其 class 的 `--bundles`／`--auctions` 兩分頁，2026-07-21 使用者再次指定擴大）的 `.product-list__row:hover` 改浮起（`--card` 底＋`--radius-md`＋`--shadow-float`，比照 `.is-dragging` 拖曳抬起態），使用者兩次都明確指定「hover 要跟 drag 的 style 一樣」——僅這幾個變體，`--orders`／`--pickup` 清單列仍維持 A 原規則（只換底色）〕〔**2026-07-26 由 Q34 取代**：清單列 hover 全站統一成浮起版，本條「清單列只換底色」不再是 base 規則，「什麼算卡片、什麼算列」的區分問題本身也隨之解消（列現在也浮起）〕 | 2026-07-13（07-20 加 `--ip` 例外，07-21 擴大到 `--eshop`）| 卡片＝浮起、列＝換底的標準區分 | ✅ 已執行 2026-07-13（`--ip` 例外 07-20、`--eshop` 擴大 07-21 皆使用者裁示；base 規則已被 Q34 取代）|
+| Q6 | 表單欄位垂直節奏 | **以 .field 為準**（欄位間距 16px、form-section 不再局部覆寫）。折衷選項：長建立流程「欄位↔欄位」改用刻度值 24 保留呼吸感——此折衷待使用者最終確認 | 2026-07-13 | 統一節奏；26 裸值退場 | ✅ 已執行 2026-07-13（統一 16px；「長流程 24」折衷未採用，日後需要可加 `.form-section .field{margin-bottom:var(--sp-24)}`）|
+| Q7 | 卡片內距級距 | **B**：保留各自內距（KPI 緊/空狀態留白），整理成一張對照表寫進 design-system.md；未來要正式分 sm/md/lg 再升 A | 2026-07-13 | 不同功能密度不該壓成單一值 | ✅ 已執行 2026-07-13 |
+| Q8 | 品牌橘使用範圍 | ~~**B**（2026-07-13）：橘只給主操作/主分類，導覽/篩選已選一律中性灰~~ → **2026-07-27 使用者裁決反轉為 A：「已選中」狀態全站一律用品牌橘。** 一套配方三種形態，橘永遠在場、只是強度隨控件份量調整：**tint**＝安靜的持續選取（`.app-sidebar__link`／`.app-sidebar__sub-link`／`.settings-nav__item`／`.filter-tabs__item`／`.chip`）→ 吃新增的 `--selected-surface`／`--selected-surface-hover`／`--selected-ink`；**underline**＝主要檢視切換（`.tabs`）→ 維持橘底線不變；**solid**＝離散且已提交的選擇（`.pager` 目前頁／主 CTA）→ 維持實色橘不變。`.segmented__btn--active`／`.segmented__item--active` 只換字色、保留白色浮起 pill（浮起是該元件的結構語彙，染底會把「被抬起」讀成「被塗色」）。**橘一定在場、但不一定在文字上**：`.radio-card` 的橘落在右上標記點與 icon，標題維持 `--foreground`（卡片有標題＋副標，整段染橘等於在讀橘色內文）——`.radio-cards .segmented__btn` 的 `color` 覆寫是刻意保留、已加註解。`.filter-tabs--source` 不受本條管轄（每項取自己資料序列的顏色，色彩＝該筆資料本身，非選取記號）。**a11y 硬需求**：`--selected-ink` 必須亮暗分色——`#ffa33f` 對近白底只有 1.92:1，亮色版壓深成 `#8F4E00`（同色相 32°；對 `--sidebar` 6.23:1、對 14% 橘 tint 5.70:1，皆過 WCAG AA）；深色版維持 `#ffa33f`（8.49:1／6.44:1）。**連帶刪除的重複規則**：`.filter-tabs--brand` 的四條顏色覆寫（橘變基底後全數重複，只留「計數不加泡泡」）、`tag-input.css` 的 `.chip--active` 橘色覆寫（Q19 的意圖由基底承接，並順帶修掉它原本 `color: var(--primary)` 在亮色模式 1.92:1 的對比 bug） **2026-07-27 同日擴充**：使用者圈選儀表板「總收入」KPI 卡裁示「這是本頁最重要的數據，用橘色 accent」，並在確認時指明是**卡片底色、不是字**。因此 `.kpi--hero` ＝ 整張卡實色 `--primary`。與「已選中」的分辨改靠**填底濃度＋尺度**而非色相：**實色＝主角**（主 CTA／`.pager` 目前頁／`.kpi--hero` 整張卡）、**tint 半透明＝已選中**（且只長在 pill／nav item 這種小控件上）——不會有人把一整張實色橘的卡讀成「這張卡被我點選了」。兩條墨水規則同時成立：橘**當字**（底非橘）走 `--brand-ink`（light `#8F4E00`／dark `#ffa33f`，`--selected-ink` 為其語意別名），**不得** `var(--primary)`（白底 1.92:1）；字**鋪在實色橘上**走新增的 `--on-primary`（`#171717` 亮暗同值，9.02:1），**不得** `--primary-foreground`（亮色白字，對橘僅 1.99:1）。`.kpi--hero` 內 `.kpi__delta` **保留原本的半透明染色膠囊**（使用者裁示：綠色半透明設計要留、只是不要黑底），改動只在**墨色**。根因：tint 原本混的是 `--card`，把深卡色烤進膠囊底色裡，所以在橘卡上變黑斑——改成混 `transparent` 後膠囊會跟著它實際坐的面走，黑斑消失（對深卡是數學上的 no-op，實測仍 7.06:1）。但 12% 淡染疊在飽和橘上色相幾乎不位移（合成 `#e9aa47` vs 卡的 `#ffa33f`），綠撐不起來、白底亮綠字也只剩 1.17:1。最終版（使用者提案）＝**深綠半透明底＋白字**：形狀語彙完全不動（同樣 pill／內距／仍是半透明染色），只改染多深與字色，讓「綠」由**底本身**承載而不是靠墨色暗示。保留 90% 而非 100%，橘透 10% 上來把綠暖化，像長在卡上而不是貼上去——這也是它與被否決的「純黑底」的本質差異：那是中性黑（讀作黑斑），這是**有色相的深綠**（一眼還是綠的）。實作把 fill 與 ink 成對抽成 token（`--status-success-fill`／`-ink`／`--destructive-fill`／`-ink`＋深階 `--status-success-deep`／`--destructive-deep`），由 `.kpi--hero` 在卡片這層整組重新定義、靠繼承生效；**墨色跟著「坐在什麼面上」走、不跟著主題走**（實色橘卡在深色主題下依然是亮底，主題型 token 解不了）。同日試過並退場：純黑底／白色薄膜／完全不要底／深綠字配淡染底。連帶修掉兩個既有缺陷：亮色主題下 delta 綠字只有 **2.05:1**（全站，非本次新增）、深色主題下 `--neg` 紅字只有 **3.19:1**（紅墨當初漏接 2026-07-21 為此新增的 `--status-error`）。八種組合（hero／一般 × 正／負 × 亮／暗）實測全數 ≥4.5:1 | 2026-07-13 → **2026-07-27 反轉＋擴充** | 使用者截圖圈出側欄已選項，裁示「highlighted features must use our accent color across all pages or tabs」。原 B 的顧慮（橘與 CTA 搶視覺）由「導覽/篩選只用 tint、實色橘保留給 CTA 與 solid 形態」化解，One Spotlight Rule 仍成立 | ✅ 已執行 2026-07-27（`_tokens.css` 新增 3 token×2 主題；`shared.css`／`settings.css`／`filter-tabs.css`／`chip.css`／`segmented.css`／`chart.css`／`header.css` 元件層一次生效；`tag-input.css`／`filter-tabs.css` 重複規則移除；36 頁掃描零回歸）|
+| Q9 | hover 底色灰階 | **--accent（#F3F3F3）**：互動 hover 統一用 accent；`--muted` 留給斑馬紋/次級襯底；散落的 `color-mix(...)` 即席灰收斂成 accent；**`--secondary` 退役**〔**`.product-list__row:hover` 的 `--accent` 換底已被 Q34（2026-07-26）取代成浮起版，本條對其餘互動 hover（按鈕、選單項、清單列以外的元件）仍有效**〕 | 2026-07-13 | hover 要被看見，muted 太淡 | ✅ 已執行 2026-07-13（清單列 hover 部分已被 Q34 取代）|
+| Q10 | 關閉鍵 icon 尺寸 | **16px**：拿掉 alert(20)／dialog(18) 覆寫，全部關閉鍵回到基礎 16 | 2026-07-13 | 對齊基礎 `.ztor-icon` 尺度 | ✅ 已執行 2026-07-13 |
+| Q11 | 「已付款 Paid」顏色 | **A**：全站綠色 success（`orders.pay.paid`、`od.badge.paid` 改 `badge--success`）。備註：若之後覺訂單列視覺過重可退 B | 2026-07-13 | 一語意一色、綠色 Paid 直覺 | ✅ 已執行 2026-07-13 |
+| Q12 | 欄位標籤：大寫 vs 一般 | **A**：`tier-settings.html` 的 `.gate-field__label`（大寫孤例）退役，改用 `.settings-row__label`（一般大小寫） | 2026-07-13 | 大寫孤例是站上小標系統的重複發明 | ✅ 已執行 2026-07-13 |
+| Q13 | 建立流程選擇卡邊界／`form-section--outlined` 外框 | **邊框化**：`.selection-card--icon`（型別卡，卡距 8）與 `.radio-cards`（不限量/限量等二選一卡，卡距 12）由陰影改 1px 純邊框 `--border`、扁平無陰影（更貼 Q3 扁平預設，base `.selection-card` 其他用途維持陰影）。radio 標記精修（Figma node 781-4386）：已選卡無橘外框（只留灰邊框）、標記為置中小橘實心點無外圈、未選無可見標記。`.form-section--outlined` 外框全站改圓角 `--radius-xl`(16)／內距 `--sp-16`（原 6／32）〔**邊框部分已被 Q14 取代**〕〔**icon 磚尺寸已被 Q18 縮小**〕〔**已選型別卡已被 Q19 加淡橘底（outline 仍在、仍無勾）**〕 | 2026-07-16 | 使用者指定對齊 Figma node 781-4166 | ✅ 已執行 2026-07-16 |
+| Q14 | `form-section--outlined` 是否保留 1px 外框 | **去外框、保留填色卡**：`.form-section--outlined` 移除 `border`（原 1px `--border`），保留背景填色（亮 `--card`／暗 `--muted`）、圓角 `--radius-xl`(16)、內距 `--sp-16`；靠填色對比區分區塊，不再有邊界線。**取代 Q13 對本元件的「邊框化」部分**（Q13 的 selection-card／radio-cards 邊框不受影響）。實作用 `.form-section.form-section--outlined`（權重 0,2,0）蓋掉 `.form-section + .form-section` 分隔線，確保四邊無殘留〔**暗色填色已被 Q15 midnight 改為 `--card`**〕〔**Q18 再加 E2 陰影＋頂緣高光＝浮起卡，仍無邊框**〕 | 2026-07-16 | 使用者裁示：outlined 卡的硬邊界太重，改用填色卡即可分區 | ✅ 已執行 2026-07-16（全站 11 頁 88 處經元件層一次生效）|
+| Q15 | 黑夜版 midnight 深色層次＋KPI delta chip | **整體壓暗、維持 r2.1 內凹層次語意（v2 定案）**（Mobbin Whop/Posh/Substack 參照）：暗色 token 改——**content(surface-page/background) `#0C0D0D`＝最深** → 嵌套襯底 `--muted #161718` → **外殼(surface-shell/sidebar) `#1C1D1E`＝明顯亮於 content、包住圓角內凹的 content** → 卡/popover `#212223` → hover `--accent #2A2B2C`；border/input `#2C2D2E`、border-soft `#202122`、sidebar-accent `#262728`、sidebar-active `#303132`。**層次方向＝維持 r2.1 原制**（content 最深、外殼較淺、拉開對比）——v1 一度反轉成殼最深/content 較亮且兩者相近，經使用者回饋改回（v2）。配套：`form-section--outlined` 暗色填色 `--muted`→`--card`（浮在最深 content 上，修訂 Q14 暗色部分）。**KPI delta 升級染色膠囊 chip**（success/destructive 12% tint over `--card`、radius-pill、semibold）——膠囊形狀屬「趨勢指示（data-trend）」新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的狀態徽章角色區隔，不構成 Q1 例外。亮色 token 全部不動 | 2026-07-17 | 使用者裁示（以總覽為起點、截圖核可；v2 依「content 要最深、外殼別太相近」回饋修正；docs/黑夜版風格探索-midnight.html） | ✅ 已執行 2026-07-17 v2（token＋kpi＋form-section 元件層一次生效；**未跑 bump_ver**，等其他 session 收工統一補） |
+| Q20 | 清單列縮圖／圖示晶片：填色無邊框 vs 描邊框 | **全站統一單一標準**：`.product-list__thumb`（orders／pickup）、`.project-list__icon`（projects）、`.data-list__icon`（15 頁儀表板資訊列，含「我的 IP」）三者一律 52×52／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`，對齊 `.product-list__image--placeholder`（e-shop／events）的**真實呈現值**。**沿革**：首版（07-18）誤把對齊對象抓成 `.product-list__image` 的「基礎規則」`--card`／`--border`／52px——但該 class 全站 28 處使用皆搭配 `--placeholder` 變體、基礎規則從未單獨呈現過，畫面上實際是 `--placeholder` 覆蓋後的 `--muted`／`--border-soft`，且首版沒同步改尺寸（仍 44px）。07-20 二次修正把 `.product-list__thumb`／`.project-list__icon` 改對到真實值，並用 Playwright 量測 computed style 逐項核對三頁一致；但 `.data-list__icon` 當時保留成獨立家族（`--card`／`--border`／40×40，理由是與 `.alert--card .alert__icon` 同尺寸家族）。使用者接著指出「我的 IP」仍跟電子商店不同，明確要求一併統一——三度修正取消家族區分，`.data-list__icon` 併入同一組數值（40→52px），15 個消費頁（含密集列表如收入管理）已檢查版面自適應撐開、無破版。反白變體 `.product-list__thumb--cover` 邊框設成與自身填色同色，不露中性描邊。〔**2026-07-23 訂單清單移除縮圖欄**：訂單清單 `orders.html` 一度改用真實商品照 `.product-list__image`，同日使用者再裁示「訂單管理列表不需要商品圖片」，整欄移除——訂單列現在**沒有任何縮圖**（不屬 thumb 也不屬 image 家族）。本條的 icon chip 標準仍規範 `--pickup`／projects／data-list；訂單清單不再是本條的 consumer〕 | 2026-07-18（07-20 兩次追加修正，統一為單一標準；07-23 訂單清單先改真實照、同日再裁示移除整個縮圖欄）| 使用者裁示（三輪截圖指定，最終要求全站單一標準，不分家族）；亦符合 Q3「邊框優先」的既有方向 | ✅ 已執行（元件層一次生效，逐輪 Playwright 量測驗證）|
+| Q18 | midnight 精修搬入 r2.1（form-section 浮起／型別磚縮小／上傳圖示晶片） | **套用（僅建立流程，不動全站 `.card`）**：(1) `form-section--outlined` 由純填色卡加「E2 resting 陰影 `--shadow-card` ＋頂緣高光 `--shadow-edge-top`（新增 Foundation token，亮色白底近乎不可見、深底顯上緣光）」＝浮起卡（**修訂 Q14**：仍無 1px 邊框，改由填色＋陰影＋上緣光共同分區）；(2) `.selection-card--icon` 型別磚縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊，**修訂 Q13 尺寸部分**）；(3) `.upload-tile--hero` 圖示加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`）。全站一般 `.card`（Q3 純邊框）與 `.selection-card--icon` 的邊框/橘 outline 標記（Q13）均不動 | 2026-07-17 | 使用者裁示：把 docs/黑夜版風格探索-midnight.html 的區塊浮起感與元件微調搬進正式站，限建立流程、不覆蓋 Q3 全站卡片 | ✅ 已執行 2026-07-17（元件層一次生效；**未跑 bump_ver**，等其他 session 收工統一補）|
+| Q19 | midnight 精修搬入 r2.1 batch 2（input 填色／標籤橘框／radio 小點） | **套用**：(1) `.input/.textarea/.select` 底色改用新 token `--input-surface`（亮＝`--card` 白卡靠 border 分界；暗＝`#262729` 比卡 `#212223` 亮一階＝filled 欄位浮出卡面）——全站表單欄位皆生效（暗色最明顯）；(2) tag-input 已選標籤 chip（`.tag-input .chip--active`＝field 內＋建議列已加入的 chip；2026-07-18 由原本只 `.tag-input__field` 放寬到整個 tag-input，讓建議列已加入的白色反白標籤也變橘）改品牌橘外框＋橘字＋淡橘底，不動全站 `.chip--active`（Q8 濾鏡 chip 維持反白黑底＝Q8 scoped 例外）；(3) radio-list 指示器精修——未選 16→13px 細環(1.25px)、已選粗環消失只留 8px 實心橘點（原已選仍留橘環，屬 Q17 元件的狀態精修）；(4) 已選型別卡（`.selection-card--icon.selection-card--active`）除橘 outline 再加淡橘底 `color-mix(--primary 5%, --input-surface)`（2026-07-18，對齊 midnight；icon 維持中性、無勾，修訂 Q13 的已選呈現）；(5) 型別選項卡 `.selection-card--icon` 與上傳投放區 `.upload-tile` 底色改用 `--input-surface`（暗色比 section 卡亮一階＝填色互動面、亮色白卡，2026-07-18，對齊 midnight「選項/投放區比 section 亮一階」；`--input-surface` 用途由「只 input」擴為「input＋型別卡＋上傳」）；另修一個既有 bug：`.select-wrap__icon` 的 `right` 原繞 `--select-icon-inset`（定義在兄弟 `.select` 上、CSS 變數不從兄弟繼承→箭頭跑到框外），改直接用 `--sp-12`（Bug 修，不另記 UI-CHANGES）| 2026-07-17（07-18 追加 tag scope 放寬＋型別卡淡橘底＋填色互動面＋select 箭頭修）| 使用者裁示：對照 midnight 探索頁逐項（截圖指定）——input 要浮出卡面、標籤已選要橘、radio 點要精巧、型別卡已選要橘底 | ✅ 已執行（元件層一次生效；bump 見 UI-CHANGES）|
+| Q16 | 卡片/面板級圓角放大 | **卡片級 6→16px（`--radius-xl`）**：card／kpi／preview-card／selection-card／radio-card／readiness／notification-matrix／insight-row／table 容器／picker／album-tracks／upload-tile／alert banner·bar／info-banner／store-settings 卡／scanner／vip-card／彈窗 dialog（payout/embed/leave）＋其內容卡，共約 40 處統一到現有 `--radius-xl`（16px），與 form-section 一致。**維持 6px**：控制項（button/input/badge/segmented/field-pill）、下拉選單浮層（dropdown/header/owner-lookup 用 `--radius-lg` 8px）、tooltip、清單列、icon 底框、縮圖——放大會違反 Q1「形狀＝角色」或造成一堆圓角。不違反 Q2（Q2 裁的是 6 vs 7px 假精度，非禁止大圓角；shell 28/pill 9999 本就不動） | 2026-07-17 | 使用者裁示（midnight 深色大卡配大圓角更柔和、且統一站上原本 form-section 16 vs 一般卡 6 的不一致） | ✅ 已執行 2026-07-17（元件層逐支改、控制項未動；**未跑 bump_ver**，等其他 session 收工統一補） |
+| Q21 | 商品明細改版連帶的四個全站視覺尺度（區塊標題字級／區塊副標與欄位說明的色階與字級／KPI 底色／頁寬） | **全站套用，不做單頁特例**：(1) `.form-section__title` 18→14px，與 `.field__label` 同級——區塊標題不再靠字級放大，層級改由卡片邊界承擔；(2) `.form-section__sub` 14→11px 且色階 `--foreground-muted`→`--muted-foreground`，與 `.field__hint` 同級（兩者同為「輔助說明」角色）；(3) `.field__hint` 同步壓暗成 `--muted-foreground`——**此點推翻 2026-07-16 的反向決定**（當時由 `--muted-foreground` 提亮成 `--foreground-muted`，理由是「說明文字在卡背景上要讀得清楚」），本次由使用者裁示改回；(4) `.kpi` 底色 `--card`→`--input-surface`——KPI 常被放進 `form-section` 卡內，兩層同為 `--card` 會糊在一起，改亮一階讓內層方塊浮在卡面上；(5) 頁寬**改為變體、不動全站**（2026-07-20 同日修訂）：`.page` 維持 1280，新增 `.page--narrow`（1056）只給「主欄＋右側常駐 meta 欄」的詳情頁用——原裁決是全站 1280→1056，使用者看過實際結果後改為只有商品明細窄版，其餘頁維持原寬。這是**變體**不是頁面覆寫，仍在 DS 層、有文件與 consumer 清單，不違反鐵律 9。使用者在被明確告知影響範圍（15–28 頁）與「第 3 點會推翻既有決定」後，仍選擇全站統一而非單頁特例 | 2026-07-20 | 使用者裁示；避免同一視覺角色出現兩種答案（鐵律 11），寧可全站一致也不留特例 | ✅ 已執行 2026-07-20（元件層一次生效：form-section.css／field-system.css／kpi.css／shared.css；已用 Playwright 逐頁量測 index／create-product／e-shop／earnings／settings／product-detail，0 水平溢出；頁寬同日修訂為僅 product-detail 用 `.page--narrow` 1056、其餘頁回 1280）|
+| Q25 | 單行輸入控件的高度（站上有 6 種、其中 3 種帶小數） | **統一 36px＝`--control-h-sm`，且一律吃 token、不用 padding 撐**：`.input`／`.select`／`.picker__search-input`／`.app-sidebar__action`（含側欄搜尋）／`.app-topbar__search-input-wrap`／`.field-pill`／`.tag-input` 全部改 `height: var(--control-h-sm)`；表格密集列 `.variant-table .input` 降一階吃 `--control-h-xs`(28)、不再是 padding 撐出來的 32；`.textarea` 例外維持 padding ＋ `min-height:100px`（多行本來就不能鎖高）。**追加同輪（使用者：「都改為整數」）**：側欄兩條列也一起吃 token——`.app-sidebar__link`(34.8→36)、`.app-sidebar__sub-link`(33.6→36，`display` 由 `block` 改 `flex`＋`align-items:center`，鎖高後 block 的文字會貼頂不會自動置中)；子項與主項的區別交給縮排與字級，不靠高度差。**刻意不動的**：`.app-notif__item`（通知列，標題＋時間＋內文多行）、`.app-notif__foot`、`.duration-chip`（內含 `__price` 第二行）——這些高度本來就該隨內容變，鎖高是錯的；它們的「小數」是內容撐開的結果、不是控件尺度分岔。**盤點結果**（`docs/input高度盤點-2026-07-21.md`）：39（`.input` 基準）／44（field-pill、tag-input）／41.5（picker 搜尋）／37.5（側欄搜尋）／35.5（頂欄搜尋）／32（規格表格）＝6 種，其中三個搜尋框的小數高度看不出任何分級理由，是各自手調 padding 沒對過帳的殘留。**小數的根因是做法而非數值**——padding×2 ＋ font-size×line-height(1.5) 幾乎必然算出零頭，所以裁決連做法一起改掉，只調數值治標。**為什麼選 36 而非 44**：(1) `.btn` 就是 36，工具列裡搜尋框與按鈕必須齊平——那三個歪掉的搜尋框正是沒對齊按鈕造成的；(2) `_tokens.css` 原本就宣稱「同尺寸的 input 與 button 等高」，選 36 讓這句由空話變事實（選 44 得反過來改註解或連按鈕一起放大）；(3) 本站 token 命名刻意對齊 shadcn，而 shadcn 的 input 與 button 同為 `h-9`＝36。代價：一般欄位矮 3px、field-pill／tag-input 矮 8px（後者較有感，已告知使用者需目視確認）| 2026-07-21 | 使用者裁示（三選一中選 36「跟按鈕等高」）；根因治理而非逐個湊數值 | ✅ 已執行 2026-07-21（元件層一次生效：input／field-pill／tag-input／picker／header／shared／variant-builder；`--control-h-*` 註解同步改寫，標明實際預設是 sm 不是 md）|
+| Q26 | 站上有兩個按鈕家族、預設高度不同 | **`.ztor-btn` 家族退場，`.btn` 成為唯一按鈕**（墓碑留在 `button.css` 開頭）。`.btn` 的三階尺寸本來就正確（`--sm` 28／預設 36／`--lg` 44，全整數、全在刻度上），**問題不在尺寸而在兩套並存**：`.ztor-btn` 預設 44px 且被標為「design-system 文件用的 canonical 按鈕」，`.btn` 預設 36px 卻是 236+ 處真實頁面在用的。使用者檢視元件的唯一入口是 `design-system.html`，那裡把 44 標成預設按鈕，與出貨結果不符——DS 頁在按鈕這一項是錯的。**退場成本近乎零**：清點時全站已無任何 markup 消費 `.ztor-btn`，只剩 `design-system.html` 一行 class API 說明，DS 頁的按鈕 demo 早就用 `.btn` 了。比照 2026-07-10 `.ztor-input` 替身退場的前例（同樣是「文件用替身 vs 產品頁真身」）。**副作用**：`--control-h-lg`(52) 與 `--control-h-xl`(60) 的唯一消費者是 `.ztor-btn` 的兩個大尺寸變體，退場後這兩階變成零消費，已在 `design-system.md` 標為「待採用」（定義保留備用，不刪——刻度完整性比零消費警告重要）| 2026-07-21 | 使用者裁示（三個選項中選「退場」）；DS 頁必須與產品頁同源，否則設計師看到的不是實際出貨的東西 | ✅ 已執行 2026-07-21（`button.css` 規則清空留墓碑、`design-system.html` 移除 class API 列、`design-system.md` 三處敘述改寫）|
+| Q24 | 卡片內的層級怎麼往上疊（填色階梯已用完） | **兩層填色，L3 以後改邊框**：(1) **L1 卡片維持絕對色** `--card`（亮 `#FFFFFF`／深 `#212223`），不參與疊加——DevTools 檢視卡片時看到的就是真正的顏色，不是一串半透明宣告值；(2) **L2 巢狀層才是疊加**，新增 `--nest-surface`（亮 `transparent`／深 `rgba(222,223,233,.04)`，合成 ≈ `#292A2B`）；(3) **L3 以後不再疊填色，改用 1px 邊框**——再疊會愈來愈糊、也失去色溫；(4) 深色的疊加色**刻意用冷調淺灰 `rgb(222,223,233)` 而非純白**：純白會把 midnight 畫布的冷調洗掉（B−R 由 +2 掉到 +0.8），這個 tint 反而推到 +3.0、與畫布同溫（Figma 856:27796 獨立算出同一值）；(5) **亮色兩層都是白**，單靠 `--shadow-nest-up` 的向上陰影分層。**起因**：商品選項切到「多選項」時下方要長出「疊上去的一層」，但實測發現巢狀層與其中的 input 在現有絕對色模型下算出**完全同色** `rgb(38,39,41)`——填色階梯已經用完，再加一階必須動 foundation。因為裁決把填色上限壓在兩層，**既有 token（`--card`／`--input-surface`／`--accent`／`--border`）零修改**，只新增 `--nest-surface`＋`--shadow-nest-up` 兩個。L3 邊框規則**只寫進文件、不出 `nest.css`**——nest 不知道自己裡面會放什麼，硬寫 `.nest > *` 會誤傷，由消費端自己套。**同日即落地**：`variant-builder.css` 的 `.option-set__row`／`.variant-option` 坐在 nest 裡＝L3，去掉 `--input-surface` 填色改 `transparent` ＋ 1px `--border`（該輪同時把兩顆「新增」鈕改成 1px **虛線** `--border`，沿用 upload-tile／payout-modal 既有的「這裡還沒有東西」語彙，非新語彙）。**L3 邊框不另立 token，就用 `--border`** | 2026-07-21 | 使用者裁示（探索頁 `docs/層級系統-半透明疊加-探索.html` 逐輪確認）；Figma 856:27798 版型 | ✅ 已執行 2026-07-21（`nest.css` 新元件＋`_tokens.css` 兩個新 token；消費頁 create-product 商品選項）|
+| Q25 | 詳情頁右側常駐欄可不可以放「可互動」的卡（原定義只放唯讀狀態） | **放寬為兩類都可以，但要分得出來**：右欄仍以唯讀狀態卡為主（庫存、交付、關聯這類「改東西前要先知道」的資訊），另外允許放**跨分頁層級的可互動設定**——判準是「這個設定管的是整個商品、不隸屬任何一個分頁」。第一個案例是**上架設定**：上架與否是商品的最高層級狀態，塞在「定價與庫存」分頁裡等於暗示它只跟定價庫存有關，放右欄才能在編輯任何分頁時都看得到並隨手改。**不放寬的部分**：隸屬單一分頁的欄位一律留在該分頁，右欄不做成第二個表單。`detail-rail.css` 的元件說明與 design-system Pillar 5 的 pattern 卡同步更新 | 2026-07-21 | 使用者裁示（指定把上架設定移到右欄） | ✅ 已執行 2026-07-21（product-detail 右欄第一張卡）|
+
+---
+
+| Q27 | 編輯／新增流程用側邊 drawer 還是中央彈窗 | **中央彈窗**：`.payout-modal`／`.payout-dialog` 是站上編輯／新增流程的唯一殼層，側邊滑出的 `.drawer` 不再用於「編輯或新增一筆資料」。2026-07-24 把 project-detail 的五個編輯彈窗（專案基本資料／合作者／里程碑／專案更新／支持方案）由 drawer 改為中央彈窗。`.drawer` 保留給「不離開當前頁看詳情／歷史／說明」的唯讀用途（目前唯一消費者 earnings-sony 的提領歷史與如何運作） | 2026-07-24 | 使用者裁示；站上編輯流程原本就以中央彈窗為主（出貨／退款／補貨／費率例外／請款），drawer 是少數例外，收斂成單一答案 | ✅ 已執行 2026-07-24（project-detail 五個彈窗；earnings-sony 的唯讀 drawer 未動）|
+| Q28 | 建立專案「專案類型」picker 用哪個元件 | **統一用建立商品同款 `.segmented.radio-cards`**：閘門與流程內表單的專案類型選擇一律用 radio-cards（灰卡＋右上小橘點＝Q13 基準呈現，**不加任何橘色底**），閘門帶標題＋描述＋頂部引導圖示（`--gate` 變體：`.radio-card__lead` 圖示在上恆灰不變色、標題/描述間距加大；閘門＝選了就進下一步的 picker、無持久選取態：resting 完全無指示點（覆蓋 base 已選橘點）；hover 任一卡時右上（`::after`）冒橘點＋卡底提亮到比 Q9 `--accent` 再亮一階的 `color-mix(--foreground 6%, --accent)`（閘門專用 scoped，使用者裁示要更亮））、表單只標題；三型別用 `.radio-cards--3`（3 欄等寬）；流程內表單的已選卡在 Q13 小橘點外再加卡底提亮 `color-mix(--foreground 6%, --accent)`（2026-07-25 使用者裁示，讓流程內選取更明顯），閘門無持久選取態故不套。上一輪一度嘗試的 `.radio-list--menu`／`--menu-row` 圖示清單樣式與淡橘／橘色已選底，經使用者裁示「跟建立商品長不一樣、要用那個元件」全部撤回，`--menu` 系列變體從元件庫移除（radio-list.css tombstone）| 2026-07-24 | 使用者裁示（截圖指定：要跟建立商品「商品選項」`.segmented.radio-cards` 完全一致——灰卡＋小橘點、無橘底）| ✅ 已執行 2026-07-24 |
+| Q29 | 站上有兩支長相不同的資料表元件（`ztor-table` vs `variant-table`） | **全站資料表只收斂「框型」到 `variant-table`（商品明細規格庫存表）、密度維持原樣**：`.ztor-table` 由「陰影」改為「自帶 1px `--border`」（對齊 `.variant-table-wrap` 自框），使框型一致；**間距／字級不動**（padding `sp-16 sp-20`、表頭 fs-13、內文 fs-14 皆保留）。**沿革**：首版（同日）連密度一起收斂（`sp-10 sp-12`＋表頭 fs-11／內文 fs-13），使用者看 demo（`_demo-table-density.html` A密／B完全復原／C折衷三選項）後選 B——「線框對了，但欄位間距要像之前那樣大」，故回退密度、只留邊框。**外框防雙框**（三種容器脈絡）：(1) 直接坐進出框 `.card` 的 flush 表（`.card > .ztor-table`，earnings／event-detail）由卡出框、表格自身 `border:0`；(2) 包在 `overflow-x` 容器裡的 inset／standalone 表（project-detail 發布更新／合作者、earnings 的 `.bd-tablecard`）保留自身邊框；(3) `.admin-table-wrap .ztor-table`（admin IP 銀行／費率／IP 報表）由 wrap 出框、表格 `border:0`。**未動** `variant-table` 本身，也未動各頁的 `.ztor-table__feature`／狀態格／可展開列等既有語意 | 2026-07-25 | 使用者裁示（兩輪並排比較選「全站收斂」，再看密度 demo 選 B「框型收斂、間距復原」） | ✅ 已執行 2026-07-25（`table.css` 元件層一次改：邊框收斂、密度回退＋`admin-ip-bank-table.css` 加 `border:0`；project-detail／earnings／admin-platform-fees 三種脈絡逐一以 computed style＋截圖驗證無雙框）|
+| Q30 | IP 卡／IP hero 封面：漸層色塊 vs 真實封面圖 | **漸層佔位＋可疊真實圖**：`.ipm-card__cover`（IP Market 三張上架卡，2026-07-25 由無 class 的 inline 漸層 div promote）與既有 `.ip-hero__cover`（IP 詳情）統一——預設品牌漸層佔位（3:4）＋IP 名文字，放上 `.ipm-card__cover-img`／`.ip-hero__cover-img`（`object-fit:cover`、絕對定位疊在佔位上）即改真實封面圖鋪滿，比照站上既有 `.project-card__cover-img` 慣例。真實授權圖由使用者提供、非站上內建；角色圖／藝人照等受版權素材不由 AI 生成或代抓（版權／肖像界線）。順帶消掉 card2／card3 的兩組 inline 裸 hex 漸層 | 2026-07-25 | 使用者要「圖片也要換」；與站上其他列表卡（project-card／product-list）用真實圖鋪滿的做法收斂為單一答案 | ✅ 已執行 2026-07-25（`shared.css` 新增 `.ipm-card__cover`＋兩支 `__cover-img`；ip-market 三卡與 ip-detail hero 改用；design-system.md／html 同步）|
+
+| Q31 | IP 詳情 hero：租用資訊放右側窄欄，還是收進內容欄 | **收進內容欄、hero 改兩欄**：`.ip-hero` 由「封面 248｜內容 1fr｜側欄 auto(280)」三欄改為 **`200px minmax(0,1fr)` 兩欄**——封面獨佔左欄（3:4、頂對齊、寬度刻意配合右欄文字自然高度），其餘全部走右欄。連帶三項：(1) 四格事實（版稅／起租費／租期／獨家）由自建的 `.ip-hero__meta` auto-fit 網格＋`.meta-cell` 純文字，改用**站上標準 `.bento > .kpi.bento--span-3`**，與儀表板／收入管理的指標列同一套讀法（使用者裁示「這些做成 bento」）；(2) 租用 UI 由 `.ip-hero__side > .card.rental-card` 改為新元件 **`.rent-block`**，垂直兩組（組 1 租期｜獨家、組 2 費用明細｜結算），組內 `1.3fr 1fr` 讓兩組左右欄上下對齊；(3) `.ip-hero__meta`／`.ip-hero__side` 退場留墓碑（`.meta-cell` 保留，create-project 仍消費）。**動機**：280px 側欄把內容欄壓到 217px（標題硬折行、meta 塌成單欄），且封面較高時側欄旁留一塊死空間；使用者連續三輪圈出空白要求修正。過程中兩個被否決的做法一併記錄——封面拉長填滿高度（變成與站上其他圖不同比例的長條，使用者否決）、租用區跨滿整張卡寬度（封面下方仍空，使用者指定「全部放右邊、照片在左邊不動」）。探索頁 `docs/ip-detail-hero-demo.html` | 2026-07-25 | 使用者裁示（逐輪截圖圈選：先要移出側欄、再要收回卡內垂直排 1→2、再要全部靠右、最後要四格改 bento）| ✅ 已執行 2026-07-25（`shared.css` 兩欄＋兩個墓碑、新增 `ds-components/rent-block.css`、`ip-detail.html` 改版、`design-system.md`／`.html` 同步含新章節 4.75b＋TOC）|
+| Q32 | 卡片邊界更上層問題（Q23 留待裁決）：`.card` 系（Q3 邊框）vs `form-section--outlined`（Q14/Q18 陰影）同一視覺角色兩種答案，要不要全站統一 | **C（全站統一成陰影版）**：`.card` 基底（連同 `.funding-panel--card`／`.fc-bundle`，後者本就吃 `.card`）與 `.kpi` 改為 `border:0` ＋ `box-shadow: var(--shadow-card), var(--shadow-edge-top)`，跟 `form-section--outlined` 統一做法。`.kpi` 額外處理：預設底色同步由 `--input-surface`（Q21）還原成 `--card`——多數 KPI 直接放在 `.bento`／`.tab-panel` 上、沒有卡包著，跟外層同色才是常見情境；真的疊在 `--card` 系容器內的 8 處（`event-detail.html` Overview 分頁、`earnings.html` Breakdown／Payouts、`auction-detail.html`、`bundle-detail.html`、`product-detail.html`、`admin-ip-bank-entry.html`、`ip-detail.html`）用 scoped selector `.card .kpi, .form-section--outlined .kpi, .ip-hero .kpi` 改回 `--input-surface` 維持跟外層卡的區隔（Q21 的原始理由只在這 8 處仍成立）。**未動**：`.ztor-card`（docs-only，未上產品頁）、控制項/清單類 1px 邊框（input／table／dropdown／picker／modal 等，Q3/Q4 對它們仍有效，這次只處理「大容器卡」這個視覺角色）。 | 2026-07-26 | 使用者看過 `.card` 三種卡型（組合包卡／募資狀態卡／發布更新卡）與 `.kpi` 的無邊框＋陰影 demo 後裁示「全站都改」；解決 Q23 記錄的「每次並排才發現不一致、要再開一次例外」的重複成本 | ✅ 已執行 2026-07-26（`card.css`／`funding-panel.css`／`kpi.css` 元件層一次生效；`design-system.md`／`.html` 同步 4.11b Section card、4.12 KPI、Pillar 2 陰影表；bump_ver＋check_ds_sync 見 UI-CHANGES.md）|
+| Q33 | 控制項邊框是否該看「有沒有卡片／section 包著」決定，而非 Q4 的一律真 border | **新規則**：Q4（2026-07-13：input／textarea／select／switch／metric-pill 一律真 `border`）對疊在卡片／section 內的控件仍成立；但**不在任何卡片／section 內、直接坐在頁面或工具列上**的控件改無邊框無填色，貼合旁邊同列元件（如 filter-tabs）的處理。首個落地案例：`projects.html` 列表工具列的內容類別 `<select id="proj-cat">` 原本跟旁邊的 `.filter-tabs`（無邊框 pill）並排卻自己戴一圈框，使用者指出不一致。新增 `.select--bare`（疊加在 `.select` 上，`ds-components/input.css`）：去 box-shadow 邊線、去填色、pill 圓角、hover 才浮出 `--muted`。**稽核範圍**：全站僅 `projects.html` 這一處是「select 直接坐在 `.list-status-row` 工具列、沒有卡片包著」的情境（其餘 `.list-status-row` consumer：e-shop／events／orders／ip-market／my-ip／pickup 皆無此 pattern；ip-market 的六個 select 在進階篩選面板內，不受影響）。**未動**：`.input`／`.textarea`／`.switch`／`.metric-pill` 尚未逐一稽核套用此規則，未來若出現同款「不在卡片內」的情境比照本條處理，不必另開新題號 | 2026-07-26 | 使用者裁示（截圖指出 `#proj-cat` 這個 select 不該有 border，並明確定調「section 內的才要 border」的新規則） | ✅ 已執行 2026-07-26（`input.css` 新增 `.select--bare`；`projects.html` 套用；`design-system.md`／`.html` 同步 4.x Input/Select 條目） |
+| Q34 | 清單列 hover：`--eshop`／`--ip` 的浮起處理要不要變成全站唯一答案（原本 base／`--orders`／`--pickup` 仍是 Q9 純換底色） | **C（全站統一成浮起版）**：`.product-list__row:hover` base 規則由 Q9 2026-07-13 的純換底色（`--accent`）改為 2026-07-20/21 原本只給 `--eshop`／`--ip` 的浮起處理（`--card` 底＋`--radius-md`＋`--shadow-lift-flat`＋自身與上一列 `border-bottom` 透明），全部變體（`--orders`／`--pickup`／`--events`／`--auctions`／`--bundles` 及無 variant 的 base）統一。原本 `--eshop`／`--ip` 專屬的 scoped 規則因此變成單純重複，已刪除、併回 base。**`.project-list__row:hover`（Projects 列表，獨立的 `project-list.css`，同款 Q9 純換底色）同步比照改寫**，跟 product-list 用同一套視覺語言。**未動**：`.product-list--eshop .product-list__row { cursor:pointer }`（點列進編輯的點擊行為，2026-07-23 裁示只有 --eshop 有這個導航行為，`.project-list__row` 本身是 `<a>` 整列可點、不受影響）；`.radio-list__item:hover`、表格類（`.ztor-table`／`.data-list`／admin 系）——這些列本來就沒有列 hover 浮起的語意（radio 選取態、純資料表），不在「商品列表」這個角色內，不套用 | 2026-07-26 | 使用者裁示「所有列表的 hover 都要改成像電子商店的商品列表一樣」，並附電子商店浮起 hover 的截圖為範本 | ✅ 已執行 2026-07-26（`product-list.css`／`project-list.css` base 規則改寫、eshop/ip scoped 重複規則移除；product-list 7 個 consumer 頁＋project-list 1 個 consumer 頁共用同一套視覺，元件層一次生效） |
+
+---
+
+## 待裁決
+
+> **2026-07-13：Q1–Q12 全數裁決完成，見上方「已裁決」表。** 以下保留每題的證據與選項供執行工單參考（動 token/元件時對照）。視覺化圈選版：`docs/風格裁決-視覺化.html`。
+>
+> **2026-07-13 全數執行完成**（執行狀態欄已標 ✅）。落地時的三個技術決定，記錄在案供日後對照：
+>
+> - Q2：採「別名合併」——把 `--radius-md` 定義成 `var(--radius)`（同 6px），不改 67 處呼叫點；視覺結果與全量合併相同。
+> - Q9：`.filter-tabs__item:hover` 保留 `--muted` 為**例外**（因其 `--active` 也是 muted 灰，hover 若升 accent 會比「已選」還重、倒置層級）。其餘互動 hover 全收斂成 `--accent`。
+> - Q6：統一 16px、`.form-section` 不再覆寫；「長建立流程用 24」折衷**未採用**（如日後想恢復呼吸感再加一條 scoped 規則）。
+>
+> 完整改動清單見 `UI-CHANGES.md`（2026-07-13 條目）。
+
+站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
+
+### Q26：清單頁工作列的主軸分頁有兩種寫法（2026-07-26 提出，同日依使用者裁示落地）
+
+四個清單頁的 `.list-toolbar` 主軸分頁都是同一個元件 `.tabs.tabs--underline-short`，但兩個修飾 class 只有 projects 有：
+
+- `tabs--underline-label`（active 底線只等標籤寬、不含計數）
+- `tabs--count-plain`（計數不用 pill、改 `--muted-foreground` 純文字）
+
+結果 my-ip、events 有計數但底線會延伸到數字下方、計數還是深色藥丸，跟 projects 差一截；e-shop 沒有計數但底線寬度算法也不同。使用者：「所有頁面有這種設計的都要用一樣的元件……和電子商店的差別只在於沒有計數，其他都應該一樣。」
+
+**裁決（A）**：`.list-toolbar` 裡的主軸分頁一律寫成
+`class="tabs tabs--underline-short tabs--underline-label tabs--count-plain"`，四頁一致。e-shop 沒有計數，`--count-plain` 在那裡不影響外觀，仍照寫以保持同一組配方、之後要加計數也不必再改 class。
+
+已落地：my-ip.html:54、events.html:119、e-shop.html:309 補上兩個修飾（projects 原本就有）。DS 文件（`design-system.md` §Tabs 與 `design-system.html` 的 Tabs demo）已改寫成「這是 list-toolbar 的標準配方」，不再寫成「Projects 專用的 opt-in」。
+
+**注意**：`tabs--underline-label` 需要標籤包在子元素裡。標籤是 `<button>` 直接文字的分頁（product-detail、admin-platform-fees）**不在此範圍**，維持整條 item 底線——那些不是 list-toolbar。
+
+### Q25：次層篩選列有三份同構實作（2026-07-26 提出，待裁決）
+
+同一個視覺角色「工作列下方那排狀態／類型篩選 pill」，站上有三個 class 名、樣式規則完全一樣（`display:flex; align-items:center; gap:12px; flex-wrap:wrap`）：
+
+- `.list-status-row` — 共用元件，`ds-components/list-toolbar.css:74`；消費頁：projects、my-ip、e-shop、events
+- `.ord-status-row` — 頁內複本，`orders.html:29`
+- `.pk-status-row` — 頁內複本，`pickup.html:39`
+
+2026-07-26 使用者要求「篩選列到清單的間距加大」時，共用元件改一處即涵蓋四頁，兩個頁內複本得各自再改一次（`.ord-list-controls`／`.pk-list-controls` 的 `margin-bottom`）——這就是分岔的成本。
+
+- **A（建議）**：orders／pickup 改用 `.list-status-row`，刪掉兩份頁內複本與各自的外層 margin。需一併確認上排到篩選列的間距（元件是 `margin-top: --sp-16`，兩頁現在是 topbar 的 `margin-bottom: 8px`）。
+- **B**：維持現狀，接受三處各改。
+
+暫依現狀（B），本輪只同步了間距值。
+
+### Q23：卡片邊界在建立流程出現兩種答案（2026-07-21 提出，已依使用者裁示落地，登記備查；**上層問題已於 2026-07-26 由 Q32 裁決 C 解決，全站統一陰影版**）
+
+建立流程是左右兩欄並排，兩欄的盒子用了兩種邊界做法：
+
+- 左欄 `form-section--outlined`：填色＋`--shadow-card`＋`--shadow-edge-top`、**無邊框**（Q14 去邊框、Q18 加陰影）。
+- 右欄 `.preview-col` 內的 `.preview-card` 與 `.card`：填色＋**1px `--border`**、無陰影（Q3 卡片用邊框）。
+
+兩者各自都合規，機械檢查抓不到，但並排時一眼看得出不一致（使用者 2026-07-21 指出「上架設定的外框不應該有線，和左邊的 section 一致」）。
+
+**處置**：已把 `.preview-col` 內的卡對齊左欄（`border:0` ＋ 同一組陰影），scope 限預覽欄，全站其他 `.card` 維持 Q3 不動。實際受影響＝**4 頁共 7 個盒子**：create-product／create-bundle／create-auction 各 2（預覽卡＋上架設定卡）、create-campaign 1（僅預覽卡，該頁預覽欄沒有第二張卡）。
+
+**留待裁決的是更上層的問題**：Q3（卡片＝邊框）與 Q14／Q18（區塊卡＝陰影無邊框）本質上是同一個視覺角色的兩種答案，目前靠「哪個元件」而非「什麼角色」區分，所以每次有新的並排情境就要再開一次例外（這已經是第二次）。選項：**A** 維持現況（逐案 scope，累積例外）；**B** 定義判準——「內容容器用陰影無邊框、資料列表容器用邊框」之類，寫進 design-system.md 讓後續有規則可循；**C** 全站統一成一種。裁決權在使用者。
+
+### Q22：收合式 radio-list 的圓角，與 Q16「控制項維持 6px」相衝（2026-07-21 提出，待裁決）
+
+Figma node 856-22782 把上架設定畫成收合式：外框 1px 邊、圓角 18，內部觸發列與選項列的圓角也跟著放大到 18（見展開態 hover 在「立刻上架」那列的角度）。站上既有規則是 Q16——卡片／面板級放大到 16（`--radius-xl`），**控制項（button／input／badge／segmented／field-pill）與清單列維持 6**。radio-list 的列在角色上比較接近「清單列」，照 Q16 應該留 6。
+
+- 證據 A（Figma）：外框與列皆 18，收合式整體讀起來像一張小卡片而非一排控制項。
+- 證據 B（Q16 裁決）：`STYLE-DECISIONS.md:29`，控制項與清單列明列為「維持 6px」。
+- 現況：`ds-components/radio-list.css` 的 `.radio-list--collapsible` 外框與內部列都取 `--radius-xl`(16)，**暫依 Figma**，標 Q22。
+
+選項：**A** 維持現況（外框與列都 16，把「收合式選擇器」視為卡片級容器，等於為 Q16 開一個具名例外）；**B** 外框 16、內部列回 6（容器是卡片、列還是控制項）；**C** 整組回 6（嚴格守 Q16，與 Figma 有落差）。裁決權在使用者。
+
+**2026-07-21 追加證據，方向偏向 A**：使用者當日另外指名「多規格選項列的圓角都要再大一點」，該組列（`.option-set__row`／`.option-set__add`／`.variant-option`，含優先權較高的 `.option-set .variant-option`）因此由 6 放大到 `--radius-xl`(16)；同日新增的 `.control-group`（開關＋揭示表單的外框）也取 16。也就是說「表單內的成組列」這個角色，使用者連續三次都選了大圓角。若最終裁 A，Q16 的「控制項／清單列維持 6px」需改寫成「**單獨的控制項**維持 6px；**成組的設定列**（收合式選擇器、選項列、control-group）用 16」，並把判準寫進 design-system.md，而不是留成一串個案例外。
+
+### Q17：1-of-N 選擇器的分工（2026-07-17 提出，待裁決）
+
+站上互斥單選（1-of-N）現有三支元件，各自合 token、機械檢查抓不到分岔，但概念上都是「從幾個選項挑一個」：
+
+- **selection-card**（`ds-components/selection-card.css`）：grid 大卡，title＋sub（＋可選 icon／swatch），已選＝橘 outline。用於顯眼的主選擇（商品型別、組合 edition、主題）。證據：`create-auction.html` 種類卡。
+- **radio-card**（`ds-components/radio-card.css`）：2-up 並排卡，建在 segmented 上，已選＝橘點。用於表單內二選一（單一/多規格、不限量/限量、取貨方式）。證據：`create-product.html` variant/edition/delivery。
+- **radio-list**（`ds-components/radio-list.css`，2026-07-17 新增）：垂直輕量列，radio 點＋標題＋可選描述，已選＝填橘點、無卡框。用於窄欄的資料選擇（上架設定）。**2026-07-24 使用者指定建立專案的專案類型對齊深色直列選單，新增 `--menu` 圖示面板變體；仍是資料選擇，不擴及 access／發布等其他卡式選項。**證據：三創建頁預覽欄＋兩細節頁＋create-project 專案類型。
+
+選項：**A** 維持三支、把「何時用哪支」寫成 design-system.md 的明確分工表（依版面：grid 大卡／2-up 並排／vertical 窄欄）；**B** 收斂成兩支（e.g. 卡式一支＋列式一支）；**C** 全部收斂成單一可配置元件。暫依 **A**（三支分工並存，現行做法），標 Q17；裁決權在使用者。
+
+### 維度 1：圓角尺度
+
+#### Q1　「膠囊型」元件的圓角形狀要不要統一
+
+現況 A（全圓 pill，`--radius-pill` / `9999px`）：
+- `ds-components/chip.css:36` `.chip`
+- `ds-components/filter-tabs.css` `.filter-tabs__item`、`.filter-tabs__count`
+- `ds-components/badge.css:79` `.ztor-dot`
+
+現況 B（小圓角矩形，`--radius` 6px 或 `--radius-md` 7px，**但命名或視覺語意都在暗示「pill」**）：
+- `ds-components/field-pill.css:28` `.field-pill`——名稱帶「pill」，實際是 `--radius-md` 矩形，不是全圓
+- `ds-components/badge.css:24` `.ztor-metric-pill`——名稱帶「pill」，實際是 `--radius-md` 矩形
+- `ds-components/badge.css:44` `.ztor-badge`、`ds-components/badge.css:105` `.badge`（狀態徽章）
+
+選項：
+- A　凡是「pill」命名／膠囊A視覺一律全圓（field-pill、metric-pill 改 `--radius-pill`）
+- B　徽章類統一維持小圓角矩形，只有 chip／filter-tabs 這種「可點選篩選」用全圓，兩者用形狀區分「可篩選 vs 純顯示」（需要在 design-system.md 明文寫下這條規則，否則新元件還會選錯）
+- C　混用有理由，維持現況，僅補文件說明
+
+#### Q2　控制項圓角級距只差 1px，要不要收斂成同一階
+
+現況：token 註解本身就寫了兩階並存（`ds-components/_tokens.css:91-92`：`--radius` 6px 給「primary buttons」、`--radius-md` 7px 給「outline buttons, cards」），但實際套用時同一元件家族內部也在混：
+- `ds-components/button.css:26` `.ztor-btn`（primary）＝`--radius`(6px)；`ds-components/button.css:64` `.ztor-btn--outline`＝`--radius-md`(7px)；`ds-components/button.css:121` `.btn`（product-density primary）＝`--radius`；`ds-components/button.css:146` `.btn--outline`＝`--radius-md`；`ds-components/button.css:189` `.btn--icon`＝`--radius`
+- `ds-components/input.css:14` `.input/.textarea/.select`＝`--radius`(6px)
+- `ds-components/card.css:15` `.ztor-card`、`ds-components/card.css:83` `.card`（實際頁面用的版本）都是`--radius-md`(7px)
+- 另外 `ds-components/button.css:204` `.btn--icon-circle` 圓角是寫死 `9999px`，沒有走 `var(--radius-pill)` token
+
+選項：
+- A　維持兩階（primary 按鈕/輸入框 6px，outline 按鈕/卡片 7px），只把 `.btn--icon-circle` 的裸值 9999px 改成 `var(--radius-pill)`
+- B　全部收斂成同一階（6px 或 7px 擇一），不再分「按鈕用哪階、卡片用哪階」
+- C　混用有理由（例如視覺上刻意做細微差異），維持現況並在 design-system.md 明文列出「哪個元件用哪一階」的對照表
+
+### 維度 2：邊界做法
+
+#### Q3　卡片類元件：純陰影 vs 純邊框，要不要統一
+
+現況 A（純陰影，`box-shadow: var(--shadow-card)`，陰影本身內含 1px rim，完全不寫 `border`）：
+- `ds-components/card.css:11-16` `.ztor-card`、`ds-components/card.css:81-86` `.card`
+- `ds-components/kpi.css:16-23` `.kpi`
+- `ds-components/selection-card.css` `.selection-card`
+
+現況 B（純 1px 實線 border，完全不寫 `box-shadow`）：
+- `ds-components/preview-card.css:17-22` `.preview-card`
+- `ds-components/event-preview-card.css:26-31` `.event-preview-card`
+
+選項：
+- A　統一走「純陰影」（preview-card / event-preview-card 補上 `--shadow-card`、拿掉 border）
+- B　統一走「純邊框」（card / kpi / selection-card 改成 1px border，拿掉陰影）
+- C　混用有理由——例如「主畫面卡片用陰影表達可點擊浮起、建立流程的即時預覽卡刻意做得更平面像實體卡」——維持現況但寫進 design-system.md
+
+#### Q4　控制項／浮層邊界：真 border vs 用陰影模擬 border，要不要統一
+
+現況 A（真 `border: 1px solid var(--border)`）：
+- `ds-components/chip.css:35` `.chip`、`ds-components/field-pill.css:27` `.field-pill`
+- `ds-components/button.css:63` `.ztor-btn--outline`、`ds-components/button.css:144` `.btn--outline`
+- `ds-components/dropdown-menu.css:35` `.dropdown__menu`、`ds-components/embed-modal.css:34` `.embed-modal__sheet`、`ds-components/leave-dialog.css:19` `.leave-dialog__card`
+
+現況 B（`box-shadow: 0 0 0 1px var(--border)` 模擬邊框，不寫 `border`）：
+- `ds-components/input.css:15-17` `.input/.textarea/.select`
+- `ds-components/badge.css:22-25` `.ztor-metric-pill`
+- `ds-components/switch.css:25-27`
+
+**關鍵佐證**：`ds-components/button.css:54-59` 的註解明確記載——outline 按鈕在 2026-06-12 已經**從**「陰影模擬邊框」**改回**「真 border」，理由是「白填色按鈕在白底上近乎隱形（使用者反饋）」。這條理由對 input（同樣白底 `--card` 背景 + 陰影模擬邊框）同樣成立，但 input.css 一直沒跟進改版。
+
+選項：
+- A　全面改回真 border（跟按鈕當年的決定一致），input／metric-pill／switch 也改成 `border: 1px solid var(--border)`
+- B　維持陰影模擬邊框（理由：陰影版可以疊 focus 環時不跳動、不佔版面尺寸），outline 按鈕才是例外
+- C　混用有理由（例如「可獲得焦點的表單控件」統一用陰影版方便疊 focus ring，「純展示/觸發用」pill 用真 border），維持現況並明文化
+
+### 維度 3：陰影語言（hover 浮起規則）
+
+#### Q5　哪些「卡片型／列型」元件在 hover 要浮起（借用 `--shadow-float`），哪些不用
+
+現況 A（有 hover 浮起）：
+- `ds-components/card.css:22-25` `.ztor-card--clickable:hover`（transform -2px + `--shadow-card-hover`）
+- `ds-components/selection-card.css:50` `.selection-card:hover`（`--shadow-card-hover`）
+
+現況 B（同屬「可點卡片」，但 hover 完全沒有陰影變化，只有列表行用背景色代替，或什麼都沒有）：
+- `ds-components/preview-card.css`、`ds-components/event-preview-card.css`：整檔沒有任何 `:hover` 規則
+- `ds-components/kpi.css`：`.kpi` 本體沒有 hover 效果，只有內部的 `.kpi__link:hover`（`ds-components/kpi.css:61`）換文字色
+- `ds-components/product-list.css:40-42` `.product-list__row:hover`、`ds-components/project-list.css:40-42` `.project-list__row:hover`：都是背景換成 `var(--muted)`，不是陰影浮起
+
+選項：
+- A　「可點擊卡片」一律 hover 浮起（借 `--shadow-float`），列表行維持背景色 hover（列表行本來就不该模仿卡片浮起）——需要先定義「什麼算卡片、什麼算列」
+- B　只有真正會導覽到別頁的卡片才浮起，純預覽/展示用卡片（preview-card、kpi）不需要 hover 回饋
+- C　混用有理由，維持現況並在 design-system.md 逐一標註每個元件的 hover 規則
+
+### 維度 4：密度
+
+#### Q6　表單欄位垂直節奏：`.field` 基礎值 vs `.form-section` 內覆寫值，要不要統一
+
+現況：
+- `ds-components/field-system.css:6-7` 基礎 `.field { gap: var(--sp-6); margin-bottom: var(--sp-16); }`（描述↔控件 6px、欄位↔欄位 16px）
+- `ds-components/form-section.css:25` `.form-section .field { gap: var(--sp-4); margin-bottom: 26px; }`（描述↔控件 4px、欄位↔欄位 26px）——且 `26px` 是寫死的字面值，不在 `--sp-*` 刻度表內（最近的刻度是 24 或 28）
+
+選項：
+- A　建立流程（`.form-section` 作用域）維持比一般表單更緊的描述間距、但欄位↔欄位間距改採 `--sp-24` 或 `--sp-28`（收進刻度表），不再用裸值 26
+- B　全站表單欄位垂直節奏收斂成同一組數值，`.form-section` 不再局部覆寫
+- C　混用有理由（建立流程需要更寬鬆的段落感、一般表單需要更緊湊），維持現況，但把 26px 換成刻度內最近值
+
+#### Q7　卡片類元件的內距（padding）沒有統一的級距表
+
+現況（同屬「卡片/資訊磚」但內距各自為政）：
+- `ds-components/kpi.css:20` `.kpi` → `var(--sp-16) var(--sp-18)`（16/18）
+- `ds-components/card.css:85` `.card`（實際頁面用的版本）→ `var(--sp-20)`（20，四邊等值）
+- `ds-components/card.css:11` `.ztor-card`（design-system 文件示範用，頁面不直接用）→ `var(--sp-24)`（24，四邊等值）
+- `ds-components/selection-card.css:38` `.selection-card` → `var(--sp-14) var(--sp-16)`（14/16）
+- `ds-components/empty-card.css:24` `.empty-card` → `var(--sp-32) var(--sp-24)`（32/24）
+
+選項：
+- A　定一組「卡片內距級距表」（例如 sm=16、md=20、lg=24），上述元件對號入座
+- B　維持各自的內距（理由：KPI 磚要緊湊、empty-card 要留白突出插畫感），但把現況整理成一張對照表寫進 design-system.md，避免未來新卡片再隨機挑數字
+- C　全部統一成單一內距值
+
+### 維度 5：品牌橘使用範圍
+
+#### Q8　「已選中/active」狀態要不要一律用品牌橘標示
+
+> **2026-07-27：已裁決 A（反轉 2026-07-13 的 B），詳見上方「已裁決」表 Q8 列。以下現況快照停留在 2026-07-13，僅供對照當時的分歧，不再反映站上實況。**
+> 反轉後「現況 B」那一組（`.app-sidebar__link`／`.app-sidebar__sub-link`／`.chip--active`／`.segmented__btn--active`／預設 `.filter-tabs__item--active`）已全部併入 A。
+
+現況 A（active 用品牌橘）：
+- `ds-components/tabs.css:39-42` `.tabs__item--active`（橘色底線）；`ds-components/tabs.css:76` `.tabs--brand .tabs__item--active`（橘色調底）；`ds-components/tabs.css:97` `.tabs--underline-short .tabs__item--active`（橘色短底線）
+- `ds-components/settings.css:31-35` `.settings-nav__item--active`（品牌橘 18% 底 tint）
+- `ds-components/selection-card.css` `.selection-card--active`（橘色 outline 線框）
+- `ds-components/radio-card.css` 已選態（橘色 outline）
+
+現況 B（同樣是「導覽列表/切換控制的已選項」，但用中性黑或灰，完全不用橘色）：
+- `shared.css:154` `.app-sidebar__link--active`、`shared.css:188` `.app-sidebar__sub-link[aria-current="page"]` → `background: var(--sidebar-active)`（中性灰 `#ECECEC`，不是橘）
+- `ds-components/chip.css:44-48` `.chip--active` → 反白成 `var(--foreground)`（黑底白字），不是橘
+- `ds-components/segmented.css:41-47` `.segmented__btn--active` → 白色浮起 pill + 中性邊框，不是橘
+- `ds-components/filter-tabs.css` 預設 `.filter-tabs__item--active` → 灰底（`var(--muted)`），只有加 `.filter-tabs--brand` 修飾類才會變橘（頁面各自決定要不要加）
+
+值得注意：**同樣是「側邊導覽列表的已選項」，全站主 `.app-sidebar`（左側大導覽）用中性灰，但 Settings 頁自己的次層導覽 `.settings-nav`（`ds-components/settings.css:31`）卻用品牌橘**——同一種元件角色（左側可捲動的頁內導覽列表）两处给了不同答案。
+
+選項：
+- A　「已選中」狀態全站統一用品牌橘（sidebar-active、chip--active、segmented--active 都改橘）
+- B　橘色只保留給「主要操作／主要分類」（Tabs、選擇卡的已選），導覽列表／篩選類的已選一律中性色（`.settings-nav--active` 改回中性灰，向 `.app-sidebar` 看齊）
+- C　混用有理由（例如「橘色只用在會直接影響資料的操作上，導覽本身不用橘避免與 CTA 搶視覺」），維持現況並在 design-system.md 寫清楚這條分野規則，`.filter-tabs--brand` 這種「選用变体」也要註明哪些頁該用
+
+### 維度 6：灰階層次
+
+#### Q9　「hover 底色」該用哪一個灰階 token
+
+現況：`--muted`(`#FAFAFA`)、`--accent`(`#F3F3F3`)、`--secondary`(`#F4F4F4`) 三個十分接近的近白灰階同時存在（`ds-components/_tokens.css:33-37`），但實際 hover 底色沒有統一套用同一個：
+- 多數 hover 用 `var(--muted)`：如 `ds-components/button.css:148` `.btn--outline:hover`、`ds-components/chip.css:42` `.chip:hover`、`shared.css:249` `.app-notif__item:hover`
+- 少數 hover 用 `var(--accent)`：`shared.css:152/187/202`（`.app-sidebar__link/__sub-link/__action:hover`）、`ds-components/switch.css:25`、`ds-components/amount-field.css:38`
+- 另有元件不用上述兩者、改用即席算出的灰：`ds-components/settings.css:27-29` `.settings-nav__item:hover` 用 `color-mix(in srgb, var(--foreground) 4%, transparent)`；`ds-components/button.css:155` `.btn--ghost:hover` 用 `color-mix(in srgb, var(--foreground) 6%, transparent)`
+- `--secondary` 目前**全站零使用**（`ds-components/*.css`、`shared.css`、`*.html` 皆搜不到 `var(--secondary)`），是已定義但未落地的 token
+
+選項：
+- A　hover 底色統一用 `--muted`，`--accent` 只保留給「選單項目/導覽 hover」這種更明確的語意角色（sidebar 系列維持用 accent），其餘 `color-mix` 即席寫法都改成引用固定 token
+- B　三個 token 語意本來就不同（muted=次級底、accent=互動 hover、secondary=次要按鈕底），維持分工，但要把 `--secondary` 找到實際用途或退役，並把散落的 `color-mix(...)` 即席寫法收斂成引用 `--accent`
+- C　直接退役掉其中一個 token（例如 `--secondary`），只留兩階
+
+### 維度 7：icon
+
+#### Q10　「關閉/收合(X)」類功能性小 icon 尺寸沒有統一
+
+現況（同屬「浮層右上角關閉鍵」角色，三種尺寸並存）：
+- `ds-components/alert.css:95` `.alert--card .alert__close .ztor-icon` → 20×20px
+- `ds-components/leave-dialog.css:29` `.leave-dialog__close .ztor-icon` → 18×18px
+- `ds-components/embed-modal.css:72` `.embed-modal__close .ztor-icon` → 16×16px
+
+（基礎 icon 尺度本身有定義：`ds-components/icon.css` 預設 `.ztor-icon` 16px、`.ztor-icon--sm` 14px；但各元件大量各自覆寫成 11–44px 不等，多數是因應圖示型 icon〔如 34/44px 的媒體佔位圖示〕或極小的行內裝飾〔11px 移除鍵〕，屬合理依情境縮放，不算衝突——只有「關閉鍵」這個重複出現的同角色給了三種答案，值得出題。）
+
+選項：
+- A　收斂成 1 種（例如都用 18px，介於現有三值中間）
+- B　依浮層尺寸分兩階（大型浮層/alert 用 20px，小型 modal/dialog 用 16px），寫進 design-system.md 的對照表
+- C　混用有理由，維持現況
+
+### 維度 8：狀態色語意
+
+#### Q11　「已付款 Paid」狀態在不同頁用了不同顏色
+
+現況：同一個「訂單已付款」語意，在收益頁用綠色（success），在訂單頁用灰色（neutral）：
+- `earnings.html:382 / 406 / 810 / 823 / 849` → `class="badge badge--success"` 顯示 `Paid`
+- `orders.html:109 / 121 / 145` → `class="badge badge--neutral"` 顯示 `Paid`（`data-i18n="orders.pay.paid"`）
+- `order-detail.html:57` → `class="badge badge--neutral"` 顯示 `Paid`（`data-i18n="od.badge.paid"`）
+
+（對照組：`Shipped`/已出貨 在 `orders.html:133/145` 都一致用 `badge--neutral`，沒有分歧；`Sold Out`/售罄 在 `e-shop.html:471` 有明確註解記載「刻意用 neutral 灰、與 Low Stock 的紅區隔」，屬已決策、不必出題。「Paid」是目前唯一發現的顏色分歧。）
+
+選項：
+- A　「已付款」全站統一用綠色 success（訂單頁的 `orders.pay.paid`、`od.badge.paid` 改成 `badge--success`）
+- B　全站統一用中性灰 neutral（收益頁的 `Paid` 改回 `badge--neutral`），因為 orders.html 用 `status-axes` 把「物流狀態」和「付款狀態」分兩軸並列，付款軸本來就刻意做得比物流軸安靜，避免視覺過重
+- C　混用有理由（收益頁的 Paid 是「這筆錢已入帳」的正向強調，訂單頁的 Paid 只是眾多資訊軸之一、要安靜），維持現況並明文化這條分野
+
+### 維度 9：字級與字重（label 樣式）
+
+#### Q12　欄位/列標籤：大寫小標 vs 一般 label，同頁同角色卻給了不同答案
+
+現況：`tier-settings.html` 同一頁面內，「欄位名稱標籤」這個角色出現兩種樣式：
+- `tier-settings.html:44-51`（頁內 `<style>` 自訂的 `.gate-field__label`）→ 12px、**大寫（`text-transform: uppercase`）**、字距 0.3px，用在「Top %」「Min. loyalty points」「Early access (days)」「Merch discount (%)」等欄位名稱
+- `ds-components/settings.css:67-71`（DS 元件 `.settings-row__label`）→ 13px、**一般大小寫**、無字距特調，用在同頁的「Purchases」「Event check-ins」「Dual-gate upgrade」「Versioned, non-retroactive」等列標籤
+
+兩者都是「說明這一列/這一欄是什麼」的標籤角色，只因為 Gates／Benefits 區塊用了頁面自訂 class、Multipliers／Rules 區塊用了 DS 元件，就長得不一樣。
+
+（對照組：站上其他「小型全大寫標籤」——`ds-components/kpi.css:26-30` `.kpi__label`、`shared.css:1012` `.meta-cell__label`、`shared.css:1081` `.insight-eyebrow`、`ds-components/status-axes.css:34-38`、`ds-components/progress-stepper.css:40-44`——彼此字級/字距高度一致〔11-12px、大寫、0.4px 上下字距〕，屬於已經一致的「頁面級小標」系統，`tier-settings.html` 的 `.gate-field__label` 其實是這套系統的又一次重複發明，只是恰好和它同頁的 `.settings-row__label` 不是同一套。）
+
+選項：
+- A　`tier-settings.html` 的 `.gate-field__label` 退役，改用 `.settings-row__label`（一般大小寫），欄位名稱樣式跟頁面其他列標籤一致
+- B　`.settings-row__label` 也改成大寫小標風格，向站上已經一致的那套「大寫小標系統」看齊，`.gate-field__label` 直接 promote 成 DS 元件供其他頁引用
+- C　兩種角色其實不同（`.gate-field__label` 是「單一數字輸入框正上方的緊湊說明」，`.settings-row__label` 是「一整列的標題」），維持現況但把 `.gate-field__label` promote 進 `ds-components/`（目前是頁內孤例，不符合「可重用樣式要 promote」的專案規則）
+
+### 已一致：不出題的部分
+
+- **狀態色的「售罄 vs 低庫存」**：`e-shop.html:471` 已有明確設計決策註解，售罄故意用中性灰、低庫存用紅，不衝突。
+- **「已出貨 Shipped」的顏色**：`orders.html` 全站一致用 `badge--neutral`。
+- **頁面級小型全大寫標籤系統**（kpi__label / meta-cell__label / insight-eyebrow / status-axes / progress-stepper__label）：字級（11-12px）、字距（約 0.4px 或 .04-.05em）、大寫處理彼此一致，是目前少數已經成熟的子系統（唯一的例外已寫進 Q12）。
+- **Icon 基礎尺度**（`ds-components/icon.css`：預設 16px、`--sm` 14px）本身定義清楚；元件各自覆寫到 11–44px 多數對應到「裝飾用大圖示」或「行內極小裝飾」等不同情境，屬合理縮放，只有「關閉鍵」这个重複角色值得出題（見 Q10）。
+
+### 暗色版落差清單
+
+使用者自述「黑夜版比白天少微調」，以下是逐一核對 `ds-components/_tokens.css` 亮／暗兩區塊後，亮色有調、暗色沒跟著調或明顯只是複製貼上的落差，供日後校正（非單選題）：
+
+> **2026-07-13 更新（taste 體檢後使用者指示校準暗色）**：下列 **1（--gradient-brand）、2（--overlay-tint）、3（綠色方向）已處理**——暗色綠 `#00A63E→#4ADE80` 提亮、補暗色 `--overlay-tint: rgba(0,0,0,.6)` 與 `--gradient-brand`（去掉淡膚起點）。4、5 屬刻意/已確認非疏漏，不動。詳見 UI-CHANGES.md 2026-07-13「風格微調」條目。
+
+1. **`--gradient-brand`**（`_tokens.css:81`，進度條品牌漸層 `linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%)`）——暗色區塊（`_tokens.css:390-490`）完全沒有覆寫。漸層起點 `#ffd9a0` 是淺膚橘色，直接套在深色 `#191A1A` 畫布上是否還讀得出漸層層次，沒有被檢視過。
+2. **`--overlay-tint`**（`_tokens.css:198`，浮層背後的黑色遮罩 `rgba(0, 0, 0, 0.45)`）——暗色區塊沒有覆寫，黑底上再疊一層 45% 黑遮罩，和淺色模式「白底上疊黑遮罩」的視覺效果不對等，暗色模式的遮罩存在感會弱很多，可能需要改用更淺的遮罩色或调整 alpha。
+3. **`--status-success` / `--chart-3`（綠色）方向不一致**——其餘品牌色從亮到暗都是「變亮」以維持深底對比（`--chart-2` 藍 `#266DF0→#5896F3`、`--chart-5`/`--status-accent` 紫 `#8B5CF6→#A78BFA`），唯獨綠色是「變暗」（`#22C55E→#00A63E`，`_tokens.css:57` vs `:426`／`:84` vs `:451`），與其他狀態色的調色方向相反，較可能是沿用亮色模式數值時漏調、而非刻意設計。
+4. **`--ring`／`--border-inverse`**：這兩個亮暗同值是刻意決定（`_tokens.css:52`、`:421` 均有註解說明），不是落差，僅記錄以免誤判。
+5. **`--destructive`**：亮 `#DA314A` → 暗 `#E7000B`（`_tokens.css:46` vs `:415`）——两值明显不同，屬已調整，附註以確認非疏漏。
+
+---
+
+## 裁決流程
+
+1. 發現矛盾 → 記入本檔「待裁決」，附證據檔:行號、A/B/C 選項。
+2. 使用者裁決 → 選定選項。
+3. 移入「已裁決」表：填編號、角色/題目、裁決、日期、理由、執行狀態（初始為「待執行」）。
+4. 執行 → 全庫同步實作（依裁決結果改 CSS/元件/token），並在 `UI-CHANGES.md` 記錄；執行完成後把「已裁決」表的執行狀態更新為「已執行」。
+5. 巡檢時盤點「已裁決」表的執行狀態，找出裁決後仍停留在「待執行」的項目，追蹤補做。

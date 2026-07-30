@@ -1,0 +1,214 @@
+/* ============================================================
+   KPI — metric tile (label / value / delta or meta)
+
+   Composition pattern: a small flat card with one big number.
+   Used in dashboard summary rows, earnings tabs (Overview / Payouts),
+   events / fans / my-ip page headers.
+
+   Anatomy:
+     .kpi
+       .kpi__label   (uppercase 12px tracking-wide)
+       .kpi__value   (font-display 28px)
+       .kpi__delta   (semantic +/- delta · status-success default)
+         .kpi__delta--neg
+       .kpi__meta    (neutral footnote · subtle)
+   ============================================================ */
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  padding: var(--sp-16) var(--sp-18);
+  /* 2026-07-26（B 反饋 + Q23 決 C）：預設底色改回跟 .card 一樣（此前 2026-07-20 Q21 改 --input-surface，
+     是為了避免 KPI 疊在 form-section 卡內時兩層同為 --card 糊在一起——但站上多數 KPI 其實直接放在
+     .bento／.tab-panel 上、沒有卡包著，跟外層底色一樣才是常見情境）；邊框同步比照 .card 改陰影浮起。
+     真的疊在 --card 系容器內的 8 處（.card/.form-section--outlined/.ip-hero 內）用下方 scoped override
+     還原 --input-surface，維持「浮在卡面上」的區隔。 */
+  background: var(--card);
+  border: 0;
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  border-radius: var(--radius-xl);   /* 卡片級圓角放大 6→16（示範，2026-07-17）：與 .card / form-section 統一 */
+  min-height: 96px;
+}
+/* 疊在 --card 系容器內的 KPI：改回較亮的 --input-surface，避免跟外層卡同色糊掉（沿用 2026-07-20 Q21 的理由，
+   scope 縮小成「真的巢狀在卡內」才套用）。8 個實際位置：event-detail（Overview 分頁）、earnings（Breakdown／
+   Payouts）、auction-detail、bundle-detail、product-detail、admin-ip-bank-entry、ip-detail。 */
+.card .kpi, .form-section--outlined .kpi, .ip-hero .kpi {
+  background: var(--input-surface);
+}
+.kpi__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+.kpi__value {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.6px;
+  /* 2026-07-27：明確宣告，不再靠繼承。原本沒有 color，包在 --tappable（<button>）裡時
+     會繼承到 UA 的 buttontext＝純黑，深色卡面上整個數字黑掉（使用者回報）。*/
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+/* 2026-07-17 midnight（使用者裁示，Mobbin Whop/Posh 參照）：delta 由純色文字升級為染色膠囊 chip。
+   膠囊形狀＝趨勢指示（data-trend）這個新視覺角色的定義，與 Q1「顯示型 badge 用小圓角」的
+   狀態徽章角色區隔（見 STYLE-DECISIONS Q15）。tint 用 color-mix，亮暗自動跟隨。
+   （2026-07-27 曾短暫改為「純黑底＋彩色墨」，使用者看過實機後裁示不好看、全站回退本版。）
+
+   2026-07-27：混色基底由 var(--card) 改成 transparent。數學上對一般卡片是 no-op——
+   12% 綠混不透明的 --card，與 12% alpha 的綠疊在 --card 上，合成結果完全相同；
+   但改成 transparent 之後這個膠囊就「跟著它實際坐的那個面走」，而不是把 --card 的深色
+   烤進自己的底色裡。這正是 hero 卡（實色橘）上會出現黑斑的原因：--card 早就不是那張卡
+   的底色了。同 --selected-surface 的作法。 */
+.kpi__delta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  color: var(--status-success-ink);
+  background: var(--status-success-fill);
+  border-radius: var(--radius-pill);
+  padding: 2px var(--sp-8);
+  display: inline-block;
+  width: fit-content;
+}
+.kpi__delta--neg {
+  color: var(--destructive-ink);
+  background: var(--destructive-fill);
+}
+.kpi__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
+
+/* --tappable：整塊 tile 是一顆 <button>，點了開 in-place popup（F2 兩張計數 tile）。
+   互動語彙全部借既有階梯：hover ＝ .ztor-card--clickable 的 −2px 浮起＋E3 陰影；
+   focus ＝ 全站 focus ring；label 尾端 chevron ＝ alert 卡／data-list 列的
+   「這會打開東西」記號，hover 時往右 2px。不自創新視覺。 */
+.kpi--tappable {
+  position: relative;   /* anchors .kpi__chevron（絕對定位，避開 data-i18n 重寫 label innerHTML）*/
+  font: inherit;
+  /* 2026-07-27：<button> 的 UA color=buttontext（純黑）不會被 font: inherit 帶進來，
+     少了這行，整塊 tile 的文字都從黑色起跳。凡是把 <button> 當容器用的元件都要補。*/
+  color: inherit;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+  transition: box-shadow var(--duration) var(--easing),
+              transform  var(--duration) var(--easing);
+}
+.kpi--tappable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover), var(--shadow-edge-top);
+}
+.kpi--tappable:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.kpi__chevron {
+  position: absolute;
+  top: var(--sp-16);
+  right: var(--sp-18);
+  width: 16px;
+  height: 16px;
+  color: var(--muted-foreground);
+  transition: transform var(--duration) var(--easing),
+              color var(--duration) var(--easing);
+}
+.kpi--tappable:hover .kpi__chevron {
+  transform: translateX(2px);
+  color: var(--foreground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpi--tappable, .kpi--tappable:hover,
+  .kpi__chevron, .kpi--tappable:hover .kpi__chevron { transition: none; transform: none; }
+}
+
+/* Quiet "view more" link on a metric tile — e.g. Net income → Breakdown,
+   Available → Request payout. Reusable across kpi cards. */
+.kpi__link {
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  text-decoration: none;
+  transition: color var(--duration) var(--easing);
+}
+.kpi__link:hover { color: var(--foreground); }
+
+/* --compact：緊湊尺寸（側欄、彙整摘要用）——去掉最小高度、內距收小。
+   value 字級由使用端搭 --fs-22。用於商品細節頁的 Sales summary 側欄。 */
+.kpi--compact {
+  min-height: auto;
+  padding: var(--sp-12) var(--sp-14);
+}
+
+/* Color-state modifiers — tint .kpi__value only (label/meta/delta stay
+   neutral). Visual baseline: event-detail.html's .checkin-stats three-color
+   semantics (valid green / already-used yellow / invalid red, spec 5.1.6
+   F5 report). Same color-mix formula as .checkin-stat--used so a warning
+   KPI and the check-in "already used" stat read as the same yellow. */
+.kpi--success .kpi__value { color: var(--status-success); }
+.kpi--warning .kpi__value { color: color-mix(in srgb, var(--status-warning) 60%, var(--foreground)); }
+.kpi--destructive .kpi__value { color: var(--destructive); }
+
+/* --hero — 這一列裡「最重要的那一張卡」（使用者裁示 2026-07-27：儀表板的總收入）。
+   上面三個修飾類是「這個數字的狀態好不好」（綠/黃/紅＝verdict），--hero 是「這張卡最重要」
+   （編輯權重），兩者不同軸。
+
+   整張卡實色橘。與 Q8-A 的「已選中」不衝突——已選中是 **tint**（14% 半透明）且只出現在
+   pill／nav 這類小控件上；--hero 是 **實色**且是一整張卡。實色橘在本系統一直代表
+   「主角／主要動作」（主 CTA、.pager 目前頁），一張實色橘的卡＝這是本頁主角，語彙一致。
+   一列 KPI 只給一個 --hero，否則就沒有主角了。
+
+   卡內所有文字改吃 --on-primary（深墨），**不吃 --primary-foreground**：後者在亮色是白字，
+   白字對 #ffa33f 只有 1.99:1（_tokens.css 自己就標註了這個問題），拿來鋪滿一整張卡會不能讀。
+   深墨 #171717 對 #ffa33f 是 9.02:1（過 AAA），亮暗同一個值。
+
+   用 .kpi.kpi--hero（0,2,0）而非 .kpi--hero（0,1,0）：要贏過 `.card .kpi` 那條巢狀底色覆寫，
+   否則 hero 卡若被放進 .card 系容器內會被改回 --input-surface。 */
+.kpi.kpi--hero {
+  background: var(--primary);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+.kpi--hero .kpi__value { color: var(--on-primary); }
+/* label／meta 用同一支深墨壓透明度做層級，不另外挑灰——灰在橘底上會發濁。 */
+.kpi--hero .kpi__label { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
+.kpi--hero .kpi__meta,
+.kpi--hero .kpi__meta .card__link { color: color-mix(in srgb, var(--on-primary) 75%, transparent); }
+.kpi--hero .kpi__chevron { color: color-mix(in srgb, var(--on-primary) 72%, transparent); }
+.kpi--hero.kpi--tappable:hover .kpi__chevron { color: var(--on-primary); }
+/* delta 在 hero 卡上：**深綠半透明底＋白字**（2026-07-27 L 裁示）。
+   形狀語彙完全不動（pill＋同樣內距＋仍然是半透明染色），改的是染得多深、以及字色。
+
+   為什麼是「更深的綠」而不是原本的 12% 淡染：12% 疊在飽和橘上色相幾乎不位移
+   （合成 #e9aa47 vs 卡的 #ffa33f），綠完全撐不起來、只能靠墨色暗示。改成深綠實底之後
+   「綠」由底本身承載，字換白，識別與對比同時變強——而且不再需要把墨色壓到 green-950
+   那種近黑的深度。
+
+   仍然保留半透明：90% 而非 100%，讓橘從底下透 10% 上來，綠會被暖化一點、像是長在這張卡上，
+   而不是貼上去的色塊。這也是它跟先前被否決的「純黑底」的本質差異——那個是中性黑、
+   讀起來就是一塊黑斑；這個是**有色相的深綠**，一眼還是綠的。
+
+   手法是在卡片這一層重新定義 fill/ink 四個 token，而不是覆寫 .kpi__delta 的個別屬性——
+   custom property 往下繼承，亮暗兩主題同時成立，不必比特異性也不用 !important。
+   關鍵認知：實色橘卡在**深色主題底下依然是一個亮底**，所以墨色要跟著「坐在什麼面上」走、
+   不是跟著主題走。 */
+/* 2026-07-28 L：「can we use a different green…」——換色的理由與推導寫在
+   _tokens.css 的 --status-success-deep 上方（那裡是值的家）。這裡只有一個變化：
+   原本的 90% 半透明拿掉、改成實色。
+   原因：暖化以前是靠「讓橘從底下透 10% 上來」達成的，現在暖化已經內建在
+   --status-success-deep 的配方裡（35% 站綠 ＋ 65% 暖黑）。再疊一層 10% 橘，
+   實際畫出來會是 #345929 而不是 token 上寫的 #1D5126——量測值與宣告值對不上，
+   是之後沒人敢動這塊顏色的原因。實色讓「寫的」等於「畫出來的」。 */
+.kpi--hero {
+  --status-success-fill: var(--status-success-deep);
+  --status-success-ink:  var(--foreground-on-inverse);
+  --destructive-fill:    var(--destructive-deep);
+  --destructive-ink:     var(--foreground-on-inverse);
+}
+/* delta 膠囊（hero 卡）：不再另開例外（2026-07-27 L 裁示——綠＝漲、紅＝跌、黑底，全站一致）。
+   先前的白膜＋深墨版是因為「綠混 --card 的 tint 在橘底上震盪」；base 改成純黑底之後，
+   墨色不再與卡面相混，黑膜把狀態色從橘場中隔出來，原衝突不存在，hero 卡直接吃 base 規則。 */

@@ -1,0 +1,224 @@
+/* ============================================================
+   Upload tile · dashed upload affordance for create flows
+   spec 5.1.5.2 §4 — Show it off / 數位下載檔 / Prove it's real
+   ------------------------------------------------------------
+   variants
+     .upload-tile          — base dashed click/drop target
+     .upload-tile--hero    — large hero slot（主圖，整列寬）
+     .upload-tile--file    — file-drop bar（數位下載檔／證書）
+   anatomy
+     .upload-tile__icon    — Icon atom wrapper（use Tabler, not text symbols）
+     .upload-tile__title   — 主文案（occupies --foreground）
+     .upload-tile__hint    — 限制說明（Min 尺寸／檔型）
+   layout helper
+     .upload-grid          — 4 格縮圖列（附圖）
+     .upload-assets        — 具名素材槽列（縮圖／海報／橫幅／相簿，各自比例）
+   shape modifiers
+     .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 固定長寬比
+   ============================================================ */
+
+.upload-tile {
+  --upload-tile-pad-y: var(--sp-18);
+  --upload-tile-pad-x: var(--sp-14);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 96px;
+  padding: var(--upload-tile-pad-y) var(--upload-tile-pad-x);
+  text-align: center;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--input-surface);   /* 2026-07-18：填色底（暗色比 section 亮一階＝填色投放區），對齊 midnight；亮色仍白卡 */
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.upload-tile:hover {
+  border-color: var(--muted-foreground);
+  background: var(--accent);   /* Q9 2026-07-13：互動 tile hover 統一用 accent */
+}
+.upload-tile[hidden] { display: none; }   /* [hidden] 要贏過 display:flex（否則 hidden 藏不掉，如內容檔單檔格切分類） */
+
+/* --hero / 縮圖格的佔位比例對齊建議尺寸（主圖 800×800、附圖 600×600 皆 1:1）。
+   主圖收斂寬度、置左，不做滿版正方形（否則高度過長把表單推遠）。 */
+.upload-tile--hero { aspect-ratio: 1 / 1; max-width: 320px; min-height: 0; }
+.upload-tile--file { min-height: 110px; }
+
+.upload-tile__icon  { display: inline-flex; align-items: center; justify-content: center; line-height: var(--lh-none); }
+.upload-tile__icon .ztor-icon { width: 20px; height: 20px; }
+.upload-tile__title { color: var(--foreground); font-weight: var(--fw-regular); font-size: var(--fs-13); }
+.upload-tile__sub   { font-size: var(--fs-13); color: var(--foreground-muted); }   /* 主副說明（如「拖放或點擊瀏覽」）*/
+.upload-tile__hint  { font-size: var(--fs-11); color: var(--muted-foreground); }
+
+/* hero 內文：Icon atom＋兩行標題（用 \n 換行）＋格式/大小 */
+/* 2026-07-17 使用者裁示：hero 上傳圖示外加「圓角晶片框」（accent 底＋1px 邊＋圓角），
+   讓圖示像放在一顆小晶片上，而非裸浮（midnight 探索頁做法）。僅 hero 變體，縮圖格不變。 */
+.upload-tile--hero .upload-tile__icon {
+  color: var(--foreground);
+  margin-bottom: var(--sp-8);
+  width: 56px; height: 56px;
+  background: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.upload-tile--hero .upload-tile__icon .ztor-icon { width: 24px; height: 24px; }
+.upload-tile--hero .upload-tile__icon .up-stack { width: 44px; height: 44px; }
+.upload-tile--hero .upload-tile__title { font-size: var(--fs-15); font-weight: var(--fw-regular); white-space: pre-line; line-height: var(--lh-comfy); }
+.upload-tile--hero .upload-tile__hint { font-size: var(--fs-12); }
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-10);
+  margin-top: var(--sp-10);
+}
+.upload-grid .upload-tile { aspect-ratio: 1 / 1; min-height: 0; }
+
+/* ---- assets：具名素材槽列（縮圖／直式海報／橫幅／相簿，每格比例不同）----
+   尺寸由「固定高度」推導寬度，不是由欄寬推導高度。
+   原因（2026-07-24 修 create-project Showcase 溢出）：grid `1fr` 的最小尺寸是 auto，
+   格子一旦帶 aspect-ratio，瀏覽器會拿「比例換算出的內容尺寸」回頭撐開欄寬，
+   四格互相拉扯後整排寬過容器、每格高到半個螢幕。改用固定高度就沒有這條回饋迴路。 */
+.upload-assets {
+  --upload-asset-h: 200px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+}
+.upload-assets .upload-tile {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--upload-asset-h);
+  min-height: 0;
+  max-width: 100%;
+}
+@media (max-width: 640px) {
+  .upload-assets { --upload-asset-h: 148px; }
+}
+
+/* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用 */
+.upload-tile--1x1  { aspect-ratio: 1 / 1; }
+.upload-tile--3x4  { aspect-ratio: 3 / 4; }
+.upload-tile--3x2  { aspect-ratio: 3 / 2; }
+.upload-tile--16x9 { aspect-ratio: 16 / 9; }
+
+/* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
+   附圖格在此排成 2×2，總高度與 1:1 主圖一致（create-product 主圖 + 附圖）。 */
+.upload-showcase {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-12);
+  align-items: start;
+}
+.upload-showcase .upload-tile--hero { max-width: none; width: 100%; }
+.upload-showcase .upload-grid { margin-top: 0; }
+.upload-grid--2x2 { grid-template-columns: repeat(2, 1fr); }
+
+/* 窄版（側邊預覽開啟或小視窗）：改回主圖在上、附圖列在下 */
+@media (max-width: 880px) {
+  .upload-showcase { grid-template-columns: 1fr; }
+  .upload-showcase .upload-tile--hero { max-width: 320px; }
+  .upload-showcase .upload-grid { margin-top: var(--sp-10); }
+  .upload-grid--2x2 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* stacked：不分寬度都主圖在上、附圖列在下（縱向堆疊）。
+   等同把上面窄版行為固定成常態，供半寬欄位（如 product-detail 素材＋資訊並列）用。 */
+.upload-showcase--stacked { grid-template-columns: 1fr; }
+.upload-showcase--stacked .upload-tile--hero { max-width: none; width: 100%; }
+.upload-showcase--stacked .upload-grid { margin-top: var(--sp-10); }
+.upload-showcase--stacked .upload-grid--2x2 { grid-template-columns: repeat(4, 1fr); }
+
+/* filled state — set after a file is chosen (create-product / create-event / register-ip).
+   Promoted 2026-06-16 from per-page <style> dupes to the shared component. */
+.upload-tile.is-filled {
+  border-style: solid;
+  border-color: var(--status-success);
+  color: var(--status-success);
+}
+.upload-tile.is-filled .upload-tile__title { color: var(--status-success); }
+
+/* ============================================================
+   Interactive uploader — opt-in via [data-upload]
+   spec 5.1.5.2 §4 Show it off（呈現層互動；真實上傳/AI 優化為 demo）
+   states on root: .is-empty（預設）· .is-uploading · .is-filled · .is-optimizing · .is-optimized
+   增強端：partials/upload-tile.js（注入 input/thumb/overlay/progress/actions/badge、切狀態、假計時）
+   只作用在 [data-upload]；沒有此屬性的舊 tile 維持上方 .is-filled 綠框行為，不受影響。
+   ============================================================ */
+.upload-tile[data-upload] { position: relative; overflow: hidden; }
+
+/* 未上傳：hover 才浮現更多資訊（保留空間、只切 opacity，無版面跳動）*/
+.upload-tile[data-upload].is-empty .upload-tile__sub,
+.upload-tile[data-upload].is-empty .upload-tile__hint { opacity: 0; transition: opacity .15s ease; }
+.upload-tile[data-upload].is-empty:hover .upload-tile__sub,
+.upload-tile[data-upload].is-empty:hover .upload-tile__hint { opacity: 1; }
+
+/* 縮圖（選到的圖，createObjectURL）：非空狀態即鋪滿 */
+.upload-tile__thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__thumb { display: block; }
+/* 非空狀態隱藏空狀態提示；filled/optimized 收掉綠框與內距、改中性邊 */
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__icon,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__title,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__sub,
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__hint { display: none; }
+.upload-tile[data-upload].is-filled,
+.upload-tile[data-upload].is-optimizing,
+.upload-tile[data-upload].is-optimized,
+.upload-tile[data-upload].is-uploading {
+  border-style: solid; border-color: var(--border); color: var(--foreground); padding: 0;
+}
+
+/* 上傳中：底部進度條 */
+.upload-tile__progress { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 6px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; display: none; z-index: 2; }
+.upload-tile__bar { height: 100%; width: 0%; background: var(--primary); border-radius: inherit; transition: width .2s linear; }
+.upload-tile[data-upload].is-uploading .upload-tile__progress { display: block; }
+
+/* 進行中浮層（上傳中／優化中）：frosted 罩＋spinner＋狀態字，主題自適應 */
+.upload-tile__overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-8); background: color-mix(in srgb, var(--card) 82%, transparent); color: var(--foreground); font-size: var(--fs-12); z-index: 3; }
+.upload-tile[data-upload].is-uploading .upload-tile__overlay,
+.upload-tile[data-upload].is-optimizing .upload-tile__overlay { display: flex; }
+.upload-tile__spinner { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: upl-spin .6s linear infinite; }
+@keyframes upl-spin { to { transform: rotate(360deg); } }
+
+/* 已上傳 hover：替換／AI 優化／刪除 */
+/* 遮罩＝深色壓暗＋毛玻璃（2026-07-21 使用者裁示）。原本混 --foreground 42%，
+   暗色模式下 --foreground 是亮色，遮罩會變成一層灰白霧、圖片反而被洗淡。
+   改用既有的浮層配方 --overlay-tint（黑 45%）＋ --overlay-blur，與 modal 背景同一套語彙，
+   兩個主題都得到「圖片退到後面、按鈕站到前面」的效果。 */
+.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: var(--overlay-tint); -webkit-backdrop-filter: var(--overlay-blur); backdrop-filter: var(--overlay-blur); opacity: 0; transition: opacity .15s ease; z-index: 4; }
+.upload-tile[data-upload].is-filled .upload-tile__actions,
+.upload-tile[data-upload].is-optimized .upload-tile__actions { display: flex; }
+.upload-tile[data-upload].is-filled:hover .upload-tile__actions,
+.upload-tile[data-upload].is-optimized:hover .upload-tile__actions,
+.upload-tile[data-upload].is-filled:focus-within .upload-tile__actions,
+.upload-tile[data-upload].is-optimized:focus-within .upload-tile__actions { opacity: 1; }
+.upload-tile__act { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 0; border-radius: var(--radius-md); background: var(--card); color: var(--foreground); box-shadow: var(--shadow-card); cursor: pointer; transition: background .12s ease; }
+.upload-tile__act:hover { background: var(--accent); }
+.upload-tile__act--ai { color: var(--primary); }
+.upload-tile__act .ztor-icon { width: 16px; height: 16px; }
+
+/* AI 優化完成徽章 */
+.upload-tile__badge { position: absolute; top: 6px; left: 6px; display: none; align-items: center; gap: var(--sp-4); padding: 3px var(--sp-8); border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font-size: var(--fs-11); font-weight: var(--fw-medium); z-index: 5; }
+.upload-tile[data-upload].is-optimized .upload-tile__badge { display: inline-flex; }
+.upload-tile__badge .ztor-icon { width: 12px; height: 12px; }
+
+/* ---- 內容檔（content / 媒體）模式：data-upload="content"（音訊/影片/檔案）----
+   上傳後可播放（音訊/影片）與刪除，操作比照 Show it off；無 AI 優化。
+   影片顯示影格、音訊/其他顯示檔型圖示＋檔名；真實 <audio>/<video> 播放。 */
+.upload-tile__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: none; }
+.upload-tile__video.is-shown { display: block; }
+.upload-tile__filemark { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-6); padding: var(--sp-10); text-align: center; }
+.upload-tile__filemark.is-shown { display: flex; }
+.upload-tile__filemark .ztor-icon { width: 28px; height: 28px; color: var(--muted-foreground); }
+.upload-tile__filename { font-size: var(--fs-12); color: var(--foreground); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 播放/暫停鈕（内容媒體）：沿用 __act，圖示由 JS 切換 */
+.upload-tile__act--play .upload-tile__ic-pause { display: none; }
+.upload-tile__act--play.is-playing .upload-tile__ic-play { display: none; }
+.upload-tile__act--play.is-playing .upload-tile__ic-pause { display: inline; }
+/* 非媒體檔（文件）隱藏播放鈕 */
+.upload-tile:not(.upload-tile--playable) .upload-tile__act--play { display: none; }

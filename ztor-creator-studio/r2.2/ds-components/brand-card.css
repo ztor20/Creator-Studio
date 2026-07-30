@@ -1,0 +1,169 @@
+/* ============================================================
+   Ztor — Brand partner card
+
+   The catalogue a creator picks a collab from. Its whole job is to make
+   ONE distinction unmissable: the commercial terms belong to the
+   Ztor↔brand deal and cannot be edited, while the campaign built on top
+   of them is the creator's. Read-only terms therefore sit in a recessed
+   panel with a lock, visually distinct from anything editable in Studio.
+   ============================================================ */
+
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-16);
+}
+
+.brand-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  padding: var(--sp-16);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition-property: box-shadow, transform;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.brand-card:hover {
+  box-shadow: inset 0 0 0 1px var(--border-strong, var(--border)), var(--shadow-card);
+}
+
+.brand-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  min-width: 0;
+}
+
+/* Square logo well. Reserved at a fixed size so swapping a placeholder
+   for a real asset later changes nothing about the layout. */
+.brand-card__logo {
+  width: 48px; height: 48px;
+  flex: none;
+  border-radius: var(--radius);
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+}
+/* The real mark. Monochrome-white SVGs sit on the brand's own colour, so
+   the tile reads as the brand at a glance; the inset keeps the mark off
+   the tile edge instead of bleeding into the corner radius. */
+.brand-card__logo img {
+  grid-area: 1 / 1;
+  width: 62%; height: 62%;
+  object-fit: contain;
+}
+/* Monogram fallback, shown ONLY while no real asset is present. Both
+   children occupy the same grid cell, so swapping one for the other
+   moves nothing. See assets/brands/README.md. */
+.brand-card__mark {
+  grid-area: 1 / 1;
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.02em;
+  color: var(--foreground-on-inverse);
+}
+.brand-card__logo.has-logo .brand-card__mark { display: none; }
+
+/* Name over category, not name-then-category on one line. Both are
+   <span>s, so without an explicit block they render as "Starbucks餐飲"
+   with nothing between them — CJK has no word space to save you. */
+.brand-card__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.brand-card__name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.brand-card__cat {
+  display: block;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.brand-card__blurb {
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+  text-wrap: pretty;
+}
+
+/* ── The locked deal panel ─────────────────────────────────────
+   Recessed rather than raised: this is the one block on the page the
+   creator cannot change, and it should read as a quotation of a
+   contract, not as a form. */
+.brand-deal {
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+  padding: var(--sp-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+.brand-deal__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--foreground-muted);
+}
+.brand-deal__head .ztor-icon { width: 12px; height: 12px; }
+.brand-deal__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.brand-deal__value {
+  font-family: var(--font-display);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+/* The headline number — the creator's cut. Earns the spotlight because
+   it is the single figure that decides whether they opt in. */
+.brand-deal__row--share .brand-deal__value {
+  font-size: var(--fs-18);
+  color: var(--primary);
+}
+
+.brand-card__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: auto;
+}
+.brand-card__foot .btn { flex: none; }
+.brand-card__method {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+.brand-card__method .ztor-icon { width: 13px; height: 13px; flex: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-card { transition-duration: 1ms; }
+}

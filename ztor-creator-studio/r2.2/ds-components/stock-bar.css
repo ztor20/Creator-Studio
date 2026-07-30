@@ -1,0 +1,38 @@
+/* ============================================================
+   Stock Bar — 細長量條（庫存水位／用量比例）
+
+   Composition pattern: 5px 高的水平量條，用一眼可讀的長度表達
+   「還剩多少」。搭配旁邊的數字（如「庫存 3 / 50」）使用；量條負責
+   體感、數字負責精確值，兩者不可互相取代。
+
+   Anatomy:
+     .stock-bar              軌道（--muted 底）
+       .stock-bar__fill      填充（品牌橘，寬度由 inline style 給百分比）
+
+   Modifier:
+     .stock-bar__fill--low   低於低庫存門檻時轉紅（--destructive）
+
+   Notes:
+     - 百分比只能由 consumer 以 inline `style="width:N%"` 提供，因為
+       它是資料而非樣式；本元件不預設寬度。
+     - 顏色只有「正常／過低」兩態，門檻判斷屬產品規則，不在本元件。
+
+   Consumers: product-detail.html（右側「當前庫存」卡）
+   ============================================================ */
+
+.stock-bar {
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--muted);
+  overflow: hidden;
+  margin: var(--sp-8) 0;
+}
+
+.stock-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+}
+
+.stock-bar__fill--low { background: var(--destructive); }

@@ -1,0 +1,150 @@
+/* ============================================================
+   detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
+
+   問題：清單頁點一列就整頁導航走。回來時篩選、搜尋、分頁、捲動位置全部歸零——
+   使用者原本的動作（「我正在看這一批，想順手查其中一個」）被打斷。
+   財務總覽的「我的專案」最明顯：篩了分類、翻到第 2 頁、點一個專案，
+   回來又是第 1 頁的全部分類。
+
+   解法沿用站上已經有的答案，而不是發明新的：ds-components/embed-modal.css
+   早就用 iframe 把 store-settings.html 開成彈窗，它的註解自己寫著
+   「Reusable for any "open page X as a popup" need」。本檔是它的全螢幕版本，
+   給「細節頁」這個角色用——細節頁比設定頁高得多，捲動空間必須給滿。
+
+   關鍵是「同一頁」而不是重做一份：iframe 載入的就是 project-detail.html 本人
+   （加 ?embed=1 收掉全域導覽，見 shared.css「內嵌模式」）。所以覆蓋層裡的細節頁
+   永遠不會跟直接開的那一份長得不一樣——沒有第二份設計要維護。
+
+   結構：
+     .detail-sheet[hidden]        固定覆蓋層 + 背板
+       .detail-sheet__panel       近乎滿版的卡（上下左右留一點，讓底下那頁露出來
+                                  ——那是「你還在原本的地方」這句話的視覺證據）
+         .detail-sheet__head      返回哪裡 + 標題 + 在新分頁開啟 + 關閉
+         .detail-sheet__frame     iframe
+   ============================================================ */
+
+.detail-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 90;                /* 高於 zselect 面板(60)、embed-modal(80) */
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: var(--sp-24) var(--sp-24) 0;
+  background: color-mix(in srgb, #000 52%, transparent);
+  backdrop-filter: blur(4px);
+  animation: detail-sheet-fade 180ms ease-out both;
+}
+.detail-sheet[hidden] { display: none; }
+
+.detail-sheet__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(1440px, 100%);
+  height: 100%;
+  background: var(--surface-shell);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: var(--shadow-overlay, 0 -8px 40px rgba(0,0,0,.45));
+  overflow: hidden;
+  /* 由下往上推出來——方向就是它的意思：這一層是疊在原本那頁「上面」的，
+     不是把原本那頁換掉。關閉時反向收回去，使用者看得到自己回到哪裡。 */
+  animation: detail-sheet-rise 260ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes detail-sheet-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes detail-sheet-rise {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.detail-sheet.is-closing { animation: detail-sheet-fade 160ms ease-in reverse both; }
+.detail-sheet.is-closing .detail-sheet__panel {
+  animation: detail-sheet-rise 160ms cubic-bezier(.16, 1, .3, 1) reverse both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-sheet, .detail-sheet__panel,
+  .detail-sheet.is-closing, .detail-sheet.is-closing .detail-sheet__panel { animation: none; }
+}
+
+.detail-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex: none;
+  padding: var(--sp-12) var(--sp-16) var(--sp-12) var(--sp-12);
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+/* 返回鈕帶著「回哪裡」的名字，不是一個孤零零的 ✕。
+   使用者要能在按下去之前就知道自己會回到哪一頁——那正是這整個覆蓋層要保護的東西。 */
+.detail-sheet__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-10);
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.detail-sheet__back:hover { background: var(--accent); color: var(--foreground); }
+.detail-sheet__back .ztor-icon { width: 16px; height: 16px; }
+
+.detail-sheet__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-sheet__actions { display: flex; align-items: center; gap: var(--sp-4); flex: none; }
+.detail-sheet__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--foreground-muted);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.detail-sheet__btn:hover { background: var(--accent); color: var(--foreground); }
+.detail-sheet__btn .ztor-icon { width: 16px; height: 16px; }
+
+.detail-sheet__frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: var(--surface-page);
+}
+
+/* 載入中：iframe 還沒回來之前先鋪一層底色，避免閃一下白（深色主題下特別刺眼）。 */
+.detail-sheet__frame[data-loading] { opacity: 0; }
+.detail-sheet__frame { transition: opacity 160ms ease-out; }
+
+/* 覆蓋層開著時鎖住底下那頁的捲動——否則滾輪會穿過去捲到後面那份清單，
+   關掉覆蓋層才發現位置已經跑掉，正好破壞這個元件要保住的東西。 */
+body.has-detail-sheet { overflow: hidden; }
+
+@media (max-width: 900px) {
+  .detail-sheet { padding: var(--sp-12) 0 0; }
+  .detail-sheet__panel { width: 100%; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+}
+
+/* 可點的清單列：游標要說明它可以被打開。列本身的 hover 底色各頁已有，不重複宣告。 */
+[data-sheet-link] { cursor: pointer; }

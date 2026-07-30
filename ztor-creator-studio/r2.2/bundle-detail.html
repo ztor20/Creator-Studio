@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ultimate Fan Bundle · Bundle detail · Ztor</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* bundle-detail · 組合內容/定價/限量 版面（spec 5.1.5.9）
+     2026-07-27：版型改與商品明細（product-detail）同一套殼——page--narrow ＋ 頁籤 ＋
+     detail-grid（主欄＋右側常駐欄）＋ form-section--outlined 卡；原本是一整排 bento card，
+     且把名稱／描述／素材／成員／價格／庫存／折扣／上架設定八件事塞在同一張 span-7 卡裡。
+     內容一項未增減，只重新分組進 tab-panel（規格 §3 明定分欄與版面由 UI 端決定、非約束）。
+     折扣 % 後綴輸入用 ds-components/amount-field.css 的 --suffix --readonly 變體（2026-07-11）。 */
+  /* 組合價格（自動 base ＋ 折扣）D103 */
+  .cb-priceline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .cb-autoprice { font-family: var(--font-display); font-size: var(--fs-18); font-weight: var(--fw-regular); color: var(--foreground); }
+  .cb-basestrike { font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through; }
+  .cb-basestrike[hidden] { display: none; }
+  .bd-member-end { display: flex; align-items: center; gap: 12px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page page--narrow">
+
+      <!-- §2.1 導航與返回脈絡 -->
+      <div class="page-crumb">
+        <a href="e-shop.html" class="card__link" data-i18n="bd.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <a href="e-shop.html" class="card__link" data-i18n="bd.crumb.bundles">Bundles</a> <span style="margin:0 6px">/</span>
+        <span id="bd-crumb-name">Ultimate Fan Bundle</span>
+      </div>
+
+      <!-- §2.2 頁首與狀態（與商品明細同構：標題在上、狀態徽章在標題下、動作在右）-->
+      <div class="page-intro">
+        <div style="min-width:0">
+          <h1 class="page-intro__title" id="bd-title" style="margin:0">Ultimate Fan Bundle</h1>
+          <div class="flex-row" style="gap:6px;margin-top:8px">
+            <span class="badge badge--orange"><span data-i18n="bd.badge.live">Live</span></span>
+            <span class="badge"><span data-i18n="bd.badge.bundle">Bundle</span></span>
+          </div>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button" data-bd-preview-open data-i18n="product-detail.btn.preview">See as fan</button>
+          <button class="btn btn--primary" type="button" data-i18n="cp.save.changes">Save changes</button>
+        </div>
+      </div>
+
+      <!-- 分頁（與商品明細同一組 DS 元件與切換邏輯）：
+           總覽＝§2.4 銷售摘要＋§2.3 的組合資訊與素材／銷售設定＝§2.3 的價格・折扣・庫存／成員＝§2.3 成員清單＋§2.5 變更影響。
+           §2.3 的上架設定屬「管整個組合、不隸屬任一分頁」，依 STYLE-DECISIONS Q25 移入右側常駐欄。 -->
+      <nav class="tabs tabs--card tabs--underline-short mt-24" role="tablist" data-tabs>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="product-detail.tab.overview">Overview</button>
+        <button class="tabs__item" role="tab" data-tab="price-stock" aria-selected="false" data-i18n="product-detail.tab.price-stock">Sales settings</button>
+        <button class="tabs__item" role="tab" data-tab="members" aria-selected="false" data-i18n="bd.tab.members">Members</button>
+      </nav>
+
+      <div class="detail-grid mt-16">
+      <div class="detail-main">
+
+      <!-- ════════ TAB · 總覽：§2.4 銷售摘要 ＋ §2.3 組合資訊／素材 ════════ -->
+      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
+
+        <!-- §2.4 銷售摘要 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
+            <div>
+              <h3 class="form-section__title" data-i18n="product-detail.sales.title">Sales summary</h3>
+              <p class="form-section__sub" data-i18n="product-detail.sales.sub">Reconciled with Earnings; not recalculated here.</p>
+            </div>
+            <a class="card__link" href="earnings.html" style="font-size: var(--fs-12);white-space:nowrap" data-i18n="product-detail.sales.more">View more →</a>
+          </div>
+
+          <div class="bento when-data" style="gap:var(--sp-10)">
+            <div class="kpi kpi--compact bento--span-4"><div class="kpi__label" data-i18n="bd.kpi.sold">Bundles sold</div><div class="kpi__value" style="font-size: var(--fs-22)">38</div></div>
+            <div class="kpi kpi--compact bento--span-4"><div class="kpi__label" data-i18n="product-detail.kpi.gross">Gross</div><div class="kpi__value" style="font-size: var(--fs-22)">$2,242</div></div>
+            <div class="kpi kpi--compact bento--span-4"><div class="kpi__label" data-i18n="product-detail.kpi.net">Net after fees</div><div class="kpi__value" style="font-size: var(--fs-22)">$1,758</div><div class="kpi__meta" data-i18n="product-detail.kpi.net-meta">Platform 15% · payment 2.4% · shipping reimbursed</div></div>
+          </div>
+          <!-- §2.4 空狀態（依 §6.1）：尚無銷售 -->
+          <div class="when-empty">
+            <div class="bento" style="gap:var(--sp-10)">
+              <div class="kpi kpi--compact bento--span-6"><div class="kpi__label" data-i18n="bd.kpi.sold">Bundles sold</div><div class="kpi__value" style="font-size: var(--fs-22)">0</div></div>
+              <div class="kpi kpi--compact bento--span-6"><div class="kpi__label" data-i18n="product-detail.kpi.gross">Gross</div><div class="kpi__value" style="font-size: var(--fs-22)">—</div></div>
+            </div>
+            <div class="field__hint mt-8" data-i18n="bd.sales.empty">No sales yet. Revenue appears here once fans buy this bundle.</div>
+          </div>
+          <div class="field__hint mt-8 when-data" data-i18n="bd.sales.hint">Net figures pulled from Earnings; member revenue split is settled by Earnings.</div>
+        </section>
+
+        <!-- §2.3 組合資訊（名稱＋描述）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="bd.content.title">Bundle content</h3>
+            <p class="form-section__sub" data-i18n="cb.info.title">Bundle info</p>
+          </div>
+
+          <div class="field">
+            <div class="field__label" data-i18n="cb.name">Bundle name</div>
+            <input class="input" id="bd-name" value="Ultimate Fan Bundle" placeholder="e.g. Ultimate Fan Bundle" data-i18n-placeholder="bd.name.ph">
+          </div>
+
+          <!-- 組合描述（spec 5.1.5.9 §2.3 → 5.1.5.4 §4 F1）-->
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label" data-i18n="cb.desc">Tell fans what they'll get</div>
+            <textarea class="textarea" id="bd-desc" placeholder="e.g. What is inside and why it is worth more together than apart." data-i18n-placeholder="bd.desc.ph">Three fan favourites bundled at one price — the tour zine, the coastline tee, and the summer preset pack.</textarea>
+          </div>
+        </section>
+
+        <!-- §2.3 素材（Show it off）：主圖＋附圖 2×2，沿用 upload-tile（spec §2.3 → 5.1.5.4 §4 F1）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cb.media.show">Show it off</h3>
+            <p class="form-section__sub" data-i18n="cb.media.hero">Bundle cover — the first thing fans see</p>
+          </div>
+          <div class="upload-showcase">
+            <div class="upload-tile upload-tile--hero is-filled" data-bd-asset="hero" data-upload>
+              <img class="upload-tile__thumb" id="bd-hero" src="images/products/set-outfit-model.webp" alt="『祝你好命』選物四件組">
+              <span class="upload-tile__icon"><svg class="up-stack" viewBox="0 0 48 48" fill="none"><rect x="11" y="10" width="20" height="26" rx="3" transform="rotate(-9 21 23)" stroke="var(--border)" stroke-width="2"/><rect x="17" y="10" width="20" height="26" rx="3" transform="rotate(9 27 23)" stroke="var(--border)" stroke-width="2"/><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
+              <span class="upload-tile__title" data-i18n="cb.media.hero">Bundle cover — the first thing fans see</span>
+              <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+            </div>
+            <div class="upload-grid upload-grid--2x2">
+              <div class="upload-tile is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/26ms-t-shirt-w-01.jpeg" alt="26MS T-Shirt (白)"></div>
+              <div class="upload-tile is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-cap-generated.webp" alt="祝你好命刺繡 Logo 老帽"></div>
+              <div class="upload-tile is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-cargo-pants-generated.webp" alt="祝你好命束口工裝褲"></div>
+              <div class="upload-tile is-filled" data-bd-asset="gallery" data-upload><img class="upload-tile__thumb" src="images/products/wyagl-lowtop-sneakers-generated.webp" alt="祝你好命紅白低筒球鞋"></div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /tab-panel overview -->
+
+      <!-- ════════ TAB · 銷售設定：§2.3 的組合價格／折扣設定／庫存 ════════ -->
+      <div class="tab-panel" data-panel="price-stock" role="tabpanel">
+
+        <!-- 組合價格：自動 base（唯讀）＋ 折扣 %（可填）· spec 5.1.5.9／5.1.5.4 §4 F3 / D103（修訂 D102）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cb.pricing">Bundle price</h3>
+            <p class="form-section__sub" data-i18n="cb.price.auto-hint">Auto-summed from members' prices — not editable. Members with variants show “from $X”.</p>
+          </div>
+          <div class="field" data-bd-base="69.00">
+            <div class="cb-priceline">
+              <span class="cb-autoprice" id="bd-autoprice">$69.00</span>
+              <span class="cb-basestrike" id="bd-basestrike" hidden></span>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field__label" data-i18n="cb.price.discount">Discount % (optional)</div>
+            <span class="amount-field amount-field--suffix amount-field--readonly" style="max-width:160px"><input class="input amount-field__input" id="bd-discount" placeholder="0" inputmode="decimal"><span class="amount-field__unit">%</span></span>
+            <div class="field__hint mt-8" id="bd-disc-hint" data-i18n="cb.price.discount-hint">Applied to the auto-summed total — fans pay the discounted price.</div>
+          </div>
+        </section>
+
+        <!-- 折扣設定（spec 5.1.5.9 §2.3 · D144）：組合折扣幅度＝定價區折扣 %（衍生價、不在此設）；此區只放「開啟限時折扣」→ 起訖日 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cp.discount.title">Discount settings</h3>
+            <p class="form-section__sub" data-i18n="cb.discount.note">The discount amount is the Discount % set in Bundle price above; turn on a limited-time window to schedule it.</p>
+          </div>
+          <div class="control-group">
+            <div class="control-row">
+              <div>
+                <div class="control-row__main" data-i18n="cp.discount.limited">Limited-time discount</div>
+                <div class="control-row__sub" data-i18n="cp.discount.limited-sub">Apply the discount only during a set period</div>
+              </div>
+              <div class="switch" role="switch" aria-checked="false" tabindex="0" id="bd-sale-toggle"></div>
+            </div>
+            <div class="form-grid control-group__body" data-bd-sale-fields hidden>
+              <div class="field" style="margin-bottom:0">
+                <div class="field__label"><span data-i18n="cb.sale.start">Discount start date</span> <span class="field__req">*</span></div>
+                <input class="input" type="date">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <div class="field__label"><span data-i18n="cb.sale.end">Discount end date</span> <span class="field__req">*</span></div>
+                <input class="input" type="date">
+                <div class="field__hint" data-i18n="cb.sale.pending">Sale price source &amp; time zone pending spec (5.1.5.4 §4 F7).</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 庫存（Stock）：Edition 不限量/限量 + 唯讀目前在庫＝min(成員)（spec 5.1.5.9 §2.3 → 5.1.5.4 §4 F4）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cb.stock.title">Stock</h3>
+            <p class="form-section__sub" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</p>
+          </div>
+          <!-- 庫存版本：用 selection-card（同定價卡），非 radio-card -->
+          <div class="field">
+            <div class="selection-grid" id="bd-edition">
+              <button class="selection-card selection-card--active" type="button" data-bd-edition="unlimited">
+                <span class="selection-card__title" data-i18n="cb.edition.unlimited">Unlimited</span>
+                <span class="selection-card__sub" data-i18n="cb.edition.unlimited-hint">Sells as long as members are in stock — no extra cap.</span>
+              </button>
+              <button class="selection-card" type="button" data-bd-edition="limited" data-feat="S45">
+                <span class="selection-card__title" data-i18n="cb.edition.limited">Limited</span>
+                <span class="selection-card__sub" data-i18n="cb.edition.limited-hint">Add a hard cap on top of member stock.</span>
+              </button>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-bottom:0">
+            <div class="field" data-when-bd-edition="limited" data-feat="S45" hidden style="margin-bottom:0">
+              <div class="field__label"><span data-i18n="cb.total">Total quantity</span> <span class="field__req">*</span></div>
+              <input class="input" value="50">
+              <div class="field__hint" data-i18n="cb.total.hint">Hard cap · still limited by member stock</div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <div class="field__label" data-i18n="cb.avail.label">Available now</div>
+              <input class="input" id="bd-available" value="12" readonly>
+              <div class="field__hint" data-i18n="cb.avail.readonly">Auto · lowest member stock (min of members)</div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /tab-panel price-stock -->
+
+      <!-- ════════ TAB · 成員：§2.3 成員清單 ＋ §2.5 成員與變更影響 ════════ -->
+      <div class="tab-panel" data-panel="members" role="tabpanel">
+
+        <!-- 成員清單（≥2；少於 2 提示且不可上架，§2.3/§2.5）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-12)">
+            <div>
+              <h3 class="form-section__title" data-i18n="bd.members.title">In this bundle</h3>
+              <p class="form-section__sub" data-i18n="bd.members.edit">Add or remove members in the bundle builder. Members reference existing products.</p>
+            </div>
+            <span class="text-sub" id="bd-member-count" style="font-size: var(--fs-12)">(3)</span>
+          </div>
+          <div class="data-list" id="bd-members">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Tour zine vol. 02</a> <span class="text-sub">Books · $24.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$24.00</span></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Coastline tee (M)</a> <span class="text-sub">Apparel · $32.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$32.00</span></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html">Summer Preset Pack</a> <span class="text-sub">Digital · $13.00</span></div></div>
+              </div>
+              <div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">$13.00</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- §2.5 成員與變更影響 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="bd.impact.title">Member impact</h3>
+          </div>
+          <div class="field__hint" data-i18n="bd.impact.note">Editing a member's price, stock or visibility can affect this bundle's sellable quantity and pricing validity — a sold-out or hidden member makes the bundle unsellable and pulls it from your shop; a member price rise can push the fixed price above members' total.</div>
+        </section>
+
+      </div><!-- /tab-panel members -->
+
+      </div><!-- /detail-main -->
+
+      <!-- 右側常駐欄（跨分頁）：上架設定（可互動、管整個組合，Q25）＋ 組合概況（唯讀）-->
+      <aside class="detail-rail">
+
+        <!-- 上架設定（spec 5.1.5.9 §2.3 · D144；選法 2026-07-17 改 radio-list、2026-07-21 改收合式）：
+             三選一 不上架／立刻上架／定時上架，選「定時上架」才展開上架時間。
+             2026-07-27 自主欄移入右欄，比照商品明細（STYLE-DECISIONS Q25：管整個物件、不隸屬任一分頁）。 -->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="cp.listing.title">Listing settings</h3>
+          </div>
+          <div class="radio-list radio-list--collapsible" id="bd-listing-mode">
+            <button class="radio-list__trigger" type="button" aria-expanded="false">
+              <span class="radio-list__dot"></span>
+              <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+              <i data-lucide="chevron-down" class="ztor-icon radio-list__chevron"></i>
+            </button>
+            <div class="radio-list__options" hidden>
+              <button class="radio-list__item" type="button" data-bd-listing="none">
+                <span class="radio-list__dot"></span>
+                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.none">Don't list</span><span class="radio-list__sub" data-i18n="cp.listing.none-sub">Save as draft, stays hidden</span></span>
+              </button>
+              <button class="radio-list__item radio-list__item--active" type="button" data-bd-listing="now">
+                <span class="radio-list__dot"></span>
+                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.now">List now</span><span class="radio-list__sub" data-i18n="cp.listing.now-sub">Goes live right after saving</span></span>
+              </button>
+              <button class="radio-list__item" type="button" data-bd-listing="schedule">
+                <span class="radio-list__dot"></span>
+                <span class="radio-list__text"><span class="radio-list__title" data-i18n="cp.listing.schedule">Schedule</span><span class="radio-list__sub" data-i18n="cp.listing.schedule-sub">Auto-lists at the time you set</span></span>
+              </button>
+            </div>
+          </div>
+          <div class="field" data-bd-listing-fields hidden style="margin-top:12px;margin-bottom:0">
+            <div class="field__label"><span data-i18n="cp.listing.time">Listing time</span> <span class="field__req">*</span></div>
+            <input class="input" type="datetime-local">
+            <div class="field__hint" data-i18n="cp.listing.pending">Auto-downlist &amp; time zone pending spec.</div>
+          </div>
+        </section>
+
+        <!-- 組合概況（唯讀鏡射；實編輯仍在對應分頁，比照商品明細右欄的唯讀狀態卡）-->
+        <section class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="bd.rail.summary">Bundle at a glance</h3>
+          </div>
+          <div class="kv"><span class="kv__k" data-i18n="cb.pricing">Bundle price</span><span class="kv__v" id="bd-rail-price">$69.00</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="cb.avail.label">Available now</span><span class="kv__v" id="bd-rail-available">12</span></div>
+          <div class="kv"><span class="kv__k" data-i18n="bd.members.title">In this bundle</span><span class="kv__v" id="bd-rail-members">3</span></div>
+        </section>
+
+      </aside>
+      </div><!-- /detail-grid -->
+
+    </div>
+  </main>
+</div>
+
+<!-- §2.2 See as fan · 畫面分割預覽（§6.7 同源，與 E-Shop F5／商品細節共用 partials/fan-store.js）-->
+<div class="preview-panel preview-panel--inset" id="bd-preview">
+  <div class="preview-panel__backdrop" data-bd-preview-close></div>
+  <div class="preview-panel__sheet">
+    <div class="preview-panel__head">
+      <h3 class="preview-panel__title" data-i18n="product-detail.preview.title">How buyers see your shop</h3>
+      <button class="btn btn--icon btn--sm" data-bd-preview-close aria-label="Close preview"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="preview-panel__body">
+      <div data-fan-store-host></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="partials/fan-store.js?v=r2.2"></script>
+<script src="partials/radio-list.js?v=r2.2"></script>
+<script>
+  /* bundle-detail 互動：定價模式切換 + See as fan 分割預覽（§6.7 同源）。display-only demo。 */
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    const bundle = window.ztorGetBundle && window.ztorGetBundle(params.get('id'));
+    const esc = s => String(s || '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch]);
+    if (bundle) {
+      const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      setText('bd-crumb-name', bundle.name); setText('bd-title', bundle.name);
+      const name = document.getElementById('bd-name'); if (name) name.value = bundle.name;
+      const desc = document.getElementById('bd-desc'); if (desc) { desc.removeAttribute('data-i18n'); desc.value = bundle.description; }
+      const hero = document.getElementById('bd-hero');
+      if (hero) { hero.src = 'images/products/' + bundle.img; hero.alt = bundle.name; hero.closest('.upload-tile').classList.add('is-filled'); }
+      const gallery = document.querySelectorAll('[data-bd-asset="gallery"]');
+      gallery.forEach((tile, i) => {
+        const item = bundle.memberItems && bundle.memberItems[i]; if (!item) return;
+        tile.classList.add('is-filled');
+        tile.innerHTML = '<img class="upload-tile__thumb" src="images/products/' + esc(item.img) + '" alt="' + esc(item.name) + '">';
+      });
+      const members = document.getElementById('bd-members');
+      if (members && bundle.memberItems) {
+        members.innerHTML = bundle.memberItems.map(item =>
+          '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title"><a class="card__link" href="product-detail.html?id=' + esc(item.id) + '">' + esc(item.name) + '</a> <span class="text-sub">' + esc(item.meta) + '</span></div></div></div><div class="data-list__end bd-member-end"><span style="font-size: var(--fs-13)">' + esc(item.price) + '</span></div></div>'
+        ).join('');
+        if (window.ztorIcons) window.ztorIcons.applyIcons(members);
+      }
+      const memberCount = (bundle.memberItems && bundle.memberItems.length) || 0;
+      setText('bd-member-count', '(' + memberCount + ')');
+      setText('bd-rail-members', String(memberCount));
+      document.title = bundle.name + ' · Bundle detail · Ztor';
+    }
+    /* 右欄「可售數」鏡射庫存分頁的唯讀欄位（同一個數字只有一個來源）*/
+    const availInput = document.getElementById('bd-available');
+    const railAvail = document.getElementById('bd-rail-available');
+    if (availInput && railAvail) railAvail.textContent = availInput.value;
+
+    /* 組合價格（D103）：base 自動（唯讀）＋折扣 %；折後＝base×(1−%)。base 為 demo 靜態值（成員加總）*/
+    const bdBase = bundle ? bundle.priceAmount : 69.00;
+    const bdCurrency = bundle ? 'NT$' : '$';
+    const bdDisc = document.getElementById('bd-discount');
+    const bdAuto = document.getElementById('bd-autoprice');
+    const bdStrike = document.getElementById('bd-basestrike');
+    const bdHint = document.getElementById('bd-disc-hint');
+    const bdRailPrice = document.getElementById('bd-rail-price');
+    function bdRecalc() {
+      const raw = (bdDisc && bdDisc.value.trim()) || '';
+      const v = parseFloat(raw);
+      const ok = !raw || (!isNaN(v) && v >= 0 && v <= 100);
+      const pct = (ok && raw && v > 0) ? v : 0;
+      const final = bdBase * (1 - pct / 100);
+      const money = value => bdCurrency + (bundle ? Math.round(value).toLocaleString('en-US') : value.toFixed(2));
+      if (bdAuto) bdAuto.textContent = money(final);
+      if (bdRailPrice) bdRailPrice.textContent = money(final);
+      if (bdStrike) { bdStrike.hidden = !(pct > 0); if (pct > 0) bdStrike.textContent = money(bdBase); }
+      if (bdHint) {
+        bdHint.removeAttribute('data-i18n');
+        if (!ok) { bdHint.style.color = 'var(--destructive)'; bdHint.textContent = 'Discount must be 0–100.'; }
+        else if (pct > 0) { bdHint.style.color = 'var(--status-success)'; bdHint.textContent = '−' + pct + '％ · 省下 ' + money(bdBase - final); }
+        else { bdHint.style.color = ''; bdHint.textContent = 'Applied to the auto-summed total — fans pay the discounted price.'; }
+      }
+    }
+    if (bdDisc) bdDisc.addEventListener('input', bdRecalc);
+    if (bundle) bdRecalc();
+
+    /* 庫存版本切換（限量才顯示硬上限欄）*/
+    const eGrid = document.getElementById('bd-edition');
+    if (eGrid) eGrid.querySelectorAll('[data-bd-edition]').forEach(btn => btn.addEventListener('click', () => {
+      eGrid.querySelectorAll('[data-bd-edition]').forEach(b => b.classList.toggle('selection-card--active', b === btn));
+      document.querySelectorAll('[data-when-bd-edition]').forEach(el => el.hidden = el.dataset.whenBdEdition !== btn.dataset.bdEdition);
+    }));
+
+    /* 販售排程 toggle */
+    const saleToggle = document.getElementById('bd-sale-toggle');
+    const saleFields = document.querySelector('[data-bd-sale-fields]');
+    if (saleToggle) {
+      const flip = () => {
+        const on = saleToggle.getAttribute('aria-checked') !== 'true';
+        saleToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+        saleToggle.classList.toggle('switch--on', on);
+        if (saleFields) saleFields.hidden = !on;
+      };
+      saleToggle.addEventListener('click', flip);
+      saleToggle.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); } });
+    }
+
+    /* 上架設定 radio-list（收合式）：選「定時上架」才展開上架時間欄（spec 5.1.5.9 §2.3 · D144）。
+       開合與選中狀態由 partials/radio-list.js 統一處理。 */
+    const bdLm = document.getElementById('bd-listing-mode');
+    if (bdLm) bdLm.addEventListener('radio-list:change', e => {
+      const f = document.querySelector('[data-bd-listing-fields]');
+      if (f) f.hidden = e.detail.item.dataset.bdListing !== 'schedule';
+    });
+
+    const panel = document.getElementById('bd-preview');
+    if (panel) {
+      (function mountFanStore() {
+        const host = panel.querySelector('[data-fan-store-host]');
+        const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.fanStore;
+        if (!host || !html) { if (host) console.warn('[bundle-detail] fan-store template missing'); return; }
+        host.innerHTML = html;
+        if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+        if (window.applyI18n) window.applyI18n(host);
+      })();
+      const open = () => { panel.classList.add('is-open'); document.body.classList.add('preview-open'); };
+      const close = () => { panel.classList.remove('is-open'); document.body.classList.remove('preview-open'); };
+      document.querySelectorAll('[data-bd-preview-open]').forEach(b => b.addEventListener('click', open));
+      panel.querySelectorAll('[data-bd-preview-close]').forEach(b => b.addEventListener('click', close));
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    }
+  })();
+</script>
+<script>
+  /* Bundle detail · in-page tabs（與 product-detail 同一套：canonical pattern per earnings.html，無共用 tabs.js）。
+     成員分頁的清單要整頁寬（右欄再放一次組合概況等於重複）→ --full；其餘分頁維持常駐右欄。 */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    function activate(name, push) {
+      let matched = false;
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) matched = true;
+      });
+      if (!matched) return;
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      const grid = document.querySelector('.detail-grid');
+      if (grid) grid.classList.toggle('detail-grid--norail', name === 'members');
+      if (push && window.history && history.replaceState) history.replaceState(null, '', '#' + name);
+    }
+    tablist.addEventListener('click', e => {
+      const btn = e.target.closest('.tabs__item');
+      if (btn) activate(btn.dataset.tab, true);
+    });
+    const initial = (location.hash || '').replace('#', '');
+    if (initial) activate(initial, false);
+  })();
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

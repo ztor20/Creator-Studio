@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign report · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<script src="js/fans-guide-firstrun.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/brand-card.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  .rep-head { display:flex; align-items:center; gap:var(--sp-12); flex-wrap:wrap; }
+  .rep-brand { display:flex; align-items:center; gap:var(--sp-10); }
+  .rep-brand span { display:flex; flex-direction:column; gap:2px; }
+  .split-bar__legend {
+    display:flex; align-items:center; gap:var(--sp-16);
+    margin-top:var(--sp-10); font-size:var(--fs-12); color:var(--muted-foreground);
+  }
+  .split-bar__key { display:inline-flex; align-items:center; gap:var(--sp-6); }
+  .split-bar__dot { width:8px; height:8px; border-radius:2px; flex:none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page" data-campaign-report>
+
+      <div class="page-crumb">
+        <a href="brand-campaigns.html" class="card__link" data-i18n="bc.crumb.self">Fan campaigns</a>
+        <span style="margin:0 6px">/</span>
+        <span data-i18n="rep.crumb.self">Report</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <div class="rep-head">
+            <h1 class="page-intro__title" id="rep-name">—</h1>
+            <span id="rep-status"></span>
+          </div>
+          <p class="page-intro__sub"><span id="rep-dates">—</span></p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          <span class="rep-brand" id="rep-brand"></span>
+        </div>
+      </div>
+
+      <!-- The four numbers a creator actually acts on. Scans is the raw
+           volume; share of voice is whether that volume is any good;
+           revenue is the money; new fans is the strategic payoff. -->
+      <div class="bento">
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="rep.kpi.scans">Scans credited to you</div>
+          <div class="kpi__value" id="rep-scans">—</div>
+          <div class="kpi__meta" data-i18n="rep.kpi.scans-meta">Fans who named you when scanning</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="rep.kpi.sov">Share of voice</div>
+          <div class="kpi__value" id="rep-sov">—</div>
+          <div class="kpi__meta" id="rep-sov-meta">—</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="rep.kpi.rev">Revenue share</div>
+          <div class="kpi__value" id="rep-rev">—</div>
+          <div class="kpi__meta" id="rep-rev-meta">—</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label" data-i18n="rep.kpi.fans">New fans</div>
+          <div class="kpi__value" id="rep-fans">—</div>
+          <div class="kpi__meta" data-i18n="rep.kpi.fans-meta">Followed you during this campaign</div>
+        </div>
+      </div>
+
+      <!-- Chosen vs defaulted. This is the one panel that says whether
+           the campaign PERSUADED anyone, as opposed to simply collecting
+           scans from fans who were going to pick you anyway. -->
+      <section class="card mt-24">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="rep.chosen.title">Did they choose you, or default to you?</h3>
+          <button class="explain-btn" type="button" data-explain="explain-chosen" aria-label="Why this matters"><i data-lucide="info" class="ztor-icon"></i></button>
+        </div>
+        <div class="stacked-bar" id="rep-chosen-bar" style="height:18px"></div>
+        <div class="split-bar__legend">
+          <span class="split-bar__key"><span class="split-bar__dot" style="background:var(--primary)"></span><span data-i18n="rep.chosen.picked">Actively picked you</span></span>
+          <span class="split-bar__key"><span class="split-bar__dot" style="background:var(--muted-foreground)"></span><span data-i18n="rep.chosen.default">Took the default</span></span>
+          <span style="margin-left:auto" id="rep-chosen-meta">—</span>
+        </div>
+        <div class="insight-row mt-16">
+          <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
+          <p class="insight-row__text"><strong id="rep-chosen">—</strong> <span data-i18n="rep.chosen.insight">of your credited scans were a deliberate choice.</span></p>
+        </div>
+      </section>
+
+      <div class="bento mt-24">
+        <section class="card bento--span-6">
+          <div class="card__head"><h3 class="card__title" data-i18n="rep.points.title">Loyalty points issued</h3></div>
+          <div class="kpi__value" id="rep-points">—</div>
+          <p class="text-sub" style="font-size:var(--fs-12);margin-top:4px" data-i18n="rep.points.meta">Points this campaign put into your fans’ accounts. Points feed tier standing, so a campaign also moves fans up the ladder.</p>
+        </section>
+        <section class="card bento--span-6">
+          <div class="card__head"><h3 class="card__title" data-i18n="rep.open.title">Not measured here</h3></div>
+          <p class="text-sub" style="font-size:var(--fs-13);line-height:var(--lh-relaxed)" data-i18n="rep.open.text">Ztor sees scans, not tills. How many codes the brand handed out, and what each fan actually spent, live in the brand’s systems — so neither is shown rather than estimated.</p>
+        </section>
+      </div>
+
+      <div class="info-banner mt-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-i18n="rep.demo-note">Prototype figures for illustration. Platform fee on campaign revenue is not yet applied — the figure shown is gross.</span>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="explain" id="explain-chosen" hidden>
+  <div class="explain__dialog" role="dialog" aria-modal="true" aria-labelledby="explain-chosen-title">
+    <div class="explain__head">
+      <h2 class="explain__title" id="explain-chosen-title" data-i18n="rep.chosen.exp.title">Chosen vs defaulted</h2>
+      <button class="explain__close" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="explain__body">
+      <p class="explain__lead" data-i18n="rep.chosen.exp.lead">When a fan scans a reward code, the app pre-selects a creator for them — usually whoever they engage with most. They can change it.</p>
+      <p data-i18n="rep.chosen.exp.body">So two very different things both arrive as “a scan”. One fan tapped past their default to name you. Another simply accepted the name already on screen. Only the first is evidence that your campaign persuaded anybody.</p>
+      <div class="explain__example">
+        <span class="explain__example-label" data-i18n="tier-settings.explain.example">Example</span>
+        <p data-i18n="rep.chosen.exp.eg">Two campaigns both credit <strong>500 scans</strong>. In one, <strong>90%</strong> actively picked you — your promotion worked. In the other, <strong>15%</strong> did — you were collecting scans you would have received anyway.</p>
+      </div>
+      <p class="explain__rule" data-i18n="rep.chosen.exp.rule">A high total with a low choice rate means the campaign is riding your existing audience, not growing it.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/explainer.js?v=r2.2"></script>
+<script src="js/brand-store.js?v=r2.2"></script>
+<script src="js/brand-campaigns.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

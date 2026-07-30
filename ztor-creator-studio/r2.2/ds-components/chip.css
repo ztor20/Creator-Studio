@@ -1,0 +1,137 @@
+/* ============================================================
+   Chip — clickable filter pill with active state + optional count.
+
+   Distinct from .badge (which is pure status display):
+   • .badge      = read-only status indicator (5 status colors)
+   • .chip       = interactive filter / selector (neutral color,
+                   inverts to foreground bg when active)
+
+   Used in Earnings Transactions filter, Tax docs year filter,
+   and any list with a filterable taxonomy.
+
+   Anatomy:
+     .chip-group       (inline-flex wrap container, 6px gap)
+       .chip
+         <text>
+         .chip__count  (optional · separator + faded number)
+       .chip--active   (inverted bg)
+       .chip--static   (read-only chip · no hover affordance)
+     .filter-row       (chip-group + actions row · space-between)
+       .filter-row__actions
+   ============================================================ */
+
+.chip-group { display: inline-flex; flex-wrap: wrap; gap: var(--sp-6); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-12);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  color: var(--foreground-muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--duration) var(--easing),
+              color var(--duration) var(--easing),
+              border-color var(--duration) var(--easing);
+}
+.chip:hover { background: var(--accent); color: var(--foreground); }
+
+/* 2026-07-27 Q8 裁決 A：已選＝品牌橘 tint（原本是反白＝黑底白字）。
+   反白版在深色模式其實是「白底黑字」，跟旁邊 filter-tabs 的已選態長得完全不一樣，是 Q8 點名的四種答案之一。*/
+.chip--active {
+  background: var(--selected-surface);
+  color: var(--selected-ink);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+.chip--active:hover {
+  background: var(--selected-surface-hover);
+  color: var(--selected-ink);
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+.chip--static { cursor: default; }
+.chip--static:hover { background: var(--card); color: var(--foreground-muted); }
+
+/* --value · 創作者剛輸入的值（多規格的選項值）。中性淡填、不反白：
+   這種 chip 是「我剛打進去的資料」，不是被選中的篩選條件，不該是全頁最搶眼的東西
+   （2026-07-21 使用者裁示，參照 Webflow Designer 的 class chip——淡色填底、安靜待在面板上）。
+   與 tag-input 的橘色已選標籤（Q19）分工：橘＝已套用的分類，灰＝剛建立的值。 */
+.chip--value,
+.chip--value:hover {
+  background: var(--input-surface);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.chip__count {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  padding-left: var(--sp-4);
+  border-left: 1px solid var(--border);
+  margin-left: var(--sp-2);
+}
+.chip--active .chip__count {
+  color: color-mix(in srgb, var(--background) 70%, transparent);
+  border-left-color: color-mix(in srgb, var(--background) 25%, transparent);
+}
+
+/* Filter row · pairs a chip-group with action buttons on the right.
+   The chip-group half is optional: when a filter is low-frequency it collapses into a
+   .select and the row carries only .filter-row__actions (selects + .field-pill search),
+   which then sits left-aligned — see Projects (2026-07-23). */
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-12);
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-12);
+}
+.filter-row__actions { display: inline-flex; gap: var(--sp-8); align-items: center; }
+
+/* Removable chip · a selected / creator-added value carrying an inline ×.
+   Used by .tag-input (product tags) and the variant builder's option values
+   (spec 5.1.5.2 §4.1④ / §4.5). Color inherits from the chip so it works on
+   both neutral and --active (inverted) chips. */
+/* 2026-07-28 使用者裁示：「字沒有置中」。量到的是 9px——可移除 chip 的左內距 12px，
+   右邊卻是 6px 內距＋16px 按鈕＋gap／margin 共 8px，所以標籤被推到左邊 9px。
+   （一般 chip 沒有這個問題：實測左右都是 12.67px、上下都是 9px，本來就正中。）
+
+   做法：× 改成絕對定位、不再佔版面，chip 兩側內距對稱 → 文字真的在正中央。
+   代價是 chip 變寬約 14px：右內距要留得下按鈕，長標籤才不會壓到 ×。
+   對稱值 = 6px 邊距 + 16px 按鈕 + 4px 間隙 = 26px，兩側同值。 */
+.chip--removable {
+  position: relative;
+  padding-inline: 26px;
+  justify-content: center;
+}
+.chip__remove {
+  position: absolute;
+  right: var(--sp-6);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity var(--duration) var(--easing),
+              background-color var(--duration) var(--easing);
+}
+.chip__remove:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+.chip__remove .ztor-icon { width: 11px; height: 11px; stroke-width: 2.4; }

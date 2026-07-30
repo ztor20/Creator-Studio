@@ -1,0 +1,528 @@
+/* ============================================================
+   Product list — borderless inventory table for E-Shop.
+   Uses existing color, type, spacing, radius, and motion tokens.
+   ============================================================ */
+
+.product-list {
+  width: 100%;
+  color: var(--foreground);
+}
+
+.product-list__head,
+.product-list__row {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 112px 88px 92px 40px;
+  gap: var(--sp-20);
+  align-items: center;
+}
+
+/* [hidden] 要蓋過上面的 display:grid，否則狀態／搜尋篩選隱藏的列仍會顯示 */
+.product-list__head[hidden],
+.product-list__row[hidden] { display: none; }
+
+.product-list__head {
+  min-height: 44px;
+  padding: 0 var(--sp-10);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+}
+
+.product-list__row {
+  min-height: 88px;
+  padding: var(--sp-14) var(--sp-10);
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color var(--duration) var(--easing), border-color var(--duration) var(--easing);
+}
+
+/* 2026-07-26 使用者：「有商品列表的都要改成這樣」——縮圖放大後，有縮圖的清單列
+   上下留白比照專案列表加大到 --sp-20、列高改 116px（76px 縮圖＋上下 20）。
+   --orders 2026-07-23 已移除縮圖欄、--creators 走頭像，兩者維持 base 的 88/--sp-14。 */
+.product-list--eshop .product-list__row,
+.product-list--bundles .product-list__row,
+.product-list--auctions .product-list__row,
+.product-list--pickup .product-list__row,
+.product-list--ip .product-list__row,
+.product-list--events .product-list__row {
+  min-height: 116px;
+  padding-block: var(--sp-20);
+}
+
+/* 2026-07-26 使用者：「所有列表的 hover 都要改成像電子商店的商品列表一樣」——原本只有 --eshop／--ip
+   兩個變體用「浮起」hover（2026-07-20/21 使用者裁示，見下方沿革），base（--orders／--pickup／--events
+   等其餘變體）維持 Q9 2026-07-13 的純換底色。本輪把浮起處理拉成 base 預設，取代 Q9，全部變體統一；
+   下方原本 --eshop／--ip 專屬的 scoped 規則因此變成單純重複，已移除。 */
+.product-list__row:hover {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  border-bottom-color: transparent;
+  box-shadow: var(--shadow-lift-flat);
+  transition: box-shadow 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+.product-list__row:has(+ .product-list__row:hover) {
+  border-bottom-color: transparent;
+}
+
+.product-list__product {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  min-width: 0;
+}
+
+/* 2026-07-18 使用者裁示、2026-07-20 修正對齊對象：列縮圖統一成描邊框，取代原本的 --muted
+   填色無邊框。原本誤對齊到 .product-list__image 的「基礎規則」（--card/--border/52px），
+   但 .product-list__image 全站 28 處使用皆搭配 --placeholder 變體、基礎規則從未單獨呈現過——
+   真正畫面上看到的是 --placeholder 覆蓋後的值（--muted 底／--border-soft 邊／52px／
+   --muted-foreground icon）。改對齊那組真實呈現值，訂單/取貨列的縮圖才會跟電子商店一致。 */
+.product-list__thumb {
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 52px）*/
+  width: 76px;
+  height: 76px;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background: var(--muted);
+  border: 1px solid var(--border-soft);
+  color: var(--muted-foreground);
+}
+
+.product-list__thumb--cover {
+  background: var(--foreground);
+  border-color: var(--foreground);   /* 反白變體：邊框跟自身填色一致，不露出中性描邊 */
+  color: var(--background);
+}
+
+.product-list__thumb .ztor-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.product-list__image-cell {
+  display: flex;
+  align-items: center;
+}
+
+.product-list__image {
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 60px）*/
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--card);
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.product-list__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.product-list__image--placeholder {
+  background: var(--muted);
+}
+
+.product-list__image-placeholder-mark {
+  color: color-mix(in srgb, var(--foreground) 14%, var(--card));
+  font-family: var(--font-display);
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.02em;
+  line-height: var(--lh-none);
+  opacity: 1;
+  text-transform: lowercase;
+}
+
+/* 無圖占位・分類 icon 變體：以商品分類 icon 取代文字 mark（e-shop F4） */
+.product-list__image--placeholder .ztor-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--muted-foreground);
+}
+
+.product-list__body {
+  min-width: 0;
+}
+
+.product-list__title {
+  overflow: hidden;
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 草稿列空值占位（spec 5.1.5 F4 三類共通 / D092）：未填欄以占位呈現、視覺壓低、不留空白。
+   名稱未填＝「未命名（Untitled）」（淡、常規字重、斜體）；其餘未定欄＝「—」（淡色）。 */
+.product-list__title--draft { color: var(--muted-foreground); font-weight: var(--fw-regular); font-style: italic; }
+.product-list__empty { color: var(--muted-foreground); }
+
+.product-list__meta {
+  overflow: hidden;
+  margin-top: var(--sp-2);
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  line-height: var(--lh-comfy);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-list__category {
+  color: var(--foreground-muted);
+  font-weight: var(--fw-regular);
+}
+
+/* 2026-07-20（Figma node 845-12576）：分類欄改兩行——子分類（具體，如「書籍」）白字在上，
+   主分類（大類，如「實體商品」）灰字在下，比照 __title/__meta 的主副字階。 */
+.product-list__cat-sub { display: block; color: var(--foreground); }
+.product-list__cat-main { display: block; margin-top: 1px; color: var(--muted-foreground); font-size: var(--fs-12); }
+
+.product-list__cell {
+  min-width: 0;
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+}
+
+.product-list__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.product-list__edit {
+  color: var(--muted-foreground);
+}
+
+.product-list__edit:hover {
+  color: var(--foreground);
+}
+
+.product-list__edit .ztor-icon {
+  width: 17px;
+  height: 17px;
+}
+
+@media (max-width: 760px) {
+  .product-list__head {
+    display: none;
+  }
+
+  .product-list__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--sp-10) var(--sp-14);
+    min-height: 0;
+    padding: var(--sp-16) var(--sp-4);
+  }
+
+  .product-list__product {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .product-list__image-cell {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+
+  .product-list__status {
+    grid-column: 1;
+    grid-row: 4;
+    padding-left: var(--sp-72);
+  }
+
+  .product-list__stock {
+    grid-column: 1;
+    grid-row: 5;
+    padding-left: var(--sp-72);
+  }
+
+  .product-list__visibility {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .product-list__actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* ============================================================
+   E-Shop 分頁欄位版型（page-level column layouts）
+   ------------------------------------------------------------
+   E-Shop 三個分頁各換一組欄位，疊在 base grid 上、不改 base：
+     --eshop     商品：drag / image / 名稱+meta / 分類 / 價格 / 狀態 / 庫存 / actions
+     --bundles   套組：image / 套組名 / 成員 / 套組價 / 狀態 / 庫存 / actions
+     --auctions  競標：image / 品項 / 分類 / 出價 / 狀態 / 動態 / actions
+   （篩空、分頁切換、kebab 等頁級行為仍在 e-shop.html；拖曳握把與抬起態見檔尾）。
+   ============================================================ */
+
+/* 商品分頁 */
+.product-list--eshop .product-list__head,
+.product-list--eshop .product-list__row {
+  /* 後方資料欄收窄：分類/價格/狀態/庫存不過寬、右側更緊湊；名稱欄(1.6fr)吸收釋出空間。
+     狀態欄保留 96px 容「庫存過低」徽章。上架開關已移入 kebab 選單（無獨立欄）。
+     2026-07-29：名稱與分類之間插入粉絲分級欄（144px）。寬度取自最長的值
+     「Superfan or above」——這一欄的值是徽章或短句，不換行才讀得快；名稱欄的
+     1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
+  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
+}
+.product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
+.product-list--eshop .product-list__price,
+.product-list--eshop .product-list__stock,
+.product-list--eshop .product-list__category-cell { color: var(--foreground); }
+.product-list--eshop .product-list__actions { display: flex; justify-content: flex-end; }
+
+/* 套組分頁 — 同 product-list 外觀，較寬的成員欄；
+   欄位：Image / Bundle / Fan tier / Members / Price / Status / Stock / Actions
+   （2026-07-29 加入粉絲分級，與商品分頁同一個位置：名稱之後、其餘資料欄之前，
+   兩個分頁掃起來是同一條線）。 */
+.product-list--bundles .product-list__head,
+.product-list--bundles .product-list__row {
+  grid-template-columns: 84px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
+}
+
+/* ── 粉絲分級門檻欄（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）─────────
+   靜止態就是值本身，不是一個等著被點的控制項：有門檻＝該分級的徽章（顏色沿用
+   tier-settings 的分派，核心圈橘／超級粉絲藍／上榜粉絲綠，同一套語彙不另立第二種），
+   沒門檻＝一句安靜的「全部分級」灰字。
+   為什麼「全部分級」不給徽章：30 列裡多數商品本來就人人可買，全部塗成徽章之後，
+   真正有門檻的那幾件反而淹沒了。這一欄要讓人一眼看見的是「哪幾件被鎖住」，
+   所以沒鎖的要安靜。 */
+.product-list__tier { min-width: 0; }
+.product-list__tier .dropdown { display: block; }
+.product-list__tier-btn {
+  display: inline-flex; align-items: center; gap: var(--sp-6);
+  max-width: 100%;
+  padding: 0; border: 0; background: transparent;
+  font: inherit; font-size: var(--fs-13); line-height: var(--lh-snug);
+  color: var(--muted-foreground); text-align: left; cursor: pointer;
+  border-radius: var(--radius-md);
+}
+.product-list__tier-btn > .badge { max-width: 100%; }
+/* 「全部分級」＝沒有門檻。刻意不是徽章：徽章在這一欄的意思是「這件被鎖住了」，
+   把沒鎖的也塗上去，等於讓整欄都在喊，該被看見的那幾件就消失在裡面。 */
+.product-list__tier-none { color: var(--muted-foreground); }
+/* chevron 只在 hover／focus／開啟時出現：欄位平常是資訊，滑過去才顯示它可以改。
+   常駐一排 chevron 會把這一欄變成「三十個下拉」，那是控制項的樣子、不是資料的樣子。 */
+.product-list__tier-chev {
+  width: 14px; height: 14px; flex: 0 0 auto;
+  opacity: 0; transition: opacity .14s ease, transform .18s ease;
+}
+.product-list__row:hover .product-list__tier-chev,
+.product-list__tier-btn:focus-visible .product-list__tier-chev,
+.product-list__tier .dropdown[open] .product-list__tier-chev { opacity: .8; }
+.product-list__tier .dropdown[open] .product-list__tier-chev { transform: rotate(180deg); }
+.product-list__tier-btn:focus-visible {
+  outline: 2px solid var(--ring); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-list__tier-chev { transition: none; }
+}
+
+/* 競標分頁 — Image / Item(+狀況·資格 meta) / Category / Bid / Status(lifecycle) / Activity / Actions。
+   單一表格、欄位隨生命週期重解意義（spec §87–91）：Bid＝起標/目前/成交價；Activity＝倒數·關注/出價·人數·剩餘/得標·實收。 */
+.product-list--auctions .product-list__head,
+.product-list--auctions .product-list__row {
+  grid-template-columns: 84px minmax(168px, 1.3fr) minmax(100px, 0.8fr) 92px minmax(104px, 0.6fr) minmax(170px, 1.4fr) 44px;
+}
+.product-list--auctions .product-list__activity { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-comfy); }
+.product-list--auctions .product-list__status { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-content: center; }
+
+/* 商品分頁 ≤760px 重排（base 760 已處理 status/stock；此處補 --eshop 多出的分類/價格欄與左內距） */
+@media (max-width: 760px) {
+  .product-list--eshop .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--eshop .product-list__product { padding-left: var(--sp-72); }
+  .product-list--eshop .product-list__category-cell { grid-column: 1; grid-row: 2; padding-left: var(--sp-72); }
+  .product-list--eshop .product-list__price { grid-column: 1; grid-row: 3; padding-left: var(--sp-72); }
+  .product-list--eshop .product-list__status { grid-column: 1; grid-row: 4; padding-left: var(--sp-72); }
+  .product-list--eshop .product-list__stock { grid-column: 1; grid-row: 5; padding-left: var(--sp-72); }
+  .product-list__drag { display: none; }
+}
+
+/* ------------------------------------------------------------
+   拖曳重排：握把 + 抬起態（spec §59/§69，粉絲端陳列順序，D083）
+   商品列最前的 grip 握把才可抓取重排；抓起時整列抬升、置頂、grabbing。
+   跟手 transform 由頁面 JS 即時控制（不放進 transition，否則跟手延遲）。
+   Promoted 2026-07-01 from e-shop.html inline。目前 E-Shop Products 分頁在用。
+   ------------------------------------------------------------ */
+.product-list__drag {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted-foreground);
+  cursor: grab; touch-action: none; user-select: none;
+}
+.product-list__drag:hover { color: var(--foreground); }
+.product-list__drag:active { cursor: grabbing; }
+.product-list__drag .ztor-icon { width: 16px; height: 16px; }
+/* 只有 --eshop Products 分頁的列參與拖曳（陰影過渡範圍限定此處） */
+.product-list--eshop[data-eshop-panel="products"] .product-list__row { transition: box-shadow 150ms ease; }
+.product-list__row.is-dragging {
+  position: relative;
+  z-index: 3;
+  background: var(--card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift-flat);   /* 2026-07-21：改用去 rim 版，理由與 hover 浮起同一條（見下方） */
+  cursor: grabbing;
+  will-change: transform;
+}
+/* 草稿列不參與粉絲端陳列排序（草稿不對粉絲顯示、無陳列順序）：藏握把、不可抓；頁面 JS 另把草稿列置頂。 */
+.product-list__row[data-status="draft"] .product-list__drag {
+  visibility: hidden;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* ============================================================
+   訂單管理 / 取貨管理欄位版型（對齊 E-Shop 家族，D111 後續一致性）
+   ------------------------------------------------------------
+   同 --eshop 手法：只換欄位模板疊在 base grid 上、不改 base。列重用
+   product-list__image-cell(thumb) / __product / __body / __title / __meta /
+   __cell / __status / __actions(kebab)。無圖片/拖曳欄。
+     --orders   訂單：icon / 訂單編號+買家(+品項/取貨 meta) / 金額 / 狀態(雙軸) / 日期 / actions
+     --pickup   場次：icon / 場次名(+地點/時間/統計 meta) / 狀態 / scanner / actions
+   ============================================================ */
+.product-list--orders .product-list__head,
+.product-list--orders .product-list__row {
+  /* 2026-07-23 使用者裁示：訂單身分與狀態雙軸全部拆成獨立欄。8 欄，欄序＝
+     訂單編號(+複製鈕) / 訂單內容(多行) / 買家 / 金額 / 付款狀態 / 出貨狀態 / 日期 / actions。
+     2026-07-23 使用者再裁示：訂單列表不放商品圖片，移除縮圖欄（原第 1 欄 68px）。
+     出貨欄較寬（minmax 148）＝混合訂單同時放「待出貨＋待取貨」兩顆徽章、水平不換行。 */
+  grid-template-columns: 120px minmax(160px, 1.4fr) minmax(76px, 0.7fr) 84px 92px minmax(148px, auto) 92px 40px;
+}
+/* 整列可點＝開啟訂單（互動元素 kebab／複製鈕另行 stopPropagation；比照 creators 列） */
+.product-list--orders .product-list__row { cursor: pointer; }
+.product-list--orders .product-list__price,
+.product-list--orders .product-list__cell { color: var(--foreground); }
+/* 訂單編號欄：編號＋很小的複製 icon 鈕並排 */
+.product-list--orders .product-list__order-id { display: flex; align-items: center; gap: var(--sp-4); font-weight: var(--fw-regular); }
+.product-list--orders .product-list__copy { color: var(--muted-foreground); flex: none; }
+.product-list--orders .product-list__copy:hover { color: var(--foreground); }
+.product-list--orders .product-list__copy .ztor-icon { width: 13px; height: 13px; }
+/* 訂單內容欄：白字、與其他欄同字級(fs-13)、每項商品一行；最多 4 行、超過第 4 行以 … 截斷 */
+.product-list--orders .product-list__items { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; }
+.product-list--orders .product-list__line { display: block; color: var(--foreground); font-size: var(--fs-13); line-height: var(--lh-normal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 各品項行之間加大間距（使用者裁示：訂單內容每行間距要大一點） */
+.product-list--orders .product-list__line + .product-list__line { margin-top: var(--sp-6); }
+.product-list--orders .product-list__pay { display: flex; align-items: center; }
+/* 出貨狀態欄：配送＋取貨兩軸值並排，水平不換行 */
+.product-list--orders .product-list__ship { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: nowrap; }
+
+.product-list--pickup .product-list__head,
+.product-list--pickup .product-list__row {
+  grid-template-columns: 76px minmax(180px, 1fr) minmax(160px, 0.9fr) 64px 96px 96px 108px 40px;
+}
+.product-list--pickup .product-list__cell { color: var(--foreground); }
+
+/* ≤760px：兩版型都退回 base 的堆疊模式（重設被桌機模板覆蓋掉的 grid，
+   讓 base 760 規則的 __product/__image-cell/__actions 定位生效，其餘欄堆到左欄）。 */
+@media (max-width: 760px) {
+  .product-list--orders .product-list__row,
+  .product-list--pickup .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--pickup .product-list__product { padding-left: var(--sp-56); }
+  /* 訂單列表無縮圖，堆疊時各欄不需清縮圖、靠左不縮排 */
+  .product-list--orders .product-list__cell { grid-column: 1; }
+  .product-list--pickup .product-list__cell,
+  .product-list--pickup .product-list__status,
+  .product-list--pickup .product-list__price { grid-column: 1; padding-left: var(--sp-56); }
+  /* 訂單編號＝堆疊卡的第一列識別；其餘欄依序堆在下方 */
+  .product-list--orders .product-list__order-id { grid-row: 1; }
+}
+
+/* ============================================================
+   我的 IP 清單欄位版型（2026-07-20，spec 5.1.4 §F6「清單欄位」）
+   ------------------------------------------------------------
+   同 --orders／--pickup 手法：只換欄位模板疊在 base grid 上、不改 base。
+   欄位：IP(icon+名稱+標籤(+登記日期 meta)) / Rights / Rented / Revenue /
+         Price / Mktplace(開關) / Actions(Manage)。重用
+   product-list__thumb(icon) / __product / __body / __title / __meta /
+   __cell(通用文字欄)；Mktplace 與 Actions 為本變體新增的專屬欄。
+   ============================================================ */
+.product-list--ip .product-list__head,
+.product-list--ip .product-list__row {
+  /* 2026-07-25（使用者裁示）：來源改純文字放名稱上方（見 __source），類型徽章（原創／衍生／
+     驗證中）獨立成一欄——名稱欄不再需要吸收徽章，收窄回單純文字寬度；新增 Type 欄固定寬度
+     （最長字樣「Verifying」）。租出數/收入/操作欄維持窄（文字短）；Mktplace 欄只放切換鈕。 */
+  grid-template-columns: 76px minmax(180px, 1.1fr) 92px minmax(110px, 0.8fr) 60px 80px minmax(96px, 0.5fr) 64px 56px;
+}
+.product-list--ip .product-list__cell { color: var(--foreground); }
+
+/* 來源（Made on Ztor／Registered externally）：純文字小標，置於名稱正上方——比照站上既有的
+   「大寫小字＋muted」eyebrow 語彙（kpi__label／rent-block__label 同一套），不用徽章。 */
+.product-list__source {
+  display: block;
+  font-size: var(--fs-11);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-2);
+}
+
+/* 類型（原創／衍生／驗證中）獨立成一欄，置中對齊；無類型的列（多數站外登錄）留空。 */
+.product-list__type { display: flex; align-items: center; }
+
+/* 浮起 hover 的原始沿革（現已升為 base，見上方）：2026-07-20 使用者裁示（--ip）、2026-07-21 擴大到
+   --eshop（含共用其 class 的 --bundles／--auctions 兩分頁）——取代原 Q9 2026-07-13 純換底色；
+   position:relative＋z-index 避免陰影被相鄰列的分隔線蓋住（z-index 低於 is-dragging 的 3，因為這裡
+   是常態 hover、不是被拖起）；hover 時連自己與「上一列」的 border-bottom 都透明，讓浮起的卡片四邊
+   乾淨不被分隔線切到（`:has()` 選中「下一個手足是 hover 狀態」）；`--shadow-lift-flat` 去掉
+   `--shadow-float` 內建的 1px rim（淺色背景色差已夠明顯，rim 會被讀成一圈框）。
+   2026-07-23 使用者反饋：點列直接進編輯（草稿進建立頁、已建立商品進細節頁，見 e-shop.html
+   點擊委派邏輯）。只有 --eshop 有這個點擊行為，游標提示保留 scoped、不隨 hover 視覺一起變成 base。 */
+.product-list--eshop .product-list__row { cursor: pointer; }
+
+/* 2026-07-27 使用者裁示：--ip 的整列也可點＝進 IP 細節頁（比照 --eshop／--orders）。
+   Mktplace 開關與 actions 兩欄是列內互動元素、不參與導向（見 my-ip.html 點擊委派），
+   游標在那兩欄還原成預設，免得看起來整欄都會導頁。承租列（--rented）沒有細節頁、不套。 */
+.product-list--ip .product-list__row { cursor: pointer; }
+.product-list--ip .product-list__mktplace,
+.product-list--ip .product-list__actions { cursor: default; }
+
+.product-list__mktplace {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ≤760px：退回堆疊模式（同 --orders／--pickup 手法） */
+@media (max-width: 760px) {
+  .product-list--ip .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--ip .product-list__product { padding-left: var(--sp-72); }
+  .product-list--ip .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
+  .product-list--ip .product-list__mktplace { grid-column: 2; justify-content: flex-end; }
+}
+
+/* ============================================================
+   --rented 變體（My IP · Rented 分頁，2026-07-27）
+   租入授權清單：Icon / IP(名稱＋licensor 小標) / Type(徽章) /
+   Licensor / Term / Expires(狀態徽章) / Price / Action(續約鈕)。
+   由 Dashboard「IP 租約即將到期」CTA 深連結（my-ip.html?ip=<slug>#rented）
+   落地；列以 data-ip 標記供 highlight。與 --ip 同法：專屬欄寬＋
+   ≤760px 退回堆疊。
+   ============================================================ */
+.product-list--rented .product-list__head,
+.product-list--rented .product-list__row {
+  /* 欄寬總和須 ≤ --ip 變體（同一容器寬）：76+170+84+100+112+112+72+88=814，與 --ip 的
+     814 對齊；首版 900px 會把 Action 欄擠出容器（Renew 鈕被裁掉半顆）。 */
+  grid-template-columns: 76px minmax(170px, 1.1fr) 84px minmax(100px, 0.6fr) minmax(112px, 0.6fr) minmax(112px, 0.55fr) minmax(72px, 0.4fr) 88px;
+}
+.product-list--rented .product-list__cell { color: var(--foreground); }
+
+@media (max-width: 760px) {
+  .product-list--rented .product-list__row { grid-template-columns: minmax(0, 1fr) auto; }
+  .product-list--rented .product-list__product { padding-left: var(--sp-72); }
+  .product-list--rented .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
+  .product-list--rented .product-list__actions { grid-column: 2; justify-content: flex-end; }
+}

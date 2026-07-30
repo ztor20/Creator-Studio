@@ -1,0 +1,146 @@
+/* ============================================================
+   Ztor — Amount field (money input with a unit prefix)
+   A single-line money input with a unit affix — a static, read-only
+   symbol ($ prefix, or a right-side % / months suffix, or a hero-size
+   prefix). Mirrors .ss-amount's absolute-prefix approach so it sits
+   flush on the shadow-hairline .input.
+   The affix can also be an interactive unit toggle (the [data-price-sync]
+   button + __chev below). That path shipped for the cash/POPCORN pricing
+   unit, which was removed in spec 5.1.5.2 · D144 — no page currently uses
+   the toggle; the CSS is kept as a reusable capability.
+   ============================================================ */
+
+.amount-field {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+/* [hidden] 必須蓋過上面的 display:block，否則 JS 設 el.hidden=true 的金額欄照樣顯示
+   （UA 的 [hidden]{display:none} 特異度輸給 .amount-field）。同 alert.css／button.css／
+   badge.css／album-tracks.css 已有的處置。2026-07-27 發現：定價改版把金額欄在「價格請洽詢」
+   時收起來，結果洽詢中還攤著一個灰數字。 */
+.amount-field[hidden] { display: none; }
+
+/* Left unit affix — interactive by default (a button). */
+.amount-field__unit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--sp-8);
+  border: 0;
+  border-right: 1px solid var(--border);   /* divider from the amount field */
+  border-radius: var(--radius) 0 0 var(--radius);
+  background: var(--card);                  /* white affix, not a grey fill */
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur-fast, .12s) ease;
+}
+.amount-field__unit:hover { background: var(--accent); }
+.amount-field__unit:focus-visible {
+  outline: 2px solid var(--ring, var(--foreground));
+  outline-offset: 1px;
+}
+
+/* Interactive toggle: fixed width so cash ($) and POPCORN (🍿) render at the
+   same width — switching unit never shifts the affix or the input. */
+.amount-field[data-price-sync] .amount-field__unit {
+  width: 46px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Fixed-width, centered symbol so $ and 🍿 occupy the same column. */
+.amount-field__sym {
+  display: inline-flex;
+  justify-content: center;
+  width: 18px;
+  font-weight: var(--fw-regular);
+}
+
+.amount-field__chev {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  line-height: 1;
+}
+
+/* Read-only affix (static symbol, e.g. cash-only cost) — no toggle. */
+.amount-field--readonly .amount-field__unit {
+  cursor: default;
+  background: var(--card);
+  pointer-events: none;
+}
+
+/* Input padding makes room for the affix. */
+.amount-field__input.input { padding-left: 52px; }
+.amount-field--readonly .amount-field__input.input { padding-left: 40px; }
+
+/* ============================================================
+   Suffix mode — unit affix on the right (e.g. "50 [%]", "6 [mo]")
+   instead of the left prefix. Visual baseline: register-ip.html's
+   .ri-affix--suffix (royalty % / minimum rental term) and
+   bundle-detail.html's .bd-price-input (discount %) — both static,
+   non-interactive right-side labels; promoted here so future suffix
+   fields don't need a page-local affix class.
+   .amount-field--suffix alone mirrors the interactive button chrome to
+   the right (symmetric with the left prefix, for a future toggleable
+   suffix); pair it with .amount-field--readonly for the static/no-toggle
+   case, which is what every current usage (%, months) needs.
+   ============================================================ */
+.amount-field--suffix .amount-field__unit {
+  left: auto;
+  right: 0;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.amount-field--suffix .amount-field__input.input {
+  padding-left: var(--sp-12);
+  padding-right: 52px;
+}
+/* Static suffix — no button chrome, just a muted label sitting in the
+   input's own padding (matches .ri-affix__sign / .bd-price-input__sym). */
+.amount-field--suffix.amount-field--readonly .amount-field__unit {
+  border-left: 0;
+  background: transparent;
+  padding: 0 var(--sp-12) 0 0;
+}
+.amount-field--suffix.amount-field--readonly .amount-field__input.input {
+  padding-right: 40px;
+}
+
+/* ============================================================
+   Hero size — large, single-focus money input for a modal's headline
+   amount (e.g. payout request amount). Visual baseline was
+   ds-components/payout-modal.css's old .payout-amount-wrap /
+   .payout-amount-prefix / .input.payout-amount-input — values ported
+   as-is; 2026-07-11: partials/payout-request-modal.js migrated onto this
+   variant and the old page-local rules were retired from payout-modal.css
+   (tombstone comment left there). height (70px) and input left padding
+   (42px) have no matching --sp-N step — documented token exception, see
+   design-system.md's Amount field entry.
+   ============================================================ */
+.amount-field--hero .amount-field__unit {
+  padding: 0 0 0 var(--sp-16);
+  border-right: 0;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;   /* static prefix — no toggle, no hover chrome */
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  color: var(--muted-foreground);
+}
+.amount-field--hero .amount-field__input.input {
+  height: 70px;         /* [token exception] no --sp-N step matches; see design-system.md */
+  padding-left: 42px;   /* [token exception] no --sp-N step matches; see design-system.md */
+  font-family: var(--font-display);
+  font-size: var(--fs-32);
+  letter-spacing: 0;
+}

@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* F3 工作列＋狀態列（比照電子商店 e-shop）：list-toolbar（時段 tabs＋搜尋收合＋建立鈕）在上、
+     filter-tabs 狀態列在下。骨架來自 ds-components（list-toolbar / filter-tabs / search-collapse），
+     此處只留本頁捲動容器的 sticky 貼頂——與 e-shop 同一手法（top 位移＝tab 列高 58＋間距 16＝74）。 */
+  /* 與上方 KPI（bento）留間距——原時段 tabs 的 mt-24 併入 wrapper 後補回 */
+  .ev-list-controls { margin-top: var(--sp-24); }
+  /* 2026-07-28：本頁專屬的 sticky 規則退場——貼頂已收進元件（list-toolbar.css 的 Snap dock）
+     ＋共用行為 js/sticky-dock.js，五個清單頁同一份，不再各頁一套。 */
+
+  /* events 活動清單 8 欄覆寫 (F1)：縮圖｜活動｜日期時間｜場地｜票券｜收入｜狀態｜操作。
+     欄數為本頁專屬，比照 e-shop 留頁內。 */
+  .product-list--events .product-list__head,
+  .product-list--events .product-list__row {
+    grid-template-columns: 76px minmax(200px, 1.4fr) 150px 150px 132px 96px 112px 104px;
+  }
+  .product-list--events .product-list__revenue,
+  .product-list--events .product-list__datetime,
+  .product-list--events .product-list__venue {
+    color: var(--foreground);
+  }
+  .product-list--events .product-list__image .ztor-icon {
+    width: 28px; height: 28px;
+    color: var(--foreground-muted);
+  }
+  .product-list--events .product-list__actions { gap: 2px; }
+
+  /* 整列可點＝開啟活動詳情（互動元素 kebab／連結另行排除；比照 orders 列） */
+  .product-list--events .product-list__row { cursor: pointer; }
+
+  /* 票券銷售進度條（F1 票券欄輔助判讀） */
+  .event-tickets { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+  .event-tickets__bar {
+    margin-top: 6px; width: 100%; max-width: 112px; height: 5px;
+    background: var(--muted); border-radius: 9999px; overflow: hidden;
+  }
+  .event-tickets__fill { height: 100%; background: var(--primary); border-radius: 9999px; }
+  .event-tickets--unlimited { color: var(--muted-foreground); }
+
+  @media (max-width: 760px) {
+    .product-list--events .product-list__head { display: none; }
+    .product-list--events .product-list__row {
+      grid-template-columns: 76px minmax(0, 1fr) auto;
+      gap: 8px 14px;
+    }
+    .product-list--events .product-list__image-cell { grid-column: 1; grid-row: 1; align-self: start; }
+    .product-list--events .product-list__product   { grid-column: 2; grid-row: 1; }
+    .product-list--events .product-list__datetime  { grid-column: 2; grid-row: 2; }
+    .product-list--events .product-list__venue     { grid-column: 2; grid-row: 3; }
+    .product-list--events .product-list__tickets   { grid-column: 2; grid-row: 4; }
+    .product-list--events .product-list__revenue   { grid-column: 2; grid-row: 5; }
+    .product-list--events .product-list__status    { grid-column: 2; grid-row: 6; }
+    .product-list--events .product-list__actions   { grid-column: 3; grid-row: 1; align-self: start; }
+  }
+</style>
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <span data-i18n="events.crumb.self">Events</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="events.h1">Events</h1>
+          <p class="page-intro__sub" data-i18n="events.sub2">Manage your concerts, meet &amp; greets, and live events.</p>
+        </div>
+      </div>
+
+      <!-- F1/F2/F3 data body (account has events). The account-level "no events yet"
+           empty state is the sibling .when-empty below; toggled by Cheat Codes Empty
+           via <html data-data-state="empty">. The #ev-empty stub inside stays the
+           search/filter no-result state (a different concern, kept). -->
+      <div class="when-data">
+
+      <div class="bento">
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.total">Total events</div><div class="kpi__value">13</div><div class="kpi__delta" data-i18n="events.kpi.total-meta">+3 vs last year</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.tickets">Tickets sold</div><div class="kpi__value">842</div><div class="kpi__delta" data-i18n="events.kpi.tickets-meta">+18% YoY</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.revenue">Total revenue</div><div class="kpi__value">$28,420</div><div class="kpi__delta" data-i18n="events.kpi.revenue-meta">+12% YoY</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="events.kpi.avg">Attendance rate</div><div class="kpi__value">91%</div><div class="kpi__meta" data-i18n="events.kpi.avg-meta">Checked in ÷ sold</div></div>
+      </div>
+
+      <!-- F3 工作列＋狀態列（比照電子商店 e-shop）：整塊 sticky，故 wrapper 併吞清單（見頁內 style 說明）。 -->
+      <div class="ev-list-controls list-dock">
+        <div class="list-toolbar">
+          <!-- 生命週期分頁（2026-07-27 改版）：草稿 → 已排程 → 售票中 → 進行中 → 已結束，
+               是同一條軸上的五個階段，彼此互斥（規則：取「走到最遠的那一階」——當天開演的場次
+               即使現場還在售票也算進行中）。原本第一排是時段（Upcoming／Past）、第二排混了銷售狀態
+               與草稿，草稿沒有日期、兩個時段分頁都放不下，才需要 D060/D033(c) 的「草稿跨時段」特例，
+               計數也因此對不起來（實測 Past 檢視：All 2、On Sale 0、Draft 1，0+1≠2）。收斂成單一軸後
+               特例消失、每一格都是單純的過濾。
+               排序＝注意力優先（不是生命週期順序）：進行中最急，已結束只供回顧故墊底。 -->
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="ev-tabs" role="tablist">
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="events.stage.all">All</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="events.stage.live">Live</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="on-sale"><span data-i18n="events.stage.on-sale">On sale</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="events.stage.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="events.stage.draft">Draft</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="past"><span data-i18n="events.stage.past">Past</span> <span class="tabs__item-count"></span></div>
+          </nav>
+        <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
+             靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
+             下方的浮層。行為見 js/sticky-dock.js，樣式見 ds-components/list-toolbar.css。 -->
+        <button class="btn btn--icon btn--sm list-toolbar__filter" type="button"
+                aria-expanded="false" aria-controls="ev-states"
+                aria-label="Filters" title="Filters"
+                data-i18n-aria-label="list.filters" data-i18n-title="list.filters">
+          <i data-lucide="filter" class="ztor-icon"></i>
+          <span class="list-toolbar__filter-count" hidden></span>
+        </button>
+
+          <div class="list-toolbar__actions">
+            <!-- 搜尋收合（點放大鏡展開成 field-pill；比照 e-shop）-->
+            <div class="search-collapse" data-ev-search-wrap>
+              <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-ev-search-toggle aria-expanded="false" aria-label="Search" title="Search" data-i18n-aria-label="events.btn.search" data-i18n-title="events.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
+              <label class="field-pill search-collapse__field" aria-label="Search events">
+                <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+                <input class="field-pill__input" id="ev-search" placeholder="Search by name, venue, performer" data-i18n-placeholder="events.filter.placeholder">
+                <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-ev-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="events.search.close" data-i18n-title="events.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+              </label>
+            </div>
+            <a class="btn btn--primary" href="create-event.html" data-i18n="events.btn.new">＋ New event</a>
+          </div>
+        </div>
+
+        <!-- 活動類型 · 第二排 filter-tabs（2026-07-27 改版；每項附數量，隨上排階段重算）。
+             與上排是兩條互相獨立的軸：上排＝這場活動走到哪一階，這排＝它是哪一種活動。
+             三分法的判準＝「核心是不是一場實體聚集」：實體演出的線上直播仍歸演唱會（錨點是那場實體演出），
+             純線上才歸線上活動；粉絲見面會＝實體的近距離接觸（內圈晚宴、簽名會）。
+             建立流程既有六型別對應：concert／festival → 演唱會｜meet／launch → 粉絲見面會｜
+             virtual／watchparty → 線上活動（對應表寫在 js/events-store.js，單一出處）。 -->
+        <div class="list-status-row" id="ev-states">
+          <nav class="filter-tabs filter-tabs--brand" id="ev-status" role="tablist" aria-label="Filter by event type" data-i18n-aria-label="events.cat.aria">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-cat="all"><span data-i18n="events.cat.all">All</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="concert"><span data-i18n="events.cat.concert">Concerts</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="fans-meet"><span data-i18n="events.cat.fans-meet">Fans meet</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-cat="online"><span data-i18n="events.cat.online">Online events</span><span class="filter-tabs__count" data-cat-count>0</span></button>
+          </nav>
+        </div>
+
+        <section class="product-list product-list--events mt-16" id="ev-list" role="table" aria-label="Events">
+        <div class="product-list__head" role="row">
+          <div role="columnheader" aria-label="Thumbnail"></div>
+          <div role="columnheader" data-i18n="events.col.event">Event</div>
+          <div role="columnheader" data-i18n="events.col.datetime">Date &amp; time</div>
+          <div role="columnheader" data-i18n="events.col.venue">Venue</div>
+          <div role="columnheader" data-i18n="events.col.tickets">Tickets</div>
+          <div role="columnheader" data-i18n="events.col.revenue">Revenue</div>
+          <div role="columnheader" data-i18n="events.col.status">Status</div>
+          <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <!-- 進行中永遠排最前：現場正在發生的事優先於任何未來場次 -->
+        <!-- 進行中（2026-07-27 ＝ 今天）：唯一的 live 場次，現場報到台面在 event-detail 的即時面板。 -->
+        <div class="product-list__row" role="row" data-stage="live" data-category="fans-meet" data-search="inner circle fan meet 內圈 見面會 粉絲見面會 neo studio 台北 臺北 taipei 進行中 live nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-asn.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html?id=inner-circle-taipei" data-i18n="events.rowLIVE.title">Inner Circle Fan Meet — Taipei</a></div>
+              <div class="product-list__meta" data-i18n="events.rowLIVE.meta">Fans meet · happening now</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowLIVE.datetime">Today · 2:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowLIVE.venue">Neo Studio · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">200 / 200<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$50,000</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--warning"><span data-i18n="events.badge.live">Live</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="event-detail.html?id=inner-circle-taipei" ><i data-lucide="scan" class="ztor-icon"></i><span data-i18n="events.act.livedesk">Live check-in desk</span></a>
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=inner-circle-taipei" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Upcoming（依日期由近到遠排序）-->
+        <!-- 共看派對（Watch Party，D149 §4.7）：一同回顧既有演出實錄；共看內容＝LOVE·RAGE·HOPE 臺中場 -->
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 一同回顧 watch back love rage hope live house tour 臺中 台中 taichung 線上共看 online nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.rowWP2.title">LOVE·RAGE·HOPE Taichung — Watch-back party</a></div>
+              <div class="product-list__meta" data-i18n="events.rowWP2.meta">Watch Party</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowWP2.datetime">Aug 08, 2026 · 9:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowWP2.venue">Online · LOVE·RAGE·HOPE Taichung recording</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">38 / 300<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:13%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$190</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=lrh-taichung-watchback" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- 粉絲見面會 · 簽名會（2026-07-27 為了讓「粉絲見面會」類型有可評估的內容而加的示範資料；
+             不需要時整段刪掉即可，對應紀錄在 js/events-store.js 的 album-signing-taipei）。 -->
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="fans-meet" data-search="簽名會 專輯簽名 album signing 見面會 fans meet 誠品信義 eslite xinyi 台北 臺北 taipei nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-baipa-goods.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.rowFM.title">Album signing — Taipei</a></div>
+              <div class="product-list__meta" data-i18n="events.rowFM.meta">Fans meet · signing</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowFM.datetime">Sep 12, 2026 · 2:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowFM.venue">Eslite Xinyi · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">118 / 150<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:79%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$590</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=album-signing-taipei" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="台灣祭 墾丁大灣 taiwan fest kenting 屏東 pingtung 演唱嘉賓 guest nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-wln.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row4.title">Taiwan Fest Kenting — Guest set</a></div>
+              <div class="product-list__meta" data-i18n="events.row4.meta">Festival · guest</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row4.datetime">Oct 04, 2026 · 5:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row4.venue">Kenting Dawan · Pingtung</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets event-tickets--unlimited" data-i18n="events.row4.tickets">— / unlimited</div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.scheduled">Scheduled</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=taiwan-fest-kenting" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="concert" data-search="realive 世界巡迴 中國段 重慶 chongqing 蜚聲 livehouse world tour nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-baipa.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row3.title">REALIVE World Tour (China) — Chongqing</a></div>
+              <div class="product-list__meta" data-i18n="events.row3.meta">Concert · World tour</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row3.datetime">Oct 25, 2026 · 8:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row3.venue">Feisheng Livehouse · Chongqing</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">84 / 120<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:70%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$2,520</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=realive-chongqing" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="屏東黑鮪魚文化觀光季 海洋音樂會 pingtung bluefin 屏東 ocean concert nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-flames.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row2.title">Pingtung Bluefin Festival — Ocean concert</a></div>
+              <div class="product-list__meta" data-i18n="events.row2.meta">Festival</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row2.datetime">Nov 02, 2026 · 6:30 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row2.venue">Pingtung</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets event-tickets--unlimited" data-i18n="events.row2.tickets">— / unlimited</div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.scheduled">Scheduled</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=pingtung-bluefin" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="scheduled" data-category="concert" data-search="跨年 new year countdown 臺北最high新年城 台北 taipei nickthereal 周湯豪 nick chou 年末 跨年演出">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/hero-event.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row1.title">Taipei New Year's Eve countdown</a></div>
+              <div class="product-list__meta" data-i18n="events.row1.meta">Festival · countdown</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row1.datetime">Dec 31, 2026 · 10:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row1.venue">Taipei New Year's Eve · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets event-tickets--unlimited" data-i18n="events.row1.tickets">— / unlimited</div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.scheduled">Scheduled</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=taipei-nye" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- 共看派對（Watch Party，D149 §4.7）：線上同步共看、單一入場券、以人數上限計 -->
+        <div class="product-list__row" role="row" data-stage="on-sale" data-category="online" data-search="watch party 共看派對 realive r2 演唱會電影 concert film 線上共看 online co-watch nickthereal 周湯豪">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-r2.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.rowWP.title">Friday Movie Night — Neon Harbor watch-along</a></div>
+              <div class="product-list__meta" data-i18n="events.rowWP.meta">Watch Party</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.rowWP.datetime">Feb 1, 2027 · 9:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.rowWP.venue">Online · Neon Harbor</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">142 / 200<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:71%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$710</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=realive-r2-watchparty" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Past（依日期由近到遠）-->
+        <div class="product-list__row" role="row" data-stage="past" data-category="concert" data-search="love rage hope live house tour 臺中 台中 taichung legacy nickthereal 周湯豪 nick chou 巡演">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-lrh-tour.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row5.title">LOVE·RAGE·HOPE Live House Tour — Taichung</a></div>
+              <div class="product-list__meta" data-i18n="events.row5.meta">Concert · Live house tour</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row5.datetime">Apr 11, 2026 · 8:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row5.venue">Legacy Taichung · Taichung</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">600 / 600<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$18,000</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.ended">Ended</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=lrh-taichung" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <div class="product-list__row" role="row" data-stage="past" data-category="concert" data-search="motorola realive r2 特仕版 臺北小巨蛋 台北 taipei arena 加開返航場 nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-r2-special.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title"><a class="card__link" href="event-detail.html" data-i18n="events.row6.title">REALIVE (R2) Special Edition — Taipei Arena</a></div>
+              <div class="product-list__meta" data-i18n="events.row6.meta">Concert</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime" role="cell" data-i18n="events.row6.datetime">May 23, 2025 · 8:00 PM</div>
+          <div class="product-list__cell product-list__venue" role="cell" data-i18n="events.row6.venue">Taipei Arena · Taipei</div>
+          <div class="product-list__cell product-list__tickets" role="cell">
+            <div class="event-tickets">10,000 / 10,000<div class="event-tickets__bar"><div class="event-tickets__fill" style="width:100%"></div></div></div>
+          </div>
+          <div class="product-list__cell product-list__revenue" role="cell">$320,000</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.ended">Ended</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=realive-r2-arena" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <!-- Drafts -->
+        <div class="product-list__row" role="row" data-stage="draft" data-category="concert" data-search="realive 世界巡迴 新場次 規劃中 draft world tour next leg nickthereal 周湯豪 nick chou">
+          <div class="product-list__image-cell" role="cell">
+            <div class="product-list__image"><img src="images/projects/nick-mxw.jpg" alt="" loading="lazy"></div>
+          </div>
+          <div class="product-list__product" role="cell">
+            <div class="product-list__body">
+              <div class="product-list__title" data-i18n="events.row7.title">Acoustic living-room session</div>
+              <div class="product-list__meta" data-i18n="events.row7.meta">Meet &amp; greet</div>
+            </div>
+          </div>
+          <div class="product-list__cell product-list__datetime text-sub" role="cell" data-i18n="events.row7.datetime">Date TBD</div>
+          <div class="product-list__cell product-list__venue" role="cell">—</div>
+          <div class="product-list__cell product-list__tickets" role="cell"><div class="event-tickets event-tickets--unlimited">—</div></div>
+          <div class="product-list__cell product-list__revenue" role="cell">—</div>
+          <div class="product-list__cell product-list__status" role="cell"><span class="badge"><span data-i18n="events.badge.draft">Draft</span></span></div>
+          <div class="product-list__actions" role="cell">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="events.a.more" data-i18n-title="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <a class="dropdown__item" role="menuitem" href="edit-event.html?id=next-leg-draft" ><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="events.edit">Edit</span></a>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="events.duplicate">Duplicate</span></button>
+                <button class="dropdown__item" type="button" role="menuitem" ><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="events.delete">Delete</span></button>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- F3 頁尾計數（對齊 orders/pickup 共用 list-footer；此頁無分批載入，只留 end-cap 計數）-->
+      <div class="list-footer list-footer--center hidden" id="ev-footer">
+        <span class="list-footer__count" id="ev-count"></span>
+      </div>
+
+      <!-- F3 搜尋／篩選無結果空狀態 -->
+      <section class="card hidden" id="ev-empty">
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="events.empty.noresult.title">No events match</h3>
+          <p class="empty-card__text" data-i18n="events.empty.noresult.sub">Try a different time tab, status, or search term.</p>
+          <button class="btn btn--outline empty-card__cta" id="ev-empty-clear" type="button" data-i18n="events.empty.noresult.clear">Clear search</button>
+        </div>
+      </section>
+
+      </div><!-- /.ev-list-controls -->
+
+      </div><!-- /.when-data -->
+
+      <!-- Account-level empty state (no events created on this account) · spec 5.1.6
+           各 F「其他狀態 · 無資料」. Shown only when <html data-data-state="empty">. -->
+      <div class="when-empty">
+        <section class="card"><div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="calendar" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="events.empty.account.title">No events yet</h3>
+          <p class="empty-card__text" data-i18n="events.empty.account.text">Create your first event to start selling tickets, managing guest lists, and tracking revenue.</p>
+          <a class="btn btn--primary empty-card__cta" href="create-event.html" data-i18n="events.empty.account.cta">＋ New event</a>
+        </div></section>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-dock.js?v=r2.2"></script>
+<script>
+/* Events F3（2026-07-27 改版）— 生命週期階段 × 活動類型 × 搜尋，三者 AND 過濾。
+   兩排是兩條互相獨立的軸，每列在每條軸上都只有一個值（data-stage / data-category），
+   所以不再有任何特例：舊版第一排是時段、第二排混了銷售狀態與草稿，草稿沒有日期、
+   哪個時段都放不下，才需要 D060/D033(c) 的「草稿跨時段」例外——那條例外連同它造成的
+   計數矛盾（Past 檢視 All 2 而 Draft 1）一起隨舊軸移除。
+
+   計數規則（兩排各有各的基準，刻意不同）：
+     · 上排＝整份清單裡各階段的總數，不隨下排類型變動——這樣切換類型時上排數字不會在游標下亂跳。
+     · 下排＝目前選定階段之內的類型分佈。
+   因此恆等式必然成立：下排各類型相加 ＝ 下排 All ＝ 上排選定分頁的數字。
+   搜尋是第三個 AND 條件，但刻意「不」改寫任何計數——會默默改掉分頁宣稱數字的過濾器，比不改更糟。 */
+(function () {
+  const list      = document.getElementById('ev-list');
+  const rows      = Array.from(list.querySelectorAll('.product-list__row'));
+  const tabsEl    = document.getElementById('ev-tabs');
+  const tabs      = Array.from(tabsEl.querySelectorAll('[data-tab]'));
+  const catBtns   = Array.from(document.querySelectorAll('#ev-status .filter-tabs__item'));
+  const searchEl  = document.getElementById('ev-search');
+  const searchWrap= document.querySelector('[data-ev-search-wrap]');
+  const emptyEl   = document.getElementById('ev-empty');
+  const emptyClr  = document.getElementById('ev-empty-clear');
+  const footerEl  = document.getElementById('ev-footer');
+  const countEl   = document.getElementById('ev-count');
+  const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+
+  let stage = 'all', cat = 'all', q = '';
+
+  /* 「進行中」現在是清單裡真實存在的一列（data-stage="live"，日期＝今天），
+     所以不再由 Cheat Codes 的 eventDay 情境推導出來——同一件事不留兩個真相來源。
+     eventDay 仍然驅動頁面上方的情境橫幅（js/scenario.js），只是不再偷改任何一列的階段。 */
+  const inStage = (r, s) => s === 'all' || r.dataset.stage === s;
+  const inCat   = (r, c) => c === 'all' || r.dataset.category === c;
+
+  function apply() {
+    let shown = 0;
+    rows.forEach(r => {
+      // 比對 data-search（含中英別名）＋當前渲染文字，確保各 persona 覆蓋後的真實名稱也搜得到
+      const hay = ((r.dataset.search || '') + ' ' + (r.textContent || '')).toLowerCase();
+      const okQ = !q || hay.indexOf(q) !== -1;
+      const vis = inStage(r, stage) && inCat(r, cat) && okQ;
+      r.classList.toggle('hidden', !vis);
+      if (vis) shown++;
+    });
+    tabs.forEach(t => {
+      const cnt = t.querySelector('.tabs__item-count');
+      if (cnt) cnt.textContent = rows.filter(r => inStage(r, t.dataset.tab)).length;
+      const on = t.dataset.tab === stage;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    catBtns.forEach(b => {
+      const on = b.dataset.cat === cat;
+      b.classList.toggle('filter-tabs__item--active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      const cntEl = b.querySelector('[data-cat-count]');
+      if (cntEl) cntEl.textContent = rows.filter(r => inStage(r, stage) && inCat(r, b.dataset.cat)).length;
+    });
+    list.classList.toggle('hidden', shown === 0);
+    emptyEl.classList.toggle('hidden', shown !== 0);
+    footerEl.classList.toggle('hidden', shown === 0);
+    if (shown !== 0) countEl.textContent = T('events.footer.count', 'Showing {n} of {m} events').replace('{n}', shown).replace('{m}', rows.length);
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => { stage = t.dataset.tab; apply(); }));
+  catBtns.forEach(b => b.addEventListener('click', () => { cat = b.dataset.cat; apply(); }));
+  searchEl.addEventListener('input', () => { q = searchEl.value.trim().toLowerCase(); apply(); });
+
+  /* 搜尋收合（比照 e-shop）：點放大鏡展開；✕／Esc／點外部（無字）收起並清空 */
+  const searchToggle = searchWrap && searchWrap.querySelector('[data-ev-search-toggle]');
+  const searchClose  = searchWrap && searchWrap.querySelector('[data-ev-search-close]');
+  function collapseSearch(clear) {
+    if (!searchWrap) return;
+    searchWrap.classList.remove('is-open');
+    if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+    if (clear) { searchEl.value = ''; q = ''; apply(); }
+  }
+  function clearSearch() { collapseSearch(true); }
+  if (searchToggle) searchToggle.addEventListener('click', () => {
+    searchWrap.classList.add('is-open');
+    searchToggle.setAttribute('aria-expanded', 'true');
+    searchEl.focus();
+  });
+  if (searchClose) searchClose.addEventListener('click', () => collapseSearch(true));
+  searchEl.addEventListener('keydown', e => { if (e.key === 'Escape') collapseSearch(true); });
+  document.addEventListener('click', e => {
+    if (!searchWrap || !searchWrap.classList.contains('is-open')) return;
+    if (searchWrap.contains(e.target)) return;
+    if (searchEl.value.trim()) return;   // 有字保持展開
+    collapseSearch(false);
+  });
+  if (emptyClr) emptyClr.addEventListener('click', clearSearch);
+
+  /* kebab dropdown（⋯）：點外部關閉；點選項後關閉（比照電子商店列操作）*/
+  document.addEventListener('click', e => {
+    const item = e.target.closest && e.target.closest('.dropdown__item');
+    document.querySelectorAll('details.dropdown[open]').forEach(d => {
+      if (!d.contains(e.target)) { d.removeAttribute('open'); return; }
+      if (item && d.contains(item) && !item.hasAttribute('data-keep-open')) d.removeAttribute('open');
+    });
+  });
+
+  /* 整列可點＝開啟活動詳情（比照 orders 列）：點 kebab／連結不觸發整列導向 */
+  list.addEventListener('click', e => {
+    if (e.target.closest('.dropdown') || e.target.closest('a')) return;
+    const row = e.target.closest('.product-list__row');
+    if (row) location.href = 'event-detail.html';
+  });
+
+  apply();
+})();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/scenario.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
+</body>
+</html>

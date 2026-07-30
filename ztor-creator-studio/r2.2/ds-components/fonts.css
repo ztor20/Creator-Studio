@@ -1,0 +1,207 @@
+/* ============================================================
+   Ztor Creator Studio R 2.0 — Self-hosted fonts
+
+   Latin: Geist (Vercel) + Inter (body) — matches ztor stack.
+   CJK:   Noto Sans TC — self-hosted & subsetted (see @font-face below).
+          中文 renders as Noto on every machine; no reliance on OS install.
+
+   Loading order: Geist priority for UI / display, Inter for body, and
+   Noto Sans TC as the CJK fallback so 中文字 falls through per-glyph
+   without per-element overrides. (R 2.1.40 — Noto Sans TC self-hosted;
+   R 2.1.39 removed Taipei Sans TC Beta.)
+   ============================================================ */
+
+@font-face {
+  font-family: "Geist";
+  src: url("../fonts/Geist-Variable.woff2") format("woff2-variations"),
+       url("../fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../fonts/Geist-Mono.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../fonts/Inter.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Alumni Sans — 已退場（2026-07-28 第二次裁示）─────────────────
+   標題改回 Satoshi ＋ 全大寫（見下方 --font-display 與 shared.css 末段的
+   「標題＝全大寫」）。@font-face 一併移除：留著雖然不會觸發下載（沒有人引用
+   就不會載），但會讓下一個讀這支檔的人以為站上還有第三個拉丁字面。
+   字檔本身保留在 /fonts/AlumniSans-Variable.woff2，要回復只需把宣告加回來。 */
+
+/* ── Satoshi — 英文內文／UI 字面（2026-07-28 使用者裁示）──────────────
+   Fontshare（Indian Type Foundry），個人與商用皆免費。非變數字體，
+   五個字重各一檔（300/400/500/700/900，各約 23–26KB）。
+   與 LINE Seed TW 的分工：拉丁走 Satoshi、中文走 LINE Seed（unicode-range 已釘死）。 */
+/* 400 / 500 / 700 是第一畫面就會用到的字重，和 Alumni 同樣被 theme.js 預載，
+   故同樣改 block（理由見上）。300 / 900 用量零星、沒有預載，維持 swap——
+   沒預載又 block，冷啟動時那兩個字重可能空白到封鎖期結束，那是拿一個問題換另一個。 */
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-300.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: block; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: block; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: block; }
+@font-face { font-family: "Satoshi"; src: url("../fonts/Satoshi-900.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+
+/* ── LINE Seed TW — 中文「標題」字面（2026-07-28 第三次裁示後縮小範圍）──────
+   原本是「中文整套系統都用 LINE Seed TW」。使用者實測後改口：
+   「LINE Seed 適合粗體大標題，不適合內文與副標。」——這與 12px 實測一致：
+   它是幾何感強、中宮開闊的品牌字面，筆畫粗而鈍，密筆字（鬱／黴／釀／鑑）
+   在 12px 會糊成一塊。所以它現在只負責 --font-display（標題），
+   內文與 UI 交給昭源黑體（見下方）。
+
+   四個字重對應：Th 100／Rg 400／Bd 700／Eb 800。**LINE Seed TW 沒有 500**——
+   CSS 字重比對規則對 500 的請求會先找 500、找不到就往下找 400，因此 fw-medium
+   會落在 Rg 而不是合成假粗體。
+
+   2026-07-28：四個檔全部做子集化。原檔是未子集化的全字集，單檔 2.8–3.5MB、
+   四檔合計 13.0MB；子集到本站實際用到的 1,648 個中文／全形字之後合計 1.6MB
+   （12%，省下 11.4MB）。作法與下方 Noto 同一套，重新子集化的指令見該段。
+
+   unicode-range 釘在 CJK 區塊：拉丁字母永遠不會落到 LINE Seed，維持
+   「拉丁走拉丁字面、中文走中文字面」的逐字回退模型。 */
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW-Th-subset.woff2") format("woff2");
+  font-weight: 100 300; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW-Rg-subset.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW-Bd-subset.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "LINE Seed TW";
+  src: url("../fonts/LINESeedTW-Eb-subset.woff2") format("woff2");
+  font-weight: 800 900; font-style: normal; font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+
+/* ── 昭源黑體 Chiron Hei HK — 中文「內文／UI」字面（2026-07-28 使用者裁示）────
+   需求：「輕、現代、優雅，而且小字要好看」——LINE Seed 在 12px 撐不住。
+
+   為什麼是這一支：它是思源黑體（Source Han Sans / Noto Sans CJK）的改造版，
+   由 Tamcy 維護、SIL OFL、可變字重 250–900。它做的事正是這個需求：
+   把思源的字形依「實際印刷慣用筆形」重畫，並針對螢幕顯示調整——
+   不是另一套骨架，而是同一套骨架的螢幕修訂版。
+
+   帶來的兩個實務好處（都已實測）：
+     · 縱向度量與思源／Noto 完全相同（typo 880/−120、hhea 1160/−288、
+       cap 733、x-height 543）。所以它可以直接接在 Noto 前面當首選、
+       Noto 當後備，中英混排的基線不會有任何位移。
+     · 同一個 12px、同一份密筆字串（營鑑贊繳鑰黴釀驗繼議覽鬱嚴變觀），
+       LINE Seed 的內白會填死，這一支仍然分得開。
+
+   字重取捨：可變軸最低到 250，但 12px 白字配深底時 300 已經開始發虛、
+   11px 的次要灰字更明顯。所以內文維持 400、次要文字也維持 400，
+   「變輕」是靠換字面達成的，不是靠調細——同樣 400，它本來就比 LINE Seed 細。
+   真的想再輕一階，把下面 --font-cjk 的消費端改成 font-variation-settings:"wght" 350
+   即可，字檔已經帶著整條軸。
+
+   子集化與 Noto 同一套（1,648 字 → 597KB），重新子集化指令見下段。 */
+@font-face {
+  font-family: "Chiron Hei HK";
+  src: url("../fonts/ChironHeiHK-subset.woff2") format("woff2-variations");
+  font-weight: 250 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+
+/* CJK — Noto Sans TC, self-hosted & subsetted (R 2.1.40).
+   Subset = only the 中文/全形 glyphs actually used across the served
+   html/js/css (~1.25k glyphs → ~375KB woff2), variable wght 100–900 so every
+   weight maps through the axis. unicode-range pins it to CJK blocks so Latin
+   stays on Geist / Inter (no metric interference). Re-subset after adding new
+   中文 copy:  pyftsubset "NotoSansTC[wght].ttf" --text-file=<used-glyphs.txt>
+   --flavor=woff2 --output-file=fonts/NotoSansTC-subset.woff2 --no-hinting
+   (Taipei Sans TC Beta .ttf removed from /fonts in this pass.) */
+@font-face {
+  font-family: "Noto Sans TC";
+  src: url("../fonts/NotoSansTC-subset.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+3000-303F, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF;
+}
+
+/* Override ztor's :root font stacks so CJK glyphs fall through to Noto Sans
+ * TC while Latin glyphs stay on Geist / Inter. ztor's _tokens.css declares
+ * these but without CJK fallback. */
+:root {
+  /* 2026-07-28 使用者裁示的字體分工（同日第三次裁示後的定案）：
+       英文 標題 → Satoshi ＋ 全大寫
+       英文 內文／UI → Satoshi
+       中文 標題 → LINE Seed TW（粗、大，它的強項）
+       中文 內文／UI／小字 → 昭源黑體 Chiron Hei HK（新增）
+
+     為什麼中文要拆成兩支：使用者實測後的原話是「LINE Seed 適合粗體大標題，
+     不適合內文與副標」。12px 實測支持這個判斷——LINE Seed 是幾何品牌字面，
+     筆畫粗鈍、中宮開闊，密筆字在小字級會把內白填死。
+     所以中文不再是一支通吃，而是兩個角色兩支字：
+
+       --font-cjk-display  標題用。LINE Seed 打頭，昭源與 Noto 依序後備
+                           （LINE Seed 沒有的字——例如「払」——逐字回退）。
+       --font-cjk          內文／UI／小字用。昭源打頭、Noto 後備。
+                           兩支的縱向度量完全相同，回退時不會有基線位移。
+
+     Geist／Inter 留在拉丁堆疊裡當第二順位回退——字檔萬一載入失敗時
+     不會直接掉到系統預設字。 */
+  /* 這兩支「不」以 sans-serif 結尾——它們是被組進更長堆疊裡的片段，不是完整堆疊。
+     2026-07-28 實測抓到的既有 bug：舊值是 `… , "Noto Sans TC", sans-serif`，
+     而繁中語系下 shared.css 會組成
+        var(--font-cjk), 'Satoshi', 'Inter', system-ui, sans-serif
+     於是 sans-serif 卡在中間。中文字面的 unicode-range 都釘死在 CJK 區塊，
+     所以拉丁字母在前幾項全部落空，接著就命中那個「一定有字」的通用 sans-serif——
+     Satoshi 永遠輪不到。實測：繁中頁面上「USD 5,860」的像素簽章與
+     generic sans-serif 完全相同、與 Satoshi 不同。也就是說整個中文介面的
+     數字與英文一直是系統字在畫，不是我們指定的 Satoshi。
+     通用字族只能放在整條堆疊的最後一項，不能出現在片段裡。 */
+  --font-cjk-display: "LINE Seed TW", "Chiron Hei HK", "Noto Sans TC";
+  --font-cjk:         "Chiron Hei HK", "Noto Sans TC";
+  /* 這支 token 給所有「要被讀成數量的字」用（金額、KPI 數值、統計）。
+     標題退回 Satoshi 之後它與 --font-display 同字面，看似多餘——但保留，因為它的
+     契約不是「哪個字面」而是「這串字是數量」：消費端一律搭 tabular-nums 讓
+     $684.32 與 $1,560.00 的小數點對齊，而且標題那條規則會套全大寫＋正字距，
+     數字不該跟著走。兩個角色分開命名，下次換字面才不會誤傷其中一邊。 */
+  --font-numeric: "Satoshi", "Inter", system-ui, sans-serif;
+  /* 2026-07-28（第二次裁示）：標題退回 Satoshi，改用「全大寫」建立標題性。
+     Alumni 的做法是靠一個不同的字面來區分標題與內文；退回單一字面之後，那個區分改由
+     大小寫與字距承擔——見下方「標題＝全大寫」一節。整站因此只剩兩個拉丁字面
+     （Satoshi 內文與標題、Geist 後備），中文仍是 LINE Seed TW。
+     字級也同步退回：先前為了補償 Alumni 偏小的 cap-height 把 26 個標題角色 ×1.22
+     （12→14、13→16、14→16、15→18、16→20、18→22），Satoshi 的 cap-height 本來就正常，
+     那批補償全數還原，否則標題會整體大一號。 */
+  /* 只有 --font-display 走中文標題字面；UI 與內文走中文內文字面。 */
+  --font-display: "Satoshi", "Geist", var(--font-cjk-display), system-ui, sans-serif;
+  --font-ui:      "Satoshi", "Geist", var(--font-cjk), system-ui, sans-serif;
+  --font-body:    "Satoshi", "Inter", var(--font-cjk), system-ui, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html, body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

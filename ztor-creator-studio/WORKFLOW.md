@@ -20,7 +20,8 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 │  ├─ devserver.py            本機預覽 server（送 no-store，取代 python -m http.server）
 │  └─ *-legacy.sh             2026-07-26 前的舊版 pull/collab（清空再灌），備查用
 │
-└─ r2.1/                      ← 原型站台（唯一版本）
+├─ r2.2/                      ← 原型站台（開發中，唯一會動的版本）
+└─ r2.1/                      ← 已凍結唯讀，對照存檔用
    ├─ *.html ×40              產品頁面 ＋ design-system.html
    ├─ js/ ×15                 共用前端腳本：theme / i18n / icons(+icons-all) / sidebar / chart / hero /
    │                          reveal / components / scenario / devtools / projects-store / products-store …
@@ -66,8 +67,8 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 | **i18n 字串** | 加 `data-en` / `data-zh` 成對 + `js/i18n.js` 字典 |
 | **新圖示** | 先在 `js/icons.js` registry 註冊，再用 `data-lucide` |
 | **新字型** | 放 `fonts/` + `fonts.css` 加 @font-face |
-| **任何收尾** | 跑 `check_ds_sync.py "site/r2.1"`（**11 項**：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產版本一致／元件有 demo／元件無裸色／TOC 錨點／token 真實性／DS 級覆寫不留頁面／md↔html 同步／頁面 token 棘輪／零消費元件），FAIL 修掉；再 append `UI-CHANGES.md` 最上方、同步 `requirements-map.md` |
-| **要清瀏覽器快取** | **平常不用做**——資產版本已凍結成固定的 `?v=r2.1`。線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 `devserver.py` 的 `no-store` 負責。真要強制清才手動跑一次 `bump_ver.py "site/r2.1" <新字串>` |
+| **任何收尾** | 跑 `check_ds_sync.py "site/r2.2"`（**11 項**：元件 CSS 都進 DS 頁／頁面用的 CSS DS 也有／資產版本一致／元件有 demo／元件無裸色／TOC 錨點／token 真實性／DS 級覆寫不留頁面／md↔html 同步／頁面 token 棘輪／零消費元件），FAIL 修掉；再 append `UI-CHANGES.md` 最上方、同步 `requirements-map.md` |
+| **要清瀏覽器快取** | **平常不用做**——資產版本已凍結成固定的 `?v=r2.2`。線上由 Vercel 的 `must-revalidate` ＋ ETag 負責，本機由 `devserver.py` 的 `no-store` 負責。真要強制清才手動跑一次 `bump_ver.py "site/r2.2" <新字串>` |
 
 > 規則出處：規則摘要在專案 `CLAUDE.md`「site/ 原型編修鐵律」；詳細 Edit Cycle 在 `project-ui-creator` skill；檢查由該 skill 的 `scripts/check_ds_sync.py`；**收尾守門員**是個 Stop hook，想結束一輪時自動跑 check，FAIL 就擋住。
 
@@ -79,7 +80,7 @@ site/                         ← 獨立 git repo，經 git subtree 與 monorepo
 
 ```mermaid
 flowchart TD
-    A(["開工"]) --> B["① 在 site/r2.1 編輯"]
+    A(["開工"]) --> B["① 在 site/r2.2 編輯"]
     B --> B2["② 本地 commit<br/>自動做、不問<br/>（不影響發版內容，純還原點）"]
     B2 --> E{"要發版?"}
     E -- "還沒" --> B
