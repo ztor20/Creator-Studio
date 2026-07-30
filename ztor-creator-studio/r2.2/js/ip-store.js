@@ -39,8 +39,40 @@
   var IP_TYPES = ['Original Story / Screenplay', 'Character / Likeness', 'Music & Score',
                   'Footage / Clip', 'Brand / Trademark', 'Other'];
 
-  /* 十筆＝my-ip.html 目前的十列，順序同清單 DOM（ztor 五列在前、外部登錄五列在後）。 */
+  /* 十筆＝my-ip.html 目前的十列，順序同清單 DOM（2026-07-30 使用者指定把肖像權／聲音
+     置頂，故 row9／row10 在最前，其後才是 ztor 五列與其餘站外登錄三列）。 */
   var IPS = {
+    /* 2026-07-30 新增 row9／row10＝肖像權與聲音（人格權，站外登錄；使用者指定）。
+       ipType 取 IP_TYPES 裡語意最近的 'Character / Likeness'——register-ip.html:100 的
+       Person-Based 副標「Likeness, persona, voice」已把肖像與聲音收在同一型，故兩筆同型。
+       deals 筆數對齊 PERSONA_DICT.nick 的租出數（6／3），與 row1 同慣例（deals 對 nick 人格）。 */
+    row9: {
+      i18nKey: 'my-ip.row9', nameKey: 'name', source: 'external', ipType: 'Character / Likeness',
+      verify: 'verified', listed: true, accepting: true, bidding: 'flat', alerts: true,
+      territory: 'Taiwan · Hong Kong · Macau', usage: ['Digital campaign', 'Merchandise print'],
+      price: { fee:{mode:'amount',amount:6400},  exclusive:{mode:'amount',amount:48000}, royalty:{mode:'percent',percent:15} },
+      proof: 'likeness-rights-authorization.pdf',
+      deals: [
+        { who: 'Motorola TW', term: 'Jan 2026 – Jul 2026', amount: '$6,400', status: 'active' },
+        { who: 'Casetify', term: 'Feb 2026 – Aug 2026', amount: '$6,400', status: 'active' },
+        { who: 'Budweiser TW', term: 'Mar 2026 – Sep 2026', amount: '$6,400', status: 'active' },
+        { who: '7-ELEVEN TW', term: 'Apr 2026 – Oct 2026', amount: '$6,400', status: 'active' },
+        { who: 'Pinkoi Retail', term: 'May 2026 – Nov 2026', amount: '$6,400', status: 'active' },
+        { who: 'MediaTek', term: 'Jun 2026 – Dec 2026', amount: '$6,400', status: 'ending' }
+      ]
+    },
+    row10: {
+      i18nKey: 'my-ip.row10', nameKey: 'name', source: 'external', ipType: 'Character / Likeness',
+      verify: 'verified', listed: true, accepting: true, bidding: 'flat', alerts: true,
+      territory: 'Worldwide', usage: ['Digital campaign', 'Sync in film & TV'],
+      price: { fee:{mode:'amount',amount:3200},  exclusive:{mode:'amount',amount:24000}, royalty:{mode:'percent',percent:12} },
+      proof: 'voice-rights-authorization.pdf',
+      deals: [
+        { who: 'KKBOX Podcast', term: 'Jan 2026 – Jul 2026', amount: '$3,200', status: 'active' },
+        { who: 'Gogoro campaign VO', term: 'Feb 2026 – Aug 2026', amount: '$3,200', status: 'active' },
+        { who: 'Garmin TW voice nav', term: 'Mar 2026 – Sep 2026', amount: '$3,200', status: 'ending' }
+      ]
+    },
     row1: {
       i18nKey: 'my-ip.row1', nameKey: 'name', source: 'ztor', ipType: 'Music & Score',
       verify: 'verified', listed: true, accepting: true, bidding: 'auction', alerts: true,
@@ -131,37 +163,6 @@
       price: { fee:{mode:'amount',amount:null},  exclusive:{mode:'none'},                royalty:{mode:'percent',percent:null} },
       proof: null, deals: []
     },
-    /* 2026-07-30 新增 row9／row10＝肖像權與聲音（人格權，站外登錄；使用者指定）。
-       ipType 取 IP_TYPES 裡語意最近的 'Character / Likeness'——register-ip.html:100 的
-       Person-Based 副標「Likeness, persona, voice」已把肖像與聲音收在同一型，故兩筆同型。
-       deals 筆數對齊 PERSONA_DICT.nick 的租出數（6／3），與 row1 同慣例（deals 對 nick 人格）。 */
-    row9: {
-      i18nKey: 'my-ip.row9', nameKey: 'name', source: 'external', ipType: 'Character / Likeness',
-      verify: 'verified', listed: true, accepting: true, bidding: 'flat', alerts: true,
-      territory: 'Taiwan · Hong Kong · Macau', usage: ['Digital campaign', 'Merchandise print'],
-      price: { fee:{mode:'amount',amount:6400},  exclusive:{mode:'amount',amount:48000}, royalty:{mode:'percent',percent:15} },
-      proof: 'likeness-rights-authorization.pdf',
-      deals: [
-        { who: 'Motorola TW', term: 'Jan 2026 – Jul 2026', amount: '$6,400', status: 'active' },
-        { who: 'Casetify', term: 'Feb 2026 – Aug 2026', amount: '$6,400', status: 'active' },
-        { who: 'Budweiser TW', term: 'Mar 2026 – Sep 2026', amount: '$6,400', status: 'active' },
-        { who: '7-ELEVEN TW', term: 'Apr 2026 – Oct 2026', amount: '$6,400', status: 'active' },
-        { who: 'Pinkoi Retail', term: 'May 2026 – Nov 2026', amount: '$6,400', status: 'active' },
-        { who: 'MediaTek', term: 'Jun 2026 – Dec 2026', amount: '$6,400', status: 'ending' }
-      ]
-    },
-    row10: {
-      i18nKey: 'my-ip.row10', nameKey: 'name', source: 'external', ipType: 'Character / Likeness',
-      verify: 'verified', listed: true, accepting: true, bidding: 'flat', alerts: true,
-      territory: 'Worldwide', usage: ['Digital campaign', 'Sync in film & TV'],
-      price: { fee:{mode:'amount',amount:3200},  exclusive:{mode:'amount',amount:24000}, royalty:{mode:'percent',percent:12} },
-      proof: 'voice-rights-authorization.pdf',
-      deals: [
-        { who: 'KKBOX Podcast', term: 'Jan 2026 – Jul 2026', amount: '$3,200', status: 'active' },
-        { who: 'Gogoro campaign VO', term: 'Feb 2026 – Aug 2026', amount: '$3,200', status: 'active' },
-        { who: 'Garmin TW voice nav', term: 'Mar 2026 – Sep 2026', amount: '$3,200', status: 'ending' }
-      ]
-    }
   };
 
   function get(id) {
