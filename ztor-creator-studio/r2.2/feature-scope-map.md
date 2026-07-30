@@ -118,7 +118,7 @@ ID 起始 `S01…` ｜ 🟢 45 · 🔵 2 · ⚪ 3
 
 ## O · 訂單管理 — Order Management
 
-ID 起始 `O01…` ｜ 🟢 17 · 🔵 3 · ⚪ 3
+ID 起始 `O01…` ｜ 🟢 24 · 🔵 3 · ⚪ 3
 
 | ID | 功能 | English | Tier | Build | 備註 |
 |---|---|---|---|---|---|
@@ -148,6 +148,14 @@ ID 起始 `O01…` ｜ 🟢 17 · 🔵 3 · ⚪ 3
 | `O21` | 　　　QR 領取（二維碼 / 標記已領取） | QR pickup | 🟢 Phase 1 | ✅ built |  |
 | `O22` | 　　　數位（下載） | Digital download | 🔵 Next | ✅⬆ ahead | digital goods deferred |
 | `O23` | 　　退款與爭議（部分 / 整單退款） | Refund & dispute | 🔵 Next | 🟡 gap |  |
+|       | **　取貨管理（Pickup Management）** — 2026-07-03 新增模組（D111），2026-07-30 併入 Phase 1（D157） | Pickup management |            |          |                                          |
+| `O24` | 　取貨管理入口（E-Shop 下拉第三個目的地）     | Pickup management entry          | 🟢 Phase 1 | ✅ built | 規格 5.1.5.11 |
+| `O25` | 　　取貨場次清單（篩選 / 搜尋 / 分批載入）     | Pickup session list              | 🟢 Phase 1 | ✅ built | 5.1.5.11 F4 |
+| `O26` | 　　建立取貨場次                          | Create pickup session            | 🟢 Phase 1 | ✅ built | 5.1.5.12 |
+| `O27` | 　　取貨場次詳情（名單 / 核銷紀錄 / 匯出）     | Pickup session detail            | 🟢 Phase 1 | ✅ built | 5.1.5.15 |
+| `O28` | 　　Scanner URL 與密碼（交付 / 生命週期）    | Scanner URL & password           | 🟢 Phase 1 | ✅ built | 5.1.5.15 F2 |
+| `O29` | 　　手機 Scanner 掃碼核銷（二元核銷）        | Mobile scanner redemption        | 🟢 Phase 1 | ✅ built | 5.1.5.14；核銷為二元制（D122） |
+| `O30` | 　　活動票券共用核銷（回寫 Events check-in）  | Event ticket redemption          | 🟢 Phase 1 | ✅ built | 5.1.5.14 F2；票券狀態仍以 Events 為來源 |
 
 ## E · 收入管理 — Earnings / Income
 

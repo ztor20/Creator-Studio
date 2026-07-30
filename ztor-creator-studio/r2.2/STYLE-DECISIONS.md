@@ -61,6 +61,26 @@
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
 
+### Q36：欄位級「超標」錯誤提示，站上只有 component-scoped 版本，沒有 DS 級通用版（2026-07-30 提出，待裁決）
+
+套組編輯器這輪新增「填超過上限不默默截掉、hint 轉紅」的模式，落地時發現這其實是第二次做同一件事——站上已經有一個幾乎一樣的既有做法，兩者都是「疊在 `.field__hint` 上、超標時變 `--status-error`」，但各自是元件自己的 class，沒有共用的 DS 級修飾。
+
+- 現況 A（既有）：`.fc-slotnote--over`（`ds-components/bundle-editor.css:221`，行號隨 2026-07-30 CSS 重排更新）——名額分帳超賣時的提示轉紅，2026-07-13 前後就存在。
+- 現況 B（本輪新增）：`.field__hint.fc-hint--over`（`ds-components/bundle-editor.css:223-230`，行號隨 2026-07-30 CSS 重排更新）——套組優惠填超過可折抵上限時的提示轉紅，特意寫成 `.field__hint.fc-hint--over`（0,2,0 權重）才能疊過同檔案之後載入的 `field-system.css`。
+- 兩者色值相同（都吃 `--status-error`），差別只在 class 命名與掛載對象（一個是獨立 `.fc-slotnote`、一個疊在通用 `.field__hint` 上），且都只存在於 `bundle-editor.css`，不是 field-system 本身的一部分。
+- 選項與取捨：**A** 維持現況，兩者都是 component-scoped、不升級，未來每個元件自己需要就各刻一個（成本：往後每多一個「這格超標」場景就會重複同一段 CSS）；**B** 把 `.fc-hint--over` 升級成 field-system 層的通用修飾（例如 `.field__hint--error`，定義在 `field-system.css`），`bundle-editor.css` 兩個既有 class 都改吃它，之後任何欄位要表達「超過上限」都有現成答案（成本：要重新測試 field-system 的載入順序與既有消費者不受影響）；**C** 只統一命名、不搬家（兩個 class 改同名但仍留在 `bundle-editor.css`，不升級成 DS 級）。
+- 建議：B——欄位級錯誤提示是任何表單都可能需要的通用需求，不應該是套組編輯器的專屬能力；但涉及 field-system.css 載入順序與既有 8 處以上消費頁，屬於需要使用者確認才動的範圍。
+
+### Q35：原價刪除線有兩種做法，字級不同（2026-07-30 提出，待裁決）
+
+套組編輯器這輪為收合摘要列新增「有折扣時原價劃線」的視覺，落地時發現站上已經有同一個視覺角色的既有做法，兩者字級不同、各自獨立定義，沒有共用一個 token 或 class。
+
+- 現況 A（既有）：`.cb-basestrike`（`create-bundle.html:56`、`bundle-detail.html:44`，兩處逐字重複定義）——`font-size: var(--fs-13); color: var(--muted-foreground); text-decoration: line-through;`。用於建立組合／組合細節頁的折後價格對照。
+- 現況 B（本輪新增）：`.fc-sum__was`（`ds-components/bundle-editor.css:91-96`，行號隨 2026-07-30 CSS 重排更新）——`font-size: var(--fs-12); color: var(--muted-foreground); text-decoration: line-through; margin-right: var(--sp-6);`。用於套組編輯器收合摘要列的原價對照。
+- 兩者角色完全相同（「劃掉的原價，緊接在折後價之前」），色階相同（`--muted-foreground`），差別只有字級（13 vs 12）與 B 多一個 `margin-right`（A 沒有這個需求是因為它在按鈕式的價格列裡、天生有間距）。`.cb-basestrike` 目前是**頁內複本**（同一段 CSS 在兩個頁面各自貼一份），不是共用元件層的一部分；`.fc-sum__was` 是本輪直接 promote 進 `ds-components/bundle-editor.css` 的元件層 class。
+- 選項與取捨：**A** 統一成 13px（`.fc-sum__was` 改吃 `--fs-13`，理由是先出現、且已在兩頁使用）；**B** 統一成 12px（`.cb-basestrike` 改吃 `--fs-12`，理由是收合摘要列字級本來就比一般內文小一階，`.fc-sum__meta` 也是 `--fs-12`，跟着同列鄰居對齊比跟着別頁對齊更合理）；**C** 兩者維持現況不同字級，但把 `.cb-basestrike` 的頁內複本 promote 成共用元件（例如新增 `.price-strike` 或直接讓兩處都吃同一個 class 但保留字級參數化）。
+- 建議：B——`.fc-sum__was` 所在的收合摘要列（`.fc-sum`）本身字級體系是 12px 起跳（`.fc-sum__meta`、`.fc-bundle__index` 皆 12px），劃線原價應該跟着同一列的其他文字對齊，而不是套用另一頁的字級；同時建議順手把 `.cb-basestrike` 的頁內重複定義 promote 進元件層，消掉兩處逐字複製的 CSS。裁決權在使用者，本輪暫不動這兩處既有 CSS，只記錄矛盾。
+
 ### Q26：清單頁工作列的主軸分頁有兩種寫法（2026-07-26 提出，同日依使用者裁示落地）
 
 四個清單頁的 `.list-toolbar` 主軸分頁都是同一個元件 `.tabs.tabs--underline-short`，但兩個修飾 class 只有 projects 有：

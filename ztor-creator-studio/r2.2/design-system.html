@@ -1272,7 +1272,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#switch">Switch</a></td><td>🟢</td><td><span data-en>Settings, E-Shop visibility, auto-payout</span><span data-zh>Settings、E-Shop 可見性、auto-payout</span></td><td><code>switch.css</code></td></tr>
           <tr><td><a href="#info-banner">Info banner</a></td><td>🟢</td><td><span data-en>Inline callouts (Pending ≠ Available, legal hint)</span><span data-zh>行內提示（Pending ≠ Available、法務提示）</span></td><td><code>info-banner.css</code></td></tr>
           <tr><td><a href="#upload-tile">Upload tile</a></td><td>🟢</td><td><span data-en>Create flows — hero / thumbs / file drop; opt-in interactive uploader (pick → progress → hover Replace / AI-optimize / Delete) via <code>[data-upload]</code></span><span data-zh>建立流程的上傳格 — 主圖／縮圖／檔案；以 <code>[data-upload]</code> 開啟互動上傳（選圖→進度→hover 替換／AI 優化／刪除）</span></td><td><code>upload-tile.css</code></td></tr>
-          <tr><td><a href="#bundle-editor">Bundle editor</a></td><td>🟠</td><td><span data-en>Co-creation reward bundles — card with name/desc, shares + slots, and a repeatable item list (thumb + name/desc)</span><span data-zh>共創回饋套組 — 卡含名稱/描述、含股份＋名額、可重複的套組商品列（縮圖＋名稱/描述）</span></td><td><code>bundle-editor.css</code></td></tr>
+          <tr><td><a href="#bundle-editor">Bundle editor</a></td><td>🟠</td><td><span data-en>Co-creation reward bundles — collapsible card (name/price/desc, slots + auto/limited cap, product-reference picker, perks), driven by shared module <code>js/bundle-editor.js</code>; shared by create-project + project-detail</span><span data-zh>共創回饋套組 — 可收合卡片（名稱／價格／說明、名額＋自動或限量上限、商品引用挑選器、額外權益），由共用模組 <code>js/bundle-editor.js</code> 驅動；create-project 與 project-detail 共用</span></td><td><code>bundle-editor.css</code></td></tr>
           <tr><td><a href="#album-tracks">Album tracks</a></td><td>🟠</td><td><span data-en>Digital「Album」multi-track manager (F11.1) — upload mp3/mp4 → per-track rows: cover / name / meta / reorder / ⋮ menu (rename · change image · upload lyrics · delete) · View Lyrics</span><span data-zh>數位「音樂專輯」多曲目管理（F11.1）——上傳 mp3/mp4 → 逐曲列：封面／曲名／meta／拖曳重排／⋯ 選單（改名·換封面·上傳歌詞·刪除）·查看歌詞</span></td><td><code>album-tracks.css</code></td></tr>
           <tr><td><a href="#vip-card">VIP card</a></td><td>🟠</td><td><span data-en>Digital「Membership / VIP card」face customizer (F11.2) — Text / Image mode → name text or PNG logo composited onto a platform template; live "Preview Your Card"</span><span data-zh>數位「會員卡」卡面自訂（F11.2）——Text／Image 模式 → 名稱文字或 PNG logo 合成到平台公版；即時「預覽你的卡片」</span></td><td><code>vip-card.css</code></td></tr>
           <tr><td><a href="#input">Input</a></td><td>🟢</td><td><span data-en>Wizard fields, settings forms, search</span><span data-zh>精靈欄位、設定表單、搜尋</span></td><td><code>input.css</code></td></tr>
@@ -2419,34 +2419,101 @@ The first thing buyers see</span>
     <span class="layer layer--molecule">🟠 molecule</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Editor for co-creation reward bundles — each bundle is a card (<code>.card.fc-bundle</code>) holding name / description, included profit-share + slots, and a repeatable item list (<code>.fc-item-row</code> = 96px upload thumb + name/description fields + remove). Full-width tall add buttons: <code>.fc-add</code> (add bundle) / <code>.fc-add-item</code> (add item). Consumed by the co-creation create flow (create-campaign) and the project-detail 方案與承諾 › 支持方案 tab.</p>
-  <p class="sub__desc" data-zh>共創回饋套組的編輯器——每張套組＝一張卡（<code>.card.fc-bundle</code>），內含名稱／描述、含股份（分潤）＋名額、可重複的套組商品列（<code>.fc-item-row</code>＝96px 縮圖上傳格＋名稱／描述欄＋移除）。滿版加高的新增鈕：<code>.fc-add</code>（新增套組）／<code>.fc-add-item</code>（新增商品）。消費者：共創建立流程（create-campaign）與 project-detail 方案與承諾 › 支持方案分頁。</p>
+  <p class="sub__desc" data-en>Editor for co-creation reward bundles. <strong>2026-07-30: behavior extracted into a shared module</strong>, <code>js/bundle-editor.js</code> (<code>window.ZtorBundleEditor.mount()</code>) — the two remaining consumers (create-project's "Reward bundles" step and project-detail's 方案與承諾 › 支持方案 tab) now render the exact same card from one source instead of two diverging implementations. <strong>2026-07-30 (third pass): the discount is a percentage</strong> (0–100%, <code>.amount-field--suffix.amount-field--readonly</code> unit <code>%</code>) rather than a dollar amount, and the expanded card's field order was reorganized input-to-output: name*, one-line description, included revenue-share slots + an auto/limited sell-cap toggle, a product-reference picker (<code>.fc-pick</code> → <code>.fc-ref</code>, no free-text items), free-text perks (<code>.fc-perk</code>), then a dedicated pricing block (<code>.fc-pricing</code>) at the very end. It's a read-only computed field (<code>.amount-field--readonly</code>) — slot count × per-slot price + item prices — plus the bundle-discount % that can only reduce the item portion, floored at the slot-share value (a slot's price can't be discounted away); the cap is likewise expressed as a percentage (<code>maxPct()</code>). Typing past what the items can absorb doesn't get silently clamped: the hint below the field turns red (<code>.field__hint.fc-hint--over</code>) and says what actually applied. The collapsed summary shows the struck-through original price (<code>.fc-sum__was</code>) whenever a discount is in effect, so the discount survives collapsing. The card's left-edge "incomplete" stripe has been removed by user decision — <code>isValid()</code> is unchanged and still drives the page-level coach marks and Continue gating, only the card's own visual cue is gone.</p>
+  <p class="sub__desc" data-zh>共創回饋套組的編輯器。<strong>2026-07-30：行為抽成共用模組</strong> <code>js/bundle-editor.js</code>（<code>window.ZtorBundleEditor.mount()</code>）——僅存的兩個消費者（create-project「回饋套組」步驟、project-detail 方案與承諾 › 支持方案）現在從同一個來源畫出同一張卡，不再是兩份會慢慢分岔的實作。<strong>2026-07-30（第三批）：優惠欄位改百分比</strong>（0–100%，沿用既有 <code>.amount-field--suffix.amount-field--readonly</code> 做法，單位 <code>%</code>），不再是金額；展開態欄位順序同輪重排為「輸入到結果」：套組名稱＊、一句話說明、含分潤名額＋自動／限量販售上限切換、商品「引用」挑選器（<code>.fc-pick</code>→<code>.fc-ref</code>，不接受自由文字品項）、自由文字額外權益（<code>.fc-perk</code>），最後才是獨立的定價區塊（<code>.fc-pricing</code>）。價格為唯讀自動計算（<code>.amount-field--readonly</code>）——名額數 × 每名額單價 ＋ 商品定價加總——套組優惠只能折抵商品那一段，地板是股份總價（名額不可被折），上限同樣以百分比表達（<code>maxPct()</code>）。填超過商品能吸收的上限不會被默默截掉：欄位下方的提示會轉紅（<code>.field__hint.fc-hint--over</code>）並說出實際生效的折抵值。收合摘要列在有折扣生效時會顯示劃線原價（<code>.fc-sum__was</code>），折扣不會因收合而消失。卡片左緣的「未完成」色線已依使用者裁決移除——<code>isValid()</code> 判準沒變，仍驅動頁面教練提示與 Continue 擋關，消失的只是卡片自己的那條視覺表現。</p>
   <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
-  <div class="demo">
+  <div class="demo" style="flex-direction:column; align-items:stretch">
+    <section class="card fc-bundle fc-bundle--collapsed" style="max-width:560px">
+      <div class="fc-bundle__head">
+        <div class="fc-sum">
+          <div>
+            <div class="fc-sum__name"><span class="fc-bundle__index">01</span>入門支持</div>
+            <div class="fc-sum__meta">1 件商品 · 0 名額</div>
+          </div>
+          <div class="fc-sum__price">$25</div>
+          <span></span>
+        </div>
+        <div class="fc-bundle__actions"><a class="card__link" href="#" onclick="return false">編輯</a><a class="card__link" href="#" onclick="return false">移除</a></div>
+      </div>
+    </section>
     <section class="card fc-bundle" style="max-width:560px">
-      <div class="fc-bundle__head"><h3 class="card__title">套組 1</h3><a class="card__link" href="#" onclick="return false">移除</a></div>
-      <div class="form-grid">
-        <div class="field"><label class="field__label">套組名稱</label><input class="input" placeholder="例如：早鳥支持者"></div>
-        <div class="field"><label class="field__label">套組描述</label><input class="input" placeholder="這個套組包含什麼？"></div>
+      <div class="fc-bundle__head">
+        <div class="fc-sum">
+          <div><div class="fc-sum__name"><span class="fc-bundle__index">02</span>標準組合</div></div>
+          <span></span><span></span>
+        </div>
+        <div class="fc-bundle__actions"><a class="card__link" href="#" onclick="return false">收合</a><a class="card__link" href="#" onclick="return false">移除</a></div>
       </div>
-      <div class="form-grid">
-        <div class="field"><label class="field__label">含股份</label><input class="input" type="number" placeholder="非分潤留空"></div>
-        <div class="field"><label class="field__label">名額</label><input class="input" type="number" placeholder="0 = 無上限"></div>
-      </div>
-      <div class="field" style="margin-bottom:0"><div class="field__label">套組商品（照片＋名稱＋描述，可多件）</div>
-        <div>
-          <div class="fc-item-row">
-            <button type="button" class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></button>
-            <div class="fc-item-fields"><input class="input" placeholder="商品名稱"><input class="input" placeholder="商品描述"></div>
-            <button type="button" class="btn btn--ghost btn--sm" aria-label="remove"><i data-lucide="x" class="ztor-icon"></i></button>
+      <div class="fc-bundle__body">
+        <div class="field"><label class="field__label">套組名稱 <span class="field__req">*</span></label><input class="input" value="標準組合"></div>
+        <div class="field"><label class="field__label">一句話說明</label><input class="input" placeholder="這個套組包含什麼？"></div>
+        <div class="form-grid">
+          <div class="field"><label class="field__label">含分潤名額</label><input class="input" type="number" value="1"><div class="field__hint">0 ＝純回饋、不分潤</div></div>
+          <div class="field">
+            <div class="field__label">販售上限</div>
+            <div class="segmented" role="radiogroup"><button type="button" class="segmented__btn segmented__btn--active">自動</button><button type="button" class="segmented__btn">限量</button></div>
+            <div class="field__hint mt-8">池剩 100 ÷ 每份 1 名額 ＝ 可賣 100 份</div>
           </div>
         </div>
-        <button type="button" class="btn btn--outline fc-add-item"><span>＋ 新增商品</span></button>
+        <div class="field">
+          <div class="field__label">商店商品</div>
+          <div class="fc-pick"><input class="input" placeholder="搜尋既有商品…" autocomplete="off"></div>
+          <div class="mt-8">
+            <div class="fc-ref"><span class="fc-ref__thumb"></span><div><div class="fc-ref__name">26MS Hoodie</div><div class="fc-ref__meta">$3,680</div></div><button type="button" class="btn btn--icon btn--xs" aria-label="remove"><i data-lucide="x" class="ztor-icon"></i></button></div>
+          </div>
+          <div class="field__hint">只能引用既有 E-Shop 商品，不建立自由文字品項</div>
+        </div>
+        <div class="field">
+          <div class="field__label">額外權益 <span class="text-sub">自由文字</span></div>
+          <div class="fc-perk"><input class="input" value="幕後線上放映會邀請"><button type="button" class="btn btn--icon btn--xs" aria-label="remove"><i data-lucide="x" class="ztor-icon"></i></button></div>
+          <button type="button" class="btn btn--outline btn--sm fc-add-item">＋ 新增權益</button>
+        </div>
+        <div class="fc-pricing">
+          <div class="fc-pricing__row">
+            <div class="field"><label class="field__label">套組優惠</label>
+              <div class="amount-field amount-field--suffix amount-field--readonly"><input class="amount-field__input input" type="number" min="0" max="100" step="1" value="15"><span class="amount-field__unit"><span class="amount-field__sym">%</span></span></div>
+            </div>
+            <div class="field fc-pricing__out"><label class="field__label">價格</label>
+              <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="amount-field__input input" value="3,298" disabled></div>
+            </div>
+          </div>
+          <div class="field__hint fc-pricing__note">1 個名額 × $200 ＋ 1 件商品 $3,680 ＝ 原價 $3,880，折 15%（−$582）＝ $3,298</div>
+          <div class="field__hint fc-pricing__note">最多可折 94%（商品定價）；股份 $200 不可折抵</div>
+        </div>
       </div>
     </section>
     <button type="button" class="btn btn--outline fc-add" style="max-width:560px"><span>＋ 新增套組</span></button>
   </div>
-  <table class="spec" data-product-spec="bundle-editor"><tbody><tr><td>Source</td><td><code>bundle-editor.css</code></td></tr><tr><td>Anatomy</td><td>Bundle card (<code>.card.fc-bundle</code>) = head (title + remove link) + name/description (<code>.form-grid</code> 2-col) + shares/slots (<code>.form-grid</code> 2-col) + item list. Item row (<code>.fc-item-row</code>) = 96px upload thumb / stacked name+description (<code>.fc-item-fields</code>) / remove button. Add buttons are full-width and tall (<code>.fc-add</code> 56px / <code>.fc-add-item</code> 48px).</td></tr><tr><td>Behavior / usage</td><td>Rows and cards are added/removed by the consuming page's JS; the component is style-only. Reuses <code>.card</code>, <code>.field</code>, <code>.form-grid</code>, <code>.input</code>, <code>.upload-tile</code>, <code>.btn</code>. Prototype: no persistence or calculation.</td></tr><tr><td>Token usage</td><td><code>--sp-16</code>, <code>--sp-18</code>, <code>--sp-12</code>, <code>--sp-10</code>, <code>--sp-8</code>, <code>--sp-6</code>, <code>--fw-medium</code>. Fixed dims: 96px thumb, 56/48px add-button heights.</td></tr><tr><td>Classes</td><td><code>.fc-bundle</code> · <code>.fc-bundle__head</code> · <code>.fc-item-row</code> · <code>.fc-item-fields</code> · <code>.fc-add</code> · <code>.fc-add-item</code></td></tr><tr><td>Evidence / usage</td><td>create-campaign (co-creation bundles step); project-detail 方案與承諾 › 支持方案. Note: create-campaign still carries a page-local copy of these rules pending migration to this component.</td></tr></tbody></table>
+  <p class="field-label" data-en>Discounted collapsed summary <span class="field-note">(struck-through original price, <code>.fc-sum__was</code>)</span></p><p class="field-label" data-zh>有折扣的收合摘要列 <span class="field-note">（原價劃線，<code>.fc-sum__was</code>）</span></p>
+  <div class="demo" style="flex-direction:column; align-items:stretch">
+    <section class="card fc-bundle fc-bundle--collapsed" style="max-width:560px">
+      <div class="fc-bundle__head">
+        <div class="fc-sum">
+          <div>
+            <div class="fc-sum__name"><span class="fc-bundle__index">02</span>標準組合</div>
+            <div class="fc-sum__meta">1 件商品 · 2 名額</div>
+          </div>
+          <div class="fc-sum__price"><span class="fc-sum__was">$88</span>$68</div>
+          <span></span>
+        </div>
+        <div class="fc-bundle__actions"><a class="card__link" href="#" onclick="return false">編輯</a><a class="card__link" href="#" onclick="return false">移除</a></div>
+      </div>
+    </section>
+  </div>
+  <p class="field-label" data-en>Discount hint states <span class="field-note">(normal vs over-limit, <code>.field__hint.fc-hint--over</code>)</span></p><p class="field-label" data-zh>套組優惠提示狀態 <span class="field-note">（正常 vs 超標，<code>.field__hint.fc-hint--over</code>）</span></p>
+  <div class="demo">
+    <div class="field" style="width:220px">
+      <label class="field__label">套組優惠</label>
+      <div class="amount-field amount-field--suffix amount-field--readonly"><input class="amount-field__input input" type="number" min="0" max="100" step="1" value="15"><span class="amount-field__unit"><span class="amount-field__sym">%</span></span></div>
+      <div class="field__hint">最多可折 94%（商品定價）；股份 $200 不可折抵</div>
+    </div>
+    <div class="field" style="width:220px">
+      <label class="field__label">套組優惠</label>
+      <div class="amount-field amount-field--suffix amount-field--readonly"><input class="amount-field__input input" type="number" min="0" max="100" step="1" value="100"><span class="amount-field__unit"><span class="amount-field__sym">%</span></span></div>
+      <div class="field__hint fc-hint--over">已自動只折抵到 94%（商品上限，實際折 $3,680）；股份 $200 不可折抵</div>
+    </div>
+  </div>
+  <table class="spec" data-product-spec="bundle-editor"><tbody><tr><td>Source</td><td><code>bundle-editor.css</code> · <code>js/bundle-editor.js</code></td></tr><tr><td>Anatomy</td><td>Bundle card (<code>.card.fc-bundle</code>) = head (<code>.fc-bundle__head</code> → <code>.fc-sum</code> summary row [<code>__name</code> + numbered <code>.fc-bundle__index</code> · <code>__meta</code> · <code>__price</code> (struck-through original via <code>.fc-sum__was</code> when a discount applies)] + <code>.fc-bundle__actions</code>) + body (<code>.fc-bundle__body</code>, hidden when <code>.fc-bundle--collapsed</code>), fields ordered input-to-output (2026-07-30 third pass): name*, one-line description, slots/availability <code>.form-grid</code> 2-col (<code>.segmented</code> auto/limited + <code>.fc-slotnote</code>/<code>--over</code> hint; the grid's own bottom margin is patched via <code>.fc-bundle__body &gt; .form-grid</code>), product picker <code>.fc-pick</code> (<code>__results</code> popover → <code>__opt</code>/<code>__opt-price</code>/<code>__empty</code>) resolving to reference rows <code>.fc-ref</code> (<code>__thumb</code> 44px/<code>__name</code>/<code>__meta</code>), free-text perks <code>.fc-perk</code>, then a dedicated pricing block <code>.fc-pricing</code> at the very end (top border, extra top margin) — <code>.fc-pricing__row</code> 2-col (112px discount-% field + 176px <code>.fc-pricing__out</code> read-only computed price, tabular-nums at <code>--fs-15</code>) + a full-row <code>.field__hint.fc-pricing__note</code> (two lines: composition, then cap/over-limit). Full-width tall add button <code>.fc-add</code> (56px, add bundle); <code>.fc-add-item</code> (48px) is reused for "add perk" in this generation. The card has no invalid-state visual — the former left-edge <code>.fc-bundle--invalid</code> stripe was removed 2026-07-30 by user decision; <code>isValid()</code> itself (name present, and either slots &gt; 0 or ≥1 item) is unchanged and still drives page-level gating.</td></tr><tr><td>Behavior / usage</td><td><strong>Style + behavior, not style-only</strong>: <code>js/bundle-editor.js</code> exposes <code>window.ZtorBundleEditor.mount({ list, addBtn, t, getPool|poolInput|pool, getPerSlot|perSlotInput|perSlot, initial, collapsedByDefault, onChange })</code>, returning <code>{ getBundles, setBundles, add, ensure, render, refresh, isValid, listPrice, finalPrice, maxDiscount, maxPct, perSlot, maxUnits, autoUnits, committedSlots, pool, num }</code>. The revenue-share slot pool is injectable three ways (a live getter, an input element to read, or a fixed number) so the same module serves a page where the pool changes live (create-project, reading <code>#fd-slots</code>) and a page where it's fixed (project-detail, a <code>SLOT_POOL</code> prototype constant derived from <code>fund.goal ÷ 200</code>). <strong>2026-07-30: per-slot price is injectable the same three ways</strong> — create-project reads the funding step's read-only <code>#fd-perslot</code> (goal ÷ supporter slots), project-detail derives a fixed <code>fund.goal ÷ 200</code> (prototype constant, no real per-slot-price field upstream yet). Pricing rule: list price = slots × per-slot price + sum of item prices. <strong>2026-07-30 (third pass): the discount field is a percentage</strong> (0–100, <code>.amount-field--suffix.amount-field--readonly</code>) of the list price, not a dollar amount — final price = list price − min(discount% × list price, item total), so the discount can never eat into the slot-share value; its ceiling expressed as a percentage is <code>maxPct()</code> = floor(item total ÷ list price × 100) (a pure-reward card with 0 slots can discount to $0; a slots-only card with no items can't discount at all — <code>maxPct()</code> is 0). <code>refresh()</code> re-syncs every card in place (no re-render, no focus loss) whenever the injected pool or per-slot price changes externally. "Auto" sell-cap derives sellable units from the shared pool; "Limited" is a manual hard cap. Product references resolve against <code>window.ZTOR_PRODUCTS</code> via <code>js/products-store.js</code>; there is no free-text item entry in this generation. Reuses <code>.card</code>, <code>.field</code>, <code>.form-grid</code>, <code>.input</code>, <code>.amount-field</code>, <code>.amount-field--readonly</code>, <code>.segmented</code>, <code>.btn</code>. Prototype: no persistence, no real inventory/order linkage.</td></tr><tr><td>Token usage</td><td><code>--sp-24</code>, <code>--sp-16</code>, <code>--sp-18</code>, <code>--sp-14</code>, <code>--sp-12</code>, <code>--sp-10</code>, <code>--sp-8</code>, <code>--sp-6</code>, <code>--sp-4</code>, <code>--sp-2</code>, <code>--fw-medium</code>, <code>--fs-11</code>–<code>--fs-15</code>, <code>--font-numeric</code>, <code>--muted-foreground</code>, <code>--foreground</code>, <code>--border</code>, <code>--status-error</code>, <code>--radius-md</code>, <code>--shadow-card</code>. <code>--status-warning</code> no longer referenced by this component (removed 2026-07-30 with <code>.fc-bundle--invalid</code>). Fixed dims: 44px reference thumb, 32px picker option thumb, 56/48px add-button heights, 264px picker results max-height, 112px/176px pricing-row columns (documented token exception — same magnitude as other DS % fields like admin-platform-fees 110–120px, benefit-matrix 100px).</td></tr><tr><td>Classes</td><td><code>.fc-bundle</code>·<code>--collapsed</code> · <code>.fc-bundle__head/__index/__actions</code> · <code>.fc-sum</code>·<code>__name/__meta/__price</code> · <code>.fc-sum__was</code> (struck-through original price, added 2026-07-30) · <code>.fc-ref</code>·<code>__thumb/__name/__meta</code> · <code>.fc-pick</code>·<code>__results/__opt/__opt-price/__empty</code> · <code>.fc-perk</code> · <code>.fc-slotnote</code>·<code>--over</code> · <code>.field__hint.fc-hint--over</code> (component-scoped over-limit hint, added 2026-07-30 — <em>not yet a DS-level modifier, see STYLE-DECISIONS Q36</em>) · <code>.fc-pricing</code>·<code>__row</code>·<code>__out</code>·<code>__note</code> (pricing block, added 2026-07-30 third pass, replaces the retired <code>.field__hint.fc-pricecalc</code>) · <code>.fc-bundle__body &gt; .form-grid</code> (bottom-margin patch, added 2026-07-30) · <code>.fc-add</code> · <code>.fc-add-item</code> (legacy: <code>.fc-item-row</code>·<code>.fc-item-fields</code>, still defined for the create-campaign copy below). <code>.fc-hint--over</code> and <code>.fc-pricing__note</code> are both written at 0,2,0 specificity because field-system.css loads after this file. <strong>Tombstoned 2026-07-30</strong>: <code>.fc-bundle--invalid</code> (left-edge stripe, removed by user decision — <code>isValid()</code> unchanged) and <code>.field__hint.fc-pricecalc</code> (superseded by <code>.fc-pricing__note</code>).</td></tr><tr><td>Evidence / usage</td><td>create-project.html (Reward bundles step, pool = live <code>#fd-slots</code>); project-detail.html (方案與承諾 › 支持方案, pool fixed, <code>collapsedByDefault: true</code>, 3 seeded bundles). <strong>create-campaign.html still carries its own page-local first-generation <code>.fc-*</code> copy</strong> (free-text <code>.fc-item-row</code> items, no collapse/reference-picker/perks/slot-derivation) and has not been migrated onto <code>js/bundle-editor.js</code> — governance backlog, tracked here rather than duplicated per row.</td></tr></tbody></table>
 </section>
 <section class="sub" id="tag-input">
   <div class="sub__head">

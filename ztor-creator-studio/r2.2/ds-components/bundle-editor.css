@@ -5,7 +5,8 @@
    第二個消費者是 project-detail 的「方案與承諾 › 支持方案」（照建立流程重做）。
 
    一張套組＝`.card.fc-bundle`（沿用填色卡），卡內欄位用 .field / .form-grid；
-   套組商品用 `.fc-item-row`（左縮圖格＝.upload-tile／中間名稱+描述兩行／右移除鈕）。
+   套組商品用 `.fc-ref`（引用既有 E-Shop 商品；第一代的自由輸入列 `.fc-item-row`
+   自 2026-07-30 起已無消費者，見下方第二段註解）。
    兩顆滿版加高「新增」鈕（新增套組 .fc-add／新增商品 .fc-add-item）。
    class 名保留 `fc-` 前綴＝與 create-campaign 既有 JG 生成的 class 一致，兩頁共用同一支。
    ============================================================ */
@@ -35,7 +36,8 @@
       UI-CHANGES L745 已裁示「商品只從既有 E-Shop picker 選取，不建立自由
       商品欄位」——自由文字的品項沒有 SKU／庫存／成本／運送設定，訂單與取貨
       端沒有任何東西可以對它履約。L679 重做時退回自由輸入，這裡改回裁示版。
-      （project-detail 仍在用 .fc-item-row，待同批回填。）
+      （2026-07-30 已回填：project-detail 的「方案與承諾」改用同一支共用行為模組
+      js/bundle-editor.js，兩頁是同一款卡；第一代的 .fc-item-row 已無消費者。）
    2) 有效且未聚焦的套組收合成一行摘要（.fc-bundle--collapsed）。
       建立回饋是「比較式」寫作——$25／$60／$150 是相對定出來的，三張全展開
       根本同屏看不到，收合摘要才讓比較成立。不是為了省高度的優化。
@@ -49,11 +51,17 @@
   color: var(--muted-foreground);
   margin-right: var(--sp-8);
 }
-.fc-bundle__actions { display: flex; align-items: center; gap: var(--sp-12); }
+/* 動作連結不參與壓縮：收合列在寬版面下把摘要撐滿，動作區被擠窄時
+   「編輯」「移除」會斷成兩行（2026-07-30 詳情頁實測）。它們是固定尺寸的出口，
+   讓摘要去讓位，不是反過來。 */
+.fc-bundle__actions { display: flex; align-items: center; gap: var(--sp-12); flex: 0 0 auto; white-space: nowrap; }
 
-/* 無效（缺名稱／價格）的卡片留一條左緣提示。1px＝craft floor 允許的極限，
-   再粗就變成裝飾性色條。 */
-.fc-bundle--invalid { border-left: 1px solid var(--status-warning); }
+/* 墓碑 2026-07-30：`.fc-bundle--invalid`（未完成卡片的左緣 1px --status-warning 色線）
+   依使用者裁決移除，class 一併從模板拿掉、不留死 class。
+   「這張卡還沒完成」的資訊沒有跟著消失——判準 isValid() 原封不動，仍然驅動建立頁底部
+   的教練提示與 Continue 的停用狀態；移除的只是卡片自己那條表現。
+   連帶移除：本檔原本為這條線寫的 border-color transition（.card 自 Q32 起 border:0，
+   沒有其他邊框顏色會變）。--status-warning 因此在本元件已無引用。 */
 
 /* ── 收合摘要列 ───────────────────────────────────────────────────
    收合時整張卡變成一列可點的摘要：名稱 · 價格 · 內容物摘要 · 名額。
@@ -76,6 +84,17 @@
   font-size: var(--fs-15);
   color: var(--foreground);
 }
+/* 套組優惠：收合摘要列上，套組價前面並列一個劃掉的原價。
+   （2026-07-30 價格改為自動計算後，折扣是唯一由創作者決定的定價動作，
+   收合狀態看不到它就等於看不到那個決定。）比照站上既有的 .cb-basestrike
+   做法（create-bundle／bundle-detail 的原價劃線），這裡 promote 進元件層。 */
+.fc-sum__was {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+  margin-right: var(--sp-6);
+}
+
 /* 展開時只留名稱當卡片標題：內容摘要與價格此時就在下面的欄位裡，
    重複顯示會變成兩個可能互相矛盾的真相來源。名稱留著，讓收合↔展開有連續性。 */
 .fc-bundle:not(.fc-bundle--collapsed) .fc-sum__meta,
@@ -151,10 +170,61 @@
 .fc-perk { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-8); align-items: center; margin-top: var(--sp-8); }
 .fc-perk:first-of-type { margin-top: 0; }
 
+/* 名額｜販售上限那排是 .form-grid，而 form-grid.css 只宣告格線**內部**的列距，
+   格線與下一個欄位之間是 0——實測名額的說明文字會直接黏上「商店商品」的標籤。
+   補回跟 .field 同級的下緣，卡內每一段的節奏才一致。 */
+.fc-bundle__body > .form-grid { margin-bottom: var(--sp-16); }
+
+/* ── 定價區塊 ─────────────────────────────────────────────────────
+   2026-07-30 重排。卡片內的順序改成從「輸入」走到「結果」：名稱 → 一句話說明 →
+   名額｜販售上限 → 商店商品 → 額外權益 → 本區塊。
+
+   為什麼要有這個容器：舊排法把價格（結果）跟名稱（輸入）並排在第一列，優惠欄的
+   說明在窄欄裡折成三行、價格欄下方卻空著一塊；算式又是一條橫跨整列的孤行，夾在
+   兩排欄位之間，看不出它在解釋誰。收成一塊之後，兩行說明明確屬於這一區。
+   上緣一條分隔線＝這裡開始不是你填的東西了。
+
+   墓碑：舊的 `.field__hint.fc-pricecalc`（負上緣把孤行貼回價格欄）隨這次重排移除，
+   它處理的正是「孤行沒有歸屬」這個問題，容器出現後就不需要了。 */
+.fc-pricing {
+  /* 24 而不是 16：與上一個欄位的 margin-bottom 會合併，取大的那個。分隔線上方比
+     下方多留一點，讀起來才是「一段結束了」而不是「又一個欄位」。 */
+  margin-top: var(--sp-24);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+/* 固定窄欄而不是 1fr：兩個都是短數字，撐滿整列會讓 $3,298 孤零零漂在半張卡寬的框裡。
+   優惠在前、價格在後＝先做決定、再看後果。
+   112／176 是控件寬度不是間距，沒有對應的 --sp-N；同站既有百分比欄也是這個量級
+   （admin-platform-fees 110–120px、benefit-matrix 100px）。 */
+.fc-pricing__row {
+  display: grid;
+  grid-template-columns: 112px 176px;
+  gap: var(--sp-14);
+  align-items: start;
+}
+.fc-pricing__row > .field { margin-bottom: 0; }
+/* 價格是這一區的主角：字體字級對齊收合摘要列的 .fc-sum__price——同一個數字在收合與
+   展開兩態不該長得不一樣重。 */
+.fc-pricing__out .amount-field__input.input {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-15);
+}
+/* 兩行說明橫跨整列（算式與上限句都是完整句子，塞進 112px 會折成五行）。
+   權重寫 0,2,0 的原因同 .fc-hint--over：field-system.css 在本檔之後載入，
+   單一個 class 會輸給 .field__hint 的 margin: 0。 */
+.field__hint.fc-pricing__note { margin-top: var(--sp-10); }
+
 /* ── 名額分帳的即時提示 ──────────────────────────────────────────── */
 .fc-slotnote { margin-top: var(--sp-6); }
 .fc-slotnote--over { color: var(--status-error); }
 
-@media (prefers-reduced-motion: no-preference) {
-  .fc-bundle { transition: border-color 160ms var(--ease-out, ease-out); }
-}
+/* 欄位級的「超標」表現，疊在 .field__hint 上。沿用上一行 .fc-slotnote--over
+   已經在用的 --status-error，不另開第二種紅。
+   2026-07-30 第一個消費者：套組優惠有了上限（不可折抵分潤名額那一段），
+   填超過時那行 hint 要自己說出「實際只折抵多少、為什麼」。
+   寫成 .field__hint.fc-hint--over（0,2,0）不是為了保險：field-system.css 在本檔之後
+   載入，單一個 .fc-hint--over 與 .field__hint 同權重會輸給它、紅色根本不會出現
+   （2026-07-30 實測 computed color 仍是 --muted-foreground）。 */
+.field__hint.fc-hint--over { color: var(--status-error); }

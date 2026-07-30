@@ -837,6 +837,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <!-- 回饋套組的商品挑選器讀這支的 window.ZTOR_PRODUCTS（persona-aware 的真實商品目錄）。 -->
 <script src="js/products-store.js?v=r2.2"></script>
+<script src="js/bundle-editor.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>
@@ -1102,276 +1103,32 @@
   });
 
   /* ══ Backer bundles (募資回饋套組) ══════════════════════════════════════════
-     2026-07-28 全新。取代原本的 tier open/close stub（見 [data-panel="tiers"] 上方註解）。
-
-     狀態→渲染單向流：所有互動只改 BUNDLES，然後 renderBundles() 重畫。
-     不做局部 DOM 手術——「編輯器顯示的東西與實際狀態不同步」正是原本壞掉的方式。
-
-     唯一例外：正在輸入的欄位不重畫（見 renderBundles 的 focus 保留），否則每打一個字
-     游標就跳回開頭。
+     2026-07-28 全新，2026-07-30 抽進共用模組 js/bundle-editor.js（第二個消費者是
+     project-detail 的「方案與承諾」，兩頁必須是同一款卡）。狀態、渲染、事件委派、
+     商品挑選器、名額推導都在模組裡；這一頁只剩三件它自己的事：
+       1) 名額池從 #fd-slots 即時讀（募資步驟填的支持者名額）。
+       2) 每名額單價從 #fd-perslot 即時讀（＝目標金額 ÷ 支持者名額，同一步驟算出來的）。
+       3) 右軌 #bd-overview 的名額分帳與目標覆蓋率。
+       4) 教練提示與 Continue 的擋關。
      ──────────────────────────────────────────────────────────────────────── */
 
-  let BUNDLES = [];
-  let bdSeq = 0;
+  const BD = window.ZtorBundleEditor.mount({
+    list: '#bd-list',
+    addBtn: '#bd-add',
+    t: T,
+    poolInput: '#fd-slots',      /* 池＝募資步驟的支持者名額，會即時變動 */
+    /* 每名額單價＝募資步驟那個唯讀欄位的值（帶千分位逗號，模組會 parse）。
+       套組價因此是算出來的：名額 × 這個單價 ＋ 商品定價加總 − 套組優惠。 */
+    perSlotInput: '#fd-perslot',
+    onChange: () => renderBundleOverview(),
+  });
 
-  /* 名額＝分潤單位。included slots = 0 代表「純回饋、不分潤」，這是合法且常見的。 */
-  function newBundle(seed) {
-    bdSeq += 1;
-    return Object.assign({
-      id: 'b' + bdSeq,
-      name: '', desc: '', price: '',
-      slots: 0,
-      avail: 'auto',        // auto | limited（2026-07-28：unlimited → auto，見 bdMaxUnits）
-      cap: '',
-      items: [],            // [{id, name, img, price}] — 引用，不是自由文字
-      perks: [],            // [string] — 自由文字，見 bundle-editor.css 的說明
-      collapsed: false,
-    }, seed || {});
-  }
-
-  const bdEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const bdGet = id => BUNDLES.find(b => b.id === id);
-  const bdNum = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : NaN; };
-
-  /* 目錄：persona-aware 的既有商品源。沒有它就退回空目錄，picker 只剩「新增商品」出口。 */
-  function catalogue() {
-    const P = window.ZTOR_PRODUCTS || {};
-    /* 依名稱去重：ZTOR_PRODUCTS 把多個 persona 的商品併在同一個物件裡，所以同一件
-       商品會以不同 key 出現好幾次（實測 27 筆裡「26MS Hoodie」出現 3 次）。
-       key 不同＝技術上是不同列，但對創作者而言那是同一件商品——請人在三個一模一樣的
-       選項之間挑一個，是把資料層的瑕疵當成使用者的問題。 */
-    const seen = new Set();
-    return Object.keys(P).reduce((acc, k) => {
-      const name = P[k].name;
-      if (!name || seen.has(name)) return acc;
-      seen.add(name);
-      acc.push({
-        id: k,
-        name: name,
-        img: P[k].img ? 'images/products/' + P[k].img : '',
-        price: P[k].price || '',
-        meta: P[k].catLabel || '',
-      });
-      return acc;
-    }, []);
-  }
-
-  /* ── 一張套組卡是否可用：有名字、有正價 ────────────────────────────────── */
-  function bdValid(b) {
-    return String(b.name).trim().length > 0 && bdNum(b.price) > 0;
-  }
-  /* ── 販售上限（2026-07-28 使用者裁示改制）─────────────────────────────
-     舊制：含名額就強制 Limited、要創作者自己打一個數字，否則算成「無上限的分潤承諾」。
-     那是把一個算得出來的數字丟回去給人填——名額本來就有一個共用池（募資頁的
-     Supporter slots），賣掉多少就少多少，每張套組能賣幾份是**除出來的**，不是填的。
-
-     新制兩種模式：
-       auto    ＝ 從池子推導。可賣份數 = floor(剩餘池 ÷ 每份含的名額)。
-                 含 0 名額（純回饋不分潤）不吃池子 → 真正無上限。
-       limited ＝ 創作者主動點選、手動輸入的硬上限（想更早收手時才用）。
-
-     使用者的例子：池 100、A 每份 10 名額、B 每份 50。
-     B 賣掉 1 份 → 池剩 50 → A 還能賣 5 份（50÷10）。兩張卡共享同一個池，
-     所以 auto 不預先佔用名額（committed = 0）；只有 limited 會把 cap×slots 鎖起來，
-     auto 再從沒被鎖走的餘額裡推導。這樣就不可能超賣，也就不需要舊的 unbounded 錯誤態。 */
-  function bdPool() {
-    const el = document.getElementById('fd-slots');
-    const n = el ? bdNum(el.value) : NaN;
-    return Number.isFinite(n) && n > 0 ? Math.floor(n) : NaN;
-  }
-  /* Limited 卡硬鎖走的名額總數——auto 只能用剩下的。 */
-  function bdReservedSlots() {
-    return BUNDLES.reduce((sum, b) => {
-      if (b.avail !== 'limited') return sum;
-      const s = bdNum(b.slots), c = bdNum(b.cap);
-      return sum + (Number.isFinite(s) && s > 0 && Number.isFinite(c) && c > 0 ? s * c : 0);
-    }, 0);
-  }
-  /* auto 模式推導出的可賣份數。池子沒填 → 先當無上限（募資頁填了就會重算）。 */
-  function bdAutoUnits(b) {
-    const s = bdNum(b.slots);
-    if (!Number.isFinite(s) || s <= 0) return Infinity;   // 不含名額＝不吃池子
-    const pool = bdPool();
-    if (!Number.isFinite(pool)) return Infinity;
-    return Math.max(0, Math.floor((pool - bdReservedSlots()) / s));
-  }
-  function bdMaxUnits(b) {
-    if (b.avail === 'limited') { const c = bdNum(b.cap); return Number.isFinite(c) && c > 0 ? c : 0; }
-    return bdAutoUnits(b);
-  }
-  /* 「已承諾的名額」只算 limited：auto 是從池子裡拿，不會把池子撐破，
-     把它的理論最大值也加總進來會重複計算（A 100 ＋ B 100 ＞ 池 100）。 */
-  function bdCommittedSlots(b) {
-    const s = bdNum(b.slots);
-    if (!Number.isFinite(s) || s <= 0) return 0;
-    if (b.avail !== 'limited') return 0;
-    const u = bdMaxUnits(b);
-    return u === Infinity ? Infinity : s * u;
-  }
-
-  /* ── 渲染 ───────────────────────────────────────────────────────────── */
-  function bdItemsHTML(b) {
-    if (!b.items.length) return '';
-    return b.items.map(it =>
-      '<div class="fc-ref" data-bd-ref="' + bdEsc(it.id) + '">' +
-        (it.img ? '<img class="fc-ref__thumb" src="' + bdEsc(it.img) + '" alt="" loading="lazy">'
-                : '<span class="fc-ref__thumb"></span>') +
-        '<div><div class="fc-ref__name">' + bdEsc(it.name) + '</div>' +
-          (it.meta ? '<div class="fc-ref__meta">' + bdEsc(it.meta) + '</div>' : '') + '</div>' +
-        '<button class="btn btn--icon btn--xs" type="button" data-bd-item-remove aria-label="' +
-          bdEsc(T('cpp.bd.item.remove')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
-      '</div>'
-    ).join('');
-  }
-
-  function bdPerksHTML(b) {
-    return b.perks.map((p, i) =>
-      '<div class="fc-perk">' +
-        '<input class="input" data-bd-perk="' + i + '" value="' + bdEsc(p) + '" placeholder="' +
-          bdEsc(T('cpp.bd.perk.ph')) + '">' +
-        '<button class="btn btn--icon btn--xs" type="button" data-bd-perk-remove="' + i + '" aria-label="' +
-          bdEsc(T('cpp.bd.perk.remove')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
-      '</div>'
-    ).join('');
-  }
-
-  /* 收合摘要：名稱 · 內容物 · 名額｜價格。內容物寫成人看得懂的一句，不是計數器。 */
-  function bdSummaryMeta(b) {
-    const bits = [];
-    if (b.items.length) bits.push(b.items.length + ' ' + T(b.items.length === 1 ? 'cpp.bd.n.item' : 'cpp.bd.n.items'));
-    if (b.perks.length) bits.push(b.perks.length + ' ' + T(b.perks.length === 1 ? 'cpp.bd.n.perk' : 'cpp.bd.n.perks'));
-    const s = bdNum(b.slots);
-    if (Number.isFinite(s) && s > 0) bits.push(s + ' ' + T(s === 1 ? 'cpp.bd.n.slot' : 'cpp.bd.n.slots'));
-    if (b.avail === 'limited' && bdNum(b.cap) > 0) bits.push(bdNum(b.cap) + ' ' + T('cpp.bd.n.available'));
-    return bits.length ? bits.join(' · ') : T('cpp.bd.sum.empty');
-  }
-
-  function bdCardHTML(b, i) {
-    const priceN = bdNum(b.price);
-    const slotsN = bdNum(b.slots);
-    const hasSlots = Number.isFinite(slotsN) && slotsN > 0;
-    const invalid = !bdValid(b);
-
-    /* 2026-07-28：不再因為填了名額就強制 Limited。auto 由池子推導，兩顆都永遠可點。 */
-    const autoUnits = bdAutoUnits(b);
-    const poolN = bdPool();
-
-    return '' +
-    '<div class="card fc-bundle' + (b.collapsed ? ' fc-bundle--collapsed' : '') +
-        (invalid ? ' fc-bundle--invalid' : '') + '" data-bd-card="' + b.id + '">' +
-      '<div class="fc-bundle__head">' +
-        '<div class="fc-sum" data-bd-expand>' +
-          '<div>' +
-            '<div class="fc-sum__name"><span class="fc-bundle__index">' + String(i + 1).padStart(2, '0') + '</span>' +
-              bdEsc(b.name || T('cpp.bd.untitled')) + '</div>' +
-            '<div class="fc-sum__meta">' + bdEsc(bdSummaryMeta(b)) + '</div>' +
-          '</div>' +
-          '<div class="fc-sum__price">' + (Number.isFinite(priceN) && priceN > 0 ? '$' + priceN.toLocaleString('en-US') : '—') + '</div>' +
-          '<span></span>' +
-        '</div>' +
-        '<div class="fc-bundle__actions">' +
-          '<a class="card__link" href="#" data-bd-toggle>' + bdEsc(T(b.collapsed ? 'cpp.bd.edit' : 'cpp.bd.collapse')) + '</a>' +
-          (BUNDLES.length > 1 ? '<a class="card__link" href="#" data-bd-remove>' + bdEsc(T('cpp.bd.remove')) + '</a>' : '') +
-        '</div>' +
-      '</div>' +
-
-      '<div class="fc-bundle__body">' +
-        '<div class="form-grid" style="grid-template-columns:2fr 1fr">' +
-          '<div class="field">' +
-            '<label class="field__label">' + bdEsc(T('cpp.bd.name')) + ' <span class="field__req">*</span></label>' +
-            '<input class="input" data-bd-f="name" value="' + bdEsc(b.name) + '" placeholder="' + bdEsc(T('cpp.bd.name.ph')) + '">' +
-          '</div>' +
-          '<div class="field">' +
-            '<label class="field__label">' + bdEsc(T('cpp.bd.price')) + ' <span class="field__req">*</span></label>' +
-            '<div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
-              '<input class="amount-field__input input" type="number" min="0" step="1" data-bd-f="price" value="' + bdEsc(b.price) + '" placeholder="0"></div>' +
-          '</div>' +
-        '</div>' +
-
-        '<div class="field">' +
-          '<label class="field__label">' + bdEsc(T('cpp.bd.desc')) + '</label>' +
-          '<input class="input" data-bd-f="desc" value="' + bdEsc(b.desc) + '" placeholder="' + bdEsc(T('cpp.bd.desc.ph')) + '">' +
-        '</div>' +
-
-        '<div class="form-grid">' +
-          '<div class="field">' +
-            '<label class="field__label">' + bdEsc(T('cpp.bd.slots')) + '</label>' +
-            '<input class="input" type="number" min="0" step="1" data-bd-f="slots" value="' + bdEsc(b.slots) + '">' +
-            '<div class="field__hint">' + bdEsc(T('cpp.bd.slots.hint')) + '</div>' +
-          '</div>' +
-          '<div class="field">' +
-            '<div class="field__label">' + bdEsc(T('cpp.bd.avail')) + '</div>' +
-            '<div class="segmented" role="radiogroup" aria-label="' + bdEsc(T('cpp.bd.avail')) + '">' +
-              '<button type="button" class="segmented__btn' + (b.avail === 'auto' ? ' segmented__btn--active' : '') +
-                '" role="radio" aria-checked="' + (b.avail === 'auto') + '" data-bd-avail="auto">' +
-                bdEsc(T('cpp.bd.avail.auto')) + '</button>' +
-              '<button type="button" class="segmented__btn' + (b.avail === 'limited' ? ' segmented__btn--active' : '') +
-                '" role="radio" aria-checked="' + (b.avail === 'limited') + '" data-bd-avail="limited">' +
-                bdEsc(T('cpp.bd.avail.limited')) + '</button>' +
-            '</div>' +
-            /* cap 需要自己的標籤：一旦填了值，placeholder 就不再說明它是什麼，
-               這個輸入框會變成 segmented 底下一個沒有名字的數字。 */
-            (b.avail === 'limited'
-              ? '<label class="field__label mt-8">' + bdEsc(T('cpp.bd.cap')) + '</label>' +
-                '<input class="input" type="number" min="1" step="1" data-bd-f="cap" value="' + bdEsc(b.cap) +
-                  '" placeholder="' + bdEsc(T('cpp.bd.cap.ph')) + '">' +
-                '<div class="field__hint">' + bdEsc(T('cpp.bd.cap.hint')) + '</div>'
-              /* auto：把算出來的份數直接寫出來。這一格不是輸入框——它是結果，
-                 讓創作者看得到「池子除下來是幾份」，而不是自己去猜一個數字。 */
-              : '<div class="field__hint mt-8" data-bd-auto-hint>' + bdEsc(bdAutoHintText(b)) + '</div>') +
-          '</div>' +
-        '</div>' +
-
-        '<div class="field">' +
-          '<div class="field__label">' + bdEsc(T('cpp.bd.items')) + '</div>' +
-          '<div class="fc-pick" data-bd-pick>' +
-            '<input class="input" data-bd-search placeholder="' + bdEsc(T('cpp.bd.search')) + '" autocomplete="off">' +
-            '<div class="fc-pick__results" data-bd-results hidden></div>' +
-          '</div>' +
-          (b.items.length ? '<div class="mt-8">' + bdItemsHTML(b) + '</div>' : '') +
-          '<div class="field__hint">' + bdEsc(T('cpp.bd.items.hint')) + '</div>' +
-        '</div>' +
-
-        '<div class="field" style="margin-bottom:0">' +
-          '<div class="field__label">' + bdEsc(T('cpp.bd.perks')) + ' <span class="text-sub">' + bdEsc(T('cpp.bd.perks.sub')) + '</span></div>' +
-          (b.perks.length ? bdPerksHTML(b) : '') +
-          '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add>' + bdEsc(T('cpp.bd.perk.add')) + '</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-
-  function renderBundles(opts) {
-    const list = document.getElementById('bd-list');
-    if (!list) return;
-
-    /* 重畫會殺掉焦點與游標位置。先記下「哪張卡的哪個欄位、游標在第幾個字」，畫完還原。 */
-    const ae = document.activeElement;
-    let keep = null;
-    if (ae && list.contains(ae)) {
-      const card = ae.closest('[data-bd-card]');
-      if (card) keep = {
-        id: card.dataset.bdCard,
-        sel: ae.dataset.bdF ? '[data-bd-f="' + ae.dataset.bdF + '"]'
-           : ae.hasAttribute('data-bd-search') ? '[data-bd-search]'
-           : ae.dataset.bdPerk != null ? '[data-bd-perk="' + ae.dataset.bdPerk + '"]' : null,
-        start: ae.selectionStart, end: ae.selectionEnd,
-      };
-    }
-
-    list.innerHTML = BUNDLES.map(bdCardHTML).join('');
-    if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(list);
-
-    if (keep && keep.sel && !(opts && opts.blur)) {
-      const el = list.querySelector('[data-bd-card="' + keep.id + '"] ' + keep.sel);
-      if (el) {
-        el.focus();
-        try { el.setSelectionRange(keep.start, keep.end); } catch (_) { /* number inputs 不支援 */ }
-      }
-    }
-    renderBundleOverview();
-  }
+  /* 右軌與驗證共用模組的算式，不各自重算一份（重算＝兩個會分岔的真相）。 */
+  const bdNum = BD.num;
+  const bdValid = b => BD.isValid(b);
+  const bdPrice = b => BD.finalPrice(b);   /* 套組價（已扣套組優惠），不是使用者填的欄位 */
+  const bdMaxUnits = b => BD.maxUnits(b);
+  const bdCommittedSlots = b => BD.committedSlots(b);
 
   /* ── 右軌：名額分帳與目標覆蓋率 ─────────────────────────────────────── */
   function renderBundleOverview() {
@@ -1380,11 +1137,12 @@
     const goal = bdNum(document.getElementById('fd-goal') && document.getElementById('fd-goal').value);
     const offered = bdNum(document.getElementById('fd-slots') && document.getElementById('fd-slots').value);
 
-    const valid = BUNDLES.filter(bdValid);
-    const prices = valid.map(b => bdNum(b.price)).filter(Number.isFinite);
+    const bundles = BD.getBundles();
+    const valid = bundles.filter(bdValid);
+    const prices = valid.map(bdPrice).filter(v => Number.isFinite(v) && v > 0);
 
     set('bd-ov-goal', Number.isFinite(goal) ? money(goal) : DASH);
-    set('bd-ov-count', String(BUNDLES.length));
+    set('bd-ov-count', String(bundles.length));
     set('bd-ov-range', prices.length
       ? (Math.min(...prices) === Math.max(...prices)
           ? money(Math.min(...prices))
@@ -1409,8 +1167,7 @@
     /* 賣光能募到多少：無上限的套組不能計入天花板，否則是編造數字。 */
     let ceiling = 0, ceilingUnbounded = false;
     valid.forEach(b => {
-      const u = bdMaxUnits(b), p = bdNum(b.price);
-      if (!Number.isFinite(p)) return;
+      const u = bdMaxUnits(b), p = bdPrice(b);
       if (u === Infinity) ceilingUnbounded = true; else ceiling += u * p;
     });
     set('bd-ov-raise', ceilingUnbounded ? T('cpp.bd.ov.uncapped') : (ceiling > 0 ? money(ceiling) : DASH));
@@ -1454,203 +1211,24 @@
     if (next) next.disabled = valid.length === 0;
   }
 
-  /* auto 模式下，那行推導出來的份數會隨著名額每打一個字就變，所以「要不要重畫」
-     不能再看舊的 disabled 旗標（已經沒有了），改成比對畫面上現在寫的那句話跟
-     重算後的那句話是否一致。用 DOM 當「之前」的證據，不另外維護影子狀態。
-     limited 模式與結構無關（cap 欄位是否存在只跟 avail 有關），直接回 false。 */
-  function bdAutoHintText(b) {
-    const s = bdNum(b.slots);
-    const hasSlots = Number.isFinite(s) && s > 0;
-    const poolN = bdPool();
-    const u = bdAutoUnits(b);
-    if (!hasSlots || u === Infinity) return T('cpp.bd.avail.auto.noslots');
-    if (!Number.isFinite(poolN)) return T('cpp.bd.avail.auto.nopool');
-    return T('cpp.bd.avail.auto.hint')
-      .replace('{n}', u.toLocaleString('en-US'))
-      .replace('{pool}', poolN.toLocaleString('en-US'));
-  }
-  function bdSlotsCrossedZero(card, b) {
-    if (b.avail !== 'auto') return false;
-    const shown = card.querySelector('[data-bd-auto-hint]');
-    return !shown || shown.textContent !== bdAutoHintText(b);
-  }
+  /* 第一次進到這步就給一張空卡：「新增第一張」永遠是使用者要做的事。
+     （render() 在切到 tiers 那步時呼叫，見上方 line ~919。） */
+  function ensureBundles() { BD.ensure(); }
 
-  /* auto 推導吃的是「全域」剩餘名額，所以任何一張卡改了 slots／cap／模式，
-     其他每一張 auto 卡的數字都會過期（B 鎖走 50 → A 從 10 份掉到 5 份）。
-     就地改文字、不整塊重畫——重畫會把游標從正在打字的欄位踢掉。 */
-  function bdRefreshAutoHints() {
-    document.querySelectorAll('[data-bd-card]').forEach(card => {
-      const b = bdGet(card.dataset.bdCard);
-      const el = card.querySelector('[data-bd-auto-hint]');
-      if (b && el) el.textContent = bdAutoHintText(b);
-    });
-  }
-
-  /* 不重畫的就地同步：摘要列與收合狀態下看得到的東西。 */
-  function bdSyncCard(card, b) {
-    const priceN = bdNum(b.price);
-    const nameEl = card.querySelector('.fc-sum__name');
-    const idx = nameEl.querySelector('.fc-bundle__index');
-    nameEl.textContent = b.name || T('cpp.bd.untitled');
-    if (idx) nameEl.insertBefore(idx, nameEl.firstChild);
-    card.querySelector('.fc-sum__meta').textContent = bdSummaryMeta(b);
-    card.querySelector('.fc-sum__price').textContent =
-      Number.isFinite(priceN) && priceN > 0 ? '$' + priceN.toLocaleString('en-US') : '—';
-    card.classList.toggle('fc-bundle--invalid', !bdValid(b));
-  }
-
-  /* ── 事件（全部委派到 #bd-list，卡片是重畫出來的，直接綁會掉） ──────────── */
-  (function bindBundles() {
-    const list = document.getElementById('bd-list');
-    if (!list) return;
-
-    list.addEventListener('input', e => {
-      const card = e.target.closest('[data-bd-card]');
-      if (!card) return;
-      const b = bdGet(card.dataset.bdCard);
-      if (!b) return;
-
-      if (e.target.dataset.bdF) {
-        const f = e.target.dataset.bdF;
-        const wasAvail = b.avail;
-        b[f] = e.target.value;
-        /* 2026-07-28（使用者裁示）：填了名額不再自動切 Limited。份數由池子算出來，
-           auto 就是預設；Limited 只有創作者自己點下去、想設硬上限時才進去。 */
-
-        /* 只有「卡片結構會變」時才整塊重畫——也就是名額跨越 0（切換 Limited 強制、
-           顯示/隱藏強制說明）的那一刻。打字本身不重畫：每個字元重建一次 DOM 又把
-           游標還原回去，是在跟自己打架，而且任何持有節點參照的程式都會拿到斷開的節點。 */
-        const structural = (f === 'slots') && (b.avail !== wasAvail || bdSlotsCrossedZero(card, b));
-        if (structural) { renderBundles(); return; }
-
-        bdSyncCard(card, b);
-        bdRefreshAutoHints();   /* 這張卡的 slots/cap 會改變別張 auto 卡的推導 */
-        renderBundleOverview();
-        return;
-      }
-      if (e.target.dataset.bdPerk != null) {
-        b.perks[Number(e.target.dataset.bdPerk)] = e.target.value;
-        renderBundleOverview();   /* perks 不影響卡片結構，不必重畫 */
-        return;
-      }
-      if (e.target.hasAttribute('data-bd-search')) {
-        bdRenderResults(card, b, e.target.value);
-      }
-    });
-
-    /* 搜尋框失焦時收起結果；用 mousedown 之前的 blur 會吃掉點擊，所以延遲一拍。 */
-    list.addEventListener('focusout', e => {
-      if (!e.target.hasAttribute || !e.target.hasAttribute('data-bd-search')) return;
-      const pick = e.target.closest('[data-bd-pick]');
-      setTimeout(() => { if (pick && !pick.contains(document.activeElement)) {
-        const r = pick.querySelector('[data-bd-results]'); if (r) r.hidden = true;
-      } }, 120);
-    });
-
-    list.addEventListener('click', e => {
-      const card = e.target.closest('[data-bd-card]');
-      if (!card) return;
-      const b = bdGet(card.dataset.bdCard);
-      if (!b) return;
-
-      const avail = e.target.closest('[data-bd-avail]');
-      if (avail) {
-        if (avail.disabled) return;
-        b.avail = avail.dataset.bdAvail;
-        renderBundles({ blur: true });
-        return;
-      }
-      if (e.target.closest('[data-bd-toggle]')) {
-        e.preventDefault(); b.collapsed = !b.collapsed; renderBundles({ blur: true }); return;
-      }
-      if (e.target.closest('[data-bd-expand]') && b.collapsed) {
-        b.collapsed = false; renderBundles({ blur: true }); return;
-      }
-      if (e.target.closest('[data-bd-remove]')) {
-        e.preventDefault();
-        BUNDLES = BUNDLES.filter(x => x.id !== b.id);
-        renderBundles({ blur: true });
-        return;
-      }
-      const ref = e.target.closest('[data-bd-item-remove]');
-      if (ref) {
-        const row = ref.closest('[data-bd-ref]');
-        b.items = b.items.filter(it => it.id !== row.dataset.bdRef);
-        renderBundles({ blur: true });
-        return;
-      }
-      if (e.target.closest('[data-bd-perk-add]')) {
-        b.perks.push(''); renderBundles({ blur: true });
-        const el = list.querySelector('[data-bd-card="' + b.id + '"] [data-bd-perk="' + (b.perks.length - 1) + '"]');
-        if (el) el.focus();
-        return;
-      }
-      const prm = e.target.closest('[data-bd-perk-remove]');
-      if (prm) {
-        b.perks.splice(Number(prm.dataset.bdPerkRemove), 1); renderBundles({ blur: true }); return;
-      }
-      const opt = e.target.closest('[data-bd-opt]');
-      if (opt) {
-        const id = opt.dataset.bdOpt;
-        if (id === '__new') {
-          /* 目錄裡沒有＝還沒壓出來的黑膠。就地開一個草稿商品，仍然是一筆真的目錄列，
-             只是狀態是草稿——不是退回自由文字。 */
-          const q = card.querySelector('[data-bd-search]').value.trim();
-          if (q) b.items.push({ id: 'draft:' + q.toLowerCase().replace(/\s+/g, '-'), name: q, img: '', meta: T('cpp.bd.item.draft') });
-        } else if (!b.items.some(it => it.id === id)) {
-          const p = catalogue().find(x => x.id === id);
-          if (p) b.items.push({ id: p.id, name: p.name, img: p.img, meta: p.price ? '$' + p.price : p.meta });
-        }
-        renderBundles({ blur: true });
-        return;
-      }
-    });
-
-    document.getElementById('bd-add').addEventListener('click', () => {
-      BUNDLES.forEach(b => { if (bdValid(b)) b.collapsed = true; });
-      BUNDLES.push(newBundle());
-      renderBundles({ blur: true });
-      const cards = list.querySelectorAll('[data-bd-card]');
-      const last = cards[cards.length - 1];
-      if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); const i = last.querySelector('[data-bd-f="name"]'); if (i) i.focus(); }
-    });
-  })();
-
-  function bdRenderResults(card, b, q) {
-    const box = card.querySelector('[data-bd-results]');
-    if (!box) return;
-    const term = String(q || '').trim().toLowerCase();
-    if (!term) { box.hidden = true; box.innerHTML = ''; return; }
-    const taken = new Set(b.items.map(i => i.id));
-    const hits = catalogue().filter(p => !taken.has(p.id) && p.name.toLowerCase().includes(term)).slice(0, 6);
-    box.innerHTML =
-      hits.map(p =>
-        '<button type="button" class="fc-pick__opt" data-bd-opt="' + bdEsc(p.id) + '">' +
-          (p.img ? '<img src="' + bdEsc(p.img) + '" alt="" loading="lazy">' : '<span></span>') +
-          '<span>' + bdEsc(p.name) + '</span>' +
-          '<span class="fc-pick__opt-price">' + (p.price ? '$' + bdEsc(p.price) : '') + '</span>' +
-        '</button>').join('') +
-      (hits.length ? '' : '<div class="fc-pick__empty">' + bdEsc(T('cpp.bd.search.none')) + '</div>') +
-      '<button type="button" class="fc-pick__opt" data-bd-opt="__new"><span></span>' +
-        '<span>' + bdEsc(T('cpp.bd.search.new').replace('{q}', q)) + '</span><span></span></button>';
-    box.hidden = false;
-  }
-
-  /* 第一次進到這步就給一張空卡：「新增第一張」永遠是使用者要做的事。 */
-  function ensureBundles() {
-    if (!BUNDLES.length) BUNDLES.push(newBundle());
-    renderBundles({ blur: true });
-  }
-
-  /* 右軌吃 funding 步驟的值，所以那邊一改就要重算。 */
+  /* 套組卡與右軌都吃 funding 步驟的值，所以那邊一改就要重算：
+       · 目標金額／支持者名額 → #fd-perslot（每名額單價）→ 每張套組卡的價格
+       · 支持者名額 → 名額池 → auto 模式推導出的可賣份數
+     BD.refresh() 是就地重算（不重畫、不搶焦點），所以在募資步驟一邊打字一邊更新是安全的。
+     監聽器註冊順序有意義：renderFundingOverview 先掛（見上方），它負責把新的每名額單價
+     寫進 #fd-perslot，模組讀到的才是新值。 */
   ['fd-goal', 'fd-slots'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', renderBundleOverview);
+    if (el) el.addEventListener('input', () => { BD.refresh(); renderBundleOverview(); });
   });
   /* JS 生成的節點在語言切換後要重畫（UI-CHANGES L105 記錄過同一個 bug：切 en 後
      票種列仍留著中文）。這裡不另外掛 i18n:applied——頁尾已經有
      `document.addEventListener('i18n:applied', render)`，而 render() 在這一步會
-     再進 ensureBundles() → renderBundles()。多掛一個只會讓同一件事做兩次。 */
+     再進 ensureBundles() → BD.ensure()。多掛一個只會讓同一件事做兩次。 */
 
   // Nav
   document.querySelector('[data-action=next]').addEventListener('click', () => {
