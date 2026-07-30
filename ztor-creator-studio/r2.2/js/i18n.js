@@ -1033,7 +1033,7 @@
     'my-ip.btn.import':      { en: 'Import waterfall data',      zh: '匯入 waterfall 資料' },
     'my-ip.btn.add':         { en: '+ Add your IP',             zh: '＋ 新增 IP' },
     'my-ip.kpi.total':       { en: 'Total IP',                   zh: 'IP 總數' },
-    'my-ip.kpi.total-meta':  { en: '8 own · 4 rented in',        zh: '自有 8 · 租入 4' },
+    'my-ip.kpi.total-meta':  { en: '10 own · 4 rented in',       zh: '自有 10 · 租入 4' },
     'my-ip.kpi.rentals':     { en: 'Total rentals',              zh: '租出數' },
     'my-ip.kpi.rentals-meta':{ en: 'Active licenses out',        zh: '進行中授權' },
     'my-ip.kpi.revenue':     { en: 'Total IP revenue',           zh: 'IP 總收入' },
@@ -1103,6 +1103,18 @@
     'my-ip.row7.revenue':    { en: '$640',                  zh: '$640' },
     'my-ip.row8.name':       { en: 'Coastline zine vol.01 artwork', zh: 'Coastline zine vol.01 插畫' },
     'my-ip.row8.meta':       { en: 'Registered Aug 3, 2025 · Awaiting waterfall verification', zh: '2025/08/03 登錄 · 等待 waterfall 驗證' },
+    /* 2026-07-30 新增 row9／row10：肖像權與聲音（人格權，站外登錄）。此處為 default persona
+       的 Coastline 世界觀值；周湯豪版在 PERSONA_DICT.nick。 */
+    'my-ip.row9.name':       { en: 'Likeness rights',        zh: '肖像權' },
+    'my-ip.row9.meta':       { en: 'Registered Jan 12, 2026 · Waterfall verified', zh: '2026/01/12 登錄 · waterfall 已驗證' },
+    'my-ip.row9.rights':     { en: 'Maya Chou · 100%',       zh: 'Maya Chou · 100%' },
+    'my-ip.row9.rented':     { en: '2',                      zh: '2' },
+    'my-ip.row9.revenue':    { en: '$1,450',                 zh: '$1,450' },
+    'my-ip.row10.name':      { en: 'Voice rights',           zh: '聲音' },
+    'my-ip.row10.meta':      { en: 'Registered Feb 3, 2026 · Waterfall verified', zh: '2026/02/03 登錄 · waterfall 已驗證' },
+    'my-ip.row10.rights':    { en: 'Maya Chou · 100%',       zh: 'Maya Chou · 100%' },
+    'my-ip.row10.rented':    { en: '1',                      zh: '1' },
+    'my-ip.row10.revenue':   { en: '$620',                   zh: '$620' },
     'my-ip.badge.original':  { en: 'Original',                   zh: '原創' },
     'my-ip.badge.derivative':{ en: 'Derivative',                 zh: '衍生' },
     'my-ip.badge.verifying': { en: 'Verifying',                  zh: '驗證中' },
@@ -5055,7 +5067,7 @@
     /* 2026-07-27 使用者裁示：分級門檻改成「Top %＋最低忠誠點數」兩欄。
        消費門檻移除——忠誠點數本身已經反映消費，兩個閘門會重複計算同一件事。
        2026-07-28：全站對外名稱統一為「忠誠點數 / Loyalty points」，舊詞「聲望 /
-       Reputation」不再出現於任何介面文案；未使用的 gate.reputation key 已移除。 */
+       Reputation」不再出現於任何介面文案；未使用的 gate.reputation 與 gate.spend key 已移除（後者 2026-07-30 補清）。 */
     /* ─── 分級權益 tier-benefits.html（2026-07-27 改版）───────────
        舊版是「四張分級卡各自帶一份 chip 清單＋自訂權益欄」，同一個權益
        被複製到多張卡、狀態各自獨立，所以「新增」無處可加。改成
@@ -5140,7 +5152,6 @@
     'tier-settings.explain.points.lead': { en: 'An <strong>absolute</strong> gate. A percentile always produces a top 1% — even in a tiny audience. The floor is what stops a tier being handed out to someone who has not earned it.', zh: '這是<strong>絕對</strong>門檻。百分位一定算得出「前 1%」——就算總共只有幾十個人也一樣。點數下限就是用來擋住「還沒真的達標卻被發了分級」。' },
     'tier-settings.explain.points.eg': { en: 'A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> and Inner Circle’s floor is <strong>800</strong>, they still do not enter. The tier stays empty until someone genuinely reaches it.', zh: '一位創作者只有 <strong>40 位</strong>粉絲：前 1% 就是一個人。若這位粉絲只有 <strong>120 點</strong>，而核心圈的下限是 <strong>800</strong>，他仍然進不去。這個分級會一直空著，直到有人真的達標。' },
     'tier-settings.explain.points.rule': { en: 'A fan must clear both gates. Being top 1% is not enough on its own, and neither is a high score outside the percentile.', zh: '兩道門檻都要通過。只在前 1% 不夠，點數再高但排不進百分位也不夠。' },
-    'tier-settings.gate.spend': { en: 'Spend gate (USD)', zh: '消費門檻（USD）' },
     'tier-settings.tier.superfan': { en: 'Superfan', zh: '超級粉絲' },
     'tier-settings.tier.superfan-count': { en: '512 fans today', zh: '今日 512 位粉絲' },
     'tier-settings.tier.devoted': { en: 'Ranked fans', zh: '上榜粉絲' },
@@ -5384,6 +5395,17 @@
       'my-ip.row2.name':      { en: 'REALIVE tour visual identity', zh: 'REALIVE 巡迴視覺' },
       'my-ip.row3.name':      { en: '“帥到分手” official MV footage', zh: '帥到分手 官方 MV 影像' },
       'my-ip.kpi.revenue-val': { en: '$86,400', zh: '$86,400' },
+      /* 2026-07-30 新增：肖像權與聲音兩筆人格權（清單 row9／row10；使用者指定）。 */
+      'my-ip.row9.name':      { en: 'NICKTHEREAL likeness rights', zh: '周湯豪的肖像權' },
+      'my-ip.row9.meta':      { en: 'Registered Jan 12, 2026 · Waterfall verified', zh: '2026/01/12 登錄 · waterfall 已驗證' },
+      'my-ip.row9.rights':    { en: 'NICKTHEREAL · 100%', zh: '周湯豪 · 100%' },
+      'my-ip.row9.rented':    { en: '6', zh: '6' },
+      'my-ip.row9.revenue':   { en: '$38,400', zh: '$38,400' },
+      'my-ip.row10.name':     { en: 'NICKTHEREAL voice rights', zh: '周湯豪的聲音' },
+      'my-ip.row10.meta':     { en: 'Registered Feb 3, 2026 · Waterfall verified', zh: '2026/02/03 登錄 · waterfall 已驗證' },
+      'my-ip.row10.rights':   { en: 'NICKTHEREAL · 100%', zh: '周湯豪 · 100%' },
+      'my-ip.row10.rented':   { en: '3', zh: '3' },
+      'my-ip.row10.revenue':  { en: '$14,200', zh: '$14,200' },
 
       /* ── 收入管理（i18n 可覆蓋的少數；寫死值見 earnings.html data-i18n 補標）── */
       'earnings.kpi.gross-meta':       { zh: '較上月 +22.6%', en: '+22.6% MoM' },

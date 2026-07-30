@@ -4,6 +4,16 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-07-30 · 我的 IP 清單新增「肖像權」與「聲音」兩筆（B 反饋導入）
+
+使用者指定在自有 IP 清單補周湯豪的肖像權與聲音兩個項目。兩者歸**站外登錄**：人格權本來就存在於 Ztor 之外、由創作者登錄進來，不是在站上產出的作品；`register-ip.html` 的 IP 類型「Person-Based」副標原本就寫「Likeness, persona, voice」，所以這兩筆落在既有分類內，未新增產品規則（IP 類型 enum 兩套並存的既有問題記入 ASSUMPTIONS UIA-094）。
+
+- **【B】** `my-ip.html` 自有清單新增 row9（肖像權）／row10（聲音），完全沿用 row7 的「站外登錄＋已驗證＋有完整數據＋已上架」樣板：`data-source="external"`、類型欄「—」、權利／租出數／收益／`data-ip-price` 齊備、市場開關 on、kebab 與整列點擊都連 `manage-ip.html?id=row9|row10`。**類型欄刻意不加原創徽章**——站上所有站外登錄列都是「—」，加了就是自創「站外登錄＋徽章」的第三種組合（風格單一答案）。
+- **【B】** 文字照既有兩層 persona 架構落位：主 `DICT` 放 default 人格（Coastline 世界）的通用版「肖像權／聲音」，`PERSONA_DICT.nick` 放「周湯豪的肖像權／周湯豪的聲音」＋權利人「周湯豪 · 100%」。**周湯豪的內容不寫進主 DICT**，維持 `js/i18n.js` 檔頭那條「周湯豪內容只集中在兩支資料檔的 nick 區塊＋PERSONA_DICT」的架構。
+- **【B】** `js/ip-store.js` 補 row9／row10 的結構欄位，讓 `manage-ip.html` 點進去不是空頁、清單租金欄有數字：`ipType` 取語意最近的 `Character / Likeness`（聲音無專屬型別，屬將就）、verified、已上架、一次性費用＋分潤（$6,400＋15%／$3,200＋12%）。`deals` 筆數對齊 nick 人格的租出數（6／3），與 row1 同慣例。
+- **【B】** 計數同步：自有分頁 tab 計數 8→10、KPI「IP 總數」12→14、`my-ip.kpi.total-meta`「自有 8」→「自有 10」。來源 filter 計數與頁尾「顯示 n 筆」是 JS 即時算、未動。「租出數 26」與「IP 總收入」屬人工設定的展示值（本來就不等於逐列加總），本輪不動。
+- **【D】** 新資產 `images/ip/nick-portrait.jpg`（440×440）：由 `persona/NICKTHEREAL/images/artist_2024_nick.jpg` 裁出頭肩方形，兩列的 `data-nick-img` 共用。既有 `images/projects/nick-*.jpg` 都是專輯／海報構圖（`nick-r2.jpg` 還壓著「LIVE 11.23」字樣），拿來當肖像權與聲音的縮圖讀不出「這是這個人本人」。
+
 ## 2026-07-29 · 版本切版：R 2.1 → R 2.2，併入外部協作者改版快照（D infra / 文件）
 
 r2.1 凍結為唯讀對照存檔，開發移到 r2.2。r2.2 的內容＝我方 r2.1 ＋ 外部協作者 2026-07-29 交付的本機快照（該批未經 monorepo，只能以檔案形式整合）。
@@ -70,7 +80,7 @@ r2.1 凍結為唯讀對照存檔，開發移到 r2.2。r2.2 的內容＝我方 r
 
 使用者指定：不同階段該有不同分頁；售票中與進行中需要一個顯示每筆銷售紀錄的分頁（站上原本沒有）；已排程與草稿不需要名單與報到、退款、收支、以及新的交易明細。並指示移除頁首的樣本資料說明橫幅。
 
-- **【A/原則】** 推導矩陣的原則不是逐頁挑選，而是**一個分頁只在「它管的東西可能存在」時才出現**。每個分頁都是一句「這裡有東西可看」的宣稱；草稿顯示「名單與報到」是資料兌現不了的承諾，久了使用者就不信任整排導覽。前置條件：總覽／票種＝永遠；通知＝要有可通知的對象（草稿沒有觀眾）；交易明細／名單／退款／收支＝要有金流或持票人；系列＝這場活動真的屬於某個系列。
+- **【A/原則】** 推導矩陣的原則：**一個分頁只在「它管的東西可能存在」時才出現**（不逐頁挑選）。每個分頁都是一句「這裡有東西可看」的宣稱；草稿顯示「名單與報到」是資料兌現不了的承諾，久了使用者就不信任整排導覽。前置條件：總覽／票種＝永遠；通知＝要有可通知的對象（草稿沒有觀眾）；交易明細／名單／退款／收支＝要有金流或持票人；系列＝這場活動真的屬於某個系列。
 - **【A/矩陣】** 草稿：總覽 · 票種｜已排程：＋通知｜售票中／進行中／已結束：＋交易明細 · 名單與報到 · 退款 · 收支｜系列：任何階段，但**僅在該活動有系列時**。使用者只點名了「已排程與草稿不需要那四個」，其餘由上述前置條件推出（草稿 ⊂ 已排程 ⊂ 有金流的三個階段）。
 - **【A/新分頁】** 交易明細：一列一筆訂單（不是一張票——很少有人只買一張），欄位＝訂單／買家／票種／張數／金額／平台費／淨額／付款方式／狀態，上方摘要＝收款總額 · 平台費 · 實收淨額 · 已退款，另有全部／已付款／已退款篩選。**它回答的問題與既有分頁都不同**：名單問「誰會來」、收支問「這場賺不賺」，交易明細問「收入 KPI 那個數字由哪些款項組成、每一筆後來怎麼了」——對帳與爭議處理面。
 - **【A/資料一致性，最重要的一條】** 交易由 store 依票種決定性地生成，且**已結算金額加總恆等於該場次的 revenue**——否則這張表會跟頁首的收入 KPI 互相打架，整個 console 的可信度就沒了。退款筆是**額外**附加、不計入加總（退掉的票已回庫存、不在 `sold` 裡）。為了讓恆等式成立，順手修掉一個既有矛盾：Chongqing 的票種單價 × 售出＝30×72+60×12＝2,880，與 revenue 2,520 不符（是我先前照清單列的收入數字反推票價時留下的），GA 調成 25 後 25×72+60×12＝2,520。**七個有金流的場次全部驗過**：settled sum ＝ revenue ＝ 票種單價×售出，且結算張數 ＝ sold。
@@ -102,7 +112,10 @@ r2.1 凍結為唯讀對照存檔，開發移到 r2.2。r2.2 的內容＝我方 r
   ⑥ 掃碼連結 `fetch` 回 **HTTP 200**；`scanner.html?event=…` 的場次名稱與標題確實變成該活動；複製路徑攔截 `writeText` 驗證寫入的是絕對網址、按鈕回饋「已複製連結」。
   ⑦ 活動清單 6×4＝24 種組合的計數恆等式重跑仍全數通過（Live 1、全部 11）。
   ⑧ 中英雙語、無溢出、無水平捲動。
-- **【讀圖後修掉的三個缺陷】**（截圖逐格核對才發現，不是跑完就算數）：① 類型徽章印出 `Meet &amp; Greet`——字典值本身帶 HTML entity，用 `textContent` 會原樣印出，改 `innerHTML`；② 總覽「活動詳情」的值寫進了標籤格（Type 那列顯示日期、第二列標籤變成場地字串）——`.data-list__row span:last-child` 會連 `.data-list__row-main` 裡的標籤 span 一起選中，改用 `> span:last-child` 限定直接子層；③ 頁首徽章、詳情列與頁尾殘留示例的系列／直播權益資訊（粉絲見面會顯示「Series 2 of 3」「VIP 含直播」），store 沒有這些欄位，整列與徽章收起、頁尾改成該活動名稱——不留半真半假的陳述。
+- **【讀圖後修掉的三個缺陷】**（截圖逐格核對才發現，不是跑完就算數）：
+  - 類型徽章印出 `Meet &amp; Greet`——字典值本身帶 HTML entity，用 `textContent` 會原樣印出，改 `innerHTML`。
+  - 總覽「活動詳情」的值寫進了標籤格（Type 那列顯示日期、第二列標籤變成場地字串）——`.data-list__row span:last-child` 會連 `.data-list__row-main` 裡的標籤 span 一起選中，改用 `> span:last-child` 限定直接子層。
+  - 頁首徽章、詳情列與頁尾殘留示例的系列／直播權益資訊（粉絲見面會顯示「Series 2 of 3」「VIP 含直播」），store 沒有這些欄位，整列與徽章收起、頁尾改成該活動名稱——不留半真半假的陳述。
 - **【已知限制】** 到場計時器是原型示意（固定節奏、不接真實票務系統）；`startedMinutesAgo` 是資料裡的固定值、不接真實時鐘；名單只渲染前 40 列（下方註記說明總數）。
 
 ## 2026-07-27 · 活動清單兩排篩選重構：生命週期 × 活動類型（B 反饋導入）
@@ -112,9 +125,17 @@ r2.1 凍結為唯讀對照存檔，開發移到 r2.2。r2.2 的內容＝我方 r
 **為什麼這個重構同時修掉一個既有 bug**：舊的第一排是時段（Upcoming／Past）、第二排混了銷售狀態與草稿。草稿沒有日期，兩個時段分頁都容不下它，所以才需要 D060/D033(c) 的「草稿跨時段顯示」特例——而那個特例讓計數自相矛盾：Past 檢視實測 All 2、On Sale 0、Draft 1，`0+1≠2`，且那個 Draft 指向一列當下分頁根本顯示不出來的資料。新軸把草稿與已結束都納入同一條生命週期，特例連同矛盾一起消失。
 
 - **【B】上排＝生命週期階段**（互斥，規則「取走到最遠的那一階」：當天開演即使現場仍在售票也算進行中）：**全部 · 進行中 · 售票中 · 已排程 · 草稿 · 已結束**。
-  - **與使用者列出的順序有兩處差異，明列**：① 補上「全部」——五個互斥階段若無全部，就再也看不到完整清單，等於我引入一個退步；② 「已結束」移到最後（使用者原列在草稿之前）。理由：已結束是唯一純檔案性質的桶（用來回顧、不用來行動），草稿則是還沒做完的工作，該和其他活躍階段放在一起。排序原則＝注意力優先，不是生命週期順序。
+  - **與使用者列出的順序有兩處差異，明列**：
+    - 補上「全部」——五個互斥階段若無全部，就再也看不到完整清單，等於我引入一個退步。
+    - 「已結束」移到最後（使用者原列在草稿之前）。
+
+    理由：已結束是唯一純檔案性質的桶（用來回顧、不用來行動），草稿則是還沒做完的工作，該和其他活躍階段放在一起。排序原則＝注意力優先，不是生命週期順序。
 - **【B】下排＝活動類型**：**全部 · 演唱會 · 粉絲見面會 · 線上活動**。判準＝「核心是不是一場實體聚集」：實體演出的線上直播仍歸演唱會（錨點是那場實體演出），純線上才歸線上活動。建立流程六型別的對應表寫在 `js/events-store.js` 檔頭（**單一出處**）：concert／festival → 演唱會｜meet／launch → 粉絲見面會｜virtual／watchparty → 線上活動。
-  - **兩個要使用者裁示的判斷題**：① `launch`（發片派對）歸粉絲見面會——它比較像近距離慶祝而非售票演出，但若有表演成分也可歸演唱會；② 定義本身的邊界——粉絲見面會是用「實體近距離接觸」定義、線上活動是用「媒介」定義，所以線上的粉絲互動兩者皆符合，依使用者原話「any online interaction events」歸線上活動。這條規則會決定日後所有邊界案例，故明寫出來。
+  - **兩個要使用者裁示的判斷題**：
+    - `launch`（發片派對）歸粉絲見面會——它比較像近距離慶祝而非售票演出，但若有表演成分也可歸演唱會。
+    - 定義本身的邊界——粉絲見面會是用「實體近距離接觸」定義、線上活動是用「媒介」定義，所以線上的粉絲互動兩者皆符合，依使用者原話「any online interaction events」歸線上活動。
+
+    這條規則會決定日後所有邊界案例，故明寫出來。
 - **【B/計數規則】** 上排＝整份清單各階段總數（不隨下排變動，切類型時上排數字不會在游標下亂跳）；下排＝目前階段之內的類型分佈。恆等式：下排各類型相加 ＝ 下排全部 ＝ 上排選定分頁。搜尋是第三個 AND 條件但**刻意不改寫任何計數**——會默默改掉分頁宣稱數字的過濾器比不改更糟。
 - **【B/資料】** 每列由 `data-period`＋`data-status` 換成 `data-stage`＋`data-category`，每條軸各一個值，過濾與計數都變成單純的 filter，無任何特例。`events-store.js` 同步加 `category`。
 - **【B/示範資料】** 新增一場「專輯簽名會 — 臺北」（`album-signing-taipei`，售票中、118/150）。**原因**：既有九場全落在演唱會與線上活動，粉絲見面會在每個檢視都是 0，那個晶片就無法被評估、看起來像壞掉。屬為了讓設計可被判斷而加的示範資料，**不需要時把 events.html 那一列與 store 那筆一起刪掉即可**，已在兩處標註。
@@ -629,7 +650,12 @@ r2.1 凍結為唯讀對照存檔，開發移到 r2.2。r2.2 的內容＝我方 r
 延續同日「IP Market 換示例卡」那筆：使用者改要真實知名 IP 名、且「圖片也要換」。本輪把三卡與詳情頁的示例名換成真實 IP，並把封面由漸層色塊 promote 成可放真實封面圖的結構。**版權／肖像界線**：真實 IP 名只作純文字提及、描述為原創通用措辭；受版權角色圖與真人藝人照不由 AI 生成或代抓，真實授權圖一律由使用者自備放入 `images/`（見 ASSUMPTIONS UIA-088）。
 
 - **【B/元件】** `shared.css` 新增 `.ipm-card__cover`（IP Market 卡封面，由 ip-market 三個無 class 的 inline 漸層 div promote：3:4、品牌漸層佔位、`position:relative;overflow:hidden`）＋ `.ipm-card__cover-img`／`.ip-hero__cover-img`（`object-fit:cover`、絕對定位疊在佔位上）；`.ip-hero__cover` 加 `position:relative;overflow:hidden` 承接疊圖。無圖時顯示漸層＋IP 名，加 `<img class="…__cover-img" src="images/…">` 即鋪滿。比照站上 `.project-card__cover-img` 慣例。**Q30 裁決**。
-- **【B/內容】** `ip-market.html` 三卡改真實 IP 名：① 哈利波特 Harry Potter（Story World·Warner Bros.·Available）② A-Lin（Music·Sony Music·Bidding）③ 佩佩豬 Peppa Pig（Brand·Hasbro·Exclusive）；封面 div 改用 `.ipm-card__cover`、更新 `data-search`；順帶消掉 card2／card3 的兩組 inline 裸 hex 漸層（頁面裸值降）。
+- **【B/內容】** `ip-market.html` 三卡改真實 IP 名：
+  - 哈利波特 Harry Potter（Story World·Warner Bros.·Available）
+  - A-Lin（Music·Sony Music·Bidding）
+  - 佩佩豬 Peppa Pig（Brand·Hasbro·Exclusive）
+
+  封面 div 改用 `.ipm-card__cover`、更新 `data-search`；順帶消掉 card2／card3 的兩組 inline 裸 hex 漸層（頁面裸值降）。
 - **【B/內容】** `ip-detail.html`（三卡共用詳情頁，對齊 card1）改哈利波特：title／麵包屑／hero 封面＋標題／owner 卡（avatar 首字→W、姓名→Warner Bros.）；描述改魔法世界通用措辭（保留 14 位角色以對齊 Assets 計數 14）。
 - **【B/i18n】** `js/i18n.js` 同步 en＋zh：`ip-market.card1.meta`／`card2.title`／`card2.meta`／`card3.title`／`card3.meta`、`ip-detail.owner-line`／`desc`／`owner.bio`／`footer1`；HTML fallback 一併同步。
 - **【D】** `design-system.md`（IP hero 條目補 `__cover-img`＋新增「IP market card cover」條目）／`design-system.html`（IP hero spec 表補 Classes＋Cover art 說明）／`STYLE-DECISIONS.md` Q30／`ASSUMPTIONS.md` UIA-088 同步。
@@ -2107,7 +2133,7 @@ i18n 新增 18 個 `product-detail.*` key（已驗證頁面 0 缺 key）；bump 
 
 ## 2026-07-20 · 我的 IP 清單改表格化，對齊 spec 5.1.4 §F6 的 8 欄定義（A 規格補齊 · 新元件變體 · UIA-061）
 
-使用者反饋「我的 IP 版面跟電子商店不像」，指的不是圖示顏色（那已經一致），而是整體版面——`my-ip.html` 原本用 `.data-list` 卡片式清單，把 IP 名稱、權利資訊、租出數、收入、租金全部擠成一行文字（如「Maya Chou · 租出3 · 收入$2,180 · 分潤100% · 租金$480/6個月」）。查證 `documents/5.1.4-我的IP.md` §F6「清單頁欄位與互動」發現：**規格本來就定義了 8 個獨立欄位**（IP／權利資訊／租出數／收入／租金／Mktplace／Manage），現有實作沒有照著做——使用者的直覺跟規格是一致的，不是新提案。
+使用者反饋「我的 IP 版面跟電子商店不像」，指的是整體版面（圖示顏色已經一致，不是這個）——`my-ip.html` 原本用 `.data-list` 卡片式清單，把 IP 名稱、權利資訊、租出數、收入、租金全部擠成一行文字（如「Maya Chou · 租出3 · 收入$2,180 · 分潤100% · 租金$480/6個月」）。查證 `documents/5.1.4-我的IP.md` §F6「清單頁欄位與互動」發現：**規格本來就定義了 8 個獨立欄位**（IP／權利資訊／租出數／收入／租金／Mktplace／Manage），現有實作沒有照著做——使用者的直覺跟規格是一致的，不是新提案。
 
 - **【A · 新元件變體 `.product-list--ip`】** 比照 e-shop/orders/pickup 既有的「同一組 grid 換一批欄位模板」手法，在 `product-list.css` 新增 8 欄版型：icon(60px) / IP 名稱＋標籤 / 權利資訊 / 租出數 / 收入 / 租金 / Mktplace(開關，新 `.product-list__mktplace` cell) / Manage。含 ≤760px 響應式堆疊規則（同 --orders/--pickup 手法）。
 - **【A · my-ip.html 表格化】** 兩段清單（「在 Ztor 上產出的 IP」5 筆／「Ztor 之外的 IP」3 筆，現有樣本各 3 筆／1 筆）改用新變體，含表頭列（IP/權利資訊/租出數/收入/租金/Mktplace）。**純拆欄、不動資料**：原本擠在單一 meta 字串裡的權利資訊/租出數/收入/租金原樣拆進對應欄，數字文字皆未改動。i18n 新增 `my-ip.col.*`（欄位表頭）＋ `my-ip.rowN.rights/rented/revenue/price`（原 `rowN.meta` 拆開，取代舊 key）。
@@ -2405,7 +2431,11 @@ i18n 新增 18 個 `product-detail.*` key（已驗證頁面 0 缺 key）；bump 
 
 - **【B】create-product body 由 `--narrow`(1000px) 改 `--wide`(1240px)**（[create-product.html](./create-product.html)）：本頁是 `preview-split`（表單欄｜固定 320px 預覽欄＋40px gap），narrow 下表單欄僅約 584px（1000−28×2−320−40），而限量逐規格表 7 欄（規格名／價格／原價／上限／成本／在庫／刪除，`variant-builder.css` 的 `.variant-table--limited`）最小需約 685px → 溢出捲動。改 wide 後表單欄約 824px（1240−56−360），7 欄完整展開仍餘約 140px。
 - **復用既有修飾類、零新值**：`--wide` 是 create-campaign 已在用的既有 `.wizard__body--wide`，非新增寬度；`variant-table` 的 `overflow-x:auto` 保留當更窄視窗的保險。DS 文件（md＋html）body-modifier 清單已把 create-product 由 narrow 移到 wide。cache-bust bump。
-- **【B · 追加】逐規格表「規格組合」欄不再過寬**（[variant-builder.css](./ds-components/variant-builder.css)，元件層改一次 → create-product／product-detail／DS demo 三處同步）：頁面變寬後，第一欄原本 `minmax(110px, 1.3fr)` 用 `fr` 吃掉所有多餘寬度，導致「S／M」這種短值也被撐得很寬。改法：① `.variant-table-wrap` 加 `width:fit-content`＋`max-width:100%`，表格外框貼齊實際內容寬、靠左，不再撐滿表單欄；② 第一欄改 `minmax(110px, max-content)`，貼齊內容、保留 110px 下限、不吃滿剩餘寬度。限量表因此收斂到約 682px 靠左展開，更窄視窗仍由 `min-width:560`＋`overflow-x:auto` 回退捲動。DS 兩份文件的 Variant builder 條目已補此欄寬行為。
+- **【B · 追加】逐規格表「規格組合」欄不再過寬**（[variant-builder.css](./ds-components/variant-builder.css)，元件層改一次 → create-product／product-detail／DS demo 三處同步）：頁面變寬後，第一欄原本 `minmax(110px, 1.3fr)` 用 `fr` 吃掉所有多餘寬度，導致「S／M」這種短值也被撐得很寬。改法：
+  - `.variant-table-wrap` 加 `width:fit-content`＋`max-width:100%`，表格外框貼齊實際內容寬、靠左，不再撐滿表單欄。
+  - 第一欄改 `minmax(110px, max-content)`，貼齊內容、保留 110px 下限、不吃滿剩餘寬度。
+
+  限量表因此收斂到約 682px 靠左展開，更窄視窗仍由 `min-width:560`＋`overflow-x:auto` 回退捲動。DS 兩份文件的 Variant builder 條目已補此欄寬行為。
 - **【B · 再追加】整頁寬度由 `--wide`(1240) 收到新增的 `--mid`(1140)**（[shared.css](./shared.css)＋[create-product.html](./create-product.html)）：表格貼齊內容後只約 682px，`--wide` 右側留白過多。新增介於 narrow/wide 之間的 `.wizard__body--mid`(1140px)，表單欄變約 704px（1140−56−320−40）＝表格完整展開＋約 22px 餘裕、右側留白大幅收窄。**下限 floor≈1100px**：因固定 320px 預覽欄，再窄（如回 narrow 1000→表單欄 584）表格就會溢出捲動，故收到 mid 而非 narrow。DS 兩份文件 body-modifier 清單新增 `--mid`、create-product 由 wide 移到 mid。
 
 ## 2026-07-16 · 商品細節頁改分頁式（tabs）佈局（B 反饋導入）
