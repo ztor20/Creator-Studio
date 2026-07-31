@@ -61,6 +61,7 @@
     'nav.fans-tiers':        { en: 'Tier settings', zh: '分級設定' },
     /* Media Vault（2026-07-29）：權益定義「給什麼」，媒體庫是那個東西本身。 */
     'nav.fans-vault':        { en: 'Media Vault', zh: '媒體庫' },
+    'nav.fans-audience':     { en: 'Fan analytics', zh: '粉絲分析' },
     'nav.fans-vault-sub':    { en: 'Gated vaults of media',           zh: '有門檻的媒體庫房' },
     'fg.crumb.fans':  { en: 'Fans', zh: '粉絲' },
     'fg.crumb.self':  { en: 'How this works', zh: '系統說明' },
@@ -163,7 +164,13 @@
     'rep.chosen.exp.eg': { en: 'Two campaigns both credit <strong>500 scans</strong>. In one, <strong>90%</strong> actively picked you — your promotion worked. In the other, <strong>15%</strong> did — you were collecting scans you would have received anyway.', zh: '兩次合作同樣歸屬 <strong>500 次掃碼</strong>。其中一次有 <strong>90%</strong> 是主動選你——推廣奏效。另一次只有 <strong>15%</strong>——你收到的是本來就會來的掃碼。' },
     'rep.chosen.exp.rule': { en: 'A high total with a low choice rate means the campaign is riding your existing audience, not growing it.', zh: '總數高但主動選擇率低，代表這次合作是在吃既有受眾的紅利，而不是把受眾做大。' },
     'nav.fans-tiers-sub':    { en: 'Thresholds, multipliers & rules', zh: '門檻、行為加權與規則' },
+    'nav.fans-audience-sub': { en: 'The whole picture, across platforms', zh: '整體樣貌：多少人、在哪裡、走到哪' },
     'nav.earnings':     { en: 'Earnings',   zh: '收入管理' },
+    /* Earnings 拆頁提案（2026-07-31）：群組底下兩個目的地。 */
+    'nav.earnings-overview':     { en: 'Overview',      zh: '收入總覽' },
+    'nav.earnings-overview-sub': { en: 'Everything you earn, on Ztor and off', zh: '全部收入：Ztor 加上外部平台' },
+    'nav.earnings-ztor':         { en: 'Ztor earnings', zh: 'Ztor 收入' },
+    'nav.earnings-ztor-sub':     { en: 'Settlement, payouts & tax',           zh: '結算、提款與稅務' },
 
     /* ─── Platform-operator (Admin) layer · spec §4.1 / D086 ─── */
     'admin.creator-mgmt': { en: 'Creator Management', zh: 'Creator 管理' },
@@ -364,7 +371,7 @@
     'nav.search-label':       { en: 'Open search',           zh: '開啟搜尋' },
     'nav.search-placeholder': { en: 'Search projects, IP, fans, transactions…', zh: '搜尋項目、IP、粉絲、交易…' },
     'nav.search-hint':        { en: 'Type a keyword, then press Enter', zh: '輸入關鍵字後按 Enter' },
-    'nav.notif-label':        { en: 'Notifications & to-dos', zh: '通知與待辦' },
+    'nav.notif-label':        { en: 'Notifications', zh: '通知中心' },
     'nav.theme-label':        { en: 'Toggle theme',          zh: '切換主題' },
     'nav.lang-label':         { en: 'Language',              zh: '語言切換' },
     /* 側欄帳號群組裡的語言列標籤（2026-07-28）。與 nav.lang-label 分開：那個是
@@ -379,8 +386,8 @@
     'nav.currency.hkd':       { en: 'HKD (HK$)',             zh: '港幣 (HKD)' },
     'nav.currency.twd':       { en: 'TWD (NT$)',             zh: '新台幣 (TWD)' },
 
-    /* ─── Notification & to-do center ─────────────────────── */
-    'notif.title':            { en: 'Notifications & to-dos', zh: '通知與待辦中心' },
+    /* ─── Notifications（原「通知與待辦中心」，2026-07-31 改名）─────── */
+    'notif.title':            { en: 'Notifications', zh: '通知中心' },
     'notif.markread':         { en: 'Mark all read',          zh: '全部標為已讀' },
     'notif.todo':             { en: 'Needs action',           zh: '需要你處理' },
     'notif.updates':          { en: 'Status updates',         zh: '狀態更新' },
@@ -424,7 +431,7 @@
     'notif.connected.meta':   { en: 'Instagram was successfully connected.', zh: 'Instagram 已成功連結。' },
     'notif.connected.time':   { en: 'Mon',                    zh: '週一' },
     'notif.announce.title':   { en: 'New feature: Bundle Builder', zh: '新功能：Bundle 建立器' },
-    'notif.announce.meta':    { en: 'Official update merged into this center.', zh: '官方公告已併入通知與待辦中心。' },
+    'notif.announce.meta':    { en: 'Official update merged into this center.', zh: '官方公告已併入通知中心。' },
     'notif.announce.time':    { en: 'Mon',                    zh: '週一' },
 
     /* ─── Shared field copy ───────────────────────────────── */
@@ -500,7 +507,7 @@
     'ops.pending':            { en: 'Pending actions',       zh: '待處理事項' },
     'ops.pending-meta':       { en: '3 open · 1 in progress', zh: '3 件待處理 · 1 件處理中' },
     'ops.projects':           { en: 'Active projects',       zh: '進行中項目' },
-    'ops.projects-meta':      { en: 'Live · funding · scheduled', zh: '上線 · 募資 · 排程中' },
+    'ops.projects-meta':      { en: 'Live · co-create · scheduled', zh: '進行中 · 共創 · 準備中' },
     /* F2 tile popups（2026-07-27）— in-place 明細彈窗，每項自帶 CTA */
     'ops.modal.pending-title':  { en: 'Pending actions',                    zh: '待處理事項' },
     'ops.modal.pending-sub':    { en: 'Each item has one clear next step',  zh: '每一項都有明確的下一步' },
@@ -512,12 +519,12 @@
     'ops.modal.go-projects':    { en: 'Go to Projects',                     zh: '前往項目' },
 
     /* F3 · added Event-tickets income row (replaced the excluded payout row) */
-    'tx.tickets.title':       { en: 'Event tickets · <em>Spring Launch</em> show × 38', zh: '活動票券 · <em>Spring Launch</em> 演出 × 38' },
+    'tx.tickets.title':       { en: '<em>REALIVE (R2)</em> × 38', zh: '<em>REALIVE (R2)</em> 特仕版演唱會 × 38' },
     'tx.tickets.meta':        { en: 'Event tickets · Nov 18', zh: '活動票券 · 11/18' },
     /* F3 · settled-only income rows (Dashboard hides the status column; spec 5.1.1 §F3) */
-    'tx.iproyalty.title':       { en: 'IP royalty · <em>Neon Tide</em> brand → 2 licensees', zh: 'IP 版稅 · <em>Neon Tide</em> 品牌 → 2 位被授權者' },
+    'tx.iproyalty.title':       { en: 'NICKTHEREAL likeness → 2 licensees', zh: 'NICKTHEREAL 肖像 → 2 位被授權者' },
     'tx.iproyalty.meta':        { en: 'IP royalties · Nov 19', zh: 'IP 版稅 · 11/19' },
-    'tx.tickets-settled.title': { en: 'Event tickets · <em>Winter Set</em> show × 52', zh: '活動票券 · <em>Winter Set</em> 演出 × 52' },
+    'tx.tickets-settled.title': { en: '<em>REALIVE (R2)</em> × 52', zh: '<em>REALIVE (R2)</em> 特仕版演唱會 × 52' },
     'tx.tickets-settled.meta':  { en: 'Event tickets · Nov 17', zh: '活動票券 · 11/17' },
 
     /* F4 · per-alert meta line: severity · associated object · processing status */
@@ -534,25 +541,25 @@
     'status.signed':          { en: 'Signed',                zh: '已簽約' },
 
     /* F7 · merged fan-relations + audience-trends block */
-    'dash.f7.title':          { en: 'Fan relations & audience trends', zh: '粉絲關係與受眾趨勢' },
+    'dash.f7.title':          { en: 'Fan relations & trends', zh: '粉絲關係與趨勢' },
     'dash.fans.eyebrow':      { en: 'Fan relations · Fans CRM', zh: '粉絲關係 · Fans CRM' },
     'dash.fans.synced':       { en: 'Updated 2h ago',         zh: '2 小時前更新' },
-    'dash.audience.eyebrow':  { en: 'Audience trends · Audience Intelligence', zh: '受眾趨勢 · Audience Intelligence' },
+    'dash.audience.eyebrow':  { en: 'Fan trends · Fan analytics', zh: '粉絲趨勢 · 粉絲分析' },
     'dash.audience.synced':   { en: 'Last 30 days',           zh: '近 30 天' },
 
     /* F8 · External data status (data source · type · last sync · status · impact) */
     'dash.ext.title':         { en: 'External data status',   zh: '外部資料狀態' },
     'dash.ext.link':          { en: 'Manage in Settings',     zh: '在設定管理' },
     'ext.youtube.type':       { en: 'Subscribers & views · synced 1h ago', zh: '訂閱與觀看 · 1 小時前同步' },
-    'ext.youtube.impact':     { en: 'Feeds Audience trends',  zh: '供應 受眾趨勢' },
+    'ext.youtube.impact':     { en: 'Feeds Fan analytics',  zh: '供應 粉絲分析' },
     'ext.instagram.type':     { en: 'Followers & engagement · synced 2h ago', zh: '追蹤與互動 · 2 小時前同步' },
-    'ext.instagram.impact':   { en: 'Feeds Audience trends & Fans CRM', zh: '供應 受眾趨勢 與 Fans CRM' },
+    'ext.instagram.impact':   { en: 'Feeds Fan analytics & Fans CRM', zh: '供應 粉絲分析 與 Fans CRM' },
     'ext.spotify.type':       { en: 'Streams & monthly listeners · last synced Nov 18', zh: '串流與每月聽眾 · 上次同步 11/18' },
-    'ext.spotify.impact':     { en: 'Affects Audience trends & streaming royalties', zh: '影響 受眾趨勢 與 串流版稅' },
+    'ext.spotify.impact':     { en: 'Affects Fan analytics & streaming royalties', zh: '影響 粉絲分析 與 串流版稅' },
     'ext.streetvoice.type':   { en: 'Followers & plays · synced Nov 23', zh: '追蹤與播放 · 11/23 同步' },
-    'ext.streetvoice.impact': { en: 'Some audience metrics incomplete', zh: '部分受眾指標缺漏' },
+    'ext.streetvoice.impact': { en: 'Some fan metrics incomplete', zh: '部分粉絲指標缺漏' },
     'ext.tiktok.type':        { en: 'Not linked · no data flowing in', zh: '未連結 · 無資料進入' },
-    'ext.tiktok.impact':      { en: 'No TikTok audience data in analytics', zh: '分析中沒有 TikTok 受眾資料' },
+    'ext.tiktok.impact':      { en: 'No TikTok data in Fan analytics', zh: '粉絲分析裡沒有 TikTok 資料' },
     'data.status.normal':     { en: 'Normal',                 zh: '正常' },
     'data.status.delayed':    { en: 'Stalled',                zh: '延遲' },
     'data.status.partial':    { en: 'Partial',                zh: '部分缺漏' },
@@ -580,20 +587,20 @@
     'alert.payout-block.desc': { en: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.', zh: '在釋出任何提款前需先補交 W-8/W-9 稅務表單。請於設定中處理。' },
     'alert.payout-block.cta':  { en: 'Add tax form',           zh: '補交稅務表單' },
     'alert.spotify.title':    { en: 'SPOTIFY sync failed',    zh: 'SPOTIFY 同步失敗' },
-    'alert.spotify.desc':     { en: 'Authorization expired May 17. Re-authorize to keep audience insights current.', zh: '授權於 17 May 過期。重新授權以維持受眾洞察即時更新。' },
+    'alert.spotify.desc':     { en: 'Authorization expired May 17. Re-authorize to keep Fan analytics current.', zh: '授權於 17 May 過期。重新授權以維持粉絲分析即時更新。' },
     'alert.spotify.src':      { en: 'From · Settings · Integrations', zh: '來自 · 設定 · 第三方服務整合' },
     'alert.spotify.cta':      { en: 'Re-authorize',           zh: '重新授權' },
 
     /* Dashboard recent earnings */
-    'tx.preorder.title':      { en: 'Pre-order · <em>Coastline EP</em> · 47 supporters', zh: '預購 · <em>Coastline EP</em> · 47 位支持者' },
+    'tx.preorder.title':      { en: '<em>LOVE RAGE HOPE</em> vinyl · 47 supporters', zh: '<em>LOVE RAGE HOPE</em> 黑膠典藏版 · 47 位支持者' },
     'tx.preorder.meta':       { en: 'Project support · 2 hours ago', zh: '項目支持 · 2 小時前' },
-    'tx.spotify.title':       { en: 'Streaming royalty · Spotify (Q4 statement)', zh: '串流版稅 · Spotify（Q4 結算）' },
+    'tx.spotify.title':       { en: '<em>REAL LIFE</em> (Q4 statement)', zh: '<em>REAL LIFE</em>（Q4 結算）' },
     'tx.spotify.meta':        { en: 'Platform / streaming royalties · Yesterday', zh: '平台 / 串流版稅 · 昨天' },
-    'tx.merch.title':         { en: 'Merch sale · <em>Tour zine vol. 02</em> × 14', zh: '周邊銷售 · <em>Tour zine vol. 02</em> × 14' },
+    'tx.merch.title':         { en: '<em>Tour zine vol. 02</em> × 14', zh: '<em>Tour zine vol. 02</em> × 14' },
     'tx.merch.meta':          { en: 'E-Shop sales · Nov 22',  zh: '電子商店銷售 · 11/22' },
-    'tx.licensing.title':     { en: 'Licensing · <em>Late Bloom</em> story world → Studio Yiu', zh: '授權 · <em>Late Bloom</em> 故事世界 → Studio Yiu' },
+    'tx.licensing.title':     { en: '<em>帥到分手</em> story world → Studio Yiu', zh: '<em>帥到分手</em> 故事世界 → Studio Yiu' },
     'tx.licensing.meta':      { en: 'Licensing · Nov 20',    zh: '授權 · 11/20' },
-    'tx.payout.title':        { en: 'Payout · Bank transfer ••3417', zh: '提款 · 銀行轉帳 ••3417' },
+    'tx.payout.title':        { en: 'Bank transfer ••3417', zh: '銀行轉帳 ••3417' },
     'tx.payout.meta':         { en: 'Withdrawal · Nov 18',   zh: '提款 · 11/18' },
 
     /* Dashboard source list */
@@ -622,7 +629,113 @@
     'earnings.period.quarter':{ en: 'This quarter',          zh: '本季' },
     'earnings.period.year':   { en: 'This year',             zh: '本年度' },
 
+    /* ─── Earnings 拆頁提案（2026-07-31）· 頁1 收入總覽 / 頁2 Ztor 收入 ───
+       分界線＝錢有沒有經過 Ztor。頁1 整合內外部、純看；頁2 只放可結算的錢。 */
+    'earnings.crumb.overview':    { en: 'Overview',      zh: '收入總覽' },
+    'earnings.crumb.ztor':        { en: 'Ztor earnings', zh: 'Ztor 收入' },
+    'earnings.ov.h1':             { en: 'Overview',      zh: '收入總覽' },
+    'earnings.ov.sub':            { en: "Your Ztor income, plus the royalties every platform you're on pays you.", zh: 'Ztor 上的全部收入，加上各平台匯進來的版稅。' },
+    'earnings.ov.cta':            { en: 'Ztor earnings', zh: 'Ztor 收入' },
+    'earnings.ov.kpi.total':      { en: 'Total revenue · all sources', zh: '總收入 · 全部來源' },
+    'earnings.ov.kpi.total-meta': { en: '+14.2% MoM',    zh: '較上月 +14.2%' },
+    'earnings.ov.kpi.ztor':       { en: 'Ztor revenue',  zh: 'Ztor 收入' },
+    'earnings.ov.kpi.ztor-meta':  { en: '92.8% · settles on Ztor', zh: '占 92.8% · 在 Ztor 結算' },
+    'earnings.ov.kpi.ztor-link':  { en: 'Open Ztor earnings →', zh: '進入 Ztor 收入 →' },
+    'earnings.ov.kpi.ext':        { en: 'Off-platform royalties', zh: '站外版稅' },
+    'earnings.ov.kpi.ext-meta':   { en: '7.2% · not withdrawable', zh: '占 7.2% · 不可提領' },
+    'earnings.ov.kpi.ext-link':   { en: 'See royalties →', zh: '看版稅 →' },
+    'earnings.ov.kpi.avail-meta': { en: 'Ztor only · bank ••3417', zh: '僅 Ztor · 銀行 ••3417' },
+    'earnings.zt.h1':             { en: 'Ztor earnings', zh: 'Ztor 收入' },
+    'earnings.zt.sub':            { en: 'Money that settles on Ztor — transactions, breakdown, payouts and tax.', zh: '在 Ztor 平台上結算的錢：交易明細、項目收益、提款與稅務。' },
+    'earnings.zt.kpi.gross':      { en: 'Ztor gross revenue', zh: 'Ztor 總收入' },
+    'btn.manual-entry-ext':       { en: 'Royalties & manual entry', zh: '版稅與補登' },
+
+    /* 版稅區塊（頁1 第三段）。2026-07-31 裁定：總覽的外部那一半只收版稅，
+       外部平台的商品販售與票務不納入。來源是發行商定期報表、非各平台 API 同步，
+       所以文案講的是「報表什麼時候到」而不是「平台連上了沒」。 */
+    'section.revenue-trend-ztor': { en: 'Revenue trend · Ztor', zh: '收入趨勢 · Ztor' },
+    'earnings.ov.foot.range': { en: 'Last 12 months · Ztor income only. Royalties arrive as quarterly statements — see the Royalties tab.', zh: '近 12 個月 · 只含 Ztor 上的收入。版稅是季報、會晚一季到，見「版稅」分頁。' },
+    /* 併回單頁後的 KPI：四張卡改成「範圍看得懂」的一組。淨利搬進項目收益分頁
+       （金流瀑布本來就在那），待結算併進可提領卡的輔助行。 */
+    'earnings.kpi.total':        { en: 'Total revenue · all sources', zh: '總收入 · 全部來源' },
+    'earnings.kpi.total-meta':   { en: '+14.2% MoM',        zh: '較上月 +14.2%' },
+    'earnings.kpi.ztor':         { en: 'Ztor revenue',      zh: 'Ztor 收入' },
+    'earnings.kpi.ztor-meta':    { en: '92.8% · settles on Ztor', zh: '占 92.8% · 在 Ztor 結算' },
+    'earnings.kpi.royalty':      { en: 'Off-platform royalties', zh: '站外版稅' },
+    'earnings.kpi.royalty-meta': { en: '7.2% · recorded, not withdrawable', zh: '占 7.2% · 只記錄、不可提領' },
+    'earnings.kpi.royalty-link': { en: 'See royalties →',    zh: '看版稅 →' },
+    'earnings.kpi.available-meta2': { en: 'Bank ••3417 · $3,210 still settling', zh: '銀行 ••3417 · 另有 $3,210 待結算' },
+    'tx.filter.royalty':      { en: 'Off-platform royalties', zh: '站外版稅' },
+    'btn.manual-entry-roy':   { en: 'Add a royalty statement', zh: '補登版稅報表' },
+    'roy.empty.title':        { en: 'No royalty statements yet', zh: '還沒有版稅報表' },
+    'roy.empty.text':         { en: 'Once a distributor files a statement — or you add one yourself — your royalties by work, region and platform show up here.', zh: '等發行商送出報表，或你自己補登一份，依作品、地區與平台的版稅就會出現在這裡。' },
+
+    /* 版稅榜的作品名（2026-07-31 data-i18n 化）：此處為 default persona（Maya Chou 世界觀）；
+       周湯豪版在 PERSONA_DICT.nick。原本寫死在 HTML，切 persona 時會露出別人的作品。 */
+    'roy.work1':           { en: "Chan Chung Ling Greatest Hits", zh: '陳松伶精選' },
+    'roy.work2':           { en: "Moonlight over Sham Shui Po", zh: '深水埗的月光' },
+    'roy.work3':           { en: "Kowloon Nightfall", zh: '龍虎門外傳：九龍夜行' },
+    'roy.work4':           { en: "Mong Kok Sniper", zh: '旺角狙擊' },
+    'roy.work5':           { en: "Cheng I Sao", zh: '海上霸姬鄭一嫂' },
+    'roy.work6':           { en: "Moonlight — title track MV", zh: '深水埗的月光 主題曲 MV' },
+    'roy.work7':           { en: "Kowloon Nightfall — end credits", zh: '九龍夜行 片尾曲' },
+    'roy.work8':           { en: "Race to the Line", zh: '我要衝線' },
+    'roy.work9':           { en: "Cheng I Sao — Season 2", zh: '海上霸姬 第二季' },
+    'roy.work10':          { en: "Cheng I Sao — Behind the Scenes", zh: '海上霸姬 幕後紀錄' },
+    'roy.work11':          { en: "Vulgaria — Hi Jai Side Story", zh: '低俗喜劇之嗨仔番外篇' },
+    'roy.works.money':        { en: 'Top 10 works',      zh: 'Top 10 表現最佳作品' },
+    'aud.works.title':        { en: 'Top 10 works · by streams & downloads', zh: 'Top 10 表現最佳作品 · 依串流／下載次數' },
+    'aud.works.unit':         { en: 'Counts, not people', zh: '單位是次數，不是人' },
+    'aud.works.note':         { en: 'Showing {shown} of {total} · views + streams reported by each platform, counted separately from the people figures above.', zh: '顯示 {shown} 部，共 {total} 部 · 各平台回報的觀看＋串流次數，與上方以「人」為單位的數字分開計算、不可互比。' },
+    'roy.works.all':          { en: 'See all works',    zh: '查看全部作品' },
+    'roy.works.count':        { en: 'Showing {shown} of {total}', zh: '顯示 {shown} 部，共 {total} 部' },
+    'roy.type.all':           { en: 'All',              zh: '全部' },
+    'roy.type.music':         { en: 'Music',            zh: '音樂' },
+    'roy.type.video':         { en: 'Video',            zh: '影片' },
+    'roy.all.title':          { en: 'All works',        zh: '全部作品' },
+    'roy.all.sub':            { en: '{n} works this period', zh: '本期共 {n} 部作品' },
+    'roy.all.work':           { en: 'Work',             zh: '作品' },
+    'roy.all.type':           { en: 'Type',             zh: '類型' },
+    'roy.all.royalty':        { en: 'Royalty',          zh: '版稅金額' },
+    'roy.all.plays':          { en: 'Streams & downloads', zh: '串流／下載次數' },
+    'roy.title':              { en: 'Royalties',        zh: '版稅' },
+    'roy.period.month':       { en: 'Month',            zh: '月' },
+    'roy.period.quarter':     { en: 'Quarter',          zh: '季' },
+    'roy.period.year':        { en: 'Year',             zh: '年' },
+    'roy.period.custom':      { en: 'Custom',           zh: '自訂區間' },
+    'roy.export':             { en: 'Export report',    zh: '匯出報表' },
+    'roy.total':              { en: 'Total royalties',  zh: '總版稅' },
+    /* 版稅期間 meta：四個期間各一個鍵。切期間時只換 data-i18n 再呼叫 applyI18n，
+       語言切換就沿用既有機制，不必在頁面裡自己判斷語言（2026-07-31 踩過：
+       誤用 lang === 'zh' 判斷，實際值是 'zh-Hant'，中文介面下會顯示英文）。 */
+    'roy.meta.month':         { en: 'Jun 2026 · all works, platforms and regions · data through Jun 30', zh: '2026 年 6 月 · 全部作品、平台與地區 · 資料截至 06-30' },
+    'roy.meta.quarter':       { en: '2026 Q2 (Apr–Jun) · all works, platforms and regions · data through Jun 30', zh: '2026 Q2（4–6 月）· 全部作品、平台與地區 · 資料截至 06-30' },
+    'roy.meta.year':          { en: '2026 year to date · all works, platforms and regions · data through Jun 30', zh: '2026 年迄今 · 全部作品、平台與地區 · 資料截至 06-30' },
+    'roy.meta.custom':        { en: 'Jul 1 2025 – Jun 30 2026 · all works, platforms and regions · data through Jun 30', zh: '2025-07-01 – 2026-06-30 · 全部作品、平台與地區 · 資料截至 06-30' },
+    'roy.freshness':          { en: '<strong>Data through 2026-06-30.</strong> Royalty statements arrive from distributors on their own schedule — some sources run about a quarter behind. These are not live figures, and they are counted separately from your Ztor sales.', zh: '<strong>資料截至 2026-06-30。</strong>版稅報表由發行商定期提供，部分來源約延遲一季，非即時數據，與 Ztor 上的銷售分開計算。' },
+    'roy.src.distributor':      { en: 'Distributor statements', zh: '發行商報表' },
+    'roy.src.distributor-meta': { en: 'Streaming, download and broadcast · about one quarter behind', zh: '串流、下載與播映 · 約延遲一季' },
+    'roy.src.ip':               { en: 'Ztor IP royalties', zh: 'Ztor IP 版稅' },
+    'roy.src.ip-meta':          { en: 'Your IP rented or referenced on Ztor · settles here', zh: '你的 IP 在 Ztor 上被租用或引用 · 在這裡結算' },
+    'roy.src.licensing':        { en: 'Ztor licensing', zh: 'Ztor 授權收入' },
+    'roy.src.licensing-meta':   { en: 'Licence fees and rentals agreed on Ztor · settles here', zh: '在 Ztor 上談成的授權費與租用費 · 在這裡結算' },
+    'roy.src.manual':           { en: 'KKBOX · Q3 statement (added by you)', zh: 'KKBOX · Q3 版稅報表（你補登的）' },
+    'roy.src.manual-meta':      { en: 'No integration yet · statement attached · Nov 18', zh: '尚未串接 · 已附報表 · 11/18' },
+    'roy.tag.external':       { en: 'Off-platform',     zh: '站外' },
+    'roy.tag.settles':        { en: 'Settles on Ztor',  zh: '可在 Ztor 結算' },
+    'roy.tag.unverified':     { en: 'Unverified',       zh: '未驗證' },
+    'roy.manual-hint':        { en: "Getting royalties from somewhere Ztor doesn't sync yet? Add the statement so it counts here.", zh: '有 Ztor 還沒串接的版稅來源？把報表補登進來，這裡才算得到。' },
+    'roy.manual-cta':         { en: 'Add a royalty statement', zh: '補登版稅報表' },
+    'roy.src.view':           { en: 'View sources',      zh: '查看來源' },
+    'roy.src.modal-title':    { en: 'Where the royalties came from', zh: '版稅從哪裡來' },
+    'roy.src.modal-sub':      { en: "This period · which sources settle on Ztor and which don't", zh: '本期各來源 · 哪些可在 Ztor 結算、哪些不行' },
+    'roy.regions':            { en: 'Regions',          zh: '地區表現' },
+    'roy.regions.rest':       { en: 'Everywhere else',        zh: '其他地區' },
+    'roy.platforms':          { en: 'Platforms',        zh: '串流平台表現' },
+    'roy.platforms.rest':     { en: 'Licensing & other (no platform)', zh: '授權與其他（非平台）' },
+
     'earnings.tab.overview':     { en: 'Overview',           zh: '總覽' },
+    'earnings.tab.royalty':      { en: 'Royalties',          zh: '版稅' },
     'earnings.tab.transactions': { en: 'Transactions',       zh: '交易明細' },
     'earnings.tab.breakdown':    { en: 'Project income',     zh: '項目收益' },
     'earnings.tab.payouts':      { en: 'Payouts',            zh: '提款' },
@@ -774,7 +887,13 @@
     'status.manual':          { en: 'Manual · unverified',   zh: '手動 · 未驗證' },
     /* Project / integration status pills (Dashboard In-progress + Integrations) */
     'status.live':            { en: 'Live',                  zh: '進行中' },
-    'status.scheduled':       { en: 'Scheduled',             zh: '預定' },
+    /* 生命週期的終態（2026-07-31 補齊）：demo 資料原本沒用到這三個，
+       但表格的進度欄會直接顯示狀態詞，缺文案就會露出 key。 */
+    'status.sold-out':        { en: 'Sold out',              zh: '已售完' },
+    'status.ended':           { en: 'Ended',                 zh: '已結束' },
+    'status.cancelled':       { en: 'Cancelled',             zh: '已取消' },
+    'status.succeeded':       { en: 'Succeeded',             zh: '已成立' },
+    'status.scheduled':       { en: 'Scheduled',             zh: '準備中' },
     'status.on-sale':         { en: 'On sale',               zh: '售票中' },
     'status.draft':           { en: 'Draft',                 zh: '草稿' },
     'status.sync-failed':     { en: 'Sync failed',           zh: '同步失敗' },
@@ -790,26 +909,111 @@
        11/23). */
     'dash.recent.title':      { en: 'Recent activity',       zh: '最近動態' },
     'dash.recent.sub':        { en: 'System events',         zh: '系統事件' },
-    'dash.recent.row1.title': { en: '<em>Coastline EP</em> MV published',                  zh: '<em>Coastline EP</em> MV 上線' },
+    'dash.recent.row1.title': { en: '<em>帥到分手</em> MV published',                  zh: '<em>帥到分手</em> MV 上線' },
+    /* ─── 儀表板三張卡改表格後的逐欄文案（2026-07-31）：原本每列的副標是一整串
+       （來源·時間、分類·模組·日期…），拆成欄位後每個欄位各自一個 key。 */
+    'dash.col.item': { en: 'Item', zh: '項目' },
+    'dash.col.src': { en: 'Source', zh: '來源' },
+    'dash.col.time': { en: 'Time', zh: '時間' },
+    'dash.col.amount': { en: 'Amount', zh: '金額' },
+    'dash.col.event': { en: 'Event', zh: '事件' },
+    'dash.col.module': { en: 'Module', zh: '來源模組' },
+    'dash.col.date': { en: 'Date', zh: '日期' },
+    'dash.col.status': { en: 'Status', zh: '狀態' },
+    'dash.col.name': { en: 'Name', zh: '名稱' },
+    'dash.col.cat': { en: 'Category', zh: '分類' },
+    'dash.col.progress': { en: 'Progress', zh: '進度' },
+    'dash.col.due': { en: 'Due', zh: '期限' },
+    'tx.preorder.src': { en: 'Pre-order sales', zh: '預購銷售' },
+    'tx.preorder.time': { en: '2 hours ago', zh: '2 小時前' },
+    'tx.spotify.src': { en: 'Streaming royalty', zh: '串流版稅' },
+    'tx.spotify.time': { en: 'Yesterday', zh: '昨天' },
+    'tx.merch.src': { en: 'E-Shop sales', zh: '電子商店銷售' },
+    'tx.merch.time': { en: 'Nov 22', zh: '11/22' },
+    'tx.licensing.src': { en: 'Story world licensing', zh: '故事世界授權' },
+    'tx.licensing.time': { en: 'Nov 20', zh: '11/20' },
+    'tx.tickets.src': { en: 'Event tickets', zh: '活動票券' },
+    'tx.tickets.time': { en: 'Nov 18', zh: '11/18' },
+    'tx.payout.src': { en: 'Bank transfer payout', zh: '銀行轉帳提款' },
+    'tx.payout.time': { en: 'Nov 18', zh: '11/18' },
+    'tx.iproyalty.src': { en: 'IP licensing royalty', zh: 'IP 授權版稅' },
+    'tx.iproyalty.time': { en: 'Nov 19', zh: '11/19' },
+    'tx.tickets-settled.src': { en: 'Event tickets', zh: '活動票券' },
+    'tx.tickets-settled.time': { en: 'Nov 17', zh: '11/17' },
+    /* 2026-07-31 補滿儀表板假資料：F3 只放已結算收入，補三筆湊滿整張卡。 */
+    'tx.hoodie.title':        { en: '<em>WYAGL</em> hoodie × 22', zh: '<em>WYAGL</em> 連帽衫 × 22' },
+    'tx.hoodie.meta':         { en: 'E-Shop sales · Nov 16', zh: '電子商店銷售 · 11/16' },
+    'tx.hoodie.src':          { en: 'E-Shop sales', zh: '電子商店銷售' },
+    'tx.hoodie.time':         { en: 'Nov 16', zh: '11/16' },
+    'tx.cd-preorder.title':   { en: '<em>REALIVE</em> special edition CD × 63', zh: '<em>REALIVE</em> 特仕版 CD × 63' },
+    'tx.cd-preorder.meta':    { en: 'Pre-order · Nov 15', zh: '預購 · 11/15' },
+    'tx.cd-preorder.src':     { en: 'Pre-order sales', zh: '預購銷售' },
+    'tx.cd-preorder.time':    { en: 'Nov 15', zh: '11/15' },
+    'tx.adshare.title':       { en: '<em>FLAMES</em> MV ad revenue share', zh: '<em>FLAMES</em> MV 廣告分潤' },
+    'tx.adshare.meta':        { en: 'Video ad royalties · Nov 14', zh: '影音廣告版稅 · 11/14' },
+    'tx.adshare.src':         { en: 'Video ad royalty', zh: '影音廣告版稅' },
+    'tx.adshare.time':        { en: 'Nov 14', zh: '11/14' },
+    'dash.recent.row1.mod': { en: 'Projects', zh: 'Projects' },
+    'dash.recent.row1.date': { en: 'Nov 23', zh: '11/23' },
+    'dash.recent.row2.mod': { en: 'Fans CRM', zh: 'Fans CRM' },
+    'dash.recent.row2.date': { en: 'Nov 21', zh: '11/21' },
+    'dash.recent.row3.mod': { en: 'My IP', zh: 'My IP' },
+    'dash.recent.row3.date': { en: 'Nov 19', zh: '11/19' },
+    'dash.recent.row4.mod': { en: 'Earnings', zh: 'Earnings' },
+    'dash.recent.row4.date': { en: 'Nov 17', zh: '11/17' },
+    'dash.recent.row5.mod': { en: 'Events', zh: 'Events' },
+    'dash.recent.row5.date': { en: 'Nov 16', zh: '11/16' },
+    'dash.recent.row6.mod': { en: 'E-Shop', zh: 'E-Shop' },
+    'dash.recent.row6.date': { en: 'Nov 15', zh: '11/15' },
+    'dash.recent.row7.mod': { en: 'Projects', zh: 'Projects' },
+    'dash.recent.row7.date': { en: 'Nov 14', zh: '11/14' },
+    'dash.progress.row1.cat': { en: 'Pre-order project', zh: '預購項目' },
+    'dash.progress.row1.prog': { en: '62 / 100 supporters', zh: '62 / 100 位支持者' },
+    'dash.progress.row1.due': { en: 'ends Dec 14', zh: '12/14 截止' },
+    'dash.progress.row2.cat': { en: 'Co-create project', zh: '共創項目' },
+    'dash.progress.row2.prog': { en: '$8,420 / $15,000', zh: '$8,420 / $15,000' },
+    'dash.progress.row2.due': { en: '21 days left', zh: '剩 21 天' },
+    'dash.progress.row3.cat': { en: 'In-person event', zh: '實體活動' },
+    'dash.progress.row3.prog': { en: '84 / 200 tickets', zh: '84 / 200 張票' },
+    'dash.progress.row3.due': { en: 'Apr 12', zh: '4/12' },
+    'dash.progress.row4.cat': { en: 'Release project', zh: '上線項目' },
+    'dash.progress.row4.prog': { en: '—', zh: '—' },
+    'dash.progress.row4.due': { en: 'scheduled to launch Dec 01', zh: '12/01 上線' },
+    'dash.progress.row5.cat': { en: 'Co-create project', zh: '共創項目' },
+    'dash.progress.row5.prog': { en: '—', zh: '—' },
+    'dash.progress.row5.due': { en: 'closed Nov 10', zh: '11/10 結束' },
+    'dash.progress.row6.cat': { en: 'Online event', zh: '線上活動' },
+    'dash.progress.row6.prog': { en: '—', zh: '—' },
+    'dash.progress.row6.due': { en: 'Jan 18', zh: '1/18' },
     'dash.recent.row1.meta':  { en: 'Content · Projects · Nov 23',                         zh: '內容 · Projects · 11/23' },
     'dash.recent.row2.title': { en: 'Fan milestone — Inner Circle reached 50',             zh: '粉絲里程碑 — Inner Circle 達 50 人' },
     'dash.recent.row2.meta':  { en: 'Fans · Fans CRM · Nov 21',                            zh: '粉絲 · Fans CRM · 11/21' },
-    'dash.recent.row3.title': { en: 'Updated overdue IP — <em>Late Bloom</em> renewed',    zh: '過期 IP 已更新 — <em>Late Bloom</em> 續約' },
+    'dash.recent.row3.title': { en: 'Expiring IP renewed — NICKTHEREAL likeness',    zh: '過期 IP 已更新 — NICKTHEREAL 肖像續約' },
     'dash.recent.row3.meta':  { en: 'IP · My IP · Nov 19',                                 zh: 'IP · My IP · 11/19' },
     'dash.recent.row4.title': { en: 'Brand partnership signed — Cypress Audio',            zh: '品牌合作簽約 — Cypress Audio' },
     'dash.recent.row4.meta':  { en: 'Income · Earnings · Nov 17',                          zh: '收入 · Earnings · 11/17' },
+    'dash.recent.row5.title': { en: 'Ticket sales opened — <em>REALIVE (R2)</em>',           zh: '演唱會開賣 — <em>REALIVE (R2)</em> 特仕版' },
+    'dash.recent.row5.meta':  { en: 'Event · Events · Nov 16',                              zh: '活動 · Events · 11/16' },
+    'dash.recent.row6.title': { en: 'Restocked — <em>WYAGL</em> hoodie',                     zh: '補貨完成 — <em>WYAGL</em> 連帽衫' },
+    'dash.recent.row6.meta':  { en: 'Store · E-Shop · Nov 15',                              zh: '商店 · E-Shop · 11/15' },
+    'dash.recent.row7.title': { en: 'Co-create project opened — <em>什麼都不必說</em>',       zh: '共創項目開跑 — <em>什麼都不必說</em>' },
+    'dash.recent.row7.meta':  { en: 'Project · Projects · Nov 14',                          zh: '項目 · Projects · 11/14' },
 
     'dash.progress.title':     { en: 'Events & projects',      zh: '近期活動與項目' },
     /* Trailing → 已從文字裡拿掉 — .card__head .card__link 會自動加 chevron::after。 */
     'dash.progress.link':      { en: 'View all',              zh: '查看全部' },
-    'dash.progress.row1.title':{ en: '<em>Coastline EP</em> · pre-order',                  zh: '<em>Coastline EP</em> · 預購' },
+    'dash.progress.row1.title':{ en: '<em>LOVE RAGE HOPE</em> vinyl',                  zh: '<em>LOVE RAGE HOPE</em> 黑膠典藏版' },
     'dash.progress.row1.meta': { en: 'Project · Projects · 62 / 100 supporters · ends Dec 14', zh: '項目 · Projects · 62 / 100 位支持者 · 12/14 截止' },
-    'dash.progress.row2.title':{ en: '<em>Late Bloom</em> short film · funding',           zh: '<em>Late Bloom</em> 短片 · 募資' },
+    'dash.progress.row2.title':{ en: '<em>什麼都不必說</em>',           zh: '<em>什麼都不必說</em>' },
     'dash.progress.row2.meta': { en: 'Project · Projects · $8,420 / $15,000 · 21 days left', zh: '項目 · Projects · $8,420 / $15,000 · 剩 21 天' },
-    'dash.progress.row3.title':{ en: '<em>Spring Launch</em> show · in-person',            zh: '<em>Spring Launch</em> 演出 · 實體場' },
+    'dash.progress.row3.title':{ en: '<em>REALIVE (R2)</em> concert',            zh: '<em>REALIVE (R2)</em> 特仕版演唱會' },
     'dash.progress.row3.meta': { en: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei', zh: '活動 · Events · 4/12 · 84 / 200 張票 · 台北' },
-    'dash.progress.row4.title':{ en: '<em>Quiet Hours</em> playlist · go live',            zh: '<em>Quiet Hours</em> 歌單 · 上線' },
-    'dash.progress.row4.meta': { en: 'Project · Projects · scheduled to launch Dec 01',    zh: '項目 · Projects · 預定 12/01 上線' },
+    'dash.progress.row4.title':{ en: '<em>FLAMES</em>',            zh: '<em>FLAMES</em>' },
+    'dash.progress.row4.meta': { en: 'Project · Projects · scheduled to launch Dec 01',    zh: '項目 · Projects · 12/01 上線' },
+    'dash.progress.row5.title':{ en: '<em>帥到分手</em> photo book',   zh: '<em>帥到分手</em> 影像故事集' },
+    'dash.progress.row5.meta': { en: 'Project · Projects · closed Nov 10',                 zh: '項目 · Projects · 11/10 結束' },
+    'dash.progress.row6.title':{ en: '<em>深水埗月光</em> screening',  zh: '<em>深水埗月光</em> 放映會' },
+    'dash.progress.row6.meta': { en: 'Event · Events · Jan 18',                            zh: '活動 · Events · 1/18' },
 
     'dash.fans.title':         { en: 'Fans & loyalty',        zh: '粉絲與忠誠度' },
     'dash.fans.link':          { en: 'Open Fans',             zh: '開啟粉絲頁' },
@@ -824,7 +1028,7 @@
     'dash.fans.risk.meta':     { en: '14+ days without a touchpoint',   zh: '已 14+ 天未互動' },
     'dash.fans.risk.cta':      { en: 'Send a private update',           zh: '發送私訊更新' },
 
-    'dash.audience.title':       { en: 'Audience trend',      zh: '受眾趨勢' },
+    'dash.audience.title':       { en: 'Fan trend',          zh: '粉絲趨勢' },
     'dash.audience.sub':         { en: 'Last 30 days · Audience Intelligence',             zh: '近 30 天 · Audience Intelligence' },
     'dash.audience.lead':        { en: 'New followers across connected platforms',         zh: '各連接平台新增追蹤' },
     'dash.audience.sync-paused': { en: '— sync paused',       zh: '— 同步已暫停' },
@@ -983,7 +1187,7 @@
     'projects.state.label':       { en: 'Project state',                         zh: '項目狀態' },
     'projects.state.all':         { en: 'All states',                            zh: '所有狀態' },
     'projects.state.draft':       { en: 'Draft',                                 zh: '草稿' },
-    'projects.state.scheduled':   { en: 'Scheduled',                             zh: '已排程' },
+    'projects.state.scheduled':   { en: 'Scheduled',                             zh: '準備中' },
     /* 集資中＝開放支持、作品還沒出來（不是「已上線」，那是 live） */
     'projects.state.published':   { en: 'Published',                             zh: '集資中' },
     /* 已成立＝達標且已結束，但尚未交付給支持者 */
@@ -1297,6 +1501,15 @@
     'ip-detail.bd.estimate-note': { en: 'Estimate only — not a charge. Final fees are confirmed with the owner.', zh: '僅為預估、非實際扣款；最終費用與權利人確認。' },
     'ip-detail.btn.send-request': { en: 'Send rental request',         zh: '送出租用申請' },
     'ip-detail.btn.save':         { en: 'Save for later',              zh: '稍後再說' },
+    /* 2026-07-30 送出租用申請後的狀態（規格 5.1.3.1 §F4 Draft 授權進核准佇列、§F3 不得誤導為已完成）。 */
+    'ip-detail.sent.badge':       { en: 'Draft',                       zh: 'Draft 草稿' },
+    'ip-detail.sent.status':      { en: 'Awaiting owner approval',     zh: '等待權利人核准' },
+    'ip-detail.sent.summary':     { en: 'Requested: {total} · {terms}', zh: '已送出：{total} · {terms}' },
+    'ip-detail.sent.next':        { en: 'The owner reviews it in their approval queue. You will be notified when they respond — nothing is charged, and this is not a licence until both sides approve.', zh: '權利人會在他的核准佇列裡審這筆。對方回覆時你會收到通知——這一步不扣款，雙方都核准之前都還不構成授權。' },
+    'ip-detail.sent.withdraw':    { en: 'Withdraw request',            zh: '撤回申請' },
+    'ip-detail.toast.sent':       { en: 'Request sent — a draft licence is now in the owner’s approval queue', zh: '已送出——一筆 Draft 授權已進入權利人的核准佇列' },
+    'ip-detail.toast.withdrawn':  { en: 'Request withdrawn — the draft licence was removed', zh: '已撤回——那筆 Draft 授權已移除' },
+    'ip-detail.toast.saved':      { en: 'Saved on this device for now — a saved-IP list is still pending product design', zh: '暫存在這台裝置——「已儲存的 IP」要放哪一頁還沒有規格' },
     'ip-detail.legal-note':       { en: "Sends a draft licence request to the owner's approval queue — not a payment. A licence is active only once both sides approve and terms are complete.", zh: '送出後建立一筆 Draft 授權、進入權利人核准佇列，非付款。雙方核准且條款齊全後授權才生效。' },
     'ip-detail.tab.overview':     { en: 'Overview',                    zh: '總覽' },
     'ip-detail.tab.terms':        { en: 'Terms &amp; usage',           zh: '條款與用途' },
@@ -1450,20 +1663,26 @@
     'e-shop.col.category':      { en: 'Category',                         zh: '分類' },
     'e-shop.col.price':         { en: 'Price',                            zh: '價格' },
     /* 粉絲分級門檻（2026-07-29）：這一格答的是「誰買得到」。
-       2026-07-29 二修（L：「you should be able to select multiple」）：值不再是單一的
-       「最低分級」，而是一組可購買的分級——creator 逐級勾選。單選階梯只表達得了
-       「某級以上」，表達不了「這幾級可以、那幾級不行」。
        分級階梯與名稱的唯一真相在 tier-settings（核心圈 > 超級粉絲 > 上榜粉絲 > 粉絲），
        選單直接引用 tier-settings.tier.* 那組 key，不在這裡複製第二份名字。
-       欄位顯示的是那組勾選的摘要，用 L 指定的四種寫法（全勾／> 粉絲／> 上榜粉絲／
-       僅核心圈）；勾選不連續時退回逐項列出。「>」在中英文都保留，它就是「不含這一級」
-       的意思——中文的「以上」慣例上含本級，換成 >  才不會反過來讀。 */
+       2026-07-29 二修曾改成自由多選（四級各自勾選），2026-07-31 三修由 L 裁決推翻，
+       改回門檻模型：欄位顯示的是「買得到的最低那一級」。
+       文案跟著改寫——舊版寫「> 粉絲」「> 上榜粉絲」，要讀者自己把大於號翻譯成「比這一級
+       高的人」；門檻模型可以直接說「上榜粉絲以上」，含本級、讀起來就是它的意思。
+       用字對齊建立拍賣頁的競標資格（cp.elig.*：僅限核心圈／超級粉絲以上／全部粉絲），
+       同一個模型在產品裡只用一套說法。英文取 `+` 簡寫是為了塞得進 144px 的欄寬，
+       規格 §5.1.5 描述競標資格時也是寫 `Superfan+`。
+       舊 key `e-shop.tier.gt-fan`／`gt-ranked` 已無消費者且措辭與新模型矛盾，本輪刪除。 */
     'e-shop.col.tier':           { en: 'Fan tier',                         zh: '粉絲分級' },
     'e-shop.tier.aria':          { en: 'Who can buy this',                 zh: '誰買得到' },
-    'e-shop.tier.all':           { en: 'All',                              zh: '全部' },
-    'e-shop.tier.gt-fan':        { en: '> Fans',                           zh: '> 粉絲' },
-    'e-shop.tier.gt-ranked':     { en: '> Ranked fans',                    zh: '> 上榜粉絲' },
-    'e-shop.tier.inner-only':    { en: 'Inner Circle only',                zh: '僅核心圈' },
+    'e-shop.tier.cap':           { en: 'Minimum tier that can buy',        zh: '買得到的最低分級' },
+    /* 每一級右邊的累計人數：門檻設在該級時買得到的總人數（該級＋其上各級）。
+       數字由 js/tier-population.js 供給，是原型示範資料、非產品資料（ASSUMPTIONS PG-022）。 */
+    'e-shop.tier.reach':         { en: '{n} fans',                         zh: '{n} 人' },
+    'e-shop.tier.all':           { en: 'All tiers',                        zh: '全部分級' },
+    'e-shop.tier.min-devoted':   { en: 'Ranked fans+',                     zh: '上榜粉絲以上' },
+    'e-shop.tier.min-superfan':  { en: 'Superfan+',                        zh: '超級粉絲以上' },
+    'e-shop.tier.inner-only':    { en: 'Inner Circle only',                zh: '僅限核心圈' },
     'e-shop.col.status':         { en: 'Status',                           zh: '狀態' },
     'e-shop.col.stock':          { en: 'Stock',                            zh: '庫存' },
     'e-shop.col.shop':          { en: 'Shop',                              zh: '上架開關' },
@@ -1942,7 +2161,7 @@
     'events.tab.past':         { en: 'Past',                                zh: '已舉辦' },
     'events.tab.drafts':       { en: 'Drafts',                              zh: '草稿' },
     'events.badge.on-sale':    { en: 'On Sale',                             zh: '售票中' },
-    'events.badge.scheduled':  { en: 'Scheduled',                           zh: '預定' },
+    'events.badge.scheduled':  { en: 'Scheduled',                           zh: '準備中' },
     'events.badge.ended':      { en: 'Ended',                               zh: '已結束' },
     'events.badge.draft':      { en: 'Draft',                               zh: '草稿' },
     'events.status.all':       { en: 'All',                                 zh: '全部' },
@@ -2023,7 +2242,7 @@
     'events.stage.all':       { en: 'All',           zh: '全部' },
     'events.stage.live':      { en: 'Live',          zh: '進行中' },
     'events.stage.on-sale':   { en: 'On sale',       zh: '售票中' },
-    'events.stage.scheduled': { en: 'Scheduled',     zh: '已排程' },
+    'events.stage.scheduled': { en: 'Scheduled',     zh: '準備中' },
     'events.stage.draft':     { en: 'Draft',         zh: '草稿' },
     'events.stage.past':      { en: 'Past',          zh: '已結束' },
     'events.cat.aria':        { en: 'Filter by event type', zh: '依活動類型篩選' },
@@ -2072,7 +2291,7 @@
     'ee.ov.capacity':     { en: 'Capacity',                       zh: '容納人數' },
     'ee.ov.tickets':      { en: 'Ticket tiers',                   zh: '票種' },
     'ee.ov.empty':        { en: 'Not set',                        zh: '未設定' },
-    'ee.ov.imagesn':      { en: '{n} of 4 uploaded',              zh: '已上傳 {n} / 4' },
+    'ee.ov.imagesn':      { en: '{n} of 3 uploaded',              zh: '已上傳 {n} / 3' },   /* D164：活動素材由四格收斂為三格 */
     'ee.ov.capn':         { en: '{n} capacity · {s} sold',        zh: '可容納 {n} 人 · 已售 {s}' },
     'ee.ov.tiersn':       { en: '{n} tiers',                      zh: '{n} 種票' },
     'ee.changed':         { en: 'Changed',                        zh: '已變更' },
@@ -2179,7 +2398,7 @@
     /* ─── Fans CRM page ───────────────────────────────────── */
     'fans.h1':               { en: 'Your fans, ranked.',                    zh: '你的粉絲，依價值排序' },
     'fans.crumb.self':       { en: 'Fans',                                  zh: '粉絲' },
-    'fans.sub':              { en: 'High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.', zh: '高價值優先。依消費、忠誠點數、近期或等級排序，任一區段都可發訊或匯出。' },
+    'fans.sub':              { en: 'High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment. This is the roster — one person at a time; for the whole picture, see Fan analytics.', zh: '依價值排序，可用消費、忠誠點數、近期活躍或分級排序，並對任一族群群發或匯出。這頁是名冊——一個一個看；整體樣貌（多少人、在哪裡、走到哪）在粉絲分析。' },
     'fans.btn.csv':          { en: 'Export CSV',                            zh: '匯出 CSV' },
     'fans.btn.message':      { en: 'Message segment',                       zh: '群發訊息' },
     'fans.kpi.active':       { en: 'Active fans',                           zh: '活躍粉絲' },
@@ -2237,6 +2456,125 @@
     'fans.col.rank':     { en: 'Rank',        zh: '排名' },
     'fans.col.since':    { en: 'Since',       zh: '達成年份' },
     'fans.col.peak':     { en: 'Peak tier',   zh: '最高分級' },
+
+    /* ─── Fan analytics（粉絲分析 · fan-analytics.html，spec 5.1.7.8 / D158–D162）───
+       用詞取捨（2026-07-31）：
+       · Fans CRM 與本頁的分工是「名冊 vs 分析」（D162）：名冊一個一個看，
+         分析整體看。原本用「受眾 vs 粉絲」劃界，2026-07-31 頁面改名粉絲分析
+         後失效，改用使用者實際要做的事來分。
+       · 單位要標明：本頁算「人」（去重後人數），儀表板／項目詳情的表現卡算
+         「次數」（觀看＋串流）。兩邊都有平台與地區切面，數字不可互比。
+       · 「來源 / sources」而非「平台 / platforms」用在膠囊上：膠囊要講的是
+         「這些數字建立在什麼之上」，sources 比 platforms 更貼近那個意思，也
+         更短。面板標題仍用 platform connections（那裡談的確實是平台連結）。
+       · 「建議行動 / Suggested actions」而非上游的「商業機會提示」：名字站在
+         使用者那一側（你拿到的是一個可以按下去的動作），也和 F7 的摘要區分開
+         （D160）。 */
+    'dash.audience.link':    { en: 'Open Fan analytics',                   zh: '進入粉絲分析' },
+    'aud.crumb.self':        { en: 'Fan analytics',                         zh: '粉絲分析' },
+    'aud.h1':                { en: 'Fan analytics',                        zh: '粉絲分析' },
+    'aud.sub':               { en: 'Every platform shows you one slice. This page joins the slices we can reach — and says plainly which ones we can’t. Counted in people; the performance cards count plays.', zh: '各平台只給你自己那一塊。這裡把拿得到的拼起來，也直說哪些拿不到。這頁算的是「人」，表現那幾張卡算的是「次數」。' },
+
+    /* F1 · 平台連結與同步狀態 */
+    'aud.src.pill':          { en: '2 / 5 sources',                        zh: '2 / 5 個來源' },
+    'aud.src.alert.title':   { en: 'Spotify stopped syncing — this page doesn’t include it', zh: 'Spotify 停止同步，這頁的數字沒有算它' },
+    'aud.src.alert.desc':    { en: 'Its access token expired on Nov 18. Reconnect and the missing figures fill back in.', zh: '授權已於 11 月 18 日過期。重新連結後，缺掉的數字會補回來。' },
+    'aud.src.alert.cta':     { en: 'Reconnect Spotify',                     zh: '重新連結 Spotify' },
+    'aud.src.title':         { en: 'Platform connections & sync',           zh: '平台連結與同步狀態' },
+    'aud.src.note':          { en: 'Figures on this page cover YouTube and StreetVoice only.', zh: '這頁的數字只涵蓋 YouTube 與 StreetVoice。' },
+    'aud.src.yt':            { en: 'Subscribers, views, engagement, regions · synced 4 min ago', zh: '訂閱數、觀看數、互動數、所在地區 · 4 分鐘前同步' },
+    'aud.src.sp':            { en: 'Streams, listener regions · failed Nov 18: access token expired', zh: '串流數、聽眾地區 · 11 月 18 日同步失敗：授權已過期' },
+    'aud.src.sp-off':        { en: 'Connect to pull streams and listener regions', zh: '連結後可取得串流數與聽眾地區' },
+    'aud.src.sv':            { en: 'Play counts only — this platform doesn\u2019t expose followers or regions · synced 2 h ago', zh: '只支援播放次數，追蹤數與地區這個平台不提供 · 2 小時前同步' },
+    'aud.src.sv-off':        { en: 'Play counts only — this platform doesn\u2019t expose followers or regions', zh: '只支援播放次數，追蹤數與地區這個平台不提供' },
+    'aud.src.ig':            { en: 'Connect to pull followers, engagement and regions', zh: '連結後可取得追蹤數、互動數與所在地區' },
+    'aud.src.tt':            { en: 'Connect to pull followers and engagement', zh: '連結後可取得追蹤數與互動數' },
+    'aud.src.connect':       { en: 'Connect',                               zh: '連結' },
+    'aud.src.open-settings': { en: 'Open integrations',                     zh: '前往整合設定' },
+    'aud.src.foot':          { en: 'Connecting and authorising happen in Settings. This page only shows status.', zh: '連結與授權都在設定裡完成，這頁只顯示狀態。' },
+
+    /* F7 · 本月重點摘要 */
+    'aud.hl.kicker':         { en: 'Highlight · last 30 days',              zh: '本月重點 · 近 30 天' },
+    'aud.hl.title':          { en: 'Japan is growing. The money isn\u2019t.',    zh: '日本的人在長，錢沒有跟著長' },
+    'aud.hl.sub':            { en: 'The widest gap between people growth and spend growth of any region.', zh: '人數成長與消費成長的落差，是所有地區裡最大的一組。' },
+    'aud.hl.basis':          { en: 'From YouTube and StreetVoice, last 30 days. Spotify stopped syncing Nov 18 and isn\u2019t counted.', zh: '依據 YouTube 與 StreetVoice 近 30 天資料；Spotify 停在 11/18 未計入。' },
+    'aud.hl.fig1':           { en: 'People growth',                         zh: '人數成長' },
+    'aud.hl.fig1-meta':      { en: '10,124 people',                         zh: '10,124 人' },
+    'aud.hl.fig2':           { en: 'Spend growth',                          zh: '消費成長' },
+    'aud.hl.gap':            { en: '16pt gap',                              zh: '落差 16pt' },
+    'aud.hl.cta':            { en: 'See regions',                           zh: '看地區分群' },
+
+    /* F2 · 粉絲總覽 */
+    'aud.kpi.total':         { en: 'Total following',                       zh: '總追蹤人數' },
+    'aud.kpi.total-meta':    { en: '+3.2% vs previous 30 days · deduped across platforms', zh: '+3.2% 對比上個 30 天 · 跨平台去重' },
+    'aud.kpi.active':        { en: 'Active fans',                           zh: '活躍粉絲' },
+    'aud.kpi.active-meta':   { en: 'On Ztor, trailing 90 days — from Fans CRM', zh: '站內近 90 天，引用 Fans CRM' },
+    'aud.kpi.paying':        { en: 'Paying fans',                           zh: '付費粉絲' },
+    'aud.kpi.paying-meta':   { en: '+18 vs previous 30 days',               zh: '+18 對比上個 30 天' },
+    'aud.kpi.top-platform':  { en: 'Top platform',                          zh: '主要平台' },
+    'aud.kpi.top-platform-meta': { en: '71% of everyone we can see',        zh: '佔看得到的人 71%' },
+    'aud.range.30d':         { en: 'Last 30 days',                          zh: '近 30 天' },
+
+    /* F3 · 多維影響力 */
+    'aud.infl.title':        { en: 'Influence',                             zh: '多維影響力' },
+    'aud.infl.chip':         { en: 'Four dimensions, no single score',      zh: '四維並列，不給總分' },
+    'aud.infl.reach':        { en: 'Reach',                                 zh: '觸及廣度' },
+    'aud.infl.engagement':   { en: 'Engagement',                            zh: '互動深度' },
+    'aud.infl.value':        { en: 'Commercial value',                      zh: '商業價值' },
+    'aud.infl.value-val':    { en: '$0.43 / person',                        zh: '$0.43 / 人' },
+    'aud.infl.growth':       { en: 'Growth',                                zh: '成長速度' },
+    'aud.infl.growth-val':   { en: '+3.2% / mo',                            zh: '+3.2% / 月' },
+    'aud.infl.note':         { en: 'These four are never merged into one influence score — a single number hides which one is actually moving.', zh: '這四維不會被合併成單一「影響力分數」——一個總分會蓋掉真正在動的是哪一項。' },
+
+    /* F4 · 粉絲分群 */
+    'aud.seg.title':         { en: 'Fan segments',                          zh: '粉絲分群' },
+    'aud.seg.dim.work':      { en: 'By work',                               zh: '依作品' },
+    'aud.seg.dim.region':    { en: 'By region',                             zh: '依地區' },
+    'aud.seg.dim.platform':  { en: 'By platform',                           zh: '依平台' },
+    'aud.seg.note.work':     { en: 'Counted in people, not plays — only listeners we can tie to an account: every Ztor play, plus platforms that hand back an identifiable account. Anything we can\u2019t attribute is left out rather than estimated.', zh: '算的是「人」不是播放次數——只計入認得出帳號的人：站內播放全部算得到，外部平台只有在它願意回傳可辨識帳號時才算得到。認不出來的一律不計入，不做估算。' },
+    'aud.seg.note.region':   { en: 'Where those people are. Platform, behaviour and paying status are also available; age is in the spec but hidden until its source is settled.', zh: '這些人在哪裡。另有行為模式與付費狀態可切換；年齡維度規格保留但不顯示，資料來源上游還沒定義。' },
+    'aud.seg.note.platform': { en: 'Which platform each person came from. Unconnected platforms are not counted in the denominator.', zh: '每個人是從哪個平台來的。未連結的平台不計入分母。' },
+    'aud.seg.tw':            { en: 'Taiwan',                                zh: '台灣' },
+    'aud.seg.jp':            { en: 'Japan',                                 zh: '日本' },
+    'aud.seg.hk':            { en: 'Hong Kong',                             zh: '香港' },
+    'aud.seg.my':            { en: 'Malaysia',                              zh: '馬來西亞' },
+    'aud.seg.note':          { en: 'Platform, behaviour and paying status are also available. Age is defined in the spec but hidden — where that data comes from isn\u2019t settled yet.', zh: '另有平台、行為模式與付費狀態三個維度可切換。年齡維度規格保留但不顯示——年齡資料由誰提供，上游還沒定義。' },
+
+    /* F5 · 轉換漏斗 */
+    'aud.fun.title':         { en: 'Conversion funnel',                     zh: '轉換漏斗' },
+    'aud.fun.follow':        { en: 'Follow',                                zh: '追蹤' },
+    'aud.fun.engage':        { en: 'Engage',                                zh: '互動' },
+    'aud.fun.purchase':      { en: 'Purchase',                              zh: '購買' },
+    'aud.fun.attend':        { en: 'Attend',                                zh: '出席' },
+    'aud.fun.back':          { en: 'Back a project',                        zh: '支持項目' },
+    'aud.fun.note':          { en: 'Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.', zh: '百分比是相對前一階段的轉換率。追蹤與互動來自外部平台，購買以下三段來自站內模組，可點進對應名單。' },
+
+    /* F6 · 商業價值 */
+    'aud.cv.title':          { en: 'Commercial value',                      zh: '商業價值' },
+    'aud.cv.chip':           { en: 'Figures from Earnings',                 zh: '口徑引用 Earnings' },
+    'aud.cv.arpu-meta':      { en: 'Per person reached (48,210)',            zh: '分母＝總追蹤人數 48,210' },
+    'aud.cv.spend':          { en: 'Spend, last 30 days',                   zh: '近 30 天消費' },
+    'aud.cv.spend-meta':     { en: '+6.1% vs previous 30 days',             zh: '+6.1% 對比上個 30 天' },
+    'aud.cv.tw':             { en: 'Taiwan · paying',                       zh: '台灣 · 付費' },
+    'aud.cv.hk':             { en: 'Hong Kong · paying',                    zh: '香港 · 付費' },
+    'aud.cv.jp':             { en: 'Japan · paying',                        zh: '日本 · 付費' },
+    'aud.cv.note':           { en: 'Every segment opens the matching fan list in Fans CRM.', zh: '每一群都能點回 Fans CRM 的對應粉絲清單。' },
+
+    /* F8 · 建議行動 */
+    'aud.act.title':         { en: 'Suggested actions',                     zh: '建議行動' },
+    'aud.act.chip':          { en: 'Dismissible',                           zh: '可關閉' },
+    'aud.act.1':             { en: 'Japan grew 18% and you\u2019ve never held an event there', zh: '日本人數成長 18%，但你從沒在那裡辦過活動' },
+    'aud.act.1-basis':       { en: 'From region segments, trailing 90 days (YouTube · StreetVoice)', zh: '依據地區分群近 90 天資料（YouTube · StreetVoice）' },
+    'aud.act.1-cta':         { en: 'Create an event',                       zh: '建立活動' },
+    'aud.act.2':             { en: 'Hong Kong pays at 1.4\u00d7 the rate of Taiwan, but has no local pickup', zh: '香港付費比例是台灣的 1.4 倍，但你的商品沒有當地取貨' },
+    'aud.act.2-basis':       { en: 'From commercial value and E-Shop order data', zh: '依據商業價值與電子商店訂單資料' },
+    'aud.act.2-cta':         { en: 'Open store settings',                   zh: '查看商店設定' },
+    'aud.act.note':          { en: 'Each one states what it\u2019s based on and can be dismissed. These are suggestions, not conclusions — nothing here is phrased as a certainty.', zh: '每則都寫出依據哪些資料，也都可以關掉。規格不允許用確定語氣講預測——這是建議，不是結論。' },
+
+    /* 未連結態 */
+    'aud.empty.title':       { en: 'No platforms connected yet',            zh: '還沒有連結任何平台' },
+    'aud.empty.text':        { en: 'Once connected, this page joins followers, views, streams and regions into one picture of everyone following you. Until then there are no numbers to show you — and we won\u2019t fill the page with zeros or estimates.', zh: '連結之後，這裡會把各平台的追蹤數、觀看數、串流數與所在地區拼成一張完整的樣貌。在那之前，這頁沒有數字可以給你——不用零或估算把版面填滿。' },
+    'aud.empty.available':   { en: 'Available platforms',                   zh: '可連結的平台' },
 
     /* ─── Settings page ───────────────────────────────────── */
     'settings.h1':              { en: 'Settings',                             zh: '設定' },
@@ -2350,7 +2688,7 @@
     'settings.pay.verify-hint':     { en: 'Submitted Sep 14 · awaiting platform review.', zh: '9/14 已送出 · 等待平台審核。' },
     'settings.pay.verify-badge':    { en: 'Pending review',       zh: '審核中' },
     'settings.int.title':           { en: 'Integrations',         zh: '整合' },
-    'settings.int.sub':             { en: 'Connect external platforms to power Audience Intelligence and pull royalty statements.', zh: '連結第三方平台以驅動受眾洞察並抓取版稅結算單。' },
+    'settings.int.sub':             { en: 'Connect external platforms to power Fan analytics and pull royalty statements.', zh: '連結第三方平台以驅動粉絲分析並抓取版稅結算單。' },
     'settings.int.connected':       { en: 'Connected',            zh: '已連接' },
     'settings.int.available':       { en: 'Available',            zh: '可連接' },
     'settings.int.synced':          { en: 'Synced',               zh: '已同步' },
@@ -2364,8 +2702,8 @@
     'settings.int.spotify':         { en: 'Last sync Nov 18 · failed: access token expired', zh: '上次同步 11/18 · 失敗：存取 token 已過期' },
     'settings.int.instagram':       { en: 'Last sync · 12 min ago · 286 new followers', zh: '上次同步 · 12 分鐘前 · 286 位新追蹤' },
     'settings.int.streetvoice':     { en: 'Partial · play counts only · revenue not supported', zh: '部分同步 · 僅播放次數 · 不支援收入' },
-    'settings.int.tiktok':          { en: 'Audience growth, top videos.', zh: '受眾成長與熱門影片。' },
-    'settings.int.x':               { en: 'Audience growth signals only.', zh: '僅受眾成長指標。' },
+    'settings.int.tiktok':          { en: 'Follower growth, top videos.', zh: '追蹤成長與熱門影片。' },
+    'settings.int.x':               { en: 'Follower growth signals only.', zh: '僅追蹤成長指標。' },
     'settings.int.discord':         { en: 'Cross-post fan announcements.', zh: '同步發送粉絲公告。' },
     'settings.footer':              { en: 'Settings saved automatically when fields blur · high-risk actions confirm separately', zh: '欄位離開焦點時自動儲存 · 高風險動作需另行確認' },
 
@@ -2428,15 +2766,17 @@
     'ce.lineup.sub':        { en: 'Search Ztor users or type external names.', zh: '搜尋 Ztor 用戶或直接輸入外部表演者名稱。' },
     'ce.lineup.add':        { en: 'Add performer',                    zh: '新增表演者' },
     'ce.images':            { en: 'Images',                           zh: '圖片' },
-    'ce.images.sub':        { en: 'Each format appears in a different place. Upload all 4.', zh: '每種格式出現在不同版位，四種都要上傳。' },
-    'ce.img.thumb':         { en: 'Thumbnail',                        zh: '縮圖' },
-    'ce.img.thumb-hint':    { en: '800×800px · 1:1 · Search, browse, share', zh: '800×800px · 1:1 · 搜尋、瀏覽、分享' },
-    'ce.img.poster':        { en: 'Vertical poster',                  zh: '直式海報' },
-    'ce.img.poster-hint':   { en: '900×1200px · 3:4 · Hero (mobile), featured', zh: '900×1200px · 3:4 · 手機主視覺、精選' },
+    /* 2026-07-31 D164：活動由四格收斂為三格（主視覺／橫式橫幅／圖庫圖片），必填數 4→3。
+       退場 key：ce.img.thumb、ce.img.thumb-hint、ce.img.poster、ce.img.poster-hint
+       （原「縮圖」與「直式海報」兩格併為 ce.img.keyvisual，見 documents 5.1.6.1 F4）。 */
+    'ce.images.sub':        { en: 'Each format appears in a different place. Upload all 3.', zh: '每種格式出現在不同版位，三種都要上傳。' },
+    'ce.img.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
+    'ce.img.keyvisual-hint':{ en: '750 × 930 · portrait · Search, browse, share, hero (mobile)', zh: '750 × 930 · 直式 · 搜尋、瀏覽、分享、手機主視覺' },
     'ce.img.banner':        { en: 'Landscape banner',                 zh: '橫式橫幅' },
-    'ce.img.banner-hint':   { en: '1920×1080px · 16:9 · Hero (desktop), social', zh: '1920×1080px · 16:9 · 桌面主視覺、社群' },
+    /* 2026-07-31 使用者：活動不併入單一直式，橫式橫幅改回 16:9 / 1920×1080（見 documents 5.1.6.1 F4）。 */
+    'ce.img.banner-hint':   { en: '1920 × 1080 · landscape · Hero (desktop), social', zh: '1920 × 1080 · 橫式 · 桌面主視覺、社群' },
     'ce.img.gallery':       { en: 'Gallery images',                   zh: '圖庫圖片' },
-    'ce.img.gallery-hint':  { en: '1200×800px · 3:2 · Detail carousel, 1–8', zh: '1200×800px · 3:2 · 詳情輪播，1～8 張' },
+    'ce.img.gallery-hint':  { en: '750 × 930 · portrait · Detail carousel, 1–8', zh: '750 × 930 · 直式 · 詳情輪播，1～8 張' },
     'ce.video':             { en: 'Video teaser',                     zh: '影片預告' },
     'ce.video.title':       { en: 'Upload a teaser',                  zh: '上傳預告片' },
     'ce.video.hint':        { en: 'MP4 or MOV · up to 2GB',           zh: 'MP4 或 MOV · 單檔上限 2GB' },
@@ -2561,8 +2901,12 @@
     'cp.media.sub':         { en: "Buyers can't touch it. Your photos do that job.", zh: '買家摸不到，照片替你做事。' },
     'cp.media.hero-physical':{ en: 'Hero image\nThe first thing buyers see', zh: '主圖\n買家第一眼看到的' },
     'cp.media.hero-auction':{ en: 'Hero image — show off the item',   zh: '主圖——展示這件物品' },
+    /* min800／min600 是舊的多比例上傳槽留下的最小邊長說明。2026-07-31 全站圖片上傳槽收斂成
+       單一直式 750 × 930 後，圖片槽一律改用 cp.media.portrait；min800 只剩拍賣「真實性證明」
+       那個檔案槽（--file，非圖片上傳槽）在用，min600 已無消費者、暫留待 DS 示範改完一併清。 */
     'cp.media.min800':      { en: 'Min 800 x 800px',                  zh: '最小 800 x 800px' },
     'cp.media.min600':      { en: 'Min 600 x 600px',                  zh: '最小 600 x 600px' },
+    'cp.media.portrait':    { en: 'Portrait 750 × 930',               zh: '直式 750 × 930' },
     'cp.media.dnd':         { en: 'Drag & drop or click to browse',   zh: '拖放或點擊瀏覽' },
     'cp.media.formats':     { en: 'JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB', zh: 'JPG · PNG · GIF · MP4 · MOV · WEBM · 最大 1.8GB' },
     'cp.media.file':        { en: 'Upload the file buyers will download', zh: '上傳買家會下載的檔案' },
@@ -3010,6 +3354,10 @@
     'cpp.next.3':           { en: 'Continue to Review',               zh: '繼續確認發布' },
     'cpp.next.4':           { en: 'Publish project',                  zh: '發布項目' },
     'cpp.publish-alert':    { en: 'Project would be published here. (Prototype)', zh: '項目會在這裡發布。（原型示意）' },
+    /* 發布後的跨頁提示（2026-07-30）：按下發布 → 導向專案詳情頁 → 在該頁跳這一句。
+       排程發布時作品還沒上線，說「已發布」是假陳述，所以分成兩句。 */
+    'cpp.publish.toast.now':       { en: 'Project published',  zh: '項目已發布' },
+    'cpp.publish.toast.scheduled': { en: 'Project scheduled',  zh: '項目已排程發布' },
     'cpp.draft-alert':      { en: 'Draft saved. You can return from Projects → Drafts.', zh: '草稿已儲存。可從 項目 → 草稿 找回。' },
 
     'cpp.h1':               { en: 'Create project',                  zh: '建立項目' },
@@ -3064,17 +3412,16 @@
 
     /* Step 2 · Showcase */
     'cpp.s2.h1':            { en: 'Show fans why this matters.',      zh: '讓粉絲看見作品的意義' },
-    'cpp.s2.sub':           { en: 'Cover, poster, banner, gallery. One short story. A trailer if you have it. We accept files up to 2 GB.', zh: '封面、海報、橫幅、相簿。一段短故事。有預告片更好。檔案上限 2 GB。' },
+    'cpp.s2.sub':           { en: 'Key visual and gallery. One short story. A video if you have it. We accept files up to 2 GB.', zh: '主視覺與圖庫。一段短故事。有影片更好。檔案上限 2 GB。' },
     'cpp.s2.images':        { en: 'Images',                           zh: '圖片' },
-    'cpp.s2.four-req':      { en: '· all four required',              zh: '· 四張都必填' },
-    'cpp.s2.thumb':         { en: 'Thumbnail',                        zh: '縮圖' },
-    'cpp.s2.thumb-size':    { en: '800 × 800 · 1:1',                  zh: '800 × 800 · 1:1' },
-    'cpp.s2.poster':        { en: 'Vertical poster',                  zh: '直式海報' },
-    'cpp.s2.poster-size':   { en: '900 × 1200 · 3:4',                 zh: '900 × 1200 · 3:4' },
-    'cpp.s2.banner':        { en: 'Landscape banner',                 zh: '橫幅' },
-    'cpp.s2.banner-size':   { en: '1920 × 1080 · 16:9',               zh: '1920 × 1080 · 16:9' },
-    'cpp.s2.gallery':       { en: 'Gallery',                          zh: '相簿' },
-    'cpp.s2.gallery-size':  { en: '1200 × 800 · 3:2 · 1–8 images',    zh: '1200 × 800 · 3:2 · 1–8 張' },
+    /* 2026-07-31 D164：建立項目由四格收斂為兩格（主視覺＋圖庫），必填數 4→2。
+       退場 key：cpp.s2.four-req、cpp.s2.thumb(-size)、cpp.s2.poster(-size)、cpp.s2.banner(-size)
+       （原「縮圖／直式海報／橫式橫幅」三格併為 cpp.s2.keyvisual，見 documents 5.1.2.1 F6）。 */
+    'cpp.s2.both-req':      { en: '· both required',                  zh: '· 兩張都必填' },
+    'cpp.s2.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
+    'cpp.s2.keyvisual-size':{ en: '750 × 930 · portrait',             zh: '750 × 930 · 直式' },
+    'cpp.s2.gallery':       { en: 'Gallery',                          zh: '圖庫' },
+    'cpp.s2.gallery-size':  { en: '750 × 930 · portrait · 1–8 images', zh: '750 × 930 · 直式 · 1–8 張' },
     'cpp.s2.add':           { en: 'Add images',                       zh: '新增圖片' },
     'cpp.s2.trailer':       { en: 'Trailer / behind-the-scenes',      zh: '預告片 / 幕後' },
     'cpp.s2.trailer-drop':  { en: 'Drop an MP4 or MOV',               zh: '拖入 MP4 或 MOV' },
@@ -3138,7 +3485,7 @@
     'cpp.s4.none':          { en: 'None',                             zh: '無' },
     'cpp.s4.complete':      { en: 'Complete',                         zh: '完成' },
     'cpp.s4.uploaded':      { en: 'Uploaded',                         zh: '已上傳' },
-    'cpp.s4.imgs':          { en: 'Thumbnail · poster · banner · gallery', zh: '縮圖 · 海報 · 橫幅 · 相簿' },
+    'cpp.s4.imgs':          { en: 'Key visual · gallery',             zh: '主視覺 · 圖庫' },
     'cpp.s4.gallery':       { en: '4 of 8 images',                    zh: '8 張中已 4 張' },
     'cpp.s4.trailer':       { en: 'Trailer',                          zh: '預告片' },
     'cpp.s4.no-trailer':    { en: 'Not uploaded',                     zh: '未上傳' },
@@ -3351,6 +3698,11 @@
     'cpp.bd.edit':          { en: 'Edit',                             zh: '編輯' },
     'cpp.bd.collapse':      { en: 'Collapse',                         zh: '收合' },
     'cpp.bd.remove':        { en: 'Remove',                           zh: '移除' },
+    /* 展開態的兩個出口寫全字（2026-07-30）：它們在卡片底部、旁邊沒有別的動作可以
+       互相對照，單一個「收合」「移除」不會告訴人收合什麼、移除什麼。 */
+    'cpp.bd.collapse.long': { en: 'Collapse this bundle',             zh: '收合這個套組' },
+    'cpp.bd.remove.long':   { en: 'Remove this bundle',               zh: '移除這個套組' },
+    'cpp.bd.price.tag':     { en: 'Bundle price',                     zh: '套組價' },
     'cpp.bd.name':          { en: 'Bundle name',                      zh: '套組名稱' },
     'cpp.bd.name.ph':       { en: 'e.g. Early Bird',                  zh: '例：早鳥支持' },
     'cpp.bd.price':         { en: 'Price · USD',                      zh: '價格 · USD' },
@@ -3466,6 +3818,10 @@
        文案跟著寫出來——不然創作者看著一張已經打了名字的卡，被告知「至少要有一個套組」。 */
     'cpp.bd.coach.none':    { en: 'Add at least one bundle before you continue — a bundle needs a name plus either revenue-share slots or an item.',
                               zh: '繼續之前，至少要有一個完整的套組：要有名稱，並且含分潤名額或至少一件商品。' },
+    /* footer 主動作旁的短原因（2026-07-30）：與上面的教練行同一個判準，但寫在灰按鈕
+       旁邊，所以只留「還缺什麼」——完整條件留在右軌那句。 */
+    'cpp.bd.hint.blocked':  { en: 'One complete bundle is needed to continue.',
+                              zh: '還需要一個完整的套組才能繼續。' },
     'cpp.bd.coach.few':     { en: 'Works as is. {n} more would give backers a real choice; most campaigns offer three.',
                               zh: '這樣就能用了。再多 {n} 個能讓支持者真的有得選；多數專案會開三個。' },
     'cpp.bd.coach.ok':      { en: 'A good spread. Backers have a real choice.',
@@ -3900,7 +4256,7 @@
     'dash.empty.events.text':    { en: 'Create your first project or event to see it here.', zh: '建立第一個項目或活動後會顯示在這裡。' },
     'dash.empty.events.cta':     { en: 'Create project',            zh: '建立項目' },
     'dash.empty.fans.title':     { en: 'No fan data yet',           zh: '尚無粉絲資料' },
-    'dash.empty.fans.text':      { en: 'Connect a channel or grow your audience to see relationship and trend insights.', zh: '連結頻道或累積受眾後，會顯示粉絲關係與趨勢洞察。' },
+    'dash.empty.fans.text':      { en: 'Connect a channel or grow your following to see relationship and trend insights.', zh: '連結頻道或累積粉絲後，會顯示粉絲關係與趨勢洞察。' },
     'dash.empty.ext.title':      { en: 'No external data connected', zh: '尚未連結外部資料' },
     'dash.empty.ext.text':       { en: 'Connect platforms in Settings to track followers, streams and external revenue.', zh: '在設定連結平台後，可追蹤粉絲、串流與外部收益。' },
     'dash.empty.ext.cta':        { en: 'Manage in Settings',        zh: '前往設定' },
@@ -4119,7 +4475,7 @@
     'project-detail.publish.label':{en:'Publish status',zh:'發布狀態'},
     'project-detail.publish.hint':{en:'Status changes with money or backer impact need confirmation.',zh:'具金流或支持者承諾影響的狀態轉換需確認。'},
     'project-detail.status.draft':{en:'Draft',zh:'草稿'},
-    'project-detail.status.scheduled':{en:'Scheduled',zh:'已排程'},
+    'project-detail.status.scheduled':{en:'Scheduled',zh:'準備中'},
     'project-detail.status.live':{en:'Live',zh:'進行中'},
     'project-detail.status.funded':{en:'Funded',zh:'已達標'},
     'project-detail.status.completed':{en:'Completed',zh:'已完成'},
@@ -4437,18 +4793,18 @@
     'project-detail.updates.just-now':{en:'Just now',zh:'剛剛'},
     'project-detail.updates.notification-sent':{en:'Notified',zh:'已通知'},
     'project-detail.showcase.title':{en:'Showcase',zh:'展示內容'},
-    'project-detail.showcase.thumb':{en:'Thumbnail',zh:'縮圖'},
-    'project-detail.showcase.poster':{en:'Poster',zh:'海報'},
-    'project-detail.showcase.banner':{en:'Banner',zh:'橫幅'},
+    /* 退場（2026-07-31，D164）：project-detail.showcase.thumb／.poster／.banner——舊多槽模型的槽名，
+       頁面早已改成「第一張為主視覺、其餘為圖庫」的單一圖片列，全站零消費，本輪一併刪除。 */
     'project-detail.showcase.trailer':{en:'Trailer / story video',zh:'預告 / 故事影片'},
     'project-detail.showcase.uploaded':{en:'Uploaded',zh:'已上傳'},
     'project-detail.showcase.pending':{en:'Pending',zh:'待補'},
     'project-detail.showcase.missing':{en:'Missing',zh:'缺少'},
     'project-detail.showcase.note':{en:"Swapping primary assets on a published project changes what fans see — you'll be warned before it goes live.",zh:'更換已發布項目的主要素材會影響粉絲端呈現，上線前會先提示你。'},
     /* 2026-07-24 展示內容重做：直式相簿（第一張封面）＋每張方形裁切＋展示媒體 */
-    'project-detail.showcase.sub':{en:'Portrait images shown to fans. The first one is the cover.',zh:'粉絲端看到的直式圖片。第一張為封面。'},
-    'project-detail.showcase.images-hint':{en:'portrait 750 × 930 · first is the cover',zh:'直式 750 × 930 · 第一張為封面'},
-    'project-detail.showcase.cover':{en:'Cover',zh:'封面'},
+    /* 2026-07-31 D164／規格 5.1.2.2 §2.2.2：可編輯素材＝主視覺／圖庫，槽名對齊建立流程 F6（第一張＝主視覺）。 */
+    'project-detail.showcase.sub':{en:'Portrait images shown to fans. The first one is the key visual.',zh:'粉絲端看到的直式圖片。第一張為主視覺。'},
+    'project-detail.showcase.images-hint':{en:'portrait 750 × 930 · first is the key visual, the rest are the gallery',zh:'直式 750 × 930 · 第一張為主視覺，其餘為圖庫'},
+    'project-detail.showcase.cover':{en:'Key visual',zh:'主視覺'},
     'project-detail.showcase.add-image':{en:'Add image',zh:'新增圖片'},
     'project-detail.showcase.hint':{en:'Hover an image to replace or delete it.',zh:'游標移到圖片可替換或刪除。'},
     'project-detail.showcase.demo':{en:'Demo media',zh:'展示媒體'},
@@ -4456,8 +4812,10 @@
     'project-detail.showcase.demo-video-hint':{en:'MP4 / MOV / WEBM · up to 2 GB',zh:'MP4 / MOV / WEBM · 上限 2 GB'},
     'project-detail.showcase.demo-music':{en:'Demo music',zh:'展示音樂'},
     'project-detail.showcase.demo-music-hint':{en:'MP3 / M4A / WAV / FLAC · up to 50 MB',zh:'MP3 / M4A / WAV / FLAC · 上限 50 MB'},
-    'project-detail.showcase.replace':{en:'Replace image',zh:'替換圖片'},
-    'project-detail.showcase.delete':{en:'Delete',zh:'刪除'},
+    /* ✝ 2026-07-31：圖片上傳格的動作按鈕文案全站收斂成一組正典 key
+       —— cp.media.replace（替換圖片）／cp.media.remove（刪除圖片），由共用元件
+       partials/upload-tile.js 統一產生。原本這頁自己有一組
+       project-detail.showcase.replace／.delete，已無消費者，故移除；要改文案改 cp.media.*。 */
     'project-detail.items.title':{en:'Work progress',zh:'作品進度'},
     'project-detail.items.kind':{en:'Episodes',zh:'影集'},
     'project-detail.items.ep1':{en:'Bloom at Dusk',zh:'暮色綻放'},
@@ -4756,6 +5114,10 @@
     'ri.age.to': { en: 'To', zh: '迄' },
     /* 2026-07-30 素材包（Media Pack §7.7）：依 IP 類型分流的素材槽。槽位明細為產品變更提案
        （ASSUMPTIONS UIA-096）；`-h` 結尾是該槽的建議檔型。 */
+    /* 2026-07-30 送出登錄後導回 my-ip 的落地提示（規格 5.1.4.1 §7.1 建立後落點）。
+       上架與私有是兩種結果，分兩句——共用一句會漏掉「私有的之後可再上架」（§6.5）。 */
+    'ri.toast.registered-listed':  { en: 'IP registered and listed on the IP Market', zh: 'IP 已登錄，並已在 IP 市場上架' },
+    'ri.toast.registered-private': { en: 'IP registered and kept private — list it anytime from its detail page', zh: 'IP 已登錄，目前為私有——之後隨時可從 IP 詳情頁上架' },
     'ri.assets': { en: 'Asset upload', zh: '素材上傳' },
     'ri.assets.sub': { en: 'The files a licensee actually receives — different from the ownership proof below, which only the platform sees. What to include depends on your IP type; the hint under the upload area lists it. All optional.', zh: '承租方實際拿到的檔案，跟下面的「所有權證明」是兩回事——證明只給平台看。該放什麼隨 IP 類型而定，上傳區下方會列出建議。全部選填。' },
     'ri.assets.picktype': { en: 'Choose an IP type above and we will list what this kind of IP usually needs.', zh: '先在上面選 IP 類型，這裡會提示這類 IP 通常要上傳什麼。' },
@@ -4952,7 +5314,6 @@
     'ri.qc.ready': { en: 'All set — ready to register', zh: '一切就緒，可以登錄' },
     'ri.qc.left': { en: '{n} required items left', zh: '還有 {n} 個必填項目' },
     'ri.saveexit-alert': { en: 'Draft saved. You can resume from My IP.', zh: '草稿已儲存。你可以從「我的 IP」繼續。' },
-    'ri.register-alert': { en: 'IP would be registered here. (Prototype) — final submit copy pending product confirmation.', zh: '此處會登錄 IP。（原型）──最終送出文案待產品確認。' },
 
     /* Event detail & operations (5.1.6 F5) */
     'event-detail.crumb.events': { en: 'Events', zh: '活動' },
@@ -5096,7 +5457,7 @@
     'event-detail.series.this': { en: 'this event', zh: '本場活動' },
     'event-detail.series.row2.title': { en: 'Spring Launch — Hualien encore', zh: 'Spring Launch — 花蓮加場' },
     'event-detail.series.row3.title': { en: 'Spring Launch — Online encore', zh: 'Spring Launch — 線上加場' },
-    'event-detail.badge.scheduled': { en: 'Scheduled', zh: '已排程' },
+    'event-detail.badge.scheduled': { en: 'Scheduled', zh: '準備中' },
     'event-detail.resale.title': { en: 'Resale', zh: '轉售' },
     'event-detail.resale.p2': { en: 'Phase 2', zh: 'Phase 2' },
     'event-detail.resale.note': { en: '<strong>Resale is Phase 2 — not available in this build.</strong> Per-event modes Allowed / Blocked (default) / Limited; Limited sets a price-cap multiple and platform cut, a successful resale atomically transfers the holder and emits a resale_fee revenue event, Blocked rejects all transfers (§5.1.6 F5).', zh: '<strong>轉售屬 Phase 2──此版本不提供。</strong>各活動可設模式 Allowed / Blocked（預設）/ Limited；Limited 可設定價格上限倍數與平台抽成，成功轉售會原子地轉移持票人並產生 resale_fee 營收事件，Blocked 則拒絕所有轉移（§5.1.6 F5）。' },
@@ -5390,8 +5751,8 @@
     'earnings.empty.tax.text':        { en: 'Tax forms and earnings summaries are issued here once you have income for a reporting period.', zh: '有收入並進入申報期間後，稅務文件與收入摘要會在此產生。' },
 
     /* ── Deck for Sony 版收入管理（finance-overview 移植，earnings-sony.html）── */
-    'fin.crumb':              { en: 'Finance overview', zh: '財務總覽' },
-    'fin.h1':                 { en: 'Finance overview', zh: '財務總覽' },
+    'fin.crumb':              { en: 'Earnings', zh: '收入管理' },
+    'fin.h1':                 { en: 'Earnings', zh: '收入管理' },
     'fin.sub':                { en: 'A roll-up of every deposit and payout across your work on Ztor. See <a class="card__link" href="#" data-drawer-open="how">how it works</a> to learn more.', zh: '您在 Ztor. 的各項存入及提領總匯。請參考 <a class="card__link" href="#" data-drawer-open="how">如何運作</a> 了解更多。' },
     'fin.kpi.total':          { en: 'Total earnings', zh: '總收益' },
     'fin.kpi.total-meta':     { en: "What you've earned in total", zh: '您累積賺取的金額' },
@@ -5527,6 +5888,23 @@
       'e-shop.a1.meta': { zh: '良好 · NICKTHEREAL Club', en: 'Good · NICKTHEREAL Club' },
       'e-shop.a2.name': { zh: 'REALIVE 親簽巡演海報 · 1/1', en: 'REALIVE signed tour poster · 1 of 1' },
       'e-shop.a3.name': { zh: '工作室古董合成器', en: 'Studio vintage synth' },
+
+
+      /* ── 版稅榜的作品名（2026-07-31）── */
+
+
+      /* ── 版稅榜的 11 部作品（2026-07-31 由 7 擴到 11）── */
+      'roy.work1': { zh: 'LOVE RAGE HOPE', en: "LOVE RAGE HOPE" },
+      'roy.work2': { zh: 'REAL LIFE', en: "REAL LIFE" },
+      'roy.work3': { zh: '帥到分手', en: "Too Handsome to Stay" },
+      'roy.work4': { zh: '罵醒我', en: "Wake Me Up" },
+      'roy.work5': { zh: '愛上你算我賤', en: "Loving You Was My Mistake" },
+      'roy.work6': { zh: '什麼都不必說', en: "Nothing Left to Say" },
+      'roy.work7': { zh: '帥到分手 MV', en: "Too Handsome to Stay (MV)" },
+      'roy.work8': { zh: 'REALIVE', en: "REALIVE" },
+      'roy.work9': { zh: 'FLAMES', en: "FLAMES" },
+      'roy.work10': { zh: '罵醒我 (Reimagined)', en: "Wake Me Up (Reimagined)" },
+      'roy.work11': { zh: 'LOVE RAGE HOPE 黑膠典藏版', en: "LOVE RAGE HOPE — Vinyl Collector's Edition" },
 
       /* ── 我的 IP ── */
       'my-ip.row1.rights':  { en: 'NICKTHEREAL · 100%', zh: '周湯豪 · 100%' },

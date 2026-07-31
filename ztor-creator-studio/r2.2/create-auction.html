@@ -92,16 +92,16 @@
         <h3 class="form-section__title" data-i18n="cp.media.title">Show it off</h3>
         <p class="form-section__sub" data-i18n="ca.media.sub">Buyers can't touch it. Your photos do that job.</p>
       </div>
-      <div class="upload-tile upload-tile--hero" data-ca-asset="a-hero">
+      <div class="upload-tile upload-tile--hero" data-ca-asset="a-hero" data-upload>
         <span class="upload-tile__icon"><i data-lucide="gavel" class="ztor-icon"></i></span>
         <span class="upload-tile__title" data-i18n="cp.media.hero-auction">Hero image — show off the item</span>
-        <span class="upload-tile__hint" data-i18n="cp.media.min800">Min 800 x 800px</span>
+        <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
       </div>
       <div class="upload-grid">
-        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
-        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
-        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
-        <div class="upload-tile" data-ca-asset="a-gallery"><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery" data-upload><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery" data-upload><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery" data-upload><span class="upload-tile__icon">＋</span></div>
+        <div class="upload-tile" data-ca-asset="a-gallery" data-upload><span class="upload-tile__icon">＋</span></div>
       </div>
       <div class="field__hint" style="margin-top:8px" data-i18n="cp.media.angles">Add multiple angles to build trust</div>
     </section>
@@ -592,8 +592,8 @@
   /* ---- 任何輸入都重算就緒＋預覽 ---- */
   document.querySelector('.wizard__body').addEventListener('input', refresh);
 
-  /* ---- 上傳格：點擊模擬上傳 ---- */
-  document.querySelectorAll('[data-ca-asset]').forEach(tile => {
+  /* ---- 上傳格（非互動：證明用的檔案格）：點擊模擬上傳，切 is-filled ---- */
+  document.querySelectorAll('[data-ca-asset]:not([data-upload])').forEach(tile => {
     tile.style.cursor = 'pointer';
     tile.addEventListener('click', () => {
       const key = tile.dataset.caAsset;
@@ -601,6 +601,15 @@
       assets[key] = on ? true : (document.querySelector('.is-filled[data-ca-asset="' + key + '"]') ? true : false);
       refresh();
     });
+  });
+
+  /* ---- 互動上傳格（圖片，[data-upload]，由 partials/upload-tile.js 增強）：
+          監聽 upload:change 更新就緒（同 key 多格取「任一已上傳」）---- */
+  document.querySelector('.wizard__body').addEventListener('upload:change', () => {
+    ['a-hero', 'a-gallery'].forEach(key => {
+      assets[key] = !!document.querySelector('[data-ca-asset="' + key + '"].is-filled, [data-ca-asset="' + key + '"].is-optimized');
+    });
+    refresh();
   });
 
   /* 上架設定 radio-list（移至預覽欄，2026-07-17；2026-07-21 改收合式）：選「定時開拍」才展開開拍時間欄
@@ -639,6 +648,8 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
+<!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>

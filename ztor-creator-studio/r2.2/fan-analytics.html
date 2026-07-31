@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fan analytics · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/finding-card.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* audience 專屬 layout hook（非可重用樣式留頁內）。
+     F3–F6 兩兩並排；窄一點就掉成單欄。440px 是 perf-rank 五欄不擠的下限。 */
+  .aud-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: var(--sp-16);
+    margin-top: var(--sp-16);
+  }
+  .aud-note {
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+    line-height: var(--lh-normal);
+    margin-top: var(--sp-12);
+  }
+  /* 未連結態下整頁只剩來源清單，狀態膠囊沒有存在意義（spec F1 其他狀態）。 */
+  html[data-data-state="empty"] .src-status { display: none; }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+
+    <!-- 同步異常提示（2026-07-31 使用者裁示，樣式改用跟活動頁情境橫幅／
+         E-Shop 低庫存通知條同款：.alert-inset 定位殼 ＋ .alert.alert--bar.alert--inset-card
+         視覺卡，sticky 貼頂、.main 第一個子元素）。原本異常是寫在 F1 膠囊裡
+         （「2 / 5 來源 · 1 異常」＋整顆轉紅），改成膠囊只講涵蓋範圍、異常獨立
+         成這一條：涵蓋範圍是恆常事實，異常是要處理的事件，兩者塞進同一顆膠囊
+         時，讀者得先展開才知道壞的是哪個平台、也沒有地方放處理入口。
+         spec 5.1.7.8 F1「異常需醒目、且未排除前不得回到低調樣式」由這一條承接
+         （見 ASSUMPTIONS.md）。只在 when-data（帳號已連結）狀態顯示。 -->
+    <div class="alert-inset when-data" id="aud-sync-alert">
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <span class="alert__title" data-i18n="aud.src.alert.title">Spotify stopped syncing — this page doesn’t include it</span>
+          <span class="alert__meta" data-i18n="aud.src.alert.desc">Its access token expired on Nov 18. Reconnect and the missing figures fill back in.</span>
+        </div>
+        <a class="alert__cta" href="settings.html#integrations" data-i18n="aud.src.alert.cta">Reconnect Spotify</a>
+        <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#aud-sync-alert').remove()">×</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <div class="page-crumb">
+        <span data-i18n="nav.fans">Fans</span> · <span data-i18n="aud.crumb.self">Audience</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="aud.h1">Your audience, pieced together.</h1>
+          <p class="page-intro__sub" data-i18n="aud.sub">Every platform shows you one slice. This page joins the slices we can reach — and says plainly which ones we can't.</p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+
+          <!-- F1 · 平台連結與同步狀態（spec 5.1.7.8 F1）。不占常駐版位：
+               第一層是這顆膠囊、第二層是點開的來源明細，整合設定的入口收在裡面。 -->
+          <div class="src-status" data-open="false" data-alert="false" data-src-status>
+            <button class="src-status__pill" type="button" aria-expanded="false" data-src-toggle>
+              <span class="src-status__dot"></span>
+              <span data-i18n="aud.src.pill">2 / 5 sources</span>
+              <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm src-status__chevron"></i>
+            </button>
+
+            <div class="src-status__panel" role="dialog" aria-label="Platform connections">
+              <div class="src-status__title" data-i18n="aud.src.title">Platform connections &amp; sync</div>
+              <p class="src-status__note" data-i18n="aud.src.note">Figures on this page cover YouTube and StreetVoice only.</p>
+
+              <div class="settings-row">
+                <div class="flex-row">
+                  <span class="src-status__mark">YT</span>
+                  <div>
+                    <div class="settings-row__label">YouTube</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.yt">Subscribers, views, engagement, regions · synced 4 min ago</div>
+                  </div>
+                </div>
+                <div class="flex-row"><span class="badge badge--success" data-i18n="settings.int.synced">Synced</span></div>
+              </div>
+
+              <div class="settings-row">
+                <div class="flex-row">
+                  <span class="src-status__mark">SP</span>
+                  <div>
+                    <div class="settings-row__label">Spotify</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.sp">Streams, listener regions · failed Nov 18: access token expired</div>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <a class="btn btn--primary btn--sm" href="settings.html#integrations" data-i18n="settings.int.reconnect">Reconnect</a>
+                </div>
+              </div>
+
+              <div class="settings-row">
+                <div class="flex-row">
+                  <span class="src-status__mark">SV</span>
+                  <div>
+                    <div class="settings-row__label">StreetVoice</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.sv">Play counts only — this platform doesn't expose followers or regions · synced 2 h ago</div>
+                  </div>
+                </div>
+                <div class="flex-row"><span class="badge" data-i18n="settings.int.partial">Partial</span></div>
+              </div>
+
+              <div class="settings-row src-status__row--off">
+                <div class="flex-row">
+                  <span class="src-status__mark">IG</span>
+                  <div>
+                    <div class="settings-row__label">Instagram</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
+                  </div>
+                </div>
+                <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+              </div>
+
+              <div class="settings-row src-status__row--off" style="border-bottom:0">
+                <div class="flex-row">
+                  <span class="src-status__mark">TT</span>
+                  <div>
+                    <div class="settings-row__label">TikTok</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.tt">Connect to pull followers and engagement</div>
+                  </div>
+                </div>
+                <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+              </div>
+
+              <div class="src-status__foot">
+                <a class="btn btn--outline" href="settings.html#integrations" data-i18n="aud.src.open-settings">Open integrations</a>
+                <p class="src-status__note" style="margin:var(--sp-8) 0 0" data-i18n="aud.src.foot">Connecting and authorising happen in Settings. This page only shows status.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 有資料（帳號已連結至少一個平台）。未連結態＝下方 .when-empty。 -->
+      <div class="when-data">
+
+        <!-- F7 · 本月重點摘要（spec 5.1.7.8 F7）。放最前面：先給一句有證據的
+             結論，比先給一排數字更快讓人接上狀況（D159）。 -->
+        <section class="card finding">
+          <div>
+            <div class="finding__kicker">
+              <i data-lucide="trending-up" class="ztor-icon ztor-icon--sm" aria-hidden="true"></i>
+              <span data-i18n="aud.hl.kicker">Highlight · last 30 days</span>
+            </div>
+            <h2 class="finding__title" data-i18n="aud.hl.title">Japan is growing. The money isn't.</h2>
+            <p class="finding__sub" data-i18n="aud.hl.sub">The widest gap between audience growth and spend growth of any region.</p>
+            <p class="finding__basis" data-i18n="aud.hl.basis">From YouTube and StreetVoice, last 30 days. Spotify stopped syncing Nov 18 and isn't counted.</p>
+          </div>
+
+          <div class="finding__figures">
+            <div>
+              <div class="finding__fig-label" data-i18n="aud.hl.fig1">Audience growth</div>
+              <div class="finding__fig-val finding__fig-val--up">+18%</div>
+              <div class="finding__fig-meta"><span data-i18n="aud.hl.fig1-meta">10,124 people</span></div>
+            </div>
+            <div class="finding__gap" data-i18n="aud.hl.gap">16pt gap</div>
+            <div>
+              <div class="finding__fig-label" data-i18n="aud.hl.fig2">Spend growth</div>
+              <div class="finding__fig-val">+2%</div>
+              <div class="finding__fig-meta">$1,863</div>
+            </div>
+            <a class="btn btn--outline btn--sm finding__cta" href="#aud-segments" data-i18n="aud.hl.cta">See regions</a>
+          </div>
+        </section>
+
+        <!-- F2 · 受眾總覽 -->
+        <div class="bento mt-24">
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="aud.kpi.total">Total audience</div>
+            <div class="kpi__value">48,210</div>
+            <div class="kpi__delta" data-i18n="aud.kpi.total-meta">+3.2% vs previous 30 days</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="aud.kpi.active">Active fans</div>
+            <div class="kpi__value">1,283</div>
+            <div class="kpi__meta" data-i18n="aud.kpi.active-meta">On Ztor, trailing 90 days — from Fans CRM</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="aud.kpi.paying">Paying fans</div>
+            <div class="kpi__value">412</div>
+            <div class="kpi__delta" data-i18n="aud.kpi.paying-meta">+18 vs previous 30 days</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label" data-i18n="aud.kpi.top-platform">Top platform</div>
+            <div class="kpi__value" style="font-size:var(--fs-28)">YouTube</div>
+            <div class="kpi__meta" data-i18n="aud.kpi.top-platform-meta">71% of connected audience</div>
+          </div>
+        </div>
+
+        <div class="aud-grid">
+
+          <!-- F3 · 多維影響力 -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="aud.infl.title">Influence</h3>
+              <span class="chip chip--static" data-i18n="aud.infl.chip">Four dimensions, no single score</span>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span>
+                <span class="perf-rank__name" data-i18n="aud.infl.reach">Reach</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+3.2%</span>
+                <span class="perf-rank__val">48,210</span>
+              </li>
+              <li class="perf-rank__row" style="--w:46%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">2</span>
+                <span class="perf-rank__name" data-i18n="aud.infl.engagement">Engagement</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+0.4pt</span>
+                <span class="perf-rank__val">4.6%</span>
+              </li>
+              <li class="perf-rank__row" style="--w:62%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">3</span>
+                <span class="perf-rank__name" data-i18n="aud.infl.value">Commercial value</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+6.1%</span>
+                <span class="perf-rank__val" data-i18n="aud.infl.value-val">$0.43 / person</span>
+              </li>
+              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-5)">
+                <span class="perf-rank__idx">4</span>
+                <span class="perf-rank__name" data-i18n="aud.infl.growth">Growth</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">—</span>
+                <span class="perf-rank__val" data-i18n="aud.infl.growth-val">+3.2% / mo</span>
+              </li>
+            </ol>
+            <p class="aud-note" data-i18n="aud.infl.note">These four are never merged into one “influence score” — a single number hides which one is actually moving.</p>
+          </section>
+
+          <!-- F4 · 受眾分群 -->
+          <section class="card" id="aud-segments">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="aud.seg.title">Fan segments</h3>
+              <div class="chip-group">
+                <button class="chip chip--active" type="button" data-seg="work" data-i18n="aud.seg.dim.work">By work</button>
+                <button class="chip" type="button" data-seg="region" data-i18n="aud.seg.dim.region">By region</button>
+                <button class="chip" type="button" data-seg="platform" data-i18n="aud.seg.dim.platform">By platform</button>
+              </div>
+            </div>
+            <div class="stacked-bar" style="height:18px" data-seg-bar></div>
+            <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)" data-seg-list></ol>
+            <p class="aud-note" data-seg-note data-i18n="aud.seg.note.work">Counted in people, not plays.</p>
+          </section>
+
+          <!-- F5 · 轉換漏斗 -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="aud.fun.title">Conversion funnel</h3>
+              <span class="chip chip--static" data-i18n="aud.range.30d">Last 30 days</span>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span><span class="perf-rank__name" data-i18n="aud.fun.follow">Follow</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">—</span><span class="perf-rank__val">48,210</span>
+              </li>
+              <li class="perf-rank__row" style="--w:32%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">2</span><span class="perf-rank__name" data-i18n="aud.fun.engage">Engage</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">15.4%</span><span class="perf-rank__val">7,424</span>
+              </li>
+              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">3</span><span class="perf-rank__name" data-i18n="aud.fun.purchase">Purchase</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">412</span>
+              </li>
+              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-4)">
+                <span class="perf-rank__idx">4</span><span class="perf-rank__name" data-i18n="aud.fun.attend">Attend</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">45.1%</span><span class="perf-rank__val">186</span>
+              </li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-5)">
+                <span class="perf-rank__idx">5</span><span class="perf-rank__name" data-i18n="aud.fun.back">Back a project</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">51.6%</span><span class="perf-rank__val">96</span>
+              </li>
+            </ol>
+            <p class="aud-note" data-i18n="aud.fun.note">Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.</p>
+          </section>
+
+          <!-- F6 · 商業價值 -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="aud.cv.title">Commercial value</h3>
+              <span class="chip chip--static" data-i18n="aud.cv.chip">Figures from Earnings</span>
+            </div>
+            <div class="bento">
+              <div class="kpi bento--span-6">
+                <div class="kpi__label">ARPU</div>
+                <div class="kpi__value">$0.43</div>
+                <div class="kpi__meta" data-i18n="aud.cv.arpu-meta">Per connected audience member (48,210)</div>
+              </div>
+              <div class="kpi bento--span-6">
+                <div class="kpi__label" data-i18n="aud.cv.spend">Spend, last 30 days</div>
+                <div class="kpi__value">$20,700</div>
+                <div class="kpi__delta" data-i18n="aud.cv.spend-meta">+6.1% vs previous 30 days</div>
+              </div>
+            </div>
+            <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span><span class="perf-rank__name" data-i18n="aud.cv.tw">Taiwan · paying</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">52%</span><span class="perf-rank__val">$10,764</span>
+              </li>
+              <li class="perf-rank__row" style="--w:44%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">2</span><span class="perf-rank__name" data-i18n="aud.cv.hk">Hong Kong · paying</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">23%</span><span class="perf-rank__val">$4,761</span>
+              </li>
+              <li class="perf-rank__row" style="--w:18%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">3</span><span class="perf-rank__name" data-i18n="aud.cv.jp">Japan · paying</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">9%</span><span class="perf-rank__val">$1,863</span>
+              </li>
+            </ol>
+            <p class="aud-note" data-i18n="aud.cv.note">Every segment opens the matching fan list in Fans CRM.</p>
+          </section>
+
+        </div>
+
+
+        <!-- 作品表現榜（2026-07-31 自收入管理·版稅分頁搬來，使用者裁定）。
+             單位是「次數」不是「人」——與本頁其他卡不同軸，卡上直接寫明、不可互比。
+             作品名與類型沿用 roy.work1–11／roy.type.*（同一批作品、同一份 persona 覆蓋）。 -->
+        <section class="card mt-24" data-aud-works='{"plays": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500], "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--info"><i data-lucide="play" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="aud.works.title">Top 10 works · by streams &amp; downloads</h3>
+            </div>
+            <span class="chip chip--static" data-i18n="aud.works.unit">Counts, not people</span>
+          </div>
+          <nav class="filter-tabs" role="tablist" aria-label="Work type" data-aud-type>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-aud-t="all" data-i18n="roy.type.all">All</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="music" data-i18n="roy.type.music">Music</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="video" data-i18n="roy.type.video">Video</button>
+          </nav>
+          <ol class="perf-rank perf-rank--nopct" data-aud-list style="width:100%"></ol>
+          <p class="aud-note" data-aud-count></p>
+        </section>
+
+        <!-- F8 · 建議行動（spec 5.1.7.8 F8 · D160）。這是本頁唯一會給動作的區塊。 -->
+        <section class="card mt-24">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="aud.act.title">Suggested actions</h3>
+            <span class="chip chip--static" data-i18n="aud.act.chip">Dismissible</span>
+          </div>
+
+          <div class="alert alert--row alert--warning">
+            <div class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></div>
+            <div class="alert__body">
+              <div class="alert__title" data-i18n="aud.act.1">Japan grew 18% and you've never held an event there</div>
+              <div class="alert__meta" data-i18n="aud.act.1-basis">From region segments, trailing 90 days (YouTube · StreetVoice)</div>
+            </div>
+            <a class="alert__cta" href="create-event.html" data-i18n="aud.act.1-cta">Create an event</a>
+          </div>
+
+          <div class="alert alert--row">
+            <div class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></div>
+            <div class="alert__body">
+              <div class="alert__title" data-i18n="aud.act.2">Hong Kong pays at 1.4× the rate of Taiwan, but has no local pickup</div>
+              <div class="alert__meta" data-i18n="aud.act.2-basis">From commercial value and E-Shop order data</div>
+            </div>
+            <a class="alert__cta" href="store-settings.html" data-i18n="aud.act.2-cta">Open store settings</a>
+          </div>
+
+          <p class="aud-note" data-i18n="aud.act.note">Each one states what it's based on and can be dismissed. These are suggestions, not conclusions — nothing here is phrased as a certainty.</p>
+        </section>
+
+      </div><!-- /when-data -->
+
+      <!-- 未連結任何平台：整頁只剩來源清單（spec 5.1.7.8 §4 頁面狀態）。 -->
+      <div class="when-empty">
+        <section class="card">
+          <div class="empty-card">
+            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="link" class="ztor-icon"></i></span>
+            <div class="empty-card__title" data-i18n="aud.empty.title">No platforms connected yet</div>
+            <div class="empty-card__text" data-i18n="aud.empty.text">Once connected, this page joins followers, views, streams and regions into one picture of your audience. Until then there are no numbers to show you — and we won't fill the page with zeros or estimates.</div>
+            <a class="btn btn--primary" href="settings.html#integrations" data-i18n="aud.src.open-settings">Open integrations</a>
+          </div>
+
+          <div class="src-status__title" style="margin-top:var(--sp-24)" data-i18n="aud.empty.available">Available platforms</div>
+
+          <div class="settings-row src-status__row--off">
+            <div class="flex-row">
+              <span class="src-status__mark">YT</span>
+              <div>
+                <div class="settings-row__label">YouTube</div>
+                <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+          </div>
+
+          <div class="settings-row src-status__row--off">
+            <div class="flex-row">
+              <span class="src-status__mark">SP</span>
+              <div>
+                <div class="settings-row__label">Spotify</div>
+                <div class="settings-row__hint" data-i18n="aud.src.sp-off">Connect to pull streams and listener regions</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+          </div>
+
+          <div class="settings-row src-status__row--off">
+            <div class="flex-row">
+              <span class="src-status__mark">SV</span>
+              <div>
+                <div class="settings-row__label">StreetVoice</div>
+                <div class="settings-row__hint" data-i18n="aud.src.sv-off">Play counts only — this platform doesn't expose followers or regions</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+          </div>
+
+          <div class="settings-row src-status__row--off">
+            <div class="flex-row">
+              <span class="src-status__mark">IG</span>
+              <div>
+                <div class="settings-row__label">Instagram</div>
+                <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+          </div>
+
+          <div class="settings-row src-status__row--off" style="border-bottom:0">
+            <div class="flex-row">
+              <span class="src-status__mark">TT</span>
+              <div>
+                <div class="settings-row__label">TikTok</div>
+                <div class="settings-row__hint" data-i18n="aud.src.tt">Connect to pull followers and engagement</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+/* F4 粉絲分群：維度切換。數字一律是「人」，不是播放次數——
+   只計入可對應到具體帳號的行為（spec 5.1.7.8 F4 · D163）。 */
+(function () {
+  var DATA = {
+    work: [
+      { k: 'REAL LIFE',    v: '8,420', p: '31%', w: 100, hue: 'var(--chart-1)' },
+      { k: 'REALIVE',      v: '5,180', p: '19%', w: 61,  hue: 'var(--chart-2)' },
+      { k: '\u5e25\u5230\u5206\u624b', v: '4,260', p: '16%', w: 51, hue: 'var(--chart-3)' },
+      { k: '\u611b\u4e0a\u4f60\u7b97\u6211\u8ce4', v: '3,140', p: '12%', w: 37, hue: 'var(--chart-5)' },
+      { k: '\u4ec0\u9ebc\u90fd\u4e0d\u5fc5\u8aaa', v: '2,690', p: '10%', w: 32, hue: 'var(--chart-6)' }
+    ],
+    region: [
+      { k: 'aud.seg.tw', v: '21,212', p: '44%', w: 100, hue: 'var(--chart-1)' },
+      { k: 'aud.seg.jp', v: '10,124', p: '21%', w: 48,  hue: 'var(--chart-2)' },
+      { k: 'aud.seg.hk', v: '6,749',  p: '14%', w: 32,  hue: 'var(--chart-3)' },
+      { k: 'aud.seg.my', v: '4,339',  p: '9%',  w: 20,  hue: 'var(--chart-5)' }
+    ],
+    platform: [
+      { k: 'YouTube',     v: '18,640', p: '39%', w: 100, hue: 'var(--chart-1)' },
+      { k: 'Ztor',        v: '12,410', p: '26%', w: 67,  hue: 'var(--chart-2)' },
+      { k: 'StreetVoice', v: '9,870',  p: '20%', w: 53,  hue: 'var(--chart-3)' },
+      { k: 'Instagram',   v: '7,290',  p: '15%', w: 39,  hue: 'var(--chart-5)' }
+    ]
+  };
+  var list = document.querySelector('[data-seg-list]');
+  var bar  = document.querySelector('[data-seg-bar]');
+  var note = document.querySelector('[data-seg-note]');
+  if (!list) return;
+
+  function render(dim) {
+    var rows = DATA[dim] || [];
+    list.innerHTML = rows.map(function (r, i) {
+      var isKey = /^[a-z][a-z.]+$/.test(r.k);
+      var name = isKey
+        ? '<span class="perf-rank__name" data-i18n="' + r.k + '">' + r.k + '</span>'
+        : '<span class="perf-rank__name">' + r.k + '</span>';
+      return '<li class="perf-rank__row" style="--w:' + r.w + '%; --hue:' + r.hue + '">'
+        + '<span class="perf-rank__idx">' + (i + 1) + '</span>' + name
+        + '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>'
+        + '<span class="perf-rank__pct">' + r.p + '</span>'
+        + '<span class="perf-rank__val">' + r.v + '</span></li>';
+    }).join('');
+    var used = rows.reduce(function (a, r) { return a + parseFloat(r.p); }, 0);
+    bar.innerHTML = rows.map(function (r) {
+      return '<div class="stacked-bar__seg" style="width:' + parseFloat(r.p) + '%;background:' + r.hue + '"></div>';
+    }).join('') + '<div class="stacked-bar__seg" style="width:' + Math.max(0, 100 - used) + '%;background:var(--foreground-muted)"></div>';
+    if (note) note.setAttribute('data-i18n', 'aud.seg.note.' + dim);
+    if (window.applyI18n) window.applyI18n(document.getElementById('aud-segments'));
+  }
+
+  document.querySelectorAll('[data-seg]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-seg]').forEach(function (x) { x.classList.remove('chip--active'); });
+      b.classList.add('chip--active');
+      render(b.dataset.seg);
+    });
+  });
+  render('work');
+})();
+
+/* F1 來源狀態：展開／收合，點外面關掉。 */
+(function () {
+  var dock = document.querySelector('[data-src-status]');
+  if (!dock) return;
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-src-toggle]');
+    if (t) {
+      var open = dock.getAttribute('data-open') === 'true';
+      dock.setAttribute('data-open', open ? 'false' : 'true');
+      t.setAttribute('aria-expanded', open ? 'false' : 'true');
+      return;
+    }
+    if (dock.getAttribute('data-open') === 'true' && !e.target.closest('[data-src-status]')) {
+      dock.setAttribute('data-open', 'false');
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') dock.setAttribute('data-open', 'false');
+  });
+})();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script>
+  /* 作品表現榜 —— 2026-07-31 自收入管理·版稅分頁搬來（使用者裁定：版稅分頁只講錢，
+     次數屬表現分析）。作品名走 roy.work1–11，所以切 persona 會跟著換；
+     類型（音樂／影片）兩個 persona 各一份，與收入管理那邊同一組定義。
+     單位是「次數」，與本頁其他卡的「人」不同軸——卡上的膠囊已寫明，不做合併運算。 */
+  (function () {
+    const host = document.querySelector('[data-aud-works]');
+    if (!host) return;
+    const CFG = JSON.parse(host.dataset.audWorks);
+    const persona = (window.ztorPersona && window.ztorPersona.get && window.ztorPersona.get()) || 'default';
+    const TYPES = CFG.types[persona] || CFG.types.default;
+    const T = k => (window.i18nT && window.i18nT(k)) || k;
+
+    function render() {
+      const type = host.querySelector('[data-aud-type] .filter-tabs__item--active').dataset.audT;
+      const rows = CFG.plays.map((v, i) => ({ i: i, v: v, type: TYPES[i] }))
+        .filter(r => type === 'all' || r.type === type)
+        .sort((a, b) => b.v - a.v);
+      const top = rows.slice(0, 10);
+      const max = top.length ? top[0].v : 1;
+      host.querySelector('[data-aud-list]').innerHTML = top.map((r, n) =>
+        '<li class="perf-rank__row" style="--w:' + Math.max(4, Math.round(r.v / max * 100)) + '%; --hue:var(--chart-' + (r.i % 7 + 1) + ')">' +
+        '<span class="perf-rank__idx">' + (n + 1) + '</span>' +
+        '<span class="perf-rank__name">' + T('roy.work' + (r.i + 1)) + '</span>' +
+        '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>' +
+        '<span class="perf-rank__val">' + r.v.toLocaleString() + '</span></li>').join('');
+      host.querySelector('[data-aud-count]').textContent =
+        T('aud.works.note').replace('{shown}', top.length).replace('{total}', rows.length);
+    }
+    host.addEventListener('click', e => {
+      const b = e.target.closest('[data-aud-type] .filter-tabs__item');
+      if (!b) return;
+      host.querySelectorAll('[data-aud-type] .filter-tabs__item').forEach(x => {
+        const on = x === b;
+        x.classList.toggle('filter-tabs__item--active', on);
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      render();
+    });
+    document.addEventListener('i18n:applied', render);
+    render();
+  })();
+</script>
+</body>
+</html>

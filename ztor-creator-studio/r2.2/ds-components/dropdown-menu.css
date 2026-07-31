@@ -118,12 +118,12 @@ button.dropdown__item {
 }
 .dropdown__item--toggle .switch { flex: none; }
 
-/* --choice：單選值列（2026-07-29，用於商品/組合清單的粉絲分級門檻）。
+/* --choice：值列（2026-07-29，用於商品/組合清單的粉絲分級門檻）。
    與 --toggle 同類、同樣豁免「每個 .dropdown__item 都要有領頭 icon」那條規則：
    這不是動作項，是一個值。領頭位置放的是該分級的徽章——它比任何通用字符都更能說明
    這一列選的是什麼，而且與 tier-settings 用的是同一套徽章語彙。
-   已選態靠尾端的 check（不是底色）：選單一次只會有一個被選，底色高亮會和 hover 打架，
-   使用者會分不清「這是我選的」還是「我的滑鼠在這」。 */
+   已選態靠尾端的 check（不是底色）：底色高亮會和 hover 打架，使用者會分不清
+   「這是我選的」還是「我的滑鼠在這」。 */
 .dropdown__item.dropdown__item--choice {
   display: flex;
   align-items: center;
@@ -134,6 +134,49 @@ button.dropdown__item {
 .dropdown__item--choice .dropdown__check { opacity: 0; color: var(--selected-ink); }
 .dropdown__item--choice[aria-checked="true"] .dropdown__check { opacity: 1; }
 .dropdown__item--choice[aria-checked="true"] { color: var(--foreground); }
+
+/* --ladder：把一組 --choice 值列當成「一道階梯」呈現（2026-07-31，粉絲分級門檻的
+   單擊門檻模型）。選項由高到低排列，點任何一級＝把門檻設在那一級，該級與其上各級
+   一起成為已選態。所以已選的永遠是從頂端連續的一段，不是散落的幾項。
+   左緣那條 2px 線把「被包含的一段」連起來——沒有它，四個各自帶 check 的列看起來就像
+   四個獨立開關，使用者會以為可以隨意跳選。線是這個模型唯一需要的額外筆觸，其餘視覺
+   與 --choice 完全相同。
+   --preview：滑鼠移過某一級時，「點下去會被納入」的那幾級先用半透明 check 預告，
+   讓階梯關係在點擊前就看得見，不必靠文字解釋。 */
+.dropdown__menu--ladder .dropdown__item--choice { position: relative; }
+.dropdown__menu--ladder .dropdown__item--choice::before {
+  content: "";
+  position: absolute; left: var(--sp-4); top: 0; bottom: 0;
+  width: 2px; border-radius: var(--radius-pill);
+  background: transparent;
+}
+.dropdown__menu--ladder .dropdown__item--choice[aria-checked="true"]::before { background: var(--selected-ink); }
+.dropdown__menu--ladder .dropdown__item--preview { color: var(--foreground); }
+.dropdown__menu--ladder .dropdown__item--preview .dropdown__check { opacity: .4; }
+
+/* 值列的尾端次要資訊（如粉絲分級門檻的「988 人」＝門檻設在這一級有多少人買得到）。
+   放在標籤與 check 之間、靠右推齊，讓四列的數字對成一欄可以直接比大小。
+   刻意是次要色與小一階字：它是幫忙做決定的參考值，不是這一列選的東西本身。 */
+.dropdown__meta {
+  margin-left: auto;
+  padding-left: var(--sp-8);
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 選單抬頭：一行小字說明這組值列在回答什麼問題（如「買得到的最低分級」）。
+   不是選項、不可點，所以不是 .dropdown__item。 */
+.dropdown__cap {
+  padding: var(--sp-6) var(--sp-16) var(--sp-4);
+  font-size: var(--fs-11);
+  line-height: var(--lh-snug);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
 
 /* --danger：破壞性動作（刪除等），紅字 ghost。用於草稿列的「刪除」。 */
 .dropdown__item--danger { color: var(--destructive); }

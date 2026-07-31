@@ -254,10 +254,24 @@ html[data-hidden] .filter-tabs__item--live .live-dot::after { animation-play-sta
 }
 
 /* When .tabs__item is rendered as <button> (programmatic tabs),
-   strip default button chrome. */
+   strip default button chrome.
+
+   ⚠ 只清左右上三邊，**底邊一定要留**：`.tabs__item` 的
+   `border-bottom: 2px solid transparent` 是整套底線的基座——經典變體直接把它
+   染成 --primary，`--underline-short`／`--underline-label` 變體則靠它撐出 item
+   高度、讓 ::after 的 -12px 落在分頁／卡片底緣。2026-07-31 之前這裡寫 `border: 0`，
+   等於把基座一起清掉：全站 17 支用 <button> 寫的分頁，active 底線一律畫不出來，
+   而底線變體還會因為少 2px 而被 nav 的 overflow 裁掉。div 版沒事、button 版壞掉，
+   同一個元件兩種行為——改成分邊清除後兩者一致。 */
 button.tabs__item {
   background: transparent;
-  border: 0;
+  /* 分邊清除，不用 `border: 0`／也不重寫 border-bottom：這條規則在檔案裡排在
+     `.tabs__item--active` 之後、specificity 又更高（0,1,1 vs 0,1,0），
+     只要它碰到 border-bottom 的**顏色**，active 的橘色就會被它蓋掉。
+     只清上／右／左三邊，底邊完全交給 `.tabs__item` 與 `--active` 兩條規則。 */
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
   font-family: inherit;
   outline: none;
 }

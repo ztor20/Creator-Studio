@@ -1,0 +1,123 @@
+/* Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
+   ─────────────────────────────────────────────────────────────────────────
+   一個「不占版位」的資料可信度指示：坐在頁首操作區，用一顆膠囊講兩件事
+   —— 目前的數字涵蓋幾個來源、有沒有需要處理的異常；點開才展開來源明細。
+
+   為什麼不是一個區塊：涵蓋範圍是判讀所有數字的前提，必須隨時看得到，但它
+   不是使用者來這頁要完成的任務。做成常駐區塊等於每次進站都先讀一遍不會變
+   的東西（spec 5.1.7.8 §3）。
+
+   異常時整顆轉 destructive 色 —— 規格要求「異常未排除前不得回到低調樣式」。
+
+   明細列沿用 .settings-row（settings.css），本檔只補來源識別塊與未連結態。 */
+
+.src-status {
+  position: relative;
+}
+
+/* ── 第一層：常駐膠囊 ─────────────────────────────────────────────────── */
+
+.src-status__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+
+.src-status__pill:hover { border-color: var(--foreground-muted); }
+
+.src-status__dot {
+  width: var(--sp-8);
+  height: var(--sp-8);
+  border-radius: var(--radius-pill);
+  background: var(--status-success);
+  flex: none;
+}
+
+/* 有異常：整顆膠囊改色，不只換點的顏色 —— 規格要求「明顯有別於正常狀態」。 */
+.src-status[data-alert="true"] .src-status__pill {
+  border-color: var(--destructive);
+  color: var(--destructive);
+  background: var(--destructive-fill);
+}
+.src-status[data-alert="true"] .src-status__dot { background: var(--destructive); }
+
+.src-status__chevron { transition: transform var(--duration) var(--easing); }
+.src-status[data-open="true"] .src-status__chevron { transform: rotate(180deg); }
+
+/* ── 第二層：來源明細面板 ─────────────────────────────────────────────── */
+
+.src-status__panel {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--sp-8));
+  z-index: 40;
+  width: min(460px, calc(100vw - var(--sp-48)));
+  max-height: 70vh;
+  overflow: auto;
+  padding: var(--sp-16) var(--sp-20) var(--sp-20);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-float, none);
+  text-align: left;
+}
+
+.src-status[data-open="true"] .src-status__panel { display: block; }
+
+.src-status__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  margin-bottom: var(--sp-4);
+}
+
+.src-status__note {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  line-height: var(--lh-normal);
+  margin: 0 0 var(--sp-8);
+}
+
+/* 來源識別塊：只放縮寫，不用各平台品牌色（品牌色會讓五列變成五種強度不一
+   的視覺重量，而這裡要比較的是「狀態」不是「是哪家」）。 */
+.src-status__mark {
+  width: var(--sp-32);
+  height: var(--sp-32);
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  flex: none;
+}
+
+/* 未連結的來源：整列降權，但仍看得見 —— 「有哪些拿不到」本身就是資訊。 */
+.src-status__row--off .src-status__mark,
+.src-status__row--off .settings-row__label { opacity: .55; }
+
+.src-status__foot { margin-top: var(--sp-16); }
+.src-status__foot .btn { width: 100%; }
+
+@media (max-width: 600px) {
+  .src-status__panel {
+    position: fixed;
+    right: var(--sp-16);
+    left: var(--sp-16);
+    width: auto;
+  }
+}

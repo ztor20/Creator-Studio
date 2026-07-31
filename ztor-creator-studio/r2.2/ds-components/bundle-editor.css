@@ -11,13 +11,23 @@
    class 名保留 `fc-` 前綴＝與 create-campaign 既有 JG 生成的 class 一致，兩頁共用同一支。
    ============================================================ */
 
-/* 套組卡：在 .card 基礎上收一點內距、卡間距 */
-.fc-bundle { padding: var(--sp-16) var(--sp-18); margin-bottom: var(--sp-12); }
+/* 套組卡：內距與卡間距。2026-07-30 使用者裁示「間距參考建立商品的 section」——
+   那裡是 .form-section--outlined，內距吃 --card-pad（24px）、欄位 label 14px、
+   說明貼齊 label。這張卡在畫面上做的是同一件事（一整組欄位住在一張卡裡），
+   所以改成同一組數值，兩個流程之間的節奏才一致。 */
+.fc-bundle { padding: var(--sp-24); margin-bottom: var(--sp-12); }
+
+/* 卡內欄位沿用建立流程 section 的節奏：label 14px、說明貼齊 label（gap 收成 0）。
+   欄位之間的 16px 由基礎 .field 提供，這裡不覆寫（Q6 已統一全站表單節奏）。 */
+.fc-bundle__body .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+.fc-bundle__body .field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)); }
 .fc-bundle__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-16); }
 
 /* 套組商品列：縮圖(96) ＋ 名稱/描述兩行 ＋ 移除鈕 */
 .fc-item-row { display: grid; grid-template-columns: 96px 1fr auto; gap: var(--sp-10); align-items: start; margin-top: var(--sp-8); }
-.fc-item-row .upload-tile { min-height: 96px; aspect-ratio: 1 / 1; }
+/* 比例不在這裡決定：格子自己掛 .upload-tile--750x930（2026-07-31 全站圖片上傳槽收斂成
+   單一直式尺寸）。原本這行硬寫 1 / 1，會蓋掉元件的比例、讓套組商品縮圖變成全站唯一的方形上傳槽。 */
+.fc-item-row .upload-tile { min-height: 96px; }
 .fc-item-fields { display: flex; flex-direction: column; gap: var(--sp-8); }
 
 /* 滿版加高的「新增」按鈕（新增套組／新增商品） */
@@ -66,7 +76,9 @@
 /* ── 收合摘要列 ───────────────────────────────────────────────────
    收合時整張卡變成一列可點的摘要：名稱 · 價格 · 內容物摘要 · 名額。
    用 grid 而不是 flex，讓多張卡的價格欄對齊成一直行——比較的前提是對齊。 */
-.fc-bundle--collapsed { padding: var(--sp-12) var(--sp-18); cursor: pointer; }
+/* 收合列自己收窄上下內距，左右維持與展開態同一條垂直線——收合↔展開時
+   名稱不該左右位移。 */
+.fc-bundle--collapsed { padding: var(--sp-12) var(--sp-24); cursor: pointer; }
 .fc-bundle--collapsed .fc-bundle__body { display: none; }
 .fc-bundle--collapsed .fc-bundle__head { margin-bottom: 0; }
 .fc-sum {
@@ -95,12 +107,26 @@
   margin-right: var(--sp-6);
 }
 
-/* 展開時只留名稱當卡片標題：內容摘要與價格此時就在下面的欄位裡，
-   重複顯示會變成兩個可能互相矛盾的真相來源。名稱留著，讓收合↔展開有連續性。 */
-.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__meta,
-.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__price { display: none; }
+/* 展開時只留名稱與價格：內容摘要此時就在下面的欄位裡，重複顯示會變成兩個
+   可能互相矛盾的真相來源。價格留著的理由相反——它在卡片最後，中間隔著五組欄位，
+   編輯當下看不到自己把價格改成多少（2026-07-30 使用者裁決）。 */
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__meta { display: none; }
 .fc-bundle:not(.fc-bundle--collapsed) .fc-sum { cursor: default; }
 .fc-bundle--collapsed .fc-sum { cursor: pointer; }
+
+/* 展開態的價格：右對齊的兩層——「套組價」小標＋放大的金額。
+   標籤只在展開態出現：收合列一行之內已經有名稱與內容物在解釋自己，
+   再加一個標籤會讓那一行變成三種字級。 */
+.fc-sum__tag { display: none; }
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__price { text-align: right; }
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__tag {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-2);
+}
+.fc-bundle:not(.fc-bundle--collapsed) .fc-sum__val { font-size: var(--fs-20); }
 
 /* ── 商品引用列 ───────────────────────────────────────────────────
    縮圖 44 ＋ 名稱/次要資訊 ＋ 移除。可讀不可改：品項的真相住在商品自己的
@@ -215,6 +241,33 @@
    權重寫 0,2,0 的原因同 .fc-hint--over：field-system.css 在本檔之後載入，
    單一個 class 會輸給 .field__hint 的 margin: 0。 */
 .field__hint.fc-pricing__note { margin-top: var(--sp-10); }
+
+/* ── 卡片底部的兩個出口（2026-07-30 使用者選定的版本）─────────────────
+   收合＝整條可點的把手：卡片展開後有六段內容、上千像素高，收合是這裡最常按的
+   動作，給它整條寬度就不必瞄準。移除＝把手下方的紅色按鈕：它刪掉整張套組且不可
+   復原，用站上既有的 .btn--destructive 說出後果，並與收合分成上下兩層——兩個
+   後果差這麼多的動作，不該並排在同一條線上讓手指去分辨。 */
+.fc-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+  width: 100%;
+  min-height: 40px;
+  margin-top: var(--sp-24);
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--muted-foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  cursor: pointer;
+}
+.fc-collapse:hover { color: var(--foreground); }
+.fc-collapse:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.fc-collapse .ztor-icon { width: 14px; height: 14px; }
+.fc-bundle__foot { display: flex; justify-content: flex-end; margin-top: var(--sp-12); }
 
 /* ── 名額分帳的即時提示 ──────────────────────────────────────────── */
 .fc-slotnote { margin-top: var(--sp-6); }

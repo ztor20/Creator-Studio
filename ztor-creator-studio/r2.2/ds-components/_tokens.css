@@ -132,6 +132,13 @@
      而不是去覆寫 .kpi__delta 的個別屬性。base ＝原本的 12% 半透明染色，配方沒變。
      這裡引用 var(--status-success)，而 custom property 是延遲解析的——深色主題覆寫
      --status-success 之後，這條 fill 會自動跟著變，所以只需要定義一次。 */
+  /* 列表／表格欄位表頭的標籤墨色（2026-07-31 使用者裁示，STYLE-DECISIONS Q41）。
+     站上沒有比 --muted-foreground 更暗的文字 token（亮 #6E6E68／暗 #979797 已是最低階），
+     所以以它為基底調降不透明度。收成 token 是因為同一個角色原本跑了三種配方：
+     裸 --muted-foreground、color-mix(…68%, --card)、color-mix(…72%, transparent)——
+     正是 Q9 要收斂的「散落的即席灰」。混 transparent 而不是 --card，表頭才能坐在
+     任何底色上（有些表頭帶 --muted 底）都是同一階暗度。 */
+  --column-head-ink: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
   --status-success-fill: color-mix(in srgb, var(--status-success) 12%, transparent);
   --destructive-fill:    color-mix(in srgb, var(--destructive) 12%, transparent);
   /* 深階實色版（給「坐在實色暖底上」的膠囊用，見 kpi.css 的 .kpi--hero）。
@@ -241,6 +248,20 @@
      使用值按需擴充（不預先鋪滿）。與 --sp-* 同邏輯：數字＝px。 */
   --w-220: 220px;
   --w-300: 300px;
+
+  /* ── Aspect ratio · --img-portrait（2026-07-31 使用者裁決，Q39 顯示端續作）──
+     全站作品圖的單一直式比例＝ 750 / 930（≈0.806）＝創作者實際上傳的那張圖。
+     上傳槽（`ds-components/upload-tile.css` 的 `--upload-img-ratio`）與顯示端
+     （清單縮圖、卡片封面）皆讀這一個變數，不再各自寫死 1:1／16:9／4:3——
+     顯示框由同一張直式原圖 object-fit:cover 置中裁切填滿（D164）。
+     2026-07-31 當日第二次搬家：原本暫放 `shared.css` 的 :root（當時是為了
+     不動 <link>），本輪確認每頁都已各自 `<link>` 這支 `_tokens.css`（排在
+     shared.css 之前），故移回 Pillar 1 Foundation 的正確位置——Foundation
+     級變數若不住在這裡，check_ds_sync 檢查 9 的 token 文件化稽核抓不到，
+     也違反 Foundation ← Role ← Component 的依賴契約。
+     例外：活動（Events）的橫式橫幅槽與橫式顯示版位不吃這個變數，
+     見 `upload-tile.css` 的 `--16x9`。 */
+  --img-portrait: 750 / 930;
 
   /* ── Shadow tokens · Elevation 海拔階梯（E0–E4）──────────────────────
      扁平為底，陰影只表達「浮起的層級」；同層分隔一律用 hairline／surface 色階。

@@ -100,26 +100,36 @@
 .alert--snoozed.alert--card { opacity: 0.62; }
 .alert--snoozed.alert--card .alert__cta { opacity: 0.9; }
 
-/* ── --row density (slim, single-line, left-border accent) ── */
+/* ── --row density (slim single-line list row) ──────────────────────
+   2026-07-31 使用者裁決（scratch demo 四案選 C）：這一列不再是「一個有底色
+   的方塊」，改成清單列——無底色、無圓角，只靠底部 hairline 與下一列分開。
+
+   兩步走到這裡：先拿掉左邊那條 3px 狀態色線（狀態色原本靠它＋圖示晶片雙重
+   表達，重複了）；再拿掉整條底色與圖示晶片的方塊底。剩下的狀態信號是圖示
+   字色與 CTA 連結色，兩個就夠。
+
+   圖示欄仍保留 30×30 的正方形足跡（使用者指定）：晶片底色雖然拿掉了，寬度
+   要留著，否則有圖示與無圖示的列文字起點會參差，多列疊起來左緣就散了。 */
 .alert--row {
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: var(--sp-12);
   align-items: center;
-  padding: var(--sp-12) var(--sp-14);
-  border-radius: var(--radius-md);
-  background: var(--muted);
-  border-left: 3px solid var(--primary);
+  padding: var(--sp-12) 0;
 }
-.alert--row + .alert--row { margin-top: var(--sp-8); }
+/* 分隔線畫在「列與列之間」，不是每列的底下：F8 那疊列後面還跟著一段說明文字，
+   用 border-bottom + :last-child 會在最後一列與說明之間多畫一條沒有意義的線
+   （:last-child 對不上，因為最後一個子元素是那個 <p>）。相鄰選擇器只在真的
+   有下一列時才畫，單獨一列的用法（manage-ip 刪除警告、edit-event 後果提示）
+   自然就沒有線。 */
+.alert--row + .alert--row { border-top: 1px solid var(--border); }
 
 .alert--row .alert__icon {
-  width: 30px; height: 30px;
-  border-radius: var(--radius-sm);
+  width: 30px; height: 30px;          /* 正方形足跡：底色沒了，佔位仍在 */
   display: inline-grid; place-items: center;
-  background: var(--card);
   font-size: var(--fs-13);
 }
+.alert--row .alert__icon .ztor-icon { width: 16px; height: 16px; }
 .alert--row .alert__body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
 .alert--row .alert__title {
   font-family: var(--font-display);
@@ -380,15 +390,14 @@
 }
 
 /* ── Status variants (shared across densities) ── */
-.alert--warning.alert--row { border-left-color: var(--status-warning-ink); }
-.alert--error.alert--row   { border-left-color: var(--destructive); }
-.alert--info.alert--row    { border-left-color: var(--status-info); }
-.alert--success.alert--row { border-left-color: var(--status-success); }
-
 .alert--warning .alert__icon { background: color-mix(in srgb, var(--status-warning) 10%, var(--card)); color: var(--status-warning-ink); }
 .alert--error   .alert__icon { background: color-mix(in srgb, var(--destructive)    8%, var(--card)); color: var(--destructive); }
 .alert--success .alert__icon { background: color-mix(in srgb, var(--status-success)  8%, var(--card)); color: var(--status-success); }
 .alert--info    .alert__icon { background: color-mix(in srgb, var(--status-info)     8%, var(--card)); color: var(--status-info); }
+
+/* --row 是清單列、不是色塊：晶片底色一律不上，狀態只留在圖示的字色上。
+   寫在狀態變體之後才蓋得掉上面那四條（同權重時後者勝）。 */
+.alert--row .alert__icon { background: transparent; }
 
 .alert--warning .alert__cta { color: var(--status-warning-ink); }
 .alert--error   .alert__cta { color: var(--destructive); }

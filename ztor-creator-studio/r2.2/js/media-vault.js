@@ -329,7 +329,60 @@
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.main);
   }
 
-  function render() { renderRail(); renderDoor(); renderMain(); }
+  /* ── 上鎖遮罩 ───────────────────────────────────────────────
+     側欄按分級把打不開的庫房壓暗，但壓暗只回答「打不開」；點進去之後還要
+     回答「那要怎樣才打得開」。所以主欄把門條與內容整塊打模糊，蓋一張說明卡
+     寫出解鎖條件——粉絲那一側看到的正是這個：東西在，但我進不去。
+
+     只在檢視器開著時發生。創作者以自己的身分看，任何庫房都打得開。 */
+  function renderGate() {
+    var f = vault();
+    var locked = !!state.viewer && V.reachInTierAll(f, state.viewer) === 0;
+
+    els.body.classList.toggle("is-gated", locked);
+    els.gate.hidden = !locked;
+    if (!locked) { els.gate.innerHTML = ""; return; }
+
+    var who = tierName(state.viewer);
+    var liveKeys = (f.keys || []).filter(function (k) { return !k.revoked; }).length;
+
+    /* 條件在這裡是唯讀的：粉絲看得到門上寫什麼，但門不是他能改的。
+       所以用 chip--static、沒有移除鈕，跟門條那組可編輯的 chips 不同。 */
+    var chips = f.rules.map(function (r) {
+      var l = V.ruleLabel(r);
+      var text = r.t === "tier"
+        ? '<span class="vault-gate__rule-verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
+        : '<span class="vault-gate__rule-verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
+      return '<span class="chip chip--static">' + icon(l.icon) + text + "</span>";
+    }).join("");
+
+    var foot = f.rules.length
+      ? tx("Meet any one of these to open it." + (liveKeys ? " Holding a key also gets you in." : ""),
+           "符合任一條件就打得開。" + (liveKeys ? "持有鑰匙的人也進得來。" : ""))
+      : liveKeys
+        ? tx("No condition on this vault — only fans holding a key get in.",
+             "這座庫房沒有設條件——只有持鑰匙的人進得來。")
+        : tx("No condition and no key yet — nobody can open this vault.",
+             "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。");
+
+    els.gate.innerHTML =
+      '<div class="vault-gate__panel">' +
+        '<span class="vault-gate__icon">' + icon("lock") + "</span>" +
+        '<h3 class="vault-gate__title">' + tx("This vault is locked", "此媒體庫已上鎖") + "</h3>" +
+        '<p class="vault-gate__sub">' +
+          esc(tx("Viewing as " + who + " · nobody at this tier gets in", "正在以「" + who + "」檢視・這一級沒有人進得來")) +
+        "</p>" +
+        (f.rules.length
+          ? '<span class="vault-gate__label">' + icon("key") + tx("Unlock conditions", "解鎖條件") + "</span>" +
+            '<div class="vault-gate__rules">' + chips + "</div>"
+          : "") +
+        '<p class="vault-gate__foot">' + esc(foot) + "</p>" +
+      "</div>";
+
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.gate);
+  }
+
+  function render() { renderRail(); renderDoor(); renderMain(); renderGate(); }
 
   /* ── 分享抽屜：發鑰匙 ───────────────────────────────────────
      一把鑰匙就是一條加密連結。兩個意圖共用同一個物件，只差 uses 的預設值
@@ -876,7 +929,7 @@
     els.viewer.addEventListener("change", function () {
       state.viewer = els.viewer.value;
       els.viewerWrap.classList.toggle("is-on", !!state.viewer);
-      renderRail();
+      renderRail(); renderGate();
     });
 
     document.addEventListener("i18n:applied", function () { lastReach = null; render(); });
@@ -892,6 +945,8 @@
     els.viewer    = els.rail.querySelector("[data-vault-viewer]");
     els.viewerWrap = els.rail.querySelector(".vault-viewer");
     els.main      = document.querySelector("[data-vault-main]");
+    els.body      = els.main.querySelector("[data-vault-body]");
+    els.gate      = els.main.querySelector("[data-vault-gate]");
     els.title     = els.main.querySelector("[data-vault-title]");
     els.note      = els.main.querySelector("[data-vault-note]");
     els.door      = els.main.querySelector("[data-vault-door]");

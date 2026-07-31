@@ -170,28 +170,29 @@
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
-          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 4.</p>
+          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 3.</p>
         </div>
-        <div class="form-grid">
-          <div class="upload-tile" data-asset="thumb">
+        <!-- 2026-07-31（D164 / documents 5.1.6.1 F4）：四格收斂為三格——原「縮圖」與「直式海報」
+             比例統一後形狀相同、素材同源，併為單一「主視覺」；橫式橫幅是活動專屬例外、維持
+             --16x9（全站唯一保留橫式的模組）；圖庫仍是直式 750×930、1–8 張。三格皆必填。
+             版面走 .upload-assets（固定高推導寬），不放進 grid 1fr 軌道。 -->
+        <div class="upload-assets">
+          <div class="upload-tile upload-tile--750x930" data-asset="keyvisual" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+            <span class="upload-tile__title" data-i18n="ce.img.keyvisual">Key visual</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.keyvisual-hint">750 × 930 · portrait · Search, browse, share, hero (mobile)</span>
           </div>
-          <div class="upload-tile" data-asset="poster">
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
-          </div>
-          <div class="upload-tile" data-asset="banner">
+          <!-- 橫式橫幅是活動的例外槽（D164 第 4 點）：活動維持「有直有橫」，
+               這一格是 16:9 / 1920×1080（documents 5.1.6.1 F4），其餘兩格仍是 750×930。 -->
+          <div class="upload-tile upload-tile--16x9" data-asset="banner" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920 × 1080 · landscape · Hero (desktop), social</span>
           </div>
-          <div class="upload-tile" data-asset="gallery">
+          <div class="upload-tile upload-tile--750x930" data-asset="gallery" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">750 × 930 · portrait · Detail carousel, 1–8</span>
           </div>
         </div>
       </div>
@@ -567,7 +568,7 @@
     const city  = (document.querySelector("[data-ce=city]")?.value  || "").trim();
     const start = (document.querySelector("[data-ce=start]")?.value || "").trim();
     const tiers = Number(document.getElementById("ce-tier-count")?.dataset.tiers || 0);
-    const posterFilled = !!document.querySelector('.upload-tile.is-filled[data-asset="poster"], .upload-tile.is-filled[data-asset="banner"]');
+    const posterFilled = !!document.querySelector('.upload-tile.is-filled[data-asset="keyvisual"], .upload-tile.is-filled[data-asset="banner"]');
     return { typeName, name, date, venue, city, start, tiers, posterFilled };
   }
 
@@ -641,7 +642,7 @@
   function renderPreview(s) {
     if (isWP()) { renderPreviewWP(); return; }   // D149：共看派對預覽
     s = s || readState();
-    // 海報：已傳 Vertical poster／Landscape banner 時換實色背景示意，未傳顯 icon 佔位
+    // 海報位：已傳 Key visual／Landscape banner 時換實色背景示意，未傳顯 icon 佔位
     const poster = document.getElementById("ce-pv-poster");
     const posterIcon = document.getElementById("ce-pv-poster-icon");
     if (poster) {
@@ -780,11 +781,14 @@
     alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
   }
 
-  /* ---- A6：圖片/影片上傳格點擊填入示意（demo）。必填 4 圖填齊才反映就緒。
+  /* ---- A6：圖片/影片上傳格點擊填入示意（demo）。必填 3 圖（主視覺／橫式橫幅／圖庫，D164）填齊才反映就緒。
           目前 QC 五項（spec §4.5）未含「圖片齊全」，故圖片填入只回饋視覺，不改 QC 計數。---- */
-  document.querySelectorAll(".upload-tile[data-asset]").forEach(tile => {
+  document.querySelectorAll(".upload-tile[data-asset]:not([data-upload])").forEach(tile => {
     tile.addEventListener("click", () => { tile.classList.toggle("is-filled"); renderPreview(); scheduleSave(); });
   });
+  /* 圖片格改由共用元件 partials/upload-tile.js 增強（點擊選檔、hover 替換／刪除），
+     就緒與預覽改聽它發出的 upload:change，不再靠上面那條 toggle。 */
+  document.addEventListener("upload:change", () => { renderPreview(); scheduleSave(); });
 
   // ---- 票種：點擊新增票種卡 → 計數 +1、回填 Review/QC（demo）----
   const tierAdd   = document.getElementById("ce-tier-add");
@@ -931,6 +935,8 @@
   document.addEventListener('i18n:applied', render);
 })();
 </script>
+<!-- 圖片格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>

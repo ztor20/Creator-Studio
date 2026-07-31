@@ -5,6 +5,8 @@
 //    fallback：.wizard[data-autosave="false"] 的頁面，儲存狀態渲染成可點的「儲存」鈕，手動觸發。
 //  · 返回（[data-wizard-back]）：編輯過 → 彈窗「儲存並離開／不儲存就離開」（取消＝右上 ✕）；
 //    沒編輯過 → 彈窗「離開」（取消＝✕）。
+//    例外：.wizard[data-leave-simple] 的頁面（頂列沒有儲存入口、儲存只在底部主鈕）一律走純離開版，
+//    不問「要不要先儲存」——頂列沒有可觸發的儲存機制，問了也無從執行（使用者裁示 2026-07-31）。
 //  · 驅動對象：[data-wizard-save]（沒有此屬性的頁，如 create-event 自有狀態 JS，本檔不碰其狀態，
 //    仍負責編輯追蹤與離開彈窗）。
 (function () {
@@ -19,6 +21,7 @@
     var wizard = document.querySelector('.wizard');
     if (!wizard) return;
     var autosave = wizard.dataset.autosave !== 'false';
+    var leaveSimple = wizard.hasAttribute('data-leave-simple');
     var edited = false;
     var state = 'saved';        // 'saved' | 'saving'
     var timer = null;
@@ -101,7 +104,7 @@
     }
     function open() {
       actionsEl.innerHTML = '';
-      if (edited) {
+      if (edited && !leaveSimple) {
         titleEl.textContent = T('wiz.leave.title.edited', 'Save before you leave?');
         bodyEl.textContent = T('wiz.leave.body.edited', 'You have edits on this page.');
         actionsEl.appendChild(mkBtn('btn btn--primary', T('wiz.leave.saveleave', 'Save and leave'), function () { if (autosave) autosaveTick(); leave(); }));

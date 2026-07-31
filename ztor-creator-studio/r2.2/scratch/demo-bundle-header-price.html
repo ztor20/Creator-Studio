@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B 版右上角價格 · 收合／移除的位置比較（scratch）</title>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* scratch 專用：把三種動作位置並排比較，不會進產品頁。卡片內容是真的欄位。 */
+  body { background: var(--background); color: var(--foreground); padding: var(--sp-24) var(--sp-32) var(--sp-40); font-family: var(--font-ui); }
+  .demo { max-width: 820px; margin: 0 auto var(--sp-32); }
+  .demo__no { font-family: var(--font-numeric); font-size: var(--fs-12); color: var(--muted-foreground); }
+  .demo__title { font-size: var(--fs-16); margin: var(--sp-4) 0; }
+  .demo__note { font-size: var(--fs-12); color: var(--muted-foreground); margin-bottom: var(--sp-12); line-height: var(--lh-normal); }
+
+  /* ── B 版標題列：右上角「套組價」＋放大金額，動作不放這裡 ───────────── */
+  .fc-bundle:not(.fc-bundle--collapsed) .fc-sum__price { display: block; text-align: right; }
+  .demo-pricelabel { display: block; font-size: var(--fs-11); color: var(--muted-foreground); margin-bottom: var(--sp-2); }
+  .demo-priceval { font-size: var(--fs-20); }
+
+  /* ── 卡片底部的動作列 ──────────────────────────────────────────── */
+  .demo-foot {
+    display: flex; align-items: center;
+    padding-top: var(--sp-14); margin-top: var(--sp-16);
+    border-top: 1px solid var(--border);
+  }
+  .demo-foot--right { justify-content: flex-end; gap: var(--sp-16); }
+  .demo-foot--split { justify-content: space-between; }
+
+  /* 版本 3：收合＝底部整條可點的把手，移除＝把手下方小連結 */
+  .demo-handle {
+    display: flex; align-items: center; justify-content: center; gap: var(--sp-6);
+    width: 100%; min-height: 40px;
+    margin-top: var(--sp-16);
+    border-top: 1px solid var(--border);
+    color: var(--muted-foreground); font-size: var(--fs-12);
+    cursor: pointer;
+  }
+  .demo-handle:hover { color: var(--foreground); }
+  .demo-removerow { display: flex; justify-content: flex-end; margin-top: var(--sp-8); }
+</style>
+</head>
+<body>
+
+<!-- 卡片內容三張完全相同（真欄位、真數字）：
+     5 個名額 × $200 ＋ 1 件商品 $688 ＝ 原價 $1,688，折 40%（−$675）＝ $1,013。
+     差別只有「收合／移除」放在哪裡。 -->
+
+<div class="demo">
+  <div class="demo__no">1</div>
+  <h2 class="demo__title">底部一列、兩個都靠右</h2>
+  <p class="demo__note">動作收到卡片最後、跟內容用一條分隔線隔開。位置固定在右下角，多張卡疊起來時掃視位置一致。「移除」緊鄰「收合」，誤點是這版最需要留意的地方。</p>
+  <div class="card fc-bundle">
+    <div class="fc-bundle__head">
+      <div class="fc-sum">
+        <div><div class="fc-sum__name"><span class="fc-bundle__index">02</span>典藏支持</div></div>
+        <div class="fc-sum__price">
+          <span class="demo-pricelabel">套組價</span>
+          <span class="fc-sum__was">$1,688</span><span class="demo-priceval">$1,013</span>
+        </div>
+        <span></span>
+      </div>
+    </div>
+    <div class="fc-bundle__body">
+      <div class="field">
+        <label class="field__label">套組名稱 <span class="field__req">*</span></label>
+        <input class="input" value="典藏支持">
+      </div>
+      <div class="field">
+        <label class="field__label">一句話說明支持者拿到什麼</label>
+        <input class="input" value="限量典藏組合，含較多分潤名額">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">含分潤名額</label>
+          <input class="input" type="number" value="5">
+          <div class="field__hint">0 ＝ 純回饋、不分潤</div>
+        </div>
+        <div class="field">
+          <div class="field__label">販售上限</div>
+          <div class="segmented" role="radiogroup" aria-label="販售上限">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true">自動</button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false">限量</button>
+          </div>
+          <div class="field__hint mt-8">依 100 個名額的共用池，最多 20 份。名額賣出後自動重算。</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field__label">商店商品</div>
+        <div class="fc-pick"><input class="input" placeholder="搜尋你的商品..." autocomplete="off"></div>
+        <div class="mt-8">
+          <div class="fc-ref">
+            <img class="fc-ref__thumb" src="../images/products/26ms-socks-01.jpeg" alt="">
+            <div><div class="fc-ref__name">26MS Socks</div><div class="fc-ref__meta">$688</div></div>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+          </div>
+        </div>
+        <div class="field__hint">這裡的每一項都是真實商品，訂單與取貨才有東西可以履約。</div>
+      </div>
+      <div class="field">
+        <div class="field__label">額外權益 <span class="text-sub">· 沒有商品編號的東西，例如 Discord 身分組或感謝名單</span></div>
+        <div class="fc-perk">
+          <input class="input" value="片尾字卡署名">
+          <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+        </div>
+        <button class="btn btn--outline btn--sm fc-add-item" type="button">＋ 新增權益</button>
+      </div>
+      <div class="fc-pricing">
+        <div class="fc-pricing__row">
+          <div class="field">
+            <label class="field__label">套組優惠 · %</label>
+            <div class="amount-field amount-field--suffix amount-field--readonly">
+              <input class="amount-field__input input" type="number" min="0" max="100" value="40">
+              <span class="amount-field__unit">%</span>
+            </div>
+          </div>
+          <div class="field fc-pricing__out">
+            <label class="field__label">價格 · USD</label>
+            <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="amount-field__input input" value="1,013" disabled></div>
+          </div>
+        </div>
+        <div class="field__hint fc-pricing__note">5 個名額 × $200 ＋ 1 件商品 $688 ＝ 原價 $1,688，折 40%（−$675）＝ $1,013</div>
+        <div class="field__hint fc-pricing__note">最多可折 40%——分潤名額的 $1,000 不可折抵</div>
+      </div>
+      <div class="demo-foot demo-foot--right">
+        <a class="card__link" href="#">收合</a>
+        <a class="card__link" href="#">移除</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo__no">2</div>
+  <h2 class="demo__title">底部一列、移除靠左／收合靠右</h2>
+  <p class="demo__note">兩個動作拉到卡片兩端。「移除」是刪東西、「收合」是每天都在按的，分開放最不容易按錯；代價是左下角平常沒有動作，第一次會需要找一下。</p>
+  <div class="card fc-bundle">
+    <div class="fc-bundle__head">
+      <div class="fc-sum">
+        <div><div class="fc-sum__name"><span class="fc-bundle__index">02</span>典藏支持</div></div>
+        <div class="fc-sum__price">
+          <span class="demo-pricelabel">套組價</span>
+          <span class="fc-sum__was">$1,688</span><span class="demo-priceval">$1,013</span>
+        </div>
+        <span></span>
+      </div>
+    </div>
+    <div class="fc-bundle__body">
+      <div class="field">
+        <label class="field__label">套組名稱 <span class="field__req">*</span></label>
+        <input class="input" value="典藏支持">
+      </div>
+      <div class="field">
+        <label class="field__label">一句話說明支持者拿到什麼</label>
+        <input class="input" value="限量典藏組合，含較多分潤名額">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">含分潤名額</label>
+          <input class="input" type="number" value="5">
+          <div class="field__hint">0 ＝ 純回饋、不分潤</div>
+        </div>
+        <div class="field">
+          <div class="field__label">販售上限</div>
+          <div class="segmented" role="radiogroup" aria-label="販售上限">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true">自動</button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false">限量</button>
+          </div>
+          <div class="field__hint mt-8">依 100 個名額的共用池，最多 20 份。名額賣出後自動重算。</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field__label">商店商品</div>
+        <div class="fc-pick"><input class="input" placeholder="搜尋你的商品..." autocomplete="off"></div>
+        <div class="mt-8">
+          <div class="fc-ref">
+            <img class="fc-ref__thumb" src="../images/products/26ms-socks-01.jpeg" alt="">
+            <div><div class="fc-ref__name">26MS Socks</div><div class="fc-ref__meta">$688</div></div>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+          </div>
+        </div>
+        <div class="field__hint">這裡的每一項都是真實商品，訂單與取貨才有東西可以履約。</div>
+      </div>
+      <div class="field">
+        <div class="field__label">額外權益 <span class="text-sub">· 沒有商品編號的東西，例如 Discord 身分組或感謝名單</span></div>
+        <div class="fc-perk">
+          <input class="input" value="片尾字卡署名">
+          <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+        </div>
+        <button class="btn btn--outline btn--sm fc-add-item" type="button">＋ 新增權益</button>
+      </div>
+      <div class="fc-pricing">
+        <div class="fc-pricing__row">
+          <div class="field">
+            <label class="field__label">套組優惠 · %</label>
+            <div class="amount-field amount-field--suffix amount-field--readonly">
+              <input class="amount-field__input input" type="number" min="0" max="100" value="40">
+              <span class="amount-field__unit">%</span>
+            </div>
+          </div>
+          <div class="field fc-pricing__out">
+            <label class="field__label">價格 · USD</label>
+            <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="amount-field__input input" value="1,013" disabled></div>
+          </div>
+        </div>
+        <div class="field__hint fc-pricing__note">5 個名額 × $200 ＋ 1 件商品 $688 ＝ 原價 $1,688，折 40%（−$675）＝ $1,013</div>
+        <div class="field__hint fc-pricing__note">最多可折 40%——分潤名額的 $1,000 不可折抵</div>
+      </div>
+      <div class="demo-foot demo-foot--split">
+        <a class="card__link" href="#">移除這個套組</a>
+        <a class="card__link" href="#">收合</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo__no">3</div>
+  <h2 class="demo__title">收合＝底部整條把手，移除＝把手下方小連結</h2>
+  <p class="demo__note">整條底邊都可以點來收合，滑鼠不用瞄準；「移除」退成把手下面一個安靜的小連結，兩個動作在視覺份量上分了層級。卡片多一列高度，而且底邊變成可點區域，這件事要靠 hover 才看得出來。</p>
+  <div class="card fc-bundle">
+    <div class="fc-bundle__head">
+      <div class="fc-sum">
+        <div><div class="fc-sum__name"><span class="fc-bundle__index">02</span>典藏支持</div></div>
+        <div class="fc-sum__price">
+          <span class="demo-pricelabel">套組價</span>
+          <span class="fc-sum__was">$1,688</span><span class="demo-priceval">$1,013</span>
+        </div>
+        <span></span>
+      </div>
+    </div>
+    <div class="fc-bundle__body">
+      <div class="field">
+        <label class="field__label">套組名稱 <span class="field__req">*</span></label>
+        <input class="input" value="典藏支持">
+      </div>
+      <div class="field">
+        <label class="field__label">一句話說明支持者拿到什麼</label>
+        <input class="input" value="限量典藏組合，含較多分潤名額">
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field__label">含分潤名額</label>
+          <input class="input" type="number" value="5">
+          <div class="field__hint">0 ＝ 純回饋、不分潤</div>
+        </div>
+        <div class="field">
+          <div class="field__label">販售上限</div>
+          <div class="segmented" role="radiogroup" aria-label="販售上限">
+            <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true">自動</button>
+            <button type="button" class="segmented__btn" role="radio" aria-checked="false">限量</button>
+          </div>
+          <div class="field__hint mt-8">依 100 個名額的共用池，最多 20 份。名額賣出後自動重算。</div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field__label">商店商品</div>
+        <div class="fc-pick"><input class="input" placeholder="搜尋你的商品..." autocomplete="off"></div>
+        <div class="mt-8">
+          <div class="fc-ref">
+            <img class="fc-ref__thumb" src="../images/products/26ms-socks-01.jpeg" alt="">
+            <div><div class="fc-ref__name">26MS Socks</div><div class="fc-ref__meta">$688</div></div>
+            <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+          </div>
+        </div>
+        <div class="field__hint">這裡的每一項都是真實商品，訂單與取貨才有東西可以履約。</div>
+      </div>
+      <div class="field">
+        <div class="field__label">額外權益 <span class="text-sub">· 沒有商品編號的東西，例如 Discord 身分組或感謝名單</span></div>
+        <div class="fc-perk">
+          <input class="input" value="片尾字卡署名">
+          <button class="btn btn--icon btn--xs" type="button" aria-label="移除">✕</button>
+        </div>
+        <button class="btn btn--outline btn--sm fc-add-item" type="button">＋ 新增權益</button>
+      </div>
+      <div class="fc-pricing">
+        <div class="fc-pricing__row">
+          <div class="field">
+            <label class="field__label">套組優惠 · %</label>
+            <div class="amount-field amount-field--suffix amount-field--readonly">
+              <input class="amount-field__input input" type="number" min="0" max="100" value="40">
+              <span class="amount-field__unit">%</span>
+            </div>
+          </div>
+          <div class="field fc-pricing__out">
+            <label class="field__label">價格 · USD</label>
+            <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="amount-field__input input" value="1,013" disabled></div>
+          </div>
+        </div>
+        <div class="field__hint fc-pricing__note">5 個名額 × $200 ＋ 1 件商品 $688 ＝ 原價 $1,688，折 40%（−$675）＝ $1,013</div>
+        <div class="field__hint fc-pricing__note">最多可折 40%——分潤名額的 $1,000 不可折抵</div>
+      </div>
+      <div class="demo-handle">∧ 收合這個套組</div>
+      <div class="demo-removerow"><a class="card__link" href="#">移除</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <div class="demo__no">參考</div>
+  <h2 class="demo__title">收合狀態（三個版本都一樣，不動）</h2>
+  <p class="demo__note">收合時卡片只有一列、沒有「底部」可以放動作，所以「編輯／移除」維持在右邊、價格在它們左側。整條摘要本來就可以點開，右上角的價格因此不會跟動作打架。</p>
+  <div class="card fc-bundle fc-bundle--collapsed">
+    <div class="fc-bundle__head">
+      <div class="fc-sum">
+        <div>
+          <div class="fc-sum__name"><span class="fc-bundle__index">02</span>典藏支持</div>
+          <div class="fc-sum__meta">1 件商品 · 1 項權益 · 5 個名額 · 20 份可售</div>
+        </div>
+        <div class="fc-sum__price"><span class="fc-sum__was">$1,688</span>$1,013</div>
+        <span></span>
+      </div>
+      <div class="fc-bundle__actions">
+        <a class="card__link" href="#">編輯</a><a class="card__link" href="#">移除</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

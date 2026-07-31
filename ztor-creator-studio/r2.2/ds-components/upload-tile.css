@@ -10,14 +10,32 @@
      .upload-tile__icon    — Icon atom wrapper（use Tabler, not text symbols）
      .upload-tile__title   — 主文案（occupies --foreground）
      .upload-tile__hint    — 限制說明（Min 尺寸／檔型）
+     .upload-tile__flag    — 角落標籤（如相簿第一格的「封面」）；與 __badge 不同，
+                             __badge 專屬 AI 優化完成狀態、由 JS 產生，__flag 是靜態語意標記
    layout helper
      .upload-grid          — 4 格縮圖列（附圖）
-     .upload-assets        — 具名素材槽列（縮圖／海報／橫幅／相簿，各自比例）
+     .upload-assets        — 具名素材槽列（2026-07-31 起依 D164 收斂：建立項目＝主視覺＋圖庫，
+                             建立活動＝主視覺＋橫幅＋圖庫；同一組槽共用同一個直式比例，
+                             活動的橫幅槽例外走 --16x9）
    shape modifiers
-     .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 固定長寬比
+     .upload-tile--750x930 — 圖片槽的唯一比例（見下方 --upload-img-ratio）
+     .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 已自圖片槽退場，見檔尾墓碑段
    ============================================================ */
 
 .upload-tile {
+  /* ---- 圖片上傳槽的單一比例（2026-07-31 使用者裁決）----
+     全站「上傳圖片」的槽一律直式 750 × 930（≈0.806），與項目詳情「展示內容」同一個尺寸。
+     此前各模組各走一套（縮圖 1:1／直式海報 3:4／橫幅 16:9／輪播 3:2／商品與拍賣 hero 1:1），
+     同一張作品要備四種裁切；收斂成一種之後創作者只上傳一次。
+     只管「上傳槽」——檔案槽（--file，音樂／影片／文件）與純顯示的縮圖框（清單 76、
+     .project-card__cover 16:9、.ipm-card__cover／.ip-hero__cover 3:4 等）維持原樣，
+     由各自的 object-fit:cover 從直式原圖置中裁切填滿。
+     2026-07-31 續作（同日、使用者第二輪）：顯示端也跟上了——清單縮圖與卡片封面改吃
+     shared.css 的 `--img-portrait`（同一個 750/930），本行改成引用它，全站只剩一個數字。
+     fallback 保留字面值，讓 design-system.html 之外任何單獨載入本檔的情境仍算得出比例。
+     活動（Events）是唯一例外，維持「有直有橫」：橫式橫幅槽走下方 --16x9。 */
+  --upload-img-ratio: var(--img-portrait, 750 / 930);
+
   --upload-tile-pad-y: var(--sp-18);
   --upload-tile-pad-x: var(--sp-14);
 
@@ -42,10 +60,15 @@
   background: var(--accent);   /* Q9 2026-07-13：互動 tile hover 統一用 accent */
 }
 .upload-tile[hidden] { display: none; }   /* [hidden] 要贏過 display:flex（否則 hidden 藏不掉，如內容檔單檔格切分類） */
+/* 鍵盤焦點環：沿用站上既有配方（.project-card／.app-nav-burger／.fc-collapse 同款）。
+   可觸發的空格由 partials/upload-tile.js 掛上 role=button＋tabindex=0（見該檔 syncA11y），
+   已填圖的格子則是動作列那兩顆真 <button> 進 tab 序。 */
+.upload-tile:focus-visible,
+.upload-tile__act:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
-/* --hero / 縮圖格的佔位比例對齊建議尺寸（主圖 800×800、附圖 600×600 皆 1:1）。
-   主圖收斂寬度、置左，不做滿版正方形（否則高度過長把表單推遠）。 */
-.upload-tile--hero { aspect-ratio: 1 / 1; max-width: 320px; min-height: 0; }
+/* --hero / 縮圖格一律走 --upload-img-ratio（750×930 直式）。
+   主圖收斂寬度、置左，不做滿版（否則直式高度會把表單推得更遠）。 */
+.upload-tile--hero { aspect-ratio: var(--upload-img-ratio); max-width: 320px; min-height: 0; }
 .upload-tile--file { min-height: 110px; }
 
 .upload-tile__icon  { display: inline-flex; align-items: center; justify-content: center; line-height: var(--lh-none); }
@@ -76,9 +99,11 @@
   gap: var(--sp-10);
   margin-top: var(--sp-10);
 }
-.upload-grid .upload-tile { aspect-ratio: 1 / 1; min-height: 0; }
+/* 附圖格跟主圖同比例（2026-07-31 起 750×930）。原本強制 1 / 1，會與格子自己帶的
+   形狀修飾詞打架——收斂成單一比例後直接指向同一個變數，兩邊不可能再分岔。 */
+.upload-grid .upload-tile { aspect-ratio: var(--upload-img-ratio); min-height: 0; }
 
-/* ---- assets：具名素材槽列（縮圖／直式海報／橫幅／相簿，每格比例不同）----
+/* ---- assets：具名素材槽列（2026-07-31 依 D164 收斂為主視覺＋圖庫〔＋活動的橫幅〕；同一個直式比例）----
    尺寸由「固定高度」推導寬度，不是由欄寬推導高度。
    原因（2026-07-24 修 create-project Showcase 溢出）：grid `1fr` 的最小尺寸是 auto，
    格子一旦帶 aspect-ratio，瀏覽器會拿「比例換算出的內容尺寸」回頭撐開欄寬，
@@ -101,14 +126,34 @@
   .upload-assets { --upload-asset-h: 148px; }
 }
 
-/* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用 */
-.upload-tile--1x1  { aspect-ratio: 1 / 1; }
-.upload-tile--3x4  { aspect-ratio: 3 / 4; }
-.upload-tile--3x2  { aspect-ratio: 3 / 2; }
-.upload-tile--16x9 { aspect-ratio: 16 / 9; }
+/* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用。
+   750:930（0.806）＝項目詳情「展示內容」的直式展示圖尺寸（D156：展示圖片維持單一直式尺寸），
+   2026-07-31 起是全站圖片上傳槽的唯一比例。刻意與 --3x4（0.75）分開：
+   文案寫 750 × 930 就得真的排 750 × 930，否則格子比例與標示對不上。 */
+.upload-tile--750x930 { aspect-ratio: var(--upload-img-ratio); }
+
+/* ---- 墓碑：多比例上傳槽（原 --1x1 / --3x4 / --3x2 / --16x9）----
+   退場日：2026-07-31。原因：使用者裁決「全站圖片上傳槽一律單一直式 750 × 930」，
+   多比例模型（縮圖 1:1／直式海報 3:4／輪播 3:2／橫幅 16:9）整組被 --750x930 取代。
+   本輪已把所有圖片槽（create-project／create-event／edit-event／create-product／
+   create-auction／create-bundle／bundle-detail／product-detail／create-campaign／
+   project-detail）改成 --750x930。
+   --1x1 / --3x4 / --3x2 三行 CSS 宣告已於本日移除：唯一消費者是 design-system.html
+   的示範卡，該卡本輪已改用 --750x930，零消費後 CSS 一併刪除（見下方 --16x9 分工）。
+   --16x9 仍服役、非墓碑：project-detail 的「Demo 影片／Demo 音樂」兩個**檔案槽**
+   （非圖片上傳，不在本輪收斂範圍）。期間不得再拿已退場的三個修飾詞排新的圖片上傳槽。
+
+   ✝→♁ --16x9 於圖片槽復活（2026-07-31 當日第二輪，使用者裁決）：
+   活動（Events）不併入單一直式，維持「有直有橫」——活動同時要直式海報（手機主視覺）
+   與橫式橫幅（桌面主視覺、社群分享卡），兩者用途本來就不同比例，硬統一會讓桌面
+   主視覺變成一條窄長條。因此 create-event／edit-event 的「橫式橫幅」槽改回 --16x9
+   （1920×1080，依 documents/5.1.6.1 F4）。**只有活動的橫幅這一格**——活動的縮圖、
+   直式海報、圖庫圖片仍是 750×930，其他模組一律不得再用 --16x9 排圖片槽。 */
+.upload-tile--16x9 { aspect-ratio: 16 / 9; }   /* 服役中：檔案／媒體槽（project-detail Demo 影片、音樂）＋活動橫式橫幅圖片槽 */
 
 /* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
-   附圖格在此排成 2×2，總高度與 1:1 主圖一致（create-product 主圖 + 附圖）。 */
+   附圖格在此排成 2×2；兩欄同比例（750×930）時右欄總高＝主圖高度減掉 0.24 個 gap（約 3px），
+   視覺上仍齊平，差額由 align-items:start 吸收（create-product 主圖 + 附圖）。 */
 .upload-showcase {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -150,7 +195,10 @@
    增強端：partials/upload-tile.js（注入 input/thumb/overlay/progress/actions/badge、切狀態、假計時）
    只作用在 [data-upload]；沒有此屬性的舊 tile 維持上方 .is-filled 綠框行為，不受影響。
    ============================================================ */
-.upload-tile[data-upload] { position: relative; overflow: hidden; }
+/* 疊層（縮圖／動作列／標籤）需要定位脈絡。互動格一律成立；靜態手刻的已填格（.is-filled）
+   也一併成立，這樣「有沒有掛 data-upload」不再改變疊層行為（2026-07-31 統一）。 */
+.upload-tile[data-upload],
+.upload-tile.is-filled { position: relative; overflow: hidden; }
 
 /* 未上傳：hover 才浮現更多資訊（保留空間、只切 opacity，無版面跳動）*/
 .upload-tile[data-upload].is-empty .upload-tile__sub,
@@ -160,7 +208,9 @@
 
 /* 縮圖（選到的圖，createObjectURL）：非空狀態即鋪滿 */
 .upload-tile__thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
-.upload-tile[data-upload]:not(.is-empty) .upload-tile__thumb { display: block; }
+.upload-tile[data-upload]:not(.is-empty) .upload-tile__thumb,
+.upload-tile.is-filled .upload-tile__thumb,
+.upload-tile.is-optimized .upload-tile__thumb { display: block; }
 /* 非空狀態隱藏空狀態提示；filled/optimized 收掉綠框與內距、改中性邊 */
 .upload-tile[data-upload]:not(.is-empty) .upload-tile__icon,
 .upload-tile[data-upload]:not(.is-empty) .upload-tile__title,
@@ -185,22 +235,36 @@
 .upload-tile__spinner { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: upl-spin .6s linear infinite; }
 @keyframes upl-spin { to { transform: rotate(360deg); } }
 
-/* 已上傳 hover：替換／AI 優化／刪除 */
+/* 已上傳 hover：替換／刪除（站上標準 2 鈕；AI 優化為選配第三鈕，見 __act--ai）*/
+/* 2026-07-31 統一：選擇器不再要求 [data-upload]，改以「已填狀態（.is-filled/.is-optimized）」
+   為準。原本只有互動增強器產生的格子才會 hover 出動作列，手刻的已填格（如項目詳情相簿、
+   商品詳情素材格）得各自在頁面／shared.css 補一份覆寫，同一個互動長出四種實作。 */
 /* 遮罩＝深色壓暗＋毛玻璃（2026-07-21 使用者裁示）。原本混 --foreground 42%，
    暗色模式下 --foreground 是亮色，遮罩會變成一層灰白霧、圖片反而被洗淡。
    改用既有的浮層配方 --overlay-tint（黑 45%）＋ --overlay-blur，與 modal 背景同一套語彙，
    兩個主題都得到「圖片退到後面、按鈕站到前面」的效果。 */
 .upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: var(--overlay-tint); -webkit-backdrop-filter: var(--overlay-blur); backdrop-filter: var(--overlay-blur); opacity: 0; transition: opacity .15s ease; z-index: 4; }
-.upload-tile[data-upload].is-filled .upload-tile__actions,
-.upload-tile[data-upload].is-optimized .upload-tile__actions { display: flex; }
-.upload-tile[data-upload].is-filled:hover .upload-tile__actions,
-.upload-tile[data-upload].is-optimized:hover .upload-tile__actions,
-.upload-tile[data-upload].is-filled:focus-within .upload-tile__actions,
-.upload-tile[data-upload].is-optimized:focus-within .upload-tile__actions { opacity: 1; }
+.upload-tile.is-filled .upload-tile__actions,
+.upload-tile.is-optimized .upload-tile__actions { display: flex; }
+.upload-tile.is-filled:hover .upload-tile__actions,
+.upload-tile.is-optimized:hover .upload-tile__actions,
+.upload-tile.is-filled:focus-within .upload-tile__actions,
+.upload-tile.is-optimized:focus-within .upload-tile__actions { opacity: 1; }
 .upload-tile__act { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 0; border-radius: var(--radius-md); background: var(--card); color: var(--foreground); box-shadow: var(--shadow-card); cursor: pointer; transition: background .12s ease; }
 .upload-tile__act:hover { background: var(--accent); }
 .upload-tile__act--ai { color: var(--primary); }
 .upload-tile__act .ztor-icon { width: 16px; height: 16px; }
+
+/* 角落標籤（__flag）：靜態語意標記，如相簿第一格的「封面」。
+   2026-07-31 由 shared.css 的 .pd-gallery__badge 搬進元件層（原本只有項目詳情相簿能用）。
+   名字刻意不叫 __badge——那個名字已被下方「AI 優化完成徽章」佔用，語意也不同：
+   __badge 是狀態結果（優化完成才出現、由 JS 產生），__flag 是作者標定的角色（封面／主圖）。 */
+.upload-tile__flag {
+  position: absolute; top: var(--sp-8); left: var(--sp-8); z-index: 5;
+  padding: var(--sp-2) var(--sp-8); border-radius: var(--radius-md);
+  background: var(--primary); color: var(--primary-foreground);
+  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-medium);
+}
 
 /* AI 優化完成徽章 */
 .upload-tile__badge { position: absolute; top: 6px; left: 6px; display: none; align-items: center; gap: var(--sp-4); padding: 3px var(--sp-8); border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font-size: var(--fs-11); font-weight: var(--fw-medium); z-index: 5; }

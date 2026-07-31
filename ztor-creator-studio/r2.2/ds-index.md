@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 241 條）
+## Tokens（_tokens.css，亮色，共 243 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -34,6 +34,9 @@
 - `--chart-5`: #8B5CF6
 - `--chart-6`: #EC4899
 - `--chart-7`: #06B6D4
+
+### --column-*
+- `--column-head-ink`: color-mix(in srgb, var(--muted-foreground) 72%, transparent)
 
 ### --control-*
 - `--control-h-xs`: 28px
@@ -96,6 +99,9 @@
 
 ### --gradient-*
 - `--gradient-brand`: linear-gradient(90deg, #ffd9a0 0%, #ffa33f 55%, #ff7a4d 100%)
+
+### --img-*
+- `--img-portrait`: 750 / 930
 
 ### --input-*
 - `--input`: #EAEAEA
@@ -318,7 +324,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 107 支；主 class 前 5 個）
+## 元件（ds-components/，共 109 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -331,7 +337,7 @@
 - `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix
 - `bento.css` — .bento ｜ Bento — 12-column grid utility for dashboard / p
 - `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
-- `bundle-editor.css` — .fc-bundle, .fc-bundle__head, .fc-item-row, .fc-item-fields, .fc-add ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
+- `bundle-editor.css` — .fc-bundle, .fc-bundle__body, .fc-bundle__head, .fc-item-row, .fc-item-fields ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart-tip.css` — .linechart__main, .fin-hitline, .fin-area, .fin-guide, .fin-marker ｜ chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28）
@@ -360,6 +366,7 @@
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
 - `field-system.css` — .field, .field__label, .field__hint, .field__req, .field-readout ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
+- `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `footer.css` — .ztor-footer, .ztor-footer__inner, .ztor-footer__brand, .ztor-footer__wordmark, .ztor-footer__tagline ｜ Ztor — Footer
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--outlined, .form-section__head, .form-section__head--actions, .form-section__head-actions ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
@@ -407,6 +414,7 @@
 - `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
 - `settings.css` — .settings-layout, .settings-nav, .settings-nav__item, .settings-nav__item--active, .settings-section ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
+- `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input
@@ -416,11 +424,11 @@
 - `stock-tip.css` — .stock-tip, .stock-tip__pop, .stock-tip__row, .stock-tip__name, .stock-tip__qty ｜ Ztor — Stock tip (extra stock info on hover)
 - `store-settings.css` — .ss-stack, .ss-identity-card, .ss-band__cover, .ss-band__cover-edit, .ss-band__head
 - `switch.css` — .switch, .switch--on ｜ Switch — binary on/off toggle (form control).
-- `table.css` — .ztor-table, .card, .ztor-table__feature, .fee-tree__panel, .ztor-accordion__item ｜ Ztor — Table
+- `table.css` — .ztor-table, .ztor-table-scroll, .card, .ztor-table__feature, .fee-tree__panel ｜ Ztor — Table
 - `tabs.css` — .tabs, .tabs__item, .tabs__item--active, .tabs__item-count, .tabs--count-plain ｜ Tabs — horizontal tab bar with hairline underlin
 - `tag-input.css` — .tag-input, .tag-input__field, .tag-input__entry, .tag-input__suggest-label ｜ Tag input · creator-built / selectable tags
 - `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ Ztor — Toast
-- `upload-tile.css` — .upload-tile, .upload-tile--hero, .upload-tile--file, .upload-tile__icon, .upload-tile__title ｜ Upload tile · dashed upload affordance for creat
+- `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--hero, .upload-tile--file, .upload-tile__icon ｜ Upload tile · dashed upload affordance for creat
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）

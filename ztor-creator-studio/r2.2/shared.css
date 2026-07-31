@@ -26,6 +26,17 @@
 html, body { margin: 0; padding: 0; }
 
 /* ============================================================
+   全站作品圖比例 `--img-portrait` —— 已搬到 ds-components/_tokens.css
+   （2026-07-31 文件同步：Foundation 級變數要住在 Pillar 1 的來源檔
+   `_tokens.css`，放這裡會讓 check_ds_sync 檢查 9 的 token 文件化稽核
+   抓不到，也違反 Foundation ← Role ← Component 的依賴契約）。
+   全站每一頁都各自用 `<link>` 直接載入 `ds-components/_tokens.css`
+   （排在 `shared.css` 之前），不必改任何 <link> 順序。
+   定義與沿革見 `_tokens.css` 的「Aspect ratio」段；
+   活動（Events）例外見 `upload-tile.css` 的 `--16x9`。
+   ============================================================ */
+
+/* ============================================================
    Scrollbar — 全站自訂捲軸（2026-07-27，使用者裁示：不用 OS 預設）
 
    放在 shared.css 而不是新開一支 ds-components/scrollbar.css：這不是「元件」而是
@@ -1169,7 +1180,21 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   align-items: center;
   justify-content: space-between;
 }
-.wizard__bottom-actions { display: flex; gap: var(--sp-8); }
+.wizard__bottom-actions { display: flex; align-items: center; gap: var(--sp-8); }
+
+/* 主動作被停用時，為什麼不能按就寫在它旁邊（2026-07-30）。
+   在此之前原因只寫在步驟右軌的教練行——使用者看的是 footer 那顆灰按鈕，
+   兩者隔著整個表單，等於按鈕自己不解釋自己。
+   視覺與 .field__hint 同級（輔助說明的既有角色），刻意壓在按鈕之下不搶主動作；
+   只在 JS 判定擋關時去掉 .hidden，可按時整行清空、不留佔位。 */
+.wizard__bottom-hint {
+  margin: 0 var(--sp-4) 0 0;
+  max-width: 320px;
+  font-size: var(--fs-11);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
+  text-align: right;
+}
 
 /* 黑夜版 wizard 配色（2026-06-30 改版，升進 DS）：content＋header＝最深的 #191A1A（沉下的內容卡），
    footer＋其下 canvas＝較淺的 #2B2B2C（卡浮在較淺底上）。此為 create-flow 全頁標準，
@@ -1426,12 +1451,15 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 [data-mode="view"] .tag-input__entry { display: none; }
 /* 表單填寫用的提示語（「拖曳可換順序」「在這裡直接編輯」）在唯讀狀態是誤導 */
 [data-mode="view"] .field__hint { display: none; }
-/* 展示相簿的操作層另有一條 .pd-gallery .upload-tile.is-filled .upload-tile__actions
-   （見下方相簿區塊）優先權比上面那條高，會把封面圖的替換／刪除留在畫面上。
-   這裡補一條更明確的，確保檢視模式下真的沒有任何可改動的入口。
+/* 元件層有一條 .upload-tile.is-filled .upload-tile__actions { display:flex }（ds-components/
+   upload-tile.css），權重比上面那條 [data-mode="view"] .upload-tile__actions 高，會把已填圖格的
+   替換／刪除留在畫面上。這裡補一條同樣帶 .is-filled/.is-optimized 的，權重才壓得過去，
+   確保檢視模式下真的沒有任何可改動的入口。
    ✝ 2026-07-30：本檔曾短暫改為在檢視模式保留裁切入口（D155），同日裁切功能整個移除後
-   （D156，展示圖片維持單一直式尺寸）已無白名單例外，故還原為整層不出現。 */
-[data-mode="view"] .pd-gallery .upload-tile.is-filled .upload-tile__actions { display: none; }
+   （D156，展示圖片維持單一直式尺寸）已無白名單例外，故還原為整層不出現。
+   ✝ 2026-07-31：原本這條綁 .pd-gallery 作用域，隨相簿樣式搬進元件層而改為不綁頁面 class。 */
+[data-mode="view"] .upload-tile.is-filled .upload-tile__actions,
+[data-mode="view"] .upload-tile.is-optimized .upload-tile__actions { display: none; }
 
 /* 標題單獨留在 hero header，間距交給 .pd-hero__main 的 flex gap。 */
 .pd-hero__title {
@@ -1457,29 +1485,23 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   .pd-hero__cover { max-width: 260px; }
 }
 
-/* ---------- Project detail · Showcase 直式相簿（沿用 .upload-assets ＋ .upload-tile--3x4）----------
-   比照商品詳情的圖片格：直式縮圖，hover 顯示「替換／刪除」動作列（沿用 .upload-tile__actions/__act）。
-   這裡不掛 data-upload（不要互動上傳增強），故在 .pd-gallery 作用域補：定位、顯示縮圖、中和 is-filled
-   綠框、以及 hover 顯示動作列。 */
-.pd-gallery .upload-tile { position: relative; overflow: hidden; }
-.pd-gallery .upload-tile__thumb { display: block; }
-.pd-gallery .upload-tile.is-filled { border-color: var(--border); color: inherit; }   /* 圖已滿版，不套「完成綠框」 */
-.pd-gallery .upload-tile.is-filled .upload-tile__actions { display: flex; }
-.pd-gallery .upload-tile.is-filled:hover .upload-tile__actions,
-.pd-gallery .upload-tile.is-filled:focus-within .upload-tile__actions { opacity: 1; }
-/* 封面藥丸：疊在第一格左上；品牌橘＝主資產標示 */
-.pd-gallery__badge {
-  position: absolute; top: var(--sp-8); left: var(--sp-8); z-index: 5;
-  padding: var(--sp-2) var(--sp-8); border-radius: var(--radius-md);
-  background: var(--primary); color: var(--primary-foreground);
-  font-family: var(--font-ui); font-size: var(--fs-11); font-weight: var(--fw-medium);
-}
+/* ---------- Project detail · Showcase 直式相簿 ----------
+   ✝ 2026-07-31 墓碑：本區塊整段搬進 ds-components/upload-tile.css（元件層），頁面 class
+   `.pd-gallery` 一併退場（HTML 只留 id="pd-gallery" 給 JS 用）。搬去哪：
+     .pd-gallery .upload-tile{position/overflow}            → .upload-tile.is-filled{position/overflow}
+     .pd-gallery .upload-tile__thumb{display:block}         → .upload-tile.is-filled .upload-tile__thumb
+     .pd-gallery .upload-tile.is-filled{中和綠框}            → .upload-tile[data-upload].is-filled（既有規則已涵蓋）
+     .pd-gallery ... .upload-tile__actions{hover 顯示}       → .upload-tile.is-filled .upload-tile__actions
+     .pd-gallery__badge（封面藥丸）                          → .upload-tile__flag
+   相簿本身的版面沿用共用的 .upload-assets（固定高度、橫向排列），沒有 #pd-gallery 專屬版面規則，
+   故此處不再留任何樣式。比例改用 .upload-tile--750x930（原本套 --3x4，與文案 750×930 對不上）。 */
 
 /* ---------- 方形裁切彈窗（#pd-edit-crop 內容）----------
    左：直式舞台＋可移動＋可縮放的方形選框（框外壓暗）；右：方形即時預覽。JS 在 project-detail.html。 */
 /* ✝ 2026-07-30 移除方形裁切彈窗的樣式（.pd-crop-edit 家族：__col/__stage/__img/__box/__handle/__preview）。
    使用者裁示展示圖片維持單一直式尺寸，不再需要方形裁切（D156）。原樣式見 git 歷史。
-   注意 .pd-gallery__badge（封面藥丸）名字相近但**不是**裁切功能，保留於上方。 */
+   注意封面藥丸名字相近但**不是**裁切功能；它已於 2026-07-31 改名並搬進元件層
+   （.pd-gallery__badge → .upload-tile__flag，見上方墓碑）。 */
 
 /* ---------- Project detail · 我的收益「共創計畫 · 深度明細」----------
    2026-07-25：僅在收益類型篩選切到「OTT 版稅收益」時出現（版型參考共創前台，元件用本站 DS）。
@@ -1574,15 +1596,26 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 .project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
 .project-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* 2026-07-31 使用者：封面由 16:9 改直式 --img-portrait（750/930）。原本橫式框配上
+   直式原圖，object-fit:cover 只能取中間一條橫帶，海報上下全被切掉；卡片格是
+   auto-fill minmax(280px,1fr)，直式封面在 280px 欄寬下約 347px 高，卡片變成
+   海報牆的讀法。活動不吃這條（活動沒有用 .project-card）。 */
 .project-card__cover {
-  position: relative; aspect-ratio: 16 / 9;
+  position: relative; aspect-ratio: var(--img-portrait);
   display: grid; place-items: center;
+  overflow: hidden;   /* 圖比框高時裁掉，不讓它把 16:9 撐開（見下方 __cover-img 註解）*/
+  min-height: 0;      /* 這格是 .project-card（flex column）的項目，auto 最小高會被內容頂大 */
   background: var(--muted); color: var(--muted-foreground);
   border-bottom: 1px solid var(--border);
 }
 .project-card__cover .ztor-icon { width: 30px; height: 30px; }
-/* 真實海報：鋪滿 16:9 封面格並裁切（無素材的專案仍走上面的圖示佔位） */
-.project-card__cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 真實海報：鋪滿封面格並裁切（2026-07-31 起封面格＝直式 --img-portrait；無素材的專案仍走上面的圖示佔位）。
+   2026-07-31 改成絕對定位鋪滿，與站上另外兩個同角色的封面（.ipm-card__cover-img／
+   .ip-hero__cover-img）同一個配方。原本只寫 width/height:100%，圖片是 grid 項目、
+   封面格又是 flex column 的項目（min-height:auto），瀏覽器會拿圖片的內在尺寸當最小高度，
+   把宣告的 16:9 整個頂掉——實測 400×400 的方圖讓封面變成 291×291 正方形。
+   上傳槽 2026-07-31 全站改直式 750×930 之後，同一條路徑會讓封面被撐成更高的直式塊。 */
+.project-card__cover-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .project-card__badge { position: absolute; top: 12px; right: 12px; }
 .project-card__body { display: flex; flex-direction: column; gap: var(--sp-6); padding: var(--sp-14) var(--sp-16) var(--sp-16); }
 .project-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-8); }

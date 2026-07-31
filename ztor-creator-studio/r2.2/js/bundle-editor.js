@@ -376,6 +376,20 @@
         : '') + esc(money(finalPrice(b)));
     }
 
+    /* 展開態右上角的價格：標籤「套組價」＋放大的金額（2026-07-30 使用者選定）。
+       展開時卡片最後才是定價區塊，中間隔著五組欄位；編輯名額或商品的當下看不到
+       自己把價格改成多少，等於要一路捲到底才知道剛才那一下的後果。標籤是必要的——
+       右上角一個沒有名字的數字，跟卡片最後那個有算式的數字看起來會像兩件事。 */
+    function headPriceHTML(b) {
+      if (listPrice(b) <= 0) return '<span class="fc-sum__tag">' + esc(T('cpp.bd.price.tag')) + '</span>—';
+      var d = discountOf(b);
+      return '<span class="fc-sum__tag">' + esc(T('cpp.bd.price.tag')) + '</span>' +
+        (d > 0
+          ? '<span class="fc-sum__was" title="' + esc(T('cpp.bd.price.list')) + '">' + esc(money(listPrice(b))) + '</span>'
+          : '') +
+        '<span class="fc-sum__val">' + esc(money(finalPrice(b))) + '</span>';
+    }
+
     /* 收合摘要：名稱 · 內容物 · 名額｜價格。內容物寫成人看得懂的一句，不是計數器。 */
     function summaryMeta(b) {
       var bits = [];
@@ -402,13 +416,19 @@
                 esc(b.name || T('cpp.bd.untitled')) + '</div>' +
               '<div class="fc-sum__meta">' + esc(summaryMeta(b)) + '</div>' +
             '</div>' +
-            '<div class="fc-sum__price">' + summaryPriceHTML(b) + '</div>' +
+            '<div class="fc-sum__price">' + (b.collapsed ? summaryPriceHTML(b) : headPriceHTML(b)) + '</div>' +
             '<span></span>' +
           '</div>' +
-          '<div class="fc-bundle__actions">' +
-            '<a class="card__link" href="#" data-bd-toggle>' + esc(T(b.collapsed ? 'cpp.bd.edit' : 'cpp.bd.collapse')) + '</a>' +
-            (BUNDLES.length > 1 ? '<a class="card__link" href="#" data-bd-remove>' + esc(T('cpp.bd.remove')) + '</a>' : '') +
-          '</div>' +
+          /* 動作只在收合態留在標題列：那時卡片只有一列，沒有別的地方可以放。
+             展開後改放卡片底部（見 .fc-bundle__foot），右上角讓給價格——
+             把「這張卡值多少」跟「刪掉這張卡」擺在同一個角落，是把最常看的資訊
+             和最不可逆的動作放進同一次瞄準。 */
+          (b.collapsed
+            ? '<div class="fc-bundle__actions">' +
+                '<a class="card__link" href="#" data-bd-toggle>' + esc(T('cpp.bd.edit')) + '</a>' +
+                (BUNDLES.length > 1 ? '<a class="card__link" href="#" data-bd-remove>' + esc(T('cpp.bd.remove')) + '</a>' : '') +
+              '</div>'
+            : '') +
         '</div>' +
 
         /* ── 卡片內的順序＝從「輸入」走到「結果」（2026-07-30 重排）───────────
@@ -499,6 +519,20 @@
             '<div class="field__hint fc-pricing__note' + (discountOver(b) ? ' fc-hint--over' : '') +
               '" data-bd-discount-hint>' + esc(discountHintText(b)) + '</div>' +
           '</div>' +
+
+          /* ── 卡片底部的兩個出口 ────────────────────────────────────────
+             收合＝整條可點的把手（滑鼠不用瞄準，卡片這麼長時最常按的就是它）。
+             移除＝把手下面的紅色按鈕：它刪掉整張套組、且無法復原，所以用站上既有的
+             destructive 樣式明說後果，並與收合分成上下兩層，不並排在同一條線上。 */
+          '<button class="fc-collapse" type="button" data-bd-toggle>' +
+            '<i data-lucide="chevron-up" class="ztor-icon"></i>' + esc(T('cpp.bd.collapse.long')) +
+          '</button>' +
+          (BUNDLES.length > 1
+            ? '<div class="fc-bundle__foot">' +
+                '<button class="btn btn--destructive btn--sm" type="button" data-bd-remove>' +
+                  esc(T('cpp.bd.remove.long')) + '</button>' +
+              '</div>'
+            : '') +
         '</div>' +
       '</div>';
     }
@@ -559,7 +593,10 @@
       nameEl.textContent = b.name || T('cpp.bd.untitled');
       if (idx) nameEl.insertBefore(idx, nameEl.firstChild);
       card.querySelector('.fc-sum__meta').textContent = summaryMeta(b);
-      card.querySelector('.fc-sum__price').innerHTML = summaryPriceHTML(b);
+      /* 標題列的價格在兩種狀態下長得不一樣（收合＝一行摘要價；展開＝帶「套組價」標籤的
+         放大金額），就地同步時要挑對那一份，否則打字打到一半標籤會消失。 */
+      card.querySelector('.fc-sum__price').innerHTML =
+        card.classList.contains('fc-bundle--collapsed') ? summaryPriceHTML(b) : headPriceHTML(b);
       var priceInput = card.querySelector('[data-bd-price]');
       if (priceInput) priceInput.value = money(finalPrice(b)).replace('$', '');
       var priceHint = card.querySelector('[data-bd-price-hint]');

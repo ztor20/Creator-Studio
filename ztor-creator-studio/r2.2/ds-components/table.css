@@ -8,6 +8,13 @@
    裁決「線框對了，但欄位間距要像之前那樣大」，故只收斂邊框、不收斂密度（padding 16/20、表頭 fs-13、
    內文 fs-14 皆保留舊值）。使 ztor-table 與 variant-table 的框型一致、但保留較鬆的閱讀節奏。 */
 .ztor-table {
+  /* 媒體欄縮圖尺寸的單一來源（2026-07-31）：鎖高度＝與資料列內容等高，寬度由全站
+     直式比例 --img-portrait 換算（40 × 750/930 ≈ 32.3px）。表頭標籤的位移也讀同一支，
+     見 .ztor-table__media-head。--img-portrait 是 "750 / 930"，代進 calc 後就是
+     calc(40px * 750 / 930)，所以這裡不需要第二個寫死的數字。 */
+  --zt-thumb-h: var(--sp-56);
+  --zt-thumb-w: calc(var(--sp-56) * var(--img-portrait));
+
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
@@ -29,12 +36,17 @@
   padding: var(--sp-16) var(--sp-20);
 
   font-family: var(--font-ui);
-  font-size: var(--fs-13);
+  font-size: var(--fs-12);                 /* 2026-07-31 使用者裁示：再小一級（原 --fs-13）*/
   font-weight: var(--fw-regular);
-  color: var(--muted-foreground);
+  /* 同日裁示「再暗一點」。配方原本寫在這裡（--muted-foreground 調降不透明度），
+     2026-07-31 使用者要求所有列表表頭都改成這個顏色後收成 token --column-head-ink，
+     由 _tokens.css 定義、10 支表頭元件共用。 */
+  color: var(--column-head-ink);
 
-  background: var(--muted);
-  border-bottom: 1px solid var(--border);
+  /* 2026-07-31 使用者裁示（同日兩段）：表頭先去底色——底色在卡片內反而多切一塊、
+     像另一個區塊；再去下框線——先做 e-shop 探索頁確認效果後全面套用到所有列表表頭。
+     表頭與內容的分隔改由留白承擔；tbody 每一列自己的分隔線不動。
+     全站 ztor-table 一致，不另開變體。 */
 }
 
 .ztor-table tbody td {
@@ -44,10 +56,25 @@
   color: var(--foreground);
 }
 
+/* 橫向捲動容器（2026-07-31 promote）：窄容器裡放不下所有欄時讓表格自己捲，
+   不擠壓欄寬也不撐破卡片。此前 project-detail 的發布更新／協作者表格是用行內
+   style="overflow-x:auto" 各寫一次，這次儀表板三張卡也要用，第三次出現即收進元件。
+   注意它同時讓表格「不是 .card 的直接子代」，所以下方那條取消自框的規則不會套用、
+   表格保留自己的邊框——inset 情境本來就要框。 */
+.ztor-table-scroll { overflow-x: auto; }
+
 /* flush 情境：表格直接坐進出框的 .card（padding:0；如 earnings／event-detail 的表格卡）時，
    卡已提供 1px 邊框，取消表格自框以免雙框。inset 情境（發布更新／協作者）的表格包在
    overflow-x 容器裡、非 .card 直接子代，不受此規則影響、保留自框。2026-07-25 Q29 */
 .card > .ztor-table {
+  border: 0;
+  border-radius: 0;
+}
+/* 捲動容器坐在 .card 裡時同樣視為 flush：卡片已提供邊框，表格再自帶一個就成了框中框。
+   用後代選擇器而非直接子代——元件渲染會在中間多一層 data-component 容器，
+   .card > .ztor-table-scroll 會落空。只認 .ztor-table-scroll，所以 project-detail
+   那兩處用行內 style 的 inset 表格不受影響、維持原本保留自框的樣子（2026-07-31）。 */
+.card .ztor-table-scroll > .ztor-table {
   border: 0;
   border-radius: 0;
 }
@@ -119,6 +146,52 @@
 /* 展開箭頭移到列尾獨立欄（2026-07-13：原內嵌在日期格最前、把日期擠到換行）。表頭補等寬空欄，內容才與表頭對齊。 */
 .ztor-table__chevcell { width: 32px; text-align: right; white-space: nowrap; }
 .ztor-table__datecell { white-space: nowrap; }
+/* 短值欄（分類／狀態／進度等）不換行：兩個字的詞被逐字斷成直行比溢出更難讀（2026-07-31）。 */
+.ztor-table__nowrap { white-space: nowrap; }
+/* 主欄位的第二行（來源／模組／分類）：與 .data-list__meta 同一組視覺語彙，
+   讓「名稱＋歸屬」留在同一格，省下一整欄的寬度（2026-07-31）。 */
+.ztor-table__sub { display: block; font-size: var(--fs-12); color: var(--muted-foreground); }
+/* 進度欄兼任狀態時的例外上色（2026-07-31）：草稿／準備中這類中性狀態維持次級灰，
+   但「已取消」是需要被看見的終態，用既有的 destructive 色；不回到彩色徽章，
+   是為了讓這一欄維持單一視覺語彙（要嘛數字、要嘛一個狀態詞）。 */
+/* 目標進度儲存格（2026-07-31）：百分比 ＋ 進度條 ＋ 原始數字，與項目清單
+   （.project-list__goal）同一種寫法。進度條本身沿用 shared.css 的 .project-bar，
+   不另做一支；pct／amt 兩個文字樣式因為分屬不同元件而各留一份，若之後第三處
+   再出現同樣需求，應把這組 goal cell 抽成共用元件而不是再複製一次。 */
+.ztor-table__goal { display: flex; flex-direction: column; gap: var(--sp-4); min-width: 0; }
+.ztor-table__goal-pct {
+  color: var(--foreground);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-14);
+  line-height: var(--lh-none);
+  font-variant-numeric: tabular-nums;
+}
+.ztor-table__goal-amt {
+  margin-top: var(--sp-4);
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+  line-height: var(--lh-none);
+}
+
+.ztor-table__state--error { color: var(--destructive); }
+.ztor-table__state--warning { color: var(--status-warning-ink); }
+
+/* ── .ztor-table--truncate：一律單行，超出就點點點（2026-07-31 使用者裁示） ──
+   做法是給名稱欄 `max-width: 0` ＋ `width: 100%`：在 table-layout: auto 下，
+   這一格會吃掉其他欄取完自然寬度後剩餘的空間，內容超過就被 ellipsis 收掉，
+   而不是把整張表撐寬去觸發橫向捲動。
+   不用 table-layout: fixed，是因為那會一併改掉站上所有 .ztor-table 的欄寬演算法
+   （收益總帳這類長表靠的正是自然寬度）；作成 modifier 才只影響掛上它的表。 */
+.ztor-table--truncate td,
+.ztor-table--truncate th { white-space: nowrap; }
+.ztor-table--truncate .ztor-table__namecell { width: 100%; max-width: 0; }
+.ztor-table--truncate .ztor-table__mediatext > span,
+.ztor-table--truncate .ztor-table__namecell > span:not(.ztor-table__media) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .ztor-table__row[aria-expanded="true"] td { background: var(--muted); }
 
 .ztor-table__detail[hidden] { display: none; }
@@ -187,22 +260,43 @@
 .ztor-table__media {
   display: flex;
   align-items: center;
-  gap: var(--sp-10);
+  /* 2026-07-31 使用者：間距與縮圖各再大一點點（--sp-10 → --sp-12）。 */
+  gap: var(--sp-12);
   min-width: 0;
 }
+/* 沒有商品圖時退回圖示晶片。`.data-list__icon` 本身是 52px（STYLE-DECISIONS Q20 的
+   清單縮圖標準），放進 media cell 會比 40px 的縮圖大一圈；只在此情境對齊縮圖尺寸，
+   Q20 規範的清單列本身不受影響（2026-07-31）。 */
+.ztor-table__media .data-list__icon { width: var(--zt-thumb-w); height: var(--zt-thumb-h); }
+/* 名稱要兩行（標題＋來源／分類）時的文字包裝：flex item 預設 min-width:auto 不會縮，
+   不歸零的話 ellipsis 永遠不會觸發、表格會被撐寬（2026-07-31）。 */
+.ztor-table__mediatext { min-width: 0; }
 /* Header for a media column — pushes the label past the thumbnail so the column
    title lines up with the row's NAME, not with the image (2026-07-26 使用者)。
-   Offset = cell left padding (--sp-20) + thumb (--sp-32) + media gap (--sp-10).
+   Offset = cell left padding (--sp-20) + thumb (--sp-40) + media gap (--sp-12).
    Specificity is deliberately `.ztor-table thead th.…` so it beats the base
    `.ztor-table thead th` padding without !important. */
 .ztor-table thead th.ztor-table__media-head {
-  padding-left: calc(var(--sp-20) + var(--sp-32) + var(--sp-10));
+  /* 2026-07-31：縮圖改直式後寬度不再等於高度，位移改用同一支 --zt-thumb-w 算，
+     兩者不可能再分岔。 */
+  padding-left: calc(var(--sp-20) + var(--zt-thumb-w) + var(--sp-12));
 }
 
 .ztor-table__thumb {
-  /* 2026-07-26 使用者：縮圖再小一階（36→32）、圓角上一階（--radius-sm 3px → --radius 6px） */
-  width: var(--sp-32);
-  height: var(--sp-32);
+  /* 2026-07-26 使用者：縮圖再小一階（36→32）、圓角上一階（--radius-sm 3px → --radius 6px）
+     2026-07-31 使用者：再大一點點 → 40px（覆蓋上一條的尺寸裁決，圓角維持）。
+     40px 剛好等於資料列的內容高（列高 72 － 上下 --sp-16 內距），所以列高不變、
+     縮圖與整列等高，圖不再顯得縮在中間。間距沒有 36px 的 token，故取上一階 --sp-40。
+     2026-07-31（同日第二輪）使用者：改直式。刻意用「鎖高度、算寬度」而不是把 40px
+     當寬度——40px 是上一條裁決的「與列等高」，一旦當成寬度、高度就變 49.6px，列高
+     會從 72 被頂到 82，整張表跟著變鬆。現在高度仍是 40、列高完全不動，寬度縮成
+     32.3px，直式比例照樣讀得出來。
+     2026-07-31（同日第三輪）使用者「這頁的這些圖大一點」：高度 40 → 56（寬 45.2）。
+     這一次刻意讓列高跟著長（72 → 88）——直式縮圖在 40px 高時只有 32px 寬，作品封面
+     的內容小到看不出是什麼；鎖著列高不放就等於永遠只能給它 32px。收入清單本來就是
+     一頁十來列的閱讀場景，列高多 16px 換到能辨識的封面，這筆划算。 */
+  height: var(--zt-thumb-h);
+  width: var(--zt-thumb-w);
   flex: none;
   border-radius: var(--radius);
   background: var(--muted);
