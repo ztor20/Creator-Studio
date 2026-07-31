@@ -149,14 +149,19 @@
        之後，粉絲真正拿到的東西——先定義給什麼（Benefits）、再決定誰進得來並
        把東西放進去（Media Vault）。放在分級設定之前，因為它跟權益是同一件事
        的兩半，分級設定則是門檻本身的計算規則。 */
+    /* 2026-07-31 使用者裁決：粉絲分析改名「粉絲總覽」並移到第一位，原本的
+       「總覽」（粉絲名冊）改名「粉絲圈」。先看整體樣貌、再進到一個一個人，
+       所以總覽在前、名冊在後；兩者原本都叫「總覽」會撞名，故名冊改叫粉絲圈。 */
     { key: "nav.fans", icon: "users", panel: [
+      { href: "fan-analytics.html",    icon: "globe",     titleKey: "nav.fans-audience", descKey: "nav.fans-audience-sub" },
       { href: "fans-crm.html",         icon: "users",     titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
-      { href: "tier-benefits.html",    icon: "gift",      titleKey: "nav.fans-benefits", descKey: "nav.fans-benefits-sub" },
       { href: "media-vault.html",      icon: "key",       titleKey: "nav.fans-vault",    descKey: "nav.fans-vault-sub" },
-      { href: "tier-settings.html",    icon: "sliders",   titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
       { href: "brand-campaigns.html",  icon: "handshake", titleKey: "nav.brandcmp",      descKey: "nav.brandcmp-sub" },
-      { href: "fan-analytics.html",         icon: "globe",     titleKey: "nav.fans-audience", descKey: "nav.fans-audience-sub" },
-    ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html"] },
+    ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html",
+               /* 2026-07-31：分級權益／分級設定併進粉絲管理的「粉絲分級設定」分頁，
+                  兩頁自導覽移除但檔案保留（見各檔頭的墓碑註解）。仍列在 match 裡，
+                  舊連結或書籤打開時側欄還會亮在「粉絲」這一組、不會失去定位。 */
+               "tier-benefits.html", "tier-settings.html"] },
     /* Earnings 維持平鋪單頁（2026-07-31 使用者裁決）：一度拆成「收入總覽／Ztor 收入」
        兩個下拉目的地，後來併回一頁、版稅改當一個分頁。不用全頁 filter 的理由——
        filter 的前提是每個值對每個視圖都成立，這裡不成立：站外 × 項目收益／提款／

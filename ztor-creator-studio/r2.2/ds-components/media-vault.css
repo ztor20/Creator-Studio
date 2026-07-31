@@ -36,6 +36,10 @@
   gap: var(--sp-24);
   align-items: start;
 }
+/* [hidden] 要贏過 display:grid（demo A 在總覽與詳情之間切換靠它）。 */
+.vault-layout[hidden] { display: none; }
+/* 沒有清單欄的版型（demo A／B）：主欄吃滿整個寬度。 */
+.vault-layout--norail { grid-template-columns: minmax(0, 1fr); }
 
 /* ── 側欄 ──────────────────────────────────────────────── */
 .vault-rail {
@@ -65,23 +69,48 @@
 }
 .vault-rail__count { font-variant-numeric: tabular-nums; letter-spacing: 0; }
 
-/* 檢視器：整支功能的簽名互動。選一個分級，側欄立刻把該分級打不開的
-   庫房壓暗——「我設的這組門，從粉絲那一側看起來是什麼樣子」一眼看完。 */
+/* 檢視器那一列：整支功能的簽名互動。選一個分級，整頁換成那一級粉絲看到的樣子——
+   側欄把打不開的庫房壓暗、主欄把打不開的那座蓋上遮罩。
+
+   2026-07-31 使用者裁示（三輪）：作用範圍是整頁，所以先從側欄的 .vault-rail__head
+   搬走；再從頁首動作列搬到這裡——自成一列、橫跨在庫房與內容的正上方，靠右對齊。
+   三個位置的差別是它被讀成什麼：在側欄是清單篩選器，在頁首動作列是一顆按鈕，在
+   這裡才是「以下所有東西都受這個角度影響」。靠右是跟下面主欄的「分享權限」共用
+   同一條右邊界；左邊留白，不跟側欄的「庫房」標題搶第一眼。
+
+   曾經在下拉旁邊寫一句白話現況（這一級打得開幾座），第三輪裁示撤掉：側欄逐列標
+   「打不開」、主欄蓋遮罩、下拉自己轉品牌橘，狀態已經寫在畫面上，再補一句是重複。
+   這一列因此只是版面，不上底色——內容靠右之後，整條橫幅上色會變成一大片空的色塊。
+   「回到我的視角」留著、排在下拉左邊：離開的路要一直在，但下拉是這一列的主角，
+   不讓按鈕把它從最右邊擠開。 */
+.vault-lens {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-8);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-16);
+}
+.vault-lens [data-vault-lens-reset] { flex: none; }
+
+/* 高度吃 --control-h-sm（36px）＝ .btn 的實際預設，跟同列的「回到我的視角」對齊；
+   min-width 讓標籤在五個選項之間切換時不會抽動。 */
 .vault-viewer {
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  padding: var(--sp-8) var(--sp-10);
+  height: var(--control-h-sm);
+  padding: 0 var(--sp-10);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--muted);
 }
-.vault-viewer__icon { color: var(--muted-foreground); flex: none; }
+.vault-viewer__icon { color: var(--muted-foreground); flex: none; display: inline-flex; }
 .vault-viewer__icon .ztor-icon { width: 15px; height: 15px; }
 .vault-viewer .select {
   flex: 1;
-  min-width: 0;
-  height: var(--control-h-xs);
+  min-width: 178px;
+  height: 100%;
   border: 0;
   background: transparent;
   padding: 0 var(--sp-18) 0 0;
@@ -186,19 +215,24 @@
 }
 .vault-rail__new:hover { border-color: var(--muted-foreground); color: var(--foreground); }
 .vault-rail__new .ztor-icon { width: 15px; height: 15px; }
+/* [hidden] 必須蓋過上面的 display:flex，否則按鈕原地變成輸入欄時它藏不掉，會變成
+   按鈕與輸入欄上下並排（UA 的 [hidden]{display:none} 特異度輸給 .vault-rail__new）。
+   同 alert.css／button.css／badge.css／media-vault 的 .vault-gate 的處理。 */
+.vault-rail__new[hidden] { display: none; }
 
 /* 就地新增：不開 modal。建立庫房只有一個必填欄位（名稱），把整個畫面
    蓋掉去問一個字，是把中斷當成儀式。 */
+/* 新庫房的名字欄＝「新增庫房」那顆鈕原地變的（2026-07-31 使用者裁決）。按下去之後
+   那顆鈕就沒有第二個用途，留著它、旁邊再長一格，等於同一件事佔兩格；原地替換也讓
+   打字的位置＝剛才按下去的位置。右邊的叉叉是看得見的退路（Esc 與失焦都是隱形的）。
+   這一列不畫外框：輸入欄本身就是 .input，邊框與聚焦光暈由元件負責。 */
 .vault-rail__draft {
   display: flex;
   align-items: center;
   gap: var(--sp-6);
-  padding: var(--sp-6);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-lg);
-  background: var(--card);
 }
-.vault-rail__draft .input { height: var(--control-h-sm); font-size: var(--fs-13); }
+.vault-rail__draft .input { flex: 1; min-width: 0; font-size: var(--fs-13); }
+.vault-rail__draft-x { flex: none; }
 
 /* ── 主欄 ──────────────────────────────────────────────── */
 .vault-main { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-16); }
@@ -230,9 +264,32 @@
    左：解鎖條件（可移除的 chips ＋ 新增）
    右：觸及讀數（一句話帶一個大數字）＋ 分級覆蓋條
    兩欄之間有一道細分隔線——它們是同一件事的因與果。 */
+/* 「誰進得來」吸頂（2026-07-31 使用者裁示）。這是全頁唯一的即時回饋——改一條
+   條件，數字當場變——所以往下捲去改條件、看內容時它要一直在。
+
+   為什麼它必須自己一塊、不能留在門條卡片裡：`position: sticky` 只在自己的父層
+   還在畫面上時有效，包在門條裡就會跟著門條一起捲走。現在它是 .vault-body 的直接
+   子元素，吸附範圍因此涵蓋整個內容區。
+   top 78px ＝ 與側欄 .vault-rail、settings 側欄同一個貼頂高度（頂列之下）。 */
+.vault-reach {
+  position: sticky;
+  top: 78px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  padding: var(--sp-16) var(--sp-18);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+
+/* 門條改單欄（2026-07-31）：讀數搬出去吸頂之後，這裡只剩「怎麼進得來」的設定，
+   並排的理由（左因右果）已經不存在，各佔一整行讀起來更直。 */
 .vault-door {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 288px;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-20);
   padding: var(--sp-16) var(--sp-18);
   border: 1px solid var(--border);
@@ -241,27 +298,96 @@
   box-shadow: var(--shadow-card);
 }
 .vault-door__col { min-width: 0; display: flex; flex-direction: column; gap: var(--sp-10); }
-.vault-door__col--reach {
-  padding-left: var(--sp-20);
-  border-left: 1px solid var(--border);
-}
+/* 這一頁的區塊標題：「解鎖條件」「誰進得來」「已發出的鑰匙」「這座庫房裡」共用同
+   一個 class（名字帶 __label 是歷史遺留，實際角色是標題）。
+
+   2026-07-31 使用者裁示改成標題該有的字：原本是 12px、全大寫、加字距、muted 色的
+   「欄位標籤」規格——那是用來標一個輸入框的，不是用來分節的。這四個各自帶起下面
+   一整塊內容，是標題，所以改吃站上卡片標題的既有規格（`.card__title`：Satoshi
+   標題體 18px、Regular、前景色），全站的區塊標題長得一樣。
+   圖示跟著放大到 16px，維持 muted 色——它是分類記號，不跟標題搶字重。 */
 .vault-door__label {
   display: flex;
   align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-12);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  gap: var(--sp-8);
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-regular);
+  color: var(--foreground);
+}
+.vault-door__label .ztor-icon { width: 16px; height: 16px; color: var(--muted-foreground); }
+
+/* ── 進得來的方法（2026-07-31）──────────────────────────
+   一個 .vault-door__group ＝ 一種進得來的方法；裡面的條件要一起達成，
+   方法與方法之間是「或是」——任何一種達成就進得來。
+
+   漸進顯示：只有一種方法時不畫框、不出現「或是」，畫面跟這個功能出現之前
+   一模一樣；多一種方法才長出框線與分隔。沒用到的人不必先看懂它。 */
+.vault-door__rules { display: flex; flex-direction: column; align-items: stretch; gap: var(--sp-8); }
+.vault-door__chips { display: flex; flex-wrap: wrap; gap: var(--sp-6); align-items: center; }
+.vault-door__group { display: flex; flex-direction: column; gap: var(--sp-6); }
+/* 多種方法時才有的框：只夠把「這幾條是一夥的」圈出來，不加底色（加了會變成
+   卡中卡）。 */
+.vault-door__group--boxed {
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+/* 「這些要一起達成」：兩條以上才出現的小字說明。不寫「且」「AND」——直接說
+   會發生什麼事，不要求讀的人先學會邏輯符號。 */
+.vault-door__all {
+  font-size: var(--fs-11);
   color: var(--muted-foreground);
 }
-.vault-door__label .ztor-icon { width: 13px; height: 13px; }
 
-.vault-door__rules { display: flex; flex-wrap: wrap; gap: var(--sp-6); align-items: center; }
+/* 「或是」分隔：一條線穿過、中間留字。用線而不是只放一個字，是因為要讓人看出
+   它切開的是上下兩整塊，不是又一個條件晶片。 */
+.vault-door__sep {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.vault-door__sep::before,
+.vault-door__sep::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* 「多一種進得來的方法」比「再加一個」低一階：加條件是每天在做的事，多開一種
+   方法是偶爾才需要的，兩顆長得一樣會讓人分不出哪一顆是主要的路。 */
+.vault-door__addgroup {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: var(--fs-12);
+  display: inline-flex; align-items: center; gap: var(--sp-4);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing);
+}
+.vault-door__addgroup:hover { color: var(--foreground); }
+.vault-door__addgroup .ztor-icon { width: 12px; height: 12px; }
+
 .vault-door__any {
   font-size: var(--fs-12);
   color: var(--muted-foreground);
   margin-top: var(--sp-2);
+}
+/* 條件的細則（什麼時候重新判定、哪幾類是永久的）。2026-07-31 從內容區底部的
+   info-banner 搬上來：它回答的是上面那幾張 chip 的問題，答案要貼著問題放。
+   降一階墨色並推到欄位底部——是註腳，不是又一條規則。 */
+.vault-door__fine {
+  margin: auto 0 0;
+  padding-top: var(--sp-10);
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
 }
 
 /* 條件 chip：沿用 .chip / .chip--removable，這裡只補圖示與動詞的排版。 */
@@ -295,8 +421,8 @@
   font-variant-numeric: tabular-nums;
 }
 .vault-door__of { font-size: var(--fs-13); color: var(--foreground-muted); }
-.vault-door--empty .vault-door__num { color: var(--destructive); }
-.vault-door--empty .vault-door__col--reach { border-left-color: color-mix(in srgb, var(--destructive) 40%, var(--border)); }
+.vault-reach.is-shut .vault-door__num { color: var(--destructive); }
+.vault-reach.is-shut { border-color: color-mix(in srgb, var(--destructive) 40%, var(--border)); }
 
 /* 分級覆蓋條：四段，段寬＝該分級人數佔比，填色＝該分級被涵蓋的比例。
    這不是裝飾用的量條——每一格都是集合運算的結果，回答的是「進得來的
@@ -395,7 +521,20 @@
 }
 
 /* ── 內容格 ────────────────────────────────────────────── */
-.vault-gridwrap { display: flex; flex-direction: column; gap: var(--sp-10); }
+/* 內容區整塊框起來（2026-07-31 使用者裁示），規格與門條 .vault-door 同一套：1px
+   邊、--radius-xl、卡片底、shadow-card。主欄因此是兩張並列的卡——上面回答「誰進
+   得來」，下面回答「裡面有什麼」——而不是一張卡加一段裸內容。
+   注意這跟「主欄不做成一張 .card」不衝突：兩張是兄弟，包成一張才會變卡中卡。 */
+.vault-gridwrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  padding: var(--sp-16) var(--sp-18);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
 .vault-gridbar {
   display: flex;
   align-items: center;
@@ -403,7 +542,9 @@
   gap: var(--sp-12);
   flex-wrap: wrap;
 }
+.vault-gridbar__right { display: flex; align-items: center; gap: var(--sp-10); }
 .vault-gridbar__meta { font-size: var(--fs-12); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.vault-gridbar__meta[hidden] { display: none; }
 
 /* ── 一個投放區、三個分區 ────────────────────────────────
    2026-07-29 使用者裁示：上傳一顆按鈕收所有媒體，但顯示要分成三區。
@@ -416,8 +557,33 @@
      影片 → 16:9（影格的原生比例，強塞成方形是把影片當縮圖）
      音檔 → 清單列，不是格子。聲音沒有畫面，一個裝著文字的方塊是最差的
             容器；一列「播放 · 曲名 · 長度」才是這個媒介本來的樣子。 */
-.vault-drop { margin-bottom: var(--sp-4); }
-.vault-drop .upload-tile { width: 100%; min-height: 104px; border-radius: var(--radius-lg); }
+/* 上傳入口：空的與有內容都是同一塊方框（2026-07-31 使用者裁示，不縮成標題列上的
+   小按鈕）。方框比按鈕大，但它同時是拖放的目標——把目標畫小等於把最省事的那條路
+   藏起來。有內容時矮一階，讓位給下面真正的素材。gap 加大讓圖示列站得出來。 */
+.vault-empty { width: 100%; min-height: 200px; gap: var(--sp-8); border-radius: var(--radius-lg); }
+.vault-empty--filled { min-height: 148px; }
+
+/* 收哪三種，用圖示講。三個並排＝一眼數得出來是三種，比一句把三種念過一遍好讀；
+   放在標題與「怎麼放進來」那句之間，順序是「這裡是空的 → 可以放這三種 → 這樣放」。 */
+.vault-empty__kinds {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin: var(--sp-2) 0;
+}
+.vault-empty__kind {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  height: 26px;
+  padding: 0 var(--sp-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--foreground-muted);
+  font-size: var(--fs-12);
+}
+.vault-empty__kind .ztor-icon { width: 14px; height: 14px; color: var(--muted-foreground); }
 
 .vault-group { display: flex; flex-direction: column; gap: var(--sp-10); }
 .vault-group + .vault-group { margin-top: var(--sp-20); }
@@ -441,14 +607,9 @@
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
-.vault-group__empty {
-  font-size: var(--fs-12);
-  color: var(--muted-foreground);
-  padding: var(--sp-4) 0 var(--sp-8);
-}
-/* 空的分區留在畫面上（只留一行字）：創作者要看得見這座庫房有三種收納格，
-   否則丟一個音檔進來會不知道它去了哪裡。 */
-.vault-group--empty .vault-group__head { border-bottom-color: transparent; }
+/* .vault-group__empty / .vault-group--empty 已退場（2026-07-31 使用者裁決）：
+   空的分區不再出現在畫面上——三塊「這裡沒有東西」是圖三那片雜亂的主因。
+   「東西會被分到哪一區」改由空庫房的 .vault-empty 講一次，之後分區有內容才長出來。 */
 
 .vault-grid {
   display: grid;
@@ -726,16 +887,6 @@
 /* ── 窄版 ──────────────────────────────────────────────── */
 @media (max-width: 1080px) {
   .vault-door { grid-template-columns: minmax(0, 1fr); gap: var(--sp-14); }
-  .vault-door__col--reach {
-    padding-left: 0;
-    padding-top: var(--sp-14);
-    border-left: 0;
-    border-top: 1px solid var(--border);
-  }
-  .vault-door--empty .vault-door__col--reach {
-    border-left-color: var(--border);
-    border-top-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
-  }
 }
 /* ── 上鎖遮罩 ──────────────────────────────────────────
    「以某個分級檢視」時，那一級打不開的庫房：門條與內容整塊打模糊，蓋上
@@ -763,6 +914,10 @@
   user-select: none;
 }
 
+/* [hidden] 必須蓋過下面的 display:flex，否則沒上鎖的庫房也會被這張 inset:0 的
+   遮罩罩住（暗底照樣蓋上去），連門條都點不到（UA 的 [hidden]{display:none}
+   特異度輸給 .vault-gate）。同 alert.css／button.css／badge.css 的處理。 */
+.vault-gate[hidden] { display: none; }
 .vault-gate {
   position: absolute;
   inset: 0;
@@ -820,14 +975,35 @@
   color: var(--muted-foreground);
 }
 .vault-gate__label .ztor-icon { width: 13px; height: 13px; }
+/* 遮罩上的條件改直排（2026-07-31 分組之後）：橫排時「A 或 B 且 C」會斷在任意
+   位置，讀的人無從得知括號在哪。一組一行、「且」自己一行，結構就是版面本身。 */
 .vault-gate__rules {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: var(--sp-6);
 }
 .vault-gate__rules .ztor-icon { width: 13px; height: 13px; }
 .vault-gate__rule-verb { color: var(--muted-foreground); }
+/* 遮罩上的條件是唯讀的，連接詞用文字寫出來就夠。一種方法佔一行、同一行的條件
+   用「＋」串起來，行與行之間的「或是」自己一行並加重一階——結構靠版面分開，
+   讀的人不必自己補括號、也不必先學會什麼是「且」。 */
+.vault-gate__group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-6);
+}
+.vault-gate__join {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.vault-gate__join--or {
+  color: var(--foreground-muted);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.08em;
+}
 .vault-gate__foot {
   margin: 0;
   font-size: var(--fs-12);
@@ -845,6 +1021,13 @@
   .vault-grid { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); }
 }
 
+/* 手機：檢視器撐滿一行。這個寬度沒有靠右可言，下拉自己就是整列。 */
+@media (max-width: 640px) {
+  .vault-lens { align-items: stretch; flex-direction: column; }
+  .vault-lens .vault-viewer { width: 100%; }
+  .vault-lens [data-vault-lens-reset] { align-self: flex-start; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vault-row,
   .vault-door__seg-fill,
@@ -853,4 +1036,102 @@
   .vault-tile__act,
   .vault-rail__new,
   .vault-door__add { transition: none; }
+}
+
+/* ============================================================
+   庫房總覽 ＋ 單一庫房彈窗（2026-07-31 使用者裁決）
+   ------------------------------------------------------------
+   問題：全站導覽是左欄，庫房清單又是左欄，兩條並排很擠。庫房清單天生是垂直的
+   （縮圖＋名稱＋內容數＋鑰匙數），轉成橫排塞不下，所以解法不是把它轉向，是讓它
+   不要跟主內容同時出現。
+
+   定案：頁面只放總覽卡片牆；點一張卡，那座庫房開在彈窗裡。彈窗內沒有全站導覽，
+   所以清單可以留在左邊——只有一條左欄，並排的問題就不存在了，換庫房也不必關掉
+   彈窗。（探索過的另外兩種：只留標題旁的切換下拉，看不到全部庫房的概況；把全站
+   導覽改走頂列，那是全站偏好，為單一頁面改它本末倒置。）
+   ============================================================ */
+
+/* ── 總覽卡片牆 ────────────────────────────────────────────
+   側欄 276px 擠著的封面在這裡可以放大——「哪座門開得最大」反而比清單更
+   一眼看得出來，而那正是這一頁想講的事。 */
+.vault-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-16);
+}
+.vault-ovcard {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--easing);
+}
+.vault-ovcard:hover { border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+.vault-ovcard:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.vault-ovcard__cover {
+  aspect-ratio: var(--img-portrait, 750 / 930);
+  max-height: 168px;
+  background: var(--muted);
+  display: grid; place-items: center;
+  color: var(--muted-foreground);
+  overflow: hidden;
+}
+.vault-ovcard__cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vault-ovcard__cover .ztor-icon { width: 22px; height: 22px; }
+.vault-ovcard__body { display: flex; flex-direction: column; gap: var(--sp-6); padding: var(--sp-14) var(--sp-14) var(--sp-16); }
+.vault-ovcard__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  color: var(--foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vault-ovcard__meta { font-size: var(--fs-11); color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.vault-ovcard__reach {
+  display: flex; align-items: baseline; gap: var(--sp-6);
+  font-size: var(--fs-12); color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+.vault-ovcard__num { font-family: var(--font-display); font-size: var(--fs-22); color: var(--foreground); letter-spacing: -0.4px; }
+.vault-ovcard.is-locked { opacity: 0.42; }
+.vault-ovcard.is-locked .vault-ovcard__cover img { filter: grayscale(1); }
+.vault-ovcard--new {
+  align-items: center; justify-content: center;
+  min-height: 200px;
+  gap: var(--sp-8);
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+}
+/* 新增庫房的名字欄就地長在那張虛線卡裡，所以那張卡要能收下一列輸入。 */
+.vault-ovcard--new .vault-rail__draft { width: 100%; padding: 0 var(--sp-14); }
+
+/* ── 單一庫房彈窗 ──────────────────────────────────────────
+   外殼沿用 .embed-modal（同一層 z-index 80、同一張 backdrop），只換尺寸與內部
+   捲動：內容是完整的一座庫房，不是一段嵌入碼。 */
+.vault-modal__sheet { width: min(1320px, 100%); height: min(940px, 100%); }
+/* 標題列放的是庫房名字（專有名詞），不跟著站上「小標全大寫」的慣例走——
+   「未發行 Demo 與分軌」被轉成全大寫會變成另一個字。 */
+.vault-modal__sheet .embed-modal__title { text-transform: none; font-size: var(--fs-18); }
+.vault-modal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sp-20) var(--sp-20) var(--sp-24);
+}
+/* 彈窗裡的捲動容器是 .vault-modal__body，不是頁面——側欄與讀數的貼頂高度因此
+   歸零（頂上已經有彈窗自己的標題列，不需要再讓開全站頂列的 78px）。 */
+.vault-modal__body .vault-rail { top: 0; }
+.vault-modal__body .vault-reach { top: 0; }
+
+@media (max-width: 900px) {
+  .vault-modal__sheet { height: 100%; }
+  .vault-modal__body { padding: var(--sp-14); }
 }

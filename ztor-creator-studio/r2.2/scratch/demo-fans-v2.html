@@ -1,0 +1,709 @@
+<!doctype html>
+<!-- DEMO ONLY（scratch，不進發版／不部署）：粉絲圈吃下「分級權益」與「分級設定」之後的
+     版面（第二版，依 2026-07-31 討論定案）。
+
+     結構＝三個頁籤，按主題分而不是按動作分：
+       粉絲          — 排行榜（誰是誰）
+       名人堂        — 歷史高貢獻（唯讀，不隨現時分級變動）
+       粉絲分級設定  — 組成圓餅 ＋ 設定概覽 ＋ 權益概覽，各自「編輯」開 popup
+
+     刻意的三件事：
+       · 提示只出現在整頁最上方（r2.2 慣例），不插在內容中間
+       · 概覽只能看，改都在 popup 裡完成 → 頁面本身沒有儲存狀態
+       · 粉絲組成不給編輯鈕：它是分級的結果、不是設定
+
+     側欄是真的（沿用 js/sidebar.js 渲染），但整條關掉點擊——這是版面 demo，
+     不是可用的原型。 -->
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 粉絲圈三頁籤佈局</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<script>
+  /* i18n.js 的本機預設語言是英文，而且會記在 localStorage。這頁的內容全是中文寫死的，
+     側欄若跟著跑成英文，整頁會變成中英夾雜、看不出真實觀感。載入前先把語言鎖成 zh-Hant。
+     只影響這份 demo，不動使用者原本的偏好以外的東西。 */
+  try { localStorage.setItem('ztor-r21-lang', 'zh-Hant'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/benefit-matrix.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* 側欄整條關掉點擊：這是版面 demo，不是可用原型。 */
+  .app-sidebar, .app-topbar { pointer-events: none; }
+
+  /* 概覽卡的四欄骨架。三塊（組成／設定／權益）共用同一組欄位置，
+     四個等級在三塊裡都落在同一個水平位置，視線才能直接往下走一整欄。 */
+  .ov { display: grid; grid-template-columns: 132px repeat(4, minmax(0, 1fr)); gap: var(--sp-8); align-items: center; }
+  /* 整列的那塊（粉絲權益）欄名可以寬一點 */
+  .ov--wide { grid-template-columns: 168px repeat(4, minmax(0, 1fr)); gap: var(--sp-12); }
+  .ov__rowlabel { font-size: var(--fs-13); color: var(--foreground-muted); }
+  .ov__rowlabel small { display: block; font-size: var(--fs-11); color: var(--muted-foreground); margin-top: 2px; }
+  .ov__cell { font-size: var(--fs-13); font-variant-numeric: tabular-nums; }
+  .ov__head { padding-bottom: var(--sp-8); border-bottom: 1px solid var(--border); }
+  .ov__row { padding: var(--sp-10) 0; border-bottom: 1px solid var(--border); }
+  .ov__row:last-child { border-bottom: 0; }
+  .ov__yes { color: var(--status-success); }
+  .ov__no { color: var(--muted-foreground); }
+
+  /* 主塊在左、組成在右（2026-07-31 使用者裁示）。7/3：左邊要排四個等級欄加十列權益
+     再加行為加權與規則；右邊只有一張圓餅＋四列圖例，可以窄。 */
+  .tier-row {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    gap: var(--sp-16);
+    align-items: start;
+  }
+
+  /* 卡內小標。原本寫成 11px 大寫的灰色標籤——那是「欄名」的字級，不是標題的字級，
+     所以讀起來像註解不像分段。改成跟 .card__title 同一支 display 體、小一階（15px），
+     階層才是「卡標題 18 → 段落標題 15 → 內文 13」。 */
+  .ov__subhead {
+    margin: var(--sp-28) 0 var(--sp-2);
+    font-family: var(--font-display);
+    font-size: var(--fs-15);
+    font-weight: var(--fw-regular);
+    letter-spacing: -0.1px;
+    color: var(--foreground);
+  }
+  .ov__subhead:first-of-type { margin-top: var(--sp-16); }
+
+  /* 分頁列與內容之間多留一點（2026-07-31 使用者反饋：貼太近）。
+     .list-toolbar 自己的 margin-bottom 是 8px，那是為了「工作列＋次層篩選列」
+     兩條貼在一起的清單頁；這裡下面接的是內容，需要一個段落級的間距。 */
+  .tabpanel { margin-top: var(--sp-24); }
+  /* 左欄的三塊直向堆疊。 */
+  .tier-stack { display: flex; flex-direction: column; gap: var(--sp-16); min-width: 0; }
+  @media (max-width: 1080px) { .tier-row { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 窄卡裡圓餅改成上下排：420px 左右的寬度塞不下「圓餅＋四欄圖例」並排，
+     圖例的金額欄會先被壓爛。圓餅置中、圖例吃滿整個卡寬最穩。 */
+  /* 右欄只有 ~330px：圓餅置中在上、圖例在下。並排的話圖例的金額欄會被壓爛。 */
+  .compose { display: flex; flex-direction: column; gap: var(--sp-16); }
+  .compose .pie { margin-inline: auto; }
+  .compose__legend { min-width: 0; }
+  .compose .source-row { grid-template-columns: 14px minmax(0, 1fr) auto; row-gap: 2px; }
+  .compose .source-row > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .compose .source-row__pct { grid-column: 2 / -1; font-size: var(--fs-11); }
+
+  .card__head--edit { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-16); }
+  .card__head--edit .card__title { margin: 0; }
+  .card__sub { font-size: var(--fs-13); color: var(--foreground-muted); margin: var(--sp-4) 0 0; }
+
+  /* 這兩個 popup 裝的是五欄矩陣，站上 .payout-dialog 預設的 620px 會把最後一欄
+     擠到折行（「無門檻」被拆成兩行）。放寬到 880px——真要做的話這應該是
+     .payout-dialog 的一個寬版變體，不是頁面覆寫，但 demo 先就地放寬。 */
+  [data-modal] .payout-dialog { max-width: 880px; width: min(880px, calc(100vw - var(--sp-40))); }
+
+  /* 矩陣有 12 列，捲到一半時四個等級的欄頭已經看不到了，就分不出哪一欄是哪一級。
+     欄頭在 popup 裡貼頂。背景要補實色——它會蓋在捲動的列上面。 */
+  [data-modal] .bmx__head {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--popover);
+    padding-top: var(--sp-4);
+  }
+
+  /* popup 內的權益矩陣：欄＝四階，列＝權益。
+     table-layout:fixed 是必要的——不鎖的話欄寬由內容決定，前三階因為有輸入框
+     各撐到 210px，只有開關的「粉絲」欄被擠到 39px、欄名折成兩行。四階必須等寬，
+     這張表才讀得出「往右走權益越來越少」。 */
+  .mx { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .mx th:first-child, .mx td:first-child { width: 30%; }
+  .mx th:not(:first-child), .mx td:not(:first-child) { width: 17.5%; }
+  .mx .amount-field { width: 100%; max-width: 104px; margin-inline: auto; }
+  .mx th, .mx td { padding: var(--sp-10) var(--sp-8); border-bottom: 1px solid var(--border); font-size: var(--fs-13); text-align: center; }
+  .mx th:first-child, .mx td:first-child { text-align: left; }
+  .mx thead th { font-weight: var(--fw-regular); color: var(--muted-foreground); font-size: var(--fs-12); }
+  .mx tbody tr:last-child td { border-bottom: 0; }
+
+  /* .product-list 的欄位版型是各消費頁自己的變體（e-shop 有 --eshop、活動有 --events…），
+     這兩個是本頁的。列高壓到 64px：這兩張表沒有縮圖，沿用 e-shop 的 116px 會空一大半。 */
+  .product-list--fans .product-list__head,
+  .product-list--fans .product-list__row {
+    grid-template-columns: 28px minmax(160px, 1fr) 80px 104px 88px 88px 84px 104px;
+    gap: var(--sp-16);
+  }
+  .product-list--hof .product-list__head,
+  .product-list--hof .product-list__row {
+    grid-template-columns: 28px minmax(200px, 1fr) 88px 148px 104px 104px;
+    gap: var(--sp-16);
+  }
+  .product-list--fans .product-list__row,
+  .product-list--hof .product-list__row { min-height: 64px; padding-block: var(--sp-12); }
+  .product-list--fans .product-list__cell,
+  .product-list--hof .product-list__cell { font-size: var(--fs-13); font-variant-numeric: tabular-nums; }
+
+  .tabpanel[hidden] { display: none; }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+
+    <!-- ① 提示：整頁最上方，在麵包屑之前。有事才出現，沒事整條不存在。 -->
+    <div class="alert-inset" id="fans-alert">
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <span class="alert__title">5 位超級粉絲超過 14 天沒有互動</span>
+          <span class="alert__meta">他們過去 90 天合計消費 $4,180。趁還沒掉級前打個招呼。</span>
+        </div>
+        <a class="alert__cta" href="#" data-goto-roster>查看這 5 位</a>
+        <button class="alert__dismiss" type="button" aria-label="關閉" onclick="this.closest('#fans-alert').remove()">×</button>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- ② 麵包屑 -->
+      <div class="page-crumb">
+        <span>粉絲</span> · <span>粉絲圈</span>
+      </div>
+
+      <!-- ③ 標題 ＋ 右上角其他功能 -->
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">粉絲圈</h1>
+          <div class="page-intro__lede">
+            <p class="page-intro__sub">你的粉絲是誰、他們在哪一級、要怎麼上去、上去有什麼。</p>
+            <a class="page-intro__help" href="#">系統說明</a>
+          </div>
+        </div>
+        <!-- 「其他功能」是我上一版留的佔位，沒有定義內容——已換成粉絲圈真正的頁級動作。
+             原本 fans-crm 頁首有三顆：受眾連結（已變成側欄的「總覽」）、匯出 CSV、群發訊息。
+             群發訊息已經移到分頁列右側（貼著它的對象＝篩出來的那群人），
+             所以頁首只剩匯出。 -->
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button">
+            <i data-lucide="download" class="ztor-icon"></i><span>匯出 CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ④ 統計 bento：整個粉絲圈的體檢數字，三個頁籤共用、切換時不動 -->
+      <div class="bento">
+        <div class="kpi bento--span-3">
+          <div class="kpi__label">活躍粉絲</div>
+          <div class="kpi__value">1,283</div>
+          <div class="kpi__meta">共 1,840 位</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label">流失風險</div>
+          <div class="kpi__value">5</div>
+          <div class="kpi__delta kpi__delta--neg">5 位超級粉絲 &gt;14 天未互動</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label">收入（活躍）</div>
+          <div class="kpi__value">$20,700</div>
+          <div class="kpi__meta">近 90 天</div>
+        </div>
+        <div class="kpi bento--span-3">
+          <div class="kpi__label">平均忠誠點數</div>
+          <div class="kpi__value">642</div>
+          <div class="kpi__delta">較上月 +12</div>
+        </div>
+      </div>
+
+      <!-- ⑤ 頁籤列。標題在它上面——頁籤描述的是「粉絲圈裡面的三種看法」，
+           頁面身分必須先講，這也是站上 e-shop／活動／項目的既有位置。 -->
+      <div class="list-toolbar mt-24">
+        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist">
+          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="roster"><span>粉絲排行榜</span> <span class="tabs__item-count">1,840</span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="hof"><span>名人堂</span> <span class="tabs__item-count">32</span></div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-tab="tiers"><span>粉絲分級設定</span></div>
+        </nav>
+        <div class="list-toolbar__actions" data-actions="roster">
+          <button class="btn btn--icon btn--sm" type="button" aria-label="搜尋"><i data-lucide="search" class="ztor-icon"></i></button>
+          <button class="btn btn--primary btn--sm" type="button"><i data-lucide="send" class="ztor-icon"></i>發訊息</button>
+        </div>
+      </div>
+
+      <!-- ══════ 頁籤一 · 粉絲（排行榜）══════ -->
+      <div class="tabpanel" data-panel="roster">
+        <!-- 無框清單（.product-list）：跟電子商店商品列表同一支元件。
+             欄位版型是本頁自己的 --fans 變體，沿用元件的列高、hover 與分隔線。 -->
+        <section class="product-list product-list--fans" role="table" aria-label="粉絲排行榜">
+          <div class="product-list__head" role="row">
+            <div role="columnheader">#</div>
+            <div role="columnheader">粉絲</div>
+            <div role="columnheader">國家</div>
+            <div role="columnheader">分級</div>
+            <div role="columnheader">忠誠點數</div>
+            <div role="columnheader">消費</div>
+            <div role="columnheader">下一級</div>
+            <div role="columnheader">狀態</div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">1</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Wei Yu-han</div><div class="product-list__meta">yuhan@studio</div></div></div>
+            <div class="product-list__cell" role="cell">台灣</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--orange">核心圈</span></div>
+            <div class="product-list__cell" role="cell">874</div>
+            <div class="product-list__cell" role="cell">$1,420</div>
+            <div class="product-list__cell" role="cell">↗ 92%</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">活躍</span></div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">2</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Ahmed Said</div><div class="product-list__meta">ahmed@hey</div></div></div>
+            <div class="product-list__cell" role="cell">新加坡</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--orange">核心圈</span></div>
+            <div class="product-list__cell" role="cell">812</div>
+            <div class="product-list__cell" role="cell">$1,280</div>
+            <div class="product-list__cell" role="cell">—</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">活躍</span></div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">3</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Lin Yiwen</div><div class="product-list__meta">yiwen@gmail</div></div></div>
+            <div class="product-list__cell" role="cell">台灣</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--info">超級粉絲</span></div>
+            <div class="product-list__cell" role="cell">688</div>
+            <div class="product-list__cell" role="cell">$960</div>
+            <div class="product-list__cell" role="cell">↗ 71%</div>
+            <div class="product-list__cell" role="cell"><span class="badge">14 天未互動</span></div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">4</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Kenji Sato</div><div class="product-list__meta">kenji@mail</div></div></div>
+            <div class="product-list__cell" role="cell">日本</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--info">超級粉絲</span></div>
+            <div class="product-list__cell" role="cell">642</div>
+            <div class="product-list__cell" role="cell">$880</div>
+            <div class="product-list__cell" role="cell">↗ 64%</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">活躍</span></div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">5</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">黃思穎</div><div class="product-list__meta">siying@mail</div></div></div>
+            <div class="product-list__cell" role="cell">香港</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">上榜粉絲</span></div>
+            <div class="product-list__cell" role="cell">318</div>
+            <div class="product-list__cell" role="cell">$430</div>
+            <div class="product-list__cell" role="cell">↗ 42%</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">活躍</span></div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">6</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Ray Wong</div><div class="product-list__meta">ray@mail</div></div></div>
+            <div class="product-list__cell" role="cell">香港</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">上榜粉絲</span></div>
+            <div class="product-list__cell" role="cell">290</div>
+            <div class="product-list__cell" role="cell">$380</div>
+            <div class="product-list__cell" role="cell">↗ 38%</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--success">活躍</span></div>
+          </div>
+        </section>
+        <p class="settings-row__hint" style="margin-top:var(--sp-12)">顯示 6 / 1,840 位 · demo 截斷</p>
+      </div>
+
+      <!-- ══════ 頁籤二 · 名人堂 ══════ -->
+      <div class="tabpanel" data-panel="hof" hidden>
+        <section class="product-list product-list--hof" role="table" aria-label="名人堂">
+          <div class="product-list__head" role="row">
+            <div role="columnheader">#</div>
+            <div role="columnheader">粉絲</div>
+            <div role="columnheader">國家</div>
+            <div role="columnheader">歷史最高等級</div>
+            <div role="columnheader">累計消費</div>
+            <div role="columnheader">加入</div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">1</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Wei Yu-han</div><div class="product-list__meta">yuhan@studio · 台北</div></div></div>
+            <div class="product-list__cell" role="cell">台灣</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--orange">巔峰 · 核心圈</span></div>
+            <div class="product-list__cell" role="cell">$8,940</div>
+            <div class="product-list__cell" role="cell">2024 年起</div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">2</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Ahmed Said</div><div class="product-list__meta">ahmed@hey · 新加坡</div></div></div>
+            <div class="product-list__cell" role="cell">新加坡</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--orange">巔峰 · 核心圈</span></div>
+            <div class="product-list__cell" role="cell">$7,210</div>
+            <div class="product-list__cell" role="cell">2025 年起</div>
+          </div>
+          <div class="product-list__row" role="row">
+            <div class="product-list__cell" role="cell">3</div>
+            <div class="product-list__product" role="cell"><div class="product-list__body"><div class="product-list__title">Lin Yiwen</div><div class="product-list__meta">yiwen@gmail · 台南</div></div></div>
+            <div class="product-list__cell" role="cell">台灣</div>
+            <div class="product-list__cell" role="cell"><span class="badge badge--info">巔峰 · 超級粉絲</span></div>
+            <div class="product-list__cell" role="cell">$5,860</div>
+            <div class="product-list__cell" role="cell">2025 年起</div>
+          </div>
+        </section>
+        <p class="settings-row__hint" style="margin-top:var(--sp-12)">顯示 3 / 32 位 · demo 截斷</p>
+        <!-- 說明句移到表格下方（2026-07-31 使用者裁示）：先看到榜，再讀規則。
+             放在上面會讓每次進來都先讀一段不會變的字。 -->
+        <p class="settings-row__hint" style="margin-top:var(--sp-24)">長期高貢獻粉絲，依其歷史曾達的最高等級排列。唯讀，不隨現時分級變動。</p>
+      </div>
+
+      <!-- ══════ 頁籤三 · 粉絲分級設定 ══════ -->
+      <div class="tabpanel" data-panel="tiers" hidden>
+
+        <!-- 左欄直著疊三塊、右欄放組成（2026-07-31 使用者裁示：是直的不是橫的）。
+             三塊講的是同一件事的三個部分（門檻與權益／加權／規則），直著往下讀；
+             組成是「現在長什麼樣」，放右邊當對照。 -->
+        <div class="tier-row">
+
+        <div class="tier-stack">
+        <!-- 1 · 組織你的粉絲圈 = 四欄表（門檻 ＋ 權益）。卡標題就把這件事講完了，
+             不再另立「分級與權益」小標。行為加權與規則各自獨立成 section（下一列）。 -->
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title">組織你的粉絲圈</h3>
+            <div class="flex-row">
+              <button class="btn btn--ghost btn--sm" type="button" data-open="history">
+                <i data-lucide="history" class="ztor-icon"></i>變更歷史
+              </button>
+              <button class="btn btn--outline btn--sm" type="button" data-open="tiers" data-sec-target="gates">
+                <i data-lucide="pencil" class="ztor-icon"></i>編輯
+              </button>
+            </div>
+          </div>
+          <p class="settings-row__hint" style="margin:0 0 var(--sp-12)">四個分級各自的門檻與解鎖的權益。往下走條件遞減、權益也遞減。</p>
+          <div class="ov ov--wide ov__head">
+            <span></span>
+            <span class="ov__cell"><span class="badge badge--orange">核心圈</span></span>
+            <span class="ov__cell"><span class="badge badge--info">超級粉絲</span></span>
+            <span class="ov__cell"><span class="badge badge--success">上榜粉絲</span></span>
+            <span class="ov__cell"><span class="badge">粉絲</span></span>
+          </div>
+          <div class="ov ov--wide ov__row">
+            <span class="ov__rowlabel">前 % 名<small>依忠誠點數排名</small></span>
+            <span class="ov__cell">前 10%</span><span class="ov__cell">前 40%</span><span class="ov__cell">前 75%</span><span class="ov__cell ov__no">無門檻</span>
+          </div>
+          <div class="ov ov--wide ov__row">
+            <span class="ov__rowlabel">最低忠誠點數</span>
+            <span class="ov__cell">800</span><span class="ov__cell">500</span><span class="ov__cell">200</span><span class="ov__cell ov__no">—</span>
+          </div>
+          <div class="ov ov--wide ov__row">
+            <span class="ov__rowlabel">目前人數</span>
+            <span class="ov__cell">154 位</span><span class="ov__cell">359 位</span><span class="ov__cell">475 位</span><span class="ov__cell">295 位</span>
+          </div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">搶先購買 · 週邊與門票</span><span class="ov__cell">7 天</span><span class="ov__cell">3 天</span><span class="ov__cell">1 天</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">週邊折扣</span><span class="ov__cell">20%</span><span class="ov__cell">10%</span><span class="ov__cell">5%</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">VIP 拍賣 · 創作者私人物品</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">VIP 電子商店</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">創作者庫房 · VIP 權限</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">生日語音祝福 · 每年</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">生日影片祝福 · 每年</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">Demo 音檔</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">幕後花絮</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+          <div class="ov ov--wide ov__row"><span class="ov__rowlabel">私人直播</span><span class="ov__cell ov__yes">✓</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span><span class="ov__cell ov__no">—</span></div>
+        </section>
+
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title">行為加權</h3>
+            <button class="btn btn--outline btn--sm" type="button" data-open="tiers" data-sec-target="mult">
+              <i data-lucide="pencil" class="ztor-icon"></i>編輯
+            </button>
+          </div>
+          <p class="settings-row__hint" style="margin:0 0 var(--sp-8)">每種行為換算成忠誠點數時的權重。這一組跨所有分級，不分欄。</p>
+            <div class="settings-row"><div><div class="settings-row__label">購買</div><div class="settings-row__hint">每消費 $1 換算的點數</div></div><div class="settings-row__value">3 ×</div></div>
+            <div class="settings-row"><div><div class="settings-row__label">活動報到</div><div class="settings-row__hint">實體到場一次</div></div><div class="settings-row__value">5 ×</div></div>
+            <div class="settings-row"><div><div class="settings-row__label">互動</div><div class="settings-row__hint">留言、分享、投票</div></div><div class="settings-row__value">1 ×</div></div>
+            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">推薦</div><div class="settings-row__hint">帶進一位新粉絲</div></div><div class="settings-row__value">8 ×</div></div>
+        </section>
+
+
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title">規則</h3>
+            <span class="chip chip--static">唯讀</span>
+          </div>
+          <p class="settings-row__hint" style="margin:0 0 var(--sp-8)">分級系統的運作方式。這些是產品規則——在此呈現，由上游掌管。</p>
+            <div class="settings-row"><div><div class="settings-row__label">雙重門檻升級</div><div class="settings-row__hint">粉絲要同時通過該分級的兩道門檻——前 % 名<b>以及</b>最低忠誠點數——才會升級。</div></div></div>
+            <div class="settings-row"><div><div class="settings-row__label">門檻必須單調</div><div class="settings-row__hint">高分級的要求必須嚴格高於低分級，否則不能儲存。<em>確切驗證邏輯待上游確認。</em></div></div></div>
+            <div class="settings-row"><div><div class="settings-row__label">版本化、不回溯</div><div class="settings-row__hint">每次儲存產生一個不可變更的分級設定版本。舊版本下已賺到的收入與徽章不會被改寫。</div></div></div>
+            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">變更何時生效</div><div class="settings-row__hint">門檻與行為加權於下次每晚重算時生效；權益立即生效。</div></div></div>
+        </section>
+        </div>
+
+        <!-- 2 · 粉絲組成。沒有編輯鈕：它是分級的結果，人數是算出來的。 -->
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title">粉絲組成</h3>
+          </div>
+          <div class="compose">
+            <div class="pie" aria-hidden="true"
+                 style="--pie-size:150px;--pie-stops:
+                   var(--primary) 0 12%,
+                   var(--status-info) 0 40%,
+                   var(--status-success) 0 77%,
+                   var(--foreground-muted) 0 100%"></div>
+            <div class="compose__legend">
+              <div class="source-list">
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span>核心圈 · 12%</span><span class="source-row__amt">154 位</span><span class="source-row__pct">$8,420</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span>超級粉絲 · 28%</span><span class="source-row__amt">359 位</span><span class="source-row__pct">$6,180</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span>上榜粉絲 · 37%</span><span class="source-row__amt">475 位</span><span class="source-row__pct">$4,890</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span>一般粉絲 · 23%</span><span class="source-row__amt">295 位</span><span class="source-row__pct">$1,210</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="settings-row__hint" style="margin-top:var(--sp-12)">只算站內，不含外部平台。</p>
+          <div class="info-banner mt-24">
+            <i data-lucide="trending-up" class="ztor-icon info-banner__icon"></i>
+            <span>最小的 12% 粉絲貢獻了 41% 收入。</span>
+          </div>
+        </section>
+
+        </div><!-- /tier-row -->
+
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ══════ popup · 編輯分級與權益（一個，2026-07-31 使用者裁示合併）══════
+     表單直接照搬「分級權益」那頁的 .bmx 矩陣（js/benefit-matrix.js 的渲染結構），
+     再把「分級設定」的兩道門檻插成矩陣最前面兩列——欄位本來就一樣（同樣四個等級），
+     所以門檻只是多兩列，不需要第二張表。行為加權與規則說明接在矩陣下方。
+     兩個入口鈕開的是同一個 popup，只差捲到哪一段。 -->
+<div class="payout-modal" data-modal="tiers" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="tiers-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="tiers-title">編輯分級與權益</h2>
+      <button class="btn btn--icon" type="button" aria-label="關閉" data-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+
+      <div class="table-scroll">
+        <div class="bmx">
+          <div class="bmx__head"><span class="bmx__head-label">項目</span><span class="bmx__tier"><span class="badge badge badge--orange">核心圈</span><span class="bmx__tier-count">154 位</span></span><span class="bmx__tier"><span class="badge badge badge--info">超級粉絲</span><span class="bmx__tier-count">359 位</span></span><span class="bmx__tier"><span class="badge badge badge--success">上榜粉絲</span><span class="bmx__tier-count">475 位</span></span><span class="bmx__tier"><span class="badge badge">粉絲</span><span class="bmx__tier-count">295 位</span></span></div>
+          <div class="bmx__body"><div class="bmx__row" data-sec="gates"><span class="bmx__label"><span class="bmx__label-text">前 % 名</span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="40"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="75"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="ov__no">—</span></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">最低忠誠點數</span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="800"><span class="amount-field__unit">點</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="500"><span class="amount-field__unit">點</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="200"><span class="amount-field__unit">點</span></span></span><span class="bmx__cell"><span class="ov__no">—</span></span></div><div class="bmx__row" data-sec="perks"><span class="bmx__label"><span class="bmx__label-text">搶先購買 · 週邊與門票</span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="7"><span class="amount-field__unit">天</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="3"><span class="amount-field__unit">天</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit">天</span></span></span><span class="bmx__cell"><span class="ov__no">—</span></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">週邊折扣</span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="20"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="5"><span class="amount-field__unit">%</span></span></span><span class="bmx__cell"><span class="ov__no">—</span></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">VIP 拍賣 · 創作者私人物品</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">VIP 電子商店</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">創作者庫房 · VIP 權限</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">生日語音祝福 · 每年</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">生日影片祝福 · 每年</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">Demo 音檔</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">幕後花絮</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div><div class="bmx__row"><span class="bmx__label"><span class="bmx__label-text">私人直播</span></span><span class="bmx__cell"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span><span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></div></div>
+        </div>
+      </div>
+
+      <div class="bmx__add">
+        <button class="btn btn--outline btn--sm" type="button" data-bmx-add><i data-lucide="plus" class="ztor-icon"></i>新增權益項目</button>
+        <span class="text-sub" style="font-size: var(--fs-12)">新增一次，四個分級都會出現，再各自開關。</span>
+      </div>
+
+      <h3 class="settings-section__title" data-sec="mult" style="font-size:var(--fs-15);margin:var(--sp-24) 0 var(--sp-4)">行為加權</h3>
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-8)">每種行為換算成忠誠點數時的權重。</p>
+      <div class="settings-row"><div><div class="settings-row__label">購買</div><div class="settings-row__hint">每消費 $1 換算的點數</div></div><div class="settings-row__value"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="3" inputmode="numeric"><span class="amount-field__unit">×</span></span></div></div>
+      <div class="settings-row"><div><div class="settings-row__label">活動報到</div><div class="settings-row__hint">實體到場一次</div></div><div class="settings-row__value"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="5" inputmode="numeric"><span class="amount-field__unit">×</span></span></div></div>
+      <div class="settings-row"><div><div class="settings-row__label">互動</div><div class="settings-row__hint">留言、分享、投票</div></div><div class="settings-row__value"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1" inputmode="numeric"><span class="amount-field__unit">×</span></span></div></div>
+      <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">推薦</div><div class="settings-row__hint">帶進一位新粉絲</div></div><div class="settings-row__value"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="8" inputmode="numeric"><span class="amount-field__unit">×</span></span></div></div>
+
+      <div class="info-banner mt-24">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span><b>門檻</b>變更於下次每晚重算時生效；<b>權益</b>立即生效，不等重算。同一顆儲存鈕、兩種時機——這句話的寫法還沒定案。</span>
+      </div>
+      <div class="info-banner mt-8">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span>權益文案會對照平台的 NFT／集資用語規則檢查，避免暗示財務報酬。</span>
+      </div>
+
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-close>捨棄</button>
+      <button class="btn btn--primary" type="button" data-close>儲存</button>
+    </div>
+  </section>
+</div>
+
+<!-- ══════ popup · 變更歷史 ══════
+     來源是原本「規則與版本」那段的 version history。每次儲存產生一個不可變更的版本，
+     舊版本下已賺到的收入與徽章不會被改寫，所以歷史是唯讀的。 -->
+<div class="payout-modal" data-modal="history" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="hist-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="hist-title">變更歷史</h2>
+      <button class="btn btn--icon" type="button" aria-label="關閉" data-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-12)">每次儲存產生一個不可變更的版本。舊版本下已賺到的收入與徽章不會被改寫，所以這份紀錄唯讀。</p>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label">v3 · 2026/05/26 <span class="badge badge--success">目前版本</span></div>
+                <div class="settings-row__hint">把「上榜粉絲」的最低忠誠點數由 250 降到 200；新增權益「私人直播」（僅核心圈）。</div>
+              </div>
+              <div class="settings-row__value">重新分級 34 位粉絲</div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label">v2 · 2026/03/01 </div>
+                <div class="settings-row__hint">行為加權「推薦」由 5× 調到 8×；「週邊折扣」核心圈由 15% 調到 20%。</div>
+              </div>
+              <div class="settings-row__value">重新分級 112 位粉絲</div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label">v1 · 2026/01/12 <span class="badge">初版</span></div>
+                <div class="settings-row__hint">建立四個分級與初始門檻。</div>
+              </div>
+              <div class="settings-row__value">—</div>
+            </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-close>關閉</button>
+    </div>
+  </section>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script src="../js/i18n.js?v=r2.2"></script>
+<script src="../js/sidebar.js?v=r2.2"></script>
+<script>
+(function () {
+  /* 側欄是真的 sidebar.js 渲染的，但這頁不在它的清單裡，所以手動把「粉絲」
+     那一組打開、並把 aria-current 指到粉絲圈，讓 demo 看起來像真的在那一頁。 */
+  setTimeout(function () {
+    document.querySelectorAll('.app-sidebar__group').forEach(function (g) {
+      if (/粉絲|Fans/.test(g.textContent)) {
+        g.setAttribute('data-state', 'open');
+        var t = g.querySelector('.app-sidebar__group-toggle');
+        if (t) t.setAttribute('aria-expanded', 'true');
+      }
+    });
+    document.querySelectorAll('.app-sidebar__sub-link').forEach(function (a) {
+      if ((a.getAttribute('href') || '').indexOf('fans-crm') === 0) a.setAttribute('aria-current', 'page');
+    });
+  }, 0);
+
+  /* 頁籤：切換面板，並讓「發訊息」只在粉絲那一頁出現（動作要貼在它的對象旁邊）。 */
+  var actions = document.querySelector('[data-actions="roster"]');
+  document.querySelectorAll('[data-tab]').forEach(function (t) {
+    t.addEventListener('click', function () {
+      var key = t.getAttribute('data-tab');
+      document.querySelectorAll('[data-tab]').forEach(function (x) {
+        var on = x === t;
+        x.classList.toggle('tabs__item--active', on);
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('[data-panel]').forEach(function (p) {
+        p.hidden = p.getAttribute('data-panel') !== key;
+      });
+      actions.hidden = key !== 'roster';
+    });
+  });
+
+  /* 提示條的 CTA 跳去粉絲那一頁 */
+  var goto = document.querySelector('[data-goto-roster]');
+  if (goto) goto.addEventListener('click', function (e) {
+    e.preventDefault();
+    document.querySelector('[data-tab="roster"]').click();
+  });
+
+  /* popup */
+  function close() {
+    document.querySelectorAll('[data-modal]').forEach(function (m) { m.hidden = true; });
+  }
+  document.querySelectorAll('[data-open]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var m = document.querySelector('[data-modal="' + b.getAttribute('data-open') + '"]');
+      m.hidden = false;
+      /* 一個 popup、兩個入口：捲到按鈕對應的那一段，使用者才不用自己找。 */
+      var sec = b.getAttribute('data-sec-target');
+      var row = sec && m.querySelector('[data-sec="' + sec + '"]');
+      var body = m.querySelector('.payout-dialog__body');
+      body.scrollTop = row ? Math.max(0, row.offsetTop - 120) : 0;
+    });
+  });
+  document.querySelectorAll('[data-modal]').forEach(function (m) {
+    m.addEventListener('click', function (e) {
+      if (e.target === m || e.target.closest('[data-close]')) close();
+    });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+  /* 新增權益項目——照 js/benefit-matrix.js 的 addRow() 做法：就地在矩陣最後長出一列，
+     四個分級的格子已經在那裡（全部關著），名稱欄自動 focus。Enter 存、Esc 取消、
+     失焦視同存。不開第二層 modal：命名一個權益只有一個欄位，而「看到四個空格子」
+     本身就是這張表的說明。全部預設 OFF——權益必須是刻意給的，不能因為新增就自動生效。 */
+  var seq = 0;
+  var bmxBody = document.querySelector('[data-modal="tiers"] .bmx__body');
+  var addBtn = document.querySelector('[data-bmx-add]');
+  if (addBtn) addBtn.addEventListener('click', function () {
+    var existing = bmxBody.querySelector('.bmx__row--new');
+    if (existing) { existing.querySelector('.bmx__name-input').focus(); return; }
+
+    var el = document.createElement('div');
+    el.className = 'bmx__row bmx__row--new';
+    var cells = '';
+    for (var i = 0; i < 4; i++) {
+      cells += '<span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false" disabled></button></span>';
+    }
+    el.innerHTML = '<span class="bmx__label">' +
+      '<input class="input bmx__name-input" maxlength="60" placeholder="權益名稱，例如：專屬語音留言">' +
+      '</span>' + cells;
+    bmxBody.appendChild(el);
+    var input = el.querySelector('.bmx__name-input');
+    input.focus();
+
+    var done = false;
+    function commit() {
+      if (done) return;
+      done = true;
+      var name = input.value.trim();
+      el.remove();
+      if (!name) return;
+      seq++;
+      var row = document.createElement('div');
+      row.className = 'bmx__row';
+      var c = '';
+      for (var j = 0; j < 4; j++) {
+        c += '<span class="bmx__cell"><button class="switch" type="button" role="switch" aria-checked="false"></button></span>';
+      }
+      row.innerHTML = '<span class="bmx__label"><span class="bmx__label-text">' + name +
+        '</span><span class="bmx__own">· 自訂</span></span>' + c;
+      bmxBody.appendChild(row);
+      wireSwitch(row);
+      /* 焦點落在新列最高分級的開關：下一個決定是「誰拿得到」，一個鍵就到。 */
+      row.querySelector('.switch').focus();
+    }
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') { e.preventDefault(); done = true; el.remove(); }
+    });
+    input.addEventListener('blur', commit);
+  });
+
+  function wireSwitch(scope) {
+    scope.querySelectorAll('.switch').forEach(function (sw) {
+      if (sw.disabled || sw.dataset.wired) return;
+      sw.dataset.wired = '1';
+      sw.addEventListener('click', function () {
+        var on = sw.classList.toggle('switch--on');
+        sw.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    });
+  }
+
+  /* 權益開關（demo：點了會動，不存任何東西） */
+  wireSwitch(document);
+
+  if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(document.body);
+})();
+</script>
+</body>
+</html>
