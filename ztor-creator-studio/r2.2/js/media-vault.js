@@ -41,16 +41,17 @@
   };
 
   /* 2026-07-29 使用者裁示：同一顆上傳鈕收所有媒體，但畫面要分三區。
-     三區固定順序、固定存在——就算某一種是空的也顯示空狀態，不整個消失。
      一顆按鈕丟進來的檔案，落地時已經知道自己該站哪一區；創作者不用先
-     決定「這是要放哪一區」再上傳，分類是 MIME 幫他做的，不是他的操作。 */
+     決定「這是要放哪一區」再上傳，分類是 MIME 幫他做的，不是他的操作。
+
+     2026-07-31 使用者裁決修正：分區改成「有東西才長出來」。原本三區固定存在、
+     空的印一句「尚無照片——拖進上面的上傳格」，理由是讓人知道東西會被分到哪；
+     但一座新庫房因此會連續印出四塊「這裡沒有東西」（上傳格＋三個空分區），整頁
+     都在宣告空白。那句教學改由空狀態講一次就好，講完就讓位給真的內容。 */
   var GROUPS = [
-    { kind: "image", icon: "image", title: { en: "Photos", zh: "照片" },
-      empty: { en: "No photos yet — drop some into the upload tile above.", zh: "尚無照片——拖進上面的上傳格就會分類到這裡。" } },
-    { kind: "clip",  icon: "film",  title: { en: "Clips",  zh: "影片" },
-      empty: { en: "No clips yet — drop some into the upload tile above.", zh: "尚無影片——拖進上面的上傳格就會分類到這裡。" } },
-    { kind: "audio", icon: "music", title: { en: "Audio",  zh: "音檔" },
-      empty: { en: "No audio yet — drop some into the upload tile above.", zh: "尚無音檔——拖進上面的上傳格就會分類到這裡。" } }
+    { kind: "image", icon: "image", title: { en: "Photos", zh: "照片" } },
+    { kind: "clip",  icon: "film",  title: { en: "Clips",  zh: "影片" } },
+    { kind: "audio", icon: "music", title: { en: "Audio",  zh: "音檔" } }
   ];
 
   var state = { vaultId: V.vaults[0].id, viewer: "" };
@@ -69,6 +70,60 @@
   function vaultName(v) { return v.custom ? v.custom : V.t(v.name); }
 
   /* ── 側欄 ───────────────────────────────────────────────── */
+  /* ── demo A：庫房總覽卡片牆 ────────────────────────────────
+     側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」比清單更一眼看得出來。 */
+  function renderOverview() {
+    if (!els.overview) return;
+    var html = V.vaults.map(function (v) {
+      var cover = V.cover(v);
+      var reach = state.viewer ? V.reachInTierAll(v, state.viewer) : V.reachAll(v);
+      var locked = !!state.viewer && reach === 0;
+      var c = V.counts(v), parts = [];
+      if (c.image) parts.push(plural(c.image, "photo", "photos", "圖"));
+      if (c.clip)  parts.push(plural(c.clip,  "clip",  "clips",  "片"));
+      if (c.audio) parts.push(plural(c.audio, "audio", "audio",  "音"));
+      return '<button type="button" class="vault-ovcard' + (locked ? " is-locked" : "") +
+          '" data-vault="' + v.id + '">' +
+          '<span class="vault-ovcard__cover">' +
+            (cover ? '<img src="' + cover + '" alt="" loading="lazy">' : icon(v.icon)) +
+          "</span>" +
+          '<span class="vault-ovcard__body">' +
+            '<span class="vault-ovcard__name">' + esc(vaultName(v)) + "</span>" +
+            '<span class="vault-ovcard__meta">' + (parts.join(" · ") || tx("Empty", "尚無內容")) + "</span>" +
+            '<span class="vault-ovcard__reach">' +
+              (locked
+                ? icon("lock") + tx("Locked", "打不開")
+                : '<span class="vault-ovcard__num">' + num(reach) + "</span>" +
+                  tx("fans can open it", "位粉絲打得開")) +
+            "</span>" +
+          "</span>" +
+        "</button>";
+    }).join("");
+    els.overview.innerHTML = html +
+      '<button type="button" class="vault-ovcard vault-ovcard--new" data-vault-new-ov>' +
+        icon("plus") + tx("New vault", "新增庫房") + "</button>";
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.overview);
+  }
+
+  /* ── 單一庫房彈窗 ─────────────────────────────────────────
+     開／關只動 hidden 與焦點，不換網址：它是同一頁的下一層，不是另一個頁面。 */
+  function openVault(id, from) {
+    state.vaultId = id;
+    lastReach = null;
+    lastFocus = from || document.activeElement;
+    render();
+    els.modal.hidden = false;
+    document.body.style.overflow = "hidden";
+    var close = els.modal.querySelector("[data-vault-modal-close]");
+    if (close) close.focus();
+  }
+  function closeVault() {
+    if (els.modal.hidden) return;
+    els.modal.hidden = true;
+    document.body.style.overflow = "";
+    if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  }
+
   function renderRail() {
     var html = V.vaults.map(function (v) {
       var cover = V.cover(v);
@@ -102,52 +157,97 @@
         "</button>";
     }).join("");
 
-    els.list.innerHTML = html;
+    if (els.list) els.list.innerHTML = html;
     /* 側欄標題列的右側是「這些鑰匙數是對誰算的」的說明——沒開檢視器時是
        庫房數，開了就換成那一級的母體大小，否則 17 這個數字沒有分母。 */
-    if (state.viewer) {
-      var tier = V.tiers.filter(function (x) { return x.key === state.viewer; })[0];
-      els.count.textContent = tierName(state.viewer) + " · " + num(tier.count);
-    } else {
-      els.count.textContent = plural(V.vaults.length, "vault", "vaults", "座");
+    if (els.count) {
+      if (state.viewer) {
+        var tier = V.tiers.filter(function (x) { return x.key === state.viewer; })[0];
+        els.count.textContent = tierName(state.viewer) + " · " + num(tier.count);
+      } else {
+        els.count.textContent = plural(V.vaults.length, "vault", "vaults", "座");
+      }
     }
-    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.list);
+    if (els.list && window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.list);
     else if (window.lucide && window.lucide.createIcons) window.lucide.createIcons({ nameAttr: "data-lucide" });
   }
 
   /* ── 門條 ───────────────────────────────────────────────── */
+  /* 一條條件晶片。移除鈕是每個 chip 自己的按鈕，不是列尾一個共用的垃圾桶
+     ——刪掉「哪一條」必須在按下去之前就確定。座標是「第幾組:第幾條」。 */
+  function ruleChip(r, gi, ri, removable) {
+    var l = V.ruleLabel(r);
+    var text = r.t === "tier"
+      ? '<span class="vault-rule__verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
+      : '<span class="vault-rule__verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
+    return '<span class="chip chip--static' + (removable ? " chip--removable" : "") + ' vault-rule">' +
+      icon(l.icon) + text +
+      (removable
+        ? '<button type="button" class="chip__remove" data-rule-remove="' + gi + ":" + ri + '" ' +
+          'aria-label="' + esc(tx("Remove condition", "移除條件")) + '">' + icon("x") + "</button>"
+        : "") +
+      "</span>";
+  }
+
+  /* 一種進得來的方法。裡面的條件要一起達成，所以兩條以上時在上面寫一句
+     「這些要一起達成」——不用「且」「AND」這種符號式講法，直接說會發生什麼事。 */
+  function doorGroupHtml(g, gi) {
+    var items = g.items || [];
+    var lead = items.length >= 2
+      ? '<div class="vault-door__all">' + tx("Meet all of these", "這些要一起達成") + "</div>"
+      : "";
+    var chips = items.map(function (r, ri) { return ruleChip(r, gi, ri, true); }).join("");
+    return '<div class="vault-door__group' + (items.length >= 2 ? " vault-door__group--boxed" : "") + '">' + lead +
+      '<div class="vault-door__chips">' + chips +
+        '<button type="button" class="vault-door__add" data-rule-add="' + gi + '" ' +
+          'aria-label="' + esc(tx("Add a condition to this way in", "在這一種方法裡再加一個條件")) + '">' +
+          icon("plus") + tx("Add", "再加一個") + "</button>" +
+      "</div>" +
+    "</div>";
+  }
+
+  /* 白話總結。畫面上的框線與「或是」講的是結構，這一句講的是結果——一句話說完
+     誰進得來，不必先看懂上面的排版。 */
+  function doorSummary(f, noKey) {
+    var gs = f.rules || [];
+    var n = V.ruleCount(f);
+    if (!n) {
+      return noKey
+        ? tx("No condition and no key yet — nobody can open this vault.", "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。")
+        : tx("No condition — only fans holding a key get in.", "沒有條件——只有持鑰匙的人進得來。");
+    }
+    if (gs.length > 1) {
+      return tx("Any one of these ways gets a fan in.", "上面任何一種達成，粉絲就進得來。");
+    }
+    if (n === 1) return tx("A fan who meets this gets in.", "達成這個條件，粉絲就進得來。");
+    return tx("A fan must meet all of these to get in.", "上面的條件全部達成，粉絲才進得來。");
+  }
+
   function renderDoor() {
     var f = vault();
-    var rules = f.rules;
+    var gs = f.rules;
     var stats = V.keyStats(f);
     var reach = V.reachAll(f);
     /* 「沒有路進來」＝一條條件都沒有，而且一把有效鑰匙也沒有。只看條件是
-       不夠的：一座沒有條件但發過 NFC 鑰匙的庫房是進得去的，那不是紅字。 */
-    var empty = rules.length === 0 && stats.live === 0;
+       不夠的：一座沒有條件但發過 NFC 鑰匙的庫房是進得去的，那不是紅字。
+       數的是條件總數不是組數——一個空組不算「有條件」。 */
+    var empty = V.ruleCount(f) === 0 && stats.live === 0;
 
-    els.door.classList.toggle("vault-door--empty", empty);
+    /* 「沒有路進來」的紅字標在讀數那一塊上，不在門條上——沒有人進得來是讀數的
+       事實，門條只是它的原因。 */
+    els.reach.classList.toggle("is-shut", empty);
 
-    /* 條件 chips。移除鈕是每個 chip 自己的按鈕，不是列尾一個共用的垃圾桶
-       ——刪掉「哪一條」必須在按下去之前就確定。 */
-    var chips = rules.map(function (r, i) {
-      var l = V.ruleLabel(r);
-      var text = r.t === "tier"
-        ? '<span class="vault-rule__verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
-        : '<span class="vault-rule__verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
-      return '<span class="chip chip--static chip--removable vault-rule">' + icon(l.icon) + text +
-        '<button type="button" class="chip__remove" data-rule-remove="' + i + '" ' +
-        'aria-label="' + esc(tx("Remove condition", "移除條件")) + '">' + icon("x") + "</button></span>";
-    }).join("");
+    /* 框只在「這一種方法有兩個以上條件」時才畫——一個條件就是一個條件，圈起來
+       只是多一層線。「或是」則是有兩種方法就出現，因為那時真的有選擇。 */
+    var multi = gs.length > 1;
+    els.doorRules.innerHTML =
+      gs.map(function (g, gi) { return doorGroupHtml(g, gi); })
+        .join('<div class="vault-door__sep"><span>' + tx("or", "或是") + "</span></div>") +
+      '<button type="button" class="vault-door__addgroup" data-group-add>' + icon("plus") +
+        tx("Another way in", "多一種進得來的方法") + "</button>";
+    els.doorRules.classList.toggle("is-grouped", multi);
 
-    els.doorRules.innerHTML = chips +
-      '<button type="button" class="vault-door__add" data-rule-add>' + icon("plus") +
-      tx("Add condition", "新增條件") + "</button>";
-
-    els.doorAny.textContent = empty
-      ? tx("No condition and no key yet — nobody can open this vault.", "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。")
-      : rules.length === 0
-        ? tx("No condition — only fans holding a key get in.", "沒有條件——只有持鑰匙的人進得來。")
-        : tx("A fan gets in by meeting any one of these.", "粉絲符合以上任一條件即可進入。");
+    els.doorAny.textContent = doorSummary(f, stats.live === 0);
 
     /* 讀數：數字用滾動的，因為它是「我剛剛改了條件」的回饋，不是一個
        靜態指標；跳一下和滾上去，讀起來是兩件事。 */
@@ -191,7 +291,7 @@
       });
     });
 
-    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.door);
+    if (window.ztorIcons && window.ztorIcons.render) { window.ztorIcons.render(els.door); window.ztorIcons.render(els.reach); }
   }
 
   /* 門條裡的鑰匙那一列：一把鑰匙一顆晶片，寫「已領/總數」。
@@ -275,19 +375,15 @@
     "</div>";
   }
 
-  /* 三個分區固定存在、固定順序——空的也顯示空狀態文字，不整個消失。
-     一座新庫房什麼都還沒放，創作者仍要看得見「這裡收音檔、那裡收影片」，
-     否則丟一個音檔進來時不會知道它去了哪裡。 */
+  /* 只長出有東西的分區，順序固定（照片 → 影片 → 音檔）。空的那一種整個不出現。 */
   function groupHtml(items) {
     return GROUPS.map(function (g) {
       var list = items.filter(function (i) { return i.kind === g.kind; });
-      var empty = list.length === 0;
-      var inner = empty
-        ? '<p class="vault-group__empty">' + tx(g.empty.en, g.empty.zh) + "</p>"
-        : g.kind === "audio"
-          ? '<div class="vault-tracks">' + list.map(trackHtml).join("") + "</div>"
-          : '<div class="vault-grid vault-grid--' + g.kind + '">' + list.map(tileHtml).join("") + "</div>";
-      return '<div class="vault-group' + (empty ? " vault-group--empty" : "") + '">' +
+      if (!list.length) return "";
+      var inner = g.kind === "audio"
+        ? '<div class="vault-tracks">' + list.map(trackHtml).join("") + "</div>"
+        : '<div class="vault-grid vault-grid--' + g.kind + '">' + list.map(tileHtml).join("") + "</div>";
+      return '<div class="vault-group">' +
         '<div class="vault-group__head">' +
           '<span class="vault-group__icon">' + icon(g.icon) + "</span>" +
           '<span class="vault-group__title">' + tx(g.title.en, g.title.zh) + "</span>" +
@@ -295,6 +391,36 @@
         "</div>" + inner +
       "</div>";
     }).join("");
+  }
+
+  /* 空庫房的唯一畫面。上傳格本身就是最誠實的空狀態——這一區要的就是「把東西放
+     進來」，所以不另外畫一張空狀態卡再擺一個上傳格，讓同一個方框把話講完：
+     它是說明，也是可以點、可以拖的目標。三種媒體會各自歸位那句教學在這裡講一次，
+     講完之後分區自己會出現，不需要再重複。 */
+  /* 上傳入口。空的與有內容都是同一塊方框（2026-07-31 使用者裁示：不要縮成標題列
+     上的小按鈕），只換標題——空的時候先講「這裡還沒有東西」，有內容之後它就只是
+     「再放一些進來」。方框比按鈕大得多，但它同時是拖放的目標，把目標畫小等於把
+     最省事的那條路藏起來。
+
+     收哪三種用圖示講：三個圖示配三個名字，一眼數得出來是三種、也看得出各自長什麼
+     樣，比一句話把三種念過一遍好讀；剩下的句子只交代怎麼放進來。 */
+  function uploadHtml(isEmpty) {
+    var kinds = GROUPS.map(function (g) {
+      return '<span class="vault-empty__kind">' + icon(g.icon) + tx(g.title.en, g.title.zh) + "</span>";
+    }).join("");
+    return '<div class="vault-empty upload-tile' + (isEmpty ? "" : " vault-empty--filled") +
+        '" data-vault-upload tabindex="0" role="button" ' +
+        'aria-label="' + esc(tx("Add media", "新增內容")) + '">' +
+        '<span class="upload-tile__icon">' + icon("upload") + "</span>" +
+        '<span class="upload-tile__title">' +
+          (isEmpty ? tx("This vault is still empty", "這座庫房還是空的") : tx("Add media", "新增內容")) +
+        "</span>" +
+        '<span class="vault-empty__kinds">' + kinds + "</span>" +
+        '<span class="upload-tile__hint">' +
+          tx("Drop files here or click to pick — each kind lands in its own section.",
+             "拖進來或點一下選檔——每一種會各自分到自己的分區。") +
+        "</span>" +
+      "</div>";
   }
 
   /* ── 主欄標頭與內容格 ───────────────────────────────────── */
@@ -308,23 +434,17 @@
     if (c.image) bits.push(plural(c.image, "photo", "photos", "張圖片"));
     if (c.clip)  bits.push(plural(c.clip,  "clip",  "clips",  "段影片"));
     if (c.audio) bits.push(plural(c.audio, "audio file", "audio files", "個音檔"));
-    els.gridMeta.textContent = bits.length ? bits.join(" · ") : tx("Nothing in here yet", "這裡還沒有東西");
+    /* 空的時候標題列右邊不報數——「0 張圖片」是廢話。上傳入口一律是下面那塊方框，
+       標題列上不再放第二顆新增鈕（2026-07-31 使用者裁示）。拖放整區都吃，綁在
+       [data-vault-grid] 容器上，跟長什麼樣子無關。
 
-    /* 上傳格是真的能收檔的：點擊開檔案選擇器，拖放也吃（整個投放區，不只
-       這個方框）。原型沒有後端，檔案留在瀏覽器記憶體（createObjectURL），
-       重整就沒了——這件事寫在 info-banner 裡，不假裝已經存到雲端。同一顆
-       按鈕收所有媒體，落地後由 MIME 自己分到下面三區，不必先選類型。 */
-    els.grid.innerHTML =
-      '<div class="vault-drop">' +
-        '<div class="upload-tile" data-vault-upload tabindex="0" role="button" ' +
-          'aria-label="' + esc(tx("Add media", "新增內容")) + '">' +
-          '<input type="file" multiple accept="image/*,video/*,audio/*" hidden data-vault-file>' +
-          '<span class="upload-tile__icon">' + icon("upload") + "</span>" +
-          '<span class="upload-tile__title">' + tx("Add media", "新增內容") + "</span>" +
-          '<span class="upload-tile__hint">' + tx("Drop photos, clips or audio — they sort into the sections below", "拖進照片、影片或音檔——會自動分類到下面的分區") + "</span>" +
-        "</div>" +
-      "</div>" +
-      groupHtml(f.items);
+       原型沒有後端，檔案留在瀏覽器記憶體（createObjectURL），重整就沒了——這件事
+       寫在頁尾的原型聲明裡，不假裝已經存到雲端。 */
+    var empty = !f.items.length;
+    els.gridMeta.textContent = bits.join(" · ");
+    els.gridMeta.hidden = empty;
+
+    els.grid.innerHTML = uploadHtml(empty) + (empty ? "" : groupHtml(f.items));
 
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.main);
   }
@@ -347,23 +467,34 @@
     var liveKeys = (f.keys || []).filter(function (k) { return !k.revoked; }).length;
 
     /* 條件在這裡是唯讀的：粉絲看得到門上寫什麼，但門不是他能改的。
-       所以用 chip--static、沒有移除鈕，跟門條那組可編輯的 chips 不同。 */
-    var chips = f.rules.map(function (r) {
-      var l = V.ruleLabel(r);
-      var text = r.t === "tier"
-        ? '<span class="vault-gate__rule-verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
-        : '<span class="vault-gate__rule-verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
-      return '<span class="chip chip--static">' + icon(l.icon) + text + "</span>";
-    }).join("");
+       所以用 chip--static、沒有移除鈕，跟門條那組可編輯的 chips 不同。
+       一種方法一行、同一行裡用「＋」串起來，行與行之間寫「或是」——門上寫的
+       規則怎麼組合，看的人要一眼看懂，不必先學會什麼是「且」。 */
+    var gs = f.rules || [];
+    var chips = gs.map(function (g) {
+      var inner = (g.items || []).map(function (r) {
+        var l = V.ruleLabel(r);
+        var text = r.t === "tier"
+          ? '<span class="vault-gate__rule-verb">' + tx("Tier", "分級") + " ≥ </span>" + esc(tierName(r.v))
+          : '<span class="vault-gate__rule-verb">' + esc(V.t(l.verb)) + " · </span>" + esc(V.t(l.text));
+        return '<span class="chip chip--static">' + icon(l.icon) + text + "</span>";
+      }).join('<span class="vault-gate__join">＋</span>');
+      return '<span class="vault-gate__group">' + inner + "</span>";
+    }).join('<span class="vault-gate__join vault-gate__join--or">' + tx("or", "或是") + "</span>");
 
-    var foot = f.rules.length
-      ? tx("Meet any one of these to open it." + (liveKeys ? " Holding a key also gets you in." : ""),
-           "符合任一條件就打得開。" + (liveKeys ? "持有鑰匙的人也進得來。" : ""))
-      : liveKeys
-        ? tx("No condition on this vault — only fans holding a key get in.",
-             "這座庫房沒有設條件——只有持鑰匙的人進得來。")
-        : tx("No condition and no key yet — nobody can open this vault.",
-             "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。");
+    var n = V.ruleCount(f);
+    var keyLine = liveKeys ? tx(" Holding a key also gets you in.", "持有鑰匙的人也進得來。") : "";
+    var foot = !n
+      ? (liveKeys
+          ? tx("No condition on this vault — only fans holding a key get in.",
+               "這座庫房沒有設條件——只有持鑰匙的人進得來。")
+          : tx("No condition and no key yet — nobody can open this vault.",
+               "還沒有條件、也沒有鑰匙——目前沒有人打得開這座庫房。"))
+      : gs.length > 1
+        ? tx("Any one of these gets you in." + keyLine, "上面任何一種達成就打得開。" + keyLine)
+        : n === 1
+          ? tx("Meet this to open it." + keyLine, "達成這個條件就打得開。" + keyLine)
+          : tx("Meet all of these to open it." + keyLine, "上面的條件全部達成才打得開。" + keyLine);
 
     els.gate.innerHTML =
       '<div class="vault-gate__panel">' +
@@ -372,7 +503,7 @@
         '<p class="vault-gate__sub">' +
           esc(tx("Viewing as " + who + " · nobody at this tier gets in", "正在以「" + who + "」檢視・這一級沒有人進得來")) +
         "</p>" +
-        (f.rules.length
+        (n
           ? '<span class="vault-gate__label">' + icon("key") + tx("Unlock conditions", "解鎖條件") + "</span>" +
             '<div class="vault-gate__rules">' + chips + "</div>"
           : "") +
@@ -382,7 +513,19 @@
     if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.gate);
   }
 
-  function render() { renderRail(); renderDoor(); renderMain(); renderGate(); }
+  /* ── 檢視器那一列 ───────────────────────────────────────────
+     檢視中的狀態不另外寫成一句話（2026-07-31 使用者裁示撤掉）：側欄逐列標「打不開」、
+     主欄蓋遮罩、下拉自己轉橘，畫面已經把狀態說完了。這裡只開關下拉的上色與離開鈕。 */
+  function renderLens() {
+    var on = !!state.viewer;
+    els.viewerWrap.classList.toggle("is-on", on);
+    els.lensReset.hidden = !on;
+  }
+
+  function render() {
+    renderLens(); renderRail(); renderOverview();
+    renderDoor(); renderMain(); renderGate();
+  }
 
   /* ── 分享抽屜：發鑰匙 ───────────────────────────────────────
      一把鑰匙就是一條加密連結。兩個意圖共用同一個物件，只差 uses 的預設值
@@ -550,10 +693,17 @@
     }
   }
 
-  /* ── 條件選單 ───────────────────────────────────────────── */
+  /* ── 條件選單 ─────────────────────────────────────────────
+     pendingGroup ＝ 這次要把條件加進第幾組。由按下「新增條件」的那一顆按鈕決定，
+     選單本身看不到自己是被誰打開的。 */
+  var pendingGroup = 0;
+
   function ruleMenuHtml() {
     var f = vault();
-    var has = function (t, v) { return f.rules.some(function (r) { return r.t === t && r.v === v; }); };
+    /* 只擋「這一組裡已經有的」。同一條件出現在不同組是多餘但無害，擋掉反而會讓
+       人以為系統壞了；同一組裡重複才是真的沒有意義。 */
+    var cur = (f.rules[pendingGroup] && f.rules[pendingGroup].items) || [];
+    var has = function (t, v) { return cur.some(function (r) { return r.t === t && r.v === v; }); };
     var out = '<div class="vault-rulemenu__group" role="presentation">' + tx("Tier", "分級") + "</div>";
     out += V.tiers.map(function (t) {
       var n = V.reach([{ t: "tier", v: t.key }]);
@@ -607,33 +757,60 @@
   }
 
   /* ── 就地新增庫房 ─────────────────────────────────────── */
-  function startDraft() {
-    if (els.rail.querySelector(".vault-rail__draft")) return;
+  /* 2026-07-31 使用者裁決，三輪累積：
+     一、按鈕自己變成輸入欄，不是在按鈕旁邊多長一個。按下「新增庫房」之後那顆鈕就
+        沒有第二個用途了，讓它留在原地當背景、旁邊又冒出一格，等於同一件事佔兩格。
+        原地替換也讓打字的位置＝剛才按下去的位置。
+     二、右邊給一個叉叉可以取消。原本只有 Esc 與「清空後失焦」兩條退路，兩條都是
+        隱形的；反悔是常見動作，要有看得見的出口。
+     三、輸入欄不畫外框：它本身就是 .input，DS 的邊框與聚焦光暈由元件負責。 */
+  function startDraft(anchor) {
+    anchor = anchor || els.newBtn;
+    if (!anchor || document.querySelector(".vault-rail__draft")) return;
+
     var row = document.createElement("div");
     row.className = "vault-rail__draft";
-    row.innerHTML = '<input class="input" type="text" placeholder="' +
-      esc(tx("Vault name", "庫房名稱")) + '" aria-label="' + esc(tx("Vault name", "庫房名稱")) + '">';
-    els.newBtn.insertAdjacentElement("beforebegin", row);
+    row.innerHTML =
+      '<input class="input" type="text" placeholder="' + esc(tx("Vault name", "庫房名稱")) +
+        '" aria-label="' + esc(tx("Vault name", "庫房名稱")) + '">' +
+      '<button type="button" class="btn btn--icon btn--xs vault-rail__draft-x" ' +
+        'aria-label="' + esc(tx("Cancel", "取消")) + '">' + icon("x") + "</button>";
+    anchor.hidden = true;
+    anchor.insertAdjacentElement("afterend", row);
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(row);
+
     var input = row.querySelector("input");
+    var done = false;
     input.focus();
 
+    function close() { done = true; row.remove(); anchor.hidden = false; }
+
     function commit() {
+      if (done) return;
       var name = input.value.trim();
-      row.remove();
+      close();
       if (!name) return;
       var id = "f" + Date.now();
-      /* 新庫房條件為空：預設是「沒有人進得來」，不是「所有人看得到」。 */
-      V.vaults.push({ id: id, icon: "package", custom: name, name: { en: name, zh: name }, note: { en: "", zh: "" }, rules: [], items: [] });
-      state.vaultId = id;
-      lastReach = null;
-      render();
+      /* 新庫房條件為空：預設是「沒有人進得來」，不是「所有人看得到」。
+         插在清單最前面，跟剛才打字的位置同一格——輸入框在最上面、建好的庫房卻
+         跑到第七列，會讓人以為自己按錯了。 */
+      V.vaults.unshift({ id: id, icon: "package", custom: name, name: { en: name, zh: name }, note: { en: "", zh: "" }, rules: [{ items: [] }], items: [] });
+      if (els.modal.hidden) openVault(id); else { state.vaultId = id; lastReach = null; render(); }
       if (window.ztorToast) window.ztorToast.show(tx("Vault created — now set who gets in", "庫房已建立——接著決定誰進得來"), { tone: "success" });
       var add = els.doorRules.querySelector("[data-rule-add]");
       if (add) add.focus();
     }
+
+    /* 叉叉走 mousedown ＋ preventDefault：等到 click 才處理的話，blur 會先跑、
+       已經把名字送出去了——按取消卻建出一座庫房是最糟的結果。 */
+    row.querySelector(".vault-rail__draft-x").addEventListener("mousedown", function (e) {
+      e.preventDefault();
+      close();
+      anchor.focus();
+    });
     input.addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); commit(); }
-      else if (e.key === "Escape") { e.preventDefault(); row.remove(); els.newBtn.focus(); }
+      else if (e.key === "Escape") { e.preventDefault(); close(); anchor.focus(); }
     });
     input.addEventListener("blur", commit);
   }
@@ -756,7 +933,7 @@
 
   /* ── 事件接線 ───────────────────────────────────────────── */
   function wire() {
-    els.list.addEventListener("click", function (e) {
+    if (els.list) els.list.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-vault]");
       if (!btn) return;
       state.vaultId = btn.getAttribute("data-vault");
@@ -765,22 +942,70 @@
       render();
     });
 
-    els.newBtn.addEventListener("click", startDraft);
-    /* 頁首的主要動作與側欄底部那顆是同一件事，所以走同一條路徑：
-       捲到側欄、就地開一列草稿，而不是另外開一個對話框。 */
-    var topNew = document.querySelector("[data-vault-new-top]");
-    if (topNew) topNew.addEventListener("click", function () {
-      els.rail.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "nearest" });
-      startDraft();
+    /* 建立庫房只有側欄這一個入口（2026-07-31 使用者裁示撤掉頁首那顆）：就地開一列
+       草稿，不開對話框——只有一個必填欄位（名稱），把整個畫面蓋掉去問一個字，是把
+       中斷當成儀式。 */
+    if (els.newBtn) els.newBtn.addEventListener("click", function () { startDraft(els.newBtn); });
+
+    /* ── demo A：總覽 ↔ 詳情 ─────────────────────────────── */
+    if (els.overview) {
+      els.overview.addEventListener("click", function (e) {
+        var nv = e.target.closest("[data-vault-new-ov]");
+        if (nv) { startDraft(nv); return; }
+        var card = e.target.closest("[data-vault]");
+        if (card) openVault(card.getAttribute("data-vault"), card);
+      });
+    }
+
+    /* 關閉：叉叉、點背景、Esc。三條路都要有——彈窗是「蓋在上面」的東西，
+       離開它的方式不能只有一個角落的按鈕。 */
+    els.modal.addEventListener("click", function (e) {
+      if (e.target.closest("[data-vault-modal-close]") || e.target === els.modal) closeVault();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape" || els.modal.hidden) return;
+      /* 抽屜／選單開著時，Esc 先關它們，不要一路關到彈窗。 */
+      if (els.drawer && els.drawer.classList.contains("is-open")) return;
+      if (els.menu && !els.menu.hidden) return;
+      closeVault();
     });
 
     els.doorRules.addEventListener("click", function (e) {
+      var f = vault();
+
       var add = e.target.closest("[data-rule-add]");
-      if (add) { els.menu.hidden ? openRuleMenu(add) : closeRuleMenu(); return; }
+      if (add) {
+        if (els.menu.hidden) {
+          /* 條件要加進哪一種方法，是按下去的那一刻就決定的——選單本身不知道
+             自己是被誰打開的，所以在這裡記下來。 */
+          pendingGroup = parseInt(add.getAttribute("data-rule-add"), 10) || 0;
+          openRuleMenu(add);
+        } else closeRuleMenu();
+        return;
+      }
+
       var rm = e.target.closest("[data-rule-remove]");
       if (rm) {
-        vault().rules.splice(parseInt(rm.getAttribute("data-rule-remove"), 10), 1);
-        renderDoor(); renderRail();
+        var at = rm.getAttribute("data-rule-remove").split(":");
+        var gi = parseInt(at[0], 10), ri = parseInt(at[1], 10);
+        var g = f.rules[gi];
+        if (!g) return;
+        g.items.splice(ri, 1);
+        /* 刪到空的方法自動消失，不必再給一顆「移除」——除非它是最後一種，
+           那一種要留著當加條件的落點，否則畫面上會沒有任何入口。 */
+        if (!g.items.length && f.rules.length > 1) f.rules.splice(gi, 1);
+        renderDoor(); renderRail(); renderGate();
+        return;
+      }
+
+      if (e.target.closest("[data-group-add]")) {
+        f.rules.push({ items: [] });
+        renderDoor();
+        /* 新的方法是空的，直接把選單開在它的「再加一個」上——多開一種方法的
+           意圖本來就是要放條件進去，多一次點擊只是儀式。 */
+        var adders = els.doorRules.querySelectorAll("[data-rule-add]");
+        var last = adders[adders.length - 1];
+        if (last) { pendingGroup = f.rules.length - 1; openRuleMenu(last); }
       }
     });
 
@@ -788,9 +1013,12 @@
       var opt = e.target.closest("[data-add]");
       if (!opt || opt.disabled) return;
       var parts = opt.getAttribute("data-add").split(":");
-      vault().rules.push({ t: parts[0], v: parts[1] });
+      var f = vault();
+      var g = f.rules[pendingGroup] || f.rules[0];
+      if (!g) { g = { items: [] }; f.rules.push(g); }
+      g.items.push({ t: parts[0], v: parts[1] });
       closeRuleMenu();
-      renderDoor(); renderRail();
+      renderDoor(); renderRail(); renderGate();
     });
     document.addEventListener("click", function (e) {
       if (els.menu.hidden) return;
@@ -822,26 +1050,23 @@
         if (it) startRename(ren.closest(".vault-tile, .vault-track"), it);
         return;
       }
-      if (e.target.closest("[data-vault-upload]")) {
-        var picker = els.grid.querySelector("[data-vault-file]");
-        if (picker) picker.click();
-      }
     });
 
-    /* 鍵盤也要能開檔案選擇器——上傳格是 role=button，那就得像按鈕。 */
-    els.grid.addEventListener("keydown", function (e) {
-      var tile = e.target.closest("[data-vault-upload]");
+    /* 兩個上傳入口——空狀態那張大方框、有內容時標題列上的按鈕——都掛
+       [data-vault-upload]，共用住在 .vault-gridbar 裡的同一個檔案選擇器。
+       所以監聽掛在 .vault-gridwrap 這層（同時涵蓋標題列與格子），不是格子那層。 */
+    els.gridWrap.addEventListener("click", function (e) {
+      if (e.target.closest("[data-vault-upload]")) els.file.click();
+    });
+
+    /* 鍵盤也要能開檔案選擇器——空狀態那張是 role=button，那就得像按鈕。 */
+    els.gridWrap.addEventListener("keydown", function (e) {
+      var tile = e.target.closest('[data-vault-upload][role="button"]');
       if (!tile) return;
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        var picker = els.grid.querySelector("[data-vault-file]");
-        if (picker) picker.click();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); els.file.click(); }
     });
 
-    els.grid.addEventListener("change", function (e) {
-      if (e.target.matches("[data-vault-file]")) addFiles(e.target.files);
-    });
+    els.file.addEventListener("change", function (e) { addFiles(e.target.files); });
 
     /* 拖放到格子上的任何位置都算——投放區是整座庫房，不是那一個虛線方框。 */
     ["dragenter", "dragover"].forEach(function (evt) {
@@ -928,8 +1153,15 @@
 
     els.viewer.addEventListener("change", function () {
       state.viewer = els.viewer.value;
-      els.viewerWrap.classList.toggle("is-on", !!state.viewer);
-      renderRail(); renderGate();
+      renderLens(); renderRail(); renderGate();
+    });
+
+    els.lensReset.addEventListener("click", function () {
+      els.viewer.value = "";
+      /* zselect 用自己的觸發鈕顯示標籤，程式改 value 不會通知它——補一個 change
+         讓它跟著更新，順帶走同一條渲染路徑，不必把邏輯抄兩份。 */
+      els.viewer.dispatchEvent(new Event("change", { bubbles: true }));
+      els.viewer.focus();
     });
 
     document.addEventListener("i18n:applied", function () { lastReach = null; render(); });
@@ -937,19 +1169,30 @@
   }
 
   function init() {
+    /* 清單容器在三種 demo 裡住的地方不一樣（側欄／切換面板／不存在），所以從整份
+       文件找，不從側欄找；側欄本身可以不存在。 */
     els.rail = document.querySelector("[data-vault-rail]");
-    if (!els.rail) return;
-    els.list      = els.rail.querySelector("[data-vault-list]");
-    els.count     = els.rail.querySelector("[data-vault-count]");
-    els.newBtn    = els.rail.querySelector("[data-vault-new]");
-    els.viewer    = els.rail.querySelector("[data-vault-viewer]");
-    els.viewerWrap = els.rail.querySelector(".vault-viewer");
+    els.list      = document.querySelector("[data-vault-list]");
+    els.count     = document.querySelector("[data-vault-count]");
+    els.newBtn    = document.querySelector("[data-vault-new]");
+    if (!document.querySelector("[data-vault-main]")) return;
+    /* 檢視器住在庫房與內容正上方那條 .vault-lens，不在側欄裡——它換的是整頁的
+       檢視角度，不是庫房清單的篩選器。所以從 document 找，別從 els.rail 找。 */
+    els.overview  = document.querySelector("[data-vault-overview]");
+    els.modal     = document.querySelector("[data-vault-modal]");
+    els.modalTitle = document.querySelector("[data-vault-modal-title]");
+    els.lens      = document.querySelector("[data-vault-lens]");
+    els.viewer    = els.lens.querySelector("[data-vault-viewer]");
+    els.viewerWrap = els.viewer.closest(".vault-viewer");
+    els.lensReset = els.lens.querySelector("[data-vault-lens-reset]");
     els.main      = document.querySelector("[data-vault-main]");
     els.body      = els.main.querySelector("[data-vault-body]");
     els.gate      = els.main.querySelector("[data-vault-gate]");
-    els.title     = els.main.querySelector("[data-vault-title]");
+    /* 庫房名字只有一個落點：彈窗標題列。 */
+    els.title     = els.modalTitle;
     els.note      = els.main.querySelector("[data-vault-note]");
     els.door      = els.main.querySelector("[data-vault-door]");
+    els.reach     = els.main.querySelector("[data-vault-reach]");
     els.doorRules = els.main.querySelector("[data-vault-rules]");
     els.doorAny   = els.main.querySelector("[data-vault-any]");
     els.doorNum   = els.main.querySelector("[data-vault-num]");
@@ -961,13 +1204,18 @@
     els.drawer    = document.querySelector("[data-vault-drawer]");
     els.drawerBody = els.drawer.querySelector("[data-vault-drawerbody]");
     els.drawerTitle = els.drawer.querySelector(".drawer__title");
+    els.gridWrap  = els.main.querySelector(".vault-gridwrap");
     els.grid      = els.main.querySelector("[data-vault-grid]");
     els.gridMeta  = els.main.querySelector("[data-vault-gridmeta]");
+    els.file      = els.main.querySelector("[data-vault-file]");
     els.menu      = document.querySelector("[data-vault-rulemenu]");
 
     render();
     wire();
-    if (window.applyI18n) window.applyI18n(els.rail);
+    if (window.applyI18n) {
+      if (els.rail) window.applyI18n(els.rail);
+      window.applyI18n(els.lens);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

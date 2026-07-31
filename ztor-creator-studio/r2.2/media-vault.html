@@ -41,6 +41,7 @@
 <link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-vault.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-share.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -62,14 +63,13 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="vault.h1">Media Vault</h1>
-          <p class="page-intro__sub" data-i18n="vault.sub">Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it. Every vault shows how many fans can open it right now.</p>
+          <div class="page-intro__lede">
+            <p class="page-intro__sub" data-i18n="vault.sub">Gated vaults that live behind your fan tiers. Make a vault, decide who gets in, then fill it. Every vault shows how many fans can open it right now.</p>
+            <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          </div>
         </div>
-        <div class="page-intro__actions">
-          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
-          <button class="btn btn--primary" type="button" data-vault-new-top>
-            <i data-lucide="plus" class="ztor-icon"></i><span data-i18n="vault.btn.new">New vault</span>
-          </button>
-        </div>
+        <!-- 頁首沒有動作列（2026-07-31 使用者裁示）：建立庫房的入口只留側欄那一顆。
+             兩顆同名按鈕做同一件事、還會捲到對方那裡去，是多餘的第二個入口。 -->
       </div>
 
       <!-- 分級名稱的唯一出處是 tier-settings.tier.*；這裡放一份被 i18n 翻好的
@@ -82,67 +82,95 @@
         <span data-tier-name="fan"     data-i18n="tier-settings.tier.fan">Fan</span>
       </div>
 
-      <div class="vault-layout">
+      <!-- 檢視器：整支功能的簽名互動。選一個分級，整頁換成那一級粉絲看到的樣子——
+           側欄把打不開的庫房壓暗，主欄把打不開的那座蓋上遮罩。
 
-        <!-- ── 庫房側欄 ───────────────────────────────────── -->
-        <aside class="vault-rail" data-vault-rail aria-label="Vaults">
-          <div class="vault-rail__head">
-            <div class="vault-rail__label">
-              <span data-i18n="vault.rail.label">Vaults</span>
-              <span class="vault-rail__count" data-vault-count></span>
-            </div>
-            <!-- 簽名互動：選一個分級，側欄立刻把該分級打不開的庫房壓暗。
-                 「我設的這組門，從粉絲那一側看是什麼樣子」——一次點擊看完。 -->
-            <div class="vault-viewer">
-              <span class="vault-viewer__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
-              <select class="select select--bare" data-vault-viewer aria-label="View as a fan tier">
-                <option value="" data-i18n="vault.viewer.me">View as: you (all vaults)</option>
-                <option value="inner"   data-i18n="vault.viewer.inner">View as: Inner Circle</option>
-                <option value="super"   data-i18n="vault.viewer.super">View as: Superfan</option>
-                <option value="devoted" data-i18n="vault.viewer.devoted">View as: Ranked fan</option>
-                <option value="fan"     data-i18n="vault.viewer.fan">View as: Fan</option>
-              </select>
-            </div>
+           自成一列、橫跨在庫房與內容的正上方（2026-07-31 使用者裁示）：它管的是
+           下面所有東西，放進頁首動作列會被讀成一顆按鈕，放進側欄又會被讀成庫房
+           清單的篩選器。靠右對齊，與下面主欄的「分享權限」同一條右邊界。 -->
+      <div class="vault-lens" data-vault-lens>
+        <button class="btn btn--ghost btn--sm" type="button" data-vault-lens-reset hidden>
+          <i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="vault.lens.reset">Back to my view</span>
+        </button>
+        <div class="vault-viewer">
+          <span class="vault-viewer__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
+          <select class="select select--bare" data-vault-viewer aria-label="View as a fan tier">
+            <option value="" data-i18n="vault.viewer.me">View as: you (all vaults)</option>
+            <option value="inner"   data-i18n="vault.viewer.inner">View as: Inner Circle</option>
+            <option value="super"   data-i18n="vault.viewer.super">View as: Superfan</option>
+            <option value="devoted" data-i18n="vault.viewer.devoted">View as: Ranked fan</option>
+            <option value="fan"     data-i18n="vault.viewer.fan">View as: Fan</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 庫房總覽（2026-07-31 使用者裁決）。原本清單是常駐左欄，跟全站導覽並排成
+           兩條左欄，很擠；庫房清單天生是垂直的（縮圖／名稱／內容數／鑰匙數），轉橫排
+           塞不下，所以解法是讓它不要跟主內容同時出現——這一頁只放總覽，點一張卡才把
+           那座庫房開在彈窗裡。側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」
+           反而比清單更一眼看得出來，而那正是這一頁想講的事。 -->
+      <div class="vault-overview" data-vault-overview></div>
+
+      <!-- 單一庫房＝彈窗。彈窗裡沒有全站導覽，所以清單可以留在左邊——只有一條左欄，
+           兩條並排的問題就不存在了；換庫房也不必關掉彈窗。外殼沿用 Embed modal
+           （§4.x embed-modal.css），只把尺寸與內部捲動換掉。 -->
+      <div class="embed-modal vault-modal" data-vault-modal hidden>
+        <div class="embed-modal__sheet vault-modal__sheet" role="dialog" aria-modal="true" aria-labelledby="vault-modal-title">
+          <div class="embed-modal__head">
+            <h2 class="embed-modal__title" id="vault-modal-title" data-vault-modal-title></h2>
+            <button type="button" class="embed-modal__close" data-vault-modal-close aria-label="Close">
+              <i data-lucide="x" class="ztor-icon"></i>
+            </button>
           </div>
+          <div class="vault-modal__body">
+        <div class="vault-layout">
 
-          <div class="vault-rail__list" data-vault-list></div>
-
-          <button type="button" class="vault-rail__new" data-vault-new>
-            <i data-lucide="plus" class="ztor-icon"></i><span data-i18n="vault.btn.new">New vault</span>
-          </button>
-        </aside>
-
-        <!-- ── 主欄 ─────────────────────────────────────────── -->
-        <div class="vault-main" data-vault-main>
-
-          <div class="vault-head">
-            <div class="vault-head__text">
-              <h2 class="vault-head__title" data-vault-title></h2>
-              <p class="vault-head__note" data-vault-note></p>
-            </div>
-            <div class="vault-head__actions">
-              <button class="btn btn--outline" type="button" data-vault-share>
-                <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 門條以下都包在 .vault-body 裡，只為了一件事：以粉絲身分檢視、
-               而這座庫房那一級打不開時，整塊內容要能被同一張遮罩蓋住（.vault-gate）。
-               標題留在遮罩之外——看的人仍要知道自己站在哪一座庫房前面。 -->
-          <div class="vault-body" data-vault-body>
-
-          <!-- 門條。左因右果：條件在左，那組條件放進來的人在右。 -->
-          <section class="vault-door" data-vault-door>
-            <div class="vault-door__col">
-              <div class="vault-door__label">
-                <i data-lucide="key" class="ztor-icon"></i>
-                <span data-i18n="vault.door.rules">Unlock conditions</span>
+          <!-- ── 庫房側欄 ───────────────────────────────────── -->
+          <aside class="vault-rail" data-vault-rail aria-label="Vaults">
+            <div class="vault-rail__head">
+              <div class="vault-rail__label">
+                <span data-i18n="vault.rail.label">Vaults</span>
+                <span class="vault-rail__count" data-vault-count></span>
               </div>
-              <div class="vault-door__rules" data-vault-rules></div>
-              <p class="vault-door__any" data-vault-any></p>
             </div>
-            <div class="vault-door__col vault-door__col--reach">
+
+            <!-- 「新增庫房」在清單上面（2026-07-31 使用者裁示）：按下去長出來的名字欄
+                 是清單的第一列，按鈕就該在那一列的正上方；擺在清單底部要人按了之後把
+                 視線拉回頂端。 -->
+            <button type="button" class="vault-rail__new" data-vault-new>
+              <i data-lucide="plus" class="ztor-icon"></i><span data-i18n="vault.btn.new">New vault</span>
+            </button>
+
+            <div class="vault-rail__list" data-vault-list></div>
+          </aside>
+
+          <!-- ── 主欄 ─────────────────────────────────────────── -->
+          <div class="vault-main" data-vault-main>
+
+            <div class="vault-head">
+              <!-- 庫房名字寫在彈窗標題列上（那裡捲不走），這裡只留說明，
+                   不重複第二次。 -->
+              <div class="vault-head__text">
+                <p class="vault-head__note" data-vault-note></p>
+              </div>
+              <div class="vault-head__actions">
+                <button class="btn btn--outline" type="button" data-vault-share>
+                  <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 門條以下都包在 .vault-body 裡，只為了一件事：以粉絲身分檢視、
+                 而這座庫房那一級打不開時，整塊內容要能被同一張遮罩蓋住（.vault-gate）。
+                 標題留在遮罩之外——看的人仍要知道自己站在哪一座庫房前面。 -->
+            <div class="vault-body" data-vault-body>
+
+            <!-- 「誰進得來」自己一塊，而且吸在最上面（2026-07-31 使用者裁示）。
+                 它是這一頁唯一的即時回饋——改一條條件，這個數字當場變。往下捲去看
+                 內容、去改條件時它要一直在，否則就得捲回來確認自己剛剛做了什麼。
+                 因此它不能留在門條卡片裡：sticky 只在自己父層還在畫面上時有效，
+                 包在門條裡就會跟著門條一起捲走。 -->
+            <section class="vault-reach" data-vault-reach>
               <div class="vault-door__label">
                 <i data-lucide="users" class="ztor-icon"></i>
                 <span data-i18n="vault.door.who">Who gets in</span>
@@ -154,53 +182,73 @@
               <div class="vault-door__bar" data-vault-bar></div>
               <div class="vault-door__legend" data-vault-legend></div>
               <div class="vault-door__breakdown" data-vault-breakdown></div>
-            </div>
+            </section>
 
-            <!-- 鑰匙：條件之外的第二條路。條件是「哪一群人自動符合」，鑰匙是
-                 創作者親手交出去的那幾把（加密連結／NFC 商品）。同一條門條、
-                 不同一列，因為兩者都是進門的路但不是同一種東西。 -->
-            <div class="vault-door__keyrow">
-              <div class="vault-door__keyleft">
+            <!-- 門條：解鎖條件與鑰匙，兩者都是「怎麼進得來」的設定。原本與讀數並排
+                 兩欄（左因右果），2026-07-31 改成上下各佔一整行——讀數要吸頂，並排
+                 就沒有「往下捲」這件事可講。 -->
+            <section class="vault-door" data-vault-door>
+              <div class="vault-door__col">
+                <div class="vault-door__label">
+                  <i data-lucide="key" class="ztor-icon"></i>
+                  <span data-i18n="vault.door.rules">Unlock conditions</span>
+                </div>
+                <div class="vault-door__rules" data-vault-rules></div>
+                <p class="vault-door__any" data-vault-any></p>
+                <!-- 「條件什麼時候會重新判定」是條件本身的細則，2026-07-31 從內容區
+                     底部的橫幅移上來貼著條件放：它回答的是上面那幾張 chip 的問題，
+                     壓在媒體清單下面等於問完之後隔了半頁才回答。 -->
+                <p class="vault-door__fine" data-i18n="vault.note.tiers">Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.</p>
+              </div>
+            </section>
+
+            <!-- 鑰匙自成一個區塊（2026-07-31 使用者裁示）。它是條件之外的第二條路：
+                 條件回答「哪一群人自動符合」，鑰匙回答「我親手把權限交給了誰」——
+                 兩件事都通向同一道門，但不是同一種東西，塞在條件那張卡的下緣會被
+                 讀成條件的附註。 -->
+            <section class="vault-keys">
+              <div class="vault-keys__head">
                 <div class="vault-door__label">
                   <i data-lucide="key" class="ztor-icon"></i>
                   <span data-i18n="vault.door.keys">Keys issued</span>
                 </div>
-                <div class="vault-door__keys" data-vault-keys></div>
+                <button class="btn btn--ghost btn--sm" type="button" data-vault-share>
+                  <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
+                </button>
               </div>
-              <button class="btn btn--ghost btn--sm" type="button" data-vault-share>
-                <i data-lucide="link" class="ztor-icon"></i><span data-i18n="vault.btn.share">Share access</span>
-              </button>
-            </div>
-          </section>
+              <div class="vault-door__keys" data-vault-keys></div>
+            </section>
 
-          <div class="vault-gridwrap">
-            <div class="vault-gridbar">
-              <div class="vault-door__label">
-                <i data-lucide="layout-grid" class="ztor-icon"></i>
-                <span data-i18n="vault.grid.label">In this vault</span>
+            <!-- 內容區（2026-07-31 使用者裁決重做）。空庫房只給一張空狀態，不再把
+                 上傳格＋三個空分區疊成四塊「這裡沒有東西」；有內容之後上傳收進這條
+                 標題列右邊的按鈕，下面只長出真的有東西的分區。檔案選擇器固定住在這
+                 裡，兩種狀態共用同一個 input。 -->
+            <div class="vault-gridwrap">
+              <div class="vault-gridbar">
+                <div class="vault-door__label">
+                  <i data-lucide="layout-grid" class="ztor-icon"></i>
+                  <span data-i18n="vault.grid.label">In this vault</span>
+                </div>
+                <span class="vault-gridbar__meta" data-vault-gridmeta></span>
+                <input type="file" multiple accept="image/*,video/*,audio/*" hidden data-vault-file>
               </div>
-              <span class="vault-gridbar__meta" data-vault-gridmeta></span>
+              <div data-vault-grid></div>
             </div>
-            <div data-vault-grid></div>
-          </div>
 
-          <div class="info-banner">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="vault.note.tiers">Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.</span>
-          </div>
+            <!-- 上鎖遮罩。內容由 media-vault.js 依「檢視身分 × 這座庫房」現算。 -->
+            <div class="vault-gate" data-vault-gate hidden></div>
 
-          <div class="info-banner mt-8">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="vault.note.demo">Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.</span>
-          </div>
-
-          <!-- 上鎖遮罩。內容由 media-vault.js 依「檢視身分 × 這座庫房」現算。 -->
-          <div class="vault-gate" data-vault-gate hidden></div>
+            </div>
 
           </div>
-
+        </div>
+          </div>
         </div>
       </div>
+
+      <!-- 原型聲明：整頁的免責，不屬於任何一座庫房，所以收到頁尾當小字，不再用
+           info-banner 壓在媒體清單下面（2026-07-31 使用者裁決）。 -->
+      <p class="page-note" data-i18n="vault.note.demo">Vault contents and fan counts are prototype sample data. Fan totals match the Fans overview (1,283) and every limited-run figure is capped at what actually sold.</p>
 
     </div>
   </main>

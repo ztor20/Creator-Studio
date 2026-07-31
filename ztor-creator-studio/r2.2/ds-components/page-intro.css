@@ -47,10 +47,50 @@
   max-width: 560px;
 }
 
+/* flex-wrap: wrap（2026-07-31 補）：這一列只放按鈕時怎麼排都塞得下，一旦有頁面
+   把較寬的控制項放進來，窄視窗會直接爆出容器——按鈕被壓成直排、最右邊那顆切掉
+   一半。允許換行不改變任何現有頁面的版面（沒有溢位就不會換行），只是把溢位的那
+   一顆換到下一行。 */
 .page-intro__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-8);
   align-items: center;
+}
+
+/* 說明文字 ＋ 就地的求助連結（2026-07-31 使用者裁決）。
+   「系統說明」原本站在動作列裡，跟「新增庫房」「儲存」這些會改變資料的按鈕並排，
+   讀起來像第三個動作，其實它只是把這一頁再解釋一次——跟說明文字是同一個角色。
+   移到說明段落的末尾之後，動作列只剩真正的動作。
+
+   `.page-intro__sub` 掛著 data-i18n，切語言時整段 innerHTML 會被換掉，所以連結
+   不能寫在它裡面；改成把兩者收進 .page-intro__lede，讓 sub 變 inline，連結就會
+   自然接在最後一句後面、句子長時一起換行。max-width 從 sub 移到 lede，避免行寬
+   在兩個元素上各設一次。 */
+.page-intro__lede { max-width: 560px; }
+.page-intro__lede .page-intro__sub { display: inline; max-width: none; }
+.page-intro__help {
+  margin-left: var(--sp-6);
+  font-size: var(--fs-13);
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  transition: border-bottom-color var(--duration) var(--easing);
+  white-space: nowrap;
+}
+.page-intro__help:hover { border-bottom-color: var(--primary); }
+.page-intro__help:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .page-intro__help { transition-duration: 1ms; } }
+
+/* 頁尾註腳（2026-07-31）：整頁層級的細字，例如「本頁數字為原型示範資料」。
+   與 .page-crumb 同一個家族——頁面外框的上下兩端，一個在標題之前、一個在內容
+   之後——所以住同一支檔。用它取代把免責聲明做成 info-banner 壓在內容底下：
+   橫幅是「請讀我」，註腳是「需要時查得到」，這種聲明屬於後者。 */
+.page-note {
+  margin: var(--sp-24) 0 0;
+  font-size: var(--fs-12);
+  line-height: var(--lh-normal);
+  color: var(--muted-foreground);
 }
 
 @media (max-width: 900px) {

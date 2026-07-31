@@ -2,7 +2,7 @@
 <html lang="zh-Hant" data-theme="dark" data-page-feat="full">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fan analytics · Ztor Creator Studio</title>
+<title>Overview · Fans · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
@@ -76,10 +77,12 @@
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="aud.h1">Your audience, pieced together.</h1>
-          <p class="page-intro__sub" data-i18n="aud.sub">Every platform shows you one slice. This page joins the slices we can reach — and says plainly which ones we can't.</p>
+          <div class="page-intro__lede">
+            <p class="page-intro__sub" data-i18n="aud.sub">Every platform shows you one slice. This page joins the slices we can reach — and says plainly which ones we can't.</p>
+            <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          </div>
         </div>
         <div class="page-intro__actions">
-          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
 
           <!-- F1 · 平台連結與同步狀態（spec 5.1.7.8 F1）。不占常駐版位：
                第一層是這顆膠囊、第二層是點開的來源明細，整合設定的入口收在裡面。 -->
@@ -216,6 +219,64 @@
           </div>
         </div>
 
+        <!-- 作品榜 ＋ ztor 粉絲組成並排一列（2026-07-31 使用者指定）。
+             左「哪幾支作品被播最多」、右「這些人是誰」——同一群人的兩個切面，
+             所以放同一行。⚠ 兩張卡單位不同：左邊算「次數」、右邊算「人」，
+             卡上各自的膠囊就是在講這件事，不可互比。 -->
+        <div class="aud-grid">
+
+        <!-- 作品表現榜（2026-07-31 自收入管理·版稅分頁搬來，使用者裁定）。
+             單位是「次數」不是「人」——與本頁其他卡不同軸，卡上直接寫明、不可互比。
+             作品名與類型沿用 roy.work1–11／roy.type.*（同一批作品、同一份 persona 覆蓋）。 -->
+        <section class="card" data-aud-works='{"plays": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500], "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--info"><i data-lucide="play" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="aud.works.title">Top 10 works · by streams &amp; downloads</h3>
+            </div>
+            <span class="chip chip--static" data-i18n="aud.works.unit">Counts, not people</span>
+          </div>
+          <nav class="filter-tabs" role="tablist" aria-label="Work type" data-aud-type>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-aud-t="all" data-i18n="roy.type.all">All</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="music" data-i18n="roy.type.music">Music</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="video" data-i18n="roy.type.video">Video</button>
+          </nav>
+          <ol class="perf-rank perf-rank--nopct" data-aud-list style="width:100%"></ol>
+          <p class="aud-note" data-aud-count></p>
+        </section>
+
+        <!-- ztor 粉絲組成（2026-07-31 使用者指定新增）。與上面 F2 那排數字的
+             分母不同：F2 的「受眾」含外部平台，這裡只算站內認得出帳號的粉絲，
+             所以自成一張卡、不併進 bento。用圓餅不用長條：這裡問的是「這一整塊
+             是怎麼被分掉的」，不是「誰比誰長」。資料與粉絲名冊同一份。
+             本頁是分析頁、只有 F8 給動作，所以這裡不放「分級設定／編輯權益」
+             那兩顆鈕（粉絲名冊那張卡才有）。 -->
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="aud.tiers.title">Fans on Ztor</h3>
+            <span class="chip chip--static" data-i18n="aud.tiers.chip">On-Ztor only — no external platforms</span>
+          </div>
+          <div class="pie-figure">
+            <div class="pie" aria-hidden="true"
+                 style="--pie-stops:
+                   var(--primary) 0 12%,
+                   var(--status-info) 0 40%,
+                   var(--status-success) 0 77%,
+                   var(--foreground-muted) 0 100%"></div>
+            <div class="pie-figure__legend">
+              <div class="source-list">
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="aud-note" data-i18n="aud.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count. The audience figures above include people we only see through connected platforms, so the two don't share a denominator.</p>
+        </section>
+
+        </div><!-- /作品榜 ＋ ztor 粉絲組成 -->
+
         <div class="aud-grid">
 
           <!-- F3 · 多維影響力 -->
@@ -348,26 +409,6 @@
 
         </div>
 
-
-        <!-- 作品表現榜（2026-07-31 自收入管理·版稅分頁搬來，使用者裁定）。
-             單位是「次數」不是「人」——與本頁其他卡不同軸，卡上直接寫明、不可互比。
-             作品名與類型沿用 roy.work1–11／roy.type.*（同一批作品、同一份 persona 覆蓋）。 -->
-        <section class="card mt-24" data-aud-works='{"plays": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500], "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
-          <div class="card__head">
-            <div class="card__title-group">
-              <span class="card__title-icon card__title-icon--info"><i data-lucide="play" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="aud.works.title">Top 10 works · by streams &amp; downloads</h3>
-            </div>
-            <span class="chip chip--static" data-i18n="aud.works.unit">Counts, not people</span>
-          </div>
-          <nav class="filter-tabs" role="tablist" aria-label="Work type" data-aud-type>
-            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-aud-t="all" data-i18n="roy.type.all">All</button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="music" data-i18n="roy.type.music">Music</button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="video" data-i18n="roy.type.video">Video</button>
-          </nav>
-          <ol class="perf-rank perf-rank--nopct" data-aud-list style="width:100%"></ol>
-          <p class="aud-note" data-aud-count></p>
-        </section>
 
         <!-- F8 · 建議行動（spec 5.1.7.8 F8 · D160）。這是本頁唯一會給動作的區塊。 -->
         <section class="card mt-24">

@@ -66,12 +66,17 @@
          `.myip-list-controls .list-status-row` 這類後代選擇器都不受影響。 */
       var toolbar = dock.querySelector(':scope > .list-toolbar');
       var statusRow = dock.querySelector(':scope > .list-status-row');
-      if (!toolbar || !statusRow) return;   /* 骨架不符就不貼頂，也不要弄壞版面 */
+      /* 工作列是必要的；狀態列選配（2026-08-01）——站上出現了第二種骨架：
+         只有分頁、沒有次層篩選的工作列（earnings-sony 的總覽／版稅）。原本要求
+         兩排俱全，那種頁面就完全吃不到這套貼頂，只能各自手刻一份貼頂樣式，
+         正是「同一視覺角色兩種做法」。放寬成選配即可共用，setupFilters()
+         本來就會在找不到狀態列時自己返回。 */
+      if (!toolbar) return;   /* 骨架不符就不貼頂，也不要弄壞版面 */
       var bars = document.createElement('div');
       bars.className = 'list-dock__bars';
       dock.insertBefore(bars, toolbar);
       bars.appendChild(toolbar);
-      bars.appendChild(statusRow);
+      if (statusRow) bars.appendChild(statusRow);
 
       /* ── 兩種殼，兩個 sticky 落點（2026-07-28）──────────────────
          sticky 元素只能在「親層的 box」裡移動，所以貼頂該掛在哪一層，取決於這頁的

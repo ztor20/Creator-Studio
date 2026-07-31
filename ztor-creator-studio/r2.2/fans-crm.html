@@ -12,6 +12,14 @@
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tier-overview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2">
@@ -23,6 +31,8 @@
 <link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/insight-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
@@ -39,8 +49,17 @@
      所以標題不可能跟它命名的那一欄跑掉。 */
   .table-head.fan-row,
   .fan-row {
-    /* 忠誠點數欄 96px：欄名「Loyalty points」單行需 90px，原本的 78px 會斷成兩行。 */
-    grid-template-columns: 36px minmax(150px,1fr) 116px 108px 96px 84px 104px 96px 62px;
+    /* 忠誠點數欄 96px：欄名「Loyalty points」單行需 90px，原本的 78px 會斷成兩行。
+       排名欄 36→28、分級欄 108→94（2026-08-01）：兩欄原本是為舊內容留的寬度
+       ——排名曾是 36px 圓形頭像、分級 badge 曾整欄拉滿——換成小號數字與 hug 版
+       badge 後，欄框仍是舊尺寸，於是欄框裡的內容跟下一欄之間多出一段沒有意義的
+       空白，兩欄合計曾拉出 30～60px 的視覺斷層，比其餘固定 12px 的欄距鬆散
+       數倍。94px 已覆蓋最寬的英文 badge「Ranked fans」（實測 86px）。
+       gap 同時由 12→14（沿用 .data-list__row 的 --sp-12，這裡覆寫成 --sp-14），
+       這樣即使分級欄短字（如「粉絲」）留下的殘餘空白，也落在跟其他欄距同一個
+       量級，不會顯得忽鬆忽緊。 */
+    grid-template-columns: 28px minmax(150px,1fr) 116px 94px 96px 84px 104px 96px 62px;
+    gap: var(--sp-14);
     min-width: 920px;   /* 低於此寬度由 .table-scroll 橫向捲動，不重排成卡片 */
   }
   /* 欄名一律單行：兩個字的欄名斷行後會比鄰欄矮半行，整條標題列看起來沒對齊。 */
@@ -65,6 +84,32 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .fan-row__status { display:flex; align-items:center; }
+  /* 徽章要 hug 內容：grid 子項預設 justify-self:stretch，會把 .badge 拉滿整欄，
+     看起來像一塊色條而不是一顆標籤（2026-08-01 使用者反饋）。 */
+  .fan-row__tier, .fan-row__status .badge { justify-self: start; }
+
+  /* 名字前的頭像。站上沒有粉絲人像素材，也不該拿商品／IP 圖當人臉——
+     改用縮寫圓（跟頂列帳號頭像同一套語言），色相由名字決定，所以同一個人
+     每次載入都是同一個顏色，不是真的隨機。 */
+  .fan-row__avatar {
+    width: 32px; height: 32px; flex: none;
+    border-radius: var(--radius-pill);
+    display: inline-grid; place-items: center;
+    font-family: var(--font-display);
+    font-size: var(--fs-13);
+    color: var(--card);
+    background: var(--fan-avatar, var(--muted-foreground));
+  }
+  .fan-row__ident { display: flex; align-items: center; gap: var(--sp-10); min-width: 0; }
+  .fan-row__ident .data-list__body { min-width: 0; }
+  /* 排名不再是圓形色塊——圓形讓給頭像，一列兩個圓會互相搶。
+     justify-self:center 且欄寬已收窄到貼合兩位數字，殘餘空白平均分在兩側、
+     不再是單側一大段。 */
+  .fan-row__rank {
+    width: auto; height: auto; background: none !important;
+    color: var(--muted-foreground); font-size: var(--fs-12);
+    justify-self: center;
+  }
   .fan-row__since { text-align: right; font-variant-numeric: tabular-nums; }
   .fan-row__actions { display:flex; align-items:center; gap:2px; }
   /* Hall of fame 名人堂列：peak tier + 達成年份（唯讀示意）。同樣拆出國家欄。 */
@@ -75,6 +120,45 @@
   }
   /* 表頭與第一列之間留一口氣，標題才不會黏在資料上。 */
   .table-head + .data-list > .data-list__row:first-child { padding-top: var(--sp-12); }
+
+  /* ── 粉絲分級設定分頁的版面（非可重用樣式留頁內）─────────────────
+     左欄直著疊三塊（對照表／行為加權／規則），右欄放粉絲組成。
+     7/3：左邊要排四個分級欄，右邊只有一張圓餅＋四列圖例。 */
+  .fans-tier-row {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    gap: var(--sp-16);
+    align-items: start;
+  }
+  .fans-tier-stack { display: flex; flex-direction: column; gap: var(--sp-16); min-width: 0; }
+  @media (max-width: 1080px) { .fans-tier-row { grid-template-columns: minmax(0, 1fr); } }
+
+  /* 右欄只有 ~330px：圓餅置中在上、圖例在下。並排的話圖例的金額欄會先被壓爛。 */
+  .fans-compose { display: flex; flex-direction: column; gap: var(--sp-16); }
+  .fans-compose .pie { margin-inline: auto; }
+  .fans-compose__legend { min-width: 0; }
+  .fans-compose .source-row { grid-template-columns: 14px minmax(0, 1fr) auto; row-gap: 2px; }
+  .fans-compose .source-row > span:nth-child(2) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fans-compose .source-row__pct { grid-column: 2 / -1; font-size: var(--fs-11); }
+
+  /* 分頁列與內容之間留一個段落級的間距。.list-toolbar 自己的 margin-bottom 是 8px，
+     那是為了「工作列＋次層篩選列」兩條貼在一起的清單頁；這裡下面接的是內容。 */
+  .tab-panel[data-panel] { margin-top: var(--sp-16); }
+
+  /* 次層篩選列：分級（單選）與標籤（複選）是兩個軸，同一列但中間隔開，
+     不讓它們看起來像同一組 pill。 */
+  .fans-filter-row { display: flex; align-items: center; gap: var(--sp-12); flex-wrap: wrap; }
+  .fans-filter-row__sep {
+    width: 1px; align-self: stretch; min-height: 20px;
+    background: var(--border); flex: none;
+  }
+  @media (max-width: 720px) { .fans-filter-row__sep { display: none; } }
+
+  /* 編輯／儲存兩態共用同一顆鈕，用 hidden 切換。外層 span 帶 .flex-row（display:flex）
+     ——只要元件自己宣告了 display，HTML 的 hidden 就失效（它靠 UA 的
+     [hidden]{display:none}，權重輸給任何 class 規則）。站上 alert.css、
+     list-toolbar.css 都踩過同一個坑，這裡補同樣的一條。 */
+  [data-icon-idle][hidden], [data-icon-editing][hidden] { display: none; }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
 </head>
@@ -83,22 +167,42 @@
   <header class="app-topbar" id="sidebar"></header>
 
   <main class="main">
+
+    <!-- F4 流失風險提醒（2026-07-31 使用者裁示改位置與形態）：提示一律放整頁最上方，
+         跟 E-Shop 低庫存條、粉絲分析同步異常條同一組——.alert-inset 定位殼（sticky 貼頂、
+         與 .page 同一套 max-width）＋ .alert--bar.alert--inset-card 視覺卡。
+         原本是 .alert--banner.alert--error 夾在 KPI 與分頁列之間：那個位置每次進站都要
+         先跨過它才看得到清單，而且紅色橫幅在內容流裡讀起來像「這一段壞了」，
+         不像「有一件事要處理」。有風險才出現，demo 以 data-has-risk 控制。 -->
+    <div class="alert-inset when-data" id="fans-risk-alert" data-has-risk="true" hidden>
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <span class="alert__title" data-i18n="fans.alert.title">5 fans at risk of dropping</span>
+          <span class="alert__meta" data-i18n="fans.alert.meta">Superfans · 14+ days without a touchpoint</span>
+        </div>
+        <a class="alert__cta" href="#" data-msg-open data-msg-to="risk" data-i18n="fans.alert.cta">Message them</a>
+        <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#fans-risk-alert').remove()">×</button>
+      </div>
+    </div>
+
     <div class="page">
 
       <div class="page-crumb">
-        <span data-i18n="fans.crumb.self">Fans</span>
+        <span data-i18n="nav.fans">Fans</span> · <span data-i18n="nav.fans-overview">Fan management</span>
       </div>
 
       <div class="page-intro">
         <div>
           <h1 class="page-intro__title" data-i18n="fans.h1">Your fans, ranked.</h1>
-          <p class="page-intro__sub" data-i18n="fans.sub">High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.</p>
+          <div class="page-intro__lede">
+            <p class="page-intro__sub" data-i18n="fans.sub">High-value first. Sort by spend, loyalty points, recency, or tier. Message or export any segment.</p>
+            <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          </div>
         </div>
+        <!-- 2026-07-31：受眾連結移除（側欄的「粉絲分析」就是它）；群發訊息移到分頁列右側，
+             貼著它的對象＝當下那份名單。頁首只留匯出。 -->
         <div class="page-intro__actions">
-          <a class="card__link card__link--accent" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
-          <a class="card__link" href="fan-analytics.html" data-i18n="nav.fans-audience">Audience</a>
           <button class="btn btn--outline" data-i18n="fans.btn.csv">Export CSV</button>
-          <a class="btn btn--primary" href="#" data-msg-open data-msg-to="all" data-i18n="fans.btn.message">Message segment</a>
         </div>
       </div>
 
@@ -126,67 +230,60 @@
         </div><div class="kpi__value">642</div><div class="kpi__delta" data-i18n="fans.kpi.rep-meta">+12 vs last month</div></div>
       </div>
 
-      <section class="card mt-24">
-        <div class="card__head">
-          <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
-          <div class="flex-row"><a class="btn btn--ghost btn--sm" href="tier-settings.html" data-i18n="fans.who.tier">Tier settings</a><a class="btn btn--ghost btn--sm" href="tier-benefits.html" data-i18n="fans.who.benefits">Edit benefits</a></div>
-        </div>
-        <div class="stacked-bar" style="height:18px">
-          <div class="stacked-bar__seg" style="width:12%;background:var(--primary)"></div>
-          <div class="stacked-bar__seg" style="width:28%;background:var(--status-info)"></div>
-          <div class="stacked-bar__seg" style="width:37%;background:var(--status-success)"></div>
-          <div class="stacked-bar__seg" style="width:23%;background:var(--foreground-muted)"></div>
-        </div>
-        <div class="source-list" id="fans-tier-list">
-          <div class="source-row" data-tier-share="12" data-rev="8420"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
-          <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
-          <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
-          <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
-        </div>
-        <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden（見頁尾腳本） -->
-        <div class="insight-row hidden" id="fans-pareto" hidden>
-          <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
-          <p class="insight-row__text" id="fans-pareto-text"></p>
-        </div>
-      </section>
 
-      <!-- F4 流失風險提醒：有風險才出現。demo 以 data-has-risk 旗標控制（true=顯示）。 -->
-      <div class="alert alert--banner alert--error mt-24" role="status" id="fans-risk-alert" data-has-risk="true" hidden>
-        <div class="alert__icon">!</div>
-        <div class="alert__body">
-          <div class="alert__title" data-i18n="fans.alert.title">5 fans at risk of dropping</div>
-          <div class="alert__meta" data-i18n="fans.alert.meta">Superfans · 14+ days without a touchpoint</div>
+      <!-- 分頁列（2026-07-31 改版）：三個分頁按主題分——排行榜與名人堂是「人」，
+           粉絲分級設定是「等級」。裝進 .list-toolbar 的 58px 殼裡是硬性的：
+           --underline-label 的底線照容器下緣畫，沒有殼就變成浮空的一截橘線。
+           群發訊息放在殼的右側動作群，只在排行榜分頁出現。 -->
+      <div class="list-toolbar mt-24">
+        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" data-tabs>
+          <button class="tabs__item tabs__item--active" role="tab" data-tab="leaderboard" aria-selected="true"><span data-i18n="fans.tab.leaderboard">Leaderboard</span></button>
+          <button class="tabs__item" role="tab" data-tab="hof" aria-selected="false"><span data-i18n="fans.tab.hof">Hall of fame</span></button>
+          <button class="tabs__item" role="tab" data-tab="tiers" aria-selected="false"><span data-i18n="fans.tab.tiers">Tier settings</span></button>
+        </nav>
+        <div class="list-toolbar__actions" data-tab-actions="leaderboard">
+          <!-- 搜尋收合成放大鏡（重用 .search-collapse，同 projects／e-shop／orders／pickup），
+               把橫向空間讓給 tabs。2026-07-31 由分頁內容區的一排篩選搬上來。 -->
+          <div class="search-collapse" id="fans-search-wrap">
+            <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" id="fans-search-toggle" aria-expanded="false" aria-label="Search" title="Search" data-i18n-aria-label="fans.search.open" data-i18n-title="fans.search.open"><i data-lucide="search" class="ztor-icon"></i></button>
+            <label class="field-pill search-collapse__field" aria-label="Search fans">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" id="fans-search" placeholder="Search by name or email" data-i18n-placeholder="fans.search">
+              <button class="btn btn--icon btn--xs search-collapse__close" type="button" id="fans-search-close" aria-label="Close search" title="Close search" data-i18n-aria-label="fans.search.close" data-i18n-title="fans.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </label>
+          </div>
+          <a class="btn btn--primary btn--sm" href="#" data-msg-open data-msg-to="all">
+            <i data-lucide="send" class="ztor-icon"></i><span data-i18n="fans.btn.message">Message segment</span>
+          </a>
         </div>
-        <a class="alert__cta" href="#" data-msg-open data-msg-to="risk" data-i18n="fans.alert.cta">Message them</a>
-        <button class="alert__dismiss" type="button" aria-label="Dismiss" onclick="this.closest('.alert--banner').remove()">×</button>
       </div>
-
-      <nav class="tabs mt-24" role="tablist" data-tabs>
-        <button class="tabs__item tabs__item--active" role="tab" data-tab="leaderboard" aria-selected="true" data-i18n="fans.tab.leaderboard">Leaderboard</button>
-        <button class="tabs__item" role="tab" data-tab="hof" aria-selected="false" data-i18n="fans.tab.hof">Hall of fame</button>
-      </nav>
 
       <!-- ── Leaderboard panel (F5 list + F6 search/filter/load-more) ── -->
       <div class="tab-panel tab-panel--active" data-panel="leaderboard" role="tabpanel">
 
-        <div class="flex-row mb-16" style="gap:8px;flex-wrap:wrap">
-          <label class="field-pill" aria-label="Search fans" style="max-width:240px">
-            <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
-            <input class="field-pill__input" id="fans-search" placeholder="Search by name or email" data-i18n-placeholder="fans.search">
-          </label>
-          <select class="select" id="fans-tier-filter" style="max-width:180px">
-            <option value="all" data-i18n="fans.filter.all">All fans</option>
-            <option value="inner" data-i18n="fans.tier.inner">Inner Circle</option>
-            <option value="super" data-i18n="fans.tier.super">Superfan</option>
-            <option value="devoted" data-i18n="fans.tier.devoted">Ranked fans</option>
-            <option value="fan" data-i18n="fans.tier.fan">Fan</option>
+        <!-- 次層篩選列（2026-07-31 改成與項目頁同一套）：搜尋上移到分頁列右側之後，
+             這一排只剩兩個篩選軸——
+               分級：互斥、單選 → .filter-tabs--brand（同 projects 的狀態列）
+               標籤：可複選 → 維持 .chip-group，接在同一列後面
+             兩者不同軸所以不混成一組 pill，中間用一道細分隔線隔開。 -->
+        <div class="list-status-row fans-filter-row">
+          <nav class="filter-tabs filter-tabs--brand" id="fans-tier-filter" role="tablist" aria-label="Fan tier" data-i18n-aria-label="fans.filter.label">
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-tier="all"><span data-i18n="fans.filter.all">All fans</span><span class="filter-tabs__count" data-tier-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="inner"><span data-i18n="tier-settings.tier.inner">Inner Circle</span><span class="filter-tabs__count" data-tier-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="super"><span data-i18n="tier-settings.tier.superfan">Superfan</span><span class="filter-tabs__count" data-tier-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="devoted"><span data-i18n="fans.tier.devoted">Ranked fans/span><span class="filter-tabs__count" data-tier-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="fan"><span data-i18n="tier-settings.tier.fan">Fan</span><span class="filter-tabs__count" data-tier-count>0</span></button>
+          </nav>
+          <!-- 標籤改下拉（2026-07-31 使用者裁示），與項目頁的「內容類別」同一個做法：
+               .select--bare ＋ margin-left:auto 靠右，由 zselect.js 升級成站上樣式。
+               ⚠ 連帶行為變更：原本是 chip 可複選（多個標籤取交集），下拉只能單選。 -->
+          <select class="select select--bare" id="fans-chips" aria-label="Fan tags" data-i18n-aria-label="fans.chip.label" style="width:auto;min-width:168px;margin-left:auto">
+            <option value="all" data-i18n="fans.chip.all">All tags</option>
+            <option value="vip" data-i18n="fans.chip.vip">VIP</option>
+            <option value="high-spender" data-i18n="fans.chip.high-spender">High spender</option>
+            <option value="event" data-i18n="fans.chip.event">Event attendee</option>
+            <option value="intl" data-i18n="fans.chip.intl">International</option>
           </select>
-          <div class="chip-group" id="fans-chips" role="group" aria-label="Fan tags">
-            <button class="chip" type="button" data-chip="vip" aria-pressed="false" data-i18n="fans.chip.vip">VIP</button>
-            <button class="chip" type="button" data-chip="high-spender" aria-pressed="false" data-i18n="fans.chip.high-spender">High spender</button>
-            <button class="chip" type="button" data-chip="event" aria-pressed="false" data-i18n="fans.chip.event">Event attendee</button>
-            <button class="chip" type="button" data-chip="intl" aria-pressed="false" data-i18n="fans.chip.intl">International</button>
-          </div>
         </div>
 
         <!-- F5 粉絲排行榜 — 真正的表格（2026-07-27 使用者裁示）。
@@ -196,7 +293,9 @@
              第二次低→高／Z→A，第三次回到預設排名順序。
              排名章 ①②③ 不重編號——它焊死在該粉絲身上，所以改用「消費」排序時，
              看得出第 3 名的粉絲其實花得最多。 -->
-        <section class="card" data-sort-table>
+        <!-- 2026-07-31 使用者裁示：清單不套 .card 外框（比照電子商店商品列表的無框清單）。
+             分隔仍由 .data-list__row 各自的底線承擔，卡框拿掉之後表頭與內容更連續。 -->
+        <div data-sort-table>
           <div class="table-scroll">
           <div class="table-head fan-row">
             <!-- 排名欄的標題只給輔助技術用。隱藏樣式是 position:absolute，
@@ -215,8 +314,8 @@
           <div class="data-list" id="fans-list" data-sort-rows>
 
             <div class="data-list__row fan-row" data-tier="inner" data-tags="vip high-spender" data-search="wei yu-han yuhan@studio taipei 台北 台灣 taiwan 林詩涵 lin shih-han shihan">
-              <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 30%, var(--card))">①</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.row1.meta">yuhan@studio</div></div>
+              <span class="fan-row__rank">1</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.row1.meta">yuhan@studio</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row1.country">Taiwan</span>
               <span class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">874</span>
@@ -232,8 +331,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="inner" data-tags="high-spender" data-search="lin yiwen yiwen@gmail tainan 台南 台灣 taiwan 陳柏宇 chen po-yu boyu 台中 taichung">
-              <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 20%, var(--card))">②</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row2.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.row2.meta">yiwen@gmail</div></div>
+              <span class="fan-row__rank">2</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row2.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.row2.meta">yiwen@gmail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row2.country">Taiwan</span>
               <span class="badge badge--orange fan-row__tier" data-sort-key="tier" data-sort-value="4"><span data-i18n="fans.tier.inner">Inner Circle</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">821</span>
@@ -249,8 +348,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="super" data-tags="event intl" data-search="ahmed said ahmed@hey singapore 新加坡 王凱昕 wang kai-hsin vivian">
-              <span class="fan-row__rank" style="background:var(--muted)">③</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row3.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.row3.meta">ahmed@hey</div></div>
+              <span class="fan-row__rank">3</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row3.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.row3.meta">ahmed@hey</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row3.country">Singapore</span>
               <span class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Superfan</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">692</span>
@@ -266,8 +365,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="super" data-tags="event" data-search="chen mei-ling meiling@mail kaohsiung 高雄 台灣 taiwan 黃于潔 huang yu-chieh yuchieh">
-              <span class="fan-row__rank" style="background:var(--muted)">④</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row4.name">Chen Mei-ling</div><div class="data-list__meta" data-i18n="fans.row4.meta">meiling@mail</div></div>
+              <span class="fan-row__rank">4</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row4.name">Chen Mei-ling</div><div class="data-list__meta" data-i18n="fans.row4.meta">meiling@mail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row4.country">Taiwan</span>
               <span class="badge badge--info fan-row__tier" data-sort-key="tier" data-sort-value="3"><span data-i18n="fans.tier.super">Superfan</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">655</span>
@@ -283,8 +382,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="devoted" data-tags="intl" data-search="james carter james@studio london 倫敦 英國 united kingdom 張詠晴 chang yung-ching jamie">
-              <span class="fan-row__rank" style="background:var(--muted)">⑤</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row5.name">James Carter</div><div class="data-list__meta" data-i18n="fans.row5.meta">james@studio</div></div>
+              <span class="fan-row__rank">5</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row5.name">James Carter</div><div class="data-list__meta" data-i18n="fans.row5.meta">james@studio</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row5.country">United Kingdom</span>
               <span class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked fans</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">540</span>
@@ -300,8 +399,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="devoted" data-tags="" data-search="park ji-woo jiwoo@mail seoul 首爾 南韓 south korea 李佳恩 li chia-en jiaen">
-              <span class="fan-row__rank" style="background:var(--muted)">⑥</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row6.name">Park Ji-woo</div><div class="data-list__meta" data-i18n="fans.row6.meta">jiwoo@mail</div></div>
+              <span class="fan-row__rank">6</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row6.name">Park Ji-woo</div><div class="data-list__meta" data-i18n="fans.row6.meta">jiwoo@mail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row6.country">South Korea</span>
               <span class="badge badge--success fan-row__tier" data-sort-key="tier" data-sort-value="2"><span data-i18n="fans.tier.devoted">Ranked fans</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">498</span>
@@ -317,8 +416,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="fan" data-tags="event" data-search="sofia rossi sofia@mail milan 米蘭 日本 japan 蘇曉薇 su hsiao-wei weiwei 東京 tokyo">
-              <span class="fan-row__rank" style="background:var(--muted)">⑦</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row7.name">Sofia Rossi</div><div class="data-list__meta" data-i18n="fans.row7.meta">sofia@mail</div></div>
+              <span class="fan-row__rank">7</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row7.name">Sofia Rossi</div><div class="data-list__meta" data-i18n="fans.row7.meta">sofia@mail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row7.country">Japan</span>
               <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">312</span>
@@ -334,8 +433,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="fan" data-tags="intl" data-search="liam nguyen liam@mail sydney 雪梨 澳洲 australia 吳承翰 wu cheng-han chenghan">
-              <span class="fan-row__rank" style="background:var(--muted)">⑧</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row8.name">Liam Nguyen</div><div class="data-list__meta" data-i18n="fans.row8.meta">liam@mail</div></div>
+              <span class="fan-row__rank">8</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row8.name">Liam Nguyen</div><div class="data-list__meta" data-i18n="fans.row8.meta">liam@mail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row8.country">Australia</span>
               <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">288</span>
@@ -351,8 +450,8 @@
             </div>
 
             <div class="data-list__row fan-row" data-tier="fan" data-tags="" data-search="emma müller emma@mail berlin 柏林 加拿大 canada 高子晴 kao tzu-ching ziqing 溫哥華 vancouver">
-              <span class="fan-row__rank" style="background:var(--muted)">⑨</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row9.name">Emma Müller</div><div class="data-list__meta" data-i18n="fans.row9.meta">emma@mail</div></div>
+              <span class="fan-row__rank">9</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.row9.name">Emma Müller</div><div class="data-list__meta" data-i18n="fans.row9.meta">emma@mail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.row9.country">Canada</span>
               <span class="badge badge--neutral fan-row__tier" data-sort-key="tier" data-sort-value="1"><span data-i18n="fans.tier.fan">Fan</span></span>
               <span class="fan-row__num fan-row__rep" data-sort-key="rep">241</span>
@@ -369,12 +468,17 @@
 
           </div>
           </div>
-        </section>
+        </div>
 
         <!-- F6 分頁載入：每次 25 列、顯示已載入／總數。demo 列數較少，per-load 設小才看得出效果 -->
-        <div class="list-footer" id="fans-footer">
-          <span class="list-footer__count" id="fans-count"></span>
-          <button class="btn btn--outline btn--sm" id="fans-loadmore" type="button" data-i18n="fans.loadmore">Load more</button>
+        <!-- 2026-08-01 使用者裁示：跟電子商店商品列表的「載入更多」同步。
+             那邊固定用 --center 置中變體＋ghost 按鈕，且 count 只在「全部載完」
+             時才出現（end-cap 文案「已顯示全部 N 筆」），不是跟按鈕並存的
+             running counter。原本這裡是 count 常駐在左、按鈕在右——兩套邏輯，
+             改成同一套。 -->
+        <div class="list-footer list-footer--center" id="fans-footer">
+          <button class="btn btn--ghost btn--sm" id="fans-loadmore" type="button" data-i18n="fans.loadmore" hidden>Load more</button>
+          <span class="list-footer__count" id="fans-count" hidden></span>
         </div>
 
         <!-- F6 搜尋／篩選無結果 -->
@@ -394,7 +498,9 @@
         <p class="text-sub mb-16" style="font-size: var(--fs-13)" data-i18n="fans.hof.intro">Long-term top contributors, by the highest tier they ever reached. Read-only — this does not change with current tier.</p>
         <!-- 名人堂同樣是表格：與排行榜同一組欄位標題＋排序行為，
              一個區塊裡不容許兩種清單長相（peer-sweep）。 -->
-        <section class="card" data-sort-table>
+        <!-- 2026-07-31 使用者裁示：清單不套 .card 外框（比照電子商店商品列表的無框清單）。
+             分隔仍由 .data-list__row 各自的底線承擔，卡框拿掉之後表頭與內容更連續。 -->
+        <div data-sort-table>
           <div class="table-scroll">
           <div class="table-head hof-row">
             <span><span class="u-visually-hidden" data-i18n="fans.col.rank">Rank</span></span>
@@ -405,29 +511,198 @@
           </div>
           <div class="data-list" data-sort-rows>
             <div class="data-list__row hof-row" data-search="">
-              <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 30%, var(--card))">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.hof.row1.meta">yuhan@studio</div></div>
+              <span class="fan-row__rank">★</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row1.name">Wei Yu-han</div><div class="data-list__meta" data-i18n="fans.hof.row1.meta">yuhan@studio</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row1.country">Taiwan</span>
               <span class="badge badge--orange fan-row__tier" data-sort-key="peak" data-sort-value="4"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
               <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row1.year">Since 2024</span>
             </div>
             <div class="data-list__row hof-row" data-search="">
-              <span class="fan-row__rank" style="background:color-mix(in srgb, var(--primary) 20%, var(--card))">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row2.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.hof.row2.meta">ahmed@hey</div></div>
+              <span class="fan-row__rank">★</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row2.name">Ahmed Said</div><div class="data-list__meta" data-i18n="fans.hof.row2.meta">ahmed@hey</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row2.country">Singapore</span>
               <span class="badge badge--info fan-row__tier" data-sort-key="peak" data-sort-value="3"><span data-i18n="fans.hof.peak.super">Peak · Superfan</span></span>
               <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row2.year">Since 2025</span>
             </div>
             <div class="data-list__row hof-row" data-search="">
-              <span class="fan-row__rank" style="background:var(--muted)">★</span>
-              <div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row3.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.hof.row3.meta">yiwen@gmail</div></div>
+              <span class="fan-row__rank">★</span>
+              <div class="fan-row__ident"><span class="fan-row__avatar" data-fan-avatar aria-hidden="true"></span><div class="data-list__body"><div class="data-list__title" data-sort-key="name" data-i18n="fans.hof.row3.name">Lin Yiwen</div><div class="data-list__meta" data-i18n="fans.hof.row3.meta">yiwen@gmail</div></div></div>
               <span class="fan-row__country" data-sort-key="country" data-i18n="fans.hof.row3.country">Taiwan</span>
               <span class="badge badge--orange fan-row__tier" data-sort-key="peak" data-sort-value="4"><span data-i18n="fans.hof.peak.inner">Peak · Inner Circle</span></span>
               <span class="text-sub fan-row__since" style="font-size: var(--fs-12)" data-sort-key="since" data-i18n="fans.hof.row3.year">Since 2025</span>
             </div>
           </div>
           </div>
+        </div>
+      </div>
+
+
+      <!-- ── 粉絲分級設定 panel（2026-07-31 新增）──────────────────────────
+           原本的兩個獨立頁面（分級設定 tier-settings / 分級權益 tier-benefits）
+           併進這裡。理由：門檻與權益的欄位一模一樣（同樣四個分級），只是列不同，
+           所以合成一張對照表，一次直向掃描就答完「這一階要什麼、給什麼」。
+           左欄直著疊三塊（對照表／行為加權／規則），右欄放粉絲組成當對照。
+           三塊都唯讀，改一律走右上角「編輯」的彈窗——所以本頁沒有儲存狀態。 -->
+      <div class="tab-panel" data-panel="tiers" role="tabpanel">
+        <div class="fans-tier-row">
+
+        <div class="fans-tier-stack">
+
+          <!-- 兩種狀態：預設唯讀、按「編輯」就地變成可編輯（2026-08-01 使用者裁示，
+               取代原本開彈窗的做法）。兩份內容都在 DOM 裡、用 display 切換；
+               格子恆為 --control-h-sm 高，所以切狀態時整張表不會抽高位移。 -->
+          <section class="card" data-tier-card>
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fans.tiers.title">Organise your fan circle</h3>
+              <div class="flex-row">
+                <button class="btn btn--ghost btn--sm" type="button" data-tier-open="history">
+                  <i data-lucide="history" class="ztor-icon"></i><span data-i18n="fans.tiers.history">Change history</span>
+                </button>
+                <!-- 兩個狀態各自的按鈕群，不是同一顆鈕來回切（2026-08-01 使用者裁示：
+                     除了儲存還要有取消，取消不落地）。閒置只有一顆「編輯」；
+                     編輯態換成「取消」＋「儲存」兩顆——取消要能回到進入編輯之前
+                     的樣子，不能只是把 UI 收回去，所以需要獨立於「儲存」的路徑。 -->
+                <span data-icon-idle>
+                  <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
+                    <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
+                  </button>
+                </span>
+                <span data-icon-editing hidden class="flex-row">
+                  <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
+                    <span data-i18n="tier-settings.btn.discard">Cancel</span>
+                  </button>
+                  <button class="btn btn--primary btn--sm" type="button" data-tier-save>
+                    <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <p class="settings-row__hint" style="margin:0 0 var(--sp-12)" data-i18n="fans.tiers.sub">Each tier's gates and what it unlocks. Going down the ladder, both the conditions and the benefits ease off.</p>
+
+            <div class="tier-ov-scroll" data-tier-table>
+              <div class="tier-ov tier-ov__head">
+                <span></span>
+                <span class="tier-ov__cell"><span class="badge badge--orange"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></span>
+                <span class="tier-ov__cell"><span class="badge badge--info"><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></span>
+                <span class="tier-ov__cell"><span class="badge badge--success"><span data-i18n="fans.tier.devoted">Ranked fans/span></span></span>
+                <span class="tier-ov__cell"><span class="badge"><span data-i18n="tier-settings.tier.fan">Fan</span></span></span>
+              </div>
+              <!-- 權益數量：由下面那些列實際算出來的，不寫死——編輯時開關一動就要跟著變，
+                   寫死的話「我剛給了超級粉絲一項權益」這件事在摘要上看不到。
+                   編輯態不給控制項（它是結果不是設定），但不隱藏。 -->
+              <div class="tier-ov tier-ov__row tier-ov__row--locked" data-tier-perkcount>
+                <span class="tier-ov__rowlabel" data-i18n="fans.tiers.perkcount">Benefits</span>
+                <span class="tier-ov__cell" data-perk-total="0">0</span>
+                <span class="tier-ov__cell" data-perk-total="1">0</span>
+                <span class="tier-ov__cell" data-perk-total="2">0</span>
+                <span class="tier-ov__cell" data-perk-total="3">0</span>
+              </div>
+              <div class="tier-ov tier-ov__row">
+                <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.toppct">Top %</span><button class="explain-btn" type="button" data-explain="explain-toppct" aria-label="How Top % works" data-i18n-aria-label="tier-settings.gate.toppct-explain"><i data-lucide="info" class="ztor-icon"></i></button></span><small data-i18n="fans.tiers.toppct-hint">Ranked by loyalty points</small></span>
+<span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">40%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="40"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">75%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="75"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
+              </div>
+              <div class="tier-ov tier-ov__row">
+                <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.points">Min. loyalty points</span><button class="explain-btn" type="button" data-explain="explain-points" aria-label="Why there is also a points floor" data-i18n-aria-label="tier-settings.gate.points-explain"><i data-lucide="info" class="ztor-icon"></i></button></span></span>
+<span class="tier-ov__cell"><span class="tier-ov__read">800 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="800"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">500 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="500"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">200 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="200"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
+              </div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.early">Early access · merch &amp; tickets</span><span class="tier-ov__cell"><span class="tier-ov__read">7 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="7"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">3 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="3"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">1 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.discount">Merch discount</span><span class="tier-ov__cell"><span class="tier-ov__read">20%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="20"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">5%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="5"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.auction">VIP auction · creator’s personal items</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vipshop">VIP e-shop</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vault">Creator’s vault · VIP access</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvoice">Birthday voice message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvideo">Birthday video message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.demos">Demo tracks</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bts">Behind the scenes</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.livestream">Private livestreams</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            </div>
+
+            <!-- 只在編輯態出現：新增一列權益，四個分級的格子直接就在那裡（全部關著）。 -->
+            <div class="bmx__add" data-tier-editonly hidden>
+              <button class="btn btn--outline btn--sm" type="button" data-tier-add><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="ben.add">Add gated content</span></button>
+              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ben.add-hint">Added once — it appears on every tier for you to switch on.</span>
+            </div>
+
+            <div class="info-banner mt-24" data-tier-editonly hidden>
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="fans.tiers.effective">Threshold and multiplier changes apply at the next nightly recompute. Benefit changes apply immediately.</span>
+            </div>
+          </section>
+
+          <section class="card" data-tier-card>
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="tier-settings.mult.title">Behavior multipliers</h3>
+              <div class="flex-row">
+                <span data-icon-idle>
+                  <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
+                    <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
+                  </button>
+                </span>
+                <span data-icon-editing hidden class="flex-row">
+                  <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
+                    <span data-i18n="tier-settings.btn.discard">Cancel</span>
+                  </button>
+                  <button class="btn btn--primary btn--sm" type="button" data-tier-save>
+                    <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
+                  </button>
+                </span>
+              </div>
+            </div>
+            <p class="settings-row__hint" style="margin:0 0 var(--sp-8)" data-i18n="fans.tiers.mult-sub">How much each behaviour is worth in loyalty points. This set is the same for every tier, so it has no columns.</p>
+            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.purchase">Purchases</div><div class="settings-row__hint">每消費 $1 換算的點數</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">3 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="3" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.event">Event check-ins</div><div class="settings-row__hint">實體到場一次</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">5 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="5" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.interact">Interactions</div><div class="settings-row__hint">留言、分享、投票</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label" data-i18n="tier-settings.mult.referral">Referrals</div><div class="settings-row__hint">帶進一位新粉絲</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">8 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="8" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+          </section>
+
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="fans.tiers.rules">Rules</h3>
+            </div>
+            <p class="settings-row__hint" style="margin:0 0 var(--sp-8)" data-i18n="tier-settings.rules.sub">How the tier system behaves. These are product rules — surfaced here, owned upstream.</p>
+            <div class="settings-row"><div><div class="settings-row__label">雙重門檻升級</div><div class="settings-row__hint">粉絲要同時通過該分級的兩道門檻——前 % 名<b>以及</b>最低忠誠點數——才會升級。</div></div></div>
+            <div class="settings-row"><div><div class="settings-row__label">門檻必須單調</div><div class="settings-row__hint">高分級的要求必須嚴格高於低分級，否則不能儲存。<em>確切驗證邏輯待上游確認。</em></div></div></div>
+            <div class="settings-row"><div><div class="settings-row__label">版本化、不回溯</div><div class="settings-row__hint">每次儲存產生一個不可變更的分級設定版本。舊版本下已賺到的收入與徽章不會被改寫。</div></div></div>
+            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">變更何時生效</div><div class="settings-row__hint">門檻與行為加權於下次每晚重算時生效；權益立即生效。</div></div></div>
+          </section>
+
+        </div>
+
+        <!-- 粉絲組成：分級的結果，人數是算出來的，所以沒有編輯鈕。
+             用圓餅不用長條：這裡問的是「這一整塊是怎麼被分掉的」，不是「誰比誰長」。 -->
+        <section class="card">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
+          </div>
+          <div class="fans-compose">
+            <div class="pie" aria-hidden="true" data-pie
+                 style="--pie-size:150px;--pie-stops:
+                   var(--primary) 0 12%,
+                   var(--status-info) 0 40%,
+                   var(--status-success) 0 77%,
+                   var(--foreground-muted) 0 100%"></div>
+            <div class="fans-compose__legend">
+              <!-- 名稱與百分比拆成兩個節點（2026-08-01）：改「前 % 名」時這裡的人數要
+                   跟著即時重算（見下方 <script> 的 updateComposition()），而百分比
+                   文字如果還黏在同一個 data-i18n 字串裡，切語言時 applyI18n 會把它
+                   蓋回寫死的「12%」，剛算出來的數字就丟了。拆開後名稱仍走 i18n、
+                   百分比與人數改由 JS 直接寫值。 -->
+              <div class="source-list" id="fans-tier-list">
+                <div class="source-row" data-tier-share="12" data-rev="8420"><span class="source-row__swatch" style="background:var(--primary)"></span><span><span data-i18n="fans.tier.inner">Inner Circle</span> · <span class="source-row__sharepct">12%</span></span><span class="source-row__amt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+                <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:var(--status-info)"></span><span><span data-i18n="fans.tier.super">Superfan</span> · <span class="source-row__sharepct">28%</span></span><span class="source-row__amt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+                <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span><span data-i18n="fans.tier.devoted">Ranked fans</span> · <span class="source-row__sharepct">37%</span></span><span class="source-row__amt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+                <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span><span data-i18n="fans.tier.fan">Fan</span> · <span class="source-row__sharepct">23%</span></span><span class="source-row__amt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+              </div>
+            </div>
+          </div>
+          <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden。 -->
+          <div class="insight-row hidden" id="fans-pareto" hidden>
+            <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
+            <p class="insight-row__text" id="fans-pareto-text"></p>
+          </div>
         </section>
+
+        </div>
       </div>
 
       </div><!-- /.when-data -->
@@ -614,8 +889,69 @@
   </div>
 </div>
 
+
+<!-- ── 變更歷史（唯讀）── 來源是原本「規則與版本」那段的 version history。 -->
+<div class="payout-modal" data-tier-modal="history" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="tier-hist-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="tier-hist-title" data-i18n="fans.tiers.history">Change history</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-tier-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-12)" data-i18n="fans.tiers.history-sub">Each save creates an immutable version. Revenue and badges already earned under an old version are never rewritten, so this record is read-only.</p>
+      <div class="settings-row"><div><div class="settings-row__label">v3 · 2026/05/26 <span class="badge badge--success">目前版本</span></div><div class="settings-row__hint">把「上榜粉絲」的最低忠誠點數由 250 降到 200；新增權益「私人直播」（僅核心圈）。</div></div><div class="settings-row__value">重新分級 34 位粉絲</div></div>
+      <div class="settings-row"><div><div class="settings-row__label">v2 · 2026/03/01 </div><div class="settings-row__hint">行為加權「推薦」由 5× 調到 8×；「週邊折扣」核心圈由 15% 調到 20%。</div></div><div class="settings-row__value">重新分級 112 位粉絲</div></div>
+      <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">v1 · 2026/01/12 <span class="badge">初版</span></div><div class="settings-row__hint">建立四個分級與初始門檻。</div></div><div class="settings-row__value">—</div></div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-tier-close data-i18n="tier-settings.explain.close">Close</button>
+    </div>
+  </section>
+</div>
+
+<!-- 門檻的兩個說明面板，原樣自 tier-settings.html（備份頁）搬來。 -->
+<div class="explain" id="explain-toppct" hidden>
+  <div class="explain__dialog" role="dialog" aria-modal="true" aria-labelledby="explain-toppct-title">
+    <div class="explain__head">
+      <h2 class="explain__title" id="explain-toppct-title" data-i18n="tier-settings.explain.toppct.title">How “Top %” works</h2>
+      <button class="explain__close" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="explain__body">
+      <p class="explain__lead" data-i18n="tier-settings.explain.toppct.lead">A <strong>relative</strong> gate. It asks where a fan sits compared with everyone else — not how much they have.</p>
+      <ol class="explain__steps">
+        <li data-i18n="tier-settings.explain.toppct.s1">Every fan is ranked by loyalty points, highest first.</li>
+        <li data-i18n="tier-settings.explain.toppct.s2">Their rank becomes a percentile — rank ÷ total fans.</li>
+        <li data-i18n="tier-settings.explain.toppct.s3">“Top 10%” means the highest-scoring tenth of your audience.</li>
+      </ol>
+      <div class="explain__example">
+        <span class="explain__example-label" data-i18n="tier-settings.explain.example">Example</span>
+        <p data-i18n="tier-settings.explain.toppct.eg">With <strong>1,840 fans</strong>, Top 10% is the highest-ranked <strong>184</strong> of them.</p>
+      </div>
+      <p data-i18n="tier-settings.explain.toppct.note">Because it is relative, the bar moves as your audience grows. A fan can drop out of the top 10% without losing a single point — someone else simply overtook them.</p>
+    </div>
+  </div>
+</div>
+
+<div class="explain" id="explain-points" hidden>
+  <div class="explain__dialog" role="dialog" aria-modal="true" aria-labelledby="explain-points-title">
+    <div class="explain__head">
+      <h2 class="explain__title" id="explain-points-title" data-i18n="tier-settings.explain.points.title">Why there is also a points floor</h2>
+      <button class="explain__close" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="explain__body">
+      <p class="explain__lead" data-i18n="tier-settings.explain.points.lead">An <strong>absolute</strong> gate. A percentile always produces a top 1% — even in a tiny audience. The floor is what stops a tier being handed out to someone who has not earned it.</p>
+      <div class="explain__example">
+        <span class="explain__example-label" data-i18n="tier-settings.explain.example">Example</span>
+        <p data-i18n="tier-settings.explain.points.eg">A creator with <strong>40 fans</strong>: the top 1% is one person. If that fan has <strong>120 points</strong> and Inner Circle’s floor is <strong>800</strong>, they still do not enter. The tier stays empty until someone genuinely reaches it.</p>
+      </div>
+      <p class="explain__rule" data-i18n="tier-settings.explain.points.rule">A fan must clear both gates. Being top 1% is not enough on its own, and neither is a high score outside the percentile.</p>
+    </div>
+  </div>
+</div>
+
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/explainer.js?v=r2.2"></script>
 <script src="js/table-sort.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -641,6 +977,11 @@
         t.setAttribute('aria-selected', on ? 'true' : 'false');
       });
       panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      /* 動作要貼在它的對象旁邊：群發訊息是對「當下這份名單」發的，
+         所以切到名人堂／分級設定時整組收起來（[hidden] 由 list-toolbar.css 蓋掉 display）。 */
+      document.querySelectorAll('[data-tab-actions]').forEach(a => {
+        a.hidden = a.getAttribute('data-tab-actions') !== name;
+      });
     }
     tablist.addEventListener('click', e => {
       const btn = e.target.closest('.tabs__item');
@@ -654,33 +995,43 @@
      句子含動態 {x}{y}，i18n.js 無法插值；故由本腳本依現時 lang 自填，
      並掛 i18n:applied 在語言切換後重寫（不寫 data-i18n，避免被 innerHTML 清空）。 */
   (function () {
-    const rows = Array.from(document.querySelectorAll('#fans-tier-list .source-row'));
     const box  = document.getElementById('fans-pareto');
     const text = document.getElementById('fans-pareto-text');
-    if (!rows.length || !box) return;
+    if (!box) return;
+    let lastX = null, lastY = null;   // i18n:applied 重繪要用最近一次算出的數字，不是重新掃一次 DOM 的舊值
 
-    const totalRev = rows.reduce((s, r) => s + (+r.dataset.rev || 0), 0);
-    let best = null;
-    rows.forEach(r => {
-      const fanShare = +r.dataset.tierShare || 0;          // 人數占比 %
-      const revShare = totalRev ? (+r.dataset.rev || 0) / totalRev * 100 : 0;
-      if (revShare > fanShare) {                            // 合格：revenue share 嚴格大於 fan share
-        if (!best || fanShare < best.fanShare) best = { fanShare, revShare };   // 取人數占比最小者
-      }
-    });
-
-    if (!best) { box.hidden = true; box.classList.add('hidden'); return; }
-    const x = Math.round(best.fanShare);
-    const y = Math.round(best.revShare);
+    /* 抽成函式而不是跑一次即忘：分級設定頁改「前 % 名」時人數會重算（見下方
+       tier-editing 那支 <script>），這裡要能被它叫回來重新掃一次 DOM，
+       不然改完門檻、這句洞察卻還停在舊比例。掛在 window 上是因為兩支腳本
+       是各自獨立的 <script> 區塊、不共用函式作用域，這是最小改動的接法。 */
+    function refresh() {
+      const rows = Array.from(document.querySelectorAll('#fans-tier-list .source-row'));
+      if (!rows.length) return;
+      const totalRev = rows.reduce((s, r) => s + (+r.dataset.rev || 0), 0);
+      let best = null;
+      rows.forEach(r => {
+        const fanShare = +r.dataset.tierShare || 0;
+        const revShare = totalRev ? (+r.dataset.rev || 0) / totalRev * 100 : 0;
+        if (revShare > fanShare) {
+          if (!best || fanShare < best.fanShare) best = { fanShare, revShare };
+        }
+      });
+      if (!best) { box.hidden = true; box.classList.add('hidden'); lastX = null; return; }
+      lastX = Math.round(best.fanShare);
+      lastY = Math.round(best.revShare);
+      paint();
+      box.hidden = false; box.classList.remove('hidden');
+    }
     function paint() {
+      if (lastX == null) return;
       const zh = (document.documentElement.lang === 'zh-Hant');
       text.textContent = zh
-        ? ('最小的 ' + x + '% 粉絲貢獻了 ' + y + '% 收入。')
-        : ('Your top ' + x + '% of fans drive ' + y + '% of revenue.');
+        ? ('最小的 ' + lastX + '% 粉絲貢獻了 ' + lastY + '% 收入。')
+        : ('Your top ' + lastX + '% of fans drive ' + lastY + '% of revenue.');
     }
-    paint();
+    refresh();
     document.addEventListener('i18n:applied', paint);
-    box.hidden = false; box.classList.remove('hidden');
+    window.ztorRefreshFanPareto = refresh;
   })();
 
   /* ── F4 · 流失風險橫幅：有風險才出現（demo 以 data-has-risk 旗標控制）── */
@@ -701,23 +1052,21 @@
        若沿用初始化時的陣列，「載入更多」會取到排序前的那幾列。 */
     const rowsNow = () => Array.from(list.querySelectorAll('.fan-row'));
     const search = document.getElementById('fans-search');
-    const tierF  = document.getElementById('fans-tier-filter');
-    const chips  = Array.from(document.querySelectorAll('#fans-chips .chip'));
+    const tierBtns = Array.from(document.querySelectorAll('#fans-tier-filter .filter-tabs__item'));
+    const tagSel = document.getElementById('fans-chips');
     const footer = document.getElementById('fans-footer');
     const empty  = document.getElementById('fans-empty');
     const emptyClr = document.getElementById('fans-empty-clear');
     const countEl= document.getElementById('fans-count');
     const moreBtn= document.getElementById('fans-loadmore');
 
-    let q = '', tier = 'all';
-    const activeChips = new Set();
+    let q = '', tier = 'all', tag = 'all';
     let shownLimit = PER_LOAD;
 
     function matches(r) {
       const okQ = !q || (r.dataset.search || '').indexOf(q) !== -1;
       const okT = tier === 'all' || r.dataset.tier === tier;
-      const tags = (r.dataset.tags || '').split(' ');
-      const okC = activeChips.size === 0 || Array.from(activeChips).every(c => tags.includes(c));
+      const okC = tag === 'all' || (r.dataset.tags || '').split(' ').includes(tag);
       return okQ && okT && okC;
     }
 
@@ -732,33 +1081,86 @@
 
       const showing = visible.length;
       empty.classList.toggle('hidden', total !== 0);
-      footer.classList.toggle('hidden', total === 0);
+      footer.hidden = total === 0;
 
-      // Showing N of M — 含動態數字，i18n.js 無法插值；依現時 lang 自填，
-      // 並在 i18n:applied 後重算（不用 data-i18n，避免被 innerHTML 清掉）。
+      /* 同 e-shop 商品列表：未載完→只顯示「載入更多」；載完→只顯示 end-cap
+         「已顯示全部 N 位」，兩者互斥，不像原本 count＋按鈕並存。
+         end-cap 文案含動態數字，i18n.js 無法插值；依現時 lang 自填，
+         並在 i18n:applied 後重算（不用 data-i18n，避免被 innerHTML 清掉）。 */
       const zh = (document.documentElement.lang === 'zh-Hant');
-      countEl.textContent = zh
-        ? ('顯示 ' + showing + ' / ' + total + ' 位')
-        : ('Showing ' + showing + ' of ' + total);
-      moreBtn.classList.toggle('hidden', showing >= total);
+      const more = showing < total;
+      moreBtn.hidden = !more;
+      countEl.hidden = more;
+      if (!more) {
+        countEl.textContent = zh ? ('已顯示全部 ' + total + ' 位') : ('Showing all ' + total + (total === 1 ? ' fan' : ' fans'));
+      }
+      countTiers();
     }
 
     function resetLimit() { shownLimit = PER_LOAD; render(); }
 
+    /* 收合式搜尋：放大鏡展開、× 收起並清空（同 projects／e-shop 的既有做法）。 */
+    const searchWrap = document.getElementById('fans-search-wrap');
+    const searchToggle = document.getElementById('fans-search-toggle');
+    const searchClose = document.getElementById('fans-search-close');
+    if (searchWrap && searchToggle && searchClose) {
+      const openSearch = () => { searchWrap.classList.add('is-open'); searchToggle.setAttribute('aria-expanded', 'true'); search.focus(); };
+      const closeSearch = () => { searchWrap.classList.remove('is-open'); searchToggle.setAttribute('aria-expanded', 'false'); search.value = ''; q = ''; resetLimit(); };
+      searchToggle.addEventListener('click', openSearch);
+      searchClose.addEventListener('click', closeSearch);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && searchWrap.classList.contains('is-open')) closeSearch(); });
+    }
+
     search.addEventListener('input', () => { q = search.value.trim().toLowerCase(); resetLimit(); });
-    tierF.addEventListener('change', () => { tier = tierF.value; resetLimit(); });
-    chips.forEach(c => c.addEventListener('click', () => {
-      const key = c.dataset.chip;
-      if (activeChips.has(key)) { activeChips.delete(key); c.setAttribute('aria-pressed', 'false'); c.classList.remove('chip--active'); }
-      else { activeChips.add(key); c.setAttribute('aria-pressed', 'true'); c.classList.add('chip--active'); }
+
+    /* 分級篩選（2026-07-31 由 <select> 改成 .filter-tabs，同項目頁的狀態列）。
+       單選、互斥，所以是 tablist 不是 chip group；每一格帶自己的筆數，
+       使用者按下去之前就知道會剩幾筆。 */
+    tierBtns.forEach(b => b.addEventListener('click', () => {
+      tier = b.dataset.tier;
+      tierBtns.forEach(x => {
+        const on = x === b;
+        x.classList.toggle('filter-tabs__item--active', on);
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
       resetLimit();
     }));
+
+    /* 每一級的筆數只跟「搜尋 × 標籤」連動，不跟分級自己連動——
+       否則選了核心圈之後其他級全變 0，就看不出「切過去會有幾筆」。 */
+    function countTiers() {
+      const rows = rowsNow();
+      tierBtns.forEach(b => {
+        const t = b.dataset.tier;
+        const n = rows.filter(r => {
+          const okQ = !q || (r.dataset.search || '').indexOf(q) !== -1;
+          const okC = tag === 'all' || (r.dataset.tags || '').split(' ').includes(tag);
+          return okQ && okC && (t === 'all' || r.dataset.tier === t);
+        }).length;
+        const el = b.querySelector('[data-tier-count]');
+        if (el) el.textContent = n;
+      });
+    }
+    tagSel.addEventListener('change', () => { tag = tagSel.value; resetLimit(); });
     moreBtn.addEventListener('click', () => { shownLimit += PER_LOAD; render(); });
+    /* 「清除篩選」要把三個軸一起歸零，而且是 UI 與狀態兩邊都歸零——
+       只改變數的話，畫面上藥丸還亮著、下拉還選著，使用者會以為沒清乾淨。
+       分級改成 .filter-tabs 之後不能再用 tierF.value，要走同一組按鈕的 class。 */
     if (emptyClr) emptyClr.addEventListener('click', () => {
       q = ''; search.value = '';
-      tier = 'all'; tierF.value = 'all';
-      activeChips.clear();
-      chips.forEach(c => { c.setAttribute('aria-pressed', 'false'); c.classList.remove('chip--active'); });
+      if (searchWrap) { searchWrap.classList.remove('is-open'); searchToggle.setAttribute('aria-expanded', 'false'); }
+      tier = 'all';
+      tierBtns.forEach(b => {
+        const on = b.dataset.tier === 'all';
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      tag = 'all';
+      tagSel.value = 'all';
+      /* zselect 靠原生 change 事件同步觸發器上的文字（見 zselect.js:84）——
+         只改 .value 不發事件的話，下拉按鈕上還會留著舊標籤。
+         這也會再跑一次上面的 change handler，把 tag 設成 'all'，無害。 */
+      tagSel.dispatchEvent(new Event('change', { bubbles: true }));
       resetLimit();
     });
 
@@ -954,6 +1356,389 @@
     selectTab('history');
     if (window.lucide) lucide.createIcons();
   });
+})();
+</script>
+
+<script>
+/* 分級設定分頁：就地編輯（2026-08-01 使用者裁示，取代原本的編輯彈窗）。
+
+   互動＝閒置態一顆「編輯」；編輯態換成「取消」＋「儲存」兩顆（同日再裁示：
+   除了儲存還要有能夠不落地的取消）。取消要回到「按下編輯之前」的樣子，
+   所以進入編輯的當下要拍一張快照，取消時整份還原；儲存則是把編輯態的值
+   寫回唯讀那一面（原型不落地資料，這一步就是「儲存」在畫面上的全部意義）。
+   每張卡各自獨立，因為使用者是對著單一 section 說話。
+
+   變更歷史仍是彈窗：它是唯讀的另一件事，不屬於這個模式。 */
+(function () {
+  const cards = Array.from(document.querySelectorAll('[data-tier-card]'));
+  if (!cards.length) return;
+  const table = document.querySelector('[data-tier-table]');
+  const mainCard = table ? table.closest('[data-tier-card]') : null;
+
+  /* 主卡（組織你的粉絲圈）額外快照＋還原粉絲組成的預覽——那張圓餅／圖例
+     卡不在 [data-tier-card] 底下（它本來就唯讀、沒有自己的編輯狀態），但
+     「前 % 名」打字時會即時改它（見下方 updateComposition），所以取消時
+     也要連它一起復原，不然按了取消、輸入框回去了，圓餅卻停在剛才打的預覽值。 */
+  const pieEl = document.querySelector('[data-pie]');
+  const legendRows = Array.from(document.querySelectorAll('#fans-tier-list .source-row'));
+
+  function snapshot(card) {
+    const snap = {
+      inputs: Array.from(card.querySelectorAll('.tier-ov__edit input')).map(i => i.value),
+      switches: Array.from(card.querySelectorAll('.tier-ov__edit .switch')).map(s => s.classList.contains('switch--on')),
+      addedRows: Array.from(card.querySelectorAll('.tier-ov__row--added, .tier-ov__row--new')),
+    };
+    if (card === mainCard && pieEl) {
+      snap.pieStops = pieEl.style.getPropertyValue('--pie-stops');
+      snap.legend = legendRows.map(r => ({
+        share: r.dataset.tierShare,
+        pct: r.querySelector('.source-row__sharepct') ? r.querySelector('.source-row__sharepct').textContent : '',
+        amt: r.querySelector('.source-row__amt') ? r.querySelector('.source-row__amt').textContent : '',
+      }));
+    }
+    return snap;
+  }
+
+  function restore(card, snap) {
+    card.querySelectorAll('.tier-ov__edit input').forEach((i, n) => {
+      if (snap.inputs[n] !== undefined) i.value = snap.inputs[n];
+    });
+    card.querySelectorAll('.tier-ov__edit .switch').forEach((s, n) => {
+      const on = !!snap.switches[n];
+      s.classList.toggle('switch--on', on);
+      s.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    /* 這一輪新增／複製出來的權益列整列移除——它們在快照裡不存在。 */
+    card.querySelectorAll('.tier-ov__row--added, .tier-ov__row--new').forEach(r => {
+      if (snap.addedRows.indexOf(r) === -1) r.remove();
+    });
+    if (card === mainCard && pieEl && snap.pieStops) {
+      pieEl.style.setProperty('--pie-stops', snap.pieStops);
+      legendRows.forEach((r, i) => {
+        const L = snap.legend[i];
+        if (!L) return;
+        r.dataset.tierShare = L.share;
+        const pctEl = r.querySelector('.source-row__sharepct');
+        if (pctEl) pctEl.textContent = L.pct;
+        const amtEl = r.querySelector('.source-row__amt');
+        if (amtEl) amtEl.textContent = L.amt;
+      });
+      if (window.ztorRefreshFanPareto) window.ztorRefreshFanPareto();
+    }
+  }
+
+  /* 離開編輯（儲存）時把唯讀那一面同步成剛才改的值。 */
+  function commit(card) {
+    card.querySelectorAll('.tier-ov__cell').forEach(cell => {
+      const read = cell.querySelector('.tier-ov__read');
+      if (!read) return;
+      const input = cell.querySelector('.tier-ov__edit input');
+      const sw = cell.querySelector('.tier-ov__edit .switch');
+      if (input) {
+        const unit = cell.querySelector('.amount-field__unit');
+        const u = unit ? unit.textContent.trim() : '';
+        read.textContent = input.value + (u ? (u === '×' ? ' ' + u : u) : '');
+      } else if (sw) {
+        const on = sw.classList.contains('switch--on');
+        read.textContent = on ? '✓' : '—';
+        read.classList.toggle('tier-ov__yes', on);
+        read.classList.toggle('tier-ov__no', !on);
+      }
+    });
+  }
+
+  const cardSnaps = new WeakMap();
+
+  function setEditing(card, editing) {
+    card.classList.toggle('is-editing', editing);
+    const idle = card.querySelector('.card__head [data-icon-idle]');
+    const busy = card.querySelector('.card__head [data-icon-editing]');
+    if (idle) idle.hidden = editing;
+    if (busy) busy.hidden = !editing;
+    card.querySelectorAll('[data-tier-editonly]').forEach(el => { el.hidden = !editing; });
+  }
+
+  cards.forEach(card => {
+    const editBtn = card.querySelector('[data-tier-edit]');
+    const cancelBtn = card.querySelector('[data-tier-cancel]');
+    const saveBtn = card.querySelector('[data-tier-save]');
+    if (!editBtn) return;
+
+    editBtn.addEventListener('click', () => {
+      cardSnaps.set(card, snapshot(card));
+      setEditing(card, true);
+    });
+    if (cancelBtn) cancelBtn.addEventListener('click', () => {
+      const snap = cardSnaps.get(card);
+      if (snap) restore(card, snap);
+      countPerks();
+      setEditing(card, false);
+    });
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      commit(card);
+      countPerks();
+      setEditing(card, false);
+    });
+  });
+
+  /* 開關（只有編輯態點得到，唯讀態它 display:none）。新列也要接線。 */
+  function wireSwitches(scope) {
+    scope.querySelectorAll('.switch').forEach(sw => {
+      if (sw.dataset.wired) return;
+      sw.dataset.wired = '1';
+      sw.addEventListener('click', () => {
+        const on = sw.classList.toggle('switch--on');
+        sw.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    });
+  }
+  wireSwitches(document);
+
+  /* 權益數量＝每一欄實際被打開的權益數。用算的不用寫死：編輯時開關一動就要跟著變，
+     不然「我剛給了超級粉絲一項權益」這件事在摘要那一列上看不到。
+     數的是「權益列」——門檻兩列（帶說明鈕的那兩列）與這一列自己都不算。 */
+  const perkRow = document.querySelector('[data-tier-perkcount]');
+  function countPerks() {
+    if (!perkRow || !table) return;
+    const rows = Array.from(table.querySelectorAll('.tier-ov__row'))
+      .filter(r => r !== perkRow && !r.classList.contains('tier-ov__row--new')
+                && !r.querySelector('.explain-btn'));
+    for (let col = 0; col < 4; col++) {
+      let n = 0;
+      rows.forEach(r => {
+        const cell = r.querySelectorAll('.tier-ov__cell')[col];
+        if (!cell) return;
+        const sw = cell.querySelector('.switch');
+        if (sw) { if (sw.classList.contains('switch--on')) n++; return; }
+        const input = cell.querySelector('input');
+        if (input) { if (input.value.trim() !== '') n++; return; }
+        if (!cell.classList.contains('tier-ov__no')) n++;
+      });
+      const out = perkRow.querySelector('[data-perk-total="' + col + '"]');
+      if (out) out.textContent = n;
+    }
+  }
+  countPerks();
+  if (table) {
+    table.addEventListener('click', e => { if (e.target.closest('.switch')) countPerks(); });
+    table.addEventListener('input', countPerks);
+  }
+
+  /* 改「前 % 名」時，粉絲組成（圓餅＋圖例）要跟著即時變（2026-08-01 使用者裁示）。
+     三個分級門檻是巢狀的：核心圈 ⊂ 超級粉絲 ⊂ 上榜粉絲 ⊂ 全部——下層的「前 %」
+     不能比上層窄，這裡用 Math.max 保底，避免打字打到一半（例如把超級粉絲改成
+     5%，比核心圈的 10% 還窄）算出負的人數。
+     母數用 1,283（活躍粉絲，也是原始 154/359/475/295 那組示範數字的母數：
+     154/1283=12.0%、359/1283=28.0%……全部對得上），不是全站 1,840，
+     兩個母數在這頁本來就分屬「受眾」與「站內活躍」兩件事，見粉絲總覽頁的
+     單位界線註解。 */
+  const TOTAL_FANS = 1283;
+  const PIE_VARS = ['--primary', '--status-info', '--status-success', '--foreground-muted'];
+  function fansUnit(n) {
+    const zh = document.documentElement.lang === 'zh-Hant';
+    return zh ? (n + ' 位') : (n + (n === 1 ? ' fan' : ' fans'));
+  }
+  function updateComposition() {
+    if (!pieEl || legendRows.length !== 4 || !table) return;
+    const gateRow = Array.from(table.querySelectorAll('.tier-ov__row'))
+      .find(r => r.querySelector('[data-i18n="tier-settings.gate.toppct"]'));
+    if (!gateRow) return;
+    const gateInputs = Array.from(gateRow.querySelectorAll('.tier-ov__edit input'));
+    if (gateInputs.length < 3) return;
+    const raw = gateInputs.map(i => Math.max(0, Math.min(100, +i.value || 0)));
+    const cumPct = [raw[0], Math.max(raw[0], raw[1]), Math.max(raw[0], raw[1], raw[2]), 100];
+    const cumCount = cumPct.map(p => Math.round(TOTAL_FANS * p / 100));
+    cumCount[3] = TOTAL_FANS;   // 最後一階鎖定吃滿總數，不留四捨五入的零頭
+
+    let prevCount = 0, prevPct = 0;
+    const stops = [];
+    legendRows.forEach((row, i) => {
+      const n = Math.max(0, cumCount[i] - prevCount);
+      const cumPctRounded = Math.round(cumCount[i] / TOTAL_FANS * 100);
+      const pct = cumPctRounded - prevPct;
+      row.dataset.tierShare = pct;
+      const pctEl = row.querySelector('.source-row__sharepct');
+      if (pctEl) pctEl.textContent = pct + '%';
+      const amtEl = row.querySelector('.source-row__amt');
+      if (amtEl) amtEl.textContent = fansUnit(n);
+      stops.push('var(' + PIE_VARS[i] + ') 0 ' + cumPctRounded + '%');
+      prevCount = cumCount[i];
+      prevPct = cumPctRounded;
+    });
+    pieEl.style.setProperty('--pie-stops', stops.join(', '));
+    if (window.ztorRefreshFanPareto) window.ztorRefreshFanPareto();
+  }
+  /* 只掛在三個「前 % 名」欄位上，不是整張表——權益開關、行為加權都不影響
+     粉絲組成，掛在 table 級的 input 事件上會每次都白算一次。 */
+  {
+    const gateRow0 = Array.from(table ? table.querySelectorAll('.tier-ov__row') : [])
+      .find(r => r.querySelector('[data-i18n="tier-settings.gate.toppct"]'));
+    if (gateRow0) gateRow0.querySelectorAll('.tier-ov__edit input').forEach(i =>
+      i.addEventListener('input', updateComposition));
+  }
+
+  /* 新增權益：照 js/benefit-matrix.js 的 addRow()——就地在表尾長出一列，四個分級的
+     格子已經在那裡（全部關著），名稱欄自動 focus。Enter 存、Esc 取消、失焦視同存。
+     全部預設 OFF：權益必須是刻意給的，不能因為新增就自動生效。 */
+  const addBtn = document.querySelector('[data-tier-add]');
+  const isZh = () => document.documentElement.lang === 'zh-Hant';
+  if (addBtn && table) addBtn.addEventListener('click', () => {
+    const existing = table.querySelector('.tier-ov__row--new');
+    if (existing) { existing.querySelector('input').focus(); return; }
+    const el = document.createElement('div');
+    el.className = 'tier-ov tier-ov__row tier-ov__row--new';
+    let cells = '';
+    for (let i = 0; i < 4; i++) {
+      cells += '<span class="tier-ov__cell"><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false" disabled></button></span></span>';
+    }
+    el.innerHTML = '<span class="tier-ov__rowlabel"><input class="input" maxlength="60" placeholder="' +
+      (isZh() ? '權益名稱，例如：專屬語音留言' : 'Name this benefit') + '"></span>' + cells;
+    table.appendChild(el);
+    const input = el.querySelector('input');
+    input.focus();
+
+    let done = false;
+    function commitRow() {
+      if (done) return;
+      done = true;
+      const name = input.value.trim();
+      el.remove();
+      if (!name) return;
+      const row = document.createElement('div');
+      row.className = 'tier-ov tier-ov__row tier-ov__row--added';
+      let c = '';
+      for (let j = 0; j < 4; j++) {
+        c += '<span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span>' +
+             '<span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span>';
+      }
+      row.innerHTML = '<span class="tier-ov__rowlabel"></span>' + c;
+      row.querySelector('.tier-ov__rowlabel').textContent = name;   /* 使用者輸入不進 innerHTML */
+      table.appendChild(row);
+      wireSwitches(row);
+      countPerks();
+      row.querySelector('.switch').focus();
+    }
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commitRow(); }
+      else if (e.key === 'Escape') { e.preventDefault(); done = true; el.remove(); }
+    });
+    input.addEventListener('blur', commitRow);
+  });
+
+  /* 列選單：刪除 ／ 複製。用事件委派，新增與複製出來的列自動涵蓋。 */
+  if (table) table.addEventListener('click', e => {
+    const del = e.target.closest('[data-perk-del]');
+    const dup = e.target.closest('[data-perk-dup]');
+    if (!del && !dup) return;
+    const row = e.target.closest('.tier-ov__row');
+    if (!row) return;
+    const dd = row.querySelector('details.dropdown');
+    if (dd) dd.open = false;   /* 動作做完把選單收起來，不然它會蓋住剛複製出來的列 */
+
+    if (del) {
+      /* 移除等於從四個分級一起拿掉——那是「一項權益定義一次」的另一面，
+         真的有人拿著的時候要先說清楚，沒人拿的就安靜刪掉（同 benefit-matrix 的判斷）。 */
+      const live = Array.from(row.querySelectorAll('.tier-ov__cell')).filter(c => {
+        const sw = c.querySelector('.switch');
+        if (sw) return sw.classList.contains('switch--on');
+        const inp = c.querySelector('input');
+        return inp && inp.value.trim() !== '';
+      }).length;
+      const name = row.querySelector('.tier-ov__rowlabel').textContent.trim();
+      if (live > 0) {
+        const msg = isZh()
+          ? ('「' + name + '」目前在 ' + live + ' 個分級啟用中。移除會從所有分級一起拿掉，確定嗎？')
+          : ('“' + name + '” is live on ' + live + ' tier(s). Removing takes it off all of them. Continue?');
+        if (!window.confirm(msg)) return;
+      }
+      row.remove();
+      countPerks();
+      return;
+    }
+
+    /* 複製：整列複製（四個分級的值原樣帶過來），名稱欄換成輸入框讓人先改名。
+       預設帶「名稱 副本」而不是留空——留空會讓 Enter 直接送出一個沒有名字的權益。 */
+    const clone = row.cloneNode(true);
+    clone.classList.add('tier-ov__row--added');
+    const label = clone.querySelector('.tier-ov__rowlabel');
+    const base = row.querySelector('.tier-ov__rowlabel').textContent.trim();
+    label.removeAttribute('data-i18n');
+    label.innerHTML = '';
+    const input = document.createElement('input');
+    input.className = 'input';
+    input.maxLength = 60;
+    input.value = isZh() ? (base + ' 副本') : (base + ' copy');
+    label.appendChild(input);
+    row.insertAdjacentElement('afterend', clone);
+    clone.querySelectorAll('.switch').forEach(sw => { delete sw.dataset.wired; });
+    wireSwitches(clone);
+    countPerks();
+    input.focus();
+    input.select();
+
+    let done = false;
+    function commitName() {
+      if (done) return;
+      done = true;
+      const name = input.value.trim();
+      if (!name) { clone.remove(); countPerks(); return; }
+      label.textContent = name;   /* 使用者輸入不進 innerHTML */
+    }
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') { ev.preventDefault(); commitName(); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); done = true; clone.remove(); countPerks(); }
+    });
+    input.addEventListener('blur', commitName);
+  });
+
+  /* 變更歷史彈窗（唯讀，與編輯模式無關）。 */
+  const hist = document.querySelector('[data-tier-modal="history"]');
+  if (hist) {
+    document.querySelectorAll('[data-tier-open="history"]').forEach(b =>
+      b.addEventListener('click', () => { hist.hidden = false; }));
+    hist.addEventListener('click', e => {
+      if (e.target === hist || e.target.closest('[data-tier-close]')) hist.hidden = true;
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hist.hidden = true; });
+  }
+})();
+</script>
+
+<script>
+/* 粉絲頭像（2026-08-01）。站上沒有粉絲人像素材，也不該拿商品／IP 圖當人臉，
+   所以用縮寫圓——跟頂列帳號頭像同一套語言（sidebar.js 的 avatarInitial()）。
+
+   「隨機」是視覺上的隨機、不是真的 Math.random()：色相由名字雜湊出來，
+   所以同一位粉絲每次載入、切語言、重新排序都是同一個顏色。真隨機的話
+   排序一次整欄顏色全變，看起來像換了一批人。
+
+   語言切換與排序後要重跑：切中文時名字從 Wei Yu-han 變成林詩涵，縮寫要跟著變。 */
+(function () {
+  const PALETTE = ['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5', '--chart-6'];
+  /* 短字串（中文姓名常常只有 3 個字）用單純的 h*31+c，低位元幾乎不散，
+     實測 5 個人有 4 個撞到同一色。補一輪 avalanche 把高位攪進低位再取模。 */
+  function hash(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15;
+    return Math.abs(h);
+  }
+  function paint() {
+    document.querySelectorAll('[data-fan-avatar]').forEach(el => {
+      const title = el.parentElement.querySelector('.data-list__title');
+      const name = title ? title.textContent.trim() : '';
+      if (!name) return;
+      /* 中文取姓（第一個字），英文取名字首字母——「Wei Yu-han」要的是 W 不是 W-Y。 */
+      el.textContent = name.charAt(0).toUpperCase();
+      el.style.setProperty('--fan-avatar', 'var(' + PALETTE[hash(name) % PALETTE.length] + ')');
+    });
+  }
+  paint();
+  document.addEventListener('i18n:applied', paint);
+  document.addEventListener('ztor:sorted', paint);
 })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>

@@ -420,12 +420,58 @@
 .alert-inset {
   position: sticky;
   top: var(--sp-16);
-  z-index: 6;
+  /* 2026-08-01 使用者回報「tab 滑上去時會在通知上面」：原本是 6，跟 .list-toolbar
+     （list-toolbar.css:20）同層——同層時 DOM 在後面的贏，所以整條分頁工作列會蓋過
+     這張黏頂的通知。抬到 10：高過一般頁面內容與工作列（6），仍低於黏頂的
+     .list-dock（20）／篩選浮層與下拉（30）／app-topbar（50），那三者本來就該壓在
+     通知之上。站上沒有正式的 z 階梯文件，以既有數字為準對齊。 */
+  z-index: 10;
   width: 100%;              /* 顯式設；靠 flex 預設 stretch 撐不滿 */
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: 28px;
   margin-bottom: 8px;
+}
+
+/* 黏頂遮罩（2026-08-01 使用者裁示，先做 earnings-sony 探索頁確認效果後套用）。
+   卡片本身不透明，但上方那道 16px 空隙與卡片正下方是空的，往上捲時內容會從那
+   兩處穿出來。補一層與頁面同色的底：上緣往上多蓋一大段（黏頂與過捲都不露），
+   下緣延伸 --alert-inset-fade 做淡出，內容在通知下方漸消而不是被硬邊切斷。
+   z-index:-1 讓它坐在 alert 卡後面——.alert-inset 有 z-index、自成堆疊脈絡，
+   負值只落到這個脈絡的底層，仍然蓋在頁面內容之上。
+   靜止時（沒捲動）卡片下緣到頁面第一行字有 68px 空隙，44px 的淡出整段落在空白
+   處，標題不會被糊到（earnings-sony 實測）。 */
+.alert-inset {
+  --alert-inset-fade: 44px;
+}
+/* 貼頂列接手頂端時，通知條讓位（2026-08-01 使用者裁示：「滑到 tab，tab 應該 fix 置頂，
+   此時消息提示應該被往上滑掉」）。解除 sticky 讓它跟著頁面捲走，而不是繼續黏在
+   dock 下緣露出一截——e-shop 貼頂時通知條的下緣本來就會從 dock 底下探出約 15px
+   （dock 貼在 top:0、通知條貼在 top:16，兩者高度不同），這條一併修掉。
+   :has() 只在真的有貼頂列的頁面生效，其餘頁面的通知條行為不動。 */
+.main:has(.list-dock.is-snapped) .alert-inset {
+  /* relative 而不是 static：兩者都讓它脫離黏頂、跟著頁面捲走，但下面那層遮罩
+     （::before）是 position:absolute，要靠這個元素當定位基準。改成 static 會讓
+     基準往上跑到外層容器，遮罩的框因此撐成整片、把整頁內容蓋掉（2026-08-01
+     使用者回報「往上滑 content 全部不見了」的真因）。 */
+  position: relative;
+}
+
+.alert-inset::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -200px;
+  bottom: calc(var(--alert-inset-fade) * -1);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--surface-page) 0,
+    var(--surface-page) calc(100% - var(--alert-inset-fade)),
+    transparent 100%
+  );
 }
 .alert--inset-card {
   padding: 12px 16px;

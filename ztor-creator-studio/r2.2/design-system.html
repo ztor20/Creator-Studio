@@ -98,6 +98,7 @@
 <!-- r2.2 新進元件（19 支，2026-07-29 補齊 demo；zselect 原本就有 <link>，見上方 45 行） -->
 <link rel="stylesheet" href="ds-components/artist-picker.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/benefit-matrix.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tier-overview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/brand-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart-tip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
@@ -598,6 +599,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="toc__subgroup"><span data-en>R2.2 new components (19)</span><span data-zh>R2.2 新元件（19）</span></div>
     <a class="toc__link toc__link--sub" href="#artist-picker">Artist picker</a>
     <a class="toc__link toc__link--sub" href="#benefit-matrix">Benefit matrix</a>
+    <a class="toc__link toc__link--sub" href="#tier-overview">Tier overview</a>
     <a class="toc__link toc__link--sub" href="#brand-card">Brand card</a>
     <a class="toc__link toc__link--sub" href="#chart-tip">Earnings chart tooltip</a>
     <a class="toc__link toc__link--sub" href="#checkbox">Checkbox</a>
@@ -3743,7 +3745,7 @@ The first thing buyers see</span>
   <p class="field-text" data-zh>active tab 的橘色底線貼在 <code>.tabs__item</code> 下緣。只有讓 tabs 撐滿整個 58px，底線才會落在殼層最底部、而不是浮在中間——所以是固定高度加 <code>align-items: stretch</code>。</p>
   <p class="field-label" data-en>Not part of this component</p><p class="field-label" data-zh>不屬於本元件的部分</p>
   <p class="field-text" data-en>Sticky pinning depends on each page's scroll container height and stacking, so it stays in the page's own <code>&lt;style&gt;</code>: E-Shop pins both layers (status row at <code>top: 74px</code> = 58px shell + 16px collapsed margin); Projects does not pin.</p>
-  <p class="field-text" data-zh>sticky 貼頂取決於各頁捲動容器的高度與層疊，留在各頁自己的 <code>&lt;style&gt;</code>：電子商店兩層都貼頂（狀態列 <code>top: 74px</code>＝58px 殼層＋摺疊後 16px 間距）；Projects 目前不貼頂。</p>
+  <p class="field-text" data-zh>貼頂由共用的 snap dock 提供：把工作列（選配狀態列）包進 <code>.list-dock</code>，殼要往下包住內容（sticky 只能在親層 box 裡移動），<code>js/sticky-dock.js</code> 會在執行期包出 <code>.list-dock__bars</code> 並用哨兵切換 <code>.is-snapped</code>。貼頂態＝上緣切平與外框連成一體、毛玻璃、收成一行。<strong>狀態列選配</strong>（2026-08-01）：只有分頁的工作列也能用（首例 <code>earnings-sony.html</code>）。</p>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
   <table class="spec" data-product-spec="list-toolbar"><tbody><tr><td>Source</td><td><code>ds-components/list-toolbar.css</code></td></tr><tr><td>Anatomy</td><td>Shell toolbar (tabs + absolute-right actions) over a transparent secondary filter row.</td></tr><tr><td>Behavior / usage</td><td>Actions are absolutely positioned so a changing tab count never pushes them; the shell stacks vertically under 900px and the actions return to flow under 640px.</td></tr><tr><td>Token usage</td><td><code>--surface-shell</code> (light: <code>--card</code> + <code>--shadow-card</code>), <code>--radius-xl</code>, <code>--sp-8</code> / <code>--sp-12</code> / <code>--sp-16</code> / <code>--sp-24</code>.</td></tr><tr><td>Classes</td><td><code>.list-toolbar</code> · <code>.list-toolbar__actions</code> · <code>.list-status-row</code></td></tr><tr><td>Evidence / usage</td><td>E-Shop · Projects.</td></tr></tbody></table>
 </section>
@@ -4691,13 +4693,17 @@ The first thing buyers see</span>
     <div class="ds-preview">
       <div class="page-intro">
         <h1 class="page-intro__title">Earnings</h1>
-        <p class="page-intro__sub">Track gross revenue, net revenue, pending payouts, and tax documents in one place.</p>
+        <div class="page-intro__lede">
+          <p class="page-intro__sub">Track gross revenue, net revenue, pending payouts, and tax documents in one place.</p>
+          <a class="page-intro__help" href="#page-intro">How this works</a>
+        </div>
         <div class="page-intro__actions"><button class="btn btn--primary">Request payout</button><button class="btn btn--outline">Export CSV</button></div>
+        <p class="page-note">Figures on this page are prototype sample data.</p>
       </div>
     </div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="page-intro"><tbody><tr><td>Source</td><td><code>page-intro.css</code></td></tr><tr><td>Anatomy</td><td>Title + supporting copy + optional action cluster.</td></tr><tr><td>Behavior / usage</td><td>Default / with actions; mobile title resolves to 32px; eyebrow pattern is retired.</td></tr><tr><td>Token usage</td><td><code>--font-display</code>, <code>--foreground-muted</code>, page rhythm.</td></tr><tr><td>Classes</td><td><code>.page-intro</code> · <code>__title</code> · <code>__sub</code> · <code>__actions</code></td></tr><tr><td>Evidence / usage</td><td>Projects · My IP · IP Market · E-Shop · Events · Fans CRM · Earnings · Settings · detail pages.</td></tr></tbody></table>
+  <table class="spec" data-product-spec="page-intro"><tbody><tr><td>Source</td><td><code>page-intro.css</code></td></tr><tr><td>Anatomy</td><td>Title + lede (supporting copy, optional help link) + optional action cluster + optional page footnote.</td></tr><tr><td>Behavior / usage</td><td>Default / with actions; mobile title resolves to 32px; eyebrow pattern is retired. The action cluster is for controls that change data only (2026-07-31 ruling) and wraps (<code>flex-wrap: wrap</code>) if a wide control is placed there. Contextual help goes in <code>.page-intro__lede</code> as <code>.page-intro__help</code> — an inline accent link after the last sentence; it cannot be nested inside <code>__sub</code> because <code>applyI18n</code> replaces that node's innerHTML on language switch. <code>.page-note</code> is the page-level footnote (bookend to <code>.page-crumb</code>) for whole-page disclaimers.</td></tr><tr><td>Token usage</td><td><code>--font-display</code>, <code>--foreground-muted</code>, <code>--muted-foreground</code>, <code>--primary</code>, page rhythm.</td></tr><tr><td>Classes</td><td><code>.page-intro</code> · <code>__title</code> · <code>__lede</code> · <code>__sub</code> · <code>__help</code> · <code>__actions</code> · <code>.page-crumb</code> · <code>.page-note</code></td></tr><tr><td>Evidence / usage</td><td>Projects · My IP · IP Market · E-Shop · Events · Fans CRM · Earnings · Settings · detail pages.</td></tr></tbody></table>
 </section>
 <section class="sub" id="tabs">
   <div class="sub__head">
@@ -4761,8 +4767,8 @@ The first thing buyers see</span>
       <div class="tabs__item" role="tab" aria-selected="false">Auctions</div>
     </nav>
   </div>
-  <p class="field-label" data-en>Underline hugs the label <span class="field-note">(<code>.tabs--underline-label</code> — opt-in, pairs with <code>--underline-short</code>. The active underline spans only the label span's width, <strong>excluding a trailing <code>.tabs__item-count</code></strong>. <strong>Since 2026-07-26 this is the standard recipe for every <code>.list-toolbar</code> primary tab bar</strong> — projects / my-ip / e-shop / events all use <code>.tabs.tabs--underline-short.tabs--underline-label.tabs--count-plain</code>, no per-page variation (e-shop has no counts, but still carries the same class set). Only works when the label is wrapped in a child element — tabs whose label is direct <code>&lt;button&gt;</code> text keep the full-item underline.)</span></p>
-  <p class="field-label" data-zh>底線只等標籤寬 <span class="field-note">(<code>.tabs--underline-label</code> — opt-in，搭 <code>--underline-short</code>。active 底線只等「標籤 span」的寬，<strong>不含尾隨的 <code>.tabs__item-count</code></strong>。<strong>2026-07-26 起，這組是所有 <code>.list-toolbar</code> 主軸分頁的標準配方</strong>——projects／my-ip／e-shop／events 一律 <code>.tabs.tabs--underline-short.tabs--underline-label.tabs--count-plain</code>，不各留一套（e-shop 沒有計數，仍照寫同一組 class）。只在標籤包在子元素裡時有效——標籤為 <code>&lt;button&gt;</code> 直接文字的分頁維持整條 item 底線。)</span></p>
+  <p class="field-label" data-en>Underline hugs the label <span class="field-note">(<code>.tabs--underline-label</code> — opt-in, pairs with <code>--underline-short</code>. The active underline spans only the label span's width, <strong>excluding a trailing <code>.tabs__item-count</code></strong>. <strong>Since 2026-07-26 this is the standard recipe for every <code>.list-toolbar</code> primary tab bar</strong> — projects / my-ip / e-shop / events all use <code>.tabs.tabs--underline-short.tabs--underline-label.tabs--count-plain</code>, no per-page variation (e-shop has no counts, but still carries the same class set). Only works when the label is wrapped in a child element — tabs whose label is direct <code>&lt;button&gt;</code> text keep the full-item underline. <strong>Hard rule (user ruling, 2026-07-31): this pair may only live inside the 58px filled <code>.list-toolbar</code> shell</strong> — the underline is drawn against the container's bottom edge, so with no shell it becomes an orange dash floating under the label with nothing to sit on. For a tab bar with no shell use <code>.tabs--card</code> or the base <code>.tabs</code> hairline.)</span></p>
+  <p class="field-label" data-zh>底線只等標籤寬 <span class="field-note">(<code>.tabs--underline-label</code> — opt-in，搭 <code>--underline-short</code>。active 底線只等「標籤 span」的寬，<strong>不含尾隨的 <code>.tabs__item-count</code></strong>。<strong>2026-07-26 起，這組是所有 <code>.list-toolbar</code> 主軸分頁的標準配方</strong>——projects／my-ip／e-shop／events 一律 <code>.tabs.tabs--underline-short.tabs--underline-label.tabs--count-plain</code>，不各留一套（e-shop 沒有計數，仍照寫同一組 class）。只在標籤包在子元素裡時有效——標籤為 <code>&lt;button&gt;</code> 直接文字的分頁維持整條 item 底線。<strong>鐵律（2026-07-31 使用者裁決）：這一組只能裝在 <code>.list-toolbar</code> 那個 58px 實色殼裡</strong>——底線是照容器下緣畫的，沒有殼就變成浮在標籤下方一截無所依附的橘線。要一排沒有殼的分頁，改用 <code>.tabs--card</code> 或 base <code>.tabs</code> 的 hairline。)</span></p>
   <div class="demo">
     <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist">
       <div class="tabs__item tabs__item--active" role="tab" aria-selected="true"><span>All</span> <span class="tabs__item-count">12</span></div>
@@ -4825,7 +4831,7 @@ The first thing buyers see</span>
       <tr><td><code>.tabs__item-count</code></td><td><span data-en>Optional count pill in <code>--muted</code></span><span data-zh>可選的數量 pill，置於 <code>--muted</code></span></td></tr>
       <tr><td><code>.tabs--brand</code></td><td><span data-en>Opt-in pill variant — soft <code>--primary</code> active fill, no underline; for a primary type switch that opts in. Leaves default <code>.tabs</code> unchanged elsewhere</span><span data-zh>opt-in pill 變體 — 淡 <code>--primary</code> active 填色、無底線；供選用的主類型切換。其他頁的預設 <code>.tabs</code> 不受影響</span></td></tr>
       <tr><td><code>.tabs--underline-short</code></td><td><span data-en>Opt-in modifier — base gray divider off, active underline shortened + centered (<code>var(--sp-12)</code> inset each side) instead of full-width; separator left to the consuming context. E-Shop F3 type switch</span><span data-zh>opt-in 修飾子 — 關閉灰色基準底線、active 底線縮短置中（兩側各 <code>var(--sp-12)</code> 內縮）取代滿版；分隔線交由使用情境提供。E-Shop F3 類型切換</span></td></tr>
-      <tr><td><code>.tabs--underline-label</code></td><td><span data-en>Opt-in, pairs with <code>--underline-short</code> — active underline spans only the label span, excluding a trailing <code>.tabs__item-count</code>. Requires the label wrapped in a child element. Standard for every <code>.list-toolbar</code> tab bar since 2026-07-26</span><span data-zh>opt-in，搭 <code>--underline-short</code> — active 底線只等標籤 span 寬、不含尾隨 <code>.tabs__item-count</code>。需標籤包在子元素裡。2026-07-26 起為所有 <code>.list-toolbar</code> 主軸分頁的標準配方</span></td></tr>
+      <tr><td><code>.tabs--underline-label</code></td><td><span data-en>Opt-in, pairs with <code>--underline-short</code> — active underline spans only the label span, excluding a trailing <code>.tabs__item-count</code>. Requires the label wrapped in a child element. Standard for every <code>.list-toolbar</code> tab bar since 2026-07-26. <strong>2026-07-31: may ONLY be used inside that shell</strong></span><span data-zh>opt-in，搭 <code>--underline-short</code> — active 底線只等標籤 span 寬、不含尾隨 <code>.tabs__item-count</code>。需標籤包在子元素裡。2026-07-26 起為所有 <code>.list-toolbar</code> 主軸分頁的標準配方。<strong>2026-07-31 起只准用在那個殼裡</strong></span></td></tr>
       <tr><td><code>.tabs--count-plain</code></td><td><span data-en>Opt-in — removes the count pill fill and padding; plain text uses <code>--muted-foreground</code>. Standard for every <code>.list-toolbar</code> tab bar since 2026-07-26</span><span data-zh>opt-in — 移除計數 pill 的填色與內距；文字改用 <code>--muted-foreground</code>。2026-07-26 起為所有 <code>.list-toolbar</code> 主軸分頁的標準配方</span></td></tr>
       <tr><td><code>.tab-panel</code> / <code>--active</code></td><td><span data-en>Hidden panel / shown panel</span><span data-zh>隱藏面板／顯示面板</span></td></tr>
       <tr><td><code>.filter-tabs</code> / <code>__item</code> / <code>__item--active</code> / <code>__count</code></td><td><span data-en>Secondary status-filter pill row (wrapping) / pill button / selected（soft <code>--muted</code> fill）/ count badge (JS-driven) — <code>filter-tabs.css</code></span><span data-zh>次級狀態篩選 pill 列（可換行）／pill 按鈕／選取（淡 <code>--muted</code> 填底）／數量徽章（JS 驅動）— <code>filter-tabs.css</code></span></td></tr>
@@ -4957,8 +4963,24 @@ The first thing buyers see</span>
       </div>
     </div>
   </div>
+  <p class="field-label" data-en>Stacked variant <span class="field-note">(<code>.settings-layout--stacked</code> — single column; the 220px rail is replaced by a <code>.list-toolbar</code> shell holding the tab bar. The shell is required, not decorative: <code>--underline-label</code> draws its underline against the container's bottom edge)</span></p>
+  <p class="field-label" data-zh>單欄變體 <span class="field-note">(<code>.settings-layout--stacked</code>——收掉 220px 直欄，改成內容上方一個 <code>.list-toolbar</code> 殼裝橫向分頁。那個殼是必要的不是裝飾：<code>--underline-label</code> 的底線是照容器下緣畫的)</span></p>
+  <div class="demo demo--preview">
+    <div class="ds-preview ds-preview--medium">
+      <div class="settings-layout settings-layout--stacked">
+        <div class="list-toolbar">
+          <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist">
+            <a class="tabs__item tabs__item--active" role="tab" aria-selected="true"><span>Thresholds</span></a>
+            <a class="tabs__item" role="tab" aria-selected="false"><span>Behavior multipliers</span></a>
+            <a class="tabs__item" role="tab" aria-selected="false"><span>Rules &amp; versioning</span></a>
+          </nav>
+        </div>
+        <section class="card"><h3 class="settings-section__title">Thresholds</h3><p class="settings-section__sub">Three peer views, so the nav goes horizontal and the content takes the full width.</p></section>
+      </div>
+    </div>
+  </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="settings-nav"><tbody><tr><td>Source</td><td><code>settings.css</code></td></tr><tr><td>Anatomy</td><td>Settings layout rail + sticky vertical local-nav item stack.</td></tr><tr><td>Behavior / usage</td><td>Default / hover / active / sticky.</td></tr><tr><td>Token usage</td><td><code>--accent</code> (hover), <code>--sidebar-active</code> (active — neutral gray, Q8 2026-07-13, aligned with <code>.app-sidebar</code>; not <code>--primary</code>), UI type.</td></tr><tr><td>Classes</td><td><code>.settings-layout</code> · <code>.settings-nav</code> · <code>.settings-nav__item</code></td></tr><tr><td>Evidence / usage</td><td>Settings only.</td></tr></tbody></table>
+  <table class="spec" data-product-spec="settings-nav"><tbody><tr><td>Source</td><td><code>settings.css</code></td></tr><tr><td>Anatomy</td><td>Settings layout rail + sticky vertical local-nav item stack.</td></tr><tr><td>Behavior / usage</td><td>Default / hover / active / sticky.</td></tr><tr><td>Token usage</td><td><code>--accent</code> (hover), <code>--sidebar-active</code> (active — neutral gray, Q8 2026-07-13, aligned with <code>.app-sidebar</code>; not <code>--primary</code>), UI type.</td></tr><tr><td>Classes</td><td><code>.settings-layout</code> · <code>.settings-layout--stacked</code> · <code>.settings-nav</code> · <code>.settings-nav__item</code></td></tr><tr><td>Evidence / usage</td><td><span data-en>Vertical rail: <code>settings.html</code> (7 destinations — a settings category tree). Stacked: <code>tier-settings.html</code> (3 peer views, 2026-07-31) — the tab bar must sit inside a <code>.list-toolbar</code> shell. Rule of thumb: many destinations forming a tree → keep the rail; ~3 peer views → stacked + <code>.list-toolbar</code> + tabs.</span><span data-zh>直式導覽：<code>settings.html</code>（7 個去處、是設定分類樹）。單欄：<code>tier-settings.html</code>（3 段平等視圖，2026-07-31）——分頁列必須裝在 <code>.list-toolbar</code> 殼裡。判準：去處多且成樹狀 → 留直欄；3 段左右、互為平行視圖 → 單欄＋<code>.list-toolbar</code>＋tabs。</span></td></tr></tbody></table>
 </section>
 <section class="sub" id="settings-row">
   <div class="sub__head"><h3 class="sub__title">4.48 Settings row</h3><span class="layer layer--molecule">🟡 molecule</span></div>
@@ -5985,8 +6007,8 @@ The first thing buyers see</span>
       <a class="alert__cta" href="#" data-en>Open store settings</a><a class="alert__cta" href="#" data-zh>查看商店設定</a>
     </div>
   </div>
-  <p class="field-label" data-en>Page-top variant <span class="field-note">(<code>.alert-inset</code> ＋ <code>.alert--inset-card</code> — the shell below stands in for <code>.main</code>; sticky positioning omitted in this demo)</span></p>
-  <p class="field-label" data-zh>頁面貼頂變體 <span class="field-note">(<code>.alert-inset</code> ＋ <code>.alert--inset-card</code> — 下方外框代表 <code>.main</code>；demo 中不套 sticky)</span></p>
+  <p class="field-label" data-en>Page-top variant <span class="field-note">(<code>.alert-inset</code> ＋ <code>.alert--inset-card</code> — the shell below stands in for <code>.main</code>; sticky positioning omitted in this demo). When it is sticky (2026-08-01), <code>::before</code> lays a <code>--surface-page</code> scrim behind the card — 200px above so nothing peeks through the 16px gap, and <code>--alert-inset-fade</code> (44px) below so content fades out under the notice instead of being cut by a hard edge. <code>z-index</code> is 10, above ordinary content and <code>.list-toolbar</code> (6), below a stuck <code>.list-dock</code> (20), popovers (30) and the topbar (50). When a page wants a stuck toolbar, use the shared snap dock (<code>.list-dock</code> + <code>js/sticky-dock.js</code>) rather than hand-rolling it — while it is snapped, <code>.main:has(.list-dock.is-snapped) .alert-inset</code> drops the sticky so the notice scrolls away.</span></p>
+  <p class="field-label" data-zh>頁面貼頂變體 <span class="field-note">(<code>.alert-inset</code> ＋ <code>.alert--inset-card</code> — 下方外框代表 <code>.main</code>；demo 中不套 sticky）。真的黏頂時（2026-08-01）由 <code>::before</code> 墊一層 <code>--surface-page</code> 同色底：上緣多蓋 200px，讓上方那道 16px 空隙不漏內容；下緣延伸 <code>--alert-inset-fade</code>（44px）做漸層，內容在通知下方漸消而不是被硬邊切斷。<code>z-index</code> 為 10——高過一般內容與 <code>.list-toolbar</code>（6），低於黏頂的 <code>.list-dock</code>（20）、浮層（30）與 topbar（50）。頁面若讓工作列貼頂，一律走共用的 snap dock（<code>.list-dock</code> ＋ <code>js/sticky-dock.js</code>），不要手刻——貼頂時 <code>.main:has(.list-dock.is-snapped) .alert-inset</code> 會解除 sticky，通知條隨頁面捲走。</span></p>
   <div style="background:var(--surface-page);border-radius:var(--radius-md);padding:16px;margin-bottom:8px">
     <div class="alert-inset" style="position:static;max-width:none;padding-inline:0;margin-bottom:0">
       <div class="alert alert--bar alert--inset-card" role="status">
@@ -6228,9 +6250,29 @@ The first thing buyers see</span>
       </div>
     </div>
   </div>
+  <p class="field-label" data-en>Pie <span class="field-note">(<code>.pie</code> ＋ <code>.pie-figure</code> — N-segment solid pie with the legend alongside; use when there are 3+ segments and no single result number to centre)</span></p>
+  <p class="field-label" data-zh>比例圓餅 <span class="field-note">(<code>.pie</code> ＋ <code>.pie-figure</code>——N 段實心圓餅，圖例並排在旁；三段以上、又沒有單一結果數字要放中央時用這支)</span></p>
+  <div class="demo">
+    <div class="pie-figure">
+      <div class="pie" aria-hidden="true"
+           style="--pie-stops:
+             var(--primary) 0 12%,
+             var(--status-info) 0 40%,
+             var(--status-success) 0 77%,
+             var(--foreground-muted) 0 100%"></div>
+      <div class="pie-figure__legend">
+        <div class="source-list">
+          <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span>Inner Circle · 12%</span><span class="source-row__amt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+          <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span>Superfan · 28%</span><span class="source-row__amt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+          <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span>Ranked fans · 37%</span><span class="source-row__amt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+          <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span>Fan · 23%</span><span class="source-row__amt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <p class="field-label" data-en>Do &amp; Don't</p>
   <p class="field-label" data-zh>該做與別做</p>
-  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Set stacked-bar segment widths + palette inline.</li><li data-zh>stacked-bar 的 segment 寬度 + 配色用 inline 設定。</li><li data-en>Scale <code>.rank-bar__fill</code> so the largest value reads 100%.</li><li data-zh>縮放 <code>.rank-bar__fill</code>，讓最大值讀作 100%。</li><li data-en>Override <code>--donut-hole</code> when the donut sits on a surface other than <code>--card</code>.</li><li data-zh>圓環放在非 <code>--card</code> 底色上時，一併覆寫 <code>--donut-hole</code>。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Apply <code>.linechart__area</code> to multi-series charts.</li><li data-zh>把 <code>.linechart__area</code> 套到多 series 的圖上。</li><li data-en>Rely on hover tooltip/cursor for essential values (JS-driven, pointer-only).</li><li data-zh>關鍵數值靠 hover 的 tooltip／cursor（JS 驅動、僅限 pointer）。</li><li data-en>Force 3+ segments into <code>.donut</code> — use <code>.stacked-bar</code> / <code>.rank-bar</code> instead.</li><li data-zh>把三段以上的比例硬塞進 <code>.donut</code>——改用 <code>.stacked-bar</code>／<code>.rank-bar</code>。</li></ul></div></div>
+  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Give <code>.pie</code> <code>aria-hidden="true"</code> — the legend beside it carries every number.</li><li data-zh>給 <code>.pie</code> 加 <code>aria-hidden="true"</code>——數字全在旁邊的圖例上。</li><li data-en>Write <code>--pie-stops</code> segment bounds as cumulative percentages, each starting at <code>0</code>.</li><li data-zh><code>--pie-stops</code> 的段界寫累計百分比，每段起點一律寫 <code>0</code>。</li><li data-en>Set stacked-bar segment widths + palette inline.</li><li data-zh>stacked-bar 的 segment 寬度 + 配色用 inline 設定。</li><li data-en>Scale <code>.rank-bar__fill</code> so the largest value reads 100%.</li><li data-zh>縮放 <code>.rank-bar__fill</code>，讓最大值讀作 100%。</li><li data-en>Override <code>--donut-hole</code> when the donut sits on a surface other than <code>--card</code>.</li><li data-zh>圓環放在非 <code>--card</code> 底色上時，一併覆寫 <code>--donut-hole</code>。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Apply <code>.linechart__area</code> to multi-series charts.</li><li data-zh>把 <code>.linechart__area</code> 套到多 series 的圖上。</li><li data-en>Rely on hover tooltip/cursor for essential values (JS-driven, pointer-only).</li><li data-zh>關鍵數值靠 hover 的 tooltip／cursor（JS 驅動、僅限 pointer）。</li><li data-en>Force 3+ segments into <code>.donut</code> — use <code>.pie</code>, <code>.stacked-bar</code> or <code>.rank-bar</code> instead.</li><li data-zh>把三段以上的比例硬塞進 <code>.donut</code>——改用 <code>.pie</code>、<code>.stacked-bar</code> 或 <code>.rank-bar</code>。</li><li data-en>Reach for <code>.pie</code> to rank things — a pie answers "how was this whole split", a bar answers "which is bigger".</li><li data-zh>用 <code>.pie</code> 比大小——圓餅回答「這一整塊是怎麼被分掉的」，長條才回答「誰比誰長」。</li></ul></div></div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · tokens · code</span><span data-zh>給工程師 — class · token · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-label" data-en>Behavior details</p>
@@ -7166,6 +7208,46 @@ The first thing buyers see</span>
   <p class="field-text">列由兩種型態組成——toggle（開關型權益，如 VIP e-shop）與 value（分級數值型權益，如天數/折扣%）；<code>.bmx__warn</code> 是「上層分級卻沒有下層有的權益」的非阻斷提示，只在 <code>.is-broken</code> 列出現。實際由 <code>js/benefit-matrix.js</code> 生成，消費頁：<code>tier-benefits.html</code>。</p>
 </section>
 
+<section class="sub" id="tier-overview">
+  <div class="sub__head"><h3 class="sub__title">4.93b Tier overview</h3><span class="layer layer--molecule">🟡 molecule</span></div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Read-only tier comparison: the four tiers become columns, each row is one thing to compare (gates, headcount, each benefit). Every question here is a comparison — "what does Inner Circle get that Superfan doesn't", "do the conditions actually ease off going down". Side by side, you read the answer; split into four cards, you have to remember it.</p>
+  <p class="sub__desc" data-zh>唯讀的分級對照表：四個分級並排成欄，每一列是一個比較項目（門檻、人數、每一項權益）。這裡的每個問題都是比較題——「核心圈比超級粉絲多什麼」「往下走條件有沒有越來越鬆」。並排就是用看的；拆成四張卡就得靠記憶。</p>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo">
+    <div class="tier-ov tier-ov__head">
+      <span></span>
+      <span class="tier-ov__cell"><span class="badge badge--orange">Inner Circle</span></span>
+      <span class="tier-ov__cell"><span class="badge badge--info">Superfan</span></span>
+      <span class="tier-ov__cell"><span class="badge badge--success">Ranked fans</span></span>
+      <span class="tier-ov__cell"><span class="badge">Fan</span></span>
+    </div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">Top %</span><span class="tier-ov__cell">10%</span><span class="tier-ov__cell">40%</span><span class="tier-ov__cell">75%</span><span class="tier-ov__cell tier-ov__no">—</span></div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">Min. loyalty points</span><span class="tier-ov__cell">800</span><span class="tier-ov__cell">500</span><span class="tier-ov__cell">200</span><span class="tier-ov__cell tier-ov__no">—</span></div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">Fans today</span><span class="tier-ov__cell">154</span><span class="tier-ov__cell">359</span><span class="tier-ov__cell">475</span><span class="tier-ov__cell">295</span></div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">Early access</span><span class="tier-ov__cell">7 d</span><span class="tier-ov__cell">3 d</span><span class="tier-ov__cell">1 d</span><span class="tier-ov__cell tier-ov__no">—</span></div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">VIP auction</span><span class="tier-ov__cell tier-ov__yes">✓</span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__cell tier-ov__no">—</span></div>
+    <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel">Creator's vault</span><span class="tier-ov__cell tier-ov__yes">✓</span><span class="tier-ov__cell tier-ov__yes">✓</span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__cell tier-ov__no">—</span></div>
+  </div>
+  <p class="field-label" data-en>Do &amp; Don't</p><p class="field-label" data-zh>該做與別做</p>
+  <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul>
+    <li data-en>Keep all four tier columns equal width — that is what makes "fewer benefits going right" readable.</li>
+    <li data-zh>四欄一律等寬——「往右走越來越少」是靠這個才讀得出來。</li>
+    <li data-en>Use <code>.tier-ov--compact</code> in a narrow column; wrap in <code>.tier-ov-scroll</code> when narrower still.</li>
+    <li data-zh>窄容器用 <code>.tier-ov--compact</code>，再窄就包 <code>.tier-ov-scroll</code> 橫向捲。</li>
+  </ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul>
+    <li data-en>Put inputs or switches in it — read-only is the split between this and <code>.bmx</code>.</li>
+    <li data-zh>別加輸入框或開關——唯讀是它與 <code>.bmx</code> 的分工。</li>
+    <li data-en>Let a column size to its content; an unequal grid makes the comparison lie.</li>
+    <li data-zh>別讓欄寬跟著內容跑，欄寬不齊比較就失真。</li>
+  </ul></div></div>
+  <table class="spec"><tbody>
+    <tr><td>Source</td><td><code>tier-overview.css</code></td></tr>
+    <tr><td>Classes</td><td><code>.tier-ov</code> · <code>__head</code> · <code>__row</code> · <code>__rowlabel</code> · <code>__cell</code> · <code>__yes</code> / <code>__no</code> · <code>--compact</code> · <code>.tier-ov-scroll</code></td></tr>
+    <tr><td>Token usage</td><td><code>--border</code>, <code>--foreground-muted</code>, <code>--muted-foreground</code>, <code>--status-success</code>, <code>--fs-13</code>/<code>--fs-11</code>, <code>--sp-8</code>/<code>--sp-10</code>/<code>--sp-12</code></td></tr>
+    <tr><td>Evidence / usage</td><td><code>fans-crm.html</code> ▸ <span data-en>Tier settings tab</span><span data-zh>粉絲分級設定分頁</span> (2026-07-31)</td></tr>
+  </tbody></table>
+</section>
 <section class="sub" id="brand-card">
   <div class="sub__head"><h3 class="sub__title">4.94 Brand card</h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label">用途</p>
@@ -7367,31 +7449,91 @@ The first thing buyers see</span>
   <p class="sub__desc">加密媒體庫（Fans → 媒體庫）——把「這座庫房現在誰打得開」變成版面的一部分（側欄鑰匙數＋門條），而非藏在設定頁分頁裡；圖片／影片／音檔三種原生分區刻意不做成同一種格子，各自對應媒介本來的形狀。</p>
   <p class="field-label">視覺展示 <span class="field-note">(側欄/門條/內容格骨架由頁面提供，實際列與格由 js/media-vault.js 灌入)</span></p>
   <div class="demo">
-    <div class="vault-layout" style="width:100%;">
-      <aside class="vault-rail" style="position:static;">
-        <div class="vault-rail__head">
-          <div class="vault-rail__label">Vaults <span class="vault-rail__count">3</span></div>
+    <div style="width:100%;">
+      <div class="vault-lens">
+        <button class="btn btn--ghost btn--sm" type="button" data-vault-lens-reset>Back to my view</button>
+        <div class="vault-viewer is-on">
+          <span class="vault-viewer__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
+          <select class="select select--bare"><option>View as: Ranked fan</option></select>
         </div>
-        <div class="vault-rail__list" data-vault-list></div>
-        <button type="button" class="vault-rail__new" data-vault-new>+ New vault</button>
-      </aside>
-      <div class="vault-main">
-        <section class="vault-door" data-vault-door>
-          <div class="vault-door__col">
-            <div class="vault-door__label">Unlock conditions</div>
-            <div class="vault-door__rules" data-vault-rules></div>
+      </div>
+      <div class="vault-layout">
+        <aside class="vault-rail" style="position:static;">
+          <div class="vault-rail__head">
+            <div class="vault-rail__label">Vaults <span class="vault-rail__count">3</span></div>
           </div>
-          <div class="vault-door__col vault-door__col--reach">
-            <div class="vault-door__label">Reach</div>
-            <p class="vault-door__reach"><span class="vault-door__num" data-vault-num>128</span>
-              <span class="vault-door__of">of 512 fans</span></p>
+          <button type="button" class="vault-rail__new" data-vault-new>+ New vault</button>
+          <div class="vault-rail__list" data-vault-list>
+            <input class="input vault-rail__draft" type="text" placeholder="Vault name" aria-label="Vault name">
           </div>
-        </section>
-        <div class="vault-gridwrap"><div data-vault-grid></div></div>
+        </aside>
+        <div class="vault-main">
+          <section class="vault-door" data-vault-door>
+            <div class="vault-door__col">
+              <div class="vault-door__label">Unlock conditions</div>
+              <div class="vault-door__rules is-grouped" data-vault-rules>
+                <div class="vault-door__group vault-door__group--boxed">
+                  <div class="vault-door__all">Meet all of these</div>
+                  <div class="vault-door__chips">
+                    <span class="chip chip--static vault-rule"><span class="vault-rule__verb">Tier ≥ </span>Inner Circle</span>
+                    <span class="chip chip--static vault-rule"><span class="vault-rule__verb">Bought · </span>Coastline acetate</span>
+                    <button type="button" class="vault-door__add">+ Add</button>
+                  </div>
+                </div>
+                <div class="vault-door__sep"><span>or</span></div>
+                <div class="vault-door__group">
+                  <div class="vault-door__chips">
+                    <span class="chip chip--static vault-rule"><span class="vault-rule__verb">Attended · </span>Album signing — Taipei</span>
+                    <button type="button" class="vault-door__add">+ Add</button>
+                  </div>
+                </div>
+                <button type="button" class="vault-door__addgroup">+ Another way in</button>
+              </div>
+              <p class="vault-door__any">Any one of these ways gets a fan in.</p>
+              <p class="vault-door__fine">Tier conditions re-evaluate on the nightly recompute. Purchase, backing, event and achievement conditions are permanent.</p>
+            </div>
+            <div class="vault-door__col vault-door__col--reach">
+              <div class="vault-door__label">Reach</div>
+              <p class="vault-door__reach"><span class="vault-door__num" data-vault-num>128</span>
+                <span class="vault-door__of">of 512 fans</span></p>
+            </div>
+          </section>
+          <div class="vault-gridwrap">
+            <div class="vault-gridbar">
+              <div class="vault-door__label">In this vault</div>
+              <div class="vault-gridbar__right">
+                <span class="vault-gridbar__meta">2 photos · 3 audio files</span>
+                <button class="btn btn--ghost btn--sm" type="button">+ Add media</button>
+              </div>
+            </div>
+            <div data-vault-grid>
+              <div class="vault-empty upload-tile" role="button" tabindex="0">
+                <span class="upload-tile__title">This vault is still empty</span>
+                <span class="upload-tile__hint">Drop photos, clips or audio here, or click to pick files — each kind lands in its own section.</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <p class="field-text">為什麼主欄不是一張 <code>.card</code>：門條與內容格各自是一層，包進同一張卡就會變成卡中卡（DS 禁止）。同時承載 <a href="#vault-share">Vault share</a> 的一部分抽屜列（<code>.vault-door__keyrow</code> 定義於本檔而非 vault-share.css）。實際由 <code>js/media-vault.js</code>＋<code>js/vault-store.js</code> 生成，消費頁：<code>media-vault.html</code>（唯一）。</p>
+  <p class="field-text">為什麼主欄不是一張 <code>.card</code>：門條與內容格各自是一層，包進同一張卡就會變成卡中卡（DS 禁止）。「已發出的鑰匙」2026-07-31 起是獨立區塊 <code>.vault-keys</code>（定義在 vault-share.css，原本是門條下緣的 <code>.vault-door__keyrow</code>，已退場）。實際由 <code>js/media-vault.js</code>＋<code>js/vault-store.js</code> 生成，消費頁：<code>media-vault.html</code>（唯一）。</p>
+  <p class="field-text"><strong>2026-07-31 使用者裁決（版面重整）</strong>：<br>
+    <code>.vault-lens</code> 自成一列橫跨在庫房與內容之上、靠右對齊——它換的是整頁的檢視角度，放側欄會被讀成清單篩選器、放頁首動作列會被讀成一顆按鈕。狀態不另外寫成一句話：側欄逐列標「打不開」＋主欄遮罩＋下拉自己轉橘已經說完了；這一列只是版面，不上底色（內容靠右之後整條上色會變成一大片空色塊）。「回到我的視角」排在下拉左邊，讓下拉守住最右邊界。<br>
+    頁首不放動作列——建立庫房的入口只留側欄 <code>.vault-rail__new</code> 一顆，且排在 <code>.vault-rail__list</code> 之上，跟按下去長出來的 <code>.vault-rail__draft</code>（清單第一列）連在一起。<br>
+    空的分區整個不出現（<code>.vault-group--empty</code>／<code>__empty</code> 已退場）：新庫房原本會連續印出四塊「這裡沒有東西」，改成空庫房只給一張 <code>.vault-empty</code>，「三種媒體各自歸位」那句話在那裡講一次。<br>
+    上傳入口隨狀態換位置——空的時候是 <code>.vault-empty</code> 整塊，有內容之後收進 <code>.vault-gridbar__right</code> 的 ghost 鈕；兩者共用同一個 <code>&lt;input type=file&gt;</code>，拖放綁在 <code>[data-vault-grid]</code> 容器。<br>
+    <code>.vault-rail__draft</code> 移到清單第一列並拆掉外層卡片（原本橘框卡片＋<code>.input</code> 自己的框＝框中框）。<br>
+    說明各歸各位：條件細則貼著條件放成 <code>.vault-door__fine</code>，整頁的原型聲明降級為頁尾 <code>.page-note</code>，兩者都不再是壓在媒體清單下面的 <code>.info-banner</code>。</p>
+  <p class="field-text"><strong>總覽卡片牆 ＋ 單一庫房彈窗</strong>（2026-07-31 使用者裁決）：全站導覽已經是左欄，庫房清單再常駐一欄就變兩條並排；清單天生垂直（縮圖／名稱／內容數／鑰匙數）轉橫排塞不下，所以解法不是轉向，是讓它不要跟主內容同時出現。<br>
+    頁面只放 <code>.vault-overview</code> 卡片牆（封面放得比 276px 側欄大，「哪座門開得最大」比清單更一眼看得出來）；點一張卡，那座庫房開在 <code>.vault-modal</code> 裡——彈窗內沒有全站導覽，清單因此可以留在左邊，只有一條左欄，換庫房也不必關掉彈窗。外殼沿用 <a href="#embed-modal">Embed modal</a>，只換尺寸（1320×940）與內部捲動；捲動容器換成 <code>.vault-modal__body</code>，所以側欄與讀數的貼頂高度在彈窗內歸零。庫房名字只寫在彈窗標題列（捲不走），內文不重複。<br>
+    探索過但沒採用：只留標題旁的切換下拉（看不到全部庫房的概況）、把全站導覽改走頂列（那是全站偏好，為單一頁面改它本末倒置）。</p>
+  <p class="field-text"><strong>區塊標題</strong>（2026-07-31 使用者裁示）：<code>.vault-door__label</code>（解鎖條件／誰進得來／已發出的鑰匙／這座庫房裡）原本走「12px 全大寫加字距 muted」的欄位標籤規格——那是標一個輸入框用的。這四個各自帶起下面一整塊內容，是標題，所以改吃 <a href="#card">Card</a> 的 <code>.card__title</code> 既有規格（Satoshi 標題體 18px Regular 前景色），與全站區塊標題一致；圖示放大到 16px、維持 muted 色，不跟標題搶字重。</p>
+  <p class="field-text"><strong>「進得來的方法」（2026-07-31，原型先行、待上游裁決 — ASSUMPTIONS PG-025）</strong>：<code>rules</code> 從單層條件陣列改成「方法」清單 <code>[{items:[…]},…]</code>——<strong>一個 <code>{}</code> ＝ 一種進得來的方法；任何一種達成就進得來，同一種方法裡的條件要全部達成。</strong>例：方法一＝「核心圈 ＋ 買過黑膠」，方法二＝「出席過簽名會」，兩種中一種就開得了門。<br>
+    <strong>方向是外層任一、內層全部</strong>——創作者腦中的東西是「我開了幾條路給粉絲走」，每條路各有幾個門檻；反過來同樣算得出結果，但要人自己補括號。<br>
+    <strong>措辭不用邏輯符號</strong>：畫面上寫「這些要一起達成」「或是」「多一種進得來的方法」，不寫「且／或／AND／OR」。<br>
+    <strong>漸進顯示</strong>：框只在該方法有兩個以上條件時才畫；「或是」在有兩種方法時才出現。空的方法不算達成（否則剛加一種還沒選條件，門就對全站開了），刪到空的自動消失。鑰匙不受影響，永遠疊在條件之上。遮罩上的條件直排、行間寫「或是」——橫排斷行會讓人看不出括號在哪。<br>
+    <strong>這動到的是權限規則，屬產品決策</strong>，觸及人數與遮罩文案全部隨之改變；未經上游核准前不得視為正式功能。</p>
 </section>
 
 <section class="sub" id="perf-rank">

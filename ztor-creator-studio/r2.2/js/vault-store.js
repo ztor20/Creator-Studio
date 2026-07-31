@@ -1,7 +1,7 @@
 /* vault-store.js — Media Vault 的示範資料源與「誰進得來」的計算。
    ============================================================
    為什麼需要這支：
-     Media Vault 的每一座庫房都掛著一組解鎖條件（符合任一即可進入），
+     Media Vault 的每一座庫房都掛著解鎖條件（列出幾種進得來的方法，達成任一種即可），
      而創作者在畫面上唯一真正在乎的數字是「現在有幾個粉絲打得開」。那個
      數字不能用猜的——條件之間會重疊（買過黑膠的人多半也是核心圈），把
      「212 人買過」加上「154 人是核心圈」得到 366 是錯的，而隨手抓一個
@@ -123,12 +123,48 @@
   })();
 
   /* ── 規則比對與觸及計算 ────────────────────────────────────
-     rules ＝ [{ t:'tier'|'bought'|'backed'|'attended'|'earned', v:<id> }]
-     語意固定為「符合任一」(any-of)，所以觸及＝聯集，用 .some()。 */
+     2026-07-31 起 rules 是「進得來的方法」的清單，不再是單層條件陣列：
+
+       rules ＝ [ { items:[ {t,v}, … ] }, … ]      ← 一個 { } 就是一種方法
+       單一條件 ＝ { t:'tier'|'bought'|'backed'|'attended'|'earned', v:<id> }
+
+     講白話：**任何一種方法達成，粉絲就進得來；同一種方法裡的條件要全部達成。**
+     例：方法一＝「核心圈 而且 買過黑膠」，方法二＝「出席過簽名會」——
+        兩種只要中一種就開得了門。
+
+     為什麼是這個方向（外層任一、內層全部）：創作者腦中的東西是「我開了幾條路
+     給粉絲走」，每條路各有幾個門檻。反過來（外層全部、內層任一）同樣算得出
+     結果，但要人自己在腦中補括號，畫面上寫不清楚。
+
+     舊資料（單層、語意為任一）的搬遷＝每個條件各自成為一種方法，語意不變。
+
+     ⚠️ 這是權限規則的變更，屬產品決策。原型先行實作供裁決，尚未寫回 documents/，
+        提案記在 site/r2.2/ASSUMPTIONS.md（PG-025）。 */
   function matches(rule, fan) {
     if (rule.t === "tier") return TIER_RANK[fan.tier] >= TIER_RANK[rule.v];
     var bag = fan[rule.t];
     return !!(bag && bag[rule.v]);
+  }
+  /* 一種方法：裡面的條件要全部達成。空的方法一律不算達成——「還沒填完」不能
+     等於「誰都進得來」，否則剛加一種方法還沒選條件，門就對全站開了。 */
+  function groupMatches(g, fan) {
+    var items = (g && g.items) || [];
+    if (!items.length) return false;
+    for (var j = 0; j < items.length; j++) if (!matches(items[j], fan)) return false;
+    return true;
+  }
+  /* 整座庫房：任何一種方法達成就算數。 */
+  function ruleMatches(vault, fan) {
+    var gs = vault.rules || [];
+    for (var i = 0; i < gs.length; i++) if (groupMatches(gs[i], fan)) return true;
+    return false;
+  }
+  /* 這座庫房總共掛了幾條條件（不分方法）。判斷「有沒有設條件」用它，不要用
+     rules.length——那數的是方法數，一個空方法會讓它變成 1。 */
+  function ruleCount(vault) {
+    var gs = vault.rules || [], n = 0;
+    for (var i = 0; i < gs.length; i++) n += ((gs[i].items || []).length);
+    return n;
   }
   function reach(rules) {
     if (!rules || !rules.length) return 0;
@@ -178,16 +214,14 @@
     });
     return set;
   }
-  /* 這座庫房現在真正打得開的人數＝符合任一條件 ∪ 持有有效鑰匙。 */
+  /* 這座庫房現在真正打得開的人數＝符合條件（每一組都要過）∪ 持有有效鑰匙。
+     鑰匙一直是疊在條件之上的另一條路，不受組的「且」影響——它是持有者憑證，
+     拿到就進得來，不必再符合任何條件。 */
   function reachAll(vault) {
     var held = keyHolders(vault);
-    var rules = vault.rules || [];
     var n = 0;
     for (var i = 0; i < FANS.length; i++) {
-      if (held[i]) { n++; continue; }
-      for (var j = 0; j < rules.length; j++) {
-        if (matches(rules[j], FANS[i])) { n++; break; }
-      }
+      if (held[i] || ruleMatches(vault, FANS[i])) n++;
     }
     return n;
   }
@@ -195,11 +229,9 @@
      重疊要單獨報出來，否則 513 ＋ 137 看起來像 650，實際上不是。 */
   function reachSplit(vault) {
     var held = keyHolders(vault);
-    var rules = vault.rules || [];
     var byRule = 0, byKey = 0, both = 0;
     for (var i = 0; i < FANS.length; i++) {
-      var r = false;
-      for (var j = 0; j < rules.length; j++) { if (matches(rules[j], FANS[i])) { r = true; break; } }
+      var r = ruleMatches(vault, FANS[i]);
       var k = !!held[i];
       if (r) byRule++;
       if (k) byKey++;
@@ -209,12 +241,10 @@
   }
   function reachInTierAll(vault, tierKey) {
     var held = keyHolders(vault);
-    var rules = vault.rules || [];
     var n = 0;
     for (var i = 0; i < FANS.length; i++) {
       if (FANS[i].tier !== tierKey) continue;
-      if (held[i]) { n++; continue; }
-      for (var j = 0; j < rules.length; j++) { if (matches(rules[j], FANS[i])) { n++; break; } }
+      if (held[i] || ruleMatches(vault, FANS[i])) n++;
     }
     return n;
   }
@@ -273,7 +303,7 @@
       id: "demos", icon: "disc-3",
       name: { en: "Unreleased demos & stems", zh: "未發行 Demo 與分軌" },
       note: { en: "Rough mixes and separated stems. Not licensed for redistribution.", zh: "粗混與分軌檔。未授權再散布。" },
-      rules: [{ t: "tier", v: "super" }, { t: "bought", v: "acetate" }],
+      rules: [{ items: [{ t: "tier", v: "super" }] }, { items: [{ t: "bought", v: "acetate" }] }],
       /* 送出去當禮物的單次鑰匙：uses 1、已被領走。 */
       keys: [
         { id: "k-demo-1", code: "HQ7M-3XKD", uses: 1, claimedN: 1, born: "2026/07/26",
@@ -291,7 +321,7 @@
       id: "backstage", icon: "camera",
       name: { en: "East-coast tour · backstage", zh: "東岸巡迴 · 幕後" },
       note: { en: "Everything that did not make the documentary.", zh: "沒有進紀錄片的那些。" },
-      rules: [{ t: "tier", v: "devoted" }],
+      rules: [{ items: [{ t: "tier", v: "devoted" }] }],
       /* NFC 鑰匙圈的量產批次（500 支）＋ 一把外流後被撤銷的連結。
          撤銷那把刻意留在資料裡：撤銷不是把紀錄刪掉，創作者要看得到
          「這把發生過、現在停用了、當時有 12 個人領過」。 */
@@ -315,7 +345,7 @@
       id: "onset", icon: "video",
       name: { en: "On set · Moonlight Over Sham Shui Po", zh: "《深水埗的月光》片場" },
       note: { en: "Set photography and dailies for the backers of this film.", zh: "本片支持者專屬的片場照與毛片。" },
-      rules: [{ t: "backed", v: "shamshuipo-moonlight" }, { t: "tier", v: "inner" }],
+      rules: [{ items: [{ t: "backed", v: "shamshuipo-moonlight" }] }, { items: [{ t: "tier", v: "inner" }] }],
       items: [
         { id: "s1", kind: "image", name: { en: "Night market build, day 3", zh: "夜市搭景 第三天" }, img: "images/projects/shamshuipo-moonlight.jpg", size: "6.1 MB", added: "2026/07/26" },
         { id: "s2", kind: "image", name: { en: "Bingsutt interior, lighting test", zh: "冰室內景 燈光測試" }, img: "images/projects/kowloon-bingsutt.jpg", size: "5.4 MB", added: "2026/07/26" },
@@ -327,7 +357,7 @@
       id: "signing", icon: "pencil",
       name: { en: "Signing session · Taipei", zh: "簽名會現場 · 台北" },
       note: { en: "The photographer's full set — including the frames we never posted.", zh: "攝影師完整檔——包含沒有貼出來的那些。" },
-      rules: [{ t: "attended", v: "album-signing-taipei" }],
+      rules: [{ items: [{ t: "attended", v: "album-signing-taipei" }] }],
       items: [
         { id: "g1", kind: "image", name: { en: "Queue, 10:40am", zh: "排隊 10:40" }, img: "images/products/nick-single.jpg", size: "3.3 MB", added: "2026/07/14" },
         { id: "g2", kind: "image", name: { en: "Table 2, first hour", zh: "第二桌 第一小時" }, img: "images/products/nick-album.jpg", size: "3.7 MB", added: "2026/07/14" },
@@ -339,7 +369,7 @@
       id: "voicenotes", icon: "mic",
       name: { en: "Inner Circle voice notes", zh: "核心圈語音信" },
       note: { en: "One a month, recorded for this room only. No transcript.", zh: "每月一封，只錄給這個房間。沒有逐字稿。" },
-      rules: [{ t: "tier", v: "inner" }, { t: "earned", v: "hof" }],
+      rules: [{ items: [{ t: "tier", v: "inner" }] }, { items: [{ t: "earned", v: "hof" }] }],
       items: [
         { id: "v1", kind: "audio", name: { en: "July — on finishing the EP", zh: "七月 · 關於把 EP 做完" }, dur: "8:24", size: "16.2 MB", added: "2026/07/28" },
         { id: "v2", kind: "audio", name: { en: "June — the argument about track 4", zh: "六月 · 為了第四首吵的那次" }, dur: "6:11", size: "11.8 MB", added: "2026/06/30" },
@@ -350,7 +380,7 @@
       id: "open", icon: "globe",
       name: { en: "Open reel", zh: "公開花絮" },
       note: { en: "No gate on this one — every fan can open it.", zh: "這一個沒有門檻——所有粉絲都打得開。" },
-      rules: [{ t: "tier", v: "fan" }],
+      rules: [{ items: [{ t: "tier", v: "fan" }] }],
       items: [
         { id: "o1", kind: "clip",  name: { en: "EP announcement, uncut", zh: "EP 公布 未剪版" }, img: "images/products/coastline-starter-pack.webp", dur: "1:12", size: "88 MB", added: "2026/07/27" },
         { id: "o2", kind: "image", name: { en: "Tour poster, final", zh: "巡迴海報 定稿" }, img: "images/products/vinyl-poster-set.webp", size: "2.2 MB", added: "2026/07/12" }
@@ -397,6 +427,8 @@
     vaults: VAULTS,
     reach: reach,
     reachInTier: reachInTier,
+    ruleMatches: ruleMatches,
+    ruleCount: ruleCount,
     reachAll: reachAll,
     reachSplit: reachSplit,
     reachInTierAll: reachInTierAll,

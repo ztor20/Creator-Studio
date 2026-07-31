@@ -569,3 +569,42 @@
 .donut__value { font-family: var(--font-numeric); font-size: var(--fs-20); font-weight: var(--fw-regular);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── 5. Pie chart（比例圓餅）────────────────────────────────
+   N 段實心圓餅，右邊配 .source-list 圖例。
+   2026-07-31 新增：粉絲分析「ztor 粉絲組成」（四個分級的人數佔比）。
+
+   為什麼不擴充 .donut：那支只吃兩段（一個 --donut-p 百分比就切完），而且中心
+   挖空是為了放一個結果數字。這裡是四段、沒有單一結果數字要放，硬擴充會讓
+   .donut 同時服務兩種不同的圖，兩邊的用法都變得要看情況。
+
+   為什麼不用既有的 .stacked-bar：長條回答「誰比誰長」，圓餅回答「這一整塊
+   是怎麼被分掉的」。分級組成是後者——分母固定是站內粉絲總數，看的是切分。
+
+   用法：外層行內設 --pie-stops＝conic-gradient 的色標串，段界寫「累計」百分比
+   （每段起點一律寫 0，讓瀏覽器接續上一段的終點）：
+     style="--pie-stops: var(--primary) 0 12%, var(--status-info) 0 40%, …"
+   最後一段收在 100%。圓餅本身不帶文字，數字一律由旁邊的圖例承擔，所以
+   consumer 要給它 aria-hidden="true"，不要讓讀屏念一個沒有內容的圓。 */
+.pie {
+  width: var(--pie-size, 168px);
+  aspect-ratio: 1 / 1;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: conic-gradient(var(--pie-stops, var(--chart-1) 0 100%));
+}
+
+/* 圓餅＋圖例並排。窄了就疊起來：圓餅置中、圖例落到下面，圖例列本身是
+   四欄 grid，擠在 168px 旁邊會先把金額欄壓爛。 */
+.pie-figure {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-24);
+}
+.pie-figure__legend { flex: 1 1 auto; min-width: 0; }
+.pie-figure__legend .source-list { margin-top: 0; }
+
+@media (max-width: 560px) {
+  .pie-figure { flex-direction: column; align-items: stretch; gap: var(--sp-16); }
+  .pie { margin-inline: auto; }
+}

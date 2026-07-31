@@ -1,0 +1,464 @@
+<!doctype html>
+<!-- DEMO ONLY（scratch，不進發版／不部署）：粉絲圈吃下「分級權益」與「分級設定」之後的
+     版面探索。回答的是「三頁併一頁，wireframe 怎麼重排」，不是最終視覺。
+
+     主張：這三頁講的是同一座階梯——誰在每一階（名冊）、怎麼上去（門檻）、上去有什麼
+     （權益）。所以主軸從「設定分類」翻成「階梯」，編輯以「一階」為單位（一個抽屜收完
+     門檻＋權益），而不是以「一種設定」為單位（現在調核心圈要跑兩頁）。
+
+     還沒定案、demo 裡刻意留成問題的三件事，見頁尾「待決」區。 -->
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 粉絲圈合併版 wireframe</title>
+<link rel="stylesheet" href="../ds-components/_tokens.css">
+<link rel="stylesheet" href="../ds-components/fonts.css">
+<link rel="stylesheet" href="../ds-components/icon.css">
+<link rel="stylesheet" href="../ds-components/button.css">
+<link rel="stylesheet" href="../ds-components/badge.css">
+<link rel="stylesheet" href="../ds-components/card.css">
+<link rel="stylesheet" href="../ds-components/kpi.css">
+<link rel="stylesheet" href="../ds-components/bento.css">
+<link rel="stylesheet" href="../ds-components/chip.css">
+<link rel="stylesheet" href="../ds-components/input.css">
+<link rel="stylesheet" href="../ds-components/amount-field.css">
+<link rel="stylesheet" href="../ds-components/switch.css">
+<link rel="stylesheet" href="../ds-components/tabs.css">
+<link rel="stylesheet" href="../ds-components/list-toolbar.css">
+<link rel="stylesheet" href="../ds-components/table.css">
+<link rel="stylesheet" href="../ds-components/drawer.css">
+<link rel="stylesheet" href="../ds-components/settings.css">
+<link rel="stylesheet" href="../ds-components/info-banner.css">
+<link rel="stylesheet" href="../ds-components/page-intro.css">
+<link rel="stylesheet" href="../ds-components/chart.css">
+<style>
+  /* 這一條是必要的，不是抄來的樣板：站上的 box-sizing 重置住在 shared.css，
+     而 demo 沒有掛 shared.css（那支還帶著 .app／.main 等整頁殼樣式）。少了它，
+     .input 會以 content-box 計算，width 之外再加內距與邊框——抽屜裡的權益欄位
+     就是這樣從 96px 撐成 160px、把面板撐出橫向捲動的。 */
+  * { box-sizing: border-box; }
+  body { background: var(--background); color: var(--foreground); font-family: var(--font-ui); margin: 0; padding: var(--sp-32) var(--sp-40) 120px; }
+  .wrap { max-width: 1160px; margin: 0 auto; }
+
+  /* demo 專用註解框（不是產品元件） */
+  .anno {
+    border-left: 2px solid var(--primary);
+    padding: var(--sp-8) 0 var(--sp-8) var(--sp-12);
+    margin: var(--sp-24) 0 var(--sp-12);
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+    line-height: var(--lh-relaxed);
+    max-width: 78ch;
+  }
+  .anno b { color: var(--foreground); font-weight: var(--fw-medium); }
+
+  /* ── 階梯：一階一張卡 ───────────────────────────────────
+     四張卡等寬並排，窄了掉成兩欄再單欄。每張卡回答三件事：
+     這一階有幾人 / 怎麼進來 / 進來拿到什麼。 */
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(252px, 1fr));
+    gap: var(--sp-16);
+    margin-top: var(--sp-16);
+  }
+  .step { display: flex; flex-direction: column; gap: var(--sp-12); }
+  .step__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); }
+  .step__count { font-family: var(--font-numeric); font-size: var(--fs-24); font-variant-numeric: tabular-nums; }
+  .step__share { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-6); }
+  .step__bar { height: 4px; border-radius: var(--radius-pill); background: var(--muted); overflow: hidden; }
+  .step__fill { display: block; height: 100%; border-radius: var(--radius-pill); }
+
+  .step__label {
+    font-size: var(--fs-11); letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--muted-foreground); margin-bottom: var(--sp-6);
+  }
+  .step__gate { font-size: var(--fs-13); color: var(--foreground); }
+  .step__gate em { font-style: normal; color: var(--muted-foreground); }
+  .step__perks { display: flex; flex-wrap: wrap; gap: var(--sp-6); }
+  .step__more { font-size: var(--fs-12); color: var(--muted-foreground); align-self: center; }
+  .step__foot { margin-top: auto; padding-top: var(--sp-4); }
+  .step__foot .btn { width: 100%; }
+
+  /* 抽屜內的權益開關列 */
+  /* 值那一側固定寬、名稱吃剩下的：不鎖的話 .amount-field 會撐開，把權益名擠到折行
+     （數值型的兩列跟開關型的八列右緣也就對不齊了）。 */
+  .perkrow {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12);
+    padding: var(--sp-10) 0; border-bottom: 1px solid var(--border);
+  }
+  .perkrow:last-child { border-bottom: 0; }
+  .perkrow__name { font-size: var(--fs-13); min-width: 0; }
+  .perkrow > :last-child { flex: none; }
+  .perkrow .amount-field { width: 96px; }
+  .perkrow .amount-field__input { width: 100%; }
+  .drawer-foot {
+    position: sticky; bottom: 0; margin-top: var(--sp-16);
+    display: flex; gap: var(--sp-8); justify-content: flex-end;
+    padding: var(--sp-16) 0 0; border-top: 1px solid var(--border); background: var(--popover);
+  }
+  .mt-24 { margin-top: var(--sp-24); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-intro">
+    <div>
+      <h1 class="page-intro__title">粉絲圈</h1>
+      <p class="page-intro__sub">一座階梯：誰在每一階、怎麼上去、上去有什麼。原本的「分級權益」與「分級設定」併進來。</p>
+    </div>
+  </div>
+
+  <p class="anno">
+    <b>頁首沒有 Save／Discard。</b>現在那兩頁各有一組整頁儲存；併頁之後改成「一階一存」——存在抽屜裡按。
+    這樣頁面不會有全域髒狀態，切分頁不必攔截未儲存變更。<b>這是產品行為變更，要上游確認</b>（見頁尾待決 1）。
+  </p>
+
+  <!-- ── 兩個頂層分頁 ─────────────────────────────────── -->
+  <div class="list-toolbar">
+    <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist">
+      <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="ladder"><span>分級階梯</span></div>
+      <div class="tabs__item" role="tab" aria-selected="false" data-tab="roster"><span>粉絲名冊</span> <span class="tabs__item-count">1,840</span></div>
+    </nav>
+    <div class="list-toolbar__actions">
+      <button class="btn btn--outline btn--sm" type="button" data-rules><i data-lucide="sliders" class="ztor-icon"></i>分級規則</button>
+      <button class="btn btn--outline btn--sm" type="button"><i data-lucide="send" class="ztor-icon"></i>群發訊息</button>
+    </div>
+  </div>
+
+  <p class="anno">
+    <b>為什麼是兩個分頁而不是三個。</b>階梯（結構）與名冊（個人）是兩種看法，先看結構再鑽到個人，
+    跟站上「總覽 → 名冊」的既有分工一致。排行榜是很重的長表格，跟編輯表單擠同一個捲動流會讓兩邊都難用。
+  </p>
+
+  <!-- ══════════ 分頁 1 · 分級階梯 ══════════ -->
+  <div data-panel="ladder">
+
+    <div class="bento">
+      <div class="kpi bento--span-3"><div class="kpi__label">活躍粉絲</div><div class="kpi__value">1,283</div><div class="kpi__meta">共 1,840 位</div></div>
+      <div class="kpi bento--span-3"><div class="kpi__label">流失風險</div><div class="kpi__value">5</div><div class="kpi__delta kpi__delta--neg">5 位超級粉絲 &gt;14 天未互動</div></div>
+      <div class="kpi bento--span-3"><div class="kpi__label">收入（活躍）</div><div class="kpi__value">$20,700</div><div class="kpi__meta">近 90 天</div></div>
+      <div class="kpi bento--span-3"><div class="kpi__label">平均忠誠點數</div><div class="kpi__value">642</div><div class="kpi__delta">較上月 +12</div></div>
+    </div>
+
+    <p class="anno">
+      <b>階梯是這一頁的主角。</b>四階並排、由上而下，每一階把原本散在兩頁的三件事收在同一張卡：
+      人數（原本在粉絲圈的組成卡）、門檻（原本在分級設定）、權益（原本在分級權益）。
+      要調核心圈，現在是一顆鈕、一個抽屜，不是跑兩頁。
+    </p>
+
+    <div class="ladder">
+
+      <!-- 核心圈 -->
+      <section class="card step">
+        <div class="step__head">
+          <span class="badge badge--orange">核心圈</span>
+          <button class="btn btn--icon btn--xs" type="button" aria-label="更多"><i data-lucide="more-horizontal" class="ztor-icon"></i></button>
+        </div>
+        <div>
+          <span class="step__count">154</span><span class="step__share">位 · 12%</span>
+          <div class="step__bar mt-24" style="margin-top:var(--sp-8)"><span class="step__fill" style="width:12%;background:var(--primary)"></span></div>
+        </div>
+        <div>
+          <div class="step__label">怎麼進來</div>
+          <div class="step__gate">前 10% <em>且</em> 800 點以上</div>
+        </div>
+        <div>
+          <div class="step__label">拿到什麼</div>
+          <div class="step__perks">
+            <span class="chip chip--static">搶先 7 天</span>
+            <span class="chip chip--static">折扣 20%</span>
+            <span class="chip chip--static">VIP 拍賣</span>
+            <span class="step__more">+5</span>
+          </div>
+        </div>
+        <div class="step__foot">
+          <button class="btn btn--outline btn--sm" type="button" data-edit="inner">編輯這一階</button>
+        </div>
+      </section>
+
+      <!-- 超級粉絲 -->
+      <section class="card step">
+        <div class="step__head">
+          <span class="badge badge--info">超級粉絲</span>
+          <button class="btn btn--icon btn--xs" type="button" aria-label="更多"><i data-lucide="more-horizontal" class="ztor-icon"></i></button>
+        </div>
+        <div>
+          <span class="step__count">359</span><span class="step__share">位 · 28%</span>
+          <div class="step__bar" style="margin-top:var(--sp-8)"><span class="step__fill" style="width:28%;background:var(--status-info)"></span></div>
+        </div>
+        <div>
+          <div class="step__label">怎麼進來</div>
+          <div class="step__gate">前 40% <em>且</em> 500 點以上</div>
+        </div>
+        <div>
+          <div class="step__label">拿到什麼</div>
+          <div class="step__perks">
+            <span class="chip chip--static">搶先 3 天</span>
+            <span class="chip chip--static">折扣 10%</span>
+            <span class="chip chip--static">VIP 商店</span>
+            <span class="step__more">+3</span>
+          </div>
+        </div>
+        <div class="step__foot">
+          <button class="btn btn--outline btn--sm" type="button" data-edit="super">編輯這一階</button>
+        </div>
+      </section>
+
+      <!-- 上榜粉絲 -->
+      <section class="card step">
+        <div class="step__head">
+          <span class="badge badge--success">上榜粉絲</span>
+          <button class="btn btn--icon btn--xs" type="button" aria-label="更多"><i data-lucide="more-horizontal" class="ztor-icon"></i></button>
+        </div>
+        <div>
+          <span class="step__count">475</span><span class="step__share">位 · 37%</span>
+          <div class="step__bar" style="margin-top:var(--sp-8)"><span class="step__fill" style="width:37%;background:var(--status-success)"></span></div>
+        </div>
+        <div>
+          <div class="step__label">怎麼進來</div>
+          <div class="step__gate">前 75% <em>且</em> 200 點以上</div>
+        </div>
+        <div>
+          <div class="step__label">拿到什麼</div>
+          <div class="step__perks">
+            <span class="chip chip--static">搶先 1 天</span>
+            <span class="chip chip--static">折扣 5%</span>
+          </div>
+        </div>
+        <div class="step__foot">
+          <button class="btn btn--outline btn--sm" type="button" data-edit="devoted">編輯這一階</button>
+        </div>
+      </section>
+
+      <!-- 粉絲（基礎級，無門檻） -->
+      <section class="card step">
+        <div class="step__head">
+          <span class="badge">粉絲</span>
+        </div>
+        <div>
+          <span class="step__count">295</span><span class="step__share">位 · 23%</span>
+          <div class="step__bar" style="margin-top:var(--sp-8)"><span class="step__fill" style="width:23%;background:var(--foreground-muted)"></span></div>
+        </div>
+        <div>
+          <div class="step__label">怎麼進來</div>
+          <div class="step__gate"><em>基礎級──每位粉絲皆由此開始，無需門檻</em></div>
+        </div>
+        <div>
+          <div class="step__label">拿到什麼</div>
+          <div class="step__perks"><span class="step__more">尚未設定任何權益</span></div>
+        </div>
+        <div class="step__foot">
+          <button class="btn btn--outline btn--sm" type="button" data-edit="fan">編輯這一階</button>
+        </div>
+      </section>
+
+    </div>
+
+    <p class="anno">
+      <b>頁面本體唯讀，所有編輯都走抽屜。</b>這是這一版最重要的一條規則——階梯與名冊只負責「看」，
+      改東西一律開抽屜：一階的抽屜收門檻＋權益，<b>分級規則</b>的抽屜（右上角那顆鈕）收行為加權、
+      規則與版本、權益矩陣入口。好處是頁面永遠沒有髒狀態、切分頁不必攔截，而且「哪裡可以改」只有一個答案。
+      <br><br>
+      一開始試過把全域規則做成頁尾的折疊區，但站上的 <code>.ztor-accordion</code> 內容區
+      <b>硬上限 320px</b>（它是為短文字段落做的），四列行為加權加上規則說明會被裁掉——那個限制反而
+      指出折疊不是對的容器。<b>權益矩陣</b>收在同一個抽屜裡：它是一階抽屜的轉置（列＝權益、欄＝分級），
+      批次調同一項權益時比抽屜好用，兩種批次方向都要留（見頁尾待決 3）。
+    </p>
+
+  </div>
+
+  <!-- ══════════ 分頁 2 · 粉絲名冊 ══════════ -->
+  <div data-panel="roster" class="hidden">
+
+    <p class="anno">
+      <b>名冊整組搬過來、不動。</b>現在的搜尋／篩選工具列、排行榜表格、分頁載入、群發訊息維持原樣，
+      只是從一個獨立頁面變成這一頁的第二個分頁。
+    </p>
+
+    <section class="card" style="padding:0;overflow:hidden">
+      <table class="table">
+        <thead><tr><th>粉絲</th><th>分級</th><th>忠誠點數</th><th>消費</th><th>最近活躍</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>陳彥廷</td><td><span class="badge badge--orange">核心圈</span></td><td>1,284</td><td>$3,420</td><td>2 天前</td><td><button class="btn btn--icon btn--xs" aria-label="訊息"><i data-lucide="send" class="ztor-icon"></i></button></td></tr>
+          <tr><td>林雨柔</td><td><span class="badge badge--orange">核心圈</span></td><td>1,102</td><td>$2,880</td><td>今天</td><td><button class="btn btn--icon btn--xs" aria-label="訊息"><i data-lucide="send" class="ztor-icon"></i></button></td></tr>
+          <tr><td>Kenji Sato</td><td><span class="badge badge--info">超級粉絲</span></td><td>742</td><td>$1,240</td><td>18 天前</td><td><button class="btn btn--icon btn--xs" aria-label="訊息"><i data-lucide="send" class="ztor-icon"></i></button></td></tr>
+          <tr><td>黃思穎</td><td><span class="badge badge--info">超級粉絲</span></td><td>688</td><td>$960</td><td>5 天前</td><td><button class="btn btn--icon btn--xs" aria-label="訊息"><i data-lucide="send" class="ztor-icon"></i></button></td></tr>
+          <tr><td>Ray Wong</td><td><span class="badge badge--success">上榜粉絲</span></td><td>312</td><td>$420</td><td>1 天前</td><td><button class="btn btn--icon btn--xs" aria-label="訊息"><i data-lucide="send" class="ztor-icon"></i></button></td></tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="settings-row__hint" style="margin-top:var(--sp-12)">顯示 5 / 1,840 位 · demo 截斷</p>
+
+  </div>
+
+  <!-- ══════════ 待決 ══════════ -->
+  <h2 style="font-family:var(--font-display);font-weight:var(--fw-regular);font-size:var(--fs-18);margin:var(--sp-40) 0 var(--sp-4)">這份 wireframe 刻意留著的三個問題</h2>
+  <div class="info-banner" style="margin-top:var(--sp-12)">
+    <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
+    <span><b>1 · Save 的粒度</b>：demo 做成「一階一存」（存在抽屜裡）。好處是頁面沒有全域髒狀態、切分頁不必攔截未儲存變更；代價是與現行兩頁的「整頁 Save／Discard」不同，屬產品行為變更，需上游確認。</span>
+  </div>
+  <div class="info-banner" style="margin-top:var(--sp-8)">
+    <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
+    <span><b>2 · 兩種生效時機</b>：門檻是「下次每晚重算才生效」、權益是「立即生效」。現在兩頁各有一條 info-banner 承接；併進同一個抽屜、同一顆儲存鈕之後，使用者會預設兩者同時生效。demo 把提醒放在抽屜裡儲存鈕正上方，但這個寫法還沒定案。</span>
+  </div>
+  <div class="info-banner" style="margin-top:var(--sp-8)">
+    <i data-lucide="alert-triangle" class="ztor-icon info-banner__icon"></i>
+    <span><b>3 · 權益矩陣不能丟</b>：抽屜是「一階設定所有權益」，矩陣是「一項權益設定四階」，兩種批次方向都有人要用。demo 把矩陣收進折疊區當第二入口，沒有二選一。</span>
+  </div>
+  <div class="info-banner" style="margin-top:var(--sp-8)">
+    <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+    <span><b>事實層面</b>：合併後「粉絲」群組會從 6 個子項掉到 4 個（總覽／粉絲圈／媒體庫／粉絲活動）。頁面清單的唯一來源是 <code>documents/0-設計規格書.md §3.2</code> 的 sitemap，真要走這個方向得先改那裡，site 才有依據。</span>
+  </div>
+
+</div>
+
+<!-- ── 編輯一階的抽屜：門檻 ＋ 權益 在同一個地方 ────────────── -->
+<div class="drawer" data-drawer aria-hidden="true">
+  <div class="drawer__scrim" data-close></div>
+  <section class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="dtitle">
+    <div class="drawer__head">
+      <h2 class="drawer__title" id="dtitle">編輯：核心圈</h2>
+      <button class="drawer__close" type="button" aria-label="關閉" data-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="drawer__body">
+
+      <div class="step__label" style="margin-top:0">怎麼進來</div>
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-12)">兩道門檻都要通過才會升級。</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-14)">
+        <div>
+          <div class="settings-row__label" style="margin-bottom:var(--sp-6)">前 % 名</div>
+          <span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="10" inputmode="numeric"><span class="amount-field__unit">%</span></span>
+        </div>
+        <div>
+          <div class="settings-row__label" style="margin-bottom:var(--sp-6)">最低忠誠點數</div>
+          <input class="input" value="800" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="step__label" style="margin-top:var(--sp-24)">拿到什麼</div>
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-4)">這一階解鎖的權益。</p>
+      <div>
+        <div class="perkrow"><span class="perkrow__name">搶先購買 · 週邊與門票</span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="7" inputmode="numeric"><span class="amount-field__unit">天</span></span></div>
+        <div class="perkrow"><span class="perkrow__name">週邊折扣</span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="20" inputmode="numeric"><span class="amount-field__unit">%</span></span></div>
+        <div class="perkrow"><span class="perkrow__name">VIP 拍賣 · 創作者私人物品</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">VIP 電子商店</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">創作者庫房 · VIP 權限</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">生日語音祝福 · 每年</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">生日影片祝福 · 每年</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">Demo 音檔</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">幕後花絮</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+        <div class="perkrow"><span class="perkrow__name">私人直播</span><span class="switch switch--on" role="switch" aria-checked="true" tabindex="0"></span></div>
+      </div>
+
+      <!-- 待決 2 就長在這裡：一顆儲存鈕、兩種生效時機 -->
+      <div class="info-banner" style="margin-top:var(--sp-20)">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span>門檻變更要等<b>下次每晚重算</b>才生效；權益<b>立即生效</b>。同一顆儲存鈕、兩種時機——這句話的寫法還沒定案。</span>
+      </div>
+
+      <div class="drawer-foot">
+        <button class="btn btn--outline" type="button" data-close>取消</button>
+        <button class="btn btn--primary" type="button" data-close>儲存這一階</button>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ── 分級規則的抽屜：跨所有分級的設定，不屬於任何一階 ────────── -->
+<div class="drawer" data-rules-drawer aria-hidden="true">
+  <div class="drawer__scrim" data-close></div>
+  <section class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="rtitle">
+    <div class="drawer__head">
+      <h2 class="drawer__title" id="rtitle">分級規則</h2>
+      <button class="drawer__close" type="button" aria-label="關閉" data-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="drawer__body">
+
+      <div class="step__label" style="margin-top:0">行為加權</div>
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-4)">每種行為換算成忠誠點數時的權重。</p>
+      <div class="perkrow"><span class="perkrow__name">購買<br><span class="settings-row__hint">每消費 $1 換算的點數</span></span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="3" inputmode="numeric"><span class="amount-field__unit">×</span></span></div>
+      <div class="perkrow"><span class="perkrow__name">活動報到<br><span class="settings-row__hint">實體到場一次</span></span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="5" inputmode="numeric"><span class="amount-field__unit">×</span></span></div>
+      <div class="perkrow"><span class="perkrow__name">互動<br><span class="settings-row__hint">留言、分享、投票</span></span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="1" inputmode="numeric"><span class="amount-field__unit">×</span></span></div>
+      <div class="perkrow"><span class="perkrow__name">推薦<br><span class="settings-row__hint">帶進一位新粉絲</span></span><span class="amount-field amount-field--suffix"><input class="input amount-field__input" value="8" inputmode="numeric"><span class="amount-field__unit">×</span></span></div>
+
+      <div class="step__label" style="margin-top:var(--sp-24)">權益矩陣</div>
+      <p class="settings-row__hint" style="margin:0 0 var(--sp-12)">一項權益一次設定四階。跟「編輯這一階」是同一份資料的兩種切法——那邊是一階設定所有權益，這邊是一項權益設定四階。</p>
+      <button class="btn btn--outline btn--sm" type="button"><i data-lucide="layout-grid" class="ztor-icon"></i>開啟完整矩陣</button>
+
+      <div class="step__label" style="margin-top:var(--sp-24)">規則與版本</div>
+      <p class="settings-row__hint">分級系統的運作方式。這些是產品規則──在此呈現，由上游掌管。</p>
+      <div class="info-banner" style="margin-top:var(--sp-12)">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span>忠誠點數與分級由每晚批次重新計算。門檻變更於下次重算時生效，非立即生效。</span>
+      </div>
+
+      <div class="drawer-foot">
+        <button class="btn btn--outline" type="button" data-close>取消</button>
+        <button class="btn btn--primary" type="button" data-close>儲存規則</button>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  var NAMES = { inner: '核心圈', super: '超級粉絲', devoted: '上榜粉絲', fan: '粉絲' };
+
+  /* 分頁切換 */
+  document.querySelectorAll('[data-tab]').forEach(function (t) {
+    t.addEventListener('click', function () {
+      var key = t.getAttribute('data-tab');
+      document.querySelectorAll('[data-tab]').forEach(function (x) {
+        var on = x === t;
+        x.classList.toggle('tabs__item--active', on);
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('[data-panel]').forEach(function (p) {
+        p.classList.toggle('hidden', p.getAttribute('data-panel') !== key);
+      });
+    });
+  });
+
+  /* 抽屜（兩個：一階的、全域規則的）。頁面本體唯讀，改東西一律開抽屜。 */
+  var drawer = document.querySelector('[data-drawer]');
+  var rulesDrawer = document.querySelector('[data-rules-drawer]');
+  var title = document.getElementById('dtitle');
+
+  function open(d) { d.classList.add('is-open'); d.setAttribute('aria-hidden', 'false'); }
+  function closeAll() {
+    [drawer, rulesDrawer].forEach(function (d) {
+      d.classList.remove('is-open'); d.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  document.querySelectorAll('[data-edit]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      title.textContent = '編輯：' + NAMES[b.getAttribute('data-edit')];
+      open(drawer);
+    });
+  });
+  document.querySelector('[data-rules]').addEventListener('click', function () { open(rulesDrawer); });
+
+  [drawer, rulesDrawer].forEach(function (d) {
+    d.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeAll(); });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+
+  /* 權益開關（demo：點了會動，不存任何東西） */
+  document.querySelectorAll('.switch').forEach(function (sw) {
+    sw.addEventListener('click', function () {
+      var on = sw.classList.toggle('switch--on');
+      sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  });
+
+  if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(document.body);
+})();
+</script>
+</body>
+</html>

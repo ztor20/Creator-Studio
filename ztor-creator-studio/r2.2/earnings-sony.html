@@ -90,7 +90,7 @@
     background:var(--popover); color:var(--foreground);
     border:1px solid var(--border); border-radius:var(--radius-lg);
     padding:var(--sp-10) var(--sp-12);
-    box-shadow:0 1px 5px rgba(0,0,0,.10), 0 6px 16px rgba(0,0,0,.08);
+    box-shadow:var(--shadow-float);   /* E3 浮層＝tooltip 的階（2026-08-01 由寫死 rgba 改回 token）*/
     font-size:var(--fs-12);
   }
   /* 高度要壓在繪圖區內：.chart-card 是 overflow:hidden，浮層太高會被卡片裁掉
@@ -202,6 +202,7 @@
   .roy-foot__note { font-size:var(--fs-12); color:var(--muted-foreground); }
   /* 作品榜的類型篩選自成一列（標題長、span-6 寬度放不下同一行） */
   [data-roy-card] > .filter-tabs { margin: var(--sp-4) 0 var(--sp-12); }
+
 </style>
 </head>
 <body data-sheet-nav>
@@ -263,7 +264,15 @@
            樣式跟 e-shop 工作列同一組底線式；不掛 tabs--count-plain（這裡沒有計數）。 -->
       <!-- 分頁包在 .list-toolbar 殼裡：底線式 tab 的 ::after 設計上要貼卡片底緣，
            殼提供固定 58px 高＋align-items:stretch，tab 撐滿才對得上（見 list-toolbar.css 檔頭）。 -->
-      <div class="list-toolbar mt-24">
+      <!-- 貼頂用 .list-dock 包起來（2026-08-01 使用者裁示「參考電子商店的 tab 做法」）：
+           貼頂態的形狀（上緣切平、與外框連成一體、毛玻璃、收成一行）全部由共用的
+           snap dock 提供——ds-components/list-toolbar.css 的 Snap dock 段 ＋
+           js/sticky-dock.js，五個清單頁同一套，這裡是第六個消費者、零新樣式。
+           殼要往下包住兩個分頁面板：sticky 只能在親層 box 裡移動，殼跟內容一樣高，
+           貼頂才黏得住整段捲動（腳本靠殼裡有沒有 .bento 判成 --tall、把 sticky
+           掛到它執行期包出來的 .list-dock__bars 上）。 -->
+      <div class="list-dock mt-24">
+      <div class="list-toolbar">
         <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" data-tabs>
           <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tab="overview"><span data-i18n="earnings.tab.overview">Overview</span></button>
           <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="royalty"><span data-i18n="earnings.tab.royalty">Royalties</span></button>
@@ -513,6 +522,7 @@
           </section>
         </div>
       </div>
+      </div><!-- /.list-dock -->
 
     </div>
   </main>
@@ -624,6 +634,8 @@
 <!-- table-sort 必須排在 finance-overview 之前：後者在解析階段就渲染表格，
      渲染完會立刻呼叫 window.ztorTableSort.scan() 把排序掛上去。 -->
 <script src="js/table-sort.js?v=r2.2"></script>
+<!-- 分頁工作列貼頂（.list-dock，2026-08-01）：共用行為，樣式在 ds-components/list-toolbar.css 的 Snap dock 段 -->
+<script src="js/sticky-dock.js?v=r2.2"></script>
 <script src="partials/finance-overview.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
