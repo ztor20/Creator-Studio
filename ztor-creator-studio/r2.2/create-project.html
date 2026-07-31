@@ -33,6 +33,8 @@
 <link rel="stylesheet" href="ds-components/stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<!-- 發布後的成功提示排到下一頁顯示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
@@ -240,31 +242,24 @@
     <!-- ───────────────────────── STEP · Showcase (shared) ───────────────────────── -->
     <section data-panel="showcase" class="hidden">
       <h1 class="wizard__step-title" data-i18n="cpp.s2.h1">Show fans why this matters.</h1>
-      <p class="wizard__step-sub" data-i18n="cpp.s2.sub">Cover, poster, banner, gallery. One short story. A video if you have it. We accept files up to 2 GB.</p>
+      <p class="wizard__step-sub" data-i18n="cpp.s2.sub">Key visual and gallery. One short story. A video if you have it. We accept files up to 2 GB.</p>
 
+      <!-- 2026-07-31（D164 / documents 5.1.2.1 F6）：原本的縮圖（1:1）／直式海報（3:4）／橫式橫幅（16:9）
+           三格在比例統一成 750×930 之後形狀相同、素材同源，維持三格等於要求重複上傳同一張圖，
+           故併為單一「主視覺」；項目不保留橫式素材（橫式例外只適用活動）。剩兩格：主視覺＋圖庫，皆必填。 -->
       <div class="field form-section form-section--outlined">
-        <div class="field__label"><span data-i18n="cpp.s2.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.four-req">· all four required</span></div>
+        <div class="field__label"><span data-i18n="cpp.s2.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.both-req">· both required</span></div>
         <div class="upload-assets">
-          <button type="button" class="upload-tile upload-tile--1x1">
+          <div class="upload-tile upload-tile--750x930" data-upload>
             <span class="upload-tile__icon">＋</span>
-            <span class="upload-tile__title" data-i18n="cpp.s2.thumb">Thumbnail</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.thumb-size">800 × 800 · 1:1</span>
-          </button>
-          <button type="button" class="upload-tile upload-tile--3x4">
-            <span class="upload-tile__icon">＋</span>
-            <span class="upload-tile__title" data-i18n="cpp.s2.poster">Vertical poster</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.poster-size">900 × 1200 · 3:4</span>
-          </button>
-          <button type="button" class="upload-tile upload-tile--16x9">
-            <span class="upload-tile__icon">＋</span>
-            <span class="upload-tile__title" data-i18n="cpp.s2.banner">Landscape banner</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.banner-size">1920 × 1080 · 16:9</span>
-          </button>
-          <button type="button" class="upload-tile upload-tile--3x2">
+            <span class="upload-tile__title" data-i18n="cpp.s2.keyvisual">Key visual</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.keyvisual-size">750 × 930 · portrait</span>
+          </div>
+          <div class="upload-tile upload-tile--750x930" data-upload>
             <span class="upload-tile__icon">＋</span>
             <span class="upload-tile__title" data-i18n="cpp.s2.gallery">Gallery</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">1200 × 800 · 3:2 · 1–8 images</span>
-          </button>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">750 × 930 · portrait · 1–8 images</span>
+          </div>
         </div>
       </div>
 
@@ -698,7 +693,7 @@
           </div>
           <div class="review-row__value" style="display:flex;flex-direction:column;gap:6px">
             <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s2.story">Story</span><span class="badge badge--success"><span data-i18n="cpp.s4.complete">✓ Completed</span></span></div>
-            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Thumbnail · poster · banner · gallery</span><span class="badge badge--success"><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
+            <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.imgs">Key visual · gallery</span><span class="badge badge--success"><span data-i18n="cpp.s4.uploaded">Uploaded</span></span></div>
             <div class="flex-row" style="justify-content:space-between"><span data-i18n="cpp.s4.trailer">Video</span><span class="badge badge--neutral"><span data-i18n="cpp.s4.no-trailer">Not uploaded</span></span></div>
           </div>
         </div>
@@ -826,6 +821,9 @@
 
   <footer class="wizard__bottom" style="justify-content:flex-end" data-footer>
     <div class="wizard__bottom-actions">
+      <!-- 主動作被停用時的原因，就寫在按鈕旁邊：灰掉的按鈕自己不解釋，
+           右軌的教練行離它太遠。內容由 JS 依當步驟填，可按時整行清空。 -->
+      <p class="wizard__bottom-hint hidden" data-next-hint></p>
       <button class="btn btn--outline" data-action="back" data-i18n="wiz.back">Back</button>
       <button class="btn btn--primary" data-action="next">Continue</button>
     </div>
@@ -835,6 +833,10 @@
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<!-- 發布後要導向「同類型的示範專案」，需要這份專案目錄查 id（見下方 publish()）。 -->
+<script src="js/projects-store.js?v=r2.2"></script>
+<!-- 提供 window.ztorToast.queue()：發布提示排到詳情頁再顯示。 -->
+<script src="js/toast.js?v=r2.2"></script>
 <!-- 回饋套組的商品挑選器讀這支的 window.ZTOR_PRODUCTS（persona-aware 的真實商品目錄）。 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/bundle-editor.js?v=r2.2"></script>
@@ -879,6 +881,23 @@
   const T = k => (window.i18nT && window.i18nT(k)) || k;
   const flow = () => FLOWS[type];
 
+  /* footer 主動作旁的原因行。傳 i18n key ＝顯示該句；傳 null ＝整行清掉。
+     只在主動作被停用時出現——按得下去的按鈕不需要解釋自己。
+     寫 data-i18n 是為了讓語言切換時 i18n.js 的 apply() 自己重譯這一行。 */
+  function setNextHint(key) {
+    const el = document.querySelector('[data-next-hint]');
+    if (!el) return;
+    if (key) {
+      el.dataset.i18n = key;
+      el.textContent = T(key);
+      el.classList.remove('hidden');
+    } else {
+      el.removeAttribute('data-i18n');
+      el.textContent = '';
+      el.classList.add('hidden');
+    }
+  }
+
   function buildStepper() {
     const el = document.getElementById('stepper');
     const f = flow();
@@ -917,6 +936,9 @@
        否則其他步驟會被上一步的驗證狀態卡住。 */
     const nextBtn = document.querySelector('[data-action=next]');
     if (nextBtn && cur !== 'tiers') nextBtn.disabled = false;
+    /* 原因行跟著擋關狀態走：離開 Bundles 那步一定要清掉，否則會殘留在其他步驟。
+       還在這一步時由 renderBundleOverview() 依當下的套組狀態重設。 */
+    if (cur !== 'tiers') setNextHint(null);
     if (cur === 'tiers' && typeof ensureBundles === 'function') ensureBundles();
 
     // Review per-type blocks
@@ -1205,10 +1227,13 @@
         : T('cpp.bd.coach.ok');
     }
 
-    /* 停用 Continue 而不是讓人按下去再彈 alert：按鈕的狀態就是答案，
-       旁邊的教練行已經寫著為什麼。 */
+    /* 停用 Continue 而不是讓人按下去再彈 alert：按鈕的狀態就是答案。
+       2026-07-30：原因原本只寫在右軌的教練行，離按鈕太遠——使用者只看到一顆灰掉的
+       按鈕、不知道為什麼。改成同時在按鈕旁補一句短的（教練行維持完整說明）。 */
+    const blocked = valid.length === 0;
     const next = document.querySelector('[data-action=next]');
-    if (next) next.disabled = valid.length === 0;
+    if (next) next.disabled = blocked;
+    setNextHint(blocked ? 'cpp.bd.hint.blocked' : null);
   }
 
   /* 第一次進到這步就給一張空卡：「新增第一張」永遠是使用者要做的事。
@@ -1230,11 +1255,38 @@
      `document.addEventListener('i18n:applied', render)`，而 render() 在這一步會
      再進 ensureBundles() → BD.ensure()。多掛一個只會讓同一件事做兩次。 */
 
+  /* ── 發布 ────────────────────────────────────────────────────────────
+     按下「發布項目」後，使用者該看到的是「東西已經在了」——所以離開建立流程、
+     回到專案詳情頁，並在那一頁跳一則成功提示（提示排進 js/toast.js 的跨頁佇列，
+     由詳情頁載入時顯示一次）。原本只彈 alert，按完還停在同一個表單上。
+
+     ⚠ 原型替身：這個 wizard 不會真的建立一筆專案（無後端、無寫入）。所以導向的是
+     「與這次選的類型相符的第一筆示範專案」，讓詳情頁至少長得像剛建立的那一種。
+     真實情境是導向剛建立的那一筆：project-detail.html?id=<新專案 id>。
+     找不到同類型的示範專案就不帶 id——詳情頁自己會退回第一筆。
+
+     排程發布是另一件事：東西還沒上線，說「已發布」是對創作者做假陳述，
+     所以照 Publish timing 那組選項分成兩句文案。 */
+  function publish() {
+    const scheduled = !!document.querySelector('[data-publish="schedule"].selection-card--active');
+    const key = scheduled ? 'cpp.publish.toast.scheduled' : 'cpp.publish.toast.now';
+    if (window.ztorToast) window.ztorToast.queue(T(key), { key: key, tone: 'success' });
+
+    /* wizard 的類型代號與 projects-store 的不完全同名：這裡是 'golive'，
+       那邊寫 'go-live'（fund／preorder 兩邊一致）。只在這個查找上對映，
+       不去改任一邊的既有代號——那會牽動清單頁與詳情頁的所有讀取端。 */
+    const STORE_TYPE = { golive: 'go-live', fund: 'fund', preorder: 'preorder' };
+    const want = STORE_TYPE[type] || type;
+    const list = (window.ztorProjects && window.ztorProjects.list()) || [];
+    const sample = list.filter(p => p.type === want)[0];
+    location.href = 'project-detail.html' + (sample ? '?id=' + encodeURIComponent(sample.id) : '');
+  }
+
   // Nav
   document.querySelector('[data-action=next]').addEventListener('click', () => {
     const f = flow();
     if (idx < f.length - 1) { idx++; render(); }
-    else { alert(T('cpp.publish-alert')); }
+    else publish();
   });
   document.querySelector('[data-action=back]').addEventListener('click', () => { if (idx > 0) { idx--; render(); } });
   /* footer 的「Save draft」已移除（與 header 的 Save as draft 重複）；存草稿走 header data-wizard-savedraft（wizard-chrome.js）*/
@@ -1251,6 +1303,8 @@
   showGate();   // 流程從項目類型閘門開始（D150）
 })();
 </script>
+<!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>

@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -122,10 +123,27 @@
                   <div class="rent-block__total">$1,140<span class="text-sub" style="font-size: var(--fs-13);font-weight: var(--fw-regular)"> USD</span></div>
                 </div>
                 <div class="text-sub" style="font-size: var(--fs-12);margin-top:2px" data-i18n="ip-detail.rent-sub">6-month standard term · non-exclusive</div>
-                <button class="btn btn--primary" style="width:100%;margin-top:12px" data-i18n="ip-detail.btn.send-request">Send rental request</button>
-                <button class="btn btn--ghost btn--sm" style="width:100%;margin-top:6px" data-i18n="ip-detail.btn.save">Save for later</button>
-                <div class="rent-block__legal" data-i18n="ip-detail.bd.estimate-note">Estimate only — not a charge. Final fees are confirmed with the owner.</div>
-                <div class="rent-block__legal" data-i18n="ip-detail.legal-note">Sends a draft licence request to the owner's approval queue — not a payment. A licence is active only once both sides approve and terms are complete.</div>
+                <!-- ✝ 2026-07-30 送出租用申請接上流程（原本點了沒反應）。
+                     行為照規格 5.1.3.1 §F4：送出＝建立一筆 Draft 授權、進入權利人的核准佇列，
+                     **不是付款**；§F3 另要求「不得讓創作者誤以為已完成授權」，所以送出後不是
+                     只跳一個 toast 就把 CTA 留在原地——整個結帳區換成申請狀態，把 Draft 徽章、
+                     等待對象與「核准前不構成正式授權」直接留在版面上。
+                     可撤回：原型層級的可逆操作，避免誤點就卡住。 -->
+                <div id="ipd-rent-cta">
+                  <button class="btn btn--primary" style="width:100%;margin-top:12px" id="ipd-send-request" data-i18n="ip-detail.btn.send-request">Send rental request</button>
+                  <button class="btn btn--ghost btn--sm" style="width:100%;margin-top:6px" id="ipd-save-later" data-i18n="ip-detail.btn.save">Save for later</button>
+                  <div class="rent-block__legal" data-i18n="ip-detail.bd.estimate-note">Estimate only — not a charge. Final fees are confirmed with the owner.</div>
+                  <div class="rent-block__legal" data-i18n="ip-detail.legal-note">Sends a draft licence request to the owner's approval queue — not a payment. A licence is active only once both sides approve and terms are complete.</div>
+                </div>
+                <div id="ipd-rent-sent" hidden>
+                  <div class="flex-row" style="gap:6px;align-items:center;margin-top:12px">
+                    <span class="badge badge--info"><span data-i18n="ip-detail.sent.badge">Draft</span></span>
+                    <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ip-detail.sent.status">Awaiting owner approval</span>
+                  </div>
+                  <div class="rent-block__legal" id="ipd-sent-summary"></div>
+                  <div class="rent-block__legal" data-i18n="ip-detail.sent.next">The owner reviews it in their approval queue. You will be notified when they respond — nothing is charged, and this is not a licence until both sides approve.</div>
+                  <button class="btn btn--outline btn--sm" style="width:100%;margin-top:10px" id="ipd-withdraw" data-i18n="ip-detail.sent.withdraw">Withdraw request</button>
+                </div>
               </div>
             </div>
           </div>
@@ -377,7 +395,53 @@
     const initial = (location.hash || '').replace('#', '');
     if (NAMES.includes(initial)) activate(initial);
   })();
+
+  /* 送出租用申請（2026-07-30；原本這顆按鈕沒有接任何行為）。
+     規格 5.1.3.1 §F4：送出＝建立一筆 Draft 授權、進入權利人核准佇列，**不是付款**。
+     §F3：不得讓創作者誤以為已完成授權——所以送出後把整個結帳 CTA 換成申請狀態，
+     Draft 徽章與「核准前不構成正式授權」留在版面上，而不是跳個 toast 就沒了。
+     ⚠ 原型無後端：不建立真的授權、不寫入任何佇列、重整即回初始態。 */
+  (function () {
+    const cta = document.getElementById('ipd-rent-cta');
+    const sent = document.getElementById('ipd-rent-sent');
+    if (!cta || !sent) return;
+    /* i18nT 查不到鍵時回 null（不是空字串），所以一定要留英文退路。 */
+    const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+    const toast = (m, tone) => { if (window.ztorToast) window.ztorToast.show(m, { tone: tone }); };
+
+    function setSent(on) {
+      cta.hidden = on;
+      sent.hidden = !on;
+      if (on) {
+        /* 摘要直接讀畫面上的總額與條款，不另存一份——兩邊各寫一次就會有對不上的一天。 */
+        const total = document.querySelector('.rent-block__total');
+        const terms = document.querySelector('[data-i18n="ip-detail.rent-sub"]');
+        document.getElementById('ipd-sent-summary').textContent =
+          T('ip-detail.sent.summary', 'Requested: {total} · {terms}')
+            .replace('{total}', (total ? total.textContent.trim().replace(/\s+/g, ' ') : ''))
+            .replace('{terms}', (terms ? terms.textContent.trim() : ''));
+      }
+    }
+
+    document.getElementById('ipd-send-request').addEventListener('click', () => {
+      setSent(true);
+      toast(T('ip-detail.toast.sent', 'Request sent — a draft licence is now in the owner’s approval queue'), 'success');
+      sent.scrollIntoView({ block: 'nearest' });
+    });
+
+    document.getElementById('ipd-withdraw').addEventListener('click', () => {
+      setSent(false);
+      toast(T('ip-detail.toast.withdrawn', 'Request withdrawn — the draft licence was removed'), 'neutral');
+    });
+
+    /* 「稍後再說」：目前只給回饋，因為上游沒有定義「已儲存的 IP」要落在哪一頁
+       （產品缺口，見 ASSUMPTIONS UIA-098）。不假裝有一個收藏清單可以回去看。 */
+    document.getElementById('ipd-save-later').addEventListener('click', () => {
+      toast(T('ip-detail.toast.saved', 'Saved on this device for now — a saved-IP list is still pending product design'), 'neutral');
+    });
+  })();
 </script>
+<script src="js/toast.js?v=r2.2"></script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 </body>

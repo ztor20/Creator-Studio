@@ -39,13 +39,15 @@
 
   /* ── 分級階梯（最高在前）──────────────────────────────────
      順序即階梯，tier 規則是「≥ 此級」，所以這個順序是權威的。
-     名稱不在此複製，一律引用 tier-settings.tier.* 的 i18n key。 */
-  var TIERS = [
-    { key: "inner",   i18n: "tier-settings.tier.inner",    count: 154 },
-    { key: "super",   i18n: "tier-settings.tier.superfan", count: 359 },
-    { key: "devoted", i18n: "tier-settings.tier.devoted",  count: 475 },
-    { key: "fan",     i18n: "tier-settings.tier.fan",      count: 295 }
-  ];
+     名稱不在此複製，一律引用 tier-settings.tier.* 的 i18n key。
+     2026-07-31：人數改由 js/tier-population.js 供給（電子商店的分級門檻也要問同一份
+     人口，數字不該有第二份宣告）。本檔內部沿用 "super" 這個 key——reach 系列與存下來的
+     假資料都以它為準，改名的連鎖比映射一行大得多，所以在這裡映射、不動內部命名。 */
+  var POP = (window.ztorTierPopulation && window.ztorTierPopulation.tiers) || [];
+  var LOCAL_KEY = { inner: "inner", superfan: "super", devoted: "devoted", fan: "fan" };
+  var TIERS = POP.map(function (t) {
+    return { key: LOCAL_KEY[t.key] || t.key, i18n: t.i18n, count: t.count };
+  });
   var TIER_RANK = {}; TIERS.forEach(function (x, i) { TIER_RANK[x.key] = TIERS.length - i; });
   var TOTAL_FANS = TIERS.reduce(function (a, x) { return a + x.count; }, 0);   /* 1,283 */
 

@@ -25,6 +25,26 @@
    ============================================================ */
 (function () {
   if (window.__ztorDevToolsMounted) return;
+
+  /* 被 iframe 嵌進來時只掛「傳話的」、不掛面板（2026-07-30 建立，07-31 補傳話）。
+     詳情頁被 detail-sheet 用 iframe 開（`?embed=1`）、商店設定走 embed-modal 也是 iframe，
+     這些文件同樣會載入本檔。若照掛面板，彈窗裡會生出第二個——它 position:fixed 是相對
+     **iframe 的視窗**，看起來就被關在彈窗裡、而不是浮在整個瀏覽器視窗上。
+     但也不能整個不掛：iframe 是獨立文件，滑鼠事件不會冒泡到外層，
+     游標在彈窗範圍內按 Alt＋右鍵就沒有任何東西接得到（07-30 那版的副作用）。
+     所以這裡只註冊手勢、把它 postMessage 給最外層，由外層那個位置正確的面板來開關。
+     用 self !== top 判斷而不是只看 ?embed=1：任何 iframe 情境都涵蓋，不必逐一列舉。 */
+  var embedded = true;
+  try { embedded = window.self !== window.top; } catch (e) { embedded = true; }   /* 跨來源存取被擋＝一定在 iframe 裡 */
+  if (embedded) {
+    document.addEventListener('contextmenu', function (e) {
+      if (!e.altKey) return;
+      e.preventDefault();
+      try { window.top.postMessage({ ztor: 'devtools-toggle' }, '*'); } catch (err) {}
+    });
+    return;
+  }
+
   window.__ztorDevToolsMounted = true;
 
   var DATA = [
@@ -88,7 +108,9 @@
     /* 2026-07-30 補：外部 r2.2 改版新增的 6 頁只加進 sidebar.js 的同名清單、漏了這裡，
        導致低版本下導覽藏得掉、頁內連結卻還點得進去（版本 gate 漏水）。 */
     'tier-benefits.html': 1, 'media-vault.html': 1, 'brand-campaigns.html': 1,
-    'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1
+    'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1,
+    /* 2026-07-31 D158：受眾分析新頁（Fans 群組第 6 個目的地）。 */
+    'fan-analytics.html': 1
   };
   function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'p1'); }
   function parseScopeMd(txt) {
@@ -808,6 +830,13 @@
   document.addEventListener('contextmenu', function (e) {
     if (!e.altKey) return;
     e.preventDefault();
+    root.classList.contains('is-open') ? close() : open();
+  });
+  /* 同一個手勢發生在被嵌入的 iframe 裡（detail-sheet、embed-modal）時，
+     由那份文件 postMessage 過來——iframe 的事件不會冒泡，只能這樣接。
+     只認自家訊息格式，不驗 origin 是因為原型也跑在 file://（origin 為 "null"）。 */
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.ztor !== 'devtools-toggle') return;
     root.classList.contains('is-open') ? close() : open();
   });
   document.addEventListener('keydown', function (e) {

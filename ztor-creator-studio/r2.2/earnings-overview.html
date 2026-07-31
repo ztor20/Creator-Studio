@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>收入總覽 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/waterfall.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/accordion.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 收入總覽一次性版面：收入來源 focus 高亮＋版稅區塊。色彩／字級一律走 token，無裸 hex/rgb/font-size。 */
+  .ext-row__end { display:flex; align-items:center; gap:var(--sp-16); }
+  .roy-total { padding: var(--sp-16) 0 var(--sp-4); }
+  .roy-total__label { font-size:var(--fs-12); color:var(--muted-foreground); letter-spacing:.04em; text-transform:uppercase; }
+  .roy-total__value { font-size:var(--fs-40); font-weight:var(--fw-semibold); letter-spacing:-.02em; font-variant-numeric:tabular-nums; margin-top:var(--sp-4); }
+  .roy-total__meta { font-size:var(--fs-12); color:var(--muted-foreground); margin-top:var(--sp-4); }
+  .roy-foot { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-16); margin-top:var(--sp-16); flex-wrap:wrap; }
+  .roy-foot__note { font-size:var(--fs-12); color:var(--muted-foreground); }
+  .src-legend { margin-bottom: var(--sp-12); }
+  .src-line, .src-area { transition: opacity var(--duration) var(--easing); }
+  /* Focus: a source is selected → dim the others (still visible), highlight the picked one. */
+  [data-src-chart][data-focus] .src-line, [data-src-chart][data-focus] .src-area { opacity: .14; }
+  [data-src-chart][data-focus] .src-line.is-focus, [data-src-chart][data-focus] .src-area.is-focus { opacity: 1; }
+</style>
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <a href="earnings-overview.html" class="card__link" data-i18n="nav.earnings">Earnings</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="earnings.crumb.overview">Overview</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="earnings.ov.h1">Overview</h1>
+          <p class="page-intro__sub" data-i18n="earnings.ov.sub">Your Ztor income, plus the royalties every platform you're on pays you.</p>
+        </div>
+        <div class="page-intro__actions">
+          <select class="select" style="max-width:160px">
+            <option data-i18n="earnings.period.month">This month</option>
+            <option data-i18n="earnings.period.quarter">This quarter</option>
+            <option data-i18n="earnings.period.year">This year</option>
+          </select>
+          <button class="btn btn--outline" data-i18n="btn.export">Export</button>
+          <a class="btn btn--primary" href="earnings-ztor.html" data-i18n="earnings.ov.cta">Ztor earnings</a>
+        </div>
+      </div>
+
+      <!-- Financial summary cards · spec §5.1.8.3.
+           Always visible and consistent across all tabs.
+           Account-level "no earnings yet" empty state is the sibling .when-empty
+           below; toggled by Cheat Codes Empty via <html data-data-state="empty">. -->
+      <div class="bento when-data">
+        <div class="kpi kpi--hero bento--span-3"><div class="kpi__label" data-i18n="earnings.ov.kpi.total">Total revenue · all sources</div><div class="kpi__value">$26,760</div><div class="kpi__delta" data-i18n="earnings.ov.kpi.total-meta">+14.2% MoM</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="earnings.ov.kpi.ztor">Ztor revenue</div><div class="kpi__value">$24,830</div><div class="kpi__meta" data-i18n="earnings.ov.kpi.ztor-meta">92.8% · settles on Ztor</div><a class="kpi__link" href="earnings-ztor.html" data-i18n="earnings.ov.kpi.ztor-link">Open Ztor earnings →</a></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="earnings.ov.kpi.ext">Off-platform royalties</div><div class="kpi__value">$1,930</div><div class="kpi__meta" data-i18n="earnings.ov.kpi.ext-meta">7.2% · not withdrawable</div><a class="kpi__link" href="#royalties" data-i18n="earnings.ov.kpi.ext-link">See royalties →</a></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="earnings.kpi.available">Available to withdraw</div><div class="kpi__value">$8,940</div><div class="kpi__meta" data-i18n="earnings.ov.kpi.avail-meta">Ztor only · bank ••3417</div></div>
+      </div>
+
+
+      <!-- F3 account-level empty state (no earnings on this account) -->
+      <div class="when-empty">
+        <section class="card"><div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="banknote" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="earnings.empty.summary.title">No earnings yet</h3>
+          <p class="empty-card__text" data-i18n="earnings.empty.summary.text">Revenue, net income, pending and available balances appear here once your sales, events or royalties start coming in.</p>
+          <a class="btn btn--primary empty-card__cta" href="projects.html" data-i18n="earnings.empty.summary.cta">Go to projects</a>
+        </div></section>
+      </div>
+
+      <!-- ═══════════════════ 收入總覽 · 整合 Ztor + 外部收入 ═══════════════════ -->
+      <div class="earn-ov">
+
+        <!-- Overview data body (account has earnings). Empty state is the sibling
+             .when-empty below; toggled by Cheat Codes Empty. -->
+        <div class="when-data">
+
+        <!-- Revenue-source filter (F5 sources) · picks one source line at a time -->
+        <nav class="filter-tabs filter-tabs--source src-legend" role="tablist" aria-label="Revenue source filter" data-src-legend>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" style="--dot:var(--primary)" data-src-type="all"><span data-i18n="src.filter.all">All</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--primary)" data-src-type="eshop"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.eshop">E-Shop sales</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-2)" data-src-type="cocreate"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.cocreate">Co-creation funding</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-4)" data-src-type="events"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.events">Event tickets</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-5)" data-src-type="commission"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.commission">Tastemaker commission</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--chart-3)" data-src-type="ott"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.ott">OTT royalties</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--status-success)" data-src-type="ip"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.ip">IP royalties</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--status-info)" data-src-type="streaming"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.streaming">Platform / streaming</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--status-error)" data-src-type="licensing"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.licensing">Licensing</span></button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" style="--dot:var(--muted-foreground)" data-src-type="other"><span class="filter-tabs__dot" aria-hidden="true"></span><span data-i18n="src.other">Project support · other</span></button>
+        </nav>
+
+        <!-- Trend + sources · spec §5.1.8.4–5 -->
+        <div class="bento">
+          <section class="card chart-card bento--span-12" data-chart-view="line" data-chart-name="Revenue" data-src-chart data-chart-series='[{"label":"Dec 2024","value":12000,"y":100},{"label":"Jan 2025","value":14000,"y":90},{"label":"Feb 2025","value":13000,"y":95},{"label":"Mar 2025","value":16000,"y":81},{"label":"Apr 2025","value":15000,"y":86},{"label":"May 2025","value":18000,"y":71},{"label":"Jun 2025","value":17000,"y":76},{"label":"Jul 2025","value":19000,"y":66},{"label":"Aug 2025","value":18000,"y":71},{"label":"Sep 2025","value":21000,"y":57},{"label":"Oct 2025","value":23000,"y":47},{"label":"Nov 2025","value":24830,"y":38}]'>
+            <!-- Header: title group (left) + segmented + export (right) -->
+            <div class="chart-card__head">
+              <div class="chart-card__title-group">
+                <h3 class="chart-card__title" data-i18n="section.revenue-trend-ztor">Revenue trend · Ztor</h3>
+                <span class="chart-card__subtitle">· <span data-i18n="earnings.legend.sub">Gross revenue over time</span></span>
+              </div>
+              <div class="chart-card__controls">
+                <div class="segmented" role="tablist" aria-label="Range">
+                  <button class="segmented__item" role="tab">D</button>
+                  <button class="segmented__item" role="tab">W</button>
+                  <button class="segmented__item segmented__item--active" role="tab" aria-selected="true">M</button>
+                </div>
+                <button class="chart-card__icon-btn btn btn--icon btn--xs" aria-label="Export"><i data-lucide="upload" class="ztor-icon"></i></button>
+              </div>
+            </div>
+
+            <!-- Body: line view AND bar view, one hidden by data-chart-view -->
+            <div class="chart-card__body">
+              <!-- Line view -->
+              <div class="linechart linechart--axes">
+                <div class="linechart__y-axis">
+                  <span class="linechart__y-tick" style="top:13%">$7.5k</span>
+                  <span class="linechart__y-tick" style="top:38%">$5k</span>
+                  <span class="linechart__y-tick" style="top:63%">$2.5k</span>
+                  <span class="linechart__y-tick" style="top:88%">$0</span>
+                </div>
+                <div class="linechart__main">
+                  <svg class="linechart__svg" viewBox="0 0 600 180" preserveAspectRatio="none" aria-label="Gross revenue · last 12 months">
+                    <line class="linechart__grid" x1="0" y1="23"  x2="600" y2="23" />
+                    <line class="linechart__grid" x1="0" y1="68"  x2="600" y2="68" />
+                    <line class="linechart__grid" x1="0" y1="113" x2="600" y2="113" />
+                    <line class="linechart__grid" x1="0" y1="158" x2="600" y2="158" />
+                  <path class="src-area" data-src-line="eshop" style="fill:color-mix(in srgb, var(--primary) 15%, transparent)" d="M 0.0,96.8 C 9.09,95.3 36.37,88.7 54.55,87.8 C 72.73,86.9 90.91,92.6 109.09,91.4 C 127.27,90.2 145.46,82.1 163.64,80.6 C 181.82,79.1 200.0,83.9 218.18,82.4 C 236.36,80.9 254.55,73.7 272.73,71.6 C 290.91,69.5 309.09,71.3 327.27,69.8 C 345.45,68.3 363.64,64.4 381.82,62.6 C 400.0,60.8 418.18,61.1 436.36,59.0 C 454.54,56.9 472.73,53.0 490.91,50.0 C 509.09,47.0 527.27,43.86 545.45,41.0 C 563.63,38.14 590.91,34.22 600.0,32.86 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="cocreate" style="fill:color-mix(in srgb, var(--chart-2) 15%, transparent)" d="M 0.0,118.4 C 9.09,117.2 36.37,111.8 54.55,111.2 C 72.73,110.6 90.91,116.3 109.09,114.8 C 127.27,113.3 145.46,103.7 163.64,102.2 C 181.82,100.7 200.0,107.0 218.18,105.8 C 236.36,104.6 254.55,96.5 272.73,95.0 C 290.91,93.5 309.09,98.0 327.27,96.8 C 345.45,95.6 363.64,89.0 381.82,87.8 C 400.0,86.6 418.18,90.8 436.36,89.6 C 454.54,88.4 472.73,83.3 490.91,80.6 C 509.09,77.9 527.27,75.4 545.45,73.4 C 563.63,71.4 590.91,69.41 600.0,68.61 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="events" style="fill:color-mix(in srgb, var(--chart-4) 15%, transparent)" d="M 0.0,141.8 C 9.09,141.2 36.37,139.7 54.55,138.2 C 72.73,136.7 90.91,133.1 109.09,132.8 C 127.27,132.5 145.46,137.6 163.64,136.4 C 181.82,135.2 200.0,126.8 218.18,125.6 C 236.36,124.4 254.55,130.4 272.73,129.2 C 290.91,128.0 309.09,119.6 327.27,118.4 C 345.45,117.2 363.64,123.2 381.82,122.0 C 400.0,120.8 418.18,113.9 436.36,111.2 C 454.54,108.5 472.73,107.6 490.91,105.8 C 509.09,104.0 527.27,102.13 545.45,100.4 C 563.63,98.67 590.91,96.26 600.0,95.43 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="commission" style="fill:color-mix(in srgb, var(--chart-5) 15%, transparent)" d="M 0.0,136.4 C 9.09,136.1 36.37,134.75 54.55,134.6 C 72.73,134.45 90.91,136.1 109.09,135.5 C 127.27,134.9 145.46,131.6 163.64,131.0 C 181.82,130.4 200.0,132.5 218.18,131.9 C 236.36,131.3 254.55,128.0 272.73,127.4 C 290.91,126.8 309.09,128.9 327.27,128.3 C 345.45,127.7 363.64,125.0 381.82,123.8 C 400.0,122.6 418.18,122.3 436.36,121.1 C 454.54,119.9 472.73,118.1 490.91,116.6 C 509.09,115.1 527.27,113.39 545.45,112.1 C 563.63,110.81 590.91,109.38 600.0,108.84 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="ott" style="fill:color-mix(in srgb, var(--chart-3) 15%, transparent)" d="M 0.0,152.6 C 9.09,152.3 36.37,151.4 54.55,150.8 C 72.73,150.2 90.91,149.9 109.09,149.0 C 127.27,148.1 145.46,146.6 163.64,145.4 C 181.82,144.2 200.0,143.0 218.18,141.8 C 236.36,140.6 254.55,139.4 272.73,138.2 C 290.91,137.0 309.09,135.8 327.27,134.6 C 345.45,133.4 363.64,132.2 381.82,131.0 C 400.0,129.8 418.18,128.6 436.36,127.4 C 454.54,126.2 472.73,125.0 490.91,123.8 C 509.09,122.6 527.27,121.2 545.45,120.2 C 563.63,119.2 590.91,118.17 600.0,117.77 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="ip" style="fill:color-mix(in srgb, var(--status-success) 15%, transparent)" d="M 0.0,149.0 C 9.09,148.7 36.37,147.65 54.55,147.2 C 72.73,146.75 90.91,146.9 109.09,146.3 C 127.27,145.7 145.46,144.2 163.64,143.6 C 181.82,143.0 200.0,143.3 218.18,142.7 C 236.36,142.1 254.55,140.75 272.73,140.0 C 290.91,139.25 309.09,138.95 327.27,138.2 C 345.45,137.45 363.64,136.25 381.82,135.5 C 400.0,134.75 418.18,134.45 436.36,133.7 C 454.54,132.95 472.73,131.9 490.91,131.0 C 509.09,130.1 527.27,129.01 545.45,128.3 C 563.63,127.59 590.91,126.98 600.0,126.72 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="streaming" style="fill:color-mix(in srgb, var(--status-info) 15%, transparent)" d="M 0.0,154.4 C 9.09,154.1 36.37,153.2 54.55,152.6 C 72.73,152.0 90.91,151.4 109.09,150.8 C 127.27,150.2 145.46,149.75 163.64,149.0 C 181.82,148.25 200.0,147.05 218.18,146.3 C 236.36,145.55 254.55,145.25 272.73,144.5 C 290.91,143.75 309.09,142.55 327.27,141.8 C 345.45,141.05 363.64,140.75 381.82,140.0 C 400.0,139.25 418.18,138.2 436.36,137.3 C 454.54,136.4 472.73,135.35 490.91,134.6 C 509.09,133.85 527.27,133.37 545.45,132.8 C 563.63,132.23 590.91,131.45 600.0,131.18 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="licensing" style="fill:color-mix(in srgb, var(--status-error) 15%, transparent)" d="M 0.0,155.84 C 9.09,155.66 36.37,154.88 54.55,154.76 C 72.73,154.64 90.91,155.33 109.09,155.12 C 127.27,154.91 145.46,153.92 163.64,153.5 C 181.82,153.08 200.0,152.9 218.18,152.6 C 236.36,152.3 254.55,152.06 272.73,151.7 C 290.91,151.34 309.09,150.83 327.27,150.44 C 345.45,150.05 363.64,149.72 381.82,149.36 C 400.0,149.0 418.18,148.7 436.36,148.28 C 454.54,147.86 472.73,147.32 490.91,146.84 C 509.09,146.36 527.27,145.78 545.45,145.4 C 563.63,145.03 590.91,144.72 600.0,144.59 L 600,180 L 0,180 Z" />
+                  <path class="src-area" data-src-line="other" style="fill:color-mix(in srgb, var(--muted-foreground) 15%, transparent)" d="M 0.0,156.56 C 9.09,156.44 36.37,156.02 54.55,155.84 C 72.73,155.66 90.91,155.66 109.09,155.48 C 127.27,155.3 145.46,154.94 163.64,154.76 C 181.82,154.58 200.0,154.58 218.18,154.4 C 236.36,154.22 254.55,153.92 272.73,153.68 C 290.91,153.44 309.09,153.2 327.27,152.96 C 345.45,152.72 363.64,152.48 381.82,152.24 C 400.0,152.0 418.18,151.82 436.36,151.52 C 454.54,151.22 472.73,150.77 490.91,150.44 C 509.09,150.11 527.27,149.77 545.45,149.54 C 563.63,149.31 590.91,149.13 600.0,149.05 L 600,180 L 0,180 Z" />
+                  <path class="linechart__line src-line" data-src-line="eshop" style="stroke:var(--primary);stroke-width:2" d="M 0.0,96.8 C 9.09,95.3 36.37,88.7 54.55,87.8 C 72.73,86.9 90.91,92.6 109.09,91.4 C 127.27,90.2 145.46,82.1 163.64,80.6 C 181.82,79.1 200.0,83.9 218.18,82.4 C 236.36,80.9 254.55,73.7 272.73,71.6 C 290.91,69.5 309.09,71.3 327.27,69.8 C 345.45,68.3 363.64,64.4 381.82,62.6 C 400.0,60.8 418.18,61.1 436.36,59.0 C 454.54,56.9 472.73,53.0 490.91,50.0 C 509.09,47.0 527.27,43.86 545.45,41.0 C 563.63,38.14 590.91,34.22 600.0,32.86" />
+                  <path class="linechart__line src-line" data-src-line="cocreate" style="stroke:var(--chart-2);stroke-width:2" d="M 0.0,118.4 C 9.09,117.2 36.37,111.8 54.55,111.2 C 72.73,110.6 90.91,116.3 109.09,114.8 C 127.27,113.3 145.46,103.7 163.64,102.2 C 181.82,100.7 200.0,107.0 218.18,105.8 C 236.36,104.6 254.55,96.5 272.73,95.0 C 290.91,93.5 309.09,98.0 327.27,96.8 C 345.45,95.6 363.64,89.0 381.82,87.8 C 400.0,86.6 418.18,90.8 436.36,89.6 C 454.54,88.4 472.73,83.3 490.91,80.6 C 509.09,77.9 527.27,75.4 545.45,73.4 C 563.63,71.4 590.91,69.41 600.0,68.61" />
+                  <path class="linechart__line src-line" data-src-line="events" style="stroke:var(--chart-4);stroke-width:2" d="M 0.0,141.8 C 9.09,141.2 36.37,139.7 54.55,138.2 C 72.73,136.7 90.91,133.1 109.09,132.8 C 127.27,132.5 145.46,137.6 163.64,136.4 C 181.82,135.2 200.0,126.8 218.18,125.6 C 236.36,124.4 254.55,130.4 272.73,129.2 C 290.91,128.0 309.09,119.6 327.27,118.4 C 345.45,117.2 363.64,123.2 381.82,122.0 C 400.0,120.8 418.18,113.9 436.36,111.2 C 454.54,108.5 472.73,107.6 490.91,105.8 C 509.09,104.0 527.27,102.13 545.45,100.4 C 563.63,98.67 590.91,96.26 600.0,95.43" />
+                  <path class="linechart__line src-line" data-src-line="commission" style="stroke:var(--chart-5);stroke-width:2" d="M 0.0,136.4 C 9.09,136.1 36.37,134.75 54.55,134.6 C 72.73,134.45 90.91,136.1 109.09,135.5 C 127.27,134.9 145.46,131.6 163.64,131.0 C 181.82,130.4 200.0,132.5 218.18,131.9 C 236.36,131.3 254.55,128.0 272.73,127.4 C 290.91,126.8 309.09,128.9 327.27,128.3 C 345.45,127.7 363.64,125.0 381.82,123.8 C 400.0,122.6 418.18,122.3 436.36,121.1 C 454.54,119.9 472.73,118.1 490.91,116.6 C 509.09,115.1 527.27,113.39 545.45,112.1 C 563.63,110.81 590.91,109.38 600.0,108.84" />
+                  <path class="linechart__line src-line" data-src-line="ott" style="stroke:var(--chart-3);stroke-width:2" d="M 0.0,152.6 C 9.09,152.3 36.37,151.4 54.55,150.8 C 72.73,150.2 90.91,149.9 109.09,149.0 C 127.27,148.1 145.46,146.6 163.64,145.4 C 181.82,144.2 200.0,143.0 218.18,141.8 C 236.36,140.6 254.55,139.4 272.73,138.2 C 290.91,137.0 309.09,135.8 327.27,134.6 C 345.45,133.4 363.64,132.2 381.82,131.0 C 400.0,129.8 418.18,128.6 436.36,127.4 C 454.54,126.2 472.73,125.0 490.91,123.8 C 509.09,122.6 527.27,121.2 545.45,120.2 C 563.63,119.2 590.91,118.17 600.0,117.77" />
+                  <path class="linechart__line src-line" data-src-line="ip" style="stroke:var(--status-success);stroke-width:2" d="M 0.0,149.0 C 9.09,148.7 36.37,147.65 54.55,147.2 C 72.73,146.75 90.91,146.9 109.09,146.3 C 127.27,145.7 145.46,144.2 163.64,143.6 C 181.82,143.0 200.0,143.3 218.18,142.7 C 236.36,142.1 254.55,140.75 272.73,140.0 C 290.91,139.25 309.09,138.95 327.27,138.2 C 345.45,137.45 363.64,136.25 381.82,135.5 C 400.0,134.75 418.18,134.45 436.36,133.7 C 454.54,132.95 472.73,131.9 490.91,131.0 C 509.09,130.1 527.27,129.01 545.45,128.3 C 563.63,127.59 590.91,126.98 600.0,126.72" />
+                  <path class="linechart__line src-line" data-src-line="streaming" style="stroke:var(--status-info);stroke-width:2" d="M 0.0,154.4 C 9.09,154.1 36.37,153.2 54.55,152.6 C 72.73,152.0 90.91,151.4 109.09,150.8 C 127.27,150.2 145.46,149.75 163.64,149.0 C 181.82,148.25 200.0,147.05 218.18,146.3 C 236.36,145.55 254.55,145.25 272.73,144.5 C 290.91,143.75 309.09,142.55 327.27,141.8 C 345.45,141.05 363.64,140.75 381.82,140.0 C 400.0,139.25 418.18,138.2 436.36,137.3 C 454.54,136.4 472.73,135.35 490.91,134.6 C 509.09,133.85 527.27,133.37 545.45,132.8 C 563.63,132.23 590.91,131.45 600.0,131.18" />
+                  <path class="linechart__line src-line" data-src-line="licensing" style="stroke:var(--status-error);stroke-width:2" d="M 0.0,155.84 C 9.09,155.66 36.37,154.88 54.55,154.76 C 72.73,154.64 90.91,155.33 109.09,155.12 C 127.27,154.91 145.46,153.92 163.64,153.5 C 181.82,153.08 200.0,152.9 218.18,152.6 C 236.36,152.3 254.55,152.06 272.73,151.7 C 290.91,151.34 309.09,150.83 327.27,150.44 C 345.45,150.05 363.64,149.72 381.82,149.36 C 400.0,149.0 418.18,148.7 436.36,148.28 C 454.54,147.86 472.73,147.32 490.91,146.84 C 509.09,146.36 527.27,145.78 545.45,145.4 C 563.63,145.03 590.91,144.72 600.0,144.59" />
+                  <path class="linechart__line src-line" data-src-line="other" style="stroke:var(--muted-foreground);stroke-width:2" d="M 0.0,156.56 C 9.09,156.44 36.37,156.02 54.55,155.84 C 72.73,155.66 90.91,155.66 109.09,155.48 C 127.27,155.3 145.46,154.94 163.64,154.76 C 181.82,154.58 200.0,154.58 218.18,154.4 C 236.36,154.22 254.55,153.92 272.73,153.68 C 290.91,153.44 309.09,153.2 327.27,152.96 C 345.45,152.72 363.64,152.48 381.82,152.24 C 400.0,152.0 418.18,151.82 436.36,151.52 C 454.54,151.22 472.73,150.77 490.91,150.44 C 509.09,150.11 527.27,149.77 545.45,149.54 C 563.63,149.31 590.91,149.13 600.0,149.05" />
+                  </svg>
+                  <div class="linechart__labels--sparse"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span></div>
+                </div>
+              </div>
+
+              <!-- Bar view (visible when data-chart-view="bar") -->
+              <div class="linechart linechart--axes barchart-wrap">
+                <div class="linechart__y-axis">
+                  <span class="linechart__y-tick" style="top:5%">$28k</span>
+                  <span class="linechart__y-tick" style="top:33%">$20k</span>
+                  <span class="linechart__y-tick" style="top:60%">$10k</span>
+                  <span class="linechart__y-tick" style="top:88%">$0</span>
+                </div>
+                <div class="linechart__main">
+                  <div class="barchart" aria-label="Gross revenue by month · last 12 months">
+                  <div class="barchart__bar barchart__bar--s1" style="height:43%"><span class="barchart__bar__label">Dec</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:50%"><span class="barchart__bar__label">Jan</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:46%"><span class="barchart__bar__label">Feb</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:57%"><span class="barchart__bar__label">Mar</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:54%"><span class="barchart__bar__label">Apr</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:64%"><span class="barchart__bar__label">May</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:61%"><span class="barchart__bar__label">Jun</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:68%"><span class="barchart__bar__label">Jul</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:64%"><span class="barchart__bar__label">Aug</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:75%"><span class="barchart__bar__label">Sep</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:82%"><span class="barchart__bar__label">Oct</span></div>
+                  <div class="barchart__bar barchart__bar--s1" style="height:88%"><span class="barchart__bar__label">Nov</span></div>
+                </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: data range + chart-type toggle (wires data-chart-view via inline JS) -->
+            <div class="chart-card__foot">
+              <span><span data-i18n="earnings.ov.foot.range">Last 12 months · Ztor income only. Royalties arrive as quarterly statements — see Royalties below.</span></span>
+              <div class="chart-card__foot-actions" data-chart-toggle>
+                <button class="segmented__item segmented__item--active" data-view="line" aria-label="Line chart"><i data-lucide="chart-line" class="ztor-icon" style="width:14px;height:14px"></i></button>
+                <button class="segmented__item" data-view="bar" aria-label="Bar chart"><i data-lucide="chart-column" class="ztor-icon" style="width:14px;height:14px"></i></button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+
+        <!-- Recent transactions + Revenue by source · same row -->
+        <div class="bento mt-24">
+          <section class="card bento--span-7">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="receipt" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.recent-transactions">Recent transactions</h3>
+            </div>
+            <button class="card__link" onclick="location.href='earnings-ztor.html'" style="background:none;border:0;cursor:pointer" data-i18n="btn.view-all">View all</button>
+          </div>
+          <!-- Recent transactions · rendered by the shared transaction-list component
+               (components.js) — the SAME renderer Dashboard F3 uses, so the row format stays
+               in sync. Earnings passes the full recent ledger (income + a payout). -->
+          <div data-component="transaction-list" data-key="earn-recent" data-feat="full"></div>
+          </section>
+          <section class="card bento--span-5">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="bar-chart-3" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="section.revenue-source">Revenue by source</h3>
+              </div>
+            </div>
+            <!-- Revenue by source · extended to the merged 14-type taxonomy (ASSUMPTIONS CCR-001).
+                 cocreate types (Co-creation funding / Tastemaker commission / OTT royalties) added
+                 as proposed sources; percentages are illustrative demo splits summing to 100%. -->
+            <ul class="rank-bars">
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:100%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--primary)"></span>
+                    <span class="rank-bar__label" data-i18n="src.eshop">E-Shop sales</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">28%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:71%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-2)"></span>
+                    <span class="rank-bar__label" data-i18n="src.cocreate">Co-creation funding</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">20%</span>
+              </li>
+              <li class="rank-bar" data-feat="E13">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:50%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-4)"></span>
+                    <span class="rank-bar__label" data-i18n="src.events">Event tickets</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">14%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:39%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-5)"></span>
+                    <span class="rank-bar__label" data-i18n="src.commission">Tastemaker commission</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">11%</span>
+              </li>
+              <li class="rank-bar">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:32%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--chart-3)"></span>
+                    <span class="rank-bar__label" data-i18n="src.ott">OTT royalties</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">9%</span>
+              </li>
+              <li class="rank-bar" data-feat="E14">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:25%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--status-success)"></span>
+                    <span class="rank-bar__label" data-i18n="src.ip">IP royalties</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">7%</span>
+              </li>
+              <li class="rank-bar" data-feat="E16">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:21%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--status-info)"></span>
+                    <span class="rank-bar__label" data-i18n="src.streaming">Platform / streaming</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">6%</span>
+              </li>
+              <li class="rank-bar" data-feat="E15">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:11%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--status-error)"></span>
+                    <span class="rank-bar__label" data-i18n="src.licensing">Licensing</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">3%</span>
+              </li>
+              <li class="rank-bar" data-feat="E17">
+                <div class="rank-bar__track">
+                  <div class="rank-bar__fill" style="width:7%"></div>
+                  <div class="rank-bar__content">
+                    <span class="rank-bar__dot" style="background:var(--muted-foreground)"></span>
+                    <span class="rank-bar__label" data-i18n="src.other">Project support · other</span>
+                  </div>
+                </div>
+                <span class="rank-bar__pct">2%</span>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+
+        <!-- ═══════════════════ 第三段 · 版稅（Royalties）═══════════════════
+             總覽的外部那一半只收版稅（2026-07-31 使用者裁定）；外部平台的商品
+             販售與票務收入不納入。來源是發行商定期報表，非各平台 API 同步。
+             資料點對照 cocreate 提案頁的版稅分頁，維度由歌曲升成作品。 -->
+        <section class="card mt-24" id="royalties">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="disc" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="roy.title">Royalties</h3>
+            </div>
+            <div class="filter-row__actions">
+              <nav class="filter-tabs" role="tablist" aria-label="Royalty period">
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.month">Month</button>
+                <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-i18n="roy.period.quarter">Quarter</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.year">Year</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-i18n="roy.period.custom">Custom</button>
+              </nav>
+              <button class="btn btn--outline btn--sm" data-i18n="roy.export">Export report</button>
+            </div>
+          </div>
+
+          <!-- 總版稅：本區塊自己的大數字。刻意不上 KPI 列——Ztor 的 IP 版稅與授權
+               同時算在「Ztor 收入」裡，放進 KPI 會讓那四張卡看起來能相加卻不能。 -->
+          <div class="roy-total">
+            <div class="roy-total__label" data-i18n="roy.total">Total royalties</div>
+            <div class="roy-total__value">US$4,520</div>
+            <div class="roy-total__meta" data-i18n="roy.total-meta">2026 Q2 (Apr–Jun) · all works, platforms and regions</div>
+          </div>
+
+          <div class="info-banner mt-16">
+            <i data-lucide="clock" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="roy.freshness"><strong>Data through 2026-06-30.</strong> Royalty statements arrive from distributors on their own schedule — some sources run about a quarter behind. These are not live figures, and they are counted separately from your Ztor sales.</span>
+          </div>
+
+          <!-- 依來源拆解：把「合併成一個總版稅」拆回四個來源，並標明哪些可結算。 -->
+          <div class="data-list mt-16">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="file-text" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.distributor">Distributor statements</div>
+                  <div class="data-list__meta" data-i18n="roy.src.distributor-meta">Streaming, download and broadcast · about one quarter behind</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--neutral" data-i18n="roy.tag.external">Off-platform</span>
+                <div class="data-list__amount">$1,590.00</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="landmark" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.ip">Ztor IP royalties</div>
+                  <div class="data-list__meta" data-i18n="roy.src.ip-meta">Your IP rented or referenced on Ztor · settles here</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--success" data-i18n="roy.tag.settles">Settles on Ztor</span>
+                <div class="data-list__amount">$1,840.00</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="gavel" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.licensing">Ztor licensing</div>
+                  <div class="data-list__meta" data-i18n="roy.src.licensing-meta">Licence fees and rentals agreed on Ztor · settles here</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--success" data-i18n="roy.tag.settles">Settles on Ztor</span>
+                <div class="data-list__amount">$750.00</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="pencil" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.manual">KKBOX · Q3 statement (added by you)</div>
+                  <div class="data-list__meta" data-i18n="roy.src.manual-meta">No integration yet · statement attached · Nov 18</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--warning" data-i18n="roy.tag.unverified">Unverified</span>
+                <div class="data-list__amount">$340.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="roy-foot">
+            <span class="roy-foot__note" data-i18n="roy.manual-hint">Getting royalties from somewhere Ztor doesn't sync yet? Add the statement so it counts here.</span>
+            <button class="btn btn--outline btn--sm" data-manual-open data-i18n="roy.manual-cta">Add a royalty statement</button>
+          </div>
+        </section>
+
+        <!-- 表現最佳作品：兩個軸並排，照 cocreate 提案頁的做法（金額一欄、次數一欄），
+             不做切換——兩個軸要對照著看才有意義（賺最多的不一定是聽最多的）。 -->
+        <div class="bento mt-24">
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--primary"><i data-lucide="trending-up" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.works.money">Top works · by royalty</h3>
+              </div>
+            </div>
+            <ol class="perf-rank perf-rank--nopct" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name" title="Chan Chung Ling Greatest Hits">陳松伶精選</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$1,590</span></li>
+              <li class="perf-rank__row" style="--w:62%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name" title="Moonlight over Sham Shui Po">深水埗的月光</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$980</span></li>
+              <li class="perf-rank__row" style="--w:47%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name" title="Kowloon Nightfall">龍虎門外傳：九龍夜行</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$742</span></li>
+              <li class="perf-rank__row" style="--w:31%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name" title="Mong Kok Sniper">旺角狙擊</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$486</span></li>
+              <li class="perf-rank__row" style="--w:20%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name" title="Cheng I Sao">海上霸姬鄭一嫂</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$318</span></li>
+              <li class="perf-rank__row" style="--w:14%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name" title="Moonlight — title track MV">深水埗的月光 主題曲 MV</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$224</span></li>
+              <li class="perf-rank__row" style="--w:11%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name" title="Kowloon Nightfall — end credits">九龍夜行 片尾曲</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">$180</span></li>
+            </ol>
+          </section>
+          <section class="card bento--span-6">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="play" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.works.plays">Top works · by streams &amp; downloads</h3>
+              </div>
+            </div>
+            <ol class="perf-rank perf-rank--nopct" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-2)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">深水埗的月光</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">412,800</span></li>
+              <li class="perf-rank__row" style="--w:94%; --hue:var(--chart-1)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">陳松伶精選</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">386,200</span></li>
+              <li class="perf-rank__row" style="--w:67%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">龍虎門外傳：九龍夜行</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">274,500</span></li>
+              <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-6)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">深水埗的月光 主題曲 MV</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">198,300</span></li>
+              <li class="perf-rank__row" style="--w:40%; --hue:var(--chart-4)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">旺角狙擊</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">164,700</span></li>
+              <li class="perf-rank__row" style="--w:29%; --hue:var(--chart-7)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">九龍夜行 片尾曲</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">121,400</span></li>
+              <li class="perf-rank__row" style="--w:21%; --hue:var(--chart-5)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">海上霸姬鄭一嫂</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__val">88,600</span></li>
+            </ol>
+          </section>
+        </div>
+
+        <div class="bento mt-24">
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="map-pin" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.regions">Regions · by royalty</h3>
+              </div>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Taiwan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">38.5%</span><span class="perf-rank__val">$1,740</span></li>
+              <li class="perf-rank__row" style="--w:47%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Japan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.1%</span><span class="perf-rank__val">$818</span></li>
+              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">United States</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.9%</span><span class="perf-rank__val">$493</span></li>
+              <li class="perf-rank__row" style="--w:21%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">Hong Kong</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">8.1%</span><span class="perf-rank__val">$366</span></li>
+              <li class="perf-rank__row" style="--w:14%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Singapore</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">$249</span></li>
+              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">Malaysia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.7%</span><span class="perf-rank__val">$212</span></li>
+              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">South Korea</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">3.6%</span><span class="perf-rank__val">$163</span></li>
+              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Thailand</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.7%</span><span class="perf-rank__val">$122</span></li>
+              <li class="perf-rank__row" style="--w:5%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Canada</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.0%</span><span class="perf-rank__val">$90</span></li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-3)"><span class="perf-rank__idx">10</span><span class="perf-rank__name">Australia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.6%</span><span class="perf-rank__val">$72</span></li>
+              <li class="perf-rank__row perf-rank__row--rest" style="--w:11%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.regions.rest">Everywhere else</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.3%</span><span class="perf-rank__val">$195</span></li>
+            </ol>
+          </section>
+          <section class="card bento--span-12 mt-24">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="chart-column" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.platforms">Platforms · by royalty</h3>
+              </div>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Ztor OTT</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">25.4%</span><span class="perf-rank__val">$1,150</span></li>
+              <li class="perf-rank__row" style="--w:68%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Spotify</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">17.2%</span><span class="perf-rank__val">$778</span></li>
+              <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">YouTube</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">12.1%</span><span class="perf-rank__val">$547</span></li>
+              <li class="perf-rank__row" style="--w:41%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">KKBOX</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.5%</span><span class="perf-rank__val">$475</span></li>
+              <li class="perf-rank__row" style="--w:30%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Apple Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">7.6%</span><span class="perf-rank__val">$342</span></li>
+              <li class="perf-rank__row" style="--w:16%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">LINE MUSIC</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.2%</span><span class="perf-rank__val">$189</span></li>
+              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">friDay Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.2%</span><span class="perf-rank__val">$99</span></li>
+              <li class="perf-rank__row" style="--w:6%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Amazon Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.5%</span><span class="perf-rank__val">$66</span></li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Deezer</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.1%</span><span class="perf-rank__val">$50</span></li>
+              <li class="perf-rank__row perf-rank__row--rest" style="--w:48%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.platforms.rest">Licensing &amp; other (no platform)</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.2%</span><span class="perf-rank__val">$824</span></li>
+            </ol>
+          </section>
+        </div>
+
+        <div class="info-banner mt-24">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="earnings.pending-note"><strong>Pending ≠ Available.</strong> Pending settlement holds funds for T+7 dispute window. Available is what Request Payout will draw from.</span>
+        </div>
+
+        </div><!-- /.when-data -->
+
+        <!-- Overview empty state (no earnings yet · F4 / F5 / F6 空狀態) -->
+        <div class="when-empty">
+          <section class="card"><div class="empty-card">
+            <span class="empty-card__icon"><i data-lucide="trending-up" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="earnings.empty.overview.title">No revenue to show yet</h3>
+            <p class="empty-card__text" data-i18n="earnings.empty.overview.text">Your revenue trend, sources and recent transactions will appear here once income starts coming in.</p>
+          </div></section>
+        </div>
+      </div>
+
+  </main>
+
+  <div data-payout-modal-host></div>
+  <div data-manual-modal-host></div>
+
+  <!-- ══ 全部收入 · full F12 收入去向 waterfall — canonical .payout-modal popup ══ -->
+  <div class="payout-modal" data-bd-modal="waterfall" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="bd-wf-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="bd-wf-title" data-i18n="earnings.waterfall.title">Where the money goes</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.sub">From gross revenue to distributable profit · this period</span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="waterfall">
+          <div class="waterfall__row waterfall__row--income">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.gross">Gross revenue</span><span class="waterfall__meta" data-i18n="earnings.waterfall.gross-meta">212 settled events</span></div>
+            <span class="waterfall__amt">$24,830</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.cost">Direct costs</span><span class="waterfall__meta" data-i18n="earnings.waterfall.cost-meta">Fulfilment · manufacturing</span></div>
+            <span class="waterfall__amt">−$2,180</span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.gross-profit">Gross profit</span></div>
+            <span class="waterfall__amt">$22,650</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.fees">Platform &amp; payment fees</span><span class="waterfall__meta" data-i18n="earnings.waterfall.fees-meta">5% platform + 3% Stripe</span></div>
+            <span class="waterfall__amt">−$1,820</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.ip">IP royalties</span><span class="waterfall__meta" data-i18n="earnings.waterfall.ip-meta">Licensed character usage</span></div>
+            <span class="waterfall__amt">−$760</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.referral">Referral / affiliate</span><span class="waterfall__meta" data-i18n="earnings.waterfall.referral-meta">Partner-driven sales</span></div>
+            <span class="waterfall__amt">−$398</span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.net-revenue">Net revenue</span></div>
+            <span class="waterfall__amt">$19,672</span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.ztor">Ztor cut</span><span class="waterfall__meta" data-i18n="earnings.waterfall.ztor-meta">15% · rate cfg-2026.02</span></div>
+            <span class="waterfall__amt">−$2,951</span>
+          </div>
+          <div class="waterfall__row waterfall__row--pool">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.pool">Distributable profit</span><span class="waterfall__meta" data-i18n="earnings.waterfall.pool-meta">What you can distribute this period</span></div>
+            <span class="waterfall__amt">$16,721</span>
+          </div>
+          <div class="waterfall__row waterfall__row--distribution">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.creator">Creator</span><span class="waterfall__meta" data-i18n="earnings.waterfall.creator-meta">60% · founding creator</span></div>
+            <span class="waterfall__amt">$10,033</span>
+          </div>
+          <div class="waterfall__row waterfall__row--distribution">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="earnings.waterfall.nft">NFT holders</span><span class="waterfall__meta" data-i18n="earnings.waterfall.nft-meta">40% · 1,000 backers</span></div>
+            <span class="waterfall__amt">$6,688</span>
+          </div>
+        </div>
+        <p class="text-sub mt-16" style="font-size: var(--fs-12)" data-i18n="earnings.waterfall.foot">Only settled income counts · figures follow §7.3.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- ══ 我的項目 · single project F11 profit ladder — canonical .payout-modal popup (content filled by JS) ══ -->
+  <div class="payout-modal" data-bd-modal="project" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="bd-pl-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="bd-pl-title" data-bd-pl-title>Project</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="breakdown.ladder.sub">Where this project's money goes · full lifetime</span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="waterfall" data-bd-ladder>
+          <div class="waterfall__row waterfall__row--income">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.revenue">Project revenue</span><span class="waterfall__meta" data-pl-meta="revenue"></span></div>
+            <span class="waterfall__amt" data-pl-amt="revenue"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.cost">Direct costs</span><span class="waterfall__meta" data-pl-meta="cost"></span></div>
+            <span class="waterfall__amt" data-pl-amt="cost"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--subtotal">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.gross">Gross profit</span></div>
+            <span class="waterfall__amt" data-pl-amt="gross"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.fees">Platform &amp; payment fees</span><span class="waterfall__meta" data-pl-meta="fees"></span></div>
+            <span class="waterfall__amt" data-pl-amt="fees"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--deduct">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.collab">Collaborator royalties</span><span class="waterfall__meta" data-pl-meta="collab"></span></div>
+            <span class="waterfall__amt" data-pl-amt="collab"></span>
+          </div>
+          <div class="waterfall__row waterfall__row--pool">
+            <div class="waterfall__head"><span class="waterfall__name" data-i18n="breakdown.ladder.net">Project net income</span><span class="waterfall__meta" data-pl-meta="net"></span></div>
+            <span class="waterfall__amt" data-pl-amt="net"></span>
+          </div>
+        </div>
+        <div class="filter-row__actions mt-16">
+          <span class="text-sub" style="font-size: var(--fs-12);margin-right:auto" data-i18n="breakdown.trace">Each line traces back to its transactions, products, or tiers.</span>
+          <a class="btn btn--primary btn--sm" href="project-detail.html#earnings" data-bd-pl-dash data-i18n="breakdown.action.project">View co-creation dashboard →</a>
+          <a class="btn btn--outline btn--sm" href="#transactions" data-tab-jump="transactions" data-bd-close data-i18n="breakdown.action.tx">View transactions</a>
+          <button class="btn btn--outline btn--sm" data-i18n="btn.export">Export</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="partials/payout-request-modal.js?v=r2.2"></script>
+<script src="partials/manual-entry-modal.js?v=r2.2"></script>
+<script>
+  /* Earnings tabs · spec §5.1.8.2 — switch active state + visible panel */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+
+    function activate(name) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      try { history.replaceState(null, '', '#' + name); } catch (_) {}
+    }
+
+    tablist.addEventListener('click', e => {
+      const btn = e.target.closest('.tabs__item');
+      if (btn && btn.dataset.tab) activate(btn.dataset.tab);
+    });
+
+    /* "View all transactions →" jumps to the Transactions tab */
+    document.addEventListener('click', e => {
+      const j = e.target.closest('[data-tab-jump]');
+      if (j) { e.preventDefault(); activate(j.dataset.tabJump); }
+    });
+
+    /* Hash deep-link: #transactions opens that tab on load */
+    const initial = (location.hash || '').replace('#', '');
+    if (['overview','transactions','breakdown','payouts','tax','howto'].includes(initial)) activate(initial);
+
+    /* Filter chips — local-only single-select within group */
+    document.querySelectorAll('.chip-group').forEach(group => {
+      group.addEventListener('click', e => {
+        const chip = e.target.closest('.chip:not(.chip--static)');
+        if (!chip) return;
+        group.querySelectorAll('.chip').forEach(c => c.classList.remove('chip--active'));
+        chip.classList.add('chip--active');
+      });
+    });
+
+  })();
+
+  /* Revenue-source filter · F5 sources. The total/aggregate is not drawn here
+     (it lived on a far larger scale and flattened everything); the y-axis is
+     scaled to the sources so they spread out. "All" shows every source; picking
+     one dims the rest and highlights it (Deck-for-Sony focus). */
+  (function () {
+    var legend = document.querySelector('[data-src-legend]');
+    var chart = document.querySelector('[data-src-chart]');
+    if (!legend || !chart) return;
+    legend.addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-src-type]');
+      if (!chip) return;
+      var type = chip.getAttribute('data-src-type');
+      legend.querySelectorAll('[data-src-type]').forEach(function (b) {
+        var on = b === chip;
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      chart.querySelectorAll('[data-src-line]').forEach(function (l) { l.classList.remove('is-focus'); });
+      if (type === 'all') {
+        chart.removeAttribute('data-focus');
+      } else {
+        chart.setAttribute('data-focus', type);
+        chart.querySelectorAll('[data-src-line="' + type + '"]').forEach(function (l) { l.classList.add('is-focus'); });
+      }
+    });
+  })();
+
+  /* How it works · accordion expand/collapse (shared ztor-accordion) */
+  (function () {
+    document.querySelectorAll('[data-panel="howto"] .ztor-accordion__trigger').forEach(function (t) {
+      t.addEventListener('click', function () {
+        const item = t.closest('.ztor-accordion__item');
+        const open = item.getAttribute('data-state') === 'open';
+        item.setAttribute('data-state', open ? '' : 'open');
+        t.setAttribute('aria-expanded', open ? 'false' : 'true');
+      });
+    });
+  })();
+
+  /* Breakdown popups · spec §5.1.8 F11/F12 — 全部收入 waterfall + per-project ladder.
+     全部收入 opens the full F12 收入去向 waterfall; each 我的項目 row opens its F11
+     ladder, filled from BD_PROJECTS. Reuses the canonical .payout-modal shell. */
+  (function () {
+    /* Per-project demo ladders. revenue − cost − fees − collab = net; gross = revenue − cost.
+       name/metas carry [en, zh] so the dynamic cells localize without i18n keys.
+       persona＝nick（周湯豪）時換 name/meta/slug；所有數字（revenue/cost/fees/collab/
+       projected）一律沿用原值不動。default/userB 用 _d。 */
+    const _persona = (function () {
+      try { return localStorage.getItem('ztor.persona') === 'nick' ? 'nick' : 'default'; }
+      catch (e) { return 'default'; }
+    })();
+    const _pick = (_d, _n) => _persona === 'nick' ? _n : _d;
+    const BD_PROJECTS = {
+      coastline:  { name:_pick(['Coastline EP','Coastline EP'],['LOVE RAGE HOPE','LOVE RAGE HOPE']),
+                    revenue:8420, cost:1180, fees:612, collab:1086, projected:5000,
+                    dash:_pick('project-detail.html?id=coastline-ep#earnings','project-detail.html?id=nick-lrh#earnings'),
+                    meta:{ revenue:_pick(['Pre-orders · merch · streaming','預購 · 周邊 · 串流'],['Streaming · pre-orders · merch','串流 · 預購 · 周邊']),
+                           cost:_pick(['Vinyl pressing · shipping','黑膠壓製 · 運費'],['Mastering · music video','母帶 · MV 製作']),
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['2 collaborators · 15%','2 位合作者 · 15%'] } },
+      tidepool:   { name:_pick(['Tide Pool zine vol. 02','Tide Pool zine vol. 02'],['REALIVE tour zine','REALIVE 巡迴寫真誌']),
+                    revenue:3120, cost:640, fees:214, collab:180, projected:2000,
+                    dash:_pick('project-detail.html?id=tide-pool-zine#earnings','project-detail.html?id=nick-baipa-goods#earnings'),
+                    meta:{ revenue:_pick(['Pre-orders · merch','預購 · 周邊'],['Pre-orders · tour merch','預購 · 巡演周邊']),
+                           cost:_pick(['Printing · shipping','印刷 · 運費'],['Printing · shipping','印刷 · 運費']),
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['1 collaborator · 10%','1 位合作者 · 10%'] } },
+      latebloom:  { name:_pick(['Late Bloom · licensing','Late Bloom · licensing'],['“帥到分手” sample licensing','帥到分手 取樣授權']),
+                    revenue:4600, cost:120, fees:300, collab:900, projected:3500,
+                    dash:_pick('project-detail.html?id=late-bloom#earnings','project-detail.html?id=nick-wo-de-i#earnings'),
+                    meta:{ revenue:_pick(['Licensing · derivatives','授權金 · 衍生'],['Sample licensing · sync','取樣授權 · 配樂']),
+                           cost:_pick(['Production','製作'],['Production','製作']),
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:['Licensor share','授權方分潤'] } },
+      taipeilive: { name:_pick(['Taipei Live 2026','Taipei Live 2026'],['REALIVE Tour · Taipei','REALIVE 巡迴演唱會 台北場']),
+                    revenue:5200, cost:1400, fees:420, collab:200, projected:2800,
+                    dash:_pick('project-detail.html?id=taipei-live-2026#earnings','project-detail.html?id=nick-r2#earnings'),
+                    meta:{ revenue:_pick(['Tickets · merch','票務 · 周邊'],['Tickets · merch','票務 · 周邊']),
+                           cost:_pick(['Venue · production','場地 · 製作'],['Venue · production','場地 · 製作']),
+                           fees:['5% platform + 3% Stripe','平台 5% + Stripe 3%'],
+                           collab:_pick(['Co-performer share','共演分潤'],['Backing band share','隨行樂團分潤']) } }
+    };
+
+    const projModal = document.querySelector('[data-bd-modal="project"]');
+    let currentKey = null;
+
+    function fmt(n) { return '$' + Math.abs(Math.round(n)).toLocaleString('en-US'); }
+    function langIdx() { return (document.documentElement.lang === 'en') ? 0 : 1; }
+
+    function renderProject(key) {
+      const p = BD_PROJECTS[key];
+      if (!p || !projModal) return;
+      currentKey = key;
+      const gross = p.revenue - p.cost;
+      const net = gross - p.fees - p.collab;
+      const run = { revenue:p.revenue, cost:gross, gross:gross, fees:gross - p.fees, collab:net, net:net };
+      const amt = { revenue:fmt(p.revenue), cost:'−'+fmt(p.cost), gross:fmt(gross),
+                    fees:'−'+fmt(p.fees), collab:'−'+fmt(p.collab), net:fmt(net) };
+      const li = langIdx();
+      const pct = (net - p.projected) / p.projected * 100;
+      const pctStr = (pct >= 0 ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
+      const netMeta = li === 0
+        ? ('vs. ' + fmt(p.projected) + ' projected · ' + pctStr)
+        : ('對比預期 ' + fmt(p.projected) + ' · ' + pctStr);
+
+      Object.keys(amt).forEach(k => {
+        const a = projModal.querySelector('[data-pl-amt="' + k + '"]');
+        if (a) a.textContent = amt[k];
+        const f = projModal.querySelector('[data-pl-fill="' + k + '"]');
+        if (f) f.style.width = Math.max(0, run[k] / p.revenue * 100).toFixed(1) + '%';
+      });
+      ['revenue','cost','fees','collab'].forEach(k => {
+        const m = projModal.querySelector('[data-pl-meta="' + k + '"]');
+        if (m) m.textContent = p.meta[k][li];
+      });
+      const nm = projModal.querySelector('[data-pl-meta="net"]');
+      if (nm) nm.textContent = netMeta;
+      const title = projModal.querySelector('[data-bd-pl-title]');
+      if (title) title.textContent = p.name[li];
+      const dash = projModal.querySelector('[data-bd-pl-dash]');
+      if (dash) dash.setAttribute('href', p.dash);
+    }
+
+    function openModal(which) {
+      const m = document.querySelector('[data-bd-modal="' + which + '"]');
+      if (!m) return;
+      m.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+    function closeAll() {
+      document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(m => { m.hidden = true; });
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', e => {
+      const opener = e.target.closest('[data-bd-open]');
+      if (opener) {
+        const which = opener.dataset.bdOpen;
+        if (which === 'project') renderProject(opener.dataset.proj);
+        openModal(which);
+        return;
+      }
+      if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
+      if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.querySelector('.payout-modal[data-bd-modal]:not([hidden])')) closeAll();
+    });
+    /* Re-localize the open project ladder when the language flips. */
+    document.addEventListener('i18n:applied', () => {
+      if (currentKey && projModal && !projModal.hidden) renderProject(currentKey);
+    });
+  })();
+
+  /* Transactions · expandable rows + copy Event ID (spec §5.1.8 F7) */
+  (function () {
+    document.addEventListener('click', e => {
+      const copy = e.target.closest('[data-copy]');
+      if (copy) {
+        e.stopPropagation();
+        const val = copy.dataset.copy;
+        if (navigator.clipboard) navigator.clipboard.writeText(val).catch(() => {});
+        const label = (window.i18nT && window.i18nT('tx.detail.copied')) || 'Copied';
+        copy.setAttribute('aria-label', label);
+        return;
+      }
+      const row = e.target.closest('[data-tx-row]');
+      if (!row) return;
+      const open = row.getAttribute('aria-expanded') === 'true';
+      row.setAttribute('aria-expanded', open ? 'false' : 'true');
+      const detail = row.nextElementSibling;
+      if (detail && detail.classList.contains('ztor-table__detail')) detail.hidden = open;
+    });
+  })();
+
+  /* Request payout popup · spec §5.1.8.1 — lazy-load partial, then open */
+  (function () {
+    const host = document.querySelector('[data-payout-modal-host]');
+    if (!host) return;
+
+    let modal = null;
+    let views = [];
+    let selectedTitle = null;
+    let selectedMeta = null;
+    let summaryBank = null;
+    let amountInput = null;
+    let amountSummary = null;
+    let submitButton = null;
+    let confirmBox = null;
+    let lastFocused = null;
+
+    function fallbackModalHtml() {
+      return window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.payoutRequestModal;
+    }
+
+    function mountModalHtml(html) {
+      host.innerHTML = html;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+      if (window.applyI18n) window.applyI18n(host);
+      cacheModalRefs();
+    }
+
+    function cacheModalRefs() {
+      modal = host.querySelector('[data-payout-modal]');
+      if (!modal) throw new Error('Payout modal partial did not include data-payout-modal');
+      views = modal.querySelectorAll('[data-payout-view]');
+      selectedTitle = modal.querySelector('[data-payout-selected-title]');
+      selectedMeta = modal.querySelector('[data-payout-selected-meta]');
+      summaryBank = modal.querySelector('[data-payout-summary-bank]');
+      amountInput = modal.querySelector('[data-payout-amount]');
+      amountSummary = modal.querySelector('[data-payout-summary-amount]');
+      submitButton = modal.querySelector('[data-payout-submit]');
+      confirmBox = modal.querySelector('[data-payout-confirm]');
+      amountInput.addEventListener('input', updateAmount);
+      if (confirmBox) confirmBox.addEventListener('change', syncSubmitGate);
+      modal.addEventListener('click', e => {
+        if (e.target === modal) closeModal();
+      });
+      /* Re-localize the dynamic submit label whenever the language flips. */
+      document.addEventListener('i18n:applied', () => { if (modal) updateAmount(); });
+      updateAmount();
+      syncSubmitGate();
+    }
+
+    /* Irreversible-payout gate (spec §5.1.8.1 §4.5): the submit CTA stays
+       disabled until the creator ticks the confirmation box. */
+    function syncSubmitGate() {
+      if (!submitButton) return;
+      submitButton.disabled = !(confirmBox && confirmBox.checked);
+    }
+
+    /* Single source of truth: the modal markup is always available via the
+       always-loaded JS template (window.ZTOR_PARTIALS, file:// compatible).
+       No fetch fallback — partials/payout-request-modal.js is a <script> above. */
+    function ensureModal() {
+      if (modal) return true;
+      const html = fallbackModalHtml();
+      if (!html) {
+        console.warn('[earnings] payout modal template missing — is partials/payout-request-modal.js loaded?');
+        return false;
+      }
+      mountModalHtml(html);
+      return true;
+    }
+
+    function showView(name) {
+      views.forEach(view => {
+        view.hidden = view.dataset.payoutView !== name;
+      });
+    }
+
+    /* persona 模式下把帳戶持有人名 Maya Chou 換成本人（周湯豪 / Nick Chou）；
+       銀行名、卡號、幣別不動。default/userB 沿用原值。 */
+    function personaHolder() {
+      var p = null;
+      try { p = localStorage.getItem('ztor.persona'); } catch (err) { p = null; }
+      if (p !== 'nick') return null;
+      return document.documentElement.lang === 'en' ? 'Nick Chou' : '周湯豪';
+    }
+    function selectBank(title, meta) {
+      var holder = personaHolder();
+      if (holder && meta) meta = meta.replace('Maya Chou', holder);
+      selectedTitle.textContent = title;
+      selectedMeta.textContent = meta;
+      summaryBank.textContent = title;
+      modal.querySelectorAll('[data-bank-option]').forEach(option => {
+        option.classList.toggle('is-active', option.dataset.bankTitle === title);
+      });
+    }
+
+    function updateAmount() {
+      const raw = amountInput.value.replace(/[^\d.]/g, '');
+      const num = Number(raw || 0);
+      const display = num.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+      amountSummary.textContent = display;
+      const label = (window.i18nT && window.i18nT('btn.request-payout')) || 'Request payout';
+      submitButton.textContent = label + ' · ' + display.replace('.00', '');
+    }
+
+    function openModal(view) {
+      lastFocused = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add('is-modal-open');
+      /* Re-confirm on every open — payout is irreversible, so the gate resets. */
+      if (confirmBox) confirmBox.checked = false;
+      syncSubmitGate();
+      showView(view);
+      const focusTarget = modal.querySelector('[data-payout-view="' + view + '"] button, [data-payout-view="' + view + '"] input');
+      if (focusTarget) focusTarget.focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      document.body.classList.remove('is-modal-open');
+      showView('request');
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    document.addEventListener('click', async e => {
+      const open = e.target.closest('[data-payout-open]');
+      if (open) {
+        e.preventDefault();
+        if (!await ensureModal()) return;
+        selectBank(open.dataset.bankTitle, open.dataset.bankMeta);
+        openModal('request');
+        return;
+      }
+
+      const add = e.target.closest('[data-payout-add], [data-payout-add-inline]');
+      if (add) {
+        e.preventDefault();
+        if (!await ensureModal()) return;
+        openModal('add');
+        return;
+      }
+
+      if (!modal) return;
+
+      const option = e.target.closest('[data-bank-option]');
+      if (option) {
+        selectBank(option.dataset.bankTitle, option.dataset.bankMeta);
+        return;
+      }
+
+      if (e.target.closest('[data-payout-back]')) {
+        showView('request');
+        return;
+      }
+
+      if (e.target.closest('[data-payout-add-submit]')) {
+        selectBank('Mega International Commercial Bank · •••9001', 'Maya Chou · USD · default · available');
+        showView('request');
+        amountInput.focus();
+        return;
+      }
+
+      if (e.target.closest('[data-payout-submit]')) {
+        showView('result');
+        return;
+      }
+
+      if (e.target.closest('[data-payout-close]')) closeModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (modal && !modal.hidden && e.key === 'Escape') closeModal();
+    });
+  })();
+
+  /* Manual-entry popup · spec §5.1.8.2 — opened from F7's Manual entry button.
+     Reuses the canonical dialog shell (.payout-dialog) per the project modal rule. */
+  (function () {
+    const host = document.querySelector('[data-manual-modal-host]');
+    if (!host) return;
+    let modal = null;
+    let lastFocused = null;
+
+    function ensureModal() {
+      if (modal) return true;
+      const html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.manualEntryModal;
+      if (!html) {
+        console.warn('[earnings] manual-entry modal template missing — is partials/manual-entry-modal.js loaded?');
+        return false;
+      }
+      host.innerHTML = html;
+      if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+      if (window.applyI18n) window.applyI18n(host);
+      modal = host.querySelector('[data-manual-modal]');
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      return true;
+    }
+
+    function openModal() {
+      lastFocused = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add('is-modal-open');
+      const focusTarget = modal.querySelector('input, select, button');
+      if (focusTarget) focusTarget.focus();
+    }
+
+    function closeModal() {
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.classList.remove('is-modal-open');
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    document.addEventListener('click', e => {
+      if (e.target.closest('[data-manual-open]')) {
+        e.preventDefault();
+        if (ensureModal()) openModal();
+        return;
+      }
+      if (!modal) return;
+      /* Demo: submit just closes — the unverified row already shows in F7. */
+      if (e.target.closest('[data-manual-close]') || e.target.closest('[data-manual-submit]')) closeModal();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (modal && !modal.hidden && e.key === 'Escape') closeModal();
+    });
+  })();
+</script>
+<script src="js/chart.js?v=r2.2"></script>
+<script src="js/components.js?v=r2.2"></script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
+</body>
+</html>

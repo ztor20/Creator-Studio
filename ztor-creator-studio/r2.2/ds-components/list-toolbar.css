@@ -67,6 +67,11 @@ html[data-theme="light"] .list-toolbar {
   gap: var(--sp-12);
   align-items: center;
 }
+/* 這條不是可有可無：只要元件自己宣告了 display，HTML 的 `hidden` 屬性就失效
+   （它靠的是 UA 的 `[hidden]{display:none}`，權重輸給任何 class 規則）。
+   動作群會依當前分頁顯隱（earnings 的 [data-tab-actions]），沒有這條的話
+   `el.hidden = true` 設得下去、畫面上卻照樣顯示。2026-07-31 實測踩到。 */
+.list-toolbar__actions[hidden] { display: none; }
 
 /* 篩選鈕（2026-07-29 L 裁示：移到 tab 旁邊，全站清單頁一致）。
    位置在 tabs 之後、動作群之前——tab 選「看哪一類」、篩選鈕選「其中哪些」，

@@ -4,6 +4,198 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-07-31（第十三批）· 具名素材槽數量隨比例收斂（依 D164／§7.10 規格落地）（A 規格落地）
+
+- **【A】** 依 `documents/decisions.md` D164 與 `0-設計規格書.md` §7.10：**建立項目**（5.1.2.1 F6）縮圖／直式海報／橫式橫幅／圖庫 4 格併為**主視覺（Key visual）＋圖庫** 2 格，兩者皆必填。
+- **【A】** **建立活動**（5.1.6.1 F4）4 格併為**主視覺＋橫幅＋圖庫** 3 格，必填數由 4 降為 3；橫幅維持 `--16x9`／1920×1080（唯一未併入的格）。
+- **【A】** **編輯活動**（5.1.6.2 F4）具名槽同步收斂為 2 格＋圖庫列，計數文案 n/4→n/3。
+- **【A】** **項目詳情**（5.1.2.2 §2.2.2）展示內容文案改為「第一張為主視覺、其餘為圖庫」，取代原本列舉縮圖／海報／橫幅／相簿四種角色的敘述。
+- **【D】** `js/events-store.js` 資料模型：具名欄位 `thumb`＋`poster` 併為單一 `keyvisual`（11 筆資料同步）。
+- **【D】** i18n（`js/i18n.js`）新增 `cpp.s2.both-req`／`cpp.s2.keyvisual(-size)`／`ce.img.keyvisual(-hint)`；退場 `cpp.s2.four-req`／`thumb`／`poster`／`banner` 系列與 `ce.img.thumb`／`poster` 系列；另清掉三個原本就零消費的孤兒 key。
+- **【D】** `design-system.md`／`design-system.html` 的 upload-tile 章節（§4.15）demo 改為兩種組合展示（建立項目 2 格／建立活動 3 格），Class API 補上 D164 槽位組合說明。
+- **【E】** `create-campaign` 的「海報／橫幅」兩個具名槽仍在直式格子裡、D164 影響清單未涵蓋募資建立流程——記入 `ASSUMPTIONS.md` 新產品缺口。
+
+## 2026-07-31（第十二批）· 顯示端縮圖／卡片封面改直式；活動保留橫式橫幅為唯一例外（A 規格落地）
+
+- **【A】** 使用者裁決（Q39 顯示端續作）：全站清單縮圖與卡片封面比例統一改讀 Foundation token `--img-portrait`（750/930），不再各自方形／橫式裁切。受影響 7 支顯示元件（fan-store 內含兩個框）：`.product-list__image`（76×76→76×94）、`.project-list__image`（76×76→76×94，同推導）、`.project-card__cover`（16:9→直式，280px 欄寬約長 347px）、`.preview-card__media`（4:3→直式）、`.fan-store__featured-media`（4:3→直式）、`.fan-store__thumb`（1:1→直式）、`.ztor-table__thumb`（40×40→32×40，鎖高算寬）、`.admin-table__thumb`（36×36→29×36，鎖高算寬）。全部由同一張直式原圖 `object-fit: cover` 置中裁切填滿，不另備方形或橫式素材。
+- **【A】** 例外維持：`.product-list--events .product-list__image` 仍是 `1:1`（活動列表方形版位不變）；`.product-list__thumb`（取貨頁 QR 圖示）、頭像、logo、`.fc-ref__thumb`、`.vault-tile` 皆非展示圖框，維持原樣不動。
+- **【A】** 活動（Events）保留橫式橫幅：`--16x9` 從墓碑復活，唯一服務活動的橫式橫幅圖片槽（`create-event`／`edit-event`，1920×1080）；`upload-tile.css` 的 `--16x9` 墓碑註解同步改為「服役中」，服役範圍由「僅檔案槽」擴大為「檔案槽＋活動橫幅圖片槽」。
+- **【D】** Foundation token `--img-portrait` 從 `shared.css` 的 `:root` 搬進 `ds-components/_tokens.css`（本輪文件同步順帶修正）：Foundation 級變數應住在 Pillar 1 的來源檔，放在 `shared.css` 會讓 `check_ds_sync` 檢查 9 的 token 文件化稽核抓不到，也違反 Foundation ← Role ← Component 依賴契約；`shared.css` 留墓碑註解指向新位置，全站頁面各自 `<link>` 載入 `_tokens.css`（排在 `shared.css` 之前）不受影響，無需改任何 `<link>`。
+- **【D】** `design-system.md`／`design-system.html` 同步：Pillar 1 新增 `--img-portrait` Foundation 條目；Pillar 4 七支顯示元件的比例描述改為直式並註明活動與 QR 兩個例外；upload-tile 章節（§4.15）契約表同步新來源。
+- **【E】** 顯示框比例仍與新直式標準（0.806）不同、尚未收斂的殘留：IP 卡（Q30）與 IP hero 顯示框（Q31，`.ip-hero__cover` 3:4）、`.pd-hero__cover`（商品詳情 hero，2:3）——已記入 `STYLE-DECISIONS.md` 待裁決，不擅自選邊。
+
+## 2026-07-31 · 全站圖片上傳槽比例收斂為單一直式 750×930（A 規格裁決 ＋ D infra）
+
+- **【A】** 使用者裁決：全站「上傳圖片」槽一律改用單一直式 750×930（`--upload-img-ratio`，`ds-components/upload-tile.css:31`），取代原本縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2 四套並存的比例模型。10 個產品頁（create-project／create-product／create-event／edit-event／create-auction／create-bundle／bundle-detail／product-detail／create-campaign／project-detail）改用新比例，另加測試版路由 `funding-test/create-campaign.html`（devtools 版本切換會走到，一併收斂）；`--1x1`／`--3x4`／`--3x2` 三個形狀修飾詞自圖片槽退場、CSS 宣告已刪除（`--16x9` 仍服役於 project-detail 的 Demo 影片／音樂**檔案**槽，非圖片槽，不受影響）。
+- **【D】** `ds-components/bundle-editor.css:28-30` 移除 `.fc-item-row .upload-tile` 的 `aspect-ratio: 1/1` 覆寫（會蓋掉元件比例）。頁面上寫死尺寸的說明文案（800×800、1920×1080、1:1、16:9 等）改成直式敘述，中英雙語同步（`js/i18n.js` 新增 `cp.media.portrait`）。顯示端（清單縮圖、`.project-card__cover-img`、`.ipm-card__cover-img`、`.ip-hero__cover-img` 等）不動，靠既有 `object-fit: cover` 從直式原圖置中裁切填滿。
+- **【D】** `design-system.html`／`design-system.md` 的 upload-tile 章節同步（示範卡改 `--750x930`、契約表補 `--upload-img-ratio`／`__flag`／`data-upload-src`／`data-upload-key`／`upload:change`／鍵盤契約）。
+- **【E】** 這是使用者裁決、非上游規格變更；`documents/`（5.1.5.2／5.1.5.10／5.1.6.1／5.1.2.1 等）仍寫多比例規格，尚未同步。已記入 `ASSUMPTIONS.md` 新增的產品變更提案與產品缺口（詳見 IMG-001、PG-023）。
+
+## 2026-07-30 · 圖片上傳槽 hover 動作統一到共用元件，補齊六頁漏載＋鍵盤可及性（D infra ＋ B 反饋）
+
+- **【D】** 圖片上傳槽的 hover 動作列收斂成單一產生路徑 `partials/upload-tile.js`；`project-detail.html`／`product-detail.html`（含內嵌的第二份）手刻的 hover 版本全部移除。動作列顯示條件由 `[data-upload]` 放寬為 `.is-filled`，手刻與 JS 產生兩種來源行為一致。
+- **【D】** 標準收斂為**替換／刪除 2 鈕**；AI 優化改 `data-upload-ai` opt-in 第三鈕，目前只有 create-product 的商品圖槽開啟。i18n 正典收斂為 `cp.media.replace`／`cp.media.remove`／`cp.media.optimize`／`cp.media.optimized`；`project-detail.showcase.replace`／`.delete` 退場。
+- **【B】** 補齊六頁原本漏掉的 hover 動作：`bundle-detail`（原本漏載 `upload-tile.js`＝bug）、`create-bundle`、`create-auction`、`create-campaign`、`create-event`、`create-project`。
+- **【B】** 新增 `.upload-tile__flag`（封面標籤，由 `shared.css` 的 `.pd-gallery__badge` 搬入元件層）；`shared.css` 該段只留 `#pd-gallery` 版面規則＋墓碑註解。
+- **【B】** 鍵盤可及性：可觸發的空狀態格加 `role="button"`＋`tabindex="0"`，Enter／Space 等效點擊（Space 不捲頁）；填圖後自動撤掉 role／tabindex；動作鈕在 `:focus-within` 時動作列顯示；焦點環用既有 `outline: 2px solid var(--ring)`；刪除／上傳完成／AI 完成後把焦點交還（僅鍵盤路徑）。
+- **【D】** 新增元件事件契約：`data-upload-src`（起始圖）、`data-upload-key`、`upload:change` 事件（`detail:{key,filled}`）。
+
+## 2026-07-31（第十批）· 新增 IP Entry：撤掉頂列「儲存」鈕，離開彈窗一律走純離開版（C 撤除 ＋ B 反饋）
+
+- **【C】** `admin-ip-bank-entry.html` 移除頂列右側整個 `.wizard__top-actions`（內含 `.wizard__save-status--button` 手動儲存鈕）。動機：這頁不自動儲存（`data-autosave="false"`），底部主鈕「儲存 IP Entry」才是真正建立 entry 並回父頁 F3 的動作；頂列那顆點下去只有 700ms 的「儲存中…」示意、什麼都沒送出，兩顆同名按鈕擺在同一頁只會讓人以為存過了。**只動這一頁**，其他 wizard 頁的儲存狀態不受影響。
+- **【B】** 同頁的返回離開彈窗改成永遠是純離開版（「要離開這一頁嗎？／你隨時可以再回來。／離開」），不再因為動過欄位就跳「要先儲存再離開嗎？／儲存並離開／不儲存就離開」。動機：頂列的儲存入口撤掉之後，彈窗已經沒有可觸發的儲存機制，「儲存並離開」會變成問了也做不到的選項。
+- **【D】** 做法是在共用的 `partials/wizard-chrome.js` 加一個 opt-in 開關 `.wizard[data-leave-simple]`，掛上就強制走 clean 態；不掛的頁行為完全不變（沒有動到其他 6 支建立頁）。`design-system.md`／`design-system.html` 的 Leave dialog 條目同步這個開關。check_ds_sync PASS、棘輪未升。
+
+## 2026-07-31（第十批）· 列表表頭一律不畫下框線（10 支元件）＋ media cell 縮圖放大（B 反饋／使用者裁決，STYLE-DECISIONS Q41）
+
+使用者先要求「做一個整頁的 demo 把這條底線拿掉我看看效果」——建了 `e-shop.html` 的複本探索頁（唯一差異是 `.product-list__head { border-bottom: 0 }`），看過後裁示全面套用。探索頁已刪除。
+
+- **【B】** **10 支元件的欄位表頭移除 `border-bottom`**：`.product-list__head`（e-shop）、`.project-list__head`（projects）、`.ztor-table thead th`（全站資料表）、`.table-head`（sortable，brand-campaigns／fans-crm）、`.restock-table__head`、`.variant-table__head`、`.restock-log__head`、`.bmx__head`（tier-benefits）、`.msg-history__head`（fans-crm）、`.notif-matrix__corner`／`__chead`（settings）。分隔改由表頭與內容之間的留白承擔，**每一列自己的分隔線不動**。其中四支原本表頭帶 `--muted` 底色的（restock-table／variant-table／restock-log／notif-matrix）**底色保留**，由它繼續承擔分隔。<br>**刻意不在範圍內**：面板／彈窗／卡片／群組的「標題列」——`.drawer__head`、`.detail-sheet__head`、`.payout-dialog__head`、`.embed-modal__head`、`.preview-panel__head`、`.chart-card__head`、`.vault-group__head`、`.app-notif__head`、`.header`。那是標題與內容的結構分隔，不是欄位標籤列，拿掉是另一個題目。<br>驗收：projects／settings／fans-crm／product-detail／tier-benefits／earnings 六頁實測 computed `border-bottom-width` 皆 0px、列分隔線仍 1px。裁決記於 **STYLE-DECISIONS Q41**（同時吸收同日稍早「`.ztor-table` 表頭去底色」那次裁決——當時分隔還留給 border，這次連 border 也去掉）。
+- **【B】** *（同日追加）* 使用者：「所有表頭的字的顏色也都要改成這樣」——指 `.ztor-table thead th` 那階更暗的灰。查下去發現同一個角色站上跑了**三種**配方：裸 `--muted-foreground`（7 支）、`color-mix(--muted-foreground 68%, --card)`（`.product-list--eshop` 的覆寫）、`color-mix(--muted-foreground 72%, transparent)`（ztor-table），正是 Q9 要收斂的「散落的即席灰」。<br>因此收成新 token **`--column-head-ink`**（`_tokens.css`，＝ `--muted-foreground` 降到 72% 不透明度），11 處表頭一律寫 `var(--column-head-ink)`；`.product-list--eshop` 的 68% 覆寫整條刪除，`.restock-table__head` 原本沒指定文字色（繼承彈窗內文），這次明確給上 token。混 `transparent` 而非 `--card` 的理由：四支帶 `--muted` 底色的表頭要跟其餘同一階暗度，混 `--card` 會把卡片色烤進墨色裡、換個底就走鐘。**字級不動**——`--fs-11`／`--fs-12` 兩階留著，使用者這次只點名顏色。
+- **【D】** `design-system.md`／`design-system.html` 的 Table 條目同步改寫（原本寫「分隔仍由下方 border 承擔」已不成立），並各補一段 `--column-head-ink` 的 token 說明（check 9 要求 `_tokens.css` 的每支 token 兩份文件都要有）。check_ds_sync PASS、棘輪未升。
+
+## 2026-07-31（第九批）· 儀表板三張表：假資料補滿 ＋ 一律單行截斷 ＋ 第二行改複合名詞（B 反饋／使用者裁決）
+
+- **【B】** **假資料補滿**：三張表原本各只有 4–5 列，卡片下半是空的（近期收入與「今日待處理」並排，被對方的高度撐出一大塊留白）。近期收入 5 → 8 列（新增 WYAGL 連帽衫、REALIVE 特仕版 CD、FLAMES MV 廣告分潤；F3 只放已結算收入的規則不變）、最近動態 4 → 7 列、近期活動與項目 4 → 6 列。新列的商品圖沿用既有素材、圖文對得上（FLAMES MV 那列原本配 `nick-realive.jpg`，縮圖與上一列的 CD 幾乎一樣，改配 `nick-flames.jpg`）。
+- **【B】** **一律單行、超出點點點**：新增 modifier `.ztor-table--truncate`（`ds-components/table.css`），掛在儀表板這三張表上。做法是名稱欄 `.ztor-table__namecell` 用 `max-width: 0` ＋ `width: 100%`——在 `table-layout: auto` 下這一格會吃掉其他欄取完自然寬度後剩餘的空間，內容超過就被 ellipsis 收掉，而不是把整張表撐寬去觸發橫向捲動。**不用 `table-layout: fixed`**：那會一併改掉站上所有 `.ztor-table` 的欄寬演算法（收益總帳這類長表靠的正是自然寬度），作成 modifier 才只影響掛上它的表。實測 700px 視窗下最大行數 1、三張表溢出皆 0。
+- **【B】** **第二行改複合名詞**（使用者中途裁示，先做成「項目 · 預購」再改）：活動與項目改成 `預購項目`／`共創項目`／`實體活動`／`線上活動`／`上線項目`，子類型同時從標題裡拿掉（標題只留作品名）；收入的來源同步改成 `串流版稅`／`電子商店銷售`／`故事世界授權`／`IP 授權版稅`／`活動票券`／`預購銷售`／`影音廣告版稅`。最近動態那一行的兩段是「模組 · 日期」不是分類配對，維持原樣。
+- **【D】** F2「進行中項目」的彈窗清單原本只濾掉草稿，補進已成立／已結束的新列後數字會對不上 KPI；改成濾掉所有終態（草稿／已成立／已結束／已取消），KPI 隨之 3 → 4。順手把該 KPI 的輔助行從舊術語「上線 · 募資 · 排程中」改成「進行中 · 共創 · 準備中」。
+- **【B】** *（同日修正）* 使用者圈出縮圖說「圖片左右空隙太大」。原因是我把縮圖**另開一欄**，於是 32px 的圖兩側各吃一次儲存格內距（20px），落在 72px 的空欄正中間。站上既有的答案是 `.ztor-table__media`——縮圖與名稱**同一格**的 flex 內層包裝、間距只有 `--sp-10`，表頭用 `.ztor-table__media-head` 把標籤推過縮圖、欄名仍對齊名稱。三張表改用該 pattern（縮圖欄取消，欄數各少一），圖文間距 20px → 10px，名稱欄多拿回 42px 寬（最近動態的「NICKTHEREAL 肖像續約」因此不再被截斷）。新增伴生類 `.ztor-table__mediatext`（兩行文字的包裝；flex item 預設 `min-width:auto` 不會縮，不歸零 ellipsis 永遠不觸發）。
+- **【B】** *（同日再調）* 使用者：「間距大一點點，然後圖也可以大一點點」。縮圖 **32 → 40px**、間距 `--sp-10 → --sp-12`。40px 剛好等於資料列的內容高（列高 72 － 上下 `--sp-16`），所以縮圖與整列等高、列高幾乎不變（72 → 73px）；沒有 36px 的間距 token，取上一階 `--sp-40` 而不寫死數值。**這條覆蓋 2026-07-26「縮圖再小一階（36→32）」的裁決**，圓角維持 `--radius`。改在元件層，`earnings-sony.html` 那張同樣用 media cell 的表一起生效（已驗：縮圖 40px、表頭仍對齊名稱、無溢出）——同一個視覺角色不留兩種尺寸。順帶把 `.ztor-table__media` 內的圖示晶片退路（`.data-list__icon`，本體 52px）對齊到 40px，只在 media cell 情境，STYLE-DECISIONS Q20 規範的清單列不受影響。
+- **【D】** `design-system.md`／`design-system.html` 同步 `.ztor-table--truncate`、`.ztor-table__mediatext` 條目，並把「縮圖不要自成一欄」寫進 Table 說明；`js/i18n.js` 補 20 組新 key。check_ds_sync PASS、棘輪未升。
+
+## 2026-07-31（第八批）· 修掉 tabs 元件的底線 bug（全站 17 支頁面受益）＋版稅來源收進 popup ＋ Sony 佣金提示改通知條（D infra ＋ B 反饋）
+
+使用者問「為什麼這個會改壞兩次，這個 tab 不是元件嗎」。是元件，而且**壞的就是元件本身**——不是我套用的方式。根因與修法記在這裡，避免第三次。
+
+- **【D】** **`ds-components/tabs.css` 的 `button.tabs__item { border: 0 }` 是 bug 的根源。** `.tabs__item` 的 `border-bottom: 2px solid transparent` 是整套底線的**基座**：經典變體直接把它染成 `--primary`，`--underline-short`／`--underline-label` 變體則靠它撐出 item 高度、讓 `::after` 的 `-12px` 落在分頁／卡片底緣。那條 `border: 0` 把基座一起清掉，於是——<br>(1) 全站 **17 支用 `<button>` 寫的分頁**，active 的橘色底線一律畫不出來（`event-detail`／`project-detail`／`fans-crm`／`product-detail`／`ip-detail`／`manage-ip`／`scanner`／`store-settings`… 都在內）；<br>(2) 底線變體還會因為少了那 2px、`::after` 多掉出去 2px，被 `.tabs` 的 `overflow-y:auto` 裁掉——這正是這兩輪「線不見了」的直接原因。<br>**同一個元件，`<div>` 版正常、`<button>` 版壞掉**，這是元件缺陷，不是消費頁的問題。改成只清上／右／左三邊、底邊完全交還給 `.tabs__item` 與 `--active` 兩條規則。<br>**`border: 0` 不能只換成重寫 `border-bottom`**：這條規則排在 `.tabs__item--active` 之後、specificity 又更高（0,1,1 vs 0,1,0），只要它碰到 border-bottom 的**顏色**，active 的橘色就會被蓋掉（實作中已踩到並修正）。<br>**影響範圍**：那 17 支頁面的 active 分頁**恢復**橘色底線（元件檔頭本來就寫「orange active accent」，是壞掉不是沒設計），item 高度 +2px。這是修 bug 不是改風格，故直接執行並記錄。
+- **【B】** 版稅的「依來源拆解」四列從常駐區收起來，改成一行摘要 ＋「**查看來源**」開 popup（`earnings.html` 沿用既有的 `data-bd-open`／`data-bd-modal` 開關；`earnings-sony.html` 沿用 `data-drawer-open`／`data-modal`）——兩頁都**沒有新增 JS**，用的是頁上原本就有的彈窗機制與 `.payout-modal`／`.payout-dialog` 殼。動機：那四列把整個版稅分頁推得很長，但它是「想確認才看」的資料，不是進頁就要讀的。
+- **【B】** `earnings-sony.html` 的品味推薦人佣金提示，由頁內 `.info-banner--dismissible`（位置在 KPI 下方）改成 **e-shop 低庫存通知條同一組元件與位置**：`.alert-inset`（外層只管定位，sticky、跟 `.page` 同一套 max-width＋margin＋padding）＋ `.alert.alert--bar.alert--inset-card`（內層視覺卡），掛在 `<main>` 內、`<div class="page">` 之前。可關閉行為沿用 `data-dismiss-key="fin-ratio"`（`finance-overview.js` 的 sessionStorage 機制），不變。
+- **【B】** *（同批追加）* 版稅分頁的三顆操作——**查看來源｜匯出報表｜補登版稅報表**——從卡片內搬到**工作列右側**（`.list-toolbar__actions`，比照 e-shop 的「建立商品」位置），只有選到「版稅」分頁時才出現：`activate()` 加一行 `document.querySelectorAll('[data-tab-actions]')` 顯隱，兩頁各一行、無新元件。動機是使用者指的「按鈕該在這裡」——跟著分頁走的操作屬工作列，散在卡片內會讓同一張卡同時承載資料與行動。卡片因此只剩期間切換（資料控制）＋大數字＋說明＋一行摘要，短很多。
+- **【D】** *（同日修正 ×2）* 動作群搬進工作列後又踩到兩個坑，都在元件層收掉：<br>**(a) `hidden` 屬性失效**——`.list-toolbar__actions` 自己宣告了 `display:flex`，權重蓋過 UA 的 `[hidden]{display:none}`，於是 `el.hidden = true` 設得下去、畫面上照樣顯示（使用者一眼看出來，我第一次只信了 JS 回報值沒對畫面）。元件補 `.list-toolbar__actions[hidden] { display: none; }`，並寫進 `design-system.md`。**這與同批 tabs 那個 bug 是同一類**：元件宣告了 `display` 就會默默弄壞 `hidden` 屬性，之後任何要顯隱的動作群都會中。<br>**(b) 按鈕尺寸違反已記錄的規則**——三顆一開始掛了 `btn--sm`，但 `design-system.md` §4.90 明寫「右側主 CTA 一律用 `.btn.btn--primary` 基礎尺寸（36px／13px），不要加 `btn--sm`」（2026-07-26 為此修齊過 projects）。已改回基礎尺寸，實測三顆都是 36px／13px。
+- **【C】+【A】** *（同日裁決）* **「依串流／下載次數」榜自收入管理搬到粉絲分析**。使用者問「這個是不是在粉絲分析就有了」，查證後粉絲分析其實沒有——它四張卡全在算「人」（影響力／分群／漏斗／商業價值分地區）。但使用者據此裁定：**收入管理·版稅分頁只講錢，次數屬表現分析**，整張搬過去。<br>連帶**各 section 標題不再重複「依版稅金額」**——這個分頁底下的資料都是版稅金額，每張卡各標一次是冗詞。「Top 10 表現最佳作品 · 依版稅金額」→「Top 10 表現最佳作品」，「地區表現 · 依版稅金額」→「地區表現」，「串流平台表現 · 依版稅金額」→「串流平台表現」。版稅榜因此獨佔整排（`bento--span-12`），popup 也拿掉次數欄。<br>粉絲分析那張卡沿用 `roy.work1–11` 與 `roy.type.*`（同一批作品、同一份 persona 覆蓋、同一組類型定義），不另建一套。<br>**⚠ 與 D162 的單位界線相牴觸**：D162 寫明「粉絲分析本頁算『人』（去重後人數），儀表板／項目詳情的表現卡算『次數』」。把次數榜放進粉絲分析等於在該頁引入第二種單位。依權威鏈第 1 條（使用者當次明確指示）執行，並在卡上用膠囊「單位是次數，不是人」＋註腳「與上方以『人』為單位的數字分開計算、不可互比」把界線寫在畫面上。**D162 的敘述需回寫**，記入 ASSUMPTIONS ESP-008。
+- **【D】** *（同日查證）* 使用者問的重複另有其人：**`project-detail.html` 早就有一個版稅分頁**（`data-panel="royalty"`，CCR-006 提案），含總版稅、地區表現、平台表現，**地區清單與收入管理這邊完全相同**。使用者裁定兩者定位為**單一項目 vs 全部作品彙總**，各自成立、不合併。目前兩層未互相連結（作品榜點列還沒導向該項目的版稅分頁），記入 ESP-008 待處理。
+- **【A】** *（同日）* **兩張作品榜改 Top 10 ＋ 類型篩選 ＋「查看全部」popup**，依使用者指示。<br>**作品由 7 部擴到 11 部**，兩個 persona 都取自 `projects-store.js` 的真實作品、不虛構：default 補《我要衝線》《海上霸姬 第二季》《海上霸姬 幕後紀錄》《低俗喜劇之嗨仔番外篇》，nick 補《REALIVE》《FLAMES》《罵醒我 (Reimagined)》《LOVE RAGE HOPE 黑膠典藏版》。<br>**類型篩選（全部／音樂／影片）**依 `projects-store` 的 `cat` 分：`song`／`album`＝音樂，`mv`／`movie`／`short`／`series`／`document`＝影片；`merch`／`event` 整批不列（周邊不產生版稅、活動走票務）。因為兩個 persona 的作品組成不同，類型陣列也分兩份存。<br>**兩張榜改由 JS 依資料重畫**（原本是寫死的 7 列）：篩選、期間切換、語言切換都會重畫，排序、名次、長條比例、`顯示 N 部，共 M 部` 一起更新。<br>**popup ＝全部作品表**：一次給兩個軸（版稅金額＋串流下載次數）與類型欄，同一組篩選也在裡面。它的價值不只是「多一列」——卡片是單軸 Top 10，popup 是全作品雙軸對照。<br>**帳仍然對得起來**：11 部作品的版稅由當期總額用最大餘數法分配，所以 popup 的全部加總＝總版稅（USD 4,520／NTD 6,480 都驗過）；卡片上的 Top 10 是子集、本來就不等於總額，popup 副標寫明「本期共 11 部作品」把範圍講清楚。
+- **【D】** *（同日）* 兩張榜的**類型篩選移到標題下方自成一列**：span-6 的寬度放不下「長標題＋三顆 chip」同一行，chips 會被擠成兩行。標題保持完整、篩選獨立一列，任何寬度都不會壞。
+- **【D】** *（同日修正）* **版稅榜的作品名沒跟著 persona 走**——使用者指出「現在選的是周湯豪，但有其他不相干的資料出現」。原因是我建版稅榜時直接從 `js/projects-store.js` grep 作品名，抓到的是 **`PROJECTS_DEFAULT`（Maya Chou 世界觀，港片片名）**那一組，且寫死進 HTML。切到 nick persona 時，整站其他地方都換成周湯豪的內容，只有這兩張榜還掛著《深水埗的月光》《龍虎門外傳》。<br>修法照站上既有機制（`js/i18n.js:1223` 已寫明「earnings／events／fans 原本寫死在 HTML 的名字 data-i18n 化，default 值留 DICT、周湯豪版放 `PERSONA_DICT.nick`」）：14 個作品名（金額榜 7＋次數榜 7，同 7 部作品兩種排序）改掛 `roy.work1`–`roy.work7`，DICT 放 default 的港片名、`PERSONA_DICT.nick` 放周湯豪的真實作品（LOVE RAGE HOPE／REAL LIFE／帥到分手／罵醒我／愛上你算我賤／什麼都不必說／帥到分手 MV，取自 `PROJECTS_NICK`）。兩個 persona 與 Sony 版都實測過。<br>**教訓**：這個原型的假資料是分 persona 的，新做的區塊只要出現「作品／商品／人名」，就得走 persona 覆蓋層，不能直接 grep 一份資料檔寫死。
+- **【A】** *（同日）* **期間切換接上真資料**——使用者回報「這個切換，資料沒變動」。原本月／季／年／自訂區間只是靜態控制項，點了什麼都不會發生。現在四個期間各有一份完整資料（總版稅、依來源四列、作品／地區／平台三張榜、串流下載次數），點哪個就整頁換過去。<br>**帳不會被切散**：各期數字用**最大餘數法**由該期總額分配，所以四張表的加總都精準等於該期總版稅（USD／NTD 兩份都驗過）。百分比刻意不動——量在變、組成不變，這才是版稅隨期間變化的實際樣子。NTD 那份的權重另存一套：拿 USD 權重回推會把已驗收的 2,640 算成 2,638，等於偷偷改掉對過的帳。
+- **【B】** *（同日）* **「查看來源」自工具列搬進卡片**，改成右下角的無框按鈕（`btn--ghost btn--lg`，44px／14px，含 `arrow-right` 箭頭）。**新增 icon**：registry 原本只有 `arrow-left`，依使用者指定「要有尾巴的箭頭」補上鏡像的 `arrow-right`（Tabler 同一套網格）。分工寫進註解：`chevron-right` 是「進下一層」，帶尾巴的箭頭才是「往前一步／就地展開」。順手校正 DS 文件的 registry 顆數——`design-system.md`／`.html` 都寫「策展 111 顆」，實際在我加之前就已經 117 顆，現為 118，兩份同步更新，依使用者截圖指示。工具列只留匯出報表與補登版稅報表兩顆。理由：查看來源是「就地展開這張卡的細節」，不是跟著分頁走的操作，放工具列會跟另外兩顆搶同一種份量。
+- **【D】** *（同日踩坑）* meta 那行一度在中文介面顯示英文——JS 裡用 `document.documentElement.lang === 'zh'` 判斷語言，但實際值是 **`zh-Hant`**。改成不自己判斷語言：四個期間各給一個 i18n 鍵（`roy.meta.*`），切期間時只換 `data-i18n` 再呼叫 `window.applyI18n`，語言切換沿用既有機制。頁面不該自己複製一份語言判斷邏輯。<br>*同源的第二個坑*：這顆按鈕的箭頭一度也不見了——`data-i18n` 掛在 `<button>` 上，而 i18n 是寫 `textContent`，會把 icon 子元素一起清掉。改用站上既有寫法（Sony 頁「提領歷史」同款）：標籤包 `<span data-i18n>`、icon 當兄弟節點。**凡是按鈕內含 icon，`data-i18n` 就不能掛在按鈕本身**。
+- **【C】** *（同日）* 版稅卡瘦身兩項，依使用者指示：<br>**摘要句「本期有四個來源，兩個可在 Ztor 結算、兩個不行」整條撤除**——它本來是用來介紹下面那張來源列表的，列表收進 popup、按鈕搬去工作列之後，它就成了一句沒有對象的旁白。`roy.src.summary` i18n key 一併刪除。<br>**資料時效橫幅撤出卡片，但事實不丟**：使用者問這條是否也不用出現。判斷是「橫幅可以不要，資訊不能不要」——版稅數字晚一季這件事，是「這個金額能不能拿來做決定」的前提，§7.3 也要求財務數字要能辨識狀態與是否已驗證。所以拆成兩處安置：截止日併進大數字下面那行 meta（`roy.total-meta2`，那行本來就在講期間與範圍），完整說明（發行商定期提供／部分延遲一季／與 Ztor 銷售分開計算）移進「查看來源」popup 末尾——會去翻來源的人，正是需要知道口徑的人。<br>結果是卡片只剩：標題＋期間切換＋大數字＋一行 meta，高度大約砍掉一半。
+- **【B】** *（同日）* Deck for Sony 版的頁名由「**財務總覽**／Finance overview」改為「**收入管理**／Earnings」（`fin.crumb`／`fin.h1` ＋ 該頁 `<title>`），與導覽項目 `nav.earnings` 一致——同一個目的地在導覽叫一個名字、進去之後叫另一個名字，是版本切換後最容易讓人以為走錯頁的地方。
+- **【D】** `js/i18n.js` 補 `roy.src.summary`／`roy.src.view`／`roy.src.modal-title`／`roy.src.modal-sub`。check_ds_sync PASS、棘輪未升。
+
+## 2026-07-31（第七批）· Deck for Sony 版加上「總覽／版稅」兩個分頁；earnings 家族 tab 改底線式（B 反饋／使用者裁決 ＋ A spec）
+
+- **【B】** 分頁樣式改用使用者圈選的那組——e-shop 工作列的 `tabs tabs--underline-short tabs--underline-label`（短橘底線、只跟標籤等寬）。套用範圍限 **earnings 家族兩支**：`earnings.html` 七顆、`earnings-sony.html` 兩顆。<br>兩件實作細節：`tabs--count-plain` **沒掛**——它只作用在 `.tabs__item-count`，這兩處沒有計數，掛了是無作用的 class；`tabs--underline-label` 要求標籤包在子元素裡（底線掛在 `:first-child` 的 `::after`），所以 earnings.html 原本把 `data-i18n` 直接放在 `<button>` 上的七顆全部改成包一層 `<span>`。<br>**未掃齊**：站上另有 8 支頁面（event-detail／fans-crm／ip-detail／pickup-detail／fan-detail／project-detail／scanner／store-settings）的頁面分節 tabs 仍是純 `.tabs`，跟 earnings 是同一個視覺角色。照風格單一答案原則應該一起改，但那是 8 頁批次、且本輪使用者只指到 earnings，已記為 **STYLE-DECISIONS Q38（部分執行）** 等裁決，不擅自掃。
+- **【A】** `earnings-sony.html` 加上分頁：**總覽｜版稅**兩顆（使用者指定只要這兩個）。原本整頁攤平的內容（類型 chip 圖例＋收益走勢圖＋我的項目表）包進 `data-panel="overview"`，版稅區塊整段自 `earnings.html` 搬過來當第二個 panel。切換 JS 與 `earnings.html` 同一段邏輯（含 hash deep-link），寫在頁內。
+- **【A】** 版稅金額換算成 Sony 版的 **NTD 口徑**——那頁全頁用 NTD，混 US$ 在簡報裡會很刺眼。總版稅 NTD 6,480（發行商報表 2,280／Ztor IP 版稅 2,640／Ztor 授權 1,080／KKBOX 補登 480，四項相加對得上），作品、地區、平台三張榜依同一比例換算、百分比不變、三張榜各自加總仍等於 6,480。串流／下載次數不是金額，維持原值。
+- **【B】** *（同日修正）* 只加 class 不夠——使用者比對後指出樣式仍不對。原因是這組底線式 tab 的 `::after` 是 `bottom:-12px`，設計上**要落在 58px 高工作列卡的底緣**（`list-toolbar.css` 檔頭寫明：固定高＋`align-items:stretch`，tab 撐滿才貼得到卡底）。只掛 class 時 `.tabs__item` 只有 39px 高，底線就浮在文字下方 10px 的空中。修法是把兩頁的分頁列包進同一個 `.list-toolbar` 殼（＋引 `list-toolbar.css`），零新 CSS，量到的幾何與 e-shop 完全一致：卡高 58px、標籤 span 38px、底線上緣與卡底緣差 0px、圓角 16px。
+- **【D】** `earnings-sony.html` 補引 `tabs.css`／`perf-rank.css`／`data-list.css`／`badge.css`（原本沒用到這四支），頁面 `<style>` 補與 `earnings.html` 同一份的 `.roy-*` 一次性版面——兩頁是同一頁的兩個版本，樣式必須同源。check_ds_sync PASS、棘輪未升。
+
+## 2026-07-31（第六批）· 拆頁併回單頁：版稅改當一個分頁，不用全頁 filter（B 反饋／使用者裁決 ＋ C 撤除）
+
+使用者問「收入總覽和 Ztor 收入可以合併對嗎，用 filter 分開」。合併是對的，**但不能用全頁 filter**——filter 的前提是每個值對每個視圖都成立，這裡不成立：站外 × 項目收益、站外 × 提款、站外 × 稅務文件三格是空的（那三個分頁根本沒有站外版本），切過去會有三個分頁變空白。而且提款、稅務下載是動錢的操作，主要行動不該隨 filter 狀態出現又消失。所以改用分頁分開，filter 只用在「兩邊都有內容」的地方。
+
+- **【C】** 撤除導覽群組：`js/sidebar.js` 的 Earnings 改回平鋪單頁，`js/devtools.js` 的 Deck for Sony 改接退回一條（`route:earnings.html=earnings-sony.html`）。第四批新增的四個 `nav.earnings-*` i18n key 留著沒刪（無害，之後若確定不回頭再清）。拆頁版 `earnings-overview.html`／`earnings-ztor.html` **暫留磁碟供比對、不掛導覽**，定案後再決定刪或留。
+- **【A】** `earnings.html` 新增「版稅」分頁（`data-panel="royalty"`，排在總覽之後），內容整段搬自拆頁版：總版稅＋期間切換＋資料截至說明＋依來源拆解四列＋補登入口，加上作品 Top（依版稅金額／依串流下載次數並排）、地區表現、串流平台表現。另補空狀態（`when-empty`：還沒有版稅報表，帶補登 CTA），與其他分頁一致由 Cheat Codes 的 Empty 切換。
+- **【B】** KPI 四張改成「範圍看得懂」的一組：**總收入 $26,760（hero）｜Ztor 收入 $24,830｜站外版稅 $1,930｜可提領 $8,940**，前三張互斥可加總。這一列本身就回答了使用者最初的疑問（「這頁是不是只有 ztor 的收入」），不需要用兩個頁面來講。<br>被擠掉的兩張各有去處：**淨利**搬進「項目收益」分頁——金流瀑布本來就在那，淨利是它的結果；**待結算 $3,210** 併進可提領卡的輔助行，讓「Pending ≠ Available」那條提示仍有依附對象。
+- **【B】** 交易明細補一顆「站外版稅」篩選 chip（沿用既有的 chip 單選 JS），這是 filter 唯一站得住的位置之一。總覽分頁沒加範圍 filter：那裡的趨勢圖本來就只畫 Ztor，KPI 已把範圍講完，再加一層只是噪音。
+- **【B】** 交易明細的「手動補登」鈕改成「補登版稅報表」並跳到版稅分頁——補登的既然只剩版稅報表，入口就該跟版稅在一起，不留在交易明細。
+- **【D】** 收入趨勢標題改「收入趨勢 · Ztor」、圖腳註明只含 Ztor 收入、版稅是季報會晚一季到（沿用第五批的處理，指向改成「版稅分頁」）。`earnings.html` 補引 `perf-rank.css`、頁面 `<style>` 補 `.roy-*` 一次性版面。**已知不一致仍在**：趨勢圖圖例還有「平台／串流版稅」「OTT 版稅」兩條線，與註記相牴觸，等資料歸屬定案（ASSUMPTIONS ESP-004）再重畫。
+- **未做**：「如何運作」仍是第 7 個分頁。原本提過可以收成頁尾連結回到 6 個，但那是獨立的取捨、且會動到既有內容，等使用者看過再決定。
+
+## 2026-07-31（第五批）· 收入總覽改為「Ztor 收入＋版稅」，版稅區塊整組重做（B 反饋／使用者裁決 ＋ A spec）
+
+第四批做完後使用者釐清了總覽的用途：**它是為了把各平台匯進來的版稅與 Ztor 上的版稅收在一起看**，而且**外部平台的商品販售不納入**。接著指向 cocreate 原型的提案版稅分頁（`my-cocreate-proposal.html?tab=royalty`），點名要總版稅、Top 10 依版稅金額、地區表現依版稅金額這幾組資料。
+
+那一頁推翻了第四批的一個核心假設：**版稅不是各平台各自接 API 同步，是發行商定期報表**（頁上明寫「部分來源約延遲一季」）。所以「串流平台表現」那張 Spotify／YouTube／KKBOX 是報表內的平台拆分，不是八條整合線。第四批做的「Spotify 已同步 2 小時前／StreetVoice 未連結 → 前往設定」整組是錯的模型，本輪移除。
+
+- **【C】** 撤除「外部收入」區塊的平台連結狀態模型（已同步／未連結／前往設定），連同 `ext.*` 全部 i18n 字串。錯的原因見上；保留的只有列尾對齊用的 `.ext-row__end`。
+- **【A】** 新增**版稅區塊**（`#royalties`），三層：<br>**總版稅 US$4,520**＋期間切換（月／季／年／自訂）＋匯出報表＋「資料截至 2026-06-30、部分來源延遲一季」的說明——講的是報表什麼時候到，不是平台連上了沒。<br>**依來源拆解**四列：發行商報表（站外）／Ztor IP 版稅（可結算）／Ztor 授權（可結算）／KKBOX Q3 補登（未驗證）。這是「合併成一個總版稅」之後把它拆回來，逐列 badge 標清楚哪些能提領。<br>**補登入口**改成「補登版稅報表」，範圍收窄成 Ztor 還沒串接的版稅來源。
+- **【A】** 新增四張排行卡，用既有的 `perf-rank` 元件（它的檔頭註解本來就寫「參考稿＝共創提案 › 版稅頁」，等於是為這件事做的）：表現最佳作品·依版稅金額 ｜ 依串流／下載次數（兩張並排，照參考稿的雙欄；兩個軸要對照著看才有意義——賺最多的不一定是聽最多的）；地區表現、串流平台表現各佔整排。<br>作品名沿用 `js/projects-store.js` 的既有作品，讓版稅視角接得回站上真實物件。<br>兩張作品榜用 `perf-rank--nopct`（4 欄、無百分比），跟參考稿一致；地區與平台用 5 欄含 %。**踩到的坑**：`--nopct` 是容器修飾詞不是列修飾詞；且 5 欄版在 `bento--span-6` 的寬度下 `minmax(0,1fr)` 會被固定欄擠成 0px、長條整條消失——所以含 % 的兩張改整排。
+- **【B】** KPI 第三張由「外部收入」改「**站外版稅**」，數字重算成互斥可加總：總收入 $26,760 ＝ Ztor 收入 $24,830 ＋ 站外版稅 $1,930。**總版稅（$4,520）刻意不上 KPI**——Ztor 的 IP 版稅與授權同時算在「Ztor 收入」裡，四張卡並排時使用者會以為能相加。合併放在版稅區塊自己做，KPI 那層維持「錢的歸屬」一種切法。理由寫進 ASSUMPTIONS ESP-002。
+- **【B】** 收入趨勢圖標題改「收入趨勢 · Ztor」、圖腳補一句「只含 Ztor 上的收入，版稅是季報、會晚一季到」。理由：Ztor 收入即時、版稅延遲一季，畫同一張圖的話最近兩三個月的版稅一定是空的，看起來像收入崩掉。**已知不一致（未修）**：圖例仍有「平台／串流版稅」「OTT 版稅」兩條線，與註記相牴觸；那兩條的 SVG path 是手繪的，等資料歸屬定案（ESP-004）再一次處理。
+- **【D】** 頁面 `<style>` 補 `.roy-total`／`.roy-foot` 兩組一次性版面（全走 token）；`earnings-overview.html` 補引 `ds-components/perf-rank.css`（earnings.html 原本沒引）。check_ds_sync PASS、棘輪未升。
+- **【D】** ASSUMPTIONS 的 ESP 段整組改寫成 ESP-001～006，把「發行商報表 vs API 同步」「兩個切面不是兩個桶子」「時間軸對不上」「作品維度口徑」四個結構問題與各自的待上游項目寫清楚。
+
+## 2026-07-31（第四批）· Earnings 拆成兩頁 demo：收入總覽（整合內外部）＋ Ztor 收入（結算層）（A spec ＋ D infra）
+
+> **這是探索性原型，規格尚未回寫**。使用者要先看到畫面再決定要不要進 `documents/`。舊的單頁 `earnings.html` 原封不動保留、只從導覽移除，可直接輸入 URL 開，方便並排比對與回退。完整提案與待決見 `ASSUMPTIONS.md` 的 ESP-001～003。
+
+起點是使用者的問題：「r2.2 的收入管理是不是只有 ztor 平台的收入？」查證結果是「不只」——§7.3 的收入分類第 8 類「平台／串流版稅」本來就是外部平台同步進來的，F10 手動補登也明寫是補外部收入。問題在於這兩種外部收入被塞進一個以「結算與提款」為主軸的頁面裡，所以規格得到處補「這筆不計入可提領／不計入稅務」的例外條款。拆頁要收掉的就是這個。
+
+**分界線＝錢有沒有經過 Ztor**（不是資料從哪來）。經手的可結算、可提領、可拆費率、進稅務文件；沒經手的只記錄與統計。這一刀下去，例外條款變成頁面層級的一條規則。
+
+- **【A】** 新增 `earnings-overview.html`（收入總覽）＝原 Overview 分頁升格成獨立頁。KPI 改「總收入·全部來源（hero 橘卡）｜Ztor 收入｜外部收入｜可提領」；hero 給總收入是因為這頁要回答的是「我總共賺多少」，可提領在這裡只是通往頁2 的指路牌。新增**外部收入區塊**（`#external`）：平台同步列（Spotify／YouTube，`badge--success`）、手動補登列（`badge--warning` 未驗證）、未連結列（`badge--neutral` ＋前往設定），末尾 info-banner 一句講白「只記錄、不結算」。手動補登入口從頁2 搬來這裡——補登的是外部收入，跟它的同類放在一起才找得到。
+- **【A】** 新增 `earnings-ztor.html`（Ztor 收入）＝原其餘五個分頁，預設落在交易明細。KPI 首卡改稱「Ztor 總收入」點明口徑；可提領改 hero 卡——這頁的主要行動是提款，hero 跟著行動走，跟頁1 的 hero 邏輯是同一條（hero 標的是這一頁要做的事）。原本的「Manual entry」鈕改成連往頁1 `#external` 的「External & manual entry」。影評人佣金率提示（CCR-002）留在這頁：它是套用於淨收益的 Ztor 側費率，不屬全收入圖像。
+- **【D】** `js/sidebar.js` 的 Earnings 由平鋪改為下拉群組，比照 Fans／E-Shop／IP Bank 的既有 `panel` 寫法，沒有多寫任何條件分支——`topbarNavHtml`／`sidebarNavHtml`／`isActive`／`applyVersionRoutes` 四段本來就吃 `it.panel`。`match` 收 `earnings.html` 與 `earnings-sony.html`，直達舊頁時群組仍會點亮。
+- **【D】** `js/devtools.js` 的 Deck for Sony 版本規則從一條改接擴成三條（`earnings-overview.html`／`earnings-ztor.html`／`earnings.html` 三者都導向 `earnings-sony.html`），Sony 簡報版在拆頁後仍是收入管理的唯一落點。`earnings-overview.html` 排第一條是刻意的：`guardRoutePage()` 反向導回時取第一個 pair 的來源，所以離開 Sony 版會落在新的總覽頁而不是舊單頁。已雙向實測（切 Sony → 停在 sony；切回 full → 回總覽）。
+- **【D】** `js/i18n.js` 補導覽群組四個 key（`nav.earnings-overview*`／`nav.earnings-ztor*`）與兩頁的中英字串（`earnings.ov.*`／`earnings.zt.*`／`ext.*`）。實測兩頁 `data-i18n` 零未翻鍵、`data-lucide` 零未解析 icon（外部收入列的 icon 走既有 registry：`music`／`video`／`pencil`／`link`／`globe`，未新增 icon）。
+- **【D】** 兩頁的頁面 `<style>` 按用途分流：`.src-*`（收入來源 focus 高亮）跟去總覽頁、`.bd-*`（項目收益表格）跟去 Ztor 頁，不整段照抄。總覽頁新增 `.ext-row__end`（外部收入列尾的 badge＋金額對齊）——單頁一次性版面、暫不 promote，等拆頁定案再看要不要進 `ds-components/`。check_ds_sync 全 PASS（棘輪未升）。
+- **未做／待上游**：`documents/` 一律未動（sitemap §3.2.1、5.1.8 的 F1–F12 分派、§7.3 新增「收入歸屬」欄位）；「平台／串流版稅」歸內或歸外**本輪刻意不選邊**，頁1 示意兩列、頁2 篩選 chip 仍留著，等上游裁決金流路徑（ESP-002）。
+
+## 2026-07-31（第三批）· 活動清單「現場報到台」改為深連結，整列點擊帶上活動 id（A spec ＋ D infra）
+
+使用者在活動清單上發現「現場報到台」點開後與直接點活動看不出差別，懷疑是誤植或該刪。查證結果：它不是誤植——規格 [5.1.6.3 §2.5](../../documents/5.1.6.3-活動詳情.md) 定義現場報到台是活動詳情頁裡活動進行中才出現的區塊（`#ed-live`），不是獨立頁，所以只有進行中那一列掛這個選項是對的。看不出差別是兩件事疊起來造成的。
+
+- **【A】** `events.html` 的「現場報到台」href 補錨點 `#ed-live`：原本只連到 `event-detail.html?id=…`，落點在頁面最上方，與點活動名稱完全相同，這個選單項等於沒有目的地。實測瀏覽器原生錨點捲動在此可用（區塊由 `initLive()` 在解析階段就解除 `hidden`，早於錨點捲動時機），整頁與覆蓋層兩種開法都會停在報到台上，故不另寫 JS 捲動。
+- **【D】** `events.html` 十一列全部補 `data-go="event-detail.html?id=<id>"`，十筆標題連結補上原本漏掉的 `?id=`（原本只有進行中那列有）。整列點擊的退路由寫死的 `location.href = 'event-detail.html'` 改讀 `row.dataset.go`——寫死的網址不帶 id，會開到示例首筆活動而不是點的那一列；使用者看到的「同一列的兩個入口開出不同內容」就是這個。`data-go` 同時讓 `detail-sheet.js` 在捕獲階段接手，整列點擊與選單項一致走覆蓋層，不再一個 popup 一個整頁。
+
+## 2026-07-31 · 新頁 粉絲分析（Fan analytics）：受眾洞察從全域能力升為 Fans 子頁（A spec ＋ D infra）
+
+> **同日更名（D162）**：頁面由「受眾分析／Audience」改為「粉絲分析／Fan analytics」，檔名 `audience.html` → `fan-analytics.html`。連帶把 Fans CRM 與本頁的分工從「受眾 vs 粉絲」改成**名冊 vs 分析**——一個一個看 vs 整體看，不再依賴詞彙定義。F2「受眾總覽」→「粉絲總覽」、「總受眾規模」→「總追蹤人數 / Total following」、「受眾分群」→「粉絲分群」。同時把**單位界線**寫進兩邊文案：本頁算「人」（去重後人數），儀表板／項目詳情的表現卡算「次數」（觀看＋串流）；兩邊都有平台與地區切面，數字不可互比。未採納把儀表板三張表現卡搬進本頁——它們的單位是作品觸及次數、不是人，且已歸屬項目詳情的表現分頁。
+
+規格側先行：`documents/5.1.7.8-受眾分析.md` 新建、D158（升為 Fans 群組子頁）／D159（撤除 v1 分期、F1 改為不占版位的常駐指示）／D160（F8 更名建議行動）。本輪把規格落地成站台。
+
+- **【A】** 新增 `fan-analytics.html`，掛在 Fans 導覽群組第 6 個位置（`js/sidebar.js` panel ＋ `FULL_ROUTES`；`js/devtools.js` 的同名清單一併補上——兩份清單必須一致，只改一邊會讓低版本藏得掉導覽、頁內連結卻還點得進去）。Fans 不在 `feature-scope-map.md` 的 scope 表內，比照其他非 scope 產品頁標 `data-page-feat="full"`。
+- **【A】** 版面順序 F7 → F2 → F3·F4 → F5·F6 → F8。F7 置頂是刻意的：先給一句有證據的結論，比先給一排數字更快讓人接上狀況；F2 緊接在後，讓創作者用整體數字驗證那句結論可不可信（D159）。
+- **【A】** F1 平台連結與同步狀態**不占常駐版位**：它坐在頁首操作區、取代原本獨立的「前往整合設定」按鈕。理由是「去連平台」永遠是先看到某個平台缺了或壞了之後才成立的動作，獨立擺在頁首會變成一顆沒有前因的按鈕；動線固定為 看到狀態 → 展開明細 → 知道是哪個平台 → 前往設定。唯一例外是未連結態，此時整頁只剩來源清單，前往設定就是主要行動。
+- **【D】** 新元件 `ds-components/finding-card.css`（`.finding`）——F7 用。與 `insight-row` 的分工寫進 DS：insight-row 一行就講完；結論需要數字支撐、而且要能追查下去時才用 finding card。兩個數字並列＋中間的落差標記，是為了讓「不同步」變成看得見的形狀，而不是一句要人腦補的敘述。
+- **【D】** 新元件 `ds-components/source-status.css`（`.src-status`）——F1 用。狀態由容器的 `data-open`／`data-alert` 驅動；異常時整顆膠囊轉 destructive 且排除前不回到低調樣式。來源識別塊只放縮寫、不用各平台品牌色：品牌色會讓五列變成五種強度不一的視覺重量，而這裡要比較的是「狀態」不是「是哪一家」。明細列沿用 `settings.css` 的 `.settings-row`，不另造一套列。
+- **【D】** `design-system.html`／`design-system.md` 同步兩支新元件（§4.111 Finding card、§4.112 Source status）：TOC 錨點、元件總表兩列、rendered preview、Class API 與消費頁。
+- **【D】** `js/i18n.js` 補整頁中英字串（`aud.*`）。用詞取捨記在該區塊註解裡：「受眾/audience」對整體匿名、「粉絲/fans」對站內認得出來的人，兩詞不可互換；膠囊用 sources 不用 platforms（要講的是「數字建立在什麼之上」）；F8 用「建議行動 / Suggested actions」而非上游的「商業機會提示」（D160）。
+- **【A】** Dashboard F7 受眾欄補「進入受眾分析」入口（`js/components.js`）。這收掉的是 D057 留下的懸空 deep-link——當時裁示指向「Fans CRM 受眾／趨勢區塊」，但那個區塊從未存在過。
+- **【A】** `fans-crm.html` 頁首補一條到受眾分析的 cross-link，`fans.sub` 補一句分工：這裡看「人」，跨平台的整體受眾樣貌在受眾分析。
+
+## 2026-07-31（第二批）· 分級選單補上「累計人數」，分級人口抽成單一來源（B 反饋 ＋ D infra）
+
+接續同日第一批。使用者比對 demo 後指出線上版少了選單裡的人數，並指定要**累計**人數。
+
+- **【B】** 分級選單每一級右邊顯示「門檻設在這一級，共有多少人買得到」＝該級與其上各級相加（154 ／ 513 ／ 988 ／ 1,283），不是該級自己的帶人數。決定門檻時真正要回答的是「會擋掉多少人」，只給單級人數的話使用者得自己心算；累計值往下讀就是把門檻收緊的代價。新增 `renderReach()`，隨 `renderTier()` 一起跑。
+- **【D】** 新增 `ds-components/dropdown-menu.css` 的 `.dropdown__meta`（值列尾端次要資訊）：`margin-left:auto` 靠右推齊讓四列數字對成一欄可以直接比，`tabular-nums` 讓位數不跳動，次要色＋小一階字表明它是參考值、不是這一列選的東西。`design-system.html`／`design-system.md` 的 §4.58 同步（demo 四列補數字、Class API 新增一列、Token usage 補 `--fs-12`／`--sp-8`、說明段補累計語義）。
+- **【D】** 新增 `js/tier-population.js`：把每一級的人口抽成單一來源，原本內嵌在 `js/vault-store.js` 的 `TIERS` 改讀它（vault-store 內部沿用自己的 `super` key，在讀取處映射，不動它的 reach 系列與假資料）。媒體庫房問「有幾位粉絲打得開」、電子商店問「門檻設在這一級有幾個人買得到」，是同一份人口的兩種讀法，不該各存一份數字。`media-vault.html` 補載該檔（順序在 vault-store 之前）。已回歸驗證：媒體庫房的分級數字（154／359／475／295）、總數 1,283 與庫房卡片渲染皆不變，無 JS 錯誤。
+- **【D】** i18n 新增 `e-shop.tier.reach`（`{n} fans`／`{n} 人`）。
+- **未做／已記缺口**：站上另有一組矛盾的人口數字——`js/i18n.js` 的 `tier-settings.tier.*-count`（359／512／640／329）是分級設定頁卡片的靜態文案，與本檔對不起來。兩組都是假資料、各自服務不同頁面，統一哪一組屬產品資料來源問題，記為 **PG-022**，本輪不自行選邊。
+
+## 2026-07-31 · 粉絲分級欄改「單擊門檻」，推翻 07-29 的自由多選（B 反饋／使用者裁決 ＋ D infra）
+
+使用者檢視方案比較 demo（`scratch/demo-tier-gate.html`）後裁決採門檻模型。產品決策記於 `documents/decisions.md` D161，欄位本身仍無規格出處，記為產品缺口 PG-021。
+
+- **【B】** `e-shop.html` 粉絲分級欄的互動由「四級各自勾選」改為「點一級＝把門檻設在那一級，該級與其上各級自動包含」。合法狀態由 16 種收斂成 4 種——原本的 12 種不連續組合（如「粉絲買得到、上榜粉絲買不到」）在巢狀分級下講不通，07-29 的實作自己也承認：遇到不連續時沒有簡寫可用，只能把分級名字逐一列出。`tiersOf()` 新增門檻正規化（任何既有值一律收斂成「從頂端連續到其中最低那一級」，保守方向、不會把原本買得到的人擋掉）；`tierSummary()` 移除「逐項列出」的退路分支；`renderTier()` 移除「最後一項不能取消」的停用邏輯——門檻永遠存在，做不出「沒有人買得到」那個狀態。
+- **【B】** 摘要文案由大於號寫法改成含本級的說法：`> 粉絲` → `上榜粉絲以上`、`> 上榜粉絲` → `超級粉絲以上`、`僅核心圈` → `僅限核心圈`、`全部` → `全部分級`。用字對齊建立拍賣頁的競標資格（`cp.elig.*`）——同一個模型在產品裡只用一套說法。英文取 `Superfan+`／`Ranked fans+` 簡寫是為了塞得進 144px 欄寬（實測中英文皆無溢出），規格 §5.1.5 描述競標資格時本來也是寫 `Superfan+`。
+- **【D】** `ds-components/dropdown-menu.css` 新增面板變體 `.dropdown__menu--ladder`：已選列左緣加一條 2px `--selected-ink` 直線，把「被包含的一段」連起來——沒有它，四個各自帶 check 的列看起來就是四個獨立開關，使用者會以為可以隨意跳選。同時新增 `.dropdown__item--preview`（hover 預告，40% 透明 check，讓階梯關係在點擊前就看得見）與 `.dropdown__cap`（選單抬頭小字「買得到的最低分級」，非選項不可點）。`--choice` 的原註解說「選單一次只會有一個被選」已過期，一併改寫。
+- **【D】** `design-system.html`／`design-system.md` 的 Dropdown menu（§4.58）同步：rendered preview 新增第三張 demo（ladder 選單，第三列固定在 `--preview` 態示範 hover 預告）＋說明段；Class API 補 `--choice`（07-29 落地時漏記，本輪補上）、`--ladder`、`--preview`、`.dropdown__cap` 四列；Token usage 補 `--selected-ink`／`--radius-pill`／`--sp-4`／`--fs-11`／`--lh-snug`（寫入前逐一 grep 確認 CSS 有定義且有引用）。
+- **【D】** `js/i18n.js`：新增 `e-shop.tier.cap`／`min-devoted`／`min-superfan`，改寫 `all`／`inner-only`，刪除 `gt-fan`／`gt-ranked`（全站無其他消費者，且措辭與新模型矛盾，留著會誘導下一個人用錯模型）。中英齊全。
+- **【D】** 13 個靜態列的分級選單加上 `dropdown__menu--ladder` 與抬頭；demo 填充列（`fillDemoProducts`）沿用既有的「複製第一列 markup」做法，不需另改模板。
+
+## 2026-07-30（第五批）· 套組卡片：展開態價格移到標題列右上，動作移到卡片底部，卡內間距比照建立商品 section（B 反饋）
+
+接續同日稍早三輪套組編輯器改動（第二／三批，見下方）。本輪三項改動皆共用模組 `js/bundle-editor.js` 與 `ds-components/bundle-editor.css`，create-project.html／project-detail.html 兩個消費頁同步生效。
+
+- **【B】** 展開態的價格移到卡片標題列右上角：標籤「套組價」（`.fc-sum__tag`，展開態才顯示）＋放大金額（`.fc-sum__val`，`--fs-20`），有折扣時原價劃線（既有 `.fc-sum__was`）並列在前。收合態的摘要價格維持原樣不變。理由：定價區塊在卡片最後、中間隔著五組欄位，編輯名額或商品的當下看不到價格變成多少。
+- **【B】** 展開態的動作從標題列移到卡片底部：標題列右上角只剩價格。底部改成兩層——`.fc-collapse`（整條可點的收合把手，滿寬、上緣分隔線、置中，內含 icon 元件 `<i data-lucide="chevron-up" class="ztor-icon">`）＋`.fc-bundle__foot`（右對齊，內含紅色的 `.btn.btn--destructive.btn--sm` 移除鈕，只有多於一張卡時出現）。收合態維持標題列右側的「編輯／移除」文字連結不變。移除鈕改用**實色** `.btn--destructive`，與站上多數「刪除」動作慣用的 `.btn--ghost.btn--destructive` 不同——記入 STYLE-DECISIONS Q37（待裁決）。
+- **【B】** 卡內間距對齊建立商品頁的 section（使用者指定參考 create-product 的 `.form-section--outlined`）：`.fc-bundle` 內距由 `--sp-16`/`--sp-18` 改成 `--sp-24`；收合態左右內距同步改 `--sp-24`（收合↔展開時名稱不左右位移）；新增 `.fc-bundle__body .field__label { font-size: var(--fs-14) }` 與 `.fc-bundle__body .field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)) }`。欄位間距維持基礎 `.field` 的 16px（Q6 已統一全站）。
+- **【D】** i18n 新增 3 個 key（中英齊全）：`cpp.bd.collapse.long`（收合這個套組）、`cpp.bd.remove.long`（移除這個套組）、`cpp.bd.price.tag`（套組價）。既有的 `cpp.bd.collapse`／`cpp.bd.remove` 仍供收合態的短連結使用。
+- **【D】** `design-system.md`／`design-system.html` 的 Bundle editor 條目（§4.15b）同步：purpose 段補價格上移／動作下移／間距對齊三項，demo 卡改成新版標題列＋底部把手，spec 表 Anatomy／Behavior／Classes／Token usage 四欄補新 class 與 `--fs-20`／`--ring` 兩個 token（grep 確認 `ds-components/bundle-editor.css` 逐一存在後才寫入，`--font-ui`／`--fw-regular` 屬既有但先前漏記的 token，一併補上）。
+
+## 2026-07-30（第四批）· 發布項目改導向詳情頁＋toast 跨頁佇列，停用按鈕旁補原因行（B 反饋 ＋ D infra）
+
+- **【B】** 建立項目 wizard 的「發布項目」不再只彈 alert（`create-project.html:1277-1290` `publish()`）：改成把成功訊息排進 toast 跨頁佇列，導向 `project-detail.html?id=<id>`，讓使用者看到「東西已經在了」而不是停在原表單。原型無真實建立，故導向「與這次選的類型相符的第一筆示範專案」（`golive`→nick-lrh、`fund`→nick-r2、`preorder`→nick-wo-de-i，型別對映見程式碼註解）；排程發布（Publish timing 選「排程發布」）改用「已排程」語氣的文案，不謊報「已發布」。舊 `cpp.publish-alert` 已無消費者，暫留未刪。
+- **【D】** `js/toast.js:71-121` 新增跨頁佇列 API `window.ztorToast.queue(message, { key, tone, hold })`：訊息連同 i18n key 寫入 `sessionStorage`（key `ztor.toast.queue`），下一個載入本檔的頁面在 DOM ready 時「先清佇列再顯示」，避免重整重跳；存 i18n key 而非翻好的字串是因為顯示時機在下一頁、語言可能已切換，查無 key 才退回保底字串。任何頁面載入 `js/toast.js` 即自動支援，不必逐頁接線。`show()` 本身未動。`project-detail.html:46,2069` 補載 `toast.css`／`js/toast.js`。design-system.md／design-system.html 的 Toast 條目（§4.107）同步補充。
+- **【B】** Wizard footer 主動作旁新增原因行 `[data-next-hint]`（`create-project.html:833`）：只在回饋套組步驟 Continue 被停用時顯示「還需要一個完整的套組才能繼續。」，可按時清空（`create-project.html:894-906,948,1240-1243`）——先前擋關原因只寫在步驟內的教練提示，離 footer 那顆灰按鈕太遠，按鈕自己不解釋自己。新樣式 `.wizard__bottom-hint`（`shared.css:1172-1186`），視覺與 `.field__hint` 同級，全用既有 token；design-system.md／design-system.html 的 Wizard frame 條目（§4.50）同步新增 disabled+hint 示範狀態與 spec 表列。
+- **【D】** `js/i18n.js:3015-3016,3475-3476` 新增三個 i18n key（發布成功／已排程／footer 原因行），中英齊全。
+
 ## 2026-07-30（第三批）· 套組優惠改百分比欄位，卡片欄位重排，撤除卡片左緣「未完成」色線（A spec 落地／使用者裁決 ＋ B 反饋 ＋ C 撤除）
 
 接續同日稍早把套組價格改唯讀計算＋新增套組優惠欄位那兩筆（見下方兩則）。本輪三項改動皆共用模組 `js/bundle-editor.js` 與 `ds-components/bundle-editor.css`，create-project.html／project-detail.html 兩個消費頁同步生效。
@@ -32,6 +224,61 @@ CCR-008 已裁決支持方案改「共創套組」模型、照建立流程 creat
 - **【D】** `create-project.html`「回饋套組」步驟原本的頁內第二代實作（2026-07-28）抽出為共用模組 `js/bundle-editor.js`（新檔，565 行，`window.ZtorBundleEditor.mount()`）；`create-project.html` 頁內只留三件它自己的事：名額池讀 `#fd-slots`、右軌 `#bd-overview` 名額分帳與目標覆蓋率、教練提示與 Continue 擋關（`create-project.html:1105-1212`）。
 - **【D】** `ds-components/bundle-editor.css` 本身未改動（第二代 class 上一輪已補齊）；`design-system.md`／`design-system.html` 的 Bundle editor 條目同步升級為第二代描述＋標註共用模組。
 - 未做：`create-campaign.html` 仍是自己的第一代頁內 `.fc-*` 副本（自由輸入商品、無收合/引用/名額推導），未遷移到共用模組——治理待辦，已在 design-system.md/.html 條目內註記，不在此重複登記。
+
+## 2026-07-31 · 儀表板三張表：斷點改為整排獨佔、第一欄換成作品／商品圖（B 反饋導入）
+
+- **【B】** 新增 bento 修飾類 `--stack-lg`：裝了表格的那兩排延後到 **1440px** 才並排，之下各佔一行。原本 bento 一律 900px 堆疊，那是為 KPI 這類短內容定的；實測這三張表要不擠分別需要 597／448／632px，換算回視窗約 1480px，硬並排就會擠成多行（使用者回報「都變形了」）。其餘 `.bento`（KPI 列等）不受影響。
+- **【B】** 三張表第一欄由狀態圖示改為**真實作品／商品縮圖**（沿用 `.ztor-table__thumb`，同 finance-overview 的做法）；沒有 `img` 的列仍退回圖示。
+- **【B】** 配圖與文案一起改：舊的英文佔位實體（Coastline EP／Late Bloom／Neon Tide／Winter Set／Quiet Hours）換成 persona 既有作品——REAL LIFE、帥到分手、LOVE RAGE HOPE 黑膠典藏版、什麼都不必說、REALIVE (R2)、FLAMES、NICKTHEREAL 肖像。**配對一律取自 `projects-store.js` 的既有「名稱↔封面」對應，不自行湊圖**：這個 repo 先前修過「電子商店多筆商品圖文不符」，亂配等於再犯一次。
+- 這同時修掉一處既有的不一致：站上其他頁（項目、電子商店、活動）早就是周湯豪 persona，只有儀表板這幾列還留著舊的英文佔位資料。
+- 驗證：13 張縮圖全部載入成功；1335px 視窗下三張表皆整排獨佔、無擠壓。
+
+## 2026-07-31 · 近期活動與項目的進度欄加上進度條（B 反饋導入）
+
+使用者指定改成與項目清單（`.project-list__goal`）同一種呈現：百分比 ＋ 進度條 ＋ 原始數字。
+
+- **【B】** 正在進行的列，進度欄由單行數字改為三段式——`62%` ／ 進度條 ／ `62 / 100 位支持者`。非進行中的列不變，仍只顯示狀態詞（準備中、草稿…）。
+- **【D】** 進度條沿用 shared.css 既有的 `.project-bar`（funding-panel 與 project-list 都在用），不另做一支。`table.css` 只新增容器與兩段文字樣式 `.ztor-table__goal`／`__goal-pct`／`__goal-amt`。**這兩段文字樣式與 `.project-list__goal-*` 內容相同、分屬不同元件各留一份**——已在 CSS 註解標明：若第三處再出現同樣需求，應把這組 goal cell 抽成共用元件，不要再複製第三次。
+- 三張卡在 1155px 與 1526px 視窗下皆零溢出。窄視窗時進度條只有約 46px，仍可讀但偏短，若之後覺得太細可再調。
+
+## 2026-07-31 · 生命週期狀態統一為「準備中」，補齊終態文案與例外上色（B 反饋導入）
+
+使用者裁示「預定改準備中」，並要求把先前列出的三項待決一起做完。
+
+- **【B】** 生命週期的 Scheduled 狀態，中文一律用**準備中**：原本活動軸寫「預定」、項目軸寫「已排程」，同一個概念兩個詞。改到 6 條 i18n（`status.scheduled`／`events.badge.scheduled`／`events.stage.scheduled`／`projects.state.scheduled`／`project-detail.status.scheduled`／`event-detail.badge.scheduled`）與三處頁面內的標籤對照表。英文維持 `Scheduled`。
+- **【B】** 補齊四條終態文案：`status.sold-out`（已售完）、`status.ended`（已結束）、`status.cancelled`（已取消）、`status.succeeded`（已成立）。表格的進度欄會直接顯示狀態詞，缺文案會露出 key。
+- **【B】** 進度欄的狀態詞依既有 variant 上色：中性狀態維持次級灰，`error` 用 `--destructive`、`warning` 用 `--status-warning-ink`。不回到彩色徽章，是為了讓這一欄維持單一視覺語彙（要嘛數字、要嘛一個狀態詞）。
+- **不動的同名概念**：商品的定時上架、新品貼文的排程發布、群發訊息的排程狀態（`msg.status.scheduled`、`cpp.publish.toast.scheduled`）都用同一個「已排程」字眼，但講的是動作排程、不是生命週期，整批換會弄壞語意，故逐處分類後只改生命週期那幾處。
+- 規格同步：§7.2、5.1.2、5.1.6.3 共 3 處（Plan225）。
+
+## 2026-07-31 · 近期活動與項目：進度欄吸收狀態；最近動態日期併入第二行（B 反饋導入）
+
+使用者裁示「只有正在進行的才顯示幾張票／多少支持者，其他狀態都直接寫狀態」。
+
+- **【B】** 近期活動與項目**移除狀態欄**：進度欄改為——狀態屬「正在進行」（`status.live`／`status.on-sale`／`projects.state.published`）時顯示進度數字，其餘一律直接寫狀態詞（草稿／已排程／已成立／已售完／已結束／已取消）。判準是「數字本身有沒有說明現況」。此舉同時解掉一處資料矛盾：demo 第 2 列狀態是「預定」卻帶著募資進度，現在只顯示「預定」。
+- **【B】** 最近動態把**日期併入第二行**（`Projects · 11/23`），移除日期欄。原因是這張卡是 span-5，1155px 視窗下四欄會溢出 52px、狀態徽章被切掉；日期與來源模組同屬歸屬資訊，放同一行也自然。狀態維持獨立欄——它是這張卡真正要看的東西。
+- **【D】** 表頭字級 `--fs-13` → `--fs-12`，顏色改為 `color-mix(in srgb, var(--muted-foreground) 72%, transparent)`（使用者要求更小更暗；站上沒有比 `--muted-foreground` 更暗的文字 token，故以它為基底降不透明度，不新增 token 也不寫死色值）。
+- **【D】** 修掉表格列下框線在圖示欄斷掉的問題：`.ztor-table__media` 被誤套在 `<td>` 上，而 design-system 對這個類別本來就寫著「內層包裝，絕不能放在 `<td>`——`display:flex` 會破壞儲存格版面」。改回純 `<td>`。
+- 三張卡在 1155px 與 1400px 視窗下皆為零溢出。
+
+## 2026-07-31 · 儀表板三張卡改成表格，表頭去底色（B 反饋導入）
+
+使用者裁示把近期收入／最近動態／近期活動與項目的欄位「拆出來」成表格；隨後再裁示表頭不要底色、並把來源／模組／分類移到主欄位的第二行。
+
+- **【B】** 三張卡由 `data-list` 改為 `ztor-table`。欄位——近期收入：項目（第二行放來源）｜時間｜金額；最近動態：事件（第二行放來源模組）｜日期｜狀態；近期活動與項目：名稱（第二行放分類）｜進度｜期限｜狀態。圖示保留為第一欄（承載狀態語意，不是裝飾）。
+- **【B】** `.ztor-table` 表頭移除底色（全站一致，不另開變體）：分隔改由既有的 `border-bottom` 承擔。底色在卡片裡會讀成另一個區塊。
+- **【D】** i18n 新增 48 組逐欄文案 key（中英）。原本每列副標是「來源·時間」「分類·模組·日期」這樣一整串、共用一個 key，拆欄後每個欄位各自一個。
+- **【D】** 表格化做成**逐處選用**（資料集帶 `table: true`）：`transaction-list` 同時被 earnings／earnings-overview 使用、`events-projects` 還被 F2 專案 popup 用，整支渲染器換掉會改到不相干的頁面。那些消費端維持原本的清單，已實測未受影響。
+- **【D】** `table.css` 新增三個伴生類：`.ztor-table-scroll`（自 project-detail 用過兩次的行內 `overflow-x:auto` promote，第三次出現即收進元件；在 `.card` 內時取消表格自框避免框中框）、`.ztor-table__nowrap`、`.ztor-table__sub`。
+- 過程中量到的事：把來源獨立成一欄時，三張卡分別溢出 0／51／109px；改成第二行後全部歸零。長值欄（進度「62 / 100 位支持者」、期限「預定 12/01 上線」）必須允許換行，鎖 nowrap 會把整張表撐開。
+
+## 2026-07-31 · 「通知與待辦」改名「通知中心」（B 反饋導入）
+
+使用者裁示改名。側欄／頂列的入口標籤、面板標題與公告文案三處中文一起改。
+
+- **【B】** `js/i18n.js`：`nav.notif-label`（通知與待辦 → 通知中心）、`notif.title`（通知與待辦中心 → 通知中心）、`notif.announce.meta`（官方公告已併入…）。
+- 規格同步：`0-設計規格書.md` §5.2.1／§6.5 等 14 處一併改名（Plan224）。
+- **英文同日定為 `Notifications`**（使用者指定）：`nav.notif-label`、`notif.title` 兩條英文由 `Notifications & to-dos` 改為 `Notifications`，規格定義詞同步。儀表板空狀態文案裡的 `to-dos`（`dash.empty.*`）**不動**——那描述的是「待辦這種內容」，不是中心的名字。
 
 ## 2026-07-30 · 取貨管理納入 Phase 1，並修好版本 gate 的漏水（D infra / 文件）
 
@@ -73,6 +320,26 @@ D149 早就定了共看派對（Watch Party）不套用票種、QR 報到、退�
 - **【D】** `ds-components/kpi.css` 補 `.kpi[hidden] { display: none; }`。這是元件本身的漏洞：`.kpi` 是 flex，特異度贏過瀏覽器對 `[hidden]` 的預設，所以**在此之前站上任何用 `el.hidden` 收 KPI 的地方都藏不掉**。同款保護 `alert.css`／`badge.css`／`amount-field.css`／`kv-list.css` 早就有，kpi 漏了。已同步 `design-system.md` 與 `design-system.html`。
 - 分支用 `data-hide-type="watchparty"` 屬性驅動，沿用 `create-event.html` 既有的同名慣例，不另發明機制。
 - 未做：共看派對該用什麼取代那些區塊（D149 把「房間控場與觀看名單是否進本詳情頁」列為待產品確認），所以只收不補。另「已售票數」的副標仍寫「Across 1 tier」，用了 tier 一詞、與「無票種」略有矛盾，改文案需產品定調。
+
+## 2026-07-30 · 登錄 IP：最後一步「登錄 IP」接上流程（A spec-derived 新增）
+
+使用者回報這顆按鈕點了沒反應。實際上它接的是一個 `alert()` 佔位——文案還寫著「最終送出文案待產品確認」，等於四步精靈走到底就斷在這裡。規格 5.1.4.1 §7.1 早就定義了落點：「IP 資產（5.1.4）＝登錄入口與**建立後落點**」。
+
+- **【A】** 送出後導回 `my-ip.html`，成功提示用 `ztorToast.queue()` 帶到下一頁。**這裡不能用 `show()`**——導頁的瞬間就會把它丟掉；`queue()` 存 sessionStorage、由 `toast.js` 在目標頁自動 flush，正是 create-project 發布後導頁用的同一套。
+- **【A】** **文案分兩句**：上架出租與保持私有是兩種結果。共用一句「已登錄」會漏掉「私有的之後可從 IP 詳情頁再上架」——那正是 §4 上架狀態提示與 §6.5「私有可後補」要傳達的事，也是使用者選了私有之後最需要知道的下一步。
+- **【D】** `my-ip.html` 原本沒載 `toast.js`，queue 的提示會永遠等不到 flush，一併補上；`register-ip.html` 同樣補 `toast.css`／`toast.js`。移除已無消費者的 `ri.register-alert`。
+- **【D】** 一開始寫了 `window.ztorWizardChrome.markSaved()` 想先解除離開確認，查證後發現 `wizard-chrome.js` 根本沒有對外 API、也沒掛 `beforeunload`——它只攔頂部返回鈕，`location.href` 不受影響。那行是我憑印象加的，已刪。
+- **⚠ 原型無後端**：不真的建立 IP record，回到 `my-ip.html` 不會多一列。
+
+## 2026-07-30 · IP 詳情頁：「送出租用申請」接上流程（A spec-derived 新增）
+
+使用者回報這顆按鈕點了沒反應。規格 5.1.3.1 §F4 早就定義了行為——送出＝建立一筆 Draft 授權、進入權利人的核准佇列，**不是付款**；§F3 另外要求「不得讓創作者誤以為已完成授權」。原本頁面只有法務小字寫著這件事，按鈕本身沒接任何行為。
+
+- **【A】** 送出後**整個結帳 CTA 換成申請狀態**，不是跳一個 toast 就把按鈕留在原地。§F3 那條要求靠 toast 是滿足不了的——toast 幾秒就消失，使用者回頭看到的還是一顆「送出租用申請」，只會更困惑。狀態區留下四件事：`Draft 草稿` 徽章、「等待權利人核准」、送出內容摘要、以及「核准前不構成授權、這一步不扣款」。
+- **【A】** 摘要的總額與條款**直接讀畫面上既有的 `.rent-block__total` 與 `ip-detail.rent-sub`**，不另存一份。同一個數字在兩處各寫一次，就會有對不上的一天。
+- **【A】** 提供「撤回申請」讓誤點可逆（原型層級）。**撤回的正式規則上游未定**——§7.7 生命週期只有 Draft／Active／Expired／Revoked／Disputed，沒說申請方可否自行撤回、撤回後留不留痕，記入 ASSUMPTIONS UIA-098。
+- **【A】** 「稍後再說」只給一則**誠實的 toast**（暫存在本機、清單尚無規格），刻意不假裝有收藏清單可以回去看。上游沒有定義「已儲存的 IP」落在哪一頁，給一個沒有去處的成功訊息比沒反應更糟。
+- **【D】** 補上本頁沒載的 `toast.css`／`toast.js`。i18n 的取值助手是 `window.i18nT`（查不到鍵回 `null`，所以呼叫端一定要留英文退路），不是我原先以為的 `ztorT`。
 
 ## 2026-07-30 · 登錄 IP 流程：新增「素材上傳」區，素材槽依 IP 類型分流（A spec-derived 新增／產品變更提案）
 

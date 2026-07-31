@@ -1,0 +1,394 @@
+<!doctype html>
+<!-- DEMO ONLY（scratch，不進產品頁、不部署）：電子商店「粉絲分級」欄的選取模型比較。
+     案 A＝現況（四個獨立勾選）／案 B＝階梯門檻，點一下設定門檻（推薦）／案 C＝表單頁的分段控制。
+     只用既有 ds-components 與 token，沒有新增或修改任何元件檔。 -->
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 粉絲分級門檻的選取模型</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/product-list.css?v=r2.2">
+<style>
+  body {
+    background: var(--background); color: var(--foreground);
+    font-family: var(--font-ui); margin: 0;
+    padding: var(--sp-32) var(--sp-32) var(--sp-64);
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+  h1 { font-size: var(--fs-24); line-height: var(--lh-tight); margin: 0 0 var(--sp-8); }
+  h2 { font-size: var(--fs-18); line-height: var(--lh-snug); margin: var(--sp-40) 0 var(--sp-6); }
+  h3 { font-size: var(--fs-14); line-height: var(--lh-snug); margin: var(--sp-20) 0 var(--sp-6); }
+  p  { font-size: var(--fs-14); line-height: var(--lh-relaxed); color: var(--foreground-muted); margin: 0 0 var(--sp-12); }
+  .lead { font-size: var(--fs-15); }
+  .note { font-size: var(--fs-13); color: var(--muted-foreground); }
+  code { font-family: var(--font-mono, monospace); font-size: var(--fs-12); }
+  ul { margin: 0 0 var(--sp-12); padding-left: var(--sp-20); }
+  li { font-size: var(--fs-14); line-height: var(--lh-relaxed); color: var(--foreground-muted); margin-bottom: var(--sp-4); }
+
+  .verdict {
+    border: 1px solid var(--border); border-left: 3px solid var(--primary);
+    border-radius: var(--radius-lg); background: var(--card);
+    padding: var(--sp-16) var(--sp-20); margin: var(--sp-16) 0 var(--sp-8);
+  }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  .demo-block {
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    background: var(--card); padding: var(--sp-20); margin-bottom: var(--sp-12);
+  }
+  .demo-label {
+    font-size: var(--fs-11); font-weight: var(--fw-semibold); letter-spacing: .05em;
+    text-transform: uppercase; color: var(--muted-foreground); margin-bottom: var(--sp-12);
+  }
+
+  /* 迷你商品列：只留「商品／粉絲分級／狀態」三欄，讓分級欄回到它真實的寬度與鄰居 */
+  .mini-list { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: visible; }
+  .mini-row {
+    display: grid; grid-template-columns: minmax(0,1fr) 176px 96px;
+    align-items: center; gap: var(--sp-12);
+    padding: var(--sp-12) var(--sp-16); border-bottom: 1px solid var(--border);
+  }
+  .mini-row:last-child { border-bottom: 0; }
+  .mini-row__name { font-size: var(--fs-14); line-height: var(--lh-snug); }
+  .mini-row__sub  { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
+  .mini-head {
+    display: grid; grid-template-columns: minmax(0,1fr) 176px 96px; gap: var(--sp-12);
+    padding: var(--sp-8) var(--sp-16); border-bottom: 1px solid var(--border);
+    font-size: var(--fs-11); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted-foreground); background: var(--muted);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  /* 選單裡的分級列：左徽章、右尾端 check（沿用 dropdown__item--choice 的做法） */
+  .tier-menu { min-width: 232px; }
+  .tier-menu__cap {
+    font-size: var(--fs-11); letter-spacing: .04em; text-transform: uppercase;
+    color: var(--muted-foreground); padding: var(--sp-6) var(--sp-10) var(--sp-4);
+  }
+  .tier-count { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: auto; padding-left: var(--sp-8); }
+  .dropdown__item--choice .dropdown__check { margin-left: 0; }
+
+  /* 案 B 專用：hover 預覽——滑到某一級時，該級與其上各級先亮起來 */
+  .tier-menu--ladder .dropdown__item--preview .dropdown__check { opacity: .4; }
+  .tier-menu--ladder .dropdown__item--preview { color: var(--foreground); }
+  /* 階梯連續感：已包含的各列左緣連成一條線 */
+  .tier-menu--ladder .dropdown__item--choice { position: relative; }
+  .tier-menu--ladder .dropdown__item--choice::before {
+    content: ""; position: absolute; left: var(--sp-2); top: 0; bottom: 0;
+    width: 2px; border-radius: var(--radius-pill); background: transparent;
+  }
+  .tier-menu--ladder .dropdown__item--choice[aria-checked="true"]::before { background: var(--selected-ink); }
+
+  /* 狀態空間圖：16 格 */
+  .space { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--sp-8); margin: var(--sp-12) 0 var(--sp-8); }
+  .space__cell {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: var(--sp-8) var(--sp-10); font-size: var(--fs-12);
+    line-height: var(--lh-comfy); color: var(--muted-foreground); background: var(--muted);
+  }
+  .space__cell--ok { border-color: var(--selected-ink); color: var(--foreground); background: var(--card); }
+  .space__dots { font-size: var(--fs-13); letter-spacing: .12em; }
+  .space__cell--ok .space__dots { color: var(--selected-ink); }
+
+  table.cmp { width: 100%; border-collapse: collapse; margin: var(--sp-12) 0; font-size: var(--fs-13); }
+  table.cmp th, table.cmp td {
+    text-align: left; vertical-align: top; padding: var(--sp-10) var(--sp-12);
+    border-bottom: 1px solid var(--border); line-height: var(--lh-comfy);
+  }
+  table.cmp th { font-size: var(--fs-12); color: var(--muted-foreground); font-weight: var(--fw-medium); }
+  table.cmp td:first-child { color: var(--foreground); }
+
+  .readout {
+    font-size: var(--fs-12); color: var(--muted-foreground);
+    margin-top: var(--sp-12); padding-top: var(--sp-10); border-top: 1px solid var(--border);
+  }
+  .readout b { color: var(--foreground); font-weight: var(--fw-medium); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>粉絲分級門檻 · 選取模型比較</h1>
+<p class="lead">
+  電子商店每一列的「粉絲分級」欄回答的是一個問題：<b>這件商品誰買得到</b>。
+  分級是一道有上下關係的階梯——核心圈 ⊂ 超級粉絲 ⊂ 上榜粉絲 ⊂ 粉絲，
+  選了粉絲就等於全部人都買得到，選了超級粉絲就只剩超級粉絲與核心圈。
+</p>
+
+<div class="verdict">
+  <p><b>結論：現在的做法不是最好的，建議改成案 B。</b></p>
+  <p>
+    現況（案 A）是四個各自獨立的勾選框，能表達 16 種組合，但這道階梯只有 <b>4 種說得出名字的答案</b>。
+    另外 12 種（例如「粉絲買得到、上榜粉絲買不到」）在產品上講不通，程式碼自己也承認——
+    遇到不連續的組合時它沒有簡寫可用，只能把分級名稱一個一個列出來。
+  </p>
+  <p>
+    案 B 保留一模一樣的外觀，只改互動：<b>點哪一級，就是把門檻設在那一級</b>，該級以上自動包含。
+    一次點擊取代最多三次，16 種狀態收斂成 4 種，「最後一項不能取消」那條防呆規則也不再需要。
+  </p>
+</div>
+
+<h2>為什麼：16 種狀態裡只有 4 種說得出名字</h2>
+<p class="note">
+  下面每一格是四個勾選框的一種組合，由上到下＝核心圈・超級粉絲・上榜粉絲・粉絲。
+  外框亮起來的是階梯講得通、且介面有現成說法的 4 種；其餘 12 種只能把名字列出來，或根本是空的。
+</p>
+<div class="space" id="space"></div>
+
+<h2>案 A · 現況：四個獨立勾選</h2>
+<p>點一項只切換那一項。要做出「超級粉絲以上」得點兩次（取消粉絲、取消上榜粉絲），而且中途會經過一個沒人想要的中間狀態。</p>
+<div class="demo-block">
+  <div class="demo-label">案 A · 多選（現況）</div>
+  <div class="mini-head"><div>商品</div><div>粉絲分級</div><div>狀態</div></div>
+  <div class="mini-list" id="listA"></div>
+  <div class="readout" id="readA"></div>
+</div>
+
+<h2>案 B · 階梯門檻：點一下＝設定門檻（推薦）</h2>
+<p>
+  外觀與案 A 完全一樣（同一套徽章、同樣的尾端 check），差別在<b>點擊的意思</b>：
+  點「上榜粉絲」＝門檻設在上榜粉絲，它與它上面的超級粉絲、核心圈一起亮起來。
+  滑鼠移過去就會先預覽會包含哪幾級，不用點下去才知道。左緣那條線把「被包含的一段」連起來，
+  讓「這是一段、不是四個獨立開關」這件事不必用文字解釋。
+</p>
+<div class="demo-block">
+  <div class="demo-label">案 B · 單擊門檻（推薦）</div>
+  <div class="mini-head"><div>商品</div><div>粉絲分級</div><div>狀態</div></div>
+  <div class="mini-list" id="listB"></div>
+  <div class="readout" id="readB"></div>
+</div>
+
+<h3>順帶一提：摘要文字建議一起改</h3>
+<p>
+  現在的摘要是「&gt; 粉絲」「&gt; 上榜粉絲」，要讀者自己把大於號翻譯成「比這一級高的人」。
+  門檻模型可以直接說出<b>買得到的最低那一級</b>：「上榜粉絲以上」「超級粉絲以上」「僅核心圈」「全部分級」。
+  上面案 B 的示範已經用了新寫法，可以直接跟案 A 的舊寫法對照。
+</p>
+<p class="note">
+  選單裡的人數（如「1,240 人」）是額外提案，不是現有規格內容——決定門檻時真正想知道的是「這樣會擋掉多少人」。
+  媒體庫房已經有「顯示現在有幾位粉絲打得開」的先例，但要不要用在商店列，屬產品決定，需先確認。
+</p>
+
+<h2>案 C · 分段控制（表單頁已經在用的做法）</h2>
+<p>
+  建立拍賣頁的「誰可以出價」已經是門檻模型的單選：<code>Inner Circle only／Superfan and above／All fans</code>。
+  換句話說，<b>產品裡已經有一套門檻語彙，只有商店列這一欄是多選</b>——案 B 等於把兩邊接回同一個模型。
+  分段控制在表單頁很好用，但一列 176px 的表格欄位塞不下四段，所以商店列仍該用下拉。
+</p>
+<div class="demo-block">
+  <div class="demo-label">案 C · 分段控制（僅適用表單頁）</div>
+  <div class="segmented" role="group">
+    <button class="segmented__btn" type="button">僅核心圈</button>
+    <button class="segmented__btn segmented__btn--active" type="button">超級粉絲以上</button>
+    <button class="segmented__btn" type="button">上榜粉絲以上</button>
+    <button class="segmented__btn" type="button">全部分級</button>
+  </div>
+</div>
+
+<h2>取捨對照</h2>
+<table class="cmp">
+  <thead><tr><th>面向</th><th>案 A · 多選（現況）</th><th>案 B · 單擊門檻（推薦）</th></tr></thead>
+  <tbody>
+    <tr><td>可表達的狀態</td><td>16 種，其中 12 種講不通</td><td>4 種，全部講得通</td></tr>
+    <tr><td>設定「超級粉絲以上」</td><td>2 次點擊，中途經過無意義狀態</td><td>1 次點擊</td></tr>
+    <tr><td>摘要文字</td><td>不連續時只能列名字（「粉絲 · 核心圈」）</td><td>永遠有一句話說得完</td></tr>
+    <tr><td>防呆規則</td><td>需要「最後一項不能取消」的停用邏輯</td><td>不需要，門檻永遠存在</td></tr>
+    <tr><td>與建立拍賣頁的一致性</td><td>不一致（那邊是門檻單選）</td><td>一致</td></tr>
+    <tr><td>非連續組合（如排除核心圈）</td><td>做得到</td><td>做不到——需要時得先進規格</td></tr>
+    <tr><td>外觀改動</td><td>—</td><td>幾乎沒有，只改點擊行為與摘要文字</td></tr>
+  </tbody>
+</table>
+
+<h3>案 B 唯一的代價</h3>
+<p>
+  它拿掉「跳過某一級」的能力，例如「只給上榜粉絲、核心圈反而買不到」。
+  商店情境下這件事本來就怪：分級是花時間或花錢換來的，讓高階粉絲買不到低階粉絲買得到的東西，
+  等於懲罰最忠實的人。如果之後真的出現這種需求（例如補償型商品），那是產品規則問題，
+  應該先進規格，而不是靠一個能表達 16 種狀態的控制項預留。
+</p>
+
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+/* ─────────────────────────────────────────────────────────────
+   共用資料：階梯由高到低，與 tier-settings 的排序一致。
+   人數為 demo 假資料（案 B 的加值提案，非現有規格內容）。
+   ───────────────────────────────────────────────────────────── */
+const LADDER = [
+  { v: 'inner',    name: '核心圈',   cls: 'badge badge--orange',  n: 42 },
+  { v: 'superfan', name: '超級粉絲', cls: 'badge badge--info',    n: 218 },
+  { v: 'devoted',  name: '上榜粉絲', cls: 'badge badge--success', n: 960 },
+  { v: 'fan',      name: '粉絲',     cls: 'badge badge--neutral', n: 12480 }
+];
+const ALL = LADDER.map(t => t.v);
+const nf  = n => n.toLocaleString('en-US');
+const meta = v => LADDER.find(t => t.v === v);
+
+const ITEMS = [
+  { nm: 'Tour zine vol. 02',            sub: '書籍 · 實體商品',   st: '販售中', tiers: ALL.slice() },
+  { nm: 'Coastline acetate · 1/50',     sub: '收藏品 · 實體商品', st: '販售中', tiers: ['inner', 'superfan'] },
+  { nm: 'Inner circle · membership',    sub: '會員 · 數位商品',   st: '販售中', tiers: ['inner'] }
+];
+
+/* 案 A 的摘要寫法（現況）：大於號 + 不連續時列名字 */
+function summaryA(set) {
+  const on = ALL.filter(v => set.includes(v));
+  if (!on.length || on.length === ALL.length) return { text: '全部', cls: 'product-list__tier-none' };
+  const cls = meta(on[on.length - 1]).cls;
+  const contiguous = on.every((v, i) => v === ALL[i]);
+  if (contiguous) return { text: ['', '僅核心圈', '> 上榜粉絲', '> 粉絲'][on.length], cls };
+  return { text: on.map(v => meta(v).name).join(' · '), cls };
+}
+/* 案 B 的摘要寫法（提案）：說出買得到的最低那一級 */
+function summaryB(set) {
+  const on = ALL.filter(v => set.includes(v));
+  if (on.length === ALL.length) return { text: '全部分級', cls: 'product-list__tier-none' };
+  const lowest = on[on.length - 1];
+  return { text: lowest === 'inner' ? '僅核心圈' : meta(lowest).name + '以上', cls: meta(lowest).cls };
+}
+
+/* ── 列的組裝（兩案共用同一段 markup，只有 mode 不同）───────────────── */
+function buildRow(item, mode) {
+  const row = document.createElement('div');
+  row.className = 'mini-row';
+  row.dataset.tiers = item.tiers.join(' ');
+  const menuMod = mode === 'B' ? ' tier-menu--ladder' : '';
+  const opts = LADDER.map(t =>
+    '<button class="dropdown__item dropdown__item--choice" type="button"' +
+    ' role="' + (mode === 'B' ? 'menuitemradio' : 'menuitemcheckbox') + '"' +
+    ' data-pick="' + t.v + '">' +
+      '<span class="' + t.cls + '">' + t.name + '</span>' +
+      (mode === 'B' ? '<span class="tier-count">' + nf(t.n) + ' 人</span>' : '') +
+      '<i data-lucide="check" class="ztor-icon ztor-icon--sm dropdown__check"></i>' +
+    '</button>').join('');
+  row.innerHTML =
+    '<div><div class="mini-row__name">' + item.nm + '</div><div class="mini-row__sub">' + item.sub + '</div></div>' +
+    '<div class="product-list__cell product-list__tier">' +
+      '<details class="dropdown">' +
+        '<summary class="product-list__tier-btn" aria-haspopup="menu" aria-label="誰買得到">' +
+          '<span data-label></span><i data-lucide="chevron-down" class="ztor-icon product-list__tier-chev"></i>' +
+        '</summary>' +
+        '<div class="dropdown__menu tier-menu' + menuMod + '" role="menu">' +
+          (mode === 'B' ? '<div class="tier-menu__cap">買得到的最低分級</div>' : '') + opts +
+        '</div>' +
+      '</details>' +
+    '</div>' +
+    '<div class="mini-row__sub">' + item.st + '</div>';
+  return row;
+}
+
+function tiersOf(row) {
+  const raw = (row.dataset.tiers || '').trim();
+  const set = raw ? raw.split(/\s+/) : [];
+  return set.length ? set : ALL.slice();
+}
+
+function render(row, mode) {
+  const set = tiersOf(row);
+  const sum = (mode === 'B' ? summaryB : summaryA)(set);
+  const label = row.querySelector('[data-label]');
+  label.className = sum.cls;
+  label.textContent = sum.text;
+  const only = set.length === 1;
+  row.querySelectorAll('[data-pick]').forEach(b => {
+    const on = set.includes(b.dataset.pick);
+    b.setAttribute('aria-checked', String(on));
+    /* 案 A 需要「最後一項不能取消」的停用邏輯；案 B 的門檻永遠存在，不需要 */
+    const dis = mode === 'A' && on && only;
+    b.disabled = dis;
+    b.setAttribute('aria-disabled', String(dis));
+  });
+}
+
+function mount(hostId, mode, readId) {
+  const host = document.getElementById(hostId);
+  ITEMS.forEach(it => host.appendChild(buildRow(it, mode)));
+
+  host.addEventListener('click', e => {
+    const pick = e.target.closest('[data-pick]');
+    if (!pick || pick.disabled) return;
+    e.preventDefault();                       /* summary 在 details 內，避免連帶收合 */
+    const row = pick.closest('.mini-row');
+    const v = pick.dataset.pick;
+    let set;
+    if (mode === 'A') {                       /* 多選：只切換這一項 */
+      set = tiersOf(row);
+      const i = set.indexOf(v);
+      if (i === -1) set.push(v); else set.splice(i, 1);
+    } else {                                  /* 門檻：這一級與其上全部包含 */
+      set = ALL.slice(0, ALL.indexOf(v) + 1);
+    }
+    row.dataset.tiers = ALL.filter(t => set.includes(t)).join(' ');
+    render(row, mode);
+    readout(host, mode, readId);
+  });
+
+  if (mode === 'B') {                         /* hover 預覽：先看到會包含哪幾級 */
+    host.addEventListener('mouseover', e => {
+      const pick = e.target.closest('[data-pick]');
+      const menu = e.target.closest('.tier-menu--ladder');
+      if (!menu) return;
+      const upto = pick ? ALL.slice(0, ALL.indexOf(pick.dataset.pick) + 1) : [];
+      menu.querySelectorAll('[data-pick]').forEach(b =>
+        b.classList.toggle('dropdown__item--preview',
+          upto.includes(b.dataset.pick) && b.getAttribute('aria-checked') !== 'true'));
+    });
+    host.addEventListener('mouseleave', () => {
+      host.querySelectorAll('[data-pick]').forEach(b => b.classList.remove('dropdown__item--preview'));
+    }, true);
+  }
+
+  host.querySelectorAll('.mini-row').forEach(r => render(r, mode));
+  if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+  readout(host, mode, readId);
+}
+
+function readout(host, mode, readId) {
+  const lines = [...host.querySelectorAll('.mini-row')].map(r => {
+    const set = tiersOf(r);
+    return '<b>' + r.querySelector('.mini-row__name').textContent + '</b>：' +
+           ALL.filter(v => set.includes(v)).map(v => meta(v).name).join('、') +
+           '（' + nf(ALL.filter(v => set.includes(v)).reduce((s, v) => s + meta(v).n, 0)) + ' 人買得到）';
+  });
+  document.getElementById(readId).innerHTML = '目前設定 —— ' + lines.join('　｜　');
+}
+
+/* ── 狀態空間圖：16 種組合，標出 4 種「從最高級往下連續」的答案 ───────── */
+(function () {
+  const host = document.getElementById('space');
+  for (let m = 0; m < 16; m++) {
+    const on = ALL.filter((_, i) => m & (1 << (3 - i)));
+    const contiguous = on.length > 0 && on.every((v, i) => v === ALL[i]);
+    const dots = ALL.map(v => on.includes(v) ? '●' : '○').join('');
+    const name = !on.length ? '沒有人買得到'
+      : contiguous ? ['', '僅核心圈', '超級粉絲以上', '上榜粉絲以上', '全部分級'][on.length]
+      : on.map(v => meta(v).name).join('·');
+    const cell = document.createElement('div');
+    cell.className = 'space__cell' + (contiguous ? ' space__cell--ok' : '');
+    cell.innerHTML = '<div class="space__dots">' + dots + '</div>' + name;
+    host.appendChild(cell);
+  }
+})();
+
+mount('listA', 'A', 'readA');
+mount('listB', 'B', 'readB');
+
+/* details 收合：點外部關、一次只開一個；選單內的選項不收（要連看變化） */
+document.addEventListener('click', e => {
+  document.querySelectorAll('details.dropdown[open]').forEach(d => {
+    if (d.contains(e.target) && !e.target.closest('summary')) return;
+    if (!d.contains(e.target)) d.open = false;
+  });
+});
+</script>
+</body>
+</html>

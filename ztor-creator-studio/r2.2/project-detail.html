@@ -42,6 +42,8 @@
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<!-- 跨頁提示（建立項目按下發布後導向這裡，由 js/toast.js 的佇列顯示一則成功提示） -->
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -324,29 +326,30 @@
       <div class="tab-panel" data-panel="about" data-editable data-mode="view">
         <div class="bento">
 
-                    <!-- 展示內容（2026-07-24 重做）：直式相簿，第一張＝封面；每張圖上有可上下拖的
-               方形裁切框（直式切方形時寬滿版、只需選上下位置），供商店／縮圖等方形版位用。
-               圖片素材 → 展示媒體（Demo 影片／音樂），排序照參考截圖。 -->
+                    <!-- 展示內容（2026-07-24 重做）：直式圖片列，第一張＝主視覺、其餘＝圖庫，
+               對齊建立流程 F6 的兩個素材槽（documents 5.1.2.2 §2.2.2、5.1.2.1 F6、D164）。
+               方形／橫式版位不另上傳素材，一律由直式原圖 object-fit:cover 置中裁切（D156 移除
+               方形裁切工具，D164 定案取圖方式）。圖片素材 → 展示媒體（Demo 影片／音樂）。 -->
           <section class="card bento--span-12">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.showcase.title">Showcase</h3>
             </div>
-            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first one is the cover.</p>
+            <p class="field__hint" style="margin:-4px 0 18px" data-i18n="project-detail.showcase.sub">Portrait images shown to fans. The first one is the key visual.</p>
 
-            <div class="field__label" style="margin-bottom:10px"><span data-i18n="project-detail.showcase.images">Images</span> <span class="text-sub" data-i18n="project-detail.showcase.images-hint">· portrait 750 × 930 · first is the cover</span></div>
-            <div class="upload-assets pd-gallery" id="pd-gallery">
-              <div class="upload-tile upload-tile--3x4 is-filled" data-gallery-tile>
-                <span class="pd-gallery__badge" data-i18n="project-detail.showcase.cover">Cover</span>
+            <div class="field__label" style="margin-bottom:10px"><span data-i18n="project-detail.showcase.images">Images</span> <span class="text-sub" data-i18n="project-detail.showcase.images-hint">· portrait 750 × 930 · first is the key visual, the rest are the gallery</span></div>
+            <!-- 2026-07-31：動作列（替換／刪除）不再手刻，改由共用元件 partials/upload-tile.js 產生，
+                 與全站圖片上傳槽同一條路徑；比例改用 --750x930，與上方文案「750 × 930」對齊（原本套 --3x4）。
+                 第一格帶 data-gallery-tile（＝主視覺）：刪除＝整格移出清單（見下方 upload:change 監聽）；
+                 末格是「再加一張」，刪除只會回到空格、不移除。 -->
+            <div class="upload-assets" id="pd-gallery">
+              <div class="upload-tile upload-tile--750x930 is-filled" data-gallery-tile data-upload>
+                <span class="upload-tile__flag" data-i18n="project-detail.showcase.cover">Key visual</span>
                 <img class="upload-tile__thumb" id="pd-gallery-cover" src="images/projects/f-i-am-speed.webp" alt="">
-                <div class="upload-tile__actions">
-                  <button type="button" class="upload-tile__act" data-gallery-replace aria-label="Replace image" title="Replace image" data-i18n-title="project-detail.showcase.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-gallery-del aria-label="Delete image" title="Delete" data-i18n-title="project-detail.showcase.delete"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                </div>
               </div>
-              <button type="button" class="upload-tile upload-tile--3x4 is-empty">
+              <div class="upload-tile upload-tile--750x930 is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
                 <span class="upload-tile__title" data-i18n="project-detail.showcase.add-image">Add image</span>
-              </button>
+              </div>
             </div>
             <p class="field__hint" style="margin-top:10px" data-i18n="project-detail.showcase.hint">Hover an image to replace or delete it.</p>
 
@@ -1382,6 +1385,8 @@
 <script src="js/project-earnings-chart.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
+<!-- 展示內容相簿的圖片格：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
 <script>
   /* Project detail tabs · spec 5.1.2.2 — switch active state + visible panel.
      Same pattern as earnings.html. Hash deep-link supported (#money etc.). */
@@ -1727,33 +1732,18 @@
     document.addEventListener('i18n:applied', function () { if (BD) BD.render({ blur: true }); });
   })();
 
-  /* 展示內容·直式相簿：每格 hover 顯示「替換／刪除」。替換 → 換掉該格縮圖；刪除 → 移除該格。
-     ✝ 2026-07-30 移除「編輯（方形裁切）」：展示圖片維持單一直式尺寸，不再需要方形裁切（D156）。
-     原本的選框拖曳／等比縮放／即時預覽邏輯見 git 歷史。原型：不落地、重整還原。 */
+  /* 展示內容·直式相簿：hover 的「替換／刪除」由共用元件 partials/upload-tile.js 產生，
+     選檔換圖與清空也由元件負責（2026-07-31 統一，本頁不再自備 file input 與動作列 markup）。
+     這裡只補相簿特有的一件事：帶 data-gallery-tile 的格子被清空＝那張圖退出相簿，整格移除。
+     沒有這個標記的末格是「再加一張」的常駐空位，清空後留在原地等下一張。
+     ✝ 2026-07-30 移除「編輯（方形裁切）」：展示圖片維持單一直式尺寸，不再需要方形裁切（D156）。 */
   (function () {
     const gallery = document.getElementById('pd-gallery');
-    if (!gallery) return;   /* 原本的 guard 還檢查裁切舞台與選框，拆掉彈窗後那兩個必為 null，
-                               若不改這行，替換與刪除會一起被提早 return 掉 */
-
-    /* 替換圖片：隱藏 file input，選檔後把該格縮圖換成選的圖（object URL；原型不落地）。 */
-    let replaceTile = null;
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.hidden = true;
-    document.body.appendChild(fileInput);
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files && fileInput.files[0];
-      if (file && replaceTile) {
-        const thumb = replaceTile.querySelector('.upload-tile__thumb');
-        if (thumb) thumb.src = URL.createObjectURL(file);
-      }
-      fileInput.value = ''; replaceTile = null;
-    });
-
-    gallery.addEventListener('click', e => {
-      const replace = e.target.closest('[data-gallery-replace]');
-      if (replace) { replaceTile = replace.closest('[data-gallery-tile]'); fileInput.click(); return; }
-      const del = e.target.closest('[data-gallery-del]');
-      if (del) { const tile = del.closest('[data-gallery-tile]'); if (tile) tile.remove(); }
+    if (!gallery) return;
+    gallery.addEventListener('upload:change', e => {
+      if (e.detail && e.detail.filled) return;
+      const tile = e.target.closest('[data-gallery-tile]');
+      if (tile) tile.remove();
     });
   })();
 
@@ -1850,7 +1840,7 @@
 
     const TYPE = { 'go-live': { en: 'Go live', zh: '直接上線' }, fund: { en: 'Fund it first', zh: '先募資' }, preorder: { en: 'Pre-order', zh: '預購' } };
     const STATUS = {
-      draft:     { en: 'Draft', zh: '草稿' },      scheduled: { en: 'Scheduled', zh: '已排程' },
+      draft:     { en: 'Draft', zh: '草稿' },      scheduled: { en: 'Scheduled', zh: '準備中' },
       live:      { en: 'Live', zh: '進行中' },      funded:    { en: 'Funded', zh: '已達標' },
       completed: { en: 'Completed', zh: '已完成' }, published:  { en: 'Published', zh: '已上線' },
       failed:    { en: 'Failed', zh: '失敗' }
@@ -2062,6 +2052,9 @@
   })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
+<!-- toast.js 在載入時自動 flush 跨頁佇列（建立項目 → 發布 → 導向本頁的成功提示）。
+     排在 i18n.js 之後，flush 時才查得到當前語言的字串。 -->
+<script src="js/toast.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
 </body>

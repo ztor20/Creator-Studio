@@ -1,0 +1,113 @@
+/* Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
+   ─────────────────────────────────────────────────────────────────────────
+   一則「帶得走證據的結論」：左邊是一句話的發現與依據，右邊是支撐它的數字。
+
+   為什麼不是一段文字：規格要求四個組成缺一不可 —— 結論句、可獨立掃視的支撐
+   數字、依據與涵蓋範圍、追查入口。寫成一段話時數字會埋進句子裡，讀的人要自己
+   把「18%」和「2%」拉出來比，而那個落差正是整則結論的重點。
+
+   兩個數字並列＋中間的落差標記，是為了讓「不同步」這件事變成看得見的形狀，
+   而不是一句要人腦補的敘述。
+
+   與 Insight row 的差別：insight-row 是單行自動計算提示（一句話就講完）；
+   本元件用在「結論需要證據支撐、且要能追查下去」的場合。 */
+
+.finding {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-32);
+  align-items: center;
+}
+
+.finding__kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  letter-spacing: 0.4px;
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-8);
+}
+
+.finding__title {
+  font-family: var(--type-h4-family);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-28);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--type-h4-tracking);
+  margin: 0 0 var(--sp-4);
+}
+
+.finding__sub {
+  font-family: var(--type-body-family);
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+  line-height: var(--lh-relaxed);
+  margin: 0 0 var(--sp-8);
+}
+
+/* 依據與涵蓋範圍：規格要求每則結論都要講清楚它用了哪些來源、哪個期間。 */
+.finding__basis {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  line-height: var(--lh-normal);
+  margin: 0;
+}
+
+/* ── 支撐數字 ─────────────────────────────────────────────────────────── */
+
+.finding__figures {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-20);
+  padding-left: var(--sp-32);
+  border-left: 1px solid var(--border);
+}
+
+.finding__fig-label {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-bottom: var(--sp-4);
+}
+
+.finding__fig-val {
+  font-family: var(--font-display);
+  font-weight: var(--fw-light);
+  font-size: var(--fs-40);
+  line-height: var(--lh-none);
+  font-variant-numeric: tabular-nums;
+}
+
+.finding__fig-val--up { color: var(--status-success); }
+.finding__fig-val--down { color: var(--destructive); }
+
+.finding__fig-meta {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  margin-top: var(--sp-6);
+}
+
+/* 落差標記：兩個數字之間那個「差多少」，虛線框表示它是推算出來的關係、
+   不是某個平台給的原始數字。 */
+.finding__gap {
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  padding: var(--sp-4) var(--sp-8);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.finding__cta { margin-left: var(--sp-8); }
+
+@media (max-width: 900px) {
+  .finding { grid-template-columns: 1fr; gap: var(--sp-20); }
+  .finding__figures {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-16);
+    flex-wrap: wrap;
+  }
+}

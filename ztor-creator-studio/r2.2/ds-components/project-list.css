@@ -43,15 +43,16 @@
 .project-list__head {
   min-height: 44px;
   padding: 0 var(--sp-10);
-  border-bottom: 1px solid var(--border);
-  color: var(--muted-foreground);
+  /* 2026-07-31 使用者裁示：列表表頭不畫下框線（先做 e-shop 探索頁確認效果後全面套用）。
+     分隔改由表頭與內容之間的留白承擔；每一列自己的分隔線不動。 */
+  color: var(--column-head-ink);
   font-family: var(--font-ui);
   font-size: var(--fs-12);
   font-weight: var(--fw-regular);
 }
 
 .project-list__row {
-  min-height: 116px;   /* 76px 縮圖 + 上下 --sp-20 */
+  min-height: 116px;   /* 下限值；2026-07-31 縮圖改直式 76×94 後，實際列高＝94 + 上下 --sp-20 = 134 */
   padding: var(--sp-20) var(--sp-10);
   border-bottom: 1px solid var(--border-soft);
   color: inherit;
@@ -84,8 +85,11 @@
 
 /* ── image thumbnail（比照 e-shop .product-list__image；用專案詳情同一張圖 poster||cover）── */
 .project-list__image {
+  /* 2026-07-31 使用者：改直式（同 .product-list__image）。寬度維持 76px，所以上面
+     grid-template-columns 的第一欄 76px 與各斷點模板都不用動；高度由 --img-portrait
+     推導成 94px，列高從 116 自然長到 134（min-height 是下限、不是上限）。 */
   width: 76px;
-  height: 76px;
+  aspect-ratio: var(--img-portrait);
   flex: none;
   overflow: hidden;
   border-radius: var(--radius);

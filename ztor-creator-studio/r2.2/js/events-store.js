@@ -10,8 +10,11 @@
    但尚未改由本檔渲染（屬後續重構，見 UI-CHANGES 2026-07-27 該筆的「已知債」）。
 
    images 是「已上傳素材」的真實路徑（不是 true/false）：編輯頁必須顯示創作者當初上傳的圖，
-   而不是四個空的上傳框；gallery 是 1–8 張的陣列。每筆刻意沿用活動清單那一列在用的圖檔，
+   而不是三個空的上傳框；gallery 是 1–8 張的陣列。每筆刻意沿用活動清單那一列在用的圖檔，
    同一場活動不該在兩個畫面長著兩張不同的臉。
+   2026-07-31（D164 / documents 5.1.6.1 F4）：素材槽由四個收斂為三個——原本的 thumb（縮圖）與
+   poster（直式海報）比例統一後形狀相同、素材同源，併成單一 keyvisual（主視覺）；banner（橫式
+   橫幅 1920×1080）是全站唯一保留的橫式例外；gallery 不變。舊 key thumb／poster 已退場。
 
    category ＝ 活動清單第二排篩選的三分法（2026-07-27，使用者裁示）。判準是「核心是不是一場
    實體聚集」：實體演出的線上直播仍算演唱會（錨點是那場實體演出），純線上才算線上活動。
@@ -54,7 +57,7 @@
       sold: 84,
       revenue: 2520,
       status: 'on-sale',
-      images: { thumb: 'images/projects/nick-baipa.jpg', poster: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-asn.jpg', gallery: ['images/projects/nick-i.jpg', 'images/projects/nick-lwh.jpg'] },
       video: false
     },
     {
@@ -78,7 +81,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: 'images/projects/nick-wln.jpg', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
       video: false
     },
     {
@@ -102,7 +105,7 @@
       sold: 38,
       revenue: 190,
       status: 'on-sale',
-      images: { thumb: 'images/projects/nick-lrh-tour.jpg', poster: '', banner: 'images/projects/nick-lrh.jpg', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-lrh-tour.jpg', banner: 'images/projects/nick-lrh.jpg', gallery: [] },
       video: false
     },
     {
@@ -134,7 +137,7 @@
       status: 'live',
       startedMinutesAgo: 42,          // 現場已進行時間（原型固定值，不接真實時鐘）
       arrivedAtOpen: 132,             // 開頁當下的到場數；其餘由頁面的即時計數往上跑
-      images: { thumb: 'images/projects/nick-asn.jpg', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-asn.jpg', banner: '', gallery: [] },
       video: false
     },
     {
@@ -158,7 +161,7 @@
       sold: 118,
       revenue: 590,
       status: 'on-sale',
-      images: { thumb: 'images/projects/nick-baipa-goods.jpg', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-baipa-goods.jpg', banner: '', gallery: [] },
       video: false
     },
     {
@@ -182,7 +185,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: 'images/projects/nick-flames.jpg', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
       video: false
     },
     {
@@ -206,7 +209,7 @@
       sold: 0,
       revenue: 0,
       status: 'scheduled',
-      images: { thumb: 'images/hero-event.jpg', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: 'images/hero-event.jpg', banner: '', gallery: [] },
       video: false
     },
     {
@@ -230,7 +233,7 @@
       sold: 142,
       revenue: 710,
       status: 'on-sale',
-      images: { thumb: 'images/projects/nick-r2.jpg', poster: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-r2.jpg', gallery: [] },
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: 'images/projects/nick-r2.jpg', gallery: [] },
       video: false
     },
     {
@@ -254,7 +257,7 @@
       sold: 600,
       revenue: 18000,
       status: 'ended',
-      images: { thumb: 'images/projects/nick-lrh-tour.jpg', poster: 'images/projects/nick-lrh.jpg', banner: 'images/projects/nick-lrh-tour.jpg', gallery: ['images/projects/nick-realive.jpg'] },
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: 'images/projects/nick-lrh-tour.jpg', gallery: ['images/projects/nick-realive.jpg'] },
       video: false
     },
     {
@@ -278,7 +281,7 @@
       sold: 10000,
       revenue: 320000,
       status: 'ended',
-      images: { thumb: 'images/projects/nick-r2-special.jpg', poster: 'images/projects/nick-r2.jpg', banner: 'images/projects/nick-r2-special.jpg', gallery: ['images/projects/nick-real-life.jpg'] },
+      images: { keyvisual: 'images/projects/nick-r2.jpg', banner: 'images/projects/nick-r2-special.jpg', gallery: ['images/projects/nick-real-life.jpg'] },
       video: false
     },
     {
@@ -302,7 +305,7 @@
       sold: 0,
       revenue: 0,
       status: 'draft',
-      images: { thumb: '', poster: '', banner: '', gallery: [] },
+      images: { keyvisual: '', banner: '', gallery: [] },
       video: false
     }
   ];

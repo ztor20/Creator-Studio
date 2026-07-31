@@ -152,20 +152,16 @@
                 <span class="upload-tile__icon"><svg class="up-stack" width="28" height="28" viewBox="0 0 48 48" fill="none"><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
                 <span class="upload-tile__title" data-i18n="product-detail.media.hero">Hero image</span>
                 <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
-                <div class="upload-tile__actions">
-                  <button type="button" class="upload-tile__act" data-pd-media-replace aria-label="Replace image" title="Replace image" data-i18n-title="cp.media.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" title="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                </div>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
                 <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-                <span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
+                <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
                 <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-                <span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
+                <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
               </div>
             </div>
           </div>
@@ -180,20 +176,16 @@
                 <span class="upload-tile__icon"><svg class="up-stack" width="28" height="28" viewBox="0 0 48 48" fill="none"><path d="M18 12h9l6 6v16a2 2 0 0 1-2 2H18a2 2 0 0 1-2-2V14a2 2 0 0 1 2-2z" fill="var(--card)" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M27 12v6h6" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></span>
                 <span class="upload-tile__title" data-i18n="product-detail.media.hero">Hero image</span>
                 <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
-                <div class="upload-tile__actions">
-                  <button type="button" class="upload-tile__act" data-pd-media-replace aria-label="Replace image" title="Replace image" data-i18n-title="cp.media.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>
-                  <button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" title="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                </div>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
                 <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-                <span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
+                <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
               </div>
               <div class="upload-tile is-empty" data-upload>
                 <span class="upload-tile__icon">＋</span>
                 <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-                <span class="upload-tile__hint" data-i18n="cp.media.min600">Min 600 x 600px</span>
+                <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
               </div>
             </div>
           </div>
@@ -850,6 +842,8 @@
 <script src="partials/fan-store.js?v=r2.2"></script>
 <script src="partials/album-tracks.js?v=r2.2"></script>
 <script src="partials/vip-card.js?v=r2.2"></script>
+<!-- 商品圖片格（[data-upload]）：hover 替換／刪除由共用元件產生（站上統一路徑）。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
 <script>
   /* §2.2 See as fan：把粉絲端店面（共用 fan-store）注入分割預覽並開關（§6.7 同源）。 */
   (function () {
@@ -1198,65 +1192,11 @@
   })();
 </script>
 <script>
-  /* 商品圖片的 hover 動作（替換／刪除）。本頁的圖片格是靜態示範，不掛 partials/upload-tile.js
-     那套完整上傳流程（它預期由空格開始、自己建 thumb），這裡只給最小可用行為：
-     替換＝選檔就地換圖、刪除＝回到空格。 */
-  (function () {
-    const grids = document.querySelectorAll('.upload-grid');
-    if (!grids.length) return;
-    let picker = null;
-    function pick(cb) {
-      if (!picker) {
-        picker = document.createElement('input');
-        picker.type = 'file'; picker.accept = 'image/*'; picker.hidden = true;
-        document.body.appendChild(picker);
-      }
-      picker.value = '';
-      picker.onchange = () => { const f = picker.files && picker.files[0]; if (f) cb(URL.createObjectURL(f)); };
-      picker.click();
-    }
-    function fill(tile, url) {
-      let img = tile.querySelector('.upload-tile__thumb');
-      if (!img) {
-        img = document.createElement('img');
-        img.className = 'upload-tile__thumb';
-        img.alt = '';
-        tile.insertBefore(img, tile.firstChild);
-      }
-      img.src = url;
-      tile.classList.remove('is-empty');
-      tile.classList.add('is-filled');
-      /* 空格原本沒有動作列，填進圖之後補上，才 hover 得出替換／刪除 */
-      if (!tile.querySelector('.upload-tile__actions')) {
-        const acts = document.createElement('div');
-        acts.className = 'upload-tile__actions';
-        acts.innerHTML =
-          '<button type="button" class="upload-tile__act" data-pd-media-replace aria-label="Replace image" data-i18n-title="cp.media.replace"><i data-lucide="refresh-cw" class="ztor-icon"></i></button>' +
-          '<button type="button" class="upload-tile__act" data-pd-media-remove aria-label="Remove image" data-i18n-title="cp.media.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>';
-        tile.appendChild(acts);
-        if (window.ztorIcons) window.ztorIcons.applyIcons(acts);
-        if (window.applyI18n) window.applyI18n(acts);
-      }
-    }
-    grids.forEach(grid => grid.addEventListener('click', e => {
-      const tile = e.target.closest('.upload-tile');
-      if (!tile) return;
-      if (e.target.closest('[data-pd-media-remove]')) {
-        /* 回到空格：拿掉 is-filled 讓 icon 與提示重新顯示，縮圖清空 */
-        tile.classList.remove('is-filled');
-        tile.classList.add('is-empty');
-        const img = tile.querySelector('.upload-tile__thumb');
-        if (img) img.removeAttribute('src');
-        return;
-      }
-      if (e.target.closest('[data-pd-media-replace]')) {
-        pick(url => fill(tile, url));
-        return;
-      }
-      /* 點空格＝新增一張圖 */
-      if (tile.classList.contains('is-empty')) pick(url => fill(tile, url));
-    }));
-  })();
+  /* ✝ 2026-07-31 移除本頁自備的第二份圖片格互動（選檔／替換／刪除＋動作列 markup）。
+     商品圖片格已掛 data-upload，改由共用元件 partials/upload-tile.js 一手包辦，
+     與建立流程、項目詳情走同一條路徑。原本這裡的顧慮「元件預期由空格開始、自己建 thumb」
+     已在元件端解掉：格內若已有 .upload-tile__thumb 就沿用該節點（本頁的 [data-pd-hero] 靠它
+     繼續依 ?id 換圖），不會再多疊一張。原實作見 git 歷史。 */
 
   /* §2.3 詳細規格 Specifications（僅實體）：逐筆規格名稱＋規格值，可新增／刪除。
      重用 ds-components/spec-row.css 與 cp.spec.* i18n；前端 demo（無持久化）。 */

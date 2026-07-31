@@ -232,8 +232,10 @@
         <button type="button" class="btn btn--outline btn--sm" id="ee-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
       </div>
 
-      <!-- 編輯態的圖片區＝「看見現在上線中的圖」，不是四個空上傳框。
-           三個具名槽各自帶自己的比例（1:1／3:4／16:9），相簿是 1–8 張、獨立一列。
+      <!-- 編輯態的圖片區＝「看見現在上線中的圖」，不是三個空上傳框。
+           2026-07-31（D164 / documents 5.1.6.2 F4）：原四格收斂為三格——「縮圖」與「直式海報」
+           併為單一「主視覺」（直式 750 × 930），橫式橫幅是活動專屬例外、維持 16:9 / 1920 × 1080，
+           圖庫仍是直式 750 × 930、1–8 張、獨立一列。（本流程三格皆非必填，屬規格既有待確認項。）
            互動全部沿用 ds-components/upload-tile.css ＋ partials/upload-tile.js 的
            [data-upload] 增強器（縮圖／hover 替換／AI 優化／移除），不自造。 -->
       <div class="form-section form-section--outlined" id="ee-images-sec">
@@ -244,28 +246,22 @@
 
         <div class="ee-assets">
           <div class="ee-asset">
-            <div class="upload-tile upload-tile--1x1" data-upload data-asset="thumb">
+            <div class="upload-tile upload-tile--750x930" data-upload data-asset="keyvisual">
               <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-              <span class="upload-tile__title" data-i18n="ce.img.thumb">Thumbnail</span>
-              <span class="upload-tile__hint" data-i18n="ce.img.thumb-hint">800×800px · 1:1 · Search, browse, share</span>
+              <span class="upload-tile__title" data-i18n="ce.img.keyvisual">Key visual</span>
+              <span class="upload-tile__hint" data-i18n="ce.img.keyvisual-hint">750 × 930 · portrait · Search, browse, share, hero (mobile)</span>
             </div>
-            <span class="ee-asset__cap"><span data-i18n="ce.img.thumb">Thumbnail</span> · 1:1</span>
+            <span class="ee-asset__cap"><span data-i18n="ce.img.keyvisual">Key visual</span> · 750 × 930</span>
           </div>
-          <div class="ee-asset">
-            <div class="upload-tile upload-tile--3x4" data-upload data-asset="poster">
-              <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-              <span class="upload-tile__title" data-i18n="ce.img.poster">Vertical poster</span>
-              <span class="upload-tile__hint" data-i18n="ce.img.poster-hint">900×1200px · 3:4 · Hero (mobile), featured</span>
-            </div>
-            <span class="ee-asset__cap"><span data-i18n="ce.img.poster">Vertical poster</span> · 3:4</span>
-          </div>
+          <!-- 橫式橫幅是活動的例外槽（D164 第 4 點）：活動維持「有直有橫」，
+               這一格是 16:9 / 1920×1080（documents 5.1.6.1 F4），主視覺與圖庫仍是 750×930。 -->
           <div class="ee-asset">
             <div class="upload-tile upload-tile--16x9" data-upload data-asset="banner">
               <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
               <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
-              <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920×1080px · 16:9 · Hero (desktop), social</span>
+              <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920 × 1080 · landscape · Hero (desktop), social</span>
             </div>
-            <span class="ee-asset__cap"><span data-i18n="ce.img.banner">Landscape banner</span> · 16:9</span>
+            <span class="ee-asset__cap"><span data-i18n="ce.img.banner">Landscape banner</span> · 1920 × 1080</span>
           </div>
         </div>
 
@@ -537,7 +533,7 @@
     renderTiers();
   }
 
-  /* 三個具名槽：把「已上傳的圖」交給元件的 data-upload-src（2026-07-27 新增於 partials/upload-tile.js）。
+  /* 兩個具名槽（主視覺／橫式橫幅；圖庫另由 renderGallery 逐張排）：把「已上傳的圖」交給元件的 data-upload-src（2026-07-27 新增於 partials/upload-tile.js）。
      必須在 upload-tile.js 的 init 之前設好——本段在 DOMContentLoaded 之前跑，故增強器
      enhance() 時就會看到屬性、直接進 is-filled。空字串＝那個槽本來就沒圖，維持空狀態提示。 */
   function seedAssets() {
@@ -559,14 +555,17 @@
       const cell = document.createElement('div');
       cell.className = 'ee-asset';
       const tile = document.createElement('div');
-      tile.className = 'upload-tile upload-tile--3x2';
+      tile.className = 'upload-tile upload-tile--750x930';
       tile.setAttribute('data-upload', '');
       tile.setAttribute('data-gallery-index', String(i));
       if (src) tile.setAttribute('data-upload-src', src);
       tile.innerHTML =
         '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
         '<span class="upload-tile__title">' + T('ee.img.add', 'Add image') + '</span>' +
-        '<span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">1200×800px · 3:2 · Detail carousel, 1–8</span>';
+        /* 2026-07-31：這行原本只掛 data-i18n、文字寫死英文，注入後沒有人再跑一次翻譯，
+           所以繁中介面下相簿格的尺寸說明一直是英文。改成跟同函式其他字串一樣走 T()。 */
+        '<span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">' +
+          T('ce.img.gallery-hint', '750 × 930 · portrait · Detail carousel, 1–8') + '</span>';
       const cap = document.createElement('span');
       cap.className = 'ee-asset__cap';
       cap.textContent = src ? T('ee.img.n', 'Image {n}').replace('{n}', i + 1) : T('ee.img.add', 'Add image');
@@ -712,11 +711,11 @@
     const ds = val('desc');
     setVal('details', nm ? (ds ? nm + ' — ' + (ds.length > 70 ? ds.slice(0, 70) + '…' : ds) : nm) : '');
     setVal('lineup', lineup.filter(Boolean).length ? lineup.filter(Boolean).join(' · ') : '');
-    /* 四個素材位＝縮圖／海報／橫幅／相簿；相簿算「有沒有至少一張」，不是陣列本身是否存在
+    /* 三個素材位＝主視覺／橫式橫幅／圖庫（D164）；圖庫算「有沒有至少一張」，不是陣列本身是否存在
        （空陣列也是 truthy，直接數 key 會永遠多算一個）。 */
-    const imgN = ['thumb', 'poster', 'banner'].filter(k => images[k]).length
+    const imgN = ['keyvisual', 'banner'].filter(k => images[k]).length
                + ((images.gallery || []).length ? 1 : 0);
-    setVal('images', T('ee.ov.imagesn', '{n} of 4 uploaded').replace('{n}', imgN));
+    setVal('images', T('ee.ov.imagesn', '{n} of 3 uploaded').replace('{n}', imgN));
     const cityPart = val('city');
     setVal('venue', val('venue') ? (cityPart ? val('venue') + ' · ' + cityPart : val('venue')) : '');
     setVal('time', fmtWhen(val('date'), val('start')));
@@ -800,13 +799,20 @@
     const icon = $('#ee-pv-poster-icon');
     /* 預覽卡放真正的海報圖（建立流程只能塗一塊實色，因為那時還沒有圖；編輯態有）。
        新選、尚未存檔的檔案沒有可顯示的路徑，退回實色示意而不是掛一個壞掉的 <img>。 */
-    const src = images.poster || images.banner || '';
+    const src = images.keyvisual || images.banner || '';
     const real = src && src !== NEW_UPLOAD;
     if (poster) {
-      poster.style.backgroundImage = real ? 'url("' + src + '")' : '';
-      poster.style.backgroundSize = real ? 'cover' : '';
-      poster.style.backgroundPosition = real ? 'center' : '';
-      poster.style.background = real ? poster.style.background : (src ? 'var(--surface-inverse)' : '');
+      /* 先用 background 簡寫歸零、再設個別屬性。原本順序相反：最後那行把 background 簡寫
+         重新指派成「自己」，而簡寫在只設過 background-image 時序列化為空字串，等於把剛設好的
+         圖片清掉——預覽卡因此永遠是空的。 */
+      poster.style.background = '';
+      if (real) {
+        poster.style.backgroundImage = 'url("' + src + '")';
+        poster.style.backgroundSize = 'cover';
+        poster.style.backgroundPosition = 'center';
+      } else if (src) {
+        poster.style.background = 'var(--surface-inverse)';
+      }
     }
     if (icon) icon.style.display = src ? 'none' : '';
     const tag = $('#ee-pv-type');

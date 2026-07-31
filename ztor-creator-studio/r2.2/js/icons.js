@@ -25,6 +25,7 @@ const REGISTRY = {
   'minus':          '<path d="M5 12l14 0" />',                                                      // 收支明細的「支出小計」列（減項）
   'equal':          '<path d="M5 10l14 0" /> <path d="M5 14l14 0" />',                              // 收支明細的「淨收益」列（等式結果）
   'arrow-left':     '<path d="M5 12l14 0" /> <path d="M5 12l6 6" /> <path d="M5 12l6 -6" />',                        // 返回 Creator 名冊（Admin 全域導航/D086）
+  'arrow-right':    '<path d="M5 12l14 0" /> <path d="M13 18l6 -6" /> <path d="M13 6l6 6" />',                       // 「查看來源」等就地展開細節的行動（2026-07-31 補；chevron-right 是進下一層，帶尾巴的箭頭才是「往前一步」）
   'shield-check':   '<path d="M11.46 20.846a12 12 0 0 1 -7.96 -14.846a12 12 0 0 0 8.5 -3a12 12 0 0 0 8.5 3a12 12 0 0 1 -.09 7.06" /> <path d="M15 19l2 2l4 -4" />',  // Creator Management（Admin 標記）
   'bell':           '<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /> <path d="M9 17v1a3 3 0 0 0 6 0v-1" />', // 通知
   'flag':           '<path d="M5 5a5 5 0 0 1 7 0a5 5 0 0 0 7 0v9a5 5 0 0 1 -7 0a5 5 0 0 0 -7 0v-9" /> <path d="M5 21v-7" />', // 公告 / Announcements

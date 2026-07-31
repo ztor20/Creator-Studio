@@ -7,7 +7,7 @@
 <html lang="zh-Hant" data-theme="dark">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finance Overview · Ztor Creator Studio</title>
+<title>Earnings · Ztor Creator Studio</title>
 <script src="js/theme.js?v=r2.2"></script>
 <link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
@@ -26,6 +26,12 @@
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2">
@@ -185,22 +191,46 @@
   .ztor-table th.fin-amt { text-align:right; }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+<style>
+  /* 版稅分頁一次性版面（與 earnings.html 同一份，兩頁是同一頁的兩個版本）。 */
+  .ext-row__end { display:flex; align-items:center; gap:var(--sp-16); }
+  .roy-total { padding: var(--sp-16) 0 var(--sp-4); display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-16); flex-wrap:wrap; }
+  .roy-total__label { font-size:var(--fs-12); color:var(--muted-foreground); letter-spacing:.04em; text-transform:uppercase; }
+  .roy-total__value { font-size:var(--fs-40); font-weight:var(--fw-semibold); letter-spacing:-.02em; font-variant-numeric:tabular-nums; margin-top:var(--sp-4); }
+  .roy-total__meta { font-size:var(--fs-12); color:var(--muted-foreground); margin-top:var(--sp-4); }
+  .roy-foot { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-16); margin-top:var(--sp-16); flex-wrap:wrap; }
+  .roy-foot__note { font-size:var(--fs-12); color:var(--muted-foreground); }
+  /* 作品榜的類型篩選自成一列（標題長、span-6 寬度放不下同一行） */
+  [data-roy-card] > .filter-tabs { margin: var(--sp-4) 0 var(--sp-12); }
+</style>
 </head>
 <body data-sheet-nav>
 <div class="app">
   <header class="app-topbar" id="sidebar"></header>
 
   <main class="main">
+    <!-- 佣金比例提示 · 改用 e-shop 低庫存通知條同一組元件與位置（2026-07-31 使用者指定）：
+         外層 .alert-inset 只管定位（sticky、跟 .page 同一套 max-width+margin+padding），
+         內層 .alert--inset-card 是視覺卡。原本是頁內 .info-banner，位置在 KPI 下方。 -->
+    <div class="alert-inset" id="fin-ratio-bar" data-dismiss-key="fin-ratio">
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <div class="alert__title" data-i18n="fin.ratio">Your tastemaker commission rate is <strong>15%</strong>. <a class="card__link" href="https://www.ztor.com/zh-hk/tastemaker-terms-and-conditions" target="_blank" rel="noopener">View details →</a></div>
+        </div>
+        <button class="alert__dismiss" type="button" data-dismiss aria-label="Dismiss" data-i18n-aria-label="fin.ratio.dismiss">×</button>
+      </div>
+    </div>
+
     <div class="page">
 
       <div class="page-crumb">
-        <span data-i18n="fin.crumb">Finance overview</span>
+        <span data-i18n="fin.crumb">Earnings</span>
       </div>
 
       <!-- Page head + sub (如何運作 opens the how-it-works drawer) -->
       <div class="page-intro">
         <div>
-          <h1 class="page-intro__title" data-i18n="fin.h1">Finance overview</h1>
+          <h1 class="page-intro__title" data-i18n="fin.h1">Earnings</h1>
           <p class="page-intro__sub" data-i18n="fin.sub">A roll-up of every deposit and payout across your work on Ztor. See <a class="card__link" href="#" data-drawer-open="how">how it works</a> to learn more.</p>
         </div>
       </div>
@@ -228,15 +258,25 @@
         </div>
       </div>
 
-      <!-- Tastemaker commission-rate strip (neutral info-banner) -->
-      <div class="info-banner info-banner--dismissible" style="margin-top:var(--sp-16)" data-dismiss-key="fin-ratio">
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-        <span data-i18n="fin.ratio">Your tastemaker commission rate is <strong>15%</strong>. <a class="card__link" href="https://www.ztor.com/zh-hk/tastemaker-terms-and-conditions" target="_blank" rel="noopener">View details →</a></span>
-        <button class="info-banner__close btn btn--icon btn--xs" type="button" data-dismiss aria-label="Dismiss" data-i18n-aria-label="fin.ratio.dismiss">
-          <i data-lucide="x" class="ztor-icon ztor-icon--sm"></i>
-        </button>
+
+      <!-- 分頁（2026-07-31 使用者指定）：Deck for Sony 版只有總覽與版稅兩個。
+           樣式跟 e-shop 工作列同一組底線式；不掛 tabs--count-plain（這裡沒有計數）。 -->
+      <!-- 分頁包在 .list-toolbar 殼裡：底線式 tab 的 ::after 設計上要貼卡片底緣，
+           殼提供固定 58px 高＋align-items:stretch，tab 撐滿才對得上（見 list-toolbar.css 檔頭）。 -->
+      <div class="list-toolbar mt-24">
+        <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" data-tabs>
+          <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tab="overview"><span data-i18n="earnings.tab.overview">Overview</span></button>
+          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="royalty"><span data-i18n="earnings.tab.royalty">Royalties</span></button>
+        </nav>
+          <!-- 分頁動作群：跟著分頁走的操作放工作列右側（比照 e-shop 的建立商品），
+               不再散在卡片內。切分頁時由 activate() 顯隱。 -->
+          <div class="list-toolbar__actions" data-tab-actions="royalty" hidden>
+            <button class="btn btn--outline" type="button" data-i18n="roy.export">Export report</button>
+            <button class="btn btn--primary" type="button" data-manual-open data-i18n="roy.manual-cta">Add a royalty statement</button>
+          </div>
       </div>
 
+      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
       <!-- Segmented TYPE filter — the single control for revenue type; doubles as the legend.
            Focuses the trend line and filters the 我的項目 rows via data-fin-types. -->
       <nav class="filter-tabs filter-tabs--source fin-legend" role="tablist" aria-label="Deposit type filter" data-fin-legend>
@@ -283,7 +323,6 @@
             <div class="fin-tip" data-fin-tip hidden></div>
           </div>
           </div>
-        </div>
         </div>
         <div class="chart-card__foot">
           <span data-i18n="fin.trend.range">Showing the last 5 days</span>
@@ -372,6 +411,108 @@
 
         <nav class="pager" data-fin-pager aria-label="My projects pagination"></nav>
       </section>
+      </div>
+
+      <div class="tab-panel" data-panel="royalty" role="tabpanel">
+        <!-- ═══════════════════ 第三段 · 版稅（Royalties）═══════════════════
+             總覽的外部那一半只收版稅（2026-07-31 使用者裁定）；外部平台的商品
+             販售與票務收入不納入。來源是發行商定期報表，非各平台 API 同步。
+             資料點對照 cocreate 提案頁的版稅分頁，維度由歌曲升成作品。 -->
+        <section class="card mt-24" id="royalties" data-roy-works='{"data": {"month": {"money": ["694", "428", "324", "212", "139", "98", "78", "65", "51", "40", "31"], "moneyRaw": [694, 428, 324, 212, 139, 98, 78, 65, 51, 40, 31], "plays": ["128,733", "137,600", "91,500", "54,900", "29,533", "66,100", "40,467", "32,133", "24,933", "20,400", "14,500"], "playsRaw": [128733, 137600, 91500, 54900, 29533, 66100, 40467, 32133, 24933, 20400, 14500]}, "quarter": {"money": ["2,082", "1,283", "971", "636", "416", "293", "236", "194", "155", "120", "94"], "moneyRaw": [2082, 1283, 971, 636, 416, 293, 236, 194, 155, 120, 94], "plays": ["386,200", "412,800", "274,500", "164,700", "88,600", "198,300", "121,400", "96,400", "74,800", "61,200", "43,500"], "playsRaw": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500]}, "year": {"money": ["7,118", "4,387", "3,322", "2,176", "1,424", "1,003", "806", "662", "528", "412", "322"], "moneyRaw": [7118, 4387, 3322, 2176, 1424, 1003, 806, 662, 528, 412, 322], "plays": ["1,320,709", "1,411,674", "938,722", "563,233", "302,990", "678,137", "415,158", "329,664", "255,798", "209,289", "148,759"], "playsRaw": [1320709, 1411674, 938722, 563233, 302990, 678137, 415158, 329664, 255798, 209289, 148759]}, "custom": {"money": ["4,372", "2,695", "2,040", "1,336", "874", "616", "495", "407", "324", "253", "198"], "moneyRaw": [4372, 2695, 2040, 1336, 874, 616, 495, 407, 324, 253, 198], "plays": ["811,139", "867,007", "576,535", "345,921", "186,087", "416,491", "254,977", "202,470", "157,103", "128,539", "91,363"], "playsRaw": [811139, 867007, 576535, 345921, 186087, 416491, 254977, 202470, 157103, 128539, 91363]}}, "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="disc" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="roy.title">Royalties</h3>
+            </div>
+            <nav class="filter-tabs" role="tablist" aria-label="Royalty period" data-roy-period='{"month": {"total": "NTD 2,160", "sources": ["NTD 760", "NTD 880", "NTD 360", "NTD 160"], "works": ["760", "468", "354", "233", "152", "107", "86"], "regions": ["831", "391", "235", "175", "119", "102", "78", "58", "43", "35", "93"], "platforms": ["548", "372", "261", "227", "164", "91", "48", "32", "24", "393"], "plays": ["137,600", "128,733", "91,500", "66,100", "54,900", "40,467", "29,533"]}, "quarter": {"total": "NTD 6,480", "sources": ["NTD 2,280", "NTD 2,640", "NTD 1,080", "NTD 480"], "works": ["2,280", "1,405", "1,063", "697", "456", "321", "258"], "regions": ["2,495", "1,173", "706", "525", "356", "305", "233", "175", "130", "104", "278"], "platforms": ["1,646", "1,115", "784", "680", "492", "272", "143", "97", "71", "1,180"], "plays": ["412,800", "386,200", "274,500", "198,300", "164,700", "121,400", "88,600"]}, "year": {"total": "NTD 22,160", "sources": ["NTD 7,797", "NTD 9,028", "NTD 3,693", "NTD 1,642"], "works": ["7,797", "4,805", "3,635", "2,384", "1,559", "1,098", "882"], "regions": ["8,532", "4,011", "2,414", "1,795", "1,217", "1,043", "797", "599", "445", "356", "951"], "platforms": ["5,629", "3,813", "2,681", "2,325", "1,683", "930", "489", "332", "243", "4,035"], "plays": ["1,411,674", "1,320,709", "938,722", "678,137", "563,233", "415,158", "302,990"]}, "custom": {"total": "NTD 13,610", "sources": ["NTD 4,789", "NTD 5,545", "NTD 2,268", "NTD 1,008"], "works": ["4,789", "2,951", "2,232", "1,464", "958", "674", "542"], "regions": ["5,240", "2,464", "1,483", "1,103", "748", "641", "489", "367", "273", "218", "584"], "platforms": ["3,457", "2,342", "1,647", "1,428", "1,033", "571", "300", "204", "149", "2,479"], "plays": ["867,007", "811,139", "576,535", "416,491", "345,921", "254,977", "186,087"]}}'>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-p="month" data-i18n="roy.period.month">Month</button>
+                <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-roy-p="quarter" data-i18n="roy.period.quarter">Quarter</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-p="year" data-i18n="roy.period.year">Year</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-p="custom" data-i18n="roy.period.custom">Custom</button>
+              </nav>
+          </div>
+
+          <!-- 總版稅：本區塊自己的大數字。刻意不上 KPI 列——Ztor 的 IP 版稅與授權
+               同時算在「Ztor 收入」裡，放進 KPI 會讓那四張卡看起來能相加卻不能。 -->
+          <div class="roy-total">
+            <div>
+              <div class="roy-total__label" data-i18n="roy.total">Total royalties</div>
+              <div class="roy-total__value">NTD 6,480</div>
+              <div class="roy-total__meta" data-i18n="roy.meta.quarter">2026 Q2 (Apr–Jun) · all works, platforms and regions</div>
+            </div>
+            <button class="btn btn--ghost btn--lg" type="button" data-drawer-open="royalty-src"><span data-i18n="roy.src.view">View sources</span><i data-lucide="arrow-right" class="ztor-icon ztor-icon--sm"></i></button>
+          </div>
+
+
+          <!-- 依來源拆解：把「合併成一個總版稅」拆回四個來源，並標明哪些可結算。 -->
+
+        </section>
+
+        <div class="bento mt-24">
+          <section class="card bento--span-12" data-roy-card="money">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--primary"><i data-lucide="trending-up" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.works.money">Top 10 works · by royalty</h3>
+              </div>
+            </div>
+            <nav class="filter-tabs" role="tablist" aria-label="Work type" data-roy-type>
+                <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-roy-t="all" data-i18n="roy.type.all">All</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="music" data-i18n="roy.type.music">Music</button>
+                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="video" data-i18n="roy.type.video">Video</button>
+              </nav>
+            <ol class="perf-rank perf-rank--nopct" data-roy-list="money" style="width:100%"></ol>
+            <div class="roy-foot">
+              <span class="roy-foot__note" data-roy-count></span>
+              <button class="btn btn--ghost" type="button" data-drawer-open="royalty-all"><span data-i18n="roy.works.all">See all works</span><i data-lucide="arrow-right" class="ztor-icon ztor-icon--sm"></i></button>
+            </div>
+          </section>
+        </div>
+
+        <div class="bento mt-24">
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="map-pin" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.regions">Regions · by royalty</h3>
+              </div>
+            </div>
+            <ol class="perf-rank" data-roy-list="regions" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Taiwan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">38.5%</span><span class="perf-rank__val">2,495</span></li>
+              <li class="perf-rank__row" style="--w:47%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Japan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.1%</span><span class="perf-rank__val">1,173</span></li>
+              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">United States</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.9%</span><span class="perf-rank__val">706</span></li>
+              <li class="perf-rank__row" style="--w:21%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">Hong Kong</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">8.1%</span><span class="perf-rank__val">525</span></li>
+              <li class="perf-rank__row" style="--w:14%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Singapore</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">356</span></li>
+              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">Malaysia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.7%</span><span class="perf-rank__val">305</span></li>
+              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">South Korea</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">3.6%</span><span class="perf-rank__val">233</span></li>
+              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Thailand</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.7%</span><span class="perf-rank__val">175</span></li>
+              <li class="perf-rank__row" style="--w:5%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Canada</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.0%</span><span class="perf-rank__val">130</span></li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-3)"><span class="perf-rank__idx">10</span><span class="perf-rank__name">Australia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.6%</span><span class="perf-rank__val">104</span></li>
+              <li class="perf-rank__row perf-rank__row--rest" style="--w:11%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.regions.rest">Everywhere else</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.3%</span><span class="perf-rank__val">278</span></li>
+            </ol>
+          </section>
+          <section class="card bento--span-12 mt-24">
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="chart-column" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="roy.platforms">Platforms · by royalty</h3>
+              </div>
+            </div>
+            <ol class="perf-rank" data-roy-list="platforms" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Ztor OTT</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">25.4%</span><span class="perf-rank__val">1,646</span></li>
+              <li class="perf-rank__row" style="--w:68%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Spotify</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">17.2%</span><span class="perf-rank__val">1,115</span></li>
+              <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">YouTube</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">12.1%</span><span class="perf-rank__val">784</span></li>
+              <li class="perf-rank__row" style="--w:41%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">KKBOX</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.5%</span><span class="perf-rank__val">680</span></li>
+              <li class="perf-rank__row" style="--w:30%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Apple Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">7.6%</span><span class="perf-rank__val">492</span></li>
+              <li class="perf-rank__row" style="--w:16%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">LINE MUSIC</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.2%</span><span class="perf-rank__val">272</span></li>
+              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">friDay Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.2%</span><span class="perf-rank__val">143</span></li>
+              <li class="perf-rank__row" style="--w:6%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Amazon Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.5%</span><span class="perf-rank__val">97</span></li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Deezer</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.1%</span><span class="perf-rank__val">71</span></li>
+              <li class="perf-rank__row perf-rank__row--rest" style="--w:48%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.platforms.rest">Licensing &amp; other (no platform)</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.2%</span><span class="perf-rank__val">1,180</span></li>
+            </ol>
+          </section>
+        </div>
+      </div>
 
     </div>
   </main>
@@ -487,5 +628,254 @@
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/detail-sheet.js?v=r2.2"></script>
+<script>
+  /* 分頁切換 —— 與 earnings.html 同一段邏輯（兩頁是同一頁的兩個版本）。 */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    function activate(name) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      /* 分頁動作群：只有屬於當前分頁的那組出現在工作列右側 */
+      document.querySelectorAll('[data-tab-actions]').forEach(g => { g.hidden = g.dataset.tabActions !== name; });
+      try { history.replaceState(null, '', '#' + name); } catch (_) {}
+    }
+    tablist.addEventListener('click', e => {
+      const item = e.target.closest('.tabs__item');
+      if (item && item.dataset.tab) activate(item.dataset.tab);
+    });
+    const hash = (location.hash || '').slice(1);
+    if (hash && [...panels].some(p => p.dataset.panel === hash)) activate(hash);
+  })();
+</script>
+  <!-- 版稅依來源拆解 · 由「查看來源」開啟（常駐區只留一行摘要，避免把整頁推長） -->
+  <div class="payout-modal" data-modal="royalty-src" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="roy-src-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="roy-src-title" data-i18n="roy.src.modal-title">Where the royalties came from</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="roy.src.modal-sub">NTD 6,480 this period · which sources settle on Ztor and which don't</span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="data-list" data-roy-modal-body>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="file-text" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.distributor">Distributor statements</div>
+                  <div class="data-list__meta" data-i18n="roy.src.distributor-meta">Streaming, download and broadcast · about one quarter behind</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--neutral" data-i18n="roy.tag.external">Off-platform</span>
+                <div class="data-list__amount">NTD 2,280</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="landmark" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.ip">Ztor IP royalties</div>
+                  <div class="data-list__meta" data-i18n="roy.src.ip-meta">Your IP rented or referenced on Ztor · settles here</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--success" data-i18n="roy.tag.settles">Settles on Ztor</span>
+                <div class="data-list__amount">NTD 2,640</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="gavel" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.licensing">Ztor licensing</div>
+                  <div class="data-list__meta" data-i18n="roy.src.licensing-meta">Licence fees and rentals agreed on Ztor · settles here</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--success" data-i18n="roy.tag.settles">Settles on Ztor</span>
+                <div class="data-list__amount">NTD 1,080</div>
+              </div>
+            </div>
+
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="pencil" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="roy.src.manual">KKBOX · Q3 statement (added by you)</div>
+                  <div class="data-list__meta" data-i18n="roy.src.manual-meta">No integration yet · statement attached · Nov 18</div>
+                </div>
+              </div>
+              <div class="ext-row__end">
+                <span class="badge badge--warning" data-i18n="roy.tag.unverified">Unverified</span>
+                <div class="data-list__amount">NTD 480</div>
+              </div>
+            </div>
+          </div>
+
+        <div class="info-banner mt-16">
+          <i data-lucide="clock" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="roy.freshness"><strong>Data through 2026-06-30.</strong> Royalty statements arrive from distributors on their own schedule — some sources run about a quarter behind. These are not live figures, and they are counted separately from your Ztor sales.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  /* 版稅期間切換 —— 四個期間各有一份完整資料（月／季／年／自訂區間）。
+     資料用最大餘數法分配，所以每一份的四張清單各自加總都精準等於該期總版稅，
+     切換期間不會把帳切散。百分比刻意不變：量在變、組成不變。
+     2026-07-31 使用者回報「這個切換，資料沒變動」後補上；原本只是靜態控制項。 */
+  (function () {
+    const nav = document.querySelector('[data-roy-period]');
+    if (!nav) return;
+    const DATA = JSON.parse(nav.dataset.royPeriod);
+    const card = document.getElementById('royalties');
+    const totalEl = card.querySelector('.roy-total__value');
+    const metaEl = card.querySelector('.roy-total__meta');
+    const srcEls = () => document.querySelectorAll('[data-roy-modal-body] .data-list__amount');
+    const listEls = k => document.querySelectorAll('[data-roy-list="' + k + '"] .perf-rank__val');
+
+    function apply(p) {
+      const d = DATA[p]; if (!d) return;
+      totalEl.textContent = d.total;
+      /* meta 只換 i18n 鍵，翻譯交給 i18n——頁面不自己判斷語言
+         （lang 實際值是 'zh-Hant' 不是 'zh'，自己判斷會翻錯） */
+      metaEl.setAttribute('data-i18n', 'roy.meta.' + p);
+      if (window.applyI18n) window.applyI18n(metaEl.parentElement);
+      srcEls().forEach((el, i) => { if (d.sources[i]) el.textContent = d.sources[i]; });
+      /* 作品榜由 data-roy-works 那支自己重畫（它要套類型篩選與 Top 10） */
+      document.dispatchEvent(new CustomEvent('ztor:roy-period', { detail: p }));
+      ['regions', 'platforms'].forEach(k => {
+        listEls(k).forEach((el, i) => { if (d[k][i]) el.textContent = d[k][i]; });
+      });
+      nav.querySelectorAll('.filter-tabs__item').forEach(b => {
+        const on = b.dataset.royP === p;
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+    nav.addEventListener('click', e => {
+      const b = e.target.closest('.filter-tabs__item');
+      if (b && b.dataset.royP) apply(b.dataset.royP);
+    });
+  })();
+</script>
+  <!-- 全部作品版稅明細 · 由兩張 Top 10 卡的「查看全部」開啟。
+       popup 一次給兩個軸（金額＋次數）與類型篩選，卡片只給單軸 Top 10。 -->
+  <div class="payout-modal" data-modal="royalty-all" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="roy-all-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="roy-all-title" data-i18n="roy.all.title">All works</h2>
+          <span class="text-sub" style="font-size: var(--fs-12)" data-roy-all-sub></span>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <nav class="filter-tabs" role="tablist" aria-label="Work type" data-roy-type>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-roy-t="all" data-i18n="roy.type.all">All</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="music" data-i18n="roy.type.music">Music</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="video" data-i18n="roy.type.video">Video</button>
+        </nav>
+        <table class="ztor-table mt-16">
+          <thead><tr>
+            <th data-i18n="roy.all.work">Work</th>
+            <th data-i18n="roy.all.type">Type</th>
+            <th class="bd-amt" data-i18n="roy.all.royalty">Royalty</th>
+          </tr></thead>
+          <tbody data-roy-all-body></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+<script>
+  /* 表現最佳作品兩張榜 —— 卡片 Top 10、popup 全部，兩處共用同一份資料與類型篩選。
+     作品名走 i18n（roy.work1–11），所以切 persona 會跟著換；類型（音樂／影片）
+     依 projects-store 的 cat 分，兩個 persona 各一份，存在 data-roy-works 裡。
+     金額由當期總額用最大餘數法分配到 11 部作品，故「全部」加總＝總版稅；
+     卡片上的 Top 10 是子集，不等於總額——popup 副標會把這件事講白。 */
+  (function () {
+    const host = document.querySelector('[data-roy-works]');
+    if (!host) return;
+    const CFG = JSON.parse(host.dataset.royWorks);
+    const persona = (window.ztorPersona && window.ztorPersona.get && window.ztorPersona.get()) || 'default';
+    const TYPES = CFG.types[persona] || CFG.types.default;
+    const T = k => (window.i18nT && window.i18nT(k)) || k;
+    const HUE = n => 'var(--chart-' + (n % 7 + 1) + ')';
+    let period = 'quarter';
+
+    function rows(axis, type) {
+      const d = CFG.data[period];
+      const vals = axis === 'money' ? d.moneyRaw : d.playsRaw;
+      const txt = axis === 'money' ? d.money : d.plays;
+      return vals.map((v, i) => ({ i: i, v: v, txt: txt[i], type: TYPES[i] }))
+        .filter(r => type === 'all' || r.type === type)
+        .sort((a, b) => b.v - a.v);
+    }
+
+    function renderList(card) {
+      const axis = card.dataset.royCard;
+      const type = card.querySelector('[data-roy-type] .filter-tabs__item--active').dataset.royT;
+      const all = rows(axis, type);
+      const top = all.slice(0, 10);
+      const max = top.length ? top[0].v : 1;
+      card.querySelector('[data-roy-list]').innerHTML = top.map((r, n) =>
+        '<li class="perf-rank__row" style="--w:' + Math.max(4, Math.round(r.v / max * 100)) + '%; --hue:' + HUE(r.i) + '">' +
+        '<span class="perf-rank__idx">' + (n + 1) + '</span>' +
+        '<span class="perf-rank__name">' + T('roy.work' + (r.i + 1)) + '</span>' +
+        '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>' +
+        '<span class="perf-rank__val">' + r.txt + '</span></li>').join('');
+      const note = card.querySelector('[data-roy-count]');
+      if (note) note.textContent = T('roy.works.count').replace('{shown}', top.length).replace('{total}', all.length);
+    }
+
+    function renderAll(modal) {
+      const type = modal.querySelector('[data-roy-type] .filter-tabs__item--active').dataset.royT;
+      const d = CFG.data[period];
+      const list = rows('money', type);
+      modal.querySelector('[data-roy-all-body]').innerHTML = list.map(r =>
+        '<tr><td>' + T('roy.work' + (r.i + 1)) + '</td>' +
+        '<td>' + T('roy.type.' + r.type) + '</td>' +
+        '<td class="bd-amt">' + d.money[r.i] + '</td></tr>').join('');
+      const sub = modal.querySelector('[data-roy-all-sub]');
+      if (sub) sub.textContent = T('roy.all.sub').replace('{n}', list.length);
+    }
+
+    function renderAllCards() {
+      document.querySelectorAll('[data-roy-card]').forEach(renderList);
+      const m = document.querySelector('[data-roy-all-body]');
+      if (m) renderAll(m.closest('.payout-modal'));
+    }
+
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-roy-type] .filter-tabs__item');
+      if (!b) return;
+      const nav = b.closest('[data-roy-type]');
+      nav.querySelectorAll('.filter-tabs__item').forEach(x => {
+        const on = x === b;
+        x.classList.toggle('filter-tabs__item--active', on);
+        x.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      const card = b.closest('[data-roy-card]');
+      if (card) renderList(card); else renderAll(b.closest('.payout-modal'));
+    });
+    /* 期間切換與語言切換都要重畫 */
+    document.addEventListener('ztor:roy-period', e => { period = e.detail; renderAllCards(); });
+    document.addEventListener('i18n:applied', renderAllCards);
+    renderAllCards();
+  })();
+</script>
 </body>
 </html>

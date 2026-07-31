@@ -155,7 +155,13 @@
       { href: "media-vault.html",      icon: "key",       titleKey: "nav.fans-vault",    descKey: "nav.fans-vault-sub" },
       { href: "tier-settings.html",    icon: "sliders",   titleKey: "nav.fans-tiers",    descKey: "nav.fans-tiers-sub" },
       { href: "brand-campaigns.html",  icon: "handshake", titleKey: "nav.brandcmp",      descKey: "nav.brandcmp-sub" },
+      { href: "fan-analytics.html",         icon: "globe",     titleKey: "nav.fans-audience", descKey: "nav.fans-audience-sub" },
     ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html"] },
+    /* Earnings 維持平鋪單頁（2026-07-31 使用者裁決）：一度拆成「收入總覽／Ztor 收入」
+       兩個下拉目的地，後來併回一頁、版稅改當一個分頁。不用全頁 filter 的理由——
+       filter 的前提是每個值對每個視圖都成立，這裡不成立：站外 × 項目收益／提款／
+       稅務文件 三格是空的。拆頁版 earnings-overview.html／earnings-ztor.html 暫留
+       在磁碟上供比對，不掛導覽。 */
     { href: "earnings.html", key: "nav.earnings", icon: "banknote", match: ["earnings-sony.html"] },
   ];
 
@@ -167,7 +173,7 @@
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
-    "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "my-ip.html", "ip-detail.html",
+    "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
     "ip-market.html", "register-ip.html", "settings.html"
   ]);
@@ -704,6 +710,28 @@
     }
     group.setAttribute("data-state", open ? "closed" : "open");
     toggle.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+
+  /* 底部動作區的群組（帳戶／幣別）是「選單」，不是導覽 accordion：點到群組以外的
+     任何地方都要收合。
+     2026-07-31 使用者回報：帳戶選單開著時去點搜尋或通知，它會留在原地不動。原因是
+     那兩個動作分屬不同機制——搜尋只是個 <label>、根本不在任何下拉裡；通知是
+     [data-dropdown]，它的處理只呼叫 closeAll() 收其他 [data-dropdown]。兩邊都不認得
+     .app-sidebar__group，所以誰都沒收它。與其在每個動作各補一次，統一在這裡收，
+     不管點擊來自哪裡都成立。
+     只管 .app-sidebar__actions 內的群組：導覽區的 accordion 展開後是要留著看的內容
+     清單，不該因為點了別處就闔上。 */
+  function closeSidebarActionGroups(except) {
+    document.querySelectorAll(".app-sidebar__actions .app-sidebar__group[data-state='open']").forEach(g => {
+      if (g === except) return;
+      g.setAttribute("data-state", "closed");
+      const t = g.querySelector(".app-sidebar__group-toggle");
+      if (t) t.setAttribute("aria-expanded", "false");
+    });
+  }
+  document.addEventListener("click", e => {
+    /* 點在群組自己裡面（切換鈕、選單內的連結）不收——收合交給上面的 toggle 處理 */
+    closeSidebarActionGroups(e.target.closest(".app-sidebar__actions .app-sidebar__group"));
   });
 
   /* Currency picker (Admin footer) — 選幣別即更新標籤＋記住，收合群組。預設港幣。 */

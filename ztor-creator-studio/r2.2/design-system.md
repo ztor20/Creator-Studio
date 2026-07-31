@@ -222,6 +222,7 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
 | `sidebar-active` | `#ECECEC` | ~~Sidebar selected item~~ — **退居回退用途（2026-07-27 Q8-A）**：導覽已選改吃 `--selected-surface` ＋ `--selected-ink`，本 token 不再是任何已選態的答案 |
 | `brand-ink` | light `#8F4E00` · dark `#ffa33f` | **可當文字用的品牌橘（2026-07-27）** — `--primary` 對近白底僅 1.92:1，任何要當**字或 icon** 的橘一律走這個 token，不得直接寫 `var(--primary)`。亮色為同色相 32° 的壓深版。對比：`--sidebar` 6.23:1／14% tint 5.70:1／白卡 6.45:1／深卡 8.02:1。目前的語意別名：`--selected-ink`（已選中）。**注意分工**：`--brand-ink` 是「橘字放在非橘底上」；字要鋪在**實色橘底**上時走 `--on-primary`，不是這個 |
+| `column-head-ink` | `color-mix(--muted-foreground 72%, transparent)` | **列表／表格欄位表頭的標籤墨色（2026-07-31，STYLE-DECISIONS Q41）** — 站上沒有比 `--muted-foreground` 更暗的文字 token（亮 `#6E6E68`／暗 `#979797` 已是最低階），故以它為基底調降不透明度。收成 token 是因為同一個角色原本跑了三種配方（裸 `--muted-foreground`、`color-mix(…68%, --card)`、`color-mix(…72%, transparent)`），正是 Q9 要收斂的「散落的即席灰」。混 `transparent` 而非 `--card`，表頭坐在任何底色上（有些表頭帶 `--muted` 底）都是同一階暗度。消費者＝ 10 支表頭元件，一律寫 `var(--column-head-ink)`、不再各自調配 |
 | `status-success-fill`／`destructive-fill` | `color-mix(<狀態色> 12%, transparent)` | **染色膠囊的底（2026-07-27）** — 與墨色成對抽出來，讓「擁有某個面」的元件可以整組換掉，而不是去覆寫 `.kpi__delta` 的個別屬性。混 `transparent` 而非 `--card`：混 `--card` 等於把深卡色**烤進膠囊自己的底色**，換到別的面（如 `.kpi--hero` 的實色橘）就變黑斑。對深卡是數學上的 no-op |
 | `status-success-deep`／`destructive-deep` | `#14532D`／`#881337` | **深階實色版（2026-07-27）** — 給「坐在實色暖底上」的膠囊用（`.kpi--hero` 以 90% alpha 引用）。12% 淡染在飽和橘上撐不起綠，改由深綠底承載色相、字換白 |
 | `status-success-ink`／`destructive-ink` | dark `#4ADE80`／`color-mix(--status-error 88%, #fff)` · light `#052E16`／`#4C0519` | **染色膠囊的墨色（2026-07-27）** — `.kpi__delta` 這種「狀態色 12% 半透明底＋同色字」的膠囊只有在**底是深的**時候才成立。膠囊的真實背景是它坐的那個面，所以墨色**跟著面走、不跟著主題走**（實色橘卡在深色主題下依然是亮底 → `.kpi--hero` 自己覆寫這兩個 token）。色相不動、只降明度，維持「一眼看出是綠／紅」。**12px semibold 屬 normal text，門檻 4.5:1 不是 3:1** —— green-900 `#14532D` 在橘膠囊上只有 4.47:1，差一點就是不行，故取 green-950。紅色墨改走 `--status-error`（2026-07-21 新增它就是為了「深底小字徽章 `#E7000B` 太深」，delta 當初漏接）並再提亮一階才過 4.5 |
@@ -348,6 +349,12 @@ Section-level vertical rhythm is closer to `80–96px`. Card internal padding is
 
 用於窄欄位（如 create-product 的自訂低庫存門檻輸入、限購數量輸入、pickup session 下拉）的 `max-width` / `flex-basis`；元件寬度裸值一律改用 `var(--w-N)`。
 
+**Aspect ratio — `--img-portrait`**（2026-07-31 使用者裁決，D164）— 全站作品圖的單一直式比例：
+
+`--img-portrait: 750 / 930`（≈0.806）
+
+創作者實際上傳的展示圖比例（25:31）。上傳槽（`ds-components/upload-tile.css` 的 `--upload-img-ratio: var(--img-portrait, 750 / 930)`）與顯示端（清單縮圖、卡片封面等 7 支顯示元件，見 Pillar 4）皆引用這一個變數；顯示框由同一張直式原圖 `object-fit: cover` 置中裁切填滿，不再各自另備方形／橫式素材。**唯一例外**：活動（Events）的橫式橫幅槽與橫式顯示版位不吃這個變數，走 `upload-tile.css` 的 `--16x9`（見 §4.15）。此前多比例模型（縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2）已全面退場。
+
 ### 1.4 Radius
 
 | Token | Value | Where |
@@ -424,7 +431,7 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 
 **Tabler** icon set (`@tabler/icons` 3.45.0), registered in `icons.js` and injected per page via `ztorIcons.applyIcons()`. Thin 1.2px outlined glyphs as inline SVG (no icon font). Any new icon must be added to the registry before use.
 
-**兩檔分工（刻意設計，勿合併）**：`js/icons.js`（~36KB，策展 111 顆）＝產品頁 registry，30 頁都載、保持輕量；`js/icons-all.js`（~1.7MB，完整 Tabler 6166 顆＝outline 5112＋filled 1054，自動生成）**只有 `design-system.html` 載**（供「未使用」icon 總覽瀏覽），且必須排在 `icons.js` 之前——`icons.js` 會把 `window.ZTOR_ICONS_ALL` 中缺的 key 併入 REGISTRY。產品頁要用新 icon 仍走「補進 `icons.js` registry」流程，不掛全集。
+**兩檔分工（刻意設計，勿合併）**：`js/icons.js`（~36KB，策展 118 顆）＝產品頁 registry，30 頁都載、保持輕量；`js/icons-all.js`（~1.7MB，完整 Tabler 6166 顆＝outline 5112＋filled 1054，自動生成）**只有 `design-system.html` 載**（供「未使用」icon 總覽瀏覽），且必須排在 `icons.js` 之前——`icons.js` 會把 `window.ZTOR_ICONS_ALL` 中缺的 key 併入 REGISTRY。產品頁要用新 icon 仍走「補進 `icons.js` registry」流程，不掛全集。
 
 **registry key 沿用舊名（2026-07-21 換庫後的刻意決定）**：2026-07-21 由 Lucide 換成 Tabler 時，key 名稱一律保持換庫前的舊名（`trash-2`、`more-horizontal`、`check-circle`…），HTML 的 `data-lucide="..."` 屬性名也未改，因此 39 頁、2,630 處引用完全不用動。代價是「屬性名與圖庫名不一致」——這是拿命名整潔換零改動風險的取捨，日後若要正名，走獨立的一次性機械改名（`data-lucide` → `data-icon`），不要跟換圖庫混在同一輪。
 
@@ -694,8 +701,8 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`--active` 品牌橘 tint（篩選已選，Q8-A 2026-07-27；原反白黑底作廢）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多選項選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。分工（2026-07-27 Q8-A 後）：`--value` 灰＝剛建立的值、`--active` 橘 tint＝已選（篩選已選與 tag-input 的已套用分類現在同一個外觀，Q19 的專屬覆寫已刪） | [chip.css](./ds-components/chip.css) |
 | Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
 | Info banner | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](./ds-components/info-banner.css) |
-| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換/AI 優化/刪除。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent） | [upload-tile.css](./ds-components/upload-tile.css) |
-| Bundle editor | 🟠 molecule | ✓ Project | 共創回饋套組編輯器（2026-07-24 promote → 2026-07-28 第二代改版〔create-project「回饋套組」步驟〕→ 2026-07-30 抽成共用行為模組 `js/bundle-editor.js` → 2026-07-30 第二批：價格改唯讀自動計算＋新增套組優惠欄位 → **2026-07-30 第三批：優惠改百分比欄位，卡片欄位重排，撤除左緣未完成色線**）。`window.ZtorBundleEditor.mount({list,addBtn,t,getPool\|poolInput\|pool,getPerSlot\|perSlotInput\|perSlot,initial,collapsedByDefault,onChange})`，回傳 `{getBundles,setBundles,add,ensure,render,refresh,isValid,listPrice,finalPrice,maxDiscount,maxPct,perSlot,maxUnits,autoUnits,committedSlots,pool,num}`；名額池與每名額單價各自三種注入方式（即時 getter／讀某 input／固定數字）讓同一支模組同時服務「會即時變動」（create-project 讀 `#fd-slots`／`#fd-perslot`）與「固定值」（project-detail，`fund.goal÷200` 推導名額池、每名額單價固定 $200，原型假資料）兩種頁面；`refresh()` 供外部注入值變動時就地重算全部卡片，不重畫、不搶焦點。**計價規則**：原價＝名額數×每名額單價＋商品定價加總。**2026-07-30 第三批：套組優惠改百分比欄位**（0–100%，沿用既有 `.amount-field--suffix.amount-field--readonly` 做法，非新造百分比欄樣式）——套組價＝原價－min(優惠%×原價, 商品定價加總)，折抵範圍仍只吃商品那一段，地板仍是股份總價（分潤名額的價值不可折讓）；上限同樣改以百分比表達：新函式 `maxPct()`＝floor(商品定價加總÷原價×100)。純回饋（0 名額）卡可折到 $0，只含名額無商品的卡 `maxPct()` 為 0、一分都不能折；填超過上限時優惠欄下方 `.field__hint` 轉紅（`.field__hint.fc-hint--over`）並說出實際生效的百分比與金額，不默默截掉。每張套組＝`.card.fc-bundle`：收合態 `.fc-bundle--collapsed` 顯示摘要列 `.fc-sum`（序號 `.fc-bundle__index`＋`__name`／`__meta`／`__price`，有優惠時原價劃線並列於前，`.fc-sum__was`）＋`.fc-bundle__actions`（編輯或收合／移除）；**2026-07-30 第三批展開態欄位重排（由輸入到結果）**＝套組名稱＊／一句話說明／含分潤名額＋販售上限 `.segmented`（自動＝從名額池推導可賣份數／限量＝手動硬上限，`.fc-slotnote`／`--over` 超賣提示）／商品用**引用**不用自由輸入——`.fc-pick`（`__results`／`__opt`／`__opt-price`／`__empty`）挑選既有 E-Shop 商品成 `.fc-ref`（`__thumb`／`__name`／`__meta`）／額外權益仍為自由文字 `.fc-perk`／最後才是獨立的**定價區塊**（新增 `.fc-pricing`，卡片最後，上緣一條分隔線）：優惠%（`.fc-pricing__row` 窄欄）＋價格（唯讀 `.amount-field--readonly`，`.fc-pricing__out`）＋橫跨整列的組成說明與上限說明（`.field__hint.fc-pricing__note`，兩行，取代已移除的 `.field__hint.fc-pricecalc`；與 `.fc-hint--over` 同樣寫成 0,2,0 權重，因為 field-system.css 在本檔之後載入）。滿版加高鈕：`.fc-add`（56px，新增套組）／`.fc-add-item`（48px，本代重用作「新增權益」）。**卡片左緣「未完成」色線已依使用者裁決移除**（`.fc-bundle--invalid` 與其 `border-color` transition 一併刪除，CSS 留墓碑；`isValid()` 判準不變——缺名稱、或無名額也無商品仍為無效，仍驅動建立頁教練提示與 Continue 擋關，只是卡片自己不再顯示那條色線；`--status-warning` 在本元件已無引用）。`.fc-bundle__body > .form-grid` 補回格線與下一欄位的間距（2026-07-30 新增）。消費頁：create-project.html（回饋套組步驟）、project-detail.html（方案與承諾›支持方案，`collapsedByDefault:true`＋3 張種子套組）。**create-campaign.html 仍保留自己的第一代頁內 `.fc-*` 副本**（僅自由輸入商品列 `.fc-item-row`／`.fc-item-fields`，無收合／引用挑選器／權益／名額推導／計價），未遷移到本模組（治理待辦）。 | [bundle-editor.css](./ds-components/bundle-editor.css) |
+| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換／刪除（站上標準 2 鈕，`data-upload-ai` opt-in 第三鈕 AI 優化）。**2026-07-31：全站圖片槽收斂單一直式 750×930**（`--upload-img-ratio`），舊 `--1x1`／`--3x4`／`--3x2` 退場、`--16x9` 僅存於檔案槽。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent） | [upload-tile.css](./ds-components/upload-tile.css) |
+| Bundle editor | 🟠 molecule | ✓ Project | 共創回饋套組編輯器（2026-07-24 promote → 2026-07-28 第二代改版〔create-project「回饋套組」步驟〕→ 2026-07-30 抽成共用行為模組 `js/bundle-editor.js` → 2026-07-30 第二批：價格改唯讀自動計算＋新增套組優惠欄位 → **2026-07-30 第三批：優惠改百分比欄位，卡片欄位重排，撤除左緣未完成色線**）。`window.ZtorBundleEditor.mount({list,addBtn,t,getPool\|poolInput\|pool,getPerSlot\|perSlotInput\|perSlot,initial,collapsedByDefault,onChange})`，回傳 `{getBundles,setBundles,add,ensure,render,refresh,isValid,listPrice,finalPrice,maxDiscount,maxPct,perSlot,maxUnits,autoUnits,committedSlots,pool,num}`；名額池與每名額單價各自三種注入方式（即時 getter／讀某 input／固定數字）讓同一支模組同時服務「會即時變動」（create-project 讀 `#fd-slots`／`#fd-perslot`）與「固定值」（project-detail，`fund.goal÷200` 推導名額池、每名額單價固定 $200，原型假資料）兩種頁面；`refresh()` 供外部注入值變動時就地重算全部卡片，不重畫、不搶焦點。**計價規則**：原價＝名額數×每名額單價＋商品定價加總。**2026-07-30 第三批：套組優惠改百分比欄位**（0–100%，沿用既有 `.amount-field--suffix.amount-field--readonly` 做法，非新造百分比欄樣式）——套組價＝原價－min(優惠%×原價, 商品定價加總)，折抵範圍仍只吃商品那一段，地板仍是股份總價（分潤名額的價值不可折讓）；上限同樣改以百分比表達：新函式 `maxPct()`＝floor(商品定價加總÷原價×100)。純回饋（0 名額）卡可折到 $0，只含名額無商品的卡 `maxPct()` 為 0、一分都不能折；填超過上限時優惠欄下方 `.field__hint` 轉紅（`.field__hint.fc-hint--over`）並說出實際生效的百分比與金額，不默默截掉。每張套組＝`.card.fc-bundle`：收合態 `.fc-bundle--collapsed` 顯示摘要列 `.fc-sum`（序號 `.fc-bundle__index`＋`__name`／`__meta`／`__price`，有優惠時原價劃線並列於前，`.fc-sum__was`）＋`.fc-bundle__actions`（編輯或收合／移除）；**2026-07-30 第三批展開態欄位重排（由輸入到結果）**＝套組名稱＊／一句話說明／含分潤名額＋販售上限 `.segmented`（自動＝從名額池推導可賣份數／限量＝手動硬上限，`.fc-slotnote`／`--over` 超賣提示）／商品用**引用**不用自由輸入——`.fc-pick`（`__results`／`__opt`／`__opt-price`／`__empty`）挑選既有 E-Shop 商品成 `.fc-ref`（`__thumb`／`__name`／`__meta`）／額外權益仍為自由文字 `.fc-perk`／最後才是獨立的**定價區塊**（新增 `.fc-pricing`，卡片最後，上緣一條分隔線）：優惠%（`.fc-pricing__row` 窄欄）＋價格（唯讀 `.amount-field--readonly`，`.fc-pricing__out`）＋橫跨整列的組成說明與上限說明（`.field__hint.fc-pricing__note`，兩行，取代已移除的 `.field__hint.fc-pricecalc`；與 `.fc-hint--over` 同樣寫成 0,2,0 權重，因為 field-system.css 在本檔之後載入）。滿版加高鈕：`.fc-add`（56px，新增套組）／`.fc-add-item`（48px，本代重用作「新增權益」）。**卡片左緣「未完成」色線已依使用者裁決移除**（`.fc-bundle--invalid` 與其 `border-color` transition 一併刪除，CSS 留墓碑；`isValid()` 判準不變——缺名稱、或無名額也無商品仍為無效，仍驅動建立頁教練提示與 Continue 擋關，只是卡片自己不再顯示那條色線；`--status-warning` 在本元件已無引用）。`.fc-bundle__body > .form-grid` 補回格線與下一欄位的間距（2026-07-30 新增）。消費頁：create-project.html（回饋套組步驟）、project-detail.html（方案與承諾›支持方案，`collapsedByDefault:true`＋3 張種子套組）。**create-campaign.html 仍保留自己的第一代頁內 `.fc-*` 副本**（僅自由輸入商品列 `.fc-item-row`／`.fc-item-fields`，無收合／引用挑選器／權益／名額推導／計價），未遷移到本模組（治理待辦）。**2026-07-30 第五批（使用者裁決）**：展開態的價格移到標題列右上角——復用第三批已有的 `.fc-sum__tag`（「套組價」小標，展開態才顯示）＋放大的 `.fc-sum__val`（`--fs-20`），有折扣時原價劃線 `.fc-sum__was` 仍並列在前；收合態摘要價格不變。展開態的動作同輪從標題列移到卡片底部——`.fc-bundle__head` 展開時右上角只留價格；卡片底部新增 `.fc-collapse`（滿寬可點的收合把手，`<button>`＋`<i data-lucide="chevron-up" class="ztor-icon">`＋文字，上緣一條分隔線，`:hover`/`:focus-visible` 均已定義）與 `.fc-bundle__foot`（右對齊容器，內含 `.btn.btn--destructive.btn--sm` 移除鈕，僅卡片數 >1 時出現）；收合態動作仍留在標題列右側（編輯／移除文字連結，行為不變）。卡內間距同輪對齊建立商品頁 `.form-section--outlined` 的節奏（使用者指定參考對象）：`.fc-bundle` 內距由 `--sp-16`/`--sp-18` 改 `--sp-24`（`margin-bottom` 維持 `--sp-12`）；`.fc-bundle--collapsed` 左右內距同步改 `--sp-24`（收合↔展開時名稱不左右位移）；新增 `.fc-bundle__body .field__label { font-size: var(--fs-14) }` 與 `.field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)) }`，欄位間距本身仍吃基礎 `.field` 16px（Q6 已統一全站，本輪未動）。**移除鈕改用實色 `.btn--destructive`**（非站上多數頁面「刪除」慣用的 `.btn--ghost.btn--destructive`）——與收合把手同屬本輪新增的「卡片底部兩個出口」，尚未與全站既有 destructive 動作慣例核對，見 STYLE-DECISIONS Q37（待裁決）。i18n 新增 3 key（中英）：`cpp.bd.collapse.long`／`cpp.bd.remove.long`／`cpp.bd.price.tag`；既有 `cpp.bd.collapse`／`cpp.bd.remove` 仍供收合態短連結使用。 | [bundle-editor.css](./ds-components/bundle-editor.css) |
 | Album tracks | 🟠 organism | ✓ App | 數位「音樂專輯（Album）」多曲目管理（spec 5.1.5.2 §4.2 F11.1）：上傳 mp3/mp4→逐曲列（`.album-track`：`__grip`/`__cover`/`__main`(`__name`/`__meta`/`__bar`/`__lyrics`)/`.dropdown.album-track__menu`）；拖曳重排、改名(inline)、換封面、上傳歌詞(音訊限定→View Lyrics)、刪除；上傳中 `.is-uploading`。`partials/album-tracks.js` 增強、emit `albumtracks:change`；逐列選單重用 dropdown-menu.css。**`data-album-seed`（JSON `[{name,meta,type?,lyrics?}]`）可預置已完成曲目列**（2026-07-16，供 product-detail 呈現既有專輯內容；建立頁不帶＝空狀態）。呈現層 demo（假上傳/歌詞） | [album-tracks.css](./ds-components/album-tracks.css) |
 | VIP card | 🟠 organism | ✓ App | 數位「會員卡（Membership / VIP card）」卡面自訂（spec 5.1.5.2 §4.2 F11.2）：`.vip-card`[data-vip-card]＞`__settings`（`.segmented.radio-cards` Text/Image＋`.input`名稱／`.upload-tile` logo）＋`__preview`（`__frame`公版場景＞`__plate`霧面卡＞`__logo`/`__logo-img`/`__plate-sub`）。Text→文字合成、Image→PNG logo 合成；`.vip-card--image` 切模式。`partials/vip-card.js` 綁定、emit `vipcard:change`。公版為 CSS 近似固定藝術（frame 漸層裸色＝記錄在案例外，見下）。呈現層 demo | [vip-card.css](./ds-components/vip-card.css) |
 | Input | 🟢 atom | ✓ App | Wizard fields, settings forms, search。底色用 `--input-surface`（亮＝白卡、暗＝比卡亮一階＝filled 欄位浮出卡面，2026-07-17 Q19）；1px 陰影模擬邊 `--border`、focus 4px 橘環 | [input.css](./ds-components/input.css) |
@@ -703,7 +710,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | NavigationMenu | 🟡 molecule | ✓ App | Nav item + mega dropdowns (IP Bank / E-Shop); sidebar mode renders these as expandable `.app-sidebar__group`（accordion，現役）。另有 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）保留在 CSS、可切回 | [header.css](./ds-components/header.css) |
 | Card | 🟡 molecule | ✓ App | Section wrappers w/ head row across all product pages。圓角 `--radius-xl`（16px，Q16 2026-07-17；原 6px）。邊界 2026-07-26 由 1px 邊框改陰影浮起（Q23 決 C） | [card.css](./ds-components/card.css) |
 | KPI | 🟡 molecule | ✓ App | Dashboard summary, Earnings tabs, page KPI rows (headline metric set in display size, not colour)。變體：`--compact`（去 min-height、內距收小，側欄/摘要用，如商品細節頁 Sales summary）／`--tappable`（整塊是 `<button>`、開 in-place popup）／狀態染色 `--success`｜`--warning`｜`--destructive`（染 `.kpi__value`＝這個數字的**狀態**好不好）／**`--hero`（2026-07-27 新增）** 整張卡實色橘 `--primary`＝這張卡是本頁**主角**（編輯權重，與狀態不同軸）。**一列只給一個 `--hero`**，否則沒有主角。與 Q8-A 的「已選中」不衝突：已選中是 **tint**（14% 半透明）且只出現在 pill／nav 小控件；`--hero` 是**實色**且是一整張卡，而實色橘在本系統一直代表「主角／主要動作」（主 CTA、`.pager` 目前頁），語彙一致。卡內文字一律 `--on-primary` 深墨（**不是 `--primary-foreground`**——後者亮色是白字，白對 `#ffa33f` 只有 1.99:1；深墨 9.02:1）；label/meta 用同一支深墨壓透明度做層級（6.33:1／6.85:1），不另挑灰（灰在橘底會發濁）。`.kpi__delta` 在 `--hero` 內＝**深綠半透明底＋白字**（形狀語彙不動：一樣的 pill、一樣的內距、一樣是半透明染色，改的是染多深與字色）。理由：12% 淡染疊在飽和橘上色相幾乎不位移（合成 `#e9aa47` vs 卡的 `#ffa33f`），綠撐不起來、只能靠墨色暗示；改成深綠底之後「綠」由**底本身**承載，字換白，識別與對比同時變強。**仍然半透明**（90% 而非 100%），讓橘透 10% 上來把綠暖化一點，像長在這張卡上而不是貼上去的色塊——這也是它與先前被否決的「純黑底」的本質差異：那是中性黑、讀起來就是黑斑，這是**有色相的深綠**，一眼還是綠的。實作是在 `.kpi--hero` 這一層重新定義 fill／ink 四個 token（`--status-success-fill`／`-ink`／`--destructive-fill`／`-ink`），custom property 往下繼承，亮暗兩主題同時成立、不必比特異性。**墨色跟著「坐在什麼面上」走，不是跟著主題走**——實色橘卡在深色主題下依然是亮底，主題型 token 解不了它。選擇器寫 `.kpi.kpi--hero`（0,2,0）以贏過 `.card .kpi` 巢狀底色覆寫。首用：儀表板總收入（`js/components.js` `kpiTile()` 的 `hero: true`）。圓角 `--radius-xl`（16px，Q16 2026-07-17）。`.kpi[hidden]` 已顯式歸零 display（元件為 flex，會蓋過 UA 對 hidden 的預設；2026-07-30 補上——在此之前凡靠 `el.hidden` 收 KPI 的地方都藏不掉，例如活動詳情依活動類型收起不適用的指標） | [kpi.css](./ds-components/kpi.css) |
-| Admin IP Bank table | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列；共用 token-driven table wrapper、owner identity 與日期範圍操作列 | [admin-ip-bank-table.css](./ds-components/admin-ip-bank-table.css) |
+| Admin IP Bank table | 🟠 organism | ✓ SiteSpecific | Admin IP Bank 與 Reporting 的 Film／Owner 分配表與報表篩選列；共用 token-driven table wrapper、owner identity 與日期範圍操作列。**2026-07-31 使用者：`.admin-table__thumb` 改直式**——原 36×36 正方，改「鎖高算寬」：`height:36px`／`width:calc(36px * var(--img-portrait))`（≈29px，29×36），與 `.ztor-table__thumb` 同一個推導邏輯 | [admin-ip-bank-table.css](./ds-components/admin-ip-bank-table.css) |
 | Alert | 🟡 molecule | ✓ App | Dashboard alerts panel (`--card`) + inline page warnings (`--row`) + page announcement (`--banner`) + notification bar (`--bar` — rounded + shadow, flush in E-Shop low-stock F2) | [alert.css](./ds-components/alert.css) |
 | Accordion | 🟡 molecule | ✓ App | Collapsible sections (chevron-rotate, height transition) | [accordion.css](./ds-components/accordion.css) |
 | Tabs | 🟡 molecule | ✓ App | Earnings 4 tabs, E-Shop product types (`--brand` soft-orange pill; type-switch row uses `--underline-short` for the divider-off, shortened active underline), Projects status, Fans CRM views | [tabs.css](./ds-components/tabs.css) |
@@ -712,7 +719,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
 | Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker。`.selection-card--icon` 型別磚 2026-07-17 縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊；Q18）。型別磚底色 `--input-surface`（暗色比 section 卡亮一階＝浮出的填色選項、亮色白卡，2026-07-18，對齊 midnight）；已選 icon 卡除橘 outline 外加淡橘底 `color-mix(--primary 5%, --input-surface)`（2026-07-18 Q19，對齊 midnight；icon 維持中性、無勾） | [selection-card.css](./ds-components/selection-card.css) |
 | Composer | 🟡 molecule | ✓ App | Drop / type card + bottom action bar (tool icons · credit meter · circular send) | [composer.css](./ds-components/composer.css) |
-| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」）。**每個選項前面都要有對應 `.ztor-icon`（2026-07-21 使用者裁示），唯一例外是 `--toggle` 那列**——全站 7 個消費頁全數補齊 | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
+| Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--choice`（值列＝menuitemcheckbox，領頭放 tier `.badge`、已選態靠尾端 `.dropdown__check` 不用底色；2026-07-29）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」）。面板變體 `.dropdown__menu--ladder`（2026-07-31，E-Shop 粉絲分級門檻）：把一組 `--choice` 當一道階梯，已選列左緣加 2px `--selected-ink` 直線畫出「從頂端連續的一段」，配 `.dropdown__item--preview`（hover 預告，40% 透明 check）、`.dropdown__cap`（選單抬頭小字，非選項不可點）與 `.dropdown__meta`（值列尾端次要資訊，`margin-left:auto` 靠右、`tabular-nums`，用於分級選單的累計人數「988 人」＝門檻設在這一級有多少人買得到，資料來自 `js/tier-population.js`）；點一級＝門檻設在那一級、該級與其上自動包含，互動由頁面 JS 負責。**每個選項前面都要有對應 `.ztor-icon`（2026-07-21 使用者裁示），唯一例外是 `--toggle` 與 `--choice` 那兩種值列**——全站 7 個消費頁全數補齊 | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
 | Header (topbar) | 🟠 organism | ✓ App | All pages — canonical 64px app topbar (`.app-topbar`, injected by `sidebar.js`); hover mega-dropdown nav + action cluster. **≤900px：導覽收進 burger**（`.app-nav-burger`，2026-07-25）——兩種 shell（topbar／sidebar rail）在窄螢幕都只留 logo＋burger，展開為滿版直向面板（max 60vh 可捲）；開啟狀態＝shell 根元素的 `[data-nav-open]`（由 `js/sidebar.js` 切換，回到 >900px 自動清除）；topbar 面板內的 hover mega-dropdown 改為 inline 常開（觸控無 hover） | [header.css](./ds-components/header.css) |
 | Global nav · sidebar mode | 🟠 organism | ✓ App | Display-mode alternative to the topbar (spec §6.9 / D016): 248px left rail (`.app-sidebar`, same `sidebar.js`) sits on `--surface-shell`; dropdowns → expandable groups（`.app-sidebar__group`，accordion，現役）。另保留 **section-label 變體**（`.app-sidebar__section-label` ＋子項平鋪）可切回。Driven by `data-nav-mode` (theme.js) | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
 | Admin-layer nav · Tier 0/1 | 🟠 organism | ✓ App | Platform-operator (Admin) variant of the topbar (spec §4.1 / D086): roster page shows a "Creator Management" marker + locked Tier-1 items (`.app-topbar__link--locked`); inside a creator workspace, a back-to-roster icon (`.app-topbar__back`) sits **before** the logo + "Managing &lt;creator&gt;" chip (`.app-topbar__context`). Active creator held in `window.ztorCreator` (localStorage `ztor.activeCreator`); switched via devtools "Creator · Admin" cheat code. Used by `creators.html` (Tier 0) and every Tier-1 page | [shared.css](./shared.css) · [sidebar.js](./sidebar.js) |
@@ -732,7 +739,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Preview card | 🟡 molecule | ✓ App | 粉絲端即時預覽卡（商品／拍賣，§5.2.5） | [preview-card.css](./ds-components/preview-card.css) |
 | Preview column | 🟡 molecule | ✓ Project | 建立流程「表單｜預覽」兩欄版面＋右側 sticky 預覽欄（標題＋灰副標＋Preview card）；取代滑出式 Preview panel。**卡邊界 2026-07-21**：`.preview-col .card` 與 `.preview-col .preview-card` 改 `border:0` ＋ `--shadow-card, --shadow-edge-top`，與左欄 `form-section--outlined`（Q14／Q18 已去邊框改浮起）一致——原本左欄無邊框、右欄 1px 邊框，同一畫面兩種卡邊界（使用者裁示）。scope 限 `.preview-col` 內，全站其他 `.card` 仍照 Q3 用 1px 邊框、未推翻 Q3。消費頁＝create-product／create-bundle／create-auction（各 2 個盒子）＋create-campaign（僅預覽卡），4 頁共 7 處 | [preview-column.css](./ds-components/preview-column.css) |
 | Preview panel | 🟠 organism | ✓ App | 右側畫面分割面板承載即時預覽——壓窄 wizard、非浮層（§5.2.5） | [preview-panel.css](./ds-components/preview-panel.css) |
-| Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源），**2026-07-02 改呈現為深色手機**（`.fan-store__phone`＞`__screen` 自捲動；版型參考 endgame creator 商店手機版，僅視覺證據）：app 頂列＋hero（名字壓深色漸層＋社群＋加入社群）＋sticky app 分頁列＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。螢幕＝fan app 固定深色面（scoped `--fst-*`，主題例外見 §1.5；accent＝`var(--primary)`）。追蹤數/社群/加入社群/精選/立即購買/補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航為提案欄位（ASSUMPTIONS UIA-026） | [fan-store.css](./ds-components/fan-store.css) |
+| Fan store preview | 🟠 organism | ✓ App | See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1 共用 `partials/fan-store.js`，§6.7 同源），**2026-07-02 改呈現為深色手機**（`.fan-store__phone`＞`__screen` 自捲動；版型參考 endgame creator 商店手機版，僅視覺證據）：app 頂列＋hero（名字壓深色漸層＋社群＋加入社群）＋sticky app 分頁列＋本月精選＋商品/組合/拍賣底線子分頁＋雙欄商品格（購物車圓鈕）＋頭號粉絲＋關於＋sticky 底部 app 導航。螢幕＝fan app 固定深色面（scoped `--fst-*`，主題例外見 §1.5；accent＝`var(--primary)`）。追蹤數/社群/加入社群/精選/立即購買/補貨中/app 分頁列/頭號粉絲/關於/購物車/底部導航為提案欄位（ASSUMPTIONS UIA-026）。**2026-07-31 使用者：兩個展示圖框改直式 `--img-portrait`**——`.fan-store__featured-media`（本月精選大圖，原 4:3）與 `.fan-store__thumb`（雙欄商品格，原 1:1；手機雙欄下單格約 140px 寬→174px 高，仍一屏兩排）；兩者皆由同一張直式原圖置中裁切填滿 | [fan-store.css](./ds-components/fan-store.css) |
 | Pickup management | 🟠 organism | SiteSpecific | 現場 QR 核銷工作區（spec 5.1.5.11 · D111），E-Shop 下與訂單管理並列。`.scanner-access`（F6：`__qr`/`__main`/`__label`/`__url`/`__actions`/`__pw`）＋`.qr-box`(`--lg`/`--disabled`，faux QR via `window.ztorFauxQr()`)＋`.pickup-detail__header`/`__meta`＋`.pickup-stats`＋`.pickup-select`＞`.pickup-select__row`(`.is-checked`·`__box`/`__img`/`__text`)。場次清單／可核銷項目／名單／核銷紀錄重用 `.data-list`。共用建立場次 popup＝`partials/pickup-session-modal.js`（F3，亦掛 create-product.html／product-detail.html）：表單分成三個自由切換頁籤（重用 Tabs 的 `.tabs`＋`.tab-panel`，spec 5.1.5.12 §4：基本資訊／取貨項目／密碼），取代原疊直填色面板；`[data-pks-panels]` 保 `min-height` 免切換塌陷、`.pks-panel__intro` 為項目頁引言、取貨項目頁計數用 `.tabs__item-count`，按「建立」時驗證並自動跳到出錯的頁籤（藏在別頁的必填不會沉默）。camera 視窗用 `--surface-inverse` role token、無裸色 | [pickup.css](./ds-components/pickup.css) |
 | Mobile scanner | 🟠 organism | SiteSpecific | 獨立手機 scanner（spec 5.1.5.11 F7 · D111）——獨立 URL、無主工作台導航。`.scanner-page`＞`.scanner-frame`＞`.scanner-top`＋`.scanner-screen`（`.scanner-pw` 密碼閘／`.scanner-cam`(`__reticle`/`__line` 掃描動畫，respects `prefers-reduced-motion`)／`.scanner-result`(`__banner --ok/--warn/--bad`/`__rows`)）＋`.scanner-foot`。相機視窗＝`--surface-inverse` role token（theme-independent、非裸色）。`scanner.html` inline controller | [scanner.css](./ds-components/scanner.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product footer 用（create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
@@ -740,15 +747,17 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Notification matrix | 🟠 organism | ✓ App | 事件×管道逐格開關矩陣（含鎖定通道） | [notification-matrix.css](./ds-components/notification-matrix.css) |
 | Completeness meter | 🟡 molecule | ✓ App | label＋x/y＋進度條（素材包完整度） | [completeness.css](./ds-components/completeness.css) |
 | Insight row | 🟡 molecule | ✓ App | 圖表下單行自動洞察（無洞察隱藏） | [insight-row.css](./ds-components/insight-row.css) |
+| Finding card | 🟠 organism | ✓ App | 一則帶著支撐數字的結論（結論＋數字＋依據＋追查入口） | [finding-card.css](./ds-components/finding-card.css) |
+| Source status | 🟠 organism | ✓ App | 不占版位的資料涵蓋指示＋來源明細面板 | [source-status.css](./ds-components/source-status.css) |
 | List footer | 🟡 molecule | ✓ App | 清單分頁頁尾（Showing N of M＋Load more）。變體：`--center`（Load more 置中＋加大上下留白，E-Shop F4 分批載入）。`[hidden]` 已顯式歸零（蓋 display:flex） | [list-footer.css](./ds-components/list-footer.css) |
 | Message composer | 🟠 organism | ✓ App | 群發撰寫 modal（Compose＋History） | [message-modal.css](./ds-components/message-modal.css) |
 | Char counter | 🟡 molecule | ✓ App | 限長輸入即時字數 | [message-modal.css](./ds-components/message-modal.css) |
 | Token chip | 🟡 molecule | ✓ App | 點擊插入個人化變數 | [message-modal.css](./ds-components/message-modal.css) |
 | Event preview card | 🟡 molecule | ✓ App | 建立活動粉絲視角活動卡（即時預覽） | [event-preview-card.css](./ds-components/event-preview-card.css) |
-| Product list | 🟠 organism | ✓ App | E-Shop inventory table: product identity + status + stock + visibility + edit action, borderless row-divider layout。變體：`--eshop`/`--bundles`/`--auctions`/`--orders`/`--pickup`/`--ip`（2026-07-20 新增，spec 5.1.4 §F6：IP 清單欄位，8 欄——icon／名稱＋標籤／權利資訊／租出數／收入／租金／Mktplace 開關／Manage；`my-ip.html` 由原本 `.data-list` 卡片式清單改用此變體，對齊 e-shop 表格版面，同時把原本擠成一行的 meta 字串拆成獨立欄位）；拖曳握把 `__drag`（grip，抓它才重排）＋抬起態 `.product-list__row.is-dragging`（抬升陰影＋置頂，僅 --eshop Products 分頁；跟手 transform 由頁面 JS 控制）。草稿列（`[data-status="draft"]`）握把隱藏、不可拖曳（無粉絲端陳列順序），頁面 JS 置頂。列縮圖 `__thumb` 統一成描邊框，對齊 `__image--placeholder` 的**真實呈現值**：76×76（2026-07-26 使用者裁示：全站清單縮圖統一 76px，原 52×52）／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`（2026-07-20 二次修正——首版誤對齊 `__image` 從未單獨呈現過的基礎規則，已用 Playwright 逐項核對訂單/取貨與電子商店一致，Q20）；反白變體 `__thumb--cover` 邊框同色不露描邊 | [product-list.css](./ds-components/product-list.css) |
+| Product list | 🟠 organism | ✓ App | E-Shop inventory table: product identity + status + stock + visibility + edit action, borderless row-divider layout。變體：`--eshop`/`--bundles`/`--auctions`/`--orders`/`--pickup`/`--ip`（2026-07-20 新增，spec 5.1.4 §F6：IP 清單欄位，8 欄——icon／名稱＋標籤／權利資訊／租出數／收入／租金／Mktplace 開關／Manage；`my-ip.html` 由原本 `.data-list` 卡片式清單改用此變體，對齊 e-shop 表格版面，同時把原本擠成一行的 meta 字串拆成獨立欄位）；拖曳握把 `__drag`（grip，抓它才重排）＋抬起態 `.product-list__row.is-dragging`（抬升陰影＋置頂，僅 --eshop Products 分頁；跟手 transform 由頁面 JS 控制）。草稿列（`[data-status="draft"]`）握把隱藏、不可拖曳（無粉絲端陳列順序），頁面 JS 置頂。列縮圖 `__thumb` 統一成描邊框，對齊 `__image--placeholder` 的**真實呈現值**：76×76（2026-07-26 使用者裁示：全站清單縮圖統一 76px，原 52×52）／`--muted` 底／1px `--border-soft`／icon 色 `--muted-foreground`（2026-07-20 二次修正——首版誤對齊 `__image` 從未單獨呈現過的基礎規則，已用 Playwright 逐項核對訂單/取貨與電子商店一致，Q20）；反白變體 `__thumb--cover` 邊框同色不露描邊。**2026-07-31 使用者：`.product-list__image` 改直式**——寬度維持 76px、高度由 `--img-portrait`（750/930）推導成 94px（76×94），不再從直式原圖裁一塊方形，列高隨之從 116 自然長到 134。**例外**：`.product-list--events .product-list__image` 維持 `1:1` 方形（活動列表沿用既有方形版位，未隨本輪改直式）；取貨頁 QR 圖示用的是不同 class（`.product-list__thumb`，Q20 icon-chip 家族），不受本次收斂影響，仍是正方 chip | [product-list.css](./ds-components/product-list.css) |
 | Project list | 🟠 organism | ✓ App | Projects table，欄位＝圖片／專案（`__kind` 類型＋名稱＋簡介）／當前目標（百分比＋金額＋既有 `.project-bar`）／剩餘時間／類別（內容＋家族）／狀態／chevron，整列連進明細，borderless row-divider。**2026-07-24 由單行 meta 拆成真欄位、並比照 e-shop 改真圖縮圖**：原 52×52 icon chip `__icon` 退場、改 76px `__image`（2026-07-26 使用者要求放大三分之一，原 56px；`poster||cover`，object-fit cover；無圖退 `--placeholder` muted 方塊＋類型 icon），**就此離開 Q20 icon-chip 家族**（`.product-list__thumb`／`.data-list__icon` 仍是純 icon chip、不受影響）。當前目標為 `__goal-pct`（粗大字）＋`__goal-amt`＋可重用進度條；非 campaign 列的目標／倒數用 `__cell--empty` 破折號。**待辦 tip 欄與獨立類型欄均於 2026-07-24 移除**。詳見 §4.28 | [project-list.css](./ds-components/project-list.css) |
-| Table | 🟠 organism | ✓ App | Earnings transactions 9-col table | [table.css](./ds-components/table.css) |
-| Chart | 🟠 organism | ✓ App | Linechart (Dashboard / Earnings trends) + stacked-bar + source-list legend + rank-bars + **donut**。`.donut`（2026-07-25 新增）＝兩段式比例圓環：外層設 `--donut-p`（第一段百分比 0–100），色彩 `--donut-a`／`--donut-b`（預設 `--chart-3` 綠／`--chart-5` 紫），尺寸 `--donut-size`（預設 220px），圓心挖空以 `::after` ＋ `--donut-thickness`（預設 28px）／`--donut-hole`（預設 `--card`，放在別的底色上要一併覆寫），中央 `.donut__center`（`__label`／`__value`）疊在挖空層之上；圖例沿用同檔 `.source-list`／`.source-row`。**兩段以上的比例用 `.stacked-bar`／`.rank-bar`，不要硬塞進 donut**。消費者：專案詳情 › 我的收益 › 淨收益分配（發起人／支持者 70/30） | [chart.css](./ds-components/chart.css) |
+| Table | 🟠 organism | ✓ App | Earnings transactions 9-col table。**表頭無底色、也無下框線**（2026-07-31 使用者裁示，同日兩段：先去底色——底色在卡片內會像另一個區塊；再去下框線——全站列表表頭一致，見 STYLE-DECISIONS Q41）。表頭與內容的分隔改由留白承擔，`tbody` 每一列的分隔線不動。伴生類：`.ztor-table-scroll`（橫向捲動容器，2026-07-31 自 project-detail 的行內 `overflow-x:auto` promote；坐在 `.card` 內時表格自框會被取消、避免框中框）、`.ztor-table__nowrap`（短值欄不換行——兩字詞會被逐字斷成直行）、`.ztor-table__sub`（主欄位第二行，放來源／模組／分類這類歸屬資訊，省下一整欄寬度）、`.ztor-table--truncate`（modifier：整張表一律單行，主欄位 `.ztor-table__namecell` 用 `max-width:0`＋`width:100%` 吃掉剩餘寬度，超出以 ellipsis 收掉而不撐寬表格；不用 `table-layout:fixed`，那會改掉站上所有表格的欄寬演算法）、`.ztor-table__mediatext`（`.ztor-table__media` 裡要放兩行文字時的包裝；flex item 預設 `min-width:auto` 不會縮，不歸零 ellipsis 永遠不觸發）。**縮圖一律用 `.ztor-table__media` 併進名稱格、不要自成一欄**——獨立欄會在圖兩側各吃一次 20px 儲存格內距，圖會浮在空欄中間（2026-07-31 使用者回報）。縮圖尺寸 **40px**、間距 `--sp-12`（2026-07-31 使用者：各再大一點點，覆蓋 07-26 的 32px 裁決）；40px 剛好等於資料列的內容高，列高不變。 | [table.css](./ds-components/table.css) |
+| Chart | 🟠 organism | ✓ App | Linechart (Dashboard / Earnings trends) + stacked-bar + source-list legend + rank-bars + **donut**。`.donut`（2026-07-25 新增）＝兩段式比例圓環：外層設 `--donut-p`（第一段百分比 0–100），色彩 `--donut-a`／`--donut-b`（預設 `--chart-3` 綠／`--chart-5` 紫），尺寸 `--donut-size`（預設 220px），圓心挖空以 `::after` ＋ `--donut-thickness`（預設 28px）／`--donut-hole`（預設 `--card`，放在別的底色上要一併覆寫），中央 `.donut__center`（`__label`／`__value`）疊在挖空層之上；圖例沿用同檔 `.source-list`／`.source-row`。**兩段以上的比例用 `.stacked-bar`／`.rank-bar`，不要硬塞進 donut**。消費者：專案詳情 › 我的收益 › 淨收益分配（發起人／支持者 70/30） `.chart-card__foot` 為 space-between（左說明、右操作群）；**只有說明文字、沒有操作群時該文字靠右**（`> span:only-child` 補 `margin-left:auto`，2026-07-31）——否則單一子元素在 space-between 下等同靠左，看起來像漏了右邊那組。 | [chart.css](./ds-components/chart.css) |
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → distributable profit ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
 | Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup | [payout-modal.css](./ds-components/payout-modal.css) |
@@ -760,7 +769,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1） | [partials/film-picker.js](./partials/film-picker.js) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--labeled`＞`.status-axis`＞`.status-axis__label`＝詳情頁首大寫標籤堆疊。用於 orders/order-detail | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
-| Leave dialog | 🟠 organism | ✓ App | 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用。兩態同殼：有未存編輯→問儲存（儲存並離開 primary／不儲存就離開 outline）；未編輯→純離開（離開 primary）。`.leave-dialog`[data-open]＞`__scrim`＋`__card`＞`__close`/`__title`/`__body`/`__actions`（堆疊滿寬 btn）；Esc/scrim/× 取消。2026-06-29 自 shared.css `.wizard-leave*` promote | [leave-dialog.css](./ds-components/leave-dialog.css) |
+| Leave dialog | 🟠 organism | ✓ App | 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用。兩態同殼：有未存編輯→問儲存（儲存並離開 primary／不儲存就離開 outline）；未編輯→純離開（離開 primary）。頂列無儲存入口的頁面加 `.wizard[data-leave-simple]` 可強制永遠走純離開態（2026-07-31，admin-ip-bank-entry）。`.leave-dialog`[data-open]＞`__scrim`＋`__card`＞`__close`/`__title`/`__body`/`__actions`（堆疊滿寬 btn）；Esc/scrim/× 取消。2026-06-29 自 shared.css `.wizard-leave*` promote | [leave-dialog.css](./ds-components/leave-dialog.css) |
 | Spec row | 🟡 molecule | ✓ App | 可重複的詳細規格列（spec 5.1.5.2 §4.1② 建立商品／5.1.5.1 §2.3 商品細節）：`.spec-row`（grid 1fr 1fr auto）＞規格名稱 `.input`＋規格值 `.input`＋行尾 `.btn--icon` 刪除；多筆垂直堆疊，＋ 新增規格加空列。2026-06-29 自 create-product 內聯 `.cp-spec-row` promote、product-detail（D095）共用 | [spec-row.css](./ds-components/spec-row.css) |
 | Split button | 🟡 molecule | ✓ App | 主操作＋箭頭下拉相關動作（spec 5.1.5 F3 / D066，ref. Add Event ▾）：電子商店 F3「建立」context-aware（主鈕隨 tab：商品/組合/拍賣），箭頭一律列全部類型。`.split-button`＞`__main`(左圓角)＋`.dropdown`＞`__caret`(右圓角、細線相連)；組合 btn＋dropdown-menu | [split-button.css](./ds-components/split-button.css) |
 | New product post | 🟠 organism | ✓ App | 建立商品後在電子商店清單彈出的撰寫彈窗（spec 5.1.5.7 / D068）：重用群發撰寫器（受眾·標題≤120·內文≤2000·token·排程，message-modal.css）＋ payout dialog 外殼，本檔只加 F2 商品附件卡 `.npp-product`＋略過路徑；`?posted=1` 由 e-shop 開啟。組合 payout-modal＋message-modal | [product-post-modal.css](./ds-components/product-post-modal.css) |
@@ -780,7 +789,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Segmented control | 🟡 molecule | ✓ Project | Compact chart view switcher and mode toggles | [chart.css](./ds-components/chart.css) |
 | Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
 | Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用 | [progress-stepper.css](./ds-components/progress-stepper.css) |
-| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左（**2026-07-16：兩者合併為單一返回按鈕**——`.wizard__top-lead` 當膠囊面，hover 套 `--accent` 圓角底[`--radius-lg` 8px、內距 8/16/8/8，Figma 781:4142]、點標題也回上頁；命中區/焦點環由 `.wizard__back::after` stretched 撐滿整個 lead，markup 不變）｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**三欄軌道（2026-07-24 修）**：`minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`——左欄補 180px 下限。原本兩側都是純 `1fr`，左欄標題塊有 `min-width:0`＋ellipsis 所以最小能縮到 0、右欄的儲存狀態與按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄吃成 0、標題溢出壓在進度條上（1058px 實測 col1=0）；補下限後擠壓改由進度條吸收，寬螢幕（1440px 實測 266/820/266）版面不變。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋Save&exit。**`.wizard__body` 表單版修飾類**（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：`.wizard__body--form`（頂距 `--sp-72` 72px，取代逐頁寫死）／`.wizard__body--narrow`（1000px，create-auction/-bundle）／`.wizard__body--mid`（1140px，create-product〔2026-07-16：由 narrow→wide→mid，剛好容下多選項＋限量的逐規格表在 preview-split 表單欄完整展開，比 wide 收斂、floor≈1100〕）／`.wizard__body--wide`（1240px，create-campaign）；create-event/-project/register-ip 只掛 `--form`（維持基底 820px 寬）。已知分岔未收：funding-simulate.html（頂距 32px）、funding-test.html／create-campaign.html 內文其他覆寫（44px），仍留頁內 | [shared.css](./shared.css) |
+| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左（**2026-07-16：兩者合併為單一返回按鈕**——`.wizard__top-lead` 當膠囊面，hover 套 `--accent` 圓角底[`--radius-lg` 8px、內距 8/16/8/8，Figma 781:4142]、點標題也回上頁；命中區/焦點環由 `.wizard__back::after` stretched 撐滿整個 lead，markup 不變）｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**三欄軌道（2026-07-24 修）**：`minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`——左欄補 180px 下限。原本兩側都是純 `1fr`，左欄標題塊有 `min-width:0`＋ellipsis 所以最小能縮到 0、右欄的儲存狀態與按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄吃成 0、標題溢出壓在進度條上（1058px 實測 col1=0）；補下限後擠壓改由進度條吸收，寬螢幕（1440px 實測 266/820/266）版面不變。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋Save&exit。**`.wizard__bottom-hint`（2026-07-30 新增）**：主動作（如 Continue）被停用時，在它左側補一行「為什麼不能按」的原因（例：「還需要一個完整的套組才能繼續。」）；只在停用時出現，可按時 JS 加回 `.hidden` 整行清空、不留佔位（不用 `visibility:hidden` 是為了不占版面）。視覺與 `.field__hint`（欄位輔助說明）同級——刻意壓低、不與主動作按鈕搶視覺，靠右對齊、`max-width:320px` 避免長句擠壓按鈕。動機：先前主動作被擋關的原因只寫在步驟內的教練提示（如 Bundles 步驟右軌），使用者看的是 footer 那顆灰按鈕，兩者隔著整個表單、按鈕自己不解釋自己。首個消費頁：`create-project.html`（回饋套組步驟擋關時顯示 `cpp.bd.hint.blocked`）。**`.wizard__body` 表單版修飾類**（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：`.wizard__body--form`（頂距 `--sp-72` 72px，取代逐頁寫死）／`.wizard__body--narrow`（1000px，create-auction/-bundle）／`.wizard__body--mid`（1140px，create-product〔2026-07-16：由 narrow→wide→mid，剛好容下多選項＋限量的逐規格表在 preview-split 表單欄完整展開，比 wide 收斂、floor≈1100〕）／`.wizard__body--wide`（1240px，create-campaign）；create-event/-project/register-ip 只掛 `--form`（維持基底 820px 寬）。已知分岔未收：funding-simulate.html（頂距 32px）、funding-test.html／create-campaign.html 內文其他覆寫（44px），仍留頁內 | [shared.css](./shared.css) |
 | Settings nav | 🟡 molecule | ✓ Project | Sticky local navigation inside Settings | [settings.css](./ds-components/settings.css) |
 | Settings row | 🟡 molecule | ✓ Project | Dense label + hint + value/control/action row | [settings.css](./ds-components/settings.css) |
 | Hero slideshow | 🟠 organism | ✓ Project | Dashboard full-bleed carousel | [shared.css](./shared.css) · [hero.js](./hero.js) |
@@ -1237,7 +1246,7 @@ Static callout — no interactive states.
 ┌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┐
 │              ⬡ icon                    │
 │   Hero image — the first thing…        │ └ .upload-tile__title
-│   Min 800 x 800px                      │ └ .upload-tile__hint
+│   Portrait 750 × 930                   │ └ .upload-tile__hint
 └╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┘
 ```
 
@@ -1249,9 +1258,13 @@ Static callout — no interactive states.
 | Base | `.upload-tile` | 縮圖格／證書格（96px；grid 內 84px） |
 | File | `.upload-tile--file` | 檔案上傳列（數位下載檔、合照；110px） |
 
-**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）；`.upload-grid--2x2` 改 2 欄（搭 showcase 並排用）。`.upload-showcase`：主圖（左）＋縮圖格（右）並排兩等寬欄，附圖排 2×2 對齊 1:1 主圖高度；窄於 880px 收成主圖在上、附圖 4 格在下（create-product 展示它）。`.upload-showcase--stacked`：不分寬度都主圖在上、附圖列（4 格一排）在下（把窄版行為固定成常態），供半寬欄位並列版面用（product-detail 素材＋資訊並列）。`.upload-assets`：具名素材槽列（縮圖／直式海報／橫幅／相簿，每格比例不同）——flex-wrap 排列，每格大小由共用固定高度 `--upload-asset-h`（200px，≤640px 收 148px）＋形狀修飾詞（`--1x1`／`--3x4`／`--3x2`／`--16x9`）推導，放不下換行（create-project 作品呈現）。
+**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）；`.upload-grid--2x2` 改 2 欄（搭 showcase 並排用）。`.upload-showcase`：主圖（左）＋縮圖格（右）並排兩等寬欄，附圖排 2×2 對齊主圖高度；窄於 880px 收成主圖在上、附圖 4 格在下（create-product 展示它）。`.upload-showcase--stacked`：不分寬度都主圖在上、附圖列（4 格一排）在下（把窄版行為固定成常態），供半寬欄位並列版面用（product-detail 素材＋資訊並列）。`.upload-assets`：具名素材槽列——2026-07-31 依 D164 收斂為兩種組合：**建立項目**＝主視覺（Key visual）＋圖庫（2 格）、**建立活動**＝主視覺＋橫幅＋圖庫（3 格，橫幅仍是 `--16x9`，其餘同直式比例）；flex-wrap 排列，每格大小由共用固定高度 `--upload-asset-h`（200px，≤640px 收 148px）＋單一比例修飾詞 `--750x930` 推導，放不下換行（create-project／create-event 作品呈現）。
 
 > 為什麼是「固定高度推寬度」而不是 grid `1fr`＋`aspect-ratio`：grid `1fr` 的最小尺寸是 auto，格子帶了 `aspect-ratio` 之後，瀏覽器會拿比例換算出的內容尺寸回頭撐開欄寬，四格互相拉扯就整排衝出容器（2026-07-24 create-project Showcase 溢出的成因）。固定高度沒有這條回饋迴路。
+
+> **2026-07-31 全站比例收斂**：圖片上傳槽的比例由單一 CSS 變數 `--upload-img-ratio`（`var(--img-portrait, 750 / 930)`，Foundation 來源 `_tokens.css` 的 `--img-portrait`，≈0.806，`upload-tile.css:35`）供應，`--hero`、`.upload-grid .upload-tile`、`--750x930` 修飾詞皆讀它——這是使用者裁決，取代原本「縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2」四套並存的模型（見 STYLE-DECISIONS 已裁決條目、ASSUMPTIONS 產品變更提案）。原本的形狀修飾詞 `--1x1`／`--3x4`／`--3x2` 已從圖片槽退場、CSS 宣告本日一併刪除；`--16x9` 仍服役，用途擴大為「project-detail 的 Demo 影片／音樂**檔案**槽」＋「活動（Events）唯一保留的橫式橫幅**圖片**槽」，兩者皆不受本次直式比例收斂規範。
+>
+> **同日第二輪（D164 落地）：具名槽位數量隨比例收斂**——槽名與形狀分離後，多格同源素材不再有意義：建立項目（縮圖／直式海報／橫式橫幅／圖庫 4 格）併為**主視覺＋圖庫** 2 格；建立活動併為**主視覺＋橫幅＋圖庫** 3 格（必填數 4→3）；編輯活動具名槽同步收斂為 2 格＋圖庫列。詳見 §4.15 demo 與 `documents/decisions.md` D164。
 
 **States**
 
@@ -1272,9 +1285,14 @@ Static callout — no interactive states.
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
 | `.upload-showcase` | 主圖＋縮圖格並排兩等寬欄（≤880px 收回堆疊） |
 | `.upload-showcase--stacked` | 縱向堆疊變體：不分寬度都主圖在上、附圖列在下（product-detail 素材欄用） |
-| `.upload-assets` | 具名素材槽列：flex-wrap，格子高度＝`--upload-asset-h`（200px／≤640px 148px）、寬度由形狀修飾詞推導 |
-| `.upload-tile--1x1` / `--3x4` / `--3x2` / `--16x9` | 形狀修飾詞（`aspect-ratio`）。只在有確定高度的容器（如 `.upload-assets`）內使用，別加在 grid `1fr` 的格子上 |
-| `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/AI 優化/刪除）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」）。就緒仍走 `upload:change` 事件。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）** |
+| `.upload-assets` | 具名素材槽列：flex-wrap，格子高度＝`--upload-asset-h`（200px／≤640px 148px）、寬度由 `--750x930` 推導。**槽位組合（D164）**：建立項目＝主視覺＋圖庫（2 格）；建立活動＝主視覺＋橫幅＋圖庫（3 格，橫幅走 `--16x9`） |
+| `--upload-img-ratio` | 圖片上傳槽比例的單一來源，值為 `var(--img-portrait, 750 / 930)`（Foundation token `--img-portrait` 定義於 `_tokens.css`，見 Pillar 1 §1.3；`upload-tile.css:35`，2026-07-31 使用者裁決）。`--hero`、`.upload-grid .upload-tile`、`.upload-tile--750x930` 皆讀它 |
+| `.upload-tile--750x930` | 圖片上傳槽的唯一形狀修飾詞，讀 `--upload-img-ratio`。只在有確定高度的容器（如 `.upload-assets`）內使用，別加在 grid `1fr` 的格子上 |
+| ~~`.upload-tile--1x1` / `--3x4` / `--3x2`~~ | **已退場（2026-07-31）**：舊多比例模型的形狀修飾詞，CSS 宣告已刪除（唯一消費者是 design-system.html 示範卡，本輪已改用 `--750x930`）；不得再用於新的圖片上傳槽 |
+| `.upload-tile--16x9` | 服役範圍擴大（2026-07-31）：project-detail 的 Demo 影片／音樂**檔案**槽＋活動（Events）唯一保留的橫式橫幅**圖片**槽（create-event／edit-event，1920×1080，D164）。兩者皆不受本次直式比例收斂規範；其他模組不得比照新增橫式圖片槽 |
+| `.upload-tile__flag` | 靜態語意標記（如相簿第一格的「封面」），2026-07-31 由 `shared.css` 的 `.pd-gallery__badge` 搬入元件層；與 `__badge`（AI 優化完成狀態、JS 產生）角色不同，刻意不同名 |
+| `data-upload-src` / `data-upload-key` | 編輯態預填屬性：`data-upload-src="<url>"` 讓格子初始直接進 `.is-filled` 並掛上該圖，跳過假上傳計時；`data-upload-key` 供 `upload:change` 事件的 `detail.key` 識別（沒有則退回既有的 `data-cp-asset`） |
+| `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/刪除，站上標準 2 鈕）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」，只在掛 `data-upload-ai` 時才多出這顆鈕）。就緒仍走 `upload:change` 事件（`detail: {key, filled}`，bubbles）。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）**。**鍵盤可及性（2026-07-31）**：空狀態掛 `role="button"`＋`tabindex="0"`（填圖後拿掉，改由動作列兩顆真 `<button>` 進 tab 序）；Enter／Space 觸發同點擊（Space 不捲頁）；焦點環＝站上標準 `outline: 2px solid var(--ring)`；上傳／優化／刪除完成後把焦點交還（僅鍵盤觸發的互動才生效） |
 | `.upload-tile__thumb` / `__overlay` / `__spinner` / `__progress` / `__bar` / `__actions` / `__act`(`--ai`) / `__badge` | 互動上傳格的注入子元素（縮圖／進行中罩／spinner／進度條／hover 動作／AI 優化徽章）；全 token 驅動，罩用 `color-mix(--foreground/--card)` 主題自適應 |
 | `[data-upload="content"]`（內容檔模式） | 內容檔（音樂/影片/檔案，§4.2 F11）：上傳後可**播放**（音訊/影片，真實 `<audio>`/`<video>`）與刪除，操作比照顯示圖、**無 AI**。影片顯示影格（`.upload-tile__video`）、音訊/檔案顯示檔型圖示＋檔名（`.upload-tile__filemark`/`__filename`）；動作＝`__act--play`（播放/暫停切換）＋替換＋刪除；`accept` 由頁面以 `data-upload-accept` 指定（音樂→`audio/*`、影視→`video/*`）。`.upload-tile--playable` 才顯示播放鈕。呈現層 demo（不真上傳） |
 
@@ -1287,7 +1305,7 @@ Static callout — no interactive states.
 
 **Do & Don't**
 
-- ✅ Do 在 `__hint` 標明限制（Min 800 x 800px／檔型清單）。
+- ✅ Do 在 `__hint` 標明限制（Portrait 750 × 930／檔型清單）。
 - ✅ Do 主格用 `--hero`、次要角度用 `.upload-grid`。
 - ❌ Don't 當一般空狀態容器（那是 `empty-stub`）。
 - ❌ Don't 改實線或填色——虛線就是可上傳的訊號。
@@ -1298,7 +1316,7 @@ Static callout — no interactive states.
 <div class="upload-tile upload-tile--hero">
   <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
   <span class="upload-tile__title">Hero image — the first thing buyers see</span>
-  <span class="upload-tile__hint">Min 800 x 800px</span>
+  <span class="upload-tile__hint">Portrait 750 × 930</span>
 </div>
 ```
 
@@ -1762,15 +1780,16 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
  └ .alert__close →    (chevron · --card only)
 ```
 
-**Variants** — Two density modifiers `.alert--card` (large, row-divider list, close button) and `.alert--row` (slim single-line, left-border accent). Four status modifiers `.alert--warning` / `.alert--error` / `.alert--success` / `.alert--info`, shared across densities. Dashboard F4 adds two state modifiers on `.alert--card`: `.alert--snoozed` (soft-closed info item, receded ~62%, reappears ~7d) and a blocking item whose close control is `disabled`/locked (resolve only in the source module) — spec 5.1.1 §F4.
+**Variants** — Two density modifiers `.alert--card` (large, row-divider list, close button) and `.alert--row` (slim list row — no fill, hairline bottom divider, status carried by the icon glyph color). Four status modifiers `.alert--warning` / `.alert--error` / `.alert--success` / `.alert--info`, shared across densities. Dashboard F4 adds two state modifiers on `.alert--card`: `.alert--snoozed` (soft-closed info item, receded ~62%, reappears ~7d) and a blocking item whose close control is `disabled`/locked (resolve only in the source module) — spec 5.1.1 §F4.
 
-**Sizes** — Density is the size axis: `--card` (40px icon, multi-line, `14px 4px` pad) vs `--row` (30px icon, single-line, `12px 14px` pad).
+**Sizes** — Density is the size axis: `--card` (40px icon, multi-line, `14px 4px` pad) vs `--row` (30px square icon footprint, single-line, `12px 0` pad).
 
 **States**
 
 | State | Selector | Change |
 |---|---|---|
-| default | — | Status icon tint + (card) bottom divider / (row) left-border accent |
+| default | — | Status icon tint + (card) bottom divider |
+| stacked rows | `.alert--row + .alert--row` | `border-top` hairline between rows; a lone row gets no rule |
 | cta hover | `.alert--card .alert__cta:hover` | Underline appears, `3px` offset |
 | close hover | `.alert--card .alert__close:hover` | `--muted` bg, color → `--foreground` |
 | last item | `.alert--card:last-child` | Drops `border-bottom` (clean list end) |
@@ -1783,11 +1802,11 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|
 | `.alert--card` | Card density: `40px 1fr 28px` grid, bottom divider, close button |
 | `.alert--snoozed` | F4 soft-closed info state — muted ~62%, still in list |
-| `.alert--row` | Row density: `auto 1fr auto` grid, muted bg, 3px left accent |
+| `.alert--row` | Row density: `auto 1fr auto` grid, no fill, `12px 0` pad, hairline rule between stacked rows (2026-07-31: 3px left accent, muted fill and icon-chip fill all removed — reads as a list row, not a colored block; icon keeps its 30px square footprint so multi-row text edges stay aligned) |
 | `.alert--bar` | Bar density: single-line rounded bar, soft shadow, no divider; `.alert__title` + inline `.alert__meta`, optional `.alert__cta`, `.alert__dismiss` ✕ |
 | `.alert--page-top` | Positioning modifier on `.alert--bar`: sticky, full-bleed edge-to-edge flush page-top inside the app shell (must be `.main` first child), padding-inline aligned to the content column. `::after` masks the scroll-side top corner (≥901px). **Currently unused** — both page-top notification bars moved to `.alert-inset` (2026-07-26); kept as a preserved variant for full-bleed cases |
 | `.alert-inset` ＋ `.alert--inset-card` | 收窄置中的頁面通知條（2026-07-26 promoted 自 e-shop `#eshop-stock-bar`，Figma 856:25546）。**兩層結構**：外層 `.alert-inset` 只管定位（sticky `top:--sp-16`、`max-width:1280` + `margin-inline:auto` + `padding-inline:28px`，與 `.page` 同配方，須為 `.main` 第一個子元素）；內層 `.alert.alert--bar.alert--inset-card` 才是視覺卡（`--surface-shell` 底＋`--radius-xl`＋12/16 內距；淺色改 `--card` 白底＋`--shadow-card`）。無 icon、無狀態色。分兩層的原因：單層 `margin-inline:max(...)` 在 `.main` flex 直欄容器裡寬螢幕會右側溢出。Consumers：E-Shop 低庫存提醒（F2）、Events 情境提醒（`js/scenario.js` 注入） |
-| `.alert--warning/-error/-success/-info` | Sets icon chip tint, CTA color, and (row) left-border color |
+| `.alert--warning/-error/-success/-info` | Sets icon chip tint and CTA color |
 | `.alert__icon` | Status-tinted chip holding a filled `.ztor-icon` |
 | `.alert__body` | Title + desc/meta + optional CTA stack |
 | `.alert__title` | 14px/600 (card) or 13px/500 (row) |
@@ -1797,9 +1816,9 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Token usage** (→ Pillar 2 Role)
 
-- `--status-warning`, `--destructive`, `--status-success`, `--status-info` (icon tint via `color-mix`, CTA, row accent) · `--primary` (default `--row` left accent when no status) · `--card`, `--muted` (row bg, close hover) · `--border` (card divider); `--foreground`, `--foreground-muted`, `--muted-foreground` · `--radius-md`, `--radius-sm`; `--font-ui`
+- `--status-warning`, `--destructive`, `--status-success`, `--status-info` (icon tint via `color-mix` on `--card`, glyph color on `--row`, CTA) · `--card`, `--muted` (card icon chip, close hover) · `--border` (card divider, rule between stacked rows); `--foreground`, `--foreground-muted`, `--muted-foreground` · `--radius-md`, `--radius-sm`; `--font-ui`
 
-**Usage** — Use `.alert--card` in the dashboard alerts panel (stacked, dismissible, with renew/manage CTAs); use `.alert--row` for inline page warnings like low-stock or region banners. Avoid for a single editorial hint — use the Info banner instead.
+**Usage** — Use `.alert--card` in the dashboard alerts panel (stacked, dismissible, with renew/manage CTAs); use `.alert--row` for stacked inline notices inside a card or dialog (Fan analytics F8 suggested actions, Edit event consequence notes, Manage IP delete warning). Since 2026-07-31 the row carries no fill, so give it a card or dialog to sit in — it has no edge of its own. Avoid for a single editorial hint — use the Info banner instead.
 
 **Do & Don't**
 
@@ -2691,7 +2710,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | Class | Effect |
 |---|---|
 | `.preview-card` | 白卡容器，1px border |
-| `.preview-card__media` | 主圖 4:3，空時放 icon 占位 |
+| `.preview-card__media` | 主圖直式 `--img-portrait`（2026-07-31 使用者：原 4:3 橫式改直式——建立流程的主圖槽已是 750×930，預覽若維持橫式會把創作者剛上傳的直式圖切成橫帶，等於預覽騙人；拍賣／商品／組合／集資四個建立流程與訂單詳情共用本卡，一起跟上），空時放 icon 占位 |
 | `.preview-card__row / __name / __price / __desc` | 名稱｜價格同列、描述 |
 | `.preview-card__dots / __meta / __cta` | 拍賣專用：輪播圓點／賣家分類／出價 CTA |
 | `.is-empty` | 未填占位（斜體、subtle） |
@@ -2951,7 +2970,7 @@ table.ztor-table (width 100%, border-collapse separate, --card, 1px --border, ra
 | `thead th` | Muted header cell; `--muted` bg, Geist 13/500 `--muted-foreground`, bottom hairline |
 | `tbody td` | Body cell; `16px 20px` padding, `--foreground`, middle-aligned, bottom hairline |
 | `.ztor-table__feature` | Emphasized label cell — Geist `font-weight: 500` |
-| `.ztor-table__media` / `.ztor-table__thumb` / `.ztor-table__media-head` | Media feature cell — inner flex wrapper (gap `--sp-10`; must NOT be the `<td>` itself — `display:flex` on a cell drops it out of the table formatting context and collapses fixed column widths) with a 32px square thumb (`--radius`, `--muted` fill, 1px `--border`, `object-fit: cover`) leading the name + badge. Promoted 2026-07-25 from the sony finance table (`我的項目`); started from the admin IP-bank table's 36px thumb, shrunk to 32px with radius one step up on review; shared for any `.ztor-table`. `__media-head` on that column's `<th>` indents the header past the thumb so it aligns with the name |
+| `.ztor-table__media` / `.ztor-table__thumb` / `.ztor-table__media-head` | Media feature cell — inner flex wrapper (gap `--sp-10`; must NOT be the `<td>` itself — `display:flex` on a cell drops it out of the table formatting context and collapses fixed column widths) leading the name + badge (`--radius`, `--muted` fill, 1px `--border`, `object-fit: cover`). Promoted 2026-07-25 from the sony finance table (`我的項目`); started from the admin IP-bank table's 36px thumb, shrunk to 32px with radius one step up on review; shared for any `.ztor-table`. **2026-07-31 user: turned portrait** — height locked at `--zt-thumb-h` (40px, one step back up from 32 per the same-day earlier decision so the thumb matches the row's content height), width derives from `var(--zt-thumb-w) = --zt-thumb-h * --img-portrait` (≈32px, 32×40) instead of being declared directly — locking height and deriving width keeps the row height from drifting if the ratio ever changes. `__media-head` on that column's `<th>` indents the header past the thumb (`--zt-thumb-w`) so it aligns with the name |
 | `.ztor-table__check` | Inline-flex ✓ in `--status-success` |
 | `.ztor-table__cross` | Inline-flex ✗ in `--destructive` |
 | `.ztor-table__partial` | Partial mark in `--status-warning` |
@@ -3325,7 +3344,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 ### 4.28 Project list
 
-**`_layer`** · organism — Borderless table list for Projects, sharing Product list's visual DNA (real image thumbnail, row-divider, `--accent` hover) but with project columns and whole-row `<a>` links to the detail page. Columns: image · project (type above name + one-line desc) · category (content type over family) · current goal · time left · status · chevron. **Current goal uses three visual rows**: a smaller bold percentage (`__goal-pct`, `fs-14`/bold), the existing 6px `.project-bar`, then raised/target amount (`__goal-amt`). The bar is decorative because the percentage and amount remain text. Only funding / pre-order campaigns carry a goal + countdown; every other kind shows a muted em-dash (`__cell--empty`) in the goal + time columns. The 76px thumbnail (enlarged by a third from 56px on 2026-07-26 per user request) uses the same `poster||cover` source as the detail-page hero. This departs from the Q20 icon-chip family (`.data-list__icon` etc.) the row thumbnail once belonged to — the identity cell now leads with a real poster, matching `.product-list__image`. **2026-07-24**: the to-do tip column was removed (per user), the goal cell gained the reusable progress bar, and type moved into the project identity stack.
+**`_layer`** · organism — Borderless table list for Projects, sharing Product list's visual DNA (real image thumbnail, row-divider, `--accent` hover) but with project columns and whole-row `<a>` links to the detail page. Columns: image · project (type above name + one-line desc) · category (content type over family) · current goal · time left · status · chevron. **Current goal uses three visual rows**: a smaller bold percentage (`__goal-pct`, `fs-14`/bold), the existing 6px `.project-bar`, then raised/target amount (`__goal-amt`). The bar is decorative because the percentage and amount remain text. Only funding / pre-order campaigns carry a goal + countdown; every other kind shows a muted em-dash (`__cell--empty`) in the goal + time columns. The 76px-wide thumbnail (enlarged by a third from 56px on 2026-07-26 per user request) uses the same `poster||cover` source as the detail-page hero. This departs from the Q20 icon-chip family (`.data-list__icon` etc.) the row thumbnail once belonged to — the identity cell now leads with a real poster, matching `.product-list__image`. **2026-07-31 user decision: `.project-list__image` turned portrait** — width stays 76px, height now derives from `--img-portrait` (750/930) to 94px (76×94, same recipe as `.product-list__image`), row height grows from 116 to 134 accordingly; no square/landscape crop of the source art is kept. **2026-07-24**: the to-do tip column was removed (per user), the goal cell gained the reusable progress bar, and type moved into the project identity stack.
 
 **Anatomy**
 
@@ -3357,7 +3376,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - text `--foreground` / `--foreground-muted` / `--muted-foreground` · dividers `--border` / `--border-soft` · hover `--accent` · focus `--ring` · thumbnail `--card` (placeholder `--muted` + `--border-soft`) · radius `--radius` · motion `--duration`/`--easing` · font `--font-ui`
 
-**Usage** — Projects page list view (projects.html; rows rendered by its inline JS from data). Card view is the separate `.project-card` page block（封面 `.project-card__cover` 有 `cover` 資料時放 `.project-card__cover-img` 真實海報、鋪滿 16:9 並裁切，沒有素材的專案退回 lucide 圖示佔位，2026-07-24）。
+**Usage** — Projects page list view (projects.html; rows rendered by its inline JS from data). Card view is the separate `.project-card` page block（封面 `.project-card__cover` 有 `cover` 資料時放 `.project-card__cover-img` 真實海報、鋪滿裁切，沒有素材的專案退回 lucide 圖示佔位，2026-07-24；**2026-07-31 使用者：封面比例由 16:9 改直式 `--img-portrait`**——橫式框配直式原圖只能取中間一條橫帶，海報上下全被切掉，改直式後 auto-fill 280px 欄寬約長 347px 高，卡片變成海報牆讀法；活動不吃這條，活動未使用 `.project-card`）。
 
 **Do & Don't**
 
@@ -4053,6 +4072,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.list-toolbar` — 殼層工作列。實色 `--surface-shell`（淺色主題改 `--card` ＋ `--shadow-card`）、四角 `--radius-xl` 16px、固定 58px 高、`align-items: stretch`。
 - `.list-toolbar > .tabs` — 主軸 tab，撐滿整個 58px；active 橘色底線因此貼齊容器下緣而不是浮在中間。
 - `.list-toolbar__actions` — 右側動作群，絕對定位、垂直置中，所以 tab 數量變動不會推擠動作。
+  - `[hidden]` 有專屬覆寫（`display:none`）：元件自己宣告了 `display:flex`，會蓋過 UA 的 `[hidden]{display:none}`，沒有這條的話 `el.hidden = true` 設得下去、畫面上照樣顯示。動作群要依分頁顯隱時（earnings 的 `[data-tab-actions]`）靠這條（2026-07-31 實測踩到）。
 - `.list-status-row` — 次層篩選列，透明、行內流，放 pill 篩選（e-shop 狀態）或 select（projects 發行模式／內容類別）。
 
 **為什麼工作列要固定高度** — active 底線貼在 `.tabs__item` 下緣，只有讓 tabs 撐滿 58px，底線才會落在殼層最底部。
@@ -4709,7 +4729,14 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Dependencies** — `js/toast.js`（`window.ztorToast.show(...)`，動態建立 `.ztor-toasts` 容器與逐則 `.ztor-toast`，含 `aria-live="polite"`）；成功／錯誤圖示為 `js/toast.js` 內建的 inline SVG，非 `data-lucide` 屬性。
 
-**Consumers** — `media-vault.html`、`tier-settings.html`、`tier-benefits.html`（三頁皆載入 `js/toast.js`；頁面本身無靜態 markup，容器由 JS 於執行期建立於 `<body>` 下，屬預期行為）。
+**跨頁佇列 `queue()`（2026-07-30 新增）** — `show()` 只活在當前頁：有些確認發生在「按下去就換頁」的動作上（例如建立流程按發布 → 導向專案詳情頁），換頁瞬間 toast 就被丟掉，使用者到了新頁面看不到剛才那一下有沒有成功。`queue(message, opts)` 把訊息寫進 `sessionStorage`（key `ztor.toast.queue`，只活在該分頁、關掉即消失），下一個載入 `js/toast.js` 的頁面在 `DOMContentLoaded` 時「先刪佇列再顯示」——這樣途中重整不會把同一則提示再跳一次。任何頁面只要 `<script src="js/toast.js">`，就自動具備這個接收能力，不必逐頁接線。
+
+- 簽名：`window.ztorToast.queue(message, { key, tone, hold })`
+- `opts.key` — i18n key。顯示時機在下一頁，語言可能已被切換，所以存 key、顯示時才查字典翻譯；查不到 key（打錯、字典未補）才退回 `message` 這個字串當保底，畫面上永遠不會出現 raw key。
+- `opts.tone` / `opts.hold` — 與 `show()` 同義（`"success" | "error"`／毫秒），一併存進佇列供顯示時使用。
+- 存不進去（無痕模式、配額滿）安靜放棄——原型不該因為存不了一句提示而中斷導向。
+
+**Consumers** — `media-vault.html`、`tier-settings.html`、`tier-benefits.html`（三頁皆載入 `js/toast.js`；頁面本身無靜態 markup，容器由 JS 於執行期建立於 `<body>` 下，屬預期行為）。`create-project.html` 的建立流程發布動作（`publish()`）用 `queue()` 把成功提示交給導向後的 `project-detail.html` 顯示。
 
 **Code example**（依 `js/toast.js` 的 `ensureHost()`/`show()` 邏輯重建，非憑空推導）
 
@@ -4853,6 +4880,51 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 ```
 
 **CSS** — [`zselect.css`](./ds-components/zselect.css)
+
+### 4.111 Finding card
+
+**Purpose** — 一則「帶得走證據的結論」：左邊是一句話的發現與依據，右邊是支撐它的數字。寫成一段文字時數字會埋進句子裡，讀的人要自己把兩個數字拉出來比，而那個落差正是整則結論的重點。規格 5.1.7.8 F7 要求四個組成缺一不可：結論句、可獨立掃視的支撐數字、依據與涵蓋範圍、追查入口。
+
+**Anatomy**
+- `.finding` — 兩欄 grid 容器（左結論／右數字），放在 `.card` 內
+- `.finding__kicker` — 期間與類型的小標（如「Highlight · last 30 days」）
+- `.finding__title` — 結論句；主詞必須是具體對象（某地區／平台／分群），不用泛稱
+- `.finding__sub` — 一行補充，說明這個結論為什麼值得注意
+- `.finding__basis` — 依據與涵蓋範圍（用了哪些來源、哪個期間）
+- `.finding__figures` — 數字區，左邊界分隔；`__fig-label` / `__fig-val` / `__fig-meta` 為單一數字的三層
+- `.finding__fig-val--up` / `--down` — 方向修飾詞，走 `--status-success` / `--destructive`
+- `.finding__gap` — 兩個數字之間的落差標記；虛線框表示它是推算出來的關係、不是平台給的原始數字
+- `.finding__cta` — 追查入口，連到造成該變化的區塊
+
+**Dependencies** — `.card`（外殼）、`.btn`（CTA）、`.ztor-icon`（kicker 圖示）。無 JS。<900px 掉成單欄、數字區由左邊界改為上邊界分隔。
+
+**與 Insight row 的分工** — `insight-row` 是單行自動計算提示（一句話就講完，沒有數字與去處）；結論需要數字支撐、而且要能追查下去時才用本元件。
+
+**Consumers** — `fan-analytics.html`（F7 本月重點摘要）。
+
+---
+
+### 4.112 Source status
+
+**Purpose** — 不占版位的資料涵蓋指示。坐在頁首操作區，用一顆膠囊講兩件事：數字涵蓋幾個來源、有沒有需要處理的異常；來源明細點開才展開。涵蓋範圍是判讀頁上每個數字的前提，必須隨時看得到；但它不是使用者來這頁要完成的任務，所以不能占掉一個區塊（規格 5.1.7.8 F1／D159）。
+
+**Anatomy**
+- `.src-status` — 定位容器；狀態由 `data-open`（展開）與 `data-alert`（異常）驅動
+- `.src-status__pill` — 第一層常駐膠囊；`__dot` 狀態點、`__chevron` 展開時旋轉 180°
+- `.src-status__panel` — 第二層來源明細，絕對定位於膠囊下方
+- `.src-status__title` / `__note` — 面板標題與涵蓋範圍說明
+- `.src-status__mark` — 來源識別塊（只放縮寫）
+- `.src-status__row--off` — 未連結來源，整列降權但仍可見
+- `.src-status__foot` — 面板底部的「前往整合設定」通用入口
+
+**狀態規則** — `data-alert="true"` 時膠囊改用 `--destructive` 邊框與文字、`--destructive-fill` 底；規格要求異常排除前不得回到低調樣式。
+
+**為什麼識別塊不用品牌色** — 品牌色會讓五列變成五種強度不一的視覺重量，而這裡要比較的是「狀態」不是「是哪一家」。
+
+**Dependencies** — 明細列沿用 `settings.css` 的 `.settings-row`；面板 surface 語彙取自 `.dropdown__menu`。展開／收合與 Esc 關閉由消費頁的行內腳本處理（無獨立 JS 檔）。<600px 面板改 `fixed` 貼齊左右。
+
+**Consumers** — `fan-analytics.html`（F1 平台連結與同步狀態）。
+
 
 ## Pillar 5 · Pattern
 

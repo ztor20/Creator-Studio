@@ -737,6 +737,104 @@
     border-top-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
   }
 }
+/* ── 上鎖遮罩 ──────────────────────────────────────────
+   「以某個分級檢視」時，那一級打不開的庫房：門條與內容整塊打模糊，蓋上
+   一張說明卡寫解鎖條件。
+
+   為什麼是模糊而不是清空：粉絲那一側看到的不是「什麼都沒有」，是「有東西
+   但我進不去」——形狀還在、細節沒了，這正是分級內容的真實觀感。清空會讓
+   創作者誤以為這座庫房是空的。
+
+   為什麼標題不進遮罩：`.vault-body` 從門條開始包，`.vault-head` 留在外面。
+   遮罩要回答的是「這一座打不開」，所以「這一座」必須始終讀得到。
+
+   模糊打在 `.vault-body` 的子層、遮罩自己是同層兄弟，因此遮罩上的字不會
+   被自己的 filter 糊掉（filter 只影響套用的那棵子樹）。 */
+.vault-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+.vault-body.is-gated > :not(.vault-gate) {
+  filter: blur(7px);
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
+}
+
+.vault-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--sp-40) var(--sp-24);
+  border-radius: var(--radius-xl);
+  background: var(--overlay-tint);
+}
+.vault-gate__panel {
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-24);
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-overlay);
+}
+.vault-gate__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--foreground-muted);
+}
+.vault-gate__icon .ztor-icon { width: 20px; height: 20px; }
+.vault-gate__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-18);
+  font-weight: var(--fw-regular);
+  letter-spacing: -0.2px;
+}
+.vault-gate__sub {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.vault-gate__label {
+  margin-top: var(--sp-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-11);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.vault-gate__label .ztor-icon { width: 13px; height: 13px; }
+.vault-gate__rules {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-6);
+}
+.vault-gate__rules .ztor-icon { width: 13px; height: 13px; }
+.vault-gate__rule-verb { color: var(--muted-foreground); }
+.vault-gate__foot {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  max-width: 34ch;
+}
+
 /* 單欄時側欄變成頁面最上面的一段。刻意「不」給清單自己的 max-height ＋
    overflow：那會在頁面裡塞出一個 262px 的內捲區，手指落在上面時捲的是
    清單、不是頁面，使用者會以為頁面卡住了。庫房數量本來就是個位數，讓它

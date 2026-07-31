@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>受眾分析 5.1.7.8 · 樣子預覽（scratch）</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/insight-row.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* scratch 專用：把規格 5.1.7.8 的區塊排出來看樣子，不進產品頁、不 promote。
+     全部沿用既有元件與 token，沒有新增或修改任何 ds-components；
+     左側欄直接跑正式的 js/sidebar.js，「受眾分析」那一項由本頁事後插入，
+     所以 sidebar.js 本身一個字都沒動。 */
+
+  .scratch-bar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; align-items: center; gap: var(--sp-16); flex-wrap: wrap;
+    padding: var(--sp-10) var(--sp-20);
+    background: var(--muted); border-bottom: 1px solid var(--border);
+    font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-normal);
+  }
+  .scratch-bar strong { color: var(--foreground); font-weight: var(--fw-medium); }
+
+  .sec-label {
+    font-family: var(--font-ui); font-size: var(--fs-13);
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: var(--muted-foreground); margin: var(--sp-24) 0 var(--sp-4);
+  }
+  .f-tag {
+    font-family: var(--font-mono); font-size: var(--fs-11);
+    color: var(--muted-foreground); margin-right: var(--sp-8);
+  }
+  .coverage-note { font-size: var(--fs-12); color: var(--muted-foreground); line-height: var(--lh-normal); }
+  .grid-2 {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: var(--sp-16); margin-top: var(--sp-16);
+  }
+
+  /* ── F1：頁首操作區的狀態指示（規格 F1 第一層）─────────────────────
+     坐在原本「前往整合設定」按鈕的位置，不另占版位；異常時整顆轉警示色。
+     點開才顯示平台明細（第二層），整合設定的入口收在裡面。 */
+  .f1-dock { position: relative; }
+  .f1-dock__pill {
+    display: inline-flex; align-items: center; gap: var(--sp-8);
+    padding: var(--sp-8) var(--sp-14);
+    border-radius: var(--radius-pill); border: 1px solid var(--border);
+    background: var(--card); color: var(--foreground);
+    font-family: var(--font-ui); font-size: var(--fs-12);
+    box-shadow: var(--shadow-float, none); cursor: pointer;
+  }
+  .f1-dock__dot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--status-success); }
+  .f1-dock[data-alert="true"] .f1-dock__pill { border-color: var(--status-error); color: var(--status-error); }
+  .f1-dock[data-alert="true"] .f1-dock__dot { background: var(--status-error); }
+  .f1-dock__panel {
+    display: none;
+    position: absolute; right: 0; top: calc(100% + var(--sp-8));
+    width: min(460px, calc(100vw - var(--sp-48)));
+    max-height: 70vh; overflow: auto;
+    padding: var(--sp-16) var(--sp-20) var(--sp-20);
+    background: var(--popover); color: var(--popover-foreground);
+    border: 1px solid var(--border); border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-float, none);
+  }
+  .f1-dock[data-open="true"] .f1-dock__panel { display: block; }
+  .f1-dock__head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--sp-12); margin-bottom: var(--sp-4);
+  }
+  .f1-dock__title { font-family: var(--font-ui); font-size: var(--fs-14); }
+
+  /* ── F7 · 本月重點摘要：結論＋可掃視的數字＋依據＋追查入口 ────────── */
+  .highlight {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--sp-32); align-items: center;
+  }
+  .highlight__kicker {
+    display: flex; align-items: center; gap: var(--sp-6);
+    font-family: var(--font-ui); font-size: var(--fs-12);
+    letter-spacing: 0.4px; color: var(--muted-foreground);
+    margin-bottom: var(--sp-8);
+  }
+  .highlight__finding {
+    font-family: var(--font-display); font-weight: var(--fw-light);
+    font-size: var(--fs-28); line-height: var(--lh-snug);
+    letter-spacing: -0.6px; margin: 0 0 var(--sp-4);
+  }
+  .highlight__sub {
+    font-size: var(--fs-14); color: var(--foreground-muted);
+    line-height: var(--lh-relaxed); margin: 0 0 var(--sp-8);
+  }
+  .highlight__figures {
+    display: flex; align-items: center; gap: var(--sp-20);
+    padding-left: var(--sp-32); border-left: 1px solid var(--border);
+  }
+  .highlight__fig-label { font-size: var(--fs-12); color: var(--muted-foreground); margin-bottom: var(--sp-4); }
+  .highlight__fig-val {
+    font-family: var(--font-display); font-weight: var(--fw-light);
+    font-size: var(--fs-40); line-height: var(--lh-none);
+    font-variant-numeric: tabular-nums;
+  }
+  .highlight__fig-meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-6); }
+  .highlight__gap {
+    font-size: var(--fs-11); color: var(--muted-foreground);
+    padding: var(--sp-4) var(--sp-8);
+    border: 1px dashed var(--border); border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+  .highlight__cta { margin-left: var(--sp-8); }
+  @media (max-width: 900px) {
+    .highlight { grid-template-columns: 1fr; gap: var(--sp-20); }
+    .highlight__figures { padding-left: 0; border-left: 0; border-top: 1px solid var(--border); padding-top: var(--sp-16); flex-wrap: wrap; }
+  }
+
+  /* 平台列的方形識別塊：不用品牌色（避免在 scratch 裡寫死 hex），只放首字母。 */
+  .plat-mark {
+    width: 32px; height: 32px; border-radius: var(--radius-lg);
+    background: var(--muted); border: 1px solid var(--border);
+    display: inline-grid; place-items: center;
+    font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground);
+  }
+  .plat-row--off .plat-mark,
+  .plat-row--off .settings-row__label { opacity: .55; }
+
+  /* 狀態切換：demo 用，正式頁沒有這個控制項。
+     class 名刻意避開 shared.css 既有的 .when-data / .when-empty（那組由 devtools 控制）。 */
+  [data-state="empty"] .st-connected,
+  [data-state="empty"] .f1-dock { display: none; }
+  [data-state="partial"] .st-empty { display: none; }
+</style>
+</head>
+<body data-state="partial">
+
+<div class="scratch-bar">
+  <strong>scratch 預覽</strong>
+  <span>規格 documents/5.1.7.8-受眾分析.md（D159 完整版）｜ 只用現有 design system，未新增或修改元件 ｜ 左側欄的「受眾分析」由本頁插入，未動 sidebar.js</span>
+  <span class="segmented" style="margin-left:auto">
+    <button class="segmented__btn segmented__btn--active" data-go="partial">部分連結</button>
+    <button class="segmented__btn" data-go="empty">未連結</button>
+  </span>
+</div>
+
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">Fans · 受眾分析</div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">你的受眾，拼成一張圖。</h1>
+          <p class="page-intro__sub">各平台只給你自己那一塊。這裡把拿得到的拼起來，也直說哪些拿不到。</p>
+        </div>
+        <div class="page-intro__actions">
+          <a class="card__link card__link--accent" href="#">系統說明</a>
+          <div class="f1-dock" data-open="false" data-alert="true">
+            <div class="f1-dock__panel">
+              <div class="f1-dock__head">
+                <div class="f1-dock__title"><span class="f-tag">F1</span>平台連結與同步狀態</div>
+              </div>
+              <p class="coverage-note" style="margin:0 0 var(--sp-8)">
+                數字只涵蓋 YouTube 與 StreetVoice。
+              </p>
+
+              <div class="settings-row plat-row">
+                <div class="flex-row">
+                  <span class="plat-mark">YT</span>
+                  <div>
+                    <div class="settings-row__label">YouTube</div>
+                    <div class="settings-row__hint">訂閱數、觀看數、互動數、受眾地區 · 4 分鐘前同步</div>
+                  </div>
+                </div>
+                <div class="flex-row"><span class="badge badge--success">正常</span></div>
+              </div>
+
+              <div class="settings-row plat-row">
+                <div class="flex-row">
+                  <span class="plat-mark">SP</span>
+                  <div>
+                    <div class="settings-row__label">Spotify</div>
+                    <div class="settings-row__hint">串流數、聽眾地區 · 11 月 18 日同步失敗：授權已過期</div>
+                  </div>
+                </div>
+                <div class="flex-row"><a class="btn btn--primary btn--sm" href="../settings.html#integrations">重新授權</a></div>
+              </div>
+
+              <div class="settings-row plat-row">
+                <div class="flex-row">
+                  <span class="plat-mark">SV</span>
+                  <div>
+                    <div class="settings-row__label">StreetVoice</div>
+                    <div class="settings-row__hint">只支援播放次數，追蹤數與地區這個平台不提供 · 2 小時前同步</div>
+                  </div>
+                </div>
+                <div class="flex-row"><span class="badge">部分支援</span></div>
+              </div>
+
+              <div class="settings-row plat-row plat-row--off">
+                <div class="flex-row">
+                  <span class="plat-mark">IG</span>
+                  <div>
+                    <div class="settings-row__label">Instagram</div>
+                    <div class="settings-row__hint">連結後可取得追蹤數、互動數與受眾地區</div>
+                  </div>
+                </div>
+                <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+              </div>
+
+              <div class="settings-row plat-row plat-row--off" style="border-bottom:0">
+                <div class="flex-row">
+                  <span class="plat-mark">TT</span>
+                  <div>
+                    <div class="settings-row__label">TikTok</div>
+                    <div class="settings-row__hint">連結後可取得追蹤數與互動數</div>
+                  </div>
+                </div>
+                <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+              </div>
+
+              <a class="btn btn--outline" href="../settings.html#integrations" style="width:100%;margin-top:var(--sp-16)">前往整合設定</a>
+              <p class="coverage-note" style="margin:var(--sp-8) 0 0">連結與授權都在設定裡完成，這頁只顯示狀態。</p>
+            </div>
+
+            <button class="f1-dock__pill" type="button" data-f1-toggle aria-expanded="false">
+              <span class="f1-dock__dot"></span>
+              <span>2 / 5 平台 · 1 異常</span>
+              <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="st-connected">
+
+        <!-- ══ F7 · 本月重點摘要 ═══════════════════════════════════════
+             規格要求四個組成缺一不可：結論句、可獨立掃視的支撐數字、
+             依據與涵蓋範圍、追查入口。所以它不是一段話，是一則帶證據的結論。 -->
+        <section class="card highlight" style="margin-bottom:var(--sp-16)">
+          <div class="highlight__main">
+            <div class="highlight__kicker">
+              <i data-lucide="trending-up" class="ztor-icon ztor-icon--sm" aria-hidden="true"></i>
+              <span class="f-tag">F7</span>本月重點 · 近 30 天
+            </div>
+            <h3 class="highlight__finding">日本的受眾在長，錢沒有跟著長。</h3>
+            <p class="highlight__sub">受眾成長與消費成長的落差是所有地區裡最大的一組。</p>
+            <p class="coverage-note" style="margin:0">依據 YouTube 與 StreetVoice 近 30 天資料；Spotify 停在 11/18 未計入。</p>
+          </div>
+
+          <div class="highlight__figures">
+            <div class="highlight__fig">
+              <div class="highlight__fig-label">受眾成長</div>
+              <div class="highlight__fig-val" style="color:var(--status-success)">+18%</div>
+              <div class="highlight__fig-meta">10,124 人</div>
+            </div>
+            <div class="highlight__gap">落差 16pt</div>
+            <div class="highlight__fig">
+              <div class="highlight__fig-label">消費成長</div>
+              <div class="highlight__fig-val">+2%</div>
+              <div class="highlight__fig-meta">$1,863</div>
+            </div>
+            <a class="btn btn--outline btn--sm highlight__cta" href="#">看地區分群</a>
+          </div>
+        </section>
+        <!-- ══ F2 · 受眾總覽 ══════════════════════════════════════════ -->
+        <div class="sec-label"><span class="f-tag">F2</span>受眾總覽</div>
+        <div class="bento">
+          <div class="kpi bento--span-3">
+            <div class="kpi__label">總受眾規模</div>
+            <div class="kpi__value">48,210</div>
+            <div class="kpi__delta">+3.2% 對比上個 30 天</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label">活躍粉絲</div>
+            <div class="kpi__value">1,283</div>
+            <div class="kpi__meta">站內近 90 天，引用 Fans CRM</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label">付費粉絲</div>
+            <div class="kpi__value">412</div>
+            <div class="kpi__delta">+18 對比上個 30 天</div>
+          </div>
+          <div class="kpi bento--span-3">
+            <div class="kpi__label">主要平台</div>
+            <div class="kpi__value" style="font-size:var(--fs-28)">YouTube</div>
+            <div class="kpi__meta">佔已連結受眾 71%</div>
+          </div>
+        </div>
+
+
+        <div class="grid-2">
+
+          <!-- ══ F3 · 多維影響力 ═══════════════════════════════════════ -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span class="f-tag">F3</span>多維影響力</h3>
+              <span class="chip chip--static">四維並列，不給總分</span>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span>
+                <span class="perf-rank__name">觸及廣度</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+3.2%</span>
+                <span class="perf-rank__val">48,210</span>
+              </li>
+              <li class="perf-rank__row" style="--w:46%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">2</span>
+                <span class="perf-rank__name">互動深度</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+0.4pt</span>
+                <span class="perf-rank__val">4.6%</span>
+              </li>
+              <li class="perf-rank__row" style="--w:62%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">3</span>
+                <span class="perf-rank__name">商業價值</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">+6.1%</span>
+                <span class="perf-rank__val">$0.43 / 人</span>
+              </li>
+              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-5)">
+                <span class="perf-rank__idx">4</span>
+                <span class="perf-rank__name">成長速度</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">—</span>
+                <span class="perf-rank__val">+3.2% / 月</span>
+              </li>
+            </ol>
+            <p class="coverage-note" style="margin-top:var(--sp-12)">
+              規格禁止把四維合併成單一「影響力分數」——單一分數會讓創作者誤判自己的處境。
+            </p>
+          </section>
+
+          <!-- ══ F4 · 受眾分群 ═════════════════════════════════════════ -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span class="f-tag">F4</span>受眾分群</h3>
+              <span class="chip chip--static">地區</span>
+            </div>
+            <div class="stacked-bar" style="height:18px">
+              <div class="stacked-bar__seg" style="width:44%;background:var(--chart-1)"></div>
+              <div class="stacked-bar__seg" style="width:21%;background:var(--chart-2)"></div>
+              <div class="stacked-bar__seg" style="width:14%;background:var(--chart-3)"></div>
+              <div class="stacked-bar__seg" style="width:9%;background:var(--chart-5)"></div>
+              <div class="stacked-bar__seg" style="width:12%;background:var(--foreground-muted)"></div>
+            </div>
+            <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span><span class="perf-rank__name">台灣</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">44%</span><span class="perf-rank__val">21,212</span>
+              </li>
+              <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">2</span><span class="perf-rank__name">日本</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">21%</span><span class="perf-rank__val">10,124</span>
+              </li>
+              <li class="perf-rank__row" style="--w:32%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">3</span><span class="perf-rank__name">香港</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">14%</span><span class="perf-rank__val">6,749</span>
+              </li>
+              <li class="perf-rank__row" style="--w:20%; --hue:var(--chart-5)">
+                <span class="perf-rank__idx">4</span><span class="perf-rank__name">馬來西亞</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">9%</span><span class="perf-rank__val">4,339</span>
+              </li>
+            </ol>
+            <p class="coverage-note" style="margin-top:var(--sp-12)">
+              另有平台、行為模式與付費狀態三個維度可切換。年齡維度規格保留但不顯示——年齡資料由誰提供，上游還沒定義。
+            </p>
+          </section>
+
+          <!-- ══ F5 · 轉換漏斗 ═════════════════════════════════════════ -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span class="f-tag">F5</span>轉換漏斗</h3>
+              <span class="chip chip--static">近 30 天</span>
+            </div>
+            <ol class="perf-rank" style="width:100%">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span><span class="perf-rank__name">追蹤</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">—</span><span class="perf-rank__val">48,210</span>
+              </li>
+              <li class="perf-rank__row" style="--w:32%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">2</span><span class="perf-rank__name">互動</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">15.4%</span><span class="perf-rank__val">7,424</span>
+              </li>
+              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">3</span><span class="perf-rank__name">購買</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">412</span>
+              </li>
+              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-4)">
+                <span class="perf-rank__idx">4</span><span class="perf-rank__name">出席</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">45.1%</span><span class="perf-rank__val">186</span>
+              </li>
+              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-5)">
+                <span class="perf-rank__idx">5</span><span class="perf-rank__name">支持項目</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">51.6%</span><span class="perf-rank__val">96</span>
+              </li>
+            </ol>
+            <p class="coverage-note" style="margin-top:var(--sp-12)">
+              百分比是相對前一階段的轉換率。追蹤與互動來自外部平台，購買以下三段來自站內模組，可點進對應名單。
+            </p>
+          </section>
+
+          <!-- ══ F6 · 商業價值 ═════════════════════════════════════════ -->
+          <section class="card">
+            <div class="card__head">
+              <h3 class="card__title"><span class="f-tag">F6</span>商業價值</h3>
+              <span class="chip chip--static">口徑引用 Earnings</span>
+            </div>
+            <div class="bento" style="margin-top:0">
+              <div class="kpi bento--span-6">
+                <div class="kpi__label">ARPU</div>
+                <div class="kpi__value">$0.43</div>
+                <div class="kpi__meta">分母＝已連結受眾 48,210</div>
+              </div>
+              <div class="kpi bento--span-6">
+                <div class="kpi__label">近 30 天消費</div>
+                <div class="kpi__value">$20,700</div>
+                <div class="kpi__delta">+6.1% 對比上個 30 天</div>
+              </div>
+            </div>
+            <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)">
+              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+                <span class="perf-rank__idx">1</span><span class="perf-rank__name">台灣 · 付費</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">52%</span><span class="perf-rank__val">$10,764</span>
+              </li>
+              <li class="perf-rank__row" style="--w:44%; --hue:var(--chart-2)">
+                <span class="perf-rank__idx">2</span><span class="perf-rank__name">香港 · 付費</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">23%</span><span class="perf-rank__val">$4,761</span>
+              </li>
+              <li class="perf-rank__row" style="--w:18%; --hue:var(--chart-3)">
+                <span class="perf-rank__idx">3</span><span class="perf-rank__name">日本 · 付費</span>
+                <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+                <span class="perf-rank__pct">9%</span><span class="perf-rank__val">$1,863</span>
+              </li>
+            </ol>
+            <p class="coverage-note" style="margin-top:var(--sp-12)">
+              每一群都能點回 Fans CRM 的對應粉絲清單。
+            </p>
+          </section>
+
+        </div><!-- /grid-2 -->
+
+        <!-- ══ F8 · 建議行動 ═══════════════════════════════════════════ -->
+        <section class="card" style="margin-top:var(--sp-16)">
+          <div class="card__head">
+            <h3 class="card__title"><span class="f-tag">F8</span>建議行動</h3>
+            <span class="chip chip--static">可關閉</span>
+          </div>
+
+          <div class="alert alert--row alert--warning">
+            <div class="alert__icon"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i></div>
+            <div class="alert__body">
+              <div class="alert__title">日本受眾成長 18%，但你從沒在那裡辦過活動</div>
+              <div class="alert__meta">依據 F4 地區分群近 90 天資料（YouTube · StreetVoice）</div>
+            </div>
+            <a class="alert__cta" href="../create-event.html">建立活動</a>
+          </div>
+
+          <div class="alert alert--row">
+            <div class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></div>
+            <div class="alert__body">
+              <div class="alert__title">香港付費比例是台灣的 1.4 倍，但你的商品沒有當地取貨</div>
+              <div class="alert__meta">依據 F6 商業價值與電子商店訂單資料</div>
+            </div>
+            <a class="alert__cta" href="../store-settings.html">查看商店設定</a>
+          </div>
+
+          <p class="coverage-note" style="margin-top:var(--sp-12)">
+            每則都寫出依據哪些資料，也都可以關掉。規格不允許用確定語氣講預測——這是建議，不是結論。
+          </p>
+        </section>
+
+      </div><!-- /st-connected -->
+
+      <!-- ══ 未連結狀態：F1 升為整頁內容，其餘不出現 ═══════════════════ -->
+      <div class="st-empty">
+        <section class="card">
+          <div class="empty-card">
+            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="link" class="ztor-icon"></i></span>
+            <div class="empty-card__title">還沒有連結任何平台</div>
+            <div class="empty-card__text">
+              連結之後，這裡會把各平台的追蹤數、觀看數、串流數與受眾地區拼成一張完整的受眾圖像。<br>
+              在那之前，這頁沒有數字可以給你——規格明訂不用零或估算把版面填滿。
+            </div>
+            <a class="btn btn--primary" href="../settings.html#integrations">前往整合設定</a>
+          </div>
+
+          <div class="sec-label" style="margin-top:var(--sp-8)">可連結的平台</div>
+
+          <div class="settings-row plat-row plat-row--off">
+            <div class="flex-row">
+              <span class="plat-mark">YT</span>
+              <div>
+                <div class="settings-row__label">YouTube</div>
+                <div class="settings-row__hint">連結後可取得訂閱數、觀看數、互動數與受眾地區</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+          </div>
+
+          <div class="settings-row plat-row plat-row--off">
+            <div class="flex-row">
+              <span class="plat-mark">SP</span>
+              <div>
+                <div class="settings-row__label">Spotify</div>
+                <div class="settings-row__hint">連結後可取得串流數與聽眾地區</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+          </div>
+
+          <div class="settings-row plat-row plat-row--off">
+            <div class="flex-row">
+              <span class="plat-mark">SV</span>
+              <div>
+                <div class="settings-row__label">StreetVoice</div>
+                <div class="settings-row__hint">只支援播放次數，追蹤數與地區這個平台不提供</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+          </div>
+
+          <div class="settings-row plat-row plat-row--off">
+            <div class="flex-row">
+              <span class="plat-mark">IG</span>
+              <div>
+                <div class="settings-row__label">Instagram</div>
+                <div class="settings-row__hint">連結後可取得追蹤數、互動數與受眾地區</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+          </div>
+
+          <div class="settings-row plat-row plat-row--off" style="border-bottom:0">
+            <div class="flex-row">
+              <span class="plat-mark">TT</span>
+              <div>
+                <div class="settings-row__label">TikTok</div>
+                <div class="settings-row__hint">連結後可取得追蹤數與互動數</div>
+              </div>
+            </div>
+            <div class="flex-row"><a class="btn btn--outline btn--sm" href="../settings.html#integrations">連結</a></div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script src="../js/i18n.js?v=r2.2"></script>
+<script src="../js/sidebar.js?v=r2.2"></script>
+<script>
+/* demo 專用腳本：
+   1) 把「受眾分析」插進左側欄的 Fans 群組（第 6 個子項），並標成目前頁。
+      sidebar.js 沒有被修改——這裡是渲染完之後才動 DOM。
+   2) F1 狀態膠囊的展開／收合。
+   3) 頁面狀態切換（部分連結／未連結）。 */
+(function () {
+  function injectNavItem() {
+    var root = document.getElementById('sidebar');
+    if (!root) return false;
+
+    var toggle = root.querySelector('.app-sidebar__group-toggle [data-i18n="nav.fans"], .app-topbar__nav-group [data-i18n="nav.fans"]');
+    if (!toggle) return false;
+    var group = toggle.closest('.app-sidebar__group') || toggle.closest('.app-topbar__nav-group');
+    if (!group) return false;
+
+    var list = group.querySelector('.app-sidebar__subnav > div') || group.querySelector('.app-topbar__dropdown');
+    if (!list) return false;
+    if (list.querySelector('[data-demo-audience]')) return true;
+
+    if (list.closest('.app-sidebar__subnav')) {
+      var li = document.createElement('li');
+      li.innerHTML = '<a class="app-sidebar__sub-link" href="#" aria-current="page" data-demo-audience>受眾分析</a>';
+      list.appendChild(li);
+    } else {
+      var a = document.createElement('a');
+      a.className = 'app-topbar__dropdown-item';
+      a.href = '#';
+      a.setAttribute('aria-current', 'page');
+      a.setAttribute('data-demo-audience', '');
+      a.textContent = '受眾分析';
+      list.appendChild(a);
+    }
+
+    group.setAttribute('data-state', 'open');
+    var btn = group.querySelector('.app-sidebar__group-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    return true;
+  }
+
+  var tries = 0;
+  var timer = setInterval(function () {
+    if (injectNavItem() || ++tries > 60) clearInterval(timer);
+  }, 50);
+
+  // F1 狀態膠囊
+  var dock = document.querySelector('.f1-dock');
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-f1-toggle]');
+    if (t) {
+      var open = dock.getAttribute('data-open') === 'true';
+      dock.setAttribute('data-open', open ? 'false' : 'true');
+      t.setAttribute('aria-expanded', open ? 'false' : 'true');
+      return;
+    }
+    if (dock && dock.getAttribute('data-open') === 'true' && !e.target.closest('.f1-dock')) {
+      dock.setAttribute('data-open', 'false');
+    }
+  });
+
+  // 頁面狀態切換
+  document.querySelectorAll('[data-go]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-go]').forEach(function (b) {
+        b.classList.remove('segmented__btn--active');
+      });
+      btn.classList.add('segmented__btn--active');
+      document.body.dataset.state = btn.dataset.go;
+    });
+  });
+})();
+</script>
+</body>
+</html>

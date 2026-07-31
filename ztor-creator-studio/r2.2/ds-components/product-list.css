@@ -23,8 +23,9 @@
 .product-list__head {
   min-height: 44px;
   padding: 0 var(--sp-10);
-  border-bottom: 1px solid var(--border);
-  color: var(--muted-foreground);
+  /* 2026-07-31 使用者裁示：列表表頭不畫下框線（先做 e-shop 探索頁確認效果後全面套用）。
+     分隔改由表頭與內容之間的留白承擔；每一列自己的分隔線不動。 */
+  color: var(--column-head-ink);
   font-family: var(--font-ui);
   font-size: var(--fs-12);
   font-weight: var(--fw-regular);
@@ -80,7 +81,11 @@
    真正畫面上看到的是 --placeholder 覆蓋後的值（--muted 底／--border-soft 邊／52px／
    --muted-foreground icon）。改對齊那組真實呈現值，訂單/取貨列的縮圖才會跟電子商店一致。 */
 .product-list__thumb {
-  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 52px）*/
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 52px）
+     2026-07-31：本輪清單縮圖改直式，這一個**刻意不改**——__thumb 不是圖片框而是
+     icon 晶片（全站唯一消費者是 pickup.html 的三列取貨場次，裡面放 QR code 圖示，
+     沒有任何創作者上傳的素材）。方形是圖示的自然外框，改直式只會讓 QR 圖示被塞進
+     一個高瘦的框裡；真正裝圖的是隔壁的 .product-list__image。 */
   width: 76px;
   height: 76px;
   flex: none;
@@ -109,9 +114,13 @@
 }
 
 .product-list__image {
-  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 60px）*/
+  /* 2026-07-26 使用者：全站清單縮圖統一 76px（比照專案列表；原 60px）
+     2026-07-31 使用者：改直式——寬度仍是 76px（欄寬與各變體的 grid 模板不必動），
+     高度由 --img-portrait（750/930）推導成 94px，直接顯示上傳的直式原圖，不再從
+     直式原圖裁一塊方形出來。列高不用另外調：__row 的 min-height 116 只是下限，
+     94 縮圖＋上下 --sp-20 內距＝134，列會自己長高。 */
   width: 76px;
-  height: 76px;
+  aspect-ratio: var(--img-portrait);
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--card);
@@ -148,6 +157,14 @@
   height: 28px;
   color: var(--muted-foreground);
 }
+
+/* ── 活動清單縮圖維持方形（2026-07-31 使用者裁決的例外）──────────────────────
+   全站清單縮圖本日改直式，活動是唯一不併入的模組：活動素材刻意「有直有橫」
+   （直式海報給手機主視覺、橫式橫幅給桌面與社群），清單那一格要同時裝得下兩種來源，
+   給它直式框等於預先選邊、橫幅會被裁掉兩側。方形是對兩種來源都對稱的裁法，
+   故 --events 覆寫回 1 / 1、76×76，列高也維持原本的 116px。
+   （若日後活動清單改成只吃直式海報，這條覆寫就該一併刪掉。） */
+.product-list--events .product-list__image { aspect-ratio: 1 / 1; }
 
 .product-list__body {
   min-width: 0;
@@ -280,7 +297,6 @@
      1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
   grid-template-columns: 26px 84px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
 }
-.product-list--eshop .product-list__head { color: color-mix(in srgb, var(--muted-foreground) 68%, var(--card)); }
 .product-list--eshop .product-list__price,
 .product-list--eshop .product-list__stock,
 .product-list--eshop .product-list__category-cell { color: var(--foreground); }
