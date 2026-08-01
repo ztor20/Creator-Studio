@@ -9,7 +9,7 @@
 使用者逐項圈選指正，其中一條是「似乎沒有照 DS 和元件來改」——屬實，見同日 D 類條目。
 
 - **【B】第一屏拆成三張獨立的卡**（原本是一張卡切兩欄）：照 `product-detail` 的 `.detail-grid` 主欄＋`.detail-rail` 側欄。主欄＝這場在哪、什麼時候、能領什麼；側欄兩張＝核銷進度（或這場結果）、Scanner access。欄間分隔線與 `.form-grid` 兩欄寫法一併撤除。
-- **【B】領取項目重新設計**（Mobbin 參考：Eventbrite「Sales by ticket type」每票種一列帶已售數、Luma「At a Glance」清單上方一條進度）：每一項各自帶「已核銷 / 總量」與細量條（`.pickup-items`＋既有 `.stock-bar`）。原本只有三個裸數字，看得出當天要備多少、看不出領得如何。
+- **【C】領取項目維持「項目＋總量」**：曾照 Mobbin 參考（Eventbrite「Sales by ticket type」、Luma「At a Glance」）讓每一項各自帶「已核銷 / 總量」與細量條（`.pickup-items`），使用者看過實機後裁示這裡不需要進度條與領取數量——整體核銷進度側欄已經有一份，逐項再放一次是同一件事講兩次。回到既有 `.kv`；`.pickup-items` 當日建、當日退場（墓碑留在 `pickup.css`）。
 - **【B】名單改用電子商店的 `.product-list`**（`__head`／`__row`／`__cell`／`__actions` 同一套列型，新增 `--roster` 欄模板），不再用 `.ztor-table`；**每一列都有 ⋯ 選單**——待核銷＝手動核銷／查看來源，已核銷＝反轉核銷／查看來源。
 - **【B】名單工作列改用 `.list-toolbar`**（電子商店那條），解掉原本工作列與表頭疊在一起的問題。
 - **【B】核銷進度卡去掉標題與 KPI tile**：「核銷進度」四個字與卡本身重複，主數字與說明改同一行（`.pickup-board__hero`）。
