@@ -498,7 +498,14 @@ html[data-nav-mode="sidebar"] .main {
   align-self: stretch;   /* row 版 .app 為 flex-start，需撐滿高度，內捲才有作用 */
   margin-top: var(--space-shell-gutter);
   background: var(--surface-page);
-  border-radius: var(--radius-shell) 0 0 0;
+  /* 2026-08-01：右上角也給圓角（原本 `28px 0 0 0` 只有左上）。使用者比對「電子商店有
+     圓角、收入管理沒有」，追下去發現兩頁幾何一模一樣，差別是電子商店自己補了一塊
+     假圓角遮罩。但那個做法有個量出來的缺陷：遮罩是 .main 的子元素、只到內容邊界，
+     而 .main 右側有 12px 捲軸（offsetWidth 1264 vs clientWidth 1252），所以假圓角被
+     畫在離面板實際邊緣 12px 的地方，看起來就不像角。
+     直接給 .main 圓角讓瀏覽器自己裁（它是 overflow:hidden auto，裁切會跟著圓角走），
+     角就落在真正的邊緣上、連捲軸一起裁，也不必逐頁補遮罩。 */
+  border-radius: var(--radius-shell) var(--radius-shell) 0 0;
   overflow-y: auto; overflow-x: hidden;   /* shell 固定、面板內容內部捲動 */
 }
 @media (max-width: 900px) {
