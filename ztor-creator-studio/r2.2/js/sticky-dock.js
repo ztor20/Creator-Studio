@@ -93,19 +93,6 @@
       var isTall = !!dock.querySelector('.product-list, .project-list, .bento, [id$="-grid"]');
       dock.classList.add(isTall ? 'list-dock--tall' : 'list-dock--thin');
 
-      /* 面板右上角的假圓角（2026-08-01）：`.main` 只有左上圓角，右上是直角；
-         電子商店本來自己補一塊遮罩畫出來，其他清單頁沒有，同樣貼頂就少一個角。
-         收進這裡，凡是有 .list-dock 的頁面都自動補上，一頁一塊、不重複插。
-         必須是捲動容器（.main）的第一個子元素才貼得到那個角。 */
-      var scrollHost = dock.closest('main') || dock.parentElement;
-      if (scrollHost && !scrollHost.querySelector(':scope > .list-dock__corner')
-          && !scrollHost.querySelector(':scope > .eshop-corner-mask')) {
-        var corner = document.createElement('div');
-        corner.className = 'list-dock__corner';
-        corner.setAttribute('aria-hidden', 'true');
-        scrollHost.insertBefore(corner, scrollHost.firstChild);
-      }
-
       var sentinel = document.createElement('div');
       sentinel.className = 'list-dock__sentinel';
       sentinel.setAttribute('aria-hidden', 'true');

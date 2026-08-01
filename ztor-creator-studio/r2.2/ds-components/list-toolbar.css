@@ -200,34 +200,11 @@ html[data-theme="light"] .list-toolbar {
   pointer-events: none;
 }
 
-/* ── 面板右上角的假圓角（2026-08-01 promote 自 e-shop 的 .eshop-corner-mask）──────
-   `.main` 的圓角只有左上（shared.css:501 的 `--radius-shell` 寫成 `28px 0 0 0`），右上是
-   直角。電子商店早就自己補了一塊遮罩把右上角「畫成」圓的，其他清單頁沒有——所以同樣
-   捲到貼頂，電子商店有圓角、收入管理沒有（2026-08-01 使用者比對後回報）。
-   收進元件、由 js/sticky-dock.js 在有 .list-dock 的頁面自動插入，六頁一致。
-
-   原理：填色必須等於「角後面露出來的那個顏色」，方角才會被蓋成圓角。main 右上角後面
-   露出的永遠是 shell 的灰底，所以填 --surface-shell。零高度、sticky 貼在 .main 頂端，
-   不佔版面也不吃事件。 */
-.list-dock__corner {
-  position: sticky;
-  top: 0;
-  height: 0;
-  z-index: 6;
-  pointer-events: none;
-}
-@media (min-width: 901px) {
-  .list-dock__corner::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: var(--radius-shell);
-    height: var(--radius-shell);
-    background: radial-gradient(circle var(--radius-shell) at bottom left,
-      transparent calc(var(--radius-shell) - 1px), var(--surface-shell) var(--radius-shell));
-  }
-}
+/* 墓碑：.list-dock__corner（2026-08-01 當日新增、當日退場）。
+   原本想把 e-shop 的假圓角遮罩收成共用元件補 .main 的右上角，但實測那個做法本身就
+   有缺陷——遮罩是 .main 的子元素、只畫到內容邊界，而右側有 12px 捲軸，角會落在離
+   面板實際邊緣 12px 的位置。改成直接給 .main 圓角讓瀏覽器裁（shared.css），
+   這支元件與 e-shop 的 .eshop-corner-mask 一併移除。 */
 
 /* ── 貼頂時不要讓捲動位置被「捲動錨定」拉回去（2026-07-28）──────────
    使用者回報：電子商店往下捲到貼頂那一刻會彈來彈去，除非用力捲否則卡在那裡下不去。
