@@ -4,6 +4,13 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-01 · 面板右上角的假圓角收進共用元件（B 反饋／使用者比對回報）
+
+使用者：「現在收入管理滑下來沒有圓角，電子商店的是有的。」用 Playwright 把兩頁逐項量過，**幾何完全一樣**（貼頂列 t=16 / l=276 / r=1472、圓角 `0 0 16px 16px`；`.main` t=16 / l=248、圓角 `28px 0 0 0`）——差別只有一個：電子商店多一塊 `.eshop-corner-mask`。
+
+- **【D】** `.main` 的圓角只有左上（`shared.css:501` 寫成 `28px 0 0 0`），右上是直角。電子商店早就自己在頁面 `<style>` 補了一塊遮罩，用 28px 的徑向漸層把右上角「畫成」圓的；其他清單頁沒有，所以同樣捲到貼頂，電子商店有圓角、收入管理沒有。<br>把它 promote 成 `.list-dock__corner`（`ds-components/list-toolbar.css`），由 `js/sticky-dock.js` 在有 `.list-dock` 的頁面自動插進 `.main` 第一個子元素——六頁一致、不必逐頁改 HTML。已存在 `.eshop-corner-mask` 的頁面會跳過，不重複插（e-shop 實測仍是 1 塊遮罩、0 塊新的）。<br>原理：填色必須等於「角後面露出來的那個顏色」，方角才會被蓋成圓角；`.main` 右上角後面露出的永遠是 shell 的灰底，所以填 `--surface-shell`。零高度、sticky 貼在 `.main` 頂端，不佔版面也不吃事件。
+- **【D】** *（過程紀錄）* 這個圓角問題前後改錯三次（毛玻璃、四角全圓＋上緣留 8px、又還原），原因是 Browser pane 捲不動也不觸發貼頂，等於盲改。最後改用 Playwright 開真瀏覽器捲到貼頂逐項量測才定位到真因。**教訓：貼頂／捲動相關的視覺問題，一律用 Playwright 驗，不要靠 Browser pane 推測。**
+
 ## 2026-08-01 · 貼頂 tab 去下框線改用陰影；通知條讓位改只動 opacity（B 反饋 ＋ bug 修正）
 
 - **【B】** `.list-dock.is-snapped .list-dock__bars` 拿掉 `border-bottom: 1px solid var(--border)`（深色主題上那是一道偏亮的細線，貼頂時橫過整個內容欄特別顯眼），改由 **`::after` 漸層遮罩**承擔分隔：`top:100%`、高 `--dock-fade`（56px）、`linear-gradient(var(--surface-page), transparent)`，捲動的內容從貼頂列底下通過時漸漸淡掉而不是被硬邊切斷。使用者兩段裁示：「tab 的下緣有一個白白的…請刪掉」→「tab fix 在最上方時，要有陰影」→「陰影不夠深，要像這樣的效果」（圈的是通知條那種同色底往下漸消，不是投影）。box-shadow 仍留一層當輔助。<br>用 `::after` 而非 `::before`：`::before` 在這個元件已被 `.list-status-row` 的浮層錨點用掉。與通知條遮罩的差別：通知條自己是不透明卡、要連上方空隙一起蓋；bars 是半透明毛玻璃且上緣切齊外框，只需要下方這一段。<br>**生效範圍＝所有用 snap dock 的頁**：e-shop、projects、events、my-ip、ip-market、earnings-sony，改元件層一次到位（使用者指定的活動／項目／電子商店都在內）。
