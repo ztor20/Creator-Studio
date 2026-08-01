@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/detail-rail.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
@@ -34,11 +36,19 @@
   /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
      .pickup-board（左＝領取的活動與物品、右＝工作人員掃碼與核銷數字），F4 名單改
      .ztor-table，F5 核銷紀錄改 popup。頁內只留兩條純佈局 glue。 */
-  /* 名單工作列沿用 e-shop 的 .list-toolbar；filter-tabs 在條內置中，不吃 tabs 的 grow 規則。 */
-  .list-toolbar > .filter-tabs { align-self:center; margin-bottom:0; }
+  /* 名單工作列＝電子商店的 .list-toolbar（左 tabs、右動作群）。 */
   /* 這一頁的側欄放的是核銷數字與掃碼交付，比一般 meta 欄重，300px 太窄、主欄太寬；
      兩欄拉近到接近對半（使用者裁示「左右平衡一點」）。 */
-  .detail-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr); }
+  .detail-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr);
+    align-items: stretch;              /* 左右兩張卡等高（使用者裁示）*/
+    margin-bottom: var(--sp-24);       /* 與下方名單工作列的間距，別黏在一起 */
+  }
+  /* 這一頁的側欄只有一張卡、且要跟左欄等高，所以取消 detail-rail 的 sticky——
+     sticky 會脫離 stretch 的高度計算，卡片會長過格子、壓到下面的工作列。 */
+  .detail-rail { position: static; }
+  .detail-main > .form-section,
+  .detail-rail > .form-section { height: 100%; }
 </style>
 </head>
 <body>
@@ -89,59 +99,70 @@
         </div>
 
         <aside class="detail-rail">
-          <!-- 掃出來的核銷數字（尚未開始的場次沒有這張卡） -->
-          <section class="form-section form-section--outlined pickup-board__stage" data-pk-stage="active">
-            <div class="pickup-board__hero"><b>36</b> <span data-i18n="pk.board.left">still to collect</span></div>
-            <div class="pickup-board__bar">
-              <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
-              <span class="pickup-board__pct">55%</span>
+          <!-- 一張卡、裡面分兩段：上段＝掃出來的核銷數字（隨場次狀態換，尚未開始沒有這段），
+               下段＝交給現場工作人員的網址與密碼。 -->
+          <section class="form-section form-section--outlined pickup-rail">
+            <div class="pickup-board__stage" data-pk-stage="active">
+              <div class="pickup-board__hero"><b>36</b> <span data-i18n="pk.board.left">still to collect</span></div>
+              <div class="pickup-board__bar">
+                <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
+                <span class="pickup-board__pct">55%</span>
+              </div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">44 / 80</span></div>
             </div>
-            <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">44 / 80</span></div>
-          </section>
-          <section class="form-section form-section--outlined pickup-board__stage" data-pk-stage="ended" hidden>
-            <div class="pickup-board__hero"><b>12</b> <span data-i18n="pk.board.noshow">did not collect</span></div>
-            <div class="pickup-board__bar">
-              <div class="stock-bar"><span class="stock-bar__fill" style="width:85%"></span></div>
-              <span class="pickup-board__pct">85%</span>
+            <div class="pickup-board__stage" data-pk-stage="ended" hidden>
+              <div class="pickup-board__hero"><b>12</b> <span data-i18n="pk.board.noshow">did not collect</span></div>
+              <div class="pickup-board__bar">
+                <div class="stock-bar"><span class="stock-bar__fill" style="width:85%"></span></div>
+                <span class="pickup-board__pct">85%</span>
+              </div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">68 / 80</span></div>
+              <div class="pickup-board__acts">
+                <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.board.export">Export no-shows</span></button>
+                <button class="btn btn--primary btn--sm" type="button" data-i18n="pk.board.extend">Extend session</button>
+              </div>
             </div>
-            <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">68 / 80</span></div>
-            <div class="pickup-board__acts">
-              <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.board.export">Export no-shows</span></button>
-              <button class="btn btn--primary btn--sm" type="button" data-i18n="pk.board.extend">Extend session</button>
-            </div>
-          </section>
 
-          <!-- 交給現場工作人員的網址與密碼（唯讀；重設／停用／改密碼在「編輯場次」裡） -->
-          <section class="form-section form-section--outlined" id="scanner" data-pk-scanner>
-            <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.f6.title">Scanner access</h3></div>
-            <label class="field">
-              <span class="field__label" data-i18n="pk.f6.url">Scanner URL</span>
-              <div class="input-action">
-                <input class="input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly>
-                <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
-              </div>
-            </label>
-            <label class="field" style="margin-bottom:0">
-              <span class="field__label" data-i18n="pk.f6.pw">Scanner password</span>
-              <div class="input-action">
-                <input class="input" data-pk-pw value="signing2026" readonly>
-                <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner password" title="Copy scanner password" data-i18n-aria-label="pk.a.copypw" data-i18n-title="pk.a.copypw" data-pk-copypw><i data-lucide="copy" class="ztor-icon"></i></button>
-              </div>
-            </label>
+            <div id="scanner" data-pk-scanner>
+              <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.f6.title">Scanner access</h3></div>
+              <label class="field">
+                <span class="field__label" data-i18n="pk.f6.url">Scanner URL</span>
+                <div class="input-action">
+                  <input class="input" data-pk-url value="ztor.app/scan/tpe-signing-7f3a2" readonly>
+                  <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
+                </div>
+              </label>
+              <label class="field" style="margin-bottom:0">
+                <span class="field__label" data-i18n="pk.f6.pw">Scanner password</span>
+                <div class="input-action">
+                  <input class="input" data-pk-pw value="signing2026" readonly>
+                  <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner password" title="Copy scanner password" data-i18n-aria-label="pk.a.copypw" data-i18n-title="pk.a.copypw" data-pk-copypw><i data-lucide="copy" class="ztor-icon"></i></button>
+                </div>
+              </label>
+            </div>
           </section>
         </aside>
       </div>
 
       <!-- F4 · 取貨與入場名單：規格的七個欄位各自成欄（買家／來源／領取項目／規格／
            數量／狀態／最近核銷），核銷紀錄降為右側次要入口，開 popup。 -->
+      <!-- 工作列＝電子商店那條 `.list-toolbar`：左邊底線式 tabs 切狀態、右邊動作群
+           （收合搜尋＋核銷紀錄）。 -->
       <div class="list-toolbar">
-        <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter roster" data-pk-roster-status>
-          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</button>
+        <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Filter roster" data-pk-roster-status>
+          <div class="tabs__item tabs__item--active" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</div>
+          <div class="tabs__item" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</div>
         </nav>
         <div class="list-toolbar__actions">
-          <input class="input" placeholder="Name, email, order #, ticket ID" data-pk-roster-search data-i18n-placeholder="pk.roster.search.ph" style="max-width:240px">
+          <div class="search-collapse" data-pk-search-wrap>
+            <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-pk-search-toggle aria-expanded="false" aria-label="Search roster" title="Search roster" data-i18n-aria-label="pk.btn.search" data-i18n-title="pk.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
+            <label class="field-pill search-collapse__field" aria-label="Search roster">
+              <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+              <input class="field-pill__input" placeholder="Name, email, order #, ticket ID" data-i18n-placeholder="pk.roster.search.ph" data-pk-roster-search>
+              <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-pk-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="pk.search.close" data-i18n-title="pk.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
+            </label>
+          </div>
           <button class="btn btn--outline btn--sm" type="button" data-pk-open-log><i data-lucide="history" class="ztor-icon"></i> <span data-i18n="pk.tab.log">Redemption log</span></button>
         </div>
       </div>
@@ -317,6 +338,17 @@
       if (!el.childElementCount) el.innerHTML = window.ztorFauxQr(i + 3);
     });
 
+    /* ── 收合搜尋（照 pickup.html：點放大鏡展開、× 或 Esc 收起並清空）── */
+    var swrap = document.querySelector('[data-pk-search-wrap]');
+    var stoggle = document.querySelector('[data-pk-search-toggle]');
+    var sclose = document.querySelector('[data-pk-search-close]');
+    var ssearch = document.querySelector('[data-pk-roster-search]');
+    if (swrap && stoggle) {
+      stoggle.addEventListener('click', function () { swrap.classList.add('is-open'); stoggle.setAttribute('aria-expanded', 'true'); if (ssearch) ssearch.focus(); });
+      if (sclose) sclose.addEventListener('click', function () { swrap.classList.remove('is-open'); stoggle.setAttribute('aria-expanded', 'false'); if (ssearch) { ssearch.value = ''; ssearch.dispatchEvent(new Event('input', { bubbles: true })); } });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && swrap.classList.contains('is-open')) { swrap.classList.remove('is-open'); stoggle.setAttribute('aria-expanded', 'false'); } });
+    }
+
     /* ── 場次狀態（?s=scheduled|active|ended）──────────────────
        取貨管理列表的三列各自帶自己的狀態進來，這一頁照那個狀態換：徽章、側欄那張
        數字卡、名單內容與工作列。三個狀態共用同一頁（IA 只有一頁 pickup-detail，
@@ -437,11 +469,11 @@
         if (rCard) rCard.hidden = shown === 0;
         if (rNoRes) rNoRes.hidden = shown !== 0;
       }
-      rNav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
+      rNav.querySelectorAll('.tabs__item').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          rNav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
+          rNav.querySelectorAll('.tabs__item').forEach(function (b) {
             var on = b === btn;
-            b.classList.toggle('filter-tabs__item--active', on);
+            b.classList.toggle('tabs__item--active', on);
             b.setAttribute('aria-selected', on ? 'true' : 'false');
           });
           rStatus = btn.getAttribute('data-status-val'); rApply();

@@ -4,6 +4,14 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-02 · 取貨兩頁的工作列統一成電子商店的 .list-toolbar；側欄合併成一張卡（B 反饋／使用者裁決）
+
+- **【B】工作列統一**（`pickup.html` 與 `pickup-detail.html`）：都改用電子商店那條 `.list-toolbar`——左邊底線式 `.tabs`（`--underline-short` / `--underline-label` / `--count-plain`，附數量）切狀態、右邊 `.list-toolbar__actions` 放收合搜尋與主要動作。撤除 `pickup.html` 原本的兩排式版型（`.pk-list-controls` / `.pk-list-topbar` / `.pk-status-row`）與詳情頁一度用過的 `.filter-tabs--brand` 版本；`wireFilter` 的作用對象同步由 `.filter-tabs__item` 改成 `.tabs__item`。
+- **【B】搜尋改收合式**：詳情頁的名單搜尋原本是一個固定 240px 的裸 `.input`，改成 `.search-collapse`＋`.field-pill`（點放大鏡才展開），與清單頁一致。
+- **【B】側欄兩張卡合併成一張**：上段＝核銷數字（隨場次狀態換，尚未開始沒有這段）、下段＝Scanner 存取，中間一條 `--border-soft`。左右兩欄改 `align-items: stretch` 等高。
+- **【D】** *（bug）* 修掉一個多餘的 `</div>`——它把 `.page` 提早關掉，名單整段掉到 `<main>` 底下，畫面上表現為工作列與卡片重疊、名單前一段詭異空白。另：`.detail-rail` 在這一頁取消 sticky，sticky 會脫離 stretch 的高度計算、卡片長過格子壓到下方工作列。
+
+
 ## 2026-08-02 · 取貨場次詳情：三種場次狀態、場次資訊給欄位標題、數量改「每人領取」（B 反饋／使用者裁決）
 
 - **【A】三種場次狀態各自的頁面**：取貨管理列表的三列（進行中／尚未開始／已結束）各自帶自己的狀態進詳情頁（`pickup-detail.html?s=…`），這一頁照狀態換徽章、側欄那張數字卡與名單內容。**共用同一頁而不是開三個檔**——IA 只有一頁 `pickup-detail`，新增頁面要先改 §3.2 sitemap。尚未開始＝沒有數字卡、名單全待核銷；已結束＝這場結果卡（含匯出未領／延長場次）、名單全已核銷。

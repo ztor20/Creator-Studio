@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/search-collapse.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
@@ -34,9 +35,9 @@
 <style>
   /* F3 清單工作列版型（對齊電子商店 F3 兩排式）：上排收合搜尋靠右、下排狀態 filter-tabs 獨佔整列。
      版面為 page-specific 佈局；元件（filter-tabs--brand / search-collapse / product-list / dropdown / list-footer）皆共用。 */
-  .pk-list-controls { margin-top: var(--sp-16); margin-bottom: var(--sp-40); }   /* 2026-07-26 使用者：篩選列到清單的間距加大，對齊 .list-status-row 的 40px */
-  .pk-list-topbar { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:8px; }
-  .pk-status-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  /* 2026-08-02：清單工作列改用電子商店的 .list-toolbar，原本的兩排式版型
+     （.pk-list-controls / .pk-list-topbar / .pk-status-row）隨之退場。 */
+  .list-toolbar { margin-top: var(--sp-16); margin-bottom: var(--sp-24); }
   .pk-noresult[hidden]{ display:none; }
 </style>
 <link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
@@ -72,8 +73,18 @@
         </div>
 
         <!-- F3 · 清單工作列 · 建立取貨場次入口＋搜尋＋狀態篩選皆屬本區（對齊電子商店 F3：上排收合搜尋＋建立、下排狀態 filter-tabs--brand 每項附數量）-->
-        <section class="pk-list-controls when-data" aria-label="Session filters">
-          <div class="pk-list-topbar">
+        <!-- F3 · 清單工作列＝電子商店那條 `.list-toolbar`（2026-08-02 使用者裁示統一）：
+             左邊底線式 tabs 切狀態（附數量）、右邊動作群（收合搜尋＋建立取貨場次）。
+             取代原本的兩排式（上排動作、下排 filter-tabs pill）。 -->
+        <div class="list-toolbar when-data">
+          <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" aria-label="Filter by session status" data-pk-status>
+            <div class="tabs__item tabs__item--active" role="tab" aria-selected="true"  data-status-val="all"><span data-i18n="pk.status.all">All</span><span class="tabs__item-count" data-status-count>0</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-status-val="scheduled"><span data-i18n="pk.status.scheduled">Scheduled</span><span class="tabs__item-count" data-status-count>0</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-status-val="active"><span data-i18n="pk.status.active">Active</span><span class="tabs__item-count" data-status-count>0</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-status-val="ended"><span data-i18n="pk.status.ended">Ended</span><span class="tabs__item-count" data-status-count>0</span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-status-val="archived"><span data-i18n="pk.status.archived">Archived</span><span class="tabs__item-count" data-status-count>0</span></div>
+          </nav>
+          <div class="list-toolbar__actions">
             <div class="search-collapse" data-pk-search-wrap>
               <button class="btn btn--icon btn--sm search-collapse__toggle" type="button" data-pk-search-toggle aria-expanded="false" aria-label="Search sessions" title="Search sessions" data-i18n-aria-label="pk.btn.search" data-i18n-title="pk.btn.search"><i data-lucide="search" class="ztor-icon"></i></button>
               <label class="field-pill search-collapse__field" aria-label="Search sessions">
@@ -82,18 +93,9 @@
                 <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-pk-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="pk.search.close" data-i18n-title="pk.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
               </label>
             </div>
-            <button class="btn btn--primary" type="button" data-pk-create><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pk.btn.create">Create pickup session</span></button>
+            <button class="btn btn--primary btn--sm" type="button" data-pk-create><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pk.btn.create">Create pickup session</span></button>
           </div>
-          <div class="pk-status-row">
-            <nav class="filter-tabs filter-tabs--brand" role="tablist" aria-label="Filter by session status" data-pk-status>
-              <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"><span data-i18n="pk.status.all">All</span><span class="filter-tabs__count" data-status-count>0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="scheduled"><span data-i18n="pk.status.scheduled">Scheduled</span><span class="filter-tabs__count" data-status-count>0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="active"><span data-i18n="pk.status.active">Active</span><span class="filter-tabs__count" data-status-count>0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="ended"><span data-i18n="pk.status.ended">Ended</span><span class="filter-tabs__count" data-status-count>0</span></button>
-              <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="archived"><span data-i18n="pk.status.archived">Archived</span><span class="filter-tabs__count" data-status-count>0</span></button>
-            </nav>
-          </div>
-        </section>
+        </div>
 
         <!-- F4 · 取貨清單 · product-list（對齊電子商店 F4）· 列操作收進 kebab（⋯）-->
         <section class="product-list product-list--pickup when-data" role="table" aria-label="Pickup sessions" data-pk-list>
@@ -248,7 +250,7 @@
         var shown = 0;
         rows.forEach(function (r) { var vis = matches(r, status, q); r.hidden = !vis; if (vis) shown++; });
         if (noRes) noRes.hidden = shown !== 0;
-        nav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
+        nav.querySelectorAll('.tabs__item').forEach(function (btn) {
           var cspan = btn.querySelector('[data-status-count]');
           if (!cspan) return;
           var val = btn.getAttribute('data-status-val');
@@ -257,11 +259,11 @@
         if (footer) footer.hidden = shown === 0;
         if (countEl) countEl.textContent = T(countKey || 'pk.footer.count', 'Showing {n} of {m}').replace('{n}', shown).replace('{m}', rows.length);
       }
-      nav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {
+      nav.querySelectorAll('.tabs__item').forEach(function (btn) {
         btn.addEventListener('click', function () {
-          nav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
+          nav.querySelectorAll('.tabs__item').forEach(function (b) {
             var on = b === btn;
-            b.classList.toggle('filter-tabs__item--active', on);
+            b.classList.toggle('tabs__item--active', on);
             b.setAttribute('aria-selected', on ? 'true' : 'false');
           });
           status = btn.getAttribute('data-status-val'); apply();
@@ -272,9 +274,9 @@
       window.addEventListener('load', apply);
       return function clear() {
         status = 'all'; if (search) search.value = '';
-        nav.querySelectorAll('.filter-tabs__item').forEach(function (b) {
+        nav.querySelectorAll('.tabs__item').forEach(function (b) {
           var on = b.getAttribute('data-status-val') === 'all';
-          b.classList.toggle('filter-tabs__item--active', on);
+          b.classList.toggle('tabs__item--active', on);
           b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
         apply();
