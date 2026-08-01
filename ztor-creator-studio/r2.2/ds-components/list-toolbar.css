@@ -301,6 +301,43 @@ html[data-theme="light"] .list-toolbar {
      分隔改回只靠 box-shadow（見上方）。之後若還要漸消效果，必須讓遮罩跟著面板的
      圓角走（例如掛在有 border-radius 的容器上並 overflow:hidden），不能再用方角矩形。 */
 
+  /* 貼頂列兩側的凹角（2026-08-01 使用者裁示，附手繪示意圖）。
+     形狀＝「方角減掉一個四分圓」，填色在靠近 bar 的那一側、弧線往外開，所以這一條
+     讀起來是**從外框長出來的一段**，而不是一張浮在裡面的方卡。這正是使用者要的
+     「向外的圓角」——不是把 bar 自己的角磨圓（那個試過、被否決）。
+     用徑向漸層雕出來，不加 DOM；`overflow: visible` 讓兩塊能長到 bar 之外。
+     半徑 16px（--radius-xl 同一階；先做 28px，使用者看過後裁示「可以小一點」）。
+     ::before／::after 兩個位置在此之前都空著（同日退場的漸層遮罩曾用過 ::after）。 */
+  .list-dock.is-snapped .list-dock__bars { overflow: visible; }
+  .list-dock.is-snapped .list-dock__bars::before,
+  .list-dock.is-snapped .list-dock__bars::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: var(--radius-xl);
+    height: var(--radius-xl);
+    pointer-events: none;
+  }
+  .list-dock.is-snapped .list-dock__bars::before {
+    left: calc(var(--radius-xl) * -1);
+    background: radial-gradient(circle var(--radius-xl) at bottom left,
+      transparent calc(var(--radius-xl) - 1px), var(--surface-shell) var(--radius-xl));
+  }
+  .list-dock.is-snapped .list-dock__bars::after {
+    right: calc(var(--radius-xl) * -1);
+    background: radial-gradient(circle var(--radius-xl) at bottom right,
+      transparent calc(var(--radius-xl) - 1px), var(--surface-shell) var(--radius-xl));
+  }
+  /* 淺色主題：bar 的底色是 --card，凹角填色要跟著換，否則會露出一塊深色。 */
+  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars::before {
+    background: radial-gradient(circle var(--radius-xl) at bottom left,
+      transparent calc(var(--radius-xl) - 1px), var(--card) var(--radius-xl));
+  }
+  html[data-theme="light"] .list-dock.is-snapped .list-dock__bars::after {
+    background: radial-gradient(circle var(--radius-xl) at bottom right,
+      transparent calc(var(--radius-xl) - 1px), var(--card) var(--radius-xl));
+  }
+
   /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。 */
   .list-dock.is-snapped .list-toolbar {
     height: 44px;
