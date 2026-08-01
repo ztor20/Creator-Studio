@@ -1329,7 +1329,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#detail-rail">Detail rail</a></td><td>🟠</td><td><span data-en>Detail-page two-column shell — editable main + sticky read-only meta rail; <code>--full</code> collapses it to one column (assembly rules in Pillar 5)</span><span data-zh>詳情頁兩欄版型殼——可編輯主欄＋sticky 唯讀 meta 右欄；<code>--full</code> 收成單欄（組合規則見 Pillar 5）</span></td><td><code>detail-rail.css</code></td></tr>
           <tr><td><a href="#restock-log">Restock log</a></td><td>🟡</td><td><span data-en>Restock history table — one row per restock, columns aligned for comparison; <code>--with-option</code> opens the option column</span><span data-zh>補貨紀錄表——逐筆一列、欄位對齊方便比對；<code>--with-option</code> 開出選項組合欄</span></td><td><code>restock-log.css</code></td></tr>
           <tr><td><a href="#stock-tip">Stock tip</a></td><td>🟢</td><td><span data-en>Hover/focus any product row's status/stock cell → floating info card. Multi-option/bundle rows get a per-option stock breakdown (flattened to option combinations, bundle members too); single-variant rows (2026-07-23, scope widened) show current stock instead</span><span data-zh>hover/focus 任何商品列的狀態／庫存欄 → 浮出資訊卡。多選項／組合商品列顯示逐選項庫存明細（攤到選項組合，組合商品連成員也攤）；單一選項商品列（2026-07-23 擴大範圍）改顯示目前庫存</span></td><td><code>stock-tip.css</code></td></tr>
-          <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): scanner-access card (URL + password + QR), verifiable-item / roster / log lists, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：scanner 存取卡（URL＋密碼＋QR）、可核銷項目／名單／核銷紀錄清單、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
+          <tr><td><a href="#pickup">Pickup management</a></td><td>🟠</td><td><span data-en>On-site QR redemption workspace (E-Shop 5.1.5.11): session-detail board (items left / staff scanning + progress right), roster table, scanner-access settings card, multi-select session rows</span><span data-zh>現場 QR 核銷工作區（E-Shop 5.1.5.11）：場次詳情行動卡（左＝領取項目／右＝工作人員掃碼與核銷進度）、名單表格、scanner 存取設定卡、建立場次多選列</span></td><td><code>pickup.css</code></td></tr>
           <tr><td><a href="#scanner">Mobile scanner</a></td><td>🟠</td><td><span data-en>Standalone phone scanner (5.1.5.14 F1): password gate → camera viewport (--surface-inverse) → scan result → confirm; Scan/Items/Roster sub-nav (F2 verifiable items, F3 read-only roster); separate URL, no Studio nav</span><span data-zh>獨立手機 scanner（5.1.5.14 F1）：密碼→相機視窗（--surface-inverse）→掃描結果→確認；Scan／Items／Roster 分頁（F2 可核銷項目、F3 唯讀名單）；獨立 URL、無主工作台導航</span></td><td><code>scanner.css</code></td></tr>
           <tr><td><a href="#preview-card">Preview card</a></td><td>🟡</td><td><span data-en>Fan-side live preview card — product / auction (create flows §5.2.5)</span><span data-zh>粉絲端即時預覽卡 — 商品／拍賣（建立流程 §5.2.5）</span></td><td><code>preview-card.css</code></td></tr>
           <tr><td><a href="#preview-panel">Preview panel</a></td><td>🟠</td><td><span data-en>Right split panel holding the live preview — compresses the wizard, not an overlay</span><span data-zh>右側畫面分割面板承載即時預覽，壓窄 wizard、非浮層</span></td><td><code>preview-panel.css</code></td></tr>
@@ -6772,10 +6772,68 @@ The first thing buyers see</span>
 
 <section class="sub" id="pickup">
   <div class="sub__head"><h3 class="sub__title">4.82 Pickup management</h3><span class="layer layer--organism">🟠 organism</span></div>
-  <p class="sub__desc" data-en>On-site QR redemption workspace (spec 5.1.5.11 · D111). E-Shop sibling of Orders. The demo shows the F6 <strong>Scanner access</strong> card — scanner URL + password + QR — plus the multi-select rows used by the shared create-session popup (F3). Session list, verifiable items, roster and log all reuse <code>.data-list</code>.</p>
-  <p class="sub__desc" data-zh>現場 QR 核銷工作區（規格 5.1.5.11 · D111），E-Shop 下與訂單管理並列。demo 展示 F6「Scanner 存取」卡——scanner URL＋密碼＋QR——以及共用建立場次 popup（F3）用的多選列。場次清單、可核銷項目、名單、核銷紀錄皆重用 <code>.data-list</code>。</p>
-  <p class="field-label" data-en>Rendered preview · F6 Scanner access <span class="field-note">(standalone card — unrelated to the block below)</span></p>
-  <p class="field-label" data-zh>視覺展示 · F6 Scanner 存取 <span class="field-note">（獨立卡片——與下一塊功能無關）</span></p>
+  <p class="sub__desc" data-en>On-site QR redemption workspace (spec 5.1.5.11 · D111). E-Shop sibling of Orders. <strong>2026-08-01</strong>: the session-detail first screen now borrows the product-detail skeleton wholesale — <code>.form-section--outlined</code> card, <code>.form-grid</code> two columns, <code>.form-section__head</code>/<code>__title</code> headings, <code>.bento</code> + <code>.kpi--compact</code> for the big number, <code>.kv</code> for the summary. <code>.pickup-board</code> only adds the column divider and the responsive stack; left column is what is being collected, right column is what staff need to scan (<code>.scanner-hand</code> URL + password). The roster moved to <code>.pickup-roster</code> on <code>.ztor-table</code>, one column per spec field. The full <strong>Scanner access</strong> settings card and <code>.pickup-select</code> rows are kept below for the standalone scanner page and the create-session popup (F3).</p>
+  <p class="sub__desc" data-zh>現場 QR 核銷工作區（規格 5.1.5.11 · D111），E-Shop 下與訂單管理並列。<strong>2026-08-01</strong>：場次詳情第一屏整套沿用 product-detail 的骨架——<code>.form-section--outlined</code> 分區卡、<code>.form-grid</code> 兩欄、<code>.form-section__head</code>／<code>__title</code> 區段標題、<code>.bento</code>＋<code>.kpi--compact</code> 大數字、<code>.kv</code> 鍵值摘要；<code>.pickup-board</code> 只補兩欄之間的分隔線與響應式堆疊。左欄＝領取的活動與物品，右欄＝工作人員操作取貨要知道的（<code>.scanner-hand</code> 掃碼網址與密碼），上方疊一段隨場次狀態換的核銷數字。名單改用 <code>.pickup-roster</code> 套 <code>.ztor-table</code>，規格的每個欄位各自成欄。完整的「Scanner 存取」設定卡與 <code>.pickup-select</code> 多選列保留在下方，供獨立 scanner 頁與建立場次 popup（F3）使用。</p>
+  <p class="field-label" data-en>Rendered preview · Pickup board <span class="field-note">(session detail first screen — left: what is being collected, right: staff scanning + progress)</span></p>
+  <p class="field-label" data-zh>視覺展示 · 場次行動卡 <span class="field-note">（場次詳情第一屏——左：領取的活動與物品，右：工作人員掃碼與核銷數字）</span></p>
+  <div class="demo">
+    <section class="form-section form-section--outlined">
+      <div class="form-grid pickup-board">
+        <div>
+          <div class="pickup-detail__meta pickup-detail__meta--stack mb-16">
+            <span><i data-lucide="map-pin" class="ztor-icon"></i> <span>Legacy Books, Xinyi Rd. Sec 4</span></span>
+            <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span>Today 14:00 – 18:00</span></span>
+          </div>
+          <div class="form-section__head"><h3 class="form-section__title">Pickup items</h3></div>
+          <div class="kv kv--lead"><span class="kv__k">Tour zine vol. 02</span><span class="kv__v">40</span></div>
+          <div class="kv"><span class="kv__k">Coastline tee · M / L</span><span class="kv__v">22</span></div>
+        </div>
+        <div>
+          <div class="pickup-board__stage">
+            <div class="bento">
+              <div class="kpi kpi--compact">
+                <div class="kpi__label">Redemption progress</div>
+                <div class="kpi__value">36</div>
+                <div class="kpi__meta">still to collect</div>
+              </div>
+            </div>
+            <div class="pickup-board__bar">
+              <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
+              <span class="pickup-board__pct">55%</span>
+            </div>
+            <div class="kv mt-12"><span class="kv__k">Redeemed</span><span class="kv__v">44 / 80</span></div>
+          </div>
+          <div class="scanner-hand">
+            <div class="scanner-hand__row">
+              <span class="scanner-hand__k">Scanner URL</span>
+              <code>ztor.app/scan/tpe-signing-7f3a2</code>
+              <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL"><i data-lucide="copy" class="ztor-icon"></i></button>
+            </div>
+            <div class="scanner-hand__row">
+              <span class="scanner-hand__k">Scanner password</span>
+              <code>signing2026</code>
+              <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner password"><i data-lucide="copy" class="ztor-icon"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <p class="field-label" data-en>Rendered preview · Pickup roster table <span class="field-note">(spec 5.1.5.15 F4 — one column per field)</span></p>
+  <p class="field-label" data-zh>視覺展示 · 取貨名單表格 <span class="field-note">（規格 5.1.5.15 F4——每個欄位各自成欄）</span></p>
+  <div class="demo">
+    <div class="ztor-table-scroll">
+      <table class="ztor-table pickup-roster">
+        <thead><tr><th>Buyer</th><th>Source</th><th>Pickup item</th><th>Variant</th><th class="pickup-roster__num">Qty</th><th>Status</th><th>Last redeemed</th></tr></thead>
+        <tbody>
+          <tr><td>Mika L.</td><td><a class="card__link" href="#pickup">#ZT-10482</a></td><td>Tour zine vol. 02</td><td class="pickup-roster__none">—</td><td class="pickup-roster__num">1</td><td><span class="badge badge--warning"><span>Pending</span></span></td><td class="pickup-roster__none">—</td></tr>
+          <tr><td>Devon W.</td><td><a class="card__link" href="#pickup">#ZT-10475</a></td><td>Coastline tee</td><td>M</td><td class="pickup-roster__num">1</td><td><span class="badge badge--success"><span>Redeemed</span></span></td><td>14:22</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="field-label" data-en>Rendered preview · F6 Scanner access <span class="field-note">(full settings card — kept for the standalone scanner page)</span></p>
+  <p class="field-label" data-zh>視覺展示 · F6 Scanner 存取 <span class="field-note">（完整設定卡——留給獨立的 scanner 頁）</span></p>
   <div class="demo">
     <div class="scanner-access" style="max-width:520px">
       <div class="scanner-access__qr"><div class="qr-box"><i data-lucide="qr-code" class="ztor-icon" style="width:52px;height:52px"></i></div></div>
@@ -6809,8 +6867,8 @@ The first thing buyers see</span>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.scanner-access</code> (<code>__qr</code>/<code>__main</code>/<code>__label</code>/<code>__url</code>/<code>__actions</code>/<code>__pw</code>) · <code>.qr-box</code>(<code>--lg</code>/<code>--disabled</code>) · <code>.pickup-detail__header</code>/<code>__meta</code> · <code>.pickup-stats</code> · <code>.pickup-select</code> &gt; <code>.pickup-select__row</code>(<code>.is-checked</code> · <code>__box</code>/<code>__img</code>/<code>__text</code>/<code>__name</code>/<code>__meta</code>).</p>
-    <p class="field-text"><code>ds-components/pickup.css</code> · <code>pickup.html</code> (F1/F2/F4/F5/F6/F8) · shared popup <code>partials/pickup-session-modal.js</code> (F3, also on create-product.html + product-detail.html). QR = faux SVG via <code>window.ztorFauxQr()</code>. Lists reuse <code>.data-list</code>; camera viewport uses <code>--surface-inverse</code> role token — no raw hex.</p>
+    <p class="field-text"><code>.pickup-board</code> (column divider only; <code>__stage</code>/<code>__bar</code>/<code>__pct</code>/<code>__acts</code>) · <code>.pickup-detail__meta--stack</code> · <code>.scanner-hand</code> (<code>__row</code>/<code>__k</code>/<code>code.is-unset</code>) · <code>.pickup-roster</code> (<code>__num</code>/<code>__none</code>/<code>__act</code>, on <code>.ztor-table</code>) · <code>.pks-step</code>/<code>__intro</code> · <code>.scanner-access</code> (<code>__qr</code>/<code>__main</code>/<code>__label</code>/<code>__url</code>/<code>__actions</code>/<code>__pw</code>) · <code>.qr-box</code>(<code>--lg</code>/<code>--disabled</code>) · <code>.pickup-detail__header</code>/<code>__meta</code> · <code>.pickup-stats</code> · <code>.pickup-select</code> &gt; <code>.pickup-select__row</code>(<code>.is-checked</code> · <code>__box</code>/<code>__img</code>/<code>__text</code>/<code>__name</code>/<code>__meta</code>).</p>
+    <p class="field-text"><code>ds-components/pickup.css</code> · <code>pickup.html</code> (F1/F2/F4/F5/F6/F8) · shared popup <code>partials/pickup-session-modal.js</code> (F3, also on create-product.html + product-detail.html) — <strong>two steps since 2026-08-01</strong> (no stepper: only two, the dialog subtitle plus Back/Next carry the position); the result step was retired, <code>hooks.onCreate</code> lands on the session detail instead. The redemption log opens as a <code>.payout-dialog</code> popup. QR = faux SVG via <code>window.ztorFauxQr()</code>, kept for the standalone scanner page. Lists reuse <code>.data-list</code>; camera viewport uses <code>--surface-inverse</code> role token — no raw hex.</p>
   </div>
   </details>
 </section>

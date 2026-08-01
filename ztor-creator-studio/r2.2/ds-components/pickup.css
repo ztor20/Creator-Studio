@@ -36,7 +36,8 @@
   gap: var(--sp-8);
   flex-wrap: wrap;
 }
-.scanner-access__url code {
+.scanner-access__url code,
+.scanner-hand__row code {
   flex: 1 1 220px;
   min-width: 0;
   overflow: hidden;
@@ -160,19 +161,95 @@
 .pickup-select__name { font-size: var(--fs-13); font-weight: var(--fw-regular); color: var(--foreground); }
 .pickup-select__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 2px; }
 
-/* ── Pickup session modal · tabbed layout (partials/pickup-session-modal.js) ──
-   The create/edit dialog groups its fields into three freely-switchable tabs
-   (basics / items / scanner) built on the shared .tabs + .tab-panel. Glue only:
-   reserve a min-height so switching tabs doesn't collapse the dialog height,
-   preserve the field-label rhythm the dialog had under form-section, and style
-   the items-tab intro line. */
-[data-pks-panels] { min-height: 248px; }
-[data-pks-panels] .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
-.pks-panel__intro {
+/* ── Pickup session modal · two-step layout (partials/pickup-session-modal.js) ──
+   2026-08-01（使用者裁決）：建立/編輯場次的三個頁籤（基本資訊 / 取貨項目 / 密碼）
+   改成兩步流程——第一步「這場是什麼」（名稱地點時間＋選填掃碼密碼，編輯時多出
+   掃碼網址的重設／停用），第二步「可以領什麼」（項目 combobox）。**刻意不放 stepper**：
+   只有兩步，dialog 副標與「上一步／下一步」已經說明位置，再擺一排圓點是多餘的裝置。
+   Glue only：一次只顯示一步，兩步內容量差很多，給 body 一個下限高度讓彈窗不忽大忽小；
+   欄位標籤節奏沿用原本 form-section 的 14px regular。
+   （舊的 `[data-pks-panels]` / `.pks-panel__intro` 隨頁籤一起退場。） */
+.pks-step[hidden] { display: none; }
+.pks-step { padding: var(--sp-4) 0 var(--sp-8); }
+.pks-step__intro {
   margin: 0 0 var(--sp-16);
   font-size: var(--fs-14);
   color: var(--foreground-muted);
 }
+[data-pks-form] { min-height: 420px; }
+[data-pks-form] .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+
+/* ── Pickup board · 場次詳情第一屏的兩欄分區 ────────────────────
+   2026-08-01（使用者裁決）：**卡殼、標題、大數字一律沿用 E-Shop／建立商品那套**——
+   分區卡＝`.form-section.form-section--outlined`、區段標題＝`.form-section__head`＋
+   `__title`、兩欄＝`.form-grid`、大數字＝`.bento` 裡的 `.kpi.kpi--compact`、
+   鍵值摘要＝`.kv`、表格＝`.ztor-table`。本區段只補那套沒有的三件事：
+     (1) 兩欄之間的分隔線（.form-grid 只給欄、不給界線）
+     (2) 隨場次狀態換的那一段（下緣線與其下方內容分開）
+     (3) 量條與百分比同一列
+   左右分工固定：左＝領取的活動與物品，右＝工作人員操作取貨要知道的。
+   Consumers: pickup-detail.html */
+.pickup-board > * + * {
+  border-left: 1px solid var(--border);
+  padding-left: var(--sp-24);
+}
+@media (max-width: 860px) {
+  .pickup-board > * + * {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-20);
+  }
+}
+/* 隨場次狀態換的那一段（尚未開始無此段、進行中＝核銷進度、已結束＝這場結果） */
+.pickup-board__stage {
+  margin-bottom: var(--sp-20);
+  padding-bottom: var(--sp-20);
+  border-bottom: 1px solid var(--border-soft);
+}
+.pickup-board__stage[hidden] { display: none; }
+/* 量條與百分比同一列：百分比是量條的註腳，不自己佔一行大字 */
+.pickup-board__bar { display: flex; align-items: center; gap: var(--sp-10); margin-top: var(--sp-12); }
+.pickup-board__bar .stock-bar { flex: 1 1 auto; margin: 0; }
+.pickup-board__pct {
+  flex: none;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.pickup-board__acts { display: flex; align-items: center; gap: var(--sp-8); margin-top: var(--sp-16); }
+
+/* 場次地點與時間：沿用既有 .pickup-detail__meta，只加一個直排變體
+   （原本是橫排 meta，放進欄裡要一行一條才讀得順） */
+.pickup-detail__meta--stack { flex-direction: column; gap: var(--sp-6); }
+.pickup-detail__meta--stack span { align-items: flex-start; }
+
+/* ── Scanner hand-off · 唯讀「欄名＋值＋複製」的一列 ─────────────
+   2026-08-01 promote：把掃碼網址與密碼交給現場工作人員用。欄名固定寬度讓兩列對齊，
+   複製鍵只留圖示——兩顆並排時「複製／複製」讀起來是雜訊。值的外觀直接與既有
+   `.scanner-access__url code` 共用同一條規則（見上方），不另定義第二套。
+   Consumers: pickup-detail.html */
+.scanner-hand { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
+.scanner-hand__row { display: flex; align-items: center; gap: var(--sp-8); }
+.scanner-hand__k {
+  flex: none;
+  width: var(--sp-64);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.scanner-hand__row code.is-unset { color: var(--muted-foreground); }
+
+/* ── Pickup roster table · 名單表格的密度調整 ───────────────────
+   2026-08-01：名單改用 .ztor-table，但欄位有八個（買家／來源／領取項目／規格／
+   數量／狀態／最近核銷／操作），沿用 .ztor-table 預設的 16/20 內距會撐爆 940 寬。
+   只收窄內距與定義數字欄，其餘框型、表頭色階一律吃 .ztor-table（Q29／Q41）。
+   Consumers: pickup-detail.html */
+.pickup-roster td,
+.pickup-roster th { padding: var(--sp-12) var(--sp-14); white-space: nowrap; }
+.pickup-roster__num { text-align: right; font-variant-numeric: tabular-nums; }
+.pickup-roster__none { color: var(--muted-foreground); }
+.pickup-roster__act { width: var(--sp-40); text-align: right; }
+.pickup-roster tbody tr[hidden] { display: none; }
 
 @media (max-width: 640px) {
   .scanner-access { grid-template-columns: 1fr; }
