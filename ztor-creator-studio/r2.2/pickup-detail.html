@@ -36,6 +36,9 @@
      .ztor-table，F5 核銷紀錄改 popup。頁內只留兩條純佈局 glue。 */
   /* 名單工作列沿用 e-shop 的 .list-toolbar；filter-tabs 在條內置中，不吃 tabs 的 grow 規則。 */
   .list-toolbar > .filter-tabs { align-self:center; margin-bottom:0; }
+  /* 這一頁的側欄放的是核銷數字與掃碼交付，比一般 meta 欄重，300px 太窄、主欄太寬；
+     兩欄拉近到接近對半（使用者裁示「左右平衡一點」）。 */
+  .detail-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr); }
 </style>
 </head>
 <body>
@@ -57,7 +60,7 @@
         <div>
           <div class="pickup-detail__header">
             <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
-            <span class="badge badge--success"><span data-i18n="pk.status.active">Active</span></span>
+            <span class="badge badge--success" data-pk-status-badge><span data-i18n="pk.status.active">Active</span></span>
           </div>
         </div>
         <div class="page-intro__actions">
@@ -71,14 +74,17 @@
       <div class="detail-grid mt-16">
         <div class="detail-main">
           <section class="form-section form-section--outlined">
-            <div class="pickup-detail__meta pickup-detail__meta--stack mb-16">
-              <span><i data-lucide="map-pin" class="ztor-icon"></i> <span data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
-              <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
+            <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.board.session">Session</h3></div>
+            <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.board.loc">Pickup location</span><span class="kv__v" data-pk-loc data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="pk.board.when">Date and time</span><span class="kv__v" data-pk-time data-i18n="pk.detail.time">Today 14:00 – 18:00</span></div>
+
+            <div class="form-section__head mt-24"><h3 class="form-section__title" data-i18n="pk.board.items">Pickup items</h3></div>
+            <!-- 值＝每人可領幾個（不是這場的總量；總量看側欄的核銷進度） -->
+            <div class="pk-items" data-pk-items>
+              <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.r1.item">Tour zine vol. 02</span><span class="kv__v">×1</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Coastline tee · M / L</span><span class="kv__v">×1</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="pk.tk.signing">Signing session · GA entry</span><span class="kv__v">×1</span></div>
             </div>
-            <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.board.items">Pickup items</h3></div>
-            <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.r1.item">Tour zine vol. 02</span><span class="kv__v">40</span></div>
-            <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Coastline tee · M / L</span><span class="kv__v">22</span></div>
-            <div class="kv"><span class="kv__k" data-i18n="pk.tk.signing">Signing session · GA entry</span><span class="kv__v">18</span></div>
           </section>
         </div>
 
@@ -310,6 +316,38 @@
     document.querySelectorAll('[data-qr]').forEach(function (el, i) {
       if (!el.childElementCount) el.innerHTML = window.ztorFauxQr(i + 3);
     });
+
+    /* ── 場次狀態（?s=scheduled|active|ended）──────────────────
+       取貨管理列表的三列各自帶自己的狀態進來，這一頁照那個狀態換：徽章、側欄那張
+       數字卡、名單內容與工作列。三個狀態共用同一頁（IA 只有一頁 pickup-detail，
+       新增頁面要先改 §3.2 sitemap）。 */
+    var SESSIONS = {
+      scheduled: { name: 'pk.s2.name', loc: 'pk.s2.loc', time: 'pk.s2.time',
+                   st: 'pk.st.scheduled', badge: 'badge badge--neutral', stage: null, roster: 'pending' },
+      active:    { name: 'pk.row1.name', loc: 'pk.detail.loc', time: 'pk.detail.time',
+                   st: 'pk.status.active', badge: 'badge badge--success', stage: 'active', roster: 'mixed' },
+      ended:     { name: 'pk.s3.name', loc: 'pk.s3.loc', time: 'pk.s3.time',
+                   st: 'pk.st.ended', badge: 'badge badge--neutral', stage: 'ended', roster: 'done' }
+    };
+    (function applySession() {
+      var key = (location.search.match(/[?&]s=(\w+)/) || [])[1];
+      var cfg = SESSIONS[key];
+      if (!cfg) return;   /* 無參數＝維持頁面預設的「進行中」 */
+      function setKey(sel, k) { var el = document.querySelector(sel); if (el) el.setAttribute('data-i18n', k); }
+      setKey('[data-i18n="pk.row1.name"]', cfg.name);
+      setKey('[data-pk-loc]', cfg.loc);
+      setKey('[data-pk-time]', cfg.time);
+      var badge = document.querySelector('[data-pk-status-badge]');
+      if (badge) { badge.className = cfg.badge; badge.firstElementChild.setAttribute('data-i18n', cfg.st); }
+      document.querySelectorAll('[data-pk-stage]').forEach(function (el) {
+        el.hidden = el.getAttribute('data-pk-stage') !== cfg.stage;
+      });
+      /* 名單：尚未開始＝全部待核銷（示範只留一列）、已結束＝全部已核銷 */
+      var rows = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
+      if (cfg.roster === 'pending') rows.forEach(function (r) { r.hidden = r.getAttribute('data-pk-roster-st') !== 'pending'; });
+      if (cfg.roster === 'done')    rows.forEach(function (r) { r.hidden = r.getAttribute('data-pk-roster-st') !== 'done'; });
+      if (window.applyI18n) window.applyI18n(document.body);
+    })();
 
     /* F5 核銷紀錄 popup（2026-08-01 取代原本與名單並列的第二分頁）*/
     var logModal = document.querySelector('[data-pk-log-modal]');

@@ -4220,6 +4220,10 @@
 
     /* ── 2026-08-01 · 取貨場次詳情頁改版（行動卡＋名單表格＋核銷紀錄 popup）── */
     'pk.board.items':   { en: 'Pickup items',   zh: '領取項目' },
+    'pk.board.session': { en: 'Session',        zh: '場次資訊' },
+    'pk.board.loc':     { en: 'Pickup location', zh: '領取地點' },
+    'pk.board.when':    { en: 'Date and time',  zh: '領取日期與時間' },
+    'pk.board.per':     { en: 'Per person',     zh: '每人領取' },
     'pk.board.progress':{ en: 'Redemption progress', zh: '核銷進度' },
     'pk.board.result':  { en: 'Session result', zh: '這場結果' },
     'pk.board.left':    { en: 'still to collect', zh: '人還沒領' },
@@ -4241,6 +4245,17 @@
     'pk.r2.item':       { en: 'Coastline tee',  zh: 'Coastline tee' },
     'pk.r3.item':       { en: 'Signing GA entry', zh: '簽書會一般入場' },
     'pk.log.dialog.sub':{ en: 'Every scan result, including blocked duplicates and manual reversals.', zh: '每一次掃碼的結果，包含被擋下的重複掃描與人工反轉。' },
+    /* 另外兩個場次（對應取貨管理列表的三列） */
+    'pk.s2.name':       { en: 'Kaohsiung fan-meet — pickup', zh: '高雄粉絲見面會取貨' },
+    'pk.s2.loc':        { en: 'Pier-2 Hall B',  zh: '駁二 B 館' },
+    'pk.s2.time':       { en: 'Jul 12, 13:00 – 17:00', zh: '7/12 13:00 – 17:00' },
+    'pk.s3.name':       { en: 'Taichung listening — pickup', zh: '台中試聽會取貨' },
+    'pk.s3.loc':        { en: 'TADA Center',    zh: 'TADA 中心' },
+    'pk.s3.time':       { en: 'Jun 21, closed', zh: '6/21 已結束' },
+    'pk.st.scheduled':  { en: 'Scheduled',      zh: '尚未開始' },
+    'pk.st.ended':      { en: 'Ended',          zh: '已結束' },
+    'pk.empty.scheduled.title': { en: 'Nobody on the list yet', zh: '還沒有人進到這份名單' },
+    'pk.empty.scheduled.text':  { en: 'Buyers appear here once they buy this session\u2019s items or tickets.', zh: '買家買下這場的取貨商品或購票後，就會自動出現在這裡。' },
 
     /* ── D111 · 建立／編輯取貨場次 popup（pks.*）── */
     'pks.title':        { en: 'Create pickup session', zh: '建立取貨場次' },
