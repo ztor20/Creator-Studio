@@ -4,6 +4,27 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-01 · 貼頂 tab 去下框線改用陰影；通知條讓位改只動 opacity（B 反饋 ＋ bug 修正）
+
+- **【B】** `.list-dock.is-snapped .list-dock__bars` 拿掉 `border-bottom: 1px solid var(--border)`（深色主題上那是一道偏亮的細線，貼頂時橫過整個內容欄特別顯眼），改由 **`::after` 漸層遮罩**承擔分隔：`top:100%`、高 `--dock-fade`（56px）、`linear-gradient(var(--surface-page), transparent)`，捲動的內容從貼頂列底下通過時漸漸淡掉而不是被硬邊切斷。使用者兩段裁示：「tab 的下緣有一個白白的…請刪掉」→「tab fix 在最上方時，要有陰影」→「陰影不夠深，要像這樣的效果」（圈的是通知條那種同色底往下漸消，不是投影）。box-shadow 仍留一層當輔助。<br>用 `::after` 而非 `::before`：`::before` 在這個元件已被 `.list-status-row` 的浮層錨點用掉。與通知條遮罩的差別：通知條自己是不透明卡、要連上方空隙一起蓋；bars 是半透明毛玻璃且上緣切齊外框，只需要下方這一段。<br>**生效範圍＝所有用 snap dock 的頁**：e-shop、projects、events、my-ip、ip-market、earnings-sony，改元件層一次到位（使用者指定的活動／項目／電子商店都在內）。
+- **【B/D】** 貼頂列改**實色**、移除 `backdrop-filter`。一次解決兩件事：<br>① 使用者「陰影不夠深，要像這樣的效果」圈的是通知條——那是實色底＋往下漸消，本來就不是半透明毛玻璃。<br>② 使用者「滾下來以後圓角不見了」的**真因就是 `backdrop-filter`**：帶毛玻璃的子元素會讓外層 `.main` 的 `border-radius` 裁切失效，貼頂那一刻整個內容面板的圓角被切成直角（`.main` 是 `border-radius: 28px 0 0 0` ＋ `overflow: hidden auto`）。<br>底下內容的移動改由下方那段漸層遮罩交代，原本「半透明是為了讓底下的移動看得見一點」的理由不再需要。深色 `--surface-shell`、淺色 `--card`。
+- **【D】** *（bug）* 貼頂時通知條讓位改成**只動 `opacity`，不動 `position`**。先前寫 `position: static`（後又改 `relative`）會讓整頁內容在貼頂後不再繪製——`.alert-inset` 同時是遮罩 `::before`（`position:absolute`）的定位基準，一動它遮罩的框就跑掉。維持 sticky、只是淡出（200ms），版面與定位完全不變，dock 本來就疊在它上面（z-index 20 對 10）。使用者回報「往上滑 content 全部不見了」。
+
+## 2026-08-01 · 外部平台改「官方串接＋自行上傳」雙軌，粉絲分析就地上傳（A spec ＋ C 撤除）
+
+使用者在檢視粉絲分析的資料來源面板時裁定實際模型：「Spotify 預設是 ztor 官方幫你連接，放在第一個，並且可以選擇自行上傳 csv 檔案。StreetVoice 也是 ztor 官方幫你連接，但他不能自己上傳。其他都是自行上傳。」追問後補齊三件事：自行上傳的三個平台**沒有**授權連結這條路、官方串接壞掉時顯示「ztor 處理中」並給上傳備援、上傳入口在粉絲分析頁就地完成。上游已先落規格（`documents/` D165、Plan231），本輪是依新規格同步呈現層。
+
+- **【A】** **來源面板改雙軌分組**（`fan-analytics.html:96-166`、`ds-components/source-status.css`）：五列重排成「ztor 官方串接」（Spotify、StreetVoice）與「你自己上傳」（YouTube、Instagram、TikTok）兩組，Spotify 排第一。新增 `.src-status__group` 分組標題。**為什麼用分組不用逐列標章**：分組標題本身就在回答「這一列為什麼有／沒有按鈕」，逐列掛「官方／自行」標章要讀者自己歸納；下半組收在一起也自然讀成一份待辦。排序是規格約束（D165），不是版面自由。
+- **【C】** **全站移除「連結／重新連結」**（`fan-analytics.html`、`settings.html:383-451`、`js/components.js`、`js/i18n.js`）：五個平台沒有一個是創作者去授權的——官方串接那兩個授權不在他手上，另外三個 ztor 根本沒串接。留著那顆按鈕等於在畫面上撒謊。連帶退場 7 個已無消費者的 i18n key：`settings.int.connected/synced/open/resync/reconnect`、`ext.cta.fix`、`ext.cta.connect`，以及 `aud.src.connect`、`aud.src.open-settings`、`aud.empty.available`。
+- **【A】** **同步異常橫幅改寫**（`fan-analytics.html:60-70`）：原本是「授權已過期，重新連結後數字會補回來」＋導向設定。Spotify 是官方串接，那顆按鈕創作者按了也做不了事。改成「修復在 ztor 這邊，你不需要重新連結」＋CTA 換成「上傳 Spotify 資料」，讓當下真的有事可做。
+- **【A】** **上傳資料檔彈窗**（新增 `partials/source-upload-modal.js`、`fan-analytics.html` 掛載與開關 JS）：殼層照 Q27 用 `.payout-modal`／`.payout-dialog`，投放區用既有 `.upload-tile--file`（Q40：hover 動作列由 `partials/upload-tile.js` 產生，未手刻），說明條用 `.info-banner`，不新造元件。四個平台共用同一顆彈窗，只有標題與「去哪裡匯出」那一句隨平台換——做法是換 `data-i18n` 的 key 再重跑 `applyI18n`，**不手動塞字串**：手動塞的會在使用者切語言時被洗回通用文案。StreetVoice 沒有 `sv` 分支，它本來就不開放上傳。
+- **【A】** **設定的整合段拆成兩組**（`settings.html:383-451`）：上組「資料來源（唯讀）」五列只有狀態、零動作，底下一顆連去粉絲分析；下組「需授權的整合」留 X／Discord／Stripe／Google Analytics。X（Twitter）歸屬未定（D165 待確認 6），暫留在授權組。順帶把五個資料來源列的平台品牌色方塊換成中性的 `.src-status__mark`，與粉絲分析同一支元件——**裸值棘輪因此由 54 降到 50**。
+- **【A】** **儀表板 F8 同步改軌**（`js/components.js`、`index.html:216-223`）：五列改成官方串接在前、狀態語言分同步軸與上傳軸（新增 `data.status.missing`＝未上傳），CTA 一律改指 `fan-analytics.html`，沒有任何一列再導向設定。Spotify 的快照警示同步從「重新授權」改成「上傳資料」。
+- **【D】** **缺口登記**：`ASSUMPTIONS.md` 新增 PG-026（檔案格式與必要欄位未定）、PG-027（同期間重複上傳的處理未定）、PG-028（上傳資料的效期未定）、UIA-099（分組呈現決策）。上傳彈窗因此**刻意不寫任何格式、副檔名、大小上限或欄位名**——那四件事規格標〔產品待確認〕，呈現層不得自行決定。
+- **【D】** `design-system.md`／`design-system.html` 條目與 demo 同步（`__group` 進 class 清單、demo 改成雙軌兩組）。check_ds_sync PASS，棘輪未升（50 < 50 基準前值 54）。
+
+---
+
 ## 2026-08-01 · 黏頂通知條加漸層遮罩 ＋ 分頁工作列接手置頂（B 反饋／使用者裁決）
 
 使用者：「當有提示訊息在上面時，往上滑，底下的內容應該被遮住。可以將提示訊息下方加上一個背景色漸層，讓底下內容在提示訊息下方漸消。」先做 `earnings-sony.html` 的複本探索頁確認效果、看過後套用，探索頁已刪除。

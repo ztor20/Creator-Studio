@@ -387,7 +387,7 @@
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).
       { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax' },
       // Snoozed (info, soft-closed) — excluded from F2 pending count; reappears in ~7 days (spec §F4).
-      { variant: 'info',    icon: 'info-fill',           snoozed: true,  titleKey: 'alert.spotify.title',   title: 'SPOTIFY sync failed',             descKey: 'alert.spotify.desc',   desc: 'Authorization expired May 17. Re-authorize to keep audience insights current.',                         metaKey: 'alert.spotify.meta',   meta: 'Info · Settings · Snoozed',     ctaKey: 'alert.spotify.cta',   cta: 'Re-authorize',       ctaHref: 'settings.html#integrations' }
+      { variant: 'info',    icon: 'info-fill',           snoozed: true,  titleKey: 'alert.spotify.title',   title: 'SPOTIFY sync stopped',            descKey: 'alert.spotify.desc',   desc: 'Spotify is an official ztor integration — we\u2019re fixing it. Upload an export if you need the figures now.',            metaKey: 'alert.spotify.meta',   meta: 'Info · Fan analytics · Snoozed', ctaKey: 'alert.spotify.cta',   cta: 'Upload data',        ctaHref: 'fan-analytics.html' }
     ] },
 
     // F5 — recent activity (completed / record-only events).
@@ -414,13 +414,19 @@
       { icon: 'circle', titleKey: 'dash.progress.row6.title', title: '<em>深水埗月光</em> screening',      img: 'images/projects/shamshuipo-moonlight.jpg', metaKey: 'dash.progress.row6.meta', meta: 'Event · Events · Jan 18', catKey: 'dash.progress.row6.cat', cat: 'Online event', progKey: 'dash.progress.row6.prog', prog: '—', dueKey: 'dash.progress.row6.due', due: 'Jan 18', status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' }, go: 'events.html' }
     ] },
 
-    // F8 — external data status (CTAs only route to Settings; Dashboard never manages integrations).
+    // F8 — external data status. D165: two intake tracks. Official integrations
+    // (Spotify, StreetVoice) are ztor's to run — the creator has nothing to authorise,
+    // so a failure gets no CTA except Spotify's upload fallback. Creator-upload
+    // platforms (YouTube, Instagram, TikTok) route to Fan analytics, where the
+    // upload actually happens. Nothing here routes to Settings any more, and no row
+    // says Connect — none of the five is something the creator connects.
+    // Order follows the spec: official first, Spotify leading.
     'dash-ext': { rows: [
-      { logo: { t: 'Y',  bg: '#ff0000', fg: '#fff' },                                                       title: 'YouTube',     typeKey: 'ext.youtube.type',     type: 'Subscribers & views · synced 1h ago',                  impactKey: 'ext.youtube.impact',     impact: 'Feeds Audience trends',                       status: { key: 'data.status.normal',  fallback: 'Normal',        variant: 'success' } },
-      { logo: { t: 'IG', bg: 'linear-gradient(45deg,#fbad50,#cd486b,#5b51d8)', fg: '#fff' },                title: 'Instagram',   typeKey: 'ext.instagram.type',   type: 'Followers & engagement · synced 2h ago',               impactKey: 'ext.instagram.impact',   impact: 'Feeds Audience trends & Fans CRM',            status: { key: 'data.status.normal',  fallback: 'Normal',        variant: 'success' } },
-      { logo: { t: 'S',  bg: '#1ed760', fg: '#000' },                                                       title: 'Spotify',     typeKey: 'ext.spotify.type',     type: 'Streams & monthly listeners · last synced Nov 18',     impactKey: 'ext.spotify.impact',     impact: 'Affects Audience trends & streaming royalties', status: { key: 'data.status.delayed', fallback: 'Stalled',       variant: 'error' },   cta: { key: 'ext.cta.fix',     text: 'Fix in Settings', href: 'settings.html#integrations' } },
-      { logo: { t: 'SV', bg: '#ec5b24', fg: '#fff', fs: 'var(--fs-12)' },                                           title: 'StreetVoice', typeKey: 'ext.streetvoice.type', type: 'Followers & plays · synced Nov 23',                    impactKey: 'ext.streetvoice.impact', impact: 'Some audience metrics incomplete',            status: { key: 'data.status.partial', fallback: 'Partial',       variant: 'neutral' }, cta: { key: 'ext.cta.fix',     text: 'Fix in Settings', href: 'settings.html#integrations' } },
-      { logo: { t: 'T' },                                                                                   title: 'TikTok',      typeKey: 'ext.tiktok.type',      type: 'Not linked · no data flowing in',                      impactKey: 'ext.tiktok.impact',      impact: 'No TikTok audience data in analytics',        status: { key: 'status.not-connected', fallback: 'Not connected', variant: 'neutral' }, cta: { key: 'ext.cta.connect', text: 'Connect',         href: 'settings.html#integrations' } }
+      { logo: { t: 'SP' }, title: 'Spotify',     typeKey: 'ext.spotify.type',     type: 'Streams & monthly listeners · last synced Nov 18',  impactKey: 'ext.spotify.impact',     impact: 'Affects Fan overview & streaming royalties', status: { key: 'data.status.delayed', fallback: 'Stalled',      variant: 'error' },   cta: { key: 'ext.cta.upload',   text: 'Upload data',       href: 'fan-analytics.html' } },
+      { logo: { t: 'SV' }, title: 'StreetVoice', typeKey: 'ext.streetvoice.type', type: 'Followers & plays · synced Nov 23',                 impactKey: 'ext.streetvoice.impact', impact: 'Some fan metrics incomplete',               status: { key: 'data.status.partial', fallback: 'Partial',      variant: 'neutral' } },
+      { logo: { t: 'YT' }, title: 'YouTube',     typeKey: 'ext.youtube.type',     type: 'Subscribers & views · uploaded 4 days ago',         impactKey: 'ext.youtube.impact',     impact: 'Feeds Fan overview',                        status: { key: 'data.status.normal',  fallback: 'Normal',       variant: 'success' } },
+      { logo: { t: 'IG' }, title: 'Instagram',   typeKey: 'ext.instagram.type',   type: 'Followers & engagement · no file uploaded yet',     impactKey: 'ext.instagram.impact',   impact: 'Feeds Fan overview & Fans CRM',             status: { key: 'data.status.missing', fallback: 'Not uploaded', variant: 'neutral' }, cta: { key: 'ext.cta.upload',   text: 'Upload data',       href: 'fan-analytics.html' } },
+      { logo: { t: 'TT' }, title: 'TikTok',      typeKey: 'ext.tiktok.type',      type: 'Followers & engagement · no file uploaded yet',     impactKey: 'ext.tiktok.impact',      impact: 'No TikTok data in Fan overview',            status: { key: 'data.status.missing', fallback: 'Not uploaded', variant: 'neutral' }, cta: { key: 'ext.cta.upload',   text: 'Upload data',       href: 'fan-analytics.html' } }
     ] },
 
     // F7 — fan relations (Fans CRM) | audience trends (Audience Intelligence).
@@ -456,7 +462,7 @@
           { name: 'Spotify',     valKey: 'dash.audience.sync-paused', val: '— sync paused', muted: true }
         ],
         noteKey: 'dash.audience.note', note: 'Spotify resync needed — last successful Nov 18.',
-        fixKey: 'dash.audience.fix', fix: 'Fix', fixHref: 'settings.html#integrations',
+        fixKey: 'dash.audience.fix', fix: 'Upload data', fixHref: 'fan-analytics.html',   /* D165：Spotify 是官方串接，創作者能做的是上傳備援，不是去設定重連 */
         /* 2026-07-31 D158：受眾趨勢的處理入口原本懸空（D057 裁示指向「Fans CRM
            受眾／趨勢區塊」，但那個區塊從未存在）。受眾分析成頁後落在這裡。 */
         linkKey: 'dash.audience.link', link: 'Open Audience', linkHref: 'fan-analytics.html'

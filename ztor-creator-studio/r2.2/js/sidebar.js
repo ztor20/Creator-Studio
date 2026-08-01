@@ -240,7 +240,7 @@
     { icon: "receipt",        href: "order-detail.html",          k: "notif.new-order",    source: "notif.source.orders" },
     { icon: "rocket",         href: "projects.html",              k: "notif.funded",       source: "notif.source.projects" },
     { icon: "award",          href: "fans-crm.html",              k: "notif.fan-up",       source: "notif.source.fans" },
-    { icon: "refresh-ccw",    href: "settings.html#integrations", k: "notif.connected",    source: "notif.source.settings" },
+    { icon: "upload",         href: "fan-analytics.html",         k: "notif.connected",    source: "notif.source.analytics" },
     { icon: "megaphone",      href: "#",                          k: "notif.announce",    source: "notif.source.official" },
   ];
 
