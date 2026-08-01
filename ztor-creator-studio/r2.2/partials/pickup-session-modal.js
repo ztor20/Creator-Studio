@@ -5,15 +5,13 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    context it pre-adds that product to "pickup items" but the creator can still
    add other items and event tickets.
 
-   Two steps in one dialog:
-     · form   — three freely-switchable tabs (shared .tabs + .tab-panel), spec
-                5.1.5.12 §4: "basic" session basics (name / location / start·end
-                / instructions), "items" pickup items — ONE search-to-add
-                combobox (selected items are removable chips; focus/typing opens
-                a dropdown of products + tickets), "scanner" set password. The
-                items tab carries a live count badge; Create validates and routes
-                to the offending tab so a hidden required field is never silent.
-     · result — generated scanner URL + QR + copy, shown after Create.
+   2026-08-01 改版（使用者裁決）：三頁籤 → 兩步流程，result step 撤除。
+     · step 1「這場是什麼」— 名稱／地點／起訖／說明，加上**選填**的掃碼密碼（已預先
+       產生一組）；編輯場次時多出掃碼網址的重設與停用（原本在詳情頁 F2 那張卡上）。
+     · step 2「可以領什麼」— ONE search-to-add combobox（已選項目是可移除的 chip）。
+   刻意不放 stepper：只有兩步，dialog 副標與「上一步／下一步」已經說明位置。
+   建立成功不再顯示 result（QR＋URL），改由 hooks.onCreate 讓 consumer 落地到場次詳情頁——
+   那頁的行動卡右欄本來就有同一組網址與密碼，再做一次是重複的 UI。
    Fields use the canonical .field / .form-grid system (field-system.css /
    form-grid.css); the retired .payout-field* classes were dropped 2026-07-17.
    The item picker reuses .tag-input (field + chips) + .combobox (dropdown).
@@ -39,99 +37,89 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     <div class="payout-dialog__head">
       <div>
         <h2 class="payout-dialog__title" id="pickup-dialog-title" data-i18n="pks.title">Create pickup session</h2>
-        <p class="text-sub" style="margin:6px 0 0;font-size:13px" data-i18n="pks.sub">Set a time window, add the items and event tickets this session can redeem, and protect the scanner with a password.</p>
+        <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-pks-sub data-i18n="pks.step1.sub">First, set where and when this session runs.</p>
       </div>
       <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pks-close><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
 
-    <!-- STEP 1 · form — three freely-switchable tabs: basics / items / scanner (spec 5.1.5.12 §4).
-         The tab bar replaces the old stacked filled panels; only the active .tab-panel shows. -->
+    <!-- STEP 1 / 2 · form — 兩步流程（spec 5.1.5.12 §4）：
+         step 1「這場是什麼」＝名稱／地點／起訖／說明＋選填掃碼密碼（編輯時多出掃碼網址的
+         重設與停用）；step 2「可以領什麼」＝項目 combobox。一次只顯示一步，不放 stepper。 -->
     <div class="payout-dialog__body" data-pks-form>
-      <nav class="tabs" role="tablist" data-pks-tabs>
-        <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-pks-tab="basic"><span data-i18n="pks.tab.basic">Basics</span></button>
-        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-pks-tab="items"><span data-i18n="pks.tab.items">Items</span><span class="tabs__item-count" data-pks-item-count>0</span></button>
-        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-pks-tab="scanner"><span data-i18n="pks.tab.scanner">Password</span></button>
-      </nav>
-
-      <div data-pks-panels>
-        <!-- Tab · basics -->
-        <section class="tab-panel tab-panel--active" role="tabpanel" data-pks-panel="basic">
-          <div class="form-grid">
-            <label class="field">
-              <span class="field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
-              <input class="input" data-pks-name placeholder="e.g., Taipei signing — pickup" data-i18n-placeholder="pks.f.name.ph">
-            </label>
-            <label class="field">
-              <span class="field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
-              <input class="input" data-pks-loc placeholder="Venue, booth or entrance" data-i18n-placeholder="pks.f.loc.ph">
-            </label>
-            <label class="field">
-              <span class="field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
-              <input class="input" type="datetime-local" data-pks-start value="2026-07-12T13:00">
-            </label>
-            <label class="field">
-              <span class="field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
-              <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
-            </label>
-          </div>
-          <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
-          <label class="field mt-16">
-            <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
-            <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
-          </label>
-        </section>
-
-        <!-- Tab · items — single search-to-add combobox (products + tickets); focus opens a suggestion dropdown -->
-        <section class="tab-panel" role="tabpanel" data-pks-panel="items">
-          <p class="pks-panel__intro" data-i18n="pks.sec.items.sub">Add at least one product or event ticket.</p>
-          <div class="combobox" data-pks-combo>
-            <div class="tag-input__field" data-pks-field>
-              <input class="tag-input__entry" type="search" data-pks-search role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or tickets by name…" data-i18n-placeholder="pks.search.ph">
-              <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
-            </div>
-            <div class="combobox__menu" data-pks-menu hidden></div>
-          </div>
-        </section>
-
-        <!-- Tab · scanner -->
-        <section class="tab-panel" role="tabpanel" data-pks-panel="scanner">
+      <section class="pks-step" data-pks-step="basic">
+        <div class="form-grid">
           <label class="field">
-            <span class="field__label"><span data-i18n="pks.f.pw">Scanner password</span> <span class="field__req">*</span></span>
-            <input class="input" type="password" data-pks-pw placeholder="Staff enter this to scan" data-i18n-placeholder="pks.f.pw.ph" autocomplete="new-password">
-            <span class="field__hint" data-i18n="pks.f.pw.hint">Staff type this after opening the scanner URL. Changing it later signs out active scanners.</span>
+            <span class="field__label"><span data-i18n="pks.f.name">Session name</span> <span class="field__req">*</span></span>
+            <input class="input" data-pks-name placeholder="e.g., Taipei signing — pickup" data-i18n-placeholder="pks.f.name.ph">
           </label>
-        </section>
-      </div>
+          <label class="field">
+            <span class="field__label"><span data-i18n="pks.f.loc">Pickup location</span> <span class="field__req">*</span></span>
+            <input class="input" data-pks-loc placeholder="Venue, booth or entrance" data-i18n-placeholder="pks.f.loc.ph">
+          </label>
+          <label class="field">
+            <span class="field__label"><span data-i18n="pks.f.start">Start time</span> <span class="field__req">*</span></span>
+            <input class="input" type="datetime-local" data-pks-start value="2026-07-12T13:00">
+          </label>
+          <label class="field">
+            <span class="field__label"><span data-i18n="pks.f.end">End time</span> <span class="field__req">*</span></span>
+            <input class="input" type="datetime-local" data-pks-end value="2026-07-12T17:00">
+          </label>
+        </div>
+        <span class="field__hint" data-pks-time-err hidden style="color:var(--destructive)" data-i18n="pks.f.time.err">End time must be later than start time.</span>
+        <label class="field mt-16">
+          <span class="field__label" data-i18n="pks.f.instr">Pickup instructions (optional)</span>
+          <textarea class="textarea" data-pks-instr placeholder="Queue location, ID needed, limits…" data-i18n-placeholder="pks.f.instr.ph"></textarea>
+        </label>
+        <!-- 掃碼密碼＝工作人員那支掃碼器網址的鎖，屬於這場的基本設定。已預先產生一組。 -->
+        <label class="field mt-16">
+          <span class="field__label" data-i18n="pks.f.pw.opt">Scanner password (optional)</span>
+          <div class="control-row">
+            <input class="input" type="text" data-pks-pw autocomplete="off">
+            <button class="btn btn--outline btn--sm" type="button" data-pks-pwgen><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.pw.gen">Regenerate</span></button>
+          </div>
+        </label>
+        <!-- 掃碼網址的重設／停用：只在編輯場次時出現（建立當下網址還沒產生） -->
+        <label class="field mt-16" data-pks-editonly hidden>
+          <span class="field__label" data-i18n="pks.f.url">Scanner URL</span>
+          <div class="control-row">
+            <input class="input" data-pks-url readonly>
+            <button class="btn btn--outline btn--sm" type="button" data-pks-urlreset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.url.reset">Reset</span></button>
+            <button class="btn btn--outline btn--sm" type="button" data-pks-urltoggle data-i18n="pks.f.url.off">Disable</button>
+          </div>
+          <span class="field__hint" data-i18n="pks.f.url.hint">Resetting invalidates the old URL immediately; on-site devices must reopen the new one. Changing the password signs out active scanners.</span>
+        </label>
+      </section>
+
+      <!-- step 2 — single search-to-add combobox (products + tickets); focus opens a suggestion dropdown -->
+      <section class="pks-step" data-pks-step="items" hidden>
+        <p class="pks-step__intro" data-i18n="pks.items.sub">Add at least one product or event ticket. What you add here is what you need to bring on the day.</p>
+        <div class="combobox" data-pks-combo>
+          <div class="tag-input__field" data-pks-field>
+            <input class="tag-input__entry" type="search" data-pks-search role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="off" placeholder="Search products or tickets by name…" data-i18n-placeholder="pks.search.ph">
+            <i data-lucide="chevron-down" class="combobox__chevron ztor-icon"></i>
+          </div>
+          <div class="combobox__menu" data-pks-menu hidden></div>
+        </div>
+      </section>
     </div>
 
-    <!-- STEP 2 · result -->
-    <div class="payout-dialog__body" data-pks-result hidden>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:8px 0">
-        <div class="qr-box qr-box--lg" data-qr></div>
-        <div>
-          <div style="font-size:var(--fs-16);font-weight:var(--fw-semibold)" data-i18n="pks.done.title">Session created</div>
-          <p class="text-sub" style="font-size:var(--fs-13);margin:6px 0 0" data-i18n="pks.done.sub">Hand this scanner URL to your on-site staff. They open it, enter the password and scan.</p>
-        </div>
-        <div class="scanner-access__url" style="width:100%">
-          <code data-pks-url>ztor.app/scan/tpe-signing-7f3a2</code>
-          <button class="btn btn--outline btn--sm" type="button" data-pks-copy><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="pks.done.copy">Copy</span></button>
-        </div>
-      </div>
-    </div>
+    <!-- 2026-08-01：原本的 result step（QR＋scanner URL）已撤除。建立成功直接落地到
+         場次詳情頁，那頁的行動卡右欄本來就有同一組網址與密碼，這裡再做一次是重複的 UI。 -->
 
+    <!-- 「Cancel」已移除：右上角的 × 就是取消，兩個出口是重複的。
+         也不再寫「還差什麼」——必填星號＋灰掉的按鈕已經說明還不能送出。 -->
     <div class="payout-dialog__foot" data-pks-foot-form>
-      <button class="btn btn--ghost" type="button" data-pks-close data-i18n="payout.cancel">Cancel</button>
-      <button class="btn btn--primary" type="button" data-pks-create data-i18n="pks.create" disabled>Create session</button>
-    </div>
-    <div class="payout-dialog__foot" data-pks-foot-result hidden>
-      <button class="btn btn--primary" type="button" data-pks-close style="margin-left:auto" data-i18n="pks.done.ok">Done</button>
+      <span style="margin-left:auto"></span>
+      <button class="btn btn--ghost" type="button" data-pks-back hidden><i data-lucide="chevron-left" class="ztor-icon"></i> <span data-i18n="pks.back">Back</span></button>
+      <button class="btn btn--primary" type="button" data-pks-next disabled><span data-i18n="pks.next">Next</span> <i data-lucide="chevron-right" class="ztor-icon"></i></button>
+      <button class="btn btn--primary" type="button" data-pks-create data-i18n="pks.create" disabled hidden>Create session</button>
     </div>
   </section>
 </div>`;
 
   window.ZTOR_PARTIALS.createPickupSession = function (host, hooks) {
     hooks = hooks || {};
-    var modal = null, lastFocused = null, selected = [];
+    var modal = null, lastFocused = null, selected = [], step = 1;
 
     function chrome(el) {
       if (window.ztorIcons) window.ztorIcons.applyIcons(el);
@@ -188,26 +176,38 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     function setExpanded(on) { var s = modal.querySelector('[data-pks-search]'); if (s) s.setAttribute('aria-expanded', on ? 'true' : 'false'); }
     function addItem(id) { if (id && selected.indexOf(id) < 0) selected.push(id); var s = modal.querySelector('[data-pks-search]'); if (s) s.value = ''; renderChips(); renderMenu(); syncCreateEnabled(); }
     function removeItem(id) { var i = selected.indexOf(id); if (i >= 0) selected.splice(i, 1); renderChips(); renderMenu(); syncCreateEnabled(); }
-    /* No draft state (D112) — a session needs ≥1 item/ticket before it can be created.
-       Also refreshes the items-tab count badge so the requirement's location stays
-       visible from any tab. */
+    /* 兩步各自檢查自己的必填：step 1 名稱＋地點＋時間先後，step 2 至少 1 個項目
+       （D112 無草稿態）。掃碼密碼自 2026-08-01 起是選填，不進這份檢查。 */
     function syncCreateEnabled() {
-      var btn = modal.querySelector('[data-pks-create]');
-      if (btn) btn.disabled = selected.length === 0;
-      var badge = modal.querySelector('[data-pks-item-count]');
-      if (badge) badge.textContent = selected.length;
+      var ok = step === 1
+        ? (!!val('[data-pks-name]') && !!val('[data-pks-loc]') && validTime())
+        : selected.length > 0;
+      var btn = modal.querySelector(step === 1 ? '[data-pks-next]' : '[data-pks-create]');
+      if (btn) btn.disabled = !ok;
     }
-    /* Switch the active tab + panel (shared .tabs / .tab-panel wiring). */
-    function setTab(name) {
-      modal.querySelectorAll('[data-pks-tab]').forEach(function (t) {
-        var on = t.getAttribute('data-pks-tab') === name;
-        t.classList.toggle('tabs__item--active', on);
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
+    function val(sel) { var el = modal.querySelector(sel); return el ? el.value.trim() : ''; }
+    /* 一次只顯示一步；副標與上一步／下一步負責表達位置，不放 stepper。 */
+    function setStep(n) {
+      step = n;
+      modal.querySelectorAll('[data-pks-step]').forEach(function (p) {
+        p.hidden = p.getAttribute('data-pks-step') !== (n === 1 ? 'basic' : 'items');
       });
-      modal.querySelectorAll('[data-pks-panel]').forEach(function (p) {
-        p.classList.toggle('tab-panel--active', p.getAttribute('data-pks-panel') === name);
-      });
+      var sub = modal.querySelector('[data-pks-sub]');
+      /* applyI18n 只掃 root 的後代，所以要傳 sub 的父層進去（傳 sub 自己不會生效） */
+      if (sub) { sub.setAttribute('data-i18n', n === 1 ? 'pks.step1.sub' : 'pks.step2.sub'); if (window.applyI18n) window.applyI18n(sub.parentNode); }
+      modal.querySelector('[data-pks-back]').hidden = n !== 2;
+      modal.querySelector('[data-pks-next]').hidden = n !== 1;
+      modal.querySelector('[data-pks-create]').hidden = n !== 2;
+      modal.querySelector('[data-pks-form]').scrollTop = 0;
+      syncCreateEnabled();
+      /* 進到第二步就把游標放進搜尋框並展開建議清單。延到下一輪 tick——在同一個 click
+         事件裡對剛從 [hidden] 放出來的元素呼叫 focus()，瀏覽器會忽略。 */
+      if (n === 2) setTimeout(function () {
+        var s = modal.querySelector('[data-pks-search]');
+        if (s) { s.focus(); openMenu(); }
+      }, 0);
     }
+    function genPw() { return Math.random().toString(36).slice(2, 8) + '26'; }
     function validTime() {
       var s = modal.querySelector('[data-pks-start]').value;
       var e = modal.querySelector('[data-pks-end]').value;
@@ -218,31 +218,41 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       modal.querySelector('[data-pks-time-err]').hidden = ok;
       return ok;
     }
-    function step(which) {
-      modal.querySelector('[data-pks-form]').hidden = which !== 'form';
-      modal.querySelector('[data-pks-result]').hidden = which !== 'result';
-      modal.querySelector('[data-pks-foot-form]').hidden = which !== 'form';
-      modal.querySelector('[data-pks-foot-result]').hidden = which !== 'result';
-    }
-    function fillQr(seed) {
-      var box = modal.querySelector('[data-pks-result] .qr-box');
-      if (box && window.ztorFauxQr) box.innerHTML = window.ztorFauxQr(seed || 9);
-    }
+    /* 建立成功＝關閉彈窗、交給 consumer 落地到場次詳情頁（result step 已撤除）。 */
     function create() {
-      if (selected.length === 0) { setTab('items'); syncCreateEnabled(); return; }
-      if (!updateTimeErr()) { setTab('basic'); return; }   /* route to the tab that holds the error */
+      if (selected.length === 0) { setStep(2); return; }
+      if (!updateTimeErr()) { setStep(1); return; }
       var name = (modal.querySelector('[data-pks-name]').value || '').trim();
       var slug = (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'session').slice(0, 18);
-      modal.querySelector('[data-pks-url]').textContent = 'ztor.app/scan/' + slug + '-' + Math.random().toString(36).slice(2, 7);
-      fillQr(Math.floor(Math.random() * 40) + 5);
-      step('result');
-      if (hooks.onCreate) hooks.onCreate({ name: name, items: selected.length });
+      close();
+      if (hooks.onCreate) hooks.onCreate({
+        name: name,
+        items: selected.length,
+        password: val('[data-pks-pw]'),
+        url: 'ztor.app/scan/' + slug + '-' + Math.random().toString(36).slice(2, 7)
+      });
     }
 
     function onClick(e) {
       if (e.target === modal) { close(); return; }
-      var tab = e.target.closest('[data-pks-tab]');
-      if (tab) { setTab(tab.getAttribute('data-pks-tab')); return; }
+      if (e.target.closest('[data-pks-next]')) { setStep(2); return; }
+      if (e.target.closest('[data-pks-back]')) { setStep(1); return; }
+      if (e.target.closest('[data-pks-pwgen]')) {
+        modal.querySelector('[data-pks-pw]').value = genPw();
+        return;
+      }
+      if (e.target.closest('[data-pks-urlreset]')) {
+        modal.querySelector('[data-pks-url]').value = 'ztor.app/scan/session-' + Math.random().toString(36).slice(2, 7);
+        return;
+      }
+      var tgl = e.target.closest('[data-pks-urltoggle]');
+      if (tgl) {
+        var off = tgl.getAttribute('data-i18n') === 'pks.f.url.off';
+        tgl.setAttribute('data-i18n', off ? 'pks.f.url.on' : 'pks.f.url.off');
+        modal.querySelector('[data-pks-url]').style.opacity = off ? '.45' : '';
+        if (window.applyI18n) window.applyI18n(tgl);
+        return;
+      }
       var add = e.target.closest('[data-pks-add]');
       if (add) { addItem(add.getAttribute('data-pks-add')); var si = modal.querySelector('[data-pks-search]'); if (si) si.focus(); return; }
       var rm = e.target.closest('[data-pks-remove]');
@@ -250,11 +260,6 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       if (e.target.closest('[data-pks-field]')) { var sf = modal.querySelector('[data-pks-search]'); if (sf) sf.focus(); return; }
       if (e.target.closest('[data-pks-close]')) { close(); return; }
       if (e.target.closest('[data-pks-create]')) { create(); return; }
-      if (e.target.closest('[data-pks-copy]')) {
-        var url = modal.querySelector('[data-pks-url]').textContent;
-        if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function () {});
-        return;
-      }
       if (!e.target.closest('[data-pks-combo]')) closeMenu();   /* click outside the picker closes the dropdown */
     }
     function onKey(e) {
@@ -277,6 +282,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
       });
       modal.addEventListener('input', function (e) {
         if (e.target.matches('[data-pks-search]')) openMenu();
+        syncCreateEnabled();   /* step 1 的名稱／地點也要即時解鎖「下一步」 */
       });
       modal.addEventListener('focusin', function (e) {
         if (e.target.matches('[data-pks-search]')) openMenu();
@@ -286,18 +292,23 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
     }
     function open(preselectId, titleKey) {
       lastFocused = document.activeElement;
-      step('form');
-      setTab('basic');   /* always land on the first tab */
+      var isEdit = titleKey === 'pks.title.edit';
       updateTimeErr();
       selected = preselectId ? [preselectId] : [];
       var search = modal.querySelector('[data-pks-search]');
       if (search) search.value = '';
+      /* 掃碼密碼預先產生：創作者不想管就直接下一步；要自訂再改 */
+      modal.querySelector('[data-pks-pw]').value = genPw();
+      /* 掃碼網址的重設／停用只在編輯場次時出現——建立當下網址還沒產生 */
+      modal.querySelectorAll('[data-pks-editonly]').forEach(function (el) { el.hidden = !isEdit; });
+      if (isEdit) modal.querySelector('[data-pks-url]').value = 'ztor.app/scan/tpe-signing-7f3a2';
+      modal.querySelector('[data-pks-create]').setAttribute('data-i18n', isEdit ? 'pks.save' : 'pks.create');
       renderChips();
       closeMenu();
-      syncCreateEnabled();
+      setStep(1);
       var title = modal.querySelector('#pickup-dialog-title');
       title.setAttribute('data-i18n', titleKey || 'pks.title');
-      if (window.applyI18n) window.applyI18n(title);
+      if (window.applyI18n) window.applyI18n(modal);
       modal.hidden = false;
       document.body.classList.add('is-modal-open');
       var f = modal.querySelector('[data-pks-name]');

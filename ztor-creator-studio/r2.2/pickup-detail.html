@@ -18,13 +18,22 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <style>
-  /* 5.1.5.15 取貨場次詳情：F1 場次基本資訊／F2 Scanner URL 與密碼／F3 名單與核銷紀錄分頁切換（預設 F4 取貨與入場名單、可切 F5 核銷紀錄）。 */
-  .pk-filter-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-  .pk-noresult[hidden]{ display:none; }
+  /* 5.1.5.15 取貨場次詳情。2026-08-01 改版：F1 基本資訊＋F2 Scanner 收斂成一張
+     .pickup-board（左＝領取的活動與物品、右＝工作人員掃碼與核銷數字），F4 名單改
+     .ztor-table，F5 核銷紀錄改 popup。頁內只留兩條純佈局 glue。 */
+  .pk-filter-row { display:flex; align-items:center; gap:var(--sp-12); flex-wrap:wrap; }
+  .pk-filter-row__end { margin-left:auto; display:flex; align-items:center; gap:var(--sp-8); }
 </style>
 </head>
 <body>
@@ -36,137 +45,183 @@
 
       <div class="page-crumb">
         <a href="e-shop.html" class="card__link" data-i18n="pk.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
-        <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a> <span style="margin:0 6px">/</span>
-        <span data-i18n="pk.row1.name">Taipei signing — pickup</span>
+        <a href="pickup.html" class="card__link" data-i18n="pk.crumb.self">Pickup management</a>
       </div>
 
-      <!-- F1 · session basic info -->
+      <!-- F1 · 場次身分：名稱＋狀態＋編輯入口。
+           地點／時間已下放到行動卡左欄；頁面說明段落與「Start scanning」入口已撤除
+           （掃碼是工作人員在自己裝置上做的事，這頁只負責把網址交出去）。 -->
       <div class="page-intro">
         <div>
           <div class="pickup-detail__header">
             <h1 class="page-intro__title" data-i18n="pk.row1.name">Taipei signing — pickup</h1>
             <span class="badge badge--success"><span data-i18n="pk.status.active">Active</span></span>
           </div>
-          <div class="pickup-detail__meta">
-            <span><i data-lucide="map-pin" class="ztor-icon"></i> <span data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
-            <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
-          </div>
-          <p class="page-intro__sub" data-i18n="pk.detail.sub">Session info, scanner access, the redemption log, and the pickup &amp; check-in list. Verifiable items are defined on the mobile scanner.</p>
         </div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" type="button" data-pk-edit><i data-lucide="pencil" class="ztor-icon"></i> <span data-i18n="pk.act.editsession">Edit session</span></button>
-          <a class="btn btn--primary" href="scanner.html" target="_blank" rel="noopener"><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="pk.act.startscan">Start scanning</span></a>
         </div>
       </div>
 
-      <!-- F2 · Scanner access -->
-      <div class="data-list__title" style="margin:8px 0 8px;font-size: var(--fs-14)"><span data-i18n="pk.f6.title">Scanner access</span></div>
-      <div class="scanner-access mb-24" id="scanner" data-pk-scanner>
-        <div class="scanner-access__qr">
-          <div class="qr-box" data-qr></div>
-        </div>
-        <div class="scanner-access__main">
-          <div class="scanner-access__label" data-i18n="pk.f6.url">Scanner URL</div>
-          <div class="scanner-access__url">
-            <code data-pk-url>ztor.app/scan/tpe-signing-7f3a2</code>
-            <span class="badge badge--success" data-pk-url-badge><span data-i18n="pk.f6.enabled">Enabled</span></span>
-          </div>
-          <div class="scanner-access__actions">
-            <button class="btn btn--outline btn--sm" type="button" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="pk.act.copyurl">Copy URL</span></button>
-            <button class="btn btn--outline btn--sm" type="button" data-pk-reset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pk.act.reset">Reset URL</span></button>
-            <button class="btn btn--outline btn--sm" type="button" data-pk-toggle-url data-i18n="pk.act.disable">Disable</button>
-          </div>
-          <div class="scanner-access__pw">
-            <i data-lucide="key" class="ztor-icon" style="width:15px;height:15px"></i>
-            <span data-i18n="pk.f6.pw">Scanner password</span>
-            <code>••••••</code>
-            <button class="btn btn--ghost btn--sm" type="button" data-pk-editpw data-i18n="pk.act.changepw">Change</button>
-          </div>
-          <div class="field__hint mt-8" data-i18n="pk.f6.hint">Staff open the URL, enter the password, then scan. The scanner can only redeem — it never shows amounts, Earnings or CRM.</div>
-        </div>
-      </div>
+      <!-- F1＋F2 · 第一屏：沿用 product-detail 那套骨架——`.form-section--outlined` 分區卡、
+           `.form-grid` 兩欄、`.form-section__head`＋`__title` 區段標題、`.bento`＋`.kpi--compact`
+           大數字、`.kv` 鍵值摘要。`.pickup-board` 只補兩欄之間的分隔線與響應式堆疊。
+           左＝領取的活動與物品，右＝工作人員操作取貨要知道的。 -->
+      <section class="form-section form-section--outlined mt-16">
+        <div class="form-grid pickup-board">
 
-      <!-- F3 · 名單與核銷紀錄 分頁切換（D123：取貨與入場名單＝預設分頁、核銷紀錄＝第二分頁）-->
-      <nav class="tabs mt-24" role="tablist" aria-label="Roster and log" data-pk-detail-tabs>
-        <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true"  data-pk-detail-tab="roster" data-i18n="pk.tab.roster">Pickup &amp; check-in list</button>
-        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-pk-detail-tab="log" data-i18n="pk.tab.log">Redemption log</button>
-      </nav>
+          <div>
+            <div class="pickup-detail__meta pickup-detail__meta--stack mb-16">
+              <span><i data-lucide="map-pin" class="ztor-icon"></i> <span data-i18n="pk.detail.loc">Legacy Books, Xinyi Rd. Sec 4</span></span>
+              <span><i data-lucide="calendar-clock" class="ztor-icon"></i> <span data-i18n="pk.detail.time">Today 14:00 – 18:00</span></span>
+            </div>
+            <div class="form-section__head"><h3 class="form-section__title" data-i18n="pk.board.items">Pickup items</h3></div>
+            <div class="kv kv--lead"><span class="kv__k" data-i18n="pk.r1.item">Tour zine vol. 02</span><span class="kv__v">40</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="pk.item.tee">Coastline tee · M / L</span><span class="kv__v">22</span></div>
+            <div class="kv"><span class="kv__k" data-i18n="pk.tk.signing">Signing session · GA entry</span><span class="kv__v">18</span></div>
+          </div>
 
-      <!-- F4 · 取貨與入場名單（預設分頁：完整管理版，含搜尋/狀態篩選/人工處理/反轉）-->
-      <div data-pk-detail-panel="roster">
-        <div class="pk-filter-row mt-16 mb-16">
-          <nav class="filter-tabs" role="tablist" aria-label="Filter roster" data-pk-roster-status>
-            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</button>
-          </nav>
-          <input class="input" placeholder="Name, email, order #, ticket ID" data-pk-roster-search data-i18n-placeholder="pk.roster.search.ph" style="max-width:280px">
-        </div>
-        <section class="card">
-          <div class="data-list">
-            <div class="data-list__row" data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 zine">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title">Mika L.</div>
-                  <div class="data-list__meta" data-i18n="pk.roster.r1">Order #ZT-10482 · Tour zine vol. 02 ×1</div>
+          <div>
+            <!-- 上半：掃出來的核銷數字（尚未開始的場次沒有這段） -->
+            <div class="pickup-board__stage" data-pk-stage="active">
+              <div class="bento">
+                <div class="kpi kpi--compact">
+                  <div class="kpi__label" data-i18n="pk.board.progress">Redemption progress</div>
+                  <div class="kpi__value">36</div>
+                  <div class="kpi__meta" data-i18n="pk.board.left">still to collect</div>
                 </div>
               </div>
-              <div class="data-list__end data-list__end--row">
-                <span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span>
-                <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+              <div class="pickup-board__bar">
+                <div class="stock-bar"><span class="stock-bar__fill" style="width:55%"></span></div>
+                <span class="pickup-board__pct">55%</span>
+              </div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">44 / 80</span></div>
+            </div>
+            <div class="pickup-board__stage" data-pk-stage="ended" hidden>
+              <div class="bento">
+                <div class="kpi kpi--compact">
+                  <div class="kpi__label" data-i18n="pk.board.result">Session result</div>
+                  <div class="kpi__value">12</div>
+                  <div class="kpi__meta" data-i18n="pk.board.noshow">did not collect</div>
+                </div>
+              </div>
+              <div class="pickup-board__bar">
+                <div class="stock-bar"><span class="stock-bar__fill" style="width:85%"></span></div>
+                <span class="pickup-board__pct">85%</span>
+              </div>
+              <div class="kv mt-12"><span class="kv__k" data-i18n="pk.board.redeemed">Redeemed</span><span class="kv__v">68 / 80</span></div>
+              <div class="pickup-board__acts">
+                <button class="btn btn--outline btn--sm" type="button"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.board.export">Export no-shows</span></button>
+                <button class="btn btn--primary btn--sm" type="button" data-i18n="pk.board.extend">Extend session</button>
               </div>
             </div>
-            <div class="data-list__row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="devon w zt-10475 tee m">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title">Devon W.</div>
-                  <div class="data-list__meta" data-i18n="pk.roster.r2">Order #ZT-10475 · Coastline tee (M) ×1 · redeemed 14:22</div>
-                </div>
+
+            <!-- 下半：交給現場工作人員的網址與密碼（唯讀；重設／停用／改密碼在「編輯場次」裡） -->
+            <div class="scanner-hand" id="scanner" data-pk-scanner>
+              <div class="scanner-hand__row">
+                <span class="scanner-hand__k" data-i18n="pk.f6.url">Scanner URL</span>
+                <code data-pk-url>ztor.app/scan/tpe-signing-7f3a2</code>
+                <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner URL" title="Copy scanner URL" data-i18n-aria-label="pk.a.copyurl" data-i18n-title="pk.a.copyurl" data-pk-copy><i data-lucide="copy" class="ztor-icon"></i></button>
               </div>
-              <div class="data-list__end data-list__end--row">
-                <span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span>
-                <a class="card__link" href="order-detail.html" data-i18n="pk.roster.source">Source</a>
+              <div class="scanner-hand__row">
+                <span class="scanner-hand__k" data-i18n="pk.f6.pw">Scanner password</span>
+                <code data-pk-pw>signing2026</code>
+                <button class="btn btn--icon btn--sm" type="button" aria-label="Copy scanner password" title="Copy scanner password" data-i18n-aria-label="pk.a.copypw" data-i18n-title="pk.a.copypw" data-pk-copypw><i data-lucide="copy" class="ztor-icon"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- F4 · 取貨與入場名單：規格的七個欄位各自成欄（買家／來源／領取項目／規格／
+           數量／狀態／最近核銷），核銷紀錄降為右側次要入口，開 popup。 -->
+      <div class="pk-filter-row mb-16">
+        <nav class="filter-tabs" role="tablist" aria-label="Filter roster" data-pk-roster-status>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"     data-i18n="pk.roster.all">All</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="pending" data-i18n="pk.roster.pending">Pending</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="done"    data-i18n="pk.roster.done">Redeemed</button>
+        </nav>
+        <span class="pk-filter-row__end">
+          <input class="input" placeholder="Name, email, order #, ticket ID" data-pk-roster-search data-i18n-placeholder="pk.roster.search.ph" style="max-width:260px">
+          <button class="btn btn--outline btn--sm" type="button" data-pk-open-log><i data-lucide="history" class="ztor-icon"></i> <span data-i18n="pk.tab.log">Redemption log</span></button>
+        </span>
+      </div>
+
+      <div class="ztor-table-scroll" data-pk-roster-card>
+        <table class="ztor-table pickup-roster">
+          <thead>
+            <tr>
+              <th data-i18n="pk.col.buyer">Buyer</th>
+              <th data-i18n="pk.col.source">Source</th>
+              <th data-i18n="pk.col.item">Pickup item</th>
+              <th data-i18n="pk.col.variant">Variant</th>
+              <th class="pickup-roster__num" data-i18n="pk.col.qty">Qty</th>
+              <th data-i18n="pk.col.status">Status</th>
+              <th data-i18n="pk.col.lastscan">Last redeemed</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-pk-roster-row data-pk-roster-st="pending" data-pk-roster-text="mika l zt-10482 zine">
+              <td>Mika L.</td>
+              <td><a class="card__link" href="order-detail.html">#ZT-10482</a></td>
+              <td data-i18n="pk.r1.item">Tour zine vol. 02</td>
+              <td class="pickup-roster__none">—</td>
+              <td class="pickup-roster__num">1</td>
+              <td><span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span></td>
+              <td class="pickup-roster__none">—</td>
+              <td class="pickup-roster__act"></td>
+            </tr>
+            <tr data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="devon w zt-10475 tee m">
+              <td>Devon W.</td>
+              <td><a class="card__link" href="order-detail.html">#ZT-10475</a></td>
+              <td data-i18n="pk.r2.item">Coastline tee</td>
+              <td>M</td>
+              <td class="pickup-roster__num">1</td>
+              <td><span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span></td>
+              <td>14:22</td>
+              <td class="pickup-roster__act">
                 <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button></div></details>
-              </div>
-            </div>
-            <div class="data-list__row" data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="aria s ticket ga signing checked">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title">Aria S.</div>
-                  <div class="data-list__meta" data-i18n="pk.roster.r3">Ticket TK-88213 · Signing GA entry · checked in 14:05</div>
-                </div>
-              </div>
-              <div class="data-list__end data-list__end--row">
-                <span class="badge badge--success"><span data-i18n="pk.st.checkedin">Checked in</span></span>
-                <a class="card__link" href="event-detail.html" data-i18n="pk.roster.source">Source</a>
-                <details class="dropdown"><summary class="btn btn--icon btn--xs" aria-label="More actions" title="More actions" data-i18n-aria-label="pk.a.more" data-i18n-title="pk.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-pk-reverse><i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="pk.roster.reverse">Reverse redemption</span></button></div></details>
-              </div>
-            </div>
-          </div>
-        </section>
-        <section class="card pk-noresult" data-pk-roster-noresult hidden>
-          <div class="empty-card">
-            <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
-            <h3 class="empty-card__title" data-i18n="pk.roster.noresult">No matching people</h3>
-          </div>
-        </section>
+              </td>
+            </tr>
+            <tr data-pk-roster-row data-pk-roster-st="done" data-pk-roster-text="aria s ticket ga signing checked">
+              <td>Aria S.</td>
+              <td><a class="card__link" href="event-detail.html">TK-88213</a></td>
+              <td data-i18n="pk.r3.item">Signing GA entry</td>
+              <td class="pickup-roster__none">—</td>
+              <td class="pickup-roster__num">1</td>
+              <td><span class="badge badge--success"><span data-i18n="pk.st.checkedin">Checked in</span></span></td>
+              <td>14:05</td>
+              <td class="pickup-roster__act"></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <section class="card" data-pk-roster-noresult hidden>
+        <div class="empty-card">
+          <span class="empty-card__icon"><i data-lucide="search-x" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="pk.roster.noresult">No matching people</h3>
+        </div>
+      </section>
 
-      <!-- F5 · 核銷紀錄與問題處理（第二分頁）-->
-      <div data-pk-detail-panel="log" hidden>
-        <div class="pk-filter-row mt-16 mb-16">
-          <nav class="filter-tabs" role="tablist" aria-label="Filter log" data-pk-log-status>
+      <!-- F5 · 核銷紀錄：popup（稽核用、低頻，不佔主畫面）-->
+      <div class="payout-modal" data-pk-log-modal hidden>
+       <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pk-log-title">
+        <div class="payout-dialog__head">
+          <div>
+            <h2 class="payout-dialog__title" id="pk-log-title" data-i18n="pk.f8.title">Redemption log</h2>
+            <p class="text-sub" style="margin:6px 0 0;font-size:var(--fs-13)" data-i18n="pk.log.dialog.sub">Every scan result, including blocked duplicates and manual reversals.</p>
+          </div>
+          <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="pks.close" data-pk-log-close><i data-lucide="x" class="ztor-icon"></i></button>
+        </div>
+        <div class="payout-dialog__body">
+          <nav class="filter-tabs mb-16" role="tablist" aria-label="Filter log" data-pk-log-status>
             <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true"  data-status-val="all"       data-i18n="pk.log.all">All</button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="success"   data-i18n="pk.log.success">Success</button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="duplicate" data-i18n="pk.log.duplicate">Duplicate</button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-status-val="reversal"  data-i18n="pk.log.reversal">Reversal</button>
           </nav>
-          <button class="btn btn--outline btn--sm" type="button" data-pk-export><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.log.export">Export</span></button>
-        </div>
-        <section class="card">
+        <section>
           <div class="data-list">
             <div class="data-list__row" data-pk-log-row data-pk-log-st="success">
               <div class="data-list__row-main">
@@ -222,7 +277,12 @@
             </div>
           </div>
         </section>
-        <div class="field__hint mt-8" data-i18n="pk.log.note">The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.</div>
+        </div>
+        <div class="payout-dialog__foot">
+          <span class="field__hint" data-i18n="pk.log.note">The redemption log is the audit source; order-item and Events ticket status are the operational source. If they fall out of sync the row is flagged for retry.</span>
+          <button class="btn btn--outline btn--sm" type="button" style="margin-left:auto" data-pk-export><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="pk.log.export">Export</span></button>
+        </div>
+       </section>
       </div>
 
     </div>
@@ -258,20 +318,19 @@
       if (!el.childElementCount) el.innerHTML = window.ztorFauxQr(i + 3);
     });
 
-    /* F3 名單／核銷紀錄 分頁切換（D123：名單預設）*/
-    var detailTabs = document.querySelector('[data-pk-detail-tabs]');
-    if (detailTabs) detailTabs.querySelectorAll('[data-pk-detail-tab]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var to = btn.getAttribute('data-pk-detail-tab');
-        detailTabs.querySelectorAll('[data-pk-detail-tab]').forEach(function (b) {
-          var on = b === btn;
-          b.classList.toggle('tabs__item--active', on);
-          b.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-        document.querySelectorAll('[data-pk-detail-panel]').forEach(function (p) {
-          p.hidden = p.getAttribute('data-pk-detail-panel') !== to;
-        });
-      });
+    /* F5 核銷紀錄 popup（2026-08-01 取代原本與名單並列的第二分頁）*/
+    var logModal = document.querySelector('[data-pk-log-modal]');
+    function openLog(on) {
+      logModal.hidden = !on;
+      document.body.classList.toggle('is-modal-open', on);
+    }
+    var openLogBtn = document.querySelector('[data-pk-open-log]');
+    if (openLogBtn) openLogBtn.addEventListener('click', function () { openLog(true); });
+    if (logModal) logModal.addEventListener('click', function (e) {
+      if (e.target === logModal || e.target.closest('[data-pk-log-close]')) openLog(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && logModal && !logModal.hidden) openLog(false);
     });
 
     /* create/edit session popup */
@@ -292,35 +351,17 @@
       span.textContent = (window.i18nT && window.i18nT(key)) || fallback;
       setTimeout(function () { if (prev) { span.setAttribute('data-i18n', prev); if (window.applyI18n) window.applyI18n(span); } }, 1400);
     }
-    var copyBtn = document.querySelector('[data-pk-copy]');
-    if (copyBtn) copyBtn.addEventListener('click', function () {
-      var url = (document.querySelector('[data-pk-url]') || {}).textContent || 'ztor.app/scan/…';
-      if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function () {});
-      flash(copyBtn, 'pk.act.copied', 'Copied');
-    });
-
-    var toggleUrl = document.querySelector('[data-pk-toggle-url]');
-    if (toggleUrl) toggleUrl.addEventListener('click', function () {
-      var box = document.querySelector('[data-pk-scanner]');
-      var badge = document.querySelector('[data-pk-url-badge] span');
-      var qr = document.querySelector('[data-pk-scanner] .qr-box');
-      var off = box.classList.toggle('is-url-off');
-      if (qr) qr.classList.toggle('qr-box--disabled', off);
-      toggleUrl.setAttribute('data-i18n', off ? 'pk.act.enable' : 'pk.act.disable');
-      if (badge) {
-        badge.setAttribute('data-i18n', off ? 'pk.f6.disabled' : 'pk.f6.enabled');
-        document.querySelector('[data-pk-url-badge]').className = 'badge ' + (off ? 'badge--neutral' : 'badge--success');
-      }
-      if (window.applyI18n) window.applyI18n(box);
-    });
-    var reset = document.querySelector('[data-pk-reset]');
-    if (reset) reset.addEventListener('click', function () {
-      var url = document.querySelector('[data-pk-url]');
-      if (url) url.textContent = 'ztor.app/scan/tpe-signing-' + Math.random().toString(36).slice(2, 7);
-      var qr = document.querySelector('[data-pk-scanner] .qr-box');
-      if (qr) qr.innerHTML = window.ztorFauxQr(Math.floor(Math.random() * 40) + 5);
-      flash(reset, 'pk.act.reset.done', 'URL reset');
-    });
+    /* 交付列的兩顆複製鍵（重設／停用／改密碼已移進「編輯場次」）*/
+    function copyFrom(btnSel, valSel) {
+      var btn = document.querySelector(btnSel);
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var v = (document.querySelector(valSel) || {}).textContent || '';
+        if (navigator.clipboard) navigator.clipboard.writeText(v).catch(function () {});
+      });
+    }
+    copyFrom('[data-pk-copy]', '[data-pk-url]');
+    copyFrom('[data-pk-copypw]', '[data-pk-pw]');
 
     /* redemption log filter */
     var nav = document.querySelector('[data-pk-log-status]');
@@ -349,6 +390,7 @@
     var rRows = [].slice.call(document.querySelectorAll('[data-pk-roster-row]'));
     var rSearch = document.querySelector('[data-pk-roster-search]');
     var rNoRes = document.querySelector('[data-pk-roster-noresult]');
+    var rCard = document.querySelector('[data-pk-roster-card]');
     if (rNav && rRows.length) {
       var rStatus = 'all';
       function rApply() {
@@ -359,6 +401,8 @@
           var okT = !q || (r.getAttribute('data-pk-roster-text') || '').indexOf(q) >= 0;
           var vis = okS && okT; r.hidden = !vis; if (vis) shown++;
         });
+        /* 全部篩掉時整張表收起來，只留空狀態卡——留一排孤兒表頭讀不出意義 */
+        if (rCard) rCard.hidden = shown === 0;
         if (rNoRes) rNoRes.hidden = shown !== 0;
       }
       rNav.querySelectorAll('.filter-tabs__item').forEach(function (btn) {

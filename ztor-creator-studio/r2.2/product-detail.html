@@ -1245,7 +1245,10 @@
   (function () {
     var host = document.querySelector('[data-pickup-modal-host]');
     var pickup = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createPickupSession
-      ? window.ZTOR_PARTIALS.createPickupSession(host, {}) : null;
+      /* 2026-08-01：建立成功直接落地到場次詳情頁（彈窗的 result step 已撤除）*/
+      ? window.ZTOR_PARTIALS.createPickupSession(host, {
+          onCreate: function () { location.href = 'pickup-detail.html'; }
+        }) : null;
     var btn = document.querySelector('[data-pd-new-session]');
     if (btn && pickup) btn.addEventListener('click', function () { pickup.openForProduct('zine'); });
   })();
