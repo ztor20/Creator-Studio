@@ -294,22 +294,12 @@ html[data-theme="light"] .list-toolbar {
     box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.34);
   }
 
-  /* 貼頂列下方的漸層遮罩（2026-08-01 使用者裁示：「陰影不夠深，要像這樣的效果」，
-     圈的是通知條 .alert-inset::before 那種「同色底往下漸消」）。捲動的內容從這一條
-     底下通過時不是被一條硬邊切斷，而是漸漸淡掉。
-     與通知條的差別：通知條的遮罩要連上方空隙一起蓋（它自己是不透明卡），這裡的
-     bars 本身是半透明毛玻璃、上緣又切齊外框，所以只需要下方這一段。
-     ::after 而非 ::before：::before 在這個元件已被 .list-status-row 的浮層錨點用掉。 */
-  .list-dock.is-snapped .list-dock__bars::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    height: var(--dock-fade, 56px);
-    pointer-events: none;
-    background: linear-gradient(to bottom, var(--surface-page), transparent);
-  }
+  /* 墓碑：貼頂列下方的漸層遮罩 .list-dock__bars::after（2026-08-01 當日新增、當日退場）。
+     加它是為了「陰影不夠深，要像通知條那樣往下漸消」。但它是一個 left:0/right:0 的
+     **方角矩形**，疊在圓角面板上就把左上／右上兩個角壓成直角——使用者連續回報
+     「滾下來以後圓角不見了」「是陰影吧」，Playwright 關掉它拍照確認就是這一層。
+     分隔改回只靠 box-shadow（見上方）。之後若還要漸消效果，必須讓遮罩跟著面板的
+     圓角走（例如掛在有 border-radius 的容器上並 overflow:hidden），不能再用方角矩形。 */
 
   /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。 */
   .list-dock.is-snapped .list-toolbar {
