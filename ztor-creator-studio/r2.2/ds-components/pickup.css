@@ -36,8 +36,7 @@
   gap: var(--sp-8);
   flex-wrap: wrap;
 }
-.scanner-access__url code,
-.scanner-hand__row code {
+.scanner-access__url code {
   flex: 1 1 220px;
   min-width: 0;
   overflow: hidden;
@@ -189,25 +188,16 @@
      (3) 量條與百分比同一列
    左右分工固定：左＝領取的活動與物品，右＝工作人員操作取貨要知道的。
    Consumers: pickup-detail.html */
-.pickup-board > * + * {
-  border-left: 1px solid var(--border);
-  padding-left: var(--sp-24);
-}
-@media (max-width: 860px) {
-  .pickup-board > * + * {
-    border-left: 0;
-    padding-left: 0;
-    border-top: 1px solid var(--border);
-    padding-top: var(--sp-20);
-  }
-}
-/* 隨場次狀態換的那一段（尚未開始無此段、進行中＝核銷進度、已結束＝這場結果） */
-.pickup-board__stage {
-  margin-bottom: var(--sp-20);
-  padding-bottom: var(--sp-20);
-  border-bottom: 1px solid var(--border-soft);
-}
+/* 2026-08-01 當日修訂：左右兩欄改成兩張獨立的卡（`.detail-grid` 主欄＋側欄，
+   照 product-detail），所以原本畫在 `.form-grid` 上的欄間分隔線與響應式堆疊已移除——
+   卡與卡之間本來就有間距，不需要再畫線。 */
+/* 隨場次狀態換的那張卡（尚未開始沒有這張、進行中＝核銷進度、已結束＝這場結果）。
+   它自己就是一張 form-section--outlined，所以只需要處理 [hidden]。 */
 .pickup-board__stage[hidden] { display: none; }
+/* 主數字與它的說明同一行——區塊本身已經說明是什麼，不再另給欄位標題 */
+.pickup-board__hero { display: flex; align-items: baseline; gap: var(--sp-8); }
+.pickup-board__hero b { font-family: var(--font-display); font-size: var(--fs-40); line-height: 1; }
+.pickup-board__hero span { font-size: var(--fs-14); color: var(--muted-foreground); }
 /* 量條與百分比同一列：百分比是量條的註腳，不自己佔一行大字 */
 .pickup-board__bar { display: flex; align-items: center; gap: var(--sp-10); margin-top: var(--sp-12); }
 .pickup-board__bar .stock-bar { flex: 1 1 auto; margin: 0; }
@@ -224,34 +214,31 @@
 .pickup-detail__meta--stack { flex-direction: column; gap: var(--sp-6); }
 .pickup-detail__meta--stack span { align-items: flex-start; }
 
-/* ── Scanner hand-off · 唯讀「欄名＋值＋複製」的一列 ─────────────
-   2026-08-01 promote：把掃碼網址與密碼交給現場工作人員用。欄名固定寬度讓兩列對齊，
-   複製鍵只留圖示——兩顆並排時「複製／複製」讀起來是雜訊。值的外觀直接與既有
-   `.scanner-access__url code` 共用同一條規則（見上方），不另定義第二套。
-   Consumers: pickup-detail.html */
-.scanner-hand { display: flex; flex-direction: column; gap: var(--sp-8); min-width: 0; }
-.scanner-hand__row { display: flex; align-items: center; gap: var(--sp-8); }
-.scanner-hand__k {
-  flex: none;
-  width: var(--sp-64);
-  font-size: var(--fs-12);
-  color: var(--muted-foreground);
-}
-.scanner-hand__row code.is-unset { color: var(--muted-foreground); }
+/* .scanner-hand 已於 2026-08-01 當日退場：把「欄名放左邊、值放右邊」改成標準
+   `.field`＋`.field__label`（標題在上）＋新的 `.input-action`（值＋複製鈕同一行），
+   側欄 300px 寬放不下側標，且站上表單欄位本來就是標題在上。 */
 
-/* ── Pickup roster table · 名單表格的密度調整 ───────────────────
-   2026-08-01：名單改用 .ztor-table，但欄位有八個（買家／來源／領取項目／規格／
-   數量／狀態／最近核銷／操作），沿用 .ztor-table 預設的 16/20 內距會撐爆 940 寬。
-   只收窄內距與定義數字欄，其餘框型、表頭色階一律吃 .ztor-table（Q29／Q41）。
+/* ── Pickup roster · 名單列的兩個小工具 class ───────────────────
+   2026-08-01：名單改用電子商店的 `.product-list`（同一套 __head/__row/__cell/__actions），
+   所以這裡不再覆寫表格密度，只留數字欄與「沒有值」的色階。
    Consumers: pickup-detail.html */
-.pickup-roster td,
-.pickup-roster th { padding: var(--sp-12) var(--sp-14); white-space: nowrap; }
 .pickup-roster__num { text-align: right; font-variant-numeric: tabular-nums; }
 .pickup-roster__none { color: var(--muted-foreground); }
-.pickup-roster__act { width: var(--sp-40); text-align: right; }
-.pickup-roster tbody tr[hidden] { display: none; }
 
-@media (max-width: 640px) {
-  .scanner-access { grid-template-columns: 1fr; }
-  .scanner-access__qr { grid-row: auto; justify-self: start; }
+/* ── Pickup items · 每項領取項目的「已核銷 / 總量」＋細量條 ────────
+   2026-08-01（Mobbin 參考：Eventbrite「Sales by ticket type」每票種一列帶已售數、
+   Luma「At a Glance」清單上方一條進度）：原本左欄只有三個裸數字，看得出當天要備多少、
+   看不出領得如何。改成每一項各自帶分子分母與量條，量條吃既有 `.stock-bar`。
+   Consumers: pickup-detail.html */
+.pickup-items { display: flex; flex-direction: column; gap: var(--sp-16); }
+.pickup-items__line {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12);
+  font-size: var(--fs-13);
 }
+.pickup-items__name {
+  color: var(--foreground-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pickup-items__num { flex: none; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.pickup-items__num b { color: var(--foreground); }
+.pickup-items__row .stock-bar { margin: var(--sp-6) 0 0; }
