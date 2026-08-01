@@ -73,7 +73,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         <!-- 掃碼密碼＝工作人員那支掃碼器網址的鎖，屬於這場的基本設定。已預先產生一組。 -->
         <label class="field mt-16">
           <span class="field__label" data-i18n="pks.f.pw.opt">Scanner password (optional)</span>
-          <div class="control-row">
+          <div class="input-action">
             <input class="input" type="text" data-pks-pw autocomplete="off">
             <button class="btn btn--outline btn--sm" type="button" data-pks-pwgen><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.pw.gen">Regenerate</span></button>
           </div>
@@ -81,7 +81,7 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
         <!-- 掃碼網址的重設／停用：只在編輯場次時出現（建立當下網址還沒產生） -->
         <label class="field mt-16" data-pks-editonly hidden>
           <span class="field__label" data-i18n="pks.f.url">Scanner URL</span>
-          <div class="control-row">
+          <div class="input-action">
             <input class="input" data-pks-url readonly>
             <button class="btn btn--outline btn--sm" type="button" data-pks-urlreset><i data-lucide="refresh-cw" class="ztor-icon"></i> <span data-i18n="pks.f.url.reset">Reset</span></button>
             <button class="btn btn--outline btn--sm" type="button" data-pks-urltoggle data-i18n="pks.f.url.off">Disable</button>

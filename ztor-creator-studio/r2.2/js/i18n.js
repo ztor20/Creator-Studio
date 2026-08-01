@@ -4194,6 +4194,7 @@
     'pk.roster.r4':     { en: 'Order #ZT-10466 · Coastline tee (L) ×1 · redeemed 14:31', zh: '訂單 #ZT-10466 · Coastline tee (L) ×1 · 14:31 核銷' },
     'pk.roster.source': { en: 'Source',       zh: '來源' },
     'pk.roster.reverse':{ en: 'Reverse redemption', zh: '反轉核銷' },
+    'pk.roster.manual': { en: 'Redeem manually', zh: '手動核銷' },
     'pk.roster.noresult': { en: 'No matching people', zh: '查無符合的名單' },
     'pk.st.pending':    { en: 'Pending',      zh: '待核銷' },
     'pk.st.done':       { en: 'Redeemed',     zh: '已核銷' },
