@@ -23,6 +23,13 @@
 <link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/finding-card.css?v=r2.2">
+<!-- 上傳資料檔彈窗（spec 5.1.7.8 F1 · D165）：殼層照 Q27 用 payout-dialog，
+     投放區用既有 upload-tile，說明條用 info-banner，期間欄位用 field-system。 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* audience 專屬 layout hook（非可重用樣式留頁內）。
@@ -61,9 +68,9 @@
       <div class="alert alert--bar alert--inset-card" role="status">
         <div class="alert__body">
           <span class="alert__title" data-i18n="aud.src.alert.title">Spotify stopped syncing — this page doesn’t include it</span>
-          <span class="alert__meta" data-i18n="aud.src.alert.desc">Its access token expired on Nov 18. Reconnect and the missing figures fill back in.</span>
+          <span class="alert__meta" data-i18n="aud.src.alert.desc">Spotify is an official ztor integration, so we're fixing it on our side — nothing for you to reconnect. Upload an export to fill the gap meanwhile.</span>
         </div>
-        <a class="alert__cta" href="settings.html#integrations" data-i18n="aud.src.alert.cta">Reconnect Spotify</a>
+        <button class="alert__cta" type="button" data-src-upload-open="sp" data-i18n="aud.src.alert.cta">Upload Spotify data</button>
         <button class="alert__dismiss" type="button" aria-label="Dismiss" data-i18n-aria-label="e-shop.alert.dismiss" onclick="this.closest('#aud-sync-alert').remove()">×</button>
       </div>
     </div>
@@ -84,8 +91,12 @@
         </div>
         <div class="page-intro__actions">
 
-          <!-- F1 · 平台連結與同步狀態（spec 5.1.7.8 F1）。不占常駐版位：
-               第一層是這顆膠囊、第二層是點開的來源明細，整合設定的入口收在裡面。 -->
+          <!-- F1 · 資料來源與涵蓋範圍（spec 5.1.7.8 F1 · D165）。不占常駐版位：
+               第一層是這顆膠囊、第二層是點開的來源明細，上傳入口收在對應的來源列上。
+               明細分兩組（D165）：官方串接（ztor 幫你接好，你不用也不能自己授權）
+               排前面、Spotify 第一；自行上傳（ztor 沒串接，要你自己匯出檔案）排後面。
+               沒有任何一列出現「連結／重新連結」——五個平台裡沒有一個是創作者去
+               授權的，留著那顆按鈕等於在畫面上撒謊。 -->
           <div class="src-status" data-open="false" data-alert="false" data-src-status>
             <button class="src-status__pill" type="button" aria-expanded="false" data-src-toggle>
               <span class="src-status__dot"></span>
@@ -94,30 +105,23 @@
             </button>
 
             <div class="src-status__panel" role="dialog" aria-label="Platform connections">
-              <div class="src-status__title" data-i18n="aud.src.title">Platform connections &amp; sync</div>
+              <div class="src-status__title" data-i18n="aud.src.title">Data sources &amp; coverage</div>
               <p class="src-status__note" data-i18n="aud.src.note">Figures on this page cover YouTube and StreetVoice only.</p>
 
-              <div class="settings-row">
-                <div class="flex-row">
-                  <span class="src-status__mark">YT</span>
-                  <div>
-                    <div class="settings-row__label">YouTube</div>
-                    <div class="settings-row__hint" data-i18n="aud.src.yt">Subscribers, views, engagement, regions · synced 4 min ago</div>
-                  </div>
-                </div>
-                <div class="flex-row"><span class="badge badge--success" data-i18n="settings.int.synced">Synced</span></div>
-              </div>
+              <!-- 組 1 · 官方串接：ztor 端接好的來源，創作者沒有授權這件事可做。 -->
+              <div class="src-status__group" data-i18n="aud.src.g.official">Connected by ztor</div>
+              <p class="src-status__note" data-i18n="aud.src.g.official.note">We hold these integrations, so they flow in on their own — nothing for you to authorise.</p>
 
               <div class="settings-row">
                 <div class="flex-row">
                   <span class="src-status__mark">SP</span>
                   <div>
                     <div class="settings-row__label">Spotify</div>
-                    <div class="settings-row__hint" data-i18n="aud.src.sp">Streams, listener regions · failed Nov 18: access token expired</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.sp">Streams, listener regions · sync stopped Nov 18, ztor is on it</div>
                   </div>
                 </div>
                 <div class="flex-row">
-                  <a class="btn btn--primary btn--sm" href="settings.html#integrations" data-i18n="settings.int.reconnect">Reconnect</a>
+                  <button class="btn btn--primary btn--sm" type="button" data-src-upload-open="sp" data-i18n="aud.src.upload">Upload</button>
                 </div>
               </div>
 
@@ -126,10 +130,27 @@
                   <span class="src-status__mark">SV</span>
                   <div>
                     <div class="settings-row__label">StreetVoice</div>
-                    <div class="settings-row__hint" data-i18n="aud.src.sv">Play counts only — this platform doesn't expose followers or regions · synced 2 h ago</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.sv">Play counts only — this platform exposes neither followers nor regions, and has no export to upload · synced 2 h ago</div>
                   </div>
                 </div>
                 <div class="flex-row"><span class="badge" data-i18n="settings.int.partial">Partial</span></div>
+              </div>
+
+              <!-- 組 2 · 自行上傳：ztor 沒有串接，數字來自創作者自己匯出的檔案。 -->
+              <div class="src-status__group" data-i18n="aud.src.g.upload">You upload these</div>
+              <p class="src-status__note" data-i18n="aud.src.g.upload.note">We don't connect to these platforms. Export a report from each and upload it here.</p>
+
+              <div class="settings-row">
+                <div class="flex-row">
+                  <span class="src-status__mark">YT</span>
+                  <div>
+                    <div class="settings-row__label">YouTube</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.yt">Subscribers, views, engagement, regions · uploaded 4 days ago, covers May–Jul</div>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <button class="btn btn--outline btn--sm" type="button" data-src-upload-open="yt" data-i18n="aud.src.replace">Replace</button>
+                </div>
               </div>
 
               <div class="settings-row src-status__row--off">
@@ -137,10 +158,10 @@
                   <span class="src-status__mark">IG</span>
                   <div>
                     <div class="settings-row__label">Instagram</div>
-                    <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.ig">Upload an export to add followers, engagement and regions</div>
                   </div>
                 </div>
-                <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+                <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="ig" data-i18n="aud.src.upload">Upload</button></div>
               </div>
 
               <div class="settings-row src-status__row--off" style="border-bottom:0">
@@ -148,15 +169,14 @@
                   <span class="src-status__mark">TT</span>
                   <div>
                     <div class="settings-row__label">TikTok</div>
-                    <div class="settings-row__hint" data-i18n="aud.src.tt">Connect to pull followers and engagement</div>
+                    <div class="settings-row__hint" data-i18n="aud.src.tt">Upload an export to add followers and engagement</div>
                   </div>
                 </div>
-                <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+                <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="tt" data-i18n="aud.src.upload">Upload</button></div>
               </div>
 
               <div class="src-status__foot">
-                <a class="btn btn--outline" href="settings.html#integrations" data-i18n="aud.src.open-settings">Open integrations</a>
-                <p class="src-status__note" style="margin:var(--sp-8) 0 0" data-i18n="aud.src.foot">Connecting and authorising happen in Settings. This page only shows status.</p>
+                <p class="src-status__note" style="margin:0" data-i18n="aud.src.foot">Uploads happen right here. Settings only keeps a read-only copy of these statuses.</p>
               </div>
             </div>
           </div>
@@ -440,38 +460,30 @@
 
       </div><!-- /when-data -->
 
-      <!-- 未連結任何平台：整頁只剩來源清單（spec 5.1.7.8 §4 頁面狀態）。 -->
+      <!-- 無來源：整頁只剩來源清單（spec 5.1.7.8 §4 頁面狀態 · D165）。
+           主要行動是「上傳第一份檔案」，不是「去設定連結」——官方串接那兩個
+           creator 本來就無從授權，剩下三個 ztor 沒串接。 -->
       <div class="when-empty">
         <section class="card">
           <div class="empty-card">
-            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="link" class="ztor-icon"></i></span>
-            <div class="empty-card__title" data-i18n="aud.empty.title">No platforms connected yet</div>
-            <div class="empty-card__text" data-i18n="aud.empty.text">Once connected, this page joins followers, views, streams and regions into one picture of your audience. Until then there are no numbers to show you — and we won't fill the page with zeros or estimates.</div>
-            <a class="btn btn--primary" href="settings.html#integrations" data-i18n="aud.src.open-settings">Open integrations</a>
+            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="upload" class="ztor-icon"></i></span>
+            <div class="empty-card__title" data-i18n="aud.empty.title">No audience data yet</div>
+            <div class="empty-card__text" data-i18n="aud.empty.text">Once data arrives, this page joins followers, views, streams and regions into one picture of your audience. Until then there are no numbers to show you — and we won't fill the page with zeros or estimates.</div>
+            <button class="btn btn--primary" type="button" data-src-upload-open="yt" data-i18n="aud.empty.cta">Upload your first file</button>
           </div>
 
-          <div class="src-status__title" style="margin-top:var(--sp-24)" data-i18n="aud.empty.available">Available platforms</div>
-
-          <div class="settings-row src-status__row--off">
-            <div class="flex-row">
-              <span class="src-status__mark">YT</span>
-              <div>
-                <div class="settings-row__label">YouTube</div>
-                <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
-              </div>
-            </div>
-            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
-          </div>
+          <div class="src-status__group" style="margin-top:var(--sp-24)" data-i18n="aud.src.g.official">Connected by ztor</div>
+          <p class="src-status__note" data-i18n="aud.empty.official.note">These two are ours to connect. If nothing has arrived yet, it's on our side — there's nothing for you to authorise.</p>
 
           <div class="settings-row src-status__row--off">
             <div class="flex-row">
               <span class="src-status__mark">SP</span>
               <div>
                 <div class="settings-row__label">Spotify</div>
-                <div class="settings-row__hint" data-i18n="aud.src.sp-off">Connect to pull streams and listener regions</div>
+                <div class="settings-row__hint" data-i18n="aud.src.sp-off">Streams and listener regions, once the integration starts delivering</div>
               </div>
             </div>
-            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+            <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="sp" data-i18n="aud.src.upload">Upload</button></div>
           </div>
 
           <div class="settings-row src-status__row--off">
@@ -479,10 +491,24 @@
               <span class="src-status__mark">SV</span>
               <div>
                 <div class="settings-row__label">StreetVoice</div>
-                <div class="settings-row__hint" data-i18n="aud.src.sv-off">Play counts only — this platform doesn't expose followers or regions</div>
+                <div class="settings-row__hint" data-i18n="aud.src.sv-off">Play counts only — this platform exposes neither followers nor regions, and has no export to upload</div>
               </div>
             </div>
-            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+            <div class="flex-row"><span class="badge" data-i18n="aud.src.awaiting">ztor is on it</span></div>
+          </div>
+
+          <div class="src-status__group" data-i18n="aud.src.g.upload">You upload these</div>
+          <p class="src-status__note" data-i18n="aud.src.g.upload.note">We don't connect to these platforms. Export a report from each and upload it here.</p>
+
+          <div class="settings-row src-status__row--off">
+            <div class="flex-row">
+              <span class="src-status__mark">YT</span>
+              <div>
+                <div class="settings-row__label">YouTube</div>
+                <div class="settings-row__hint" data-i18n="aud.src.yt-off">Upload an export to add subscribers, views, engagement and regions</div>
+              </div>
+            </div>
+            <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="yt" data-i18n="aud.src.upload">Upload</button></div>
           </div>
 
           <div class="settings-row src-status__row--off">
@@ -490,10 +516,10 @@
               <span class="src-status__mark">IG</span>
               <div>
                 <div class="settings-row__label">Instagram</div>
-                <div class="settings-row__hint" data-i18n="aud.src.ig">Connect to pull followers, engagement and regions</div>
+                <div class="settings-row__hint" data-i18n="aud.src.ig">Upload an export to add followers, engagement and regions</div>
               </div>
             </div>
-            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+            <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="ig" data-i18n="aud.src.upload">Upload</button></div>
           </div>
 
           <div class="settings-row src-status__row--off" style="border-bottom:0">
@@ -501,10 +527,10 @@
               <span class="src-status__mark">TT</span>
               <div>
                 <div class="settings-row__label">TikTok</div>
-                <div class="settings-row__hint" data-i18n="aud.src.tt">Connect to pull followers and engagement</div>
+                <div class="settings-row__hint" data-i18n="aud.src.tt">Upload an export to add followers and engagement</div>
               </div>
             </div>
-            <div class="flex-row"><a class="btn btn--outline btn--sm" href="settings.html#integrations" data-i18n="aud.src.connect">Connect</a></div>
+            <div class="flex-row"><button class="btn btn--outline btn--sm" type="button" data-src-upload-open="tt" data-i18n="aud.src.upload">Upload</button></div>
           </div>
         </section>
       </div>
@@ -512,6 +538,9 @@
     </div>
   </main>
 </div>
+
+<!-- 上傳資料檔彈窗的掛載點（partials/source-upload-modal.js 注入，Q27 殼層）。 -->
+<div data-src-upload-host></div>
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
@@ -595,6 +624,86 @@
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') dock.setAttribute('data-open', 'false');
+  });
+})();
+</script>
+<script src="partials/upload-tile.js?v=r2.2"></script>
+<script src="partials/source-upload-modal.js?v=r2.2"></script>
+<script>
+/* 上傳資料檔（spec 5.1.7.8 F1 · D165）。任何帶 data-src-upload-open="<平台>"
+   的按鈕都開這顆彈窗——來源明細列、空狀態列、以及頁首那條同步異常橫幅的
+   CTA 共用同一條路徑，不各寫一份。平台代碼只有 sp / yt / ig / tt 四個：
+   StreetVoice 不開放上傳，所以沒有 sv。 */
+(function () {
+  var PLATFORMS = ['sp', 'yt', 'ig', 'tt'];
+
+  var host = document.querySelector('[data-src-upload-host]');
+  if (!host) return;
+  var modal = null, lastFocused = null;
+
+  function ensureModal() {
+    if (modal) return true;
+    var html = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.sourceUploadModal;
+    if (!html) {
+      console.warn('[fan-analytics] source upload modal template missing — is partials/source-upload-modal.js loaded?');
+      return false;
+    }
+    host.innerHTML = html;
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+    if (window.applyI18n) window.applyI18n(host);
+    /* 投放區是後注入的，upload-tile.js 的 init() 在 DOMContentLoaded 就跑完了，
+       掃不到這一格——不補這一行，格子會停在「沒有狀態 class」，被
+       `:not(.is-empty)` 那條規則把圖示與文案整組 display:none，只剩一個空虛線框。
+       同 create-campaign.html:529 的做法。 */
+    var tile = host.querySelector('.upload-tile[data-upload]');
+    if (tile && window.ztorUploadTile) window.ztorUploadTile.enhance(tile);
+    modal = host.querySelector('[data-src-upload-modal]');
+    modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+    return true;
+  }
+
+  function open(platform) {
+    lastFocused = document.activeElement;
+    /* 標題與「去哪裡匯出」那一句隨平台換——同一顆彈窗服務四個來源，只有這兩處
+       會變。做法是換 data-i18n 的 key 再重跑 applyI18n，不手動塞字串：手動塞的
+       字串會在使用者切語言時被 applyI18n 洗回通用文案。 */
+    if (PLATFORMS.indexOf(platform) === -1) platform = 'yt';
+    var title = modal.querySelector('[data-src-upload-title]');
+    var where = modal.querySelector('[data-src-upload-where]');
+    if (title) title.setAttribute('data-i18n', 'aud.up.title.' + platform);
+    if (where) where.setAttribute('data-i18n', 'aud.up.where.' + platform);
+    /* 副標分兩種說法：Spotify 是官方串接，上傳只是同步中斷時的備援，不能跟
+       另外三個一樣寫「ztor 沒有串接這個平台」——那句話對 Spotify 是錯的。 */
+    var sub = modal.querySelector('[data-src-upload-sub]');
+    if (sub) sub.setAttribute('data-i18n', platform === 'sp' ? 'aud.up.sub.sp' : 'aud.up.sub');
+    if (window.applyI18n) window.applyI18n(modal);
+    modal.hidden = false;
+    document.body.classList.add('is-modal-open');
+    var focusTarget = modal.querySelector('button, input');
+    if (focusTarget) focusTarget.focus();
+  }
+
+  function close() {
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove('is-modal-open');
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+  }
+
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-src-upload-open]');
+    if (opener) {
+      e.preventDefault();
+      if (ensureModal()) open(opener.getAttribute('data-src-upload-open'));
+      return;
+    }
+    if (!modal) return;
+    /* Demo：送出就關掉——真實系統要驗檔案格式與期間，規則尚未定案（D165 待確認 1–3）。 */
+    if (e.target.closest('[data-src-upload-close]') || e.target.closest('[data-src-upload-submit]')) close();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (modal && !modal.hidden && e.key === 'Escape') close();
   });
 })();
 </script>

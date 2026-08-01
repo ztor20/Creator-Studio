@@ -449,12 +449,17 @@
    dock 下緣露出一截——e-shop 貼頂時通知條的下緣本來就會從 dock 底下探出約 15px
    （dock 貼在 top:0、通知條貼在 top:16，兩者高度不同），這條一併修掉。
    :has() 只在真的有貼頂列的頁面生效，其餘頁面的通知條行為不動。 */
+/* ⚠ 只動 opacity，絕對不要動 position（2026-08-01 兩次踩到，使用者回報「往上滑
+   content 全部不見了」）：static 與 relative 都會讓整頁內容在貼頂後不再繪製——這個
+   元素同時是下方那層遮罩（::before，position:absolute）的定位基準，一動它遮罩的框
+   就跑掉。維持 sticky、只是淡出：版面與定位完全不變，而 dock 本來就疊在它上面
+   （z-index 20 對 10），看起來就是通知讓位。 */
 .main:has(.list-dock.is-snapped) .alert-inset {
-  /* relative 而不是 static：兩者都讓它脫離黏頂、跟著頁面捲走，但下面那層遮罩
-     （::before）是 position:absolute，要靠這個元素當定位基準。改成 static 會讓
-     基準往上跑到外層容器，遮罩的框因此撐成整片、把整頁內容蓋掉（2026-08-01
-     使用者回報「往上滑 content 全部不見了」的真因）。 */
-  position: relative;
+  opacity: 0;
+  pointer-events: none;
+}
+.alert-inset {
+  transition: opacity 200ms var(--easing);
 }
 
 .alert-inset::before {

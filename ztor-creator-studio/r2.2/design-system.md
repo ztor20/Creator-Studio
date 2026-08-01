@@ -4947,9 +4947,10 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.src-status__pill` — 第一層常駐膠囊；`__dot` 狀態點、`__chevron` 展開時旋轉 180°
 - `.src-status__panel` — 第二層來源明細，絕對定位於膠囊下方
 - `.src-status__title` / `__note` — 面板標題與涵蓋範圍說明
+- `.src-status__group` — 接入方式分組標題（官方串接組在前、自行上傳組在後；D165）
 - `.src-status__mark` — 來源識別塊（只放縮寫）
-- `.src-status__row--off` — 未連結來源，整列降權但仍可見
-- `.src-status__foot` — 面板底部的「前往整合設定」通用入口
+- `.src-status__row--off` — 還沒有資料的來源，整列降權但仍可見
+- `.src-status__foot` — 面板底部的補述（上傳就在本頁完成，設定只留唯讀副本）
 
 **狀態規則** — `data-alert="true"` 時膠囊改用 `--destructive` 邊框與文字、`--destructive-fill` 底；規格要求異常排除前不得回到低調樣式。
 

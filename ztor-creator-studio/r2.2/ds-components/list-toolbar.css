@@ -261,22 +261,47 @@ html[data-theme="light"] .list-toolbar {
        並在右緣加一道漸隱提示還有東西。 */
     flex-wrap: nowrap;
     padding: var(--sp-6) var(--sp-16);
-    /* 94% 而不是 86%：清單列從底下捲過去時，只差 14% 明度的半透明面板會和列糊在一起，
-       讀不出「這條在前面」。毛玻璃在這裡是為了讓底下的移動看得見一點，不是要看穿。 */
-    background: color-mix(in srgb, var(--surface-shell) 94%, transparent);
-    backdrop-filter: blur(14px) saturate(140%);
+    /* 實色，不用毛玻璃（2026-08-01 使用者裁示兩件事的交集）：
+       ① 「陰影不夠深，要像這樣的效果」圈的是通知條——那是實色底＋往下漸消，不是半透明。
+       ② 「滾下來以後圓角不見了」的真因就是 backdrop-filter：帶毛玻璃的子元素會讓外層
+          .main 的 border-radius 裁切失效，貼頂那一刻整個內容面板的圓角被切成直角。
+       改實色兩件一起解決；底下內容的移動改由下方那段漸層遮罩交代。
+       原本的理由（半透明是為了讓底下的移動看得見一點）在有漸層之後不再需要。 */
+    background: var(--surface-shell);
     /* 上緣切平（2026-07-28 使用者裁示：「拿掉貼頂態的上圓角，讓它看起來是頁首外框的延伸」）。
        貼頂之後這一條的上緣正好切齊頁面外框的內側——留著 16px 圓角就會在兩個角各露出一小塊
        底色，讀起來像一張「浮在框裡的卡」；切平之後它是那個外框往下長出來的一段。
        下緣的圓角留著：下面是會捲動的內容，那一側仍然是這條自己的邊界。 */
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-    /* 下緣要有一條實線：捲動的內容正好從這裡通過，沒有邊界就沒有「上面／下面」。 */
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 6px 20px -10px rgb(0 0 0 / 0.5);
+    /* 下緣不畫線（2026-08-01 使用者裁示：「tab 的下緣有一個白白的，不知道是線
+       還是陰影，請刪掉那個效果」）——那條 1px --border 在深色主題上是一道偏亮的
+       細線，貼頂時橫過整個內容欄特別顯眼。
+       分隔改由下方的漸層遮罩承擔（見下面的 ::after）：同日使用者再指「陰影不夠深，
+       要像這樣的效果」並圈出通知條——那裡是「同色底＋往下漸消」，不是投影。
+       陰影仍留一層當輔助，讓貼頂那一條讀得出是浮在上面的。 */
+    border-bottom: 0;
+    box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.65);
   }
   html[data-theme="light"] .list-dock.is-snapped .list-dock__bars {
-    background: color-mix(in srgb, var(--card) 94%, transparent);
-    box-shadow: 0 6px 20px -12px rgb(0 0 0 / 0.28);
+    background: var(--card);
+    box-shadow: 0 10px 24px -14px rgb(0 0 0 / 0.34);
+  }
+
+  /* 貼頂列下方的漸層遮罩（2026-08-01 使用者裁示：「陰影不夠深，要像這樣的效果」，
+     圈的是通知條 .alert-inset::before 那種「同色底往下漸消」）。捲動的內容從這一條
+     底下通過時不是被一條硬邊切斷，而是漸漸淡掉。
+     與通知條的差別：通知條的遮罩要連上方空隙一起蓋（它自己是不透明卡），這裡的
+     bars 本身是半透明毛玻璃、上緣又切齊外框，所以只需要下方這一段。
+     ::after 而非 ::before：::before 在這個元件已被 .list-status-row 的浮層錨點用掉。 */
+  .list-dock.is-snapped .list-dock__bars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: var(--dock-fade, 56px);
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--surface-page), transparent);
   }
 
   /* 工作列在 dock 裡讓出背景與圓角——那些現在歸 dock 管，避免卡中卡。 */

@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2"><link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/source-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
@@ -380,68 +381,78 @@
             <h2 class="settings-section__title" data-i18n="settings.int.title">Integrations</h2>
             <p class="settings-section__sub" data-i18n="settings.int.sub">Connect external platforms to power Audience Intelligence and pull royalty statements.</p>
 
-            <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:18px 0 0" data-i18n="settings.int.connected">Connected</h3>
+            <!-- 資料來源平台（唯讀，spec 5.1.9 F6 · D165）。五個粉絲資料來源在這裡
+                 只看得到狀態：官方串接（Spotify／StreetVoice）由 ztor 端建立與修復，
+                 創作者無從授權；自行上傳（YouTube／Instagram／TikTok）的檔案在粉絲
+                 分析頁就地上傳。所以整段沒有 Connect／Reconnect／Retry 任何一顆按鈕，
+                 唯一的動作是連去粉絲分析。識別塊改用 .src-status__mark（中性縮寫塊），
+                 與粉絲分析同一支元件，也不再各自寫死平台品牌色。 -->
+            <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:18px 0 0" data-i18n="settings.int.sources">Data sources (read-only)</h3>
+            <p class="settings-section__sub" style="margin-top:var(--sp-8)" data-i18n="settings.int.sources.note">Fan figures come from these five. You never authorise them here — official integrations are ours to run, and the rest you upload in Fan analytics.</p>
 
             <div class="settings-row">
               <div class="flex-row">
-                <span style="width:32px;height:32px;border-radius:7px;background:#ff0000;display:inline-grid;place-items:center;color:#fff;font-weight: var(--fw-regular);font-size: var(--fs-13)">Y</span>
+                <span class="src-status__mark">SP</span>
                 <div>
-                  <div class="settings-row__label">YouTube Studio</div>
-                  <div class="settings-row__hint" data-i18n="settings.int.youtube">Last sync · 4 min ago · 64 video metadata, 412 new subs</div>
+                  <div class="settings-row__label">Spotify</div>
+                  <div class="settings-row__hint" data-i18n="settings.int.spotify">Official integration · sync stopped Nov 18, ztor is on it</div>
                 </div>
               </div>
-              <div class="flex-row">
-                <span class="badge badge--success"><span data-i18n="settings.int.synced">Synced</span></span>
-                <button class="btn btn--ghost btn--sm" data-i18n="settings.int.open">Open</button>
-                <button class="btn btn--ghost btn--sm" data-i18n="settings.int.resync">Resync</button>
-              </div>
+              <div class="flex-row"><span class="badge badge--error"><span data-i18n="settings.int.failed">Sync failed</span></span></div>
             </div>
 
             <div class="settings-row">
               <div class="flex-row">
-                <span style="width:32px;height:32px;border-radius:7px;background:#1ed760;display:inline-grid;place-items:center;color:#000;font-weight: var(--fw-regular);font-size: var(--fs-13)">S</span>
+                <span class="src-status__mark">SV</span>
                 <div>
-                  <div class="settings-row__label">Spotify for Artists</div>
-                  <div class="settings-row__hint" data-i18n="settings.int.spotify">Last sync Nov 18 · failed: access token expired</div>
+                  <div class="settings-row__label">StreetVoice</div>
+                  <div class="settings-row__hint" data-i18n="settings.int.streetvoice">Official integration · play counts only · revenue not supported</div>
                 </div>
               </div>
-              <div class="flex-row">
-                <span class="badge badge--error"><span data-i18n="settings.int.failed">Sync failed</span></span>
-                <button class="btn btn--ghost btn--sm"><i data-lucide="refresh-ccw" class="ztor-icon"></i><span data-i18n="settings.int.retry">Retry</span></button>
-                <button class="btn btn--primary btn--sm" data-i18n="settings.int.reconnect">Reconnect</button>
-              </div>
+              <div class="flex-row"><span class="badge"><span data-i18n="settings.int.partial">Partial</span></span></div>
             </div>
 
             <div class="settings-row">
               <div class="flex-row">
-                <span style="width:32px;height:32px;border-radius:7px;background:linear-gradient(45deg,#fbad50,#cd486b,#5b51d8);display:inline-grid;place-items:center;color:#fff;font-weight: var(--fw-regular);font-size: var(--fs-13)">I</span>
+                <span class="src-status__mark">YT</span>
+                <div>
+                  <div class="settings-row__label">YouTube</div>
+                  <div class="settings-row__hint" data-i18n="settings.int.youtube">You upload this · last file 4 days ago, covers May–Jul</div>
+                </div>
+              </div>
+              <div class="flex-row"><span class="badge badge--success"><span data-i18n="settings.int.uploaded">Uploaded</span></span></div>
+            </div>
+
+            <div class="settings-row">
+              <div class="flex-row">
+                <span class="src-status__mark">IG</span>
                 <div>
                   <div class="settings-row__label">Instagram</div>
-                  <div class="settings-row__hint" data-i18n="settings.int.instagram">Last sync · 12 min ago · 286 new followers</div>
+                  <div class="settings-row__hint" data-i18n="settings.int.instagram">You upload this · no file yet</div>
                 </div>
               </div>
-              <div class="flex-row">
-                <span class="badge badge--success"><span data-i18n="settings.int.synced">Synced</span></span>
-                <button class="btn btn--ghost btn--sm" data-i18n="settings.int.open">Open</button>
-              </div>
+              <div class="flex-row"><span class="badge"><span data-i18n="settings.int.not-uploaded">Not uploaded</span></span></div>
             </div>
 
             <div class="settings-row" style="border-bottom:0">
               <div class="flex-row">
-                <span style="width:32px;height:32px;border-radius:7px;background:#ec5b24;display:inline-grid;place-items:center;color:#fff;font-weight: var(--fw-regular);font-size: var(--fs-13)">SV</span>
+                <span class="src-status__mark">TT</span>
                 <div>
-                  <div class="settings-row__label">StreetVoice</div>
-                  <div class="settings-row__hint" data-i18n="settings.int.streetvoice">Partial · play counts only · revenue not supported</div>
+                  <div class="settings-row__label">TikTok</div>
+                  <div class="settings-row__hint" data-i18n="settings.int.tiktok">You upload this · no file yet</div>
                 </div>
               </div>
-              <div class="flex-row">
-                <span class="badge"><span data-i18n="settings.int.partial">Partial</span></span>
-              </div>
+              <div class="flex-row"><span class="badge"><span data-i18n="settings.int.not-uploaded">Not uploaded</span></span></div>
             </div>
 
-            <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:24px 0 0" data-i18n="settings.int.available">Available</h3>
-            <div class="settings-row"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:var(--muted);display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13);box-shadow:0 0 0 1px var(--border)">T</span><div><div class="settings-row__label">TikTok</div><div class="settings-row__hint" data-i18n="settings.int.tiktok">Audience growth, top videos.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
-            <div class="settings-row"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:#000;color:#fff;display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13)">X</span><div><div class="settings-row__label">X (Twitter)</div><div class="settings-row__hint" data-i18n="settings.int.x">Audience growth signals only.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
+            <div style="margin-top:var(--sp-12)">
+              <a class="btn btn--outline btn--sm" href="fan-analytics.html" data-i18n="settings.int.manage-sources">Manage in Fan analytics</a>
+            </div>
+
+            <!-- 授權型整合：真正需要創作者去授權的第三方服務。X（Twitter）歸屬未定
+                 （D165 待確認 6），暫留在這一組。 -->
+            <h3 style="font-family:var(--font-ui);font-size: var(--fs-13);font-weight: var(--fw-regular);letter-spacing:0.4px;text-transform:uppercase;color:var(--muted-foreground);margin:24px 0 0" data-i18n="settings.int.available">Authorised integrations</h3>
+            <div class="settings-row"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:#000;color:#fff;display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13)">X</span><div><div class="settings-row__label">X (Twitter)</div><div class="settings-row__hint" data-i18n="settings.int.x">Follower growth signals only.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
             <div class="settings-row"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:#5865f2;color:#fff;display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13)">D</span><div><div class="settings-row__label">Discord</div><div class="settings-row__hint" data-i18n="settings.int.discord">Cross-post fan announcements.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
             <div class="settings-row"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:#635bff;color:#fff;display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13)">S</span><div><div class="settings-row__label">Stripe</div><div class="settings-row__hint" data-i18n="settings.int.stripe">Card payments and payouts.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
             <div class="settings-row" style="border-bottom:0"><div class="flex-row"><span style="width:32px;height:32px;border-radius:7px;background:#e8710a;color:#fff;display:inline-grid;place-items:center;font-weight: var(--fw-regular);font-size: var(--fs-13)">GA</span><div><div class="settings-row__label">Google Analytics</div><div class="settings-row__hint" data-i18n="settings.int.ga">Traffic insights for your Projects.</div></div></div><button class="btn btn--outline btn--sm" data-i18n="settings.int.connect">Connect</button></div>
