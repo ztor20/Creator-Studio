@@ -33,6 +33,8 @@
 
 > **2026-07-31 呈現追蹤**：`create-campaign.html`（無獨立上游規格列、於 5.1.2.2 Project Detail 列內以 `fc.*` 命名空間提及）的圖片上傳槽同步改用共用元件＋單一直式 750×930（見 STYLE-DECISIONS Q39、ASSUMPTIONS IMG-001）。
 
+> **2026-08-02 呈現追蹤（跨 10 頁，無獨立上游規格列）**：全部 10 個詳情頁（`auction-` / `brand-campaign-` / `bundle-` / `event-` / `fan-` / `ip-` / `order-` / `pickup-` / `product-` / `project-detail.html`）的麵包屑最前面加返回上一層按鈕（`.page-crumb__back`），href 固定指麵包屑的上一層。**只在整頁滿版那種開法出現**——從清單點進來的 `detail-sheet` 覆蓋層（`?embed=1`）本來就有自己的「← 回到 XXX」，該情境下由 `html[data-embed]` 隱藏。純呈現補位，不改任何導航目的地或產品行為（見 UI-CHANGES 同日條目、design-system.md §6.3）。
+
 ## 覆蓋對照
 
 > 2026-07-24 B 反饋：項目詳情設定分頁的「發布更新」「＋ 新增合作者」與「前往我的 IP 連結」統一為滿寬置中的 outline 入口；新增合作者改放其卡片底部。僅改呈現，不改既有 modal／連結行為。
