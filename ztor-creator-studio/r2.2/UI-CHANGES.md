@@ -4,6 +4,21 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-02 · 十個詳情頁的麵包屑前加返回上一層按鈕（B 反饋／使用者裁決，版型參考 Lovable）
+
+- **【B】返回鈕加在麵包屑最前面**（10 個 `*-detail.html`：auction／brand-campaign／bundle／event／fan／ip／order／pickup／product／project）。**補的是整頁滿版那種開法**：詳情頁從清單點進來會走 `detail-sheet` 覆蓋層（iframe `?embed=1`），那層頂部本來就有「← 回到 XXX」；直接開網址（書籤、分享連結、搜尋結果）則是整頁滿版，除了瀏覽器上一頁沒有任何回到母清單的入口。
+- **【B】覆蓋層裡隱藏這顆**（`shared.css` 的 `html[data-embed]` 區塊，與其他覆蓋層收納規則同處）：同一個畫面兩顆返回鈕，使用者得先分辨哪顆退到哪裡；而且麵包屑這顆是整頁導航，在覆蓋層裡按下去會把 iframe 換成清單頁、外層覆蓋層還開著。
+- **【B】固定連結而非 `history.back()`**：href 指麵包屑的上一層（取貨詳情 → `pickup.html`）。從外部連結第一次進站沒有上一頁可退，`history.back()` 會變成按了沒反應；真的 `<a>` 還保住 cmd-click 開新分頁與右鍵複製網址。使用者於本輪明確選定此方案。
+- **【D】`.btn--icon-circle` 新增 `.btn--sm` 尺寸**（28px 圓／16px 字符）：原本只有 36px 一種，擺在 12px 的麵包屑列上比整列還高。`.btn--sm` 本來就會降高度，但 `.btn--icon-circle` 在它之後把 `height` 釘死，所以要明寫一次才生效。
+- **【D】`.page-crumb--back` 修飾子**（`page-intro.css`）：只有帶返回鈕的頁把麵包屑那列切成 flex。`.page-crumb` 有 30 個消費頁、其中 20 頁沒有這顆鈕，改動基底等於讓那 20 頁的每個連結與 `/` 都變成 flex item 卻換不到任何好處。`.page-crumb__back` 本身只帶 `flex: 0 0 auto` 與右間距，外觀全部來自共用的 `.btn` classes。
+- **【D】兩處對 atom 的刻意偏離**（都寫進 design-system）：
+  - **退出麵包屑的連結配色**：麵包屑的 `a { color: inherit }` 選擇器比 `.btn--icon-circle` 強，不擋的話字符會被染成品牌橘、hover 還在 svg 底下畫底線。這顆是控制項不是麵包屑的一節，改回站上 icon 鈕的標準配色。
+  - **去掉外框與底色**（使用者當日圈選裁示「這個按鈕要用沒有外匡的」）：靜止態只有箭頭，圓形底只在 hover 時現形。底色跟著一起收掉而不是只收外框——`.btn--icon-circle` 的 `--muted` 填色是為「坐在卡片裡」調的，留著會變成暗色模式看得到一顆灰圓、亮色模式 `#FAFAFA` 對白底整顆消失，同一顆鈕在兩個主題長不一樣。
+- **【B】返回鈕與第一節麵包屑的間距由 10px 加到 16px**（使用者裁示「要和後面的麵包屑有更多一點間距」）：沒有可見邊界之後，28px 框內那 6px 空白讀不出來，箭頭與文字看起來黏在一起。
+- **【D】STYLE-DECISIONS Q43 當日提出、當日裁決**：「返回」這個角色原本站上兩種樣貌——wizard 頂列的裸箭頭（`.wizard__back`，7 頁）與本輪一度採用的圓鈕（10 頁）。使用者裁示走裸箭頭，兩邊自此同一種做法。兩者剩下的尺寸差異（wizard 22px 字符 vs 詳情頁 16px）不在本次裁決範圍，沒有擅自動 wizard 那 7 頁。
+- **【D】新增 i18n `crumb.back`**（走 `data-i18n-aria-label` 與 `data-i18n-title`，這顆鈕沒有可見文字）；文案寫「返回上一層」而不是「返回」，因為它退的是麵包屑的上一層、不是瀏覽器上一頁。
+
+
 ## 2026-08-02 · 取貨兩頁的工作列統一成電子商店的 .list-toolbar；側欄合併成一張卡（B 反饋／使用者裁決）
 
 - **【B】工作列統一**（`pickup.html` 與 `pickup-detail.html`）：都改用電子商店那條 `.list-toolbar`——左邊底線式 `.tabs`（`--underline-short` / `--underline-label` / `--count-plain`，附數量）切狀態、右邊 `.list-toolbar__actions` 放收合搜尋與主要動作。撤除 `pickup.html` 原本的兩排式版型（`.pk-list-controls` / `.pk-list-topbar` / `.pk-status-row`）與詳情頁一度用過的 `.filter-tabs--brand` 版本；`wireFilter` 的作用對象同步由 `.filter-tabs__item` 改成 `.tabs__item`。

@@ -42,6 +42,11 @@
     'hero.slide-2':     { en: 'Go to slide 2',   zh: '跳到第 2 張' },
     'hero.slide-3':     { en: 'Go to slide 3',   zh: '跳到第 3 張' },
     'hero.slide-4':     { en: 'Go to slide 4',   zh: '跳到第 4 張' },
+    /* ─── 麵包屑返回鈕（2026-08-02，10 個詳情頁共用）───────────
+       只有圖示、沒有可見文字，所以字串走 aria-label 與 title 兩條。
+       寫「返回上一層」而不是「返回」：這顆退的是麵包屑的上一層，不是瀏覽器
+       上一頁，兩者在覆蓋層情境下會退到不同地方。 */
+    'crumb.back':       { en: 'Back to previous level', zh: '返回上一層' },
     /* ─── Topbar ───────────────────────────────────────────── */
     'nav.dashboard':    { en: 'Dashboard',  zh: '總覽' },
     /* 儀表板頁首（2026-07-28）。標題刻意不叫 Dashboard——側欄與麵包屑已經說了兩次。
