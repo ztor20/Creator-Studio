@@ -21,9 +21,9 @@ window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
    UI chrome = data-i18n; sample item/ticket lists are literals. */
 (function () {
   var PRODUCTS = [
-    { id: 'zine', kind: 'product', name: 'Tour zine vol. 02', meta: 'Books · 40 sold' },
-    { id: 'tee',  kind: 'product', name: 'Coastline tee · M / L', meta: 'Apparel · 22 sold' },
-    { id: 'lp',   kind: 'product', name: 'Coastline acetate LP', meta: 'Music · numbered' }
+    { id: 'zine', kind: 'product', name: 'Pirate Queen zine vol. 02', meta: 'Books · 40 sold' },
+    { id: 'tee',  kind: 'product', name: 'Kowloon After Dark tee · M / L', meta: 'Apparel · 22 sold' },
+    { id: 'lp',   kind: 'product', name: 'Kowloon After Dark vinyl LP', meta: 'Music · numbered' }
   ];
   var TICKETS = [
     { id: 'sign', kind: 'ticket', name: 'Signing session · GA entry', meta: 'Taipei signing · on-site entry' },

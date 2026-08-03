@@ -4,6 +4,56 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-03 · 表格表頭與首列的間距收小（B 反饋）
+
+- **【B】** `.ztor-table thead th` 下緣內距 `--sp-16` → `--sp-8`。原本表頭下緣 16 ＋ 首列上緣 16 ＝ **32px**，在 2026-07-31 去掉表頭底色與下框線之後，那段空白讀起來像斷開的兩塊；收成 8 之後總距離 **24px**，表頭仍站得住、但明顯歸屬於下面那份清單。上緣維持 16，表頭與卡片標題之間的呼吸不變。全站 `.ztor-table` 一致，不另開變體。
+
+## 2026-08-03 · 補齊周湯豪 persona 的資料隔離：i18n 49 key ＋ 三支無分支資料檔（B 反饋／使用者回報）
+
+使用者在他的「我的 IP」看到「九龍夜行 寫真誌 vol.01 插畫」，要求全面檢查。條件是**假資料可以，但必須是周湯豪實際發行物或其合理衍生**。
+
+- **【B】** `js/i18n.js` 補 **49 個 `PERSONA_DICT.nick` 覆蓋**（覆蓋 key 總數 145 → 194）。原本 base 有 49 個帶作品名的 key 沒有 nick 版本，切到他就露出港片世界觀，散在 `orders`／`pk`（取貨）／`my-ip` row5–8＋租入區／`alert`／`notif`／`tx`／`ip-detail`／`project-detail`／`cocreate`／`e-shop.alert`／`fan.about`／`settings.profile`／`cpp`／`od` 與四個輸入提示。替代值一律取自他的發行物，沿用 e-shop 低庫存橫條既有的對應：寫真誌→REALIVE 巡演精裝寫真誌、T 恤→REALIVE 白趴 官方 Tee、原聲帶→LOVE RAGE HOPE、黑膠→LOVE RAGE HOPE 限量黑膠 1/500。
+- **【B】** `js/vault-store.js` 加 persona 標籤覆蓋。媒體庫的「誰進得來」解鎖條件原本寫死港片（深水埗的月光／龍虎門外傳／海上霸姬）與九龍夜行周邊。**只換標籤、不動 id 與權重**——機率、`cap`、集合運算都跟 id 綁定，動了觸及人數會漂移。`attended` 那組本來就是他的巡演與見面會，不需覆蓋。
+- **【B】** `partials/fan-store.js`（以粉絲視角預覽）加同樣的標籤覆蓋，5 個商品名。注意該檔的 markup 是 `String.raw` 模板字串，插值要用 `${}` 不能用字串串接。
+- **【B】** 三處 HTML 寫死、沒有 i18n 掛勾的預設資料補上 key 與 nick 覆蓋：`order-detail` 的兩個品名、`project-detail` 協作者表的持有人名。
+- **【D】** 驗收：21 支頁面在 nick persona 下逐頁掃 23 個 default 世界觀關鍵字，**零命中**（先前 4 支有殘留）；`media-vault` 解鎖條件實測顯示「購買過 · LOVE RAGE HOPE 限量黑膠 1/500」。
+- **【D】** **反向問題，未修**：`default` persona 的儀表板（`index.html`）現在顯示周湯豪的作品——`js/components.js` 與 base `dash.*` 在 2026-07-31 補假資料時整批換成他的作品（當時 persona 停在 nick）。要修需要為 `dash.*` 反過來建一組 default 值，約 40 個 key，屬另一件工。
+
+## 2026-08-03 · 稽核周湯豪 persona 是否混入他人資料（D infra ＋ bug 修正）
+
+使用者：「檢查 user 周湯豪的假資料是不是有混入其他不是周湯豪的」。逐檔比對後修掉三處，另有三處是**既有的結構問題**、需裁決後才動。
+
+- **【D】** *（bug，本輪造成）* `js/components.js` 儀表板「近期活動與項目」第 6 列是「深水埗月光 放映會」——那是 default persona 的港片（`shamshuipo-moonlight`），同列表其餘 5 筆都是周湯豪的作品。改成「REALIVE (R2) 演唱會影像 線上放映會」（`events-store` 本來就有這場 watch party），圖換 `nick-r2.jpg`。
+- **【D】** *（bug，本輪造成）* `js/vault-store.js` 有 4 處 `zh` 值變成中英混雜（「Kowloon After Dark 手編號黑膠 1/50」）——該檔用 `{en, zh}` 結構但不是 `i18n.js`，改名腳本一律套了英文。改回純中文。
+- **【D】** *（bug，既有）* `js/products-store.js` 的「祝你好命 紅包主題低筒球鞋」指向不存在的 `nick-nike.jpg`（實際檔名 `nick-nike-01.jpg`），修掉。全站商品圖已複驗零缺檔。
+- **【D】** **待裁決，未動**——三支資料檔沒有 persona 分支，會讓兩邊互相看到對方的東西：<br>① `js/vault-store.js`（18 處）內容是 default 港片，切到周湯豪時，媒體庫「誰進得來」的解鎖條件全是別人的作品；<br>② `partials/fan-store.js`（7 處）同樣是 default 內容，粉絲的購買／支持紀錄顯示別人的商品；<br>③ `js/events-store.js`（15 處）**反向**——內容全是周湯豪的巡演，default persona 的活動頁會顯示 REALIVE World Tour。<br>三者都要加 persona 分支才能根治，屬結構改動，等使用者決定要不要做。
+- **【D】** **確認乾淨**：`PROJECTS_NICK` 16 個作品全部是周湯豪、圖檔全為 `nick-*`；`PERSONA_DICT.nick` 145 個 key 零混入；`performance-store`／`brand-campaigns`／`media-vault` 不含任何一方的專有名詞。周湯豪商品有 8 件借用非 nick 圖檔（`tour-zine-vol-02.webp`／`coastline-acetate.webp` 等），但那是 `products-store` 檔頭早已註記的刻意佔位（避免 404），非本輪造成。
+
+## 2026-08-03 · 早期假資料全面換掉，收斂進既有的港片世界觀（B 反饋／使用者裁決）
+
+使用者：「將 r2.2 的假資料調整成易懂的項目，不動 user 周湯豪的假資料」「最早期的都換掉，後來改的都保留」。用 `git log -S` 逐一查首次出現的 commit，**分水嶺是 2026-07-23**：之前＝初始化那批（`c6bb994`，2026-06-18），之後＝陸續改的（港片／歌曲／周湯豪）。
+
+- **【B】** 換掉初始化批次的全部虛構名稱，掛到**已保留的港片項目**底下，讓「項目 → 商品 → 活動 → IP → 訂單」串成同一條線：<br>`Coastline` 家族 → **九龍夜行**（對應既有 `dragon-tiger-gate` 龍虎門外傳：九龍夜行）；`Tour zine`／`Tour documentary`／`Tide Pool` → **海上霸姬 幕後**（對應 `pirate-queen-doc`）；`Spring Launch`／`Taipei Live 2026` → **九龍冰室 十週年**（對應 `kowloon-premiere`）；`Winter Set` → 海上霸姬 首映會；`Late Bloom` → **深水埗的月光**（對應 `shamshuipo-moonlight`）；`Neon Tide` → 龍虎門 主視覺；`Quiet Hours` → 九龍夜行 原聲歌單；`Salt & Bitumen` → 旺角狙擊 概念海報；曲目 `Tidewater`／`Harbor Lights`／`Undertow` → 霓虹街口／天台的風／暗流；`Studio Yiu` → 姚氏影業；`Cypress Audio` → 松柏音響；`Maya Chou` → **林家維 Gary Lin**（與招呼用名 Gary 對齊）；四個英文商品名（`Enamel pin · wave`／`Logo cap`／`Canvas low-top`／`Inner circle · membership`）一併中文化。共 37 支檔案。
+- **【D】** 語言處理：`js/i18n.js` 的 `en:` 用英文、`zh:` 用中文（雙語正確）；`products-store.js` 與 e-shop 商品列用中文（那些列沒有 i18n，default persona 直接吃 HTML 原文，比照周湯豪的中文品名）。
+- **【D】** **識別字不動**：圖檔名（`coastline-*.webp`）、專案 id（`coastline-ep`／`late-bloom`）、i18n key 全部保留原樣——改了會斷深連結與圖片。首版腳本誤把小寫索引一起換掉，已全部修回並複驗「站上引用的圖檔 100% 存在」。earnings 的 `BD_PROJECTS` 有個 key 被連帶中文化，改成 ascii `kowloonOst`。
+- **【D】** 順手修兩個既有瑕疵：`nick-nike.jpg`（404，實際檔名是 `nick-nike-01.jpg`）、`my-ip.row4` 語意（海報被接成「概念海報 紀錄片影像」，改回「旺角狙擊 紀錄片影像」）。
+- **【D】** **未動**：周湯豪全部資料、07-23 之後新增的港片與 IP（Harbour Nights／Northline／Sasha Lin／Warner Bros.）、人名（粉絲 9 人、Mika L／Aki Tanaka／Lena Wu）與系統詞彙（Inner Circle 粉絲分級、Legacy Taipei 場地範例）。人名屬「人」不屬「項目」，且本身可讀，未納入本輪。
+
+## 2026-08-02 · 十個詳情頁的麵包屑前加返回上一層按鈕（B 反饋／使用者裁決，版型參考 Lovable）
+
+- **【B】返回鈕加在麵包屑最前面**（10 個 `*-detail.html`：auction／brand-campaign／bundle／event／fan／ip／order／pickup／product／project）。**補的是整頁滿版那種開法**：詳情頁從清單點進來會走 `detail-sheet` 覆蓋層（iframe `?embed=1`），那層頂部本來就有「← 回到 XXX」；直接開網址（書籤、分享連結、搜尋結果）則是整頁滿版，除了瀏覽器上一頁沒有任何回到母清單的入口。
+- **【B】覆蓋層裡隱藏這顆**（`shared.css` 的 `html[data-embed]` 區塊，與其他覆蓋層收納規則同處）：同一個畫面兩顆返回鈕，使用者得先分辨哪顆退到哪裡；而且麵包屑這顆是整頁導航，在覆蓋層裡按下去會把 iframe 換成清單頁、外層覆蓋層還開著。
+- **【B】固定連結而非 `history.back()`**：href 指麵包屑的上一層（取貨詳情 → `pickup.html`）。從外部連結第一次進站沒有上一頁可退，`history.back()` 會變成按了沒反應；真的 `<a>` 還保住 cmd-click 開新分頁與右鍵複製網址。使用者於本輪明確選定此方案。
+- **【D】`.btn--icon-circle` 新增 `.btn--sm` 尺寸**（28px 圓／16px 字符）：原本只有 36px 一種，擺在 12px 的麵包屑列上比整列還高。`.btn--sm` 本來就會降高度，但 `.btn--icon-circle` 在它之後把 `height` 釘死，所以要明寫一次才生效。
+- **【D】`.page-crumb--back` 修飾子**（`page-intro.css`）：只有帶返回鈕的頁把麵包屑那列切成 flex。`.page-crumb` 有 30 個消費頁、其中 20 頁沒有這顆鈕，改動基底等於讓那 20 頁的每個連結與 `/` 都變成 flex item 卻換不到任何好處。`.page-crumb__back` 本身只帶 `flex: 0 0 auto` 與右間距，外觀全部來自共用的 `.btn` classes。
+- **【D】兩處對 atom 的刻意偏離**（都寫進 design-system）：
+  - **退出麵包屑的連結配色**：麵包屑的 `a { color: inherit }` 選擇器比 `.btn--icon-circle` 強，不擋的話字符會被染成品牌橘、hover 還在 svg 底下畫底線。這顆是控制項不是麵包屑的一節，改回站上 icon 鈕的標準配色。
+  - **去掉外框與底色**（使用者當日圈選裁示「這個按鈕要用沒有外匡的」）：靜止態只有箭頭，圓形底只在 hover 時現形。底色跟著一起收掉而不是只收外框——`.btn--icon-circle` 的 `--muted` 填色是為「坐在卡片裡」調的，留著會變成暗色模式看得到一顆灰圓、亮色模式 `#FAFAFA` 對白底整顆消失，同一顆鈕在兩個主題長不一樣。
+- **【B】返回鈕與第一節麵包屑的間距由 10px 加到 16px**（使用者裁示「要和後面的麵包屑有更多一點間距」）：沒有可見邊界之後，28px 框內那 6px 空白讀不出來，箭頭與文字看起來黏在一起。
+- **【D】STYLE-DECISIONS Q43 當日提出、當日裁決**：「返回」這個角色原本站上兩種樣貌——wizard 頂列的裸箭頭（`.wizard__back`，7 頁）與本輪一度採用的圓鈕（10 頁）。使用者裁示走裸箭頭，兩邊自此同一種做法。兩者剩下的尺寸差異（wizard 22px 字符 vs 詳情頁 16px）不在本次裁決範圍，沒有擅自動 wizard 那 7 頁。
+- **【D】新增 i18n `crumb.back`**（走 `data-i18n-aria-label` 與 `data-i18n-title`，這顆鈕沒有可見文字）；文案寫「返回上一層」而不是「返回」，因為它退的是麵包屑的上一層、不是瀏覽器上一頁。
+
+
 ## 2026-08-02 · 取貨兩頁的工作列統一成電子商店的 .list-toolbar；側欄合併成一張卡（B 反饋／使用者裁決）
 
 - **【B】工作列統一**（`pickup.html` 與 `pickup-detail.html`）：都改用電子商店那條 `.list-toolbar`——左邊底線式 `.tabs`（`--underline-short` / `--underline-label` / `--count-plain`，附數量）切狀態、右邊 `.list-toolbar__actions` 放收合搜尋與主要動作。撤除 `pickup.html` 原本的兩排式版型（`.pk-list-controls` / `.pk-list-topbar` / `.pk-status-row`）與詳情頁一度用過的 `.filter-tabs--brand` 版本；`wireFilter` 的作用對象同步由 `.filter-tabs__item` 改成 `.tabs__item`。
@@ -60,7 +110,9 @@
 使用者附手繪示意圖：「不是方塊本身圓角，是向外的圓角」「像紅色區塊一樣」「兩邊都要」。
 
 - **【B】** `.list-dock.is-snapped .list-dock__bars` 兩側各補一塊 **16px 的凹角**（`::before` / `::after`）。形狀＝**方角減掉一個四分圓**，填色在靠近 bar 的那一側、弧線往外開，所以貼頂那一條讀起來是**從外框長出來的一段**，不是浮在裡面的方卡。用徑向漸層雕出來，不加 DOM；`overflow: visible` 讓兩塊能長到 bar 之外。淺色主題另備一組（bar 底色是 `--card`，凹角填色要跟著換）。<br>半徑先做 28px，使用者看過後裁示「可以小一點」→ 收到 `--radius-xl`（16px），與 bar 自身下緣同一階。<br>**不是**把 bar 自己的角磨圓——那個版本試過並被否決（見同日「還原：貼頂列回到上緣切平」）。生效範圍：e-shop／projects／events／my-ip／ip-market／earnings-sony 六頁。
-- **【D】** *（流程）* 這一輪來回七次才對，關鍵在兩件事：① 使用者前幾版其實**沒看到**我的探索頁——我只講了檔名沒講完整網址，他開的是原版 `e-shop.html`；② 貼頂態在 Browser pane 裡驗不到，改用 Playwright 才拍得到真畫面。**之後給探索頁一律附完整可點的 URL，並附一張 Playwright 實拍。**
+- **【D】** *（流程）* 這一輪來回七次才對，關鍵在兩件事：
+  - 使用者前幾版其實**沒看到**我的探索頁——我只講了檔名沒講完整網址，他開的是原版 `e-shop.html`
+  - 貼頂態在 Browser pane 裡驗不到，改用 Playwright 才拍得到真畫面。**之後給探索頁一律附完整可點的 URL，並附一張 Playwright 實拍。**
 
 ## 2026-08-01 · 撤除貼頂列下方的漸層遮罩——它就是「圓角不見了」的元兇（C 撤除）
 
@@ -88,7 +140,10 @@
 
 - **【B】** `.list-dock.is-snapped .list-dock__bars` 拿掉 `border-bottom: 1px solid var(--border)`（深色主題上那是一道偏亮的細線，貼頂時橫過整個內容欄特別顯眼），改由 **`::after` 漸層遮罩**承擔分隔：`top:100%`、高 `--dock-fade`（56px）、`linear-gradient(var(--surface-page), transparent)`，捲動的內容從貼頂列底下通過時漸漸淡掉而不是被硬邊切斷。使用者兩段裁示：「tab 的下緣有一個白白的…請刪掉」→「tab fix 在最上方時，要有陰影」→「陰影不夠深，要像這樣的效果」（圈的是通知條那種同色底往下漸消，不是投影）。box-shadow 仍留一層當輔助。<br>用 `::after` 而非 `::before`：`::before` 在這個元件已被 `.list-status-row` 的浮層錨點用掉。與通知條遮罩的差別：通知條自己是不透明卡、要連上方空隙一起蓋；bars 是半透明毛玻璃且上緣切齊外框，只需要下方這一段。<br>**生效範圍＝所有用 snap dock 的頁**：e-shop、projects、events、my-ip、ip-market、earnings-sony，改元件層一次到位（使用者指定的活動／項目／電子商店都在內）。
 - **【C】** *（撤除）* 曾把貼頂列改成四角全圓＋上緣留 8px，想解「圓角不見了」；使用者看過後裁示「改回來」，已還原成 2026-07-28 的上緣切平（`0 0 16px 16px`、`top: 0`）。圓角問題另尋原因，不在這條。
-- **【B/D】** 貼頂列改**實色**、移除 `backdrop-filter`。一次解決兩件事：<br>① 使用者「陰影不夠深，要像這樣的效果」圈的是通知條——那是實色底＋往下漸消，本來就不是半透明毛玻璃。<br>② 使用者「滾下來以後圓角不見了」的**真因就是 `backdrop-filter`**：帶毛玻璃的子元素會讓外層 `.main` 的 `border-radius` 裁切失效，貼頂那一刻整個內容面板的圓角被切成直角（`.main` 是 `border-radius: 28px 0 0 0` ＋ `overflow: hidden auto`）。<br>底下內容的移動改由下方那段漸層遮罩交代，原本「半透明是為了讓底下的移動看得見一點」的理由不再需要。深色 `--surface-shell`、淺色 `--card`。
+- **【B/D】** 貼頂列改**實色**、移除 `backdrop-filter`。一次解決兩件事：
+  - 使用者「陰影不夠深，要像這樣的效果」圈的是通知條——那是實色底＋往下漸消，本來就不是半透明毛玻璃
+  - 使用者「滾下來以後圓角不見了」的**真因就是 `backdrop-filter`**：帶毛玻璃的子元素會讓外層 `.main` 的 `border-radius` 裁切失效，貼頂那一刻整個內容面板的圓角被切成直角（`.main` 是 `border-radius: 28px 0 0 0` ＋ `overflow: hidden auto`）
+  - 底下內容的移動改由下方那段漸層遮罩交代，原本「半透明是為了讓底下的移動看得見一點」的理由不再需要。深色 `--surface-shell`、淺色 `--card`。
 - **【D】** *（bug）* 貼頂時通知條讓位改成**只動 `opacity`，不動 `position`**。先前寫 `position: static`（後又改 `relative`）會讓整頁內容在貼頂後不再繪製——`.alert-inset` 同時是遮罩 `::before`（`position:absolute`）的定位基準，一動它遮罩的框就跑掉。維持 sticky、只是淡出（200ms），版面與定位完全不變，dock 本來就疊在它上面（z-index 20 對 10）。使用者回報「往上滑 content 全部不見了」。
 
 ## 2026-08-01 · 外部平台改「官方串接＋自行上傳」雙軌，粉絲分析就地上傳（A spec ＋ C 撤除）

@@ -1,3 +1,18 @@
+(function () {
+  /* Persona 標籤（2026-08-03）：本檔沒有 persona 分支，商品名寫死成 default 世界觀，
+     切到周湯豪時「以粉絲視角預覽」會顯示別人的商品。只換顯示名，版面與結構不動。 */
+  var FS_PERSONA = (function () {
+    try { return localStorage.getItem("ztor.persona") === "nick" ? "nick" : "default"; }
+    catch (e) { return "default"; }
+  })();
+  var FS_NAME = FS_PERSONA === "nick" ? {
+    "Kowloon After Dark vinyl · 1/50":     "LOVE RAGE HOPE 限量黑膠 1/500",
+    "Pirate Queen zine vol. 02":           "REALIVE 巡演精裝寫真誌",
+    "Kowloon After Dark tee":              "REALIVE 白趴 官方 Tee",
+    "Kowloon After Dark OST · digital":    "LOVE RAGE HOPE · 數位專輯",
+    "Kowloon After Dark hoodie":           "祝你好命 連帽外套"
+  } : {};
+  var FS = function (n) { return FS_NAME[n] || n; };
 window.ZTOR_PARTIALS = window.ZTOR_PARTIALS || {};
 /* Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同源）。
    E-Shop F5（商店預覽）與 Store-settings F1（See as fan）共用同一份 markup，
@@ -60,7 +75,7 @@ window.ZTOR_PARTIALS.fanStore = String.raw`
           <div class="fan-store__featured-media"><i data-lucide="disc-3" class="ztor-icon"></i></div>
           <div class="fan-store__featured-info">
             <span class="fan-store__featured-tag" data-i18n="fan.featured.tag">Featured</span>
-            <div class="fan-store__featured-title">Coastline acetate · 1/50</div>
+            <div class="fan-store__featured-title">${FS('Kowloon After Dark vinyl · 1/50')}</div>
             <div class="fan-store__featured-price">$180</div>
             <button class="fan-store__featured-cta" type="button" data-i18n="fan.featured.cta">Buy now</button>
           </div>
@@ -75,30 +90,30 @@ window.ZTOR_PARTIALS.fanStore = String.raw`
         <div class="fan-store__grid when-data">
           <article class="fan-store__card fan-store__card--out">
             <div class="fan-store__thumb"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="fan-store__card-title">Tour zine vol. 02</div>
+            <div class="fan-store__card-title">${FS('Pirate Queen zine vol. 02')}</div>
             <div class="fan-store__card-status" data-i18n="fan.status.restocking">Sold out · restocking</div>
           </article>
           <article class="fan-store__card">
             <div class="fan-store__thumb"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="fan-store__card-title">Coastline tee</div>
+            <div class="fan-store__card-title">${FS('Kowloon After Dark tee')}</div>
             <div class="fan-store__card-foot"><span class="fan-store__card-price">$32</span>
               <button class="fan-store__cart" type="button" aria-label="Add to cart" data-i18n-aria-label="fan.cart"><i data-lucide="shopping-cart" class="ztor-icon"></i></button></div>
           </article>
           <article class="fan-store__card">
             <div class="fan-store__thumb"><i data-lucide="music" class="ztor-icon"></i></div>
-            <div class="fan-store__card-title">Coastline EP · digital</div>
+            <div class="fan-store__card-title">${FS('Kowloon After Dark OST · digital')}</div>
             <div class="fan-store__card-foot"><span class="fan-store__card-price">$12</span>
               <button class="fan-store__cart" type="button" aria-label="Add to cart" data-i18n-aria-label="fan.cart"><i data-lucide="shopping-cart" class="ztor-icon"></i></button></div>
           </article>
           <article class="fan-store__card">
             <div class="fan-store__thumb"><i data-lucide="disc-3" class="ztor-icon"></i></div>
-            <div class="fan-store__card-title">Coastline acetate · 1/50</div>
+            <div class="fan-store__card-title">${FS('Kowloon After Dark vinyl · 1/50')}</div>
             <div class="fan-store__card-foot"><span class="fan-store__card-price">$180</span>
               <button class="fan-store__cart" type="button" aria-label="Add to cart" data-i18n-aria-label="fan.cart"><i data-lucide="shopping-cart" class="ztor-icon"></i></button></div>
           </article>
           <article class="fan-store__card">
             <div class="fan-store__thumb"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="fan-store__card-title">Coastline hoodie</div>
+            <div class="fan-store__card-title">${FS('Kowloon After Dark hoodie')}</div>
             <div class="fan-store__card-foot"><span class="fan-store__card-price">$58</span>
               <button class="fan-store__cart" type="button" aria-label="Add to cart" data-i18n-aria-label="fan.cart"><i data-lucide="shopping-cart" class="ztor-icon"></i></button></div>
           </article>
@@ -151,7 +166,7 @@ window.ZTOR_PARTIALS.fanStore = String.raw`
 
         <section class="fan-store__about">
           <h4 class="fan-store__section-title" data-i18n="fan.about.title">About</h4>
-          <p class="fan-store__about-text" data-i18n="fan.about.text">Started uploading demos in 2019; the Coastline EP grew into a community of twelve thousand fans. Merch, vinyl and digital drops all ship from the studio — every order funds the next record.</p>
+          <p class="fan-store__about-text" data-i18n="fan.about.text">Started uploading demos in 2019; the Kowloon After Dark OST grew into a community of twelve thousand fans. Merch, vinyl and digital drops all ship from the studio — every order funds the next record.</p>
           <a class="fan-store__link" href="#" data-i18n="fan.about.more">Read more →</a>
         </section>
 
@@ -168,3 +183,5 @@ window.ZTOR_PARTIALS.fanStore = String.raw`
     </div>
   </div>
 </div>`;
+
+})();
