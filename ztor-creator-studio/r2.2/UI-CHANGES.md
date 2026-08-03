@@ -4,6 +4,14 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-03 · 收尾：文件治理 ＋ 最後一個漏網的早期名稱（D infra）
+
+使用者：「還有什麼沒做完都做完」，並裁示 default persona 展示周湯豪不受限（`dash.*` 建 default 值那筆待辦因此關閉）。
+
+- **【D】** check 7（token 真實性）由 WARN 轉 **PASS**，四項都是文件層的誤判或過期敘述：<br>① `--destructive-hover` 是「建議下一輪新增」的**提案**，不是既有 token，補標「尚未定義、待採用」；<br>② `--active` **根本不是 token**——`ds-components/radio-card.css` 註解裡的「下方 `--active::after`」被檢查的 `--x:` 規則誤判成定義，補上 class 全名 `.radio-card--active::after`；`design-system.md` 另有 3 處把 BEM modifier 寫成裸 `--active`，一併改回 `.chip--active`／`.radio-card--active`／`.segmented--active`；<br>③ `--control-h-lg`／`--control-h-xl` 的「待採用」標記只寫在 md、DS 頁沒有，補上；<br>④ `--sidebar-active` 在 DS 頁有 **3 處過期敘述**——仍寫「導覽已選用中性灰」，但 Q8-A（2026-07-27）已反轉成品牌橘 tint。改寫敘述並標註該 token 已無人引用。
+- **【D】** 補掉早期假資料的最後一個漏網名稱 **Goldfish Patterns**（2026-06-18 初始化批，3 處，在粉絲詳情的時間軸／消費／支持項目）。base 改成 `深水埗的月光`，另補 nick 覆蓋為 `LOVE RAGE HOPE`。上一輪漏掉的原因是關鍵字清單沒收錄它——這次改用「掃 i18n zh 值裡的英文專有名詞」反查，比列舉關鍵字可靠。
+- **【D】** **仍為 WARN、需使用者裁決**：check 5（46 處存量裸值，受棘輪管制、只准降不准升）、check 11（`cookie-banner.css`／`footer.css` 零消費，退場須依巡檢流程經使用者確認）。
+
 ## 2026-08-03 · 表格表頭與首列的間距收小（B 反饋）
 
 - **【B】** `.ztor-table thead th` 下緣內距 `--sp-16` → `--sp-8`。原本表頭下緣 16 ＋ 首列上緣 16 ＝ **32px**，在 2026-07-31 去掉表頭底色與下框線之後，那段空白讀起來像斷開的兩塊；收成 8 之後總距離 **24px**，表頭仍站得住、但明顯歸屬於下面那份清單。上緣維持 16，表頭與卡片標題之間的呼吸不變。全站 `.ztor-table` 一致，不另開變體。
