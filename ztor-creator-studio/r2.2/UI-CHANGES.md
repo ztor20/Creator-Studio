@@ -13,6 +13,8 @@
 - **【D】** **程式註解一律保留原文**。那些是當初拆狀態模型時的歷史說明（例如「`live` 被當成『募資進行中』」），改掉會讓紀錄失真、也看不懂當初在解什麼問題。只有會出現在畫面上的字串才換。
 - **【D】** 驗收：12 支頁面用 Playwright 逐頁掃「募資／集資」，**零命中**。
 
+- **【D】** *（同日修正，使用者回報「這一整頁都不能點了」）* 上面那次改名的英文對照表有一條 `Funding → Co-creation` **沒有限定邊界**，把 `create-project.html` 裡的 JS 函式名 `renderFundingOverview` 也改成 `renderCo-creationOverview`——名稱裡的 `-` 讓整個 `<script>` 解析失敗（`Unexpected token '-'`），該頁所有互動因此全部失效。已還原 6 處識別字。<br>**教訓**：對程式檔做整串取代時，英文詞必須限定在「顯示字串」內，或至少排除前後緊鄰英數字的情況（camelCase 接點）。這次補上的驗收方式是**逐頁抽出 inline `<script>` 跑 `node --check`**，比肉眼看可靠；9 支建立／編輯類頁面已全數通過、無 JS 錯誤。
+
 ## 2026-08-03 · 刪除鈕統一成實色紅底（B 反饋／使用者裁決，STYLE-DECISIONS Q37）
 
 - **【B】** 卡片內的移除／刪除動作原本兩種做法並存：多數頁用 `btn--ghost btn--destructive`（透明底紅字），套組編輯器與媒體庫用實色紅底。使用者裁示「統一用紅色的」→ 全部拿掉 `btn--ghost`，一律實色 `--destructive` 底＋白字。<br>改動 5 處：`create-auction`（刪除拍賣）、`create-product`（刪除商品＋刪除規格選項）、`edit-event`（刪除活動）、`manage-ip`（刪除 IP）。`bundle-editor.js`／`media-vault.js` 本來就是實色，未動。<br>理由記在 Q37：刪除是不可逆動作，ghost 文字鈕在卡片裡跟一般次要動作長得太像，看不出後果的分量。Playwright 實測 `rgb(231,0,11)` 底＋白字。

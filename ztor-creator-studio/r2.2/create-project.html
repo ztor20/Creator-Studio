@@ -931,7 +931,7 @@
        兩個共創步驟用同一個形狀，不然它們會讀起來像兩個不同的產品。 */
     const body = document.querySelector('.wizard__body');
     if (body) body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
-    if (cur === 'funding') renderCo-creationOverview();
+    if (cur === 'funding') renderFundingOverview();
     /* Continue 的 disabled 只由 Bundles 那步管；離開這步一定要放開，
        否則其他步驟會被上一步的驗證狀態卡住。 */
     const nextBtn = document.querySelector('[data-action=next]');
@@ -1040,7 +1040,7 @@
     return sum;
   }
 
-  function renderCo-creationOverview() {
+  function renderFundingOverview() {
     if (!document.getElementById('fd-overview')) return;
     const goal  = num('fd-goal');
     const days  = num('fd-length');
@@ -1100,16 +1100,16 @@
       bar.appendChild(seg);
     });
     /* 預算總和只算一次、兩處共用，避免總覽自己再加一遍而漂移。 */
-    renderCo-creationOverview();
+    renderFundingOverview();
   }
   document.getElementById('budget-rows').addEventListener('input', recalcBudget);
   /* input（非 change）＝邊打邊更新，這才是 realtime。 */
   ['fd-goal', 'fd-length', 'fd-pool', 'fd-slots'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', renderCo-creationOverview);
+    if (el) el.addEventListener('input', renderFundingOverview);
   });
   /* 語言切換時日期格式與「天」都要跟著換 */
-  new MutationObserver(() => renderCo-creationOverview())
+  new MutationObserver(() => renderFundingOverview())
     .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   document.querySelectorAll('[data-budget-remove]').forEach(b => b.addEventListener('click', e => {
     e.preventDefault(); b.closest('[data-budget-row]').remove(); recalcBudget();
@@ -1244,7 +1244,7 @@
        · 目標金額／支持者名額 → #fd-perslot（每名額單價）→ 每張套組卡的價格
        · 支持者名額 → 名額池 → auto 模式推導出的可賣份數
      BD.refresh() 是就地重算（不重畫、不搶焦點），所以在共創步驟一邊打字一邊更新是安全的。
-     監聽器註冊順序有意義：renderCo-creationOverview 先掛（見上方），它負責把新的每名額單價
+     監聽器註冊順序有意義：renderFundingOverview 先掛（見上方），它負責把新的每名額單價
      寫進 #fd-perslot，模組讀到的才是新值。 */
   ['fd-goal', 'fd-slots'].forEach(id => {
     const el = document.getElementById(id);

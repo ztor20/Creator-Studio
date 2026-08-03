@@ -324,7 +324,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 110 支；主 class 前 5 個）
+## 元件（ds-components/，共 108 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -348,7 +348,6 @@
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
 - `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group__body ｜ control-row.css · 有外框的「左文字右控件」獨立列
-- `cookie-banner.css` — .ztor-cookie-banner, .ztor-cookie-banner__copy, .ztor-cookie-banner__actions, .ztor-cookie-banner__settings ｜ Ztor — Cookie Banner
 - `data-list.css` — .data-list, .data-list__row, .data-list__row--child, .data-list__row-main, .data-list__icon ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
 - `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-grid--norail, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
@@ -367,7 +366,6 @@
 - `field-system.css` — .field, .field__label, .field__hint, .field__req, .field-readout ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
-- `footer.css` — .ztor-footer, .ztor-footer__inner, .ztor-footer__brand, .ztor-footer__wordmark, .ztor-footer__tagline ｜ Ztor — Footer
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
 - `form-section.css` — .form-section, .form-section--outlined, .form-section__head, .form-section__head--actions, .form-section__head-actions ｜ form-section.css · 無卡片表單區段（建立流程共用骨架）
 - `funding-panel.css` — .funding-panel, .funding-panel__amount-row, .funding-panel__amount, .funding-panel__backers, .funding-panel__goal ｜ Funding panel · 募資概況面板（2026-07-24 promote）
