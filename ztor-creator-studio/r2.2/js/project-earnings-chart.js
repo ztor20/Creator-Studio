@@ -263,7 +263,7 @@
      用「這筆錢是誰給的」當維度，明細才回答得了「要再多賺就去找誰」。 */
   var TASTEMAKERS = ['Aria Lam', 'Kenji Watanabe', 'Priya Nair', 'Marco Bellini', 'Sofia Reyes',
                  'Daniel Okafor', 'Hana Kim', 'Tomas Vidal'];
-  var LICENSEES = ['Studio Yiu · Taiwan', 'Neon Tide Media · Hong Kong', 'Kanata Films · Japan',
+  var LICENSEES = ['Yiu Pictures · Taiwan', 'Dragon Tiger Gate key art Media · Hong Kong', 'Kanata Films · Japan',
                    'Northbound · Singapore', 'Rojak Pictures · Malaysia', 'Halcyon · Worldwide'];
 
   function platformsFor() {

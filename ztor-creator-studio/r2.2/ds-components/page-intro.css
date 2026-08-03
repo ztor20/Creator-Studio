@@ -27,6 +27,61 @@
 }
 .page-crumb a { color: inherit; text-decoration: none; }
 .page-crumb a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* 返回上一層（2026-08-02 使用者裁示，版型參考 Lovable：圓鈕在麵包屑左側、同一列）。
+   ── 為什麼只有詳情頁需要它 ────────────────────────────────
+   詳情頁有兩種開法。從清單點一列會走 detail-sheet 覆蓋層（iframe ?embed=1），
+   那層頂部自己就有「← 回到 XXX」；直接開網址（書籤、分享連結、搜尋結果）則是
+   整頁滿版，除了瀏覽器上一頁沒有任何返回入口。這顆補的是後者，所以在覆蓋層裡
+   要收起來——同一個畫面出現兩顆返回鈕，使用者得先分辨哪顆退到哪裡。
+   隱藏規則寫在 shared.css 的 html[data-embed] 區塊，跟其他覆蓋層收納規則同處。
+
+   ── 為什麼是固定連結而不是 history.back() ─────────────────
+   href 指向麵包屑的上一層（取貨詳情 → pickup.html）。用 history.back() 的話，
+   從外部連結第一次進站沒有上一頁可退，按鈕會變成沒反應；固定連結永遠成立，
+   而且是真的 <a>，cmd-click 開新分頁、右鍵複製網址都照常。
+
+   ── 為什麼 .page-crumb 只在有返回鈕時才變 flex ────────────
+   .page-crumb 有 30 個消費頁，其中 20 頁沒有返回鈕。整支改成 flex 會讓那 20 頁
+   的每個 <a> 與 / 分隔都變成 flex item，行為改變卻換不到任何好處，所以用
+   .page-crumb--back 這個修飾子把版面改動關在需要的那 10 頁裡。
+   分隔符的 6px 間距寫在各頁 markup 的 inline style 上，flex 情境照樣生效。 */
+.page-crumb--back {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* 只留位置，外觀全部來自 .btn.btn--icon-circle.btn--sm——照 button.css 的分工
+   註解「消費者只保留 layout hook，LOOK 由共用 class 提供」。 */
+/* 右間距 2026-08-02 由 10px 加到 16px（使用者裁示「要和後面的麵包屑有更多一點間距」）。
+   拿掉底色之後，圓鈕的邊界看不見了，量到的 10px 是從 28px 方框的邊算起、
+   眼睛卻是從箭頭的筆畫算起——中間那 6px 的留白讀不出來，兩者就黏在一起。 */
+.page-crumb__back {
+  flex: 0 0 auto;
+  margin-right: var(--sp-16);
+}
+/* 退出麵包屑的連結樣式。上面那兩條 `.page-crumb a`（0,1,1）比 `.btn--icon-circle`
+   （0,1,0）強，會把返回鈕一起吃掉：字符被染成麵包屑的品牌橘、hover 還會在 svg
+   底下畫一條底線。這顆是控制項不是麵包屑的一節——照站上其他 icon 圓鈕的配色
+   （--muted 底 × --muted-foreground 字符，hover 轉 --foreground），不跟著橘。
+   選擇器用兩個 class（0,2,0）才蓋得過 `.page-crumb a`。 */
+/* 無框無底（2026-08-02 使用者裁示「這個按鈕要用沒有外匡的」）。
+   `.btn--icon-circle` 自帶 --muted 填色，那是為 composer 那種「坐在卡片裡」的
+   位置調的。麵包屑這一列直接坐在頁面底上，亮色模式的 --muted(#FAFAFA) 對上白色
+   頁面幾乎同色——只拿掉外框、留著填色的話，會變成暗色模式看得到一顆灰圓、亮色
+   模式整顆消失只剩箭頭浮著，同一顆鈕在兩個主題長不一樣。
+   所以填色跟著一起收掉：靜止態只有箭頭，圓形只在 hover 時由 `.btn--icon-circle`
+   的 --accent 底色現形。這也讓它跟 wizard 頂列的 .wizard__back（裸箭頭）同一種
+   做法，收掉 STYLE-DECISIONS Q43 原本的分歧。 */
+.page-crumb .page-crumb__back {
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+}
+.page-crumb .page-crumb__back:hover {
+  color: var(--foreground);
+  text-decoration: none;
+}
 /* 2026-07-28（L 裁示「Satoshi 輕一點好看」）：頁面 H1 是全站唯一夠大、能撐得住
    Light 的字級（44px）。Satoshi 的字面本來就開闊，字級越大越不需要重量——44px 的
    300 讀起來仍然清楚，但把 Regular 那點厚重感拿掉了。小字級不跟進：13px 的 300

@@ -18,7 +18,7 @@
 //   img        e-shop 列表縮圖檔名（在 images/products/ 下）；供 persona 就地改列用
 //
 // ── Persona（2026-07-24）──────────────────────────────────────────
-// cheat code「User」切換改 localStorage 'ztor.persona'：default＝原批（Coastline 巡迴
+// cheat code「User」切換改 localStorage 'ztor.persona'：default＝原批（九龍夜行 巡迴
 // 世界觀）、nick＝周湯豪 NICKTHEREAL、userB＝佔位沿用 default。兩個 persona 用「相同的
 // 9 個商品 id」，所以 e-shop 列表既有的 ?id=<key> 連結與 product-detail 都自動對上。
 // product-detail 依當前 persona 讀對應商品；e-shop 列表的商品名／圖是寫死在 HTML（非
@@ -33,17 +33,17 @@
     return 'default';
   }
 
-  /* ── default：原有 9 商品（Coastline 巡迴）───────────────────── */
+  /* ── default：原有 9 商品（九龍夜行 巡迴）───────────────────── */
   var P_DEFAULT = {
     zine: {
-      name: 'Tour zine vol. 02', img: 'tour-zine-vol-02.webp',
+      name: '海上霸姬 幕後寫真誌 vol.02', img: 'tour-zine-vol-02.webp',
       sub: '32-page photo zine documenting the east-coast tour. Letterpress cover.',
       cat: 'physical', subKey: 'zine', variant: 'single', edition: 'unlimited',
       status: 'low', price: '24.00', cost: '9.00', stock: '3', threshold: '4',
       catLabel: 'Physical Merchandise', subLabel: 'Books · 書籍'
     },
     tee: {
-      name: 'Coastline tee', img: 'coastline-tee.webp',
+      name: '九龍夜行 紀念 T 恤', img: 'coastline-tee.webp',
       sub: 'Heavyweight cotton tee — east-coast tour print. 4 variants.',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '32.00', cost: '11.00', stock: '42', threshold: '6',
@@ -58,7 +58,7 @@
       ]
     },
     hoodie: {
-      name: 'Coastline hoodie', img: 'coastline-hoodie.webp',
+      name: '九龍夜行 連帽外套', img: 'coastline-hoodie.webp',
       sub: 'Brushed-fleece hoodie — embroidered wave mark. 6 variants.',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'low', price: '58.00', cost: '22.00', stock: '48', threshold: '8',
@@ -79,7 +79,7 @@
       ]
     },
     acetate: {
-      name: 'Coastline acetate · numbered 1/50', img: 'coastline-acetate.webp',
+      name: '九龍夜行 原聲黑膠 · 編號 1/50', img: 'coastline-acetate.webp',
       sub: 'Hand-numbered acetate LP — limited run of 50, signed. Collect on-site at the signing session.',
       cat: 'physical', subKey: 'collectible', variant: 'single', edition: 'limited',
       status: 'live', price: '120.00', cost: '38.00', stock: '29', cap: '50', sold: '21', threshold: '5',
@@ -87,42 +87,42 @@
       catLabel: 'Physical Merchandise', subLabel: 'Collectibles · 收藏品'
     },
     pin: {
-      name: 'Enamel pin · wave', img: 'enamel-pin-wave.webp',
+      name: '霓虹招牌 琺瑯徽章', img: 'enamel-pin-wave.webp',
       sub: 'Hard-enamel pin, gold plating. Wave mark.',
       cat: 'physical', subKey: 'merch', variant: 'single', edition: 'unlimited',
       status: 'soldout', price: '12.00', cost: '3.50', stock: '0', threshold: '10',
       catLabel: 'Physical Merchandise', subLabel: 'Merch · 商品'
     },
     song: {
-      name: 'Coastline · single', img: 'coastline-single.webp',
+      name: '九龍夜行 主題單曲', img: 'coastline-single.webp',
       sub: 'Lead single — instant download after purchase.',
       cat: 'digital', subKey: 'song', content: 'song', variant: 'single', edition: 'unlimited',
       status: 'live', price: '1.50', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Song · 音樂單曲'
     },
     movie: {
-      name: 'Tour documentary', img: 'tour-documentary.webp',
+      name: '海上霸姬 幕後紀錄', img: 'tour-documentary.webp',
       sub: 'Feature-length tour documentary — stream / download.',
       cat: 'digital', subKey: 'movie', content: 'video', variant: 'single', edition: 'unlimited',
       status: 'live', price: '9.00', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Movie · 電影'
     },
     album: {
-      name: 'Coastline EP — digital download', img: 'coastline-ep.webp',
+      name: '九龍夜行 原聲帶 數位下載', img: 'coastline-ep.webp',
       sub: 'Five-track EP — full download with lyrics.',
       cat: 'digital', subKey: 'album', content: 'album', variant: 'single', edition: 'unlimited',
       status: 'live', price: '12.00', cost: '', stock: '∞',
       catLabel: 'Digital Merchandise', subLabel: 'Album · 音樂專輯',
       albumSeed: [
-        { name: 'Coastline (intro)', meta: 'coastline-intro.mp3 · 3.2 MB · Apr 2026', lyrics: false },
-        { name: 'Tidewater', meta: 'tidewater.mp3 · 8.1 MB', lyrics: true },
-        { name: 'Harbor Lights', meta: 'harbor-lights.mp3 · 7.4 MB', lyrics: true },
-        { name: 'Undertow', meta: 'undertow.mp3 · 6.9 MB', lyrics: false },
-        { name: 'Coastline (reprise)', meta: 'coastline-reprise.mp3 · 4.0 MB', lyrics: false }
+        { name: '夜行序曲', meta: 'kowloon-intro.mp3 · 3.2 MB · Apr 2026', lyrics: false },
+        { name: '霓虹街口', meta: 'neon-crossing.mp3 · 8.1 MB', lyrics: true },
+        { name: '天台的風', meta: 'rooftop-wind.mp3 · 7.4 MB', lyrics: true },
+        { name: '暗流', meta: 'undertow.mp3 · 6.9 MB', lyrics: false },
+        { name: '夜行 重奏', meta: 'kowloon-reprise.mp3 · 4.0 MB', lyrics: false }
       ]
     },
     membership: {
-      name: 'Inner circle · membership', img: 'inner-circle-membership.webp',
+      name: '林家維 官方後援會', img: 'inner-circle-membership.webp',
       sub: 'Recurring membership card — perks, early access, community.',
       cat: 'digital', subKey: 'membership', content: 'membership', variant: 'single', edition: 'unlimited',
       status: 'live', price: '8.00', cost: '', stock: '∞',
@@ -132,7 +132,7 @@
     /* cap／shoes（2026-07-25 新增）：為「服飾四件組」的成員而開的兩個新商品 id。
        default persona 也要有對應資料，否則這兩列在 default 下點編輯會查不到商品。 */
     cap: {
-      name: 'Logo cap · six-panel', img: 'cap.webp',
+      name: '九龍夜行 六片帽', img: 'cap.webp',
       sub: 'Embroidered six-panel cap with adjustable strap. Four colours.',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '26.00', cost: '9.00', stock: '98', threshold: '12',
@@ -146,8 +146,8 @@
       ]
     },
     shoes: {
-      name: 'Canvas low-top', img: 'nick-nike.jpg',
-      sub: 'Canvas low-top sneaker, rubber cup sole. Four sizes.',
+      name: '九龍夜行 帆布低筒鞋', img: 'nick-nike-01.jpg',
+      sub: '九龍夜行 帆布低筒鞋 sneaker, rubber cup sole. Four sizes.',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '64.00', cost: '27.00', stock: '72', threshold: '10',
       catLabel: 'Physical Merchandise', subLabel: 'Apparel · 服飾',
@@ -232,7 +232,7 @@
     /* 鞋子單品（2026-07-25 使用者指定）：「選物四件組」成員之一，單獨也販售中。
        圖＝nick-nike.jpg（祝你好命聯名球鞋實拍，紅包主題），由褲子那筆讓出、放回鞋款本身。 */
     shoes: {
-      name: '祝你好命 紅包主題低筒球鞋', img: 'nick-nike.jpg',
+      name: '祝你好命 紅包主題低筒球鞋', img: 'nick-nike-01.jpg',
       sub: '周湯豪主理品牌「祝你好命」紅包主題低筒球鞋，紅／白／螢光綠配色，附品牌鞋盒。',
       cat: 'physical', subKey: 'apparel', variant: 'multiple', edition: 'unlimited',
       status: 'live', price: '78.00', cost: '32.00', stock: '86', threshold: '10',
@@ -355,7 +355,7 @@
 
   /* ── 組合包與拍賣（2026-07-25）──────────────────────────────────
      e-shop 的「組合」與「競標」兩個分頁，列是寫死在 e-shop.html 的（沒有 ?id= 連結可查），
-     因此 persona 切換時原本不會跟著換，會露出 Coastline 的名字。這裡用列的 data-name
+     因此 persona 切換時原本不會跟著換，會露出 九龍夜行 的名字。這裡用列的 data-name
      （內部查表鍵、不會被 i18n 覆寫）當 key，替換可見的名稱／圖／成員／價格／庫存。
      組合包結構參考公開端 shop-item.html?id=fan-selection-set：一組多件、每件各自選規格、
      組合價低於單買加總。⚠ 圖沿用既有 images/products/ 檔，之後可替換。 */
@@ -363,7 +363,7 @@
     /* 2026-07-25 使用者指定：改成公開端「影迷選物四件組」（shop-item.html?id=fan-selection-set）
        的同型組合——Tee／帽／褲／鞋各自挑尺寸顏色，組合價低於單買加總（206→178，省 $28）。
        四件在 e-shop 都是可單買的獨立商品（cap／shoes／tee／pin，狀態皆販售中）。 */
-    'Coastline starter pack': {
+    '九龍夜行 入門組合': {
       id: 'wish-you-good-life-four-piece',
       name: '『祝你好命』選物四件組', img: 'set-outfit-model.webp',
       description: '白 Tee、刺繡 Logo 老帽、束口工裝褲與低筒球鞋，以紅白黑配色組成的四件穿搭。',

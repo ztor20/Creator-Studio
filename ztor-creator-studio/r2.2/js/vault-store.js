@@ -60,10 +60,10 @@
       icon: "shopping-bag",
       label: { en: "Bought", zh: "購買過" },
       opts: [
-        { id: "acetate", cap: 21,  w: [1.0, 0.45, 0.12, 0.03], label: { en: "Coastline acetate · numbered 1/50", zh: "Coastline 手編號黑膠 1/50" } },
-        { id: "album",   rate: [0.86, 0.58, 0.24, 0.07],       label: { en: "Coastline EP — digital download",   zh: "Coastline EP 數位下載" } },
-        { id: "hoodie",  rate: [0.54, 0.29, 0.09, 0.02],       label: { en: "Coastline hoodie",                  zh: "Coastline 連帽衫" } },
-        { id: "movie",   rate: [0.71, 0.38, 0.14, 0.04],       label: { en: "Tour documentary",                  zh: "巡迴紀錄片" } }
+        { id: "acetate", cap: 21,  w: [1.0, 0.45, 0.12, 0.03], label: { en: "Kowloon After Dark vinyl · numbered 1/50", zh: "九龍夜行 原聲黑膠 1/50" } },
+        { id: "album",   rate: [0.86, 0.58, 0.24, 0.07],       label: { en: "Kowloon After Dark OST — digital download",   zh: "九龍夜行 原聲帶 數位下載" } },
+        { id: "hoodie",  rate: [0.54, 0.29, 0.09, 0.02],       label: { en: "Kowloon After Dark hoodie",                  zh: "九龍夜行 連帽外套" } },
+        { id: "movie",   rate: [0.71, 0.38, 0.14, 0.04],       label: { en: "Pirate Queen — Behind the Scenes",                  zh: "巡迴紀錄片" } }
       ]
     },
     backed: {
@@ -94,6 +94,32 @@
       ]
     }
   };
+
+  /* ── Persona 標籤覆蓋（2026-08-03）──────────────────────────
+     本檔沒有 persona 分支，內容是 default 世界觀（港片＋九龍夜行周邊），
+     切到周湯豪時，媒體庫「誰進得來」的解鎖條件會顯示別人的作品——使用者
+     在「我的 IP」發現同類問題後要求全面檢查。這裡不重寫資料結構（機率、
+     cap、集合運算都與 id 綁定，動了會改變人數），只在 nick persona 下
+     把**標籤**換成他實際的發行物；id 與權重完全不動，數字不會漂移。
+     attended 那組本來就是他的巡演與見面會，故不需覆蓋。 */
+  var VAULT_PERSONA = (function () {
+    try { return localStorage.getItem("ztor.persona") === "nick" ? "nick" : "default"; }
+    catch (e) { return "default"; }
+  })();
+  var NICK_LABELS = {
+    acetate: { en: "LOVE RAGE HOPE vinyl · numbered 1/500", zh: "LOVE RAGE HOPE 限量黑膠 1/500" },
+    album:   { en: "LOVE RAGE HOPE — digital album",        zh: "LOVE RAGE HOPE — 數位專輯" },
+    hoodie:  { en: "Wish You A Good Life hoodie",           zh: "祝你好命 連帽外套" },
+    movie:   { en: "REALIVE (R2) concert film",             zh: "REALIVE (R2) 演唱會影像" },
+    "shamshuipo-moonlight": { en: "LOVE RAGE HOPE",               zh: "LOVE RAGE HOPE" },
+    "dragon-tiger-gate":    { en: "REALIVE",                      zh: "REALIVE" },
+    "pirate-queen":         { en: "Too Handsome to Stay (MV)",    zh: "帥到分手 MV" }
+  };
+  if (VAULT_PERSONA === "nick") {
+    Object.keys(CATALOGUE).forEach(function (k) {
+      CATALOGUE[k].opts.forEach(function (o) { if (NICK_LABELS[o.id]) o.label = NICK_LABELS[o.id]; });
+    });
+  }
 
   /* ── 生成粉絲母體 ──────────────────────────────────────────
      一次建好，之後所有觸及人數都是對這個陣列做集合運算。 */
@@ -310,9 +336,9 @@
           label: { en: "Gift · for the fan who mailed the tape", zh: "禮物 · 給那位寄卡帶來的粉絲" } }
       ],
       items: [
-        { id: "d1", kind: "audio", name: { en: "Tidewater — rough mix v4", zh: "Tidewater 粗混 v4" }, dur: "4:12", size: "9.8 MB", added: "2026/07/22" },
+        { id: "d1", kind: "audio", name: { en: "Neon Crossing — rough mix v4", zh: "Neon Crossing 粗混 v4" }, dur: "4:12", size: "9.8 MB", added: "2026/07/22" },
         { id: "d2", kind: "audio", name: { en: "Undertow — drum stem", zh: "Undertow 鼓組分軌" }, dur: "5:03", size: "12.1 MB", added: "2026/07/22" },
-        { id: "d3", kind: "audio", name: { en: "Harbor Lights — demo (voice memo)", zh: "Harbor Lights Demo（語音備忘）" }, dur: "1:47", size: "3.4 MB", added: "2026/07/18" },
+        { id: "d3", kind: "audio", name: { en: "Rooftop Wind — demo (voice memo)", zh: "Rooftop Wind Demo（語音備忘）" }, dur: "1:47", size: "3.4 MB", added: "2026/07/18" },
         { id: "d4", kind: "image", name: { en: "Mastering room whiteboard", zh: "母帶室白板" }, img: "images/products/coastline-acetate.webp", size: "2.6 MB", added: "2026/07/16" },
         { id: "d5", kind: "image", name: { en: "EP cover — rejected direction", zh: "EP 封面 未採用版" }, img: "images/products/coastline-ep.webp", size: "3.1 MB", added: "2026/07/11" }
       ]
@@ -328,7 +354,9 @@
       keys: [
         { id: "k-bs-1", code: "KC26-A4VP", uses: 500, claimedN: 137, born: "2026/07/12",
           label: { en: "NFC keychain · east-coast tour", zh: "NFC 鑰匙圈 · 東岸巡迴" },
-          product: { id: "nfc-keychain", name: { en: "Coastline NFC keychain", zh: "Coastline NFC 鑰匙圈" } } },
+          product: { id: "nfc-keychain", name: VAULT_PERSONA === "nick"
+            ? { en: "REALIVE NFC keychain", zh: "REALIVE NFC 鑰匙圈" }
+            : { en: "Kowloon After Dark NFC keychain", zh: "九龍夜行 NFC 鑰匙圈" } } },
         { id: "k-bs-2", code: "TMP9-2QRS", uses: 50, claimedN: 12, born: "2026/06/30", revoked: "2026/07/08",
           label: { en: "Press preview · leaked, revoked", zh: "媒體預覽 · 外流後已撤銷" } }
       ],
@@ -343,7 +371,9 @@
     },
     {
       id: "onset", icon: "video",
-      name: { en: "On set · Moonlight Over Sham Shui Po", zh: "《深水埗的月光》片場" },
+      name: VAULT_PERSONA === "nick"
+        ? { en: "On set · Too Handsome to Stay (MV)", zh: "《帥到分手》MV 拍攝現場" }
+        : { en: "On set · Moonlight Over Sham Shui Po", zh: "《深水埗的月光》片場" },
       note: { en: "Set photography and dailies for the backers of this film.", zh: "本片支持者專屬的片場照與毛片。" },
       rules: [{ items: [{ t: "backed", v: "shamshuipo-moonlight" }] }, { items: [{ t: "tier", v: "inner" }] }],
       items: [

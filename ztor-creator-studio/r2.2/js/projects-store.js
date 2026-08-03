@@ -1,7 +1,7 @@
 /* projects-store.js · 項目 demo 資料的單一來源（2026-07-24）
    ------------------------------------------------------------------
    在此之前，項目清單的資料寫死在 projects.html 的 inline script，而
-   project-detail.html 是一個寫死的 Late Bloom 樣本、用一顆「影視／音樂」
+   project-detail.html 是一個寫死的 Moonlight Over Sham Shui Po 樣本、用一顆「影視／音樂」
    segmented 假裝切換項目類型。使用者指出項目類型本來就有很多種，該由
    「清單上選哪一個項目」決定，不是詳情頁裡自己切——所以資料抽成這支共用
    store，清單與詳情頁同吃一份。
@@ -19,7 +19,7 @@
 
    ── Persona（2026-07-24）──────────────────────────────────────────
    cheat code 的「User」切換會改 localStorage 的 'ztor.persona'：
-     default＝原本這批（Maya Chou 世界觀，港片／華語為主）
+     default＝原本這批（Gary Lin 世界觀，港片／華語為主）
      nick   ＝周湯豪 NICKTHEREAL（嘻哈／R&B 音樂人世界觀，全新一批 demo）
      userB  ＝佔位空殼，沿用 default
    list()/get()/first()/owner() 依當前 persona 回傳對應資料集，projects.html 與
@@ -61,7 +61,7 @@
     return 'default';
   }
 
-  /* ── default：原有資料集（Maya Chou）─────────────────────────── */
+  /* ── default：原有資料集（Gary Lin）─────────────────────────── */
   const PROJECTS_DEFAULT = [
     {
       id: 'f-i-am-speed', created: '2026/03/02', fundFrom: '2026/05/18', name: '我要衝線', nameEn: "Crossing the Line",
@@ -392,7 +392,7 @@
        兩者在中英文下的最佳寫法不同：周湯豪的英文是 Nick Chou（本名），
        NICKTHEREAL 是藝名——跟人打招呼不會叫藝名全稱。
        2026-07-28 使用者裁示：預設帳號的稱謂是 Gary。 */
-    default: { owner: 'Maya Chou', display: { zh: 'Gary', en: 'Gary' }, projects: PROJECTS_DEFAULT },
+    default: { owner: 'Gary Lin', display: { zh: 'Gary', en: 'Gary' }, projects: PROJECTS_DEFAULT },
     nick:    { owner: '周湯豪 NICKTHEREAL', display: { zh: '周湯豪', en: 'Nick Chou' }, projects: PROJECTS_NICK }
     /* userB 未列＝沿用 default（佔位空殼）*/
   };

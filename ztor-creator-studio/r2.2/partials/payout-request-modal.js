@@ -22,23 +22,23 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
             <span class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
             <span class="payout-selected-bank__main">
               <span class="payout-selected-bank__title" data-payout-selected-title>First Commercial Bank · •••3417</span>
-              <span class="payout-selected-bank__meta" data-payout-selected-meta>Maya Chou · USD · default · available</span>
+              <span class="payout-selected-bank__meta" data-payout-selected-meta>Gary Lin · USD · default · available</span>
             </span>
             <span class="badge badge--success"><span class="badge__dot"></span><span data-i18n="payout.selected">Selected</span></span>
           </div>
           <div class="payout-bank-options" aria-label="Available payout banks">
-            <button class="payout-bank-option is-active" type="button" data-bank-option data-bank-title="First Commercial Bank · •••3417" data-bank-meta="Maya Chou · USD · default · available">
+            <button class="payout-bank-option is-active" type="button" data-bank-option data-bank-title="First Commercial Bank · •••3417" data-bank-meta="Gary Lin · USD · default · available">
               <span class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
               <span class="payout-bank-option__main">
                 <span class="payout-bank-option__title">First Commercial Bank · •••3417</span>
-                <span class="payout-bank-option__meta">Maya Chou · USD · default · available</span>
+                <span class="payout-bank-option__meta">Gary Lin · USD · default · available</span>
               </span>
             </button>
-            <button class="payout-bank-option" type="button" data-bank-option data-bank-title="Wise transfer · USD → EUR" data-bank-meta="Maya Chou · EUR · verified">
+            <button class="payout-bank-option" type="button" data-bank-option data-bank-title="Wise transfer · USD → EUR" data-bank-meta="Gary Lin · EUR · verified">
               <span class="payout-bank-card__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
               <span class="payout-bank-option__main">
                 <span class="payout-bank-option__title">Wise transfer · USD → EUR</span>
-                <span class="payout-bank-option__meta">Maya Chou · EUR · verified</span>
+                <span class="payout-bank-option__meta">Gary Lin · EUR · verified</span>
               </span>
             </button>
             <button class="payout-bank-option" type="button" data-payout-add-inline>
@@ -94,7 +94,7 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
         <div class="form-grid">
           <div class="field">
             <div class="field__label" data-i18n="payout.field.holder">Account holder name</div>
-            <input class="input" value="Maya Chou">
+            <input class="input" value="Gary Lin">
           </div>
           <div class="field">
             <div class="field__label" data-i18n="payout.field.bank">Bank name</div>

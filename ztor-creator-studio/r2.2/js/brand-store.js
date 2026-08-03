@@ -141,7 +141,7 @@
      creator. Derivable, and it is the reason a creator runs this at all. */
   var CAMPAIGNS = [
     {
-      id: "cmp-1041", brandId: "starbucks", name: "Coastline tour · coffee run",
+      id: "cmp-1041", brandId: "starbucks", name: "Kowloon After Dark tour · coffee run",
       status: "live", from: "2026-07-01", to: "2026-09-30",
       scans: 1832, chosen: 1104, brandScans: 8420, newFans: 611
     },

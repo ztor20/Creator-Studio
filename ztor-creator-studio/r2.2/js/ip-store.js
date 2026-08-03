@@ -5,7 +5,7 @@
 //
 // ── 為什麼 id 是 row1..row10，而不是可讀 slug ────────────────────
 // my-ip.html 的列內容（名稱／權利／租出數／收益／價格）本來就住在 i18n key
-// `my-ip.row<N>.*`，而且會被 PERSONA_DICT 依人格覆蓋（default＝Coastline 世界觀、
+// `my-ip.row<N>.*`，而且會被 PERSONA_DICT 依人格覆蓋（default＝Kowloon After Dark 世界觀、
 // nick＝周湯豪）。人格一換，同一列的「名字」就換了——所以名字做不了穩定的 id。
 // row 編號是跨人格唯一穩定的接點，故直接拿它當 id：`manage-ip.html?id=row1`。
 // 連帶好處是**顯示內容只有一份來源**：管理頁的名稱／權利／租出數／收益／價格一律
@@ -122,9 +122,9 @@
       price: { fee:{mode:'amount',amount:600},   exclusive:{mode:'amount',amount:3200},  royalty:{mode:'percent',percent:10} },
       proof: 'live-visuals-release.pdf',
       deals: [
-        { who: 'Coastline Tour Co.', term: 'Jan 2026 – Jul 2026', amount: '$600', status: 'active' },
+        { who: 'Kowloon After Dark Tour Co.', term: 'Jan 2026 – Jul 2026', amount: '$600', status: 'active' },
         { who: 'Indie Fest TW', term: 'Feb 2026 – Aug 2026', amount: '$600', status: 'active' },
-        { who: 'Neon Tide Studio', term: 'Mar 2026 – Sep 2026', amount: '$600', status: 'active' },
+        { who: 'Dragon Tiger Gate key-art studio', term: 'Mar 2026 – Sep 2026', amount: '$600', status: 'active' },
         { who: 'Riverside Sessions', term: 'Apr 2026 – Oct 2026', amount: '$600', status: 'ending' }
       ]
     },

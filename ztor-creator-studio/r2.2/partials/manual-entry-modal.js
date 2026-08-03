@@ -19,7 +19,7 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
       <div class="payout-form-grid">
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="manual.f.item">Transaction item</span>
-          <input class="input" placeholder="Neon Tide · live show merch">
+          <input class="input" placeholder="Dragon Tiger Gate key art · live show merch">
         </label>
         <label class="payout-field">
           <span class="payout-field__label" data-i18n="manual.f.category">Revenue category</span>
