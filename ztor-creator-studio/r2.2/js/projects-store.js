@@ -29,26 +29,26 @@
    ------------------------------------------------------------------ */
 /* ── 狀態模型（2026-07-27，L 裁示：重構）──────────────────────────────
    在此之前 status 混用了兩件事，語意剛好相反：`published` 被當成「作品已上線」、
-   `live` 被當成「募資進行中」。L 的定義是：
+   `live` 被當成「共創進行中」。L 的定義是：
 
      live      ＝作品已上線、正在賺錢（終點狀態）
-     published ＝共創／預購「集資中、開放支持」，作品還沒出來
+     published ＝共創／預購「共創中、開放支持」，作品還沒出來
 
    所以這裡拆成兩個欄位，因為「一個項目同時只會有一個狀態」與「共創成功這件事
    永遠留著」兩句話並不衝突——它們講的是不同欄位：
 
      status    ＝現在在哪裡（唯一、單向前進）
                  draft → scheduled → published → succeeded → live
-                 直接發佈（go-live）沒有集資階段：draft → scheduled → live
-                 cancelled ＝死路（集資失敗或創作者中止），取代舊的 failed
-     goalMet   ＝集資是否達標。**達標後活動仍在進行、仍在收單**（常見超募），
+                 直接發佈（go-live）沒有共創階段：draft → scheduled → live
+                 cancelled ＝死路（共創失敗或創作者中止），取代舊的 failed
+     goalMet   ＝共創是否達標。**達標後活動仍在進行、仍在收單**（常見超募），
                  所以它是 published 上的旗標，不是一個會把項目移出 published 的狀態。
      delivered ＝是否已交付給支持者。這是 succeeded 與 live 的唯一分界：
                  達標＋已結束＋未交付 ⇒ succeeded（你還欠支持者東西）
                  已交付            ⇒ live（作品在賺錢；succeeded 變成隨身的徽章）
 
    舊值對照：published(作品已上線)→live · funded→live/succeeded(看 delivered) ·
-             completed→live · failed→cancelled · live(集資中)→published
+             completed→live · failed→cancelled · live(共創中)→published
    ──────────────────────────────────────────────────────────────────── */
 (function () {
   const IMG = 'images/projects/';
@@ -69,7 +69,7 @@
       cover: IMG + 'f-i-am-speed-card.webp', poster: IMG + 'f-i-am-speed.webp',
       desc: { en: 'A farm kid muscles his way into motor racing — adapted from Noboru Rokuda\'s classic manga.', zh: '改編自六田登經典漫畫，農村青年憑勇氣闖入賽車世界。' },
       meta: { en: '$8,420 of $15,000 · 134 backers · 21 days left', zh: '$8,420 / $15,000 · 134 位支持者 · 剩 21 天' },
-      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'Campaign May 18 – Jul 06, 2026', zh: '募資期間 2026/05/18 – 07/06' } },
+      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'Co-creation May 18 – Jul 06, 2026', zh: '共創期間 2026/05/18 – 07/06' } },
       list: { goal: { en: '$8,420 / $15,000', zh: '$8,420 / $15,000' }, left: { en: '21 days left', zh: '剩 21 天' } },
       bar: { pct: 56 }, todo: { en: 'Link IP rental', zh: '綁定 IP 租借' }
     },
@@ -81,7 +81,7 @@
       cover: IMG + 'adia-chan-card.webp', poster: IMG + 'adia-chan.webp',
       desc: { en: 'Cantopop classics re-recorded with a new string arrangement, including live session takes.', zh: '經典重唱 × 全新弦樂編制，收錄 Live Session 現場版本。' },
       meta: { en: '$10,000 funded · 176 backers · Now released', zh: '$10,000 已募足 · 176 位支持者 · 現已上線' },
-      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Jun 01 – Sep 01, 2026 · Released', zh: '募資期間 2026/06/01 – 09/01 · 已上線' } },
+      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Jun 01 – Sep 01, 2026 · Released', zh: '共創期間 2026/06/01 – 09/01 · 已上線' } },
       list: { goal: { en: '$10,000 / $10,000', zh: '$10,000 / $10,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -95,7 +95,7 @@
       cover: IMG + 'mong-kok-shootout-card.webp', poster: IMG + 'shuangyan-zhijian.webp',
       desc: { en: 'A rookie negotiator has 24 hours to close a kidnapping — against the mentor who vanished ten years ago.', zh: '一場 24 小時內必須結案的綁架案，菜鳥談判專家對上失蹤十年的師父。' },
       meta: { en: '$50,000 funded · 612 backers · Now streaming', zh: '$50,000 已募足 · 612 位支持者 · 現已上線' },
-      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Feb 10 – May 10, 2026 · Released', zh: '募資期間 2026/02/10 – 05/10 · 已上線' } },
+      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Feb 10 – May 10, 2026 · Released', zh: '共創期間 2026/02/10 – 05/10 · 已上線' } },
       list: { goal: { en: '$50,000 / $50,000', zh: '$50,000 / $50,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -184,9 +184,9 @@
       id: 'pirate-queen-s2', created: '2026/02/01', fundFrom: '2026/03/01', name: '海上霸姬 第二季', nameEn: "Pirate Queen — Season Two",
       cat: 'series', family: 'film', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'pirate-queen-zheng-yi-sao-card.webp', poster: IMG + 'yangtai-shang-de-huai-nuhai.webp',
-      desc: { en: 'The second season — funded and now in production; backers are waiting on delivery.', zh: '第二季，募資已成立、正在製作中；支持者尚未收到交付。' },
+      desc: { en: 'The second season — goal met and now in production; backers are waiting on delivery.', zh: '第二季，共創已成立、正在製作中；支持者尚未收到交付。' },
       meta: { en: '$80,000 of $80,000 reached · in production', zh: '$80,000 / $80,000 已達標 · 製作中' },
-      fund: { raised: '$80,000', goal: '$80,000', backers: '1,020', pct: 100, left: { en: 'Funding closed', zh: '募資已結束' }, period: { en: 'Campaign Mar 01 – Apr 30, 2026', zh: '募資期間 2026/03/01 – 04/30' } },
+      fund: { raised: '$80,000', goal: '$80,000', backers: '1,020', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Mar 01 – Apr 30, 2026', zh: '共創期間 2026/03/01 – 04/30' } },
       list: { goal: { en: '$80,000 / $80,000', zh: '$80,000 / $80,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
     },
@@ -206,11 +206,11 @@
      圖沿用現有檔（非本人素材），金額／日期為示意值。 */
   /* ── nick：周湯豪 NICKTHEREAL（真實作品，2026-07-24 換上）─────────────
      專輯/單曲/MV/巡演/周邊取自其真實作品年表（見 persona/NICKTHEREAL/資料彙整.md），
-     封面為真實素材（Apple Music／官方售票／媒體，僅供 demo 參考）；金額／募資狀態
+     封面為真實素材（Apple Music／官方售票／媒體，僅供 demo 參考）；金額／共創狀態
      為示意值（原型演示各版面用，非真實銷售）。 */
   /* 2026-07-25 使用者指定：以下五筆為指定要有的樣本，排在最前面（順序照指定）——
-       直接上線三首單曲（已上線）／募資一張專輯（募資中）／MV 募資（已上線）。
-     其中「你說的都對」由直接上線改為募資型，成為 MV（影視家族）＋已上線的版稅樣本。 */
+       直接上線三首單曲（已上線）／共創一張專輯（共創中）／MV 共創（已上線）。
+     其中「你說的都對」由直接上線改為共創型，成為 MV（影視家族）＋已上線的版稅樣本。 */
   const PROJECTS_NICK = [
     /* ── ① 直接上線單曲 ×3（已上線）────────────────────────────── */
     {
@@ -253,9 +253,9 @@
       id: 'nick-lrh', created: '2025/08/01', fundFrom: '2025/09/01', name: 'LOVE RAGE HOPE', nameEn: "LOVE RAGE HOPE",
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'published', goalMet: false, delivered: false,
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
-      desc: { en: 'The fifth studio album — a ten-track rock concept record. Deluxe vinyl and signed edition crowdfunding.', zh: '第五張錄音室專輯，十軌搖滾概念作；豪華黑膠與親簽版集資。' },
+      desc: { en: 'The fifth studio album — a ten-track rock concept record. Deluxe vinyl and signed edition crowdfunding.', zh: '第五張錄音室專輯，十軌搖滾概念作；豪華黑膠與親簽版共創。' },
       meta: { en: '$88,600 of $120,000 · 2,140 backers · 20 days left', zh: '$88,600 / $120,000 · 2,140 位支持者 · 剩 20 天' },
-      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Campaign Sep 01 – Oct 30, 2025', zh: '募資期間 2025/09/01 – 10/30' } },
+      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Co-creation Sep 01 – Oct 30, 2025', zh: '共創期間 2025/09/01 – 10/30' } },
       list: { goal: { en: '$88,600 / $120,000', zh: '$88,600 / $120,000' }, left: { en: '20 days left', zh: '剩 20 天' } },
       bar: { pct: 74 }, todo: { en: 'Approve vinyl test pressing', zh: '確認黑膠試壓樣' }
     },
@@ -268,9 +268,9 @@
       perf: { usd: 7300, audience: 2400000, kind: 'views' },
       /* MV 沿用單曲主視覺（同一首歌），與下方直接發佈版同圖 */
       cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
-      desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '集資拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
+      desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '共創拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
       meta: { en: '$45,000 funded · 980 backers · Now streaming', zh: '$45,000 已募足 · 980 位支持者 · 現已上線' },
-      fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Campaign Jul 01 – Aug 15, 2024 · Released', zh: '募資期間 2024/07/01 – 08/15 · 已上線' } },
+      fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Jul 01 – Aug 15, 2024 · Released', zh: '共創期間 2024/07/01 – 08/15 · 已上線' } },
       list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -299,7 +299,7 @@
       cover: IMG + 'nick-realive.jpg', poster: IMG + 'nick-realive.jpg',
       desc: { en: 'The REALIVE EP tied to the arena tour — five tracks including GET REAL and 走三關.', zh: '與小巨蛋巡演同名的 EP，收錄 GET REAL、走三關等五軌。' },
       meta: { en: '$60,000 of $60,000 reached · delivered', zh: '$60,000 / $60,000 已達標 · 已交付' },
-      fund: { raised: '$60,000', goal: '$60,000', backers: '1,580', pct: 100, left: { en: 'Funding closed', zh: '募資已結束' }, period: { en: 'Campaign Jan 20 – Feb 10, 2023', zh: '募資期間 2023/01/20 – 02/10' } },
+      fund: { raised: '$60,000', goal: '$60,000', backers: '1,580', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Jan 20 – Feb 10, 2023', zh: '共創期間 2023/01/20 – 02/10' } },
       list: { goal: { en: '$60,000 / $60,000', zh: '$60,000 / $60,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
     },
@@ -360,9 +360,9 @@
       id: 'nick-lrh-vinyl', created: '2025/10/01', fundFrom: '2025/11/01', name: 'LOVE RAGE HOPE 黑膠典藏版', nameEn: "LOVE RAGE HOPE — Vinyl Collector’s Edition",
       cat: 'album', family: 'music', icon: 'music', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
-      desc: { en: 'The deluxe vinyl pressing — funded and at the plant; backers have not received it yet.', zh: '豪華黑膠壓片版，募資已成立、正在壓片；支持者尚未收到。' },
+      desc: { en: 'The deluxe vinyl pressing — funded and at the plant; backers have not received it yet.', zh: '豪華黑膠壓片版，共創已成立、正在壓片；支持者尚未收到。' },
       meta: { en: '$52,000 of $50,000 reached · at the pressing plant', zh: '$52,000 / $50,000 已達標 · 壓片中' },
-      fund: { raised: '$52,000', goal: '$50,000', backers: '870', pct: 100, left: { en: 'Funding closed', zh: '募資已結束' }, period: { en: 'Campaign Nov 01 – Dec 15, 2025', zh: '募資期間 2025/11/01 – 12/15' } },
+      fund: { raised: '$52,000', goal: '$50,000', backers: '870', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Nov 01 – Dec 15, 2025', zh: '共創期間 2025/11/01 – 12/15' } },
       list: { goal: { en: '$52,000 / $50,000', zh: '$52,000 / $50,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm vinyl shipping window', zh: '確認黑膠出貨時程' }
     },

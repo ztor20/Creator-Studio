@@ -4,6 +4,27 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-03 · 術語統一成「共創」：募資／集資全數收斂（B 反饋／使用者裁決）
+
+站上原本三種說法並存——機制叫「共創」、項目狀態寫「集資中」、另有 47 個畫面文字寫「募資」。使用者裁示「統一改共創」。
+
+- **【B】** `js/i18n.js`：48 個中文值的「募資」「集資」→「共創」；英文同步 `Crowdfunding`／`Funding`／`Fund it first`／`Crowdfund` → `Co-creation`／`Co-create first`／`Co-create`，對齊站上既有的 `projects.mode.fund` = Co-create / 共創。專案狀態 `projects.state.published` 由 `Published`／`集資中` 改成 `Co-creating`／`共創中`。
+- **【B】** 非 i18n 的畫面文字一併改：`project-detail.html`（FAQ 兩則、專案類型字典、創作者列）、`create-campaign.html`（測試版建立流程，含 `<title>` 與自帶的 `data-fi` 字典）、`create-project.html`、`js/projects-store.js` 的資料值（共創期間／共創已結束）、`projects.html` 的狀態字典。
+- **【D】** **程式註解一律保留原文**。那些是當初拆狀態模型時的歷史說明（例如「`live` 被當成『募資進行中』」），改掉會讓紀錄失真、也看不懂當初在解什麼問題。只有會出現在畫面上的字串才換。
+- **【D】** 驗收：12 支頁面用 Playwright 逐頁掃「募資／集資」，**零命中**。
+
+## 2026-08-03 · 刪除鈕統一成實色紅底（B 反饋／使用者裁決，STYLE-DECISIONS Q37）
+
+- **【B】** 卡片內的移除／刪除動作原本兩種做法並存：多數頁用 `btn--ghost btn--destructive`（透明底紅字），套組編輯器與媒體庫用實色紅底。使用者裁示「統一用紅色的」→ 全部拿掉 `btn--ghost`，一律實色 `--destructive` 底＋白字。<br>改動 5 處：`create-auction`（刪除拍賣）、`create-product`（刪除商品＋刪除規格選項）、`edit-event`（刪除活動）、`manage-ip`（刪除 IP）。`bundle-editor.js`／`media-vault.js` 本來就是實色，未動。<br>理由記在 Q37：刪除是不可逆動作，ghost 文字鈕在卡片裡跟一般次要動作長得太像，看不出後果的分量。Playwright 實測 `rgb(231,0,11)` 底＋白字。
+
+## 2026-08-03 · Cookie banner 與 Footer 兩支元件退場（C 撤除／使用者裁決）
+
+使用者：「沒用就刪」。兩支被 check_ds_sync 檢查 11 連續標記為零消費。
+
+- **【C】** `ds-components/cookie-banner.css`（4 個 class）與 `ds-components/footer.css`（7 個 class）樣式整支移除，檔案保留為**墓碑**（照站上既有慣例，比照 `navigation-menu.css`／`status-axes.css`）。核實過真的沒人用：cookie-banner 只在 DS 頁 demo 出現；footer 只有 `index.html`／`creators.html` 掛了 `<link>`、兩頁都沒有對應 markup。三個 `<link>` 一併移除。
+- **【C】** DS 頁同步撤除：兩個 demo 區塊（119 行）、側欄 TOC 兩條、組成圖的 5 個 chip、總表兩列。`design-system.md` 的元件表兩列改標「已退場」，§4.16 加退場說明並保留原文供追溯。
+- **【D】** 連帶效應：`--border-inverse` 失去唯一消費者（footer slab 的髮絲線），標為待採用。check 11 由 WARN 轉 PASS；目前只剩 check 5（46 處存量裸值，受棘輪管制）一個 WARN。
+
 ## 2026-08-03 · 收尾：文件治理 ＋ 最後一個漏網的早期名稱（D infra）
 
 使用者：「還有什麼沒做完都做完」，並裁示 default persona 展示周湯豪不受限（`dash.*` 建 default 值那筆待辦因此關閉）。
