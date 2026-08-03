@@ -78,7 +78,7 @@
         </div>
       </div>
 
-      <!-- Hero — 參考募資預覽卡（ztor-cocreate-preview）的並排版型：封面在左；右欄由上而下＝
+      <!-- Hero — 參考共創預覽卡（ztor-cocreate-preview）的並排版型：封面在左；右欄由上而下＝
            標題 → 簡介 → 徽章列 → 共創有框卡 → 下一步。操作鈕置於上方麵包屑同列。
            2026-07-24：標題／簡介在框外；創作者脈絡搬進框內最下面（取代原 §7.3 口徑註記）；
            徽章列（狀態／類別／型別）移到簡介下方。 -->
@@ -87,7 +87,7 @@
         <div class="pd-hero__main">
           <div class="pd-hero__badges flex-row" style="gap:8px;flex-wrap:wrap">
             <span class="badge badge--orange" id="pd-badge-status"><span data-i18n="project-detail.badge.live">Live</span></span>
-            <span class="badge badge--info" id="pd-badge-type"><span data-i18n="project-detail.badge.type">Co-create first</span></span>
+            <span class="badge badge--info" id="pd-badge-type"><span data-i18n="project-detail.badge.type">Co-create</span></span>
           </div>
           <div class="pd-hero__head">
             <h1 class="pd-hero__title" id="pd-title">Moonlight Over Sham Shui Po</h1>
@@ -125,12 +125,22 @@
       <!-- Tabs: Total / Content / Public details / Money (spec resource grouping) -->
       <!-- 分頁列＋右側「編輯」切換（2026-07-27 使用者裁示：這兩個分頁預設唯讀，
            要按編輯才能改）。按鈕只在「可編輯」的分頁出現，狀態逐分頁各自記。 -->
+      <!-- ── 分頁出現與否的唯一依據：documents/5.1.2.2-專案詳情.md §2.0 區段適用的項目類型 ──
+           分頁怎麼分組、叫什麼名字是呈現決策（§3），但「這個類型有沒有這個區段」是產品規則，
+           一律照 §2.0 那張表寫進 data-type，不在這裡自行判斷。逐列對照（2026-08-03，D166）：
+             §2.2.5 方案與承諾    — · ✓ ✓  → data-tab="pledges"  data-type="fund preorder"
+             §2.2.10 製作進度     — · ✓ ✓  → data-tab="progress"  data-type="fund preorder"
+             §2.2.3 營利設定      ✓ · — —  → 總覽分頁內的區段 data-type="go-live"
+             §2.3.3 共創監看      — · ✓ —  → data-tab="cofund"    data-type="fund"
+             §2.3.2 淨利池分配    三型都有，但 NFT 分配只有共創 → 分配卡 data-type="fund"
+           §2.0 未涵蓋的兩個站台自訂分頁（表現、版稅）各有自己的條件，見下方 render()。
+           預購的集單進度收在 §2.1 概覽，原型另設「預購進度」分頁屬呈現分組（§2.0 末段允許）。 -->
       <div class="pd-tabbar mt-24">
       <nav class="tabs" role="tablist" data-tabs>
         <button class="tabs__item tabs__item--active" role="tab" data-tab="settings" aria-selected="true" data-i18n="project-detail.tab.settings">Project overview</button>
-        <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges" data-type="fund">Plans &amp; promises</button>
+        <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges" data-type="fund preorder">Plans &amp; promises</button>
         <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
-        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund">Production progress</button>
+        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund preorder">Production progress</button>
         <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings">My earnings</button>
         <!-- 表現 · 緊接在「我的收益」之後（2026-07-28 使用者裁示）。
              收益回答「賺了多少」，表現回答「多少人看／聽、在哪些平台、在哪些地區」；
@@ -240,7 +250,7 @@
             <a class="btn btn--outline mt-16" style="width:100%;justify-content:center" href="my-ip.html" data-i18n="project-detail.ip.link">Go to My IP links</a>
           </section>
 
-          <!-- go-live 專屬：內容已就緒立即上線，無募資／訂購門檻、無退款——只需簡單的上線時程。
+          <!-- go-live 專屬：內容已就緒立即上線，無共創／訂購門檻、無退款——只需簡單的上線時程。
                （fund/preorder 的時程在製作進度分頁；go-live 沒有製作進度，時程收在這裡。）-->
           <section class="card bento--span-12" data-type="go-live">
             <div class="card__head">
@@ -296,7 +306,7 @@
       </div>
 
       <!-- ============ 2 · PLANS & PROMISES（賣什麼、答應什麼、說了什麼）============ -->
-      <div class="tab-panel" data-panel="pledges" data-type="fund">
+      <div class="tab-panel" data-panel="pledges" data-type="fund preorder">
         <div class="bento">
 
           <!-- Support plans (tier definitions) — moved here 2026-07-24; the per-tier
@@ -308,7 +318,8 @@
           <!-- 間距對齊建立流程（create-product）：無框 section 內＝區段抬頭（標題＋灰副標）
                → sp-24 → 逐張套組卡（.form-section--outlined，卡間自帶 sp-24）→ sp-24 → 新增鈕
                → sp-12 → 底部說明。抬頭沿用建立流程的 .form-section__title／__sub 字級。 -->
-          <section class="bento--span-12">
+          <!-- 共創方案（欄位沿用 5.1.2.1 §5.2.2 F24／F25，含分潤名額） -->
+          <section class="bento--span-12" data-type="fund">
             <div class="form-section__head" style="margin-bottom:var(--sp-24)">
               <h3 class="form-section__title" data-i18n="project-detail.tiers.title">Support plans</h3>
               <p class="form-section__sub" data-i18n="pd-bundle.editor-sub">Each bundle is a reward tier backers can buy — it can include a profit-share and multiple items. At least one.</p>
@@ -316,6 +327,28 @@
             <div id="pd-bundle-editor"></div>
             <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add data-i18n="pd-bundle.add">＋ Add bundle</button>
             <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.tiers.note">Plan pricing and slots are a promise to existing backers — changes after publish are still under product review.</div>
+          </section>
+
+          <!-- 預購方案（2026-08-03 D166，欄位沿用 5.1.2.1 §5.3.2 F28／F29，不含分潤名額）。
+               與上面那塊是同一支 js/bundle-editor.js，掛載時 shares:false。 -->
+          <section class="bento--span-12" data-type="preorder">
+            <div class="form-section__head" style="margin-bottom:var(--sp-24)">
+              <h3 class="form-section__title" data-i18n="project-detail.pretiers.title">Pre-order plans</h3>
+              <p class="form-section__sub" data-i18n="pd-bundle.editor-sub-pre">Each plan is one thing a fan can order — the work itself, plus any shop items and perks.</p>
+            </div>
+            <!-- 單位價格＝作品一份的價格，於本區維護（規格 5.1.2.2 §2.2.5、D167）。
+                 每個方案的價格都從它推導，所以它必須跟方案編輯器住在一起——放到別頁去改，
+                 創作者就看不到自己把哪幾個方案的價格改動了。
+                 ⚠ 原型假資料：已發布項目的單價該由哪個欄位／API 提供待上游定義，
+                 這裡先沿用本頁預購 KPI 既有的示範值 $28，重整還原。 -->
+            <div class="field" style="max-width:280px">
+              <label class="field__label" for="pd-pre-unit" data-i18n="pd-bundle.unit">Unit price · USD</label>
+              <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="pd-pre-unit" class="amount-field__input input" value="28"></div>
+              <div class="field__hint" data-i18n="pd-bundle.unit.hint">What one copy of the work costs. Every plan price is worked out from it.</div>
+            </div>
+            <div id="pd-bundle-editor-pre"></div>
+            <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add-pre data-i18n="pd-bundle.add-pre">＋ Add plan</button>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.pretiers.note">Price, contents and quantity limits are a promise to fans who already ordered — how far they may change after publish is still under product review.</div>
           </section>
 
           
@@ -438,7 +471,7 @@
       </div>
 
       <!-- ===================== 4 · PRODUCTION PROGRESS（製作進度）===================== -->
-      <div class="tab-panel" data-panel="progress" data-type="fund">
+      <div class="tab-panel" data-panel="progress" data-type="fund preorder">
         <div class="bento">
 
           <!-- 項目時間 + 里程碑整合成單一時間軸（2026-07-24 使用者裁示）：
@@ -526,7 +559,9 @@
                   </div>
                 </div>
               </div>
-              <div class="data-list__row">
+              <!-- NFT 發行是共創才有的事（分潤名額＝NFT，5.1.2.2 §2.3.2／§2.0）；
+                   預購沒有 NFT 持有人，這則示範里程碑不給預購。預購的時間軸收在「預期交付」。 -->
+              <div class="data-list__row" data-type="fund">
                 <div class="data-list__row-main">
                   <div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div>
                   <div class="data-list__body">
@@ -538,13 +573,22 @@
               </div>
             </div>
             <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-type="fund" data-i18n="project-detail.schedule.autonote">On the funding deadline the project advances on its own — reaching the goal turns it Funded, missing it turns it Failed with an automatic full refund when the switch below is on. Only cancelling is a manual decision.</p>
-            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-type="preorder" data-i18n="project-detail.schedule.autonote-pre">On the pre-order deadline: reaching the minimum order quantity moves it into production, missing it fails the project with an automatic full refund when the switch below is on.</p>
-            <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)">
+            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-type="preorder" data-i18n="project-detail.schedule.autonote-pre">On the pre-order deadline: reaching the minimum units moves it into production, missing it ends the project and refunds every pre-order in full.</p>
+            <!-- 「未達標時自動全額退款」是共創設定的開關（5.1.2.2 §2.2.4），只給共創。
+                 預購的全額退款是 §5.3.1 F26 寫死的承諾，不是創作者可以關掉的選項——
+                 給預購一顆能關的開關等於在畫面上多發明一條產品規則。 -->
+            <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)" data-type="fund">
               <div>
                 <div class="settings-row__label" data-i18n="project-detail.refund.label">Auto full refund if goal missed</div>
                 <div class="settings-row__hint" data-i18n="project-detail.refund.hint">Co-creation-only · refunds follow §7.3.</div>
               </div>
               <div class="switch switch--on"></div>
+            </div>
+            <!-- 5.1.2.2 §2.2.10 的兩個〔產品待確認〕：回報頻率下限與逾期處理、
+                 以及「排定上線日」階段在主規格 §7.2 六態沒有對應狀態。呈現層不自行補規則。 -->
+            <div class="info-banner mt-16" data-type="preorder">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="project-detail.progress.tbd-pre">How often you must report progress, and what happens if a milestone slips, are not defined yet (待確認).</span>
             </div>
           </section>
 
@@ -582,7 +626,7 @@
         </div>
       </div>
 
-      <!-- ===================== 6 · MY EARNINGS（我的收益，僅募資型）===================== -->
+      <!-- ===================== 6 · MY EARNINGS（我的收益，僅共創型）===================== -->
       <!-- 內容提取自 ztor 公開端 my-cocreate-proposal.html「我的收益」分頁，改套 R2.1 設計系統。
            數字為示意、待產品裁決（統一模型探索原型）。 -->
       <div class="tab-panel" data-panel="earnings">
@@ -804,7 +848,7 @@
         </div><!-- /[data-earn-live] -->
       </div>
 
-      <!-- ===================== 7 · CO-CREATION PROGRESS（共創進度，僅募資型）===================== -->
+      <!-- ===================== 7 · CO-CREATION PROGRESS（共創進度，僅共創型）===================== -->
       <!-- 內容提取自 my-cocreate-proposal.html「共創進度」分頁，改套 R2.1 設計系統。數字示意。 -->
       <div class="tab-panel" data-panel="cofund" data-type="fund">
         <div class="bento mt-16">
@@ -904,7 +948,8 @@
       </div>
 
       <!-- ===================== PRE-ORDER PROGRESS（預購進度，僅預購型）===================== -->
-      <!-- 規格 §3.1／§5.3：預購＝提前下單、達最少訂購數再生產、未達量全額退款。單一商品、無多方案。 -->
+      <!-- 規格 §3.1／§5.3：預購＝提前下單、達最少預購數（累計賣出的作品份數）再生產、未達量全額退款。
+           方案在「方案與承諾」分頁維護（D166／D167），這一區只呈現進度與訂單。 -->
       <div class="tab-panel" data-panel="preorder" data-type="preorder">
         <div class="bento mt-16">
           <div class="kpi bento--span-4">
@@ -913,7 +958,7 @@
             <div class="kpi__meta" data-i18n="pd-pre.kpi.orders-meta">Cards verified · charged when the minimum is met</div>
           </div>
           <div class="kpi bento--span-4">
-            <div class="kpi__label" data-i18n="pd-pre.kpi.min">Minimum quantity</div>
+            <div class="kpi__label" data-i18n="pd-pre.kpi.min">Minimum units</div>
             <div class="kpi__value">100</div>
             <div class="kpi__meta" data-i18n="pd-pre.kpi.min-meta">Below the minimum = full refund</div>
           </div>
@@ -942,7 +987,7 @@
               </div>
               <p class="funding-panel__note">
                 <i data-lucide="info" class="ztor-icon ztor-icon--xs"></i>
-                <span data-i18n="pd-pre.progress.note">Cards verified on order · charged only when the minimum quantity is met; below it, all orders are refunded in full.</span>
+                <span data-i18n="pd-pre.progress.note">Cards verified on order · charged only when the minimum units are met; below it, all orders are refunded in full.</span>
               </p>
             </div>
           </section>
@@ -1671,7 +1716,7 @@
     var L = function (zh, en) { return zhUI ? zh : en; };
     var pname = proj ? (zhUI ? proj.name : (proj.nameEn || proj.name)) : '';
 
-    /* ⚠ 原型假資料：分潤名額共用池與每名額單價。建立流程是從募資步驟的「支持者名額」
+    /* ⚠ 原型假資料：分潤名額共用池與每名額單價。建立流程是從共創步驟的「支持者名額」
        與「每名額單價」兩個欄位讀，這頁的專案資料只有目標金額（fund.goal，字串如
        "$120,000"），沒有名額欄位。所以反過來從目標金額推：每名額固定 $200（＝建立
        流程的預設值），名額池 ＝ 目標金額 ÷ 200。這樣示範數字才會跟建立頁同一個量級，
@@ -1728,9 +1773,51 @@
       collapsedByDefault: true,
     });
 
+    /* ── 預購方案（2026-08-03 D166／D167，規格 §5.3.2 F28／F29）──────────────
+       同一支模組、shares:false。與上面共創版的差別都不是這頁決定的：
+       沒有分潤名額欄位、販售上限只有「不限量／限量」、每個方案必含作品（D167）。
+       價格因此是「單位價格 × 含作品份數 ＋ 附屬商品定價加總」再套方案優惠——
+       單價從本區的 #pd-pre-unit 即時讀，作品名稱就是這個項目的名稱。
+       種子的第二張示範「一次給兩份」（雙人票型）的方案，讓份數欄位在畫面上看得到作用。 */
+    var rootPre = document.getElementById('pd-bundle-editor-pre');
+    var BDPre = rootPre ? window.ZtorBundleEditor.mount({
+      list: rootPre,
+      addBtn: '[data-bundle-add-pre]',
+      t: T,
+      shares: false,
+      collapsedByDefault: true,
+      unitPriceInput: '#pd-pre-unit',
+      workName: pname,
+      initial: [
+        {
+          name: L('標準版', 'Standard'),
+          desc: L(pname + '・基本組合', pname + ' · the basic set'),
+          avail: 'unlimited',
+          units: 1,
+          items: some(0, 1),
+        },
+        {
+          name: L('雙人典藏版', 'Two-copy edition'),
+          desc: L(pname + '・一次兩份，限量編號', pname + ' · two copies, numbered'),
+          avail: 'limited', cap: '50', discount: '10',
+          units: 2,
+          items: some(0, 2, 3),
+          perks: [L('親筆簽名卡', 'Hand-signed card')],
+        },
+      ],
+    }) : null;
+
+    /* 單價一改，每張方案卡的作品小計與價格一起重算（規格 §2.2.5：調整後未鎖定方案的
+       價格一併重算）。refresh() 是就地重算，不重畫、不搶焦點。 */
+    var unitEl = document.getElementById('pd-pre-unit');
+    if (unitEl && BDPre) unitEl.addEventListener('input', function () { BDPre.refresh(); });
+
     /* 卡片文案由 JS 產生（不是 data-i18n），所以語言一切就要重畫。
        建立頁靠它自己的 render() 帶到，這頁沒有那層，得自己掛。 */
-    document.addEventListener('i18n:applied', function () { if (BD) BD.render({ blur: true }); });
+    document.addEventListener('i18n:applied', function () {
+      if (BD) BD.render({ blur: true });
+      if (BDPre) BDPre.render({ blur: true });
+    });
   })();
 
   /* 展示內容·直式相簿：hover 的「替換／刪除」由共用元件 partials/upload-tile.js 產生，
@@ -1839,14 +1926,21 @@
     const t = o => (o ? (zh() ? o.zh : o.en) : '');
     const set = (elId, text) => { const el = document.getElementById(elId); if (el && text) el.textContent = text; };
 
-    const TYPE = { 'go-live': { en: 'Go live', zh: '直接上線' }, fund: { en: 'Co-create first', zh: '先共創' }, preorder: { en: 'Pre-order', zh: '預購' } };
+    const TYPE = { 'go-live': { en: 'Direct release', zh: '直接發佈' }, fund: { en: 'Co-create', zh: '共創' }, preorder: { en: 'Presale', zh: '預購' } };
+    /* 狀態字彙與徽章色與 projects.html 的 STATE 表同源（2026-08-04 修）。
+       修的是三個會被使用者看到的錯：succeeded／cancelled 在舊表裡根本沒有，
+       徽章會變成空字串＋殘留橘色；published 與 live 的中文則整個對調了——
+       還在收單的項目被標成「已上線」，真的上線的被標成「進行中」。
+       退役的舊值 funded／completed／failed 一併移除，避免下次又被當成有效狀態。 */
     const STATUS = {
-      draft:     { en: 'Draft', zh: '草稿' },      scheduled: { en: 'Scheduled', zh: '準備中' },
-      live:      { en: 'Live', zh: '進行中' },      funded:    { en: 'Funded', zh: '已達標' },
-      completed: { en: 'Completed', zh: '已完成' }, published:  { en: 'Published', zh: '已上線' },
-      failed:    { en: 'Failed', zh: '失敗' }
+      draft:     { en: 'Draft', zh: '草稿' },          scheduled: { en: 'Scheduled', zh: '準備中' },
+      published: { en: 'Co-creating', zh: '共創中' },  succeeded: { en: 'Succeeded', zh: '已成立' },
+      live:      { en: 'Live', zh: '已上線' },          cancelled: { en: 'Cancelled', zh: '已取消' }
     };
-    const STATUS_TONE = { draft: '', scheduled: 'badge--info', live: 'badge--orange', funded: 'badge--success', completed: 'badge--success', published: 'badge--success', failed: 'badge--error' };
+    const STATUS_TONE = {
+      draft: 'badge--neutral', scheduled: 'badge--info', published: 'badge--info',
+      succeeded: 'badge--success', live: 'badge--orange', cancelled: 'badge--error'
+    };
 
     function render() {
       document.title = p.name + ' · Project detail · Ztor Creator Studio';
@@ -1868,7 +1962,13 @@
         el.textContent = text;
         if (tone !== undefined) el.className = 'badge' + (tone ? ' ' + tone : '');
       };
-      badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
+      /* published 的字樣依類型分流（2026-08-04）：共創叫「共創中」、預購叫「預購中」。
+         共用一個字樣會讓預購項目被標成「共創中」——它連分潤名額都沒有。
+         規格把各模式的對外字樣列為待確認（D166），這裡先照類型講對話，記在 ASSUMPTIONS。 */
+      const statusLabel = (p.status === 'published' && p.type === 'preorder')
+        ? { en: 'Taking orders', zh: '預購中' }
+        : STATUS[p.status];
+      badge('pd-badge-status', t(statusLabel), STATUS_TONE[p.status]);
       badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
       /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：項目 / 分類 / 項目名 */
       set('pd-crumb-cat', t(store.catLabel(p.cat)));
@@ -1879,7 +1979,7 @@
       const galleryCover = document.getElementById('pd-gallery-cover');
       if (galleryCover) { galleryCover.src = p.poster || p.cover; galleryCover.alt = p.name; }
 
-      /* 募資面板：有 fund 資料的項目（先募資）才換數字，其餘沿用示意值 */
+      /* 共創面板：有 fund 資料的項目（共創型）才換數字，其餘沿用示意值 */
       if (p.fund) {
         set('pd-fund-raised', p.fund.raised);
         set('pd-fund-backers', p.fund.backers + (zh() ? ' 人支持' : ' backers'));
@@ -1890,7 +1990,7 @@
         const bar = document.getElementById('pd-fund-bar');
         if (bar) bar.style.width = p.fund.pct + '%';
       } else {
-        /* 非先募資（直接上線／預購）沒有「已募 / 目標 / 進度」的募資語意——改用 meta 摘要，
+        /* 非共創（直接發佈／預購）沒有「已募 / 目標 / 進度」的共創語意——改用 meta 摘要，
            並隱藏共創限定的欄位（目標、進度條、支持人數），避免顯示到 Moonlight Over Sham Shui Po 的預設值。 */
         const parts = t(p.meta).split(' · ');
         set('pd-fund-raised', parts[0] || '—');
@@ -1903,7 +2003,7 @@
       }
 
       /* 收益概況（landing 一行摘要，明細在項目收益分頁）：
-         先共創有 fund 資料就顯示已承諾金額，其餘類型顯示 meta 摘要 */
+         共創有 fund 資料就顯示已承諾金額，其餘類型顯示 meta 摘要 */
       const head = document.getElementById('pd-rev-headline');
       const sub = document.getElementById('pd-rev-sub');
       if (head && sub) {
@@ -1916,7 +2016,7 @@
         }
       }
 
-      /* 版稅＝股份分潤的產物，只有募資型項目有股份，直接上線／預購沒有（2026-07-25 使用者裁決）。
+      /* 版稅＝股份分潤的產物，只有共創型項目有股份，直接發佈／預購沒有（2026-07-25 使用者裁決）。
          因此條件＝共創＋作品已上線；影視與音樂都有，只是面板內容不同（見下方 famKind 切版）。
          資料來源、彙入頻率與分帳規則仍待 CCR-006 裁決。
 
@@ -1929,7 +2029,7 @@
 
       /* ── 表現 Performance（2026-07-28）──────────────────────────────
          條件與版稅不同，而且刻意不同：版稅綁「共創型＋有股份」，表現綁的是
-         「作品出來了沒有」——直接上線（go-live）的 MV 一樣有人看，它沒有股份
+         「作品出來了沒有」——直接發佈（go-live）的 MV 一樣有人看，它沒有股份
          但有觀看數。依 projects-store 的狀態模型，live ＝ 已交付、正在賺錢，
          那正是第一筆觀看數存在的時點。
          家族決定平台清單與量綱；cat 決定要不要有 Top 10（專輯有曲目、影集有
@@ -1974,9 +2074,11 @@
         el.hidden = el.getAttribute('data-royalty-fam') !== royaltyFam;
       });
 
-      /* 項目「類型」維度（直接上線 go-live／募資 fund／預購 preorder）：
-         任何帶 data-type 的元素（tab 按鈕、面板、卡片、時間軸列）只在其列出的類型顯示。
-         規格 §3.1／§5：go-live 無門檻無退款；fund 有共創方案＋共創；preorder 有訂購門檻。 */
+      /* 項目「類型」維度（直接發佈 go-live／共創 fund／預購 preorder）：
+         任何帶 data-type 的元素（tab 按鈕、面板、卡片、時間軸列）只在其列出的類型顯示，
+         值是空白分隔的類型清單。哪個區段給哪個類型，唯一依據是
+         documents/5.1.2.2-專案詳情.md §2.0 的區段適用類型表（逐列對照寫在分頁列上方的註解）；
+         類型定義見 5.1.2.1 §3。本檔不自行判斷區段歸屬。 */
       const ptype = p.type;
       document.querySelectorAll('[data-type]').forEach(el => {
         el.hidden = !el.getAttribute('data-type').split(/\s+/).includes(ptype);

@@ -3443,13 +3443,16 @@
     'cpp.about.h1':         { en: 'Project basics',                   zh: '基本資料' },
     'cpp.about.sub':        { en: 'Tell us the essentials — you can refine everything later.', zh: '填寫必要資訊，細節都可之後再調整。' },
     'cpp.golive.tag':       { en: 'Fastest',                          zh: '最快' },
-    'cpp.golive.title':     { en: 'Go live',                          zh: '直接上線' },
+    /* 三個項目類型的名稱以規格 §3 對照表為準（2026-08-03 正名，D166 同輪）：
+       直接發佈（Direct release）／共創（Co-create）／預購（Presale）。
+       站上舊名「直接上線」「先共創」「開放預購」已停用。 */
+    'cpp.golive.title':     { en: 'Direct release',                   zh: '直接發佈' },
     'cpp.golive.sub':       { en: 'Publish now. Best when the content is finished and you want fans to consume or buy today.', zh: '立即發布。內容已完成、想讓粉絲今天就消費時用。' },
     'cpp.fund.tag':         { en: 'Co-create',                        zh: '群眾共創' },
-    'cpp.fund.title':       { en: 'Co-create first',                    zh: '先共創' },
+    'cpp.fund.title':       { en: 'Co-create',                        zh: '共創' },
     'cpp.fund.sub':         { en: 'Set a goal and deadline. Build support before you commit production budget.', zh: '設目標與截止日。投入製作預算前先建立支持基礎。' },
     'cpp.pre.tag':          { en: 'Pre-order',                        zh: '預購' },
-    'cpp.pre.title':        { en: 'Open pre-orders',                  zh: '開放預購' },
+    'cpp.pre.title':        { en: 'Presale',                          zh: '預購' },
     'cpp.pre.sub':          { en: 'Take orders early. Ship after a threshold is hit, or refund automatically.', zh: '先收訂單。達到門檻後出貨，未達門檻自動退款。' },
     'cpp.s1.title':         { en: 'Project title',                    zh: '項目標題' },
     'cpp.s1.title.ph':      { en: 'A name fans will remember',        zh: '粉絲會記住的名稱' },
@@ -3581,6 +3584,7 @@
     'cpp.s4.edit':          { en: 'Edit →',                           zh: '編輯 →' },
     'cpp.s4.off':           { en: 'Off',                              zh: '關閉' },
     'cpp.s4.na':            { en: 'N/A',                              zh: '不適用' },
+    'cpp.s4.no':            { en: 'No',                               zh: '否' },
 
     /* Wizard shell · status + flow */
     'cpp.saved':            { en: '✓ Draft saved',                    zh: '✓ 草稿已儲存' },
@@ -3590,6 +3594,9 @@
        維持不變（純內部識別，改了要動三處而換不到任何東西）；面向使用者的字改掉。 */
     'cpp.step.tiers':       { en: 'Bundles',                          zh: '回饋套組' },
     'cpp.step.preorder':    { en: 'Pre-order',                        zh: '預購設定' },
+    /* 預購的第 4 步（2026-08-03 D166）。與共創的 cpp.step.tiers（回饋套組）分開命名：
+       同一個能力、兩型的名字在規格裡本來就不同（共創方案／預購方案）。 */
+    'cpp.step.pretiers':    { en: 'Plans',                            zh: '預購方案' },
     'cpp.next.continue':    { en: 'Continue to',                      zh: '繼續：' },
     'cpp.next.publish':     { en: 'Publish project',                  zh: '發布項目' },
     'cpp.s2.story.ok':      { en: '✓ 100 character minimum met',      zh: '✓ 已達 100 字下限' },
@@ -3778,6 +3785,49 @@
     'cpp.bd.price.tag':     { en: 'Bundle price',                     zh: '套組價' },
     'cpp.bd.name':          { en: 'Bundle name',                      zh: '套組名稱' },
     'cpp.bd.name.ph':       { en: 'e.g. Early Bird',                  zh: '例：早鳥支持' },
+
+    /* 預購版文案（2026-08-03 D166 後續裁決）：模組在 shares:false 時優先讀 `.pre`。
+       只覆寫講法不同的幾條——預購賣的是「方案」給「預購者」，共創賣的是「套組」
+       給「支持者」；其餘欄位兩型講法相同，繼續共用上面那組，避免下次改文案分岔。 */
+    'cpp.bd.add.pre':       { en: '+ Add tier',                      zh: '＋ 新增方案' },
+    'cpp.bd.untitled.pre':  { en: 'Untitled tier',                   zh: '未命名方案' },
+    'cpp.bd.collapse.long.pre': { en: 'Collapse this tier',          zh: '收合這個方案' },
+    'cpp.bd.remove.long.pre':   { en: 'Remove this tier',            zh: '移除這個方案' },
+    'cpp.bd.price.tag.pre': { en: 'Tier price',                      zh: '方案價' },
+    'cpp.bd.name.pre':      { en: 'Tier name',                       zh: '方案名稱' },
+    'cpp.bd.discount.pre':  { en: 'Tier discount · %',               zh: '方案優惠 · %' },
+    'cpp.bd.desc.pre':      { en: 'What buyers get, in one line',    zh: '一句話說明預購者拿到什麼' },
+    'cpp.bd.items.pre':     { en: 'Add-on items from your shop',     zh: '附屬商品' },
+    'cpp.bd.n.available.pre': { en: 'orders',                        zh: '筆可售' },
+
+    /* ── 預購方案必含作品（2026-08-03 D167）─────────────────────────────────
+       作品是預購的主體，方案只是「這一筆包含哪些東西」的組合。所以卡片內容區最上方
+       固定一列作品、不可移除，並多一個「含作品份數」欄位（最小 1、預設 1）。 */
+    'cpp.bd.work':          { en: 'The work',                        zh: '作品' },
+    /* 徽章：說明這一列為什麼沒有移除鈕。 */
+    'cpp.bd.work.req':      { en: 'Always included',                 zh: '必含' },
+    'cpp.bd.work.untitled': { en: 'Untitled work',                   zh: '未命名作品' },
+    /* 作品列的次要資訊＝這一列怎麼算成錢，價格區塊的算式才有源頭。 */
+    'cpp.bd.work.meta':     { en: '{per} × {n} {unit} = {sum}',       zh: '{per} × {n} {unit} ＝ {sum}' },
+    'cpp.bd.work.meta.noprice': { en: 'No unit price yet',           zh: '還沒有單位價格' },
+    'cpp.bd.n.copy':        { en: 'copy',                            zh: '份作品' },
+    'cpp.bd.n.copies':      { en: 'copies',                          zh: '份作品' },
+    'cpp.bd.units':         { en: 'Copies of the work included',     zh: '含作品份數' },
+    'cpp.bd.units.hint':    { en: 'A two-person plan takes 2. Minimum 1.',
+                              zh: '一次給兩份的方案（例如雙人票）填 2；最少 1。' },
+    /* 預購的販售上限數的是**訂單筆數**，不是份數——兩者相乘才是可售份數。
+       標籤先把單位講對，說明再把乘出來的結果寫出來（發布前檢查比的就是這個數）。 */
+    'cpp.bd.cap.pre':       { en: 'How many orders can be sold',     zh: '最多可售出幾筆' },
+    'cpp.bd.cap.calc':      { en: '{cap} orders × {n} {unit} = up to {total}',
+                              zh: '{cap} 筆 × 每筆 {n} {unit} ＝ 最多 {total} 份' },
+    'cpp.bd.cap.calc.nocap':{ en: 'Each order includes {n} {unit}.', zh: '每筆訂單含 {n} {unit}' },
+    'cpp.bd.price.calc.work':   { en: '{n} {unit} × {per}',          zh: '{n} {unit} × {per}' },
+    'cpp.bd.price.calc.nounit': { en: '{n} {unit} (unit price not set yet)',
+                              zh: '{n} {unit}（單位價格還沒填）' },
+    /* 預購沒有分潤名額，優惠可以吃到整包，上限恆為 100%——把「最多可折 100%」寫出來
+       是一句用算式包裝的廢話，改說留空會怎樣。 */
+    'cpp.bd.discount.cap.all.pre': { en: 'Taken off the list price. Blank or 0 means no discount.',
+                              zh: '按比例從原價折抵；留空或填 0 就是不打折。' },
     'cpp.bd.price':         { en: 'Price · USD',                      zh: '價格 · USD' },
     /* 2026-07-30 使用者裁決：價格改唯讀、自動計算（名額 × 每名額單價 ＋ 商品定價加總），
        所以標籤不再帶必填星號，改配一行把算式寫成人話的組成說明。
@@ -3840,6 +3890,16 @@
     'cpp.bd.cap.ph':        { en: 'e.g. 40',                          zh: '例：40' },
     'cpp.bd.cap.hint':      { en: 'A hard cap you set. Sales stop here even if the pool still has slots.',
                                    zh: '你自己設的硬上限。就算池子還有名額，賣到這個數就停。' },
+    /* ── 預購模式（bundle-editor 的 shares:false，2026-08-03 D166）──────────────
+       預購沒有分潤名額，所以沒有名額池可以推導份數：販售上限只剩「不限量」與
+       「限量」兩個由創作者自己決定的選項，「自動」那顆不出現。
+       這一組只有兩個鍵——其餘欄位（名稱、說明、商品、權益、優惠、價格）兩型共用
+       同一批 cpp.bd.* 文案，不另寫一套。 */
+    'cpp.bd.qty.unlim':     { en: 'Unlimited',                       zh: '不限量' },
+    /* 2026-08-03 D167：預購方案一定含作品，所以價格算不出來只剩一個原因——單位價格
+       還沒填。舊文案寫「加入商品後自動計價」，會把人指到一個其實不必要的動作。 */
+    'cpp.bd.qty.price.empty': { en: 'Set the unit price and this works itself out.',
+                              zh: '填了單位價格就會自動計價' },
     'cpp.bd.items':         { en: 'Items from your shop',             zh: '商店商品' },
     'cpp.bd.items.hint':    { en: 'Everything here is a real product, so Orders and Pickup can fulfil it.',
                               zh: '這裡的每一項都是真實商品，訂單與取貨才有東西可以履約。' },
@@ -3902,20 +3962,41 @@
 
     /* Step · Pre-order */
     'cpp.po.h1':            { en: 'Set your pre-order terms.',        zh: '設定你的預購條件' },
-    'cpp.po.sub':           { en: 'Price, minimum orders, deadline and expected delivery. This is the promise fans commit to.', zh: '價格、最少訂購數、截止與預期交付。這是粉絲承諾的條件。' },
-    'cpp.po.hint':          { en: "If minimum orders aren't met, every pre-order is refunded.", zh: '未達最少訂購數，每筆預購全額退款。' },
+    /* 2026-08-03 D167：「最少訂購數」正名「最少預購數」，數的是**累計賣出的作品份數**
+       （含 2 份的方案賣出一筆計 2 份），中英一起改；單位價格的定義同時寫清楚——
+       它是作品一份的價格，也是方案價格的計價基礎。 */
+    'cpp.po.sub':           { en: 'Unit price, minimum units, deadline and expected delivery. This is the promise fans commit to.', zh: '單位價格、最少預購數、截止與預期交付。這是粉絲承諾的條件。' },
+    'cpp.po.hint':          { en: "If the minimum isn't met, every pre-order is refunded.", zh: '未達最少預購數，每筆預購全額退款。' },
     'cpp.po.price':         { en: 'Price per unit · USD',             zh: '單位價格 · USD' },
-    'cpp.po.min':           { en: 'Minimum orders',                   zh: '最少訂購數' },
-    'cpp.po.min.hint':      { en: 'Pre-order succeeds when total orders reach this.', zh: '訂購總數達此值時預購成立。' },
+    'cpp.po.price.hint':    { en: 'What one copy of the work costs. Plan prices are worked out from it.',
+                              zh: '作品一份的價格；方案價格由它推導出來。' },
+    'cpp.po.min':           { en: 'Minimum units',                    zh: '最少預購數' },
+    'cpp.po.min.hint':      { en: 'Counted in copies sold — a plan that includes 2 counts as 2.', zh: '以賣出的作品份數累計；含 2 份的方案賣出一筆計 2 份。' },
     'cpp.po.deadline':      { en: 'Pre-order deadline',               zh: '預購截止' },
     'cpp.po.deadline.hint': { en: 'Days open from launch.',           zh: '自發布起開放天數。' },
     'cpp.po.delivery':      { en: 'Expected delivery',                zh: '預期交付' },
     'cpp.po.delivery.hint': { en: 'Should be after the deadline plus production time.', zh: '應晚於截止加製造時間。' },
-    'cpp.po.included':      { en: "What's included",                  zh: '預購內容' },
-    'cpp.po.included.sub':  { en: '· Merch items',                    zh: '· 商品品項' },
-    'cpp.po.included.add':  { en: '+ Add item',                      zh: '＋ 新增項目' },
-    'cpp.po.included.eg1':  { en: 'Vinyl LP · numbered',              zh: '黑膠 LP · 編號' },
-    'cpp.po.included.eg2':  { en: 'Behind-the-scenes zine',                        zh: '巡演雜誌書' },
+    /* 2026-08-03 D166 退場：cpp.po.included / .sub / .add / .eg1 / .eg2 五鍵已刪。
+       原本是預購設定裡一段自由文字的「預購內容（What's included）」，職責改由預購
+       方案步驟承接（§5.3.2 F28／F29）。全庫已無消費者。 */
+
+    /* Step · 預購方案（2026-08-03 D166 新增，規格 §5.3.2 F28／F29）
+       卡片本身的文案吃共用的 cpp.bd.*（同一支編輯器、同一款卡）；這一組只寫這一步
+       自己的抬頭、按鈕與擋關訊息。 */
+    'cpp.bdp.h1':           { en: 'Build your pre-order plans.',      zh: '設計你的預購方案' },
+    'cpp.bdp.sub':          { en: 'A plan is what a fan gets for one order: the work itself, plus any shop items and perks.',
+                              zh: '方案就是下單的粉絲實際拿到的東西：作品本身，再加上附屬商品與額外權益。' },
+    'cpp.bdp.add':          { en: '+ Add plan',                      zh: '＋ 新增方案' },
+    /* 下限＝至少 1 個（承接原「預購內容」必填的效力，見 §4.3 F12 第 4 條；
+       是否比照共創提高到 3 個屬產品待確認，呈現層不自行加碼）。
+       2026-08-03 D167：判準只剩「有名稱」——作品是必含項，任何方案都至少裝著一份作品，
+       舊文案要求「一件商品或一項權益」會把只賣作品本身的方案說成沒填完。 */
+    'cpp.bdp.coach.none':   { en: 'Add at least one plan before you continue — a name is all a plan needs, the work is already in it.',
+                              zh: '繼續之前，至少要有一個方案：填上名稱就算完整，作品本身已經含在裡面。' },
+    'cpp.bdp.coach.ok':     { en: 'Ready — fans can pick a plan and order.',
+                              zh: '可以了，粉絲能選一個方案下單。' },
+    'cpp.bdp.hint.blocked': { en: 'One complete plan is needed to continue.',
+                              zh: '還需要一個完整的方案才能繼續。' },
 
     /* Step · Review · per-type */
     'cpp.rv.fund.title':    { en: 'Funding',                          zh: '共創設定' },
@@ -3926,9 +4007,13 @@
     'cpp.rv.tiers.val':     { en: '3 tiers',                          zh: '3 個方案' },
     'cpp.rv.pre.title':     { en: 'Pre-order',                        zh: '預購設定' },
     'cpp.rv.pre.price':     { en: 'Unit price',                       zh: '單位價格' },
-    'cpp.rv.pre.min':       { en: 'Min orders',                       zh: '最少訂購數' },
+    'cpp.rv.pre.min':       { en: 'Min units',                        zh: '最少預購數' },
     'cpp.rv.pre.deadline':  { en: 'Deadline',                         zh: '預購截止' },
     'cpp.rv.pre.delivery':  { en: 'Expected delivery',                zh: '預期交付' },
+    /* Review 的預購方案摘要（D166：§4.3 F9 的「預購方案——方案數」） */
+    'cpp.rv.pre.tiers':     { en: 'Plans',                            zh: '預購方案' },
+    'cpp.rv.pre.tiers.val': { en: '{n} plans',                        zh: '{n} 個方案' },
+    'cpp.rv.pre.tiers.one': { en: '1 plan',                           zh: '1 個方案' },
     'cpp.rv.delivery':      { en: 'Delivery timeline',                zh: '交付時程' },
     'cpp.rv.delivery.sub':  { en: 'When backers can expect the final product.', zh: '支持者可預期收到成品的時間。' },
     'cpp.rv.delivery.expected':{ en: 'Expected delivery',             zh: '預期交付' },
@@ -3956,6 +4041,16 @@
     'cpp.rv.pf.mid.fund':   { en: 'Co-creation set · budget totals 100%', zh: '共創設定完成 · 預算合計 100%' },
     'cpp.rv.pf.tiers':      { en: '3+ tiers created',                 zh: '已建立 3+ 方案' },
     'cpp.rv.pf.mid.pre':    { en: 'Pre-order set',                    zh: '預購設定已完成' },
+    'cpp.rv.pf.pretiers':   { en: '1+ plan created',                  zh: '已建立 1+ 方案' },
+    /* 2026-08-03 D167 §4.3 F12 第 5 條：所有方案都限量時，各方案「販售上限 × 含作品份數」
+       的總和須 ≥ 最少預購數，否則預購在算術上不可能成立；任一方案不限量則跳過。
+       系統不自動改任何欄位，所以說明只講差多少、可以往哪幾個方向改。 */
+    'cpp.rv.pf.precap':     { en: 'Sellable copies cover the minimum', zh: '可售份數足以成立' },
+    'cpp.rv.pf.precap.note':{ en: 'Every plan is limited: {sold} copies at most, against a minimum of {min}. Raise a limit, add a plan, or lower the minimum.',
+                              zh: '所有方案都限量，加起來最多賣出 {sold} 份，最少預購數是 {min} 份。可以提高販售上限、增加方案，或調降最少預購數。' },
+    'cpp.rv.pf.precap.short': { en: 'Sellable copies fall short of the minimum', zh: '可售份數不足最少預購數' },
+    'cpp.rv.pf.precap.skip':{ en: 'A plan with no limit means there is no ceiling to check.',
+                              zh: '有方案不限量，可售份數沒有上界，不需要檢查。' },
     'cpp.rv.pf.delivery':   { en: 'Delivery timeline clear',          zh: '交付時程清楚' },
     'cpp.rv.pf.ip':         { en: 'IP rental linked (if other IP is used)', zh: 'IP 租借已連結（若使用他人 IP）' },
 
@@ -4581,7 +4676,7 @@
     'project-detail.crumb.projects':{en: 'Projects',zh: '項目'},
     'project-detail.badge.live':{en: 'Live',zh: '進行中'},
     'project-detail.badge.cat':{en: 'Short film',zh: '短片'},
-    'project-detail.badge.type':{en: 'Co-create first',zh: '先共創'},
+    'project-detail.badge.type':{en: 'Co-create',zh: '共創'},
     'project-detail.owner-line':{en: 'By Gary Lin · Created Mar 02, 2026 · Co-creation live since May 18, 2026',zh: '創作者 林家維 · 建立於 2026/03/02 · 共創自 2026/05/18 起進行中'},
     'project-detail.desc':{en: 'A coming-of-age short film about a florist who only blooms at night. Funding the final color grade and a limited NFT collectible for backers.',zh: '一部關於只在夜裡綻放的花藝師的成長短片。共創用於最終調光與給支持者的限量 NFT 收藏品。'},
     'project-detail.meta.raised':{en: 'Raised',zh: '已募'},
@@ -4697,25 +4792,29 @@
     'project-detail.tl.pre-deadline-val':{en: 'Jul 06, 2026 · 9 days left',zh: '2026/07/06 · 剩 9 天'},
     'project-detail.tl.delivery':{en: 'Expected delivery',zh: '預期交付'},
     'project-detail.tl.delivery-val':{en: 'Oct 2026',zh: '2026/10'},
-    'project-detail.schedule.autonote-pre':{en: 'On the pre-order deadline: reaching the minimum order quantity moves it into production, missing it fails the project with an automatic full refund when the switch below is on.',zh: '到預購截止時：達最少訂購數就進入生產，未達量則項目失敗、並在下方開關開啟時自動全額退款。'},
+    /* 2026-08-03 D166：預購的全額退款是 §5.3.1 F26 寫死的承諾，不是可關掉的開關，
+       所以這句不再指向下方那顆共創專用的開關。 */
+    'project-detail.schedule.autonote-pre':{en: 'On the pre-order deadline: reaching the minimum units moves it into production, missing it ends the project and refunds every pre-order in full.',zh: '到預購截止時：達最少預購數就進入生產，未達量則項目終止、每筆預購全額退款。'},
+    /* 5.1.2.2 §2.2.10 的〔產品待確認〕，呈現層照實標，不自行補規則。 */
+    'project-detail.progress.tbd-pre':{en: 'How often you must report progress, and what happens if a milestone slips, are not defined yet (待確認).',zh: '進度多久要回報一次、里程碑延誤怎麼處理，產品尚未定義（待確認）。'},
     'project-detail.golive.title':{en: 'Publish timeline',zh: '上線時間'},
     'project-detail.golive.badge':{en: 'Live',zh: '已上線'},
     'project-detail.golive.published':{en: 'Published live',zh: '正式上線'},
-    'project-detail.golive.note':{en: 'Go-live projects publish immediately — no co-creation or order threshold, no refund. Revenue is shared on earnings after release.',zh: '直接上線的項目立即發布——無共創／訂購門檻、無退款；上線後依營收分潤。'},
+    'project-detail.golive.note':{en: 'Direct-release projects publish immediately — no co-creation or order threshold, no refund. Revenue is shared on earnings after release.',zh: '直接發佈的項目立即發布——無共創／訂購門檻、無退款；上線後依營收分潤。'},
     'project-detail.golive.field.name':{en: 'Name',zh: '名稱'},
     'project-detail.golive.field.date':{en: 'Date',zh: '日期'},
     'pd-pre.kpi.orders':{en: 'Pre-orders',zh: '已下單'},
     'pd-pre.kpi.orders-meta':{en: 'Cards verified · charged when the minimum is met',zh: '卡片已驗證 · 達量才扣款'},
-    'pd-pre.kpi.min':{en: 'Minimum quantity',zh: '最少訂購數'},
+    'pd-pre.kpi.min':{en: 'Minimum units',zh: '最少預購數'},
     'pd-pre.kpi.min-meta':{en: 'Below the minimum = full refund',zh: '未達量＝全額退款'},
     'pd-pre.kpi.deadline':{en: 'Pre-order deadline',zh: '預購截止'},
     'pd-pre.kpi.deadline-meta':{en: '9 days left',zh: '剩 9 天'},
     'pd-pre.progress.title':{en: 'Order progress',zh: '訂購進度'},
     'pd-pre.unit':{en: 'Unit price $28',zh: '單價 $28'},
-    'pd-pre.progress.goal':{en: 'Reaches the minimum to go into production',zh: '達最少訂購數才進入生產'},
+    'pd-pre.progress.goal':{en: 'Reaches the minimum to go into production',zh: '達最少預購數才進入生產'},
     'pd-pre.progress.left':{en: '9 days left',zh: '剩 9 天'},
     'pd-pre.progress.delivery':{en: 'Expected delivery Oct 2026',zh: '預期交付 2026/10'},
-    'pd-pre.progress.note':{en: 'Cards verified on order · charged only when the minimum quantity is met; below it, all orders are refunded in full.',zh: '下單僅驗證卡片 · 達最少訂購數才實際扣款；未達量則全部訂單全額退款。'},
+    'pd-pre.progress.note':{en: 'Cards verified on order · charged only when the minimum units are met; below it, all orders are refunded in full.',zh: '下單僅驗證卡片 · 達最少預購數才實際扣款；未達量則全部訂單全額退款。'},
     'pd-pre.refund.title':{en: 'If the minimum is missed',zh: '未達量時'},
     'pd-pre.refund.body':{en: '<strong>Full refund guaranteed.</strong> If pre-orders don\'t reach 100 by the deadline, every order is refunded in full. Buyers are only charged once the minimum is met.',zh: '<strong>保證全額退款。</strong> 若預購到截止未達 100 筆，每筆訂單全額退款；達量才向買家扣款。'},
     'pd-pre.orders.title':{en: 'Pre-order detail',zh: '預購訂單明細'},
@@ -4836,6 +4935,10 @@
     'pd-edit.schedule.note':{en: 'These times drive the automatic Draft → Live → Funded / Failed transitions. Changing dates after publish affects the backer commitment — a real change would ask to confirm.',zh: '這些時間驅動 草稿 → 進行中 → 已達標／失敗 的自動轉換。發布後改日期會影響支持者承諾——正式版會先要求確認。'},
     'project-detail.tiers.title':{en: 'Support plans',zh: '支持方案'},
     'project-detail.tiers.note':{en: 'Plan pricing and slots are a promise to existing backers — changes after publish are still under product review.',zh: '方案價格與名額是對既有支持者的承諾——發布後能否更動仍待產品裁決。'},
+    /* 預購方案（2026-08-03 D166，§5.3.2 F28／F29）。與上面共創那組分開命名：
+       兩型的欄位來源不同（預購不含分潤名額），承諾的對象也不同。 */
+    'project-detail.pretiers.title':{en: 'Pre-order plans',zh: '預購方案'},
+    'project-detail.pretiers.note':{en: 'Price, contents and quantity limits are a promise to fans who already ordered — how far they may change after publish is still under product review.',zh: '價格、內容與販售上限是對已下單粉絲的承諾——發布後能改到什麼程度仍待產品裁決。'},
     'project-detail.tiers.editor-sub':{en: 'Set the supporter promise for each plan. This prototype only updates this page.',zh: '逐組設定支持者看見的承諾內容。此原型只更新本頁。'},
     'pd-cf.tranche-rule':{en: 'Budget tier under 50k pays out in three tranches — 40% / 30% / 30%. Each tranche after the first is released once its materials are submitted.',zh: '預算 5 萬以下這一級距分三期撥款：40% / 30% / 30%。第一期之後每期都要先遞交對應物料才撥付。'},
     'pd-tier.plan':{en: 'Plan',zh: '套組'},
@@ -4862,6 +4965,10 @@
     'pd-tier.minimum':{en: 'Keep at least 3 support plans.',zh: '至少保留 3 組支持方案。'},
     /* 支持方案＝共創套組編輯器（2026-07-24，照 create-campaign 新增套組重做） */
     'pd-bundle.editor-sub':{en: 'Each bundle is a reward tier backers can buy — it can include a profit-share and multiple items. At least one.',zh: '每個組合包是贊助者可認購的回饋方案，可含分潤股份與多件商品。至少一個。'},
+    'pd-bundle.editor-sub-pre':{en: 'Each plan is one thing a fan can order — the work itself, plus any shop items and perks.',zh: '每個方案是粉絲可以下單的一組東西：必含作品本身，再加上附屬商品與額外權益。'},
+    /* 2026-08-03 D167：單位價格於本區維護（5.1.2.2 §2.2.5），改動後每個方案的價格一起重算。 */
+    'pd-bundle.unit':{en: 'Unit price · USD',zh: '單位價格 · USD'},
+    'pd-bundle.unit.hint':{en: 'What one copy of the work costs. Every plan price is worked out from it.',zh: '作品一份的價格；每個方案的價格都由它推導出來。'},
     'pd-bundle.title':{en: 'Bundle',zh: '組合包'},
     'pd-bundle.remove':{en: 'Remove',zh: '移除'},
     'pd-bundle.name':{en: 'Bundle name',zh: '組合包名稱'},
@@ -4877,13 +4984,14 @@
     'pd-bundle.item-desc-ph':{en: 'Item description',zh: '商品描述'},
     'pd-bundle.item-add':{en: '+ Add item',zh: '＋ 新增商品'},
     'pd-bundle.add':{en: '+ Add bundle',zh: '＋ 新增組合包'},
+    'pd-bundle.add-pre':{en: '+ Add plan',zh: '＋ 新增方案'},
     'pd-bundle.head-named':{en: 'Bundle: {name}',zh: '組合包：{name}'},
     'project-detail.about.title':{en: 'Project basics',zh: '項目基本資料'},
     'project-detail.about.name':{en: 'Project name',zh: '項目名稱'},
     'project-detail.about.contenttype':{en: 'Content type',zh: '內容類型'},
     'project-detail.about.contenttype-val':{en: 'Short film',zh: '短片'},
     'project-detail.about.projecttype':{en: 'Project type',zh: '項目類型'},
-    'project-detail.about.projecttype-val':{en: 'Co-create first',zh: '先共創'},
+    'project-detail.about.projecttype-val':{en: 'Co-create',zh: '共創'},
     'project-detail.about.locked':{en: 'Locked after publish',zh: '發布後鎖定'},
     'project-detail.about.access':{en: 'Access & price',zh: '存取與價格'},
     'project-detail.about.access-val':{en: 'Paid · $12 rental · ad-free',zh: '付費 · $12 租看 · 無廣告'},
