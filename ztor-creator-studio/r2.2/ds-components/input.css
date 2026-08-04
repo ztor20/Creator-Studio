@@ -39,6 +39,26 @@
 .input, .select { height: var(--control-h-sm); }
 .textarea { --input-pad-y: var(--sp-12); min-height: 100px; resize: vertical; height: auto; }
 .input--with-prefix { padding-left: var(--input-prefix-pad-x); }
+/* select 版的前置圖示（2026-08-01 使用者裁示補上）：先前只有 .input 有，select 想
+   放圖示只能自己在外面包一層方框，結果就是框中框。zselect 會把原 select 的 class
+   原封搬到觸發鈕上，所以這個 modifier 對原生 select 與升級後的按鈕都成立。 */
+.select--with-prefix { padding-left: var(--input-prefix-pad-x); }
+
+/* 前置圖示的定位殼。原本站上是在 DS 頁用 inline style 拼出來的（position:relative
+   ＋ 絕對定位的 icon），只有一個示範、沒有元件；這裡收成正式 class，讓「欄位內左側
+   固定一個圖示」有單一寫法。圖示不吃點擊——點下去要進到控件本身。 */
+.control-prefix { position: relative; display: block; }
+.control-prefix__icon {
+  position: absolute;
+  left: var(--sp-12);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  z-index: 1;
+}
+.control-prefix__icon .ztor-icon { width: 15px; height: 15px; }
 
 /* disabled — 建立後固定不可編輯（D137）等鎖定欄位的唯讀呈現：靜音底、不可操作游標，
    仍顯示目前值（如商品細節頁鎖定的主分類 disabled select）。 */

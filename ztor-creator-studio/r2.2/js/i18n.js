@@ -6000,6 +6000,8 @@
     'vault.item.title': { en: 'Media settings', zh: '內容設定' },
     'vault.btn.issue-key': { en: 'Issue a key', zh: '發一把鑰匙' },
     'vault.btn.share-links': { en: 'Share links', zh: '分享連結' },
+    'vault.btn.share-page': { en: 'Share page', zh: '分享頁面' },
+    'vault.toast.page-copied': { en: 'Share link copied', zh: '分享連結已複製' },
     'vault.lens.reset': { en: 'Back to my view', zh: '回到我的視角' },
     'vault.note.tiers': { en: 'Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.', zh: '分級條件在每晚的分級重算時重新判定——掉出分級的粉絲在那之前仍然打得開。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事，權限不會過期。' },
     'cp.vaultkey.title': { en: 'This product carries a vault key', zh: '這件商品會附帶一把庫房鑰匙' },
