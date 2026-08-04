@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/auth.css?v=r2.2">
+</head>
+<body>
+<!-- 登入（Login）· spec 5.1.10 · D170
+     未登入層的統一入口，不掛 Creator Studio 導航（不載 js/sidebar.js），
+     骨架照站上唯一的無側欄全畫面先例 scanner.html。
+     2026-08-04 使用者裁示：拿掉外層卡片，內容直接置中在頁面底色上（比照 ztor 消費端
+     的登入頁）。四個畫面（F1 方式選擇／F2 電子郵件／F3 手機號碼／F6 忘記密碼）
+     仍住在同一個 .auth-shell 裡互切。 -->
+<div class="auth-page">
+
+  <!-- 品牌角標：ztor wordmark ＋ Creator Studio，釘在畫面左上角（2026-08-04
+       使用者裁示，參考 Cursor 登入頁）。它不在 .auth-shell 裡——shell 是「這一步
+       要做的事」，角標是「你在哪個產品」，兩者不同層級，疊在一起會讓每一步的
+       標題都被品牌壓一次。SVG path 與 js/sidebar.js 的 LOGO_SVG 同一份；本頁
+       刻意不載 sidebar.js（無導航整頁殼），所以這裡是唯一的複本，改 logo 要兩邊一起改。 -->
+  <div class="auth-brand">
+    <svg class="auth-brand__logo" viewBox="0 0 101 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ztor"><path opacity="0.99" d="M55.749 7.35352C62.3102 6.56387 68.1795 8.99977 70.8506 13.6182C71.8335 15.3184 72.2187 16.7656 72.3027 19.0908C72.4094 22.015 71.9544 23.817 70.5332 26.0986C69.8395 27.2145 67.9548 29.025 66.6904 29.792C62.6322 32.2529 56.4412 32.7086 51.6602 30.8984C48.7838 29.81 46.349 27.6537 45.0264 25.0264C44.2163 23.4148 43.8408 21.6966 43.8311 19.5537C43.8214 17.4853 44.0078 16.4756 44.6934 14.8818C45.864 12.1628 48.31 9.81044 51.2637 8.56543C52.486 8.05031 54.5137 7.50209 55.749 7.35352ZM96.4805 23.1143C98.9761 23.1143 101 24.9861 101 27.2949C101 29.6039 98.9763 31.4766 96.4805 31.4766C93.9848 31.4764 91.9619 29.6038 91.9619 27.2949C91.9622 24.9863 93.985 23.1145 96.4805 23.1143ZM89.5264 7.31055C90.089 7.31055 90.5439 7.76583 90.5439 8.32617V12.2227C90.5439 12.6328 90.2997 12.9866 89.9473 13.1465L89.9102 13.1621L83.6123 15.9268C83.2129 16.1318 82.9384 16.5458 82.9336 17.0254V30.1709C82.9336 30.7329 82.4771 31.1875 81.916 31.1875H76.9004C76.3379 31.1873 75.8838 30.7311 75.8838 30.1709V8.68457C75.8838 8.12275 76.3395 7.66917 76.9004 7.66895H81.916C82.4787 7.66895 82.9336 8.12423 82.9336 8.68457V9.69531C82.9336 9.84549 83.0567 9.96875 83.207 9.96875C83.2424 9.96868 83.2764 9.96012 83.3086 9.94727C83.3103 9.94707 83.3154 9.94482 83.3164 9.94434L89.1035 7.4043L89.1465 7.38477C89.2644 7.33638 89.3923 7.31061 89.5264 7.31055ZM35.6514 0C36.214 0 36.6689 0.455327 36.6689 1.01562V7.56348C36.6689 7.83628 36.89 8.05745 37.1631 8.05762H40.5762C41.1387 8.05762 41.5935 8.51311 41.5938 9.07324V12.5742C41.5938 13.1362 41.1372 13.5908 40.5762 13.5908H37.1631C36.89 13.591 36.6689 13.8122 36.6689 14.085V30.1699C36.6689 30.7318 36.2124 31.1855 35.6514 31.1855H30.6592C30.0966 31.1855 29.6417 30.7302 29.6416 30.1699V14.085C29.6416 13.8122 29.4205 13.5911 29.1475 13.5908H27.9102C27.3475 13.5908 26.8936 13.1346 26.8936 12.5742V9.07324C26.8938 8.51149 27.3493 8.05762 27.9102 8.05762H29.1475C29.4205 8.05738 29.6416 7.83624 29.6416 7.56348V1.01562C29.6417 0.453712 30.0982 0 30.6592 0H35.6514ZM23.1084 8.04492C23.7194 8.0451 24.2138 8.5392 24.2139 9.14941C24.2139 9.37374 24.1479 9.58055 24.0332 9.75488L23.8936 9.92773L20.9365 13.5889L12.6016 23.9072C12.5773 23.9347 12.5552 23.9641 12.5342 23.9932C12.4161 24.1563 12.3467 24.3549 12.3467 24.5713C12.3468 25.1201 12.7923 25.5652 13.3418 25.5654H23.4619L23.4639 25.5645C24.0265 25.5645 24.4805 26.0198 24.4805 26.5801V30.168C24.4805 30.7299 24.0249 31.1835 23.4639 31.1836H0.998047C0.4467 31.1836 0 30.7382 0 30.1875C2.76681e-06 29.9727 0.0710906 29.7725 0.1875 29.6094L0.256836 29.5234L3.45312 25.5645L12.5 14.3652C12.5017 14.3637 12.5049 14.3619 12.5049 14.3604C12.5581 14.2814 12.5888 14.1864 12.5889 14.085C12.5889 13.8121 12.367 13.5908 12.0938 13.5908H2.12988C1.56722 13.5908 1.1123 13.1346 1.1123 12.5742V9.06055C1.11243 8.49869 1.56891 8.04492 2.12988 8.04492H23.1084ZM59.7852 13.2803C56.0761 12.3824 52.1339 14.574 51.2188 18.041C50.9957 18.8888 50.9911 20.5182 51.2109 21.2852C51.8885 23.6539 54.3762 25.684 57.0762 26.0732C60.5912 26.5803 64.1954 24.3252 64.9893 21.123C65.201 20.2655 65.1817 18.8623 64.9473 18.0518C64.2681 15.7105 62.2975 13.8891 59.7852 13.2803ZM24.2168 8.05762L24.2012 8.04492H24.2168V8.05762Z"/></svg>
+    <span class="auth-brand__name" data-i18n="login.brand">Creator Studio</span>
+  </div>
+
+  <div class="auth-shell">
+
+    <!-- ── F1 · 登入方式選擇 ────────────────────────────────
+         六個入口地位相同、不預設其中一種（規格 F1）。用建立流程閘門同款
+         .radio-cards--gate（STYLE-DECISIONS Q28）：選了就進下一步、無持久選取態。
+
+         2026-08-04 使用者裁示「將第三方全部都用這種格式」：原本第三方是一列四顆
+         只有圖示的方塊（.auth-oauth），本輪併入同一個 2 欄 grid，六張卡同一種格式。
+         排法＝2 欄 × 3 列：第 1 列電子郵件／手機號碼、第 2-3 列四個第三方。
+         用同一個 grid 而不是兩個並排的區塊，是因為六者是同一個決定的六個答案，
+         切成兩個區塊會冒出兩種不同的垂直間距在描述同一件事。
+
+         副標一律回答「怎麼驗證」：前兩張是密碼／簡訊驗證碼，四張第三方的對應事實
+         是「不需另設密碼」（使用者裁示，共用同一個 key login.method.oauth.sub）。
+         四張共用同一句是刻意的——彼此的差別已經由圖示與名稱說完，副標負責說這一
+         整組跟前兩張差在哪；四句不同的話反而像在硬湊，也會變成把品牌名再講一次。
+         六張都是「標題＋一行副標」，所以六張等高。
+         可讀名稱＝卡面上看得見的標題，不再另外掛 aria-label。
+
+         2026-08-04 第三輪裁示「email phone icon 都換實心的」：前兩張改用 'mail-fill'／
+         'smartphone-fill'（Tabler filled，見 js/icons.js）。品牌標記沒有描邊版，六顆並排時
+         混兩種風格會看起來像沒對齊；實心是**只限這一格**的例外，站上其他地方仍是描邊
+         （'smartphone' 還被 settings.html 的登入裝置列用著，'mail' 被 partials/artist-picker.js
+         引用、該元件目前零頁面載入屬退場候選；兩顆的路徑都沒動）。裁決見 STYLE-DECISIONS Q51。
+
+         ⚠ 第三方的原型行為：不接任何真的 OAuth，點了直接當登入成功落地 index.html，
+         與電子郵件登入非 admin 的落點一致。見 ASSUMPTIONS UIA-105。
+         ⚠ 這是產品範圍變更：規格 5.1.10 與 D170 目前寫的是「第三方登入不做」，
+         依使用者裁示先在原型加上，規格由上游同步。 -->
+    <section class="auth-step" data-auth-step="method">
+      <div class="auth-intro">
+        <div class="auth-head"><h1 class="auth-title" data-i18n="login.method.h1">Log in</h1></div>
+        <p class="auth-sub" data-i18n="login.method.sub">Platform admins and creators use the same entrance.</p>
+      </div>
+
+      <div class="segmented radio-cards radio-cards--gate" role="group"
+           aria-label="Login method" data-i18n-aria-label="login.method.group">
+        <button class="segmented__btn" type="button" data-auth-goto="email">
+          <i data-lucide="mail-fill" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.email">Email</span>
+            <span class="radio-card__sub" data-i18n="login.method.email.sub">Verified with a password</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-auth-goto="phone">
+          <i data-lucide="smartphone-fill" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.phone">Phone number</span>
+            <span class="radio-card__sub" data-i18n="login.method.phone.sub">Verified with an SMS code</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-auth-oauth="apple">
+          <i data-lucide="brand-apple" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.apple">Apple</span>
+            <span class="radio-card__sub" data-i18n="login.method.oauth.sub">No password needed</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-auth-oauth="google">
+          <i data-lucide="brand-google" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.google">Google</span>
+            <span class="radio-card__sub" data-i18n="login.method.oauth.sub">No password needed</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-auth-oauth="facebook">
+          <i data-lucide="brand-facebook" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.facebook">Facebook</span>
+            <span class="radio-card__sub" data-i18n="login.method.oauth.sub">No password needed</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button" data-auth-oauth="line">
+          <i data-lucide="brand-line" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-i18n="login.method.line">LINE</span>
+            <span class="radio-card__sub" data-i18n="login.method.oauth.sub">No password needed</span>
+          </span>
+        </button>
+      </div>
+      <!-- 註冊入口：本頁完全沒有，任何版本都不出現（2026-08-04 使用者裁示）。
+           規格 5.1.10 F6 只要求 phase 1–3 不出現，原型比規格更嚴格；等自助註冊
+           真的要做時再連規格一起補。見 ASSUMPTIONS UIA-105。 -->
+    </section>
+
+    <!-- ── F2 · 電子郵件登入 ──────────────────────────────── -->
+    <section class="auth-step" data-auth-step="email" hidden>
+      <div class="auth-intro">
+        <div class="auth-head">
+          <button class="btn btn--icon auth-head__back" type="button" data-auth-back
+                  aria-label="Back" data-i18n-aria-label="login.back"
+                  title="Back" data-i18n-title="login.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+          <h1 class="auth-title" data-i18n="login.email.h1">Email login</h1>
+        </div>
+      </div>
+
+      <!-- F5 憑證錯誤：不區分帳號不存在或密碼錯誤，一律一般性錯誤（防帳號列舉） -->
+      <div class="alert alert--row alert--error" role="alert" data-auth-err="email" hidden>
+        <span class="alert__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></span>
+        <span class="alert__body"><span class="alert__title" data-i18n="login.err.credentials">Email or password is incorrect.</span></span>
+      </div>
+
+      <div>
+        <div class="field">
+          <label class="field__label" for="lg-email"><span data-i18n="login.f.email">Email address</span> <span class="field__req">*</span></label>
+          <input class="input" id="lg-email" type="email" autocomplete="username" data-auth-email
+                 placeholder="you@example.com" data-i18n-placeholder="login.f.email.ph">
+        </div>
+        <div class="field">
+          <label class="field__label" for="lg-pw"><span data-i18n="login.f.pw">Password</span> <span class="field__req">*</span></label>
+          <div class="auth-pw">
+            <input class="input" id="lg-pw" type="password" autocomplete="current-password" data-auth-pw>
+            <button class="btn btn--icon btn--sm auth-pw__toggle" type="button" data-auth-pw-toggle
+                    aria-label="Show password" data-i18n-aria-label="login.pw.show"><i data-lucide="eye" class="ztor-icon"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn btn--primary btn--lg" type="button" data-auth-submit="email" disabled data-i18n="login.submit">Log in</button>
+      </div>
+      <div class="auth-foot">
+        <button class="auth-link" type="button" data-auth-goto="forgot" data-i18n="login.forgot">Forgot password</button>
+      </div>
+
+    </section>
+
+    <!-- ── F3 · 手機號碼登入 ──────────────────────────────── -->
+    <section class="auth-step" data-auth-step="phone" hidden>
+      <div class="auth-intro">
+        <div class="auth-head">
+          <button class="btn btn--icon auth-head__back" type="button" data-auth-back
+                  aria-label="Back" data-i18n-aria-label="login.back"
+                  title="Back" data-i18n-title="login.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+          <h1 class="auth-title" data-i18n="login.phone.h1">Phone login</h1>
+        </div>
+      </div>
+
+      <!-- F5 查無帳號／號碼未開通：明確錯誤，且不導向註冊、不代為建立帳號 -->
+      <div class="alert alert--row alert--error" role="alert" data-auth-err="phone" hidden>
+        <span class="alert__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></span>
+        <span class="alert__body"><span class="alert__title" data-i18n="login.err.phone">This number isn’t activated yet — please contact the platform.</span></span>
+      </div>
+
+      <div>
+        <div class="field">
+          <label class="field__label" for="lg-phone"><span data-i18n="login.f.phone">Phone number</span> <span class="field__req">*</span></label>
+          <div class="auth-inline auth-inline--lead">
+            <select class="select" id="lg-cc" data-auth-cc aria-label="Country code" data-i18n-aria-label="login.f.country">
+              <option value="+886" selected>TW +886</option>
+              <option value="+852">HK +852</option>
+              <option value="+81">JP +81</option>
+              <option value="+82">KR +82</option>
+              <option value="+1">US +1</option>
+            </select>
+            <input class="input" id="lg-phone" type="tel" inputmode="numeric" autocomplete="tel" data-auth-phone
+                   placeholder="912 345 678" data-i18n-placeholder="login.f.phone.ph">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="lg-code"><span data-i18n="login.f.code">Verification code</span> <span class="field__req">*</span></label>
+          <div class="auth-inline">
+            <input class="input" id="lg-code" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" data-auth-code
+                   placeholder="6 digits" data-i18n-placeholder="login.f.code.ph">
+            <button class="btn btn--outline" type="button" data-auth-getcode data-i18n="login.getcode">Get code</button>
+          </div>
+          <p class="field__hint" data-auth-code-hint hidden data-i18n="login.code.sent">Code sent. In this demo any 6 digits will do.</p>
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn btn--primary btn--lg" type="button" data-auth-submit="phone" disabled data-i18n="login.submit">Log in</button>
+      </div>
+
+    </section>
+
+    <!-- ── F6 · 忘記密碼 ──────────────────────────────────
+         規格只承諾「有這個入口」，重設流程本身〔產品待確認〕，本頁不代為發明。 -->
+    <section class="auth-step" data-auth-step="forgot" hidden>
+      <div class="auth-intro">
+        <div class="auth-head">
+          <button class="btn btn--icon auth-head__back" type="button" data-auth-back
+                  aria-label="Back" data-i18n-aria-label="login.back"
+                  title="Back" data-i18n-title="login.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+          <h1 class="auth-title" data-i18n="login.forgot.h1">Forgot password?</h1>
+        </div>
+        <p class="auth-sub" data-i18n="login.forgot.sub">Enter the email you use to log in.</p>
+      </div>
+
+      <div class="alert alert--row" role="status" data-auth-err="forgot" hidden>
+        <span class="alert__icon"><i data-lucide="check-circle" class="ztor-icon"></i></span>
+        <span class="alert__body"><span class="alert__title" data-i18n="login.forgot.done">If that email has an account, a reset link is on its way.</span></span>
+      </div>
+
+      <div>
+        <div class="field">
+          <label class="field__label" for="lg-fmail"><span data-i18n="login.f.email">Email address</span> <span class="field__req">*</span></label>
+          <input class="input" id="lg-fmail" type="email" autocomplete="username" data-auth-fmail
+                 placeholder="you@example.com" data-i18n-placeholder="login.f.email.ph">
+        </div>
+      </div>
+
+      <div class="auth-actions">
+        <button class="btn btn--primary btn--lg" type="button" data-auth-submit="forgot" disabled data-i18n="login.forgot.submit">Request a reset</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* 登入頁的原型控制器（spec 5.1.10）。純前端、無後端。
+   規則出處：F1 方式互切／F2·F3 欄位填妥前主要行動停用／F4 依身分分流落地／
+   F5 一般性憑證錯誤·號碼未開通·送出中／F6 忘記密碼只有入口。
+   哪些是「demo 手法」而非產品規則，記在 ASSUMPTIONS.md 的 UIA-105。 */
+(function () {
+  var shell = document.querySelector('.auth-shell');
+  function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
+  function $(sel, root) { return (root || shell).querySelector(sel); }
+
+  /* ── 畫面切換 ───────────────────────────────────────── */
+  var history_ = ['method'];
+  function show(step) {
+    shell.querySelectorAll('[data-auth-step]').forEach(function (s) {
+      s.hidden = s.getAttribute('data-auth-step') !== step;
+    });
+    /* 換畫面時清掉上一個畫面留下的錯誤，避免使用者以為錯誤跟著新畫面走 */
+    shell.querySelectorAll('[data-auth-err]').forEach(function (e) { e.hidden = true; });
+  }
+  shell.querySelectorAll('[data-auth-goto]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var to = b.getAttribute('data-auth-goto');
+      history_.push(to);
+      show(to);
+    });
+  });
+  shell.querySelectorAll('[data-auth-back]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      history_.pop();
+      show(history_[history_.length - 1] || 'method');
+    });
+  });
+
+  /* ── 第三方登入（原型示範，不接真的 OAuth）───────────────
+     真實流程會跳轉到各家授權頁再帶著授權碼回來，原型沒有後端也沒有註冊的 client，
+     所以直接視為登入成功、落地 index.html（與電子郵件登入非 admin 的落點一致）。
+     正式流程（授權範圍、首次登入是否要綁既有帳號、失敗與取消怎麼回）皆〔上游待確認〕。 */
+  shell.querySelectorAll('[data-auth-oauth]').forEach(function (b) {
+    b.addEventListener('click', function () { location.href = 'index.html'; });
+  });
+
+  /* ── 主要行動的啟用條件（規格：欄位填妥前停用）─────────── */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var email = $('[data-auth-email]'), pw = $('[data-auth-pw]');
+  var phone = $('[data-auth-phone]'), code = $('[data-auth-code]');
+  var fmail = $('[data-auth-fmail]');
+  var btnEmail = $('[data-auth-submit="email"]');
+  var btnPhone = $('[data-auth-submit="phone"]');
+  var btnForgot = $('[data-auth-submit="forgot"]');
+
+  function sync() {
+    btnEmail.disabled = !(EMAIL_RE.test(email.value.trim()) && pw.value.length > 0);
+    btnPhone.disabled = !(phone.value.replace(/\D/g, '').length >= 6 && code.value.replace(/\D/g, '').length === 6);
+    btnForgot.disabled = !EMAIL_RE.test(fmail.value.trim());
+  }
+  [email, pw, phone, code, fmail].forEach(function (el) { el.addEventListener('input', sync); });
+  sync();
+
+  /* ── 密碼顯示／隱藏 ─────────────────────────────────── */
+  var pwToggle = $('[data-auth-pw-toggle]');
+  pwToggle.addEventListener('click', function () {
+    var showing = pw.type === 'text';
+    pw.type = showing ? 'password' : 'text';
+    pwToggle.innerHTML = '<i data-lucide="' + (showing ? 'eye' : 'eye-off') + '" class="ztor-icon"></i>';
+    pwToggle.setAttribute('data-i18n-aria-label', showing ? 'login.pw.show' : 'login.pw.hide');
+    pwToggle.setAttribute('aria-label', T(showing ? 'login.pw.show' : 'login.pw.hide', showing ? 'Show password' : 'Hide password'));
+    if (window.ztorIcons) window.ztorIcons.applyIcons(pwToggle);
+  });
+
+  /* ── 取得驗證碼：純畫面回饋（倒數），不真的發簡訊 ───────── */
+  var getCode = $('[data-auth-getcode]'), codeHint = $('[data-auth-code-hint]');
+  var tick = null;
+  getCode.addEventListener('click', function () {
+    if (tick) return;
+    codeHint.hidden = false;
+    var left = 60;
+    getCode.disabled = true;
+    getCode.removeAttribute('data-i18n');          /* 倒數期間是動態字串，交回 i18n 會被覆蓋 */
+    function paint() { getCode.textContent = T('login.getcode.wait', 'Resend in {s}s').replace('{s}', left); }
+    paint();
+    tick = setInterval(function () {
+      left -= 1;
+      if (left > 0) return paint();
+      clearInterval(tick); tick = null;
+      getCode.disabled = false;
+      getCode.setAttribute('data-i18n', 'login.getcode.again');
+      getCode.textContent = T('login.getcode.again', 'Resend code');
+    }, 1000);
+  });
+
+  /* ── 送出 ───────────────────────────────────────────
+     F5「送出中」：主要行動改處理中字樣並停用，避免重複送出。
+     F4 落地分流：Admin → creators.html、Artist → index.html。 */
+  function submitting(btn, on) {
+    if (on) {
+      btn.dataset.authLabel = btn.getAttribute('data-i18n') || '';
+      btn.removeAttribute('data-i18n');
+      btn.textContent = T('login.submitting', 'Signing in…');
+      btn.disabled = true;
+    } else {
+      if (btn.dataset.authLabel) btn.setAttribute('data-i18n', btn.dataset.authLabel);
+      btn.textContent = T(btn.dataset.authLabel || 'login.submit', 'Log in');
+      btn.disabled = false;
+    }
+  }
+
+  btnEmail.addEventListener('click', function () {
+    var v = email.value.trim().toLowerCase();
+    $('[data-auth-err="email"]').hidden = true;
+    submitting(btnEmail, true);
+    setTimeout(function () {
+      /* demo 手法：密碼打 wrong ＝ 憑證錯誤；錯誤文案刻意不分辨帳號或密碼（F5 防帳號列舉） */
+      if (pw.value === 'wrong') {
+        submitting(btnEmail, false);
+        $('[data-auth-err="email"]').hidden = false;
+        sync();
+        return;
+      }
+      /* demo 手法：信箱含 admin ＝ Admin 身分。正式分流依帳號本身的身分標記（F4，上游待確認） */
+      location.href = v.indexOf('admin') >= 0 ? 'creators.html' : 'index.html';
+    }, 700);
+  });
+
+  btnPhone.addEventListener('click', function () {
+    var digits = phone.value.replace(/\D/g, '');
+    $('[data-auth-err="phone"]').hidden = true;
+    submitting(btnPhone, true);
+    setTimeout(function () {
+      /* demo 手法：只有 912345678 對得上帳號。查無號碼一律當錯誤處理——
+         規格明訂不沿用消費端「查無號碼即開通新帳號」，本頁沒有任何通往註冊的路徑。 */
+      if (digits !== '912345678') {
+        submitting(btnPhone, false);
+        $('[data-auth-err="phone"]').hidden = false;
+        sync();
+        return;
+      }
+      location.href = 'index.html';
+    }, 700);
+  });
+
+  btnForgot.addEventListener('click', function () {
+    submitting(btnForgot, true);
+    setTimeout(function () {
+      submitting(btnForgot, false);
+      sync();
+      /* 回覆刻意中性、不透露該信箱是否存在（與 F5 防帳號列舉同一個理由）。
+         實際重設管道與連結有效期〔產品待確認〕，本頁不代為發明。 */
+      $('[data-auth-err="forgot"]').hidden = false;
+    }, 700);
+  });
+}());
+</script>
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

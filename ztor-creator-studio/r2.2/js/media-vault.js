@@ -54,7 +54,12 @@
     { kind: "audio", icon: "music", title: { en: "Audio",  zh: "音檔" } }
   ];
 
-  var state = { vaultId: V.vaults[0].id, viewer: "" };
+  /* 版型旗標：<html data-vault-view="popup"> ＝ 總覽卡片牆＋單一庫房彈窗（保存在
+     media-vault-popup.html）；沒有這個屬性＝清單與詳情並排，可以直接切換與編輯
+     （正式頁，2026-08-01 使用者裁示改回這一種）。兩種版型共用這一支 JS。 */
+  var POPUP = document.documentElement.getAttribute("data-vault-view") === "popup";
+
+  var state = { vaultId: V.vaults[0].id, viewer: "", itemId: null };
   var lastReach = null;
   var lastFocus = null;        /* 抽屜關掉之後焦點要回到打開它的那顆鈕 */
   var els = {};
@@ -109,6 +114,7 @@
      開／關只動 hidden 與焦點，不換網址：它是同一頁的下一層，不是另一個頁面。 */
   function openVault(id, from) {
     state.vaultId = id;
+    if (!els.modal) { lastReach = null; render(); return; }
     lastReach = null;
     lastFocus = from || document.activeElement;
     render();
@@ -118,10 +124,76 @@
     if (close) close.focus();
   }
   function closeVault() {
-    if (els.modal.hidden) return;
+    if (!els.modal || els.modal.hidden) return;
     els.modal.hidden = true;
     document.body.style.overflow = "";
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
+  }
+
+  /* ── 單一內容的設定（2026-08-01 使用者裁示「點進去每個 media 設定裡」）──
+     用抽屜不用第二層彈窗：庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，
+     而且會蓋掉剛才點的那一格；抽屜從右邊推進來，被編輯的東西還看得見。
+
+     這裡只放這座原型真的有的欄位（檔名、類型、大小、加入日期、長度）與已經存在的
+     兩個動作（改名、刪除）。權限、有效期、浮水印這類還沒有上游規格的東西不擅自
+     生出來——那會把「呈現探索」偷渡成產品功能。 */
+  function itemById(id) {
+    return vault().items.filter(function (i) { return i.id === id; })[0];
+  }
+
+  function renderItemSheet(it) {
+    var k = KIND[it.kind];
+    var rows = [
+      [tx("Kind", "類型"), V.t(k.label)],
+      [tx("Size", "檔案大小"), it.size || "—"],
+      [tx("Added", "加入日期"), it.added || "—"]
+    ];
+    if (it.dur) rows.splice(1, 0, [tx("Length", "長度"), it.dur]);
+
+    els.itemBody.innerHTML =
+      '<div class="vault-item__preview">' +
+        (it.img
+          ? '<img src="' + it.img + '" alt="">'
+          : '<span class="vault-item__glyph">' + icon(k.icon) + "</span>") +
+      "</div>" +
+      '<label class="field">' +
+        '<span class="field__label">' + tx("Name", "名稱") + "</span>" +
+        '<input class="input" type="text" data-item-name value="' + esc(V.t(it.name)) + '">' +
+      "</label>" +
+      '<dl class="vault-item__facts">' +
+        rows.map(function (r) {
+          return "<dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd>";
+        }).join("") +
+      "</dl>" +
+      '<div class="vault-item__actions">' +
+        '<button type="button" class="btn btn--outline btn--sm" data-item-sheet-delete>' +
+          icon("trash-2") + tx("Delete", "刪除") + "</button>" +
+      "</div>";
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(els.itemBody);
+  }
+
+  function openItem(id) {
+    var it = itemById(id);
+    if (!it) return;
+    state.itemId = id;
+    renderItemSheet(it);
+    els.itemSheet.classList.add("is-open");
+    els.itemSheet.setAttribute("aria-hidden", "false");
+    var input = els.itemBody.querySelector("[data-item-name]");
+    if (input) input.focus();
+  }
+  function closeItem() {
+    /* 名字即時生效，不設「儲存」鈕：這一格只有一個可改的欄位，關掉抽屜就是收工。 */
+    var it = itemById(state.itemId);
+    var input = els.itemBody.querySelector("[data-item-name]");
+    if (it && input && input.value.trim()) {
+      var v = input.value.trim();
+      it.name = { en: v, zh: v };
+      renderMain(); renderRail(); renderOverview();
+    }
+    state.itemId = null;
+    els.itemSheet.classList.remove("is-open");
+    els.itemSheet.setAttribute("aria-hidden", "true");
   }
 
   function renderRail() {
@@ -522,6 +594,25 @@
     els.lensReset.hidden = !on;
   }
 
+  /* 「誰進得來」吸住了沒有——吸住才讓它上面那塊遮罩現身（沒吸住時遮罩會把頁首
+     蓋掉）。捲動容器在正式頁是 .main、在彈窗版是 .vault-modal__body，所以往上找，
+     不寫死。 */
+  function bindStuckWatch() {
+    var el = els.reach;
+    if (!el) return;
+    var scroller = el.closest(".vault-modal__body") || el.closest(".main") || document.scrollingElement;
+    var offset = parseFloat(getComputedStyle(el).top) || 0;
+    function check() {
+      var top = el.getBoundingClientRect().top;
+      var base = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
+      el.classList.toggle("is-stuck", top - base <= offset + 1);
+    }
+    (scroller === document.scrollingElement ? window : scroller)
+      .addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    check();
+  }
+
   function render() {
     renderLens(); renderRail(); renderOverview();
     renderDoor(); renderMain(); renderGate();
@@ -652,12 +743,24 @@
     });
   }
 
-  function openShare() {
+  /* 抽屜有兩段：上面「發一把新鑰匙」（建立），下面「已發出的鑰匙」（每一把都能
+     複製連結、撤銷）。兩個入口進來的意圖不同，所以停的位置也不同——從「分享連結」
+     進來的人要的是既有的那幾條，不該還要自己往下捲過整個建立表單。 */
+  function openShare(intent) {
     share.created = null;
     renderShare();
     els.drawer.classList.add("is-open");
     els.drawer.setAttribute("aria-hidden", "false");
     lastFocus = document.activeElement;
+
+    if (intent === "keys") {
+      var list = els.drawerBody.querySelectorAll(".vshare__section")[1];
+      if (list) {
+        list.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+        var copy = list.querySelector("[data-vkey-copy]");
+        if (copy) { copy.focus(); return; }
+      }
+    }
     var first = els.drawerBody.querySelector(".vshare__opt");
     if (first) first.focus();
   }
@@ -959,11 +1062,13 @@
 
     /* 關閉：叉叉、點背景、Esc。三條路都要有——彈窗是「蓋在上面」的東西，
        離開它的方式不能只有一個角落的按鈕。 */
-    els.modal.addEventListener("click", function (e) {
+    if (els.modal) els.modal.addEventListener("click", function (e) {
       if (e.target.closest("[data-vault-modal-close]") || e.target === els.modal) closeVault();
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key !== "Escape" || els.modal.hidden) return;
+      if (e.key !== "Escape") return;
+      if (els.itemSheet.classList.contains("is-open")) { closeItem(); return; }
+      if (!els.modal || els.modal.hidden) return;
       /* 抽屜／選單開著時，Esc 先關它們，不要一路關到彈窗。 */
       if (els.drawer && els.drawer.classList.contains("is-open")) return;
       if (els.menu && !els.menu.hidden) return;
@@ -1056,7 +1161,25 @@
        [data-vault-upload]，共用住在 .vault-gridbar 裡的同一個檔案選擇器。
        所以監聽掛在 .vault-gridwrap 這層（同時涵蓋標題列與格子），不是格子那層。 */
     els.gridWrap.addEventListener("click", function (e) {
-      if (e.target.closest("[data-vault-upload]")) els.file.click();
+      if (e.target.closest("[data-vault-upload]")) { els.file.click(); return; }
+      /* 點在格子的空白處＝打開這一件的設定。格子上原有的動作鈕（播放／改名／刪除）
+         各自 return 在前面，所以不會互相搶。 */
+      var hit = e.target.closest("[data-item]");
+      if (hit && !e.target.closest("button")) openItem(hit.getAttribute("data-item"));
+    });
+
+    els.itemSheet.addEventListener("click", function (e) {
+      if (e.target.closest("[data-item-close]")) { closeItem(); return; }
+      if (e.target.closest("[data-item-sheet-delete]")) {
+        var it = itemById(state.itemId);
+        var f = vault();
+        f.items = f.items.filter(function (x) { return x.id !== state.itemId; });
+        state.itemId = null;
+        els.itemSheet.classList.remove("is-open");
+        els.itemSheet.setAttribute("aria-hidden", "true");
+        renderMain(); renderRail(); renderOverview();
+        if (it && window.ztorToast) window.ztorToast.show(tx("Deleted", "已刪除"), { tone: "neutral" });
+      }
     });
 
     /* 鍵盤也要能開檔案選擇器——空狀態那張是 role=button，那就得像按鈕。 */
@@ -1083,7 +1206,8 @@
 
     /* ── 分享抽屜 ─────────────────────────────────────────── */
     document.addEventListener("click", function (e) {
-      if (e.target.closest("[data-vault-share]")) { openShare(); return; }
+      var sh = e.target.closest("[data-vault-share]");
+      if (sh) { openShare(sh.getAttribute("data-vault-share")); return; }
       if (els.drawer.classList.contains("is-open") && e.target.closest("[data-drawer-close]")) closeShare();
     });
     document.addEventListener("keydown", function (e) {
@@ -1181,6 +1305,8 @@
     els.overview  = document.querySelector("[data-vault-overview]");
     els.modal     = document.querySelector("[data-vault-modal]");
     els.modalTitle = document.querySelector("[data-vault-modal-title]");
+    els.itemSheet = document.querySelector("[data-item-sheet]");
+    els.itemBody  = els.itemSheet.querySelector("[data-item-body]");
     els.lens      = document.querySelector("[data-vault-lens]");
     els.viewer    = els.lens.querySelector("[data-vault-viewer]");
     els.viewerWrap = els.viewer.closest(".vault-viewer");
@@ -1188,8 +1314,8 @@
     els.main      = document.querySelector("[data-vault-main]");
     els.body      = els.main.querySelector("[data-vault-body]");
     els.gate      = els.main.querySelector("[data-vault-gate]");
-    /* 庫房名字只有一個落點：彈窗標題列。 */
-    els.title     = els.modalTitle;
+    /* 庫房名字：並排版寫在主欄標頭，彈窗版寫在彈窗標題列（那裡捲不走，內文就不重複）。 */
+    els.title     = els.main.querySelector("[data-vault-title]") || els.modalTitle;
     els.note      = els.main.querySelector("[data-vault-note]");
     els.door      = els.main.querySelector("[data-vault-door]");
     els.reach     = els.main.querySelector("[data-vault-reach]");
@@ -1212,6 +1338,7 @@
 
     render();
     wire();
+    bindStuckWatch();
     if (window.applyI18n) {
       if (els.rail) window.applyI18n(els.rail);
       window.applyI18n(els.lens);

@@ -320,6 +320,17 @@
           <div role="columnheader" aria-label="Actions"></div>
         </div>
 
+        <!-- 釘選區分隔列（PIN-001 提案）：這條線以上＝釘選並顯示在商店最前的商品（上限 10）。
+             位置與計數由頁尾的釘選模組維護；釘選數為 0 或有搜尋／篩選時收起。 -->
+        <div class="product-list__divider" role="row" data-eshop-pin-divider hidden>
+          <div class="product-list__divider-body" role="cell">
+            <i data-lucide="pin" class="ztor-icon" aria-hidden="true"></i>
+            <span data-i18n="e-shop.pin.divider">Pinned to the front of your shop</span>
+            <a class="btn btn--ghost btn--sm product-list__divider-cta" href="#" data-eshop-pin-cta data-i18n="e-shop.pin.cta" hidden>Pin now</a>
+            <span class="product-list__divider-count" data-eshop-pin-count>0/10</span>
+          </div>
+        </div>
+
         <div class="product-list__row" role="row" data-status="low" data-type="physical" data-name="海上霸姬 幕後寫真誌 vol.02" data-tiers="inner superfan devoted fan">
           <div class="product-list__drag" role="cell" aria-label="Drag to reorder" title="Drag to reorder"><i data-lucide="grip-vertical" class="ztor-icon"></i></div>
           <div class="product-list__image-cell" role="cell">
@@ -552,6 +563,15 @@
           <div role="columnheader" aria-label="Actions"></div>
         </div>
 
+        <div class="product-list__divider" role="row" data-eshop-pin-divider hidden>
+          <div class="product-list__divider-body" role="cell">
+            <i data-lucide="pin" class="ztor-icon" aria-hidden="true"></i>
+            <span data-i18n="e-shop.pin.divider">Pinned to the front of your shop</span>
+            <a class="btn btn--ghost btn--sm product-list__divider-cta" href="#" data-eshop-pin-cta data-i18n="e-shop.pin.cta" hidden>Pin now</a>
+            <span class="product-list__divider-count" data-eshop-pin-count>0/10</span>
+          </div>
+        </div>
+
         <div class="product-list__row" role="row" data-status="live" data-type="bundle" data-stock-avail="3" data-name="九龍夜行 入門組合" data-tiers="inner superfan devoted">
           <div class="product-list__image-cell" role="cell">
             <div class="product-list__image"><img src="images/products/coastline-starter-pack.webp" alt="" loading="lazy"></div>
@@ -614,6 +634,15 @@
           <div role="columnheader" data-i18n="e-shop.col.status">Status</div>
           <div role="columnheader" data-i18n="e-shop.col.activity">Activity</div>
           <div role="columnheader" aria-label="Actions"></div>
+        </div>
+
+        <div class="product-list__divider" role="row" data-eshop-pin-divider hidden>
+          <div class="product-list__divider-body" role="cell">
+            <i data-lucide="pin" class="ztor-icon" aria-hidden="true"></i>
+            <span data-i18n="e-shop.pin.divider">Pinned to the front of your shop</span>
+            <a class="btn btn--ghost btn--sm product-list__divider-cta" href="#" data-eshop-pin-cta data-i18n="e-shop.pin.cta" hidden>Pin now</a>
+            <span class="product-list__divider-count" data-eshop-pin-count>0/10</span>
+          </div>
         </div>
 
         <!-- Live：目前出價／出價·人數·剩餘時間；列操作＝複製連結（spec §89）-->
@@ -859,6 +888,192 @@
       });
     })();
 
+    /* ── F4 釘選（Pin，2026-08-04 · 產品變更提案 PIN-001）────────────────────
+       使用者要「把想 highlight 的商品釘在最前面」。裁決過的四件事：粉絲端強制置頂、
+       不掛精選徽章、釘選區內順序仍可自己調、Products／Bundles／Auctions 三個分頁都要。
+
+       模型：每列一個布林 data-pinned；清單分成「釘選區 → 分隔列 → 其餘」三段，
+       釘選與否＝在分隔列的哪一側。所以「釘選」跟「排序」不是兩套操作，位置就是狀態。
+       上限 10 各分頁獨立計（三類共用一個額度會讓分頁之間互搶名額，也沒地方顯示計數）。
+       草稿不可釘選：草稿不對粉絲顯示，釘它等於釘一個粉絲看不到的東西。
+       DOM 順序＝粉絲端陳列順序這條線沒有斷（D083）——釘選區只是這條順序的前 10 名。
+       非 demo 的持久化、下架商品的釘選狀態怎麼算，屬產品缺口，見 ASSUMPTIONS PIN-001。 */
+    const PIN_MAX = 10;
+    const pinDividerOf = panel => panel.querySelector('[data-eshop-pin-divider]');
+    const pinnedRowsOf = panel => [...panel.querySelectorAll('.product-list__row[data-pinned="true"]')];
+    const canPin = row => (row.dataset.status || '') !== 'draft';
+
+    /* 名稱前的圖釘標記要能被補回來：`products-store.js` 在 i18n:applied 時會用
+       `title.textContent = 名稱` 重寫整格標題，一次就把標記洗掉。所以每次更新釘選區
+       chrome 都順手確認它還在，而不是只在初始化插一次。 */
+    function ensurePinMark(row) {
+      const title = row.querySelector('.product-list__title');
+      if (!title || title.querySelector('.product-list__pin-mark')) return;
+      title.insertAdjacentHTML('afterbegin',
+        '<span class="product-list__pin-mark" aria-hidden="true"><i data-lucide="pin" class="ztor-icon"></i></span>');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(title);
+    }
+
+    /* 把 DOM 排成「草稿 → 釘選區 → 分隔列 → 其餘」。三段各自維持原本的相對順序，
+       所以拖曳排出來的名次不會因為重排而被打亂。
+       草稿永遠在最前（2026-08-04 使用者裁示，沿用 UIA-038 的理由）：草稿不對粉絲顯示、
+       沒有陳列順序，它是待補齊的工作清單，不參與釘選區的名額競爭。 */
+    function reflowPins(panel) {
+      const divider = pinDividerOf(panel);
+      if (!divider) return;
+      const rows = [...panel.querySelectorAll('.product-list__row')];
+      const drafts = rows.filter(r => (r.dataset.status || '') === 'draft');
+      const pinned = rows.filter(r => r.dataset.pinned === 'true' && (r.dataset.status || '') !== 'draft');
+      const rest = rows.filter(r => !drafts.includes(r) && !pinned.includes(r));
+      drafts.forEach(r => panel.appendChild(r));
+      pinned.forEach(r => panel.appendChild(r));
+      panel.appendChild(divider);
+      rest.forEach(r => panel.appendChild(r));
+      updatePinChrome(panel);
+    }
+
+    /* 分隔列的文字、計數與顯隱，以及每列選單裡那一項的文字／可用性。
+       一件都沒釘選時這條線不收起，改講「怎麼釘、釘了會怎樣」（2026-08-04 使用者裁示）——
+       此時它剛好落在草稿之後、第一個商品之前，也就是釘選區將來會出現的位置，等於先把
+       那塊地方指出來；同一條線兩種說法，不另做一個提示元件。
+       搜尋或篩選中仍然收起：那時畫面上的列是散的，一條說「以上為釘選商品」的線會說謊。 */
+    function updatePinChrome(panel) {
+      const divider = pinDividerOf(panel);
+      if (!divider) return;
+      const n = pinnedRowsOf(panel).length;
+      const filtering = !!((search && search.value.trim()) || activeStatus() !== 'all');
+      divider.hidden = filtering;
+      /* 兩種狀態長相不同（使用者裁示）：有釘選＝一條有字的分隔線；零釘選＝有圓角的方框。 */
+      divider.classList.toggle('product-list__divider--empty', n === 0);
+      const label = divider.querySelector('[data-i18n]');
+      if (label) {
+        const key = n === 0 ? 'e-shop.pin.hint' : 'e-shop.pin.divider';
+        label.setAttribute('data-i18n', key);
+        label.textContent = T(key, label.textContent);
+      }
+      /* 右端那一格零釘選時給指路連結、有釘選之後給計數——同一個位置、兩種內容，
+         不並排：零釘選時的 0/10 沒有在報告任何進度，只是把行動往旁邊擠。 */
+      const cta = divider.querySelector('[data-eshop-pin-cta]');
+      if (cta) cta.hidden = n > 0;
+      const count = divider.querySelector('[data-eshop-pin-count]');
+      if (count) { count.hidden = n === 0; count.textContent = n + '/' + PIN_MAX; }
+      panel.querySelectorAll('.product-list__row').forEach(row => {
+        ensurePinMark(row);
+        const item = row.querySelector('[data-eshop-pin]');
+        if (!item) return;
+        const on = row.dataset.pinned === 'true';
+        const full = !on && n >= PIN_MAX;
+        item.setAttribute('aria-checked', on ? 'true' : 'false');
+        item.disabled = full;
+        const key = full ? 'e-shop.pin.full' : (on ? 'e-shop.a.unpin' : 'e-shop.a.pin');
+        const label = item.querySelector('[data-i18n]');
+        if (label) { label.setAttribute('data-i18n', key); label.textContent = T(key, label.textContent); }
+        const icon = item.querySelector('.ztor-icon');
+        if (icon && icon.getAttribute('data-lucide') !== (on ? 'pin-off' : 'pin')) {
+          icon.setAttribute('data-lucide', on ? 'pin-off' : 'pin');
+          if (window.ztorIcons) window.ztorIcons.applyIcons(item);
+        }
+      });
+    }
+
+    function setPinned(row, on) {
+      const panel = row.closest('[data-eshop-panel]');
+      if (!panel || !canPin(row)) return false;
+      if (on && pinnedRowsOf(panel).length >= PIN_MAX && row.dataset.pinned !== 'true') {
+        flashPinFull(panel);
+        return false;
+      }
+      if (on) row.dataset.pinned = 'true'; else delete row.dataset.pinned;
+      reflowPins(panel);
+      return true;
+    }
+
+    function flashPinFull(panel) {
+      const divider = pinDividerOf(panel);
+      if (!divider) return;
+      divider.classList.add('is-full');
+      setTimeout(() => divider.classList.remove('is-full'), 1200);
+    }
+
+    /* 選單項與名稱前的圖釘標記都由 JS 補進每一列：這兩樣東西每列都一樣，
+       手寫進 40 幾個 kebab 選單只會多 40 幾份會各自漂移的副本。 */
+    (function initPins() {
+      document.querySelectorAll('[data-eshop-panel]').forEach(panel => {
+        panel.querySelectorAll('.product-list__row').forEach(row => {
+          ensurePinMark(row);
+          /* 一定要限定在 operations 欄裡的那個選單：列上還有一個粉絲分級的下拉，
+             它在 DOM 裡排在前面，用未限定的 `.dropdown__menu` 會把「釘選」
+             插進分級選單，功能仍可運作、但人在 kebab 裡永遠找不到它。 */
+          const menu = row.querySelector('.product-list__actions .dropdown__menu');
+          if (menu && canPin(row) && !menu.querySelector('[data-eshop-pin]')) {
+            menu.insertAdjacentHTML('afterbegin',
+              /* 刻意不給 data-keep-open：按下去列就搬到釘選區，選單留在原地會停在
+                 一個已經沒有那一列的位置上；結果本身（列跳上去）就是回饋。
+                 隔壁的上架開關相反——它要留著讓人看見 switch 翻動、列不會動。 */
+              '<button class="dropdown__item" type="button" role="menuitemcheckbox" aria-checked="false" data-eshop-pin>'
+              + '<i data-lucide="pin" class="ztor-icon"></i><span data-i18n="e-shop.a.pin">Pin to front</span></button>');
+          }
+        });
+        /* 起始狀態＝一件都沒釘選（2026-08-04 使用者裁示）：預先塞幾件釘選商品會讓人
+           以為那是系統挑的，也少掉「自己按一次」那個關鍵動作。釘選區與分隔列在第一次
+           釘選時才出現。 */
+        reflowPins(panel);
+        if (window.ztorIcons) window.ztorIcons.applyIcons(panel);
+        if (window.applyI18n) window.applyI18n(panel);
+      });
+    })();
+
+    document.addEventListener('click', e => {
+      const item = e.target.closest('[data-eshop-pin]');
+      if (!item || item.disabled) return;
+      const row = item.closest('.product-list__row');
+      if (row) setPinned(row, row.dataset.pinned !== 'true');
+    });
+
+    /* 「立刻前往」：替使用者把第一件商品的操作選單打開，並把「釘選」那一項圈起來。
+       不直接代按——釘哪一件是他的決定，這裡只負責把入口指出來。指路環在他點了選單裡
+       任何一項、或選單關掉、或 6 秒後自行解除，不留在畫面上。 */
+    document.addEventListener('click', e => {
+      const cta = e.target.closest('[data-eshop-pin-cta]');
+      if (!cta) return;
+      e.preventDefault();
+      const panel = cta.closest('[data-eshop-panel]');
+      const row = [...panel.querySelectorAll('.product-list__row')]
+        .find(r => !r.hidden && r.querySelector('.product-list__actions [data-eshop-pin]'));
+      if (!row) return;
+      const details = row.querySelector('.product-list__actions details');
+      const item = row.querySelector('.product-list__actions [data-eshop-pin]');
+      if (!details || !item) return;
+      /* 把那一列捲到視窗上方三分之一：選單是往下開的，用 block:'center' 會讓列剛好在中央、
+         選單一半掉到摺線下。捲的是最近的可捲容器（本站是 <main>），不是整個文件。 */
+      const scroller = (function (el) {
+        for (let n = el.parentElement; n; n = n.parentElement) {
+          const oy = getComputedStyle(n).overflowY;
+          if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+        }
+        return document.scrollingElement;
+      })(row);
+      scroller.scrollTo({ top: scroller.scrollTop + row.getBoundingClientRect().top - scroller.clientHeight * 0.3, behavior: 'smooth' });
+      /* 延到下一輪再開：頁面另有一個 document 層的「點到選單外就收起」處理器，它註冊在本段
+         之後、會在同一次點擊裡把剛開的選單關掉。等這次點擊處理完再開，就不會被它收走。 */
+      setTimeout(() => {
+        details.open = true;
+        item.classList.add('is-hinted');
+        item.focus({ preventScroll: true });
+      }, 0);
+      const clear = () => item.classList.remove('is-hinted');
+      /* 只在選單「收起」時解除；toggle 事件開與關都會派送，開的那次不能算。 */
+      const onToggle = () => { if (!details.open) { clear(); details.removeEventListener('toggle', onToggle); } };
+      details.addEventListener('toggle', onToggle);
+      item.addEventListener('click', clear, { once: true });
+      setTimeout(clear, 6000);
+    });
+    /* 兩個時機都要補畫：`products-store.js` 綁在 DOMContentLoaded 與 i18n:applied 上重寫標題格，
+       比本段初始化晚，只在初始化插一次會被它洗掉（本檔在它之後，所以同名事件我們排在它後面）。 */
+    const refreshPins = () => document.querySelectorAll('[data-eshop-panel]').forEach(updatePinChrome);
+    document.addEventListener('i18n:applied', refreshPins);
+    document.addEventListener('DOMContentLoaded', refreshPins);
+
     /* F4 三類共通·分批載入（D094）：每批 BATCH 筆，「載入更多」載下一批，全部載完顯示 end-cap。
        BATCH＝25（規格預設，使用者裁示，原 10）。樣本列數 < 25 → 一批全載、不出現「載入更多」、直接顯示 end-cap（與真實 25 批量行為一致；先前 demo 取 4 會在 6 筆時誤現「載入更多」，已校正）。Load more 僅在某分頁 > 25 筆時出現。
        縮圖 lazy load（D094）：真實縮圖 `.product-list__image img` 採 `loading="lazy"`、僅捲入視窗才抓圖；本 demo 清單為無圖 CSS 佔位（自架、無 CDN 縮圖），故 lazy-load 記為慣例、demo 無可見效果。 */
@@ -888,6 +1103,7 @@
       const noResult = document.querySelector('[data-eshop-noresult]');
       if (noResult) noResult.hidden = !empty;
       panel.classList.toggle('is-filtered-empty', empty);
+      updatePinChrome(panel);   // 搜尋／篩選中收起釘選區分隔列（PIN-001）
       updateListFoot(matched, shown, empty);
     }
 
@@ -1117,6 +1333,12 @@
           const ref = clientY > b.top + b.height / 2 ? over.nextSibling : over;
           if (ref !== dragging) list.insertBefore(dragging, ref);
         }
+        /* 目前落點會不會改變釘選狀態？會的話把分隔線點亮，讓「跨過去有事發生」先講出來。 */
+        const divider = pinDividerOf(list);
+        if (divider && !divider.hidden) {
+          const above = !!(dragging.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING);
+          divider.classList.toggle('is-drop-target', above !== (dragging.dataset.pinned === 'true'));
+        }
         dragging.style.transform = 'none';                         // 先還原以量到「在流位置」
         const natTop = dragging.getBoundingClientRect().top;
         dragging.style.transform = 'translateY(' + (clientY - grabDY - natTop) + 'px) scale(1.01)';
@@ -1135,7 +1357,24 @@
         follow(e.clientY);
       });
       list.addEventListener('pointermove', e => { if (dragging) follow(e.clientY); });
-      const end = () => { if (!dragging) return; dragging.style.transform = ''; dragging.classList.remove('is-dragging'); dragging = null; };
+      /* 放手時看落點在分隔列的哪一側，就是釘選或取消釘選（PIN-001）——拖過那條線本身
+         就是操作，不必再開一個「要不要釘選」的確認。額滿時退回線下，並讓計數閃一下。 */
+      const end = () => {
+        if (!dragging) return;
+        const divider = pinDividerOf(list);
+        if (divider && !divider.hidden) {
+          divider.classList.remove('is-drop-target');
+          const above = !!(dragging.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING);
+          if (above && dragging.dataset.pinned !== 'true') {
+            if (pinnedRowsOf(list).length >= PIN_MAX) { flashPinFull(list); list.insertBefore(dragging, divider.nextSibling); }
+            else dragging.dataset.pinned = 'true';
+          } else if (!above && dragging.dataset.pinned === 'true') {
+            delete dragging.dataset.pinned;
+          }
+          updatePinChrome(list);
+        }
+        dragging.style.transform = ''; dragging.classList.remove('is-dragging'); dragging = null;
+      };
       list.addEventListener('pointerup', end);
       list.addEventListener('pointercancel', end);
     })();

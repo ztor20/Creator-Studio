@@ -25,13 +25,19 @@
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* create-event 專屬 layout hooks，非跨頁重用，比照 e-shop/events 留頁內。上緣留白改用 shared.css 的 .wizard__body--form 修飾類（2026-07-09），對齊募資創建（測試版）create-campaign 的 72px。
      區段骨架／欄位網格／類型卡圖示／自動儲存 pill 已改用基準元件（2026-07-10）：
      form-section／form-grid（ds-components）、selection-card--icon（ds-components/selection-card.css）、
      .wizard__save-status（shared.css）。 */
-  .ce-tier-count { margin-top:10px; text-align:right; font-size: var(--fs-12); color:var(--muted-foreground); }
+  /* 票種卡與其計數列已 promote 至 ds-components/ticket-tier-card.css（2026-08-04，
+     `.ce-tier-count` → `.tier-count`）。 */
 
   /* 上傳格已填狀態（.upload-tile.is-filled）已 promote 至 ds-components/upload-tile.css。 */
 
@@ -342,13 +348,77 @@
       <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s4.h1" hidden>Set your ticket</h1>
       <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s4.sub" hidden>Free, or set one price to enter.</p>
 
-      <div class="form-section form-section--outlined" data-hide-type="watchparty">
-        <button type="button" class="upload-tile" id="ce-tier-add" style="min-height:120px">
-          <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
-          <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity, eligibility</span>
-        </button>
-        <div class="ce-tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
+      <!-- 票種卡清單（spec 5.1.6.1 F9／F9.1／F9.2）。卡片由 JS 依狀態渲染，直接坐在步驟
+           面板上（L1），與建立募資流程的方案卡（create-project 的 #bd-list）同一種做法——
+           不再外包一層 form-section--outlined：卡中卡在亮色會變成白疊白，且 Q24 把卡內填色
+           上限壓在兩層。空狀態的虛線卡（F9「空狀態顯示單一虛線卡」）維持原樣，只是不再有外框卡。 -->
+      <div data-hide-type="watchparty">
+       <!-- 收入試算改坐右軌（2026-08-04 使用者指示），沿用建立募資流程的 .wizard-split：
+            左邊是你在填的東西、右邊是填出來的結果，捲動時結果一直跟著。
+            右軌在來源順序上排前面（小螢幕會落到表單上方、先讀摘要），視覺位置由 grid-column 決定。 -->
+       <div class="wizard-split">
+        <aside class="wizard-split__rail" aria-labelledby="ce-calc-title">
+          <div class="card">
+            <h3 class="fd-ov__title" id="ce-calc-title" data-i18n="ce.calc.h">Revenue estimate</h3>
+            <div class="calc-sum">
+              <div class="kv kv--lead"><span class="kv__k" data-i18n="ce.calc.revenue">Projected revenue</span><span class="kv__v" id="ce-calc-rev">$0</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="ce.calc.fee">Platform fee</span><span class="kv__v" id="ce-calc-fee">$0</span></div>
+              <div class="kv"><span class="kv__k" data-i18n="ce.calc.cost">Event costs</span><span class="kv__v" id="ce-calc-cost">$0</span></div>
+              <div class="kv calc-sum__out"><span class="kv__k" data-i18n="ce.calc.profit">Your take</span><span class="kv__v" id="ce-calc-profit">$0</span></div>
+            </div>
+            <p class="field__hint" id="ce-calc-note" data-i18n="ce.calc.note">Assumes every ticket sells at its discounted price.</p>
+          </div>
+        </aside>
+        <div class="wizard-split__main">
+        <!-- 批次編輯（Beamco Group Edit）：整段票種卡一起進編輯態，共用一組取消／儲存。
+             刻意是選配模式、不是預設——票種一多，全部攤開這一頁會長到看不完。 -->
+        <div class="tier-toolbar">
+          <button type="button" class="btn btn--outline btn--sm" id="ce-tier-group" data-i18n="ce.tier.group">Group edit</button>
+          <span class="tier-toolbar__actions" id="ce-tier-groupacts" hidden>
+            <button type="button" class="btn btn--outline btn--sm" id="ce-tier-gcancel" data-i18n="ce.tier.cancel">Cancel</button>
+            <button type="button" class="btn btn--primary btn--sm" id="ce-tier-gsave" data-i18n="ce.tier.save">Save</button>
+          </span>
+        </div>
+        <!-- 網格版型（Figma 的 Grid View）。橫向捲動的 List View 不採用：設計稿自己就把
+             第一張卡切掉了，而「有幾種票、加起來幾張」正是這一步最需要一眼看到的。
+             #ce-tier-list 是 display:contents，卡片與新增格因此同屬 .tier-grid 這一張網格。 -->
+        <div class="tier-grid">
+          <div class="tier-list" id="ce-tier-list"></div>
+          <button type="button" class="upload-tile tier-add" id="ce-tier-add">
+            <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" id="ce-tier-cta" data-i18n="ce.tier.create">＋ Create first tier</span>
+            <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity</span>
+          </button>
+        </div>
+        <div class="tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
+
+        <!-- 所有票種的預設規則（購買條件／每人限購／折扣）。三種設定同一個結構，
+             範圍走「繼承＋覆寫」：這裡設一次是所有票種的預設，票種卡可以逐張改成自訂。
+             內容由 JS 渲染——同一組條件欄位在這裡與票種卡各出現一次，共用同一支渲染函式。 -->
+        <div class="form-section form-section--outlined" id="ce-rules-sec">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ce.rules.h">Default rules for all tiers</h3>
+            <p class="form-section__sub" data-i18n="ce.rules.sub">Each tier can override these.</p>
+          </div>
+          <div id="ce-rules" data-rules-for="event"></div>
+        </div>
+
+        <!-- 活動支出是唯一餵給試算的輸入，留在左邊；右軌只放算出來的結果
+             （站上右軌一律唯讀，不放正在編輯的欄位）。 -->
+        <div class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ce.calc.expense">Event costs</h3>
+          </div>
+          <div class="field">
+            <span class="amount-field amount-field--readonly">
+              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+              <input class="input amount-field__input" type="number" min="0" step="1" id="ce-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
+            </span>
+            <p class="field__hint" data-i18n="ce.calc.expense.hint">Venue, crew, production — whatever you pay out for this event.</p>
+          </div>
+        </div>
+        </div>
+       </div>
       </div>
 
       <!-- 共看派對分支（D149 §4.7）：F19 入場券（單一價，無票種階層、無 QR） -->
@@ -549,6 +619,10 @@
     });
     const ps = document.getElementById("stepper");
     if (ps) ps.style.setProperty("--progress", (step / labels.length * 100) + "%");
+    /* 步驟 4 有右軌，內容欄要放寬到 --mid（1140）才容得下票種網格＋320 的右軌；
+       其餘步驟維持 820 的表單寬度，一行字不會拉太長。共看派對沒有右軌，不放寬。 */
+    document.querySelector(".wizard__body")
+      ?.classList.toggle("wizard__body--mid", step === 4 && !isWP());
     document.querySelector("[data-action=back]").disabled = step === 1;
     const next = document.querySelector("[data-action=next]");
     next.dataset.i18n = nextKeys[step];
@@ -777,6 +851,13 @@
       alert(T("ce.publish-blocked", "Some required (＊) fields are empty. Please complete the highlighted fields."));
       return;
     }
+    /* 票種數量加總超過容量＝Review 的彙整阻擋項（spec §4.5 F11）：
+       不擋切步（草稿可以先超標），但發布前一定要回步驟 4 調完。 */
+    if (!isWP() && overCapacity()) {
+      step = 4; render();
+      alert(T("ce.publish-blocked-cap", "Tier quantities add up to more than the capacity. Adjust the tiers or the capacity."));
+      return;
+    }
     markSaved();
     alert(T("ce.publish-alert", "Event would be published here. (Prototype)"));
   }
@@ -790,21 +871,466 @@
      就緒與預覽改聽它發出的 upload:change，不再靠上面那條 toggle。 */
   document.addEventListener("upload:change", () => { renderPreview(); scheduleSave(); });
 
-  // ---- 票種：點擊新增票種卡 → 計數 +1、回填 Review/QC（demo）----
+  /* ---- 票種（spec 5.1.6.1 F9／F9.1／F9.2）------------------------------------
+     一張卡＝一個票種，三個必填欄位（名稱／價格／數量），收合與編輯兩態。
+     只有按過 Save 的卡才算「已建立」——編輯中的草稿不進計數、Review 摘要與
+     Quality check，否則按一下新增就先送出一張空票種，跟改壞之前那版一樣。
+     深度票務規則（entitlement／售票時窗／優先購票）屬活動詳情 5.1.6 F5，此步不收。 */
+  const tierList  = document.getElementById("ce-tier-list");
   const tierAdd   = document.getElementById("ce-tier-add");
   const tierCount = document.getElementById("ce-tier-count");
   const tierCta   = document.getElementById("ce-tier-cta");
-  if (tierAdd && tierCount) {
-    tierAdd.addEventListener("click", () => {
-      const n = Number(tierCount.dataset.tiers || 0) + 1;
-      tierCount.dataset.tiers = n;
-      tierCount.removeAttribute("data-i18n");
-      tierCount.textContent = T("ce.tier.countn", "{n} tiers created · minimum 1 required").replace("{n}", n);
-      if (tierCta) { tierCta.removeAttribute("data-i18n"); tierCta.textContent = T("ce.tier.addmore", "＋ Add another tier"); }
-      syncReview();
-      scheduleSave();
+  const tierBar   = document.querySelector(".tier-toolbar");
+  const tierGroupBtn  = document.getElementById("ce-tier-group");
+  const tierGroupActs = document.getElementById("ce-tier-groupacts");
+  const TIER_NAME_MAX = 40;
+
+  let tiers   = [];            // 畫面上的票種卡 {id, name, price, qty}（含還沒存過的新卡）
+  let drafts  = {};            // id → 編輯中的值；有 draft 就代表那張卡在編輯態
+  let newIds  = new Set();     // 還沒存過的新卡：Cancel 要整張移除、也不計入「已建立」
+  let errIds  = new Set();     // 按過 Save 的卡才開始標紅，邊打字邊標紅太吵
+  let groupMode = false;       // 批次編輯（Beamco Group Edit）
+  let tierSeq = 0;
+  let focusId = null;          // 這次重繪後要把游標放進哪張卡
+
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const capacity  = () => Number(document.querySelector("[data-ce=capacity]")?.value || 0);
+  const isInt     = v => /^\d+$/.test(String(v).trim());
+  const editing   = t => Object.prototype.hasOwnProperty.call(drafts, t.id);
+  // 一張卡當下的值：編輯中的看草稿，其餘看已存的
+  const val       = t => (editing(t) ? drafts[t.id] : t);
+  const savedTiers = () => tiers.filter(t => !newIds.has(t.id));
+  // 數量加總一律用「當下的值」——正在打字的那張也要算進去，超標才會即時反映
+  const sumQty = () => tiers.reduce((a, t) => { const q = val(t).qty; return a + (isInt(q) ? Number(q) : 0); }, 0);
+  const overCapacity = () => capacity() > 0 && sumQty() > capacity();
+
+  /* 欄位級驗證（F9.1）：名稱 1–40 字且同活動內不重複、價格整數 ≥ 0、數量整數 ≥ 1。
+     回傳每欄的錯誤訊息（沒錯就是空字串），由 renderTierErrors 掛到各欄的 hint 上。 */
+  function tierErrors(t) {
+    const d = val(t);
+    const e = { name: "", price: "", qty: "" };
+    const name = (d.name || "").trim();
+    if (!name) e.name = T("ce.tier.err.name", "Ticket type name is required.");
+    else if (name.length > TIER_NAME_MAX) e.name = T("ce.tier.err.namelen", "Keep the name within 40 characters.");
+    else if (tiers.some(o => o.id !== t.id && (val(o).name || "").trim().toLowerCase() === name.toLowerCase()))
+      e.name = T("ce.tier.err.namedup", "This event already has a tier with that name.");
+    if (!isInt(d.price)) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
+    if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
+    else if (overCapacity())
+      e.qty = T("ce.tier.err.overcap", "Tier quantities add up to {n}, over the {cap} capacity.")
+                .replace("{n}", sumQty()).replace("{cap}", capacity());
+    return e;
+  }
+  const tierValid = t => { const e = tierErrors(t); return !e.name && !e.price && !e.qty; };
+
+  function commitTier(t) {                              // 把草稿寫回卡片本身
+    const d = drafts[t.id];
+    t.name = d.name.trim(); t.price = String(Number(d.price)); t.qty = String(Number(d.qty));
+    delete drafts[t.id]; newIds.delete(t.id); errIds.delete(t.id);
+  }
+  function dropDraft(t) {                               // 丟掉草稿；新卡連同卡片一起移除
+    delete drafts[t.id]; errIds.delete(t.id);
+    if (newIds.has(t.id)) { newIds.delete(t.id); tiers = tiers.filter(o => o.id !== t.id); }
+  }
+
+  function tierFieldHTML(key, labelKey, labelFb, value, opts) {
+    const o = opts || {};
+    const inner = o.money
+      ? '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
+        '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key + '" value="' + esc(value) +
+        '" placeholder="' + esc(T(o.phKey, o.phFb)) + '"></span>'
+      : '<input class="input" ' + (o.num ? 'type="number" min="1" step="1" ' : "") + 'data-tier-f="' + key +
+        '" value="' + esc(value) + '" placeholder="' + esc(T(o.phKey, o.phFb)) + '">';
+    return '<div class="field">' +
+      '<label class="field__label"><span>' + esc(T(labelKey, labelFb)) + '</span> <span class="field__req">*</span></label>' +
+      '<span class="tier-card__control" data-tier-wrap="' + key + '" data-empty="' + (String(value).length ? "false" : "true") + '">' +
+        inner +
+        '<button type="button" class="tier-card__clear" data-tier-clear="' + key + '" aria-label="' + esc(T("ce.tier.clear", "Clear")) +
+          '"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</span>' +
+      '<p class="field__hint" data-tier-hint="' + key + '"></p>' +
+    '</div>';
+  }
+
+  function tierCardHTML(t) {
+    const isEdit = editing(t);
+    const d = val(t);
+    const named = (d.name || "").trim();
+    return '<div class="card tier-card' + (isEdit ? " tier-card--editing" : "") + (isEdit && groupMode ? " tier-card--group" : "") +
+        '" data-tier="' + t.id + '">' +
+      '<div class="tier-card__head">' +
+        /* 徽章是 h4 的兄弟、不是子節點——邊打字邊更新卡標時會整個覆寫 h4 的文字，
+           放在裡面會被一起洗掉。 */
+        '<h4 class="tier-card__name' + (named ? "" : " tier-card__name--untitled") + '">' +
+          esc(named || T("ce.tier.untitled", "Untitled tier")) + '</h4>' +
+        '<span class="badge badge--neutral tier-card__badge" data-tier-custom' + (t.rules ? "" : " hidden") + '>' +
+          esc(T("ce.rule.custom.badge", "Custom")) + '</span>' +
+        '<div class="tier-card__actions">' +
+          '<details class="dropdown">' +
+            '<summary class="btn btn--icon btn--sm" aria-label="' + esc(T("ce.tier.more", "More actions")) +
+              '"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>' +
+            '<div class="dropdown__menu" role="menu">' +
+              '<button type="button" class="dropdown__item" role="menuitem" data-tier-dup>' +
+                '<i data-lucide="copy" class="ztor-icon"></i>' + esc(T("ce.tier.duplicate", "Duplicate tier")) + '</button>' +
+              '<button type="button" class="dropdown__item dropdown__item--danger" role="menuitem" data-tier-remove>' +
+                '<i data-lucide="trash-2" class="ztor-icon"></i>' + esc(T("ce.tier.remove", "Remove tier")) + '</button>' +
+            '</div>' +
+          '</details>' +
+        '</div>' +
+      '</div>' +
+      '<dl class="tier-card__facts">' +
+        '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.price", "Price")) + '</dt><dd>$' + esc(t.price) + '</dd></div>' +
+        '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.qty", "Quantity")) + '</dt><dd>' + esc(t.qty) + '</dd></div>' +
+      '</dl>' +
+      '<button type="button" class="btn btn--outline btn--sm tier-card__edit" data-tier-edit>' + esc(T("ce.tier.edit", "Edit")) + '</button>' +
+      (isEdit
+        ? '<div class="tier-card__body">' +
+            tierFieldHTML("name",  "ce.tier.name",  "Name",     d.name,  { phKey: "ce.tier.name.ph",  phFb: "e.g., VIP" }) +
+            tierFieldHTML("price", "ce.tier.price", "Price",    d.price, { phKey: "ce.tier.price.ph", phFb: "0", money: true }) +
+            tierFieldHTML("qty",   "ce.tier.qty",   "Quantity", d.qty,   { phKey: "ce.tier.qty.ph",   phFb: "e.g., 200", num: true }) +
+            /* 進階：這張票種自訂規則。預設關＝跟隨活動預設；打開才長出自己的一份，
+               關掉就丟回去跟隨（不保留上次填的，免得看起來還在生效）。 */
+            '<div class="tier-card__rules" data-rules-for="' + t.id + '">' +
+              '<label class="tier-card__own">' +
+                '<span>' + esc(T("ce.rule.custom", "Custom rules for this tier")) + '</span>' +
+                '<span class="switch' + (t.rules ? " switch--on" : "") + '" data-tier-own role="switch" aria-checked="' +
+                  (t.rules ? "true" : "false") + '" tabindex="0"></span>' +
+              '</label>' +
+              (t.rules ? rulesHTML(t.rules)
+                       : '<p class="field__hint">' + esc(T("ce.rule.inherit", "Following the event defaults below.")) + '</p>') +
+            '</div>' +
+          '</div>' +
+          '<div class="tier-card__foot">' +
+            '<button type="button" class="btn btn--destructive btn--sm" data-tier-remove>' + esc(T("ce.tier.removeshort", "Remove")) + '</button>' +
+            '<span class="tier-card__foot-spacer"></span>' +
+            '<button type="button" class="btn btn--outline btn--sm" data-tier-cancel>' + esc(T("ce.tier.cancel", "Cancel")) + '</button>' +
+            '<button type="button" class="btn btn--primary btn--sm" data-tier-save>' + esc(T("ce.tier.save", "Save")) + '</button>' +
+          '</div>'
+        : "") +
+    '</div>';
+  }
+
+  /* 錯誤與提示只改文字、不重繪整張卡——重繪會把游標從使用者正在打的欄位彈出去。
+     批次編輯時每張卡都在編輯態，所以逐張跑。 */
+  function renderTierErrors() {
+    if (!tierList) return;
+    const left = capacity() > 0 ? capacity() - sumQty() : 0;   // 含正在打的那幾張，數字才跟著輸入走
+    tiers.filter(editing).forEach(t => {
+      const card = tierList.querySelector('.tier-card[data-tier="' + t.id + '"]');
+      if (!card) return;
+      const errs = tierErrors(t);
+      const d = drafts[t.id];
+      ["name", "price", "qty"].forEach(k => {
+        const hint  = card.querySelector('[data-tier-hint="' + k + '"]');
+        const wrap  = card.querySelector('[data-tier-wrap="' + k + '"]');
+        const input = card.querySelector('[data-tier-f="' + k + '"]');
+        if (wrap) wrap.dataset.empty = String(!String(d[k] == null ? "" : d[k]).length);
+        if (!hint) return;
+        const show = errIds.has(t.id) && errs[k];
+        hint.classList.toggle("tier-card__err", !!show);
+        if (show) hint.textContent = errs[k];
+        // 餘量提示只在單張編輯時出現：批次編輯時每張卡都掛同一句，等於同一個數字講三遍
+        else if (k === "qty" && capacity() > 0 && !groupMode)
+          hint.textContent = T("ce.tier.qty.hint", "{n} of the {cap} capacity still unassigned")
+                               .replace("{n}", Math.max(left, 0)).replace("{cap}", capacity());
+        else hint.textContent = "";
+        if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
+      });
     });
   }
+
+  function renderTierCount() {
+    if (!tierCount) return;
+    const n = savedTiers().length;
+    tierCount.dataset.tiers = n;                       // readState() 仍從這裡讀票種數
+    tierCount.removeAttribute("data-i18n");
+    tierCount.classList.toggle("tier-count--over", overCapacity());
+    tierCount.textContent = overCapacity()
+      ? T("ce.tier.err.overcap", "Tier quantities add up to {n}, over the {cap} capacity.")
+          .replace("{n}", sumQty()).replace("{cap}", capacity())
+      : (n > 0
+          ? T("ce.tier.countn", "{n} tiers created · minimum 1 required").replace("{n}", n)
+          : T("ce.tier.count", "0 tiers created · minimum 1 required"));
+    if (tierCta) {
+      tierCta.removeAttribute("data-i18n");
+      tierCta.textContent = n > 0 ? T("ce.tier.addmore", "+ Add another tier") : T("ce.tier.create", "+ Create first tier");
+    }
+    // 批次編輯只在「已經有存下來的票種」時才有意義；一張都沒有時整條工具列收起來
+    if (tierBar) tierBar.hidden = n === 0;
+    if (tierGroupBtn)  tierGroupBtn.hidden  = groupMode;
+    if (tierGroupActs) tierGroupActs.hidden = !groupMode;
+  }
+
+  function renderTiers() {
+    if (!tierList) return;
+    tierList.innerHTML = tiers.map(tierCardHTML).join("");
+    if (window.ztorIcons) window.ztorIcons.applyIcons(tierList);
+    renderTierErrors();
+    renderTierCount();
+    renderCalc();
+    syncReview();
+    if (focusId) {
+      const f = tierList.querySelector('.tier-card[data-tier="' + focusId + '"] [data-tier-f=name]');
+      if (f) f.focus();
+      focusId = null;
+    }
+  }
+
+  function startTier(t) {                              // 開一張卡的編輯態（新增或編輯既有）
+    if (!groupMode) tiers.filter(editing).forEach(dropDraft);   // 單張模式一次只編輯一張
+    if (!t) {
+      t = { id: "tier-" + (++tierSeq), name: "", price: "", qty: "" };
+      tiers.push(t); newIds.add(t.id);
+    }
+    drafts[t.id] = { name: t.name, price: t.price, qty: t.qty };
+    errIds.delete(t.id);
+    focusId = t.id;
+    renderTiers();
+  }
+
+  if (tierAdd) tierAdd.addEventListener("click", () => { startTier(null); scheduleSave(); });
+
+  /* 批次編輯（Beamco Group Edit）：整段一起進編輯態、共用一組取消／儲存。
+     刻意是選配模式——票種一多，全部攤開這一頁會長到看不完。 */
+  if (tierGroupBtn) tierGroupBtn.addEventListener("click", () => {
+    groupMode = true;
+    savedTiers().forEach(t => { if (!editing(t)) drafts[t.id] = { name: t.name, price: t.price, qty: t.qty }; });
+    renderTiers(); scheduleSave();
+  });
+  document.getElementById("ce-tier-gcancel")?.addEventListener("click", () => {
+    groupMode = false;
+    tiers.filter(editing).forEach(dropDraft);
+    renderTiers(); scheduleSave();
+  });
+  document.getElementById("ce-tier-gsave")?.addEventListener("click", () => {
+    const open = tiers.filter(editing);
+    open.forEach(t => errIds.add(t.id));
+    if (open.some(t => !tierValid(t))) { renderTierErrors(); return; }   // 有一張不過就整批不收
+    open.forEach(commitTier);
+    groupMode = false;
+    renderTiers(); scheduleSave();
+  });
+
+  if (tierList) {
+    // 輸入即時寫回草稿：只更新提示與計數，不重繪卡片（重繪會踢掉游標）
+    tierList.addEventListener("input", e => {
+      const f = e.target.closest("[data-tier-f]");
+      const card = f && f.closest(".tier-card");
+      if (!card || !drafts[card.dataset.tier]) return;
+      drafts[card.dataset.tier][f.dataset.tierF] = f.value;
+      if (f.dataset.tierF === "name") {              // 卡標＝票種名稱（F9.2），邊打邊跟上
+        const head = card.querySelector(".tier-card__name");
+        const named = f.value.trim();
+        head.textContent = named || T("ce.tier.untitled", "Untitled tier");
+        head.classList.toggle("tier-card__name--untitled", !named);
+      }
+      renderTierErrors();
+      renderTierCount();
+      scheduleSave();
+    });
+
+    tierList.addEventListener("click", e => {
+      const card = e.target.closest(".tier-card");
+      if (!card) return;
+      const idx = tiers.findIndex(t => t.id === card.dataset.tier);
+      if (idx < 0) return;
+      const t = tiers[idx];
+
+      if (e.target.closest("[data-tier-clear]")) {
+        const key = e.target.closest("[data-tier-clear]").dataset.tierClear;
+        const input = card.querySelector('[data-tier-f="' + key + '"]');
+        if (drafts[t.id]) drafts[t.id][key] = "";
+        if (input) { input.value = ""; input.focus(); }
+        renderTierErrors(); renderTierCount(); scheduleSave();
+        return;
+      }
+      if (e.target.closest(".tier-card__own")) {      // 自訂規則開關：開＝複製一份活動預設，關＝丟回去跟隨（整列可點，不只那顆開關）
+        t.rules = t.rules ? null : JSON.parse(JSON.stringify(eventRules));
+        renderTiers(); scheduleSave();
+        return;
+      }
+      if (e.target.closest("[data-tier-edit]")) { startTier(t); return; }
+      if (e.target.closest("[data-tier-dup]")) {       // F9.2：複製＝同欄位值、名稱後綴 Copy
+        const d = val(t);
+        tiers.splice(idx + 1, 0, {
+          id: "tier-" + (++tierSeq),
+          name: ((d.name || "") + T("ce.tier.copysuffix", " Copy")).slice(0, TIER_NAME_MAX),
+          price: d.price, qty: d.qty
+        });
+        renderTiers(); scheduleSave();
+        return;
+      }
+      if (e.target.closest("[data-tier-remove]")) {    // F9.2：移除整張卡（破壞性）
+        delete drafts[t.id]; newIds.delete(t.id); errIds.delete(t.id);
+        tiers.splice(idx, 1);
+        if (groupMode && !tiers.some(editing)) groupMode = false;
+        renderTiers(); scheduleSave();
+        return;
+      }
+      if (e.target.closest("[data-tier-cancel]")) {    // 取消本次編輯、不儲存變更
+        dropDraft(t);
+        renderTiers(); scheduleSave();
+        return;
+      }
+      if (e.target.closest("[data-tier-save]")) {
+        errIds.add(t.id);
+        if (!tierValid(t)) { renderTierErrors(); return; }
+        commitTier(t);
+        renderTiers(); scheduleSave();
+      }
+    });
+  }
+
+  /* ---- 票種規則（購買條件／每人限購／折扣）＋收入試算 -------------------------
+     三種設定同一個結構，範圍走「繼承＋覆寫」：活動層設一次是所有票種的預設，
+     票種卡打開「自訂」才有自己的一份。條件欄位（不限／限時間／限粉絲分級）在
+     活動層與票種卡各出現一次，共用同一支渲染函式，不寫兩份。
+     ※ 這一整塊是產品變更提案（ASSUMPTIONS TIX-001），上游規格 5.1.6.1 尚無對應欄位。 */
+  const FAN_TIERS = ["inner", "superfan", "devoted", "fan"];    // 高→低，與 e-shop 粉絲分級門檻同一套
+  const EVENT_FEE_PCT = 5;   // 平台費率＝admin-platform-fees「活動 › 現場活動票券」的 General 值（原型無共用來源，見 TIX-001）
+
+  const newRules = () => ({
+    buy:  { mode: "none", from: "", to: "", tier: "fan" },
+    cap:  { mode: "none", n: "" },
+    disc: { mode: "off", pct: "", cmode: "none", from: "", to: "", tier: "fan" }
+  });
+  let eventRules = newRules();
+  const rulesOf = t => t.rules || eventRules;        // 沒有自己的一份＝跟隨活動
+
+  function segHTML(path, value, opts) {
+    return '<div class="segmented" data-rule-seg="' + path + '" data-value="' + esc(value) + '">' +
+      opts.map(o => '<button type="button" class="segmented__btn' + (o.v === value ? " segmented__btn--active" : "") +
+        '" data-val="' + o.v + '">' + esc(T(o.k, o.f)) + '</button>').join("") + '</div>';
+  }
+  function whenHTML(path, val, cur, inner) {
+    return '<div class="rule-when" data-rule-when="' + path + '" data-rule-val="' + val + '"' +
+      (cur === val ? "" : " hidden") + '>' + inner + '</div>';
+  }
+  // 條件欄位：限時間＝起訖兩欄；限粉絲分級＝一個下拉（買得到的最低分級）
+  function condHTML(g, r, mkey) {
+    const cur = r[mkey];
+    return segHTML(g + "." + mkey, cur, [
+        { v: "none", k: "ce.rule.any",  f: "No limit" },
+        { v: "time", k: "ce.rule.time", f: "Time window" },
+        { v: "tier", k: "ce.rule.tier", f: "Fan tier" }
+      ]) +
+      whenHTML(g + "." + mkey, "time", cur,
+        '<div class="rule-row">' +
+          '<input class="input" type="datetime-local" data-rule-f="' + g + '.from" value="' + esc(r.from) + '">' +
+          '<input class="input" type="datetime-local" data-rule-f="' + g + '.to" value="' + esc(r.to) + '">' +
+        '</div>') +
+      whenHTML(g + "." + mkey, "tier", cur,
+        '<select class="select" data-rule-f="' + g + '.tier">' +
+          FAN_TIERS.map(v => '<option value="' + v + '"' + (r.tier === v ? " selected" : "") + '>' +
+            esc(T("ce.rule.tier." + v, v)) + '</option>').join("") +
+        '</select>');
+  }
+  function rulesHTML(r) {
+    return '<div class="rule">' +
+        '<div class="field__label">' + esc(T("ce.rule.buy", "Who can buy")) + '</div>' +
+        condHTML("buy", r.buy, "mode") +
+      '</div>' +
+      '<div class="rule">' +
+        '<div class="field__label">' + esc(T("ce.rule.cap", "Per-person limit")) + '</div>' +
+        segHTML("cap.mode", r.cap.mode, [
+          { v: "none", k: "ce.rule.any", f: "No limit" },
+          { v: "cap",  k: "ce.rule.cap.on", f: "Set a cap" }
+        ]) +
+        whenHTML("cap.mode", "cap", r.cap.mode,
+          '<div class="rule-row"><input class="input" type="number" min="1" step="1" data-rule-f="cap.n" value="' +
+            esc(r.cap.n) + '" placeholder="' + esc(T("ce.rule.cap.ph", "e.g., 2")) + '">' +
+          '<span class="rule-unit">' + esc(T("ce.rule.cap.unit", "tickets per person")) + '</span></div>') +
+      '</div>' +
+      '<div class="rule">' +
+        '<div class="field__label">' + esc(T("ce.rule.disc", "Discount")) + '</div>' +
+        segHTML("disc.mode", r.disc.mode, [
+          { v: "off", k: "ce.rule.disc.off", f: "None" },
+          { v: "on",  k: "ce.rule.disc.on",  f: "Set a discount" }
+        ]) +
+        whenHTML("disc.mode", "on", r.disc.mode,
+          '<div class="rule-row"><span class="amount-field amount-field--suffix amount-field--readonly">' +
+            '<input class="input amount-field__input" type="number" min="0" max="100" step="1" data-rule-f="disc.pct" value="' +
+              esc(r.disc.pct) + '" placeholder="0"><span class="amount-field__unit">%</span></span></div>' +
+          '<div class="rule-sub">' + condHTML("disc", r.disc, "cmode") + '</div>') +
+      '</div>';
+  }
+
+  const ruleGet = (r, path) => { const p = path.split("."); return r[p[0]][p[1]]; };
+  const ruleSet = (r, path, v) => { const p = path.split("."); r[p[0]][p[1]] = v; };
+
+  const rulesRoot = document.getElementById("ce-rules");
+  function renderRules() {
+    if (rulesRoot) rulesRoot.innerHTML = rulesHTML(eventRules);
+    renderCalc();
+  }
+
+  /* 規則的互動：整段委派在 body 上，活動層與票種卡共用同一組處理。
+     改哪一份由最近的 [data-rules-for] 決定（"event" 或票種 id）。 */
+  function rulesFor(el) {
+    const host = el.closest("[data-rules-for]");
+    if (!host) return null;
+    if (host.dataset.rulesFor === "event") return eventRules;
+    const t = tiers.find(x => x.id === host.dataset.rulesFor);
+    return t ? rulesOf(t) : null;
+  }
+  document.addEventListener("click", e => {
+    const btn = e.target.closest("[data-rule-seg] .segmented__btn");
+    if (!btn) return;
+    const group = btn.closest("[data-rule-seg]");
+    const r = rulesFor(group);
+    if (!r) return;
+    const path = group.dataset.ruleSeg, v = btn.dataset.val;
+    ruleSet(r, path, v);
+    group.dataset.value = v;
+    group.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b === btn));
+    const scope = group.closest("[data-rules-for]");
+    scope.querySelectorAll('[data-rule-when="' + path + '"]').forEach(w => { w.hidden = w.dataset.ruleVal !== v; });
+    renderCalc(); renderTierBadges(); scheduleSave();
+  });
+  document.addEventListener("input", e => {
+    const f = e.target.closest("[data-rule-f]");
+    if (!f) return;
+    const r = rulesFor(f);
+    if (!r) return;
+    ruleSet(r, f.dataset.ruleF, f.value);
+    renderCalc(); scheduleSave();
+  });
+
+  /* 收入試算（使用者裁決 2026-08-04）：一律用折後價當保守估——折扣實際會有幾個人用
+     無法預估，寧可少報。平台費接 admin-platform-fees 的活動票券費率。 */
+  // 負數要寫成 -$290,000 不是 $-290,000——錢的符號在最前面才讀得順
+  const money = n => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
+  function netPrice(t) {
+    const r = rulesOf(t);
+    const pct = r.disc.mode === "on" ? Math.min(Math.max(Number(r.disc.pct) || 0, 0), 100) : 0;
+    return (Number(t.price) || 0) * (1 - pct / 100);
+  }
+  function renderCalc() {
+    const rev  = savedTiers().reduce((a, t) => a + netPrice(t) * (Number(t.qty) || 0), 0);
+    const fee  = rev * EVENT_FEE_PCT / 100;
+    const cost = Number(document.getElementById("ce-expense")?.value || 0);
+    const profit = rev - fee - cost;
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = money(v); };
+    set("ce-calc-rev", rev); set("ce-calc-fee", fee); set("ce-calc-cost", cost);
+    const p = document.getElementById("ce-calc-profit");
+    if (p) { p.textContent = money(profit); p.classList.toggle("calc-sum__neg", profit < 0); }
+  }
+  document.getElementById("ce-expense")?.addEventListener("input", () => { renderCalc(); scheduleSave(); });
+
+  // 收合卡上的「自訂」標記：哪幾張票種不跟隨活動預設，一眼看得出來
+  function renderTierBadges() {
+    if (!tierList) return;
+    tiers.forEach(t => {
+      const b = tierList.querySelector('.tier-card[data-tier="' + t.id + '"] [data-tier-custom]');
+      if (b) b.hidden = !t.rules;
+    });
+  }
+
+  // 容量改了，票種那邊的「還剩幾張」與超標警示要跟著重算
+  document.querySelector("[data-ce=capacity]")?.addEventListener("input", () => { renderTierErrors(); renderTierCount(); });
+
+  renderTierCount();
 
   /* ===== 共看派對（Watch Party）分支 — D149 §4.7 ===== */
 
@@ -932,7 +1458,32 @@
     setPv("ce-pv-tickets", wpTicketLabel(w), "ce.pv.tickets", "Tickets coming soon");
   }
 
-  document.addEventListener('i18n:applied', render);
+  /* 票種卡是 JS 產生的，切語言時 i18n 掃不到它們（掃的是 data-i18n 標記），
+     所以這裡連同票種一起重畫，否則切成 en 之後票種卡仍留在中文。 */
+  /* 重繪期間收到的 i18n:applied 要忽略，否則會無限迴圈（2026-08-04 實際踩到，整頁卡死）：
+     規則區塊裡有 datetime-local 欄位 → partials/date-input.js 的 MutationObserver 接到新節點
+     → 它會呼叫 applyI18n() 加工 → i18n.js 的 apply() 結尾一律 dispatch 'i18n:applied'
+     → 這個 handler 又重繪一次規則 → 又插入新的日期欄位 → 無窮下去。
+     旗標用 setTimeout(0) 才解除：observer 的 callback 是 microtask，會在這個 macrotask 之前跑完，
+     所以自己造成的那一輪一定被擋掉，使用者真的切語言那一次不受影響。 */
+  /* 右軌是 sticky，貼齊位置要讓開 .wizard__top（同一個捲動容器裡的 sticky header）。
+     高度隨語言換行而變，所以執行期量一次、寫進 --wizard-top-h（做法沿用 create-project）。 */
+  (function measureTop() {
+    const bar = document.querySelector(".wizard__top");
+    const set = () => { if (bar) document.documentElement.style.setProperty("--wizard-top-h", bar.offsetHeight + "px"); };
+    set();
+    window.addEventListener("resize", set);
+    document.addEventListener("i18n:applied", set);
+  })();
+
+  let i18nBusy = false;
+  document.addEventListener('i18n:applied', () => {
+    if (i18nBusy) return;
+    i18nBusy = true;
+    render(); renderRules(); renderTiers();
+    setTimeout(() => { i18nBusy = false; }, 0);
+  });
+  renderRules();
 })();
 </script>
 <!-- 圖片格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->

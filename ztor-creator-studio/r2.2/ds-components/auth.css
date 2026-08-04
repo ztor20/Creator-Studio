@@ -1,0 +1,217 @@
+/* ============================================================
+   Auth shell · 未登入層的置中表單殼（spec 5.1.10 · D170）
+   ------------------------------------------------------------
+   站上第二個「沒有 Creator Studio 導航」的整頁殼（第一個是 scanner）。
+   差別在角色：scanner 是給現場人員的手機工具、刻意做成手機框；
+   登入是進站前的一份表單，2026-08-04 使用者裁示改成「沒有卡片的設計」——
+   內容直接置中在頁面底色上，沒有容器底色、外框、陰影或圓角，
+   比照 ztor 消費端登入頁（標題、選項、欄位垂直置中在深色背景上）。
+
+   頁底改吃 --background（body canvas）而不是 --surface-shell：--surface-shell
+   是「app 外殼」那一層，它存在的理由是要跟疊在上面的卡拉開對比；卡拿掉之後
+   沒有東西需要被襯托，內容就該直接坐在頁面底色上。亮色 #FFFFFF、暗色 #0C0D0D。
+
+   內層的六個登入方式仍是可點的方塊（.radio-cards--gate），那是 F1 的選擇器、
+   不是容器——本次拿掉的只有最外層包住全部內容的那張卡。
+
+   四個畫面（方式選擇／電子郵件／手機號碼／忘記密碼）住在同一個殼裡，
+   用 .auth-step[hidden] 互切——規格「兩者互斥、不同時呈現」（§頁面佈局 2）。
+   殼只固定最大寬度，切換時只有內容換、左右邊界不跳。
+
+   anatomy
+     .auth-page                      整頁置中容器（--background 底、角標的定位基準）
+       .auth-brand                   品牌角標（釘左上角，在 shell 之外，不隨畫面換）
+         .auth-brand__logo           ztor wordmark
+         .auth-brand__name           Creator Studio
+       .auth-shell                   內容欄（只有置中與 max 420，無底色／邊框／陰影）
+         .auth-step[data-auth-step]  四個畫面之一
+           .auth-intro               標題區（標題與說明貼在一起，不吃 step 的 20px 節奏）
+             .auth-head              返回鈕＋標題同列
+               .auth-head__back      返回鈕（layout hook；外觀全部來自 .btn.btn--icon）
+               .auth-title           畫面標題
+             .auth-sub               標題下的一句說明
+           .auth-pw                  密碼欄外殼（輸入框 ＋ 右側顯示／隱藏鈕）
+             .auth-pw__toggle
+           .auth-inline              「主欄位 ＋ 右側附帶動作」的一列（國碼＋號碼、驗證碼＋取得驗證碼）
+           .auth-actions             主要行動（滿寬）
+           .auth-foot                次要行動列（忘記密碼）
+           .auth-link                文字型次要行動
+
+   為什麼返回鈕不自帶外觀：STYLE-DECISIONS Q43 已裁決「返回上一層＝裸箭頭」，
+   而 .btn--icon 本身就是「透明底、hover 才出 --accent 底」的方形圖示鈕，
+   跟 Q43 要的長相一致。本檔只留 flex 定位，不再重寫一份看起來一樣的樣式。
+   ============================================================ */
+
+/* 內容的垂直起點是固定的，不是置中（2026-08-04 使用者裁示「內容再往上一點」）。
+   為什麼不改成「置中但偏上」：四個畫面高度不一樣（方式選擇有六張卡、
+   忘記密碼只有一個欄位），只要基準是置中，切畫面時標題就會上下跳——高的畫面
+   標題往上、矮的往下，明明只換了內容，整塊卻在動。改成固定上內距之後，
+   標題永遠落在同一條線上，畫面只有下方在長高。
+   上內距 168px = --sp-96 + --sp-72：要低到不跟左上角的品牌角標（24 + 約 42 高）
+   打架，又要明顯高於原本的置中位置（1440×900 下原為 318px）。 */
+.auth-page {
+  position: relative;          /* 品牌角標的定位基準 */
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--sp-96) + var(--sp-72)) var(--sp-16) var(--sp-48);
+  background: var(--background);
+}
+
+/* 內容欄：只負責寬度與垂直節奏。沒有底色、外框、陰影與圓角——這正是
+   「沒有 card 的設計」的落點，改這裡就等於把卡加回來，別加。 */
+.auth-shell {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-24);
+}
+
+/* 品牌角標：識別用，不是導航（沒有連結目的地）。
+   2026-08-04 使用者裁示分兩次到位——先改成「ztor wordmark ＋ 下一行 Creator
+   Studio」（logo 說完是誰，第二行說是哪一個介面，所以疊兩行、不並排成一句），
+   再參考 Cursor 登入頁把它移出 .auth-shell、釘到畫面左上角。
+
+   為什麼移出去：.auth-shell 裝的是「這一步要做的事」，四個畫面會輪流換內容；
+   品牌是「你在哪個產品」，從頭到尾不變。放在 shell 裡等於每換一步都讓品牌
+   再壓一次當前標題，而且返回鈕的視覺起點會被推到品牌下方、離頁面左上角很遠。
+   釘在角落之後，shell 的第一個元素永遠是當前這一步的標題。 */
+.auth-brand {
+  position: absolute;
+  top: var(--sp-24);
+  left: var(--sp-24);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  color: var(--foreground);
+}
+.auth-brand__logo {
+  width: 64px;
+  height: auto;
+  display: block;
+  color: var(--foreground);
+}
+.auth-brand__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-15);
+  letter-spacing: -0.3px;
+  color: var(--muted-foreground);
+}
+
+.auth-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-20);
+}
+/* [hidden] 必須蓋過上面的 display:flex，否則沒作用中的畫面仍會露出（SKILL 鐵律：
+   凡是用 el.hidden 切換顯隱的 class 都要補這條）。 */
+.auth-step[hidden] { display: none; }
+
+/* 標題與說明是同一個語意塊，用自己的 8px 節奏；與其他區塊之間才走 step 的 20px。 */
+.auth-intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+/* min-height 對齊返回鈕的 36px：方式選擇沒有返回鈕，這一列只有標題（約 29px 高），
+   其餘三個畫面有返回鈕（36px）。不鎖高度的話，標題在有鈕的畫面會被 align-items:center
+   往下推約 4px——切畫面時標題就在那 4px 之間抖一下。鎖成同高，四個畫面的標題落在同一條線。 */
+.auth-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  min-height: var(--control-h-sm);
+  min-width: 0;
+}
+/* 只留定位，外觀全部來自 .btn.btn--icon（Q43 裸箭頭）。負左邊距讓箭頭的
+   光學左緣對齊內容欄左緣，而不是對齊 36px 命中框的左緣。 */
+.auth-head__back {
+  flex: 0 0 auto;
+  margin-left: calc(-1 * var(--sp-8));
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-24);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.48px;
+  color: var(--foreground);
+  margin: 0;
+  min-width: 0;
+}
+
+.auth-sub {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-comfy);
+  color: var(--muted-foreground);
+}
+
+/* 密碼欄：輸入框滿寬，顯示／隱藏鈕疊在右側。右內距讓文字不會鑽到鈕底下。 */
+.auth-pw { position: relative; }
+.auth-pw .input { padding-right: var(--sp-40); }
+.auth-pw__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--sp-4);
+  transform: translateY(-50%);
+}
+
+/* 「主欄位 ＋ 右側附帶動作」的一列。國碼那組把左欄壓成內容寬（--lead），
+   驗證碼那組把右欄壓成內容寬——兩種都只是欄寬不同，共用同一條 grid。 */
+.auth-inline {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-8);
+  align-items: center;
+}
+.auth-inline--lead { grid-template-columns: 116px 1fr; }
+.auth-inline .btn { white-space: nowrap; }
+
+/* 第三方登入不再有自己的樣式（2026-08-04 使用者裁示「將第三方全部都用這種格式」）。
+   原本的 .auth-oauth／.auth-oauth__btn（一列四顆只有品牌標記的方塊）已整條移除：
+   Apple／Google／Facebook／LINE 改成跟電子郵件／手機號碼同一種卡，全部住進 F1 那個
+   .segmented.radio-cards--gate 的 2 欄 grid（2 欄 × 3 列），本檔不需要為它們再加規則。
+   零消費的元件規則不留在庫裡（check_ds_sync 檢查 11 的精神）。 */
+
+/* 主要行動滿寬：每個畫面只有一個出口，滿寬讓它成為畫面唯一的落點。 */
+.auth-actions { display: flex; flex-direction: column; gap: var(--sp-8); }
+.auth-actions .btn { width: 100%; }
+
+.auth-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-16);
+}
+
+.auth-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+.auth-link:hover { color: var(--foreground); text-decoration: underline; text-underline-offset: 3px; }
+/* 曾有一條 .auth-sub .auth-link（句子裡的連結恆常畫底線），唯一的消費者是註冊入口
+   「還沒有帳號？註冊」；註冊入口已於 2026-08-04 整段移除，該規則一併刪除。 */
+.auth-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* 表單級的錯誤／狀態列用 .alert.alert--row（既有細條版），這裡只收掉它的上下內距，
+   讓它貼齊 .auth-step 的 gap 節奏，不多長出一段空白。 */
+.auth-step .alert--row { padding: 0; }
+
+@media (max-width: 480px) {
+  /* 手機把上內距收回 96：畫面本來就矮，桌機那段 168 會把內容推到摺線以下。
+     96 仍足以讓開左上角的品牌角標（角標本身也往內縮一格）。 */
+  .auth-page { padding: var(--sp-96) var(--sp-16) var(--sp-24); }
+  .auth-brand { top: var(--sp-16); left: var(--sp-16); }
+}
