@@ -289,10 +289,32 @@
   background: var(--card);
   box-shadow: var(--shadow-card);
 }
-/* 吸住時：往上延伸一段實心的頁面底色，把 --sp-16 那段間距填掉。 */
-.vault-reach.is-stuck {
-  box-shadow: var(--shadow-card), 0 -24px 0 var(--surface-page);
+/* 吸住時：上下各鋪一塊實心的頁面底色，把兩道縫填掉。
+     · 上面那道＝貼頂的 --sp-16 間距；
+     · 下面那道＝這張卡與下一張卡之間的 gap（捲上來的內容會從卡片底下經過時被
+       看見一小截，2026-08-01 使用者標的那條線就是這裡）。
+
+   為什麼是 ::before/::after 而不是 box-shadow：box-shadow 會跟著元素的 border-radius
+   走，上下兩塊因此帶圓角，四個角補不到，下一張卡的圓角就從角落露出來（使用者
+   「不用圓角」指的正是這個）。虛擬元素是方角的。
+
+   left/right 各給 -1px：絕對定位對齊的是「內距框」，這張卡有 1px 邊框，left: 0 會
+   在左右各留下一道 1px 的縫。
+
+   z-index:-1 在這張卡自己的堆疊脈絡（z-index:3）裡，所以只會沉到卡片底色之下，
+   仍然蓋在捲動內容之上。 */
+.vault-reach.is-stuck::before,
+.vault-reach.is-stuck::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--surface-page);
 }
+.vault-reach.is-stuck::before { bottom: 100%; height: 48px; }
+.vault-reach.is-stuck::after  { top: 100%; height: var(--sp-16); }
 
 /* 門條改單欄（2026-07-31）：讀數搬出去吸頂之後，這裡只剩「怎麼進得來」的設定，
    並排的理由（左因右果）已經不存在，各佔一整行讀起來更直。 */
