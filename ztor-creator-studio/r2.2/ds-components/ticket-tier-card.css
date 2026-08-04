@@ -1,0 +1,236 @@
+/* ============================================================
+   Ticket tier card — 票種卡（spec 5.1.6.1 F9 / F9.1 / F9.2）
+   ------------------------------------------------------------
+   建立活動 Step 4 的可重複票種卡清單。一張卡有兩態：
+   • 收合態：卡標＝票種名稱，下方唯讀列出價格與數量，右側 Edit ＋ ⋮（複製／移除）
+   • 編輯態：名稱／價格／數量三欄可輸入（每欄末端 ✕ 清空），
+     底部 Remove／Cancel／Save。Remove 走 Q37 裁決的實色 .btn--destructive
+     （規格 F9.2 寫「紅字」是截圖觀察，站上呈現以 STYLE-DECISIONS Q37 為準）
+
+   卡體沿用 .card（填色＋陰影＋--radius-xl），與建立組合流程的
+   .fc-bundle（bundle-editor.css）同一種「建立流程裡 JS 產生的可編輯卡清單」；
+   本元件不重畫卡片外觀，只定義卡內的兩態骨架與唯讀事實列。
+   差異：--fc-bundle 的收合動作是兩個 .card__link 文字連結，本元件依規格
+   F9.2 走「Edit 鈕＋⋮ 選單」。兩者是否收斂為同一種，見 STYLE-DECISIONS Q48。
+
+   Markup:
+     <div class="tier-list">
+       <div class="card tier-card">
+         <div class="tier-card__head">
+           <h4 class="tier-card__name">VIP</h4>
+           <div class="tier-card__actions">
+             <button class="btn btn--outline btn--sm">Edit</button>
+             <details class="dropdown">…複製／移除…</details>
+           </div>
+         </div>
+         <dl class="tier-card__facts">
+           <div class="tier-card__fact"><dt>Price</dt><dd>$120</dd></div>
+           <div class="tier-card__fact"><dt>Quantity</dt><dd>200</dd></div>
+         </dl>
+         <div class="tier-card__body">…三個 .field（.tier-card__control 包住 input）…</div>
+         <div class="tier-card__foot">…Remove｜Cancel Save…</div>
+       </div>
+     </div>
+   ============================================================ */
+
+/* ── 版型：網格（Figma Grid View）─────────────────────────────────
+   票種卡與尾端的「新增票種」格排在同一張網格上。橫向捲動的 List View 不採用
+   （2026-08-04 使用者裁決）：卡片會被推出畫面，而這一步最需要一眼看到的正是
+   「有幾種票、加起來幾張」。
+   .tier-list 是 display:contents——卡片由 JS 重繪、新增格是靜態 markup，
+   兩者要落在同一張網格上，中間那層容器就不能自己成為 grid item。 */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-12);
+  align-items: start;      /* 編輯中的卡變高時，同列其他卡不跟著拉長 */
+}
+.tier-list { display: contents; }
+.tier-list[hidden] { display: none; }   /* display:contents 會壓過 UA 的 [hidden]，需顯式還原 */
+
+/* 批次編輯工具列：靠右，與網格拉開一段。 */
+.tier-toolbar { display: flex; justify-content: flex-end; gap: var(--sp-8); margin-bottom: var(--sp-12); }
+.tier-toolbar__actions { display: inline-flex; gap: var(--sp-8); }
+.tier-toolbar__actions[hidden] { display: none; }
+
+/* 新增格：與票種卡等寬的一格，維持 upload-tile 的虛線語彙。 */
+.tier-add { min-height: 152px; }
+
+.tier-card { padding: var(--sp-20); }
+
+/* 標題列：卡標＋（有的話）自訂徽章靠左成一組，動作被 auto 推到最右。
+   不用 space-between——中間多一個徽章時它會被推到卡片正中央，讀起來像另一欄。 */
+.tier-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+.tier-card__head > .tier-card__actions { margin-left: auto; }
+
+.tier-card__name {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-15);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+}
+/* 尚未命名的票種：與 fc-bundle 的「未命名方案」同樣降一階呈現，不留空白卡標。 */
+.tier-card__name--untitled { color: var(--muted-foreground); }
+
+.tier-card__actions { display: flex; align-items: center; gap: var(--sp-6); flex: 0 0 auto; }
+
+/* ── 收合態的唯讀事實列（價格／數量）───────────────────────────────
+   一列一個事實：標籤靠左、值靠右。值全部貼在卡片右緣、又是 tabular-nums，
+   所以多張卡並排時價格與數量各自對成一欄，可以直接比大小。 */
+.tier-card__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin: var(--sp-14) 0 0;
+}
+.tier-card__fact { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-12); }
+.tier-card__fact dt {
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+}
+.tier-card__fact dd {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 收合態的主要動作：整寬的 Edit，貼在卡底。⋮ 留在標題列——「改這張卡」是常做的事，
+   給它整條可點的寬度；複製與移除是偶爾才做的，收進選單。 */
+.tier-card__edit { width: 100%; margin-top: var(--sp-16); }
+
+/* ── 兩態切換 ────────────────────────────────────────────────
+   收合態藏起編輯欄位與底部動作；編輯態藏起唯讀事實列與收合態的 Edit
+   （動作改放卡底，規格 F9.2：編輯態底部才有 Remove／Cancel／Save）。 */
+.tier-card__body,
+.tier-card__foot { display: none; }
+.tier-card--editing .tier-card__body { display: flex; flex-direction: column; gap: var(--sp-14); margin-top: var(--sp-16); }
+.tier-card--editing .tier-card__foot { display: flex; }
+.tier-card--editing .tier-card__facts,
+.tier-card--editing .tier-card__edit { display: none; }
+/* 單張編輯時標題列的 ⋮ 收起來（動作都在卡底）；批次編輯時留著——
+   那是整段一起編輯的狀態，卡底沒有各自的動作列，移除單張只剩這條路。 */
+.tier-card--editing:not(.tier-card--group) .tier-card__actions { display: none; }
+.tier-card--group .tier-card__foot { display: none; }
+
+/* 欄位在窄卡裡一律直排（Figma 的卡寬放不下三欄並排）。
+   沒有訊息的欄位不留空的 hint 行，免得卡片底部多出一段莫名的留白。 */
+.tier-card__body .field { margin-bottom: 0; }
+.tier-card__body .field__hint:empty { display: none; }
+
+/* 欄位末端的 ✕ 清空鈕（規格 F9.2）。包住 input 而非整個 .field，
+   才不會被 label 與 hint 的高度帶偏；.input 右內距讓出 ✕ 的寬度。 */
+.tier-card__control { position: relative; display: block; }
+.tier-card__control > .input { padding-right: 32px; }
+.tier-card__clear {
+  position: absolute;
+  top: 50%;
+  right: var(--sp-6);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.tier-card__clear:hover { background: var(--accent); color: var(--foreground); }
+.tier-card__clear:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+.tier-card__clear .ztor-icon { width: 14px; height: 14px; }
+/* 空欄位不顯示清空鈕——沒有東西可清時，那顆 ✕ 只是雜訊。 */
+.tier-card__control[data-empty="true"] .tier-card__clear { display: none; }
+/* 金額欄的 ✕ 要避開 .amount-field 自己的左側 $ 綴詞，右側位置不變；
+   數字欄關掉瀏覽器的上下微調鈕，否則與 ✕ 疊在同一個角落。 */
+.tier-card__control > .amount-field > .input { padding-right: 32px; }
+.tier-card__control input[type="number"]::-webkit-outer-spin-button,
+.tier-card__control input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.tier-card__control input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+/* 欄位級錯誤訊息：疊在 .field__hint 上轉紅，沿用 bundle-editor 的
+   .field__hint.fc-hint--over 做法（單一 class 會輸給 field-system.css 的 .field__hint）。 */
+.field__hint.tier-card__err { color: var(--status-error); }
+
+/* ── 編輯態卡底動作列 ──────────────────────────────────────────
+   左＝破壞性的 Remove、右＝Cancel／Save，中間用 auto 推開：
+   把「丟掉整張卡」跟「儲存這張卡」放在視線的兩端，不會誤點。 */
+.tier-card__foot {
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-20);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border-soft);
+}
+.tier-card__foot-spacer { margin-left: auto; }
+
+/* ── 規則區塊（購買條件／每人限購／折扣）──────────────────────────
+   同一組欄位在活動層（所有票種的預設）與票種卡（這張自訂）各出現一次，
+   共用同一支渲染函式，所以樣式也只有這一份。
+   一條規則＝標籤＋一組 .segmented 選法＋選到才展開的欄位；欄位本身一律吃
+   既有的 .input／.select／.amount-field，本檔只排間距。 */
+.rule + .rule { margin-top: var(--sp-20); }
+.rule > .segmented { margin-top: var(--sp-6); }
+.rule-when { margin-top: var(--sp-10); }
+.rule-when[hidden] { display: none; }
+.rule-row { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+.rule-row > .input,
+.rule-row > .amount-field { flex: 1 1 140px; min-width: 0; }
+.rule-unit { font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }
+/* 折扣的條件是「折扣」這條規則的下一層，往內縮一階並用左邊界標出從屬關係 */
+.rule-sub {
+  margin-top: var(--sp-12);
+  padding-left: var(--sp-14);
+  border-left: 1px solid var(--border-soft);
+}
+
+/* 票種卡裡的自訂規則：一個開關決定要不要有自己的一份 */
+.tier-card__rules { margin-top: var(--sp-16); padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+.tier-card__own {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-12);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  cursor: pointer;
+}
+/* 收合卡上的「自訂」標記：哪幾張不跟隨活動預設，不用打開卡也看得出來 */
+.tier-card__badge { flex: none; }
+.tier-card__badge[hidden] { display: none; }
+
+/* ── 收入試算 ────────────────────────────────────────────────
+   四列唯讀鍵值（吃既有的 .kv），最後一列是結果：加一條上分隔線與較大的字，
+   讓「算完是多少」與上面三個組成分開。 */
+.calc-sum { margin-top: var(--sp-16); }
+.calc-sum__out { margin-top: var(--sp-6); padding-top: var(--sp-12); border-top: 1px solid var(--border); }
+.calc-sum__out .kv__v { font-size: var(--fs-18); }
+/* 支出填太多或票價太低時結果會是負的。照實顯示負數並轉紅，不夾成 0——
+   把虧損顯示成 0 才是真的誤導。 */
+.calc-sum__neg { color: var(--status-error); }
+
+/* ── 清單尾端的計數列（已建立 N 種 · 至少需 1 種）────────────────
+   靠右、次要色，貼在新增鈕下緣。超標（Σ 數量 > 容量）時整行轉紅，
+   與欄位級錯誤同一個訊號色。 */
+.tier-count {
+  margin-top: var(--sp-10);
+  text-align: right;
+  font-size: var(--fs-12);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+}
+.tier-count--over { color: var(--status-error); }

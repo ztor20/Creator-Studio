@@ -117,6 +117,25 @@
 /* Disabled — e.g. a primary gated by a readiness check (2026-06-12) */
 .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
 
+/* 填色按鈕的停用態改灰底灰字（2026-08-04 使用者裁示，Q50）。
+   為什麼不沿用上面那條 opacity：把品牌橘調到 45% 只會變成「暗一點的橘」，
+   在深色底上讀起來像另一種可以按的狀態，而不是不能按。灰是站上唯一表示
+   「不可用」的顏色——輸入框的 disabled 早就是 --muted 底＋弱化字（見
+   design-system.md「Input 狀態」），這條只是讓按鈕跟上同一套語彙。
+   補一條 hairline：--muted 在深色下與頁面底色很接近，沒有邊界的話按鈕會
+   整個化進背景、看不出那裡still有一顆按鈕。
+   只管填色的兩種（primary／destructive）；ghost／outline／soft 本來就沒有
+   實心品牌底，繼續走 opacity 就夠。 */
+.btn--primary:disabled, .btn--primary[aria-disabled="true"],
+.btn--destructive:not(.btn--ghost):disabled,
+.btn--destructive:not(.btn--ghost)[aria-disabled="true"] {
+  opacity: 1;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
+  cursor: not-allowed;
+}
+
 /* ============================================================
    Shared button variants (2026-06-01) — promoted from bespoke
    per-component controls so molecules/organisms compose the Button

@@ -57,6 +57,7 @@
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
@@ -113,6 +114,10 @@
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-share.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.2">
+<!-- 2026-08-04 補掛：login.html（D170）與 create-event 票種卡 promote 時漏接 DS 頁 -->
+<link rel="stylesheet" href="ds-components/auth.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
 /* ===== Doc chrome (visualization shell only; tokens come from ds-components) ===== */
@@ -615,6 +620,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#zselect">Custom select (zselect)</a>
     <a class="toc__link toc__link--sub" href="#finding-card">Finding card</a>
     <a class="toc__link toc__link--sub" href="#source-status">Source status</a>
+    <a class="toc__link toc__link--sub" href="#auth-shell">Auth shell</a>
+    <a class="toc__link toc__link--sub" href="#ticket-tier-card">Ticket tier card</a>
+    <a class="toc__link toc__link--sub" href="#size-chart-editor">Size chart editor</a>
     <div class="toc__group"><span data-en>Pillar 5 · Pattern</span><span data-zh>Pillar 5 · Pattern</span></div>
     <a class="toc__link" href="#patterns"><span data-en>5.1 Pattern cards</span><span data-zh>5.1 Pattern 卡</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
@@ -969,12 +977,12 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <p class="field-label" data-zh>1.7 圖示</p>
       <p class="field-text" data-en><strong>Tabler</strong> icon set (<code>@tabler/icons</code> 3.45.0), registered in <code>icons.js</code> and injected per page via <code>ztorIcons.applyIcons()</code>. Thin 1.2px outlined glyphs as inline SVG (no icon font). New icons must be added to the registry first.</p>
       <p class="field-text" data-zh><strong>Tabler</strong> 圖示集（<code>@tabler/icons</code> 3.45.0），註冊於 <code>icons.js</code>，各頁透過 <code>ztorIcons.applyIcons()</code> 注入。細 1.2px 描邊字符，以 inline SVG 呈現（不用 icon font）。新圖示必須先加進 registry。</p>
-      <p class="field-text" data-en><strong>Two files, deliberately split — do not merge.</strong> <code>js/icons.js</code> (~36KB, 111 curated glyphs) is the product-page registry loaded by all 30 pages. <code>js/icons-all.js</code> (~1.7MB, the full Tabler set: 5,112 outline + 1,054 filled, auto-generated) is loaded <strong>only by this page</strong>, and must come before <code>icons.js</code> so the missing keys get merged in. To use a new glyph on a product page, add it to the <code>icons.js</code> registry — never ship the full set.</p>
-      <p class="field-text" data-zh><strong>兩檔分工（刻意設計，勿合併）</strong>：<code>js/icons.js</code>（~36KB，策展 118 顆）＝產品頁 registry，30 頁都載、保持輕量；<code>js/icons-all.js</code>（~1.7MB，完整 Tabler 6,166 顆＝outline 5,112＋filled 1,054，自動生成）<strong>只有本頁載</strong>，且必須排在 <code>icons.js</code> 之前，才能把缺的 key 併進 registry。產品頁要用新圖示，一律走「補進 <code>icons.js</code> registry」，不掛全集。</p>
+      <p class="field-text" data-en><strong>Two files, deliberately split — do not merge.</strong> <code>js/icons.js</code> (~36KB, 139 curated glyphs) is the product-page registry loaded by all 30 pages. <code>js/icons-all.js</code> (~1.7MB, the full Tabler set: 5,112 outline + 1,054 filled, auto-generated) is loaded <strong>only by this page</strong>, and must come before <code>icons.js</code> so the missing keys get merged in. To use a new glyph on a product page, add it to the <code>icons.js</code> registry — never ship the full set.</p>
+      <p class="field-text" data-zh><strong>兩檔分工（刻意設計，勿合併）</strong>：<code>js/icons.js</code>（~36KB，策展 139 顆）＝產品頁 registry，30 頁都載、保持輕量；<code>js/icons-all.js</code>（~1.7MB，完整 Tabler 6,166 顆＝outline 5,112＋filled 1,054，自動生成）<strong>只有本頁載</strong>，且必須排在 <code>icons.js</code> 之前，才能把缺的 key 併進 registry。產品頁要用新圖示，一律走「補進 <code>icons.js</code> registry」，不掛全集。</p>
       <p class="field-text" data-en><strong>Registry keys keep their pre-migration names.</strong> When the set moved from Lucide to Tabler on 2026-07-21, every key kept its old name (<code>trash-2</code>, <code>more-horizontal</code>, <code>check-circle</code>…) and the <code>data-lucide</code> attribute was left alone, so all 2,630 references across 39 pages needed no edit. The trade-off is an attribute name that no longer matches the icon set; renaming it to <code>data-icon</code> is a separate one-off mechanical pass, not something to bundle with an icon-set swap.</p>
       <p class="field-text" data-zh><strong>registry key 沿用換庫前的舊名</strong>：2026-07-21 由 Lucide 換成 Tabler 時，key 一律保持舊名（<code>trash-2</code>、<code>more-horizontal</code>、<code>check-circle</code>…），<code>data-lucide</code> 屬性名也沒動，因此 39 頁、2,630 處引用完全不用改。代價是屬性名與圖庫名不一致——這是拿命名整潔換零改動風險；日後要正名成 <code>data-icon</code>，走獨立的一次性機械改名，別跟換圖庫混在同一輪。</p>
-      <details class="code-fold"><summary><i data-lucide="list" class="ztor-icon"></i><span data-en>Migration map — the 40 keys whose Tabler name differs (69 others matched by name)</span><span data-zh>換庫對照表 — 名稱不同的 40 顆（另 69 顆同名直接對上）</span></summary>
-      <div class="code-fold__body"><table class="spec"><thead><tr><th><span data-en>Registry key</span><span data-zh>registry key</span></th><th>Tabler</th></tr></thead><tbody><tr><td><code>alert-triangle-fill</code></td><td><code>filled/alert-triangle</code></td></tr><tr><td><code>badge-check</code></td><td><code>rosette-discount-check</code></td></tr><tr><td><code>banknote</code></td><td><code>cash-banknote</code></td></tr><tr><td><code>book-open</code></td><td><code>book</code></td></tr><tr><td><code>boxes</code></td><td><code>stack-2</code></td></tr><tr><td><code>check-circle</code></td><td><code>circle-check</code></td></tr><tr><td><code>check-circle-fill</code></td><td><code>filled/circle-check</code></td></tr><tr><td><code>disc-3</code></td><td><code>disc</code></td></tr><tr><td><code>film</code></td><td><code>movie</code></td></tr><tr><td><code>gem</code></td><td><code>diamond</code></td></tr><tr><td><code>house</code></td><td><code>home</code></td></tr><tr><td><code>id-card</code></td><td><code>id</code></td></tr><tr><td><code>image</code></td><td><code>photo</code></td></tr><tr><td><code>info</code></td><td><code>info-circle</code></td></tr><tr><td><code>info-fill</code></td><td><code>filled/info-circle</code></td></tr><tr><td><code>landmark</code></td><td><code>building-bank</code></td></tr><tr><td><code>megaphone</code></td><td><code>speakerphone</code></td></tr><tr><td><code>mic</code></td><td><code>microphone</code></td></tr><tr><td><code>monitor</code></td><td><code>device-desktop</code></td></tr><tr><td><code>more-horizontal</code></td><td><code>dots</code></td></tr><tr><td><code>more-vertical</code></td><td><code>dots-vertical</code></td></tr><tr><td><code>package-x</code></td><td><code>package-off</code></td></tr><tr><td><code>panel-left</code></td><td><code>layout-sidebar</code></td></tr><tr><td><code>panel-top</code></td><td><code>layout-navbar</code></td></tr><tr><td><code>party-popper</code></td><td><code>confetti</code></td></tr><tr><td><code>pause</code></td><td><code>player-pause</code></td></tr><tr><td><code>percent</code></td><td><code>percentage</code></td></tr><tr><td><code>play</code></td><td><code>player-play</code></td></tr><tr><td><code>qr-code</code></td><td><code>qrcode</code></td></tr><tr><td><code>refresh-ccw / refresh-cw</code></td><td><code>refresh</code></td></tr><tr><td><code>repeat-2</code></td><td><code>repeat</code></td></tr><tr><td><code>rotate-ccw</code></td><td><code>rotate</code></td></tr><tr><td><code>search-x</code></td><td><code>search-off</code></td></tr><tr><td><code>sliders-horizontal</code></td><td><code>adjustments-horizontal</code></td></tr><tr><td><code>smartphone</code></td><td><code>device-mobile</code></td></tr><tr><td><code>store</code></td><td><code>building-store</code></td></tr><tr><td><code>trash-2</code></td><td><code>trash</code></td></tr><tr><td><code>x-circle</code></td><td><code>circle-x</code></td></tr><tr><td><code>x-circle-fill</code></td><td><code>filled/circle-x</code></td></tr></tbody></table></div>
+      <details class="code-fold"><summary><i data-lucide="list" class="ztor-icon"></i><span data-en>Migration map — the 53 keys whose Tabler name differs (71 others matched by name)</span><span data-zh>換庫對照表 — 名稱不同的 53 顆（另 71 顆同名直接對上）</span></summary>
+      <div class="code-fold__body"><table class="spec"><thead><tr><th><span data-en>Registry key</span><span data-zh>registry key</span></th><th>Tabler</th></tr></thead><tbody><tr><td><code>alert-triangle-fill</code></td><td><code>filled/alert-triangle</code></td></tr><tr><td><code>award-fill</code></td><td><code>filled/award</code></td></tr><tr><td><code>badge-check</code></td><td><code>rosette-discount-check</code></td></tr><tr><td><code>banknote</code></td><td><code>cash-banknote</code></td></tr><tr><td><code>banknote-fill</code></td><td><code>filled/cash-banknote</code></td></tr><tr><td><code>bell-fill</code></td><td><code>filled/bell</code></td></tr><tr><td><code>book-open</code></td><td><code>book</code></td></tr><tr><td><code>boxes</code></td><td><code>stack-2</code></td></tr><tr><td><code>calendar-fill</code></td><td><code>filled/calendar</code></td></tr><tr><td><code>check-circle</code></td><td><code>circle-check</code></td></tr><tr><td><code>check-circle-fill</code></td><td><code>filled/circle-check</code></td></tr><tr><td><code>circle-fill</code></td><td><code>filled/circle</code></td></tr><tr><td><code>disc-3</code></td><td><code>disc</code></td></tr><tr><td><code>film</code></td><td><code>movie</code></td></tr><tr><td><code>flag-fill</code></td><td><code>filled/flag</code></td></tr><tr><td><code>gem</code></td><td><code>diamond</code></td></tr><tr><td><code>globe-fill</code></td><td><code>filled/globe</code></td></tr><tr><td><code>house</code></td><td><code>home</code></td></tr><tr><td><code>id-card</code></td><td><code>id</code></td></tr><tr><td><code>image</code></td><td><code>photo</code></td></tr><tr><td><code>info</code></td><td><code>info-circle</code></td></tr><tr><td><code>info-fill</code></td><td><code>filled/info-circle</code></td></tr><tr><td><code>landmark</code></td><td><code>building-bank</code></td></tr><tr><td><code>layout-grid-fill</code></td><td><code>filled/layout-grid</code></td></tr><tr><td><code>lock-fill</code></td><td><code>filled/lock</code></td></tr><tr><td><code>mail-fill</code></td><td><code>filled/mail</code></td></tr><tr><td><code>megaphone</code></td><td><code>speakerphone</code></td></tr><tr><td><code>mic</code></td><td><code>microphone</code></td></tr><tr><td><code>monitor</code></td><td><code>device-desktop</code></td></tr><tr><td><code>more-horizontal</code></td><td><code>dots</code></td></tr><tr><td><code>more-vertical</code></td><td><code>dots-vertical</code></td></tr><tr><td><code>package-x</code></td><td><code>package-off</code></td></tr><tr><td><code>panel-left</code></td><td><code>layout-sidebar</code></td></tr><tr><td><code>panel-top</code></td><td><code>layout-navbar</code></td></tr><tr><td><code>party-popper</code></td><td><code>confetti</code></td></tr><tr><td><code>pause</code></td><td><code>player-pause</code></td></tr><tr><td><code>percent</code></td><td><code>percentage</code></td></tr><tr><td><code>play</code></td><td><code>player-play</code></td></tr><tr><td><code>qr-code</code></td><td><code>qrcode</code></td></tr><tr><td><code>receipt-fill</code></td><td><code>filled/receipt</code></td></tr><tr><td><code>refresh-ccw / refresh-cw</code></td><td><code>refresh</code></td></tr><tr><td><code>repeat-2</code></td><td><code>repeat</code></td></tr><tr><td><code>rotate-ccw</code></td><td><code>rotate</code></td></tr><tr><td><code>search-x</code></td><td><code>search-off</code></td></tr><tr><td><code>sliders-horizontal</code></td><td><code>adjustments-horizontal</code></td></tr><tr><td><code>smartphone</code></td><td><code>device-mobile</code></td></tr><tr><td><code>smartphone-fill</code></td><td><code>filled/device-mobile</code></td></tr><tr><td><code>store</code></td><td><code>building-store</code></td></tr><tr><td><code>tag-fill</code></td><td><code>filled/tag</code></td></tr><tr><td><code>trash-2</code></td><td><code>trash</code></td></tr><tr><td><code>x-circle</code></td><td><code>circle-x</code></td></tr><tr><td><code>x-circle-fill</code></td><td><code>filled/circle-x</code></td></tr></tbody></table></div>
       </details>
       <div class="viz"><div class="icon-grid"><div class="icon-cell"><i data-lucide="trending-up" class="ztor-icon"></i><span>trending-up</span></div><div class="icon-cell"><i data-lucide="receipt" class="ztor-icon"></i><span>receipt</span></div><div class="icon-cell"><i data-lucide="shopping-bag" class="ztor-icon"></i><span>shopping-bag</span></div><div class="icon-cell"><i data-lucide="users" class="ztor-icon"></i><span>users</span></div><div class="icon-cell"><i data-lucide="bell" class="ztor-icon"></i><span>bell</span></div><div class="icon-cell"><i data-lucide="calendar" class="ztor-icon"></i><span>calendar</span></div><div class="icon-cell"><i data-lucide="tag" class="ztor-icon"></i><span>tag</span></div><div class="icon-cell"><i data-lucide="package" class="ztor-icon"></i><span>package</span></div><div class="icon-cell"><i data-lucide="search" class="ztor-icon"></i><span>search</span></div><div class="icon-cell"><i data-lucide="award" class="ztor-icon"></i><span>award</span></div><div class="icon-cell"><i data-lucide="megaphone" class="ztor-icon"></i><span>megaphone</span></div><div class="icon-cell"><i data-lucide="globe" class="ztor-icon"></i><span>globe</span></div><div class="icon-cell"><i data-lucide="layout-grid" class="ztor-icon"></i><span>layout-grid</span></div><div class="icon-cell"><i data-lucide="chart-line" class="ztor-icon"></i><span>chart-line</span></div><div class="icon-cell"><i data-lucide="check-circle" class="ztor-icon"></i><span>check-circle</span></div><div class="icon-cell"><i data-lucide="file-text" class="ztor-icon"></i><span>file-text</span></div></div></div>
 
@@ -1330,6 +1338,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#preview-card">Preview card</a></td><td>🟡</td><td><span data-en>Fan-side live preview card — product / auction (create flows §5.2.5)</span><span data-zh>粉絲端即時預覽卡 — 商品／拍賣（建立流程 §5.2.5）</span></td><td><code>preview-card.css</code></td></tr>
           <tr><td><a href="#preview-panel">Preview panel</a></td><td>🟠</td><td><span data-en>Right split panel holding the live preview — compresses the wizard, not an overlay</span><span data-zh>右側畫面分割面板承載即時預覽，壓窄 wizard、非浮層</span></td><td><code>preview-panel.css</code></td></tr>
           <tr><td><a href="#fan-store">Fan store preview</a></td><td>🟠</td><td><span data-en>Fan-side storefront inside See-as-fan (E-Shop F5 + Store settings F1, §6.7 same view), presented as a dark mobile phone: app bar + hero + app pills + featured + sub-tabs + product grid + top fans + about + bottom nav</span><span data-zh>See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1，§6.7 同源），呈現為深色手機：app 頂列＋hero＋app 分頁列＋本月精選＋子分頁＋商品格＋頭號粉絲＋關於＋底部導航</span></td><td><code>fan-store.css</code></td></tr>
+          <tr><td><a href="#ticket-tier-card">Ticket tier card</a></td><td>🟡</td><td><span data-en>Ticket tier row in the event create flow — collapsed summary (name + price + quantity) vs expanded edit form</span><span data-zh>建立活動的票種卡——收合摘要（名稱＋價格＋數量）與展開編輯表單兩態</span></td><td><code>ticket-tier-card.css</code></td></tr>
           <tr><td><a href="#readiness">Readiness card</a></td><td>🟡</td><td><span data-en>Pre-publish checklist + remaining-count banner (Ready to sell?)</span><span data-zh>上架前就緒檢查＋還差幾項 banner（Ready to sell?）</span></td><td><code>readiness.css</code></td></tr>
           <tr><td><a href="#table">Table</a></td><td>🟠</td><td><span data-en>Earnings transactions, comparison grids</span><span data-zh>Earnings 交易、比較表格</span></td><td><code>table.css</code></td></tr>
           <tr><td><a href="#chart">Chart</a></td><td>🟠</td><td><span data-en>Linechart + barchart + stacked-bar + source-list + rank-bars</span><span data-zh>折線圖＋長條圖＋堆疊長條＋來源清單＋排名長條</span></td><td><code>chart.css</code></td></tr>
@@ -1944,9 +1953,15 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </tr>
   </tbody></table>
   </div>
-  <p class="field-label" data-en>Registry — in use <span class="field-note">(curated set in <code>icons.js</code> — 111 glyphs)</span></p>
-  <p class="field-label" data-zh>Registry — 使用中 <span class="field-note">(<code>icons.js</code> 策展集 — 118 顆)</span></p>
-  <div class="viz"><div class="icon-grid"><div class="icon-cell"><i data-lucide="alert-triangle" class="ztor-icon"></i><span>alert-triangle</span></div><div class="icon-cell"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i><span>alert-triangle-fill</span></div><div class="icon-cell"><i data-lucide="arrow-up" class="ztor-icon"></i><span>arrow-up</span></div><div class="icon-cell"><i data-lucide="award" class="ztor-icon"></i><span>award</span></div><div class="icon-cell"><i data-lucide="banknote" class="ztor-icon"></i><span>banknote</span></div><div class="icon-cell"><i data-lucide="bell" class="ztor-icon"></i><span>bell</span></div><div class="icon-cell"><i data-lucide="calendar" class="ztor-icon"></i><span>calendar</span></div><div class="icon-cell"><i data-lucide="chart-column" class="ztor-icon"></i><span>chart-column</span></div><div class="icon-cell"><i data-lucide="chart-line" class="ztor-icon"></i><span>chart-line</span></div><div class="icon-cell"><i data-lucide="check-circle" class="ztor-icon"></i><span>check-circle</span></div><div class="icon-cell"><i data-lucide="check-circle-fill" class="ztor-icon"></i><span>check-circle-fill</span></div><div class="icon-cell"><i data-lucide="chevron-down" class="ztor-icon"></i><span>chevron-down</span></div><div class="icon-cell"><i data-lucide="chevron-right" class="ztor-icon"></i><span>chevron-right</span></div><div class="icon-cell"><i data-lucide="circle" class="ztor-icon"></i><span>circle</span></div><div class="icon-cell"><i data-lucide="download" class="ztor-icon"></i><span>download</span></div><div class="icon-cell"><i data-lucide="file-text" class="ztor-icon"></i><span>file-text</span></div><div class="icon-cell"><i data-lucide="filter" class="ztor-icon"></i><span>filter</span></div><div class="icon-cell"><i data-lucide="flag" class="ztor-icon"></i><span>flag</span></div><div class="icon-cell"><i data-lucide="globe" class="ztor-icon"></i><span>globe</span></div><div class="icon-cell"><i data-lucide="info-fill" class="ztor-icon"></i><span>info-fill</span></div><div class="icon-cell"><i data-lucide="layout-grid" class="ztor-icon"></i><span>layout-grid</span></div><div class="icon-cell"><i data-lucide="megaphone" class="ztor-icon"></i><span>megaphone</span></div><div class="icon-cell"><i data-lucide="mic" class="ztor-icon"></i><span>mic</span></div><div class="icon-cell"><i data-lucide="monitor" class="ztor-icon"></i><span>monitor</span></div><div class="icon-cell"><i data-lucide="moon" class="ztor-icon"></i><span>moon</span></div><div class="icon-cell"><i data-lucide="package" class="ztor-icon"></i><span>package</span></div><div class="icon-cell"><i data-lucide="paperclip" class="ztor-icon"></i><span>paperclip</span></div><div class="icon-cell"><i data-lucide="play" class="ztor-icon"></i><span>play</span></div><div class="icon-cell"><i data-lucide="receipt" class="ztor-icon"></i><span>receipt</span></div><div class="icon-cell"><i data-lucide="refresh-ccw" class="ztor-icon"></i><span>refresh-ccw</span></div><div class="icon-cell"><i data-lucide="search" class="ztor-icon"></i><span>search</span></div><div class="icon-cell"><i data-lucide="shopping-bag" class="ztor-icon"></i><span>shopping-bag</span></div><div class="icon-cell"><i data-lucide="sun" class="ztor-icon"></i><span>sun</span></div><div class="icon-cell"><i data-lucide="tag" class="ztor-icon"></i><span>tag</span></div><div class="icon-cell"><i data-lucide="trending-up" class="ztor-icon"></i><span>trending-up</span></div><div class="icon-cell"><i data-lucide="upload" class="ztor-icon"></i><span>upload</span></div><div class="icon-cell"><i data-lucide="users" class="ztor-icon"></i><span>users</span></div><div class="icon-cell"><i data-lucide="x-circle" class="ztor-icon"></i><span>x-circle</span></div><div class="icon-cell"><i data-lucide="x-circle-fill" class="ztor-icon"></i><span>x-circle-fill</span></div></div></div>
+  <p class="field-label" data-en>Registry — in use <span class="field-note">(curated set in <code>icons.js</code> — 139 glyphs)</span></p>
+  <p class="field-label" data-zh>Registry — 使用中 <span class="field-note">(<code>icons.js</code> 策展集 — 139 顆)</span></p>
+  <div class="viz"><div class="icon-grid"><div class="icon-cell"><i data-lucide="alert-triangle" class="ztor-icon"></i><span>alert-triangle</span></div><div class="icon-cell"><i data-lucide="alert-triangle-fill" class="ztor-icon"></i><span>alert-triangle-fill</span></div><div class="icon-cell"><i data-lucide="arrow-up" class="ztor-icon"></i><span>arrow-up</span></div><div class="icon-cell"><i data-lucide="award" class="ztor-icon"></i><span>award</span></div><div class="icon-cell"><i data-lucide="award-fill" class="ztor-icon"></i><span>award-fill</span></div><div class="icon-cell"><i data-lucide="banknote" class="ztor-icon"></i><span>banknote</span></div><div class="icon-cell"><i data-lucide="banknote-fill" class="ztor-icon"></i><span>banknote-fill</span></div><div class="icon-cell"><i data-lucide="bell" class="ztor-icon"></i><span>bell</span></div><div class="icon-cell"><i data-lucide="bell-fill" class="ztor-icon"></i><span>bell-fill</span></div><div class="icon-cell"><i data-lucide="calendar" class="ztor-icon"></i><span>calendar</span></div><div class="icon-cell"><i data-lucide="calendar-fill" class="ztor-icon"></i><span>calendar-fill</span></div><div class="icon-cell"><i data-lucide="chart-column" class="ztor-icon"></i><span>chart-column</span></div><div class="icon-cell"><i data-lucide="chart-line" class="ztor-icon"></i><span>chart-line</span></div><div class="icon-cell"><i data-lucide="check-circle" class="ztor-icon"></i><span>check-circle</span></div><div class="icon-cell"><i data-lucide="check-circle-fill" class="ztor-icon"></i><span>check-circle-fill</span></div><div class="icon-cell"><i data-lucide="chevron-down" class="ztor-icon"></i><span>chevron-down</span></div><div class="icon-cell"><i data-lucide="chevron-right" class="ztor-icon"></i><span>chevron-right</span></div><div class="icon-cell"><i data-lucide="circle" class="ztor-icon"></i><span>circle</span></div><div class="icon-cell"><i data-lucide="circle-fill" class="ztor-icon"></i><span>circle-fill</span></div><div class="icon-cell"><i data-lucide="download" class="ztor-icon"></i><span>download</span></div><div class="icon-cell"><i data-lucide="file-text" class="ztor-icon"></i><span>file-text</span></div><div class="icon-cell"><i data-lucide="filter" class="ztor-icon"></i><span>filter</span></div><div class="icon-cell"><i data-lucide="flag" class="ztor-icon"></i><span>flag</span></div><div class="icon-cell"><i data-lucide="flag-fill" class="ztor-icon"></i><span>flag-fill</span></div><div class="icon-cell"><i data-lucide="globe" class="ztor-icon"></i><span>globe</span></div><div class="icon-cell"><i data-lucide="globe-fill" class="ztor-icon"></i><span>globe-fill</span></div><div class="icon-cell"><i data-lucide="info-fill" class="ztor-icon"></i><span>info-fill</span></div><div class="icon-cell"><i data-lucide="layout-grid" class="ztor-icon"></i><span>layout-grid</span></div><div class="icon-cell"><i data-lucide="layout-grid-fill" class="ztor-icon"></i><span>layout-grid-fill</span></div><div class="icon-cell"><i data-lucide="lock" class="ztor-icon"></i><span>lock</span></div><div class="icon-cell"><i data-lucide="lock-fill" class="ztor-icon"></i><span>lock-fill</span></div><div class="icon-cell"><i data-lucide="mail-fill" class="ztor-icon"></i><span>mail-fill</span></div><div class="icon-cell"><i data-lucide="megaphone" class="ztor-icon"></i><span>megaphone</span></div><div class="icon-cell"><i data-lucide="mic" class="ztor-icon"></i><span>mic</span></div><div class="icon-cell"><i data-lucide="monitor" class="ztor-icon"></i><span>monitor</span></div><div class="icon-cell"><i data-lucide="moon" class="ztor-icon"></i><span>moon</span></div><div class="icon-cell"><i data-lucide="package" class="ztor-icon"></i><span>package</span></div><div class="icon-cell"><i data-lucide="paperclip" class="ztor-icon"></i><span>paperclip</span></div><div class="icon-cell"><i data-lucide="play" class="ztor-icon"></i><span>play</span></div><div class="icon-cell"><i data-lucide="receipt" class="ztor-icon"></i><span>receipt</span></div><div class="icon-cell"><i data-lucide="receipt-fill" class="ztor-icon"></i><span>receipt-fill</span></div><div class="icon-cell"><i data-lucide="refresh-ccw" class="ztor-icon"></i><span>refresh-ccw</span></div><div class="icon-cell"><i data-lucide="search" class="ztor-icon"></i><span>search</span></div><div class="icon-cell"><i data-lucide="shopping-bag" class="ztor-icon"></i><span>shopping-bag</span></div><div class="icon-cell"><i data-lucide="smartphone-fill" class="ztor-icon"></i><span>smartphone-fill</span></div><div class="icon-cell"><i data-lucide="sun" class="ztor-icon"></i><span>sun</span></div><div class="icon-cell"><i data-lucide="tag" class="ztor-icon"></i><span>tag</span></div><div class="icon-cell"><i data-lucide="tag-fill" class="ztor-icon"></i><span>tag-fill</span></div><div class="icon-cell"><i data-lucide="trending-up" class="ztor-icon"></i><span>trending-up</span></div><div class="icon-cell"><i data-lucide="upload" class="ztor-icon"></i><span>upload</span></div><div class="icon-cell"><i data-lucide="users" class="ztor-icon"></i><span>users</span></div><div class="icon-cell"><i data-lucide="x-circle" class="ztor-icon"></i><span>x-circle</span></div><div class="icon-cell"><i data-lucide="x-circle-fill" class="ztor-icon"></i><span>x-circle-fill</span></div><div class="icon-cell"><i data-lucide="brand-apple" class="ztor-icon"></i><span>brand-apple</span></div><div class="icon-cell"><i data-lucide="brand-google" class="ztor-icon"></i><span>brand-google</span></div><div class="icon-cell"><i data-lucide="brand-facebook" class="ztor-icon"></i><span>brand-facebook</span></div><div class="icon-cell"><i data-lucide="brand-line" class="ztor-icon"></i><span>brand-line</span></div></div></div>
+  <p class="field-text" data-en><strong>Brand marks are the one exception to "Tabler only"</strong> — <code>brand-apple</code> / <code>brand-google</code> / <code>brand-facebook</code> / <code>brand-line</code> come from Simple Icons (CC0), because each vendor's trademark guidelines pin the exact shape of its mark and Tabler's redrawn versions don't match. Same 24×24 grid, single-colour, <code>fill="currentColor" stroke="none"</code> — no brand colour values enter the site.</p>
+  <p class="field-text" data-zh><strong>品牌標記是「只用 Tabler」的唯一例外</strong>——<code>brand-apple</code>／<code>brand-google</code>／<code>brand-facebook</code>／<code>brand-line</code> 取自 Simple Icons（CC0），因為各家商標規範綁死了標記的形狀，Tabler 的重畫版對不上。同樣是 24×24 網格、單色、<code>fill="currentColor" stroke="none"</code>——站上不會出現品牌彩色值。</p>
+  <p class="field-text" data-en><strong>Filled glyphs are scoped, never global</strong> — the site's default is outline. <code>*-fill</code> keys exist only where a filled shape is doing a specific job: the dashboard alert cards (<code>alert-triangle-fill</code>, <code>info-fill</code>, <code>check-circle-fill</code>, <code>x-circle-fill</code>) and the login page's F1 method cards (<code>mail-fill</code>, <code>smartphone-fill</code> — from Tabler <code>filled/mail</code> and <code>filled/device-mobile</code>, added 2026-08-04 so the two account methods carry the same visual weight as the four brand marks beside them; brand marks have no outline form). The outline <code>mail</code> and <code>smartphone</code> keys are untouched — <code>smartphone</code> is still the login-device row in <code>settings.html</code>, and <code>mail</code> is referenced by <code>partials/artist-picker.js</code> (a component no page currently loads). Adding a filled variant anywhere else is a style decision — see STYLE-DECISIONS Q51.</p>
+  <p class="field-text" data-en><strong>Trial batch — the all-filled dashboard (2026-08-04, not adopted)</strong> — eleven more <code>*-fill</code> keys (<code>layout-grid-fill</code>, <code>banknote-fill</code>, <code>receipt-fill</code>, <code>flag-fill</code>, <code>award-fill</code>, <code>tag-fill</code>, <code>bell-fill</code>, <code>lock-fill</code>, <code>calendar-fill</code>, <code>circle-fill</code>, <code>globe-fill</code>) exist only for the side-by-side page <code>demo-icons-filled.html</code>. No product page references them. That page is a copy of <code>index.html</code> plus one alias script that repoints the outline registry keys at their filled twins, so the whole screen — sidebar nav and JS-rendered cards included — turns filled without editing <code>index.html</code>, <code>js/sidebar.js</code> or <code>js/components.js</code>. No <code>&lt;g transform&gt;</code> scaling: measured, Tabler’s filled shapes run exactly 1px wider per side than their outline twins (to offset a 2px stroke); at our 1.2 stroke that leaves the filled version only 4–6% larger, matching how the four alert fills already ship. Eighteen glyphs on that page have no filled form in Tabler at all (<code>menu</code>, <code>x</code>, <code>rocket</code>, <code>landmark</code>, <code>chevron-down</code>, <code>chevron-right</code>, <code>shopping-bag</code>, <code>ticket</code>, <code>users</code>, <code>search</code>, <code>package-x</code>, <code>upload</code>, <code>megaphone</code>, <code>trending-up</code>, <code>dollar-sign</code>, <code>refresh-ccw</code>, <code>bar-chart-3</code>, <code>link</code>) and stay outline — nothing was hand-drawn to fill the gap, so the demo is deliberately a mix. Delete both the page and this batch if the trial is rejected.</p>
+  <p class="field-text" data-zh><strong>實心字符只給特定情境，不是全站選項</strong>——站上預設是描邊。<code>*-fill</code> 只存在於實心真的在做事的地方：儀表板告警卡（<code>alert-triangle-fill</code>／<code>info-fill</code>／<code>check-circle-fill</code>／<code>x-circle-fill</code>），以及登入頁 F1 的方式卡（<code>mail-fill</code>／<code>smartphone-fill</code>，取自 Tabler <code>filled/mail</code> 與 <code>filled/device-mobile</code>，2026-08-04 新增，讓兩張帳號方式卡與旁邊四顆品牌標記同一個視覺量級；品牌標記沒有描邊版）。描邊的 <code>mail</code> 與 <code>smartphone</code> 原封不動——<code>smartphone</code> 仍是 <code>settings.html</code> 的登入裝置列，<code>mail</code> 由 <code>partials/artist-picker.js</code> 引用（該元件目前沒有頁面載入）。要在其他地方新增實心變體屬風格決策，見 STYLE-DECISIONS Q51。</p>
+  <p class="field-text" data-zh><strong>試做批次：儀表板整頁實心（2026-08-04，尚未採用、尚未裁決）</strong>——另外 11 顆 <code>*-fill</code>（<code>layout-grid-fill</code>／<code>banknote-fill</code>／<code>receipt-fill</code>／<code>flag-fill</code>／<code>award-fill</code>／<code>tag-fill</code>／<code>bell-fill</code>／<code>lock-fill</code>／<code>calendar-fill</code>／<code>circle-fill</code>／<code>globe-fill</code>）只服務比較用示範頁 <code>demo-icons-filled.html</code>，正式頁面一顆都沒引用。該頁是 <code>index.html</code> 的複本，唯一差別是多掛一段別名腳本把 registry 的描邊 key 指到實心版，因此在不動 <code>index.html</code>、<code>js/sidebar.js</code>、<code>js/components.js</code> 的前提下，整頁（含側欄導航與 JS 動態渲染的卡片）都會換成實心。這批不加 <code>&lt;g transform&gt;</code> 縮放：量過幾何邊界，Tabler 的實心版剛好比描邊版每邊各大 1px（用來補償 stroke-width 2 的一半），站上 stroke-width 是 1.2，所以實心版視覺上只大 4–6%，與既有四顆告警實心的做法一致。首頁另有 18 顆字符 Tabler 根本沒有實心版（<code>menu</code>／<code>x</code>／<code>rocket</code>／<code>landmark</code>／<code>chevron-down</code>／<code>chevron-right</code>／<code>shopping-bag</code>／<code>ticket</code>／<code>users</code>／<code>search</code>／<code>package-x</code>／<code>upload</code>／<code>megaphone</code>／<code>trending-up</code>／<code>dollar-sign</code>／<code>refresh-ccw</code>／<code>bar-chart-3</code>／<code>link</code>），一律維持描邊、不手工描一顆假的，所以示範頁必然是實心與描邊混排——那正是要給使用者判斷的東西。裁決不採用時，示範頁與這批 key 一起刪除。</p>
   <p class="field-label" data-en>Not in use <span class="field-note">(full Tabler set available via <code>icons-all.js</code>; expand to browse — the grid is built at runtime from the loaded set)</span></p>
   <p class="field-label" data-zh>未使用 <span class="field-note">(完整 Tabler 套件已透過 <code>icons-all.js</code> 備好;展開瀏覽——清單於執行期依實際載入內容生成)</span></p>
   <details class="code-fold" id="icon-gallery-fold"><summary><i data-lucide="layout-grid" class="ztor-icon"></i><span data-en>Browse all unused Tabler icons</span><span data-zh>展開全部未使用的 Tabler 圖示</span></summary>
@@ -3411,7 +3426,7 @@ The first thing buyers see</span>
     <span class="layer layer--organism">🟠 organism</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Borderless inventory table for E-Shop: product identity (image / thumb + title + meta) + category + price + status + stock + visibility switch + edit action, on row-divider layout. The E-Shop page swaps column layouts per panel via page-level modifiers — <code>--eshop</code> (Products: image / category / price / status / stock / visibility), <code>--bundles</code> (Bundles: image / members / bundle price / stock), <code>--auctions</code> (Auctions: image / category / bid / activity) — all layered on the same base grid. Below 760px the header hides and rows restack. <strong>2026-07-31 user: <code>.product-list__image</code> turned portrait</strong> (76×94, width unchanged, height from <code>--img-portrait</code>) — real product photos now render uncropped instead of a square crop of the portrait original. Exceptions: <code>.product-list--events .product-list__image</code> stays <code>1:1</code> (event rows keep the square slot); the pickup page's <code>.product-list__thumb</code> QR icon-chip is a different class and is unaffected.</p>
+  <p class="sub__desc" data-en>Borderless inventory table for E-Shop: product identity (image / thumb + title + meta) + category + price + status + stock + visibility switch + edit action, on row-divider layout. The E-Shop page swaps column layouts per panel via page-level modifiers — <code>--eshop</code> (Products: image / category / price / status / stock / visibility), <code>--bundles</code> (Bundles: image / members / bundle price / stock), <code>--auctions</code> (Auctions: image / category / bid / activity) — all layered on the same base grid. Below 760px the header hides and rows restack. <strong>2026-07-31 user: <code>.product-list__image</code> turned portrait</strong> (76×94, width unchanged, height from <code>--img-portrait</code>) — real product photos now render uncropped instead of a square crop of the portrait original. Exceptions: <code>.product-list--events .product-list__image</code> stays <code>1:1</code> (event rows keep the square slot); the pickup page's <code>.product-list__thumb</code> QR icon-chip is a different class and is unaffected. <strong>2026-08-04 pinned section (<code>.product-list__divider</code> + <code>.product-list__pin-mark</code>, spec 5.1.5 F4 / D172)</strong> — rows pinned to the front of the fan-facing shop sit above a labelled divider carrying a <code>n/10</code> count; membership is position, so dragging a row across the divider is what pins or unpins it. No fan-facing "featured" badge: the creator-side cue is the section plus a small pin glyph before the name, which is the only cue left once search or filter breaks the grouping. With nothing pinned yet the divider stays visible, switches to its <code>--empty</code> variant (a rounded 1px box instead of a single rule — with nothing above it, it invites rather than divides) and swaps to a prompt — "Pin items to the top." with the right-hand slot swapped from the <code>n/10</code> count to a borderless <code>.btn--ghost</code> action (<code>__divider-cta</code>) — sitting exactly where the pinned section will appear. The link guides rather than acts: it scrolls the first pinnable row into the upper third, opens that row's action menu and rings the Pin entry with <code>.dropdown__item.is-hinted</code> (§4.26); choosing what to pin stays with the creator.</p>
   <p class="sub__desc" data-zh>E-Shop 的無框庫存表：商品識別（圖／縮圖＋標題＋meta）＋分類＋價格＋狀態＋庫存＋可見度開關＋編輯動作，列分隔線版式。E-Shop 頁以頁面層修飾子按分頁切換欄位版型——<code>--eshop</code>（商品：圖／分類／價格／狀態／庫存／可見度）、<code>--bundles</code>（套組：圖／成員／套組價／庫存）、<code>--auctions</code>（競標：圖／分類／出價／動態）——都疊在同一 base grid 上。760px 以下表頭隱藏、列重新堆疊。<strong>2026-07-31 使用者：<code>.product-list__image</code> 改直式</strong>（76×94，寬度不變、高度由 <code>--img-portrait</code> 推導）——真實商品照不再被裁成方形。例外：<code>.product-list--events .product-list__image</code> 維持 <code>1:1</code>（活動列表仍是方形）；取貨頁的 <code>.product-list__thumb</code> QR icon chip 是不同 class，不受影響。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
@@ -3425,11 +3440,12 @@ The first thing buyers see</span>
       <div class="product-list__head" role="row">
         <div role="columnheader">Product</div><div role="columnheader">Status</div><div role="columnheader">Stock</div><div role="columnheader">Visible</div><div aria-hidden="true"></div>
       </div>
-      <div class="product-list__row" role="row">
+      <!-- 固定列＋釘選區分隔列（2026-08-04 · D172）：分隔線以上＝釘選並顯示在商店最前 -->
+      <div class="product-list__row" role="row" data-pinned="true">
         <div class="product-list__product" role="cell">
           <div class="product-list__thumb"><i data-lucide="shirt" class="ztor-icon"></i></div>
           <div class="product-list__body">
-            <div class="product-list__title">Coastline tee (M)</div>
+            <div class="product-list__title"><span class="product-list__pin-mark" aria-hidden="true"><i data-lucide="pin" class="ztor-icon"></i></span>Coastline tee (M)</div>
             <div class="product-list__meta"><span class="product-list__category">Apparel</span> · Screen-printed · $32</div>
           </div>
         </div>
@@ -3437,6 +3453,13 @@ The first thing buyers see</span>
         <div class="product-list__cell product-list__stock" role="cell">128 left</div>
         <div class="product-list__cell product-list__visibility" role="cell"><div class="switch switch--on" title="Visible to fans"></div></div>
         <div class="product-list__actions" role="cell"><a class="product-list__edit" href="#product-list" aria-label="Edit"><i data-lucide="pencil" class="ztor-icon"></i></a></div>
+      </div>
+      <div class="product-list__divider" role="row">
+        <div class="product-list__divider-body" role="cell">
+          <i data-lucide="pin" class="ztor-icon" aria-hidden="true"></i>
+          <span data-en>Pinned to the front of your shop</span><span data-zh>以上釘選並顯示在商店最前</span>
+          <span class="product-list__divider-count">1/10</span>
+        </div>
       </div>
       <div class="product-list__row" role="row">
         <div class="product-list__product" role="cell">
@@ -3802,7 +3825,7 @@ The first thing buyers see</span>
       </div>
     </div>
   </div>
-  <p class="field-label" data-en>Why the shell has a fixed height</p><p class="field-label" data-zh>為什麼殼層要固定高度</p>
+  <p class="field-label" data-en>Why the shell has a fixed height</p><p class="field-label" data-zh>為什麼殼層要釘選高度</p>
   <p class="field-text" data-en>The active tab's orange underline sits on the bottom edge of <code>.tabs__item</code>. Only when the tabs stretch the full 58px does that underline land at the very bottom of the shell instead of floating mid-height — hence the fixed height plus <code>align-items: stretch</code>.</p>
   <p class="field-text" data-zh>active tab 的橘色底線貼在 <code>.tabs__item</code> 下緣。只有讓 tabs 撐滿整個 58px，底線才會落在殼層最底部、而不是浮在中間——所以是固定高度加 <code>align-items: stretch</code>。</p>
   <p class="field-label" data-en>Not part of this component</p><p class="field-label" data-zh>不屬於本元件的部分</p>
@@ -7531,9 +7554,12 @@ The first thing buyers see</span>
     上傳入口隨狀態換位置——空的時候是 <code>.vault-empty</code> 整塊，有內容之後收進 <code>.vault-gridbar__right</code> 的 ghost 鈕；兩者共用同一個 <code>&lt;input type=file&gt;</code>，拖放綁在 <code>[data-vault-grid]</code> 容器。<br>
     <code>.vault-rail__draft</code> 移到清單第一列並拆掉外層卡片（原本橘框卡片＋<code>.input</code> 自己的框＝框中框）。<br>
     說明各歸各位：條件細則貼著條件放成 <code>.vault-door__fine</code>，整頁的原型聲明降級為頁尾 <code>.page-note</code>，兩者都不再是壓在媒體清單下面的 <code>.info-banner</code>。</p>
-  <p class="field-text"><strong>總覽卡片牆 ＋ 單一庫房彈窗</strong>（2026-07-31 使用者裁決）：全站導覽已經是左欄，庫房清單再常駐一欄就變兩條並排；清單天生垂直（縮圖／名稱／內容數／鑰匙數）轉橫排塞不下，所以解法不是轉向，是讓它不要跟主內容同時出現。<br>
+  <p class="field-text"><strong>總覽卡片牆 ＋ 單一庫房彈窗</strong>（2026-07-31 探索、2026-08-01 退為保存檔 <code>media-vault-popup.html</code>）：使用者試用後裁示正式頁改回清單與詳情並排——可以直接切換庫房、直接編輯 media，不必先開再關一層彈窗。兩種版型共用同一支 <code>js/media-vault.js</code>，靠 <code>&lt;html data-vault-view="popup"&gt;</code> 分流。當初的推導：全站導覽已經是左欄，庫房清單再常駐一欄就變兩條並排；清單天生垂直（縮圖／名稱／內容數／鑰匙數）轉橫排塞不下，所以解法不是轉向，是讓它不要跟主內容同時出現。<br>
     頁面只放 <code>.vault-overview</code> 卡片牆（封面放得比 276px 側欄大，「哪座門開得最大」比清單更一眼看得出來）；點一張卡，那座庫房開在 <code>.vault-modal</code> 裡——彈窗內沒有全站導覽，清單因此可以留在左邊，只有一條左欄，換庫房也不必關掉彈窗。外殼沿用 <a href="#embed-modal">Embed modal</a>，只換尺寸（1320×940）與內部捲動；捲動容器換成 <code>.vault-modal__body</code>，所以側欄與讀數的貼頂高度在彈窗內歸零。庫房名字只寫在彈窗標題列（捲不走），內文不重複。<br>
     探索過但沒採用：只留標題旁的切換下拉（看不到全部庫房的概況）、把全站導覽改走頂列（那是全站偏好，為單一頁面改它本末倒置）。</p>
+  <p class="field-text"><strong>清單靠右</strong>（2026-08-01 使用者裁示）：<code>.vault-layout</code> 改成 <code>1fr 276px</code>，用 <code>order</code> 換位置而不動 DOM 順序——清單是在庫房之間導覽的東西，讀屏與 Tab 先碰到它是對的，換的只是它畫在哪一邊；窄版收成單欄時清單回到內容上方（右邊已經不存在，擺下面等於要先捲過整座庫房才選得到下一座）。檢視身分那一列跟著改為靠左、與內容切齊同一條左邊界。</p>
+  <p class="field-text"><strong>單一內容的設定</strong>（2026-08-01 使用者裁示「點進去每個 media 設定裡」）：點格子／音檔列打開右側 <a href="#drawer">Drawer</a>。用抽屜不用第二層彈窗——庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，而且會蓋掉剛才點的那一格。內容只放這座原型真的有的欄位（名稱可改；類型／長度／大小／加入日期唯讀，用 <code>&lt;dl&gt;</code> 而非 input，因為它們改不動）與既有的刪除動作。<br>
+    同一輪：<strong>檢視身分搬進彈窗標題列</strong>（它問的是「這座庫房從粉絲那一側長怎樣」，是進到庫房才要問的問題；標題列捲不走）；<strong><a href="#embed-modal">Embed modal</a> 的遮罩底色改黑</strong>——原本混的是 <code>--foreground</code>，深色主題下那是接近白的前景色，遮罩因此變成一層白紗，改成與 <code>.payout-modal</code> 同一個配方（<code>--background</code> ＋ <code>--overlay-tint</code>），全站遮罩只剩一種寫法。</p>
   <p class="field-text"><strong>區塊標題</strong>（2026-07-31 使用者裁示）：<code>.vault-door__label</code>（解鎖條件／誰進得來／已發出的鑰匙／這座庫房裡）原本走「12px 全大寫加字距 muted」的欄位標籤規格——那是標一個輸入框用的。這四個各自帶起下面一整塊內容，是標題，所以改吃 <a href="#card">Card</a> 的 <code>.card__title</code> 既有規格（Satoshi 標題體 18px Regular 前景色），與全站區塊標題一致；圖示放大到 16px、維持 muted 色，不跟標題搶字重。</p>
   <p class="field-text"><strong>「進得來的方法」（2026-07-31，原型先行、待上游裁決 — ASSUMPTIONS PG-025）</strong>：<code>rules</code> 從單層條件陣列改成「方法」清單 <code>[{items:[…]},…]</code>——<strong>一個 <code>{}</code> ＝ 一種進得來的方法；任何一種達成就進得來，同一種方法裡的條件要全部達成。</strong>例：方法一＝「核心圈 ＋ 買過黑膠」，方法二＝「出席過簽名會」，兩種中一種就開得了門。<br>
     <strong>方向是外層任一、內層全部</strong>——創作者腦中的東西是「我開了幾條路給粉絲走」，每條路各有幾個門檻；反過來同樣算得出結果，但要人自己補括號。<br>
@@ -7652,7 +7678,7 @@ The first thing buyers see</span>
   <p class="field-text">「畫面乾淨時 Save 按鈕自我停用」——已儲存卻仍亮著的 Save 是在說謊，狀態改由旁邊的時間戳承接安心感；未儲存變更用琥珀色而非紅色，因為此刻還沒有出錯。實際由 <code>js/toast.js</code>（<code>window.ztorToast.show(...)</code>）動態建立於 <code>&lt;body&gt;</code> 下。消費頁：<code>media-vault.html</code>、<code>tier-settings.html</code>、<code>tier-benefits.html</code>。</p>
 
   <p class="field-label">跨頁佇列 <code>queue()</code> <span class="field-note">(2026-07-30 新增)</span></p>
-  <p class="sub__desc">有些確認發生在「按下去就換頁」的動作上（例：建立流程按發布 → 導向專案詳情頁）。<code>show()</code> 只活在當前頁，換頁那一刻就被丟掉；<code>queue()</code> 把訊息先存進 <code>sessionStorage</code>，換頁後由<em>下一個載入 <code>js/toast.js</code> 的頁面</em>在 DOM ready 時「先刪佇列再顯示」——所以中途重整不會把同一則提示再跳一次。任何頁面只要載入 <code>js/toast.js</code> 就自動具備接收能力，不必逐頁接線。</p>
+  <p class="sub__desc">有些確認發生在「按下去就換頁」的動作上（例：建立流程按發布 → 導向項目詳情頁）。<code>show()</code> 只活在當前頁，換頁那一刻就被丟掉；<code>queue()</code> 把訊息先存進 <code>sessionStorage</code>，換頁後由<em>下一個載入 <code>js/toast.js</code> 的頁面</em>在 DOM ready 時「先刪佇列再顯示」——所以中途重整不會把同一則提示再跳一次。任何頁面只要載入 <code>js/toast.js</code> 就自動具備接收能力，不必逐頁接線。</p>
   <div class="demo" style="flex-direction:column;align-items:flex-start;gap:8px;">
     <pre style="margin:0;font-size:var(--fs-12);white-space:pre-wrap;">window.ztorToast.queue('項目已發布', {
   key: 'cpp.publish.toast.now',   // i18n key：顯示時機在下一頁，語言可能已切換
@@ -7876,6 +7902,360 @@ The first thing buyers see</span>
     <p class="field-text"><code>.src-status</code> · <code>__pill / __dot / __chevron / __panel / __title / __note / __group / __mark / __row--off / __foot</code>。狀態由容器的 <code>data-open</code>（展開）與 <code>data-alert</code>（異常）驅動；<code>data-alert="true"</code> 時膠囊改用 <code>--destructive</code> 邊框、文字與 <code>--destructive-fill</code> 底。來源識別塊只放縮寫、不用各平台品牌色 —— 品牌色會讓五列變成五種強度不一的視覺重量，而這裡要比較的是狀態不是哪一家。&lt;600px 面板改 fixed 貼齊左右。</p>
     <p class="field-text"><code>__group</code>（2026-08-01 新增，D165）＝接入方式分組標題：官方串接組在前、自行上傳組在後。分組標題本身就在回答「這一列為什麼有／沒有按鈕」，比每列各掛一顆「官方／自行」標章省一輪視覺，也讓下半組自然讀成一份待辦。分組順序是規格約束、不是這裡的自由。</p>
     <p class="field-text"><code>ds-components/source-status.css</code>。消費頁：<code>fan-analytics.html</code>、<code>settings.html</code>（只借 <code>__mark</code>）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="auth-shell">
+  <div class="sub__head">
+    <h3 class="sub__title">4.113 Auth shell</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The shell for the pre-login layer — the only surface a visitor sees before the workspace exists. It carries no product navigation: there is no sidebar, no header, no breadcrumb, because none of them can be trusted to mean anything before identity is known. There is no card either — the content sits straight on the page background, matching the ztor consumer login. Every step swaps inside the same column rather than navigating away, so the visitor never loses the sense of being in one place doing one thing.</p>
+  <p class="sub__desc" data-zh>未登入層的殼，是訪客在工作區存在之前唯一看得到的畫面。它不掛任何產品導航——沒有側欄、沒有頁首、沒有麵包屑，因為身分未知之前這些東西都指不到可信的目的地。也沒有卡片：內容直接坐在頁面底色上，比照 ztor 消費端的登入頁（2026-08-04 使用者裁示）。所有步驟在同一個內容欄裡互切、不換頁，讓訪客始終覺得自己在同一個地方做同一件事。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
+    <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#field-system">Field</a> <a class="compose-chip compose-chip--molecule" href="#alert">Alert</a> <a class="compose-chip compose-chip--molecule" href="#segmented">Segmented</a></div>
+    <div class="compose__note"><span data-en>The method chooser reuses <code>.segmented.radio-cards--gate</code> from <a href="#segmented">Segmented</a> (STYLE-DECISIONS Q28: gate cards commit on click and hold no persistent selected state).</span><span data-zh>方式選擇沿用 <a href="#segmented">Segmented</a> 的 <code>.segmented.radio-cards--gate</code>（STYLE-DECISIONS Q28：閘門卡點了就進下一步、不保留選取態）。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo" style="min-height:420px">
+    <!-- width:100% 是 demo 專用：.demo 是 flex 容器，不給寬度的話 .auth-page 只會撐到內容寬，
+         「整頁底色 ＋ 內容置中」這件事就看不出來（無卡片版之後這一層是唯一的底色）。 -->
+    <div class="auth-page" style="min-height:220px; width:100%; padding:var(--sp-72) 0 var(--sp-24)">
+      <!-- 角標在 .auth-shell 之外、絕對定位在 .auth-page 左上角（demo 加高並留上內距才看得出來） -->
+      <div class="auth-brand">
+        <svg class="auth-brand__logo" viewBox="0 0 101 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ztor"><path opacity="0.99" d="M55.749 7.35352C62.3102 6.56387 68.1795 8.99977 70.8506 13.6182C71.8335 15.3184 72.2187 16.7656 72.3027 19.0908C72.4094 22.015 71.9544 23.817 70.5332 26.0986C69.8395 27.2145 67.9548 29.025 66.6904 29.792C62.6322 32.2529 56.4412 32.7086 51.6602 30.8984C48.7838 29.81 46.349 27.6537 45.0264 25.0264C44.2163 23.4148 43.8408 21.6966 43.8311 19.5537C43.8214 17.4853 44.0078 16.4756 44.6934 14.8818C45.864 12.1628 48.31 9.81044 51.2637 8.56543C52.486 8.05031 54.5137 7.50209 55.749 7.35352ZM96.4805 23.1143C98.9761 23.1143 101 24.9861 101 27.2949C101 29.6039 98.9763 31.4766 96.4805 31.4766C93.9848 31.4764 91.9619 29.6038 91.9619 27.2949C91.9622 24.9863 93.985 23.1145 96.4805 23.1143ZM89.5264 7.31055C90.089 7.31055 90.5439 7.76583 90.5439 8.32617V12.2227C90.5439 12.6328 90.2997 12.9866 89.9473 13.1465L89.9102 13.1621L83.6123 15.9268C83.2129 16.1318 82.9384 16.5458 82.9336 17.0254V30.1709C82.9336 30.7329 82.4771 31.1875 81.916 31.1875H76.9004C76.3379 31.1873 75.8838 30.7311 75.8838 30.1709V8.68457C75.8838 8.12275 76.3395 7.66917 76.9004 7.66895H81.916C82.4787 7.66895 82.9336 8.12423 82.9336 8.68457V9.69531C82.9336 9.84549 83.0567 9.96875 83.207 9.96875C83.2424 9.96868 83.2764 9.96012 83.3086 9.94727C83.3103 9.94707 83.3154 9.94482 83.3164 9.94434L89.1035 7.4043L89.1465 7.38477C89.2644 7.33638 89.3923 7.31061 89.5264 7.31055ZM35.6514 0C36.214 0 36.6689 0.455327 36.6689 1.01562V7.56348C36.6689 7.83628 36.89 8.05745 37.1631 8.05762H40.5762C41.1387 8.05762 41.5935 8.51311 41.5938 9.07324V12.5742C41.5938 13.1362 41.1372 13.5908 40.5762 13.5908H37.1631C36.89 13.591 36.6689 13.8122 36.6689 14.085V30.1699C36.6689 30.7318 36.2124 31.1855 35.6514 31.1855H30.6592C30.0966 31.1855 29.6417 30.7302 29.6416 30.1699V14.085C29.6416 13.8122 29.4205 13.5911 29.1475 13.5908H27.9102C27.3475 13.5908 26.8936 13.1346 26.8936 12.5742V9.07324C26.8938 8.51149 27.3493 8.05762 27.9102 8.05762H29.1475C29.4205 8.05738 29.6416 7.83624 29.6416 7.56348V1.01562C29.6417 0.453712 30.0982 0 30.6592 0H35.6514ZM23.1084 8.04492C23.7194 8.0451 24.2138 8.5392 24.2139 9.14941C24.2139 9.37374 24.1479 9.58055 24.0332 9.75488L23.8936 9.92773L20.9365 13.5889L12.6016 23.9072C12.5773 23.9347 12.5552 23.9641 12.5342 23.9932C12.4161 24.1563 12.3467 24.3549 12.3467 24.5713C12.3468 25.1201 12.7923 25.5652 13.3418 25.5654H23.4619L23.4639 25.5645C24.0265 25.5645 24.4805 26.0198 24.4805 26.5801V30.168C24.4805 30.7299 24.0249 31.1835 23.4639 31.1836H0.998047C0.4467 31.1836 0 30.7382 0 30.1875C2.76681e-06 29.9727 0.0710906 29.7725 0.1875 29.6094L0.256836 29.5234L3.45312 25.5645L12.5 14.3652C12.5017 14.3637 12.5049 14.3619 12.5049 14.3604C12.5581 14.2814 12.5888 14.1864 12.5889 14.085C12.5889 13.8121 12.367 13.5908 12.0938 13.5908H2.12988C1.56722 13.5908 1.1123 13.1346 1.1123 12.5742V9.06055C1.11243 8.49869 1.56891 8.04492 2.12988 8.04492H23.1084ZM59.7852 13.2803C56.0761 12.3824 52.1339 14.574 51.2188 18.041C50.9957 18.8888 50.9911 20.5182 51.2109 21.2852C51.8885 23.6539 54.3762 25.684 57.0762 26.0732C60.5912 26.5803 64.1954 24.3252 64.9893 21.123C65.201 20.2655 65.1817 18.8623 64.9473 18.0518C64.2681 15.7105 62.2975 13.8891 59.7852 13.2803ZM24.2168 8.05762L24.2012 8.04492H24.2168V8.05762Z"/></svg>
+        <span class="auth-brand__name">Creator Studio</span>
+      </div>
+      <div class="auth-shell">
+        <section class="auth-step">
+          <div class="auth-intro">
+            <div class="auth-head">
+              <button class="btn btn--icon auth-head__back" type="button" aria-label="Back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+              <h1 class="auth-title">Email login</h1>
+            </div>
+            <p class="auth-sub">Platform admins and creators use the same entrance.</p>
+          </div>
+          <div class="alert alert--row alert--error" role="alert">
+            <span class="alert__icon"><i data-lucide="alert-circle" class="ztor-icon"></i></span>
+            <span class="alert__body"><span class="alert__title">Email or password is incorrect.</span></span>
+          </div>
+          <div>
+            <div class="field">
+              <label class="field__label" for="ds-auth-email">Email address <span class="field__req">*</span></label>
+              <input class="input" id="ds-auth-email" type="email" placeholder="you@example.com">
+            </div>
+            <div class="field">
+              <label class="field__label" for="ds-auth-pw">Password <span class="field__req">*</span></label>
+              <div class="auth-pw">
+                <input class="input" id="ds-auth-pw" type="password" value="hunter2">
+                <button class="btn btn--icon btn--sm auth-pw__toggle" type="button" aria-label="Show password"><i data-lucide="eye" class="ztor-icon"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="auth-actions">
+            <button class="btn btn--primary btn--lg" type="button">Log in</button>
+          </div>
+          <div class="auth-foot">
+            <a class="auth-link" href="#auth-shell">Forgot password?</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Rendered preview · the six method cards (<code>.radio-cards--gate</code>)</p><p class="field-label" data-zh>視覺展示 · 方式選擇的六張卡（<code>.radio-cards--gate</code>）</p>
+  <div class="demo">
+    <!-- width:100% 是 demo 專用：.demo 是 flex 容器，不給寬度的話 .ds-preview 會縮到內容寬，
+         2 欄的 grid 就看不出「同一列兩張等寬、列高各自決定」這件事。 -->
+    <div class="ds-preview ds-preview--narrow" style="width:100%">
+      <!-- 2026-08-04 使用者裁示「將第三方全部都用這種格式」：六個登入方式同一種卡，
+           住同一個 2 欄 grid（2 欄 × 3 列），六張等高。副標一律回答「怎麼驗證」——
+           前兩張是密碼／簡訊驗證碼，四張第三方共用同一句「不需另設密碼」（同一個
+           i18n key），因為彼此的差別已由圖示與名稱說完，副標負責說這一組跟前兩張
+           差在哪。品牌標記走 .radio-card__lead 的位置（卡片左上），是 registry 裡的
+           單色字符（吃 currentColor，不帶品牌彩色值）。
+           2026-08-04 第三輪裁示：前兩張的圖示也換成實心（mail-fill／smartphone-fill），
+           與四顆品牌標記同一個視覺量級。這是限這一格的例外，站上通用圖示仍是描邊，
+           見 STYLE-DECISIONS Q51。 -->
+      <div class="segmented radio-cards radio-cards--gate" role="group" aria-label="Login method">
+        <button class="segmented__btn" type="button">
+          <i data-lucide="mail-fill" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title">Email</span>
+            <span class="radio-card__sub">Verified with a password</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button">
+          <i data-lucide="smartphone-fill" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title">Phone number</span>
+            <span class="radio-card__sub">Verified with an SMS code</span>
+          </span>
+        </button>
+        <button class="segmented__btn" type="button">
+          <i data-lucide="brand-apple" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text"><span class="radio-card__title">Apple</span><span class="radio-card__sub">No password needed</span></span>
+        </button>
+        <button class="segmented__btn" type="button">
+          <i data-lucide="brand-google" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text"><span class="radio-card__title">Google</span><span class="radio-card__sub">No password needed</span></span>
+        </button>
+        <button class="segmented__btn" type="button">
+          <i data-lucide="brand-facebook" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text"><span class="radio-card__title">Facebook</span><span class="radio-card__sub">No password needed</span></span>
+        </button>
+        <button class="segmented__btn" type="button">
+          <i data-lucide="brand-line" class="ztor-icon radio-card__lead"></i>
+          <span class="radio-card__text"><span class="radio-card__title">LINE</span><span class="radio-card__sub">No password needed</span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Rendered preview · the two paired rows (<code>.auth-inline</code>)</p><p class="field-label" data-zh>視覺展示 · 兩種成對的一列（<code>.auth-inline</code>）</p>
+  <div class="demo">
+    <div class="ds-preview ds-preview--narrow">
+      <div class="field">
+        <label class="field__label">Phone number <span class="field__req">*</span></label>
+        <div class="auth-inline auth-inline--lead">
+          <select class="select" aria-label="Country code"><option>TW +886</option><option>HK +852</option></select>
+          <input class="input" type="tel" placeholder="912 345 678">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field__label">Verification code <span class="field__req">*</span></label>
+        <div class="auth-inline">
+          <input class="input" type="text" placeholder="6 digits">
+          <button class="btn btn--outline" type="button">Get code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.auth-page</code>（置中的全畫面底，<code>--background</code>）· <code>.auth-brand</code>（品牌角標：wordmark ＋ Creator Studio，絕對定位在左上角、在 shell 之外）· <code>.auth-shell</code>（內容欄，只有 max 420 與垂直節奏，無底色／邊框／陰影／圓角）· <code>.auth-step</code>（每個步驟一節，非當前步驟掛 <code>hidden</code>）· <code>.auth-intro / .auth-head / .auth-head__back / .auth-title / .auth-sub</code> · <code>.auth-pw + .auth-pw__toggle</code>（密碼顯示切換）· <code>.auth-inline</code>（驗證碼這種「輸入格＋按鈕」同列；<code>--lead</code> 是國碼在前的變體）· <code>.auth-actions / .auth-foot / .auth-link</code>。</p>
+    <p class="field-text">2026-08-04 使用者裁示再兩件：<strong>(1) 內容的垂直起點改成固定</strong>——<code>.auth-page</code> 由 <code>align-items:center</code> 換成 <code>flex-start</code> ＋ <code>calc(var(--sp-96) + var(--sp-72))</code> 上內距（手機 ≤480px 仍是 <code>--sp-96</code>）。置中的問題是四個畫面高度不同，切畫面時標題會上下跳；固定起點之後標題永遠在同一條線上，只有下方在長高。<strong>(2) 加上第三方登入</strong>——Apple／Google／Facebook／LINE 四個入口。品牌標記是 <code>icons.js</code> 裡唯一非 Tabler 的字符（Simple Icons CC0 官方單色路徑），一律吃 <code>currentColor</code>、不帶品牌彩色值。</p>
+    <p class="field-text">2026-08-04 第二輪使用者裁示「將第三方全部都用這種格式」：第三方原本是一列四顆只有品牌標記的方塊（<code>.auth-oauth / .auth-oauth__btn</code>），本輪改成跟電子郵件／手機號碼同一種卡，六張一起住進 F1 那個 <code>.segmented.radio-cards--gate</code>——<strong>2 欄 × 3 列，第 1 列是電子郵件／手機號碼、第 2-3 列是四個第三方</strong>。用同一個 grid 而不是兩個相鄰區塊，是因為六者是同一個決定的六個答案，切成兩塊會冒出兩種垂直間距在描述同一件事。<strong>六張都是「標題＋一行副標」，所以六張等高</strong>：副標的職責是回答「怎麼驗證」——前兩張是密碼／簡訊驗證碼，四張第三方的對應事實是「不需另設密碼」，四張共用同一個 i18n key（<code>login.method.oauth.sub</code>）。共用一句是刻意的：它們彼此的差別已經由圖示與名稱說完，副標負責說這一整組跟前兩張差在哪；寫成四句不同的話會變成把 Apple／Google 這些名字再講一次。可讀名稱＝卡面上看得見的標題，<code>login.oauth.*</code> 五個純 <code>aria-label</code> 的 key 一併刪除；<code>.auth-oauth</code> 兩條規則零消費，也一併從 <code>auth.css</code> 移除。</p>
+    <p class="field-text">2026-08-04 使用者裁示改成無卡片版：原本的 <code>.auth-card</code>（<code>--card</code> 底＋<code>--shadow-card</code>＋<code>--radius-xl</code>＋<code>--sp-32</code> 內距）改名 <code>.auth-shell</code> 並拿掉全部容器外觀，頁底也由 <code>--surface-shell</code> 換成 <code>--background</code>——<code>--surface-shell</code> 存在的理由是襯托疊在上面的卡，卡沒了就不需要那一層。內層 F1 的兩個登入方式仍是可點方塊（<code>.radio-cards--gate</code>），拿掉的只有最外層那張卡。</p>
+    <p class="field-text">步驟切換由 <code>data-auth-step</code> 與 <code>[hidden]</code> 驅動，不換頁也不動 URL——四個畫面（方式選擇／電子郵件／手機號碼／忘記密碼）共用同一個內容欄。<code>.auth-step[hidden]{display:none}</code> 是必要的顯式還原，因為 <code>.auth-step</code> 自己宣告了 display。</p>
+    <p class="field-text"><code>ds-components/auth.css</code>。消費頁：<code>login.html</code>（規格 5.1.10 / D170）。這頁不載 <code>js/sidebar.js</code>，骨架照站上唯一的無側欄全畫面先例 <code>scanner.html</code>。全站帳戶選單的「登出」（<code>js/sidebar.js</code> 的 <code>[data-logout]</code>）導回這一頁。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="ticket-tier-card">
+  <div class="sub__head">
+    <h3 class="sub__title">4.114 Ticket tier card</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>A repeatable row for building a list of ticket tiers inside a creation flow. Each card has two faces: collapsed it is a summary — name plus the two facts that decide whether the tier is right (price, quantity); expanded it becomes the edit form and the summary steps aside. Only one card edits at a time, so the list never turns into a wall of open forms.</p>
+  <p class="sub__desc" data-zh>建立流程裡可重複增列的票種卡。每張卡有兩個面貌：收合時是摘要——名稱加上判斷這個票種對不對所需的兩個事實（價格、數量）；展開時整張變成編輯表單、摘要讓位。一次只有一張卡在編輯，清單才不會變成一整面攤開的表單。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#card">Card</a> <a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#input">Input</a></div>
+    <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#field-system">Field</a> <a class="compose-chip compose-chip--molecule" href="#dropdown-menu">Dropdown menu</a></div>
+    <div class="compose__note"><span data-en>The “add another” affordance reuses <code>.upload-tile</code> so an empty slot reads the same as every other add-something-here target in the flow.</span><span data-zh>「再加一個」沿用 <code>.upload-tile</code>，讓空位跟流程裡其他「往這裡加東西」的位置讀起來是同一件事。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <!-- .demo 是 flex，這一段要照消費頁的實際排法直向堆疊（工具列→網格→計數列），所以自己包一層 -->
+  <div class="demo"><div style="width:100%">
+    <div class="tier-toolbar">
+      <button class="btn btn--outline btn--sm" type="button">Group edit</button>
+    </div>
+    <!-- .tier-grid 是外層網格；.tier-list 已改 display:contents，卡片與「再加一個」同在這個網格裡 -->
+    <div class="tier-grid">
+    <div class="tier-list">
+      <div class="card tier-card">
+        <div class="tier-card__head">
+          <h4 class="tier-card__name">Early bird</h4>
+          <div class="tier-card__actions">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--sm" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <button class="dropdown__item" type="button" role="menuitem"><i data-lucide="copy" class="ztor-icon"></i>Duplicate tier</button>
+                <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem"><i data-lucide="trash-2" class="ztor-icon"></i>Remove tier</button>
+              </div>
+            </details>
+          </div>
+        </div>
+        <dl class="tier-card__facts">
+          <div class="tier-card__fact"><dt>Price</dt><dd>$680</dd></div>
+          <div class="tier-card__fact"><dt>Quantity</dt><dd>120</dd></div>
+        </dl>
+        <button class="btn btn--outline btn--sm tier-card__edit" type="button">Edit</button>
+      </div>
+      <div class="card tier-card tier-card--editing">
+        <div class="tier-card__head">
+          <h4 class="tier-card__name">Front row</h4>
+          <div class="tier-card__actions">
+            <details class="dropdown">
+              <summary class="btn btn--icon btn--sm" aria-label="More actions"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+              <div class="dropdown__menu" role="menu">
+                <button class="dropdown__item" type="button" role="menuitem"><i data-lucide="copy" class="ztor-icon"></i>Duplicate tier</button>
+                <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem"><i data-lucide="trash-2" class="ztor-icon"></i>Remove tier</button>
+              </div>
+            </details>
+          </div>
+        </div>
+        <dl class="tier-card__facts">
+          <div class="tier-card__fact"><dt>Price</dt><dd>$1,280</dd></div>
+          <div class="tier-card__fact"><dt>Quantity</dt><dd>600</dd></div>
+        </dl>
+        <button class="btn btn--outline btn--sm tier-card__edit" type="button">Edit</button>
+        <div class="tier-card__body">
+          <div class="field">
+              <label class="field__label" for="ds-tier-name">Name <span class="field__req">*</span></label>
+              <span class="tier-card__control" data-empty="false">
+                <input class="input" id="ds-tier-name" type="text" value="Front row">
+                <button class="tier-card__clear" type="button" aria-label="Clear"><i data-lucide="x" class="ztor-icon"></i></button>
+              </span>
+              <p class="field__hint"></p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ds-tier-price">Price <span class="field__req">*</span></label>
+              <span class="tier-card__control" data-empty="false">
+                <span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                  <input class="input amount-field__input" id="ds-tier-price" type="number" value="1280"></span>
+                <button class="tier-card__clear" type="button" aria-label="Clear"><i data-lucide="x" class="ztor-icon"></i></button>
+              </span>
+              <p class="field__hint"></p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ds-tier-qty">Quantity <span class="field__req">*</span></label>
+              <span class="tier-card__control" data-empty="false">
+                <input class="input" id="ds-tier-qty" type="number" value="600">
+                <button class="tier-card__clear" type="button" aria-label="Clear"><i data-lucide="x" class="ztor-icon"></i></button>
+              </span>
+              <p class="field__hint tier-card__err">Tier quantities add up to 720, over the 500 capacity.</p>
+            </div>
+        </div>
+        <div class="tier-card__foot">
+          <button class="btn btn--destructive btn--sm" type="button">Remove</button>
+          <span class="tier-card__foot-spacer"></span>
+          <button class="btn btn--outline btn--sm" type="button">Cancel</button>
+          <button class="btn btn--primary btn--sm" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+    <button class="upload-tile tier-add" type="button">
+      <span class="upload-tile__icon"><i data-lucide="ticket" class="ztor-icon"></i></span>
+      <span class="upload-tile__title">＋ Add another tier</span>
+      <span class="upload-tile__hint">Name, price, quantity</span>
+    </button>
+    </div>
+    <div class="tier-count tier-count--over">Tier quantities add up to 720, over the 500 capacity.</div>
+  </div></div>
+  <p class="field-label" data-en>Rules &amp; revenue estimate</p><p class="field-label" data-zh>規則與收入試算</p>
+  <p class="sub__desc" data-en>Three settings share one shape (who can buy / per-person limit / discount) and one renderer — it runs once at event level as the default for every tier, and once inside a tier card that opted out. Scope is inheritance plus override, not two separate modes.</p>
+  <p class="sub__desc" data-zh>三種設定（購買條件／每人限購／折扣）同一個結構、同一支渲染函式——在活動層跑一次當所有票種的預設，在打開自訂的票種卡裡再跑一次。範圍走繼承＋覆寫，不做「全部一致 vs 獨立」兩種模式。</p>
+  <div class="demo"><div style="width:100%;max-width:520px">
+    <div class="rule">
+      <div class="field__label">Who can buy</div>
+      <div class="segmented"><button class="segmented__btn" type="button">No limit</button><button class="segmented__btn segmented__btn--active" type="button">Time window</button><button class="segmented__btn" type="button">Fan tier</button></div>
+      <div class="rule-when"><div class="rule-row"><input class="input" type="datetime-local"><input class="input" type="datetime-local"></div></div>
+    </div>
+    <div class="rule">
+      <div class="field__label">Per-person limit</div>
+      <div class="segmented"><button class="segmented__btn" type="button">No limit</button><button class="segmented__btn segmented__btn--active" type="button">Set a cap</button></div>
+      <div class="rule-when"><div class="rule-row"><input class="input" type="number" value="2"><span class="rule-unit">tickets per person</span></div></div>
+    </div>
+    <div class="rule">
+      <div class="field__label">Discount</div>
+      <div class="segmented"><button class="segmented__btn" type="button">None</button><button class="segmented__btn segmented__btn--active" type="button">Set a discount</button></div>
+      <div class="rule-when">
+        <div class="rule-row"><span class="amount-field amount-field--suffix amount-field--readonly"><input class="input amount-field__input" type="number" value="10"><span class="amount-field__unit">%</span></span></div>
+        <div class="rule-sub">
+          <div class="segmented"><button class="segmented__btn" type="button">No limit</button><button class="segmented__btn" type="button">Time window</button><button class="segmented__btn segmented__btn--active" type="button">Fan tier</button></div>
+          <div class="rule-when"><select class="select"><option>Superfan and up</option></select></div>
+        </div>
+      </div>
+    </div>
+    <div class="calc-sum" style="margin-top:24px">
+      <div class="kv kv--lead"><span class="kv__k">Projected revenue</span><span class="kv__v">$1,800,000</span></div>
+      <div class="kv"><span class="kv__k">Platform fee</span><span class="kv__v">$90,000</span></div>
+      <div class="kv"><span class="kv__k">Event costs</span><span class="kv__v">$2,000,000</span></div>
+      <div class="kv calc-sum__out"><span class="kv__k">Your take</span><span class="kv__v calc-sum__neg">-$290,000</span></div>
+    </div>
+  </div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.tier-grid</code>（網格，<code>auto-fill</code>/<code>minmax(280px,1fr)</code>）· <code>.tier-list</code>（卡片渲染容器，<code>display:contents</code>）· <code>.tier-toolbar(__actions)</code>（批次編輯）· <code>.tier-card</code>（掛在 <code>.card</code> 上）· <code>__head / __name / __name--untitled / __actions</code>（收合面：卡標＋<code>.dropdown</code> ⋮ 選單，規格 5.1.6.1 F9.2 複製／移除）· <code>__facts / __fact</code>（標籤靠左、值靠右的價格與數量）· <code>__edit</code>（收合面卡底的整寬 Edit）· <code>__body / __foot / __foot-spacer</code>（展開面；Remove 走 Q37 的實色 <code>.btn--destructive</code>）· <code>__control + __clear</code>（有值才出現的清除鈕）· <code>.field__hint.tier-card__err</code>（驗證錯誤）· <code>.tier-count(.--over)</code>（計數列，超過容量轉紅）· <code>.tier-add</code>（沿用 <code>.upload-tile</code>）。</p>
+    <p class="field-text">兩個面貌由卡片自己的 <code>--editing</code> 修飾字切換：<code>__body</code> 與 <code>__foot</code> 平常 <code>display:none</code>，加上 <code>--editing</code> 後換成 <code>__facts</code> 與 <code>__edit</code> 收起來。再加 <code>--group</code>（批次編輯中的卡）則連 <code>__foot</code> 也收起、<code>__actions</code> 留著——動作在工具列，移除單張只剩 ⋮ 這條路。<code>.tier-list[hidden]</code> 要顯式還原 <code>display:none</code>——容器宣告了 <code>display:contents</code>，不還原的話「該藏的不會藏」。</p>
+    <p class="field-text">版型來源＝Beamco Artist Portal v3 的 Ticket Type Settings（Figma <code>0gWC6dR1yzdEu0g1LqvRvJ</code> node 1904-82978）。該設計有 List／Grid 兩種檢視，2026-08-04 使用者裁決<strong>只採用 Grid</strong>——List 是橫向捲動，會把卡片推出畫面，而這一步最需要一眼看到的正是「有幾種票、加起來幾張」；切換鈕因此整個不做。</p>
+    <p class="field-text"><code>ds-components/ticket-tier-card.css</code>。消費頁：<code>create-event.html</code>（步驟 4 票種）。2026-08-04 新建：該步驟原本只有一顆虛線卡把計數 +1、沒有任何欄位可填，規格 F9.1／F9.2 的票種卡此輪才落地；驗證（名稱 1–40 字不重複／價格整數 ≥ 0／數量整數 ≥ 1／Σ 數量 ≤ 容量）與草稿 Save／Cancel 由該頁行內控制器負責。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="size-chart-editor">
+  <div class="sub__head">
+    <h3 class="sub__title">4.115 Size chart editor</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>A data table where the creator controls both axes. Rows are sizes; columns are whatever this garment needs measured — and that genuinely differs per item, so the columns cannot be a fixed set the way every other table on this site has one. Delete affordances stay hidden until you hover the row or column they belong to, because two growable axes means a permanently visible grid of delete icons would outweigh the data itself.</p>
+  <p class="sub__desc" data-zh>兩個維度都由創作者決定的資料表。列是尺碼、欄是這件衣服需要量的部位——而要量哪幾個部位本來就因商品而異，所以欄沒辦法像站上其他表格那樣是固定集合。刪除鈕平常藏起來、hover 到所屬的那一列或那一欄才浮現：兩軸都會長，一整排常駐的刪除圖示會蓋過資料本身。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#icon">Icon</a></div>
+    <div class="compose__note"><span data-en>Visual language is borrowed wholesale from <a href="#variant-builder">Variant builder</a>'s table (frame, muted head, <code>.input</code> cells, row-end delete) so the two read as one family; the dynamic-column mechanism is borrowed from <a href="#benefit-matrix">Benefit matrix</a>'s <code>--bmx-cols</code>.</span><span data-zh>視覺語彙整套取自 <a href="#variant-builder">Variant builder</a> 的表格（外框、靜音表頭、<code>.input</code> 格子、列尾刪除），讓兩張表讀起來是同一族；動態欄的機制取自 <a href="#benefit-matrix">Benefit matrix</a> 的 <code>--bmx-cols</code>。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo"><div style="width:100%">
+    <div class="sce">
+      <div class="sce__wrap">
+        <div class="sce__table">
+          <div class="sce__head">
+            <div class="sce__col"><span class="sce__col-label">Size</span></div>
+            <div class="sce__col">
+              <input class="input sce__col-input" type="text" value="Chest width" aria-label="Measurement name">
+              <button class="sce__col-remove" type="button"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="sce__col">
+              <input class="input sce__col-input" type="text" value="Length" aria-label="Measurement name">
+              <button class="sce__col-remove" type="button"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div class="sce__col">
+              <input class="input sce__col-input" type="text" value="Sleeve" aria-label="Measurement name">
+              <button class="sce__col-remove" type="button"><i data-lucide="x" class="ztor-icon"></i></button>
+            </div>
+            <div></div>
+          </div>
+          <div class="sce__row">
+            <input class="input sce__cell sce__cell--size" type="text" value="S" aria-label="Size">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="55" aria-label="Chest width">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="66" aria-label="Length">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="60" aria-label="Sleeve">
+            <button class="sce__row-remove" type="button"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+          <div class="sce__row">
+            <input class="input sce__cell sce__cell--size" type="text" value="M" aria-label="Size">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="58" aria-label="Chest width">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="68" aria-label="Length">
+            <input class="input sce__cell" type="text" inputmode="decimal" value="62" aria-label="Sleeve">
+            <button class="sce__row-remove" type="button"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="sce__foot">
+        <button class="sce__add" type="button"><i data-lucide="plus" class="ztor-icon"></i><span>Add size</span></button>
+        <button class="sce__add" type="button"><i data-lucide="plus" class="ztor-icon"></i><span>Add measurement</span></button>
+      </div>
+    </div>
+  </div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.sce</code> · <code>__wrap</code>（外框＋橫捲）· <code>__table</code>（欄定義的唯一住處）· <code>__head</code> ＞ <code>__col</code> ＞ <code>__col-label</code> ／ <code>__col-input</code> ＋ <code>__col-remove</code> · <code>__row</code> ＞ <code>__cell</code>（<code>--size</code> 為首欄識別格）＋ <code>__row-remove</code> · <code>__foot</code> ＞ <code>__add</code>。</p>
+    <p class="field-text"><strong>欄定義只住在 <code>--sce-cols</code> 這一個變數上</strong>（宣告在 <code>.sce__table</code>，<code>__head</code> 與每個 <code>__row</code> 都 <code>var()</code> 取用）。<code>__head</code> 與每一列是各自獨立的 grid container，欄寬要對齊就只能吃同一份 <code>grid-template-columns</code>；JS 增減欄時只改這個變數＋每列補一格 DOM，不動 CSS。</p>
+    <p class="field-text"><strong>首欄必須固定寬、不能用 <code>max-content</code></strong>：兩個 grid 會各自解析 —— 表頭那格只有文字（72px）、資料列那格是輸入框（152px），兩邊就錯開。已改固定 <code>112px</code>。</p>
+    <p class="field-text">表頭的欄名輸入框平常收起邊界：<code>.input</code> 的邊界是 <code>box-shadow</code> 環不是 <code>border</code>，所以要清 <code>box-shadow</code>，改 <code>border-color</code> 沒有作用。</p>
+    <p class="field-text"><code>ds-components/size-chart-editor.css</code>。消費頁：<code>store-settings.html</code>（spec 5.1.5.5 F7.2 · D171）—— 尺寸表與身高體重參考各一個實例，後者欄固定、不掛欄刪除鈕。</p>
   </div>
   </details>
 </section>

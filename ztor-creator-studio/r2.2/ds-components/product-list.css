@@ -394,6 +394,73 @@
   cursor: grabbing;
   will-change: transform;
 }
+/* ------------------------------------------------------------
+   釘選區分隔列（Pinned divider，2026-08-04 · PIN-001 提案）
+   清單最上方是被釘選的列（上限 10），其下插一條分隔列說明「以上會顯示在商店最前」。
+   為什麼是分隔列而不是逐列徽章：使用者裁示粉絲端不掛精選標記，創作者端要辨識的是
+   「哪一段」而不是「哪一顆」——位置本身就是狀態，一條有字的線把它講完，比 10 顆徽章安靜。
+   分隔列不是資料列：不參與篩選、計數與拖曳讓位，JS 只負責搬它與更新計數。
+   ------------------------------------------------------------ */
+.product-list__divider {
+  display: block;
+  /* 2026-08-04 使用者兩輪裁示：(1) 高度、字級與上下留白都要再大一點；(2) 改成有圓角的方形外框。
+     一條細線在 76×94 縮圖的列陣裡會被讀成「兩列之間的分隔線」；框起來之後它才明確是一個
+     自己的區塊，而不是某一列的附屬。外框用 1px --border、不填色——填了色會長得像另一列商品。 */
+  padding: var(--sp-16) var(--sp-10);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* 零釘選變體（--empty，2026-08-04 使用者裁示）：兩種狀態是兩件不同的東西，長相也該不同。
+   已有釘選商品時它是「兩段之間的界線」，一條線就對；一件都沒有時它沒有上下兩段可分，
+   實際在做的是邀請你去釘第一件，所以改成有圓角的方框把那句話與行動框起來。
+   框線同列分隔線色（--border-soft）：這個框跟清單是同一層東西，較重的框線會讀成疊上去的卡片。 */
+.product-list__divider--empty {
+  padding: var(--sp-16);
+  margin-block: var(--sp-8);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-xl);
+}
+/* 方框狀態才收掉上一列的分隔線：框自己有上緣，兩條疊在一起會看成雙線。
+   線狀態不收——那條線本來就是它與上一段的分界。篩選中框會 hidden，也不收。 */
+.product-list__row:has(+ .product-list__divider--empty:not([hidden])) { border-bottom-color: transparent; }
+.product-list__divider[hidden] { display: none; }
+.product-list__divider-body {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal);
+}
+.product-list__divider .ztor-icon { width: 15px; height: 15px; flex: none; }
+/* 計數（3/10）靠右：上限是這條線唯一需要隨時看得到的數字，滿了才不會拖到一半才發現。 */
+.product-list__divider-count { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* 「立即釘選」：零釘選時的指路入口（點了會打開第一列的操作選單並指出該按哪一項）。
+   位置＝計數那一格（2026-08-04 使用者裁示）：零釘選時右端沒有數字要報，那個位置正好
+   讓行動落在視線掃到句尾的地方；釘選第一件之後這格換回 n/10。
+   樣式＝無外框按鈕（`.btn.btn--ghost.btn--sm`，2026-08-04 使用者裁示，取代原本的底線連結）——
+   ghost 沒有外框，不會和外面這個框變成框中框；本 class 只負責推到右端與收起。 */
+.product-list__divider-cta { margin-left: auto; }
+.product-list__divider-cta[hidden] { display: none; }
+/* 拖曳越過分隔線＝改變釘選狀態，過程中把線點亮，讓「跨過去會發生事」看得出來。 */
+.product-list__divider.is-drop-target { border-color: var(--primary); }
+.product-list__divider.is-drop-target .product-list__divider-body { color: var(--foreground); }
+/* 額滿時把計數點成錯誤色一下（JS 加 class、動畫結束移除）：拖到一半才發現滿了會比較挫折，
+   所以拒收的當下就在計數那裡回答「為什麼不收」。 */
+.product-list__divider.is-full .product-list__divider-count { color: var(--destructive); }
+
+/* 已釘選的列：名稱前一顆小圖釘。分隔區只在完整清單成立，一旦搜尋或篩選就沒有分段可讀，
+   這顆標記是那時唯一還說得出「這件被釘選了」的東西，所以常駐、不隨 hover 出現。 */
+.product-list__pin-mark {
+  flex: none;
+  margin-right: var(--sp-6);
+  color: var(--muted-foreground);
+  vertical-align: -2px;
+}
+.product-list__pin-mark .ztor-icon { width: 14px; height: 14px; }
+.product-list__row:not([data-pinned="true"]) .product-list__pin-mark { display: none; }
+
 /* 草稿列不參與粉絲端陳列排序（草稿不對粉絲顯示、無陳列順序）：藏握把、不可抓；頁面 JS 另把草稿列置頂。 */
 .product-list__row[data-status="draft"] .product-list__drag {
   visibility: hidden;

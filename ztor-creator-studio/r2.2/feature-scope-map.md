@@ -48,6 +48,8 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 規則語法：`all` 全部可見｜`tier:p1,next` 只顯示這些 tier 的功能｜`feat:S30`／`-feat:S30` 額外加入／排除特定功能｜`route:來源頁=目標` 把指向「來源頁」的連結改接到「目標」，並在你「已停在來源頁」（含直接輸入 URL、或切版本時正停在該頁）時把整頁換到目標；切回非此版本時，停在目標頁會自動導回來源頁（雙向、保留 query／hash）。特殊版用；標 `data-route-keep` 的連結不改接｜`page:原頁=變體` 換整頁。tier 對照取自下方各模組功能表的 🟢 Phase 1／🔵 Next／⚪ TBD 欄；頁面元素需標 `data-feat="S30"` 才會被版本切換控制，外殼元素包多個功能時可寫逗號多值 `data-feat="S05,S06"`（任一在版本內即顯示）。`data-feat="full"` 是保留 gate，表示 scope 未列功能，只在 `all`／funding-test 顯示；整頁用 `data-page-feat`，低版本直連會回到 E-Shop。作用中分頁被版本藏掉時，cheat code 會自動切到第一個可見分頁。
 
+**登入頁的自助註冊入口：已整段移除，待註冊規格補齊後再議（2026-08-04 使用者裁示）**。原本的登記是：規格 5.1.10 要求自助註冊入口 phase 1–3 完全不出現，上表三個 tier（🟢 Phase 1／🔵 Next／⚪ TBD）沒有一個能表達（⚪ TBD 在 Phase 3 就看得到），所以沿用保留 gate `data-feat="full"` 掛在 `login.html` F1 方式選擇底下的「還沒有帳號？註冊」那一列。**現況**：使用者裁示直接整段拿掉那一列，原型任何版本都不出現註冊入口，因此**本表不再登記任何 `full` gate 給註冊**——沒有對應元素的閘門只會誤導後續 session。等自助註冊真的要做時，連同上游規格一起補，再決定要用哪個閘門。`login.html` 整頁**不掛** `data-page-feat`、也不進 `js/devtools.js` 與 `js/sidebar.js` 的 `FULL_ROUTES` 清單——登入本身是 phase 1 能力（D170），各版本都要進得去。
+
 **data-feat 標註現況（2026-07-14 全面切割）**：S05/S06 商店設定付款·出貨、S11 拍賣入口/頁級、S24 專案引用卡、S45 組合限量、O04/O09 退款爭議 KPI·篩選、O17/O18/O22/O23 訂單詳情升級功能、E08/E09/E13–E18/E20/E22/E23/E24 收入與提款功能皆有 gate。scope 未列的產品頁以 `data-page-feat="full"` 限為 Phase 4；跨頁連結在低版本隱藏。S31.1 保持 `data-feat`／`data-feat-off` 成對切換。
 
 ---

@@ -30,12 +30,17 @@
    ============================================================ */
 
 /* ── 殼 ────────────────────────────────────────────────── */
+/* 庫房清單靠右（2026-08-01 使用者裁示）。用 order 換位置、不動 DOM 順序：清單是
+   在庫房之間導覽的東西，讀屏與 Tab 先碰到它是對的；換的只是它畫在哪一邊。
+   窄版收成單欄時 order 仍然生效，清單回到內容上方（跟 DOM 一致）。 */
 .vault-layout {
   display: grid;
-  grid-template-columns: 276px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 276px;
   gap: var(--sp-24);
   align-items: start;
 }
+.vault-layout > .vault-rail { order: 2; }
+.vault-layout > .vault-main { order: 1; }
 /* [hidden] 要贏過 display:grid（demo A 在總覽與詳情之間切換靠它）。 */
 .vault-layout[hidden] { display: none; }
 /* 沒有清單欄的版型（demo A／B）：主欄吃滿整個寬度。 */
@@ -81,42 +86,35 @@
    曾經在下拉旁邊寫一句白話現況（這一級打得開幾座），第三輪裁示撤掉：側欄逐列標
    「打不開」、主欄蓋遮罩、下拉自己轉品牌橘，狀態已經寫在畫面上，再補一句是重複。
    這一列因此只是版面，不上底色——內容靠右之後，整條橫幅上色會變成一大片空的色塊。
-   「回到我的視角」留著、排在下拉左邊：離開的路要一直在，但下拉是這一列的主角，
-   不讓按鈕把它從最右邊擠開。 */
+   2026-08-01：庫房清單移到右邊之後，這一列改成靠左（跟下面的內容切齊同一條左
+   邊界）。「回到我的視角」跟著排到下拉右邊——下拉是這一列的主角，要守住起頭的
+   位置；離開的路留著，只是不搶第一眼。 */
 .vault-lens {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: var(--sp-8);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-16);
 }
 .vault-lens [data-vault-lens-reset] { flex: none; }
+/* 頁面層的那一列要跟下面的版面留距離；彈窗標題列裡的那一份不用（標題列自己有內距）。 */
+.page > .vault-lens { margin-bottom: var(--sp-16); }
 
-/* 高度吃 --control-h-sm（36px）＝ .btn 的實際預設，跟同列的「回到我的視角」對齊；
-   min-width 讓標籤在五個選項之間切換時不會抽動。 */
+/* 檢視器就是一個 DS 下拉，不外包一層自己的框（2026-08-01 使用者回報「UI 壞掉了，
+   乾脆改成我們現有的 dropdown 元件」）：先前外面還有一層 .vault-viewer 的邊框＋
+   底色，裡面的 zselect 觸發鈕又有自己的邊框與聚焦環，兩層疊起來就是框中框——跟
+   當初 .vault-rail__draft 踩到的是同一個坑。
+
+   現在這一層只負責把眼睛圖示與下拉排成一列，邊框、底色、聚焦環全部交還給 .select。
+   檢視中的狀態由圖示轉品牌橘表示，不再靠外框上色。 */
 .vault-viewer {
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  height: var(--control-h-sm);
-  padding: 0 var(--sp-10);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--muted);
 }
 .vault-viewer__icon { color: var(--muted-foreground); flex: none; display: inline-flex; }
 .vault-viewer__icon .ztor-icon { width: 15px; height: 15px; }
-.vault-viewer .select {
-  flex: 1;
-  min-width: 178px;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  padding: 0 var(--sp-18) 0 0;
-  font-size: var(--fs-13);
-}
-.vault-viewer.is-on { border-color: var(--primary); background: var(--selected-surface); }
+.vault-viewer .select { min-width: 200px; font-size: var(--fs-13); }
 .vault-viewer.is-on .vault-viewer__icon { color: var(--primary); }
 
 .vault-rail__list {
@@ -284,6 +282,29 @@
   background: var(--card);
   box-shadow: var(--shadow-card);
 }
+/* 貼頂之後，卡片上緣與捲動容器頂端之間還有 78px 的空隙——沒有東西擋住，捲上來的
+   內容會從那道縫露出來（2026-08-01 使用者回報）。補一塊與頁面同色的遮罩往上蓋掉。
+
+   只在真的吸住時才出現（.is-stuck 由 js/media-vault.js 掛）：常駐的話，沒捲動時
+   它會把上面的頁首與檢視身分那一列一起蓋掉。高度只要蓋過那道縫（78px）即可，
+   不需要更多。
+
+   為什麼放得下：.vault-reach 是 position:sticky，本身就是絕對定位的定位基準；
+   z-index:3 又讓它成為一個堆疊脈絡，所以 z-index:-1 的 ::before 只會沉到這張卡的
+   底色之下，仍然蓋在捲動內容之上。（同 shared.css 的 .alert-inset::before 做法。）*/
+.vault-reach::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  top: -96px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--surface-page);
+  opacity: 0;
+}
+.vault-reach.is-stuck::before { opacity: 1; }
 
 /* 門條改單欄（2026-07-31）：讀數搬出去吸頂之後，這裡只剩「怎麼進得來」的設定，
    並排的理由（左因右果）已經不存在，各佔一整行讀起來更直。 */
@@ -1017,7 +1038,9 @@
    直接長高、跟著頁面捲最誠實。 */
 @media (max-width: 900px) {
   .vault-layout { grid-template-columns: minmax(0, 1fr); }
-  .vault-rail { position: static; }
+  /* 單欄時清單回到內容上方——右邊已經不存在，擺在下面等於要先捲過整座庫房
+     才選得到下一座。 */
+  .vault-layout > .vault-rail { order: 0; position: static; }
   .vault-grid { grid-template-columns: repeat(auto-fill, minmax(152px, 1fr)); }
 }
 
@@ -1120,6 +1143,7 @@
 /* 標題列放的是庫房名字（專有名詞），不跟著站上「小標全大寫」的慣例走——
    「未發行 Demo 與分軌」被轉成全大寫會變成另一個字。 */
 .vault-modal__sheet .embed-modal__title { text-transform: none; font-size: var(--fs-18); }
+.vault-modal__headright { display: flex; align-items: center; gap: var(--sp-12); flex: none; }
 .vault-modal__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -1135,3 +1159,44 @@
   .vault-modal__sheet { height: 100%; }
   .vault-modal__body { padding: var(--sp-14); }
 }
+
+/* ── 單一內容的設定抽屜 ────────────────────────────────────
+   2026-08-01 使用者裁示「點進去每個 media 設定裡」。用 .drawer 不用第二層彈窗：
+   庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，而且會蓋掉剛才點的那
+   一格；抽屜從右邊推進來，被編輯的東西還看得見。z-index 200 > 彈窗的 80。 */
+.vault-item__preview {
+  aspect-ratio: var(--img-portrait, 750 / 930);
+  max-height: 240px;
+  margin-bottom: var(--sp-16);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+.vault-item__preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vault-item__glyph { color: var(--muted-foreground); }
+.vault-item__glyph .ztor-icon { width: 28px; height: 28px; }
+
+/* 唯讀事實用 dl：左邊欄位名、右邊值。它們是檔案本身的屬性，不是可填的欄位，
+   做成 input 會讓人以為改得動。 */
+.vault-item__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-8) var(--sp-16);
+  margin: var(--sp-16) 0 0;
+  font-size: var(--fs-13);
+}
+.vault-item__facts dt { color: var(--muted-foreground); }
+.vault-item__facts dd { margin: 0; color: var(--foreground); text-align: right; font-variant-numeric: tabular-nums; }
+
+.vault-item__actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--sp-20);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+
+/* 格子本身可點＝打開設定，游標要說出來。 */
+.vault-tile, .vault-track { cursor: pointer; }

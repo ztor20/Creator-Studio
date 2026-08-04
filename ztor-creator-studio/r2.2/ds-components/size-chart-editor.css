@@ -1,0 +1,154 @@
+/* size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
+   用於商店設定的商品規格範本（規格 5.1.5.5 F7.2 / D171）。
+
+   為什麼不擴充 variant-builder 的 .variant-table：那支的欄是三套寫死的
+   grid-template-columns 字面值，服務「規格組合＋價格＋庫存＋SKU＋成本」這組已知
+   固定欄位；欄數本身要能被使用者增減，得把 grid 模型整個換掉，那已經不是擴充。
+   這裡改抄 benefit-matrix 的做法——欄定義只宣告一次在容器的 --sce-cols 上，
+   表頭與每一列共用，JS 只要改這一個變數就能動態增減欄。
+
+   視覺語彙沿用 .variant-table：1px 外框、--muted 表頭、格子用 .input、
+   刪除鈕 hover 才浮現（同 .bmx__remove），讓兩張表在站上讀起來是同一族。
+
+   結構：
+     .sce
+       .sce__wrap (scroll-x)
+         .sce__table
+           .sce__head  > .sce__col > .sce__col-label + .sce__col-remove
+           .sce__row   > .sce__cell + .sce__row-remove
+       .sce__foot > .sce__add (× 2：加尺碼列／加量測欄)
+*/
+
+.sce { display: flex; flex-direction: column; gap: var(--sp-8); }
+
+.sce__wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow-x: auto;
+  width: 100%;
+}
+
+.sce__table {
+  display: flex;
+  flex-direction: column;
+  /* 首欄＝尺碼，其餘由 JS 依量測欄數改寫；末欄＝列刪除鈕。
+     預設值對應「尺碼＋三個量測欄」，也就是空範本剛建立時的樣子。
+     首欄一定要是固定值：表頭與每一列是各自獨立的 grid，用 max-content
+     會讓表頭（純文字）算出來比資料列（輸入框）窄，兩邊就對不齊了。 */
+  --sce-cols: 112px repeat(3, minmax(88px, 1fr)) 34px;
+  min-width: 420px;
+}
+
+.sce__head,
+.sce__row {
+  display: grid;
+  grid-template-columns: var(--sce-cols);
+  gap: var(--sp-8);
+  align-items: center;
+  padding: 9px var(--sp-12);
+}
+
+/* 表頭：底色承擔分隔，不畫下框線（Q41 已裁決） */
+.sce__head {
+  background: var(--muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  color: var(--column-head-ink);
+}
+
+.sce__row + .sce__row { border-top: 1px solid var(--border-soft); }
+
+/* ---- 欄（表頭格）---- */
+.sce__col { display: flex; align-items: center; gap: var(--sp-4); min-width: 0; }
+.sce__col-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 量測欄名可改：表頭格裡的輸入框平常收起邊界、hover 或聚焦才顯形，
+   避免一排輸入框把表頭變吵。注意 .input 的邊界是 box-shadow 環不是 border，
+   所以收起邊界要清 box-shadow，改 border-color 沒有作用。 */
+.sce__col-input.input {
+  height: var(--sp-24);
+  padding: 0 var(--sp-4);
+  background: transparent;
+  box-shadow: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+.sce__col-input.input:hover { box-shadow: 0 0 0 1px var(--border); }
+.sce__col-input.input:focus {
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--ring), 0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent);
+}
+
+/* ---- 刪除鈕（欄與列共用同一套 hover 才浮現的語彙，同 .bmx__remove）---- */
+.sce__col-remove,
+.sce__row-remove {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--sp-2);
+  flex: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition-property: opacity, color, background-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.sce__row-remove { margin-left: auto; }
+.sce__col-remove .ztor-icon,
+.sce__row-remove .ztor-icon { width: 13px; height: 13px; }
+.sce__col:hover .sce__col-remove,
+.sce__col:focus-within .sce__col-remove,
+.sce__col-remove:focus-visible,
+.sce__row:hover .sce__row-remove,
+.sce__row-remove:focus-visible { opacity: 1; }
+.sce__col-remove:hover,
+.sce__row-remove:hover { color: var(--destructive); background: var(--accent); }
+.sce__col-remove:focus-visible,
+.sce__row-remove:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ---- 格子 ---- */
+.sce__cell.input {
+  height: var(--sp-32);
+  padding: 0 var(--sp-8);
+  font-size: var(--fs-13);
+}
+/* 尺碼格：本欄是這一列的識別，給它稍重的字重跟其他數值格區分 */
+.sce__cell--size.input { font-weight: var(--fw-medium); }
+
+/* ---- 新增列／欄 ---- */
+.sce__foot { display: flex; gap: var(--sp-8); flex-wrap: wrap; }
+.sce__add {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  padding: var(--sp-10) var(--sp-12);
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-xl);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition-property: color, border-color, background-color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.sce__add:hover { color: var(--foreground); border-color: var(--muted-foreground); background: var(--accent); }
+.sce__add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.sce__add .ztor-icon { width: 14px; height: 14px; flex: none; color: var(--muted-foreground); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sce__col-remove,
+  .sce__row-remove,
+  .sce__add { transition-duration: 1ms; }
+}

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full" data-vault-view="popup">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Media Vault · Ztor Creator Studio</title>
+<title>Media Vault（總覽＋彈窗版）· Ztor Creator Studio</title>
 <!-- ============================================================
      方向契約（Media Vault · Fans）
 
@@ -41,6 +41,7 @@
 <link rel="stylesheet" href="ds-components/explainer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/drawer.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/embed-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/media-vault.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/vault-share.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -52,6 +53,15 @@
 
   <main class="main">
     <div class="page">
+
+      <!-- ⚠ 這一頁是「總覽卡片牆＋單一庫房彈窗」版本的保存檔（2026-08-01 使用者要求
+           先備份、正式頁改回可直接切換的版本）。與 media-vault.html 共用同一支
+           js/media-vault.js，靠 <html data-vault-view="popup"> 分流；沒有這個屬性就是
+           清單＋詳情並排的版本。要比較兩種版型時開這一頁。 -->
+      <div class="info-banner mb-16">
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span>總覽＋彈窗版（保存檔）。<a class="card__link" href="media-vault.html">回正式頁</a></span>
+      </div>
 
       <div class="page-crumb">
         <a href="fans-crm.html" class="card__link" data-i18n="vault.crumb.fans">Fans</a>
@@ -81,28 +91,49 @@
         <span data-tier-name="fan"     data-i18n="tier-settings.tier.fan">Fan</span>
       </div>
 
-          <!-- 檢視器：整支功能的簽名互動。選一個分級，整座庫房換成那一級粉絲看到的
-               樣子——清單把打不開的庫房壓暗，右邊把打不開的那座蓋上遮罩。
+      <!-- 庫房總覽（2026-07-31 使用者裁決）。原本清單是常駐左欄，跟全站導覽並排成
+           兩條左欄，很擠；庫房清單天生是垂直的（縮圖／名稱／內容數／鑰匙數），轉橫排
+           塞不下，所以解法是讓它不要跟主內容同時出現——這一頁只放總覽，點一張卡才把
+           那座庫房開在彈窗裡。側欄 276px 擠著的封面在這裡放得大，「哪座門開得最大」
+           反而比清單更一眼看得出來，而那正是這一頁想講的事。 -->
+      <div class="vault-overview" data-vault-overview></div>
 
-               2026-08-01 使用者裁示搬進內頁：它管的是「這座庫房從粉絲那一側長怎樣」，
-               那是進到庫房裡才要問的問題；擺在總覽頁時，總覽本身沒有什麼可看的變化。
-               放在彈窗標題列而不是內容裡：標題列捲不走，切了分級之後往下看內容時
-               那個身分要一直在。 -->
-          <div class="vault-lens" data-vault-lens>
-            <div class="vault-viewer">
-              <span class="vault-viewer__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
-              <select class="select" data-vault-viewer aria-label="View as a fan tier">
-                <option value="" data-i18n="vault.viewer.me">View as: you (all vaults)</option>
-                <option value="inner"   data-i18n="vault.viewer.inner">View as: Inner Circle</option>
-                <option value="super"   data-i18n="vault.viewer.super">View as: Superfan</option>
-                <option value="devoted" data-i18n="vault.viewer.devoted">View as: Ranked fan</option>
-                <option value="fan"     data-i18n="vault.viewer.fan">View as: Fan</option>
-              </select>
+      <!-- 單一庫房＝彈窗。彈窗裡沒有全站導覽，所以清單可以留在左邊——只有一條左欄，
+           兩條並排的問題就不存在了；換庫房也不必關掉彈窗。外殼沿用 Embed modal
+           （§4.x embed-modal.css），只把尺寸與內部捲動換掉。 -->
+      <div class="embed-modal vault-modal" data-vault-modal hidden>
+        <div class="embed-modal__sheet vault-modal__sheet" role="dialog" aria-modal="true" aria-labelledby="vault-modal-title">
+          <div class="embed-modal__head">
+            <h2 class="embed-modal__title" id="vault-modal-title" data-vault-modal-title></h2>
+            <div class="vault-modal__headright">
+            <!-- 檢視器：整支功能的簽名互動。選一個分級，整座庫房換成那一級粉絲看到的
+                 樣子——清單把打不開的庫房壓暗，右邊把打不開的那座蓋上遮罩。
+
+                 2026-08-01 使用者裁示搬進內頁：它管的是「這座庫房從粉絲那一側長怎樣」，
+                 那是進到庫房裡才要問的問題；擺在總覽頁時，總覽本身沒有什麼可看的變化。
+                 放在彈窗標題列而不是內容裡：標題列捲不走，切了分級之後往下看內容時
+                 那個身分要一直在。 -->
+            <div class="vault-lens" data-vault-lens>
+              <div class="vault-viewer">
+                <span class="vault-viewer__icon"><i data-lucide="eye" class="ztor-icon"></i></span>
+                <select class="select" data-vault-viewer aria-label="View as a fan tier">
+                  <option value="" data-i18n="vault.viewer.me">View as: you (all vaults)</option>
+                  <option value="inner"   data-i18n="vault.viewer.inner">View as: Inner Circle</option>
+                  <option value="super"   data-i18n="vault.viewer.super">View as: Superfan</option>
+                  <option value="devoted" data-i18n="vault.viewer.devoted">View as: Ranked fan</option>
+                  <option value="fan"     data-i18n="vault.viewer.fan">View as: Fan</option>
+                </select>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="button" data-vault-lens-reset hidden>
+                <i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="vault.lens.reset">Back to my view</span>
+              </button>
             </div>
-            <button class="btn btn--ghost btn--sm" type="button" data-vault-lens-reset hidden>
-              <i data-lucide="rotate-ccw" class="ztor-icon"></i><span data-i18n="vault.lens.reset">Back to my view</span>
-            </button>
+              <button type="button" class="embed-modal__close" data-vault-modal-close aria-label="Close">
+                <i data-lucide="x" class="ztor-icon"></i>
+              </button>
+            </div>
           </div>
+          <div class="vault-modal__body">
         <div class="vault-layout">
 
           <!-- ── 庫房側欄 ───────────────────────────────────── -->
@@ -128,8 +159,9 @@
           <div class="vault-main" data-vault-main>
 
             <div class="vault-head">
+              <!-- 庫房名字寫在彈窗標題列上（那裡捲不走），這裡只留說明，
+                   不重複第二次。 -->
               <div class="vault-head__text">
-                <h2 class="vault-head__title" data-vault-title></h2>
                 <p class="vault-head__note" data-vault-note></p>
               </div>
               <div class="vault-head__actions">
@@ -225,6 +257,9 @@
 
           </div>
         </div>
+          </div>
+        </div>
+      </div>
 
       <!-- 單一內容的設定（2026-08-01 使用者裁示「點進去每個 media 設定裡」）。
            用抽屜不用第二層彈窗：庫房本身已經是一層彈窗，再疊一層 modal 會變成

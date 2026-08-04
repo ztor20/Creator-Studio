@@ -4,6 +4,236 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-04 · 儀表板整頁實心圖示：**試做示範頁，尚未採用**（D infra／試做）
+
+使用者想看「首頁整頁換實心圖示」長什麼樣，先做 demo。**`index.html` 一個字都沒改**，另開一份可並排比較的示範頁；採不採用由使用者裁決，本輪不動 `STYLE-DECISIONS.md`。
+
+- **【D】新增 `demo-icons-filled.html`**（檔頭寫明：比較用示範頁、非產品頁、待裁決後刪除或轉正）。它是 `index.html` 的複本，唯一差別是在 `js/icons.js` 之後多掛一段別名腳本，把 registry 裡的描邊 key 指到對應的實心版。**為什麼用別名而不是改 markup**：首頁的圖示有一半是 JS 動態產生的（側欄導航 `js/sidebar.js`、儀表板各張卡 `js/components.js`、平台表現 `js/performance-store.js`），去改那三支會讓站上另外 40 頁跟著變成實心；別名只活在這一頁的記憶體裡，關掉就沒了。另補一行讓側欄「總覽」維持已選態——`sidebar.js` 用檔名判斷當前頁，不補的話並排比較會多出一個「選中態」的差異，看的人分不清是圖示造成的還是選中態造成的。
+- **【D】`js/icons.js` 新增 11 顆試做用 `*-fill`**：`layout-grid-fill`／`banknote-fill`／`receipt-fill`／`flag-fill`／`award-fill`／`tag-fill`／`bell-fill`／`lock-fill`／`calendar-fill`／`circle-fill`／`globe-fill`（Tabler `filled/*`，MIT，路徑吃 `fill="currentColor" stroke="none"`，零裸 hex）。**正式頁面一顆都沒引用**，只有示範頁透過別名用到；描邊原版一個字都沒動。
+- **【D】沒有加 `<g transform>` 縮放**。量過每一顆的幾何邊界：Tabler 的 filled 版剛好比 outline 版每邊各大 1px，那是設計上用來補償 `stroke-width: 2` 的一半。站上 `stroke-width` 是 1.2，所以實心版視覺上只大 4–6%，肉眼分不出來；既有四顆告警實心（`alert-triangle-fill` 等）也都沒有包層，這批跟它們一致。
+- **【D】18 顆維持描邊，因為 Tabler 沒有實心版**：`menu`／`x`／`rocket`／`landmark`／`chevron-down`／`chevron-right`／`shopping-bag`／`ticket`／`users`／`search`／`package-x`／`upload`／`megaphone`／`trending-up`／`dollar-sign`／`refresh-ccw`／`bar-chart-3`／`link`。不手工描一顆假的——手描的形狀對不上 Tabler 的網格與轉角語彙，會在同一排裡自己露餡。所以示範頁必然是實心與描邊混排（75 個字符裡 29 實心／46 描邊），**這正是要給使用者判斷的東西**：側欄七個導航項只有「總覽」與「收入管理」有實心版，另外五項（項目／IP 資產／電子商店／活動／粉絲）只能維持描邊。
+- **【D】** `design-system.html`：§4.9 Icon 的「使用中」清單補 11 顆實心＋`lock` 描邊、策展顆數 128→139、換庫對照表補 11 列（顆數 42→53，順手修掉 summary 那句停在 40／69 的舊數字）、新增一段「試做批次：儀表板整頁實心」中英說明。`design-system.md` §1.7 補同一段＋對照表 11 列、顆數同步三處。
+- **本輪沒有動 `documents/`、`STYLE-DECISIONS.md`、`index.html`、`js/sidebar.js`、`js/components.js`**。
+- 驗證（本機 devserver + Playwright 實測）：1440 寬、深色與亮色各截一組現況／試做對照；`check_ds_sync.py` 12 項全 PASS，檢查 10 裸值基準未變、檢查 12 的 R1／R2 維持 11／11。截圖見 `screenshots/20260804-dashboard-icons-A-現況描邊-dark.png`／`-light.png` 與 `20260804-dashboard-icons-B-試做實心-dark.png`／`-light.png`。
+
+## 2026-08-04 · 登入頁 F1：電子郵件／手機號碼的圖示也改實心（B 反饋）
+
+使用者裁示「email phone icon 都換實心的」。上一輪六張卡統一格式之後，四張第三方是實心品牌標記、前兩張仍是站上通用的描邊字符，六顆並排時前兩顆看起來比較輕。
+
+- **【B】** `login.html` F1 的前兩張卡改用 `mail-fill`／`smartphone-fill`。**為什麼是「前兩顆下沉」而不是「四顆線條化」**：Apple／Google／Facebook／LINE 的標記受各家商標規範綁定形狀，本來就沒有描邊版可用；六張卡是同一個決定的六個答案，混兩種風格會讓那兩顆看起來像沒對齊。
+- **【B】** `js/icons.js` 新增兩顆：`mail-fill`（Tabler `filled/mail`）、`smartphone-fill`（Tabler `filled/device-mobile`），MIT，路徑吃 `fill="currentColor" stroke="none"`，與既有 `*-fill` 同一套做法、零裸 hex。**既有的描邊 `mail`／`smartphone` 路徑一個字都沒動**——`smartphone` 還是 `settings.html` 登入裝置列在用，`mail` 由 `partials/artist-picker.js` 引用（該元件目前零頁面載入、屬退場候選）；站上通用圖示維持描邊風格，沒有全站改實心。
+- **【B】光學大小對齊**：兩顆原圖比滿版的品牌標記小一圈（信封 20×16、手機 14×20，品牌標記多半 24×24），所以各自用 `<g transform="translate(12 12) scale(n) translate(-12 -12)"` 從中心放大——信封 1.14（→22.8×18.2）、手機 1.2（→16.8×24，高度與 Apple 標記齊平），倍率取「畫到滿版邊緣但不被 viewBox 裁掉」。實測六顆 `getBBox`：22.8×18.2／16.8×24／19.6×24／23.4×24／24×23.9／24×22.9。
+- **【D】** `design-system.html`：§4.9 Icon 的「使用中」清單補這兩顆、策展顆數 126→128、換庫對照表補兩列、新增一段「實心字符只給特定情境，不是全站選項」中英說明；§4.113 Auth shell 的 demo 卡同步換用。`design-system.md` §1.7 補同一段＋對照表兩列、§4.9 Variants 補註、顆數同步。`requirements-map.md` 登入那列同步。
+- **【D】** `STYLE-DECISIONS.md` 新增 **Q51**（圖示風格：登入頁 F1 是刻意的局部例外，其他地方維持描邊；要在別處新增實心變體須另立題號）。
+- **本輪沒有動 `documents/`**：純呈現決策。
+- 驗證（本機 devserver + Playwright 實測）：1440 深色與亮色各看一次，六顆同一量級；`settings.html` 的 `smartphone` 仍是描邊（`fill="none" stroke="currentColor"`，無 `<g>`）；DS 頁 0 個未渲染 icon；`check_ds_sync.py` 12 項全 PASS，檢查 10 裸值基準 50 未變、檢查 12 的 R1／R2 維持 11／11。截圖見 `screenshots/login-method-icons-filled-1440-dark.png`／`-light.png`。
+
+## 2026-08-04 · 登入頁六個方式改成同一種卡（B 反饋）
+
+使用者在「電子郵件」那張卡上裁示「將第三方全部都用這種格式吧」。上一輪第三方是一列四顆只有圖示的方塊（`.auth-oauth`），與前兩者兩種長相；本輪統一。
+
+- **【B】六張卡、一個 grid、2 欄 × 3 列**。Apple／Google／Facebook／LINE 改成 `.segmented__btn`，與電子郵件／手機號碼一起住進 F1 既有的 `.segmented.radio-cards.radio-cards--gate`（Q28）。第 1 列電子郵件／手機號碼、第 2-3 列四個第三方。**為什麼是同一個 grid 而不是兩個相鄰區塊**：六者是同一個決定的六個答案，切成兩塊會冒出兩種垂直間距（區塊間 20px vs 卡間 12px）在描述同一件事；同一個 grid 只有一種節奏。**沒有寫任何新 CSS**——`--gate` 變體本來就是 2 欄 grid，六張卡自動排成三列。
+- **【B】四張第三方卡也有副標，四張共用同一句**（使用者裁示；一版曾做成「第三方無副標」，本輪改回來）。zh「不需另設密碼」／en「No password needed」。**為什麼是這一句**：前兩張的副標在講「怎麼驗證」（以密碼驗證／以簡訊驗證碼驗證），第三方的對應事實就是「不必再記一組密碼」——那是使用者做選擇時真正需要知道的差別，不是把 Apple／Google 這些名字再講一次。**為什麼四張同一句**：它們彼此的差別已經由圖示與名稱說完，副標負責說這一整組跟前兩張差在哪；四句不同的話反而像在硬湊。i18n 只開一個 key（`login.method.oauth.sub`）給四張共用，不做四個內容相同的 key。
+- **【B】六張卡等高**。副標補上後六張都是「圖示＋標題＋一行副標」，實測 1440 下皆 100.8px、375 下皆 91.6px，三列高度一致。
+- **【B】文案**：新增 `login.method.group`（整組的 `aria-label`）＋ `login.method.apple`／`.google`／`.facebook`／`.line` 四個卡面標題（品牌名中英同字）＋ `login.method.oauth.sub`（四張共用的副標）；刪除上一輪的 `login.oauth.group`／`.apple`／`.google`／`.facebook`／`.line` 五個純 `aria-label` key——卡面標題看得見之後，可讀名稱由文字承擔，不需要再掛一組只給螢幕閱讀器的名稱。順手把兩張既有卡的中文標題由「電子郵件登入」「手機號碼登入」收成「電子郵件」「手機號碼」：頁面標題已經寫了「登入」，六張卡一致地只寫方式本身。`login.*` 由 38 增為 39 個 key。
+- **【C】** `.auth-oauth` / `.auth-oauth__btn` 兩條規則零消費，整段從 `ds-components/auth.css` 移除（含 anatomy 那兩行）；全站 grep `auth-oauth` 只剩 `data-auth-oauth`（JS 掛鉤）與說明文字。
+- **【D】** `design-system.html` §4.113 的「第三方登入的一列」視覺展示換成**改後的六張卡**，開發者摺頁補一段裁示理由；`design-system.md` §4.113 刪 `.auth-oauth` anatomy、改寫第三方段、補「六個方式同一種卡」與 RWD 敘述；Icon 圖庫節的品牌標記消費者改指卡片。`requirements-map.md`／`BUILD-SPEC.md`／`ASSUMPTIONS.md` UIA-105 同步。
+- **本輪沒有動 `documents/`**：這是呈現形式改變，產品規則（哪些登入方式、點了做什麼）沒動。
+- 驗證（本機 devserver 實測）：1440／1280／375 三種寬度、深色主題、六張卡皆在；375px 下維持 2 欄（每張 165.5px）不塌成單欄；點 Google 落地 `index.html`；`check_ds_sync.py` 12 項全 PASS，檢查 12 的 R1／R2 命中數維持 11／11 未上升。截圖見 `screenshots/login-method-cards-1440.png`／`-1280.png`／`-375.png`。
+
+## 2026-08-04 · 登入頁加上第三方登入，內容整體上移（A 新增 ＋ B 反饋）
+
+使用者兩個裁示：畫面上畫了向上的箭頭（內容位置偏低，要往上一點），以及「比照 ztor 消費端加第三方登入」。
+
+- **【B】內容的垂直起點改成固定，不再置中**。`.auth-page` 由 `align-items:center` 換成 `flex-start` ＋ `calc(var(--sp-96) + var(--sp-72))`（168px）上內距，下內距 `--sp-48`；手機 ≤480px 維持原本的 96px 置頂。**為什麼不是「置中但偏上」**：四個畫面高度不一樣（方式選擇多了第三方那一列、忘記密碼只有一個欄位），只要基準是置中，切畫面時標題就會上下跳——高的往上、矮的往下，明明只換了內容，整塊卻在動。固定起點之後標題永遠落在同一條線，只有下方在長高。168px 的取法：低到不跟左上角的品牌角標打架，又明顯高於原本的置中位置（1440×900 下原為 318px）。
+- **【B】`.auth-head` 補 `min-height: var(--control-h-sm)`**。方式選擇沒有返回鈕、這一列只有標題（約 29px），其餘三個畫面有返回鈕（36px），`align-items:center` 會把有鈕那幾頁的標題往下推 4px——實測第一版四個畫面是 168／172／172／172，補上之後四個都是 171.6，完全不跳。
+- **【A】第三方登入（⚠ 產品範圍變更，規格同步中）**。方式選擇畫面的兩個登入方式底下加 `.auth-oauth`：`repeat(4, minmax(0,1fr))` 一列四等分，順序 Apple／Google／Facebook／LINE，比照 ztor 消費端 `ztor.com/zh-tw/login`。**四個入口地位相同，所以等寬、不排優先序、不給任何一個更大的權重**。單顆 `.auth-oauth__btn` 只提供方形尺寸（寬 100%、高 `--control-h-md`＝與本頁主要行動同高、`padding:0`、字符 20px），外觀全部來自 `.btn.btn--outline`（surface ＋ hairline ＋ hover `--accent` ＋ focus ring），不另造一套看起來一樣的按鈕樣式。
+- **【A】品牌標記進 `icons.js`，不 inline 在頁面**。`brand-apple`／`brand-google`／`brand-facebook`／`brand-line` 四顆。**為什麼放 registry 而不是照 wordmark 的做法 inline**：wordmark 只有登入頁一個消費者，這四顆同時要出現在 `design-system.html` 的 demo 卡——inline 就會變成兩份複本、改一邊漏一邊（wordmark 已經是站上唯一一組刻意複製的 SVG，不該再多一組）。這幾顆是 registry 裡唯一非 Tabler 的字符：各家商標規範綁死了標記形狀，Tabler 的重畫版對不上，改用 **Simple Icons（CC0）** 官方單色路徑，同樣 24×24 網格。**一律單色**：路徑吃 `fill="currentColor" stroke="none"`（與既有 `*-fill` 同一套做法），顏色由外層控件的 `color` 決定，**沒有引入任何品牌彩色值**（站上禁止裸 hex，且參考畫面本來就是白色單色標記）。
+- **【A】文案**：按鈕沒有文字，可讀名稱走 `aria-label` ＋ `data-i18n-aria-label`，新增 5 個 key（`login.oauth.group`／`.apple`／`.google`／`.facebook`／`.line`，中英齊全）。
+- **⚠ 原型行為，不是產品規則**：不接任何真的 OAuth，點了直接視為登入成功、落地 `index.html`（與電子郵件登入非 admin 的落點一致）。授權範圍、首次登入是否綁既有帳號、取消／失敗的回程、第三方身分與 F4 分流的對應皆〔上游待確認〕，見 `ASSUMPTIONS.md` UIA-105。
+- **⚠ 產品範圍變更**：規格 `5.1.10-登入.md` 與 `decisions.md` D170 目前寫的是「第三方登入不做」，本輪依使用者裁示先在原型加上，`documents/` 由上游另一位 agent 同步——本輪**沒有**動 `documents/`。
+- **【D】** `design-system.html` 的 Auth shell 卡新增「第三方登入的一列」視覺展示與說明段；icon registry 的「使用中」清單補上四顆品牌標記＋一段例外說明；策展集顆數由 111／118 這兩個各自漂移的數字統一更正成實際的 126。`design-system.md` §4.113 補 `.auth-oauth` anatomy、垂直起點與第三方兩段理由、RWD 敘述；Icon 圖庫節補品牌標記例外。`requirements-map.md` 登入那列同步。
+- 驗證（本機 devserver 實測）：1440／1280／375 三種寬度、深色與亮色、四個畫面全切過——標題垂直位置四個畫面同為 171.6px（切換不跳）；375px 下四顆按鈕維持一列、每顆約 80×44；點 Google 落地 `index.html`；中英 `aria-label` 各自正確；check_ds_sync 12 項全 PASS。
+
+## 2026-08-04 · 登入頁移除原型旁白 `.auth-note`（C 撤除）
+
+使用者在電子郵件登入那則旁白上裁示「這個刪除」。兩則同型（電子郵件、手機號碼）一起撤，只留一則會變成「有的畫面有說明、有的沒有」。
+
+- **【C】** 移除 `login.html` 兩則 `<p class="auth-note">`、`js/i18n.js` 的 `login.demo.email`／`login.demo.phone` 兩個 key、`ds-components/auth.css` 的 `.auth-note` 規則與 anatomy 那一行，以及 `design-system.html` demo 卡裡的同款段落與 `design-system.md` 的條目。撤完全站 grep `auth-note` 零命中。
+- **demo 的分支輸入改記在這裡**（頁面上不再寫，但要試的人需要知道）：電子郵件登入——信箱含 `admin` 落地 Creator 管理，其餘落地儀表板，密碼輸入 `wrong` 看一般性錯誤；手機號碼登入——`912345678` 可登入，其他號碼看「此號碼尚未開通」。
+- **為什麼撤得掉**：這是原型才有的旁白，不是產品文案，規格 5.1.10 從未定義它；它擠在主要行動下方，跟真正的欄位說明（`.field__hint`）搶同一個位置。
+
+## 2026-08-04 · 填色按鈕的停用態改灰底灰字（B 反饋，元件層改動·全站生效）
+
+使用者在登入頁點選停用中的「登入」鈕裁示「這個 disable 的狀態應該用灰色的」，並指明「需要改元件」——不做頁面層覆寫。
+
+- **【B】** `ds-components/button.css` 新增一條規則：`.btn--primary` 與 `.btn--destructive`（非 ghost）在 `:disabled` / `[aria-disabled="true"]` 時改吃 `--muted` 底、`--muted-foreground` 字、`--border` hairline、`opacity: 1`、`cursor: not-allowed`。原本全站共用的 `opacity: 0.45` 保留給沒有實心品牌底的變體（ghost／outline／soft／icon）。
+- **為什麼不是繼續用 opacity**：把品牌橘調到 45% 得到的是「暗一點的橘」，在深色底上讀起來像另一種可以按的狀態，而不是不能按。灰是站上唯一表示「不可用」的顏色——輸入框的 disabled 早就是 `--muted` 底＋弱化字（見 `design-system.md`「Input 狀態」），這次只是讓按鈕跟上同一套語彙。
+- **為什麼要補 hairline**：`--muted` 在深色主題是 `#161718`，與頁面底色 `#0C0D0D` 只差一階；沒有邊界的話整顆按鈕會化進背景，看不出那裡還有一顆按鈕。
+- **全站生效，不只登入頁**。受影響的消費頁：`login.html`、`create-product.html`、`create-bundle.html`、`create-auction.html`、`creators.html`、`edit-event.html`、`partials/payout-request-modal.js`、`partials/pickup-session-modal.js`。實測 `create-product.html` 底部「開始販售」在就緒檢查未過時同樣轉灰。
+- **【D】** `STYLE-DECISIONS.md` 新增已裁決 **Q50**；`design-system.md` 的 Button 狀態表 disabled 那列改寫成「填色／非填色兩種」。`design-system.html` 的按鈕狀態矩陣本來就用真的 `disabled` 屬性渲染，改完自動反映、不需要改 markup。
+- 驗證（本機 devserver 實測）：深色停用 `rgb(22,23,24)` 底＋`rgb(151,151,151)` 字、亮色 `#FAFAFA` 底；欄位填妥解除停用後回到 `rgb(255,163,63)` 品牌橘；check_ds_sync 12 項全 PASS。
+
+## 2026-08-04 · 登入頁品牌角標移到左上角（B 反饋，參考 Cursor）
+
+使用者看過 Mobbin 上的簡約登入頁後裁示「參考 Cursor 的做法，把 logo 放在左上角」。
+
+- **【B】** `.auth-brand` 移出 `.auth-shell`，改成 `.auth-page` 的絕對定位子元素，釘在左上角（桌機 24／手機 16），wordmark 由 88px 收成 64px。**為什麼要移出 shell**：shell 裝的是「這一步要做的事」，四個畫面輪流換內容；品牌是「你在哪個產品」，從頭到尾不變。放在 shell 裡等於每換一步都讓品牌再壓一次當前標題，而且返回鈕的視覺起點被推到品牌下方、離頁面左上角很遠。釘到角落之後，內容欄的第一個元素永遠是當前這一步的標題（實測：進電子郵件登入後，畫面第一眼就是返回鈕＋「電子郵件登入」）。
+- **【B】** 對齊維持靠左不改置中。Mobbin 上多數簡約登入頁是水平置中（[TIDAL](https://mobbin.com/screens/706ae1ba-0106-4a70-8d0e-d4a435824f96)、[Modal](https://mobbin.com/screens/eac946fc-7909-478d-926e-02b07cc840be)、[Basedash](https://mobbin.com/screens/6cac49d7-9304-4243-80a6-3f2487186207)），但 Cursor 這一路（[Cursor](https://mobbin.com/screens/7be66c2e-dd07-49cb-9594-e4dd435204d9)、[Graphite](https://mobbin.com/screens/d12f2476-6315-4932-8df6-35c6c3cebb09)、[Clockwise](https://mobbin.com/screens/1fe625d7-7371-42da-bfa0-c78785236fda)）是「角標＋靠左內容欄」，使用者選的是後者，所以標題與欄位維持左對齊、不動。
+- **【D】** RWD：≤480px 的頁面上內距由 24 提到 96，讓內容讓開角標（先試 72，實測標題貼著副標太緊）；角標本身縮到 16。`design-system.html` 的 demo 加高到 220px 並留上內距，否則角標會疊在 demo 內容上、看不出「釘在角落」這件事；`design-system.md` §4.113 anatomy 同步。
+- 驗證（本機 devserver 實測）：桌機與 375px 兩種寬度、方式選擇與電子郵件兩個步驟都正常，角標不隨步驟變動；check_ds_sync 12 項全 PASS。
+
+## 2026-08-04 · 登入頁品牌改成 ztor wordmark ＋ 下一行 Creator Studio（B 反饋）
+
+使用者在畫面上點選 `.auth-brand` 後裁示：「用 ztor logo 下面寫 Creator Studio」。原本是 `badge-check` 圖示＋一行「Ztor Creator Studio」文字，圖示只是佔位、不是品牌識別。
+
+- **【B】** `.auth-brand` 由橫排改直排：`.auth-brand__logo`（ztor wordmark SVG，88px 寬）疊上 `.auth-brand__name`（Creator Studio，`--muted-foreground`）。**為什麼疊兩行而不是並排成一句**：wordmark 已經說完「這是誰」，第二行只負責說「這是哪一個介面」，兩件事層級不同、疊起來比串成一句清楚；第二行用弱化色，避免跟下面的 `.auth-title`（登入）搶主標地位。
+- **【D】** **SVG path 在站上有兩份複本**：`js/sidebar.js` 的 `LOGO_SVG` 是正本，`login.html` 是唯一的副本。原因是登入頁刻意不載 `sidebar.js`（它是無導航的整頁殼，載進來等於把 40 頁的導航邏輯拖進登入畫面）；把 logo 抽成共用 JS 又會讓全站 40 幾頁都要多掛一支 script。取捨後選擇複製一份並在兩處都留註解：**改 logo 要兩邊一起改**。
+- `js/i18n.js` 的 `login.brand` 值由「Ztor Creator Studio」改成「Creator Studio」（中英同值，品牌名不翻譯）；`design-system.html` 的 Auth shell demo 卡與 `design-system.md` §4.113 anatomy 同步。
+- 驗證（本機 devserver 實測）：桌機與 375px 兩種寬度下 wordmark 與副標都正常、無 console 錯誤；check_ds_sync 12 項全 PASS。
+
+## 2026-08-04 · 登入頁：拿掉註冊入口、改成無卡片版面、接上全站登出（B 反饋／C 撤除／D infra）
+
+使用者看過上一輪的登入頁 demo 後裁示三件事。三件都是呈現層或原型接線，沒有新增產品規則。
+
+- **【C】** **註冊入口整段移除**。原本 F1 方式選擇底下有一列「還沒有帳號？註冊」，掛 `data-feat="full"` 保留 gate（phase 1–3 隱藏，但本機預設是 Phase 4 所以看得到）。使用者裁示直接拿掉，等自助註冊真的要做時再連規格一起補。移除範圍：`login.html` 的 DOM 段落、`js/i18n.js` 的 `login.signup.q`／`login.signup.cta` 兩個 key（全站無其他消費者）、以及只服務那一列的 `auth.css` 規則 `.auth-sub .auth-link`（句子裡的連結恆常畫底線——沒有句子裡的連結了）。`feature-scope-map.md` 原本為它登記的 `full` gate 段落改寫成「入口已整段移除、待註冊規格補齊後再議」，不留一個指向不存在元素的閘門。**原型比規格更嚴格**：規格 5.1.10 F6 只要求 phase 1–3 不出現，沒說 Phase 4 要出現；掛 `full` 只是站上唯一能表達「phase 1–3 不出現」的既有機制，Phase 4 看得到那一列是機制的副作用、不是產品承諾。記在 `ASSUMPTIONS.md` UIA-105。
+- **【B】** **版面改成沒有卡片的設計**。`.auth-card` 改名 `.auth-shell` 並拿掉全部容器外觀（`--card` 底、`--radius-xl`、`--shadow-card`、`--sp-32` 內距），只留置中、`max-width: 420px` 與 `--sp-24` 的垂直節奏；頁底由 `--surface-shell` 換成 `--background`。比照 ztor 消費端 `ztor.com/zh-tw/login`——那邊沒有卡片容器，標題、選項、欄位就是垂直置中在深色背景上。**為什麼底色也要跟著換**：`--surface-shell` 是「app 外殼」那一層，登入頁原本用它的唯一理由是襯托疊在上面的白卡（亮色下 `--surface-page` 的 `#FAFAFA` 與白卡只差 2%、讀不出邊界）；卡拿掉之後沒有東西需要被襯托，內容就該直接坐在頁面底色上。`scanner-page` 仍留在 `--surface-shell`，它的手機框還在、理由沒消失。**拿掉的只有最外層那張卡**：F1 的兩個登入方式（電子郵件／手機號碼）仍是可點的 `.radio-cards--gate` 方塊。RWD 連帶簡化：≤480px 原本要收卡片內距，現在只剩頁面上下內距 24 ＋ 垂直對齊改置頂（左右維持 16，不再收成 12——沒有卡片內距墊著，收到 12 會讓欄位貼邊）。
+- **【D】** **全站帳戶選單的「登出」接上**。`js/sidebar.js` 三個入口（topbar 帳戶下拉、側欄帳戶選單、Admin 側欄底部）原本都是 `href="#"` 死連結，統一改成 `href="login.html"` ＋ `data-logout`，行為由一條委派 handler 定義：清 `ztor.activeCreator` → 導向 `login.html`。**只清這一個 key**：原型沒有真的登入態可清（`login.html` 從頭到尾不寫任何旗標，登入成功只是 `location.href` 換頁），`ztor.activeCreator` 是唯一「這次進來之後選定了誰」的狀態；語言、顯示模式、幣別、主題、devtools 狀態一律當裝置偏好保留，`ztor.persona` 是 cheat code 的假資料人物開關（開發工具狀態、不是身分），清掉只會讓下次載入被 `theme.js` 重設成 default、悄悄換掉整批展示資料。**登出行為上游完全沒有規格**（導向哪裡、要不要二次確認、代操中的 creator 該不該一起放掉、正式 session 該清什麼），記入 `ASSUMPTIONS.md` 產品缺口 **PG-032**。
+- **【D】** 文件同步：`design-system.md` §4.113（Purpose／Anatomy／底色理由／RWD／Consumers／無註冊入口）＋元件表一列、`design-system.html`（TOC 錨點 `#auth-card` → `#auth-shell`、demo 卡改無卡片版、開發者摺疊區補改版理由）、`BUILD-SPEC.md`、`requirements-map.md` 的 5.1.10 一列、`STYLE-DECISIONS.md` 新增已裁決 **Q49**（未登入層整頁殼不用卡片容器）。
+- 驗證（本機 devserver 實測）：登入頁四個畫面（方式選擇／電子郵件／手機／忘記密碼）在無卡片版面下正常，主要行動填妥前停用、填妥後可按；手機輸入非 912345678 仍重現「此號碼尚未開通」；全頁 grep 無註冊殘留連結與孤兒 i18n key；`index.html`／`e-shop.html`／`creators.html` 三頁按登出都清掉 `ztor.activeCreator` 並回到 `login.html`；check_ds_sync 12 項全 PASS。
+
+## 2026-08-04 · 商店設定新增第四組「商品規格」＝尺寸表範本庫（A 類，spec 驅動，來源 5.1.5.5 F7／D171）
+
+使用者要在商店設定加一個設定群組，選商品類型「衣服」後設定尺寸指南，而且要做成全域設定。上游規格同日先行落地（`documents/5.1.5.5-商店設定.md` v16→v17 新增 F7，決策 D171），本輪照規格建 UI。模型是**範本庫**不是單一組設定：一間店可以建多份具名尺寸表（「外套版型」「T 恤版型」），因為同一家店的外套跟 T 恤尺寸本來就不同。
+
+- **【A】** [store-settings.html](./store-settings.html) 的設定群組由三個 tab（付款／出貨／幣別）變四個，第四個是「商品規格」。tab 沿用本頁現有的純 `.tabs`，不改底線式——Q38 把本頁列在「待使用者決定是否掃齊」的 8 頁裡，同頁兩種 tab 並存會更糟。
+- **【A】** 該 panel 內兩個檢視用 `[hidden]` 互切：**清單**（範本名稱／商品類型／套用中／⋮ 編輯·複製·刪除，重用 `.ztor-table` ＋ `.admin-table__actions` ＋ `.dropdown`，空狀態 `.empty-card`）↔ **單一範本編輯**。不開次級 popup：本頁本身已經住在 e-shop 的 embed-modal iframe 裡，再疊一層要付 postMessage 與 z-index 的協調成本，換不到好處；也不做行內展開，因為編輯內容量遠大於其他三組設定，展開會把清單撐得極長。
+- **【A】** 新元件 [ds-components/size-chart-editor.css](./ds-components/size-chart-editor.css)（§4.115 Size chart editor）：`.sce`／`__wrap`／`__table`／`__head`／`__col`(`__col-label`／`__col-input`／`__col-remove`)／`__row`／`__cell`(`--size`)／`__row-remove`／`__foot`／`__add`。站上第一支**欄數由使用者決定**的表格——要量哪幾個部位本來就因商品而異。欄定義只住在 `.sce__table` 的 `--sce-cols` 一個變數上，`__head` 與每一列都 `var()` 取用，JS 增減欄只改這個變數＋每列補一格 DOM，做法取自 `.bmx` 的 `--bmx-cols`。刪除鈕（欄與列）預設 `opacity:0`、hover 該欄／該列才浮現，同 `.bmx__remove`——兩軸都會長，常駐一整排刪除圖示會蓋過資料。
+- **【A】** 編輯檢視的欄位照規格 F7.2：尺碼制（國際／US／EU／JP）與量測單位（公分／英吋）用 `.segmented`（不是 `.tabs`——這是同一份資料換視角，不是換內容區塊）、尺寸表、版型建議、身高體重參考（同一支 `.sce` 第二個實例，欄固定兩欄、不掛欄刪除鈕）、量測方式（重用 `.spec-row`）、免責說明。
+- **【C】** 商品類型沒有做成下拉選單：本版只有「衣服」一個可選值，做成假裝可互動的 selector 只會讓人以為還有別的。改成唯讀 `.badge` ＋一行「鞋子與配件要量的部位不同，尚未定義」，等上游開放其他類型再升級。
+- **【D】** 文案照 Q44 不重述分頁脈絡：欄位標籤是「名稱」「尺碼制」「量測單位」而不是「商品規格範本名稱」。hint 只寫做決定需要的資訊（「介於兩個尺碼之間時該選哪一個」），不把標籤換句話說一次。
+- **【D】** `js/i18n.js` 新增 49 個 `store-settings.specs.*` key，中英齊全。欄名可改，而 i18n 是純靜態 key→字串沒有插值機制，所以「量測欄的 aria-label 帶入使用者自訂欄名」由行內 JS 拼接，不走 key。
+- **【D】** 文件同步：`design-system.md` §4.115、`design-system.html` TOC ＋ demo 卡、`ASSUMPTIONS.md` 新增 UIA-106（四制共用同一份數值等六項 demo 手法）與缺口 PG-030／PG-031。
+- **【D】** 順手補掉別輪留下的 DS 未同步：`auth.css` 與 `ticket-tier-card.css` 有 `.md` 條目卻沒進 `design-system.html`（缺 `<link>`、缺 demo、缺 TOC），check_ds_sync 檢查 1／2／4 因此紅燈。本輪補上，讓收尾驗收能過。
+- **兩個上游缺口本輪不補**（已記 ASSUMPTIONS 並在 D171 登記）：**(1)** 商品層如何選用範本，`5.1.5.2` 還沒有這個欄位，所以這個範本庫目前沒有下游消費點，清單的「套用中 12／4」是假資料；**(2)** 截圖的主尺寸表用平量（胸寬／衣長／袖長）、量測說明教圍度（胸圍／腰圍／臀圍），基準對不上，UI 不做校驗也不暗示兩者該對應。
+- 驗證（本機 devserver 1180×900 實測）：四個 tab 切換正常、清單兩列與 kebab 選單開合、複製長出一列且套用中歸零、刪除減一、空狀態接上、新增開空白表單、編輯帶既有值、加欄時表頭與三列同步長一格且 `--sce-cols` 跟著改、刪欄同步縮回、加列／刪列、量測方式增刪、中英切換 0 個 raw key、icon 0 缺鍵、無水平溢出、console 無錯誤、check_ds_sync 12 項全 PASS。**過程修掉兩個自己踩的坑**：首欄原本用 `minmax(72px, max-content)`，但表頭與每一列是各自獨立的 grid、`max-content` 分別解析（表頭 72px vs 資料列 152px）導致整張表錯開，改固定 `112px`；表頭欄名輸入框原本用 `border-color: transparent` 想收起邊界，但 `.input` 的邊界是 `box-shadow` 環不是 `border`，改成清 `box-shadow`。
+
+## 2026-08-04 · 票種的購買條件／限購／折扣＋收入試算（B 反饋，產品變更提案 TIX-001；第 2 批）
+
+使用者要把 Beamco 設計裡的 Discount Settings、購買條件與每人限購都做進來，並要求「先整理需求、告訴我怎樣比較簡單」。整理後三件事其實是**同一個結構**：購買條件（誰能買）、限購次數（能買幾張）、折扣（多少錢＋同一組條件）。四項裁決記在 `ASSUMPTIONS.md` TIX-001。**這一整塊在規格 5.1.6.1 沒有對應欄位，屬產品變更提案，未回寫 `documents/`。**
+
+- **【B】** **範圍改「繼承＋覆寫」，不做「全部一致 vs 票種獨立」兩種模式**（使用者裁決）：活動層一張「所有票種的預設規則」卡設一次，票種卡上一個開關決定要不要有自己的一份。省掉模式切換、省掉「切回一致時已填的值怎麼辦」，票種一多也看得出誰是特例（收合卡掛「自訂」徽章）。關掉自訂就把那份丟掉、不保留——留著會讓人以為還在生效。
+- **【B】** 條件欄位（不限／限時間／限粉絲分級）是**一支渲染函式、用三個地方**（活動層購買條件、活動層折扣條件、票種自訂的同兩處），不寫多份。分級門檻用下拉（核心圈以上／超級粉絲以上／上榜粉絲以上／全部粉絲），詞彙與 e-shop 商品的粉絲分級門檻同一套——填絕對點數創作者無從判斷那是多少人（使用者裁決）。
+- **【B】** **收入試算**：活動支出欄＋四列 `.kv`（預估營收／平台費／活動支出／你實拿）。營收**一律用折後價當保守估**（使用者裁決）——折扣實際有幾人用無法預估，這張卡旁邊就是實拿金額，寧可少報；平台費 5%，值取自 `admin-platform-fees` 的「活動 › 現場活動票券」General。實拿為負時照實顯示負數並轉紅（`.calc-sum__neg`），不夾成 0——把虧損顯示成 0 才是真的誤導。
+- **【D】** 修掉一個會把整頁卡死的迴圈（本輪自己造成、已修）：規則區塊含 `datetime-local` 欄位 → `partials/date-input.js` 的 MutationObserver 接到新節點會呼叫 `applyI18n()` → `i18n.js` 的 `apply()` 結尾一律 dispatch `i18n:applied` → 本頁在該事件上重繪規則 → 又插入日期欄 → 無窮下去。改成重繪期間擋掉自己造成的那一輪（旗標＋`setTimeout(0)` 解除，因為 observer callback 是 microtask、一定跑在該 macrotask 之前）。此坑已寫進 `design-system.md` §4.114，供其他要在 `i18n:applied` 重繪的頁面對照。
+- **【D】** 「自訂」徽章改成 `.tier-card__name` 的**兄弟節點**：邊打字邊更新卡標是整個覆寫 `h4` 的文字，徽章放在裡面會被一起洗掉（實測踩到）。標題列同輪由 `space-between` 改 `flex-start` ＋ 動作 `margin-left:auto`，否則中間多一個徽章會被推到卡片正中央、讀起來像另一欄。
+- **【B】** **試算改坐右軌**（2026-08-04 使用者指示，同日追加）：步驟 4 套 `wizard-split`，左欄是票種網格＋預設規則＋活動支出，右軌是 sticky 的試算卡——左邊填、右邊即時看到結果，捲動時結果一直跟著。餵給試算的**活動支出欄留在左欄**：站上右軌一律唯讀、不放正在編輯的欄位（Detail rail pattern）。配套兩件：步驟 4 才把 `.wizard__body` 加 `--mid`（1140；820 容不下 732 的網格＋320 右軌），其餘步驟維持 820 不動——代價是步驟 3→4 內容欄會變寬一次，換得網格維持兩欄；執行期量 `.wizard__top` 高度寫進 `--wizard-top-h`，sticky 才不會鑽進 header 底下（高度隨語言換行而變，硬寫會漂，做法沿用 create-project）。共看派對分支沒有右軌、不放寬。
+- **【D】** 金額負值格式改 `-$290,000`（原本是 `$-290,000`）。
+- **【D】** `js/i18n.js` 新增 27 個 `ce.rule.*`／`ce.calc.*` key，中英齊全；`create-event.html` 補載 `kv-list.css`／`switch.css`。
+- 驗證（本機 devserver 實測）：右軌實測 1280 視窗下內容欄 1140、左欄 732（網格 2×360）、右軌 320，捲動 600px 後右軌貼在 96px＝header 底（80）＋16 不被遮；步驟 3／5 維持 820、共看派對步驟 4 維持 820 且無右軌；無折扣 2,000,000／費 100,000／實拿 1,900,000；活動層折扣 10% 後 1,800,000／90,000／1,710,000；票種自訂 50% 後總營收 1,400,000（兩張各用各的折扣）；支出 9,000,000 時實拿 `-$7,100,000` 並轉紅；自訂開關開關來回、徽章不被名稱編輯洗掉；切語言 9ms 完成、規則區塊跟著換語言（不再卡死）；console 無錯誤。
+
+## 2026-08-04 · 票種改網格版型＋批次編輯（B 反饋，版型來源 Beamco Artist Portal v3；第 1 批）
+
+使用者給了 Figma 的票價設定設計（`0gWC6dR1yzdEu0g1LqvRvJ` node 1904-82978，Beamco Artist Portal v3），要把演出型的票種段改成那套。整份設計有五塊：Basic Ticket Settings（活動總支出／每人限購＋營收試算）、票種、折扣、批次編輯、View Type。**其中只有版型與互動這一塊不碰產品規則，本輪只做這一批**；總支出、平台費、Artist profit、每人限購、折扣與忠誠點數在 ztor 規格 5.1.6.1 完全沒有對應，屬產品範圍變更，待上游裁決（記在 `ASSUMPTIONS.md` TIX-001）。
+
+- **【B】** 票種卡改**網格**：`.tier-grid`（`auto-fill` / `minmax(280px, 1fr)`）取代原本的單欄堆疊，卡片與尾端的「新增票種」格排在同一張網格上。`.tier-list` 改 `display: contents`——卡片由 JS 重繪、新增格是靜態 markup，要落在同一張網格上，中間那層就不能自己成為 grid item。
+- **【C】** **不做 List View**（使用者裁決）：Figma 的 List View 是橫向捲動，設計稿自己的畫面就切掉了第一張卡；而這一步最需要一眼看到的正是「有幾種票、加起來幾張」。連帶 List／Grid 切換鈕整個不做——少一個沒人會切的控制項。
+- **【B】** 卡面照 Figma 重排：⋮ 留在標題列，**Edit 改成卡底的整寬鈕**（`.tier-card__edit`）；價格與數量從「標籤在上、值在下」改成**一列一個、標籤靠左值靠右**，值貼右緣＋`tabular-nums`，並排的卡片因此各自對成一欄可以直接比大小。編輯態三欄由並排改直排（窄卡放不下）。
+- **【B】** **批次編輯**（`.tier-toolbar`）：整段卡一起進編輯態、共用工具列上的取消／儲存，儲存時有一張不過驗證就整批不收。**刻意是選配模式、不是預設**（使用者裁決）——票種一多，全部攤開這一頁會長到看不完；單張編輯維持一次只開一張（規格 F9.2）。批次編輯中的卡（`--group`）收起自己的卡底動作、保留 ⋮，因為那時移除單張只剩這條路。工具列在一張票種都還沒建立時整條收起。
+- **【D】** 票種狀態模型從「單一 `tierDraft`」改成 `drafts` 對照表＋`newIds`／`errIds` 兩個集合，批次與單張走同一套；沒存過的新卡不計入「已建立」與發布前檢核，取消時整張移除。餘量提示（容量還有 N 張未分配）只在單張編輯時出現——批次時每張卡都掛同一句，等於同一個數字講三遍。
+- **【D】** `js/i18n.js` 新增 `ce.tier.group`／`ce.tier.removeshort` 兩個 key（卡底的移除鈕在 280px 卡寬下放不下「移除票種」，選單項維持完整名稱）。
+- **【D】** 文件同步：`design-system.md` §4.114 改寫（新增網格、工具列、`--group`、不做 List View 的理由）＋元件表一列、`design-system.html` demo 改成與實作一致的兩態並陳（含批次工具列）、`ASSUMPTIONS.md` TIX-001。
+- 驗證（本機 devserver 實測）：三張卡建立後成 2 欄網格（764px 內容寬，每張 376px，與 Figma 卡寬同級）、批次編輯三張同時進編輯態且卡底動作收起、改一張價格整批儲存生效、一張數量清空則整批被擋並標紅、批次取消全部還原、單張編輯一次只開一張、新增後取消整張消失且計數不動、明暗兩色、console 無錯誤。
+
+## 2026-08-04 · 建立活動的票種真的能建了（A 類，spec 驅動，來源 5.1.6.1 F9／F9.1／F9.2）
+
+使用者回報「r2.2 新增活動的流程，票種無法創建」。查證屬實且不是壞掉：步驟 4 那顆虛線卡從來只做一件事——把計數 +1、把自己的標題從「建立第一個票種」換成「新增票種」，沒有票種卡、沒有欄位、沒有任何地方可以填票名價格數量（r2.1 也一樣）。規格 F9.1／F9.2 早就寫好整張卡的欄位與兩態，這輪把它落地。
+
+- **【A】** 新元件 [ds-components/ticket-tier-card.css](./ds-components/ticket-tier-card.css)（§4.114 Ticket tier card）：`.tier-list`／`.tier-add`／`.tier-card`(`__head`／`__name`(`--untitled`)／`__actions`／`__facts`／`__fact`／`__body`／`__foot`／`__foot-spacer`／`__control`／`__clear`／`__err`)／`.tier-count`(`--over`)。**收合態**＝卡標是票種名稱、下面唯讀列出價格與數量（`tabular-nums`，多張卡疊起來位數對得齊）、右側 Edit 鈕＋⋮ 選單（複製票種／移除票種，F9.2）；**編輯態**＝名稱／價格／數量三欄（`.form-grid--3`）、每欄末端 ✕ 清空、卡底 Remove｜Cancel Save。分兩態而不是永遠攤開：一場活動可以有多個票種，全部攤開要捲很久才看得到全貌。
+- **【A】** [create-event.html](./create-event.html) 步驟 4 換成真的票種清單：新增＝開一張編輯中的草稿卡，**按過 Save 才算已建立**——草稿不進計數、不進 Review 摘要、不進發布前檢核，否則按一下新增就先送出一張空票種（就是改壞之前那版的行為）。驗證照 F9.1：名稱 1–40 字且同活動內不重複、價格整數 ≥ 0、數量整數 ≥ 1；錯誤在按過一次 Save 之後才標出來（邊打字邊標紅太吵）。數量欄常駐一行「容量還有 N 張未分配」，改容量會即時重算。
+- **【A】** Σ 數量 ≤ 容量（F9.1／§4.5 F11）：超標時計數列整行轉紅並改寫成「各票種數量加總 N 張，超過容量 M 張」，切步不擋（草稿可以先超標），**發布前擋下並跳回步驟 4**。這是站上第一個「跨欄位加總校驗」的落地（同構的 PG-029 預購方案上限校驗仍是缺口）。
+- **【C】** 卡不再包一層 `form-section--outlined`：卡中卡在亮色是白疊白，而 Q24 把卡內填色上限壓在兩層。票種卡改成直接坐在步驟面板上（L1），與建立募資流程的方案卡（`create-project` 的 `#bd-list`）同一種做法。空狀態的虛線卡維持原樣，只是外面那層卡沒了。
+- **【D】** Remove 走 Q37 已裁決的實色 `.btn--destructive`（規格 F9.2 寫的「紅字」是截圖觀察，站上呈現以裁決為準）；⋮ 選單重用 `ds-components/dropdown-menu.css`，不自造第二種列操作選單。
+- **【D】** `js/i18n.js` 新增 24 個 `ce.tier.*`／`ce.publish-blocked-cap` key，中英齊全；`ce.tier.create-hint` 拿掉「購買資格」——票種卡只收三欄，entitlement 屬活動詳情 5.1.6 F5，寫在這裡等於承諾一個這一步不存在的欄位。票種卡是 JS 產生的，切語言時併進 `i18n:applied` 一起重畫。
+- **【D】** 登記待裁決：**Q48**（建立流程可編輯卡的收合態動作：文字連結 vs Edit 鈕＋⋮ 選單）、**Q47**（欄位末端的清空 ✕ 目前只有票種卡有）、**Q36 追加第三份同構實作**（`.field__hint.tier-card__err` 與 bundle-editor 兩支同配方，仍無 DS 級通用版）。`ASSUMPTIONS.md` 的 PG-009 收斂、新增 CAP-001（票種與容量的校驗口徑待上游確認）。
+- **【D】** 文件同步：`design-system.md` §4.114 ＋元件表一列、`design-system.html` TOC／元件表／demo 卡（兩態並陳、含超標錯誤態）、`requirements-map.md` 的 5.1.6.1 一列。
+- 驗證（本機 devserver 實測）：空白按 Save 三欄各自報錯、填齊儲存後轉收合態、Review 摘要與發布前檢核的「至少 1 種票種」跟著打勾、複製帶出「Normal Copy」、同名（大小寫不同）擋下、✕ 清空、Cancel 還原不留編輯態、Remove 減一並解除超標紅字、⋮ 選單開合、容量 500 對上 600 張時計數列轉紅、明暗兩色、console 無錯誤。
+
+## 2026-08-04 · 釘選區分隔列改兩態：有釘選回到原本的線，零釘選才是方框（B 反饋）
+
+- **【B】** 方框改成只屬於零釘選狀態（新增 `--empty` 變體，由 JS 依釘選數切換）；一旦釘了第一件，這一列回到原本的樣子——一條有字的分隔線、無外框、上一列的分隔線也復原。理由：兩種狀態在做的事不同。有釘選時它是「兩段之間的界線」，一條線就對；一件都沒有時沒有上下兩段可分，它實際在做的是邀請你去釘第一件，框起來才對得上。
+
+## 2026-08-04 · 釘選區方框收斂：框線同列分隔線色、去掉雙線、CTA 改無外框按鈕（B 反饋）
+
+- **【B】** 框線由 `--border` 改 `--border-soft`（＝列分隔線同色）：這個框跟清單是同一層東西，較重的框線會讓它讀起來像疊上去的另一張卡片。
+- **【B】** 收掉緊鄰上方那一列的分隔線（`.product-list__row:has(+ .product-list__divider:not([hidden]))`）：框自己已經有上緣，兩條線疊在一起會看成雙線。限定在框沒被收起時——篩選中框會 `hidden`，那時上一列仍需要自己的分隔線。
+- **【B】** 「立即釘選」由底線連結改為**無外框按鈕**（`.btn.btn--ghost.btn--sm`）：ghost 沒有外框，不會和外面這個框變成框中框；點擊區也比一段底線文字好按。`__divider-cta` 退成只管推到右端與收起。
+
+## 2026-08-04 · 釘選：術語正名、文案改寫、分隔列改成有圓角的方形外框（B 反饋／上游 D173）
+
+- **【A】** **術語由「固定」正名為「釘選」**（上游 `documents/decisions.md` **D173**，`5.1.5-電子商店.md` 同步、Plan243 備份）：i18n 中文值改為「釘選／取消釘選／以上為釘選商品，顯示在商店最前／已達釘選上限」，英文不動（Pin／Unpin／Pinned）。使用者說「固定」彆扭——它講的是「不會動」，這裡的意思是「排到最前面」；「釘選」是 zh-TW 對 pin 的標準譯法，也跟畫面上的圖釘圖示對得上。站台文件（`design-system.md`／`design-system.html`／`BUILD-SPEC.md`／`requirements-map.md`／`STYLE-DECISIONS.md` Q46）一併掃過；本檔既有條目屬歷史紀錄不改，新條目起用新詞。
+- **【B】** 零釘選時的句子改為 **「把主打商品放到商店最前。」**，右端連結改為 **「立即釘選」**（`Put your headline items at the front of your shop.` ／ `Pin now`）。句子只講結果、動詞交給連結，兩邊不重複用「釘選」二字。
+- **【B】** **分隔列改成有圓角的方形外框**（`.product-list__divider`）：1px `--border` ＋ `--radius-xl`、內距 `--sp-16`、上下外距 `--sp-8`，不填色。一條細線在 76×94 縮圖的列陣裡會被讀成「兩列之間的分隔線」；框起來才明確是一個自己的區塊。`is-drop-target` 由改下框線色改為改整圈框色。
+
+## 2026-08-04 · 固定在最前：指路連結移到計數的位置，零固定不顯示 0/10（B 反饋）
+
+- **【B】** 零固定時右端那一格由 `0/10` 改放指路連結（文字同時由「立刻前往」改「試試看」），計數收起；固定第一件之後右端換回 `n/10`、連結收起。同一個位置兩種內容、不並排——零固定時的 `0/10` 沒有在報告任何進度，只是把行動往旁邊擠。
+
+## 2026-08-04 · 固定在最前：引導改成「將商品置頂。立刻前往」＋可點指路（B 反饋）
+
+- **【B】** 零固定時的文案由「從列的 ⋯ 選單固定商品，粉絲一進商店就先看到」改為 **「將商品置頂。」＋行內連結「立刻前往」**（`e-shop.pin.hint`／新 key `e-shop.pin.cta`，中英齊全）。把「怎麼操作」寫進句子會讓這條線變成說明書；改成點一下直接帶到那一項，句子只留這件事本身叫什麼。連結樣式 `.product-list__divider-cta` 沿用站上既有的行內連結語彙（底線、hover 轉品牌色），刻意不做成按鈕——它是句子的一部分，不是這一區的主行動。
+- **【B】** 「立刻前往」**指路、不代按**：捲到第一件可固定商品（放在視窗上方三分之一，因為選單往下開，置中會讓選單一半掉到摺線下）、打開該列的操作選單、把「固定在最前」那一項圈起來並給焦點。要固定哪一件仍是創作者的決定。指路環在選單收起、按下該項或 6 秒後自動解除。
+- **【A】** `ds-components/dropdown-menu.css` 新增 **`.dropdown__item.is-hinted` 指路態**（`--accent` 底＋1px `--primary` 內環）：站上第一次出現「由別處替使用者打開選單並指出該按哪一項」這個 pattern，第一次出現即 promote 進元件，`design-system.md` §4.26 Class API 同步。刻意不借用 hover／active 的底色——那兩個在同一瞬間可能正被游標佔用，混在一起分不出是誰在說話。
+- **【D】** 開選單要延到下一輪 event loop：頁面另有一個 document 層的「點到選單外就收起」處理器註冊在後面，同一次點擊裡會把剛開的選單關掉。
+
+## 2026-08-04 · 固定在最前：零固定時的引導文案＋分隔列尺寸放大（B 反饋）
+
+- **【B】** **零固定時分隔列不收起、改講提示**：文案由「以上固定顯示在商店最前」換成「從列的 ⋯ 選單固定商品，粉絲一進商店就先看到」（新 i18n key `e-shop.pin.hint`，中英齊全），右側計數顯示 `0/10`。用同一條線承擔兩種說法，不另做提示元件——零固定時它剛好落在草稿之後、第一個商品之前，也就是固定區將來出現的位置，等於先把那塊地方指出來。文案挑這句的理由：⋯ 選單是唯一入口，不寫等於把功能藏起來；後半句講粉絲端結果，右側的 0/10 把上限一併交代。
+- **【B】** **分隔列尺寸放大**（`ds-components/product-list.css`）：`padding` 由 `--sp-10` 改 `--sp-16 --sp-10`、字級 `--fs-12` → `--fs-13`、圖示 14px → 15px，高度約 50px。理由：這條線要在 76×94 縮圖的列陣裡被讀成「一段的界線」，原本太薄會被誤讀成兩列之間的分隔線。
+
+## 2026-08-04 · 固定在最前：三項操作裁示＋上游以 D172 正式收下（A 類 spec 驅動／B 反饋）
+
+使用者看過 demo 後裁示「可以做正式的了」，同時給了三個調整。上游 `documents/decisions.md` **D172** 已把這項能力寫成正式規格（`5.1.5-電子商店.md` F4／F5／使用情境，備份 Plan242），`ASSUMPTIONS.md` PIN-001 標記為已採納。
+
+- **【B】** **草稿永遠在整張清單最前**：原本排序是「固定區 → 分隔列 → 草稿 → 其餘」，改成「草稿 → 固定區 → 分隔列 → 其餘」。理由沿用 UIA-038——草稿是待補齊的工作清單、不對粉絲顯示，它不參與固定區的名額競爭，位置也不該被固定操作推動。
+- **【B】** **固定／取消固定點完就收選單**（移除該項的 `data-keep-open`）：按下去那一列就搬到固定區，選單留在原地會停在一個已經沒有那一列的位置上；列跳走本身就是回饋。同一個選單裡的「在商店上架」開關維持不收——它要讓人看見 switch 翻動，而且列不會動。
+- **【B】** **起始狀態改成一件都沒固定**：原本預先固定 3 件商品與 1 個組合當示範。預先塞會讓人以為那是系統挑的，也少掉「自己按一次」這個關鍵動作；固定區與分隔列改成第一次固定時才出現。
+- **【D】** 修正：「固定在最前」原本被插進列上的粉絲分級下拉（列裡有兩個 `.dropdown__menu`，分級那個排在前面），功能可用但在 kebab 裡找不到；改為限定 `.product-list__actions .dropdown__menu`。
+
+## 2026-08-04 · 電子商店清單可「固定在最前」（B 反饋／產品變更提案 PIN-001，上游未核准）
+
+使用者要把想 highlight 的商品釘在清單最前面。裁決過的四件事：固定＝**粉絲端強制置頂**（不是後台檢視捷徑）、上限 **10**、**不掛精選徽章**、固定區內順序仍可自己調，且 Products／Bundles／Auctions 三類都要。**這是新的產品能力**，規格 §55/§71（D083）目前只定義「列順序＝粉絲端陳列順序」，沒有固定的概念——先做 demo 是使用者當次指示，提案與待裁決問題記在 `ASSUMPTIONS.md` PIN-001，未回寫 `documents/`。
+
+- **【B】** `ds-components/product-list.css` 新增固定區三件：`.product-list__divider`（＋`__divider-body`／`__divider-count`）＝固定區分隔列、`.product-list__pin-mark`＝名稱前的小圖釘、`.is-drop-target`／`.is-full` 兩個拖曳回饋態。為什麼是「一條有字的分隔線」而不是逐列徽章：使用者裁示粉絲端不掛精選標記，創作者端要辨識的是**哪一段**而不是哪一顆，位置本身就是狀態；10 顆徽章只會把清單吵滿。
+- **【B】** `e-shop.html` 三個分頁各加一條分隔列與固定模組：固定與否＝在分隔列的哪一側，所以**拖曳跨線就是固定／取消固定**，不另開確認；列操作選單同時提供「固定在最前／取消固定」，給窄螢幕與不想拖的人。上限 10 各分頁獨立計，計數常駐分隔列右側；額滿時選單項 disabled、拖曳被退回線下並把計數閃成 `--destructive`。草稿列不給固定入口（不對粉絲顯示），仍置頂於未固定段之首（沿用 UIA-038）。搜尋／篩選中分隔列收起——那個檢視下列是散的，一條說「以上固定」的線會說謊，名稱前的圖釘則留著當唯一線索。
+- **【D】** 選單項與圖釘由 JS 統一注入每一列，不手寫進 40 幾個 kebab（第二份模板遲早各自漂移）；並掛在 `DOMContentLoaded` 與 `i18n:applied` 之後補畫——`products-store.js` 在這兩個時機用 `title.textContent = 名稱` 重寫標題格，只在初始化插一次會被它洗掉。
+- **【D】** `js/icons.js` 新增 `pin`／`pin-off`（Tabler）；`js/i18n.js` 新增 4 個 key（`e-shop.a.pin`／`e-shop.a.unpin`／`e-shop.pin.divider`／`e-shop.pin.full`），中英齊全。
+- 驗證：三分頁固定／取消固定、上限 10 擋第 11 筆（選單與拖曳兩路都擋）、拖曳雙向跨線、搜尋與狀態篩選下分隔列收起、切語言後圖釘與選單文字都還在、明暗兩色皆讀得出來。
+
+## 2026-08-04 · 新增登入頁 login.html（A 類，spec 驅動，來源 5.1.10／D170）
+
+登入提前到 phase 1（D170），規格 `documents/5.1.10-登入.md` 已寫定。本輪把它做成可實際點的原型 demo：四個畫面住在同一張置中卡裡互切，不換頁。上游 `requirement/` 查無登入需求，產品依據就是 D170。
+
+- **【A】** 新頁 [login.html](./login.html)：F1 方式選擇（電子郵件／手機號碼兩個並列入口，地位相同、不預設其中一種）→ F2 電子郵件登入（信箱＋可切顯示隱藏的密碼；**欄位填妥前「登入」是停用的**；底下左側忘記密碼）／F3 手機號碼登入（國碼下拉預設 TW +886＋電話號碼＋驗證碼＋取得驗證碼，同樣填妥前停用）→ F6 忘記密碼（返回箭頭＋「忘記密碼？」＋說明＋信箱＋「請求重設密碼」）。F4 登入後分流：Admin → `creators.html`、Artist → `index.html`。F5 錯誤狀態：電子郵件憑證錯誤顯示**不分辨帳號不存在或密碼錯誤**的一般性錯誤（規格明訂，防帳號列舉）；手機查無號碼顯示「此號碼尚未開通，請聯繫平台」，**頁面上沒有任何通往註冊或建立帳號的路徑**（規格明訂不沿用消費端「查無號碼即開通」的合一流程）；送出中主要行動改「登入中…」並停用。<br>**明確不做**（D170 裁示）：第三方登入（Apple／Google／Facebook／LINE）、推薦碼／兌換碼欄、同意條款勾選、自助註冊。<br>骨架照站上唯一的無側欄全畫面先例 `scanner.html`：不載 `js/sidebar.js`，body 尾端 `icons.js` → `i18n.js` → `zselect.js` → `devtools.js`。
+- **【A】** 新元件 [ds-components/auth.css](./ds-components/auth.css)（§4.113 Auth shell）：`.auth-page`／`.auth-card`／`.auth-brand`／`.auth-step`／`.auth-intro`／`.auth-head`(`__back`)／`.auth-title`／`.auth-sub`／`.auth-pw`(`__toggle`)／`.auth-inline`(`--lead`)／`.auth-actions`／`.auth-foot`／`.auth-link`／`.auth-note`。<br>**能重用的一律不自造**：方式選擇的兩張卡＝`.segmented.radio-cards.radio-cards--gate`（STYLE-DECISIONS Q28 的閘門變體，選了就進下一步、無持久選取態）；表單級錯誤＝`.alert.alert--row.alert--error`；欄位＝`.field`＋`.input`；返回鈕＝`.btn.btn--icon`（Q43 已裁決的裸箭頭，本檔只留 flex 定位、不重寫外觀）；國碼下拉是原生 `<select class="select">`，由 `js/zselect.js` 自動升級。<br>**頁底用 `--surface-shell` 不用 `--surface-page`**：亮色下 `--surface-page` 是 `#FAFAFA`，白卡放上去只差 2%、卡的邊界幾乎讀不出來（實測截圖比對過），`--surface-shell`（`#F0F0EE`）才拉得開；暗色兩者都成立。`scanner-page` 用的也是這一層。
+- **【A】** 版本閘門：註冊入口掛 `data-feat="full"`（保留 gate），phase 1–3 隱藏、Phase 4 才出現。**沒有另立新代號**——`feature-scope-map.md` 的三個 tier（🟢／🔵／⚪）沒有任何一個能表達「phase 1–3 不出現」（⚪ TBD 在 Phase 3 就看得到），站上唯一表達得了的既有機制就是 `full`。已在 `feature-scope-map.md` 的「開發版本配置」節登記說明。`login.html` **整頁不掛** `data-page-feat`、也**不進** `devtools.js` 的 `FULL_ROUTES` 與 `sidebar.js` 的 `FULL_ROUTES`／`fullVersion()`——登入本身是 phase 1 能力，各版本都要進得去，只有註冊那一個元素受閘門控制。實測：Phase 1／2／3 該列 `ztd-ver-hidden`、`href` 被拔掉（連鍵盤都到不了）；Phase 4 與 deck-for-sony 正常顯示。
+- **【D】** `js/icons.js` 新增 `mail`（Tabler 信封）：站上原本沒有信封——`inbox` 是收件匣托盤、`send` 是紙飛機，兩個講的都是「收發這個動作」，這裡要的是「電子郵件這個東西」。
+- **【D】** `js/i18n.js` 新增 42 個 `login.*` key，中英齊全。
+- **【D】** 文件同步：`design-system.md` §4.113 ＋元件表一列、`design-system.html` TOC＋demo 卡（含 `.auth-inline` 兩種成對列的獨立展示）、`BUILD-SPEC.md` §2 Sitemap／§3.2 pattern 表／§4 頁面對照、`requirements-map.md` 新增 5.1.10 一列、`ASSUMPTIONS.md` UIA-105（demo 手法與待上游項目）。
+- **【D】** 實測（Playwright，http 非 file://）：四畫面切換與返回、主要行動的停用→啟用、密碼顯示切換、驗證碼倒數、手機「號碼未開通」錯誤、電子郵件一般性錯誤、Admin／Artist 兩條落地分流、亮暗兩色、版本閘門五個版本。截圖存 [screenshots/](./screenshots/)。
+
+## 2026-08-04 · 規格稽核收尾：術語殘留清掉＋台帳關閉（B 反饋／D 文件，來源 `docs/規格落差稽核-2026-08-03.md`）
+
+`docs/規格落差稽核-2026-08-03.md` 標記為「純機械、無需產品裁決」的收尾項：清掉 D152／D151 已定案但沒套用到底的舊術語殘留，並把已由近期決策（D166／D167／D168）關閉的 `ASSUMPTIONS.md` 缺口正式標記為已解決。
+
+- **【B】** `js/i18n.js` 6 處使用者可見中文值仍寫「專案」，改為 D152 定案的現行術語「項目」（key、英文值、函式名一律不動）：`cpp.s2.story.ph`（3646 行）、`cpp.bd.coach.few`（3959 行）、`pd-earn.detail.scope`（4764 行）、`pd-earn.pending.title`（4831 行）、`pd-earn.pending.note`（4842 行）、`ben.vault.body`（5851 行）。
+- **【B】** `js/i18n.js` 2 處輔助說明句仍寫已於 D151／v3.10 更名的舊狀態詞「已排程」，改為現行狀態術語「準備中」：`cpp.publish.toast.scheduled`（3433 行，「項目已排程發布」→「項目已進入準備中」）、`pd-edit.schedule.publish-hint`（4933 行，「已排程的項目」→「準備中的項目」）。商品定時上架（`restock.method.scheduled` 等）與訊息排程（`msg.status.scheduled`）是同字不同概念，不動。
+- **【D】** 全庫覆核時多抓到 1 處同類殘留（不在稽核報告原始清單內）：`design-system.html` 一段說明文字「導向專案詳情頁」改「導向項目詳情頁」（7655 行）——`design-system.html` 是使用者查閱元件的入口頁，此段為使用者可讀的說明文字、非程式註解。
+- **【D】** `ASSUMPTIONS.md` 台帳關閉四筆，逐條對應 `documents/decisions.md`：
+  - **CCR-008**：待上游第 (5)（推導＋限定折扣是否為正式定價規則）、第 (6)（不可折抵分潤名額是否為硬性規則）由 **D168** 核准；第 (7)（每名額單價逐套組覆寫）由 **D168**「未採納 3」否決，維持全項目統一單價。
+  - **PG-029**：預購方案販售上限總和與最少訂購數的校驗規則已由 **D167** 定案（全數限量時上限總和須 ≥ 最少預購數，任一方案不限量則跳過），標記為「規格已定、原型尚未實作跨欄位校驗」，待辦留在台帳上。
+  - **UIA-089**：預購型是否需要製作／交付進度分頁已由 **D166** 決定第 6 項裁決為「需要」（新增 §2.2.10），推翻本則原「僅募資型才有」的限制；查核 `project-detail.html:143`／`:474` 已是 `data-type="fund preorder"`，site 端早已落地，一併關閉。
+
 ## 2026-08-04 · 項目詳情頁的狀態徽章修正（D 類 · bug）
 
 - **【D】** 詳情頁的狀態字彙表落後專案清單頁三個版本，三個錯同時修掉（[project-detail.html](./project-detail.html) 狀態徽章段）：
@@ -343,6 +573,39 @@
 `documents/0-設計規格書.md §3.2` 的 sitemap 仍列著分級權益（5.1.7.2）與分級設定（5.1.7.6）兩個獨立子頁，粉絲分析／粉絲管理的頁名也還是舊的。**頁面清單的唯一來源在那裡**，本次是先在 site 實作、規格未同步——要正式化需回頭改 §3.2 與對應的 `5.1.7.x` 分頁。
 
 ---
+
+## 2026-08-01（第二十四批）· 分享的兩個入口分工、檢視器改用標準下拉、吸頂遮罩（B 反饋／使用者裁示）
+
+- **【B】** **分享的兩個入口分工**（承第二十三批）：使用者提出「分享權限是不是要改成創建什麼，另一顆列出已建立的讓人複製」。查下去發現**要的東西抽屜裡本來就有**——上半是「發一把新鑰匙」，下半是「已發出的鑰匙」，每一把都能複製連結、撤銷。問題只在入口命名沒把兩件事講開。所以不新增介面，改成：庫房標頭＝**發一把鑰匙**（開抽屜、停在建立那一段），已發出的鑰匙區塊＝**分享連結**（開同一個抽屜、直接捲到清單那一段並聚焦第一個複製鈕）。抽屜標題同步改成「鑰匙與分享連結」。
+- **【B】** **檢視器改用標準 DS 下拉**（使用者：「這個 UI 壞掉了，乾脆改成我們現有的 dropdown 元件」）：拿掉 `.vault-viewer` 自己的邊框與底色、`select--bare` 也拿掉，邊框／聚焦環全部交還 `.select`。先前外層框＋內層 zselect 聚焦環疊成框中框——跟 `.vault-rail__draft` 當初踩到的是同一個坑。檢視中的狀態改由眼睛圖示轉品牌橘表示。
+- **【B】** **吸頂時才遮住上方**：「誰進得來」貼頂之後，卡片上緣與捲動容器頂端之間還有 78px 的空隙，捲上來的內容會從那道縫露出來。補一塊同色遮罩（`.vault-reach::before`），但**只在真的吸住時現身**（`.is-stuck` 由 JS 依捲動位置掛）——常駐的話沒捲動時會把頁首與檢視身分那一列一起蓋掉（第一版就是這樣，使用者當場抓到）。捲動容器往上找，正式頁是 `.main`、彈窗版是 `.vault-modal__body`，不寫死。
+- **【D】** i18n 新增 `vault.btn.share-links`，`vault.share.title` 改「鑰匙與分享連結」。保存檔 `media-vault-popup.html` 全部同步。check_ds_sync PASS。
+
+## 2026-08-01（第二十三批）· 兩顆「分享權限」去重（B 反饋／使用者提問）
+
+- **【C】** 使用者本來要在庫房標頭再加一顆分享按鈕，同時自己問「這樣功能是不是重複了」——查下去發現**現況已經重複**：庫房標頭與「已發出的鑰匙」區塊各有一顆 `data-vault-share`，標籤同樣是「分享權限」，打開的是同一個發鑰匙抽屜。**所以沒有新增第三顆**，改成把重複去掉。
+- **【B】** 標頭那顆維持「分享權限」（庫房層級的主要動作，不必捲動就看得到）；「已發出的鑰匙」那顆改成 **「發一把鑰匙」**（icon 也從 link 換成 plus）。同一個抽屜、兩個高度的入口，但標籤各自說得出結果——那一顆的意思是「往這份清單再加一把」，新鑰匙也確實會出現在它正下方。
+- **【D】** i18n 新增 `vault.btn.issue-key`。保存檔 `media-vault-popup.html` 同步。check_ds_sync PASS。
+
+## 2026-08-01（第二十二批）· 庫房清單移到右邊、檢視身分改靠左（B 反饋／使用者裁示）
+
+- **【B】** `.vault-layout` 從 `276px 1fr` 改成 `1fr 276px`——庫房清單移到右邊。用 `order` 換位置、**不動 DOM 順序**：清單是在庫房之間導覽的東西，讀屏與 Tab 先碰到它是對的，換的只是它畫在哪一邊。窄版收成單欄時清單回到內容上方（右邊已經不存在，擺在下面等於要先捲過整座庫房才選得到下一座）。
+- **【B】** 檢視身分那一列跟著改為**靠左**，與下面的內容切齊同一條左邊界；「回到我的視角」從下拉左邊移到右邊——下拉是這一列的主角，要守住起頭的位置。
+- **【D】** 順手修掉一個被誤塞進 `@media (max-width: 900px)` 的規則（`.vault-modal__headright`），它本來該全域生效。`design-system.md`／`design-system.html` §4.102 同步。check_ds_sync PASS。
+
+## 2026-08-01（第二十一批）· 正式頁改回「清單＋詳情並排」，總覽＋彈窗版退為保存檔（B 反饋／使用者裁示）
+
+- **【C】** 使用者試用後裁示：正式頁 `media-vault.html` **改回清單與詳情並排**——可以直接切換庫房、也直接編輯 media，不必先開再關一層彈窗。總覽卡片牆＋彈窗那一版**不刪、退為保存檔** `media-vault-popup.html`，兩種版型共用同一支 `js/media-vault.js`，靠 `<html data-vault-view="popup">` 分流；保存檔頁首有橫幅說明它是什麼、以及回正式頁的連結。
+- **【D】** 這一輪**只換版型外殼**，第十九、二十批的內容全部保留在兩種版型上：誰進得來吸頂、解鎖條件的「進得來的方法」、已發出的鑰匙獨立區塊、區塊標題規格、單一內容的設定抽屜。檢視身分在並排版回到頁面層（靠右、橫跨在清單與內容之上），在彈窗版留在彈窗標題列。
+- **【D】** 庫房名字的落點跟著版型走：並排版寫在主欄標頭 `.vault-head__title`，彈窗版寫在彈窗標題列（那裡捲不走，內文就不重複）。JS 以 `els.main.querySelector("[data-vault-title]") || els.modalTitle` 取用，兩邊都不必分支。`design-system.md`／`design-system.html` §4.102 同步標註「總覽／彈窗只用於保存檔」。check_ds_sync PASS。
+
+## 2026-08-01（第二十批）· 點進單一內容的設定 ＋ 檢視身分搬進彈窗 ＋ 彈窗遮罩改黑（B 反饋／使用者裁示）
+
+- **【B】** **點進去每個 media 的設定**：點格子或音檔列打開右側抽屜（`.drawer` ＋ `.vault-item__*`）。**用抽屜不用第二層彈窗**——庫房本身已經是一層彈窗，再疊一層會變成對話框中的對話框，而且會蓋掉剛才點的那一格；抽屜從右邊推進來，被編輯的東西還看得見。內容：預覽、可改的名稱、唯讀事實（類型／長度／大小／加入日期，用 `<dl>` 不是 input，因為它們改不動）、刪除。名稱關掉抽屜就生效，不設「儲存」鈕——這一格只有一個可改的欄位。格子上原有的播放／改名／刪除鈕各自先攔截，不跟開設定搶。
+- **【E】** 刻意**沒有**加權限、有效期、浮水印、下載次數這類欄位——它們沒有上游規格，生出來會把「呈現探索」偷渡成產品功能。真要有，先走 `documents/`。
+- **【B】** **檢視身分搬進彈窗標題列**（原本在總覽頁上）。它問的是「這座庫房從粉絲那一側長怎樣」，那是進到庫房裡才要問的問題；擺在總覽頁時總覽本身沒什麼可看的變化。放標題列而不是內容裡：標題列捲不走，切了分級之後往下看內容時那個身分要一直在。
+- **【D】** **彈窗遮罩底色改黑**：`.embed-modal` 原本混 `--foreground`，深色主題下那是接近白的前景色，遮罩因此是一層白紗。改成與 `.payout-modal` 同一個配方（`--background` ＋ `--overlay-tint`），全站遮罩只剩一種寫法。影響的另兩個消費頁：`e-shop.html`、`design-system.html`。
+- **【D】** i18n 新增 `vault.item.title`。`design-system.md`／`design-system.html` §4.102 同步。check_ds_sync PASS。
 
 ## 2026-07-31（第十九批）· 庫房總覽卡片牆 ＋ 單一庫房彈窗；已發出的鑰匙升成獨立區塊（B 反饋／使用者裁決）
 

@@ -59,6 +59,7 @@
     'nav.events':       { en: 'Events',     zh: '活動' },
     'nav.fans':         { en: 'Fans',       zh: '粉絲' },
     /* Fans 由單一連結改成 accordion（2026-07-27）：總覽＋分級權益 */
+    'nav.brand-sub':         { en: 'Creator Studio', zh: 'Creator Studio' },
     'nav.fans-overview':     { en: 'Fan management',  zh: '粉絲管理' },
     'nav.fans-overview-sub': { en: 'Leaderboard, tiers & messaging', zh: '排行榜、分級與群發訊息' },
     'nav.fans-benefits':     { en: 'Benefits',  zh: '分級權益' },
@@ -1611,6 +1612,59 @@
     'store-settings.group.shipping': { en: 'Shipping defaults',                    zh: '出貨預設' },
     'store-settings.group.currency': { en: 'Currency',                            zh: '幣別' },
     'store-settings.currency.hint':  { en: "Default display currency for your shop's pricing.", zh: '商店定價的預設顯示幣別。' },
+
+    /* F7 商品規格（spec 5.1.5.5 F7 / D171）— 尺寸表範本庫。
+       標籤不重述「商品規格」（Q44）：分頁標題已經是脈絡。 */
+    'store-settings.group.specs':        { en: 'Product specs',          zh: '商品規格' },
+    'store-settings.specs.intro':        { en: 'Build a size guide once, then attach it to any item you sell.', zh: '尺寸指南建一次，之後每件商品直接套用。' },
+    'store-settings.specs.col.name':     { en: 'Name',                   zh: '名稱' },
+    'store-settings.specs.col.type':     { en: 'Item type',              zh: '商品類型' },
+    'store-settings.specs.col.inuse':    { en: 'In use',                 zh: '套用中' },
+    'store-settings.specs.type.apparel': { en: 'Apparel',                zh: '衣服' },
+    'store-settings.specs.more':         { en: 'More actions',           zh: '更多操作' },
+    'store-settings.specs.edit':         { en: 'Edit',                   zh: '編輯' },
+    'store-settings.specs.duplicate':    { en: 'Duplicate',              zh: '複製' },
+    'store-settings.specs.delete':       { en: 'Delete',                 zh: '刪除' },
+    'store-settings.specs.new':          { en: 'Add size guide',         zh: '新增尺寸指南' },
+    'store-settings.specs.back':         { en: 'Back to list',           zh: '返回清單' },
+    'store-settings.specs.backlist':     { en: 'Back to list',           zh: '返回清單' },
+    'store-settings.specs.empty.title':  { en: 'No size guides yet',     zh: '還沒有尺寸指南' },
+    'store-settings.specs.empty.text':   { en: "Fans check measurements before they buy. One guide covers every item that shares a fit.", zh: '粉絲下單前會先對尺寸。同一種版型的商品共用一份指南就夠。' },
+    'store-settings.specs.f.name':       { en: 'Name',                   zh: '名稱' },
+    'store-settings.specs.f.name.ph':    { en: 'e.g. Outerwear fit',     zh: '例如：外套版型' },
+    'store-settings.specs.f.name.hint':  { en: "Only you see this — it's how you'll pick the guide when creating an item.", zh: '只有你看得到，建立商品時靠它認出要套哪一份。' },
+    'store-settings.specs.f.type':       { en: 'Item type',              zh: '商品類型' },
+    'store-settings.specs.f.type.hint':  { en: 'Shoes and accessories need different measurements — not defined yet.', zh: '鞋子與配件要量的部位不同，尚未定義。' },
+    'store-settings.specs.f.system':     { en: 'Size labels',            zh: '尺碼制' },
+    'store-settings.specs.f.system.hint':{ en: 'Which regional labelling fans see first.', zh: '粉絲第一眼看到哪一種標示法。' },
+    'store-settings.specs.system.intl':  { en: 'International',          zh: '國際' },
+    'store-settings.specs.f.unit':       { en: 'Unit',                   zh: '量測單位' },
+    'store-settings.specs.f.unit.hint':  { en: 'Applies to every measurement below.', zh: '以下所有數值都用這個單位。' },
+    'store-settings.specs.unit.cm':      { en: 'cm',                     zh: '公分' },
+    'store-settings.specs.unit.in':      { en: 'inch',                   zh: '英吋' },
+    'store-settings.specs.f.chart':      { en: 'Size chart',             zh: '尺寸表' },
+    'store-settings.specs.f.chart.hint': { en: 'Garment laid flat, not body measurements.', zh: '商品平放測量，不是身體圍度。' },
+    'store-settings.specs.chart.size':   { en: 'Size',                   zh: '尺碼' },
+    'store-settings.specs.chart.colname':{ en: 'Measurement name',       zh: '量測項名稱' },
+    'store-settings.specs.chart.value':  { en: 'Measurement',            zh: '數值' },
+    'store-settings.specs.chart.addrow': { en: 'Add size',               zh: '加一個尺碼' },
+    'store-settings.specs.chart.addcol': { en: 'Add measurement',        zh: '加一個量測項' },
+    'store-settings.specs.f.fit':        { en: 'Fit advice',             zh: '版型建議' },
+    'store-settings.specs.f.fit.hint':   { en: 'What to do when someone falls between two sizes.', zh: '介於兩個尺碼之間時該選哪一個。' },
+    'store-settings.specs.f.fit.ph':     { en: 'e.g. Regular fit. Size up if you layer a hoodie underneath. Model is 180 cm / 72 kg, wearing L.', zh: '例如：版型標準，內搭帽 T 建議大一號。模特兒 180 cm／72 kg，穿 L。' },
+    'store-settings.specs.f.body':       { en: 'Height & weight guide',  zh: '身高體重參考' },
+    'store-settings.specs.f.body.hint':  { en: "Optional. Helps fans who can't measure a garment they don't own yet.", zh: '選填。給還沒拿到衣服、量不到平量尺寸的粉絲用。' },
+    'store-settings.specs.body.height':  { en: 'Height',                 zh: '身高' },
+    'store-settings.specs.body.weight':  { en: 'Weight',                 zh: '體重' },
+    'store-settings.specs.f.howto':      { en: 'How to measure',         zh: '量測方式' },
+    'store-settings.specs.f.howto.hint': { en: 'Optional. Written for someone holding a tape measure for the first time.', zh: '選填。寫給第一次拿皮尺的人看。' },
+    'store-settings.specs.howto.part':   { en: 'Body part',              zh: '部位' },
+    'store-settings.specs.howto.body':   { en: 'How to measure it',      zh: '怎麼量' },
+    'store-settings.specs.howto.remove': { en: 'Remove',                 zh: '移除' },
+    'store-settings.specs.howto.add':    { en: 'Add body part',          zh: '加一個部位' },
+    'store-settings.specs.f.note':       { en: 'Disclaimer',             zh: '免責說明' },
+    'store-settings.specs.f.note.hint':  { en: 'Shown under the chart. Sets expectations before a return request.', zh: '顯示在尺寸表下方，先講清楚可以少一次退換貨。' },
+    'store-settings.specs.f.note.ph':    { en: 'e.g. Measured flat in cm. Fabric may vary by 1–2 cm.', zh: '例如：尺寸為平放測量、以公分為單位；因材質不同可能有 1–2 cm 誤差。' },
     'store-settings.basics.sub':     { en: "Your shop's name, address, and how fans find it.", zh: '商店的名稱、網址，以及粉絲怎麼找到你。' },
     'store-settings.payment.sub':    { en: 'How fans pay you. Connection and payouts are managed in Earnings.', zh: '粉絲怎麼付款給你；連接與出款於收入管理設定。' },
     'store-settings.shipping.sub':   { en: 'Defaults for physical items. Digital items are unaffected.', zh: '實體商品的預設值；數位商品不適用。' },
@@ -1764,6 +1818,15 @@
     'e-shop.a.publish':       { en: 'Publish',                             zh: '上架商品' },
     'e-shop.a.unpublish':     { en: 'Unpublish',                           zh: '下架商品' },
     'e-shop.a.shoplist':      { en: 'List in shop',                        zh: '在商店上架' },
+    /* 2026-08-04 釘選（D172，術語由「固定」正名為「釘選」見 D173）：列操作與釘選區分隔列。
+       分隔列文案要能一句講完「這條線以上的東西會發生什麼事」，所以講粉絲端結果，不講操作名稱。 */
+    'e-shop.a.pin':           { en: 'Pin to front',                        zh: '釘選' },
+    'e-shop.a.unpin':         { en: 'Unpin',                               zh: '取消釘選' },
+    'e-shop.pin.divider':     { en: 'Pinned to the front of your shop',    zh: '以上為釘選商品，顯示在商店最前' },
+    /* 一件都還沒釘選時，句子只講結果、動詞交給右端的連結，兩邊不重複用「釘選」二字。 */
+    'e-shop.pin.hint':        { en: 'Put your headline items at the front of your shop.', zh: '把主打商品放到商店最前。' },
+    'e-shop.pin.cta':         { en: 'Pin now',                               zh: '立即釘選' },
+    'e-shop.pin.full':        { en: 'Pin limit reached',                   zh: '已達釘選上限' },
     'e-shop.row1.price':      { en: '$24',                                 zh: '$24' },
     'e-shop.row1.stock':      { en: '3 / ∞',                               zh: '3 / ∞' },
     'e-shop.row5.cat':        { en: 'Accessories',                         zh: '配件' },
@@ -2875,7 +2938,9 @@
     'ce.s4.h1':             { en: 'Set your tickets',                 zh: '設定你的票種' },
     'ce.s4.sub':            { en: 'Create ticket tiers. Minimum 1.',  zh: '建立票種，至少 1 種。' },
     'ce.tier.create':       { en: '+ Create first tier',             zh: '＋ 建立第一個票種' },
-    'ce.tier.create-hint':  { en: 'Name, price, quantity, eligibility', zh: '票名、價格、數量、購買資格' },
+    /* 2026-08-04：拿掉「購買資格」——票種卡只收名稱／價格／數量三欄（spec F9.1），
+       entitlement 屬活動詳情 5.1.6 F5，寫在這裡等於承諾一個這一步不存在的欄位。 */
+    'ce.tier.create-hint':  { en: 'Name, price, quantity',         zh: '票名、價格、數量' },
     'ce.tier.count':        { en: '0 tiers created · minimum 1 required', zh: '已建立 0 種 · 至少需 1 種' },
     /* Step 5 · Review */
     'ce.s5.h1':             { en: 'Review your event',                zh: '確認你的活動' },
@@ -3430,7 +3495,7 @@
     /* 發布後的跨頁提示（2026-07-30）：按下發布 → 導向專案詳情頁 → 在該頁跳這一句。
        排程發布時作品還沒上線，說「已發布」是假陳述，所以分成兩句。 */
     'cpp.publish.toast.now':       { en: 'Project published',  zh: '項目已發布' },
-    'cpp.publish.toast.scheduled': { en: 'Project scheduled',  zh: '項目已排程發布' },
+    'cpp.publish.toast.scheduled': { en: 'Project scheduled',  zh: '項目已進入準備中' },
     'cpp.draft-alert':      { en: 'Draft saved. You can return from Projects → Drafts.', zh: '草稿已儲存。可從 項目 → 草稿 找回。' },
 
     'cpp.h1':               { en: 'Create project',                  zh: '建立項目' },
@@ -3643,7 +3708,7 @@
     'pd.desc.ph':              { en: 'e.g. What it is, how it was made, and what ships in the box.', zh: '例：這是什麼、怎麼做的，以及盒子裡會寄出什麼。' },
     'pdp.language.ph':         { en: 'e.g. Mandarin, Cantonese', zh: '例：國語、粵語' },
     'cpp.s2.story.ph':      { en: 'e.g. Why this project exists, what you have finished so far, and what the money unlocks.',
-                              zh: '例：這個專案為什麼存在、目前完成到哪裡、這筆錢會解鎖什麼。' },
+                              zh: '例：這個項目為什麼存在、目前完成到哪裡、這筆錢會解鎖什麼。' },
     /* 預算分類名：「新增項目」是複製一列再清空名稱，所以空狀態是使用者真的會看到的。 */
     'cpp.fd.budget.name.ph':{ en: 'e.g. Production',                zh: '例：製作' },
 
@@ -3956,7 +4021,7 @@
     'cpp.bd.hint.blocked':  { en: 'One complete bundle is needed to continue.',
                               zh: '還需要一個完整的套組才能繼續。' },
     'cpp.bd.coach.few':     { en: 'Works as is. {n} more would give backers a real choice; most campaigns offer three.',
-                              zh: '這樣就能用了。再多 {n} 個能讓支持者真的有得選；多數專案會開三個。' },
+                              zh: '這樣就能用了。再多 {n} 個能讓支持者真的有得選；多數項目會開三個。' },
     'cpp.bd.coach.ok':      { en: 'A good spread. Backers have a real choice.',
                               zh: '層次不錯，支持者有得選。' },
 
@@ -4579,6 +4644,64 @@
     'ce.rev.tiersn':    { en: '{n} tiers',                          zh: '{n} 種票種' },
     'ce.tier.countn':   { en: '{n} tiers created · minimum 1 required', zh: '已建立 {n} 種 · 至少需 1 種' },
     'ce.tier.addmore':  { en: '+ Add another tier',                zh: '＋ 新增票種' },
+    /* 票種卡（5.1.6.1 F9.1／F9.2）。標籤只寫「這一格是什麼」——卡片本身已經是票種，
+       不必再寫成「票種名稱」（Q44）；錯誤訊息是明列例外，可以帶主詞。 */
+    'ce.tier.name':     { en: 'Name',                              zh: '名稱' },
+    'ce.tier.name.ph':  { en: 'e.g., VIP',                         zh: '例如：VIP' },
+    'ce.tier.price':    { en: 'Price',                             zh: '價格' },
+    'ce.tier.price.ph': { en: '0',                                 zh: '0' },
+    'ce.tier.qty':      { en: 'Quantity',                          zh: '數量' },
+    'ce.tier.qty.ph':   { en: 'e.g., 200',                         zh: '例如：200' },
+    'ce.tier.qty.hint': { en: '{n} of the {cap} capacity still unassigned', zh: '容量還有 {n} 張未分配（共 {cap} 張）' },
+    'ce.tier.untitled': { en: 'Untitled tier',                     zh: '未命名票種' },
+    'ce.tier.edit':     { en: 'Edit',                              zh: '編輯' },
+    'ce.tier.more':     { en: 'More actions',                      zh: '更多操作' },
+    'ce.tier.duplicate':{ en: 'Duplicate tier',                    zh: '複製票種' },
+    'ce.tier.remove':   { en: 'Remove tier',                       zh: '移除票種' },
+    'ce.tier.cancel':   { en: 'Cancel',                            zh: '取消' },
+    'ce.tier.group':    { en: 'Group edit',                        zh: '批次編輯' },
+    /* 票種規則（購買條件／每人限購／折扣）與收入試算。ASSUMPTIONS TIX-001：
+       這一整塊是產品變更提案，上游規格 5.1.6.1 尚無對應欄位。 */
+    'ce.rules.h':        { en: 'Default rules for all tiers',       zh: '所有票種的預設規則' },
+    'ce.rules.sub':      { en: 'Each tier can override these.',     zh: '票種卡可以逐張改成自訂。' },
+    'ce.rule.buy':       { en: 'Who can buy',                       zh: '購買條件' },
+    'ce.rule.cap':       { en: 'Per-person limit',                  zh: '每人限購' },
+    'ce.rule.disc':      { en: 'Discount',                          zh: '折扣' },
+    'ce.rule.any':       { en: 'No limit',                          zh: '不限' },
+    'ce.rule.time':      { en: 'Time window',                       zh: '限時間' },
+    'ce.rule.tier':      { en: 'Fan tier',                          zh: '限粉絲分級' },
+    'ce.rule.tier.inner':    { en: 'Inner Circle and up',           zh: '核心圈以上' },
+    'ce.rule.tier.superfan': { en: 'Superfan and up',               zh: '超級粉絲以上' },
+    'ce.rule.tier.devoted':  { en: 'Ranked fans and up',            zh: '上榜粉絲以上' },
+    'ce.rule.tier.fan':      { en: 'All fans',                      zh: '全部粉絲' },
+    'ce.rule.cap.on':    { en: 'Set a cap',                         zh: '設上限' },
+    'ce.rule.cap.ph':    { en: 'e.g., 2',                           zh: '例如：2' },
+    'ce.rule.cap.unit':  { en: 'tickets per person',                zh: '張／人' },
+    'ce.rule.disc.off':  { en: 'None',                              zh: '無' },
+    'ce.rule.disc.on':   { en: 'Set a discount',                    zh: '設折扣' },
+    'ce.rule.custom':    { en: 'Custom rules for this tier',        zh: '這張票種自訂規則' },
+    'ce.rule.custom.badge': { en: 'Custom',                         zh: '自訂' },
+    'ce.rule.inherit':   { en: 'Following the event defaults below.', zh: '跟隨下方的活動預設規則。' },
+    'ce.calc.h':         { en: 'Revenue estimate',                  zh: '收入試算' },
+    'ce.calc.expense':   { en: 'Costs',                             zh: '支出' },
+    'ce.calc.expense.ph':{ en: '0',                                 zh: '0' },
+    'ce.calc.expense.hint': { en: 'Venue, crew, production — whatever you pay out for this event.', zh: '場地、工作人員、製作——這場活動你要付出去的錢。' },
+    'ce.calc.revenue':   { en: 'Projected revenue',                 zh: '預估營收' },
+    'ce.calc.fee':       { en: 'Platform fee',                      zh: '平台費' },
+    'ce.calc.cost':      { en: 'Costs',                             zh: '支出' },
+    'ce.calc.profit':    { en: 'Your take',                         zh: '你實拿' },
+    'ce.calc.note':      { en: 'Assumes every ticket sells at its discounted price.', zh: '以「每張票都用折後價賣出」估算，是保守值。' },
+    'ce.tier.removeshort': { en: 'Remove',                         zh: '移除' },
+    'ce.tier.save':     { en: 'Save',                              zh: '儲存' },
+    'ce.tier.clear':    { en: 'Clear',                             zh: '清空' },
+    'ce.tier.copysuffix': { en: ' Copy',                           zh: ' 複本' },
+    'ce.tier.err.name':    { en: 'Ticket type name is required.',  zh: '票種名稱不可空白。' },
+    'ce.tier.err.namelen': { en: 'Keep the name within 40 characters.', zh: '名稱最多 40 個字。' },
+    'ce.tier.err.namedup': { en: 'This event already has a tier with that name.', zh: '這個活動已經有同名的票種。' },
+    'ce.tier.err.price':   { en: 'Price must be a whole number, 0 or more.', zh: '價格要填 0 以上的整數。' },
+    'ce.tier.err.qty':     { en: 'Quantity must be a whole number, 1 or more.', zh: '數量要填 1 以上的整數。' },
+    'ce.tier.err.overcap': { en: 'Tier quantities add up to {n}, over the {cap} capacity.', zh: '各票種數量加總 {n} 張，超過容量 {cap} 張。' },
+    'ce.publish-blocked-cap': { en: 'Tier quantities add up to more than the capacity. Adjust the tiers or the capacity.', zh: '各票種數量加總超過容量，請調整票種數量或容量後再發布。' },
 
     /* Fans CRM — group message composer (5.1.7.1 v2 / D058) */
     'msg.title':          { en: 'Message your fans', zh: '群發訊息' },
@@ -4761,7 +4884,7 @@
 
     /* 收益走勢圖的滑過浮層與類型明細（2026-07-28） */
     'pd-earn.tip.hint':{en: 'Click a row for the breakdown',zh: '點任一列看該類型明細'},
-    'pd-earn.detail.scope':{en: 'This project only · current chart range',zh: '僅此專案 · 目前圖表期間'},
+    'pd-earn.detail.scope':{en: 'This project only · current chart range',zh: '僅此項目 · 目前圖表期間'},
     'pd-earn.detail.platform':{en: 'Platform',zh: '平台'},
     'pd-earn.detail.tastemaker':{en: 'Tastemaker',zh: '品味推薦人'},
     'pd-earn.detail.critic':{en: 'Tastemaker',zh: '品味推薦人'},
@@ -4828,7 +4951,7 @@
     'pd-earn.filter.ott':{en: 'OTT royalty',zh: 'OTT版稅收益'},
     /* 未上線專案的「我的收益」說明卡（2026-07-28 使用者裁示）：專案還沒上線就沒有收益，
        原本照樣渲染走勢圖與帳目等於編造數字。改成一份預先說明。 */
-    'pd-earn.pending.title':{en: 'Earnings start once this project is live',zh: '專案上線後才會開始有收益'},
+    'pd-earn.pending.title':{en: 'Earnings start once this project is live',zh: '項目上線後才會開始有收益'},
     'pd-earn.pending.badge':{en: 'Not live yet',zh: '尚未上線'},
     'pd-earn.pending.lead':{en: 'Nothing has been earned yet, so there is no trend or ledger to show. Here is what will appear on this tab, and when.',zh: '目前還沒有任何收益，所以沒有走勢圖與帳目可看。以下是這個分頁之後會顯示的內容，以及開始的時點。'},
     'pd-earn.pending.ott.title':{en: 'OTT royalty',zh: 'OTT版稅收益'},
@@ -4839,7 +4962,7 @@
     'pd-earn.pending.commission.desc':{en: 'Spending driven by tastemaker recommendations, returned at their commission rate.',zh: '由品味推薦人的推薦帶動的消費，依其佣金比例回饋。'},
     'pd-earn.pending.license.title':{en: 'Licensing',zh: '授權收益'},
     'pd-earn.pending.license.desc':{en: 'Income from licensing this work to other studios or platforms.',zh: '把這部作品授權給其他製作方或平台所產生的收入。'},
-    'pd-earn.pending.note':{en: 'Figures appear here after the project goes live and its first settled income clears. Funding raised before release is tracked in Co-creation progress, not here.',zh: '專案上線、且第一筆收益結算入帳後，這裡才會出現數字。上線前募得的資金記在「共創進度」，不在這一頁。'},
+    'pd-earn.pending.note':{en: 'Figures appear here after the project goes live and its first settled income clears. Funding raised before release is tracked in Co-creation progress, not here.',zh: '項目上線、且第一筆收益結算入帳後，這裡才會出現數字。上線前募得的資金記在「共創進度」，不在這一頁。'},
     /* 2026-07-28 使用者裁示：歌曲／專輯沒有 OTT（線上影音）版稅，那是影視通路的收入。
        音樂家族改用音樂版稅；兩者是同一條資料線的兩個名字，依 family 擇一顯示。 */
     'pd-earn.filter.music':{en: 'Music royalty',zh: '音樂版稅收益'},
@@ -4930,7 +5053,7 @@
     'project-detail.updates.publish':{en: 'Post update',zh: '發布更新'},
     'pd-edit.schedule.title':{en: 'Edit schedule',zh: '編輯項目時間'},
     'pd-edit.schedule.publish':{en: 'Co-creation publish time',zh: '共創發布時間'},
-    'pd-edit.schedule.publish-hint':{en: 'Set a future time to schedule, or publish now. A scheduled project goes live automatically at this time.',zh: '設未來時間＝排程，或立即發布。已排程的項目會在這個時間自動上線。'},
+    'pd-edit.schedule.publish-hint':{en: 'Set a future time to schedule, or publish now. A scheduled project goes live automatically at this time.',zh: '設未來時間＝排程，或立即發布。準備中的項目會在這個時間自動上線。'},
     'pd-edit.schedule.deadline':{en: 'Co-creation deadline',zh: '共創截止時間'},
     'pd-edit.schedule.note':{en: 'These times drive the automatic Draft → Live → Funded / Failed transitions. Changing dates after publish affects the backer commitment — a real change would ask to confirm.',zh: '這些時間驅動 草稿 → 進行中 → 已達標／失敗 的自動轉換。發布後改日期會影響支持者承諾——正式版會先要求確認。'},
     'project-detail.tiers.title':{en: 'Support plans',zh: '支持方案'},
@@ -5848,7 +5971,7 @@
        「整座庫房一起開給某個分級」的說法已經不成立，留著會直接誤導。 */
     'ben.vault.title': { en: 'What is the Media Vault?', zh: '什麼是媒體庫？' },
     'ben.vault.lead':  { en: 'A gated media library that belongs to you, kept in vaults. Upload anything — stems, raw footage, photo dumps, unreleased mixes — and each vault decides for itself who can open it.', zh: '一座屬於你的加密媒體庫，內容分成一座座庫房存放。什麼都能上傳——分軌、未剪素材、整批照片、未發行的混音——每座庫房自己決定誰打得開。' },
-    'ben.vault.body':  { en: 'A vault opens for a fan who meets any one of its conditions: a tier, something they bought, a project they backed, an event they attended, or something they achieved. Switching a tier on here is the promise fans read on the ladder; the vaults and their conditions are set in Media Vault.', zh: '粉絲只要符合庫房的任一條件就進得去：分級、買過什麼、支持過哪個專案、出席過哪一場、或達成了什麼。在這裡為某個分級開啟，是粉絲在階梯上讀到的承諾；庫房與條件本身在「媒體庫」裡設定。' },
+    'ben.vault.body':  { en: 'A vault opens for a fan who meets any one of its conditions: a tier, something they bought, a project they backed, an event they attended, or something they achieved. Switching a tier on here is the promise fans read on the ladder; the vaults and their conditions are set in Media Vault.', zh: '粉絲只要符合庫房的任一條件就進得去：分級、買過什麼、支持過哪個項目、出席過哪一場、或達成了什麼。在這裡為某個分級開啟，是粉絲在階梯上讀到的承諾；庫房與條件本身在「媒體庫」裡設定。' },
     'ben.vault.where': { en: 'Open Media Vault', zh: '前往媒體庫' },
 
     /* ── Media Vault（2026-07-29）─────────────────────────────
@@ -5871,9 +5994,12 @@
        也可以寫進 NFC 商品，粉絲買到之後手機一碰就取得權限。 */
     'vault.door.keys':  { en: 'Keys issued', zh: '已發出的鑰匙' },
     'vault.btn.share':  { en: 'Share access', zh: '分享權限' },
-    'vault.share.title':{ en: 'Share access', zh: '分享權限' },
+    'vault.share.title':{ en: 'Keys & share links', zh: '鑰匙與分享連結' },
     'vault.grid.label': { en: 'In this vault', zh: '這座庫房裡' },
     'vault.btn.add':    { en: 'Add media', zh: '新增內容' },
+    'vault.item.title': { en: 'Media settings', zh: '內容設定' },
+    'vault.btn.issue-key': { en: 'Issue a key', zh: '發一把鑰匙' },
+    'vault.btn.share-links': { en: 'Share links', zh: '分享連結' },
     'vault.lens.reset': { en: 'Back to my view', zh: '回到我的視角' },
     'vault.note.tiers': { en: 'Tier conditions re-evaluate on the nightly tier recompute — a fan who drops a tier keeps access until then. Purchase, backing, event and achievement conditions are permanent: they record something that already happened, so access never expires.', zh: '分級條件在每晚的分級重算時重新判定——掉出分級的粉絲在那之前仍然打得開。購買、支持、出席、成就這四類條件是永久的：它們記錄的是已經發生的事，權限不會過期。' },
     'cp.vaultkey.title': { en: 'This product carries a vault key', zh: '這件商品會附帶一把庫房鑰匙' },
@@ -6109,6 +6235,61 @@
     /* 2026-07-27 新增：「如何運作」彈窗的商品／門票收益說明 */
     'fin.how.goods':          { en: 'Your share of merchandise sold through your storefront — physical goods and digital items alike, settled after fulfilment and the refund window closes.', zh: '您的電子商店售出商品分得的收益，實體商品與數位商品皆適用；於出貨完成、退款期結束後結算入帳。' },
     'fin.how.ticket':         { en: 'Box-office takings from events you host, net of platform and payment fees; released after the event date once no-show and refund claims are settled.', zh: '您舉辦的活動售票所得，扣除平台與金流手續費；待活動結束、未到場與退票爭議處理完成後撥付。' },
+
+    /* ─── 登入（login.html · spec 5.1.10 · D170）────────────────────
+       標題不重複「Creator Studio」四個字（品牌角標已經寫在畫面左上角）；
+       電子郵件與手機號碼兩張卡的副標只寫「用什麼驗證」——那是使用者選之前唯一
+       需要知道的差別。 */
+    'login.brand':            { en: 'Creator Studio', zh: 'Creator Studio' },
+    'login.method.h1':        { en: 'Log in', zh: '登入' },
+    'login.method.sub':       { en: 'Platform admins and creators use the same entrance.', zh: '平台營運與創作者本人共用同一個入口。' },
+    'login.method.group':     { en: 'Login method', zh: '登入方式' },
+    /* 六張卡的標題都只寫「方式本身」——頁面標題已經說了這是登入，卡面不必再講一次。
+       副標一律回答「怎麼驗證」：前兩張是密碼／簡訊驗證碼，四張第三方的對應事實是
+       「不必再記一組密碼」。四張共用同一句是刻意的——彼此的差別已經由圖示與名稱
+       說完，副標負責說這一整組跟前兩張差在哪，四句不同反而像在硬湊。 */
+    'login.method.email':      { en: 'Email', zh: '電子郵件' },
+    'login.method.email.sub':  { en: 'Verified with a password', zh: '以密碼驗證' },
+    'login.method.phone':      { en: 'Phone number', zh: '手機號碼' },
+    'login.method.phone.sub':  { en: 'Verified with an SMS code', zh: '以簡訊驗證碼驗證' },
+    'login.method.apple':      { en: 'Apple', zh: 'Apple' },
+    'login.method.google':     { en: 'Google', zh: 'Google' },
+    'login.method.facebook':   { en: 'Facebook', zh: 'Facebook' },
+    'login.method.line':       { en: 'LINE', zh: 'LINE' },
+    'login.method.oauth.sub':  { en: 'No password needed', zh: '不需另設密碼' },
+    /* login.oauth.group／.apple／.google／.facebook／.line 五個 key 已於 2026-08-04
+       第二輪刪除：第三方改成跟前兩者同款的卡片、標題看得見，可讀名稱由卡面文字
+       承擔，不再需要一組只給螢幕閱讀器的 aria-label。 */
+    'login.back':             { en: 'Back', zh: '返回上一步' },
+    'login.email.h1':         { en: 'Email login', zh: '電子郵件登入' },
+    'login.phone.h1':         { en: 'Phone login', zh: '手機號碼登入' },
+    'login.f.email':          { en: 'Email address', zh: '電子郵件地址' },
+    'login.f.email.ph':       { en: 'you@example.com', zh: 'you@example.com' },
+    'login.f.pw':             { en: 'Password', zh: '密碼' },
+    'login.f.country':        { en: 'Country code', zh: '國碼' },
+    'login.f.phone':          { en: 'Phone number', zh: '電話號碼' },
+    'login.f.phone.ph':       { en: '912 345 678', zh: '912 345 678' },
+    'login.f.code':           { en: 'Verification code', zh: '驗證碼' },
+    'login.f.code.ph':        { en: '6 digits', zh: '6 位數' },
+    'login.pw.show':          { en: 'Show password', zh: '顯示密碼' },
+    'login.pw.hide':          { en: 'Hide password', zh: '隱藏密碼' },
+    'login.getcode':          { en: 'Get code', zh: '取得驗證碼' },
+    'login.getcode.wait':     { en: 'Resend in {s}s', zh: '{s} 秒後可重寄' },
+    'login.getcode.again':    { en: 'Resend code', zh: '重新取得' },
+    'login.code.sent':        { en: 'Code sent. In this demo any 6 digits will do.', zh: '已發送。原型階段輸入任意 6 位數即可。' },
+    'login.submit':           { en: 'Log in', zh: '登入' },
+    'login.submitting':       { en: 'Signing in…', zh: '登入中…' },
+    'login.forgot':           { en: 'Forgot password', zh: '忘記密碼' },
+    'login.forgot.h1':        { en: 'Forgot password?', zh: '忘記密碼？' },
+    'login.forgot.sub':       { en: 'Enter the email you use to log in.', zh: '請輸入您用於登入的電子郵件。' },
+    'login.forgot.submit':    { en: 'Request a reset', zh: '請求重設密碼' },
+    'login.forgot.done':      { en: 'If that email has an account, a reset link is on its way.', zh: '若這個信箱有帳號，重設連結會寄到該信箱。' },
+    /* F5：憑證錯誤刻意不分辨「帳號不存在」與「密碼錯誤」，避免帳號列舉 */
+    'login.err.credentials':  { en: 'Email or password is incorrect.', zh: '電子郵件或密碼不正確。' },
+    'login.err.phone':        { en: 'This number isn’t activated yet — please contact the platform.', zh: '此號碼尚未開通，請聯繫平台。' },
+    /* F6 註冊入口：2026-08-04 使用者裁示整段移除，原型任何版本都沒有這個入口，
+       login.signup.q／login.signup.cta 兩個 key 一併刪除（無其他消費者） */
+    /* 原型旁白：說明哪個輸入會走哪條分支，不是產品文案（見 ASSUMPTIONS UIA-105） */
   };
 
   /* ── PERSONA_DICT：persona 專屬內容覆蓋層 ───────────────────────
