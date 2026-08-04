@@ -594,18 +594,17 @@
     els.lensReset.hidden = !on;
   }
 
-  /* 「誰進得來」吸住了沒有——吸住才讓它上面那塊遮罩現身（沒吸住時遮罩會把頁首
-     蓋掉）。捲動容器在正式頁是 .main、在彈窗版是 .vault-modal__body，所以往上找，
-     不寫死。 */
+  /* 「誰進得來」吸住了沒有——吸住才開那道往上的實心陰影（沒吸住時它會把上面的
+     庫房標頭蓋掉）。捲動容器在正式頁是 .main、在彈窗版是 .vault-modal__body，
+     所以往上找，不寫死。 */
   function bindStuckWatch() {
     var el = els.reach;
     if (!el) return;
     var scroller = el.closest(".vault-modal__body") || el.closest(".main") || document.scrollingElement;
     var offset = parseFloat(getComputedStyle(el).top) || 0;
     function check() {
-      var top = el.getBoundingClientRect().top;
       var base = scroller === document.scrollingElement ? 0 : scroller.getBoundingClientRect().top;
-      el.classList.toggle("is-stuck", top - base <= offset + 1);
+      el.classList.toggle("is-stuck", el.getBoundingClientRect().top - base <= offset + 1);
     }
     (scroller === document.scrollingElement ? window : scroller)
       .addEventListener("scroll", check, { passive: true });
@@ -1202,6 +1201,17 @@
         els.grid.classList.remove("is-dropping");
         if (evt === "drop" && e.dataTransfer) addFiles(e.dataTransfer.files);
       });
+    });
+
+    /* ── 分享這一頁 ───────────────────────────────────────
+       公開展示頁本身還沒有規格（記在 ASSUMPTIONS PG-026），所以這裡只把流程做完：
+       複製連結、跳 3 秒提示。連結格式沿用鑰匙連結的網域，換一個 /v/ 路徑。 */
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest("[data-vault-share-page]")) return;
+      copyLink("https://ztor.com/v/" + vault().id, null);
+      if (window.ztorToast) {
+        window.ztorToast.show(tx("Share link copied", "分享連結已複製"), { tone: "success", hold: 3000 });
+      }
     });
 
     /* ── 分享抽屜 ─────────────────────────────────────────── */

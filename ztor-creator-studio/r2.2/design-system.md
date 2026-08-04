@@ -1362,7 +1362,7 @@ Static callout — no interactive states.
 └──────────────────────────────────────┘
 ```
 
-**Variants** — `.input` (line field), `.input--with-prefix` (extra left padding for a leading glyph), `.textarea` (multi-line, vertical resize), `.select` (native select, custom chevron, no OS arrow), `.select--bare` (2026-07-26: no border/fill, for a select sitting directly on the page/toolbar — not inside any card/section — see below).
+**Variants** — `.input` (line field), `.input--with-prefix` (extra left padding for a leading glyph), `.textarea` (multi-line, vertical resize), `.select` (native select, custom chevron, no OS arrow), `.select--bare` (2026-07-26: no border/fill, for a select sitting directly on the page/toolbar — not inside any card/section — see below), `.select--with-prefix` (2026-08-01: select 版的前置圖示左內距——先前只有 `.input` 有，select 想放圖示只能在外面包一層方框，結果是框中框；zselect 會把原 select 的 class 原封搬到觸發鈕，所以這個 modifier 對兩者都成立).
 
 **Sizes** — Single size only across all three (no sm/lg/xl size variants — that ladder existed only in the deleted `.ztor-input` replica, never in the real component).
 
@@ -1384,6 +1384,8 @@ Static callout — no interactive states.
 |---|---|
 | `.input` | Single-line field |
 | `.input--with-prefix` | Extra left padding (`--sp-32`) for a leading glyph (currency, unit) |
+| `.select--with-prefix` | 同上，select 版（2026-08-01） |
+| `.control-prefix` / `.control-prefix__icon` | 前置圖示的定位殼（2026-08-01 收成元件；先前只在 DS 頁用 inline style 拼過一次）。殼負責 `position: relative`，圖示絕對定位在左側 `--sp-12`、`pointer-events: none`——點下去要進到控件本身 |
 | `.textarea` | Multi-line field, vertical resize, min-height 100px |
 | `.select` | Native `<select>`, OS arrow dropped; pair with `.select-wrap` + `.select-wrap__icon` for a registered Tabler chevron |
 | `.select--bare` | 2026-07-26 新增：疊加在 `.select` 上（`class="select select--bare"`），去邊框去填色、pill 圓角，只在 hover 浮出 `--muted` 底——給不在任何卡片／section 內、直接坐在頁面工具列上的 select（如 projects.html 列表工具列的內容類別篩選，跟旁邊 `.filter-tabs` 同列） |
@@ -1397,7 +1399,8 @@ Static callout — no interactive states.
 **Do & Don't**
 
 - ✅ Do pair with Field system for label + hint.
-- ✅ Do use `.input--with-prefix` when a fixed leading glyph sits inside the field.
+- ✅ Do use `.input--with-prefix` / `.select--with-prefix` ＋ `.control-prefix` when a fixed leading glyph sits inside the field.
+- ❌ Don't wrap a select in your own bordered box just to fit an icon — that stacks a second frame around the control's own border and focus ring (媒體庫的檢視器踩過，2026-08-01 修掉)。
 - ✅ Do rely on the component's 1px `--border` shadow edge; do not add a second border.
 - ❌ Don't invent a size variant — the real component ships one size only.
 - ✅ Do use `.select--bare` only when the select has no card/section ancestor (新設計規則 2026-07-26：border 只留給疊在卡片／section 內的控件；不在任何卡片內、直接坐在頁面或工具列上的控件改無邊框，貼合旁邊 filter-tabs 等同列元件）。
@@ -4600,7 +4603,7 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.vault-viewer` — 檢視器只是「眼睛圖示＋一個標準 DS `.select`」的一列，**不外包自己的框**（2026-08-01：先前外層有邊框＋底色，內層 zselect 又有自己的邊框與聚焦環，疊成框中框）；檢視中的狀態由圖示轉品牌橘表示
 - `.vault-lens` / `.vault-viewer` / `.vault-viewer.is-on` — 檢視器列：橫跨在庫房與內容正上方、靠右，選一個分級就把整座庫房換成那一級粉絲看到的樣子。並排版靠左、與內容切齊同一條左邊界，「回到我的視角」排在下拉右邊。2026-08-01 使用者裁示搬進彈窗標題列——它問的是「這座庫房從粉絲那一側長怎樣」，那是進到庫房裡才要問的問題；標題列捲不走，切了分級之後往下看內容時身分要一直在
 - `.vault-layout` — 根層（2026-08-01 起清單靠右：`grid-template-columns: 1fr 276px` ＋ 用 `order` 換位置、不動 DOM 順序，讀屏與 Tab 仍先碰到清單；窄版收單欄時清單回到內容上方）；`.vault-rail` / `.vault-row` / `.vault-row--active` / `.is-locked` — 側欄庫房清單（打不開的庫房變暗）；`.vault-rail__new` 在清單之上，`.vault-rail__draft` — 新庫房名字欄，清單第一列
-- `.vault-reach`（sticky, top 78px；`.is-stuck` 由 JS 掛，吸住時才讓 `::before` 遮罩現身，蓋掉貼頂空隙裡露出的捲動內容）— 「誰進得來」：讀數＋分級覆蓋條＋拆分讀數。2026-07-31 從門條的右欄搬出來自成一塊並吸頂——它是全頁唯一的即時回饋（改一條條件數字當場變），往下捲時要一直在；留在門條裡不行，`position: sticky` 只在自己父層還在畫面上時有效。`.is-shut` ＝ 沒有任何路進得來（紅字）
+- `.vault-reach`（sticky, `top: --sp-16`；`.is-stuck` 由 JS 掛，吸住時才多一道 `box-shadow: 0 -24px 0 var(--surface-page)` 把那段間距填成頁面底色——用 box-shadow 而不是 `::before`，因為前者貼的是邊框框、後者對齊內距框會被 1px 邊框讓出縫）— 「誰進得來」：讀數＋分級覆蓋條＋拆分讀數。2026-07-31 從門條的右欄搬出來自成一塊並吸頂——它是全頁唯一的即時回饋（改一條條件數字當場變），往下捲時要一直在；留在門條裡不行，`position: sticky` 只在自己父層還在畫面上時有效。`.is-shut` ＝ 沒有任何路進得來（紅字）
 - `.vault-door` / `.vault-door__col` / `.vault-door__fine` — 門條（單欄）：解鎖條件＋細則。讀數搬走後並排的理由（左因右果）不存在，改成各佔一整行
 - `.vault-keys` / `.vault-keys__head` — 「已發出的鑰匙」（區塊右上是「發一把鑰匙」，與庫房標頭的「分享權限」同一個抽屜、不同高度的入口；2026-08-01 去重，兩顆不再共用同一個標籤）：2026-07-31 使用者裁示從門條卡片下緣的一列升成獨立區塊（定義在 vault-share.css）。條件是「哪一群人自動符合」，鑰匙是「我親手把權限交給了誰」，塞在條件那張卡裡會被讀成條件的附註
 - `.vault-door__label` — 這一頁的**區塊標題**（解鎖條件／誰進得來／已發出的鑰匙／這座庫房裡）。名字帶 `__label` 是歷史遺留，角色是標題：2026-07-31 使用者裁示從「12px 全大寫加字距 muted」的欄位標籤規格，改吃 `.card__title` 的既有規格（`--font-display` 18px Regular 前景色），與全站區塊標題一致；圖示 16px 維持 muted 色

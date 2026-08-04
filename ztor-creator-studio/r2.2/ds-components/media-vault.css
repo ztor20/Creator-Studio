@@ -49,7 +49,7 @@
 /* ── 側欄 ──────────────────────────────────────────────── */
 .vault-rail {
   position: sticky;
-  top: 78px;                       /* 與 .settings-nav 同一個貼頂高度 */
+  top: var(--sp-16);               /* 與「誰進得來」同高，兩欄一起貼、留同樣的間距 */
   display: flex;
   flex-direction: column;
   gap: var(--sp-10);
@@ -105,17 +105,14 @@
    底色，裡面的 zselect 觸發鈕又有自己的邊框與聚焦環，兩層疊起來就是框中框——跟
    當初 .vault-rail__draft 踩到的是同一個坑。
 
-   現在這一層只負責把眼睛圖示與下拉排成一列，邊框、底色、聚焦環全部交還給 .select。
-   檢視中的狀態由圖示轉品牌橘表示，不再靠外框上色。 */
-.vault-viewer {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-}
-.vault-viewer__icon { color: var(--muted-foreground); flex: none; display: inline-flex; }
-.vault-viewer__icon .ztor-icon { width: 15px; height: 15px; }
-.vault-viewer .select { min-width: 200px; font-size: var(--fs-13); }
-.vault-viewer.is-on .vault-viewer__icon { color: var(--primary); }
+   眼睛圖示 2026-08-01 再收進下拉內部，走 DS 新補的 .control-prefix ＋
+   .select--with-prefix（先前只有 .input 有前置圖示，select 沒有，所以才會有人在
+   外面包方框）。這一層現在只剩定位。 */
+.vault-viewer { display: flex; align-items: center; }
+.vault-viewer .control-prefix { min-width: 220px; }
+.vault-viewer .select { font-size: var(--fs-13); }
+/* 檢視中：前置圖示轉品牌橘。整個框不上色——那是 zselect 自己的聚焦環的事。 */
+.vault-viewer.is-on .control-prefix__icon { color: var(--primary); }
 
 .vault-rail__list {
   display: flex;
@@ -268,10 +265,20 @@
    為什麼它必須自己一塊、不能留在門條卡片裡：`position: sticky` 只在自己的父層
    還在畫面上時有效，包在門條裡就會跟著門條一起捲走。現在它是 .vault-body 的直接
    子元素，吸附範圍因此涵蓋整個內容區。
-   top 78px ＝ 與側欄 .vault-rail、settings 側欄同一個貼頂高度（頂列之下）。 */
+
+   貼頂高度與「上面不能露出東西」的拉鋸（2026-08-01 使用者連三次回報）：
+     · 沿用側欄的 78px → 卡片上緣與捲動區頂端之間有一道縫，捲上來的內容從縫裡露出。
+     · 補一個 ::before 同色遮罩 → 絕對定位對齊的是內距框，左右各被 1px 邊框讓出一道
+       縫，後面那張卡的邊線照樣透出來。
+     · top: 0 → 不漏了，但卡片直接黏在捲動區最上緣，沒有一點喘息。
+   最後的做法：留 --sp-16 的間距，用 **box-shadow 往上實心延伸** 去補那段間距。
+   box-shadow 貼的是邊框框、不是內距框，所以左右不會有 1px 縫；顏色用 --surface-page
+   ＝ .main 的實際底色（實測同為 #0C0D0D）。
+   只在吸住時開（.is-stuck 由 js/media-vault.js 掛）——常駐的話這道往上的實心陰影
+   會把上面的庫房標頭蓋掉。 */
 .vault-reach {
   position: sticky;
-  top: 78px;
+  top: var(--sp-16);
   z-index: 3;
   display: flex;
   flex-direction: column;
@@ -282,29 +289,10 @@
   background: var(--card);
   box-shadow: var(--shadow-card);
 }
-/* 貼頂之後，卡片上緣與捲動容器頂端之間還有 78px 的空隙——沒有東西擋住，捲上來的
-   內容會從那道縫露出來（2026-08-01 使用者回報）。補一塊與頁面同色的遮罩往上蓋掉。
-
-   只在真的吸住時才出現（.is-stuck 由 js/media-vault.js 掛）：常駐的話，沒捲動時
-   它會把上面的頁首與檢視身分那一列一起蓋掉。高度只要蓋過那道縫（78px）即可，
-   不需要更多。
-
-   為什麼放得下：.vault-reach 是 position:sticky，本身就是絕對定位的定位基準；
-   z-index:3 又讓它成為一個堆疊脈絡，所以 z-index:-1 的 ::before 只會沉到這張卡的
-   底色之下，仍然蓋在捲動內容之上。（同 shared.css 的 .alert-inset::before 做法。）*/
-.vault-reach::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  top: -96px;
-  z-index: -1;
-  pointer-events: none;
-  background: var(--surface-page);
-  opacity: 0;
+/* 吸住時：往上延伸一段實心的頁面底色，把 --sp-16 那段間距填掉。 */
+.vault-reach.is-stuck {
+  box-shadow: var(--shadow-card), 0 -24px 0 var(--surface-page);
 }
-.vault-reach.is-stuck::before { opacity: 1; }
 
 /* 門條改單欄（2026-07-31）：讀數搬出去吸頂之後，這裡只剩「怎麼進得來」的設定，
    並排的理由（左因右果）已經不存在，各佔一整行讀起來更直。 */
