@@ -1,0 +1,104 @@
+/* ============================================================
+   Ticket preview — 票根即時預覽（建立活動步驟 5「票券銷售」）
+
+   粉絲手機裡收到的那張票，創作者一邊填一邊看。上半是識別（時間、
+   logo 或票名、票種），下半是進場用的 QR，中間一條撕線把兩者分開——
+   撕線是這個物件唯一需要的隱喻：它一眼說明「上面給人看、下面給機器掃」。
+
+   為什麼不是一張普通的 .card：卡片是容器，這是一個「物品」的縮影，
+   有自己的比例（直式 3:5 上下）、自己的底圖與撕線缺口，不吃卡片的
+   內距與陰影規則。也因此它只長在預覽位，不當任何內容的外框。
+
+   底圖預設是 role token 疊出來的漸層（不是裸色），上傳自訂背景時由
+   消費頁把縮圖塞進 --ticket-bg 並加 --custom-bg。
+
+   Anatomy:
+     .ticket-preview
+       .ticket-preview__top    > __when / __logo(.--asset) / __kind
+       .ticket-preview__tear   撕線（兩側缺口 + 虛線）
+       .ticket-preview__bottom > .qr-box（沿用 pickup.css 的假 QR 框）
+   ============================================================ */
+
+.ticket-preview {
+  --ticket-notch: 14px;
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 280px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  /* 預設底圖：品牌橘往冷色收，兩個角落各壓一團光。用 role token 疊，
+     不寫裸色——這張圖是預設值，不是資料。 */
+  background:
+    radial-gradient(120% 80% at 20% 0%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 90% 100%, color-mix(in srgb, var(--ring) 45%, transparent), transparent 55%),
+    var(--surface-inverse);
+  /* 票面永遠是深色物件，字色走「黑 slab 上的文字」那組 role token；
+     不能用 --on-primary——那是「疊在品牌橘上」的字色，本身是深色，放這裡會黑底黑字。 */
+  color: var(--foreground-on-inverse);
+  box-shadow: var(--shadow-float);
+}
+/* 自訂背景：消費頁把上傳的縮圖寫進 --ticket-bg */
+.ticket-preview--custom-bg {
+  background-image: var(--ticket-bg, none);
+  background-size: cover;
+  background-position: center;
+}
+
+.ticket-preview__top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-32) var(--sp-20) var(--sp-24);
+  text-align: center;
+}
+.ticket-preview__when {
+  font-size: var(--fs-12);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--foreground-on-inverse-muted);
+}
+/* 票名那一行是這張票的主角，給 display 字級；上傳 logo 之後這一格
+   換成圖，所以 --asset 只把字距收掉、尺寸交給圖自己。 */
+.ticket-preview__logo {
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  line-height: var(--lh-snug);
+  letter-spacing: .02em;
+  word-break: break-word;
+}
+.ticket-preview__logo--asset { font-size: var(--fs-18); opacity: .9; }
+.ticket-preview__kind {
+  font-size: var(--fs-11);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--foreground-on-inverse-muted);
+}
+
+/* 撕線：兩側各挖一個半圓缺口，中間一條虛線。缺口用與頁面同色的圓形
+   遮住邊緣，所以它跟著 --surface-page 走、換主題不會露餡。 */
+.ticket-preview__tear {
+  position: relative;
+  height: var(--ticket-notch);
+}
+.ticket-preview__tear::before,
+.ticket-preview__tear::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: var(--ticket-notch);
+  height: var(--ticket-notch);
+  border-radius: var(--radius-pill);
+  background: var(--surface-page);
+}
+.ticket-preview__tear::before { left: calc(var(--ticket-notch) / -2); }
+.ticket-preview__tear::after  { right: calc(var(--ticket-notch) / -2); }
+
+.ticket-preview__bottom {
+  display: grid;
+  place-items: center;
+  padding: var(--sp-20) var(--sp-20) var(--sp-32);
+  border-top: 1px dashed color-mix(in srgb, var(--foreground-on-inverse) 45%, transparent);
+}

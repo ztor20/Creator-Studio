@@ -162,14 +162,35 @@
     var SHARES = opts.shares !== false;
     var AVAIL_OPEN = SHARES ? 'auto' : 'unlimited';
 
+    /* 活動套組變體（2026-08-04）：使用者裁決「活動套組、募資套組、電子商店組合包是同一件事的
+       三個變體」，所以不開第二支編輯器，改在這支加兩個**選配**能力。兩個都不傳時行為與先前
+       一模一樣，募資那兩個消費頁（create-project／project-detail）不受影響。
+         · cover   ＝ 每張卡一張封面圖。活動套組每一組賣的是不同的東西，卡與卡之間要靠圖分辨
+                     （電子商店組合包也有主圖，日後併過來時同一個旗標就能用）。
+         · tickets ＝ 適用票種勾選清單。活動套組「一定含一張票」，所以有票種時至少要勾一個
+                     才算有效（isValid）。傳陣列或傳 getter 都可以——票種在建立流程中會即時
+                     增減，getter 才拿得到當下的值。 */
+    /* work:false ＝ 沒有「作品」這個本體（活動套組賣的是票＋商品，不是一份作品的份數）。
+       只在 shares:false 時有意義：共創本來就沒有作品這一段。 */
+    var WORK = opts.work !== false;
+    var COVER = !!opts.cover;
+    var getTickets = typeof opts.tickets === 'function' ? opts.tickets
+                   : (opts.tickets ? function () { return opts.tickets; } : null);
+
     /* 預購模式優先讀 `<key>.pre` 的文案，查不到才回落共用那組（2026-08-03 使用者裁決）。
        兩型的字彙本來就不同：共創賣的是「套組」給「支持者」，預購賣的是「方案」給
        「預購者」。共用同一組字串會讓其中一邊永遠說錯話，而各自複製一整套字典又會
        在下次改文案時分岔——所以只覆寫講法不同的那幾條，其餘照舊共用。 */
+    /* 字彙變體（2026-08-04 由 `.pre` 一種擴成三種）：三個變體賣的東西不同，講法就不該相同。
+         共創 → 基礎字串（套組／支持者）
+         預購 → `.pre`（方案／預購者／作品）
+         活動 → `.ev`（套組／買這組的人）
+       只覆寫講法真的不同的那幾條，其餘照舊共用——各自複製一整套字典會在下次改文案時分岔。 */
+    var VOC = SHARES ? '' : (WORK ? 'pre' : 'ev');
     function T(k) {
-      if (!SHARES) {
-        var pre = T0(k + '.pre');
-        if (pre && pre !== k + '.pre') return pre;
+      if (VOC) {
+        var alt = T0(k + '.' + VOC);
+        if (alt && alt !== k + '.' + VOC) return alt;
       }
       return T0(k);
     }
@@ -199,6 +220,10 @@
         cap: '',
         items: [],            // [{id, name, img, meta, price}] — 引用，不是自由文字
         perks: [],            // [string] — 自由文字，見 bundle-editor.css 的說明
+        /* 只有 cover／tickets 選項打開時才有意義；關著時留在狀態裡也不會被讀到。
+           cover 是布林不是圖：原型沒有素材儲存，上傳格自己顯示縮圖，這裡只記「有沒有」。 */
+        cover: false,
+        tickets: [],          // [票種 id] — 活動套組適用哪幾種票
         collapsed: false,
       };
       if (seed) {
@@ -317,7 +342,9 @@
        而那正是最基本、最常見的預購方案。 */
     function isValid(b) {
       if (!String(b.name).trim().length) return false;
-      if (!SHARES) return unitCount(b) >= 1;
+      // 活動套組一定含一張票（使用者裁決）：有票種可勾時，一個都沒勾就不算成立
+      if (getTickets && !(b.tickets || []).length) return false;
+      if (!SHARES) return WORK ? unitCount(b) >= 1 : true;
       if (b.items.length > 0) return true;
       return slotCount(b) > 0;
     }
@@ -560,7 +587,7 @@
          共創：含分潤名額｜販售上限。預購：含作品份數｜販售上限（D167）。
          把份數與上限並排是刻意的——它們最容易被當成同一件事，而規格特別要求分清楚：
          上限管這個方案最多成立幾筆訂單，份數管每一筆含幾份作品，相乘才是可售份數。 */
-      var qtyField = SHARES
+      var qtyField = (!SHARES && !WORK) ? '' : SHARES
         ? '<div class="field">' +
             '<label class="field__label">' + esc(T('cpp.bd.slots')) + '</label>' +
             '<input class="input" type="number" min="0" step="1" data-bd-f="slots" value="' + esc(b.slots) + '">' +
@@ -600,7 +627,7 @@
 
       /* 預購的內容分兩塊：作品本體在最上方、不可移除，附屬商品接在下面（D167）。
          共創沒有作品這一段，內容區就只有商店商品，與 2026-07-30 完全相同。 */
-      var workField = SHARES ? '' :
+      var workField = (SHARES || !WORK) ? '' :
         '<div class="field">' +
           '<div class="field__label">' + esc(T('cpp.bd.work')) + '</div>' +
           workRowHTML(b) +
@@ -617,9 +644,47 @@
           '<div class="field__hint">' + esc(T('cpp.bd.items.hint')) + '</div>' +
         '</div>';
 
+      /* 封面圖（選配）：活動套組每一組賣的是不同的東西，卡與卡之間要靠圖分辨。
+         用站上唯一的上傳格產生路徑（Q40）——點擊選檔、hover 替換／刪除都由
+         partials/upload-tile.js 接手，這裡只出 markup。 */
+      var coverField = !COVER ? '' :
+        '<div class="field">' +
+          '<div class="field__label">' + esc(T('cpp.bd.cover')) + '</div>' +
+          '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
+              '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
+            '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+            '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
+          '</div>' +
+        '</div>';
+
+      /* 適用票種（選配）：一張卡可以賣給多種票的持有者，所以是複選不是單選。
+         票種是在同一個流程的上一步建立的，所以每次渲染都重新取——中途新增的票種
+         要立刻出現在這裡，不能停在掛載當下的那份快照。 */
+      var tks = getTickets ? (getTickets() || []) : [];
+      var ticketsField = !getTickets ? '' :
+        '<div class="field">' +
+          '<div class="field__label">' + esc(T('cpp.bd.tickets')) + '</div>' +
+          (tks.length
+            ? '<div class="bd-tickets">' + tks.map(function (t) {
+                var on = (b.tickets || []).indexOf(t.id) >= 0;
+                return '<label class="zcheck bd-ticket">' +
+                  '<span class="zcheck__control">' +
+                    '<input class="zcheck__input" type="checkbox" data-bd-ticket="' + esc(t.id) + '"' + (on ? ' checked' : '') + '>' +
+                    '<span class="zcheck__box"></span>' +
+                  '</span>' +
+                  '<span class="zcheck__label bd-ticket__name">' + esc(t.name) + '</span>' +
+                  '<span class="bd-ticket__price">$' + esc(t.price) + '</span>' +
+                '</label>';
+              }).join('') + '</div>'
+            : '<div class="field__hint">' + esc(T('cpp.bd.tickets.none')) + '</div>') +
+          '<div class="field__hint">' + esc(T('cpp.bd.tickets.hint')) + '</div>' +
+        '</div>';
+
       /* 順序差一處：預購的份數欄位要在作品出現之後才有東西可數，所以數量那排排在
-         內容兩塊後面（也就是規格 F29 的欄位順序）；共創沿用原順序不動。 */
-      var middle = SHARES ? (qtyRow + itemsField) : (workField + itemsField + qtyRow);
+         內容兩塊後面（也就是規格 F29 的欄位順序）；共創沿用原順序不動。
+         活動變體的票種接在內容之前——先講「這組賣給誰」，再講「裡面有什麼」。 */
+      var middle = coverField + ticketsField +
+        (SHARES ? (qtyRow + itemsField) : (workField + itemsField + qtyRow));
 
       return '' +
       '<div class="card fc-bundle' + (b.collapsed ? ' fc-bundle--collapsed' : '') +
@@ -875,6 +940,20 @@
        打字當下夾會讓「清空再重打」變成不可能（每刪一個字就被塞回 1）。
        離開時把狀態與畫面一起補成 1，才不會留下一個空欄位配著算 1 份的價格。 */
     list.addEventListener('change', function (e) {
+      var tk = e.target.closest('[data-bd-ticket]');
+      if (tk) {
+        var cardT = e.target.closest('[data-bd-card]');
+        var bt = cardT && get(cardT.dataset.bdCard);
+        if (bt) {
+          var id = tk.dataset.bdTicket, at = (bt.tickets || []).indexOf(id);
+          if (tk.checked && at < 0) bt.tickets.push(id);
+          else if (!tk.checked && at >= 0) bt.tickets.splice(at, 1);
+          /* 不重繪：重繪會把 checkbox 連同焦點一起換掉，連續勾兩個就會斷。
+             這一格改變的只有自己的勾選狀態與整卡的有效性，兩者都不需要重畫。 */
+          onChange();
+        }
+        return;
+      }
       if (!e.target.dataset || e.target.dataset.bdF !== 'units') return;
       var card = e.target.closest('[data-bd-card]');
       var b = card && get(card.dataset.bdCard);

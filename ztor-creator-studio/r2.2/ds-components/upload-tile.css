@@ -18,23 +18,23 @@
                              建立活動＝主視覺＋橫幅＋圖庫；同一組槽共用同一個直式比例，
                              活動的橫幅槽例外走 --16x9）
    shape modifiers
-     .upload-tile--750x930 — 圖片槽的唯一比例（見下方 --upload-img-ratio）
+     .upload-tile--portrait — 圖片槽的唯一比例（見下方 --upload-img-ratio）
      .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 已自圖片槽退場，見檔尾墓碑段
    ============================================================ */
 
 .upload-tile {
   /* ---- 圖片上傳槽的單一比例（2026-07-31 使用者裁決）----
-     全站「上傳圖片」的槽一律直式 750 × 930（≈0.806），與項目詳情「展示內容」同一個尺寸。
+     全站「上傳圖片」的槽一律直式 750 × 1125（≈0.667），與項目詳情「展示內容」同一個尺寸。
      此前各模組各走一套（縮圖 1:1／直式海報 3:4／橫幅 16:9／輪播 3:2／商品與拍賣 hero 1:1），
      同一張作品要備四種裁切；收斂成一種之後創作者只上傳一次。
      只管「上傳槽」——檔案槽（--file，音樂／影片／文件）與純顯示的縮圖框（清單 76、
      .project-card__cover 16:9、.ipm-card__cover／.ip-hero__cover 3:4 等）維持原樣，
      由各自的 object-fit:cover 從直式原圖置中裁切填滿。
      2026-07-31 續作（同日、使用者第二輪）：顯示端也跟上了——清單縮圖與卡片封面改吃
-     shared.css 的 `--img-portrait`（同一個 750/930），本行改成引用它，全站只剩一個數字。
+     shared.css 的 `--img-portrait`（同一個 2/3），本行改成引用它，全站只剩一個數字。
      fallback 保留字面值，讓 design-system.html 之外任何單獨載入本檔的情境仍算得出比例。
      活動（Events）是唯一例外，維持「有直有橫」：橫式橫幅槽走下方 --16x9。 */
-  --upload-img-ratio: var(--img-portrait, 750 / 930);
+  --upload-img-ratio: var(--img-portrait, 2 / 3);
 
   --upload-tile-pad-y: var(--sp-18);
   --upload-tile-pad-x: var(--sp-14);
@@ -66,7 +66,7 @@
 .upload-tile:focus-visible,
 .upload-tile__act:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
-/* --hero / 縮圖格一律走 --upload-img-ratio（750×930 直式）。
+/* --hero / 縮圖格一律走 --upload-img-ratio（750×1125 直式）。
    主圖收斂寬度、置左，不做滿版（否則直式高度會把表單推得更遠）。 */
 .upload-tile--hero { aspect-ratio: var(--upload-img-ratio); max-width: 320px; min-height: 0; }
 .upload-tile--file { min-height: 110px; }
@@ -99,7 +99,7 @@
   gap: var(--sp-10);
   margin-top: var(--sp-10);
 }
-/* 附圖格跟主圖同比例（2026-07-31 起 750×930）。原本強制 1 / 1，會與格子自己帶的
+/* 附圖格跟主圖同比例（2026-07-31 起 750×1125）。原本強制 1 / 1，會與格子自己帶的
    形狀修飾詞打架——收斂成單一比例後直接指向同一個變數，兩邊不可能再分岔。 */
 .upload-grid .upload-tile { aspect-ratio: var(--upload-img-ratio); min-height: 0; }
 
@@ -127,19 +127,20 @@
 }
 
 /* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用。
-   750:930（0.806）＝項目詳情「展示內容」的直式展示圖尺寸（D156：展示圖片維持單一直式尺寸），
-   2026-07-31 起是全站圖片上傳槽的唯一比例。刻意與 --3x4（0.75）分開：
-   文案寫 750 × 930 就得真的排 750 × 930，否則格子比例與標示對不上。 */
-.upload-tile--750x930 { aspect-ratio: var(--upload-img-ratio); }
+   2:3（≈0.667，＝ 750 × 1125）＝項目詳情「展示內容」的直式展示圖尺寸（D156：展示圖片
+   維持單一直式尺寸），2026-07-31 起是全站圖片上傳槽的唯一比例（2026-08-05 D176 把值
+   由 750:930 ≈ 0.806 改成 2:3）。刻意與已退場的 --3x4（0.75）分開：
+   文案寫 750 × 1125 就得真的排 750 × 1125，否則格子比例與標示對不上。 */
+.upload-tile--portrait { aspect-ratio: var(--upload-img-ratio); }
 
 /* ---- 墓碑：多比例上傳槽（原 --1x1 / --3x4 / --3x2 / --16x9）----
-   退場日：2026-07-31。原因：使用者裁決「全站圖片上傳槽一律單一直式 750 × 930」，
-   多比例模型（縮圖 1:1／直式海報 3:4／輪播 3:2／橫幅 16:9）整組被 --750x930 取代。
+   退場日：2026-07-31。原因：使用者裁決「全站圖片上傳槽一律單一直式 750 × 1125」，
+   多比例模型（縮圖 1:1／直式海報 3:4／輪播 3:2／橫幅 16:9）整組被 --portrait 取代。
    本輪已把所有圖片槽（create-project／create-event／edit-event／create-product／
    create-auction／create-bundle／bundle-detail／product-detail／create-campaign／
-   project-detail）改成 --750x930。
+   project-detail）改成 --portrait。
    --1x1 / --3x4 / --3x2 三行 CSS 宣告已於本日移除：唯一消費者是 design-system.html
-   的示範卡，該卡本輪已改用 --750x930，零消費後 CSS 一併刪除（見下方 --16x9 分工）。
+   的示範卡，該卡本輪已改用 --portrait，零消費後 CSS 一併刪除（見下方 --16x9 分工）。
    --16x9 仍服役、非墓碑：project-detail 的「Demo 影片／Demo 音樂」兩個**檔案槽**
    （非圖片上傳，不在本輪收斂範圍）。期間不得再拿已退場的三個修飾詞排新的圖片上傳槽。
 
@@ -148,11 +149,11 @@
    與橫式橫幅（桌面主視覺、社群分享卡），兩者用途本來就不同比例，硬統一會讓桌面
    主視覺變成一條窄長條。因此 create-event／edit-event 的「橫式橫幅」槽改回 --16x9
    （1920×1080，依 documents/5.1.6.1 F4）。**只有活動的橫幅這一格**——活動的縮圖、
-   直式海報、圖庫圖片仍是 750×930，其他模組一律不得再用 --16x9 排圖片槽。 */
+   直式海報、圖庫圖片仍是 750×1125，其他模組一律不得再用 --16x9 排圖片槽。 */
 .upload-tile--16x9 { aspect-ratio: 16 / 9; }   /* 服役中：檔案／媒體槽（project-detail Demo 影片、音樂）＋活動橫式橫幅圖片槽 */
 
 /* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
-   附圖格在此排成 2×2；兩欄同比例（750×930）時右欄總高＝主圖高度減掉 0.24 個 gap（約 3px），
+   附圖格在此排成 2×2；兩欄同比例（750×1125）時右欄總高＝主圖高度減掉 0.24 個 gap（約 3px），
    視覺上仍齊平，差額由 align-items:start 吸收（create-product 主圖 + 附圖）。 */
 .upload-showcase {
   display: grid;

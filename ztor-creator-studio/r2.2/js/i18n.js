@@ -2907,12 +2907,12 @@
        （原「縮圖」與「直式海報」兩格併為 ce.img.keyvisual，見 documents 5.1.6.1 F4）。 */
     'ce.images.sub':        { en: 'Each format appears in a different place. Upload all 3.', zh: '每種格式出現在不同版位，三種都要上傳。' },
     'ce.img.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
-    'ce.img.keyvisual-hint':{ en: '750 × 930 · portrait · Search, browse, share, hero (mobile)', zh: '750 × 930 · 直式 · 搜尋、瀏覽、分享、手機主視覺' },
+    'ce.img.keyvisual-hint':{ en: '750 × 1125 · portrait · Search, browse, share, hero (mobile)', zh: '750 × 1125 · 直式 · 搜尋、瀏覽、分享、手機主視覺' },
     'ce.img.banner':        { en: 'Landscape banner',                 zh: '橫式橫幅' },
     /* 2026-07-31 使用者：活動不併入單一直式，橫式橫幅改回 16:9 / 1920×1080（見 documents 5.1.6.1 F4）。 */
     'ce.img.banner-hint':   { en: '1920 × 1080 · landscape · Hero (desktop), social', zh: '1920 × 1080 · 橫式 · 桌面主視覺、社群' },
     'ce.img.gallery':       { en: 'Gallery images',                   zh: '圖庫圖片' },
-    'ce.img.gallery-hint':  { en: '750 × 930 · portrait · Detail carousel, 1–8', zh: '750 × 930 · 直式 · 詳情輪播，1～8 張' },
+    'ce.img.gallery-hint':  { en: '750 × 1125 · portrait · Detail carousel, 1–8', zh: '750 × 1125 · 直式 · 詳情輪播，1～8 張' },
     'ce.video':             { en: 'Video teaser',                     zh: '影片預告' },
     'ce.video.title':       { en: 'Upload a teaser',                  zh: '上傳預告片' },
     'ce.video.hint':        { en: 'MP4 or MOV · up to 2GB',           zh: 'MP4 或 MOV · 單檔上限 2GB' },
@@ -3040,11 +3040,11 @@
     'cp.media.hero-physical':{ en: 'Hero image\nThe first thing buyers see', zh: '主圖\n買家第一眼看到的' },
     'cp.media.hero-auction':{ en: 'Hero image — show off the item',   zh: '主圖——展示這件物品' },
     /* min800／min600 是舊的多比例上傳槽留下的最小邊長說明。2026-07-31 全站圖片上傳槽收斂成
-       單一直式 750 × 930 後，圖片槽一律改用 cp.media.portrait；min800 只剩拍賣「真實性證明」
+       單一直式 750 × 1125 後，圖片槽一律改用 cp.media.portrait；min800 只剩拍賣「真實性證明」
        那個檔案槽（--file，非圖片上傳槽）在用，min600 已無消費者、暫留待 DS 示範改完一併清。 */
     'cp.media.min800':      { en: 'Min 800 x 800px',                  zh: '最小 800 x 800px' },
     'cp.media.min600':      { en: 'Min 600 x 600px',                  zh: '最小 600 x 600px' },
-    'cp.media.portrait':    { en: 'Portrait 750 × 930',               zh: '直式 750 × 930' },
+    'cp.media.portrait':    { en: 'Portrait 750 × 1125',               zh: '直式 750 × 1125' },
     'cp.media.dnd':         { en: 'Drag & drop or click to browse',   zh: '拖放或點擊瀏覽' },
     'cp.media.formats':     { en: 'JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB', zh: 'JPG · PNG · GIF · MP4 · MOV · WEBM · 最大 1.8GB' },
     'cp.media.file':        { en: 'Upload the file buyers will download', zh: '上傳買家會下載的檔案' },
@@ -3560,9 +3560,9 @@
        （原「縮圖／直式海報／橫式橫幅」三格併為 cpp.s2.keyvisual，見 documents 5.1.2.1 F6）。 */
     'cpp.s2.both-req':      { en: '· both required',                  zh: '· 兩張都必填' },
     'cpp.s2.keyvisual':     { en: 'Key visual',                       zh: '主視覺' },
-    'cpp.s2.keyvisual-size':{ en: '750 × 930 · portrait',             zh: '750 × 930 · 直式' },
+    'cpp.s2.keyvisual-size':{ en: '750 × 1125 · portrait',             zh: '750 × 1125 · 直式' },
     'cpp.s2.gallery':       { en: 'Gallery',                          zh: '圖庫' },
-    'cpp.s2.gallery-size':  { en: '750 × 930 · portrait · 1–8 images', zh: '750 × 930 · 直式 · 1–8 張' },
+    'cpp.s2.gallery-size':  { en: '750 × 1125 · portrait · 1–8 images', zh: '750 × 1125 · 直式 · 1–8 張' },
     'cpp.s2.add':           { en: 'Add images',                       zh: '新增圖片' },
     'cpp.s2.trailer':       { en: 'Trailer / behind-the-scenes',      zh: '預告片 / 幕後' },
     'cpp.s2.trailer-drop':  { en: 'Drop an MP4 or MOV',               zh: '拖入 MP4 或 MOV' },
@@ -3869,6 +3869,18 @@
        作品是預購的主體，方案只是「這一筆包含哪些東西」的組合。所以卡片內容區最上方
        固定一列作品、不可移除，並多一個「含作品份數」欄位（最小 1、預設 1）。 */
     'cpp.bd.work':          { en: 'The work',                        zh: '作品' },
+    /* 活動套組變體（2026-08-04）：封面圖與適用票種。募資的兩個掛載點不傳這兩個選項，
+       所以這幾條只在建立活動的套組分頁出現。 */
+    /* 活動變體的字彙（`.ev`）：只覆寫講法真的不同的那兩條——套組本身的名稱、商品、
+       權益在三個變體都一樣，會說錯話的是「誰買、買到什麼」這件事。 */
+    'cpp.bd.desc.ev':       { en: 'What buyers get, in one line',     zh: '一句話說明買這組拿到什麼' },
+    'cpp.bd.desc.ph.ev':    { en: 'e.g. VIP ticket + limited tee + pre-show meet',
+                              zh: '例：VIP 票＋限定 T 恤＋演出前見面會' },
+    'cpp.bd.cover':         { en: 'Cover',                           zh: '封面圖' },
+    'cpp.bd.cover.cta':     { en: 'Upload cover',                    zh: '上傳封面' },
+    'cpp.bd.tickets':       { en: 'Which tickets this applies to',   zh: '適用票種' },
+    'cpp.bd.tickets.hint':  { en: 'Fans pick one of these when they buy the bundle.', zh: '粉絲買這組時從勾選的裡面挑一種。' },
+    'cpp.bd.tickets.none':  { en: 'Create a ticket tier first — every bundle includes one.', zh: '請先在上一步建立票種——每一組都要含一張票。' },
     /* 徽章：說明這一列為什麼沒有移除鈕。 */
     'cpp.bd.work.req':      { en: 'Always included',                 zh: '必含' },
     'cpp.bd.work.untitled': { en: 'Untitled work',                   zh: '未命名作品' },
@@ -4660,6 +4672,43 @@
     'ce.tier.remove':   { en: 'Remove tier',                       zh: '移除票種' },
     'ce.tier.cancel':   { en: 'Cancel',                            zh: '取消' },
     'ce.tier.group':    { en: 'Group edit',                        zh: '批次編輯' },
+    /* 步驟 5 票券銷售（票券設計＋套組）。ASSUMPTIONS TIX-002：產品變更提案，
+       上游規格 5.1.6.1 只定義 5 階段、無此步。 */
+    'ce.step.sales':     { en: 'Ticket sales',                     zh: '票券銷售' },
+    /* 類型閘門與細節那一步的類型快選（2026-08-04）；bookyay 匯入見 ASSUMPTIONS BKY-001 */
+    'ce.gate.back':      { en: 'Back',                             zh: '返回' },
+    'ce.type.h':         { en: 'Event type',                       zh: '活動類型' },
+    'ce.bky.h':          { en: 'Import from bookyay',              zh: '從 bookyay 帶入' },
+    'ce.bky.sub':        { en: 'Already selling this event on bookyay? Pull it in instead of typing it again.', zh: '這場活動已經在 bookyay 上賣了？帶進來就不用重打一次。' },
+    'ce.bky.ph':         { en: 'Search your bookyay events…',      zh: '搜尋你在 bookyay 的活動…' },
+    'ce.next.5':         { en: 'Next: Review',                     zh: '下一步：確認' },
+    'ce.s6.h1':          { en: 'Ticket sales',                     zh: '票券銷售' },
+    'ce.s6.sub':         { en: 'Design the ticket fans receive, and package tickets with products.', zh: '設計粉絲收到的那張票，並把票與商品打包成套組。' },
+    'ce.sales.design':   { en: 'Ticket design',                    zh: '票券設計' },
+    'ce.sales.bundle':   { en: 'Bundle sales',                     zh: '套組銷售' },
+    'ce.tk.preview':     { en: 'Ticket preview',                   zh: '票券預覽' },
+    'ce.tk.info':        { en: 'Ticket information',               zh: '票券資訊' },
+    'ce.tk.name':        { en: 'Ticket name',                      zh: '票券名稱' },
+    'ce.tk.name.hint':   { en: 'Defaults to the event name. A different name here is what fans see on the ticket.', zh: '留空就跟活動名稱。填了什麼，粉絲票面上就看到什麼。' },
+    'ce.tk.name.ph':     { en: 'Same as the event name',           zh: '同活動名稱' },
+    'ce.tk.when':        { en: 'Date & time',                      zh: '日期時間' },
+    'ce.tk.when.hint':   { en: 'Comes from Venue & time. Change it there.', zh: '取自場地與時間那一步，要改請回去改。' },
+    'ce.tk.when.none':   { en: 'Date to be set',                   zh: '日期未定' },
+    'ce.tk.kind':        { en: 'Concert ticket',                   zh: '演出票券' },
+    'ce.tk.assets':      { en: 'Ticket artwork',                   zh: '票面素材' },
+    'ce.tk.logo':        { en: 'Logo',                             zh: 'Logo' },
+    'ce.tk.logo.hint':   { en: 'Transparent PNG or WEBP, 400 × 121. Upload one and it replaces the ticket name on the ticket face.', zh: '透明底 PNG 或 WEBP，400 × 121。傳了就取代票面上的票券名稱。' },
+    'ce.tk.logo.cta':    { en: 'Upload logo',                      zh: '上傳 logo' },
+    'ce.tk.logo.spec':   { en: 'PNG or WEBP · up to 5MB',          zh: 'PNG 或 WEBP · 5MB 以內' },
+    'ce.tk.logo.ph':     { en: 'LOGO',                             zh: 'LOGO' },
+    'ce.tk.logo.set':    { en: 'Your logo',                        zh: '你的 logo' },
+    'ce.tk.bg':          { en: 'Background',                       zh: '票面背景' },
+    'ce.tk.bg.hint':     { en: 'Skip this and the ticket keeps the default backdrop shown in the preview.', zh: '不傳就用預覽上那張預設底圖。' },
+    'ce.tk.bg.cta':      { en: 'Upload background',                zh: '上傳背景' },
+    'ce.tk.bg.spec':     { en: 'Portrait · up to 5MB',             zh: '直式 · 5MB 以內' },
+    'ce.bd.h':           { en: 'Bundles',                          zh: '套組' },
+    'ce.bd.sub':         { en: 'Package tickets with products. Each bundle includes at least one ticket.', zh: '把票與商品打包。每個套組至少含一張票。' },
+    'ce.bd.add':         { en: '＋ Add bundle',                     zh: '＋ 新增套組' },
     /* 票種規則（購買條件／每人限購／折扣）與收入試算。ASSUMPTIONS TIX-001：
        這一整塊是產品變更提案，上游規格 5.1.6.1 尚無對應欄位。 */
     'ce.rules.h':        { en: 'Default rules for all tiers',       zh: '所有票種的預設規則' },
@@ -5164,7 +5213,7 @@
     /* 2026-07-24 展示內容重做：直式相簿（第一張封面）＋每張方形裁切＋展示媒體 */
     /* 2026-07-31 D164／規格 5.1.2.2 §2.2.2：可編輯素材＝主視覺／圖庫，槽名對齊建立流程 F6（第一張＝主視覺）。 */
     'project-detail.showcase.sub':{en: 'Portrait images shown to fans. The first one is the key visual.',zh: '粉絲端看到的直式圖片。第一張為主視覺。'},
-    'project-detail.showcase.images-hint':{en: 'portrait 750 × 930 · first is the key visual, the rest are the gallery',zh: '直式 750 × 930 · 第一張為主視覺，其餘為圖庫'},
+    'project-detail.showcase.images-hint':{en: 'portrait 750 × 1125 · first is the key visual, the rest are the gallery',zh: '直式 750 × 1125 · 第一張為主視覺，其餘為圖庫'},
     'project-detail.showcase.cover':{en: 'Key visual',zh: '主視覺'},
     'project-detail.showcase.add-image':{en: 'Add image',zh: '新增圖片'},
     'project-detail.showcase.hint':{en: 'Hover an image to replace or delete it.',zh: '游標移到圖片可替換或刪除。'},
