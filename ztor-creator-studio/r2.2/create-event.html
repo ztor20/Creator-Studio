@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/selection-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
@@ -28,6 +29,11 @@
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-preview.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -51,8 +57,29 @@
 </head>
 <body>
 <div class="wizard">
+
+  <!-- 活動類型閘門（2026-08-04 使用者指示，做法對齊 create-project 的項目類型閘門）：
+       整個建立流程從這裡開始，畫面只有六張型別卡＋返回。選定後 JS 隱藏本閘門、顯示分步表單。
+       類型因此不再佔一個步驟——要改類型走「細節」那一步最上面的快選（同 create-project 的 [data-type]）。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned wizard__gate" data-gate>
+    <div class="wizard__gate-inner">
+      <h1 class="wizard__step-title" data-i18n="ce.s1.h1">What kind of event?</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s1.sub">This determines what settings you will see.</p>
+      <div class="segmented radio-cards radio-cards--3 radio-cards--gate" data-gate-seg role="radiogroup" aria-label="Event type">
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="concert"><i data-lucide="music" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.concert">Concert</span><span class="radio-card__sub" data-i18n="ce.type.concert-sub">Live music performance</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="meet"><i data-lucide="users" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.meet">Meet &amp; Greet</span><span class="radio-card__sub" data-i18n="ce.type.meet-sub">Intimate fan interaction</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="festival"><i data-lucide="tent" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.festival">Festival</span><span class="radio-card__sub" data-i18n="ce.type.festival-sub">Multi-day, multiple acts</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="launch"><i data-lucide="party-popper" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.launch">Launch Party</span><span class="radio-card__sub" data-i18n="ce.type.launch-sub">Celebrate a release</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="virtual"><i data-lucide="video" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.virtual">Virtual Event</span><span class="radio-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-gate-type="watchparty"><i data-lucide="film" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="ce.type.watchparty">Watch Party</span><span class="radio-card__sub" data-i18n="ce.type.watchparty-sub">Watch a video together, in sync</span></span></button>
+      </div>
+      <div class="wizard__gate-foot">
+        <button class="btn btn--icon-circle wizard__gate-close" type="button" data-gate-back data-i18n-aria-label="ce.gate.back" aria-label="Back"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+    </div>
+  </div>
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬）；右＝自動儲存＋預覽。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <div class="wizard__sheet wizard__sheet--sectioned hidden" data-sheet>
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -67,11 +94,11 @@
         <div class="progress-stepper" id="stepper" style="--progress:20%">
           <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
           <div class="progress-stepper__labels">
-            <span class="progress-stepper__label progress-stepper__label--current" data-step="1" data-i18n="ce.step.type">Type</span>
-            <span class="progress-stepper__label" data-step="2" data-i18n="ce.step.details">Details</span>
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="2" data-i18n="ce.step.details">Details</span>
             <span class="progress-stepper__label" data-step="3" data-i18n="ce.step.venue">Venue &amp; Time</span>
             <span class="progress-stepper__label" data-step="4" data-i18n="ce.step.tickets">Tickets</span>
-            <span class="progress-stepper__label" data-step="5" data-i18n="ce.step.review">Review</span>
+            <span class="progress-stepper__label" data-step="5" data-i18n="ce.step.sales">Ticket sales</span>
+            <span class="progress-stepper__label" data-step="6" data-i18n="ce.step.review">Review</span>
           </div>
         </div>
       </div>
@@ -88,45 +115,6 @@
 
   <div class="wizard__body wizard__body--form">
 
-    <!-- STEP 1 · Type -->
-    <section data-step-panel="1">
-      <h1 class="wizard__step-title" data-i18n="ce.s1.h1">What kind of event?</h1>
-      <p class="wizard__step-sub" data-i18n="ce.s1.sub">This determines what settings you will see.</p>
-
-      <div class="selection-grid form-section form-section--outlined">
-        <button type="button" class="selection-card selection-card--icon" data-choice="concert">
-          <span class="selection-card__ic"><i data-lucide="music" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.concert">Concert</span>
-          <span class="selection-card__sub" data-i18n="ce.type.concert-sub">Live music performance</span>
-        </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="meet">
-          <span class="selection-card__ic"><i data-lucide="users" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.meet">Meet &amp; Greet</span>
-          <span class="selection-card__sub" data-i18n="ce.type.meet-sub">Intimate fan interaction</span>
-        </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="festival">
-          <span class="selection-card__ic"><i data-lucide="tent" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.festival">Festival</span>
-          <span class="selection-card__sub" data-i18n="ce.type.festival-sub">Multi-day, multiple acts</span>
-        </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="launch">
-          <span class="selection-card__ic"><i data-lucide="party-popper" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.launch">Launch Party</span>
-          <span class="selection-card__sub" data-i18n="ce.type.launch-sub">Celebrate a release</span>
-        </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="virtual">
-          <span class="selection-card__ic"><i data-lucide="video" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.virtual">Virtual Event</span>
-          <span class="selection-card__sub" data-i18n="ce.type.virtual-sub">Online-only experience</span>
-        </button>
-        <button type="button" class="selection-card selection-card--icon" data-choice="watchparty">
-          <span class="selection-card__ic"><i data-lucide="film" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="ce.type.watchparty">Watch Party</span>
-          <span class="selection-card__sub" data-i18n="ce.type.watchparty-sub">Watch a video together, in sync</span>
-        </button>
-      </div>
-    </section>
-
     <!-- STEP 2 · Details -->
     <section data-step-panel="2" class="hidden">
       <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Make them feel it</h1>
@@ -134,6 +122,36 @@
       <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s2.h1" hidden>Pick what you'll watch</h1>
       <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s2.sub" hidden>Choose a video and name the room.</p>
 
+
+      <!-- 類型快選（2026-08-04；同日改為下拉選單，使用者指示）：類型移到閘門之後，
+           表單裡要有地方能改回來。六個選項用一個下拉就講完——並排卡在這裡只是把閘門
+           再畫一次，而這一步的主角是活動內容，不是再選一次類型。 -->
+      <div class="form-section form-section--outlined">
+        <div class="field">
+          <label class="field__label" for="ce-type" data-i18n="ce.type.h">Event type</label>
+          <select class="select" id="ce-type" data-type-select>
+            <option value="concert" data-i18n="ce.type.concert">Concert</option>
+            <option value="meet" data-i18n="ce.type.meet">Meet &amp; Greet</option>
+            <option value="festival" data-i18n="ce.type.festival">Festival</option>
+            <option value="launch" data-i18n="ce.type.launch">Launch Party</option>
+            <option value="virtual" data-i18n="ce.type.virtual">Virtual Event</option>
+            <option value="watchparty" data-i18n="ce.type.watchparty">Watch Party</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 從 bookyay 帶入既有活動（2026-08-04 使用者指示，暫時變通做法）：
+           bookyay 是既有的售票平台。這一版只做搜尋框本身，帶入哪些欄位與同步行為待補，
+           見 ASSUMPTIONS BKY-001。 -->
+      <div class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title"><span data-i18n="ce.bky.h">Import from bookyay</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
+          <p class="form-section__sub" data-i18n="ce.bky.sub">Already selling this event on bookyay? Pull it in instead of typing it again.</p>
+        </div>
+        <div class="fc-pick">
+          <input class="input" id="ce-bky" data-i18n-placeholder="ce.bky.ph" placeholder="Search your bookyay events…" autocomplete="off">
+        </div>
+      </div>
       <!-- 共看派對分支（D149 §4.7）：F13 播放內容 + F14 房間名稱 -->
       <div class="form-section form-section--outlined" data-show-type="watchparty" hidden>
         <div class="form-section__head">
@@ -180,25 +198,25 @@
         </div>
         <!-- 2026-07-31（D164 / documents 5.1.6.1 F4）：四格收斂為三格——原「縮圖」與「直式海報」
              比例統一後形狀相同、素材同源，併為單一「主視覺」；橫式橫幅是活動專屬例外、維持
-             --16x9（全站唯一保留橫式的模組）；圖庫仍是直式 750×930、1–8 張。三格皆必填。
+             --16x9（全站唯一保留橫式的模組）；圖庫仍是直式 750×1125、1–8 張。三格皆必填。
              版面走 .upload-assets（固定高推導寬），不放進 grid 1fr 軌道。 -->
         <div class="upload-assets">
-          <div class="upload-tile upload-tile--750x930" data-asset="keyvisual" data-upload>
+          <div class="upload-tile upload-tile--portrait" data-asset="keyvisual" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.keyvisual">Key visual</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.keyvisual-hint">750 × 930 · portrait · Search, browse, share, hero (mobile)</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.keyvisual-hint">750 × 1125 · portrait · Search, browse, share, hero (mobile)</span>
           </div>
           <!-- 橫式橫幅是活動的例外槽（D164 第 4 點）：活動維持「有直有橫」，
-               這一格是 16:9 / 1920×1080（documents 5.1.6.1 F4），其餘兩格仍是 750×930。 -->
+               這一格是 16:9 / 1920×1080（documents 5.1.6.1 F4），其餘兩格仍是 750×1125。 -->
           <div class="upload-tile upload-tile--16x9" data-asset="banner" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
             <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920 × 1080 · landscape · Hero (desktop), social</span>
           </div>
-          <div class="upload-tile upload-tile--750x930" data-asset="gallery" data-upload>
+          <div class="upload-tile upload-tile--portrait" data-asset="gallery" data-upload>
             <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
             <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">750 × 930 · portrait · Detail carousel, 1–8</span>
+            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">750 × 1125 · portrait · Detail carousel, 1–8</span>
           </div>
         </div>
       </div>
@@ -441,8 +459,98 @@
       </div>
     </section>
 
-    <!-- STEP 5 · Review -->
+    <!-- STEP 5 · 票券銷售（Beamco「Ticket Sales」，Figma node 1904-82979）
+         兩件事：票券設計（票根長什麼樣）與套組銷售（票＋商品打包賣）。
+         用 .tabs 分而不是 Beamco 的左側任務欄——精靈已經有一條 stepper 表達進度，
+         再加一層垂直導航等於三層導航；兩個任務用分頁就夠，也是站上既有的做法。
+         類型分支：共看派對整步跳過（沒有票種，也就沒有票根與套組）；
+         線上活動（virtual）只收起票券設計——直播入場不用掃碼、沒有票根要設計，
+         但商品加票的套組照樣賣得動（使用者裁決 2026-08-04）。 -->
     <section data-step-panel="5" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="ce.s6.h1">Ticket sales</h1>
+      <p class="wizard__step-sub" data-i18n="ce.s6.sub">Design the ticket fans receive, and package tickets with products.</p>
+
+      <nav class="tabs tabs--underline-short tabs--underline-label" id="ce-sales-nav" role="tablist">
+        <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-sales="design" data-hide-type="watchparty virtual"><span data-i18n="ce.sales.design">Ticket design</span></div>
+        <div class="tabs__item" role="tab" aria-selected="false" data-sales="bundle"><span data-i18n="ce.sales.bundle">Bundle sales</span></div>
+      </nav>
+
+      <!-- 票券設計：左邊填、右邊即時看到票根，沿用票種那一步的 wizard-split -->
+      <div data-sales-panel="design" data-hide-type="watchparty virtual">
+        <div class="wizard-split">
+          <aside class="wizard-split__rail" aria-labelledby="ce-tk-pv-title">
+            <h3 class="fd-ov__title" id="ce-tk-pv-title" data-i18n="ce.tk.preview">Ticket preview</h3>
+            <div class="ticket-preview" id="ce-tk-preview">
+              <div class="ticket-preview__top">
+                <div class="ticket-preview__when" id="ce-tk-when">—</div>
+                <div class="ticket-preview__logo" id="ce-tk-logo" data-i18n="ce.tk.logo.ph">LOGO</div>
+                <div class="ticket-preview__kind" id="ce-tk-kind" data-i18n="ce.tk.kind">Concert ticket</div>
+              </div>
+              <div class="ticket-preview__tear"></div>
+              <div class="ticket-preview__bottom">
+                <div class="qr-box qr-box--lg" id="ce-tk-qr"></div>
+              </div>
+            </div>
+          </aside>
+          <div class="wizard-split__main">
+            <div class="form-section form-section--outlined">
+              <div class="form-section__head">
+                <h3 class="form-section__title" data-i18n="ce.tk.info">Ticket information</h3>
+              </div>
+              <div class="field">
+                <label class="field__label"><span data-i18n="ce.tk.name">Ticket name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+                <p class="field__hint" data-i18n="ce.tk.name.hint">Defaults to the event name. A different name here is what fans see on the ticket.</p>
+                <input class="input" id="ce-tk-name" data-i18n-placeholder="ce.tk.name.ph" placeholder="Same as the event name">
+              </div>
+              <div class="field">
+                <label class="field__label" data-i18n="ce.tk.when">Date &amp; time</label>
+                <p class="field__hint" data-i18n="ce.tk.when.hint">Comes from Venue &amp; time. Change it there.</p>
+                <input class="input" id="ce-tk-when-ro" disabled>
+              </div>
+            </div>
+            <div class="form-section form-section--outlined">
+              <div class="form-section__head">
+                <h3 class="form-section__title" data-i18n="ce.tk.assets">Ticket artwork</h3>
+              </div>
+              <div class="field">
+                <label class="field__label" data-i18n="ce.tk.logo">Logo</label>
+                <p class="field__hint" data-i18n="ce.tk.logo.hint">Transparent PNG or WEBP, 400 × 121. Upload one to show it instead of the ticket name.</p>
+                <div class="upload-tile upload-tile--file" data-asset="ticketlogo" data-upload>
+                  <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+                  <span class="upload-tile__title" data-i18n="ce.tk.logo.cta">Upload logo</span>
+                  <span class="upload-tile__hint" data-i18n="ce.tk.logo.spec">PNG or WEBP · up to 5MB</span>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label"><span data-i18n="ce.tk.bg">Background</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+                <p class="field__hint" data-i18n="ce.tk.bg.hint">Skip this and the ticket keeps the default backdrop shown in the preview.</p>
+                <div class="upload-tile upload-tile--portrait" data-asset="ticketbg" data-upload>
+                  <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+                  <span class="upload-tile__title" data-i18n="ce.tk.bg.cta">Upload background</span>
+                  <span class="upload-tile__hint" data-i18n="ce.tk.bg.spec">Portrait · up to 5MB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 套組銷售：掛既有的共用套組編輯器（create-project 與 project-detail 同一支），
+           不另做第二套組合規則。活動版的「一定含一張票」＝票種勾選，仍待接上（ASSUMPTIONS TIX-002）。 -->
+      <div data-sales-panel="bundle" hidden>
+        <div class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-i18n="ce.bd.h">Bundles</h3>
+            <p class="form-section__sub" data-i18n="ce.bd.sub">Package tickets with products. Each bundle includes at least one ticket.</p>
+          </div>
+          <div id="ce-bd-list"></div>
+          <button class="btn btn--outline fc-add" type="button" id="ce-bd-add" style="margin-top:var(--sp-12)"><span data-i18n="ce.bd.add">＋ Add bundle</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 6 · Review -->
+    <section data-step-panel="6" class="hidden">
       <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
       <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
 
@@ -451,7 +559,7 @@
         <div class="review-row__item">
           <div class="review-row__head">
             <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
-            <a class="review-row__action" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
+            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
           </div>
           <div class="review-row__value" data-rev="wp-type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
         </div>
@@ -489,7 +597,7 @@
         <div class="review-row__item">
           <div class="review-row__head">
             <h3 class="review-row__name" data-i18n="ce.rev.type">Event type</h3>
-            <a class="review-row__action" href="#" data-goto="1" data-i18n="ce.rev.edit">Edit →</a>
+            <a class="review-row__action" href="#" data-goto="2" data-i18n="ce.rev.edit">Edit →</a>
           </div>
           <div class="review-row__value" data-rev="type" data-ph-key="ce.ph.notsel"><span data-i18n="ce.ph.notsel">Not selected</span></div>
         </div>
@@ -550,7 +658,7 @@
   </div>
   </div><!-- /.wizard__sheet -->
 
-  <footer class="wizard__bottom">
+  <footer class="wizard__bottom hidden" data-footer>
     <button class="btn btn--ghost" data-action="save-exit" data-i18n="ce.saveexit">Save &amp; exit</button>
     <div class="wizard__bottom-actions">
       <button class="btn btn--outline" data-action="back" disabled data-i18n="wiz.back">Back</button>
@@ -592,11 +700,19 @@
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
+<!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
+<script src="js/products-store.js?v=r2.2"></script>
+<script src="js/bundle-editor.js?v=r2.2"></script>
 <script>
 (function () {
-  let step = 1;
-  const total = 5;
-  const nextKeys = ["", "ce.next.1", "ce.next.2", "ce.next.3", "ce.next.4", "ce.publish"];
+  /* 類型改由閘門選（2026-08-04），流程從「細節」開始——步驟編號刻意維持 2–6 不重編：
+     Review 的 [data-goto]、各處 stepOf 與 data-step 都掛在這組編號上，重編只會製造一輪對不上的風險。 */
+  const first = 2;
+  let step = first;
+  const total = 6;
+  const nextKeys = ["", "ce.next.1", "ce.next.2", "ce.next.3", "ce.next.4", "ce.next.5", "ce.publish"];
+  // 共看派對沒有票種，票券銷售那一步整步跳過（沒有票根可設計、也沒有票可打包）
+  const skipped = s => s === 5 && isWP();
   let eventType = "";                          // 選定的活動類型（D149：watchparty 走共看派對分支）
   const isWP = () => eventType === "watchparty";
 
@@ -618,24 +734,28 @@
       s.classList.toggle("progress-stepper__label--done", n < step);
     });
     const ps = document.getElementById("stepper");
-    if (ps) ps.style.setProperty("--progress", (step / labels.length * 100) + "%");
-    /* 步驟 4 有右軌，內容欄要放寬到 --mid（1140）才容得下票種網格＋320 的右軌；
+    if (ps) ps.style.setProperty("--progress", ((step - first + 1) / labels.length * 100) + "%");
+    /* 步驟 4（票種試算）與步驟 5（票券預覽）有右軌，內容欄要放寬到 --mid（1140）才容得下；
        其餘步驟維持 820 的表單寬度，一行字不會拉太長。共看派對沒有右軌，不放寬。 */
     document.querySelector(".wizard__body")
-      ?.classList.toggle("wizard__body--mid", step === 4 && !isWP());
-    document.querySelector("[data-action=back]").disabled = step === 1;
+      ?.classList.toggle("wizard__body--mid", (step === 4 || step === 5) && !isWP());
+    // 共看派對跳過票券銷售那一步，stepper 上那一格也不該還點得到
+    const salesLabel = document.querySelector('.progress-stepper__label[data-step="5"]');
+    if (salesLabel) salesLabel.hidden = isWP();
+    document.querySelector("[data-action=back]").disabled = step === first;
     const next = document.querySelector("[data-action=next]");
     next.dataset.i18n = nextKeys[step];
     next.textContent = nextLabel(step);
     syncReview();
+    if (typeof renderTicket === "function") renderTicket();
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   /* ---- A2/A3：讀前面步驟輸入 → 回填 Review 摘要、即時打勾 Quality check、
           banner 計數、全通過才開放 Publish。純前端就緒示意（spec §4.5 五項）。---- */
   function readState() {
-    const typeCard = document.querySelector(".selection-card--active");
-    const typeName = typeCard ? (typeCard.querySelector(".selection-card__title")?.textContent || "").trim() : "";
+    const typeSel = document.getElementById("ce-type");
+    const typeName = typeSel && eventType ? (typeSel.options[typeSel.selectedIndex]?.textContent || "").trim() : "";
     const name  = (document.querySelector("[data-ce=name]")?.value  || "").trim();
     const date  = (document.querySelector("[data-ce=date]")?.value  || "").trim();
     const venue = (document.querySelector("[data-ce=venue]")?.value || "").trim();
@@ -743,11 +863,11 @@
   }
 
   document.querySelector("[data-action=next]").addEventListener("click", () => {
-    if (step < total) { step++; render(); }
+    if (step < total) { step++; while (skipped(step) && step < total) step++; render(); }
     else { tryPublish(); }
   });
   document.querySelector("[data-action=back]").addEventListener("click", () => {
-    if (step > 1) { step--; render(); }
+    if (step > first) { step--; while (skipped(step) && step > first) step--; render(); }
   });
   document.querySelector("[data-action=save-exit]").addEventListener("click", () => {
     markSaved();
@@ -757,23 +877,56 @@
   document.querySelectorAll(".progress-stepper__label").forEach(s => {
     s.addEventListener("click", () => {
       const n = Number(s.dataset.step);
-      if (n <= step) { step = n; render(); }   // 只能回點已完成/當前步，前進走 Next
+      if (n <= step && n >= first) { step = n; render(); }   // 只能回點已完成/當前步，前進走 Next
     });
   });
   document.querySelectorAll("[data-goto]").forEach(a => {
     a.addEventListener("click", e => { e.preventDefault(); step = Number(a.dataset.goto); render(); });
   });
 
-  document.querySelectorAll(".selection-card").forEach(c => {
-    c.addEventListener("click", () => {
-      c.parentElement.querySelectorAll(".selection-card").forEach(s => s.classList.remove("selection-card--active"));
-      c.classList.add("selection-card--active");
-      eventType = c.dataset.choice || "";
-      applyTypeVisibility();                    // D149：切換共看派對 vs 演出型的欄位集
-      syncReview();
-      scheduleSave();
+  /* 類型選擇有兩個入口：閘門（[data-gate-type]）與細節那一步的快選（[data-type]）。
+     兩邊共用同一支 chooseType——選在哪裡按的不影響結果，只影響按完要不要進流程。 */
+  let syncing = false;                          // 程式改下拉的值時擋掉自己觸發的 change
+  const gate  = document.querySelector("[data-gate]");
+  const sheet = document.querySelector("[data-sheet]");
+  function syncTypeUI() {
+    document.querySelectorAll("[data-gate-type]").forEach(b => {
+      const on = b.dataset.gateType === eventType;
+      b.classList.toggle("segmented__btn--active", on);
+      b.setAttribute("aria-checked", String(on));
     });
+    /* 下拉由 js/zselect.js 升級成自訂觸發鈕，它靠 change 事件同步按鈕上的字；
+       程式改值不會自己發 change，所以這裡補一個，並用 syncing 擋掉回頭再進 chooseType。 */
+    const sel = document.getElementById("ce-type");
+    if (sel && sel.value !== eventType) {
+      syncing = true;
+      sel.value = eventType;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      syncing = false;
+    }
+  }
+  function chooseType(t) {
+    eventType = t || "";
+    syncTypeUI();
+    applyTypeVisibility();                      // D149：切換共看派對 vs 演出型的欄位集
+    // 共看派對跳過票券銷售那一步；若當下正停在那一步，先退回票種再重畫
+    if (skipped(step)) step = 4;
+    syncReview();
+    scheduleSave();
+  }
+  function enterWizard() {
+    gate?.classList.add("hidden");
+    sheet?.classList.remove("hidden");
+    document.querySelector("[data-footer]")?.classList.remove("hidden");   // 底部動作列在閘門上沒有意義，跟著一起收
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  document.querySelectorAll("[data-gate-type]").forEach(b =>
+    b.addEventListener("click", () => { chooseType(b.dataset.gateType); enterWizard(); render(); }));
+  document.getElementById("ce-type")?.addEventListener("change", e => {
+    if (syncing) return;
+    chooseType(e.target.value); render();
   });
+  document.querySelector("[data-gate-back]")?.addEventListener("click", () => { history.length > 1 ? history.back() : (location.href = "events.html"); });
 
   // 任何欄位輸入即時回填／打勾＋觸發自動儲存示意
   document.querySelectorAll("[data-ce]").forEach(el => el.addEventListener("input", () => { syncReview(); scheduleSave(); }));
@@ -1342,6 +1495,12 @@
     document.querySelectorAll("[data-hide-type]").forEach(el => {
       el.hidden = el.dataset.hideType.split(/\s+/).indexOf(eventType) >= 0;
     });
+    /* 票券設計對線上活動收起來之後，分頁的作用中狀態不能還停在那一格——
+       否則畫面上兩個分頁都不是 active，看起來像壞掉。 */
+    const designTab = document.querySelector('#ce-sales-nav [data-sales="design"]');
+    if (designTab && designTab.hidden && designTab.classList.contains("tabs__item--active")) {
+      document.querySelector('#ce-sales-nav [data-sales="bundle"]')?.click();
+    }
     const sub = document.getElementById("ce-subtitle");
     if (sub) {
       const k = isWP() ? "ce.subtitle.wp" : "ce.subtitle";
@@ -1383,8 +1542,8 @@
   });
 
   function readWP() {
-    const card = document.querySelector(".selection-card--active");
-    const typeName = card ? (card.querySelector(".selection-card__title")?.textContent || "").trim() : "";
+    const ts = document.getElementById("ce-type");
+    const typeName = ts && eventType ? (ts.options[ts.selectedIndex]?.textContent || "").trim() : "";
     const film = document.getElementById("ce-film");
     const filmName = film && film.value ? (film.options[film.selectedIndex]?.textContent || "").trim() : "";
     return {
@@ -1466,6 +1625,85 @@
      → 這個 handler 又重繪一次規則 → 又插入新的日期欄位 → 無窮下去。
      旗標用 setTimeout(0) 才解除：observer 的 callback 是 microtask，會在這個 macrotask 之前跑完，
      所以自己造成的那一輪一定被擋掉，使用者真的切語言那一次不受影響。 */
+  /* ---- 步驟 5 · 票券銷售 ------------------------------------------------------
+     兩個分頁：票券設計（票根長什麼樣，右軌即時預覽）與套組銷售（掛既有的共用套組編輯器）。
+     ※ 產品變更提案（ASSUMPTIONS TIX-002），上游規格 5.1.6.1 只定義 5 階段、無此步。 */
+  const salesNav = document.getElementById("ce-sales-nav");
+  if (salesNav) salesNav.addEventListener("click", e => {
+    const tab = e.target.closest(".tabs__item");
+    if (!tab) return;
+    salesNav.querySelectorAll(".tabs__item").forEach(t => {
+      const on = t === tab;
+      t.classList.toggle("tabs__item--active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll("[data-sales-panel]").forEach(p => { p.hidden = p.dataset.salesPanel !== tab.dataset.sales; });
+  });
+
+  /* 假 QR：與 pickup-detail／event-detail 同一支，守衛以免重複定義 */
+  window.ztorFauxQr = window.ztorFauxQr || function (seed) {
+    seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
+    function fnd(ox, oy) {
+      r += '<rect x="' + (pad + ox * cell) + '" y="' + (pad + oy * cell) + '" width="' + (7 * cell) + '" height="' + (7 * cell) + '" fill="currentColor"/>';
+      r += '<rect x="' + (pad + (ox + 1) * cell) + '" y="' + (pad + (oy + 1) * cell) + '" width="' + (5 * cell) + '" height="' + (5 * cell) + '" fill="var(--card)"/>';
+      r += '<rect x="' + (pad + (ox + 2) * cell) + '" y="' + (pad + (oy + 2) * cell) + '" width="' + (3 * cell) + '" height="' + (3 * cell) + '" fill="currentColor"/>';
+    }
+    function inF(x, y) { return (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9); }
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      if (inF(x, y)) continue;
+      var v = (x * 7 + y * 13 + seed * 31) % 11;
+      if (v > 4) r += '<rect x="' + (pad + x * cell) + '" y="' + (pad + y * cell) + '" width="' + cell + '" height="' + cell + '" fill="currentColor"/>';
+    }
+    fnd(0, 0); fnd(N - 7, 0); fnd(0, N - 7);
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="100%" height="100%" role="img" aria-label="QR">' + r + '</svg>';
+  };
+  const tkQr = document.getElementById("ce-tk-qr");
+  if (tkQr) tkQr.innerHTML = window.ztorFauxQr(5);
+
+  /* 票根預覽：票名空著就跟活動名稱（規格上的預設），日期時間唯讀取自步驟 3。
+     上傳了 logo 就以 logo 取代票名那一行——設計稿的說明講的就是這個取捨。 */
+  function renderTicket() {
+    const s = readState();
+    const nameIn = document.getElementById("ce-tk-name");
+    const shown = (nameIn?.value || "").trim() || s.name;
+    const logoEl = document.getElementById("ce-tk-logo");
+    const hasLogo = !!document.querySelector('.upload-tile.is-filled[data-asset="ticketlogo"]');
+    if (logoEl) {
+      logoEl.textContent = hasLogo ? T("ce.tk.logo.set", "Your logo") : (shown || T("ce.tk.logo.ph", "LOGO"));
+      logoEl.classList.toggle("ticket-preview__logo--asset", hasLogo);
+    }
+    const when = [s.date, s.start].filter(Boolean).join("  ");
+    const whenEl = document.getElementById("ce-tk-when");
+    if (whenEl) whenEl.textContent = when || T("ce.tk.when.none", "Date to be set");
+    const ro = document.getElementById("ce-tk-when-ro");
+    if (ro) ro.value = when;
+    const kind = document.getElementById("ce-tk-kind");
+    if (kind) kind.textContent = s.typeName || T("ce.tk.kind", "Concert ticket");
+    const bg = document.querySelector('.upload-tile.is-filled[data-asset="ticketbg"] .upload-tile__thumb');
+    const card = document.getElementById("ce-tk-preview");
+    if (card) card.classList.toggle("ticket-preview--custom-bg", !!bg);
+  }
+  document.getElementById("ce-tk-name")?.addEventListener("input", () => { renderTicket(); scheduleSave(); });
+  document.addEventListener("upload:change", renderTicket);
+
+  /* 套組：掛共用模組（create-project／project-detail 同一支），不另做第二套組合規則。
+     shares:false ＝ 沒有分潤名額那一套（活動套組賣的是票＋商品，不是名額）。 */
+  if (window.ZtorBundleEditor && document.getElementById("ce-bd-list")) {
+    window.ZtorBundleEditor.mount({
+      list: "#ce-bd-list",
+      addBtn: "#ce-bd-add",
+      shares: false,        // 活動套組沒有分潤名額
+      work: false,          // 也沒有「作品」本體與份數（賣的是票＋商品）
+      cover: true,          // 每一組賣的東西不同，要靠封面圖分辨
+      // 票種即時取：上一步中途新增的票種要立刻出現在勾選清單
+      tickets: () => savedTiers().map(t => ({ id: t.id, name: t.name, price: t.price })),
+      pool: 0,
+      perSlot: 0,
+      collapsedByDefault: false,
+      onChange: scheduleSave
+    });
+  }
+
   /* 右軌是 sticky，貼齊位置要讓開 .wizard__top（同一個捲動容器裡的 sticky header）。
      高度隨語言換行而變，所以執行期量一次、寫進 --wizard-top-h（做法沿用 create-project）。 */
   (function measureTop() {

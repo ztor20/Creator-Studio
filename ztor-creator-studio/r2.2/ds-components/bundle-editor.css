@@ -25,7 +25,7 @@
 
 /* 套組商品列：縮圖(96) ＋ 名稱/描述兩行 ＋ 移除鈕 */
 .fc-item-row { display: grid; grid-template-columns: 96px 1fr auto; gap: var(--sp-10); align-items: start; margin-top: var(--sp-8); }
-/* 比例不在這裡決定：格子自己掛 .upload-tile--750x930（2026-07-31 全站圖片上傳槽收斂成
+/* 比例不在這裡決定：格子自己掛 .upload-tile--portrait（2026-07-31 全站圖片上傳槽收斂成
    單一直式尺寸）。原本這行硬寫 1 / 1，會蓋掉元件的比例、讓套組商品縮圖變成全站唯一的方形上傳槽。 */
 .fc-item-row .upload-tile { min-height: 96px; }
 .fc-item-fields { display: flex; flex-direction: column; gap: var(--sp-8); }
@@ -304,3 +304,27 @@
    載入，單一個 .fc-hint--over 與 .field__hint 同權重會輸給它、紅色根本不會出現
    （2026-07-30 實測 computed color 仍是 --muted-foreground）。 */
 .field__hint.fc-hint--over { color: var(--status-error); }
+
+/* ── 活動變體：封面圖與適用票種（2026-08-04）─────────────────────────────
+   使用者裁決「活動套組、募資套組、電子商店組合包是同一件事的三個變體」，
+   所以這兩塊是同一支編輯器的選配段落，不是另一支元件。
+   票種列＝一列一個票種：勾選框與名稱靠左、原價靠右對齊成一欄，
+   多列並排時價格可以直接比大小（與票種卡的事實列同一個處理）。 */
+.bd-tickets { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-8); }
+.bd-ticket {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-4);
+  border-radius: var(--radius-md);
+}
+.bd-ticket:hover { background: var(--accent); }
+.bd-ticket__name { flex: 1 1 auto; min-width: 0; }
+.bd-ticket__price {
+  flex: none;
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+/* 封面圖只佔一格、不撐滿整張卡——它是這一組的辨識用縮圖，不是主視覺。 */
+.fc-bundle [data-bd-cover] { max-width: 160px; }

@@ -96,14 +96,16 @@
       <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
       <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
 
-      <!-- 型別已在閘門選定；此處用建立商品同款並排可選卡（radio-cards）供流程中改選，僅標題（D151）。 -->
+      <!-- 型別已在閘門選定；此處供流程中改選。2026-08-04 使用者指示由並排可選卡（radio-cards，D151）
+           改為下拉選單，與建立活動的類型快選同一種做法——三個選項用一個下拉就講完，
+           並排卡在這裡只是把閘門再畫一次，而這一步的主角是項目內容、不是再選一次型別。 -->
       <div class="field form-section form-section--outlined">
-        <div class="field__label" data-i18n="cpp.s1.type">Project type</div>
-        <div class="segmented radio-cards radio-cards--3" data-type-seg role="radiogroup" aria-label="Project type">
-          <button type="button" class="segmented__btn segmented__btn--active" role="radio" aria-checked="true" data-type="golive"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.golive.title">Direct release</span></span></button>
-          <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-type="fund"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.fund.title">Co-create</span></span></button>
-          <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-type="preorder"><span class="radio-card__text"><span class="radio-card__title" data-i18n="cpp.pre.title">Presale</span></span></button>
-        </div>
+        <label class="field__label" for="cpp-type" data-i18n="cpp.s1.type">Project type</label>
+        <select class="select" id="cpp-type" data-type-select>
+          <option value="golive" data-i18n="cpp.golive.title">Direct release</option>
+          <option value="fund" data-i18n="cpp.fund.title">Co-create</option>
+          <option value="preorder" data-i18n="cpp.pre.title">Presale</option>
+        </select>
       </div>
 
       <div class="field form-section form-section--outlined">
@@ -245,20 +247,20 @@
       <p class="wizard__step-sub" data-i18n="cpp.s2.sub">Key visual and gallery. One short story. A video if you have it. We accept files up to 2 GB.</p>
 
       <!-- 2026-07-31（D164 / documents 5.1.2.1 F6）：原本的縮圖（1:1）／直式海報（3:4）／橫式橫幅（16:9）
-           三格在比例統一成 750×930 之後形狀相同、素材同源，維持三格等於要求重複上傳同一張圖，
+           三格在比例統一成 750×1125 之後形狀相同、素材同源，維持三格等於要求重複上傳同一張圖，
            故併為單一「主視覺」；項目不保留橫式素材（橫式例外只適用活動）。剩兩格：主視覺＋圖庫，皆必填。 -->
       <div class="field form-section form-section--outlined">
         <div class="field__label"><span data-i18n="cpp.s2.images">Images</span> <span class="text-sub" data-i18n="cpp.s2.both-req">· both required</span></div>
         <div class="upload-assets">
-          <div class="upload-tile upload-tile--750x930" data-upload>
+          <div class="upload-tile upload-tile--portrait" data-upload>
             <span class="upload-tile__icon">＋</span>
             <span class="upload-tile__title" data-i18n="cpp.s2.keyvisual">Key visual</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.keyvisual-size">750 × 930 · portrait</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.keyvisual-size">750 × 1125 · portrait</span>
           </div>
-          <div class="upload-tile upload-tile--750x930" data-upload>
+          <div class="upload-tile upload-tile--portrait" data-upload>
             <span class="upload-tile__icon">＋</span>
             <span class="upload-tile__title" data-i18n="cpp.s2.gallery">Gallery</span>
-            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">750 × 930 · portrait · 1–8 images</span>
+            <span class="upload-tile__hint" data-i18n="cpp.s2.gallery-size">750 × 1125 · portrait · 1–8 images</span>
           </div>
         </div>
       </div>
@@ -1047,6 +1049,7 @@
   }
 
   // Project type — 閘門與表單的同款 radio-list 共同驅動 type（D150）
+  let typeSyncing = false;                       // 程式改下拉的值時擋掉自己觸發的 change
   const gate   = document.querySelector('[data-gate]');
   const sheet  = document.querySelector('[data-sheet]');
   const footer = document.querySelector('[data-footer]');
@@ -1056,18 +1059,22 @@
       s.classList.toggle('segmented__btn--active', active);   // 閘門也改用 radio-cards（D152）
       s.setAttribute('aria-checked', String(active));
     });
-    document.querySelectorAll('[data-type]').forEach(s => {
-      const active = s.dataset.type === t;
-      s.classList.toggle('segmented__btn--active', active);   // 表單改用 radio-cards（D151）
-      s.setAttribute('aria-checked', String(active));
-    });
+    /* 表單那半是下拉（2026-08-04）。zselect 靠 change 事件同步按鈕上的字，程式改值不會自己發，
+       所以這裡補一個，並用 typeSyncing 擋掉回頭再進 chooseType。 */
+    const sel = document.getElementById('cpp-type');
+    if (sel && sel.value !== t) {
+      typeSyncing = true;
+      sel.value = t;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      typeSyncing = false;
+    }
   }
   function chooseType(t) { type = t; idx = 0; syncTypeUI(t); render(); }
   function enterWizard() { gate.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function showGate()    { gate.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); }
 
   document.querySelectorAll('[data-gate-type]').forEach(c => c.addEventListener('click', () => { chooseType(c.dataset.gateType); enterWizard(); }));
-  document.querySelectorAll('[data-type]').forEach(c => c.addEventListener('click', () => chooseType(c.dataset.type)));
+  document.getElementById('cpp-type')?.addEventListener('change', e => { if (!typeSyncing) chooseType(e.target.value); });
   document.querySelector('[data-gate-back]').addEventListener('click', () => { if (history.length > 1) history.back(); else location.href = 'projects.html'; });
 
   // Content type chips → toggle field group

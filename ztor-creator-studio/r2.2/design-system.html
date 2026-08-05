@@ -117,6 +117,7 @@
 <!-- 2026-08-04 補掛：login.html（D170）與 create-event 票種卡 promote 時漏接 DS 頁 -->
 <link rel="stylesheet" href="ds-components/auth.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/ticket-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
@@ -622,6 +623,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#source-status">Source status</a>
     <a class="toc__link toc__link--sub" href="#auth-shell">Auth shell</a>
     <a class="toc__link toc__link--sub" href="#ticket-tier-card">Ticket tier card</a>
+    <a class="toc__link toc__link--sub" href="#ticket-preview">Ticket preview</a>
     <a class="toc__link toc__link--sub" href="#size-chart-editor">Size chart editor</a>
     <div class="toc__group"><span data-en>Pillar 5 · Pattern</span><span data-zh>Pillar 5 · Pattern</span></div>
     <a class="toc__link" href="#patterns"><span data-en>5.1 Pattern cards</span><span data-zh>5.1 Pattern 卡</span></a>
@@ -920,9 +922,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 
       <p class="field-label" data-en>Aspect ratio · <code>--img-portrait</code> <span class="field-note">(2026-07-31, D164)</span></p>
       <p class="field-label" data-zh>圖片比例 · <code>--img-portrait</code> <span class="field-note">(2026-07-31，D164)</span></p>
-      <p class="field-text" data-en>Single portrait ratio for every creator-uploaded showcase image site-wide: <code>--img-portrait: 750 / 930</code> (≈0.806, 25:31). Both upload slots (<code>upload-tile.css</code>'s <code>--upload-img-ratio: var(--img-portrait, 750 / 930)</code>) and display frames (7 list-thumb / card-cover components, see Pillar 4) read this one variable; every display frame fills via <code>object-fit: cover</code>, center-cropped from the same portrait original — no separate square or landscape asset is required. Sole exception: Events' horizontal banner slot and display position stay on <code>--16x9</code> (see §4.15). Replaces the pre-2026-07-31 multi-ratio model (1:1 thumb / 3:4 poster / 16:9 banner / 3:2 gallery).</p>
-      <p class="field-text" data-zh>全站創作者上傳展示圖的單一直式比例：<code>--img-portrait: 750 / 930</code>（≈0.806，25:31）。上傳槽（<code>upload-tile.css</code> 的 <code>--upload-img-ratio: var(--img-portrait, 750 / 930)</code>）與顯示端（7 支清單縮圖／卡片封面元件，見 Pillar 4）皆讀同一個變數；每個顯示框都由同一張直式原圖 <code>object-fit: cover</code> 置中裁切填滿，不再各自另備方形或橫式素材。唯一例外：活動（Events）的橫式橫幅槽與橫式顯示版位維持 <code>--16x9</code>（見 §4.15）。取代 2026-07-31 之前「縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2」四套並存的模型。</p>
-      <div class="viz"><div class="upload-tile upload-tile--750x930" style="max-width:140px"><span class="upload-tile__hint">750 × 930</span></div></div>
+      <p class="field-text" data-en>Single portrait ratio for every creator-uploaded showcase image site-wide: <code>--img-portrait: 2 / 3</code> (≈0.667, 2:3). Both upload slots (<code>upload-tile.css</code>'s <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>) and display frames (7 list-thumb / card-cover components, see Pillar 4) read this one variable; every display frame fills via <code>object-fit: cover</code>, center-cropped from the same portrait original — no separate square or landscape asset is required. Sole exception: Events' horizontal banner slot and display position stay on <code>--16x9</code> (see §4.15). Replaces the pre-2026-07-31 multi-ratio model (1:1 thumb / 3:4 poster / 16:9 banner / 3:2 gallery).</p>
+      <p class="field-text" data-zh>全站創作者上傳展示圖的單一直式比例：<code>--img-portrait: 2 / 3</code>（≈0.667，2:3）。上傳槽（<code>upload-tile.css</code> 的 <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>）與顯示端（7 支清單縮圖／卡片封面元件，見 Pillar 4）皆讀同一個變數；每個顯示框都由同一張直式原圖 <code>object-fit: cover</code> 置中裁切填滿，不再各自另備方形或橫式素材。唯一例外：活動（Events）的橫式橫幅槽與橫式顯示版位維持 <code>--16x9</code>（見 §4.15）。取代 2026-07-31 之前「縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2」四套並存的模型。</p>
+      <div class="viz"><div class="upload-tile upload-tile--portrait" style="max-width:140px"><span class="upload-tile__hint">750 × 1125</span></div></div>
 
       <p class="field-label" data-en>1.4 Radius</p>
       <p class="field-label" data-zh>1.4 圓角</p>
@@ -1339,6 +1341,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#preview-panel">Preview panel</a></td><td>🟠</td><td><span data-en>Right split panel holding the live preview — compresses the wizard, not an overlay</span><span data-zh>右側畫面分割面板承載即時預覽，壓窄 wizard、非浮層</span></td><td><code>preview-panel.css</code></td></tr>
           <tr><td><a href="#fan-store">Fan store preview</a></td><td>🟠</td><td><span data-en>Fan-side storefront inside See-as-fan (E-Shop F5 + Store settings F1, §6.7 same view), presented as a dark mobile phone: app bar + hero + app pills + featured + sub-tabs + product grid + top fans + about + bottom nav</span><span data-zh>See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1，§6.7 同源），呈現為深色手機：app 頂列＋hero＋app 分頁列＋本月精選＋子分頁＋商品格＋頭號粉絲＋關於＋底部導航</span></td><td><code>fan-store.css</code></td></tr>
           <tr><td><a href="#ticket-tier-card">Ticket tier card</a></td><td>🟡</td><td><span data-en>Ticket tier row in the event create flow — collapsed summary (name + price + quantity) vs expanded edit form</span><span data-zh>建立活動的票種卡——收合摘要（名稱＋價格＋數量）與展開編輯表單兩態</span></td><td><code>ticket-tier-card.css</code></td></tr>
+          <tr><td><a href="#ticket-preview">Ticket preview</a></td><td>🟡</td><td><span data-en>The ticket a fan receives, previewed live while the creator fills the form — identity half, tear line, QR half</span><span data-zh>粉絲收到的那張票，創作者邊填邊看——識別半張、撕線、QR 半張</span></td><td><code>ticket-preview.css</code></td></tr>
           <tr><td><a href="#readiness">Readiness card</a></td><td>🟡</td><td><span data-en>Pre-publish checklist + remaining-count banner (Ready to sell?)</span><span data-zh>上架前就緒檢查＋還差幾項 banner（Ready to sell?）</span></td><td><code>readiness.css</code></td></tr>
           <tr><td><a href="#table">Table</a></td><td>🟠</td><td><span data-en>Earnings transactions, comparison grids</span><span data-zh>Earnings 交易、比較表格</span></td><td><code>table.css</code></td></tr>
           <tr><td><a href="#chart">Chart</a></td><td>🟠</td><td><span data-en>Linechart + barchart + stacked-bar + source-list + rank-bars</span><span data-zh>折線圖＋長條圖＋堆疊長條＋來源清單＋排名長條</span></td><td><code>chart.css</code></td></tr>
@@ -2334,8 +2337,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <span class="layer layer--atom">🟢 atom</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Dashed upload affordance for create flows (spec 5.1.5.2 Show it off / Prove it's real / digital download). <strong>2026-07-31: every image slot shares a single portrait ratio</strong> — <code>--hero</code>, <code>.upload-grid</code>'s thumbs, and <code>.upload-assets</code>' named slots all read one variable, <code>--upload-img-ratio: var(--img-portrait, 750 / 930)</code> (Foundation token <code>--img-portrait</code>, see Pillar 1 §1.3; ≈0.806), applied via the <code>--750x930</code> modifier (<code>--hero</code> and <code>.upload-grid .upload-tile</code> already build it in). <code>.upload-showcase</code> places the hero (left) and thumb grid (right) side by side as two equal columns; <code>.upload-grid--2x2</code> arranges thumbs 2×2 (collapses to stacked + 4-up below 880px). <code>.upload-showcase--stacked</code> forces the stacked layout (hero on top, thumb row below) at any width — for half-width columns like product-detail's media + info side-by-side. <strong>2026-07-31, second pass (D164): named-slot counts collapsed along with the ratio</strong> — <code>.upload-assets</code> now ships two combinations instead of four same-source slots: Create Project = Key visual + Gallery (2 tiles), Create Event = Key visual + Banner + Gallery (3 tiles, required count 4→3). Every tile is sized from a shared fixed height (<code>--upload-asset-h</code>) and the portrait tiles carry <code>--750x930</code>; never put <code>aspect-ratio</code> on a grid <code>1fr</code> item, the ratio feeds back into the track and blows the row past its container. The old multi-ratio modifiers <code>--1x1</code> / <code>--3x4</code> / <code>--3x2</code> are retired from image slots; <code>--16x9</code>'s serving scope now covers project-detail's Demo video/audio <strong>file</strong> slots <em>and</em> Events' sole surviving horizontal <strong>banner image</strong> slot (create-event / edit-event, 1920×1080) — both stay outside this ratio unification, and no other module may adopt a new landscape image slot. Title uses <code>__title</code>, constraints (min size / file types) go in <code>__hint</code>.</p>
-  <p class="sub__desc" data-zh>建立流程用的虛線上傳格（spec 5.1.5.2 展示它／證明是真的／數位下載檔）。<strong>2026-07-31 起：所有圖片槽共用單一直式比例</strong>——<code>--hero</code>、<code>.upload-grid</code> 的縮圖、<code>.upload-assets</code> 的具名素材槽，全部讀同一個變數 <code>--upload-img-ratio: var(--img-portrait, 750 / 930)</code>（Foundation token <code>--img-portrait</code>，見 Pillar 1 §1.3；≈0.806），以 <code>--750x930</code> 修飾詞套用（<code>--hero</code> 與 <code>.upload-grid .upload-tile</code> 已內建此比例）。<code>.upload-showcase</code> 把主圖（左）與縮圖格（右）並排成兩等寬欄；<code>.upload-grid--2x2</code> 把附圖排成 2×2（窄於 880px 收成主圖在上、附圖 4 格在下）。<code>.upload-showcase--stacked</code> 把這個「主圖在上、附圖列在下」的堆疊固定成常態（不分寬度），供半寬欄位並列版面用（如 product-detail 素材＋資訊並列）。<strong>2026-07-31 同日第二輪（D164）：具名槽位數量隨比例收斂</strong>——<code>.upload-assets</code> 不再是四格同源素材，改為兩種組合：建立項目＝主視覺＋圖庫（2 格）、建立活動＝主視覺＋橫幅＋圖庫（3 格，必填數 4→3）。每格由共用的固定高度（<code>--upload-asset-h</code>）決定大小、直式格子共用同一個 <code>--750x930</code> 比例；不要把 <code>aspect-ratio</code> 加在 grid <code>1fr</code> 的格子上——比例會回頭撐開欄寬，整排衝出容器。舊的多比例修飾詞 <code>--1x1</code>／<code>--3x4</code>／<code>--3x2</code> 已自圖片槽退場；<code>--16x9</code> 服役範圍擴大為 project-detail 的 Demo 影片／音樂<strong>檔案</strong>槽，加上活動唯一保留的橫式<strong>橫幅圖片</strong>槽（create-event／edit-event，1920×1080）——兩者皆不在本次比例收斂範圍內，其他模組不得比照新增橫式圖片槽。主文案放 <code>__title</code>，限制（最小尺寸／檔型）放 <code>__hint</code>。</p>
+  <p class="sub__desc" data-en>Dashed upload affordance for create flows (spec 5.1.5.2 Show it off / Prove it's real / digital download). <strong>2026-07-31: every image slot shares a single portrait ratio</strong> — <code>--hero</code>, <code>.upload-grid</code>'s thumbs, and <code>.upload-assets</code>' named slots all read one variable, <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code> (Foundation token <code>--img-portrait</code>, see Pillar 1 §1.3; ≈0.667), applied via the <code>--portrait</code> modifier (<code>--hero</code> and <code>.upload-grid .upload-tile</code> already build it in). <code>.upload-showcase</code> places the hero (left) and thumb grid (right) side by side as two equal columns; <code>.upload-grid--2x2</code> arranges thumbs 2×2 (collapses to stacked + 4-up below 880px). <code>.upload-showcase--stacked</code> forces the stacked layout (hero on top, thumb row below) at any width — for half-width columns like product-detail's media + info side-by-side. <strong>2026-07-31, second pass (D164): named-slot counts collapsed along with the ratio</strong> — <code>.upload-assets</code> now ships two combinations instead of four same-source slots: Create Project = Key visual + Gallery (2 tiles), Create Event = Key visual + Banner + Gallery (3 tiles, required count 4→3). Every tile is sized from a shared fixed height (<code>--upload-asset-h</code>) and the portrait tiles carry <code>--portrait</code>; never put <code>aspect-ratio</code> on a grid <code>1fr</code> item, the ratio feeds back into the track and blows the row past its container. The old multi-ratio modifiers <code>--1x1</code> / <code>--3x4</code> / <code>--3x2</code> are retired from image slots; <code>--16x9</code>'s serving scope now covers project-detail's Demo video/audio <strong>file</strong> slots <em>and</em> Events' sole surviving horizontal <strong>banner image</strong> slot (create-event / edit-event, 1920×1080) — both stay outside this ratio unification, and no other module may adopt a new landscape image slot. Title uses <code>__title</code>, constraints (min size / file types) go in <code>__hint</code>.</p>
+  <p class="sub__desc" data-zh>建立流程用的虛線上傳格（spec 5.1.5.2 展示它／證明是真的／數位下載檔）。<strong>2026-07-31 起：所有圖片槽共用單一直式比例</strong>——<code>--hero</code>、<code>.upload-grid</code> 的縮圖、<code>.upload-assets</code> 的具名素材槽，全部讀同一個變數 <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>（Foundation token <code>--img-portrait</code>，見 Pillar 1 §1.3；≈0.667），以 <code>--portrait</code> 修飾詞套用（<code>--hero</code> 與 <code>.upload-grid .upload-tile</code> 已內建此比例）。<code>.upload-showcase</code> 把主圖（左）與縮圖格（右）並排成兩等寬欄；<code>.upload-grid--2x2</code> 把附圖排成 2×2（窄於 880px 收成主圖在上、附圖 4 格在下）。<code>.upload-showcase--stacked</code> 把這個「主圖在上、附圖列在下」的堆疊固定成常態（不分寬度），供半寬欄位並列版面用（如 product-detail 素材＋資訊並列）。<strong>2026-07-31 同日第二輪（D164）：具名槽位數量隨比例收斂</strong>——<code>.upload-assets</code> 不再是四格同源素材，改為兩種組合：建立項目＝主視覺＋圖庫（2 格）、建立活動＝主視覺＋橫幅＋圖庫（3 格，必填數 4→3）。每格由共用的固定高度（<code>--upload-asset-h</code>）決定大小、直式格子共用同一個 <code>--portrait</code> 比例；不要把 <code>aspect-ratio</code> 加在 grid <code>1fr</code> 的格子上——比例會回頭撐開欄寬，整排衝出容器。舊的多比例修飾詞 <code>--1x1</code>／<code>--3x4</code>／<code>--3x2</code> 已自圖片槽退場；<code>--16x9</code> 服役範圍擴大為 project-detail 的 Demo 影片／音樂<strong>檔案</strong>槽，加上活動唯一保留的橫式<strong>橫幅圖片</strong>槽（create-event／edit-event，1920×1080）——兩者皆不在本次比例收斂範圍內，其他模組不得比照新增橫式圖片槽。主文案放 <code>__title</code>，限制（最小尺寸／檔型）放 <code>__hint</code>。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(showcase: hero + 2×2 thumb grid)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">(showcase：主圖＋2×2 縮圖格)</span></p>
   <div class="demo">
@@ -2379,17 +2382,17 @@ The first thing buyers see</span>
   <p class="field-text" data-zh>建立項目 <span class="field-note">(2 格，皆必填)</span></p>
   <div class="demo">
     <div class="upload-assets">
-      <div class="upload-tile upload-tile--750x930"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Key visual</span><span class="upload-tile__hint">750 × 930 · portrait</span></div>
-      <div class="upload-tile upload-tile--750x930"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Gallery</span><span class="upload-tile__hint">750 × 930 · portrait · 1–8</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Key visual</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Gallery</span><span class="upload-tile__hint">750 × 1125 · portrait · 1–8</span></div>
     </div>
   </div>
   <p class="field-text" data-en>Create Event <span class="field-note">(3 tiles, all required — banner is the sole surviving <code>--16x9</code> image slot)</span></p>
   <p class="field-text" data-zh>建立活動 <span class="field-note">(3 格皆必填——橫幅是唯一保留的 <code>--16x9</code> 圖片槽)</span></p>
   <div class="demo">
     <div class="upload-assets">
-      <div class="upload-tile upload-tile--750x930"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Key visual</span><span class="upload-tile__hint">750 × 930 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Key visual</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
       <div class="upload-tile upload-tile--16x9"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Banner</span><span class="upload-tile__hint">1920 × 1080 · 16:9</span></div>
-      <div class="upload-tile upload-tile--750x930"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Gallery</span><span class="upload-tile__hint">750 × 930 · portrait · 1–8</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Gallery</span><span class="upload-tile__hint">750 × 1125 · portrait · 1–8</span></div>
     </div>
   </div>
   <p class="field-label" data-en>Interactive uploader <span class="field-note">(opt-in via <code>[data-upload]</code> — click a tile to try: pick an image → fake upload progress → hover for Replace / AI-optimize / Delete)</span></p>
@@ -2404,10 +2407,10 @@ The first thing buyers see</span>
         <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
       </div>
       <div class="upload-grid upload-grid--2x2">
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span></div>
+        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
+        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
       </div>
     </div>
   </div>
@@ -2419,7 +2422,7 @@ The first thing buyers see</span>
       <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image
 The first thing buyers see</span>
       <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
-      <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 930 · portrait</span>
+      <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
     </div>
   </div>
   <p class="field-label" data-en>Content-file mode <span class="field-note">(<code>data-upload="content"</code> — music / video content files: upload → play (audio/video) + delete, no AI. Try an mp3/mp4/file)</span></p>
@@ -2455,7 +2458,7 @@ The first thing buyers see</span>
     <p class="field-label" data-en>Component contract</p>
     <p class="field-label" data-zh>元件契約</p>
     <table class="spec"><thead><tr><th><span data-en>Item</span><span data-zh>項目</span></th><th><span data-en>Contract</span><span data-zh>約定</span></th></tr></thead><tbody>
-      <tr><td><code>--upload-img-ratio</code></td><td><span data-en>Single source of truth for the portrait ratio (750 / 930, ≈0.806; <code>upload-tile.css:31</code>). <code>--hero</code>, <code>.upload-grid .upload-tile</code> and the <code>--750x930</code> modifier all read it — change the ratio here, not per-consumer.</span><span data-zh>直式比例的單一來源（750 / 930，≈0.806；<code>upload-tile.css:31</code>）。<code>--hero</code>、<code>.upload-grid .upload-tile</code>、<code>--750x930</code> 修飾詞皆讀它——要調比例改這裡，不逐一消費頁改</span></td></tr>
+      <tr><td><code>--upload-img-ratio</code></td><td><span data-en>Single source of truth for the portrait ratio (2 / 3, ≈0.667; <code>upload-tile.css:31</code>). <code>--hero</code>, <code>.upload-grid .upload-tile</code> and the <code>--portrait</code> modifier all read it — change the ratio here, not per-consumer.</span><span data-zh>直式比例的單一來源（2 / 3，≈0.667；<code>upload-tile.css:31</code>）。<code>--hero</code>、<code>.upload-grid .upload-tile</code>、<code>--portrait</code> 修飾詞皆讀它——要調比例改這裡，不逐一消費頁改</span></td></tr>
       <tr><td><span data-en>Action buttons</span><span data-zh>動作鈕</span></td><td><span data-en>Standard = Replace + Remove (2 buttons). <code>data-upload-ai</code> opts a tile into a third "AI optimize" button + completion badge — currently only create-product's product-image gallery slots enable it.</span><span data-zh>站上標準＝替換／刪除（2 鈕）。掛 <code>data-upload-ai</code> 才多開第三顆「AI 優化」鈕＋完成徽章——目前只有 create-product 的商品圖相簿格開啟</span></td></tr>
       <tr><td><code>.upload-tile__flag</code></td><td><span data-en>Static, author-set corner label (e.g. "Cover" on a gallery's first tile) — distinct from <code>__badge</code>, which is a JS-driven state result (AI-optimize completion).</span><span data-zh>作者標定的靜態角落標籤（如相簿第一格的「封面」）——與 <code>__badge</code>（JS 產生的狀態結果，AI 優化完成）角色不同</span></td></tr>
       <tr><td><code>data-upload-src</code> / <code>data-upload-key</code></td><td><span data-en>Edit-flow preload: <code>data-upload-src="&lt;url&gt;"</code> puts the tile straight into <code>.is-filled</code> with that image, skipping the fake-upload timer. <code>data-upload-key</code> identifies the tile in the <code>upload:change</code> event (falls back to <code>data-cp-asset</code>).</span><span data-zh>編輯態預填：<code>data-upload-src="&lt;url&gt;"</code> 讓格子直接帶圖進 <code>.is-filled</code>、跳過假上傳計時；<code>data-upload-key</code> 供 <code>upload:change</code> 事件辨識該格（沒有則退回 <code>data-cp-asset</code>）</span></td></tr>
@@ -2466,7 +2469,7 @@ The first thing buyers see</span>
   &lt;div class="upload-tile upload-tile--hero"&gt;
     &lt;span class="upload-tile__icon"&gt;…&lt;/span&gt;
     &lt;span class="upload-tile__title"&gt;Hero image&lt;/span&gt;
-    &lt;span class="upload-tile__hint"&gt;Portrait 750 × 930&lt;/span&gt;
+    &lt;span class="upload-tile__hint"&gt;Portrait 750 × 1125&lt;/span&gt;
   &lt;/div&gt;
   &lt;div class="upload-grid upload-grid--2x2"&gt;…4 tiles…&lt;/div&gt;
 &lt;/div&gt;</pre>
@@ -3426,8 +3429,8 @@ The first thing buyers see</span>
     <span class="layer layer--organism">🟠 organism</span>
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Borderless inventory table for E-Shop: product identity (image / thumb + title + meta) + category + price + status + stock + visibility switch + edit action, on row-divider layout. The E-Shop page swaps column layouts per panel via page-level modifiers — <code>--eshop</code> (Products: image / category / price / status / stock / visibility), <code>--bundles</code> (Bundles: image / members / bundle price / stock), <code>--auctions</code> (Auctions: image / category / bid / activity) — all layered on the same base grid. Below 760px the header hides and rows restack. <strong>2026-07-31 user: <code>.product-list__image</code> turned portrait</strong> (76×94, width unchanged, height from <code>--img-portrait</code>) — real product photos now render uncropped instead of a square crop of the portrait original. Exceptions: <code>.product-list--events .product-list__image</code> stays <code>1:1</code> (event rows keep the square slot); the pickup page's <code>.product-list__thumb</code> QR icon-chip is a different class and is unaffected. <strong>2026-08-04 pinned section (<code>.product-list__divider</code> + <code>.product-list__pin-mark</code>, spec 5.1.5 F4 / D172)</strong> — rows pinned to the front of the fan-facing shop sit above a labelled divider carrying a <code>n/10</code> count; membership is position, so dragging a row across the divider is what pins or unpins it. No fan-facing "featured" badge: the creator-side cue is the section plus a small pin glyph before the name, which is the only cue left once search or filter breaks the grouping. With nothing pinned yet the divider stays visible, switches to its <code>--empty</code> variant (a rounded 1px box instead of a single rule — with nothing above it, it invites rather than divides) and swaps to a prompt — "Pin items to the top." with the right-hand slot swapped from the <code>n/10</code> count to a borderless <code>.btn--ghost</code> action (<code>__divider-cta</code>) — sitting exactly where the pinned section will appear. The link guides rather than acts: it scrolls the first pinnable row into the upper third, opens that row's action menu and rings the Pin entry with <code>.dropdown__item.is-hinted</code> (§4.26); choosing what to pin stays with the creator.</p>
-  <p class="sub__desc" data-zh>E-Shop 的無框庫存表：商品識別（圖／縮圖＋標題＋meta）＋分類＋價格＋狀態＋庫存＋可見度開關＋編輯動作，列分隔線版式。E-Shop 頁以頁面層修飾子按分頁切換欄位版型——<code>--eshop</code>（商品：圖／分類／價格／狀態／庫存／可見度）、<code>--bundles</code>（套組：圖／成員／套組價／庫存）、<code>--auctions</code>（競標：圖／分類／出價／動態）——都疊在同一 base grid 上。760px 以下表頭隱藏、列重新堆疊。<strong>2026-07-31 使用者：<code>.product-list__image</code> 改直式</strong>（76×94，寬度不變、高度由 <code>--img-portrait</code> 推導）——真實商品照不再被裁成方形。例外：<code>.product-list--events .product-list__image</code> 維持 <code>1:1</code>（活動列表仍是方形）；取貨頁的 <code>.product-list__thumb</code> QR icon chip 是不同 class，不受影響。</p>
+  <p class="sub__desc" data-en>Borderless inventory table for E-Shop: product identity (image / thumb + title + meta) + category + price + status + stock + visibility switch + edit action, on row-divider layout. The E-Shop page swaps column layouts per panel via page-level modifiers — <code>--eshop</code> (Products: image / category / price / status / stock / visibility), <code>--bundles</code> (Bundles: image / members / bundle price / stock), <code>--auctions</code> (Auctions: image / category / bid / activity) — all layered on the same base grid. Below 760px the header hides and rows restack. <strong>2026-07-31 user: <code>.product-list__image</code> turned portrait</strong> (76×94, width unchanged, height from <code>--img-portrait</code>) — real product photos now render uncropped instead of a square crop of the portrait original. Exceptions: <strong>2026-08-05 (D176 / Q52)</strong>: ratio value changed to <code>2 / 3</code> (76×114, row 154) and the events square exception was dropped &mdash; <code>.product-list--events .product-list__image</code> no longer overrides, so <strong>all eight list thumbnails now share one ratio with no exception</strong>. the pickup page's <code>.product-list__thumb</code> QR icon-chip is a different class and is unaffected. <strong>2026-08-04 pinned section (<code>.product-list__divider</code> + <code>.product-list__pin-mark</code>, spec 5.1.5 F4 / D172)</strong> — rows pinned to the front of the fan-facing shop sit above a labelled divider carrying a <code>n/10</code> count; membership is position, so dragging a row across the divider is what pins or unpins it. No fan-facing "featured" badge: the creator-side cue is the section plus a small pin glyph before the name, which is the only cue left whenever the divider is hidden. <strong>2026-08-05:</strong> the divider now holds in every filter and search state (it used to collapse the moment either was active). Filtering only hides non-matching rows, so what stays on screen is still "pinned above, rest below" &mdash; the visibility test is therefore "can this view see any pinned row", not "is a filter active". None visible &rarr; the whole divider collapses, since a rule reading "pinned above" with nothing above it would lie. The count keeps reporting the panel-wide <code>n/10</code> quota, and the <code>--empty</code> invitation box appears only when unfiltered. With nothing pinned yet the divider stays visible, switches to its <code>--empty</code> variant (a rounded 1px box instead of a single rule — with nothing above it, it invites rather than divides) and swaps to a prompt — "Pin items to the top." with the right-hand slot swapped from the <code>n/10</code> count to a borderless <code>.btn--ghost</code> action (<code>__divider-cta</code>) — sitting exactly where the pinned section will appear. The link guides rather than acts: it scrolls the first pinnable row into the upper third, opens that row's action menu and rings the Pin entry with <code>.dropdown__item.is-hinted</code> (§4.26); choosing what to pin stays with the creator.</p>
+  <p class="sub__desc" data-zh>E-Shop 的無框庫存表：商品識別（圖／縮圖＋標題＋meta）＋分類＋價格＋狀態＋庫存＋可見度開關＋編輯動作，列分隔線版式。E-Shop 頁以頁面層修飾子按分頁切換欄位版型——<code>--eshop</code>（商品：圖／分類／價格／狀態／庫存／可見度）、<code>--bundles</code>（套組：圖／成員／套組價／庫存）、<code>--auctions</code>（競標：圖／分類／出價／動態）——都疊在同一 base grid 上。760px 以下表頭隱藏、列重新堆疊。<strong>2026-07-31 使用者：<code>.product-list__image</code> 改直式</strong>（76×94，寬度不變、高度由 <code>--img-portrait</code> 推導）——真實商品照不再被裁成方形。例外：<strong>2026-08-05（D176／Q52）</strong>：比例值改 <code>2 / 3</code>（76×114、列高 154），同時撤除活動的方形例外&mdash;&mdash;<code>.product-list--events .product-list__image</code> 的覆寫已刪除，<strong>八支清單縮圖現在沒有例外、全部同一個比例</strong>；取貨頁的 <code>.product-list__thumb</code> QR icon chip 是不同 class，不受影響。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
     <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
@@ -5247,8 +5250,8 @@ The first thing buyers see</span>
     <h3 class="sub__title">4.54 Preview card</h3>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
-  <p class="sub__desc" data-en>Fan-side preview card — mirrors the storefront product / auction card, rendered live inside the create-flow preview panel. Empty fields show italic placeholders via <code>.is-empty</code>. <strong>2026-07-31 user: <code>__media</code> turned portrait <code>--img-portrait</code></strong> (was 4:3) — the create-flow hero slot is already 750×930, so a landscape preview would crop the creator's just-uploaded portrait art into a strip; shared by product/auction/bundle/campaign create-flows and order detail.</p>
-  <p class="sub__desc" data-zh>粉絲端即時預覽卡— 鏡像商店端商品卡／拍賣卡，在建立流程預覽面板內即時渲染；未填欄位用 <code>.is-empty</code> 顯示斜體占位。<strong>2026-07-31 使用者：<code>__media</code> 改直式 <code>--img-portrait</code></strong>（原 4:3）——建立流程的主圖槽已是 750×930，橫式預覽會把剛上傳的直式圖切成橫帶；拍賣／商品／組合／集資建立流程與訂單詳情共用。</p>
+  <p class="sub__desc" data-en>Fan-side preview card — mirrors the storefront product / auction card, rendered live inside the create-flow preview panel. Empty fields show italic placeholders via <code>.is-empty</code>. <strong>2026-07-31 user: <code>__media</code> turned portrait <code>--img-portrait</code></strong> (was 4:3) — the create-flow hero slot is already 750×1125, so a landscape preview would crop the creator's just-uploaded portrait art into a strip; shared by product/auction/bundle/campaign create-flows and order detail.</p>
+  <p class="sub__desc" data-zh>粉絲端即時預覽卡— 鏡像商店端商品卡／拍賣卡，在建立流程預覽面板內即時渲染；未填欄位用 <code>.is-empty</code> 顯示斜體占位。<strong>2026-07-31 使用者：<code>__media</code> 改直式 <code>--img-portrait</code></strong>（原 4:3）——建立流程的主圖槽已是 750×1125，橫式預覽會把剛上傳的直式圖切成橫帶；拍賣／商品／組合／集資建立流程與訂單詳情共用。</p>
   <p class="field-label" data-en>Rendered preview</p>
   <p class="field-label" data-zh>視覺展示</p>
   <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">.preview-card <span data-en>(product / auction)</span><span data-zh>(商品／拍賣)</span></span><span class="gallery__when" data-en>Mirrors the storefront product / auction card, re-rendered live from the create form; unfilled fields show italic placeholders via <code>.is-empty</code>.</span><span class="gallery__when" data-zh>鏡像商店端商品卡／拍賣卡，依建立表單即時渲染；未填欄位用 <code>.is-empty</code> 顯示斜體占位。</span></div>
@@ -8192,6 +8195,37 @@ The first thing buyers see</span>
   </details>
 </section>
 
+<section class="sub" id="ticket-preview">
+  <div class="sub__head">
+    <h3 class="sub__title">4.116 Ticket preview</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The ticket a fan ends up holding, shown live while the creator fills the form beside it. Two halves with a tear line between them: the top is identity (when, name or logo, what kind of ticket), the bottom is the QR that gets scanned at the door. The tear is the only metaphor this object needs — it says at a glance which half is for a person and which is for a machine.</p>
+  <p class="sub__desc" data-zh>粉絲最後拿到的那張票，創作者在旁邊填、這裡即時長出來。一條撕線把票分成兩半：上半是識別（時間、票名或 logo、哪一種票），下半是進場掃的 QR。撕線是這個物件唯一需要的隱喻——一眼就說明哪半張給人看、哪半張給機器掃。</p>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo">
+    <div class="ticket-preview">
+      <div class="ticket-preview__top">
+        <div class="ticket-preview__when">2026-09-01 19:30</div>
+        <div class="ticket-preview__logo">Pleasure World Tour</div>
+        <div class="ticket-preview__kind">Concert</div>
+      </div>
+      <div class="ticket-preview__tear"></div>
+      <div class="ticket-preview__bottom">
+        <div class="qr-box qr-box--lg" id="ds-tk-qr"></div>
+      </div>
+    </div>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.ticket-preview</code>（<code>--custom-bg</code> 吃消費頁寫進 <code>--ticket-bg</code> 的上傳底圖）· <code>__top</code> ＞ <code>__when</code>／<code>__logo</code>(<code>--asset</code>)／<code>__kind</code> · <code>__tear</code>（兩側半圓缺口＋虛線）· <code>__bottom</code> ＞ <code>.qr-box.qr-box--lg</code>（沿用 <code>pickup.css</code> 的假 QR 框，SVG 由 <code>window.ztorFauxQr()</code> 產生）。</p>
+    <p class="field-text"><strong>字色走 <code>--foreground-on-inverse</code>／<code>--foreground-on-inverse-muted</code></strong>：票面永遠是深色物件，不是跟著主題翻的卡。第一版誤用 <code>--on-primary</code>（那是「疊在品牌橘上」的字色、本身是深色）造成黑底黑字，實測抓到。缺口用 <code>--surface-page</code> 的圓形遮住邊緣，所以換主題不會露餡。預設底圖是 <code>--primary</code>／<code>--ring</code> 兩團 <code>color-mix</code> 光疊在 <code>--surface-inverse</code> 上，無裸色。</p>
+    <p class="field-text"><code>ds-components/ticket-preview.css</code>。消費頁：<code>create-event.html</code>（步驟 5 票券銷售 › 票券設計的右軌）。版型來源＝Beamco Artist Portal v3（Figma <code>0gWC6dR1yzdEu0g1LqvRvJ</code> node 1904-82979）。</p>
+  </div>
+  </details>
+</section>
+
 <section class="sub" id="size-chart-editor">
   <div class="sub__head">
     <h3 class="sub__title">4.115 Size chart editor</h3>
@@ -8586,6 +8620,27 @@ The first thing buyers see</span>
     ];
     out.textContent = lines.join('\n');
   })();
+</script>
+<script>
+  /* Ticket preview 的 demo QR：與 pickup／event-detail 同一支假 QR，守衛以免重複定義 */
+  window.ztorFauxQr = window.ztorFauxQr || function (seed) {
+    seed = seed || 7; var N = 25, cell = 4, pad = 2, size = N * cell + pad * 2, r = '';
+    function fnd(ox, oy) {
+      r += '<rect x="' + (pad + ox * cell) + '" y="' + (pad + oy * cell) + '" width="' + (7 * cell) + '" height="' + (7 * cell) + '" fill="currentColor"/>';
+      r += '<rect x="' + (pad + (ox + 1) * cell) + '" y="' + (pad + (oy + 1) * cell) + '" width="' + (5 * cell) + '" height="' + (5 * cell) + '" fill="var(--card)"/>';
+      r += '<rect x="' + (pad + (ox + 2) * cell) + '" y="' + (pad + (oy + 2) * cell) + '" width="' + (3 * cell) + '" height="' + (3 * cell) + '" fill="currentColor"/>';
+    }
+    function inF(x, y) { return (x < 8 && y < 8) || (x > N - 9 && y < 8) || (x < 8 && y > N - 9); }
+    for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+      if (inF(x, y)) continue;
+      var v = (x * 7 + y * 13 + seed * 31) % 11;
+      if (v > 4) r += '<rect x="' + (pad + x * cell) + '" y="' + (pad + y * cell) + '" width="' + cell + '" height="' + cell + '" fill="currentColor"/>';
+    }
+    fnd(0, 0); fnd(N - 7, 0); fnd(0, N - 7);
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="100%" height="100%" role="img" aria-label="QR">' + r + '</svg>';
+  };
+  var dsTkQr = document.getElementById('ds-tk-qr');
+  if (dsTkQr) dsTkQr.innerHTML = window.ztorFauxQr(5);
 </script>
 <script src="js/zselect.js?v=r2.2"></script>
 </body>

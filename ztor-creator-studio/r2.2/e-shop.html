@@ -936,27 +936,39 @@
        一件都沒釘選時這條線不收起，改講「怎麼釘、釘了會怎樣」（2026-08-04 使用者裁示）——
        此時它剛好落在草稿之後、第一個商品之前，也就是釘選區將來會出現的位置，等於先把
        那塊地方指出來；同一條線兩種說法，不另做一個提示元件。
-       搜尋或篩選中仍然收起：那時畫面上的列是散的，一條說「以上為釘選商品」的線會說謊。 */
+       2026-08-05 使用者反饋：釘選區只在「全部商品」看得到，其他篩選狀態也要有。
+       原本的規則是「一旦搜尋或篩選就整條收起」，理由是那時畫面上的列是散的。實際上並沒有
+       散——reflowPins 把釘選列排在最前，篩選只是把不相符的列 hidden 掉，留在畫面上的
+       仍然是「釘選的在上、其餘在下」，那條線照樣分得開。真正會說謊的只有一種情況：
+       這個篩選底下一件釘選商品都看不到，線上方空無一物卻寫著「以上釘選」。
+       所以判準從「有沒有在篩選」改成「這個視野裡看不看得到釘選商品」。 */
     function updatePinChrome(panel) {
       const divider = pinDividerOf(panel);
       if (!divider) return;
       const n = pinnedRowsOf(panel).length;
       const filtering = !!((search && search.value.trim()) || activeStatus() !== 'all');
-      divider.hidden = filtering;
+      const visiblePinned = pinnedRowsOf(panel).filter(r => !r.hidden).length;
+      divider.hidden = filtering && visiblePinned === 0;
+      /* 零釘選時那條線改成「去釘第一件」的邀請方框，只在完整清單成立：篩選中的子集合
+         不是介紹功能的地方，那時該讓位給使用者正在找的東西。所以篩選中只有兩種結果——
+         看得到釘選商品就畫線，看不到就整條收起，不會冒出邀請框。 */
+      const inviting = !filtering && n === 0;
       /* 兩種狀態長相不同（使用者裁示）：有釘選＝一條有字的分隔線；零釘選＝有圓角的方框。 */
-      divider.classList.toggle('product-list__divider--empty', n === 0);
+      divider.classList.toggle('product-list__divider--empty', inviting);
       const label = divider.querySelector('[data-i18n]');
       if (label) {
-        const key = n === 0 ? 'e-shop.pin.hint' : 'e-shop.pin.divider';
+        const key = inviting ? 'e-shop.pin.hint' : 'e-shop.pin.divider';
         label.setAttribute('data-i18n', key);
         label.textContent = T(key, label.textContent);
       }
       /* 右端那一格零釘選時給指路連結、有釘選之後給計數——同一個位置、兩種內容，
-         不並排：零釘選時的 0/10 沒有在報告任何進度，只是把行動往旁邊擠。 */
+         不並排：零釘選時的 0/10 沒有在報告任何進度，只是把行動往旁邊擠。
+         計數在篩選中仍報全分頁的 n/10，不報這個視野看得到幾件：它回答的是「還能再釘幾件」，
+         那個額度是分頁層級的，不隨當下篩選縮放。 */
       const cta = divider.querySelector('[data-eshop-pin-cta]');
-      if (cta) cta.hidden = n > 0;
+      if (cta) cta.hidden = !inviting;
       const count = divider.querySelector('[data-eshop-pin-count]');
-      if (count) { count.hidden = n === 0; count.textContent = n + '/' + PIN_MAX; }
+      if (count) { count.hidden = inviting; count.textContent = n + '/' + PIN_MAX; }
       panel.querySelectorAll('.product-list__row').forEach(row => {
         ensurePinMark(row);
         const item = row.querySelector('[data-eshop-pin]');
@@ -985,6 +997,10 @@
       }
       if (on) row.dataset.pinned = 'true'; else delete row.dataset.pinned;
       reflowPins(panel);
+      /* 重排會改變列的先後，分批載入的「前 N 筆」因此換了一批人；在篩選中釘選還會讓
+         「這個視野看不看得到釘選商品」翻面（取消最後一件可見的釘選＝那條線該收起來）。
+         兩者都由 applyFilter 重算，所以搬完就讓它再跑一次，而不是各自補一段判斷。 */
+      applyFilter();
       return true;
     }
 
