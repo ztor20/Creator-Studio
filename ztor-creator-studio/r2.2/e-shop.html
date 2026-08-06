@@ -948,11 +948,14 @@
       const n = pinnedRowsOf(panel).length;
       const filtering = !!((search && search.value.trim()) || activeStatus() !== 'all');
       const visiblePinned = pinnedRowsOf(panel).filter(r => !r.hidden).length;
-      divider.hidden = filtering && visiblePinned === 0;
-      /* 零釘選時那條線改成「去釘第一件」的邀請方框，只在完整清單成立：篩選中的子集合
-         不是介紹功能的地方，那時該讓位給使用者正在找的東西。所以篩選中只有兩種結果——
-         看得到釘選商品就畫線，看不到就整條收起，不會冒出邀請框。 */
-      const inviting = !filtering && n === 0;
+      /* 零釘選時那條線改成「去釘第一件」的邀請方框，每一個篩選狀態都要在（2026-08-05
+         使用者裁示，同日稍早「只在未篩選時出現」的做法作廢）：釘選是這張清單的能力，
+         不是「全部商品」這個視角限定的能力；在篩選中想釘東西的人反而更常見——先篩出
+         販售中，再從裡面挑幾件主打。那個入口在篩選時消失，等於要人先切回全部才找得到。
+         一件都沒釘選時沒有上下兩段可分，所以不會有「線上方空無一物」的說謊問題，
+         整條照常顯示。 */
+      const inviting = n === 0;
+      divider.hidden = inviting ? false : visiblePinned === 0;
       /* 兩種狀態長相不同（使用者裁示）：有釘選＝一條有字的分隔線；零釘選＝有圓角的方框。 */
       divider.classList.toggle('product-list__divider--empty', inviting);
       const label = divider.querySelector('[data-i18n]');
@@ -965,8 +968,13 @@
          不並排：零釘選時的 0/10 沒有在報告任何進度，只是把行動往旁邊擠。
          計數在篩選中仍報全分頁的 n/10，不報這個視野看得到幾件：它回答的是「還能再釘幾件」，
          那個額度是分頁層級的，不隨當下篩選縮放。 */
+      /* 「立即釘選」會去打開「這個視野裡第一件可釘選商品」的操作選單。所以這個視野裡
+         一件可釘選的商品都沒有時（例如只篩草稿——草稿不可釘選），連結收起、只留說明；
+         留著它就是一顆按下去什麼都不會發生的按鈕。 */
+      const hasPinnable = [...panel.querySelectorAll('.product-list__row')]
+        .some(r => !r.hidden && r.querySelector('.product-list__actions [data-eshop-pin]'));
       const cta = divider.querySelector('[data-eshop-pin-cta]');
-      if (cta) cta.hidden = !inviting;
+      if (cta) cta.hidden = !inviting || !hasPinnable;
       const count = divider.querySelector('[data-eshop-pin-count]');
       if (count) { count.hidden = inviting; count.textContent = n + '/' + PIN_MAX; }
       panel.querySelectorAll('.product-list__row').forEach(row => {

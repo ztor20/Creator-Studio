@@ -10,7 +10,7 @@
 
 - **【B】** 分隔列的顯隱判準由「有沒有在搜尋／篩選」改成「**這個視野看不看得到釘選商品**」（`e-shop.html` `updatePinChrome()`）。原本的規則是一旦搜尋或篩選就整條收起，理由記的是「那時畫面上的列是散的」——實際上沒有散：`reflowPins()` 把釘選列排在最前，篩選只是把不相符的列 `hidden` 掉，留在畫面上的仍然是「釘選在上、其餘在下」，那條線照樣分得開。真正會說謊的只有一種情況：這個篩選底下一件釘選商品都看不到，線上方空無一物卻寫著「以上釘選」——那一種才收起。
 - **【B】** 計數在篩選中維持全分頁的 `n/10`，不改成「這個視野幾件」：它回答的是「還能再釘幾件」，額度是分頁層級的，不隨當下篩選縮放。
-- **【B】** `--empty` 邀請方框（「把主打商品放到商店最前。」＋指路連結）**只在未篩選時出現**：篩選中的子集合不是介紹功能的地方，那時該讓位給使用者正在找的東西。所以篩選中只有兩種結果——看得到釘選商品就畫線，看不到就整條收起。
+- **【B】** 零釘選時的 `--empty` 邀請方框（「把主打商品放到商店最前。」＋「立即釘選」）**每一個篩選狀態都在**。（同日稍早先做成「只在未篩選時出現」，理由是「篩選中的子集合不是介紹功能的地方」；使用者當天圈選該方框裁示「不同的篩選狀態下，還未釘選的提示也要在」，該做法作廢。**新的理由**：釘選是這張清單的能力，不是「全部商品」這個視角限定的能力；而且「先篩出販售中，再從裡面挑幾件主打」是常見動線，入口在篩選時消失等於要人先切回全部才找得到。零釘選時沒有上下兩段可分，所以也不會有「線上方空無一物卻寫著以上釘選」的說謊問題。）**唯一跟著收起的是「立即釘選」連結**：它會去打開這個視野裡第一件可釘選商品的操作選單，視野裡一件可釘選的都沒有時（例如只篩草稿——草稿不可釘選）按下去不會有反應，所以收起、只留說明文字。查無符合時整張清單走 `.is-filtered-empty`（`display:none`），方框連同清單一起退場，空狀態卡獨佔畫面。
 - **【D】** `setPinned()` 在 `reflowPins()` 之後補呼叫 `applyFilter()`：重排會換掉分批載入的「前 N 筆」，在篩選中釘選／取消釘選還會讓「視野看不看得到釘選商品」翻面（取消最後一件可見的釘選＝線該收起來）。兩者都由 `applyFilter` 重算，不各自補一段判斷。
 - **【D】** `product-list.css` 兩處註解、`design-system.md`（Pattern 段＋狀態表新增兩列）、`design-system.html`（§4.32 Product list 的 purpose 段）同步改掉「搜尋／篩選中分隔列收起」的舊描述。
 - 實測涵蓋：全部／販售中／未完成（草稿）／搜尋命中／搜尋無結果五種狀態，以及商品與組合兩個分頁；並驗證篩選中釘選與取消釘選後排序、計數、線的顯隱都跟著更新。
@@ -35,17 +35,24 @@
 - **【D】`STYLE-DECISIONS.md` 兩則同步**：Q39（已裁決）加註比例值由 D176 改寫、結論本身不變；**Q43（待裁決）範圍縮小**——該題原本記錄「三個直式顯示框數值互不相等」，其中 `.pd-hero__cover` 本來就是 `2/3`，標準改成 2:3 之後與它數值相同，原記的裁切落差自動消失，矛盾從三個數字縮成兩個（3:4 對 2:3）。**沒有順手把它改成讀 token**：目前相等純屬巧合，要不要轉成保證相等屬該題待裁決範圍，裁決權在使用者。
 - **未動**：活動（Events）的橫式橫幅仍是 1920×1080（16:9），仍是全站唯一橫式例外；`.ip-hero__cover`／`.ipm-card__cover` 的 `3/4` 維持不變（Q30／Q31 既有裁決，Q43 待裁決）；`UI-CHANGES` 舊條目、`ASSUMPTIONS.md` IMG-001／PG-023、`requirements-map.md` 的 2026-07-31 追蹤註記皆為當時紀錄，不回頭改寫。
 
-## 2026-08-04 · 儀表板整頁實心圖示：**試做示範頁，尚未採用**（D infra／試做）
+## 2026-08-04（2026-08-05 改用 Phosphor 重做，同日使用者裁示不採用）· 儀表板整頁實心圖示：**試做結案，維持描邊**（D infra／試做）
+
+**使用者看過 Phosphor 版 demo 後裁示「還是保持線性的吧」**——維持全站現行的 Tabler 描邊語彙，不採用實心。示範頁 `demo-icons-filled.html` 與其專用覆寫檔 `js/demo-icons-phosphor-fill.js` 已刪除；試做過程與兩個圖庫（Tabler filled／Phosphor fill）的覆蓋率比較留在下方紀錄與 git 歷史（`9dd68ab`／`89e3099`）備查，不留在工作區。`index.html`／`js/sidebar.js`／`js/components.js`／`js/icons.js` 全程未被這批試做改動。`STYLE-DECISIONS.md` 不需要補裁決條目——描邊本來就是現況，這次是「維持現況」而非「新裁決」。
+
+以下為試做過程紀錄：
 
 使用者想看「首頁整頁換實心圖示」長什麼樣，先做 demo。**`index.html` 一個字都沒改**，另開一份可並排比較的示範頁；採不採用由使用者裁決，本輪不動 `STYLE-DECISIONS.md`。
 
-- **【D】新增 `demo-icons-filled.html`**（檔頭寫明：比較用示範頁、非產品頁、待裁決後刪除或轉正）。它是 `index.html` 的複本，唯一差別是在 `js/icons.js` 之後多掛一段別名腳本，把 registry 裡的描邊 key 指到對應的實心版。**為什麼用別名而不是改 markup**：首頁的圖示有一半是 JS 動態產生的（側欄導航 `js/sidebar.js`、儀表板各張卡 `js/components.js`、平台表現 `js/performance-store.js`），去改那三支會讓站上另外 40 頁跟著變成實心；別名只活在這一頁的記憶體裡，關掉就沒了。另補一行讓側欄「總覽」維持已選態——`sidebar.js` 用檔名判斷當前頁，不補的話並排比較會多出一個「選中態」的差異，看的人分不清是圖示造成的還是選中態造成的。
-- **【D】`js/icons.js` 新增 11 顆試做用 `*-fill`**：`layout-grid-fill`／`banknote-fill`／`receipt-fill`／`flag-fill`／`award-fill`／`tag-fill`／`bell-fill`／`lock-fill`／`calendar-fill`／`circle-fill`／`globe-fill`（Tabler `filled/*`，MIT，路徑吃 `fill="currentColor" stroke="none"`，零裸 hex）。**正式頁面一顆都沒引用**，只有示範頁透過別名用到；描邊原版一個字都沒動。
-- **【D】沒有加 `<g transform>` 縮放**。量過每一顆的幾何邊界：Tabler 的 filled 版剛好比 outline 版每邊各大 1px，那是設計上用來補償 `stroke-width: 2` 的一半。站上 `stroke-width` 是 1.2，所以實心版視覺上只大 4–6%，肉眼分不出來；既有四顆告警實心（`alert-triangle-fill` 等）也都沒有包層，這批跟它們一致。
-- **【D】18 顆維持描邊，因為 Tabler 沒有實心版**：`menu`／`x`／`rocket`／`landmark`／`chevron-down`／`chevron-right`／`shopping-bag`／`ticket`／`users`／`search`／`package-x`／`upload`／`megaphone`／`trending-up`／`dollar-sign`／`refresh-ccw`／`bar-chart-3`／`link`。不手工描一顆假的——手描的形狀對不上 Tabler 的網格與轉角語彙，會在同一排裡自己露餡。所以示範頁必然是實心與描邊混排（75 個字符裡 29 實心／46 描邊），**這正是要給使用者判斷的東西**：側欄七個導航項只有「總覽」與「收入管理」有實心版，另外五項（項目／IP 資產／電子商店／活動／粉絲）只能維持描邊。
-- **【D】** `design-system.html`：§4.9 Icon 的「使用中」清單補 11 顆實心＋`lock` 描邊、策展顆數 128→139、換庫對照表補 11 列（顆數 42→53，順手修掉 summary 那句停在 40／69 的舊數字）、新增一段「試做批次：儀表板整頁實心」中英說明。`design-system.md` §1.7 補同一段＋對照表 11 列、顆數同步三處。
-- **本輪沒有動 `documents/`、`STYLE-DECISIONS.md`、`index.html`、`js/sidebar.js`、`js/components.js`**。
-- 驗證（本機 devserver + Playwright 實測）：1440 寬、深色與亮色各截一組現況／試做對照；`check_ds_sync.py` 12 項全 PASS，檢查 10 裸值基準未變、檢查 12 的 R1／R2 維持 11／11。截圖見 `screenshots/20260804-dashboard-icons-A-現況描邊-dark.png`／`-light.png` 與 `20260804-dashboard-icons-B-試做實心-dark.png`／`-light.png`。
+- **【D】新增 `demo-icons-filled.html`**（檔頭寫明：比較用示範頁、非產品頁、待裁決後刪除或轉正）。它是 `index.html` 的複本，唯一差別是在 `js/icons.js` 之後多掛一支覆寫檔，把 registry 裡的描邊 key 指到實心字符。**為什麼用覆寫而不是改 markup**：首頁的圖示有一半是 JS 動態產生的（側欄導航 `js/sidebar.js`、儀表板各張卡 `js/components.js`、平台表現 `js/performance-store.js`），去改那三支會讓站上另外 40 頁跟著變成實心；覆寫只活在這一頁的記憶體裡，關掉就沒了。另補一行讓側欄「總覽」維持已選態——`sidebar.js` 用檔名判斷當前頁，不補的話並排比較會多出一個「選中態」的差異，看的人分不清是圖示造成的還是選中態造成的。
+- **【D · 2026-08-05 換圖庫】第一版用 Tabler filled，結果只換得到 12／33 顆，整頁作廢重做。** Tabler 的 filled 集雖然有 1054 顆，但首頁要的 `rocket`／`landmark`／`shopping-bag`／`users`／`megaphone`／`trending-up`／`refresh-ccw`／`package-x`／`bar-chart-3`／`chevron-*`／`menu`／`search`／`upload`／`dollar-sign`／`link` 全部沒有實心版（逐顆 curl unpkg 驗過；`ticket` 其實有，第一版漏掉了）。使用者看了直接反應「這些不是實心耶」——側欄七個導航項只有兩顆變實心，其餘五項還是描邊，整排看起來就是壞掉。**改用 Phosphor Icons（`@phosphor-icons/core@2.1.1`，MIT）的 fill weight**：它每一顆 outline 都有對應的 fill，33 個 key 一顆不漏。
+- **【D】新增 `js/demo-icons-phosphor-fill.js`（本頁專用，自動產生）**：33 個 key → Phosphor fill 的完整對照，path data 內嵌、不連外網（站上是離線原型）。**刻意不寫進 `js/icons.js`**——共用 registry 是站上 40 幾頁一起吃的，混進第三套圖庫（Tabler ＋ Simple Icons ＋ Phosphor）會讓其他頁面的圖示語彙分岔。
+- **【D】7 顆換了隱喻或形狀**，其餘 26 顆同義直換：`chevron-down`／`chevron-right` → `caret-*-fill`（細角號沒有實心版，實心三角才有）、`landmark` → `bank-fill`（同一座列柱建築）、`link` → `plugs-connected-fill`（Phosphor 的 `link-fill` 是「方框挖出鏈結」，不能用；這顆用在「外部資料狀態」卡，插頭語意更準）、`menu` → `rows-fill`（`list-fill` 同樣是方框挖線）、`x` → `x-circle-fill`（`x-fill` 是方框挖 ✕）、`package-x` → `package-fill`（**警示語意流失**：包裹上的 ✕ 不見了，「庫存過低」只剩文案在講）。
+- **【D】網格與光學大小**：Phosphor 原生 256×256、站上渲染器（`icons.js` 的 `buildSvg`）固定輸出 `viewBox="0 0 24 24"` 且改不得，所以每顆包一層 `<g transform="translate(…) scale(…)">` 把座標壓回 24 網格——`icons.js` 檔頭本來就允許這種寫法。縮放係數＝`24/256 × 0.90`：Phosphor 字符約佔滿畫布 87%、Tabler 只佔 75%，1:1 換算會整排大一號，乘上修正係數後兩者視覺量體才對齊（實測 bbox：Tabler 平均 18.8、Phosphor 17.7，實心略小才是對的）。`chevron-down`／`chevron-right` 再單獨乘 0.78——實心三角密度高得多，等比換算會在清單裡吼一聲。
+- **【D】`.card__head .card__link::after` 的尾端箭頭也一起換，只寫在本頁的 `<style>`**：這一顆不在 icon registry 裡，`ds-components/card.css` 是用 CSS mask 畫的（一條 stroke 的 chevron polyline），覆寫檔碰不到它，會變成「整頁都實心、只剩它是描邊」。就地把 mask 換成 Phosphor 的 `caret-right`（`viewBox` 開到 328＝內縮 78%，與 registry 的 caret 同一個光學修正）。**沒有動 `card.css`**——那是 40 幾頁共用的。
+- **【D · 2026-08-04 保留不動】`js/icons.js` 那 11 顆 Tabler `*-fill`**（`layout-grid-fill`／`banknote-fill`／`receipt-fill`／`flag-fill`／`award-fill`／`tag-fill`／`bell-fill`／`lock-fill`／`calendar-fill`／`circle-fill`／`globe-fill`）留在共用 registry：`mail-fill`／`smartphone-fill` 已在登入頁正式採用、其餘已寫進 DS 文件，與本頁裁決無關。本輪**沒有**再往共用 registry 加任何東西。
+- **【D】** `design-system.html`：§4.9 Icon 的「使用中」清單補 11 顆實心＋`lock` 描邊、策展顆數 128→139、換庫對照表補 11 列（顆數 42→53，順手修掉 summary 那句停在 40／69 的舊數字）、新增一段「試做批次：儀表板整頁實心」中英說明。`design-system.md` §1.7 補同一段＋對照表 11 列、顆數同步三處。（2026-08-04 的紀錄，Phosphor 那批因為不進共用 registry，沒有進 DS 文件。）
+- **本輪沒有動 `documents/`、`STYLE-DECISIONS.md`、`index.html`、`js/sidebar.js`、`js/components.js`、`js/icons.js`**。
+- 驗證（本機 server + Playwright 實測）：1440 寬、深色與亮色各截一組現況／試做對照，側欄七項完整入鏡；程式化逐顆核對 75 個字符全部帶 `fill="currentColor" stroke="none"`、零 stroked 節點，另掃 computed style 確認畫面上沒有殘留的 CSS 描邊圖示；通知面板與空狀態另開驗過。`check_ds_sync.py` 12 項全 PASS，檢查 10 裸值基準未變。截圖見 `screenshots/20260805-icons-before-tabler-outline-dark.png`／`-light.png` 與 `20260805-icons-after-phosphor-fill-dark.png`／`-light.png`（2026-08-04 第一版的四張 `20260804-dashboard-icons-*` 保留備查）。
 
 ## 2026-08-04 · 登入頁 F1：電子郵件／手機號碼的圖示也改實心（B 反饋）
 
