@@ -4,8 +4,8 @@
    建立活動 Step 4 的可重複票種卡清單。一張卡有兩態：
    • 收合態：卡標＝票種名稱，下方唯讀列出價格與數量，右側 Edit ＋ ⋮（複製／移除）
    • 編輯態：名稱／價格／數量三欄可輸入（每欄末端 ✕ 清空），
-     底部 Remove／Cancel／Save。Remove 走 Q37 裁決的實色 .btn--destructive
-     （規格 F9.2 寫「紅字」是截圖觀察，站上呈現以 STYLE-DECISIONS Q37 為準）
+     底部 Remove／Cancel／Save。Remove 走 .btn--destructive——2026-08-06 起是
+     紅框紅字（Q37 的實色紅底已被使用者推翻），與規格 F9.2 寫的「紅字」反而一致
 
    卡體沿用 .card（填色＋陰影＋--radius-xl），與建立組合流程的
    .fc-bundle（bundle-editor.css）同一種「建立流程裡 JS 產生的可編輯卡清單」；
@@ -41,10 +41,15 @@
    兩者要落在同一張網格上，中間那層容器就不能自己成為 grid item。 */
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* 2026-08-06 使用者指示：固定一行三欄（原本是 auto-fill／最小 280px，欄數隨容器寬度浮動，
+     同一頁在不同視窗寬度下會排成 2 欄或 4 欄，看起來像兩種版型）。窄螢幕仍要退，
+     所以只在放不下三欄時降級，不讓卡片被壓到讀不了。 */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-12);
   align-items: start;      /* 編輯中的卡變高時，同列其他卡不跟著拉長 */
 }
+@media (max-width: 1100px) { .tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 720px)  { .tier-grid { grid-template-columns: minmax(0, 1fr); } }
 .tier-list { display: contents; }
 .tier-list[hidden] { display: none; }   /* display:contents 會壓過 UA 的 [hidden]，需顯式還原 */
 
@@ -55,6 +60,8 @@
 
 /* 新增格：與票種卡等寬的一格，維持 upload-tile 的虛線語彙。 */
 .tier-add { min-height: 152px; }
+/* .upload-tile 有自己的 display，會蓋掉 UA 的 [hidden]：編輯中要收起新增格，需顯式還原。 */
+.tier-add[hidden] { display: none; }
 
 .tier-card { padding: var(--sp-20); }
 
@@ -183,12 +190,22 @@
    一條規則＝標籤＋一組 .segmented 選法＋選到才展開的欄位；欄位本身一律吃
    既有的 .input／.select／.amount-field，本檔只排間距。 */
 .rule + .rule { margin-top: var(--sp-20); }
-.rule > .segmented { margin-top: var(--sp-6); }
-.rule-when { margin-top: var(--sp-10); }
+/* 標籤與控制項之間吃 .field 同一個節奏（6px）。2026-08-06 模式控制項由 .segmented 改成
+   .select 之後，原本只寫 .segmented 的那條就不再命中，標籤與下拉黏成一塊（使用者圈出）。
+   兩個 selector 都留著——批次編輯等處若還有 segmented，行為不變。 */
+.rule > .segmented,
+.rule > .select { margin-top: var(--sp-6); }
+/* 條件欄位與上面那個下拉拉開一點：它是「選了才出現」的結果，不是下一個並列欄位。 */
+.rule-when { margin-top: var(--sp-12); }
 .rule-when[hidden] { display: none; }
 .rule-row { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap; }
+/* .date-input 是包住 input 的外層 span，不是 .input 本身——沒列進來的話兩個日期各自
+   撐滿整行、疊成一疊（2026-08-06 使用者圈出「所有欄位都黏在一起」的另一半原因）。 */
+/* flex-basis 用 0 不用 140px（2026-08-06）：票種卡只有約 240px 可用，兩格各 140 加間距
+   就超過寬度、於是換行疊成兩排。改成 0 之後兩格永遠平分同一列，窄到哪裡都還是一行。 */
 .rule-row > .input,
-.rule-row > .amount-field { flex: 1 1 140px; min-width: 0; }
+.rule-row > .date-input,
+.rule-row > .amount-field { flex: 1 1 0; min-width: 0; }
 .rule-unit { font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }
 /* 折扣的條件是「折扣」這條規則的下一層，往內縮一階並用左邊界標出從屬關係 */
 .rule-sub {
@@ -197,26 +214,36 @@
   border-left: 1px solid var(--border-soft);
 }
 
-/* 票種卡裡的自訂規則：一個開關決定要不要有自己的一份 */
+/* 票種卡裡的自訂規則：規則欄位本體（開關在卡標那一行，見 .tier-card__ownbtn） */
 .tier-card__rules { margin-top: var(--sp-16); padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
-.tier-card__own {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-12);
-  margin-bottom: var(--sp-12);
-  font-size: var(--fs-13);
-  color: var(--foreground);
-  cursor: pointer;
-}
-/* 收合卡上的「自訂」標記：哪幾張不跟隨活動預設，不用打開卡也看得出來 */
+/* 墓碑（2026-08-06）：`.tier-card__own`——卡內那一列「自訂規則＋switch」。
+   依使用者指示改成卡標同一行靠右的按鈕，這個 class 已無消費者，故移除。 */
+
+/* 自訂規則開關（按鈕形）。只在編輯態出現：收合態要不要自訂規則不是當下在做的事，
+   那時該看的是徽章。開啟狀態走橘色外框＋橘字，不用實色——同一張卡的卡底已經有一顆
+   實色橘的「儲存」，兩顆實色橘會分不出哪顆是這一步的主要動作。 */
+.tier-card__ownbtn { display: none; }
+.tier-card--editing .tier-card__ownbtn { display: inline-flex; margin-left: auto; }
+.tier-card__ownbtn[aria-pressed="true"] { border-color: var(--primary); color: var(--primary); }
+/* 批次編輯時按鈕與 ⋮ 都在，靠右成一組：auto 只給前面那顆，否則兩個 auto 會把空白對半分、
+   按鈕停在卡片中間。 */
+.tier-card--group .tier-card__head > .tier-card__actions { margin-left: 0; }
+
+/* 收合卡上的「自訂」標記：哪幾張不跟隨活動預設，不用打開卡也看得出來。
+   編輯態收起來——那時同一行的按鈕已經在說同一件事。 */
 .tier-card__badge { flex: none; }
 .tier-card__badge[hidden] { display: none; }
+.tier-card--editing .tier-card__badge { display: none; }
 
 /* ── 收入試算 ────────────────────────────────────────────────
    四列唯讀鍵值（吃既有的 .kv），最後一列是結果：加一條上分隔線與較大的字，
    讓「算完是多少」與上面三個組成分開。 */
 .calc-sum { margin-top: var(--sp-16); }
+/* 「支出」那一列自己是輸入格（2026-08-06）：其餘三列是算出來的、這一列是填進去的。
+   .kv 的值欄本來是一段文字，換成輸入框之後要給它一個寬度上限，不然會把標籤擠掉。 */
+.kv--input { align-items: center; }
+.calc-sum__cost { flex: 0 0 auto; width: 132px; }
+.calc-sum__cost .amount-field__input { text-align: right; }
 .calc-sum__out { margin-top: var(--sp-6); padding-top: var(--sp-12); border-top: 1px solid var(--border); }
 .calc-sum__out .kv__v { font-size: var(--fs-18); }
 /* 支出填太多或票價太低時結果會是負的。照實顯示負數並轉紅，不夾成 0——
@@ -226,6 +253,10 @@
 /* ── 清單尾端的計數列（已建立 N 種 · 至少需 1 種）────────────────
    靠右、次要色，貼在新增鈕下緣。超標（Σ 數量 > 容量）時整行轉紅，
    與欄位級錯誤同一個訊號色。 */
+/* 網格與下一個區塊之間的間距。原本是靠計數列的上外距撐開的，2026-08-06 計數列撤除後
+   規則區塊就直接黏在新增格底下（使用者圈出）。改由網格自己負責下緣，與計數列在不在無關。 */
+.tier-grid { margin-bottom: var(--sp-24); }
+
 .tier-count {
   margin-top: var(--sp-10);
   text-align: right;

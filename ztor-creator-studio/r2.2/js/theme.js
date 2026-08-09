@@ -43,20 +43,68 @@
    localStorage。之後任何讀取者拿到的都是實際存在的值，退路根本不會被觸發——
    就算日後有人新增第四個 store 又寫了不同的退路，也不會再分岐。
    ============================================================ */
+/* ── Admin 進入某位創作者的工作區（2026-08-07）────────────────────────
+   規格 §4.1：Admin 從 Creator 管理選定並進入某 Artist 工作區之後，導航才顯示
+   該 Artist 的模組。原型裡「這是誰的工作區」＝哪一份 demo 資料集（persona），
+   所以帶著身分的連結長這樣：
+
+     project-detail.html?id=<項目 id>&creator=<persona>&from=<來源 Admin 頁>
+
+   `creator` 在這裡（每頁第一支 script、早於所有 store）就套用，落地頁的資料
+   才會是那位創作者的。同時把這趟代管記進 ztor.adminHandoff，供 js/sidebar.js
+   畫既有的「代管中 + 返回」列（站上只有那一套標示，不另做第二種）。
+
+   ⚠ persona 是 demo 機制（cheat code 的假資料人物開關），不是產品功能——真實
+     系統的「進入誰的工作區」由後端授權，不會是網址上的一個參數。見 ASSUMPTIONS。 */
 (function seedPersona() {
   var KEY = "ztor.persona";
+  var HANDOFF = "ztor.adminHandoff";
   var VALID = ["default", "nick", "userB"];
   /* 本機／demo 的預設人格＝周湯豪（沿用 i18n.js 原本的 [local-default]，
      也是 cheat code 面板本來就高亮的那一個）。上游為 'default'。 */
   var FALLBACK = "nick";
+  var asked = null, from = "";
+  function stripHandoffParams(q) {
+    try {
+      q.delete("creator"); q.delete("from");
+      var s = q.toString();
+      history.replaceState(null, "", location.pathname + (s ? "?" + s : "") + location.hash);
+    } catch (_) {}
+  }
+  try {
+    var q = new URLSearchParams(location.search);
+    asked = q.get("creator");
+    from = q.get("from") || "";
+    if (VALID.indexOf(asked) < 0) asked = null;
+  } catch (_) { asked = null; }
   try {
     var p = localStorage.getItem(KEY);
-    if (VALID.indexOf(p) < 0) { p = FALLBACK; localStorage.setItem(KEY, p); }
+    if (asked) p = asked;
+    if (VALID.indexOf(p) < 0) p = FALLBACK;
+    if (p !== localStorage.getItem(KEY)) localStorage.setItem(KEY, p);
+    if (asked) {
+      /* 顯示名由來源頁在點擊當下寫入（它手上就有創作者名字）；同一個人再進來一次
+         不要把名字洗掉，所以沿用既有那一份。 */
+      var prev = null;
+      try { prev = JSON.parse(localStorage.getItem(HANDOFF) || "null"); } catch (_) {}
+      localStorage.setItem(HANDOFF, JSON.stringify({
+        persona: asked,
+        from: from,
+        name: (prev && prev.persona === asked && prev.name) || ""
+      }));
+      /* 「現在代管誰」只有一個位子：從審核頁交接進來就取代掉先前從 Creator 名冊
+         選的那一位，否則導航會同時有兩個代管對象、返回鍵指錯地方。 */
+      localStorage.removeItem("ztor.activeCreator");
+      /* 交接參數是一次性的指令，用完就從網址上收掉——留著的話，這一頁往後每一次
+         重新載入都會再套用一次，cheat code 換人格時的 reload 會被它蓋回去，看起來
+         像切換失效。身分本身已經寫進 localStorage，網址不需要再記一份。 */
+      stripHandoffParams(q);
+    }
     window.ztorPersonaId = function () { return p; };
   } catch (_) {
     /* localStorage 被封鎖（無痕／第三方 cookie 政策）時仍要有一致的答案，
        否則就退回原本各自為政的狀態。 */
-    window.ztorPersonaId = function () { return FALLBACK; };
+    window.ztorPersonaId = function () { return asked || FALLBACK; };
   }
 })();
 

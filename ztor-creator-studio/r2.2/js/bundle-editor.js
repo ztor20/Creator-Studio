@@ -647,36 +647,53 @@
       /* 封面圖（選配）：活動套組每一組賣的是不同的東西，卡與卡之間要靠圖分辨。
          用站上唯一的上傳格產生路徑（Q40）——點擊選檔、hover 替換／刪除都由
          partials/upload-tile.js 接手，這裡只出 markup。 */
+      /* 2026-08-06 修：上傳格要包在 .upload-assets 裡。--portrait 只給比例，高度是
+         .upload-assets 的 --upload-asset-h 給的；少了外層，格子會沿著 .field 撐滿整列寬、
+         再依比例長到半個畫面高（使用者回報「壞掉了」的就是這個）。
+         包了之後與活動圖片、項目展示相簿是同一組尺寸，不再各長各的。 */
       var coverField = !COVER ? '' :
         '<div class="field">' +
           '<div class="field__label">' + esc(T('cpp.bd.cover')) + '</div>' +
-          '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
-              '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
-            '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
-            '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
+          '<div class="upload-assets">' +
+            '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
+                '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
+              '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+              '<span class="upload-tile__title">' + esc(T('cpp.bd.cover.cta')) + '</span>' +
+            '</div>' +
           '</div>' +
         '</div>';
 
       /* 適用票種（選配）：一張卡可以賣給多種票的持有者，所以是複選不是單選。
          票種是在同一個流程的上一步建立的，所以每次渲染都重新取——中途新增的票種
          要立刻出現在這裡，不能停在掛載當下的那份快照。 */
+      /* 2026-08-06 使用者指示：票券**以商品的形式帶入一列**，不再是一排勾選框。
+         理由是這一塊在回答「這組裡面有什麼」——商品用的是 .fc-ref（縮圖＋名稱＋次要資訊）
+         的引用列，票券也是這組的內容物之一，長成另一種樣子只會讓人以為那是設定不是內容。
+         還沒建立票種時放一列 placeholder（虛線、灰字），把「這裡將來會有一張票」畫出來，
+         而不是只留一句提示文字。 */
       var tks = getTickets ? (getTickets() || []) : [];
+      var chosen = (b.tickets || []);
       var ticketsField = !getTickets ? '' :
         '<div class="field">' +
           '<div class="field__label">' + esc(T('cpp.bd.tickets')) + '</div>' +
           (tks.length
-            ? '<div class="bd-tickets">' + tks.map(function (t) {
-                var on = (b.tickets || []).indexOf(t.id) >= 0;
-                return '<label class="zcheck bd-ticket">' +
+            ? tks.map(function (t) {
+                var on = chosen.indexOf(t.id) >= 0;
+                return '<label class="fc-ref bd-ticket' + (on ? ' bd-ticket--on' : '') + '">' +
                   '<span class="zcheck__control">' +
                     '<input class="zcheck__input" type="checkbox" data-bd-ticket="' + esc(t.id) + '"' + (on ? ' checked' : '') + '>' +
                     '<span class="zcheck__box"></span>' +
                   '</span>' +
-                  '<span class="zcheck__label bd-ticket__name">' + esc(t.name) + '</span>' +
-                  '<span class="bd-ticket__price">$' + esc(t.price) + '</span>' +
+                  '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
+                  '<div><div class="fc-ref__name">' + esc(t.name) + '</div>' +
+                    '<div class="fc-ref__meta">' + (Number(t.price) === 0 ? esc(T('ce.tier.free')) : '$' + esc(t.price)) + '</div></div>' +
                 '</label>';
-              }).join('') + '</div>'
-            : '<div class="field__hint">' + esc(T('cpp.bd.tickets.none')) + '</div>') +
+              }).join('')
+            : '<div class="fc-ref fc-ref--placeholder">' +
+                '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
+                '<div><div class="fc-ref__name">' + esc(T('cpp.bd.tickets.ph')) + '</div>' +
+                  '<div class="fc-ref__meta">' + esc(T('cpp.bd.tickets.none')) + '</div></div>' +
+              '</div>') +
           '<div class="field__hint">' + esc(T('cpp.bd.tickets.hint')) + '</div>' +
         '</div>';
 

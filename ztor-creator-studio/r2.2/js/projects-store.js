@@ -32,7 +32,9 @@
    `live` 被當成「共創進行中」。L 的定義是：
 
      live      ＝作品已上線、正在賺錢（終點狀態）
-     published ＝共創／預購「共創中、開放支持」，作品還沒出來
+     published ＝共創／預購「開放支持中」，作品還沒出來
+                 （畫面字樣 2026-08-06 起為「進行中／In progress」，使用者裁示改中立：
+                  同一個狀態同時服務共創與預購，字樣不能綁其中一種）
 
    所以這裡拆成兩個欄位，因為「一個項目同時只會有一個狀態」與「共創成功這件事
    永遠留著」兩句話並不衝突——它們講的是不同欄位：
@@ -209,7 +211,7 @@
      封面為真實素材（Apple Music／官方售票／媒體，僅供 demo 參考）；金額／共創狀態
      為示意值（原型演示各版面用，非真實銷售）。 */
   /* 2026-07-25 使用者指定：以下五筆為指定要有的樣本，排在最前面（順序照指定）——
-       直接上線三首單曲（已上線）／共創一張專輯（共創中）／MV 共創（已上線）。
+       直接上線三首單曲（已上線）／共創一張專輯（進行中）／MV 共創（已上線）。
      其中「你說的都對」由直接上線改為共創型，成為 MV（影視家族）＋已上線的版稅樣本。 */
   const PROJECTS_NICK = [
     /* ── ① 直接上線單曲 ×3（已上線）────────────────────────────── */
@@ -273,6 +275,22 @@
       fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Jul 01 – Aug 15, 2024 · Released', zh: '共創期間 2024/07/01 – 08/15 · 已上線' } },
       list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
+    },
+
+    {
+      /* 共創已成立、尚未交付的影視樣本（2026-08-07 補）。
+         補這一筆的原因：作品上架流程（publish-work.html）只對「已成立 × 影視家族」開放，
+         而 nick 是站上預設 persona，原本它名下唯一的 succeeded 是黑膠專輯（音樂家族）——
+         不切 persona 就點不到任何一個能真的走進上架流程的項目。default persona 那邊
+         對應的樣本是 pirate-queen-s2。 */
+      id: 'nick-lrh-doc', created: '2025/10/12', fundFrom: '2025/11/10', name: 'LOVE·RAGE·HOPE 巡演紀錄片', nameEn: "LOVE·RAGE·HOPE — Tour Documentary",
+      cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
+      cover: IMG + 'nick-lrh-tour.jpg', poster: IMG + 'nick-lrh-tour.jpg',
+      desc: { en: 'A feature-length documentary following the Live House tour — goal met, now in post-production; backers are waiting on the release.', zh: '跟拍 Live House 巡演的長片紀錄片；共創已成立、正在後期，支持者尚未收到交付。' },
+      meta: { en: '$62,000 of $62,000 reached · in post-production', zh: '$62,000 / $62,000 已達標 · 後期製作中' },
+      fund: { raised: '$62,000', goal: '$62,000', backers: '1,480', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Nov 10 – Dec 24, 2025', zh: '共創期間 2025/11/10 – 12/24' } },
+      list: { goal: { en: '$62,000 / $62,000', zh: '$62,000 / $62,000' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
     },
 
     {
@@ -415,11 +433,18 @@
      2026-07-24 使用者裁示：MV 歸影視家族（拍攝／製作屬性接近影視，非音樂發行本體）。 */
   const FAMILY = { movie: 'film', short: 'film', series: 'film', mv: 'film', song: 'music', album: 'music' };
 
+  function dataset(personaId) { return DATASETS[personaId] || DATASETS.default; }
+
   window.ztorProjects = {
     list: () => active().projects.slice(),
     get: id => active().projects.find(p => p.id === id) || null,
     first: () => active().projects[0],
     owner: () => active().owner,
+    /* 指名資料集查（2026-08-07）。給的是「不是目前這位創作者」的頁面用——影片上架
+       審核頁一次看全平台的送審件，四筆分屬不同創作者，用 get() 查只會查到目前人格
+       那一批、其餘一律 null。呼叫端要自己知道這一筆屬於誰（審核件有 persona 欄）。 */
+    getIn: (personaId, id) => dataset(personaId).projects.find(p => p.id === id) || null,
+    ownerIn: personaId => dataset(personaId).owner,
     /* 稱謂。依目前語系回傳；缺 display 就退回 owner，不會變成空字串。 */
     displayName: () => {
       const a = active();

@@ -1,0 +1,41 @@
+/* ============================================================
+   entry-list.css · 逐筆單欄輸入清單（可增可刪）
+   ------------------------------------------------------------
+   一個欄位要收「不確定幾筆」的同型別短文字時用它：一列＝一個 .input ＋
+   行尾刪除鈕，底下一顆「＋ 新增」補一列空的。首見於作品上架流程的演職人員
+   （publish-work.html §4：男主角、導演、編劇…每一項都可能不只一位）。
+
+   ---- 與 spec-row 的分工（同為可增刪的輸入列，不可混用）----
+   .spec-row    ＝ 兩欄（名稱＋值）並列的成對資料，如商品的「材質：無塗佈紙」。
+   .entry-list（本元件）＝ 單欄的同質清單，每一列都是同一個問題的另一個答案。
+   判斷句：這一列本身需要「欄位名稱」嗎？需要 → spec-row，不需要 → entry-list。
+
+   ---- surface ----
+   內容是 .input 與 .btn--icon，兩者各自對所在層有邊界，容器本身不填色，
+   白底與灰底（--card / --surface-shell / --muted）都成立。
+
+   anatomy
+     .entry-list[data-last-empty]
+       .entry-list__row      × N   > .input + .btn.btn--icon（刪除）
+       .entry-list__add            > .btn.btn--outline.btn--sm
+   ============================================================ */
+
+.entry-list { display: flex; flex-direction: column; gap: var(--sp-8); align-items: stretch; }
+
+.entry-list__row { display: flex; align-items: center; gap: var(--sp-8); }
+/* 輸入吃滿剩餘寬度；min-width:0 讓它在窄欄能真的縮，不把刪除鈕擠出容器 */
+.entry-list__row .input { flex: 1 1 auto; min-width: 0; }
+
+/* 只剩一列時不給刪除鈕（清單至少留一格可填），由頁面 JS 切 hidden。
+   這裡負責的是「藏得掉」——.btn 有 display，[hidden] 單靠自己蓋不過去。 */
+.entry-list__row .btn[hidden] { display: none; }
+
+/* 新增鈕自己一行、靠左，不跟著輸入列拉滿寬 */
+.entry-list__add { align-self: flex-start; }
+
+/* 最後一列還沒填字就不給新增鈕（2026-08-07 使用者反饋）：一頁上並排九份名單時，
+   九顆常駐的「＋ 再加一位」比名單本身還搶眼，而且最後一格還空著時按它也沒有意義。
+   空／不空由消費頁的 JS 在容器上切 [data-last-empty]，與 date-input、票種卡的 [data-empty]
+   同一種寫法（不另立第三種「有值才出現」機制）；元件負責的一樣是「藏得掉」。
+   沒有設這個屬性的消費頁行為不變——新增鈕照常常駐。 */
+.entry-list[data-last-empty="true"] .entry-list__add { display: none; }

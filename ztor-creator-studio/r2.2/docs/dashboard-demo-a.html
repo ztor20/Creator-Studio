@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full" data-data-state="has-data">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：這頁住在 docs/，但所有資產、圖片與導覽連結都以 r2.2 根為準；
+     加了 base 之後就跟 index.html 走同一組相對路徑，components.js 注入的
+     images/... 也才找得到。副作用：純 #hash 連結會被 base 解析成換頁，
+     所以本頁一律不用裸 #anchor。 -->
+<base href="../">
+<title>DEMO A · 儀表板三帶佈局</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<link rel="stylesheet" href="ds-components/badge.css">
+<link rel="stylesheet" href="ds-components/bento.css">
+<link rel="stylesheet" href="ds-components/kpi.css">
+<link rel="stylesheet" href="ds-components/data-list.css">
+<link rel="stylesheet" href="ds-components/info-banner.css">
+<link rel="stylesheet" href="ds-components/alert.css">
+<link rel="stylesheet" href="ds-components/card.css">
+<link rel="stylesheet" href="ds-components/empty-card.css">
+<link rel="stylesheet" href="ds-components/input.css">
+<link rel="stylesheet" href="ds-components/header.css">
+<link rel="stylesheet" href="ds-components/table.css">
+<link rel="stylesheet" href="ds-components/tabs.css">
+<link rel="stylesheet" href="ds-components/chip.css">
+<link rel="stylesheet" href="ds-components/payout-modal.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ── DEMO 專用樣式（探索頁，未進 ds-components；裁決後才 promote）──────────
+     只用既有 token，不寫死顏色與字級。三個東西是這頁新增的：
+       .demo-bar   ＝ 比較用的頁面切換條（不是提案的一部分）
+       .band-label ＝ 三帶的分隔標題（提案的一部分，若採用需 promote）
+       .sum3       ＝ 帶 3 摘要卡的三欄骨架（提案的一部分，若採用需 promote）*/
+  .demo-bar { display:flex; align-items:center; gap: var(--sp-10); flex-wrap: wrap;
+              padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-20);
+              border: 1px dashed var(--border); border-radius: var(--radius-xl);
+              background: var(--accent); font-family: var(--font-ui); font-size: var(--fs-13);
+              color: var(--muted-foreground); }
+  .demo-bar__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .demo-bar__spacer { margin-left: auto; }
+
+  .band-label { display:flex; align-items: baseline; gap: var(--sp-10);
+                margin: var(--sp-32) 0 var(--sp-12); font-family: var(--font-ui);
+                font-size: var(--fs-12); letter-spacing: 0.4px; text-transform: uppercase;
+                color: var(--muted-foreground); }
+  .band-label:first-of-type { margin-top: var(--sp-20); }
+  .band-label__note { text-transform: none; letter-spacing: 0;
+                      color: color-mix(in srgb, var(--muted-foreground) 70%, transparent); }
+
+  .sum3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-24); }
+  .sum3 > * + * { padding-left: var(--sp-24); border-left: 1px solid var(--border-soft); }
+  .sum3 .kpi__value { margin-top: var(--sp-4); }
+  .sum3 .kpi__delta { align-self: flex-start; margin-top: var(--sp-6); }
+  .sum3 .kpi__meta { margin-top: var(--sp-8); }
+  @media (max-width: 900px) {
+    .sum3 { grid-template-columns: 1fr; }
+    .sum3 > * + * { padding-left: 0; border-left: 0; padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+  }
+
+  /* 無資料版的四張能力卡：卡內垂直排，底部 CTA 對齊 */
+  .start-card { display: flex; flex-direction: column; gap: var(--sp-8); }
+  .start-card .btn { margin-top: auto; align-self: flex-start; }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- ══ DEMO 切換條（非提案內容）════════════════════════════════ -->
+      <div class="demo-bar">
+        <span class="demo-bar__tag">DEMO A · 三帶佈局</span>
+        <span>現在 / 進行中 / 表現入口</span>
+        <span class="demo-bar__spacer"></span>
+        <a class="card__link" href="index.html">現況</a>
+        <a class="card__link" href="docs/dashboard-demo-b.html">提案 B</a>
+        <button class="btn btn--outline btn--sm" type="button" data-demo-state>切到無資料版</button>
+      </div>
+
+      <div class="page-crumb">
+        <span data-i18n="nav.dashboard">Dashboard</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="dash.h1">Studio</h1>
+          <!-- 副標也隨狀態換：有資料版那句在講「這頁有什麼」，對還沒建立過任何東西的人
+               是空話。無資料版改成講第一步。 -->
+          <p class="page-intro__sub dash-data-only" data-i18n="dash.sub">What came in, what needs you, and where your work is playing right now.</p>
+          <p class="page-intro__sub dash-empty-only">先建立一樣東西，這裡就會變成你的營運看板。</p>
+        </div>
+        <div class="page-intro__actions"><p class="greeting" data-greeting></p></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           帶 1 · 現在 — 旅程 A（日常巡檢）＋ B（處理待辦）
+           目標：不捲動就能回答「今天要不要有反應、是哪一件事」。
+           所以 F2（有沒有事）與 F4（是哪件事）必須同屏，F4 由 span-5
+           放大到滿寬，原因摘要與 CTA 才排得開。
+           ══════════════════════════════════════════════════════════════ -->
+      <p class="band-label dash-data-only">帶 1 · 現在 <span class="band-label__note">目標：不捲動看完</span></p>
+
+      <!-- 旅程 E（拓展機會）的落點：F1 全幅輪播降規成一條可關閉的訊息帶。
+           用既有 .info-banner--dismissible（此前全站零消費）。 -->
+      <div class="info-banner info-banner--dismissible mb-16" data-demo-dismiss>
+        <i data-lucide="megaphone" class="ztor-icon info-banner__icon"></i>
+        <span><strong>ztor 夏季企劃徵件中</strong> — 入選作品進站上首頁推薦位，投件到 8 月 31 日。</span>
+        <a class="card__link" href="ip-market.html">查看企劃</a>
+        <button class="btn btn--icon btn--xs info-banner__close" type="button" aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+
+      <!-- F2 · 營運摘要（維持現況：三塊 KPI，總收入為橘色 hero 卡）-->
+      <div class="bento dash-data-only mb-16" data-component="ops-summary" data-key="dash-ops"></div>
+
+      <!-- F4 · 今日待處理 — 由 span-5 改滿寬，首屏只放前 3 筆 -->
+      <section class="card dash-data-only">
+        <div class="card__head">
+          <div class="card__title-group">
+            <span class="card__title-icon card__title-icon--warning"><i data-lucide="bell" class="ztor-icon"></i></span>
+            <h3 class="card__title" data-i18n="section.alerts">Alerts &amp; actions</h3>
+          </div>
+          <a class="card__link" href="index.html">查看全部</a>
+        </div>
+        <!-- data-demo-limit：這頁的示意用截斷，正式版應由渲染器帶 limit 參數 -->
+        <div data-component="alerts" data-key="dash-alerts" data-demo-limit="3"></div>
+        <p class="card__note">另有 1 筆阻斷型與 1 筆已暫緩的事項，在完整待辦視圖查看。</p>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           帶 2 · 進行中 — 旅程 C（檔期推進）
+           F6 升到主位（span-8）、F3 降為側欄的精簡清單（span-4）。
+           F5 近期動態併成 F6 卡內第二個分頁：兩者講的都是「已發生／進行中」，
+           拆成兩張各半的卡會讓人左右來回讀同一批事。
+           ══════════════════════════════════════════════════════════════ -->
+      <p class="band-label dash-data-only">帶 2 · 進行中 <span class="band-label__note">F5 併入 F6 的第二個分頁</span></p>
+
+      <div class="bento bento--stack-lg dash-data-only">
+        <section class="card bento--span-8">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="calendar" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.progress.title">Events &amp; projects</h3>
+            </div>
+            <a class="card__link" href="projects.html" data-i18n="dash.progress.link">View all</a>
+          </div>
+          <nav class="tabs" role="tablist" data-demo-tabs>
+            <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tab="ongoing">進行中</button>
+            <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="recent">最近發生</button>
+          </nav>
+          <div class="tab-panel tab-panel--active" data-panel="ongoing">
+            <div data-component="events-projects" data-key="dash-events"></div>
+          </div>
+          <div class="tab-panel" data-panel="recent">
+            <div data-component="activity-list" data-key="dash-activity"></div>
+          </div>
+        </section>
+
+        <!-- F3 · 近期收入 — 側欄版：拿掉縮圖與表頭，只留名稱／來源·日期／金額。
+             理由：總額與週變化在 F2 已經看過，這裡是確認型資訊，不需要表格密度。
+             （手寫示意；正式版應由 transaction-list 渲染器出一個 compact 變體。）-->
+        <section class="card bento--span-4">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="dollar-sign" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+            </div>
+            <a class="card__link" href="earnings.html" data-i18n="btn.view-all">View all</a>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="play" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>REAL LIFE</em> (Q4 statement)</div>
+                  <div class="data-list__meta">Streaming royalty · Yesterday</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$684.32</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>REALIVE tour photobook</em> × 14</div>
+                  <div class="data-list__meta">E-Shop sales · Nov 22</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$392.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="file-text" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>帥到分手</em> story world</div>
+                  <div class="data-list__meta">Story world licensing · Nov 20</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$2,400.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="badge-check" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">NICKTHEREAL likeness → 2 licensees</div>
+                  <div class="data-list__meta">IP licensing royalty · Nov 19</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$960.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>REALIVE (R2)</em> × 52</div>
+                  <div class="data-list__meta">Event tickets · Nov 17</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$1,560.00</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           帶 3 · 表現與受眾 — 旅程 D（成效複盤）收成一個入口
+           原本這一段是四塊、1,731px：平台表現三卡＋F7＋F8＋F9。
+           D 是週／月頻率，佔每日版面不划算，壓成三句話＋一顆入口鈕。
+           F8 外部資料狀態不再常駐：正常時不出現，異常時以告警形式進 F4
+           （下方第三欄就是它在這個版本裡的痕跡）。
+           ══════════════════════════════════════════════════════════════ -->
+      <p class="band-label dash-data-only">帶 3 · 表現與受眾 <span class="band-label__note">原四塊 1,731px 壓成一張卡</span></p>
+
+      <section class="card dash-data-only">
+        <div class="card__head">
+          <div class="card__title-group">
+            <span class="card__title-icon card__title-icon--info"><i data-lucide="bar-chart-3" class="ztor-icon"></i></span>
+            <h3 class="card__title">表現與受眾</h3>
+          </div>
+          <a class="btn btn--outline btn--sm" href="fan-analytics.html">查看完整表現分析</a>
+        </div>
+        <div class="sum3">
+          <div class="kpi-plain">
+            <div class="kpi__label">本週受眾</div>
+            <div class="kpi__value">1.24M</div>
+            <span class="kpi__delta">+8.4% vs 上週</span>
+            <p class="kpi__meta">觀看＋串流，5 個平台合計</p>
+          </div>
+          <div class="kpi-plain">
+            <div class="kpi__label">站上粉絲</div>
+            <div class="kpi__value">1,283</div>
+            <p class="kpi__meta">Inner Circle 12% · Superfan 28% · Ranked 37%</p>
+          </div>
+          <div class="kpi-plain">
+            <div class="kpi__label">資料新鮮度</div>
+            <div class="kpi__value">4 / 5</div>
+            <p class="kpi__meta">Spotify 同步中斷，已列入今日待處理</p>
+          </div>
+        </div>
+        <p class="card__note">站上粉絲只算有 ztor 帳號的人，與受眾數字分母不同、不可互比或加總。</p>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           無資料版（第一次登入）— 不與有資料版共用骨架
+           現況是同一副骨架填空字，八張卡把同一句話講八次。這裡改成
+           能力地圖＋第一步＋「建立之後會看到什麼」的靜態預覽。
+           ══════════════════════════════════════════════════════════════ -->
+      <div class="dash-empty-only">
+        <section class="card">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="rocket" class="ztor-icon"></i></span>
+              <h3 class="card__title">你可以在 ztor 做這四件事</h3>
+            </div>
+          </div>
+          <div class="bento">
+            <div class="start-card bento--span-3">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="rocket" class="ztor-icon"></i></span>
+              <div class="data-list__title">建立項目</div>
+              <p class="kpi__meta">把一首歌、一支片或一個企劃變成可上線、可募資、可預購的項目。</p>
+              <a class="btn btn--primary btn--sm" href="create-project.html">建立項目</a>
+            </div>
+            <div class="start-card bento--span-3">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="landmark" class="ztor-icon"></i></span>
+              <div class="data-list__title">登錄我的 IP</div>
+              <p class="kpi__meta">把角色、形象、曲目或美術登錄成可授權的資產，別人租用就有版稅。</p>
+              <a class="btn btn--outline btn--sm" href="register-ip.html">登錄 IP</a>
+            </div>
+            <div class="start-card bento--span-3">
+              <span class="card__title-icon card__title-icon--info"><i data-lucide="search" class="ztor-icon"></i></span>
+              <div class="data-list__title">逛 IP 市場</div>
+              <p class="kpi__meta">找可以租用的 IP 當素材，先看得到能用什麼，再決定做什麼。</p>
+              <a class="btn btn--outline btn--sm" href="ip-market.html">逛 IP 市場</a>
+            </div>
+            <div class="start-card bento--span-3">
+              <span class="card__title-icon card__title-icon--success"><i data-lucide="calendar" class="ztor-icon"></i></span>
+              <div class="data-list__title">建立活動</div>
+              <p class="kpi__meta">把作品延伸成可售票、可通知、可結算的活動。</p>
+              <a class="btn btn--outline btn--sm" href="create-event.html">建立活動</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="card mt-24">
+          <div class="card__head">
+            <h3 class="card__title">建立之後，這頁會變成什麼</h3>
+          </div>
+          <div class="sum3">
+            <div class="kpi-plain">
+              <div class="kpi__label">帶 1 · 現在</div>
+              <p class="kpi__meta">當前收入與週變化、今天需要你處理的事，每筆自帶一顆按鈕。</p>
+            </div>
+            <div class="kpi-plain">
+              <div class="kpi__label">帶 2 · 進行中</div>
+              <p class="kpi__meta">你的項目與活動跑到哪、最近進了哪幾筆帳。</p>
+            </div>
+            <div class="kpi-plain">
+              <div class="kpi__label">帶 3 · 表現與受眾</div>
+              <p class="kpi__meta">作品被誰看到、粉絲怎麼分佈、外部資料新不新。</p>
+            </div>
+          </div>
+          <p class="card__note">這一段是靜態說明，不是空狀態卡——沒有資料的區塊在這個版本裡整塊不出現。</p>
+        </section>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>DEMO A · 提案「三帶佈局」</span>
+      <span>·</span>
+      <span>探索頁，不屬正式站台</span>
+      <span>·</span>
+      <span>依據 docs/dashboard-佈局重思-2026-08-07.md</span>
+    </footer>
+  </main>
+</div>
+
+<!-- F2 兩顆計數 KPI 的彈出層，沿用 index.html 的做法 -->
+<div class="payout-modal" data-bd-modal="ops-pending" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-pending-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-pending-title" data-i18n="ops.modal.pending-title">Pending actions</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.pending-sub">Each item has one clear next step</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="alerts" data-key="ops-pending-list"></div>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" data-bd-modal="ops-projects" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-projects-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-projects-title" data-i18n="ops.modal.projects-title">Active projects</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.projects-sub">Live, funding and scheduled right now</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="events-projects" data-key="ops-projects-list"></div>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/components.js"></script>
+<script src="js/projects-store.js"></script>
+<script src="js/reveal.js"></script>
+<script src="js/detail-sheet.js"></script>
+<script>
+/* ── DEMO 專用行為（探索頁）──────────────────────────────────────────
+   四件事：卡內分頁切換、待辦截斷、有資料↔無資料切換、彈出層開關。
+   前三項是這個提案要示意的行為，正式版應各自落在對應元件／渲染器。 */
+(function () {
+  /* 1 · 卡內分頁（F6 的「進行中 / 最近發生」）*/
+  document.querySelectorAll('[data-demo-tabs]').forEach(function (nav) {
+    var card = nav.closest('.card');
+    nav.addEventListener('click', function (e) {
+      var btn = e.target.closest('.tabs__item[data-tab]');
+      if (!btn) return;
+      nav.querySelectorAll('.tabs__item').forEach(function (t) {
+        var on = t === btn;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      card.querySelectorAll('.tab-panel[data-panel]').forEach(function (p) {
+        p.classList.toggle('tab-panel--active', p.getAttribute('data-panel') === btn.getAttribute('data-tab'));
+      });
+    });
+  });
+
+  /* 2 · 待辦截斷：components.js 注入完才有 .alert 可以數 */
+  document.querySelectorAll('[data-demo-limit]').forEach(function (host) {
+    var n = parseInt(host.getAttribute('data-demo-limit'), 10);
+    Array.from(host.children).slice(n).forEach(function (el) { el.hidden = true; });
+  });
+
+  /* 3 · 有資料 ↔ 無資料（沿用 shared.css 的 html[data-data-state] 開關）*/
+  var stateBtn = document.querySelector('[data-demo-state]');
+  if (stateBtn) stateBtn.addEventListener('click', function () {
+    var empty = document.documentElement.getAttribute('data-data-state') === 'empty';
+    document.documentElement.setAttribute('data-data-state', empty ? 'has-data' : 'empty');
+    stateBtn.textContent = empty ? '切到無資料版' : '切回有資料版';
+  });
+
+  /* 4 · 訊息帶關閉 */
+  var ann = document.querySelector('[data-demo-dismiss]');
+  if (ann) ann.addEventListener('click', function (e) {
+    if (e.target.closest('.info-banner__close')) ann.hidden = true;
+  });
+
+  /* 5 · F2 計數 KPI 的彈出層（與 index.html 同一組 data-bd-* 語彙）*/
+  function closeAll() {
+    document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(function (m) { m.hidden = true; });
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-bd-open]');
+    if (opener) {
+      var m = document.querySelector('[data-bd-modal="' + opener.dataset.bdOpen + '"]');
+      if (m) { m.hidden = false; document.body.style.overflow = 'hidden'; }
+      return;
+    }
+    if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
+    if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
+
+/* 問候語，與 index.html 同一段（名字跟 persona 走、招呼跟時段走）*/
+(function () {
+  function zh() { return (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0; }
+  function greet(h) {
+    if (h < 5)  return zh() ? '夜深了' : 'Still up';
+    if (h < 11) return zh() ? '早安'   : 'Good morning';
+    if (h < 17) return zh() ? '午安'   : 'Good afternoon';
+    return         zh() ? '晚安'   : 'Good evening';
+  }
+  function dateLine(d) {
+    if (zh()) {
+      var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+      return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 週' + wk;
+    }
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function paint() {
+    var el = document.querySelector('[data-greeting]');
+    if (!el) return;
+    var name = (window.ztorProjects && window.ztorProjects.displayName && window.ztorProjects.displayName()) || '';
+    var d = new Date();
+    var sep = zh() ? '，' : ', ';
+    el.innerHTML =
+      '<span class="greeting__hi">' + greet(d.getHours()) + (name ? sep + '<span class="greeting__name"></span>' : '') + '</span>' +
+      '<span class="greeting__meta"></span>';
+    var n = el.querySelector('.greeting__name');
+    if (n) n.textContent = name;
+    el.querySelector('.greeting__meta').textContent = dateLine(d);
+  }
+  paint();
+  document.addEventListener('i18n:applied', paint);
+})();
+</script>
+</body>
+</html>

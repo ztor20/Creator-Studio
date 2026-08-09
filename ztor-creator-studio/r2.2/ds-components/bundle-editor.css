@@ -310,21 +310,23 @@
    所以這兩塊是同一支編輯器的選配段落，不是另一支元件。
    票種列＝一列一個票種：勾選框與名稱靠左、原價靠右對齊成一欄，
    多列並排時價格可以直接比大小（與票種卡的事實列同一個處理）。 */
-.bd-tickets { display: flex; flex-direction: column; gap: var(--sp-2); margin-top: var(--sp-8); }
-.bd-ticket {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  padding: var(--sp-8) var(--sp-4);
-  border-radius: var(--radius-md);
-}
+/* 2026-08-06 使用者指示：票券改用**商品那一列**的形式（`.fc-ref`），不再是一排勾選框。
+   這一塊回答的是「這組裡面有什麼」——商品用引用列，票券也是內容物之一，長成另一種
+   樣子會讓人以為那是設定不是內容。勾選框留著（一組可以賣給多種票的持有者，仍是複選），
+   只是移到列首、與縮圖並排。
+   墓碑：`.bd-tickets` 容器與 `.bd-ticket__name`／`__price` 已無消費者，隨本輪移除。 */
+.bd-ticket { cursor: pointer; }
 .bd-ticket:hover { background: var(--accent); }
-.bd-ticket__name { flex: 1 1 auto; min-width: 0; }
-.bd-ticket__price {
-  flex: none;
-  font-size: var(--fs-13);
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
+/* 勾到的那一列給一條左緣色線——一排長得一樣的引用列裡，只靠一個小勾看不出選了幾張。 */
+.bd-ticket--on { box-shadow: inset 2px 0 0 var(--primary); }
+/* 還沒建立票種時的佔位列：虛線框＋灰字，把「這裡將來會有一張票」畫出來，
+   不是只留一句提示文字。 */
+.fc-ref--placeholder {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-8) var(--sp-12);
+  margin-top: var(--sp-8);
 }
+.fc-ref--placeholder .fc-ref__name { color: var(--muted-foreground); }
 /* 封面圖只佔一格、不撐滿整張卡——它是這一組的辨識用縮圖，不是主視覺。 */
 .fc-bundle [data-bd-cover] { max-width: 160px; }

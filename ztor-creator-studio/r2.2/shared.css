@@ -1026,6 +1026,9 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   flex-direction: column;
   background: var(--surface-shell);   /* 灰 canvas */
 }
+/* class 自己寫了 display 就會蓋掉 [hidden] 的 display:none——要藏得起來得補這一條
+   （2026-08-07：作品上架流程在查無項目 id 時整個收起來，改顯示錯誤狀態）。 */
+.wizard[hidden] { display: none; }
 .wizard__sheet {
   flex: 1 1 auto;
   min-height: 0;                 /* 允許收縮，內部捲動 */
@@ -1196,6 +1199,18 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   margin: 0 0 var(--sp-6);
 }
 .wizard__step-sub { color: var(--foreground-muted); margin: 0 0 var(--sp-24); max-width: 560px; }
+/* 步驟標題列帶右側動作（2026-08-04，建立活動的「換活動類型」）：標題與副標成一組靠左、
+   動作靠右，兩者垂直置中。副標的下緣留白移到本容器身上——留在副標上會被算進標題組的
+   高度，按鈕就會對齊到「含那段空白」的中線、看起來偏上。 */
+.wizard__step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  margin-bottom: var(--sp-24);
+}
+.wizard__step-head-titles { min-width: 0; }
+.wizard__step-head-titles .wizard__step-sub { margin-bottom: 0; }
 /* footer：in-flow、平面灰條（在 .wizard 灰 canvas 上、content 卡下方）。圓角已歸 content 卡，footer 不再做假圓角。 */
 .wizard__bottom {
   flex: 0 0 auto;
@@ -1552,6 +1567,9 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   color: var(--muted-foreground);
   display: flex; gap: var(--sp-14); flex-wrap: wrap;
 }
+/* 同 .wizard[hidden] 的成因：class 自己寫了 display 就蓋掉 [hidden] 的 display:none。
+   查無項目 id 時頁面主體會整個收起改顯示錯誤狀態，頁尾要跟著收（2026-08-07）。 */
+.app-footer[hidden] { display: none; }
 
 /* ---------- Utility ---------- */
 .text-mono { font-family: var(--font-mono); }

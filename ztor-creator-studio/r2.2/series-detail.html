@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REALIVE World Tour — Asia leg · Series · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* series-detail 專屬：場次表的欄寬（比照 events.html 的做法，欄數為本頁專屬故留頁內）。
+     欄位＝場次｜日期時間｜場地｜票券｜收入｜狀態｜操作。 */
+  .product-list--series .product-list__head,
+  .product-list--series .product-list__row {
+    grid-template-columns: minmax(140px, 1fr) 160px minmax(120px, 1fr) 132px 110px 100px 56px;
+  }
+  .product-list--series .product-list__cell { color: var(--foreground); }
+  .product-list--series .product-list__row { min-height: 72px; padding-block: var(--sp-14); cursor: pointer; }
+  /* 票券進度條與活動清單同一視覺語言（events.html 也有一份頁內副本，兩處待一併 promote） */
+  .sd-tickets { font-family: var(--font-ui); font-size: var(--fs-13); color: var(--foreground); }
+  .sd-tickets__bar {
+    margin-top: 6px; width: 100%; max-width: 112px; height: 5px;
+    background: var(--muted); border-radius: var(--radius-pill); overflow: hidden;
+  }
+  .sd-tickets__fill { height: 100%; background: var(--primary); border-radius: var(--radius-pill); }
+
+  /* 票種列（與活動詳情頁的 .ed-tier__* 同一種；兩頁各自 scoped，欄數與情境不同故未共用元件） */
+  .sd-tier__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); margin-bottom: var(--sp-12); }
+  .sd-tier__meta { display: inline-flex; align-items: center; gap: var(--sp-8); }
+  .sd-tier__sold { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .sd-tier__del[disabled] { opacity: .4; cursor: not-allowed; }
+
+  @media (max-width: 900px) {
+    .product-list--series .product-list__head { display: none; }
+    .product-list--series .product-list__row { grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-8) var(--sp-14); }
+    .product-list--series .product-list__actions { grid-column: 2; grid-row: 1; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- Breadcrumb -->
+      <div class="page-crumb page-crumb--back">
+        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="events.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+        <a href="events.html" class="card__link" data-i18n="sd.crumb.events">Events</a>
+        <span style="margin:0 6px">/</span>
+        <span data-i18n="sd.h1">REALIVE World Tour — Asia leg</span>
+      </div>
+
+      <!-- ═══ 頁首 ═══
+           這一頁是「系列」本身，不是任何一場。所以標題不掛日期與場地——那是各場自己的事，
+           頁首只說這個系列是什麼、有幾場、橫跨多久。 -->
+      <div class="page-intro">
+        <div>
+          <div class="flex-row" style="gap:8px;margin-bottom:8px">
+            <span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span>
+            <span class="badge badge--neutral"><span data-i18n="sd.badge.series">Series · 3 dates</span></span>
+            <span class="badge badge--info"><span data-i18n="sd.badge.type">Concert</span></span>
+          </div>
+          <h1 class="page-intro__title" data-i18n="sd.h1">REALIVE World Tour — Asia leg</h1>
+          <p class="page-intro__sub" data-i18n="sd.sub">2026/09/12 – 2026/10/03 · 3 venues</p>
+        </div>
+        <!-- 儲存放頁首動作區：全站的 sticky-actions.js 會在這一排捲出畫面時自己複製一份吸底，
+             不必在頁內手刻一條動作列（那支元件的 markup 是它產生的，不是手寫的）。 -->
+        <div class="page-intro__actions">
+          <span class="text-sub" data-i18n="sd.save.note">Applies to all 3 dates</span>
+          <button class="btn btn--ghost" type="button" data-i18n="sd.btn.preview">View ticket page</button>
+          <button class="btn btn--primary" type="button" id="sd-save" data-i18n="sd.save">Save and sync</button>
+        </div>
+      </div>
+
+      <!-- ═══ KPI：整個系列的加總 ═══ -->
+      <div class="bento mt-16">
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.dates">Dates</div><div class="kpi__value">3</div><div class="kpi__meta" data-i18n="sd.kpi.dates-meta">2 on sale · 1 sold out</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.sold">Tickets sold</div><div class="kpi__value">1,240 / 1,800</div><div class="kpi__meta" data-i18n="sd.kpi.sold-meta">Every date counts its own stock</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.revenue">Revenue</div><div class="kpi__value">$3,732,000</div><div class="kpi__meta" data-i18n="sd.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
+        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.next">Next date</div><div class="kpi__value">09/26</div><div class="kpi__meta" data-i18n="sd.kpi.next-meta">Taichung Intercontinental</div></div>
+      </div>
+
+      <!-- ═══ Tabs ═══ -->
+      <nav class="tabs mt-24" role="tablist" data-tabs>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="shared" aria-selected="true" data-i18n="sd.tab.shared">Shared settings</button>
+        <button class="tabs__item" role="tab" data-tab="dates" aria-selected="false" data-i18n="sd.tab.dates">Dates</button>
+      </nav>
+
+      <!-- ════════════════ 共用設定（改這裡＝改全部場次）════════════════ -->
+      <div class="tab-panel tab-panel--active" data-panel="shared" role="tabpanel">
+
+        <div class="info-banner">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="sd.sync.note"><strong>Saving here updates all 3 dates.</strong> Anything that differs per date — the date itself and the venue — is edited on that date's own page.</span>
+        </div>
+
+        <!-- 已開賣的警示。沿用編輯活動那頁「改動的後果」同一種說法（.alert--row.--warning），
+             同一件事在兩頁不該長成兩種樣子。使用者裁決：正式版要擋或要通知，原型只到「說出來」這一步。 -->
+        <div class="alert alert--row alert--warning mt-12">
+          <span class="alert__icon"><i data-lucide="bell" class="ztor-icon"></i></span>
+          <div class="alert__body">
+            <div class="alert__title" data-i18n="sd.sync.onsale">2 of these dates are already on sale — 1,240 tickets sold</div>
+            <div class="alert__meta" data-i18n="sd.sync.onsale.meta">Changing price or date affects fans who already bought. The live product asks for confirmation and notifies ticket holders before saving; the prototype only states the rule.</div>
+          </div>
+        </div>
+
+        <div class="mt-24">
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="sd.f.basics">Basics</h3>
+            </div>
+            <div class="field">
+              <label class="field__label" for="sd-name" data-i18n="sd.f.name">Event name</label>
+              <input class="input" id="sd-name" value="REALIVE 世界巡迴 — 亞洲段">
+              <p class="field__hint" data-i18n="sd.f.name.hint">Every date carries this name; the date and venue tell them apart.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="sd-desc" data-i18n="sd.f.desc">Description</label>
+              <textarea class="input" id="sd-desc" rows="3">睽違三年的世界巡迴亞洲段，三場、三個城市、同一套曲目。</textarea>
+            </div>
+          </div>
+
+          <!-- 2026-08-06 使用者回報：共用設定原本只有名稱與描述，其餘（陣容、圖片、人數、票種）
+               只在子場看得到，等於「一次改全部」做不到。補齊的判準是**這個欄位每一場一不一樣**：
+               一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住這裡改一次同步全部；
+               每場不同的（日期、場地）留在那一場自己的頁面。 -->
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="ce.lineup">Lineup / performers</h3>
+            </div>
+            <div id="sd-lineup"></div>
+            <button class="btn btn--outline btn--sm mt-8" type="button" id="sd-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
+          </div>
+
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
+              <p class="form-section__sub" data-i18n="sd.f.images.sub">The same artwork runs on every date.</p>
+            </div>
+            <div class="upload-assets" id="sd-gallery"></div>
+            <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
+          </div>
+
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="ce.attend">Attendance</h3>
+              <p class="form-section__sub" data-i18n="sd.f.attend.sub">Per date, not for the whole run.</p>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label class="field__label" for="sd-attend-min"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+                <input class="input" id="sd-attend-min" type="number" min="0" step="1" value="">
+              </div>
+              <div class="field">
+                <label class="field__label" for="sd-capacity"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+                <input class="input" id="sd-capacity" type="number" min="1" step="1" value="600">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="sd.f.tiers">Ticket tiers</h3>
+              <p class="form-section__sub" data-i18n="sd.f.tiers.sub">Quantities are per date — 600 here means 600 at every date.</p>
+            </div>
+            <div id="sd-tier-list"></div>
+            <button class="btn btn--outline btn--sm mt-16" type="button" id="sd-tier-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ee.tix.add">Add tier</span></button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ════════════════ 場次 ════════════════ -->
+      <div class="tab-panel" data-panel="dates" role="tabpanel">
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="sd.dates.title">Dates in this series</h2>
+          <div class="section-head__sub" data-i18n="sd.dates.sub">Each one is its own event — its own stock, its own attendees, its own check-in.</div>
+        </div>
+
+        <div class="product-list-scroll">
+          <div class="product-list product-list--series">
+            <div class="product-list__head" role="row">
+              <div role="columnheader" data-i18n="sd.col.date">Date</div>
+              <div role="columnheader" data-i18n="sd.col.when">Date &amp; time</div>
+              <div role="columnheader" data-i18n="sd.col.venue">Venue</div>
+              <div role="columnheader" data-i18n="sd.col.tickets">Tickets</div>
+              <div role="columnheader" data-i18n="sd.col.revenue">Revenue</div>
+              <div role="columnheader" data-i18n="sd.col.status">Status</div>
+              <div role="columnheader" aria-label="Actions"></div>
+            </div>
+
+            <div class="product-list__row" role="row" data-go="event-detail.html?id=realive-asia-kaohsiung">
+              <div class="product-list__product" role="cell">
+                <div class="product-list__body">
+                  <div class="product-list__title"><a class="card__link" href="event-detail.html?id=realive-asia-kaohsiung" data-i18n="sd.leg1">Date 1 of 3</a></div>
+                </div>
+              </div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER1.datetime">2026/09/12 · 7:30 PM</div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER1.venue">Kaohsiung Arena</div>
+              <div class="product-list__cell" role="cell">
+                <div class="sd-tickets">600 / 600<div class="sd-tickets__bar"><div class="sd-tickets__fill" style="width:100%"></div></div></div>
+              </div>
+              <div class="product-list__cell" role="cell">$1,800,000</div>
+              <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.soldout">Sold out</span></span></div>
+              <div class="product-list__actions" role="cell">
+                <details class="dropdown">
+                  <summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                  <div class="dropdown__menu" role="menu">
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-kaohsiung"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="sd.act.open">Open this date</span></a>
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-kaohsiung"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="sd.act.edit">Edit date &amp; venue</span></a>
+                    <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-cancel-date><i data-lucide="x" class="ztor-icon"></i><span data-i18n="sd.act.cancel">Cancel this date</span></button>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div class="product-list__row" role="row" data-go="event-detail.html?id=realive-asia-taichung">
+              <div class="product-list__product" role="cell">
+                <div class="product-list__body">
+                  <div class="product-list__title"><a class="card__link" href="event-detail.html?id=realive-asia-taichung" data-i18n="sd.leg2">Date 2 of 3</a></div>
+                </div>
+              </div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER2.datetime">2026/09/26 · 7:30 PM</div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER2.venue">Taichung Intercontinental</div>
+              <div class="product-list__cell" role="cell">
+                <div class="sd-tickets">440 / 600<div class="sd-tickets__bar"><div class="sd-tickets__fill" style="width:73%"></div></div></div>
+              </div>
+              <div class="product-list__cell" role="cell">$1,326,000</div>
+              <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+              <div class="product-list__actions" role="cell">
+                <details class="dropdown">
+                  <summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                  <div class="dropdown__menu" role="menu">
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-taichung"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="sd.act.open">Open this date</span></a>
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-taichung"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="sd.act.edit">Edit date &amp; venue</span></a>
+                    <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-cancel-date><i data-lucide="x" class="ztor-icon"></i><span data-i18n="sd.act.cancel">Cancel this date</span></button>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div class="product-list__row" role="row" data-go="event-detail.html?id=realive-asia-taipei">
+              <div class="product-list__product" role="cell">
+                <div class="product-list__body">
+                  <div class="product-list__title"><a class="card__link" href="event-detail.html?id=realive-asia-taipei" data-i18n="sd.leg3">Date 3 of 3</a></div>
+                </div>
+              </div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER3.datetime">2026/10/03 · 7:30 PM</div>
+              <div class="product-list__cell" role="cell" data-i18n="events.rowSER3.venue">Taipei Arena</div>
+              <div class="product-list__cell" role="cell">
+                <div class="sd-tickets">200 / 600<div class="sd-tickets__bar"><div class="sd-tickets__fill" style="width:33%"></div></div></div>
+              </div>
+              <div class="product-list__cell" role="cell">$606,000</div>
+              <div class="product-list__cell" role="cell"><span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span></div>
+              <div class="product-list__actions" role="cell">
+                <details class="dropdown">
+                  <summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="events.a.more"><i data-lucide="more-vertical" class="ztor-icon"></i></summary>
+                  <div class="dropdown__menu" role="menu">
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-taipei"><i data-lucide="external-link" class="ztor-icon"></i><span data-i18n="sd.act.open">Open this date</span></a>
+                    <a class="dropdown__item" role="menuitem" href="event-detail.html?id=realive-asia-taipei"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="sd.act.edit">Edit date &amp; venue</span></a>
+                    <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-cancel-date><i data-lucide="x" class="ztor-icon"></i><span data-i18n="sd.act.cancel">Cancel this date</span></button>
+                  </div>
+                </details>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 取消一場的規則（使用者裁決 2026-08-06）：與單場活動取消完全相同，不另立一套。
+             系列不因為「還有別場」就改變對這一場持票人的義務。 -->
+        <div class="info-banner mt-24">
+          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+          <span data-i18n="sd.cancel.note"><strong>Cancelling one date follows the same refund rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about what is owed to that date's ticket holders — refunds are issued on all valid tickets for that date; the other dates are untouched.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span data-i18n="sd.footer1">REALIVE World Tour — Asia leg · 3 dates</span>
+      <span>·</span>
+      <span data-i18n="sd.footer2">Ticket revenue rolls up to Earnings → Event ticketing</span>
+    </footer>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="partials/upload-tile.js?v=r2.2"></script>
+<script>
+  /* 分頁切換（做法沿用 event-detail／earnings） */
+  (function () {
+    const tablist = document.querySelector('[data-tabs]');
+    if (!tablist) return;
+    const tabs = tablist.querySelectorAll('.tabs__item');
+    const panels = document.querySelectorAll('.tab-panel[data-panel]');
+    function activate(name) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === name;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
+      try { history.replaceState(null, '', '#' + name); } catch (_) {}
+    }
+    tablist.addEventListener('click', e => {
+      const btn = e.target.closest('.tabs__item');
+      if (btn && btn.dataset.tab) activate(btn.dataset.tab);
+    });
+    const initial = (location.hash || '').replace('#', '');
+    if (Array.from(tabs).some(t => t.dataset.tab === initial)) activate(initial);
+  })();
+
+  /* 場次列整列可點＝開那一場的詳情（比照活動清單；點 kebab／連結不觸發） */
+  (function () {
+    const list = document.querySelector('.product-list--series');
+    if (!list) return;
+    list.addEventListener('click', e => {
+      if (e.target.closest('.dropdown') || e.target.closest('a')) return;
+      const row = e.target.closest('.product-list__row');
+      if (row && row.dataset.go) location.href = row.dataset.go;
+    });
+  })();
+
+  /* kebab 選單開合（比照 events.html） */
+  document.addEventListener('click', e => {
+    const item = e.target.closest && e.target.closest('.dropdown__item');
+    document.querySelectorAll('details.dropdown[open]').forEach(d => {
+      if (!d.contains(e.target)) { d.removeAttribute('open'); return; }
+      if (item && d.contains(item)) d.removeAttribute('open');
+    });
+  });
+
+  /* ── 共用設定的三塊：陣容、圖片相簿、票種（2026-08-06 補齊）────────────
+     這一頁沒有 store 紀錄（系列在資料上還不是一個物件，見 ASSUMPTIONS SER-001 ⑤），
+     所以種子值寫在這裡，與 events-store 的三場子紀錄刻意一致——同一個系列不該在
+     兩個畫面長出兩組數字。真的接資料時，這段換成從系列讀即可。 */
+  (function () {
+    const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+    const icons = el => { if (window.ztorIcons) window.ztorIcons.applyIcons(el); };
+
+    /* 演出陣容 */
+    const lineup = document.getElementById('sd-lineup');
+    function lineupRow(name) {
+      const row = document.createElement('div');
+      row.className = 'flex-row mt-8'; row.style.gap = 'var(--sp-8)'; row.dataset.sdLineupRow = '';
+      row.innerHTML = '<input class="input" style="flex:1">' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-sd-lineup-remove aria-label="' +
+        T('ee.lineup.remove', 'Remove') + '"><i data-lucide="x" class="ztor-icon"></i></button>';
+      row.querySelector('input').value = name || '';
+      return row;
+    }
+    if (lineup) {
+      ['NICKTHEREAL 周湯豪'].forEach(n => lineup.appendChild(lineupRow(n)));
+      icons(lineup);
+      document.getElementById('sd-lineup-add').addEventListener('click', () => {
+        const r = lineupRow(''); lineup.appendChild(r); icons(r); r.querySelector('input').focus();
+      });
+      lineup.addEventListener('click', e => {
+        const row = e.target.closest('[data-sd-lineup-row]');
+        if (row && e.target.closest('[data-sd-lineup-remove]')) row.remove();
+      });
+    }
+
+    /* 圖片相簿：與建立流程、活動詳情同一套（排第一的就是主視覺） */
+    const gal = document.getElementById('sd-gallery');
+    function addSlot() {
+      const el = document.createElement('div');
+      el.className = 'upload-tile upload-tile--portrait is-empty';
+      el.setAttribute('data-upload', ''); el.setAttribute('data-gallery-add', '');
+      el.innerHTML = '<span class="upload-tile__icon">＋</span><span class="upload-tile__title" data-i18n="ce.img.add">' +
+        T('ce.img.add', 'Add image') + '</span>';
+      gal.appendChild(el);
+      if (window.ztorUploadTile) window.ztorUploadTile.enhance(el);
+    }
+    function syncFlags() {
+      gal.querySelectorAll('[data-gallery-tile]').forEach((t, i) => {
+        let f = t.querySelector('.upload-tile__flag');
+        if (i === 0) {
+          if (!f) { f = document.createElement('span'); f.className = 'upload-tile__flag'; f.setAttribute('data-i18n', 'ce.img.keyvisual'); t.insertBefore(f, t.firstChild); }
+          f.textContent = T('ce.img.keyvisual', 'Key visual');
+        } else if (f) f.remove();
+      });
+      const add = gal.querySelector('[data-gallery-add]');
+      if (gal.querySelectorAll('[data-gallery-tile]').length >= 8) { if (add) add.remove(); }
+      else if (!add) addSlot();
+    }
+    if (gal) {
+      gal.innerHTML = ['images/projects/nick-realive.jpg'].map(src =>
+        '<div class="upload-tile upload-tile--portrait is-filled" data-gallery-tile data-upload>' +
+          '<img class="upload-tile__thumb" src="' + src + '" alt="">' +
+        '</div>').join('');
+      gal.querySelectorAll('[data-upload]').forEach(t => { if (window.ztorUploadTile) window.ztorUploadTile.enhance(t); });
+      syncFlags();
+      gal.addEventListener('upload:change', e => {
+        const tile = e.target.closest('.upload-tile');
+        if (!tile) return;
+        if (e.detail && e.detail.filled) {
+          if (tile.hasAttribute('data-gallery-add')) {
+            tile.removeAttribute('data-gallery-add'); tile.setAttribute('data-gallery-tile', '');
+          }
+        } else if (tile.hasAttribute('data-gallery-tile')) tile.remove();
+        syncFlags();
+      });
+    }
+
+    /* 票種：與活動詳情同一種列（已售出的不可刪）。母頁改的是「每一場都一樣」的那份設定，
+       所以已售數顯示的是三場加總——這裡按下刪除等於三場一起刪，門檻不該比子場低。 */
+    const SOLD = { vip: 220, floor: 400, seat: 620 };     // 三場加總，與 events-store 的子紀錄一致
+    let tiers = [
+      { id: 'vip',   name: 'VIP',    price: 4200, qty: 100, sold: SOLD.vip },
+      { id: 'floor', name: 'Floor',  price: 3300, qty: 200, sold: SOLD.floor },
+      { id: 'seat',  name: 'Seated', price: 2400, qty: 300, sold: SOLD.seat }
+    ];
+    const fmtNum = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    function tierField(labelKey, fb, value, key, tier, type, min) {
+      const f = document.createElement('div'); f.className = 'field';
+      const l = document.createElement('label'); l.className = 'field__label'; l.textContent = T(labelKey, fb);
+      const inp = document.createElement('input'); inp.className = 'input';
+      if (type) inp.type = type;
+      if (min != null) inp.min = min;
+      inp.value = value == null ? '' : value;
+      inp.addEventListener('input', () => { tier[key] = inp.value; });
+      f.appendChild(l); f.appendChild(inp);
+      return f;
+    }
+    function renderTiers() {
+      const list = document.getElementById('sd-tier-list');
+      if (!list) return;
+      list.innerHTML = '';
+      tiers.forEach((t, i) => {
+        const sec = document.createElement('div');
+        sec.className = 'form-section form-section--outlined';
+        const head = document.createElement('div'); head.className = 'sd-tier__head';
+        const meta = document.createElement('span'); meta.className = 'sd-tier__meta';
+        const sold = document.createElement('span'); sold.className = 'sd-tier__sold';
+        sold.textContent = T('sd.f.tier.sold', '{n} sold across the series').replace('{n}', fmtNum(t.sold));
+        meta.appendChild(sold);
+        if (Number(t.price) === 0) {
+          const free = document.createElement('span'); free.className = 'badge badge--neutral';
+          free.textContent = T('ce.tier.free', 'Free'); meta.appendChild(free);
+        }
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'btn btn--icon btn--xs sd-tier__del';
+        del.innerHTML = '<i data-lucide="trash-2" class="ztor-icon"></i>';
+        if (t.sold > 0) {
+          del.disabled = true;
+          del.title = T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(t.sold));
+        } else del.addEventListener('click', () => { tiers.splice(i, 1); renderTiers(); });
+        head.appendChild(meta); head.appendChild(del);
+        sec.appendChild(head);
+        const grid = document.createElement('div'); grid.className = 'form-grid form-grid--3';
+        grid.appendChild(tierField('ee.tix.name', 'Tier name', t.name, 'name', t));
+        grid.appendChild(tierField('ee.tix.price', 'Price', t.price, 'price', t, 'number', 0));
+        grid.appendChild(tierField('sd.f.tier.qtyper', 'Quantity per date', t.qty, 'qty', t, 'number', 1));
+        sec.appendChild(grid);
+        list.appendChild(sec);
+      });
+      icons(list);
+    }
+    renderTiers();
+    document.getElementById('sd-tier-add')?.addEventListener('click', () => {
+      tiers.push({ id: 'new-' + tiers.length, name: '', price: 0, qty: 0, sold: 0 });
+      renderTiers();
+    });
+  })();
+
+  /* 儲存並同步：原型只回報結果，不接後端。刻意說出「同步到幾場」——
+     這一頁最容易誤會的就是「我只是改了一個欄位」。 */
+  (function () {
+    const btn = document.getElementById('sd-save');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+      alert(T('sd.save.done', 'Saved. The change is now on all 3 dates.'));
+    });
+  })();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+</body>
+</html>

@@ -71,9 +71,12 @@ window.ZTOR_PARTIALS.payoutRequestModal = String.raw`
           <div class="payout-summary__row"><span data-i18n="payout.summary.cfgver">Rate version</span><strong>cfg-2026.02</strong></div>
         </div>
 
-        <label class="payout-confirm">
-          <input type="checkbox" class="payout-confirm__box" data-payout-confirm>
-          <span class="payout-confirm__text" data-i18n="payout.confirm">I confirm the amount and details above, and understand a payout request is irreversible.</span>
+        <label class="zcheck mt-16">
+          <span class="zcheck__control">
+            <input class="zcheck__input" type="checkbox" data-payout-confirm>
+            <span class="zcheck__box"></span>
+          </span>
+          <span class="zcheck__label" data-i18n="payout.confirm">I confirm the amount and details above, and understand a payout request is irreversible.</span>
         </label>
       </div>
       <div class="payout-dialog__foot">
