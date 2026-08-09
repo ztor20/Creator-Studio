@@ -4,19 +4,21 @@
    ------------------------------------------------------------
    variants
      .upload-tile          — base dashed click/drop target
-     .upload-tile--hero    — large hero slot（主圖，整列寬）
-     .upload-tile--file    — file-drop bar（數位下載檔／證書）
+     .upload-tile--file    — file-drop bar（數位下載檔／證書；非影片）
+     .upload-tile--video   — 影片投放格（16:9、容器 2/3 寬；站上影片上傳的唯一做法）
    anatomy
      .upload-tile__icon    — Icon atom wrapper（use Tabler, not text symbols）
      .upload-tile__title   — 主文案（occupies --foreground）
      .upload-tile__hint    — 限制說明（Min 尺寸／檔型）
      .upload-tile__flag    — 角落標籤（如相簿第一格的「封面」）；與 __badge 不同，
                              __badge 專屬 AI 優化完成狀態、由 JS 產生，__flag 是靜態語意標記
-   layout helper
-     .upload-grid          — 4 格縮圖列（附圖）
-     .upload-assets        — 具名素材槽列（2026-07-31 起依 D164 收斂：建立項目＝主視覺＋圖庫，
-                             建立活動＝主視覺＋橫幅＋圖庫；同一組槽共用同一個直式比例，
-                             活動的橫幅槽例外走 --16x9）
+   layout helper（直式圖片槽只有這一套，2026-08-09 起）
+     .upload-assets        — 素材槽列（固定高度推寬度、可換行）
+     .upload-assets--fill  — 直式圖片槽的正典排法（2026-08-09 使用者裁決）：
+                             --upload-asset-cols（預設 4）格撐滿一整列、第五格換行、格子同尺寸
+   behaviour opt-in（JS：partials/upload-tile.js）
+     [data-upload-reveal]  — 掛在容器上＝逐格顯示：一次只露出一個空格，填滿才長出下一格
+                             （2026-08-09 建立商品素材列）
    shape modifiers
      .upload-tile--portrait — 圖片槽的唯一比例（見下方 --upload-img-ratio）
      .upload-tile--1x1 / --3x4 / --3x2 / --16x9 — 已自圖片槽退場，見檔尾墓碑段
@@ -66,10 +68,20 @@
 .upload-tile:focus-visible,
 .upload-tile__act:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
-/* --hero / 縮圖格一律走 --upload-img-ratio（750×1125 直式）。
-   主圖收斂寬度、置左，不做滿版（否則直式高度會把表單推得更遠）。 */
-.upload-tile--hero { aspect-ratio: var(--upload-img-ratio); max-width: 320px; min-height: 0; }
 .upload-tile--file { min-height: 110px; }
+
+/* ---- 影片上傳格（2026-08-10 使用者裁決：站上影片上傳只有這一套）----
+   比例照影片本身（16:9），不是一條與內容無關的長條——格子長得像它要裝的東西，
+   使用者不用讀文案就知道這裡放的是影片。寬度取容器的 2/3：滿版會讓一支預告片的
+   投放區比整份表單還搶眼，2/3 留出右邊的呼吸，同時仍是一眼可見的目標。
+   default 與 hover 不另外定義，直接吃基底的虛線與 accent hover——與直式圖片格同一套，
+   站上「可投放的上傳格」因此只有一種手感。 */
+.upload-tile--video {
+  aspect-ratio: 16 / 9;
+  width: 66.6667%;
+  min-height: 0;
+}
+@media (max-width: 640px) { .upload-tile--video { width: 100%; } }
 
 .upload-tile__icon  { display: inline-flex; align-items: center; justify-content: center; line-height: var(--lh-none); }
 .upload-tile__icon .ztor-icon { width: 20px; height: 20px; }
@@ -77,31 +89,18 @@
 .upload-tile__sub   { font-size: var(--fs-13); color: var(--foreground-muted); }   /* 主副說明（如「拖放或點擊瀏覽」）*/
 .upload-tile__hint  { font-size: var(--fs-11); color: var(--muted-foreground); }
 
-/* hero 內文：Icon atom＋兩行標題（用 \n 換行）＋格式/大小 */
-/* 2026-07-17 使用者裁示：hero 上傳圖示外加「圓角晶片框」（accent 底＋1px 邊＋圓角），
-   讓圖示像放在一顆小晶片上，而非裸浮（midnight 探索頁做法）。僅 hero 變體，縮圖格不變。 */
-.upload-tile--hero .upload-tile__icon {
-  color: var(--foreground);
-  margin-bottom: var(--sp-8);
-  width: 56px; height: 56px;
-  background: var(--accent);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-.upload-tile--hero .upload-tile__icon .ztor-icon { width: 24px; height: 24px; }
-.upload-tile--hero .upload-tile__icon .up-stack { width: 44px; height: 44px; }
-.upload-tile--hero .upload-tile__title { font-size: var(--fs-15); font-weight: var(--fw-regular); white-space: pre-line; line-height: var(--lh-comfy); }
-.upload-tile--hero .upload-tile__hint { font-size: var(--fs-12); }
 
-.upload-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-10);
-  margin-top: var(--sp-10);
-}
-/* 附圖格跟主圖同比例（2026-07-31 起 750×1125）。原本強制 1 / 1，會與格子自己帶的
-   形狀修飾詞打架——收斂成單一比例後直接指向同一個變數，兩邊不可能再分岔。 */
-.upload-grid .upload-tile { aspect-ratio: var(--upload-img-ratio); min-height: 0; }
+/* ---- aside：直式上傳格＋右邊一句說明並排（2026-08-09 promoted from
+   create-event.html，原 `.ce-timg`）---- 用於彈窗裡「現在用的是哪張圖」這類
+   小面板：左邊固定寬的 .upload-tile、右邊縱向堆疊的說明文字與動作鈕。 */
+.upload-tile-aside { display: flex; gap: var(--sp-12); align-items: flex-start; }
+.upload-tile-aside .upload-tile { flex: 0 0 auto; width: 104px; }
+.upload-tile-aside__side { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-8); align-items: flex-start; }
+/* 直排變體（2026-08-09）：說明改坐在格子下方。並排版假設橫向有空間，放進窄欄
+   （例如彈窗右側那條 200px 的側欄）時說明會被擠成一行三、四個字的長條。 */
+.upload-tile-aside--stacked { flex-direction: column; }
+.upload-tile-aside--stacked .upload-tile { width: 100%; }
+
 
 /* ---- assets：具名素材槽列（2026-07-31 依 D164 收斂為主視覺＋圖庫〔＋活動的橫幅〕；同一個直式比例）----
    尺寸由「固定高度」推導寬度，不是由欄寬推導高度。
@@ -124,6 +123,35 @@
 }
 @media (max-width: 640px) {
   .upload-assets { --upload-asset-h: 148px; }
+}
+
+/* --fill：格子尺寸由「幾格撐滿容器」決定（2026-08-09 建立商品，使用者裁決）。
+   預設的 .upload-assets 是固定高度（200px）推寬度，跟容器多寬無關；素材列變成五格之後
+   那個尺寸就跟版面對不上——四格擺完剩一段空白，第五格自己掉下去，看起來像排錯。
+   本變體反過來：先決定一排放幾格（--upload-asset-cols，預設 4），寬度＝容器扣掉間隙後平分，
+   高度由 --portrait 的比例推導。所以四格永遠剛好撐滿一整列，第五格換行、尺寸與前四格相同。
+   容器變寬變窄都等比縮放，不需要斷點。
+   align-items 必須是 flex-start，否則 stretch 會先把高度拉滿、比例就失效。
+   width:100% 是必要的：格子帶 min-width:0，整列的最小內容寬度因此趨近 0，
+   一旦這一列自己也是某個 flex 容器的子項（例如 design-system.html 的 .demo），
+   它會被壓成一條窄帶、每格只剩幾十像素。宣告滿寬就不吃這個 shrink-to-fit。 */
+.upload-assets--fill {
+  --upload-asset-cols: 4;
+
+  flex-wrap: wrap;
+  align-items: flex-start;
+  width: 100%;
+}
+.upload-assets--fill .upload-tile {
+  flex: 0 0 calc((100% - var(--sp-12) * (var(--upload-asset-cols) - 1)) / var(--upload-asset-cols));
+  width: auto;
+  height: auto;
+  min-width: 0;
+  max-width: none;
+}
+/* 手機改一排兩格：四格平分手機寬度，每格只剩約 80px，圖看不清也點不準。 */
+@media (max-width: 640px) {
+  .upload-assets--fill { --upload-asset-cols: 2; }
 }
 
 /* 形狀修飾詞：素材槽與任何需要固定比例的上傳格共用。
@@ -152,42 +180,31 @@
    直式海報、圖庫圖片仍是 750×1125，其他模組一律不得再用 --16x9 排圖片槽。 */
 .upload-tile--16x9 { aspect-ratio: 16 / 9; }   /* 服役中：檔案／媒體槽（project-detail Demo 影片、音樂）＋活動橫式橫幅圖片槽 */
 
-/* showcase：主圖（左）與附圖格（右）並排，兩欄等寬、頂端對齊。
-   附圖格在此排成 2×2；兩欄同比例（750×1125）時右欄總高＝主圖高度減掉 0.24 個 gap（約 3px），
-   視覺上仍齊平，差額由 align-items:start 吸收（create-product 主圖 + 附圖）。 */
-.upload-showcase {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-12);
-  align-items: start;
-}
-.upload-showcase .upload-tile--hero { max-width: none; width: 100%; }
-.upload-showcase .upload-grid { margin-top: 0; }
-.upload-grid--2x2 { grid-template-columns: repeat(2, 1fr); }
-
-/* 窄版（側邊預覽開啟或小視窗）：改回主圖在上、附圖列在下 */
-@media (max-width: 880px) {
-  .upload-showcase { grid-template-columns: 1fr; }
-  .upload-showcase .upload-tile--hero { max-width: 320px; }
-  .upload-showcase .upload-grid { margin-top: var(--sp-10); }
-  .upload-grid--2x2 { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* stacked：不分寬度都主圖在上、附圖列在下（縱向堆疊）。
-   等同把上面窄版行為固定成常態，供半寬欄位（如 product-detail 素材＋資訊並列）用。 */
-.upload-showcase--stacked { grid-template-columns: 1fr; }
-.upload-showcase--stacked .upload-tile--hero { max-width: none; width: 100%; }
-.upload-showcase--stacked .upload-grid { margin-top: var(--sp-10); }
-.upload-showcase--stacked .upload-grid--2x2 { grid-template-columns: repeat(4, 1fr); }
+/* ---- 墓碑：主圖大格與縮圖列（原 --hero / .upload-grid(--2x2) / .upload-showcase(--stacked)）----
+   退場日：2026-08-09。原因：使用者裁決「直式上傳圖只用一套元件與一套排版規則」——
+   `.upload-assets.upload-assets--fill`（四格撐滿一整列、第五格換行、格子同尺寸）
+   ＋容器層 `[data-upload-reveal]`（一次只露一個空格）。
+   「主圖比附圖大」這個模型連同它的三個版面助手一起退場：主圖的身分改由角落標籤
+   `.upload-tile__flag` 承擔，不再靠尺寸暗示。
+   本輪已改的消費頁：create-product／create-auction／create-bundle／bundle-detail／
+   product-detail（含 IP 素材槽）／publish-work（封面與劇照）。原本吃 `.upload-assets`
+   的頁面（create-project／create-event(-legacy)／create-campaign／project-detail／
+   series-detail／event-detail／bundle-editor.js）一律補上 `--fill`。
+   `--hero` 的圓角晶片圖示框（Q18 2026-07-17）隨變體一起消失。
+   期間不得再拿這四個名字排新的上傳格；檔案槽請用 `--file`，橫式媒體槽請用 `--16x9`。 */
 
 /* filled state — set after a file is chosen (create-product / create-event / register-ip).
-   Promoted 2026-06-16 from per-page <style> dupes to the shared component. */
+   Promoted 2026-06-16 from per-page <style> dupes to the shared component.
+   2026-08-09 使用者裁決：撤除綠框／綠字（「不該有這種綠框元件」）。已填＝實線中性邊＋
+   前景色文字，靠 border-style（solid vs 空狀態的 dashed）辨別填了沒，不再靠顏色。
+   與下方 [data-upload].is-filled 互動格的既有中性配方（border-color: var(--border);
+   color: var(--foreground)）對齊，統一成同一套「已填」語彙。 */
 .upload-tile.is-filled {
   border-style: solid;
-  border-color: var(--status-success);
-  color: var(--status-success);
+  border-color: var(--border);
+  color: var(--foreground);
 }
-.upload-tile.is-filled .upload-tile__title { color: var(--status-success); }
+.upload-tile.is-filled .upload-tile__title { color: var(--foreground); }
 
 /* ============================================================
    Interactive uploader — opt-in via [data-upload]
@@ -205,11 +222,24 @@
 .upload-tile[data-upload],
 .upload-tile.is-filled { position: relative; overflow: hidden; }
 
-/* 未上傳：hover 才浮現更多資訊（保留空間、只切 opacity，無版面跳動）*/
+/* 未上傳：hover 才浮現更多資訊。
+   2026-08-09 使用者指示改為「兩個狀態各自依高度置中」：原本用 opacity 藏，說明文字仍占著
+   位置，於是靜止態的圖示與標題被那塊空白往上推、看起來沒有置中。改成 display:none 收掉，
+   靜止態＝圖示＋標題居中、hover＝連說明一起居中，兩態各自對齊自己的內容高度。 */
 .upload-tile[data-upload].is-empty .upload-tile__sub,
-.upload-tile[data-upload].is-empty .upload-tile__hint { opacity: 0; transition: opacity .15s ease; }
+.upload-tile[data-upload].is-empty .upload-tile__hint { display: none; }
 .upload-tile[data-upload].is-empty:hover .upload-tile__sub,
-.upload-tile[data-upload].is-empty:hover .upload-tile__hint { opacity: 1; }
+.upload-tile[data-upload].is-empty:hover .upload-tile__hint { display: block; }
+
+/* 圖進來之前不掛角落標籤（2026-08-09 使用者指示）：空格子還沒有內容可以被稱作「主圖」。
+   上傳中／處理中／優化中也不掛——那時格子被浮層蓋著，標籤浮在進度上只是噪音。
+   只有 .is-filled／.is-optimized 顯示。 */
+.upload-tile[data-upload]:not(.is-filled):not(.is-optimized) .upload-tile__flag { display: none; }
+
+/* hover 時虛線收細（2026-08-09 使用者指示）：hover 已經有底色變化在說「這格可以點」，
+   邊框不必再加粗宣示，退成一條細線讓格內文字站上前景。只作用在還沒填的格子——
+   已填的格子是實線邊，粗細不動。 */
+.upload-tile:not(.is-filled, .is-optimized, .is-uploading, .is-optimizing, .is-processing):hover { border-width: .5px; }
 
 /* 縮圖（選到的圖，createObjectURL）：非空狀態即鋪滿 */
 .upload-tile__thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
@@ -250,7 +280,9 @@
    暗色模式下 --foreground 是亮色，遮罩會變成一層灰白霧、圖片反而被洗淡。
    改用既有的浮層配方 --overlay-tint（黑 45%）＋ --overlay-blur，與 modal 背景同一套語彙，
    兩個主題都得到「圖片退到後面、按鈕站到前面」的效果。 */
-.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: var(--overlay-tint); -webkit-backdrop-filter: var(--overlay-blur); backdrop-filter: var(--overlay-blur); opacity: 0; transition: opacity .15s ease; z-index: 4; }
+/* border-radius: inherit 是必要的（2026-08-09 修）：backdrop-filter 會自己開一個新的
+   裁切脈絡，父層的 overflow:hidden ＋圓角管不到它，hover 一浮出來整格就變成直角。 */
+.upload-tile__actions { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: var(--sp-8); background: var(--overlay-tint); -webkit-backdrop-filter: var(--overlay-blur); backdrop-filter: var(--overlay-blur); border-radius: inherit; opacity: 0; transition: opacity .15s ease; z-index: 4; }
 .upload-tile.is-filled .upload-tile__actions,
 .upload-tile.is-optimized .upload-tile__actions { display: flex; }
 .upload-tile.is-filled:hover .upload-tile__actions,
@@ -260,6 +292,11 @@
 .upload-tile__act { width: 34px; height: 34px; display: inline-grid; place-items: center; border: 0; border-radius: var(--radius-md); background: var(--card); color: var(--foreground); box-shadow: var(--shadow-card); cursor: pointer; transition: background .12s ease; }
 .upload-tile__act:hover { background: var(--accent); }
 .upload-tile__act--ai { color: var(--primary); }
+/* AI 優化的兩顆鈕互斥：沒優化過顯示「AI 優化」，優化完成換成「還原」（回到剛上傳那一版）。
+   同一個位置換一顆鈕，而不是並排三顆——優化與還原是同一個決定的正反面。 */
+.upload-tile__act--undo { display: none; }
+.upload-tile.is-optimized .upload-tile__act--ai { display: none; }
+.upload-tile.is-optimized .upload-tile__act--undo { display: inline-grid; }
 .upload-tile__act .ztor-icon { width: 16px; height: 16px; }
 
 /* 角落標籤（__flag）：靜態語意標記，如相簿第一格的「封面」。
@@ -277,6 +314,11 @@
 .upload-tile__badge { position: absolute; top: 6px; left: 6px; display: none; align-items: center; gap: var(--sp-4); padding: 3px var(--sp-8); border-radius: var(--radius-pill); background: var(--primary); color: var(--primary-foreground); font-size: var(--fs-11); font-weight: var(--fw-medium); z-index: 5; }
 .upload-tile[data-upload].is-optimized .upload-tile__badge { display: inline-flex; }
 .upload-tile__badge .ztor-icon { width: 12px; height: 12px; }
+/* 同一格同時有 __flag 與 AI __badge 時（建立商品的主圖格：既是主圖、又開了 AI 優化），
+   兩者預設都佔左上角、會疊在一起。徽章移到下緣，角落標籤留在左上不動。
+   不改成「一左一右」是因為單排素材格只有 126px 寬，徽章那句「已依規格優化」就佔掉
+   一大半，左右並排仍會撞上。下緣在優化完成時是空的（進度條只在上傳中出現）。 */
+.upload-tile:has(.upload-tile__flag) .upload-tile__badge { top: auto; bottom: 6px; }
 
 /* ---- 內容檔（content / 媒體）模式：data-upload="content"（音訊/影片/檔案）----
    上傳後可播放（音訊/影片）與刪除，操作比照 Show it off；無 AI 優化。

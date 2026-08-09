@@ -222,7 +222,9 @@ Ztor Creator Studio · R 2.1 runs on a **clean white canvas with neutral light-g
 | `accent` | `#F3F3F3` | Sidebar item hover — a controlled step darker so it reads on the near-white rail |
 | `sidebar-active` | `#ECECEC` | ~~Sidebar selected item~~ — **退居回退用途（2026-07-27 Q8-A）**：導覽已選改吃 `--selected-surface` ＋ `--selected-ink`，本 token 不再是任何已選態的答案 |
 | `brand-ink` | light `#8F4E00` · dark `#ffa33f` | **可當文字用的品牌橘（2026-07-27）** — `--primary` 對近白底僅 1.92:1，任何要當**字或 icon** 的橘一律走這個 token，不得直接寫 `var(--primary)`。亮色為同色相 32° 的壓深版。對比：`--sidebar` 6.23:1／14% tint 5.70:1／白卡 6.45:1／深卡 8.02:1。目前的語意別名：`--selected-ink`（已選中）。**注意分工**：`--brand-ink` 是「橘字放在非橘底上」；字要鋪在**實色橘底**上時走 `--on-primary`，不是這個 |
-| `column-head-ink` | `color-mix(--muted-foreground 72%, transparent)` | **列表／表格欄位表頭的標籤墨色（2026-07-31，STYLE-DECISIONS Q41）** — 站上沒有比 `--muted-foreground` 更暗的文字 token（亮 `#6E6E68`／暗 `#979797` 已是最低階），故以它為基底調降不透明度。收成 token 是因為同一個角色原本跑了三種配方（裸 `--muted-foreground`、`color-mix(…68%, --card)`、`color-mix(…72%, transparent)`），正是 Q9 要收斂的「散落的即席灰」。混 `transparent` 而非 `--card`，表頭坐在任何底色上（有些表頭帶 `--muted` 底）都是同一階暗度。消費者＝ 10 支表頭元件，一律寫 `var(--column-head-ink)`、不再各自調配 |
+| `faint-ink` | `color-mix(--muted-foreground 72%, transparent)` | **比 `--muted-foreground` 再低一階的墨色（2026-08-09 抽出）** — 站上最低階的文字 token 就是 `--muted-foreground`，比它更輕的角色只能以它為基底調降不透明度。混 `transparent` 而不是某個面色，所以它坐在任何底上都是同一階暗度，也因此**在深色主題自動更深、在亮色主題自動更淡**，不需要逐主題各寫一次。抽出的原因：2026-07-31 為表頭做的 `--column-head-ink` 其實是同一個配方，第二個消費者出現時與其複製一份，不如把配方收成單一來源。消費者＝`--column-head-ink`（表頭，見下一列） |
+| `locked-field-ink` | `color-mix(--muted-foreground 55%, transparent)` | **全站 disabled 欄位唯讀值的墨色（2026-08-09 兩輪定案）** — 寫法一律 `var(--locked-field-ink)`。第一輪只在來源鎖定欄位（`field-source-tag.css` 的 `.is-source-locked`）用；**第二輪（使用者裁示「整個元件庫只能有一個 disabled 樣子」）把它上收成 `input.css` 的 `.input:disabled`／`.textarea:disabled`／`.select:disabled` 全站基準**，`field-source-tag.css` 因此不再自己定義鎖定樣式（見 [Field source tag §4.121](#field-source-tag)）。全站最輕的文字。不直接把 `--faint-ink` 調更淡，是因為它同時是表頭墨色（10 支元件），表頭沒有要跟著變。**對比刻意低於 AA**：實測深色 `#606061` 對 `#1C1D1E` ＝ 2.69:1、亮色 `#AFAFAC` 對白 ＝ 2.20:1。成立前提是它只承載 disabled 的唯讀值，而不是本頁要讀的資訊——欄位標籤與「bookyay 帶入」來源標記都維持正常對比，「這格是什麼、為什麼不能改」靠那兩個回答。**不得**用在需要閱讀的文字上 |
+| `column-head-ink` | `var(--faint-ink)` | **列表／表格欄位表頭的標籤墨色（2026-07-31，STYLE-DECISIONS Q41）** — 站上沒有比 `--muted-foreground` 更暗的文字 token（亮 `#6E6E68`／暗 `#979797` 已是最低階），故以它為基底調降不透明度。**2026-08-09 起改成 `var(--faint-ink)` 的語意別名**，值與行為不變。收成 token 是因為同一個角色原本跑了三種配方（裸 `--muted-foreground`、`color-mix(…68%, --card)`、`color-mix(…72%, transparent)`），正是 Q9 要收斂的「散落的即席灰」。混 `transparent` 而非 `--card`，表頭坐在任何底色上（有些表頭帶 `--muted` 底）都是同一階暗度。消費者＝ 10 支表頭元件，一律寫 `var(--column-head-ink)`、不再各自調配 |
 | `status-success-fill`／`destructive-fill` | `color-mix(<狀態色> 12%, transparent)` | **染色膠囊的底（2026-07-27）** — 與墨色成對抽出來，讓「擁有某個面」的元件可以整組換掉，而不是去覆寫 `.kpi__delta` 的個別屬性。混 `transparent` 而非 `--card`：混 `--card` 等於把深卡色**烤進膠囊自己的底色**，換到別的面（如 `.kpi--hero` 的實色橘）就變黑斑。對深卡是數學上的 no-op |
 | `status-success-deep`／`destructive-deep` | `#14532D`／`#881337` | **深階實色版（2026-07-27）** — 給「坐在實色暖底上」的膠囊用（`.kpi--hero` 以 90% alpha 引用）。12% 淡染在飽和橘上撐不起綠，改由深綠底承載色相、字換白 |
 | `status-success-ink`／`destructive-ink` | dark `#4ADE80`／`color-mix(--status-error 88%, #fff)` · light `#052E16`／`#4C0519` | **染色膠囊的墨色（2026-07-27）** — `.kpi__delta` 這種「狀態色 12% 半透明底＋同色字」的膠囊只有在**底是深的**時候才成立。膠囊的真實背景是它坐的那個面，所以墨色**跟著面走、不跟著主題走**（實色橘卡在深色主題下依然是亮底 → `.kpi--hero` 自己覆寫這兩個 token）。色相不動、只降明度，維持「一眼看出是綠／紅」。**12px semibold 屬 normal text，門檻 4.5:1 不是 3:1** —— green-900 `#14532D` 在橘膠囊上只有 4.47:1，差一點就是不行，故取 green-950。紅色墨改走 `--status-error`（2026-07-21 新增它就是為了「深底小字徽章 `#E7000B` 太深」，delta 當初漏接）並再提亮一階才過 4.5 |
@@ -532,7 +534,7 @@ Durations sit in the `150–300ms` range with ease-out curves; `transition: all`
 | **Input** (控件邊) | `--input` | `#EAEAEA` | = border；元件現多直接用 `--border`（待採用） |
 | **Input surface** (填色互動面) | `--input-surface` | `var(--card)`（dark `#262729`）| 暗色下比 `--card` 亮一階的「填色互動面」：`.input/.textarea/.select`（2026-07-17 Q19）＋型別選項卡 `.selection-card--icon`＋上傳投放區 `.upload-tile`（2026-07-18）皆用，讓這些互動面在 section 卡（`--card`）上浮得出來；亮色＝白卡靠 border 分界 |
 | **Nest surface** (巢狀層薄膜) | `--nest-surface` | `transparent`（dark `rgba(222,223,233,.04)`）| 疊在 `--card` 上的第二層 surface（`.nest`，§4.53）。亮色＝透明，卡與 nest 同為白、單靠 `--shadow-nest-up` 分層就夠；深色才真的疊一層冷調薄膜（合成 ≈ `#292A2B`，刻意不用純白以免洗掉畫布冷調）。層級只有兩層填色，L3+ 改邊框 |
-| **Charts** | `--chart-1..5` | 橘 `#ffa33f` · 藍 `#266DF0` · 綠 `#22C55E` · 黃 `#F8D749` · 紫 `#8B5CF6` | chart series；chart.js 尚未讀 token（待採用） |
+| **Charts** | `--chart-1..8` | 橘 `#ffa33f` · 藍 `#266DF0` · 綠 `#22C55E` · 黃 `#F8D749` · 紫 `#8B5CF6` · 玫紅 `#EC4899` · 青 `#06B6D4` · 赭 `#7C4A2D` | 收益類型與排行色相；6–7 於 2026-07-27 隨商品／門票收益加入，8 於 2026-08-09 隨貼文帶貨收益加入（D181） |
 | **Sidebar family** | `--sidebar-*`（`-foreground` / `-primary(-foreground)` / `-accent(-foreground)` / `-border` / `-ring` / `-active` [ext]） | `#FBFBFB` + 整組 | rail 一家；其中 `--sidebar-primary(-foreground)` / `--sidebar-ring` / `--sidebar-accent-foreground` 元件尚未引用（待採用） |
 | **Brand gradient** | `--gradient-brand` | 橘漸層（#ffd9a0 · #ffa33f · #ff7a4d） | 進度條品牌漸層 [ext] |
 
@@ -710,10 +712,10 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Button | 🟢 atom | ✓ App | Primary CTAs, wizard action bar, header actions (primary / outline / ghost) | [button.css](./ds-components/button.css) |
 | Badge / Status pill | 🟢 atom | ✓ App | Dashboard / Earnings / Payouts + category chips — flat soft-tag look (no dot/ring), variants orange / success / error / info / warning / accent (purple) / neutral。`--inline`：接在標題文字後的安靜限定詞（regular 字重、middle 對齊、左 6px），如訂單「Limit 2/person」「Awaiting pickup」（2026-07-21：E-Shop 清單的「N variants／限量」用法已移除，規格數與限量狀態改由 `__meta` 副標與 `__stock` 欄本身呈現，見下方 Product list Variants） | [badge.css](./ds-components/badge.css) |
 | Status dot | 🟢 atom | ✓ App | Dashboard status / source dots | [badge.css](./ds-components/badge.css) |
-| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`.chip--active` 品牌橘 tint（篩選已選，Q8-A 2026-07-27；原反白黑底作廢）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多選項選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。分工（2026-07-27 Q8-A 後）：`.chip--value` 灰＝剛建立的值、`.chip--active` 橘 tint＝已選（篩選已選與 tag-input 的已套用分類現在同一個外觀，Q19 的專屬覆寫已刪） | [chip.css](./ds-components/chip.css) |
-| Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout | [switch.css](./ds-components/switch.css) |
+| Chip | 🟢 atom | ✓ App | Earnings transactions filter, Tax year filter, supported regions。變體：`.chip--active` 品牌橘 tint（篩選已選，Q8-A 2026-07-27；原反白黑底作廢）／`--static` 唯讀／`--removable` 帶行內 ×／**`--value`（2026-07-21 新增）** 中性淡填（`--input-surface` 底＋`--foreground` 字＋`--border` 邊）＝創作者剛輸入的值，用於多選項選項值——這種 chip 是正在輸入的資料、不是被選中的篩選條件，不該反白搶視覺（使用者裁示，參照 Webflow Designer 的 class chip）。分工（2026-07-27 Q8-A 後）：`.chip--value` 灰＝剛建立的值、`.chip--active` 橘 tint＝已選（篩選已選與 tag-input 的已套用分類現在同一個外觀，Q19 的專屬覆寫已刪）。**新消費情境（2026-08-09）**：建立活動 `create-event.html` 的「加入商品」清單，已加入商品改用 `.chip-group` ＋ `.chip--removable`，價格併進 chip 文字、不另立一欄 | [chip.css](./ds-components/chip.css) |
+| Switch | 🟢 atom | ✓ App | Settings notifications, E-Shop visibility, My IP marketplace, Earnings auto-payout. **`.switch--locked`（2026-08-09 從 `notification-matrix.css` 上收進本檔）**：合規／來源鎖定的停用態（`cursor:not-allowed`＋`opacity:.65`）。上收原因——這個修飾類原本只定義在 `notification-matrix.css`，但 `tier-settings.html`／`create-event.html` 都只連 `switch.css`、沒連那支檔，掛了 class 卻吃不到任何視覺，只剩 JS 擋點擊；三個消費頁（settings／tier-settings／create-event）現在都連 `switch.css`，鎖定態理當定義在這裡，不必為借兩行樣式多連一支不相干的元件檔。Consumers：settings.html（合規通道鎖定開啟）、tier-settings.html、create-event.html（bookyay 帶入鎖住「發布後直接開賣」開關） | [switch.css](./ds-components/switch.css) |
 | Info banner | 🟢 atom | ✓ App | Contextual explanations (timing, region note, legal hint) | [info-banner.css](./ds-components/info-banner.css) |
-| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換／刪除（站上標準 2 鈕，`data-upload-ai` opt-in 第三鈕 AI 優化）。**2026-08-07 新增 `.is-processing`**（`data-upload-processing` opt-in）：檔案傳完、伺服器還在轉檔／檢查的那一段，沿用上傳中的 frosted 浮層但不給進度條，`upload:change` 的 `filled` 維持 false，所以就緒檢查照舊算它未完成、送出被擋（作品上架流程 F1 的上傳與處理狀態、§8 檔案就緒）；事件同時新增 `detail.state` 讓消費頁講得出「現在是哪一段」。**2026-07-31：全站圖片槽收斂單一直式 750×1125**（`--upload-img-ratio`），舊 `--1x1`／`--3x4`／`--3x2` 退場、`--16x9` 僅存於檔案槽。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent） | [upload-tile.css](./ds-components/upload-tile.css) |
+| Upload tile | 🟢 atom | ✓ App | Create-flow upload slots（hero／thumbs／file drop，Add new item）；opt-in 互動上傳（`[data-upload]`＋`partials/upload-tile.js`）：選圖→假進度→hover 替換／刪除（站上標準 2 鈕，`data-upload-ai` opt-in 第三鈕 AI 優化）。**2026-08-07 新增 `.is-processing`**（`data-upload-processing` opt-in）：檔案傳完、伺服器還在轉檔／檢查的那一段，沿用上傳中的 frosted 浮層但不給進度條，`upload:change` 的 `filled` 維持 false，所以就緒檢查照舊算它未完成、送出被擋（作品上架流程 F1 的上傳與處理狀態、§8 檔案就緒）；事件同時新增 `detail.state` 讓消費頁講得出「現在是哪一段」。**2026-07-31：全站圖片槽收斂單一直式 750×1125**（`--upload-img-ratio`），舊 `--1x1`／`--3x4`／`--3x2` 退場、`--16x9` 僅存於檔案槽。`--hero` 圖示外加圓角晶片框（`--accent` 底＋1px `--border`＋`--radius-lg`，2026-07-17 Q18）。投放區底色 `--input-surface`（暗色比 section 卡亮一階＝填色投放區、亮色白卡，2026-07-18，對齊 midnight；原 transparent）。**2026-08-09 新增撐滿型素材列**：`.upload-assets--fill`（`--upload-asset-cols` 決定一排幾格、寬度平分容器、第五格換行同尺寸）＋容器層 `[data-upload-reveal]`（一次只露出一個空格，填滿才長出下一格），建立商品「展示它」由「主圖大格＋附圖 2×2」改為五格同尺寸 | [upload-tile.css](./ds-components/upload-tile.css) |
 | Bundle editor | 🟠 molecule | ✓ Project | 共創回饋套組編輯器（2026-07-24 promote → 2026-07-28 第二代改版〔create-project「回饋套組」步驟〕→ 2026-07-30 抽成共用行為模組 `js/bundle-editor.js` → 2026-07-30 第二批：價格改唯讀自動計算＋新增套組優惠欄位 → **2026-07-30 第三批：優惠改百分比欄位，卡片欄位重排，撤除左緣未完成色線**）。`window.ZtorBundleEditor.mount({list,addBtn,t,getPool\|poolInput\|pool,getPerSlot\|perSlotInput\|perSlot,initial,collapsedByDefault,shares,onChange})`，回傳 `{getBundles,setBundles,add,ensure,render,refresh,isValid,listPrice,finalPrice,maxDiscount,maxPct,perSlot,maxUnits,autoUnits,committedSlots,pool,num}`；**2026-08-03（D166）新增 `shares` 選項**（布林，預設 `true`；預購掛載傳 `false`）——共創與預購的方案是同一件事，差別只在預購不含分潤，`shares:false` 時關掉五個地方：①分潤名額欄位（`cpp.bd.slots`）整格不渲染；②販售上限的「自動」不出現，只剩「不限量」（內部值 `unlimited`）／「限量」兩個由創作者自己決定的選項（共創的非限量內部值是 `auto`，兩型故意用不同字串，讓狀態自己說得出「這是推導出來的」還是「這是真的沒有上限」，所有判斷式一律寫成「是不是 `limited`」）；③自動上限指向名額池的說明不出現；④價格算式（`priceHintText()`）的名額段落消失，只剩商品加總；⑤`isValid()` 判準改為「有名稱 ＋（至少一件商品或至少一項有內容的權益）」（共創版是「有名稱 ＋（至少一件商品或名額數 > 0）」），因為預購沒有名額可以當對價，權益要能算數，否則純體驗方案（如「一場線上見面會」）永遠是無效卡；價格空狀態文案也換一組（`cpp.bd.qty.price.empty` vs `cpp.bd.price.calc.empty`）。其餘欄位（名稱、一句話說明、商品、額外權益、套組優惠、價格計算）兩型完全相同、共用同一批 `cpp.bd.*` key。規格出處：`documents/5.1.2.1-建立專案流程.md` §5.3.2 F28／F29、`decisions.md` D166。名額池與每名額單價各自三種注入方式（即時 getter／讀某 input／固定數字）讓同一支模組同時服務「會即時變動」（create-project 讀 `#fd-slots`／`#fd-perslot`）與「固定值」（project-detail，`fund.goal÷200` 推導名額池、每名額單價固定 $200，原型假資料）兩種頁面；`refresh()` 供外部注入值變動時就地重算全部卡片，不重畫、不搶焦點。**計價規則**：原價＝名額數×每名額單價＋商品定價加總。**2026-07-30 第三批：套組優惠改百分比欄位**（0–100%，沿用既有 `.amount-field--suffix.amount-field--readonly` 做法，非新造百分比欄樣式）——套組價＝原價－min(優惠%×原價, 商品定價加總)，折抵範圍仍只吃商品那一段，地板仍是股份總價（分潤名額的價值不可折讓）；上限同樣改以百分比表達：新函式 `maxPct()`＝floor(商品定價加總÷原價×100)。純回饋（0 名額）卡可折到 $0，只含名額無商品的卡 `maxPct()` 為 0、一分都不能折；填超過上限時優惠欄下方 `.field__hint` 轉紅（`.field__hint.fc-hint--over`）並說出實際生效的百分比與金額，不默默截掉。每張套組＝`.card.fc-bundle`：收合態 `.fc-bundle--collapsed` 顯示摘要列 `.fc-sum`（序號 `.fc-bundle__index`＋`__name`／`__meta`／`__price`，有優惠時原價劃線並列於前，`.fc-sum__was`）＋`.fc-bundle__actions`（編輯或收合／移除）；**2026-07-30 第三批展開態欄位重排（由輸入到結果）**＝套組名稱＊／一句話說明／含分潤名額＋販售上限 `.segmented`（自動＝從名額池推導可賣份數／限量＝手動硬上限，`.fc-slotnote`／`--over` 超賣提示）／商品用**引用**不用自由輸入——`.fc-pick`（`__results`／`__opt`／`__opt-price`／`__empty`）挑選既有 E-Shop 商品成 `.fc-ref`（`__thumb`／`__name`／`__meta`）／額外權益仍為自由文字 `.fc-perk`／最後才是獨立的**定價區塊**（新增 `.fc-pricing`，卡片最後，上緣一條分隔線）：優惠%（`.fc-pricing__row` 窄欄）＋價格（唯讀 `.amount-field--readonly`，`.fc-pricing__out`）＋橫跨整列的組成說明與上限說明（`.field__hint.fc-pricing__note`，兩行，取代已移除的 `.field__hint.fc-pricecalc`；與 `.fc-hint--over` 同樣寫成 0,2,0 權重，因為 field-system.css 在本檔之後載入）。滿版加高鈕：`.fc-add`（56px，新增套組）／`.fc-add-item`（48px，本代重用作「新增權益」）。**卡片左緣「未完成」色線已依使用者裁決移除**（`.fc-bundle--invalid` 與其 `border-color` transition 一併刪除，CSS 留墓碑；`isValid()` 判準不變——缺名稱、或無名額也無商品仍為無效，仍驅動建立頁教練提示與 Continue 擋關，只是卡片自己不再顯示那條色線；`--status-warning` 在本元件已無引用）。`.fc-bundle__body > .form-grid` 補回格線與下一欄位的間距（2026-07-30 新增）。消費頁（**2026-08-03 由 2 個增為 4 個**，D166 新增預購方案掛載點）：create-project.html（回饋套組步驟，共創）、create-project.html（預購方案步驟，`shares:false`）、project-detail.html（方案與承諾›支持方案，共創，`collapsedByDefault:true`＋3 張種子套組）、project-detail.html（方案與承諾›預購方案，`shares:false`，`collapsedByDefault:true`＋2 張種子方案）。**create-campaign.html 仍保留自己的第一代頁內 `.fc-*` 副本**（僅自由輸入商品列 `.fc-item-row`／`.fc-item-fields`，無收合／引用挑選器／權益／名額推導／計價），未遷移到本模組（治理待辦）。**2026-07-30 第五批（使用者裁決）**：展開態的價格移到標題列右上角——復用第三批已有的 `.fc-sum__tag`（「套組價」小標，展開態才顯示）＋放大的 `.fc-sum__val`（`--fs-20`），有折扣時原價劃線 `.fc-sum__was` 仍並列在前；收合態摘要價格不變。展開態的動作同輪從標題列移到卡片底部——`.fc-bundle__head` 展開時右上角只留價格；卡片底部新增 `.fc-collapse`（滿寬可點的收合把手，`<button>`＋`<i data-lucide="chevron-up" class="ztor-icon">`＋文字，上緣一條分隔線，`:hover`/`:focus-visible` 均已定義）與 `.fc-bundle__foot`（右對齊容器，內含 `.btn.btn--destructive.btn--sm` 移除鈕，僅卡片數 >1 時出現）；收合態動作仍留在標題列右側（編輯／移除文字連結，行為不變）。卡內間距同輪對齊建立商品頁 `.form-section--outlined` 的節奏（使用者指定參考對象）：`.fc-bundle` 內距由 `--sp-16`/`--sp-18` 改 `--sp-24`（`margin-bottom` 維持 `--sp-12`）；`.fc-bundle--collapsed` 左右內距同步改 `--sp-24`（收合↔展開時名稱不左右位移）；新增 `.fc-bundle__body .field__label { font-size: var(--fs-14) }` 與 `.field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)) }`，欄位間距本身仍吃基礎 `.field` 16px（Q6 已統一全站，本輪未動）。**移除鈕用 `.btn--destructive`**（非 `.btn--ghost.btn--destructive`）——Q37 曾裁決為實色紅底，**2026-08-06 使用者裁示全站改紅框紅字**（見 Button 與 STYLE-DECISIONS Q37 的推翻紀錄），本元件不必改 markup、跟著 button.css 一起變。i18n 新增 3 key（中英）：`cpp.bd.collapse.long`／`cpp.bd.remove.long`／`cpp.bd.price.tag`；既有 `cpp.bd.collapse`／`cpp.bd.remove` 仍供收合態短連結使用。 **2026-08-06 適用票種改用商品那一列的形式**（使用者指示）：原本的一排勾選框（`.bd-tickets` 容器＋`.bd-ticket__name`／`__price`，已墓碑）換成 `.fc-ref` 引用列——這一塊回答的是「這組裡面有什麼」，商品用引用列、票券也是內容物之一，長成另一種樣子會讓人以為那是設定不是內容。勾選框留著（一組可賣給多種票的持有者，仍是複選）、移到列首與縮圖並排，勾到的列加一條左緣橘線（`.bd-ticket--on`）。還沒建立票種時放一列虛線佔位（`.fc-ref--placeholder`），把「這裡將來會有一張票」畫出來，而不是只留一句提示文字。同輪修掉封面圖的尺寸——上傳格要包在 `.upload-assets` 裡才有固定高，少了外層會沿著 `.field` 撐滿整列寬再依比例長到半個畫面高。**2026-08-04 新增活動變體的三個選配旗標**（使用者裁決「活動套組、募資套組、電子商店組合包是同一件事的三個變體」，所以不開第二支編輯器）：`work:false` 收掉「作品」本體與含作品份數（活動賣的是票＋商品，不是一份作品的份數）；`cover:true` 每張卡加一格封面圖（活動每一組賣的東西不同，卡與卡要靠圖分辨，走 Q40 的共用上傳格產生路徑）；`tickets` 收陣列或 getter，長出「適用票種」複選清單（`.bd-tickets`／`.bd-ticket`，勾選框用正典 `.zcheck`），有票種時 `isValid()` 要求至少勾一個——活動套組一定含一張票。**預購字彙（方案／預購者）改跟著 `work` 走、不跟 `shares`**：活動同樣 `shares:false`，套上預購講法會讓每個標籤都說錯話。三個旗標都不傳時行為與先前完全相同，募資兩個消費頁不受影響（已實測共創仍有名額、預購仍有作品與份數）。**電子商店組合包（`create-bundle.html`）仍是另一套實作**，尚未併進本模組（治理待辦）。 | [bundle-editor.css](./ds-components/bundle-editor.css) |
 | Album tracks | 🟠 organism | ✓ App | 數位「音樂專輯（Album）」多曲目管理（spec 5.1.5.2 §4.2 F11.1）：上傳 mp3/mp4→逐曲列（`.album-track`：`__grip`/`__cover`/`__main`(`__name`/`__meta`/`__bar`/`__lyrics`)/`.dropdown.album-track__menu`）；拖曳重排、改名(inline)、換封面、上傳歌詞(音訊限定→View Lyrics)、刪除；上傳中 `.is-uploading`。`partials/album-tracks.js` 增強、emit `albumtracks:change`；逐列選單重用 dropdown-menu.css。**`data-album-seed`（JSON `[{name,meta,type?,lyrics?}]`）可預置已完成曲目列**（2026-07-16，供 product-detail 呈現既有專輯內容；建立頁不帶＝空狀態）。呈現層 demo（假上傳/歌詞） | [album-tracks.css](./ds-components/album-tracks.css) |
 | VIP card | 🟠 organism | ✓ App | 數位「會員卡（Membership / VIP card）」卡面自訂（spec 5.1.5.2 §4.2 F11.2）：`.vip-card`[data-vip-card]＞`__settings`（`.segmented.radio-cards` Text/Image＋`.input`名稱／`.upload-tile` logo）＋`__preview`（`__frame`公版場景＞`__plate`霧面卡＞`__logo`/`__logo-img`/`__plate-sub`）。Text→文字合成、Image→PNG logo 合成；`.vip-card--image` 切模式。`partials/vip-card.js` 綁定、emit `vipcard:change`。公版為 CSS 近似固定藝術（frame 漸層裸色＝記錄在案例外，見下）。呈現層 demo | [vip-card.css](./ds-components/vip-card.css) |
@@ -756,7 +758,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Mobile scanner | 🟠 organism | SiteSpecific | 獨立手機 scanner（spec 5.1.5.11 F7 · D111）——獨立 URL、無主工作台導航。`.scanner-page`＞`.scanner-frame`＞`.scanner-top`＋`.scanner-screen`（`.scanner-pw` 密碼閘／`.scanner-cam`(`__reticle`/`__line` 掃描動畫，respects `prefers-reduced-motion`)／`.scanner-result`(`__banner --ok/--warn/--bad`/`__rows`)）＋`.scanner-foot`。相機視窗＝`--surface-inverse` role token（theme-independent、非裸色）。`scanner.html` inline controller | [scanner.css](./ds-components/scanner.css) |
 | Auth shell | 🟠 organism | SiteSpecific | 未登入層的置中表單殼（spec 5.1.10 · D170）——站上第二個無工作台導航的整頁殼，**無卡片**（2026-08-04 使用者裁示，比照 ztor 消費端登入頁）。`.auth-page`（`--background` 底、整頁置中）＞`.auth-shell`（純內容欄：max 420 ＋ `--sp-24` 垂直節奏，無底色／邊框／陰影／圓角）＞`.auth-brand`（wordmark ＋ Creator Studio 兩行，絕對定位左上角）＋`.auth-shell`＞多個 `.auth-step[data-auth-step]`（`[hidden]` 互切）；step 內＝`.auth-intro`(`.auth-head`＞`.auth-head__back`＋`.auth-title`／`.auth-sub`)、`.auth-pw`(`__toggle` 顯示隱藏)、`.auth-inline`(`--lead` 國碼在前)、`.auth-actions`（主要行動滿寬）、`.auth-foot`、`.auth-link`。六個登入方式（電子郵件／手機號碼／Apple／Google／Facebook／LINE）同一種卡、同一個 `.radio-cards--gate` 的 2 欄 grid（2026-08-04 使用者裁示），錯誤列重用 `.alert--row.alert--error`，本檔不另造 | [auth.css](./ds-components/auth.css) |
 | Ticket preview | 🟡 molecule | ✓ App | 粉絲收到的那張票的即時預覽（建立活動步驟 5 票券銷售 › 票券設計的右軌）：識別半張（時間／票名或 logo／票種）＋撕線＋QR 半張。票面是永遠深色的物件，字色走 `--foreground-on-inverse(-muted)`，缺口用 `--surface-page` 遮邊；QR 沿用 `.qr-box` 與 `window.ztorFauxQr()`。詳見 §4.116 | [ticket-preview.css](./ds-components/ticket-preview.css) |
-| Session list | 🟡 molecule | ✓ App | 系列場次清單（建立活動 › 場地與時間，2026-08-06）：一活動辦好幾場時逐場列出日期與場地。第 1 場是上面主欄位的**唯讀鏡像**（`__row--main` ＋ `__text`），第 2 場起才是這份清單自己的資料（`.input` 兩欄）；`__no` 固定寬序號讓多列欄位左緣對齊，`__end` 固定寬尾欄讓「有移除鈕」與「有徽章」兩種列的右緣也對齊。詳見 §4.117 | [session-list.css](./ds-components/session-list.css) |
+| Session list | 🟡 molecule | ✓ App | 系列場次清單（建立活動 › 場地與時間，2026-08-06）：一活動辦好幾場時逐場列出日期與場地。第 1 場是上面主欄位的**唯讀鏡像**（`__row--main` ＋ `__text`），第 2 場起才是這份清單自己的資料（`.input` 兩欄）；`__no` 固定寬序號讓多列欄位左緣對齊，`__end` 固定寬尾欄讓「有移除鈕」與「有徽章」兩種列的右緣也對齊。**2026-08-09 新增 `__head`（欄位標題列）與 `--detailed`（多欄變體，`create-event.html` 場次清單改用，含 `[data-multi]` 兩種欄寬與窄螢幕收合）**。詳見 §4.117 | [session-list.css](./ds-components/session-list.css) |
 | Review status | 🟡 molecule | ✓ App | 送審件的狀態面板（2026-08-07，spec 5.1.0.4 F5／5.1.2.2 §2.2.9）：狀態徽章＋唯讀事實（送出時間／送出次數／審核者）＋退件理由（`__note`，`--rejected`／`--approved` 只改左側色條）＋動作列（只在真的有事可做時出現）。審核的兩端共用同一支——創作者在項目頁看結果、審核者在審核頁看同一塊；狀態字彙由 `js/work-review-store.js` 提供，元件不自帶。詳見 §4.119 | [review-status.css](./ds-components/review-status.css) |
 | Ticket tier card | 🟡 molecule | ✓ App | 建立活動的票種卡（spec 5.1.6.1 F9）：收合態＝卡標＋⋮（複製／移除）＋唯讀價格／數量＋整寬 Edit，編輯態＝名稱／價格／數量三欄直排＋每欄清空 ✕＋卡底 Remove／Cancel／Save；`.tier-grid` 網格（無 List／Grid 切換；**2026-08-06 起固定三欄**，1100/720px 降級）、`.tier-toolbar` 批次編輯、`.tier-count`（`--over` 超過容量轉紅）。自訂規則開關 **2026-08-06 由卡內 switch 列改成標題列靠右的 `.tier-card__ownbtn` 按鈕**（`aria-pressed`，開啟態橘框橘字）。卡體吃 `.card`、不重畫。詳見 §4.114 | [ticket-tier-card.css](./ds-components/ticket-tier-card.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product／create-auction／publish-work footer 用（publish-work 只在最後一步顯示，因為送出只發生在那一步；create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
@@ -777,12 +779,12 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Chart | 🟠 organism | ✓ App | Linechart (Dashboard / Earnings trends) + stacked-bar + source-list legend + rank-bars + **donut**。`.donut`（2026-07-25 新增）＝兩段式比例圓環：外層設 `--donut-p`（第一段百分比 0–100），色彩 `--donut-a`／`--donut-b`（預設 `--chart-3` 綠／`--chart-5` 紫），尺寸 `--donut-size`（預設 220px），圓心挖空以 `::after` ＋ `--donut-thickness`（預設 28px）／`--donut-hole`（預設 `--card`，放在別的底色上要一併覆寫），中央 `.donut__center`（`__label`／`__value`）疊在挖空層之上；圖例沿用同檔 `.source-list`／`.source-row`。**兩段以上、且要放中央數字的比例用 `.stacked-bar`／`.rank-bar`，不要硬塞進 donut**。<br>`.pie`（2026-07-31 新增）＝N 段實心圓餅：外層行內設 `--pie-stops` 為 conic-gradient 色標串、段界寫累計百分比（每段起點一律寫 `0`，讓瀏覽器接續上一段終點），尺寸 `--pie-size`（預設 168px）；圓餅不帶文字，數字全由旁邊圖例承擔，故 consumer 必須給它 `aria-hidden="true"`。`.pie-figure` 是「圓餅＋圖例」的並排殼（`.pie-figure__legend` 內放 `.source-list`），560px 以下疊成單欄、圓餅置中。**與 donut 的分工**：donut 只吃兩段且中心要放一個結果數字；三段以上、沒有單一結果數字要放的切分用 pie。**與 stacked-bar 的分工**：長條回答「誰比誰長」，圓餅回答「這一整塊是怎麼被分掉的」。消費者：粉絲總覽 › ztor 粉絲組成（四個分級的人數佔比）。<br>消費者：專案詳情 › 我的收益 › 淨收益分配（發起人／支持者 70/30） `.chart-card__foot` 為 space-between（左說明、右操作群）；**只有說明文字、沒有操作群時該文字靠右**（`> span:only-child` 補 `margin-left:auto`，2026-07-31）——否則單一子元素在 space-between 下等同靠左，看起來像漏了右邊那組。 | [chart.css](./ds-components/chart.css) |
 | Earnings waterfall | 🟡 molecule | ✓ App | Earnings · Breakdown (spec §5.1.8 F12) — statement-style gross revenue → distributable profit ledger (bars on milestones, deductions plain indented rows); also reused for the F11 per-project profit ladder and F7 transaction mini-ladder | [waterfall.css](./ds-components/waterfall.css) |
 | Bento grid | 🟠 organism | ✓ App | 12-col responsive grid · KPI rows, dashboard pairs, settings layouts | [bento.css](./ds-components/bento.css) |
-| Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup。**寬度三階**：預設 620px ／ `--wide` 880px（裝五欄矩陣，2026-07-31）／ `--xwide` 1180px（裝「一整個設定畫面」，2026-08-01 新增，首個消費者＝粉絲管理的分級設定彈窗；它裡面是 7fr／3fr 兩欄，880px 會把右欄壓到 250px 左右、圖例的金額欄先被擠爛。1180px 沿用 `.embed-modal` 的上限，兩者都是「把一整頁裝進浮層」） | [payout-modal.css](./ds-components/payout-modal.css) |
+| Payout picker & dialog | 🟠 organism | ✓ App | Earnings · Payouts bank picker card grid + request-payout modal (legacy dialog shell, predates Modal). `--embed` variant (2026-06-17) is a near-fullscreen, head/foot-less shell that hosts a whole page in an iframe — used by Create bundle's "New item" → `create-product.html?embed=1` popup。**寬度三階**：預設 620px ／ `--wide` 880px（裝五欄矩陣，2026-07-31）／ `--xwide` 1180px（裝「一整個設定畫面」，2026-08-01 新增，首個消費者＝粉絲管理的分級設定彈窗；它裡面是 7fr／3fr 兩欄，880px 會把右欄壓到 250px 左右、圖例的金額欄先被擠爛。1180px 沿用 `.embed-modal` 的上限，兩者都是「把一整頁裝進浮層」）。**`.payout-dialog__split`**（2026-08-09，首個消費者＝建立活動的門票編輯彈窗）把 `__body` 分成主欄（要填的欄位）與固定 200px 的側欄（只用看的圖片），`align-items:start` 避免側欄被主欄拉高，≤640px 收單欄 | [payout-modal.css](./ds-components/payout-modal.css) |
 | Restock order (table) | 🟡 molecule | ✓ App | E-Shop restock popup (spec §5.1.5.6, D104 order + D106 member tabs). 2026-07-22 layout (Figma 861-28842): method as `.segmented.radio-cards` → product-name label → `.restock-table` (3 number columns current/restock/after, `__group`/`__row`/`__id`/`__img`/`__name`/`__col`/`__ro`) → supplier/notes/ETA below → footer pinned to dialog bottom (body scrolls); under-method hint + yellow stickynote removed. Product variants = matrix rows (2-option grouped), bundle members = Tabs (one `.tab-panel` each); reuses payout shell + Segmented + Tabs + Data-list (history) | [restock-modal.css](./ds-components/restock-modal.css) |
 | Store settings page | 🟠 organism | ✓ SiteSpecific | E-Shop 商店層級設定 popup（`store-settings.html`，D035/D067，由 E-Shop F3 embed-modal 開啟、無頁首）：店面門面常駐（Base44/FB 式身分帶 `.ss-identity-card`/`.ss-band__*` + 逐欄就地編輯 `.ss-edit`）+ 商品陳列/付款/出貨 tab 群組 + 底部提交列 `.ss-actionbar` + See-as-fan 畫面分割預覽；含 `.ss-url`/`.amount-field`/`.ss-status`/`.ss-order`/`.ss-fan` | [store-settings.css](./ds-components/store-settings.css) |
 | Variant builder | 🟠 organism | ✓ App | 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體）：`.segmented` 切單一/多選項 + `.option-set`（設定好的選項收成一行 `__row`，只有編輯中的展開成 `.variant-option`）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；可編輯格重用 `.input`。**2026-07-21 庫存欄改唯讀**：庫存格是讀數 `.variant-cell--stock`（`--font-ui`／`--fs-13`／`--foreground`），低於低庫存門檻再加 `.variant-cell--stock-low` 轉 `--destructive` ＋ `--fw-medium`；庫存只能靠留有紀錄的補貨增加，做成 `.input` 會讓人以為可以直接打字覆蓋，轉紅則讓「哪一個規格快沒了」在表上一眼可見。**2026-07-21 逐值 input 改版（使用者裁示）**：值由 chip 膠囊改成「一個值一個 `.input`」（`__value` > `.input` ＋ `__value-remove`），可就地改字——設定選項時最常做的是改一個字，chip 得先刪再重打；底部 `__add-value` 虛線鈕再長一列，Enter 亦可。編輯態欄位加 `.field` 標籤（選項名稱／選項值），底部 `__actions` 靠右放「刪除」（`.btn--ghost.btn--destructive`，破壞性只用透明底）＋「儲存」（`.btn--outline`）。**列的外觀＝Q24 的 L3 規則首次落地**：整組坐在 `.nest`（L2）裡，所以 `__row`／`.variant-option` 去掉 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`；兩顆新增鈕（`__add`／`__add-value`）用 1px **虛線** `--border`（沿用 upload-tile／payout-modal 的「這裡還沒有東西」語彙）。表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、選項組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16）。**2026-07-22 列尾動作分兩種消費**：建立流程用 `.variant-row__remove`（X，把組合排除在建立集合外）；商品明細規格鎖定後不可移除，改列尾 `.dropdown` kebab 選單「單獨下架／重新上架」，下架列加 `.variant-table__row--delisted`（只壓「除下拉外的直接子代」灰階、輸入由 JS 加 `disabled`，kebab 仍可用來重新上架）。列尾用浮動選單的外框要加 `.variant-table-wrap--menu`：基礎 `.variant-table-wrap` 的 `overflow-x:auto` 會裁掉浮出的選單，此修飾在桌面寬度放行 `overflow:visible`（表格本就撐得下），只在 <560px 恢復 `overflow-x:auto` 橫捲。**放行 overflow 後外框圓角不再 clip 內容**（2026-07-23）：表頭（`--muted` 底）與末列的方角會戳出圓角，故改由內容自己貼齊——`--menu` 下給 `.variant-table__head` 上圓角、`.variant-table__row:last-child` 下圓角（半徑 `calc(--radius-xl - 1px)` 貼齊外框內緣）。**2026-07-22 商品明細整張表改唯讀**：價格／SKU／成本／總量欄由 `.input` 換成 `.variant-cell--ro`（純文字、與 `--stock` 同族、`text-overflow:ellipsis`），改值走「⋯ → 編輯」popup；每格加 `data-vc` 標角色（name/price/total/sku/cost）供 popup 讀寫回填。**2026-07-23 兩階層（顏色×尺寸）＋資料驅動**：商品明細的規格表改由 `products-store` 的 `options`／`variants` 驅動——單階層逐值一列、兩階層依第一個選項（顏色）用 `.variant-table__group`（撐滿整列的分組標題、同補貨矩陣語彙）分組、尺寸列在組底下。編輯 popup 用 `.variant-table--preview`（5 欄唯讀組合預覽：規格／價格／庫存／SKU／成本，無總量、無列尾動作），改選項值（加/改名/移除）時笛卡兒積即時重算 | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤。已選標籤 chip 用**品牌橘 tint**——Q19（2026-07-17）當初為此寫的 `.tag-input .chip--active` 專屬覆寫已於 **2026-07-27 Q8-A 刪除**：全站 `.chip--active` 本身就是橘了，覆寫變成純重複。Q19 的意圖（標籤＝已套用的分類，用橘標）完全保留，只是改由基底承接；順帶修掉原覆寫 `color: var(--primary)` 在亮色模式僅 1.92:1 的對比 bug（基底走 `--selected-ink`） | [tag-input.css](./ds-components/tag-input.css) |
-| Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2） | [combobox.css](./ds-components/combobox.css) |
+| Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2）。**新消費情境（2026-08-09）**：建立活動 `create-event.html` 的「票種」欄（選票種帶入門票）與「加入商品」欄（搜尋帶入 E-Shop 商品），選單與選項皆用 `.combobox`／`.combobox__menu`／`.combobox__opt`，取代原本頁內自造的一套下拉候選樣式；已加入的商品改用 Chip 的 `.chip-group` ＋ `.chip--removable`（見 Chip） | [combobox.css](./ds-components/combobox.css) |
 | Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1） | [partials/film-picker.js](./partials/film-picker.js) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--split`＝詳情頁首一列，每軸各自是一個內嵌的 `.status-axes` 群組（混合訂單的履約軸得以在同一組並列兩顆徽章）、群組間以 `border-left` 細線分隔。**2026-08-07**：原 `.status-axes--labeled`／`.status-axis`／`.status-axis__label`（每軸上方大寫標籤）退場——分隔線已達成 PCR-001 的「兩軸不混成一顆徽章」，徽章文字本身已說明所屬軸，標籤重述同一件事，且「收入結算」與徽章「已付款」用詞不一致。用於 order-detail §2.2（orders 清單改為兩軸各自成欄，見 product-list--orders） | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
@@ -794,11 +796,11 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Page intro | 🟡 molecule | ✓ Project | Product page H1 + sub + optional actions; eyebrow retired | [page-intro.css](./ds-components/page-intro.css) |
 | Field more | 🟡 molecule | ✓ Project | 把一組欄位裡的次要欄位收在「顯示更多」按鈕後（2026-07-21）：`.field-more` > `.btn.btn--outline.field-more__toggle`（**2026-07-21 使用者裁示改滿寬線框鈕**，原為靠左無框文字鈕；外觀重用 Button atom，本元件只擁有 `width:100%` ＋ `justify-content:center`，不自刻邊框/hover）。`margin-bottom: --sp-16` 吃 `.field` 同一套表單節奏、`:last-child` 歸零免留尾巴（2026-07-21：改滿寬鈕後才浮現——原本只有上方靠前一個 `.field` 的下外距撐開、自己沒有下外距，後面元素會貼上來）（chevron ＋ `field.show-more`／`field.show-less` 文案）＋ `.field-more__body[hidden]`。**收合區內任一欄位已有值就自動展開**——建立商品是空表單、收起來合理；商品明細是編輯頁、欄位帶真實資料，藏起來等於藏使用者填過的東西。這個判斷是用 JS（[partials/field-more.js](./partials/field-more.js)）而非 `<details>` 的原因，兩頁因此能共用同一段 markup。首次用於建立商品／商品明細的取貨方式 ▸ 物流配送（只留「重量」在外，出貨分類／尺寸／寄件地收起來）；**商品明細已於 2026-07-22 依使用者裁決把物流欄位全部展開、不再有 `.field-more`**，「有值就自動展開」目前沒有活的消費頁，保留是因為建立商品同時當編輯頁用。收在裡面的必填欄仍保留 `*` 標記。**2026-08-06 新增選配的自訂按鈕文案**：在 `.field-more` 掛 `data-more-key`／`data-more-text`／`data-less-key`／`data-less-text` 即可換一組講法（建立活動的場地用「進階／收合」），不掛就維持預設的「顯示更多／收合」，既有消費頁不受影響。第二個消費頁：`create-event.html` 場地 ▸ 集合地點與交通 | [field-more.css](./ds-components/field-more.css) |
 | Field system | 🟡 molecule | ✓ Project | ONE form field = label / hint / control slot（控件重用 atom）；多欄位怎麼成組、堆疊＝Pillar 5 · Form assembly，非本元件。單獨與 Form section 內皆維持基礎密度 gap 6／欄距 16；產品建立頁同樣遵守此節奏。`.field__hint` 顏色 2026-07-20（Q21）改回 `--muted-foreground`，推翻 2026-07-16 「提亮成 `--foreground-muted` 以便在卡填色上讀得清楚」的決定——說明文字要明確退到輔助層；全站用 `.field` 的頁面一併生效，並與同輪改成同色的 `.form-section__sub` 對齊。**2026-07-22 追加 `.field-readout`**：欄位改「只顯示、不可填」時用它取代 `.input`／`.amount-field`（ui 字體／`--fs-14`／`--foreground`、不畫框不留 input 內距，讀起來是文字不是空欄）；用於商品明細把價格／成本／總量上限改唯讀，改值一律走編輯 popup。**2026-08-06 追加 `.field__error`**：欄位級錯誤訊息，位置與字級同 `.field__hint`，顏色改 `--status-error`（可讀的狀態紅，非破壞性操作專用的 `--destructive`；與 bundle-editor 的 `.field__hint.fc-hint--over` 同一支色）；隱藏／顯示用 `[hidden]`，控件同步標 `aria-invalid="true"` 由既有的 `.input[aria-invalid="true"]`（shared.css）畫紅框。首個消費者＝`earnings-sony.html` 捐贈彈窗的金額欄（超過可提領金額／低於所選組織的最低捐款額） | [field-system.css](./ds-components/field-system.css) · [input.css](./ds-components/input.css) |
-| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜改以 `--surface-shell`（`#1C1D1E`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 先改 `--muted`→`--card`——壓暗後 `--muted` 與頁底過近、區塊會消失；2026-08-01 使用者比對同頁 `.list-toolbar`／`.alert-inset` 皆用 `--surface-shell`，裁示三者統一用 `#1C1D1E`，再改 `--card`→`--surface-shell`）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立）。**2026-07-22 追加 `.form-section__head--actions`**：標題列帶右側動作的變體——把標題群包進 `.form-section__head-titles`、動作群放 `.form-section__head-actions`（按鈕／⋯選單），head 改 flex 兩端對齊；只在需要動作的區段啟用（預設 head 仍是堆疊 title＋sub）。用於商品明細庫存卡（補貨紀錄鈕＋新增/編輯/補貨選單） | [form-section.css](./ds-components/form-section.css) |
-| Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant. **`--3` variant (Q28, 2026-07-24)**: 3-column grid (overrides the default 2-up) for create-project's gate + in-flow「專案類型」picker. In the **in-flow form** (`--3` without `--gate`) the selected card keeps the Q13 orange dot **and** lifts its background to `color-mix(--foreground 6%, --accent)` (2026-07-25, per user, to make the in-flow selection clearer); the gate (`--gate`) has no persistent selection so it gets no such fill. **`--gate` variant (Q28, 2026-07-24)**: create-project gate only — each card stacks a lead icon (`.radio-card__lead`, constant `--muted-foreground` — no recolor when active) on top, then title + sub with a roomier gap (`--sp-6`); the gate is a click-to-proceed picker with **no persistent selection**, so cards show **no dot at rest** (the base active dot is overridden to none); the orange dot appears **top-right (`::after`) only on hover**, and the hovered card's background lifts to a brighter-than-`--accent` fill (`color-mix(--foreground 6%, --accent)`, a gate-scoped step above the Q9 hover token, per user) — dot + brighter fill together are the hover affordance. In-flow form uses plain `--3` (title-only, no icon) | [radio-card.css](./ds-components/radio-card.css) |
-| Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--accent`（2026-07-21 由 `--muted` 改回 Q9 裁決值——暗色 `--muted` 比卡還深、hover 像凹下去）, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title. **`--menu`／`--menu-compact`／`--menu-row` 變體已於 2026-07-24 移除（Q28，tombstone 見 radio-list.css）**：曾用於 create-project 的「專案類型」picker，經使用者裁示改用建立商品同款 `.segmented.radio-cards`（見 Radio card，灰卡＋右上小橘點），list-menu 樣式全數退場。**變體 `--collapsible`（2026-07-21 · Figma 856-22782）**：收合式，`.radio-list__trigger`（圓點＋文字＋`.radio-list__chevron`）＋`.radio-list__options[hidden]`，外框 1px `--border` ＋ `--radius-xl`，展開時觸發列填 `--input-surface`、chevron 轉 180°、`[data-open]` 標開合；展開時已選項在觸發列與清單各出現一次（Figma 原設計、使用者裁示保留）。行為由 [partials/radio-list.js](./partials/radio-list.js) 統一接線（開合、觸發列文字＋`data-i18n` 同步、外點與 Esc 關閉、派發 `radio-list:change`），頁面只留自己的欄位揭示邏輯。其他 consumer：create-product/-bundle/-auction（Listing settings under the preview card）＋product-detail/bundle-detail（Listing settings in price-stock），五頁 2026-07-21 起一律用 `--collapsible` | [radio-list.css](./ds-components/radio-list.css) |
+| Form section | 🟠 organism | ✓ Project | No-card section skeleton (title + sub + top divider + spacing) for create / wizard flows; scopes field label / hint presentation under `.form-section`（承載 Field 的組合殼，2026-07-08 自 🟡 重標；表單配方見 Pillar 5 · Form assembly）。`.form-section--outlined` 為建立流程正式採用的變體：白天以 `--surface-page` 作 sheet 底、`--card` 填色；黑夜改以 `--surface-shell`（`#1C1D1E`）填色浮在最深的 content（`--surface-page #0C0D0D`）上（2026-07-17 midnight-v2 先改 `--muted`→`--card`——壓暗後 `--muted` 與頁底過近、區塊會消失；2026-08-01 使用者比對同頁 `.list-toolbar`／`.alert-inset` 皆用 `--surface-shell`，裁示三者統一用 `#1C1D1E`，再改 `--card`→`--surface-shell`）；**無外框線**（2026-07-16 Q14 使用者裁示去 border，靠填色對比分區）；**浮起感**（2026-07-17 Q18 修訂 Q14）＝疊 `--shadow-card`（E2 resting）＋`--shadow-edge-top`（頂緣高光），仍無 1px 邊框、改由填色＋陰影＋上緣光共同分區；圓角 `--radius-xl`（16px）、內距 `--sp-16`（對齊 Figma node 781-4166；原圓角 6／內距 32）。可見 outlined siblings 用 `--sp-24` 分隔，跨過 `[hidden]` 條件區塊不留空白。採用頁：create-product／-auction／-bundle／-event／-project／register-ip／admin-ip-bank-entry；[section-test.html](./section-test.html) 保留作視覺驗證。`.form-section--modal` 已於 2026-07-17 退場：原採用它的建立取貨場次 modal（`partials/pickup-session-modal.js`）當日改成頁籤式分區（重用 Tabs 的 `.tabs` + `.tab-panel`，不再疊直填色面板），此變體無其他消費者故移除。**2026-07-20（Q21）字級拉平（全站 form-section 消費頁一起生效）**：`.form-section__title` `--fs-18`→`--fs-14`，與 `.field__label` 同級——區塊標題不再靠放大字級建立層級，改由卡片邊界承擔；`.form-section__sub` `--fs-14`→`--fs-11` 且色階由 `--foreground-muted` 壓暗成 `--muted-foreground`，與 `.field__hint` 同級——區塊副標與欄位說明本來就是同一種「輔助說明」角色。同檔尾追加 `.form-footnote`：表單底部置中小字說明（如 Stripe 保障文案），`--fs-12` / `--muted-foreground`，margin-top 22px 非 token（2026-07-09 自 create-product/auction 頁內樣式 promote，create-campaign 的 `.fc-footnote` 樣式不同、維持獨立）。**2026-07-22 追加 `.form-section__head--actions`**：標題列帶右側動作的變體——把標題群包進 `.form-section__head-titles`、動作群放 `.form-section__head-actions`（按鈕／⋯選單），head 改 flex 兩端對齊；只在需要動作的區段啟用（預設 head 仍是堆疊 title＋sub）。用於商品明細庫存卡（補貨紀錄鈕＋新增/編輯/補貨選單）。**2026-08-09 追加 `.form-section__subhead` 與 `.form-section__grouplabel`**（自 `create-event.html` 頁內 `.ce-subhead` promote）：一個 `.form-section` 裡有好幾組東西時（例：場次區段的「場次日期與時間」／「場次細節」）用 `__subhead` 分組，比拆成多張卡合適——它們回答的是同一個問題的幾個部分；字型與字級刻意跟 `.form-section__title` 完全一樣（`--font-display`／`--fs-14`，Q21 已裁決區塊標題與欄位標籤拉平成 14px，層級改由上緣 hairline 與留白承擔），卡片頂端第一個小標不畫分隔線（`.form-section__head + .form-section__subhead` 歸零 margin/border——上面就是區段標題本人）。`.form-section__grouplabel` 是小標底下的欄位分組（例如「每一場的人數」統轄最少／最多兩欄），Q21 之後與欄位標籤同字級，靠上方留白與網格分群，不另造第四種字級 | [form-section.css](./ds-components/form-section.css) |
+| Radio card | 🟡 molecule | ✓ Project | Side-by-side selectable cards (title/sub) built on Segmented; flat 1px `--border` card, no shadow, gap 12 (Q13 2026-07-16, Figma node 781-4386); selected = small centered orange dot (no ring, no card outline), unselected shows no marker; single-line cards (no sub) vertically center text + dot, title+sub cards stay top-aligned; optional icon-marker variant. **Hover (2026-08-09, per user)**: every radio card lifts its background to `color-mix(--foreground 6%, --accent)` on hover. That fill used to live only on `--gate`, so the plain cards (single/multiple options, unlimited/limited, pickup method) had no hover feedback at all — same component, the only difference being a lead icon, so the feedback shouldn't come in two grades. **The orange dot does not move down with it**: the gate has no persistent selection, so its hover dot is the only preview of what you're about to pick; on a plain radio card the selected one already carries a dot, and a second dot under the cursor would read as "both are selected". **`--3` variant (Q28, 2026-07-24)**: 3-column grid (overrides the default 2-up) for create-project's gate + in-flow「專案類型」picker. In the **in-flow form** (`--3` without `--gate`) the selected card keeps the Q13 orange dot **and** lifts its background to `color-mix(--foreground 6%, --accent)` (2026-07-25, per user, to make the in-flow selection clearer); the gate (`--gate`) has no persistent selection so it gets no such fill. **`--gate` variant (Q28, 2026-07-24)**: create-project gate only — each card stacks a lead icon (`.radio-card__lead`, constant `--muted-foreground` — no recolor when active) on top, then title + sub with a roomier gap (`--sp-6`); the gate is a click-to-proceed picker with **no persistent selection**, so cards show **no dot at rest** (the base active dot is overridden to none); the orange dot appears **top-right (`::after`) only on hover** — the brighter hover fill it used to declare for itself now lives on the base rule above (2026-08-09), so `--gate` only keeps the dot half; dot + brighter fill together remain the hover affordance. In-flow form uses plain `--3` (title-only, no icon). **`--list` variant (2026-08-09 promoted from create-event.html's page-local `#ce-bky-list` id override)**: single-column list (`grid-template-columns: 1fr`) instead of the default grid, for the bookyay import gate's search results (one row per venue, not a 2-up grid) — see §4.120 Source import. Reuses the `--gate` card face (same "pick and move on" semantics) but paints the selected row in the `--gate` **hover** look (brighter fill + orange dot) because this list still needs a visible "which one is picked" cue before the user presses Import, unlike the plain gate which has no persistent selection. `--list` and `--gate` stack on the same container without conflict. **`align-items: stretch`（2026-08-09 修根因）**：三張並排卡高度曾對不齊（如「三選一取票方式」某張副標兩行、某張一行，卡就長不一樣高）——grid 的預設 `align-items` 本來就是 `stretch`，但 `segmented.css` 的 `.segmented { align-items: center }`（給軌道內文字置中用）沒被蓋掉：`.segmented.radio-cards`（0,2,0）這條規則本身沒設 `align-items`，瀏覽器照特異度回頭吃 `.segmented`（0,1,0）那條，等於把 grid 的 stretch 蓋成 center，同列的卡因此各自用自己內容的高度置中。修法是在 `.segmented.radio-cards` 顯式補回 `align-items: stretch`，卡片就會填滿所在列的最大高度 | [radio-card.css](./ds-components/radio-card.css) |
+| Radio list | 🟡 molecule | ✓ Project | Lightweight vertical 1-of-N picker (2026-07-17): radio dot + title (optional one-line sub) per row. 指示器（2026-07-17 Q19 精修）：未選＝13px 細環（1.25px `--border`）、已選＝粗環消失只留 8px 實心橘點（`--primary`）；transparent rows, hover `--accent`（2026-07-21 由 `--muted` 改回 Q9 裁決值——暗色 `--muted` 比卡還深、hover 像凹下去）, no card frame/shadow. Data choice, not view switch (that's Segmented). Rows without `.radio-list__sub` vertically center dot + title. **`--menu`／`--menu-compact`／`--menu-row` 變體已於 2026-07-24 移除（Q28，tombstone 見 radio-list.css）**：曾用於 create-project 的「專案類型」picker，經使用者裁示改用建立商品同款 `.segmented.radio-cards`（見 Radio card，灰卡＋右上小橘點），list-menu 樣式全數退場。**變體 `--collapsible`（2026-07-21 · Figma 856-22782）**：收合式，`.radio-list__trigger`（圓點＋文字＋`.radio-list__chevron`）＋`.radio-list__options[hidden]`，外框 1px `--border` ＋ `--radius-xl`，展開時觸發列填 `--input-surface`、chevron 轉 180°、`[data-open]` 標開合；展開時已選項在觸發列與清單各出現一次（Figma 原設計、使用者裁示保留）。行為由 [partials/radio-list.js](./partials/radio-list.js) 統一接線（開合、觸發列文字＋`data-i18n` 同步、外點與 Esc 關閉、派發 `radio-list:change`），頁面只留自己的欄位揭示邏輯。其他 consumer：create-product/-bundle/-auction（Listing settings under the preview card）＋product-detail/bundle-detail（Listing settings in price-stock），五頁 2026-07-21 起一律用 `--collapsible`。**新消費情境（2026-08-09）**：`create-event.html` 票種卡購票規則區塊（購票條件／限購／折扣）的單選改用本元件（基準版，非 `--collapsible`）——原本這裡當日一度 promote 出 `.zradio`（drawn radio，見 Checkbox §4.96），同日使用者裁決「建活動頁的樣式一律以既有 design system 為主」，改吃既有 `.radio-list`，不留第二種單選視覺；元件定位擴大為「輕量單選列、資料選擇，**也含表單裡的規則選項**」 | [radio-list.css](./ds-components/radio-list.css) |
 | Date input placeholder | 🔵 atom | ✓ Project | 原生 `<input type="date|datetime-local|time">` 的 placeholder 裝飾層（2026-07-21）：原生欄位不吃 `placeholder`、空值時自己畫「年/月/日 --:--」且用一般內文色，看起來像已填值。`[data-empty="true"]`＝日曆 icon（`--sp-12`）＋淡灰「選擇日期」（`--sp-40`、`--muted-foreground`），原生 `::-webkit-datetime-edit` 藏起來、input 內距推到 `--sp-40`；`[data-empty="false"]`＝icon 與 placeholder 都收掉、內距回基礎 `--sp-12`、日期用 `--foreground`（常駐 icon 會吃掉 28px，設定頁 120px 的窄時間欄會被切字）。date／datetime-local／time 三型共用同一句文案 `field.pick-date`（使用者 2026-07-21 裁示）。**2026-08-06 新增選配的自訂文案**：欄位掛 `data-ph-key`（字典 key）或 `data-ph`（直接給字）就換一組，不掛維持「選擇日期」，既有約 40 處不受影響；首個消費者＝建立活動售票規則的起訖兩格（「開始」「結束」）——兩格並排時各自說自己是哪一端，比重複寫同一句有用。原生日曆鈕攤平成整格透明覆蓋層，點整格用 `showPicker()` 開選單。由 [partials/date-input.js](./partials/date-input.js) 執行期自動包裝全站約 40 個欄位（含 MutationObserver 接住 modal 這類後注入的節點），頁面 markup 維持乾淨的 `.input`，不得手寫 `.date-input` 外層 | [date-input.css](./ds-components/date-input.css) |
-| Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button)。**`.control-group`（2026-07-21 新增）**：開關列＋它揭示出來的表單包成同一個外框（`--radius-xl` 外框、群組內的 `.control-row` 交出自己的框與圓角、揭示區 `.control-group__body` 帶 1px 上分隔線＋`--sp-16` 內距）——原本揭示欄位是裸的散在框外，讀起來像另一件事，包起來才看得出「這塊歸這個開關管」（使用者裁示）。可巢狀（開啟折扣 ▸ 開啟限時折扣）。寬度限制要下在內層欄位、不能下在 `__body`，否則分隔線會跟著縮短。11 組分佈於 create-product／create-bundle／bundle-detail／product-detail；沒有揭示表單的開關列維持單獨 `.control-row`（create-auction、create-project） | [control-row.css](./ds-components/control-row.css) |
+| Control row | 🟡 molecule | ✓ Project | Bordered standalone row: left label/sub + right control (switch / number / button)。**`.control-group`（2026-07-21 新增）**：開關列＋它揭示出來的表單包成同一個外框（`--radius-xl` 外框、群組內的 `.control-row` 交出自己的框與圓角、揭示區 `.control-group__body` 帶 1px 上分隔線＋`--sp-16` 內距）——原本揭示欄位是裸的散在框外，讀起來像另一件事，包起來才看得出「這塊歸這個開關管」（使用者裁示）。可巢狀（開啟折扣 ▸ 開啟限時折扣）。寬度限制要下在內層欄位、不能下在 `__body`，否則分隔線會跟著縮短。12 組分佈於 create-product／create-bundle／bundle-detail／product-detail／create-event；沒有揭示表單的開關列維持單獨 `.control-row`（create-auction、create-project）。**`--plain` 與 `__body--top`（2026-08-10 新增）**：`.control-group--plain` 是「整塊就是內容、沒有開關列與揭示區兩段」的外框盒（自帶 `--sp-16` 內距），首個消費情境是建立活動票務那一步——一個場次一個框，門票一多才看得出哪幾張屬於同一場；`.control-group__body--top` 收掉上緣分隔線，給「揭示區是群組裡唯一一塊」的情形用。**新消費頁（2026-08-09）**：create-event.html 的「販售方式」——`.control-row` 開關「發布後直接開賣」＋ `.control-group__body` 放「開賣／停售時間」欄位，揭示方向與既有消費頁相反（**關掉**開關才展開時間欄，其餘消費頁一律**開啟**才展開）；元件本身只認 `__body` 的 `[hidden]`，揭示條件是哪個開關值一律由消費頁的行內邏輯決定，元件層不因此分岔 | [control-row.css](./ds-components/control-row.css) |
 | Form grid | 🟢 atom | ✓ Project | 2- / 3-column field layout helper | [form-grid.css](./ds-components/form-grid.css) |
 | Filter row | 🟡 molecule | ✓ Project | Chip filters and inline actions above lists / grids | [shared.css](./shared.css) |
 | Edge shadow（工具）| ⚪ utility | ✓ Project | `.edge-shadow`：把 `--shadow-header` 變成「只露下緣、內縮、兩端漸淡」的邊緣陰影（`::before`＋clip）。wizard header／電子商店庫存條共用；其他元素加 class 即覆用 | [shared.css](./shared.css) |
@@ -806,7 +808,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Segmented control | 🟡 molecule | ✓ Project | Compact chart view switcher and mode toggles | [chart.css](./ds-components/chart.css) |
 | Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
 | Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用 | [progress-stepper.css](./ds-components/progress-stepper.css) |
-| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左（**2026-07-16：兩者合併為單一返回按鈕**——`.wizard__top-lead` 當膠囊面，hover 套 `--accent` 圓角底[`--radius-lg` 8px、內距 8/16/8/8，Figma 781:4142]、點標題也回上頁；命中區/焦點環由 `.wizard__back::after` stretched 撐滿整個 lead，markup 不變）｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**三欄軌道（2026-07-24 修）**：`minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`——左欄補 180px 下限。原本兩側都是純 `1fr`，左欄標題塊有 `min-width:0`＋ellipsis 所以最小能縮到 0、右欄的儲存狀態與按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄吃成 0、標題溢出壓在進度條上（1058px 實測 col1=0）；補下限後擠壓改由進度條吸收，寬螢幕（1440px 實測 266/820/266）版面不變。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋Save&exit。**`.wizard__bottom-hint`（2026-07-30 新增）**：主動作（如 Continue）被停用時，在它左側補一行「為什麼不能按」的原因（例：「還需要一個完整的套組才能繼續。」）；只在停用時出現，可按時 JS 加回 `.hidden` 整行清空、不留佔位（不用 `visibility:hidden` 是為了不占版面）。視覺與 `.field__hint`（欄位輔助說明）同級——刻意壓低、不與主動作按鈕搶視覺，靠右對齊、`max-width:320px` 避免長句擠壓按鈕。動機：先前主動作被擋關的原因只寫在步驟內的教練提示（如 Bundles 步驟右軌），使用者看的是 footer 那顆灰按鈕，兩者隔著整個表單、按鈕自己不解釋自己。首個消費頁：`create-project.html`（回饋套組步驟擋關時顯示 `cpp.bd.hint.blocked`）。**`.wizard__body` 表單版修飾類**（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：`.wizard__body--form`（頂距 `--sp-72` 72px，取代逐頁寫死）／`.wizard__body--narrow`（1000px，create-auction/-bundle）／`.wizard__body--mid`（1140px，create-product〔2026-07-16：由 narrow→wide→mid，剛好容下多選項＋限量的逐規格表在 preview-split 表單欄完整展開，比 wide 收斂、floor≈1100〕）／`.wizard__body--wide`（1240px，create-campaign）；create-event/-project/register-ip 只掛 `--form`（維持基底 820px 寬）。已知分岔未收：funding-simulate.html（頂距 32px）、funding-test.html／create-campaign.html 內文其他覆寫（44px），仍留頁內。**`.wizard__step-head`（2026-08-04 新增）**：步驟標題列帶右側動作——`.wizard__step-head-titles`（標題＋副標成一組，靠左）與一顆動作按鈕靠右，兩者 `align-items:center` 垂直置中。**副標的下緣留白移到容器身上**（`.wizard__step-head-titles .wizard__step-sub { margin-bottom: 0 }`）：留在副標上會被算進標題組的高度，按鈕就會對齊到「含那段空白」的中線、看起來偏上。首個消費頁＝`create-event.html` 細節那一步的「切換活動類型」（switch icon＋目前類型名稱，點了把類型閘門叫回來重選；已填欄位不動、選完回到原本那一步）。此前站上 30 個 `.wizard__step-title` 全是單獨一行、右側沒有版位，這是第一個 | [shared.css](./shared.css) |
+| Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左（**2026-07-16：兩者合併為單一返回按鈕**——`.wizard__top-lead` 當膠囊面，hover 套 `--accent` 圓角底[`--radius-lg` 8px、內距 8/16/8/8，Figma 781:4142]、點標題也回上頁；命中區/焦點環由 `.wizard__back::after` stretched 撐滿整個 lead，markup 不變）｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**三欄軌道（2026-07-24 修）**：`minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`——左欄補 180px 下限。原本兩側都是純 `1fr`，左欄標題塊有 `min-width:0`＋ellipsis 所以最小能縮到 0、右欄的儲存狀態與按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄吃成 0、標題溢出壓在進度條上（1058px 實測 col1=0）；補下限後擠壓改由進度條吸收，寬螢幕（1440px 實測 266/820/266）版面不變。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋左側次要動作（如 Save & exit）。**`.wizard__bottom--end`（2026-08-09 promote）**：沒有左側次要動作時整組靠右收齊。此前站上有十個 wizard footer 各自寫著同一段 inline `style="justify-content:flex-end"`——正是 Q9 要收斂的「散落的即席樣式」，本輪收成修飾類並把十個消費頁一次換掉（`create-project`／`-auction`／`-bundle`／`-campaign`／`-product`／`-event`／`publish-work`／`funding-simulate`／`admin-ip-bank-entry`／`funding-test/create-campaign`）。建立活動同輪撤掉「儲存並離開」（工作列已有儲存為草稿），因此成為這個修飾類的消費者。**`.wizard__bottom-hint`（2026-07-30 新增）**：主動作（如 Continue）被停用時，在它左側補一行「為什麼不能按」的原因（例：「還需要一個完整的套組才能繼續。」）；只在停用時出現，可按時 JS 加回 `.hidden` 整行清空、不留佔位（不用 `visibility:hidden` 是為了不占版面）。視覺與 `.field__hint`（欄位輔助說明）同級——刻意壓低、不與主動作按鈕搶視覺，靠右對齊、`max-width:320px` 避免長句擠壓按鈕。動機：先前主動作被擋關的原因只寫在步驟內的教練提示（如 Bundles 步驟右軌），使用者看的是 footer 那顆灰按鈕，兩者隔著整個表單、按鈕自己不解釋自己。首個消費頁：`create-project.html`（回饋套組步驟擋關時顯示 `cpp.bd.hint.blocked`）。**`.wizard__body` 表單版修飾類**（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：`.wizard__body--form`（頂距 `--sp-72` 72px，取代逐頁寫死）／`.wizard__body--narrow`（1000px，create-auction/-bundle）／`.wizard__body--mid`（1140px，create-product〔2026-07-16：由 narrow→wide→mid，剛好容下多選項＋限量的逐規格表在 preview-split 表單欄完整展開，比 wide 收斂、floor≈1100〕）／`.wizard__body--wide`（1240px，create-campaign）；create-event/-project/register-ip 只掛 `--form`（維持基底 820px 寬）。已知分岔未收：funding-simulate.html（頂距 32px）、funding-test.html／create-campaign.html 內文其他覆寫（44px），仍留頁內。**`.wizard__step-head`（2026-08-04 新增）**：步驟標題列帶右側動作——`.wizard__step-head-titles`（標題＋副標成一組，靠左）與一顆動作按鈕靠右，兩者 `align-items:center` 垂直置中。**副標的下緣留白移到容器身上**（`.wizard__step-head-titles .wizard__step-sub { margin-bottom: 0 }`）：留在副標上會被算進標題組的高度，按鈕就會對齊到「含那段空白」的中線、看起來偏上。首個消費頁＝`create-event.html` 細節那一步的「切換活動類型」（switch icon＋目前類型名稱，點了把類型閘門叫回來重選；已填欄位不動、選完回到原本那一步）。此前站上 30 個 `.wizard__step-title` 全是單獨一行、右側沒有版位，這是第一個 | [shared.css](./shared.css) |
 | Settings nav | 🟡 molecule | ✓ Project | Sticky local navigation inside Settings。`.settings-layout` 預設是「220px 直式導覽 ＋ 1fr 內容」；區段少、彼此平等時改用 `.settings-layout--stacked`（單欄）＋ 上方一個 **`.list-toolbar` 殼裝橫向分頁**——2026-07-31 分級設定就是這樣改的（3 段平等去處）。那個殼是必要的不是裝飾：`--underline-label` 的底線照容器下緣畫，沒有殼會變成浮在標籤下方一截無所依附的橘線（本輪第一版踩過，已作廢）。**判準**：像 settings.html 那樣 7 段以上、屬設定分類樹 → 留直式 `.settings-nav`；3 段左右、互為平行視圖 → `--stacked` ＋ `.list-toolbar` ＋ tabs | [settings.css](./ds-components/settings.css) |
 | Settings row | 🟡 molecule | ✓ Project | Dense label + hint + value/control/action row | [settings.css](./ds-components/settings.css) |
 | Hero slideshow | 🟠 organism | ✓ Project | Dashboard full-bleed carousel | [shared.css](./shared.css) · [hero.js](./hero.js) |
@@ -1103,12 +1105,13 @@ No interactive states — purely decorative.
 | Class / modifier | Effect |
 |---|---|
 | `.chip-group` | inline-flex wrap container, 6px gap |
+| `.chip-group--loose` | 2026-08-09 promoted from `create-event.html`（原 `.ce-lineup`）：一列陣容／參演者 chip 的容器，比預設 `.chip-group` 寬鬆——`display:flex`（非 inline-flex）、更大間距（8px）、底部留白（12px），用於表單裡自成一段的可移除 chip 清單 |
 | `.chip` | Interactive filter pill |
 | `.chip--active` | Selected state — brand-orange tint (Q8-A, 2026-07-27) |
 | `.chip--static` | Read-only chip (e.g. supported-regions list) |
 | `.chip--value` | A value the creator just entered — quiet fill, never inverted. Distinct from `.chip--active` (a chosen filter) and from `.tag-input .chip--active` (an applied tag, orange per Q19). **⚠ 零消費（2026-07-21）**：唯一消費者是建立商品的選項值，同日改成逐值 `.input`（見 Variant builder 條目）後這個變體失去用途，只剩 DS 頁 demo。**退場候選、待使用者裁決**，未經確認前不移除 |
 | `.chip__count` | Faded count after a vertical separator |
-| `.chip--removable` / `.chip__remove` | Selected / creator-added value with an inline × (tag-input、商品標籤、電影關聯 film-picker、取貨場次多選；2026-07-21 起不再用於選項值) |
+| `.chip--removable` / `.chip__remove` | Selected / creator-added value with an inline × (tag-input、商品標籤、電影關聯 film-picker、取貨場次多選、**建立活動「加入商品」清單**（`.chip-group` ＋ `.chip--removable`，價格併進 chip 文字不另立一欄，2026-08-09）；2026-07-21 起不再用於選項值) |
 | `.filter-row` / `.filter-row__actions` | Chip-group paired with right-aligned actions. The chip-group half is **optional**：低頻篩選收成 `.select` 時，整條列只留 `__actions`（放 select／`.field-pill` 搜尋），內容左靠（Projects 2026-07-23 起即此形） |
 
 **Token usage** (→ Pillar 2 Role)
@@ -1156,9 +1159,10 @@ No interactive states — purely decorative.
 off  ◖○      ◗   .switch          (neutral track, knob left)
 on   ◖      ●◗   .switch--on      (orange track, knob right)
                   └ ::after knob (16px)
+locked  ◖ ⊘  ●◗   .switch--locked  (any state, dimmed, not-allowed cursor)
 ```
 
-**Variants** — `.switch` (off) and `.switch.switch--on` (on). Single visual form.
+**Variants** — `.switch` (off) and `.switch.switch--on` (on); `.switch--locked` stacks on either as a stopgap modifier (compliance/source-locked, e.g. `.switch.switch--on.switch--locked`).
 
 **Sizes** — Single size (36 × 20px track, 16 × 16 knob).
 
@@ -1168,6 +1172,7 @@ on   ◖      ●◗   .switch--on      (orange track, knob right)
 |---|---|---|
 | default (off) | `.switch` | track `--muted`, ring `1px --border`, knob `--card` left:2px |
 | checked (on) | `.switch--on` | track `--primary`, ring `rgba(23,23,23,0.12)`, knob `--primary-foreground` left:18px |
+| locked | `.switch--locked` | `cursor: not-allowed`, `opacity: .65` — stacks on top of the off/on visual, does not replace it |
 
 No separate hover/focus styling in CSS (state toggled via the `--on` class).
 
@@ -1177,23 +1182,27 @@ No separate hover/focus styling in CSS (state toggled via the `--on` class).
 |---|---|
 | `.switch` | Off track + knob (knob is `::after`) |
 | `.switch--on` | On state: orange track + knob slid right |
+| `.switch--locked` | Compliance/source-locked stopgap: `cursor: not-allowed` + `opacity: .65` on top of whatever on/off state it's paired with. **2026-08-09 promoted from `notification-matrix.css`** — it used to live only in that file, but `tier-settings.html` and `create-event.html` link `switch.css` without `notification-matrix.css`, so a switch there could carry the class and get zero visual change (JS still blocked the click, but nothing *looked* disabled). All three consumers now link `switch.css`, so the lock lives where every consumer already reaches it |
 
 **Token usage** (→ Pillar 2 Role)
 
 - off track `--muted`, ring `--border` · on track `--primary` · knob `--card` (off) / `--primary-foreground` (on) · radius `--radius-pill` · knob motion `left 150ms ease`, track `--duration` / `--easing`
+- locked: no new tokens — reuses `opacity` + `cursor`, layered over the existing off/on token set
 
-**Usage** — Use for immediate-apply binary settings (notifications, privacy, auto-payout, product/marketplace visibility). Avoid where a Save step is required — use a checkbox/form control instead.
+**Usage** — Use for immediate-apply binary settings (notifications, privacy, auto-payout, product/marketplace visibility). Avoid where a Save step is required — use a checkbox/form control instead. Use `.switch--locked` when the value is fixed by policy or by an upstream data source and the page's own JS already blocks the click (`classList.contains("switch--locked")` guard) — the class only supplies the "this can't be changed" visual, it does not itself prevent interaction.
 
 **Do & Don't**
 
 - ✅ Do label what "on" means next to the switch.
 - ❌ Don't use a switch for actions that need confirmation.
-
+- ✅ Do pair `.switch--locked` with the page's own click-guard — the class is cosmetic only.
+- ❌ Don't reintroduce a second "locked switch" look in a page-local stylesheet — one component, one lock visual (Settings compliance channels, Tier settings, and create-event's bookyay-imported "go on sale immediately" toggle all share this one).
 
 **Code example**
 
 ```html
 <button class="switch switch--on" role="switch" aria-checked="true" aria-label="Auto-payout"></button>
+<button class="switch switch--on switch--locked" role="switch" aria-checked="true" aria-disabled="true" aria-label="Payout confirmation email (required)"></button>
 ```
 
 **CSS** — [`switch.css`](./ds-components/switch.css)
@@ -1272,13 +1281,16 @@ Static callout — no interactive states.
 
 | Variant | Class | Use |
 |---|---|---|
-| Hero | `.upload-tile--hero` | 主圖大格（min-height 150px） |
-| Base | `.upload-tile` | 縮圖格／證書格（96px；grid 內 84px） |
-| File | `.upload-tile--file` | 檔案上傳列（數位下載檔、合照；110px） |
+| Base | `.upload-tile` | 虛線點擊／投放格（min-height 96px） |
+| Portrait | `.upload-tile--portrait` | **直式圖片槽的唯一形狀**（2:3），一律配 `.upload-assets--fill` |
+| File | `.upload-tile--file` | 檔案投放列（數位下載檔、證書；110px） |
+| Video | `.upload-tile--video` | 影片投放格（16:9 等比、容器 2/3 寬；2026-08-10 使用者裁決：站上影片上傳只有這一套，default 與 hover 吃基底，與直式圖片格同一種手感） |
+| Landscape | `.upload-tile--16x9` | 橫式媒體槽（project-detail 的 Demo 影片／音樂），非圖片上傳 |
+| ~~Hero~~ | ~~`.upload-tile--hero`~~ | **已退場（2026-08-09）**，見下方墓碑 |
 
-**Layout helper** — `.upload-grid`：4 欄縮圖列（附圖）；`.upload-grid--2x2` 改 2 欄（搭 showcase 並排用）。`.upload-showcase`：主圖（左）＋縮圖格（右）並排兩等寬欄，附圖排 2×2 對齊主圖高度；窄於 880px 收成主圖在上、附圖 4 格在下（create-product 展示它）。`.upload-showcase--stacked`：不分寬度都主圖在上、附圖列（4 格一排）在下（把窄版行為固定成常態），供半寬欄位並列版面用（product-detail 素材＋資訊並列）。`.upload-assets`：具名素材槽列——2026-07-31 依 D164 收斂為兩種組合：**建立項目**＝主視覺（Key visual）＋圖庫（2 格）、**建立活動**＝主視覺＋橫幅＋圖庫（3 格，橫幅仍是 `--16x9`，其餘同直式比例）；flex-wrap 排列，每格大小由共用固定高度 `--upload-asset-h`（200px，≤640px 收 148px）＋單一比例修飾詞 `--portrait` 推導，放不下換行（create-project／create-event 作品呈現）。
+**Layout helper** — 直式圖片槽只有一套：`.upload-assets` ＋ `.upload-assets--fill`（2026-08-09 使用者裁決「直式上傳圖只用一套元件與一套排版規則」）。`.upload-assets` 是底：flex-wrap 的素材槽列，格子大小由固定高度 `--upload-asset-h`（200px，≤640px 收 148px）推導。`.upload-assets--fill` 反過來，由「一排放幾格剛好撐滿容器」推導：`--upload-asset-cols`（預設 4）把容器寬度平分給那幾格、高度由 `--portrait` 的比例推出，所以四格永遠撐滿一整列、第五格換行且尺寸相同，容器變寬變窄等比縮放（≤640px 降為一排兩格）。**退場（同日）**：`.upload-grid`／`--2x2`、`.upload-showcase`／`--stacked`、`.upload-tile--hero`——「主圖大格＋附圖列」整個模型收掉，主圖改由 `.upload-tile__flag` 自報身分。詳見下方墓碑段。
 
-> 為什麼是「固定高度推寬度」而不是 grid `1fr`＋`aspect-ratio`：grid `1fr` 的最小尺寸是 auto，格子帶了 `aspect-ratio` 之後，瀏覽器會拿比例換算出的內容尺寸回頭撐開欄寬，四格互相拉扯就整排衝出容器（2026-07-24 create-project Showcase 溢出的成因）。固定高度沒有這條回饋迴路。
+> 為什麼不用 grid `1fr`＋`aspect-ratio`（`.upload-assets` 底層採固定高度推寬度、`--fill` 採 flex 平分寬度，兩者都刻意避開 grid）：grid `1fr` 的最小尺寸是 auto，格子帶了 `aspect-ratio` 之後，瀏覽器會拿比例換算出的內容尺寸回頭撐開欄寬，四格互相拉扯就整排衝出容器（2026-07-24 create-project Showcase 溢出的成因）。固定高度沒有這條回饋迴路。
 
 > **2026-07-31 全站比例收斂**：圖片上傳槽的比例由單一 CSS 變數 `--upload-img-ratio`（`var(--img-portrait, 2 / 3)`，Foundation 來源 `_tokens.css` 的 `--img-portrait`，≈0.667，`upload-tile.css:35`）供應，`--hero`、`.upload-grid .upload-tile`、`--portrait` 修飾詞皆讀它——這是使用者裁決，取代原本「縮圖 1:1／直式海報 3:4／橫幅 16:9／相簿 3:2」四套並存的模型（見 STYLE-DECISIONS 已裁決條目、ASSUMPTIONS 產品變更提案）。原本的形狀修飾詞 `--1x1`／`--3x4`／`--3x2` 已從圖片槽退場、CSS 宣告本日一併刪除；`--16x9` 仍服役，用途擴大為「project-detail 的 Demo 影片／音樂**檔案**槽」＋「活動（Events）唯一保留的橫式橫幅**圖片**槽」，兩者皆不受本次直式比例收斂規範。
 >
@@ -1289,29 +1301,35 @@ Static callout — no interactive states.
 | State | Selector | Change |
 |---|---|---|
 | default | — | 1.5px dashed `--border`, radius `--radius-md`, text `--muted-foreground` |
-| hover | `:hover` | border → `--muted-foreground`, bg → `--muted` |
+| hover | `:hover` | border → `--muted-foreground`, bg → `--muted`；**還沒填的格子邊框同時收細成 `.5px`**（2026-08-09 使用者指示：hover 已經有底色在說「可以點」，邊框不必再加粗宣示）。已填的格子是實線邊，粗細不動 |
 
 **Class API**
 
 | Class / modifier | Effect |
 |---|---|
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
-| `.upload-tile--hero` / `--file` | 大格／檔案列尺寸變體 |
+| `.upload-tile--file` | 檔案投放列尺寸變體（min-height 110px） |
+| `.upload-tile--video` | 影片投放格（`aspect-ratio:16/9`、`width:66.6667%`；≤640px 轉滿版）。消費頁：create-event／create-project／project-detail／publish-work（兩處） |
+| ~~`.upload-tile--hero`~~ | **已退場（2026-08-09）**：主圖大格連同它的圓角晶片圖示框（Q18）一起收掉，直式圖片槽全部同尺寸 |
 | `.upload-tile__icon` / `__title` / `__hint` | registered Tabler icon／主文案（`--foreground` 500）／限制說明；不用文字 `＋` 或自製 SVG |
-| `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框＋`--status-success`（含 `__title` 轉綠）。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
+| `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框（`border-style: solid`，取代空狀態的 dashed）＋中性 `--border`／`--foreground` 文字（含 `__title`）。**2026-08-09 使用者裁決「不該有這種綠框元件」，撤除 `--status-success` 綠**——已填／未填改由邊框樣式（實線 vs 虛線）辨別，不再靠顏色，與下方 `[data-upload].is-filled` 互動格既有的中性配方（`border-color: var(--border)`／`color: var(--foreground)`）對齊，統一成同一套「已填」語彙。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
 | `.upload-grid` | 4 欄縮圖 grid（gap 10px） |
 | `.upload-grid--2x2` | 縮圖 grid 改 2 欄（並排 showcase 用） |
-| `.upload-showcase` | 主圖＋縮圖格並排兩等寬欄（≤880px 收回堆疊） |
-| `.upload-showcase--stacked` | 縱向堆疊變體：不分寬度都主圖在上、附圖列在下（product-detail 素材欄用） |
+| ~~`.upload-showcase`／`--stacked`~~ | **已退場（2026-08-09）**：主圖＋縮圖格的並排／堆疊版面，被 `.upload-assets--fill` 取代 |
+| ~~`.upload-grid`／`--2x2`~~ | **已退場（2026-08-09）**：4 欄／2 欄縮圖列，被 `.upload-assets--fill` 取代 |
 | `.upload-assets` | 具名素材槽列：flex-wrap，格子高度＝`--upload-asset-h`（200px／≤640px 148px）、寬度由 `--portrait` 推導。**槽位組合（D164）**：建立項目＝主視覺＋圖庫（2 格）；建立活動＝主視覺＋橫幅＋圖庫（3 格，橫幅走 `--16x9`） |
+| `.upload-assets--fill`（`--upload-asset-cols`） | 撐滿容器的變體（2026-08-09，建立商品素材列）：`flex-wrap: wrap`＋`align-items: flex-start`＋`width: 100%`，格子 `flex: 0 0 calc((100% - var(--sp-12) * (cols - 1)) / cols)`／`height: auto`，高度改由 `--portrait` 推導。`--upload-asset-cols` 預設 4＝四格撐滿一整列、第五格換行同尺寸；≤640px 降為 2。`width: 100%` 不可省——格子帶 `min-width: 0`，這一列自己當 flex 子項時（如 DS 頁的 `.demo`）會被壓成窄帶 |
 | `--upload-img-ratio` | 圖片上傳槽比例的單一來源，值為 `var(--img-portrait, 2 / 3)`（Foundation token `--img-portrait` 定義於 `_tokens.css`，見 Pillar 1 §1.3；`upload-tile.css:35`，2026-07-31 使用者裁決）。`--hero`、`.upload-grid .upload-tile`、`.upload-tile--portrait` 皆讀它 |
 | `.upload-tile--portrait` | 圖片上傳槽的唯一形狀修飾詞，讀 `--upload-img-ratio`。只在有確定高度的容器（如 `.upload-assets`）內使用，別加在 grid `1fr` 的格子上 |
 | ~~`.upload-tile--1x1` / `--3x4` / `--3x2`~~ | **已退場（2026-07-31）**：舊多比例模型的形狀修飾詞，CSS 宣告已刪除（唯一消費者是 design-system.html 示範卡，本輪已改用 `--portrait`）；不得再用於新的圖片上傳槽 |
 | `.upload-tile--16x9` | 服役範圍擴大（2026-07-31）：project-detail 的 Demo 影片／音樂**檔案**槽＋活動（Events）唯一保留的橫式橫幅**圖片**槽（create-event／edit-event，1920×1080，D164）。兩者皆不受本次直式比例收斂規範；其他模組不得比照新增橫式圖片槽 |
-| `.upload-tile__flag` | 靜態語意標記（如相簿第一格的「封面」），2026-07-31 由 `shared.css` 的 `.pd-gallery__badge` 搬入元件層；與 `__badge`（AI 優化完成狀態、JS 產生）角色不同，刻意不同名 |
+| `.upload-tile__flag` | 靜態語意標記（如相簿第一格的「封面」、建立商品素材列第一格的「主圖」）。**互動格要等圖進來才掛**（2026-08-09 使用者指示，`[data-upload]:not(.is-filled):not(.is-optimized)` 收起）——空格子還沒有內容可以被稱作「主圖」，上傳中格子又被浮層蓋著，標籤浮在進度上只是噪音；手刻的已填格不受影響，2026-07-31 由 `shared.css` 的 `.pd-gallery__badge` 搬入元件層；與 `__badge`（AI 優化完成狀態、JS 產生）角色不同，刻意不同名。**同格兩者並存時**（建立商品主圖格：既掛 `__flag`、又開 `data-upload-ai`）`__badge` 讓到下緣（`.upload-tile:has(.upload-tile__flag) .upload-tile__badge`）——單排素材格只有約 126px 寬，左右並排仍會撞上，而下緣在優化完成時是空的（進度條只在上傳中出現） |
+| `[data-upload-reveal]`（容器層） | 逐格顯示（2026-08-09，`partials/upload-tile.js` 的 `initReveal`）：容器內一次只露出一個空格，填滿目前這格才顯示下一格；把中間某格清空，後面的空格縮回去、該格自己變成那個開放的槽。用於「張數有上限、格子預先寫在 HTML」的素材列（建立商品：主圖 1＋附圖 4），格子各自的 `data-cp-asset`／`data-upload-ai` 原樣保留。與 publish-work 劇照那種「張數不設限、末格填滿就 append 一格」互補：那邊是長格子，這邊是既有格子的顯隱 |
+| `.upload-tile-aside`（`__side`） | **2026-08-09 promote 自 `create-event.html` 頁內 `.ce-timg`**：直式上傳格＋右側一句說明並排，用於彈窗裡「現在用的是哪張圖」這類小面板——左邊固定寬（104px）的 `.upload-tile`，右邊 `.upload-tile-aside__side` 縱向堆疊說明文字與動作鈕 |
+| `.upload-tile-aside--stacked` | 直排變體（2026-08-09，同日第二輪）：`.upload-tile-aside` 改上下堆疊（格子在上、說明在下，格子寬度改滿版），供窄欄用——並排版假設橫向有空間，放進窄欄（如 [Payout §4.61](#payout) 彈窗 `.payout-dialog__split` 那條 200px 側欄）會把說明擠成一行三、四個字的長條 |
 | `data-upload-src` / `data-upload-key` | 編輯態預填屬性：`data-upload-src="<url>"` 讓格子初始直接進 `.is-filled` 並掛上該圖，跳過假上傳計時；`data-upload-key` 供 `upload:change` 事件的 `detail.key` 識別（沒有則退回既有的 `data-cp-asset`） |
-| `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/刪除，站上標準 2 鈕）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」，只在掛 `data-upload-ai` 時才多出這顆鈕）。就緒仍走 `upload:change` 事件（`detail: {key, filled}`，bubbles）。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）**。**鍵盤可及性（2026-07-31）**：空狀態掛 `role="button"`＋`tabindex="0"`（填圖後拿掉，改由動作列兩顆真 `<button>` 進 tab 序）；Enter／Space 觸發同點擊（Space 不捲頁）；焦點環＝站上標準 `outline: 2px solid var(--ring)`；上傳／優化／刪除完成後把焦點交還（僅鍵盤觸發的互動才生效）。**沒有 `__title` 時的標籤退路依模式分兩種**（2026-08-07）：圖片格 `cp.media.add`（新增圖片）、內容檔格 `cp.cfile.add`（新增檔案）——影音／字幕格套「新增圖片」會誤導螢幕閱讀器使用者。要更精確的說法（「上傳預告片」）由消費頁自己寫 `aria-label` ＋ `data-i18n-aria-label`，元件會讓路 |
-| `.upload-tile__thumb` / `__overlay` / `__spinner` / `__progress` / `__bar` / `__actions` / `__act`(`--ai`) / `__badge` | 互動上傳格的注入子元素（縮圖／進行中罩／spinner／進度條／hover 動作／AI 優化徽章）；全 token 驅動，罩用 `color-mix(--foreground/--card)` 主題自適應 |
+| `[data-upload]`（互動上傳格） | opt-in 開啟互動上傳（`partials/upload-tile.js` 增強）。狀態：`.is-empty`（hover 現 `__sub`/`__hint` 更多資訊；**2026-08-09 起用 `display` 收放而非 `opacity`**——原本靠透明度藏、說明文字仍佔著位置，靜止態的圖示與標題被那塊空白往上推，看起來沒置中。改成不佔位之後靜止態與 hover 態各自依自己的內容高度置中，代價是 hover 時有一次版面變動，使用者裁示接受）→ `.is-uploading`（`__thumb`＋frosted `__overlay`＋`__progress`/`__bar`，假走 ~2.5s）→ `.is-filled`（`__thumb` 鋪滿；hover `__actions`：替換/刪除，站上標準 2 鈕）→ `.is-optimizing`/`.is-optimized`（`__badge`「已依規格優化」，只在掛 `data-upload-ai` 時才多出這顆鈕；**2026-08-09 起優化可反悔**——優化完成後第三顆鈕換成「還原成優化前」〔`__act--undo`，`rotate-ccw`〕，按下回到 `.is-filled`。兩顆互斥、同一個位置換一顆，因為優化與還原是同一個決定的正反面。原型的優化本來就沒真的改動圖檔，所以還原只是切狀態；真實實作要保留優化前的原檔）。就緒仍走 `upload:change` 事件（`detail: {key, filled}`，bubbles）。**AI 優化＝假動作＋產品變更提案（ASSUMPTIONS UIA-037，上游無此功能）**。**鍵盤可及性（2026-07-31）**：空狀態掛 `role="button"`＋`tabindex="0"`（填圖後拿掉，改由動作列兩顆真 `<button>` 進 tab 序）；Enter／Space 觸發同點擊（Space 不捲頁）；焦點環＝站上標準 `outline: 2px solid var(--ring)`；上傳／優化／刪除完成後把焦點交還（僅鍵盤觸發的互動才生效）。**沒有 `__title` 時的標籤退路依模式分兩種**（2026-08-07）：圖片格 `cp.media.add`（新增圖片）、內容檔格 `cp.cfile.add`（新增檔案）——影音／字幕格套「新增圖片」會誤導螢幕閱讀器使用者。要更精確的說法（「上傳預告片」）由消費頁自己寫 `aria-label` ＋ `data-i18n-aria-label`，元件會讓路 |
+| `.upload-tile__thumb` / `__overlay` / `__spinner` / `__progress` / `__bar` / `__actions` / `__act`(`--ai` / `--undo`) / `__badge` | 互動上傳格的注入子元素（縮圖／進行中罩／spinner／進度條／hover 動作／AI 優化與還原／AI 優化徽章）；全 token 驅動，罩用 `color-mix(--foreground/--card)` 主題自適應。`__actions` 必須帶 `border-radius: inherit`（2026-08-09 修）——它的 `backdrop-filter` 會自己開一個裁切脈絡，父層的 `overflow: hidden` ＋圓角管不到它，hover 一浮出來整格就變直角 |
 | `[data-upload="content"]`（內容檔模式） | 內容檔（音樂/影片/檔案，§4.2 F11）：上傳後可**播放**（音訊/影片，真實 `<audio>`/`<video>`）與刪除，操作比照顯示圖、**無 AI**。影片顯示影格（`.upload-tile__video`）、音訊/檔案顯示檔型圖示＋檔名（`.upload-tile__filemark`/`__filename`）；動作＝`__act--play`（播放/暫停切換）＋替換＋刪除；`accept` 由頁面以 `data-upload-accept` 指定（音樂→`audio/*`、影視→`video/*`）。`.upload-tile--playable` 才顯示播放鈕。呈現層 demo（不真上傳） |
 
 **Token usage** (→ Pillar 2 Role)
@@ -1323,18 +1341,24 @@ Static callout — no interactive states.
 
 **Do & Don't**
 
-- ✅ Do 在 `__hint` 標明限制（Portrait 750 × 1125／檔型清單）。
-- ✅ Do 主格用 `--hero`、次要角度用 `.upload-grid`。
+- ✅ Do 在 `__hint` 標明限制（750 × 1125 直式／檔型清單）。
+- ✅ Do 直式圖片槽一律 `.upload-tile--portrait` 裝在 `.upload-assets.upload-assets--fill` 裡；主圖用 `__flag` 標身分，不靠尺寸。
+- ✅ Do 想要「填滿才長出下一格」時，在容器加 `[data-upload-reveal]`。
+- ❌ Don't 用 `--hero`／`.upload-grid`／`.upload-showcase`（2026-08-09 已退場，見上方 Class API 與 CSS 檔尾墓碑）。
 - ❌ Don't 當一般空狀態容器（那是 `empty-stub`）。
 - ❌ Don't 改實線或填色——虛線就是可上傳的訊號。
 
 **Code example**
 
 ```html
-<div class="upload-tile upload-tile--hero">
-  <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
-  <span class="upload-tile__title">Hero image — the first thing buyers see</span>
-  <span class="upload-tile__hint">Portrait 750 × 1125</span>
+<div class="upload-assets upload-assets--fill" data-upload-reveal>
+  <div class="upload-tile upload-tile--portrait" data-upload>
+    <span class="upload-tile__flag">主圖</span>
+    <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+    <span class="upload-tile__title">新增圖片</span>
+    <span class="upload-tile__hint">直式 750 × 1125</span>
+  </div>
+  <!-- 其餘 4 格同樣寫法，各自帶 hidden，前一格填滿才顯示 -->
 </div>
 ```
 
@@ -1375,7 +1399,7 @@ Static callout — no interactive states.
 |---|---|---|
 | default | — | bg `--card`, `0 0 0 1px var(--border)` shadow edge, text `--foreground` |
 | focus | `:focus` | `outline: none`; `0 0 0 1px var(--ring)` + `0 0 0 4px color-mix(in srgb, var(--ring) 15%, transparent)` soft glow |
-| disabled | `:disabled` | 靜音底 `--muted`、文字 `--foreground-muted`、`cursor:not-allowed`、`opacity .75`；鎖定欄位唯讀呈現（建立後固定不可編輯，D137，如商品細節頁的主分類 disabled select） |
+| disabled | `:disabled` | **透明底**、文字 `--locked-field-ink`、`cursor:not-allowed`、`opacity 1`（**2026-08-09 使用者裁示「整個元件庫只能有一個 disabled 樣子」收斂**：原本 `--muted` 填底＋`--foreground-muted` 字＋`opacity .75`，坐在卡片上會變成一塊比卡片還深的方塊；改成透明底之後欄位直接吃它所坐的那個面，全站僅此一種 disabled 呈現——來源鎖定欄位〔見 [Field source tag §4.121](#field-source-tag)〕不再自訂另一種）；鎖定欄位唯讀呈現（建立後固定不可編輯，D137，如商品細節頁的主分類 disabled select） |
 | `.select--bare` default | — | 無邊框無填色（`box-shadow:none`、`background:transparent`）、pill 圓角、`--foreground-muted` 文字、`--fs-12`／`--fw-medium`（比照同列 `.filter-tabs__item`） |
 | `.select--bare` hover | `:hover` | 浮出 `--muted` 底、文字轉 `--foreground` |
 
@@ -2831,9 +2855,11 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | `.notif-matrix__corner / __chead` | 左上角格、欄表頭（`--muted` 底） |
 | `.notif-matrix__label(__label-title/__label-hint)` | 事件列標題與說明 |
 | `.notif-matrix__cell(.--locked)` | 開關格；鎖定格放鎖頭 |
-| `.notif-matrix__lock` / `.switch--locked` | 鎖頭色 `--muted-foreground`；鎖定 switch not-allowed、降透明 |
+| `.notif-matrix__lock` / `.switch--locked` | 鎖頭色 `--muted-foreground`；鎖定 switch not-allowed、降透明。**`.switch--locked` 本身已於 2026-08-09 上收進 [Switch §4.6](#switch) 的 `switch.css`**——本檔只消費這個 class、不再定義它，理由見 §4.6 的說明（另兩個消費頁 tier-settings.html／create-event.html 只連 `switch.css`，鎖定態上收才三頁都吃得到） |
 
 **響應式** — ≤560px 欄寬收窄不換行。
+
+**Dependencies** — 鎖定 switch 重用 [Switch §4.6](#switch) 的 `.switch--locked`（定義在 `switch.css`，本檔僅消費）。
 
 **CSS** — [`notification-matrix.css`](./ds-components/notification-matrix.css)
 
@@ -3450,7 +3476,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
    └─ __foot (ghost + primary Buttons)
 ```
 
-**Variants** — Bank card: default / `--selected` (inset 2px foreground ring) / `--add` (dashed). Form grid: 2-col / `--single`.
+**Variants** — Bank card: default / `--selected` (inset 2px foreground ring) / `--add` (dashed). Form grid: 2-col / `--single`. **`.payout-dialog__split`** (2026-08-09; first consumer = the ticket edit dialog in `create-event.html`, §4.114 Ticket tier card) — splits `__body` into a main column (fields to fill in) + a fixed 200px side column (image, view-only), `align-items: start` so the side column never stretches to the main column's height; collapses to a single column ≤640px, side column falls to the end.
 
 **States**
 
@@ -3466,7 +3492,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 
 - surfaces `--card` / `--muted` · rings `--border` / `--foreground` (selected) · shadows `--shadow-card` / `--shadow-overlay` (dialog shell, E4) / `--shadow-hairline` · radius `--radius-md` / `--radius-lg` · success `color-mix(--status-success 14%, --card)` · fonts `--font-ui` / `--font-display` · backdrop `color-mix(--background 68%, black 45% alpha)`
 
-**Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps; and by `partials/restock-modal.js` / `partials/pickup-session-modal.js` / `creators.html`'s inline create-creator form. All of these now build their fields from `.field` / `.form-grid` / `.control-row` (field-system.css / form-grid.css / control-row.css), not page-local `.payout-field*` markup — the page-local `.payout-field` / `.payout-form-grid` / `.payout-inline-control` classes have no remaining consumer and their rules were removed from `payout-modal.css` (2026-07-11).
+**Usage** — Earnings · Payouts tab (earnings.html). The dialog shell is the project's canonical modal pattern — reuse it for future modals instead of re-rolling. Already reused by the F10 manual-entry modal (`partials/manual-entry-modal.js`), which mounts the same `.payout-modal` / `.payout-dialog` shell with form fields instead of payment steps; and by `partials/restock-modal.js` / `partials/pickup-session-modal.js` / `creators.html`'s inline create-creator form. All of these now build their fields from `.field` / `.form-grid` / `.control-row` (field-system.css / form-grid.css / control-row.css), not page-local `.payout-field*` markup — the page-local `.payout-field` / `.payout-form-grid` / `.payout-inline-control` classes have no remaining consumer and their rules were removed from `payout-modal.css` (2026-07-11). The ticket edit dialog in `create-event.html` also reuses this shell and is the first consumer of the `.payout-dialog__split` layout above.
 
 **Do & Don't**
 
@@ -4408,6 +4434,8 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 
 **唯一的勾選控件（2026-08-06 Q53）** — 站上確認類勾選不另外加容器框。原本提款／捐贈彈窗的 `.payout-confirm` 是「灰底＋內描邊＋內距」的框住一整列，裡面又是一顆靠 `accent-color` 染色的原生 checkbox；2026-08-06 使用者裁示「不需要有一個框框，我們的元件樣式應該沒有這樣？有的話請統一改掉」，該族群連同 `manage-ip` 的 `.mi-onreq`、`register-ip` 的 `.ri-onreq` 一起退場，全部改吃本元件。要與上一個區塊拉開距離時用 `mt-8`／`mt-16` 工具類，不要為此新增變體。
 
+**Radio（`.zradio`，⚰️ 已退場・tombstone）** — 2026-08-09 曾把 `create-event.html` 的頁內 `.zradio*`（與 `.zcheck` 同一套「畫出來的控件疊在真實原生 input 下」寫法，套用到 `<input type="radio">`）promote 進本檔，用於票種卡購票規則區塊（購票條件／限購／折扣）的單選。**同日使用者裁決「建活動頁的樣式一律以既有 design system 為主，不留頁內自造的平行做法」**，`.zradio*` 全數撤場，改用既有 [Radio list](#radio-list)（`ds-components/radio-list.css` 的 `.radio-list`），不留第二種單選視覺。CSS 已從本檔整段移除，原處只留 tombstone 註解（`ds-components/checkbox.css` 第 183 行附近）；勿再新增 `.zradio*`。原 anatomy 供追溯：`.zradio-group`（`role="radiogroup"`，直排容器）＞ `.zradio`（單一選項 `<label>`）＞ `.zradio__control`（`.zradio__input` 真實 `<input type="radio">` 透明疊底＋`.zradio__dot` 畫出來的圓環）＋ `.zradio__label`；間距規則（`.rule > .zradio-group`）已一併搬到 `ticket-tier-card.css` 並改名為 `.rule > .radio-list`。
+
 **Code example**（擷取自 `create-project.html` 第 167 行）
 
 ```html
@@ -4664,10 +4692,11 @@ This section documents **the shell only** — column ratio, sticky behavior, nes
 - `.perf-twin` — 雙欄排行並置（例如「依人數排」與「依時長排」對照）
 - `.perf-hero__value` / `.perf-hero__sub` — Hero 大數字卡與其副指標
 - `.perf-rank--animate` — 長條從 0 展開的進場動畫
+- `.perf-rank--wide` — 名稱欄改吃比例（`2fr` 對長條的 `1fr`）、不設固定上限，給整句式的標題用（作品全名、貼文標題）；預設的 148px 是為片名／歌名／平台名訂的，一整句塞進去只剩省略號，而換成更大的固定值永遠會被更長的標題突破
 
-**Dependencies** — `js/performance-store.js`（唯一產生 `.perf-rank__*`、`.perf-cap`、`.perf-hero__*` markup 的來源）；不依賴其他元件 CSS，色相走 `--hue`（消費端指定 `--chart-*` token）。
+**Dependencies** — `js/performance-store.js` 與 `js/audience-store.js`（產生 `.perf-rank__*`、`.perf-cap`、`.perf-hero__*` markup 的兩個來源）；不依賴其他元件 CSS，色相走 `--hue`（消費端指定 `--chart-*` token）。
 
-**Consumers** — `index.html`、`project-detail.html`。
+**Consumers** — `index.html`、`project-detail.html`、`audience-report.html`、`fan-analytics.html`。
 
 **Code example**
 
@@ -4887,9 +4916,12 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **Anatomy**
 - `.wizard-split` — 根層；`.wizard-split__main` / `.wizard-split__rail` — 主欄與側欄，皆固定 `grid-row:1`（否則側欄會掉到下一列）
+- **側欄可疊多張卡（2026-08-09）**：`.wizard-split__rail` 改成 `display:flex; flex-direction:column; gap: var(--sp-16)`，讓一條軌上放兩張以上的卡有固定間距。首個消費情境是建立活動的票務那一步（預覽卡在上、收入試算卡在下）。**只有一張卡時的呈現與改動前相同**，`create-project.html` 與 `create-event-legacy.html` 這兩個單卡消費者不受影響
 - `.fd-ov` — 摘要卡本體（Setup overview）；`.fd-ov__hero-value` — 卡片最上方「每份定價」大數字
 - `.fd-ov__row--total` — 金額試算的最後一行（用粗細不用顏色強調）
 - 響應式：`max-width:1023.98px` 以下側欄退回原生順序、取消 sticky
+
+**Variants** — `.wizard-split--narrow`（2026-08-09 自 `create-event.html` 的頁內 `.ce-split-narrow` promote）：右軌欄寬由預設 320px 收窄到 264px。用於右軌內容本身較輕的情境（如收入試算：四列 `.kv` ＋一顆按鈕，撐不滿也用不到 320px 的完整寬度）；改成修飾類而不是直接改 `.wizard-split` 本身，因為這個基礎 class 同時被 create-project／create-event／design-system 共用，直接改會牽動其他消費頁。
 
 **Dependencies** — 無獨立 `wizard-split.js`；`create-project.html` 頁面自身量測並設定 CSS 變數 `--wizard-top-h`（頂列高度因語系換行而變，寫死數字會悄悄失準，實測於該頁第 852 行 `bar.offsetHeight` 設定確認此依賴為真）；消費頁需把 `.wizard__body` 加寬到 `--mid`（1140px）；摘要卡列表沿用既有 `.data-list__row`。**Rail 在原始碼順序上排在最前**，讓小螢幕與螢幕報讀器先讀到它，`grid-column` 再把它視覺放到右側。**數值變化無 transition/animation**——金額隨每個按鍵變動，跳動或數字滾動效果在這裡會讀成抖動而非回饋。
 
@@ -5059,8 +5091,11 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.tier-add` — 網格最後一格的新增卡（沿用 `.upload-tile` 的虛線語彙），與票種卡等寬
 - `.tier-toolbar`（`__actions`）— 網格上方靠右的批次編輯工具列
 - `.card.tier-card` — 單張票種卡，卡體外觀全部來自 `.card`（Q32 的無邊框＋陰影），本元件不重畫
-- `.tier-card__head` ＞ `.tier-card__name`（卡標＝票種名稱，`--untitled` 為未命名時的降權態）＋ `.tier-card__badge`＋`.tier-card__ownbtn`（編輯態才出現的自訂規則按鈕）＋ `.tier-card__actions`（⋮ 選單）
-- `.tier-card__facts` ＞ `.tier-card__fact`（`<dt>` 標籤靠左／`<dd>` 值靠右）— 收合態的唯讀價格與數量，`tabular-nums` 讓並排卡片的位數對成一欄
+- `.tier-card--clickable`（2026-08-09 promote）— 加法修飾類，整張卡是開啟編輯的點擊區（`⋮` 選單與拖曳把手排除）。**opt-in，不寫進裸的 `.tier-card`**：本元件也給 `create-event-legacy.html` 用，那邊的卡從來不是「整卡可點」，直接改基礎 class 會讓 legacy 卡悄悄跟著變可點
+- `.tier-card__grip`（2026-08-09 promote）— 卡標列的拖曳把手（排序不從 bookyay 帶入，直接在 UI 上拖），`cursor:grab`／拖曳中 `grabbing`；`--editing` 態收起（少了它票種名才能與下面自動生成的門票名稱左緣對齊）
+- `.tier-card__head` ＞ `.tier-card__grip` ＋ `.tier-card__name`（卡標＝票種名稱，`--untitled` 為未命名時的降權態）＋ `.tier-card__badge`＋`.tier-card__ownbtn`（編輯態才出現的自訂規則按鈕）＋ `.tier-card__actions`（⋮ 選單）
+- `.tier-card__thumb`（卡標小縮圖，2026-08-09 promote，方形裁切、非原圖比例）— **同日第二輪由卡標那一行移出，改坐在卡標下方自成一列**（使用者指示「圖片放下一行」）：擠在卡標列時只能當個記號（28px），獨立成列後放大到 40px（圖示 14px→18px），上下各加 `--sp-2`／`--sp-10` margin，才真的看得出圖裡是什麼
+- `.tier-card__facts` ＞ `.tier-card__fact`（`<dt>` 標籤靠左／`<dd>` 值靠右）— 收合態的唯讀價格與數量，`tabular-nums` 讓並排卡片的位數對成一欄；含 `.tier-card__line`（2026-08-09 promote）時改逐項換行顯示「商品組合」多筆值，`dt` 改 `white-space:nowrap` 避免被壓縮擠斷字
 - `.tier-card__edit` — 收合態卡底的整寬 Edit
 - `.tier-card--editing` — 編輯態：顯示 `__body` 與 `__foot`，隱藏 `__facts` 與 `__edit`
 - `.tier-card--group` — 批次編輯中的卡：`__foot` 收起（動作在工具列），`__actions` 保留（移除單張只剩這條路）
@@ -5075,6 +5110,10 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.field__hint.tier-card__err` — 欄位級錯誤，疊在 `.field__hint` 上轉 `--status-error`
 - `.tier-card__foot` — 左 Remove／右 Cancel＋Save，中間 `.tier-card__foot-spacer` 推開
 - `.tier-count`（`--over`）— 清單尾端的計數列；數量加總超過容量時整行轉紅
+- `.tier-card__ownrow`（2026-08-09 第二輪新增）— 規則區塊的狀態列：左邊「已自訂」徽章（`.badge.badge--neutral`）、右邊「改回跟隨活動預設」的 `.btn.btn--ghost.btn--sm`；只在這張票的規則已與活動預設脫鉤時出現（票種編輯彈窗的規則分頁，取代原本 `.field__hint`「跟隨活動預設」提示句那一行）
+- 🪦 tombstone：`.tier-card__ownbtn--always` ／ `.tier-card__ownicon` ／整寬展開鈕覆寫（2026-08-09 當天新增、當天第二輪即退場）— 服務的是票種編輯彈窗裡那顆「新增購票規則」收合鈕：`--always` 是它在彈窗裡無條件顯示的變體（取代原本「用彈窗容器 id 提權蓋過元件」的做法），`__ownicon` 是它的箭頭圖示、`aria-expanded="true"` 時旋轉 180°。同日使用者第二輪裁示「攤開不需要折疊了」——規則一律列出、不再收合，這顆鈕連同箭頭一併撤除，CSS 原地留 tombstone 註解（`ticket-tier-card.css` 檔尾）。基礎 `.tier-card__ownbtn`（標題列靠右的小按鈕，見上）不受影響，仍由 `create-event-legacy.html` 消費
+
+**Regulatory spacing（2026-08-09 promote，同日第二輪改用 `.radio-list`）** — 規則區塊內的間距補完（使用者指示「項目間距都要做出來」）：`.rule-sub` 內第二層 `.radio-list`（原為 `.zradio-group`，見 [Checkbox §4.96](#checkbox) 的 tombstone 與 [Radio list](#radio-list)）與它展開的欄位之間拉開、最後一個欄位不留尾巴；並排的兩欄（折扣％＋折後價、起訖時間，`.rule-row > .field`）各自平分一列；票種卡只有約 240px 寬，`.tier-card__rules .rule-row` 改上下堆疊（規則彈窗夠寬則維持並排）。
 
 **Remove 的外觀** — 2026-08-06 起是**紅框紅字**（透明底＋1px `--destructive` 邊框，hover 才上 10% 紅底），與規格 F9.2 寫的「紅字」一致。此前依 Q37 是實色紅底＋白字，**2026-08-06 使用者裁示全站改紅框**推翻：刪除的分量由「紅」本身承擔就夠，實色紅塊在卡片裡比同一列的主要動作（儲存）還搶眼，等於把最不該先按的那顆做成視覺焦點。改動住在 `button.css` 的 `.btn--destructive:not(.btn--ghost)`，全站一次生效、消費頁不必逐一改。
 
@@ -5153,6 +5192,8 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.session-list__row` ＞ `__no`（固定寬序號「第 N 場」）＋ `__fields`（日期｜場地兩欄）＋ `__end`（固定寬尾欄：移除鈕或徽章）
 - `.session-list__row--main` — 第 1 場：`__fields` 改成單欄，內容是 `__text`（唯讀鏡像；沒填時 `--empty` 降一階色）
 - `.session-list__add` — 清單下方的「新增場次」鈕（吃 `.btn--outline`）
+- `.session-list__head`（選配，2026-08-09 promoted from `create-event.html` 的 `.ce-sess__head`）— 欄位標題列，跟 `__row` 同一套排版（flex＋`--sp-12` 間距），文字換成 `--muted-foreground` 小標色，讓多欄版一眼看懂每欄是什麼；與 `.session-list__row` 各自出現一次即可，不強制成對
+- `.session-list--detailed`（修飾類，2026-08-09 promoted from `create-event.html` 的 `.ce-sess`）— 場次要問起訖時間與入場時間時的多欄變體，不動基準版兩欄行為（`create-event-legacy.html` 仍在消費基準版）：單場 4 欄（日期｜起｜訖｜入場）；多場時 `__row[data-multi="true"]`／`__head[data-multi="true"]` 多插一欄場次名成 5 欄，兩種欄寬各自定義；窄螢幕（≤640px）`__head` 隱藏、`__fields` 收成單欄或兩欄
 
 **為什麼第 1 場是唯讀的** — 日期與場地在同一頁上面已經有一組正式欄位。這裡若再給一組可編輯的，同一筆資料就有兩個真相來源：使用者改了下面那格，上面那格、Review 摘要與發布前檢核到底該聽誰的沒有答案。改成鏡像後，只有「第 2 場起」是這份清單自己的資料，主欄位一改、鏡像跟著更新。
 
@@ -5176,7 +5217,7 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 **兩則規則說明刻意寫在頁面上** — ①已開賣的警示用 `.alert--row.--warning`，沿用編輯活動那頁「改動的後果」同一種說法（同一件事在兩頁不該長成兩種樣子）；②取消系列中的一場＝與取消一場獨立活動完全相同的退款規則（F5），屬於系列不改變對該場持票人的義務。兩者在原型都只到「說出來」這一步，不接真流程。
 
-**Consumers** — `create-event.html`（步驟 3 場地與時間 › 系列場次）· `events.html`（活動清單的系列母列與子列）· `series-detail.html`（系列母頁，用 `product-list--series` 列場次）。產品規格缺口見 ASSUMPTIONS SER-001。
+**Consumers** — `create-event.html`（步驟 3 場地與時間 › 系列場次，用 `.session-list--detailed` ＋ `__head`）· `events.html`（活動清單的系列母列與子列）· `series-detail.html`（系列母頁，用 `product-list--series` 列場次）。產品規格缺口見 ASSUMPTIONS SER-001。
 
 ### 4.118 Entry list
 
@@ -5229,6 +5270,70 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 **Dependencies** — `.badge`／`.btn`（`--primary`／`--outline`／`--ghost`，皆 `--sm`）。無獨立 JS 檔；狀態資料來自 `js/work-review-store.js`，DOM 由消費頁的行內控制器填。
 
 **Consumers** — `project-detail.html`（項目更新區段的作品審核狀態）、`admin-video-review.html`（送審件頁首與審核動作）。產品缺口見 ASSUMPTIONS UIA-109／UIA-111。
+
+---
+
+### 4.120 Source import
+
+**Purpose** — 從外部平台（bookyay）搜尋一筆既有紀錄帶入表單的一頁式閘門：搜尋 → 一列一筆的結果清單 → 略過／帶入兩顆動作。2026-08-09 自 `create-event.html` 的頁內 `.ce-bky` / `.ce-bkyq*` promote。
+
+**Anatomy**
+- `.source-gate` — 閘門本體，靠左對齊（閘門殼 `.wizard__gate-inner` 預設置中，這裡拉回靠左——清單要一列一列掃過去，置中會讓每列起點不一樣）
+- `.source-gate__head` ＞ `.source-gate__titles`（＋ `.wizard__step-title`）— 返回鍵與標題同一列、垂直置中
+- 搜尋框 — 沿用 `.input`，不另造控件
+- 結果清單 — `.segmented.radio-cards.radio-cards--gate.radio-cards--list`（見 §4.1 Radio card 的 `--list` 變體，一列一場而非兩欄格線）
+- `.source-gate__empty` — 無符合結果時的說明文字
+- `.source-gate__acts` — 略過｜帶入，靠右
+- `.source-import`（選配）— 帶入後在表單頂端顯示的唯讀欄位列，內含一個佔滿寬度的 `.select`；欄位本身的來源標記與鎖定樣式見 §4.121 Field source tag
+
+**Dependencies** — `.radio-cards--gate.radio-cards--list`（`radio-card.css`）、`.input`、`.select`、`.btn`、`.wizard__step-title`。無獨立 JS 檔；搜尋、選取與帶入由 `create-event.html` 的行內控制器處理。帶入後的欄位鎖定樣式見 §4.121。
+
+**Consumers** — `create-event.html`（bookyay 帶入閘門，場地資料）。
+
+**CSS** — [`source-import.css`](./ds-components/source-import.css)
+
+---
+
+### 4.121 Field source tag
+
+**Purpose** — 欄位標籤旁標記「這一格是從哪裡帶進來的」（bookyay 帶入後不可改），並讓被鎖定的欄位維持可讀——不是「壞掉」而是「別處管的」，只降一點對比、游標改不可編輯。2026-08-09 自 `create-event.html` 的頁內 `.ce-src` / `.is-locked` promote。
+
+**Anatomy**
+- `.field-source` — 掛在 `.field__label` 內、靠右對齊（小鎖頭 icon＋「bookyay」字樣）；`.field__label:has(.field-source)` 才開 flex，避免壓掉一般欄名裡刻意留的空白
+- `.is-source-locked` — 掛在欄位容器；**本身不再自己定義表單控件的鎖定樣式**（2026-08-09 第二輪，使用者裁示「整個元件庫只能有一個 disabled 樣子」）——內部的 `.input`／`.textarea`／`.select` 完全吃 [Input §4.8](#input) 的 `.input:disabled`（透明底＋`--locked-field-ink`）；`.segmented__btn`（含建在它上面的 [Radio card](#radio-card)）不是表單控件、吃不到 `:disabled`，鎖定樣式仍由本檔定義——`cursor: not-allowed`＋`pointer-events: none`（不可點），文字對比改由 `.radio-card__title`／`.radio-card__sub` 直接吃 `--locked-field-ink`（**2026-08-09 第三輪**，見下）
+
+**鎖定態呈現的三輪修訂（皆 2026-08-09）** — 第一輪（使用者反饋「disable 的背景色要和外層的背景色一樣，文字不要這麼明顯」）：本檔一度自己定義來源鎖定的樣式——透明底＋文字降到 `--muted-foreground`，寫法下到 `:disabled` 這一層（`.is-source-locked .input:disabled`，0-3-0）蓋過元件層 `input.css` 的 `.input:disabled`（當時是 `--muted` 填底，同權重 0-2-0，坐在 `form-section` 上會變成一塊比卡片還深的方塊，讀起來像「這裡有東西壞了」）。**第二輪（使用者裁示「整個元件庫只能有一個 disabled 樣子」）**：把第一輪那組「透明底」值直接上收成 `input.css` 的 `.input:disabled` 全站基準（值改用 `--locked-field-ink`、`opacity` 拿掉改吃顏色控制對比），本檔因此不再自己定義**表單控件**的鎖定外觀——來源鎖定與其他 disabled 欄位長得一樣是刻意的，差別由標籤旁的來源標記（`.field-source`）說明，不靠兩種灰去暗示「這格為什麼不能改」。**第三輪**：`.segmented__btn`（[入場方式／取票方式](#source-import) 這類用 Radio card 呈現的欄位，bookyay 帶入後整組鎖住）原本還留著舊制的 `.is-source-locked .segmented__btn { opacity: .78 }`，等於同一頁同時存在「表單控件用顏色降對比」與「segmented 用透明度降對比」兩種鎖定語彙。改成同一套做法：`opacity` 拿掉，`.radio-card__title`／`.radio-card__sub` 文字直接吃 `--locked-field-ink`（不疊 opacity），卡面其餘部分（邊框、底色）不降對比——鎖定的是「內容不可改」，不是「整張卡消失」，與其他 disabled 欄位、與 [Upload tile](#upload-tile) 已填態撤除綠框的判斷同一個方向：**站上「不可改／已完成」一律靠顏色或邊框樣式表達，不疊 opacity 弱化整塊**。`pointer-events: none` 維持，滑鼠仍點不動。
+
+**命名說明** — 這個 class 刻意不叫 `.is-locked`：該名字已被 `media-vault.css` 用在完全不同的語意（檢視器模式下某分級整列打不開，變暗＋灰階＋鎖頭），兩者都不在自己的命名空間裡，若同頁兩支元件同時服役會互相污染（誰的 `.is-locked`生效取決於載入順序，而非語意）。「來源鎖定」與「權限鎖定」是兩回事，各自留一個不會被對方覆寫的名字。
+
+**Dependencies** — `.field__label`、`.field`、`.ztor-icon`、[Input §4.8](#input)（`.input:disabled` 提供鎖定欄位的實際外觀）。無獨立 JS 檔；隨 §4.120 Source import 的帶入流程一起出現，欄位 `disabled` 由消費頁在帶入當下設定。
+
+**Consumers** — `create-event.html`（bookyay 帶入後鎖定的場地欄位）。
+
+**CSS** — [`field-source-tag.css`](./ds-components/field-source-tag.css)
+
+---
+
+### 4.122 Quick result list
+
+**Purpose** — 批次設定產生結果的唯讀預覽，一列一項：名稱｜金額｜數量｜跟隨預設／已自訂標籤｜重設動作，可依場次分組。欄位對齊票種卡（§4.114）同一張表的節奏。2026-08-09 自 `create-event.html` 的頁內 `.ce-qres*`（快速設定彈窗下半「生成的門票」預覽）promote。
+
+**Anatomy**
+- `.quick-result` — 直排容器
+- `.quick-result__head`（選配）— 場次分組小標，單場時不出現
+- `.quick-result__row` — grid 五欄（名稱／金額／數量／標籤／動作）
+- `.quick-result__name` — 名稱，超長截字尾
+- `.quick-result__num` — 出現兩次（金額、數量），等寬數字靠右
+- `.quick-result__tag` — 「跟隨活動預設」或「已自訂」說明；`.quick-result__tag--own` 加深顏色標出已自訂（不會跟著活動預設走的那幾張要看得出來）
+- `.quick-result__end`（選配）— 重設鈕
+
+**Responsive** — ≤720px 收成兩欄（名稱／金額），標籤與動作各自佔滿下一行。
+
+**Dependencies** — 無外部元件依賴，純 CSS 排版。無獨立 JS 檔；渲染與重設由 `create-event.html` 快速設定彈窗的行內控制器處理。
+
+**Consumers** — `create-event.html`（快速設定彈窗「生成的門票」預覽）。
+
+**CSS** — [`quick-result-list.css`](./ds-components/quick-result-list.css)
 
 ---
 
@@ -5670,6 +5775,13 @@ Filled with Ztor Creator Studio · R 2.1's actual values where the 7-Pillar stru
 ---
 
 ## Changelog
+
+- **2026-08-09** — 建立活動第三輪：四支既有元件的視覺語彙收斂，全站生效。
+  - **§4.7b Upload tile** — `.upload-tile.is-filled` 撤除 `--status-success` 綠框／綠字（使用者裁示「不該有這種綠框元件」），改實線中性邊＋`--foreground` 文字；已填／未填改由邊框樣式（solid vs dashed）辨別，不再靠顏色，與 `[data-upload].is-filled` 互動格既有配方對齊。全站生效（十幾個消費頁的上傳格皆吃此樣式）。
+  - **§4.1 Inventory Radio card** — `.segmented.radio-cards` 補 `align-items: stretch`，修正三卡並排高度不一的根因：grid 預設 `align-items` 是 `stretch`，但 `segmented.css` 的 `.segmented { align-items: center }`（0,1,0）沒被同權重不足的 `.segmented.radio-cards`（0,2,0，本身未設此屬性）蓋掉，卡片因此各自用內容高度置中；本輪顯式補回 `stretch`。
+  - **§4.121 Field source tag** — `.is-source-locked .segmented__btn` 撤除 `opacity: .78`，改 `.radio-card__title`／`.radio-card__sub` 直接吃 `--locked-field-ink`（不疊 opacity），與表單控件的 disabled 語彙、與 Upload tile 撤綠框同一個方向：不可改／已完成一律靠顏色或邊框表達，不疊 opacity 弱化整塊。`pointer-events: none` 維持。
+  - **§4.6 Switch** — 新增 `.switch--locked` 的 Class API／Variants／States／Do-Don't 記載，並記錄它從 `notification-matrix.css` 上收進 `switch.css` 的原因（tier-settings.html／create-event.html 只連 `switch.css`，掛了 class 卻吃不到視覺）；§4.22i Notification matrix 同步改為只消費、不定義。
+  - **§4.1 Inventory Control row** — `.control-group` 新增消費頁 create-event.html（販售方式：「發布後直接開賣」開關，關掉才展開「開賣／停售時間」欄位），計數 11→12 組、5 頁；記錄此消費頁的揭示方向與既有頁相反（關才展開，非開才展開），元件本身不因此分岔，揭示條件一律由消費頁決定。
 
 - **2026-07-29** — 外部協作者併入改版帶進 19 支新元件，補齊 md 側文件（machine contract），html 側 demo 由另一 agent 同步處理。
   - **New §4.92–§4.110**（19 支）：artist-picker（⚠ 退場候選，全站零消費含配套 JS）、benefit-matrix、brand-card、chart-tip（⚠ earnings-sony.html 待收斂，仍留內嵌複本）、checkbox（port 自既有統一設計系統）、detail-sheet、explainer（⚠ media-vault.html 死引用）、fans-guide、inline-edit（✝ 已退場墓碑檔，0 consumers）、manage-ip、media-vault、perf-rank、sortable（⚠ tier-benefits.html 死引用）、numeric stepper（`.zstep`，與既有「Stepper」wizard 進度圓圈為不同元件）、sticky-actions、toast（同步校正 §4.1 Inventory 舊行的過時資訊）、vault-share、wizard-split、zselect。

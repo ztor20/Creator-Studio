@@ -67,7 +67,10 @@
     'nav.fans-tiers':        { en: 'Tier settings', zh: '分級設定' },
     /* Media Vault（2026-07-29）：權益定義「給什麼」，媒體庫是那個東西本身。 */
     'nav.fans-vault':        { en: 'Media Vault', zh: '媒體庫' },
-    'nav.fans-audience':     { en: 'Fan analytics', zh: '粉絲分析' },
+    /* 2026-08-09 D181：粉絲分析拆兩頁。nav.fans-report ＝ 新頁（ztor 拿得到的資料）、
+       nav.fans-audience ＝ 原本那頁改名「含外部」（依賴外部平台資料，封存中）。 */
+    'nav.fans-report':       { en: 'Fan analytics', zh: '粉絲分析' },
+    'nav.fans-audience':     { en: 'Fan analytics · incl. external', zh: '粉絲分析：含外部' },
     'nav.fans-vault-sub':    { en: 'Gated vaults of media',           zh: '有門檻的媒體庫房' },
     'fg.crumb.fans':  { en: 'Fans', zh: '粉絲' },
     'fg.crumb.self':  { en: 'How this works', zh: '系統說明' },
@@ -170,7 +173,8 @@
     'rep.chosen.exp.eg': { en: 'Two campaigns both credit <strong>500 scans</strong>. In one, <strong>90%</strong> actively picked you — your promotion worked. In the other, <strong>15%</strong> did — you were collecting scans you would have received anyway.', zh: '兩次合作同樣歸屬 <strong>500 次掃碼</strong>。其中一次有 <strong>90%</strong> 是主動選你——推廣奏效。另一次只有 <strong>15%</strong>——你收到的是本來就會來的掃碼。' },
     'rep.chosen.exp.rule': { en: 'A high total with a low choice rate means the campaign is riding your existing audience, not growing it.', zh: '總數高但主動選擇率低，代表這次合作是在吃既有受眾的紅利，而不是把受眾做大。' },
     'nav.fans-tiers-sub':    { en: 'Thresholds, multipliers & rules', zh: '門檻、行為加權與規則' },
-    'nav.fans-audience-sub': { en: 'The whole picture, across platforms', zh: '整體樣貌：多少人、在哪裡、走到哪' },
+    'nav.fans-report-sub':   { en: 'Plays, and who is behind them',       zh: '播放次數，以及背後是哪些人' },
+    'nav.fans-audience-sub': { en: 'Archived — waiting on platform data', zh: '封存中，等外部平台資料' },
     'nav.earnings':     { en: 'Earnings',   zh: '收入管理' },
     /* Earnings 拆頁提案（2026-07-31）：群組底下兩個目的地。 */
     'nav.earnings-overview':     { en: 'Overview',      zh: '收入總覽' },
@@ -2234,6 +2238,9 @@
     'events.crumb.self':       { en: 'Events',                              zh: '活動' },
     'events.sub':              { en: 'Concerts, listening parties, online sessions — ticketed and free.', zh: '演唱會、聆聽會、線上活動——售票與免費皆可。' },
     'events.btn.new':          { en: '+ New event',                        zh: '＋ 新增活動' },
+    'events.btn.more':         { en: 'More create options',                 zh: '更多建立選項' },
+    'events.btn.new-event':    { en: 'Create event',                        zh: '建立活動' },
+    'events.btn.legacy-event': { en: 'Create event (old flow)',             zh: '建立活動（舊版流程）' },
     'events.kpi.total':        { en: 'Total events',                        zh: '活動總數' },
     'events.kpi.total-meta':   { en: '+3 vs last year',                     zh: '較去年 +3' },
     'events.kpi.tickets':      { en: 'Tickets sold',                        zh: '已售票數' },
@@ -2653,9 +2660,15 @@
          使用者那一側（你拿到的是一個可以按下去的動作），也和 F7 的摘要區分開
          （D160）。 */
     'dash.audience.link':    { en: 'Open Fan overview',                    zh: '進入粉絲總覽' },
-    'aud.crumb.self':        { en: 'Fan analytics',                         zh: '粉絲分析' },
-    'aud.h1':                { en: 'Fan analytics',                        zh: '粉絲分析' },
+    /* 2026-08-09 D181：本頁改名「粉絲分析：含外部」並封存。使用者原話——
+       「只是想先備份起來，因為有許多平台資料得不到，所以先做 ztor 可以拿到的
+       資料畫面」。頁面不刪、內容不縮水，等外部平台資料取得能力成熟再啟用；
+       現階段拿得到的那一半改由 audience-report.html（ar.* 那組）承載。 */
+    'aud.crumb.self':        { en: 'Fan analytics · incl. external',       zh: '粉絲分析：含外部' },
+    'aud.h1':                { en: 'Fan analytics · incl. external',       zh: '粉絲分析：含外部' },
     'aud.sub':               { en: 'Every platform shows you one slice. This page joins the slices we can reach — and says plainly which ones we can’t. Counted in people; the performance cards count plays.', zh: '各平台只給你自己那一塊。這裡把拿得到的拼起來，也直說哪些拿不到。這頁算的是「人」，表現那幾張卡算的是「次數」。' },
+    'aud.archived':          { en: 'Archived spec — most of these platforms don’t return data to us yet. What Ztor can see today lives in Fan analytics.', zh: '封存中的規格——這裡多數平台目前不回傳資料給我們。ztor 現在拿得到的部分在「粉絲分析」那一頁。' },
+    'aud.archived.link':     { en: 'Open Fan analytics',                    zh: '前往粉絲分析' },
 
     /* F1 · 資料來源與涵蓋範圍（D165：官方串接 ＋ 自行上傳雙軌）。
        整組不再出現「連結／重新連結」——五個平台沒有一個是創作者去授權的。
@@ -3013,6 +3026,11 @@
     'ce.lineup':            { en: 'Lineup / performers',              zh: '表演陣容' },
     'ce.lineup.sub':        { en: 'Search Ztor users or type external names.', zh: '搜尋 Ztor 用戶或直接輸入外部表演者名稱。' },
     'ce.lineup.add':        { en: 'Add performer',                    zh: '新增表演者' },
+    /* 2026-08-09：陣容改成真的搜尋加入流程（不再是 bookyay 帶入），新增 4 個 key。 */
+    'ce.lineup.ph':         { en: 'Search Ztor users or type a name…', zh: '搜尋 Ztor 用戶，或直接輸入名字…' },
+    'ce.lineup.external':   { en: 'Add "{name}" as an external performer', zh: '將「{name}」新增為站外表演者' },
+    'ce.lineup.empty':      { en: 'No matching Ztor users. Type a name to add them as an external performer.', zh: '沒有符合的 Ztor 用戶，輸入名字即可新增為站外表演者' },
+    'ce.lineup.remove':     { en: 'Remove performer',                 zh: '移除表演者' },
     'ce.images':            { en: 'Images',                           zh: '圖片' },
     /* 2026-07-31 D164：活動由四格收斂為三格（主視覺／橫式橫幅／圖庫圖片），必填數 4→3。
        退場 key：ce.img.thumb、ce.img.thumb-hint、ce.img.poster、ce.img.poster-hint
@@ -3226,6 +3244,10 @@
     'cp.media.file':        { en: 'Upload the file buyers will download', zh: '上傳買家會下載的檔案' },
     'cp.media.file-types':  { en: 'MP3, WAV, FLAC, PDF, ZIP, PSD, video — any file type', zh: 'MP3、WAV、FLAC、PDF、ZIP、PSD、影片——任意檔型' },
     'cp.media.cover':       { en: 'Cover art',                        zh: '封面' },
+    /* __flag 角落標籤：尺寸統一成單排之後，主圖／封面靠標籤辨識，不再靠格子比別人大。
+       標籤只有一格寬，所以取最短的稱呼，不帶說明。 */
+    'cp.media.hero-flag':   { en: 'Hero',                             zh: '主圖' },
+    'cp.media.cover-flag':  { en: 'Cover',                            zh: '封面' },
     'cp.media.cover-hero':  { en: 'Cover art\nThe first thing buyers see', zh: '封面\n買家第一眼看到的' },
     'cp.media.angles':      { en: 'Add multiple angles to build trust', zh: '多放幾個角度，建立信任' },
     'cp.media.uploading':   { en: 'Uploading…',                       zh: '上傳中…' },
@@ -3234,6 +3256,7 @@
     'cp.media.add':         { en: 'Add image',                        zh: '新增圖片' },
     'cp.media.replace':     { en: 'Replace image',                    zh: '替換圖片' },
     'cp.media.optimize':    { en: 'AI optimize',                      zh: 'AI 優化' },
+    'cp.media.undo':        { en: 'Back to the original',             zh: '還原成優化前' },
     'cp.media.remove':      { en: 'Remove image',                     zh: '刪除圖片' },
     'cp.name':              { en: 'Product name',                     zh: '商品名稱' },
     'cp.name.ph':           { en: 'e.g., Summer Tour Hoodie',         zh: '例：Summer Tour Hoodie' },
@@ -6735,6 +6758,9 @@
        金額欄表頭 relabelAmount() 直接組 'fin.type.' + state.type，缺鍵會印出原始鍵名。 */
     'fin.type.goods':         { en: 'Merch income', zh: '商品收益' },
     'fin.type.ticket':        { en: 'Ticket income', zh: '門票收益' },
+    /* 2026-08-09 D181：第八型收益。使用者裁示「在 earning 中也做貼文，帶貨收益就放在這裡」
+       ——貼文的成效（瀏覽、互動、內容租借次數）在粉絲分析，錢只在這一頁出現。 */
+    'fin.type.affiliate':     { en: 'Post affiliate', zh: '貼文帶貨收益' },
     /* fin.soon.* 保留：earnings-sony 的「即將推出」條已移除，鍵先留著供日後其他頁沿用 */
     'fin.soon':               { en: 'Coming soon', zh: '即將推出' },
     'fin.soon.music':         { en: 'Music royalties', zh: '音樂版稅收益' },
@@ -6824,6 +6850,7 @@
     /* 2026-07-27 新增：「如何運作」彈窗的商品／門票收益說明 */
     'fin.how.goods':          { en: 'Your share of merchandise sold through your storefront — physical goods and digital items alike, settled after fulfilment and the refund window closes.', zh: '您的電子商店售出商品分得的收益，實體商品與數位商品皆適用；於出貨完成、退款期結束後結算入帳。' },
     'fin.how.ticket':         { en: 'Box-office takings from events you host, net of platform and payment fees; released after the event date once no-show and refund claims are settled.', zh: '您舉辦的活動售票所得，扣除平台與金流手續費；待活動結束、未到場與退票爭議處理完成後撥付。' },
+    'fin.how.affiliate':      { en: 'Your cut when someone rents one of your titles through a link in a post you wrote. The post’s views and interactions live in Fan analytics; the money lands here. Revenue share, settlement cycle and how it interacts with platform fees are still being decided.', zh: '有人透過你寫的貼文裡的連結租借你的作品時，你分到的那一份。貼文的瀏覽與互動在粉絲分析頁，錢在這一頁。分潤比例、結算週期與平台費率的關係仍待確認。' },
 
     /* ─── 登入（login.html · spec 5.1.10 · D170）────────────────────
        標題不重複「Creator Studio」四個字（品牌角標已經寫在畫面左上角）；
@@ -6879,6 +6906,140 @@
     /* F6 註冊入口：2026-08-04 使用者裁示整段移除，原型任何版本都沒有這個入口，
        login.signup.q／login.signup.cta 兩個 key 一併刪除（無其他消費者） */
     /* 原型旁白：說明哪個輸入會走哪條分支，不是產品文案（見 ASSUMPTIONS UIA-105） */
+
+    /* ─── Fan analytics（粉絲分析 · audience-report.html，spec 5.1.7.9 / D181）───
+       與 aud.* 那組（fan-analytics.html＝粉絲分析：含外部）是兩頁，前綴刻意分開：
+       ar.* 講「作品被消費了多少次、消費者是誰」，用 ztor 現在拿得到的資料；
+       aud.* 講「跨外部平台的受眾規模與轉換」，資料拿不到、該頁封存中。
+
+       單位是這一頁的骨幹（D181）：次數與人數不可互相加總，所以每個數字後面
+       都掛一個 ar.unit.*，不靠讀者自己猜「38,600」是次還是人。 */
+    'ar.crumb.self':      { en: 'Fan analytics',  zh: '粉絲分析' },
+    'ar.h1':              { en: 'Who is actually watching', zh: '看你作品的是哪些人' },
+    'ar.sub':             { en: 'How often your work gets played, and who the people behind those plays are — limited to what Ztor can actually see today.', zh: '你的作品被播放了多少次，以及這些次數背後是哪些人。範圍限於 ztor 目前真的拿得到的資料。' },
+    'ar.export':          { en: 'Export report',  zh: '匯出報表' },
+    'ar.export.toast':    { en: 'Export queued — file format still being decided', zh: '已排入匯出，檔案格式仍在確認中' },
+
+    'ar.tab.film':        { en: 'Film & TV', zh: '影視' },
+    'ar.tab.music':       { en: 'Music',     zh: '音樂' },
+    'ar.tab.post':        { en: 'Posts',     zh: '貼文' },
+
+    'ar.period.m':        { en: 'Month',   zh: '月' },
+    'ar.period.q':        { en: 'Quarter', zh: '季' },
+    'ar.period.y':        { en: 'Year',    zh: '年' },
+
+    /* 兩種時點分開寫：發行商報表有延遲，站內統計沒有。寫成同一句會讓創作者
+       以為影視的數字跟貼文一樣新，那是不對的。 */
+    'ar.asof.works':      { en: 'Data through {date}. Distributors deliver these reports periodically — some sources lag about a quarter — so this is not live data.', zh: '資料截至 {date}。這些報表由發行商定期提供，部分來源約延遲一季，並非即時數據。' },
+    'ar.asof.post':       { en: 'Data through {date}. Post figures are Ztor’s own statistics and update daily.', zh: '資料截至 {date}。貼文數字是 ztor 站內統計，每日更新。' },
+
+    'ar.unit.views':      { en: 'views',   zh: '次' },
+    'ar.unit.streams':    { en: 'streams', zh: '次' },
+    'ar.unit.people':     { en: 'people',  zh: '人' },
+    'ar.unit.times':      { en: 'times',   zh: '次' },
+    'ar.unit.posts':      { en: 'posts',   zh: '篇' },
+
+    'ar.kpi.views':            { en: 'Total views',   zh: '總觀看次數' },
+    'ar.kpi.streams':          { en: 'Total streams', zh: '總串流次數' },
+    'ar.kpi.counts-meta':      { en: 'Counts, not people — one person watching twice counts twice', zh: '算次數不算人，同一個人看兩次算兩次' },
+    'ar.kpi.reach':            { en: 'People reached', zh: '觸及人數' },
+    'ar.kpi.reach-meta':       { en: 'Deduplicated across platforms', zh: '跨平台去重後的人數' },
+    'ar.kpi.identified':       { en: 'Identified on Ztor', zh: '站上認得出身分' },
+    'ar.kpi.identified-meta':  { en: '{ratio} of everyone reached — the only group whose attributes we know', zh: '佔觸及人數 {ratio}，只有這一群知道他們的屬性' },
+
+    'ar.kpi.pviews':           { en: 'Total post views', zh: '總瀏覽量' },
+    'ar.kpi.pviews-meta':      { en: 'Times your posts were loaded', zh: '貼文被載入的次數' },
+    'ar.kpi.rentals':          { en: 'Content rentals', zh: '內容租借成交' },
+    'ar.kpi.rentals-meta':     { en: 'Closed through a post’s own link', zh: '透過貼文專屬連結成交' },
+    'ar.kpi.pcount':           { en: 'Posts published', zh: '發布貼文' },
+    'ar.kpi.pcount-meta':      { en: 'In the selected period', zh: '所選期間內' },
+
+    'ar.top.film':        { en: 'Best-performing titles', zh: '表現最佳影片' },
+    'ar.top.music':       { en: 'Best-performing tracks', zh: '表現最佳歌曲' },
+    'ar.top.post':        { en: 'Best-performing posts',  zh: '表現最佳貼文' },
+    'ar.top.count':       { en: 'Showing {shown} of {total}', zh: '顯示 {shown} 件，共 {total} 件' },
+    'ar.regions':         { en: 'By region',     zh: '地區表現' },
+    'ar.platforms':       { en: 'By platform',   zh: '平台表現' },
+
+    /* 涵蓋率是硬規格（5.1.7.9）：不寫這一句，54.2% 會被讀成全體觀眾的性別比。 */
+    'ar.attr.h':          { en: 'Who they are', zh: '他們是誰' },
+    'ar.attr.coverage':   { en: 'Based on the {identified} people we can identify on Ztor — {ratio} of the {reach} reached. External platforms return totals only, so the rest have no attributes attached.', zh: '以站上認得出身分的 {identified} 人為分母，佔觸及的 {reach} 人中的 {ratio}。外部平台只回傳彙總數字，其餘的人沒有屬性可對應。' },
+    'ar.attr.gender':     { en: 'Gender',        zh: '性別' },
+    'ar.attr.zodiac':     { en: 'Star sign',     zh: '星座' },
+    'ar.attr.mbti':       { en: 'MBTI',          zh: 'MBTI' },
+    'ar.attr.shengxiao':  { en: 'Chinese zodiac',zh: '生肖' },
+
+    'ar.gender.f':        { en: 'Female', zh: '女' },
+    'ar.gender.m':        { en: 'Male',   zh: '男' },
+    'ar.gender.x':        { en: 'Other',  zh: '其他' },
+
+    'ar.zo.aries':        { en: 'Aries',       zh: '牡羊座' },
+    'ar.zo.taurus':       { en: 'Taurus',      zh: '金牛座' },
+    'ar.zo.gemini':       { en: 'Gemini',      zh: '雙子座' },
+    'ar.zo.cancer':       { en: 'Cancer',      zh: '巨蟹座' },
+    'ar.zo.leo':          { en: 'Leo',         zh: '獅子座' },
+    'ar.zo.virgo':        { en: 'Virgo',       zh: '處女座' },
+    'ar.zo.libra':        { en: 'Libra',       zh: '天秤座' },
+    'ar.zo.scorpio':      { en: 'Scorpio',     zh: '天蠍座' },
+    'ar.zo.sagittarius':  { en: 'Sagittarius', zh: '射手座' },
+    'ar.zo.capricorn':    { en: 'Capricorn',   zh: '摩羯座' },
+    'ar.zo.aquarius':     { en: 'Aquarius',    zh: '水瓶座' },
+    'ar.zo.pisces':       { en: 'Pisces',      zh: '雙魚座' },
+
+    'ar.mb.INFP': { en: 'INFP', zh: 'INFP' }, 'ar.mb.ENFP': { en: 'ENFP', zh: 'ENFP' },
+    'ar.mb.INFJ': { en: 'INFJ', zh: 'INFJ' }, 'ar.mb.ENFJ': { en: 'ENFJ', zh: 'ENFJ' },
+    'ar.mb.INTJ': { en: 'INTJ', zh: 'INTJ' }, 'ar.mb.ENTJ': { en: 'ENTJ', zh: 'ENTJ' },
+    'ar.mb.INTP': { en: 'INTP', zh: 'INTP' }, 'ar.mb.ENTP': { en: 'ENTP', zh: 'ENTP' },
+    'ar.mb.ISFP': { en: 'ISFP', zh: 'ISFP' }, 'ar.mb.ESFP': { en: 'ESFP', zh: 'ESFP' },
+    'ar.mb.ISFJ': { en: 'ISFJ', zh: 'ISFJ' }, 'ar.mb.ESFJ': { en: 'ESFJ', zh: 'ESFJ' },
+    'ar.mb.ISTP': { en: 'ISTP', zh: 'ISTP' }, 'ar.mb.ESTP': { en: 'ESTP', zh: 'ESTP' },
+    'ar.mb.ISTJ': { en: 'ISTJ', zh: 'ISTJ' }, 'ar.mb.ESTJ': { en: 'ESTJ', zh: 'ESTJ' },
+
+    'ar.sx.rat':      { en: 'Rat',     zh: '屬鼠' },
+    'ar.sx.ox':       { en: 'Ox',      zh: '屬牛' },
+    'ar.sx.tiger':    { en: 'Tiger',   zh: '屬虎' },
+    'ar.sx.rabbit':   { en: 'Rabbit',  zh: '屬兔' },
+    'ar.sx.dragon':   { en: 'Dragon',  zh: '屬龍' },
+    'ar.sx.snake':    { en: 'Snake',   zh: '屬蛇' },
+    'ar.sx.horse':    { en: 'Horse',   zh: '屬馬' },
+    'ar.sx.goat':     { en: 'Goat',    zh: '屬羊' },
+    'ar.sx.monkey':   { en: 'Monkey',  zh: '屬猴' },
+    'ar.sx.rooster':  { en: 'Rooster', zh: '屬雞' },
+    'ar.sx.dog':      { en: 'Dog',     zh: '屬狗' },
+    'ar.sx.pig':      { en: 'Pig',     zh: '屬豬' },
+
+    /* 帶貨收益不在本頁（D181）——講清楚它在哪裡，而不是讓人以為漏做了。 */
+    'ar.affiliate.note':  { en: 'Money earned through these posts is settled in Earnings, not here.', zh: '透過這些貼文賺到的錢在收入管理結算，不在本頁。' },
+    'ar.affiliate.link':  { en: 'Open Earnings', zh: '前往收入管理' },
+
+    'ar.pt.image':        { en: 'Image + text', zh: '圖文' },
+    'ar.pt.video':        { en: 'Video',        zh: '影片' },
+    'ar.pt.text':         { en: 'Text only',    zh: '文字' },
+    'ar.pt.k.review':     { en: 'Film review',  zh: '影評' },
+
+    'ar.ptype.h':          { en: 'By post format', zh: '貼文類型表現' },
+    'ar.ptype.type':       { en: 'Format',   zh: '類型' },
+    'ar.ptype.count':      { en: 'Posts',    zh: '貼文數' },
+    'ar.ptype.withrental': { en: 'With rentals', zh: '有帶貨' },
+    'ar.ptype.mentions':   { en: 'Mentions a title', zh: '提及影片' },
+    'ar.ptype.kind':       { en: 'Title type', zh: '影片類型' },
+    'ar.ptype.views':      { en: 'Views',    zh: '瀏覽量' },
+    'ar.ptype.note':       { en: 'Totalled from the post report below.', zh: '由下方貼文報告明細彙總。' },
+
+    'ar.detail.h':        { en: 'Post report', zh: '貼文報告明細' },
+    'ar.detail.title':    { en: 'Post',        zh: '貼文標題' },
+    'ar.detail.mention':  { en: 'Mentions',    zh: '提及內容' },
+    'ar.detail.date':     { en: 'Published',   zh: '建立日期' },
+    'ar.detail.type':     { en: 'Format',      zh: '貼文形式' },
+    'ar.detail.views':    { en: 'Views',       zh: '曝光次數' },
+    'ar.detail.dwell':    { en: 'Over 3s',     zh: '觀看多於 3 秒' },
+    'ar.detail.eng':      { en: 'Interactions',zh: '互動次數' },
+    'ar.detail.rate':     { en: 'Interaction rate', zh: '互動率' },
+    'ar.detail.rentals':  { en: 'Rentals',     zh: '內容租借次數' },
+    'ar.detail.note':     { en: 'Interaction rate is interactions divided by views.', zh: '互動率＝互動次數 ÷ 曝光次數。' },
+
+    'ar.empty.title':     { en: 'No performance data yet', zh: '還沒有表現資料' },
+    'ar.empty.text':      { en: 'Distributor reports for this content type haven’t arrived. Nothing to show until they do.', zh: '這個內容類型的發行商報表尚未進來，資料到齊前沒有內容可顯示。' },
   };
 
   /* ── PERSONA_DICT：persona 專屬內容覆蓋層 ───────────────────────

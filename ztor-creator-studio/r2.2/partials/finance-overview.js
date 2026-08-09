@@ -132,10 +132,14 @@
     other: []
   };
   var CAT_TYPES = { event: ['ticket'], merch: ['goods'] };
+  /* 帶貨收益不綁 cat：它來自創作者寫的貼文，而貼文談的是自己的影音作品，
+     所以掛在 film／music 兩個 family 上，跟著被提及的作品走。 */
+  var AFFILIATE_FAMILIES = ['film', 'music'];
   function typesFor(p) {
     var t = (FAMILY_TYPES[p.family] || []).slice();
     (CAT_TYPES[p.cat] || []).forEach(function (x) { if (t.indexOf(x) < 0) t.push(x); });
     if (p.type === 'fund' && t.indexOf('cocreate') < 0) t.unshift('cocreate');
+    if (AFFILIATE_FAMILIES.indexOf(p.family) >= 0) t.push('affiliate');
     return t.join(' ');
   }
   /* 金額改依類別給合理量級（原本綁在 SLOTS 上，列數一變就沒得取）。示意值，非真實數據。 */
@@ -381,8 +385,10 @@
        └─ 明細：同一個總額按來源拆分，加總 == 總額
      兩種拆法都回到同一個總額，所以「表格總和／滑過的數字／明細合計」不可能互相打架。
      ════════════════════════════════════════════════════════════ */
-  var TYPES = ['cocreate', 'ott', 'music', 'commission', 'licence', 'goods', 'ticket'];
-  var TYPE_SERIES = { cocreate: 1, ott: 2, commission: 3, music: 4, licence: 5, goods: 6, ticket: 7 };
+  /* 2026-08-09 D181：新增第八型「貼文帶貨收益」。使用者裁示貼文的成效看粉絲分析、
+     錢看這裡，所以帶貨的金額只在本頁出現一次，粉絲分析那頁完全不放金額。 */
+  var TYPES = ['cocreate', 'ott', 'music', 'commission', 'licence', 'goods', 'ticket', 'affiliate'];
+  var TYPE_SERIES = { cocreate: 1, ott: 2, commission: 3, music: 4, licence: 5, goods: 6, ticket: 7, affiliate: 8 };
 
   /* 決定性亂數：示意數字必須每次重新整理都一樣，否則簡報時數字會自己跳。 */
   function hashStr(str) {

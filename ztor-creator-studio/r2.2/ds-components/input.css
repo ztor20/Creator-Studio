@@ -60,13 +60,20 @@
 }
 .control-prefix__icon .ztor-icon { width: 15px; height: 15px; }
 
-/* disabled — 建立後固定不可編輯（D137）等鎖定欄位的唯讀呈現：靜音底、不可操作游標，
-   仍顯示目前值（如商品細節頁鎖定的主分類 disabled select）。 */
+/* disabled — 建立後固定不可編輯（D137）等鎖定欄位的唯讀呈現：仍顯示目前值
+   （如商品細節頁鎖定的主分類 disabled select），但明顯不是等你填的那一格。
+
+   2026-08-09 使用者裁示「整個元件庫只能有一個 disabled 樣子」：原本是 `--muted` 填底
+   ＋`--foreground-muted` 字＋`opacity:.75`，那組值在卡片上會變成一塊比卡片還深的方塊，
+   讀起來像「這裡壞了」；而建立活動的來源鎖定欄位當天已改成透明底，站上因此出現兩種
+   disabled。統一成透明底這一種——欄位直接吃它所坐的那個面（卡片、彈窗、頁面通用），
+   只留 1px 邊界標示範圍，值吃 `--locked-field-ink`（全站最輕的墨色，深色更深、亮色更淡）。
+   `opacity` 拿掉：對比改由顏色明確控制，不再是兩層透明度相乘的結果。 */
 .input:disabled, .textarea:disabled, .select:disabled {
-  background: var(--muted);
-  color: var(--foreground-muted);
+  background: transparent;
+  color: var(--locked-field-ink);
   cursor: not-allowed;
-  opacity: 0.75;
+  opacity: 1;
 }
 
 /* Native <select> styled to match the design system: drop the OS arrow and

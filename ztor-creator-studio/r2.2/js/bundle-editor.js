@@ -654,7 +654,7 @@
       var coverField = !COVER ? '' :
         '<div class="field">' +
           '<div class="field__label">' + esc(T('cpp.bd.cover')) + '</div>' +
-          '<div class="upload-assets">' +
+          '<div class="upload-assets upload-assets--fill">' +
             '<div class="upload-tile upload-tile--portrait' + (b.cover ? ' is-filled' : '') +
                 '" data-bd-cover data-asset="bdcover-' + b.id + '" data-upload>' +
               '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +

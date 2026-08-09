@@ -11,6 +11,7 @@
    Anatomy:
      .switch                  (off · neutral track)
      .switch.switch--on       (on  · orange track, knob shifted right)
+     .switch--locked          (source/compliance-locked · dimmed, no pointer)
 
    The element is typically a `<div>` or `<button>` styled as a
    toggle; pair with `role="switch" aria-checked="true|false"`
@@ -57,4 +58,16 @@
 [data-theme="dark"] .switch::after,
 [data-theme="dark"] .switch--on::after {
   background: var(--foreground);
+}
+
+/* 鎖定態（2026-08-09 從 notification-matrix.css 上收）：原本只長在通知矩陣那份檔裡，
+   結果沒連那支 CSS 的頁面（如 tier-settings.html）掛了 .switch--locked 卻吃不到任何視覺、
+   只剩 JS 擋點擊；create-event.html 的「發布後直接開賣」開關（bookyay 帶入時鎖住）是第三個
+   要用同一套鎖定樣式的消費頁，再借一次同樣的路只會多錯一次。既然三個消費頁都已經連了
+   switch.css（本檔），鎖定態本來就該定義在這裡——搬過來後，原本連 notification-matrix.css
+   的頁（settings.html）與只連 switch.css 的頁（tier-settings.html、create-event.html）
+   都吃得到同一套，不必為了借兩行樣式多連一支不相干的元件檔。 */
+.switch--locked {
+  cursor: not-allowed;
+  opacity: .65;
 }

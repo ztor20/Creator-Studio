@@ -17,6 +17,9 @@
 //  2) 格內已有 <img class="upload-tile__thumb" src="…">  — 沿用該節點，不再另建一張（否則兩張縮圖疊著）
 //  3) 頁面 JS 稍後才填 src（如 product-detail 依 ?id 帶圖）— HTML 先給 .is-filled，本檔沿用該狀態
 // detail.key 取用順序：data-upload-key → data-cp-asset（create-product 既有命名）。
+//
+// 容器層行為（opt-in，見檔尾 initReveal）：
+//  · data-upload-reveal — 逐格顯示，一次只露出一個空格，填滿才長出下一格。
 (function () {
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb; }
   function el(tag, cls, html) { var n = document.createElement(tag); n.className = cls; if (html != null) n.innerHTML = html; return n; }
@@ -66,9 +69,12 @@
         act('data-upload-remove',  'cp.cfile.remove',  'Remove',  '<i data-lucide="trash-2" class="ztor-icon"></i>');
     } else {
       // 站上標準＝替換／刪除兩顆；AI 優化是 opt-in 的第三顆（data-upload-ai）。
+      /* 優化前後可來回：優化完成後第三顆換成「還原」（2026-08-09 使用者指示），
+         按下回到剛上傳的那一版。兩顆互斥、由 CSS 依狀態顯隱（見 --ai / --undo）。 */
       actions.innerHTML =
         act('data-upload-replace', 'cp.media.replace', 'Replace image', '<i data-lucide="refresh-cw" class="ztor-icon"></i>') +
         (ai ? act('data-upload-optimize', 'cp.media.optimize', 'AI optimize', '<i data-lucide="sparkles" class="ztor-icon"></i>', 'upload-tile__act--ai') : '') +
+        (ai ? act('data-upload-undo', 'cp.media.undo', 'Undo optimize', '<i data-lucide="rotate-ccw" class="ztor-icon"></i>', 'upload-tile__act--undo') : '') +
         act('data-upload-remove',  'cp.media.remove',  'Remove image',  '<i data-lucide="trash-2" class="ztor-icon"></i>');
     }
 
@@ -190,7 +196,13 @@
     }
     function optimize() {
       setState('is-optimizing'); statusEl.textContent = T('cp.media.optimizing', 'Optimizing…');
-      clearTimeout(timer); timer = setTimeout(function () { setState('is-optimized'); emit(); refocusAfter('[data-upload-optimize]'); }, 1200);
+      clearTimeout(timer); timer = setTimeout(function () { setState('is-optimized'); emit(); refocusAfter('[data-upload-undo]'); }, 1200);
+    }
+    /* 還原＝回到剛上傳的那一版（2026-08-09 使用者指示：優化是可以反悔的）。
+       原型的優化本來就沒有真的改動圖檔（ASSUMPTIONS UIA-037），所以還原只需切回狀態；
+       真實實作要保留優化前的原檔才能回得去。 */
+    function undoOptimize() {
+      clearTimeout(timer); setState('is-filled'); emit(); refocusAfter('[data-upload-optimize]');
     }
     function togglePlay() {
       if (!media) return;
@@ -247,10 +259,35 @@
     if (playBtn) playBtn.addEventListener('click', function (e) { e.stopPropagation(); togglePlay(); });
     actions.querySelector('[data-upload-replace]').addEventListener('click', function (e) { e.stopPropagation(); pickAccept(); input.click(); });
     var aiBtn = actions.querySelector('[data-upload-optimize]'); if (aiBtn) aiBtn.addEventListener('click', function (e) { e.stopPropagation(); optimize(); });
+    var undoBtn = actions.querySelector('[data-upload-undo]'); if (undoBtn) undoBtn.addEventListener('click', function (e) { e.stopPropagation(); undoOptimize(); });
     actions.querySelector('[data-upload-remove]').addEventListener('click', function (e) { e.stopPropagation(); remove(); });
   }
 
-  function init() { document.querySelectorAll('.upload-tile[data-upload]').forEach(enhance); }
+  /* ---- 逐格顯示（容器加 data-upload-reveal）------------------------------------
+     一次只露出一個空格：填滿目前這個，下一個才出現；把中間某一格清空，後面的空格
+     就縮回去。用在「張數有上限、格子預先寫死在 HTML」的素材列（建立商品的主圖＋附圖）。
+     與 publish-work 劇照那種「張數不設限、末格填滿就 append 一格」互補：那邊是長格子，
+     這邊是既有格子的顯隱，所以要保留每一格自己的 data-cp-asset 與 data-upload-ai。
+     沒有這個屬性的容器完全不受影響（純 opt-in）。 */
+  function initReveal(box) {
+    if (box.__uploadRevealReady) return; box.__uploadRevealReady = true;
+    var tiles = [].slice.call(box.querySelectorAll('.upload-tile[data-upload]'));
+    function sync() {
+      var slotUsed = false;   // 這一輪的「下一個空格」是否已經指派出去
+      tiles.forEach(function (t) {
+        if (!t.classList.contains('is-empty')) { t.hidden = false; return; }
+        t.hidden = slotUsed;
+        if (!slotUsed) slotUsed = true;
+      });
+    }
+    box.addEventListener('upload:change', sync);
+    sync();
+  }
+
+  function init() {
+    document.querySelectorAll('.upload-tile[data-upload]').forEach(enhance);
+    document.querySelectorAll('[data-upload-reveal]').forEach(initReveal);
+  }
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
-  window.ztorUploadTile = { enhance: enhance, init: init };
+  window.ztorUploadTile = { enhance: enhance, init: init, initReveal: initReveal };
 })();
