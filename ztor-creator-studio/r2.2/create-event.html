@@ -150,7 +150,10 @@
   .ce-tiergroup > .tier-grid { margin-bottom: 0; }
   /* 場次標題（2026-08-10 使用者指示）：大一階並拉開與門票的距離——它是這一盒的主人，
      和卡片黏太近會讀成卡片的一部分。 */
-  .ce-tiergroup__head { font-size: var(--fs-14); color: var(--foreground-muted); margin-bottom: var(--sp-16); }
+  /* 場次標題改吃 DS 既有的 .card__title（2026-08-10 使用者指示要大一點、要白）：
+     它是站上「一個框的標題」的既有答案（display 字體／18px／--foreground），
+     不為了這一處另造第四種標題字級。本頁只留與門票的距離。 */
+  .ce-tiergroup__head { margin-bottom: var(--sp-16); }
 </style>
 </head>
 <body>
@@ -217,15 +220,15 @@
       </div>
       <!-- 進度條：中欄、內容寬（id 沿用 stepper 供切步 JS 找到）-->
       <div class="wizard__progress">
-        <div class="progress-stepper" id="stepper" style="--progress:20%">
+        <div class="progress-stepper progress-stepper--segmented" id="stepper" style="--progress:0%">
           <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
           <div class="progress-stepper__labels">
-            <span class="progress-stepper__label progress-stepper__label--current" data-step="2" data-di="d.step.basic">基本資料</span>
-            <span class="progress-stepper__label" data-step="3" data-di="d.step.session">場次</span>
-            <span class="progress-stepper__label" data-step="4" data-di="d.step.types">票種</span>
-            <span class="progress-stepper__label" data-step="5" data-di="d.step.tix">票務</span>
-            <span class="progress-stepper__label" data-step="6" data-di="d.step.publish">發布設定</span>
-            <span class="progress-stepper__label" data-step="7" data-i18n="ce.step.review">Review</span>
+            <span class="progress-stepper__label progress-stepper__label--current" data-step="2"><span data-di="d.step.basic">基本資料</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="3"><span data-di="d.step.session">場次</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="4"><span data-di="d.step.types">票種</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="5"><span data-di="d.step.tix">票務</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="6"><span data-di="d.step.publish">發布設定</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="7"><span data-i18n="ce.step.review">Review</span><span class="progress-stepper__state" data-step-state></span></span>
           </div>
         </div>
       </div>
@@ -1211,7 +1214,24 @@
     /* 進度用「還看得到幾格」算：跳掉的格子不佔位，否則走到最後一步進度條也填不滿。 */
     const shown = Array.from(labels).filter(l => !skipped(Number(l.dataset.step)));
     const at = shown.findIndex(l => Number(l.dataset.step) === step) + 1;
-    if (ps) ps.style.setProperty("--progress", (at / (shown.length || 1) * 100) + "%");
+    if (ps) {
+      /* 分段軌道（2026-08-10）：一步一段，縫的位置＝步驟分界。實色填的是**已完成**的段
+         （不含現在這一步——它還沒做完，下面的狀態小字也寫「未完成」，兩邊不能互相打架）；
+         正在走的那一段由元件用 --at 畫成淡色。 */
+      ps.style.setProperty("--steps", shown.length || 1);
+      ps.style.setProperty("--at", at || 1);
+      ps.style.setProperty("--progress", ((at - 1) / (shown.length || 1) * 100) + "%");
+    }
+    /* 每一步下方的狀態小字：走過的打勾說已完成，其餘寫未完成。 */
+    labels.forEach(l => {
+      const box = l.querySelector("[data-step-state]");
+      if (!box) return;
+      const done = Number(l.dataset.step) < step;
+      box.innerHTML = done
+        ? '<i data-lucide="check" class="ztor-icon"></i>' + esc(dT("d.step.done"))
+        : esc(dT("d.step.todo"));
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(ps);
     /* 2026-08-09（使用者指示）：預覽卡從覆蓋面板搬成每一步常駐右軌，2～6 步都放寬到
        --mid（1140）才容得下右軌；只有 Review（7）維持 820 單欄——它本身已是整份摘要，
        旁邊再放一張預覽卡是同一件事講兩次。 */
@@ -2129,7 +2149,7 @@
          看不出哪幾張屬於同一場。用既有的 .control-group（外框＋圓角），--plain 是
          「整塊就是內容、沒有開關列與揭示區兩段」的變體。 */
       '<div class="ce-tiergroup control-group control-group--plain">' +
-        (many ? '<div class="ce-tiergroup__head">' + esc(sessionLabel(ss, i)) +
+        (many ? '<div class="ce-tiergroup__head card__title">' + esc(sessionLabel(ss, i)) +
           esc(ss.date ? " · " + ss.date.replace(/-/g, "/") : "") + '</div>' : "") +
         /* 末格＝這一場自己補一張（2026-08-09 使用者指示，沿用舊流程的虛線新增格）。
            場次由格子所在的那一組決定，所以彈窗裡只問票種。
@@ -2899,8 +2919,11 @@
      [4, isWP() ? "d.step.wp.ticket" : "d.step.types"]].forEach(([n, key]) => {
       const el = document.querySelector('.progress-stepper__label[data-step="' + n + '"]');
       if (!el) return;
-      el.dataset.di = key;
-      el.textContent = dT(key);
+      /* 只換步驟名那一層（2026-08-10 修）：標籤現在還裝著下方的狀態小字，
+         直接寫 el.textContent 會把它一起洗掉，那兩步就永遠沒有已完成／未完成。 */
+      const nameEl = el.querySelector("[data-di], [data-i18n]") || el;
+      nameEl.dataset.di = key;
+      nameEl.textContent = dT(key);
     });
   }
 
@@ -3100,6 +3123,8 @@
      以下全部是 demo 用的假資料與假行為，不是產品規格。 ---------------------- */
 
   const D = {
+    "d.step.done":    { en: "Done",     zh: "已完成" },
+    "d.step.todo":    { en: "Not done", zh: "未完成" },
     "d.step.basic":   { en: "Basics",            zh: "基本資料" },
     "d.att":          { en: "Total attendance",  zh: "活動總人數" },
     "d.step.session": { en: "Dates",             zh: "場次" },

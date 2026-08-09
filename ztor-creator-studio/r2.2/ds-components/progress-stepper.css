@@ -16,7 +16,9 @@
 
 .progress-stepper__track {
   position: relative;
-  height: 6px;
+  /* 2026-08-10 使用者指示「進度條可以細一點」：6 → 3px。它是背景資訊，
+     旁邊已經有步驟名稱與狀態小字在說同一件事，不需要那麼粗。 */
+  height: 3px;
   border-radius: var(--radius-pill);
   background: var(--muted);
   overflow: hidden;
@@ -29,6 +31,31 @@
   border-radius: var(--radius-pill);
   background: var(--gradient-brand);
   transition: width .35s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ── 分段軌道（--segmented，2026-08-10）──────────────────────────────────
+   使用者反饋「進度條斷點的位置好像可以有更好的位置」。原本是一條連續的長條，
+   填到 40% 這種位置在畫面上不對應任何東西——讀者看不出那一格是哪一步。
+   改成一步一段：段與段之間留縫，縫的位置就是步驟的分界，填滿幾段＝完成幾步。
+
+   用法：容器加 `--segmented`，並設 `--steps`（看得到幾步）與 `--at`（現在第幾步，1 起算）。
+   `--progress` 仍是已完成的比例，由消費頁算好（跳過的步驟不佔位）。
+   沒加這個修飾類的消費頁（create-project／register-ip／publish-work…）行為完全不變。 */
+.progress-stepper--segmented .progress-stepper__track {
+  --seg: calc(100% / var(--steps, 1));
+  --seg-gap: 3px;
+  -webkit-mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(var(--seg) - var(--seg-gap)), transparent calc(var(--seg) - var(--seg-gap)), transparent var(--seg));
+  mask-image: repeating-linear-gradient(90deg, #000 0, #000 calc(var(--seg) - var(--seg-gap)), transparent calc(var(--seg) - var(--seg-gap)), transparent var(--seg));
+}
+/* 正在走的那一段：淡色底。實色＝已完成、淡色＝你在這裡、空的＝還沒到，
+   三種狀態在同一條軌道上分得開，不用再看文字。 */
+.progress-stepper--segmented .progress-stepper__track::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: calc(var(--seg) * (var(--at, 1) - 1));
+  width: var(--seg);
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
 }
 
 .progress-stepper__labels {
@@ -45,7 +72,41 @@
   color: var(--muted-foreground);
   white-space: nowrap;
   cursor: default;
+  /* 2026-08-10 使用者指示「這些步驟選擇應該要有 hover 效果」：標籤自己就是點擊區，
+     所以要有可點的量體——內距把命中區撐開，圓角與 hover 底色沿用站上互動元素的既有配方
+     （Q9：互動 hover 一律 --accent）。不可點的未來步驟不給 hover，免得看起來能按。 */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-8);
+  margin: calc(var(--sp-4) * -1) calc(var(--sp-8) * -1);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration) var(--easing), color var(--duration) var(--easing);
 }
+/* 標籤現在是 display:flex（撐開命中區用），會蓋掉 UA 的 [hidden]{display:none}——
+   被跳過的步驟（共看派對的票務、免票入場的票種）要真的收起來，得顯式還原。 */
+.progress-stepper__label[hidden] { display: none; }
+
+.progress-stepper__label--done:hover,
+.progress-stepper__label--current:hover { background: var(--accent); }
+.progress-stepper__label--done:focus-visible,
+.progress-stepper__label--current:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* 每一步下方的狀態小字（選配子元素，2026-08-10）：已完成打勾、未完成留白字。
+   有了它，進度就不只靠一條軌道的長度表達——哪一步做完了可以直接讀。
+   消費頁自行決定要不要放這一段，沒放的頁面版面不變。 */
+.progress-stepper__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--fs-11);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-foreground);
+  font-weight: var(--fw-regular);
+}
+.progress-stepper__state .ztor-icon { width: 12px; height: 12px; }
+.progress-stepper__label--done .progress-stepper__state { color: var(--status-success-ink); }
 
 /* 已完成步驟：可回點 */
 .progress-stepper__label--done {
@@ -60,8 +121,8 @@
 }
 
 /* 第一與最後一個標籤貼齊兩端，中間自然分布 */
-.progress-stepper__label:first-child { text-align: left; }
-.progress-stepper__label:last-child  { text-align: right; }
+.progress-stepper__label:first-child { align-items: flex-start; margin-left: 0; }
+.progress-stepper__label:last-child  { align-items: flex-end; margin-right: 0; }
 
 /* 窄螢幕：標籤縮小、軌道加高一點維持可見 */
 @media (max-width: 720px) {
