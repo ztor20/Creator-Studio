@@ -68,8 +68,24 @@
 </head>
 <body>
 <div class="wizard">
-  <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中欄空（無 stepper）；右＝自動儲存＋預覽。主動作（Start selling）仍在 footer；複製／刪除僅編輯既有商品時出現。 -->
-  <div class="wizard__sheet wizard__sheet--sectioned">
+  <!-- 商品類型閘門（2026-08-10 使用者指示，做法對齊建立活動／建立項目）：
+       整個建立流程從這裡開始，畫面只有兩張型別卡＋離開。選定後 JS 隱藏本閘門、顯示表單。
+       類型因此不再佔一個 section——要改類型走「商品資訊」標題列右側那顆切換鈕。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned wizard__gate" data-cp-gate>
+    <div class="wizard__gate-inner">
+      <h1 class="wizard__step-title" data-i18n="cp.gate.h1">What are you selling?</h1>
+      <p class="wizard__step-sub" data-i18n="cp.gate.sub">This decides which settings you'll see.</p>
+      <div class="segmented radio-cards radio-cards--gate" data-cp-gate-seg role="radiogroup" aria-label="Product type">
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cp-gate-type="physical"><i data-lucide="package" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.physical">Physical item</span><span class="radio-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span></span></button>
+        <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-cp-gate-type="digital"><i data-lucide="download" class="ztor-icon radio-card__lead" aria-hidden="true"></i><span class="radio-card__text"><span class="radio-card__title" data-i18n="cp.type.digital">Digital file</span><span class="radio-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span></span></button>
+      </div>
+      <div class="wizard__gate-foot">
+        <button class="btn btn--icon-circle wizard__gate-close" type="button" data-cp-gate-back data-i18n-aria-label="cp.gate.back" aria-label="Back"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wizard__sheet wizard__sheet--sectioned hidden" data-cp-sheet>
   <header class="wizard__top">
     <div class="wizard__top-bar">
       <div class="wizard__top-lead">
@@ -88,7 +104,7 @@
     </div>
   </header>
 
-  <div class="wizard__body wizard__body--form wizard__body--mid preview-split">
+  <div class="wizard__body wizard__body--form wizard__body--mid preview-split preview-split--narrow">
     <div class="preview-split__form">
 
     <!-- Media Vault 交棒（2026-07-29）：從庫房的「做成 NFC 商品」過來時，網址帶
@@ -113,76 +129,20 @@
     </script>
 
 
-    <!-- §3 商品類型：實體／數位 二選一，預設實體（拍賣已獨立為 create-auction.html，spec 5.1.5.2 v5.0 / D081）-->
-    <section class="form-section form-section--outlined">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.type.title">Product type</h3>
-        <p class="form-section__sub" data-i18n="cp.type.sub">Choose what you're selling.</p>
-      </div>
-      <div class="selection-grid" id="cp-type-grid">
-        <button class="selection-card selection-card--icon selection-card--active" data-cp-type="physical">
-          <span class="selection-card__ic"><i data-lucide="package" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="cp.type.physical">Physical item</span>
-          <span class="selection-card__sub" data-i18n="cp.type.physical-sub">Ships to the buyer</span>
-        </button>
-        <button class="selection-card selection-card--icon" data-cp-type="digital">
-          <span class="selection-card__ic"><i data-lucide="download" class="ztor-icon"></i></span>
-          <span class="selection-card__title" data-i18n="cp.type.digital">Digital file</span>
-          <span class="selection-card__sub" data-i18n="cp.type.digital-sub">Instant download after purchase</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- §4 ① 素材（Show it off）-->
-    <section class="form-section form-section--outlined" data-cp-show="physical digital">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.media.title">Show it off</h3>
-        <p class="form-section__sub" data-i18n="cp.media.sub">Buyers can't touch it. Your photos do that job.</p>
-      </div>
-
-      <!-- 2026-08-09（使用者裁決）：主圖大格＋附圖 2×2 的並排版改成「同尺寸單排、逐格出現」。
-           五格同尺寸（.upload-assets--fill：四格剛好撐滿一整列、第五格換行，寬度隨容器等比縮放），
-           一次只露出一個空格，填滿才長出下一格；主圖那格掛 __flag 標示身分（尺寸統一後，
-           靠標籤而不是靠大小分辨），標籤等圖進來才出現。
-           張數不變：主圖 1＋附圖 4（規格 5.1.5.2 F1）。尺寸與檔型兩句說明都收在格子裡、
-           hover 才浮現（同日第二輪使用者指示：這兩件事該寫在一起）。 -->
-      <div data-cp-show="physical">
-        <div class="upload-assets upload-assets--fill" data-upload-reveal>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-hero" data-upload data-upload-ai>
-            <span class="upload-tile__flag" data-i18n="cp.media.hero-flag">Hero</span>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
-            <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-            <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
-          </div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-        </div>
-      </div>
-
-      <!-- 數位 F1 素材：封面＊＋附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3。版面同上。 -->
-      <div data-cp-show="digital" hidden>
-        <div class="upload-assets upload-assets--fill" data-upload-reveal>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-cover" data-upload data-upload-ai>
-            <span class="upload-tile__flag" data-i18n="cp.media.cover-flag">Cover</span>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
-            <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
-            <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
-          </div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
-        </div>
-      </div>
-
-    </section>
-
     <!-- §4 ② 商品資訊（實體/數位）-->
     <section class="form-section form-section--outlined" data-cp-show="physical digital">
-      <div class="form-section__head">
-        <h3 class="form-section__title" data-i18n="cp.info.title">Product info</h3>
+      <!-- 類型切換鈕（2026-08-10 使用者指示，做法對齊建立活動）：類型在閘門選定，
+           流程裡只留這一顆把閘門叫回來重選。位置＝第一個 section 的標題列右端。 -->
+      <div class="form-section__head form-section__head--actions">
+        <div class="form-section__head-titles">
+          <h3 class="form-section__title" data-i18n="cp.info.title">Product info</h3>
+        </div>
+        <div class="form-section__head-actions">
+          <button type="button" class="btn btn--outline" id="cp-type-switch" data-i18n-aria-label="cp.type.switch" aria-label="Switch product type">
+            <i data-lucide="switch-horizontal" class="ztor-icon"></i>
+            <span id="cp-type-switch-label"></span>
+          </button>
+        </div>
       </div>
       <div class="field">
         <div class="field__label"><span data-i18n="cp.name">Product name</span> <span class="field__req">*</span></div>
@@ -232,6 +192,52 @@
         <div id="spec-rows"></div>
         <button class="btn btn--outline" id="cp-add-spec" style="align-self:flex-start;margin-top:var(--sp-4)"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cp.spec.add">Add spec</span></button>
       </div>
+    </section>
+
+    <!-- §4 ① 素材（Show it off）-->
+    <section class="form-section form-section--outlined" data-cp-show="physical digital">
+      <div class="form-section__head">
+        <h3 class="form-section__title" data-i18n="cp.media.title">Show it off</h3>
+        <p class="form-section__sub" data-i18n="cp.media.sub">Buyers can't touch it. Your photos do that job.</p>
+      </div>
+
+      <!-- 2026-08-09（使用者裁決）：主圖大格＋附圖 2×2 的並排版改成「同尺寸單排、逐格出現」。
+           五格同尺寸（.upload-assets--fill：四格剛好撐滿一整列、第五格換行，寬度隨容器等比縮放），
+           一次只露出一個空格，填滿才長出下一格；主圖那格掛 __flag 標示身分（尺寸統一後，
+           靠標籤而不是靠大小分辨），標籤等圖進來才出現。
+           張數不變：主圖 1＋附圖 4（規格 5.1.5.2 F1）。尺寸與檔型兩句說明都收在格子裡、
+           hover 才浮現（同日第二輪使用者指示：這兩件事該寫在一起）。 -->
+      <div data-cp-show="physical">
+        <div class="upload-assets upload-assets--fill" data-upload-reveal>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-hero" data-upload data-upload-ai>
+            <span class="upload-tile__flag" data-i18n="cp.media.hero-flag">Hero</span>
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+            <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+          </div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="p-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+        </div>
+      </div>
+
+      <!-- 數位 F1 素材：封面＊＋附圖（下載檔移到 F11 內容檔案）· spec §4.2 F1 v4.3。版面同上。 -->
+      <div data-cp-show="digital" hidden>
+        <div class="upload-assets upload-assets--fill" data-upload-reveal>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-cover" data-upload data-upload-ai>
+            <span class="upload-tile__flag" data-i18n="cp.media.cover-flag">Cover</span>
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+            <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+          </div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+          <div class="upload-tile upload-tile--portrait" data-cp-asset="d-gallery" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title" data-i18n="cp.media.add">Add image</span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span><span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+        </div>
+      </div>
+
     </section>
 
     <!-- §4.2 F11 內容檔案（數位）：下載檔，依 F2 數位次分類切換上傳格 · spec 5.1.5.2 §4.2 F11 / v4.3 -->
@@ -458,8 +464,9 @@
         <p class="form-section__sub" data-i18n="cp.var.table.sub">Each variation has its own price and stock — Limited edition adds a cap column.</p>
       </div>
       <div class="variant-table-wrap" id="cp-var-table-wrap" hidden>
-        <div class="variant-table" id="cp-var-table">
+        <div class="variant-table variant-table--img" id="cp-var-table">
           <div class="variant-table__head">
+            <span data-i18n="cp.var.col.img">Image</span>
             <span data-i18n="cp.var.col.variant">Variant</span>
             <span data-i18n="cp.var.col.price">Price</span>
             <span data-i18n="cp.var.col.stock">Stock</span>
@@ -715,7 +722,8 @@
   </div><!-- /.wizard__sheet -->
   <!-- §5.2.4 底部操作列：Save for later 已移到 header；此列只放就緒 chip＋主動作（右對齊）。
        就緒檢查（Ready to sell?）改為 chip 的 hover/focus tooltip（使用者裁示，取代右欄常駐卡）。 -->
-  <footer class="wizard__bottom wizard__bottom--end">
+  <!-- 底部動作列在閘門上沒有意義（還沒開始填），跟著閘門一起收；enterWizard 才放出來 -->
+  <footer class="wizard__bottom wizard__bottom--end hidden" data-cp-footer>
     <div class="wizard__bottom-actions">
       <!-- 編輯態才出現：刪除（破壞性，確認流程待規格 §4.5）-->
       <button class="btn btn--destructive" id="cp-delete" hidden data-i18n="cp.delete">Delete</button>
@@ -856,6 +864,26 @@
     host.appendChild(box);
     if (window.ztorIcons) window.ztorIcons.applyIcons(host);
   }
+  /* ---- 逐規格圖片（2026-08-10 使用者指示）--------------------------------------
+     每個規格組合可以有自己的一張圖；沒給就沿用商品主圖。列首只放一顆小縮圖，
+     點開彈窗換圖（欄寬只有 34px，塞不下上傳格與說明）。
+     邊框語彙沿用上傳格：實線＝自己的圖、虛線＝沿用主圖或還沒有圖。
+     **這是上游沒有的欄位**，記在 ASSUMPTIONS（PG-025）等裁決，不寫回 documents/。 */
+  function productHeroSrc() {
+    const t = document.querySelector('[data-cp-show="physical"] [data-cp-asset="p-hero"] .upload-tile__thumb');
+    return (t && t.getAttribute('src')) || '';
+  }
+  function variantImgSrc(d) { return (d && d.img) || productHeroSrc(); }
+  function variantThumbHTML(key, d) {
+    const own = !!(d && d.img);
+    const src = variantImgSrc(d);
+    const label = T('cp.var.img', 'Variant image') + ' · ' + key;
+    return `<button class="variant-thumb${own ? ' variant-thumb--own' : ''}" type="button" data-vimg="${esc(key)}" aria-label="${esc(label)}" title="${esc(label)}">`
+      + (src ? `<img class="variant-thumb__img" src="${esc(src)}" alt="">`
+             : '<i data-lucide="plus" class="ztor-icon"></i>')
+      + '</button>';
+  }
+
   function renderVariants() {
     const combos = currentCombos();
     const wrap = document.getElementById('cp-var-table-wrap');
@@ -869,7 +897,8 @@
       const row = document.createElement('div');
       row.className = 'variant-table__row' + (d.excluded ? ' is-excluded' : '');
       row.innerHTML =
-        `<span class="variant-cell--variant">${esc(key)}</span>`
+        variantThumbHTML(key, d)
+        + `<span class="variant-cell--variant">${esc(key)}</span>`
         + `<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" data-vk="${esc(key)}" data-vf="price" value="${esc(d.price || '')}" placeholder="0.00"></span>`
         + `<input class="input" data-vk="${esc(key)}" data-vf="stock" value="${esc(d.stock || '')}" placeholder="0">`
         + `<input class="input variant-cell--total" data-vk="${esc(key)}" data-vf="total" value="${esc(d.total || '')}" placeholder="0">`
@@ -881,6 +910,23 @@
     syncVariantLimited();
     if (window.ztorIcons) window.ztorIcons.applyIcons(rowsHost);
   }
+  /* 給彈窗用的最小介面：狀態留在 varData，彈窗只讀寫這三件事。 */
+  window.ztorVariantImage = {
+    heroSrc: productHeroSrc,
+    getOwn: k => (varData[k] || {}).img || '',
+    setOwn: (k, v) => {
+      const d = (varData[k] = varData[k] || {});
+      if (v) d.img = v; else delete d.img;
+      renderVariants();
+    }
+  };
+  /* 商品主圖換了，沿用主圖的那幾列縮圖要跟著換（自己有圖的不受影響）。 */
+  document.addEventListener('upload:change', e => {
+    if (!e.target.closest('[data-cp-asset="p-hero"]')) return;
+    if (!document.getElementById('cp-var-rows')) return;
+    renderVariants();
+  });
+
   function regenVariants() { renderOptions(); renderVariants(); refresh(); }
 
   /* 收合列的展開／收合／新增（2026-07-20） */
@@ -1071,9 +1117,28 @@
     syncLowStock();   // 低庫存自訂門檻的顯示＋預填隨 type/edition 連動（S31.1）
   }
 
-  /* ---- 類型切換 ---- */
-  const grid = document.getElementById('cp-type-grid');
-  const cards = grid.querySelectorAll('[data-cp-type]');
+  /* ---- 類型：唯一選擇入口＝閘門（2026-08-10 使用者指示，做法對齊建立活動）----
+     流程裡沒有型別卡了，改類型走「商品資訊」標題列右側那顆切換鈕，它把閘門叫回來。
+     ✕ 的意思看有沒有進過流程：還沒進＝離開建立商品；進過＝取消重選、回到表單。 */
+  const gate   = document.querySelector('[data-cp-gate]');
+  const sheet  = document.querySelector('[data-cp-sheet]');
+  const footer = document.querySelector('[data-cp-footer]');
+  const cards  = document.querySelectorAll('[data-cp-gate-type]');
+  const swLabel = document.getElementById('cp-type-switch-label');
+  let enteredWizard = false;
+  function enterWizard() {
+    enteredWizard = true;
+    gate?.classList.add('hidden');
+    sheet?.classList.remove('hidden');
+    footer?.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  function showGate() {
+    gate?.classList.remove('hidden');
+    sheet?.classList.add('hidden');
+    footer?.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
   function setSegActive(id, value, attr) {
     const seg = document.getElementById(id);
     if (!seg) return;
@@ -1082,7 +1147,20 @@
   function setType(t) {
     state.type = t;
     if (t !== 'physical') { state.varMode = 'single'; setSegActive('cp-var-mode', 'single', 'cpVar'); }
-    cards.forEach(c => c.classList.toggle('selection-card--active', c.dataset.cpType === t));
+    cards.forEach(c => {
+      const on = c.dataset.cpGateType === t;
+      c.classList.toggle('segmented__btn--active', on);
+      c.setAttribute('aria-checked', String(on));
+    });
+    /* 切換鈕上寫的是「現在是哪一型」，文字取自閘門那張卡的標題＝站上唯一一份型別名稱。
+       頁首副標同一份文字（2026-08-10 修：原本寫死「實體商品」，切成數位也不會變）。 */
+    const tKey = t === 'digital' ? 'cp.type.digital' : 'cp.type.physical';
+    const active = document.querySelector('[data-cp-gate-type="' + t + '"] .radio-card__title');
+    const tLabel = active ? active.textContent.trim() : '';
+    /* 切換鈕的字掛 data-i18n，切語言時由 applyI18n 重譯（只寫 textContent 會停在選定當下那個語言） */
+    if (swLabel) { swLabel.setAttribute('data-i18n', tKey); swLabel.textContent = T(tKey, tLabel); }
+    const sub = document.getElementById('cp-subtitle');
+    if (sub) { sub.setAttribute('data-i18n', tKey); sub.textContent = T(tKey, tLabel); }
     applyVisibility();
     /* 編輯態主動作固定為 Save changes，不隨類型改寫 */
     if (!editMode) {
@@ -1091,7 +1169,18 @@
     }
     refresh();
   }
-  cards.forEach(c => c.addEventListener('click', () => setType(c.dataset.cpType)));
+  cards.forEach(c => c.addEventListener('click', () => { setType(c.dataset.cpGateType); enterWizard(); }));
+  document.getElementById('cp-type-switch')?.addEventListener('click', showGate);
+  document.querySelector('[data-cp-gate-back]')?.addEventListener('click', () => {
+    if (enteredWizard) { enterWizard(); return; }   // 填到一半回來重選：✕＝取消重選
+    history.length > 1 ? history.back() : (location.href = 'e-shop.html');
+  });
+  /* 這三種進場不經閘門，因為類型在進來之前就定了：
+     編輯既有商品（?id=／?edit）、嵌入在組合流程裡（?embed=1）、外部帶入型別（?type=）。 */
+  (function () {
+    const q = new URLSearchParams(location.search);
+    if (q.get('id') || q.get('edit') != null || q.get('embed') != null || q.get('type')) enterWizard();
+  })();
 
   /* ---- segmented 切換（多規格 / 庫存版本 / 取貨方式）---- */
   function wireSegmented(id, attr, onSet) {
@@ -1501,6 +1590,96 @@
     var btn = document.querySelector('[data-cp-new-session]');
     if (btn && pickup) btn.addEventListener('click', function () { pickup.openForProduct('zine'); });
   })();
+</script>
+
+<!-- 逐規格圖片彈窗（2026-08-10 使用者指示）：列首那顆 34px 縮圖點開就是這裡。
+     殼沿用站上通用的 .payout-modal / .payout-dialog；內容沿用建立活動「票種圖片」
+     同一個 pattern（.upload-tile-aside ＝ 直式上傳格＋旁邊一句說明＋還原鈕），
+     兩處講的是同一件事：這一列自己的圖，沒給就沿用上一層的圖。 -->
+<div class="payout-modal" id="cp-vimg-modal" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="cp-vimg-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="cp-vimg-title"></h2>
+      <button class="btn btn--icon" type="button" data-vimg-close aria-label="Close" data-i18n-aria-label="cp.var.img.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" id="cp-vimg-body"></div>
+    <div class="payout-dialog__foot">
+      <span class="field__hint" style="margin:0" data-i18n="cp.var.img.auto">Changes apply straight away.</span>
+      <button class="btn btn--primary" type="button" data-vimg-close data-i18n="cp.var.img.done">Done</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---- 逐規格圖片彈窗控制器（2026-08-10）------------------------------------------
+   狀態只有一個來源：varData[key].img（有值＝這個規格自己的圖，沒值＝沿用商品主圖）。
+   彈窗裡的上傳格走站上共用的互動上傳格（partials/upload-tile.js），所以選圖、
+   假進度、hover 替換／刪除全都跟其他上傳格一致，這裡只接 upload:change 把結果寫回。 */
+(function () {
+  const modal = document.getElementById('cp-vimg-modal');
+  if (!modal) return;
+  const body = document.getElementById('cp-vimg-body');
+  const title = document.getElementById('cp-vimg-title');
+  let openKey = null;
+
+  const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
+  const api = () => window.ztorVariantImage || null;   // 由主控制器掛上（讀寫 varData、重畫列）
+
+  function render() {
+    const a = api(); if (!a || !openKey) return;
+    const own = a.getOwn(openKey);
+    const hero = a.heroSrc();
+    const src = own || hero;
+    const hintKey = own ? 'cp.var.img.own' : (hero ? 'cp.var.img.inherit' : 'cp.var.img.none');
+    body.innerHTML =
+      '<div class="upload-tile-aside">' +
+        '<div class="upload-tile upload-tile--portrait ' + (src ? 'is-filled' : 'is-empty') + '" data-upload data-vimg-tile>' +
+          (src ? '<img class="upload-tile__thumb" src="' + src + '" alt="">'
+               : '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>') +
+        '</div>' +
+        '<div class="upload-tile-aside__side">' +
+          '<p class="field__hint" style="margin:0" data-i18n="' + hintKey + '">' + T(hintKey, '') + '</p>' +
+          (own ? '<button type="button" class="btn btn--outline btn--sm" data-vimg-reset data-i18n="cp.var.img.reset">' + T('cp.var.img.reset', 'Back to the product image') + '</button>' : '') +
+        '</div>' +
+      '</div>';
+    if (window.ztorIcons) window.ztorIcons.applyIcons(body);
+    if (window.ztorUploadTile) body.querySelectorAll('.upload-tile[data-upload]').forEach(window.ztorUploadTile.enhance);
+  }
+
+  function open(key) {
+    openKey = key;
+    title.textContent = T('cp.var.img', 'Variant image') + ' · ' + key;
+    render();
+    modal.hidden = false;
+    document.body.classList.add('is-modal-open');
+  }
+  function close() { modal.hidden = true; openKey = null; document.body.classList.remove('is-modal-open'); }
+
+  document.addEventListener('click', e => {
+    const open_ = e.target.closest('[data-vimg]');
+    if (open_) { open(open_.dataset.vimg); return; }
+    if (e.target.closest('[data-vimg-close]')) { close(); return; }
+    if (e.target.closest('[data-vimg-reset]')) {
+      const a = api(); if (a && openKey) { a.setOwn(openKey, ''); render(); }
+      return;
+    }
+    /* 點背景關閉：只認彈窗最外層，點到對話框內部不算 */
+    if (e.target === modal) close();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+
+  /* 上傳格傳完 → 把縮圖寫回這個規格；刪除 → 回到沿用主圖 */
+  modal.addEventListener('upload:change', e => {
+    const a = api(); if (!a || !openKey) return;
+    const tile = e.target.closest('[data-vimg-tile]'); if (!tile) return;
+    if (e.detail && e.detail.filled) {
+      const img = tile.querySelector('.upload-tile__thumb');
+      if (img && img.src) { a.setOwn(openKey, img.src); render(); }
+    } else if (e.detail && e.detail.state === 'empty') {
+      a.setOwn(openKey, ''); render();
+    }
+  });
+})();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>

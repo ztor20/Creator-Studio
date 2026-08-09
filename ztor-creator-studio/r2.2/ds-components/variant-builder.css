@@ -11,6 +11,7 @@
        .variant-table-wrap (scroll-x)
          .variant-table(.--limited)
            .variant-table__head | .variant-table__row(.is-excluded)
+             .variant-thumb（列首圖片格，需外層 .variant-table--img）
              .variant-cell--variant / .variant-cell--total / .variant-row__remove
    Editable cells reuse .input; value chips reuse .chip--removable.
    --limited adds the Total Quantity column (Limited Edition, §4.1⑤).
@@ -243,6 +244,41 @@
 .variant-table--limited .variant-table__row {
   grid-template-columns: minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
 }
+/* --img（2026-08-10 使用者指示）：每一列開頭多一個「這個規格的圖片」小格。
+   欄寬 34px＝與列尾動作欄同寬，直式縮圖靠 aspect-ratio 自己長高，不撐大列高太多。
+   只有真的排了圖片格的表要掛這個修飾類——商品詳情那張唯讀表沿用原欄寬，
+   不掛就完全不受影響。 */
+.variant-table--img .variant-table__head,
+.variant-table--img .variant-table__row {
+  grid-template-columns: 34px minmax(110px, max-content) minmax(96px, 1fr) 78px 116px minmax(92px, 1fr) 34px;
+}
+.variant-table--img.variant-table--limited .variant-table__head,
+.variant-table--img.variant-table--limited .variant-table__row {
+  grid-template-columns: 34px minmax(110px, max-content) minmax(96px, 1fr) 78px 84px 116px minmax(92px, 1fr) 34px;
+}
+/* 圖片格本身：一顆可點的小直式縮圖，點開彈窗換圖。
+   邊框語彙沿用上傳格（Q59）：**實線＝這個規格自己的圖、虛線＝沿用商品主圖或還沒有圖**，
+   所以整列掃過去就看得出哪幾個規格被單獨換過圖，不必逐格點開。 */
+.variant-thumb {
+  width: 100%;
+  aspect-ratio: var(--img-portrait, 2 / 3);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  overflow: hidden;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--input-surface);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.variant-thumb:hover { border-color: var(--muted-foreground); background: var(--accent); }
+.variant-thumb:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.variant-thumb--own { border-style: solid; }
+.variant-thumb__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.variant-thumb .ztor-icon { width: 12px; height: 12px; }
+
 /* --preview（2026-07-23）：編輯 popup 內的規格組合唯讀預覽表——5 欄（規格／價格／庫存／SKU／成本），
    無總量欄、無列尾動作欄（動作在上方選項值管理區）。與頁面主表分開一套欄寬。 */
 .variant-table--preview .variant-table__head,
