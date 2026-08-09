@@ -568,7 +568,7 @@
 }
 .product-list--ip .product-list__cell { color: var(--foreground); }
 
-/* 來源（Made on Ztor／Registered externally）：純文字小標，置於名稱正上方——比照站上既有的
+/* 來源（Made on Ztor／External）：純文字小標，置於名稱正上方——比照站上既有的
    「大寫小字＋muted」eyebrow 語彙（kpi__label／rent-block__label 同一套），不用徽章。 */
 .product-list__source {
   display: block;
@@ -635,3 +635,65 @@
   .product-list--rented .product-list__cell { grid-column: 1; padding-left: var(--sp-72); }
   .product-list--rented .product-list__actions { grid-column: 2; justify-content: flex-end; }
 }
+
+/* ============================================================
+   群組列（母列＋子列）— 2026-08-06
+   ------------------------------------------------------------
+   一筆清單項目其實是好幾筆時，母列收成一列、點開才看到底下每一筆。
+   首次用於活動清單的系列場次：同一個活動辦好幾場，每一場都是獨立的一場
+   活動，但清單不該因為一個 20 場的巡演就多出 20 列。
+
+   母列點擊＝展開／收合（不導向），子列點擊才進該場的詳情頁。
+
+   Markup:
+     <div class="product-list__row product-list__row--group"
+          data-group="tour-a" aria-expanded="false"> … </div>
+     <div class="product-list__row product-list__row--child"
+          data-group-child="tour-a" data-go="…" hidden> … </div>
+   ============================================================ */
+
+/* 母列的展開把手：放在**名稱前面**，不放最右的操作欄。清單頁的 .main 是
+   overflow-x:hidden，視窗窄一點時右側幾欄會被切掉且捲不到，收在那裡等於沒有入口；
+   樹狀清單的展開三角本來也長在最前面。外觀吃 .btn.btn--icon.btn--xs，本檔只擁有
+   「排在名稱前面」與「會轉」這兩件事。 */
+.product-list__row--group .product-list__product { display: flex; align-items: center; gap: var(--sp-8); }
+.product-list__group-toggle { flex: none; }
+.product-list__group-chevron { transition: transform var(--duration) var(--easing); }
+.product-list__row--group[aria-expanded="true"] .product-list__group-chevron { transform: rotate(180deg); }
+
+/* 子列：縮排一階並在左緣畫一條線，說明「這幾列從屬於上面那一列」。
+   線用 inset shadow 不用 border-left——border 會參與 grid 的欄寬計算，
+   母列與子列的欄就會對不齊。 */
+.product-list__row--child {
+  padding-left: var(--sp-32);
+  box-shadow: inset 2px 0 0 var(--border-soft);
+}
+.product-list__row--child .product-list__title { font-size: var(--fs-13); }
+/* hover 的浮起會蓋掉 inset shadow（同一個屬性），補回來 */
+.product-list__row--child:hover { box-shadow: inset 2px 0 0 var(--border-soft), var(--shadow-lift-flat); }
+
+/* ============================================================
+   橫向捲動包層 — 2026-08-06
+   ------------------------------------------------------------
+   清單列有 7–9 欄、最窄 830–1160px，而 app 外殼的 .main 是
+   `overflow-x: hidden`（shell 固定、內容內部捲動），所以視窗一窄，
+   右側的「狀態」「操作」幾欄就被切掉**而且捲不到**——每一列的 ⋮
+   （編輯／複製／現場報到台…）在那個寬度區間整個點不到。
+   既有的 ≤760px 堆疊版型只救得了手機，760px 到各變體的最小寬之間
+   （筆電常見的 1280–1440 就落在裡面）是漏的。
+
+   做法沿用站上既有的表格橫捲（.ztor-table-scroll / .admin-table-wrap /
+   .variant-table-wrap）：外面包一層自己捲的容器。
+   `min-width: min-content` 讓清單撐到「欄寬加總」那麼寬，捲動才有東西可捲；
+   欄數少、放得下的變體 min-content 本來就小於容器，不會長出捲軸。
+
+   上下的 padding 是給 .product-list__row:hover 的浮起陰影讓位——
+   overflow-x 只要不是 visible，overflow-y 也會被算成 auto，不留空間的話
+   第一列與最後一列的陰影會被裁掉。用等量負外距抵銷，版面高度不變。
+   ============================================================ */
+.product-list-scroll {
+  overflow-x: auto;
+  padding-block: var(--sp-6);
+  margin-block: calc(-1 * var(--sp-6));
+}
+.product-list-scroll > .product-list { min-width: min-content; }

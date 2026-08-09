@@ -192,7 +192,11 @@
 /* ============================================================
    Interactive uploader — opt-in via [data-upload]
    spec 5.1.5.2 §4 Show it off（呈現層互動；真實上傳/AI 優化為 demo）
-   states on root: .is-empty（預設）· .is-uploading · .is-filled · .is-optimizing · .is-optimized
+   states on root: .is-empty（預設）· .is-uploading · .is-processing · .is-filled · .is-optimizing · .is-optimized
+   .is-processing（2026-08-07）＝檔案已傳完、伺服器還在轉檔／檢查，此時尚未可用。
+     opt-in：格子加 data-upload-processing 才會經過這一態（作品上架的影片檔 F1）。
+     它與 .is-filled 的差別是「就緒與否」——就緒檢查看的是 .is-filled，所以處理中
+     不會被算成已完成，送出自然被擋（規格 5.1.2.2.1 §8「檔案就緒」）。
    增強端：partials/upload-tile.js（注入 input/thumb/overlay/progress/actions/badge、切狀態、假計時）
    只作用在 [data-upload]；沒有此屬性的舊 tile 維持上方 .is-filled 綠框行為，不受影響。
    ============================================================ */
@@ -220,6 +224,7 @@
 .upload-tile[data-upload].is-filled,
 .upload-tile[data-upload].is-optimizing,
 .upload-tile[data-upload].is-optimized,
+.upload-tile[data-upload].is-processing,
 .upload-tile[data-upload].is-uploading {
   border-style: solid; border-color: var(--border); color: var(--foreground); padding: 0;
 }
@@ -232,6 +237,7 @@
 /* 進行中浮層（上傳中／優化中）：frosted 罩＋spinner＋狀態字，主題自適應 */
 .upload-tile__overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-8); background: color-mix(in srgb, var(--card) 82%, transparent); color: var(--foreground); font-size: var(--fs-12); z-index: 3; }
 .upload-tile[data-upload].is-uploading .upload-tile__overlay,
+.upload-tile[data-upload].is-processing .upload-tile__overlay,
 .upload-tile[data-upload].is-optimizing .upload-tile__overlay { display: flex; }
 .upload-tile__spinner { width: 22px; height: 22px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: upl-spin .6s linear infinite; }
 @keyframes upl-spin { to { transform: rotate(360deg); } }

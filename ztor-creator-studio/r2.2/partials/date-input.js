@@ -36,11 +36,22 @@
     icon.className = 'ztor-icon date-input__icon';
     wrap.insertBefore(icon, input);
 
+    /* placeholder 預設是「選擇日期」；欄位掛 data-ph-key（字典 key）或 data-ph（直接給字）
+       就換一組——起訖兩格並排時，各自寫「開始」「結束」比兩格都寫「選擇日期」有用得多。
+       （2026-08-06 新增，不掛就與先前完全相同。） */
     var ph = document.createElement('span');
     ph.className = 'date-input__ph';
     ph.setAttribute('aria-hidden', 'true');
-    ph.setAttribute('data-i18n', 'field.pick-date');
-    ph.textContent = 'Pick a date';
+    var phKey = input.getAttribute('data-ph-key');
+    if (phKey) {
+      ph.setAttribute('data-i18n', phKey);
+      ph.textContent = (window.i18nT && window.i18nT(phKey)) || input.getAttribute('data-ph') || phKey;
+    } else if (input.hasAttribute('data-ph')) {
+      ph.textContent = input.getAttribute('data-ph');
+    } else {
+      ph.setAttribute('data-i18n', 'field.pick-date');
+      ph.textContent = 'Pick a date';
+    }
     wrap.appendChild(ph);
 
     syncEmpty(wrap, input);

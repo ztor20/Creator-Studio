@@ -40,12 +40,6 @@
     gap: var(--sp-16);
     margin-top: var(--sp-16);
   }
-  .aud-note {
-    font-size: var(--fs-12);
-    color: var(--muted-foreground);
-    line-height: var(--lh-normal);
-    margin-top: var(--sp-12);
-  }
   /* 未連結態下整頁只剩來源清單，狀態膠囊沒有存在意義（spec F1 其他狀態）。 */
   html[data-data-state="empty"] .src-status { display: none; }
 </style>
@@ -239,16 +233,13 @@
           </div>
         </div>
 
-        <!-- 作品榜 ＋ ztor 粉絲組成並排一列（2026-07-31 使用者指定）。
-             左「哪幾支作品被播最多」、右「這些人是誰」——同一群人的兩個切面，
-             所以放同一行。⚠ 兩張卡單位不同：左邊算「次數」、右邊算「人」，
-             卡上各自的膠囊就是在講這件事，不可互比。 -->
-        <div class="aud-grid">
-
         <!-- 作品表現榜（2026-07-31 自收入管理·版稅分頁搬來，使用者裁定）。
              單位是「次數」不是「人」——與本頁其他卡不同軸，卡上直接寫明、不可互比。
-             作品名與類型沿用 roy.work1–11／roy.type.*（同一批作品、同一份 persona 覆蓋）。 -->
-        <section class="card" data-aud-works='{"plays": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500], "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
+             作品名與類型沿用 roy.work1–11／roy.type.*（同一批作品、同一份 persona 覆蓋）。
+             2026-08-06：原本與「ztor 粉絲組成」並排一列（.aud-grid），該卡已依使用者
+             裁示搬到儀表板，這裡不留只剩一張卡的兩欄格線——改成整寬區段，與上方
+             結論卡（F7）、下方建議行動（F8）同一種節奏，中間的 F3–F6 才是兩欄。 -->
+        <section class="card mt-24" data-aud-works='{"plays": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500], "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
           <div class="card__head">
             <div class="card__title-group">
               <span class="card__title-icon card__title-icon--info"><i data-lucide="play" class="ztor-icon"></i></span>
@@ -262,40 +253,8 @@
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-aud-t="video" data-i18n="roy.type.video">Video</button>
           </nav>
           <ol class="perf-rank perf-rank--nopct" data-aud-list style="width:100%"></ol>
-          <p class="aud-note" data-aud-count></p>
+          <p class="card__note" data-aud-count></p>
         </section>
-
-        <!-- ztor 粉絲組成（2026-07-31 使用者指定新增）。與上面 F2 那排數字的
-             分母不同：F2 的「受眾」含外部平台，這裡只算站內認得出帳號的粉絲，
-             所以自成一張卡、不併進 bento。用圓餅不用長條：這裡問的是「這一整塊
-             是怎麼被分掉的」，不是「誰比誰長」。資料與粉絲名冊同一份。
-             本頁是分析頁、只有 F8 給動作，所以這裡不放「分級設定／編輯權益」
-             那兩顆鈕（粉絲名冊那張卡才有）。 -->
-        <section class="card">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="aud.tiers.title">Fans on Ztor</h3>
-            <span class="chip chip--static" data-i18n="aud.tiers.chip">On-Ztor only — no external platforms</span>
-          </div>
-          <div class="pie-figure">
-            <div class="pie" aria-hidden="true"
-                 style="--pie-stops:
-                   var(--primary) 0 12%,
-                   var(--status-info) 0 40%,
-                   var(--status-success) 0 77%,
-                   var(--foreground-muted) 0 100%"></div>
-            <div class="pie-figure__legend">
-              <div class="source-list">
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
-                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
-              </div>
-            </div>
-          </div>
-          <p class="aud-note" data-i18n="aud.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count. The audience figures above include people we only see through connected platforms, so the two don't share a denominator.</p>
-        </section>
-
-        </div><!-- /作品榜 ＋ ztor 粉絲組成 -->
 
         <div class="aud-grid">
 
@@ -335,7 +294,7 @@
                 <span class="perf-rank__val" data-i18n="aud.infl.growth-val">+3.2% / mo</span>
               </li>
             </ol>
-            <p class="aud-note" data-i18n="aud.infl.note">These four are never merged into one “influence score” — a single number hides which one is actually moving.</p>
+            <p class="card__note" data-i18n="aud.infl.note">These four are never merged into one “influence score” — a single number hides which one is actually moving.</p>
           </section>
 
           <!-- F4 · 受眾分群 -->
@@ -350,7 +309,7 @@
             </div>
             <div class="stacked-bar" style="height:18px" data-seg-bar></div>
             <ol class="perf-rank" style="width:100%;margin-top:var(--sp-12)" data-seg-list></ol>
-            <p class="aud-note" data-seg-note data-i18n="aud.seg.note.work">Counted in people, not plays.</p>
+            <p class="card__note" data-seg-note data-i18n="aud.seg.note.work">Counted in people, not plays.</p>
           </section>
 
           <!-- F5 · 轉換漏斗 -->
@@ -386,7 +345,7 @@
                 <span class="perf-rank__pct">51.6%</span><span class="perf-rank__val">96</span>
               </li>
             </ol>
-            <p class="aud-note" data-i18n="aud.fun.note">Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.</p>
+            <p class="card__note" data-i18n="aud.fun.note">Percentages are conversion from the stage above. Follow and Engage come from external platforms; the last three come from Ztor and open the matching list.</p>
           </section>
 
           <!-- F6 · 商業價值 -->
@@ -424,7 +383,7 @@
                 <span class="perf-rank__pct">9%</span><span class="perf-rank__val">$1,863</span>
               </li>
             </ol>
-            <p class="aud-note" data-i18n="aud.cv.note">Every segment opens the matching fan list in Fans CRM.</p>
+            <p class="card__note" data-i18n="aud.cv.note">Every segment opens the matching fan list in Fans CRM.</p>
           </section>
 
         </div>
@@ -455,7 +414,7 @@
             <a class="alert__cta" href="store-settings.html" data-i18n="aud.act.2-cta">Open store settings</a>
           </div>
 
-          <p class="aud-note" data-i18n="aud.act.note">Each one states what it's based on and can be dismissed. These are suggestions, not conclusions — nothing here is phrased as a certainty.</p>
+          <p class="card__note" data-i18n="aud.act.note">Each one states what it's based on and can be dismissed. These are suggestions, not conclusions — nothing here is phrased as a certainty.</p>
         </section>
 
       </div><!-- /when-data -->

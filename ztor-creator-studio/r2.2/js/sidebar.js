@@ -33,9 +33,13 @@
      driven by the devtools "cheat code" panel (D086, presentation裁示).
      ───────────────────────────────────────────────────────── */
   const ROSTER_PAGE = "creators.html";
-  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html"]);
+  /* 2026-08-07（D179）：Admin 同層目的地由四個增為五個——新增影片上架審核
+     （spec 5.1.0.4，登記於 0-設計規格書 §3.2 產品地圖 Tier 0）。它跨全平台、
+     不需選定 Artist，與其他四個同層。 */
+  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
+    { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" },
     { href: "admin-ip-bank.html",     key: "admin.ip-bank",      icon: "landmark", match: ["admin-ip-bank-entry.html"] },
     { href: "ip-bank-reporting.html", key: "admin.ip-reporting", icon: "bar-chart-3" },
     { href: "admin-platform-fees.html", key: "admin.platform-fees", icon: "percent" }
@@ -67,13 +71,67 @@
     catch (e) { return null; }
   }
   function setCreator(handle) {
-    try { handle ? localStorage.setItem(CREATOR_LS, handle) : localStorage.removeItem(CREATOR_LS); }
+    try {
+      handle ? localStorage.setItem(CREATOR_LS, handle) : localStorage.removeItem(CREATOR_LS);
+      /* 「現在代管誰」只有一個位子：從名冊選人就取代掉從別的 Admin 頁交接進來的那一趟
+         （2026-08-07，見下方 ztor.adminHandoff）。兩份同時有效會讓返回鍵指錯地方。 */
+      localStorage.removeItem("ztor.adminHandoff");
+    }
     catch (e) {}
     document.dispatchEvent(new CustomEvent("ztor:creator-changed", { detail: { handle: handle || null } }));
   }
   /* Shared with creators.html (roster render + onboard flow) and devtools.js (cheat-code switch).
      registered = BR-02 pre-registered accounts pool (searched by the「建立 creator」onboard wizard). */
   window.ztorCreator = { list: CREATORS, registered: REGISTERED, get: getCreator, set: setCreator, rosterPage: ROSTER_PAGE };
+
+  /* ── Admin 從某個 Admin 頁進入某位創作者的工作區（2026-08-07）──────────────
+     既有的代管路徑是「Creator 管理選一位」（上面的 ztor.activeCreator）。影片上架
+     審核頁的「來源項目」是第二個入口：它同樣是 §4.1 的「Admin 進入某 Artist 的
+     工作區」，只是起點不是名冊。兩者共用同一組 chrome（返回鍵＋代管中標示），
+     這裡只是把「代管的是誰、返回哪裡」解析成同一種形狀，不新增第二套標示。
+
+     ztor.adminHandoff 由 js/theme.js 在網址帶 ?creator= 時寫入，內容 { persona,
+     from, name }。只有 persona 與目前資料人格一致才算數——cheat code 切人格時
+     這個條件自然不成立，代管標示就跟著消失，不必再另外清一次。 */
+  const HANDOFF_LS = "ztor.adminHandoff";
+  function getHandoff() {
+    try {
+      const h = JSON.parse(localStorage.getItem(HANDOFF_LS) || "null");
+      if (!h || !h.persona) return null;
+      const now = (typeof window.ztorPersonaId === "function") ? window.ztorPersonaId() : null;
+      if (now && h.persona !== now) return null;
+      /* from 只接受站上既有的 Admin 目的地，避免返回鍵被帶去任意網址。 */
+      const from = String(h.from || "").split(/[?#]/)[0].toLowerCase();
+      return ADMIN_ROUTES.has(from) ? { from: from, name: h.name || "" } : null;
+    } catch (e) { return null; }
+  }
+  /* 返回鍵上的字。側欄那顆只有一行的位置，所以用短名（「Creator 名冊」的同級寫法），
+     aria 才寫完整的「返回 X」。沒有短名的 Admin 頁退回 ADMIN_NAV 的頁名。 */
+  const BACK_LABEL = {
+    "creators.html":           { label: "admin.back-short",  aria: "admin.back" },
+    "admin-video-review.html": { label: "admin.back-review", aria: "admin.back-review-aria" }
+  };
+  function adminRouteKeys(href) {
+    if (BACK_LABEL[href]) return BACK_LABEL[href];
+    const hit = ADMIN_NAV.find(it => it.href === href || (it.match || []).includes(href));
+    return { label: hit ? hit.key : "admin.creator-mgmt", aria: "admin.back" };
+  }
+  /* 目前這一頁要不要出現代管 chrome，以及代管的是誰、返回哪裡。null＝一般創作者。 */
+  function adminContext() {
+    const h = getHandoff();
+    if (!h) {
+      const picked = getCreator();
+      if (!picked) return null;
+      const rosterKeys = adminRouteKeys(ROSTER_PAGE);
+      return { name: picked.name, back: ROSTER_PAGE, backKey: rosterKeys.label, ariaKey: rosterKeys.aria };
+    }
+    /* 名字優先問 projects-store（它就是這份 demo 資料的擁有者名稱，永遠對得上目前
+       人格）；沒載入那支 store 的頁面才退回交接時存下來的那一份。 */
+    let name = "";
+    try { name = (window.ztorProjects && window.ztorProjects.owner && window.ztorProjects.owner()) || ""; } catch (e) {}
+    const keys = adminRouteKeys(h.from);
+    return { name: name || h.name, back: h.from, backKey: keys.label, ariaKey: keys.aria };
+  }
 
   /* Full Ztor wordmark from R 2.0 (101×32 viewBox, monochrome currentColor). */
   /* 頭像縮寫跟著 persona 走。原本兩處都寫死 "M"（Maya 的縮寫），
@@ -177,7 +235,7 @@
   /* ✝ 2026-07-30：取貨管理三頁移出本清單，改由 feature-scope-map 的 O24–O30（🟢 Phase 1）管轄（D157）。
      這份清單與 devtools.js 的同名清單必須一致，改一邊就要改另一邊。 */
   const FULL_ROUTES = new Set([
-    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "projects.html", "project-detail.html", "create-project.html",
+    "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
     "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "my-ip.html", "ip-detail.html",
@@ -310,16 +368,17 @@
   }
 
   function buildTopbar() {
-    const creator = getCreator();                 // null = 一般創作者（無 admin 代管）
+    const creator = adminContext();               // null = 一般創作者（無 admin 代管）
     const adminScope = !isAdminPlatform && !!creator;    // admin 正在代管某個 creator
     /* Three nav faces:
        · Tier 0 roster (creators.html): "Creator Management" marker + locked Tier-1.
-       · Admin 代管 (Tier-1, a creator selected): back-to-roster icon BEFORE the logo
-         (使用者裁示, D086) + "Managing <creator>" chip + full nav.
+       · Admin 代管 (Tier-1, a creator selected): back icon BEFORE the logo
+         (使用者裁示, D086) + "Managing <creator>" chip + full nav. 返回的目的地是
+         「從哪個 Admin 頁進來的」——名冊進來就回名冊，審核頁進來就回審核頁。
        · 一般創作者 (Tier-1, no creator selected): plain topbar, NO admin chrome —
          the normal dashboard view (之前的版本). */
     const back = adminScope
-      ? `<a class="app-topbar__back" href="${ROSTER_PAGE}" aria-label="Back to creators" data-i18n-aria-label="admin.back">
+      ? `<a class="app-topbar__back" href="${creator.back}" aria-label="Back" data-i18n-aria-label="${creator.ariaKey}">
            <i data-lucide="arrow-left" class="ztor-icon"></i>
          </a>`
       : "";
@@ -439,7 +498,7 @@
   }
 
   function buildSidebar() {
-    const creator = getCreator();                 // null = 一般創作者（無 admin 代管）
+    const creator = adminContext();               // null = 一般創作者（無 admin 代管）
     const adminScope = !isAdminPlatform && !!creator;
     /* Same three faces as topbar: roster marker / admin 代管 (back + managing) /
        plain creator (no chrome). */
@@ -448,9 +507,9 @@
            <i data-lucide="shield-check" class="ztor-icon"></i>
            <span data-i18n="admin.studio">Admin Creator Studio</span>
          </div>`
-      : (adminScope ? `<a class="app-sidebar__back" href="${ROSTER_PAGE}" data-i18n-aria-label="admin.back" aria-label="Back to creators">
+      : (adminScope ? `<a class="app-sidebar__back" href="${creator.back}" data-i18n-aria-label="${creator.ariaKey}" aria-label="Back">
            <i data-lucide="arrow-left" class="ztor-icon"></i>
-           <span class="app-sidebar__back-label" data-i18n="admin.back-short">Creators</span>
+           <span class="app-sidebar__back-label" data-i18n="${creator.backKey}">Back</span>
          </a>
          <div class="app-sidebar__context">
            <span class="app-sidebar__context-label" data-i18n="admin.managing">Managing</span>
@@ -771,7 +830,9 @@
      原型沒有真的 session——`login.html` 從頭到尾不寫任何「已登入」旗標，
      登入成功只是 location.href 換頁（見 ASSUMPTIONS UIA-105）。所以登出能清的
      只有「這次進來之後選定了誰」，也就是 ztor.activeCreator（Admin 代操選定的
-     creator，D086）。其餘 localStorage 一律不動：語言、顯示模式、幣別、主題、
+     creator，D086）與 ztor.adminHandoff（從審核頁這類 Admin 頁進入某位創作者的
+     工作區，2026-08-07 新增；同一句話的第二個入口，所以一起清）。
+     其餘 localStorage 一律不動：語言、顯示模式、幣別、主題、
      devtools 狀態都是裝置偏好，重新登入後本來就該維持原樣；ztor.persona 是
      cheat code 的假資料人物開關（開發工具狀態、不是身分），清掉只會讓下次載入
      被 theme.js 重設成 default、悄悄換掉整批展示資料，所以也不碰。
@@ -782,7 +843,7 @@
     const out = e.target.closest("[data-logout]");
     if (!out) return;
     e.preventDefault();
-    try { localStorage.removeItem(CREATOR_LS); } catch (err) {}
+    try { localStorage.removeItem(CREATOR_LS); localStorage.removeItem(HANDOFF_LS); } catch (err) {}
     location.href = "login.html";
   });
 
@@ -803,6 +864,12 @@
     var i = avatarInitial();
     document.querySelectorAll(".app-topbar__avatar, .app-sidebar__avatar")
       .forEach(function (el) { el.textContent = i; });
+    /* 代管中的創作者名字同理：mount() 當下 projects-store 可能還沒載入，先寫進去的
+       是交接時存的那一份，store 到位後改用它的擁有者名稱（雙語稱謂會跟著語言變）。 */
+    var ctx = adminContext();
+    if (!ctx || !ctx.name) return;
+    document.querySelectorAll(".app-topbar__context-name, .app-sidebar__context-name")
+      .forEach(function (el) { el.textContent = ctx.name; });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refreshAvatar);
   else refreshAvatar();

@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>影片上架審核 · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/message-modal.css?v=r2.2">
+<!-- 審核狀態、送出時間、退件理由與動作：與項目詳情的創作者端共用同一支元件 -->
+<link rel="stylesheet" href="ds-components/review-status.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="app"><header class="app-topbar" id="sidebar"></header><main class="main"><div class="page">
+
+<!-- F1 頁首與範圍：導航脈絡＋頁面名稱＋範圍說明＋權限邊界。
+     同層導覽（Creator 管理／Admin IP Bank／IP Bank Reporting／平台費率設定）由
+     全域導航的 Admin 列承擔（js/sidebar.js 的 ADMIN_NAV），本頁不再自畫第二排。 -->
+<nav class="text-sub" aria-label="麵包屑" style="font-size:var(--fs-12);margin-bottom:var(--space-shell-gutter)">
+  <a class="card__link" href="creators.html" data-i18n="admin.studio">Admin Creator Studio</a>
+  <span aria-hidden="true"> / </span>
+  <a class="card__link" href="admin-video-review.html" id="vr-crumb-queue" data-i18n="admin.video-review">Video publishing review</a>
+  <span aria-hidden="true" id="vr-crumb-sep" hidden> / </span>
+  <span aria-current="page" id="vr-crumb-item" hidden></span>
+</nav>
+
+<div class="page-intro">
+  <div>
+    <h1 class="page-intro__title" data-i18n="admin.video-review">Video publishing review</h1>
+    <p class="page-intro__sub" data-i18n="vr.lede">Creators send finished films here before they go live. Approving one publishes the work, sends the completion post to its fans and moves the project to Live.</p>
+  </div>
+</div>
+
+<!-- 無權限狀態（規格 F6／§4.4／§6.4）：非平台營運身分進來時，說明需要什麼身分，
+     不只把入口藏起來。原型用 Cheat Codes 的「檢視身分」切換示範（見頁尾 script）。 -->
+<div id="vr-noaccess" hidden>
+  <div class="empty-card">
+    <div class="empty-card__icon empty-card__icon--warning"><i data-lucide="lock" class="ztor-icon"></i></div>
+    <h2 class="empty-card__title" data-i18n="vr.noaccess.title">Platform operators only</h2>
+    <p class="empty-card__text" data-i18n="vr.noaccess.text">Reviewing belongs to the ztor operations team. A creator workspace cannot review its own work or anyone else's.</p>
+    <a class="btn btn--outline" href="index.html" data-i18n="vr.noaccess.back">Back to dashboard</a>
+  </div>
+</div>
+
+<!-- ══════════════ 檢視一：待審清單（F2）══════════════ -->
+<div id="vr-queue" hidden>
+  <div class="list-toolbar">
+    <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="vr-tabs" role="tablist">
+      <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="vr.tab.all">All</span> <span class="tabs__item-count"></span></div>
+      <div class="tabs__item" role="tab" aria-selected="false" data-tab="pending"><span data-i18n="vr.status.pending">Pending review</span> <span class="tabs__item-count"></span></div>
+      <div class="tabs__item" role="tab" aria-selected="false" data-tab="inreview"><span data-i18n="vr.status.inreview">In review</span> <span class="tabs__item-count"></span></div>
+      <div class="tabs__item" role="tab" aria-selected="false" data-tab="approved"><span data-i18n="vr.status.approved">Approved</span> <span class="tabs__item-count"></span></div>
+      <div class="tabs__item" role="tab" aria-selected="false" data-tab="rejected"><span data-i18n="vr.status.rejected">Rejected</span> <span class="tabs__item-count"></span></div>
+    </nav>
+    <div class="list-toolbar__actions">
+      <label class="field-pill" aria-label="Search submissions" data-i18n-aria-label="vr.search.ph">
+        <i data-lucide="search" class="ztor-icon field-pill__icon"></i>
+        <input class="field-pill__input" id="vr-search" placeholder="Title, creator or project" data-i18n-placeholder="vr.search.ph">
+      </label>
+    </div>
+  </div>
+
+  <div id="vr-list"><!-- 由 JS 建 --></div>
+</div>
+
+<!-- ══════════════ 檢視二：送審內容與審核動作（F3／F4）══════════════ -->
+<div id="vr-detail" hidden>
+
+  <!-- 這一件現在的狀態、送出時間、送出次數、審核者；已審完的件在此顯示結果與退件理由。 -->
+  <div class="review-status mb-16" id="vr-head">
+    <div class="review-status__head">
+      <span class="badge" id="vr-head-badge"></span>
+      <h2 class="review-status__title" id="vr-head-title"></h2>
+    </div>
+    <div class="review-status__meta">
+      <span class="review-status__meta-item"><span data-i18n="vr.meta.creator">Creator</span><span id="vr-head-creator"></span></span>
+      <span class="review-status__meta-item"><span data-i18n="vr.meta.submitted">Last sent</span><span id="vr-head-at"></span></span>
+      <span class="review-status__meta-item"><span data-i18n="vr.meta.waiting">Waiting</span><span id="vr-head-wait"></span></span>
+      <span class="review-status__meta-item"><span data-i18n="vr.meta.count">Times sent</span><span id="vr-head-count"></span></span>
+      <span class="review-status__meta-item" id="vr-head-reviewer-wrap" hidden><span data-i18n="vr.meta.reviewer">Reviewer</span><span id="vr-head-reviewer"></span></span>
+    </div>
+    <div class="review-status__note" id="vr-head-note" hidden>
+      <span class="review-status__note-label" id="vr-head-note-label"></span>
+      <p class="review-status__note-body" id="vr-head-note-body"></p>
+    </div>
+    <!-- F4 審核動作。接手之後才出現通過與不通過——先接手才有審核者可記錄（F6 操作紀錄）。 -->
+    <div class="review-status__actions" id="vr-actions" hidden>
+      <button class="btn btn--primary btn--sm" type="button" id="vr-act-start" hidden data-i18n="vr.act.start">Start review</button>
+      <button class="btn btn--primary btn--sm" type="button" id="vr-act-approve" hidden data-i18n="vr.act.approve">Approve</button>
+      <button class="btn btn--outline btn--sm" type="button" id="vr-act-reject" hidden data-i18n="vr.act.reject">Reject</button>
+      <a class="btn btn--ghost btn--sm" href="admin-video-review.html" data-i18n="vr.act.back">Back to queue</a>
+    </div>
+  </div>
+
+  <!-- 來源項目脈絡：通過之後會發出去的東西長什麼樣，審核者得先看到（F3 Project context）。 -->
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.ctx.title">Source project</h3>
+      <p class="form-section__sub" data-i18n="vr.ctx.sub">Approving publishes the post below to the audience the creator picked.</p>
+    </div>
+    <div class="kv"><span class="kv__k" data-i18n="vr.ctx.project">Project</span><span class="kv__v"><a class="card__link" id="vr-ctx-project" href="project-detail.html">—</a></span></div>
+    <div class="kv"><span class="kv__k" data-i18n="vr.ctx.status">Project status</span><span class="kv__v" id="vr-ctx-status">—</span></div>
+    <div class="kv"><span class="kv__k" data-i18n="vr.ctx.post">Post</span><span class="kv__v" id="vr-ctx-post">—</span></div>
+    <div class="kv"><span class="kv__k" data-i18n="vr.ctx.audience">Audience</span><span class="kv__v" id="vr-ctx-audience">—</span></div>
+  </section>
+
+  <!-- F3 送審內容檢視：逐步驟照作品上架流程的順序呈現，欄位定義以該流程為權威、本頁不重抄。 -->
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.step1">Audio &amp; subtitles</h3>
+    </div>
+    <div id="vr-s1"></div>
+  </section>
+
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.step2">Artwork &amp; clips</h3>
+    </div>
+    <div id="vr-s2"></div>
+  </section>
+
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.step3">Video details</h3>
+    </div>
+    <div id="vr-s3"></div>
+  </section>
+
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.step4">Cast &amp; crew</h3>
+    </div>
+    <div id="vr-s4"></div>
+  </section>
+
+  <!-- 送審歷程（F3 Submission History）：append-only，重送件的審核者靠它看出上次為什麼被退。 -->
+  <section class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title" data-i18n="vr.history.title">Submission history</h3>
+      <p class="form-section__sub" data-i18n="vr.history.sub">Every send, hand-off and decision, oldest first.</p>
+    </div>
+    <div class="data-list" id="vr-history"></div>
+  </section>
+
+  <p class="info-banner" data-i18n="vr.readonly">Reviewers read and decide only — send it back to the creator for any change to the work itself.</p>
+</div>
+
+</div>
+
+<!-- 退件理由（F4）：不通過時必填，寫給創作者看。 -->
+<div class="payout-modal" id="vr-reject-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="vr-reject-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="vr-reject-title" data-i18n="vr.reject.title">Send it back</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-vr-close aria-label="Close" data-i18n-aria-label="vr.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="field">
+        <label class="field__label" for="vr-reject-reason"><span data-i18n="vr.reject.reason">Why it came back</span> <span class="field__req">＊</span></label>
+        <textarea class="textarea" id="vr-reject-reason" data-i18n-placeholder="vr.reject.ph" placeholder="Name what needs changing so the creator can fix it and send again."></textarea>
+        <div class="field__hint" data-i18n="vr.reject.hint">The creator sees this word for word on the project page.</div>
+      </div>
+      <button class="btn btn--primary mt-16" style="width:100%" type="button" id="vr-reject-confirm" data-i18n="vr.reject.confirm">Send it back</button>
+    </div>
+  </div>
+</div>
+
+<!-- 通過確認（F4 動作確認）：作品會對粉絲上線並發出通知，執行後不可原地撤回。 -->
+<div class="payout-modal" id="vr-approve-modal" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="vr-approve-title">
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="vr-approve-title" data-i18n="vr.approve.title">Approve and publish</h3>
+      <button class="btn btn--icon btn--sm" type="button" data-vr-close aria-label="Close" data-i18n-aria-label="vr.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="text-sub" style="margin:0 0 var(--sp-12)" data-i18n="vr.approve.body">Three things happen at once: the work goes on sale, the completion post reaches its audience, and the project turns Live. There is no undo.</p>
+      <button class="btn btn--primary" style="width:100%" type="button" id="vr-approve-confirm" data-i18n="vr.approve.confirm">Approve and publish</button>
+    </div>
+  </div>
+</div>
+
+<footer class="app-footer"><span>Ztor Creator Studio · R 2.1 prototype</span><span>·</span><span data-i18n="admin.studio">Admin Creator Studio</span></footer></main></div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/projects-store.js?v=r2.2"></script>
+<script src="js/work-review-store.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script>
+/* 影片上架審核（admin-video-review.html）· 規格 documents/5.1.0.4-影片上架審核.md
+   ------------------------------------------------------------------------------
+   一頁兩種檢視，由網址參數決定：沒有 ?id= 就是待審清單（F2），有就是那一件的
+   送審內容與審核動作（F3／F4）。做成同一頁而不是兩個檔，是因為 F4 的動作做完
+   要立刻回到清單並看到計數改變——同一頁只要重繪，跨頁就得再想一次狀態怎麼帶。
+
+   狀態機、字彙、流轉一律向 js/work-review-store.js 要，本頁不自己寫一套：
+   同一組「待審核／審核中／審核通過／審核不通過」在創作者端也會出現，
+   兩邊講的必須是同一句話（規格：字詞引用主規格 §7.2 作品審核列）。
+
+   全前端 demo：接手／通過／不通過只改 store 的狀態，不打後端；通過後創作者端
+   的三件事由 project-detail.html 讀 store 播出來。 */
+(function () {
+  'use strict';
+  var T = function (k, fb) { return (window.i18nT && window.i18nT(k)) || fb; };
+  var zh = function () { return document.documentElement.lang === 'zh-Hant'; };
+  var S = window.ztorWorkReview;
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+  var pick = function (o) { return o ? (zh() ? (o.zh || o.en) : (o.en || o.zh)) : ''; };
+
+  /* 審核者身分：v1 的 Admin 是 Beamco 內部團隊（規格 §4.1），原型用一個固定名字代表
+     目前這位操作者。誰是審核者、能不能轉派屬〔產品待確認〕，本頁不自行拍板。 */
+  var ME = 'ztor Ops · You';
+
+  /* ---- 權限：Cheat Codes 的「檢視身分」（page-scoped 預覽開關，見 js/devtools.js）----
+     真實系統由後端判斷；原型只需要能把「無權限」這個頁面狀態演出來。 */
+  window.ZTOR_DEV_PAGE_GROUPS = [{
+    key: 'vrRole', label: '檢視身分', def: 'admin',
+    options: [['admin', '平台營運', '可檢視與裁決'], ['creator', '創作者', '無權限，顯示說明']]
+  }];
+  function role() {
+    var st = window.ztorDevState && window.ztorDevState.get && window.ztorDevState.get();
+    return (st && st.pageOpts && st.pageOpts.vrRole) || 'admin';
+  }
+
+  /* ── 來源項目連結（規格 F2／F3）────────────────────────────────────────
+     審核佇列是全平台的，一件作品的項目住在它自己那位創作者的工作區裡。所以連結
+     不能只帶項目 id：要一併說明「進的是誰的工作區」（規格 §4.1 Admin 選定 Artist
+     後才看得到該 Artist 的模組），落地頁才知道該用誰的資料去查這個 id。
+     from 讓落地頁的返回鍵知道從哪裡來，回得到這個審核佇列。 */
+  var HERE = 'admin-video-review.html';
+  function projectHref(rec) {
+    return 'project-detail.html?id=' + encodeURIComponent(rec.projectId || '') +
+           '&creator=' + encodeURIComponent(S.personaOf(rec)) +
+           '&from=' + encodeURIComponent(HERE);
+  }
+  /* 代管中要顯示的創作者名字，在這裡就知道（送審件本來就帶著），先存起來給落地頁的
+     全域導航用——那些頁面不一定載入項目資料，臨時查不到名字。 */
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-vr-project]');
+    if (!a) return;
+    try {
+      localStorage.setItem('ztor.adminHandoff', JSON.stringify({
+        persona: a.getAttribute('data-vr-project'), from: HERE, name: a.getAttribute('data-vr-creator') || ''
+      }));
+    } catch (err) {}
+  });
+
+  var params = new URLSearchParams(location.search);
+  var currentId = params.get('id') || '';
+  var filter = 'all';
+  var query = '';
+
+  var queueEl = document.getElementById('vr-queue');
+  var detailEl = document.getElementById('vr-detail');
+  var noAccessEl = document.getElementById('vr-noaccess');
+
+  /* ── 等待時間：從送出到現在有多久（F2 Waiting Time）。逾時門檻〔產品待確認〕，
+        所以只講長度、不標紅、不寫「逾期」。 ── */
+  function waited(at) {
+    if (!at) return '—';
+    var t = Date.parse(String(at).replace(' ', 'T'));
+    if (isNaN(t)) return '—';
+    var mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+    if (mins < 60) return zh() ? mins + ' 分鐘' : mins + ' min';
+    var hrs = Math.round(mins / 60);
+    if (hrs < 48) return zh() ? hrs + ' 小時' : hrs + ' hr';
+    return zh() ? Math.round(hrs / 24) + ' 天' : Math.round(hrs / 24) + ' days';
+  }
+
+  function badgeHtml(status) {
+    return '<span class="badge ' + S.tone(status) + '">' + esc(S.label(status)) + '</span>';
+  }
+
+  /* ── F2 待審清單 ─────────────────────────────────────────────────────
+     預設排序＝待處理的排最前，同狀態內等最久的排最前（送出時間由舊到新）。 */
+  var ORDER = { pending: 0, inreview: 1, rejected: 2, approved: 3 };
+  function rows() {
+    var list = S.list().filter(function (r) {
+      if (filter !== 'all' && r.status !== filter) return false;
+      if (!query) return true;
+      var hay = [pick(r.title), r.creator, pick(r.projectName)].join(' ').toLowerCase();
+      return hay.indexOf(query) >= 0;
+    });
+    list.sort(function (a, b) {
+      /* `|| 9` 在這裡是錯的：待審核的序位是 0，會被當成沒有序位而掉到最後——
+         也就是最該先被看到的那一批排到最下面。用明確的 null 判斷。 */
+      var oa = ORDER[a.status] == null ? 9 : ORDER[a.status];
+      var ob = ORDER[b.status] == null ? 9 : ORDER[b.status];
+      var d = oa - ob;
+      if (d) return d;
+      return String(a.submittedAt).localeCompare(String(b.submittedAt));
+    });
+    return list;
+  }
+
+  function renderCounts() {
+    var c = S.counts();
+    document.querySelectorAll('#vr-tabs .tabs__item').forEach(function (t) {
+      var k = t.dataset.tab;
+      t.querySelector('.tabs__item-count').textContent = String(k === 'all' ? c.all : (c[k] || 0));
+    });
+  }
+
+  function renderQueue() {
+    renderCounts();
+    var list = rows();
+    var root = document.getElementById('vr-list');
+    if (!list.length) {
+      /* 完全沒有送審件與「篩到沒有」是兩件事，說法要分開——後者要給得回去的路。 */
+      var none = S.list().length === 0;
+      root.innerHTML =
+        '<div class="empty-card">' +
+          '<div class="empty-card__icon"><i data-lucide="file-check" class="ztor-icon"></i></div>' +
+          '<h2 class="empty-card__title">' + esc(T(none ? 'vr.empty.title' : 'vr.noresult.title', none ? 'Nothing waiting' : 'No matches')) + '</h2>' +
+          '<p class="empty-card__text">' + esc(T(none ? 'vr.empty.text' : 'vr.noresult.text', none ? 'Submitted films land here the moment a creator sends one.' : 'Nothing matches this filter or search.')) + '</p>' +
+          (none ? '' : '<button class="btn btn--outline" type="button" id="vr-clear">' + esc(T('vr.noresult.clear', 'Clear filters')) + '</button>') +
+        '</div>';
+      var clear = document.getElementById('vr-clear');
+      if (clear) clear.addEventListener('click', function () {
+        filter = 'all'; query = ''; document.getElementById('vr-search').value = '';
+        syncTabs(); renderQueue();
+      });
+      window.ztorIcons.render();
+      return;
+    }
+    root.innerHTML =
+      '<div class="admin-table-wrap"><table class="ztor-table"><thead><tr>' +
+        '<th>' + esc(T('vr.col.work', 'Work')) + '</th>' +
+        '<th>' + esc(T('vr.col.creator', 'Creator')) + '</th>' +
+        '<th>' + esc(T('vr.col.project', 'Project')) + '</th>' +
+        '<th>' + esc(T('vr.col.status', 'Status')) + '</th>' +
+        '<th>' + esc(T('vr.col.submitted', 'Sent')) + '</th>' +
+        '<th>' + esc(T('vr.col.waiting', 'Waiting')) + '</th>' +
+        '<th>' + esc(T('vr.col.count', 'Times')) + '</th>' +
+        '<th>' + esc(T('vr.col.reviewer', 'Reviewer')) + '</th>' +
+        '<th></th>' +
+      '</tr></thead><tbody>' +
+      list.map(function (r) {
+        return '<tr>' +
+          '<td class="ztor-table__feature"><div class="admin-table__film">' +
+            '<span class="admin-table__thumb"' + (r.cover ? ' style="background-image:url(' + esc(r.cover) + ');background-size:cover;background-position:center"' : '') + '></span>' +
+            '<span>' + esc(pick(r.title)) + '</span></div></td>' +
+          '<td>' + esc(r.creator) + '</td>' +
+          /* 規格 F2：來源項目可連回該項目詳情——審核者常需要先看項目在講什麼才判斷得了作品。 */
+          '<td><a class="card__link" href="' + esc(projectHref(r)) + '" data-vr-project="' + esc(S.personaOf(r)) +
+            '" data-vr-creator="' + esc(r.creator || '') + '">' + esc(pick(r.projectName)) + '</a></td>' +
+          '<td>' + badgeHtml(r.status) + '</td>' +
+          '<td>' + esc(r.submittedAt || '—') + '</td>' +
+          '<td>' + esc(S.isOpen(r.status) ? waited(r.submittedAt) : '—') + '</td>' +
+          '<td>' + esc(String(r.count || 1)) + '</td>' +
+          '<td>' + esc(r.reviewer || '—') + '</td>' +
+          '<td><a class="btn btn--outline btn--sm" href="admin-video-review.html?id=' + encodeURIComponent(r.id) + '">' +
+            esc(T(S.isOpen(r.status) ? 'vr.row.review' : 'vr.row.view', S.isOpen(r.status) ? 'Review' : 'View')) + '</a></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+    window.ztorIcons.render();
+  }
+
+  function syncTabs() {
+    document.querySelectorAll('#vr-tabs .tabs__item').forEach(function (t) {
+      var on = t.dataset.tab === filter;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', String(on));
+    });
+  }
+
+  document.getElementById('vr-tabs').addEventListener('click', function (e) {
+    var t = e.target.closest('.tabs__item');
+    if (!t) return;
+    filter = t.dataset.tab;
+    syncTabs();
+    renderQueue();
+  });
+  document.getElementById('vr-search').addEventListener('input', function (e) {
+    query = e.target.value.trim().toLowerCase();
+    renderQueue();
+  });
+
+  /* ── F3 送審內容檢視 ──────────────────────────────────────────────── */
+  function kv(k, v) {
+    return '<div class="kv"><span class="kv__k">' + esc(k) + '</span><span class="kv__v">' + esc(v || '—') + '</span></div>';
+  }
+  var FILE_STATE = { ready: 'vr.file.ready', processing: 'vr.file.processing', uploading: 'vr.file.uploading', empty: 'vr.file.empty' };
+  function renderWork(rec) {
+    var w = rec.work || {};
+    var n = function (v) { return v == null || v === '' ? '—' : String(v); };
+
+    document.getElementById('vr-s1').innerHTML =
+      kv(T('pw.media.file.title', 'Video file'), n(w.file && w.file.name)) +
+      kv(T('vr.file.state', 'File state'), T(FILE_STATE[(w.file && w.file.state) || 'empty'], '—')) +
+      kv(T('pw.media.audio.lang', 'Original language'), T(w.audio, '—')) +
+      kv(T('pw.media.subs.title', 'Subtitles'),
+         (w.subs && w.subs.length) ? w.subs.map(function (s) { return T(s.lang, s.lang) + (s.name ? ' · ' + s.name : ''); }).join('、') : '—');
+
+    document.getElementById('vr-s2').innerHTML =
+      kv(T('pw.art.cover.title', 'Cover'), w.cover ? T('vr.yes.uploaded', 'Uploaded') : '—') +
+      kv(T('pw.art.stills.title', 'Stills'), w.stills ? (zh() ? w.stills + ' 張' : w.stills) : '—') +
+      kv(T('pw.art.bts.title', 'Behind the scenes'), w.bts ? (zh() ? w.bts + ' 支' : w.bts) : '—') +
+      kv(T('pw.art.trailer.title', 'Trailer'), n(w.trailer));
+
+    var copy = (w.copy || []).map(function (c) {
+      return '<div class="kv"><span class="kv__k">' + esc(T(c.lang, c.lang)) + '</span><span class="kv__v">' + esc(c.title || '—') + '</span></div>' +
+             (c.desc ? '<p class="text-sub" style="margin:0 0 var(--sp-8);font-size:var(--fs-13)">' + esc(c.desc) + '</p>' : '');
+    }).join('');
+    document.getElementById('vr-s3').innerHTML =
+      copy +
+      kv(T('pw.info.runtime', 'Runtime'), n(w.runtime)) +
+      kv(T('pw.info.release', 'Release date'), n(w.release)) +
+      kv(T('pw.info.genre.title', 'Genres'), (w.genres && w.genres.length) ? w.genres.map(function (g) { return T(g, g); }).join('、') : '—') +
+      kv(T('pw.info.tags.title', 'Tags'), (w.tags && w.tags.length) ? w.tags.join('、') : '—') +
+      kv(T('pw.info.age.title', 'Age rating'), T(w.age, '—')) +
+      kv(T('pw.price.paid', 'Charge for this work'), w.paid ? T('vr.paid.yes', 'Paid') : T('vr.paid.no', 'Free')) +
+      (w.paid ? kv(T('pw.price.currency', 'Currency'), n(w.currency)) : '') +
+      (w.paid ? (w.qualities || []).map(function (q) {
+        return kv(q.name, [q.price, q.popcorn + ' ' + T('pw.price.popcorn', 'Popcorn kernels'),
+          q.rent + ' ' + T('vr.days', 'days'), q.watch + ' ' + T('vr.days', 'days')].join(' · '));
+      }).join('') : '');
+
+    var credits = (w.credits || []).map(function (c) { return kv(T(c.role, c.role), (c.names || []).join('、')); }).join('');
+    document.getElementById('vr-s4').innerHTML =
+      (credits || '<p class="text-sub" style="margin:0">' + esc(T('vr.credits.none', 'The creator left this blank.')) + '</p>') +
+      (w.notes ? kv(T('pw.credits.notes.title', 'Notes'), w.notes) : '');
+  }
+
+  var ACTION_LABEL = { submit: 'vr.hist.submit', start: 'vr.hist.start', approve: 'vr.hist.approve', reject: 'vr.hist.reject' };
+  var ACTION_ICON = { submit: 'upload', start: 'eye', approve: 'check-circle', reject: 'x-circle' };
+  function renderHistory(rec) {
+    document.getElementById('vr-history').innerHTML = (rec.history || []).map(function (h) {
+      return '<div class="data-list__row"><div class="data-list__row-main">' +
+        '<div class="data-list__icon"><i data-lucide="' + (ACTION_ICON[h.action] || 'circle') + '" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body">' +
+          '<div class="data-list__title">' + esc(T(ACTION_LABEL[h.action], h.action)) + (h.by ? ' · ' + esc(h.by) : '') + '</div>' +
+          '<div class="data-list__meta">' + esc(h.at) + (h.reason ? ' · ' + esc(h.reason) : '') + '</div>' +
+        '</div></div></div>';
+    }).join('');
+  }
+
+  function renderDetail(rec) {
+    document.getElementById('vr-crumb-sep').hidden = false;
+    var crumb = document.getElementById('vr-crumb-item');
+    crumb.hidden = false;
+    crumb.textContent = pick(rec.title);
+
+    var head = document.getElementById('vr-head');
+    head.classList.toggle('review-status--rejected', rec.status === 'rejected');
+    head.classList.toggle('review-status--approved', rec.status === 'approved');
+    var badge = document.getElementById('vr-head-badge');
+    badge.textContent = S.label(rec.status);
+    badge.className = 'badge ' + S.tone(rec.status);
+    document.getElementById('vr-head-title').textContent = pick(rec.title);
+    document.getElementById('vr-head-creator').textContent = rec.creator || '—';
+    document.getElementById('vr-head-at').textContent = rec.submittedAt || '—';
+    document.getElementById('vr-head-wait').textContent = S.isOpen(rec.status) ? waited(rec.submittedAt) : '—';
+    document.getElementById('vr-head-count').textContent = String(rec.count || 1);
+    document.getElementById('vr-head-reviewer-wrap').hidden = !rec.reviewer;
+    document.getElementById('vr-head-reviewer').textContent = rec.reviewer || '';
+
+    var note = document.getElementById('vr-head-note');
+    if (rec.status === 'rejected' && rec.reason) {
+      note.hidden = false;
+      document.getElementById('vr-head-note-label').textContent = T('vr.reject.reason', 'Why it came back');
+      document.getElementById('vr-head-note-body').textContent = rec.reason;
+    } else if (rec.status === 'approved') {
+      note.hidden = false;
+      document.getElementById('vr-head-note-label').textContent = T('vr.approved.label', 'What this triggered');
+      document.getElementById('vr-head-note-body').textContent = T('vr.approved.body', 'The work is on sale, the completion post went out, and the project is Live.');
+    } else { note.hidden = true; }
+
+    /* 已審完的件只保留檢視（規格 F4 其他狀態）；待審核先接手、審核中才給裁決兩顆。 */
+    var open = S.isOpen(rec.status);
+    document.getElementById('vr-actions').hidden = false;
+    document.getElementById('vr-act-start').hidden = rec.status !== 'pending';
+    document.getElementById('vr-act-approve').hidden = rec.status !== 'inreview';
+    document.getElementById('vr-act-reject').hidden = rec.status !== 'inreview';
+
+    /* 來源項目脈絡。查項目要指名是誰的資料集——這一頁看的是全平台的送審件，
+       用「目前這位創作者」去查別人的項目 id 一定查不到（2026-08-07 修：原本查
+       不到就一律顯示「已成立」，等於替一個沒讀到的項目編一個狀態）。 */
+    var proj = window.ztorProjects ? window.ztorProjects.getIn(S.personaOf(rec), rec.projectId) : null;
+    var link = document.getElementById('vr-ctx-project');
+    link.textContent = pick(rec.projectName) || rec.projectId || '—';
+    link.setAttribute('href', projectHref(rec));
+    link.setAttribute('data-vr-project', S.personaOf(rec));
+    link.setAttribute('data-vr-creator', rec.creator || '');
+    document.getElementById('vr-ctx-status').textContent = proj
+      ? T('vr.projstatus.' + proj.status, proj.status)
+      : '—';
+    document.getElementById('vr-ctx-post').textContent = (rec.post && rec.post.title) || '—';
+    document.getElementById('vr-ctx-audience').textContent = rec.post && rec.post.audience ? T(rec.post.audience, '—') : '—';
+
+    renderWork(rec);
+    renderHistory(rec);
+    window.ztorIcons.render();
+    return open;
+  }
+
+  /* ── F4 審核動作 ──────────────────────────────────────────────────── */
+  function openModal(id) { document.getElementById(id).hidden = false; }
+  function closeModals() { document.querySelectorAll('.payout-modal:not([hidden])').forEach(function (d) { d.hidden = true; }); }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-vr-close]')) { closeModals(); return; }
+    if (e.target.classList && e.target.classList.contains('payout-modal')) closeModals();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModals(); });
+
+  document.getElementById('vr-act-start').addEventListener('click', function () {
+    S.start(currentId, ME);
+    render();
+    window.ztorToast.show(T('vr.toast.start', 'You are reviewing this one'), { tone: 'success' });
+  });
+  document.getElementById('vr-act-approve').addEventListener('click', function () { openModal('vr-approve-modal'); });
+  document.getElementById('vr-act-reject').addEventListener('click', function () {
+    document.getElementById('vr-reject-reason').value = '';
+    openModal('vr-reject-modal');
+  });
+  document.getElementById('vr-approve-confirm').addEventListener('click', function () {
+    S.approve(currentId, ME);
+    closeModals();
+    render();
+    window.ztorToast.show(T('vr.toast.approved', 'Approved — the work is live'), { tone: 'success' });
+  });
+  document.getElementById('vr-reject-confirm').addEventListener('click', function () {
+    var reason = document.getElementById('vr-reject-reason').value.trim();
+    /* 退件理由必填：沒有理由的退件對創作者等於「再猜一次」。 */
+    if (!reason) { document.getElementById('vr-reject-reason').focus(); return; }
+    S.reject(currentId, reason, ME);
+    closeModals();
+    render();
+    window.ztorToast.show(T('vr.toast.rejected', 'Sent back to the creator'), { tone: 'success' });
+  });
+
+  /* ── 繪製 ─────────────────────────────────────────────────────────── */
+  function render() {
+    var denied = role() !== 'admin';
+    noAccessEl.hidden = !denied;
+    if (denied) { queueEl.hidden = true; detailEl.hidden = true; return; }
+
+    var rec = currentId ? S.get(currentId) : null;
+    if (currentId && !rec) currentId = '';   /* id 不存在時退回清單，不留白 */
+    queueEl.hidden = !!rec;
+    detailEl.hidden = !rec;
+    document.getElementById('vr-crumb-sep').hidden = !rec;
+    document.getElementById('vr-crumb-item').hidden = !rec;
+    if (rec) renderDetail(rec); else renderQueue();
+  }
+
+  document.addEventListener('ztor:devstate-changed', render);
+  /* 切語言時本頁自己畫的那些內容（清單列、送審欄位、歷程）要重畫一次——它們是用
+     i18nT() 直接產生的字串，沒有 data-i18n，i18n.js 的 apply() 掃不到。
+     render() 內不再回頭呼叫 applyI18n：那會再觸發一次 i18n:applied，變成無限迴圈。 */
+  document.addEventListener('i18n:applied', render);
+  syncTabs();
+  render();
+})();
+</script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>

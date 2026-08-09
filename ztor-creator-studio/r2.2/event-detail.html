@@ -23,6 +23,12 @@
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<!-- 2026-08-06：編輯搬進本頁，欄位、格線與上傳格的樣式跟著進來 -->
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/date-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* event-detail 專屬 layout/狀態 hook。可重用 chrome 由 ds-components 提供。
@@ -46,6 +52,13 @@
      .kpi--success/--warning/--destructive 色態變體（2026-07-11）。 */
 
   .ed-hero__meta { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
+
+  /* 票種列（2026-08-06 自 edit-event.html 搬入）：一張票種＝一個 form-section，
+     標頭放已售張數與刪除鈕；已售出者刪除鈕壓灰不可按（票在買方手上）。 */
+  .ed-tier__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); margin-bottom: var(--sp-12); }
+  .ed-tier__meta { display: inline-flex; align-items: center; gap: var(--sp-8); }
+  .ed-tier__sold { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .ed-tier__del[disabled] { opacity: .4; cursor: not-allowed; }
 
   /* ── 現場報到台（活動進行中）──────────────────────────────
      只在 status='live' 的場次出現。數字本身是主角，故 headline 走 display 字級；
@@ -108,9 +121,17 @@
           <h1 class="page-intro__title" data-i18n="event-detail.h1">Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party</h1>
           <p class="page-intro__sub" data-i18n="event-detail.sub">Apr 12, 2026 · 8:00 PM · Legacy Taipei, Taipei</p>
         </div>
+        <!-- 編輯不再跳頁（2026-08-06）：這一排是「檢視／編輯」兩種狀態的同一組動作，
+             由 syncEditMode() 一起驅動，不各自維護。刪除活動只在編輯態出現——
+             在唯讀畫面上擺一顆會刪掉整場活動的鈕，太容易誤觸。 -->
         <div class="page-intro__actions">
-          <a class="btn btn--outline" href="edit-event.html?id=realive-chongqing" data-i18n="event-detail.btn.edit">Edit event</a>
-          <button class="btn btn--ghost" type="button" data-i18n="event-detail.btn.preview">View ticket page</button>
+          <button class="btn btn--destructive" type="button" data-ed-delete hidden data-i18n="ee.delete">Delete event</button>
+          <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
+          <button class="btn btn--outline" type="button" data-ed-editmode aria-pressed="false">
+            <i data-lucide="pencil" class="ztor-icon"></i>
+            <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
+          </button>
+          <button class="btn btn--ghost" type="button" data-ed-preview data-i18n="event-detail.btn.preview">View ticket page</button>
         </div>
       </div>
 
@@ -137,7 +158,11 @@
       </nav>
 
       <!-- ════════════════ Overview ════════════════ -->
-      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel">
+      <!-- 2026-08-06 使用者指示：編輯搬進詳情頁，獨立的 edit-event.html 撤除。
+           做法沿用項目詳情頁（project-detail.html）2026-07-27 已裁決的那套：面板永遠長成
+           「編輯畫面的樣子」，檢視模式只是把可以打字的訊號拿掉（shared.css 的 [data-mode="view"]），
+           所以切換模式時版面完全不位移。系列子場不給編輯——共用設定在系列母頁改（見下方 syncEditable）。 -->
+      <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel" data-editable data-mode="view">
         <div class="bento">
 
           <!-- 活動詳情 -->
@@ -145,13 +170,82 @@
             <div class="card__head">
               <h3 class="card__title" data-i18n="event-detail.ov.details.title">Event details</h3>
             </div>
+            <!-- 類型與系列不在這裡改：類型是建立時的閘門選擇、系列在系列母頁管理。
+                 兩者留唯讀列，其餘欄位可就地編輯。 -->
             <div class="data-list">
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.datetime">Date &amp; time</span></div><span>Apr 12, 2026 · 8:00 PM (GMT+8)</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.venue">Venue</span></div><span>Legacy Taipei · Taipei</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.lineup">Lineup</span></div><span data-i18n="event-detail.ov.lineup-val">Mika L · Kowloon After Dark (band)</span></div>
               <div class="data-list__row" data-hide-type="watchparty"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.stream">Stream entitlement</span></div><span data-i18n="event-detail.ov.stream-val">VIP tier includes live stream</span></div>
+            </div>
+
+            <div class="field mt-16">
+              <label class="field__label" for="ed-name"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+              <input class="input" id="ed-name" data-ed="name" data-required>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ed-desc" data-i18n="ce.desc">Description</label>
+              <textarea class="textarea" id="ed-desc" data-ed="desc" rows="3"></textarea>
+            </div>
+
+            <div class="field">
+              <div class="field__label" data-i18n="ce.lineup">Lineup / performers</div>
+              <div id="ed-lineup"></div>
+              <button class="btn btn--outline btn--sm mt-8" type="button" id="ed-lineup-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
+            </div>
+
+            <!-- 圖片沿用建立流程 2026-08-06 改好的相簿：排第一的就是主視覺，末格是「＋ 新增圖片」。 -->
+            <div class="field">
+              <div class="field__label" data-i18n="ce.images">Images</div>
+              <div class="upload-assets" id="ed-gallery"></div>
+              <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="ed-venue"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+              <input class="input" id="ed-venue" data-ed="venue" data-required>
+            </div>
+            <div class="field">
+              <label class="field__label" for="ed-address"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <input class="input" id="ed-address" data-ed="address">
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="ed-date"><span data-i18n="ce.date">Event date</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+              <input class="input" id="ed-date" data-ed="date" type="date" data-required>
+            </div>
+            <div class="form-grid form-grid--3">
+              <div class="field">
+                <label class="field__label" for="ed-start" data-i18n="ce.start">Start time</label>
+                <input class="input" id="ed-start" data-ed="start" type="time">
+              </div>
+              <div class="field">
+                <label class="field__label" for="ed-end" data-i18n="ce.end">End time</label>
+                <input class="input" id="ed-end" data-ed="end" type="time">
+              </div>
+              <div class="field">
+                <label class="field__label" for="ed-doors" data-i18n="ce.doors">Doors open</label>
+                <input class="input" id="ed-doors" data-ed="doors" type="time">
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label class="field__label" for="ed-attend-min"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+                <input class="input" id="ed-attend-min" data-ed="attendMin" type="number" min="0" step="1">
+              </div>
+              <div class="field">
+                <label class="field__label" for="ed-capacity"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+                <input class="input" id="ed-capacity" data-ed="capacity" type="number" min="1" step="1" data-required>
+                <p class="field__hint" id="ed-capacity-hint"></p>
+              </div>
+            </div>
+
+            <!-- 系列子場：共用設定在母頁改，這一頁只能看（2026-08-06 使用者裁決：暫時不可單獨修改）。 -->
+            <div class="alert alert--row alert--info mt-16" id="ed-series-lock" hidden>
+              <span class="alert__icon"><i data-lucide="info" class="ztor-icon"></i></span>
+              <div class="alert__body">
+                <div class="alert__title" data-i18n="event-detail.edit.serieslock">This date is part of a series — edit it on the series page</div>
+                <div class="alert__meta"><a class="card__link" href="series-detail.html" data-i18n="event-detail.series.manage">Manage the series →</a></div>
+              </div>
             </div>
 
             <div class="info-banner mt-16">
@@ -250,62 +344,17 @@
       </div>
 
       <!-- ════════════════ Ticket tiers ════════════════ -->
-      <div class="tab-panel" data-panel="tiers" data-hide-type="watchparty" role="tabpanel">
+      <!-- 2026-08-06：票種由唯讀表格改成可就地編輯的清單（編輯搬進詳情頁，edit-event.html 撤除）。
+           規則從舊編輯頁原封搬過來：**已售出的票種可以關閉銷售、但不能刪除**——票在買方手上。
+           清單由 JS 依 store 渲染，檢視模式靠 [data-mode="view"] 鎖住（shared.css），與總覽同一套。 -->
+      <div class="tab-panel" data-panel="tiers" data-hide-type="watchparty" role="tabpanel" data-editable data-mode="view">
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.tiers.title">Ticket tiers</h2>
-          <div class="section-head__sub" data-i18n="event-detail.tiers.sub">1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).</div>
+          <div class="section-head__sub" data-i18n="event-detail.tiers.sub2">Tiers that already sold can be closed, but not deleted — buyers hold them.</div>
         </div>
 
-        <section class="card" style="padding:0;overflow:hidden">
-          <table class="ztor-table">
-            <thead>
-              <tr>
-                <th data-i18n="event-detail.tiers.col.tier">Tier</th>
-                <th data-i18n="event-detail.tiers.col.price">Price</th>
-                <th data-i18n="event-detail.tiers.col.entitlement">Entitlement</th>
-                <th data-i18n="event-detail.tiers.col.progress">Sold / cap</th>
-                <th data-i18n="event-detail.tiers.col.status">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="ztor-table__row">
-                <td><strong>General Admission</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.ga.window">Sale Mar 01 – Apr 12</div></td>
-                <td>$30 USD</td>
-                <td><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.ent.inperson">In-person</span></span></td>
-                <td>
-                  <div class="tier-progress">62 / 120
-                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:52%"></div></div>
-                  </div>
-                </td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.tiers.st.onsale">On sale</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td><strong>VIP + Live stream</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.vip.window">Sale Mar 01 – Apr 11 · Top Fan priority</div></td>
-                <td>$80 USD</td>
-                <td><span class="badge badge--info"><span data-i18n="event-detail.tiers.ent.both">In-person + stream</span></span></td>
-                <td>
-                  <!-- 80% → 黃警示 -->
-                  <div class="tier-progress tier-progress--warn">17 / 20
-                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:85%"></div></div>
-                  </div>
-                </td>
-                <td><span class="badge badge--warning"><span data-i18n="event-detail.tiers.st.almost">Almost sold out</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td><strong>Livestream only</strong><div class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.tiers.stream.window">Sale Mar 01 – Apr 12 · replay 48 h</div></td>
-                <td>$15 USD</td>
-                <td><span class="badge badge--accent"><span data-i18n="event-detail.tiers.ent.stream">Stream only</span></span></td>
-                <td>
-                  <!-- 95% → 紅警示 -->
-                  <div class="tier-progress tier-progress--danger">58 / 60
-                    <div class="tier-progress__bar"><div class="tier-progress__fill" style="width:97%"></div></div>
-                  </div>
-                </td>
-                <td><span class="badge badge--error"><span data-i18n="event-detail.tiers.st.nearfull">Near capacity</span></span></td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <div id="ed-tier-list"></div>
+        <button class="btn btn--outline btn--sm mt-24" type="button" id="ed-tier-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ee.tix.add">Add tier</span></button>
 
         <section class="card mt-16">
           <div class="card__head">
@@ -637,10 +686,20 @@
       <div class="tab-panel" data-panel="series" data-hide-type="watchparty" role="tabpanel">
         <div class="section-head">
           <h2 class="section-head__title" data-i18n="event-detail.series.title">Series management</h2>
-          <div class="section-head__sub" data-i18n="event-detail.series.sub">How this single date relates to the whole series (§5.1.6 F5).</div>
+          <div class="section-head__sub">
+            <span data-i18n="event-detail.series.sub">How this single date relates to the whole series (§5.1.6 F5).</span>
+          <!-- 2026-08-06：系列有了自己的母頁，這裡給一個入口。共用設定（名稱、票種、圖片）
+               改在母頁一次改完同步全部場次；這一頁只管這一場自己的事。
+               連結掛在 __sub 裡不另開一個第三欄——.section-head 是 space-between 的兩欄版型，
+               多塞一個子元素會把副標推到正中央。 -->
+          <a class="card__link" href="series-detail.html" data-i18n="event-detail.series.manage">Manage the series →</a>
+          </div>
         </div>
 
-        <section class="card">
+        <!-- 同系列各場：這場活動的 store 紀錄帶 series.id 時，由下方 JS 依 id 撈出同系列
+             全部場次重繪；沒有 series.id（示例頁、或只掛了系列名稱沒有系列 id 的舊紀錄）
+             才維持這三列示例內容。 -->
+        <section class="card" data-series-list>
           <div class="data-list">
             <div class="data-list__row">
               <div class="data-list__row-main">
@@ -703,6 +762,8 @@
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="partials/upload-tile.js?v=r2.2"></script>
+<script src="partials/date-input.js?v=r2.2"></script>
 <script>
   /* 假 QR（與 pickup-detail／create-product 同一支；此處守衛以免重複定義） */
   window.ztorFauxQr = window.ztorFauxQr || function (seed) {
@@ -794,11 +855,85 @@
   const STAGE_KEY = { 'live': 'events.badge.live', 'on-sale': 'events.badge.on-sale',
                       'draft': 'events.status.draft', 'ended': 'events.badge.ended', 'scheduled': 'events.badge.scheduled' };
 
+  /* ── 「系列」分頁的各場清單（2026-08-06）──────────────────────
+     這場活動的 store 紀錄帶 series.id 時，從 store 撈出同系列全部場次重繪；
+     沒有 series.id 就什麼都不做，保留原本那三列示例——對這場活動陳述別人的巡演
+     才是真的誤導，但「還沒接線的示例」至少不會假裝是這一場的資料。
+     每一列連到那一場自己的詳情頁，本場標「這一場」且不做成連結（點了原地不動）。 */
+  function renderSeriesList(ev) {
+    const card = document.querySelector('[data-series-list] .data-list');
+    if (!card || !ev.series || !ev.series.id || !window.ztorEvents) return;
+    const all = window.ztorEvents.list()
+      .filter(e => e.series && e.series.id === ev.series.id)
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    if (all.length < 2) return;              // 只有自己一場＝不成系列，不重繪
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    card.innerHTML = all.map(e => {
+      const me = e.id === ev.id;
+      const meta = [fmtDate(e.date), [e.venue, e.city].filter(Boolean).join(' · ')].filter(Boolean).join(' · ');
+      const soldOut = e.capacity > 0 && e.sold >= e.capacity;
+      const badgeKey = soldOut ? 'events.badge.soldout' : (STAGE_KEY[e.status] || 'events.badge.scheduled');
+      const badgeCls = (soldOut || e.status === 'on-sale') ? ' badge--success' : '';
+      const title = me
+        ? esc(e.name)
+        : '<a class="card__link" href="event-detail.html?id=' + encodeURIComponent(e.id) + '">' + esc(e.name) + '</a>';
+      return '<div class="data-list__row">' +
+        '<div class="data-list__row-main">' +
+          '<div class="data-list__icon data-list__icon--' + (me ? 'success' : 'info') + '">' +
+            '<i data-lucide="' + (me ? 'check-circle' : 'calendar') + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body">' +
+            '<div class="data-list__title">' + title + '</div>' +
+            '<div class="data-list__meta">' + esc(meta) +
+              (me ? ' · <span data-i18n="event-detail.series.this">' +
+                    esc(T('event-detail.series.this', 'this event')) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<span class="badge' + badgeCls + '"><span data-i18n="' + badgeKey + '">' +
+          esc(T(badgeKey, e.status)) + '</span></span>' +
+      '</div>';
+    }).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+  }
+
   /* ── 頁首／KPI／總覽：填入這一場的真實欄位 ── */
   function hydrate() {
     /* 2026-07-28：麵包屑收成 .page-crumb（原本是 .text-sub ＋ inline style）。 */
-    const crumb = document.querySelector('.page-crumb span:last-child');
-    if (crumb && !crumb.hasAttribute('data-i18n')) crumb.textContent = ev.name;
+    /* 麵包屑：屬於系列的場次多一層——活動 / 系列母頁 / 這一場（2026-08-06 使用者指示）。
+       階層上這一場是掛在系列底下的，返回鈕也跟著回系列母頁而不是整份活動清單。
+       末層不能用活動名稱：同系列各場刻意同名（SER-001 ⑥），三場的麵包屑會長得一模一樣，
+       所以末層改寫「第 N 場 · 場地」——那才是這一頁跟兄弟場次的差別。
+       hydrate 會被 i18n:applied 再呼叫一次，中間那層用 data-crumb-series 認領、只插一次。 */
+    const crumbBox = document.querySelector('.page-crumb');
+    const crumb = crumbBox && crumbBox.querySelector('span:last-child');
+    const inSeries = !!(ev.series && ev.series.id);
+    if (crumbBox && inSeries) {
+      let mid = crumbBox.querySelector('[data-crumb-series]');
+      if (!mid) {
+        mid = document.createElement('a');
+        mid.className = 'card__link';
+        mid.setAttribute('data-crumb-series', '');
+        mid.href = 'series-detail.html';
+        const sep = document.createElement('span');
+        sep.style.margin = '0 6px';
+        sep.textContent = '/';
+        crumbBox.insertBefore(mid, crumb);
+        crumbBox.insertBefore(sep, crumb);
+      }
+      mid.textContent = ev.series.name;
+      const back = crumbBox.querySelector('.page-crumb__back');
+      if (back) back.href = 'series-detail.html';
+    }
+    if (crumb && !crumb.hasAttribute('data-i18n')) {
+      crumb.textContent = inSeries
+        ? T('event-detail.crumb.leg', 'Date {i} · {venue}')
+            .replace('{i}', ev.series.index).replace('{venue}', ev.venue || '')
+        : ev.name;
+    }
+    /* 分頁標題也要跟著這一場（2026-08-06）：原本只有「找不到活動」那條分支會改 title，
+       其餘一律留著 <head> 裡示例活動的名稱——不論打開哪一場，瀏覽器分頁都寫著別人的活動。 */
+    document.title = ev.name + ' · ' + T('event-detail.doctitle', 'Event detail') + ' · Ztor Creator Studio';
     const h1 = $('.page-intro__title');
     if (h1) { h1.removeAttribute('data-i18n'); h1.textContent = ev.name; }
     const sub = $('.page-intro__sub');
@@ -821,8 +956,7 @@
          textContent 會把它原樣印成「Meet &amp;amp; Greet」。字典是自家可信內容。 */
       if (sp) { sp.setAttribute('data-i18n', ev.typeLabelKey); sp.innerHTML = T(ev.typeLabelKey, ev.type); }
     }
-    const edit = $('.page-intro__actions a[href^="edit-event"]');
-    if (edit) edit.href = 'edit-event.html?id=' + encodeURIComponent(ev.id);
+    fillEditForm(ev);            // 就地編輯的欄位帶入這一場的現值（2026-08-06）
 
     const kpis = document.querySelectorAll('.bento .kpi .kpi__value');
     if (kpis[0]) kpis[0].textContent = fmtNum(ev.sold) + ' / ' + fmtNum(ev.capacity || ev.sold);
@@ -841,24 +975,28 @@
        選擇器必須是「列的直接子 span」——`.data-list__row span:last-child` 會連
        .data-list__row-main 裡的標籤 span 一起選中，於是值寫進了標籤格（實測：Type 那列的值
        變成日期、第二列的標籤變成場地字串）。用 `>` 限定直接子層才只命中值。 */
-    const vals = document.querySelectorAll('[data-panel="overview"] .data-list__row > span:last-child');
-    if (vals[0]) { vals[0].removeAttribute('data-i18n'); vals[0].innerHTML = T(ev.typeLabelKey, ev.type); }
-    if (vals[1]) { vals[1].removeAttribute('data-i18n'); vals[1].textContent = [fmtDate(ev.date), fmtTime(ev.start)].filter(Boolean).join(' · '); }
-    if (vals[2]) { vals[2].removeAttribute('data-i18n'); vals[2].textContent = [ev.venue, ev.city].filter(Boolean).join(' · '); }
-    if (vals[3]) { vals[3].removeAttribute('data-i18n'); vals[3].textContent = (ev.lineup || []).join(' · ') || '—'; }
-    /* 系列：store 現在有 series 欄位——有值就填真實的巡演資訊，沒有就整列收起
-       （粉絲見面會顯示「Series 2 of 3」是對這場活動陳述不實）。
-       直播權益 store 沒有這個欄位，一律收起。 */
-    if (vals[4] && vals[4].closest('.data-list__row')) {
-      const row = vals[4].closest('.data-list__row');
+    /* 2026-08-06：總覽的日期／場地／演出陣容三列改成可編輯欄位後，這裡只剩「類型」與「系列」
+       兩列唯讀。**改成用標籤 key 定位、不再用索引** —— 原本是 vals[0]..vals[5] 依序對應六列，
+       少了四列之後索引全部錯位，系列那一格會被填進日期（實測抓到）。索引綁的是「排第幾」，
+       那是最容易被下一次改版洗掉的東西。 */
+    const rowVal = key => {
+      const label = document.querySelector('[data-panel="overview"] .data-list__row [data-i18n="' + key + '"]');
+      const row = label && label.closest('.data-list__row');
+      return row ? { row: row, val: row.querySelector(':scope > span:last-child') } : null;
+    };
+    const typeRow = rowVal('event-detail.ov.type');
+    if (typeRow && typeRow.val) { typeRow.val.removeAttribute('data-i18n'); typeRow.val.innerHTML = T(ev.typeLabelKey, ev.type); }
+    /* 系列：store 有 series 欄位——有值就填真實的巡演資訊，沒有就整列收起
+       （粉絲見面會顯示「Series 2 of 3」是對這場活動陳述不實）。 */
+    const serRow = rowVal('event-detail.ov.series');
+    if (serRow && serRow.val) {
       if (ev.series) {
-        row.hidden = false;
-        vals[4].removeAttribute('data-i18n');
-        vals[4].textContent = T('event-detail.series.val', '{name} · {i} of {n}')
+        serRow.row.hidden = false;
+        serRow.val.removeAttribute('data-i18n');
+        serRow.val.textContent = T('event-detail.series.val', '{name} · {i} of {n}')
           .replace('{name}', ev.series.name).replace('{i}', ev.series.index).replace('{n}', ev.series.total);
-      } else row.hidden = true;
+      } else serRow.row.hidden = true;
     }
-    if (vals[5] && vals[5].closest('.data-list__row')) vals[5].closest('.data-list__row').hidden = true;
     /* 頁首的系列徽章同理：有系列才顯示，內容用真實的巡演名稱 */
     const seriesBadge = document.querySelectorAll('.page-intro .badge')[1];
     if (seriesBadge) {
@@ -868,6 +1006,10 @@
         if (sp) { sp.removeAttribute('data-i18n'); sp.textContent = ev.series.index + '/' + ev.series.total; }
       } else seriesBadge.hidden = true;
     }
+    /* 「系列」分頁的各場清單：有 series.id 就從 store 撈同系列全部場次重繪，
+       本場標「這一場」。沒有 series.id 時什麼都不做——保留原本那三列示例，
+       總比對這場活動陳述別人的巡演好。 */
+    renderSeriesList(ev);
     /* 頁尾同樣寫著示例的系列資訊（「Kowloon Café 10th Anniv. — Kowloon After Dark OST · Series 1 of 3」），
        對這場活動一樣是錯的；改成這場活動的名稱。 */
     const foot = $('.app-footer [data-i18n="event-detail.footer1"]');
@@ -1096,7 +1238,262 @@
     renderTx();
   }
 
+  /* ══ 就地編輯（2026-08-06）══════════════════════════════════════════
+     沿用項目詳情頁那套：面板永遠是編輯版面，[data-mode="view"] 只把「可以打字」
+     的訊號拿掉（shared.css），所以切換不位移。這裡負責三件事：把 store 的值填進欄位、
+     切換模式、以及「誰不能編輯」。
+
+     系列子場不可編輯（使用者裁決 2026-08-06）：共用設定在系列母頁改，日期與場地
+     「未來可能需要可以單獨修改」——所以鎖的是入口（編輯鈕收起、面板留一則說明），
+     欄位本身沒有拆掉，之後要開放只需要把這個判斷拿掉。 */
+  const isSeriesChild = () => !!(ev.series && ev.series.id);
+
+  function lineupRow(name) {
+    const row = document.createElement('div');
+    row.className = 'flex-row mt-8';
+    row.style.gap = 'var(--sp-8)';
+    row.dataset.edLineupRow = '';
+    row.innerHTML = '<input class="input" style="flex:1" data-ed-lineup>' +
+      '<button class="btn btn--ghost btn--sm" type="button" data-ed-lineup-remove aria-label="' +
+      T('ee.lineup.remove', 'Remove') + '"><i data-lucide="x" class="ztor-icon"></i></button>';
+    row.querySelector('input').value = name || '';
+    return row;
+  }
+
+  function fillEditForm(ev) {
+    const set = (k, v) => { const el = document.querySelector('[data-ed="' + k + '"]'); if (el) el.value = v == null ? '' : v; };
+    set('name', ev.name); set('desc', ev.desc); set('venue', ev.venue); set('address', ev.address);
+    set('date', ev.date); set('start', ev.start); set('end', ev.end); set('doors', ev.doors);
+    set('capacity', ev.capacity || '');
+    /* 容量的下限是已售出張數——賣掉的票不能因為改了數字就消失（edit-event 原本的規則，
+       搬過來時一起帶）。 */
+    const cap = document.querySelector('[data-ed="capacity"]');
+    const sold = window.ztorEvents ? window.ztorEvents.soldOf(ev) : 0;
+    if (cap && sold > 0) cap.min = sold;
+    const capHint = document.getElementById('ed-capacity-hint');
+    if (capHint) {
+      capHint.textContent = sold > 0
+        ? T('event-detail.edit.caphint', 'At least {n} — that many tickets are already sold.').replace('{n}', sold)
+        : '';
+    }
+    const list = document.getElementById('ed-lineup');
+    if (list) {
+      list.innerHTML = '';
+      (ev.lineup || []).forEach(nm => list.appendChild(lineupRow(nm)));
+      if (window.ztorIcons) window.ztorIcons.applyIcons(list);
+    }
+    fillGallery(ev);
+    const lock = document.getElementById('ed-series-lock');
+    if (lock) lock.hidden = !isSeriesChild();
+  }
+
+  /* 圖片相簿：排第一的就是主視覺（與建立流程 2026-08-06 同一套）。編輯頁要看見
+     「現在上線中的圖」，所以已上傳的圖直接以 is-filled 的格子渲染，不是空上傳框。 */
+  function fillGallery(ev) {
+    const gal = document.getElementById('ed-gallery');
+    if (!gal) return;
+    const imgs = [ev.images && ev.images.keyvisual].concat((ev.images && ev.images.gallery) || []).filter(Boolean);
+    gal.innerHTML = imgs.map((src, i) =>
+      '<div class="upload-tile upload-tile--portrait is-filled" data-gallery-tile data-upload>' +
+        (i === 0 ? '<span class="upload-tile__flag" data-i18n="ce.img.keyvisual">' + T('ce.img.keyvisual', 'Key visual') + '</span>' : '') +
+        '<img class="upload-tile__thumb" src="' + src + '" alt="">' +
+      '</div>').join('') +
+      '<div class="upload-tile upload-tile--portrait is-empty" data-upload data-gallery-add>' +
+        '<span class="upload-tile__icon">＋</span>' +
+        '<span class="upload-tile__title" data-i18n="ce.img.add">' + T('ce.img.add', 'Add image') + '</span>' +
+      '</div>';
+    if (window.ztorUploadTile) gal.querySelectorAll('[data-upload]').forEach(t => window.ztorUploadTile.enhance(t));
+  }
+
+  /* 檢視模式把欄位鎖成唯讀（select 沒有 readonly，只能 disabled）。做法與 project-detail 一致。 */
+  function applyReadonly(root, ro) {
+    root.querySelectorAll('input, textarea').forEach(el => { el.readOnly = ro; });
+    root.querySelectorAll('select').forEach(el => { el.disabled = ro; });
+  }
+
+  function syncEditMode() {
+    const panels = document.querySelectorAll('.tab-panel[data-editable]');
+    const panel = panels[0];
+    if (!panel) return;
+    /* 編輯是整頁一個狀態、不是逐分頁——切到票種分頁時不該又要按一次編輯。
+       所以兩個可編輯面板一起翻，模式以第一個為準。 */
+    const editing = panel.getAttribute('data-mode') === 'edit';
+    panels.forEach(p => { p.setAttribute('data-mode', editing ? 'edit' : 'view'); applyReadonly(p, !editing); });
+    const show = (sel, on) => document.querySelectorAll(sel).forEach(el => { el.hidden = !on; });
+    show('[data-ed-delete]', editing);
+    show('[data-ed-cancel]', editing);
+    const btn = document.querySelector('[data-ed-editmode]');
+    if (btn) {
+      /* 系列子場不給編輯入口——鈕整顆收起，面板裡那則說明才是這一頁該講的話。 */
+      btn.hidden = isSeriesChild();
+      btn.setAttribute('aria-pressed', editing ? 'true' : 'false');
+      btn.classList.toggle('btn--primary', editing);
+      btn.classList.toggle('btn--outline', !editing);
+      const label = btn.querySelector('[data-ed-editmode-label]');
+      if (label) {
+        const key = editing ? 'event-detail.btn.save' : 'event-detail.btn.edit';
+        label.setAttribute('data-i18n', key);
+        label.textContent = T(key, editing ? 'Save changes' : 'Edit event');
+      }
+    }
+  }
+
+  function setMode(mode) {
+    document.querySelectorAll('.tab-panel[data-editable]').forEach(p => p.setAttribute('data-mode', mode));
+    syncEditMode();
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-ed-editmode]')) {
+      const panel = document.querySelector('.tab-panel[data-editable]');
+      const editing = panel && panel.getAttribute('data-mode') === 'edit';
+      if (editing) {                                   // 編輯態按下＝儲存
+        alert(T('event-detail.edit.saved', 'Saved.'));
+        setMode('view');
+      } else setMode('edit');
+      return;
+    }
+    if (e.target.closest('[data-ed-cancel]')) { fillEditForm(ev); edTiers = (ev.tiers || []).map(t => Object.assign({}, t)); renderEdTiers(); setMode('view'); return; }
+    if (e.target.closest('[data-ed-delete]')) {
+      if (confirm(T('event-detail.edit.confirm-delete', 'Delete this event? Ticket holders will be refunded.'))) {
+        location.href = 'events.html';
+      }
+      return;
+    }
+    const row = e.target.closest('[data-ed-lineup-row]');
+    if (row && e.target.closest('[data-ed-lineup-remove]')) { row.remove(); return; }
+    if (e.target.closest('#ed-lineup-add')) {
+      const list = document.getElementById('ed-lineup');
+      if (list) { const r = lineupRow(''); list.appendChild(r); if (window.ztorIcons) window.ztorIcons.applyIcons(r); r.querySelector('input').focus(); }
+    }
+  });
+
+  /* 相簿的增刪（與建立流程同一套規則：填滿末格就轉正、清空正式圖片就整格移除） */
+  (function () {
+    const gal = document.getElementById('ed-gallery');
+    if (!gal) return;
+    gal.addEventListener('upload:change', e => {
+      const tile = e.target.closest('.upload-tile');
+      if (!tile) return;
+      if (e.detail && e.detail.filled) {
+        if (tile.hasAttribute('data-gallery-add')) {
+          tile.removeAttribute('data-gallery-add');
+          tile.setAttribute('data-gallery-tile', '');
+          const add = document.createElement('div');
+          add.className = 'upload-tile upload-tile--portrait is-empty';
+          add.setAttribute('data-upload', ''); add.setAttribute('data-gallery-add', '');
+          add.innerHTML = '<span class="upload-tile__icon">＋</span><span class="upload-tile__title" data-i18n="ce.img.add">' +
+            T('ce.img.add', 'Add image') + '</span>';
+          if (gal.querySelectorAll('[data-gallery-tile]').length < 8) {
+            gal.appendChild(add);
+            if (window.ztorUploadTile) window.ztorUploadTile.enhance(add);
+          }
+        }
+      } else if (tile.hasAttribute('data-gallery-tile')) tile.remove();
+      // 主視覺標記永遠在第一張
+      gal.querySelectorAll('[data-gallery-tile]').forEach((t, i) => {
+        let f = t.querySelector('.upload-tile__flag');
+        if (i === 0) {
+          if (!f) { f = document.createElement('span'); f.className = 'upload-tile__flag'; f.setAttribute('data-i18n', 'ce.img.keyvisual'); t.insertBefore(f, t.firstChild); }
+          f.textContent = T('ce.img.keyvisual', 'Key visual');
+        } else if (f) f.remove();
+      });
+    });
+  })();
+
+  /* ── 票種清單（2026-08-06，自 edit-event.html 搬入）──────────────────
+     一張票種＝一個 form-section：標頭放「已售 n / q」與刪除鈕，下面三欄（名稱／票價／張數）。
+     **已售出的不可刪**，只能關閉銷售——票在買方手上，刪掉等於單方面撕票。張數的下限同理是已售出數。
+     票價 0 直接顯示「免費」（使用者裁決 2026-08-06：不做「免費票」這個獨立模式，價格即狀態）。 */
+  let edTiers = (ev.tiers || []).map(t => Object.assign({}, t));
+
+  function tierField(labelKey, fallback, value, key, tier, type, min) {
+    const f = document.createElement('div');
+    f.className = 'field';
+    const l = document.createElement('label');
+    l.className = 'field__label';
+    l.textContent = T(labelKey, fallback);
+    const inp = document.createElement('input');
+    inp.className = 'input';
+    if (type) inp.type = type;
+    if (min != null) inp.min = min;
+    inp.value = value == null ? '' : value;
+    inp.addEventListener('input', () => { tier[key] = inp.value; renderEdTiers(); });
+    f.appendChild(l); f.appendChild(inp);
+    return f;
+  }
+
+  function renderEdTiers() {
+    const list = document.getElementById('ed-tier-list');
+    if (!list) return;
+    const focus = document.activeElement;
+    const focusKey = focus && focus.closest('[data-ed-tier]')
+      ? focus.closest('[data-ed-tier]').dataset.edTier + '|' + (focus.dataset.edTierF || '')
+      : null;
+    list.innerHTML = '';
+    edTiers.forEach((t, i) => {
+      const sold = t.sold || 0;
+      const sec = document.createElement('div');
+      sec.className = 'form-section form-section--outlined';
+      sec.setAttribute('data-ed-tier', t.id || ('new-' + i));
+
+      const head = document.createElement('div');
+      head.className = 'ed-tier__head';
+      const soldEl = document.createElement('span');
+      soldEl.className = 'ed-tier__sold';
+      soldEl.textContent = T('ee.tix.sold', '{n} of {q} sold')
+        .replace('{n}', fmtNum(sold)).replace('{q}', fmtNum(t.qty));
+      const free = document.createElement('span');
+      if (Number(t.price) === 0) {
+        free.className = 'badge badge--neutral';
+        free.textContent = T('ce.tier.free', 'Free');
+      }
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'btn btn--icon btn--xs ed-tier__del';
+      del.innerHTML = '<i data-lucide="trash-2" class="ztor-icon"></i>';
+      if (sold > 0) {
+        del.disabled = true;
+        del.title = T('ee.tix.nodelete', "Can't delete — {n} buyers hold this tier").replace('{n}', fmtNum(sold));
+      } else {
+        del.addEventListener('click', () => { edTiers.splice(i, 1); renderEdTiers(); });
+      }
+      const left = document.createElement('span');
+      left.className = 'ed-tier__meta';
+      left.appendChild(soldEl);
+      if (free.className) left.appendChild(free);
+      head.appendChild(left); head.appendChild(del);
+      sec.appendChild(head);
+
+      const grid = document.createElement('div');
+      grid.className = 'form-grid form-grid--3';
+      const nameF  = tierField('ee.tix.name',  'Tier name', t.name,  'name',  t);
+      const priceF = tierField('ee.tix.price', 'Price',     t.price, 'price', t, 'number', 0);
+      const qtyF   = tierField('ee.tix.qty',   'Quantity',  t.qty,   'qty',   t, 'number', sold);
+      [['name', nameF], ['price', priceF], ['qty', qtyF]].forEach(([k, el]) => el.querySelector('input').dataset.edTierF = k);
+      grid.appendChild(nameF); grid.appendChild(priceF); grid.appendChild(qtyF);
+      sec.appendChild(grid);
+      list.appendChild(sec);
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(list);
+    /* 重繪會把游標彈掉，所以把它放回原本那一格（票種卡在建立流程踩過同一個坑）。 */
+    if (focusKey) {
+      const [id, k] = focusKey.split('|');
+      const back = list.querySelector('[data-ed-tier="' + id + '"] [data-ed-tier-f="' + k + '"]');
+      if (back) { back.focus(); const v = back.value; back.value = ''; back.value = v; }
+    }
+    const panel = document.querySelector('.tab-panel[data-panel="tiers"]');
+    if (panel) applyReadonly(panel, panel.getAttribute('data-mode') !== 'edit');
+  }
+
+  document.getElementById('ed-tier-add')?.addEventListener('click', () => {
+    edTiers.push({ id: 'tier-new-' + edTiers.length, name: '', price: 0, qty: 0, sold: 0 });
+    renderEdTiers();
+  });
+
   hydrate();
+  renderEdTiers();
+  syncEditMode();          // 載入後先鎖成唯讀（面板預設 data-mode="view"）
   applyTabs();
   initTx();
   if (isLive) initLive();

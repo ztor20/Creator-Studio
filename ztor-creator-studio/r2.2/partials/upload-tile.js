@@ -6,6 +6,9 @@
 //  · 內容檔（data-upload="content"，§4.2 F11 音樂/影片/檔案）：上傳後可播放（音訊/影片，
 //    真實 <audio>/<video>）與刪除，操作比照顯示圖；影片顯示影格、音訊/檔案顯示檔型圖示＋檔名；無 AI。
 // 狀態流：空 → 點擊選檔 → 上傳中（進度條假走 ~2.5s）→ 已上傳（hover 動作）。
+// 加掛 data-upload-processing 時多一段「處理中」（轉檔／檢查，假走 ~2.4s）：
+//   空 → 上傳中 → 處理中 → 已上傳。處理中不算已填（emit 的 filled 為 false），
+//   所以就緒檢查會自然把它擋在「未完成」那一側（規格 5.1.2.2.1 §8「檔案就緒」）。
 // 全前端 demo：URL.createObjectURL 顯示/播放所選檔，不真的上傳。
 // 每次狀態變動 dispatch 'upload:change'（bubbles，detail:{key,filled}）供頁面更新就緒。
 //
@@ -18,11 +21,12 @@
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb; }
   function el(tag, cls, html) { var n = document.createElement(tag); n.className = cls; if (html != null) n.innerHTML = html; return n; }
 
-  var STATES = ['is-empty', 'is-uploading', 'is-filled', 'is-optimizing', 'is-optimized'];
+  var STATES = ['is-empty', 'is-uploading', 'is-processing', 'is-filled', 'is-optimizing', 'is-optimized'];
 
   function enhance(tile) {
     if (tile.__uploadReady) return; tile.__uploadReady = true;
     var content = tile.getAttribute('data-upload') === 'content';
+    var needsProcessing = tile.hasAttribute('data-upload-processing');   // 傳完還要轉檔的格（見檔頭）
     var ai = !content && tile.hasAttribute('data-upload-ai');   // AI 優化＝選配第三鈕（見檔頭）
     if (!STATES.some(function (s) { return tile.classList.contains(s); })) tile.classList.add('is-empty');
 
@@ -93,9 +97,14 @@
       if (empty && tile.tagName !== 'BUTTON') {
         tile.setAttribute('role', 'button');
         tile.setAttribute('tabindex', '0');
+        /* 沒有可見標題時才自己補一個。退路依模式分兩種：內容檔格收的是音訊／影片／字幕之類的
+           檔案，套圖片格的「新增圖片」會直接誤導螢幕閱讀器使用者（2026-08-07 修）。
+           需要更精確的說法（「上傳預告片」）由消費頁自己寫 aria-label＋data-i18n-aria-label，
+           這裡的 hasAttribute 檢查會讓路。 */
         if (!tile.hasAttribute('aria-label') && !tile.querySelector('.upload-tile__title')) {
-          tile.setAttribute('aria-label', T('cp.media.add', 'Add image'));
-          tile.setAttribute('data-i18n-aria-label', 'cp.media.add');
+          var addKey = content ? 'cp.cfile.add' : 'cp.media.add';
+          tile.setAttribute('aria-label', T(addKey, content ? 'Add file' : 'Add image'));
+          tile.setAttribute('data-i18n-aria-label', addKey);
         }
       } else {
         tile.removeAttribute('role');
@@ -106,7 +115,11 @@
     function emit() {
       var filled = tile.classList.contains('is-filled') || tile.classList.contains('is-optimized');
       var key = tile.dataset.uploadKey || tile.dataset.cpAsset || null;
-      tile.dispatchEvent(new CustomEvent('upload:change', { bubbles: true, detail: { key: key, filled: filled } }));
+      /* state 讓消費頁講得出「現在是上傳中還是處理中」——filled 只夠回答「能不能用」，
+         而 F1 要求把上傳與處理的進度顯示給創作者看（規格 5.1.2.2.1 F1）。 */
+      var state = 'empty';
+      STATES.forEach(function (c) { if (tile.classList.contains(c)) state = c.replace('is-', ''); });
+      tile.dispatchEvent(new CustomEvent('upload:change', { bubbles: true, detail: { key: key, filled: filled, state: state } }));
     }
     function resetMedia() {
       if (!content) return;
@@ -150,12 +163,30 @@
       url = URL.createObjectURL(file);
       if (!content) thumb.src = url;
       setState('is-uploading'); statusEl.textContent = T('cp.media.uploading', 'Uploading…'); bar.style.width = '0%';
+      /* 開始上傳也要通知一次：消費頁要能把「上傳中」寫進畫面，而不是等到傳完才有反應。
+         此時 filled 為 false，就緒檢查照舊把它算成未完成。 */
+      emit();
       var pct = 0; clearInterval(timer);
       timer = setInterval(function () {
         pct += Math.random() * 12 + 6;
-        if (pct >= 100) { pct = 100; clearInterval(timer); bar.style.width = '100%'; setTimeout(function () { if (content) showContent(file); setState('is-filled'); emit(); refocusAfter('[data-upload-replace]'); }, 260); }
+        if (pct >= 100) {
+          pct = 100; clearInterval(timer); bar.style.width = '100%';
+          setTimeout(function () {
+            if (content) showContent(file);
+            if (needsProcessing) startProcessing(); else { setState('is-filled'); emit(); refocusAfter('[data-upload-replace]'); }
+          }, 260);
+        }
         bar.style.width = pct + '%';
       }, 200);
+    }
+    /* 處理中：檔案已在伺服器上、但還不能用。狀態要先發一次（讓消費頁把「處理中」
+       寫進畫面、同時知道還不能送出），完成後再發一次。 */
+    function startProcessing() {
+      setState('is-processing');
+      statusEl.textContent = T('cp.cfile.processing', 'Processing…');
+      emit();
+      clearTimeout(timer);
+      timer = setTimeout(function () { setState('is-filled'); emit(); refocusAfter('[data-upload-replace]'); }, 2400);
     }
     function optimize() {
       setState('is-optimizing'); statusEl.textContent = T('cp.media.optimizing', 'Optimizing…');

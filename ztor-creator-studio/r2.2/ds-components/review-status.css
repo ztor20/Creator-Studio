@@ -1,0 +1,111 @@
+/* ============================================================
+   Review status · 送審件的狀態面板（2026-08-07）
+
+   spec documents/5.1.2.2-專案詳情.md §2.2.9「本頁對審核狀態的呈現」
+        documents/5.1.0.4-影片上架審核.md F5
+   角色：把「一件送審作品現在走到哪一步」講完——狀態、時間、被退的理由、
+        接下來能做什麼——並且與旁邊的項目狀態徽章明顯分開。
+
+   為什麼要獨立成元件而不是塞進 kv-list：kv-list 是「唯讀鍵值列」，
+   講不出「被退件了、理由在這裡、按這顆重送」這件事的層次；而這一組
+   （狀態徽章 + 時間 + 理由區 + 動作）在創作者端與 Admin 端各出現一次，
+   第一次出現就 promote（見 project-ui-creator 鐵律 1）。
+
+   Anatomy
+     .review-status                    外框區塊（坐在 card 或 form-section 內）
+       .review-status__head            徽章 + 標題行
+         .review-status__title         這一件在講什麼（作品名或「這次送審」）
+       .review-status__meta            送出時間、送出次數、審核者等唯讀事實
+         .review-status__meta-item     一項（label + value）
+       .review-status__note            退件理由／說明區（左側色條）
+         .review-status__note-label    「退件理由」這類欄目名
+         .review-status__note-body     自由文字內容
+       .review-status__actions         重送、前往審核頁等出口
+
+   Variants
+     .review-status--rejected          退件：note 走 destructive 色條
+     .review-status--approved          通過：note 走 success 色條
+     .review-status--flat              去掉外框與內距，供已經有卡片外框的容器內用
+
+   Surface：坐在 --card（白／深卡）上，用 1px border 成立，灰底亦可（跨層安全）。
+   Consumers: project-detail.html（項目更新區段）、admin-video-review.html（審核結果）
+   ============================================================ */
+
+.review-status {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-14) var(--sp-16);
+  background: var(--card);
+}
+.review-status[hidden] { display: none; }
+
+.review-status--flat {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+}
+
+.review-status__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+}
+
+.review-status__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+
+.review-status__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-20);
+  margin-top: var(--sp-10);
+  font-size: var(--fs-13);
+}
+.review-status__meta-item { display: inline-flex; gap: var(--sp-6); }
+.review-status__meta-item[hidden] { display: none; }
+.review-status__meta-item > span:first-child { color: var(--muted-foreground); }
+
+.review-status__note {
+  margin-top: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  border-left: 3px solid var(--border);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--muted);
+}
+.review-status__note[hidden] { display: none; }
+.review-status--rejected .review-status__note { border-left-color: var(--destructive); }
+.review-status--approved .review-status__note { border-left-color: var(--status-success); }
+
+.review-status__note-label {
+  display: block;
+  margin-bottom: var(--sp-4);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.review-status__note-body {
+  margin: 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-comfy);
+  color: var(--foreground);
+  white-space: pre-line;
+}
+
+.review-status__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-14);
+}
+.review-status__actions[hidden] { display: none; }
+
+@media (max-width: 640px) {
+  .review-status__meta { gap: var(--sp-4) var(--sp-12); }
+}

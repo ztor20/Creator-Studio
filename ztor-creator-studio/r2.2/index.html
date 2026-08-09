@@ -20,6 +20,10 @@
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<!-- ztor 粉絲組成卡（2026-08-06 自粉絲分析搬來）：圓餅與圖例在 chart.css，
+     卡頭那顆口徑膠囊在 chip.css。 -->
+<link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/accordion.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -223,6 +227,42 @@
           </div></div>
         </section>
       </div>
+
+      <!-- ztor 粉絲組成（2026-08-06 使用者裁示：自粉絲分析頁搬來，放 bento 之下）。
+           位置緊接 F7「粉絲關係與受眾趨勢」：F7 講的是「這群人怎麼動」，這張卡
+           講「這群人怎麼被分掉」，同一批人的兩個切面，分開會讓人來回對照。
+           用圓餅不用長條：這裡問的是「一整塊是怎麼被分掉的」，不是「誰比誰長」。
+           資料與粉絲名冊（fans-crm）同一份，所以走同一組 fans.tier.* key。
+           ⚠ 分母：只算站內有 ztor 帳號的粉絲，不含只在外部平台看得到的人——
+           卡頭膠囊與卡底註腳就是在講這件事，不可與受眾數字互比。
+           空狀態不另給一張卡：這批數字與 F7 同源，F7 的「還沒有粉絲資料」已經
+           把話講完，再放一張只會重複（掛 dash-data-only，empty 情境整張隱藏）。 -->
+      <section class="card mt-24 dash-data-only">
+        <div class="card__head">
+          <!-- 卡頭沿用來源頁的組成（標題＋口徑膠囊），不補 .card__title-icon：
+               圖示登記表沒有圓餅圖，為了跟旁邊的卡對齊而硬借一個語意不對的圖示，
+               比沒有圖示更誤導。 -->
+          <h3 class="card__title" data-i18n="dash.tiers.title">Fans on Ztor</h3>
+          <span class="chip chip--static" data-i18n="dash.tiers.chip">On-Ztor only — no external platforms</span>
+        </div>
+        <div class="pie-figure">
+          <div class="pie" aria-hidden="true"
+               style="--pie-stops:
+                 var(--primary) 0 12%,
+                 var(--status-info) 0 40%,
+                 var(--status-success) 0 77%,
+                 var(--foreground-muted) 0 100%"></div>
+          <div class="pie-figure__legend">
+            <div class="source-list">
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+              <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="card__note" data-i18n="dash.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count. The audience figures in Fan analytics include people we only see through connected platforms, so the two don’t share a denominator.</p>
+      </section>
 
     </div>
 

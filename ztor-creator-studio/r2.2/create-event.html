@@ -12,6 +12,11 @@
 <link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-more.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/session-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
@@ -117,28 +122,26 @@
 
     <!-- STEP 2 · Details -->
     <section data-step-panel="2" class="hidden">
-      <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Make them feel it</h1>
-      <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s2.sub">What will fans experience?</p>
-      <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s2.h1" hidden>Pick what you'll watch</h1>
-      <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s2.sub" hidden>Choose a video and name the room.</p>
-
-
-      <!-- 類型快選（2026-08-04；同日改為下拉選單，使用者指示）：類型移到閘門之後，
-           表單裡要有地方能改回來。六個選項用一個下拉就講完——並排卡在這裡只是把閘門
-           再畫一次，而這一步的主角是活動內容，不是再選一次類型。 -->
-      <div class="form-section form-section--outlined">
-        <div class="field">
-          <label class="field__label" for="ce-type" data-i18n="ce.type.h">Event type</label>
-          <select class="select" id="ce-type" data-type-select>
-            <option value="concert" data-i18n="ce.type.concert">Concert</option>
-            <option value="meet" data-i18n="ce.type.meet">Meet &amp; Greet</option>
-            <option value="festival" data-i18n="ce.type.festival">Festival</option>
-            <option value="launch" data-i18n="ce.type.launch">Launch Party</option>
-            <option value="virtual" data-i18n="ce.type.virtual">Virtual Event</option>
-            <option value="watchparty" data-i18n="ce.type.watchparty">Watch Party</option>
-          </select>
+      <!-- 標題列帶右側動作（2026-08-04 使用者指示）：右邊那顆是「換活動類型」——
+           類型在閘門選定，這顆把閘門叫回來重選。標題與副標包成一組，按鈕與那一組
+           垂直置中對齊（副標的下緣留白移到 .wizard__step-head 上，否則按鈕會被那段
+           空白往上推、看起來沒對齊）。 -->
+      <div class="wizard__step-head">
+        <div class="wizard__step-head-titles">
+          <h1 class="wizard__step-title" data-hide-type="watchparty" data-i18n="ce.s2.h1">Make them feel it</h1>
+          <p class="wizard__step-sub" data-hide-type="watchparty" data-i18n="ce.s2.sub">What will fans experience?</p>
+          <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s2.h1" hidden>Pick what you'll watch</h1>
+          <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s2.sub" hidden>Choose a video and name the room.</p>
         </div>
+        <button type="button" class="btn btn--outline" id="ce-type-switch" data-i18n-aria-label="ce.type.switch" aria-label="Switch event type">
+          <i data-lucide="switch-horizontal" class="ztor-icon"></i>
+          <span id="ce-type-switch-label"></span>
+        </button>
       </div>
+
+
+      <!-- 類型快選那張卡已移除（2026-08-05 使用者指示）：改類型只留標題列右側那顆切換鈕，
+           它把閘門叫回來重選。同一個畫面不留兩個改類型的入口。 -->
 
       <!-- 從 bookyay 帶入既有活動（2026-08-04 使用者指示，暫時變通做法）：
            bookyay 是既有的售票平台。這一版只做搜尋框本身，帶入哪些欄位與同步行為待補，
@@ -181,6 +184,70 @@
           <textarea class="textarea" data-ce="desc" data-required placeholder="What will fans experience? Make it vivid." data-i18n-placeholder="ce.desc.ph"></textarea>
           <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
         </div>
+        <!-- 活動國家與語言（2026-08-05 使用者指示）。國家在這裡問一次，場地那一步的
+             「城市／國家」欄同輪移除，同一件事不問兩遍。市場清單沿用 login 的既有那組
+             （TW／HK／JP／KR／US），不另立第二份國家表。 -->
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="ce-country" data-i18n="ce.country">Country</label>
+            <select class="select" id="ce-country" data-ce="country">
+              <option value="TW" data-i18n="ce.country.tw">Taiwan</option>
+              <option value="HK" data-i18n="ce.country.hk">Hong Kong</option>
+              <option value="JP" data-i18n="ce.country.jp">Japan</option>
+              <option value="KR" data-i18n="ce.country.kr">South Korea</option>
+              <option value="US" data-i18n="ce.country.us">United States</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="ce-lang" data-i18n="ce.lang">Language</label>
+            <select class="select" id="ce-lang" data-ce="lang">
+              <option value="zh-Hant" data-i18n="ce.lang.zhhant">Traditional Chinese</option>
+              <option value="en" data-i18n="ce.lang.en">English</option>
+              <option value="ja" data-i18n="ce.lang.ja">Japanese</option>
+              <option value="ko" data-i18n="ce.lang.ko">Korean</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 進階詳細資料（2026-08-06 使用者指示）：多數活動不需要，收在 .field-more 後面，
+             表單第一眼只留每一場都要填的東西。走既有的收合元件（建立商品的物流欄位同一支），
+             按鈕文案換一組。 -->
+        <div class="field-more" data-more-key="ce.adv" data-more-text="Advanced details"
+             data-less-key="ce.venue.adv.less" data-less-text="Collapse">
+          <button class="btn btn--outline field-more__toggle" type="button" aria-expanded="false">
+            <i data-lucide="chevron-down" class="ztor-icon field-more__icon"></i>
+            <span data-field-more-label data-i18n="ce.adv">Advanced details</span>
+          </button>
+          <div class="field-more__body" hidden>
+            <!-- 2026-08-06 使用者指示：四個勾選改成與下面兩份清單同一種「新增一項」列，
+                 每一列是「先選類型、再寫內容」。勾選只能說「有飲食」，說不出是什麼飲食；
+                 一列一項之後，類型是分類、文字才是實際內容，兩者各歸各位。 -->
+            <div class="field">
+              <div class="field__label" data-i18n="ce.adv.includes">What's included</div>
+              <div id="ce-includes-list"></div>
+              <button class="btn btn--outline btn--sm mt-8" type="button" data-list-add="ce-includes-list"
+                      data-list-kind="includes" data-list-ph="ce.adv.inc.ph">
+                <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.adv.add">Add a line</span>
+              </button>
+            </div>
+
+            <div class="field">
+              <div class="field__label" data-i18n="ce.adv.bring">What to bring</div>
+              <div id="ce-bring-list"></div>
+              <button class="btn btn--outline btn--sm mt-8" type="button" data-list-add="ce-bring-list" data-list-ph="ce.adv.bring.ph">
+                <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.adv.add">Add a line</span>
+              </button>
+            </div>
+
+            <div class="field">
+              <div class="field__label" data-i18n="ce.adv.notes">Good to know</div>
+              <div id="ce-notes-list"></div>
+              <button class="btn btn--outline btn--sm mt-8" type="button" data-list-add="ce-notes-list" data-list-ph="ce.adv.notes.ph">
+                <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.adv.add">Add a line</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
@@ -191,44 +258,60 @@
         <button type="button" class="btn btn--outline btn--sm"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.lineup.add">Add performer</span></button>
       </div>
 
+      <!-- 素材＝圖片＋影片預告同一個區段（2026-08-05 使用者指示）：兩者是同一件事的兩種
+           素材，分成兩張卡等於把「這場活動長什麼樣」拆成兩個問題。影片仍是選填，
+           標籤自己標。 -->
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="ce.images">Images</h3>
-          <p class="form-section__sub" data-i18n="ce.images.sub">Each format appears in a different place. Upload all 3.</p>
+          <p class="form-section__sub" data-i18n="ce.images.sub">Both appear in different places. Upload both.</p>
         </div>
-        <!-- 2026-07-31（D164 / documents 5.1.6.1 F4）：四格收斂為三格——原「縮圖」與「直式海報」
-             比例統一後形狀相同、素材同源，併為單一「主視覺」；橫式橫幅是活動專屬例外、維持
-             --16x9（全站唯一保留橫式的模組）；圖庫仍是直式 750×1125、1–8 張。三格皆必填。
-             版面走 .upload-assets（固定高推導寬），不放進 grid 1fr 軌道。 -->
-        <div class="upload-assets">
-          <div class="upload-tile upload-tile--portrait" data-asset="keyvisual" data-upload>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.keyvisual">Key visual</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.keyvisual-hint">750 × 1125 · portrait · Search, browse, share, hero (mobile)</span>
+        <!-- 2026-08-05：橫式橫幅槽撤除，活動圖片與商品一樣**只有直式**（推翻 STYLE-DECISIONS Q46
+             與其上游追認 D164 第 4 點，落差記在 ASSUMPTIONS IMG-002）。
+             2026-08-06 使用者指示：兩個具名槽（主視覺／圖庫）改成**一列相簿**，做法比照項目詳情頁
+             的展示相簿——第一張就是主視覺（角落掛 __flag 標記），其餘是圖庫，末格永遠是「＋ 新增圖片」。
+             為什麼這樣比較好：原本要人先決定「這張是主視覺還是圖庫」再選檔，但那是同一批素材的排序問題，
+             不是兩種東西；排在第一就是主視覺，改順序＝改主視覺，少一個要先想清楚的分類決定。 -->
+        <div class="upload-assets" id="ce-gallery">
+          <div class="upload-tile upload-tile--portrait is-empty" data-upload data-gallery-add>
+            <span class="upload-tile__icon">＋</span>
+            <span class="upload-tile__title" data-i18n="ce.img.add">Add image</span>
           </div>
-          <!-- 橫式橫幅是活動的例外槽（D164 第 4 點）：活動維持「有直有橫」，
-               這一格是 16:9 / 1920×1080（documents 5.1.6.1 F4），其餘兩格仍是 750×1125。 -->
-          <div class="upload-tile upload-tile--16x9" data-asset="banner" data-upload>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.banner">Landscape banner</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.banner-hint">1920 × 1080 · landscape · Hero (desktop), social</span>
-          </div>
-          <div class="upload-tile upload-tile--portrait" data-asset="gallery" data-upload>
-            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-            <span class="upload-tile__title" data-i18n="ce.img.gallery">Gallery images</span>
-            <span class="upload-tile__hint" data-i18n="ce.img.gallery-hint">750 × 1125 · portrait · Detail carousel, 1–8</span>
+        </div>
+        <p class="field__hint" data-i18n="ce.img.note">Portrait 750 × 1125, up to 8. The first one is the key visual; hover an image to replace or delete it.</p>
+        <div class="field" style="margin-top:var(--sp-24)">
+          <div class="field__label"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></div>
+          <div class="upload-tile upload-tile--file" data-asset="video">
+            <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
+            <span class="upload-tile__title" data-i18n="ce.video.title">Upload a teaser</span>
+            <span class="upload-tile__hint" data-i18n="ce.video.hint">MP4 or MOV · up to 2GB</span>
           </div>
         </div>
       </div>
 
+      <!-- 條款與細則（2026-08-06 使用者指示）：兩個開關決定粉絲購票時**看不看得到**這兩項，
+           不是創作者自己勾同意。用 .settings-row ＋ .switch（與設定頁同一種「一列一個開關」），
+           不自造。實際條款內容與同意紀錄屬產品規格，原型只做顯示與否，見 ASSUMPTIONS TERM-001。 -->
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
-          <h3 class="form-section__title"><span data-i18n="ce.video">Video teaser</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></h3>
+          <h3 class="form-section__title" data-i18n="ce.terms">Terms and conditions</h3>
+          <p class="form-section__sub" data-i18n="ce.terms.sub">What fans have to see before they buy.</p>
         </div>
-        <div class="upload-tile upload-tile--file" data-asset="video">
-          <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="ce.video.title">Upload a teaser</span>
-          <span class="upload-tile__hint" data-i18n="ce.video.hint">MP4 or MOV · up to 2GB</span>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row__label" data-i18n="ce.terms.marketing">Consent to direct marketing</div>
+            <div class="settings-row__hint" data-i18n="ce.terms.marketing.hint">Attendee data may be used by the organiser to market to them directly.</div>
+          </div>
+          <button type="button" class="switch" data-ce-term="marketing" role="switch" aria-checked="false"
+                  aria-label="Consent to direct marketing" data-i18n-aria-label="ce.terms.marketing"></button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row__label" data-i18n="ce.terms.tnc">Terms and conditions</div>
+            <div class="settings-row__hint" data-i18n="ce.terms.tnc.hint">Shown at checkout for the fan to accept.</div>
+          </div>
+          <button type="button" class="switch" data-ce-term="tnc" role="switch" aria-checked="false"
+                  aria-label="Terms and conditions" data-i18n-aria-label="ce.terms.tnc"></button>
         </div>
       </div>
     </section>
@@ -312,13 +395,31 @@
           <input class="input" data-ce="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
           <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
         </div>
-        <div class="field">
-          <label class="field__label"><span data-i18n="ce.venue.city">City / Country</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-          <input class="input" data-ce="city" placeholder="e.g., Taipei, Taiwan" data-i18n-placeholder="ce.venue.city.ph">
-        </div>
+        <!-- 城市／國家欄已移除（2026-08-05 使用者指示）：國家改在「細節」那一步問一次
+             （活動國家），這裡不再重複問；場地只留名稱與完整地址。 -->
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
           <input class="input" placeholder="Street address" data-i18n-placeholder="ce.venue.addr.ph">
+        </div>
+        <!-- 進階：集合地點與交通（2026-08-06 使用者指示）。走既有的 .field-more 收合
+             （建立商品的物流欄位同一支），只把按鈕文案換成「進階」——這兩欄不是每場都要寫，
+             預設收起來，表單第一眼只剩地點本身。有值時 field-more.js 會自己展開。 -->
+        <div class="field-more" data-more-key="ce.venue.adv" data-more-text="Advanced"
+             data-less-key="ce.venue.adv.less" data-less-text="Collapse">
+          <button class="btn btn--outline field-more__toggle" type="button" aria-expanded="false">
+            <i data-lucide="chevron-down" class="ztor-icon field-more__icon"></i>
+            <span data-field-more-label data-i18n="ce.venue.adv">Advanced</span>
+          </button>
+          <div class="field-more__body" hidden>
+            <div class="field">
+              <label class="field__label"><span data-i18n="ce.venue.meet">Meeting point</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <input class="input" data-ce="venue-meet" placeholder="e.g., Exit 6, west plaza" data-i18n-placeholder="ce.venue.meet.ph">
+            </div>
+            <div class="field">
+              <label class="field__label"><span data-i18n="ce.venue.transit">Getting there</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+              <input class="input" data-ce="venue-transit" placeholder="e.g., 5 min walk from Arena Station Exit 2" data-i18n-placeholder="ce.venue.transit.ph">
+            </div>
+          </div>
         </div>
       </div>
 
@@ -349,12 +450,73 @@
 
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.capacity">Capacity</h3>
+          <h3 class="form-section__title" data-i18n="ce.attend">Attendance</h3>
         </div>
-        <div class="field">
-          <label class="field__label"><span data-i18n="ce.capacity.label">Capacity</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
-          <input class="input" data-ce="capacity" data-required type="number" placeholder="Total seats or standing" data-i18n-placeholder="ce.capacity.ph">
-          <p class="ce-field-error" data-i18n="ce.err.capacity">Capacity is required.</p>
+        <!-- 2026-08-06 使用者指示：單一「容量」改成最少／最多兩欄，最多必填。
+             最多這欄仍掛 data-ce="capacity"——它就是票種數量加總的上限，
+             下游（票種超賣檢查、發布前檢核、必填→步驟對照表）沿用同一個 key，不必各自改。 -->
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" data-ce="attend-min" type="number" min="0" step="1" placeholder="e.g., 50" data-i18n-placeholder="ce.attend.min.ph">
+          </div>
+          <div class="field">
+            <label class="field__label"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+            <input class="input" data-ce="capacity" data-required type="number" min="1" step="1" placeholder="e.g., 500" data-i18n-placeholder="ce.attend.max.ph">
+            <p class="ce-field-error" data-i18n="ce.err.capacity">Maximum attendance is required.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 入場方式（2026-08-06 使用者裁決，同日第二次移位：由「細節」搬到這一步的人數之後；同輪統一用詞為購票入場／免費門票／免票入場）。
+           它決定後面**有沒有**票種與票券銷售兩個步驟，所以必須在那兩步之前問；擺在人數旁邊
+           是因為兩者回答的是同一類問題——這場活動放多少人進來、他們要不要買票。
+           **免費不做成第三種**：票價 0 就是免費（票種卡與 Review 自己顯示「免費」）。做成模式會讓
+           同一件事有兩個真相來源——模式說免費、價格欄寫著 200，沒有答案。 -->
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="ce.sales">Entry</h3>
+        </div>
+        <div class="segmented radio-cards" data-seg="sales" data-value="paid">
+          <!-- 標題與副標要包在 .radio-card__text 裡（元件 anatomy 就是這樣定的）：卡片本身是
+               flex row（文字群｜右上 radio 點），少了這層外框，標題與副標會變成同一列的兩個
+               flex item、並排在一起而不是上下兩行。 -->
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="paid">
+            <span class="radio-card__text">
+              <span class="radio-card__title" data-i18n="ce.sales.paid">Ticketed entry</span>
+              <span class="radio-card__sub" data-i18n="ce.sales.paid.sub">Set your own tiers and prices. A tier priced 0 is a free ticket.</span>
+            </span>
+          </button>
+          <button class="segmented__btn" type="button" data-val="none">
+            <span class="radio-card__text">
+              <span class="radio-card__title" data-i18n="ce.sales.none">Ticket-free entry</span>
+              <span class="radio-card__sub" data-i18n="ce.sales.none.sub">No ticket at all — the ticket and sales steps drop out.</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 系列場次（2026-08-06 使用者指示）。開關放這一步、不是最後的確認頁：日期的家在
+           這裡，前面填的日期與場地自然就是第 1 場；確認頁的定位是「檢查沒問題就發布」，
+           在那裡開一個會生出 N 個活動的開關，還得回頭改前面已填的日期。
+           第 1 場是上面主欄位的唯讀鏡像（避免同一筆資料兩個真相來源），第 2 場起才在這裡填。 -->
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles">
+            <h3 class="form-section__title" data-i18n="ce.series">Series dates</h3>
+            <p class="form-section__sub" data-i18n="ce.series.sub">Turn on when the same event runs on several dates — each one becomes its own event.</p>
+          </div>
+          <div class="form-section__head-actions">
+            <button type="button" class="switch" id="ce-series-sw" data-series-toggle role="switch" aria-checked="false"
+                    aria-label="Series dates" data-i18n-aria-label="ce.series"></button>
+          </div>
+        </div>
+        <div id="ce-series-body" hidden>
+          <div class="session-list" id="ce-session-list"></div>
+          <button type="button" class="btn btn--outline session-list__add" id="ce-session-add">
+            <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.series.add">Add a date</span>
+          </button>
+          <p class="field__hint" data-i18n="ce.series.note">Ticket quantities count per date — a 500-seat tier means 500 for each one.</p>
         </div>
       </div>
     </section>
@@ -379,12 +541,28 @@
           <div class="card">
             <h3 class="fd-ov__title" id="ce-calc-title" data-i18n="ce.calc.h">Revenue estimate</h3>
             <div class="calc-sum">
+              <!-- 場次列只在系列時出現：單場活動寫「共 1 場」是廢話 -->
+              <div class="kv" id="ce-calc-sessions-row" hidden><span class="kv__k" data-i18n="ce.calc.sessions">Dates</span><span class="kv__v" id="ce-calc-sessions">1</span></div>
               <div class="kv kv--lead"><span class="kv__k" data-i18n="ce.calc.revenue">Projected revenue</span><span class="kv__v" id="ce-calc-rev">$0</span></div>
               <div class="kv"><span class="kv__k" data-i18n="ce.calc.fee">Platform fee</span><span class="kv__v" id="ce-calc-fee">$0</span></div>
-              <div class="kv"><span class="kv__k" data-i18n="ce.calc.cost">Event costs</span><span class="kv__v" id="ce-calc-cost">$0</span></div>
+              <!-- 支出這一列自己就是輸入格（2026-08-06 使用者指示：不要分成「一列顯示、一格填寫」
+                   兩塊）。其餘三列是算出來的、這一列是填進去的，放同一張表才看得出誰影響誰。 -->
+              <div class="kv kv--input"><span class="kv__k" data-i18n="ce.calc.cost">Event costs</span>
+                <span class="amount-field amount-field--readonly calc-sum__cost">
+                  <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+                  <input class="input amount-field__input" type="number" min="0" step="1" id="ce-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
+                </span>
+              </div>
               <div class="kv calc-sum__out"><span class="kv__k" data-i18n="ce.calc.profit">Your take</span><span class="kv__v" id="ce-calc-profit">$0</span></div>
             </div>
             <p class="field__hint" id="ce-calc-note" data-i18n="ce.calc.note">Assumes every ticket sells at its discounted price.</p>
+            <!-- 售票規則的入口（2026-08-06 使用者指示）。放這張卡底下，是因為規則裡的折扣
+                 直接改上面那幾個數字——入口與後果在同一個視線範圍內。
+                 規則本身預設收起來：多數活動只要票價與數量，購票條件／限購／折扣是進階的事，
+                 攤開會讓這一步第一眼多出一整塊沒人要填的欄位。 -->
+            <button class="btn btn--outline mt-16" type="button" id="ce-rules-open" style="width:100%">
+              <i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ce.rules.add">Add purchase rules</span>
+            </button>
           </div>
         </aside>
         <div class="wizard-split__main">
@@ -408,33 +586,14 @@
             <span class="upload-tile__hint" data-i18n="ce.tier.create-hint">Name, price, quantity</span>
           </button>
         </div>
-        <div class="tier-count" id="ce-tier-count" data-tiers="0" data-i18n="ce.tier.count">0 tiers created · minimum 1 required</div>
+        <!-- 2026-08-06 使用者指示：票種計數列（「已建立 N 種 · 至少需 1 種」）撤除。
+             節點保留但不顯示——readState() 仍從它的 data-tiers 讀票種數，發布前檢核靠這個值。 -->
+        <div class="tier-count" id="ce-tier-count" data-tiers="0" hidden></div>
 
-        <!-- 所有票種的預設規則（購買條件／每人限購／折扣）。三種設定同一個結構，
+        <!-- 所有票種的預設規則（購票條件／每人限購／折扣）。三種設定同一個結構，
              範圍走「繼承＋覆寫」：這裡設一次是所有票種的預設，票種卡可以逐張改成自訂。
              內容由 JS 渲染——同一組條件欄位在這裡與票種卡各出現一次，共用同一支渲染函式。 -->
-        <div class="form-section form-section--outlined" id="ce-rules-sec">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="ce.rules.h">Default rules for all tiers</h3>
-            <p class="form-section__sub" data-i18n="ce.rules.sub">Each tier can override these.</p>
-          </div>
-          <div id="ce-rules" data-rules-for="event"></div>
-        </div>
 
-        <!-- 活動支出是唯一餵給試算的輸入，留在左邊；右軌只放算出來的結果
-             （站上右軌一律唯讀，不放正在編輯的欄位）。 -->
-        <div class="form-section form-section--outlined">
-          <div class="form-section__head">
-            <h3 class="form-section__title" data-i18n="ce.calc.expense">Event costs</h3>
-          </div>
-          <div class="field">
-            <span class="amount-field amount-field--readonly">
-              <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
-              <input class="input amount-field__input" type="number" min="0" step="1" id="ce-expense" placeholder="0" data-i18n-placeholder="ce.calc.expense.ph">
-            </span>
-            <p class="field__hint" data-i18n="ce.calc.expense.hint">Venue, crew, production — whatever you pay out for this event.</p>
-          </div>
-        </div>
         </div>
        </div>
       </div>
@@ -620,6 +779,14 @@
 
         <div class="review-row__item">
           <div class="review-row__head">
+            <h3 class="review-row__name" data-i18n="ce.rev.series">Dates</h3>
+            <a class="review-row__action" href="#" data-goto="3" data-i18n="ce.rev.edit">Edit →</a>
+          </div>
+          <div class="review-row__value" data-rev="series" data-ph-key="ce.series.single"><span data-i18n="ce.series.single">Single date</span></div>
+        </div>
+
+        <div class="review-row__item">
+          <div class="review-row__head">
             <h3 class="review-row__name" data-i18n="ce.rev.tickets">Tickets</h3>
             <a class="review-row__action" href="#" data-goto="4" data-i18n="ce.rev.edit">Edit →</a>
           </div>
@@ -695,9 +862,32 @@
   </div>
 </div>
 
+<!-- 售票規則彈窗（2026-08-06 使用者指示：入口在收入試算卡底部、內容開在彈窗裡）。
+     為什麼是彈窗不是就地展開：規則有三組、每組選了條件還會再長出兩到三欄，攤在票種網格
+     底下會把這一步拉得很長，而它又不是每個活動都要填。用站上既有的對話框外殼
+     （.payout-modal / .payout-dialog），不自造第二種彈窗。 -->
+<div class="payout-modal" id="ce-rules-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ce-rules-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ce-rules-title" data-i18n="ce.rules.h">Default rules for all tiers</h2>
+      <button class="btn btn--icon" type="button" data-ce-rules-close aria-label="Close" data-i18n-aria-label="ce.rules.close">
+        <i data-lucide="x" class="ztor-icon"></i>
+      </button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="field__hint mb-16" data-i18n="ce.rules.sub">Each tier can override these.</p>
+      <div id="ce-rules" data-rules-for="event"></div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--primary" type="button" data-ce-rules-close data-i18n="ce.rules.done">Done</button>
+    </div>
+  </section>
+</div>
+
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
+<script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
@@ -711,8 +901,12 @@
   let step = first;
   const total = 6;
   const nextKeys = ["", "ce.next.1", "ce.next.2", "ce.next.3", "ce.next.4", "ce.next.5", "ce.publish"];
-  // 共看派對沒有票種，票券銷售那一步整步跳過（沒有票根可設計、也沒有票可打包）
-  const skipped = s => s === 5 && isWP();
+  /* 共看派對沒有票種，票券銷售那一步整步跳過（沒有票根可設計、也沒有票可打包）。
+     2026-08-06：選「免票入場」時，票種（4）與票券銷售（5）兩步一起跳過——沒有票就沒有
+     票種、票根、套組，也沒有收入試算。 */
+  let salesMode = "paid";                      // paid=購票入場／none=免票入場
+  const noTickets = () => salesMode === "none";
+  const skipped = s => (s === 5 && isWP()) || (noTickets() && (s === 4 || s === 5));
   let eventType = "";                          // 選定的活動類型（D149：watchparty 走共看派對分支）
   const isWP = () => eventType === "watchparty";
 
@@ -734,14 +928,18 @@
       s.classList.toggle("progress-stepper__label--done", n < step);
     });
     const ps = document.getElementById("stepper");
-    if (ps) ps.style.setProperty("--progress", ((step - first + 1) / labels.length * 100) + "%");
+    /* 進度用「還看得到幾格」算：跳掉的格子不佔位，否則走到最後一步進度條也填不滿。 */
+    const shown = Array.from(labels).filter(l => !skipped(Number(l.dataset.step)));
+    const at = shown.findIndex(l => Number(l.dataset.step) === step) + 1;
+    if (ps) ps.style.setProperty("--progress", (at / (shown.length || 1) * 100) + "%");
     /* 步驟 4（票種試算）與步驟 5（票券預覽）有右軌，內容欄要放寬到 --mid（1140）才容得下；
        其餘步驟維持 820 的表單寬度，一行字不會拉太長。共看派對沒有右軌，不放寬。 */
     document.querySelector(".wizard__body")
       ?.classList.toggle("wizard__body--mid", (step === 4 || step === 5) && !isWP());
-    // 共看派對跳過票券銷售那一步，stepper 上那一格也不該還點得到
-    const salesLabel = document.querySelector('.progress-stepper__label[data-step="5"]');
-    if (salesLabel) salesLabel.hidden = isWP();
+    /* 被跳過的步驟在進度列上也不該還看得到（共看派對跳票券銷售；不設門票跳票種＋票券銷售）。
+       改成一律問 skipped()，不再逐一列舉——2026-08-06 新增「免票入場」時，原本寫死只藏第 5 格
+       的版本會讓進度列還留著一格點不進去的「票種」。 */
+    labels.forEach(l => { l.hidden = skipped(Number(l.dataset.step)); });
     document.querySelector("[data-action=back]").disabled = step === first;
     const next = document.querySelector("[data-action=next]");
     next.dataset.i18n = nextKeys[step];
@@ -753,17 +951,43 @@
 
   /* ---- A2/A3：讀前面步驟輸入 → 回填 Review 摘要、即時打勾 Quality check、
           banner 計數、全通過才開放 Publish。純前端就緒示意（spec §4.5 五項）。---- */
+  /* 系列場次的狀態宣告在這裡、控制器在下面（搜「系列場次」）——readState() 每次都要讀它，
+     而 readState 跑得比控制器那一段早，狀態留在下面會撞到 TDZ（let 在宣告前碰就報錯）。 */
+  const series = { on: false, list: [], seq: 0 };
+
+  /* Review 摘要那一列：沒開系列就留空（顯示佔位「單場」），開了就寫「共 N 場」
+     並附第一場與最後一場的日期，讓人不必回上一步也知道這個系列橫跨多久。 */
+  function seriesSummary() {
+    if (!series.on) return "";
+    const n = 1 + series.list.length;
+    const dates = [(document.querySelector("[data-ce=date]")?.value || "").trim()]
+      .concat(series.list.map(s => s.date))
+      .filter(Boolean).sort();
+    const line = T("ce.series.countn", "{n} dates").replace("{n}", n);
+    if (!dates.length) return line;
+    const ymd = v => v.replace(/-/g, "/");        // 站內日期一律 YYYY/MM/DD
+    const span = dates.length > 1 && dates[0] !== dates[dates.length - 1]
+      ? ymd(dates[0]) + " – " + ymd(dates[dates.length - 1])
+      : ymd(dates[0]);
+    return line + " · " + span;
+  }
+
   function readState() {
-    const typeSel = document.getElementById("ce-type");
-    const typeName = typeSel && eventType ? (typeSel.options[typeSel.selectedIndex]?.textContent || "").trim() : "";
+    const typeName = typeLabel();   // 類型下拉已移除，名稱一律取自閘門那張卡（唯一來源）
     const name  = (document.querySelector("[data-ce=name]")?.value  || "").trim();
     const date  = (document.querySelector("[data-ce=date]")?.value  || "").trim();
     const venue = (document.querySelector("[data-ce=venue]")?.value || "").trim();
-    const city  = (document.querySelector("[data-ce=city]")?.value  || "").trim();
+    /* 場地那一步的「城市／國家」欄已移除（2026-08-05），改讀細節那一步的活動國家；
+       摘要與預覽卡仍想在場地後面接一個地點脈絡，來源換成這裡。 */
+    const cSel  = document.getElementById("ce-country");
+    const city  = cSel ? (cSel.options[cSel.selectedIndex]?.textContent || "").trim() : "";
     const start = (document.querySelector("[data-ce=start]")?.value || "").trim();
     const tiers = Number(document.getElementById("ce-tier-count")?.dataset.tiers || 0);
-    const posterFilled = !!document.querySelector('.upload-tile.is-filled[data-asset="keyvisual"], .upload-tile.is-filled[data-asset="banner"]');
-    return { typeName, name, date, venue, city, start, tiers, posterFilled };
+    // 橫式橫幅槽已撤除（2026-08-05），海報就緒只看主視覺
+    /* 主視覺＝相簿的第一張（2026-08-06 起沒有具名的 keyvisual 槽了）。 */
+    const posterFilled = !!document.querySelector('#ce-gallery [data-gallery-tile].is-filled');
+    const sessions = seriesSummary();
+    return { typeName, name, date, venue, city, start, tiers, posterFilled, sessions };
   }
 
   function setRev(key, value, phKey, phFallback) {
@@ -775,6 +999,7 @@
   function syncReview() {
     if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬摘要/檢核
     const s = readState();
+    const noTix = noTickets();                 // 摘要與檢核清單都要用，宣告在最上面免得撞 TDZ
 
     // A3 — 摘要回填（未填顯佔位）
     setRev("type",  s.typeName, "ce.ph.notsel",     "Not selected");
@@ -787,23 +1012,32 @@
       venueLine = parts.join(" — ");
     }
     setRev("venue", venueLine, "ce.ph.notset", "Not set");
-    setRev("tickets", s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "", "ce.ph.0tiers", "0 tiers");
+    setRev("series", s.sessions, "ce.series.single", "Single date");
+    /* 免票入場時這一列寫「免票入場」，不要留「0 種票」——那讀起來像忘了建，不像刻意不賣。 */
+    setRev("tickets",
+      noTix ? T("ce.sales.none", "Ticket-free entry")
+            : (s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : ""),
+      "ce.ph.0tiers", "0 tiers");
 
     // A2 — Quality check 即時打勾
+    /* 免票入場時「至少 1 種票種」這一項不適用——留著會變成一條永遠過不了的硬閘。
+       整項從檢核清單移除（而不是自動打勾），因為打勾等於宣稱「已經建立票種」，那是假的。 */
     const checks = {
       type:   !!s.typeName,
       name:   !!s.name,
       date:   !!s.date,
-      venue:  !!s.venue,
-      ticket: s.tiers > 0
+      venue:  !!s.venue
     };
+    if (!noTix) checks.ticket = s.tiers > 0;
+    const tixItem = document.querySelector('[data-qc="ticket"]');
+    if (tixItem) tixItem.hidden = noTix;
     let done = 0;
     Object.keys(checks).forEach(k => {
       const li = document.querySelector('[data-qc="' + k + '"]');
       if (li) li.classList.toggle("readiness__item--done", checks[k]);
       if (checks[k]) done++;
     });
-    const totalQc = 5, left = totalQc - done, allOk = left === 0;
+    const totalQc = Object.keys(checks).length, left = totalQc - done, allOk = left === 0;
 
     // banner 計數即時更新；全通過轉 ready
     const banner = document.getElementById("ce-qc-banner");
@@ -884,26 +1118,23 @@
     a.addEventListener("click", e => { e.preventDefault(); step = Number(a.dataset.goto); render(); });
   });
 
-  /* 類型選擇有兩個入口：閘門（[data-gate-type]）與細節那一步的快選（[data-type]）。
-     兩邊共用同一支 chooseType——選在哪裡按的不影響結果，只影響按完要不要進流程。 */
-  let syncing = false;                          // 程式改下拉的值時擋掉自己觸發的 change
+  /* 類型只有一個選擇入口＝閘門（[data-gate-type]）；表單裡改類型走標題列右側那顆
+     切換鈕，它把閘門叫回來。細節那一步的類型下拉已於 2026-08-05 移除（使用者指示）。 */
   const gate  = document.querySelector("[data-gate]");
   const sheet = document.querySelector("[data-sheet]");
+  // 類型名稱的唯一來源＝閘門那張卡的標題（下拉移除後，站上只剩這一份文字）
+  function typeLabel() {
+    const b = document.querySelector('[data-gate-type="' + eventType + '"]');
+    return b ? (b.querySelector(".radio-card__title")?.textContent || "").trim() : "";
+  }
   function syncTypeUI() {
     document.querySelectorAll("[data-gate-type]").forEach(b => {
       const on = b.dataset.gateType === eventType;
       b.classList.toggle("segmented__btn--active", on);
       b.setAttribute("aria-checked", String(on));
     });
-    /* 下拉由 js/zselect.js 升級成自訂觸發鈕，它靠 change 事件同步按鈕上的字；
-       程式改值不會自己發 change，所以這裡補一個，並用 syncing 擋掉回頭再進 chooseType。 */
-    const sel = document.getElementById("ce-type");
-    if (sel && sel.value !== eventType) {
-      syncing = true;
-      sel.value = eventType;
-      sel.dispatchEvent(new Event("change", { bubbles: true }));
-      syncing = false;
-    }
+    const swLabel = document.getElementById("ce-type-switch-label");
+    if (swLabel) swLabel.textContent = typeLabel();
   }
   function chooseType(t) {
     eventType = t || "";
@@ -914,19 +1145,34 @@
     syncReview();
     scheduleSave();
   }
+  /* 閘門服務兩種情境，✕ 的意思因此不同（2026-08-05 使用者指示）：
+       ① 一進頁面就看到的閘門——還沒開始填，✕＝離開建立活動流程。
+       ② 用標題列的切換鈕叫回來的閘門——正在填到一半，✕＝取消重選、回到原本那一步。
+     用 enteredWizard 記住有沒有進過流程，兩種情境才不會共用一個錯的出口。 */
+  let enteredWizard = false;
   function enterWizard() {
+    enteredWizard = true;
     gate?.classList.add("hidden");
     sheet?.classList.remove("hidden");
     document.querySelector("[data-footer]")?.classList.remove("hidden");   // 底部動作列在閘門上沒有意義，跟著一起收
     window.scrollTo({ top: 0, behavior: "instant" });
   }
+  /* 回閘門重選類型：把 enterWizard 反過來做（但不清 enteredWizard——那是「有沒有進過流程」
+     的記號，不是「現在在不在流程裡」）。已填的欄位不動，選完回來還停在原本那一步。 */
+  function showGate() {
+    gate?.classList.remove("hidden");
+    sheet?.classList.add("hidden");
+    document.querySelector("[data-footer]")?.classList.add("hidden");
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  document.getElementById("ce-type-switch")?.addEventListener("click", showGate);
   document.querySelectorAll("[data-gate-type]").forEach(b =>
     b.addEventListener("click", () => { chooseType(b.dataset.gateType); enterWizard(); render(); }));
-  document.getElementById("ce-type")?.addEventListener("change", e => {
-    if (syncing) return;
-    chooseType(e.target.value); render();
+  document.querySelector("[data-gate-back]")?.addEventListener("click", () => {
+    // 進過流程＝這次是回來重選，✕ 取消重選、回到原本那一步；否則才是離開建立活動
+    if (enteredWizard) { enterWizard(); render(); return; }
+    history.length > 1 ? history.back() : (location.href = "events.html");
   });
-  document.querySelector("[data-gate-back]")?.addEventListener("click", () => { history.length > 1 ? history.back() : (location.href = "events.html"); });
 
   // 任何欄位輸入即時回填／打勾＋觸發自動儲存示意
   document.querySelectorAll("[data-ce]").forEach(el => el.addEventListener("input", () => { syncReview(); scheduleSave(); }));
@@ -1024,6 +1270,127 @@
      就緒與預覽改聽它發出的 upload:change，不再靠上面那條 toggle。 */
   document.addEventListener("upload:change", () => { renderPreview(); scheduleSave(); });
 
+  /* ---- 進階詳細資料的可增刪清單（需攜帶物品／活動須知，2026-08-06）--------------
+     兩份清單結構一樣，共用同一支：按鈕上的 data-list-add 指到要塞進哪個容器、
+     data-list-ph 指定 placeholder 的字典 key。不為兩份幾乎相同的清單各寫一遍。 */
+  (function () {
+    /* 有些清單的每一列要先選類型再寫內容（活動內含物），有些只有一行字（需攜帶物品、
+       活動須知）。差別只在前面多不多一個下拉，所以同一支列產生器用 kind 決定要不要出。 */
+    const KINDS = {
+      includes: [["food", "ce.adv.inc.food"], ["admission", "ce.adv.inc.admission"],
+                 ["gear", "ce.adv.inc.gear"], ["other", "ce.adv.inc.other"]]
+    };
+    function row(phKey, kind) {
+      const el = document.createElement("div");
+      el.className = "flex-row mt-8";
+      el.style.gap = "var(--sp-8)";
+      el.dataset.listRow = "";
+      const opts = KINDS[kind];
+      el.innerHTML =
+        (opts ? '<select class="select" style="flex:0 0 150px" data-list-kind-sel>' +
+            opts.map(o => '<option value="' + o[0] + '" data-i18n="' + o[1] + '">' + esc(T(o[1], o[0])) + '</option>').join("") +
+          '</select>' : "") +
+        '<input class="input" style="flex:1" data-i18n-placeholder="' + phKey + '" placeholder="' +
+        esc(T(phKey, "")) + '">' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-list-remove aria-label="' +
+        esc(T("ee.lineup.remove", "Remove")) + '"><i data-lucide="x" class="ztor-icon"></i></button>';
+      return el;
+    }
+    document.addEventListener("click", e => {
+      const add = e.target.closest("[data-list-add]");
+      if (add) {
+        const list = document.getElementById(add.dataset.listAdd);
+        if (list) {
+          const r = row(add.dataset.listPh, add.dataset.listKind);
+          list.appendChild(r);
+          if (window.ztorIcons) window.ztorIcons.applyIcons(r);
+          if (window.ztorSelect) window.ztorSelect.mount(r);   // 動態長出來的 select 要補掛自訂下拉
+          r.querySelector("input").focus();
+          scheduleSave();
+        }
+        return;
+      }
+      const rm = e.target.closest("[data-list-remove]");
+      if (rm) { rm.closest("[data-list-row]")?.remove(); scheduleSave(); }
+    });
+  })();
+
+  /* 條款與細則的兩個開關：原型只記狀態（要不要在購票流程顯示），不接條款內容。 */
+  document.querySelectorAll("[data-ce-term]").forEach(sw => {
+    sw.addEventListener("click", () => {
+      const on = sw.getAttribute("aria-checked") !== "true";
+      sw.setAttribute("aria-checked", on ? "true" : "false");
+      sw.classList.toggle("switch--on", on);
+      scheduleSave();
+    });
+  });
+
+  /* ---- 圖片相簿（2026-08-06 使用者指示，做法比照項目詳情頁的展示相簿）------------
+     一列格子＝這個活動的圖片，**排第一的就是主視覺**（角落掛 __flag）。末格永遠是空的
+     「＋ 新增圖片」；填滿它就變成一張正式圖片、後面再長一個新的空格出來（上限 8 張）。
+     刪掉一張＝整格移除（不留空洞），主視覺標記跟著重算——順序就是語意，不必再問一次
+     「這張是主視覺還是圖庫」。 */
+  (function () {
+    const gal = document.getElementById("ce-gallery");
+    if (!gal) return;
+    const MAX = 8;
+    const tiles = () => Array.from(gal.querySelectorAll("[data-gallery-tile]"));
+
+    function addSlot() {
+      const el = document.createElement("div");
+      el.className = "upload-tile upload-tile--portrait is-empty";
+      el.setAttribute("data-upload", "");
+      el.setAttribute("data-gallery-add", "");
+      el.innerHTML = '<span class="upload-tile__icon">＋</span>' +
+        '<span class="upload-tile__title" data-i18n="ce.img.add">' + esc(T("ce.img.add", "Add image")) + "</span>";
+      gal.appendChild(el);
+      if (window.ztorUploadTile) window.ztorUploadTile.enhance(el);   // 動態長出來的格子要補掛共用元件
+      return el;
+    }
+
+    /* 主視覺標記只掛在第一張上；其餘拿掉。每次增刪都重算，不靠記錄「誰是主視覺」。 */
+    function syncFlags() {
+      tiles().forEach((t, i) => {
+        let flag = t.querySelector(".upload-tile__flag");
+        if (i === 0) {
+          if (!flag) {
+            flag = document.createElement("span");
+            flag.className = "upload-tile__flag";
+            flag.setAttribute("data-i18n", "ce.img.keyvisual");
+            t.insertBefore(flag, t.firstChild);
+          }
+          flag.textContent = T("ce.img.keyvisual", "Key visual");
+        } else if (flag) flag.remove();
+      });
+      const add = gal.querySelector("[data-gallery-add]");
+      if (tiles().length >= MAX) { if (add) add.remove(); }
+      else if (!add) addSlot();
+    }
+
+    gal.addEventListener("upload:change", e => {
+      const tile = e.target.closest(".upload-tile");
+      if (!tile) return;
+      if (e.detail && e.detail.filled) {
+        // 剛填滿的如果是末端那個新增格，就把它轉正成一張正式圖片
+        if (tile.hasAttribute("data-gallery-add")) {
+          tile.removeAttribute("data-gallery-add");
+          tile.setAttribute("data-gallery-tile", "");
+        }
+      } else if (tile.hasAttribute("data-gallery-tile")) {
+        tile.remove();                       // 清空一張正式圖片＝整格移除，不留空洞
+      }
+      syncFlags();
+      renderPreview(); scheduleSave();
+    });
+
+    document.addEventListener("i18n:applied", () => {
+      const f = gal.querySelector(".upload-tile__flag");
+      if (f) f.textContent = T("ce.img.keyvisual", "Key visual");
+      const add = gal.querySelector("[data-gallery-add] .upload-tile__title");
+      if (add) add.textContent = T("ce.img.add", "Add image");
+    });
+  })();
+
   /* ---- 票種（spec 5.1.6.1 F9／F9.1／F9.2）------------------------------------
      一張卡＝一個票種，三個必填欄位（名稱／價格／數量），收合與編輯兩態。
      只有按過 Save 的卡才算「已建立」——編輯中的草稿不進計數、Review 摘要與
@@ -1119,6 +1486,11 @@
           esc(named || T("ce.tier.untitled", "Untitled tier")) + '</h4>' +
         '<span class="badge badge--neutral tier-card__badge" data-tier-custom' + (t.rules ? "" : " hidden") + '>' +
           esc(T("ce.rule.custom.badge", "Custom")) + '</span>' +
+        /* 自訂規則的開關（2026-08-06 使用者指示：由卡內的 switch 列改成卡標同一行靠右的按鈕）。
+           只在編輯態出現——收合態要不要自訂規則不是當下在做的事，那時看的是徽章。
+           開＝複製一份活動預設當自己的，關＝丟回去跟隨。 */
+        '<button type="button" class="btn btn--outline btn--sm tier-card__ownbtn" data-tier-own aria-pressed="' +
+          (t.rules ? "true" : "false") + '">' + esc(T("ce.rule.custom", "Custom rules")) + '</button>' +
         '<div class="tier-card__actions">' +
           '<details class="dropdown">' +
             '<summary class="btn btn--icon btn--sm" aria-label="' + esc(T("ce.tier.more", "More actions")) +
@@ -1133,7 +1505,9 @@
         '</div>' +
       '</div>' +
       '<dl class="tier-card__facts">' +
-        '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.price", "Price")) + '</dt><dd>$' + esc(t.price) + '</dd></div>' +
+        /* 票價 0 直接寫「免費」（使用者裁決 2026-08-06：不做「免費票」這個獨立模式，價格就是狀態）。 */
+        '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.price", "Price")) + '</dt><dd>' +
+          (Number(t.price) === 0 ? esc(T("ce.tier.free", "Free ticket")) : '$' + esc(t.price)) + '</dd></div>' +
         '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.qty", "Quantity")) + '</dt><dd>' + esc(t.qty) + '</dd></div>' +
       '</dl>' +
       '<button type="button" class="btn btn--outline btn--sm tier-card__edit" data-tier-edit>' + esc(T("ce.tier.edit", "Edit")) + '</button>' +
@@ -1142,17 +1516,11 @@
             tierFieldHTML("name",  "ce.tier.name",  "Name",     d.name,  { phKey: "ce.tier.name.ph",  phFb: "e.g., VIP" }) +
             tierFieldHTML("price", "ce.tier.price", "Price",    d.price, { phKey: "ce.tier.price.ph", phFb: "0", money: true }) +
             tierFieldHTML("qty",   "ce.tier.qty",   "Quantity", d.qty,   { phKey: "ce.tier.qty.ph",   phFb: "e.g., 200", num: true }) +
-            /* 進階：這張票種自訂規則。預設關＝跟隨活動預設；打開才長出自己的一份，
-               關掉就丟回去跟隨（不保留上次填的，免得看起來還在生效）。 */
-            '<div class="tier-card__rules" data-rules-for="' + t.id + '">' +
-              '<label class="tier-card__own">' +
-                '<span>' + esc(T("ce.rule.custom", "Custom rules for this tier")) + '</span>' +
-                '<span class="switch' + (t.rules ? " switch--on" : "") + '" data-tier-own role="switch" aria-checked="' +
-                  (t.rules ? "true" : "false") + '" tabindex="0"></span>' +
-              '</label>' +
-              (t.rules ? rulesHTML(t.rules)
-                       : '<p class="field__hint">' + esc(T("ce.rule.inherit", "Following the event defaults below.")) + '</p>') +
-            '</div>' +
+            /* 這張票種自訂的規則。開關已移到卡標那一行（.tier-card__ownbtn）；
+               這裡只負責內容：開＝自己的一份規則欄位，關＝一行說明說它跟著活動預設走。 */
+            (t.rules
+              ? '<div class="tier-card__rules" data-rules-for="' + t.id + '">' + rulesHTML(t.rules) + '</div>'
+              : '<p class="field__hint">' + esc(T("ce.rule.inherit", "Following the event defaults below.")) + '</p>') +
           '</div>' +
           '<div class="tier-card__foot">' +
             '<button type="button" class="btn btn--destructive btn--sm" data-tier-remove>' + esc(T("ce.tier.removeshort", "Remove")) + '</button>' +
@@ -1210,7 +1578,11 @@
       tierCta.textContent = n > 0 ? T("ce.tier.addmore", "+ Add another tier") : T("ce.tier.create", "+ Create first tier");
     }
     // 批次編輯只在「已經有存下來的票種」時才有意義；一張都沒有時整條工具列收起來
-    if (tierBar) tierBar.hidden = n === 0;
+    /* 2026-08-06 使用者指示：兩種票種以上才出現——只有一張卡時「批次」沒有東西可批。 */
+    if (tierBar) tierBar.hidden = n < 2;
+    /* 有卡片正在編輯時，新增格收起來（2026-08-06 使用者指示）：手上這張都還沒存，
+       旁邊擺一格「建立第一個票種」等於邀請你丟下它再開一張。存或取消之後才回來。 */
+    if (tierAdd) tierAdd.hidden = tiers.some(editing);
     if (tierGroupBtn)  tierGroupBtn.hidden  = groupMode;
     if (tierGroupActs) tierGroupActs.hidden = !groupMode;
   }
@@ -1298,7 +1670,7 @@
         renderTierErrors(); renderTierCount(); scheduleSave();
         return;
       }
-      if (e.target.closest(".tier-card__own")) {      // 自訂規則開關：開＝複製一份活動預設，關＝丟回去跟隨（整列可點，不只那顆開關）
+      if (e.target.closest("[data-tier-own]")) {      // 自訂規則按鈕：開＝複製一份活動預設，關＝丟回去跟隨
         t.rules = t.rules ? null : JSON.parse(JSON.stringify(eventRules));
         renderTiers(); scheduleSave();
         return;
@@ -1335,7 +1707,99 @@
     });
   }
 
-  /* ---- 票種規則（購買條件／每人限購／折扣）＋收入試算 -------------------------
+  /* ---- 系列場次（2026-08-06 使用者指示；ASSUMPTIONS SER-001）-------------------
+     打開後，這個活動會生出多場——每一場都是活動清單上獨立的一場活動，共用同一組
+     票種設定，但**數量各場獨立**（使用者裁決：500 張的票種＝每場各 500 張）。
+     第 1 場永遠是上面主欄位那一場的鏡像，不進 sessions 陣列——同一筆日期與場地
+     不能有兩個可編輯的來源，否則 Review 摘要與發布前檢核不知道該聽誰的。
+     新增的場次預設帶入主欄位的日期與場地（使用者指定），再各自去改。 */
+  const seriesSw   = document.getElementById("ce-series-sw");
+  const seriesBody = document.getElementById("ce-series-body");
+  const sessList   = document.getElementById("ce-session-list");
+
+  const mainDate  = () => (document.querySelector("[data-ce=date]")?.value  || "").trim();
+  const mainVenue = () => (document.querySelector("[data-ce=venue]")?.value || "").trim();
+  // 場次總數＝主場 + 額外場次；沒開系列時恆為 1，收入試算與摘要都吃這個數字
+  const sessionCount = () => (series.on ? 1 + series.list.length : 1);
+
+  function renderSessions() {
+    if (seriesSw) {
+      seriesSw.classList.toggle("switch--on", series.on);
+      seriesSw.setAttribute("aria-checked", series.on ? "true" : "false");
+    }
+    if (seriesBody) seriesBody.hidden = !series.on;
+    if (!sessList) return;
+    if (!series.on) { sessList.innerHTML = ""; return; }
+
+    // 站內日期一律 YYYY/MM/DD；input 的值是 ISO，這一列是純文字所以自己換
+    const ymd = v => (v || "").replace(/-/g, "/");
+    const mainText = [ymd(mainDate()), mainVenue()].filter(Boolean).join(" · ");
+    let html =
+      '<div class="session-list__row session-list__row--main">' +
+        '<span class="session-list__no">' + esc(T("ce.series.n", "Date {n}").replace("{n}", 1)) + '</span>' +
+        '<div class="session-list__fields">' +
+          '<span class="session-list__text' + (mainText ? "" : " session-list__text--empty") + '">' +
+            esc(mainText || T("ce.series.main.empty", "Fill in the date and venue above")) + '</span>' +
+        '</div>' +
+        '<span class="session-list__end"><span class="badge badge--neutral">' +
+          esc(T("ce.series.main", "Set above")) + '</span></span>' +
+      '</div>';
+
+    html += series.list.map((s, i) =>
+      '<div class="session-list__row" data-sess="' + s.id + '">' +
+        '<span class="session-list__no">' + esc(T("ce.series.n", "Date {n}").replace("{n}", i + 2)) + '</span>' +
+        '<div class="session-list__fields">' +
+          '<input class="input" type="date" data-sess-f="date" value="' + esc(s.date) + '" ' +
+            'aria-label="' + esc(T("ce.series.date", "Date")) + '">' +
+          '<input class="input" data-sess-f="venue" value="' + esc(s.venue) + '" ' +
+            'placeholder="' + esc(T("ce.venue.name.ph", "e.g., Red Coliseum")) + '" ' +
+            'aria-label="' + esc(T("ce.series.venue", "Venue")) + '">' +
+        '</div>' +
+        '<span class="session-list__end">' +
+          '<button type="button" class="btn btn--icon btn--sm" data-sess-remove ' +
+            'aria-label="' + esc(T("ce.series.remove", "Remove this date")) + '">' +
+            '<i data-lucide="x" class="ztor-icon"></i></button>' +
+        '</span>' +
+      '</div>').join("");
+
+    sessList.innerHTML = html;
+    if (window.ztorIcons) window.ztorIcons.applyIcons(sessList);
+  }
+
+  function addSession() {                       // 預設帶入主欄位那一場的日期與場地（使用者指定）
+    series.list.push({ id: "sess-" + (++series.seq), date: mainDate(), venue: mainVenue() });
+    renderSessions(); renderCalc(); syncReview(); scheduleSave();
+  }
+
+  seriesSw?.addEventListener("click", () => {
+    series.on = !series.on;
+    // 第一次打開先給一場——「系列」只有 1 場不成立，開了卻空白等於還要多按一下才看得懂
+    if (series.on && !series.list.length) { addSession(); return; }
+    renderSessions(); renderCalc(); syncReview(); scheduleSave();
+  });
+  document.getElementById("ce-session-add")?.addEventListener("click", addSession);
+
+  /* 輸入只寫進資料、不重繪——重繪會把游標從正在打的欄位彈出去（票種卡同一個理由）。
+     移除才重繪，因為序號要重新編。 */
+  sessList?.addEventListener("input", e => {
+    const row = e.target.closest("[data-sess]");
+    const f   = e.target.closest("[data-sess-f]");
+    if (!row || !f) return;
+    const s = series.list.find(o => o.id === row.dataset.sess);
+    if (s) { s[f.dataset.sessF] = e.target.value; syncReview(); scheduleSave(); }
+  });
+  sessList?.addEventListener("click", e => {
+    const row = e.target.closest("[data-sess]");
+    if (!row || !e.target.closest("[data-sess-remove]")) return;
+    series.list = series.list.filter(o => o.id !== row.dataset.sess);
+    if (!series.list.length) series.on = false;   // 一場都不剩就不是系列了，開關跟著關
+    renderSessions(); renderCalc(); syncReview(); scheduleSave();
+  });
+  // 主欄位就是第 1 場，改了要跟著更新那一列的鏡像文字
+  ["date", "venue"].forEach(k =>
+    document.querySelector("[data-ce=" + k + "]")?.addEventListener("input", () => { if (series.on) renderSessions(); }));
+
+  /* ---- 票種規則（購票條件／每人限購／折扣）＋收入試算 -------------------------
      三種設定同一個結構，範圍走「繼承＋覆寫」：活動層設一次是所有票種的預設，
      票種卡打開「自訂」才有自己的一份。條件欄位（不限／限時間／限粉絲分級）在
      活動層與票種卡各出現一次，共用同一支渲染函式，不寫兩份。
@@ -1346,34 +1810,58 @@
   const newRules = () => ({
     buy:  { mode: "none", from: "", to: "", tier: "fan" },
     cap:  { mode: "none", n: "" },
-    disc: { mode: "off", pct: "", cmode: "none", from: "", to: "", tier: "fan" }
+    /* 2026-08-06：折扣的條件併進 mode（off/on/time/tier/both），cmode 退場；
+       from／to／tier 保留，只是改由 mode 決定要不要用。 */
+    disc: { mode: "off", pct: "", from: "", to: "", tier: "fan" }
   });
   let eventRules = newRules();
   const rulesOf = t => t.rules || eventRules;        // 沒有自己的一份＝跟隨活動
 
+  /* 2026-08-06 使用者指示：規則的三個控制項由 .segmented 改成下拉。
+     理由不只是版面——選項從 2–3 個長到 4–5 個（多了「同時限時間與粉絲分級」這種組合），
+     並排按鈕會擠成一長條、而且沒有「已選的是什麼」這個單一落點可讀。
+     data-rule-seg 這個 hook 名沿用，事件仍走同一條路（change 而非 click）。 */
   function segHTML(path, value, opts) {
-    return '<div class="segmented" data-rule-seg="' + path + '" data-value="' + esc(value) + '">' +
-      opts.map(o => '<button type="button" class="segmented__btn' + (o.v === value ? " segmented__btn--active" : "") +
-        '" data-val="' + o.v + '">' + esc(T(o.k, o.f)) + '</button>').join("") + '</div>';
+    return '<select class="select" data-rule-seg="' + path + '" data-value="' + esc(value) + '">' +
+      opts.map(o => '<option value="' + o.v + '"' + (o.v === value ? " selected" : "") + '>' +
+        esc(T(o.k, o.f)) + '</option>').join("") + '</select>';
   }
   function whenHTML(path, val, cur, inner) {
     return '<div class="rule-when" data-rule-when="' + path + '" data-rule-val="' + val + '"' +
       (cur === val ? "" : " hidden") + '>' + inner + '</div>';
   }
   // 條件欄位：限時間＝起訖兩欄；限粉絲分級＝一個下拉（買得到的最低分級）
+  /* 時間與分級兩個條件可以同時成立（2026-08-06 使用者指示新增 both）。
+     所以顯隱不能再用「值等不等於」判斷——改成一張表說明「哪個值要開哪幾段」，
+     both 就是兩段都開。多一個選項時只要在表裡加一行。 */
+  const COND_SHOWS = { none: [], time: ["time"], tier: ["tier"], both: ["time", "tier"] };
+  /* 折扣的五種模式各要開哪幾段：只要不是「無」就有百分比欄，時間與分級各自看模式。 */
+  const DISC_SHOWS = { off: [], on: ["pct"], time: ["pct", "time"], tier: ["pct", "tier"], both: ["pct", "time", "tier"] };
+  function discWhen(part, cur, inner) {
+    const on = (DISC_SHOWS[cur] || []).indexOf(part) >= 0;
+    return '<div class="rule-when" data-rule-when="disc.mode" data-rule-part="' + part + '"' +
+      (on ? "" : " hidden") + '>' + inner + '</div>';
+  }
+  function condWhen(path, part, cur, inner) {
+    const on = (COND_SHOWS[cur] || []).indexOf(part) >= 0;
+    return '<div class="rule-when" data-rule-when="' + path + '" data-rule-part="' + part + '"' +
+      (on ? "" : " hidden") + '>' + inner + '</div>';
+  }
   function condHTML(g, r, mkey) {
     const cur = r[mkey];
-    return segHTML(g + "." + mkey, cur, [
+    const path = g + "." + mkey;
+    return segHTML(path, cur, [
         { v: "none", k: "ce.rule.any",  f: "No limit" },
         { v: "time", k: "ce.rule.time", f: "Time window" },
-        { v: "tier", k: "ce.rule.tier", f: "Fan tier" }
+        { v: "tier", k: "ce.rule.tier", f: "Fan tier" },
+        { v: "both", k: "ce.rule.both", f: "Time window and fan tier" }
       ]) +
-      whenHTML(g + "." + mkey, "time", cur,
+      condWhen(path, "time", cur,
         '<div class="rule-row">' +
-          '<input class="input" type="datetime-local" data-rule-f="' + g + '.from" value="' + esc(r.from) + '">' +
-          '<input class="input" type="datetime-local" data-rule-f="' + g + '.to" value="' + esc(r.to) + '">' +
+          '<input class="input" type="datetime-local" data-ph-key="ce.rule.from" data-rule-f="' + g + '.from" value="' + esc(r.from) + '">' +
+          '<input class="input" type="datetime-local" data-ph-key="ce.rule.to" data-rule-f="' + g + '.to" value="' + esc(r.to) + '">' +
         '</div>') +
-      whenHTML(g + "." + mkey, "tier", cur,
+      condWhen(path, "tier",  cur,
         '<select class="select" data-rule-f="' + g + '.tier">' +
           FAN_TIERS.map(v => '<option value="' + v + '"' + (r.tier === v ? " selected" : "") + '>' +
             esc(T("ce.rule.tier." + v, v)) + '</option>').join("") +
@@ -1395,17 +1883,33 @@
             esc(r.cap.n) + '" placeholder="' + esc(T("ce.rule.cap.ph", "e.g., 2")) + '">' +
           '<span class="rule-unit">' + esc(T("ce.rule.cap.unit", "tickets per person")) + '</span></div>') +
       '</div>' +
+      /* 折扣（2026-08-06 使用者指示）：原本是「有／無」再加一層條件下拉，兩層要各按一次。
+         合併成一個五選一——無／有折扣／限時折扣／限粉絲折扣／限時與粉絲折扣，
+         把「要不要打折」與「打給誰、什麼時候打」壓成同一個決定。
+         內部仍是同一份資料（disc.mode 決定折扣百分比欄開不開、要不要開時間或分級那兩段）。 */
       '<div class="rule">' +
         '<div class="field__label">' + esc(T("ce.rule.disc", "Discount")) + '</div>' +
         segHTML("disc.mode", r.disc.mode, [
-          { v: "off", k: "ce.rule.disc.off", f: "None" },
-          { v: "on",  k: "ce.rule.disc.on",  f: "Set a discount" }
+          { v: "off",  k: "ce.rule.disc.off",  f: "None" },
+          { v: "on",   k: "ce.rule.disc.on",   f: "Discount" },
+          { v: "time", k: "ce.rule.disc.time", f: "Discount in a time window" },
+          { v: "tier", k: "ce.rule.disc.tier", f: "Discount for a fan tier" },
+          { v: "both", k: "ce.rule.disc.both", f: "Discount in a time window, for a fan tier" }
         ]) +
-        whenHTML("disc.mode", "on", r.disc.mode,
+        discWhen("pct", r.disc.mode,
           '<div class="rule-row"><span class="amount-field amount-field--suffix amount-field--readonly">' +
             '<input class="input amount-field__input" type="number" min="0" max="100" step="1" data-rule-f="disc.pct" value="' +
-              esc(r.disc.pct) + '" placeholder="0"><span class="amount-field__unit">%</span></span></div>' +
-          '<div class="rule-sub">' + condHTML("disc", r.disc, "cmode") + '</div>') +
+              esc(r.disc.pct) + '" placeholder="0"><span class="amount-field__unit">%</span></span></div>') +
+        discWhen("time", r.disc.mode,
+          '<div class="rule-sub"><div class="rule-row">' +
+            '<input class="input" type="datetime-local" data-ph-key="ce.rule.from" data-rule-f="disc.from" value="' + esc(r.disc.from) + '">' +
+            '<input class="input" type="datetime-local" data-ph-key="ce.rule.to" data-rule-f="disc.to" value="' + esc(r.disc.to) + '">' +
+          '</div></div>') +
+        discWhen("tier", r.disc.mode,
+          '<div class="rule-sub"><select class="select" data-rule-f="disc.tier">' +
+            FAN_TIERS.map(v => '<option value="' + v + '"' + (r.disc.tier === v ? " selected" : "") + '>' +
+              esc(T("ce.rule.tier." + v, v)) + '</option>').join("") +
+          '</select></div>') +
       '</div>';
   }
 
@@ -1427,18 +1931,24 @@
     const t = tiers.find(x => x.id === host.dataset.rulesFor);
     return t ? rulesOf(t) : null;
   }
-  document.addEventListener("click", e => {
-    const btn = e.target.closest("[data-rule-seg] .segmented__btn");
-    if (!btn) return;
-    const group = btn.closest("[data-rule-seg]");
-    const r = rulesFor(group);
+  /* 規則的模式改成下拉之後聽 change（原本是 segmented 的 click）。顯隱不再是
+     「值等不等於」，而是查 COND_SHOWS／DISC_SHOWS——同一個值可能要開好幾段（both）。 */
+  document.addEventListener("change", e => {
+    const sel = e.target.closest("select[data-rule-seg]");
+    if (!sel) return;
+    const r = rulesFor(sel);
     if (!r) return;
-    const path = group.dataset.ruleSeg, v = btn.dataset.val;
+    const path = sel.dataset.ruleSeg, v = sel.value;
     ruleSet(r, path, v);
-    group.dataset.value = v;
-    group.querySelectorAll(".segmented__btn").forEach(b => b.classList.toggle("segmented__btn--active", b === btn));
-    const scope = group.closest("[data-rules-for]");
-    scope.querySelectorAll('[data-rule-when="' + path + '"]').forEach(w => { w.hidden = w.dataset.ruleVal !== v; });
+    sel.dataset.value = v;
+    const table = path === "disc.mode" ? DISC_SHOWS : COND_SHOWS;
+    const scope = sel.closest("[data-rules-for]");
+    scope.querySelectorAll('[data-rule-when="' + path + '"]').forEach(w => {
+      /* 每人限購那一條沒有 part（只有一段），仍照舊比對 data-rule-val。 */
+      w.hidden = w.dataset.rulePart
+        ? (table[v] || []).indexOf(w.dataset.rulePart) < 0
+        : w.dataset.ruleVal !== v;
+    });
     renderCalc(); renderTierBadges(); scheduleSave();
   });
   document.addEventListener("input", e => {
@@ -1456,20 +1966,46 @@
   const money = n => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
   function netPrice(t) {
     const r = rulesOf(t);
-    const pct = r.disc.mode === "on" ? Math.min(Math.max(Number(r.disc.pct) || 0, 0), 100) : 0;
+    // 折扣模式從 off/on 兩種長成五種（2026-08-06），判準改成「不是無就有折扣」
+    const pct = r.disc.mode !== "off" ? Math.min(Math.max(Number(r.disc.pct) || 0, 0), 100) : 0;
     return (Number(t.price) || 0) * (1 - pct / 100);
   }
   function renderCalc() {
-    const rev  = savedTiers().reduce((a, t) => a + netPrice(t) * (Number(t.qty) || 0), 0);
+    /* 票種數量是「每場各自」的（使用者裁決），所以營收要乘場次數。支出這一欄反過來
+       維持整體值不乘——它是使用者自己輸入的一個總數，替他乘出一個沒填過的數字更難懂。 */
+    const n    = sessionCount();
+    const rev  = savedTiers().reduce((a, t) => a + netPrice(t) * (Number(t.qty) || 0), 0) * n;
     const fee  = rev * EVENT_FEE_PCT / 100;
     const cost = Number(document.getElementById("ce-expense")?.value || 0);
     const profit = rev - fee - cost;
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = money(v); };
-    set("ce-calc-rev", rev); set("ce-calc-fee", fee); set("ce-calc-cost", cost);
+    const sRow = document.getElementById("ce-calc-sessions-row");
+    if (sRow) sRow.hidden = n <= 1;
+    const sVal = document.getElementById("ce-calc-sessions");
+    if (sVal) sVal.textContent = T("ce.series.countn", "{n} dates").replace("{n}", n);
+    set("ce-calc-rev", rev); set("ce-calc-fee", fee);   // 支出那一列現在是輸入格，不由這裡寫值
     const p = document.getElementById("ce-calc-profit");
     if (p) { p.textContent = money(profit); p.classList.toggle("calc-sum__neg", profit < 0); }
   }
   document.getElementById("ce-expense")?.addEventListener("input", () => { renderCalc(); scheduleSave(); });
+
+  /* 售票規則彈窗：入口在試算卡底部（折扣直接改上面那幾個數字，入口與後果同一個視線範圍）。
+     關閉的三條路都留著——右上 ✕、底部「完成」、點背景；Esc 也收（站上對話框的既有慣例）。
+     規則本身沒有「取消」——每一次改動當下就寫進資料並重算試算，關掉只是收起畫面。 */
+  const rulesModal = document.getElementById("ce-rules-modal");
+  function openRules(on) {
+    if (!rulesModal) return;
+    rulesModal.hidden = !on;
+    document.body.style.overflow = on ? "hidden" : "";
+    if (on) rulesModal.querySelector("[data-ce-rules-close]")?.focus();
+  }
+  document.getElementById("ce-rules-open")?.addEventListener("click", () => openRules(true));
+  rulesModal?.addEventListener("click", e => {
+    if (e.target === rulesModal || e.target.closest("[data-ce-rules-close]")) { openRules(false); scheduleSave(); }
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && rulesModal && !rulesModal.hidden) { openRules(false); scheduleSave(); }
+  });
 
   // 收合卡上的「自訂」標記：哪幾張票種不跟隨活動預設，一眼看得出來
   function renderTierBadges() {
@@ -1536,14 +2072,19 @@
         document.querySelectorAll('[data-when="' + seg + '"]').forEach(sub => {
           sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
         });
+        /* 入場方式會改變流程有幾步，所以要重畫進度列；停在被跳掉的那一步時先退回細節。 */
+        if (seg === "sales") {
+          salesMode = btn.dataset.val;
+          if (skipped(step)) step = 3;
+          render();
+        }
         syncReview(); scheduleSave();
       });
     });
   });
 
   function readWP() {
-    const ts = document.getElementById("ce-type");
-    const typeName = ts && eventType ? (ts.options[ts.selectedIndex]?.textContent || "").trim() : "";
+    const typeName = typeLabel();   // 同上：唯一來源＝閘門那張卡的標題
     const film = document.getElementById("ce-film");
     const filmName = film && film.value ? (film.options[film.selectedIndex]?.textContent || "").trim() : "";
     return {
@@ -1718,10 +2259,11 @@
   document.addEventListener('i18n:applied', () => {
     if (i18nBusy) return;
     i18nBusy = true;
-    render(); renderRules(); renderTiers();
+    render(); renderRules(); renderTiers(); renderSessions();
     setTimeout(() => { i18nBusy = false; }, 0);
   });
   renderRules();
+  renderSessions();
 })();
 </script>
 <!-- 圖片格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->

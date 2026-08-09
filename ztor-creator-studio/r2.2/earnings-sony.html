@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
@@ -33,13 +34,24 @@
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<!-- 捐贈彈窗（2026-08-06）用到的既有元件：欄位／輸入與下拉／金額欄／開關列／開關／提示條。
+     與 earnings.html 的提款申請彈窗同一組，零新元件。 -->
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sortable.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* finance-overview 專屬一次性版面：只做這頁的排版，不覆寫共用 class／token；
      色彩・字級一律走 token，無裸 hex/rgb/font-size。 */
-  .fin-actions { display:flex; gap:var(--sp-8); align-items:center; margin-top:var(--sp-12); flex-wrap:wrap; }
+  /* 兩端對齊：左＝提領歷史（回看已發生的事）、右＝捐贈＋提領（現在要動這筆錢）。
+     右側兩顆用 __end 包成一組，換行時才會整組落下、不會被 space-between 拆散。 */
+  .fin-actions { display:flex; gap:var(--sp-8); align-items:center; justify-content:space-between; margin-top:var(--sp-12); flex-wrap:wrap; }
+  .fin-actions__end { display:inline-flex; gap:var(--sp-8); align-items:center; }
   /* 只留外距；排列交給 DS 的 .filter-tabs（gap／wrap／align 由元件負責） */
   /* 2026-07-27：「即將推出」條移除（三型皆已上線），.fin-soon 一族樣式隨之刪除。
      legend 下方原本靠 .fin-soon 的 margin-bottom 撐出與圖表的距離，故補到 .fin-legend。 */
@@ -250,11 +262,21 @@
         </div>
         <div class="kpi bento--span-4">
           <div class="kpi__label" data-i18n="fin.kpi.available">Available to withdraw</div>
-          <div class="kpi__value">NTD 2,200</div>
+          <!-- data-fin-kpi="available" ＝這頁「可提領金額」的唯一顯示來源：捐贈彈窗的幣別字串、
+               金額上限與送出後的扣款全部讀這一格，彈窗自己不留第二份幣別或餘額（2026-08-06）。 -->
+          <div class="kpi__value" data-fin-kpi="available">NTD 2,200</div>
           <div class="kpi__meta" data-i18n="fin.kpi.available-meta">Withdrawable once you reach NTD 2,200</div>
+          <!-- 2026-08-05 使用者裁示：提領歷史靠左、提領靠右，另加捐贈。
+               左邊是「回頭看已經發生的事」、右邊是「現在要動這筆錢」，兩種動作分屬兩端；
+               捐贈與提領同屬「動這筆錢」，所以並排在右側、緊鄰主動作。
+               捐贈用 outline：它跟提領一樣是實際動用金額的動作，不能弱化成 ghost 文字鈕，
+               但一張卡只留一個主動作，所以不與提領搶 primary。 -->
           <div class="fin-actions">
-            <button class="btn btn--primary btn--sm" type="button" data-i18n="fin.withdraw">Withdraw</button>
             <button class="btn btn--ghost btn--sm" type="button" data-drawer-open="history"><span data-i18n="fin.history">Withdrawal history</span><i data-lucide="chevron-right" class="ztor-icon ztor-icon--xs"></i></button>
+            <span class="fin-actions__end">
+              <button class="btn btn--outline btn--sm" type="button" data-drawer-open="donate" data-i18n="fin.donate">Donate</button>
+              <button class="btn btn--primary btn--sm" type="button" data-i18n="fin.withdraw">Withdraw</button>
+            </span>
           </div>
         </div>
       </div>
@@ -625,10 +647,82 @@
       </div>
     </section>
   </div>
+
+  <!-- ══ 捐贈（2026-08-06 使用者逐條裁示）— 沿用同一組 .payout-modal / .payout-dialog：
+       捐贈與提款同族，都是「動用可提領金額」的表單彈窗，所以 Esc／點遮罩／鎖捲動全部沿用。
+       五個部分：受贈組織 → 金額（placeholder 隨組織換）→ 平台費說明 → 匿名 → 不可逆警語＋確認。
+       金額上限與幣別字串一律讀 [data-fin-kpi="available"]（卡片那一格），彈窗內不寫第二份幣別；
+       仍未定的產品規則（費率、幣別真相來源、捐款紀錄、收據、報表計入）見 ASSUMPTIONS.md PG-033。 ══ -->
+  <div class="payout-modal" data-modal="donate" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="fin-don-title">
+      <div class="payout-dialog__head">
+        <div>
+          <h2 class="payout-dialog__title" id="fin-don-title" data-i18n="fin.donate">Donate</h2>
+          <p class="text-sub" style="margin:var(--sp-6) 0 0;font-size:var(--fs-13)" data-i18n="fin.don.sub">Give part of your available balance to an international relief organisation.</p>
+        </div>
+        <button class="btn btn--icon" type="button" aria-label="Close donation popup" data-i18n-aria-label="fin.don.close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+
+        <!-- 受贈組織（2026-08-05 使用者裁示改下拉）：五個組織收進一顆 .select。
+             取捨——原本一列一個組織＋一句話說明，五列把彈窗撐得很長；選組織只是這張表單的
+             第一步，不該占掉一半版面。組織的說明沒有丟掉，改成選單下方隨選取換的
+             .field__hint，一次只顯示當前這一個。
+             data-don-min 是該組織的最低捐款額（示範資料），金額欄的 placeholder 讀它。 -->
+        <div class="field">
+          <label class="field__label" for="fin-don-org" data-i18n="fin.don.org">Recipient</label>
+          <select class="select" id="fin-don-org" data-don-orgs aria-describedby="fin-don-org-sub">
+            <option value="org1" data-don-min="100" data-i18n="fin.don.org1">Médecins Sans Frontières</option>
+            <option value="org2" data-don-min="200" data-i18n="fin.don.org2">UNICEF</option>
+            <option value="org3" data-don-min="150" data-i18n="fin.don.org3">WWF</option>
+            <option value="org4" data-don-min="300" data-i18n="fin.don.org4">International Committee of the Red Cross</option>
+            <option value="org5" data-don-min="250" data-i18n="fin.don.org5">Oxfam</option>
+          </select>
+          <div class="field__hint" id="fin-don-org-sub" data-don-org-sub></div>
+        </div>
+
+        <!-- 金額：幣別前綴由腳本從卡片那一格填入；placeholder＝所選組織的最低金額。 -->
+        <div class="field">
+          <div class="field__label" data-i18n="fin.don.amount">Amount</div>
+          <span class="amount-field amount-field--readonly amount-field--code">
+            <span class="amount-field__unit" data-don-cur></span>
+            <input class="input amount-field__input" type="text" inputmode="numeric" data-don-amount aria-describedby="fin-don-fee">
+          </span>
+          <div class="field__hint" id="fin-don-fee" data-i18n="fin.don.fee">In this demo the whole amount goes to the organisation and nothing is deducted. The live fee is still being decided.</div>
+          <div class="field__error" data-don-error role="alert" hidden></div>
+        </div>
+
+        <!-- 匿名：站上既有的「左文字右控件」外框列＋開關 -->
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="fin.don.anon">Give anonymously</div>
+            <div class="control-row__sub" data-i18n="fin.don.anon-sub">The organisation receives the gift without your name attached.</div>
+          </div>
+          <div class="switch" role="switch" aria-checked="false" tabindex="0" data-don-anon></div>
+        </div>
+
+        <!-- 不可逆的告知與確認合成同一個勾選（2026-08-05 使用者裁示）。
+             原本是「警示條說不可逆」＋「勾選框說我確認」兩塊，講的是同一件事的兩半：
+             拆開時讀者要連讀兩遍才拼得起來。合成一句之後，勾與不勾都是對同一句話表態。 -->
+        <label class="zcheck mt-16">
+          <span class="zcheck__control">
+            <input class="zcheck__input" type="checkbox" data-don-confirm>
+            <span class="zcheck__box"></span>
+          </span>
+          <span class="zcheck__label" data-i18n="fin.don.confirm">A donation cannot be cancelled or refunded. I'm sure I want to give this amount to the organisation I picked.</span>
+        </label>
+      </div>
+      <div class="payout-dialog__foot">
+        <button class="btn btn--ghost" type="button" data-drawer-close data-i18n="payout.cancel">Cancel</button>
+        <button class="btn btn--primary" type="button" data-don-submit disabled data-i18n="fin.don.submit">Send donation</button>
+      </div>
+    </section>
+  </div>
 </div>
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
 <script src="js/projects-store.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <!-- table-sort 必須排在 finance-overview 之前：後者在解析階段就渲染表格，
@@ -887,6 +981,119 @@
     document.addEventListener('ztor:roy-period', e => { period = e.detail; renderAllCards(); });
     document.addEventListener('i18n:applied', renderAllCards);
     renderAllCards();
+  })();
+</script>
+<script>
+  /* 捐贈彈窗（2026-08-06）——五件事：選組織、填金額、看平台費說明、匿名、確認後送出。
+     開關由 finance-overview.js 的 data-drawer-open/-close 負責，這裡只管表單狀態。
+
+     幣別與可提領金額的單一來源＝卡片上的 [data-fin-kpi="available"]（例如「NTD 2,200」）。
+     本檔不自帶幣別字串、不換算匯率——側欄的幣別選單目前只剩 HKD、本頁金額寫死 NTD，
+     兩者尚未接上（產品缺口，見 ASSUMPTIONS.md PG-033）；在真相來源定案前，
+     彈窗跟著卡片走，至少同一張卡上的兩個地方永遠一致。 */
+  (function () {
+    var modal = document.querySelector('.payout-modal[data-modal="donate"]');
+    var kpi = document.querySelector('[data-fin-kpi="available"]');
+    if (!modal || !kpi) return;
+
+    var T = function (k) { return (window.i18nT && window.i18nT(k)) || k; };
+    var orgsEl   = modal.querySelector('[data-don-orgs]');
+    var curEl    = modal.querySelector('[data-don-cur]');
+    var amountEl = modal.querySelector('[data-don-amount]');
+    var errEl    = modal.querySelector('[data-don-error]');
+    var anonEl   = modal.querySelector('[data-don-anon]');
+    var confirmEl= modal.querySelector('[data-don-confirm]');
+    var submitEl = modal.querySelector('[data-don-submit]');
+
+    /* 「NTD 2,200」→ { cur: 'NTD', n: 2200 }。幣別是數字前的那一段，不預設是哪一國。 */
+    function readKpi() {
+      var m = /^\s*(\S+)\s+([\d.,]+)/.exec(kpi.textContent || '');
+      if (!m) return { cur: '', n: 0 };
+      return { cur: m[1], n: parseFloat(m[2].replace(/,/g, '')) || 0 };
+    }
+    function money(n) { return readKpi().cur + ' ' + n.toLocaleString('en-US'); }
+    function activeOrg() { return orgsEl.options[orgsEl.selectedIndex] || null; }
+    function minOf(el) { return parseFloat(el && el.getAttribute('data-don-min')) || 0; }
+    function typed() { return parseFloat((amountEl.value || '').replace(/[^\d.]/g, '')); }
+
+    /* placeholder 與說明都隨所選組織換：不同組織的最低捐款額不同（第 4 條裁示），
+       說明則是下拉本身顯示不出來的那一句「這個組織在做什麼」。 */
+    var subEl = modal.querySelector('[data-don-org-sub]');
+    function syncOrg() {
+      var opt = activeOrg();
+      amountEl.placeholder = T('fin.don.amount-ph').replace('{min}', money(minOf(opt)));
+      if (subEl) subEl.textContent = opt ? T('fin.don.' + opt.value + '-sub') : '';
+    }
+
+    function validate() {
+      var max = readKpi().n, min = minOf(activeOrg()), v = typed();
+      var msg = '';
+      if (!isNaN(v) && v > max) msg = T('fin.don.err.max').replace('{max}', money(max));
+      else if (!isNaN(v) && v > 0 && v < min) msg = T('fin.don.err.min').replace('{min}', money(min));
+      errEl.textContent = msg;
+      errEl.hidden = !msg;
+      amountEl.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      var ok = !msg && !isNaN(v) && v >= min && v <= max && v > 0;
+      submitEl.disabled = !(ok && confirmEl.checked);
+      return ok;
+    }
+
+    /* 開啟時重讀卡片（上一筆捐款已經把可提領金額改小了），並把表單歸零 */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('[data-drawer-open="donate"]')) return;
+      curEl.textContent = readKpi().cur;
+      amountEl.value = '';
+      confirmEl.checked = false;
+      anonEl.classList.remove('switch--on');
+      anonEl.setAttribute('aria-checked', 'false');
+      syncOrg();
+      validate();
+    });
+
+    orgsEl.addEventListener('change', function () {
+      syncOrg();
+      validate();
+    });
+
+    amountEl.addEventListener('input', validate);
+    confirmEl.addEventListener('change', validate);
+
+    function toggleAnon() {
+      var on = !anonEl.classList.contains('switch--on');
+      anonEl.classList.toggle('switch--on', on);
+      anonEl.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    anonEl.addEventListener('click', toggleAnon);
+    anonEl.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggleAnon(); }
+    });
+
+    submitEl.addEventListener('click', function () {
+      if (!validate() || !confirmEl.checked) return;
+      var v = typed(), cur = readKpi().cur;
+      /* 送出＝關窗、卡片上的可提領金額直接扣掉、給一句成功回饋（第 1 條裁示：不做即時試算）。
+         捐款紀錄與收據本輪不做（放哪一頁未定，見 PG-033）。 */
+      kpi.textContent = cur + ' ' + (readKpi().n - v).toLocaleString('en-US');
+      document.querySelectorAll('.payout-modal[data-modal]').forEach(function (m) { m.hidden = true; });
+      document.body.style.overflow = '';
+      if (window.ztorToast) {
+        window.ztorToast.show(
+          T('fin.don.toast')
+            .replace('{amount}', cur + ' ' + v.toLocaleString('en-US'))
+            /* 組織名的 i18n key 由 <option> 的 value 組出來（org1 → fin.don.org1），
+               與上面 syncOrg() 取說明（fin.don.org1-sub）同一套推法。 */
+            .replace('{org}', T('fin.don.' + activeOrg().value)),
+          { tone: 'success' }
+        );
+      }
+    });
+
+    /* 切語言時 placeholder 與錯誤訊息要跟著換（兩者都是腳本組出來的，i18n 掃不到） */
+    document.addEventListener('i18n:applied', function () { syncOrg(); validate(); });
+
+    curEl.textContent = readKpi().cur;
+    syncOrg();
+    validate();
   })();
 </script>
 </body>

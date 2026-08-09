@@ -34,6 +34,102 @@
 
   var EVENTS = [
     {
+      id: 'realive-asia-kaohsiung',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
+      /* 系列的第 1 場（2026-08-06）。`series.id` 是同日新增的欄位：有了它，活動詳情的
+         「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
+         **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
+         只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
+      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 1, total: 3 },
+      name: 'REALIVE World Tour — Asia leg',
+      desc: 'The Asia leg — three cities, one setlist.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Kaohsiung Arena',
+      city: 'Kaohsiung, Taiwan',
+      address: '',
+      date: '2026-09-12',
+      start: '19:30',
+      end: '22:00',
+      doors: '18:30',
+      capacity: 600,
+      tiers: [
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200 },
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
+      ],
+      sold: 600,
+      revenue: 1800000,
+      status: 'on-sale',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-asia-taichung',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
+      /* 系列的第 2 場（2026-08-06）。`series.id` 是同日新增的欄位：有了它，活動詳情的
+         「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
+         **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
+         只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
+      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 2, total: 3 },
+      name: 'REALIVE World Tour — Asia leg',
+      desc: 'The Asia leg — three cities, one setlist.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Taichung Intercontinental',
+      city: 'Taichung, Taiwan',
+      address: '',
+      date: '2026-09-26',
+      start: '19:30',
+      end: '22:00',
+      doors: '18:30',
+      capacity: 600,
+      tiers: [
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 80 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 140 },
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 220 }
+      ],
+      sold: 440,
+      revenue: 1326000,
+      status: 'on-sale',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-asia-taipei',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
+      /* 系列的第 3 場（2026-08-06）。`series.id` 是同日新增的欄位：有了它，活動詳情的
+         「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
+         **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
+         只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
+      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 3, total: 3 },
+      name: 'REALIVE World Tour — Asia leg',
+      desc: 'The Asia leg — three cities, one setlist.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Taipei Arena',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-10-03',
+      start: '19:30',
+      end: '22:00',
+      doors: '18:30',
+      capacity: 600,
+      tiers: [
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60 },
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
+      ],
+      sold: 200,
+      revenue: 606000,
+      status: 'on-sale',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
       id: 'realive-chongqing',
       type: 'concert',                       // 對應 create-event 的 selection-card data-choice
       typeLabelKey: 'ce.type.concert',

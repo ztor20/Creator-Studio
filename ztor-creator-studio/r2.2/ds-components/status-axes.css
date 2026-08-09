@@ -1,15 +1,14 @@
 /* ============================================================
    Status axes · two INDEPENDENT order status tracks shown together
    (spec 5.1.5.3.1 §2.2 / PCR-001). Order fulfilment (履約: To ship /
-   Shipped / Completed / Delivered) and payment·settlement (收入結算:
-   Paid / Refunded / Disputed) are two different axes and are never
-   merged into one badge.
-     .status-axes           — badges side by side (compact, list rows):
-                              fulfilment first, payment second (neutral)
-     .status-axes--labeled  — each axis stacked under an uppercase label
-                              (order detail header)
-       .status-axis         — one axis = label + badge
-         .status-axis__label
+   Awaiting pickup / Shipped / Completed — the §7.2 vocabulary; there is
+   no separate "Delivered" value) and payment·settlement (收入結算:
+   Paid / Refunded / Disputed) are two different axes, and the two axes
+   are never combined into a single badge.
+     .status-axes         — badges side by side (compact, list rows):
+                            fulfilment first, payment second (neutral)
+     .status-axes--split  — detail-header row: one group per axis, split by
+                            a hairline rule instead of a text label
    The badges themselves come from badge.css (status colors).
    ============================================================ */
 
@@ -20,21 +19,21 @@
   flex-wrap: wrap;
 }
 
-.status-axes--labeled {
-  align-items: flex-start;
-  gap: 22px;
-}
-.status-axes--labeled .status-axis {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--sp-6);
+/* --split · 訂單詳情頁首那一列（2026-08-07）。每一軸是一個自己的 .status-axes 群組，
+   群組之間畫一條細線；混合訂單的履約軸在自己的群組裡並列兩顆徽章（待出貨＋待取貨），
+   細線讓「哪兩顆屬於同一軸」一眼可分。
+
+   ── 為什麼不再放軸標籤（原 --labeled 變體，同日退場，見下）──────────
+   規格 5.1.5.3.1 §2.2／PCR-001 要求的是「履約與收入結算不可混成一顆徽章」，
+   一條分隔線就達成了這件事。徽章文字本身（已出貨／待取貨＝履約，已付款＝收入結算）
+   已經說明它屬於哪一軸，再加「履約狀態」「收入結算」兩個標籤是把同一件事講兩次；
+   而且「收入結算」這個標籤與它底下徽章的「已付款」用詞還對不起來。 */
+.status-axes--split { gap: var(--sp-12); }
+.status-axes--split > * + * {
+  padding-left: var(--sp-12);
+  border-left: 1px solid var(--border);
 }
 
-.status-axis__label {
-  font-family: var(--font-ui);
-  font-size: var(--fs-11);
-  font-weight: var(--fw-regular);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-}
+/* (2026-08-07) `.status-axes--labeled` / `.status-axis` / `.status-axis__label` 已退場：
+   唯一消費者 order-detail.html §2.2 當日改用上面的 --split（拿掉兩個軸標籤、改細線分隔），
+   此變體隨之零消費，故移除規則（比照 form-section.css 的 --modal 退場慣例）。 */

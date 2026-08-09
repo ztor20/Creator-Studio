@@ -25,6 +25,18 @@
     );
   }
 
+  /* 按鈕文案預設是「顯示更多／收合」。某些區塊要換一組講法（如建立活動的場地
+     用「進階／收合」），在 .field-more 上掛 data-more-key／data-more-text 與
+     data-less-key／data-less-text 即可；不掛就維持原本那組，既有消費頁不受影響。 */
+  function labelFor(root, open) {
+    var key = root.getAttribute(open ? 'data-less-key' : 'data-more-key');
+    var text = root.getAttribute(open ? 'data-less-text' : 'data-more-text');
+    return {
+      key: key || (open ? 'field.show-less' : 'field.show-more'),
+      text: text || (open ? 'Show less' : 'Show more')
+    };
+  }
+
   function setOpen(root, open) {
     var body = root.querySelector('.field-more__body');
     var toggle = root.querySelector('.field-more__toggle');
@@ -33,8 +45,9 @@
     if (body) body.hidden = !open;
     if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     if (label) {
-      label.setAttribute('data-i18n', open ? 'field.show-less' : 'field.show-more');
-      label.textContent = open ? 'Show less' : 'Show more';
+      var l = labelFor(root, open);
+      label.setAttribute('data-i18n', l.key);
+      label.textContent = l.text;
       if (window.applyI18n) window.applyI18n(label.parentNode);
     }
   }

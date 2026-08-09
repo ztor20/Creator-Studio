@@ -324,7 +324,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 112 支；主 class 前 5 個）
+## 元件（ds-components/，共 116 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -358,13 +358,14 @@
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
 - `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__icon--primary, .empty-card__icon--warning, .empty-card__icon--info ｜ Empty card — in-card empty state for a loaded-bu
 - `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
+- `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪）
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
 - `explainer.css` — .explain-btn, .explain, .explain__dialog, .explain__head, .explain__title ｜ Ztor — Explainer
 - `fan-store.css` — .preview-panel__body, .fan-store, .fan-store__overline, .fan-store__phone, .fan-store__screen ｜ Fan store · 粉絲端店面（See-as-fan 預覽的唯一呈現，spec §6.7 同
 - `fans-guide.css` — .fg, .fg-open, .fg-open__kicker, .fg-open__title, .fg-open__sub ｜ Ztor — Fans guide
-- `field-more.css` — .field-more, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
+- `field-more.css` — .field-more, .form-grid, .field-more__toggle, .field-more__icon, .field-more__body ｜ field-more.css · 表單次要欄位的「顯示更多」收合（2026-07-21）
 - `field-pill.css` — .field-pill, .field-pill__icon, .field-pill__chevron, .field-pill__input, .field-pill__select ｜ Field pill · inline control pill — search / sele
-- `field-system.css` — .field, .field__label, .field__hint, .field__req, .field-readout ｜ Ztor Creator Studio - Field system molecule
+- `field-system.css` — .field, .field__label, .field__hint, .field__req, .field__error ｜ Ztor Creator Studio - Field system molecule
 - `filter-tabs.css` — .filter-tabs, .filter-tabs__item, .filter-tabs__item--active, .filter-tabs__count, .filter-tabs--brand ｜ Filter Tabs — secondary, lighter pill row for na
 - `finding-card.css` — .finding, .finding__kicker, .finding__title, .finding__sub, .finding__basis ｜ Finding card · 結論卡（spec 5.1.7.8 F7 · D159／D160）
 - `form-grid.css` — .form-grid, .form-grid--3 ｜ form-grid.css · 表單欄位並排網格 helper
@@ -407,16 +408,19 @@
 - `restock-log.css` — .restock-log-wrap, .restock-log, .restock-log__head, .restock-log__row, .restock-log--with-option ｜ Restock Log — 補貨紀錄表（逐欄對齊的歷史清單）
 - `restock-modal.css` — .restock-table, .restock-table__head, .restock-table__row, .restock-table__col, .restock-table__group
 - `review-row.css` — .review-row, .review-row__item, .review-row__head, .review-row__name, .review-row__action ｜ Ztor — Review row (flat, no-card wizard summary 
+- `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__title, .review-status__meta ｜ Review status · 送審件的狀態面板（2026-08-07）
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__brand, .scanner-top__title ｜ Mobile scanner · spec 5.1.5.11 F7 (standalone ph
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
 - `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active, .segmented__btn--icon, .segmented--locked ｜ Segmented control · 2/3-way text toggle in a mut
 - `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
+- `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）
 - `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-nav__item, .settings-nav__item--active ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
 - `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
+- `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input
 - `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ Sticky page actions — keep a page's top CTAs rea
 - `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例）

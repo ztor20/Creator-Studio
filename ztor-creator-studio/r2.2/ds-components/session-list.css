@@ -1,0 +1,77 @@
+/* ============================================================
+   Session list — 系列場次清單（2026-08-06）
+   ------------------------------------------------------------
+   一個活動要辦好幾場時，在「場地與時間」那一步列出每一場的日期與場地。
+   第 1 場永遠是上面主欄位填的那一場（唯讀鏡像，不是第二個可編輯的來源），
+   第 2 場之後才是這裡新增的，各自可改日期與場地。
+
+   為什麼第 1 場是唯讀的：日期與場地在同一頁上面已經有一組正式欄位，
+   如果這裡再給一組可編輯的，同一筆資料就有兩個真相來源——使用者改了下面
+   那格，上面那格與 Review 摘要、發布前檢核到底該聽誰的沒有答案。
+   改成鏡像之後，只有「第 2 場起」是這份清單自己的資料。
+
+   Markup:
+     <div class="session-list">
+       <div class="session-list__row session-list__row--main">
+         <span class="session-list__no">第 1 場</span>
+         <div class="session-list__fields">
+           <span class="session-list__text">2026/04/12 · 紅館</span>
+         </div>
+         <span class="badge badge--neutral">上面設定</span>
+       </div>
+       <div class="session-list__row">
+         <span class="session-list__no">第 2 場</span>
+         <div class="session-list__fields">
+           <input class="input" type="date"> <input class="input">
+         </div>
+         <button class="btn btn--icon btn--sm session-list__remove">✕</button>
+       </div>
+     </div>
+   ============================================================ */
+
+.session-list { display: flex; flex-direction: column; gap: var(--sp-8); }
+
+/* 一列＝序號｜欄位｜尾端動作。序號固定寬，讓多列的欄位左緣對齊成一直線。 */
+.session-list__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+.session-list__no {
+  flex: none;
+  min-width: 56px;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.session-list__fields {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 160px) minmax(0, 1fr);
+  gap: var(--sp-8);
+}
+.session-list__fields > .input { min-width: 0; }
+
+/* 第 1 場：唯讀鏡像。用與 input 同高的一行文字，讓它跟下面幾列排成同一個節奏，
+   但明顯不是輸入框——不給邊框、不給填色，只有文字。 */
+.session-list__row--main .session-list__fields { display: block; }
+.session-list__text {
+  display: block;
+  padding: var(--sp-8) 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+}
+.session-list__text--empty { color: var(--muted-foreground); }
+
+/* 尾端動作欄固定寬，讓有移除鈕與沒有的兩種列，欄位右緣仍對齊 */
+.session-list__end { flex: none; display: flex; align-items: center; justify-content: flex-end; min-width: 32px; }
+
+.session-list__add { margin-top: var(--sp-12); }
+
+@media (max-width: 640px) {
+  .session-list__row { flex-wrap: wrap; }
+  .session-list__fields { grid-template-columns: minmax(0, 1fr); }
+}

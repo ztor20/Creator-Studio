@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<!-- 作品審核狀態（§2.2.9）：狀態、送出時間、退件理由與重送入口 -->
+<link rel="stylesheet" href="ds-components/review-status.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
@@ -18,6 +20,8 @@
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart-tip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<!-- 查無此項目 id 時的整頁錯誤狀態（沿用查無活動 id 的既有做法，D154） -->
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
@@ -165,6 +169,28 @@
           <section class="card">
             <div class="card__head">
               <h3 class="card__title" data-i18n="project-detail.updates.title">Project updates</h3>
+            </div>
+            <!-- 作品審核狀態（規格 5.1.2.2 §2.2.9「本頁對審核狀態的呈現」）。
+                 這一塊講的是「這一件送審作品」走到哪，與頁首的項目狀態徽章是兩套狀態，
+                 所以刻意放在更新區段裡、用自己的元件呈現，不併進那顆徽章。
+                 沒有送審紀錄時整塊不出現（由 JS 控制 hidden）。 -->
+            <div class="review-status mb-16" id="pd-review" hidden>
+              <div class="review-status__head">
+                <span class="badge" id="pd-review-badge"></span>
+                <h4 class="review-status__title" data-i18n="pd.review.title">Completed work submission</h4>
+              </div>
+              <div class="review-status__meta">
+                <span class="review-status__meta-item"><span data-i18n="pd.review.submitted">Last sent</span><span id="pd-review-at"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.review.count">Times sent</span><span id="pd-review-count"></span></span>
+                <span class="review-status__meta-item" id="pd-review-decided-wrap" hidden><span data-i18n="pd.review.decided">Decided</span><span id="pd-review-decided"></span></span>
+              </div>
+              <div class="review-status__note" id="pd-review-note" hidden>
+                <span class="review-status__note-label" id="pd-review-note-label"></span>
+                <p class="review-status__note-body" id="pd-review-note-body"></p>
+              </div>
+              <div class="review-status__actions" id="pd-review-actions" hidden>
+                <a class="btn btn--primary btn--sm" id="pd-review-resubmit" href="publish-work.html" data-i18n="pd.review.resubmit">Fix and send again</a>
+              </div>
             </div>
             <div style="overflow-x:auto">
             <table class="ztor-table">
@@ -1410,16 +1436,60 @@
       <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
+      <!-- 類型放在第一格：選了哪一種，決定下面送出鈕會做什麼（發一則更新，或接著走上架流程）。
+           2026-08-07 由原本的「此更新同時標記項目完成」checkbox 改成兩選一的下拉——
+           勾一個框看不出後面還有一整段上架流程要走，也看不出它只在項目已成立時才成立。 -->
+      <div class="field"><label class="field__label" for="pd-f-ukind" data-i18n="pd-edit.update.kind">Type</label><select class="select" id="pd-f-ukind"><option value="general" data-i18n="pd-edit.update.kind-general">General update</option><option value="release" data-i18n="pd-edit.update.kind-release">Work release</option></select><div class="field__hint" id="pd-ukind-note" hidden></div></div>
       <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-utitle" data-i18n="pd-edit.update.name">Title</label><input class="input" id="pd-f-utitle" data-i18n-placeholder="pd-edit.update.name-ph" placeholder="Sound mix is locked"></div><div class="field"><label class="field__label" for="pd-f-uaud" data-i18n="pd-edit.update.audience">Audience</label><select class="select" id="pd-f-uaud"><option data-i18n="pd-edit.update.aud-everyone">Everyone</option><option data-i18n="pd-edit.update.aud-backers">Backers only</option><option data-i18n="pd-edit.update.aud-superfan">Superfan+</option></select></div></div>
       <div class="field"><label class="field__label" for="pd-f-ubody" data-i18n="pd-edit.update.body">Body</label><textarea class="textarea" id="pd-f-ubody" data-i18n-placeholder="pd-edit.update.body-ph" placeholder="Share progress with your backers…"></textarea></div>
-      <div class="field"><label class="zcheck"><span class="zcheck__control"><input class="zcheck__input" type="checkbox" id="pd-f-ucomplete"><span class="zcheck__box"></span></span><span class="zcheck__label" data-i18n="pd-edit.update.complete">Mark project complete with this update</span></label></div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="update" data-i18n="pd-edit.update.submit">Publish update</button>
     </div>
   </div>
 </div>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/projects-store.js?v=r2.2"></script>
+<!-- 作品送審件（§2.2.9 的審核狀態、退件理由、重送入口）與審核頁共用同一份狀態機。 -->
+<script src="js/work-review-store.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script>
+/* 這一頁畫的是哪一個項目（2026-08-07 修）
+   ------------------------------------------------------------------------------
+   在此之前：`?id=` 查不到就退回清單第一筆，畫面照樣長得像一個正常的項目。項目
+   資料是逐創作者一份的，所以從審核頁（全平台）點某位創作者的項目過來時，這個
+   退路會把「別人的項目」端上桌——名稱、狀態、金額全部是另一件事，而且沒有任何
+   提示。查不到就要說查不到（沿用查無活動 id 的既有做法，D154）。
+
+   沒帶 `?id=` 仍維持原樣（獨立開啟時看清單第一筆），那是刻意的展示入口。
+   進來時該用誰的資料查，由 `?creator=` 決定，js/theme.js 在最前面就套用了。 */
+window.ztorPdLookup = (function () {
+  var id = new URLSearchParams(location.search).get('id') || '';
+  var store = window.ztorProjects;
+  var p = store ? (id ? store.get(id) : store.first()) : null;
+  if (p || !id) return { id: id, project: p, missing: false };
+
+  /* 真實內容留在原地不動（頁面下方還有很多段各自去讀它們的元素），只是不給看；
+     使用者看到的是這一塊查詢失敗，其餘 script 照常跑完、不會因為找不到元素報錯。 */
+  var page = document.querySelector('.page');
+  if (page) {
+    var stub = document.createElement('div');
+    stub.className = 'empty-stub';
+    stub.innerHTML =
+      '<div class="empty-stub__inner">' +
+      '<div class="empty-stub__mark">!</div>' +
+      '<h2 class="empty-stub__title" data-i18n="project.notfound.title">Project not found</h2>' +
+      '<p class="empty-stub__sub" data-i18n="project.notfound.sub">This link may be out of date, the project was removed, or it belongs to another creator. Go back to the list and pick one.</p>' +
+      '<div class="empty-stub__refs"><a class="btn btn--primary" href="projects.html" data-i18n="project.notfound.back">Back to projects</a></div>' +
+      '</div>';
+    page.parentNode.insertBefore(stub, page);
+    page.hidden = true;
+    if (window.applyI18n) window.applyI18n(stub);
+  }
+  document.title = ((window.i18nT && window.i18nT('project.notfound.title')) || 'Project not found') + ' · Ztor Creator Studio';
+  var foot = document.querySelector('.app-footer');
+  if (foot) foot.hidden = true;
+  return { id: id, project: null, missing: true };
+})();
+</script>
 <!-- 商品目錄＝「方案與承諾」分頁的套組編輯器要引用的既有 SKU（與建立流程同一個來源）。
      順序照 create-project：i18n 先，products-store 的列改寫會查翻譯。 -->
 <script src="js/products-store.js?v=r2.2"></script>
@@ -1657,26 +1727,184 @@
       },
       update() {
         if (!v('pd-f-utitle')) return;
-        const sel = document.getElementById('pd-f-uaud');
-        const option = sel.options[sel.selectedIndex];
-        const list = document.getElementById('pd-upd-list');
-        const el = tableRow([
-          v('pd-f-utitle'),
-          { i18n: option.dataset.i18n, fallback: option.textContent },
-          { i18n: 'project-detail.updates.just-now', fallback: 'Just now' },
-          { i18n: 'project-detail.updates.notification-sent', fallback: 'Notified' }
-        ]);
-        list.insertBefore(el, list.firstChild);
-        if (!document.getElementById('pd-f-ucomplete').checked) return;
-        const badge = document.getElementById('pd-badge-status');
-        const complete = window.i18nT ? window.i18nT('project-detail.status.completed') : 'Completed';
-        if (badge) {
-          badge.className = 'badge badge--success';
-          badge.dataset.i18n = 'project-detail.status.completed';
-          badge.textContent = complete;
+        const kind = updateKind();
+        /* 影片家族的完成作品：這則貼文要等作品真的上架完才發得出去（不然貼文裡的
+           作品連結是空的），所以先把已填的三格收進 sessionStorage，跳去上架流程，
+           由那邊走完最後一步再回來一次補上貼文與狀態。 */
+        if (kind === 'release' && isFilm()) {
+          try {
+            sessionStorage.setItem(RELEASE_KEY, JSON.stringify({
+              id: proj ? proj.id : '',
+              title: v('pd-f-utitle'),
+              audience: audienceKey(),
+              body: v('pd-f-ubody')
+            }));
+          } catch (err) { /* 無痕模式等寫不進去：流程照走，回跳時當成沒有草稿 */ }
+          location.href = 'publish-work.html?project=' + encodeURIComponent(proj ? proj.id : '');
+          return;
         }
+        postUpdate(v('pd-f-utitle'), audienceKey());
+        /* 上架流程還沒開放的作品類型：發文本身就是把項目推到已上線的那個動作。 */
+        if (kind === 'release' && window.ztorPdSetStatus) window.ztorPdSetStatus('live');
       }
     };
+
+    /* ── 發文類型（2026-08-07）──────────────────────────────────────────
+       「完成作品」在上游規格裡的前置條件是項目已成立（succeeded）；不符合時把選項
+       停用並就地說明原因，而不是讓人選了才被擋。影片家族接得上作品上架流程，其餘
+       家族的上架流程尚未開放，送出即發布並轉已上線。 */
+    const RELEASE_KEY = 'ztor.workRelease';
+    /* 哪一個項目由頁首那段 window.ztorPdLookup 一次解析（查不到就整頁換成查詢失敗）。 */
+    if (window.ztorPdLookup && window.ztorPdLookup.missing) return;
+    const proj = (window.ztorPdLookup && window.ztorPdLookup.project) || null;
+    /* 審核通過的項目已經是「已上線」。projects-store 是純記憶體資料（重整還原），
+       所以通過這件事記在 work-review-store，載入時先把它套回項目物件——否則重新
+       整理之後徽章會退回「已成立」，看起來像審核結果被吃掉了。
+       這一段必須在 syncKind() 與下方 render() 之前跑：兩者都讀 status。 */
+    if (proj && window.ztorWorkReview) {
+      const ov = window.ztorWorkReview.projectStatus(proj.id);
+      if (ov) proj.status = ov;
+    }
+    const isFilm = () => !!proj && proj.family === 'film';
+    const canRelease = () => !!proj && proj.status === 'succeeded';
+    const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    const kindSel = document.getElementById('pd-f-ukind');
+    const kindNote = document.getElementById('pd-ukind-note');
+    const kindSubmit = document.querySelector('[data-pd-save="update"]');
+    const updateKind = () => (kindSel && kindSel.value) || 'general';
+
+    function audienceKey() {
+      const sel = document.getElementById('pd-f-uaud');
+      const opt = sel && sel.options[sel.selectedIndex];
+      return opt ? opt.dataset.i18n : 'pd-edit.update.aud-everyone';
+    }
+    /* 更新清單插一列。彈窗送出與 wizard 回跳共用這一支，兩條路徑的列長得一樣。 */
+    function postUpdate(title, audKey) {
+      const list = document.getElementById('pd-upd-list');
+      if (!list) return;
+      const el = tableRow([
+        title,
+        { i18n: audKey, fallback: 'Everyone' },
+        { i18n: 'project-detail.updates.just-now', fallback: 'Just now' },
+        { i18n: 'project-detail.updates.notification-sent', fallback: 'Notified' }
+      ]);
+      list.insertBefore(el, list.firstChild);
+    }
+
+    /* 說明行與送出鈕文案跟著類型走。i18n key 寫進 dataset，切語言時 i18n.js 會重譯。 */
+    function syncKind() {
+      if (!kindSel) return;
+      const releaseOpt = kindSel.querySelector('option[value="release"]');
+      /* 已經送出、還沒有結果的那一件，不需要也不該再送一次——重送的入口在審核狀態
+         那一塊、而且只在被退件時出現。已通過的則是作品已上線，這件事做完了。 */
+      const rec = (window.ztorWorkReview && proj) ? window.ztorWorkReview.forProject(proj.id) : null;
+      const inflight = !!rec && (window.ztorWorkReview.isOpen(rec.status) || rec.status === 'approved');
+      if (releaseOpt) releaseOpt.disabled = !canRelease() || inflight;
+      if (releaseOpt && releaseOpt.disabled && kindSel.value === 'release') kindSel.value = 'general';
+      const kind = updateKind();
+      let noteKey = null, submitKey = 'pd-edit.update.submit', submitFb = 'Publish update';
+      if (inflight) noteKey = rec.status === 'approved' ? 'pd.review.kind-live' : 'pd.review.kind-inflight';
+      else if (!canRelease()) noteKey = 'pd-edit.update.kind-locked';
+      if (kind === 'release') {
+        noteKey = isFilm() ? 'pd-edit.update.kind-film-note' : 'pd-edit.update.kind-other-note';
+        submitKey = isFilm() ? 'pd-edit.update.submit-next' : 'pd-edit.update.submit-live';
+        submitFb = isFilm() ? 'Next: release setup' : 'Publish and mark live';
+      }
+      if (kindNote) {
+        kindNote.hidden = !noteKey;
+        if (noteKey) { kindNote.dataset.i18n = noteKey; kindNote.textContent = T(noteKey, ''); }
+        else kindNote.removeAttribute('data-i18n');
+      }
+      if (kindSubmit) { kindSubmit.dataset.i18n = submitKey; kindSubmit.textContent = T(submitKey, submitFb); }
+    }
+    if (kindSel) kindSel.addEventListener('change', syncKind);
+    document.addEventListener('i18n:applied', syncKind);
+    syncKind();
+
+    /* ── 作品審核狀態（規格 §2.2.9 本頁對審核狀態的呈現）────────────────────
+       這一塊回答創作者三個問題：這件送審走到哪了、被退是為什麼、要怎麼再送一次。
+       狀態字彙一律向 work-review-store 要，本頁不自己寫一套（規格：字詞引用主規格
+       §7.2 作品審核列）。它與頁首那顆項目狀態徽章是兩套狀態，各自呈現、不互相代用。 */
+    const reviewBox = document.getElementById('pd-review');
+    function renderReview() {
+      if (!reviewBox || !window.ztorWorkReview || !proj) return;
+      const rec = window.ztorWorkReview.forProject(proj.id);
+      reviewBox.hidden = !rec;
+      if (!rec) return;
+      const S = window.ztorWorkReview;
+      const badge = document.getElementById('pd-review-badge');
+      badge.textContent = S.label(rec.status);
+      badge.className = 'badge ' + S.tone(rec.status);
+      reviewBox.classList.toggle('review-status--rejected', rec.status === 'rejected');
+      reviewBox.classList.toggle('review-status--approved', rec.status === 'approved');
+      document.getElementById('pd-review-at').textContent = rec.submittedAt || '—';
+      document.getElementById('pd-review-count').textContent = String(rec.count || 1);
+      const decidedWrap = document.getElementById('pd-review-decided-wrap');
+      decidedWrap.hidden = !rec.decidedAt;
+      if (rec.decidedAt) document.getElementById('pd-review-decided').textContent = rec.decidedAt;
+
+      /* 說明區三種內容：等待中講「貼文也還沒發」、退件講理由、通過講已發生什麼。 */
+      const note = document.getElementById('pd-review-note');
+      const noteLabel = document.getElementById('pd-review-note-label');
+      const noteBody = document.getElementById('pd-review-note-body');
+      const setNote = (labelKey, bodyKey, bodyText) => {
+        note.hidden = false;
+        noteLabel.dataset.i18n = labelKey;
+        noteLabel.textContent = T(labelKey, '');
+        if (bodyText != null) { noteBody.removeAttribute('data-i18n'); noteBody.textContent = bodyText; }
+        else { noteBody.dataset.i18n = bodyKey; noteBody.textContent = T(bodyKey, ''); }
+      };
+      if (rec.status === 'rejected') setNote('pd.review.reason', null, rec.reason || '');
+      else if (rec.status === 'approved') setNote('pd.review.done', 'pd.review.done-body');
+      else if (S.isOpen(rec.status)) setNote('pd.review.waiting', 'pd.review.waiting-body');
+      else { note.hidden = true; noteLabel.removeAttribute('data-i18n'); noteBody.removeAttribute('data-i18n'); }
+
+      /* 重送入口只在被退件時出現——通過與等待中都沒有「再送一次」這件事可做。 */
+      const actions = document.getElementById('pd-review-actions');
+      actions.hidden = rec.status !== 'rejected';
+      document.getElementById('pd-review-resubmit').setAttribute('href', 'publish-work.html?project=' + encodeURIComponent(proj.id));
+
+      if (rec.status === 'approved') ensureReleaseRow(rec);
+    }
+
+    /* 已通過的那則完成作品貼文要一直留在更新清單上（它真的發出去了）。
+       這頁的更新清單是靜態 markup、重整就回到原樣，所以每次載入都依 store 補一列，
+       並用標記避免補第二次。 */
+    function ensureReleaseRow(rec) {
+      const list = document.getElementById('pd-upd-list');
+      if (!list || list.querySelector('[data-pd-release-row]')) return;
+      const post = rec.post || {};
+      const el = tableRow([
+        post.title || T('pd-edit.update.kind-release', 'Work release'),
+        { i18n: post.audience || 'pd-edit.update.aud-everyone', fallback: 'Everyone' },
+        rec.decidedAt || T('project-detail.updates.just-now', 'Just now'),
+        { i18n: 'project-detail.updates.notification-sent', fallback: 'Notified' }
+      ]);
+      el.setAttribute('data-pd-release-row', '');
+      list.insertBefore(el, list.firstChild);
+    }
+
+    /* 審核通過的那一刻才發生的三件事，在創作者這一頁播出來：作品上架（前台實體，
+       原型不模擬）、發布這則完成作品更新、項目狀態轉已上線。用 setTimeout 排到同步
+       腳本之後——狀態徽章的寫入口 window.ztorPdSetStatus 定義在本檔後面那支渲染
+       IIFE 裡，立刻執行會撲空。播完標記 released，重整不會再發一次。 */
+    setTimeout(function playApproved() {
+      renderReview();
+      if (!window.ztorWorkReview || !proj) return;
+      const rec = window.ztorWorkReview.pendingRelease(proj.id);
+      if (!rec) return;
+      if (window.ztorPdSetStatus) window.ztorPdSetStatus('live');
+      window.ztorWorkReview.markReleased(rec.id);
+      /* 提示等 js/toast.js 載完再說——它的 <script> 在本段之後，這裡直接呼叫會撲空。 */
+      const toastLive = () => {
+        if (window.ztorToast && window.ztorToast.show) window.ztorToast.show(T('pd.review.toast-live', 'Your work is live'), { tone: 'success' });
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toastLive);
+      else toastLive();
+      renderReview();
+      syncKind();
+    }, 0);
+    document.addEventListener('i18n:applied', renderReview);
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-pd-save]');
       if (!btn) return;
@@ -1709,9 +1937,7 @@
        （見 products-store.js 的 P_NICK 對照表）。寫死 id 會讓「數位版」在某些 persona 下
        裝著一件球衣。依目錄取件則保證每一件都是當前創作者自己的真實商品，調性自然對得上。
        套組名稱因此也用「級距」而不是「格式」——級距在任何商品組合下都成立。 */
-    var proj = window.ztorProjects
-      ? ((new URLSearchParams(location.search).get('id') && window.ztorProjects.get(new URLSearchParams(location.search).get('id'))) || window.ztorProjects.first())
-      : null;
+    var proj = (window.ztorPdLookup && window.ztorPdLookup.project) || null;
     var zhUI = document.documentElement.lang === 'zh-Hant';
     var L = function (zh, en) { return zhUI ? zh : en; };
     var pname = proj ? (zhUI ? proj.name : (proj.nameEn || proj.name)) : '';
@@ -1916,12 +2142,15 @@
 
   /* 依 ?id= 帶出的項目渲染本頁（2026-07-24）——名稱、封面、內容類型／發行模式／狀態徽章、
      共創數字，全部來自共用 store js/projects-store.js；已上線的共創音樂項目才顯示版稅 tab。
-     沒帶 id 或 id 不存在時退回清單第一個項目。 */
+     沒帶 id 時看清單第一筆；帶了但查不到＝這一頁不成立（2026-08-07 改，見頁首的 lookup）。 */
   (function () {
     const store = window.ztorProjects;
     if (!store) return;
-    const id = new URLSearchParams(location.search).get('id');
-    const p = (id && store.get(id)) || store.first();
+    /* 查不到就不渲染：頁首那段已經把整頁換成查詢失敗，這裡再畫一次只會畫進看不見的
+       DOM，還會讓「退回第一筆」這個舊行為以另一種形式活著。 */
+    if (!window.ztorPdLookup || window.ztorPdLookup.missing) return;
+    const p = window.ztorPdLookup.project;
+    if (!p) return;
     const zh = () => document.documentElement.lang === 'zh-Hant';
     const t = o => (o ? (zh() ? o.zh : o.en) : '');
     const set = (elId, text) => { const el = document.getElementById(elId); if (el && text) el.textContent = text; };
@@ -1934,12 +2163,25 @@
        退役的舊值 funded／completed／failed 一併移除，避免下次又被當成有效狀態。 */
     const STATUS = {
       draft:     { en: 'Draft', zh: '草稿' },          scheduled: { en: 'Scheduled', zh: '準備中' },
-      published: { en: 'Co-creating', zh: '共創中' },  succeeded: { en: 'Succeeded', zh: '已成立' },
+      published: { en: 'In progress', zh: '進行中' },  succeeded: { en: 'Succeeded', zh: '已成立' },
       live:      { en: 'Live', zh: '已上線' },          cancelled: { en: 'Cancelled', zh: '已取消' }
     };
     const STATUS_TONE = {
       draft: 'badge--neutral', scheduled: 'badge--info', published: 'badge--info',
       succeeded: 'badge--success', live: 'badge--orange', cancelled: 'badge--error'
+    };
+    /* 狀態徽章的唯一改寫入口（2026-08-07）：完成作品上架後要把徽章換成「已上線」。
+       走這支而不是各自寫死字串，字彙與徽章色才會跟 render() 用同一份表——原本發文
+       彈窗自己寫了一個規格外的「已完成」＋綠底，跟這張表對不上。 */
+    window.ztorPdSetStatus = function (next) {
+      if (!STATUS[next]) return;
+      p.status = next;
+      const el = document.getElementById('pd-badge-status');
+      if (!el) return;
+      el.innerHTML = '';
+      el.removeAttribute('data-i18n');
+      el.textContent = t(STATUS[next]);
+      el.className = 'badge' + (STATUS_TONE[next] ? ' ' + STATUS_TONE[next] : '');
     };
 
     function render() {
@@ -1962,13 +2204,13 @@
         el.textContent = text;
         if (tone !== undefined) el.className = 'badge' + (tone ? ' ' + tone : '');
       };
-      /* published 的字樣依類型分流（2026-08-04）：共創叫「共創中」、預購叫「預購中」。
-         共用一個字樣會讓預購項目被標成「共創中」——它連分潤名額都沒有。
-         規格把各模式的對外字樣列為待確認（D166），這裡先照類型講對話，記在 ASSUMPTIONS。 */
-      const statusLabel = (p.status === 'published' && p.type === 'preorder')
-        ? { en: 'Taking orders', zh: '預購中' }
-        : STATUS[p.status];
-      badge('pd-badge-status', t(statusLabel), STATUS_TONE[p.status]);
+      /* 2026-08-06：published 的字樣不再依類型分流。原本共創顯示「共創中」、預購
+         顯示「預購中」，是為了避免預購項目被貼上共創語意（2026-08-04 加的補丁）；
+         使用者已裁示把字樣本身改成中立的「進行中／In progress」，兩種模式講同一句
+         話就不會講錯，分流條件失去作用，一併移除。發行模式仍由旁邊的類型徽章
+         （pd-badge-type：共創／預購／直接發佈）交代，資訊沒有減少。
+         各模式的對外字樣在規格仍列為〔產品待確認〕（§7.2），見 ASSUMPTIONS UIA-104。 */
+      badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
       badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
       /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：項目 / 分類 / 項目名 */
       set('pd-crumb-cat', t(store.catLabel(p.cat)));

@@ -140,6 +140,15 @@
   width: min(880px, calc(100vw - var(--sp-40)));
 }
 
+/* 特寬版：裝「一整個設定畫面」用（粉絲管理 ▸ 分級設定）。它裡面是兩欄——左邊
+   四分級對照表、右邊粉絲組成圓餅——880px 會把右欄壓到 250px 左右，圖例的金額
+   欄先被擠爛。1180px 沿用 .embed-modal 的上限，兩者都是「把一整頁裝進浮層」。
+   2026-08-01 新增。 */
+.payout-dialog--xwide {
+  max-width: 1180px;
+  width: min(1180px, calc(100vw - var(--sp-40)));
+}
+
 .payout-dialog__body {
   padding: var(--sp-20);
   flex: 1 1 auto;
@@ -234,32 +243,18 @@
   color: var(--muted-foreground);
 }
 
-/* Irreversible-payout confirmation gate (spec §5.1.8.1 §4.5) —
-   the submit Button stays [disabled] until this box is checked. */
-.payout-confirm {
-  display: flex;
-  gap: 11px;
-  align-items: flex-start;
-  margin-top: var(--sp-16);
-  padding: 13px var(--sp-14);
-  border-radius: var(--radius-xl);
-  background: var(--muted);
-  box-shadow: inset 0 0 0 1px var(--border);
-  cursor: pointer;
-}
-.payout-confirm__box {
-  flex: none;
-  width: 17px;
-  height: 17px;
-  margin-top: 1px;
-  accent-color: var(--foreground);
-  cursor: pointer;
-}
-.payout-confirm__text {
-  font-size: var(--fs-13);
-  line-height: var(--lh-relaxed);
-  color: var(--foreground-muted);
-}
+/* .payout-confirm / __box / __text — retired 2026-08-06（使用者裁示 Q53：
+   「不需要有一個框框，我們的元件樣式應該沒有這樣？有的話請統一改掉」）。
+   不可逆確認閘門（spec §5.1.8.1 §4.5）仍在，只是不再自帶容器與自捲的勾選框：
+     · 容器外觀（--muted 底、inset 1px 邊、13/14 內距、radius-xl）整組拿掉——
+       站上其他勾選都是「一個方框＋一句話」，沒有一個包在框裡；閘門的重量本來就
+       由旁邊那顆停用的主要按鈕承擔，外框只是把同一件事再說一次。
+     · __box 是靠 accent-color 染色的原生 checkbox，早已被 .zcheck
+       （ds-components/checkbox.css）取代——那才是站上唯一的勾選控件。
+   改法：<label class="zcheck mt-16"> ＋ .zcheck__control/__input/__box/__label，
+   閘門的 JS 掛鉤（[data-payout-confirm] / [data-don-confirm]）留在 __input 上不變。
+   消費者已全部改寫：partials/payout-request-modal.js、earnings-sony.html、
+   design-system.html demo 卡。規則移除、不留空殼。 */
 
 /* .payout-inline-control — retired 2026-07-11 alongside .payout-field.
    No remaining consumer (restock-modal.js / pickup-session-modal.js never

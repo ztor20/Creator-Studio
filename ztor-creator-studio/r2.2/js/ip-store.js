@@ -13,7 +13,7 @@
 //
 // 每筆欄位（結構欄位，i18n 沒有的部分）：
 //   i18nKey     對應的 i18n 前綴（'my-ip.row1'）；名稱鍵在 ztor 列是 .name、外部登錄列是 .title
-//   source      ztor | external —— 對應清單的「Made on Ztor / Registered externally」分組
+//   source      ztor | external —— 對應清單的「Made on Ztor / External」分組
 //   ipType      register-ip §IP type 的六選一（決定管理頁的類型顯示）
 //   verify      verified | verifying | awaiting —— waterfall 驗證狀態，驅動頁首橫幅
 //   listed      是否在 IP Market 上架（＝清單 Mktplace 開關的同一件事）

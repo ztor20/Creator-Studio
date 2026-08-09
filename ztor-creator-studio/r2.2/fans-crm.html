@@ -202,6 +202,13 @@
         <!-- 2026-07-31：受眾連結移除（側欄的「粉絲分析」就是它）；群發訊息移到分頁列右側，
              貼著它的對象＝當下那份名單。頁首只留匯出。 -->
         <div class="page-intro__actions">
+          <!-- 分級設定：2026-08-01 使用者裁示，由分頁改成頁首按鈕＋彈窗。理由——
+               排行榜與名人堂是「看這批人」，分級設定是「調整規則」，兩者不同動作；
+               並排成分頁會讓人以為它也是一份名單的第三種看法。掛 .when-data 是
+               沿用它原本的可見範圍（原本整塊就在 .when-data 裡）。 -->
+          <button class="btn btn--outline when-data" type="button" data-tier-open="settings">
+            <i data-lucide="sliders-horizontal" class="ztor-icon"></i><span data-i18n="fans.tab.tiers">Tier settings</span>
+          </button>
           <button class="btn btn--outline" data-i18n="fans.btn.csv">Export CSV</button>
         </div>
       </div>
@@ -239,7 +246,6 @@
         <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" role="tablist" data-tabs>
           <button class="tabs__item tabs__item--active" role="tab" data-tab="leaderboard" aria-selected="true"><span data-i18n="fans.tab.leaderboard">Leaderboard</span></button>
           <button class="tabs__item" role="tab" data-tab="hof" aria-selected="false"><span data-i18n="fans.tab.hof">Hall of fame</span></button>
-          <button class="tabs__item" role="tab" data-tab="tiers" aria-selected="false"><span data-i18n="fans.tab.tiers">Tier settings</span></button>
         </nav>
         <div class="list-toolbar__actions" data-tab-actions="leaderboard">
           <!-- 搜尋收合成放大鏡（重用 .search-collapse，同 projects／e-shop／orders／pickup），
@@ -537,173 +543,6 @@
       </div>
 
 
-      <!-- ── 粉絲分級設定 panel（2026-07-31 新增）──────────────────────────
-           原本的兩個獨立頁面（分級設定 tier-settings / 分級權益 tier-benefits）
-           併進這裡。理由：門檻與權益的欄位一模一樣（同樣四個分級），只是列不同，
-           所以合成一張對照表，一次直向掃描就答完「這一階要什麼、給什麼」。
-           左欄直著疊三塊（對照表／行為加權／規則），右欄放粉絲組成當對照。
-           三塊都唯讀，改一律走右上角「編輯」的彈窗——所以本頁沒有儲存狀態。 -->
-      <div class="tab-panel" data-panel="tiers" role="tabpanel">
-        <div class="fans-tier-row">
-
-        <div class="fans-tier-stack">
-
-          <!-- 兩種狀態：預設唯讀、按「編輯」就地變成可編輯（2026-08-01 使用者裁示，
-               取代原本開彈窗的做法）。兩份內容都在 DOM 裡、用 display 切換；
-               格子恆為 --control-h-sm 高，所以切狀態時整張表不會抽高位移。 -->
-          <section class="card" data-tier-card>
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="fans.tiers.title">Organise your fan circle</h3>
-              <div class="flex-row">
-                <button class="btn btn--ghost btn--sm" type="button" data-tier-open="history">
-                  <i data-lucide="history" class="ztor-icon"></i><span data-i18n="fans.tiers.history">Change history</span>
-                </button>
-                <!-- 兩個狀態各自的按鈕群，不是同一顆鈕來回切（2026-08-01 使用者裁示：
-                     除了儲存還要有取消，取消不落地）。閒置只有一顆「編輯」；
-                     編輯態換成「取消」＋「儲存」兩顆——取消要能回到進入編輯之前
-                     的樣子，不能只是把 UI 收回去，所以需要獨立於「儲存」的路徑。 -->
-                <span data-icon-idle>
-                  <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
-                    <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
-                  </button>
-                </span>
-                <span data-icon-editing hidden class="flex-row">
-                  <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
-                    <span data-i18n="tier-settings.btn.discard">Cancel</span>
-                  </button>
-                  <button class="btn btn--primary btn--sm" type="button" data-tier-save>
-                    <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
-                  </button>
-                </span>
-              </div>
-            </div>
-            <p class="settings-row__hint" style="margin:0 0 var(--sp-12)" data-i18n="fans.tiers.sub">Each tier's gates and what it unlocks. Going down the ladder, both the conditions and the benefits ease off.</p>
-
-            <div class="tier-ov-scroll" data-tier-table>
-              <div class="tier-ov tier-ov__head">
-                <span></span>
-                <span class="tier-ov__cell"><span class="badge badge--orange"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></span>
-                <span class="tier-ov__cell"><span class="badge badge--info"><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></span>
-                <span class="tier-ov__cell"><span class="badge badge--success"><span data-i18n="fans.tier.devoted">Ranked fans/span></span></span>
-                <span class="tier-ov__cell"><span class="badge"><span data-i18n="tier-settings.tier.fan">Fan</span></span></span>
-              </div>
-              <!-- 權益數量：由下面那些列實際算出來的，不寫死——編輯時開關一動就要跟著變，
-                   寫死的話「我剛給了超級粉絲一項權益」這件事在摘要上看不到。
-                   編輯態不給控制項（它是結果不是設定），但不隱藏。 -->
-              <div class="tier-ov tier-ov__row tier-ov__row--locked" data-tier-perkcount>
-                <span class="tier-ov__rowlabel" data-i18n="fans.tiers.perkcount">Benefits</span>
-                <span class="tier-ov__cell" data-perk-total="0">0</span>
-                <span class="tier-ov__cell" data-perk-total="1">0</span>
-                <span class="tier-ov__cell" data-perk-total="2">0</span>
-                <span class="tier-ov__cell" data-perk-total="3">0</span>
-              </div>
-              <div class="tier-ov tier-ov__row">
-                <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.toppct">Top %</span><button class="explain-btn" type="button" data-explain="explain-toppct" aria-label="How Top % works" data-i18n-aria-label="tier-settings.gate.toppct-explain"><i data-lucide="info" class="ztor-icon"></i></button></span><small data-i18n="fans.tiers.toppct-hint">Ranked by loyalty points</small></span>
-<span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">40%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="40"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">75%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="75"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
-              </div>
-              <div class="tier-ov tier-ov__row">
-                <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.points">Min. loyalty points</span><button class="explain-btn" type="button" data-explain="explain-points" aria-label="Why there is also a points floor" data-i18n-aria-label="tier-settings.gate.points-explain"><i data-lucide="info" class="ztor-icon"></i></button></span></span>
-<span class="tier-ov__cell"><span class="tier-ov__read">800 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="800"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">500 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="500"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">200 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="200"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
-              </div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.early">Early access · merch &amp; tickets</span><span class="tier-ov__cell"><span class="tier-ov__read">7 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="7"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">3 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="3"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">1 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.discount">Merch discount</span><span class="tier-ov__cell"><span class="tier-ov__read">20%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="20"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">5%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="5"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.auction">VIP auction · creator’s personal items</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vipshop">VIP e-shop</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vault">Creator’s vault · VIP access</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvoice">Birthday voice message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvideo">Birthday video message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.demos">Demo tracks</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bts">Behind the scenes</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-              <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.livestream">Private livestreams</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
-            </div>
-
-            <!-- 只在編輯態出現：新增一列權益，四個分級的格子直接就在那裡（全部關著）。 -->
-            <div class="bmx__add" data-tier-editonly hidden>
-              <button class="btn btn--outline btn--sm" type="button" data-tier-add><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="ben.add">Add gated content</span></button>
-              <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ben.add-hint">Added once — it appears on every tier for you to switch on.</span>
-            </div>
-
-            <div class="info-banner mt-24" data-tier-editonly hidden>
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="fans.tiers.effective">Threshold and multiplier changes apply at the next nightly recompute. Benefit changes apply immediately.</span>
-            </div>
-          </section>
-
-          <section class="card" data-tier-card>
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="tier-settings.mult.title">Behavior multipliers</h3>
-              <div class="flex-row">
-                <span data-icon-idle>
-                  <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
-                    <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
-                  </button>
-                </span>
-                <span data-icon-editing hidden class="flex-row">
-                  <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
-                    <span data-i18n="tier-settings.btn.discard">Cancel</span>
-                  </button>
-                  <button class="btn btn--primary btn--sm" type="button" data-tier-save>
-                    <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
-                  </button>
-                </span>
-              </div>
-            </div>
-            <p class="settings-row__hint" style="margin:0 0 var(--sp-8)" data-i18n="fans.tiers.mult-sub">How much each behaviour is worth in loyalty points. This set is the same for every tier, so it has no columns.</p>
-            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.purchase">Purchases</div><div class="settings-row__hint">每消費 $1 換算的點數</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">3 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="3" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
-            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.event">Event check-ins</div><div class="settings-row__hint">實體到場一次</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">5 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="5" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
-            <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.interact">Interactions</div><div class="settings-row__hint">留言、分享、投票</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
-            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label" data-i18n="tier-settings.mult.referral">Referrals</div><div class="settings-row__hint">帶進一位新粉絲</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">8 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="8" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
-          </section>
-
-          <section class="card">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="fans.tiers.rules">Rules</h3>
-            </div>
-            <p class="settings-row__hint" style="margin:0 0 var(--sp-8)" data-i18n="tier-settings.rules.sub">How the tier system behaves. These are product rules — surfaced here, owned upstream.</p>
-            <div class="settings-row"><div><div class="settings-row__label">雙重門檻升級</div><div class="settings-row__hint">粉絲要同時通過該分級的兩道門檻——前 % 名<b>以及</b>最低忠誠點數——才會升級。</div></div></div>
-            <div class="settings-row"><div><div class="settings-row__label">門檻必須單調</div><div class="settings-row__hint">高分級的要求必須嚴格高於低分級，否則不能儲存。<em>確切驗證邏輯待上游確認。</em></div></div></div>
-            <div class="settings-row"><div><div class="settings-row__label">版本化、不回溯</div><div class="settings-row__hint">每次儲存產生一個不可變更的分級設定版本。舊版本下已賺到的收入與徽章不會被改寫。</div></div></div>
-            <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label">變更何時生效</div><div class="settings-row__hint">門檻與行為加權於下次每晚重算時生效；權益立即生效。</div></div></div>
-          </section>
-
-        </div>
-
-        <!-- 粉絲組成：分級的結果，人數是算出來的，所以沒有編輯鈕。
-             用圓餅不用長條：這裡問的是「這一整塊是怎麼被分掉的」，不是「誰比誰長」。 -->
-        <section class="card">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
-          </div>
-          <div class="fans-compose">
-            <div class="pie" aria-hidden="true" data-pie
-                 style="--pie-size:150px;--pie-stops:
-                   var(--primary) 0 12%,
-                   var(--status-info) 0 40%,
-                   var(--status-success) 0 77%,
-                   var(--foreground-muted) 0 100%"></div>
-            <div class="fans-compose__legend">
-              <!-- 名稱與百分比拆成兩個節點（2026-08-01）：改「前 % 名」時這裡的人數要
-                   跟著即時重算（見下方 <script> 的 updateComposition()），而百分比
-                   文字如果還黏在同一個 data-i18n 字串裡，切語言時 applyI18n 會把它
-                   蓋回寫死的「12%」，剛算出來的數字就丟了。拆開後名稱仍走 i18n、
-                   百分比與人數改由 JS 直接寫值。 -->
-              <div class="source-list" id="fans-tier-list">
-                <div class="source-row" data-tier-share="12" data-rev="8420"><span class="source-row__swatch" style="background:var(--primary)"></span><span><span data-i18n="fans.tier.inner">Inner Circle</span> · <span class="source-row__sharepct">12%</span></span><span class="source-row__amt">154 fans</span><span class="source-row__pct">$8,420</span></div>
-                <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:var(--status-info)"></span><span><span data-i18n="fans.tier.super">Superfan</span> · <span class="source-row__sharepct">28%</span></span><span class="source-row__amt">359 fans</span><span class="source-row__pct">$6,180</span></div>
-                <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span><span data-i18n="fans.tier.devoted">Ranked fans</span> · <span class="source-row__sharepct">37%</span></span><span class="source-row__amt">475 fans</span><span class="source-row__pct">$4,890</span></div>
-                <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span><span data-i18n="fans.tier.fan">Fan</span> · <span class="source-row__sharepct">23%</span></span><span class="source-row__amt">295 fans</span><span class="source-row__pct">$1,210</span></div>
-              </div>
-            </div>
-          </div>
-          <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden。 -->
-          <div class="insight-row hidden" id="fans-pareto" hidden>
-            <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
-            <p class="insight-row__text" id="fans-pareto-text"></p>
-          </div>
-        </section>
-
-        </div>
-      </div>
 
       </div><!-- /.when-data -->
 
@@ -889,6 +728,196 @@
   </div>
 </div>
 
+
+<!-- ── 分級設定彈窗（2026-08-01 使用者裁示：由分頁改成頁首按鈕＋彈窗）──────
+     內容原封不動搬自原本的 tiers 分頁，只換殼。殼層照 Q27 用 .payout-modal /
+     .payout-dialog；--xwide 是因為裡面是 7fr／3fr 兩欄（左邊四分級對照表、右邊
+     粉絲組成圓餅），880px 的 --wide 會把右欄壓到 250px、圖例的金額欄先爛掉。
+     位置刻意排在變更歷史與兩個 explain 之前：三者都是從本彈窗裡開的，同為
+     z-index 80 時要靠 DOM 順序壓在它上面。 -->
+<div class="payout-modal" data-tier-modal="settings" hidden>
+  <section class="payout-dialog payout-dialog--xwide" role="dialog" aria-modal="true" aria-labelledby="tier-settings-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="tier-settings-title" data-i18n="fans.tab.tiers">Tier settings</h2>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="tier-settings.explain.close" data-tier-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="fans-tier-row">
+
+      <div class="fans-tier-stack">
+
+        <!-- 三個分頁（2026-08-01 使用者裁示）：門檻與權益、行為加權、規則。原本是
+             直向疊三張卡，一次要捲完才知道有什麼；分成分頁後每次只答一個問題。
+             用彈窗內的樸素 .tabs（同 msg-modal 的 Compose／History），不用頁面級的
+             底線式——底線式是「頁面分節」的語彙（Q38），這裡是浮層內的分區。
+             卡頭原本的標題拿掉了：分頁名已經說了這是哪一張，卡頭再寫一次是重複；
+             改把原本墊在卡下方的說明句搬進卡頭左側，按鈕仍靠右。 -->
+        <nav class="tabs" role="tablist" data-tier-tabs>
+          <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tier-tab="gates" data-i18n="fans.tiers.title">Organise your fan circle</button>
+          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tier-tab="mult" data-i18n="tier-settings.mult.title">Behavior multipliers</button>
+          <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tier-tab="rules" data-i18n="fans.tiers.rules">Rules</button>
+        </nav>
+
+        <!-- 兩種狀態：預設唯讀、按「編輯」就地變成可編輯（2026-08-01 使用者裁示，
+             取代原本開彈窗的做法）。兩份內容都在 DOM 裡、用 display 切換；
+             格子恆為 --control-h-sm 高，所以切狀態時整張表不會抽高位移。 -->
+        <div class="tab-panel tab-panel--active" role="tabpanel" data-tier-panel="gates">
+        <section class="card" data-tier-card>
+          <div class="card__head">
+            <p class="settings-row__hint" style="margin:0" data-i18n="fans.tiers.sub">Each tier's gates and what it unlocks. Going down the ladder, both the conditions and the benefits ease off.</p>
+            <div class="flex-row">
+              <button class="btn btn--ghost btn--sm" type="button" data-tier-open="history">
+                <i data-lucide="history" class="ztor-icon"></i><span data-i18n="fans.tiers.history">Change history</span>
+              </button>
+              <!-- 兩個狀態各自的按鈕群，不是同一顆鈕來回切（2026-08-01 使用者裁示：
+                   除了儲存還要有取消，取消不落地）。閒置只有一顆「編輯」；
+                   編輯態換成「取消」＋「儲存」兩顆——取消要能回到進入編輯之前
+                   的樣子，不能只是把 UI 收回去，所以需要獨立於「儲存」的路徑。 -->
+              <span data-icon-idle>
+                <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
+                  <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
+                </button>
+              </span>
+              <span data-icon-editing hidden class="flex-row">
+                <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
+                  <span data-i18n="tier-settings.btn.discard">Cancel</span>
+                </button>
+                <button class="btn btn--primary btn--sm" type="button" data-tier-save>
+                  <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="tier-ov-scroll" data-tier-table>
+            <div class="tier-ov tier-ov__head">
+              <span></span>
+              <span class="tier-ov__cell"><span class="badge badge--orange"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></span>
+              <span class="tier-ov__cell"><span class="badge badge--info"><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></span>
+              <span class="tier-ov__cell"><span class="badge badge--success"><span data-i18n="fans.tier.devoted">Ranked fans/span></span></span>
+              <span class="tier-ov__cell"><span class="badge"><span data-i18n="tier-settings.tier.fan">Fan</span></span></span>
+            </div>
+            <!-- 權益數量：由下面那些列實際算出來的，不寫死——編輯時開關一動就要跟著變，
+                 寫死的話「我剛給了超級粉絲一項權益」這件事在摘要上看不到。
+                 編輯態不給控制項（它是結果不是設定），但不隱藏。 -->
+            <div class="tier-ov tier-ov__row tier-ov__row--locked" data-tier-perkcount>
+              <span class="tier-ov__rowlabel" data-i18n="fans.tiers.perkcount">Benefits</span>
+              <span class="tier-ov__cell" data-perk-total="0">0</span>
+              <span class="tier-ov__cell" data-perk-total="1">0</span>
+              <span class="tier-ov__cell" data-perk-total="2">0</span>
+              <span class="tier-ov__cell" data-perk-total="3">0</span>
+            </div>
+            <div class="tier-ov tier-ov__row">
+              <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.toppct">Top %</span><button class="explain-btn" type="button" data-explain="explain-toppct" aria-label="How Top % works" data-i18n-aria-label="tier-settings.gate.toppct-explain"><i data-lucide="info" class="ztor-icon"></i></button></span><small data-i18n="fans.tiers.toppct-hint">Ranked by loyalty points</small></span>
+<span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">40%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="40"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">75%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="75"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
+            </div>
+            <div class="tier-ov tier-ov__row">
+              <span class="tier-ov__rowlabel"><span class="tier-ov__labelrow"><span data-i18n="tier-settings.gate.points">Min. loyalty points</span><button class="explain-btn" type="button" data-explain="explain-points" aria-label="Why there is also a points floor" data-i18n-aria-label="tier-settings.gate.points-explain"><i data-lucide="info" class="ztor-icon"></i></button></span></span>
+<span class="tier-ov__cell"><span class="tier-ov__read">800 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="800"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">500 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="500"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">200 <span data-i18n="fans.unit.points">pts</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="200"><span class="amount-field__unit" data-i18n="fans.unit.points">pts</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span>
+            </div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.early">Early access · merch &amp; tickets</span><span class="tier-ov__cell"><span class="tier-ov__read">7 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="7"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">3 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="3"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">1 <span data-i18n="fans.unit.days">d</span></span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="1"><span class="amount-field__unit" data-i18n="fans.unit.days">d</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.discount">Merch discount</span><span class="tier-ov__cell"><span class="tier-ov__read">20%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="20"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">10%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="10"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell"><span class="tier-ov__read">5%</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix"><input class="input amount-field__input" inputmode="numeric" value="5"><span class="amount-field__unit">%</span></span></span></span><span class="tier-ov__cell tier-ov__no">—</span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.auction">VIP auction · creator’s personal items</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vipshop">VIP e-shop</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.vault">Creator’s vault · VIP access</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvoice">Birthday voice message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bdayvideo">Birthday video message · yearly</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.demos">Demo tracks</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.bts">Behind the scenes</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+            <div class="tier-ov tier-ov__row"><span class="tier-ov__rowlabel" data-i18n="ben.item.livestream">Private livestreams</span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__yes">✓</span><span class="tier-ov__edit"><button class="switch switch--on" type="button" role="switch" aria-checked="true"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__cell"><span class="tier-ov__read tier-ov__no">—</span><span class="tier-ov__edit"><button class="switch" type="button" role="switch" aria-checked="false"></button></span></span><span class="tier-ov__rowmenu"><details class="dropdown dropdown--left"><summary class="btn btn--icon btn--xs" aria-label="More actions" data-i18n-aria-label="e-shop.a.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem" data-perk-dup><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="fans.tiers.duplicate">Duplicate</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-perk-del><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="ben.remove">Remove</span></button></div></details></span></div>
+          </div>
+
+          <!-- 只在編輯態出現：新增一列權益，四個分級的格子直接就在那裡（全部關著）。 -->
+          <div class="bmx__add" data-tier-editonly hidden>
+            <button class="btn btn--outline btn--sm" type="button" data-tier-add><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="ben.add">Add gated content</span></button>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ben.add-hint">Added once — it appears on every tier for you to switch on.</span>
+          </div>
+
+          <div class="info-banner mt-24" data-tier-editonly hidden>
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="fans.tiers.effective">Threshold and multiplier changes apply at the next nightly recompute. Benefit changes apply immediately.</span>
+          </div>
+        </section>
+        </div><!-- /.tab-panel -->
+
+        <div class="tab-panel" role="tabpanel" data-tier-panel="mult">
+        <section class="card" data-tier-card>
+          <div class="card__head">
+            <p class="settings-row__hint" style="margin:0" data-i18n="fans.tiers.mult-sub">How much each behaviour is worth in loyalty points. This set is the same for every tier, so it has no columns.</p>
+            <div class="flex-row">
+              <span data-icon-idle>
+                <button class="btn btn--outline btn--sm" type="button" data-tier-edit>
+                  <i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="fans.tiers.edit">Edit</span>
+                </button>
+              </span>
+              <span data-icon-editing hidden class="flex-row">
+                <button class="btn btn--outline btn--sm" type="button" data-tier-cancel>
+                  <span data-i18n="tier-settings.btn.discard">Cancel</span>
+                </button>
+                <button class="btn btn--primary btn--sm" type="button" data-tier-save>
+                  <i data-lucide="check" class="ztor-icon"></i><span data-i18n="fans.tiers.save">Save</span>
+                </button>
+              </span>
+            </div>
+          </div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.purchase">Purchases</div><div class="settings-row__hint" data-i18n="tier-settings.mult.purchase-hint">Points per $1 spent</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">3 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="3" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.event">Event check-ins</div><div class="settings-row__hint" data-i18n="tier-settings.mult.event-hint">Per in-person check-in</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">5 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="5" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.mult.interact">Interactions</div><div class="settings-row__hint" data-i18n="tier-settings.mult.interact-hint">Comments, shares, votes</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">1 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="1" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+          <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label" data-i18n="tier-settings.mult.referral">Referrals</div><div class="settings-row__hint" data-i18n="tier-settings.mult.referral-hint">Per new fan brought in</div></div><div class="settings-row__value tier-ov__cell"><span class="tier-ov__read">8 ×</span><span class="tier-ov__edit"><span class="amount-field amount-field--suffix" style="width:96px"><input class="input amount-field__input" value="8" inputmode="numeric"><span class="amount-field__unit">×</span></span></span></div></div>
+        </section>
+        </div><!-- /.tab-panel -->
+
+        <div class="tab-panel" role="tabpanel" data-tier-panel="rules">
+        <section class="card">
+          <div class="card__head">
+            <p class="settings-row__hint" style="margin:0" data-i18n="tier-settings.rules.sub">How the tier system behaves. These are product rules — surfaced here, owned upstream.</p>
+          </div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.rules.dual">Both gates must pass</div><div class="settings-row__hint" data-i18n="tier-settings.rules.dual-body">A fan moves up only after clearing both of that tier’s gates — the Top % <b>and</b> the minimum loyalty points.</div></div></div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.rules.mono">Gates must climb</div><div class="settings-row__hint" data-i18n="tier-settings.rules.mono-body">A higher tier must ask strictly more than the one below it, or the settings won’t save. <em>Exact validation logic pending upstream.</em></div></div></div>
+          <div class="settings-row"><div><div class="settings-row__label" data-i18n="tier-settings.rules.ver">Versioned, never retroactive</div><div class="settings-row__hint" data-i18n="tier-settings.rules.ver-body">Every save creates an immutable version. Revenue and badges already earned under an older version are never rewritten.</div></div></div>
+          <div class="settings-row" style="border-bottom:0"><div><div class="settings-row__label" data-i18n="tier-settings.rules.when">When changes take effect</div><div class="settings-row__hint" data-i18n="tier-settings.rules.when-body">Gates and multipliers apply at the next nightly recount; benefits apply immediately.</div></div></div>
+        </section>
+        </div><!-- /.tab-panel -->
+
+      </div>
+
+      <!-- 粉絲組成：分級的結果，人數是算出來的，所以沒有編輯鈕。
+           用圓餅不用長條：這裡問的是「這一整塊是怎麼被分掉的」，不是「誰比誰長」。 -->
+      <section class="card">
+        <div class="card__head">
+          <h3 class="card__title" data-i18n="fans.who.title">Who's who</h3>
+        </div>
+        <div class="fans-compose">
+          <div class="pie" aria-hidden="true" data-pie
+               style="--pie-size:150px;--pie-stops:
+                 var(--primary) 0 12%,
+                 var(--status-info) 0 40%,
+                 var(--status-success) 0 77%,
+                 var(--foreground-muted) 0 100%"></div>
+          <div class="fans-compose__legend">
+            <!-- 名稱與百分比拆成兩個節點（2026-08-01）：改「前 % 名」時這裡的人數要
+                 跟著即時重算（見下方 <script> 的 updateComposition()），而百分比
+                 文字如果還黏在同一個 data-i18n 字串裡，切語言時 applyI18n 會把它
+                 蓋回寫死的「12%」，剛算出來的數字就丟了。拆開後名稱仍走 i18n、
+                 百分比與人數改由 JS 直接寫值。 -->
+            <div class="source-list" id="fans-tier-list">
+              <div class="source-row" data-tier-share="12" data-rev="8420"><span class="source-row__swatch" style="background:var(--primary)"></span><span><span data-i18n="fans.tier.inner">Inner Circle</span> · <span class="source-row__sharepct">12%</span></span><span class="source-row__amt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+              <div class="source-row" data-tier-share="28" data-rev="6180"><span class="source-row__swatch" style="background:var(--status-info)"></span><span><span data-i18n="fans.tier.super">Superfan</span> · <span class="source-row__sharepct">28%</span></span><span class="source-row__amt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+              <div class="source-row" data-tier-share="37" data-rev="4890"><span class="source-row__swatch" style="background:var(--status-success)"></span><span><span data-i18n="fans.tier.devoted">Ranked fans</span> · <span class="source-row__sharepct">37%</span></span><span class="source-row__amt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+              <div class="source-row" data-tier-share="23" data-rev="1210"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span><span data-i18n="fans.tier.fan">Fan</span> · <span class="source-row__sharepct">23%</span></span><span class="source-row__amt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- F3 Pareto 洞察行：由 JS 自動計算填入；無合格 tier 時整行 hidden。 -->
+        <div class="insight-row hidden" id="fans-pareto" hidden>
+          <i data-lucide="trending-up" class="ztor-icon insight-row__icon" aria-hidden="true"></i>
+          <p class="insight-row__text" id="fans-pareto-text"></p>
+        </div>
+      </section>
+
+      </div>
+    </div>
+  </section>
+</div>
 
 <!-- ── 變更歷史（唯讀）── 來源是原本「規則與版本」那段的 version history。 -->
 <div class="payout-modal" data-tier-modal="history" hidden>
@@ -1691,16 +1720,53 @@
     input.addEventListener('blur', commitName);
   });
 
-  /* 變更歷史彈窗（唯讀，與編輯模式無關）。 */
-  const hist = document.querySelector('[data-tier-modal="history"]');
-  if (hist) {
-    document.querySelectorAll('[data-tier-open="history"]').forEach(b =>
-      b.addEventListener('click', () => { hist.hidden = false; }));
-    hist.addEventListener('click', e => {
-      if (e.target === hist || e.target.closest('[data-tier-close]')) hist.hidden = true;
+  /* 分級設定彈窗內的三個分頁（門檻與權益／行為加權／規則）。切分頁不影響編輯
+     狀態——三張卡各自有自己的 data-tier-card，編輯到一半切走再切回來，內容還在。 */
+  const tierTabs = document.querySelector('[data-tier-tabs]');
+  if (tierTabs) {
+    tierTabs.addEventListener('click', e => {
+      const btn = e.target.closest('[data-tier-tab]');
+      if (!btn) return;
+      const name = btn.getAttribute('data-tier-tab');
+      tierTabs.querySelectorAll('[data-tier-tab]').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      document.querySelectorAll('[data-tier-panel]').forEach(pnl =>
+        pnl.classList.toggle('tab-panel--active', pnl.getAttribute('data-tier-panel') === name));
     });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hist.hidden = true; });
   }
+
+  /* 兩顆 tier 彈窗共用一套開關：data-tier-open="<名字>" 開對應的
+     data-tier-modal="<名字>"。settings 是分級設定本體（2026-08-01 由分頁改來），
+     history 是唯讀的變更歷史，從 settings 裡面再開一層。 */
+  const tierModals = {};
+  document.querySelectorAll('[data-tier-modal]').forEach(m => {
+    tierModals[m.getAttribute('data-tier-modal')] = m;
+    m.addEventListener('click', e => {
+      if (e.target === m || e.target.closest('[data-tier-close]')) close(m);
+    });
+  });
+  function close(m) {
+    m.hidden = true;
+    /* 還有別的 tier 彈窗開著時（從 settings 開出 history 再關掉 history），
+       body 的鎖不能收——收了背景會突然可捲。 */
+    if (!Object.values(tierModals).some(x => !x.hidden)) document.body.classList.remove('is-modal-open');
+  }
+  document.querySelectorAll('[data-tier-open]').forEach(b =>
+    b.addEventListener('click', () => {
+      const m = tierModals[b.getAttribute('data-tier-open')];
+      if (!m) return;
+      m.hidden = false;
+      document.body.classList.add('is-modal-open');
+    }));
+  /* Esc 只關最上面那一層：history 疊在 settings 上，先關 history。 */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = ['history', 'settings'].map(k => tierModals[k]).filter(m => m && !m.hidden);
+    if (open.length) close(open[0]);
+  });
 })();
 </script>
 

@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish work · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/entry-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<!-- 送出前的就緒檢查（規格 §8）沿用建立商品／建立拍賣那顆 footer chip。 -->
+<link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<!-- 查無此項目 id 時的整頁錯誤狀態（與項目詳情同一種說法，見 D154） -->
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
+<!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="wizard">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="pw.h1">Publish work</span>
+          <span class="wizard__top-sub" id="pw-sub" data-i18n="pw.subtitle">Film</span>
+        </div>
+      </div>
+
+      <div class="wizard__progress">
+        <div class="progress-stepper" id="stepper"><!-- 由 JS 依 FLOW 建 --></div>
+      </div>
+
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wizard__body wizard__body--form wizard__body--narrow">
+
+    <!-- ─────────────────── 步驟 1 · 音訊與字幕 ─────────────────── -->
+    <section data-panel="media">
+      <h1 class="wizard__step-title" data-i18n="pw.media.h1">Audio &amp; subtitles</h1>
+      <p class="wizard__step-sub" data-i18n="pw.media.sub">Upload the finished cut, then say what language it speaks and what subtitles ship with it.</p>
+
+      <!-- F1 影片檔＋上傳與處理狀態（規格 §4 F1）。狀態是系統產生、創作者不可編輯，
+           所以放在卡頭當唯讀徽章，不做成欄位；轉檔沒跑完就不算就緒，送出會被擋（§8）。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head form-section__head--actions">
+          <div class="form-section__head-titles">
+            <h3 class="form-section__title" data-i18n="pw.media.file.title">Video file</h3>
+            <p class="form-section__sub" data-i18n="pw.media.file.sub">MP4 or MOV, up to 20 GB.</p>
+          </div>
+          <div class="form-section__head-actions">
+            <span class="badge badge--neutral" id="pw-video-state" data-i18n="pw.media.file.state.empty">Not uploaded</span>
+          </div>
+        </div>
+        <div class="upload-tile upload-tile--file" data-pw-asset="video" data-upload="content" data-upload-accept="video/*" data-upload-processing>
+          <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="pw.media.file.cta">Drop the master file or browse</span>
+          <span class="upload-tile__hint" data-i18n="pw.media.file.hint">1080p or higher</span>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.media.audio.title">Audio track</h3>
+        </div>
+        <div class="field" style="margin-bottom:0;max-width:320px">
+          <label class="field__label" for="pw-audio" data-i18n="pw.media.audio.lang">Original language</label>
+          <select class="select" id="pw-audio">
+            <option data-i18n="pw.lang.yue">Cantonese</option>
+            <option data-i18n="pw.lang.cmn">Mandarin</option>
+            <option data-i18n="pw.lang.en">English</option>
+            <option data-i18n="pw.lang.ja">Japanese</option>
+            <option data-i18n="pw.lang.ko">Korean</option>
+            <option data-i18n="pw.lang.none">No dialogue</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.media.subs.title">Subtitles</h3>
+          <p class="form-section__sub" data-i18n="pw.media.subs.sub">One file per language. SRT or VTT.</p>
+        </div>
+        <!-- 一份字幕檔配一種語言（規格 §4 F3）：語言選單就是這一份字幕的身分，所以放在卡頭。 -->
+        <div id="pw-subs"><!-- 由 JS 建，可增可刪 --></div>
+        <button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-sub><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.media.subs.add">Add a language</span></button>
+      </section>
+    </section>
+
+    <!-- ─────────────────── 步驟 2 · 封面與影音素材 ─────────────────── -->
+    <section data-panel="art" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.art.h1">Artwork &amp; clips</h1>
+      <p class="wizard__step-sub" data-i18n="pw.art.sub">This is what fans see before they press play.</p>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.art.cover.title">Cover</h3>
+        </div>
+        <div class="upload-tile upload-tile--hero" data-pw-asset="cover" data-upload>
+          <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
+          <span class="upload-tile__title" data-i18n="pw.art.cover.cta">Add the poster</span>
+          <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.art.stills.title">Stills</h3>
+          <p class="form-section__sub" data-i18n="pw.art.stills.sub">Frames that sell the film without spoiling it.</p>
+        </div>
+        <!-- 張數不設限（規格 §4 F5「可多張」）：填滿最後一格就自動長出下一格，
+             清空某一格就把那一格移出，做法與項目詳情的展示相簿同一套。 -->
+        <div class="upload-grid" id="pw-stills"><!-- 由 JS 建 --></div>
+      </section>
+
+      <!-- 花絮在預告片之前＝規格 §4／§5 的欄位順序（F6 花絮、F7 預告片）。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.art.bts.title">Behind the scenes</h3>
+          <p class="form-section__sub" data-i18n="pw.art.bts.sub">Optional. Extra footage that sits alongside the trailer.</p>
+        </div>
+        <!-- 筆數不設限（規格 §4 F6「可多筆」）：一張卡＝一支花絮影片，可增可刪，
+             做法與步驟一的字幕卡同一套。格子沒有 .upload-tile__title，元件會自己補一個
+             泛用標籤；影音格不能被讀成「新增圖片」，所以由這一頁直接指名它收的是什麼。 -->
+        <div id="pw-bts"><!-- 由 JS 建 --></div>
+        <button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-bts><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.art.bts.addmore">Add another clip</span></button>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.art.trailer.title">Trailer</h3>
+          <p class="form-section__sub" data-i18n="pw.art.trailer.sub">Plays on the work's page before anyone rents it.</p>
+        </div>
+        <div class="upload-tile upload-tile--file" data-pw-asset="trailer" data-upload="content" data-upload-accept="video/*"
+             aria-label="Add the trailer" data-i18n-aria-label="pw.art.trailer.add">
+          <span class="upload-tile__icon"><i data-lucide="play" class="ztor-icon"></i></span>
+          <span class="upload-tile__hint" data-i18n="pw.art.trailer.hint">Up to 3 minutes</span>
+        </div>
+      </section>
+    </section>
+
+    <!-- ─────────────────── 步驟 3 · 影片詳情 ─────────────────── -->
+    <section data-panel="info" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.info.h1">Video details</h1>
+      <p class="wizard__step-sub" data-i18n="pw.info.sub">Everything on the listing page, plus what it costs to watch.</p>
+
+      <!-- 站上是中英雙語呈現，所以作品文案也收兩套；分組標題就是語言，欄位標籤不再重複寫語言。 -->
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.info.copy.title">Name &amp; synopsis</h3>
+          <p class="form-section__sub" data-i18n="pw.info.copy.sub">Fans see the version matching their app language.</p>
+        </div>
+        <!-- 一張卡＝一個語言組（規格 §4 F8）：預設繁體中文與英文兩組，可再加、可移除，至少留一組。
+             卡頭的語言選單就是這一組的身分，所以欄位標籤只寫「標題／說明」，不再重述語言。 -->
+        <div id="pw-copy"><!-- 由 JS 建 --></div>
+        <button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-lang><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.info.copy.add">Add a language</span></button>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.info.spec.title">Runtime &amp; release</h3>
+        </div>
+        <div class="field">
+          <div class="field__label" data-i18n="pw.info.runtime">Runtime</div>
+          <div class="form-grid form-grid--3" style="max-width:340px">
+            <div class="field"><input class="input" id="pw-hh" inputmode="numeric" placeholder="01" aria-label="HH"></div>
+            <div class="field"><input class="input" id="pw-mm" inputmode="numeric" placeholder="48" aria-label="MM"></div>
+            <div class="field"><input class="input" id="pw-ss" inputmode="numeric" placeholder="00" aria-label="SS"></div>
+          </div>
+          <div class="field__hint" data-i18n="pw.info.runtime.units">Hours · minutes · seconds</div>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <div class="field__label" data-i18n="pw.info.release">Release date</div>
+          <div class="form-grid form-grid--3" style="max-width:340px">
+            <div class="field"><select class="select" id="pw-yyyy" aria-label="YYYY"></select></div>
+            <div class="field"><select class="select" id="pw-mm2" aria-label="MM"></select></div>
+            <div class="field"><select class="select" id="pw-dd" aria-label="DD"></select></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.info.genre.title">Genres</h3>
+          <p class="form-section__sub" data-i18n="pw.info.genre.sub">Pick every one that fits — they drive where the work shows up.</p>
+        </div>
+        <div class="chip-group" id="pw-genres">
+          <button class="chip" type="button" data-pw-genre="drama" data-i18n="pw.genre.drama">Drama</button>
+          <button class="chip" type="button" data-pw-genre="comedy" data-i18n="pw.genre.comedy">Comedy</button>
+          <button class="chip" type="button" data-pw-genre="action" data-i18n="pw.genre.action">Action</button>
+          <button class="chip" type="button" data-pw-genre="romance" data-i18n="pw.genre.romance">Romance</button>
+          <button class="chip" type="button" data-pw-genre="thriller" data-i18n="pw.genre.thriller">Thriller</button>
+          <button class="chip" type="button" data-pw-genre="mystery" data-i18n="pw.genre.mystery">Mystery</button>
+          <button class="chip" type="button" data-pw-genre="horror" data-i18n="pw.genre.horror">Horror</button>
+          <button class="chip" type="button" data-pw-genre="crime" data-i18n="pw.genre.crime">Crime</button>
+          <button class="chip" type="button" data-pw-genre="scifi" data-i18n="pw.genre.scifi">Sci-fi</button>
+          <button class="chip" type="button" data-pw-genre="fantasy" data-i18n="pw.genre.fantasy">Fantasy</button>
+          <button class="chip" type="button" data-pw-genre="adventure" data-i18n="pw.genre.adventure">Adventure</button>
+          <button class="chip" type="button" data-pw-genre="animation" data-i18n="pw.genre.animation">Animation</button>
+          <button class="chip" type="button" data-pw-genre="family" data-i18n="pw.genre.family">Family</button>
+          <button class="chip" type="button" data-pw-genre="music" data-i18n="pw.genre.music">Music</button>
+          <button class="chip" type="button" data-pw-genre="history" data-i18n="pw.genre.history">History</button>
+          <button class="chip" type="button" data-pw-genre="war" data-i18n="pw.genre.war">War</button>
+          <button class="chip" type="button" data-pw-genre="western" data-i18n="pw.genre.western">Western</button>
+          <button class="chip" type="button" data-pw-genre="documentary" data-i18n="pw.genre.documentary">Documentary</button>
+          <button class="chip" type="button" data-pw-genre="tvmovie" data-i18n="pw.genre.tvmovie">TV movie</button>
+          <button class="chip" type="button" data-pw-genre="feature" data-i18n="pw.genre.feature">Feature film</button>
+          <button class="chip" type="button" data-pw-genre="ai" data-i18n="pw.genre.ai">AI</button>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.info.tags.title">Tags</h3>
+          <p class="form-section__sub" data-i18n="cp.tags.sub">Make it easier for fans to discover your work.</p>
+        </div>
+        <div class="tag-input" id="pw-tags">
+          <div class="tag-input__field" id="pw-tags-field">
+            <input class="tag-input__entry" id="pw-tags-entry" placeholder="Type a tag, press Enter" data-i18n-placeholder="cp.tags.ph">
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.info.age.title">Age rating</h3>
+        </div>
+        <div class="field" style="margin-bottom:0;max-width:280px">
+          <select class="select" id="pw-age" aria-label="Age rating">
+            <option data-i18n="pw.age.all">Everyone</option>
+            <option data-i18n="pw.age.7">7+</option>
+            <option data-i18n="pw.age.10">10+</option>
+            <option data-i18n="pw.age.13">13+</option>
+            <option data-i18n="pw.age.16">16+</option>
+            <option data-i18n="pw.age.18">18+</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.price.title">Pricing</h3>
+          <p class="form-section__sub" data-i18n="pw.price.sub">Each quality is rented separately.</p>
+        </div>
+        <div class="control-row">
+          <div>
+            <div class="control-row__main" data-i18n="pw.price.paid">Charge for this work</div>
+            <div class="control-row__sub" data-i18n="pw.price.paid-sub">Turn off and anyone can watch it for free.</div>
+          </div>
+          <div class="switch switch--on" id="pw-paid" role="switch" aria-checked="true" tabindex="0"></div>
+        </div>
+        <div id="pw-price-body">
+          <div class="field mt-16">
+            <div class="field__label" data-i18n="pw.price.currency">Currency</div>
+            <div class="segmented" id="pw-currency" style="max-width:220px">
+              <button class="segmented__btn segmented__btn--active" type="button" data-pw-cur="HKD">HKD</button>
+              <button class="segmented__btn" type="button" data-pw-cur="TWD">TWD</button>
+            </div>
+          </div>
+          <div id="pw-quality-list"><!-- 由 JS 依 QUALITIES 建，可增可刪 --></div>
+          <button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-quality><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.price.add">Add a quality</span></button>
+        </div>
+      </section>
+    </section>
+
+    <!-- ─────────────────── 步驟 4 · 演職人員詳情 ─────────────────── -->
+    <section data-panel="credits" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.credits.h1">Cast &amp; crew</h1>
+      <p class="wizard__step-sub" data-i18n="pw.credits.sub">Names appear on the work's page in the order you enter them.</p>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.credits.cast.title">Cast</h3>
+        </div>
+        <div class="field" data-pw-role="lead-m"><div class="field__label" data-i18n="pw.role.lead-m">Lead actor</div></div>
+        <div class="field" data-pw-role="lead-f"><div class="field__label" data-i18n="pw.role.lead-f">Lead actress</div></div>
+        <div class="field" data-pw-role="sup-m"><div class="field__label" data-i18n="pw.role.sup-m">Supporting actor</div></div>
+        <div class="field" data-pw-role="sup-f" style="margin-bottom:0"><div class="field__label" data-i18n="pw.role.sup-f">Supporting actress</div></div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.credits.crew.title">Crew</h3>
+        </div>
+        <div class="field" data-pw-role="director"><div class="field__label" data-i18n="pw.role.director">Director</div></div>
+        <div class="field" data-pw-role="editor"><div class="field__label" data-i18n="pw.role.editor">Editor</div></div>
+        <div class="field" data-pw-role="producer"><div class="field__label" data-i18n="pw.role.producer">Producer</div></div>
+        <div class="field" data-pw-role="writer"><div class="field__label" data-i18n="pw.role.writer">Writer</div></div>
+        <div class="field" data-pw-role="studio" style="margin-bottom:0"><div class="field__label" data-i18n="pw.role.studio">Production company</div></div>
+      </section>
+
+      <section class="form-section form-section--outlined">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-i18n="pw.credits.notes.title">Notes</h3>
+          <p class="form-section__sub" data-i18n="pw.credits.notes.sub">Anything the review team should know.</p>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <textarea class="textarea" id="pw-notes" aria-label="Notes"></textarea>
+        </div>
+      </section>
+    </section>
+
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom" style="justify-content:flex-end" data-footer>
+    <div class="wizard__bottom-actions">
+      <button class="btn btn--outline" type="button" data-action="back" data-i18n="wiz.back">Back</button>
+      <!-- 送出前的就緒檢查（規格 §8）。做法與建立商品／建立拍賣同一顆 readiness chip：
+           缺項時主動作停用、chip 就在它旁邊說明缺什麼、在第幾步；只在最後一步出現，
+           因為送出只發生在那一步（前三步的主動作是「下一步」，不該被擋）。 -->
+      <span class="readiness__chip" id="pw-ready-chip" tabindex="0" hidden><i data-lucide="circle" class="ztor-icon"></i><span id="pw-ready-chip-text">6 to go</span>
+        <span class="readiness__pop">
+          <section class="readiness">
+            <div class="readiness__head"><h3 class="readiness__title" id="pw-ready-title" data-i18n="pw.ready.title">Ready to send?</h3></div>
+            <ul class="readiness__list" id="pw-ready-list"></ul>
+            <div class="readiness__banner" id="pw-ready-banner"></div>
+          </section>
+        </span>
+      </span>
+      <button class="btn btn--primary" type="button" data-action="next" data-i18n="wiz.continue">Continue</button>
+    </div>
+  </footer>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<!-- 頁首副標要顯示是哪一個項目的作品，成功後也要導回該項目的詳情頁。 -->
+<script src="js/projects-store.js?v=r2.2"></script>
+<!-- 送出＝建立一件送審作品；狀態機與字彙都在這支 store 裡（審核頁與項目詳情共用同一份）。 -->
+<script src="js/work-review-store.js?v=r2.2"></script>
+<!-- 提供 window.ztorToast.queue()：上架成功的提示排到項目詳情頁再顯示。 -->
+<script src="js/toast.js?v=r2.2"></script>
+<script src="partials/wizard-chrome.js?v=r2.2"></script>
+<!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
+<script>
+/* 作品上架流程（publish-work.html）· 四步：音訊與字幕 → 封面與影音素材 → 影片詳情 → 演職人員詳情
+   ------------------------------------------------------------------------------
+   入口：項目詳情頁的發文彈窗選「完成作品」＋影片家族的項目（`?project=<id>`）。
+   沒帶參數也能單獨開啟（便於獨立檢視版面），此時副標退回泛稱、送出後回項目清單的第一筆。
+   全前端 demo：上傳不真的上傳、送出不真的建檔。
+
+   ── 送出＝送審，不是上線（2026-08-07 改，規格 §3.3／§4 共用操作與送出）──────
+   送出只把作品審核狀態由草稿轉成待審核；作品尚未上線、那則完成作品更新尚未發出、
+   項目狀態維持已成立。三件事（作品上架、發貼文、項目轉已上線）等到 Admin 在
+   影片上架審核頁按下通過才一次發生。這頁因此只做兩件事：把送審內容寫進
+   js/work-review-store.js、queue 一則「已送出審核」的提示，然後回項目詳情。
+   被退件後從同一個入口回來修改、再送一次，送出次數 +1（store 負責計數）。 */
+(function () {
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+  const zh = () => document.documentElement.lang === 'zh-Hant';
+  const RELEASE_KEY = 'ztor.workRelease';
+
+  /* ---- 頁首：這是哪一個項目的作品 ---- */
+  const params = new URLSearchParams(location.search);
+  const pid = params.get('project') || '';
+  const store = window.ztorProjects;
+  const proj = store ? ((pid && store.get(pid)) || null) : null;
+  /* 帶了 ?project= 卻查不到（連結過期、項目已移除，或那是別位創作者的項目）＝這一趟
+     上架不成立：接下來每一步都會把作品掛到一個不存在的項目上，送出還會生出一件孤兒
+     送審件。所以在這裡就停，說法與項目詳情共用同一組文案（2026-08-07 補，D154 慣例）。
+     沒帶參數仍維持原樣（獨立開啟看版面），那是刻意保留的展示入口。 */
+  if (pid && !proj) {
+    const wiz = document.querySelector('.wizard');
+    if (wiz) {
+      const stub = document.createElement('div');
+      stub.className = 'empty-stub';
+      stub.innerHTML =
+        '<div class="empty-stub__inner">' +
+        '<div class="empty-stub__mark">!</div>' +
+        '<h2 class="empty-stub__title" data-i18n="project.notfound.title">Project not found</h2>' +
+        '<p class="empty-stub__sub" data-i18n="project.notfound.sub">This link may be out of date, the project was removed, or it belongs to another creator. Go back to the list and pick one.</p>' +
+        '<div class="empty-stub__refs"><a class="btn btn--primary" href="projects.html" data-i18n="project.notfound.back">Back to projects</a></div>' +
+        '</div>';
+      wiz.parentNode.insertBefore(stub, wiz);
+      wiz.hidden = true;
+      if (window.applyI18n) window.applyI18n(stub);
+    }
+    document.title = ((window.i18nT && window.i18nT('project.notfound.title')) || 'Project not found') + ' · Ztor Creator Studio';
+    return;
+  }
+  const subEl = document.getElementById('pw-sub');
+  /* 有帶 ?project 就把副標換成該項目的名字（跟著語言換）；沒帶就留 markup 的泛稱。 */
+  function syncSub() {
+    if (!proj || !subEl) return;
+    subEl.removeAttribute('data-i18n');
+    subEl.textContent = zh() ? proj.name : (proj.nameEn || proj.name);
+  }
+
+  /* ---- 分步 ---- */
+  const FLOW = ['media', 'art', 'info', 'credits'];
+  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits' };
+  let idx = 0;
+  /* 就緒檢查要讀到頁面所有欄位才算得出來，而那些欄位是下面一段一段建起來的；
+     建到一半就跑會讀到還沒宣告的變數，所以在最後一段開燈，在此之前呼叫都直接返回。 */
+  let readinessOn = false;
+
+  const stepperEl = document.getElementById('stepper');
+  const backBtn = document.querySelector('[data-action=back]');
+  const nextBtn = document.querySelector('[data-action=next]');
+
+  function buildStepper() {
+    stepperEl.style.setProperty('--progress', Math.round((idx + 1) / FLOW.length * 100) + '%');
+    stepperEl.innerHTML =
+      '<div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>' +
+      '<div class="progress-stepper__labels">' +
+      FLOW.map((s, i) => {
+        const cls = 'progress-stepper__label' + (i === idx ? ' progress-stepper__label--current' : '') + (i < idx ? ' progress-stepper__label--done' : '');
+        return '<span class="' + cls + '" data-jump="' + i + '">' + T(STEP_LABEL[s], s) + '</span>';
+      }).join('') +
+      '</div>';
+    stepperEl.querySelectorAll('[data-jump]').forEach(it => {
+      it.addEventListener('click', () => { idx = Number(it.dataset.jump); render(true); });
+    });
+  }
+
+  function render(scroll) {
+    const cur = FLOW[idx];
+    document.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== cur));
+    backBtn.classList.toggle('hidden', idx === 0);
+    /* 最後一步的主動作就是送出上架，所以按鈕自己換名字——底下不另加第二顆送出鈕，
+       否則同一列會同時出現「繼續」與「發布」，使用者得先猜哪一顆才是結尾。 */
+    const last = idx === FLOW.length - 1;
+    nextBtn.dataset.i18n = last ? 'pw.submit' : 'wiz.continue';
+    nextBtn.textContent = T(last ? 'pw.submit' : 'wiz.continue', last ? 'Send for review' : 'Continue');
+    buildStepper();
+    syncSub();
+    renderReadiness();
+    if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  }
+
+  backBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(true); } });
+  nextBtn.addEventListener('click', () => {
+    if (nextBtn.disabled) return;
+    if (idx < FLOW.length - 1) { idx++; render(true); return; }
+    submit();
+  });
+
+  /* 走完＝把這一件送進平台審核。貼文與作品內容一起交給 store 保管，等審核通過
+     那一刻才由項目詳情頁播出「發貼文＋轉已上線」。為什麼三件事不在這裡做：
+     它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。 */
+  function submit() {
+    let post = null;
+    try { post = JSON.parse(sessionStorage.getItem(RELEASE_KEY) || 'null'); } catch (err) { post = null; }
+    if (!post) post = { id: pid, title: '', audience: 'pd-edit.update.aud-everyone', body: '' };
+    /* 貼文標題退而求其次用作品標題：語言組是可增可刪的，所以取「第一個填了字的那一組」，
+       不再指名某一個固定的 input id。 */
+    const titles = Array.from(document.querySelectorAll('[data-pw-copy]')).map(c => ({
+      lang: c.querySelector('select').value,
+      title: (c.querySelector('[data-pw-title]').value || '').trim(),
+      desc: (c.querySelector('[data-pw-desc]').value || '').trim()
+    }));
+    const firstTitle = (titles.find(t => t.title) || {}).title || '';
+    if (!post.title) post.title = firstTitle || T('pw.update.fallback', 'The work is live');
+
+    const target = post.id || pid || (store && store.first() ? store.first().id : '');
+    const workName = firstTitle || (proj ? proj.name : '');
+    const workNameEn = firstTitle || (proj ? (proj.nameEn || proj.name) : '');
+
+    if (window.ztorWorkReview) {
+      window.ztorWorkReview.submit({
+        projectId: target,
+        creator: store ? store.owner() : '',
+        cover: proj ? (proj.cover || proj.poster || '') : '',
+        title: { zh: workName, en: workNameEn },
+        projectName: { zh: proj ? proj.name : '', en: proj ? (proj.nameEn || proj.name) : '' },
+        post: { title: post.title, audience: post.audience || 'pd-edit.update.aud-everyone', body: post.body || '' },
+        work: collectWork(titles)
+      });
+    }
+    /* 貼文草稿已經交給 store 保管，sessionStorage 這份就沒有用了——留著會在下一次
+       進項目詳情時被舊的續作邏輯誤讀成「有一件剛走完的上架」。 */
+    try { sessionStorage.removeItem(RELEASE_KEY); } catch (err) {}
+    if (window.ztorToast && window.ztorToast.queue) {
+      window.ztorToast.queue(T('pw.toast.submitted', 'Sent for review'), { key: 'pw.toast.submitted', tone: 'success' });
+    }
+    location.href = 'project-detail.html' + (target ? '?id=' + encodeURIComponent(target) : '');
+  }
+
+  /* 送審內容（規格 5.1.0.4 F3「檢視範圍」＝四個步驟的全部欄位）。
+     原型不真的上傳檔案，所以檔案類欄位存的是檔名與筆數，讓審核者至少看得出
+     創作者交了什麼；能不能實際播放屬原型限制，記在 ASSUMPTIONS。 */
+  function collectWork(titles) {
+    const fileEl = document.querySelector('[data-pw-asset="video"]');
+    const fileName = fileEl ? ((fileEl.querySelector('.upload-tile__filename') || {}).textContent || '') : '';
+    const stateOf = el => {
+      if (!el) return 'empty';
+      if (el.classList.contains('is-filled') || el.classList.contains('is-optimized')) return 'ready';
+      if (el.classList.contains('is-processing')) return 'processing';
+      if (el.classList.contains('is-uploading')) return 'uploading';
+      return 'empty';
+    };
+    const isFilled = el => !!el && (el.classList.contains('is-filled') || el.classList.contains('is-optimized'));
+    const audioSel = document.getElementById('pw-audio');
+    const audioOpt = audioSel && audioSel.options[audioSel.selectedIndex];
+    return {
+      file: { name: fileName, state: stateOf(fileEl) },
+      audio: audioOpt ? audioOpt.getAttribute('data-i18n') : '',
+      subs: Array.from(subsWrap.querySelectorAll('[data-pw-sub]')).map(c => {
+        const sel = c.querySelector('select');
+        const opt = sel.options[sel.selectedIndex];
+        return { lang: opt ? opt.getAttribute('data-i18n') : '', name: (c.querySelector('.upload-tile__filename') || {}).textContent || '' };
+      }),
+      cover: isFilled(document.querySelector('[data-pw-asset="cover"]')),
+      stills: document.querySelectorAll('#pw-stills .upload-tile.is-filled, #pw-stills .upload-tile.is-optimized').length,
+      bts: document.querySelectorAll('#pw-bts .upload-tile.is-filled').length,
+      trailer: (document.querySelector('[data-pw-asset="trailer"] .upload-tile__filename') || {}).textContent || '',
+      copy: titles,
+      runtime: ['pw-hh', 'pw-mm', 'pw-ss'].map(id => (document.getElementById(id).value || '').trim() || '00').join(':'),
+      release: ['pw-yyyy', 'pw-mm2', 'pw-dd'].map(id => document.getElementById(id).value).join('/'),
+      genres: Array.from(document.querySelectorAll('#pw-genres .chip--active')).map(c => c.getAttribute('data-i18n')),
+      tags: tags.slice(),
+      age: (function () { const s = document.getElementById('pw-age'); const o = s.options[s.selectedIndex]; return o ? o.getAttribute('data-i18n') : ''; })(),
+      paid: paid.classList.contains('switch--on'),
+      currency: (document.querySelector('#pw-currency .segmented__btn--active') || {}).dataset ? document.querySelector('#pw-currency .segmented__btn--active').dataset.pwCur : '',
+      qualities: Array.from(qualityList.querySelectorAll('[data-pw-quality]')).map(c => {
+        const v = Array.from(c.querySelectorAll('input')).map(i => (i.value || '').trim());
+        return { name: c.dataset.pwQuality, price: v[0] || '', popcorn: v[1] || '', rent: v[2] || '', watch: v[3] || '' };
+      }),
+      credits: Array.from(document.querySelectorAll('[data-pw-role]')).map(f => ({
+        role: f.querySelector('.field__label').getAttribute('data-i18n'),
+        names: Array.from(f.querySelectorAll('.entry-list__row .input')).map(i => (i.value || '').trim()).filter(Boolean)
+      })).filter(r => r.names.length),
+      notes: (document.getElementById('pw-notes').value || '').trim()
+    };
+  }
+
+  /* ---- 字幕：一張卡＝一份字幕檔＋它的語言（規格 §4 F3）。每次都重新建一張，
+         不複製既有的——既有那張已被 upload-tile.js 增強過，連同注入的 <input> 與
+         動作列一起複製會變成一格壞掉的空殼。 ---- */
+  const SUB_LANGS = ['pw.lang.yue', 'pw.lang.cmn', 'pw.lang.en', 'pw.lang.ja', 'pw.lang.ko'];
+  const subsWrap = document.getElementById('pw-subs');
+  function syncSubRemoves() {
+    const cards = subsWrap.querySelectorAll('[data-pw-sub]');
+    cards.forEach(c => { c.querySelector('[data-pw-drop-sub]').hidden = cards.length <= 1; });
+  }
+  function addSubtitle() {
+    const card = document.createElement('div');
+    card.className = 'card card--muted' + (subsWrap.children.length ? ' mt-16' : '');
+    card.setAttribute('data-pw-sub', '');
+    card.innerHTML =
+      '<div class="card__head">' +
+        '<select class="select" style="max-width:200px" aria-label="' + T('pw.media.subs.lang', 'Subtitle language') + '">' +
+          SUB_LANGS.map(k => '<option data-i18n="' + k + '">' + T(k, k) + '</option>').join('') +
+        '</select>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-sub aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>' +
+      /* 這格只有一行「SRT / VTT」提示、沒有標題元素，元件會自己補泛用標籤；
+         字幕收的是檔案不是圖片，故在這裡直接指名（切語言時由 data-i18n-aria-label 重譯）。 */
+      '<div class="upload-tile upload-tile--file" data-pw-asset="subtitle" data-upload="content" data-upload-accept=".srt,.vtt"' +
+        ' aria-label="' + T('pw.media.subs.file', 'Add a subtitle file') + '" data-i18n-aria-label="pw.media.subs.file">' +
+        '<span class="upload-tile__icon"><i data-lucide="file-text" class="ztor-icon"></i></span>' +
+        '<span class="upload-tile__hint" data-i18n="pw.media.subs.slot">' + T('pw.media.subs.slot', 'SRT / VTT') + '</span>' +
+      '</div>';
+    card.querySelector('[data-pw-drop-sub]').addEventListener('click', () => {
+      if (subsWrap.children.length <= 1) return;
+      card.remove();
+      syncSubRemoves();
+    });
+    subsWrap.appendChild(card);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+    if (window.ztorUploadTile) window.ztorUploadTile.enhance(card.querySelector('[data-upload]'));
+    syncSubRemoves();
+  }
+  addSubtitle();
+  document.querySelector('[data-pw-add-sub]').addEventListener('click', addSubtitle);
+
+  /* ---- F1 上傳與處理狀態（規格 §4 F1）----------------------------------------
+         系統產生、創作者不可編輯，所以做成卡頭的唯讀徽章而不是欄位。
+         轉檔沒跑完＝就緒檢查裡的「影片檔」不算完成（§8 檔案就緒），送出鈕維持停用。 */
+  const VIDEO_STATE = {
+    empty:      { key: 'pw.media.file.state.empty',      fb: 'Not uploaded',  tone: 'badge--neutral' },
+    uploading:  { key: 'pw.media.file.state.uploading',  fb: 'Uploading',     tone: 'badge--info' },
+    processing: { key: 'pw.media.file.state.processing', fb: 'Processing',    tone: 'badge--warning' },
+    ready:      { key: 'pw.media.file.state.ready',      fb: 'Ready',         tone: 'badge--success' }
+  };
+  const videoTile = document.querySelector('[data-pw-asset="video"]');
+  const videoStateEl = document.getElementById('pw-video-state');
+  function syncVideoState() {
+    if (!videoTile || !videoStateEl) return;
+    let s = 'empty';
+    if (videoTile.classList.contains('is-filled') || videoTile.classList.contains('is-optimized')) s = 'ready';
+    else if (videoTile.classList.contains('is-processing')) s = 'processing';
+    else if (videoTile.classList.contains('is-uploading')) s = 'uploading';
+    const st = VIDEO_STATE[s];
+    videoStateEl.dataset.i18n = st.key;
+    videoStateEl.textContent = T(st.key, st.fb);
+    videoStateEl.className = 'badge ' + st.tone;
+  }
+  document.addEventListener('upload:change', syncVideoState);
+  syncVideoState();
+
+  /* ---- F5 劇照：張數不設限（規格 §4 F5「可多張」）----------------------------
+         永遠留一格空的在最後；填滿它就長出下一格，清空某一格就把那一格移出。
+         這樣「還能再加」與「已經加了幾張」都是看得見的，不必先猜格數。 */
+  const stillsWrap = document.getElementById('pw-stills');
+  function addStill() {
+    const tile = document.createElement('div');
+    tile.className = 'upload-tile';
+    tile.setAttribute('data-pw-asset', 'still');
+    tile.setAttribute('data-upload', '');
+    tile.setAttribute('aria-label', T('pw.art.stills.add', 'Add a still'));
+    tile.setAttribute('data-i18n-aria-label', 'pw.art.stills.add');
+    tile.innerHTML = '<span class="upload-tile__icon">＋</span>';
+    stillsWrap.appendChild(tile);
+    if (window.ztorUploadTile) window.ztorUploadTile.enhance(tile);
+    return tile;
+  }
+  addStill();
+  stillsWrap.addEventListener('upload:change', e => {
+    const tile = e.target.closest('.upload-tile');
+    if (!tile) return;
+    const tiles = Array.from(stillsWrap.querySelectorAll('.upload-tile'));
+    const last = tiles[tiles.length - 1];
+    if (e.detail && e.detail.filled) { if (tile === last) addStill(); return; }
+    /* 清空的是中間某一格＝那張劇照退出清單；末格是常駐空位，清空後留在原地。 */
+    if (tile !== last) tile.remove();
+  });
+
+  /* ---- F6 花絮：筆數不設限（規格 §4 F6「可多筆」）----------------------------
+         一張卡＝一支花絮影片，做法與字幕卡同一套（可增可刪、只剩一張時不給刪）。 */
+  const btsWrap = document.getElementById('pw-bts');
+  function syncBtsRemoves() {
+    const cards = btsWrap.querySelectorAll('[data-pw-bts]');
+    cards.forEach(c => { c.querySelector('[data-pw-drop-bts]').hidden = cards.length <= 1; });
+  }
+  function addBts() {
+    const card = document.createElement('div');
+    card.className = 'card card--muted' + (btsWrap.children.length ? ' mt-16' : '');
+    card.setAttribute('data-pw-bts', '');
+    card.innerHTML =
+      '<div class="card__head">' +
+        '<h3 class="card__title">' + T('pw.art.bts.item', 'Clip') + ' ' + (btsWrap.children.length + 1) + '</h3>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-bts aria-label="' + T('pw.art.bts.drop', 'Remove this clip') + '" data-i18n-aria-label="pw.art.bts.drop"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>' +
+      '<div class="upload-tile upload-tile--file" data-pw-asset="bts" data-upload="content" data-upload-accept="video/*"' +
+        ' aria-label="' + T('pw.art.bts.add', 'Add a behind-the-scenes video') + '" data-i18n-aria-label="pw.art.bts.add">' +
+        '<span class="upload-tile__icon"><i data-lucide="video" class="ztor-icon"></i></span>' +
+        '<span class="upload-tile__hint" data-i18n="pw.art.bts.hint">' + T('pw.art.bts.hint', 'MP4 or MOV') + '</span>' +
+      '</div>';
+    card.querySelector('[data-pw-drop-bts]').addEventListener('click', () => {
+      if (btsWrap.children.length <= 1) return;
+      card.remove();
+      Array.from(btsWrap.children).forEach((c, i) => {
+        c.classList.toggle('mt-16', i > 0);
+        c.querySelector('.card__title').textContent = T('pw.art.bts.item', 'Clip') + ' ' + (i + 1);
+      });
+      syncBtsRemoves();
+    });
+    btsWrap.appendChild(card);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+    if (window.applyI18n) window.applyI18n(card);
+    if (window.ztorUploadTile) window.ztorUploadTile.enhance(card.querySelector('[data-upload]'));
+    syncBtsRemoves();
+  }
+  addBts();
+  document.querySelector('[data-pw-add-bts]').addEventListener('click', addBts);
+
+  /* ---- 標題與說明：一張卡＝一個語言組（規格 §4 F8）----
+         預設繁體中文與英文兩組，可再加、可移除，最後一組不給移除（拿掉就沒有任何前台文案了）。
+         選項只列站上既有的語言 key，與 F2 原始語音那個選單同一份命名，不另造一套。
+         範例文字（placeholder）跟著該組的語言換——它是「這一格該長什麼樣」的示意，
+         不是資料，所以中文組給中文的提示、英文組給英文的提示，其餘語言不給範例只給說明。
+         提示不寫任何一部作品的名字：這頁會開在任何一個創作者的項目底下，寫死片名在別人的
+         項目上讀起來像系統填錯資料（2026-08-07 使用者反饋）。 */
+  const COPY_LANGS = ['pw.lang.zh', 'pw.lang.enName', 'pw.lang.ja', 'pw.lang.ko'];
+  const COPY_PH = {
+    'pw.lang.zh':     { t: 'pw.info.title.ph-zh', d: 'pw.info.desc.ph' },
+    'pw.lang.enName': { t: 'pw.info.title.ph-en', d: 'pw.info.desc.ph-en' }
+  };
+  const copyWrap = document.getElementById('pw-copy');
+  const addLangBtn = document.querySelector('[data-pw-add-lang]');
+  let copySeq = 0;
+  const usedLangs = () => Array.from(copyWrap.querySelectorAll('[data-pw-copy] select')).map(s => s.value);
+  function syncCopyControls() {
+    const cards = copyWrap.querySelectorAll('[data-pw-copy]');
+    cards.forEach(c => { c.querySelector('[data-pw-drop-lang]').hidden = cards.length <= 1; });
+    addLangBtn.disabled = cards.length >= COPY_LANGS.length;
+  }
+  /* 語言是這一組的身分，同一種語言出現兩次就沒有意義（前台不知道要拿哪一份），
+     所以每個選單只列「還沒被別組用掉的語言」＋自己目前選的那一個。 */
+  function syncLangOptions() {
+    copyWrap.querySelectorAll('[data-pw-copy] select').forEach(sel => {
+      const mine = sel.value;
+      const taken = usedLangs().filter(v => v !== mine);
+      sel.querySelectorAll('option').forEach(o => { o.disabled = taken.indexOf(o.value) >= 0; });
+    });
+  }
+  function applyCopyPlaceholders(card) {
+    const key = card.querySelector('select').value;
+    const ph = COPY_PH[key] || { d: 'pw.info.desc.ph' };
+    const title = card.querySelector('[data-pw-title]');
+    const desc = card.querySelector('[data-pw-desc]');
+    if (ph.t) { title.placeholder = T(ph.t, ''); title.setAttribute('data-i18n-placeholder', ph.t); }
+    else { title.placeholder = ''; title.removeAttribute('data-i18n-placeholder'); }
+    desc.placeholder = T(ph.d, ''); desc.setAttribute('data-i18n-placeholder', ph.d);
+  }
+  function addCopy(langKey) {
+    const n = ++copySeq;
+    const card = document.createElement('div');
+    card.className = 'card card--muted' + (copyWrap.children.length ? ' mt-16' : '');
+    card.setAttribute('data-pw-copy', '');
+    card.innerHTML =
+      '<div class="card__head">' +
+        '<select class="select" style="max-width:200px" aria-label="' + T('pw.info.copy.lang', 'Language') + '" data-i18n-aria-label="pw.info.copy.lang">' +
+          COPY_LANGS.map(k => '<option value="' + k + '"' + (k === langKey ? ' selected' : '') + ' data-i18n="' + k + '">' + T(k, k) + '</option>').join('') +
+        '</select>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-lang aria-label="' + T('pw.info.copy.drop', 'Remove this language') + '" data-i18n-aria-label="pw.info.copy.drop"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>' +
+      '<div class="field">' +
+        '<label class="field__label" for="pw-title-' + n + '" data-i18n="pw.info.title">Title</label>' +
+        '<input class="input" id="pw-title-' + n + '" data-pw-title>' +
+      '</div>' +
+      '<div class="field" style="margin-bottom:0">' +
+        '<label class="field__label" for="pw-desc-' + n + '" data-i18n="pw.info.desc">Synopsis</label>' +
+        '<textarea class="textarea" id="pw-desc-' + n + '" data-pw-desc></textarea>' +
+      '</div>';
+    const sel = card.querySelector('select');
+    sel.value = langKey;
+    sel.addEventListener('change', () => { applyCopyPlaceholders(card); syncLangOptions(); });
+    card.querySelector('[data-pw-drop-lang]').addEventListener('click', () => {
+      if (copyWrap.children.length <= 1) return;
+      card.remove();
+      /* 移除第一張後，剩下那張的 mt-16 會變成多出來的上緣間距。 */
+      Array.from(copyWrap.children).forEach((c, i) => c.classList.toggle('mt-16', i > 0));
+      syncCopyControls(); syncLangOptions(); renderReadiness();
+    });
+    copyWrap.appendChild(card);
+    applyCopyPlaceholders(card);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+    if (window.applyI18n) window.applyI18n(card);
+    syncCopyControls(); syncLangOptions(); renderReadiness();
+  }
+  addCopy('pw.lang.zh');
+  addCopy('pw.lang.enName');
+  addLangBtn.addEventListener('click', () => {
+    const next = COPY_LANGS.find(k => usedLangs().indexOf(k) < 0);
+    if (next) addCopy(next);
+  });
+
+  /* ---- 上映日期：三個下拉 ---- */
+  function fillSelect(el, from, to, pad) {
+    if (!el) return;
+    for (let n = from; n <= to; n++) {
+      const o = document.createElement('option');
+      o.value = String(n);
+      o.textContent = pad && n < 10 ? '0' + n : String(n);
+      el.appendChild(o);
+    }
+  }
+  const nowYear = new Date().getFullYear();
+  fillSelect(document.getElementById('pw-yyyy'), nowYear - 20, nowYear + 2, false);
+  fillSelect(document.getElementById('pw-mm2'), 1, 12, true);
+  fillSelect(document.getElementById('pw-dd'), 1, 31, true);
+  document.getElementById('pw-yyyy').value = String(nowYear);
+
+  /* ---- 分類：多選 chip ---- */
+  document.querySelectorAll('[data-pw-genre]').forEach(c => {
+    c.addEventListener('click', () => c.classList.toggle('chip--active'));
+  });
+
+  /* ---- 標籤 ---- */
+  const tags = [];
+  const tagsField = document.getElementById('pw-tags-field');
+  const tagsEntry = document.getElementById('pw-tags-entry');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function renderTags() {
+    tagsField.querySelectorAll('.chip').forEach(c => c.remove());
+    tags.forEach((t, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'chip chip--active chip--removable';
+      chip.innerHTML = '<span>' + esc(t) + '</span><button class="chip__remove" type="button" data-tag-remove="' + i + '" aria-label="Remove tag"><i data-lucide="x" class="ztor-icon"></i></button>';
+      tagsField.insertBefore(chip, tagsEntry);
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(tagsField);
+  }
+  tagsEntry.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const v = tagsEntry.value.trim();
+    if (v && tags.indexOf(v) < 0) tags.push(v);
+    tagsEntry.value = '';
+    renderTags();
+  });
+  tagsField.addEventListener('click', e => {
+    const rm = e.target.closest('[data-tag-remove]');
+    if (rm) { tags.splice(Number(rm.dataset.tagRemove), 1); renderTags(); return; }
+    if (e.target === tagsField) tagsEntry.focus();
+  });
+
+  /* ---- 定價：是否付費 ＋ 幣種 ＋ 每個畫質一組租賃條件 ---- */
+  const paid = document.getElementById('pw-paid');
+  const priceBody = document.getElementById('pw-price-body');
+  function togglePaid() {
+    const on = paid.classList.contains('switch--on');
+    paid.setAttribute('aria-checked', String(on));
+    priceBody.hidden = !on;
+  }
+  paid.addEventListener('click', () => { paid.classList.toggle('switch--on'); togglePaid(); });
+  paid.addEventListener('keydown', e => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault(); paid.classList.toggle('switch--on'); togglePaid();
+  });
+  togglePaid();
+
+  document.getElementById('pw-currency').addEventListener('click', e => {
+    const b = e.target.closest('.segmented__btn');
+    if (!b) return;
+    document.querySelectorAll('#pw-currency .segmented__btn').forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+    document.querySelectorAll('[data-pw-cur-sym]').forEach(s => { s.textContent = b.dataset.pwCur === 'TWD' ? 'NT$' : 'HK$'; });
+  });
+
+  /* 畫質清單：預設三個，可刪、也可從還沒用到的預設值再加。做成固定名單而不是自由輸入，
+     因為畫質是播放端認得的枚舉值，打錯字的「HD1080」不會有任何播放器認得。 */
+  const QUALITY_PRESETS = ['4K', 'HD-1080P', 'SD-720P', 'HD-720P', 'SD-480P'];
+  const qualityList = document.getElementById('pw-quality-list');
+  const addQualityBtn = document.querySelector('[data-pw-add-quality]');
+  const usedQualities = () => Array.from(qualityList.querySelectorAll('[data-pw-quality]')).map(el => el.dataset.pwQuality);
+  function syncQualityAdd() {
+    addQualityBtn.disabled = QUALITY_PRESETS.every(q => usedQualities().indexOf(q) >= 0);
+  }
+  function currencySym() {
+    const active = document.querySelector('#pw-currency .segmented__btn--active');
+    return active && active.dataset.pwCur === 'TWD' ? 'NT$' : 'HK$';
+  }
+  function addQuality(name) {
+    const card = document.createElement('div');
+    card.className = 'card card--muted mt-16';
+    card.setAttribute('data-pw-quality', name);
+    card.innerHTML =
+      '<div class="card__head">' +
+        '<h3 class="card__title">' + esc(name) + '</h3>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-quality aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>' +
+      '<div class="form-grid">' +
+        '<div class="field"><div class="field__label" data-i18n="pw.price.rent">Rental price</div>' +
+          '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym" data-pw-cur-sym>' + currencySym() + '</span></span>' +
+          '<input class="input amount-field__input" inputmode="numeric" placeholder="38"></span></div>' +
+        '<div class="field"><div class="field__label" data-i18n="pw.price.popcorn">Popcorn kernels</div>' +
+          '<input class="input" inputmode="numeric" placeholder="580"></div>' +
+        '<div class="field"><div class="field__label" data-i18n="pw.price.window">Rental window</div>' +
+          '<input class="input" inputmode="numeric" placeholder="30">' +
+          '<div class="field__hint" data-i18n="pw.price.window-hint">Days the rental stays in the library.</div></div>' +
+        '<div class="field"><div class="field__label" data-i18n="pw.price.watch">Watch window</div>' +
+          '<input class="input" inputmode="numeric" placeholder="2">' +
+          '<div class="field__hint" data-i18n="pw.price.watch-hint">Days left after the first play starts.</div></div>' +
+      '</div>';
+    card.querySelector('[data-pw-drop-quality]').addEventListener('click', () => {
+      if (qualityList.children.length <= 1) return;   // 至少留一個畫質，不然這塊變成空的
+      card.remove();
+      syncQualityAdd();
+      renderReadiness();
+    });
+    qualityList.appendChild(card);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+    if (window.applyI18n) window.applyI18n(card);
+    syncQualityAdd();
+    renderReadiness();
+  }
+  ['4K', 'HD-1080P', 'SD-720P'].forEach(addQuality);
+  addQualityBtn.addEventListener('click', () => {
+    const next = QUALITY_PRESETS.find(q => usedQualities().indexOf(q) < 0);
+    if (next) addQuality(next);
+  });
+
+  /* ---- 演職人員：每個角色一份可增可刪的名單 ---- */
+  function bindRole(field) {
+    const list = document.createElement('div');
+    list.className = 'entry-list';
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'btn btn--outline btn--sm entry-list__add';
+    add.innerHTML = '<i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.credits.add">Add another</span>';
+    const rowsOf = () => Array.from(list.querySelectorAll('.entry-list__row'));
+    function syncRemoves() {
+      const rows = rowsOf();
+      rows.forEach(r => { r.querySelector('button').hidden = rows.length <= 1; });
+    }
+    /* 最後一格還空著就不給新增鈕（元件的 [data-last-empty] 規則）：九個角色各常駐一顆
+       「＋ 再加一位」會讓這一步全是重複按鈕，而且空格還在時多開一格也沒有意義。 */
+    function syncAdd() {
+      const rows = rowsOf();
+      const last = rows[rows.length - 1];
+      const empty = !last || String(last.querySelector('.input').value || '').trim() === '';
+      list.setAttribute('data-last-empty', String(empty));
+    }
+    function addRow(takeFocus) {
+      const row = document.createElement('div');
+      row.className = 'entry-list__row';
+      row.innerHTML = '<input class="input" data-i18n-placeholder="pw.credits.name.ph" placeholder="' + T('pw.credits.name.ph', 'Name') + '">' +
+        '<button class="btn btn--icon btn--sm" type="button" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>';
+      row.querySelector('button').addEventListener('click', () => {
+        /* 被刪掉的那一列會把焦點一起帶走（掉回 <body>），鍵盤使用者當場失去位置，
+           所以先記下要接手的鄰居：優先上一列，刪的是第一列就換下一列。 */
+        const rows = rowsOf();
+        const heir = rows[rows.indexOf(row) - 1] || rows[rows.indexOf(row) + 1];
+        row.remove();
+        syncRemoves();
+        syncAdd();
+        if (heir) heir.querySelector('.input').focus();
+      });
+      list.insertBefore(row, add);   // 新增鈕永遠留在最後一列下面
+      syncRemoves();
+      syncAdd();
+      if (window.ztorIcons) window.ztorIcons.applyIcons(row);
+      /* 新的一列是空的，新增鈕會立刻收起來；焦點若留在原地就落在 display:none 的按鈕上，
+         所以交給剛長出來的那一格——這也正是使用者按下新增之後要做的事。 */
+      if (takeFocus) row.querySelector('.input').focus();
+    }
+    add.addEventListener('click', () => addRow(true));
+    list.addEventListener('input', syncAdd);
+    /* 新增鈕放在 .entry-list 之內（與 design-system.html 的 demo 同一份 markup）：
+       align-self:flex-start 是對 flex 容器說的，掛在外面那條規則就不成立。 */
+    field.appendChild(list);
+    list.appendChild(add);
+    addRow();
+    if (window.ztorIcons) window.ztorIcons.applyIcons(add);
+  }
+  document.querySelectorAll('[data-pw-role]').forEach(bindRole);
+
+  /* ---- 送出前的就緒檢查（規格 §8）--------------------------------------------
+     §8 的「必填齊全」點名 F1、F2、F4、F8、F9、F10、F11、F13，付費時再加 F14；
+     未通過就停用送出鈕、由旁邊那顆 chip 說出缺哪一項、在第幾步。做法沿用建立商品
+     （create-product）與建立拍賣（create-auction）的 readiness chip，不另立第三種。
+     項目名稱直接引用該欄位自己的標籤 key，讓清單上的字與使用者要回去找的那一格同名。 */
+  const readyList = document.getElementById('pw-ready-list');
+  const readyBanner = document.getElementById('pw-ready-banner');
+  const readyChip = document.getElementById('pw-ready-chip');
+  const readyChipText = document.getElementById('pw-ready-chip-text');
+  const readyChipIcon = readyChip.querySelector('.ztor-icon');
+  const filled = sel => { const t = document.querySelector(sel); return !!t && (t.classList.contains('is-filled') || t.classList.contains('is-optimized')); };
+  const hasVal = el => !!el && String(el.value || '').trim() !== '';
+
+  function buildChecks() {
+    const step = k => T(STEP_LABEL[k], k);
+    const checks = [
+      { s: 'media', k: 'pw.media.file.title',  fb: 'Video file',       done: () => filled('[data-pw-asset="video"]') },
+      { s: 'media', k: 'pw.media.audio.lang',  fb: 'Original language', done: () => hasVal(document.getElementById('pw-audio')) },
+      { s: 'art',   k: 'pw.art.cover.title',   fb: 'Cover',            done: () => filled('[data-pw-asset="cover"]') },
+      /* F8 要每一個語言組的標題與說明都有值——留一組空白等於那個語言的作品頁是空的。 */
+      { s: 'info',  k: 'pw.info.copy.title',   fb: 'Name & synopsis',  done: () => {
+        const cards = Array.from(copyWrap.querySelectorAll('[data-pw-copy]'));
+        return cards.length > 0 && cards.every(c => hasVal(c.querySelector('[data-pw-title]')) && hasVal(c.querySelector('[data-pw-desc]')));
+      } },
+      { s: 'info',  k: 'pw.info.runtime',      fb: 'Runtime',          done: () => ['pw-hh', 'pw-mm', 'pw-ss'].every(id => hasVal(document.getElementById(id))) },
+      { s: 'info',  k: 'pw.info.release',      fb: 'Release date',     done: () => ['pw-yyyy', 'pw-mm2', 'pw-dd'].every(id => hasVal(document.getElementById(id))) },
+      { s: 'info',  k: 'pw.info.genre.title',  fb: 'Genres',           done: () => !!document.querySelector('#pw-genres .chip--active') },
+      { s: 'info',  k: 'pw.info.age.title',    fb: 'Age rating',       done: () => hasVal(document.getElementById('pw-age')) }
+    ];
+    /* 免費作品沒有價格可填，這一項就不存在——不是「未通過」，是不適用。 */
+    if (paid.classList.contains('switch--on')) {
+      checks.push({ s: 'info', k: 'pw.price.title', fb: 'Pricing', done: () => {
+        const cards = Array.from(qualityList.querySelectorAll('[data-pw-quality]'));
+        return cards.length > 0 && cards.every(c => Array.from(c.querySelectorAll('input')).every(i => String(i.value || '').trim() !== ''));
+      } });
+    }
+    return checks.map(c => Object.assign({ label: step(c.s) + ' · ' + T(c.k, c.fb) }, c));
+  }
+
+  function renderReadiness() {
+    if (!readinessOn) return;
+    const last = idx === FLOW.length - 1;
+    const checks = buildChecks();
+    const remaining = checks.filter(c => !c.done()).length;
+    readyList.innerHTML = '';
+    checks.forEach(c => {
+      const done = c.done();
+      const li = document.createElement('li');
+      li.className = 'readiness__item' + (done ? ' readiness__item--done' : '');
+      li.innerHTML = '<span class="readiness__mark">' + (done ? '<i data-lucide="check" class="ztor-icon"></i>' : '') + '</span><span>' + esc(c.label) + '</span>';
+      readyList.appendChild(li);
+    });
+    const ready = remaining === 0;
+    /* Cheat Codes 的 Skip validation：開著就放行，與站上其他建立流程一致。 */
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    if (ready) {
+      readyBanner.textContent = T('pw.ready.banner.ready', 'Ready to send!');
+      readyBanner.classList.add('readiness__banner--ready');
+      readyChipText.textContent = T('pw.ready.chip.ready', 'Ready to send');
+      readyChip.classList.add('readiness__chip--ready');
+      readyChipIcon.setAttribute('data-lucide', 'check-circle');
+    } else {
+      readyBanner.textContent = skip
+        ? T('pw.ready.banner.skip', '{n} items missing · validation skipped (dev)').replace('{n}', remaining)
+        : T('pw.ready.banner.needed', '{n} items still needed').replace('{n}', remaining);
+      readyBanner.classList.remove('readiness__banner--ready');
+      readyChipText.textContent = skip
+        ? T('cp.ready.chip.skip', 'Validation skipped')
+        : T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
+      readyChip.classList.remove('readiness__chip--ready');
+      readyChipIcon.setAttribute('data-lucide', 'circle');
+    }
+    /* 只有最後一步的主動作是「送出」，擋關與 chip 都跟著它走。 */
+    readyChip.hidden = !last;
+    nextBtn.disabled = last && !(ready || skip);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(readyList), window.ztorIcons.applyIcons(readyChip);
+  }
+  /* 任何一格改動都可能讓清單變短：輸入、下拉、上傳、chip、開關都各自通知一次。 */
+  document.addEventListener('input', renderReadiness);
+  document.addEventListener('change', renderReadiness);
+  document.addEventListener('upload:change', renderReadiness);
+  document.querySelectorAll('[data-pw-genre]').forEach(c => c.addEventListener('click', renderReadiness));
+  paid.addEventListener('click', renderReadiness);
+  paid.addEventListener('keyup', renderReadiness);
+  readinessOn = true;
+
+  /* 切語言時步驟名與主動作文案都要跟著換；主動作的字隨「是不是最後一步」而不同，
+     所以整個 render() 重跑一次最省事（面板顯隱本來就冪等）。 */
+  document.addEventListener('i18n:applied', () => render(false));
+  render(false);
+})();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/button.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
@@ -22,12 +23,43 @@
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* Order amount breakdown · spec 5.1.5.3.1 §2.3 */
-  .od-amt { display:flex; justify-content:space-between; padding:var(--sp-8) 0; font-size: var(--fs-13); border-bottom:1px solid var(--border); }
-  .od-amt:last-child { border-bottom:0; font-weight: var(--fw-regular); }
+  /* 2026-08-07 使用者裁示拿掉逐行分隔線：先試過線變淡，兩版都讓「淨額」跟上面幾行的
+     區隔感一起變弱（線本來同時在做兩件事：分隔每一行、標出淨額是結論）。使用者選擇拿掉，
+     這裡不用線挑，改用行距把「商品金額／運費／平台費／支付費」壓緊成一組、淨額前多留
+     一點空隙——區隔改交給間距，不是線條。 */
+  .od-amt { display:flex; justify-content:space-between; align-items:baseline; padding:var(--sp-4) 0; font-size: var(--fs-13); }
+  .od-amt:last-child { margin-top:var(--sp-8); font-weight: var(--fw-bold); }
   .od-amt__neg { color: var(--foreground-muted); }
+  /* 匯率與時點：收在金額數字底下，hover／focus 才浮出（2026-08-07 使用者裁示，
+     12 筆帶 fx 的訂單一律套用）。金額本身永遠看得到，換算細節是想看才看的第二層。
+     用 position:absolute 而非撐開列高，避免 hover 時把下面「平台費」那幾列往下推；
+     浮層補卡片底色＋陰影，否則文字會疊在下一列數字上。
+     沿用站上既有的 hover 浮現慣例（readiness__pop 的 opacity／visibility／transform
+     三件套＋ prefers-reduced-motion 關動畫），不另寫一套。 */
+  .od-amt__value { position:relative; display:inline-flex; align-items:center; gap:var(--sp-4); cursor:default; }
+  /* info 圖示是「這裡還有說明」的唯一線索——匯率預設收起來，畫面上必須有東西告訴人
+     可以滑，否則就是把資訊藏到沒人找得到。沿用收入管理 KPI 卡的既有慣例。 */
+  .od-amt__value .ztor-icon { color: var(--muted-foreground); flex:none; }
+  .od-amt__sub {
+    position:absolute; top:100%; right:0; margin-top:var(--sp-4);
+    padding:var(--sp-4) var(--sp-8);
+    /* 補一條 hairline：深色主題的 --card／--popover 同色（#212223），浮層疊在卡片上時
+       只有陰影撐邊界、輪廓讀不出來，加邊框才看得出這是獨立的一層。 */
+    background:var(--popover); border:1px solid var(--border);
+    border-radius:var(--radius-md); box-shadow:var(--shadow-float);
+    white-space:nowrap; font-size: var(--fs-12); color: var(--muted-foreground);
+    opacity:0; visibility:hidden; transform:translateY(-2px); pointer-events:none;
+    transition: opacity var(--duration) var(--easing), transform var(--duration) var(--easing), visibility var(--duration) var(--easing);
+    z-index:5;
+  }
+  .od-amt__value:hover .od-amt__sub,
+  .od-amt__value:focus-visible .od-amt__sub { opacity:1; visibility:visible; transform:translateY(0); pointer-events:auto; }
+  @media (prefers-reduced-motion: reduce) { .od-amt__sub { transition:none; } }
   /* 品項明細五欄表（訂單明細專用，不動全站 data-list）：商品名稱（名稱＋灰色分類）｜數量｜單價｜出貨狀態（含取貨）｜小計。
      .od-items 自己是 grid 並定義欄軌；表頭與每一列用 subgrid 共用同一組欄軌 → 表頭與資料欄對齊。
      （若表頭與各列各自 grid、欄用 auto，欄寬會依各自內容獨立計算而錯位，這是先前對不齊的原因。）
@@ -43,11 +75,6 @@
   .od-amt-group { border-top:1px solid var(--border); margin-top:var(--sp-16); padding-top:var(--sp-8); }
   /* 收入對帳降為右下角常駐入口 */
   .od-amt-foot { margin-top:var(--sp-12); text-align:right; }
-  /* §2.5 取貨方式分支：QR 領取的 QR 占位框 */
-  .od-qr { display:flex; gap:14px; align-items:center; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--muted); }
-  .od-qr__code { width:96px; height:96px; flex:none; display:grid; place-items:center; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--foreground-muted); }
-  .od-qr__code .ztor-icon { width:56px; height:56px; }
-  .od-ful-branch[hidden] { display:none; }
   /* §2.6 退款 popup：整筆／部分分支＋品項勾選 */
   .od-refund-branch[hidden] { display:none; }
   .od-refund-pick { cursor:pointer; }
@@ -68,28 +95,32 @@
         <a class="btn btn--icon-circle btn--sm page-crumb__back" href="orders.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
         <a href="e-shop.html" class="card__link" data-i18n="od.crumb.eshop">E-Shop</a> <span style="margin:0 6px">/</span>
         <a href="orders.html" class="card__link" data-i18n="od.crumb.orders">Order management</a> <span style="margin:0 6px">/</span>
-        <span>#ZT-10482</span>
+        <span data-od-crumb-id>#ZT-10482</span>
       </div>
 
       <!-- §2.2 訂單基本資料 -->
       <div class="page-intro">
         <div>
-          <!-- §2.2 兩條狀態軸（履約 vs 收入結算），不混用（PCR-001）-->
-          <div class="status-axes status-axes--labeled" style="margin-bottom:10px">
-            <div class="status-axis">
-              <span class="status-axis__label" data-i18n="od.axis.fulfil">Fulfilment</span>
-              <span class="badge badge--warning" id="od-fulfil-badge"><span data-i18n="od.badge.toship">To ship</span></span>
-            </div>
-            <div class="status-axis">
-              <span class="status-axis__label" data-i18n="od.axis.payment">Payment · settlement</span>
-              <span class="badge badge--success"><span data-i18n="od.badge.paid">Paid</span></span>
-            </div>
+          <!-- 頁首序（2026-08-07）：麵包屑 → 訂單編號 → 狀態列。標題先講「這是哪一張訂單」，
+               狀態列接在標題下自成一列，與商品／組合／拍賣三個詳情頁的「標題在上、徽章在下」一致。
+               原本的副標「建立於 … · … 件品項」拆開搬家：件數進左欄品項明細的區塊標題、
+               下單時間進右欄「訂單資訊」——兩個數字都回到它們描述的那塊內容旁邊。 -->
+          <h1 class="page-intro__title" data-od-title>#ZT-10482</h1>
+          <!-- §2.2 兩條狀態軸（履約 vs 收入結算），不混用（PCR-001）。
+               軸標籤（原「履約狀態」「收入結算」）2026-08-07 拿掉，改由 --split 的細分隔線區隔：
+               規格 5.1.5.3.1 §2.2／PCR-001 要求的是「兩軸不可混成一顆徽章」，分隔線就達成了；
+               徽章文字（已出貨／待取貨＝履約，已付款＝收入結算）本身已說明它屬於哪一軸，
+               標籤是把同一件事講第二次，而且「收入結算」與徽章的「已付款」用詞還不一致。 -->
+          <div class="status-axes status-axes--split">
+            <!-- 混合訂單的履約軸會並列兩顆徽章（待出貨＋待取貨），故外層用 .status-axes 收 badge -->
+            <span class="status-axes" id="od-fulfil-badges"><span class="badge badge--warning"><span data-i18n="orders.status.toship">To ship</span></span></span>
+            <span class="status-axes" id="od-pay-badges"><span class="badge badge--success"><span data-i18n="orders.pay.paid">Paid</span></span></span>
           </div>
-          <h1 class="page-intro__title">#ZT-10482</h1>
-          <p class="page-intro__sub" data-i18n="od.sub">Placed 2026-06-08 · 2 items</p>
         </div>
         <div class="page-intro__actions">
           <button class="btn btn--outline" id="od-refund-open" data-feat="O18" data-i18n="od.btn.refund">Refund</button>
+          <!-- 純數位訂單沒有出貨動作（§2.5「數位商品呈現下載／存取權限的交付狀態」）：
+               同一顆按鈕改叫「數位交付」、開的是唯讀的交付狀態彈窗 -->
           <button class="btn btn--primary" id="od-ship-open" data-i18n="od.btn.ship">Mark shipped</button>
         </div>
       </div>
@@ -101,9 +132,15 @@
           <!-- §2.3.1 品項明細（Order items）＋ §2.3.2 金額拆解合併於同區塊（B 反饋）：
                商品列表下接金額拆解，右下角常駐「在收入管理查看」入口（取代原 §2.3.3 收入對帳獨立區塊）。 -->
           <section class="form-section form-section--outlined">
-            <div class="form-section__head">
-              <h3 class="form-section__title" data-i18n="od.items.sub.items">Order items</h3>
-              <p class="form-section__sub" data-i18n="od.sec.items.sub">Items, pickup status and per-buyer purchase limits.</p>
+            <!-- 件數（原頁首副標的「N 件品項」）搬到這裡：它描述的就是底下這份清單。
+                 用 form-section__head--actions（標題群靠左、右側掛件）＋唯讀的 .chip--static，
+                 與建立項目頁「預算分配」標題列右掛徽章同一個做法，不另立樣式。 -->
+            <div class="form-section__head form-section__head--actions">
+              <div class="form-section__head-titles">
+                <h3 class="form-section__title" data-i18n="od.items.sub.items">Order items</h3>
+                <p class="form-section__sub" data-i18n="od.sec.items.sub">Quantities, fulfilment and amount breakdown.</p>
+              </div>
+              <span class="chip chip--static" data-od-count>2 items</span>
             </div>
             <!-- 六欄品項表（.od-items 頁內範圍）：商品｜分類｜單價｜限購｜取貨狀態｜小計。表頭定位各欄，無值以「—」佔位 -->
             <div class="data-list od-items">
@@ -114,63 +151,44 @@
                 <span data-i18n="od.col.fulfil">Fulfilment</span>
                 <span class="od-col-r" data-i18n="od.col.subtotal">Subtotal</span>
               </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <!-- §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品；快照資料為下單當時 demo 值 -->
-                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Pirate Queen zine vol. 02" data-snap-price="$24.00" data-snap-cat-key="e-shop.cat.books" data-snap-desc="32-page photo zine documenting the east-coast tour. Letterpress cover." data-snap-manage="product-detail.html" data-i18n="od.item1.name">Pirate Queen zine vol. 02</a></div>
-                    <div class="data-list__meta" data-i18n="e-shop.cat.books">Books</div>
-                  </div>
-                </div>
-                <span class="od-cell">1</span>
-                <span class="od-cell od-col-r">$24.00</span>
-                <!-- 出貨狀態欄：寄送品項＝待配送 -->
-                <div class="od-item-pickup">
-                  <span class="badge badge--warning badge--inline"><span data-i18n="od.item.deliver">To ship</span></span>
-                </div>
-                <span class="data-list__amount">$24.00</span>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#" data-snap-name="Kowloon After Dark tee" data-snap-price="$32.00" data-snap-cat-key="e-shop.cat.apparel" data-snap-variant="M" data-snap-desc="Soft-washed cotton tee with a 九龍夜行 print. Unisex fit." data-snap-manage="product-detail.html" data-i18n="od.item2.name">Kowloon After Dark tee (M)</a></div>
-                    <div class="data-list__meta" data-i18n="e-shop.cat.apparel">Apparel</div>
-                  </div>
-                </div>
-                <span class="od-cell">1</span>
-                <span class="od-cell od-col-r">$32.00</span>
-                <!-- §2.3 品項層取貨狀態（D111）：現場 QR 領取＝待取貨＋前往取貨場次 -->
-                <div class="od-item-pickup">
-                  <span class="badge badge--warning badge--inline"><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
-                  <a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>
-                </div>
-                <span class="data-list__amount">$32.00</span>
-              </div>
+              <!-- 品項列由 js/orders-store.js 依 ?id= 產生（見頁末 renderOrder） -->
             </div>
 
             <!-- §2.3.2 金額拆解：接在商品列表下（原獨立區塊內容併入此處）-->
-            <div class="od-amt-group">
-              <div class="od-amt"><span data-i18n="od.amt.goods">Goods</span><span>$56.00</span></div>
-              <div class="od-amt"><span data-i18n="od.amt.shipping">Shipping</span><span>$5.00</span></div>
-              <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.platform">Platform fee · 15%</span><span class="od-amt__neg">−$8.40</span></div>
-              <div class="od-amt"><span class="od-amt__neg" data-i18n="od.amt.payment">Payment fee · 2.4%</span><span class="od-amt__neg">−$1.30</span></div>
-              <div class="od-amt"><span data-i18n="od.amt.net">Net to you</span><span>$51.30</span></div>
+            <div class="od-amt-group" data-od-amounts>
+              <!-- 金額拆解由 renderOrder 依訂單產生（口徑引用 Earnings，本頁不重算）-->
             </div>
-            <!-- §2.3 跨幣別呈現：原幣／換算幣／匯率／時點。同幣別訂單不顯示此列 -->
-            <div class="field__hint mt-8" data-i18n="od.amt.fx">Buyer paid NT$1,764 · converted to $56.00 at 1 USD = 31.5 TWD (2026-06-08).</div>
-            <div class="field__hint mt-8" data-i18n="od.amt.hint">Figures reconcile to Earnings — order detail never recomputes amounts.</div>
+            <!-- 已退款的訂單：在金額拆解下方陳述退了多少、哪一天退的（§2.6）。
+                 §7.2 規定單筆訂單只屬一個付款・結算狀態，所以「部分退款」在狀態徽章上
+                 一樣是「已退款」——退了整筆還是一部分，靠這一行講清楚。
+                 帶變數，由 paint() 依語言重畫。 -->
+            <div class="field__hint mt-8" data-od-refund-issued hidden></div>
 
-            <!-- §2.3.3 收入對帳降為右下角常駐入口（取代原獨立區塊）：到收入管理查看此訂單入帳 -->
+            <!-- §2.3.3 收入對帳降為右下角常駐入口（取代原獨立區塊）：到收入管理查看此訂單入帳。
+                 2026-08-07 使用者裁示改成按鈕：沿用站上同類「前往某處 →」連結的既有樣式
+                 （btn--outline btn--sm，如 §2.7 商品快照的「管理此商品 →」、拍賣詳情的
+                 「前往訂單管理 →」），不新造樣式。 -->
             <div class="od-amt-foot">
-              <a class="card__link" href="earnings.html" data-i18n="od.amt.cta">View in Earnings →</a>
+              <a class="btn btn--outline btn--sm" href="earnings-sony.html" data-i18n="od.amt.cta" data-route-orig="earnings.html">View in Earnings →</a>
             </div>
           </section>
 
         </div>
 
         <aside class="detail-rail">
+          <!-- §2.2 訂單資訊：承接原頁首副標的「建立於 <日期>」。日期擺在「下單時間」這個標籤底下，
+               「建立於」三個字就不必再寫一次。這裡只放規格 §2.2 已有的下單時間一列——
+               付款方式、發票、幣別之類的欄位規格沒有，不在此自行發明。 -->
+          <section class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-i18n="od.info.title">Order info</h3>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="od.info.placed">Placed</div>
+              <div class="field-readout" data-od-placed>2026-06-08</div>
+            </div>
+          </section>
+
           <!-- §2.4 買家資訊（Buyer info）-->
           <section class="form-section form-section--outlined">
             <div class="form-section__head">
@@ -179,15 +197,16 @@
             </div>
             <div class="field">
               <div class="field__label" data-i18n="od.buyer.name">Buyer</div>
-              <div style="font-size: var(--fs-14)">Mika L. · <a class="card__link" href="fans-crm.html" data-feat="O17" data-i18n="od.buyer.fan">View fan record</a></div>
+              <div class="field-readout"><span data-od-buyer-name>Mika L.</span> · <a class="card__link" href="fans-crm.html" data-feat="O17" data-i18n="od.buyer.fan">View fan record</a></div>
             </div>
-            <div class="field">
+            <!-- 純數位訂單沒有寄送地址，整列收起（§2.5 純數位訂單無實體物流）-->
+            <div class="field" data-od-shipto-field>
               <div class="field__label" data-i18n="od.buyer.ship-to">Ship to</div>
-              <div class="text-sub" style="font-size: var(--fs-13)">No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
+              <div class="text-sub" style="font-size: var(--fs-13)" data-od-shipto>No. 12, Ln 3, Dadaocheng, Taipei 103, TW</div>
             </div>
             <div class="field">
               <div class="field__label" data-i18n="od.buyer.contact">Contact</div>
-              <div class="text-sub" style="font-size: var(--fs-13)">mika.l@example.com</div>
+              <div class="text-sub" style="font-size: var(--fs-13)" data-od-contact>mika.l@example.com</div>
             </div>
           </section>
         </aside>
@@ -201,7 +220,12 @@
   </main>
 </div>
 
-<!-- §2.2「標記出貨」popup：§2.5 出貨與履約內容（物流商下拉＋其他／追蹤碼；QR／數位分支）· spec 5.1.5.3.1 §2.2/§2.5 -->
+<!-- §2.2「標記出貨」popup：§2.5 出貨與履約內容 · spec 5.1.5.3.1 §2.2/§2.5
+     一張訂單的履約方式單一決定，所以這裡不是分頁、而是由訂單本身決定顯示哪一塊
+     （2026-08-06 撤除的是三選一的 demo 分頁，2026-08-07 改由 ?id= 的訂單型態決定）：
+       實體（含混合）→ 物流商＋追蹤碼＋「標記出貨」
+       純數位        → 唯讀的數位交付狀態，不顯示物流商／追蹤碼（§2.5 區塊狀態）
+     QR 現場領取品項不在此彈窗手動核銷，核銷在 pickup.html 的場次 scanner。 -->
 <div class="payout-modal" id="od-ship-modal" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="od-ship-title">
     <div class="payout-dialog__head">
@@ -209,19 +233,19 @@
       <button class="btn btn--icon btn--sm" type="button" data-od-ship-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="segmented" id="od-ful-view" style="margin-bottom:14px">
-        <button class="segmented__btn segmented__btn--active" type="button" data-od-ful="shipping" data-i18n="od.ful.shipping">Shipping</button>
-        <button class="segmented__btn" type="button" data-od-ful="qr" data-i18n="od.ful.qr">QR pickup</button>
-        <button class="segmented__btn" type="button" data-od-ful="digital" data-feat="O22" data-i18n="od.ful.digital">Digital</button>
-      </div>
-
-      <!-- 物流配送：物流商下拉＋其他、追蹤碼 -->
-      <div class="od-ful-branch" data-od-ful-branch="shipping">
+      <!-- 實體出貨：物流商下拉＋其他、追蹤碼。
+           2026-08-06 使用者裁示拿掉本地／國際分組，改成單一清單、國際排最前面——
+           分組讓一份九項的清單長出兩個標題列，讀者要先選組別才選公司；
+           排序本身已經把「先看國際」講完了，不需要再加一層標題。 -->
+      <div data-od-ful-block="shipping">
         <div class="form-grid">
           <div class="field">
             <div class="field__label" data-i18n="od.ful.carrier">Carrier</div>
             <select class="select" id="od-carrier" data-od-carrier>
               <option value="" data-i18n="od.ful.carrier.ph">Select carrier</option>
+              <option data-i18n="od.ful.carrier.fedex">FedEx</option>
+              <option data-i18n="od.ful.carrier.dhl">DHL</option>
+              <option data-i18n="od.ful.carrier.ups">UPS</option>
               <option>黑貓宅急便</option>
               <option>新竹物流</option>
               <option>中華郵政</option>
@@ -233,7 +257,7 @@
           </div>
           <div class="field">
             <div class="field__label" data-i18n="od.ful.tracking">Tracking number</div>
-            <input class="input" placeholder="—">
+            <input class="input" placeholder="—" data-od-tracking>
           </div>
         </div>
         <div class="field" data-od-carrier-other hidden>
@@ -243,46 +267,27 @@
         <div class="field__hint" data-i18n="od.ful.note">Marking shipped logs a fulfilment event — it never changes amounts.</div>
       </div>
 
-      <!-- 現場 QR 領取（D111：核銷改由取貨管理 scanner，此處不手動 Mark received）-->
-      <div class="od-ful-branch" data-od-ful-branch="qr" hidden>
-        <div class="od-qr">
-          <div class="od-qr__code"><i data-lucide="qr-code" class="ztor-icon"></i></div>
-          <div>
-            <div style="font-size: var(--fs-13);font-weight: var(--fw-regular)" data-i18n="od.qr.title">On-site QR pickup</div>
-            <p class="text-sub" style="font-size: var(--fs-12);margin:4px 0 0" data-i18n="od.qr.body">This item is redeemed at its pickup session's scanner, not here. Buyers show their QR; staff scan it to redeem, which writes the item back to Redeemed automatically.</p>
-          </div>
-        </div>
-        <div class="field mt-8">
-          <div class="field__label" data-i18n="od.qr.session">Pickup session</div>
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span class="badge badge--warning"><span data-i18n="od.item.pickup.pending">Awaiting pickup</span></span>
-            <span class="text-sub" style="font-size: var(--fs-13)">Taipei signing — pickup</span>
-            <a class="btn btn--outline btn--sm" href="pickup.html" data-i18n="od.qr.manage">Open in Pickup management</a>
-          </div>
-        </div>
-        <div class="field__hint mt-8" data-i18n="od.qr.note">On-site QR items can't be marked received here — redemption happens at the session scanner and writes back automatically.</div>
+      <!-- 純數位訂單：§2.5「數位商品呈現下載／存取權限的交付狀態」——唯讀，沒有出貨欄位也沒有出貨動作 -->
+      <div data-od-ful-block="digital" hidden>
+        <div class="kv"><span class="kv__k" data-i18n="od.dig.method">Delivery method</span><span class="kv__v" data-i18n="od.dig.method.instant">Instant download / access</span></div>
+        <div class="kv"><span class="kv__k" data-i18n="od.dig.status">Delivery status</span><span class="kv__v" data-od-dig-status><span class="badge badge--success"><span data-i18n="orders.status.completed">Completed</span></span></span></div>
+        <div class="kv"><span class="kv__k" data-i18n="od.dig.on">Delivered on</span><span class="kv__v" data-od-dig-on>—</span></div>
+        <div class="kv"><span class="kv__k" data-i18n="od.dig.downloads">Downloads</span><span class="kv__v" data-od-dig-downloads>—</span></div>
+        <div class="field__hint mt-8" data-i18n="od.dig.note">No physical shipment — the buyer's download / access right is granted at purchase.</div>
       </div>
 
-      <!-- 數位交付 -->
-      <div class="od-ful-branch" data-od-ful-branch="digital" data-feat="O22" hidden>
-        <div class="data-list">
-          <div class="data-list__row">
-            <div class="data-list__row-main">
-              <div class="data-list__icon"><i data-lucide="download" class="ztor-icon"></i></div>
-              <div class="data-list__body">
-                <div class="data-list__title" data-i18n="od.dig.item">Kowloon After Dark OST — FLAC + MP3</div>
-                <div class="data-list__meta" data-i18n="od.dig.meta">Auto-delivered at purchase · no shipping</div>
-              </div>
-            </div>
-            <span class="badge badge--success"><span data-i18n="od.dig.available">Access ready</span></span>
-          </div>
-        </div>
-        <div class="field__hint mt-8" data-i18n="od.dig.note">Digital orders show download / access status; no carrier or tracking fields.</div>
+      <!-- 純現場 QR 領取訂單：§2.5「純取貨訂單不顯示物流商／追蹤碼欄位，改引導至取貨管理查看或處理核銷」。
+           唯讀——核銷動作在 pickup.html 的場次 scanner，不在這裡手動標記（D111）。 -->
+      <div data-od-ful-block="pickup" hidden>
+        <div class="kv"><span class="kv__k" data-i18n="od.pk.status">Item status</span><span class="kv__v"><span class="badge badge--warning"><span data-i18n="orders.status.pickup">Awaiting pickup</span></span></span></div>
+        <div class="field__hint mt-8" data-i18n="od.pk.note">Nothing ships for this order — every item is redeemed by scanning its QR at the pickup session. Sessions, rosters and redemption records live in Pickup management.</div>
+        <div class="mt-8"><a class="card__link" href="pickup.html" data-i18n="od.pk.goto">Open Pickup management →</a></div>
       </div>
     </div>
     <div class="payout-dialog__foot">
-      <button class="btn btn--ghost btn--sm" type="button" data-od-ship-close data-i18n="od.ful.cancel">Cancel</button>
+      <button class="btn btn--ghost btn--sm" type="button" data-od-ship-close data-od-ship-cancel data-i18n="od.ful.cancel">Cancel</button>
       <button class="btn btn--primary btn--sm" id="od-ship-confirm" data-i18n="od.ful.mark">Mark shipped</button>
+      <button class="btn btn--primary btn--sm" type="button" data-od-ship-close data-od-ship-done hidden data-i18n="od.snap.close">Close</button>
     </div>
   </div>
 </div>
@@ -309,28 +314,8 @@
       <!-- 部分退款：勾選要退的品項 -->
       <div class="field od-refund-branch" data-od-refund-branch="partial" hidden>
         <div class="field__label" data-i18n="od.refund.select">Select items to refund</div>
-        <div class="data-list">
-          <label class="data-list__row od-refund-pick">
-            <div class="data-list__row-main">
-              <span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="24" checked><span class="zcheck__box"></span></span>
-              <div class="data-list__body">
-                <div class="data-list__title">Pirate Queen zine vol. 02 ×1</div>
-                <div class="data-list__meta" data-i18n="od.item1.meta">Books · $24.00</div>
-              </div>
-            </div>
-            <span class="data-list__amount">$24.00</span>
-          </label>
-          <label class="data-list__row od-refund-pick">
-            <div class="data-list__row-main">
-              <span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="32"><span class="zcheck__box"></span></span>
-              <div class="data-list__body">
-                <div class="data-list__title">Kowloon After Dark tee (M) ×1</div>
-                <div class="data-list__meta" data-i18n="od.item2.meta">Apparel · $32.00</div>
-              </div>
-            </div>
-            <span class="data-list__amount">$32.00</span>
-          </label>
-        </div>
+        <!-- 可退品項由 renderOrder 依該筆訂單產生（與 §2.3.1 品項明細同一份資料）-->
+        <div class="data-list" data-od-refund-items></div>
       </div>
 
       <!-- 退款金額試算 -->
@@ -387,6 +372,244 @@
   </div>
 </div>
 
+<script src="js/orders-store.js?v=r2.2"></script>
+<script>
+/* ══ 依 ?id= 帶入該筆訂單（2026-08-07）══════════════════════════════════════
+   在此之前這頁完全不看網址參數，是一份寫死的 #ZT-10482；清單那邊「點任何一列」
+   也都導到不帶編號的 order-detail.html，所以從純數位訂單點進來看到的是別人的
+   資料——清單寫「已交付」、這裡的出貨彈窗講的卻是實體物流，同一件事兩種說法。
+
+   現在四筆訂單的資料只有一份（js/orders-store.js），清單與本頁同吃：
+     沒帶 id → first()（合理預設，不空白）
+     查無 id → 查詢失敗空狀態（不顯示別人的訂單）
+
+   本段跑在 icons.js／i18n.js 之前，所以產生出來的 data-i18n 由 i18n.js 正常
+   在地化；只有帶變數的句子（標題摘要、退款品項列）要自己在 i18n:applied 時重畫。 */
+(function () {
+  'use strict';
+  var S = window.ztorOrders;
+  if (!S) return;
+  var $ = function (s) { return document.querySelector(s); };
+  var T = function (k, f) { return (window.i18nT && window.i18nT(k)) || f; };
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+
+  var raw = new URLSearchParams(location.search).get('id');
+  var order = raw ? S.get(raw) : S.first();
+
+  /* 查無此訂單：不拿預設訂單頂替，改顯示查詢失敗（比照 event-detail.html） */
+  if (!order) {
+    var page = document.querySelector('.page');
+    if (page) {
+      page.innerHTML =
+        '<div class="empty-stub"><div class="empty-stub__inner">' +
+        '<div class="empty-stub__mark">!</div>' +
+        '<h2 class="empty-stub__title" data-i18n="od.notfound.title">Order not found</h2>' +
+        '<p class="empty-stub__sub" data-i18n="od.notfound.sub">This link may be out of date, or the order was removed. Go back to the list and pick one.</p>' +
+        '<div class="empty-stub__refs"><a class="btn btn--primary" href="orders.html" data-i18n="od.notfound.back">Back to orders</a></div>' +
+        '</div></div>';
+    }
+    document.querySelectorAll('.payout-modal').forEach(function (m) { m.remove(); });
+    document.title = 'Order not found · Ztor';
+    document.addEventListener('i18n:applied', function () {
+      document.title = T('od.notfound.title', 'Order not found') + ' · Ztor';
+    });
+    return;
+  }
+
+  window.ztorOrderCurrent = order;   /* 頁末的出貨／退款 popup 取用同一筆 */
+
+  var badge = function (b) {
+    return '<span class="badge ' + b.cls + '"><span data-i18n="' + b.key + '">' + esc(b.text) + '</span></span>';
+  };
+
+  /* ── §2.1／§2.2 頁框與基本資料 ─────────────────────────────── */
+  document.title = '#' + order.id + ' · Order detail · Ztor';
+  $('[data-od-crumb-id]').textContent = '#' + order.id;
+  $('[data-od-title]').textContent = '#' + order.id;
+  /* 下單時間搬到右欄「訂單資訊」（原頁首副標的一半）；日期字串不隨語言變，設一次就好 */
+  $('[data-od-placed]').textContent = order.date;
+  /* 待付款訂單的履約軸是空的（還沒付款就還沒有履約動作）：用破折號佔位，
+     不要讓那一格空著——空白看起來像渲染壞掉，破折號才讀得出「這裡目前沒有值」。 */
+  $('#od-fulfil-badges').innerHTML = order.fulfil.length
+    ? order.fulfil.map(function (v) { return badge(S.fulfilBadge(v)); }).join('')
+    : '<span class="text-sub">—</span>';
+  $('#od-pay-badges').innerHTML = badge(S.payBadge(order.pay));
+
+  /* 主操作依訂單型態換臉（§2.5 區塊狀態）：
+       純數位 → 唯讀的數位交付狀態
+       純取貨 → 唯讀的取貨說明＋取貨管理入口（核銷在場次 scanner，不在這裡）
+     另外，待付款訂單停用出貨——§4 情境 1 是「確認付款後」才對物流品項標記出貨。 */
+  var shipBtn = $('#od-ship-open');
+  if (order.kind === 'digital') {
+    shipBtn.setAttribute('data-i18n', 'od.btn.delivery');
+    shipBtn.textContent = 'Digital delivery';
+  } else if (order.kind === 'pickup') {
+    shipBtn.setAttribute('data-i18n', 'od.btn.pickup');
+    shipBtn.textContent = 'Pickup status';
+  }
+  if (order.pay === 'unpaid') shipBtn.disabled = true;
+
+  /* ── §2.3.1 品項明細 ──────────────────────────────────────── */
+  var itemsHost = document.querySelector('.od-items');
+  /* 物流品項的品項層狀態＝跟著訂單履約軸走（同一張單的所有物流品項一起出貨），
+     取貨與數位品項則各自有自己的狀態、不受這條影響。
+     2026-08-07：原本只判斷「有沒有 shipped」，所以已完成的訂單其物流品項會顯示
+     「待出貨」，與頁首的「已完成」自相矛盾；改成依已完成 → 已出貨 → 待出貨逐級判斷。 */
+  var shipStage = order.fulfil.indexOf('completed') >= 0 ? 'completed'
+    : order.fulfil.indexOf('shipped') >= 0 ? 'shipped'
+    : order.fulfil.indexOf('toship') >= 0 ? 'toship' : '';
+  order.items.forEach(function (it) {
+    var cell;
+    if (it.mode === 'pickup') {
+      cell = badge({ cls: 'badge--warning badge--inline', key: 'orders.status.pickup', text: 'Awaiting pickup' }) +
+        '<a class="card__link" href="pickup.html" data-i18n="od.item.pickup.goto">Go to pickup session</a>';
+    } else if (it.mode === 'digital') {
+      cell = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
+    } else if (shipStage === 'completed') {
+      cell = badge({ cls: 'badge--success badge--inline', key: 'orders.status.completed', text: 'Completed' });
+    } else if (shipStage === 'shipped') {
+      cell = badge({ cls: 'badge--neutral badge--inline', key: 'orders.status.shipped', text: 'Shipped' });
+    } else if (shipStage === 'toship') {
+      cell = badge({ cls: 'badge--warning badge--inline', key: 'orders.status.toship', text: 'To ship' });
+    } else {
+      /* 待付款：訂單層還沒有履約動作，品項層自然也還不是「待出貨」 */
+      cell = '<span class="text-sub">—</span>';
+    }
+    var row = document.createElement('div');
+    row.className = 'data-list__row';
+    row.innerHTML =
+      '<div class="data-list__row-main">' +
+        '<div class="data-list__icon"><i data-lucide="' + (it.mode === 'digital' ? 'download' : 'package') + '" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body">' +
+          /* §2.3.1 品項名稱點擊開商品快照 popup，不直接連活商品 */
+          '<div class="data-list__title"><a class="card__link od-snap-open" role="button" href="#"' +
+            ' data-snap-name-key="' + esc(it.nameKey) + '" data-snap-name="' + esc(it.name) + '"' +
+            ' data-snap-price="' + esc(it.snap.price) + '" data-snap-cat-key="' + esc(it.catKey) + '"' +
+            (it.snap.variant ? ' data-snap-variant="' + esc(it.snap.variant) + '"' : '') +
+            ' data-snap-desc="' + esc(it.snap.desc) + '" data-snap-manage="' + esc(it.snap.manage) + '">' +
+            '<span data-i18n="' + esc(it.nameKey) + '">' + esc(it.name) + '</span></a></div>' +
+          '<div class="data-list__meta" data-i18n="' + esc(it.catKey) + '">—</div>' +
+        '</div>' +
+      '</div>' +
+      '<span class="od-cell">' + it.qty + '</span>' +
+      '<span class="od-cell od-col-r">' + esc(it.unit) + '</span>' +
+      '<div class="od-item-pickup">' + cell + '</div>' +
+      '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>';
+    itemsHost.appendChild(row);
+  });
+
+  /* ── §2.3.2 金額拆解（數位訂單無運費列）───────────────────── */
+  var A = order.amounts;
+  var amtRow = function (key, label, val, neg) {
+    var c = neg ? ' class="od-amt__neg"' : '';
+    return '<div class="od-amt"><span' + c + ' data-i18n="' + key + '">' + esc(label) + '</span><span' + c + '>' + esc(val) + '</span></div>';
+  };
+  var amtHtml = amtRow('od.amt.goods', 'Goods', A.goods, false);
+  if (A.shipping) amtHtml += amtRow('od.amt.shipping', 'Shipping', A.shipping, false);
+  /* 跨幣別（§2.3.2／§7.3：原幣、換算幣、匯率、時點）＝拆解表裡的一列，不是表外註腳。
+     位置在「商品金額＋運費」之後、費用扣項之前：這一列講的是買家實際掏出多少，剛好
+     是上面兩列的合計、也是下面平台費／支付費的計算基礎，順著讀就是「買家付了多少 →
+     扣掉哪些費 → 你拿到多少」。擺在淨額之後會在結論後面又冒出一個新數字，也會把
+     淨額擠掉 :last-child 的收尾樣式（無下框線）。
+     匯率與時點是這一列的次要資訊，放左欄標籤下方的小字；換算後的金額不另寫一次——
+     商品金額那幾列本來就是換算幣。同幣別訂單（order.fx 為 null）整列不產生。 */
+  if (order.fx) {
+    amtHtml += '<div class="od-amt">' +
+      '<span data-i18n="od.amt.fxpaid">Buyer paid</span>' +
+      '<span class="od-amt__value" tabindex="0">' +
+        '<i data-lucide="info" class="ztor-icon ztor-icon--xs" aria-hidden="true"></i>' +
+        esc(order.fx.paid) +
+        /* 浮層只放匯率、不放時點（2026-08-07 使用者裁示）：規格 §2.3.2 要的「時點」
+           就是這筆訂單的成立時間，右欄「訂單資訊 · 下單時間」已經寫了一次，
+           同一個值在同一頁講兩遍是多的。 */
+        '<span class="od-amt__sub">' + esc(order.fx.rate) + '</span>' +
+      '</span></div>';
+  }
+  amtHtml += amtRow('od.amt.platform', 'Platform fee · 15%', A.platform, true) +
+             amtRow('od.amt.payment', 'Payment fee · 2.4%', A.payment, true) +
+             amtRow('od.amt.net', 'Net to you', A.net, false);
+  $('[data-od-amounts]').innerHTML = amtHtml;
+
+  /* ── §2.4 買家 ────────────────────────────────────────────── */
+  $('[data-od-buyer-name]').textContent = order.buyer.name;
+  $('[data-od-contact]').textContent = order.buyer.contact;
+  $('[data-od-shipto-field]').hidden = !order.buyer.shipTo;
+  if (order.buyer.shipTo) $('[data-od-shipto]').textContent = order.buyer.shipTo;
+
+  /* ── §2.5 出貨與履約 popup：依訂單型態決定顯示哪一塊 ───────── */
+  var digital = order.kind === 'digital';
+  var pickupOnly = order.kind === 'pickup';
+  /* 三選一：有實體要寄 → 物流欄位；純數位 → 交付狀態；純現場取貨 → 取貨管理引導。
+     後兩者都沒有可填的欄位，所以頁尾只留一顆「關閉」，不出現「標記出貨」。 */
+  var readOnly = digital || pickupOnly;
+  document.querySelector('[data-od-ful-block="shipping"]').hidden = readOnly;
+  document.querySelector('[data-od-ful-block="digital"]').hidden = !digital;
+  document.querySelector('[data-od-ful-block="pickup"]').hidden = !pickupOnly;
+  $('#od-ship-title').setAttribute('data-i18n', digital ? 'od.dig.title' : pickupOnly ? 'od.pk.title' : 'od.ful.title');
+  $('#od-ship-title').textContent = digital ? 'Digital delivery' : pickupOnly ? 'On-site pickup' : 'Fulfilment';
+  $('#od-ship-confirm').hidden = readOnly;
+  document.querySelector('[data-od-ship-cancel]').hidden = readOnly;
+  document.querySelector('[data-od-ship-done]').hidden = !readOnly;
+  if (digital && order.delivery) {
+    $('[data-od-dig-on]').textContent = order.delivery.on;
+    $('[data-od-dig-downloads]').textContent = order.delivery.downloads;
+  }
+  /* 已出貨的訂單帶出憑證（§2.5「完成後呈現對應憑證（追蹤碼）」）*/
+  if (!digital && order.shipment) {
+    var sel = $('#od-carrier');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].textContent === order.shipment.carrier) { sel.selectedIndex = i; break; }
+    }
+    $('[data-od-tracking]').value = order.shipment.tracking;
+  }
+
+  /* ── §2.6 退款 popup 的可退品項（與品項明細同源）──────────── */
+  var refundHost = $('[data-od-refund-items]');
+  order.items.forEach(function (it, i) {
+    var label = document.createElement('label');
+    label.className = 'data-list__row od-refund-pick';
+    label.innerHTML =
+      '<div class="data-list__row-main">' +
+        '<span class="zcheck__control"><input class="zcheck__input od-refund-check" type="checkbox" data-amt="' + it.amt + '"' + (i === 0 ? ' checked' : '') + '><span class="zcheck__box"></span></span>' +
+        '<div class="data-list__body">' +
+          '<div class="data-list__title" data-od-refund-title data-name-key="' + esc(it.nameKey) + '" data-qty="' + it.qty + '">' + esc(it.name) + ' ×' + it.qty + '</div>' +
+          '<div class="data-list__meta" data-od-refund-meta data-cat-key="' + esc(it.catKey) + '" data-price="' + esc(it.unit) + '">—</div>' +
+        '</div>' +
+      '</div>' +
+      '<span class="data-list__amount">$' + it.amt.toFixed(2) + '</span>';
+    refundHost.appendChild(label);
+  });
+
+  /* ── 帶變數的句子：i18n.js 每次套用後重畫（不呼叫 applyI18n，避免無限迴圈）── */
+  function paint() {
+    /* 件數（原頁首副標的另一半）掛在品項明細的區塊標題上；單複數兩個 key，故留在 paint() 裡重畫 */
+    var n = order.items.reduce(function (a, it) { return a + it.qty; }, 0);
+    var key = n === 1 ? 'od.items.count1' : 'od.items.count';
+    var fb = n === 1 ? '1 item' : '{n} items';
+    $('[data-od-count]').textContent = T(key, fb).replace('{n}', n);
+    /* 退款事實那一行（只有已退款的訂單才有） */
+    var issued = $('[data-od-refund-issued]');
+    if (issued && order.refund) {
+      var full = order.refund.scope === 'full';
+      issued.textContent = T(full ? 'od.refund.issued.full' : 'od.refund.issued.partial',
+        full ? 'Fully refunded {amt} on {on}.' : 'Partially refunded {amt} on {on}.')
+        .replace('{amt}', order.refund.amount).replace('{on}', order.refund.on);
+      issued.hidden = false;
+    }
+    document.querySelectorAll('[data-od-refund-title]').forEach(function (el) {
+      el.textContent = T(el.dataset.nameKey, el.textContent.split(' ×')[0]) + ' ×' + el.dataset.qty;
+    });
+    document.querySelectorAll('[data-od-refund-meta]').forEach(function (el) {
+      el.textContent = T(el.dataset.catKey, '') + ' · ' + el.dataset.price;
+    });
+  }
+  paint();
+  document.addEventListener('i18n:applied', paint);
+})();
+</script>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -395,20 +618,19 @@
 <script>
   /* §2.2 標記出貨 popup（§2.5 出貨與履約內容）：
      - 頂部 Mark shipped 開窗；backdrop／Esc／Cancel 關窗（.is-modal-open 鎖背景捲動）。
-     - segmented 預覽取貨方式（demo，真實訂單由其取貨方式單一決定）。
+     - 此彈窗固定為配送型訂單（本頁訂單含實體出貨品項）；QR／數位兩種履約方式的管理入口在
+       pickup.html／O22，不在此彈窗示範分支（2026-08-06 撤除 segmented 預覽）。
      - 物流商「其他」→ 顯示自訂物流商輸入。
-     - 確認 → 履約 badge 改 已出貨／已領取 並關窗（數位為自動交付、無確認鈕）。 */
+     - 確認 → 履約 badge 改「已出貨」並關窗。 */
   (function () {
     const modal = document.getElementById('od-ship-modal');
     const openBtn = document.getElementById('od-ship-open');
     if (!modal || !openBtn) return;
-    const seg = document.getElementById('od-ful-view');
     const carrier = document.getElementById('od-carrier');
     const other = modal.querySelector('[data-od-carrier-other]');
     const confirmBtn = document.getElementById('od-ship-confirm');
-    const badge = document.getElementById('od-fulfil-badge');
+    const badges = document.getElementById('od-fulfil-badges');
     const T = (k, fb) => (window.i18nT ? window.i18nT(k) : null) || fb;
-    let branch = 'shipping';
 
     const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
     const close = () => { modal.hidden = true; document.body.classList.remove('is-modal-open'); };
@@ -417,33 +639,17 @@
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 
-    function setBranch(v) {
-      branch = v;
-      seg.querySelectorAll('.segmented__btn').forEach(b => b.classList.toggle('segmented__btn--active', b.dataset.odFul === v));
-      modal.querySelectorAll('[data-od-ful-branch]').forEach(br => { br.hidden = br.dataset.odFulBranch !== v; });
-      // 數位＝自動交付；QR 現場領取＝由取貨管理 scanner 核銷（D111）——兩者皆無此處手動確認動作
-      if (v === 'digital' || v === 'qr') { confirmBtn.hidden = true; }
-      else {
-        confirmBtn.hidden = false;
-        confirmBtn.setAttribute('data-i18n', 'od.ful.mark');
-        confirmBtn.textContent = T('od.ful.mark', 'Mark shipped');
-      }
-    }
-    seg.querySelectorAll('.segmented__btn').forEach(btn => btn.addEventListener('click', () => setBranch(btn.dataset.odFul)));
-
     if (carrier && other) carrier.addEventListener('change', () => { other.hidden = carrier.value !== '__other__'; });
 
     confirmBtn.addEventListener('click', () => {
-      if (badge) {
-        const key = branch === 'qr' ? 'od.badge.received' : 'od.badge.shipped';
-        const label = branch === 'qr' ? T('od.badge.received', 'Received') : T('od.badge.shipped', 'Shipped');
-        badge.className = 'badge badge--neutral';
-        badge.innerHTML = '<span data-i18n="' + key + '">' + label + '</span>';
+      /* 混合訂單只有物流那一段被標記出貨，取貨徽章留著（§2.5：取貨要等 scanner 核銷）。 */
+      if (badges) {
+        const keep = [...badges.querySelectorAll('.badge')].filter(b => b.querySelector('[data-i18n="orders.status.pickup"]'));
+        badges.innerHTML = '<span class="badge badge--neutral"><span data-i18n="orders.status.shipped">' + T('orders.status.shipped', 'Shipped') + '</span></span>';
+        keep.forEach(b => badges.appendChild(b));
       }
       close();
     });
-
-    setBranch('shipping');
   })();
 
   /* §2.6「退款」popup：§2.2 頁首 Refund 開窗（最終形態，v1 由 data-feat="O18" 版本閘控隱藏＝守 D041）；
@@ -455,7 +661,8 @@
     const scope = document.getElementById('od-refund-scope');
     const totalEl = document.getElementById('od-refund-total');
     const checks = modal.querySelectorAll('.od-refund-check');
-    const FULL = 56;
+    /* 整筆退款金額＝該訂單品項合計（與 §2.3.1 同一份資料，不另外寫死）*/
+    const FULL = (window.ztorOrderCurrent && window.ztorOrderCurrent.totalAmt) || 0;
     let scopeVal = 'full';
 
     const open = () => { modal.hidden = false; document.body.classList.add('is-modal-open'); };
@@ -507,7 +714,11 @@
     document.querySelectorAll('.od-snap-open').forEach(el => el.addEventListener('click', e => {
       e.preventDefault();
       const d = el.dataset;
-      nameEl.textContent = d.snapName || '—';
+      /* 快照卡的品名跟著語系走（品名有中英兩版，key 與品項明細同一個）*/
+      if (d.snapNameKey) {
+        nameEl.setAttribute('data-i18n', d.snapNameKey);
+        nameEl.textContent = (window.i18nT && window.i18nT(d.snapNameKey)) || d.snapName || '—';
+      } else { nameEl.removeAttribute('data-i18n'); nameEl.textContent = d.snapName || '—'; }
       priceEl.textContent = d.snapPrice || '—';
       descEl.textContent = d.snapDesc || '';
       /* 2026-07-27：快照分類改帶 i18n key（data-snap-cat-key），不再帶寫死的
