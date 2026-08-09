@@ -212,11 +212,16 @@
     /* 2026-07-31 使用者裁決：粉絲分析改名「粉絲總覽」並移到第一位，原本的
        「總覽」（粉絲名冊）改名「粉絲圈」。先看整體樣貌、再進到一個一個人，
        所以總覽在前、名冊在後；兩者原本都叫「總覽」會撞名，故名冊改叫粉絲圈。 */
+    /* 2026-08-09 使用者裁決（D181）：粉絲分析拆成兩頁。新的「粉絲分析」只用
+       ztor 現在真的拿得到的資料（發行商報表的次數＋站上會員的屬性），排第一位；
+       原本那頁改名「粉絲分析：含外部」，因為它依賴的 IG／TikTok／YouTube 資料
+       目前拿不到，先封存備份，所以退到這一組的最後。 */
     { key: "nav.fans", icon: "users", panel: [
-      { href: "fan-analytics.html",    icon: "globe",     titleKey: "nav.fans-audience", descKey: "nav.fans-audience-sub" },
+      { href: "audience-report.html",  icon: "trending-up", titleKey: "nav.fans-report",   descKey: "nav.fans-report-sub" },
       { href: "fans-crm.html",         icon: "users",     titleKey: "nav.fans-overview", descKey: "nav.fans-overview-sub" },
       { href: "media-vault.html",      icon: "key",       titleKey: "nav.fans-vault",    descKey: "nav.fans-vault-sub" },
       { href: "brand-campaigns.html",  icon: "handshake", titleKey: "nav.brandcmp",      descKey: "nav.brandcmp-sub" },
+      { href: "fan-analytics.html",    icon: "globe",     titleKey: "nav.fans-audience", descKey: "nav.fans-audience-sub" },
     ], match: ["fan-detail.html", "brand-campaign-detail.html", "fans-guide.html",
                /* 2026-07-31：分級權益／分級設定併進粉絲管理的「粉絲分級設定」分頁，
                   兩頁自導覽移除但檔案保留（見各檔頭的墓碑註解）。仍列在 match 裡，
@@ -238,7 +243,7 @@
     "index.html", "creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html", "projects.html", "project-detail.html", "create-project.html",
     "create-campaign.html", "funding-simulate.html", "events.html", "event-detail.html", "create-event.html", "edit-event.html",
     "fans-crm.html", "fan-detail.html", "tier-settings.html", "tier-benefits.html", "media-vault.html",
-    "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "my-ip.html", "ip-detail.html",
+    "brand-campaigns.html", "brand-campaign-detail.html", "fans-guide.html", "fan-analytics.html", "audience-report.html", "my-ip.html", "ip-detail.html",
     "manage-ip.html",
     "ip-market.html", "register-ip.html", "settings.html"
   ]);

@@ -76,7 +76,7 @@
             <span class="badge badge--neutral" id="pw-video-state" data-i18n="pw.media.file.state.empty">Not uploaded</span>
           </div>
         </div>
-        <div class="upload-tile upload-tile--file" data-pw-asset="video" data-upload="content" data-upload-accept="video/*" data-upload-processing>
+        <div class="upload-tile upload-tile--video" data-pw-asset="video" data-upload="content" data-upload-accept="video/*" data-upload-processing>
           <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
           <span class="upload-tile__title" data-i18n="pw.media.file.cta">Drop the master file or browse</span>
           <span class="upload-tile__hint" data-i18n="pw.media.file.hint">1080p or higher</span>
@@ -120,10 +120,13 @@
         <div class="form-section__head">
           <h3 class="form-section__title" data-i18n="pw.art.cover.title">Cover</h3>
         </div>
-        <div class="upload-tile upload-tile--hero" data-pw-asset="cover" data-upload>
-          <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>
-          <span class="upload-tile__title" data-i18n="pw.art.cover.cta">Add the poster</span>
-          <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
+        <!-- 2026-08-09（使用者裁決）：全站直式上傳圖同一套元件與尺寸，封面不再是大格。 -->
+        <div class="upload-assets upload-assets--fill">
+          <div class="upload-tile upload-tile--portrait" data-pw-asset="cover" data-upload>
+            <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+            <span class="upload-tile__title" data-i18n="pw.art.cover.cta">Add the poster</span>
+            <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
+          </div>
         </div>
       </section>
 
@@ -134,7 +137,7 @@
         </div>
         <!-- 張數不設限（規格 §4 F5「可多張」）：填滿最後一格就自動長出下一格，
              清空某一格就把那一格移出，做法與項目詳情的展示相簿同一套。 -->
-        <div class="upload-grid" id="pw-stills"><!-- 由 JS 建 --></div>
+        <div class="upload-assets upload-assets--fill" id="pw-stills"><!-- 由 JS 建 --></div>
       </section>
 
       <!-- 花絮在預告片之前＝規格 §4／§5 的欄位順序（F6 花絮、F7 預告片）。 -->
@@ -155,7 +158,7 @@
           <h3 class="form-section__title" data-i18n="pw.art.trailer.title">Trailer</h3>
           <p class="form-section__sub" data-i18n="pw.art.trailer.sub">Plays on the work's page before anyone rents it.</p>
         </div>
-        <div class="upload-tile upload-tile--file" data-pw-asset="trailer" data-upload="content" data-upload-accept="video/*"
+        <div class="upload-tile upload-tile--video" data-pw-asset="trailer" data-upload="content" data-upload-accept="video/*"
              aria-label="Add the trailer" data-i18n-aria-label="pw.art.trailer.add">
           <span class="upload-tile__icon"><i data-lucide="play" class="ztor-icon"></i></span>
           <span class="upload-tile__hint" data-i18n="pw.art.trailer.hint">Up to 3 minutes</span>
@@ -327,7 +330,7 @@
   </div>
   </div><!-- /.wizard__sheet -->
 
-  <footer class="wizard__bottom" style="justify-content:flex-end" data-footer>
+  <footer class="wizard__bottom wizard__bottom--end" data-footer>
     <div class="wizard__bottom-actions">
       <button class="btn btn--outline" type="button" data-action="back" data-i18n="wiz.back">Back</button>
       <!-- 送出前的就緒檢查（規格 §8）。做法與建立商品／建立拍賣同一顆 readiness chip：
@@ -622,7 +625,7 @@
   const stillsWrap = document.getElementById('pw-stills');
   function addStill() {
     const tile = document.createElement('div');
-    tile.className = 'upload-tile';
+    tile.className = 'upload-tile upload-tile--portrait';
     tile.setAttribute('data-pw-asset', 'still');
     tile.setAttribute('data-upload', '');
     tile.setAttribute('aria-label', T('pw.art.stills.add', 'Add a still'));

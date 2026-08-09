@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fan analytics · Fans · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/icon.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+<style>
+  /* 本頁專屬的 layout hook（非可重用樣式留頁內，照 CLAUDE.md 鐵律 1）。
+     兩兩並排；窄一點就掉成單欄。440px 是 perf-rank 五欄不擠的下限，
+     沿用 fan-analytics.html 的 .aud-grid 已驗證過的斷點。 */
+  .ar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: var(--sp-16);
+    margin-top: var(--sp-16);
+  }
+  /* 受眾屬性四區：星座 12 列、MBTI 16 列，兩張並排會很高，
+     所以給它們比上面窄一點的下限，四張能排成 2×2。
+     align-items:start 是必要的——性別只有 3 列、星座有 12 列，grid 預設把同列的卡
+     拉成一樣高，性別那張就會多出一大塊空白。讓每張卡各自貼齊內容高度即可。 */
+  .ar-grid--attrs { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+  /* 區段標題列：標題靠左、軸切換靠右，與 card__head 同一種骨架但用在 section 層級。 */
+  .ar-sechead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-16);
+    flex-wrap: wrap;
+    margin-top: var(--sp-32);
+  }
+  .ar-sechead__title { font-size: var(--fs-18); font-weight: var(--fw-medium); margin: 0; }
+  .ar-sechead__sub { color: var(--muted-foreground); font-size: var(--fs-13); margin: var(--sp-4) 0 0; }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb">
+        <span data-i18n="nav.fans">Fans</span> · <span data-i18n="ar.crumb.self">Fan analytics</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="ar.h1">Who is actually watching</h1>
+          <div class="page-intro__lede">
+            <p class="page-intro__sub" data-i18n="ar.sub">How often your work gets played, and who the people behind those plays are — limited to what Ztor can actually see today.</p>
+            <a class="page-intro__help" href="fans-guide.html" data-i18n="fans.btn.explain">系統說明</a>
+          </div>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline btn--sm" type="button" data-ar-export>
+            <i data-lucide="download" class="ztor-icon ztor-icon--sm"></i>
+            <span data-i18n="ar.export">Export report</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 資料時點與來源說明。影視／音樂走發行商報表有延遲、貼文是站內統計每日更新，
+           兩者時點不同是事實，所以這一條隨分頁換內容、不寫成一句通用的話。 -->
+      <div class="info-banner mt-16" data-ar-asof>
+        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+        <span data-ar-asof-text></span>
+      </div>
+
+      <nav class="tabs mt-16" role="tablist" aria-label="Content type" data-ar-tabs>
+        <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-tab="film"><span data-i18n="ar.tab.film">Film &amp; TV</span></button>
+        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-ar-tab="music"><span data-i18n="ar.tab.music">Music</span></button>
+        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-ar-tab="post"><span data-i18n="ar.tab.post">Posts</span></button>
+      </nav>
+
+      <!-- 期間切換。影視與音樂的期間是發行商報表的結算區間，貼文是站內統計的
+           回看區間——同一組控制項、兩種來源，所以說明文字掛在上面那條 banner 上。 -->
+      <div class="segmented mt-16" role="tablist" aria-label="Period" data-ar-period>
+        <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
+        <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
+        <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
+      </div>
+
+      <div data-ar-panel></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<script src="js/sidebar.js?v=r2.2"></script>
+<script src="js/components.js?v=r2.2"></script>
+<script src="js/performance-store.js?v=r2.2"></script>
+<script src="js/audience-store.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script>
+/* ============================================================
+   粉絲分析（Fan Analytics）· spec 5.1.7.9 · D181
+
+   整頁由 JS 依 audience-store 繪製，HTML 只留殼。理由是三個分頁的區塊
+   有七成同構（Top 10、地區、受眾屬性四區），寫三份 markup 會立刻分岔——
+   fan-analytics 的作品榜與 project-detail 的版稅榜就是這樣長成兩套的。
+
+   兩條軸的規矩（D181，全頁一致）：
+     次數（counts）可切人數；受眾屬性四區只有人數，且一定帶涵蓋率。
+   任何一個數字旁邊都要有單位，因為「38,600」是次還是人，看不出來。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var A = window.ztorAudience;
+  var panel = document.querySelector('[data-ar-panel]');
+  if (!A || !panel) return;
+
+  var state = { scope: 'film', period: 'q', axis: 'count' };
+
+  var T = A.T, num = A.num, pct = A.pct;
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function hue(i) { return 'var(--chart-' + (i % 7 + 1) + ')'; }
+
+  /* ── 排行列（perf-rank）───────────────────────────────────
+     rows: [{ label, n, w }]，w 是佔比％。unit 是「次」或「人」的 i18n key，
+     每一列都帶單位——這是 D181 的硬規定，不是裝飾。 */
+  function rankHTML(rows, opts) {
+    opts = opts || {};
+    var max = rows.reduce(function (a, r) { return Math.max(a, r.n); }, 0) || 1;
+    var showPct = opts.pct !== false;
+    return '<ol class="perf-rank' + (showPct ? '' : ' perf-rank--nopct') + (opts.wide ? ' perf-rank--wide' : '') + '">'
+      + rows.map(function (r, i) {
+        return '<li class="perf-rank__row' + (r.rest ? ' perf-rank__row--rest' : '') + '"'
+          + ' style="--w:' + Math.max(3, Math.round(r.n / max * 100)) + '%; --hue:' + (opts.hue || hue(i)) + '">'
+          + '<span class="perf-rank__idx">' + (r.rest ? '—' : (i + 1)) + '</span>'
+          + '<span class="perf-rank__name">' + esc(r.label) + '</span>'
+          + '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>'
+          + (showPct ? '<span class="perf-rank__pct">' + pct(r.w) + '</span>' : '')
+          + '<span class="perf-rank__val">' + num(r.n) + ' ' + esc(T(opts.unit)) + '</span>'
+          + '</li>';
+      }).join('') + '</ol>';
+  }
+
+  function card(title, body, opts) {
+    opts = opts || {};
+    return '<section class="card">'
+      + '<div class="card__head"><div class="card__title-group">'
+      + '<h3 class="card__title">' + esc(T(title)) + '</h3>'
+      + '</div>'
+      + (opts.aside ? '<span class="text-sub" style="font-size:var(--fs-12)">' + esc(T(opts.aside)) + '</span>' : '')
+      + '</div>'
+      + (opts.note ? '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0">' + opts.note + '</p>' : '')
+      + '<div class="mt-16">' + body + '</div>'
+      + '</section>';
+  }
+
+  function kpi(label, value, meta, span) {
+    return '<div class="kpi bento--span-' + (span || 4) + '">'
+      + '<div class="kpi__label">' + esc(T(label)) + '</div>'
+      + '<div class="kpi__value">' + value + '</div>'
+      + '<div class="kpi__meta">' + meta + '</div>'
+      + '</div>';
+  }
+
+  /* ── 受眾屬性四區 ─────────────────────────────────────────
+     四張卡共用同一個分母（認得出身分的人數），所以涵蓋率只寫一次，
+     寫在區段標題底下、不是每張卡各寫一遍。 */
+  function attrsHTML(scope, period) {
+    var cov = A.coverage(scope, period);
+    var attrs = A.attrs[scope];
+    var blocks = [
+      { key: 'gender',    title: 'ar.attr.gender' },
+      { key: 'zodiac',    title: 'ar.attr.zodiac' },
+      { key: 'mbti',      title: 'ar.attr.mbti' },
+      { key: 'shengxiao', title: 'ar.attr.shengxiao' }
+    ];
+    var note = T('ar.attr.coverage')
+      .replace('{identified}', num(cov.identified))
+      .replace('{reach}', num(cov.reach))
+      .replace('{ratio}', pct(cov.ratio));
+
+    return '<div class="ar-sechead">'
+      + '<div>'
+      + '<h2 class="ar-sechead__title">' + esc(T('ar.attr.h')) + '</h2>'
+      + '<p class="ar-sechead__sub">' + esc(note) + '</p>'
+      + '</div></div>'
+      + '<div class="ar-grid ar-grid--attrs">'
+      + blocks.map(function (b) {
+        var rows = A.distribute(attrs[b.key], cov.identified).map(function (r) {
+          return { label: T(r.i18n), n: r.n, w: r.w };
+        });
+        return card(b.title, rankHTML(rows, { unit: 'ar.unit.people' }));
+      }).join('')
+      + '</div>';
+  }
+
+  /* ── 影視／音樂分頁 ───────────────────────────────────────
+     次數那一半全部轉引 performance-store（見 audience-store 檔頭）。
+     取不到就出空狀態，不拿假數字頂上。 */
+  function worksPanel(scope, period) {
+    var fam = A.perf(scope);
+    if (!fam) {
+      return '<div class="empty-card mt-16"><p class="empty-card__title">'
+        + esc(T('ar.empty.title')) + '</p><p class="empty-card__text">'
+        + esc(T('ar.empty.text')) + '</p></div>';
+    }
+    var cov = A.coverage(scope, period);
+    var countUnit = scope === 'music' ? 'ar.unit.streams' : 'ar.unit.views';
+    var total = fam.total[period];
+
+    var tw = A.topWorks(scope, period);
+    var top = tw.rows.map(function (r) { return { label: T(r.i18n), n: r.n, w: r.w }; });
+    /* 「顯示 N／共 M」：這位創作者的影視作品可能不到十部（周湯豪只有三部），
+       硬把卡片標成「Top 10」會讓三列看起來像壞掉。標題不寫死數字，改用這一句
+       說清楚母體有多大。 */
+    var topNote = T('ar.top.count')
+      .replace('{shown}', top.length).replace('{total}', tw.total);
+
+    var regions = A.ranked(fam.territories, period).map(function (r) {
+      return { label: T(r.i18n || r.name), n: r.n, w: r.w, rest: r.rest };
+    });
+    var platforms = A.ranked(fam.platforms, period).map(function (r) {
+      return { label: r.i18n ? T(r.i18n) : r.name, n: r.n, w: r.w, rest: r.rest };
+    });
+
+    return '<div class="bento mt-16">'
+      + kpi(scope === 'music' ? 'ar.kpi.streams' : 'ar.kpi.views',
+            num(total) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T(countUnit)) + '</span>',
+            esc(T('ar.kpi.counts-meta')))
+      + kpi('ar.kpi.reach',
+            num(cov.reach) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.people')) + '</span>',
+            esc(T('ar.kpi.reach-meta')))
+      + kpi('ar.kpi.identified',
+            num(cov.identified) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.people')) + '</span>',
+            esc(T('ar.kpi.identified-meta').replace('{ratio}', pct(cov.ratio))))
+      + '</div>'
+
+      + '<div class="mt-16">'
+      + card(scope === 'music' ? 'ar.top.music' : 'ar.top.film',
+             /* 寬版：作品名是一整句時（英文片名尤其長）148px 只看得到前幾個字；
+                地區與平台名短，維持窄版讓長條起點更靠左。 */
+             rankHTML(top, { unit: countUnit, pct: false, wide: true }),
+             { note: esc(topNote) })
+      + '</div>'
+
+      + '<div class="ar-grid">'
+      + card('ar.regions', rankHTML(regions, { unit: countUnit }))
+      + card('ar.platforms', rankHTML(platforms, { unit: countUnit }))
+      + '</div>'
+
+      + attrsHTML(scope, period);
+  }
+
+  /* ── 貼文分頁 ─────────────────────────────────────────────
+     金額一律不出現（D181：帶貨收益落在收入管理）。這一頁只有次數與人數，
+     想看錢的人由「貼文帶貨收益」那條連結帶到收入管理，不在這裡放第二份數字。 */
+  function postsPanel(period) {
+    var P = A.posts;
+    var cov = A.coverage('post', period);
+    /* KPI、Top 10、地區、型別表全部吃同一份期間切片，所以任何一個數字都能在
+       最下面那張明細表逐列加回來（見 audience-store 的 postRows）。 */
+    var rows = A.postRows(period);
+    var k = A.postKpi(period);
+    var views = k.views, rentals = k.rentals, count = k.count;
+
+    var top = rows.slice().sort(function (a, b) { return b.views - a.views; }).slice(0, 10)
+      .map(function (r) { return { label: r.title, n: r.views, w: 0 }; });
+
+    var regionSum = P.regions.reduce(function (a, r) { return a + r.w; }, 0);
+    var regions = P.regions.map(function (r) {
+      return { label: T(r.i18n), n: Math.round(r.w / regionSum * views), w: r.w };
+    }).sort(function (a, b) { return b.n - a.n; });
+
+    var typeRows = A.postByType(period).map(function (t) {
+      return '<tr class="ztor-table__row">'
+        + '<td>' + esc(T(t.i18n)) + '</td>'
+        + '<td style="text-align:right">' + t.count + '</td>'
+        + '<td style="text-align:right">' + t.withRental + '</td>'
+        + '<td style="text-align:right">' + t.mentionsFilm + '</td>'
+        + '<td>' + (t.filmKind ? esc(T(t.filmKind)) : '—') + '</td>'
+        + '<td style="text-align:right">' + num(t.views) + '</td>'
+        + '</tr>';
+    }).join('');
+
+    var detailRows = rows.map(function (r) {
+      var rate = r.views ? (r.eng / r.views * 100) : 0;
+      return '<tr class="ztor-table__row">'
+        + '<td>' + esc(r.title) + '</td>'
+        + '<td>' + esc(T(r.mention)) + '</td>'
+        + '<td>' + esc(r.date) + '</td>'
+        + '<td>' + esc(T(r.type)) + '</td>'
+        + '<td style="text-align:right">' + num(r.views) + '</td>'
+        + '<td style="text-align:right">' + num(r.dwell) + '</td>'
+        + '<td style="text-align:right">' + num(r.eng) + '</td>'
+        + '<td style="text-align:right">' + pct(rate) + '</td>'
+        + '<td style="text-align:right">' + num(r.rentals) + '</td>'
+        + '</tr>';
+    }).join('');
+
+    return '<div class="bento mt-16">'
+      + kpi('ar.kpi.pviews',
+            num(views) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.views')) + '</span>',
+            esc(T('ar.kpi.pviews-meta')))
+      + kpi('ar.kpi.rentals',
+            num(rentals) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.times')) + '</span>',
+            esc(T('ar.kpi.rentals-meta')))
+      + kpi('ar.kpi.pcount',
+            num(count) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.posts')) + '</span>',
+            esc(T('ar.kpi.pcount-meta')))
+      + '</div>'
+
+      /* 帶貨收益不在本頁——給一條明確的去路，而不是讓人以為這裡漏做了。 */
+      + '<div class="info-banner mt-16">'
+      + '<i data-lucide="info" class="ztor-icon info-banner__icon"></i>'
+      + '<span>' + esc(T('ar.affiliate.note'))
+      + ' <a class="card__link" href="earnings-sony.html#affiliate">' + esc(T('ar.affiliate.link')) + '</a></span>'
+      + '</div>'
+
+      + '<div class="mt-16">'
+      + card('ar.top.post', rankHTML(top, { unit: 'ar.unit.views', pct: false, wide: true }))
+      + '</div>'
+
+      + '<div class="ar-grid">'
+      + card('ar.regions', rankHTML(regions, { unit: 'ar.unit.views' }))
+      + card('ar.ptype.h',
+             '<div class="ztor-table-scroll"><table class="ztor-table"><thead><tr>'
+             + '<th>' + esc(T('ar.ptype.type')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.ptype.count')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.ptype.withrental')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.ptype.mentions')) + '</th>'
+             + '<th>' + esc(T('ar.ptype.kind')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.ptype.views')) + '</th>'
+             + '</tr></thead><tbody>' + typeRows + '</tbody></table></div>',
+             { note: esc(T('ar.ptype.note')) })
+      + '</div>'
+
+      + attrsHTML('post', period)
+
+      + '<div class="mt-32">'
+      + card('ar.detail.h',
+             '<div class="ztor-table-scroll"><table class="ztor-table"><thead><tr>'
+             + '<th>' + esc(T('ar.detail.title')) + '</th>'
+             + '<th>' + esc(T('ar.detail.mention')) + '</th>'
+             + '<th>' + esc(T('ar.detail.date')) + '</th>'
+             + '<th>' + esc(T('ar.detail.type')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.detail.views')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.detail.dwell')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.detail.eng')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.detail.rate')) + '</th>'
+             + '<th style="text-align:right">' + esc(T('ar.detail.rentals')) + '</th>'
+             + '</tr></thead><tbody>' + detailRows + '</tbody></table></div>',
+             { note: esc(T('ar.detail.note')) })
+      + '</div>';
+  }
+
+  function render() {
+    rendering = true;
+    var asof = A.asOf[state.scope];
+    var noteKey = state.scope === 'post' ? 'ar.asof.post' : 'ar.asof.works';
+    var el = document.querySelector('[data-ar-asof-text]');
+    if (el) el.textContent = T(noteKey).replace('{date}', asof);
+
+    panel.innerHTML = state.scope === 'post'
+      ? postsPanel(state.period)
+      : worksPanel(state.scope, state.period);
+
+    if (window.ztorIcons) window.ztorIcons.applyIcons(panel);
+    if (window.applyI18n) window.applyI18n(panel);
+    rendering = false;
+  }
+
+  document.querySelector('[data-ar-tabs]').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ar-tab]');
+    if (!b) return;
+    state.scope = b.dataset.arTab;
+    this.querySelectorAll('[data-ar-tab]').forEach(function (x) {
+      var on = x === b;
+      x.classList.toggle('tabs__item--active', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    render();
+  });
+
+  document.querySelector('[data-ar-period]').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ar-p]');
+    if (!b) return;
+    state.period = b.dataset.arP;
+    this.querySelectorAll('[data-ar-p]').forEach(function (x) {
+      var on = x === b;
+      x.classList.toggle('segmented__btn--active', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    render();
+  });
+
+  var exportBtn = document.querySelector('[data-ar-export]');
+  if (exportBtn) exportBtn.addEventListener('click', function () {
+    /* 匯出的檔案格式與欄位規格未定（見 5.1.7.9 待確認），原型只回饋動作已收到。 */
+    if (window.ztorToast) window.ztorToast.show(T('ar.export.toast'), { key: 'ar.export.toast' });
+  });
+
+  /* i18n:applied 是 document 層級的事件，而 render() 自己會呼叫 applyI18n(panel)
+     ——沒有這道閘就會 render → applyI18n → i18n:applied → render 無限遞迴
+     （第一版實測 Maximum call stack size exceeded）。改語言時仍會重繪一次。 */
+  var rendering = false;
+  document.addEventListener('i18n:applied', function () {
+    if (rendering) return;
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

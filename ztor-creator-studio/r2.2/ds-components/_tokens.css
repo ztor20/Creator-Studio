@@ -73,6 +73,9 @@
   --chart-5:           #8B5CF6;   /* 紫 */
   --chart-6:           #EC4899;   /* 玫紅 · 2026-07-27 新增：收益類型擴充到 7 種（商品收益）*/
   --chart-7:           #06B6D4;   /* 青 · 2026-07-27 新增：門票收益 */
+  --chart-8:           #7C4A2D;   /* 赭 · 2026-08-09 新增：貼文帶貨收益（D181）。第八種收益類型；
+                                       選暖褐是因為 1–7 已佔滿橘黃綠藍紫桃青，暖褐是剩下少數
+                                       與它們都拉得開、又不會被讀成狀態色（紅＝錯誤）的色相 */
 
   /* Sidebar（原 --surface-rail 一家）*/
   --sidebar:                   #FBFBFB;
@@ -138,7 +141,21 @@
      裸 --muted-foreground、color-mix(…68%, --card)、color-mix(…72%, transparent)——
      正是 Q9 要收斂的「散落的即席灰」。混 transparent 而不是 --card，表頭才能坐在
      任何底色上（有些表頭帶 --muted 底）都是同一階暗度。 */
-  --column-head-ink: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
+  /* 比 --muted-foreground 再低一階的墨色（2026-08-09 抽出）。站上最低階的文字 token 就是
+     --muted-foreground（亮 #6E6E68／暗 #979797），比它再輕的角色只能以它為基底調降不透明度。
+     混 transparent 而不是某個面色，是為了讓它坐在任何底上都是同一階暗度——也因此它在深色
+     主題自動更深、在亮色主題自動更淡，不需要逐主題各寫一次。
+     消費者：表格欄位表頭的標籤（--column-head-ink，Q41）、來源鎖定欄位的值（field-source-tag.css）。 */
+  --faint-ink: color-mix(in srgb, var(--muted-foreground) 72%, transparent);
+  --column-head-ink: var(--faint-ink);
+  /* 再更輕的一階，只給「這一格的值不是你管的」用（2026-08-09 使用者兩次要求調降後定案）。
+     不直接把 --faint-ink 調降，是因為它同時是表頭的墨色（10 支元件），表頭並沒有要跟著變淡。
+     這是全站最輕的文字，只保證「認得出這裡寫了什麼」，不當閱讀用文字看待——實測合成後
+     深色 #606061 對 #1C1D1E ＝ 2.69:1、亮色 #AFAFAC 對白 ＝ 2.20:1，兩者都低於 WCAG AA 的
+     4.5:1。成立的前提是它是 disabled 的唯讀值、且不是本頁要讀的資訊；欄位標籤與「bookyay
+     帶入」來源標記都維持正常對比，使用者要理解這一格是什麼、為什麼不能改，看的是那兩個。
+     這個 token 不要拿去用在需要閱讀的文字上。 */
+  --locked-field-ink: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
   --status-success-fill: color-mix(in srgb, var(--status-success) 12%, transparent);
   --destructive-fill:    color-mix(in srgb, var(--destructive) 12%, transparent);
   /* 深階實色版（給「坐在實色暖底上」的膠囊用，見 kpi.css 的 .kpi--hero）。
@@ -634,6 +651,7 @@
   --chart-5:           #A78BFA;
   --chart-6:           #F472B6;   /* 玫紅 · 2026-07-27 新增（暗色提亮一階，同 chart-3/5 慣例）*/
   --chart-7:           #22D3EE;   /* 青 · 2026-07-27 新增。與 chart-2 藍 ΔE2000≈26、chart-3 綠≈34，暗卡面對比 8.8:1 */
+  --chart-8:           #C88B6A;   /* 赭 · 2026-08-09 新增（暗色提亮一階，同 chart-3/5/6 慣例）*/
 
   /* Sidebar */
   --sidebar:                   #1C1D1E;   /* midnight-v2（原 #2B2B2C）rail＝外殼色，明顯亮於 content */

@@ -77,6 +77,79 @@
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
 
+### Q60：直式上傳圖的元件與排版（2026-08-09 提出，同日使用者裁決，全站落地）
+
+- 原本站上兩種做法：
+  - **大格＋縮圖列**：主圖用 `--hero`（整列寬），附圖 4 格排在旁邊或下方（`.upload-showcase`／`.upload-grid`）。
+  - **同尺寸列**：格子一樣大，靠角落標籤 `__flag` 分辨主圖（`.upload-assets`）。
+- **裁決＝只留後者，而且只留一套**。使用者：「這個元件和這個排版規則套用到 r2.2 全部直的上傳圖。所以直的上傳圖只會用這一套元件，其他都刪除。」
+- 正典＝`.upload-assets.upload-assets--fill`：`--upload-asset-cols`（預設 4）格撐滿一整列、第五格換行且尺寸相同，容器變寬變窄等比縮放（≤640px 降為兩格）；需要「填滿才長出下一格」時容器再加 `[data-upload-reveal]`。
+- **退場**：`.upload-tile--hero`（連同 Q18 的圓角晶片圖示框）、`.upload-grid`／`--2x2`、`.upload-showcase`／`--stacked`。CSS 已刪、檔尾留墓碑。
+- 仍服役、不在本題範圍：`--file`（檔案投放列）、`--16x9`（橫式媒體槽，project-detail 的 Demo 影片／音樂）。
+- 本輪改到的頁：create-product、create-auction、create-bundle、bundle-detail、product-detail（含 IP 素材槽）、publish-work（封面與劇照）；原本就吃 `.upload-assets` 的 create-project／create-event(-legacy)／create-campaign／project-detail／series-detail／event-detail／`bundle-editor.js` 一律補 `--fill`。
+
+證據：`ds-components/upload-tile.css`（`.upload-assets--fill` 與檔尾墓碑段）、`design-system.md` §4.15。
+
+### Q59：已填的上傳格用綠色表達（2026-08-09 提出，同日依使用者裁示落地）
+
+- 現況：`.upload-tile.is-filled` 是 `border-color: var(--status-success)` ＋ `color: var(--status-success)`，連 `.upload-tile__title` 也染綠。
+- **裁決＝撤除綠色**。使用者圈選建立活動的圖庫格：「不該有綠色 border 這種元件。」
+- 落地：改成中性 `border-style: solid` ＋ `--border` ＋ `--foreground` 文字。**已填與未填的差別改由「實線 vs 虛線邊框」承擔**——形狀差異本來就在，顏色是多的一層。
+- 為什麼可以直接撤：`--status-success` 在站上的語意是「狀態結果」（付款成功、審核通過），「這一格填了圖」不是狀態、是內容有沒有；用綠色表達會讓真正的狀態綠變得廉價。十幾個消費頁逐頁確認過，沒有任何一頁是靠這個綠框當「已上傳」的唯一訊號。
+- 影響範圍：`upload-tile.css` 的所有消費頁（media-vault／create-project／register-ip／product-detail／publish-work 等十幾頁）。
+
+證據：`ds-components/upload-tile.css` 的 `.upload-tile.is-filled` 段落。
+
+### Q58：站上出現兩種 disabled 欄位（2026-08-09 提出，同日依使用者裁示落地）
+
+- 現況 A（`input.css` 的 `.input:disabled`）：`--muted` 填底＋`--foreground-muted` 字＋`opacity:.75`。全站基準，二十幾頁在吃。
+- 現況 B（`field-source-tag.css` 的 `.is-source-locked`，2026-08-09 當天建立）：透明底＋最輕的墨色。起因是 A 的填底比卡片還深，坐在 `form-section` 上讀起來像「這裡壞了」。
+- **裁決＝B，並上收成全站基準**。使用者圈選門票彈窗的唯讀「總價」欄位：「這個 disable 的 input 怎麼和剛才改的不同，整個元件庫應該都只能用同一個。」
+- 落地：透明底那一組寫進 `input.css` 的 `.input:disabled`／`.textarea:disabled`／`.select:disabled`，`field-source-tag.css` 不再定義欄位鎖定樣式，只留來源標記與 `.is-source-locked .segmented__btn`（segmented 不是表單控件、吃不到 `:disabled`）。
+- **連帶的語意決定**：來源鎖定欄位與其他 disabled 欄位長得一樣是刻意的——「這格為什麼不能改」由標籤旁的來源標記回答，不靠兩種灰去暗示。
+- **已知代價**：值的墨色是 `--locked-field-ink`，對比刻意低於 WCAG AA（深色 2.69:1／亮色 2.20:1，見該 token 的文件）。全站 disabled 欄位一起套用了這個決定。
+
+證據：`ds-components/input.css` 的 `:disabled` 段落、`ds-components/field-source-tag.css`、`ds-components/_tokens.css` 的 `--locked-field-ink`。
+
+### Q57：「打字搜尋 → 下拉候選 → 選一個」站上有三套做法（2026-08-09 提出，同日依使用者裁示落地）
+
+> **2026-08-09 裁決＝A（往 `combobox.css` 收斂）**。使用者裁示「樣式應該都要以原本的 DS 為主」，三題（Q55／Q56／Q57）一併裁成「頁面改用既有元件、不留頁內的平行做法」。落地：建立活動頁的 `.ce-pick*` 一組退場改用 `.combobox*`，已加入的商品列改用 `.chip.chip--removable`（combobox 自己表達已選項的方式）。**視覺因此改變**——候選項的名稱與價格由「左右分排」改成 combobox 的「name 在上、meta 在下」，已加入的商品由帶邊框的橫列改成可移除標籤。
+
+建立活動正式化時盤點出來的唯一一處真正重複建設。同一個互動問題，站上現在有三個答案：
+
+- 現況 A（`combobox.css`）：`.combobox__menu` 浮動選單＋`.combobox__opt`，focus 觸發、選項可帶 28px 圖示。
+- 現況 B（`picker.css`）：`.picker__search` ＋ `.picker__list`，選項列借用 `.data-list__row`，是「面板內的挑選清單」而非浮層。
+- 現況 C（建立活動頁內 `.ce-pick*`／`.ce-prod*`）：`.ce-pick__anchor` 定位＋`.ce-pick__menu` 浮層＋`.ce-pick__opt`，另有「已加入的列」`.ce-prod__row`。票種欄與「加入商品」兩處共用。
+- 三者的 `z-index` 也不一致（A 是 30，C 是 60），全站沒有 z-index token 刻度，各浮層各自訂數字。
+- 選項：**A** 往 `combobox.css` 收斂，C 的「已加入清單」另外抽成一支或併進 `chip.css`；**B** 往 `picker.css` 收斂；**C** 承認兩種語彙並存（浮層型 vs 面板型），把判準寫進 design-system Pillar 5，C 併入其中一支。
+- 建議：A。C 與 A 的解剖幾乎一樣（浮層貼在輸入框下、一列一個選項），差別只在 C 多了「已加入的列」；B 是面板內清單，形狀本來就不同，不該硬併。裁決權在使用者。
+- ~~現況處置：2026-08-09 正式化時 `.ce-pick*` 一組刻意留在 `create-event.html` 頁內、沒有 promote~~ **同日裁決後已退場**，見本題開頭。
+
+證據：`ds-components/combobox.css:24`（`.combobox__menu`，z-index 30）、`ds-components/picker.css`（`.picker__search`／`.picker__list`）、`create-event.html` 頁內 `<style>` 的 `.ce-pick*`／`.ce-prod*` 段落。
+
+### Q56：場次清單有兩套，欄位數不同（2026-08-09 提出，同日依使用者裁示落地）
+
+> **2026-08-09 裁決＝B（併進既有 `session-list.css` 成為變體）**。同 Q57 的裁示。落地：`.ce-sess*` 退場改用 `.session-list*`；既有元件缺的兩樣東西往元件補——`.session-list__head`（欄位標題列）與 `.session-list--detailed`（多欄變體，含 `[data-multi]` 的兩種欄寬）。既有兩欄版行為不動，`create-event-legacy.html` 不受影響。鎖定態不再自造，改用 `field-source-tag.css` 已有的 `.is-source-locked`。
+
+- 現況 A（`ds-components/session-list.css`）：兩欄版（日期＋場地），`create-event-legacy.html` 仍在消費。
+- 現況 B（建立活動頁內 `.ce-sess*`）：四欄版（場次名＋日期＋起訖＋入場），另有 `[data-multi]` 變體再換一次欄寬、`.ce-sess.is-locked` 鎖定態、900px 以下收合。demo 期間的原註解就寫著「沿用 session-list 的節奏但欄位不同，所以另立一組，確認採用再合併」。
+- 選項：**A** 把 `session-list.css` 擴充成支援可變欄位數（欄位定義交給消費頁的 grid-template 或 data 屬性），B 併進去；**B** 兩者並存成兩個變體（`.session-list` 單日版／`.session-list--detailed` 多欄版）；**C** 舊的兩欄版退場，全站只留多欄版（但 legacy 頁還在用它）。
+- 建議：B。A 的「可變欄位數」會把欄寬決定權推回頁面、等於元件不再擁有版面；C 會動到 legacy 備份頁的呈現。裁決權在使用者。
+- **現況處置**：`.ce-sess*` 已依裁決退場。`.ce-types*`／`.ce-tiergroup*`（票種定義列與門票的場次分組標題）**仍留在頁內**——站上沒有對應的既有元件可收斂，不在本次裁決範圍，日後若出現第二個消費者再 promote。
+
+證據：`ds-components/session-list.css`、`create-event-legacy.html` 的 `session-list.css` 連結、`create-event.html` 頁內 `<style>` 的 `.ce-sess*`／`.ce-types*`／`.ce-tiergroup*` 段落。
+
+### Q55：單選鈕有兩套實作（2026-08-09 提出，同日依使用者裁示落地）
+
+> **2026-08-09 裁決＝C（`zradio` 退場，改用既有 `radio-list`）**。同 Q57 的裁示：站上已經有的元件說了算。落地：當天上午才 promote 進 `checkbox.css` 的 `.zradio*` 同日移除、留 tombstone；建立活動購票規則的三組選項改用 `.radio-list__item`／`__dot`／`__text`，選取改由 JS 切 `--active`（radio-list 沒有原生 `<input type="radio">`）。**代價已知並接受**：這些選項因此不具原生表單語意與鍵盤 radio 行為；原型階段沒有真的送出表單，接真後端時要一併檢討。
+
+- 現況 A（`ds-components/radio-list.css`）：2026-07-21 建的「輕量單選列」，按鈕列＋JS 切換 active class，**沒有原生 `<input type="radio">`**，指示器是畫出來的圓點（已選 8px 實心橘）。
+- 現況 B（`.zradio*`，2026-08-09 隨建立活動正式化 promote 進 `ds-components/checkbox.css`）：真正的原生 radio 疊在畫出來的圓點下面，點擊、鍵盤、表單語意全部原生，只換視覺。做法與同檔的 `.zcheck` 完全一致（`__control` 16px、`__dot::after` 8px 都與 A 的數值相同）。
+- 選項：**A** 承認兩種語彙並存——`radio-list` 用於「選了就切換檢視」的輕量選單列、`zradio` 用於表單裡真的要送出的選項，把判準寫進 design-system Pillar 4；**B** `radio-list` 改成以 `zradio` 為底重寫，全站只留一套；**C** 反過來，`zradio` 退場改用 `radio-list`。
+- 建議：A。兩者的差別不是視覺而是語意（一個是檢視切換、一個是表單資料），視覺數值本來就已經一致。C 不可行——購票規則那些選項要進表單，需要原生語意。裁決權在使用者。
+
+證據：`ds-components/radio-list.css:78-79`（已選 8px 圓點）、`ds-components/checkbox.css` 的 `.zcheck` 與新增的 `.zradio` 段落。
+
 ### Q54：一個 form-section 裡要再分組時，沒有「小標」這一級（2026-08-08 提出，待裁決）
 
 Q21（2026-07-20）把區段標題與欄位標籤都拉平成 `--fs-14`、層級改由卡片邊界承擔。這在「一張卡＝一組欄位」時成立，但**建立活動 demo** 出現一張卡裡有三組東西（場次的日期時間／場地細節／每一場的人數），Q21 沒有為這個中間層留下任何表達方式。
@@ -88,7 +161,9 @@ Q21（2026-07-20）把區段標題與欄位標籤都拉平成 `--fs-14`、層級
 - 選項：**A** 採納 demo 的做法，promote 成 `form-section.css` 的 `.form-section__subhead`（＋第三層 `.form-section__grouplabel`），寫進 design-system Pillar 4；**B** 不承認這一級，改要求「一張卡只放一組」——把場次拆成三張 outlined 卡；**C** 為這一級開一個新字級（例如 display／`--fs-16`），等於部分推翻 Q21 的拉平。
 - 建議：A。B 會讓建立流程的卡片數量膨脹（場次一步就從一張變三張，而它們是同一件事的三個部分）；C 動到已裁決的 Q21，代價最大。裁決權在使用者。
 
-證據：`ds-components/form-section.css:70-90`（Q21 的拉平：title 14 / label 14）、`docs/create-event-demo.html`（頁內 `.ce-subhead`／`.ce-grouplabel` 與三處消費點）。
+**2026-08-09 現況更新**：demo 升為正式頁（`create-event.html`）時，這一級**暫依上面的建議 A 落地**——`.ce-subhead`／`.ce-grouplabel` 已 promote 成 `ds-components/form-section.css` 的 `.form-section__subhead`／`.form-section__grouplabel`。這是「暫依最新確認的做法並標註題號」，不是裁決；使用者若裁 B 或 C，回退範圍就是這兩個 class 與建立活動頁的三處消費點。
+
+證據：`ds-components/form-section.css:70-90`（Q21 的拉平：title 14 / label 14）、`ds-components/form-section.css` 的 `.form-section__subhead` 段落、`create-event.html`（三處消費點）。
 
 ### Q46：清單分段的做法出現第二種——群組標題在上 vs 有字的分隔線在下（2026-08-04 提出，待裁決）
 

@@ -71,7 +71,36 @@
 
 .session-list__add { margin-top: var(--sp-12); }
 
+/* 欄位標題列（選配，2026-08-09 promoted from create-event.html 的 .ce-sess__head）：
+   跟資料列同一套排版（flex＋sp-12 間距），只是文字換成小標色，讓多欄版一眼看懂
+   每欄是什麼。與 .session-list__row 各自出現一次即可，不強制成對。 */
+.session-list__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+
+/* ── 變體：--detailed（2026-08-09 promoted from create-event.html 的 .ce-sess）───
+   基準版只問「日期＋場地」兩欄；場次還要問起訖時間與入場時間，多場時再多一欄
+   場次名，欄數與欄寬都不一樣，所以另立修飾類承載——不動基準版的兩欄行為
+   （create-event-legacy.html 仍在消費基準版，改壞它會連帶壞到舊版備份頁）。
+   單場＝4 欄（日期｜起｜訖｜入場）；多場（[data-multi="true"]）多插一欄場次名＝5 欄。 */
+.session-list--detailed .session-list__fields {
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+}
+.session-list--detailed .session-list__row[data-multi="true"] > .session-list__fields,
+.session-list--detailed .session-list__head[data-multi="true"] > .session-list__fields {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr) repeat(3, minmax(0, .9fr));
+}
+
 @media (max-width: 640px) {
   .session-list__row { flex-wrap: wrap; }
   .session-list__fields { grid-template-columns: minmax(0, 1fr); }
+  .session-list__head { display: none; }
+  .session-list--detailed .session-list__row > .session-list__fields,
+  .session-list--detailed .session-list__row[data-multi="true"] > .session-list__fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }

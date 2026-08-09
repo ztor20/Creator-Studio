@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+    <pre>&lt;div class="upload-assets upload-assets--fill" data-upload-reveal&gt;
+  &lt;div class="upload-tile upload-tile--portrait" data-upload&gt;
+    &lt;span class="upload-tile__flag"&gt;Hero&lt;/span&gt;
+    &lt;span class="upload-tile__icon"&gt;…&lt;/span&gt;
+    &lt;span class="upload-tile__title"&gt;Add image&lt;/span&gt;
+    &lt;span class="upload-tile__hint"&gt;750 × 1125 · portrait&lt;/span&gt;
+  &lt;/div&gt;
+  …4 more, each `hidden` until the one before it is filled…
+&lt;/div&gt;</pre><!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
@@ -122,6 +130,10 @@
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/ticket-preview.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
+<!-- 2026-08-09 補掛：create-event bookyay 帶入閘門 promote 時新增的三支元件 -->
+<link rel="stylesheet" href="ds-components/source-import.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-source-tag.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/quick-result-list.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
 /* ===== Doc chrome (visualization shell only; tokens come from ds-components) ===== */
@@ -602,7 +614,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#rent-block">Rent block</a>
     <a class="toc__link toc__link--sub" href="#ip-hero">IP hero</a>
     <a class="toc__link toc__link--sub" href="#funding-panel">Funding panel</a>
-    <div class="toc__subgroup"><span data-en>R2.2 new components (19)</span><span data-zh>R2.2 新元件（19）</span></div>
+    <div class="toc__subgroup"><span data-en>R2.2 new components (22)</span><span data-zh>R2.2 新元件（22）</span></div>
     <a class="toc__link toc__link--sub" href="#artist-picker">Artist picker</a>
     <a class="toc__link toc__link--sub" href="#benefit-matrix">Benefit matrix</a>
     <a class="toc__link toc__link--sub" href="#tier-overview">Tier overview</a>
@@ -631,6 +643,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#session-list">Session list</a>
     <a class="toc__link toc__link--sub" href="#review-status">Review status</a>
     <a class="toc__link toc__link--sub" href="#size-chart-editor">Size chart editor</a>
+    <a class="toc__link toc__link--sub" href="#source-import">Source import gate</a>
+    <a class="toc__link toc__link--sub" href="#field-source-tag">Field source tag</a>
+    <a class="toc__link toc__link--sub" href="#quick-result-list">Quick result list</a>
     <div class="toc__group"><span data-en>Pillar 5 · Pattern</span><span data-zh>Pillar 5 · Pattern</span></div>
     <a class="toc__link" href="#patterns"><span data-en>5.1 Pattern cards</span><span data-zh>5.1 Pattern 卡</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
@@ -798,10 +813,18 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <p class="field-text" data-en><small><code>--brand-ink</code> light <code>#8F4E00</code> / dark <code>#ffa33f</code> — the readable version of brand orange for text/icons on a non-orange surface (contrast ≥5.7:1 on card/sidebar/tint). <code>--selected-ink</code> is a semantic alias of it. <code>--on-primary</code> is aligned to <code>#171717</code> in both themes (9.02:1 on <code>--primary</code>). <code>--selected-surface</code> and <code>--selected-surface-hover</code> are <code>color-mix(--primary 14%/20%, transparent)</code> tints, so they inherit whatever surface sits underneath.</small></p>
       <p class="field-text" data-zh><small><code>--brand-ink</code> 亮色 <code>#8F4E00</code>／暗色 <code>#ffa33f</code> —— 品牌橘鋪在非橘底上當文字／icon 用的可讀版本（對 card／sidebar／tint 皆 ≥5.7:1）。<code>--selected-ink</code> 是它的語意別名。<code>--on-primary</code> 兩個主題都定在 <code>#171717</code>（對 <code>--primary</code> 9.02:1）。<code>--selected-surface</code> 與 <code>--selected-surface-hover</code> 是 <code>color-mix(--primary 14%/20%, transparent)</code> 的淡染，會自動貼合底下任何底色。</small></p>
 
+      <p class="field-label" data-en>Faint ink (2026-08-09)</p>
+      <p class="field-label" data-zh>最低階墨色（2026-08-09）</p>
+      <p class="field-text" data-en><code>--faint-ink</code> = <code>color-mix(in srgb, var(--muted-foreground) 72%, transparent)</code> — one step quieter than the floor text token. <code>--muted-foreground</code> is already the site's quietest ink, so anything softer has to step it down in opacity. Mixing with <code>transparent</code> rather than a surface color means it keeps the same step of dimness on any background — and it therefore goes <em>darker</em> in the dark theme and <em>lighter</em> in the light theme on its own, with no per-theme override. Consumers: <code>--column-head-ink</code> (table headers, below) and the value of a source-locked field (<code>field-source-tag.css</code>).</p>
+      <p class="field-text" data-zh><code>--faint-ink</code> ＝ <code>color-mix(in srgb, var(--muted-foreground) 72%, transparent)</code> —— 比最低階文字 token 再輕一階。站上最安靜的墨色就是 <code>--muted-foreground</code>，比它更輕的角色只能以它為基底調降不透明度。混 <code>transparent</code> 而不是某個面色，所以它坐在任何底上都是同一階暗度——也因此**在黑夜版自動更深、在白天版自動更淡**，不需要逐主題各寫一次。消費者：<code>--column-head-ink</code>（表頭，見下）與來源鎖定欄位的值（<code>field-source-tag.css</code>）。</p>
+
+      <p class="field-text" data-en><code>--locked-field-ink</code> = <code>color-mix(in srgb, var(--muted-foreground) 55%, transparent)</code> — one step below <code>--faint-ink</code>, reserved for the value of a source-locked field. It is a separate token rather than a dimmer <code>--faint-ink</code> because that one also inks 10 table-header components, which are not meant to fade. <strong>Its contrast is deliberately below AA</strong> (measured: dark <code>#606061</code> on <code>#1C1D1E</code> = 2.69:1, light <code>#AFAFAC</code> on white = 2.20:1). That holds only because it carries a disabled read-only value, not information the page is asking you to read — the field label and the "From bookyay" source tag keep normal contrast and are what answer "what is this, and why can't I edit it". Do not use it for text meant to be read.</p>
+      <p class="field-text" data-zh><code>--locked-field-ink</code> ＝ <code>color-mix(in srgb, var(--muted-foreground) 55%, transparent)</code> —— 比 <code>--faint-ink</code> 再輕一階，專給來源鎖定欄位的值。之所以另立一個 token 而不是把 <code>--faint-ink</code> 調更淡：那一支同時是 10 支表頭元件的墨色，表頭並沒有要跟著變淡。<strong>對比刻意低於 AA</strong>（實測：深色 <code>#606061</code> 對 <code>#1C1D1E</code> ＝ 2.69:1、亮色 <code>#AFAFAC</code> 對白 ＝ 2.20:1）。成立的前提是它只承載 disabled 的唯讀值、不是本頁要讀的資訊——欄位標籤與「bookyay 帶入」來源標記都維持正常對比，「這格是什麼、為什麼不能改」由那兩個回答。不要拿它去寫需要閱讀的文字。</p>
+
       <p class="field-label" data-en>Column header ink (Q41, 2026-07-31)</p>
       <p class="field-label" data-zh>欄位表頭墨色（Q41，2026-07-31）</p>
-      <p class="field-text" data-en><code>--column-head-ink</code> = <code>color-mix(in srgb, var(--muted-foreground) 72%, transparent)</code> — the label ink for every list/table column header. There is no text token darker than <code>--muted-foreground</code> (light <code>#6E6E68</code> / dark <code>#979797</code> are already the floor), so it steps that down in opacity instead. It exists as a token because the same role had been running three recipes (bare <code>--muted-foreground</code>, <code>color-mix(…68%, --card)</code>, <code>color-mix(…72%, transparent)</code>) — exactly the ad-hoc greys Q9 set out to collapse. Mixing with <code>transparent</code> rather than <code>--card</code> keeps the same step of dimness on any surface, including the four headers that carry a <code>--muted</code> fill. Consumed by 10 header components.</p>
-      <p class="field-text" data-zh><code>--column-head-ink</code> ＝ <code>color-mix(in srgb, var(--muted-foreground) 72%, transparent)</code> —— 所有列表／表格欄位表頭的標籤墨色。站上沒有比 <code>--muted-foreground</code> 更暗的文字 token（亮 <code>#6E6E68</code>／暗 <code>#979797</code> 已是最低階），所以以它為基底調降不透明度。收成 token 是因為同一個角色原本跑了三種配方（裸 <code>--muted-foreground</code>、<code>color-mix(…68%, --card)</code>、<code>color-mix(…72%, transparent)</code>），正是 Q9 要收斂的「散落的即席灰」。混 <code>transparent</code> 而非 <code>--card</code>，表頭坐在任何底色上（含四支帶 <code>--muted</code> 底的）都是同一階暗度。消費者＝ 10 支表頭元件。</p>
+      <p class="field-text" data-en><code>--column-head-ink</code> = <code>var(--faint-ink)</code> (2026-08-09; the recipe itself moved up to <code>--faint-ink</code> when a second consumer appeared — value and behaviour unchanged) — the label ink for every list/table column header. There is no text token darker than <code>--muted-foreground</code> (light <code>#6E6E68</code> / dark <code>#979797</code> are already the floor), so it steps that down in opacity instead. It exists as a token because the same role had been running three recipes (bare <code>--muted-foreground</code>, <code>color-mix(…68%, --card)</code>, <code>color-mix(…72%, transparent)</code>) — exactly the ad-hoc greys Q9 set out to collapse. Mixing with <code>transparent</code> rather than <code>--card</code> keeps the same step of dimness on any surface, including the four headers that carry a <code>--muted</code> fill. Consumed by 10 header components.</p>
+      <p class="field-text" data-zh><code>--column-head-ink</code> ＝ <code>var(--faint-ink)</code>（2026-08-09 起；出現第二個消費者時把配方上收成 <code>--faint-ink</code>，值與行為不變）—— 所有列表／表格欄位表頭的標籤墨色。站上沒有比 <code>--muted-foreground</code> 更暗的文字 token（亮 <code>#6E6E68</code>／暗 <code>#979797</code> 已是最低階），所以以它為基底調降不透明度。收成 token 是因為同一個角色原本跑了三種配方（裸 <code>--muted-foreground</code>、<code>color-mix(…68%, --card)</code>、<code>color-mix(…72%, transparent)</code>），正是 Q9 要收斂的「散落的即席灰」。混 <code>transparent</code> 而非 <code>--card</code>，表頭坐在任何底色上（含四支帶 <code>--muted</code> 底的）都是同一階暗度。消費者＝ 10 支表頭元件。</p>
 
       <p class="field-label" data-en>Status ink pairs</p>
       <p class="field-label" data-zh>狀態墨色配對</p>
@@ -1295,7 +1318,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#button">Button</a></td><td>🟢</td><td><span data-en>Primary CTAs, wizard action bar, header actions</span><span data-zh>主要 CTA、精靈動作列、header 動作</span></td><td><code>button.css</code></td></tr>
           <tr><td><a href="#badge">Badge / Status pill</a></td><td>🟢</td><td><span data-en>Dashboard / Earnings / Payouts — 5 status variants</span><span data-zh>Dashboard／Earnings／Payouts — 5 種狀態變體</span></td><td><code>badge.css</code></td></tr>
           <tr><td><a href="#dot">Status dot</a></td><td>🟢</td><td><span data-en>Dashboard status / source dots</span><span data-zh>Dashboard 狀態／來源 dot</span></td><td><code>badge.css</code></td></tr>
-          <tr><td><a href="#chip">Chip</a></td><td>🟢</td><td><span data-en>Earnings filters, Tax year, supported regions</span><span data-zh>Earnings 篩選、稅務年度、支援地區</span></td><td><code>chip.css</code></td></tr>
+          <tr><td><a href="#chip">Chip</a></td><td>🟢</td><td><span data-en>Earnings filters, Tax year, supported regions; create-event's added-product list (<code>--removable</code>, 2026-08-09)</span><span data-zh>Earnings 篩選、稅務年度、支援地區；建立活動的加入商品清單（<code>--removable</code>，2026-08-09）</span></td><td><code>chip.css</code></td></tr>
           <tr><td><a href="#switch">Switch</a></td><td>🟢</td><td><span data-en>Settings, E-Shop visibility, auto-payout</span><span data-zh>Settings、E-Shop 可見性、auto-payout</span></td><td><code>switch.css</code></td></tr>
           <tr><td><a href="#info-banner">Info banner</a></td><td>🟢</td><td><span data-en>Inline callouts (Pending ≠ Available, legal hint)</span><span data-zh>行內提示（Pending ≠ Available、法務提示）</span></td><td><code>info-banner.css</code></td></tr>
           <tr><td><a href="#upload-tile">Upload tile</a></td><td>🟢</td><td><span data-en>Create flows — hero / thumbs / file drop; opt-in interactive uploader (pick → progress → hover Replace / AI-optimize / Delete) via <code>[data-upload]</code></span><span data-zh>建立流程的上傳格 — 主圖／縮圖／檔案；以 <code>[data-upload]</code> 開啟互動上傳（選圖→進度→hover 替換／AI 優化／刪除）</span></td><td><code>upload-tile.css</code></td></tr>
@@ -1347,7 +1370,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#preview-panel">Preview panel</a></td><td>🟠</td><td><span data-en>Right split panel holding the live preview — compresses the wizard, not an overlay</span><span data-zh>右側畫面分割面板承載即時預覽，壓窄 wizard、非浮層</span></td><td><code>preview-panel.css</code></td></tr>
           <tr><td><a href="#fan-store">Fan store preview</a></td><td>🟠</td><td><span data-en>Fan-side storefront inside See-as-fan (E-Shop F5 + Store settings F1, §6.7 same view), presented as a dark mobile phone: app bar + hero + app pills + featured + sub-tabs + product grid + top fans + about + bottom nav</span><span data-zh>See-as-fan 內的粉絲端店面（E-Shop F5＋商店設定 F1，§6.7 同源），呈現為深色手機：app 頂列＋hero＋app 分頁列＋本月精選＋子分頁＋商品格＋頭號粉絲＋關於＋底部導航</span></td><td><code>fan-store.css</code></td></tr>
           <tr><td><a href="#ticket-tier-card">Ticket tier card</a></td><td>🟡</td><td><span data-en>Ticket tier row in the event create flow — collapsed summary (name + price + quantity) vs expanded edit form</span><span data-zh>建立活動的票種卡——收合摘要（名稱＋價格＋數量）與展開編輯表單兩態</span></td><td><code>ticket-tier-card.css</code></td></tr>
-          <tr><td><a href="#session-list">Session list</a></td><td>🟡</td><td><span data-en>Per-date list for an event that runs several times; date 1 mirrors the fields above, dates 2+ are editable</span><span data-zh>一活動辦好幾場時逐場列出；第 1 場是上面欄位的鏡像，第 2 場起可編輯</span></td><td><code>session-list.css</code></td></tr>
+          <tr><td><a href="#session-list">Session list</a></td><td>🟡</td><td><span data-en>Per-date list for an event that runs several times; date 1 mirrors the fields above, dates 2+ are editable. <code>__head</code> column headings + <code>--detailed</code> multi-column variant added 2026-08-09</span><span data-zh>一活動辦好幾場時逐場列出；第 1 場是上面欄位的鏡像，第 2 場起可編輯。2026-08-09 新增 <code>__head</code> 欄位標題列與 <code>--detailed</code> 多欄變體</span></td><td><code>session-list.css</code></td></tr>
           <tr><td><a href="#review-status">Review status</a></td><td>🟡</td><td><span data-en>Where one submitted work stands — status badge, read-only facts, the rejection reason, and what to do next; used on both sides of the review (creator and platform operator)</span><span data-zh>一件送審作品現在走到哪——狀態徽章、唯讀事實、退件理由、接下來能做什麼；審核的兩端（創作者與平台營運）共用同一支</span></td><td><code>review-status.css</code></td></tr>
           <tr><td><a href="#ticket-preview">Ticket preview</a></td><td>🟡</td><td><span data-en>The ticket a fan receives, previewed live while the creator fills the form — identity half, tear line, QR half</span><span data-zh>粉絲收到的那張票，創作者邊填邊看——識別半張、撕線、QR 半張</span></td><td><code>ticket-preview.css</code></td></tr>
           <tr><td><a href="#readiness">Readiness card</a></td><td>🟡</td><td><span data-en>Pre-publish checklist + remaining-count banner (Ready to sell?)</span><span data-zh>上架前就緒檢查＋還差幾項 banner（Ready to sell?）</span></td><td><code>readiness.css</code></td></tr>
@@ -1363,7 +1386,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#field-system">Field system</a></td><td>🟡</td><td><span data-en>Form label / hint / control grouping in settings and wizards</span><span data-zh>Settings 與 wizard 的表單標籤／提示／控制組</span></td><td><code>field-system.css</code> · <code>input.css</code></td></tr>
           <tr><td><a href="#form-section">Form section</a></td><td>🟠</td><td><span data-en>No-card section skeleton (title + sub + divider) for create flows</span><span data-zh>建立流程的無卡片區段骨架（標題＋副標＋分隔線）</span></td><td><code>form-section.css</code></td></tr>
           <tr><td><a href="#radio-card">Radio card</a></td><td>🟡</td><td><span data-en>Side-by-side selectable cards (radio dot, title + sub) built on Segmented</span><span data-zh>並排可選卡（radio 點＋標題/描述），建在 Segmented 上</span></td><td><code>radio-card.css</code></td></tr>
-          <tr><td><a href="#radio-list">Radio list</a></td><td>🟡</td><td><span data-en>Lightweight vertical 1-of-N picker (radio dot + title/sub); data choice, not view switch</span><span data-zh>輕量垂直單選（radio 點＋標題/描述）；資料選擇、非視角切換</span></td><td><code>radio-list.css</code></td></tr>
+          <tr><td><a href="#radio-list">Radio list</a></td><td>🟡</td><td><span data-en>Lightweight vertical 1-of-N picker (radio dot + title/sub); data choice, not view switch — now also a form's rule radio (create-event ticket-tier rules, 2026-08-09)</span><span data-zh>輕量垂直單選（radio 點＋標題/描述）；資料選擇、非視角切換——現在也用於表單裡的規則選項（建立活動票種規則，2026-08-09）</span></td><td><code>radio-list.css</code></td></tr>
           <tr><td><a href="#date-input">Date input placeholder</a></td><td>🔵</td><td><span data-en>Placeholder decorator for native date / time inputs (calendar icon + "Pick a date" when empty)</span><span data-zh>原生日期／時間欄位的 placeholder 裝飾層（空值時日曆 icon ＋「選擇日期」）</span></td><td><code>date-input.css</code></td></tr>
           <tr><td><a href="#stock-readout">Stock readout</a></td><td>🔵</td><td><span data-en>Read-only quantity readout (big number + unit + status badge) for values that can only change via an action</span><span data-zh>唯讀數量讀數（大數字＋單位＋狀態徽章），用在「只能透過某個動作改變」的數量</span></td><td><code>stock-readout.css</code></td></tr>
           <tr><td><a href="#nest">Nest</a></td><td>🔵</td><td><span data-en>Full-bleed block seated at the card's bottom edge, lifted by an upward shadow (layer 2 of two fills)</span><span data-zh>嵌在卡片底緣的滿版子層，靠向上陰影浮起（兩層填色中的第二層）</span></td><td><code>nest.css</code></td></tr>
@@ -1714,7 +1737,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       </tr>
     </tbody></table>
   </div>
-  <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">.chip--removable</span><span class="gallery__when" data-en>Selected / creator-added value carrying an inline × (tag-input, product tags, film picker, pickup session multi-select). Colour inherits, so it works on every fill.</span><span class="gallery__when" data-zh>帶行內 × 的已選／自建值（tag-input、商品標籤、電影關聯、取貨場次多選；2026-07-21 起不再用於選項值）。顏色繼承，任何填色都適用。</span></div>
+  <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">.chip--removable</span><span class="gallery__when" data-en>Selected / creator-added value carrying an inline × (tag-input, product tags, film picker, pickup session multi-select, and — since 2026-08-09 — create-event's added-product list, price folded into the chip text with no separate column). Colour inherits, so it works on every fill.</span><span class="gallery__when" data-zh>帶行內 × 的已選／自建值（tag-input、商品標籤、電影關聯、取貨場次多選；2026-08-09 起也用於建立活動「加入商品」清單，價格併進 chip 文字、不另立一欄；2026-07-21 起不再用於選項值）。顏色繼承，任何填色都適用。</span></div>
     <table class="matrix"><thead><tr><th></th><th>neutral</th><th>.chip--value</th><th>.chip--active</th></tr></thead><tbody>
       <tr><th>removable</th>
         <td><span class="chip chip--removable">Vinyl<button class="chip__remove" type="button" aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button></span></td>
@@ -1769,6 +1792,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-label" data-zh>Class API（樣式類別）<span class="field-note">（CSS class — 無 Props／API，靜態原型）</span></p>
     <table class="spec"><thead><tr><th><span data-en>Class / modifier</span><span data-zh>Class／修飾子</span></th><th><span data-en>Effect</span><span data-zh>效果</span></th></tr></thead><tbody>
       <tr><td><code>.chip-group</code></td><td><span data-en>inline-flex wrap container, 6px gap</span><span data-zh>inline-flex 換行容器，6px gap</span></td></tr>
+      <tr><td><code>.chip-group--loose</code></td><td><span data-en>2026-08-09 promoted from create-event.html (was <code>.ce-lineup</code>): a looser block container (not inline-flex) with wider gap (8px) and bottom margin (12px), for a self-contained removable chip list inside a form (e.g. lineup / performers)</span><span data-zh>2026-08-09 自 create-event.html 的 <code>.ce-lineup</code> promote：更寬鬆的 block 容器（非 inline-flex），較大間距（8px）與底部留白（12px），用於表單裡自成一段的可移除 chip 清單（如陣容／參演者）</span></td></tr>
       <tr><td><code>.chip</code></td><td><span data-en>Interactive filter pill</span><span data-zh>互動式篩選 pill</span></td></tr>
       <tr><td><code>.chip--active</code></td><td><span data-en>Inverted selected state</span><span data-zh>反白的選取狀態</span></td></tr>
       <tr><td><code>.chip--static</code></td><td><span data-en>Read-only chip (e.g. supported-regions list)</span><span data-zh>唯讀 chip（如支援地區清單）</span></td></tr>
@@ -1817,8 +1841,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
 
-  <p class="sub__desc" data-en>Binary on/off toggle; 36 × 20 pill with a sliding 16px knob, on-state fills orange. Use for immediate-apply binary settings (notifications, privacy, auto-payout, marketplace visibility); avoid where a Save step is required — use a checkbox/form control instead.</p>
-  <p class="sub__desc" data-zh>二元 on／off 切換；36 × 20 pill 帶滑動的 16px knob，on 狀態填成橘色。用於即時生效的二元設定（通知、隱私、auto-payout、商城可見性）；需要 Save 步驟的場合別用 — 改用 checkbox／表單控制項。</p>
+  <p class="sub__desc" data-en>Binary on/off toggle; 36 × 20 pill with a sliding 16px knob, on-state fills orange. Use for immediate-apply binary settings (notifications, privacy, auto-payout, marketplace visibility); avoid where a Save step is required — use a checkbox/form control instead. <code>.switch--locked</code> stacks a compliance/source-locked look on top of either state (2026-08-09, promoted from <code>notification-matrix.css</code> — see the code tab).</p>
+  <p class="sub__desc" data-zh>二元 on／off 切換；36 × 20 pill 帶滑動的 16px knob，on 狀態填成橘色。用於即時生效的二元設定（通知、隱私、auto-payout、商城可見性）；需要 Save 步驟的場合別用 — 改用 checkbox／表單控制項。<code>.switch--locked</code> 可疊在任一狀態上表示合規／來源鎖定（2026-08-09 從 <code>notification-matrix.css</code> 上收，見下方給工程師的 code 分頁）。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(binary — no separate hover/focus in CSS)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">(二元 — CSS 無獨立 hover/focus)</span></p>
   <div class="matrix-block"><div class="matrix-block__head"><span class="gallery__name">.switch</span><span class="gallery__when" data-en>Binary on/off; the on state fills orange. No separate hover/focus styling in CSS.</span><span class="gallery__when" data-zh>二元 on/off；on 態填橘。CSS 無獨立 hover/focus 樣式。</span></div>
@@ -1829,11 +1853,17 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </tr>
   </tbody></table>
   </div>
+  <p class="field-label" data-en>Locked <span class="field-note">(<code>.switch--locked</code> — compliance/source-locked stopgap; settings.html payout-confirmation email, tier-settings.html, create-event.html's bookyay-imported "go on sale immediately")</span></p>
+  <p class="field-label" data-zh>鎖定 <span class="field-note">(<code>.switch--locked</code>——合規／來源鎖定；settings.html 撥款確認信、tier-settings.html、create-event.html bookyay 帶入的「發布後直接開賣」)</span></p>
+  <div class="demo">
+    <div class="switch switch--on switch--locked" role="switch" aria-checked="true" aria-disabled="true" aria-label="Payout confirmation email (required)"></div>
+    <div class="switch switch--locked" role="switch" aria-checked="false" aria-disabled="true" aria-label="Go on sale immediately (locked by bookyay import)" style="margin-left:14px"></div>
+  </div>
   <p class="field-label" data-en>Do &amp; Don't</p>
   <p class="field-label" data-zh>該做與別做</p>
   <div class="dodont">
-    <div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Label what "on" means next to the switch.</li><li data-zh>在 switch 旁標明「on」代表什麼。</li></ul></div>
-    <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Use a switch for actions that need confirmation.</li><li data-zh>別把需要確認的動作用 switch 來做。</li></ul></div>
+    <div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Label what "on" means next to the switch.</li><li data-zh>在 switch 旁標明「on」代表什麼。</li><li data-en>Pair <code>.switch--locked</code> with the page's own click-guard — the class is cosmetic only.</li><li data-zh><code>.switch--locked</code> 要搭頁面自己的點擊擋——這個 class 只管視覺，不擋點擊。</li></ul></div>
+    <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Use a switch for actions that need confirmation.</li><li data-zh>別把需要確認的動作用 switch 來做。</li><li data-en>Re-invent a second "locked switch" look in a page-local stylesheet — one component, one lock visual.</li><li data-zh>別在頁面自己的樣式表另造第二種「鎖定 switch」——全站只有一種鎖定視覺。</li></ul></div>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · tokens · code</span><span data-zh>給工程師 — class · token · 程式碼</span></summary>
   <div class="code-fold__body">
@@ -1850,6 +1880,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <table class="spec"><thead><tr><th><span data-en>Class / modifier</span><span data-zh>Class／修飾子</span></th><th><span data-en>Effect</span><span data-zh>效果</span></th></tr></thead><tbody>
       <tr><td><code>.switch</code></td><td><span data-en>Off track + knob (knob is <code>::after</code>)</span><span data-zh>off track＋knob（knob 是 <code>::after</code>）</span></td></tr>
       <tr><td><code>.switch--on</code></td><td><span data-en>On state: orange track + knob slid right</span><span data-zh>on 狀態：橘色 track＋knob 滑到右側</span></td></tr>
+      <tr><td><code>.switch--locked</code></td><td><span data-en>Stacks on either state: <code>cursor: not-allowed</code> + <code>opacity: .65</code>. <strong>2026-08-09 promoted from <code>notification-matrix.css</code></strong> into this file — <code>tier-settings.html</code> and <code>create-event.html</code> link <code>switch.css</code> but not <code>notification-matrix.css</code>, so a switch there could carry the class with a JS click-guard but zero visual change (nothing looked disabled). All three consumers (settings.html, tier-settings.html, create-event.html) now reach the lock style from the one file it belongs in</span><span data-zh>疊在任一狀態上：<code>cursor: not-allowed</code>＋<code>opacity: .65</code>。<strong>2026-08-09 從 <code>notification-matrix.css</code> 上收</strong>進本檔——<code>tier-settings.html</code>／<code>create-event.html</code> 只連 <code>switch.css</code>、沒連 <code>notification-matrix.css</code>，掛了 class＋JS 點擊擋，畫面卻毫無變化（看不出被鎖）。三個消費頁（settings.html、tier-settings.html、create-event.html）現在都從同一支檔拿到鎖定樣式</span></td></tr>
     </tbody></table>
     <p class="field-label" data-en>Token usage <span class="field-note">(→ Pillar 2 Role)</span></p>
     <p class="field-label" data-zh>Token 使用 <span class="field-note">(→ Pillar 2 Role)</span></p>
@@ -1866,8 +1897,11 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <li data-zh><code>--radius-pill</code> — track＋knob 形狀</li>
       <li data-en><code>left 150ms ease</code> — knob motion</li>
       <li data-zh><code>left 150ms ease</code> — knob 動態</li>
+      <li data-en><code>.switch--locked</code> reuses <code>opacity</code>/<code>cursor</code> only — no new tokens</li>
+      <li data-zh><code>.switch--locked</code> 只重用 <code>opacity</code>／<code>cursor</code>——無新增 token</li>
     </ul>
-    <pre class="code">&lt;button class="switch switch--on" role="switch" aria-checked="true" aria-label="Auto-payout"&gt;&lt;/button&gt;</pre>
+    <pre class="code">&lt;button class="switch switch--on" role="switch" aria-checked="true" aria-label="Auto-payout"&gt;&lt;/button&gt;
+&lt;button class="switch switch--on switch--locked" role="switch" aria-checked="true" aria-disabled="true" aria-label="Payout confirmation email (required)"&gt;&lt;/button&gt;</pre>
     <p class="field-text"><code>ds-components/switch.css</code></p>
   </div>
   </details>
@@ -2045,8 +2079,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Pair with Field system for label + error message.</li><li data-zh>搭配 Field system 顯示 label 與錯誤訊息。</li><li data-en>Use <code>.input--with-prefix</code> when a fixed leading glyph (currency, unit) sits inside the field.</li><li data-zh>欄位內有固定前置符號（幣別、單位）時用 <code>.input--with-prefix</code>。</li><li data-en>Rely on the component's 1px <code>--border</code> shadow edge; do not add a second border.</li><li data-zh>欄位邊緣使用元件既有的 1px <code>--border</code> 陰影邊線，不要另加第二層 border。</li><li data-en>Use <code>.select--bare</code> only when the select has no card/section ancestor (2026-07-26 rule: border is reserved for controls sitting inside a card/section).</li><li data-zh>只有 select 不在任何卡片／section 內才用 <code>.select--bare</code>（2026-07-26 新規則：border 只留給疊在卡片／section 內的控件）。</li></ul></div>
     <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Invent a size variant — the real component ships one size only.</li><li data-zh>別自創尺寸變體 — 真身元件只有一種尺寸。</li><li data-en>Use <code>.select--bare</code> inside a card/form-section — it needs the 1px edge to read as a field there.</li><li data-zh>別在卡片／form-section 內用 <code>.select--bare</code> — 那裡需要 1px 邊線才讀得出是欄位。</li></ul></div>
   </div>
-  <p class="field-note" data-en><code>:disabled</code> = muted <code>--muted</code> fill + <code>--foreground-muted</code> text + <code>not-allowed</code> (read-only presentation for fixed-after-creation locked fields, D137). State gap: <code>aria-invalid</code> (error ring) styling is still not implemented in <code>input.css</code>.</p>
-  <p class="field-note" data-zh><code>:disabled</code> ＝靜音底 <code>--muted</code> ＋文字 <code>--foreground-muted</code> ＋ <code>not-allowed</code>（建立後固定不可編輯欄位的唯讀呈現，D137）。狀態缺口：<code>input.css</code> 仍未實作 <code>aria-invalid</code>（錯誤 ring）樣式。</p>
+  <p class="field-note" data-en><code>:disabled</code> = transparent fill (takes whatever surface it sits on) + <code>--locked-field-ink</code> text + <code>not-allowed</code> + <code>opacity: 1</code> (read-only presentation for fixed-after-creation locked fields, D137). <strong>2026-08-09:</strong> consolidated to a single sitewide disabled look — previously <code>--muted</code> fill + <code>--foreground-muted</code> text + <code>opacity: .75</code>, which read as a "something's broken" dark box when sitting on a card; source-locked fields (<a href="#field-source-tag">Field source tag</a>) had already moved to this transparent look, so it was promoted up to the component baseline instead of leaving two disabled looks on the site. State gap: <code>aria-invalid</code> (error ring) styling is still not implemented in <code>input.css</code>.</p>
+  <p class="field-note" data-zh><code>:disabled</code> ＝透明底（直接吃它所坐的那個面）＋文字 <code>--locked-field-ink</code> ＋ <code>not-allowed</code> ＋ <code>opacity: 1</code>（建立後固定不可編輯欄位的唯讀呈現，D137）。**2026-08-09：**收斂成全站唯一一種 disabled 呈現——原本是 <code>--muted</code> 填底＋文字 <code>--foreground-muted</code>＋<code>opacity: .75</code>，坐在卡片上會變成一塊「這裡壞了」的深色方塊；來源鎖定欄位（<a href="#field-source-tag">Field source tag</a>）當時已改用透明底，於是把那組值上收成元件層基準，不留兩種 disabled 並存。狀態缺口：<code>input.css</code> 仍未實作 <code>aria-invalid</code>（錯誤 ring）樣式。</p>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · tokens · code</span><span data-zh>給工程師 — class · token · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-label" data-en>Behavior details</p>
@@ -2054,7 +2088,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <table class="spec"><thead><tr><th><span data-en>State</span><span data-zh>狀態</span></th><th><span data-en>Selector</span><span data-zh>選擇器</span></th><th><span data-en>Change</span><span data-zh>變化</span></th></tr></thead><tbody>
       <tr><td><span data-en>default</span><span data-zh>預設</span></td><td>—</td><td><span data-en>bg <code>--card</code>, 1px <code>box-shadow</code> edge, text <code>--foreground</code></span><span data-zh>背景 <code>--card</code>，1px <code>box-shadow</code> 邊線，文字 <code>--foreground</code></span></td></tr>
       <tr><td><span data-en>focus</span><span data-zh>focus</span></td><td><code>:focus</code></td><td><span data-en><code>--ring</code> edge + 4px soft glow</span><span data-zh><code>--ring</code> 邊線＋4px 柔光環</span></td></tr>
-      <tr><td><span data-en>disabled / error</span><span data-zh>disabled／錯誤</span></td><td>—</td><td><span data-en>not implemented — state gap, see above</span><span data-zh>未實作 — 狀態缺口，見上方</span></td></tr>
+      <tr><td><span data-en>disabled</span><span data-zh>disabled</span></td><td><code>:disabled</code></td><td><span data-en>transparent fill + <code>--locked-field-ink</code> text + <code>not-allowed</code> (2026-08-09, sitewide baseline — see field-note above)</span><span data-zh>透明底＋文字 <code>--locked-field-ink</code>＋<code>not-allowed</code>（2026-08-09 全站基準，見上方 field-note）</span></td></tr>
+      <tr><td><span data-en>error</span><span data-zh>錯誤</span></td><td><code>aria-invalid</code></td><td><span data-en>not implemented — state gap</span><span data-zh>未實作 — 狀態缺口</span></td></tr>
     </tbody></table>
     <p class="field-label" data-en>Class API <span class="field-note">(CSS classes — Props/API N/A, static prototype)</span></p>
     <p class="field-label" data-zh>Class API（樣式類別）<span class="field-note">（CSS class — 無 Props／API,靜態原型）</span></p>
@@ -2199,6 +2234,25 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </div>
   <p class="field-text" data-en>Which sections a form has, their order, and the field mix inside are the <a href="#patterns">Pillar 5 · Form assembly</a> recipe — the fields above are illustrative only.</p>
   <p class="field-text" data-zh>一張表單有哪些區段、什麼順序、段內放哪些欄位，屬 <a href="#patterns">Pillar 5 · Form assembly</a> 配方——上面的欄位內容只是示意。</p>
+  <p class="field-label" data-en>Sub-head <span class="field-note">(<code>.form-section__subhead</code> — 2026-08-09 promoted from create-event.html's <code>.ce-subhead</code>; groups fields inside one section, e.g. "Date &amp; time" vs "Session details")</span></p>
+  <p class="field-label" data-zh>區段內小標 <span class="field-note">（<code>__subhead</code>——2026-08-09 自 create-event.html 的 <code>.ce-subhead</code> promote；一個區段內再分組，如「場次日期與時間」／「場次細節」）</span></p>
+  <div class="demo demo--preview">
+    <div class="ds-preview ds-preview--narrow">
+      <section class="form-section" style="padding-top:0">
+        <div class="form-section__head"><h3 class="form-section__title">Session</h3></div>
+        <div class="form-section__subhead">Date &amp; time</div>
+        <div class="field"><label class="field__label">Start</label><input class="input" type="datetime-local"></div>
+        <div class="form-section__subhead">Session details</div>
+        <div class="form-section__grouplabel"><label class="field__label">Capacity</label></div>
+        <div class="form-grid">
+          <div class="field"><label class="field__label">Min</label><input class="input" value="0"></div>
+          <div class="field"><label class="field__label">Max</label><input class="input" value="120"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <p class="field-text" data-en>Font matches <code>.form-section__title</code> exactly (<code>--fs-14</code>, display) — per Q21 the site no longer signals hierarchy by bumping type size; a top hairline + spacing carry it instead. The first sub-head right under a section head skips its own divider (the section title already drew the line).</p>
+  <p class="field-text" data-zh>字型與 <code>.form-section__title</code> 完全一樣（<code>--fs-14</code>、display）——Q21 之後全站不再用放大字級表示層級，改由上緣 hairline 與留白承擔。緊接在區段標題之下的第一個小標不畫自己的分隔線（上面就是區段標題本人）。</p>
   <p class="field-label" data-en>Form footnote <span class="field-note">(centered small print below the last section — e.g. Stripe payment protection copy)</span></p>
   <p class="field-label" data-zh>表單 footnote <span class="field-note">（最後一個區段之下的置中小字——如 Stripe 保障文案）</span></p>
   <div class="demo demo--preview">
@@ -2207,7 +2261,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="form-section"><tbody><tr><td>Source</td><td><code>form-section.css</code></td></tr><tr><td>Anatomy</td><td>Section = head (title + optional sub) + fields; sibling sections get a top divider. The outlined variant adds a surface fill + rounded corners (no border edge as of Q14, 2026-07-16).</td></tr><tr><td>Behavior / usage</td><td><strong>2026-07-20 (Q21) type-scale flattening — applies to every form-section consumer at once:</strong> <code>.form-section__title</code> drops <code>--fs-18</code> → <code>--fs-14</code>, putting the section title on the same step as <code>.field__label</code>, so hierarchy is carried by the card edge rather than by making the heading bigger; <code>.form-section__sub</code> drops <code>--fs-14</code> → <code>--fs-11</code> and darkens <code>--foreground-muted</code> → <code>--muted-foreground</code>, matching <code>.field__hint</code> because a section sub-line and a field hint are the same "supporting explanation" role. Base 44px vertical padding; fields retain the base gap 6px and field-to-field spacing 16px, description hugs label, count hint right-aligned. Sectioned create sheets use <code>--surface-page</code>. <code>.form-section--outlined</code> uses <code>--card</code> fill in light mode, <code>--muted</code> fill in dark mode, no border edge (Q14, 2026-07-16), <code>--radius-xl</code> corners and <code>--sp-16</code> padding; visible outlined siblings use <code>--sp-24</code>, including across hidden conditional sections. <code>.form-footnote</code>: centered, 12px muted, margin-top 22px（2026-07-09 自 create-product/auction 頁內樣式 promote；create-campaign 的 <code>.fc-footnote</code> 樣式不同、維持獨立）。</td></tr><tr><td>Token usage</td><td><code>--surface-page</code>, <code>--card</code>（light）, <code>--muted</code>（dark）, <code>--border-soft</code>, <code>--radius-xl</code>, <code>--sp-16</code>, <code>--sp-24</code>, <code>--sp-4</code>, <code>--fs-14</code>（title, was <code>--fs-18</code> before Q21）, <code>--fs-11</code>（sub, was <code>--fs-14</code>）, <code>--fs-12</code>（footnote）, <code>--type-title-24-*</code>, <code>--lh-normal</code>, <code>--muted-foreground</code>（sub, was <code>--foreground-muted</code>）.</td></tr><tr><td>Classes</td><td><code>.form-section</code> · <code>.form-section--outlined</code> · <code>.form-section__head</code> · <code>.form-section__head--actions</code>（標題列帶右側動作：<code>.form-section__head-titles</code>＋<code>.form-section__head-actions</code>，2026-07-22）· <code>.form-section__title</code> · <code>.form-section__sub</code> · <code>.field__hint--count</code> · <code>.form-footnote</code></td></tr><tr><td>Evidence / usage</td><td>create-product / -auction / -bundle / -event / -project / register-ip / admin-ip-bank-entry (outlined adoption); create-product / create-auction (footnote); <a href="section-test.html">section-test.html</a> (visual test).</td></tr></tbody></table>
+  <table class="spec" data-product-spec="form-section"><tbody><tr><td>Source</td><td><code>form-section.css</code></td></tr><tr><td>Anatomy</td><td>Section = head (title + optional sub) + fields; sibling sections get a top divider. The outlined variant adds a surface fill + rounded corners (no border edge as of Q14, 2026-07-16).</td></tr><tr><td>Behavior / usage</td><td><strong>2026-07-20 (Q21) type-scale flattening — applies to every form-section consumer at once:</strong> <code>.form-section__title</code> drops <code>--fs-18</code> → <code>--fs-14</code>, putting the section title on the same step as <code>.field__label</code>, so hierarchy is carried by the card edge rather than by making the heading bigger; <code>.form-section__sub</code> drops <code>--fs-14</code> → <code>--fs-11</code> and darkens <code>--foreground-muted</code> → <code>--muted-foreground</code>, matching <code>.field__hint</code> because a section sub-line and a field hint are the same "supporting explanation" role. Base 44px vertical padding; fields retain the base gap 6px and field-to-field spacing 16px, description hugs label, count hint right-aligned. Sectioned create sheets use <code>--surface-page</code>. <code>.form-section--outlined</code> uses <code>--card</code> fill in light mode, <code>--muted</code> fill in dark mode, no border edge (Q14, 2026-07-16), <code>--radius-xl</code> corners and <code>--sp-16</code> padding; visible outlined siblings use <code>--sp-24</code>, including across hidden conditional sections. <code>.form-footnote</code>: centered, 12px muted, margin-top 22px（2026-07-09 自 create-product/auction 頁內樣式 promote；create-campaign 的 <code>.fc-footnote</code> 樣式不同、維持獨立）。</td></tr><tr><td>Token usage</td><td><code>--surface-page</code>, <code>--card</code>（light）, <code>--muted</code>（dark）, <code>--border-soft</code>, <code>--radius-xl</code>, <code>--sp-16</code>, <code>--sp-24</code>, <code>--sp-4</code>, <code>--fs-14</code>（title, was <code>--fs-18</code> before Q21）, <code>--fs-11</code>（sub, was <code>--fs-14</code>）, <code>--fs-12</code>（footnote）, <code>--type-title-24-*</code>, <code>--lh-normal</code>, <code>--muted-foreground</code>（sub, was <code>--foreground-muted</code>）.</td></tr><tr><td>Classes</td><td><code>.form-section</code> · <code>.form-section--outlined</code> · <code>.form-section__head</code> · <code>.form-section__head--actions</code>（標題列帶右側動作：<code>.form-section__head-titles</code>＋<code>.form-section__head-actions</code>，2026-07-22）· <code>.form-section__title</code> · <code>.form-section__sub</code> · <code>.form-section__subhead</code>（區段內再分組的小標，2026-08-09；字級同 <code>__title</code>，卡頂第一個不畫分隔線）· <code>.form-section__grouplabel</code>（小標底下的欄位分組，2026-08-09）· <code>.field__hint--count</code> · <code>.form-footnote</code></td></tr><tr><td>Evidence / usage</td><td>create-product / -auction / -bundle / -event / -project / register-ip / admin-ip-bank-entry (outlined adoption); create-product / create-auction (footnote); <a href="section-test.html">section-test.html</a> (visual test).</td></tr></tbody></table>
 </section>
 <section class="sub" id="form-grid">
   <div class="sub__head"><h3 class="sub__title">4.12 Form grid</h3><span class="layer layer--atom">🟢 atom</span></div>
@@ -2228,7 +2282,17 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 </section>
 <section class="sub" id="control-row">
   <div class="sub__head"><h3 class="sub__title">4.13 Control row</h3><span class="layer layer--molecule">🟡 molecule</span></div>
-  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+    <p class="field-label" data-en>Plain box <span class="field-note">(<code>--plain</code> / <code>__body--top</code>, 2026-08-10)</span></p>
+  <p class="field-label" data-zh>單塊外框盒 <span class="field-note">（<code>--plain</code>／<code>__body--top</code>，2026-08-10）</span></p>
+  <p class="sub__desc" data-en><code>.control-group--plain</code> is the group with no switch row and no reveal — just an outlined box with its own padding, for grouping content that needs a visible edge. First use: the ticket step of create-event, one box per date, so you can tell which tickets belong together once there are several. <code>.control-group__body--top</code> drops the top divider for when the reveal is the only block in the group.</p>
+  <p class="sub__desc" data-zh><code>.control-group--plain</code> 是「沒有開關列、也沒有揭示區」的版本——就是一個帶內距的外框盒，用來把需要看得出邊界的一塊內容圈起來。首個用途：建立活動票務那一步，一個場次一個框，門票一多才看得出哪幾張屬於同一場。<code>.control-group__body--top</code> 用在「揭示區是群組裡唯一一塊」的情形，收掉那條沒有東西可分隔的上緣線。</p>
+  <div class="demo"><div style="width:100%;max-width:420px">
+    <div class="control-group control-group--plain">
+      <div class="field" style="margin-bottom:0"><label class="field__label">Day 1 · 2026/10/02</label><input class="input" value="General admission"></div>
+    </div>
+  </div></div>
+
+<p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
   <p class="sub__desc" data-en>A standalone bordered row holding a label (+ optional sub) on the left and a control (Switch, number, button) on the right. Unlike Settings row (a list row with only a bottom divider), this is a self-contained outlined box — used for low-stock alert, shop visibility, per-person limit. When the control reveals a form, wrap the row and the revealed block in <code>.control-group</code> so the two read as one setting rather than two unrelated things (2026-07-21).</p>
   <p class="sub__desc" data-zh>一條獨立的圓角外框列，左邊標籤（＋可選副），右邊放控件（Switch、數量、按鈕）。不同於 Settings row（只有下底線的列表列），這是站得住的外框盒——用於低庫存提醒、上架開關、每人限購。開關會揭示表單時，把開關列與揭示區一起包進 <code>.control-group</code>，讓兩者讀起來是同一個設定、而不是兩件不相干的事（2026-07-21）。</p>
   <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
@@ -2258,7 +2322,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="control-row"><tbody><tr><td>Source</td><td><code>control-row.css</code></td></tr><tr><td>Anatomy</td><td>Row: left <code>.control-row__main</code> (+ <code>__sub</code>) · right control slot (Switch / Input / Button).<br>Group: <code>.control-group</code> &gt; <code>.control-row</code> + <code>.control-group__body[hidden]</code>.</td></tr><tr><td>Variants</td><td><code>.control-row</code> standalone (own 1px inset border, <code>--radius-md</code>) · <code>.control-group</code> wrapper (<code>--radius-xl</code>, 1px inset border; the row inside gives up its own border and radius, the group owns the boundary).</td></tr><tr><td>Behavior / usage</td><td>Use <code>.control-group</code> whenever the toggle reveals a form — the revealed block becomes <code>.control-group__body</code> (1px top divider + <code>--sp-16</code> padding) so the dependency reads visually. Groups nest: a body may contain another <code>.control-group</code> (Enable discount ▸ Limited-time discount). Width limits belong on the inner field, never on <code>__body</code> — a narrowed body clips the divider.</td></tr><tr><td>Token usage</td><td><code>--border</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-16</code>, <code>--fs-14</code>, <code>--muted-foreground</code>.</td></tr><tr><td>Classes</td><td><code>.control-row</code> · <code>.control-row__main</code> · <code>.control-row__sub</code> · <code>.control-group</code> · <code>.control-group__body</code></td></tr><tr><td>Evidence / usage</td><td>11 groups across 4 pages (2026-07-21): create-product (discount ▸ limited-time · variation discount ▸ limited-time · low-stock · per-person limit), create-bundle · bundle-detail (limited-time discount), product-detail (discount ▸ limited-time · per-person limit). Standalone rows without a revealed form stay plain <code>.control-row</code> (create-auction sealed round / winner pays shipping, create-project livestream / ads).</td></tr></tbody></table>
+  <table class="spec" data-product-spec="control-row"><tbody><tr><td>Source</td><td><code>control-row.css</code></td></tr><tr><td>Anatomy</td><td>Row: left <code>.control-row__main</code> (+ <code>__sub</code>) · right control slot (Switch / Input / Button).<br>Group: <code>.control-group</code> &gt; <code>.control-row</code> + <code>.control-group__body[hidden]</code>.</td></tr><tr><td>Variants</td><td><code>.control-row</code> standalone (own 1px inset border, <code>--radius-md</code>) · <code>.control-group</code> wrapper (<code>--radius-xl</code>, 1px inset border; the row inside gives up its own border and radius, the group owns the boundary).</td></tr><tr><td>Behavior / usage</td><td>Use <code>.control-group</code> whenever the toggle reveals a form — the revealed block becomes <code>.control-group__body</code> (1px top divider + <code>--sp-16</code> padding) so the dependency reads visually. Groups nest: a body may contain another <code>.control-group</code> (Enable discount ▸ Limited-time discount). Width limits belong on the inner field, never on <code>__body</code> — a narrowed body clips the divider.</td></tr><tr><td>Token usage</td><td><code>--border</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-16</code>, <code>--fs-14</code>, <code>--muted-foreground</code>.</td></tr><tr><td>Classes</td><td><code>.control-row</code> · <code>.control-row__main</code> · <code>.control-row__sub</code> · <code>.control-group</code> · <code>.control-group__body</code></td></tr><tr><td>Evidence / usage</td><td>12 groups across 5 pages (2026-07-21, create-event added 2026-08-09): create-product (discount ▸ limited-time · variation discount ▸ limited-time · low-stock · per-person limit), create-bundle · bundle-detail (limited-time discount), product-detail (discount ▸ limited-time · per-person limit), create-event (sale mode ▸ "go on sale immediately" toggle). Standalone rows without a revealed form stay plain <code>.control-row</code> (create-auction sealed round / winner pays shipping, create-project livestream / ads). <strong>create-event reveals on the opposite polarity</strong> from every other consumer: its body opens when the switch is turned <em>off</em> ("set your own on-sale/off-sale times" only applies once "go on sale immediately" is declined), where the rest reveal on <em>on</em>. The component only cares about <code>[hidden]</code> on <code>__body</code> — which switch state clears it is page logic, not a component variant.</td></tr></tbody></table>
 </section>
 <section class="sub" id="field-more">
   <div class="sub__head"><h3 class="sub__title">4.13b Field more</h3><span class="layer layer--molecule">🟡 molecule</span></div>
@@ -2348,44 +2412,30 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <h3 class="sub__title">4.15 Upload tile</h3>
     <span class="layer layer--atom">🟢 atom</span>
   </div>
-  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Dashed upload affordance for create flows (spec 5.1.5.2 Show it off / Prove it's real / digital download). <strong>2026-07-31: every image slot shares a single portrait ratio</strong> — <code>--hero</code>, <code>.upload-grid</code>'s thumbs, and <code>.upload-assets</code>' named slots all read one variable, <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code> (Foundation token <code>--img-portrait</code>, see Pillar 1 §1.3; ≈0.667), applied via the <code>--portrait</code> modifier (<code>--hero</code> and <code>.upload-grid .upload-tile</code> already build it in). <code>.upload-showcase</code> places the hero (left) and thumb grid (right) side by side as two equal columns; <code>.upload-grid--2x2</code> arranges thumbs 2×2 (collapses to stacked + 4-up below 880px). <code>.upload-showcase--stacked</code> forces the stacked layout (hero on top, thumb row below) at any width — for half-width columns like product-detail's media + info side-by-side. <strong>2026-07-31, second pass (D164): named-slot counts collapsed along with the ratio</strong> — <code>.upload-assets</code> now ships two combinations instead of four same-source slots: Create Project = Key visual + Gallery (2 tiles), Create Event = Key visual + Banner + Gallery (3 tiles, required count 4→3). Every tile is sized from a shared fixed height (<code>--upload-asset-h</code>) and the portrait tiles carry <code>--portrait</code>; never put <code>aspect-ratio</code> on a grid <code>1fr</code> item, the ratio feeds back into the track and blows the row past its container. The old multi-ratio modifiers <code>--1x1</code> / <code>--3x4</code> / <code>--3x2</code> are retired from image slots; <code>--16x9</code>'s serving scope now covers project-detail's Demo video/audio <strong>file</strong> slots <em>and</em> Events' sole surviving horizontal <strong>banner image</strong> slot (create-event / edit-event, 1920×1080) — both stay outside this ratio unification, and no other module may adopt a new landscape image slot. Title uses <code>__title</code>, constraints (min size / file types) go in <code>__hint</code>.</p>
-  <p class="sub__desc" data-zh>建立流程用的虛線上傳格（spec 5.1.5.2 展示它／證明是真的／數位下載檔）。<strong>2026-07-31 起：所有圖片槽共用單一直式比例</strong>——<code>--hero</code>、<code>.upload-grid</code> 的縮圖、<code>.upload-assets</code> 的具名素材槽，全部讀同一個變數 <code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>（Foundation token <code>--img-portrait</code>，見 Pillar 1 §1.3；≈0.667），以 <code>--portrait</code> 修飾詞套用（<code>--hero</code> 與 <code>.upload-grid .upload-tile</code> 已內建此比例）。<code>.upload-showcase</code> 把主圖（左）與縮圖格（右）並排成兩等寬欄；<code>.upload-grid--2x2</code> 把附圖排成 2×2（窄於 880px 收成主圖在上、附圖 4 格在下）。<code>.upload-showcase--stacked</code> 把這個「主圖在上、附圖列在下」的堆疊固定成常態（不分寬度），供半寬欄位並列版面用（如 product-detail 素材＋資訊並列）。<strong>2026-07-31 同日第二輪（D164）：具名槽位數量隨比例收斂</strong>——<code>.upload-assets</code> 不再是四格同源素材，改為兩種組合：建立項目＝主視覺＋圖庫（2 格）、建立活動＝主視覺＋橫幅＋圖庫（3 格，必填數 4→3）。每格由共用的固定高度（<code>--upload-asset-h</code>）決定大小、直式格子共用同一個 <code>--portrait</code> 比例；不要把 <code>aspect-ratio</code> 加在 grid <code>1fr</code> 的格子上——比例會回頭撐開欄寬，整排衝出容器。舊的多比例修飾詞 <code>--1x1</code>／<code>--3x4</code>／<code>--3x2</code> 已自圖片槽退場；<code>--16x9</code> 服役範圍擴大為 project-detail 的 Demo 影片／音樂<strong>檔案</strong>槽，加上活動唯一保留的橫式<strong>橫幅圖片</strong>槽（create-event／edit-event，1920×1080）——兩者皆不在本次比例收斂範圍內，其他模組不得比照新增橫式圖片槽。主文案放 <code>__title</code>，限制（最小尺寸／檔型）放 <code>__hint</code>。</p>
-  <p class="field-label" data-en>Rendered preview <span class="field-note">(showcase: hero + 2×2 thumb grid)</span></p>
-  <p class="field-label" data-zh>視覺展示 <span class="field-note">(showcase：主圖＋2×2 縮圖格)</span></p>
-  <div class="demo">
-    <div class="upload-showcase">
-      <div class="upload-tile upload-tile--hero">
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
-        <span class="upload-tile__title">Hero image
-The first thing buyers see</span>
-        <span class="upload-tile__sub">Drag &amp; drop or click to browse</span>
-        <span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
-      </div>
-      <div class="upload-grid upload-grid--2x2">
-        <div class="upload-tile is-filled"><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span><span class="upload-tile__title">Filled</span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-      </div>
+    <p class="field-label" data-en>Video slot <span class="field-note">(<code>--video</code>, 2026-08-10)</span></p>
+  <p class="field-label" data-zh>影片投放格 <span class="field-note">（<code>--video</code>，2026-08-10）</span></p>
+  <p class="sub__desc" data-en>The one and only way to take a video upload on this site (user ruling). It carries the ratio of the thing it holds — 16:9, not a bar unrelated to its content — and takes two thirds of the container so a single trailer drop zone does not outweigh the form around it. Default and hover are inherited from the base tile, so every droppable slot on the site feels the same. Consumers: create-event, create-project, project-detail, publish-work (two).</p>
+  <p class="sub__desc" data-zh>站上影片上傳的唯一做法（使用者裁決）。比例照它要裝的東西走——16:9，不是一條與內容無關的長條；寬度取容器的 2/3，一支預告片的投放區才不會比整份表單還搶眼。default 與 hover 直接吃基底，站上「可投放的上傳格」因此只有一種手感。消費頁：create-event、create-project、project-detail、publish-work（兩處）。</p>
+  <div class="demo"><div style="width:100%;max-width:420px">
+    <div class="upload-tile upload-tile--video">
+      <span class="upload-tile__icon"><i data-lucide="film" class="ztor-icon"></i></span>
+      <span class="upload-tile__title">Upload a trailer</span>
+      <span class="upload-tile__hint">MP4 or MOV · up to 2 GB</span>
     </div>
-  </div>
-  <p class="field-label" data-en>Stacked variant <span class="field-note">(<code>.upload-showcase--stacked</code> — hero on top, thumb row below at any width; product-detail media column)</span></p>
-  <p class="field-label" data-zh>堆疊變體 <span class="field-note">(<code>.upload-showcase--stacked</code>——不分寬度都主圖在上、附圖列在下；product-detail 素材欄)</span></p>
+  </div></div>
+
+<p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Dashed upload affordance for create flows (spec 5.1.5.2 Show it off / Prove it's real / digital download). <strong>2026-08-09 (user ruling): portrait image slots have exactly one component and one layout rule</strong> — <code>.upload-assets.upload-assets--fill</code> plus the container-level <code>[data-upload-reveal]</code>. Every image slot still shares the single portrait ratio set in 2026-07-31 (<code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>, Foundation token <code>--img-portrait</code>, see Pillar 1 §1.3), applied through the <code>--portrait</code> modifier. <strong>Retired the same day</strong>: <code>--hero</code>, <code>.upload-grid</code> / <code>--2x2</code>, <code>.upload-showcase</code> / <code>--stacked</code> — the whole &ldquo;hero is bigger than the thumbs&rdquo; model, along with the rounded icon chip <code>--hero</code> used to carry (Q18). A hero now says so with <code>.upload-tile__flag</code> instead of by being larger. Still in service: <code>--file</code> for file-drop bars and <code>--16x9</code> for landscape media slots (project-detail's Demo video/audio). Title uses <code>__title</code>, constraints (size / file types) go in <code>__hint</code>. <strong>2026-08-09: <code>.upload-assets--fill</code> sizes tiles from how many fit a full row</strong> — <code>--upload-asset-cols</code> (4 by default) splits the container width between that many tiles and lets <code>--portrait</code> derive the height, so four tiles always fill one row exactly, a fifth wraps at the same size, and the whole set scales with the column instead of needing breakpoints (2 columns at ≤640px); pair it with <code>[data-upload-reveal]</code> on the container to keep exactly one empty tile on screen. <strong>Same day, second round (user direction)</strong>: the empty state's <code>__sub</code>/<code>__hint</code> are now hidden with <code>display</code> instead of <code>opacity</code>, so the resting state and the hover state each centre on their own content height; a <code>__flag</code> on an interactive tile waits until the image is actually in; an optimized tile swaps its third hover button for <em>Back to the original</em>; and an empty tile's dashed border thins to 0.5px on hover.</p>
+  <p class="sub__desc" data-zh>建立流程用的虛線上傳格（spec 5.1.5.2 展示它／證明是真的／數位下載檔）。<strong>2026-08-09（使用者裁決）：直式上傳圖只有一套元件、一套排版規則</strong>——<code>.upload-assets.upload-assets--fill</code> 加容器層的 <code>[data-upload-reveal]</code>。比例仍是 2026-07-31 定下的單一直式（<code>--upload-img-ratio: var(--img-portrait, 2 / 3)</code>，Foundation token <code>--img-portrait</code>，見 Pillar 1 §1.3），由 <code>--portrait</code> 修飾詞套用。<strong>同日退場</strong>：<code>--hero</code>、<code>.upload-grid</code>／<code>--2x2</code>、<code>.upload-showcase</code>／<code>--stacked</code>——「主圖比附圖大」整個模型連同 <code>--hero</code> 專屬的圓角晶片圖示框（Q18）一起收掉。主圖改用 <code>.upload-tile__flag</code> 自報身分，不靠尺寸暗示。仍服役：檔案投放列的 <code>--file</code>、橫式媒體槽的 <code>--16x9</code>（project-detail 的 Demo 影片／音樂）。主文案放 <code>__title</code>，限制（尺寸／檔型）放 <code>__hint</code>。<strong>2026-08-09 新增 <code>.upload-assets--fill</code></strong>：格子尺寸改由「一排放幾格剛好撐滿容器」決定——<code>--upload-asset-cols</code>（預設 4）把容器寬度平分給那幾格、高度由 <code>--portrait</code> 推導，所以四格永遠撐滿一整列、第五格換行且尺寸相同，容器變寬變窄等比縮放（≤640px 降為一排兩格）；容器再加 <code>[data-upload-reveal]</code> 就變成一次只露出一個空格。<strong>同日第二輪（使用者指示）</strong>：空狀態的 <code>__sub</code>／<code>__hint</code> 改用 <code>display</code> 收放（不再是 <code>opacity</code>），靜止態與 hover 態各自依自己的內容高度置中；互動格的 <code>__flag</code> 等圖真的進來才掛；優化完成後 hover 的第三顆鈕換成「還原成優化前」；還沒填的格子 hover 時虛線收細成 0.5px。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(<code>.upload-assets--fill</code>: four tiles fill the row, the fifth wraps at the same size)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">(<code>.upload-assets--fill</code>：四格撐滿一整列、第五格換行且一樣大)</span></p>
   <div class="demo">
-    <div class="upload-showcase upload-showcase--stacked" style="max-width:360px">
-      <div class="upload-tile upload-tile--hero">
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
-        <span class="upload-tile__title">Hero image
-The first thing buyers see</span>
-        <span class="upload-tile__hint">JPG · PNG · GIF · up to 1.8GB</span>
-      </div>
-      <div class="upload-grid upload-grid--2x2">
-        <div class="upload-tile is-filled"><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-        <div class="upload-tile"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span></div>
-      </div>
+    <div class="upload-assets upload-assets--fill">
+      <div class="upload-tile upload-tile--portrait is-filled"><span class="upload-tile__flag">Hero</span><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span><span class="upload-tile__title">Filled</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
     </div>
   </div>
   <p class="field-label" data-en>Named asset slots <span class="field-note">(<code>.upload-assets</code> — 2026-07-31, D164: slot <em>counts</em> collapsed with the ratio — two combinations replace the old four same-source slots)</span></p>
@@ -2407,34 +2457,74 @@ The first thing buyers see</span>
       <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Gallery</span><span class="upload-tile__hint">750 × 1125 · portrait · 1–8</span></div>
     </div>
   </div>
+  <p class="field-label" data-en>Fill the row, one open slot <span class="field-note">(<code>.upload-assets--fill</code> + <code>[data-upload-reveal]</code> — 2026-08-09, Add new item: four tiles fill a row exactly, the fifth wraps at the same size, and only one empty tile is on screen at a time. Click to try — fill one and the next appears; clear a middle one and it becomes the open slot again)</span></p>
+  <p class="field-label" data-zh>撐滿一列、一次一個空格 <span class="field-note">(<code>.upload-assets--fill</code> ＋ <code>[data-upload-reveal]</code>——2026-08-09 建立商品：四格剛好撐滿一整列、第五格換行且一樣大，畫面上一次只有一個空格。點格子試——填滿一個就長出下一個；把中間某格清掉，那格就變回開放的槽)</span></p>
+  <p class="field-text" data-en>Add new item · Show it off <span class="field-note">(Hero + 4 additional photos, spec 5.1.5.2 F1. Tile size comes from four-per-row, so it tracks the column width; the first tile carries a <code>__flag</code> because a uniform row can no longer say "hero" by being bigger)</span></p>
+  <p class="field-text" data-zh>建立商品 · 展示它 <span class="field-note">(主圖＋附圖 4 張，spec 5.1.5.2 F1。尺寸由「四格撐滿一列」推導，跟著欄寬走；尺寸統一之後主圖無法再靠「比別人大」來自我介紹，改由第一格的 <code>__flag</code> 承擔)</span></p>
+  <div class="demo">
+    <div class="upload-assets upload-assets--fill" data-upload-reveal style="max-width:720px">
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai>
+        <span class="upload-tile__flag">Hero</span>
+        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__title">Add image</span>
+        <span class="upload-tile__hint">750 × 1125 · portrait</span>
+        <span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
+      </div>
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span><span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span><span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span><span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span><span class="upload-tile__hint">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span></div>
+    </div>
+  </div>
+
+  <p class="field-label" data-en>Aside layout <span class="field-note">(<code>.upload-tile-aside</code> — 2026-08-09 promoted from create-event.html's <code>.ce-timg</code>: a fixed-width portrait tile beside a short explanation, for a small "here's the image currently in use" panel inside a modal)</span></p>
+  <p class="field-label" data-zh>並排版面 <span class="field-note">(<code>.upload-tile-aside</code>——2026-08-09 自 create-event.html 的 <code>.ce-timg</code> promote：固定寬直式上傳格＋右側一句說明，用於彈窗裡「現在用的是哪張圖」這類小面板)</span></p>
+  <div class="demo">
+    <div class="upload-tile-aside" style="max-width:420px">
+      <div class="upload-tile is-filled"><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span></div>
+      <div class="upload-tile-aside__side">
+        <p class="field-text" style="margin:0">Follows the event's key visual unless replaced here.</p>
+        <button class="btn btn--outline btn--sm" type="button">Replace</button>
+      </div>
+    </div>
+  </div>
+  <p class="field-label" data-en>Aside layout — stacked <span class="field-note">(<code>.upload-tile-aside--stacked</code> — 2026-08-09, same-day second round: side-by-side assumes horizontal room, which a narrow column (e.g. the 200px side column of <a href="#payout"><code>.payout-dialog__split</code></a>) doesn't have — the explanation would get squeezed into a 3–4 character strip)</span></p>
+  <p class="field-label" data-zh>並排版面 — 直排變體 <span class="field-note">(<code>.upload-tile-aside--stacked</code>——2026-08-09 同日第二輪：並排版假設橫向有空間，窄欄（如 <a href="#payout"><code>.payout-dialog__split</code></a> 的 200px 側欄）沒有——說明會被擠成一行三、四個字的長條)</span></p>
+  <div class="demo">
+    <div class="upload-tile-aside upload-tile-aside--stacked" style="max-width:200px">
+      <div class="upload-tile is-filled"><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span></div>
+      <div class="upload-tile-aside__side">
+        <p class="field-text" style="margin:0">Follows the event's key visual.</p>
+        <button class="btn btn--outline btn--sm" type="button">Replace</button>
+      </div>
+    </div>
+  </div>
   <p class="field-label" data-en>Interactive uploader <span class="field-note">(opt-in via <code>[data-upload]</code> — click a tile to try: pick an image → fake upload progress → hover for Replace / AI-optimize / Delete)</span></p>
   <p class="field-label" data-zh>互動上傳格 <span class="field-note">(以 <code>[data-upload]</code> 開啟——點格子試：選圖 → 假上傳進度 → hover 出 替換／AI 優化／刪除)</span></p>
   <div class="demo">
-    <div class="upload-showcase">
-      <div class="upload-tile upload-tile--hero" data-upload>
-        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
-        <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image
-The first thing buyers see</span>
-        <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
+    <div class="upload-assets upload-assets--fill" data-upload-reveal>
+      <div class="upload-tile upload-tile--portrait" data-upload>
+        <span class="upload-tile__flag">Hero</span>
+        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
+        <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
         <span class="upload-tile__hint" data-i18n="cp.media.formats">JPG · PNG · GIF · MP4 · MOV · WEBM · up to 1.8GB</span>
       </div>
-      <div class="upload-grid upload-grid--2x2">
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
-        <div class="upload-tile" data-upload><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span></div>
-      </div>
+      <div class="upload-tile upload-tile--portrait" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
+      <div class="upload-tile upload-tile--portrait" data-upload hidden><span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span><span class="upload-tile__title">Add image</span><span class="upload-tile__hint">750 × 1125 · portrait</span></div>
     </div>
   </div>
   <p class="field-label" data-en>AI-optimize opt-in <span class="field-note">(<code>data-upload-ai</code> — adds a third hover button on top of the standard Replace/Remove pair; today only create-product's product-image gallery slots enable this)</span></p>
   <p class="field-label" data-zh>AI 優化 opt-in <span class="field-note">(<code>data-upload-ai</code>——在標準的替換／刪除兩鈕之外多開第三顆；目前只有 create-product 的商品圖相簿格開啟)</span></p>
   <div class="demo">
-    <div class="upload-tile upload-tile--hero" data-upload data-upload-ai>
-      <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--lg"></i></span>
-      <span class="upload-tile__title" data-i18n="cp.media.hero-physical">Hero image
-The first thing buyers see</span>
-      <span class="upload-tile__sub" data-i18n="cp.media.dnd">Drag &amp; drop or click to browse</span>
-      <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
+    <div class="upload-assets upload-assets--fill">
+      <div class="upload-tile upload-tile--portrait" data-upload data-upload-ai>
+        <span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon ztor-icon--md"></i></span>
+        <span class="upload-tile__title" data-i18n="cp.media.add">Add image</span>
+        <span class="upload-tile__hint" data-i18n="cp.media.portrait">750 × 1125 · portrait</span>
+      </div>
     </div>
   </div>
   <p class="field-label" data-en>Content-file mode <span class="field-note">(<code>data-upload="content"</code> — music / video content files: upload → play (audio/video) + delete, no AI. Try an mp3/mp4/file)</span></p>
@@ -2461,7 +2551,7 @@ The first thing buyers see</span>
     <table class="spec"><thead><tr><th><span data-en>State</span><span data-zh>狀態</span></th><th><span data-en>Selector</span><span data-zh>選擇器</span></th><th><span data-en>Change</span><span data-zh>變化</span></th></tr></thead><tbody>
       <tr><td><span data-en>default</span><span data-zh>預設</span></td><td>—</td><td><span data-en>1.5px dashed <code>--border</code>, radius <code>--radius-md</code>, text <code>--muted-foreground</code></span><span data-zh>1.5px 虛線 <code>--border</code>，圓角 <code>--radius-md</code>，文字 <code>--muted-foreground</code></span></td></tr>
       <tr><td>hover</td><td><code>:hover</code></td><td><span data-en>border → <code>--muted-foreground</code>, bg → <code>--muted</code></span><span data-zh>邊框 → <code>--muted-foreground</code>，背景 → <code>--muted</code></span></td></tr>
-      <tr><td><span data-en>filled (legacy)</span><span data-zh>已填（舊）</span></td><td><code>.is-filled</code></td><td><span data-en>solid <code>--status-success</code> border + text (non-interactive tiles: create-auction / -event / register-ip toggle)</span><span data-zh>實線 <code>--status-success</code> 邊＋字（非互動格：create-auction／-event／register-ip 的 toggle）</span></td></tr>
+      <tr><td><span data-en>filled (legacy)</span><span data-zh>已填（舊）</span></td><td><code>.is-filled</code></td><td><span data-en>solid neutral <code>--border</code> border + <code>--foreground</code> text — filled/empty is told apart by border <em>style</em> (solid vs. the empty state's dashed), not color (2026-08-09: dropped the <code>--status-success</code> green border/text, per user ruling "this shouldn't have a green-border component"; now aligned with the interactive tile's own filled recipe below). Non-interactive tiles: create-auction / -event / register-ip toggle</span><span data-zh>實線中性 <code>--border</code> 邊＋<code>--foreground</code> 文字——已填／未填改由邊框「樣式」（實線 vs 空狀態的虛線）辨別，不靠顏色（2026-08-09：撤除 <code>--status-success</code> 綠框／綠字，使用者裁決「不該有這種綠框元件」；現與下方互動格的已填配方對齊）。非互動格：create-auction／-event／register-ip 的 toggle</span></td></tr>
       <tr><td><span data-en>empty (interactive)</span><span data-zh>空（互動）</span></td><td><code>[data-upload].is-empty</code></td><td><span data-en><code>__sub</code>/<code>__hint</code> hidden, revealed on hover (more info)</span><span data-zh><code>__sub</code>／<code>__hint</code> 隱藏、hover 才現（更多資訊）</span></td></tr>
       <tr><td><span data-en>uploading</span><span data-zh>上傳中</span></td><td><code>[data-upload].is-uploading</code></td><td><span data-en>thumb behind frosted <code>__overlay</code> (spinner + "Uploading…") + bottom <code>__progress</code>/<code>__bar</code> (fake ~2.5s)</span><span data-zh>縮圖上蓋 frosted <code>__overlay</code>（spinner＋「上傳中…」）＋底部 <code>__progress</code>／<code>__bar</code>（假走 ~2.5s）</span></td></tr>
       <tr><td><span data-en>processing</span><span data-zh>處理中</span></td><td><code>[data-upload].is-processing</code></td><td><span data-en>Opt-in via <code>data-upload-processing</code> — the file is on the server but not usable yet (transcode / check). Same frosted <code>__overlay</code> as uploading, status text "Processing…", no progress bar (a server-side job has no client-side percentage). <code>filled</code> stays false, so readiness keeps counting it as unfinished and submit stays blocked (spec 5.1.2.2.1 §8 "file ready"). Fake ~2.4s.</span><span data-zh>掛 <code>data-upload-processing</code> 才會經過——檔案已在伺服器上、但還不能用（轉檔／檢查）。沿用上傳中那層 frosted <code>__overlay</code>，狀態字改「處理中…」，不給進度條（伺服器端的工作沒有前端算得出來的百分比）。<code>filled</code> 維持 false，就緒檢查照舊算它未完成、送出仍被擋（規格 5.1.2.2.1 §8「檔案就緒」）。假走 ~2.4s。</span></td></tr>
@@ -2471,20 +2561,23 @@ The first thing buyers see</span>
     <p class="field-label" data-en>Component contract</p>
     <p class="field-label" data-zh>元件契約</p>
     <table class="spec"><thead><tr><th><span data-en>Item</span><span data-zh>項目</span></th><th><span data-en>Contract</span><span data-zh>約定</span></th></tr></thead><tbody>
-      <tr><td><code>--upload-img-ratio</code></td><td><span data-en>Single source of truth for the portrait ratio (2 / 3, ≈0.667; <code>upload-tile.css:31</code>). <code>--hero</code>, <code>.upload-grid .upload-tile</code> and the <code>--portrait</code> modifier all read it — change the ratio here, not per-consumer.</span><span data-zh>直式比例的單一來源（2 / 3，≈0.667；<code>upload-tile.css:31</code>）。<code>--hero</code>、<code>.upload-grid .upload-tile</code>、<code>--portrait</code> 修飾詞皆讀它——要調比例改這裡，不逐一消費頁改</span></td></tr>
+      <tr><td><code>--upload-img-ratio</code></td><td><span data-en>Single source of truth for the portrait ratio (2 / 3, ≈0.667; <code>upload-tile.css:31</code>). The <code>--portrait</code> modifier is the only thing that reads it now (2026-08-09) — change the ratio here, not per-consumer.</span><span data-zh>直式比例的單一來源（2 / 3，≈0.667；<code>upload-tile.css:31</code>）。現在只剩 <code>--portrait</code> 修飾詞讀它（2026-08-09）——要調比例改這裡，不逐一消費頁改</span></td></tr>
       <tr><td><span data-en>Action buttons</span><span data-zh>動作鈕</span></td><td><span data-en>Standard = Replace + Remove (2 buttons). <code>data-upload-ai</code> opts a tile into a third "AI optimize" button + completion badge — currently only create-product's product-image gallery slots enable it.</span><span data-zh>站上標準＝替換／刪除（2 鈕）。掛 <code>data-upload-ai</code> 才多開第三顆「AI 優化」鈕＋完成徽章——目前只有 create-product 的商品圖相簿格開啟</span></td></tr>
       <tr><td><code>.upload-tile__flag</code></td><td><span data-en>Static, author-set corner label (e.g. "Cover" on a gallery's first tile) — distinct from <code>__badge</code>, which is a JS-driven state result (AI-optimize completion).</span><span data-zh>作者標定的靜態角落標籤（如相簿第一格的「封面」）——與 <code>__badge</code>（JS 產生的狀態結果，AI 優化完成）角色不同</span></td></tr>
+      <tr><td><code>.upload-tile-aside</code> / <code>__side</code></td><td><span data-en>2026-08-09 promoted from create-event.html (<code>.ce-timg</code>): fixed-width (104px) portrait tile beside a vertically-stacked explanation + action column — a small "which image is in use" panel inside a modal</span><span data-zh>2026-08-09 自 create-event.html 的 <code>.ce-timg</code> promote：固定寬（104px）直式上傳格＋右側縱向堆疊的說明文字與動作鈕——彈窗裡「現在用的是哪張圖」小面板</span></td></tr>
+      <tr><td><code>.upload-tile-aside--stacked</code></td><td><span data-en>2026-08-09, same-day second round: the tile stacks above the explanation (tile goes full-width) instead of sitting side by side — for narrow columns where the side-by-side layout would squeeze the text</span><span data-zh>2026-08-09 同日第二輪：格子改坐在說明上方（格子改滿版），取代並排——給並排版放不下的窄欄用</span></td></tr>
       <tr><td><code>data-upload-src</code> / <code>data-upload-key</code></td><td><span data-en>Edit-flow preload: <code>data-upload-src="&lt;url&gt;"</code> puts the tile straight into <code>.is-filled</code> with that image, skipping the fake-upload timer. <code>data-upload-key</code> identifies the tile in the <code>upload:change</code> event (falls back to <code>data-cp-asset</code>).</span><span data-zh>編輯態預填：<code>data-upload-src="&lt;url&gt;"</code> 讓格子直接帶圖進 <code>.is-filled</code>、跳過假上傳計時；<code>data-upload-key</code> 供 <code>upload:change</code> 事件辨識該格（沒有則退回 <code>data-cp-asset</code>）</span></td></tr>
       <tr><td><code>upload:change</code></td><td><span data-en>Custom event, bubbles, fired on every state change — <code>detail: { key, filled, state }</code>. Pages listen to this to update readiness gating; <code>state</code> (<code>empty</code> / <code>uploading</code> / <code>processing</code> / <code>filled</code> / <code>optimizing</code> / <code>optimized</code>) is what lets a page say <em>which</em> stage it is at, since <code>filled</code> alone only answers "usable or not".</span><span data-zh>自訂事件，會冒泡，每次狀態變動都會發出——<code>detail: { key, filled, state }</code>。頁面監聽它來更新就緒判斷；<code>state</code>（<code>empty</code>／<code>uploading</code>／<code>processing</code>／<code>filled</code>／<code>optimizing</code>／<code>optimized</code>）讓頁面講得出「現在是哪一段」，光靠 <code>filled</code> 只回答得了「能不能用」</span></td></tr>
       <tr><td><span data-en>Keyboard</span><span data-zh>鍵盤</span></td><td><span data-en>Empty tiles get <code>role="button"</code> + <code>tabindex="0"</code> (removed once filled — the two real <code>&lt;button&gt;</code> actions take over the tab stop); Enter/Space activate (Space doesn't scroll the page); focus ring is the site standard <code>outline: 2px solid var(--ring)</code>; focus is handed back after upload/optimize/remove completes, but only for keyboard-triggered interactions. When a tile has no <code>__title</code>, the injected label depends on the mode (2026-08-07): image tiles fall back to <code>cp.media.add</code> (Add image), content-file tiles to <code>cp.cfile.add</code> (Add file) — a video or subtitle slot labelled &ldquo;Add image&rdquo; misleads screen-reader users. A page can name its own slot precisely (&ldquo;Add the trailer&rdquo;) with <code>aria-label</code> + <code>data-i18n-aria-label</code>; the component gives way.</span><span data-zh>空狀態掛 <code>role="button"</code>＋<code>tabindex="0"</code>（填圖後拿掉，改由動作列兩顆真 <code>&lt;button&gt;</code> 進 tab 序）；Enter／Space 觸發同點擊（Space 不捲頁）；焦點環用站上標準 <code>outline: 2px solid var(--ring)</code>；上傳／優化／刪除完成後把焦點交還，僅限鍵盤觸發的互動。沒有 <code>__title</code> 時自動補的標籤依模式分兩種（2026-08-07）：圖片格用 <code>cp.media.add</code>（新增圖片）、內容檔格用 <code>cp.cfile.add</code>（新增檔案）——影音或字幕格套「新增圖片」會誤導螢幕閱讀器使用者。頁面要更精確的說法（「上傳預告片」）就自己寫 <code>aria-label</code>＋<code>data-i18n-aria-label</code>，元件會讓路</span></td></tr>
     </tbody></table>
-    <pre>&lt;div class="upload-showcase"&gt;
-  &lt;div class="upload-tile upload-tile--hero"&gt;
+    <pre>&lt;div class="upload-assets upload-assets--fill" data-upload-reveal&gt;
+  &lt;div class="upload-tile upload-tile--portrait" data-upload&gt;
+    &lt;span class="upload-tile__flag"&gt;Hero&lt;/span&gt;
     &lt;span class="upload-tile__icon"&gt;…&lt;/span&gt;
-    &lt;span class="upload-tile__title"&gt;Hero image&lt;/span&gt;
-    &lt;span class="upload-tile__hint"&gt;Portrait 750 × 1125&lt;/span&gt;
+    &lt;span class="upload-tile__title"&gt;Add image&lt;/span&gt;
+    &lt;span class="upload-tile__hint"&gt;750 × 1125 · portrait&lt;/span&gt;
   &lt;/div&gt;
-  &lt;div class="upload-grid upload-grid--2x2"&gt;…4 tiles…&lt;/div&gt;
+  …4 more, each `hidden` until the one before it is filled…
 &lt;/div&gt;</pre>
     <p class="field-text"><code>ds-components/upload-tile.css</code> · <span data-en>interactive states enhanced by</span><span data-zh>互動狀態由此增強</span> <code>partials/upload-tile.js</code> <span data-en>(opt-in per tile via</span><span data-zh>（逐格以</span> <code>[data-upload]</code><span data-en>)</span><span data-zh> 開啟）</span></p>
   </div>
@@ -2690,8 +2783,8 @@ The first thing buyers see</span>
     <h3 class="sub__title">4.16b Combobox</h3>
     <span class="layer layer--molecule">🟡 molecule</span>
   </div>
-  <p class="sub__desc" data-en>Multi-select search-to-add typeahead. Reuses the <a href="#tag-input">Tag input</a> field (selected <code>.chip--removable</code> + borderless entry); focusing / typing opens a floating <code>.combobox__menu</code> of suggestions (grouped <code>.combobox__opt</code> = icon + name + meta), picking one adds it as a chip and drops it from the list. Differs from Tag input only in that suggestions live in a focus-triggered dropdown, not an always-visible chip row. First used by the pickup session modal's "add pickup items" (spec 5.1.5.12 §4 F2).</p>
-  <p class="sub__desc" data-zh>多選 search-to-add typeahead。重用 <a href="#tag-input">Tag input</a> 欄位（已選 <code>.chip--removable</code> ＋無框 entry）；focus／輸入時彈出浮層 <code>.combobox__menu</code> 建議（<code>.combobox__opt</code>＝icon＋名稱＋meta、可分組 <code>.combobox__group</code>），點選加入為 chip、已選項自建議移除。與 Tag input 差別只在建議改「focus 觸發下拉」而非常駐 chip-group。首用於建立取貨場次 modal 的「加入取貨項目」（spec 5.1.5.12 §4 F2）。</p>
+  <p class="sub__desc" data-en>Multi-select search-to-add typeahead. Reuses the <a href="#tag-input">Tag input</a> field (selected <code>.chip--removable</code> + borderless entry); focusing / typing opens a floating <code>.combobox__menu</code> of suggestions (grouped <code>.combobox__opt</code> = icon + name + meta), picking one adds it as a chip and drops it from the list. Differs from Tag input only in that suggestions live in a focus-triggered dropdown, not an always-visible chip row. First used by the pickup session modal's "add pickup items" (spec 5.1.5.12 §4 F2). <strong>New consumers (2026-08-09)</strong>: Create-event's "Ticket type" field and "Add product" field both moved to this component — replacing a page-local dropdown-and-list pattern — with added products now shown as <a href="#chip"><code>.chip-group</code> + <code>.chip--removable</code></a>.</p>
+  <p class="sub__desc" data-zh>多選 search-to-add typeahead。重用 <a href="#tag-input">Tag input</a> 欄位（已選 <code>.chip--removable</code> ＋無框 entry）；focus／輸入時彈出浮層 <code>.combobox__menu</code> 建議（<code>.combobox__opt</code>＝icon＋名稱＋meta、可分組 <code>.combobox__group</code>），點選加入為 chip、已選項自建議移除。與 Tag input 差別只在建議改「focus 觸發下拉」而非常駐 chip-group。首用於建立取貨場次 modal 的「加入取貨項目」（spec 5.1.5.12 §4 F2）。<strong>新消費情境（2026-08-09）</strong>：建立活動的「票種」欄與「加入商品」欄都改用本元件——取代原本頁內自造的一套下拉候選樣式，已加入的商品改用 <a href="#chip"><code>.chip-group</code> ＋ <code>.chip--removable</code></a> 呈現。</p>
   <div class="demo" style="max-width:480px">
     <div class="combobox">
       <div class="tag-input__field">
@@ -2711,6 +2804,7 @@ The first thing buyers see</span>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><code>.combobox</code> &gt; <code>.tag-input__field</code> (chips + entry) + <code>.combobox__menu</code> (<code>.combobox__group</code> + <code>.combobox__opt</code> &gt; <code>.combobox__opt-icon</code> + <code>.combobox__opt-text</code> &gt; <code>.combobox__opt-name</code> + <code>.combobox__opt-meta</code>; <code>.combobox__empty</code> when no match). Menu shown on focus/input; pickup session modal 前端 demo（UIA-059）。</p>
+    <p class="field-text">消費頁：<code>partials/pickup-session-modal.js</code>（取貨場次「加入取貨項目」）· <code>create-event.html</code>（步驟 4 票種「票種」欄與「加入商品」欄，2026-08-09）。</p>
     <p class="field-text"><code>ds-components/combobox.css</code> · reuses <code>tag-input.css</code> + <code>chip.css</code></p>
   </div>
   </details>
@@ -2880,19 +2974,26 @@ The first thing buyers see</span>
   <div class="demo demo--preview" data-product-preview="radio-card">
     <div class="ds-preview ds-preview--narrow">
       <div class="segmented radio-cards">
-        <button class="segmented__btn segmented__btn--active" type="button"><span class="radio-card__text"><span class="radio-card__title">Unlimited edition</span><span class="radio-card__sub">Restock anytime — never auto sells out.</span></span></button>
-        <button class="segmented__btn" type="button"><span class="radio-card__text"><span class="radio-card__title">Limited edition</span><span class="radio-card__sub">Hard cap — fans see how many remain.</span></span></button>
+        <button class="segmented__btn segmented__btn--active" type="button"><span class="radio-card__text"><span class="radio-card__title">Unlimited</span><span class="radio-card__sub">Never sells out.</span></span></button>
+        <button class="segmented__btn" type="button"><span class="radio-card__text"><span class="radio-card__title">Limited edition</span><span class="radio-card__sub">Hard cap — fans see exactly how many copies remain before it sells out.</span></span></button>
       </div>
+      <p class="field-note" data-en style="margin-top:6px"><code>align-items: stretch</code> (2026-08-09): the two cards above stay equal height even though their sub-copy wraps to a different number of lines — see the code tab for the root cause.</p>
+      <p class="field-note" data-zh style="margin-top:6px"><code>align-items: stretch</code>（2026-08-09）：上面兩張卡副標行數不同，仍維持等高——根因見下方給工程師的 code 分頁。</p>
       <p class="field-text"><span data-en><code>--3</code> + <code>--gate</code> — 3-up, lead icon on top (create-project gate)</span><span data-zh><code>--3</code> + <code>--gate</code> — 三欄、頂部引導圖示（建立項目閘門）</span></p>
       <div class="segmented radio-cards radio-cards--3 radio-cards--gate">
         <button class="segmented__btn segmented__btn--active" type="button"><i data-lucide="rocket" class="ztor-icon radio-card__lead"></i><span class="radio-card__text"><span class="radio-card__title">Go live</span><span class="radio-card__sub">Content is ready to publish.</span></span></button>
         <button class="segmented__btn" type="button"><i data-lucide="trending-up" class="ztor-icon radio-card__lead"></i><span class="radio-card__text"><span class="radio-card__title">Fund it first</span><span class="radio-card__sub">Back it before production.</span></span></button>
         <button class="segmented__btn" type="button"><i data-lucide="calendar" class="ztor-icon radio-card__lead"></i><span class="radio-card__text"><span class="radio-card__title">Pre-order</span><span class="radio-card__sub">Ship after the minimum is hit.</span></span></button>
       </div>
+      <p class="field-text"><span data-en><code>--gate --list</code> — single column, one row per result (2026-08-09, <a href="#source-import">Source import</a>'s bookyay search results)</span><span data-zh><code>--gate --list</code> — 單欄一列一筆（2026-08-09，<a href="#source-import">Source import</a> 的 bookyay 搜尋結果）</span></p>
+      <div class="segmented radio-cards radio-cards--gate radio-cards--list">
+        <button class="segmented__btn segmented__btn--active" type="button"><span class="radio-card__text"><span class="radio-card__title">Riverside Hall</span><span class="radio-card__sub">Taipei · 3F, No.12, Sec. 2</span></span></button>
+        <button class="segmented__btn" type="button"><span class="radio-card__text"><span class="radio-card__title">Riverside Studio B</span><span class="radio-card__sub">Taipei · 1F, No.8, Sec. 2</span></span></button>
+      </div>
     </div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="radio-card"><tbody><tr><td>Source</td><td><code>radio-card.css</code> + <code>segmented.css</code></td></tr><tr><td>Anatomy</td><td><code>.segmented.radio-cards</code> &gt; <code>.segmented__btn</code> (marker via ::after) &gt; <code>.radio-card__text</code> (title + sub).</td></tr><tr><td>Behavior / usage</td><td>2-up grid (gap 12); flat 1px <code>--border</code> card, no shadow (Q13 2026-07-16, aligned to Figma node 781-4386); active = small centered orange dot (no ring, no card outline); unselected shows no marker. Single-line cards (no <code>.radio-card__sub</code>) vertically center the text + dot; title+sub cards stay top-aligned. Optional <code>.radio-cards--icon</code> swaps the dot for a supplied <code>.radio-card__icon</code>; JS still reuses Segmented toggle.</td></tr><tr><td>Token usage</td><td><code>--card</code>, <code>--border</code>, <code>--primary</code>, <code>--radius-md</code>, <code>--sp-8</code>.</td></tr><tr><td>Classes</td><td><code>.radio-cards</code> · <code>.radio-cards--icon</code> · <code>.radio-cards--3</code> (3-up grid, Q28) · <code>.radio-cards--gate</code> (lead icon on top + roomier title/sub, create-project gate) · <code>.radio-card__icon</code> · <code>.radio-card__lead</code> · <code>.radio-card__text</code> · <code>.radio-card__title</code> · <code>.radio-card__sub</code></td></tr><tr><td>Evidence / usage</td><td>create-product (variant mode · edition · delivery); other create flows to follow.</td></tr></tbody></table>
+  <table class="spec" data-product-spec="radio-card"><tbody><tr><td>Source</td><td><code>radio-card.css</code> + <code>segmented.css</code></td></tr><tr><td>Anatomy</td><td><code>.segmented.radio-cards</code> &gt; <code>.segmented__btn</code> (marker via ::after) &gt; <code>.radio-card__text</code> (title + sub).</td></tr><tr><td>Behavior / usage</td><td>2-up grid (gap 12); flat 1px <code>--border</code> card, no shadow (Q13 2026-07-16, aligned to Figma node 781-4386); active = small centered orange dot (no ring, no card outline); unselected shows no marker. Single-line cards (no <code>.radio-card__sub</code>) vertically center the text + dot; title+sub cards stay top-aligned. Optional <code>.radio-cards--icon</code> swaps the dot for a supplied <code>.radio-card__icon</code>; JS still reuses Segmented toggle. <strong>Hover (2026-08-09, per user)</strong> — every radio card lifts its background to <code>color-mix(--foreground 6%, --accent)</code> on hover. That fill used to be declared only inside <code>--gate</code>, leaving the plain cards with no hover feedback at all; they are the same component, the only difference being a lead icon. The orange dot stays gate-only: the gate has no persistent selection so its hover dot is the preview of what you'd pick, whereas a plain card already shows a dot on the selected one and a second dot under the cursor would read as "both are selected". <strong><code>align-items: stretch</code> (2026-08-09 root-cause fix)</strong> — side-by-side cards used to come out different heights whenever one card's sub-copy wrapped to more lines than its neighbor (e.g. a 3-up "取票方式" row). Grid's own default for <code>align-items</code> is already <code>stretch</code>, but <code>segmented.css</code>'s <code>.segmented { align-items: center }</code> (specificity 0,1,0) was never overridden: <code>.segmented.radio-cards</code> (0,2,0) is higher-specificity as a selector, but it never <em>set</em> <code>align-items</code> itself, so the browser fell through to the lower-specificity rule that did — turning the grid's stretch into center, so each card sized itself to its own content. Fixed by declaring <code>align-items: stretch</code> explicitly on <code>.segmented.radio-cards</code>.</td></tr><tr><td>Token usage</td><td><code>--card</code>, <code>--border</code>, <code>--primary</code>, <code>--radius-md</code>, <code>--sp-8</code>.</td></tr><tr><td>Classes</td><td><code>.radio-cards</code> · <code>.radio-cards--icon</code> · <code>.radio-cards--3</code> (3-up grid, Q28) · <code>.radio-cards--gate</code> (lead icon on top + roomier title/sub, create-project gate) · <code>.radio-cards--list</code> (2026-08-09: single-column list instead of the default grid, one row per result — <a href="#source-import">Source import</a>'s search results; stacks with <code>--gate</code> on the same container without conflict, paints the selected row in the <code>--gate</code> hover look since this list needs a visible "which one is picked" cue before Import) · <code>.radio-card__icon</code> · <code>.radio-card__lead</code> · <code>.radio-card__text</code> · <code>.radio-card__title</code> · <code>.radio-card__sub</code></td></tr><tr><td>Evidence / usage</td><td>create-product (variant mode · edition · delivery); create-event (<code>--gate --list</code>, bookyay import); other create flows to follow.</td></tr></tbody></table>
 </section>
 <section class="sub" id="segmented">
   <div class="sub__head">
@@ -5094,9 +5195,12 @@ The first thing buyers see</span>
           <div class="selection-grid"><div class="selection-card selection-card--active"><div class="selection-card__title">Portfolio drop</div><div class="selection-card__sub">Best for a curated creator launch.</div></div><div class="selection-card"><div class="selection-card__title">Campaign</div><div class="selection-card__sub">Best for a time-bound release.</div></div></div>
         </div>
         <div class="wizard__bottom"><button class="btn btn--ghost">Save draft</button><div class="wizard__bottom-actions"><button class="btn btn--outline">Back</button><button class="btn btn--primary">Next</button></div></div>
+        <div class="wizard__bottom wizard__bottom--end" style="margin-top:8px"><div class="wizard__bottom-actions"><button class="btn btn--outline">Back</button><button class="btn btn--primary">Next</button></div></div>
       </div>
     </div>
   </div>
+  <p class="field-text" data-en><code>.wizard__bottom--end</code> <span class="field-note">(2026-08-09)</span> — use it when the footer has no secondary action on the left, so the button group sits flush right. Ten wizard footers were each carrying the same inline <code>style="justify-content:flex-end"</code>; this modifier replaces all of them.</p>
+  <p class="field-text" data-zh><code>.wizard__bottom--end</code> <span class="field-note">（2026-08-09）</span>——footer 沒有左側次要動作時用它，讓按鈕組靠右收齊。此前十個 wizard footer 各自寫著同一段 inline <code>style="justify-content:flex-end"</code>，本輪收成修飾類一次換掉。上面第二個示範就是它。</p>
   <p class="field-label" data-en>Footer hint — primary action disabled <span class="field-note">(<code>.wizard__bottom-hint</code>, added 2026-07-30)</span></p>
   <p class="field-label" data-zh>Footer 原因行——主動作停用時 <span class="field-note">（<code>.wizard__bottom-hint</code>，2026-07-30 新增）</span></p>
   <p class="field-text" data-en>Shown only while the primary action is disabled — a disabled button doesn't explain itself. Toggled with <code>.hidden</code>, so it takes zero space when the step is unblocked.</p>
@@ -5579,8 +5683,8 @@ The first thing buyers see</span>
     <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#switch">Switch</a> <a class="compose-chip compose-chip--atom" href="#badge">Badge</a> <a class="compose-chip compose-chip--atom" href="#form-grid">Form grid</a></div>
     <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#field-system">Field system</a> <a class="compose-chip compose-chip--molecule" href="#control-row">Control row</a> <a class="compose-chip compose-chip--molecule" href="#amount-field">Amount field</a></div>
   </div>
-  <p class="field-text" data-en>The dialog chrome here (<code>.payout-dialog</code> head / body / foot) is the project's canonical modal shell — reuse rules live in <a href="#patterns">Pillar 5 · Modal shell</a>. All four consumers (<code>partials/payout-request-modal.js</code>, <code>partials/manual-entry-modal.js</code>, <code>partials/restock-modal.js</code>, <code>partials/pickup-session-modal.js</code>) plus <code>creators.html</code>'s inline create-creator form build fields from <a href="#field-system">Field system</a> / <a href="#form-grid">Form grid</a> / <a href="#control-row">Control row</a> and the amount input from <a href="#amount-field"><code>.amount-field--hero</code></a> (2026-07-11) — the page-local <code>.payout-field*</code> / <code>.payout-form-grid</code> / <code>.payout-inline-control</code> / <code>.payout-amount-*</code> markup they used to hand-roll is gone everywhere; the classes have no remaining consumer and their rules were removed from <code>payout-modal.css</code>.</p>
-  <p class="field-text" data-zh>這裡的 dialog 殼（<code>.payout-dialog</code> 頭／身／腳）是本項目的 canonical modal 殼——共用規則見 <a href="#patterns">Pillar 5 · Modal shell</a>。全部四個 consumer（<code>partials/payout-request-modal.js</code>、<code>partials/manual-entry-modal.js</code>、<code>partials/restock-modal.js</code>、<code>partials/pickup-session-modal.js</code>）與 <code>creators.html</code> 內建的建立 creator 表單，欄位皆改用 <a href="#field-system">Field system</a>／<a href="#form-grid">Form grid</a>／<a href="#control-row">Control row</a>，金額輸入改用 <a href="#amount-field"><code>.amount-field--hero</code></a>（2026-07-11）——這些檔案原本自刻的 <code>.payout-field*</code>／<code>.payout-form-grid</code>／<code>.payout-inline-control</code>／<code>.payout-amount-*</code> markup 已全數移除；這些 class 已無任何 consumer，規則也已從 <code>payout-modal.css</code> 移除。</p>
+  <p class="field-text" data-en>The dialog chrome here (<code>.payout-dialog</code> head / body / foot) is the project's canonical modal shell — reuse rules live in <a href="#patterns">Pillar 5 · Modal shell</a>. All four consumers (<code>partials/payout-request-modal.js</code>, <code>partials/manual-entry-modal.js</code>, <code>partials/restock-modal.js</code>, <code>partials/pickup-session-modal.js</code>) plus <code>creators.html</code>'s inline create-creator form build fields from <a href="#field-system">Field system</a> / <a href="#form-grid">Form grid</a> / <a href="#control-row">Control row</a> and the amount input from <a href="#amount-field"><code>.amount-field--hero</code></a> (2026-07-11) — the page-local <code>.payout-field*</code> / <code>.payout-form-grid</code> / <code>.payout-inline-control</code> / <code>.payout-amount-*</code> markup they used to hand-roll is gone everywhere; the classes have no remaining consumer and their rules were removed from <code>payout-modal.css</code>. The ticket edit dialog in <code>create-event.html</code> (<a href="#ticket-tier-card">Ticket tier card</a>) also reuses this shell, and is the first consumer of the <code>.payout-dialog__split</code> layout below.</p>
+  <p class="field-text" data-zh>這裡的 dialog 殼（<code>.payout-dialog</code> 頭／身／腳）是本項目的 canonical modal 殼——共用規則見 <a href="#patterns">Pillar 5 · Modal shell</a>。全部四個 consumer（<code>partials/payout-request-modal.js</code>、<code>partials/manual-entry-modal.js</code>、<code>partials/restock-modal.js</code>、<code>partials/pickup-session-modal.js</code>）與 <code>creators.html</code> 內建的建立 creator 表單，欄位皆改用 <a href="#field-system">Field system</a>／<a href="#form-grid">Form grid</a>／<a href="#control-row">Control row</a>，金額輸入改用 <a href="#amount-field"><code>.amount-field--hero</code></a>（2026-07-11）——這些檔案原本自刻的 <code>.payout-field*</code>／<code>.payout-form-grid</code>／<code>.payout-inline-control</code>／<code>.payout-amount-*</code> markup 已全數移除；這些 class 已無任何 consumer，規則也已從 <code>payout-modal.css</code> 移除。<code>create-event.html</code> 的票種編輯彈窗（<a href="#ticket-tier-card">Ticket tier card</a>）也重用這個殼，是下方 <code>.payout-dialog__split</code> 版面的首個消費者。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(dialog shown without the fixed backdrop; bank picker below)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">(dialog 不含全螢幕背板直接展示；下方為銀行挑選卡)</span></p>
   <div class="demo" style="flex-direction:column;align-items:stretch;gap:20px;">
@@ -5647,6 +5751,29 @@ The first thing buyers see</span>
       </button>
     </div>
   </div>
+  <p class="field-label" data-en>Split layout <span class="field-note">(<code>.payout-dialog__split</code> — 2026-08-09, first consumer = the ticket edit dialog in <a href="#ticket-tier-card">Ticket tier card</a>: a main column of fields to fill in + a fixed 200px side column for view-only content like an image)</span></p>
+  <p class="field-label" data-zh>分左右欄 <span class="field-note">(<code>.payout-dialog__split</code>——2026-08-09，首個消費者＝<a href="#ticket-tier-card">Ticket tier card</a> 的票種編輯彈窗：主欄放要填的欄位＋固定 200px 側欄放圖片這類用看的內容)</span></p>
+  <div class="demo" style="flex-direction:column;align-items:stretch;">
+    <div class="payout-dialog__split" style="max-width:520px;margin:0 auto;width:100%">
+      <div>
+        <div class="field">
+          <label class="field__label" for="ds-split-name">Ticket name</label>
+          <input class="input" id="ds-split-name" type="text" value="Front row">
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field__label" for="ds-split-price">Price</label>
+          <span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input class="input amount-field__input" id="ds-split-price" type="number" value="1280"></span>
+        </div>
+      </div>
+      <div class="upload-tile-aside upload-tile-aside--stacked">
+        <div class="upload-tile is-filled"><span class="upload-tile__icon"><i data-lucide="check" class="ztor-icon"></i></span></div>
+        <div class="upload-tile-aside__side">
+          <p class="field-text" style="margin:0">Follows the event's key visual.</p>
+          <button class="btn btn--outline btn--sm" type="button">Replace</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <p class="field-label" data-en>Do &amp; Don't</p>
   <p class="field-label" data-zh>該做與別做</p>
   <div class="dodont"><div class="dodont__do"><strong><span data-en>Do</span><span data-zh>該做</span></strong><ul><li data-en>Mount via <code>partials/payout-request-modal.js</code> so every consumer gets the same dialog.</li><li data-zh>用 <code>partials/payout-request-modal.js</code> 掛載，讓每個 consumer 拿到同一個 dialog。</li><li data-en>Keep the summary block visible before confirm — amount, fee, arrival.</li><li data-zh>確認前保留摘要區塊 — 金額、手續費、到帳時間。</li></ul></div><div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Don't rebuild the dialog shell per page — it is the project's canonical modal pattern.</li><li data-zh>別逐頁重刻 dialog 外殼 — 它是本項目的標準 modal pattern。</li><li data-en>Don't forget <code>.is-modal-open</code> scroll lock when opening.</li><li data-zh>開啟時別忘了 <code>.is-modal-open</code> 捲動鎖定。</li></ul></div></div>
@@ -5667,6 +5794,7 @@ The first thing buyers see</span>
     <table class="spec"><thead><tr><th><span data-en>Class / modifier</span><span data-zh>Class／修飾子</span></th><th><span data-en>Effect</span><span data-zh>效果</span></th></tr></thead><tbody>
       <tr><td><code>.payout-bank-grid</code> / <code>.payout-bank-card</code> (<code>--selected</code> / <code>--add</code>) / <code>__top</code> / <code>__icon</code> / <code>__title</code> / <code>__meta</code> / <code>.payout-bank-empty</code></td><td><span data-en>Page-side bank picker: auto-fit 230px card grid; add-card = dashed</span><span data-zh>頁面側銀行挑選：auto-fit 230px 卡格；新增卡＝虛線</span></td></tr>
       <tr><td><code>.payout-modal</code> / <code>.payout-dialog</code> / <code>__head</code> / <code>__body</code> / <code>__foot</code> / <code>__title</code> / <code>.payout-view</code></td><td><span data-en>Modal shell: blurred backdrop (z 80) + 620px dialog with head/body/foot and step views</span><span data-zh>Modal 外殼：模糊背板（z 80）＋620px dialog，head／body／foot 與步驟畫面</span></td></tr>
+      <tr><td><code>.payout-dialog__split</code></td><td><span data-en>2026-08-09, first consumer = the ticket edit dialog (<a href="#ticket-tier-card">Ticket tier card</a>): grid inside <code>__body</code>, main column (<code>minmax(0,1fr)</code>) + fixed 200px side column, <code>align-items:start</code>, collapses to one column ≤640px</span><span data-zh>2026-08-09，首個消費者＝票種編輯彈窗（<a href="#ticket-tier-card">Ticket tier card</a>）：<code>__body</code> 內的 grid，主欄（<code>minmax(0,1fr)</code>）＋固定 200px 側欄，<code>align-items:start</code>，≤640px 收單欄</span></td></tr>
       <tr><td><code>.field</code>(<code>__label</code>/<code>__hint</code>) · <code>.form-grid</code> · <code>.amount-field.amount-field--hero</code>(<code>__unit</code>/<code>__input</code>)</td><td><span data-en>Bank / amount fields use <a href="#field-system">Field system</a>; the add-bank view's 5 fields wrap in <a href="#form-grid">Form grid</a> (2-col); the headline amount input is <a href="#amount-field"><code>.amount-field--hero</code></a> — 70px input height, 32px display-type font, $ prefix (2026-07-11, was page-local <code>.payout-form-grid</code>/<code>.payout-field</code>/<code>.payout-amount-*</code>)</span><span data-zh>銀行／金額欄位用 <a href="#field-system">Field system</a>；add-bank 畫面的 5 個欄位包在 <a href="#form-grid">Form grid</a>（2 欄）；金額主角輸入是 <a href="#amount-field"><code>.amount-field--hero</code></a>——70px 輸入高、32px display 字級、$ 前綴（2026-07-11，原為頁面自刻的 <code>.payout-form-grid</code>／<code>.payout-field</code>／<code>.payout-amount-*</code>）</span></td></tr>
       <tr><td><code>.payout-selected-bank</code> / <code>.payout-bank-option(s)</code> / <code>.payout-summary</code>(<code>__row</code>) / <a href="#checkbox"><code>.zcheck</code></a><code>.mt-16</code> / <code>.control-row</code>(<code>__main</code>/<code>__sub</code>) / <code>.payout-result</code>(<code>__icon</code>)</td><td><span data-en>Bank rows, fee summary (incl. settled-sources + rate-version rows), irreversible-confirm gate — the shared <a href="#checkbox">Checkbox</a> since 2026-08-06, no frame of its own (was <code>.payout-confirm</code>: a <code>--muted</code> row with an inset hairline wrapped around a native checkbox — Q53), <a href="#control-row">Control row</a> inline toggles (2026-07-11, was <code>.payout-inline-control</code>), success view (green tint circle)</span><span data-zh>銀行列、費用摘要（含結算來源＋費率版本列）、不可逆確認閘門（2026-08-06 起改吃共用的 <a href="#checkbox">Checkbox</a>、不再自帶框；原為 <code>.payout-confirm</code>—— <code>--muted</code> 底加內描邊包住一顆原生 checkbox——Q53）、<a href="#control-row">Control row</a> 行內開關（2026-07-11，原為 <code>.payout-inline-control</code>）、成功畫面（綠 tint 圓）</span></td></tr>
     </tbody></table>
@@ -6103,8 +6231,8 @@ The first thing buyers see</span>
   </div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.notif-matrix</code> · <code>__corner / __chead / __label(__label-title/__label-hint) / __cell(.--locked) / __lock</code>。每格放一顆 <code>.switch</code>；鎖定格用 <code>.switch--on.switch--locked</code> + <code>lock</code> icon，原因寫 <code>title</code>。grid =「label 欄 + 3 管道欄」。</p>
-    <p class="field-text"><code>ds-components/notification-matrix.css</code></p>
+    <p class="field-text"><code>.notif-matrix</code> · <code>__corner / __chead / __label(__label-title/__label-hint) / __cell(.--locked) / __lock</code>。每格放一顆 <code>.switch</code>；鎖定格用 <code>.switch--on.switch--locked</code> + <code>lock</code> icon，原因寫 <code>title</code>。grid =「label 欄 + 3 管道欄」。<code>.switch--locked</code> 本身已於 2026-08-09 上收進 <a href="#switch">Switch §4.6</a> 的 <code>switch.css</code>——本檔只消費這個 class、不再定義它。</p>
+    <p class="field-text"><code>ds-components/notification-matrix.css</code>（鎖定 switch 的視覺定義在 <a href="#switch"><code>switch.css</code></a>）</p>
   </div>
   </details>
 </section>
@@ -6913,8 +7041,8 @@ The first thing buyers see</span>
 <section class="sub" id="radio-list">
   <div class="sub__head"><h3 class="sub__title">4.84 Radio list</h3><span class="layer layer--molecule">🟡 molecule</span></div>
   <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
-  <p class="sub__desc" data-en>Lightweight vertical 1-of-N picker: a radio dot + title (optional one-line sub) per row; a filled orange dot marks the selection. Lighter than <a href="#selection-card">Selection card</a> (no card frame/shadow) and, unlike <a href="#segmented">Segmented</a>, it is a <em>data choice</em> rather than a view switch. Two variants: <strong>base</strong> keeps every option visible; <strong><code>--collapsible</code></strong> (2026-07-21, Figma 856-22782) shows only the current selection plus a chevron and reveals the full list on click — use it when the picker sits in a narrow column and vertical space is scarce, e.g. Listing settings (Don't list / List now / Schedule) under the store-preview card. In the collapsible variant the selected option appears twice while open (once in the trigger, once in the list) — that is the intended Figma behaviour. Independent component (own classes + JS), not built on Segmented.</p>
-  <p class="sub__desc" data-zh>輕量垂直單選：每列一個 radio 圓點＋標題（可帶一句描述），圓點填橘＝選中。比 <a href="#selection-card">Selection card</a> 輕（無卡框陰影）；與 <a href="#segmented">Segmented</a> 的分工是它做<em>資料選擇</em>、不是視角切換。兩個變體：<strong>base</strong> 選項恆展開；<strong><code>--collapsible</code></strong>（2026-07-21，Figma 856-22782）收起時只顯示目前選項＋chevron，點一下才展開完整清單，用於窄欄、垂直空間吃緊的情境——例如商店預覽卡下的上架設定（不上架／立刻上架／定時上架）。收合式展開時已選項會出現兩次（觸發列一次、清單一次），這是 Figma 原設計、刻意保留。獨立元件（自有 class＋JS），非建在 Segmented 上。</p>
+  <p class="sub__desc" data-en>Lightweight vertical 1-of-N picker: a radio dot + title (optional one-line sub) per row; a filled orange dot marks the selection. Lighter than <a href="#selection-card">Selection card</a> (no card frame/shadow) and, unlike <a href="#segmented">Segmented</a>, it is a <em>data choice</em> rather than a view switch. Two variants: <strong>base</strong> keeps every option visible; <strong><code>--collapsible</code></strong> (2026-07-21, Figma 856-22782) shows only the current selection plus a chevron and reveals the full list on click — use it when the picker sits in a narrow column and vertical space is scarce, e.g. Listing settings (Don't list / List now / Schedule) under the store-preview card. In the collapsible variant the selected option appears twice while open (once in the trigger, once in the list) — that is the intended Figma behaviour. Independent component (own classes + JS), not built on Segmented. <strong>New consumption context (2026-08-09)</strong>: the base variant now also covers single-select options inside a form — create-event's ticket-tier rules block (purchase condition / per-person limit / discount) uses <code>.radio-list</code> for its radio choice, replacing a short-lived page-local drawn-radio (<a href="#checkbox">see the retired <code>.zradio</code></a>).</p>
+  <p class="sub__desc" data-zh>輕量垂直單選：每列一個 radio 圓點＋標題（可帶一句描述），圓點填橘＝選中。比 <a href="#selection-card">Selection card</a> 輕（無卡框陰影）；與 <a href="#segmented">Segmented</a> 的分工是它做<em>資料選擇</em>、不是視角切換。兩個變體：<strong>base</strong> 選項恆展開；<strong><code>--collapsible</code></strong>（2026-07-21，Figma 856-22782）收起時只顯示目前選項＋chevron，點一下才展開完整清單，用於窄欄、垂直空間吃緊的情境——例如商店預覽卡下的上架設定（不上架／立刻上架／定時上架）。收合式展開時已選項會出現兩次（觸發列一次、清單一次），這是 Figma 原設計、刻意保留。獨立元件（自有 class＋JS），非建在 Segmented 上。<strong>新消費情境（2026-08-09）</strong>：base 變體現在也承接<strong>表單裡的規則選項</strong>——建立活動的票種卡購票規則區塊（購票條件／每人限購／折扣）改用 <code>.radio-list</code> 做單選，取代短命存在過的頁內自繪 radio（<a href="#checkbox">見已退場的 <code>.zradio</code></a>）。</p>
   <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
   <div class="demo demo--preview" data-product-preview="radio-list">
     <div class="ds-preview ds-preview--narrow">
@@ -6945,7 +7073,7 @@ The first thing buyers see</span>
     <div class="dodont__dont"><strong><span data-en>Don't</span><span data-zh>別做</span></strong><ul><li data-en>Use it to switch the <em>view</em> of one dataset — that's <a href="#segmented">Segmented</a>.</li><li data-zh>別用在切換同一資料的<em>視角</em>（那是 <a href="#segmented">Segmented</a>）。</li><li data-en>Mix both variants for the same role on different pages — Listing settings is collapsible everywhere.</li><li data-zh>別讓同一角色在不同頁用不同變體——上架設定全站一律收合式。</li></ul></div>
   </div>
   <p class="field-label" data-en>Specification</p><p class="field-label" data-zh>規格</p>
-  <table class="spec" data-product-spec="radio-list"><tbody><tr><td>Source</td><td><code>radio-list.css</code> · <code>partials/radio-list.js</code> (collapsible behaviour)</td></tr><tr><td>Anatomy</td><td>Base: <code>.radio-list</code> &gt; <code>.radio-list__item</code> (<code>--active</code>) &gt; <code>.radio-list__dot</code> + <code>.radio-list__text</code> (<code>__title</code> + optional <code>__sub</code>).<br>Collapsible: <code>.radio-list.radio-list--collapsible[data-open]</code> &gt; <code>.radio-list__trigger</code> (dot + text + <code>.radio-list__chevron</code>) + <code>.radio-list__options[hidden]</code> &gt; <code>.radio-list__item</code>.</td></tr><tr><td>Variants</td><td><code>(base)</code> every option visible · <code>--collapsible</code> trigger + disclosure list, 1px <code>--border</code> frame at <code>--radius-xl</code>, open trigger fills <code>--input-surface</code>, chevron rotates 180°.</td></tr><tr><td>States</td><td>default · hover (<code>--accent</code>) · focus-visible (<code>--ring</code>) · selected (<code>--active</code>, orange filled dot) · open / closed (<code>[data-open]</code>, collapsible only).</td></tr><tr><td>Behavior / usage</td><td>Vertical flex; transparent rows, hover <code>--accent</code>; selected = orange filled dot (<code>--primary</code>), no bg/border change. Rows with no <code>.radio-list__sub</code> vertically center dot + title. <code>partials/radio-list.js</code> auto-mounts every <code>.radio-list--collapsible</code>: toggles open state, mirrors the selected row's text + <code>data-i18n</code> keys into the trigger, closes on outside click / Esc, and dispatches <code>radio-list:change</code> (detail.item) so pages only own their own field-reveal logic.</td></tr><tr><td>Token usage</td><td><code>--foreground</code>, <code>--accent</code>, <code>--muted-foreground</code>, <code>--primary</code>, <code>--border</code>, <code>--input-surface</code>, <code>--ring</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-2/8/10</code>, <code>--fs-14/12</code>, <code>--duration</code>, <code>--easing</code>.</td></tr><tr><td>Classes</td><td><code>.radio-list</code> · <code>.radio-list--collapsible</code> · <code>.radio-list__trigger</code> · <code>.radio-list__chevron</code> · <code>.radio-list__options</code> · <code>.radio-list__item</code> · <code>.radio-list__item--active</code> · <code>.radio-list__dot</code> · <code>.radio-list__text</code> · <code>.radio-list__title</code> · <code>.radio-list__sub</code></td></tr><tr><td>Dependencies</td><td>Composes <a href="#icon">Icon</a> (<code>chevron-down</code>) in the collapsible trigger.</td></tr><tr><td>Evidence / usage</td><td>All five consumers use <code>--collapsible</code> (2026-07-21): create-product · create-bundle · create-auction (Listing settings under the preview card); product-detail · bundle-detail (Listing settings in price-stock).</td></tr></tbody></table>
+  <table class="spec" data-product-spec="radio-list"><tbody><tr><td>Source</td><td><code>radio-list.css</code> · <code>partials/radio-list.js</code> (collapsible behaviour)</td></tr><tr><td>Anatomy</td><td>Base: <code>.radio-list</code> &gt; <code>.radio-list__item</code> (<code>--active</code>) &gt; <code>.radio-list__dot</code> + <code>.radio-list__text</code> (<code>__title</code> + optional <code>__sub</code>).<br>Collapsible: <code>.radio-list.radio-list--collapsible[data-open]</code> &gt; <code>.radio-list__trigger</code> (dot + text + <code>.radio-list__chevron</code>) + <code>.radio-list__options[hidden]</code> &gt; <code>.radio-list__item</code>.</td></tr><tr><td>Variants</td><td><code>(base)</code> every option visible · <code>--collapsible</code> trigger + disclosure list, 1px <code>--border</code> frame at <code>--radius-xl</code>, open trigger fills <code>--input-surface</code>, chevron rotates 180°.</td></tr><tr><td>States</td><td>default · hover (<code>--accent</code>) · focus-visible (<code>--ring</code>) · selected (<code>--active</code>, orange filled dot) · open / closed (<code>[data-open]</code>, collapsible only).</td></tr><tr><td>Behavior / usage</td><td>Vertical flex; transparent rows, hover <code>--accent</code>; selected = orange filled dot (<code>--primary</code>), no bg/border change. Rows with no <code>.radio-list__sub</code> vertically center dot + title. <code>partials/radio-list.js</code> auto-mounts every <code>.radio-list--collapsible</code>: toggles open state, mirrors the selected row's text + <code>data-i18n</code> keys into the trigger, closes on outside click / Esc, and dispatches <code>radio-list:change</code> (detail.item) so pages only own their own field-reveal logic.</td></tr><tr><td>Token usage</td><td><code>--foreground</code>, <code>--accent</code>, <code>--muted-foreground</code>, <code>--primary</code>, <code>--border</code>, <code>--input-surface</code>, <code>--ring</code>, <code>--radius-md</code>, <code>--radius-xl</code>, <code>--sp-2/8/10</code>, <code>--fs-14/12</code>, <code>--duration</code>, <code>--easing</code>.</td></tr><tr><td>Classes</td><td><code>.radio-list</code> · <code>.radio-list--collapsible</code> · <code>.radio-list__trigger</code> · <code>.radio-list__chevron</code> · <code>.radio-list__options</code> · <code>.radio-list__item</code> · <code>.radio-list__item--active</code> · <code>.radio-list__dot</code> · <code>.radio-list__text</code> · <code>.radio-list__title</code> · <code>.radio-list__sub</code></td></tr><tr><td>Dependencies</td><td>Composes <a href="#icon">Icon</a> (<code>chevron-down</code>) in the collapsible trigger.</td></tr><tr><td>Evidence / usage</td><td>Five consumers use <code>--collapsible</code> (2026-07-21): create-product · create-bundle · create-auction (Listing settings under the preview card); product-detail · bundle-detail (Listing settings in price-stock). <strong>2026-08-09</strong>: create-event.html uses the base variant for the ticket-tier rules block's radio choice (purchase condition / per-person limit / discount) — spacing rules live in <code>ticket-tier-card.css</code> (<code>.rule &gt; .radio-list</code>).</td></tr></tbody></table>
 </section>
 
 <section class="sub" id="date-input">
@@ -7395,6 +7523,8 @@ The first thing buyers see</span>
   </div>
   <p class="field-text">Markup 契約：帶標籤用 <code>.zcheck</code> 包住 <code>.zcheck__control</code>＋<code>.zcheck__label</code>；表格儲存格等已有標籤情境可只留 <code>.zcheck__control</code>。<code>--zcheck-ink:#271302</code> 為刻意裸值——品牌橘在深淺主題都偏亮，勾的墨色不能隨主題翻轉。消費頁：<code>create-project.html</code>、<code>order-detail.html</code>、<code>ip-market.html</code>、<code>project-detail.html</code>、<code>brand-campaigns.html</code>、<code>create-event.html</code>、<code>manage-ip.html</code>、<code>register-ip.html</code>、<code>earnings-sony.html</code>、<code>earnings.html</code>／<code>earnings-ztor.html</code>／<code>earnings-overview.html</code>（<code>partials/payout-request-modal.js</code>）。</p>
   <p class="field-text"><strong>站上唯一的勾選控件（2026-08-06 Q53）</strong>：確認類勾選不另加容器框。原本提款／捐贈彈窗的 <code>.payout-confirm</code> 把一整列包進「<code>--muted</code> 底＋內描邊＋內距」的框，框裡又是一顆靠 <code>accent-color</code> 染色的原生 checkbox；使用者裁示「不需要有一個框框，我們的元件樣式應該沒有這樣？有的話請統一改掉」，該族群連同 <code>manage-ip</code> 的 <code>.mi-onreq</code>、<code>register-ip</code> 的 <code>.ri-onreq</code> 一併退場，全部改吃本元件。要與上一區塊拉開距離用 <code>mt-8</code>／<code>mt-16</code> 工具類，不要為此新增變體。</p>
+  <p class="field-label">Radio（<code>.zradio</code>，⚰️ 已退場・tombstone） <span class="field-note">（2026-08-09 曾 promote，同日改用既有 <a href="#radio-list">Radio list</a>）</span></p>
+  <p class="field-text">2026-08-09 曾把 <code>create-event.html</code> 的頁內 <code>.zradio*</code>（與 <code>.zcheck</code> 同一套「畫出來的控件疊在真實 input 下」寫法，套用到 <code>&lt;input type="radio"&gt;</code>）promote 進本檔，用於票種卡購票規則區塊（購票條件／限購／折扣）的單選。<strong>同日使用者裁決「建活動頁的樣式一律以既有 design system 為主，不留頁內自造的平行做法」</strong>，<code>.zradio*</code> 全數撤場，改用既有 <a href="#radio-list">Radio list</a>（<code>ds-components/radio-list.css</code> 的 <code>.radio-list</code>），不留第二種單選視覺。CSS 已從本檔整段移除，原處只留 tombstone 註解（<code>ds-components/checkbox.css</code> 第 183 行附近）；<strong>勿再新增 <code>.zradio*</code></strong>。間距規則（原 <code>.rule &gt; .zradio-group</code>）已一併搬到 <code>ticket-tier-card.css</code> 並改名為 <code>.rule &gt; .radio-list</code>。</p>
 </section>
 
 <section class="sub" id="detail-sheet">
@@ -7637,7 +7767,24 @@ The first thing buyers see</span>
       </li>
     </ol>
   </div>
-  <p class="field-text">長條寬度是資料（<code>--w</code> 由呼叫端算好），色相是分類（<code>--hue</code> 吃 <code>--chart-*</code> token）；<code>.perf-rank--nopct</code> 為無百分比的 4 欄變體。實際由 <code>js/performance-store.js</code> 生成，消費頁：<code>index.html</code>、<code>project-detail.html</code>。</p>
+  <p class="field-label">寬名稱變體 <span class="field-note">(.perf-rank--wide，2026-08-09)</span></p>
+  <div class="demo">
+    <ol class="perf-rank perf-rank--wide perf-rank--nopct" style="width:100%;">
+      <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)">
+        <span class="perf-rank__idx">1</span>
+        <span class="perf-rank__name">《海上霸姬鄭一嫂》為什麼是這五年最好的港產武打片</span>
+        <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+        <span class="perf-rank__val">640 次</span>
+      </li>
+      <li class="perf-rank__row" style="--w:80%; --hue:var(--chart-2)">
+        <span class="perf-rank__idx">2</span>
+        <span class="perf-rank__name">【分鏡拆解】旺角狙擊開場那顆長鏡頭</span>
+        <span class="perf-rank__track"><span class="perf-rank__fill"></span></span>
+        <span class="perf-rank__val">512 次</span>
+      </li>
+    </ol>
+  </div>
+  <p class="field-text">長條寬度是資料（<code>--w</code> 由呼叫端算好），色相是分類（<code>--hue</code> 吃 <code>--chart-*</code> token）；<code>.perf-rank--nopct</code> 為無百分比的 4 欄變體。<code>.perf-rank--wide</code> 把名稱欄改吃比例（<code>2fr</code> 對長條的 <code>1fr</code>）、不設固定上限——預設的 148px 是為片名、歌名、平台名這種七八個字的短名訂的，作品全名與貼文標題是一整句，塞進去只看得到前六個字；換成更大的固定值也只是把問題往後推，比例才會把剩下的寬度真的讓給名稱。實際由 <code>js/performance-store.js</code> 與 <code>js/audience-store.js</code> 生成，消費頁：<code>index.html</code>、<code>project-detail.html</code>、<code>audience-report.html</code>、<code>fan-analytics.html</code>。</p>
 </section>
 
 <section class="sub" id="sortable">
@@ -7792,7 +7939,42 @@ The first thing buyers see</span>
       </div>
     </section>
   </div>
-  <p class="field-text">摘要卡的值不做進場動效（每個按鍵都會變，動畫在此讀作抖動而非回饋）；金額試算一律引用 <a href="#waterfall">Earnings</a> 已有的數字，本卡不重新計算。需要消費頁把 <code>.wizard__body</code> 加寬到 <code>--mid</code>（1140px）。消費頁：<code>create-project.html</code>（唯一）。</p>
+  <p class="field-text">摘要卡的值不做進場動效（每個按鍵都會變，動畫在此讀作抖動而非回饋）；金額試算一律引用 <a href="#waterfall">Earnings</a> 已有的數字，本卡不重新計算。需要消費頁把 <code>.wizard__body</code> 加寬到 <code>--mid</code>（1140px）。消費頁：<code>create-project.html</code>、<code>create-event.html</code>（<code>--narrow</code>，收入試算右軌）。</p>
+  <p class="field-label">側欄可疊多張卡 <span class="field-note">（2026-08-09）</span></p>
+  <p class="sub__desc">側欄是 <code>display:flex; flex-direction:column; gap: var(--sp-16)</code>，一條軌上可以疊兩張以上的卡。首個消費情境是建立活動的票務那一步：預覽卡在上、收入試算卡在下。<strong>只有一張卡時的呈現與改動前完全相同</strong>，<code>create-project.html</code> 與 <code>create-event-legacy.html</code> 這兩個單卡消費者不受影響。</p>
+  <div class="demo">
+    <section class="wizard-split wizard-split--narrow" style="width:100%;">
+      <aside class="wizard-split__rail">
+        <div class="card" style="padding:var(--sp-16)">
+          <div class="fd-ov__title">How fans see your event</div>
+          <p class="field-text" style="margin:0">預覽卡（示意）</p>
+        </div>
+        <div class="card" style="padding:var(--sp-16)">
+          <div class="kv"><span class="kv__k">Ticket revenue</span><span class="kv__v">$12,000</span></div>
+          <div class="kv calc-sum__out"><span class="kv__k">You receive</span><span class="kv__v">$11,040</span></div>
+        </div>
+      </aside>
+      <div class="wizard-split__main">
+        <div class="field"><label class="field__label">Ticket name</label><input class="input" value="General admission"></div>
+      </div>
+    </section>
+  </div>
+
+  <p class="field-label"><code>--narrow</code> 變體 <span class="field-note">（2026-08-09 自 create-event.html 的 <code>.ce-split-narrow</code> promote：右軌欄寬 320px → 264px，供內容較輕的右軌用，如四列 <code>.kv</code> ＋一顆按鈕的收入試算）</span></p>
+  <div class="demo">
+    <section class="wizard-split wizard-split--narrow" style="width:100%;">
+      <aside class="wizard-split__rail">
+        <div class="card" style="padding:var(--sp-16)">
+          <div class="kv"><span class="kv__k">Ticket revenue</span><span class="kv__v">$12,000</span></div>
+          <div class="kv"><span class="kv__k">Platform fee</span><span class="kv__v">-$960</span></div>
+          <div class="kv calc-sum__out"><span class="kv__k">You receive</span><span class="kv__v">$11,040</span></div>
+        </div>
+      </aside>
+      <div class="wizard-split__main">
+        <div class="field"><label class="field__label">Ticket name</label><input class="input" value="General admission"></div>
+      </div>
+    </section>
+  </div>
 </section>
 
 <section class="sub" id="zselect">
@@ -8109,8 +8291,9 @@ The first thing buyers see</span>
     <!-- .tier-grid 是外層網格；.tier-list 已改 display:contents，卡片與「再加一個」同在這個網格裡 -->
     <div class="tier-grid">
     <div class="tier-list">
-      <div class="card tier-card">
+      <div class="card tier-card tier-card--clickable">
         <div class="tier-card__head">
+          <span class="tier-card__grip"><i data-lucide="grip-vertical" class="ztor-icon"></i></span>
           <h4 class="tier-card__name">Early bird</h4>
           <span class="badge badge--neutral tier-card__badge">Custom</span>
           <div class="tier-card__actions">
@@ -8123,9 +8306,11 @@ The first thing buyers see</span>
             </details>
           </div>
         </div>
+        <span class="tier-card__thumb"><i data-lucide="image" class="ztor-icon"></i></span>
         <dl class="tier-card__facts">
           <div class="tier-card__fact"><dt>Price</dt><dd>$680</dd></div>
           <div class="tier-card__fact"><dt>Quantity</dt><dd>120</dd></div>
+          <div class="tier-card__fact"><dt>Bundle</dt><dd><span class="tier-card__line">Tour hoodie</span><span class="tier-card__line">Signed poster</span></dd></div>
         </dl>
         <button class="btn btn--outline btn--sm tier-card__edit" type="button">Edit</button>
       </div>
@@ -8195,6 +8380,14 @@ The first thing buyers see</span>
   <p class="field-label" data-en>Rules &amp; revenue estimate</p><p class="field-label" data-zh>規則與收入試算</p>
   <p class="sub__desc" data-en>Three settings share one shape (who can buy / per-person limit / discount) and one renderer — it runs once at event level as the default for every tier, and once inside a tier card that opted out. Scope is inheritance plus override, not two separate modes.</p>
   <p class="sub__desc" data-zh>三種設定（購票條件／每人限購／折扣）同一個結構、同一支渲染函式——在活動層跑一次當所有票種的預設，在打開自訂的票種卡裡再跑一次。範圍走繼承＋覆寫，不做「全部一致 vs 獨立」兩種模式。</p>
+  <p class="field-label" data-en><code>.tier-card__ownrow</code> <span class="field-note">(2026-08-09 — the customized-status row inside the ticket edit dialog's rules tab; only appears once this tier's rules have diverged from the event default)</span></p>
+  <p class="field-label" data-zh><code>.tier-card__ownrow</code> <span class="field-note">（2026-08-09——票種編輯彈窗規則分頁裡的自訂狀態列；只在這張票的規則已與活動預設脫鉤時出現）</span></p>
+  <div class="demo"><div style="width:100%;max-width:520px">
+    <div class="tier-card__ownrow">
+      <span class="badge badge--neutral">Custom</span>
+      <button class="btn btn--ghost btn--sm" type="button">Follow event default</button>
+    </div>
+  </div></div>
   <div class="demo"><div style="width:100%;max-width:520px">
     <div class="rule">
       <div class="field__label">Who can buy</div>
@@ -8226,7 +8419,9 @@ The first thing buyers see</span>
   </div></div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.tier-grid</code>（網格，2026-08-06 起固定 <code>repeat(3, minmax(0,1fr))</code>，≤1100px 兩欄、≤720px 一欄）· <code>.tier-list</code>（卡片渲染容器，<code>display:contents</code>）· <code>.tier-toolbar(__actions)</code>（批次編輯）· <code>.tier-card</code>（掛在 <code>.card</code> 上）· <code>__head / __name / __name--untitled / __badge / __ownbtn / __actions</code>（收合面：卡標＋「自訂」徽章＋<code>.dropdown</code> ⋮ 選單，規格 5.1.6.1 F9.2 複製／移除；<code>__ownbtn</code> 是編輯態才出現的自訂規則按鈕，徽章同時收起）· <code>__facts / __fact</code>（標籤靠左、值靠右的價格與數量）· <code>__edit</code>（收合面卡底的整寬 Edit）· <code>__body / __foot / __foot-spacer</code>（展開面；Remove 走 <code>.btn--destructive</code>——2026-08-06 起是紅框紅字，Q37 的實色紅底已被使用者推翻）· <code>__control + __clear</code>（有值才出現的清除鈕）· <code>.field__hint.tier-card__err</code>（驗證錯誤）· <code>.tier-count(.--over)</code>（計數列，<strong>2026-08-06 依使用者指示撤除顯示</strong>，節點保留供 <code>readState()</code> 讀 <code>data-tiers</code>）· <code>.tier-add</code>（沿用 <code>.upload-tile</code>）。</p>
+    <p class="field-text"><code>.tier-grid</code>（網格，2026-08-06 起固定 <code>repeat(3, minmax(0,1fr))</code>，≤1100px 兩欄、≤720px 一欄）· <code>.tier-list</code>（卡片渲染容器，<code>display:contents</code>）· <code>.tier-toolbar(__actions)</code>（批次編輯）· <code>.tier-card</code>（掛在 <code>.card</code> 上）· <code>.tier-card--clickable</code>（2026-08-09 promote：整張卡是開啟編輯的點擊區，⋮ 選單與拖曳把手排除；opt-in 修飾類，不寫進裸的 <code>.tier-card</code>——本元件也給 <code>create-event-legacy.html</code> 用，那邊的卡從來不是整卡可點）· <code>__head / __grip / __name / __name--untitled / __badge / __ownbtn / __actions</code>（收合面：拖曳把手＋卡標＋「自訂」徽章＋<code>.dropdown</code> ⋮ 選單；<code>__ownbtn</code> 是編輯態才出現的自訂規則按鈕）· <code>__thumb</code>（卡標小縮圖，2026-08-09 promote，方形裁切；<strong>同日第二輪由卡標那一行移出</strong>，改坐在 <code>__head</code> 下方自成一列——擠在卡標列時只能當個記號〔28px〕，獨立成列後放大到 40px〔圖示 14px→18px〕）· <code>__facts / __fact</code>（標籤靠左、值靠右的價格與數量；含 <code>__line</code>（2026-08-09 promote）時逐項換行顯示「商品組合」多筆值）· <code>__edit</code>（收合面卡底的整寬 Edit）· <code>__body / __foot / __foot-spacer</code>（展開面；Remove 走 <code>.btn--destructive</code>——2026-08-06 起是紅框紅字，Q37 的實色紅底已被使用者推翻）· <code>__control + __clear</code>（有值才出現的清除鈕）· <code>.field__hint.tier-card__err</code>（驗證錯誤）· <code>.tier-count(.--over)</code>（計數列，<strong>2026-08-06 依使用者指示撤除顯示</strong>，節點保留供 <code>readState()</code> 讀 <code>data-tiers</code>）· <code>.tier-add</code>（沿用 <code>.upload-tile</code>）· <code>.tier-card__ownrow</code>（2026-08-09 第二輪新增，票種編輯彈窗規則分頁的自訂狀態列：左「已自訂」徽章、右「改回跟隨活動預設」鈕，只在規則已脫鉤時出現，見上方示範）。</p>
+    <p class="field-text"><strong>2026-08-09 promote（規則區塊間距，同日第二輪改用 <code>.radio-list</code>）</strong>：<code>.rule-sub &gt; .radio-list</code>（原為 <code>.zradio-group</code>，見 <a href="#checkbox">Radio 的 tombstone</a> 與 <a href="#radio-list">Radio list</a>）與其展開欄位拉開間距、最後一個欄位不留尾巴；<code>.rule-row &gt; .field</code> 並排兩欄各自平分一列；<code>.tier-card__rules .rule-row</code> 在票種卡（≈240px 寬）改上下堆疊，規則彈窗夠寬則維持並排。</p>
+    <p class="field-text">🪦 <strong>tombstone（2026-08-09 當天新增、當天第二輪即退場）</strong>：<code>__ownbtn--always</code>／<code>__ownicon</code>／整寬展開鈕覆寫，服務的是票種編輯彈窗裡那顆「新增購票規則」收合鈕——<code>--always</code> 是它在彈窗裡無條件顯示的變體（取代原本「用彈窗容器 id 提權蓋過元件」的做法，<code>create-event.html</code> 把票種編輯整段搬進彈窗〔<code>.payout-dialog__body</code>〕後，這顆按鈕不再有 <code>--editing</code> 這個祖先），<code>__ownicon</code> 是它的箭頭圖示（<code>aria-expanded="true"</code> 時旋轉 180°）。同日使用者第二輪裁示「攤開不需要折疊了」——規則一律列出、不再收合，這顆鈕連同箭頭一併撤除，CSS 原地留 tombstone 註解。基礎 <code>__ownbtn</code> 不受影響，仍由 <code>create-event-legacy.html</code> 消費。</p>
     <p class="field-text">兩個面貌由卡片自己的 <code>--editing</code> 修飾字切換：<code>__body</code> 與 <code>__foot</code> 平常 <code>display:none</code>，加上 <code>--editing</code> 後換成 <code>__facts</code> 與 <code>__edit</code> 收起來。再加 <code>--group</code>（批次編輯中的卡）則連 <code>__foot</code> 也收起、<code>__actions</code> 留著——動作在工具列，移除單張只剩 ⋮ 這條路。<code>.tier-list[hidden]</code> 要顯式還原 <code>display:none</code>——容器宣告了 <code>display:contents</code>，不還原的話「該藏的不會藏」。</p>
     <p class="field-text">版型來源＝Beamco Artist Portal v3 的 Ticket Type Settings（Figma <code>0gWC6dR1yzdEu0g1LqvRvJ</code> node 1904-82978）。該設計有 List／Grid 兩種檢視，2026-08-04 使用者裁決<strong>只採用 Grid</strong>——List 是橫向捲動，會把卡片推出畫面，而這一步最需要一眼看到的正是「有幾種票、加起來幾張」；切換鈕因此整個不做。</p>
     <p class="field-text"><code>ds-components/ticket-tier-card.css</code>。消費頁：<code>create-event.html</code>（步驟 4 票種）。2026-08-06（使用者指示）兩處調整：網格固定三欄（原本欄數隨容器寬浮動，同一頁在不同視窗寬度下會排成 2 或 4 欄，看起來像兩種版型）；自訂規則開關由卡內的 switch 列改成標題列靠右的 <code>.tier-card__ownbtn</code> 按鈕（<code>aria-pressed</code>，開啟態橘框橘字——卡底已有一顆實色橘的 Save，再來一顆實色橘會分不出主要動作），<code>.tier-card__own</code> 已無消費者、CSS 留墓碑。2026-08-04 新建：該步驟原本只有一顆虛線卡把計數 +1、沒有任何欄位可填，規格 F9.1／F9.2 的票種卡此輪才落地；驗證（名稱 1–40 字不重複／價格整數 ≥ 0／數量整數 ≥ 1／Σ 數量 ≤ 容量）與草稿 Save／Cancel 由該頁行內控制器負責。</p>
@@ -8304,6 +8499,44 @@ The first thing buyers see</span>
     </div>
     <button class="btn btn--outline session-list__add" type="button"><i data-lucide="plus" class="ztor-icon"></i> 新增場次</button>
   </div></div>
+  <p class="field-label" data-en>Detailed variant — column headings, multi-column</p><p class="field-label" data-zh>Detailed 變體 — 欄位標題列、多欄</p>
+  <p class="sub__desc" data-en>When a session needs start / end / doors-open times, not just date and venue, use <code>.session-list--detailed</code> with a <code>.session-list__head</code> row (2026-08-09, promoted from create-event.html's own <code>.ce-sess</code>/<code>.ce-sess__head</code>). It does not use the read-only first-row mirror — every row is editable, including the first. With more than one date (<code>[data-multi="true"]</code>) an extra "session name" column appears so each date can be told apart, and every row gets a remove button; single-date stays 4 columns with no session-name field. <code>create-event-legacy.html</code> still consumes the base variant above unchanged.</p>
+  <p class="sub__desc" data-zh>場次除了日期與場地，還要問起訖時間與入場時間時，改用 <code>.session-list--detailed</code> 搭 <code>.session-list__head</code> 標題列（2026-08-09，從 create-event.html 頁內的 <code>.ce-sess</code>／<code>.ce-sess__head</code> promote）。不用第 1 場唯讀鏡像那套——每一列（含第 1 場）都可編輯。多場時（<code>[data-multi="true"]</code>）多插一欄場次名分辨每一場，每列都給移除鈕；單場維持 4 欄、不出現場次名欄位。<code>create-event-legacy.html</code> 仍消費上面的基準版，未受影響。</p>
+  <div class="demo"><div style="width:100%;max-width:760px">
+    <div class="session-list session-list--detailed">
+      <div class="session-list__head" data-multi="true">
+        <div class="session-list__fields">
+          <span>場次名稱</span><span>日期</span><span>開始時間</span><span>結束時間</span><span>入場時間</span>
+        </div>
+        <span class="session-list__end"></span>
+      </div>
+      <div class="session-list__row" data-multi="true">
+        <div class="session-list__fields">
+          <input class="input" value="第 1 場" aria-label="Session name">
+          <input class="input" type="date" value="2026-09-12" aria-label="Date">
+          <input class="input" type="time" value="19:30" aria-label="Start time">
+          <input class="input" type="time" value="21:30" aria-label="End time">
+          <input class="input" type="time" value="18:30" aria-label="Doors open">
+        </div>
+        <span class="session-list__end">
+          <button class="btn btn--icon btn--sm" type="button" aria-label="Remove this date"><i data-lucide="x" class="ztor-icon"></i></button>
+        </span>
+      </div>
+      <div class="session-list__row" data-multi="true">
+        <div class="session-list__fields">
+          <input class="input" value="第 2 場" aria-label="Session name">
+          <input class="input" type="date" value="2026-09-26" aria-label="Date">
+          <input class="input" type="time" value="19:30" aria-label="Start time">
+          <input class="input" type="time" value="21:30" aria-label="End time">
+          <input class="input" type="time" value="18:30" aria-label="Doors open">
+        </div>
+        <span class="session-list__end">
+          <button class="btn btn--icon btn--sm" type="button" aria-label="Remove this date"><i data-lucide="x" class="ztor-icon"></i></button>
+        </span>
+      </div>
+    </div>
+    <button class="btn btn--outline session-list__add" type="button"><i data-lucide="plus" class="ztor-icon"></i> 新增場次</button>
+  </div></div>
   <p class="field-label" data-en>Grouped rows in the event list</p><p class="field-label" data-zh>清單上的母列與子列</p>
   <p class="sub__desc" data-en>The same series in the event list: one parent row carrying the totals, expanding to one row per date. Parent click toggles; only the children open a detail page.</p>
   <p class="sub__desc" data-zh>同一個系列在活動清單上的樣子：母列扛加總、點開才是每一場。母列點擊是展開，只有子列會開詳情頁。</p>
@@ -8351,12 +8584,12 @@ The first thing buyers see</span>
   </div></div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.session-list</code> · <code>__row</code>（<code>--main</code> 為第 1 場）· <code>__no</code>（固定寬序號，讓多列欄位左緣對齊）· <code>__fields</code>（日期｜場地兩欄；<code>--main</code> 改單欄）· <code>__text</code>（<code>--empty</code> 為未填時的降權態）· <code>__end</code>（固定寬尾欄，讓「有移除鈕」與「有徽章」兩種列的右緣也對齊）· <code>__add</code>。</p>
+    <p class="field-text"><code>.session-list</code> · <code>__row</code>（<code>--main</code> 為第 1 場）· <code>__no</code>（固定寬序號，讓多列欄位左緣對齊）· <code>__fields</code>（日期｜場地兩欄；<code>--main</code> 改單欄）· <code>__text</code>（<code>--empty</code> 為未填時的降權態）· <code>__end</code>（固定寬尾欄，讓「有移除鈕」與「有徽章」兩種列的右緣也對齊）· <code>__add</code>。<strong>2026-08-09 新增</strong>：<code>__head[data-multi]</code>（選配欄位標題列，與 <code>__row</code> 同排版、文字改小標色）· <code>.session-list--detailed</code>（多欄修飾類：單場 4 欄「日期｜起｜訖｜入場」，<code>[data-multi="true"]</code> 多插「場次名」成 5 欄，兩種欄寬各自定義；≤640px 時 <code>__head</code> 隱藏、欄位收成 1～2 欄）。</p>
     <p class="field-text"><strong>第 1 場為什麼是唯讀鏡像</strong>：日期與場地在同一頁上面已經有一組正式欄位，這裡再給一組可編輯的，同一筆資料就有兩個真相來源——使用者改了下面那格，上面那格與 Review 摘要、發布前檢核不知道該聽誰的。改成鏡像後只有「第 2 場起」是這份清單自己的資料。</p>
     <p class="field-text"><strong>開關為什麼在「場地與時間」不在確認頁</strong>：使用者最初指定放最後的確認頁；確認頁的定位是「檢查每一項沒問題就發布」，在那裡開一個會生出 N 個活動的開關等於在檢查步驟做重大建立動作，而且日期與場地都在前一步填過、要改得跳回去。2026-08-06 與使用者確認後移到「場地與時間」。</p>
     <p class="field-text"><strong>清單頁的群組列</strong>（住在 <code>product-list.css</code>，不另開元件）：<code>.product-list__row--group[data-group][aria-expanded]</code> ＋ <code>.product-list__group-toggle</code>（展開把手，<strong>放在名稱前面</strong>——清單頁的 <code>.main</code> 是 <code>overflow-x:hidden</code>，視窗窄一點時右側幾欄會被切掉且捲不到，把手收在最右的操作欄等於沒有入口）＋ <code>.product-list__group-chevron</code>（轉 180°）／<code>.product-list__row--child[data-group-child][hidden]</code>（縮排一階＋左緣 inset 線；用 inset shadow 不用 <code>border-left</code>，border 會參與 grid 欄寬計算讓母子列對不齊）。<strong>系列母頁的入口要有名字</strong>：母列標題本身是連結（進系列母頁），但母列的整列點擊是「展開」，光靠標題沒人會發現那裡還能點去別的地方，所以操作欄的 ⋮ 另給一個具名項目「管理整個系列」，子場詳情頁的「系列」分頁也放一個。行為約定由消費頁負責：母列整列可點＝展開／收合（明確的展開鈕與 ⋮ 裡那一項一律有效，連結與選單本身放行）；子列不進分頁計數；子列可見＝母列過篩選且展開；搜尋中一律攤開（搜到的字可能長在某一場身上）。</p>
     <p class="field-text"><strong>三種活動詳情頁</strong>（2026-08-06 使用者裁決）：單場活動（<code>event-detail.html</code>，無系列）／系列母頁（<code>series-detail.html</code>）／系列子場（<code>event-detail.html</code>，有系列）。母頁承載共用設定、改一次同步所有場次；判準是「這個欄位每一場一不一樣」——一樣的（名稱、描述、陣容、圖片、人數、票種與票價）住母頁，不一樣的（日期、場地）住子場。<strong>階層要在麵包屑上讀得出來</strong>：子場是「活動 / 系列母頁 / 這一場」三層、返回鈕回系列母頁；末層寫「第 N 場 · 場地」不寫活動名稱（同系列各場刻意同名，用名稱三場會一模一樣）。單場活動維持兩層。母頁不是一場活動，所以頁首不掛日期與場地、也沒有報到與名單。入口有兩個：活動清單的母列標題、子場詳情頁「系列」分頁的「管理整個系列 →」。頁面上刻意寫死兩則規則：已開賣的警示用 <code>.alert--row.--warning</code>（沿用編輯活動「改動的後果」同一種說法），以及「取消系列中的一場＝與取消一場獨立活動完全相同的退款規則」。</p>
-    <p class="field-text"><code>ds-components/session-list.css</code> ＋ <code>ds-components/product-list.css</code>（群組列）。消費頁：<code>create-event.html</code>（步驟 3 場地與時間 › 系列場次）、<code>events.html</code>（系列母列與子列）、<code>series-detail.html</code>（系列母頁，場次表用頁內變體 <code>product-list--series</code>）。產品規格缺口見 ASSUMPTIONS SER-001。</p>
+    <p class="field-text"><code>ds-components/session-list.css</code> ＋ <code>ds-components/product-list.css</code>（群組列）。消費頁：<code>create-event.html</code>（步驟 3 場地與時間 › 系列場次，用 <code>.session-list--detailed</code> ＋ <code>__head</code>）、<code>create-event-legacy.html</code>（基準版）、<code>events.html</code>（系列母列與子列）、<code>series-detail.html</code>（系列母頁，場次表用頁內變體 <code>product-list--series</code>）。產品規格缺口見 ASSUMPTIONS SER-001。</p>
   </div>
   </details>
 </section>
@@ -8559,6 +8792,135 @@ The first thing buyers see</span>
     <p class="field-text"><strong>首欄必須固定寬、不能用 <code>max-content</code></strong>：兩個 grid 會各自解析 —— 表頭那格只有文字（72px）、資料列那格是輸入框（152px），兩邊就錯開。已改固定 <code>112px</code>。</p>
     <p class="field-text">表頭的欄名輸入框平常收起邊界：<code>.input</code> 的邊界是 <code>box-shadow</code> 環不是 <code>border</code>，所以要清 <code>box-shadow</code>，改 <code>border-color</code> 沒有作用。</p>
     <p class="field-text"><code>ds-components/size-chart-editor.css</code>。消費頁：<code>store-settings.html</code>（spec 5.1.5.5 F7.2 · D171）—— 尺寸表與身高體重參考各一個實例，後者欄固定、不掛欄刪除鈕。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="source-import">
+  <div class="sub__head">
+    <h3 class="sub__title">4.120 Source import</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>A one-page gate for pulling an existing record in from an external platform (bookyay): search → a one-row-per-result list → Skip / Import. Promoted 2026-08-09 from create-event.html's page-local <code>.ce-bky</code> / <code>.ce-bkyq*</code>.</p>
+  <p class="sub__desc" data-zh>從外部平台（bookyay）搜尋一筆既有紀錄帶入表單的一頁式閘門：搜尋 → 一列一筆的結果清單 → 略過／帶入。2026-08-09 自 <code>create-event.html</code> 的頁內 <code>.ce-bky</code> / <code>.ce-bkyq*</code> promote。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
+    <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#button">Button</a></div>
+    <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#radio-card">Radio card (<code>--gate --list</code>)</a></div>
+    <div class="compose__note"><span data-en>After import, form fields switch to <a href="#field-source-tag">Field source tag</a>'s locked presentation to show where each value came from.</span><span data-zh>帶入之後，表單欄位改用 <a href="#field-source-tag">Field source tag</a> 的鎖定樣式呈現「這一格從哪裡來」。</span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo"><div style="width:100%;max-width:420px">
+    <div class="source-gate">
+      <div class="source-gate__head">
+        <button class="btn btn--icon" type="button" aria-label="Back"><i data-lucide="arrow-left" class="ztor-icon"></i></button>
+        <div class="source-gate__titles">
+          <h4 class="wizard__step-title">Find your venue on bookyay</h4>
+        </div>
+      </div>
+      <input class="input" type="text" placeholder="Search venue name…" value="Riverside">
+      <div class="segmented radio-cards radio-cards--gate radio-cards--list" role="radiogroup">
+        <button class="segmented__btn segmented__btn--active" type="button"><span class="radio-card__text"><span class="radio-card__title">Riverside Hall</span><span class="radio-card__sub">Taipei · 3F, No.12, Sec. 2</span></span></button>
+        <button class="segmented__btn" type="button"><span class="radio-card__text"><span class="radio-card__title">Riverside Studio B</span><span class="radio-card__sub">Taipei · 1F, No.8, Sec. 2</span></span></button>
+      </div>
+      <div class="source-gate__acts">
+        <button class="btn btn--outline btn--sm" type="button">Skip</button>
+        <button class="btn btn--primary btn--sm" type="button">Import</button>
+      </div>
+    </div>
+  </div></div>
+  <p class="field-label" data-en>After import <span class="field-note">(optional read-only row at the top of the form)</span></p>
+  <p class="field-label" data-zh>帶入之後 <span class="field-note">(選配，表單頂端的唯讀欄位列)</span></p>
+  <div class="demo"><div style="width:100%;max-width:420px">
+    <div class="source-import">
+      <select class="select"><option>Riverside Hall — Taipei</option></select>
+    </div>
+  </div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.source-gate</code>（靠左對齊，閘門殼 <code>.wizard__gate-inner</code> 預設置中）&gt; <code>__head</code>（返回鍵＋<code>__titles</code> 同一列）· 搜尋框沿用 <code>.input</code> · 結果清單為 <code>.segmented.radio-cards.radio-cards--gate.radio-cards--list</code>（見 <a href="#radio-card">Radio card</a> 的 <code>--list</code> 變體）· <code>__empty</code>（無符合結果的說明文字）· <code>__acts</code>（略過／帶入，靠右）。選配 <code>.source-import</code> ＞ <code>.select</code>：帶入後在表單頂端顯示的唯讀欄位列。</p>
+    <p class="field-text"><code>ds-components/source-import.css</code>。消費頁：<code>create-event.html</code>（bookyay 帶入閘門，場地資料）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="field-source-tag">
+  <div class="sub__head">
+    <h3 class="sub__title">4.121 Field source tag</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Marks "where did this field come from" next to a field label (imported from bookyay, can't be edited here), and keeps a locked field readable — it's not broken, it's "managed elsewhere": slightly lower contrast, cursor switches to not-allowed. Promoted 2026-08-09 from create-event.html's page-local <code>.ce-src</code> / <code>.is-locked</code>.</p>
+  <p class="sub__desc" data-zh>欄位標籤旁標記「這一格是從哪裡帶進來的」（bookyay 帶入後不可改），並讓被鎖定的欄位維持可讀——不是「壞掉」而是「別處管的」，只降一點對比、游標改不可編輯。2026-08-09 自 <code>create-event.html</code> 的頁內 <code>.ce-src</code> / <code>.is-locked</code> promote。</p>
+  <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
+  <div class="compose">
+    <div class="compose__dir"><span data-en>Used by</span><span data-zh>被哪些元件使用</span> ↑</div>
+    <div class="compose__tier"><span class="compose__none"><span data-en>Consumed inside <a href="#source-import">Source import</a>'s post-import form fields; not a standalone control</span><span data-zh>用於 <a href="#source-import">Source import</a> 帶入後的表單欄位內，非獨立控件</span></span></div>
+  </div>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo"><div style="width:100%;max-width:320px">
+    <label class="field__label"><span>Venue name</span><span class="field-source"><i data-lucide="lock" class="ztor-icon"></i>bookyay</span></label>
+    <div class="field is-source-locked"><input class="input" value="Riverside Hall" disabled></div>
+    <label class="field__label"><span data-en>Door time (editable, for comparison)</span><span data-zh>入場時間（可編輯，對照用）</span></label>
+    <div class="field"><input class="input" value="18:30"></div>
+  </div></div>
+  <p class="field-label" data-en>Locked on a Radio card group <span class="field-note">(<code>.is-source-locked</code> on a <code>.segmented.radio-cards</code> — 2026-08-09: same lock, non-form-control target; see the code tab)</span></p>
+  <p class="field-label" data-zh>鎖定在 Radio card 群組上 <span class="field-note">(<code>.is-source-locked</code> 掛在 <code>.segmented.radio-cards</code> 上——2026-08-09：同一套鎖定，作用對象不是表單控件；見下方 code 分頁)</span></p>
+  <div class="demo"><div style="width:100%;max-width:320px">
+    <label class="field__label"><span>Entry mode</span><span class="field-source"><i data-lucide="lock" class="ztor-icon"></i>bookyay</span></label>
+    <div class="segmented radio-cards is-source-locked">
+      <button class="segmented__btn segmented__btn--active" type="button"><span class="radio-card__text"><span class="radio-card__title">Paid entry</span><span class="radio-card__sub">Ticketed — bookyay already sells access.</span></span></button>
+      <button class="segmented__btn" type="button"><span class="radio-card__text"><span class="radio-card__title">Free entry</span></span></button>
+    </div>
+  </div></div>
+  <p class="sub__desc" data-en><strong>Locked ≠ broken.</strong> The locked field drops its fill entirely — it takes whatever surface it sits on, so it never reads as a darker "something went wrong" box inside a card — and its value steps down to <code>--locked-field-ink</code>. Only the 1px border marks where the field is. Compare with the editable field below it: filled surface, full-strength value. <strong>Two rounds, both 2026-08-09:</strong> first this component defined that transparent look for itself (overriding the then-<code>--muted</code>-filled component baseline); then, once the user decided "the whole component library gets exactly one disabled look," that same transparent look was promoted up into <code>input.css</code>'s <code>.input:disabled</code> as the sitewide baseline — so this file no longer defines a lock appearance of its own (see the code tab below).</p>
+  <p class="sub__desc" data-zh><strong>鎖住不等於壞掉。</strong>鎖定欄位整個拿掉填底——直接吃它所坐的那個面，所以不會在卡片裡變成一塊更深的「這裡壞了」方塊——值的顏色降到 <code>--locked-field-ink</code>，只留 1px 邊界標示這一格的範圍。跟下面那個可編輯欄位對照：有填底、值是全強度。<strong>兩輪修訂，皆 2026-08-09：</strong>第一輪本檔自己定義這組透明底樣式（蓋過當時 <code>--muted</code> 填底的元件層基準）；第二輪使用者裁示「整個元件庫只能有一個 disabled 樣子」後，同一組透明底值被上收進 <code>input.css</code> 的 <code>.input:disabled</code> 成為全站基準——本檔因此不再自己定義鎖定外觀（見下方給工程師的 code 分頁）。</p>
+  <p class="sub__desc" data-en><strong><code>.is-source-locked</code>, not <code>.is-locked</code></strong> — that name is already used by <a href="#media-vault">Media vault</a> for a completely different meaning (a graded tier locked in viewer mode: dimmed + grayscale + a lock icon). Neither name is namespaced, so if both components ever serve the same page, whichever loads last would silently win. "Source-locked" and "permission-locked" are two different ideas and each needs a name the other can't overwrite.</p>
+  <p class="sub__desc" data-zh><strong>命名刻意用 <code>.is-source-locked</code>、不用 <code>.is-locked</code></strong>——那個名字已被 <a href="#media-vault">Media vault</a> 用在完全不同的語意（檢視器模式下某分級整列打不開：變暗＋灰階＋鎖頭）。兩者都不在自己的命名空間裡，若同頁兩支元件同時服役，載入順序會決定誰的 <code>.is-locked</code> 生效。「來源鎖定」與「權限鎖定」是兩回事，各自要留一個不會被對方覆寫的名字。</p>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.field-source</code>（掛在 <code>.field__label</code> 內、靠右對齊；<code>.field__label:has(.field-source)</code> 才開 flex，避免壓掉一般欄名裡刻意留的空白）· <code>.is-source-locked</code>（掛在欄位容器；<strong>本身不再定義表單控件的鎖定樣式，2026-08-09 第二輪</strong>——內部的 <code>.input</code>／<code>.textarea</code>／<code>.select</code> 完全吃 <a href="#input">Input</a> 的 <code>.input:disabled</code>（透明底＋<code>--locked-field-ink</code>）；<code>.segmented__btn</code>（<a href="#radio-card">Radio card</a> 建在它上面）不是表單控件、吃不到 <code>:disabled</code>，鎖定樣式仍由本檔定義——<code>cursor:not-allowed</code> ＋ <code>pointer-events:none</code>）。</p>
+    <p class="field-text"><strong>第三輪（2026-08-09，同日）</strong>：<code>.segmented__btn</code> 這條原本還留著舊制的 <code>opacity:.78</code>，等於同一頁同時存在「表單控件用顏色降對比」與「segmented 用透明度降對比」兩種鎖定語彙。改成同一套做法：<code>opacity</code> 拿掉，改讓 <code>.radio-card__title</code> / <code>.radio-card__sub</code> 直接吃 <code>--locked-field-ink</code>（不疊 opacity），卡面其餘部分（邊框、底色）不降對比——鎖定的是「內容不可改」，不是「整張卡消失」，與 <a href="#upload-tile">Upload tile</a> 已填態撤除綠框同一個方向：站上「不可改／已完成」一律靠顏色或邊框樣式表達，不疊 opacity 弱化整塊。<code>pointer-events:none</code> 維持，滑鼠仍點不動。</p>
+    <p class="field-text"><strong>權重注意（第一輪的舊寫法，現已不適用）</strong>：本檔第一輪曾把鎖定態寫成 <code>.is-source-locked .input:disabled</code>（0-3-0）去蓋過元件層同權重的 <code>.input:disabled</code>（0-2-0）。第二輪把值上收進元件層之後，兩者變成同一份規則，本檔不再需要用權重蓋過誰。</p>
+    <p class="field-text"><code>ds-components/field-source-tag.css</code>。消費頁：<code>create-event.html</code>（bookyay 帶入後鎖定的場地欄位與入場方式／取票方式）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="quick-result-list">
+  <div class="sub__head">
+    <h3 class="sub__title">4.122 Quick result list</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>A read-only preview of batch-generated results, one row per item: name | amount | quantity | follows-default / customized tag | reset action, optionally grouped by session. Column rhythm matches the <a href="#ticket-tier-card">Ticket tier card</a> table. Promoted 2026-08-09 from create-event.html's page-local <code>.ce-qres*</code> (the "generated tickets" preview in the bottom half of the quick-setup modal).</p>
+  <p class="sub__desc" data-zh>批次設定生成結果的唯讀預覽，一列一項：名稱｜金額｜數量｜跟隨預設／已自訂標籤｜重設動作，可依場次分組。欄位對齊 <a href="#ticket-tier-card">Ticket tier card</a> 同一張表的節奏。2026-08-09 自 <code>create-event.html</code> 的頁內 <code>.ce-qres*</code>（快速設定彈窗下半「生成的門票」預覽）promote。</p>
+  <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
+  <div class="demo"><div style="width:100%;max-width:640px">
+    <div class="quick-result">
+      <div class="quick-result__head">Sat, Sep 12</div>
+      <div class="quick-result__row">
+        <span class="quick-result__name">General admission</span>
+        <span class="quick-result__num">$980</span>
+        <span class="quick-result__num">120</span>
+        <span class="quick-result__tag">Follows event default</span>
+        <span class="quick-result__end"><button class="btn btn--ghost btn--sm" type="button">Reset</button></span>
+      </div>
+      <div class="quick-result__row">
+        <span class="quick-result__name">VIP</span>
+        <span class="quick-result__num">$2,400</span>
+        <span class="quick-result__num">30</span>
+        <span class="quick-result__tag quick-result__tag--own">Customized</span>
+        <span class="quick-result__end"><button class="btn btn--ghost btn--sm" type="button">Reset</button></span>
+      </div>
+    </div>
+  </div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><code>.quick-result</code> &gt; <code>__head</code>（選配場次分組小標，單場不出現）／<code>__row</code>（grid 五欄）＞ <code>__name</code>／<code>__num</code>（出現兩次：金額、數量）／<code>__tag</code>（<code>--own</code> 已自訂加深顏色）／<code>__end</code>（選配重設鈕）。≤720px 收成兩欄，標籤與動作各自佔滿下一行。</p>
+    <p class="field-text"><code>ds-components/quick-result-list.css</code>。消費頁：<code>create-event.html</code>（快速設定彈窗「生成的門票」預覽）。</p>
   </div>
   </details>
 </section>

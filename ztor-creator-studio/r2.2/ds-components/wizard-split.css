@@ -36,6 +36,12 @@
 .wizard-split__rail {
   grid-column: 2;
   grid-row: 1;
+  /* 2026-08-09（create-event 建立活動流程：預覽卡搬進常駐側欄）：軌可以疊多張卡
+     （票務那一步＝預覽卡在上、收入試算卡在下）。flex column + gap 讓疊卡有間距，
+     且只有一張卡時（其餘步驟）行為等同原本的 block，不影響既有頁面。 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
   position: sticky;
   /* `.wizard__top` is position:sticky INSIDE .wizard__sheet — the same scroll
      container as this rail — and sits at z-index 30. So a rail pinned at
@@ -56,6 +62,15 @@
   scrollbar-width: thin;
   min-width: 0;
 }
+
+/* ── Narrow rail variant ─────────────────────────────────────────────────
+   2026-08-09 promoted from create-event.html's page-local `.ce-split-narrow`.
+   The rail content there (payout calculator: four kv rows + one button) never
+   needed the full 320px column that create-project's setup-overview card
+   uses — a modifier class instead of overriding `.wizard-split` directly,
+   since that base class is shared by create-project/create-event/
+   design-system. */
+.wizard-split--narrow { grid-template-columns: minmax(0, 1fr) 264px; gap: var(--sp-24); }
 
 /* ── Setup overview card ─────────────────────────────────────────────────── */
 .fd-ov { padding: var(--sp-20); }

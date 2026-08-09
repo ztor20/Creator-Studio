@@ -65,6 +65,20 @@
 
 .tier-card { padding: var(--sp-20); }
 
+/* ── Clickable card variant ──────────────────────────────────────────────
+   2026-08-09 promoted from create-event.html's page-local `.tier-card`
+   cursor/hover rules. Opt-in modifier, NOT the bare `.tier-card` selector:
+   this component is also consumed by create-event-legacy.html, and legacy's
+   cards were never "the whole card opens Edit" — writing this straight onto
+   `.tier-card` would have silently made legacy's cards clickable too.
+   create-event.html adds this class where the whole card is the click
+   target for Edit (⋮ menu and drag grip excepted, via the two exclusions
+   below — they stopPropagation-can't so it's done by selector instead). */
+.tier-card--clickable { cursor: pointer; }
+.tier-card--clickable:hover { border-color: var(--border); }
+.tier-card--clickable .tier-card__actions,
+.tier-card--clickable .tier-card__grip { cursor: default; }
+
 /* 標題列：卡標＋（有的話）自訂徽章靠左成一組，動作被 auto 推到最右。
    不用 space-between——中間多一個徽章時它會被推到卡片正中央，讀起來像另一欄。 */
 .tier-card__head {
@@ -85,7 +99,40 @@
 /* 尚未命名的票種：與 fc-bundle 的「未命名方案」同樣降一階呈現，不留空白卡標。 */
 .tier-card__name--untitled { color: var(--muted-foreground); }
 
+/* 門票縮圖（2026-08-09 promoted from create-event.html，原 `.ce-tthumb`）：
+   沒自己換過就是活動主視覺，所以同一場的幾張票預設長一樣。方形裁切、非原圖比例——
+   直式圖會把卡片拉得很長，而這裡要的是「一眼認出是哪張票」不是看圖。
+   **2026-08-09 同日改成自成一列**（使用者指示「圖片放下一行」）：原本擠在卡標那一行、
+   28px 只能當個記號；移到標題下方後給到 40px，才真的看得出圖裡是什麼。 */
+.tier-card__thumb {
+  display: grid; place-items: center;
+  width: 40px; height: 40px;
+  margin: var(--sp-2) 0 var(--sp-10);
+  border-radius: var(--radius-sm); overflow: hidden;
+  background: var(--muted); box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--muted-foreground);
+}
+.tier-card__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tier-card__thumb .ztor-icon { width: 18px; height: 18px; }
+
+/* 規則區塊的狀態列（2026-08-09）：這張票的規則已經跟活動預設脫鉤時出現——左邊一枚
+   「已自訂」徽章說明現況，右邊一顆還原鈕。還在跟隨時這一列不出現，改由一句提示取代
+   （沒有東西可還原就不該給還原鈕）。 */
+.tier-card__ownrow {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
+  margin-bottom: var(--sp-12);
+}
+
 .tier-card__actions { display: flex; align-items: center; gap: var(--sp-6); flex: 0 0 auto; }
+
+/* 排序把手（2026-08-09 promoted from create-event.html：排序不從 bookyay 帶入，
+   直接在 UI 上拖）。抓著它拖整張卡換位置。 */
+.tier-card__grip { display: inline-flex; align-items: center; color: var(--muted-foreground); cursor: grab; }
+.tier-card__grip .ztor-icon { width: 16px; height: 16px; }
+.tier-card:active .tier-card__grip { cursor: grabbing; }
+/* 展開（編輯態）時不能拖曳排序，把手收起來；少了它，票種名（.tier-card__name）就與
+   下面那行自動生成的門票名稱左緣對齊。 */
+.tier-card--editing .tier-card__grip { display: none; }
 
 /* ── 收合態的唯讀事實列（價格／數量）───────────────────────────────
    一列一個事實：標籤靠左、值靠右。值全部貼在卡片右緣、又是 tabular-nums，
@@ -111,6 +158,13 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* 卡面「商品組合」逐項一行（2026-08-09 promoted from create-event.html）：
+   dd 預設 nowrap 且靠右，這裡改成每項自成一行、太長切字尾。 */
+.tier-card__fact dd > .tier-card__line { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tier-card__fact:has(.tier-card__line) { align-items: flex-start; }
+/* 標籤不讓它斷行——dd 多行時 flex 會先壓縮 dt，「商品組合」會被切成「商品組／合」 */
+.tier-card__fact:has(.tier-card__line) dt { flex: none; white-space: nowrap; }
+.tier-card__fact:has(.tier-card__line) dd { white-space: normal; text-align: right; min-width: 0; }
 
 /* 收合態的主要動作：整寬的 Edit，貼在卡底。⋮ 留在標題列——「改這張卡」是常做的事，
    給它整條可點的寬度；複製與移除是偶爾才做的，收進選單。 */
@@ -194,7 +248,8 @@
    .select 之後，原本只寫 .segmented 的那條就不再命中，標籤與下拉黏成一塊（使用者圈出）。
    兩個 selector 都留著——批次編輯等處若還有 segmented，行為不變。 */
 .rule > .segmented,
-.rule > .select { margin-top: var(--sp-6); }
+.rule > .select,
+.rule > .radio-list { margin-top: var(--sp-6); }
 /* 條件欄位與上面那個下拉拉開一點：它是「選了才出現」的結果，不是下一個並列欄位。 */
 .rule-when { margin-top: var(--sp-12); }
 .rule-when[hidden] { display: none; }
@@ -214,6 +269,23 @@
   border-left: 1px solid var(--border-soft);
 }
 
+/* 規則區塊內的間距（2026-08-09 promoted from create-event.html，使用者指示
+   「項目間距都要做出來」）：欄位一律是 DS 的 .field（標籤在上、控制項在下），
+   所以只要處理群組之間的呼吸。.rule-sub 內：第二層 radio 與它展開的欄位之間
+   拉開，最後一個欄位不留尾巴。 */
+.rule-sub > .radio-list { margin-bottom: var(--sp-16); }
+.rule-sub > .rule-when { margin-top: 0; }
+.rule-sub > .field:last-child,
+.rule-sub > .rule-when:last-child .field:last-child,
+.rule-sub > .rule-row:last-child .field:last-child { margin-bottom: 0; }
+/* 並排的兩欄（折扣％＋折後價、起訖時間）各自是一個 .field，平分一列。 */
+.rule-row > .field { flex: 1 1 0; min-width: 0; margin-bottom: 0; }
+.rule-row + .radio-list { margin-top: var(--sp-16); }
+/* 票種卡只有約 240px，兩欄並排（折扣％＋折後價、起訖時間）會把數字擠到看不見，
+   所以在卡內改成上下堆疊；規則彈窗夠寬，維持並排。 */
+.tier-card__rules .rule-row { flex-direction: column; align-items: stretch; gap: var(--sp-16); }
+.tier-card__rules .rule-row > .field { flex: none; }
+
 /* 票種卡裡的自訂規則：規則欄位本體（開關在卡標那一行，見 .tier-card__ownbtn） */
 .tier-card__rules { margin-top: var(--sp-16); padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
 /* 墓碑（2026-08-06）：`.tier-card__own`——卡內那一列「自訂規則＋switch」。
@@ -228,6 +300,13 @@
 /* 批次編輯時按鈕與 ⋮ 都在，靠右成一組：auto 只給前面那顆，否則兩個 auto 會把空白對半分、
    按鈕停在卡片中間。 */
 .tier-card--group .tier-card__head > .tier-card__actions { margin-left: 0; }
+
+/* 🪦 tombstone：`.tier-card__ownbtn--always`／`.tier-card__ownicon`／整寬展開鈕的覆寫
+   都在 2026-08-09 當天新增、當天退場。它們服務的是門票彈窗裡那顆「新增購票規則」收合鈕，
+   同日使用者裁示「攤開不需要折疊了」——規則一律列出來、不再收合，那顆鈕連同它的箭頭
+   旋轉一起消失。整寬覆寫也一併移除：它原本是為彈窗寫的，留著會讓仍在消費基礎
+   `.tier-card__ownbtn` 的 `create-event-legacy.html` 那顆卡標按鈕被撐成整寬。
+   基礎的 `.tier-card__ownbtn`（上面兩條，卡標列靠右的小按鈕）仍由 legacy 頁消費，不要動。 */
 
 /* 收合卡上的「自訂」標記：哪幾張不跟隨活動預設，不用打開卡也看得出來。
    編輯態收起來——那時同一行的按鈕已經在說同一件事。 */

@@ -155,6 +155,21 @@
   min-height: 0;
   overflow-y: auto;
 }
+
+/* 內容分左右欄（2026-08-09 使用者指示，首個消費者＝建立活動的門票編輯彈窗）：
+   主欄放要填的欄位，側欄放圖片這類「用看的、不是用填的」東西。側欄固定寬、主欄吃剩下，
+   兩欄各自從頂端開始（align-items:start），側欄不會被主欄的長度拉高。
+   窄螢幕收成單欄，側欄自然排到最後——圖片是輔助資訊，讓位給欄位是對的。 */
+.payout-dialog__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: var(--sp-24);
+  align-items: start;
+}
+.payout-dialog__split > * { min-width: 0; }
+@media (max-width: 640px) {
+  .payout-dialog__split { grid-template-columns: minmax(0, 1fr); gap: var(--sp-16); }
+}
 /* 中間隔一層 wrapper 的情形（請款彈窗的 .payout-view 步驟、creators 的 <form>）：head/body/foot
    不是 .payout-dialog 的直接子層，flex column 傳不下去。讓這層 wrapper 接手成為撐滿的 flex column，
    footer-pin 才穿得到它底下的 head/body/foot；否則 dialog 的 overflow:hidden 會把過長內容直接裁掉、

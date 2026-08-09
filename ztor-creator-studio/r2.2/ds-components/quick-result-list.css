@@ -1,0 +1,45 @@
+/* ============================================================
+   Quick result list · 批次生成結果的唯讀預覽（一列一項）
+   (2026-08-09 promoted from create-event.html's page-local `.ce-qres*`,
+   the 快速設定彈窗下半「生成的門票」預覽)
+   ------------------------------------------------------------
+   欄位對齊票種那張表的節奏：名稱｜金額｜數量｜標籤（跟隨預設 / 已自訂）｜
+   動作（重設）。可依場次分組，每組前面一行灰底小標。
+
+   Anatomy:
+     .quick-result
+       .quick-result__head              （選配：場次分組小標，單場不出現）
+       .quick-result__row
+         .quick-result__name
+         .quick-result__num             （出現兩次：金額、數量）
+         .quick-result__tag                （跟隨活動預設 / 已自訂說明）
+           .quick-result__tag--own          （已自訂＝這張不會跟著活動預設走，加深顏色）
+         .quick-result__end               （選配：重設鈕）
+   ============================================================ */
+
+.quick-result { display: flex; flex-direction: column; gap: var(--sp-4); }
+.quick-result__head { margin-top: var(--sp-12); font-size: var(--fs-12); color: var(--muted-foreground); }
+.quick-result__head:first-child { margin-top: 0; }
+.quick-result__row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 88px 64px 148px 108px;
+  gap: var(--sp-8);
+  align-items: center;
+  padding: var(--sp-8) 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--fs-13);
+}
+.quick-result__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quick-result__num { text-align: right; font-variant-numeric: tabular-nums; color: var(--foreground-muted); }
+.quick-result__tag {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* 已自訂的那幾張要看得出來——它們不會跟著上面的預設值走 */
+.quick-result__tag--own { color: var(--foreground); }
+.quick-result__end { display: flex; justify-content: flex-end; }
+@media (max-width: 720px) {
+  .quick-result__row { grid-template-columns: minmax(0,1fr) 72px; grid-auto-rows: auto; }
+  .quick-result__tag, .quick-result__end { grid-column: 1 / -1; justify-content: flex-start; }
+}

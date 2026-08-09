@@ -1,0 +1,61 @@
+/* ============================================================
+   Field source tag · 「這一格從哪裡來」的來源標記＋鎖定樣式
+   (2026-08-09 promoted from create-event.html's page-local `.ce-src` /
+   `.is-locked`, part of the bookyay 帶入與鎖定 feature — see
+   source-import.css for the search/import gate itself)
+   ------------------------------------------------------------
+   欄位本身＝bookyay 帶入後不可改：欄位 disabled、標籤旁掛一枚來源標記
+   （小鎖頭圖示＋「bookyay」字樣）、鎖住的欄位維持可讀（不是「壞掉」而是
+   「別處管的」，只降一點對比、游標改成不可編輯）。
+
+   Anatomy:
+     <label class="field__label">
+       <span>Venue name</span>
+       <span class="field-source"><i class="ztor-icon" data-lucide="lock"></i>bookyay</span>
+     </label>
+     <div class="field is-source-locked">…</div>
+
+   .is-source-locked 命名說明：這個 class 名刻意不叫 `.is-locked`——那個名字
+   已經被 ds-components/media-vault.css 用在完全不同的語意上（檢視器模式下
+   某個分級整列打不開，變暗＋灰階＋鎖頭圖示），兩者都不在自己的命名空間裡，
+   同一頁如果兩支元件同時服役就會互相汙染（誰的 .is-locked 生效取決於載入
+   順序，而不是語意）。「來源鎖定」與「權限鎖定」是兩回事，各自留一個
+   語意清楚、不會被對方覆寫的名字。
+   ============================================================ */
+
+.field-source {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-left: var(--sp-6);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-regular);
+  /* 2026-08-10 使用者指示「再降兩階」：--foreground-muted → --muted-foreground → --faint-ink。
+     它是「這一格從哪裡來」的註記，不是欄位內容；跟欄位標籤搶對比會讓人先讀到它。 */
+  color: var(--faint-ink);
+}
+.field-source .ztor-icon { width: 12px; height: 12px; }
+/* 來源標記靠右：它是「這一格從哪裡來」的註記，不是欄名的一部分，緊貼欄名會被
+   讀成同一句。推到欄位右緣，數個欄位疊起來時標記也排成一直線。只在含標記的
+   label 上開 flex（用 :has），避免壓掉「加入商品 （選填）」那種欄名裡的空白。 */
+.field__label:has(.field-source) { display: flex; align-items: center; }
+.field__label .field-source { margin-left: auto; }
+
+/* 鎖住的欄位長什麼樣，本檔不再自己定義（2026-08-09 使用者裁示「整個元件庫只能有一個
+   disabled 樣子」）。當天的經過：本檔一度自己寫了一組「透明底＋最輕的墨色」，理由是元件層
+   `.input:disabled` 的 --muted 填底坐在卡片上會變成一塊比卡片還深的方塊、讀起來像壞掉；
+   但那等於站上同時存在兩種 disabled。最後把那組值上收成 `input.css` 的 `.input:disabled`
+   基準，全站共用一種——**來源鎖定與其他 disabled 欄位長得一樣是刻意的**，差別由標籤旁的
+   來源標記說明，不靠兩種灰去暗示「這格為什麼不能改」。
+   本檔現在只剩來源標記本身，加上 segmented 的鎖定態（它不是表單控件、吃不到 :disabled）。
+
+   2026-08-09：segmented 鎖定態一直是那條漏網之魚——`.input:disabled` 等表單控件早就統一成
+   「透明底＋`--locked-field-ink` 文字」（見上方説明），這裡卻還留著舊制的 `opacity:.78`，等於
+   同一頁同時存在兩種「這格不能改」的視覺語彙。改成同一套做法：標題與副標文字直接吃
+   `--locked-field-ink`（不疊 opacity），卡面其餘部分（邊框、底色）不降對比——鎖定的是「內容
+   不可改」，不是「整張卡消失」。`pointer-events: none` 維持，滑鼠仍點不動。 */
+.is-source-locked .segmented__btn { cursor: not-allowed; pointer-events: none; }
+/* 2026-08-10 使用者指示：被選中的那一張維持 default 對比。鎖定要說的是「其餘的你選不了」，
+   不是「這一格整組壞了」——把已選項也壓暗，等於連「現在選的是哪一個」都一起藏起來。 */
+.is-source-locked .segmented__btn:not(.segmented__btn--active) .radio-card__title,
+.is-source-locked .segmented__btn:not(.segmented__btn--active) .radio-card__sub { color: var(--locked-field-ink); }

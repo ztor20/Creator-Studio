@@ -110,7 +110,9 @@
     'tier-benefits.html': 1, 'media-vault.html': 1, 'brand-campaigns.html': 1,
     'brand-campaign-detail.html': 1, 'fans-guide.html': 1, 'manage-ip.html': 1,
     /* 2026-07-31 D158：受眾分析新頁（Fans 群組第 6 個目的地）。 */
-    'fan-analytics.html': 1
+    'fan-analytics.html': 1,
+    /* 2026-08-09 D181：粉絲分析拆兩頁，新頁只用 ztor 拿得到的資料。 */
+    'audience-report.html': 1
   };
   function featTier(id) { return FEAT_TIER[id.trim()] || (id.trim() === 'full' ? 'full' : 'p1'); }
   function parseScopeMd(txt) {
