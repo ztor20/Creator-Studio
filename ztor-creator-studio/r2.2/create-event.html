@@ -145,7 +145,12 @@
   }
   /* 門票以場次分組：一場一塊，塊內是那一場的幾張門票（沿用 .tier-grid 的欄寬規則）。 */
   .ce-tiergroup + .ce-tiergroup { margin-top: var(--sp-28); }
-  .ce-tiergroup__head { font-size: var(--fs-13); color: var(--foreground-muted); margin-bottom: var(--sp-10); }
+  /* 盒子的下內距要跟左右一樣（2026-08-10 使用者指示）：格線自帶的下緣留白疊在
+     --plain 的內距上，看起來就是「下面比兩側空」。 */
+  .ce-tiergroup > .tier-grid { margin-bottom: 0; }
+  /* 場次標題（2026-08-10 使用者指示）：大一階並拉開與門票的距離——它是這一盒的主人，
+     和卡片黏太近會讀成卡片的一部分。 */
+  .ce-tiergroup__head { font-size: var(--fs-14); color: var(--foreground-muted); margin-bottom: var(--sp-16); }
 </style>
 </head>
 <body>
@@ -295,12 +300,12 @@
           <p class="form-section__sub" data-i18n="ce.wp.content.sub">Pick one video for everyone to watch together.</p>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.wp.film">Select video</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <select class="select" data-ce="film" data-wp-required id="ce-film"></select>
           <p class="ce-field-error" data-i18n="ce.wp.err.film">Please choose a video to watch.</p>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.wp.room">Room name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.wp.room">Room name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <input class="input" data-ce="room" data-wp-required placeholder="e.g., Friday movie night" data-i18n-placeholder="ce.wp.room.ph">
           <p class="ce-field-error" data-i18n="ce.wp.err.room">Room name is required.</p>
         </div>
@@ -308,12 +313,12 @@
 
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <input class="input" data-ce="name" data-bky="name" data-required placeholder="The name on the ticket" data-i18n-placeholder="ce.name.ph">
           <p class="ce-field-error" data-i18n="ce.err.name">Event name is required.</p>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.desc">Description</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <textarea class="textarea" data-ce="desc" data-bky="desc" data-required placeholder="What will fans experience? Make it vivid." data-i18n-placeholder="ce.desc.ph"></textarea>
           <p class="ce-field-error" data-i18n="ce.err.desc">Description is required.</p>
         </div>
@@ -348,11 +353,11 @@
         <div class="form-grid">
           <div class="field">
             <label class="field__label"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-            <input class="input" data-ce="attend-min" type="number" min="0" step="1" placeholder="e.g., 50" data-i18n-placeholder="ce.attend.min.ph">
+            <input class="input" data-ce="attend-min" data-bky="attendMin" type="number" min="0" step="1" placeholder="e.g., 50" data-i18n-placeholder="ce.attend.min.ph">
           </div>
           <div class="field">
-            <label class="field__label"><span data-i18n="ce.attend.max">Maximum</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
-            <input class="input" data-ce="capacity" data-required type="number" min="1" step="1" placeholder="e.g., 500" data-i18n-placeholder="ce.attend.max.ph">
+            <label class="field__label"><span data-i18n="ce.attend.max">Maximum</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+            <input class="input" data-ce="capacity" data-bky="capacity" data-required type="number" min="1" step="1" placeholder="e.g., 500" data-i18n-placeholder="ce.attend.max.ph">
             <p class="ce-field-error" data-i18n="ce.err.capacity">Maximum attendance is required.</p>
           </div>
         </div>
@@ -528,7 +533,7 @@
           <h3 class="form-section__title" data-i18n="ce.wp.schedule">Schedule</h3>
         </div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.wp.start">Party start</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.wp.start">Party start</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <div class="form-grid form-grid--2">
             <input class="input" data-ce="wpstart" data-wp-required type="date">
             <input class="input" type="time">
@@ -627,7 +632,7 @@
              日期搬進場次列之後由第 1 場回寫這兩格，下游不必各自改。 -->
         <div class="form-section__subhead" data-di="d.sess.detail">場次細節</div>
         <div class="field">
-          <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+          <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <input class="input" data-ce="venue" data-bky="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
           <p class="ce-field-error" data-i18n="ce.err.venue">Venue name is required.</p>
         </div>
@@ -846,10 +851,11 @@
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.sale.window">限時販售</span><span class="radio-card__sub" data-di="d.sale.window.sub">自己指定開賣與停售時間，時間外買不到。</span></span>
           </button>
         </div>
-        <div class="control-group">
-          <div class="control-group__body control-group__body--top" id="ce-sale-times" hidden>
+        <!-- 2026-08-10 使用者指示：時間欄不要外框。二選一卡已經把「這一區在講什麼」交代完，
+             再包一層框等於把同一件事框兩次。 -->
+        <div id="ce-sale-times" hidden>
             <div class="field">
-              <label class="field__label"><span data-di="d.sale.from">開賣時間</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+              <label class="field__label"><span data-di="d.sale.from">開賣時間</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
               <div class="form-grid">
                 <input class="input" type="date" data-ce="sale-from-d" data-bky="saleFromD" data-required>
                 <input class="input" type="time" data-ce="sale-from-t" data-bky="saleFromT">
@@ -864,7 +870,7 @@
             </div>
           </div>
         </div>
-      </div>
+
 
       <!-- 取票方式（文件 3「物流：順風, 到店自取, 電子門票」；順風＝順豐）。三選一沿用建立商品的取貨方式做法。 -->
       <div class="form-section form-section--outlined">
@@ -882,6 +888,21 @@
           <button class="segmented__btn" type="button" data-val="pickup">
             <span class="radio-card__text"><span class="radio-card__title" data-di="d.ship.pick">到店自取</span><span class="radio-card__sub" data-di="d.ship.pick.sub">粉絲到指定門市或活動現場憑證件領票。</span></span>
           </button>
+        </div>
+        <!-- 選了才問的欄位（2026-08-10 使用者指示）：寄送要知道運費怎麼算，自取要知道去哪裡拿。
+             兩者都是選了那個方式才成立的必填，沒選就不該佔版面、也不該擋發布。 -->
+        <div class="field" data-ship-when="sf" hidden>
+          <label class="field__label"><span data-di="d.ship.fee">運費</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+          <span class="amount-field">
+            <span class="amount-field__unit"><span class="amount-field__sym">$</span></span>
+            <input class="input amount-field__input" data-ce="ship-fee" type="number" min="0" step="1" placeholder="例如：120" data-di-ph="d.ship.fee.ph">
+          </span>
+          <p class="field__hint" data-di="d.ship.fee.hint">粉絲結帳時另外付這筆。</p>
+        </div>
+        <div class="field" data-ship-when="pickup" hidden>
+          <label class="field__label"><span data-di="d.ship.spot">取貨地點</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
+          <input class="input" data-ce="ship-spot" placeholder="例如：ztor 門市 台北信義店" data-di-ph="d.ship.spot.ph">
+          <p class="field__hint" data-di="d.ship.spot.hint">粉絲帶證件到這裡領票。</p>
         </div>
       </div>
 
@@ -1503,7 +1524,7 @@
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
-                          : { name: 2, desc: 2, venue: 3, date: 3, capacity: 3, "sale-from-d": 6 };
+                          : { name: 2, desc: 2, venue: 3, date: 3, capacity: 3, "sale-from-d": 6, "ship-fee": 6, "ship-spot": 6 };
     const reqEls = activeRequired();
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
@@ -2618,7 +2639,22 @@
       '<span class="amount-field amount-field--suffix amount-field--readonly">' +
         '<input class="input amount-field__input" type="number" min="0" max="100" step="0.1" data-rule-f="disc.pct" value="' +
           esc(r.disc.pct) + '" placeholder="0"><span class="amount-field__unit">%</span></span>');
-    if (base == null) return pct;
+    /* 活動層也要看得到折後價（2026-08-10 使用者指示，與票種卡那份對齊）。
+       活動層沒有單一原價可依——底下每張票的價錢不一樣——所以這裡是唯讀的推算值：
+       全部同價就給一個數，價差則給區間；還沒有票就留一槓。做成可填會騙人，
+       一個折後價回推不出「對每張票都成立」的百分比。 */
+    if (base == null) {
+      const nets = tiers.map(grossPrice).filter(n => n > 0)
+        .map(g => discNet(g, r.disc.pct === "" || r.disc.pct == null ? 0 : r.disc.pct));
+      const lo = nets.length ? Math.min.apply(null, nets) : null;
+      const hi = nets.length ? Math.max.apply(null, nets) : null;
+      const txt = lo == null ? "—" : (lo === hi ? "$" + lo : "$" + lo + "–$" + hi);
+      const readout = ruleField(dT("d.rule.net"),
+        '<div class="field-readout">' + esc(txt) +
+          (lo != null && lo !== hi ? ' <span class="text-sub">' + esc(dT("d.rule.net.range")) + '</span>' : '') +
+        '</div>');
+      return '<div class="rule-row">' + pct + readout + '</div>';
+    }
     const net = ruleField(dT("d.rule.net"),
       '<span class="amount-field amount-field--readonly">' +
         '<span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
@@ -2737,9 +2773,23 @@
   });
   /* 折扣的兩個欄位（% 與折後價）是同一件事的兩個講法，填一邊另一邊立刻跟上。
      只改對方的 value、不重繪——重繪會把游標從正在打的欄位彈出去。 */
+  /* 活動層折後價的唯讀推算：全部同價給一個數，價差給區間，沒有票就一槓。 */
+  function syncDiscReadout(host) {
+    const out = host.querySelector(".field-readout");
+    if (!out) return;
+    const pctEl = host.querySelector('[data-rule-f="disc.pct"]');
+    const pct = pctEl && pctEl.value !== "" ? pctEl.value : 0;
+    const nets = tiers.map(grossPrice).filter(n => n > 0).map(g => discNet(g, pct));
+    if (!nets.length) { out.textContent = "\u2014"; return; }
+    const lo = Math.min.apply(null, nets), hi = Math.max.apply(null, nets);
+    out.innerHTML = lo === hi ? "$" + lo
+      : "$" + lo + "\u2013$" + hi + ' <span class="text-sub">' + esc(dT("d.rule.net.range")) + "</span>";
+  }
   function syncDiscPair(host, from) {
     const base = scopePrice(host.dataset.rulesFor);
-    if (base == null) return;
+    /* 活動層沒有單一原價，折後價是唯讀的推算值（可能是區間）——改百分比時要重算它，
+       否則畫面停在剛進來那一刻的數字（2026-08-10 修）。 */
+    if (base == null) { syncDiscReadout(host); return; }
     const pctEl = host.querySelector('[data-rule-f="disc.pct"]');
     const netEl = host.querySelector("[data-disc-net]");
     if (!pctEl || !netEl) return;
@@ -2886,10 +2936,13 @@
         });
         /* 入場方式會改變流程有幾步，所以要重畫進度列；停在被跳掉的那一步時先退回細節。 */
         if (seg === "sales") { salesMode = btn.dataset.val; applySalesMode(); }
+        if (seg === "ship")  applyShipMode();   // 順豐要運費、自取要地點（2026-08-10）
         syncReview(); scheduleSave();
       });
     });
   });
+
+  applyShipMode();   // 初始態：電子門票，兩個附加欄位都收起
 
   function readWP() {
     const typeName = typeLabel();   // 同上：唯一來源＝閘門那張卡的標題
@@ -3152,6 +3205,7 @@
     "d.limit.times.hint": { en: "How many separate orders one person can place.", zh: "同一個人可以下幾次單。" },
     "d.sale":         { en: "Sales window",      zh: "販售方式" },
     "d.sale.sub":     { en: "When fans can start buying, and when it stops.", zh: "粉絲從什麼時候開始買得到、買到什麼時候為止。" },
+    "d.rule.net.range": { en: "Varies by ticket", zh: "各張票不同" },
     "d.sale.now":       { en: "Sell right away",  zh: "直接販售" },
     "d.sale.now.sub":   { en: "Tickets go live the moment you publish, and stay on sale until the event starts.",
                           zh: "發布後立刻開賣，賣到活動開始為止。" },
@@ -3167,6 +3221,12 @@
     "d.ship.sf":      { en: "SF Express",        zh: "順豐寄送" },
     "d.ship.sf.sub":  { en: "Printed tickets posted to the buyer, shipping on them.", zh: "實體票寄到粉絲填的地址，運費粉絲付。" },
     "d.ship.pick":    { en: "Store pickup",      zh: "到店自取" },
+    "d.ship.fee":       { en: "Shipping fee",   zh: "運費" },
+    "d.ship.fee.ph":    { en: "e.g., 120",      zh: "例如：120" },
+    "d.ship.fee.hint":  { en: "Fans pay this on top at checkout.", zh: "粉絲結帳時另外付這筆。" },
+    "d.ship.spot":      { en: "Pickup point",   zh: "取貨地點" },
+    "d.ship.spot.ph":   { en: "e.g., ztor store, Xinyi Taipei", zh: "例如：ztor 門市 台北信義店" },
+    "d.ship.spot.hint": { en: "Fans collect here with ID.", zh: "粉絲帶證件到這裡領票。" },
     "d.ship.pick.sub":{ en: "Collected at a named store or at the venue, with ID.", zh: "粉絲到指定門市或活動現場憑證件領票。" },
     "d.vis":          { en: "Visibility",        zh: "發布狀態" },
     "d.vis.sub":      { en: "Who gets to find this event.", zh: "決定誰找得到這場活動。" },
@@ -3635,6 +3695,22 @@
   tierList?.addEventListener("drop", e => { e.preventDefault(); dragId = null; scheduleSave(); });
   tierList?.addEventListener("dragend", () => { dragId = null; });
 
+  /* 取票方式的附加欄位（2026-08-10 使用者指示）：順豐要運費、自取要地點。
+     必填隨方式浮動——沒選那個方式就把 data-required 拿掉，否則發布前檢核會擋在
+     一個根本看不到的欄位上。 */
+  function applyShipMode() {
+    const seg = document.querySelector('[data-seg="ship"]');
+    const cur = seg ? seg.dataset.value : "eticket";
+    document.querySelectorAll("[data-ship-when]").forEach(box => {
+      const on = box.dataset.shipWhen === cur;
+      box.hidden = !on;
+      box.querySelectorAll("[data-ce]").forEach(el => {
+        if (on) el.setAttribute("data-required", "");
+        else { el.removeAttribute("data-required"); clearFieldError(el); }
+      });
+    });
+  }
+
   /* 免票入場：票種與其他活動設定整區收起來（不再跳整步——它們現在跟場次同一步）。 */
   function applySalesMode() {
     if (skipped(step)) step = 3;      // 站在票種／票務時改選免票，先退回場次
@@ -3646,7 +3722,7 @@
      三筆刻意做出差異：單場／三日系列（同一個場地，照文件「無論哪個場次，地點都一樣」）／
      沒有手續費也沒有折扣的那種。 */
   const BKY = [
-    { id: "bky-1",
+    { id: "bky-1", capacity: "12000", attendMin: "",
       label: "REALIVE World Tour — Taipei",
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
@@ -3661,7 +3737,7 @@
       tiers: [{ name: "VIP", price: "4200", qty: "100", fee: "150" },
               { name: "搖滾區", price: "3300", qty: "200", fee: "120" },
               { name: "看台", price: "2400", qty: "300", fee: "80" }] },
-    { id: "bky-2",
+    { id: "bky-2", capacity: "3000", attendMin: "",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
       name: "MIRROR FANMEETING 2026 高雄",
@@ -3677,7 +3753,7 @@
       sessionNames: ["Day 1", "Day 2", "Day 3"],
       tiers: [{ name: "搖滾區", price: "3800", qty: "150", fee: "120" },
               { name: "一般席", price: "2200", qty: "400", fee: "80" }] },
-    { id: "bky-3",
+    { id: "bky-3", capacity: "8000", attendMin: "",
       label: "城市草地音樂節 2026",
       note:  "2026/11/08 · 大佳河濱公園",
       name: "城市草地音樂節 2026",
@@ -3689,7 +3765,38 @@
       date: "2026-11-08", start: "14:00", end: "22:00", doors: "13:00",
       saleFromD: "2026-09-01", saleFromT: "12:00", saleToD: "", saleToT: "",
       ship: "pickup", sessions: [],
-      tiers: [{ name: "一日票", price: "1800", qty: "2000", fee: "" }] }
+      tiers: [{ name: "一日票", price: "1800", qty: "2000", fee: "" }] },
+    /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
+       順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
+       帶入後仍要創作者自己填，所以刻意留空。 */
+    { id: "bky-4", capacity: "600", attendMin: "",
+      label: "限量黑膠簽名場 — 台中",
+      note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
+      name: "限量黑膠簽名場 — 台中",
+      desc: "新專輯黑膠首賣場，購票附一張實體收藏票券，當天憑票入場並可參加簽名。",
+      country: "TW", lang: "zh-Hant",
+      images: ["images/hero-event.jpg"],
+      venue: "Legacy Taichung", addr: "台中市西區公益路 155 號",
+      meet: "1 樓售票口", transit: "台中捷運文心森林公園站步行 8 分鐘",
+      date: "2026-12-06", start: "19:00", end: "21:00", doors: "18:00",
+      saleFromD: "2026-10-20", saleFromT: "12:00", saleToD: "2026-12-01", saleToT: "23:59",
+      ship: "sf", sessions: [],
+      tiers: [{ name: "黑膠套票", price: "2800", qty: "400", fee: "100" },
+              { name: "一般入場", price: "1200", qty: "200", fee: "60" }] },
+    { id: "bky-5", capacity: "1500", attendMin: "",
+      label: "冬季特別公演 — 台南",
+      note:  "2027/01/17 · 台南文化中心（到店自取）",
+      name: "冬季特別公演 — 台南",
+      desc: "年度最後一場公演，全場原聲編制，票券採到店自取，憑證件於指定門市領取。",
+      country: "TW", lang: "zh-Hant",
+      images: ["images/projects/nick-realive.jpg"],
+      venue: "台南文化中心 演藝廳", addr: "台南市東區中華東路三段 332 號",
+      meet: "演藝廳大廳", transit: "台鐵台南站轉公車約 20 分鐘",
+      date: "2027-01-17", start: "19:30", end: "21:40", doors: "18:45",
+      saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
+      ship: "pickup", sessions: [],
+      tiers: [{ name: "全票", price: "1600", qty: "900", fee: "80" },
+              { name: "學生票", price: "1100", qty: "300", fee: "50" }] }
   ];
 
   const bkyGo    = document.getElementById("ce-bky-go");
@@ -3784,6 +3891,8 @@
     drafts = {}; newIds = new Set(); errIds = new Set();
     renderTiers();
     syncReview(); renderCalc(); scheduleSave();
+    /* 取票方式是最後才設進 segmented 的，附加欄位要在那之後才判斷得出來（2026-08-10）。 */
+    applyShipMode();
   }
 
   function lockSeg(name, value) {
