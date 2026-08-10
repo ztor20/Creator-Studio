@@ -158,6 +158,7 @@
        永遠進不了表，門票與商品兩個 chip 就篩不出任何列。表格本來就有分頁（每頁 8 筆）。 */
     var projects = store.list();
     if (!projects.length) return;
+    var MODE_KEY = { fund: 'fund', preorder: 'preorder', 'go-live': 'golive' };
     var html = '', cats = [];
     projects.forEach(function (p, i) {
       var slot = { types: typesFor(p), amt: ntd(amountFor(p)) };
@@ -172,6 +173,9 @@
                      : '<span class="ztor-table__thumb"></span>') +
                 '<span data-proj-name="' + p.id + '">' + store.nameLabel(p).en + '</span>' +
               '</span></td>' +
+              /* 項目類型＝發行模式（共創／預購／直接發佈）。沿用 projects.mode.* 鍵，
+                 與項目清單同一套詞，不另造。2026-07-31 使用者指定新增。 */
+              '<td data-i18n="projects.mode.' + MODE_KEY[p.type] + '">' + p.type + '</td>' +
               '<td data-i18n="' + key + '">' + label.en + '</td>' +
               '<td class="fin-amt">' + slot.amt + '</td>' +
               '<td class="ztor-table__chevcell"><i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></td></tr>';

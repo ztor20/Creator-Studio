@@ -44,6 +44,7 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 | `p1-next-tbd` | Phase 3（Phase 1 ＋ Next ＋ TBD） | 開發 | `tier:p1,next,tbd` | ＋商務待定（TBD）；未列 scope 功能仍只在 Phase 4 顯示 |
 | `full` | Phase 4（最終完整版） | 開發 | `all` | 開發目標，全部功能（預設） |
 | `funding-test` | r2.1_funding-test | 測試 | `route:create-project.html=funding-test/create-campaign.html` | 建立專案改接募資建立流程（create-campaign 部署複本），其餘同最終版 |
+| `golive-4step` | r2.2_golive-4step | 測試 | `route:create-project.html=golive-4step/create-project-4step.html` | 建立項目改接整併前的四步版（直接發佈 About → Showcase → Monetization → Review），其餘同最終版 |
 | `deck-for-sony` | Deck for Sony | Demo | `route:earnings.html=earnings-sony.html` | 收入管理改接 Sony 簡報版（earnings-sony.html），其餘同 Phase 4 |
 
 規則語法：`all` 全部可見｜`tier:p1,next` 只顯示這些 tier 的功能｜`feat:S30`／`-feat:S30` 額外加入／排除特定功能｜`route:來源頁=目標` 把指向「來源頁」的連結改接到「目標」，並在你「已停在來源頁」（含直接輸入 URL、或切版本時正停在該頁）時把整頁換到目標；切回非此版本時，停在目標頁會自動導回來源頁（雙向、保留 query／hash）。特殊版用；標 `data-route-keep` 的連結不改接｜`page:原頁=變體` 換整頁。tier 對照取自下方各模組功能表的 🟢 Phase 1／🔵 Next／⚪ TBD 欄；頁面元素需標 `data-feat="S30"` 才會被版本切換控制，外殼元素包多個功能時可寫逗號多值 `data-feat="S05,S06"`（任一在版本內即顯示）。`data-feat="full"` 是保留 gate，表示 scope 未列功能，只在 `all`／funding-test 顯示；整頁用 `data-page-feat`，低版本直連會回到 E-Shop。作用中分頁被版本藏掉時，cheat code 會自動切到第一個可見分頁。

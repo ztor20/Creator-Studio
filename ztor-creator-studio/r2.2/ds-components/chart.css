@@ -587,11 +587,26 @@
    最後一段收在 100%。圓餅本身不帶文字，數字一律由旁邊的圖例承擔，所以
    consumer 要給它 aria-hidden="true"，不要讓讀屏念一個沒有內容的圓。 */
 .pie {
+  position: relative;
   width: var(--pie-size, 168px);
   aspect-ratio: 1 / 1;
   flex: none;
   border-radius: var(--radius-pill);
   background: conic-gradient(var(--pie-stops, var(--chart-1) 0 100%));
+}
+
+/* --hollow：中空版（2026-08-09）。
+   為什麼加在 .pie 不加在 .donut：.donut 的引擎只吃兩段（一個 --donut-p 就切完），
+   要它做三段以上得整個換掉；.pie 本來就是 N 段的 conic-gradient，中空只是多挖
+   一個圓心。兩支的分工維持原判——.donut 是「兩段＋中心放一個結果數字」，
+   .pie 是「N 段的切分」，本修飾詞不改變這條界線，只是讓後者也能中空。
+   厚度與挖空色沿用 .donut 的變數名，兩支的呼叫端不必記兩套。 */
+.pie--hollow::after {
+  content: "";
+  position: absolute;
+  inset: var(--donut-thickness, 28px);
+  border-radius: var(--radius-pill);
+  background: var(--donut-hole, var(--card));
 }
 
 /* 圓餅＋圖例並排。窄了就疊起來：圓餅置中、圖例落到下面，圖例列本身是
@@ -603,6 +618,17 @@
 }
 .pie-figure__legend { flex: 1 1 auto; min-width: 0; }
 .pie-figure__legend .source-list { margin-top: 0; }
+
+/* --stack：圓餅在上、圖例在下（2026-08-09）。
+   並排版把圓餅擠在左半邊，卡片一窄它就得跟著縮；直排讓圓餅吃滿卡片寬度、
+   可以畫大一點，圖例整排在底下也比擠在右側的窄欄好讀。
+   段數少（三段以內）而卡片不寬時用這個版本。 */
+.pie-figure--stack {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-20);
+}
+.pie-figure--stack .pie-figure__legend { width: 100%; flex: none; }
 
 @media (max-width: 560px) {
   .pie-figure { flex-direction: column; align-items: stretch; gap: var(--sp-16); }

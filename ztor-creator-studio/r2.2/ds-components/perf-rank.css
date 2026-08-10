@@ -63,6 +63,15 @@
   grid-template-columns: 20px minmax(64px, 148px) minmax(0, 1fr) auto;
 }
 
+/* --tight：名稱欄改吃內容寬（2026-07-31）。
+   基礎的 minmax(64px, 148px) 是為「作品名」設計的——名字長、需要空間。
+   但短標籤清單（星座／MBTI／生肖，一律 2–4 字）在有空間時也會被撐到 148px，
+   窄卡片（bento--span-4）裡長條只剩 18px，等於長條沒有作用。
+   本修飾詞讓名稱只佔內容寬，多出來的全給長條。長名單不要用——名字會被壓到換行。 */
+.perf-rank--tight .perf-rank__row {
+  grid-template-columns: 20px minmax(48px, max-content) minmax(0, 1fr) auto;
+}
+
 /* --wide：名稱欄改吃比例、不設固定上限（2026-08-09）。
    預設的 148px 是為片名／歌名／平台名訂的，那些頂多七八個字；作品全名與貼文標題
    是一整句（「《海上霸姬鄭一嫂》為什麼是這五年最好的港產武打片」），在 148px 裡
@@ -258,3 +267,9 @@
   line-height: 1.5;
   white-space: nowrap;
 }
+
+
+/* --click：整列可點（2026-07-31）。站上清單列 hover 一律浮起（STYLE-DECISIONS Q34），
+   本修飾詞只補游標與 focus 樣式——排行榜預設是唯讀的，可點是例外，要看得出來。 */
+.perf-rank__row--click { cursor: pointer; }
+.perf-rank__row--click:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

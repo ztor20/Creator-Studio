@@ -462,10 +462,13 @@
 
             <div class="form-grid">
               <div class="field">
-                <label class="field__label" for="pd-rating" data-i18n="project-detail.details.rating">Content rating</label>
-                <select class="select" id="pd-rating">
-                  <option>PG-13</option><option>G</option><option>PG</option><option>R</option><option>NC-17</option>
-                </select>
+                <!-- 值域＝主規格 §7.11 的六級，由 js/work-taxonomy.js 填；這一格與建立流程影視組的
+                     年齡分級、作品上架的年齡限制是同一份資料，所以清單不在這裡寫死。
+                     舊的 PG-13／G／PG／R／NC-17 已隨 D182 退場。 -->
+                <label class="field__label" for="pd-rating" data-i18n="tax.age.label">Age rating</label>
+                <!-- data-view-safe：檢視模式下這一格仍要看得見選到的分級（值是要讀的內容），
+                     不能被「藏掉所有按鈕」那條規則連 zselect 觸發鈕一起掃掉。 -->
+                <select class="select" id="pd-rating" data-taxonomy-age="pw.age.13" data-view-safe></select>
               </div>
               <div class="field">
                 <label class="field__label" for="pd-language" data-i18n="project-detail.details.language">Language</label>
@@ -1451,6 +1454,8 @@
 <!-- 作品送審件（§2.2.9 的審核狀態、退件理由、重送入口）與審核頁共用同一份狀態機。 -->
 <script src="js/work-review-store.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<!-- 公開資訊的年齡分級（§2.2.8）吃主規格 §7.11 那份六級值域，與建立流程、作品上架同一份。 -->
+<script src="js/work-taxonomy.js?v=r2.2"></script>
 <script>
 /* 這一頁畫的是哪一個項目（2026-08-07 修）
    ------------------------------------------------------------------------------
@@ -1766,6 +1771,9 @@ window.ztorPdLookup = (function () {
       if (ov) proj.status = ov;
     }
     const isFilm = () => !!proj && proj.family === 'film';
+    /* 直接發佈的項目在建立流程裡就把作品上架完了（2026-08-10 整併），所以沒有「事後宣告
+       作品完成」這件事可做——發文類型也就不該出現這個選項。 */
+    const isDirect = () => !!proj && proj.type === 'go-live';
     const canRelease = () => !!proj && proj.status === 'succeeded';
     const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
     const kindSel = document.getElementById('pd-f-ukind');
@@ -1799,11 +1807,19 @@ window.ztorPdLookup = (function () {
          那一塊、而且只在被退件時出現。已通過的則是作品已上線，這件事做完了。 */
       const rec = (window.ztorWorkReview && proj) ? window.ztorWorkReview.forProject(proj.id) : null;
       const inflight = !!rec && (window.ztorWorkReview.isOpen(rec.status) || rec.status === 'approved');
-      if (releaseOpt) releaseOpt.disabled = !canRelease() || inflight;
-      if (releaseOpt && releaseOpt.disabled && kindSel.value === 'release') kindSel.value = 'general';
+      /* 直接發佈的項目整個拿掉這個選項（2026-08-10 整併，規劃書 §3.3／§5 第 9 題）：
+         「完成作品」的產品意義是宣告先前承諾的作品已完成，而直接發佈沒有承諾這件事——
+         作品在建立當下就交付了，上架也在建立流程裡走完。停用而留著只會讓人一直去點它問
+         為什麼；這個類型對這種項目自始不存在，所以移除而不是灰掉。 */
+      if (releaseOpt && isDirect()) releaseOpt.remove();
+      else if (releaseOpt) releaseOpt.disabled = !canRelease() || inflight;
+      if (!kindSel.querySelector('option[value="release"]:not([disabled])') && kindSel.value === 'release') kindSel.value = 'general';
       const kind = updateKind();
       let noteKey = null, submitKey = 'pd-edit.update.submit', submitFb = 'Publish update';
-      if (inflight) noteKey = rec.status === 'approved' ? 'pd.review.kind-live' : 'pd.review.kind-inflight';
+      /* 直接發佈的項目沒有這個選項，也就沒有「為什麼不能選」要解釋——一行說明掛在一個
+         不存在的選項上，只會讓人去找那個選項在哪。 */
+      if (isDirect()) noteKey = null;
+      else if (inflight) noteKey = rec.status === 'approved' ? 'pd.review.kind-live' : 'pd.review.kind-inflight';
       else if (!canRelease()) noteKey = 'pd-edit.update.kind-locked';
       if (kind === 'release') {
         noteKey = isFilm() ? 'pd-edit.update.kind-film-note' : 'pd-edit.update.kind-other-note';

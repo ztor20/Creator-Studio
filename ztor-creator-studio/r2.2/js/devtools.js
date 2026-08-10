@@ -47,6 +47,15 @@
 
   window.__ztorDevToolsMounted = true;
 
+  /* 站台根目錄：由本檔自己的 <script src> 推導（.../js/devtools.js → .../）。
+     版本變體住在子目錄（funding-test/、golive-4step/），用相對路徑抓
+     feature-scope-map.md 會變成 `<子目錄>/feature-scope-map.md` 而 404——
+     版本表照樣有內建後備能跑，但 console 會留一筆紅色錯誤。 */
+  var SITE_ROOT = (function () {
+    var src = document.currentScript && document.currentScript.src;
+    return src ? src.replace(/js\/devtools\.js.*$/, '') : '';
+  })();
+
   var DATA = [
     ['empty', 'Empty', '帳號下尚無任何內容（含第一次進站）'],
     ['has-data', 'Has Data', '已建立過任何內容（預設）'],
@@ -88,6 +97,7 @@
     ['p1-next-tbd', 'Phase 3（Phase 1 ＋ Next ＋ TBD）', '開發', 'tier:p1,next,tbd', '＋商務待定（TBD）'],
     ['full', 'Phase 4（最終完整版）', '開發', 'all', '全部功能（預設）'],
     ['funding-test', 'r2.1_funding-test', '測試', 'route:create-project.html=funding-test/create-campaign.html', '建立項目改接募資建立流程'],
+    ['golive-4step', 'r2.2_golive-4step', '測試', 'route:create-project.html=golive-4step/create-project-4step.html', '建立項目改接整併前的四步版'],
     ['deck-for-sony', 'Deck for Sony', 'Demo', 'route:earnings.html=earnings-sony.html', '收入管理改為 Sony 簡報版，其餘同 Phase 4'],
   ];
   /* `full` 是版本 gate 的保留 tier，不是 feature-scope-map 的產品 ID。
@@ -151,7 +161,7 @@
   /* 以 Phase 4（最終完整版）為基底的版本：full 本身，以及只改接個別頁面、
      其餘同 Phase 4 的特殊版（funding-test、deck-for-sony）。這些版本不減功能，
      故 full-only 頁面與跨頁連結照常可見。新增同型特殊版時把 key 加進這裡。 */
-  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony'; }
+  function isFullBaseVersion(v) { return v === 'full' || v === 'funding-test' || v === 'deck-for-sony' || v === 'golive-4step'; }
   function applyRouteAvailability() {
     var allowFull = isFullBaseVersion(state.version);
     document.querySelectorAll('a[href]').forEach(function (a) {
@@ -299,13 +309,25 @@
        1) 停在「作用中版本」的來源頁 → 換到目標頁（earnings.html → earnings-sony.html）
        2) 停在某變體目標頁、但該版本沒作用、且無作用版本也指向此頁 → 導回來源頁
           （earnings-sony.html 在非 deck-for-sony 版 → 回 earnings.html）
-     保留 query／hash；earnings-sony.html 不是任何來源，故無迴圈。 */
+     保留 query／hash；earnings-sony.html 不是任何來源，故無迴圈。
+
+     2026-08-10 修：目標頁住在子目錄時（`funding-test/create-campaign.html`、
+     `golive-4step/create-project-4step.html`）回程從來沒有成立過——比對用的 `here` 只有
+     檔名，永遠對不上帶路徑的 `to`，所以切回其他版本仍停在變體頁。改成用「目標的檔名」
+     比對，並依目標路徑的深度補上對應數量的 `../`（location.replace 是相對當前網址解析的，
+     在子目錄裡直接丟 `create-project.html` 會找到子目錄裡不存在的那一支）。 */
   function guardRoutePage() {
     var here = (location.pathname.split('/').pop() || '').toLowerCase();
     var pairs = [];
     VERSIONS.forEach(function (v) {
       routesForRule(v[3]).forEach(function (p) {
-        pairs.push({ from: p[0].toLowerCase(), to: p[1].toLowerCase(), fromRaw: p[0], toRaw: p[1], ver: v[0] });
+        var depth = (p[1].match(/\//g) || []).length;
+        pairs.push({
+          from: p[0].toLowerCase(),
+          toBase: (p[1].split('/').pop() || '').toLowerCase(),
+          fromRaw: p[0], toRaw: p[1], ver: v[0],
+          back: new Array(depth + 1).join('../')
+        });
       });
     });
     for (var i = 0; i < pairs.length; i++) {
@@ -314,16 +336,16 @@
       }
     }
     for (var j = 0; j < pairs.length; j++) {
-      if (pairs[j].to === here && pairs[j].ver !== state.version) {
-        var stillActive = pairs.some(function (p) { return p.to === here && p.ver === state.version; });
-        if (!stillActive) { location.replace(pairs[j].fromRaw + location.search + location.hash); return true; }
+      if (pairs[j].toBase === here && pairs[j].ver !== state.version) {
+        var stillActive = pairs.some(function (p) { return p.toBase === here && p.ver === state.version; });
+        if (!stillActive) { location.replace(pairs[j].back + pairs[j].fromRaw + location.search + location.hash); return true; }
       }
     }
     return false;
   }
   function loadVersions() {
     try {
-      fetch('feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
+      fetch(SITE_ROOT + 'feature-scope-map.md').then(function (r) { return r.ok ? r.text() : null; })
         .then(function (t) { if (t) { parseScopeMd(t); if (root.classList.contains('is-open')) paint(); applyVersion(); } })
         .catch(function () {});
     } catch (e) {}

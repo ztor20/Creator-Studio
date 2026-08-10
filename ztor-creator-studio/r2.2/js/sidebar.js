@@ -252,7 +252,7 @@
       || document.documentElement.getAttribute("data-version") || "full";
     /* 以 Phase 4 為基底的版本（不減功能、只改接個別頁面）：nav 全開。
        與 devtools.js 的 isFullBaseVersion() 同一份白名單，新增同型特殊版時兩處都要加。 */
-    return v === "full" || v === "funding-test" || v === "deck-for-sony";
+    return v === "full" || v === "funding-test" || v === "deck-for-sony" || v === "golive-4step";
   }
   function routeAllowed(href) {
     const route = (href || "").split(/[?#]/)[0].toLowerCase();
