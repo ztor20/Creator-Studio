@@ -1128,6 +1128,42 @@
      #ce-rules-modal，整段搬進來）→ 生成的門票（即時列出票種與場次交叉出來的每一張票）。
      bookyay 帶入時票種是鎖的，這個彈窗對票種等於「檢視」：要另外賣粉絲專屬票走分票，
      不在這裡新增票種；購票規則不受票種鎖定影響，仍可編輯（2026-08-09 使用者裁決）。 -->
+<!-- 第一次新增門票時先問走哪條路（2026-08-10 使用者指示）：一張票都還沒有時，
+     「新增門票」有兩種完全不同的做法——先設票種與規則讓每一場自動長出門票，或直接
+     手動建一張。兩者的差別在按鈕上看不出來，所以在這裡問一次。一張票之後就不再問
+     （`tiers.length === 0` 自然只會成立一次），不另外記旗標。
+     卡片用 `.radio-cards--gate`：Q28 已裁決「閘門卡點了就走、不保留選取態」，這裡正是那個語意。 -->
+<div class="payout-modal" id="ce-tixstart-modal" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ce-tixstart-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ce-tixstart-title" data-di="d.tixstart.h">要怎麼建這些門票？</h2>
+      <button class="btn btn--icon" type="button" data-tixstart-close aria-label="Close"
+              data-i18n-aria-label="ce.rules.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <p class="field__hint" data-di="d.tixstart.sub">這場活動還沒有任何門票。兩種做法都可以，之後都還能改。</p>
+      <!-- 一列一個選項（`--list`）：兩張卡的副標各是一整句「什麼時候該選它」，
+           擠成兩欄會把每句折成四行，讀起來比並排比較更費力。 -->
+      <div class="segmented radio-cards radio-cards--gate radio-cards--list" role="group">
+        <button type="button" class="segmented__btn" data-tixstart="quick">
+          <i data-lucide="sliders-horizontal" class="ztor-icon radio-card__lead" aria-hidden="true"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-di="d.tixstart.quick">用快速設定</span>
+            <span class="radio-card__sub" data-di="d.tixstart.quick.sub">先設票種與購票規則，每一場自動各生一張門票。場次多的時候少打很多字。</span>
+          </span>
+        </button>
+        <button type="button" class="segmented__btn" data-tixstart="manual">
+          <i data-lucide="ticket" class="ztor-icon radio-card__lead" aria-hidden="true"></i>
+          <span class="radio-card__text">
+            <span class="radio-card__title" data-di="d.tixstart.manual">自己一張一張加</span>
+            <span class="radio-card__sub" data-di="d.tixstart.manual.sub">直接建一張門票，票種、價格與張數都在那一張上設定。</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
 <div class="payout-modal" id="ce-quick-modal" hidden>
   <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="ce-quick-title">
     <div class="payout-dialog__head">
@@ -3335,6 +3371,12 @@
     "d.quick.reset":  { en: "Follow defaults again", zh: "改回跟著預設" },
     "d.quick.resetall": { en: "Reset all to defaults", zh: "全部改回跟著預設" },
     "d.quick.done":   { en: "Done",              zh: "完成" },
+    "d.tixstart.h":   { en: "How do you want to build these tickets?", zh: "要怎麼建這些門票？" },
+    "d.tixstart.sub": { en: "There are no tickets yet. Either way works, and you can change it later.", zh: "這場活動還沒有任何門票。兩種做法都可以，之後都還能改。" },
+    "d.tixstart.quick":     { en: "Set them up in bulk", zh: "用快速設定" },
+    "d.tixstart.quick.sub": { en: "Define the ticket types and purchase rules once; every date gets one ticket of each. Far less typing when you have several dates.", zh: "先設票種與購票規則，每一場自動各生一張門票。場次多的時候少打很多字。" },
+    "d.tixstart.manual":     { en: "Add one at a time",  zh: "自己一張一張加" },
+    "d.tixstart.manual.sub": { en: "Build a single ticket and set its type, price and quantity right there.", zh: "直接建一張門票，票種、價格與張數都在那一張上設定。" },
     "d.manual":       { en: "＋ Add a ticket",   zh: "＋ 新增門票" },
     "d.type.pick.ph": { en: "Type a name, or pick one below", zh: "打一個名字，或從下面挑既有的" },
     "d.type.pick.hint": { en: "No match? It becomes a new ticket type the next ticket can pick.",
@@ -3695,16 +3737,13 @@
   });
   document.addEventListener("keydown", e => {
     if (e.key === "Escape" && quickModal && !quickModal.hidden) closeQuick();
+    if (e.key === "Escape" && tixStartModal && !tixStartModal.hidden) closeTixStart();
   });
 
   /* 手動新增門票（2026-08-09 使用者指示）：矩陣自動長出全部組合之後，原本「這一場新增一張票」
      的入口就沒了；刪掉某個組合之後要能自己加回來，所以補這一顆。預設挑「還缺的那一組」，
      沒有缺的就從第一場、第一種開始，兩者都能在彈窗裡改。 */
-  document.addEventListener("click", e => {
-    const add = e.target.closest("[data-tier-add]");
-    if (!add || fromBky()) return;
-    const ss = series.list.find(x => x.id === add.dataset.tierAdd);
-    if (!ss) return;
+  function addTierManually(ss) {
     /* 預設挑這一場還缺的那一種票；都齊了就從第一種開始（同一組合可以有第二張，例如另一個價位）。
        一個票種都還沒有時就開在「新建票種」上——第一張票與第一個票種在同一個彈窗裡建完。 */
     const ty = types.find(y => !tiers.some(t => t.sess === ss.id && t.type === y.id)) || types[0];
@@ -3714,6 +3753,42 @@
           addons: [], tname: "", manual: true };
     tiers.push(t); newIds.add(t.id);
     startTier(t);
+  }
+
+  /* 還一張票都沒有時，先問要走哪一條路（2026-08-10 使用者指示）。條件用 `tiers.length === 0`
+     就夠了：選完任一條路都會生出票，之後這個條件不再成立，等於自然只問第一次。 */
+  const tixStartModal = document.getElementById("ce-tixstart-modal");
+  let tixStartSess = null;
+  function openTixStart(ss) {
+    if (!tixStartModal) { addTierManually(ss); return; }
+    tixStartSess = ss;
+    tixStartModal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeTixStart() {
+    if (!tixStartModal) return;
+    tixStartModal.hidden = true;
+    document.body.style.overflow = "";
+    tixStartSess = null;
+  }
+  tixStartModal?.addEventListener("click", e => {
+    if (e.target === tixStartModal || e.target.closest("[data-tixstart-close]")) { closeTixStart(); return; }
+    const pick = e.target.closest("[data-tixstart]");
+    if (!pick) return;
+    const ss = tixStartSess;
+    const how = pick.dataset.tixstart;
+    closeTixStart();
+    if (how === "quick") openQuick();
+    else if (ss) addTierManually(ss);
+  });
+
+  document.addEventListener("click", e => {
+    const add = e.target.closest("[data-tier-add]");
+    if (!add || fromBky()) return;
+    const ss = series.list.find(x => x.id === add.dataset.tierAdd);
+    if (!ss) return;
+    if (!tiers.length) { openTixStart(ss); return; }
+    addTierManually(ss);
   });
 
   /* 門票名稱＝場次名＋票種（文件 2-1）。填了「門票名稱」就用填的那個（文件的「特殊票名」）；

@@ -517,9 +517,19 @@
       (p.name && p.name.trim() === t) || (p.nameEn && p.nameEn.trim() === t)) || null;
   }
 
+  /* ── 這個項目有沒有版稅分頁 ────────────────────────────────
+     版稅＝股份分潤的產物，只有共創型項目有股份（2026-07-25 使用者裁決），
+     而且要作品已上線（live＝已交付、正在賺錢）才會有第一筆版稅。
+     完整推導寫在 project-detail.html 的版稅分頁註解。
+     2026-08-10 抽成共用判斷：收入管理的作品榜要決定連結要不要帶 `#royalty`，
+     判斷條件與 project-detail 必須是同一條——各寫一份就會出現「這裡說有、
+     點過去卻沒有那個分頁」。 */
+  function hasRoyalty(p) { return !!p && p.type === 'fund' && p.status === 'live'; }
+
   window.ztorProjects = {
     list: () => active().projects.slice(),
     projectFor: projectFor,
+    hasRoyalty: hasRoyalty,
     get: id => active().projects.find(p => p.id === id) || null,
     first: () => active().projects[0],
     owner: () => active().owner,
