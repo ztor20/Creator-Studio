@@ -2282,7 +2282,9 @@ window.ztorPdLookup = (function () {
          所以那是對的；但狀態模型重寫後 published＝「共創中、作品還沒出來」，這條件就整個反了
          ——會對「還在共創、根本還沒有任何版稅」的項目顯示版稅分頁。改為 live（＝作品已上線、
          正在賺錢），才是原本想表達的意思。 */
-      const royaltyReady = p.type === 'fund' && p.status === 'live';
+      /* 判斷條件 2026-08-10 抽進 projects-store.hasRoyalty()——收入管理的作品榜
+         要用同一條決定連結要不要帶 #royalty，兩邊各寫一份就會分岔。 */
+      const royaltyReady = store.hasRoyalty(p);
       document.querySelectorAll('[data-royalty]').forEach(el => { el.hidden = !royaltyReady; });
 
       /* ── 表現 Performance（2026-07-28）──────────────────────────────
