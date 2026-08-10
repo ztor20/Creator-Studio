@@ -62,8 +62,11 @@
     btn.setAttribute('aria-haspopup', 'listbox');
     btn.setAttribute('aria-expanded', 'false');
     btn.setAttribute('aria-controls', id + '-panel');
-    /* select 上的 aria-label / data-i18n-aria-label 要跟著搬，否則只剩一顆沒有名字的按鈕 */
-    ['aria-label', 'data-i18n-aria-label', 'title'].forEach(function (a) {
+    /* select 上的 aria-label / data-i18n-aria-label 要跟著搬，否則只剩一顆沒有名字的按鈕。
+       data-view-safe 也要搬（2026-08-10）：觸發鈕是 <button>，會被 shared.css 那條
+       「檢視模式藏掉所有按鈕」的規則掃到——那條針對的是動作鈕，不是表單控件。
+       在唯讀面板裡該欄位仍要看得見值，所以原 <select> 標了 data-view-safe 就一起帶過來。 */
+    ['aria-label', 'data-i18n-aria-label', 'title', 'data-view-safe'].forEach(function (a) {
       if (sel.hasAttribute(a)) btn.setAttribute(a, sel.getAttribute(a));
     });
     if (sel.disabled) btn.disabled = true;

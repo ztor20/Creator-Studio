@@ -294,6 +294,53 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - 無障礙合規不是 R 2.1 預設交付範圍；若未來需要，另開 opt-in audit，不回寫成全站視覺規範。
 - **2026-07-09**：破壞性 ghost 按鈕（`.btn--ghost.btn--destructive`）與表單 footnote（`.form-footnote`）兩組跨頁重複頁內樣式一併 promote 進 ds-components，零視覺變動；細節見 UI-CHANGES.md 同日條目。
 
+### 5.6 作品欄位的跨頁共用（2026-08-10，直接發佈與作品上架整併）
+
+規格 5.1.2.2.1 的 F1–F15 從此有兩個宿主：`publish-work.html`（共創／預購成立後的事後上架）與
+`create-project.html`（直接發佈 × 影片家族的建立流程）。欄位規格只有一份權威，實作也只能有一份。
+
+**做法**：新增純 JS 元件 `partials/work-fields.js`（`window.ZtorWorkFields`），由它渲染完整的
+`.form-section` 區塊；兩個宿主頁只放空容器並在容器上宣告順序（`data-wf="file,audio,subs"`），
+另外各自決定「哪個區塊落在第幾步」與「送出做什麼」。
+
+**為什麼不是別的做法**：
+
+- **不複製 markup**：純靜態站台沒有片段引用機制，複製一份等於讓同一份欄位規格長出兩個會分岔的實作——
+  這正是 Close-out Verification 第 1 條（single source of truth）要防的事。
+- **不用 `fetch()` 載 HTML partial**：這些區塊每一個都會自己工作（字幕可增可刪、劇照填滿長出下一格、
+  語言組不准重複、幣種切換要改所有金額符號、就緒檢查要即時重算）。依 Frontend Architecture Strategy 的
+  判斷口訣，「只是切出畫面」才用 partial，「自己會工作」用 component。partial 還會多一次網路往返，
+  且原型偶爾用 `file://` 直開時 `fetch()` 會被擋。
+- **不自帶 CSS**：所有外觀都由既有元件承接，模組只組裝 markup。新增樣式一律回那些元件改。
+
+**連帶的共用**：送審內容（`collect()`）與就緒檢查項（`checks()`）也住在模組裡——兩頁若各算一份，
+「算不算填好」就會有兩個答案。步驟切法是宿主頁的事，所以 `checks()` 收一張 `stepOf` 對照表。
+
+**2026-08-10 第二輪：值域再往上抽一層**（D182 第 7／8 題）。主規格 §7.11 把年齡分級收成六級一套、
+§7.1.2 把題材軸收成 21 值一套，兩者各有三個落點——年齡在作品上架 F13、建立項目影視組 F4、項目公開資訊
+§2.2.8；題材在作品上架 F11 與建立項目影視組 F4。三處指同一份資料，清單自然也只能有一份。
+
+**做法**：新增純資料元件 `js/work-taxonomy.js`（`window.ZtorWorkTaxonomy`），提供 `GENRES`／`AGES`
+兩份清單與 `ageOptionsHtml()`／`genreChipsHtml()` 兩個產生器，並在載入時就地填好頁面上任何
+`[data-taxonomy-age]` 的 `<select>` 與 `[data-taxonomy-genres]` 的容器（chip 開關走 document 委派）。
+`partials/work-fields.js` 改成引用這一份、不再自帶副本。
+
+**為什麼獨立成檔而不是掛在 `work-fields.js` 上**：後者是整組影片上架欄位的渲染器（八百多行），
+而 `project-detail.html` 只需要那六個年齡值——為了一個陣列載進整支渲染器並不划算。這支沒有 CSS、
+沒有版面，只有值域與兩個字串產生器。
+
+**載入順序有兩個約束**：要排在 `partials/work-fields.js` 之前（後者取它的 `AGES` 與
+`genreChipsHtml()`），也要排在 `js/zselect.js` 之前（選項要先在，`<select>` 才升級得對）。
+模組本身立刻跑一次 hydrate、再補一次 `DOMContentLoaded`，對已有內容的節點會跳過。
+
+### 5.7 版本變體頁的回程改接修正（2026-08-10）
+
+cheat code 的 `route:` 規則在目標頁住在子目錄時（`funding-test/create-campaign.html`、
+`golive-4step/create-project-4step.html`），回程從來沒有成立過：`js/devtools.js` 的 `guardRoutePage()`
+用「當前檔名」比對帶路徑的目標，永遠對不上，切回其他版本仍停在變體頁。改成用目標的**檔名**比對，
+並依目標路徑深度補 `../`（`location.replace` 是相對當前網址解析的）。同輪把
+`feature-scope-map.md` 的 fetch 改用本檔 `<script src>` 推導的站台根目錄，變體頁不再留一筆 404。
+
 ---
 
 ## 5a. 已知缺口（R 2.1.x 候選）

@@ -128,6 +128,20 @@
       meta: { en: 'Created Mar 15, 2026', zh: '建立於 2026/03/15' },
       bar: null, todo: { en: 'Add showcase assets', zh: '補上展示素材' }
     },
+    /* ✝ 2026-08-10 新增：直接發佈 × 影片家族 × 準備中的樣本。整併後的建立流程送出＝送審，
+       落地狀態是「準備中」（規劃書 §5 第 1 題）；站上原本的兩筆同型項目（moonlight-mv、
+       nick-flames）是整併前建立的 MV，demo 文案還停在「發布即上線」的舊模型，拿來當送審
+       完成後的落點會讀起來自相矛盾。**沿用「新增而不是改既有樣本」的做法**——改現成項目的
+       狀態會連帶改掉它在清單頁與各狀態頁籤的落點。nick persona 的對位樣本是 nick-onstage-film。
+       金額、人數、日期為示意值。 */
+    {
+      id: 'elevator-14f', created: '2026/07/28', name: '十四樓的電梯', nameEn: "The Lift on Fourteen",
+      cat: 'movie', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
+      cover: IMG + 'elevator-14f-card.webp', poster: IMG + 'elevator-14f-card.webp',
+      desc: { en: 'A finished feature shot entirely in one Kowloon housing block — sent straight to release, no campaign.', zh: '整部戲都在同一棟九龍舊樓拍完的長片；作品已完成，直接發佈、不走共創。' },
+      meta: { en: 'In review · goes live Sep 05', zh: '審核中 · 9/05 上映' },
+      bar: null, todo: { en: 'Waiting on platform review', zh: '等待平台審核' }
+    },
     {
       id: 'moonlight-mv', created: '2026/04/02', name: '深水埗的月光 主題曲 MV', nameEn: "Moonlight Over Sham Shui Po — Theme (MV)",
       cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
@@ -373,6 +387,16 @@
       meta: { en: 'US$42,800 lifetime · 3.6M streams', zh: '累計 US$42,800 · 360 萬次串流' },
       bar: null, todo: null
     },
+    /* ✝ 2026-08-10 新增：nick persona 的「直接發佈 × 影片 × 準備中」樣本，
+       理由同 default persona 的 elevator-14f 檔頭說明。 */
+    {
+      id: 'nick-onstage-film', created: '2026/07/30', name: 'ON STAGE 演唱會電影', nameEn: "ON STAGE — The Concert Film",
+      cat: 'movie', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
+      cover: IMG + 'nick-i.jpg', poster: IMG + 'nick-i.jpg',
+      desc: { en: 'The concert film is finished and goes straight to release — no campaign, no waiting on backers.', zh: '演唱會電影已完成，直接發佈上架；不走共創、不必等支持者。' },
+      meta: { en: 'In review · goes live Sep 12', zh: '審核中 · 9/12 上映' },
+      bar: null, todo: { en: 'Waiting on platform review', zh: '等待平台審核' }
+    },
     {
       id: 'nick-flames', created: '2025/09/05', name: 'FLAMES', nameEn: "FLAMES",
       cat: 'mv', family: 'film', icon: 'film', type: 'go-live', status: 'scheduled',
@@ -477,8 +501,25 @@
 
   function dataset(personaId) { return DATASETS[personaId] || DATASETS.default; }
 
+  /* ── 顯示標題 → 項目 ────────────────────────────────────────
+     報表類頁面（粉絲分析的著作排行、收入管理的內容收益）拿到的是一個
+     顯示用標題，要判斷「這件東西在平台上有沒有對應的項目」。用標題比對，
+     不用一張手寫的對照表：對照表在切 persona 之後就會對不上（兩個 persona
+     的作品完全不同），而標題本來就是同一份 i18n 字典餵出來的，比的是同一個字串。
+     比不到＝這件東西沒有在平台建立項目（發行商報表匯入的曲目、專輯裡的單曲、
+     前台貼文）。呼叫端據此顯示「未列為項目」並停用詳情連結，不要給一個點了會 404 的路徑。
+     2026-08-10 從 audience-store 搬來這裡：判定依據是項目清單，本來就該住在項目 store，
+     兩頁共用同一份實作才不會有一頁認得、另一頁不認得的情況。 */
+  function projectFor(title) {
+    if (!title) return null;
+    const t = String(title).trim();
+    return active().projects.find(p =>
+      (p.name && p.name.trim() === t) || (p.nameEn && p.nameEn.trim() === t)) || null;
+  }
+
   window.ztorProjects = {
     list: () => active().projects.slice(),
+    projectFor: projectFor,
     get: id => active().projects.find(p => p.id === id) || null,
     first: () => active().projects[0],
     owner: () => active().owner,

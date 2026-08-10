@@ -17,39 +17,89 @@
 <link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/chart.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/perf-rank.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/alert.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
-  /* 本頁專屬的 layout hook（非可重用樣式留頁內，照 CLAUDE.md 鐵律 1）。
-     兩兩並排；窄一點就掉成單欄。440px 是 perf-rank 五欄不擠的下限，
-     沿用 fan-analytics.html 的 .aud-grid 已驗證過的斷點。 */
+  /* 本頁專屬的 layout hook（非可重用樣式留頁內，照 CLAUDE.md 鐵律 1）。 */
+  /* 3:2（使用者指定）：左欄放的是著作／地區——名稱長、列數多；
+     右欄是平台／性別——名稱短或本身是圖，天生就吃得下比較窄的欄。
+     窄螢幕跌破 900px 就不維持比例，兩張都退回整寬單欄——3:2 分下去的欄寬
+     會窄到連 perf-rank 的長條都畫不出意義。 */
   .ar-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    grid-template-columns: 3fr 2fr;
     gap: var(--sp-16);
     margin-top: var(--sp-16);
   }
-  /* 受眾屬性四區：星座 12 列、MBTI 16 列，兩張並排會很高，
-     所以給它們比上面窄一點的下限，四張能排成 2×2。
-     align-items:start 是必要的——性別只有 3 列、星座有 12 列，grid 預設把同列的卡
-     拉成一樣高，性別那張就會多出一大塊空白。讓每張卡各自貼齊內容高度即可。 */
-  .ar-grid--attrs { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
-  /* 區段標題列：標題靠左、軸切換靠右，與 card__head 同一種骨架但用在 section 層級。 */
-  .ar-sechead {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--sp-16);
-    flex-wrap: wrap;
-    margin-top: var(--sp-32);
+  @media (max-width: 900px) {
+    .ar-grid { grid-template-columns: minmax(0, 1fr); }
   }
+  /* 「查看更多」貼底：卡片本身轉 flex column，內容區 flex:1 吃掉 grid 已經
+     拉好的高度，按鈕自然落在 section 真正的底部（見 blockHTML 內的說明）。 */
+  .ar-card--anchor { display: flex; flex-direction: column; }
+  .ar-card--anchor .ar-card__content { flex: 1 1 auto; }
+  /* 受眾屬性四區：星座 12 列、MBTI 16 列，兩張並排會很高，所以給它們
+     比上面窄一點的下限，四張能排成 2×2。
+     align-items:start 是必要的——性別只有 3 列、星座有 12 列，grid 預設把同列
+     的卡拉成一樣高，性別那張就會多出一大塊空白。 */
+  /* 星座／MBTI／生肖三欄並排（使用者指定的佈局）。三張都是長清單，
+     並排才比得出同一個位置上三種分類各自的頭部是誰。 */
+  .ar-grid--trio {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* 刻意不設 align-items:start：三張要等高、以最高的 MBTI（16 列）為準
+       （使用者指定）。星座與生肖各 12 列，底部會留白，那是為了讓三張的卡框
+       對齊——並排比對時框線不齊，會讓人以為在比不同的東西。 */
+  }
+  /* 區段標題列：標題與說明靠左，用在 section 層級（卡片層級用 .card__head）。 */
+  .ar-sechead { margin-top: var(--sp-32); }
   .ar-sechead__title { font-size: var(--fs-18); font-weight: var(--fw-medium); margin: 0; }
   .ar-sechead__sub { color: var(--muted-foreground); font-size: var(--fs-13); margin: var(--sp-4) 0 0; }
+  /* 卡頭的類型切換器：接管參考站原本放「依版稅／依串流」的那個位置。
+     .segmented--xs 不存在於元件庫，這裡只調字級與高度、不改元件骨架。 */
+  /* .filter-tabs 本身是 flex 且吃滿寬，靠右只要改 justify-content。
+     （沒有「自訂區間」——那要一組日期選擇器，本頁的期間是固定的三個尺度。） */
+  .ar-period { justify-content: flex-end; }
+  .ar-scope { flex: none; }
+  .ar-scope .segmented__btn { font-size: var(--fs-12); height: var(--control-h-xs); padding: 0 var(--sp-10); }
+  /* 彈窗：清單很長，body 自己捲；捲到底才續載下一批（見 JS 的 IntersectionObserver）。 */
+  /* 定高而不是 max-height（2026-08-09 使用者指示）：切分頁時各類型件數差很多
+     （全部 23 件、影視只有 3 件），用 max-height 的話彈窗會跟著縮，整個對話框
+     在切分頁時上下抽動。固定成「全部」那一頁的高度，切換只換內容不換框。 */
+  .ar-more__body { height: min(70vh, 620px); overflow-y: auto; }
+  .ar-more__sentinel { height: 1px; }
+  .ar-more__end { text-align: center; color: var(--muted-foreground); font-size: var(--fs-12); padding: var(--sp-16) 0; }
+  /* 內容詳情：封面在左、資訊在右。封面用斜線占位——原型沒有每一件著作的
+     實體圖，畫一個假的縮圖比留白更容易被誤會成「圖load不出來」。 */
+  .ar-work { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--sp-20); align-items: start; }
+  .ar-work__media {
+    aspect-ratio: 2 / 3;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background-size: cover;
+    background-position: center;
+    display: grid;
+    place-content: center;
+    color: var(--muted-foreground);
+    font-size: var(--fs-12);
+  }
+  /* 可點的排行列：游標與焦點框。hover 高亮 perf-rank 本來就有，
+     這裡只補「這一列真的可以按」的兩個訊號。 */
+  .perf-rank--clickable .perf-rank__row { cursor: pointer; }
+  .perf-rank--clickable .perf-rank__row:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+  .ar-work__stats { display: flex; gap: var(--sp-24); flex-wrap: wrap; }
+  .ar-work__stat { display: flex; flex-direction: column; gap: var(--sp-4); }
+  .ar-work__stat-label { color: var(--muted-foreground); font-size: var(--fs-12); }
+  .ar-work__stat-value { font-family: var(--font-numeric); font-size: var(--fs-18); font-variant-numeric: tabular-nums; }
+  @media (max-width: 560px) { .ar-work { grid-template-columns: minmax(0, 1fr); } }
 </style>
 </head>
 <body data-sheet-nav>
@@ -57,6 +107,24 @@
   <header class="app-topbar" id="sidebar"></header>
 
   <main class="main">
+
+    <!-- 資料時點（2026-08-09 使用者指示放最上面、並改用活動頁那款通知條）：
+         它是判讀底下每一個數字的前提，要在讀者看到第一個數字之前就先講。
+         用 .alert-inset ＋ .alert--bar.alert--inset-card，跟活動頁的情境提醒、
+         E-Shop 的低庫存條同一款；須為 .main 的第一個子元素（元件檔明載）。
+         **不給關閉鈕**：活動頁那條是「這次要處理的事件」，關掉合理；這條是
+         恆常事實，關掉之後底下每個數字就沒有時點可依據了。
+         影視與音樂走發行商報表有延遲、貼文是站內統計每日更新，兩者不同是事實，
+         所以兩個日期都寫出來、不併成一句。 -->
+    <div class="alert-inset">
+      <div class="alert alert--bar alert--inset-card" role="status">
+        <div class="alert__body">
+          <span class="alert__title" data-i18n="ar.asof.title" data-ar-asof-title>Data through …</span>
+          <span class="alert__meta" data-i18n="ar.asof.meta">Distributor reports lag; post figures update daily.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="page">
 
       <div class="page-crumb">
@@ -72,35 +140,80 @@
           </div>
         </div>
         <div class="page-intro__actions">
-          <button class="btn btn--outline btn--sm" type="button" data-ar-export>
+          <button class="btn btn--outline" type="button" data-ar-export>
             <i data-lucide="download" class="ztor-icon ztor-icon--sm"></i>
             <span data-i18n="ar.export">Export report</span>
           </button>
         </div>
       </div>
 
-      <!-- 資料時點與來源說明。影視／音樂走發行商報表有延遲、貼文是站內統計每日更新，
-           兩者時點不同是事實，所以這一條隨分頁換內容、不寫成一句通用的話。 -->
-      <div class="info-banner mt-16" data-ar-asof>
-        <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-        <span data-ar-asof-text></span>
-      </div>
-
-      <nav class="tabs mt-16" role="tablist" aria-label="Content type" data-ar-tabs>
-        <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-tab="film"><span data-i18n="ar.tab.film">Film &amp; TV</span></button>
-        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-ar-tab="music"><span data-i18n="ar.tab.music">Music</span></button>
-        <button class="tabs__item" type="button" role="tab" aria-selected="false" data-ar-tab="post"><span data-i18n="ar.tab.post">Posts</span></button>
+      <!-- 期間。整頁共用一個，因為換期間是換「看哪一段時間」，
+           不是換「看哪一種內容」——後者才是各區塊自己的事。
+           靠右（2026-08-09 使用者指示）：各區塊的類型切換器都在卡片右上角，
+           這顆是它們的頁面層級版本，靠同一邊才讀得出是同一種控制項。 -->
+      <nav class="filter-tabs mt-16 ar-period" role="tablist" aria-label="Period" data-ar-period>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
+        <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
+        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
       </nav>
 
-      <!-- 期間切換。影視與音樂的期間是發行商報表的結算區間，貼文是站內統計的
-           回看區間——同一組控制項、兩種來源，所以說明文字掛在上面那條 banner 上。 -->
-      <div class="segmented mt-16" role="tablist" aria-label="Period" data-ar-period>
-        <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
-        <button class="segmented__btn segmented__btn--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
-        <button class="segmented__btn" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
+      <div data-ar-kpi></div>
+      <div data-ar-body></div>
+
+      <!-- 內容詳情彈窗：點排行的任一列開啟。
+           「查看詳情」連到項目詳情；這件東西在平台上沒有對應項目時（專輯裡的
+           單曲、貼文）按鈕停用並說明原因——給一個點了會 404 的連結比不給更糟。 -->
+      <div class="payout-modal" data-ar-work-modal hidden>
+        <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ar-work-title">
+          <div class="payout-dialog__head">
+            <div>
+              <span class="badge badge--neutral" data-ar-work-kind></span>
+              <h2 class="payout-dialog__title mt-8" id="ar-work-title" data-ar-work-title></h2>
+            </div>
+            <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="ar.more.close" data-ar-work-close>
+              <i data-lucide="x" class="ztor-icon"></i>
+            </button>
+          </div>
+          <div class="payout-dialog__body">
+            <div class="ar-work">
+              <div class="ar-work__media" data-ar-work-media aria-hidden="true"></div>
+              <div>
+                <p class="text-sub" style="font-size:var(--fs-13);margin:0" data-ar-work-desc></p>
+                <div class="ar-work__stats mt-16" data-ar-work-stats></div>
+              </div>
+            </div>
+          </div>
+          <div class="payout-dialog__foot">
+            <span class="text-sub" style="font-size:var(--fs-12)" data-ar-work-note></span>
+            <a class="btn btn--primary btn--sm" data-ar-work-cta href="#"></a>
+          </div>
+        </section>
       </div>
 
-      <div data-ar-panel></div>
+      <!-- 「查看更多」彈窗：主頁面的排行只給前 10，完整清單在這裡。
+           分頁切全部／影視／音樂／貼文，貼文那一頁另含類型表現與報告明細
+           （那兩塊只有貼文有，放不進共用的排行版型）。 -->
+      <div class="payout-modal" data-ar-more hidden>
+        <section class="payout-dialog payout-dialog--xwide" role="dialog" aria-modal="true" aria-labelledby="ar-more-title">
+          <div class="payout-dialog__head">
+            <div>
+              <h2 class="payout-dialog__title" id="ar-more-title" data-ar-more-title>All work by views</h2>
+              <p class="text-sub" style="margin:var(--sp-6) 0 0;font-size:var(--fs-13)" data-ar-more-sub></p>
+            </div>
+            <div style="display:flex;gap:var(--sp-8);align-items:center">
+              <button class="btn btn--outline btn--sm" type="button" data-ar-more-dl>
+                <i data-lucide="download" class="ztor-icon ztor-icon--sm"></i>
+                <span data-i18n="ar.more.download">Download</span>
+              </button>
+              <button class="btn btn--icon" type="button" aria-label="Close" data-i18n-aria-label="ar.more.close" data-ar-more-close>
+                <i data-lucide="x" class="ztor-icon"></i>
+              </button>
+            </div>
+          </div>
+          <nav class="tabs" role="tablist" style="padding:0 var(--sp-24)" data-ar-more-tabs></nav>
+          <div class="payout-dialog__body ar-more__body" data-ar-more-body></div>
+        </section>
+      </div>
 
     </div>
   </main>
@@ -110,31 +223,41 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
+<script src="js/projects-store.js?v=r2.2"></script>
 <script src="js/performance-store.js?v=r2.2"></script>
 <script src="js/audience-store.js?v=r2.2"></script>
 <script src="js/toast.js?v=r2.2"></script>
 <script>
 /* ============================================================
-   粉絲分析（Fan Analytics）· spec 5.1.7.9 · D181
+   粉絲分析（Fan Analytics）· spec 5.1.7.9 · D181／D182
 
-   整頁由 JS 依 audience-store 繪製，HTML 只留殼。理由是三個分頁的區塊
-   有七成同構（Top 10、地區、受眾屬性四區），寫三份 markup 會立刻分岔——
-   fan-analytics 的作品榜與 project-detail 的版稅榜就是這樣長成兩套的。
+   單頁，每個區塊右上角各自切「全部／影視／音樂／貼文」，預設全部。
+   （2026-08-09 使用者裁決 D182，原本是三個分頁。）
 
-   兩條軸的規矩（D181，全頁一致）：
-     次數（counts）可切人數；受眾屬性四區只有人數，且一定帶涵蓋率。
-   任何一個數字旁邊都要有單位，因為「38,600」是次還是人，看不出來。
+   為什麼逐區切換而不是分頁：創作者要比的是「同一個維度在三個類型之間
+   怎麼不同」——我的音樂聽眾跟影視觀眾是不是同一群人。分頁會逼他來回跳，
+   而且跳過去之後看不到剛剛那一頁長什麼樣，等於用記憶力做比對。
+   參考站每張卡右上角本來就有一個「依版稅／依串流」切換器，版稅拿掉之後
+   那個槽空出來，類型切換是接管既有的位置。
+
+   兩種分母不可混用（見 audience-store 檔頭）：
+     著作／地區／平台 → 全部的次數
+     性別／星座／MBTI／生肖 → 認得出身分的人所產生的次數，且必須揭露涵蓋率
    ============================================================ */
 (function () {
   'use strict';
 
   var A = window.ztorAudience;
-  var panel = document.querySelector('[data-ar-panel]');
-  if (!A || !panel) return;
-
-  var state = { scope: 'film', period: 'q', axis: 'count' };
+  var kpiHost = document.querySelector('[data-ar-kpi]');
+  var body = document.querySelector('[data-ar-body]');
+  if (!A || !kpiHost || !body) return;
 
   var T = A.T, num = A.num, pct = A.pct;
+  var period = 'q';
+
+  /* 每個區塊記住自己的類型選擇，切期間時不會被重設回全部。 */
+  var scopeOf = {};
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -142,19 +265,46 @@
   }
   function hue(i) { return 'var(--chart-' + (i % 7 + 1) + ')'; }
 
-  /* ── 排行列（perf-rank）───────────────────────────────────
-     rows: [{ label, n, w }]，w 是佔比％。unit 是「次」或「人」的 i18n key，
-     每一列都帶單位——這是 D181 的硬規定，不是裝飾。 */
+  /* 區塊定義。scopes 各自列出——平台那一維沒有貼文（貼文只發在 ztor 站上、
+     沒有平台之分），所以它的切換器少一個選項，而不是給一個點下去空白的。 */
+  var BLOCKS = [
+    /* more:true 的三張在卡片上只給前 10，完整清單走「查看更多」彈窗。
+       固定 10 列也讓卡片高度不隨類型跳動——切換是拿來比對的，
+       每切一次高度就變會讓下面的區塊上下彈。 */
+    { id: 'works',     dim: 'works',     title: 'ar.top', moreTitle: 'ar.top.full', wide: true, pct: false, more: true, scopes: ['all', 'film', 'music', 'post'] },
+    { id: 'region',    dim: 'region',    title: 'ar.regions',   more: true, scopes: ['all', 'film', 'music', 'post'] },
+    { id: 'platform',  dim: 'platform',  title: 'ar.platforms', more: true, scopes: ['all', 'film', 'music'] },
+    /* 性別只有三段，長條排行讀不出「這一整塊怎麼被分掉」，改用中空圓餅
+       （使用者指定）。星座 12 段、MBTI 16 段用圓餅會切成看不清的細片，維持排行。 */
+    { id: 'gender',    dim: 'gender',    title: 'ar.attr.gender',    attr: true, pie: true, scopes: ['all', 'film', 'music', 'post'] },
+    { id: 'zodiac',    dim: 'zodiac',    title: 'ar.attr.zodiac',    attr: true, scopes: ['all', 'film', 'music', 'post'] },
+    { id: 'mbti',      dim: 'mbti',      title: 'ar.attr.mbti',      attr: true, scopes: ['all', 'film', 'music', 'post'] },
+    { id: 'shengxiao', dim: 'shengxiao', title: 'ar.attr.shengxiao', attr: true, scopes: ['all', 'film', 'music', 'post'] }
+  ];
+  BLOCKS.forEach(function (b) { scopeOf[b.id] = 'all'; });
+
+  var SCOPE_LABEL = { all: 'ar.scope.all', film: 'ar.tab.film', music: 'ar.tab.music', post: 'ar.tab.post' };
+  /* 單位隨類型換：影視是觀看、音樂是串流、貼文是瀏覽。全部沒有共同的動詞，
+     就寫「次」——三種次相加只看得出規模，這件事由頁首 KPI 講清楚。 */
+  var UNIT = { all: 'ar.unit.times', film: 'ar.unit.views', music: 'ar.unit.streams', post: 'ar.unit.views' };
+
+  /* ── 排行列（perf-rank）─────────────────────────────────── */
   function rankHTML(rows, opts) {
     opts = opts || {};
     var max = rows.reduce(function (a, r) { return Math.max(a, r.n); }, 0) || 1;
     var showPct = opts.pct !== false;
-    return '<ol class="perf-rank' + (showPct ? '' : ' perf-rank--nopct') + (opts.wide ? ' perf-rank--wide' : '') + '">'
+    return '<ol class="perf-rank' + (showPct ? '' : ' perf-rank--nopct') + (opts.wide ? ' perf-rank--wide' : '')
+      + (opts.clickable ? ' perf-rank--clickable' : '') + '">'
       + rows.map(function (r, i) {
+        var label = r.name || T(r.i18n);
+        /* 只有著作那一維可點——地區、平台、星座點進去沒有「詳情」可看。
+           整列當按鈕（不是只有標題），因為列本身已經有 hover 高亮，
+           把可點範圍縮成一小段文字反而讓那個高亮變成誤導。 */
         return '<li class="perf-rank__row' + (r.rest ? ' perf-rank__row--rest' : '') + '"'
-          + ' style="--w:' + Math.max(3, Math.round(r.n / max * 100)) + '%; --hue:' + (opts.hue || hue(i)) + '">'
+          + ' style="--w:' + Math.max(3, Math.round(r.n / max * 100)) + '%; --hue:' + hue(i) + '"'
+          + (opts.clickable ? ' tabindex="0" role="button" data-ar-work="' + esc(label) + '"' : '') + '>'
           + '<span class="perf-rank__idx">' + (r.rest ? '—' : (i + 1)) + '</span>'
-          + '<span class="perf-rank__name">' + esc(r.label) + '</span>'
+          + '<span class="perf-rank__name">' + esc(label) + '</span>'
           + '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>'
           + (showPct ? '<span class="perf-rank__pct">' + pct(r.w) + '</span>' : '')
           + '<span class="perf-rank__val">' + num(r.n) + ' ' + esc(T(opts.unit)) + '</span>'
@@ -162,136 +312,136 @@
       }).join('') + '</ol>';
   }
 
-  function card(title, body, opts) {
-    opts = opts || {};
-    return '<section class="card">'
-      + '<div class="card__head"><div class="card__title-group">'
-      + '<h3 class="card__title">' + esc(T(title)) + '</h3>'
+  /* 卡頭的類型切換器。放在 .card__head 右側，就是參考站原本擺
+     「依版稅／依串流」的位置。 */
+  function scopeSwitchHTML(block) {
+    var cur = scopeOf[block.id];
+    return '<nav class="filter-tabs ar-scope" role="tablist" data-ar-scope="' + block.id + '">'
+      + block.scopes.map(function (s) {
+        var on = s === cur;
+        return '<button class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" type="button"'
+          + ' role="tab" aria-selected="' + (on ? 'true' : 'false') + '" data-ar-s="' + s + '">'
+          + esc(T(SCOPE_LABEL[s])) + '</button>';
+      }).join('') + '</nav>';
+  }
+
+  /* 中空圓餅＋圖例（.pie--hollow）。段界寫累計百分比、每段起點一律 0，
+     讓瀏覽器接續上一段終點；圓餅本身不帶文字，數字全在旁邊的圖例上，
+     所以要給它 aria-hidden，不要讓讀屏念一個沒有內容的圓。 */
+  function pieHTML(rows, unitKey) {
+    var acc = 0;
+    var stops = rows.map(function (r, i) {
+      acc += r.w;
+      return 'var(--chart-' + (i % 7 + 1) + ') 0 ' + (i === rows.length - 1 ? '100' : acc.toFixed(2)) + '%';
+    }).join(', ');
+    return '<div class="pie-figure pie-figure--stack">'
+      + '<div class="pie pie--hollow" aria-hidden="true" style="--pie-size:240px; --donut-thickness:34px; --pie-stops:' + stops + '"></div>'
+      + '<div class="pie-figure__legend"><div class="source-list">'
+      + rows.map(function (r, i) {
+        return '<div class="source-row">'
+          + '<span class="source-row__swatch" style="background:var(--chart-' + (i % 7 + 1) + ')"></span>'
+          + '<span>' + esc(r.name || T(r.i18n)) + '</span>'
+          + '<span class="source-row__amt">' + num(r.n) + ' ' + esc(T(unitKey)) + '</span>'
+          + '<span class="source-row__pct">' + pct(r.w) + '</span>'
+          + '</div>';
+      }).join('')
+      + '</div></div></div>';
+  }
+
+  var CARD_LIMIT = 10;
+
+  function blockHTML(block) {
+    var scope = scopeOf[block.id];
+    var s = A.series(scope, period, block.dim, block.more ? { limit: CARD_LIMIT } : {});
+    var title = T(block.title);
+
+    var inner;
+    if (!s.has || !s.rows.length) {
+      inner = '<div class="empty-card"><p class="empty-card__title">' + esc(T('ar.empty.title'))
+        + '</p><p class="empty-card__text">' + esc(T('ar.empty.text')) + '</p></div>';
+    } else if (block.pie) {
+      inner = pieHTML(s.rows, UNIT[scope]);
+    } else {
+      if (block.dim === 'works') lastRows = s.rows;
+      inner = rankHTML(s.rows, { unit: UNIT[scope], pct: block.pct, wide: block.wide, clickable: block.dim === 'works' });
+    }
+
+    /* 「查看更多」的卡（著作／平台／地區）要貼在 section 底部（使用者指示），
+       不是貼在內容下面。CSS grid 預設會把同一列的卡拉成等高（align-items:normal
+       在 grid 內即 stretch）——切到影視時著作卡只剩 3 列，section 本身仍被拉成
+       跟隔壁「平台表現」一樣高，但按鈕當時是緊跟在 3 列內容後面，底下留一大片
+       空白，看起來像按鈕漂在中間而不是貼底。
+       解法：卡片本身轉 flex column，內容區用 flex:1 把剩下的高度吃掉，按鈕自然
+       被推到 section 真正的底部——不需要量測列高或猜一個固定值，用的正是 grid
+       已經算好的那個高度。 */
+    return '<section class="card' + (block.more ? ' ar-card--anchor' : '') + '" data-ar-block="' + block.id + '">'
+      + '<div class="card__head">'
+      +   '<div class="card__title-group"><h3 class="card__title">' + esc(title) + '</h3></div>'
+      +   scopeSwitchHTML(block)
       + '</div>'
-      + (opts.aside ? '<span class="text-sub" style="font-size:var(--fs-12)">' + esc(T(opts.aside)) + '</span>' : '')
-      + '</div>'
-      + (opts.note ? '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0">' + opts.note + '</p>' : '')
-      + '<div class="mt-16">' + body + '</div>'
+      + '<div class="mt-16' + (block.more ? ' ar-card__content' : '') + '">' + inner + '</div>'
+      /* 「查看更多」靠右下：它是這張卡的延伸，不是頁面層級的動作，
+         所以留在卡內、不上升到卡頭。 */
+      /* 無外框（ghost）＋右箭頭：同一張卡裡已經有一組 segmented，
+         再放一顆有外框的按鈕會變成兩個等重的控制項在搶。 */
+      + (block.more && s.has
+          ? '<div style="display:flex;justify-content:flex-end;margin-top:var(--sp-12)">'
+            + '<button class="btn btn--ghost btn--sm" type="button" data-ar-open-more="' + block.id + '">'
+            + esc(T('ar.more.open'))
+            + '<i data-lucide="chevron-right" class="ztor-icon ztor-icon--sm"></i></button></div>'
+          : '')
       + '</section>';
   }
 
-  function kpi(label, value, meta, span) {
-    return '<div class="kpi bento--span-' + (span || 4) + '">'
+  function kpi(label, value, unit, meta, span) {
+    return '<div class="kpi bento--span-' + (span || 3) + '">'
       + '<div class="kpi__label">' + esc(T(label)) + '</div>'
-      + '<div class="kpi__value">' + value + '</div>'
-      + '<div class="kpi__meta">' + meta + '</div>'
+      + '<div class="kpi__value">' + num(value)
+      +   ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T(unit)) + '</span></div>'
+      + '<div class="kpi__meta">' + esc(meta) + '</div>'
       + '</div>';
   }
 
-  /* ── 受眾屬性四區 ─────────────────────────────────────────
-     四張卡共用同一個分母（認得出身分的人數），所以涵蓋率只寫一次，
-     寫在區段標題底下、不是每張卡各寫一遍。 */
-  function attrsHTML(scope, period) {
-    var cov = A.coverage(scope, period);
-    var attrs = A.attrs[scope];
-    var blocks = [
-      { key: 'gender',    title: 'ar.attr.gender' },
-      { key: 'zodiac',    title: 'ar.attr.zodiac' },
-      { key: 'mbti',      title: 'ar.attr.mbti' },
-      { key: 'shengxiao', title: 'ar.attr.shengxiao' }
-    ];
-    var note = T('ar.attr.coverage')
-      .replace('{identified}', num(cov.identified))
-      .replace('{reach}', num(cov.reach))
-      .replace('{ratio}', pct(cov.ratio));
-
-    return '<div class="ar-sechead">'
-      + '<div>'
-      + '<h2 class="ar-sechead__title">' + esc(T('ar.attr.h')) + '</h2>'
-      + '<p class="ar-sechead__sub">' + esc(note) + '</p>'
-      + '</div></div>'
-      + '<div class="ar-grid ar-grid--attrs">'
-      + blocks.map(function (b) {
-        var rows = A.distribute(attrs[b.key], cov.identified).map(function (r) {
-          return { label: T(r.i18n), n: r.n, w: r.w };
-        });
-        return card(b.title, rankHTML(rows, { unit: 'ar.unit.people' }));
-      }).join('')
-      + '</div>';
-  }
-
-  /* ── 影視／音樂分頁 ───────────────────────────────────────
-     次數那一半全部轉引 performance-store（見 audience-store 檔頭）。
-     取不到就出空狀態，不拿假數字頂上。 */
-  function worksPanel(scope, period) {
-    var fam = A.perf(scope);
-    if (!fam) {
-      return '<div class="empty-card mt-16"><p class="empty-card__title">'
-        + esc(T('ar.empty.title')) + '</p><p class="empty-card__text">'
-        + esc(T('ar.empty.text')) + '</p></div>';
-    }
-    var cov = A.coverage(scope, period);
-    var countUnit = scope === 'music' ? 'ar.unit.streams' : 'ar.unit.views';
-    var total = fam.total[period];
-
-    var tw = A.topWorks(scope, period);
-    var top = tw.rows.map(function (r) { return { label: T(r.i18n), n: r.n, w: r.w }; });
-    /* 「顯示 N／共 M」：這位創作者的影視作品可能不到十部（周湯豪只有三部），
-       硬把卡片標成「Top 10」會讓三列看起來像壞掉。標題不寫死數字，改用這一句
-       說清楚母體有多大。 */
-    var topNote = T('ar.top.count')
-      .replace('{shown}', top.length).replace('{total}', tw.total);
-
-    var regions = A.ranked(fam.territories, period).map(function (r) {
-      return { label: T(r.i18n || r.name), n: r.n, w: r.w, rest: r.rest };
-    });
-    var platforms = A.ranked(fam.platforms, period).map(function (r) {
-      return { label: r.i18n ? T(r.i18n) : r.name, n: r.n, w: r.w, rest: r.rest };
-    });
-
+  /* 頁首 KPI：總數旁邊就放它的組成。
+     三種「次」不是同一種次（一次觀看＝一部電影，一次串流＝一首歌），所以總和
+     只看得出規模、不是表現指標。把影視與音樂分開擺，讀者立刻看得出 61% 的
+     音樂佔比是「歌比較短」而不是「音樂表現最好」；貼文只有 3,038、跟音樂差三個
+     數量級，也是放進來才看得見——不放的話它會在總數裡靜靜消失。 */
+  function kpiHTML() {
+    var f = A.counts('film', period), m = A.counts('music', period), p = A.counts('post', period);
+    var total = f + m + p;
+    var share = function (v) { return pct(total ? v / total * 100 : 0); };
     return '<div class="bento mt-16">'
-      + kpi(scope === 'music' ? 'ar.kpi.streams' : 'ar.kpi.views',
-            num(total) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T(countUnit)) + '</span>',
-            esc(T('ar.kpi.counts-meta')))
-      + kpi('ar.kpi.reach',
-            num(cov.reach) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.people')) + '</span>',
-            esc(T('ar.kpi.reach-meta')))
-      + kpi('ar.kpi.identified',
-            num(cov.identified) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.people')) + '</span>',
-            esc(T('ar.kpi.identified-meta').replace('{ratio}', pct(cov.ratio))))
-      + '</div>'
-
-      + '<div class="mt-16">'
-      + card(scope === 'music' ? 'ar.top.music' : 'ar.top.film',
-             /* 寬版：作品名是一整句時（英文片名尤其長）148px 只看得到前幾個字；
-                地區與平台名短，維持窄版讓長條起點更靠左。 */
-             rankHTML(top, { unit: countUnit, pct: false, wide: true }),
-             { note: esc(topNote) })
-      + '</div>'
-
-      + '<div class="ar-grid">'
-      + card('ar.regions', rankHTML(regions, { unit: countUnit }))
-      + card('ar.platforms', rankHTML(platforms, { unit: countUnit }))
-      + '</div>'
-
-      + attrsHTML(scope, period);
+      + kpi('ar.kpi.total', total, 'ar.unit.times', T('ar.kpi.total-meta'))
+      + kpi('ar.kpi.film',  f, 'ar.unit.views',   T('ar.kpi.share').replace('{p}', share(f)))
+      + kpi('ar.kpi.music', m, 'ar.unit.streams', T('ar.kpi.share').replace('{p}', share(m)))
+      + kpi('ar.kpi.post',  p, 'ar.unit.views',   T('ar.kpi.share').replace('{p}', share(p)))
+      + '</div>';
   }
 
-  /* ── 貼文分頁 ─────────────────────────────────────────────
-     金額一律不出現（D181：帶貨收益落在收入管理）。這一頁只有次數與人數，
-     想看錢的人由「貼文帶貨收益」那條連結帶到收入管理，不在這裡放第二份數字。 */
-  function postsPanel(period) {
-    var P = A.posts;
-    var cov = A.coverage('post', period);
-    /* KPI、Top 10、地區、型別表全部吃同一份期間切片，所以任何一個數字都能在
-       最下面那張明細表逐列加回來（見 audience-store 的 postRows）。 */
+  /* ══════════════ 「查看更多」彈窗 ══════════════
+     主頁面的排行只給前 10，完整清單在這裡。分頁切全部／影視／音樂／貼文；
+     貼文那一頁另含類型表現與報告明細——那兩塊只有貼文有，放不進共用的排行版型，
+     掛在主頁面則會變成一段跟其他卡片都對不齊的尾巴。
+     清單一次只鋪 20 列，捲到底再續，直到鋪完。 */
+  var PAGE = 20;
+  var more = {
+    open: false,
+    blockId: 'works',   /* 哪一張卡開的——決定看哪一個維度、分頁有哪幾個 */
+    scope: 'all',
+    shown: PAGE
+  };
+  function moreBlock() {
+    return BLOCKS.filter(function (b) { return b.id === more.blockId; })[0] || BLOCKS[0];
+  }
+  var modal = document.querySelector('[data-ar-more]');
+  var moreTabs = document.querySelector('[data-ar-more-tabs]');
+  var moreBody = document.querySelector('[data-ar-more-body]');
+  var moreSub = document.querySelector('[data-ar-more-sub]');
+
+  function postTablesHTML() {
     var rows = A.postRows(period);
-    var k = A.postKpi(period);
-    var views = k.views, rentals = k.rentals, count = k.count;
-
-    var top = rows.slice().sort(function (a, b) { return b.views - a.views; }).slice(0, 10)
-      .map(function (r) { return { label: r.title, n: r.views, w: 0 }; });
-
-    var regionSum = P.regions.reduce(function (a, r) { return a + r.w; }, 0);
-    var regions = P.regions.map(function (r) {
-      return { label: T(r.i18n), n: Math.round(r.w / regionSum * views), w: r.w };
-    }).sort(function (a, b) { return b.n - a.n; });
-
+    if (!rows.length) return '';
     var typeRows = A.postByType(period).map(function (t) {
       return '<tr class="ztor-table__row">'
         + '<td>' + esc(T(t.i18n)) + '</td>'
@@ -302,7 +452,6 @@
         + '<td style="text-align:right">' + num(t.views) + '</td>'
         + '</tr>';
     }).join('');
-
     var detailRows = rows.map(function (r) {
       var rate = r.views ? (r.eng / r.views * 100) : 0;
       return '<tr class="ztor-table__row">'
@@ -317,101 +466,303 @@
         + '<td style="text-align:right">' + num(r.rentals) + '</td>'
         + '</tr>';
     }).join('');
+    var th = function (k, right) {
+      return '<th' + (right ? ' style="text-align:right"' : '') + '>' + esc(T(k)) + '</th>';
+    };
+    return '<h4 class="card__title mt-24">' + esc(T('ar.ptype.h')) + '</h4>'
+      + '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0">' + esc(T('ar.ptype.note')) + '</p>'
+      + '<div class="mt-16 ztor-table-scroll"><table class="ztor-table"><thead><tr>'
+      +   th('ar.ptype.type') + th('ar.ptype.count', 1) + th('ar.ptype.withrental', 1)
+      +   th('ar.ptype.mentions', 1) + th('ar.ptype.kind') + th('ar.ptype.views', 1)
+      + '</tr></thead><tbody>' + typeRows + '</tbody></table></div>'
 
-    return '<div class="bento mt-16">'
-      + kpi('ar.kpi.pviews',
-            num(views) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.views')) + '</span>',
-            esc(T('ar.kpi.pviews-meta')))
-      + kpi('ar.kpi.rentals',
-            num(rentals) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.times')) + '</span>',
-            esc(T('ar.kpi.rentals-meta')))
-      + kpi('ar.kpi.pcount',
-            num(count) + ' <span style="font-size:var(--fs-16);color:var(--muted-foreground)">' + esc(T('ar.unit.posts')) + '</span>',
-            esc(T('ar.kpi.pcount-meta')))
-      + '</div>'
-
-      /* 帶貨收益不在本頁——給一條明確的去路，而不是讓人以為這裡漏做了。 */
-      + '<div class="info-banner mt-16">'
-      + '<i data-lucide="info" class="ztor-icon info-banner__icon"></i>'
-      + '<span>' + esc(T('ar.affiliate.note'))
-      + ' <a class="card__link" href="earnings-sony.html#affiliate">' + esc(T('ar.affiliate.link')) + '</a></span>'
-      + '</div>'
-
-      + '<div class="mt-16">'
-      + card('ar.top.post', rankHTML(top, { unit: 'ar.unit.views', pct: false, wide: true }))
-      + '</div>'
-
-      + '<div class="ar-grid">'
-      + card('ar.regions', rankHTML(regions, { unit: 'ar.unit.views' }))
-      + card('ar.ptype.h',
-             '<div class="ztor-table-scroll"><table class="ztor-table"><thead><tr>'
-             + '<th>' + esc(T('ar.ptype.type')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.ptype.count')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.ptype.withrental')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.ptype.mentions')) + '</th>'
-             + '<th>' + esc(T('ar.ptype.kind')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.ptype.views')) + '</th>'
-             + '</tr></thead><tbody>' + typeRows + '</tbody></table></div>',
-             { note: esc(T('ar.ptype.note')) })
-      + '</div>'
-
-      + attrsHTML('post', period)
-
-      + '<div class="mt-32">'
-      + card('ar.detail.h',
-             '<div class="ztor-table-scroll"><table class="ztor-table"><thead><tr>'
-             + '<th>' + esc(T('ar.detail.title')) + '</th>'
-             + '<th>' + esc(T('ar.detail.mention')) + '</th>'
-             + '<th>' + esc(T('ar.detail.date')) + '</th>'
-             + '<th>' + esc(T('ar.detail.type')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.detail.views')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.detail.dwell')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.detail.eng')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.detail.rate')) + '</th>'
-             + '<th style="text-align:right">' + esc(T('ar.detail.rentals')) + '</th>'
-             + '</tr></thead><tbody>' + detailRows + '</tbody></table></div>',
-             { note: esc(T('ar.detail.note')) })
-      + '</div>';
+      + '<h4 class="card__title mt-24">' + esc(T('ar.detail.h')) + '</h4>'
+      + '<p class="text-sub" style="font-size:var(--fs-12);margin:var(--sp-4) 0 0">' + esc(T('ar.detail.note')) + '</p>'
+      + '<div class="mt-16 ztor-table-scroll"><table class="ztor-table"><thead><tr>'
+      +   th('ar.detail.title') + th('ar.detail.mention') + th('ar.detail.date') + th('ar.detail.type')
+      +   th('ar.detail.views', 1) + th('ar.detail.dwell', 1) + th('ar.detail.eng', 1)
+      +   th('ar.detail.rate', 1) + th('ar.detail.rentals', 1)
+      + '</tr></thead><tbody>' + detailRows + '</tbody></table></div>';
   }
 
+  /* 完整清單（不截斷）。主頁面的卡片會切前 10，彈窗要全部。 */
+  function moreRows() {
+    return A.series(more.scope, period, moreBlock().dim, { all: true }).rows;
+  }
+
+  function moreTabsHTML() {
+    return moreBlock().scopes.map(function (sc) {
+      var on = sc === more.scope;
+      return '<button class="tabs__item' + (on ? ' tabs__item--active' : '') + '" type="button" role="tab"'
+        + ' aria-selected="' + (on ? 'true' : 'false') + '" data-ar-more-t="' + sc + '">'
+        + esc(T(SCOPE_LABEL[sc])) + '</button>';
+    }).join('');
+  }
+
+  function moreBodyHTML() {
+    var block = moreBlock();
+    var rows = moreRows();
+    var slice = rows.slice(0, more.shown);
+    var done = more.shown >= rows.length;
+    /* 貼文的兩張表只掛在著作那個彈窗的貼文分頁——它們講的是貼文本身，
+       跟「這些貼文的觀眾在哪個地區」是兩件事，掛到地區的彈窗會文不對題。 */
+    var postTables = (block.id === 'works' && more.scope === 'post') ? postTablesHTML() : '';
+    if (block.dim === 'works') lastRows = slice;
+    return rankHTML(slice, { unit: UNIT[more.scope], pct: !block.wide, wide: block.wide, clickable: block.dim === 'works' })
+      + (done ? '<p class="ar-more__end">' + esc(T('ar.more.end').replace('{n}', rows.length)) + '</p>' : '')
+      + postTables;
+  }
+
+  function renderMore() {
+    if (!modal) return;
+    var titleEl = modal.querySelector('[data-ar-more-title]');
+    /* 著作那張卡叫「Top 10 瀏覽次數」，直接套進彈窗標題會變成
+       「Top 10 瀏覽次數 · 完整清單」——完整清單不會只有 10 名，自相矛盾。
+       所以彈窗用各區塊自己的完整名稱。 */
+    if (titleEl) titleEl.textContent = T('ar.more.title').replace('{what}', T(moreBlock().moreTitle || moreBlock().title));
+    moreTabs.innerHTML = moreTabsHTML();
+    moreBody.innerHTML = moreBodyHTML();
+    var rows = moreRows();
+    var shown = Math.min(more.shown, rows.length);
+    /* 列完之後不要再寫「往下捲看更多」——底下已經沒有東西了。 */
+    moreSub.textContent = (shown >= rows.length ? T('ar.more.sub-done') : T('ar.more.sub'))
+      .replace('{shown}', shown).replace('{total}', rows.length);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(modal);
+    if (window.applyI18n) window.applyI18n(modal);
+  }
+
+  /* 捲到底自動續載。監聽 scroll 而不是用 IntersectionObserver：
+     哨兵那一版在這個彈窗裡量不準（body 是 max-height 撐出來的捲動容器，
+     哨兵已經進入視窗卻沒觸發，實測捲到底列數不動）。距底 120px 就續載，
+     不必等使用者剛好停在最後一列。 */
+  function onMoreScroll() {
+    if (!more.open) return;
+    var rows = moreRows();
+    if (more.shown >= rows.length) return;
+    if (moreBody.scrollTop + moreBody.clientHeight < moreBody.scrollHeight - 120) return;
+    more.shown += PAGE;
+    renderMore();
+  }
+
+  /* ══════════════ 內容詳情彈窗 ══════════════ */
+  var wModal = document.querySelector('[data-ar-work-modal]');
+
+  function openWork(title, scope) {
+    if (!wModal) return;
+    var proj = A.projectFor(title);
+    var q = function (sel) { return wModal.querySelector(sel); };
+    var lang = (document.documentElement.lang || '').indexOf('zh') === 0 ? 'zh' : 'en';
+
+    q('[data-ar-work-title]').textContent = title;
+
+    /* 類型徽章：有對應項目就用項目自己的分類，沒有就退回這一列的內容類型。 */
+    var kindEl = q('[data-ar-work-kind]');
+    /* 沿用項目頁既有的分類字典，不另造一套——同一個 cat 在兩頁要念同一個詞。 */
+    kindEl.textContent = proj ? T('projects.cat.' + proj.cat) : T('ar.work.nokind');
+
+    var media = q('[data-ar-work-media]');
+    if (proj && proj.cover) {
+      media.style.backgroundImage = 'url("' + proj.cover + '")';
+      media.textContent = '';
+    } else {
+      media.style.backgroundImage = '';
+      media.textContent = T('ar.work.nocover');
+    }
+
+    q('[data-ar-work-desc]').textContent = proj && proj.desc
+      ? (proj.desc[lang] || proj.desc.zh || proj.desc.en || '')
+      : T('ar.work.nodesc');
+
+    /* 數字只給次數——本頁全頁零金額，金額在收入管理。 */
+    var row = lastRows.filter(function (r) { return (r.name || T(r.i18n)) === title; })[0];
+    q('[data-ar-work-stats]').innerHTML = row
+      ? '<div class="ar-work__stat">'
+        + '<span class="ar-work__stat-label">' + esc(T('ar.work.plays')) + '</span>'
+        + '<span class="ar-work__stat-value">' + num(row.n) + ' ' + esc(T(UNIT[scope])) + '</span></div>'
+      : '';
+
+    var cta = q('[data-ar-work-cta]');
+    var note = q('[data-ar-work-note]');
+    if (proj) {
+      cta.href = 'project-detail.html?id=' + encodeURIComponent(proj.id);
+      cta.textContent = T('ar.work.cta');
+      cta.removeAttribute('aria-disabled');
+      note.textContent = '';
+    } else {
+      /* 沒有對應項目：停用而不是隱藏——按鈕消失會讓人以為畫面壞了，
+         停用＋一句原因才說得出「這件東西為什麼沒有詳情可看」。 */
+      cta.removeAttribute('href');
+      cta.textContent = T('ar.work.cta');
+      cta.setAttribute('aria-disabled', 'true');
+      note.textContent = T('ar.work.unpublished');
+    }
+
+    wModal.hidden = false;
+    if (window.ztorIcons) window.ztorIcons.applyIcons(wModal);
+  }
+  function closeWork() { if (wModal) wModal.hidden = true; }
+
+  if (wModal) {
+    wModal.querySelector('[data-ar-work-close]').addEventListener('click', closeWork);
+    wModal.addEventListener('click', function (e) { if (e.target === wModal) closeWork(); });
+    wModal.querySelector('[data-ar-work-cta]').addEventListener('click', function (e) {
+      if (this.getAttribute('aria-disabled') === 'true') e.preventDefault();
+    });
+  }
+
+  /* 開彈窗時要拿到那一列的數字，所以每次繪製都把當下這批列存起來。
+     重新去 store 算一次也可以，但那要把 scope／period／dim 三個狀態再傳一輪，
+     而它們正是繪製當下已經知道的東西。 */
+  var lastRows = [];
+
+  function openMore(blockId) {
+    more.open = true;
+    more.blockId = blockId || 'works';
+    /* 沿用那張卡當下選的類型——使用者按「查看更多」，想看的是眼前這一份的
+       完整版，不是重新從全部開始。 */
+    more.scope = scopeOf[more.blockId] || 'all';
+    more.shown = PAGE;
+    modal.hidden = false;
+    renderMore();
+    /* 首屏就滿不了一頁時（例如只有影視的三件）不會有捲動事件，
+       所以開啟後先主動補一次，直到鋪滿或鋪完。 */
+    fillUp();
+  }
+  function fillUp() {
+    var guard = 0;
+    while (guard++ < 50 && more.shown < moreRows().length
+           && moreBody.scrollHeight <= moreBody.clientHeight) {
+      more.shown += PAGE;
+      renderMore();
+    }
+  }
+  function closeMore() {
+    more.open = false;
+    modal.hidden = true;
+  }
+
+  function bodyHTML() {
+    var byId = {};
+    BLOCKS.forEach(function (b) { byId[b.id] = blockHTML(b); });
+
+    /* 「他們是誰」那一區的標題列帶人數——上半講量、下半講人，
+       兩個單位不放在同一排，讀者才不會把 68,400 人跟 1,079,338 次並列著看。
+       這裡的涵蓋率固定用「全部」，因為它是整區的前提、不隨個別卡片的類型變。 */
+    var cov = A.coverage('all', period);
+    var whoSub = T('ar.who.sub')
+      .replace('{identified}', num(cov.identified))
+      .replace('{reach}', num(cov.reach))
+      .replace('{ratio}', pct(cov.ratio));
+
+    /* 佈局（2026-08-09 使用者指定）：
+         第一列 著作排行 ＋ 平台表現
+         第二列 地區表現 ＋ 性別（中空圓餅）
+         第三列 星座 ＋ MBTI ＋ 生肖
+       前兩列各自是「量」與「人」混排，第三列三張同構所以並排比得起來。
+       貼文類型表現與貼文報告明細已移進「查看更多」彈窗的貼文分頁——
+       它們只有貼文有，掛在主頁面會變成一段跟上面所有卡片都對不齊的尾巴。 */
+    return '<div class="ar-grid">' + byId.works + byId.platform + '</div>'
+      + '<div class="ar-sechead">'
+      +   '<h2 class="ar-sechead__title">' + esc(T('ar.who.h')) + '</h2>'
+      +   '<p class="ar-sechead__sub">' + esc(whoSub) + '</p>'
+      + '</div>'
+      + '<div class="ar-grid">' + byId.region + byId.gender + '</div>'
+      + '<div class="ar-grid ar-grid--trio">' + byId.zodiac + byId.mbti + byId.shengxiao + '</div>';
+  }
+
+  var rendering = false;
   function render() {
     rendering = true;
-    var asof = A.asOf[state.scope];
-    var noteKey = state.scope === 'post' ? 'ar.asof.post' : 'ar.asof.works';
-    var el = document.querySelector('[data-ar-asof-text]');
-    if (el) el.textContent = T(noteKey).replace('{date}', asof);
-
-    panel.innerHTML = state.scope === 'post'
-      ? postsPanel(state.period)
-      : worksPanel(state.scope, state.period);
-
-    if (window.ztorIcons) window.ztorIcons.applyIcons(panel);
-    if (window.applyI18n) window.applyI18n(panel);
+    var asof = document.querySelector('[data-ar-asof-title]');
+    if (asof) {
+      asof.textContent = T('ar.asof.title')
+        .replace('{works}', A.asOf.film).replace('{post}', A.asOf.post);
+    }
+    kpiHost.innerHTML = kpiHTML();
+    body.innerHTML = bodyHTML();
+    if (window.ztorIcons) { window.ztorIcons.applyIcons(kpiHost); window.ztorIcons.applyIcons(body); }
+    if (window.applyI18n) { window.applyI18n(kpiHost); window.applyI18n(body); }
     rendering = false;
   }
 
-  document.querySelector('[data-ar-tabs]').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-ar-tab]');
-    if (!b) return;
-    state.scope = b.dataset.arTab;
-    this.querySelectorAll('[data-ar-tab]').forEach(function (x) {
-      var on = x === b;
-      x.classList.toggle('tabs__item--active', on);
-      x.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    render();
+  /* 只重繪被切換的那一張卡，不重繪整頁——否則捲動位置會跳回頂端，
+     而這一頁的重點正是「捲到某一區、就地切三個類型比對」。 */
+  function renderBlock(id) {
+    var block = BLOCKS.filter(function (b) { return b.id === id; })[0];
+    var el = body.querySelector('[data-ar-block="' + id + '"]');
+    if (!block || !el) return;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = blockHTML(block);
+    var fresh = tmp.firstElementChild;
+    el.replaceWith(fresh);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(fresh);
+    if (window.applyI18n) window.applyI18n(fresh);
+  }
+
+  body.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-ar-scope] [data-ar-s]');
+    if (btn) {
+      var id = btn.closest('[data-ar-scope]').dataset.arScope;
+      if (scopeOf[id] === btn.dataset.arS) return;
+      scopeOf[id] = btn.dataset.arS;
+      renderBlock(id);
+      return;
+    }
+    var openBtn = e.target.closest('[data-ar-open-more]');
+    if (openBtn) { openMore(openBtn.dataset.arOpenMore); return; }
+
+    var workRow = e.target.closest('[data-ar-work]');
+    if (workRow) openWork(workRow.dataset.arWork, scopeOf.works);
   });
+  body.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var workRow = e.target.closest('[data-ar-work]');
+    if (!workRow) return;
+    e.preventDefault();
+    openWork(workRow.dataset.arWork, scopeOf.works);
+  });
+
+  if (modal) {
+    moreTabs.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-ar-more-t]');
+      if (!b || more.scope === b.dataset.arMoreT) return;
+      more.scope = b.dataset.arMoreT;
+      more.shown = PAGE;
+      moreBody.scrollTop = 0;
+      renderMore();
+    });
+    moreBody.addEventListener('scroll', onMoreScroll);
+    moreBody.addEventListener('click', function (e) {
+      var workRow = e.target.closest('[data-ar-work]');
+      if (workRow) openWork(workRow.dataset.arWork, more.scope);
+    });
+    modal.querySelector('[data-ar-more-close]').addEventListener('click', closeMore);
+    /* 點遮罩關閉；點對話框本體不關。 */
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeMore(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      /* 內容詳情疊在「查看更多」上面時，Esc 先關上面那層。 */
+      if (wModal && !wModal.hidden) { closeWork(); return; }
+      if (more.open) closeMore();
+    });
+    modal.querySelector('[data-ar-more-dl]').addEventListener('click', function () {
+      /* 匯出的檔案格式與欄位規格未定（見 5.1.7.9 待確認），原型只回饋動作已收到。 */
+      if (window.ztorToast) window.ztorToast.show(T('ar.export.toast'), { key: 'ar.export.toast' });
+    });
+  }
 
   document.querySelector('[data-ar-period]').addEventListener('click', function (e) {
     var b = e.target.closest('[data-ar-p]');
     if (!b) return;
-    state.period = b.dataset.arP;
+    period = b.dataset.arP;
     this.querySelectorAll('[data-ar-p]').forEach(function (x) {
       var on = x === b;
-      x.classList.toggle('segmented__btn--active', on);
+      x.classList.toggle('filter-tabs__item--active', on);
       x.setAttribute('aria-selected', on ? 'true' : 'false');
     });
     render();
+    /* 彈窗開著時期間也換了，它的內容要跟上；捲動位置重來，因為是另一批資料。 */
+    if (more.open) { more.shown = PAGE; moreBody.scrollTop = 0; renderMore(); }
   });
 
   var exportBtn = document.querySelector('[data-ar-export]');
@@ -420,10 +771,8 @@
     if (window.ztorToast) window.ztorToast.show(T('ar.export.toast'), { key: 'ar.export.toast' });
   });
 
-  /* i18n:applied 是 document 層級的事件，而 render() 自己會呼叫 applyI18n(panel)
-     ——沒有這道閘就會 render → applyI18n → i18n:applied → render 無限遞迴
-     （第一版實測 Maximum call stack size exceeded）。改語言時仍會重繪一次。 */
-  var rendering = false;
+  /* render() 自己會呼叫 applyI18n，而 applyI18n 會發 i18n:applied，
+     沒有這道閘就會無限遞迴（第一版實測 Maximum call stack size exceeded）。 */
   document.addEventListener('i18n:applied', function () {
     if (rendering) return;
     render();

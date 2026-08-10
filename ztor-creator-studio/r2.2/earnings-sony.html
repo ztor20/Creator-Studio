@@ -191,11 +191,16 @@
   /* 我的項目表：加線框（比照 DS 其他資料表的外框呈現）*/
   .fin-tablecard { border:1px solid var(--border); border-radius:var(--radius-xl); overflow:hidden; }
   .fin-tablecard .ztor-table { border-radius:0; table-layout:fixed; }
-  /* 欄寬分配：項目最寬、類別／金額等分、前往箭頭獨立一欄且不與金額相貼 */
-  .fin-tablecard .ztor-table th:nth-child(1), .fin-tablecard .ztor-table td:nth-child(1) { width:44%; }
-  .fin-tablecard .ztor-table th:nth-child(2), .fin-tablecard .ztor-table td:nth-child(2) { width:24%; }
-  .fin-tablecard .ztor-table th:nth-child(3), .fin-tablecard .ztor-table td:nth-child(3) { width:24%; padding-right:var(--sp-24); }
-  .fin-tablecard .ztor-table th:nth-child(4), .fin-tablecard .ztor-table td:nth-child(4) { width:8%; }
+  /* 欄寬分配：項目最寬、項目類型／類別／金額等分、前往箭頭獨立一欄且不與金額相貼。
+     2026-07-31 新增「項目類型」欄後，欄位由 4 個變 5 個——nth-child 是按位置寫死的，
+     插入一欄會把後面所有位置往後推一格。當時只加了新欄、沒有跟著把 3/4 改成 4/5，
+     金額欄的 padding-right 規則因此套到了「類別」欄，金額欄自己反而貼右邊界無留白
+     （使用者截圖回報）。五欄一次改齊，不要再讓 nth-child 各自漂移。 */
+  .fin-tablecard .ztor-table th:nth-child(1), .fin-tablecard .ztor-table td:nth-child(1) { width:36%; }
+  .fin-tablecard .ztor-table th:nth-child(2), .fin-tablecard .ztor-table td:nth-child(2) { width:18%; }
+  .fin-tablecard .ztor-table th:nth-child(3), .fin-tablecard .ztor-table td:nth-child(3) { width:18%; }
+  .fin-tablecard .ztor-table th:nth-child(4), .fin-tablecard .ztor-table td:nth-child(4) { width:20%; padding-right:var(--sp-24); }
+  .fin-tablecard .ztor-table th:nth-child(5), .fin-tablecard .ztor-table td:nth-child(5) { width:8%; }
   /* 提領歷史彈窗表格：欄位不換行，避免窄欄把日期／狀態擠成多行。
      2026-07-27 收斂範圍：原本寫成 .payout-dialog（＝所有彈窗內的表格都吃到），
      新的類型明細彈窗因此長標題不換行、直接壓到金額欄上。只留給提領歷史。 */
@@ -214,6 +219,11 @@
   .roy-total__meta { font-size:var(--fs-12); color:var(--muted-foreground); margin-top:var(--sp-4); }
   .roy-foot { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-16); margin-top:var(--sp-16); flex-wrap:wrap; }
   .roy-foot__note { font-size:var(--fs-12); color:var(--muted-foreground); }
+  /* 內容詳情 popup —— 只保留「左封面／右資訊」這個排版，視覺全部交給站上既有元件
+     （封面＝.ipm-card__cover 的品牌漸層占位，STYLE-DECISIONS Q30；數據磚＝.kpi；
+     標題＝.payout-dialog__title）。不自製 media／stat 樣式。 */
+  .ce-item { display:grid; grid-template-columns: 180px minmax(0,1fr); gap:var(--sp-24); align-items:start; }
+  @media (max-width: 700px) { .ce-item { grid-template-columns: 1fr; } .ce-item .ipm-card__cover { max-width:180px; } }
   /* 作品榜的類型篩選自成一列（標題長、span-6 寬度放不下同一行） */
   [data-roy-card] > .filter-tabs { margin: var(--sp-4) 0 var(--sp-12); }
 
@@ -403,7 +413,7 @@
             <thead>
               <!-- data-sort → js/table-sort.js 把標題換成可點的 .sort-th（三段循環）。
                    前往箭頭欄沒有標題也沒有值，不參與排序。 -->
-              <tr><th class="ztor-table__media-head" data-sort="text" data-i18n="fin.col.item">Item</th><th data-sort="text" data-i18n="fin.col.cat">Category</th><th class="fin-amt sort-th--end" data-sort="num" data-fin-amt-head data-i18n="fin.col.amount">Amount</th><th aria-hidden="true"></th></tr>
+              <tr><th class="ztor-table__media-head" data-sort="text" data-i18n="fin.col.item">Item</th><th data-sort="text" data-i18n="fin.col.ptype">Project type</th><th data-sort="text" data-i18n="fin.col.cat">Category</th><th class="fin-amt sort-th--end" data-sort="num" data-fin-amt-head data-i18n="fin.col.amount">Amount</th><th aria-hidden="true"></th></tr>
             </thead>
             <tbody data-fin-rows>
               <tr class="fin-rowlink" data-fin-cat="電影" data-fin-types="cocreate ott music" data-fin-go="project-detail.html?id=dragon-tiger-gate#earnings">
@@ -447,16 +457,17 @@
       </section>
       </div>
 
+      <!-- ═══════════════════ 內容收益 · 2026-07-31 由「版稅」擴充 ═══════════════════
+           4 型篩選（全部／音樂／影片／貼文）驅動 7 個收入切面。資料點取自 ztor 自家的
+           績效報告原型（performancereport.lx7.com），只取金額那半——次數軸已裁定留在
+           粉絲分析。全部＝三型相加、不是另算一套；貼文沒有串流平台，該區塊在貼文型隱藏。 -->
       <div class="tab-panel" data-panel="royalty" role="tabpanel">
-        <!-- ═══════════════════ 第三段 · 版稅（Royalties）═══════════════════
-             總覽的外部那一半只收版稅（2026-07-31 使用者裁定）；外部平台的商品
-             販售與票務收入不納入。來源是發行商定期報表，非各平台 API 同步。
-             資料點對照 cocreate 提案頁的版稅分頁，維度由歌曲升成作品。 -->
-        <section class="card mt-24" id="royalties" data-roy-works='{"data": {"month": {"money": ["694", "428", "324", "212", "139", "98", "78", "65", "51", "40", "31"], "moneyRaw": [694, 428, 324, 212, 139, 98, 78, 65, 51, 40, 31], "plays": ["128,733", "137,600", "91,500", "54,900", "29,533", "66,100", "40,467", "32,133", "24,933", "20,400", "14,500"], "playsRaw": [128733, 137600, 91500, 54900, 29533, 66100, 40467, 32133, 24933, 20400, 14500]}, "quarter": {"money": ["2,082", "1,283", "971", "636", "416", "293", "236", "194", "155", "120", "94"], "moneyRaw": [2082, 1283, 971, 636, 416, 293, 236, 194, 155, 120, 94], "plays": ["386,200", "412,800", "274,500", "164,700", "88,600", "198,300", "121,400", "96,400", "74,800", "61,200", "43,500"], "playsRaw": [386200, 412800, 274500, 164700, 88600, 198300, 121400, 96400, 74800, 61200, 43500]}, "year": {"money": ["7,118", "4,387", "3,322", "2,176", "1,424", "1,003", "806", "662", "528", "412", "322"], "moneyRaw": [7118, 4387, 3322, 2176, 1424, 1003, 806, 662, 528, 412, 322], "plays": ["1,320,709", "1,411,674", "938,722", "563,233", "302,990", "678,137", "415,158", "329,664", "255,798", "209,289", "148,759"], "playsRaw": [1320709, 1411674, 938722, 563233, 302990, 678137, 415158, 329664, 255798, 209289, 148759]}, "custom": {"money": ["4,372", "2,695", "2,040", "1,336", "874", "616", "495", "407", "324", "253", "198"], "moneyRaw": [4372, 2695, 2040, 1336, 874, 616, 495, 407, 324, 253, 198], "plays": ["811,139", "867,007", "576,535", "345,921", "186,087", "416,491", "254,977", "202,470", "157,103", "128,539", "91,363"], "playsRaw": [811139, 867007, 576535, 345921, 186087, 416491, 254977, 202470, 157103, 128539, 91363]}}, "types": {"default": ["music", "video", "video", "video", "video", "video", "music", "video", "video", "video", "video"], "nick": ["music", "music", "music", "music", "music", "video", "video", "music", "video", "music", "music"]}}'>
+        <div class="when-data" data-ce data-ce-cfg='{"cur": "ntd", "data": {"month": {"music": {"total": 760, "regions": [293, 61, 138, 83, 42, 36, 27, 20, 15, 12, 33], "gender": [445, 290, 25], "zodiac": [104, 96, 85, 79, 73, 66, 59, 53, 47, 42, 30, 26], "mbti": [92, 85, 73, 65, 58, 51, 48, 44, 41, 38, 34, 31, 29, 26, 24, 21], "cz": [94, 88, 80, 73, 66, 60, 56, 52, 47, 58, 46, 40], "works": [197, 184, 110, 90, 73, 47, 22, 15, 12, 10], "platforms": [0, 232, 0, 163, 142, 0, 103, 0, 0, 56, 0, 30, 20, 14]}, "video": {"total": 1027, "regions": [355, 188, 128, 103, 57, 47, 35, 27, 22, 17, 48], "gender": [557, 432, 38], "zodiac": [110, 138, 87, 124, 100, 91, 81, 76, 70, 61, 51, 38], "mbti": [105, 95, 85, 62, 64, 69, 80, 53, 74, 51, 58, 54, 48, 46, 44, 39], "cz": [117, 127, 112, 81, 102, 89, 95, 78, 72, 63, 51, 40], "works": [257, 201, 150, 116, 95, 76, 53, 34, 25, 20], "platforms": [339, 0, 215, 56, 0, 155, 0, 118, 81, 0, 63, 0, 0, 0]}, "post": {"total": 373, "regions": [149, 71, 26, 33, 19, 41, 5, 8, 12, 9, 0], "gender": [228, 132, 13], "zodiac": [34, 46, 29, 38, 50, 31, 26, 23, 21, 42, 18, 15], "mbti": [39, 42, 31, 19, 28, 25, 21, 23, 34, 15, 18, 13, 23, 16, 12, 14], "cz": [39, 44, 35, 24, 48, 29, 32, 27, 22, 28, 24, 21], "works": [80, 40, 32, 32, 32, 32, 32, 31, 31, 31], "platforms": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "all": {"total": 2160, "regions": [797, 320, 292, 219, 118, 124, 67, 55, 49, 38, 81], "gender": [1230, 854, 76], "zodiac": [248, 280, 201, 241, 223, 188, 166, 152, 138, 145, 99, 79], "mbti": [236, 222, 189, 146, 150, 145, 149, 120, 149, 104, 110, 98, 100, 88, 80, 74], "cz": [250, 259, 227, 178, 216, 178, 183, 157, 141, 149, 121, 101], "platforms": [339, 232, 215, 219, 142, 155, 103, 118, 81, 56, 63, 30, 20, 14], "works": null}}, "quarter": {"music": {"total": 2280, "regions": [878, 185, 413, 248, 125, 107, 82, 62, 46, 36, 98], "gender": [1336, 869, 75], "zodiac": [312, 290, 255, 237, 218, 198, 178, 161, 140, 125, 89, 77], "mbti": [277, 256, 220, 197, 176, 155, 143, 131, 122, 113, 101, 92, 86, 77, 71, 63], "cz": [281, 264, 241, 218, 198, 181, 169, 155, 140, 175, 138, 120], "works": [591, 552, 331, 271, 218, 141, 67, 45, 34, 30], "platforms": [0, 698, 0, 490, 426, 0, 308, 0, 0, 169, 0, 89, 59, 41]}, "video": {"total": 3080, "regions": [1066, 563, 385, 308, 169, 142, 105, 80, 65, 52, 145], "gender": [1669, 1297, 114], "zodiac": [331, 414, 259, 373, 301, 274, 242, 227, 210, 183, 153, 113], "mbti": [316, 284, 254, 185, 193, 206, 239, 158, 221, 153, 173, 163, 146, 138, 133, 118], "cz": [350, 380, 336, 244, 306, 267, 284, 234, 217, 188, 153, 121], "works": [770, 605, 451, 348, 284, 227, 158, 104, 74, 59], "platforms": [1016, 0, 644, 170, 0, 465, 0, 354, 243, 0, 188, 0, 0, 0]}, "post": {"total": 1120, "regions": [448, 214, 78, 98, 58, 124, 15, 22, 36, 26, 1], "gender": [685, 397, 38], "zodiac": [101, 138, 88, 114, 151, 94, 78, 69, 64, 125, 53, 45], "mbti": [117, 127, 94, 58, 85, 75, 63, 68, 101, 44, 53, 39, 70, 48, 36, 42], "cz": [118, 131, 105, 72, 144, 87, 97, 79, 66, 85, 73, 63], "works": [241, 121, 95, 95, 95, 95, 95, 95, 94, 94], "platforms": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "all": {"total": 6480, "regions": [2392, 962, 876, 654, 352, 373, 202, 164, 147, 114, 244], "gender": [3690, 2563, 227], "zodiac": [744, 842, 602, 724, 670, 566, 498, 457, 414, 433, 295, 235], "mbti": [710, 667, 568, 440, 454, 436, 445, 357, 444, 310, 327, 294, 302, 263, 240, 223], "cz": [749, 775, 682, 534, 648, 535, 550, 468, 423, 448, 364, 304], "platforms": [1016, 698, 644, 660, 426, 465, 308, 354, 243, 169, 188, 89, 59, 41], "works": null}}, "year": {"music": {"total": 7798, "regions": [3002, 632, 1411, 850, 429, 366, 281, 211, 156, 125, 335], "gender": [4570, 2971, 257], "zodiac": [1069, 991, 873, 809, 745, 677, 608, 549, 481, 427, 304, 265], "mbti": [947, 875, 753, 672, 601, 529, 489, 448, 417, 387, 346, 316, 295, 265, 244, 214], "cz": [961, 902, 824, 745, 677, 618, 579, 530, 481, 598, 471, 412], "works": [2021, 1888, 1133, 927, 745, 481, 230, 152, 118, 103], "platforms": [0, 2386, 0, 1677, 1458, 0, 1053, 0, 0, 577, 0, 304, 203, 140]}, "video": {"total": 10535, "regions": [3645, 1928, 1317, 1054, 579, 485, 358, 274, 221, 179, 495], "gender": [5710, 4435, 390], "zodiac": [1131, 1418, 886, 1275, 1030, 937, 827, 777, 718, 625, 523, 388], "mbti": [1081, 971, 869, 633, 658, 705, 819, 540, 756, 523, 591, 557, 498, 473, 456, 405], "cz": [1199, 1300, 1148, 836, 1047, 912, 971, 802, 743, 641, 523, 413], "works": [2634, 2068, 1545, 1190, 971, 777, 540, 354, 253, 203], "platforms": [3477, 0, 2202, 579, 0, 1591, 0, 1211, 832, 0, 643, 0, 0, 0]}, "post": {"total": 3831, "regions": [1532, 732, 268, 333, 199, 425, 50, 77, 123, 88, 4], "gender": [2345, 1356, 130], "zodiac": [346, 474, 300, 391, 518, 322, 265, 237, 219, 426, 180, 153], "mbti": [401, 433, 322, 198, 290, 257, 215, 234, 346, 150, 180, 134, 239, 164, 122, 146], "cz": [403, 447, 360, 245, 492, 300, 332, 271, 227, 290, 249, 215], "works": [826, 413, 324, 324, 324, 324, 324, 324, 324, 324], "platforms": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "all": {"total": 22164, "regions": [8179, 3292, 2996, 2237, 1207, 1276, 689, 562, 500, 392, 834], "gender": [12625, 8762, 777], "zodiac": [2546, 2883, 2059, 2475, 2293, 1936, 1700, 1563, 1418, 1478, 1007, 806], "mbti": [2429, 2279, 1944, 1503, 1549, 1491, 1523, 1222, 1519, 1060, 1117, 1007, 1032, 902, 822, 765], "cz": [2563, 2649, 2332, 1826, 2216, 1830, 1882, 1603, 1451, 1529, 1243, 1040], "platforms": [3477, 2386, 2202, 2256, 1458, 1591, 1053, 1211, 832, 577, 643, 304, 203, 140], "works": null}}, "custom": {"music": {"total": 4787, "regions": [1843, 388, 866, 522, 263, 225, 172, 129, 96, 77, 206], "gender": [2805, 1824, 158], "zodiac": [656, 608, 536, 497, 458, 415, 373, 337, 295, 262, 187, 163], "mbti": [581, 537, 462, 412, 369, 325, 300, 275, 256, 238, 213, 194, 181, 163, 150, 131], "cz": [590, 554, 506, 458, 416, 379, 355, 325, 295, 367, 289, 253], "works": [1240, 1159, 696, 569, 458, 295, 142, 93, 72, 63], "platforms": [0, 1465, 0, 1029, 895, 0, 646, 0, 0, 354, 0, 187, 125, 86]}, "video": {"total": 6467, "regions": [2238, 1183, 808, 647, 356, 297, 220, 168, 136, 110, 304], "gender": [3505, 2723, 239], "zodiac": [694, 871, 544, 783, 632, 575, 508, 477, 441, 383, 321, 238], "mbti": [663, 596, 534, 388, 404, 433, 503, 331, 464, 321, 363, 342, 306, 290, 280, 249], "cz": [736, 798, 705, 513, 642, 560, 596, 492, 456, 394, 321, 254], "works": [1617, 1269, 948, 731, 596, 477, 332, 218, 155, 124], "platforms": [2134, 0, 1352, 356, 0, 976, 0, 744, 511, 0, 394, 0, 0, 0]}, "post": {"total": 2352, "regions": [941, 449, 165, 205, 122, 261, 31, 47, 75, 54, 2], "gender": [1439, 833, 80], "zodiac": [212, 291, 184, 240, 318, 198, 163, 145, 134, 262, 111, 94], "mbti": [246, 266, 198, 122, 178, 158, 132, 143, 212, 92, 111, 82, 147, 101, 75, 89], "cz": [247, 275, 221, 150, 302, 184, 204, 167, 139, 178, 153, 132], "works": [507, 253, 199, 199, 199, 199, 199, 199, 199, 199], "platforms": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "all": {"total": 13606, "regions": [5022, 2020, 1839, 1374, 741, 783, 423, 344, 307, 241, 512], "gender": [7749, 5380, 477], "zodiac": [1562, 1770, 1264, 1520, 1408, 1188, 1044, 959, 870, 907, 619, 495], "mbti": [1490, 1399, 1194, 922, 951, 916, 935, 749, 932, 651, 687, 618, 634, 554, 505, 469], "cz": [1573, 1627, 1432, 1121, 1360, 1123, 1155, 984, 890, 939, 763, 639], "platforms": [2134, 1465, 1352, 1385, 895, 976, 646, 744, 511, 354, 394, 187, 125, 86], "works": null}}}, "hasWork": {"default": {"music": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "video": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "post": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}, "nick": {"music": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "video": [1, 1, 1, 1, 1, 0, 0, 0, 0, 0], "post": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}}, "keys": {"regions": ["tw", "hk", "jp", "us", "sg", "my", "kr", "th", "ca", "au", "other"], "gender": ["f", "m", "other"], "platforms": ["netflix", "spotify", "disney", "youtube", "kkbox", "prime", "applemusic", "max", "fridayvideo", "linemusic", "myvideo", "friday", "amazon", "deezer"], "zodiac": ["pisces", "scorpio", "cancer", "leo", "libra", "virgo", "aries", "sagittarius", "taurus", "gemini", "aquarius", "capricorn"], "mbti": ["infp", "enfp", "infj", "isfp", "enfj", "intp", "intj", "esfp", "entp", "isfj", "entj", "istp", "esfj", "estp", "istj", "estj"], "cz": ["rabbit", "tiger", "dragon", "snake", "horse", "rat", "monkey", "goat", "dog", "ox", "rooster", "pig"]}, "post": {"rows": [{"i": 0, "rev": 816, "date": "2025-03-28", "form": "video", "imp": 640, "v3": 512, "eng": 118, "rate": "18.4%", "rent": 87}, {"i": 1, "rev": 408, "date": "2025-03-25", "form": "image", "imp": 305, "v3": 240, "eng": 64, "rate": "21.0%", "rent": 33}, {"i": 2, "rev": 320, "date": "2025-03-09", "form": "image", "imp": 355, "v3": 260, "eng": 71, "rate": "20.0%", "rent": 30}, {"i": 3, "rev": 320, "date": "2025-03-18", "form": "video", "imp": 512, "v3": 430, "eng": 96, "rate": "18.8%", "rent": 41}, {"i": 4, "rev": 320, "date": "2024-09-12", "form": "image", "imp": 120, "v3": 100, "eng": 76, "rate": "15.2%", "rent": 52}, {"i": 5, "rev": 320, "date": "2025-03-20", "form": "image", "imp": 268, "v3": 189, "eng": 47, "rate": "17.5%", "rent": 26}, {"i": 6, "rev": 320, "date": "2025-03-12", "form": "image", "imp": 240, "v3": 175, "eng": 39, "rate": "16.3%", "rent": 15}, {"i": 7, "rev": 320, "date": "2025-03-17", "form": "image", "imp": 214, "v3": 150, "eng": 38, "rate": "17.8%", "rent": 19}, {"i": 8, "rev": 320, "date": "2025-03-15", "form": "image", "imp": 186, "v3": 141, "eng": 42, "rate": "22.6%", "rent": 24}, {"i": 9, "rev": 320, "date": "2025-03-01", "form": "image", "imp": 198, "v3": 132, "eng": 35, "rate": "17.7%", "rent": 21}], "mention": {"default": ["avengers", "oppen", "barbie", "spider", "plastic", "heron", "wick", "dune", "sun", "drivecar"], "nick": ["realive", "toohandsome", "playlist", "lrh", "symphonic", "wakeup", "whiteparty", "demo", "flames", "aftertour"]}}}'>
+        <section class="card mt-24" id="royalties" >
           <div class="card__head">
             <div class="card__title-group">
               <span class="card__title-icon card__title-icon--accent"><i data-lucide="disc" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="roy.title">Royalties</h3>
+              <h3 class="card__title" data-i18n="ce.title">Content earnings</h3>
             </div>
             <nav class="filter-tabs" role="tablist" aria-label="Royalty period" data-roy-period='{"month": {"total": "NTD 2,160", "sources": ["NTD 760", "NTD 880", "NTD 360", "NTD 160"], "works": ["760", "468", "354", "233", "152", "107", "86"], "regions": ["831", "391", "235", "175", "119", "102", "78", "58", "43", "35", "93"], "platforms": ["548", "372", "261", "227", "164", "91", "48", "32", "24", "393"], "plays": ["137,600", "128,733", "91,500", "66,100", "54,900", "40,467", "29,533"]}, "quarter": {"total": "NTD 6,480", "sources": ["NTD 2,280", "NTD 2,640", "NTD 1,080", "NTD 480"], "works": ["2,280", "1,405", "1,063", "697", "456", "321", "258"], "regions": ["2,495", "1,173", "706", "525", "356", "305", "233", "175", "130", "104", "278"], "platforms": ["1,646", "1,115", "784", "680", "492", "272", "143", "97", "71", "1,180"], "plays": ["412,800", "386,200", "274,500", "198,300", "164,700", "121,400", "88,600"]}, "year": {"total": "NTD 22,160", "sources": ["NTD 7,797", "NTD 9,028", "NTD 3,693", "NTD 1,642"], "works": ["7,797", "4,805", "3,635", "2,384", "1,559", "1,098", "882"], "regions": ["8,532", "4,011", "2,414", "1,795", "1,217", "1,043", "797", "599", "445", "356", "951"], "platforms": ["5,629", "3,813", "2,681", "2,325", "1,683", "930", "489", "332", "243", "4,035"], "plays": ["1,411,674", "1,320,709", "938,722", "678,137", "563,233", "415,158", "302,990"]}, "custom": {"total": "NTD 13,610", "sources": ["NTD 4,789", "NTD 5,545", "NTD 2,268", "NTD 1,008"], "works": ["4,789", "2,951", "2,232", "1,464", "958", "674", "542"], "regions": ["5,240", "2,464", "1,483", "1,103", "748", "641", "489", "367", "273", "218", "584"], "platforms": ["3,457", "2,342", "1,647", "1,428", "1,033", "571", "300", "204", "149", "2,479"], "plays": ["867,007", "811,139", "576,535", "416,491", "345,921", "254,977", "186,087"]}}'>
                 <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-p="month" data-i18n="roy.period.month">Month</button>
@@ -470,9 +481,9 @@
                同時算在「Ztor 收入」裡，放進 KPI 會讓那四張卡看起來能相加卻不能。 -->
           <div class="roy-total">
             <div>
-              <div class="roy-total__label" data-i18n="roy.total">Total royalties</div>
-              <div class="roy-total__value">NTD 6,480</div>
-              <div class="roy-total__meta" data-i18n="roy.meta.quarter">2026 Q2 (Apr–Jun) · all works, platforms and regions</div>
+              <div class="roy-total__label" data-i18n="ce.total">Total earnings</div>
+              <div class="roy-total__value" data-ce-total></div>
+              <div class="roy-total__meta" data-ce-meta data-i18n="ce.meta.quarter">2026 Q2 (Apr–Jun) · all works, platforms and regions</div>
             </div>
             <button class="btn btn--ghost btn--lg" type="button" data-drawer-open="royalty-src"><span data-i18n="roy.src.view">View sources</span><i data-lucide="arrow-right" class="ztor-icon ztor-icon--sm"></i></button>
           </div>
@@ -481,72 +492,106 @@
           <!-- 依來源拆解：把「合併成一個總版稅」拆回四個來源，並標明哪些可結算。 -->
 
         </section>
+          <nav class="filter-tabs mt-24" role="tablist" aria-label="Content type" data-ce-type>
+            <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ce-t="all" data-i18n="ce.type.all">All</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ce-t="music" data-i18n="ce.type.music">Music</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ce-t="video" data-i18n="ce.type.video">Video</button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ce-t="post" data-i18n="ce.type.post">Posts</button>
+          </nav>
 
-        <div class="bento mt-24">
-          <section class="card bento--span-12" data-roy-card="money">
-            <div class="card__head">
-              <div class="card__title-group">
+          <div class="bento mt-16">
+          <section class="card bento--span-7">
+              <div class="card__head"><div class="card__title-group">
                 <span class="card__title-icon card__title-icon--primary"><i data-lucide="trending-up" class="ztor-icon"></i></span>
-                <h3 class="card__title" data-i18n="roy.works.money">Top 10 works · by royalty</h3>
+                <h3 class="card__title" data-i18n="ce.sec.works">Top 10 content</h3></div></div>
+              <ol class="perf-rank perf-rank--nopct" data-ce-list="works" style="width:100%"></ol>
+              <div class="roy-foot">
+                <span class="roy-foot__note" data-ce-count></span>
+                <button class="btn btn--ghost" type="button" data-drawer-open="ce-all"><span data-i18n="ce.sec.works.all">See all content</span><i data-lucide="arrow-right" class="ztor-icon ztor-icon--sm"></i></button>
               </div>
-            </div>
-            <nav class="filter-tabs" role="tablist" aria-label="Work type" data-roy-type>
-                <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-roy-t="all" data-i18n="roy.type.all">All</button>
-                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="music" data-i18n="roy.type.music">Music</button>
-                <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="video" data-i18n="roy.type.video">Video</button>
-              </nav>
-            <ol class="perf-rank perf-rank--nopct" data-roy-list="money" style="width:100%"></ol>
-            <div class="roy-foot">
-              <span class="roy-foot__note" data-roy-count></span>
-              <button class="btn btn--ghost" type="button" data-drawer-open="royalty-all"><span data-i18n="roy.works.all">See all works</span><i data-lucide="arrow-right" class="ztor-icon ztor-icon--sm"></i></button>
-            </div>
-          </section>
-        </div>
-
-        <div class="bento mt-24">
-          <section class="card bento--span-12">
-            <div class="card__head">
-              <div class="card__title-group">
-                <span class="card__title-icon card__title-icon--info"><i data-lucide="map-pin" class="ztor-icon"></i></span>
-                <h3 class="card__title" data-i18n="roy.regions">Regions · by royalty</h3>
-              </div>
-            </div>
-            <ol class="perf-rank" data-roy-list="regions" style="width:100%">
-              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Taiwan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">38.5%</span><span class="perf-rank__val">2,495</span></li>
-              <li class="perf-rank__row" style="--w:47%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Japan</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.1%</span><span class="perf-rank__val">1,173</span></li>
-              <li class="perf-rank__row" style="--w:28%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">United States</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.9%</span><span class="perf-rank__val">706</span></li>
-              <li class="perf-rank__row" style="--w:21%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">Hong Kong</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">8.1%</span><span class="perf-rank__val">525</span></li>
-              <li class="perf-rank__row" style="--w:14%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Singapore</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">5.5%</span><span class="perf-rank__val">356</span></li>
-              <li class="perf-rank__row" style="--w:12%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">Malaysia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.7%</span><span class="perf-rank__val">305</span></li>
-              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">South Korea</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">3.6%</span><span class="perf-rank__val">233</span></li>
-              <li class="perf-rank__row" style="--w:7%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Thailand</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.7%</span><span class="perf-rank__val">175</span></li>
-              <li class="perf-rank__row" style="--w:5%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Canada</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.0%</span><span class="perf-rank__val">130</span></li>
-              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-3)"><span class="perf-rank__idx">10</span><span class="perf-rank__name">Australia</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.6%</span><span class="perf-rank__val">104</span></li>
-              <li class="perf-rank__row perf-rank__row--rest" style="--w:11%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.regions.rest">Everywhere else</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.3%</span><span class="perf-rank__val">278</span></li>
-            </ol>
-          </section>
-          <section class="card bento--span-12 mt-24">
-            <div class="card__head">
-              <div class="card__title-group">
+            </section>
+          <section class="card bento--span-5" data-ce-sec="platforms">
+              <div class="card__head"><div class="card__title-group">
                 <span class="card__title-icon card__title-icon--info"><i data-lucide="chart-column" class="ztor-icon"></i></span>
-                <h3 class="card__title" data-i18n="roy.platforms">Platforms · by royalty</h3>
-              </div>
-            </div>
-            <ol class="perf-rank" data-roy-list="platforms" style="width:100%">
-              <li class="perf-rank__row" style="--w:100%; --hue:var(--chart-1)"><span class="perf-rank__idx">1</span><span class="perf-rank__name">Ztor OTT</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">25.4%</span><span class="perf-rank__val">1,646</span></li>
-              <li class="perf-rank__row" style="--w:68%; --hue:var(--chart-2)"><span class="perf-rank__idx">2</span><span class="perf-rank__name">Spotify</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">17.2%</span><span class="perf-rank__val">1,115</span></li>
-              <li class="perf-rank__row" style="--w:48%; --hue:var(--chart-3)"><span class="perf-rank__idx">3</span><span class="perf-rank__name">YouTube</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">12.1%</span><span class="perf-rank__val">784</span></li>
-              <li class="perf-rank__row" style="--w:41%; --hue:var(--chart-4)"><span class="perf-rank__idx">4</span><span class="perf-rank__name">KKBOX</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">10.5%</span><span class="perf-rank__val">680</span></li>
-              <li class="perf-rank__row" style="--w:30%; --hue:var(--chart-5)"><span class="perf-rank__idx">5</span><span class="perf-rank__name">Apple Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">7.6%</span><span class="perf-rank__val">492</span></li>
-              <li class="perf-rank__row" style="--w:16%; --hue:var(--chart-6)"><span class="perf-rank__idx">6</span><span class="perf-rank__name">LINE MUSIC</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">4.2%</span><span class="perf-rank__val">272</span></li>
-              <li class="perf-rank__row" style="--w:9%; --hue:var(--chart-7)"><span class="perf-rank__idx">7</span><span class="perf-rank__name">friDay Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">2.2%</span><span class="perf-rank__val">143</span></li>
-              <li class="perf-rank__row" style="--w:6%; --hue:var(--chart-1)"><span class="perf-rank__idx">8</span><span class="perf-rank__name">Amazon Music</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.5%</span><span class="perf-rank__val">97</span></li>
-              <li class="perf-rank__row" style="--w:4%; --hue:var(--chart-2)"><span class="perf-rank__idx">9</span><span class="perf-rank__name">Deezer</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">1.1%</span><span class="perf-rank__val">71</span></li>
-              <li class="perf-rank__row perf-rank__row--rest" style="--w:48%; --hue:var(--muted-foreground)"><span class="perf-rank__idx">—</span><span class="perf-rank__name" data-i18n="roy.platforms.rest">Licensing &amp; other (no platform)</span><span class="perf-rank__track"><span class="perf-rank__fill"></span></span><span class="perf-rank__pct">18.2%</span><span class="perf-rank__val">1,180</span></li>
-            </ol>
+                <h3 class="card__title" data-i18n="ce.sec.platforms">Earnings by platform</h3></div></div>
+              <ol class="perf-rank" data-ce-list="platforms" style="width:100%"></ol>
+            </section>
+          </div>
+
+
+          <div class="bento mt-24">
+            <section class="card bento--span-7">
+              <div class="card__head"><div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="map-pin" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.regions">Earnings by region</h3></div></div>
+              <ol class="perf-rank" data-ce-list="regions" style="width:100%"></ol>
+            </section>
+            <section class="card bento--span-5">
+              <div class="card__head"><div class="card__title-group">
+                <span class="card__title-icon card__title-icon--accent"><i data-lucide="users" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.gender">Earnings by gender</h3></div></div>
+              <div class="pie-figure pie-figure--stack mt-16" data-ce-gender></div>
+            </section>
+          </div>
+
+          <div class="bento mt-24">
+            <section class="card bento--span-4">
+              <div class="card__head"><div class="card__title-group">
+                <span class="card__title-icon card__title-icon--accent"><i data-lucide="sparkles" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.zodiac">Earnings by star sign</h3></div></div>
+              <ol class="perf-rank perf-rank--nopct perf-rank--tight" data-ce-list="zodiac" style="width:100%"></ol>
+            </section>
+            <section class="card bento--span-4">
+              <div class="card__head"><div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="id-card" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.mbti">Earnings by MBTI</h3></div></div>
+              <ol class="perf-rank perf-rank--nopct perf-rank--tight" data-ce-list="mbti" style="width:100%"></ol>
+            </section>
+            <section class="card bento--span-4">
+              <div class="card__head"><div class="card__title-group">
+                <span class="card__title-icon card__title-icon--success"><i data-lucide="gem" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.cz">Earnings by Chinese zodiac</h3></div></div>
+              <ol class="perf-rank perf-rank--nopct perf-rank--tight" data-ce-list="cz" style="width:100%"></ol>
+            </section>
+          </div>
+
+          <section class="card mt-24" data-ce-postonly hidden>
+            <div class="card__head"><div class="card__title-group">
+              <span class="card__title-icon card__title-icon--info"><i data-lucide="layout-grid" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="ce.sec.posttype">Earnings by post format</h3></div></div>
+            <div class="bd-tablecard mt-16"><table class="ztor-table">
+              <thead><tr><th data-i18n="ce.pt.fmt">Format</th><th class="bd-amt" data-i18n="ce.pt.n">Posts</th>
+                <th class="bd-amt" data-i18n="ce.pt.aff">With affiliate</th><th class="bd-amt" data-i18n="ce.pt.mention">Mentions content</th>
+                <th class="bd-amt" data-i18n="ce.pt.views">Views</th><th class="bd-amt" data-i18n="ce.pt.rev">Affiliate revenue</th></tr></thead>
+              <tbody data-ce-posttype></tbody></table></div>
+            <p class="roy-foot__note mt-16" data-i18n="ce.pt.note">Every column rolls up from the post report below.</p>
           </section>
+
+          <section class="card mt-24" data-ce-postonly hidden>
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--primary"><i data-lucide="file-text" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="ce.sec.postdetail">Post report</h3></div>
+              <button class="btn btn--outline btn--sm" type="button" data-i18n="ce.pd.export">Export .xlsx</button>
+            </div>
+            <div class="bd-tablecard mt-16" style="overflow-x:auto"><table class="ztor-table">
+              <thead><tr><th data-i18n="ce.pd.title">Post</th><th data-i18n="ce.pd.mention">Mentions</th>
+                <th class="bd-amt" data-i18n="ce.pd.rev">Revenue</th><th data-i18n="ce.pd.date">Created</th>
+                <th data-i18n="ce.pd.form">Format</th><th class="bd-amt" data-i18n="ce.pd.imp">Impressions</th>
+                <th class="bd-amt" data-i18n="ce.pd.v3">Viewed &gt;3s</th><th class="bd-amt" data-i18n="ce.pd.eng">Interactions</th>
+                <th class="bd-amt" data-i18n="ce.pd.rate">Engagement rate</th><th class="bd-amt" data-i18n="ce.pd.rent">Content rentals</th></tr></thead>
+              <tbody data-ce-postdetail></tbody></table></div>
+          </section>
+        </div><!-- /.when-data -->
+        <div class="when-empty">
+          <section class="card"><div class="empty-card">
+            <span class="empty-card__icon"><i data-lucide="disc" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="roy.empty.title">No royalty statements yet</h3>
+            <p class="empty-card__text" data-i18n="roy.empty.text">Once a distributor files a statement — or you add one yourself — your royalties by work, region and platform show up here.</p>
+          </div></section>
         </div>
       </div>
+
       </div><!-- /.list-dock -->
 
     </div>
@@ -882,112 +927,6 @@
     });
   })();
 </script>
-  <!-- 全部作品版稅明細 · 由兩張 Top 10 卡的「查看全部」開啟。
-       popup 一次給兩個軸（金額＋次數）與類型篩選，卡片只給單軸 Top 10。 -->
-  <div class="payout-modal" data-modal="royalty-all" hidden>
-    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="roy-all-title">
-      <div class="payout-dialog__head">
-        <div>
-          <h2 class="payout-dialog__title" id="roy-all-title" data-i18n="roy.all.title">All works</h2>
-          <span class="text-sub" style="font-size: var(--fs-12)" data-roy-all-sub></span>
-        </div>
-        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
-      </div>
-      <div class="payout-dialog__body">
-        <nav class="filter-tabs" role="tablist" aria-label="Work type" data-roy-type>
-          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-roy-t="all" data-i18n="roy.type.all">All</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="music" data-i18n="roy.type.music">Music</button>
-          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-roy-t="video" data-i18n="roy.type.video">Video</button>
-        </nav>
-        <table class="ztor-table mt-16">
-          <thead><tr>
-            <th data-i18n="roy.all.work">Work</th>
-            <th data-i18n="roy.all.type">Type</th>
-            <th class="bd-amt" data-i18n="roy.all.royalty">Royalty</th>
-          </tr></thead>
-          <tbody data-roy-all-body></tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-<script>
-  /* 表現最佳作品兩張榜 —— 卡片 Top 10、popup 全部，兩處共用同一份資料與類型篩選。
-     作品名走 i18n（roy.work1–11），所以切 persona 會跟著換；類型（音樂／影片）
-     依 projects-store 的 cat 分，兩個 persona 各一份，存在 data-roy-works 裡。
-     金額由當期總額用最大餘數法分配到 11 部作品，故「全部」加總＝總版稅；
-     卡片上的 Top 10 是子集，不等於總額——popup 副標會把這件事講白。 */
-  (function () {
-    const host = document.querySelector('[data-roy-works]');
-    if (!host) return;
-    const CFG = JSON.parse(host.dataset.royWorks);
-    const persona = (window.ztorPersona && window.ztorPersona.get && window.ztorPersona.get()) || 'default';
-    const TYPES = CFG.types[persona] || CFG.types.default;
-    const T = k => (window.i18nT && window.i18nT(k)) || k;
-    const HUE = n => 'var(--chart-' + (n % 7 + 1) + ')';
-    let period = 'quarter';
-
-    function rows(axis, type) {
-      const d = CFG.data[period];
-      const vals = axis === 'money' ? d.moneyRaw : d.playsRaw;
-      const txt = axis === 'money' ? d.money : d.plays;
-      return vals.map((v, i) => ({ i: i, v: v, txt: txt[i], type: TYPES[i] }))
-        .filter(r => type === 'all' || r.type === type)
-        .sort((a, b) => b.v - a.v);
-    }
-
-    function renderList(card) {
-      const axis = card.dataset.royCard;
-      const type = card.querySelector('[data-roy-type] .filter-tabs__item--active').dataset.royT;
-      const all = rows(axis, type);
-      const top = all.slice(0, 10);
-      const max = top.length ? top[0].v : 1;
-      card.querySelector('[data-roy-list]').innerHTML = top.map((r, n) =>
-        '<li class="perf-rank__row" style="--w:' + Math.max(4, Math.round(r.v / max * 100)) + '%; --hue:' + HUE(r.i) + '">' +
-        '<span class="perf-rank__idx">' + (n + 1) + '</span>' +
-        '<span class="perf-rank__name">' + T('roy.work' + (r.i + 1)) + '</span>' +
-        '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>' +
-        '<span class="perf-rank__val">' + r.txt + '</span></li>').join('');
-      const note = card.querySelector('[data-roy-count]');
-      if (note) note.textContent = T('roy.works.count').replace('{shown}', top.length).replace('{total}', all.length);
-    }
-
-    function renderAll(modal) {
-      const type = modal.querySelector('[data-roy-type] .filter-tabs__item--active').dataset.royT;
-      const d = CFG.data[period];
-      const list = rows('money', type);
-      modal.querySelector('[data-roy-all-body]').innerHTML = list.map(r =>
-        '<tr><td>' + T('roy.work' + (r.i + 1)) + '</td>' +
-        '<td>' + T('roy.type.' + r.type) + '</td>' +
-        '<td class="bd-amt">' + d.money[r.i] + '</td></tr>').join('');
-      const sub = modal.querySelector('[data-roy-all-sub]');
-      if (sub) sub.textContent = T('roy.all.sub').replace('{n}', list.length);
-    }
-
-    function renderAllCards() {
-      document.querySelectorAll('[data-roy-card]').forEach(renderList);
-      const m = document.querySelector('[data-roy-all-body]');
-      if (m) renderAll(m.closest('.payout-modal'));
-    }
-
-    document.addEventListener('click', e => {
-      const b = e.target.closest('[data-roy-type] .filter-tabs__item');
-      if (!b) return;
-      const nav = b.closest('[data-roy-type]');
-      nav.querySelectorAll('.filter-tabs__item').forEach(x => {
-        const on = x === b;
-        x.classList.toggle('filter-tabs__item--active', on);
-        x.setAttribute('aria-selected', on ? 'true' : 'false');
-      });
-      const card = b.closest('[data-roy-card]');
-      if (card) renderList(card); else renderAll(b.closest('.payout-modal'));
-    });
-    /* 期間切換與語言切換都要重畫 */
-    document.addEventListener('ztor:roy-period', e => { period = e.detail; renderAllCards(); });
-    document.addEventListener('i18n:applied', renderAllCards);
-    renderAllCards();
-  })();
-</script>
 <script>
   /* 捐贈彈窗（2026-08-06）——五件事：選組織、填金額、看平台費說明、匿名、確認後送出。
      開關由 finance-overview.js 的 data-drawer-open/-close 負責，這裡只管表單狀態。
@@ -1101,5 +1040,259 @@
     validate();
   })();
 </script>
+  <!-- 全部內容明細 · 由 Top 10 卡的「查看全部」開啟 -->
+  <div class="payout-modal" data-modal="ce-all" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ce-all-title">
+      <div class="payout-dialog__head">
+        <div><h2 class="payout-dialog__title" id="ce-all-title" data-i18n="ce.sec.works.all">See all content</h2></div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <table class="ztor-table"><thead><tr>
+          <th data-i18n="ce.all.work">Content</th><th data-i18n="ce.all.type">Type</th>
+          <th class="bd-amt" data-i18n="ce.all.rev">Earnings</th></tr></thead>
+          <tbody data-ce-all-body></tbody></table>
+      </div>
+    </section>
+  </div>
+
+<script>
+  /* 內容收益分頁 —— 4 型篩選（全部／音樂／影片／貼文）驅動 7 個收入切面＋兩張貼文專屬表。
+     資料點取自 ztor 自家的績效報告原型，只取金額那半（次數軸 2026-07-31 裁定留在粉絲分析）。
+
+     帳的規則：每一型、每一期，各切面加總都精準等於該型總額；「全部」＝音樂＋影片＋貼文
+     逐項相加，不是另算一套。作品／貼文名走 i18n（ce.w.*），所以切 persona 會跟著換。
+     貼文沒有串流平台，該區塊在貼文型隱藏；「全部」型的平台榜只含音樂與影片的部分。 */
+  (function () {
+    const root = document.querySelector('[data-ce]');
+    if (!root) return;
+    const CFG = JSON.parse(root.dataset.ceCfg);
+    const T = k => (window.i18nT && window.i18nT(k)) || k;
+    const persona = (window.ztorPersona && window.ztorPersona.get && window.ztorPersona.get()) || 'default';
+    let period = 'quarter', type = 'all';
+    const fmt = n => CFG.cur === 'usd' ? '$' + n.toLocaleString() : 'NTD ' + n.toLocaleString();
+    const bigfmt = n => CFG.cur === 'usd' ? 'US$' + n.toLocaleString() : 'NTD ' + n.toLocaleString();
+
+    /* 一張排行榜：名次·名稱·長條·百分比·金額。keys 是 i18n key 陣列。 */
+    function rank(el, keys, vals, prefix, showPct) {
+      const rows = vals.map((v, i) => ({ v: v, k: prefix + keys[i] })).filter(r => r.v > 0)
+        .sort((a, b) => b.v - a.v);
+      const tot = rows.reduce((a, r) => a + r.v, 0) || 1;
+      const max = rows.length ? rows[0].v : 1;
+      el.className = 'perf-rank' + (showPct ? '' : ' perf-rank--nopct perf-rank--tight');
+      el.innerHTML = rows.map((r, n) =>
+        '<li class="perf-rank__row perf-rank__row--click" data-ce-open="' + r.t + ':' + r.k + '" data-drawer-open="ce-item" style="--w:' + Math.max(3, Math.round(r.v / max * 100)) + '%; --hue:var(--chart-' + (n % 7 + 1) + ')">' +
+        '<span class="perf-rank__idx">' + (n + 1) + '</span>' +
+        '<span class="perf-rank__name">' + T(r.k) + '</span>' +
+        '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>' +
+        (showPct ? '<span class="perf-rank__pct">' + (r.v / tot * 100).toFixed(1) + '%</span>' : '') +
+        '<span class="perf-rank__val">' + fmt(r.v) + '</span></li>').join('');
+    }
+
+    /* 三段比例圓餅＋圖例。用 .pie 而非 .donut：後者只吃兩段。 */
+    const PIE_HUE = ['var(--chart-1)', 'var(--chart-2)', 'var(--foreground-muted)'];
+    function pie(el, keys, vals, prefix) {
+      if (!el) return;
+      const tot = vals.reduce((a, b) => a + b, 0) || 1;
+      let acc = 0;
+      const stops = vals.map((v, i) => { acc += v / tot * 100; return PIE_HUE[i] + ' 0 ' + acc.toFixed(1) + '%'; });
+      el.innerHTML = '<div class="pie" aria-hidden="true" style="--pie-stops: ' + stops.join(', ') + '"></div>' +
+        '<div class="pie-figure__legend"><div class="source-list">' +
+        vals.map((v, i) => '<div class="source-row"><span class="source-row__swatch" style="background:' + PIE_HUE[i] + '"></span>' +
+          '<span>' + T(prefix + keys[i]) + '</span>' +
+          '<span class="source-row__amt">' + fmt(v) + '</span>' +
+          '<span class="source-row__pct">' + (v / tot * 100).toFixed(1) + '%</span></div>').join('') +
+        '</div></div>';
+    }
+
+    /* 作品金額只分給「這個 persona 真的有的作品」，用最大餘數法重分配，
+       確保該型的作品加總＝該型總額。不重分配的話，persona 缺格的那幾筆金額
+       會憑空消失——周湯豪只有 4 部影片，10 格的原始分配會漏掉 906
+       （2026-07-31 popup 一填上就露出來的帳務漏洞）。 */
+    function allocate(total, weights) {
+      const w = weights.reduce((a, b) => a + b, 0) || 1;
+      const raw = weights.map(x => total * x / w);
+      const out = raw.map(r => Math.floor(r));
+      let rem = total - out.reduce((a, b) => a + b, 0);
+      raw.map((r, i) => ({ i: i, f: r - out[i] })).sort((a, b) => b.f - a.f)
+         .slice(0, rem).forEach(o => { out[o.i] += 1; });
+      return out;
+    }
+
+    /* 作品／貼文榜。「全部」型把三型合起來排，所以跨型也能比大小。 */
+    function works(limit) {
+      const d = CFG.data[period];
+      let out = [];
+      (type === 'all' ? ['music', 'video', 'post'] : [type]).forEach(t => {
+        const has = CFG.hasWork[persona][t];
+        const idx = d[t].works.map((v, i) => i).filter(i => has[i]);
+        const vals = allocate(d[t].total, idx.map(i => d[t].works[i]));
+        idx.forEach((i, n) => out.push({ v: vals[n], k: 'ce.w.' + t + (i + 1), t: t }));
+      });
+      out.sort((a, b) => b.v - a.v);
+      return limit ? out.slice(0, limit) : out;
+    }
+
+    function render() {
+      const d = CFG.data[period][type];
+      root.querySelector('[data-ce-total]').textContent = bigfmt(d.total);
+      root.querySelector('[data-ce-meta]').setAttribute('data-i18n', 'ce.meta.' + period);
+      /* 型別膠囊 */
+      root.querySelectorAll('[data-ce-type] .filter-tabs__item').forEach(b => {
+        const on = b.dataset.ceT === type;
+        b.classList.toggle('filter-tabs__item--active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      /* 作品榜 */
+      const top = works(10), all = works(0);
+      const max = top.length ? top[0].v : 1;
+      root.querySelector('[data-ce-list="works"]').innerHTML = top.map((r, n) =>
+        '<li class="perf-rank__row perf-rank__row--click" data-ce-open="' + r.t + ':' + r.k + '" data-drawer-open="ce-item" style="--w:' + Math.max(3, Math.round(r.v / max * 100)) + '%; --hue:var(--chart-' + (n % 7 + 1) + ')">' +
+        '<span class="perf-rank__idx">' + (n + 1) + '</span>' +
+        '<span class="perf-rank__name">' + T(r.k) + '</span>' +
+        '<span class="perf-rank__track"><span class="perf-rank__fill"></span></span>' +
+        '<span class="perf-rank__val">' + fmt(r.v) + '</span></li>').join('');
+      root.querySelector('[data-ce-count]').textContent =
+        T('ce.sec.works.count').replace('{shown}', top.length).replace('{total}', all.length);
+      /* popup 掛在 <body> 尾端、不在 root（分頁內的 .when-data）底下——
+         用 root.querySelector 會查不到，表格會一直是空的（2026-07-31 實測踩到）。 */
+      const body = document.querySelector('[data-ce-all-body]');
+      if (body) body.innerHTML = all.map(r =>
+        '<tr><td>' + T(r.k) + '</td><td>' + T('ce.type.' + r.t) + '</td>' +
+        '<td class="bd-amt">' + fmt(r.v) + '</td></tr>').join('');
+      /* 六個切面 */
+      rank(root.querySelector('[data-ce-list="regions"]'), CFG.keys.regions, d.regions, 'ce.rg.', true);
+      /* 性別改圓餅（2026-07-31 使用者指定，比照粉絲分析的 .pie）：三段是「這一整塊
+         怎麼被分掉」，圓餅比長條更直接；沿用 .pie-figure--stack（段數少、卡片不寬）。 */
+      pie(root.querySelector('[data-ce-gender]'), CFG.keys.gender, d.gender, 'ce.gd.');
+      rank(root.querySelector('[data-ce-list="platforms"]'), CFG.keys.platforms, d.platforms, 'ce.pf.', true);
+      rank(root.querySelector('[data-ce-list="zodiac"]'), CFG.keys.zodiac, d.zodiac, 'ce.zd.', false);
+      rank(root.querySelector('[data-ce-list="mbti"]'), CFG.keys.mbti, d.mbti, 'ce.mb.', false);
+      rank(root.querySelector('[data-ce-list="cz"]'), CFG.keys.cz, d.cz, 'ce.cz.', false);
+      /* 型別限定區塊：貼文沒有串流平台；貼文兩張專屬表只在貼文型出現 */
+      root.querySelector('[data-ce-sec="platforms"]').hidden = (type === 'post');
+      root.querySelectorAll('[data-ce-postonly]').forEach(el => { el.hidden = (type !== 'post'); });
+      if (type === 'post') renderPost();
+      if (window.applyI18n) window.applyI18n(root.querySelector('[data-ce-meta]').parentElement);
+      if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(root);
+    }
+
+    function renderPost() {
+      const rows = CFG.post.rows, mul = CFG.data[period].post.total / CFG.data.quarter.post.total;
+      const sum = {};
+      rows.forEach(r => {
+        const f = r.form;
+        sum[f] = sum[f] || { n: 0, aff: 0, mention: 0, views: 0, rev: 0 };
+        sum[f].n++; sum[f].aff++; sum[f].mention++;
+        sum[f].views += Math.round(r.imp * mul); sum[f].rev += Math.round(r.rev * mul);
+      });
+      root.querySelector('[data-ce-posttype]').innerHTML = ['image', 'video', 'text'].map(f => {
+        const s = sum[f] || { n: 0, aff: 0, mention: 0, views: 0, rev: 0 };
+        return '<tr><td>' + T('ce.pf2.' + f) + '</td><td class="bd-amt">' + s.n + '</td>' +
+          '<td class="bd-amt">' + s.aff + '</td><td class="bd-amt">' + (s.mention || '—') + '</td>' +
+          '<td class="bd-amt">' + s.views.toLocaleString() + '</td>' +
+          '<td class="bd-amt">' + fmt(s.rev) + '</td></tr>';
+      }).join('');
+      root.querySelector('[data-ce-postdetail]').innerHTML = rows.map(r =>
+        '<tr><td>' + T('ce.w.post' + (r.i + 1)) + '</td>' +
+        '<td>' + T('ce.mn.' + CFG.post.mention[persona][r.i]) + '</td>' +
+        '<td class="bd-amt">' + fmt(Math.round(r.rev * mul)) + '</td>' +
+        '<td>' + r.date + '</td><td>' + T('ce.pf2.' + r.form) + '</td>' +
+        '<td class="bd-amt">' + Math.round(r.imp * mul).toLocaleString() + '</td>' +
+        '<td class="bd-amt">' + Math.round(r.v3 * mul).toLocaleString() + '</td>' +
+        '<td class="bd-amt">' + Math.round(r.eng * mul).toLocaleString() + '</td>' +
+        '<td class="bd-amt">' + r.rate + '</td>' +
+        '<td class="bd-amt">' + Math.round(r.rent * mul).toLocaleString() + '</td></tr>').join('');
+    }
+
+    /* 點 Top 10 任一列 → 內容詳情 popup。這張榜混了三種來源，popup 要說清楚是哪一種
+       （2026-08-10 使用者指定，與粉絲分析的著作彈窗對齊）：
+       ① 平台項目——標題比對得到 projects-store 的項目，徽章寫出項目分類，
+          「查看詳情」直接連到該項目的詳情頁。
+       ② 官方匯入——發行商報表帶進來、平台上沒有開項目的曲目（合輯收錄、客座、
+          早期未上架的舊作）。徽章寫「未列為項目」，詳情停用並說明原因，不給會 404 的連結。
+       ③ 前台貼文——本來就沒有項目這回事，來源徽章與詳情一起隱藏
+          （使用者 2026-07-31 指定：貼文沒有可跳的內容頁）；貼文型另給瀏覽量與互動率。
+       「未列為項目」沿用粉絲分析的 ar.work.nokind，同一個概念在兩頁不會念成兩個詞。 */
+    function openItem(t, key) {
+      const m = document.querySelector('[data-modal="ce-item"]'); if (!m) return;
+      const d = CFG.data[period][t], i = Number(key.replace('ce.w.' + t, '')) - 1;
+      const title = T(key);
+      const proj = t === 'post' || !window.ztorProjects ? null : window.ztorProjects.projectFor(title);
+      m.querySelector('[data-ce-kind]').textContent = T('ce.type.' + t);
+      const src = m.querySelector('[data-ce-src]');
+      src.hidden = (t === 'post');
+      src.textContent = proj ? T('projects.cat.' + proj.cat) : T('ar.work.nokind');
+      m.querySelector('[data-ce-item-title]').textContent = title;
+      const stats = [{ l: 'ce.item.rev', v: fmt(d.works[i]) }];
+      if (t === 'post') {
+        const row = CFG.post.rows.find(r => r.i === i);
+        const mul = CFG.data[period].post.total / CFG.data.quarter.post.total;
+        if (row) {
+          stats.push({ l: 'ce.item.views', v: Math.round(row.imp * mul).toLocaleString() });
+          stats.push({ l: 'ce.item.rate', v: row.rate });
+        }
+      } else {
+        stats.push({ l: 'ce.item.share', v: (d.works[i] / d.total * 100).toFixed(1) + '%' });
+      }
+      /* 數據磚用站上標準的 .kpi（bento 分欄），不自製一套 */
+      m.querySelector('[data-ce-item-stats]').innerHTML = stats.map(s =>
+        '<div class="kpi bento--span-' + (12 / stats.length) + '"><div class="kpi__label">' + T(s.l) + '</div>' +
+        '<div class="kpi__value">' + s.v + '</div></div>').join('');
+      m.querySelector('[data-ce-item-cover]').textContent = title;
+      m.querySelector('[data-ce-item-cta]').hidden = (t === 'post');
+      const link = m.querySelector('[data-ce-item-link]');
+      const note = m.querySelector('[data-ce-item-note]');
+      if (proj) {
+        link.href = 'project-detail.html?id=' + encodeURIComponent(proj.id);
+        link.removeAttribute('aria-disabled');
+        note.textContent = '';
+        note.hidden = true;
+      } else {
+        link.removeAttribute('href');
+        link.setAttribute('aria-disabled', 'true');
+        /* 貼文整個 CTA 區塊是隱藏的，說明句留著只會在下次開項目型時閃一下舊字 */
+        note.textContent = t === 'post' ? '' : T('ce.item.noproject');
+        note.hidden = (t === 'post');
+      }
+      if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(m);
+    }
+
+    root.addEventListener('click', e => {
+      const b = e.target.closest('[data-ce-type] .filter-tabs__item');
+      if (b && b.dataset.ceT) { type = b.dataset.ceT; render(); return; }
+      const row = e.target.closest('[data-ce-open]');
+      if (row) { const [t, k] = row.dataset.ceOpen.split(':'); openItem(t, k); }
+    });
+    document.addEventListener('ztor:roy-period', e => { period = e.detail; render(); });
+    document.addEventListener('i18n:applied', render);
+    render();
+  })();
+</script>
+  <!-- 內容詳情 · 點 Top 10 任一列開啟。正式版接真實內容頁，這裡是占位。
+       貼文型不顯示「查看詳情」（使用者 2026-07-31 指定）。 -->
+  <div class="payout-modal" data-modal="ce-item" hidden>
+    <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ce-item-title">
+      <div class="payout-dialog__head">
+        <div class="flex-row"><span class="badge badge--neutral" data-ce-kind></span><span class="badge badge--neutral" data-ce-src hidden></span></div>
+        <button class="btn btn--icon" type="button" aria-label="Close" data-drawer-close><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+      <div class="payout-dialog__body">
+        <div class="ce-item">
+          <div class="ipm-card__cover" data-ce-item-cover></div>
+          <div>
+            <h2 class="payout-dialog__title" id="ce-item-title" data-ce-item-title></h2>
+            <p class="text-sub mt-12" data-i18n="ce.item.body">Placeholder — the real build shows the full content record here (summary, release info, licensing and split structure, historical performance). Closing this returns you to the report; nothing changes.</p>
+            <div class="bento mt-20" data-ce-item-stats></div>
+            <div class="mt-24" data-ce-item-cta>
+              <a class="btn btn--primary btn--block" data-ce-item-link data-i18n="ce.item.details">View content</a>
+              <p class="text-sub mt-8" data-ce-item-note></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
 </body>
 </html>
