@@ -597,6 +597,10 @@
       +       '<div class="ztd__group"><p class="ztd__group-label">Display mode · 版面</p>'
       +         '<div class="ztd__grid">' + optsHtml(NAV, curNav(), 'nav') + '</div></div>'
       +       '<div class="ztd__group"><button class="ztd__row" data-act="reonboard"><span>重新顯示首次 popup</span></button></div>'
+      /* 送審資料會累積：一個項目送出過就不能再送（作品已經在審核隊伍裡），
+         要反覆示範上架流程就得先把它清回四筆種子。放在設置頁而不是掛上面的
+         全域 Reset——那顆管的是 devstate，兩者清的東西不同、混在一起會誤清。 */
+      +       '<div class="ztd__group"><button class="ztd__row" data-act="reset-review"><span>重置送審資料</span></button></div>'
       +     '</div>'
       +   '</div>'
       +   '<div class="ztd__foot"><button class="ztd__reset" data-act="reset">Reset</button>'
@@ -778,6 +782,21 @@
     if (act === 'tab') { activeTab = btn.getAttribute('data-tab'); try { localStorage.setItem(TAB_LS, activeTab); } catch (e) {} return paint(); }
     if (act === 'reset') { state = Object.assign({}, DEFAULTS); state.pageOpts = {}; seedPageOpts(); setInspect(false); return update(); }
     if (act === 'reonboard') { try { localStorage.removeItem(ONBOARD_LS); } catch (e) {} showOnboarding(); return; }
+    /* 清回四筆種子後重新整理：審核狀態塊、發文類型下拉、項目狀態徽章都是載入時算的，
+       不 reload 的話畫面還停在舊結果，看起來像沒清掉。 */
+    if (act === 'reset-review') {
+      /* devtools 每頁都在，work-review-store 只掛在四個頁面——不在的頁面直接砍
+         localStorage，store 下次讀取到空的就會自己重種。用前綴掃而不是寫死鍵名，
+         版本號往前走（v2→v3）時這裡不用跟著改。 */
+      if (window.ztorWorkReview) window.ztorWorkReview.reset();
+      else try {
+        Object.keys(localStorage)
+          .filter(function (k) { return k.indexOf('ztor.workReview') === 0; })
+          .forEach(function (k) { localStorage.removeItem(k); });
+      } catch (e) {}
+      location.reload();
+      return;
+    }
     if (act === 'toggle-skip') { state.skipValidation = !state.skipValidation; return update(); }
     if (act === 'toggle-future') { state.showFuture = !state.showFuture; return update(); }
     if (act === 'toggle-inspect') { setInspect(!inspecting); return; }

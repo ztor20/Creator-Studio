@@ -192,6 +192,19 @@
       list: { goal: { en: '$80,000 / $80,000', zh: '$80,000 / $80,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
     },
+
+    {
+      /* default persona 的「已成立 × 影視 × 還沒送過審」樣本（2026-08-07 補）。
+         上一筆 pirate-queen-s2 被審核佇列的審核中種子佔走，理由同 nick-r2-film 的檔頭說明。 */
+      id: 'kowloon-night-cut', created: '2026/01/09', fundFrom: '2026/02/20', name: '九龍夜行 導演剪輯版', nameEn: "Kowloon After Dark — Director's Cut",
+      cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
+      cover: IMG + 'dragon-tiger-gate-kowloon-night-card.webp', poster: IMG + 'anyong-qingshi.webp',
+      desc: { en: 'Twenty-two minutes back in, a new score, and the ending test audiences never saw — goal met, mastering now.', zh: '補回二十二分鐘、重配配樂、換回試片場沒看過的結局；共創已成立，正在做母帶。' },
+      meta: { en: '$36,000 of $36,000 reached · mastering', zh: '$36,000 / $36,000 已達標 · 母帶製作中' },
+      fund: { raised: '$36,000', goal: '$36,000', backers: '540', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Feb 20 – Apr 05, 2026', zh: '共創期間 2026/02/20 – 04/05' } },
+      list: { goal: { en: '$36,000 / $36,000', zh: '$36,000 / $36,000' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
+    },
     {
       id: 'miujie-merch-s2', created: '2026/05/20', fundFrom: '2026/06/20', name: '廟街風雲 復刻組合', nameEn: "Temple Street Story — Reissue Bundle",
       cat: 'merch', family: 'other', icon: 'shopping-bag', type: 'preorder', status: 'published', goalMet: true, delivered: false,
@@ -290,6 +303,35 @@
       meta: { en: '$62,000 of $62,000 reached · in post-production', zh: '$62,000 / $62,000 已達標 · 後期製作中' },
       fund: { raised: '$62,000', goal: '$62,000', backers: '1,480', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Nov 10 – Dec 24, 2025', zh: '共創期間 2025/11/10 – 12/24' } },
       list: { goal: { en: '$62,000 / $62,000', zh: '$62,000 / $62,000' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
+    },
+
+    {
+      /* 「已成立 × 影視 × 還沒送過審」的樣本（2026-08-07 補）。
+         上一筆 nick-lrh-doc 被審核佇列的待審核種子佔走了——已經送出去的作品不該再送一次，
+         所以它的「完成作品」選項是灰的。兩個 persona 各留一筆沒有送審紀錄的，
+         創作者從頭發起一次上架的路徑才走得到（default persona 的對位樣本是 kowloon-night-cut）。 */
+      id: 'nick-r2-film', created: '2025/06/18', fundFrom: '2025/07/15', name: 'REALIVE (R2) 演唱會電影', nameEn: "REALIVE (R2) — The Concert Film",
+      cat: 'movie', family: 'film', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
+      cover: IMG + 'nick-r2-special.jpg', poster: IMG + 'nick-r2-special.jpg',
+      desc: { en: 'The R2 special edition night, cut into a feature — goal met, final grade in progress; backers are waiting on the release.', zh: '把 R2 特仕版那一夜剪成長片；共創已成立、正在調光，支持者尚未收到交付。' },
+      meta: { en: '$54,000 of $54,000 reached · in post-production', zh: '$54,000 / $54,000 已達標 · 後期製作中' },
+      fund: { raised: '$54,000', goal: '$54,000', backers: '1,120', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Jul 15 – Sep 12, 2025', zh: '共創期間 2025/07/15 – 09/12' } },
+      list: { goal: { en: '$54,000 / $54,000', zh: '$54,000 / $54,000' } },
+      bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
+    },
+
+    {
+      /* 預購 × 影視 × 已成立的樣本（2026-08-07 補）。上架流程的前置條件看的是項目狀態
+         與作品家族、不看發行模式，所以預購走到已成立時跟共創一樣能發起上架——但站上
+         原本沒有任何一筆預購影片走到已成立（唯一的預購影片停在進行中），這條路徑因此
+         無從驗證。預購沒有分潤名額，方案必含作品本身（D167）。 */
+      id: 'nick-nsddd-film', created: '2025/12/02', fundFrom: '2026/01/08', name: '什麼都不必說 短片版', nameEn: "Nothing Left to Say — The Short Film",
+      cat: 'short', family: 'film', icon: 'film', type: 'preorder', status: 'succeeded', goalMet: true, delivered: false,
+      cover: IMG + 'nick-nsddd.jpg', poster: IMG + 'nick-nsddd.jpg',
+      desc: { en: 'A twenty-minute short built around the song — pre-orders closed at target, now in final cut; buyers are waiting on the release.', zh: '以同名歌曲延伸的二十分鐘短片；預購已達標結束、正在定剪，預購者尚未收到交付。' },
+      meta: { en: '900 / 900 pre-orders · $18 each · in final cut', zh: '900 / 900 筆預購 · 單價 $18 · 定剪中' },
+      list: { goal: { en: '900 / 900', zh: '900 / 900 筆' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
     },
 
