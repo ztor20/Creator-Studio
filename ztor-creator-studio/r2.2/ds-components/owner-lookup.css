@@ -32,6 +32,11 @@
 .owner-lookup__result:hover, .owner-lookup__result:focus-visible { background: var(--accent); outline: none; }
 .owner-lookup__result--empty { color: var(--muted-foreground); cursor: default; }
 .owner-lookup__result--empty:hover { background: transparent; }
+/* 已選中的那一列（2026-08-10，bookyay 帶入閘門）：這個 lookup 的選取會留著——
+   選完之後還能再點回輸入框、把整份清單叫出來換一個。既然清單會帶著「已經選過」
+   的狀態重開，就得在清單裡指出是哪一列，否則使用者只能靠輸入框的字回想。
+   creators／artist-picker 那兩個 lookup 選完就收掉、不會重開，不受影響。 */
+.owner-lookup__result[aria-selected="true"] { background: var(--accent); }
 
 .owner-lookup__avatar {
   display: grid;
@@ -47,7 +52,11 @@
   font-size: var(--fs-14);
   font-weight: var(--fw-medium);
 }
-.owner-lookup__copy { min-width: 0; }
+/* 名稱與說明是上下兩行，不是同一行的兩段字（2026-08-10 修）：這一層原本只設了
+   min-width，兩個 <span> 於是並排流成一行——底下 __meta 的 margin-top 與單行省略號
+   （white-space:nowrap + text-overflow）都是為「自己佔一行」寫的，在 inline 狀態下
+   通通不生效。creators 的帳號查找也一直長成一行，同輪一起回到原本設計的樣子。 */
+.owner-lookup__copy { display: flex; flex-direction: column; min-width: 0; }
 .owner-lookup__name { color: var(--foreground); font-family: var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-regular); }
 .owner-lookup__meta { margin-top: var(--sp-2); overflow: hidden; color: var(--muted-foreground); font-size: var(--fs-12); text-overflow: ellipsis; white-space: nowrap; }
 

@@ -115,5 +115,19 @@
 .form-section .field__label + .field__hint { margin-top: -4px; }        /* 描述貼齊 label（gap 0）*/
 .form-section .field__hint--count { text-align: right; }                /* 字數計數靠右 */
 
+/* 選項卡群組與它下面的內容之間要有一格呼吸（2026-08-10 使用者反饋「間距要做出來」）：
+   區段內的垂直節奏一直是靠 .field 自帶的 margin-bottom 撐出來的，選項卡群組
+   （.segmented.radio-cards）不是 .field、身上沒有那段留白，直接放進區段就會與下一個
+   元素貼成 0px。「選了才出現的欄位」最明顯——揭示出來的欄位標籤剛好貼在卡片下緣，
+   讀起來像被卡片壓住。
+
+   條件寫成「後面**還有看得見的東西**」而不是 `:not(:last-child)`（2026-08-10 修）：
+   這種卡片群組下面接的往往正是「選了才出現」的揭示區，收合時那些元素帶著 `hidden`
+   仍留在 DOM 上，`:not(:last-child)` 只看結構、看不出它們是隱形的，於是預設收合狀態下
+   區段底部會白白多出 16px。用 `:has(~ :not([hidden]))` 問的是「後面有沒有任何一個
+   還顯示著的兄弟」——這也同時處理了「第一個揭示區藏著、第二個才是展開那個」的情形
+   （取票方式選到店自取時，順豐那一塊是隱藏的），用相鄰選擇器 `+` 會漏掉。 */
+.form-section > .segmented.radio-cards:has(~ :not([hidden])) { margin-bottom: var(--sp-16); }
+
 /* Form footnote：表單底部置中小字說明（如 Stripe 保障文案）。2026-07-09 自 create-product/auction 頁內樣式 promote；數值照舊（margin-top 22px 非 token，維持零視覺變動） */
 .form-footnote { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 22px; }
