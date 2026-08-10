@@ -1158,6 +1158,7 @@
       return limit ? out.slice(0, limit) : out;
     }
 
+    let applying = false;   /* render → applyI18n → i18n:applied → render 的防遞迴閘，見下方註解 */
     function render() {
       const d = CFG.data[period][type];
       root.querySelector('[data-ce-total]').textContent = bigfmt(d.total);
@@ -1198,7 +1199,16 @@
       root.querySelector('[data-ce-sec="platforms"]').hidden = (type === 'post');
       root.querySelectorAll('[data-ce-postonly]').forEach(el => { el.hidden = (type !== 'post'); });
       if (type === 'post') renderPost();
-      if (window.applyI18n) window.applyI18n(root.querySelector('[data-ce-meta]').parentElement);
+      /* 這一行會讓 i18n.js dispatch `i18n:applied`，而本分頁把 render 掛在那個事件上
+         （語言切換後要重畫 JS 生成的節點）——沒有這道閘就是 render → applyI18n →
+         i18n:applied → render 的無限遞迴，每次重畫都往 console 丟一次
+         RangeError: Maximum call stack size exceeded。畫面看得到是因為 innerHTML
+         都在這一行之前就寫完了，錯誤只在最後才炸，所以一直沒被發現（2026-08-10 實測）。 */
+      if (window.applyI18n && !applying) {
+        applying = true;
+        try { window.applyI18n(root.querySelector('[data-ce-meta]').parentElement); }
+        finally { applying = false; }
+      }
       if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(root);
     }
 
