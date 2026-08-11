@@ -166,15 +166,29 @@
    主欄放要填的欄位，側欄放圖片這類「用看的、不是用填的」東西。側欄固定寬、主欄吃剩下，
    兩欄各自從頂端開始（align-items:start），側欄不會被主欄的長度拉高。
    窄螢幕收成單欄，側欄自然排到最後——圖片是輔助資訊，讓位給欄位是對的。 */
+/* 側欄寬度可由消費頁指定（2026-08-10）：預設 200px＝票種彈窗的門票圖片欄（原本寫死的值，
+   行為不變）；建立活動的「票務設定」把它調到 360px 裝生成的門票清單（一列五個欄位，
+   200px 塞不下）。用變數而不是再開一個修飾類——兩者的差別只有一個數字。 */
 .payout-dialog__split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 200px;
+  grid-template-columns: minmax(0, 1fr) var(--payout-split-side, 200px);
   gap: var(--sp-24);
   align-items: start;
 }
 .payout-dialog__split > * { min-width: 0; }
+/* 側欄要留在畫面上（選配，2026-08-10）：左欄是設定、右欄是那些設定產生的結果，
+   左欄捲動時右欄跟著捲走就等於看不到結果，分欄也就白分了。自己的 max-height 讓
+   結果多時它內捲，而不是把整個彈窗撐長。 */
+.payout-dialog__split-side {
+  position: sticky;
+  top: 0;
+  max-height: 100%;
+  overflow-y: auto;
+}
 @media (max-width: 640px) {
   .payout-dialog__split { grid-template-columns: minmax(0, 1fr); gap: var(--sp-16); }
+  /* 單欄時黏著沒有意義（上下堆疊，本來就跟著捲），還會擋住下面的內容 */
+  .payout-dialog__split-side { position: static; max-height: none; overflow-y: visible; }
 }
 /* 中間隔一層 wrapper 的情形（請款彈窗的 .payout-view 步驟、creators 的 <form>）：head/body/foot
    不是 .payout-dialog 的直接子層，flex column 傳不下去。讓這層 wrapper 接手成為撐滿的 flex column，

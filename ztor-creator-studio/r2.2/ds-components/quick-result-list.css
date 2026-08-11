@@ -20,17 +20,21 @@
 .quick-result { display: flex; flex-direction: column; gap: var(--sp-4); }
 .quick-result__head { margin-top: var(--sp-12); font-size: var(--fs-12); color: var(--muted-foreground); }
 .quick-result__head:first-child { margin-top: 0; }
+/* 兩行一列（2026-08-10 改版）：名稱獨佔第一行，金額·數量·標記與重設鈕排第二行。
+   原本是一列五欄（1fr 88 64 148 108，扣掉間距至少要 470px），彈窗改成左右分欄之後
+   結果清單住在 360px 的側欄裡，五欄橫排會把每一欄都壓成一兩個字。
+   欄位靠 grid 自動流排到第二行，markup 不動——名稱跨滿整列，後面四個依序落位。 */
 .quick-result__row {
   display: grid;
-  grid-template-columns: minmax(0,1fr) 88px 64px 148px 108px;
-  gap: var(--sp-8);
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: var(--sp-4) var(--sp-8);
   align-items: center;
   padding: var(--sp-8) 0;
   border-bottom: 1px solid var(--border-soft);
   font-size: var(--fs-13);
 }
-.quick-result__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.quick-result__num { text-align: right; font-variant-numeric: tabular-nums; color: var(--foreground-muted); }
+.quick-result__name { grid-column: 1 / -1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quick-result__num { font-variant-numeric: tabular-nums; color: var(--foreground-muted); }
 .quick-result__tag {
   font-size: var(--fs-12);
   color: var(--muted-foreground);
@@ -39,7 +43,5 @@
 /* 已自訂的那幾張要看得出來——它們不會跟著上面的預設值走 */
 .quick-result__tag--own { color: var(--foreground); }
 .quick-result__end { display: flex; justify-content: flex-end; }
-@media (max-width: 720px) {
-  .quick-result__row { grid-template-columns: minmax(0,1fr) 72px; grid-auto-rows: auto; }
-  .quick-result__tag, .quick-result__end { grid-column: 1 / -1; justify-content: flex-start; }
-}
+/* 窄螢幕的斷點已無作用：兩行一列本身就是窄版面的排法，不必再換一次。
+   墓碑保留一行說明，免得日後看到「這個元件怎麼沒有 media query」以為漏了。 */

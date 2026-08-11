@@ -317,6 +317,21 @@
       return rec;
     },
 
+    /* 編輯已上架作品，但這次的變更不需要重新送審（規格 5.1.2.2 §2.2.11 的分界：
+       文案、標籤、演職名單屬維護，不改變作品本體與交易條件）。內容換掉、審核狀態
+       與送出次數都不動；歷程留一筆 edit，讓審核者看得出這件在通過之後被改過什麼時候。 */
+    saveWork: function (projectId, work) {
+      var list = items(), rec = null;
+      for (var i = 0; i < list.length; i++) if (list[i].projectId === projectId) { rec = list[i]; break; }
+      if (!rec) return null;
+      var at = now();
+      rec.work = work || rec.work;
+      rec.editedAt = at;
+      rec.history = (rec.history || []).concat([{ at: at, action: 'edit', by: '', reason: '' }]);
+      save(list);
+      return rec;
+    },
+
     /* 接手審核：待審核 → 審核中，記下審核者（F4）。 */
     start: function (id, reviewer) {
       var list = items(), rec = find(list, id);

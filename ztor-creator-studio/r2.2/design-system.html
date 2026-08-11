@@ -342,6 +342,11 @@ html[data-lang="zh"] [data-en] { display: none !important; }
 .anatomy { font-family: var(--font-mono, ui-monospace, monospace); font-size: var(--fs-11); line-height: 1.5; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-sm, 4px); padding: 14px 16px; overflow-x: auto; color: var(--foreground-muted); white-space: pre; margin: 4px 0 16px; }
 .field-label { font-family: var(--type-section-label-family); font-size: var(--type-section-label-size); font-weight: var(--type-section-label-weight); line-height: var(--type-section-label-line-height); letter-spacing: var(--type-section-label-tracking); color: var(--foreground); margin: 22px 0 8px; }
 .field-note { font-family: var(--type-caption-family); font-size: var(--type-caption-size); font-weight: var(--fw-regular); color: var(--muted-foreground); }
+/* 彈窗類元件的行內展示（2026-08-11）：.payout-modal 原生是 position:fixed 的全視窗覆蓋層，
+   直接放進 demo 卡會蓋住整頁。這裡只在展示容器內把它壓回文件流——元件本身不動，
+   產品頁看到的仍是覆蓋層。同 #sticky-actions 卡的既有做法。 */
+.demo--inline-modal .payout-modal { position: static; inset: auto; display: block; padding: 0; background: none; backdrop-filter: none; }
+.demo--inline-modal .payout-dialog { width: 100%; max-height: none; }
 .field-text { color: var(--foreground-muted); font-family: var(--type-body-family); font-size: var(--type-body-size); font-weight: var(--type-body-weight); line-height: 1.55; letter-spacing: var(--type-body-tracking); margin: 0 0 4px; max-width: none; }
 .field-list { color: var(--foreground-muted); font-family: var(--type-body-family); font-size: var(--type-body-size); font-weight: var(--type-body-weight); line-height: 1.6; letter-spacing: var(--type-body-tracking); margin: 0; padding-left: 20px; }
 .spec { width: 100%; border-collapse: collapse; font-size: var(--fs-13); margin: 4px 0 8px; }
@@ -646,6 +651,14 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#source-import">Source import gate</a>
     <a class="toc__link toc__link--sub" href="#field-source-tag">Field source tag</a>
     <a class="toc__link toc__link--sub" href="#quick-result-list">Quick result list</a>
+    <div class="toc__subgroup"><span data-en>JS components without their own CSS (7)</span><span data-zh>無自帶 CSS 的 JS 元件（7）</span></div>
+    <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
+    <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
+    <a class="toc__link toc__link--sub" href="#film-picker">Film picker</a>
+    <a class="toc__link toc__link--sub" href="#manual-entry-modal">Manual entry modal</a>
+    <a class="toc__link toc__link--sub" href="#source-upload-modal">Source upload modal</a>
+    <a class="toc__link toc__link--sub" href="#fee-exception-modal">Fee exception modal</a>
+    <a class="toc__link toc__link--sub" href="#content-blocks">Content block injector</a>
     <div class="toc__group"><span data-en>Pillar 5 · Pattern</span><span data-zh>Pillar 5 · Pattern</span></div>
     <a class="toc__link" href="#patterns"><span data-en>5.1 Pattern cards</span><span data-zh>5.1 Pattern 卡</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
@@ -1314,6 +1327,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <div class="sub__head"><h3 class="sub__title">4.1 Inventory</h3></div>
         <p class="sub__desc" data-en>Rows are split by source ownership. <code>ds-components/</code> rows are independently importable; <code>shared.css</code> rows are real product components that are reused today but have not yet been split into one-file CSS.</p>
         <p class="sub__desc" data-zh>清單依來源權責拆分。<code>ds-components/</code> 列是可獨立匯入的元件；<code>shared.css</code> 列是今天產品中真實復用、但尚未拆成單一 CSS 檔的元件。</p>
+        <p class="sub__desc" data-en><strong>JS components with no CSS of their own are listed and demoed here too</strong> (2026-08-11). They used to be registered in <code>design-system.md</code> only, on the grounds that they own no styles. But this page is where components are reviewed — a component that is missing here reads as a component that does not exist. Their CSS column names the JS file instead.</p>
+        <p class="sub__desc" data-zh><strong>無自帶 CSS 的 JS 元件同樣列在這裡、也有 demo 卡</strong>（2026-08-11 起）。這類元件過去只登記在 <code>design-system.md</code>，理由是它們不擁有任何樣式；但元件是在這一頁被檢視的，這頁沒有就等於這個元件不存在。它們的 CSS 欄改放 JS 檔名。</p>
         <table class="spec"><thead><tr><th><span data-en>Component</span><span data-zh>元件</span></th><th><span data-en>Layer</span><span data-zh>Layer</span></th><th><span data-en>Where seen</span><span data-zh>出現位置</span></th><th><span data-en>CSS</span><span data-zh>CSS</span></th></tr></thead><tbody>
           <tr><td><a href="#button">Button</a></td><td>🟢</td><td><span data-en>Primary CTAs, wizard action bar, header actions</span><span data-zh>主要 CTA、精靈動作列、header 動作</span></td><td><code>button.css</code></td></tr>
           <tr><td><a href="#badge">Badge / Status pill</a></td><td>🟢</td><td><span data-en>Dashboard / Earnings / Payouts — 5 status variants</span><span data-zh>Dashboard／Earnings／Payouts — 5 種狀態變體</span></td><td><code>badge.css</code></td></tr>
@@ -1416,6 +1431,15 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#finding-card">Finding card</a></td><td>🟠</td><td><span data-en>A conclusion carrying the figures that support it</span><span data-zh>帶著支撐數字的一則結論</span></td><td><code>finding-card.css</code></td></tr>
           <tr><td><a href="#source-status">Source status</a></td><td>🟠</td><td><span data-en>Non-occupying data-coverage indicator with a source panel</span><span data-zh>不占版位的資料涵蓋指示＋來源明細面板</span></td><td><code>source-status.css</code></td></tr>
           <tr><td>Tooltip / Toast</td><td>—</td><td><span data-en>◎ shadcn baseline — not promoted to a project CSS file</span><span data-zh>◎ shadcn baseline — 未 promote 成項目 CSS 檔</span></td><td>—</td></tr>
+          <!-- 無自帶 CSS 的 JS 元件（2026-08-11 起也列在這裡、也有 demo 卡）。CSS 欄放 JS 檔名：
+               這些元件的實作就在那支 JS 裡，欄位空著會讀成「還沒建」。 -->
+          <tr><td><a href="#work-fields">Work fields</a></td><td>🟠</td><td><span data-en>The F1–F15 field blocks of the film release flow, shared by two hosts</span><span data-zh>影片上架的 F1–F15 欄位區塊，兩個宿主共用</span></td><td><code>partials/work-fields.js</code></td></tr>
+          <tr><td><a href="#work-taxonomy">Work taxonomy</a></td><td>🟢</td><td><span data-en>The single list behind every genre picker and age-rating select</span><span data-zh>題材與年齡分級的唯一值域來源</span></td><td><code>js/work-taxonomy.js</code></td></tr>
+          <tr><td><a href="#film-picker">Film picker</a></td><td>🟡</td><td><span data-en>Search-and-pick list of published movies, for product ↔ movie links</span><span data-zh>商品關聯電影的可搜尋多選</span></td><td><code>partials/film-picker.js</code></td></tr>
+          <tr><td><a href="#manual-entry-modal">Manual entry modal</a></td><td>🟠</td><td><span data-en>Earnings — log income earned outside Ztor</span><span data-zh>收入管理 — 補登站外收入</span></td><td><code>partials/manual-entry-modal.js</code></td></tr>
+          <tr><td><a href="#source-upload-modal">Source upload modal</a></td><td>🟠</td><td><span data-en>Fan analytics — upload a platform export</span><span data-zh>粉絲分析 — 上傳平台匯出的資料檔</span></td><td><code>partials/source-upload-modal.js</code></td></tr>
+          <tr><td><a href="#fee-exception-modal">Fee exception modal</a></td><td>🟠</td><td><span data-en>Platform fees — per-creator overrides on the rate tree</span><span data-zh>平台費率 — 逐 Creator 的費率覆寫</span></td><td><code>partials/fee-exception-modal.js</code></td></tr>
+          <tr><td><a href="#content-blocks">Content block injector</a></td><td>🟠</td><td><span data-en>Dashboard and Earnings blocks rendered from one shared renderer</span><span data-zh>儀表板與收入管理的區塊由同一支渲染器產生</span></td><td><code>js/components.js</code></td></tr>
         </tbody></table>
       </section>
 
@@ -4278,8 +4302,12 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     </nav>
   </div>
   <p class="field-text"><code>ds-components/pager.css</code></p>
-  <p class="field-text" data-en>Anatomy: <code>.pager</code> container + <code>.btn.btn--ghost.btn--sm</code> page buttons (current = <code>aria-current="page"</code>, solid fill) + <code>.pager__ellipsis</code>. Tokens: <code>--primary</code>/<code>--primary-foreground</code> · <code>--muted-foreground</code> · <code>--sp-*</code>. Evidence: earnings-sony (projects table / withdrawal history).</p>
-  <p class="field-text" data-zh>結構：<code>.pager</code> 容器 + <code>.btn.btn--ghost.btn--sm</code> 頁碼（目前頁 <code>aria-current="page"</code> 實色底）+ <code>.pager__ellipsis</code>。Token：<code>--primary</code>/<code>--primary-foreground</code>·<code>--muted-foreground</code>·<code>--sp-*</code>。Evidence／使用頁：earnings-sony（項目表／提領歷史）。</p>
+  <p class="field-text" data-en>Anatomy: <code>.pager</code> container + <code>.btn.btn--ghost.btn--sm</code> page buttons (current = <code>aria-current="page"</code>, solid fill) + <code>.pager__ellipsis</code>. Tokens: <code>--primary</code>/<code>--primary-foreground</code> · <code>--muted-foreground</code> · <code>--sp-*</code>.</p>
+  <p class="field-text" data-zh>結構：<code>.pager</code> 容器 + <code>.btn.btn--ghost.btn--sm</code> 頁碼（目前頁 <code>aria-current="page"</code> 實色底）+ <code>.pager__ellipsis</code>。Token：<code>--primary</code>/<code>--primary-foreground</code>·<code>--muted-foreground</code>·<code>--sp-*</code>。</p>
+  <p class="field-text" data-en><strong>Behavior lives in <code>js/pager.js</code></strong> (2026-08-10, lifted out of <code>partials/finance-overview.js</code> once a page that doesn't load that partial needed pagination too). <code>window.ztorPager.mount(getRows, size, nav)</code> returns <code>render(page)</code> — call it again after the caller re-renders its rows. The caller supplies a getter for the rows currently being paginated, the page size, and a <code>.pager</code> container; the module only decides which rows are visible and never owns the data. A single page draws no page numbers: a lone "1" carries no information.</p>
+  <p class="field-text" data-zh><strong>行為住在 <code>js/pager.js</code></strong>（2026-08-10 自 <code>partials/finance-overview.js</code> 抽出——有一頁不載那支 partial 卻也要分頁，留在原處就得複製一份）。<code>window.ztorPager.mount(getRows, size, nav)</code> 回傳 <code>render(page)</code>，呼叫端重畫資料後再呼叫一次即可。呼叫端給的是「目前要分頁的列」的 getter、每頁筆數與 <code>.pager</code> 容器；模組只決定哪幾列看得見，不接管資料。只有一頁時不畫頁碼列——一顆孤零零的「1」不提供任何資訊。</p>
+  <p class="field-text" data-en>Evidence: earnings-sony (projects table 8/page, withdrawal history 6/page); earnings + earnings-sony content-earnings post report (5/page).</p>
+  <p class="field-text" data-zh>Evidence／使用頁：earnings-sony（項目表 8/頁、提領歷史 6/頁）；earnings 與 earnings-sony 的內容收益·貼文報告明細（5/頁）。</p>
 </section>
 <section class="sub" id="kpi">
   <div class="sub__head">
@@ -5717,8 +5745,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <div class="compose__tier compose__tier--atom"><span class="compose__tier-label">atom</span><a class="compose-chip compose-chip--atom" href="#button">Button</a> <a class="compose-chip compose-chip--atom" href="#input">Input</a> <a class="compose-chip compose-chip--atom" href="#switch">Switch</a> <a class="compose-chip compose-chip--atom" href="#badge">Badge</a> <a class="compose-chip compose-chip--atom" href="#form-grid">Form grid</a></div>
     <div class="compose__tier compose__tier--molecule"><span class="compose__tier-label">molecule</span><a class="compose-chip compose-chip--molecule" href="#field-system">Field system</a> <a class="compose-chip compose-chip--molecule" href="#control-row">Control row</a> <a class="compose-chip compose-chip--molecule" href="#amount-field">Amount field</a></div>
   </div>
-  <p class="field-text" data-en>The dialog chrome here (<code>.payout-dialog</code> head / body / foot) is the project's canonical modal shell — reuse rules live in <a href="#patterns">Pillar 5 · Modal shell</a>. All four consumers (<code>partials/payout-request-modal.js</code>, <code>partials/manual-entry-modal.js</code>, <code>partials/restock-modal.js</code>, <code>partials/pickup-session-modal.js</code>) plus <code>creators.html</code>'s inline create-creator form build fields from <a href="#field-system">Field system</a> / <a href="#form-grid">Form grid</a> / <a href="#control-row">Control row</a> and the amount input from <a href="#amount-field"><code>.amount-field--hero</code></a> (2026-07-11) — the page-local <code>.payout-field*</code> / <code>.payout-form-grid</code> / <code>.payout-inline-control</code> / <code>.payout-amount-*</code> markup they used to hand-roll is gone everywhere; the classes have no remaining consumer and their rules were removed from <code>payout-modal.css</code>. The ticket edit dialog in <code>create-event.html</code> (<a href="#ticket-tier-card">Ticket tier card</a>) also reuses this shell, and is the first consumer of the <code>.payout-dialog__split</code> layout below.</p>
-  <p class="field-text" data-zh>這裡的 dialog 殼（<code>.payout-dialog</code> 頭／身／腳）是本項目的 canonical modal 殼——共用規則見 <a href="#patterns">Pillar 5 · Modal shell</a>。全部四個 consumer（<code>partials/payout-request-modal.js</code>、<code>partials/manual-entry-modal.js</code>、<code>partials/restock-modal.js</code>、<code>partials/pickup-session-modal.js</code>）與 <code>creators.html</code> 內建的建立 creator 表單，欄位皆改用 <a href="#field-system">Field system</a>／<a href="#form-grid">Form grid</a>／<a href="#control-row">Control row</a>，金額輸入改用 <a href="#amount-field"><code>.amount-field--hero</code></a>（2026-07-11）——這些檔案原本自刻的 <code>.payout-field*</code>／<code>.payout-form-grid</code>／<code>.payout-inline-control</code>／<code>.payout-amount-*</code> markup 已全數移除；這些 class 已無任何 consumer，規則也已從 <code>payout-modal.css</code> 移除。<code>create-event.html</code> 的票種編輯彈窗（<a href="#ticket-tier-card">Ticket tier card</a>）也重用這個殼，是下方 <code>.payout-dialog__split</code> 版面的首個消費者。</p>
+  <p class="field-text" data-en>The dialog chrome here (<code>.payout-dialog</code> head / body / foot) is the project's canonical modal shell — reuse rules live in <a href="#patterns">Pillar 5 · Modal shell</a>. All four consumers (<code>partials/payout-request-modal.js</code>, <code>partials/manual-entry-modal.js</code>, <code>partials/restock-modal.js</code>, <code>partials/pickup-session-modal.js</code>) plus <code>creators.html</code>'s inline create-creator form build fields from <a href="#field-system">Field system</a> / <a href="#form-grid">Form grid</a> / <a href="#control-row">Control row</a> and the amount input from <a href="#amount-field"><code>.amount-field--hero</code></a> (2026-07-11) — the page-local <code>.payout-field*</code> / <code>.payout-form-grid</code> / <code>.payout-inline-control</code> / <code>.payout-amount-*</code> markup they used to hand-roll is gone everywhere; the classes have no remaining consumer and their rules were removed from <code>payout-modal.css</code>. The ticket edit dialog in <code>create-event.html</code> (<a href="#ticket-tier-card">Ticket tier card</a>) also reuses this shell, and is the first consumer of the <code>.payout-dialog__split</code> layout below. <strong>Side width is <code>--payout-split-side</code> since 2026-08-10</strong>, defaulting to the original hard-coded 200px so that dialog is unchanged; create-event's Ticket setup sets 360px for its generated-ticket list, which cannot fit five fields in 200px — a variable rather than a second modifier, because the only difference is one number. <strong><code>.payout-dialog__split-side</code> (2026-08-10, optional)</strong> makes the side column <code>position: sticky</code> with its own <code>overflow-y</code>: for dialogs where the left column is the settings and the right column is what those settings produce, a side column that scrolls away defeats the split. Its own <code>max-height: 100%</code> keeps a long result list scrolling inside the column instead of stretching the dialog; it reverts to <code>static</code> at ≤640px, where stacking already scrolls and sticking would cover what follows.</p>
+  <p class="field-text" data-zh>這裡的 dialog 殼（<code>.payout-dialog</code> 頭／身／腳）是本項目的 canonical modal 殼——共用規則見 <a href="#patterns">Pillar 5 · Modal shell</a>。全部四個 consumer（<code>partials/payout-request-modal.js</code>、<code>partials/manual-entry-modal.js</code>、<code>partials/restock-modal.js</code>、<code>partials/pickup-session-modal.js</code>）與 <code>creators.html</code> 內建的建立 creator 表單，欄位皆改用 <a href="#field-system">Field system</a>／<a href="#form-grid">Form grid</a>／<a href="#control-row">Control row</a>，金額輸入改用 <a href="#amount-field"><code>.amount-field--hero</code></a>（2026-07-11）——這些檔案原本自刻的 <code>.payout-field*</code>／<code>.payout-form-grid</code>／<code>.payout-inline-control</code>／<code>.payout-amount-*</code> markup 已全數移除；這些 class 已無任何 consumer，規則也已從 <code>payout-modal.css</code> 移除。<code>create-event.html</code> 的票種編輯彈窗（<a href="#ticket-tier-card">Ticket tier card</a>）也重用這個殼，是下方 <code>.payout-dialog__split</code> 版面的首個消費者。<strong>側欄寬度自 2026-08-10 起改吃 <code>--payout-split-side</code></strong>，預設仍是原本寫死的 200px，所以那個彈窗行為不變；建立活動的「票務設定」把它設成 360px 裝生成的門票清單——一列五個欄位，200px 塞不下。用變數而不是再開一個修飾類，因為兩者的差別只有一個數字。<strong><code>.payout-dialog__split-side</code>（2026-08-10 新增，選配）</strong>讓側欄 <code>position: sticky</code> 黏在頂端、自己 <code>overflow-y</code> 內捲：用在「左欄是設定、右欄是那些設定產生的結果」的彈窗，側欄跟著捲走就等於看不到結果，分欄也就白分了。側欄自己的 <code>max-height: 100%</code> 讓結果多時它內捲、而不是把整個彈窗撐長；≤640px 收單欄時自動退回 <code>static</code>（上下堆疊本來就跟著捲，黏著只會擋住下面的內容）。</p>
   <p class="field-label" data-en>Rendered preview <span class="field-note">(dialog shown without the fixed backdrop; bank picker below)</span></p>
   <p class="field-label" data-zh>視覺展示 <span class="field-note">(dialog 不含全螢幕背板直接展示；下方為銀行挑選卡)</span></p>
   <div class="demo" style="flex-direction:column;align-items:stretch;gap:20px;">
@@ -8767,8 +8795,26 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
       <p class="review-status__note-body">作品已上線、完成作品貼文已發給選定受眾、項目已轉為已上線。</p>
     </div>
   </div></div>
-  <p class="sub__desc" data-en>The three previews share one markup — only the modifier, the badge and the note text change. The action row is hidden unless there is genuinely something to do; a permanent disabled button would read as "you are stuck" rather than "there is nothing to do yet".</p>
-  <p class="sub__desc" data-zh>三張示範是同一份 markup，差別只在修飾詞、徽章與說明文字。動作列只在真的有事可做時出現——常駐一顆停用的按鈕讀起來是「你被卡住了」，而不是「現在還沒有你的事」。</p>
+  <p class="field-label" data-en>In the work section — with the cover thumbnail</p><p class="field-label" data-zh>作品區段 — 帶封面縮圖</p>
+  <div class="demo"><div class="review-status" style="width:100%;max-width:640px">
+    <div class="review-status__head">
+      <img class="review-status__thumb" src="images/projects/mong-kok-shootout-card.webp" alt="">
+      <span class="badge badge--success">審核通過</span>
+      <h4 class="review-status__title">旺角狙擊</h4>
+    </div>
+    <div class="review-status__meta">
+      <span class="review-status__meta-item"><span>上映日期</span><span>2026/05/10</span></span>
+      <span class="review-status__meta-item"><span>最近送出</span><span>2026-05-09 13:00</span></span>
+      <span class="review-status__meta-item"><span>送出次數</span><span>1</span></span>
+    </div>
+    <div class="review-status__actions">
+      <a class="btn btn--primary btn--sm" href="#review-status"><i data-lucide="pencil" class="ztor-icon ztor-icon--sm"></i><span>編輯作品</span></a>
+    </div>
+  </div></div>
+  <p class="sub__desc" data-en><code>__thumb</code> (2026-08-11) is optional and appears only in the work section of a project (spec 5.1.2.2 §2.2.11), where the creator has to recognise which work this is before reading its status. The updates section leaves it out — that block is about the post, and the surrounding section already says which project it belongs to.</p>
+  <p class="sub__desc" data-zh><code>__thumb</code>（2026-08-11）是選配的，只用在項目詳情的作品區段（規格 5.1.2.2 §2.2.11）——那一區要先讓創作者認出這是哪一件作品，才讀得下狀態。更新區段那一塊不放：它講的是那則貼文，識別已由所在區段交代過。</p>
+  <p class="sub__desc" data-en>The three previews above share one markup — only the modifier, the badge and the note text change. The action row is hidden unless there is genuinely something to do; a permanent disabled button would read as "you are stuck" rather than "there is nothing to do yet".</p>
+  <p class="sub__desc" data-zh>上面三張示範是同一份 markup，差別只在修飾詞、徽章與說明文字。動作列只在真的有事可做時出現——常駐一顆停用的按鈕讀起來是「你被卡住了」，而不是「現在還沒有你的事」。</p>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
     <p class="field-text"><code>.review-status</code>（<code>--rejected</code>／<code>--approved</code> 只改 note 的左側色條；<code>--flat</code> 去掉外框與內距，供已經有卡片外框的容器內用）&gt; <code>__head</code>（<a href="#badge">Badge</a> ＋ <code>__title</code>）· <code>__meta</code> &gt; <code>__meta-item</code>（每項是「欄目名＋值」兩個 <code>span</code>，第一個吃 <code>--muted-foreground</code>）· <code>__note</code> &gt; <code>__note-label</code> ＋ <code>__note-body</code>（<code>white-space:pre-line</code>，退件理由是自由文字）· <code>__actions</code>。</p>
@@ -8960,20 +9006,22 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="sub__desc" data-en>A read-only preview of batch-generated results, one row per item: name | amount | quantity | follows-default / customized tag | reset action, optionally grouped by session. Column rhythm matches the <a href="#ticket-tier-card">Ticket tier card</a> table. Promoted 2026-08-09 from create-event.html's page-local <code>.ce-qres*</code> (the "generated tickets" preview in the bottom half of the quick-setup modal).</p>
   <p class="sub__desc" data-zh>批次設定生成結果的唯讀預覽，一列一項：名稱｜金額｜數量｜跟隨預設／已自訂標籤｜重設動作，可依場次分組。欄位對齊 <a href="#ticket-tier-card">Ticket tier card</a> 同一張表的節奏。2026-08-09 自 <code>create-event.html</code> 的頁內 <code>.ce-qres*</code>（快速設定彈窗下半「生成的門票」預覽）promote。</p>
   <p class="field-label" data-en>Rendered preview</p><p class="field-label" data-zh>視覺展示</p>
-  <div class="demo"><div style="width:100%;max-width:640px">
+  <p class="sub__desc" data-en><strong>Two lines per row (2026-08-10)</strong> — it used to be a five-column row (<code>1fr 88 64 148 108</code>, needing 470px+ with gaps). Once the Ticket setup dialog went two-column, this list moved into a 360px side column where five columns across squeeze every one of them to a word or two. Name now takes the first line on its own; amount · quantity · tag · action sit on the second. Columns reflow by grid alone, so <strong>the markup is unchanged</strong>. Quantity gained a unit in the same round ("400 tickets") — across a row its column position said what the number was; stacked, that cue is gone and the number has to say so itself. The demo below is deliberately narrow to match the real column.</p>
+  <p class="sub__desc" data-zh><strong>兩行一列（2026-08-10）</strong>——原本是一列五欄（<code>1fr 88 64 148 108</code>，扣掉間距至少要 470px）。票務設定彈窗改成左右分欄之後，這份清單住進 360px 的側欄，五欄橫排會把每一欄都壓成一兩個字。改成名稱獨佔第一行、金額·數量·標籤·動作排第二行；欄位靠 grid 自動流排，<strong>markup 一行都不用改</strong>。數量同輪由裸數字改成帶單位（「400 張」）——橫排時靠欄位位置就讀得出那是張數，直排之後位置線索消失，數字得自己說明自己。下面的展示刻意收窄，對齊實際的側欄寬度。</p>
+  <div class="demo"><div style="width:100%;max-width:360px">
     <div class="quick-result">
       <div class="quick-result__head">Sat, Sep 12</div>
       <div class="quick-result__row">
         <span class="quick-result__name">General admission</span>
         <span class="quick-result__num">$980</span>
-        <span class="quick-result__num">120</span>
+        <span class="quick-result__num">120 tickets</span>
         <span class="quick-result__tag">Follows event default</span>
         <span class="quick-result__end"><button class="btn btn--ghost btn--sm" type="button">Reset</button></span>
       </div>
       <div class="quick-result__row">
         <span class="quick-result__name">VIP</span>
         <span class="quick-result__num">$2,400</span>
-        <span class="quick-result__num">30</span>
+        <span class="quick-result__num">30 tickets</span>
         <span class="quick-result__tag quick-result__tag--own">Customized</span>
         <span class="quick-result__end"><button class="btn btn--ghost btn--sm" type="button">Reset</button></span>
       </div>
@@ -8981,8 +9029,169 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </div></div>
   <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — classes · code</span><span data-zh>給工程師 — class · 程式碼</span></summary>
   <div class="code-fold__body">
-    <p class="field-text"><code>.quick-result</code> &gt; <code>__head</code>（選配場次分組小標，單場不出現）／<code>__row</code>（grid 五欄）＞ <code>__name</code>／<code>__num</code>（出現兩次：金額、數量）／<code>__tag</code>（<code>--own</code> 已自訂加深顏色）／<code>__end</code>（選配重設鈕）。≤720px 收成兩欄，標籤與動作各自佔滿下一行。</p>
+    <p class="field-text"><code>.quick-result</code> &gt; <code>__head</code>（選配場次分組小標，單場不出現）／<code>__row</code>（grid 兩行：第一行名稱 <code>grid-column: 1 / -1</code> 跨滿整列，第二行金額／數量／標籤／動作依序落位）＞ <code>__name</code>／<code>__num</code>（出現兩次：金額、數量）／<code>__tag</code>（<code>--own</code> 已自訂加深顏色）／<code>__end</code>（選配重設鈕）。原本 ≤720px 的斷點已撤除——兩行一列本身就是窄版面的排法，不必再換一次。</p>
     <p class="field-text"><code>ds-components/quick-result-list.css</code>。消費頁：<code>create-event.html</code>（快速設定彈窗「生成的門票」預覽）。</p>
+  </div>
+  </details>
+</section>
+
+<!-- ══ 無自帶 CSS 的 JS 元件（2026-08-11 起也進這一頁）════════════════════════════
+     這七支元件不擁有任何 CSS，全部建在既有元件的 class 之上。過去只登記在
+     design-system.md，理由是「沒有樣式可展示」；但使用者檢視元件只看這一頁，
+     只寫進 .md 等於他看不到。以下每一支都給 TOC 項、元件總表列與 demo 卡。
+     demo 一律是真的載入那支 JS 當場產生的，不是照著它的模板手抄一份——手抄的
+     那一刻起兩邊就開始分岔。載入清單見本檔最下方的 <script> 區。 -->
+
+<section class="sub" id="work-fields">
+  <div class="sub__head">
+    <h3 class="sub__title">4.123 Work fields</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The field blocks of a film release (spec 5.1.2.2.1 F1–F15), rendered from one module. Two flows ask for the same fifteen things — the release flow after a co-create project succeeds, and the direct-release path inside project creation — and a third place now edits them after the work is live. A host page places an empty container with <code>data-wf="cover,stills"</code> and gets the finished sections back.</p>
+  <p class="sub__desc" data-zh>影片上架那組欄位（規格 5.1.2.2.1 F1–F15）的單一實作。同一組十五個欄位有三個使用場合——共創成立後的事後上架、建立項目的直接發佈影片路徑，以及作品上架後的編輯——宿主頁只放一個空容器並用 <code>data-wf="cover,stills"</code> 說要哪幾塊，區塊由本模組產生。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — three of the fourteen blocks, rendered by the module itself on this page)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的由模組當場產生，取十四塊中的三塊）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px" data-ds-workfields></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> Everything it draws comes from existing components: </span><span data-zh> 畫出來的東西全部來自既有元件：</span><a href="#form-section">form-section</a> · <a href="#form-grid">form-grid</a> · <a href="#field-system">field-system</a> · <a href="#card">card</a> · <a href="#upload-tile">upload-tile</a> · <a href="#chip">chip</a> · <a href="#tag-input">tag-input</a> · <a href="#segmented">segmented</a> · <a href="#switch">switch</a> · <a href="#control-row">control-row</a> · <a href="#amount-field">amount-field</a> · <a href="#entry-list">entry-list</a> · <a href="#badge">badge</a>。<span data-en>New styling goes back into those files, never into the module.</span><span data-zh>要新增樣式一律回那些檔案改，不在模組裡寫死。</span></p>
+    <p class="field-text"><code>window.ZtorWorkFields.renderAll(host, ['cover','stills'], opts)</code>／<code>render(host, kind, opts)</code>／<code>collect()</code>（收成送審內容物件）／<code>checks({stepOf, stepLabel})</code>（就緒檢查項）／<code>fill(work, {coverSrc})</code>（把既有內容寫回欄位，2026-08-11 新增，供編輯已上架作品用）。<code>kind</code> 值域：<code>file · audio · subs · cover · stills · bts · trailer · copy · spec · genres · tags · age · pricing · credits</code>。</p>
+    <p class="field-text">非 <code>input</code>／<code>change</code> 的互動（chip 點選、開關、卡片增刪）沒有原生事件可掛，模組統一補一顆 <code>workfields:change</code>（document 級），宿主頁的就緒檢查只聽這一顆。</p>
+    <p class="field-text"><code>partials/work-fields.js</code>。消費頁：<code>publish-work.html</code>（四步上架、以及 <code>?mode=edit</code> 的編輯態）、<code>create-project.html</code>（直接發佈影片路徑的五步）。值域相依：<a href="#work-taxonomy">Work taxonomy</a>（必須先載）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="work-taxonomy">
+  <div class="sub__head">
+    <h3 class="sub__title">4.124 Work taxonomy</h3>
+    <span class="layer layer--atom">🟢 atom</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>The one list behind every genre picker and every age-rating select on the site (spec §7.1.2 · §7.11). It is a data module: it owns values, not looks. Before it existed the same film could show three different age ratings on three screens.</p>
+  <p class="sub__desc" data-zh>站上每一個題材選擇器與年齡分級選單背後的同一份清單（規格 §7.1.2、§7.11）。它是資料模組——擁有的是值，不是外觀。在它之前，同一部片可以在三個畫面顯示三個不同的分級。</p>
+  <p class="field-label" data-en>The values it serves <span class="field-note">(live — this page only writes the two empty shells below; the module fills them, so the list here can never fall out of date)</span></p>
+  <p class="field-label" data-zh>值域一覽 <span class="field-note">（真的由模組填的：本頁只寫下面兩個空殼，所以這裡列出的值不會過期）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px">
+    <div>
+      <div class="field__label" data-en>Genres · 21 values, multi-select</div><div class="field__label" data-zh>題材 · 21 個值、可複選</div>
+      <div class="chip-group" data-taxonomy-genres></div>
+    </div>
+    <div>
+      <div class="field__label" data-en>Age rating · 6 values, single select, first is the default</div><div class="field__label" data-zh>年齡分級 · 6 個值、單選，第一個是預設值</div>
+      <select class="select" style="max-width:280px" data-taxonomy-age aria-label="Age rating"></select>
+    </div>
+  </div></div>
+  <p class="sub__desc" data-en>There is no interaction demo beyond toggling a chip, because the module has no behaviour of its own — the only thing it does at runtime is fill these shells and toggle the selected state. Everything visual belongs to <a href="#chip">Chip</a> and <a href="#input">Select</a>.</p>
+  <p class="sub__desc" data-zh>除了點選 chip 之外沒有互動可展示，因為這支模組沒有自己的行為——執行期只做兩件事：把空殼填好、切換選取狀態。看得到的部分都屬於 <a href="#chip">Chip</a> 與 <a href="#input">Select</a>。</p>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> It emits </span><span data-zh> 它產出的是 </span><code>.chip</code> / <code>.select</code> <span data-en>markup only.</span><span data-zh>的 markup。</span></p>
+    <p class="field-text"><strong data-en>Auto-wiring</strong><strong data-zh>就地接線</strong>：<code>&lt;select data-taxonomy-age="pw.age.13"&gt;</code> 與 <code>&lt;div class="chip-group" data-taxonomy-genres&gt;</code> 在載入時就被填好、chip 開關以委派綁定，宿主頁不必寫 JS（本卡的展示走的就是這條路）。</p>
+    <p class="field-text"><code>window.ZtorWorkTaxonomy.GENRES</code>（21 個鍵名尾段）／<code>AGES</code>（6 個完整 i18n key，順序即顯示順序）／<code>genreKey(g)</code>／<code>ageOptionsHtml(selected)</code>／<code>genreChipsHtml(attr)</code>／<code>hydrate(root)</code>。顯示文字來自 <code>js/i18n.js</code>。沒有載 i18n 的頁面（例如本頁）吃退路：年齡分級有內建英文字樣，題材則退回鍵名尾段（<code>drama</code>、<code>tvmovie</code>…），所以上面那排 chip 看到的是值本身、不是介面上的用字。</p>
+    <p class="field-text"><code>js/work-taxonomy.js</code>。消費頁：<code>publish-work.html</code>、<code>create-project.html</code>、<code>project-detail.html</code>（公開資訊的年齡分級）。載入順序：必須早於 <code>partials/work-fields.js</code> 與 <code>js/zselect.js</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="film-picker">
+  <div class="sub__head">
+    <h3 class="sub__title">4.125 Film picker</h3>
+    <span class="layer layer--molecule">🟡 molecule</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Links a product to the movies it belongs with (spec 5.1.5.2 §4.5 F12 · 5.1.5.1 §2.14). Type to filter, click a suggestion to add, click the ✕ on a picked one to drop it. Movies are front-of-house entities, so the list is read from a store — the creator never types a movie name by hand.</p>
+  <p class="sub__desc" data-zh>把商品關聯到它屬於的電影（規格 5.1.5.2 §4.5 F12、5.1.5.1 §2.14）。打字過濾、點建議加入、點已選的 ✕ 移除。電影是前台實體，所以候選一律來自資料源，創作者不會手打片名。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — mounted by the module, one movie pre-selected)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的由模組掛載，預選一部）</span></p>
+  <div class="demo"><div style="width:100%;max-width:520px" data-ds-filmpicker></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> Built entirely on </span><span data-zh> 完全建在 </span><a href="#tag-input">tag-input</a> + <a href="#chip">chip</a><span data-en> — the picked movies are </span><span data-zh> 之上——已選的電影是 </span><code>.chip--active.chip--removable</code><span data-en>, the suggestions are a plain </span><span data-zh>，建議是一組 </span><code>.chip-group</code>。</p>
+    <p class="field-text"><code>window.ZTOR_PARTIALS.createFilmPicker(host, { selected, onChange }) → { getSelected() }</code>。候選來自 <code>window.ztorFilms</code>（<code>js/films-store.js</code>），host 的內容由元件接管。</p>
+    <p class="field-text"><code>partials/film-picker.js</code>。消費頁：<code>create-product.html</code>（§4.5 獨立區）、<code>product-detail.html</code>（§2.14）。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="manual-entry-modal">
+  <div class="sub__head">
+    <h3 class="sub__title">4.126 Manual entry modal</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Logs income earned outside Ztor or not yet synced (spec 5.1.8.2). It is a markup module, not a behaviour one: it hands the host page one template string of the finished dialog, so the same popup can be opened from Earnings, Earnings overview and the Ztor earnings page without three copies drifting apart.</p>
+  <p class="sub__desc" data-zh>補登站外賺到、或還沒同步進來的收入（規格 5.1.8.2）。它是 markup 模組而不是行為模組：交給宿主頁一份完整彈窗的模板字串，讓三個收入頁開的是同一個彈窗，不會養出三份會分岔的副本。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — the module's own template, with the overlay's <code>position:fixed</code> overridden to sit inside this card)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的用模組自己的模板；覆蓋層的 <code>position:fixed</code> 在此覆寫成靜態，才收得進卡片裡）</span></p>
+  <div class="demo demo--inline-modal"><div style="width:100%" data-ds-partial="manualEntryModal"></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> It reuses the one canonical dialog shell </span><span data-zh> 重用唯一的 canonical dialog 殼 </span><a href="#payout">.payout-modal / .payout-dialog</a><span data-en> plus the shared form helpers (Pattern 5.1 “Modal shell”).</span><span data-zh> 與共用表單 helper（Pattern 5.1「Modal shell」）。</span></p>
+    <p class="field-text"><code>window.ZTOR_PARTIALS.manualEntryModal</code>＝模板字串。宿主頁把它注入一個 host、再自己接開關與送出；示意值寫在模板裡，介面文案走 <code>data-i18n</code>。</p>
+    <p class="field-text"><code>partials/manual-entry-modal.js</code>。消費頁：<code>earnings.html</code>、<code>earnings-overview.html</code>、<code>earnings-ztor.html</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="source-upload-modal">
+  <div class="sub__head">
+    <h3 class="sub__title">4.127 Source upload modal</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Uploads a data file exported from an outside platform, so fan analytics can cover what the API cannot reach (spec 5.1.7.8 F1). A popup rather than an in-place drop zone: the source detail is itself a popover, and stacking one over the other buries both.</p>
+  <p class="sub__desc" data-zh>上傳從外部平台後台匯出的資料檔，補上 API 拿不到的那一段（規格 5.1.7.8 F1）。做成彈窗而不是就地展開：來源明細本身已經是一顆 popover，兩層浮層會互相蓋住。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — same <code>position:fixed</code> override as above)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（同上，覆寫 <code>position:fixed</code> 才收得進卡片）</span></p>
+  <div class="demo demo--inline-modal"><div style="width:100%" data-ds-partial="sourceUploadModal"></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> Same shell as above (</span><span data-zh> 與上一支同一個殼（</span><a href="#payout">.payout-dialog</a>）。</p>
+    <p class="field-text"><code>window.ZTOR_PARTIALS.sourceUploadModal</code>＝模板字串；宿主頁以 <code>openFor(platform)</code> 帶入平台，決定標題與「去哪裡匯出」那一句。文案刻意不寫死檔案格式與大小——接受哪些格式、必要欄位、重複上傳怎麼處理都還是〔產品待確認〕（見 ASSUMPTIONS PG-026～028）。</p>
+    <p class="field-text"><code>partials/source-upload-modal.js</code>。消費頁：<code>fan-analytics.html</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="fee-exception-modal">
+  <div class="sub__head">
+    <h3 class="sub__title">4.128 Fee exception modal</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Overrides the default platform rate tree for one creator, leaf by leaf (spec 5.1.0.3 F3 · D141). One shell serves two modes — adding an exception starts with a creator search, editing one has the creator fixed.</p>
+  <p class="sub__desc" data-zh>逐葉節點覆寫某一位 Creator 的平台費率（規格 5.1.0.3 F3、D141）。一個殼服務兩種模式——新增時先搜尋 Creator，編輯時 Creator 固定。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live template; the rate tree region is empty here because the host page clones its own <code>#fee-tree</code> into it)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（真的用模組模板；費率樹那一區在這裡是空的，因為它由宿主頁 clone 自己的 <code>#fee-tree</code> 注入）</span></p>
+  <div class="demo demo--inline-modal"><div style="width:100%" data-ds-partial="feeExceptionModal"></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> Same </span><span data-zh> 同樣是 </span><a href="#payout">.payout-dialog</a><span data-en> shell; the tree inside is the page's own </span><span data-zh> 殼；裡面的樹是頁面自己的 </span><code>.fee-tree</code>。</p>
+    <p class="field-text"><code>window.ZTOR_PARTIALS.feeExceptionModal</code>＝模板字串，注入 <code>[data-fee-exc-modal-host]</code>；<code>[data-fx-creator-field]</code> 在編輯模式下藏起來，支付手續費一律唯讀（全站統一、不逐 Creator）。</p>
+    <p class="field-text"><code>partials/fee-exception-modal.js</code>。消費頁：<code>admin-platform-fees.html</code>。</p>
+  </div>
+  </details>
+</section>
+
+<section class="sub" id="content-blocks">
+  <div class="sub__head">
+    <h3 class="sub__title">4.129 Content block injector</h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Renders the recurring Dashboard and Earnings blocks from one shared renderer. A page drops in <code>&lt;div data-component="transaction-list" data-key="earn-recent"&gt;</code> and gets the block back. This static prototype has no build step, so this is the only way a block can be a real change-once component: the transaction row format is used on two pages and can no longer drift, while each page still passes its own rows.</p>
+  <p class="sub__desc" data-zh>把儀表板與收入管理反覆出現的區塊收成同一支渲染器。頁面放一個 <code>&lt;div data-component="transaction-list" data-key="earn-recent"&gt;</code> 就拿回整塊內容。這個靜態原型沒有建置步驟，這是唯一能讓區塊真的「改一次、每頁同步」的做法：交易列的格式兩頁共用、不會再分岔，各頁仍給自己的資料列。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(live — this card contains only the placeholder div; the module filled it)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（本卡裡只有一個佔位 div，內容是模組填的）</span></p>
+  <div class="demo"><div style="width:100%;max-width:640px"><div data-component="transaction-list" data-key="earn-recent"></div></div></div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>No CSS of its own.</strong><strong data-zh>無自帶 CSS。</strong><span data-en> Each renderer emits existing components: </span><span data-zh> 每一支渲染器產出的都是既有元件：</span><a href="#data-list">data-list</a> · <a href="#table">table</a> · <a href="#kpi">KPI</a> · <a href="#alert">alert</a> · <a href="#card">card</a> · <a href="#bento">bento</a>。</p>
+    <p class="field-text">渲染器：<code>transaction-list</code>（有 <code>table:true</code> 與 data-list 兩種輸出）· <code>ops-summary</code> · <code>alerts</code> · <code>activity-list</code> · <code>events-projects</code> · <code>ext-data-status</code> · <code>insight-split</code>。資料集以 <code>data-key</code> 指名，住在同一支檔案的 <code>DATA</code>。API：<code>window.ZtorComponents.mount(root)</code>／<code>RENDERERS</code>／<code>DATA</code>。</p>
+    <p class="field-text">載入順序：晚於 <code>icons.js</code>／<code>i18n.js</code>、早於 <code>reveal.js</code>；執行當下就掛載，所以佔位 div 要在它上面。</p>
+    <p class="field-text"><code>js/components.js</code>。消費頁：<code>index.html</code>、<code>earnings.html</code>、<code>earnings-overview.html</code>、<code>earnings-ztor.html</code>、<code>audience-report.html</code>。</p>
   </div>
   </details>
 </section>
@@ -9197,6 +9406,46 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 <script src="partials/owner-lookup.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script>
+<!-- 無自帶 CSS 的 JS 元件（§4.123–4.129）：demo 由這些模組當場產生，不是照模板手抄。
+     順序有兩個約束：work-taxonomy 要早於 work-fields（後者初始化時就取它的值域）、
+     films-store 要早於 film-picker（候選來源）。components.js 執行當下就掛載，
+     所以它的佔位 div（§4.129 的卡）在文件裡本來就在它上面。 -->
+<script src="js/work-taxonomy.js?v=r2.2"></script>
+<script src="partials/work-fields.js?v=r2.2"></script>
+<script src="js/films-store.js?v=r2.2"></script>
+<script src="partials/film-picker.js?v=r2.2"></script>
+<script src="partials/manual-entry-modal.js?v=r2.2"></script>
+<script src="partials/source-upload-modal.js?v=r2.2"></script>
+<script src="partials/fee-exception-modal.js?v=r2.2"></script>
+<script src="js/components.js?v=r2.2"></script>
+<script>
+/* §4.123–4.129 的 demo 掛載。三種掛法各對應元件自己的用法：
+   work-fields 用它的 renderAll、film-picker 用它的 create 函式、
+   三支彈窗模組給的是模板字串所以直接注入（並解除 [hidden]，卡片內不需要開關）。
+   work-taxonomy 與 components.js 自己會就地接線，這裡不必動。 */
+(function () {
+  var wf = document.querySelector('[data-ds-workfields]');
+  if (wf && window.ZtorWorkFields) window.ZtorWorkFields.renderAll(wf, ['audio', 'genres', 'pricing']);
+
+  var fp = document.querySelector('[data-ds-filmpicker]');
+  if (fp && window.ZTOR_PARTIALS && window.ZTOR_PARTIALS.createFilmPicker) {
+    window.ZTOR_PARTIALS.createFilmPicker(fp, { selected: ['film-neon-harbor'] });
+  }
+
+  document.querySelectorAll('[data-ds-partial]').forEach(function (host) {
+    var tpl = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS[host.getAttribute('data-ds-partial')];
+    if (!tpl) return;
+    host.innerHTML = tpl;
+    host.querySelectorAll('[hidden]').forEach(function (el) {
+      /* 只解除彈窗外層那一層的 hidden：內部條件區塊（例如編輯模式才藏的 Creator 搜尋）
+         保持原樣，那才是它真實的長相。 */
+      if (el.classList.contains('payout-modal')) el.hidden = false;
+    });
+  });
+
+  if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+})();
+</script>
 <script>
   /* Icon gallery — 執行期由 icons-all.js 實際載入的內容生成「未使用」清單。
      展開時才建（懶載入），避免一開頁就渲染數千個 SVG。 */

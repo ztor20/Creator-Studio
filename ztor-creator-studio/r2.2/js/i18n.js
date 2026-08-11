@@ -5350,6 +5350,7 @@
     'project-detail.tab.pledges':{en: 'Plans & promises',zh: '方案與承諾'},
     'project-detail.tab.about':{en: 'About the project',zh: '關於項目'},
     'project-detail.tab.progress':{en: 'Production progress',zh: '製作進度'},
+    'project-detail.tab.work':{en: 'Work',zh: '作品'},
     'project-detail.tab.earnings':{en: 'My earnings',zh: '我的收益'},
     'project-detail.tab.performance':{en: 'Performance',zh: '表現'},
     'project-detail.tab.royalty':{en: 'Royalty',zh: '版稅'},
@@ -5891,6 +5892,13 @@
     'pd.review.kind-inflight':{ en: 'This work is with the review team — no need to send it again.', zh: '這件作品在平台審核中，不用再送一次。' },
     'pd.review.kind-live':  { en: 'This work is already live.', zh: '這件作品已經上線了。' },
     'pd.review.toast-live': { en: 'Your work is live',         zh: '作品已上線' },
+    /* ── 作品區段（`pd.work.*`，規格 5.1.2.2 §2.2.11）────────────────────────
+       這一區講的是「這件作品」，不是「那則貼文」，所以字串另立命名空間。
+       規則那一句寫在按鈕下方：創作者按下去之前就該知道這次改動會不會又要等審核。 */
+    'pd.work.release':      { en: 'Release date',              zh: '上映日期' },
+    'pd.work.edited':       { en: 'Last edited',               zh: '最近修改' },
+    'pd.work.edit':         { en: 'Edit work',                 zh: '編輯作品' },
+    'pd.work.rule':         { en: 'Swapping the video file, the pricing or the age rating sends the work back for review. Copy, tags and credits do not.', zh: '換影片檔、改定價或年齡限制會重新送審；標題說明、標籤、演職名單不會。' },
 
     /* ── 作品上架流程（`pw.*` — publish-work.html，2026-08-07）──────────────
           四步：音訊與字幕 → 封面素材 → 作品資訊 → 演職人員。欄位依 bo.ztor
@@ -5905,6 +5913,16 @@
        主動作與就緒檢查三處字樣一起改，不然按鈕說發布、旁邊說可以發布了，使用者會以為按完就上線。 */
     'pw.submit':            { en: 'Send for review',                  zh: '送出審核' },
     'pw.update.fallback':   { en: 'The work is live',                 zh: '作品已上線' },
+    /* ── 編輯已上架作品（`pw.edit.*`，規格 5.1.2.2 §2.2.11）───────────────────
+       同一組步驟換一個目的：頂部那句話與最後一步的主動作都要說中「這次會不會重新送審」，
+       否則創作者按下去才知道作品又回到待審核。分界那一句沿用作品區段的 `pd.work.rule`，
+       兩處講的是同一條規則，寫兩份就會分岔。 */
+    'pw.edit.h1':           { en: 'Edit work',                        zh: '編輯作品' },
+    'pw.edit.banner.resubmit': { en: 'This change needs another review — saving puts the work back in the queue.', zh: '這次的變更要重新送審，儲存後作品回到待審核。' },
+    'pw.edit.banner.rejected': { en: 'This work came back from review, so saving always sends it in again.', zh: '這件作品被退件，儲存後一律重新送審。' },
+    'pw.edit.banner.undecided': { en: 'Whether these fields need another review is not settled yet — for now, saving does not trigger one.', zh: '這幾項要不要重新送審還沒定案，目前儲存不會觸發送審。' },
+    'pw.edit.save':         { en: 'Save changes',                     zh: '儲存變更' },
+    'pw.edit.save-review':  { en: 'Save and send for review',         zh: '儲存並重新送審' },
     /* 步驟 1 */
     'pw.media.h1':          { en: 'Audio & subtitles',                zh: '音訊與字幕' },
     'pw.media.sub':         { en: 'Upload the finished cut, then say what language it speaks and what subtitles ship with it.', zh: '先傳完成片，再交代它說什麼語言、附哪幾種字幕。' },
@@ -6041,6 +6059,8 @@
     /* 送出＝送審（2026-08-07 D179）。原本的「作品已上線」提示在送出當下是假的：
        作品要等平台審核通過才上線，所以提示只講「送出去了」。 */
     'pw.toast.submitted':   { en: 'Sent for review',                  zh: '已送出審核' },
+    'pw.toast.resent':      { en: 'Sent for review again',            zh: '已重新送出審核' },
+    'pw.toast.saved':       { en: 'Changes saved',                    zh: '變更已儲存' },
     /* F1 上傳與處理狀態（系統產生、創作者不可編輯）。 */
     'pw.media.file.state.empty':      { en: 'Not uploaded', zh: '尚未上傳' },
     'pw.media.file.state.uploading':  { en: 'Uploading',    zh: '上傳中' },
@@ -6118,6 +6138,9 @@
     'vr.hist.start':        { en: 'Picked up',        zh: '接手審核' },
     'vr.hist.approve':      { en: 'Approved',         zh: '審核通過' },
     'vr.hist.reject':       { en: 'Sent back',        zh: '退回創作者' },
+    /* 創作者事後改了作品內容、但那次變更不需要重新送審（規格 5.1.2.2 §2.2.11 的分界）。
+       歷程要留一筆，審核者才看得出通過之後這件被動過。 */
+    'vr.hist.edit':         { en: 'Edited by the creator', zh: '創作者修改內容' },
     'vr.readonly':          { en: 'Reviewers read and decide only — send it back to the creator for any change to the work itself.', zh: '審核者只檢視與裁決；作品內容要改，一律退回創作者自己修改後重送。' },
     'vr.reject.title':      { en: 'Send it back',     zh: '退回創作者' },
     'vr.reject.reason':     { en: 'Why it came back', zh: '退件理由' },

@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="ds-components/accordion.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/pager.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
@@ -524,6 +525,7 @@
                 <th class="bd-amt" data-i18n="ce.pd.v3">Viewed &gt;3s</th><th class="bd-amt" data-i18n="ce.pd.eng">Interactions</th>
                 <th class="bd-amt" data-i18n="ce.pd.rate">Engagement rate</th><th class="bd-amt" data-i18n="ce.pd.rent">Content rentals</th></tr></thead>
               <tbody data-ce-postdetail></tbody></table></div>
+            <div class="pager" data-ce-postpager></div>
           </section>
         </div><!-- /.when-data -->
         <div class="when-empty">
@@ -1800,6 +1802,7 @@
   })();
 </script>
 <!-- 內容收益的 Top 10 要判斷每一件有沒有對應的平台項目（projectFor），故需要項目清單 -->
+<script src="js/pager.js?v=r2.2"></script>
 <script src="js/projects-store.js?v=r2.2"></script>
 <script src="js/chart.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
@@ -2126,6 +2129,15 @@
         '<td class="bd-amt">' + r.eng.toLocaleString() + '</td>' +
         '<td class="bd-amt">' + r.rate + '</td>' +
         '<td class="bd-amt">' + r.rent.toLocaleString() + '</td></tr>').join('');
+      /* 分頁走共用的 js/pager.js（我的項目、提領歷史同一支）。每頁 5 筆：
+         自訂期間最多 10 則，5 筆剛好切成兩頁——切到短期間只剩 3 則時，
+         pager 自己不畫頁碼列，不會留一顆孤零零的「1」。
+         每次重畫都重新掛：列是整批重生的，舊的 <tr> 參照已經不存在。 */
+      if (window.ztorPager) {
+        window.ztorPager.mount(
+          function () { return Array.prototype.slice.call(root.querySelectorAll('[data-ce-postdetail] tr')); },
+          5, root.querySelector('[data-ce-postpager]'));
+      }
     }
 
     /* 點 Top 10 任一列 → 內容詳情 popup。這張榜混了三種來源，popup 要說清楚是哪一種
