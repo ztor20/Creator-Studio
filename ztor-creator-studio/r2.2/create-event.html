@@ -155,13 +155,7 @@
      它是站上「一個框的標題」的既有答案（display 字體／18px／--foreground），
      不為了這一處另造第四種標題字級。本頁只留與門票的距離。 */
   .ce-tiergroup__head { margin-bottom: var(--sp-16); }
-  /* 巡迴的一站一盒（2026-08-10）：沿用票務那一步「一場一盒」的 .control-group--plain，
-     只補站與站之間的距離與盒內標題列——盒子本體、內距、圓角都是元件既有的。 */
-  .ce-stop + .ce-stop { margin-top: var(--sp-16); }
-  .ce-stop__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); margin-bottom: var(--sp-16); }
-  /* 盒內最後一組欄位不再往下推：格線自帶的列距疊在 --plain 的內距上，
-     會讓盒子下面比兩側空（與 .ce-tiergroup 同一個修法）。 */
-  .ce-stop > .form-grid:last-child { margin-bottom: 0; }
+  /* 墓碑：`.ce-stop`（巡迴的一站一盒）於 2026-08-10 隨「活動形式」整組撤除。 */
 </style>
 </head>
 <body>
@@ -364,21 +358,11 @@
             </select>
           </div>
         </div>
-        <!-- 活動總人數（2026-08-08 使用者指示：由「每一場的人數」改成活動層級，搬到基本資料）。
-             最多這欄仍掛 data-ce="capacity"——它是票種張數加總的上限，下游（超賣檢查、發布前
-             檢核、必填→步驟對照表）沿用同一個 key；多場活動時它是**全部場次加起來**的總數。 -->
-        <div class="field__label form-section__grouplabel" data-di="d.att">活動總人數</div>
-        <div class="form-grid">
-          <div class="field">
-            <label class="field__label"><span data-i18n="ce.attend.min">Minimum</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-            <input class="input" data-ce="attend-min" data-bky="attendMin" type="number" min="0" step="1" placeholder="e.g., 50" data-i18n-placeholder="ce.attend.min.ph">
-          </div>
-          <div class="field">
-            <label class="field__label"><span data-i18n="ce.attend.max">Maximum</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
-            <input class="input" data-ce="capacity" data-bky="capacity" data-required type="number" min="1" step="1" placeholder="e.g., 500" data-i18n-placeholder="ce.attend.max.ph">
-            <p class="ce-field-error" data-i18n="ce.err.capacity">Maximum attendance is required.</p>
-          </div>
-        </div>
+        <!-- 墓碑：「活動總人數」（最少／最多，`data-ce="attend-min"`／`data-ce="capacity"`）
+             於 2026-08-10 依使用者指示整組撤除。它原本是票種張數加總的上限，撐著三處提示：
+             發布前的超賣硬閘、票種列的「還剩 N 張未分配」、票務步驟的超量紅字。人數上限
+             拿掉之後這三處沒有比較基準，一併失效（`capacity()` 恆為 0，所有分支本來就
+             有 `capacity() > 0` 的守門，不會誤判）。上游規格仍有此欄位，見 ASSUMPTIONS ATT-002。 -->
 
         <!-- 進階詳細資料（2026-08-06 使用者指示）：多數活動不需要，收在 .field-more 後面，
              表單第一眼只留每一場都要填的東西。走既有的收合元件（建立商品的物流欄位同一支），
@@ -605,57 +589,15 @@
         <p class="field__hint" data-i18n="ce.wp.privacy.hint">Anyone with the share link can enter the room.</p>
       </div>
 
-      <!-- 活動形式（2026-08-10 使用者指示）：排在這一步最前面，因為它決定了底下的場地要問幾次——
-           定點只問一次、巡迴每一站各問一次。bookyay 沒有巡迴這種資料，帶入時鎖定在定點。
-           ※ 上游規格把場地寫成整場活動共用一份（「無論哪個場次，地點都一樣」），巡迴是本輪
-             新增的產品變更提案，已記 ASSUMPTIONS TOUR-001。 -->
-      <div class="form-section form-section--outlined" data-hide-type="watchparty">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-di="d.shape">活動形式</h3>
-        </div>
-        <div class="segmented radio-cards" data-seg="shape" data-value="fixed" data-bky-seg="shape">
-          <button class="segmented__btn segmented__btn--active" type="button" data-val="fixed">
-            <span class="radio-card__text">
-              <span class="radio-card__title" data-di="d.shape.fixed">定點活動</span>
-              <span class="radio-card__sub" data-di="d.shape.fixed.sub">每一場都在同一個場地，場地只填一次。</span>
-            </span>
-          </button>
-          <button class="segmented__btn" type="button" data-val="tour">
-            <span class="radio-card__text">
-              <span class="radio-card__title" data-di="d.shape.tour">巡迴活動</span>
-              <span class="radio-card__sub" data-di="d.shape.tour.sub">每一站換一個場地，場地跟著站別各自設定。</span>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 入場方式（2026-08-06 使用者裁決，同日第二次移位：由「細節」搬到這一步的人數之後；同輪統一用詞為購票入場／免費門票／免票入場）。
-           它決定後面**有沒有**票種與票券銷售兩個步驟，所以必須在那兩步之前問；擺在人數旁邊
-           是因為兩者回答的是同一類問題——這場活動放多少人進來、他們要不要買票。
-           **免費不做成第三種**：票價 0 就是免費（票種卡與 Review 自己顯示「免費」）。做成模式會讓
-           同一件事有兩個真相來源——模式說免費、價格欄寫著 200，沒有答案。 -->
-      <div class="form-section form-section--outlined" data-hide-type="watchparty">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-i18n="ce.sales">Entry</h3>
-        </div>
-        <div class="segmented radio-cards" data-seg="sales" data-value="paid" data-bky-seg="sales">
-          <!-- 標題與副標要包在 .radio-card__text 裡（元件 anatomy 就是這樣定的）：卡片本身是
-               flex row（文字群｜右上 radio 點），少了這層外框，標題與副標會變成同一列的兩個
-               flex item、並排在一起而不是上下兩行。 -->
-          <button class="segmented__btn segmented__btn--active" type="button" data-val="paid">
-            <span class="radio-card__text">
-              <span class="radio-card__title" data-i18n="ce.sales.paid">Ticketed entry</span>
-              <span class="radio-card__sub" data-i18n="ce.sales.paid.sub">Set your own tiers and prices. A tier priced 0 is a free ticket.</span>
-            </span>
-          </button>
-          <button class="segmented__btn" type="button" data-val="none">
-            <span class="radio-card__text">
-              <span class="radio-card__title" data-i18n="ce.sales.none">Ticket-free entry</span>
-              <span class="radio-card__sub" data-di="d.sales.none.sub">完全不發票券，票種那一區會收起來。</span>
-            </span>
-          </button>
-        </div>
-      </div>
+      <!-- 墓碑（2026-08-10 使用者指示，同輪兩項）：
+           ①「活動形式」（定點／巡迴，`data-seg="shape"`）整組撤除——這個產品只有定點活動。
+             連帶撤除：一站一盒的場次版面、每一站自己的場地欄位、巡迴時「每一站都要有場地」
+             的發布前檢核分支。場地回到單一一份、所有場次共用（＝上游規格原本的模型）。
+           ②「入場方式」（購票入場／免票入場，`data-seg="sales"`）整組撤除——不會用到免票入場。
+             票價填 0 仍然等於免費門票，所以「不收錢的活動」這件事沒有失去表達方式；失去的
+             只有「完全不發票券」那一種。連帶撤除：`salesMode`／`noTickets()`、選免票時跳過
+             票種與票務兩步的分支、Review 摘要的「免票入場」那一行。
+           上游規格兩者的狀態見 ASSUMPTIONS TOUR-001（已撤回）與 SALES-001。 -->
 
       <!-- 場次（文件 2-1）：文件把場地與日期時間都掛在「帶入場次」底下，所以這裡是一個容器、
            不是幾個並排的區塊。場地是所有場次共用的一份（文件原話「無論哪個場次，地點都一樣」），
@@ -671,11 +613,7 @@
           <i data-lucide="plus" class="ztor-icon"></i> <span data-di="d.sess.add">新增場次</span>
         </button>
         <!-- 隱藏鏡像：Review 摘要、票根預覽與發布前檢核都讀 [data-ce=date]／[data-ce=start]，
-             日期搬進場次列之後由第 1 場回寫這兩格，下游不必各自改。
-             巡迴時場地也一樣：由第 1 站回寫 [data-ce=venue]／[data-ce=addr]。 -->
-        <!-- 整場共用的那一份場地：只有定點活動才問。巡迴時場地跟著每一站走（見場次列），
-             這一整塊收起來，免得畫面上同時存在兩個都叫「場地」、答案卻不同的地方。 -->
-        <div data-shape-when="fixed">
+             日期搬進場次列之後由第 1 場回寫這兩格，下游不必各自改。 -->
         <div class="form-section__subhead" data-di="d.sess.detail">場次細節</div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
@@ -708,7 +646,6 @@
             </div>
           </div>
         </div>
-        </div><!-- /[data-shape-when="fixed"] 整場共用的場地 -->
         <input type="hidden" data-ce="date"><input type="hidden" data-ce="start">
       </div>
 
@@ -1167,42 +1104,68 @@
 </div>
 
 <div class="payout-modal" id="ce-quick-modal" hidden>
-  <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="ce-quick-title">
+  <!-- 版面：左＝設定（票種＋購票規則）、右＝結果（生成的門票，黏在頂端自己捲）。
+       2026-08-10 改版理由——這個彈窗的用途是「改一個預設值，看它生出幾張票、多少錢」，
+       原本三段直向堆疊時因與果相隔約 1000px，等於把回饋迴圈切斷；且購票規則佔了 47–69%
+       的高度卻是最少人動的一塊（多數活動三條都留「不限」）。分欄之後改一格數字，右邊
+       的結果同時在畫面上。側欄寬度由 --payout-split-side 指定，票種彈窗維持它自己的 200px。 -->
+  <section class="payout-dialog payout-dialog--xwide" role="dialog" aria-modal="true" aria-labelledby="ce-quick-title">
     <div class="payout-dialog__head">
       <h2 class="payout-dialog__title" id="ce-quick-title" data-di="d.quick.h">票務設定</h2>
       <button class="btn btn--icon" type="button" data-quick-close aria-label="Close"
               data-i18n-aria-label="ce.rules.close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
-    <div class="payout-dialog__body">
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-di="d.types">票種</h3>
-          <p class="form-section__sub" data-di="d.types.sub">預設價格與張數只在生成那一刻帶入；生出來之後每一張票各改各的。</p>
+    <div class="payout-dialog__body payout-dialog__split" style="--payout-split-side:360px">
+      <div>
+        <div class="form-section form-section--outlined">
+          <div class="form-section__head">
+            <h3 class="form-section__title" data-di="d.types">票種</h3>
+            <!-- 副標只在已經有票種時出現（見 renderTypes）：它描述的是「生出來之後」的行為，
+                 一張票都還沒有時講太早，而那正是首次進來要動手的那一刻。 -->
+            <p class="form-section__sub" data-di="d.types.sub" id="ce-types-sub">預設價格與張數只在生成那一刻帶入；生出來之後每一張票各改各的。</p>
+          </div>
+          <div class="ce-types" id="ce-type-list"></div>
+          <button type="button" class="btn btn--outline session-list__add" id="ce-type-add">
+            <i data-lucide="plus" class="ztor-icon"></i> <span data-di="d.types.add">新增票種</span>
+          </button>
         </div>
-        <div class="ce-types" id="ce-type-list"></div>
-        <button type="button" class="btn btn--outline session-list__add" id="ce-type-add">
-          <i data-lucide="plus" class="ztor-icon"></i> <span data-di="d.types.add">新增票種</span>
-        </button>
+        <!-- 購票規則預設收合成一行摘要（2026-08-10）：它是「設一次就不太會再動」的預設值，
+             攤開時高達 1212px（彈窗可視高度的兩倍），把真正每次都要填的票種表擠出畫面。
+             收合只做在這一側——票種彈窗的「購買條件」分頁整頁就是給它的、沒有空間競爭，
+             所以 rulesHTML 本體一行都不改（使用者裁示：只收合快速設定這邊）。 -->
+        <div class="form-section form-section--outlined">
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <!-- 標題只寫「購票規則」：這個彈窗本來就叫票務設定、這一段本來就在講預設，
+                   「所有票種的預設規則」把上層已經交代的事又寫了一次。 -->
+              <h3 class="form-section__title" data-di="d.rules.h">購票規則</h3>
+              <p class="form-section__sub" data-di="d.rules.sub">每一張門票都跟著這裡，個別要不一樣就開那張票去改。</p>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="button" data-rules-toggle aria-expanded="false" aria-controls="ce-rules">
+              <span data-di="d.rules.edit">編輯</span>
+            </button>
+          </div>
+          <p class="field__hint" id="ce-rules-summary"></p>
+          <div id="ce-rules" data-rules-for="event" hidden></div>
+        </div>
       </div>
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <!-- 標題只寫「購票規則」：這個彈窗本來就叫票務設定、這一段本來就在講預設，
-               「所有票種的預設規則」把上層已經交代的事又寫了一次。 -->
-          <h3 class="form-section__title" data-di="d.rules.h">購票規則</h3>
-          <p class="form-section__sub" data-di="d.rules.sub">每一張門票都跟著這裡，個別要不一樣就開那張票去改。</p>
+      <!-- 右欄：結果。sticky 讓它在左欄捲動時留在畫面上；自己的 max-height 讓票多時它內捲，
+           而不是把整個彈窗撐長。 -->
+      <div class="payout-dialog__split-side">
+        <div class="form-section form-section--outlined">
+          <div class="form-section__head form-section__head--actions">
+            <div class="form-section__head-titles">
+              <h3 class="form-section__title"><span data-di="d.quick.result">生成的門票</span><span id="ce-quick-count"></span></h3>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="button" data-quick-reset-all
+                    data-di="d.quick.resetall">全部改回跟著預設</button>
+          </div>
+          <p class="form-section__sub" data-di="d.quick.result.sub">場次 × 票種交叉出來的每一張票。改左邊的預設值，只有還沒單獨改過的門票會跟著變。</p>
+          <div class="quick-result" id="ce-quick-preview"></div>
         </div>
-        <div id="ce-rules" data-rules-for="event"></div>
-      </div>
-      <div class="form-section form-section--outlined">
-        <div class="form-section__head">
-          <h3 class="form-section__title" data-di="d.quick.result">生成的門票</h3>
-          <p class="form-section__sub" data-di="d.quick.result.sub">場次 × 票種交叉出來的每一張票。改上面的預設值，只有還沒單獨改過的門票會跟著變。</p>
-        </div>
-        <div class="quick-result" id="ce-quick-preview"></div>
       </div>
     </div>
-    <div class="payout-dialog__foot">
-      <button class="btn btn--outline" type="button" data-quick-reset-all data-di="d.quick.resetall">全部改回跟著預設</button>
+    <div class="payout-dialog__foot wizard__bottom--end">
       <button class="btn btn--primary" type="button" data-quick-close data-di="d.quick.done">完成</button>
     </div>
   </section>
@@ -1250,13 +1213,11 @@
   /* 共看派對沒有票種，票券銷售那一步整步跳過（沒有票根可設計、也沒有票可打包）。
      2026-08-06：選「免票入場」時，票種（4）與票券銷售（5）兩步一起跳過——沒有票就沒有
      票種、票根、套組，也沒有收入試算。 */
-  let salesMode = "paid";                      // paid=購票入場／none=免票入場
+  /* 墓碑：`salesMode`／`noTickets()`（購票入場／免票入場）於 2026-08-10 依使用者指示撤除。 */
   /* 門票＝場次 × 票種（2026-08-08 使用者裁決）：每一格都是獨立的一張門票，
      自己帶價格、張數、手續費、規則與加購商品。tier.sess 記它屬於哪一場。
      bookyay 帶進來時各場的值剛好一樣，那是資料一致，不是「只有一份」。 */
-  const noTickets = () => salesMode === "none";
-  /* 免票入場＝票種（4）與票務（5）兩步都不用。場次仍要排，時間地點跟賣不賣票無關。
-     共看派對走的是原本那條流程（2026-08-09 使用者指示補回）：基本資料（改成挑影片與房間名稱）、
+  /* 共看派對走的是原本那條流程（2026-08-09 使用者指示補回）：基本資料（改成挑影片與房間名稱）、
      時間人數地區隱私、入場券、確認——所以票務（5）與發布設定（6）兩步整步跳過。
      票務是「場次 × 票種」的矩陣，共看派對只有一張單價入場券，沒有東西可矩陣；
      發布設定裡的取票方式與開賣時間也不適用（房間是線上的，隱私已在第 3 步問過）。 */
@@ -1264,9 +1225,10 @@
                         /* 票種改成票務裡的「快速設定」彈窗（2026-08-09 使用者指示），
                            所以一般活動不再走第 4 步；那一步從此只服務共看派對的入場券。
                            編號刻意不重編——重編會動到 Review 的 [data-goto]、共看派對的分支
-                           與六處文案，跳過一步的成本低得多。 */
-                        (!isWP() && st === 4) ||
-                        (noTickets() && (st === 4 || st === 5));
+                           與六處文案，跳過一步的成本低得多。
+                           2026-08-10：免票入場撤除，原本「選了免票就跳過第 4、5 步」那一條
+                           一併移除——沒有免票這個選項，票務就一律要走。 */
+                        (!isWP() && st === 4);
   let eventType = "";                          // 選定的活動類型（D149：watchparty 走共看派對分支）
   const isWP = () => eventType === "watchparty";
 
@@ -1379,7 +1341,6 @@
   function syncReview() {
     if (isWP()) { syncReviewWP(); return; }     // D149：共看派對走專屬摘要/檢核
     const s = readState();
-    const noTix = noTickets();                 // 摘要與檢核清單都要用，宣告在最上面免得撞 TDZ
 
     // A3 — 摘要回填（未填顯佔位）
     setRev("type",  s.typeName, "ce.ph.notsel",     "Not selected");
@@ -1393,26 +1354,19 @@
     }
     setRev("venue", venueLine, "ce.ph.notset", "Not set");
     setRev("series", s.sessions, "ce.series.single", "Single date");
-    /* 免票入場時這一列寫「免票入場」，不要留「0 種票」——那讀起來像忘了建，不像刻意不賣。 */
     setRev("tickets",
-      noTix ? T("ce.sales.none", "Ticket-free entry")
-            : (s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : ""),
+      s.tiers > 0 ? T("ce.rev.tiersn", "{n} tiers").replace("{n}", s.tiers) : "",
       "ce.ph.0tiers", "0 tiers");
 
     // A2 — Quality check 即時打勾
-    /* 免票入場時「至少 1 種票種」這一項不適用——留著會變成一條永遠過不了的硬閘。
-       整項從檢核清單移除（而不是自動打勾），因為打勾等於宣稱「已經建立票種」，那是假的。 */
     const checks = {
       type:   !!s.typeName,
       name:   !!s.name,
       date:   !!s.date,
-      /* 巡迴：每一站都要有自己的場地才算數——只填了第 1 站就放行，等於允許發布一個
-         後面幾站沒有地點的巡迴。定點維持原本的「共用那一格填了就算」。 */
-      venue:  isTour() ? series.list.length > 0 && series.list.every(x => (x.venue || "").trim()) : !!s.venue
+      venue:  !!s.venue,
+      /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。 */
+      ticket: s.tiers > 0
     };
-    if (!noTix) checks.ticket = s.tiers > 0;
-    const tixItem = document.querySelector('[data-qc="ticket"]');
-    if (tixItem) tixItem.hidden = noTix;
     let done = 0;
     Object.keys(checks).forEach(k => {
       const li = document.querySelector('[data-qc="' + k + '"]');
@@ -1632,7 +1586,7 @@
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
-                          : { name: 2, desc: 2, venue: 3, date: 3, capacity: 3, "sale-from-d": 6, "ship-fee": 6, "ship-spot": 6 };
+                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 6, "ship-fee": 6, "ship-spot": 6 };
     const reqEls = activeRequired();
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
@@ -1858,6 +1812,10 @@
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  /* 人數上限欄已於 2026-08-10 撤除，這裡恆為 0（見基本資料那一段的墓碑）。所有用到它的
+     地方本來就寫成 `capacity() > 0` 才生效——超賣硬閘、票種列的剩餘張數提示、票務步驟的
+     超量紅字因此一律不觸發，不會拿 0 當上限去誤判。留著這支是為了讓那些判斷式維持可讀，
+     上游規格若把欄位加回來，只要把 markup 放回去就會自動復活。 */
   const capacity  = () => Number(document.querySelector("[data-ce=capacity]")?.value || 0);
   const isInt     = v => /^\d+$/.test(String(v).trim());
   const editing   = t => Object.prototype.hasOwnProperty.call(drafts, t.id);
@@ -2528,11 +2486,9 @@
   const multi = () => series.list.length > 1;
   const sessionCount = () => Math.max(1, series.list.length);
   const newSession = init => Object.assign(
-    /* venue／addr／meet／transit 只有巡迴活動用得到（一站一個場地）；定點活動的場地是
-       整場共用的那一份，仍然存在 [data-ce=venue] 那幾格。欄位一律先備著，切換型態時
-       不必重建整個 series。 */
-    { id: "sess-" + (++series.seq), name: "", date: "", start: "", end: "", doors: "",
-      venue: "", addr: "", meet: "", transit: "" }, init || {});
+    /* 場地不在這一層：定點活動的場地是整場共用的那一份（[data-ce=venue] 那幾格）。
+       巡迴活動的逐站場地欄位已於 2026-08-10 隨「活動形式」撤除。 */
+    { id: "sess-" + (++series.seq), name: "", date: "", start: "", end: "", doors: "" }, init || {});
 
   /* 下游（Review 摘要、票根預覽、發布前檢核）都讀 [data-ce=date]／[data-ce=start]。
      日期搬進場次列之後，由第 1 場回寫這兩格隱藏鏡像，那些程式一行都不用改。 */
@@ -2542,89 +2498,18 @@
     const t = document.querySelector("[data-ce=start]");
     if (d) d.value = s0.date || "";
     if (t) t.value = s0.start || "";
-    /* 巡迴活動：整場共用的那兩格場地欄位不在畫面上，改由第 1 站回寫——預覽卡、Review
-       摘要與發布前檢核讀的都是 [data-ce=venue]／[data-ce=addr]，這樣它們一行都不用改。
-       活動卡上只寫得下一個地點，第 1 站是巡迴的起點，也是最合理的代表。 */
-    if (isTour()) {
-      const v = document.querySelector("[data-ce=venue]");
-      const a = document.querySelector("[data-ce=addr]");
-      if (v) v.value = s0.venue || "";
-      if (a) a.value = s0.addr || "";
-    }
     series.on = multi();
   }
 
   // 場次名：沒取名就用「第 N 場」。門票名稱組出來時用的就是這個。
   const sessionLabel = (s, i) => (s.name || "").trim() || T("ce.series.n", "Date {n}").replace("{n}", i + 1);
 
-  /* 活動形式（2026-08-10 使用者指示）：定點＝所有場次同一個場地（原本唯一的模型），
-     巡迴＝一站一個場地。它只影響「場地問幾次、問在哪裡」，不影響票務矩陣——
-     門票仍然是「場次 × 票種」，巡迴的每一站就是一個場次。 */
-  const shapeSeg = () => document.querySelector('[data-seg="shape"]');
-  const isTour   = () => shapeSeg()?.dataset.value === "tour";
-  // 巡迴時場次在語意上是「站」，標籤與提示跟著換一組字
-  const stopLabel = (s, i) => (s.name || "").trim() || dT("d.stop.n").replace("{n}", i + 1);
-
-  /* 巡迴的一站＝一個盒子（沿用票務那一步「一場一盒」的 .control-group--plain）：
-     一站要問的東西是日期時間＋自己的場地，六、七欄擠在同一列讀不動，拆成盒子才排得下。
-     定點維持原本的一列一場，不動。 */
-  function stopBoxHTML(s, i) {
-    // label／ph 都收「已經翻好的字」，不在這裡分 key 與 fallback 兩種來源
-    const f = (label, field, opt) => {
-      const o = opt || {};
-      return '<label class="field">' +
-        '<span class="field__label">' + esc(label) +
-          (o.req ? ' <span class="field__req">*</span>' : '') + '</span>' +
-        '<input class="input"' + (o.type ? ' type="' + o.type + '"' : '') +
-          ' data-sess-f="' + field + '" value="' + esc(s[field] || "") + '"' +
-          (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' +
-      '</label>';
-    };
-    const canRemove = !sessLocked && series.list.length > 1;
-    return '<div class="ce-stop control-group control-group--plain" data-sess="' + esc(s.id) + '">' +
-      '<div class="ce-stop__head">' +
-        '<span class="card__title">' + esc(stopLabel(s, i)) + '</span>' +
-        (canRemove ? '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' +
-          esc(dT("d.stop.remove")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : "") +
-      '</div>' +
-      /* 盒內一律兩欄（不用 --3）：欄數一變，欄的邊界就跟著變，上下相鄰的兩列會對不齊。
-         三個時間欄拆成「開始｜結束」一列、「開放入場」自己半寬一列，讀起來也剛好是
-         「活動幾點到幾點」與「幾點放人進場」兩件事。 */
-      '<div class="form-grid">' +
-        f(dT("d.stop.name"), "name", { ph: dT("d.stop.name.ph") }) +
-        f(T("ce.date", "Event date"), "date", { type: "date", req: true }) +
-      '</div>' +
-      '<div class="form-grid">' +
-        f(T("ce.start", "Start time"), "start", { type: "time" }) +
-        f(T("ce.end", "End time"), "end", { type: "time" }) +
-      '</div>' +
-      '<div class="form-grid">' +
-        f(T("ce.doors", "Doors open"), "doors", { type: "time" }) +
-      '</div>' +
-      '<div class="form-grid">' +
-        f(T("ce.venue.name", "Venue name"), "venue", { req: true, ph: T("ce.venue.name.ph", "") }) +
-        f(T("ce.venue.addr", "Full address"), "addr", { ph: T("ce.venue.addr.ph", "") }) +
-      '</div>' +
-      '<div class="form-grid">' +
-        f(T("ce.venue.meet", "Meeting point"), "meet", { ph: T("ce.venue.meet.ph", "") }) +
-        f(T("ce.venue.transit", "Getting there"), "transit", { ph: T("ce.venue.transit.ph", "") }) +
-      '</div>' +
-    '</div>';
-  }
+  /* 墓碑：巡迴活動的「一站一盒」渲染（`stopBoxHTML`／`stopLabel`／`isTour`）於 2026-08-10
+     依使用者指示撤除——這個產品只有定點活動，場地是整場共用的一份。 */
 
   function renderSessions() {
     if (!sessList) return;
     if (!series.list.length) series.list.push(newSession());
-    if (isTour()) {
-      sessList.innerHTML = series.list.map(stopBoxHTML).join("");
-      sessList.classList.toggle("is-source-locked", sessLocked);
-      if (sessLocked) sessList.querySelectorAll("input").forEach(i => { i.disabled = true; });
-      const addT = document.getElementById("ce-dates-add");
-      if (addT) addT.style.display = sessLocked ? "none" : "";
-      if (window.ztorIcons) window.ztorIcons.applyIcons(sessList);
-      syncSessionMirror();
-      return;
-    }
     const m = multi();
     const col = k => '<span>' + esc(k) + '</span>';
     const head = '<div class="session-list__head" data-multi="' + m + '">' +
@@ -2667,47 +2552,8 @@
   }
   document.getElementById("ce-dates-add")?.addEventListener("click", addSession);
 
-  /* 切換活動形式（2026-08-10 使用者指示）：把「整場共用的場地」那一整塊收起或放回來，
-     場次列改用一站一盒／一列一場，新增鈕的字也跟著換（新增場次／新增一站）。 */
-  function applyShape() {
-    const tour = isTour();
-    document.querySelectorAll("[data-shape-when]").forEach(box => {
-      const on = box.dataset.shapeWhen === (tour ? "tour" : "fixed");
-      box.hidden = !on;
-      /* 收起來的欄位不能繼續當必填，否則發布前檢核會卡在一個看不見的欄位上。
-         巡迴的場地必填改由每一站自己負責（見 checks.venue）。 */
-      box.querySelectorAll("[data-ce]").forEach(el => {
-        if (on) el.setAttribute("data-required", "");
-        else { el.removeAttribute("data-required"); clearFieldError(el); }
-      });
-    });
-    /* 定點→巡迴：把原本共用的那一份場地搬進第 1 站（其餘站留空）。第 1 站通常就是
-       已經確定的那一場，其餘待排；複製到每一站反而會造出「每站都在同一個場地」這種
-       一看就不對的預設值。反向切回去不動資料，改回來還在。 */
-    if (tour) {
-      const s0 = series.list[0];
-      if (s0 && !s0.venue) {
-        const g = k => (document.querySelector("[data-ce=" + k + "]")?.value || "").trim();
-        s0.venue = g("venue"); s0.addr = g("addr");
-        s0.meet = g("venue-meet"); s0.transit = g("venue-transit");
-      }
-    }
-    const addBtn = document.querySelector("#ce-dates-add [data-di]");
-    if (addBtn) { addBtn.dataset.di = tour ? "d.stop.add" : "d.sess.add"; addBtn.textContent = dT(addBtn.dataset.di); }
-    /* 區段的副標與小標跟著換一組字：巡迴時這一段講的是「站」，沿用「場次日期與時間」
-       會和盒子上的「第 N 站」互相打架。 */
-    const swap = (fixedKey, tourKey) => {
-      const el = document.querySelector('[data-di="' + fixedKey + '"], [data-di="' + tourKey + '"]');
-      if (!el) return;
-      el.dataset.di = tour ? tourKey : fixedKey;
-      el.textContent = dT(el.dataset.di);
-    };
-    swap("d.sess.sub", "d.stop.sub");
-    swap("d.sess.dates", "d.stop.dates");
-    renderSessions(); syncReview(); scheduleSave();
-  }
-  /* 切換的觸發點掛在集中的 [data-seg] 處理器裡（搜 `seg === "shape"`），不另外自己聽
-     click——那裡才是 dataset.value 被寫好的地方，自己聽會讀到上一個值。 */
+  /* 墓碑：`applyShape()`（切換定點／巡迴）於 2026-08-10 依使用者指示撤除，連同它負責的
+     三件事——收放整場共用的場地那一塊、把共用場地複製進第 1 站、新增鈕與小標換字。 */
 
   /* 輸入只寫資料、不整段重繪——重繪會把游標從正在打的欄位彈出去。
      場次名例外：門票名稱是「場次名＋票種」組出來的，要即時跟著改（只改那一行文字）。 */
@@ -2919,8 +2765,37 @@
   const rulesRoot = document.getElementById("ce-rules");
   function renderRules() {
     if (rulesRoot) rulesRoot.innerHTML = rulesHTML(eventRules, "event");
+    syncRulesSummary();
     renderCalc();
   }
+
+  /* 購票規則收合後那一行摘要（2026-08-10）：收著的時候也要讀得出現在設了什麼，
+     否則「收合」就等於「藏起來」。三條規則各出一個詞，用頓號串起來。
+     只在快速設定這一側做——票種彈窗的購買條件分頁整頁都是它的，不需要收合。 */
+  function rulesSummaryText() {
+    const r = eventRules;
+    return [
+      dT(r.buy.mode !== "none" ? "d.rules.sum.buy.on"  : "d.rules.sum.buy.any"),
+      dT(r.cap.mode === "cap"  ? "d.rules.sum.cap.on"  : "d.rules.sum.cap.none"),
+      dT(r.disc.mode !== "off" ? "d.rules.sum.disc.on" : "d.rules.sum.disc.off")
+    ].join("、");
+  }
+  function syncRulesSummary() {
+    const el = document.getElementById("ce-rules-summary");
+    if (el) el.textContent = rulesSummaryText();
+  }
+  /* 收合／展開：摘要與規則本體互換，按鈕文字跟著改。展開時摘要收起來——同一件事
+     不必同時用兩種方式講。 */
+  document.querySelector("[data-rules-toggle]")?.addEventListener("click", e => {
+    const btn = e.currentTarget;
+    const open = rulesRoot.hidden;                 // 現在是收著的 → 這一按要展開
+    rulesRoot.hidden = !open;
+    const sum = document.getElementById("ce-rules-summary");
+    if (sum) sum.hidden = open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    const label = btn.querySelector("[data-di]");
+    if (label) { label.dataset.di = open ? "d.rules.close" : "d.rules.edit"; label.textContent = dT(label.dataset.di); }
+  });
 
   /* 規則的互動：整段委派在 body 上，活動層與票種卡共用同一組處理。
      改哪一份由最近的 [data-rules-for] 決定（"event" 或票種 id）。 */
@@ -2992,6 +2867,7 @@
       else if (path === "disc.on") r.disc.mode = v === "off" ? "off" : (r.disc._cond || "on");
       else { r.disc._cond = v === "none" ? "on" : v; r.disc.mode = r.disc._cond; }
       rerenderRulesFor(seg);
+      syncRulesSummary();
       renderCalc(); renderTierBadges(); renderTiers(); scheduleSave();
       return;
     }
@@ -3000,6 +2876,7 @@
     ruleSet(r, path, v);
     const scope = seg.closest("[data-rules-for]");
     scope.querySelectorAll('[data-rule-when="' + path + '"]').forEach(w => { w.hidden = w.dataset.ruleVal !== v; });
+    syncRulesSummary();
     renderCalc(); renderTierBadges(); renderTiers(); scheduleSave();
   });
   /* 折扣的兩個欄位（% 與折後價）是同一件事的兩個講法，填一邊另一邊立刻跟上。
@@ -3097,7 +2974,6 @@
   }
 
   // 容量改了，票種那邊的「還剩幾張」與超標警示要跟著重算
-  document.querySelector("[data-ce=capacity]")?.addEventListener("input", () => { renderTierErrors(); renderTierCount(); });
 
   renderTierCount();
 
@@ -3168,10 +3044,7 @@
         document.querySelectorAll('[data-when="' + seg + '"]').forEach(sub => {
           sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
         });
-        /* 入場方式會改變流程有幾步，所以要重畫進度列；停在被跳掉的那一步時先退回細節。 */
-        if (seg === "sales") { salesMode = btn.dataset.val; applySalesMode(); }
         if (seg === "ship")  applyShipMode();   // 順豐要運費、自取要地點（2026-08-10）
-        if (seg === "shape") applyShape();      // 定點／巡迴決定場地問一次還是一站一次（2026-08-10）
         syncReview(); scheduleSave();
       });
     });
@@ -3338,7 +3211,6 @@
     "d.step.done":    { en: "Done",     zh: "已完成" },
     "d.step.todo":    { en: "Not done", zh: "未完成" },
     "d.step.basic":   { en: "Basics",            zh: "基本資料" },
-    "d.att":          { en: "Total attendance",  zh: "活動總人數" },
     "d.step.session": { en: "Dates",             zh: "場次" },
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
     "d.step.tix":     { en: "Tickets",           zh: "票務" },
@@ -3365,9 +3237,19 @@
     "d.rules.sub":    { en: "Every ticket follows these. Open a ticket to give it its own.",
                         zh: "每一張門票都跟著這裡，個別要不一樣就開那張票去改" },
     "d.quick.result": { en: "Tickets this creates", zh: "生成的門票" },
-    "d.quick.result.sub": { en: "Every date × type. Change a default above and only the tickets you have not edited follow it.",
-                            zh: "場次 × 票種交叉出來的每一張票。改上面的預設值，只有還沒單獨改過的門票會跟著變。" },
-    "d.quick.none":   { en: "Add a ticket type above to see what it creates.", zh: "上面加一個票種，這裡就會列出會生成哪些門票。" },
+    "d.quick.result.sub": { en: "Every date × type. Change a default on the left and only the tickets you have not edited follow it.",
+                            zh: "場次 × 票種交叉出來的每一張票。改左邊的預設值，只有還沒單獨改過的門票會跟著變。" },
+    "d.quick.none":   { en: "Add a ticket type on the left to see what it creates.", zh: "左邊加一個票種，這裡就會列出會生成哪些門票。" },
+    "d.quick.qtyn":   { en: "{n} tickets",       zh: "{n} 張" },
+    "d.quick.countn": { en: " · {n} tickets",    zh: " · {n} 張" },
+    "d.rules.edit":   { en: "Edit",              zh: "編輯" },
+    "d.rules.close":  { en: "Done",              zh: "收合" },
+    "d.rules.sum.buy.any":  { en: "Anyone can buy", zh: "不限購買資格" },
+    "d.rules.sum.buy.on":   { en: "Restricted",     zh: "限制購買資格" },
+    "d.rules.sum.cap.none": { en: "No purchase cap", zh: "不限購買量" },
+    "d.rules.sum.cap.on":   { en: "Purchase capped", zh: "有購買上限" },
+    "d.rules.sum.disc.off": { en: "No discount",     zh: "無折扣" },
+    "d.rules.sum.disc.on":  { en: "Discount on",     zh: "有折扣" },
     "d.quick.follow": { en: "Following defaults", zh: "跟著預設" },
     "d.quick.own":    { en: "Edited: {f}",       zh: "已自訂：{f}" },
     "d.quick.reset":  { en: "Follow defaults again", zh: "改回跟著預設" },
@@ -3431,7 +3313,6 @@
     "d.s5.h1":        { en: "Publishing",        zh: "發布設定" },
     "d.s5.sub":       { en: "When it goes on sale, how fans collect it, and who can find it.", zh: "什麼時候開賣、怎麼取票、誰看得到。" },
     "d.src":          { en: "From bookyay",      zh: "bookyay 帶入" },
-    "d.sales.none.sub": { en: "No ticket at all — the tickets block below drops out.", zh: "完全不發票券，票種那一區會收起來。" },
     "d.bgate.h1":     { en: "Import from bookyay?", zh: "要從 bookyay 帶入嗎？" },
     "d.bgate.sub":    { en: "Already selling this event on bookyay? Search for it instead of typing it again.",
                         zh: "這場活動已經在 bookyay 上賣了？搜尋帶進來，就不用重打一次。" },
@@ -3484,18 +3365,6 @@
     "d.tier.tname":   { en: "Ticket name",       zh: "門票名稱" },
     "d.tier.tname.ph":{ en: "Session + tier",    zh: "留空就用場次名＋票種" },
     "d.tier.tname.orig": { en: "Original combination name: {name}", zh: "原組合名稱：{name}" },
-    "d.shape":        { en: "Event shape",       zh: "活動形式" },
-    "d.shape.fixed":  { en: "One venue",         zh: "定點活動" },
-    "d.shape.fixed.sub": { en: "Every date runs at the same place. You set the venue once.", zh: "每一場都在同一個場地，場地只填一次。" },
-    "d.shape.tour":   { en: "Touring",           zh: "巡迴活動" },
-    "d.shape.tour.sub": { en: "Each stop has its own venue, set alongside that stop's dates.", zh: "每一站換一個場地，場地跟著站別各自設定。" },
-    "d.stop.n":       { en: "Stop {n}",          zh: "第 {n} 站" },
-    "d.stop.name":    { en: "Stop name",         zh: "站名" },
-    "d.stop.name.ph": { en: "e.g., Taipei",      zh: "例如：台北站" },
-    "d.stop.add":     { en: "Add a stop",        zh: "新增一站" },
-    "d.stop.remove":  { en: "Remove this stop",  zh: "移除這一站" },
-    "d.stop.sub":     { en: "One stop at a time — each with its own dates, times and venue.", zh: "一站一組：日期、時間與場地都跟著那一站走。" },
-    "d.stop.dates":   { en: "Stops",             zh: "巡迴站別" },
     "d.sess":         { en: "Dates",             zh: "場次" },
     "d.sess.sub":     { en: "Each date has its own times; the venue is shared by all of them.", zh: "日期與時間每一場各自設定，場地所有場次共用。" },
     "d.sess.dates":   { en: "Dates and times",   zh: "場次日期與時間" },
@@ -3593,6 +3462,10 @@
     if (window.ztorIcons) window.ztorIcons.applyIcons(typeList);
     const add = document.getElementById("ce-type-add");
     if (add) add.style.display = types.some(t => t.fix) ? "none" : "";
+    /* 副標描述的是「生出來之後每一張票各改各的」——一張票種都還沒有時講太早，
+       而那正是首次進來要動手加第一種的那一刻，這句話只是把主線往下推。 */
+    const sub = document.getElementById("ce-types-sub");
+    if (sub) sub.hidden = !types.length;
   }
   function addType(init) {
     types.push(Object.assign({ id: "type-" + (++typeSeq), name: "", price: "", qty: "", fee: "" }, init || {}));
@@ -3686,7 +3559,7 @@
     return '<div class="quick-result__row" data-qres="' + t.id + '">' +
       '<span class="quick-result__name">' + esc(ticketNames(t)[0]) + '</span>' +
       '<span class="quick-result__num">' + (Number(val(t).price) ? "$" + esc(val(t).price) : esc(T("ce.tier.free", "Free ticket"))) + '</span>' +
-      '<span class="quick-result__num">' + esc(val(t).qty || "—") + '</span>' +
+      '<span class="quick-result__num">' + (val(t).qty ? esc(dT("d.quick.qtyn").replace("{n}", val(t).qty)) : "—") + '</span>' +
       '<span class="quick-result__tag' + (own.length && !t.splitFrom ? " quick-result__tag--own" : "") + '">' + esc(tag) + '</span>' +
       '<span class="quick-result__end">' +
         (own.length && resettable(t)
@@ -3694,7 +3567,15 @@
           : "") +
       '</span></div>';
   }
+  /* 標題帶張數（2026-08-10）：側欄捲到一半時，光看清單讀不出總共生成幾張。 */
+  function syncQuickCount() {
+    const el = document.getElementById("ce-quick-count");
+    if (!el) return;
+    const n = types.length && series.list.length ? tiers.length : 0;
+    el.textContent = n ? dT("d.quick.countn").replace("{n}", n) : "";
+  }
   function renderQuickPreview() {
+    syncQuickCount();
     const box = document.getElementById("ce-quick-preview");
     if (!box) return;
     if (!types.length || !series.list.length) {
@@ -3998,18 +3879,13 @@
     });
   }
 
-  /* 免票入場：票種與其他活動設定整區收起來（不再跳整步——它們現在跟場次同一步）。 */
-  function applySalesMode() {
-    if (skipped(step)) step = 3;      // 站在票種／票務時改選免票，先退回場次
-    render();
-    renderCalc(); syncReview(); scheduleSave();
-  }
+  /* 墓碑：`applySalesMode()` 於 2026-08-10 隨「入場方式」整組撤除。 */
 
   /* ---- 假的 bookyay 活動 ------------------------------------------------------
      三筆刻意做出差異：單場／三日系列（同一個場地，照文件「無論哪個場次，地點都一樣」）／
      沒有手續費也沒有折扣的那種。 */
   const BKY = [
-    { id: "bky-1", capacity: "12000", attendMin: "",
+    { id: "bky-1",
       label: "REALIVE World Tour — Taipei",
       note:  "2026/09/12 · 台北小巨蛋",
       name: "REALIVE World Tour — Taipei",
@@ -4024,7 +3900,7 @@
       tiers: [{ name: "VIP", price: "4200", qty: "100", fee: "150" },
               { name: "搖滾區", price: "3300", qty: "200", fee: "120" },
               { name: "看台", price: "2400", qty: "300", fee: "80" }] },
-    { id: "bky-2", capacity: "3000", attendMin: "",
+    { id: "bky-2",
       label: "MIRROR FANMEETING 2026",
       note:  "2026/10/02–10/04 · 高雄流行音樂中心（三場）",
       name: "MIRROR FANMEETING 2026 高雄",
@@ -4040,7 +3916,7 @@
       sessionNames: ["Day 1", "Day 2", "Day 3"],
       tiers: [{ name: "搖滾區", price: "3800", qty: "150", fee: "120" },
               { name: "一般席", price: "2200", qty: "400", fee: "80" }] },
-    { id: "bky-3", capacity: "8000", attendMin: "",
+    { id: "bky-3",
       label: "城市草地音樂節 2026",
       note:  "2026/11/08 · 大佳河濱公園",
       name: "城市草地音樂節 2026",
@@ -4056,7 +3932,7 @@
     /* 這兩筆是為了示範「取票方式不是電子門票時要多問什麼」（2026-08-10 使用者指示）：
        順豐寄送要運費、到店自取要取貨地點。兩個欄位不是 bookyay 帶來的，
        帶入後仍要創作者自己填，所以刻意留空。 */
-    { id: "bky-4", capacity: "600", attendMin: "",
+    { id: "bky-4",
       label: "限量黑膠簽名場 — 台中",
       note:  "2026/12/06 · 台中 Legacy（實體票寄送）",
       name: "限量黑膠簽名場 — 台中",
@@ -4070,7 +3946,7 @@
       ship: "sf", sessions: [],
       tiers: [{ name: "黑膠套票", price: "2800", qty: "400", fee: "100" },
               { name: "一般入場", price: "1200", qty: "200", fee: "60" }] },
-    { id: "bky-5", capacity: "1500", attendMin: "",
+    { id: "bky-5",
       label: "冬季特別公演 — 台南",
       note:  "2027/01/17 · 台南文化中心（到店自取）",
       name: "冬季特別公演 — 台南",
@@ -4179,15 +4055,9 @@
     /* 表演陣容不在 bookyay 帶入範圍內（2026-08-09 使用者明確指示：bookyay 沒有這筆資料），
        這裡刻意不動 lineup——維持使用者自己在「新增表演者」搜尋加入的狀態。 */
     renderGallery(rec.images);
-    /* 入場方式與取票方式：整組鎖住（.is-source-locked 會擋掉點擊）。
-       bookyay 上賣得出票就是購票入場，取票方式也是那邊設定好的，這一側只顯示。 */
-    salesMode = "paid";
-    lockSeg("sales", "paid");
+    /* 取票方式整組鎖住（.is-source-locked 會擋掉點擊）：那是 bookyay 那邊設定好的，這一側只顯示。
+       入場方式與活動形式兩組已於 2026-08-10 整組撤除，對應的 lockSeg 一併移除。 */
     lockSeg("ship", rec.ship);
-    /* bookyay 上沒有巡迴這種活動（2026-08-10 使用者說明），帶入的一律是定點：鎖在定點，
-       巡迴那張卡連同整塊一起變成唯讀。lockSeg 只改 dataset，畫面要跟著換得自己叫一次。 */
-    lockSeg("shape", "fixed");
-    applyShape();
     /* 場次：第 1 場是活動本身的日期，rec.sessions 是加場。全部鎖住並收掉新增與移除。 */
     series.list = [newSession({ name: rec.sessionNames ? rec.sessionNames[0] : "", date: rec.date, start: rec.start, end: rec.end, doors: rec.doors })]
       .concat(rec.sessions.map((x, i) => newSession({
@@ -4420,13 +4290,12 @@
     renderBkyList();
     demoI18n();
     renderShare();
-    applySalesMode();
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
   }
   document.addEventListener("i18n:applied", () => demoI18n());
 
   renderRules();
-  applyShape();          // 場次列要先知道是定點還是巡迴，才知道畫成一列一場還是一站一盒
+  renderSessions();
   renderTypes();
   demoInit();
 })();

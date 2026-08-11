@@ -59,42 +59,11 @@
   });
 
   /* ---------- 通用數字分頁 ---------- */
-  /* rows：要分頁的 <tr> 陣列；size：每頁筆數；nav：.pager 容器。
-     回傳 render(page) 供外部呼叫；分頁只在該批 rows 上運作（篩選後可重建）。 */
-  function makePager(getRows, size, nav) {
-    if (!nav) return function () {};
-    var page = 1;
-    function render(p) {
-      var rows = getRows();
-      var pages = Math.max(1, Math.ceil(rows.length / size));
-      if (p != null) page = p;
-      if (page > pages) page = pages;
-      rows.forEach(function (r, i) {
-        r.hidden = !(i >= (page - 1) * size && i < page * size);
-      });
-      nav.innerHTML = '';
-      if (pages <= 1) return;
-      var prev = btn('‹', page > 1, function () { render(page - 1); });
-      nav.appendChild(prev);
-      for (var n = 1; n <= pages; n++) (function (n) {
-        var b = btn(String(n), true, function () { render(n); });
-        if (n === page) b.setAttribute('aria-current', 'page');
-        nav.appendChild(b);
-      })(n);
-      nav.appendChild(btn('›', page < pages, function () { render(page + 1); }));
-    }
-    function btn(label, enabled, onClick) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'btn btn--ghost btn--sm';
-      b.textContent = label;
-      if (!enabled) b.disabled = true;
-      else b.addEventListener('click', onClick);
-      return b;
-    }
-    render(1);
-    return render;
-  }
+  /* 實作 2026-08-10 搬到 js/pager.js——收入管理的貼文報告明細也要分頁，
+     但那一頁不載本 partial，留在這裡就得複製一份。這裡只留別名。 */
+  var makePager = function (getRows, size, nav) {
+    return window.ztorPager ? window.ztorPager.mount(getRows, size, nav) : function () {};
+  };
 
   /* ---------- 我的項目：類型 × 類別 × 身分 篩選 ---------- */
   var table = document.querySelector('[data-fin-table]');

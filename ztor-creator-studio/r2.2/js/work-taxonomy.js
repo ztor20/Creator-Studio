@@ -44,10 +44,17 @@
 
   function genreKey(g) { return 'pw.genre.' + g; }
 
+  /* 沒有 i18n 時的退路字樣（design-system.html 這類不載 i18n.js 的頁面會吃到）。
+     退路是 key 本身的話，選單會顯示「pw.age.all」——那不是分級，是字典鍵。 */
+  var AGE_FB = {
+    'pw.age.all': 'Everyone', 'pw.age.7': '7+', 'pw.age.10': '10+',
+    'pw.age.13': '13+', 'pw.age.16': '16+', 'pw.age.18': '18+'
+  };
+
   function ageOptionsHtml(selected) {
     return AGES.map(function (k) {
       return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + ' data-i18n="' + k + '">'
-        + esc(T(k, k)) + '</option>';
+        + esc(T(k, AGE_FB[k] || k)) + '</option>';
     }).join('');
   }
 

@@ -211,7 +211,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | 03 §5.1.1 Dashboard | index.html | ✓ Full | （2026-06-05 對齊改版 5.1.1）F1 Hero carousel → F2 營運摘要（總收入引用 Earnings ｜ 待處理數 ｜ 進行中項目數）→ F3 近期收入（含收入狀態）｜ F4 今日待處理（重要程度·關聯物件·處理狀態·CTA）→ F5 近期動態（類型·來源·狀態）｜ F6 近期活動與項目 → F7 粉絲關係與受眾趨勢（單卡雙欄）｜ F8 外部資料狀態。趨勢圖 / Revenue-by-source 已移除（屬 Earnings Overview）。2026-06-05 起 F2–F8 全部改由 `components.js` runtime 注入（單一 source of truth）；F3 的 transaction-list 與 earnings.html Overview 共用同一 renderer，列格式不再各頁漂移 |
 | 03 §5.1.2 Projects | projects.html | ✓ List | 列表＋卡片雙檢視（view-switch）· 狀態分頁（All/Draft/Scheduled/Live/Completed/Failed·Cancelled，Funded 歸 Live；計數為無底色、較高對比文字）＋類型篩選（直接發佈／募資／預購）＋項目搜尋 · 每筆顯示依類型×狀態，清單檢視把類型置於名稱上方、不另設類型欄 · 募資／預購列的當前目標以小一級百分比、既有 6px `.project-bar`、已募／目標金額三排呈現（進度條為裝飾，文字仍是資訊來源）；桌機欄間距 20px，目標欄 144px、≤1180px 136px，格內左右各 4px · 未完成 hover tooltip · 空狀態 · 8 範例。單一項目詳情/編輯 → 5.1.2.2（project-detail.html 另案） |
 | 03.1 建立項目（依類型分流）| create-project.html | ✓ Full | 依項目類型動態 stepper（spec 5.1.2.1 v3 §3）：Go live＝About/Showcase/Monetization/Review（4 步）· Fund it first＝About/Showcase/Funding/Tiers/Review（5 步）· Pre-order＝About/Showcase/Pre-order/Review（4 步）。共用步驟 About（含 chip 內容類型 + 依類型動態欄位組 + IP 租借）/ Showcase / Review（per-type 摘要＋交付時程＋What happens next＋發布前檢查）。平台費＝5% + 3% Stripe（修正前版 15% 誤抄，spec D029）。募資步驟含預算分配 100% 驗證 · Tiers 最少 3 · save draft · close 確認。**2026-07-24（B 反饋）**：流程前閘門與 About 內的項目類型，統一使用 `.radio-list--menu` 的圖示直列面板；選中以列底色與右側橘點提示，不用橘色外框。僅呈現調整，三種模式、FLOWS 與欄位規則不變 |
-| 5.1.2.2.1 作品上架流程 | publish-work.html | ✓ Full（demo） | 2026-08-07 新建（D178）。四步 wizard：音訊與字幕（影片檔／原始語音／字幕檔＋各自語言，可增可刪）→ 封面與影音素材（封面圖直式 `--img-portrait`／劇照 4 格／花絮／預告片，順序同規格 §4）→ 影片詳情（多語言標題與說明：一張 `.card--muted` ＝ 一個語言組，卡頭語言選單＋移除鈕，預設繁中與英文兩組、可增可刪、至少留一組、同一語言不重複、片長 HH·MM·SS、上映日期 YYYY·MM·DD、分類 21 項 `chip` 多選、標籤 `tag-input`、年齡限制六選一、定價：`switch` 是否付費＋`segmented` 幣種＋畫質列可增刪、每畫質四個數值）→ 演職人員詳情（九角色各可多筆＋備註）。骨架沿用 create-project 的 `.wizard__sheet--sectioned`＋`progress-stepper`＋底部 back／next，頂列 `wizard-chrome.js` 的自動儲存與離開確認；上傳一律 `upload-tile` demo。新元件 `entry-list`（演職名單）；畫質列與字幕檔各用一張 `.card--muted`，無頁面 `<style>`。入口只有項目詳情發文彈窗（不進 sidebar），`?project=<id>` 帶項目、不帶也能開。**送出＝送審（2026-08-07 第二輪，D179）**：把送審內容（四步全部欄位）＋待發貼文寫進 `js/work-review-store.js`（`submit()`，狀態轉待審核、送出次數 +1）、`ztorToast.queue('pw.toast.submitted')`、導回 `project-detail.html?id=`；`sessionStorage['ztor.workRelease']` 交棒後即清掉，避免舊的續作邏輯誤讀。三件事改由審核通過觸發（見 5.1.0.4 那列）。送出前跑 §8 就緒檢查：九項（付費時十項）逐項對照，未通過即 `nextBtn.disabled` ＋ footer 的 `readiness__chip`／`__pop` 列出「步驟 · 欄位」，只在第四步顯示（送出只發生在那一步），Cheat Codes 的 Skip validation 照放行。三個沒有 `__title` 的影音／字幕格自帶 `aria-label`＋`data-i18n-aria-label`，不吃 `upload-tile.js` 的泛用退路。**2026-08-07 第二輪補三處落差**：F1 影片檔加 `data-upload-processing`（元件層新增 `.is-processing`），卡頭掛唯讀狀態徽章（`#pw-video-state`，四態吃 `badge--neutral／info／warning／success`），處理中 `filled` 為 false 故就緒檢查算未完成、送出鈕維持停用；F5 劇照改 `#pw-stills` 動態格（末格填滿即 `addStill()`、中間格清空即移出，沿用項目詳情相簿的 `upload:change` 監聽做法）；F6 花絮改 `#pw-bts` 一張卡一支（可增可刪、只剩一張時不給刪，做法同字幕卡）。未做：只剩上游自己標〔產品待確認〕的審核營運規則（見 ASSUMPTIONS UIA-109）|
+| 5.1.2.2.1 作品上架流程 | publish-work.html | ✓ Full（demo） | 2026-08-07 新建（D178）。四步 wizard：音訊與字幕（影片檔／原始語音／字幕檔＋各自語言，可增可刪）→ 封面與影音素材（封面圖直式 `--img-portrait`／劇照 4 格／花絮／預告片，順序同規格 §4）→ 影片詳情（多語言標題與說明：一張 `.card--muted` ＝ 一個語言組，卡頭語言選單＋移除鈕，預設繁中與英文兩組、可增可刪、至少留一組、同一語言不重複、片長 HH·MM·SS、上映日期 YYYY·MM·DD、分類 21 項 `chip` 多選、標籤 `tag-input`、年齡限制六選一、定價：`switch` 是否付費＋`segmented` 幣種＋畫質列可增刪、每畫質四個數值）→ 演職人員詳情（九角色各可多筆＋備註）。骨架沿用 create-project 的 `.wizard__sheet--sectioned`＋`progress-stepper`＋底部 back／next，頂列 `wizard-chrome.js` 的自動儲存與離開確認；上傳一律 `upload-tile` demo。新元件 `entry-list`（演職名單）；畫質列與字幕檔各用一張 `.card--muted`，無頁面 `<style>`。入口只有項目詳情發文彈窗（不進 sidebar），`?project=<id>` 帶項目、不帶也能開。**送出＝送審（2026-08-07 第二輪，D179）**：把送審內容（四步全部欄位）＋待發貼文寫進 `js/work-review-store.js`（`submit()`，狀態轉待審核、送出次數 +1）、`ztorToast.queue('pw.toast.submitted')`、導回 `project-detail.html?id=`；`sessionStorage['ztor.workRelease']` 交棒後即清掉，避免舊的續作邏輯誤讀。三件事改由審核通過觸發（見 5.1.0.4 那列）。送出前跑 §8 就緒檢查：九項（付費時十項）逐項對照，未通過即 `nextBtn.disabled` ＋ footer 的 `readiness__chip`／`__pop` 列出「步驟 · 欄位」，只在第四步顯示（送出只發生在那一步），Cheat Codes 的 Skip validation 照放行。三個沒有 `__title` 的影音／字幕格自帶 `aria-label`＋`data-i18n-aria-label`，不吃 `upload-tile.js` 的泛用退路。**2026-08-07 第二輪補三處落差**：F1 影片檔加 `data-upload-processing`（元件層新增 `.is-processing`），卡頭掛唯讀狀態徽章（`#pw-video-state`，四態吃 `badge--neutral／info／warning／success`），處理中 `filled` 為 false 故就緒檢查算未完成、送出鈕維持停用；F5 劇照改 `#pw-stills` 動態格（末格填滿即 `addStill()`、中間格清空即移出，沿用項目詳情相簿的 `upload:change` 監聽做法）；F6 花絮改 `#pw-bts` 一張卡一支（可增可刪、只剩一張時不給刪，做法同字幕卡）。未做：只剩上游自己標〔產品待確認〕的審核營運規則（見 ASSUMPTIONS UIA-109） **2026-08-11 新增編輯態（D182 第 11 題）**：`?mode=edit` 沿用同一組四步與同一份欄位，`ZtorWorkFields.fill()` 預帶現有內容；頂部 `info-banner` 隨改動說明會不會重新送審，最後一步主動作換字。送審分界照規格 §2.2.11（影片檔／定價／年齡限制要重送，文案／標籤／演職不用；其餘八欄上游未定，頁面明說「還沒定案」不代為歸邊）。詳見 §5.6、ASSUMPTIONS WEDIT-001 |
 | 03 §5.1.3 IP Market | ip-market.html | ◑ Structure | Filter strip + 3 sample IP cards |
 | 03 §5.1.4 My IP | my-ip.html | ◑ Structure | KPI（Total IP / Total rentals / Total revenue）+ tabs + 自有/外部 IP 分組 + Marketplace 開關 + 圖例 |
 | 03.2 IP 詳情頁 | ip-detail.html | ✓ Full | IP hero · permitted usage · 法律提示 · rental + bidding 兩種模式 · owner manage panel |
@@ -293,6 +293,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 - `design-system.html` 內建 integrity check，用於檢查 anchor、compose chip、duplicate id 與 CSS link 清單。
 - 無障礙合規不是 R 2.1 預設交付範圍；若未來需要，另開 opt-in audit，不回寫成全站視覺規範。
 - **2026-07-09**：破壞性 ghost 按鈕（`.btn--ghost.btn--destructive`）與表單 footnote（`.form-footnote`）兩組跨頁重複頁內樣式一併 promote 進 ds-components，零視覺變動；細節見 UI-CHANGES.md 同日條目。
+- **2026-08-11（使用者裁決）：無自帶 CSS 的 JS 元件也要進 `design-system.html`**。這類元件建在既有元件的 class 之上、不擁有樣式，過去只登記在 `design-system.md`；但使用者檢視元件的唯一入口是 DS 頁，只寫進 `.md` 等於他看不到。全站七支（`partials/work-fields.js`、`js/work-taxonomy.js`、`partials/film-picker.js`、`partials/manual-entry-modal.js`、`partials/source-upload-modal.js`、`partials/fee-exception-modal.js`、`js/components.js`）各有 TOC 項、元件總表列與 demo 卡（§4.123–4.129）。**demo 一律載入那支 JS 當場產生**，不照模板手抄；純資料模組改用「值域一覽」並寫明為什麼沒有互動 demo；彈窗類的覆蓋層以 DS 頁的頁面級樣式（`.demo--inline-modal`）壓回文件流，元件本身不動。慣例與四條做法寫在 `design-system.md` §4.1 前言。`check_ds_sync.py` 以 `ds-components/*.css` 為起點，抓不到這一類，只能靠人維護。
 
 ### 5.6 作品欄位的跨頁共用（2026-08-10，直接發佈與作品上架整併）
 
@@ -332,6 +333,32 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 **載入順序有兩個約束**：要排在 `partials/work-fields.js` 之前（後者取它的 `AGES` 與
 `genreChipsHtml()`），也要排在 `js/zselect.js` 之前（選項要先在，`<select>` 才升級得對）。
 模組本身立刻跑一次 hydrate、再補一次 `DOMContentLoaded`，對已有內容的節點會跳過。
+
+**2026-08-11 第三輪：第三個使用場合＝編輯已上架作品**（規格 5.1.2.2 §2.2.11、D182 第 11 題）。
+編輯不另建一套欄位，改為在同一頁開編輯態：`publish-work.html?project=<id>&mode=edit`。模組新增
+`fill(work, opts)` 把既有內容寫回欄位——**每個區塊自己知道怎麼還原**（還原函式掛在該區塊的
+`<section>` 上），`fill()` 只負責找出畫面上有哪些區塊並逐一呼叫，模組因此不必知道宿主頁放了哪幾塊、
+排成幾步。比對基準取自畫面（填完之後跑一次 `collect()`）而不是 store 原始資料：兩邊要比的是同一種形狀，
+否則「原本就存不進原型的東西」會被誤判成使用者改過。
+
+**送審分界寫在宿主頁、不寫進模組**：哪些欄位要重新送審是產品規則（規格 §2.2.11），模組只提供
+`collect()` 的結果；`publish-work.html` 比對前後差異後決定走 `ztorWorkReview.submit()`（重新送審）
+或 `saveWork()`（只換內容）。規格未定歸屬的八個欄位在頁面上明說「還沒定案」，不靜默歸到任一邊。
+
+### 5.6.1 項目詳情的「作品」分頁（2026-08-11）
+
+規格 §2.2.11 給了已上架作品一個常駐落點。呈現上做成項目詳情的一個分頁（`data-tab="work"`），
+理由是規格 §2 的資訊分群把「作品」與總覽／內容／公開資訊／承諾／金流並列，而 §3 明說分頁分組屬呈現決策。
+
+- **出現條件寫成「有沒有這件作品」而不是「是什麼類型」**：影片家族 ＋ `js/work-review-store.js` 裡
+  有這個項目的紀錄。直接發佈在建立當下就送審、共創與預購要等第一次送審——兩種時序自然落在同一條判斷上，
+  不必在頁面裡再寫一次類型表。
+- **狀態不重畫一套**：徽章文字與色調一律向 store 要（`label()`／`tone()`），與 §2.2.9 那一塊、Admin
+  審核頁共用同一份字彙；兩塊讀同一筆紀錄，規格明講不得各記一套。
+- **§2.2.9 那一塊對直接發佈項目隱藏**：它整段在講「那則完成作品貼文與作品一起等審核」，而直接發佈
+  沒有這則貼文（D182 第 9 題）。狀態改由本分頁承載，資料仍是同一筆。
+- **元件**：整塊用 `review-status --flat`（外框由 `.card` 提供，元件再畫一層會變成盒中盒），
+  新增選配的 `__thumb`（40px 寬、2:3）讓創作者先認出是哪一件作品再讀狀態。
 
 ### 5.7 版本變體頁的回程改接修正（2026-08-10）
 

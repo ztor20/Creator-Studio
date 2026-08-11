@@ -145,6 +145,10 @@
         <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges" data-type="fund preorder">Plans &amp; promises</button>
         <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
         <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund preorder">Production progress</button>
+        <!-- 作品 · §2.2.11（2026-08-11 新增）。條件不是類型而是「這個項目真的有一件作品」：
+             影片家族 ＋ store 裡有一件送審或已上架的紀錄。直接發佈在建立時就送審，所以
+             建完就有；共創與預購要等作品第一次送審之後才出現。判定寫在下方 renderWork()。 -->
+        <button class="tabs__item" role="tab" data-tab="work" aria-selected="false" data-i18n="project-detail.tab.work" data-work-tab hidden>Work</button>
         <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings">My earnings</button>
         <!-- 表現 · 緊接在「我的收益」之後（2026-07-28 使用者裁示）。
              收益回答「賺了多少」，表現回答「多少人看／聽、在哪些平台、在哪些地區」；
@@ -652,6 +656,42 @@
             <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.items.note">Content item schema lives in another module — fields shown are illustrative (待確認).</div>
           </section>
 
+        </div>
+      </div>
+
+      <!-- ===================== 作品（§2.2.11）===================== -->
+      <!-- 已送審或已上架的影片作品在這裡有一個常駐落點。承載三件事：這是哪一件作品、
+           它走到哪一步、要改的話從哪裡進去。狀態字彙一律向 js/work-review-store.js 要，
+           與 §2.2.9 的審核狀態是同一份資料、不各自記一套（規格 §2.2.11 明講）。
+           欄位範圍與必填沿用作品上架流程 5.1.2.2.1 F1–F15，本頁不重抄、不另訂值域。 -->
+      <div class="tab-panel" data-panel="work" data-work-panel hidden>
+        <div class="bento">
+          <section class="card bento--span-12">
+            <!-- --flat：外框已由 .card 提供，元件自己再畫一層會變成盒中盒 -->
+            <div class="review-status review-status--flat">
+              <div class="review-status__head">
+                <img class="review-status__thumb" id="pd-work-cover" alt="">
+                <span class="badge" id="pd-work-badge"></span>
+                <h3 class="review-status__title" id="pd-work-name"></h3>
+              </div>
+              <div class="review-status__meta">
+                <span class="review-status__meta-item"><span data-i18n="pd.work.release">Release date</span><span id="pd-work-release"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.review.submitted">Last sent</span><span id="pd-work-at"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.review.count">Times sent</span><span id="pd-work-count"></span></span>
+                <span class="review-status__meta-item" id="pd-work-edited-wrap" hidden><span data-i18n="pd.work.edited">Last edited</span><span id="pd-work-edited"></span></span>
+              </div>
+              <div class="review-status__note" id="pd-work-note" hidden>
+                <span class="review-status__note-label" data-i18n="pd.review.reason">Why it came back</span>
+                <p class="review-status__note-body" id="pd-work-reason"></p>
+              </div>
+              <div class="review-status__actions">
+                <a class="btn btn--primary btn--sm" id="pd-work-edit" href="publish-work.html">
+                  <i data-lucide="pencil" class="ztor-icon ztor-icon--sm"></i><span id="pd-work-edit-label" data-i18n="pd.work.edit">Edit work</span>
+                </a>
+              </div>
+            </div>
+            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-i18n="pd.work.rule">Swapping the video file, the pricing or the age rating sends the work back for review. Copy, tags and credits do not.</p>
+          </section>
         </div>
       </div>
 
@@ -1516,7 +1556,7 @@ window.ztorPdLookup = (function () {
     if (!tablist) return;
     const tabs = tablist.querySelectorAll('.tabs__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
-    const NAMES = ['settings', 'pledges', 'about', 'progress', 'earnings', 'performance', 'royalty', 'cofund', 'preorder', 'money'];
+    const NAMES = ['settings', 'pledges', 'about', 'progress', 'work', 'earnings', 'performance', 'royalty', 'cofund', 'preorder', 'money'];
 
     function activate(name) {
       tabs.forEach(t => {
@@ -1845,8 +1885,12 @@ window.ztorPdLookup = (function () {
     function renderReview() {
       if (!reviewBox || !window.ztorWorkReview || !proj) return;
       const rec = window.ztorWorkReview.forProject(proj.id);
-      reviewBox.hidden = !rec;
-      if (!rec) return;
+      /* 直接發佈沒有「完成作品發文」這則貼文（2026-08-10 整併，D182 第 9 題），這一塊
+         整段都在講那則貼文與作品一起等審核結果，對它不成立。這種項目的作品審核狀態
+         由作品區段（§2.2.11）承載，同一份資料、只是換一個講得通的地方講。 */
+      const show = !!rec && !isDirect();
+      reviewBox.hidden = !show;
+      if (!show) return;
       const S = window.ztorWorkReview;
       const badge = document.getElementById('pd-review-badge');
       badge.textContent = S.label(rec.status);
@@ -1883,6 +1927,57 @@ window.ztorPdLookup = (function () {
       if (rec.status === 'approved') ensureReleaseRow(rec);
     }
 
+    /* ── 作品區段（規格 §2.2.11）───────────────────────────────────────────
+       這一區回答的是「作品」的三件事：是哪一件、走到哪一步、要改從哪裡進去；
+       §2.2.9 那一塊回答的是「那則完成作品貼文」。兩邊讀同一筆 store 紀錄。
+       出現條件＝影片家族 ＋ 這個項目真的有一件送審或已上架的作品；沒有作品時
+       整個分頁與面板都不長出來，而不是長出來再給一張空卡。 */
+    function renderWork() {
+      const rec = window.ztorWorkReview && proj ? window.ztorWorkReview.forProject(proj.id) : null;
+      const on = !!rec && isFilm();
+      document.querySelectorAll('[data-work-tab],[data-work-panel]').forEach(el => { el.hidden = !on; });
+      if (!on) return;
+      const S = window.ztorWorkReview;
+      const zh = document.documentElement.lang === 'zh-Hant';
+      const cover = document.getElementById('pd-work-cover');
+      if (cover) cover.src = rec.cover || proj.poster || proj.cover || '';
+      const title = rec.title || {};
+      document.getElementById('pd-work-name').textContent =
+        (zh ? (title.zh || title.en) : (title.en || title.zh)) || proj.name;
+      const badge = document.getElementById('pd-work-badge');
+      badge.textContent = S.label(rec.status);
+      badge.className = 'badge ' + S.tone(rec.status);
+      /* 上映日期＝上架流程 F10，也就是項目的排定上線日（D180：同一個日期、同一份資料）。 */
+      document.getElementById('pd-work-release').textContent = (rec.work && rec.work.release) || '—';
+      document.getElementById('pd-work-at').textContent = rec.submittedAt || '—';
+      document.getElementById('pd-work-count').textContent = String(rec.count || 1);
+      const editedWrap = document.getElementById('pd-work-edited-wrap');
+      editedWrap.hidden = !rec.editedAt;
+      if (rec.editedAt) document.getElementById('pd-work-edited').textContent = rec.editedAt;
+
+      /* 退件理由只在被退件時出現（規格 §2.2.11）；其餘狀態沒有理由可讀。 */
+      const rejected = rec.status === 'rejected';
+      const note = document.getElementById('pd-work-note');
+      note.hidden = !rejected;
+      if (rejected) document.getElementById('pd-work-reason').textContent = rec.reason || '';
+      const box = note.closest('.review-status');
+      box.classList.toggle('review-status--rejected', rejected);
+
+      /* 入口只有一個：進去改。被退件時改完一定會重送，所以按鈕就直接說它會重送。 */
+      const edit = document.getElementById('pd-work-edit');
+      edit.setAttribute('href', 'publish-work.html?project=' + encodeURIComponent(proj.id) + '&mode=edit');
+      const label = document.getElementById('pd-work-edit-label');
+      const k = rejected ? 'pd.review.resubmit' : 'pd.work.edit';
+      label.dataset.i18n = k;
+      label.textContent = T(k, rejected ? 'Fix and send again' : 'Edit work');
+      if (window.ztorIcons) window.ztorIcons.applyIcons(edit);
+    }
+
+    /* 同步跑一次，不等 setTimeout：`#work` 深連結（從編輯流程存檔後回來就是）在同步階段
+       就會被分頁腳本 activate，而稍後那支渲染會把「停在隱藏分頁」的人踢回總覽——分頁得
+       在那之前就長出來。 */
+    renderWork();
+
     /* 已通過的那則完成作品貼文要一直留在更新清單上（它真的發出去了）。
        這頁的更新清單是靜態 markup、重整就回到原樣，所以每次載入都依 store 補一列，
        並用標記避免補第二次。 */
@@ -1906,6 +2001,7 @@ window.ztorPdLookup = (function () {
        IIFE 裡，立刻執行會撲空。播完標記 released，重整不會再發一次。 */
     setTimeout(function playApproved() {
       renderReview();
+      renderWork();
       if (!window.ztorWorkReview || !proj) return;
       const rec = window.ztorWorkReview.pendingRelease(proj.id);
       if (!rec) return;
@@ -1918,9 +2014,10 @@ window.ztorPdLookup = (function () {
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toastLive);
       else toastLive();
       renderReview();
+      renderWork();
       syncKind();
     }, 0);
-    document.addEventListener('i18n:applied', renderReview);
+    document.addEventListener('i18n:applied', () => { renderReview(); renderWork(); });
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-pd-save]');
       if (!btn) return;

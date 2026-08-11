@@ -27,6 +27,8 @@
 <!-- 送出前的就緒檢查（規格 §8）沿用建立商品／建立拍賣那顆 footer chip。 -->
 <link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<!-- 編輯已上架作品時，頁面頂部那句「這次的變更會不會重新送審」（規格 5.1.2.2 §2.2.11）。 -->
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
 <!-- 查無此項目 id 時的整頁錯誤狀態（與項目詳情同一種說法，見 D154） -->
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
@@ -61,6 +63,13 @@
        原本這些 markup 直接寫在本頁；直接發佈的建立流程整併進來之後，同一組欄位有了
        兩個宿主，寫兩份 markup 就會分岔，所以抽成共用 JS 元件，本頁只留空容器與順序。 -->
   <div class="wizard__body wizard__body--form wizard__body--narrow">
+    <!-- 只有編輯已上架作品時出現（規格 5.1.2.2 §2.2.11）：創作者改到一半最需要知道的
+         是「這次改的東西會不會又要等審核」，所以這句話跟著改動即時換，不是靜態說明。 -->
+    <div class="info-banner mb-16" id="pw-edit-banner" hidden>
+      <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+      <span id="pw-edit-banner-text"></span>
+    </div>
+
     <section data-panel="media">
       <h1 class="wizard__step-title" data-i18n="pw.media.h1">Audio &amp; subtitles</h1>
       <p class="wizard__step-sub" data-i18n="pw.media.sub">Upload the finished cut, then say what language it speaks and what subtitles ship with it.</p>
@@ -174,6 +183,22 @@
     document.title = ((window.i18nT && window.i18nT('project.notfound.title')) || 'Project not found') + ' · Ztor Creator Studio';
     return;
   }
+  /* ---- 編輯已上架作品（?mode=edit，規格 5.1.2.2 §2.2.11）--------------------
+     同一組步驟、同一份欄位，差別只在三件事：欄位預先帶入這件作品現有的內容、
+     頂部多一句「這次的變更會不會重新送審」、最後一步的主動作依那條分界換字與換行為。
+     為什麼沿用本頁而不是另開一頁：欄位規格的權威只有一份（5.1.2.2.1 F1–F15），
+     編輯與上架看到的必須是同一組欄位；「編輯是走同一組步驟或改為就地編輯單一區段」
+     上游仍標〔產品待確認〕，本頁的做法是呈現假設，見 ASSUMPTIONS。 */
+  const rec = (window.ztorWorkReview && pid) ? window.ztorWorkReview.forProject(pid) : null;
+  const editMode = params.get('mode') === 'edit' && !!rec;
+  /* 要重新送審的欄位（規格 §2.2.11）：影片檔（F1）、定價（F14）、年齡限制（F13）。
+     不必重新送審：多語言標題與說明（F8）、標籤（F12）、演職名單（F15）。
+     其餘欄位落在哪一邊，上游標〔產品待確認〕——本頁不代為拍板，見下方 impact()。
+     ⚠ 原始語音（F2）在規格 §2.2.11 的三份清單裡都沒出現（三＋三＋八＝十四，F1–F15 少一項），
+     這裡歸進待確認那一群而不是預設「不用送審」：漏列不等於已經決定。見 ASSUMPTIONS WEDIT-001。 */
+  const UNDECIDED = ['audio', 'subs', 'cover', 'stills', 'bts', 'trailer', 'runtime', 'release', 'genres'];
+  let base = null;   /* 進來時的內容快照，用來比對這次改了哪一類欄位 */
+
   const subEl = document.getElementById('pw-sub');
   /* 有帶 ?project 就把副標換成該項目的名字（跟著語言換）；沒帶就留 markup 的泛稱。 */
   function syncSub() {
@@ -190,6 +215,45 @@
   document.querySelectorAll('[data-wf]').forEach(host => {
     window.ZtorWorkFields.renderAll(host, host.dataset.wf.split(','), { onChange: () => renderReadiness() });
   });
+
+  /* 編輯態：把這件作品現有的內容寫回欄位，再拍一份快照當比對基準。
+     快照取自畫面（collect）而不是 store 原始資料——兩邊要比的是同一種形狀，
+     否則「原本就存不進原型的東西」會被誤判成使用者改過。 */
+  if (editMode) {
+    window.ZtorWorkFields.fill(rec.work || {}, { coverSrc: rec.cover || (proj ? (proj.cover || proj.poster || '') : '') });
+    base = window.ZtorWorkFields.collect();
+    const h1 = document.querySelector('[data-i18n="pw.h1"]');
+    if (h1) { h1.dataset.i18n = 'pw.edit.h1'; h1.textContent = T('pw.edit.h1', 'Edit work'); }
+    document.title = T('pw.edit.h1', 'Edit work') + ' · Ztor Creator Studio';
+  }
+
+  /* 這次的變更落在哪一邊。三個結果：gate＝要重新送審、other＝落在待確認那一群、
+     none＝只動了不必送審的欄位。被退件的那一件不管改什麼都要重送（它本來就在等修正）。 */
+  function impact() {
+    if (!editMode || !base) return { gate: false, other: false, resubmit: false };
+    const now = window.ZtorWorkFields.collect();
+    const j = v => JSON.stringify(v);
+    const gate = now.file.name !== base.file.name
+      || now.age !== base.age
+      || j([now.paid, now.currency, now.qualities]) !== j([base.paid, base.currency, base.qualities]);
+    const other = UNDECIDED.some(k => j(now[k]) !== j(base[k]));
+    return { gate: gate, other: other, resubmit: gate || rec.status === 'rejected' };
+  }
+
+  const editBanner = document.getElementById('pw-edit-banner');
+  const editBannerText = document.getElementById('pw-edit-banner-text');
+  function renderEditBanner() {
+    if (!editMode || !editBanner) return;
+    editBanner.hidden = false;
+    const im = impact();
+    /* 還沒改到東西時就先把分界講清楚——與作品區段那一句是同一條規則，共用同一個 key。 */
+    let key = 'pd.work.rule';
+    if (rec.status === 'rejected') key = 'pw.edit.banner.rejected';
+    else if (im.gate) key = 'pw.edit.banner.resubmit';
+    else if (im.other) key = 'pw.edit.banner.undecided';
+    editBannerText.dataset.i18n = key;
+    editBannerText.textContent = T(key, '');
+  }
 
   /* ---- 分步 ---- */
   const FLOW = ['media', 'art', 'info', 'credits'];
@@ -217,15 +281,29 @@
     });
   }
 
+  /* 最後一步的主動作就是這一趟的結尾，所以按鈕自己換名字——底下不另加第二顆送出鈕。
+     編輯態的結尾有兩種：要重新送審，或只是存起來；名字必須說中哪一種，因為兩者的
+     後果差很多（一個讓作品回到待審核，一個不動狀態）。 */
+  function syncPrimary() {
+    const last = idx === FLOW.length - 1;
+    let key = last ? 'pw.submit' : 'wiz.continue';
+    let fb = last ? 'Send for review' : 'Continue';
+    if (last && editMode) {
+      const resubmit = impact().resubmit;
+      key = resubmit ? 'pw.edit.save-review' : 'pw.edit.save';
+      fb = resubmit ? 'Save and send for review' : 'Save changes';
+    }
+    nextBtn.dataset.i18n = key;
+    nextBtn.textContent = T(key, fb);
+  }
+
   function render(scroll) {
     const cur = FLOW[idx];
     document.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== cur));
     backBtn.classList.toggle('hidden', idx === 0);
     /* 最後一步的主動作就是送出上架，所以按鈕自己換名字——底下不另加第二顆送出鈕，
        否則同一列會同時出現「繼續」與「發布」，使用者得先猜哪一顆才是結尾。 */
-    const last = idx === FLOW.length - 1;
-    nextBtn.dataset.i18n = last ? 'pw.submit' : 'wiz.continue';
-    nextBtn.textContent = T(last ? 'pw.submit' : 'wiz.continue', last ? 'Send for review' : 'Continue');
+    syncPrimary();
     buildStepper();
     syncSub();
     renderReadiness();
@@ -244,6 +322,8 @@
      那一刻才由項目詳情頁播出「發貼文＋轉已上線」。為什麼三件事不在這裡做：
      它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。 */
   function submit() {
+    /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件。 */
+    if (editMode) { saveEdit(); return; }
     let post = null;
     try { post = JSON.parse(sessionStorage.getItem(RELEASE_KEY) || 'null'); } catch (err) { post = null; }
     if (!post) post = { id: pid, title: '', audience: 'pd-edit.update.aud-everyone', body: '' };
@@ -277,6 +357,34 @@
     location.href = 'project-detail.html' + (target ? '?id=' + encodeURIComponent(target) : '');
   }
 
+  /* 編輯已上架作品的儲存（規格 5.1.2.2 §2.2.11 的分界）：
+     改到影片檔／定價／年齡限制（或這一件本來就被退件）＝重新送審，走與第一次上架
+     同一支 store.submit()，作品回到待審核、送出次數 +1、Admin 的審核清單看得到；
+     其餘變更只換內容、不動審核狀態。兩條路都不碰那則完成作品貼文——貼文早就發過了。 */
+  function saveEdit() {
+    const work = window.ZtorWorkFields.collect();
+    const resubmit = impact().resubmit;
+    if (resubmit) {
+      window.ztorWorkReview.submit({
+        projectId: pid,
+        persona: rec.persona,
+        creator: rec.creator,
+        cover: rec.cover,
+        title: rec.title,
+        projectName: rec.projectName,
+        post: rec.post,
+        work: work
+      });
+    } else {
+      window.ztorWorkReview.saveWork(pid, work);
+    }
+    if (window.ztorToast && window.ztorToast.queue) {
+      const k = resubmit ? 'pw.toast.resent' : 'pw.toast.saved';
+      window.ztorToast.queue(T(k, resubmit ? 'Sent for review again' : 'Changes saved'), { key: k, tone: 'success' });
+    }
+    location.href = 'project-detail.html?id=' + encodeURIComponent(pid) + '#work';
+  }
+
   /* ---- 送出前的就緒檢查（規格 §8）--------------------------------------------
      項目清單來自 work-fields 模組（欄位在哪、算不算填好都是它的事），本頁只負責
      把它畫成清單、決定擋不擋關。做法沿用建立商品／建立拍賣的 readiness chip。 */
@@ -289,6 +397,8 @@
 
   function renderReadiness() {
     if (!readinessOn) return;
+    /* 每一格改動都可能讓「這次要不要重新送審」翻面，主動作與頂部那句話跟著重算。 */
+    syncPrimary(); renderEditBanner();
     const last = idx === FLOW.length - 1;
     const checks = window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) });
     const remaining = checks.filter(c => !c.done()).length;
@@ -335,8 +445,9 @@
 
   /* 切語言時步驟名與主動作文案都要跟著換；主動作的字隨「是不是最後一步」而不同，
      所以整個 render() 重跑一次最省事（面板顯隱本來就冪等）。 */
-  document.addEventListener('i18n:applied', () => render(false));
+  document.addEventListener('i18n:applied', () => { render(false); renderEditBanner(); });
   render(false);
+  renderEditBanner();
 })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>

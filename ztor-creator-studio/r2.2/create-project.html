@@ -1085,8 +1085,22 @@
     });
   }
 
+  /* 頁首副標跟著發行模式走。原本寫死「共創項目」，不管你選哪一型都是那四個字——
+     這一頁三種模式的步驟長得不一樣，副標卻在說另一件事，讀起來像走錯流程。
+     字彙直接借項目清單那組（projects.mode.*），不另造一份、免得兩邊講法分岔。
+     寫回 data-i18n 是為了讓語言切換時 i18n.js 的 apply() 自己重譯。 */
+  const MODE_KEY = { fund: 'projects.mode.fund', preorder: 'projects.mode.preorder', golive: 'projects.mode.golive' };
+  function syncTopSub() {
+    const el = document.querySelector('.wizard__top-sub');
+    if (!el) return;
+    const key = MODE_KEY[type] || MODE_KEY.fund;
+    el.dataset.i18n = key;
+    el.textContent = T(key);
+  }
+
   function render() {
     syncFilmBlocks();
+    syncTopSub();
     const f = flow();
     if (idx >= f.length) idx = f.length - 1;
     const cur = f[idx];

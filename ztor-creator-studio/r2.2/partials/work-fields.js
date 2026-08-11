@@ -18,6 +18,11 @@
      render(host, kind, opts)  把某個欄位區塊渲染進 host，回傳該 <section>
      collect(opts)             把畫面上的值收成送審內容物件（work-review-store 的 work 欄位）
      checks(opts)             回傳就緒檢查項清單（規格 §8 的必填齊全）
+     fill(work, opts)          把 collect() 形狀的資料寫回畫面（編輯已上架作品時用）
+
+   fill 的分工：每個區塊自己知道怎麼把值放回去，所以把還原函式掛在該區塊的
+   <section> 上（`_fill`），fill() 只負責找出畫面上有哪些區塊並逐一呼叫。宿主頁
+   放了哪幾塊、順序如何，模組不需要知道。
    kind 值域：file / audio / subs / cover / stills / bts / trailer /
              copy / spec / genres / tags / age / pricing / credits
 
@@ -82,9 +87,45 @@
     ready: { key: 'pw.media.file.state.ready', fb: 'Ready', tone: 'badge--success' }
   };
 
+  /* ── 編輯態還原（fill）的共用小工具 ────────────────────────────────
+     原型不真的存檔案，送審內容裡的素材只有檔名與筆數（見 collect 的說明），
+     所以「還原成已上傳」＝把格子切成已填狀態並寫回檔名，不重跑一次假上傳。 */
+  function markFilled(tile, name, thumbSrc) {
+    if (!tile) return;
+    tile.classList.remove('is-empty');
+    tile.classList.add('is-filled');
+    var img = tile.querySelector('.upload-tile__thumb');
+    if (img && thumbSrc) img.src = thumbSrc;
+    var fn = tile.querySelector('.upload-tile__filename');
+    if (fn && name) fn.textContent = name;
+    var mark = tile.querySelector('.upload-tile__filemark');
+    if (mark && name) mark.classList.add('is-shown');
+    /* 冒泡出去讓消費頁與容器跟上：F1 的狀態徽章、劇照的「填滿就長下一格」、
+       宿主頁的就緒檢查都聽這顆事件。 */
+    tile.dispatchEvent(new CustomEvent('upload:change', { bubbles: true, detail: { key: null, filled: true, state: 'filled' } }));
+  }
+  /* 存進去的值不見得還在值域裡（值域改過、或那筆是更早的資料形狀）。硬寫進 <select>
+     會讓它變成空白選項——看起來像創作者當初沒填。對不上就維持預設值。 */
+  function setVal(el, v) {
+    if (!el || v == null || v === '') return;
+    if (el.tagName === 'SELECT' && !el.querySelector('option[value="' + String(v).replace(/"/g, '\\"') + '"]')) return;
+    el.value = v;
+  }
+
+  /* 沒有 i18n 時的退路字樣（design-system.html 這類不載 i18n.js 的頁面會吃到）。
+     退路若是 key 本身，選單會顯示「pw.lang.yue」——那不是語言，是字典鍵。
+     字面與 js/i18n.js 的英文值一致，兩邊看到的是同一個詞。 */
+  var OPT_FB = {
+    'pw.lang.yue': 'Cantonese', 'pw.lang.cmn': 'Mandarin', 'pw.lang.en': 'English',
+    'pw.lang.ja': 'Japanese', 'pw.lang.ko': 'Korean', 'pw.lang.none': 'No dialogue',
+    'pw.lang.zh': 'Traditional Chinese', 'pw.lang.enName': 'English',
+    'pw.age.all': 'Everyone', 'pw.age.7': '7+', 'pw.age.10': '10+',
+    'pw.age.13': '13+', 'pw.age.16': '16+', 'pw.age.18': '18+'
+  };
+
   function optionsHtml(keys, selected) {
     return keys.map(function (k) {
-      return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + ' data-i18n="' + k + '">' + esc(T(k, k)) + '</option>';
+      return '<option value="' + k + '"' + (k === selected ? ' selected' : '') + ' data-i18n="' + k + '">' + esc(T(k, OPT_FB[k] || k)) + '</option>';
     }).join('');
   }
 
@@ -125,6 +166,9 @@
     document.addEventListener('upload:change', sync);
     document.addEventListener('i18n:applied', sync);
     enhance(s); upload(s); sync();
+    s._fill = function (w) {
+      if (w && w.file && w.file.name) { markFilled(tile, w.file.name); sync(); }
+    };
     return s;
   }
 
@@ -137,6 +181,7 @@
       + '<select class="select" id="pw-audio">' + optionsHtml(AUDIO_LANGS) + '</select>'
       + '</div>');
     enhance(s);
+    s._fill = function (w) { if (w) setVal(s.querySelector('#pw-audio'), w.audio); };
     return s;
   }
 
@@ -179,6 +224,16 @@
     }
     s.querySelector('[data-pw-add-sub]').addEventListener('click', add);
     enhance(s); add();
+    s._fill = function (w) {
+      var subs = (w && w.subs) || [];
+      if (!subs.length) return;
+      while (wrap.children.length < subs.length) add();
+      Array.prototype.slice.call(wrap.querySelectorAll('[data-pw-sub]')).forEach(function (card, i) {
+        if (!subs[i]) return;
+        setVal(card.querySelector('select'), subs[i].lang);
+        markFilled(card.querySelector('[data-pw-asset="subtitle"]'), subs[i].name);
+      });
+    };
     return s;
   }
 
@@ -193,6 +248,10 @@
       + '<span class="upload-tile__hint" data-i18n="cp.media.portrait">' + esc(T('cp.media.portrait', '750 × 1125 · portrait')) + '</span>'
       + '</div></div>');
     enhance(s); upload(s);
+    /* 縮圖來源由宿主頁給（opts.coverSrc）——原型沒有真的資產庫，編輯態拿項目圖當那張封面。 */
+    s._fill = function (w, o) {
+      if (w && w.cover) markFilled(s.querySelector('[data-pw-asset="cover"]'), '', (o && o.coverSrc) || '');
+    };
     return s;
   }
 
@@ -223,6 +282,14 @@
       emit();
     });
     enhance(s); add();
+    s._fill = function (w, o) {
+      var n = (w && Number(w.stills)) || 0;
+      for (var i = 0; i < n; i++) {
+        var tiles = wrap.querySelectorAll('.upload-tile');
+        /* 末格填滿會由上面的監聽器自己長出下一格，所以每次都填最後那一格。 */
+        markFilled(tiles[tiles.length - 1], '', (o && o.coverSrc) || '');
+      }
+    };
     return s;
   }
 
@@ -266,6 +333,14 @@
     }
     s.querySelector('[data-pw-add-bts]').addEventListener('click', add);
     enhance(s); add();
+    s._fill = function (w) {
+      var n = (w && Number(w.bts)) || 0;
+      if (!n) return;
+      while (wrap.children.length < n) add();
+      Array.prototype.slice.call(wrap.querySelectorAll('[data-pw-bts-card]')).slice(0, n).forEach(function (card, i) {
+        markFilled(card.querySelector('[data-pw-asset="bts"]'), T('pw.art.bts.item', 'Clip') + ' ' + (i + 1));
+      });
+    };
     return s;
   }
 
@@ -279,6 +354,9 @@
       + '<span class="upload-tile__hint" data-i18n="pw.art.trailer.hint">' + esc(T('pw.art.trailer.hint', 'Up to 3 minutes')) + '</span>'
       + '</div>');
     enhance(s); upload(s);
+    s._fill = function (w) {
+      if (w && w.trailer) markFilled(s.querySelector('[data-pw-asset="trailer"]'), w.trailer);
+    };
     return s;
   }
 
@@ -358,6 +436,21 @@
     });
     enhance(s);
     add('pw.lang.zh'); add('pw.lang.enName');
+    s._fill = function (w) {
+      var copy = (w && w.copy) || [];
+      if (!copy.length) return;
+      /* 語言組數是創作者自己決定的，還原時就要還原成當初那幾組——多的移除、少的補上。 */
+      while (wrap.children.length > copy.length) wrap.lastElementChild.remove();
+      while (wrap.children.length < copy.length) add(COPY_LANGS.filter(function (k) { return used().indexOf(k) < 0; })[0] || COPY_LANGS[0]);
+      Array.prototype.slice.call(wrap.querySelectorAll('[data-pw-copy]')).forEach(function (card, i) {
+        var it = copy[i]; if (!it) return;
+        setVal(card.querySelector('select'), it.lang);
+        applyPh(card);
+        setVal(card.querySelector('[data-pw-title]'), it.title);
+        setVal(card.querySelector('[data-pw-desc]'), it.desc);
+      });
+      syncControls(); syncLangOptions();
+    };
     return s;
   }
 
@@ -399,6 +492,17 @@
     s.querySelector('#pw-mm2').value = String(now.getMonth() + 1);
     s.querySelector('#pw-dd').value = String(now.getDate());
     enhance(s);
+    s._fill = function (w) {
+      if (!w) return;
+      var rt = String(w.runtime || '').split(':');
+      ['#pw-hh', '#pw-mm', '#pw-ss'].forEach(function (id, i) { setVal(s.querySelector(id), rt[i]); });
+      /* 存下來的日期可能是補零的（2026/09/12），下拉的 value 沒有補零，先轉成數字再比。 */
+      var d = String(w.release || '').split('/');
+      ['#pw-yyyy', '#pw-mm2', '#pw-dd'].forEach(function (id, i) {
+        var n = parseInt(d[i], 10);
+        if (!isNaN(n)) setVal(s.querySelector(id), String(n));
+      });
+    };
     return s;
   }
 
@@ -414,6 +518,12 @@
       emit();
     });
     enhance(s);
+    s._fill = function (w) {
+      var picked = (w && w.genres) || [];
+      s.querySelectorAll('[data-pw-genre]').forEach(function (c) {
+        c.classList.toggle('chip--active', picked.indexOf(c.getAttribute('data-i18n')) >= 0);
+      });
+    };
     return s;
   }
 
@@ -452,6 +562,11 @@
       if (e.target === field) entry.focus();
     });
     enhance(s);
+    s._fill = function (w) {
+      tags.length = 0;
+      ((w && w.tags) || []).forEach(function (t) { tags.push(t); });
+      paint();
+    };
     return s;
   }
 
@@ -463,6 +578,7 @@
       + '<select class="select" id="pw-age" aria-label="' + esc(T('pw.info.age.title', 'Age rating')) + '" data-i18n-aria-label="pw.info.age.title">'
       + optionsHtml(AGES) + '</select></div>');
     enhance(s);
+    s._fill = function (w) { if (w) setVal(s.querySelector('#pw-age'), w.age); };
     return s;
   }
 
@@ -557,6 +673,28 @@
     enhance(s);
     ['4K', 'HD-1080P', 'SD-720P'].forEach(addQuality);
     togglePaid();
+    s._fill = function (w) {
+      if (!w) return;
+      paid.classList.toggle('switch--on', !!w.paid);
+      togglePaid();
+      if (w.currency) {
+        curWrap.querySelectorAll('.segmented__btn').forEach(function (b) {
+          b.classList.toggle('segmented__btn--active', b.dataset.pwCur === w.currency);
+        });
+      }
+      var qs = w.qualities || [];
+      if (!qs.length) return;
+      /* 畫質清單是可增可刪的，還原時整份換掉才不會留下當初刪掉的那一列。 */
+      list.innerHTML = '';
+      qs.forEach(function (q) { addQuality(q.name); });
+      Array.prototype.slice.call(list.querySelectorAll('[data-pw-quality]')).forEach(function (card, i) {
+        var q = qs[i]; if (!q) return;
+        var inputs = card.querySelectorAll('input');
+        setVal(inputs[0], q.price); setVal(inputs[1], q.popcorn);
+        setVal(inputs[2], q.rent); setVal(inputs[3], q.watch);
+      });
+      s.querySelectorAll('[data-pw-cur-sym]').forEach(function (x) { x.textContent = sym(); });
+    };
     return s;
   }
 
@@ -600,6 +738,9 @@
       if (takeFocus) row.querySelector('.input').focus();
     }
     add.addEventListener('click', function () { addRow(true); });
+    /* 還原時要能多長幾列，但不可搶焦點（fill 發生在載入當下）——所以留一支不搶焦點的入口，
+       而不是讓 fill 去點那顆按鈕。 */
+    list._addRow = function () { addRow(false); };
     list.addEventListener('input', syncAdd);
     field.appendChild(list);
     list.appendChild(add);
@@ -621,6 +762,25 @@
     notes.insertAdjacentHTML('beforeend',
       '<div class="field" style="margin-bottom:0"><textarea class="textarea" id="pw-notes" aria-label="' + esc(T('pw.credits.notes.title', 'Notes')) + '" data-i18n-aria-label="pw.credits.notes.title"></textarea></div>');
     [cast, crew].forEach(function (sec) { sec.querySelectorAll('[data-pw-role]').forEach(bindRole); });
+    /* 三張卡各自還原自己那一段：角色名單照 role key 對回去，備註是一格自由文字。 */
+    function fillRoles(sec) {
+      return function (w) {
+        var credits = (w && w.credits) || [];
+        sec.querySelectorAll('[data-pw-role]').forEach(function (f) {
+          var key = f.querySelector('.field__label').getAttribute('data-i18n');
+          var hit = credits.filter(function (c) { return c.role === key; })[0];
+          var names = (hit && hit.names) || [];
+          if (!names.length) return;
+          var list = f.querySelector('.entry-list');
+          while (f.querySelectorAll('.entry-list__row').length < names.length) list._addRow();
+          f.querySelectorAll('.entry-list__row .input').forEach(function (input, n) { setVal(input, names[n]); });
+          list.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      };
+    }
+    cast._fill = fillRoles(cast);
+    crew._fill = fillRoles(crew);
+    notes._fill = function (w) { if (w) setVal(notes.querySelector('#pw-notes'), w.notes); };
     enhance(cast); enhance(crew); enhance(notes);
     return cast;
   }
@@ -761,6 +921,16 @@
       return out;
     },
     collect: collect,
-    checks: checks
+    checks: checks,
+    /* 把 collect() 形狀的資料寫回畫面（編輯已上架作品時用，規格 5.1.2.2 §2.2.11）。
+       opts.scope：只還原某一段（預設整份文件）；opts.coverSrc：素材格的縮圖來源。 */
+    fill: function (work, opts) {
+      opts = opts || {};
+      var scope = opts.scope || document;
+      Array.prototype.slice.call(scope.querySelectorAll('.form-section')).forEach(function (sec) {
+        if (typeof sec._fill === 'function') sec._fill(work, opts);
+      });
+      emit();
+    }
   };
 })();
