@@ -53,12 +53,24 @@
       start: '19:30',
       end: '22:00',
       doors: '18:30',
+      /* 早到政策（2026-08-11 與建立流程同步）：比自己那張票的入場時間早到的人怎麼辦。
+         沒寫的活動預設 'warn'（仍可入場）；這一場示範 'block'。 */
+      early: 'block',
       capacity: 600,
+      /* fee＝手續費、earlyMin＝比開放入場提早幾分鐘（皆 2026-08-11 新欄，沒寫＝無）。 */
       tiers: [
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100 },
-        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200 },
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 100, fee: 100, earlyMin: 30 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200, fee: 100 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
+      /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的捆綁包。與單賣的票共用同一個
+         數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。 */
+      bundles: [
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演 T 恤', tickets: [{ tier: 'tier-vip', n: 1 }],
+          products: ['REALIVE 巡演 T 恤'], price: 4800, sold: 12, cap: 50 }
+      ],
+      /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。 */
+      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
       sold: 600,
       revenue: 1800000,
       status: 'on-sale',
@@ -119,10 +131,16 @@
       doors: '18:30',
       capacity: 600,
       tiers: [
-        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40 },
-        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60 },
-        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100 }
+        /* reserved＝下單未付款佔走的、paused＝暫停販售（2026-08-11 新欄，示範營運列表用）。 */
+        { id: 'tier-vip',   name: 'VIP',    price: 4200, qty: 100, sold: 40, fee: 100, earlyMin: 30, reserved: 6 },
+        { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 60, fee: 100, reserved: 11 },
+        { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
       ],
+      bundles: [
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演 T 恤', tickets: [{ tier: 'tier-vip', n: 1 }],
+          products: ['REALIVE 巡演 T 恤'], price: 4800, sold: 3, cap: 50 }
+      ],
+      publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
       sold: 200,
       revenue: 606000,
       status: 'on-sale',
@@ -252,6 +270,14 @@
       start: '14:00',
       end: '16:00',
       doors: '13:30',
+      /* 場次陣列（2026-08-11 使用者指示）：**定點活動的多場次收進同一筆活動**——場地共用一份，
+         每場自己的日期時間與早到政策。單值的 date/start/end/doors 維持＝第 1 場的鏡像
+         （頁首、清單列等舊消費端照讀）。多站活動（每站不同場地）才拆成系列母子頁。 */
+      sessions: [
+        { id: 's1', date: '2026-09-12', start: '14:00', end: '16:00', doors: '13:30', early: 'warn' },
+        { id: 's2', date: '2026-09-13', start: '14:00', end: '16:00', doors: '13:30', early: 'warn' },
+        { id: 's3', date: '2026-09-14', start: '19:00', end: '21:00', doors: '18:00', early: 'block' }
+      ],
       capacity: 150,
       tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 }],
       sold: 118,
