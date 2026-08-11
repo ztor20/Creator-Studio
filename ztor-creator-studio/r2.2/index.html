@@ -78,29 +78,81 @@
         </div></section>
       </div>
 
-      <!-- Recent earnings + Alerts row -->
-      <div class="bento bento--stack-lg">
-        <section class="card bento--span-7">
+      <!-- ══ 第一屏第二排：F9 ztor 粉絲組成 ｜ F4 今日待處理 ═══════════════════
+           2026-08-07 使用者裁示兩段：先把粉絲組成移進第一屏，再指出它獨佔整列太寬，
+           要從頁面上挑一個更有意義的區塊上來併排。挑中 F4「今日待處理」的理由：
+             · 它是全頁行動價值最高的一塊（每一列都帶一顆到位的 CTA）
+             · F2 的「待處理事項 4」就是它的計數，數字與明細同屏才閉環
+             · 它本來就長在 span-5（彈性卡片列、無表格最小寬度），併排零風險
+           版面代價：F3 近期收入因此落單，改為滿寬單卡——這反而是修正，
+           它的表格在 span-7 會把作品名截斷（「REALIVE tour photobook …」），
+           滿寬之後名稱完整顯示。
+
+           F9 用圓餅不用長條：這裡問的是「一整塊是怎麼被分掉的」，不是「誰比誰長」。
+           資料與粉絲名冊（fans-crm）同一份，所以走同一組 fans.tier.* key。
+           ⚠ 分母：只算站內有 ztor 帳號的粉絲，不含只在外部平台看得到的人——
+           卡頭膠囊與卡底註腳就是在講這件事，不可與受眾數字互比。
+           F9 不做空狀態卡（沿用 2026-08-06 的決定：與 F7 同源、F7 已把話講完），
+           所以只有 F9 那張掛 dash-data-only，整排不掛——F7 與 F4 各自帶空狀態卡，
+           無資料時這一排仍然成立（左欄剩 F7 的空卡、右欄 F4 的空卡）。 -->
+      <!-- 這一排用 --stack-md（1200）而不是 --stack-lg（1440）：lg 是給裝表格的卡用的，
+           掛上去會讓 <1440 時圓餅卡又變回整列寬，回到使用者說「太寬」的樣子。但預設的
+           900px 又太早——1024 實測圖例會折行（20→39px）、告警欄只剩 286px。1200 這個
+           門檻讓 1280 筆電維持併排，再窄才收單欄。
+           --top ＋ __stack 兩件事一起做才收得齊（2026-08-07 第三段，使用者圈出
+           「這樣空一大塊不行」）：圓餅卡只有 309px、告警卡 783px，只加 --top 的話
+           圓餅底下會空 474px。把 F7「粉絲關係與受眾趨勢」從頁尾疊到圓餅下面同一欄，
+           左欄變成 309＋16＋503＝828，與右欄 783 幾乎齊平，空白消失。
+           內容上這也是回到原本的配對：F9 講「這群人怎麼被分掉」，F7 講「這群人怎麼動」，
+           同一批人的兩個切面本來就該一起讀。 -->
+      <div class="bento bento--stack-md bento--top mb-16">
+        <div class="bento__stack bento--span-7">
+        <section class="card dash-data-only">
+          <div class="card__head">
+            <!-- 卡頭沿用來源頁的組成（標題＋口徑膠囊），不補 .card__title-icon：
+                 圖示登記表沒有圓餅圖，為了跟旁邊的卡對齊而硬借一個語意不對的圖示，
+                 比沒有圖示更誤導。 -->
+            <h3 class="card__title" data-i18n="dash.tiers.title">Fans on Ztor</h3>
+            <span class="chip chip--static" data-i18n="dash.tiers.chip">On-Ztor only — no external platforms</span>
+          </div>
+          <div class="pie-figure">
+            <div class="pie" aria-hidden="true"
+                 style="--pie-stops:
+                   var(--primary) 0 12%,
+                   var(--status-info) 0 40%,
+                   var(--status-success) 0 77%,
+                   var(--foreground-muted) 0 100%"></div>
+            <div class="pie-figure__legend">
+              <div class="source-list">
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="card__note" data-i18n="dash.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count. The audience figures in Fan analytics include people we only see through connected platforms, so the two don’t share a denominator.</p>
+        </section>
+
+        <!-- F7 · spec 5.1.1 §F7 — one block, two labelled insight groups: fan relations
+             (Fans CRM) and audience trends (Audience Intelligence). Each carries insight type,
+             metrics, data source, sync time and an entry point into its source module.
+             2026-08-07 由頁尾（原 F7｜F8 那排）疊到 F9 底下，見本排開頭的註解。 -->
+        <section class="card">
           <div class="card__head">
             <div class="card__title-group">
-              <span class="card__title-icon card__title-icon--primary"><i data-lucide="dollar-sign" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+              <span class="card__title-icon card__title-icon--success"><i data-lucide="users" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.f7.title">Fan relations &amp; audience trends</h3>
             </div>
-            <a class="card__link dash-data-only" href="earnings.html" data-i18n="btn.view-all">View all</a>
           </div>
-          <!-- F3 · Recent earnings · spec 5.1.1 §F3 — rendered by the shared transaction-list
-               component (components.js), the SAME renderer Earnings uses, so the row format
-               stays in sync across pages. Dashboard passes settled income only (spec 排除項目:
-               refunds / payouts / fees / disputes + any non-settled rows excluded) and sets
-               hideStatus — F3 carries NO status column (狀態恆為 settled). Each row:
-               name · source · date · amount+currency. -->
-          <div data-component="transaction-list" data-key="dash-recent" class="dash-data-only"></div>
+          <div class="insight-split dash-data-only" data-component="insight-split" data-key="dash-insight"></div>
           <div class="dash-empty-only"><div class="empty-card">
-            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="tag" class="ztor-icon"></i></span>
-            <h3 class="empty-card__title" data-i18n="dash.empty.earnings.title">No earnings yet</h3>
-            <p class="empty-card__text" data-i18n="dash.empty.earnings.text">Income from sales, events and royalties will show up here.</p>
+            <span class="empty-card__icon empty-card__icon--success"><i data-lucide="users" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="dash.empty.fans.title">No fan data yet</h3>
+            <p class="empty-card__text" data-i18n="dash.empty.fans.text">Connect a channel or grow your audience to see relationship and trend insights.</p>
           </div></div>
         </section>
+        </div>
 
         <!-- F4 · Today's actions · spec 5.1.1 §F4 — each card: severity · associated object ·
              one-line reason · processing state (Open / In progress) · a concrete deep-link CTA.
@@ -113,12 +165,59 @@
             </div>
             <a class="card__link dash-data-only" href="#" data-i18n="btn.view-all-alerts">View all</a>
           </div>
-
           <div data-component="alerts" data-key="dash-alerts" class="dash-data-only"></div>
           <div class="dash-empty-only"><div class="empty-card">
             <span class="empty-card__icon empty-card__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></span>
             <h3 class="empty-card__title" data-i18n="dash.empty.alerts.title">You're all caught up</h3>
             <p class="empty-card__text" data-i18n="dash.empty.alerts.text">Alerts and to-dos from across your studio appear here.</p>
+          </div></div>
+        </section>
+      </div>
+
+      <!-- F3 · Recent earnings · spec 5.1.1 §F3 — rendered by the shared transaction-list
+           component (components.js), the SAME renderer Earnings uses, so the row format
+           stays in sync across pages. Dashboard passes settled income only (spec 排除項目:
+           refunds / payouts / fees / disputes + any non-settled rows excluded) and sets
+           hideStatus — F3 carries NO status column (狀態恆為 settled). Each row:
+           name · source · date · amount+currency.
+           2026-08-07 起改與 F8「外部資料狀態」併排（原本與 F4 併排；F4 上移到第一屏後
+           它一度落單成滿寬單卡，同日第三段 F7 也上移，F8 因此空出來遞補這個位置）。
+           兩張放一起讀得通：左邊是錢從哪來、右邊是這些數字背後的資料新不新。 -->
+      <div class="bento bento--stack-lg">
+        <section class="card bento--span-7">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="dollar-sign" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+            </div>
+            <a class="card__link dash-data-only" href="earnings.html" data-i18n="btn.view-all">View all</a>
+          </div>
+          <div data-component="transaction-list" data-key="dash-recent" class="dash-data-only"></div>
+          <div class="dash-empty-only"><div class="empty-card">
+            <span class="empty-card__icon empty-card__icon--primary"><i data-lucide="tag" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="dash.empty.earnings.title">No earnings yet</h3>
+            <p class="empty-card__text" data-i18n="dash.empty.earnings.text">Income from sales, events and royalties will show up here.</p>
+          </div></div>
+        </section>
+
+        <!-- F8 · spec 5.1.1 §F8 — external data status (NOT integration management). Each row:
+             data source · data type · last sync · data status · impact summary. Dashboard never
+             re-authorizes / revokes / connects here; CTAs only route to Settings when handling
+             is needed. Integration management itself lives in Settings F6 Integrations. -->
+        <section class="card bento--span-5">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon"><i data-lucide="link" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.ext.title">External data status</h3>
+            </div>
+            <a class="card__link dash-data-only" href="fan-analytics.html" data-i18n="dash.ext.link">Manage in Fan analytics</a>
+          </div>
+          <div data-component="ext-data-status" data-key="dash-ext" class="dash-data-only"></div>
+          <div class="dash-empty-only"><div class="empty-card">
+            <span class="empty-card__icon"><i data-lucide="refresh-ccw" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="dash.empty.ext.title">No external data yet</h3>
+            <p class="empty-card__text" data-i18n="dash.empty.ext.text">Upload your platform exports in Fan analytics to track followers, streams and external revenue.</p>
+            <a class="btn btn--outline btn--sm empty-card__cta" href="fan-analytics.html" data-i18n="dash.empty.ext.cta">Go to Fan analytics</a>
           </div></div>
         </section>
       </div>
@@ -186,83 +285,10 @@
         </div></section>
       </div>
 
-      <!-- F7 Fan relations & audience trends | F8 External data status -->
-      <div class="bento mt-24">
-        <!-- F7 · spec 5.1.1 §F7 — one block, two labelled insight groups: fan relations
-             (Fans CRM) and audience trends (Audience Intelligence). Each carries insight type,
-             metrics, data source, sync time and an entry point into its source module. -->
-        <section class="card bento--span-7">
-          <div class="card__head">
-            <div class="card__title-group">
-              <span class="card__title-icon card__title-icon--success"><i data-lucide="users" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="dash.f7.title">Fan relations &amp; audience trends</h3>
-            </div>
-          </div>
-          <div class="insight-split dash-data-only" data-component="insight-split" data-key="dash-insight"></div>
-          <div class="dash-empty-only"><div class="empty-card">
-            <span class="empty-card__icon empty-card__icon--success"><i data-lucide="users" class="ztor-icon"></i></span>
-            <h3 class="empty-card__title" data-i18n="dash.empty.fans.title">No fan data yet</h3>
-            <p class="empty-card__text" data-i18n="dash.empty.fans.text">Connect a channel or grow your audience to see relationship and trend insights.</p>
-          </div></div>
-        </section>
-
-        <!-- F8 · spec 5.1.1 §F8 — external data status (NOT integration management). Each row:
-             data source · data type · last sync · data status · impact summary. Dashboard never
-             re-authorizes / revokes / connects here; CTAs only route to Settings when handling
-             is needed. Integration management itself lives in Settings F6 Integrations. -->
-        <section class="card bento--span-5">
-          <div class="card__head">
-            <div class="card__title-group">
-              <span class="card__title-icon"><i data-lucide="link" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="dash.ext.title">External data status</h3>
-            </div>
-            <a class="card__link dash-data-only" href="fan-analytics.html" data-i18n="dash.ext.link">Manage in Fan analytics</a>
-          </div>
-          <div data-component="ext-data-status" data-key="dash-ext" class="dash-data-only"></div>
-          <div class="dash-empty-only"><div class="empty-card">
-            <span class="empty-card__icon"><i data-lucide="refresh-ccw" class="ztor-icon"></i></span>
-            <h3 class="empty-card__title" data-i18n="dash.empty.ext.title">No external data yet</h3>
-            <p class="empty-card__text" data-i18n="dash.empty.ext.text">Upload your platform exports in Fan analytics to track followers, streams and external revenue.</p>
-            <a class="btn btn--outline btn--sm empty-card__cta" href="fan-analytics.html" data-i18n="dash.empty.ext.cta">Go to Fan analytics</a>
-          </div></div>
-        </section>
-      </div>
-
-      <!-- ztor 粉絲組成（2026-08-06 使用者裁示：自粉絲分析頁搬來，放 bento 之下）。
-           位置緊接 F7「粉絲關係與受眾趨勢」：F7 講的是「這群人怎麼動」，這張卡
-           講「這群人怎麼被分掉」，同一批人的兩個切面，分開會讓人來回對照。
-           用圓餅不用長條：這裡問的是「一整塊是怎麼被分掉的」，不是「誰比誰長」。
-           資料與粉絲名冊（fans-crm）同一份，所以走同一組 fans.tier.* key。
-           ⚠ 分母：只算站內有 ztor 帳號的粉絲，不含只在外部平台看得到的人——
-           卡頭膠囊與卡底註腳就是在講這件事，不可與受眾數字互比。
-           空狀態不另給一張卡：這批數字與 F7 同源，F7 的「還沒有粉絲資料」已經
-           把話講完，再放一張只會重複（掛 dash-data-only，empty 情境整張隱藏）。 -->
-      <section class="card mt-24 dash-data-only">
-        <div class="card__head">
-          <!-- 卡頭沿用來源頁的組成（標題＋口徑膠囊），不補 .card__title-icon：
-               圖示登記表沒有圓餅圖，為了跟旁邊的卡對齊而硬借一個語意不對的圖示，
-               比沒有圖示更誤導。 -->
-          <h3 class="card__title" data-i18n="dash.tiers.title">Fans on Ztor</h3>
-          <span class="chip chip--static" data-i18n="dash.tiers.chip">On-Ztor only — no external platforms</span>
-        </div>
-        <div class="pie-figure">
-          <div class="pie" aria-hidden="true"
-               style="--pie-stops:
-                 var(--primary) 0 12%,
-                 var(--status-info) 0 40%,
-                 var(--status-success) 0 77%,
-                 var(--foreground-muted) 0 100%"></div>
-          <div class="pie-figure__legend">
-            <div class="source-list">
-              <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 fans</span><span class="source-row__pct">$8,420</span></div>
-              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">Superfan · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 fans</span><span class="source-row__pct">$6,180</span></div>
-              <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">Ranked fans · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 fans</span><span class="source-row__pct">$4,890</span></div>
-              <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">Fan · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 fans</span><span class="source-row__pct">$1,210</span></div>
-            </div>
-          </div>
-        </div>
-        <p class="card__note" data-i18n="dash.tiers.note">1,283 fans with a Ztor account, split by tier — the same roster the Fans pages count. The audience figures in Fan analytics include people we only see through connected platforms, so the two don’t share a denominator.</p>
-      </section>
+      <!-- （2026-08-07 第三段搬走）原本這裡是 F7｜F8 那一排。
+           F7「粉絲關係與受眾趨勢」疊到第一屏 F9 底下同一欄（兩者是同一批人的兩個切面，
+           且正好把圓餅卡下方的空白補滿）；F8「外部資料狀態」遞補到 F3 近期收入旁邊。
+           兩個區塊都還在頁面上，只是換了位置——項目數量未變。 -->
 
     </div>
 

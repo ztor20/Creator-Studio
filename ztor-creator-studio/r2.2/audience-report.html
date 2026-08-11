@@ -60,13 +60,14 @@
   .ar-sechead { margin-top: var(--sp-32); }
   .ar-sechead__title { font-size: var(--fs-18); font-weight: var(--fw-medium); margin: 0; }
   .ar-sechead__sub { color: var(--muted-foreground); font-size: var(--fs-13); margin: var(--sp-4) 0 0; }
-  /* 卡頭的類型切換器：接管參考站原本放「依版稅／依串流」的那個位置。
-     .segmented--xs 不存在於元件庫，這裡只調字級與高度、不改元件骨架。 */
-  /* .filter-tabs 本身是 flex 且吃滿寬，靠右只要改 justify-content。
-     （沒有「自訂區間」——那要一組日期選擇器，本頁的期間是固定的三個尺度。） */
-  .ar-period { justify-content: flex-end; }
-  .ar-scope { flex: none; }
-  .ar-scope .segmented__btn { font-size: var(--fs-12); height: var(--control-h-xs); padding: 0 var(--sp-10); }
+  /* 頁面層級的兩個控制項：類型靠左、期間靠右。 */
+  .ar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-16);
+    flex-wrap: wrap;
+  }
   /* 彈窗：清單很長，body 自己捲；捲到底才續載下一批（見 JS 的 IntersectionObserver）。 */
   /* 定高而不是 max-height（2026-08-09 使用者指示）：切分頁時各類型件數差很多
      （全部 23 件、影視只有 3 件），用 max-height 的話彈窗會跟著縮，整個對話框
@@ -147,15 +148,24 @@
         </div>
       </div>
 
-      <!-- 期間。整頁共用一個，因為換期間是換「看哪一段時間」，
-           不是換「看哪一種內容」——後者才是各區塊自己的事。
-           靠右（2026-08-09 使用者指示）：各區塊的類型切換器都在卡片右上角，
-           這顆是它們的頁面層級版本，靠同一邊才讀得出是同一種控制項。 -->
-      <nav class="filter-tabs mt-16 ar-period" role="tablist" aria-label="Period" data-ar-period>
-        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
-        <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
-        <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
-      </nav>
+      <!-- 兩個頁面層級的控制項同一排：類型靠左、期間靠右（2026-08-09 使用者裁決，
+           類型由逐區切換收回頁面層）。左邊是「看哪一種內容」，右邊是「看哪一段時間」，
+           兩者互相獨立、可任意組合，所以並列而不是串成一條。
+           **取捨**：收回頁面層之後，同一畫面上不可能同時看到兩個類型，
+           原本「捲到某一區、就地切三個類型比對」的用法不再成立，改成整頁一起換。 -->
+      <div class="ar-controls mt-16">
+        <nav class="filter-tabs" role="tablist" aria-label="Content type" data-ar-scope>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-s="all" data-i18n="ar.scope.all">All</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-s="film" data-i18n="ar.tab.film">Film &amp; TV</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-s="music" data-i18n="ar.tab.music">Music</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-s="post" data-i18n="ar.tab.post">Posts</button>
+        </nav>
+        <nav class="filter-tabs" role="tablist" aria-label="Period" data-ar-period>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="m" data-i18n="ar.period.m">Month</button>
+          <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-ar-p="q" data-i18n="ar.period.q">Quarter</button>
+          <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-ar-p="y" data-i18n="ar.period.y">Year</button>
+        </nav>
+      </div>
 
       <div data-ar-kpi></div>
       <div data-ar-body></div>
@@ -255,8 +265,8 @@
   var T = A.T, num = A.num, pct = A.pct;
   var period = 'q';
 
-  /* 每個區塊記住自己的類型選擇，切期間時不會被重設回全部。 */
-  var scopeOf = {};
+  /* 整頁一個類型（2026-08-09 使用者裁決，原本每個區塊各自記一個）。 */
+  var scope = 'all';
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -281,7 +291,6 @@
     { id: 'mbti',      dim: 'mbti',      title: 'ar.attr.mbti',      attr: true, scopes: ['all', 'film', 'music', 'post'] },
     { id: 'shengxiao', dim: 'shengxiao', title: 'ar.attr.shengxiao', attr: true, scopes: ['all', 'film', 'music', 'post'] }
   ];
-  BLOCKS.forEach(function (b) { scopeOf[b.id] = 'all'; });
 
   var SCOPE_LABEL = { all: 'ar.scope.all', film: 'ar.tab.film', music: 'ar.tab.music', post: 'ar.tab.post' };
   /* 單位隨類型換：影視是觀看、音樂是串流、貼文是瀏覽。全部沒有共同的動詞，
@@ -312,19 +321,6 @@
       }).join('') + '</ol>';
   }
 
-  /* 卡頭的類型切換器。放在 .card__head 右側，就是參考站原本擺
-     「依版稅／依串流」的位置。 */
-  function scopeSwitchHTML(block) {
-    var cur = scopeOf[block.id];
-    return '<nav class="filter-tabs ar-scope" role="tablist" data-ar-scope="' + block.id + '">'
-      + block.scopes.map(function (s) {
-        var on = s === cur;
-        return '<button class="filter-tabs__item' + (on ? ' filter-tabs__item--active' : '') + '" type="button"'
-          + ' role="tab" aria-selected="' + (on ? 'true' : 'false') + '" data-ar-s="' + s + '">'
-          + esc(T(SCOPE_LABEL[s])) + '</button>';
-      }).join('') + '</nav>';
-  }
-
   /* 中空圓餅＋圖例（.pie--hollow）。段界寫累計百分比、每段起點一律 0，
      讓瀏覽器接續上一段終點；圓餅本身不帶文字，數字全在旁邊的圖例上，
      所以要給它 aria-hidden，不要讓讀屏念一個沒有內容的圓。 */
@@ -351,12 +347,18 @@
   var CARD_LIMIT = 10;
 
   function blockHTML(block) {
-    var scope = scopeOf[block.id];
     var s = A.series(scope, period, block.dim, block.more ? { limit: CARD_LIMIT } : {});
     var title = T(block.title);
+    /* 平台這一維沒有貼文——貼文只發在 ztor 站上、沒有平台之分。
+       類型收回頁面層之後，這張卡在「貼文」下就沒有東西可畫；出一句說清楚
+       為什麼，比出通用的「沒有資料」好——後者會被讀成「資料還沒進來」。 */
+    var naPlatform = block.dim === 'platform' && scope === 'post';
 
     var inner;
-    if (!s.has || !s.rows.length) {
+    if (naPlatform) {
+      inner = '<div class="empty-card"><p class="empty-card__title">' + esc(T('ar.platforms.na.title'))
+        + '</p><p class="empty-card__text">' + esc(T('ar.platforms.na.text')) + '</p></div>';
+    } else if (!s.has || !s.rows.length) {
       inner = '<div class="empty-card"><p class="empty-card__title">' + esc(T('ar.empty.title'))
         + '</p><p class="empty-card__text">' + esc(T('ar.empty.text')) + '</p></div>';
     } else if (block.pie) {
@@ -377,14 +379,13 @@
     return '<section class="card' + (block.more ? ' ar-card--anchor' : '') + '" data-ar-block="' + block.id + '">'
       + '<div class="card__head">'
       +   '<div class="card__title-group"><h3 class="card__title">' + esc(title) + '</h3></div>'
-      +   scopeSwitchHTML(block)
       + '</div>'
       + '<div class="mt-16' + (block.more ? ' ar-card__content' : '') + '">' + inner + '</div>'
       /* 「查看更多」靠右下：它是這張卡的延伸，不是頁面層級的動作，
          所以留在卡內、不上升到卡頭。 */
       /* 無外框（ghost）＋右箭頭：同一張卡裡已經有一組 segmented，
          再放一顆有外框的按鈕會變成兩個等重的控制項在搶。 */
-      + (block.more && s.has
+      + (block.more && s.has && !naPlatform
           ? '<div style="display:flex;justify-content:flex-end;margin-top:var(--sp-12)">'
             + '<button class="btn btn--ghost btn--sm" type="button" data-ar-open-more="' + block.id + '">'
             + esc(T('ar.more.open'))
@@ -620,7 +621,10 @@
     more.blockId = blockId || 'works';
     /* 沿用那張卡當下選的類型——使用者按「查看更多」，想看的是眼前這一份的
        完整版，不是重新從全部開始。 */
-    more.scope = scopeOf[more.blockId] || 'all';
+    /* 沿用頁面當下的類型；彈窗自己的分頁仍可另外切，那是就地探索、
+       不會改掉頁面的選擇。 */
+    more.scope = scope;
+    if (moreBlock().scopes.indexOf(more.scope) < 0) more.scope = 'all';
     more.shown = PAGE;
     modal.hidden = false;
     renderMore();
@@ -685,41 +689,31 @@
     rendering = false;
   }
 
-  /* 只重繪被切換的那一張卡，不重繪整頁——否則捲動位置會跳回頂端，
-     而這一頁的重點正是「捲到某一區、就地切三個類型比對」。 */
-  function renderBlock(id) {
-    var block = BLOCKS.filter(function (b) { return b.id === id; })[0];
-    var el = body.querySelector('[data-ar-block="' + id + '"]');
-    if (!block || !el) return;
-    var tmp = document.createElement('div');
-    tmp.innerHTML = blockHTML(block);
-    var fresh = tmp.firstElementChild;
-    el.replaceWith(fresh);
-    if (window.ztorIcons) window.ztorIcons.applyIcons(fresh);
-    if (window.applyI18n) window.applyI18n(fresh);
-  }
+  document.querySelector('[data-ar-scope]').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ar-s]');
+    if (!b || scope === b.dataset.arS) return;
+    scope = b.dataset.arS;
+    this.querySelectorAll('[data-ar-s]').forEach(function (x) {
+      var on = x === b;
+      x.classList.toggle('filter-tabs__item--active', on);
+      x.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    render();
+  });
 
   body.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-ar-scope] [data-ar-s]');
-    if (btn) {
-      var id = btn.closest('[data-ar-scope]').dataset.arScope;
-      if (scopeOf[id] === btn.dataset.arS) return;
-      scopeOf[id] = btn.dataset.arS;
-      renderBlock(id);
-      return;
-    }
     var openBtn = e.target.closest('[data-ar-open-more]');
     if (openBtn) { openMore(openBtn.dataset.arOpenMore); return; }
 
     var workRow = e.target.closest('[data-ar-work]');
-    if (workRow) openWork(workRow.dataset.arWork, scopeOf.works);
+    if (workRow) openWork(workRow.dataset.arWork, scope);
   });
   body.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     var workRow = e.target.closest('[data-ar-work]');
     if (!workRow) return;
     e.preventDefault();
-    openWork(workRow.dataset.arWork, scopeOf.works);
+    openWork(workRow.dataset.arWork, scope);
   });
 
   if (modal) {
