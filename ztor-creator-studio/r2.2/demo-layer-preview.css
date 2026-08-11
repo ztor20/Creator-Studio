@@ -1,0 +1,173 @@
+/* ============================================================
+   demo-layer-preview.css · 表面階層系統的「試穿」樣式
+
+   ⚠ 這不是元件庫的一部分。刻意放在 r2.2 根目錄、不進 ds-components/，
+     也不進 _tokens.css——本輪的目的是讓使用者在真的頁面上看到層級系統
+     長什麼樣，再決定要不要動元件庫。整份樣式只在 <body class="lyr-scope">
+     時生效，把 class 拿掉就是現行站台，一行元件 CSS 都沒被改到。
+
+   裁決依據（2026-08-11 使用者裁示，登記於 STYLE-DECISIONS.md Q61～Q64）：
+     Q61 → A：命名帶級數 --layer-N-*
+     Q62 → A：亮色除畫布與 L1 外一律留白，分層用陰影／線框
+     Q63 → B：--layer-line 直接指向現行 --border，不覆議 Q22 挑定的亮度
+     Q64 → yes：要遷移，但先看這兩頁 demo
+
+   消費頁：demo-layer-e-shop.html、demo-layer-create-product.html
+   ============================================================ */
+
+/* ── 層級 token ─────────────────────────────────────────────
+   四個值全部指向既有 token，所以「改名」本身零視覺變化。
+   真正會動到畫面的是下面三條指派規則。 */
+.lyr-scope {
+  --layer-0-surface: var(--surface-page);   /* 畫布 */
+  --layer-1-surface: var(--card);           /* 實色面：卡、面板 */
+  --layer-2-surface: var(--nest-surface);   /* 疊層：深色是薄膜、亮色是 transparent（＝維持白） */
+  --layer-3-surface: transparent;           /* 只有框的分組 */
+  --layer-line:      var(--border);         /* Q63 B */
+  --layer-lift:      var(--shadow-nest-up);
+  --layer-2-edge:    0 0 0 0 rgba(0, 0, 0, 0);
+  --layer-radius:    var(--radius-xl);
+}
+/* 亮色：L2 留白，分離感交給陰影與線框（Q62） */
+[data-theme="light"] .lyr-scope {
+  --layer-2-surface: var(--card);
+  --layer-2-edge:
+    0 1px 3px rgba(16, 17, 20, 0.08),
+    0 0 0 1px rgba(16, 17, 20, 0.05);
+}
+
+/* ════════════════════════════════════════════════════════════
+   指派規則 1 · 控制項不是層，維持 --input-surface
+
+   2026-08-11 實測後改掉的規則。原本想把 --input-surface（#2A2B2D 實色）
+   換成 L2 薄膜，理由是「控制項應該永遠比父層亮一階」。實際量下去不成立：
+
+     卡片裡的輸入框    現行 #2A2B2D → 薄膜版 #242526（變暗）
+     逐規格表的列      現行 #212223 → 薄膜版 #1C1D1E（變暗）
+
+   原因是這兩頁的表單卡在深色其實吃 --surface-shell #1C1D1E（Q42 裁決），
+   不是 --card #212223。4% 薄膜疊在 #1C1D1E 上只到 #242526，比現行的填色
+   欄位還暗——填色欄位會不像填色。要救就得為控制項另開一個更濃的薄膜，
+   那等於在層級系統旁邊再長出第二種薄膜，違反「單一答案」。
+
+   結論：**控制項不是層**。輸入框、上傳槽、選項鈕是坐在層上面的東西，
+   跟 --accent（hover 態）一樣屬於 Role 層 token，不進層級階梯。
+   層級階梯只管「容器」：畫布、卡、疊層、分組框。
+   ════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════
+   指派規則 2 · 卡片內的襯底面由「比卡暗」翻成「比卡亮」
+
+   現行：--muted 是 #161718，比卡（#212223）暗。所以同一張卡裡，
+        .nest 疊層往上變亮、--muted 襯底往下變暗，兩個方向打架，
+        讀者無法從明度判斷誰包著誰。
+   改法：襯底面也走 L2，統一「愈往內愈亮」。
+   只改「面」，不改裝飾：--muted 也被 badge 底色與進度條軌道用著，
+   那兩種不是層，維持原樣（見檔尾「刻意不改」）。
+   ════════════════════════════════════════════════════════════ */
+.lyr-scope .card--muted,
+.lyr-scope .segmented:not(.radio-cards),
+.lyr-scope .empty-card__icon,
+.lyr-scope .album-track__cover,
+.lyr-scope .npp-product,
+.lyr-scope .msg-token,
+.lyr-scope .scanner-access {
+  background: var(--layer-2-surface);
+}
+
+/* ════════════════════════════════════════════════════════════
+   指派規則 3 · 第三層以後不再填色，改用線框
+
+   現行：逐規格表疊到第 4 層還在填色（卡 → 表框 → 列填 --card → 縮圖填
+        --input-surface）。第 3、4 層的填色與外層幾乎同色，等於白疊。
+   改法：第 3 層起去掉填色、用 --layer-line 分隔；控制項（第 4 層的縮圖格）
+        仍保留 L2，因為它是控制項不是層。
+   ════════════════════════════════════════════════════════════ */
+.lyr-scope .variant-table__row {
+  background: var(--layer-3-surface);
+  border-color: var(--layer-line);
+}
+
+/* ── 巢狀層本體改吃層級 token（值相同，純粹讓來源一致）────── */
+.lyr-scope .nest {
+  background: var(--layer-2-surface);
+  box-shadow: var(--layer-lift), var(--layer-2-edge);
+}
+
+/* ════════════════════════════════════════════════════════════
+   刻意不改（避免誤讀成漏改）
+
+   · .badge / .badge--neutral 的 --muted 底：徽章是墨色載體不是層，
+     翻亮會跟旁邊的控制項撞色。
+   · .album-track__bar 的 --muted：3px 進度條軌道，是裝飾不是面。
+   · --surface-shell（工具列、底部操作列、detail-sheet 面板）：那是外殼
+     不是內容層，與 L0/L1 平行而非上下關係，本輪不動。
+   · --accent：hover 態，不是常駐面。
+   · 所有 --border / --border-soft 純框：Q63 裁 B，值不變。
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 切換列（只有 demo 頁有）───────────────────────────────── */
+.lyr-switch {
+  position: fixed;
+  right: var(--sp-20);
+  bottom: var(--sp-20);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-12);
+  border-radius: var(--radius-pill);
+  background: var(--popover);
+  box-shadow: var(--shadow-overlay);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+}
+.lyr-switch__label { color: var(--muted-foreground); }
+.lyr-switch__btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground-muted);
+  font: inherit;
+  padding: var(--sp-4) var(--sp-12);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.lyr-switch__btn[aria-pressed="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+  font-weight: 500;
+}
+/* 差異標記：把「切換前後真的變色」的元素圈出來，免得用眼睛在整頁裡找 */
+.lyr-mark [data-lyr-changed] {
+  outline: 2px dashed var(--primary);
+  outline-offset: 2px;
+}
+.lyr-mark [data-lyr-changed]::after {
+  content: attr(data-lyr-changed);
+  position: absolute;
+  z-index: 40;
+  transform: translateY(-100%);
+  padding: 0 var(--sp-4);
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.lyr-mark [data-lyr-changed] { position: relative; }
+.lyr-count { color: var(--primary); font-family: var(--font-mono); }
+
+.lyr-note {
+  margin: 0 0 var(--sp-16);
+  padding: var(--sp-12) var(--sp-16);
+  border-left: 2px solid var(--primary);
+  background: var(--nest-surface);
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+  line-height: 1.6;
+}
+.lyr-note b { color: var(--foreground); }
