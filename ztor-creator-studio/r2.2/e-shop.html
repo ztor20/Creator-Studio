@@ -279,7 +279,7 @@
                 <button class="btn btn--icon btn--xs search-collapse__close" type="button" data-eshop-search-close aria-label="Close search" title="Close search" data-i18n-aria-label="e-shop.search.close" data-i18n-title="e-shop.search.close"><i data-lucide="x" class="ztor-icon"></i></button>
               </label>
             </div>
-            <button class="btn btn--icon btn--sm" type="button" data-eshop-storeset-open aria-label="Store settings" title="Store settings" data-i18n-aria-label="e-shop.btn.storeset" data-i18n-title="e-shop.btn.storeset"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></button>
+            <a class="btn btn--icon btn--sm" href="store-settings.html" data-eshop-storeset-link aria-label="Store settings" title="Store settings" data-i18n-aria-label="e-shop.btn.storeset" data-i18n-title="e-shop.btn.storeset"><i data-lucide="sliders-horizontal" class="ztor-icon"></i></a>
             <button class="btn btn--icon btn--sm" type="button" id="eshop-preview-toggle" data-eshop-preview-toggle aria-pressed="false" aria-label="Store preview" title="Store preview" data-i18n-aria-label="e-shop.btn.preview" data-i18n-title="e-shop.btn.preview"><i data-lucide="eye" class="ztor-icon"></i></button>
             <div class="split-button" id="eshop-create">
               <a class="btn btn--primary split-button__main" id="eshop-create-main" href="create-product.html" data-i18n="e-shop.create.product">Create product</a>
@@ -763,16 +763,8 @@
 <!-- 新品貼文 composer popup（spec 5.1.5.7 / D068）：建立商品完成後回清單以 ?posted=1 開啟 -->
 <div data-product-post-host></div>
 
-<!-- 商店設定 popup（spec 5.1.5 F3 / D065）：full-screen modal 內嵌 store-settings.html，不離開電子商店脈絡 -->
-<div class="embed-modal" id="eshop-storeset" hidden>
-  <div class="embed-modal__sheet">
-    <div class="embed-modal__head">
-      <h2 class="embed-modal__title" data-i18n="e-shop.storeset.title">Store settings</h2>
-      <button class="embed-modal__close" type="button" data-eshop-storeset-close aria-label="Close store settings" data-i18n-aria-label="e-shop.storeset.close"><i data-lucide="x" class="ztor-icon"></i></button>
-    </div>
-    <iframe class="embed-modal__frame" title="Store settings" data-eshop-storeset-frame></iframe>
-  </div>
-</div>
+<!-- 商店設定的 embed-modal 已於 2026-08-11 撤除（D184）：那一頁改成獨立頁面，
+     這顆按鈕直接導過去。返回時的清單狀態還原見下方 restoreListState。 -->
 
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
@@ -1868,18 +1860,6 @@
     /* Store settings popup (spec 5.1.5 F3 / D065) — full-screen modal that
        embeds store-settings.html in an iframe; opens in-context, closing keeps
        the list's filter/search. src is set on open (lazy) and cleared on close. */
-    const storeset = document.getElementById('eshop-storeset');
-    if (storeset) {
-      const frame = storeset.querySelector('[data-eshop-storeset-frame]');
-      const openSet = () => { if (frame && !frame.getAttribute('src')) frame.setAttribute('src', 'store-settings.html'); storeset.hidden = false; document.body.classList.add('is-modal-open'); };
-      const closeSet = () => { storeset.hidden = true; document.body.classList.remove('is-modal-open'); };
-      document.querySelectorAll('[data-eshop-storeset-open]').forEach(b => b.addEventListener('click', openSet));
-      storeset.querySelectorAll('[data-eshop-storeset-close]').forEach(b => b.addEventListener('click', closeSet));
-      storeset.addEventListener('click', e => { if (e.target === storeset) closeSet(); });
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !storeset.hidden) closeSet(); });
-      /* D067: store-settings (in the iframe) posts this to close after Save / Discard. */
-      window.addEventListener('message', e => { if (e.data === 'ztor:storeset-close') closeSet(); });
-    }
 
     /* New Product Post composer (spec 5.1.5.7 / D068) — mounts
        partials/product-post-modal.js and reuses the Broadcast composer fields.
@@ -1985,5 +1965,44 @@
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/detail-sheet.js?v=r2.2"></script>
+<script>
+(function () {
+  /* ---- 清單狀態還原（D184）------------------------------------------------
+     商店設定從彈窗改成獨立頁之後，去設定再回來會是一次真的換頁。
+     彈窗時期唯一的產品訴求是「不離開電子商店脈絡」，改頁面之後由這段承接：
+     離開前記下分頁、狀態篩選與搜尋字，回來時照原樣還原。 */
+  (function keepListState() {
+    const KEY = 'ztor.eshop.list';
+    const snap = () => {
+      try {
+        sessionStorage.setItem(KEY, JSON.stringify({
+          tab: document.querySelector('[data-eshop-tab].tabs__item--active')?.dataset.eshopTab || null,
+          status: document.querySelector('[data-eshop-status] .filter-tabs__item--active')?.dataset.statusVal || null,
+          q: document.querySelector('[data-eshop-search]')?.value || ''
+        }));
+      } catch (e) {}
+    };
+    document.querySelector('[data-eshop-storeset-link]')?.addEventListener('click', snap);
+    window.addEventListener('pagehide', snap);
+
+    try {
+      const st = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+      if (!st) return;
+      sessionStorage.removeItem(KEY);
+      if (st.tab) document.querySelector(`[data-eshop-tab="${st.tab}"]`)?.click();
+      if (st.status) document.querySelector(`[data-eshop-status] [data-status-val="${st.status}"]`)?.click();
+      if (st.q) {
+        const inp = document.querySelector('[data-eshop-search]');
+        if (inp) {
+          document.querySelector('[data-eshop-search-toggle]')?.click();
+          inp.value = st.q;
+          inp.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    } catch (e) {}
+  })();
+
+})();
+</script>
 </body>
 </html>

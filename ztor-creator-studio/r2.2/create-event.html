@@ -39,6 +39,7 @@
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/review-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/filter-tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
@@ -155,7 +156,31 @@
      它是站上「一個框的標題」的既有答案（display 字體／18px／--foreground），
      不為了這一處另造第四種標題字級。本頁只留與門票的距離。 */
   .ce-tiergroup__head { margin-bottom: var(--sp-16); }
-  /* 墓碑：`.ce-stop`（巡迴的一站一盒）於 2026-08-10 隨「活動形式」整組撤除。 */
+  /* 巡迴的一站一盒（2026-08-10）：沿用票務那一步「一場一盒」的 .control-group--plain，
+     只補站與站之間的距離與盒內標題列——盒子本體、內距、圓角都是元件既有的。 */
+  /* 一場（一站）一盒：定點與巡迴共用同一個類名，版面上本來就是同一種東西。
+     **列距靠 flex gap 統一發**（2026-08-11 使用者指出「行與行之間沒有間距」）：
+     .form-grid 只管自己格內的列距（28px），兩個相鄰的 .form-grid 之間是 0——
+     所以一場裡的「日期／開始結束／開放入場」三列原本是黏在一起的。改成盒子自己
+     是 flex column、gap 一次發給所有直屬子項，就不必逐條補 margin。 */
+  .ce-sess { display: flex; flex-direction: column; gap: var(--sp-20); }
+  .ce-sess + .ce-sess { margin-top: var(--sp-16); }
+  /* 盒標與底下第一列的距離由 gap 接手，不再自己帶 margin（否則 20＋16 疊成 36）。 */
+  .ce-sess__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); }
+  /* 「套用第一場的設定」是動作、不是欄位：不跟著欄位撐滿整行。 */
+  .ce-sess > [data-sess-copy1] { align-self: flex-start; }
+  /* 「未到入場時間」與它上面的「開放入場」包成同一個 flex 子項（見 sessDoorsHTML），
+     所以 .rule-sub 自己那 12px 的上距就是這一組內部的距離，比列距（20px）小一階，
+     從屬關係才讀得出來。 */
+  /* 盒內最後一組欄位不再往下推：格線／欄位自帶的下緣疊在 --plain 的內距上，
+     會讓盒子下面比兩側空（與 .ce-tiergroup 同一個修法）。 */
+  .ce-sess > .form-grid:last-child,
+  .ce-sess > .field:last-child { margin-bottom: 0; }
+  /* 場次詳情底下，「場地」那一塊（定點才顯示）與接在後面的欄位之間要有
+     一般欄位的間距（2026-08-11）：這個包裝層的最後一個小孩是 .field-more，它自己沒有
+     下外距，於是兩者貼在一起、與上面每隔 16px 一列的節奏對不上。補在包裝層上而不是
+     改 .field-more，因為那支元件別頁也在用，不該為了這一處的排版改它的預設值。 */
+  [data-shape-when="fixed"]:not([hidden]) { margin-bottom: var(--sp-16); }
 </style>
 </head>
 <body>
@@ -236,8 +261,9 @@
             <span class="progress-stepper__label" data-step="3"><span data-di="d.step.session">場次</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="4"><span data-di="d.step.types">票種</span><span class="progress-stepper__state" data-step-state></span></span>
             <span class="progress-stepper__label" data-step="5"><span data-di="d.step.tix">票務</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="6"><span data-di="d.step.publish">發布設定</span><span class="progress-stepper__state" data-step-state></span></span>
-            <span class="progress-stepper__label" data-step="7"><span data-i18n="ce.step.review">Review</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="6"><span data-di="d.step.bundle">票務商品</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="7"><span data-di="d.step.publish">發布設定</span><span class="progress-stepper__state" data-step-state></span></span>
+            <span class="progress-stepper__label" data-step="8"><span data-i18n="ce.step.review">Review</span><span class="progress-stepper__state" data-step-state></span></span>
           </div>
         </div>
       </div>
@@ -500,7 +526,7 @@
     <!-- STEP 3 · 場次（文件 2-1 的前半）：場地共用一份，日期與時間每一場各自一組。 -->
     <section data-step-panel="3" class="hidden">
       <h1 class="wizard__step-title" data-hide-type="watchparty" data-di="d.s3.h1">場次</h1>
-      <p class="wizard__step-sub" data-hide-type="watchparty" data-di="d.s3.sub">先決定要不要賣票，再排這個活動有幾場、各在什麼時候。</p>
+      <p class="wizard__step-sub" data-hide-type="watchparty" data-di="d.s3.sub">排這個活動有幾場、各在哪裡、什麼時候。</p>
       <h1 class="wizard__step-title" data-show-type="watchparty" data-i18n="ce.wp.s3.h1" hidden>When, who, and where they can watch</h1>
       <p class="wizard__step-sub" data-show-type="watchparty" data-i18n="ce.wp.s3.sub" hidden>Set the time, capacity, region and privacy.</p>
 
@@ -589,32 +615,81 @@
         <p class="field__hint" data-i18n="ce.wp.privacy.hint">Anyone with the share link can enter the room.</p>
       </div>
 
-      <!-- 墓碑（2026-08-10 使用者指示，同輪兩項）：
-           ①「活動形式」（定點／巡迴，`data-seg="shape"`）整組撤除——這個產品只有定點活動。
-             連帶撤除：一站一盒的場次版面、每一站自己的場地欄位、巡迴時「每一站都要有場地」
-             的發布前檢核分支。場地回到單一一份、所有場次共用（＝上游規格原本的模型）。
-           ②「入場方式」（購票入場／免票入場，`data-seg="sales"`）整組撤除——不會用到免票入場。
-             票價填 0 仍然等於免費門票，所以「不收錢的活動」這件事沒有失去表達方式；失去的
-             只有「完全不發票券」那一種。連帶撤除：`salesMode`／`noTickets()`、選免票時跳過
-             票種與票務兩步的分支、Review 摘要的「免票入場」那一行。
-           上游規格兩者的狀態見 ASSUMPTIONS TOUR-001（已撤回）與 SALES-001。 -->
+      <!-- 墓碑（2026-08-10 使用者指示）：「入場方式」（購票入場／免票入場，`data-seg="sales"`）
+           整組撤除——不會用到免票入場。票價填 0 仍然等於免費門票，所以「不收錢的活動」這件事
+           沒有失去表達方式；失去的只有「完全不發票券」那一種。連帶撤除：`salesMode`／
+           `noTickets()`、選免票時跳過票種與票務兩步的分支、Review 摘要的「免票入場」那一行。
+           見 ASSUMPTIONS SALES-001。 -->
 
       <!-- 場次（文件 2-1）：文件把場地與日期時間都掛在「帶入場次」底下，所以這裡是一個容器、
            不是幾個並排的區塊。場地是所有場次共用的一份（文件原話「無論哪個場次，地點都一樣」），
            日期與時間每一場各自設定；門票名稱＝場次名＋票種，所以只有多場時才需要場次名。 -->
+      <!-- 墓碑：「多個場次」開關（`#ce-series-sw`）於 2026-08-11 依使用者指示撤除——
+           「這個活動有幾場」不需要先宣告，直接新增就是了。撤掉之後 `multi()` 回到
+           **由實際場次數推導**（`series.list.length > 1`），與開關存在之前同一個定義：
+           一場就是一場，加了第二場自然變成多場，不會出現「開關說多場、清單只有一列」
+           這種兩個真相。場次名稱欄、門票名稱帶場次、票務分組標題都跟著這個推導值走。 -->
+      <!-- 版面（2026-08-11 使用者指示，分兩輪）：這一步的三件事各自一個外框區塊。
+           第一輪一度把三件事併進同一個框、用小標分段，被使用者退回——一個框裡三個
+           長得一模一樣的小標，等於把階層攤平成一張清單，反而比原本更難掃。
+           改回用區塊分，階層就落在既有的三級上：**步驟標題（h1）→ 區塊標題（h3）→
+           欄位標籤**，不必為了這一頁另造第四種標題字級。
+           連帶保留第一輪的兩項收斂：①「場次」這個詞不再重複三層（步驟標題已經是場次，
+           區塊各自用自己的名字）；②區塊副標撤除（原 d.sess.sub／d.stop.sub），它講的
+           「場地共用一份／跟著站走」與活動形式選項卡自己的副標是同一句話。 -->
+      <!-- 活動形式（2026-08-10 使用者指示；2026-08-10 一度撤除，2026-08-11 使用者說「刪錯了」加回來）：
+           排在這一步最前面，因為它決定了底下的場地要問幾次——定點只問一次、多站每一站各問一次。
+           bookyay 沒有多站這種資料，帶入時鎖定在定點。
+           ※ 上游規格把場地寫成整場活動共用一份（「無論哪個場次，地點都一樣」），多站是
+             產品變更提案，見 ASSUMPTIONS TOUR-001。 -->
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="form-section__head">
-          <h3 class="form-section__title" data-di="d.sess">場次</h3>
-          <p class="form-section__sub" data-di="d.sess.sub">日期與時間每一場各自設定，場地所有場次共用。</p>
+          <h3 class="form-section__title" data-di="d.shape">活動形式</h3>
         </div>
-        <div class="form-section__subhead" data-di="d.sess.dates">場次日期與時間</div>
-        <div class="session-list session-list--detailed" id="ce-dates-list"></div>
+        <div class="segmented radio-cards" data-seg="shape" data-value="fixed" data-bky-seg="shape">
+          <button class="segmented__btn segmented__btn--active" type="button" data-val="fixed">
+            <span class="radio-card__text">
+              <span class="radio-card__title" data-di="d.shape.fixed">定點活動</span>
+              <span class="radio-card__sub" data-di="d.shape.fixed.sub">每一場都在同一個場地，場地只填一次。</span>
+            </span>
+          </button>
+          <button class="segmented__btn" type="button" data-val="tour">
+            <span class="radio-card__text">
+              <span class="radio-card__title" data-di="d.shape.tour">多站活動</span>
+              <span class="radio-card__sub" data-di="d.shape.tour.sub">每一站換一個場地，場地跟著站別各自設定。</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 日期與時間：這一步的主體。區塊標題在定點／多站之間互換（多站時這一盒同時
+           放場地，所以叫「各站場地與時間」），見 applyShape() 的 swap。 -->
+      <div class="form-section form-section--outlined" data-hide-type="watchparty">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-di="d.sess.dates">日期與時間</h3>
+        </div>
+        <!-- 容器留 .session-list（直排＋列距＋「新增場次」那顆的樣式），但不再掛
+             --detailed：那組欄寬只服務已撤除的表格版面。盒子由 JS 塞進來。 -->
+        <div class="session-list" id="ce-dates-list"></div>
         <button type="button" class="btn btn--outline session-list__add" id="ce-dates-add">
           <i data-lucide="plus" class="ztor-icon"></i> <span data-di="d.sess.add">新增場次</span>
         </button>
-        <!-- 隱藏鏡像：Review 摘要、票根預覽與發布前檢核都讀 [data-ce=date]／[data-ce=start]，
-             日期搬進場次列之後由第 1 場回寫這兩格，下游不必各自改。 -->
-        <div class="form-section__subhead" data-di="d.sess.detail">場次細節</div>
+      </div>
+
+      <!-- 隱藏鏡像：Review 摘要、票根預覽與發布前檢核都讀 [data-ce=date]／[data-ce=start]，
+           日期搬進場次列之後由第 1 場回寫這兩格，下游不必各自改。
+           多站時場地也一樣：由第 1 站回寫 [data-ce=venue]／[data-ce=addr]。 -->
+      <!-- 場次詳情＝整場活動共用的那一份場地，所以自成一個區塊、不混進上面那張逐場的清單。
+           **整張卡只有定點活動出現**：多站時場地跟著每一站走（見上面的場次盒），這裡沒有
+           東西可問，留一張空卡比收起來更難懂。
+           墓碑（2026-08-11 使用者指示）：「未到入場時間」一度放在這張卡上（活動層只設一份），
+           同日改成每一場各設一份、掛在該場的「開放入場」底下——見 sessDoorsHTML。 -->
+      <div class="form-section form-section--outlined" data-hide-type="watchparty" data-shape-when="fixed">
+        <div class="form-section__head">
+          <h3 class="form-section__title" data-di="d.sess.detail">場次詳情</h3>
+          <p class="form-section__sub" data-di="d.sess.detail.sub">所有場次共用。</p>
+        </div>
+        <div>
         <div class="field">
           <label class="field__label"><span data-i18n="ce.venue.name">Venue name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
           <input class="input" data-ce="venue" data-bky="venue" data-required placeholder="e.g., Red Coliseum" data-i18n-placeholder="ce.venue.name.ph">
@@ -646,6 +721,7 @@
             </div>
           </div>
         </div>
+        </div><!-- /整場共用的場地 -->
         <input type="hidden" data-ce="date"><input type="hidden" data-ce="start">
       </div>
 
@@ -785,8 +861,38 @@
       </div><!-- /.wizard-split -->
     </section>
 
-    <!-- STEP 6 · 發布設定（文件 3）：什麼時候開賣、怎麼取票、誰看得到。 -->
+    <!-- STEP 6 · 票務商品（2026-08-11 使用者指示）：把前面建好的票種與商品綁成捆綁包。
+         **數量共用同一個池**——捆綁包不另設庫存，它含的那張票賣掉一組就從那張票的張數扣掉一張，
+         所以這一步不出現任何數量輸入框（套組編輯器在 `shares:false, work:false` 下本來就不渲染
+         數量欄）；「販售上限」是創作者自願加的子上限，不是另一份額度。
+         同輪撤除分票：要讓同一批票有不同賣法，改成包成捆綁包，不再從票裡切額度出來。 -->
     <section data-step-panel="6" class="hidden">
+      <h1 class="wizard__step-title" data-di="d.s6.h1">票務商品</h1>
+      <p class="wizard__step-sub" data-di="d.s6.sub">把門票和商品綁成一組賣。沒有要綁就直接下一步。</p>
+      <div class="wizard-split wizard-split--narrow">
+        <div class="wizard-split__main">
+          <div class="form-section form-section--outlined">
+            <div class="form-section__head">
+              <h3 class="form-section__title" data-di="d.bd.h">捆綁包</h3>
+              <p class="form-section__sub" data-di="d.bd.sub">一組至少含一張票。數量跟它含的那張票共用，賣掉一組就從那張票扣一張，不另外設庫存。</p>
+            </div>
+            <div id="ce-bd-list"></div>
+            <button class="btn btn--outline fc-add" type="button" id="ce-bd-add"><span data-di="d.bd.add">＋ 新增捆綁包</span></button>
+          </div>
+        </div>
+        <aside class="wizard-split__side">
+          <!-- 右軌：哪幾張票被綁進捆綁包、各自的池還剩多少。共用數量池這件事只寫在說明裡
+               看不出後果，要把「這張票被幾組用掉」攤出來才讀得到。 -->
+          <div class="fd-ov">
+            <h3 class="fd-ov__title" data-di="d.bd.pool">票的數量池</h3>
+            <div class="kv-list" id="ce-bd-pool"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- STEP 7 · 發布設定（文件 3）：什麼時候開賣、怎麼取票、誰看得到。 -->
+    <section data-step-panel="7" class="hidden">
       <h1 class="wizard__step-title" data-di="d.s5.h1">發布設定</h1>
       <p class="wizard__step-sub" data-di="d.s5.sub">什麼時候開賣、怎麼取票、誰看得到。</p>
 
@@ -925,7 +1031,7 @@
     </section>
 
     <!-- STEP 7 · Review -->
-    <section data-step-panel="7" class="hidden">
+    <section data-step-panel="8" class="hidden">
       <h1 class="wizard__step-title" data-i18n="ce.s5.h1">Review your event</h1>
       <p class="wizard__step-sub" data-i18n="ce.s5.sub">Make sure everything looks good before publishing.</p>
 
@@ -1209,7 +1315,7 @@
      Review 的 [data-goto]、各處 stepOf 與 data-step 都掛在這組編號上，重編只會製造一輪對不上的風險。 */
   const first = 2;
   let step = first;
-  const total = 7;
+  const total = 8;
   /* 共看派對沒有票種，票券銷售那一步整步跳過（沒有票根可設計、也沒有票可打包）。
      2026-08-06：選「免票入場」時，票種（4）與票券銷售（5）兩步一起跳過——沒有票就沒有
      票種、票根、套組，也沒有收入試算。 */
@@ -1221,7 +1327,7 @@
      時間人數地區隱私、入場券、確認——所以票務（5）與發布設定（6）兩步整步跳過。
      票務是「場次 × 票種」的矩陣，共看派對只有一張單價入場券，沒有東西可矩陣；
      發布設定裡的取票方式與開賣時間也不適用（房間是線上的，隱私已在第 3 步問過）。 */
-  const skipped = st => (isWP() && (st === 5 || st === 6)) ||
+  const skipped = st => (isWP() && (st === 5 || st === 6 || st === 7)) ||
                         /* 票種改成票務裡的「快速設定」彈窗（2026-08-09 使用者指示），
                            所以一般活動不再走第 4 步；那一步從此只服務共看派對的入場券。
                            編號刻意不重編——重編會動到 Review 的 [data-goto]、共看派對的分支
@@ -1290,6 +1396,9 @@
     next.dataset.i18n = nextKeyOf(step);
     next.textContent = nextLabel(step);
     syncReview();
+    /* 票務商品那一步的右軌報的是「每張票現在幾張、被幾組捆綁包用到」，
+       票在上一步才剛改完，進來時要重算一次（宣告在後面，用 typeof 擋掉初始化順序）。 */
+    if (typeof renderBundlePool === "function") renderBundlePool();
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
@@ -1297,7 +1406,7 @@
           banner 計數、全通過才開放 Publish。純前端就緒示意（spec §4.5 五項）。---- */
   /* 系列場次的狀態宣告在這裡、控制器在下面（搜「系列場次」）——readState() 每次都要讀它，
      而 readState 跑得比控制器那一段早，狀態留在下面會撞到 TDZ（let 在宣告前碰就報錯）。 */
-  const series = { on: false, list: [], seq: 0 };
+  const series = { list: [], seq: 0 };   // `on` 於 2026-08-11 隨多場次開關撤除（multi() 改推導）
 
   /* Review 摘要那一列：沒開系列就留空（顯示佔位「單場」），開了就寫「共 N 場」
      並附第一場與最後一場的日期，讓人不必回上一步也知道這個系列橫跨多久。 */
@@ -1363,7 +1472,9 @@
       type:   !!s.typeName,
       name:   !!s.name,
       date:   !!s.date,
-      venue:  !!s.venue,
+      /* 巡迴：每一站都要有自己的場地才算數——只填了第 1 站就放行，等於允許發布一個
+         後面幾站沒有地點的巡迴。定點維持原本的「共用那一格填了就算」。 */
+      venue:  isTour() ? series.list.length > 0 && series.list.every(x => (x.venue || "").trim()) : !!s.venue,
       /* 免票入場撤除後這一項恆為硬閘：一定要有票才發布得了（2026-08-10）。 */
       ticket: s.tiers > 0
     };
@@ -1586,7 +1697,7 @@
   /* ---- Publish：QC 五項硬閘（已由 syncReview gate disabled）＋ 彙整未過 ＊ 阻擋並聚焦 ---- */
   function tryPublish() {
     const stepOf = isWP() ? { film: 2, room: 2, wpstart: 3 }
-                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 6, "ship-fee": 6, "ship-spot": 6 };
+                          : { name: 2, desc: 2, venue: 3, date: 3, "sale-from-d": 7, "ship-fee": 7, "ship-spot": 7 };
     const reqEls = activeRequired();
     let firstBad = null;
     reqEls.forEach(el => { if (!validateField(el) && !firstBad) firstBad = el; });
@@ -1824,24 +1935,11 @@
   const savedTiers = () => tiers.filter(t => !newIds.has(t.id));
   // 某一場自己的票種（own 模式用）；shared 模式的票種 sess 是空字串
   const tiersOf = sid => tiers.filter(t => (t.sess || "") === sid);
-  /* 分票（2026-08-09 使用者修正）：張數是**從原本那張裡切出來**的，不是另外一份額度。
-     150 張的票最多分出 149 張，原本那張至少留 1 張。
-     實作：切第一刀時把原本的張數記在 `splitTotal`（那是這一串的總量），
-     之後原本那張的張數＝總量 − 已經分出去的，改分票的張數原本那張就跟著減。
-     要整批 150 張換設定就不必分票，直接改原本那張。 */
-  const rootOf = t => (t.splitFrom ? (tiers.find(x => x.id === t.splitFrom) || t) : t);
-  const splitsOf = root => tiers.filter(x => x.splitFrom === root.id);
-  const splitTotalOf = root => Number(root.splitTotal != null ? root.splitTotal : val(root).qty) || 0;
-  const splitOut = (root, except) => splitsOf(root)
-    .reduce((a, x) => a + (x.id === except ? 0 : (Number(val(x).qty) || 0)), 0);
-  const hasSplits = t => splitsOf(t).length > 0;
-  /* 原本那張的張數是算出來的（總量 − 分出去的），不是自己填的。 */
-  function syncRootQty(root) {
-    if (!hasSplits(root)) return;
-    const left = Math.max(splitTotalOf(root) - splitOut(root), 0);
-    root.qty = String(left);
-    if (drafts[root.id]) drafts[root.id].qty = root.qty;
-  }
+  /* 墓碑：分票（把一張票的張數切出一部分成另一張獨立設定的票）於 2026-08-11 依使用者
+     指示整組撤除，連同 `rootOf`／`splitsOf`／`splitTotalOf`／`splitOut`／`hasSplits`／
+     `syncRootQty` 與 `tier.splitFrom`／`tier.splitTotal` 兩個欄位。
+     同輪新增的「票務商品」步驟走的是另一條路：要讓同一批票有不同賣法，改成把票包進
+     捆綁包，數量仍與那張票共用同一個池，不再從票裡切額度出來。 */
   // 數量加總一律用「當下的值」——正在打字的那張也要算進去，超標才會即時反映
   /* 2026-08-08：容量欄改成「活動總人數」（活動層級），所以加總是**全部場次的門票**加起來。
      每一張門票只屬於一場，直接全部相加就是總數。 */
@@ -1856,16 +1954,10 @@
        這裡只驗這一格自己的數字。e.name 保留成空字串，讓 tierValid 與提示邏輯不用改。 */
     const e = { name: "", price: "", qty: "", ntype: "" };
     /* 手動新增又選了「新建票種」時，票種名稱是必填——沒有名字的票種在清單上讀不出是什麼 */
-    if (t.manual && !t.type && !String(d.ntype || "").trim()) e.ntype = dT("d.type.err.name");
+    if (t.manual && !t.type && !String(d.ntype || "").trim())
+      e.ntype = dT(d.tmode === "solo" ? "d.tier.soloname.err" : "d.type.err.name");
     if (!isInt(d.price)) e.price = T("ce.tier.err.price", "Price must be a whole number, 0 or more.");
     if (!isInt(d.qty) || Number(d.qty) < 1) e.qty = T("ce.tier.err.qty", "Quantity must be a whole number, 1 or more.");
-    /* 分票最多能切走「總量 − 1」——原本那張至少留 1 張（2026-08-09 使用者裁示）。 */
-    else if (t.splitFrom) {
-      const root = rootOf(t);
-      const max = splitTotalOf(root) - splitOut(root, t.id) - 1;
-      if (Number(d.qty) > max)
-        e.qty = dT("d.tier.split.over").replace("{max}", Math.max(max, 0)).replace("{cap}", splitTotalOf(root));
-    }
     else if (overCapacity())
       e.qty = T("ce.tier.err.overcap", "Tier quantities add up to {n}, over the {cap} capacity.")
                 .replace("{n}", sumQty()).replace("{cap}", capacity());
@@ -1879,29 +1971,40 @@
     t.fee = String(d.fee || "").trim(); t.tag = d.tag || ""; t.addons = (d.addons || []).slice();
     t.tname = (d.tname || "").trim();
     t.img = (d.img || "").trim();                       // 留空＝跟著活動主視覺走
-    /* 手動新增的那張票在這裡收尾（2026-08-09）：選了「新建票種」就把票種真的建出來，
-       這張票的價格／張數／手續費順便成為那個票種的預設值——下一張同票種的票就以它為起點。
-       同名的票種不重複建，直接沿用既有那個。 */
+    t.earlymin = String(d.earlymin || "").trim();        // 留空或 0＝跟著場次的開放入場時間
+    t.early = (d.early || "").trim();                    // 留空＝跟著這一場的設定
+    /* 手動新增的那張票在這裡收尾。票務有兩種，分岔就在這裡（2026-08-11 使用者裁示）：
+       **打的名字對得上既有票種** → 這張票掛進那個票種的階層，跟著它的預設值走、
+         也跟著它出現在快速設定的矩陣裡。
+       **對不上** → 建成一張**獨立票**：`type` 留空、名字寫在這張票自己的 `tname` 上，
+         不建票種、不被矩陣複製到其他場次、改票種預設值也動不到它。
+       （2026-08-11 之前這裡會偷偷建一個票種，等於沒有真正的獨立票。） */
     if (t.manual) {
-      if (!t.type) {
-        const nm = String(d.ntype || "").trim();
+      const nm = String(d.ntype || "").trim();
+      if (d.tmode === "solo") {
+        /* 獨立票：不建票種，名字寫在這張票自己身上。 */
+        t.type = "";
+        if (!(t.tname || "").trim()) t.tname = nm;
+      } else if (!t.type) {
+        /* 以票種建立：名字對得上既有票種就掛進去，對不上就把票種真的建出來，
+           這張票的價格／張數／手續費順便成為那個票種的預設值。 */
         const hit = types.find(y => (y.name || "").trim().toLowerCase() === nm.toLowerCase());
         if (hit) t.type = hit.id;
         else {
           /* 種子值（_sp/_sq/_sf）要一起寫進去：這個票種是從一張已經有值的票長出來的，
-             不先記下「預設值＝這張票現在的值」，之後在快速設定改預設價時，
+             不先記下「預設值＝這張票現在的值」，之後在票務設定改預設價時，
              這張票會被判成「已自訂」而不跟著走。 */
           const ty = { id: "type-" + (++typeSeq), name: nm, price: t.price, qty: t.qty, fee: t.fee,
                        _sp: t.price, _sq: t.qty, _sf: t.fee };
           types.push(ty);
           t.type = ty.id;
           /* 這個票種是為了「這一場的一張票」建的，不代表每一場都要賣：其餘場次先記進 dropped，
-             免得下一次 syncMatrix 把它們憑空補出來。要每一場都賣就走快速設定。 */
+             免得下一次 syncMatrix 把它們憑空補出來。要每一場都賣就走票務設定。 */
           series.list.forEach(ss => { if (ss.id !== t.sess) dropped.add(ss.id + "|" + ty.id); });
           renderTypes();
         }
       }
-      dropped.delete(t.sess + "|" + t.type);
+      if (t.type) dropped.delete(t.sess + "|" + t.type);
       delete t.manual;
     }
     delete drafts[t.id]; newIds.delete(t.id); errIds.delete(t.id);
@@ -1933,48 +2036,135 @@
   /* 票種欄（2026-08-09 使用者指示，合併成一格）：就是一個輸入框——打字就是新票種的名字，
      打的當下底下列出名字相符的既有票種，點一下就帶入那一個（連它的預設價格與張數一起）。
      沒有相符的就照打的名字新建一個。下拉與名稱欄不再分成兩格：那兩格問的是同一件事。 */
+  /* 手動新增時先問「這張票算哪一種」（2026-08-11 使用者指示）：
+     **以票種建立**＝這張票屬於某個票種，跟著它的預設值走、也出現在票種矩陣裡；
+     **以獨立票建立**＝不掛任何票種，價格與張數只屬於它自己，不會被複製到其他場次。
+     此前是靠「打的名字對不對得上既有票種」隱含判斷——同一個輸入框做兩件事，
+     使用者要先知道規則才猜得到結果。改成明講，輸入框的角色也跟著單純化。 */
+  const tmodeOf = t => {
+    const d = drafts[t.id] || {};
+    if (d.tmode) return d.tmode;
+    return t.type ? "type" : "solo";        // 編輯既有的票：看它現在是哪一種
+  };
   function comboFieldHTML(t) {
     if (!t.manual || !newIds.has(t.id)) return "";
     const d = drafts[t.id] || {};
+    const mode = tmodeOf(t);
     const v = t.type ? typeName(t) : (d.ntype == null ? "" : d.ntype);
+    const btn = (m, k) => '<button type="button" class="filter-tabs__item' +
+      (mode === m ? " filter-tabs__item--active" : "") + '" role="radio" aria-checked="' +
+      (mode === m ? "true" : "false") + '" data-tmode="' + m + '">' + esc(dT(k)) + '</button>';
+    /* 標題「這張票怎麼建」撤除（2026-08-11 使用者指示）：兩顆選項本身已經自解釋
+       （「以票種建立」／「獨立票」），不需要再問一次。radiogroup 的 aria-label
+       留著同一句文案，螢幕報讀器仍聽得到分組用途。 */
     return '<div class="field">' +
-      '<label class="field__label"><span>' + esc(dT("d.tier.type")) + '</span> ' +
+      '<div class="filter-tabs" role="radiogroup" aria-label="' + esc(dT("d.tier.how")) + '">' +
+        btn("type", "d.tier.how.type") + btn("solo", "d.tier.how.solo") +
+      '</div>' +
+    '</div>' +
+    '<div class="field">' +
+      '<label class="field__label"><span>' +
+        esc(dT(mode === "solo" ? "d.tier.soloname" : "d.tier.type")) + '</span> ' +
         '<span class="field__req">*</span></label>' +
       '<div class="combobox">' +
         '<span class="tier-card__control" data-tier-wrap="ntype" data-empty="' + (String(v).length ? "false" : "true") + '">' +
-          '<input class="input" data-tier-f="ntype" data-type-q value="' + esc(v) + '" autocomplete="off" placeholder="' +
-            esc(dT("d.type.pick.ph")) + '">' +
+          '<input class="input" data-tier-f="ntype"' + (mode === "solo" ? "" : " data-type-q") +
+            ' value="' + esc(v) + '" autocomplete="off" placeholder="' +
+            esc(dT(mode === "solo" ? "d.tier.soloname.ph" : "d.type.pick.ph")) + '">' +
           '<button type="button" class="tier-card__clear" data-tier-clear="ntype" aria-label="' +
             esc(T("ce.tier.clear", "Clear")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
         '</span>' +
         '<div class="combobox__menu" data-type-menu hidden></div>' +
       '</div>' +
-      '<p class="field__hint" data-tier-hint="ntype">' + esc(dT("d.type.pick.hint")) + '</p>' +
+      /* 常駐說明文字撤除（2026-08-11 使用者指示，分兩輪）：獨立票那句只是把選項名稱
+         換句話說一次；票種模式還沒打字時的通用說明（「挑既有的會跟著預設值走、打新
+         名字會建出來」）也一併撤除——combobox 下拉聚焦就整份列出、下拉自己的空狀態
+         也講了同一件事，這裡再講一次是第三份重複。**打了字之後**的兩態說明保留
+         （跟著票種「X」的預設值／會建立新票種「X」）：那是「選了會發生什麼」的
+         即時狀態，只有這裡看得到，不是重述。<p> 節點本身仍要印出來——必填錯誤
+         （沒打名字）跟其他欄位一樣借這個位子顯示，見 renderTierErrors／newTypeHintText。 */
+      '<p class="field__hint" data-tier-hint="ntype"></p>' +
     '</div>';
   }
   /* 候選清單只列名字相符的既有票種；沒有相符的就不出現——那代表使用者正在建一個新的。 */
+  /* 下拉一律列出**所有**票種（2026-08-11 使用者指示）：這一格的動作是「選一個票種」，
+     所以聚焦就要看得到有哪些可選，不必先猜關鍵字。打字則就地過濾。
+     沒有相符的不再整個收起來——收起來會讓人以為壞了；改成留一句說明，
+     告訴使用者現在打的這個名字會建成一個新票種。 */
   function typeMenuHTML(q) {
     const k = q.trim().toLowerCase();
-    const hit = types.filter(ty => !k || (ty.name || "").toLowerCase().indexOf(k) >= 0).slice(0, 6);
-    if (!hit.length) return "";
-    return hit.map(ty =>
-      '<button type="button" class="combobox__opt" data-type-pick="' + esc(ty.id) + '">' +
+    const hit = types.filter(ty => !k || (ty.name || "").toLowerCase().indexOf(k) >= 0);
+    /* 底部固定一列「新增票種」：下拉的其他每一列都是「選既有的」，要建新的沒有對應的動作，
+       只能靠使用者自己意會「把名字打進去就會建」。給它一個明確的入口。 */
+    const addRow = '<button type="button" class="combobox__opt" data-type-new>' +
+      '<i data-lucide="plus" class="ztor-icon combobox__opt-icon"></i>' +
+      '<span class="combobox__opt-text"><span class="combobox__opt-name">' +
+        esc(dT("d.type.new")) + '</span></span></button>';
+    /* 一個票種都還沒有時，不再多印一句「還沒有任何票種」（2026-08-11 使用者指示）：
+       底下就只剩「新增票種」這一個選項，選項本身已經在說「打名字建一個」，
+       不需要再用一整行文字重述同一件事。**打了字卻沒有相符的**這句保留
+       （d.type.pick.nomatch）——那是在回答「我打的這個名字，是不是新的」，
+       不是通用說明。 */
+    if (!hit.length)
+      return (types.length ? '<div class="combobox__empty">' + esc(dT("d.type.pick.nomatch")) + '</div>' : "") + addRow;
+    return hit.map(ty => {
+      /* 每一列把預設值一起寫出來——選了就是帶這一組進來，看不到值等於要選了才知道。 */
+      const meta = [ty.price ? "$" + ty.price : "", ty.qty ? dT("d.quick.qtyn").replace("{n}", ty.qty) : ""]
+        .filter(Boolean).join(" · ");
+      return '<button type="button" class="combobox__opt" data-type-pick="' + esc(ty.id) + '">' +
         '<span class="combobox__opt-text">' +
         '<span class="combobox__opt-name">' + esc(ty.name || T("ce.tier.untitled", "Untitled tier")) + '</span>' +
-        (ty.price ? '<span class="combobox__opt-meta">$' + esc(ty.price) + '</span>' : '') +
+        (meta ? '<span class="combobox__opt-meta">' + esc(meta) + '</span>' : '') +
         '</span>' +
-      '</button>').join("");
+      '</button>';
+    }).join("") + addRow;
   }
+  /* 輸入框下方的即時說明：打的名字**沒有**對應的既有票種時，要當場說出「這會建一個新票種」。
+     此前只有下拉裡那一句，而下拉一收起來就看不到了，使用者按下儲存前無從知道自己是選了既有的、
+     還是正在建新的。**還沒打字時不顯示任何文字**（2026-08-11 使用者指示撤除通用說明）——
+     下拉本身聚焦就整份列出、空狀態也會講「打名字建一個」，這裡不需要再講第三次。
+     只在「對得上既有票種」與「對不上、要新建」這兩個**打過字之後**的狀態才出聲。 */
+  function newTypeHintText(t) {
+    const d = drafts[t.id] || {};
+    /* 獨立票沒有常駐說明（2026-08-11 使用者指示撤除），這裡回空字串——renderTierErrors
+       仍會借同一個 <p> 顯示必填錯誤，只是平常不塞文字。 */
+    if ((d.tmode || (t.type ? "type" : "solo")) === "solo") return "";
+    const nm = String(d.ntype || "").trim();
+    if (!nm) return "";
+    const hit = types.find(y => (y.name || "").trim().toLowerCase() === nm.toLowerCase());
+    return hit ? dT("d.type.pick.follows").replace("{n}", hit.name)
+               : dT("d.type.pick.new").replace("{n}", nm);
+  }
+  function syncNewTypeHint(card, t) {
+    const hint = card && card.querySelector('[data-tier-hint="ntype"]');
+    if (!hint) return;
+    hint.textContent = newTypeHintText(t);
+    /* 新建那一句要看得出是狀態、不是一般說明——沿用站上「已自訂」的強調色。 */
+    const d = drafts[t.id] || {};
+    const nm = String(d.ntype || "").trim();
+    const isNew = nm && !types.some(y => (y.name || "").trim().toLowerCase() === nm.toLowerCase());
+    hint.classList.toggle("tier-card__hint-new", !!isNew);
+  }
+
   function openTypeMenu(card, q) {
     const menu = card.querySelector("[data-type-menu]");
     if (!menu) return;
     menu.innerHTML = typeMenuHTML(q);
-    menu.hidden = !menu.innerHTML;
+    menu.hidden = false;      // 一律展開：沒有相符的也要顯示那句說明（見 typeMenuHTML）
+    /* 「新增票種」那一列的 ✚ 是 lucide 圖示，innerHTML 重寫進去的是 <i data-lucide>
+       原始標記，要另外跑一次替換成真正的 SVG，否則只剩空殼（2026-08-11 使用者回報圖示壞了）。
+       其他地方重繪含圖示的區塊（如票種彈窗）都補這一步，這裡先前漏掉。 */
+    if (window.ztorIcons) window.ztorIcons.applyIcons(menu);
   }
+  /* 聚焦＝整份列出，不拿欄位裡現在的字當關鍵字（2026-08-11 修）。
+     新增一張票時這一格已經預先填好某個票種的名字（addTierManually 會挑一個），
+     若照那個字過濾，下拉就只剩它自己——正要換成別的票種的人反而看不到其他選項。
+     打字才過濾（見 [data-tier-f="ntype"] 的 input 分支）。同一條規則也用在
+     bookyay 帶入閘門的搜尋下拉上。 */
   document.addEventListener("focusin", e => {
     if (!e.target.matches("[data-type-q]")) return;
     const card = e.target.closest("[data-tier]");
-    if (card) openTypeMenu(card, e.target.value);
+    if (card) openTypeMenu(card, "");
   });
   document.addEventListener("click", e => {
     const pick = e.target.closest("[data-type-pick]");
@@ -1986,8 +2176,11 @@
       if (!t || !ty || !d) return;
       t.type = ty.id;
       d.ntype = ty.name || "";
-      /* 挑既有票種＝連它的預設值一起帶進來，還沒填過的欄位才填 */
-      ["price", "qty", "fee"].forEach(k => { if (!String(d[k] || "").trim()) d[k] = ty[k] || ""; });
+      /* 選了一個票種＝一律帶入它的預設值（2026-08-11 使用者指示）。此前只填空著的欄位，
+         所以「先打了價格再選票種」會留著手打的那個數字，畫面上看不出它其實沒跟著票種走。
+         選票種是明確的動作，帶入是它的定義；帶進來之後再改，那張票就成為複寫狀態
+         （`customOf` 比對票種的種子值 `_sp/_sq/_sf`，票務設定的清單會標「已自訂」）。 */
+      ["price", "qty", "fee"].forEach(k => { d[k] = ty[k] || ""; });
       if (!d.tnameOwn) d.tname = autoTicketName(t);
       renderTierModal();
       return;
@@ -2010,9 +2203,10 @@
                : '<span class="upload-tile__icon">＋</span>') +
         '</div>' +
         '<div class="upload-tile-aside__side">' +
-          /* 三種狀態各有各的說明：用自己的圖／用活動主視覺／活動根本還沒有主視覺。 */
-          '<p class="field__hint">' +
-            esc(dT(own ? "d.tier.img.own" : (src ? "d.tier.img.event" : "d.tier.img.none"))) + '</p>' +
+          /* 用自己的圖／用活動主視覺才需要說明；活動還沒有主視覺那句撤除
+             （2026-08-11 使用者指示）——上傳格本身的「＋」已經在說「按這裡加圖」，
+             不必再用一段文字複述一次。 */
+          (own || src ? '<p class="field__hint">' + esc(dT(own ? "d.tier.img.own" : "d.tier.img.event")) + '</p>' : '') +
           (own ? '<button type="button" class="btn btn--outline btn--sm" data-tier-img-reset>' +
                    esc(dT("d.tier.img.reset")) + '</button>' : '') +
         '</div>' +
@@ -2026,7 +2220,7 @@
       ? '<span class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span>' +
         '<input class="input amount-field__input" type="number" min="0" step="1" data-tier-f="' + key + '" value="' + esc(value) +
         '" placeholder="' + esc(T(o.phKey, o.phFb)) + '"' + dis + '></span>'
-      : '<input class="input" ' + (o.num ? 'type="number" min="1" step="1" ' : "") + 'data-tier-f="' + key +
+      : '<input class="input" ' + (o.num ? 'type="number" min="' + (o.min0 ? "0" : "1") + '" step="1" ' : "") + 'data-tier-f="' + key +
         '" value="' + esc(value) + '" placeholder="' + esc(T(o.phKey, o.phFb)) + '"' + dis + '>';
     return '<div class="field' + (o.locked ? " is-source-locked" : "") + '">' +
       '<label class="field__label"><span>' + esc(T(labelKey, labelFb)) + '</span> ' +
@@ -2064,11 +2258,14 @@
           esc(named || T("ce.tier.untitled", "Untitled tier")) + '</h4>' +
         '<span class="badge badge--neutral tier-card__badge" data-tier-custom' + (t.rules ? "" : " hidden") + '>' +
           esc(T("ce.rule.custom.badge", "Custom")) + '</span>' +
+        /* 獨立票（不掛票種）標一個徽章：它不會跟著票種的預設值走、也不在矩陣裡，
+           跟旁邊那些長得一樣的階層票是兩種東西，卡面上要分得出來。 */
+        (!t.type && !newIds.has(t.id)
+          ? '<span class="badge badge--neutral">' + esc(dT("d.tier.standalone")) + '</span>' : '') +
         /* 卡頭不再掛 bookyay 來源標記（2026-08-09 使用者指示）：下面多了「票務組合名稱」
            那一列，有那一列就代表這張票是 bookyay 帶進來的，標記變成重複的訊息。 */
-        (t.splitFrom ? '<span class="badge badge--neutral">' + esc(dT("d.tier.split.badge")) + '</span>' : '') +
-        /* 動作收進 ⋮（2026-08-09 使用者指示）：卡底那兩顆「編輯／分票」撤除，
-           整張卡本身就是「編輯」的點擊區，⋮ 留給不常用的分票與移除。 */
+        /* 動作收進 ⋮（2026-08-09 使用者指示）：整張卡本身就是「編輯」的點擊區，
+           ⋮ 留給不常用的移除。分票已於 2026-08-11 撤除。 */
         '<div class="tier-card__actions">' +
           '<details class="dropdown">' +
             '<summary class="btn btn--icon btn--sm" aria-label="' + esc(T("ce.tier.more", "More actions")) +
@@ -2076,8 +2273,6 @@
             '<div class="dropdown__menu" role="menu">' +
               '<button type="button" class="dropdown__item" role="menuitem" data-tier-edit>' +
                 '<i data-lucide="pencil" class="ztor-icon"></i>' + esc(T("ce.tier.edit", "Edit")) + '</button>' +
-              '<button type="button" class="dropdown__item" role="menuitem" data-tier-split>' +
-                '<i data-lucide="scissors" class="ztor-icon"></i>' + esc(dT("d.tier.split")) + '</button>' +
               (t.fix ? '' :
                 '<button type="button" class="dropdown__item dropdown__item--danger" role="menuitem" data-tier-remove>' +
                   '<i data-lucide="trash-2" class="ztor-icon"></i>' + esc(dT("d.tier.remove.cell")) + '</button>') +
@@ -2104,6 +2299,10 @@
           (Number(dv.price) === 0 ? esc(T("ce.tier.free", "Free ticket")) : '$' + esc(dv.price)) + '</dd></div>' +
         '<div class="tier-card__fact"><dt>' + esc(T("ce.tier.qty", "Quantity")) + '</dt><dd>' + esc(dv.qty) + '</dd></div>' +
         (Number(dv.fee) > 0 ? '<div class="tier-card__fact"><dt>' + esc(T("d.tier.fee", "Booking fee")) + '</dt><dd>$' + esc(dv.fee) + '</dd></div>' : '') +
+        /* 提前入場只在真的設了才出現（2026-08-11 使用者指示）：跟場次一樣的票不用特別標，
+           掃一眼票務清單，看得到這一列的才是「跟其他票不一樣、能早進」的那幾張。 */
+        (Number(dv.earlymin) > 0 ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.early.fact")) + '</dt><dd>' +
+          esc(earlyFactValue(t, dv)) + '</dd></div>' : '') +
         (buySummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.tier.buycond")) + '</dt><dd>' + esc(buySummary(t)) + '</dd></div>' : '') +
         (capSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(dT("d.rule.cap")) + '</dt><dd>' + esc(capSummary(t)) + '</dd></div>' : '') +
         (discSummary(t) ? '<div class="tier-card__fact"><dt>' + esc(T("ce.rule.disc", "Discount")) + '</dt><dd>' + esc(discSummary(t)) + '</dd></div>' : '') +
@@ -2135,22 +2334,13 @@
         const show = errIds.has(t.id) && errs[k];
         hint.classList.toggle("tier-card__err", !!show);
         if (show) hint.textContent = errs[k];
-        /* 分票時，數量該對照的是「這個票種在這一場的額度」，不是整場活動的總人數——
-           分票就是從那個額度裡切一塊出來（2026-08-09）。沒分票才回到總人數餘額。 */
-        else if (k === "qty" && t.splitFrom) {
-          const root = rootOf(t);
-          hint.textContent = dT("d.tier.split.hint")
-            .replace("{max}", Math.max(splitTotalOf(root) - splitOut(root, t.id) - 1, 0))
-            .replace("{cap}", splitTotalOf(root));
-        }
-        else if (k === "qty" && hasSplits(t))
-          hint.textContent = dT("d.tier.split.left")
-            .replace("{cap}", splitTotalOf(t)).replace("{out}", splitOut(t));
         else if (k === "qty" && capacity() > 0)
           hint.textContent = T("ce.tier.qty.hint", "{n} of the {cap} capacity still unassigned")
                                .replace("{n}", Math.max(left, 0)).replace("{cap}", capacity());
         /* 新建票種那一欄的說明是固定的，沒有錯誤時要留著（其餘欄位沒有常駐說明，清空） */
-        else if (k === "ntype") hint.textContent = dT("d.type.pick.hint");
+        /* 名字那一欄的常駐說明要跟著「以票種建立／以獨立票建立」換一句，
+           不能寫死票種那一版——切到獨立票之後說明會與欄位標籤互相矛盾。 */
+        else if (k === "ntype") hint.textContent = newTypeHintText(t);
         else hint.textContent = "";
         if (input) input.setAttribute("aria-invalid", show ? "true" : "false");
       });
@@ -2231,6 +2421,85 @@
     return own && own !== auto ? dT("d.tier.tname.orig").replace("{name}", auto) : "";
   }
 
+  /* 提前入場（2026-08-11 使用者指示）：同一場次，不同票種可以有不同的入場時間——
+     VIP 想比一般票早半小時進場之類。原始構想是直接填「幾點入場」，但那樣一場裡
+     每張票各自寫一個絕對時間，讀的人要自己心算跟場次的開放入場差多少、也容易跟
+     「場次的開放入場」搞混，誤填成活動幾點開始。改成填「提前幾分鐘」（相對場次
+     的開放入場時間，不是相對開始時間）——同一種輸入方式，但這格問的是差距、不是
+     另一個絕對時間，且畫面上把換算後的實際時間一併顯示，不必自己心算
+     （2026-08-11 使用者指示：分鐘數要保留，換算後的時間也要顯示）。
+     留空或 0＝跟著場次的開放入場時間，不用整場每張票都手動填一次。 */
+  function sessDoors(t) {
+    const s = series.list.find(x => x.id === t.sess);
+    return (s && s.doors || "").trim();
+  }
+  /* HH:MM ↔ 當日分鐘數。跨到前一天就繞回去（早 8 小時入場這種極端值也算得出來）。 */
+  const hhmmToMin = hhmm => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm == null ? "" : hhmm).trim());
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  };
+  const minToHhmm = v => {
+    const t = ((Math.round(v) % 1440) + 1440) % 1440;
+    return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+  };
+  function subtractMinutes(hhmm, mins) {
+    const base = hhmmToMin(hhmm);
+    return base == null ? "" : minToHhmm(base - (Number(mins) || 0));
+  }
+  function earlyHintText(t, d) {
+    const mins = Number(d.earlymin) || 0;
+    const doors = sessDoors(t);
+    if (mins <= 0) return doors ? dT("d.tier.early.hint.default").replace("{doors}", doors) : "";
+    if (!doors) return dT("d.tier.early.hint.nodoors");
+    return dT("d.tier.early.hint.set").replace("{n}", mins).replace("{time}", subtractMinutes(doors, mins));
+  }
+  /* 早於開放時間入場：票種層的複寫（2026-08-11 使用者指示「預設是場次裡的設定，
+     這裡可以再次設定複寫」）。`t.early` 留空＝跟著那一場走；按了任一張卡就是這張票
+     自己的設定，並多出一顆「改回跟著場次」把它清掉——與同一個彈窗裡「購買條件」的
+     繼承＋覆寫是同一套語彙，不另造第二種複寫寫法。
+     場次沒有開放入場時間時整塊不出現：沒有門檻就沒有「早於」可言（與場次那邊同一條規則）。 */
+  const sessOf = t => series.list.find(x => x.id === t.sess) || null;
+  function tierEarlyPolicyHTML(t, d) {
+    const s = sessOf(t);
+    if (!s || !((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim())) return "";
+    const own = (d.early || "").trim();
+    const eff = own || s.early || "warn";
+    const opt = (v, k) => '<button type="button" class="segmented__btn' +
+      (eff === v ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' +
+      (eff === v ? "true" : "false") + '" data-tier-early="' + v + '">' +
+      '<span class="radio-card__text">' +
+        '<span class="radio-card__title">' + esc(dT(k)) + '</span>' +
+        '<span class="radio-card__sub">' + esc(dT(k + ".sub")) + '</span>' +
+      '</span></button>';
+    const hint = own
+      ? dT("d.early.own")
+      : dT("d.early.follow").replace("{n}", dT(eff === "block" ? "d.early.block" : "d.early.warn"));
+    return '<div class="field">' +
+      '<div class="field__label">' + esc(dT("d.early.policy")) + '</div>' +
+      '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '">' +
+        opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+      '</div>' +
+      '<p class="field__hint" data-tier-hint="early">' + esc(hint) + '</p>' +
+      (own ? '<div class="tier-card__ownrow">' +
+        '<button type="button" class="btn btn--ghost btn--sm" data-tier-early-reset>' +
+          esc(dT("d.early.followback")) + '</button></div>' : "") +
+    '</div>';
+  }
+
+  function syncEarlyHint(card, t) {
+    const hint = card && card.querySelector('[data-tier-hint="earlymin"]');
+    if (hint) hint.textContent = earlyHintText(t, drafts[t.id] || {});
+  }
+  /* 卡面那一列（2026-08-11）：跟彈窗裡的常駐說明用同一套換算，只是措辭改成短句
+     （卡面空間有限），場次還沒填開放入場時間就只寫分鐘數、不硬湊一個時間出來。 */
+  function earlyFactValue(t, dv) {
+    const mins = Number(dv.earlymin) || 0;
+    const doors = sessDoors(t);
+    return doors
+      ? dT("d.tier.early.fact.value").replace("{n}", mins).replace("{time}", subtractMinutes(doors, mins))
+      : dT("d.tier.early.fact.value.nodoors").replace("{n}", mins);
+  }
+
   function tierModalHTML(t, d) {
     if (modalTab === "rules") {
       /* 規則永遠攤開（2026-08-09 使用者指示「攤開不需要折疊了」）：原本用一顆收合鈕
@@ -2254,11 +2523,17 @@
         /* 有分票的那張，張數是「總量 − 分出去的」算出來的，不給直接改——要改就改分票那邊，
            或把分票刪掉還原。沒分票時照常可填。 */
         tierFieldHTML("qty",   "ce.tier.qty",   "Quantity", d.qty,
-                      { phKey: "ce.tier.qty.ph", phFb: "e.g., 200", num: true, locked: t.fix || hasSplits(t) }) +
+                      { phKey: "ce.tier.qty.ph", phFb: "e.g., 200", num: true, locked: t.fix }) +
         tierFieldHTML("fee",   "d.tier.fee",    "Booking fee", d.fee == null ? "" : d.fee, { phKey: "d.tier.fee.ph", phFb: "0", money: true, opt: true, locked: t.fixFee }) +
-        /* 加入商品排在最後（2026-08-09 使用者指示，由「商品組合」分頁併進來）：
-           它是加在票價之上的東西，要先知道票本身賣多少，再談要不要綁商品。 */
-        addonFieldHTML(t, d) +
+        /* 「加入商品」欄位撤除（2026-08-11 使用者指示，見 ASSUMPTIONS BDL-001 追加）：
+           把商品跟票綁在一起賣，現在統一交給票務之後的「票務商品」步驟（捆綁包），
+           單張票的彈窗不再重複這件事。 */
+        /* 提前入場（2026-08-11 使用者指示，見上方 sessDoors／earlyHintText 說明）：
+           填的是分鐘數，這裡沿用一般 tierFieldHTML；換算後的實際時間顯示在它的
+           常駐說明裡（即時算，不另存一份時間字串——場次的開放入場一改，這裡自動跟上）。 */
+        tierFieldHTML("earlymin", "d.tier.early", "Early entry", d.earlymin == null ? "" : d.earlymin,
+                      { phKey: "d.tier.early.ph", phFb: "0", num: true, min0: true, opt: true, hint: earlyHintText(t, d) }) +
+        tierEarlyPolicyHTML(t, d) +
       '</div>' +
       '<div>' + tierImgFieldHTML(t, d) + '</div>' +
     '</div>';
@@ -2325,9 +2600,14 @@
     /* 門票名稱預設就填好自動生成的那個名字（2026-08-09 使用者指示），不再只放 placeholder——
        它是這張票真正的名字，讓人一打開就看得到、要改再改，而不是猜留空會變成什麼。 */
     drafts[t.id] = { price: t.price, qty: t.qty, fee: t.fee == null ? "" : t.fee,
+                     earlymin: t.earlymin == null ? "" : t.earlymin,
+                     early: t.early == null ? "" : t.early,
                      addons: (t.addons || []).slice(),
                      img: (t.img || "").trim(),
                      ntype: "",
+                     /* 預設「以票種建立」＝站上主要的模型；要獨立票就在彈窗裡切一下。
+                        這一格只服務新增的手動票（comboFieldHTML 對既有票回傳空字串）。 */
+                     tmode: "type",
                      tnameOwn: !!(t.tname || "").trim(),   // 已經存過自訂名稱的才算「自己改過」
                      tname: (t.tname || "").trim() ||
                             (t.manual && !t.type ? "" : autoTicketName(t)) };
@@ -2351,9 +2631,14 @@
       if (f.dataset.tierF === "ntype") {
         const t0 = tiers.find(x => x.id === card.dataset.tier);
         /* 一開始打字就脫離「已挑好的票種」——現在欄位裡的是使用者自己打的名字。
-           打的內容剛好等於某個既有票種時，存檔那一步會自動沿用它（不重複建）。 */
-        if (t0) t0.type = "";
-        openTypeMenu(card, f.value);
+           打的內容剛好等於某個既有票種時，存檔那一步會自動沿用它（不重複建）。
+           獨立票不掛票種，這格純粹是打門票名稱，不比對、不開下拉、不給「新增票種」
+           （2026-08-11 使用者指示）。 */
+        if (t0 && tmodeOf(t0) !== "solo") {
+          t0.type = "";
+          openTypeMenu(card, f.value);
+          syncNewTypeHint(card, t0);
+        }
         /* 門票名稱預設是「場次名＋票種」，票種名還在打的時候要一起重算；
            使用者自己改過門票名稱（tnameOwn）就不動它。 */
         const d0 = drafts[card.dataset.tier];
@@ -2372,17 +2657,18 @@
         const h = card.querySelector('[data-tier-hint="tname"]');
         if (t0 && h) h.textContent = tnameHint(t0, drafts[card.dataset.tier]);
       }
-      /* 分票的張數是從原本那張切出來的，改它原本那張要立刻跟著減（2026-08-09）。 */
-      if (f.dataset.tierF === "qty") {
-        const t0 = tiers.find(x => x.id === card.dataset.tier);
-        if (t0 && t0.splitFrom) { syncRootQty(rootOf(t0)); renderTiers(); }
-      }
       /* 售出總價＝票價＋商品，改票價要立刻跟上。只改那一格的值、不重繪——
          重繪會把游標從正在打的價格欄彈出去。 */
       if (f.dataset.tierF === "price") {
         const t0 = tiers.find(x => x.id === card.dataset.tier);
         const g = card.querySelector("[data-tier-gross]");
         if (t0 && g) g.value = finalPrice(t0);
+      }
+      /* 打提前入場的分鐘數時，說明句要立刻跟著換算，不然使用者看不到自己打的
+         30 分鐘等於幾點——這正是原始設計被詬病「看不出換算後的時間」的地方。 */
+      if (f.dataset.tierF === "earlymin") {
+        const t0 = tiers.find(x => x.id === card.dataset.tier);
+        if (t0) syncEarlyHint(card, t0);
       }
       renderTierErrors();
       renderTierCount();
@@ -2397,12 +2683,57 @@
       if (idx < 0) return;
       const t = tiers[idx];
 
+      /* 切換「以票種建立／以獨立票建立」：清掉名字欄再重繪——兩種模式問的不是同一件事，
+         留著上一個模式打到一半的字會讓人以為它還算數。 */
+      const tm = e.target.closest("[data-tmode]");
+      if (tm) {
+        const d = drafts[t.id];
+        if (d) { d.tmode = tm.dataset.tmode; d.ntype = ""; }
+        t.type = "";
+        renderTierModal();
+        return;
+      }
+      /* 下拉底部的「新增票種」：清空欄位、把游標送回輸入框，讓人直接打新名字。
+         不先建一個空票種——名字都還沒有的票種在清單上讀不出是什麼。 */
+      if (e.target.closest("[data-type-new]")) {
+        const input = card.querySelector('[data-tier-f="ntype"]');
+        t.type = "";
+        if (drafts[t.id]) drafts[t.id].ntype = "";
+        if (input) { input.value = ""; input.focus(); }
+        openTypeMenu(card, "");
+        syncNewTypeHint(card, t);
+        return;
+      }
       if (e.target.closest("[data-tier-clear]")) {
         const key = e.target.closest("[data-tier-clear]").dataset.tierClear;
         const input = card.querySelector('[data-tier-f="' + key + '"]');
         if (drafts[t.id]) drafts[t.id][key] = "";
         if (input) { input.value = ""; input.focus(); }
+        /* 票種那一格清掉之後要把下拉再叫出來（2026-08-11 使用者指示）：清空的用意
+           通常是「我要重選」，清完卻沒有清單可看等於還要再點一次輸入框。獨立票不掛
+           票種，清掉只是清名字，不開下拉。 */
+        if (key === "ntype") {
+          t.type = "";
+          if (tmodeOf(t) !== "solo") openTypeMenu(card, "");
+          syncNewTypeHint(card, t);
+        }
+        /* 清掉提前入場的分鐘數＝回到跟著場次的開放入場時間，說明句要立刻換回那一句
+           （不然會停在剛才清掉之前算出來的時間，跟欄位已經是空的對不上）。 */
+        if (key === "earlymin") syncEarlyHint(card, t);
         renderTierErrors(); renderTierCount(); scheduleSave();
+        return;
+      }
+      /* 早於開放時間入場：按卡＝這張票自己的設定；按「改回跟著場次」＝清掉、回到繼承。
+         兩者都重繪彈窗（要換掉說明句與那顆還原鈕，且這一區沒有正在打字的欄位）。 */
+      const tEarly = e.target.closest("[data-tier-early]");
+      if (tEarly && drafts[t.id]) {
+        drafts[t.id].early = tEarly.dataset.tierEarly;
+        renderTierModal();
+        return;
+      }
+      if (e.target.closest("[data-tier-early-reset]") && drafts[t.id]) {
+        drafts[t.id].early = "";
+        renderTierModal();
         return;
       }
       if (e.target.closest("[data-tier-own]")) {      // 「改回跟隨活動預設」：丟掉這張票自己的那份
@@ -2413,47 +2744,12 @@
         return;
       }
       if (e.target.closest("[data-tier-edit]")) { startTier(t); return; }
-      if (e.target.closest("[data-tier-split]")) {
-        /* 分出來的那張：bookyay 設過的東西全部繼承（手續費、加購商品、規則），
-           但價格與數量解鎖——分票的用意就是同一批票拆成不同價位或不同批次賣。
-           張數從原本那張切 1 張出來當起點，原本那張至少留 1 張；要切更多在彈窗裡改。 */
-        const root = rootOf(t);
-        if (root.splitTotal == null) root.splitTotal = Number(val(root).qty) || 0;
-        if (splitTotalOf(root) - splitOut(root) - 1 < 1) {   // 只剩 1 張就沒得切了
-          alert(dT("d.tier.split.none"));
-          return;
-        }
-        const copy = Object.assign({}, t, {
-          id: "tier-" + (++tierSeq),
-          qty: "1",
-          fix: false,                       // 價格與數量可改
-          fixFee: t.fixFee,                 // 手續費若是 bookyay 給的，仍然鎖著
-          splitFrom: root.id,
-          splitTotal: null,
-          addons: (t.addons || []).map(a => Object.assign({}, a)),
-          rules: t.rules ? JSON.parse(JSON.stringify(t.rules)) : null
-        });
-        tiers.splice(tiers.findIndex(x => x.id === root.id) + splitsOf(root).length + 1, 0, copy);
-        syncRootQty(root);
-        startTier(copy);                    // 直接進編輯彈窗，讓人馬上調張數
-        scheduleSave();
-        return;
-      }
       if (e.target.closest("[data-tier-remove]")) {    // F9.2：移除整張卡（破壞性）
-        const root = rootOf(t);
         delete drafts[t.id]; newIds.delete(t.id); errIds.delete(t.id);
-        /* 記住「這個場次不賣這個票種」，syncMatrix 才不會在下次新增票種時把它補回來。
-           分票不算——刪掉一張分票不代表整個組合不賣（2026-08-09）。 */
-        if (!t.splitFrom && !tiers.some(x => x !== t && x.sess === t.sess && x.type === t.type))
+        // 記住「這個場次不賣這個票種」，syncMatrix 才不會在下次新增票種時把它補回來
+        if (!tiers.some(x => x !== t && x.sess === t.sess && x.type === t.type))
           dropped.add(t.sess + "|" + t.type);
         tiers.splice(idx, 1);
-        /* 刪掉分票，那些張數要還給原本那張。刪掉最後一張分票時 syncRootQty 會提早 return
-           （已經沒有分票了），所以這裡直接把總量還回去，並清掉 splitTotal 恢復成一般門票。 */
-        if (t.splitFrom) {
-          if (hasSplits(root)) syncRootQty(root);
-          else { root.qty = String(splitTotalOf(root)); root.splitTotal = null; }
-          if (drafts[root.id]) drafts[root.id].qty = root.qty;
-        }
         renderTiers(); scheduleSave();
         return;
       }
@@ -2483,12 +2779,24 @@
      500 張的票種＝每場各 500 張），所以收入試算要乘場次數。 */
   const sessList = document.getElementById("ce-dates-list");
   let sessLocked = false;                 // 從 bookyay 帶入時，場次是 bookyay 的資料，不給增刪也不給改
+  /* 是不是多場，由開關決定、不再由「現在有幾筆」反推（2026-08-11 補回開關）：
+     反推的問題是使用者按了「新增場次」才變成多場，等於得先做出結果才宣告意圖，
+     而場次名稱欄是在變成多場的那一刻才長出來的——欄位會在打字途中自己冒出來。 */
+  /* 多場＝實際上有第二場（2026-08-11 開關撤除後回到推導值）。用推導而不是存一個旗標，
+     是因為旗標與清單長度可能對不上，那會變成兩個真相。 */
   const multi = () => series.list.length > 1;
   const sessionCount = () => Math.max(1, series.list.length);
   const newSession = init => Object.assign(
-    /* 場地不在這一層：定點活動的場地是整場共用的那一份（[data-ce=venue] 那幾格）。
-       巡迴活動的逐站場地欄位已於 2026-08-10 隨「活動形式」撤除。 */
-    { id: "sess-" + (++series.seq), name: "", date: "", start: "", end: "", doors: "" }, init || {});
+    /* venue／addr／meet／transit 只有巡迴活動用得到（一站一個場地）；定點活動的場地是
+       整場共用的那一份，仍然存在 [data-ce=venue] 那幾格。欄位一律先備著，切換型態時
+       不必重建整個 series。 */
+    { id: "sess-" + (++series.seq), name: "", date: "", start: "", end: "", doors: "",
+      /* 未到入場時間的處理，每一場各自一份（2026-08-11 使用者指示）：預設「仍可入場」，
+         擋下是比較重的那一邊，要創作者自己選才生效。 */
+      early: "warn",
+      /* 開放入場的另一種寫法：開演前幾分鐘。與 doors 互為換算，見 syncDoorsPair。 */
+      doorsMin: "",
+      venue: "", addr: "", meet: "", transit: "" }, init || {});
 
   /* 下游（Review 摘要、票根預覽、發布前檢核）都讀 [data-ce=date]／[data-ce=start]。
      日期搬進場次列之後，由第 1 場回寫這兩格隱藏鏡像，那些程式一行都不用改。 */
@@ -2498,49 +2806,219 @@
     const t = document.querySelector("[data-ce=start]");
     if (d) d.value = s0.date || "";
     if (t) t.value = s0.start || "";
-    series.on = multi();
+    /* 巡迴活動：整場共用的那兩格場地欄位不在畫面上，改由第 1 站回寫——預覽卡、Review
+       摘要與發布前檢核讀的都是 [data-ce=venue]／[data-ce=addr]，這樣它們一行都不用改。
+       活動卡上只寫得下一個地點，第 1 站是巡迴的起點，也是最合理的代表。 */
+    if (isTour()) {
+      const v = document.querySelector("[data-ce=venue]");
+      const a = document.querySelector("[data-ce=addr]");
+      if (v) v.value = s0.venue || "";
+      if (a) a.value = s0.addr || "";
+    }
   }
 
   // 場次名：沒取名就用「第 N 場」。門票名稱組出來時用的就是這個。
   const sessionLabel = (s, i) => (s.name || "").trim() || T("ce.series.n", "Date {n}").replace("{n}", i + 1);
 
-  /* 墓碑：巡迴活動的「一站一盒」渲染（`stopBoxHTML`／`stopLabel`／`isTour`）於 2026-08-10
-     依使用者指示撤除——這個產品只有定點活動，場地是整場共用的一份。 */
+  /* 票在清單上的可辨識名稱：多場時前面補場次。同一個票種在每一場各有一張，
+     只寫票種名的話捆綁包的勾選清單會出現三個一模一樣的選項。 */
+  function tierLabelWithSession(t) {
+    const nm = typeName(t) || ticketNames(t)[0];    // 獨立票沒有票種名，用它自己的名字
+    if (!multi()) return nm;
+    const i = series.list.findIndex(x => x.id === t.sess);
+    const ss = series.list[i];
+    return (ss ? sessionLabel(ss, i) + " · " : "") + nm;
+  }
+
+  /* 活動形式（2026-08-10 使用者指示）：定點＝所有場次同一個場地（原本唯一的模型），
+     巡迴＝一站一個場地。它只影響「場地問幾次、問在哪裡」，不影響票務矩陣——
+     門票仍然是「場次 × 票種」，巡迴的每一站就是一個場次。 */
+  const shapeSeg = () => document.querySelector('[data-seg="shape"]');
+  const isTour   = () => shapeSeg()?.dataset.value === "tour";
+  // 巡迴時場次在語意上是「站」，標籤與提示跟著換一組字
+  const stopLabel = (s, i) => (s.name || "").trim() || dT("d.stop.n").replace("{n}", i + 1);
+
+  /* 一場（或一站）＝一個盒子（沿用票務那一步「一場一盒」的 .control-group--plain）。
+     2026-08-11 使用者指示，定點也改成盒子、欄位一行一組：**活動日期**一行、
+     **開始｜結束**一行、**開放入場**一行，未到入場時間掛在開放入場底下——它問的是
+     「比入場時間更早來怎麼辦」，跟著入場時間讀才成立。原本四欄擠成一列（日期／開始／
+     結束／開放入場），四個標籤一樣長、值又都是時間，掃過去分不出哪格是哪格。
+     欄位建構器兩種盒子共用，差別只在巡迴多問一組場地。 */
+  const sessField = (s, label, field, opt) => {
+    const o = opt || {};
+    return '<label class="field">' +
+      '<span class="field__label">' + esc(label) +
+        (o.req ? ' <span class="field__req">*</span>' : '') + '</span>' +
+      '<input class="input"' + (o.type ? ' type="' + o.type + '"' : '') +
+        ' data-sess-f="' + field + '" value="' + esc(s[field] || "") + '"' +
+        (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + '>' +
+    '</label>';
+  };
+  /* 開放入場 ＋ 掛在它底下的「未到入場時間」。
+     這一組每一場各有一份（2026-08-11 使用者指示：每一場都可以設定不同的），所以控制項
+     用 radio-list **不帶副標**的緊湊版——同一段字重複十場等於把清單灌長，選項名稱本身
+     已經把結果與機制都講完（提醒職員仍可放行／擋下不能入場）。 */
+  function sessDoorsHTML(s) {
+    const cur = s.early || "warn";
+    /* 控制項用 `.segmented.radio-cards`（2026-08-11 使用者指示，比照建立商品的「商品選項」）：
+       兩張並排的寬卡＋右上小橘點，與這一步最上面的「活動形式」同一種視覺，
+       整個流程裡的二選一因此只有一種長相。 */
+    const opt = (v, k) => '<button type="button" class="segmented__btn' +
+      (cur === v ? " segmented__btn--active" : "") + '" role="radio" aria-checked="' +
+      (cur === v ? "true" : "false") + '" data-sess-early="' + v + '">' +
+      '<span class="radio-card__text">' +
+        '<span class="radio-card__title">' + esc(dT(k)) + '</span>' +
+        '<span class="radio-card__sub">' + esc(dT(k + ".sub")) + '</span>' +
+      '</span></button>';
+    /* 開放入場與早到規則整併成**一個項目**（2026-08-11 使用者指示「整理成一個項目、
+       重新定義它的功能」）。想清楚使用情境之後的定義是：
+       這一格問的是「這一場幾點放人進來」，**留空就是不限制**——沒有入場時間，
+       自然也沒有「太早」這回事。所以早到規則不是另一個並列的設定，而是**填了時間才成立
+       的下一層問題**：有門檻，才需要決定門檻怎麼守。
+       改版前兩者是平行的兩格，時間留空時底下還是問「未到入場時間怎麼辦」，
+       那時候不管選哪一個都不會發生任何事。
+       規則用 `.rule-sub`（往內縮一階＋左邊界）標出從屬，並且**只在時間有值時出現**。 */
+    /* 兩種寫法一個意思（2026-08-11 使用者指示）：**幾點開放**與**開演前幾分鐘**。
+       填哪一格都行，另一格自動算出來（換算基準＝這一場的開始時間，見 syncDoorsPair）。
+       兩種都留：排場地的人講的是「六點開門」，宣傳講的是「提前一小時入場」，
+       強迫其中一方自己心算，就會有人算錯。
+       input 一律出乾淨的 `<input type="time">`——`partials/date-input.js` 會在執行期
+       自己包一層 .date-input 並補上日曆圖示與 placeholder，這裡先包好反而會被它跳過。 */
+    const hasDoors = !!((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
+    return '<div class="field">' +
+      '<div class="field__label">' +
+        '<span>' + esc(T("ce.doors", "Doors open")) + '</span> ' +
+        '<span class="text-sub">' + esc(T("ce.opt", "(optional)")) + '</span></div>' +
+      '<div class="form-grid">' +
+        '<label class="field">' +
+          '<span class="field__label">' + esc(dT("d.doors.at")) + '</span>' +
+          '<input class="input" type="time" data-sess-f="doors" value="' + esc(s.doors || "") + '">' +
+        '</label>' +
+        '<label class="field">' +
+          '<span class="field__label">' + esc(dT("d.doors.before")) + '</span>' +
+          '<span class="amount-field amount-field--suffix amount-field--readonly">' +
+            '<input class="input amount-field__input" type="number" min="0" step="5" data-sess-f="doorsMin" value="' +
+              esc(s.doorsMin == null ? "" : s.doorsMin) + '" placeholder="0">' +
+            '<span class="amount-field__unit">' + esc(dT("d.min")) + '</span>' +
+          '</span>' +
+        '</label>' +
+      '</div>' +
+      '<p class="field__hint">' + esc(dT("d.doors.hint")) + '</p>' +
+      '<div class="rule-sub" data-early-block' + (hasDoors ? "" : " hidden") + '>' +
+        '<div class="field__label">' + esc(dT("d.early.policy")) + '</div>' +
+        '<div class="segmented radio-cards" role="radiogroup" aria-label="' + esc(dT("d.early.policy")) + '">' +
+          opt("warn", "d.early.warn") + opt("block", "d.early.block") +
+        '</div>' +
+        '<p class="field__hint">' + esc(dT("d.early.policy.hint")) + '</p>' +
+      '</div>' +
+    '</div>';
+  }
+  /* 第 2 場起給一顆「套用第一場的設定」（2026-08-11 使用者指示）：多數活動每一場的時間
+     都一樣，只有日期不同。複製時間與入場規則、**不動日期與名稱**——那兩個本來就該各場不同，
+     一起蓋掉等於把剛填好的東西洗掉。 */
+  const copyFirstBtnHTML = i => i === 0 ? "" :
+    '<button type="button" class="btn btn--outline btn--sm" data-sess-copy1>' +
+      esc(dT("d.sess.copy1")) + '</button>';
+
+  /* 盒子的外框只在**有兩場以上**時才出現（2026-08-11 使用者指示：「只有一場的時候
+     下面的框框沒意義」）。外框的作用是把一場與另一場分開，只有一場時沒有東西要分，
+     等於在區塊的框裡再套一個框。`.ce-sess` 本體（直排＋列距）兩種情況都留著，
+     `data-sess` 也一定要在——欄位的委派處理靠它認出改的是哪一場。 */
+  const sessWrapOpen = s => '<div class="ce-sess' +
+    (series.list.length > 1 ? " control-group control-group--plain" : "") +
+    '" data-sess="' + esc(s.id) + '">';
+
+  function stopBoxHTML(s, i) {
+    const f = (label, field, opt) => sessField(s, label, field, opt);
+    const canRemove = !sessLocked && series.list.length > 1;
+    const boxed = series.list.length > 1;
+    return '<div class="ce-sess' + (boxed ? " control-group control-group--plain" : "") +
+        '" data-sess="' + esc(s.id) + '">' +
+      /* 只有一站時不出盒標：沒有第二站要跟它區分，「第 1 站」只是多一行字。 */
+      (boxed ? '<div class="ce-sess__head">' +
+        '<span class="card__title">' + esc(stopLabel(s, i)) + '</span>' +
+        (canRemove ? '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' +
+          esc(dT("d.stop.remove")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : "") +
+      '</div>' : "") +
+      /* 盒內一律兩欄（不用 --3）：欄數一變，欄的邊界就跟著變，上下相鄰的兩列會對不齊。
+         三個時間欄拆成「開始｜結束」一列、「開放入場」自己半寬一列，讀起來也剛好是
+         「活動幾點到幾點」與「幾點放人進場」兩件事。 */
+      '<div class="form-grid">' +
+        f(dT("d.stop.name"), "name", { ph: dT("d.stop.name.ph") }) +
+        f(T("ce.date", "Event date"), "date", { type: "date", req: true }) +
+      '</div>' +
+      '<div class="form-grid">' +
+        f(T("ce.start", "Start time"), "start", { type: "time" }) +
+        f(T("ce.end", "End time"), "end", { type: "time" }) +
+      '</div>' +
+      sessDoorsHTML(s) +
+      '<div class="form-grid">' +
+        f(T("ce.venue.name", "Venue name"), "venue", { req: true, ph: T("ce.venue.name.ph", "") }) +
+        f(T("ce.venue.addr", "Full address"), "addr", { ph: T("ce.venue.addr.ph", "") }) +
+      '</div>' +
+      '<div class="form-grid">' +
+        f(T("ce.venue.meet", "Meeting point"), "meet", { ph: T("ce.venue.meet.ph", "") }) +
+        f(T("ce.venue.transit", "Getting there"), "transit", { ph: T("ce.venue.transit.ph", "") }) +
+      '</div>' +
+      copyFirstBtnHTML(i) +
+    '</div>';
+  }
+
+  /* 定點的一場＝一個盒子（2026-08-11 使用者指示）。與巡迴盒的差別只有兩點：
+     不問場地（整場共用一份，在「場次詳情」那張卡），盒標是「第 N 場」而不是「第 N 站」。
+     只有一場時不出盒標——沒有第二場要跟它區分，標一個「第 1 場」只是多一行字。 */
+  function sessBoxHTML(s, i) {
+    const f = (label, field, opt) => sessField(s, label, field, opt);
+    const m = multi();
+    const canRemove = !sessLocked && series.list.length > 1;
+    return sessWrapOpen(s) +
+      (m ? '<div class="ce-sess__head">' +
+        '<span class="card__title">' + esc(sessionLabel(s, i)) + '</span>' +
+        (canRemove ? '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' +
+          esc(T("ce.series.remove", "Remove this date")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : "") +
+      '</div>' : "") +
+      (m ? '<div class="form-grid">' + f(dT("d.sess.name"), "name", { ph: dT("d.sess.name.ph") }) + '</div>' : "") +
+      '<div class="form-grid">' +
+        f(T("ce.date", "Event date"), "date", { type: "date", req: true }) +
+      '</div>' +
+      '<div class="form-grid">' +
+        f(T("ce.start", "Start time"), "start", { type: "time" }) +
+        f(T("ce.end", "End time"), "end", { type: "time" }) +
+      '</div>' +
+      sessDoorsHTML(s) +
+      copyFirstBtnHTML(i) +
+    '</div>';
+  }
 
   function renderSessions() {
     if (!sessList) return;
     if (!series.list.length) series.list.push(newSession());
-    const m = multi();
-    const col = k => '<span>' + esc(k) + '</span>';
-    const head = '<div class="session-list__head" data-multi="' + m + '">' +
-      '<div class="session-list__fields">' +
-        (m ? col(dT("d.sess.name")) : "") +
-        col(T("ce.date", "Event date")) + col(T("ce.start", "Start time")) +
-        col(T("ce.end", "End time")) + col(T("ce.doors", "Doors open")) +
-      '</div><span class="session-list__end"></span></div>';
-    const rows = series.list.map((s, i) =>
-      '<div class="session-list__row" data-sess="' + s.id + '" data-multi="' + m + '">' +
-        '<div class="session-list__fields">' +
-          (m ? '<input class="input" data-sess-f="name" value="' + esc(s.name) + '" placeholder="' +
-               esc(dT("d.sess.name.ph")) + '" aria-label="' + esc(dT("d.sess.name")) + '">' : "") +
-          '<input class="input" type="date" data-sess-f="date" value="' + esc(s.date) + '" aria-label="' + esc(T("ce.date", "Event date")) + '">' +
-          '<input class="input" type="time" data-sess-f="start" value="' + esc(s.start) + '" aria-label="' + esc(T("ce.start", "Start time")) + '">' +
-          '<input class="input" type="time" data-sess-f="end" value="' + esc(s.end) + '" aria-label="' + esc(T("ce.end", "End time")) + '">' +
-          '<input class="input" type="time" data-sess-f="doors" value="' + esc(s.doors) + '" aria-label="' + esc(T("ce.doors", "Doors open")) + '">' +
-        '</div>' +
-        '<span class="session-list__end">' +
-          (m && !sessLocked ? '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' +
-               esc(T("ce.series.remove", "Remove this date")) + '"><i data-lucide="x" class="ztor-icon"></i></button>' : "") +
-        '</span>' +
-      '</div>').join("");
-    sessList.innerHTML = head + rows;
+    if (isTour()) {
+      sessList.innerHTML = series.list.map(stopBoxHTML).join("");
+      sessList.classList.toggle("is-source-locked", sessLocked);
+      if (sessLocked) sessList.querySelectorAll("input").forEach(i => { i.disabled = true; });
+      const addT = document.getElementById("ce-dates-add");
+      if (addT) addT.style.display = sessLocked ? "none" : "";
+      if (window.ztorIcons) window.ztorIcons.applyIcons(sessList);
+      syncSessionMirror();
+      return;
+    }
+    /* 墓碑（2026-08-11 使用者指示）：定點的「一列一場＋欄位標題列」表格版面撤除，
+       改成與巡迴同樣的一場一盒（sessBoxHTML）。原本四個時間欄擠在同一列，標籤一樣長、
+       值又都是時間，掃過去分不出哪格是哪格；`session-list--detailed` 那組欄寬設定
+       因此在本頁沒有消費者了（元件本身仍由 settings.html 與舊版頁使用）。 */
+    sessList.innerHTML = series.list.map(sessBoxHTML).join("");
     sessList.classList.toggle("is-source-locked", sessLocked);
     if (sessLocked) sessList.querySelectorAll("input").forEach(i => { i.disabled = true; });
     const add = document.getElementById("ce-dates-add");
-    if (add) add.style.display = sessLocked ? "none" : "";
+    /* 一律可以再加一場；只有 bookyay 帶入時鎖住（那邊排好的，這一側只顯示）。 */
+    if (add) add.hidden = sessLocked;
     if (window.ztorIcons) window.ztorIcons.applyIcons(sessList);
     syncSessionMirror();
   }
+
+  /* 墓碑：單場／多場切換的 handler 於 2026-08-11 隨開關一起撤除。要多一場就按「新增場次」，
+     要回到一場就把多的移除——兩個動作都在清單上，不需要一個先宣告意圖的開關。 */
 
   function addSession() {
     // 新一場預設沿用上一場的時間，只有日期要重填——同一個活動加場，時段通常一樣
@@ -2552,8 +3030,48 @@
   }
   document.getElementById("ce-dates-add")?.addEventListener("click", addSession);
 
-  /* 墓碑：`applyShape()`（切換定點／巡迴）於 2026-08-10 依使用者指示撤除，連同它負責的
-     三件事——收放整場共用的場地那一塊、把共用場地複製進第 1 站、新增鈕與小標換字。 */
+  /* 切換活動形式（2026-08-10 使用者指示）：把「整場共用的場地」那一整塊收起或放回來，
+     場次列改用一站一盒／一列一場，新增鈕的字也跟著換（新增場次／新增一站）。 */
+  function applyShape() {
+    const tour = isTour();
+    document.querySelectorAll("[data-shape-when]").forEach(box => {
+      const on = box.dataset.shapeWhen === (tour ? "tour" : "fixed");
+      box.hidden = !on;
+      /* 收起來的欄位不能繼續當必填，否則發布前檢核會卡在一個看不見的欄位上。
+         巡迴的場地必填改由每一站自己負責（見 checks.venue）。 */
+      box.querySelectorAll("[data-ce]").forEach(el => {
+        if (on) el.setAttribute("data-required", "");
+        else { el.removeAttribute("data-required"); clearFieldError(el); }
+      });
+    });
+    /* 定點→巡迴：把原本共用的那一份場地搬進第 1 站（其餘站留空）。第 1 站通常就是
+       已經確定的那一場，其餘待排；複製到每一站反而會造出「每站都在同一個場地」這種
+       一看就不對的預設值。反向切回去不動資料，改回來還在。 */
+    if (tour) {
+      const s0 = series.list[0];
+      if (s0 && !s0.venue) {
+        const g = k => (document.querySelector("[data-ce=" + k + "]")?.value || "").trim();
+        s0.venue = g("venue"); s0.addr = g("addr");
+        s0.meet = g("venue-meet"); s0.transit = g("venue-transit");
+      }
+    }
+    const addBtn = document.querySelector("#ce-dates-add [data-di]");
+    if (addBtn) { addBtn.dataset.di = tour ? "d.stop.add" : "d.sess.add"; addBtn.textContent = dT(addBtn.dataset.di); }
+    /* 區段的副標與小標跟著換一組字：巡迴時這一段講的是「站」，沿用「場次日期與時間」
+       會和盒子上的「第 N 站」互相打架。 */
+    const swap = (fixedKey, tourKey) => {
+      const el = document.querySelector('[data-di="' + fixedKey + '"], [data-di="' + tourKey + '"]');
+      if (!el) return;
+      el.dataset.di = tour ? tourKey : fixedKey;
+      el.textContent = dT(el.dataset.di);
+    };
+    /* 區塊副標那一組（d.sess.sub／d.stop.sub）於 2026-08-11 隨版面整併撤除，這裡少一次 swap。 */
+    swap("d.sess.dates", "d.stop.dates");
+    renderSessions(); syncReview(); scheduleSave();
+  }
+  /* 切換的觸發點掛在集中的 [data-seg] 處理器裡（搜 `seg === "shape"`），不另外自己聽
+     click——那裡才是 dataset.value 被寫好的地方，自己聽會讀到上一個值。 */
+
 
   /* 輸入只寫資料、不整段重繪——重繪會把游標從正在打的欄位彈出去。
      場次名例外：門票名稱是「場次名＋票種」組出來的，要即時跟著改（只改那一行文字）。 */
@@ -2564,12 +3082,70 @@
     const s = series.list.find(o => o.id === row.dataset.sess);
     if (!s) return;
     s[f.dataset.sessF] = e.target.value;
+    /* 開放入場那一組（時間↔分鐘）互相換算，並決定早到規則要不要出現。
+       就地更新，不重繪整份清單——重繪會把游標從剛打好的欄位彈掉。 */
+    const k = f.dataset.sessF;
+    if (k === "doors" || k === "doorsMin" || k === "start") syncDoorsPair(row, s, k);
     syncSessionMirror();
     syncReview(); scheduleSave();
   });
+
+  /* 「幾點開放」與「開演前幾分鐘」是同一件事的兩種寫法，換算基準是這一場的**開始時間**。
+     規則：**剛改的那一格是真話**，另一格重算。
+     改的是開始時間時，保留已經填好的絕對時間、重算分鐘——使用者打的是「六點開門」，
+     把演出往後挪不該讓開門時間跟著偷偷跑掉；只有分鐘的那種才反過來推時間。
+     開始時間還沒填就換算不了，兩格各自留著、等填了開始時間再算（不清空使用者打的字）。 */
+  function syncDoorsPair(row, s, edited) {
+    const startM = hhmmToMin(s.start);
+    const doorsM = hhmmToMin(s.doors);
+    const mins = String(s.doorsMin == null ? "" : s.doorsMin).trim();
+    if (startM != null) {
+      if (edited === "doors") {
+        s.doorsMin = doorsM == null ? "" : String(Math.max(0, startM - doorsM));
+      } else if (edited === "doorsMin") {
+        s.doors = mins === "" ? "" : minToHhmm(startM - Number(mins));
+      } else {                                  // 改的是開始時間
+        if (doorsM != null) s.doorsMin = String(Math.max(0, startM - doorsM));
+        else if (mins !== "") s.doors = minToHhmm(startM - Number(mins));
+      }
+    }
+    /* 回寫「沒被改的那一格」。時間欄補派一次 change：date-input 的假 placeholder
+       靠自己的 input／change 監聽切 data-empty，程式改 value 不會自動觸發。 */
+    const dEl = row.querySelector('[data-sess-f="doors"]');
+    const mEl = row.querySelector('[data-sess-f="doorsMin"]');
+    if (dEl && edited !== "doors") { dEl.value = s.doors || ""; dEl.dispatchEvent(new Event("change")); }
+    if (mEl && edited !== "doorsMin") mEl.value = s.doorsMin == null ? "" : s.doorsMin;
+    const blk = row.querySelector("[data-early-block]");
+    if (blk) blk.hidden = !((s.doors || "").trim() || String(s.doorsMin == null ? "" : s.doorsMin).trim());
+  }
   sessList?.addEventListener("click", e => {
     const row = e.target.closest("[data-sess]");
-    if (!row || !e.target.closest("[data-sess-remove]")) return;
+    if (!row) return;
+    const s = series.list.find(o => o.id === row.dataset.sess);
+    /* 未到入場時間：只改那一場的值，不重繪整份清單——重繪會把使用者剛填到一半的
+       日期或時間欄的游標彈掉。這一組是純 DOM 狀態，就地換 active 就好。 */
+    const pick = e.target.closest("[data-sess-early]");
+    if (pick && s) {
+      s.early = pick.dataset.sessEarly;
+      pick.parentElement.querySelectorAll("[data-sess-early]").forEach(b => {
+        const on = b === pick;
+        b.classList.toggle("segmented__btn--active", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      scheduleSave();
+      return;
+    }
+    /* 套用第一場的設定：只複製時間與入場規則，日期與名稱留著——那兩個本來就該各場不同。
+       巡迴的場地同理不複製（每一站的場地就是它跟別站不一樣的地方）。 */
+    if (e.target.closest("[data-sess-copy1]") && s) {
+      const s0 = series.list[0];
+      if (s0 && s0 !== s) {
+        ["start", "end", "doors", "doorsMin", "early"].forEach(k => { s[k] = s0[k]; });
+        renderSessions(); syncReview(); scheduleSave();
+      }
+      return;
+    }
+    if (!e.target.closest("[data-sess-remove]")) return;
     series.list = series.list.filter(o => o.id !== row.dataset.sess);
     syncMatrix();                     // 那一場的門票跟著走
     renderSessions(); renderTiers(); renderCalc(); syncReview(); scheduleSave();
@@ -3045,10 +3621,15 @@
           sub.hidden = sub.dataset.whenVal !== btn.dataset.val;
         });
         if (seg === "ship")  applyShipMode();   // 順豐要運費、自取要地點（2026-08-10）
+        if (seg === "shape") applyShape();      // 定點／巡迴決定場地問一次還是一站一次（2026-08-10）
         syncReview(); scheduleSave();
       });
     });
   });
+
+  /* 墓碑（2026-08-11 同日）：活動層那一顆「未到入場時間」（`#ce-early-policy`）連同它的
+     handler 撤除——同日使用者改為每一場各設一份，控制項與狀態都搬進場次盒
+     （見 sessDoorsHTML 與 sessList 的 click 委派）。 */
 
   applyShipMode();   // 初始態：電子門票，兩個附加欄位都收起
 
@@ -3167,20 +3748,52 @@
   };
   /* 套組：掛共用模組（create-project／project-detail 同一支），不另做第二套組合規則。
      shares:false ＝ 沒有分潤名額那一套（活動套組賣的是票＋商品，不是名額）。 */
+  let bundleEd = null;    // mount 的回傳（getBundles 在實例上，不在 window.ZtorBundleEditor）
   if (window.ZtorBundleEditor && document.getElementById("ce-bd-list")) {
-    window.ZtorBundleEditor.mount({
+    bundleEd = window.ZtorBundleEditor.mount({
       list: "#ce-bd-list",
       addBtn: "#ce-bd-add",
       shares: false,        // 活動套組沒有分潤名額
       work: false,          // 也沒有「作品」本體與份數（賣的是票＋商品）
       cover: true,          // 每一組賣的東西不同，要靠封面圖分辨
       // 票種即時取：上一步中途新增的票種要立刻出現在勾選清單
-      tickets: () => savedTiers().map(t => ({ id: t.id, name: typeName(t), price: t.price })),
+      /* 多場活動時票名要帶場次：同一個票種在每一場各有一張，只寫票種名的話
+         清單上會出現三個一模一樣的「搖滾區」，勾錯了也看不出來。 */
+      tickets: () => savedTiers().map(t => ({
+        id: t.id,
+        name: tierLabelWithSession(t),
+        price: t.price
+      })),
       pool: 0,
       perSlot: 0,
       collapsedByDefault: false,
-      onChange: scheduleSave
+      onChange: () => { renderBundlePool(); scheduleSave(); }
     });
+  }
+
+  /* 右軌的數量池（2026-08-11）：捆綁包與單賣的票共用同一份張數，這句話寫在說明裡
+     看不出後果——要把「這張票有幾組捆綁包在用」攤出來，才知道改一張票的張數會牽動誰。
+     這裡只報「誰用到了」，不做扣減：一組捆綁包能賣幾份取決於實際銷售，原型沒有銷售資料。 */
+  function renderBundlePool() {
+    const box = document.getElementById("ce-bd-pool");
+    if (!box) return;
+    const bundles = bundleEd ? bundleEd.getBundles() : [];
+    const list = savedTiers();
+    if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
+    const many = multi();
+    box.innerHTML = series.list.map((ss, i) => {
+      const rows = list.filter(t => t.sess === ss.id);
+      if (!rows.length) return "";
+      return (many ? '<div class="quick-result__head">' + esc(sessionLabel(ss, i)) + '</div>' : "") +
+        rows.map(t => {
+          const used = bundles.filter(b => (b.tickets || []).indexOf(t.id) >= 0).length;
+          return '<div class="kv"><span class="kv__k">' + esc(ticketNames(t)[0]) + '</span>' +
+            '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", val(t).qty || 0)) +
+            (used ? ' · ' + esc(dT("d.bd.pool.n").replace("{n}", used)) : "") + '</span></div>';
+        }).join("");
+    }).join("");
+    if (!bundles.length) box.insertAdjacentHTML("beforeend",
+      '<p class="field__hint">' + esc(dT("d.bd.pool.none")) + '</p>');
   }
 
   /* 右軌是 sticky，貼齊位置要讓開 .wizard__top（同一個捲動容器裡的 sticky header）。
@@ -3212,6 +3825,17 @@
     "d.step.todo":    { en: "Not done", zh: "未完成" },
     "d.step.basic":   { en: "Basics",            zh: "基本資料" },
     "d.step.session": { en: "Dates",             zh: "場次" },
+    "d.step.bundle":  { en: "Bundles",           zh: "票務商品" },
+    "d.s6.h1":        { en: "Bundles",           zh: "票務商品" },
+    "d.s6.sub":       { en: "Sell tickets and products together as one package. Skip this step if you are not bundling anything.",
+                        zh: "把門票和商品綁成一組賣。沒有要綁就直接下一步。" },
+    "d.bd.h":         { en: "Bundles",           zh: "捆綁包" },
+    "d.bd.sub":       { en: "Each bundle includes at least one ticket. A bundle has no stock of its own — selling one takes a ticket from that tier's own count.",
+                        zh: "一組至少含一張票。數量跟它含的那張票共用，賣掉一組就從那張票扣一張，不另外設庫存。" },
+    "d.bd.add":       { en: "＋ Add a bundle",   zh: "＋ 新增捆綁包" },
+    "d.bd.pool":      { en: "Ticket pools",      zh: "票的數量池" },
+    "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own.", zh: "還沒有捆綁包，每一張票都各自單獨賣。" },
+    "d.bd.pool.n":    { en: "{n} in bundles",    zh: "{n} 組用到" },
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
     "d.step.tix":     { en: "Tickets",           zh: "票務" },
     "d.step.types":   { en: "Ticket types",      zh: "票種" },
@@ -3262,9 +3886,19 @@
     "d.tixstart.manual.sub": { en: "Build a single ticket and set its type, price and quantity right there.", zh: "直接建一張門票，票種、價格與張數都在那一張上設定。" },
     "d.manual":       { en: "＋ Add a ticket",   zh: "＋ 新增門票" },
     "d.type.pick.ph": { en: "Type a name, or pick one below", zh: "打一個名字，或從下面挑既有的" },
-    "d.type.pick.hint": { en: "No match? It becomes a new ticket type the next ticket can pick.",
-                          zh: "沒有相符的就會建成新的票種，下一張票就挑得到它。" },
-    "d.type.err.name": { en: "Name the new ticket type.", zh: "請為新的票種取個名字。" },
+    "d.tier.standalone": { en: "Standalone",     zh: "獨立票" },
+    "d.tier.how":     { en: "How to build this ticket", zh: "這張票怎麼建" },
+    "d.tier.how.type": { en: "Ticket type",     zh: "以票種建立" },
+    "d.tier.how.solo": { en: "Standalone",      zh: "獨立票" },
+    "d.tier.soloname": { en: "Ticket name",            zh: "門票名稱" },
+    "d.tier.soloname.ph": { en: "e.g., Limited signed ticket", zh: "例如：限量簽名票" },
+    "d.tier.soloname.err": { en: "Give this ticket a name.", zh: "請為這張票取個名字。" },
+    "d.type.new":     { en: "New ticket type",   zh: "新增票種" },
+    "d.type.pick.new": { en: "New ticket type “{n}” will be created.", zh: "會建立新票種「{n}」。" },
+    "d.type.pick.follows": { en: "Follows the defaults of “{n}”.", zh: "跟著票種「{n}」的預設值。" },
+    "d.type.pick.nomatch": { en: "No type by that name — it will be created as a new one.",
+                             zh: "沒有叫這個名字的票種，會照這個名字建一個新的。" },
+    "d.type.err.name": { en: "Name the ticket type.", zh: "請為票種取個名字。" },
     "d.manual.first": { en: "＋ Add the first ticket", zh: "＋ 新增第一張門票" },
     "d.manual.hint":  { en: "Type, price, quantity", zh: "票種、價格、數量" },
     "d.tier.remove.cell": { en: "This date doesn't sell it", zh: "這一場不賣這種票" },
@@ -3273,25 +3907,17 @@
     /* 規則攤開之後（2026-08-09）不再有「新增購票規則」這個動作，只剩「改回跟隨活動預設」。
        用詞跟快速設定的「改回跟著預設」一致——同一件事在站上只能有一種說法。 */
     "d.rule.followback": { en: "Follow event defaults again", zh: "改回跟隨活動預設" },
-    "d.tier.split":   { en: "Split",              zh: "分票" },
     "d.tier.buycond": { en: "Who can buy",        zh: "購買條件" },
     "d.tier.face":    { en: "Ticket price",       zh: "票價" },
     "d.tier.img":     { en: "Ticket image",       zh: "門票圖片" },
     "d.tier.img.event": { en: "Using the event key visual — change it here to give this ticket its own.",
                           zh: "現在用的是活動主視覺。在這裡換一張，這張票就有自己的圖。" },
     "d.tier.img.own": { en: "This ticket has its own image.", zh: "這張票用的是自己的圖。" },
-    "d.tier.img.none": { en: "The event has no key visual yet — upload one in Basics, or give this ticket its own here.",
-                         zh: "活動還沒有主視覺。到「基本資料」上傳一張，或在這裡直接給這張票一張圖。" },
     "d.tier.img.reset": { en: "Back to the event image", zh: "改回活動圖片" },
     "d.tier.bundle":  { en: "Bundle",             zh: "商品組合" },
     "d.tier.solo":    { en: "Ticket only",        zh: "單一票券" },
     "d.tm.ticket":    { en: "Settings",           zh: "設定" },
     "d.tm.rules":     { en: "Who can buy",        zh: "購買條件" },
-    "d.tier.split.badge": { en: "Split",          zh: "分票" },
-    "d.tier.split.hint": { en: "Up to {max} can be split off (of {cap}) — at least 1 stays on the original", zh: "原本共 {cap} 張，最多能分出 {max} 張（原本那張至少留 1 張）" },
-    "d.tier.split.over": { en: "At most {max} can be split off — the original keeps at least 1 of its {cap}.", zh: "最多只能分出 {max} 張——原本那張的 {cap} 張裡至少要留 1 張。" },
-    "d.tier.split.left": { en: "{out} of {cap} split off, the rest stays here", zh: "原本共 {cap} 張，已分出 {out} 張，其餘留在這裡" },
-    "d.tier.split.none": { en: "Only 1 ticket left — there is nothing to split off.", zh: "只剩 1 張了，沒有可以再分出來的張數。" },
     "d.tier.gross":   { en: "Total price",        zh: "總價" },
     "d.rule.pct":     { en: "Discount",           zh: "折扣百分比" },
     "d.rule.net":     { en: "Price after discount", zh: "折扣後價格" },
@@ -3307,7 +3933,9 @@
     "d.stix":         { en: "What each date sells", zh: "每一場開哪些票" },
     "d.stix.hint":    { en: "票種定義在上面，這裡只調整某一場要開幾張，或整種關掉不賣。", zh: "票種定義在上面，這裡只調整某一場要開幾張，或整種關掉不賣。" },
     "d.s3.h1":        { en: "Dates",             zh: "場次" },
-    "d.s3.sub":       { en: "Decide how people get in, then lay out the dates.", zh: "先決定要不要賣票，再排這個活動有幾場、各在什麼時候。" },
+    /* 步驟副標 2026-08-11 修：原句是「先決定要不要賣票，再排…」，但「售票方式」
+       已於 2026-08-10 整組撤除（見 ASSUMPTIONS SALES-001），這一步不再問賣不賣票。 */
+    "d.s3.sub":       { en: "Lay out how many times it runs, where, and when.", zh: "排這個活動有幾場、各在哪裡、什麼時候。" },
     "d.s4.h1":        { en: "Tickets",           zh: "票務" },
     "d.s4.sub":       { en: "Each date gets its own tickets — price, quantity and rules are set per ticket.", zh: "每一場賣哪幾種票、各賣什麼價錢，一場一場設定。" },
     "d.s5.h1":        { en: "Publishing",        zh: "發布設定" },
@@ -3362,17 +3990,82 @@
     "d.vis.qr.hint":  { en: "The same link, as a QR.", zh: "同一個連結的 QR。" },
     "d.tier.fee":     { en: "Booking fee",       zh: "手續費" },
     "d.tier.fee.ph":  { en: "0",                 zh: "0" },
+    /* 提前入場（2026-08-11 使用者指示）：填分鐘數，說明句換算成實際時間顯示，
+       兩個數字同時看得到，不用自己心算。標籤特意標「提前」不是「入場時間」——
+       這格問的是跟場次開放入場的差距，不是另一個獨立的絕對時間。 */
+    "d.tier.early":   { en: "Early entry (minutes)", zh: "提前入場（分鐘）" },
+    "d.tier.early.ph": { en: "0",                 zh: "0" },
+    "d.tier.early.hint.default": { en: "Follows the date's doors-open time ({doors}).",
+                                    zh: "跟著場次的開放入場時間（{doors}）。" },
+    "d.tier.early.hint.set": { en: "{n} minutes before doors — opens at {time}.",
+                                zh: "比開放入場提早 {n} 分鐘，也就是 {time} 可以入場。" },
+    "d.tier.early.hint.nodoors": { en: "This date doesn't have a doors-open time yet — set one first so this can be calculated.",
+                                    zh: "場次還沒填開放入場時間，先設定好才能算出實際入場時間。" },
+    "d.tier.early.fact": { en: "Early entry",     zh: "提前入場" },
+    "d.tier.early.fact.value": { en: "{n} min early ({time})", zh: "提早 {n} 分鐘（{time}）" },
+    "d.tier.early.fact.value.nodoors": { en: "{n} min early", zh: "提早 {n} 分鐘" },
     "d.tier.tname":   { en: "Ticket name",       zh: "門票名稱" },
     "d.tier.tname.ph":{ en: "Session + tier",    zh: "留空就用場次名＋票種" },
     "d.tier.tname.orig": { en: "Original combination name: {name}", zh: "原組合名稱：{name}" },
+    "d.shape":        { en: "Event shape",       zh: "活動形式" },
+    "d.shape.fixed":  { en: "One venue",         zh: "定點活動" },
+    "d.shape.fixed.sub": { en: "Every date runs at the same place. You set the venue once.", zh: "每一場都在同一個場地，場地只填一次。" },
+    /* 改名（2026-08-11 使用者指示）：「巡迴」暗示辦的是演出巡演這種特定敘事，
+       但這個選項其實只是「每一場地點不同」的機制，跟活動類型無關——工作坊、
+       快閃活動、展覽都可能每站不同地點卻稱不上「巡迴」。改用描述機制本身的
+       說法，跟旁邊「定點活動」（單一地點）對稱。 */
+    "d.shape.tour":   { en: "Multiple venues",   zh: "多站活動" },
+    "d.shape.tour.sub": { en: "Each stop has its own venue, set alongside that stop's dates.", zh: "每一站換一個場地，場地跟著站別各自設定。" },
+    "d.stop.n":       { en: "Stop {n}",          zh: "第 {n} 站" },
+    "d.stop.name":    { en: "Stop name",         zh: "站名" },
+    "d.stop.name.ph": { en: "e.g., Taipei",      zh: "例如：台北站" },
+    "d.stop.add":     { en: "Add a stop",        zh: "新增一站" },
+    "d.stop.remove":  { en: "Remove this stop",  zh: "移除這一站" },
+    /* 墓碑（2026-08-11）：區塊副標 d.stop.sub／d.sess.sub 隨版面整併撤除——它們講的
+       「場地共用一份／跟著站走」與活動形式選項卡自己的副標是同一句話。 */
+    "d.stop.dates":   { en: "Stops",             zh: "各站場地與時間" },
     "d.sess":         { en: "Dates",             zh: "場次" },
-    "d.sess.sub":     { en: "Each date has its own times; the venue is shared by all of them.", zh: "日期與時間每一場各自設定，場地所有場次共用。" },
-    "d.sess.dates":   { en: "Dates and times",   zh: "場次日期與時間" },
-    "d.sess.detail":  { en: "Date details",      zh: "場次細節" },
+    "d.sess.dates":   { en: "Dates and times",   zh: "日期與時間" },
+    "d.sess.detail":  { en: "Date details",      zh: "場次詳情" },
+    /* 這句留著（不像 d.sess.sub 那樣撤掉）：它回答的是「這些為什麼不在上面那張逐場清單裡」，
+       標題本身沒說。 */
+    "d.sess.detail.sub": { en: "Shared by every date.", zh: "所有場次共用。" },
     "d.sess.cap":     { en: "People per date",   zh: "每一場的人數" },
     "d.sess.add":     { en: "Add a date",        zh: "新增場次" },
+    "d.sess.copy1":   { en: "Copy the first date's setup", zh: "套用第一場的設定" },
     "d.sess.name":    { en: "Date name",         zh: "場次名稱" },
     "d.sess.name.ph": { en: "e.g., Day 1",       zh: "例：Day 1" },
+    /* 早到處理（2026-08-11 使用者指示）：門口的政策，一個活動只設一份，
+       跟票種無關——票種各自能提前多久入場是另一件事，見下面 d.tier.early.*。
+       文案同日第二輪改寫（使用者：「這些詞句可以優化嗎」）：
+       ① 兩個選項由講機制（提示／擋下）改成講**結果**（仍可入場／不能入場）——
+          創作者在這裡決定的是「要不要放人進來」，機制是職員那邊的事，降到副標。
+          兩個標題也因此對稱（都以入場為主詞），一眼比得出差別。
+       ② 說明只留真正需要知道的那件事：早不早是跟**每張票自己的**入場時間比，
+          不是跟活動時間比——這是「提前入場」設了之後才成立的規則。
+       第三輪（使用者：「不要這麼白話」）：標題一度改成「粉絲太早到場怎麼辦」，
+       口語過頭；改成陳述條件的「未到入場時間」——它現在是場次詳情底下的一個欄位標籤，
+       不是自成一段的小標，標籤講條件、選項講結果，讀起來是一句完整的話。 */
+    /* 開放入場留空＝不限制（2026-08-11 重新定義）：這一句要說出「留空會怎樣」，
+       因為留空是有意義的選擇、不是還沒填完。 */
+    "d.doors.at":         { en: "Time",              zh: "時間" },
+    "d.doors.before":     { en: "Before start",      zh: "開演前" },
+    "d.min":              { en: "min",               zh: "分鐘" },
+    "d.doors.hint":       { en: "Fill either one and the other works itself out. Both empty means fans can come in any time.",
+                            zh: "兩格填一個就好，另一格會自動算；都留空就是不限制。" },
+    "d.early.policy":     { en: "Arriving before doors open", zh: "早於開放時間入場" },
+    "d.early.warn":       { en: "Allow entry",        zh: "仍可入場" },
+    "d.early.warn.sub":   { en: "Staff can confirm and let them through.", zh: "票務人員可人工確認。" },
+    "d.early.block":      { en: "Deny entry",         zh: "不能入場" },
+    "d.early.block.sub":  { en: "Staff can't override it.", zh: "票務人員限制操作。" },
+    /* 票種層的複寫（2026-08-11 使用者指示）：預設跟著場次，這裡可以再設一次。 */
+    "d.early.follow":     { en: "Follows this date's setting ({n}).", zh: "跟著場次的設定（{n}）。" },
+    "d.early.own":        { en: "This ticket has its own setting.",   zh: "這張票用自己的設定。" },
+    "d.early.followback": { en: "Back to the date's setting",         zh: "改回跟著場次" },
+    /* 說明改成指路（2026-08-11）：整併之後這裡真正需要交代的是「每張票的入場時間
+       不一定等於這個時間」，以及那件事在哪裡設定。 */
+    "d.early.policy.hint": { en: "Ticket types can enter earlier — set that per ticket in the Tickets step.",
+                              zh: "票種可以各自提前入場，在「票務」那一步設定。" },
     "d.tier.addons":  { en: "Bundled product",   zh: "加入商品" },
     "d.tier.addons.ph": { en: "Search your e-shop…", zh: "搜尋你的電子商店…" },
     "d.tier.addons.none": { en: "No match in your e-shop", zh: "電子商店裡找不到相符的商品" },
@@ -3431,7 +4124,9 @@
     }));
     const okSess = new Set(series.list.map(x => x.id));
     const okType = new Set(types.map(x => x.id));
-    tiers = tiers.filter(t => okSess.has(t.sess) && okType.has(t.type));
+    /* 獨立票（`type` 留空）不掛任何票種，這裡不能把它當成孤兒清掉——只清「掛了一個
+       已經不存在的票種」的那種。場次被刪掉時獨立票仍然跟著走，那一場沒了它也沒了。 */
+    tiers = tiers.filter(t => okSess.has(t.sess) && (!t.type || okType.has(t.type)));
   }
   function renderTypes() {
     if (!typeList) return;
@@ -3523,7 +4218,7 @@
     return out;
   }
   /* 分票不給「改回跟著預設」：它的張數是從原本那張切出來的，還原會把總量算爛。 */
-  const resettable = t => !t.splitFrom && !!typeOf(t);
+  const resettable = t => !!typeOf(t);
   function resetToSeed(t) {
     const ty = typeOf(t);
     if (!ty) return;
@@ -3554,13 +4249,15 @@
   }
   function quickRowHTML(t) {
     const own = customOf(t);
-    const tag = t.splitFrom ? dT("d.tier.split.badge")
+    /* 獨立票沒有預設值可跟隨，標「獨立」而不是「跟著預設」——後者會讓人以為
+       改票種預設會動到它。 */
+    const tag = !t.type ? dT("d.tier.standalone")
               : (own.length ? dT("d.quick.own").replace("{f}", own.join("、")) : dT("d.quick.follow"));
     return '<div class="quick-result__row" data-qres="' + t.id + '">' +
       '<span class="quick-result__name">' + esc(ticketNames(t)[0]) + '</span>' +
       '<span class="quick-result__num">' + (Number(val(t).price) ? "$" + esc(val(t).price) : esc(T("ce.tier.free", "Free ticket"))) + '</span>' +
       '<span class="quick-result__num">' + (val(t).qty ? esc(dT("d.quick.qtyn").replace("{n}", val(t).qty)) : "—") + '</span>' +
-      '<span class="quick-result__tag' + (own.length && !t.splitFrom ? " quick-result__tag--own" : "") + '">' + esc(tag) + '</span>' +
+      '<span class="quick-result__tag' + (own.length || !t.type ? " quick-result__tag--own" : "") + '">' + esc(tag) + '</span>' +
       '<span class="quick-result__end">' +
         (own.length && resettable(t)
           ? '<button type="button" class="btn btn--outline btn--sm" data-qres-reset>' + esc(dT("d.quick.reset")) + '</button>'
@@ -4056,9 +4753,15 @@
        這裡刻意不動 lineup——維持使用者自己在「新增表演者」搜尋加入的狀態。 */
     renderGallery(rec.images);
     /* 取票方式整組鎖住（.is-source-locked 會擋掉點擊）：那是 bookyay 那邊設定好的，這一側只顯示。
-       入場方式與活動形式兩組已於 2026-08-10 整組撤除，對應的 lockSeg 一併移除。 */
+       入場方式那一組已於 2026-08-10 撤除，對應的 lockSeg 一併移除。 */
     lockSeg("ship", rec.ship);
+    /* bookyay 上沒有巡迴這種活動（2026-08-10 使用者說明），帶入的一律是定點：鎖在定點，
+       巡迴那張卡連同整塊一起變成唯讀。lockSeg 只改 dataset，畫面要跟著換得自己叫一次。 */
+    lockSeg("shape", "fixed");
+    applyShape();
     /* 場次：第 1 場是活動本身的日期，rec.sessions 是加場。全部鎖住並收掉新增與移除。 */
+    /* bookyay 帶進來幾場，多場開關就跟著開——不然畫面會出現「3 列場次但標示單場」，
+       而且場次名稱欄不會長出來，門票分不出是哪一場的。 */
     series.list = [newSession({ name: rec.sessionNames ? rec.sessionNames[0] : "", date: rec.date, start: rec.start, end: rec.end, doors: rec.doors })]
       .concat(rec.sessions.map((x, i) => newSession({
         name: rec.sessionNames ? rec.sessionNames[i + 1] : "", date: x.date,
@@ -4295,7 +4998,7 @@
   document.addEventListener("i18n:applied", () => demoI18n());
 
   renderRules();
-  renderSessions();
+  applyShape();          // 場次列要先知道是定點還是巡迴，才知道畫成一列一場還是一站一盒
   renderTypes();
   demoInit();
 })();

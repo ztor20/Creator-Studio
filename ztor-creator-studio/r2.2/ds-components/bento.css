@@ -19,6 +19,26 @@
 }
 .bento > * { grid-column: span 12; }
 
+/* ── --top：卡片各自保留自然高度，不被同排最高的那張拉長（2026-08-07）───────
+   grid 預設 align-items:stretch，所以一排裡的卡會全部拉到最高那張的高度。
+   多數情況這是對的（同量級的卡等高比較整齊），但一排裡兩張卡的內容量差很多時，
+   矮的那張會被撐出一大塊空白——儀表板「ztor 粉絲組成（309px）｜今日待處理（783px）」
+   就是這個情形，圓餅卡底下會空出快 480px。
+   給那一排的 .bento 加 --top，該排改成頂端對齊、各自保留自然高度；
+   其餘 .bento 不受影響，仍是 stretch。 */
+.bento--top { align-items: start; }
+
+/* ── __stack：一個 grid 欄位裡直向疊兩張以上的卡（2026-08-07）─────────────
+   一排兩欄時，兩邊內容量常常不對等：矮的那欄底下會空一大塊（--top 讓卡不被
+   拉長，但空的還是空）。把兩張矮卡疊進同一欄，兩欄的高度才收得齊。
+   自己是 grid item（吃 --span-N），內部用 flex 直排、間距與 .bento 的 gap 同值。 */
+.bento__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+
 @media (min-width: 900px) {
   .bento--span-3  { grid-column: span 3; }
   .bento--span-4  { grid-column: span 4; }
@@ -39,4 +59,13 @@
    其餘 .bento（KPI 列等）不受影響，仍是 900px。 */
 @media (max-width: 1439.98px) {
   .bento--stack-lg > * { grid-column: span 12; }
+}
+
+/* ── --stack-md：同樣的手法、門檻放在 1200px（2026-08-07）──────────────────
+   給「不是表格、但兩張卡都還是需要一點寬度」的排用。預設的 900px 對它們太早：
+   儀表板「ztor 粉絲組成｜今日待處理」在 1024 實測，圓餅的圖例會折行（20→39px）、
+   告警欄只剩 286px，兩邊都難讀。1200 以下改單欄，1280 這種筆電寬度仍維持併排。
+   與 --stack-lg 的分工：裝表格的排用 lg（1440），其餘需要保護的排用 md（1200）。 */
+@media (max-width: 1199.98px) {
+  .bento--stack-md > * { grid-column: span 12; }
 }

@@ -16,9 +16,13 @@
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <!-- F7 商品規格（D171）：範本清單借 admin 表格＋kebab，範本編輯借 segmented／spec-row，尺寸表為新元件 -->
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/radio-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/admin-ip-bank-table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
@@ -27,100 +31,59 @@
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-panel.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/store-settings.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/fan-store.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/list-toolbar.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+
 </head>
 <body>
+<!-- 獨立頁面（D184，2026-08-11 同日第三輪使用者裁示）：不掛全域 app shell、沒有側欄，
+     但頁首用站上其他清單頁那套（麵包屑＋大標題＋右側動作），不是建立流程的窄頁首——
+     這是一個「頁」不是一個「流程」，標題該有頁的份量。麵包屑同時是回電子商店的路。 -->
 <div class="app">
-
   <main class="main">
     <div class="page">
 
-      <!-- D067: store settings is opened as a popup from E-Shop F3. The embed-modal
-           frame supplies the title + close, so this page carries NO global nav /
-           breadcrumb / page header. Save / Discard / See-as-fan live in the bottom
-           .ss-actionbar (spec 5.1.5.5 F1 設定動作與預覽). -->
+      <!-- 返回鈕沿用詳情頁那顆裸箭頭（Q43）：靜止態只有 chevron，hover 才浮出圓底。 -->
+      <div class="page-crumb page-crumb--back">
+        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="e-shop.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+        <a href="e-shop.html" class="card__link" data-i18n="nav.manage-eshop">E-Shop</a> <span style="margin:0 6px">/</span>
+        <span data-i18n="store-settings.crumb.self">Store settings</span>
+      </div>
 
-      <div class="ss-stack">
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="store-settings.h1">Store settings</h1>
+          <p class="page-intro__sub" data-i18n="store-settings.sub">How your shop looks, how you get paid, how you ship, and what discounts you hand out.</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button" data-ss-preview-open data-i18n-aria-label="store-settings.see-as-fan" aria-label="See as fan"><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="store-settings.see-as-fan">See as fan</span></button>
+          <button class="btn btn--outline" type="button" data-i18n="store-settings.discard">Discard</button>
+          <button class="btn btn--primary" type="button" data-i18n="store-settings.save">Save changes</button>
+        </div>
+      </div>
 
-        <!-- F2 店面門面（常駐置頂，身分帶＋逐欄就地編輯；品牌素材＝封面＋頭像 logo） -->
-        <section class="card ss-identity-card">
-          <!-- 封面（cover 品牌素材） -->
-          <div class="ss-band__cover">
-            <button class="btn btn--outline btn--sm ss-band__cover-edit" type="button" aria-label="Change cover image" data-i18n-aria-label="store-settings.edit.cover"><i data-lucide="camera" class="ztor-icon"></i><span data-i18n="store-settings.brand.cover">Cover image</span></button>
+
+      <div class="preview-split">
+        <div class="preview-split__form">
+
+          <div class="list-toolbar">
+            <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" aria-label="商店設定分區">
+              <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-sec="payment" data-i18n="store-settings.group.payment">Payment</div>
+              <div class="tabs__item" role="tab" aria-selected="false" data-sec="selling" data-i18n="store-settings.group.selling">Selling defaults</div>
+              <div class="tabs__item" role="tab" aria-selected="false" data-sec="specs" data-i18n="store-settings.group.specs">Product specs</div>
+              <div class="tabs__item" role="tab" aria-selected="false" data-sec="codes" data-i18n="store-settings.group.codes">Discount codes</div>
+            </nav>
           </div>
+        <div class="ss-stack stack">
+          <section class="settings-section" id="sec-payment">
+            <section class="card">
 
-          <!-- 頭像 logo（logo 品牌素材）＋ 店名／網址 -->
-          <div class="ss-band__head">
-            <div class="ss-band__avatar">M
-              <button class="ss-band__avatar-edit btn btn--icon btn--sm" type="button" aria-label="Change logo" data-i18n-aria-label="store-settings.edit.logo"><i data-lucide="camera" class="ztor-icon"></i></button>
-            </div>
-            <div class="ss-band__namewrap">
-              <!-- 店名（就地編輯） -->
-              <div class="ss-edit ss-edit--name" data-ss-edit="text" data-value="My Fan Store">
-                <span class="ss-edit__read" role="button" tabindex="0">
-                  <span class="ss-edit__value" data-ss-value data-placeholder="Your shop name">My Fan Store</span>
-                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-                </span>
-                <span class="ss-edit__form">
-                  <input class="input" type="text" aria-label="Shop name" data-i18n-aria-label="store-settings.edit.name" placeholder="e.g. Kowloon After Dark Studio" data-i18n-placeholder="ss.name.ph">
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
-                  </span>
-                </span>
-              </div>
-              <!-- 商店網址（就地編輯 slug） -->
-              <div class="ss-edit ss-edit--url" data-ss-edit="text" data-value="creator-slug">
-                <span class="ss-edit__read" role="button" tabindex="0">
-                  <span class="ss-url__prefix">ztor.com/shop/</span><span class="ss-edit__value" data-ss-value data-placeholder="your-slug">creator-slug</span>
-                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-                </span>
-                <span class="ss-edit__form">
-                  <span class="ss-url"><span class="ss-url__prefix">ztor.com/shop/</span><input class="input ss-url__input" type="text" aria-label="Shop URL slug" data-i18n-aria-label="store-settings.edit.url" placeholder="e.g. coastline-studio" data-i18n-placeholder="ss.slug.ph"></span>
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
-                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="ss-band__body">
-            <!-- 商店簡介（就地編輯，200 字） -->
-            <div class="ss-edit ss-edit--bio" data-ss-edit="textarea" data-value="Independent musician shipping merch, vinyl, and digital drops.">
-              <span class="ss-edit__read" role="button" tabindex="0">
-                <span class="ss-edit__value" data-ss-value data-placeholder="Tell fans what your shop is about…">Independent musician shipping merch, vinyl, and digital drops.</span>
-                <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
-              </span>
-              <span class="ss-edit__form">
-                <textarea class="textarea" maxlength="200" aria-label="Shop bio" data-i18n-aria-label="store-settings.edit.bio" data-ss-count-src placeholder="e.g. Records, prints and tour merch from the east coast." data-i18n-placeholder="ss.bio.ph"></textarea>
-                <span class="ss-edit__formrow">
-                  <span class="ss-edit__count" data-ss-count>0/200</span>
-                  <span class="ss-edit__actions">
-                    <button class="btn btn--outline btn--sm" type="button" data-ss-cancel data-i18n="store-settings.cancel">Cancel</button>
-                    <button class="btn btn--primary btn--sm" type="button" data-ss-ok data-i18n="store-settings.edit.save">Save</button>
-                  </span>
-                </span>
-              </span>
-            </div>
-
-          </div>
-        </section>
-
-        <!-- 設定群組（F4 付款 ｜ F5 出貨 ｜ F6 幣別）— 一次處理其一（spec 5.1.5.5 頁面佈局 / D125）。
-             F3 商品陳列已移至電子商店 5.1.5 F4 末段「粉絲端陳列排序」（D083）。 -->
-        <section class="card" data-feat="S05,S06">
-          <nav class="tabs" role="tablist" aria-label="Store setting groups">
-            <button class="tabs__item tabs__item--active" type="button" role="tab" data-ss-tab="payment" aria-selected="true" data-feat="S05" data-i18n="store-settings.group.payment">Payment settings</button>
-            <button class="tabs__item" type="button" role="tab" data-ss-tab="shipping" aria-selected="false" data-feat="S06" data-i18n="store-settings.group.shipping">Shipping defaults</button>
-            <button class="tabs__item" type="button" role="tab" data-ss-tab="currency" aria-selected="false" data-i18n="store-settings.group.currency">Currency</button>
-            <button class="tabs__item" type="button" role="tab" data-ss-tab="specs" aria-selected="false" data-i18n="store-settings.group.specs">Product specs</button>
-          </nav>
-
-          <!-- F4 付款設定 -->
-          <div class="ss-tabpanel" role="tabpanel" data-ss-panel="payment" data-feat="S05">
             <div class="ss-status" style="margin-top:2px">
               <span class="ss-status__icon"><i data-lucide="landmark" class="ztor-icon"></i></span>
               <span class="ss-status__main">
@@ -130,10 +93,29 @@
               <span class="badge badge--success"><span data-i18n="store-settings.stripe.active">Active</span></span>
             </div>
             <p class="settings-row__hint" style="margin-top:10px" data-i18n="store-settings.stripe.hint">Payout schedule and currency follow Earnings. Manage the connection there.</p>
-          </div>
+            </section>
+          </section>
+          <section class="settings-section" id="sec-selling" hidden>
+            <section class="card">
 
-          <!-- F5 出貨預設 -->
-          <div class="ss-tabpanel" role="tabpanel" data-ss-panel="shipping" data-feat="S06" hidden>
+            <div class="settings-row" style="border-bottom:0; align-items:start">
+              <div>
+                <div class="settings-row__label" data-i18n="store-settings.field.currency">Currency</div>
+                <div class="settings-row__hint" data-i18n="store-settings.currency.hint">Default display currency for your shop's pricing.</div>
+              </div>
+              <div style="width:340px">
+                <select class="select" aria-label="Currency" data-i18n-aria-label="store-settings.field.currency">
+                  <option value="" data-i18n="store-settings.currency.choose">Choose currency</option>
+                  <option value="HKD">HKD · Hong Kong Dollar</option>
+                  <option value="TWD">TWD · New Taiwan Dollar</option>
+                  <option value="SGD">SGD · Singapore Dollar</option>
+                  <option value="USD">USD · US Dollar</option>
+                </select>
+              </div>
+            </div>
+            </section>
+            <section class="card">
+
             <div class="settings-row" style="align-items:start">
               <div>
                 <div class="settings-row__label" data-i18n="store-settings.field.shipfrom">Ships from</div>
@@ -151,32 +133,11 @@
                 <input class="input amount-field__input" type="text" inputmode="decimal" value="50" aria-label="Free shipping threshold" data-i18n-aria-label="store-settings.field.freeship">
               </span>
             </div>
-          </div>
+            </section>
+          </section>
+          <section class="settings-section" id="sec-specs" hidden>
+            <section class="card">
 
-          <!-- F6 幣別（spec 5.1.5.5 F6 / D125）：商店定價的法幣顯示幣別（POPCORN 定價單位已自產品移除，見 D144）。選項＝HKD/TWD 現有＋SGD/USD 新增，共四種 -->
-          <div class="ss-tabpanel" role="tabpanel" data-ss-panel="currency" hidden>
-            <div class="settings-row" style="border-bottom:0; align-items:start">
-              <div>
-                <div class="settings-row__label" data-i18n="store-settings.field.currency">Currency</div>
-                <div class="settings-row__hint" data-i18n="store-settings.currency.hint">Default display currency for your shop's pricing.</div>
-              </div>
-              <div style="width:340px">
-                <select class="select" aria-label="Currency" data-i18n-aria-label="store-settings.field.currency">
-                  <option value="" data-i18n="store-settings.currency.choose">Choose currency</option>
-                  <option value="HKD">HKD · Hong Kong Dollar</option>
-                  <option value="TWD">TWD · New Taiwan Dollar</option>
-                  <option value="SGD">SGD · Singapore Dollar</option>
-                  <option value="USD">USD · US Dollar</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- F7 商品規格（spec 5.1.5.5 F7 / D171）：商店層級的尺寸表範本庫。
-               一個 panel 內兩個檢視互切——清單（F7.1）↔ 單一範本編輯（F7.2）。
-               不開次級 popup：本頁本身已經住在 e-shop 的 embed-modal iframe 裡，
-               再疊一層要付 postMessage 與 z-index 的協調成本，換不到好處。 -->
-          <div class="ss-tabpanel" role="tabpanel" data-ss-panel="specs" hidden>
 
             <!-- ── F7.1 範本清單 ───────────────────────────── -->
             <div data-spec-view="list">
@@ -410,24 +371,323 @@
               </div>
 
             </div>
+            </section>
+          </section>
+          <section class="settings-section" id="sec-codes" hidden>
+            <section class="card">
+
+
+              <p class="settings-row__hint" style="margin:2px 0 var(--sp-12)" data-i18n="store-settings.codes.intro">Fans type a code at checkout to get the discount. A partner code does the same, but credits the sale to whoever you gave it to.</p>
+
+              <div class="admin-table-wrap" data-code-table>
+                <table class="ztor-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="store-settings.codes.col.code">Code</th>
+                      <th data-i18n="store-settings.codes.col.discount">Discount</th>
+                      <th data-i18n="store-settings.codes.col.period">Period</th>
+                      <th data-i18n="store-settings.codes.col.status">Status</th>
+                      <th data-i18n="store-settings.codes.col.sold">Sold</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody data-code-rows>
+                    <tr data-code-kind="own">
+                      <td class="ztor-table__feature">
+                        <div class="ss-code-cell">
+                          <span class="ss-code-cell__code">SUMMER25</span>
+                          <span class="ss-code-cell__meta"><span data-i18n="store-settings.codes.type.own">Own</span></span>
+                        </div>
+                      </td>
+                      <td>25%</td>
+                      <td>7/1 – 8/31</td>
+                      <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
+                      <td>
+                        <div class="ss-code-sold">
+                          <span class="ss-code-sold__count">42 <span data-i18n="store-settings.codes.unit">sold</span></span>
+                          <span class="ss-code-sold__amount">$1,180</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="admin-table__actions">
+                          <details class="dropdown">
+                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.codes.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                            <div class="dropdown__menu" role="menu">
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.codes.edit">Edit</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.codes.duplicate">Duplicate</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="store-settings.codes.disable">Disable</span></button>
+                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-code-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.codes.delete">Delete</span></button>
+                            </div>
+                          </details>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr data-code-kind="partner">
+                      <td class="ztor-table__feature">
+                        <div class="ss-code-cell">
+                          <span class="ss-code-cell__code">AIKO10</span>
+                          <span class="ss-code-cell__meta"><span data-i18n="store-settings.codes.type.partner-with">Partner · Aiko</span></span>
+                        </div>
+                      </td>
+                      <td>10%</td>
+                      <td>8/1 – 9/30</td>
+                      <td><span class="badge badge--success" data-i18n="store-settings.codes.status.active">Active</span></td>
+                      <td>
+                        <div class="ss-code-sold">
+                          <span class="ss-code-sold__count">8 <span data-i18n="store-settings.codes.unit">sold</span></span>
+                          <span class="ss-code-sold__amount">$432</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="admin-table__actions">
+                          <details class="dropdown">
+                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.codes.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                            <div class="dropdown__menu" role="menu">
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.codes.edit">Edit</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.codes.duplicate">Duplicate</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="store-settings.codes.disable">Disable</span></button>
+                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-code-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.codes.delete">Delete</span></button>
+                            </div>
+                          </details>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr data-code-kind="own">
+                      <td class="ztor-table__feature">
+                        <div class="ss-code-cell">
+                          <span class="ss-code-cell__code">WELCOME</span>
+                          <span class="ss-code-cell__meta"><span data-i18n="store-settings.codes.type.own">Own</span></span>
+                        </div>
+                      </td>
+                      <td>$5</td>
+                      <td>9/1 –</td>
+                      <td><span class="badge badge--neutral" data-i18n="store-settings.codes.status.scheduled">Scheduled</span></td>
+                      <td><span class="text-sub">—</span></td>
+                      <td>
+                        <div class="admin-table__actions">
+                          <details class="dropdown">
+                            <summary class="btn btn--ghost btn--icon btn--sm" aria-label="More actions" data-i18n-aria-label="store-settings.codes.more"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>
+                            <div class="dropdown__menu" role="menu">
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-edit><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="store-settings.codes.edit">Edit</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-duplicate><i data-lucide="copy" class="ztor-icon"></i><span data-i18n="store-settings.codes.duplicate">Duplicate</span></button>
+                              <button class="dropdown__item" type="button" role="menuitem" data-code-disable><i data-lucide="ban" class="ztor-icon"></i><span data-i18n="store-settings.codes.disable">Disable</span></button>
+                              <button class="dropdown__item dropdown__item--danger" type="button" role="menuitem" data-code-delete><i data-lucide="trash-2" class="ztor-icon"></i><span data-i18n="store-settings.codes.delete">Delete</span></button>
+                            </div>
+                          </details>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="empty-card" data-code-empty hidden>
+                <div class="empty-card__icon"><i data-lucide="ticket-percent" class="ztor-icon"></i></div>
+                <h2 class="empty-card__title" data-i18n="store-settings.codes.empty.title">No codes yet</h2>
+                <p class="empty-card__text" data-i18n="store-settings.codes.empty.text">A code gives fans a reason to buy now, and lets someone else sell for you.</p>
+              </div>
+
+              <button class="btn btn--outline" type="button" style="margin-top:var(--sp-12)" data-code-new><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.codes.new">Add a code</span></button>
+            
+
+
+            </section>
+          </section>
+        </div>
+        </div>
+
+        <aside class="preview-col" aria-label="店面">
+          <div class="preview-col__head">
+            <h2 class="preview-col__title" data-i18n="store-settings.group.storefront">Storefront</h2>
+            <p class="preview-col__sub" data-i18n="store-settings.storefront.sub">What fans see. Swap the images, edit the words, right here.</p>
+          </div>
+<section class="card ss-identity-card">
+          <!-- 封面（cover 品牌素材） -->
+          <div class="ss-band__cover">
+            <button class="btn btn--outline btn--sm ss-band__cover-edit" type="button" aria-label="Change cover image" data-i18n-aria-label="store-settings.edit.cover"><i data-lucide="camera" class="ztor-icon"></i><span data-i18n="store-settings.brand.cover">Cover image</span></button>
+          </div>
+
+          <!-- 頭像 logo（logo 品牌素材）＋ 店名／網址 -->
+          <div class="ss-band__head">
+            <div class="ss-band__avatar">M
+              <button class="ss-band__avatar-edit btn btn--icon btn--sm" type="button" aria-label="Change logo" data-i18n-aria-label="store-settings.edit.logo"><i data-lucide="camera" class="ztor-icon"></i></button>
+            </div>
+            <div class="ss-band__namewrap">
+              <!-- 店名（就地編輯） -->
+              <div class="ss-edit ss-edit--name" data-ss-edit="text" data-value="My Fan Store">
+                <span class="ss-edit__read" role="button" tabindex="0">
+                  <span class="ss-edit__value" data-ss-value data-placeholder="Your shop name">My Fan Store</span>
+                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
+                </span>
+                <span class="ss-edit__form">
+                  <input class="input" type="text" aria-label="Shop name" data-i18n-aria-label="store-settings.edit.name" placeholder="e.g. Kowloon After Dark Studio" data-i18n-placeholder="ss.name.ph">
+                  <span class="ss-edit__actions">
+                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
+                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
+                  </span>
+                </span>
+              </div>
+              <!-- 商店網址（就地編輯 slug） -->
+              <div class="ss-edit ss-edit--url" data-ss-edit="text" data-value="creator-slug">
+                <span class="ss-edit__read" role="button" tabindex="0">
+                  <span class="ss-url__prefix">ztor.com/shop/</span><span class="ss-edit__value" data-ss-value data-placeholder="your-slug">creator-slug</span>
+                  <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
+                </span>
+                <span class="ss-edit__form">
+                  <span class="ss-url"><span class="ss-url__prefix">ztor.com/shop/</span><input class="input ss-url__input" type="text" aria-label="Shop URL slug" data-i18n-aria-label="store-settings.edit.url" placeholder="e.g. coastline-studio" data-i18n-placeholder="ss.slug.ph"></span>
+                  <span class="ss-edit__actions">
+                    <button class="btn btn--icon btn--sm" type="button" data-ss-ok aria-label="Save" data-i18n-aria-label="store-settings.edit.save"><i data-lucide="check" class="ztor-icon"></i></button>
+                    <button class="btn btn--icon btn--sm" type="button" data-ss-cancel aria-label="Cancel" data-i18n-aria-label="store-settings.cancel"><i data-lucide="x" class="ztor-icon"></i></button>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ss-band__body">
+            <!-- 商店簡介（就地編輯，200 字） -->
+            <div class="ss-edit ss-edit--bio" data-ss-edit="textarea" data-value="Independent musician shipping merch, vinyl, and digital drops.">
+              <span class="ss-edit__read" role="button" tabindex="0">
+                <span class="ss-edit__value" data-ss-value data-placeholder="Tell fans what your shop is about…">Independent musician shipping merch, vinyl, and digital drops.</span>
+                <span class="ss-edit__pencil" aria-hidden="true"><i data-lucide="pencil" class="ztor-icon"></i></span>
+              </span>
+              <span class="ss-edit__form">
+                <textarea class="textarea" maxlength="200" aria-label="Shop bio" data-i18n-aria-label="store-settings.edit.bio" data-ss-count-src placeholder="e.g. Records, prints and tour merch from the east coast." data-i18n-placeholder="ss.bio.ph"></textarea>
+                <span class="ss-edit__formrow">
+                  <span class="ss-edit__count" data-ss-count>0/200</span>
+                  <span class="ss-edit__actions">
+                    <button class="btn btn--outline btn--sm" type="button" data-ss-cancel data-i18n="store-settings.cancel">Cancel</button>
+                    <button class="btn btn--primary btn--sm" type="button" data-ss-ok data-i18n="store-settings.edit.save">Save</button>
+                  </span>
+                </span>
+              </span>
+            </div>
+
           </div>
         </section>
-
-      </div>
-
-      <!-- D067: popup submit zone — Save / Discard / See-as-fan (spec 5.1.5.5 F1 設定動作與預覽) -->
-      <div class="ss-actionbar">
-        <button class="btn btn--outline" type="button" data-ss-preview-open><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="store-settings.see-as-fan">See as fan</span></button>
-        <span class="ss-actionbar__spacer"></span>
-        <button class="btn btn--outline" type="button" data-store-settings-discard data-i18n="store-settings.discard">Discard</button>
-        <button class="btn btn--primary" type="button" data-store-settings-save data-i18n="store-settings.save">Save changes</button>
+        </aside>
       </div>
 
     </div>
   </main>
 </div>
 
-<!-- F1 粉絲視角預覽 · 畫面分割（reuses preview-panel split） -->
+
+<!-- 優惠碼編輯彈窗（spec 5.1.5.5 F8 / D183）：新增與編輯共用同一個彈窗。
+     自用與代理不再是兩顆新增鈕——它們差的只有「誰在賣」，在流程裡切即可（2026-08-11 使用者裁示）。
+     頁面改成獨立頁（D184）之後不再住在 iframe 裡，開彈窗不必再付疊層的代價。 -->
+<div class="payout-modal" id="ss-code-modal" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ss-code-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ss-code-modal-title" data-i18n="store-settings.codes.new">Add a code</h2>
+      <button class="btn btn--icon" type="button" data-code-close aria-label="Close" data-i18n-aria-label="store-settings.codes.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+              <!-- 代碼欄只放代碼本身（2026-08-11 使用者裁示）：說明那句拿掉——
+                   這一格是什麼，欄名已經講完了。旁邊一顆小複製鈕，發碼給人時直接複製走。 -->
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label"><span data-i18n="store-settings.codes.f.code">Code</span> <span class="field__req">*</span></div>
+                </div>
+                <div class="flex-row">
+                  <input class="input ss-code-partner" id="ss-code-code" value="AIKO10" placeholder="SUMMER25" data-i18n-placeholder="store-settings.codes.f.code.ph">
+                  <button class="btn btn--icon btn--sm" type="button" data-code-copy aria-label="Copy" title="Copy" data-i18n-aria-label="store-settings.codes.copy" data-i18n-title="store-settings.codes.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
+                </div>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.type">Type</div>
+                  <div class="settings-row__hint" data-code-type-hint data-i18n="store-settings.codes.type.own-sub">You hand it out yourself</div>
+                </div>
+                <div class="segmented" role="group" aria-label="Type" data-i18n-aria-label="store-settings.codes.f.type">
+                  <button class="segmented__btn segmented__btn--active" type="button" data-code-type="own" data-i18n="store-settings.codes.type.own">Own</button>
+                  <button class="segmented__btn" type="button" data-code-type="partner" data-i18n="store-settings.codes.type.partner">Partner</button>
+                </div>
+              </div>
+
+
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label"><span data-i18n="store-settings.codes.f.discount">Discount</span> <span class="field__req">*</span></div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.discount.hint">Off the item price, before shipping.</div>
+                </div>
+                <div class="flex-row">
+                  <div class="segmented" id="ss-code-unit" role="group" aria-label="Discount unit" data-i18n-aria-label="store-settings.codes.f.discount">
+                    <button class="segmented__btn segmented__btn--active" type="button" data-code-unit="pct">%</button>
+                    <button class="segmented__btn" type="button" data-code-unit="amount">$</button>
+                  </div>
+                  <input class="input ss-code-num" id="ss-code-discount" value="10" inputmode="decimal">
+                </div>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row__label" data-i18n="store-settings.codes.f.period">When it works</div>
+                  <div class="settings-row__hint" data-i18n="store-settings.codes.f.period.hint">Leave the end date empty to keep it open.</div>
+                </div>
+                <div class="flex-row">
+                  <input class="input ss-code-date" type="date" id="ss-code-start" aria-label="Starts" data-i18n-aria-label="store-settings.codes.f.starts">
+                  <span class="text-sub">–</span>
+                  <input class="input ss-code-date" type="date" id="ss-code-end" aria-label="Ends" data-i18n-aria-label="store-settings.codes.f.ends">
+                </div>
+              </div>
+
+              <!-- 代理碼專屬（一組碼綁一位推廣者，D183） -->
+              <div data-code-partner-only hidden>
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label" data-i18n="store-settings.codes.f.partner">Partner</div>
+                    <div class="settings-row__hint" data-i18n="store-settings.codes.f.partner.hint">One code, one person. Open another code to give it to someone else.</div>
+                  </div>
+                  <input class="input ss-code-partner" id="ss-code-partner" value="Aiko" placeholder="Search creators" data-i18n-placeholder="store-settings.codes.f.partner.ph">
+                </div>
+
+                <div class="settings-row">
+                  <div>
+                    <div class="settings-row__label" data-i18n="store-settings.codes.f.share">Their share</div>
+                    <div class="settings-row__hint" data-i18n="store-settings.codes.f.share.hint">Taken from what you earn, on the amount actually paid.</div>
+                  </div>
+                  <div class="flex-row">
+                    <input class="input ss-code-num" id="ss-code-share" value="10" inputmode="decimal">
+                    <span class="text-sub">%</span>
+                  </div>
+                </div>
+
+                <!-- F8.3 代理銷售紀錄：唯讀，金額引用收入管理口徑（本頁不重算） -->
+                <div class="ss-spec-block">
+                  <div class="settings-row__label" data-i18n="store-settings.codes.record.title">Sales through this code</div>
+                  <div class="settings-row__hint" style="margin-bottom:var(--sp-12)" data-i18n="store-settings.codes.record.hint">Figures follow Earnings. Paying partners out is not part of this release.</div>
+                  <div class="data-list ss-code-record">
+                    <div class="data-list__row">
+                      <div class="data-list__row-main">
+                        <div class="data-list__body">
+                          <div class="data-list__title">#10428 · 26MS Hoodie</div>
+                          <div class="data-list__meta">8/6 · <span data-i18n="store-settings.codes.record.share">Their cut</span> $5.40</div>
+                        </div>
+                      </div>
+                      <div class="data-list__amount">$54.00</div>
+                    </div>
+                    <div class="data-list__row">
+                      <div class="data-list__row-main">
+                        <div class="data-list__body">
+                          <div class="data-list__title">#10431 · Tour zine vol.02</div>
+                          <div class="data-list__meta">8/8 · <span data-i18n="store-settings.codes.record.share">Their cut</span> $2.16</div>
+                        </div>
+                      </div>
+                      <div class="data-list__amount">$21.60</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+    
+            </div>
+
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-code-close data-i18n="store-settings.codes.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-code-close data-i18n="store-settings.codes.savecode">Save code</button>
+    </div>
+  </section>
+</div>
+
 <div class="preview-panel preview-panel--inset" id="ss-preview">
   <div class="preview-panel__backdrop" data-ss-preview-close></div>
   <div class="preview-panel__sheet">
@@ -686,6 +946,116 @@
       paintEmpty();
     })();
 
+    /* ── F8 優惠碼（spec 5.1.5.5 F8 / D183）· demo 互動，無後端 ──────────
+       清單在頁面上，新增與編輯共用同一個彈窗。
+       自用與代理不再是兩顆新增鈕（2026-08-11 使用者裁示）——它們差的只有
+       「誰在賣」，所以合成一顆，型別在彈窗裡切；切到代理才長出推廣者、
+       分成與代理銷售紀錄三塊。
+       本頁改成獨立頁面（D184）之後不再住在 iframe 裡，開彈窗不必再付疊層成本。 */
+    (function discountCodes() {
+      const panel = document.querySelector('[data-ss-panel="codes"]') || document.getElementById('sec-codes');
+      const modal = document.getElementById('ss-code-modal');
+      if (!panel || !modal) return;
+
+      const table = panel.querySelector('[data-code-table]');
+      const empty = panel.querySelector('[data-code-empty]');
+      const rows = panel.querySelector('[data-code-rows]');
+      const paintEmpty = () => {
+        const none = !rows.children.length;
+        if (table) table.hidden = none;
+        if (empty) empty.hidden = !none;
+      };
+
+      const partnerOnly = modal.querySelector('[data-code-partner-only]');
+      const hint = modal.querySelector('[data-code-type-hint]');
+      const title = document.getElementById('ss-code-modal-title');
+      const T = k => (window.i18nT && window.i18nT(k)) || '';
+
+      function setKind(kind) {
+        const partner = kind === 'partner';
+        modal.querySelectorAll('[data-code-type]').forEach(b =>
+          b.classList.toggle('segmented__btn--active', b.dataset.codeType === kind));
+        if (partnerOnly) partnerOnly.hidden = !partner;
+        const hk = partner ? 'store-settings.codes.type.partner-sub' : 'store-settings.codes.type.own-sub';
+        if (hint) { hint.setAttribute('data-i18n', hk); hint.textContent = T(hk) || hint.textContent; }
+      }
+      function openModal(kind, titleKey) {
+        setKind(kind);
+        if (title) { title.setAttribute('data-i18n', titleKey); title.textContent = T(titleKey) || title.textContent; }
+        modal.hidden = false;
+        document.body.classList.add('is-modal-open');
+      }
+      function closeModal() { modal.hidden = true; document.body.classList.remove('is-modal-open'); }
+
+      document.addEventListener('click', e => {
+        const t = e.target;
+
+        if (t.closest('[data-code-new]')) { openModal('own', 'store-settings.codes.new'); return; }
+
+        const edit = t.closest('[data-code-edit]');
+        if (edit) { openModal(edit.closest('tr')?.dataset.codeKind || 'own', 'store-settings.codes.edit'); return; }
+
+        if (t.closest('[data-code-close]')) { closeModal(); return; }
+        if (t === modal) { closeModal(); return; }
+
+        const kind = t.closest('[data-code-type]');
+        if (kind) { setKind(kind.dataset.codeType); return; }
+
+        const unit = t.closest('[data-code-unit]');
+        if (unit) {
+          modal.querySelectorAll('[data-code-unit]').forEach(b =>
+            b.classList.toggle('segmented__btn--active', b === unit));
+          return;
+        }
+
+        const dup = t.closest('[data-code-duplicate]');
+        if (dup) {
+          const tr = dup.closest('tr');
+          const clone = tr.cloneNode(true);
+          clone.querySelector('.ss-code-cell__code').textContent += '-2';
+          clone.cells[4].textContent = '—';
+          tr.after(clone);
+          if (window.ztorIcons) window.ztorIcons.applyIcons(clone);
+          if (window.applyI18n) window.applyI18n(clone);
+          paintEmpty();
+          return;
+        }
+
+        /* 停用＝這組碼即刻停止受理，既有訂單與分成紀錄保留（規格 F8.1） */
+        const off = t.closest('[data-code-disable]');
+        if (off) {
+          const b = off.closest('tr').cells[3].querySelector('.badge');
+          b.className = 'badge badge--neutral';
+          b.setAttribute('data-i18n', 'store-settings.codes.status.disabled');
+          b.textContent = T('store-settings.codes.status.disabled') || 'Disabled';
+          return;
+        }
+
+        /* 複製代碼：拿到就能貼給對方。圖示短暫換打勾當回饋，不另外跳提示。 */
+        const copy = t.closest('[data-code-copy]');
+        if (copy) {
+          const inp = document.getElementById('ss-code-code');
+          if (inp) {
+            try { navigator.clipboard?.writeText(inp.value); } catch (err) {}
+            const ic = copy.querySelector('.ztor-icon');
+            if (ic && window.ztorIcons) {
+              copy.innerHTML = '<i data-lucide="check" class="ztor-icon"></i>';
+              window.ztorIcons.applyIcons(copy);
+              setTimeout(() => { copy.innerHTML = '<i data-lucide="copy" class="ztor-icon"></i>'; window.ztorIcons.applyIcons(copy); }, 1200);
+            }
+          }
+          return;
+        }
+
+        const del = t.closest('[data-code-delete]');
+        if (del) { del.closest('tr').remove(); paintEmpty(); return; }
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+      paintEmpty();
+    })();
+
+
     /* F1 See as fan 內容＝fan-store 元件（§6.7 同源，與 E-Shop F5 共用 partials/fan-store.js） */
     (function mountFanStore() {
       const host = document.querySelector('[data-fan-store-host]');
@@ -714,5 +1084,19 @@
 </script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script src="js/zselect.js?v=r2.2"></script>
+
+<script src="js/sidebar.js?v=r2.2"></script>
+<script>
+/* 設定群組切換（spec 5.1.5.5 頁面佈局 / D184）：主欄上方橫向分頁，一次處理其一 */
+document.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-sec]').forEach(x => {
+    const on = x === b;
+    x.classList.toggle('tabs__item--active', on);
+    x.setAttribute('aria-selected', String(on));
+  });
+  document.querySelectorAll('.settings-section').forEach(sec => { sec.hidden = sec.id !== 'sec-' + b.dataset.sec; });
+}));
+
+</script>
 </body>
 </html>

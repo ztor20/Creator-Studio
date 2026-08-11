@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[DEMO 提案] 表面階層系統 · Layer scale · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+
+<style>
+/* ============================================================
+   demo-layer-system.html · 提案 demo，不是正式頁面
+
+   目的：把 Figma node 856:27798 的「表面階層」模型落成可比較的畫面，
+   讓使用者裁決要不要把它收進 _tokens.css 變成全站規則。
+
+   ⚠ 本頁的 --layer-* 是**提案 token**，作用域只在 .lyr 這個容器內，
+     沒有寫進 ds-components/_tokens.css，站上其他 43 頁完全不受影響。
+     裁決通過後才 promote 進 foundation，並把 --nest-surface／
+     --shadow-nest-up 重新指向它們（值相同、視覺零變化）。
+
+   本頁自帶版面樣式（示範用的骨架，不是可重用元件），故不建 ds-components 檔。
+   ============================================================ */
+
+/* ── 提案 token：階層寫在名字裡 ─────────────────────────────
+   規則：層級＝相對深度，不是絕對顏色。
+   L2／L3 是「疊在父層上的效果」，同一組值疊在畫布或面板上都成立；
+   只有 L1 是絕對實色（它必須在任何底色上都長一樣）。 */
+.lyr {
+  --layer-0-surface: var(--surface-page);            /* 畫布：頁面底，最深 */
+  --layer-1-surface: var(--card);                    /* 實色面：卡、面板、rail */
+  --layer-2-surface: rgba(222, 223, 233, 0.04);      /* 薄膜：疊在 L1 或 L2 上，可再疊 */
+  --layer-3-surface: transparent;                    /* 只有框的分組，不再疊填色 */
+  --layer-line:      rgba(222, 223, 233, 0.08);      /* 疊層邊界：跟著父層走 */
+  --layer-lift:      0 -8px 8px rgba(0, 0, 0, 0.08); /* L2 貼齊母卡底緣時的向上分離陰影 */
+  --layer-2-edge:    0 0 0 0 rgba(0, 0, 0, 0);       /* 深色靠底色分層，L2 不需要額外邊界 */
+  --layer-radius:    var(--radius-xl);
+}
+/* 亮色版走另一條規則（2026-08-11 使用者裁示）：
+   主色是黑夜，白天版除了畫布與 L1 之外，其餘層一律留白，分層改由陰影與線框承擔。
+   理由——白底上再疊半透明灰膜只會把整張卡染灰，層數愈多愈髒；白色保持乾淨，
+   分離感交給陰影（浮起）與 hairline（分組）這兩個本來就更適合亮底的訊號。 */
+[data-theme="light"] .lyr {
+  --layer-2-surface: var(--card);                    /* 白，不疊灰膜 */
+  --layer-line:      rgba(16, 17, 20, 0.08);
+  --layer-lift:      0 -6px 8px rgba(0, 0, 0, 0.05);
+  --layer-2-edge:
+    0 1px 3px rgba(16, 17, 20, 0.08),
+    0 0 0 1px rgba(16, 17, 20, 0.05);
+}
+
+/* ── 層級的四支基礎 class ─────────────────────────────── */
+.lv0 { background: var(--layer-0-surface); }
+.lv1 { background: var(--layer-1-surface); border-radius: var(--layer-radius); }
+.lv2 { background: var(--layer-2-surface); border-radius: var(--layer-radius); box-shadow: var(--layer-2-edge); }
+.lv3 {
+  background: var(--layer-3-surface);
+  border: 1px solid var(--layer-line);
+  border-radius: var(--layer-radius);
+}
+/* L2 貼齊母層底緣（滿版出血）時才打向上陰影——這是既有 .nest 的行為 */
+.lv2--bleed { box-shadow: var(--layer-lift), var(--layer-2-edge); }
+
+/* ── 頁面骨架 ─────────────────────────────────────────── */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: 1.6;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-48) var(--sp-32) var(--sp-96); }
+
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-24); margin-bottom: var(--sp-40); }
+.top h1 { font-size: var(--fs-28); line-height: 1.25; margin: 0 0 var(--sp-8); letter-spacing: -0.01em; }
+.top p { margin: 0; color: var(--muted-foreground); max-width: 62ch; }
+.warn {
+  margin: var(--sp-20) 0 0;
+  padding: var(--sp-12) var(--sp-16);
+  border-left: 2px solid var(--primary);
+  background: var(--layer-2-surface);
+  color: var(--foreground-muted);
+  font-size: var(--fs-13);
+  max-width: 76ch;
+}
+
+section { margin-top: var(--sp-64); }
+h2 {
+  font-size: var(--fs-20);
+  margin: 0 0 var(--sp-8);
+  letter-spacing: -0.01em;
+}
+h2 .n { color: var(--muted-foreground); font-variant-numeric: tabular-nums; margin-right: var(--sp-10); font-weight: 400; }
+.lead { margin: 0 0 var(--sp-24); color: var(--muted-foreground); max-width: 72ch; }
+h3 { font-size: var(--fs-14); margin: var(--sp-32) 0 var(--sp-12); color: var(--foreground); }
+code, .mono { font-family: var(--font-mono); font-size: var(--fs-12); }
+
+.rules { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--sp-10); max-width: 78ch; }
+.rules li { padding-left: var(--sp-20); position: relative; color: var(--foreground-muted); }
+.rules li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+.rules b { color: var(--foreground); font-weight: 600; }
+
+/* ── 階梯總表 ─────────────────────────────────────────── */
+table.scale { width: 100%; border-collapse: collapse; font-size: var(--fs-13); }
+table.scale th, table.scale td { text-align: left; padding: var(--sp-12) var(--sp-14); border-bottom: 1px solid var(--border); vertical-align: top; }
+table.scale th { color: var(--muted-foreground); font-weight: 500; font-size: var(--fs-12); white-space: nowrap; }
+table.scale td.t { font-family: var(--font-mono); font-size: var(--fs-12); white-space: nowrap; }
+table.scale td.v { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--muted-foreground); white-space: nowrap; }
+.sw { display: inline-block; width: 44px; height: 24px; border-radius: var(--radius-sm); border: 1px solid var(--layer-line); vertical-align: middle; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ── Figma 復刻 ───────────────────────────────────────── */
+.study { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border-radius: var(--radius-lg); overflow: hidden; }
+.study__col { padding: var(--sp-32) var(--sp-24); display: grid; gap: var(--sp-32); align-content: start; }
+.study__cap { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0 0 var(--sp-4); }
+.study__cap b { display: block; color: var(--foreground); font-size: var(--fs-13); font-weight: 600; }
+.demo-card { padding: var(--sp-16); min-height: 110px; }
+.demo-card--tall { min-height: 0; padding-bottom: 0; overflow: hidden; }
+.demo-block { height: 46px; }
+.demo-input {
+  height: 30px;
+  background: var(--layer-2-surface);
+  border: 1px solid var(--layer-line);
+  border-radius: var(--layer-radius);
+}
+.nest-demo {
+  margin: var(--sp-16) calc(var(--sp-16) * -1) 0;
+  padding: var(--sp-16);
+  display: grid;
+  gap: var(--sp-12);
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  display: block;
+  margin-bottom: var(--sp-8);
+}
+.btnrow { display: flex; gap: var(--sp-10); }
+
+/* ── 對照兩欄 ─────────────────────────────────────────── */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-24); align-items: start; }
+.vs__head { font-size: var(--fs-13); font-weight: 600; margin: 0 0 var(--sp-4); }
+.vs__note { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0 0 var(--sp-12); min-height: 2.6em; }
+.stage { padding: var(--sp-24); background: var(--layer-0-surface); border-radius: var(--radius-lg); }
+
+/* 現行做法（對照組）——刻意直接寫現行 token，不走 --layer-* */
+.now-card { background: var(--card); border-radius: var(--radius-xl); padding: var(--sp-16); box-shadow: var(--shadow-card); overflow: hidden; }
+.now-nest { margin: var(--sp-16) calc(var(--sp-16) * -1) calc(var(--sp-16) * -1); padding: var(--sp-16); background: var(--nest-surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-nest-up); display: grid; gap: var(--sp-12); }
+.now-input { height: 30px; background: var(--input-surface); border: 1px solid var(--input); border-radius: var(--radius-lg); }
+.now-group { border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-12); display: grid; gap: var(--sp-10); }
+
+.field-label { font-size: var(--fs-12); color: var(--muted-foreground); display: block; margin-bottom: var(--sp-6); }
+
+/* ── 待裁決 ───────────────────────────────────────────── */
+.q { border-top: 1px solid var(--border); padding: var(--sp-20) 0; display: grid; grid-template-columns: 64px 1fr; gap: var(--sp-16); }
+.q__id { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--primary); padding-top: 2px; }
+.q__body p { margin: 0 0 var(--sp-8); }
+.q__body p:last-child { margin-bottom: 0; }
+.q__opt { color: var(--foreground-muted); font-size: var(--fs-13); }
+.q__opt b { color: var(--foreground); }
+.q__title { font-weight: 600; margin: 0 0 var(--sp-4); }
+.q__desc { color: var(--muted-foreground); font-size: var(--fs-13); margin: 0 0 var(--sp-16); max-width: 70ch; }
+.q__desc strong { color: var(--foreground); font-weight: 600; }
+.q__done { font-size: var(--fs-11); color: var(--status-success); font-weight: 500; }
+
+/* ── 選項並排 ─────────────────────────────────────────── */
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start; }
+.choice { display: grid; gap: var(--sp-10); }
+.choice__head { display: flex; align-items: center; gap: var(--sp-8); font-size: var(--fs-13); font-weight: 600; }
+.choice__key {
+  display: inline-grid; place-items: center;
+  width: 20px; height: 20px;
+  border-radius: var(--radius-sm);
+  background: var(--layer-2-surface);
+  border: 1px solid var(--layer-line);
+  font-family: var(--font-mono); font-size: var(--fs-11); font-weight: 500;
+  color: var(--muted-foreground);
+}
+.choice--rec .choice__key { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.choice__flag {
+  margin-left: auto;
+  font-size: var(--fs-11); font-weight: 400;
+  color: var(--muted-foreground);
+}
+.choice--rec .choice__flag { color: var(--primary); }
+.choice__stage {
+  padding: var(--sp-20);
+  background: var(--layer-0-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--layer-line);
+}
+.choice__note { margin: 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+.choice__note code, .choice__note .mono { color: var(--foreground-muted); }
+
+/* Q61：token 名字清單——重點在「名字能不能排出順序」，所以色票只是輔助 */
+.tklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-10); }
+.tklist li { display: flex; align-items: center; gap: var(--sp-10); font-family: var(--font-mono); font-size: var(--fs-12); }
+.tk-sw { width: 28px; height: 18px; border-radius: var(--radius-sm); border: 1px solid var(--layer-line); flex: none; }
+.tk-hint { color: var(--muted-foreground); font-size: var(--fs-11); }
+.tk-verdict { margin: var(--sp-16) 0 0; font-size: var(--fs-12); font-weight: 500; }
+.tk-verdict--ok { color: var(--status-success); }
+.tk-verdict--no { color: var(--muted-foreground); }
+
+/* Q62：固定亮色預覽——這一題裁的是亮色，夜間模式下也要看得到差別 */
+.lightbox {
+  --layer-0-surface: #FAFAFA;
+  --layer-1-surface: #FFFFFF;
+  --layer-2-surface: #FFFFFF;
+  --layer-3-surface: transparent;
+  --layer-line: rgba(16, 17, 20, 0.08);
+  --layer-lift: 0 -6px 8px rgba(0, 0, 0, 0.05);
+  --layer-2-edge:
+    0 1px 3px rgba(16, 17, 20, 0.08),
+    0 0 0 1px rgba(16, 17, 20, 0.05);
+  /* 預覽框自己的墨色——不覆寫 DS 的 --muted-foreground，
+     那是 Role 層 token，頁面重定義會讓 check_ds_sync 檢查 8 判為外洩。 */
+  --preview-ink: #6E6E68;
+  background: var(--layer-0-surface);
+}
+.lightbox .tag { color: var(--preview-ink); }
+.lightbox--film {
+  --layer-2-surface: rgba(16, 17, 20, 0.03);
+  --layer-2-edge: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+
+/* Q63：只換框線那一支 token，其餘完全相同 */
+.opt-border { --layer-line: var(--border); }
+
+/* Q64：遷移面積 */
+.bars { list-style: none; margin: 0 0 var(--sp-16); padding: 0; display: grid; gap: var(--sp-10); }
+.bars li { display: grid; grid-template-columns: 140px 1fr 56px; align-items: center; gap: var(--sp-12); }
+.bars__k { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--foreground-muted); }
+.bars__bar { height: 10px; border-radius: var(--radius-pill); background: var(--layer-2-surface); box-shadow: inset 0 0 0 1px var(--layer-line); position: relative; }
+.bars__bar::after {
+  content: ""; position: absolute; inset: 0 auto 0 0;
+  width: var(--w); border-radius: var(--radius-pill); background: var(--primary);
+}
+.bars__n { font-size: var(--fs-12); color: var(--muted-foreground); font-variant-numeric: tabular-nums; text-align: right; }
+
+@media (max-width: 900px) {
+  .study { grid-template-columns: 1fr; }
+  .vs { grid-template-columns: 1fr; }
+  .wrap { padding: var(--sp-32) var(--sp-20) var(--sp-64); }
+}
+</style>
+</head>
+
+<body class="lyr">
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>表面階層系統</h1>
+      <p>把「這一塊比它下面那一塊高一層」變成 token 讀得出來的規則。參照 Figma <code>856:27798</code>（layer0 / layer1 / layer2 / layer3）。</p>
+    </div>
+    <button class="btn btn--ghost" data-theme-toggle type="button">切換明暗</button>
+  </div>
+
+  <div class="warn">
+    這是提案 demo，不是正式頁面。本頁的 <code>--layer-*</code> 只作用在這一頁，還沒寫進 <code>ds-components/_tokens.css</code>，其他頁面完全不受影響。第 6 節列出要裁決的四題，裁完才 promote 進 foundation。
+  </div>
+
+  <!-- ══ 1 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">01</span>這套階層怎麼運作</h2>
+    <p class="lead">現在 DS 的表面是一串固定顏色（畫布、襯底、外殼、卡、hover），要知道某一塊是第幾層，得先記住那五個顏色誰比誰亮。這套改成級數寫在 token 名字裡，並且把「疊上去」做成相對效果。</p>
+    <ul class="rules">
+      <li><b>L0 畫布</b>是頁面底，只有一個，不能疊在別的東西上。</li>
+      <li><b>L1 實色面</b>是卡片與面板，值是絕對色——它必須在任何底色上都長成同一個顏色。</li>
+      <li><b>L2 疊層</b>是相對的一層：深色用半透明薄膜，疊在誰身上就跟著誰亮一階，同一個 token 疊在畫布上與疊在卡片上得到兩個不同顏色，但「高一層」的感覺一樣；亮色不疊色，留白靠陰影分開（見下一條）。</li>
+      <li><b>L3 只有框</b>，不再疊填色。填色最多疊到 L2；再疊下去顏色會愈來愈糊、也會把畫布的冷色調洗掉，所以第三層改用一道 hairline 表達。</li>
+      <li><b>亮色版走另一條規則</b>（2026-08-11 裁示）：主色是黑夜，白天版除了畫布與 L1 之外，其餘層一律留白，分層改由陰影與線框承擔。白底再疊灰膜只會把卡片染灰、層數愈多愈髒；白色保持乾淨，分離感交給陰影與 hairline。所以同一份 markup 在兩個主題下走的是同一組 token、不同的表達手法。</li>
+      <li>層級與陰影是兩件事：層級決定底色，陰影（既有的 E0–E4）決定離使用者多遠。深色只有「L2 貼齊母層底緣」會用到 <code>--layer-lift</code>；亮色的 L2 另外吃一道 <code>--layer-2-edge</code>，那是它唯一的分層訊號。</li>
+    </ul>
+  </section>
+
+  <!-- ══ 2 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">02</span>階梯總表</h2>
+    <p class="lead">合成色與對比是這一頁即時算出來的（換明暗會重算），不是寫死的數字。對比欄位是該層與它父層的亮度比。</p>
+    <table class="scale">
+      <thead>
+        <tr><th>級</th><th>Token</th><th>定義值</th><th>疊在</th><th>合成後</th><th>色票</th><th>與父層對比</th><th>用在哪</th></tr>
+      </thead>
+      <tbody id="scale-body"></tbody>
+    </table>
+  </section>
+
+  <!-- ══ 3 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">03</span>Figma 研究復刻</h2>
+    <p class="lead">左欄的父層是面板（L1），中右兩欄的父層是畫布（L0）。同一組 L2／L3 token，在兩種父層上都讀得出層次——這就是「相對」的意思。中欄放輸入框、右欄放按鈕，看控制項坐在不同層上的表現。</p>
+
+    <div class="study">
+      <!-- 左欄：父層＝面板 L1 -->
+      <div class="study__col lv1">
+        <p class="study__cap"><b>父層：面板 L1</b>卡片改用 L2 疊層</p>
+
+        <div class="lv3 demo-card"><span class="tag">L3 · 只有框</span></div>
+
+        <div class="lv2 demo-card">
+          <span class="tag">L2 · 疊層</span>
+          <div class="lv3 demo-block"></div>
+        </div>
+
+        <div class="lv2 demo-card demo-card--tall">
+          <span class="tag">L2 · 疊層</span>
+          <div class="demo-input"></div>
+          <div class="lv2 lv2--bleed nest-demo">
+            <span class="tag">L2 疊 L2</span>
+            <div class="demo-input"></div>
+            <div class="lv3" style="padding: var(--sp-12);">
+              <div class="demo-input"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中欄：父層＝畫布 L0，控制項用輸入框 -->
+      <div class="study__col lv0">
+        <p class="study__cap"><b>父層：畫布 L0</b>卡片用 L1 實色</p>
+
+        <div class="lv3 demo-card"><span class="tag">L3 · 只有框</span></div>
+
+        <div class="lv1 demo-card">
+          <span class="tag">L1 · 實色</span>
+          <div class="lv3 demo-block"></div>
+        </div>
+
+        <div class="lv1 demo-card demo-card--tall">
+          <span class="tag">L1 · 實色</span>
+          <div class="demo-input"></div>
+          <div class="lv2 lv2--bleed nest-demo">
+            <span class="tag">L2 疊 L1</span>
+            <div class="demo-input"></div>
+            <div class="lv3" style="padding: var(--sp-12);">
+              <div class="demo-input"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右欄：父層＝畫布 L0，控制項用按鈕 -->
+      <div class="study__col lv0">
+        <p class="study__cap"><b>父層：畫布 L0</b>控制項換成按鈕</p>
+
+        <div class="lv3 demo-card"><span class="tag">L3 · 只有框</span></div>
+
+        <div class="lv1 demo-card">
+          <span class="tag">L1 · 實色</span>
+        </div>
+
+        <div class="lv1 demo-card demo-card--tall">
+          <span class="tag">L1 · 實色</span>
+          <div class="btnrow">
+            <button class="btn btn--outline btn--sm" type="button">按鈕</button>
+            <button class="btn btn--primary btn--sm" type="button">按鈕</button>
+          </div>
+          <div class="lv2 lv2--bleed nest-demo">
+            <span class="tag">L2 疊 L1</span>
+            <div class="btnrow">
+              <button class="btn btn--outline btn--sm" type="button">按鈕</button>
+              <button class="btn btn--primary btn--sm" type="button">按鈕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">04</span>疊到第幾層停</h2>
+    <p class="lead">這一節講的是深色。薄膜可以連疊，但疊到第三層就會失效——顏色被洗白、層跟層之間的差距也小到讀不出來。下面把 L2 連疊四次攤開來看，右邊是建議的做法。（亮色沒有這個問題，因為它根本不疊填色；換到亮色會看到左右兩邊趨近一致，那正是「白色＋線框」的用意。）</p>
+
+    <div class="vs">
+      <div>
+        <p class="vs__head">連疊四層薄膜</p>
+        <p class="vs__note">第三層之後每一階的差距只剩個位數色階，跟旁邊的 hover 態幾乎撞色。</p>
+        <div class="stage">
+          <div class="lv1" style="padding: var(--sp-14);">
+            <span class="tag">L1</span>
+            <div class="lv2" style="padding: var(--sp-14);">
+              <span class="tag">L2</span>
+              <div class="lv2" style="padding: var(--sp-14);">
+                <span class="tag">L2 疊 L2</span>
+                <div class="lv2" style="padding: var(--sp-14);">
+                  <span class="tag">L2 疊 L2 疊 L2 — 已經讀不出來</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="vs__head">建議：填色兩層，之後改用框</p>
+        <p class="vs__note">L1 與 L2 用填色分開，再往下用 <code>--layer-line</code> 分組。層級一樣清楚，顏色不會愈疊愈糊。</p>
+        <div class="stage">
+          <div class="lv1" style="padding: var(--sp-14);">
+            <span class="tag">L1</span>
+            <div class="lv2" style="padding: var(--sp-14);">
+              <span class="tag">L2</span>
+              <div class="lv3" style="padding: var(--sp-14);">
+                <span class="tag">L3 · 只有框</span>
+                <div class="lv3" style="padding: var(--sp-14);">
+                  <span class="tag">L3 再一層 — 仍然讀得出來</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 5 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">05</span>真實情境：現行 vs 提案</h2>
+    <p class="lead">同一個「表單卡 ＋ 切換後長出來的巢狀設定」情境，左邊用現在站上的 token，右邊用提案的層級 token。深色模式下兩邊幾乎一樣——這是刻意的，提案沿用既有數值，改的是命名與適用範圍，不是把畫面推翻重做。差別看得出來的地方在框線與輸入框底。</p>
+
+    <div class="vs">
+      <div>
+        <p class="vs__head">現行</p>
+        <p class="vs__note"><code>--card</code> ＋ <code>--nest-surface</code> ＋ <code>--border</code> ＋ <code>--input-surface</code>。四支 token 名字看不出誰在誰上面，框線與輸入框底各自是獨立的實色。</p>
+        <div class="stage">
+          <div class="now-card">
+            <span class="field-label">商品名稱</span>
+            <div class="now-input"></div>
+            <div class="now-nest">
+              <span class="tag">切到「多選項」後長出來</span>
+              <div>
+                <span class="field-label">選項名稱</span>
+                <div class="now-input"></div>
+              </div>
+              <div class="now-group">
+                <span class="tag">尺寸表</span>
+                <div class="now-input"></div>
+                <div class="now-input"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="vs__head">提案</p>
+        <p class="vs__note"><code>--layer-1-surface</code> ＋ <code>--layer-2-surface</code> ＋ <code>--layer-line</code>。級數寫在名字裡；框線與輸入框底改成跟著父層走的相對值，所以整組搬到面板上也不用換 token。</p>
+        <div class="stage">
+          <div class="lv1 demo-card demo-card--tall" style="box-shadow: var(--shadow-card);">
+            <span class="field-label">商品名稱</span>
+            <div class="demo-input"></div>
+            <div class="lv2 lv2--bleed nest-demo" style="margin-bottom: 0;">
+              <span class="tag">切到「多選項」後長出來</span>
+              <div>
+                <span class="field-label">選項名稱</span>
+                <div class="demo-input"></div>
+              </div>
+              <div class="lv3" style="padding: var(--sp-12); display: grid; gap: var(--sp-10);">
+                <span class="tag">尺寸表</span>
+                <div class="demo-input"></div>
+                <div class="demo-input"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>提案 token ↔ 現行 token 對照</h3>
+    <table class="scale">
+      <thead>
+        <tr><th>提案</th><th>對應現行</th><th>深色值有變嗎</th><th>亮色值有變嗎</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="t">--layer-0-surface</td><td class="t">--surface-page</td>
+          <td>沒變，直接指向</td><td>沒變，直接指向</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-1-surface</td><td class="t">--card</td>
+          <td>沒變，直接指向</td><td>沒變，直接指向</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-2-surface</td><td class="t">--nest-surface</td>
+          <td>沒變（<code>rgba(222,223,233,.04)</code>，本來就照這張 Figma 定的）</td>
+          <td><b>有變</b>：現行 <code>transparent</code>（亮色沒有巢狀層次），提案改成 <code>var(--card)</code> 白底 ＋ 新增 <code>--layer-2-edge</code> 陰影分層</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-3-surface</td><td class="t">（無對應）</td>
+          <td>新增概念，值是 transparent</td><td>同左</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-line</td><td class="t">--border</td>
+          <td><b>有變</b>：現行實色 <code>#373839</code>，提案相對值 <code>rgba(222,223,233,.08)</code>，疊在卡上合成約 <code>#303133</code>，比現行淡一階</td>
+          <td><b>有變</b>：現行 <code>#EAEAEA</code>，提案合成後約 <code>#ECECEC</code>，幾乎同值</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-2-edge</td><td class="t">（無對應）</td>
+          <td>新增，深色為透明（深色靠底色分層，不需要）</td>
+          <td>新增，亮色的 L2 靠它分層：<code>0 1px 3px</code> 落影 ＋ 1px 環</td>
+        </tr>
+        <tr>
+          <td class="t">--layer-lift</td><td class="t">--shadow-nest-up</td>
+          <td>沒變，直接指向</td><td>沒變，直接指向</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 6 ══════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="n">06</span>要你裁決的四題</h2>
+    <p class="lead">這四題會決定 promote 進 <code>_tokens.css</code> 的時候長什麼樣。同題已登記在 <code>STYLE-DECISIONS.md</code>（Q61～Q64），裁完再動 foundation。</p>
+
+    <!-- ── Q61 命名 ── -->
+    <div class="q">
+      <div class="q__id">Q61</div>
+      <div class="q__body">
+        <p class="q__title">命名要用級數，還是沿用既有的 nest 語彙</p>
+        <p class="q__desc">同樣四個面，兩種命名。判準只有一句：<strong>遮住顏色只看名字，你能不能把它們由下往上排出順序</strong>。</p>
+
+        <div class="choices">
+          <div class="choice choice--rec">
+            <div class="choice__head"><span class="choice__key">A</span>級數寫在名字裡<span class="choice__flag">本頁示範中</span></div>
+            <div class="choice__stage">
+              <ul class="tklist">
+                <li><span class="tk-sw" data-sw="l0"></span><code>--layer-0-surface</code></li>
+                <li><span class="tk-sw" data-sw="l1"></span><code>--layer-1-surface</code></li>
+                <li><span class="tk-sw" data-sw="l2"></span><code>--layer-2-surface</code></li>
+                <li><span class="tk-sw" data-sw="l3"></span><code>--layer-line</code>　<span class="tk-hint">L3</span></li>
+              </ul>
+              <p class="tk-verdict tk-verdict--ok">名字自己排好順序</p>
+            </div>
+            <p class="choice__note">代價：既有 <code>--nest-surface</code>／<code>.nest</code> 要改成指向新名字，過渡期兩個名字並存。</p>
+          </div>
+
+          <div class="choice">
+            <div class="choice__head"><span class="choice__key">B</span>沿用現有名字，只補文件</div>
+            <div class="choice__stage">
+              <ul class="tklist">
+                <li><span class="tk-sw" data-sw="l0"></span><code>--surface-page</code></li>
+                <li><span class="tk-sw" data-sw="l1"></span><code>--card</code></li>
+                <li><span class="tk-sw" data-sw="l2"></span><code>--nest-surface</code></li>
+                <li><span class="tk-sw" data-sw="l3"></span><code>--border</code>　<span class="tk-hint">L3</span></li>
+              </ul>
+              <p class="tk-verdict tk-verdict--no">要背過才知道誰在誰上面</p>
+            </div>
+            <p class="choice__note">好處：不新增 token，維護面最小。代價：「從 token 看出層級」只存在文件裡。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Q62 亮色（已裁） ── -->
+    <div class="q">
+      <div class="q__id">Q62</div>
+      <div class="q__body">
+        <p class="q__title">亮色模式的 L2 怎麼分層　<span class="q__done">2026-08-11 已裁示</span></p>
+        <p class="q__desc">下面兩張都是<strong>固定亮色預覽</strong>（不跟頁面主題走），這樣在夜間模式下也看得到差別。</p>
+
+        <div class="choices">
+          <div class="choice choice--rec">
+            <div class="choice__head"><span class="choice__key">A</span>白色 ＋ 陰影／線框<span class="choice__flag">已採用</span></div>
+            <div class="choice__stage lightbox">
+              <div class="lv1 demo-card demo-card--tall">
+                <span class="tag">L1 白</span>
+                <div class="demo-input"></div>
+                <div class="lv2 lv2--bleed nest-demo" style="margin-bottom:0;">
+                  <span class="tag">L2 也是白，靠陰影浮出來</span>
+                  <div class="demo-input"></div>
+                  <div class="lv3" style="padding: var(--sp-12);">
+                    <span class="tag">L3 靠線框</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="choice__note">卡片保持乾淨，層數再多也不會愈疊愈灰。</p>
+          </div>
+
+          <div class="choice">
+            <div class="choice__head"><span class="choice__key">B</span>疊深色薄膜（作廢）</div>
+            <div class="choice__stage lightbox lightbox--film">
+              <div class="lv1 demo-card demo-card--tall">
+                <span class="tag">L1 白</span>
+                <div class="demo-input"></div>
+                <div class="lv2 lv2--bleed nest-demo" style="margin-bottom:0;">
+                  <span class="tag">L2 疊 3% 灰膜</span>
+                  <div class="demo-input"></div>
+                  <div class="lv3" style="padding: var(--sp-12);">
+                    <span class="tag">L3 靠線框</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="choice__note">跟深色同一套邏輯，但白底一疊就染灰，層數愈多愈髒。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Q63 hairline ── -->
+    <div class="q">
+      <div class="q__id">Q63</div>
+      <div class="q__body">
+        <p class="q__title">hairline 要改成相對值，還是維持現行 <code>--border</code></p>
+        <p class="q__desc">同一組卡片，只差框線那一支 token。差別很細，兩張並排才看得出來。</p>
+
+        <div class="choices">
+          <div class="choice">
+            <div class="choice__head"><span class="choice__key">A</span>相對值 <code>rgba(…,.08)</code><span class="choice__flag">本頁示範中</span></div>
+            <div class="choice__stage">
+              <div class="lv1 demo-card">
+                <span class="tag">L1 上的 L3 框</span>
+                <div class="lv3 demo-block"></div>
+              </div>
+              <div class="lv3 demo-card" style="margin-top: var(--sp-16);">
+                <span class="tag">畫布上的 L3 框</span>
+              </div>
+            </div>
+            <p class="choice__note">同一條線疊在畫布、卡、疊層上分離感一致。代價：合成後 <span class="mono" data-live="lineA"></span>，比現行淡一階，等於覆議你 7/26 挑定的 Q22。</p>
+          </div>
+
+          <div class="choice choice--rec">
+            <div class="choice__head"><span class="choice__key">B</span>指向現行 <code>--border</code><span class="choice__flag">我建議這個</span></div>
+            <div class="choice__stage">
+              <div class="opt-border">
+                <div class="lv1 demo-card">
+                  <span class="tag">L1 上的 L3 框</span>
+                  <div class="lv3 demo-block"></div>
+                </div>
+                <div class="lv3 demo-card" style="margin-top: var(--sp-16);">
+                  <span class="tag">畫布上的 L3 框</span>
+                </div>
+              </div>
+            </div>
+            <p class="choice__note">維持 <span class="mono" data-live="lineB"></span>——那個亮度是你從三個候選裡挑的，這一輪不順手推翻。只換名字進層級系統。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Q64 遷移範圍 ── -->
+    <div class="q">
+      <div class="q__id">Q64</div>
+      <div class="q__body">
+        <p class="q__title">要不要把既有元件遷到層級 token</p>
+        <p class="q__desc">本輪完全沒遷。下面是遷移的實際面積——每一條是「有幾支元件 CSS 在用這支 token」。</p>
+
+        <ul class="bars">
+          <li><span class="bars__k">--border</span><span class="bars__bar" style="--w: 100%"></span><span class="bars__n">78 支</span></li>
+          <li><span class="bars__k">--card</span><span class="bars__bar" style="--w: 85%"></span><span class="bars__n">66 支</span></li>
+          <li><span class="bars__k">--input-surface</span><span class="bars__bar" style="--w: 12%"></span><span class="bars__n">9 支</span></li>
+          <li><span class="bars__k">--surface-shell</span><span class="bars__bar" style="--w: 7%"></span><span class="bars__n">5 支</span></li>
+          <li><span class="bars__k">--surface-page</span><span class="bars__bar" style="--w: 7%"></span><span class="bars__n">5 支</span></li>
+          <li><span class="bars__k">--nest-surface</span><span class="bars__bar" style="--w: 2%"></span><span class="bars__n">1 支</span></li>
+        </ul>
+
+        <p class="choice__note">遷完才會真的收掉「三套層級語彙並存」（離散實色階、E0–E4 陰影階、nest 相對疊加）。決定 Q61 與 Q63 之後再排這件事。</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   階梯總表：即時算出每一層的合成色與對比
+
+   為什麼要算：L2／L3 是半透明的，CSS 只告訴你「疊多少」，不告訴你
+   「疊完是什麼顏色」。設計要判斷層次夠不夠讀，看的是合成後的實際色。
+   換明暗主題時整張表重算。
+   ============================================================ */
+(function () {
+  const root = document.querySelector('.lyr');
+
+  function readVar(name) {
+    return getComputedStyle(root).getPropertyValue(name).trim();
+  }
+
+  /* 把 CSS 顏色字串丟給瀏覽器解析成 rgba 陣列——比自己寫 parser 可靠，
+     hex、rgb()、rgba()、color-mix() 都吃得下。 */
+  const probe = document.createElement('span');
+  probe.style.display = 'none';
+  document.body.appendChild(probe);
+  function parse(color) {
+    probe.style.color = '';
+    probe.style.color = color;
+    const m = getComputedStyle(probe).color.match(/[\d.]+/g);
+    if (!m) return { r: 0, g: 0, b: 0, a: 0 };
+    return { r: +m[0], g: +m[1], b: +m[2], a: m[3] === undefined ? 1 : +m[3] };
+  }
+
+  /* 標準 source-over 合成：前景 alpha 疊在不透明背景上 */
+  function over(fg, bg) {
+    return {
+      r: fg.r * fg.a + bg.r * (1 - fg.a),
+      g: fg.g * fg.a + bg.g * (1 - fg.a),
+      b: fg.b * fg.a + bg.b * (1 - fg.a),
+      a: 1
+    };
+  }
+
+  function hex(c) {
+    const h = (n) => Math.round(n).toString(16).padStart(2, '0');
+    return ('#' + h(c.r) + h(c.g) + h(c.b)).toUpperCase();
+  }
+
+  function lum(c) {
+    const f = (v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  }
+
+  function ratio(a, b) {
+    const l1 = lum(a), l2 = lum(b);
+    return ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05));
+  }
+
+  function render() {
+    const l0 = parse(readVar('--layer-0-surface'));
+    const l1 = parse(readVar('--layer-1-surface'));
+    const filmRaw = readVar('--layer-2-surface');
+    const film = parse(filmRaw);
+    const lineRaw = readVar('--layer-line');
+    const line = parse(lineRaw);
+
+    const l2onL1 = over(film, l1);
+    const l2onL2 = over(film, l2onL1);
+    const lineOnL1 = over(line, l1);
+
+    const rows = [
+      {
+        lv: 'L0', token: '--layer-0-surface', def: readVar('--surface-page') || hex(l0),
+        on: '——', out: l0, cmp: null, use: '頁面畫布'
+      },
+      {
+        lv: 'L1', token: '--layer-1-surface', def: readVar('--card') || hex(l1),
+        on: 'L0', out: l1, cmp: l0, use: '卡片、面板、側欄'
+      },
+      {
+        lv: 'L2', token: '--layer-2-surface', def: filmRaw,
+        on: 'L1', out: l2onL1, cmp: l1, use: '卡片內疊上去的一層（現行 .nest）'
+      },
+      {
+        lv: 'L2²', token: '--layer-2-surface', def: filmRaw,
+        on: 'L2', out: l2onL2, cmp: l2onL1, use: '再疊一層（到此為止）'
+      },
+      {
+        lv: 'L3', token: '--layer-line', def: lineRaw,
+        on: 'L1', out: lineOnL1, cmp: l1, use: '不再疊填色，改用這條線分組'
+      }
+    ];
+
+    document.getElementById('scale-body').innerHTML = rows.map(function (r) {
+      /* 亮色的 L2 刻意與父層同色（白），分層交給 --layer-2-edge 的陰影。
+         這種情況印 1.00:1 會被誤讀成「層次失效」，改標實際的分層手法。 */
+      const same = r.cmp && hex(r.out) === hex(r.cmp);
+      const c = !r.cmp ? '——' : same ? '同色 · 靠陰影分層' : ratio(r.out, r.cmp).toFixed(2) + ' : 1';
+      return '<tr>' +
+        '<td class="mono">' + r.lv + '</td>' +
+        '<td class="t">' + r.token + '</td>' +
+        '<td class="v">' + r.def + '</td>' +
+        '<td class="v">' + r.on + '</td>' +
+        '<td class="v">' + hex(r.out) + '</td>' +
+        '<td><span class="sw" style="background:' + hex(r.out) + '"></span></td>' +
+        '<td class="v num">' + c + '</td>' +
+        '<td>' + r.use + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  /* ── Q61／Q63 的即時值 ──────────────────────────────
+     Q61 的色票用合成後的實際色（兩欄同色，因為兩種命名指的是同一批面——
+     這正是要說的重點：差別只在名字）。
+     Q63 印出兩個候選 hairline 疊在卡上的合成色，讓「淡一階」是可查的數字。 */
+  function renderChoices() {
+    const l0 = parse(readVar('--layer-0-surface'));
+    const l1 = parse(readVar('--layer-1-surface'));
+    const l2 = over(parse(readVar('--layer-2-surface')), l1);
+    const lineRel = over(parse(readVar('--layer-line')), l1);
+    const lineCur = over(parse(getComputedStyle(root).getPropertyValue('--border').trim()), l1);
+
+    const swatches = { l0: l0, l1: l1, l2: l2, l3: lineRel };
+    document.querySelectorAll('[data-sw]').forEach(function (el) {
+      el.style.background = hex(swatches[el.dataset.sw]);
+    });
+
+    const live = { lineA: hex(lineRel), lineB: hex(lineCur) };
+    document.querySelectorAll('[data-live]').forEach(function (el) {
+      el.textContent = live[el.dataset.live];
+    });
+  }
+
+  function renderAll() { render(); renderChoices(); }
+  renderAll();
+  document.addEventListener('ztor:theme-changed', renderAll);
+})();
+</script>
+</body>
+</html>

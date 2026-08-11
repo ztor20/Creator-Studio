@@ -58,6 +58,7 @@
 | Q50 | 填色按鈕的停用態：全站按 `opacity: 0.45` 調暗，主要按鈕因此變成「暗一點的品牌橘」 | **灰底灰字**：`.btn--primary` 與 `.btn--destructive`（非 ghost）停用時改吃 `--muted` 底、`--muted-foreground` 字、`--border` hairline，不再用 opacity 調暗；ghost／outline／soft 沒有實心品牌底，維持原本的 opacity 規則。hairline 是必要的——`--muted` 在深色主題與頁面底色很接近，沒有邊界按鈕會整個化進背景 | 2026-08-04 | 使用者裁示「這個 disable 的狀態應該用灰色的」＋「需要改元件」（不做頁面層覆寫）。理由：調暗的品牌色仍是品牌色，讀起來像另一種可按狀態；灰才是不可用。輸入框的 disabled 早就是 `--muted` 底＋弱化字，本題讓按鈕跟上同一套語彙 | ✅ 已執行 2026-08-04（`button.css`；實測深色 `rgb(22,23,24)` 底／亮色 `#FAFAFA` 底，啟用後回到 `rgb(255,163,63)`；受影響的消費頁：login、create-product／-bundle／-auction、creators、edit-event、payout-request-modal、pickup-session-modal）|
 | Q51 | 圖示風格：站上通用字符是描邊，登入頁 F1 那一格卻要跟四顆實心品牌標記並排 | **限登入頁 F1 方式卡改實心，其他地方一律維持描邊**：`login.html` F1 的「電子郵件」「手機號碼」兩張卡改用新增的 `mail-fill`／`smartphone-fill`（Tabler `filled/mail`／`filled/device-mobile`，MIT），既有的描邊 `mail`／`smartphone` **路徑不動**：`smartphone` 仍由 `settings.html` 的登入裝置列使用，`mail` 由 `partials/artist-picker.js` 引用（該元件目前零頁面載入、屬退場候選）。兩顆新字符的 `<g>` 從中心放大 1.14 倍，補上原圖比滿版品牌標記小一圈的差（信封 20×16、手機 14×20 對品牌標記的 24×24），讓六顆的光學大小接近。**這不是「站上可以開始用實心」的先例**——要在別處新增實心變體須另立題號 | 2026-08-04 | 使用者裁示「email phone icon 都換實心的」。理由：Apple／Google／Facebook／LINE 的品牌標記受各家商標規範綁定形狀，沒有描邊版可用；同一個 2 欄 grid 裡六張卡是同一個決定的六個答案，四顆實心配兩顆描邊會讓那兩顆看起來比較輕、像沒對齊。既然無法把品牌標記線條化，就讓另外兩顆下沉到同一個量級 | ✅ 已執行 2026-08-04（`js/icons.js` 新增兩顆；`login.html` F1 與 `design-system.html` §4.113 的 demo 卡同步換用；`design-system.md` §1.7 補「實心字符只給特定情境」段＋換庫對照表兩列；icon registry「使用中」清單同步）|
 | Q53 | 勾選框：站上有正規的 `.zcheck` 元件，但提款／捐贈確認、`manage-ip` 與 `register-ip` 的定價「請洽詢」共七處仍是裸的原生 checkbox，其中提款／捐贈那族還被一個灰底外框列包住 | **全站只有一種勾選框＝`.zcheck`，且確認類勾選不另加容器框**：`.payout-confirm`／`__box`／`__text`（`ds-components/payout-modal.css`）、`.mi-onreq`（`ds-components/manage-ip.css`）、`.ri-onreq`（`register-ip.html` 頁內 `<style>`）三族全數退場走墓碑，七處裸 checkbox 一律改成 `.zcheck` 的四層 markup（`__control` > `__input` + `__box`，外加 `__label`）。要與上一個區塊拉開距離時用既有的 `mt-8`／`mt-16` 工具類，**不為此新增變體**。`.zcheck` 之外站上僅存的原生 checkbox 是 `.switch`（開關，另一種控件，不在本題範圍）與 `checkbox.css` 檔尾那條 `accent-color` 安全網（兜底規則，不是 API） | 2026-08-06 | 使用者指著捐贈彈窗的確認列裁示「不需要有一個框框，我們的元件樣式應該沒有這樣？有的話請統一改掉」。理由：外框是把「這件事不可逆」再說一次，而那件事旁邊那顆停用的主要行動已經說過了；站上其餘每一個勾選都是「一個方框＋一句話」，沒有一個包在框裡。`.mi-onreq`／`.ri-onreq` 當初刻意把標籤壓成 `--fs-12`＋`--muted-foreground`「輕一階」，是為了讓一顆沒有樣式的系統勾選框旁的字不要太搶眼；換成正規元件後那個理由消失，標籤統一吃 `.zcheck__label`（`--fs-13`／`--foreground`） | ✅ 已執行 2026-08-06（三支 CSS 墓碑化；`earnings-sony.html`、`partials/payout-request-modal.js`、`design-system.html` demo、`manage-ip.html` ×3、`register-ip.html` ×3 全部改寫；六頁補掛 `ds-components/checkbox.css`；`design-system.md` §4.96 Checkbox／§4.29 Payout dialog 與 `design-system.html` 對應卡片同步，Checkbox 卡新增「確認閘門」整句標籤示範。實測：捐贈與提款兩個彈窗的確認閘門仍是勾了才啟用主要行動，`manage-ip` 勾選與金額欄間距維持 14px（`mt-8` 8＋`.field` gap 6），深淺主題各驗一次）|
+| Q65 | 區塊標題字級：Q21（2026-07-20）把 `.form-section__title` 由 18 壓到 14、與 `.field__label` 拉平，層級改由卡片邊界承擔。但一步之內有多張卡、卡內還有 `__subhead` 與欄位標籤時，三層字全是 14px | **`.form-section__title` `--fs-14`→`--fs-16`，部分推翻 Q21 第 1 點；全站套用、不做單頁特例**。`.form-section__subhead` 與 `.field__label` 維持 `--fs-14`——標題升上去之後，小標自然落在標題與欄位標籤之間，層級由「比標題小一階」＋上緣 hairline＋留白三者共同承擔（小標與欄位標籤仍同字級，靠 `--font-display` vs `--font-ui` 的字型差與 hairline 分辨）。**Q21 其餘四點不動**：`__sub` 11px 與色階、`field__hint` 色階、`kpi` 底色、頁寬變體 | 2026-08-11 | 使用者圈選建立活動的「活動形式」區塊標題裁示「這個層級的標題字都應該大一級」，經告知本項會推翻 Q21 且影響 21 個消費頁後，明確回覆「全站都要改，應該是從 DS 去改」。理由：Q21 的「靠卡片邊界承擔層級」在一張卡只有一組欄位時成立，但建立活動的場次那一步是三張卡、卡內還有小標與欄位標籤，掃過去分不出誰統轄誰——同一輪使用者已兩度回報「完全沒有階層」 | ✅ 已執行 2026-08-11（`form-section.css` 元件層一次生效；`design-system.md` Form section 條目與 `design-system.html` §4 小標卡同步；21 個消費頁抽驗 create-event／create-product／settings／earnings，深淺主題各一次，無換行破版或水平溢出）|
 
 ---
 
@@ -76,6 +77,25 @@
 > 完整改動清單見 `UI-CHANGES.md`（2026-07-13 條目）。
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
+
+### Q61～Q64：表面階層要不要收成一組帶級數的 token（2026-08-11 提出，待裁決）
+
+Figma `856:27798`（layer0／layer1／layer2／layer3）把「表面層級」畫成一個通用模型：L0 畫布實色、L1 卡片實色、L2 半透明薄膜（疊在誰身上就跟著誰亮一階、可再疊）、L3 不再疊填色只留 1px 邊框。站上目前有**三套各自管一段的層級語彙**並存，沒有一套是通用的：
+
+- 現況 A（離散實色階，Q15／Q42）：`--surface-page #0C0D0D` → `--muted #161718` → `--surface-shell`／`--sidebar #1C1D1E` → `--card #212223` → `--accent #2A2B2C`。管全站底色，但級數不在名字裡，要知道某塊是第幾層得先背五個顏色。
+- 現況 B（E0–E4 陰影階，`design-system.md:596-608`）：只管陰影強度，不管底色。
+- 現況 C（Nest 相對疊加，Q24）：`--nest-surface: rgba(222,223,233,.04)` ＋ `--shadow-nest-up`，值本來就是照這張 Figma 定的（`ds-components/_tokens.css:640-643` 註解直接寫「值與 Figma node 856:27796 相同」），但只服務 `.nest` 一個元件、只有一個消費頁。
+
+**提案 demo：`demo-layer-system.html`**（本輪產出，`--layer-*` 只在該頁作用域內，未進 `_tokens.css`，其他頁面零影響）。四題如下，裁完才動 foundation：
+
+- **Q61 命名**：**A** 新增 `--layer-0/1/2/3-surface`，級數寫在名字裡，看 token 就知道第幾層（代價：既有 `--nest-surface`／`.nest` 要改成指向新名字，過渡期兩個名字並存）；**B** 沿用 `--nest-surface`，只補文件說明它其實是通用的 L2（不新增 token，但「從 token 就看得出層級」只存在文件裡）。demo 示範 A。
+- **Q62 亮色的 L2**（**2026-08-11 使用者裁示，已在 demo 落地**）：主色是黑夜，白天版**除了畫布與 L1 之外，其餘層一律留白，分層改用陰影或線框**。落地做法——`--layer-2-surface` 在亮色指向 `var(--card)`（白），新增 `--layer-2-edge`（`0 1px 3px rgba(16,17,20,.08)` 落影 ＋ `0 0 0 1px rgba(16,17,20,.05)` 環）承擔分離感；深色的 `--layer-2-edge` 為透明（深色靠底色分層，不需要）。原先考慮的「疊深色薄膜 `rgba(16,17,20,.03)`」作廢：白底疊灰膜會把卡片染灰，層數愈多愈髒。
+- **Q63 hairline 要不要改成相對值**：**A** `--layer-line: rgba(222,223,233,.08)`，疊在卡上合成 ≈`#303133`，同一條線在任何父層上分離感一致（代價：比現行 `--border #373839` 淡一階，而該值是 2026-07-26 Q22 從三個候選裡挑定的，等於覆議）；**B** `--layer-line` 直接指向現行 `--border`，只換名字進層級系統。demo 示範 A。
+- **Q64 遷移範圍**：本輪完全沒遷。`--card` 有 66 支元件消費、`--border` 78 支，全站遷移是另一件工程，而遷完才會真的收掉「三套層級語彙並存」。等 Q61～Q63 裁完再排。
+
+建議：Q61 選 A（使用者本次的要求就是「從 token 就有區分」，B 達不到）、Q63 選 **B**（`--border` 的亮度是使用者自己從三個候選挑的，沒有理由在這一輪順手覆議；要改另開一題）。Q62 已裁示。裁決權在使用者。
+
+證據：`ds-components/_tokens.css:605-643`（現況 C 的 `--nest-surface` 與 `--card`／`--muted`／`--accent`／`--border`）、`ds-components/_tokens.css:657`（`--sidebar`）、`ds-components/_tokens.css:676-677`（`--surface-shell`／`--surface-page`，現況 A 的其餘兩階）、`ds-components/_tokens.css:744-746`（`--shadow-nest-up`）、`ds-components/nest.css:1-44`（現況 C 的元件與「只有兩層填色」的既有結論）、`design-system.md:596-608`（E0–E4）、`design-system.md:3975-3997`（§4.53 Nest）、`demo-layer-system.html`（提案 demo）。
 
 ### Q60：直式上傳圖的元件與排版（2026-08-09 提出，同日使用者裁決，全站落地）
 
@@ -146,7 +166,7 @@
 - 現況 A（`ds-components/radio-list.css`）：2026-07-21 建的「輕量單選列」，按鈕列＋JS 切換 active class，**沒有原生 `<input type="radio">`**，指示器是畫出來的圓點（已選 8px 實心橘）。
 - 現況 B（`.zradio*`，2026-08-09 隨建立活動正式化 promote 進 `ds-components/checkbox.css`）：真正的原生 radio 疊在畫出來的圓點下面，點擊、鍵盤、表單語意全部原生，只換視覺。做法與同檔的 `.zcheck` 完全一致（`__control` 16px、`__dot::after` 8px 都與 A 的數值相同）。
 - 選項：**A** 承認兩種語彙並存——`radio-list` 用於「選了就切換檢視」的輕量選單列、`zradio` 用於表單裡真的要送出的選項，把判準寫進 design-system Pillar 4；**B** `radio-list` 改成以 `zradio` 為底重寫，全站只留一套；**C** 反過來，`zradio` 退場改用 `radio-list`。
-- 建議：A。兩者的差別不是視覺而是語意（一個是檢視切換、一個是表單資料），視覺數值本來就已經一致。C 不可行——購票規則那些選項要進表單，需要原生語意。裁決權在使用者。
+- 建議：A。兩者的差別在語意（一個是檢視切換、一個是表單資料），視覺數值本來就已經一致。C 不可行——購票規則那些選項要進表單，需要原生語意。裁決權在使用者。
 
 證據：`ds-components/radio-list.css:78-79`（已選 8px 圓點）、`ds-components/checkbox.css` 的 `.zcheck` 與新增的 `.zradio` 段落。
 
