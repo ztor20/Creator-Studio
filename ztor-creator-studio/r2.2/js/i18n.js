@@ -1801,7 +1801,8 @@
     'store-settings.group.payment':  { en: 'Payment',                              zh: '收款' },
     'store-settings.group.shipping': { en: 'Shipping',                             zh: '出貨' },
     'store-settings.group.currency': { en: 'Currency',                            zh: '幣別' },
-    'store-settings.currency.hint':  { en: "Default display currency for your shop's pricing.", zh: '商店定價的預設顯示幣別。' },
+    /* 幣別鎖成唯讀（2026-08-13 使用者裁示）：說明只寫「為什麼不能點」，不解釋改的管道——上游未定 */
+    'store-settings.currency.hint':  { en: 'Set when the shop opens. Not editable here.', zh: '開店時設定，此處不可更改。' },
 
     /* F7 商品規格（spec 5.1.5.5 F7 / D171）— 尺寸表範本庫。
        標籤不重述「商品規格」（Q44）：分頁標題已經是脈絡。 */
@@ -1815,6 +1816,8 @@
     'store-settings.group.codes':      { en: 'Discount codes',   zh: '優惠碼' },
     /* F8 優惠碼（D183）：自用碼與代理碼；代理碼買家端行為相同，差別在成交歸屬與分成 */
     'store-settings.codes.intro':      { en: 'Fans type a code at checkout to get the discount. A partner code does the same, but credits the sale to whoever you gave it to.', zh: '粉絲結帳時輸入代碼就有折扣。代理碼對粉絲來說完全一樣，差別是這筆訂單會算給你把碼交出去的那個人。' },
+    /* Phase 1–3 沒有代理碼（D185），開場白只留折扣本身那句 */
+    'store-settings.codes.intro.base': { en: 'Fans type a code at checkout to get the discount.', zh: '粉絲結帳時輸入代碼就有折扣。' },
     'store-settings.codes.col.code':   { en: 'Code',             zh: '代碼' },
     'store-settings.codes.col.discount': { en: 'Discount',       zh: '折扣' },
     'store-settings.codes.col.period': { en: 'Period',           zh: '期間' },
@@ -1871,8 +1874,12 @@
     'store-settings.specs.duplicate':    { en: 'Duplicate',              zh: '複製' },
     'store-settings.specs.delete':       { en: 'Delete',                 zh: '刪除' },
     'store-settings.specs.new':          { en: 'Add size guide',         zh: '新增尺寸指南' },
-    'store-settings.specs.back':         { en: 'Back to list',           zh: '返回清單' },
-    'store-settings.specs.backlist':     { en: 'Back to list',           zh: '返回清單' },
+    /* 編輯器 2026-08-13 改成彈窗（D187）：清單↔編輯不再同頁互換，兩個「返回清單」按鈕隨之退場。
+       墓碑：'store-settings.specs.back'、'store-settings.specs.backlist'（返回清單）。 */
+    'store-settings.specs.modal.edit':   { en: 'Edit size guide',        zh: '編輯尺寸指南' },
+    'store-settings.specs.close':        { en: 'Close',                  zh: '關閉' },
+    'store-settings.specs.cancel':       { en: 'Cancel',                 zh: '取消' },
+    'store-settings.specs.save':         { en: 'Save guide',             zh: '儲存尺寸指南' },
     'store-settings.specs.empty.title':  { en: 'No size guides yet',     zh: '還沒有尺寸指南' },
     'store-settings.specs.empty.text':   { en: "Fans check measurements before they buy. One guide covers every item that shares a fit.", zh: '粉絲下單前會先對尺寸。同一種版型的商品共用一份指南就夠。' },
     'store-settings.specs.f.name':       { en: 'Name',                   zh: '名稱' },
@@ -1918,7 +1925,8 @@
     'store-settings.field.name.hint':{ en: 'Public name on your shop page.',        zh: '顯示於商店頁的公開名稱。' },
     'store-settings.field.currency': { en: 'Currency',                             zh: '幣別' },
     'store-settings.field.currency.hint': { en: 'Applies to shop pricing. Payout currency follows Earnings.', zh: '套用於商店定價；出款幣別以收入管理為準。' },
-    'store-settings.currency.choose':{ en: 'Choose currency',                      zh: '選擇幣別' },
+    /* 墓碑：'store-settings.currency.choose'（選擇幣別）——幣別 2026-08-13 鎖成唯讀後無空選項可選，
+       key 隨之退場；之後開放自選時把它加回來。 */
     'store-settings.field.bio':      { en: 'Shop bio',                             zh: '商店簡介' },
     'store-settings.field.bio.ph':   { en: 'Tell fans what your shop is about…',   zh: '介紹你的商店…' },
     'store-settings.field.bio.hint': { en: 'Up to 200 characters. Shown on your public shop page.', zh: '上限 200 字元，顯示於公開商店頁。' },
@@ -2462,7 +2470,7 @@
     'events.h1':               { en: 'Events',                              zh: '活動' },
     'events.crumb.self':       { en: 'Events',                              zh: '活動' },
     'events.sub':              { en: 'Concerts, listening parties, online sessions — ticketed and free.', zh: '演唱會、聆聽會、線上活動——售票與免費皆可。' },
-    'events.btn.new':          { en: '+ New event',                        zh: '＋ 新增活動' },
+    'events.btn.new':          { en: '+ Create event',                     zh: '＋ 建立活動' },
     'events.btn.more':         { en: 'More create options',                 zh: '更多建立選項' },
     'events.btn.new-event':    { en: 'Create event',                        zh: '建立活動' },
     'events.btn.legacy-event': { en: 'Create event (old flow)',             zh: '建立活動（舊版流程）' },
@@ -4341,6 +4349,11 @@
     'cpp.bd.remove.long':   { en: 'Remove this bundle',               zh: '移除這個套組' },
     'cpp.bd.price.tag':     { en: 'Bundle price',                     zh: '套組價' },
     'cpp.bd.name':          { en: 'Bundle name',                      zh: '套組名稱' },
+    /* 活動變體的名稱欄坐在「新增捆綁包」彈窗裡，主詞標題已經說了（鐵律 12）。 */
+    'cpp.bd.name.ev':       { en: 'Name',                             zh: '名稱' },
+    'cpp.bd.add.ev':        { en: 'Add a bundle',                     zh: '新增捆綁包' },
+    'cpp.bd.edit.ev':       { en: 'Edit bundle',                      zh: '編輯捆綁包' },
+    'cpp.bd.close':         { en: 'Close',                            zh: '關閉' },
     'cpp.bd.name.ph':       { en: 'e.g. Early Bird',                  zh: '例：早鳥支持' },
 
     /* 預購版文案（2026-08-03 D166 後續裁決）：模組在 shares:false 時優先讀 `.pre`。
@@ -4365,7 +4378,7 @@
        所以這幾條只在建立活動的套組分頁出現。 */
     /* 活動變體的字彙（`.ev`）：只覆寫講法真的不同的那兩條——套組本身的名稱、商品、
        權益在三個變體都一樣，會說錯話的是「誰買、買到什麼」這件事。 */
-    'cpp.bd.desc.ev':       { en: 'What buyers get, in one line',     zh: '一句話說明買這組拿到什麼' },
+    'cpp.bd.desc.ev':       { en: 'Short description', zh: '簡短說明' },
     'cpp.bd.desc.ph.ev':    { en: 'e.g. VIP ticket + limited tee + pre-show meet',
                               zh: '例：VIP 票＋限定 T 恤＋演出前見面會' },
     'cpp.bd.cover':         { en: 'Cover',                           zh: '封面圖' },
@@ -4382,6 +4395,43 @@
     'cpp.bd.work.meta.noprice': { en: 'No unit price yet',           zh: '還沒有單位價格' },
     'cpp.bd.n.copy':        { en: 'copy',                            zh: '份作品' },
     'cpp.bd.n.copies':      { en: 'copies',                          zh: '份作品' },
+    'cpp.bd.n.ticket':      { en: 'ticket', zh: '張票券' },
+    'cpp.bd.n.tickets':     { en: 'tickets', zh: '張票券' },
+    /* ── 分段版型（活動套組，2026-08-13）─────────────────────────────────
+       三段的順序＝內容 → 定價 → 包裝。段標題只說「這一段在決定什麼」，
+       不重述「捆綁包」——區塊標題已經寫了。 */
+    'cpp.bd.sec.what':      { en: 'Contents', zh: '內容' },
+    'cpp.bd.sec.sell':      { en: 'Pricing', zh: '販售設定' },
+    'cpp.bd.sec.sell.sub':  { en: 'Only the discount is yours to set.',
+                              zh: '價格由內容合計，僅折扣需設定' },
+    'cpp.bd.sec.show':      { en: 'Presentation', zh: '呈現方式' },
+    'cpp.bd.sec.show.sub':  { en: 'What fans see',                    zh: '粉絲端顯示的內容' },
+    /* 多場活動才問：這一組是跨場通用，還是每一場各出一組。 */
+    'cpp.bd.scope.shared':  { en: 'Shared across all dates', zh: '全場次共用一組' },
+    'cpp.bd.scope.per':     { en: 'One per date', zh: '每場次各一組' },
+    'cpp.bd.scope.per.hint':{ en: 'One per date — {names} — each tied to that date’s own ticket, so they can be priced separately.',
+                              zh: '{names} 各建立一組，分別對應該場次的票券，可個別調整售價。' },
+    'cpp.bd.pick.all':      { en: 'Select across dates', zh: '跨場次選取' },
+    'cpp.bd.pick.kind':     { en: 'Tier', zh: '票種' },
+    'cpp.bd.pick.done':     { en: 'Done selecting', zh: '完成選擇' },
+    'cpp.bd.pick.edit':     { en: 'Change', zh: '變更' },
+    'cpp.bd.grp.all':       { en: 'Select this date', zh: '全選本場次' },
+    'cpp.bd.chosen.all':    { en: 'all dates', zh: '全場次' },
+    'cpp.bd.tickets.qty':   { en: '{n} left',                        zh: '共 {n} 張' },
+    /* 扣庫存的說法：這一組賣掉一份，錢從哪一張票的張數裡扣。多選時扣的是粉絲挑的那張。 */
+    'cpp.bd.deduct.one':    { en: 'Selling one deducts a ticket from this tier.',
+                              zh: '售出一組時，自該票券扣除一張。' },
+    'cpp.bd.deduct.many':   { en: 'Selling one deducts a ticket from the tier the fan selects.',
+                              zh: '售出一組時，自粉絲所選的票券扣除一張。' },
+    'cpp.bd.calc.base':     { en: 'Full price', zh: '原價合計' },
+    'cpp.bd.calc.final':    { en: 'Fans pay', zh: '粉絲實付' },
+    'cpp.bd.cap.hint.ev':   { en: 'Leave blank to cap at the ticket count.',
+                              zh: '留空則以票券張數為上限' },
+    'cpp.bd.suggest':       { en: 'Apply “{n}”', zh: '套用建議名稱「{n}」' },
+    'cpp.bd.done':          { en: 'Done',                            zh: '完成' },
+    'cpp.bd.next':          { en: 'Next',                            zh: '下一步' },
+    'cpp.bd.back':          { en: 'Back',                            zh: '上一步' },
+    'cpp.bd.createn':       { en: 'Create {n} bundles',              zh: '建立 {n} 組' },
     'cpp.bd.units':         { en: 'Copies of the work included',     zh: '含作品份數' },
     'cpp.bd.units.hint':    { en: 'A two-person plan takes 2. Minimum 1.',
                               zh: '一次給兩份的方案（例如雙人票）填 2；最少 1。' },
@@ -4481,7 +4531,7 @@
     'cpp.bd.item.draft':    { en: 'Draft product',                    zh: '草稿商品' },
     'cpp.bd.perks':         { en: 'Perks',                            zh: '額外權益' },
     'cpp.bd.perks.sub':     { en: '· things with no SKU, like a Discord role or a credit',
-                              zh: '· 沒有商品編號的東西，例如 Discord 身分組或感謝名單' },
+                              zh: '· 無商品編號的項目，例如 Discord 身分組或感謝名單' },
     'cpp.bd.perk.ph':       { en: 'e.g. Exclusive Discord access',    zh: '例：專屬 Discord 權限' },
     'cpp.bd.perk.add':      { en: '+ Add perk',                      zh: '＋ 新增權益' },
     'cpp.bd.perk.remove':   { en: 'Remove perk',                      zh: '移除權益' },
@@ -7044,7 +7094,7 @@
     'e-shop.preview.empty.text':    { en: 'Once you add and publish a product, fans see it here.', zh: '上架並發布商品後，粉絲會在這裡看到。' },
     'events.empty.account.title':   { en: 'No events yet', zh: '尚無活動' },
     'events.empty.account.text':    { en: 'Create your first event to start selling tickets, managing guest lists, and tracking revenue.', zh: '建立第一個活動，開始售票、管理名單與追蹤收入。' },
-    'events.empty.account.cta':     { en: '+ New event', zh: '＋ 新增活動' },
+    'events.empty.account.cta':     { en: '+ Create event', zh: '＋ 建立活動' },
     'fans.empty.account.title':     { en: 'No fans yet', zh: '尚無粉絲' },
     'fans.empty.account.text':      { en: "Share a project or open your shop to start drawing in your first fans — they'll show up here ranked by value.", zh: '分享項目或開店，吸引你的第一批粉絲——他們會依價值排序顯示在這裡。' },
     'fans.empty.account.cta':       { en: 'Create a project', zh: '建立項目' },

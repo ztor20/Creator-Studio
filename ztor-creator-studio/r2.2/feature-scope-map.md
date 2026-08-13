@@ -51,13 +51,21 @@ cheat code（Alt＋右鍵開啟）的「版本」切換讀這張表生成選項�
 
 **登入頁的自助註冊入口：已整段移除，待註冊規格補齊後再議（2026-08-04 使用者裁示）**。原本的登記是：規格 5.1.10 要求自助註冊入口 phase 1–3 完全不出現，上表三個 tier（🟢 Phase 1／🔵 Next／⚪ TBD）沒有一個能表達（⚪ TBD 在 Phase 3 就看得到），所以沿用保留 gate `data-feat="full"` 掛在 `login.html` F1 方式選擇底下的「還沒有帳號？註冊」那一列。**現況**：使用者裁示直接整段拿掉那一列，原型任何版本都不出現註冊入口，因此**本表不再登記任何 `full` gate 給註冊**——沒有對應元素的閘門只會誤導後續 session。等自助註冊真的要做時，連同上游規格一起補，再決定要用哪個閘門。`login.html` 整頁**不掛** `data-page-feat`、也不進 `js/devtools.js` 與 `js/sidebar.js` 的 `FULL_ROUTES` 清單——登入本身是 phase 1 能力（D170），各版本都要進得去。
 
+**取貨管理三頁的頁級閘門（2026-08-11 修）**：`pickup.html`／`pickup-detail.html`／`scanner.html` 的 `data-page-feat` 原本停在 `full`，但 D157 已在 2026-07-30 把 O24–O30 併入 Phase 1，`sidebar.js` 與 `devtools.js` 的 `FULL_ROUTES` 當時也同步移除了這三頁。結果是 Phase 1 側欄看得到「取貨管理」、點下去卻被頁級閘門導回 E-Shop。三頁改標各自的功能編號（O24／O27／O29）後恢復正常。**教訓**：把一個模組併進低 tier 時，要同時掃三處——功能表的 Tier 欄、兩份 `FULL_ROUTES`、以及該模組每一頁的 `data-page-feat`。
+
+**商店設定的 S05／S06 閘門在改版時掉了（2026-08-13 修）**：D184 把商店設定從彈窗改成獨立頁時，分區容器由 `[data-ss-panel]` 換成 `#sec-*`，重寫的 markup 沒把原本掛在付款與出貨上的 `data-feat="S05"`／`"S06"` 帶過去，Phase 1 因此看得到收款分頁與出貨預設卡。已補回三處：收款分頁（`[data-sec="payment"]`）、`#sec-payment` 整區、`#sec-selling` 裡的出貨那張卡（幣別那張不屬 S06，留著）。同一次改版還把 F7 商品規格的互動 JS 打斷了（它查的還是舊的 `[data-ss-panel="specs"]`，整段被開頭的 early return 擋掉、按鈕全部沒反應），一併改用 `#sec-specs`。**教訓**：換容器選擇器是全頁性的改動，要連 `data-feat` 閘門與所有靠選擇器綁事件的 JS 一起掃，不能只看畫面長得對不對。
+
+**粉絲分級欄只在 Phase 4（2026-08-13 使用者裁示 / D187）**：電子商店商品清單與組合清單的「粉絲分級」欄（誰買得到）Phase 1–3 不出現。這一欄沒有規格出處（PG-021，2026-07-29 直接在原型上長出來的），所以歸「scope 未列」、走保留 gate `data-feat="full"`；欄頭與每一格另外標 `data-col="tier"`，`product-list.css` 用 `:has([data-col="tier"].ztd-ver-hidden)` 換掉整條欄寬——格線是固定軌數，只把格子藏起來會讓後面每一欄往左錯一格。
+
+**代理優惠碼只在 Phase 4（2026-08-13 使用者裁示 / D185）**：商店設定的優惠碼分頁（S51）各版本都有，但「代理」這一支——彈窗裡的型別切換整列、推廣者與分成欄位、代理銷售紀錄，以及清單裡的代理碼示範列——Phase 1–3 都不出現。三個 tier 沒有一個能表達「只在 Phase 4」，所以沿用保留 gate `data-feat="full"`（同註冊入口那次的做法）。分頁開場白因此做成 `data-feat="full"`／`data-feat-off="full"` 成對：full 版講兩種碼的差別，低版本只講折扣本身；清單裡「自用」那個 meta 標籤也一起收起來——沒有第二種碼時，標它是自用只是廢話。彈窗預設就是以自用開場（`openModal('own', …)`），所以切換列藏掉不影響行為。
+
 **data-feat 標註現況（2026-07-14 全面切割）**：S05/S06 商店設定付款·出貨、S11 拍賣入口/頁級、S24 專案引用卡、S45 組合限量、O04/O09 退款爭議 KPI·篩選、O17/O18/O22/O23 訂單詳情升級功能、E08/E09/E13–E18/E20/E22/E23/E24 收入與提款功能皆有 gate。scope 未列的產品頁以 `data-page-feat="full"` 限為 Phase 4；跨頁連結在低版本隱藏。S31.1 保持 `data-feat`／`data-feat-off` 成對切換。
 
 ---
 
 ## S · 商店管理 — Shop Management
 
-ID 起始 `S01…` ｜ 🟢 45 · 🔵 2 · ⚪ 3
+ID 起始 `S01…` ｜ 🟢 46 · 🔵 2 · ⚪ 3
 
 | ID    | 功能                              | English                                          | Tier       | Build    | 備註                                                        |
 | ----- | ------------------------------- | ------------------------------------------------ | ---------- | -------- | --------------------------------------------------------- |
@@ -118,6 +126,7 @@ ID 起始 `S01…` ｜ 🟢 45 · 🔵 2 · ⚪ 3
 | `S48` | 　　銷售摘要                          | Sales summary                                    | 🟢 Phase 1 | ✅ built  | reads from Earnings                                       |
 | `S49` | 　　庫存與成員影響（= 最少成員）               | Stock = min(member)                              | 🟢 Phase 1 | ✅ built  |                                                           |
 | `S50` | 　　以粉絲身份預覽                       | See-as-fan preview                               | 🟢 Phase 1 | ✅ built  |                                                           |
+| `S51` | 　商店優惠碼（清單／新增／編輯／期間／停用）           | Store discount codes                             | 🟢 Phase 1 | ✅ built  | D183。自用碼各版本皆有；代理碼（推廣者／分成／代理銷售紀錄）只在 Phase 4，走保留 gate `full`（D185） |
 
 ## O · 訂單管理 — Order Management
 

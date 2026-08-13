@@ -315,7 +315,20 @@
    樣子會讓人以為那是設定不是內容。勾選框留著（一組可以賣給多種票的持有者，仍是複選），
    只是移到列首、與縮圖並排。
    墓碑：`.bd-tickets` 容器與 `.bd-ticket__name`／`__price` 已無消費者，隨本輪移除。 */
-.bd-ticket { cursor: pointer; }
+/* 票券列比商品列多了列首的勾選框，欄位樣板必須跟著多一欄（2026-08-13 修）。
+   `.fc-ref` 的 `44px minmax(0,1fr) auto` 是為「縮圖／文字／移除鈕」寫的三欄；票券列丟進去
+   會錯位一格——勾選框佔掉縮圖那 44px、票券縮圖被拉去撐滿中間那欄、名稱與價格被擠進
+   最右邊的 auto 欄，畫面上就是「左邊一個勾、中間一個孤零零的票券圖示、右邊一團貼邊的字」。
+   票券列沒有移除鈕（要不要含這張票靠勾選框），所以是「勾選框／縮圖／文字」三欄。 */
+.bd-ticket { grid-template-columns: auto 44px minmax(0, 1fr); cursor: pointer; }
+/* 分隔線要落在兩列的正中間（2026-08-13 修）。`.fc-ref` 的節奏是「上下各 8px 內距＋列底一條線」，
+   前提是外層不再插空隙；但票券列是 `.field` 的直接子元素，而 `.field` 是 `flex` ＋ `gap: 6px`，
+   那 6px 會加在分隔線**之後**——線於是距上一列 8px、距下一列 14px，一整排看下來每條線都偏上。
+   這一段把 gap 收成 0，節奏交還給列自己的內距；整排的頭尾再各給一段真正的間距，
+   否則六列會直接黏上「適用票種」標籤與底下的說明，讀起來是一整塊、不是一份清單。 */
+.field:has(> .bd-ticket) { gap: 0; }
+.bd-ticket:first-of-type { margin-top: var(--sp-8); }
+.bd-ticket:last-of-type { margin-bottom: var(--sp-8); }
 .bd-ticket:hover { background: var(--accent); }
 /* 勾到的那一列給一條左緣色線——一排長得一樣的引用列裡，只靠一個小勾看不出選了幾張。 */
 .bd-ticket--on { box-shadow: inset 2px 0 0 var(--primary); }
@@ -330,3 +343,157 @@
 .fc-ref--placeholder .fc-ref__name { color: var(--muted-foreground); }
 /* 封面圖只佔一格、不撐滿整張卡——它是這一組的辨識用縮圖，不是主視覺。 */
 .fc-bundle [data-bd-cover] { max-width: 160px; }
+
+/* ══ 分段版型（`layout: 'sections'`，2026-08-13）══════════════════════════════
+   活動變體專用的卡片版型，源自 `docs/bundle-step-demo.html` 的探索、使用者裁決採用。
+   募資兩個消費頁（create-project／project-detail）不傳 `layout`，完全不受影響。
+
+   為什麼要另一種版型而不是調欄位順序：預設版型的欄位序是名稱＊ → 說明 → 封面圖 →
+   內容 → 數量 → 權益 → 定價，等於要創作者先替一個還沒有內容的盒子取名字、上傳封面。
+   活動套組腦中的句子是「VIP 票 ＋ 巡演 T 恤，賣 4,800」——先有內容，才有名字與價格。
+   分段版型把順序倒過來：① 這一組賣什麼 → ② 怎麼賣 → ③ 怎麼呈現，名稱移到最後、
+   並從內容自動擬一個建議名。
+
+   實測（三場 × 兩票種）：預設版型一張空卡 1,464px、視窗只有 944px；分段版型收合挑選器
+   後 1,087px，且不再隨場次數膨脹（挑選器選完就收成 chip）。 */
+
+/* ── 收合列：已存在的一組 ────────────────────────────────────────────────
+   一組捆綁包平常只需要回答三件事：叫什麼、裡面有什麼、賣多少。其餘欄位是編輯當下
+   才要看的東西，點開才給。整列是按鈕（滑鼠不必瞄準小連結）。 */
+.bd-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--sp-14);
+  width: 100%;
+  padding: var(--sp-12) var(--sp-14);
+  margin-bottom: var(--sp-10);
+  text-align: left;
+  cursor: pointer;
+}
+.bd-row:hover { background: var(--accent); }
+.bd-row__thumb {
+  display: grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.bd-row__thumb .ztor-icon { width: 18px; height: 18px; }
+.bd-row__name { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); }
+.bd-row__meta { margin-top: var(--sp-2); font-size: var(--fs-12); color: var(--muted-foreground); }
+.bd-row__price { font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--foreground); }
+/* 折後價旁邊的原價：刪除線＋弱化，一眼看出這一組有沒有讓利。 */
+.bd-row__was { margin-left: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); text-decoration: line-through; }
+.bd-row__chev { color: var(--muted-foreground); }
+
+/* 步驟列：坐在 dialog 的 head 與 body 之間，沿用建立流程頂部同一支進度條
+   （`.progress-stepper--segmented`），不另做一套小圓點。flex:none＝它不參與 body 的
+   捲動；左右內距對齊 head／body（20px），上下留白讓它與兩邊的邊界分開。 */
+.bd-steps {
+  flex: none;
+  padding: var(--sp-14) var(--sp-20) var(--sp-16);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── 編輯表單的三段 ──────────────────────────────────────────────────────
+   `.bd-form` 是分段版型自己的區塊名（2026-08-13）。它套在 `payout-dialog__body` 上，
+   不再借 `.fc-bundle__body` 的殼——分段版型已經不是一張卡，而是彈窗裡的一份表單；
+   借卡片的 class 會把卡的內距與下外距一起帶進 dialog 的版面。
+   從 `.fc-bundle__body` 繼承過來的只有這一條：卡內欄位的 label 比全站小一階。 */
+.bd-form .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+.bd-form .field__label + .field__hint { margin-top: calc(-1 * var(--sp-4)); }
+/* 墓碑 2026-08-13：`.bd-sec`／`__head`／`__num`／`__title`／`__sub`（同一張表單裡三個
+   帶編號圓標的段落）隨「三段改成三步」一併撤除。步驟標題現在由 `.bd-steps` 的進度條
+   承擔，body 裡不再重複一次段標題；`__sub` 的說明句改貼在它解釋的那個東西下面
+   （例如定價那句貼在算式底下）。 */
+
+/* ── 適用票種的分組挑選器 ────────────────────────────────────────────────
+   這是整張卡最會膨脹的一塊（場次 × 票種）。三件事在控制它：
+     ① 依場次分組、組頭可以整場全選
+     ② 一排票種捷徑，跨場次勾同一個票種（多場活動最常見的意圖）
+     ③ 選完就收合成 chip，清單只在挑選當下展開 */
+.bd-pick { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-12) var(--sp-14); }
+.bd-pick__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-10);
+  margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+.bd-pick__barlabel { font-size: var(--fs-12); color: var(--muted-foreground); }
+.bd-pick__done { margin-left: auto; }
+.bd-grp + .bd-grp { margin-top: var(--sp-4); }
+.bd-grp__head { display: flex; align-items: center; gap: var(--sp-10); padding: var(--sp-10) 0 var(--sp-6); }
+.bd-grp__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bd-grp__all { margin-left: auto; font-size: var(--fs-12); }
+/* 組內最後一列不畫線——分組本身已經是分隔，再畫一條會讀成「還有下一列」。 */
+.bd-grp .bd-ticket:last-of-type { border-bottom: 0; }
+/* 挑選器裡的票列由 `.bd-pick` 的內距管節奏，不要再吃上面那條 first/last 的外距。 */
+.bd-pick .bd-ticket:first-of-type { margin-top: 0; }
+.bd-pick .bd-ticket:last-of-type { margin-bottom: 0; }
+
+/* 收合態：已選的票以 chip 呈現＋一顆「更改」 */
+.bd-chosen { display: flex; align-items: flex-start; gap: var(--sp-10); flex-wrap: wrap; }
+.bd-chosen .chip-group { flex: 1 1 auto; }
+
+/* ── 定價：一列算完 ──────────────────────────────────────────────────────
+   原價加總 → 折扣 → 最終價。折扣輸入直接坐在算式裡，改一下就看到結果，
+   不必像預設版型那樣在卡頭的金額與卡底的優惠欄之間來回對照。 */
+.bd-calc {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  flex-wrap: wrap;
+  padding: var(--sp-14) var(--sp-16);
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+}
+.bd-calc__part { display: flex; flex-direction: column; gap: var(--sp-4); }
+.bd-calc__k { font-size: var(--fs-11); color: var(--muted-foreground); }
+.bd-calc__v { font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--foreground); }
+.bd-calc__v--final { font-size: var(--fs-24); }
+/* 運算子與數值對齊、不與標籤對齊：那一行的視覺基線是數字。 */
+.bd-calc__op { align-self: center; padding-top: var(--sp-14); color: var(--muted-foreground); font-size: var(--fs-14); }
+.bd-calc__disc { width: 108px; }
+.bd-calc__final { margin-left: auto; text-align: right; }
+
+/* ── 包裝：名稱／說明／封面圖同一列 ─────────────────────────────────────
+   封面圖是辨識用縮圖，縮成一格擺右邊；預設版型那個獨立的 267px 區塊在這裡不成立
+   ——它會把「取名字」推到一個畫面之外。 */
+/* 封面欄用 auto：格子的寬度是 .upload-assets 由固定高度照 2:3 算出來的，
+   寫死欄寬會跟它打架（欄比格子窄就把格子壓扁，寬就留一段空白）。 */
+.bd-brand { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--sp-16); align-items: start; }
+.bd-brand .field:last-child { margin-bottom: 0; }
+/* 素材列預設 200px 高，在彈窗裡太搶版面——封面是這一組的辨識用縮圖，不是主視覺。
+   調的是元件自己的變數，不覆寫它的尺寸算法：168 × 2/3 ＝ 112px 寬。 */
+.bd-brand__cover .upload-assets { --upload-asset-h: 168px; }
+/* align-self 是必要的：`.field` 是 flex column，按鈕不設就會被拉滿整欄、文字跟著置中，
+   看起來像一條分隔線而不是一顆可以按的字。 */
+.bd-suggest {
+  align-self: flex-start;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--fs-12);
+  color: var(--primary);
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 1024px) {
+  .bd-brand { grid-template-columns: minmax(0, 1fr); }
+  .bd-calc__final { margin-left: 0; text-align: left; }
+}

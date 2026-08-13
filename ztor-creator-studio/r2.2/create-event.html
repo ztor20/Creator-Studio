@@ -44,6 +44,7 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/kv-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/empty-card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/wizard-split.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
@@ -868,24 +869,37 @@
          同輪撤除分票：要讓同一批票有不同賣法，改成包成捆綁包，不再從票裡切額度出來。 -->
     <section data-step-panel="6" class="hidden">
       <h1 class="wizard__step-title" data-di="d.s6.h1">票務商品</h1>
-      <p class="wizard__step-sub" data-di="d.s6.sub">把門票和商品綁成一組賣。沒有要綁就直接下一步。</p>
+      <p class="wizard__step-sub" data-di="d.s6.sub">將門票與商品組合成套組販售。數量與票券共用，售出一組即自其扣除一張。</p>
       <div class="wizard-split wizard-split--narrow">
         <div class="wizard-split__main">
-          <div class="form-section form-section--outlined">
-            <div class="form-section__head">
-              <h3 class="form-section__title" data-di="d.bd.h">捆綁包</h3>
-              <p class="form-section__sub" data-di="d.bd.sub">一組至少含一張票。數量跟它含的那張票共用，賣掉一組就從那張票扣一張，不另外設庫存。</p>
+          <!-- 2026-08-13（使用者逐項圈選）：這一步只有一個區塊，外面那層填色卡與
+               「捆綁包」小標都撤掉——步驟標題已經是「票務商品」，卡裡再包一張卡（收合列
+               本身就是 .card）等於同一件事畫兩層框。庫存共用那條規則移進步驟副標，
+               它是這一步的前提、不是某個區塊的註腳。 -->
+          <div class="form-section">
+            <!-- 空狀態只回答「現在還沒有」與「怎麼開始」；舉例說明與「不設捆綁包」
+                 那顆出口一併撤除（使用者裁決）——沒有捆綁包本來就是預設，
+                 底部的「下一步」就是那個出口，不需要第二顆按鈕說同一件事。 -->
+            <div class="empty-card" id="ce-bd-empty" hidden>
+              <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+              <h4 class="empty-card__title" data-di="d.bd.empty.h">尚未建立捆綁包</h4>
+              <div class="empty-card__cta">
+                <button class="btn btn--primary" type="button" id="ce-bd-first" data-di="d.bd.empty.new">新增捆綁包</button>
+              </div>
             </div>
             <div id="ce-bd-list"></div>
             <button class="btn btn--outline fc-add" type="button" id="ce-bd-add"><span data-di="d.bd.add">＋ 新增捆綁包</span></button>
           </div>
         </div>
-        <aside class="wizard-split__side">
-          <!-- 右軌：哪幾張票被綁進捆綁包、各自的池還剩多少。共用數量池這件事只寫在說明裡
-               看不出後果，要把「這張票被幾組用掉」攤出來才讀得到。 -->
-          <div class="fd-ov">
-            <h3 class="fd-ov__title" data-di="d.bd.pool">票的數量池</h3>
-            <div class="kv-list" id="ce-bd-pool"></div>
+        <!-- 2026-08-13 修：class 原本是 `wizard-split__side`，但元件裡只有 `__rail`。
+             靠 grid 自動配位剛好落在第 2 欄第 1 列所以看起來正常，實際上 sticky、
+             最大高度與疊卡間距全部沒生效（捲動時右軌跟著跑掉）。 -->
+        <aside class="wizard-split__rail">
+          <!-- 右軌報的是「這一步會牽動誰」，不是把左邊的票單再列一次（2026-08-13 改）：
+               用到的票排前面並標「被 N 組用到」，沒被綁到的收成一行。 -->
+          <div class="card fd-ov">
+            <h3 class="fd-ov__title" data-di="d.bd.pool">影響範圍</h3>
+            <div id="ce-bd-pool"></div>
           </div>
         </aside>
       </div>
@@ -3759,41 +3773,77 @@
       // 票種即時取：上一步中途新增的票種要立刻出現在勾選清單
       /* 多場活動時票名要帶場次：同一個票種在每一場各有一張，只寫票種名的話
          清單上會出現三個一模一樣的「搖滾區」，勾錯了也看不出來。 */
-      tickets: () => savedTiers().map(t => ({
-        id: t.id,
-        name: tierLabelWithSession(t),
-        price: t.price
-      })),
+      /* 分段版型（2026-08-13 使用者裁決，源自 docs/bundle-step-demo.html）：
+         卡片改成內容 → 定價 → 包裝三段，票種挑選器依場次分組。 */
+      layout: "sections",
+      /* group／kind 是挑選器的分組與跨場捷徑用的（見 bundle-editor.js 的說明）：
+         group＝這張票屬於哪一場、kind＝它是哪一個票種。單場活動 group.name 留空，
+         挑選器就不畫組頭——單場沒有「哪一場」要區分。 */
+      tickets: () => savedTiers().map(t => {
+        const ss = series.list.filter(s => s.id === t.sess)[0];
+        const ty = types.filter(x => x.id === t.type)[0];
+        const i = series.list.indexOf(ss);
+        return {
+          id: t.id,
+          name: tierLabelWithSession(t),
+          price: t.price,
+          qty: val(t).qty || 0,
+          group: { id: t.sess || "", name: (multi() && ss) ? sessionLabel(ss, i) : "" },
+          kind: ty ? { id: ty.id, name: ty.name || ticketNames(t)[0] } : null
+        };
+      }),
       pool: 0,
       perSlot: 0,
       collapsedByDefault: false,
-      onChange: () => { renderBundlePool(); scheduleSave(); }
+      onChange: () => { renderBundlePool(); syncBundleEmpty(); scheduleSave(); }
     });
   }
 
-  /* 右軌的數量池（2026-08-11）：捆綁包與單賣的票共用同一份張數，這句話寫在說明裡
-     看不出後果——要把「這張票有幾組捆綁包在用」攤出來，才知道改一張票的張數會牽動誰。
-     這裡只報「誰用到了」，不做扣減：一組捆綁包能賣幾份取決於實際銷售，原型沒有銷售資料。 */
+  /* 空狀態與「＋ 新增捆綁包」互斥：一顆都沒有時給說明卡（含「不做捆綁包」的出口），
+     有了之後才換成那顆加號。 */
+  function syncBundleEmpty() {
+    const none = !bundleEd || !bundleEd.getBundles().length;
+    const empty = document.getElementById("ce-bd-empty");
+    const add = document.getElementById("ce-bd-add");
+    if (empty) empty.hidden = !none;
+    if (add) add.hidden = none;
+  }
+  document.getElementById("ce-bd-first")?.addEventListener("click", () => bundleEd && bundleEd.add());
+  /* 墓碑 2026-08-13：空狀態原本還有一顆「本活動不設捆綁包」直接跳下一步（使用者裁決撤除）。
+     沒有捆綁包本來就是預設，底部的「下一步」就是那個出口，兩顆按鈕說的是同一件事。 */
+
+  /* 右軌＝「這一步的影響」（2026-08-13 由「票的數量池」改寫）。
+     原本它把左邊挑選清單的同一份票再列一次，兩邊資訊重複；右軌真正要回答的是
+     「我改這張票的張數會牽動誰」。所以只列**被綁到的票**（標被幾組用到），
+     沒被綁到的收成一行摘要。捆綁包不另設庫存、賣掉一組就從票扣一張，這件事
+     寫在說明裡看不出後果，攤成一份名單才讀得到。
+     這裡只報「誰用到了」，不做扣減：一組能賣幾份取決於實際銷售，原型沒有銷售資料。 */
   function renderBundlePool() {
     const box = document.getElementById("ce-bd-pool");
     if (!box) return;
     const bundles = bundleEd ? bundleEd.getBundles() : [];
     const list = savedTiers();
     if (!list.length) { box.innerHTML = '<p class="field__hint">' + esc(dT("d.quick.none")) + '</p>'; return; }
+    const usedN = t => bundles.filter(b => (b.tickets || []).indexOf(t.id) >= 0).length;
+    const idle = list.filter(t => !usedN(t));
+    if (idle.length === list.length) {
+      box.innerHTML = '<p class="field__hint">' + esc(dT("d.bd.pool.none")) + '</p>';
+      return;
+    }
     const many = multi();
-    box.innerHTML = series.list.map((ss, i) => {
-      const rows = list.filter(t => t.sess === ss.id);
+    box.innerHTML = '<div class="kv-list">' + series.list.map((ss, i) => {
+      const rows = list.filter(t => t.sess === ss.id && usedN(t));
       if (!rows.length) return "";
       return (many ? '<div class="quick-result__head">' + esc(sessionLabel(ss, i)) + '</div>' : "") +
-        rows.map(t => {
-          const used = bundles.filter(b => (b.tickets || []).indexOf(t.id) >= 0).length;
-          return '<div class="kv"><span class="kv__k">' + esc(ticketNames(t)[0]) + '</span>' +
-            '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", val(t).qty || 0)) +
-            (used ? ' · ' + esc(dT("d.bd.pool.n").replace("{n}", used)) : "") + '</span></div>';
-        }).join("");
-    }).join("");
-    if (!bundles.length) box.insertAdjacentHTML("beforeend",
-      '<p class="field__hint">' + esc(dT("d.bd.pool.none")) + '</p>');
+        rows.map(t =>
+          '<div class="kv"><span class="kv__k">' + esc(ticketNames(t)[0]) + '</span>' +
+          '<span class="kv__v">' + esc(dT("d.quick.qtyn").replace("{n}", val(t).qty || 0)) +
+          ' · ' + esc(dT("d.bd.pool.n").replace("{n}", usedN(t))) + '</span></div>'
+        ).join("");
+    }).join("") + '</div>' +
+    (idle.length
+      ? '<p class="field__hint mt-10">' + esc(dT("d.bd.pool.idle").replace("{n}", idle.length)) + '</p>'
+      : "");
   }
 
   /* 右軌是 sticky，貼齊位置要讓開 .wizard__top（同一個捲動容器裡的 sticky header）。
@@ -3827,15 +3877,20 @@
     "d.step.session": { en: "Dates",             zh: "場次" },
     "d.step.bundle":  { en: "Bundles",           zh: "票務商品" },
     "d.s6.h1":        { en: "Bundles",           zh: "票務商品" },
-    "d.s6.sub":       { en: "Sell tickets and products together as one package. Skip this step if you are not bundling anything.",
-                        zh: "把門票和商品綁成一組賣。沒有要綁就直接下一步。" },
-    "d.bd.h":         { en: "Bundles",           zh: "捆綁包" },
-    "d.bd.sub":       { en: "Each bundle includes at least one ticket. A bundle has no stock of its own — selling one takes a ticket from that tier's own count.",
-                        zh: "一組至少含一張票。數量跟它含的那張票共用，賣掉一組就從那張票扣一張，不另外設庫存。" },
+    "d.s6.sub":       { en: "Sell a ticket and products together as one package. A bundle has no stock of its own — selling one deducts a ticket from that tier's count.",
+                        zh: "將門票與商品組合成套組販售。數量與票券共用，售出一組即自其扣除一張。" },
+    /* 墓碑 2026-08-13：`d.bd.h`／`d.bd.sub`（區塊小標與副標）隨外層填色卡一併撤除，
+       庫存共用那條規則移進 `d.s6.sub`；`d.bd.empty.text`（舉例）與 `d.bd.empty.skip`
+       （「本活動不設捆綁包」）同輪撤除，理由見上面 markup 的說明。 */
     "d.bd.add":       { en: "＋ Add a bundle",   zh: "＋ 新增捆綁包" },
-    "d.bd.pool":      { en: "Ticket pools",      zh: "票的數量池" },
-    "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own.", zh: "還沒有捆綁包，每一張票都各自單獨賣。" },
-    "d.bd.pool.n":    { en: "{n} in bundles",    zh: "{n} 組用到" },
+    "d.bd.pool":      { en: "What this step affects", zh: "影響範圍" },
+    "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own. Bundle some and this lists which tickets get pulled in.",
+                        zh: "尚未建立捆綁包，各票券單獨販售。建立後將列出受影響的票券。" },
+    "d.bd.pool.n":    { en: "in {n} bundles",    zh: "由 {n} 組使用" },
+    "d.bd.pool.idle": { en: "The other {n} tickets aren’t bundled — they sell on their own.",
+                        zh: "其餘 {n} 張票券未納入捆綁包，單獨販售。" },
+    "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立捆綁包" },
+    "d.bd.empty.new": { en: "Add a bundle",      zh: "新增捆綁包" },
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
     "d.step.tix":     { en: "Tickets",           zh: "票務" },
     "d.step.types":   { en: "Ticket types",      zh: "票種" },
@@ -3948,6 +4003,7 @@
     "d.bgate.none":   { en: "Nothing matches that.", zh: "找不到相符的活動。" },
     "d.bgate.skip":   { en: "Skip",              zh: "略過" },
     "d.bgate.go":     { en: "Import",            zh: "帶入" },
+    "d.bgate.done":   { en: "Imported",          zh: "已匯入" },
     "d.limits":       { en: "Other event settings", zh: "其他活動設定" },
     "d.limits.sub":   { en: "Leave blank for no limit.", zh: "留空就是不限制。" },
     "d.limit.person": { en: "Tickets per person",  zh: "每人總限購數量" },
@@ -4656,7 +4712,20 @@
       saleFromD: "2026-11-15", saleFromT: "20:00", saleToD: "2027-01-10", saleToT: "23:59",
       ship: "pickup", sessions: [],
       tiers: [{ name: "全票", price: "1600", qty: "900", fee: "80" },
-              { name: "學生票", price: "1100", qty: "300", fee: "50" }] }
+              { name: "學生票", price: "1100", qty: "300", fee: "50" }] },
+    /* 已經帶過的場次（2026-08-13 使用者指示）：同一場 bookyay 活動只會在 ztor 上存在一次，
+       所以清單裡照樣找得到它——找到才回答得了「我上次是不是已經建過了」——但不能再選一次。
+       這三筆刻意對上站上既有的活動（events-store.js 的 inner-circle-fanmeet／album-signing-taipei／
+       lrh-taichung），示範「搜到的是自己已經建好的那一場」。既然選不了，就不帶欄位資料。 */
+    { id: "bky-6", imported: true,
+      label: "Inner Circle Fan Meet — Taipei",
+      note:  "2026/07/27 · Neo Studio" },
+    { id: "bky-7", imported: true,
+      label: "Album signing — Taipei",
+      note:  "2026/09/12–09/14 · 誠品信義（三場）" },
+    { id: "bky-8", imported: true,
+      label: "LOVE·RAGE·HOPE Live House Tour — 台中",
+      note:  "2026/04/11 · Legacy Taichung" }
   ];
 
   const bkyGo    = document.getElementById("ce-bky-go");
@@ -4690,12 +4759,20 @@
     box.innerHTML = hit.length
       ? hit.map(r => {
           const on = bkyPick === r.id;
+          /* 已帶過的那一列：整列變灰、不可選，右邊掛「已匯入」標籤說明為什麼點不動
+             （2026-08-13）。仍然列出來——搜得到才回答得了「這場我建過了沒」。
+             灰掉的樣式由 owner-lookup.css 的 `[disabled]` 直接接手，不必再加 class。 */
           return '<button type="button" class="owner-lookup__result" role="option"' +
+            (r.imported ? ' disabled aria-disabled="true"' : "") +
             ' aria-selected="' + (on ? "true" : "false") + '" data-bky-opt="' + esc(r.id) + '">' +
             '<span class="owner-lookup__copy">' +
               '<span class="owner-lookup__name">' + esc(r.label) + '</span>' +
               '<span class="owner-lookup__meta">' + esc(r.note) + '</span>' +
-            '</span></button>';
+            '</span>' +
+            (r.imported
+              ? '<span class="badge badge--neutral owner-lookup__flag">' + esc(dT("d.bgate.done")) + '</span>'
+              : "") +
+            '</button>';
         }).join("")
       : '<div class="owner-lookup__result owner-lookup__result--empty" role="status">' + esc(dT("d.bgate.none")) + '</div>';
     box.hidden = false;
@@ -4704,7 +4781,7 @@
 
   function bkyPickOne(id) {
     const rec = BKY.find(r => r.id === id);
-    if (!rec) return;
+    if (!rec || rec.imported) return;      // 已帶過的選不了（畫面上那一列本來就是 disabled）
     bkyPick = id;
     const q = bkyQ();
     if (q) q.value = rec.label;
@@ -4971,9 +5048,16 @@
   });
   bkyGo?.addEventListener("click", () => {
     const rec = BKY.find(r => r.id === bkyPick);
-    if (!rec) return;
+    if (!rec || rec.imported) return;
     bkyApply(rec);
-    enterWizard(); render();
+    enterWizard();
+    /* 帶入之後直接跳到「票務商品」（2026-08-13 使用者指示）：基本資料、場次、票種、票務
+       這四步的內容整份由 bookyay 決定、也整份鎖住，一步一步按過去等於翻四頁唯讀畫面。
+       票務商品是帶入後第一件真的要創作者決定的事，落點放這裡。
+       被跳過的四步在進度列上照樣標「已完成」——render() 以「編號小於當前步」判定完成，
+       所以不必另外記帳；要回頭看內容也照樣點得進去。 */
+    step = 6;
+    render();
   });
   document.getElementById("ce-bky-skip")?.addEventListener("click", () => { enterWizard(); render(); });
   document.querySelector("[data-bgate-back]")?.addEventListener("click", showGate);
@@ -4993,6 +5077,7 @@
     renderBkyList();
     demoI18n();
     renderShare();
+    syncBundleEmpty();     // 一開始一組都沒有＝空狀態說明卡，加號先收起來
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
   }
   document.addEventListener("i18n:applied", () => demoI18n());
