@@ -42,7 +42,7 @@
          「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
          **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
          只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
-      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 1, total: 3 },
+      series: { id: 'realive-asia', hasPage: true, name: 'REALIVE World Tour — Asia leg', index: 1, total: 3 },
       name: 'REALIVE World Tour — Asia leg',
       desc: 'The Asia leg — three cities, one setlist.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -63,7 +63,7 @@
         { id: 'tier-floor', name: 'Floor',  price: 3300, qty: 200, sold: 200, fee: 100 },
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
-      /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的捆綁包。與單賣的票共用同一個
+      /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的組合包。與單賣的票共用同一個
          數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。 */
       bundles: [
         { id: 'bd-vip-tee', name: 'VIP ＋ 巡演 T 恤', tickets: [{ tier: 'tier-vip', n: 1 }],
@@ -86,7 +86,7 @@
          「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
          **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
          只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
-      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 2, total: 3 },
+      series: { id: 'realive-asia', hasPage: true, name: 'REALIVE World Tour — Asia leg', index: 2, total: 3 },
       name: 'REALIVE World Tour — Asia leg',
       desc: 'The Asia leg — three cities, one setlist.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -118,7 +118,7 @@
          「系列」分頁才能從 store 撈出同系列的其他場，不必再掛示例資料。同一個系列的三場
          **共用同一組票種設定、數量各場獨立**（使用者裁決），所以三筆的 tiers 價格與 qty 完全相同，
          只有 sold 不同；名稱也刻意三場相同，靠日期與場地分辨（SER-001 ⑥）。 */
-      series: { id: 'realive-asia', name: 'REALIVE World Tour — Asia leg', index: 3, total: 3 },
+      series: { id: 'realive-asia', hasPage: true, name: 'REALIVE World Tour — Asia leg', index: 3, total: 3 },
       name: 'REALIVE World Tour — Asia leg',
       desc: 'The Asia leg — three cities, one setlist.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -152,7 +152,12 @@
       type: 'concert',                       // 對應 create-event 的 selection-card data-choice
       typeLabelKey: 'ce.type.concert',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
-      series: { name: 'REALIVE World Tour', index: 2, total: 3 },
+      /* 2026-08-13：補上 series.id——原本只有名稱與序號，麵包屑長不出系列層、系列分頁
+         也撈不到同系列其他場，等於「看得到 2/3、點不進去」。三場共用同一個 id。
+         沒有 `hasPage`：原型只替 realive-asia 做了系列母頁（series-detail.html）。有母頁的
+         系列，子場的共用設定改在母頁（詳情頁收起編輯鈕）；沒有母頁的系列就地編輯，
+         麵包屑那一層也只顯示名稱、不做成連結——連到一個不存在的母頁比沒有連結更糟。 */
+      series: { id: 'realive-world-tour', name: 'REALIVE World Tour', index: 2, total: 3 },
       name: 'REALIVE World Tour (China) — Chongqing',
       desc: 'The China leg opener. Full band, new staging, and the first live airing of three unreleased tracks.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -215,6 +220,10 @@
       end: '',
       doors: '',
       capacity: 300,
+      /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
+         付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
+         此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
+      room: { url: 'ztor.live/w/lrh-taichung-watchback', chat: true, capacity: 300 },
       tiers: [{ id: 'tier-entry', name: 'Admission', price: 5, qty: 300, sold: 38 }],
       sold: 38,
       revenue: 190,
@@ -280,6 +289,12 @@
       ],
       capacity: 150,
       tiers: [{ id: 'tier-slot', name: 'Signing slot', price: 5, qty: 150, sold: 118 }],
+      /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
+         （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
+      bundles: [
+        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 黑膠', tickets: [{ tier: 'tier-slot', n: 1 }],
+          products: ['新專輯黑膠'], price: 45, sold: 26, cap: 60 }
+      ],
       sold: 118,
       revenue: 590,
       status: 'on-sale',
@@ -327,7 +342,12 @@
       end: '',
       doors: '',
       capacity: 0,
-      tiers: [],
+      /* 2026-08-13：這一場備好票種，當「已排程 → 開賣」那條動線的完整示範——
+         其餘已排程的活動票種仍為空，示範的是「還不能開賣、缺什麼直接列出來」那一半。 */
+      tiers: [
+        { id: 'tier-early', name: 'Early bird', price: 800, qty: 400, sold: 0 },
+        { id: 'tier-ga',    name: 'General admission', price: 1200, qty: 1600, sold: 0 }
+      ],
       sold: 0,
       revenue: 0,
       status: 'scheduled',
@@ -351,6 +371,10 @@
       end: '',
       doors: '',
       capacity: 200,
+      /* 線上房間（2026-08-13，D149 落地）：共看派對不套票種頁與取票方式，但入場方式與
+         付費門檻總得有個地方看。room.url＝觀眾進的房間、entry＝單一入場券的價格（同 tiers[0]，
+         此處不另存一份金額）、chat＝是否開聊天室。實際房控功能仍待上游（見 ASSUMPTIONS WP-001）。 */
+      room: { url: 'ztor.live/w/realive-r2-watchparty', chat: true, capacity: 200 },
       tiers: [{ id: 'tier-entry', name: 'Admission', price: 5, qty: 200, sold: 142 }],
       sold: 142,
       revenue: 710,
@@ -387,7 +411,7 @@
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
-      series: { name: 'REALIVE World Tour', index: 1, total: 3 },
+      series: { id: 'realive-world-tour', name: 'REALIVE World Tour', index: 1, total: 3 },
       name: 'REALIVE (R2) Special Ed. — Taipei Arena',
       desc: 'Hometown finale at Taipei Arena, presented with motorola.',
       lineup: ['NICKTHEREAL 周湯豪'],
@@ -411,7 +435,7 @@
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
-      series: { name: 'REALIVE World Tour', index: 3, total: 3 },
+      series: { id: 'realive-world-tour', name: 'REALIVE World Tour', index: 3, total: 3 },
       name: 'REALIVE World Tour — Next leg (planning)',
       desc: '',
       lineup: [],
@@ -513,24 +537,71 @@
 
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
+  /* ── 階段覆寫（2026-08-13）───────────────────────────────────
+     活動詳情頁新增了狀態轉換動作（發布開賣／取消活動），按下去必須真的改變這一頁的
+     階段，否則「按了沒事發生」比沒有按鈕更糟。原型沒有後端，故把改過的階段寫進
+     localStorage，`get()` 讀出來時套用；清空鍵（`reset()`）即回到 mock 原值。
+     只覆寫 `status` 這一個欄位——它是驅動分頁可見性與頁首徽章的唯一輸入。
+     已知限制：`events.html` 清單是靜態 HTML、不吃本檔，改過階段的活動在清單上仍是原值
+     （見 site/r2.2/ASSUMPTIONS.md STAGE-001）。 */
+  var STAGE_KEY = 'ztor.event-stage';
+  function stageMap() {
+    try { return JSON.parse(localStorage.getItem(STAGE_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function writeStage(id, status) {
+    var m = stageMap();
+    if (status) m[id] = status; else delete m[id];
+    try { localStorage.setItem(STAGE_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+
   window.ztorEvents = {
-    list: function () { return clone(EVENTS); },
+    list: function () {
+      var m = stageMap();
+      return clone(EVENTS).map(function (e) {
+        if (m[e.id]) e.status = m[e.id];
+        return e;
+      });
+    },
     /* id 有帶但查不到 → 回 null，由呼叫端顯示「找不到活動」。
        2026-07-30 修正：原本一律退回首筆，等於把「別人的活動」當成使用者點的那一場
        靜默顯示出來——在編輯頁與 scanner 上尤其危險（會改到／掃到錯的場次）。
        完全沒帶 id 仍回首筆，那是原型的示例頁預設值、不是查詢失敗。 */
     get: function (id) {
-      if (!id) return clone(EVENTS[0]);      // 無 id＝示例頁預設
-      for (var i = 0; i < EVENTS.length; i++) {
-        if (EVENTS[i].id === id) return clone(EVENTS[i]);
+      var m = stageMap(), ev = null;
+      if (!id) ev = clone(EVENTS[0]);        // 無 id＝示例頁預設
+      else {
+        for (var i = 0; i < EVENTS.length; i++) {
+          if (EVENTS[i].id === id) { ev = clone(EVENTS[i]); break; }
+        }
       }
-      return null;                           // 有 id 但查不到＝查詢失敗
+      if (!ev) return null;                  // 有 id 但查不到＝查詢失敗
+      if (m[ev.id]) ev.status = m[ev.id];    // 本機改過階段的活動以覆寫值為準
+      return ev;
     },
-    /* 交易明細：有金流的階段才有（售票中／進行中／已結束） */
+    /* 階段轉換（原型層級）：寫進 localStorage，下一次 get() 就是新階段。
+       允許哪些轉換由呼叫端（event-detail.html）依 §7.2 狀態機判斷，本檔只負責存。 */
+    setStage: function (id, status) { if (id) writeStage(id, status); },
+    resetStage: function (id) { if (id) writeStage(id, null); },
+    /* 交易明細：有金流的階段才有（售票中／進行中／已結束／已取消）。
+       已取消也要有——取消的活動照樣要對帳「賣過多少、退了多少」。 */
     transactions: function (id) {
       var ev = window.ztorEvents.get(id);
-      if (!ev || ['on-sale', 'live', 'ended'].indexOf(ev.status) < 0) return [];
+      if (!ev || ['on-sale', 'live', 'ended', 'cancelled'].indexOf(ev.status) < 0) return [];
       return buildTx(ev);
+    },
+    /* 最終報到統計（2026-08-13）：現場報到台只在進行中出現，活動結束後那張報到快照卡
+       仍要回答「這場最後到了多少人」——結束後還顯示「開演當天才開放」是錯的。
+       決定性推導自售出張數（不用 Math.random），非真實票務數字，同 buildRoster 的口徑。 */
+    checkinSummary: function (id) {
+      var ev = window.ztorEvents.get(id);
+      if (!ev || ev.status !== 'ended') return null;
+      var sold = ev.sold || 0;
+      var valid = Math.round(sold * 0.91);          // 正常核銷入場
+      var used = Math.round(sold * 0.015);          // 重複掃描（第二次起回黃燈）
+      var invalid = Math.round(sold * 0.004);       // 無效票（作廢／非本場）
+      return { sold: sold, valid: valid, used: used, invalid: invalid,
+               rate: sold ? Math.round(valid / sold * 100) : 0 };
     },
     /* 到場名單：只有進行中的場次會用到（現場報到台面） */
     roster: function (id) {

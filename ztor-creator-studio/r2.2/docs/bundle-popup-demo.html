@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 資產一律以 ../（r2.2 根）為前綴，不用 <base>：文件本身沒有可解析的基底網址時
+     （被當成 data: 快照預覽），<base> 會讓整組樣式表一起載不到。 -->
+<title>DEMO · 新增組合包彈窗（參考建立商品的排版）</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/readiness.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     DEMO 專用（探索頁，未進 ds-components；裁決後才 promote）
+     ══════════════════════════════════════════════════════════════════════ */
+  .bdx-demo { display: flex; align-items: center; gap: var(--sp-10); flex-wrap: wrap;
+              padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-24);
+              border: 1px dashed var(--border); border-radius: var(--radius-xl);
+              background: var(--accent); font-family: var(--font-ui);
+              font-size: var(--fs-13); color: var(--muted-foreground); }
+  .bdx-demo__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .bdx-demo__spacer { margin-left: auto; }
+  .bdx-page { max-width: 1140px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-56); }
+
+  /* ── 表面階層：照 Figma 856:27798 的疊層模型（demo-layer-system.html，Q61–Q64 待裁決）──
+     規則是「疊上去的一層跟著父層亮一階」：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜
+     （疊在誰身上就跟著誰亮）→ L3 不再疊填色、只留框。
+
+     為什麼不能直接用 .form-section--outlined：它吃 --surface-shell（深色 #1C1D1E），
+     比彈窗面板的 --card（#212223）**更暗**——放進彈窗就是「往下沉一階」，方向與這個
+     模型相反。站上目前同時存在兩套相反的巢狀答案（--muted／--surface-shell 往暗，
+     --nest-surface 往亮），這一版依使用者本次裁示採「越來越亮」那一套。
+
+     值直接照 demo-layer-system.html，只在本頁作用域內；裁決後才進 _tokens.css。 */
+  .bdp-modal {
+    --layer-2-surface: rgba(222, 223, 233, 0.04);
+    --layer-line: rgba(222, 223, 233, 0.08);
+  }
+  [data-theme="light"] .bdp-modal {
+    /* 亮色除了畫布與 L1 之外一律留白，分層改用線框（Q62 已裁示） */
+    --layer-2-surface: transparent;
+    --layer-line: rgba(16, 17, 20, 0.08);
+  }
+  /* L2＝彈窗面板（L1）上的一段分組。padding／radius 對齊 form-section--outlined，
+     只換底色來源，讓它與站上其他分組卡的內距節奏一致。 */
+  .bdp-sec {
+    padding: var(--sp-16);
+    margin-bottom: var(--sp-12);
+    background: var(--layer-2-surface);
+    border: 1px solid var(--layer-line);
+    border-radius: var(--radius-xl);
+  }
+  .bdp-sec:last-child { margin-bottom: 0; }
+  .bdp-sec__head { margin-bottom: var(--sp-16); }
+  .bdp-sec__title { font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground); margin: 0; }
+  .bdp-sec__sub { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-4) 0 0; }
+  /* L3＝L2 裡面的票種挑選器：不再疊填色，只留框（模型的第三階） */
+  .bdp-sec .bd-pick { background: transparent; border-color: var(--layer-line); }
+
+  /* 說明區（demo 旁白，不是提案的一部分） */
+  .bdx-notes { max-width: 1140px; margin: var(--sp-56) auto 0; padding: 0 var(--sp-24); }
+  .bdx-notes h2 { font-family: var(--font-display); font-size: var(--fs-20); color: var(--foreground); margin-bottom: var(--sp-12); }
+  .bdx-notes h3 { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground); margin: var(--sp-24) 0 var(--sp-8); }
+  .bdx-notes p, .bdx-notes li { font-size: var(--fs-13); color: var(--muted-foreground); line-height: var(--lh-relaxed); }
+  .bdx-notes ul { margin: 0; padding-left: var(--sp-20); }
+  .bdx-notes li { margin-bottom: var(--sp-6); }
+
+</style>
+</head>
+<body>
+
+<div class="bdx-page">
+  <div class="bdx-demo">
+    <span class="bdx-demo__tag">DEMO</span>
+    <span>新增組合包彈窗，版面參考建立商品（分卡＋底部就緒 chip），分層照 Figma 疊層模型逐層變亮。假資料＝三場的粉絲見面會，每場兩種票。</span>
+    <span class="bdx-demo__spacer"></span>
+    <button class="btn btn--outline btn--sm" type="button" id="bdp-open">開啟彈窗</button>
+  </div>
+
+  <h1 class="wizard__step-title">票務商品</h1>
+  <p class="wizard__step-sub">將門票與商品組合成套組販售。</p>
+
+  <div class="form-section form-section--outlined">
+    <div class="form-section__head">
+      <h3 class="form-section__title">組合包</h3>
+      <p class="form-section__sub">一組至少含一張票券；數量與該票券共用，售出一組即自其扣除一張。</p>
+    </div>
+    <div id="bdp-list"></div>
+    <button class="btn btn--outline fc-add" type="button" id="bdp-add">＋ 新增組合包</button>
+  </div>
+</div>
+
+<!-- ═══ 彈窗 ═══════════════════════════════════════════════════════════ -->
+<div class="payout-modal bdp-modal" id="bdp-modal" hidden>
+  <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="bdp-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="bdp-title">新增組合包</h2>
+      <button class="btn btn--icon" type="button" id="bdp-close" aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+
+    <div class="payout-dialog__body" id="bdp-form"></div>
+
+    <div class="payout-dialog__foot">
+      <button class="btn btn--ghost btn--sm" type="button" id="bdp-remove" hidden>移除</button>
+      <div class="wizard__bottom-actions" style="margin-left:auto">
+        <div class="readiness__chip" id="bdp-chip" tabindex="0" aria-describedby="bdp-pop">
+          <i data-lucide="circle" class="ztor-icon"></i><span id="bdp-chip-text">還缺 2 項</span>
+          <div class="readiness__pop" id="bdp-pop" role="tooltip">
+            <div class="readiness">
+              <div class="readiness__head"><h3 class="readiness__title">這一組還缺什麼？</h3></div>
+              <ul class="readiness__list" id="bdp-ready-list"></ul>
+              <div class="readiness__banner" id="bdp-ready-banner"></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn--primary" type="button" id="bdp-primary" disabled>完成</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="bdx-notes">
+  <h2>版面參考了建立商品的哪幾件事</h2>
+  <ul>
+    <li><strong>一路捲、用分卡而不是分步</strong>——建立商品是一連串分卡（PRODUCT INFO／SHOW IT OFF／VARIATIONS／PRICE…），每張卡一個主題、卡頭一行說明。結構讀得出來，但不必按三次「下一步」才看得到全貌。這一版把先前的三步改回三張卡。</li>
+    <li><strong>底部就緒 chip 取代步驟閘門</strong>——建立商品底部是「6 items needed」＋停用的主要動作，hover 展開缺什麼的清單。組合包同一套：「還缺 N 項」，補齊才解鎖「完成」。三步版用「第 1 步沒選票就不給下一步」擋，是同一件事的較笨版本——就緒 chip 一次講完全部缺項，而不是走到那一步才發現。</li>
+  </ul>
+
+  <h2>分層照 Figma 的疊層模型：每疊一層變亮一階</h2>
+  <p>規則來自 <code>demo-layer-system.html</code>（Figma <code>856:27798</code>，STYLE-DECISIONS Q61–Q64 待裁決）：L0 畫布實色 → L1 卡片實色 → L2 半透明薄膜（疊在誰身上就跟著誰亮）→ L3 不再疊填色、只留框。這一版對上去是：</p>
+  <ul>
+    <li><strong>L1 彈窗面板</strong> <code>--card</code> <code>#212223</code></li>
+    <li><strong>L2 三張分卡</strong>（組合內容／定價／呈現）<code>rgba(222,223,233,.04)</code> 疊上去 ≈ <code>#292A2B</code>，比面板亮一階</li>
+    <li><strong>L3 票種挑選器與算式列</strong>：不再疊填色，只留 <code>rgba(222,223,233,.08)</code> 的線框</li>
+  </ul>
+  <p><strong>為什麼不能直接用 <code>.form-section--outlined</code></strong>：它吃 <code>--surface-shell</code>（深色 <code>#1C1D1E</code>），比彈窗面板的 <code>--card</code> <strong>更暗</strong>——放進彈窗就是往下沉一階，方向與這個模型相反，正是先前那版看起來不對的原因。</p>
+  <p><strong>站上目前有兩套相反的巢狀答案</strong>：<code>--muted</code> <code>#161718</code>／<code>--surface-shell</code> <code>#1C1D1E</code> 是「嵌套襯底比卡更暗」，<code>--nest-surface</code>（Q24）與這份 layer 模型是「疊上去比卡更亮」。這一版依本次裁示採後者，衝突已記進 STYLE-DECISIONS Q66 待裁決。</p>
+
+  <h2>撤除的兩塊</h2>
+  <p>側邊的「組合包預覽」與「影響範圍」依本次指示移除，彈窗回到單欄；寬度因此由 <code>--xwide</code>（1180px）收回 <code>--wide</code>（880px）。</p>
+
+  <h2>仍未決（承 ASSUMPTIONS BDL-002）</h2>
+  <ul>
+    <li>多選票種時，折扣的計價基準以哪一張票為準（目前取最貴的那一張，保守估）。</li>
+    <li>「每場次各一組」不在上游規格裡；這一版仍保留，落在「組合內容」那張卡的最上方。</li>
+  </ul>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   DEMO 控制器。純前端示意，不接資料層；資料形狀對齊正式頁（票＝場次 × 票種）。
+   ════════════════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+  var esc = function (s) { return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
+  var money = function (n) { return "$" + Number(n || 0).toLocaleString("en-US"); };
+
+  var SESSIONS = [{ id: "s1", name: "Day 1" }, { id: "s2", name: "Day 2" }, { id: "s3", name: "Day 3" }];
+  var TYPES = [{ id: "ty1", name: "搖滾區", price: 3800 }, { id: "ty2", name: "一般席", price: 2200 }];
+  var TICKETS = [];
+  SESSIONS.forEach(function (ss) {
+    TYPES.forEach(function (ty) {
+      TICKETS.push({ id: ss.id + "-" + ty.id, sess: ss.id, type: ty.id,
+        name: ss.name + " · " + ty.name, price: ty.price, qty: ty.id === "ty1" ? 150 : 400 });
+    });
+  });
+  var PRODUCTS = [
+    { id: "p1", name: "巡演 T 恤", price: 890 },
+    { id: "p2", name: "限定托特包", price: 650 },
+    { id: "p3", name: "簽名海報", price: 480 },
+    { id: "p4", name: "應援手燈", price: 1200 },
+    { id: "p5", name: "寫真小卡組", price: 350 }
+  ];
+  var tk = function (id) { return TICKETS.filter(function (t) { return t.id === id; })[0]; };
+  var pd = function (id) { return PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
+  var ty = function (id) { return TYPES.filter(function (t) { return t.id === id; })[0]; };
+
+  var seq = 0, bundles = [], cur = null;
+
+  function newBundle() {
+    seq += 1;
+    return { id: "b" + seq, name: "", desc: "", tickets: [], items: [], perks: "",
+             disc: "", cap: "", cover: false, scope: "shared", pickOpen: true, fresh: true };
+  }
+  /* 原價＝勾選的票裡最貴的那一張（粉絲只挑一種，取最貴是保守估）＋所有商品 */
+  function base(b) {
+    var top = 0;
+    b.tickets.forEach(function (id) { var t = tk(id); if (t && t.price > top) top = t.price; });
+    return top + b.items.reduce(function (n, id) { var p = pd(id); return n + (p ? p.price : 0); }, 0);
+  }
+  function fin(b) { return Math.round(base(b) * (100 - (Number(b.disc) || 0)) / 100); }
+  function suggest(b) {
+    if (!b.tickets.length) return "";
+    var seen = {}, names = [];
+    b.tickets.forEach(function (id) {
+      var t = tk(id); if (!t) return;
+      var k = ty(t.type); if (k && !seen[k.name]) { seen[k.name] = 1; names.push(k.name); }
+    });
+    var head = names.join("／");
+    return b.items.length ? head + " ＋ " + pd(b.items[0]).name : head;
+  }
+  function contentMeta(b) {
+    var bits = [];
+    if (b.tickets.length) bits.push(b.tickets.length + " 張票券");
+    if (b.items.length) bits.push(b.items.length + " 件商品");
+    var perks = (b.perks || "").split(/[、,]/).map(function (s) { return s.trim(); }).filter(Boolean);
+    if (perks.length) bits.push(perks.length + " 項權益");
+    return bits.join(" · ");
+  }
+  /* 就緒檢查：建立商品底部那顆 chip 的同一套——一次講完全部缺項，不切成步驟 */
+  function readiness(b) {
+    return [
+      { ok: b.tickets.length > 0, label: "至少含一張票券" },
+      { ok: !!b.name.trim() || !!suggest(b), label: "組合包名稱" }
+    ];
+  }
+
+  /* ── 表單（左欄三張卡，節奏比照建立商品）───────────────────────────── */
+  function pickerHTML(b) {
+    if (b.scope === "per") {
+      return '<div class="bd-pick">' +
+        '<div class="bd-pick__bar"><span class="bd-pick__barlabel">票種</span>' +
+          '<span class="chip-group">' + kindChips(b) + '</span></div>' +
+        '<p class="field__hint mt-8">' +
+          esc(SESSIONS.map(function (s) { return s.name; }).join("／")) +
+          ' 各建立一組，分別對應該場次的票券，可個別調整售價。</p>' +
+      '</div>';
+    }
+    return '<div class="bd-pick">' +
+      '<div class="bd-pick__bar">' +
+        '<span class="bd-pick__barlabel">跨場次選取</span>' +
+        '<span class="chip-group">' + kindChips(b) + '</span>' +
+        (b.tickets.length ? '<button class="btn btn--outline btn--sm bd-pick__done" type="button" data-a="pickdone">完成選擇</button>' : '') +
+      '</div>' +
+      SESSIONS.map(function (ss) {
+        var rows = TICKETS.filter(function (t) { return t.sess === ss.id; });
+        var all = rows.every(function (t) { return b.tickets.indexOf(t.id) >= 0; });
+        return '<div class="bd-grp">' +
+          '<div class="bd-grp__head"><span class="bd-grp__name">' + esc(ss.name) + '</span>' +
+            '<label class="zcheck bd-grp__all"><span class="zcheck__control">' +
+              '<input class="zcheck__input" type="checkbox" data-sess="' + ss.id + '"' + (all ? " checked" : "") + '>' +
+              '<span class="zcheck__box"></span></span><span class="zcheck__label">全選本場次</span></label></div>' +
+          rows.map(function (t) {
+            var on = b.tickets.indexOf(t.id) >= 0;
+            return '<label class="fc-ref bd-ticket' + (on ? " bd-ticket--on" : "") + '">' +
+              '<span class="zcheck__control"><input class="zcheck__input" type="checkbox" data-tk="' + t.id + '"' + (on ? " checked" : "") + '>' +
+                '<span class="zcheck__box"></span></span>' +
+              '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
+              '<div><div class="fc-ref__name">' + esc(ty(t.type).name) + '</div>' +
+                '<div class="fc-ref__meta">' + money(t.price) + ' · 共 ' + t.qty + ' 張</div></div></label>';
+          }).join("") + '</div>';
+      }).join("") + '</div>';
+  }
+  function kindChips(b) {
+    return TYPES.map(function (k) {
+      var ids = TICKETS.filter(function (t) { return t.type === k.id; }).map(function (t) { return t.id; });
+      var all = ids.every(function (id) { return b.tickets.indexOf(id) >= 0; });
+      return '<button class="chip' + (all ? " chip--active" : "") + '" type="button" data-kind="' + k.id + '">' + esc(k.name) + '</button>';
+    }).join("");
+  }
+  function chosenHTML(b) {
+    var byK = {}, order = [];
+    b.tickets.forEach(function (id) {
+      var t = tk(id); if (!t) return;
+      var k = ty(t.type).name;
+      if (!byK[k]) { byK[k] = []; order.push(k); }
+      byK[k].push(SESSIONS.filter(function (s) { return s.id === t.sess; })[0].name);
+    });
+    return '<div class="bd-chosen"><span class="chip-group">' +
+      order.map(function (k) {
+        var span = byK[k].length === SESSIONS.length ? "全場次" : byK[k].join("／");
+        return '<span class="chip chip--static">' + esc(k) + ' · ' + esc(span) + '</span>';
+      }).join("") +
+      '</span><button class="btn btn--outline btn--sm" type="button" data-a="pickopen">變更</button></div>';
+  }
+  function itemsHTML(b) {
+    var rows = b.items.map(function (id) {
+      var p = pd(id);
+      return '<div class="fc-ref">' +
+        '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<div><div class="fc-ref__name">' + esc(p.name) + '</div><div class="fc-ref__meta">' + money(p.price) + '</div></div>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-unitem="' + p.id + '" aria-label="移除"><i data-lucide="x" class="ztor-icon"></i></button>' +
+      '</div>';
+    }).join("");
+    var left = PRODUCTS.filter(function (p) { return b.items.indexOf(p.id) < 0; });
+    return rows + '<div class="fc-pick"' + (rows ? ' style="margin-top:var(--sp-10)"' : '') + '>' +
+      '<input class="input" type="search" placeholder="搜尋你的商品…" data-f="pq" autocomplete="off">' +
+      '<div class="fc-pick__results" data-results hidden>' +
+        (left.length ? left.map(function (p) {
+          return '<button class="fc-pick__opt" type="button" data-item="' + p.id + '">' +
+            '<i data-lucide="package" class="ztor-icon"></i><span>' + esc(p.name) + '</span>' +
+            '<span class="fc-pick__opt-price">' + money(p.price) + '</span></button>';
+        }).join("") : '<div class="fc-pick__empty">商品都加進來了。</div>') +
+      '</div></div>';
+  }
+
+  function formHTML(b) {
+    var n = b.tickets.length;
+    var sug = suggest(b);
+    return '' +
+    /* ① 組合內容 */
+    '<section class="bdp-sec">' +
+      '<div class="bdp-sec__head">' +
+        '<h3 class="bdp-sec__title">組合內容</h3>' +
+        '<p class="bdp-sec__sub">這一組裡面有什麼。至少要含一張票券。</p>' +
+      '</div>' +
+      '<div class="field">' +
+        '<div class="field__label">適用票種</div>' +
+        '<div class="filter-tabs mb-10" role="radiogroup" aria-label="適用票種">' +
+          '<button class="filter-tabs__item' + (b.scope !== "per" ? " filter-tabs__item--active" : "") +
+            '" type="button" role="radio" aria-checked="' + (b.scope !== "per") + '" data-scope="shared">全場次共用一組</button>' +
+          '<button class="filter-tabs__item' + (b.scope === "per" ? " filter-tabs__item--active" : "") +
+            '" type="button" role="radio" aria-checked="' + (b.scope === "per") + '" data-scope="per">每場次各一組</button>' +
+        '</div>' +
+        ((b.pickOpen || !n) ? pickerHTML(b) : chosenHTML(b)) +
+        (n ? '<div class="field__hint">' + (n > 1 ? "售出一組時，自粉絲所選的票券扣除一張。" : "售出一組時，自該票券扣除一張。") + '</div>' : '') +
+      '</div>' +
+      '<div class="field">' +
+        '<div class="field__label">商店商品</div>' + itemsHTML(b) +
+      '</div>' +
+      '<div class="field">' +
+        '<label class="field__label">額外權益</label>' +
+        '<div class="field__hint">無商品編號的項目，例如 Discord 身分組或感謝名單</div>' +
+        '<input class="input" data-f="perks" value="' + esc(b.perks) + '" placeholder="用頓號分隔">' +
+      '</div>' +
+    '</section>' +
+
+    /* ② 定價 */
+    '<section class="bdp-sec">' +
+      '<div class="bdp-sec__head">' +
+        '<h3 class="bdp-sec__title">定價</h3>' +
+        '<p class="bdp-sec__sub">價格由內容合計，僅折扣需設定。</p>' +
+      '</div>' +
+      '<div class="bd-calc">' +
+        '<span class="bd-calc__part"><span class="bd-calc__k">原價合計</span>' +
+          '<span class="bd-calc__v">' + money(base(b)) + '</span></span>' +
+        '<span class="bd-calc__op">−</span>' +
+        '<span class="bd-calc__part"><span class="bd-calc__k">套組優惠</span>' +
+          '<span class="amount-field amount-field--suffix amount-field--readonly bd-calc__disc">' +
+            '<input class="amount-field__input input" type="number" min="0" max="100" step="1" data-f="disc" value="' + esc(b.disc) + '" placeholder="例：15">' +
+            '<span class="amount-field__unit">%</span></span></span>' +
+        '<span class="bd-calc__part bd-calc__final"><span class="bd-calc__k">粉絲實付</span>' +
+          '<span class="bd-calc__v bd-calc__v--final">' + money(fin(b)) + '</span></span>' +
+      '</div>' +
+      '<div class="form-grid mt-16">' +
+        '<div class="field">' +
+          '<label class="field__label">最多可售出幾份</label>' +
+          '<div class="field__hint">留空則以票券張數為上限</div>' +
+          '<input class="input" type="number" min="1" step="1" data-f="cap" value="' + esc(b.cap) + '" placeholder="不限量">' +
+        '</div>' +
+      '</div>' +
+    '</section>' +
+
+    /* ③ 呈現 */
+    '<section class="bdp-sec">' +
+      '<div class="bdp-sec__head">' +
+        '<h3 class="bdp-sec__title">呈現</h3>' +
+        '<p class="bdp-sec__sub">粉絲在活動頁上看到的名稱、說明與封面。</p>' +
+      '</div>' +
+      '<div class="bd-brand">' +
+        '<div>' +
+          '<div class="field">' +
+            '<label class="field__label">名稱 <span class="field__req">*</span></label>' +
+            '<input class="input" data-f="name" value="' + esc(b.name) + '" placeholder="' + esc(sug || "例：早鳥支持") + '">' +
+            (sug && b.name !== sug ? '<button class="bd-suggest" type="button" data-a="usesug">套用建議名稱「' + esc(sug) + '」</button>' : '') +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="field__label">簡短說明</label>' +
+            '<input class="input" data-f="desc" value="' + esc(b.desc) + '" placeholder="例：VIP 票＋限定 T 恤＋演出前見面會">' +
+          '</div>' +
+        '</div>' +
+        '<div class="field bd-brand__cover">' +
+          '<div class="field__label">封面圖</div>' +
+          '<div class="upload-assets">' +
+            '<div class="upload-tile upload-tile--portrait" data-a="cover">' +
+              '<span class="upload-tile__icon"><i data-lucide="image" class="ztor-icon"></i></span>' +
+              '<span class="upload-tile__title">上傳封面</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  /* ── 清單（背景那份收合列）───────────────────────────────────────── */
+  function rowHTML(b, i) {
+    var off = base(b) > fin(b);
+    return '<button class="card bd-row" type="button" data-open="' + b.id + '">' +
+      '<span class="bd-row__thumb"><i data-lucide="package" class="ztor-icon"></i></span>' +
+      '<span><span class="bd-row__name"><span class="fc-bundle__index">' + String(i + 1).padStart(2, "0") + '</span>' +
+        esc(b.name || "未命名套組") + '</span>' +
+        '<span class="bd-row__meta">' + esc(contentMeta(b) || "還沒有內容") + '</span></span>' +
+      '<span class="bd-row__price">' + money(fin(b)) +
+        (off ? '<span class="bd-row__was">' + money(base(b)) + '</span>' : '') + '</span>' +
+      '<span class="bd-row__chev"><i data-lucide="chevron-right" class="ztor-icon"></i></span></button>';
+  }
+
+  var listEl = document.getElementById("bdp-list");
+  var modal = document.getElementById("bdp-modal");
+  var formEl = document.getElementById("bdp-form");
+
+  function renderList() {
+    listEl.innerHTML = bundles.length
+      ? bundles.map(rowHTML).join("")
+      : '<div class="empty-card"><span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
+        '<h4 class="empty-card__title">尚未建立組合包</h4>' +
+        '<div class="empty-card__cta"><button class="btn btn--primary" type="button" id="bdp-first">新增組合包</button></div></div>';
+    if (window.ztorIcons) window.ztorIcons.applyIcons(listEl);
+  }
+
+  function renderModal() {
+    if (!cur) { modal.hidden = true; return; }
+    modal.hidden = false;
+    document.getElementById("bdp-title").textContent = cur.fresh ? "新增組合包" : "編輯組合包";
+    formEl.innerHTML = formHTML(cur);
+    document.getElementById("bdp-remove").hidden = cur.fresh;
+
+    var r = readiness(cur), miss = r.filter(function (x) { return !x.ok; });
+    document.getElementById("bdp-chip-text").textContent = miss.length ? "還缺 " + miss.length + " 項" : "可以建立了";
+    document.getElementById("bdp-ready-list").innerHTML = r.map(function (x) {
+      return '<li class="readiness__item' + (x.ok ? " is-ok" : "") + '">' +
+        '<i data-lucide="' + (x.ok ? "check" : "circle") + '" class="ztor-icon"></i>' + esc(x.label) + '</li>';
+    }).join("");
+    document.getElementById("bdp-ready-banner").textContent =
+      miss.length ? "補齊 " + miss.length + " 項才能建立" : "都齊了";
+    var primary = document.getElementById("bdp-primary");
+    primary.disabled = miss.length > 0;
+    primary.textContent = cur.scope === "per" ? "建立 " + SESSIONS.length + " 組" : "完成";
+    if (window.ztorIcons) window.ztorIcons.applyIcons(modal);
+  }
+  function render() { renderList(); renderModal(); }
+
+  /* ── 互動 ─────────────────────────────────────────────────────────── */
+  listEl.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-open]");
+    if (t) { cur = bundles.filter(function (b) { return b.id === t.dataset.open; })[0]; cur.pickOpen = false; render(); return; }
+    if (e.target.closest("#bdp-first")) { cur = newBundle(); render(); }
+  });
+  document.getElementById("bdp-add").addEventListener("click", function () { cur = newBundle(); render(); });
+  document.getElementById("bdp-open").addEventListener("click", function () { cur = newBundle(); render(); });
+  document.getElementById("bdp-close").addEventListener("click", function () { cur = null; render(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && cur) { cur = null; render(); } });
+
+  modal.addEventListener("click", function (e) {
+    if (!cur) return;
+    var b = cur, el = e.target.closest("[data-scope],[data-kind],[data-a],[data-item],[data-unitem]");
+    if (!el) return;
+    if (el.dataset.scope) { b.scope = el.dataset.scope; b.tickets = []; b.pickOpen = true; return render(); }
+    if (el.dataset.kind) {
+      var ids = TICKETS.filter(function (t) { return t.type === el.dataset.kind; }).map(function (t) { return t.id; });
+      var all = ids.every(function (id) { return b.tickets.indexOf(id) >= 0; });
+      b.tickets = all ? b.tickets.filter(function (id) { return ids.indexOf(id) < 0; })
+                      : b.tickets.concat(ids.filter(function (id) { return b.tickets.indexOf(id) < 0; }));
+      return render();
+    }
+    if (el.dataset.item) { if (b.items.indexOf(el.dataset.item) < 0) b.items.push(el.dataset.item); return render(); }
+    if (el.dataset.unitem) { b.items = b.items.filter(function (x) { return x !== el.dataset.unitem; }); return render(); }
+    var a = el.dataset.a;
+    if (a === "pickdone") { b.pickOpen = false; return render(); }
+    if (a === "pickopen") { b.pickOpen = true; return render(); }
+    if (a === "usesug") { b.name = suggest(b); return render(); }
+    if (a === "cover") { b.cover = !b.cover; el.classList.toggle("is-filled", b.cover); return renderModal(); }
+  });
+  modal.addEventListener("change", function (e) {
+    if (!cur) return;
+    var b = cur;
+    if (e.target.dataset.tk) {
+      var id = e.target.dataset.tk;
+      b.tickets = e.target.checked ? b.tickets.concat([id]) : b.tickets.filter(function (x) { return x !== id; });
+      return render();
+    }
+    if (e.target.dataset.sess) {
+      var ids = TICKETS.filter(function (t) { return t.sess === e.target.dataset.sess; }).map(function (t) { return t.id; });
+      b.tickets = e.target.checked ? b.tickets.concat(ids.filter(function (x) { return b.tickets.indexOf(x) < 0; }))
+                                   : b.tickets.filter(function (x) { return ids.indexOf(x) < 0; });
+      return render();
+    }
+  });
+  /* 打字不重畫整個表單（會失焦），只更新右軌預覽與底部 chip */
+  modal.addEventListener("input", function (e) {
+    if (!cur) return;
+    var b = cur, f = e.target.dataset.f;
+    if (f === "pq") {
+      var box = formEl.querySelector("[data-results]"), q = e.target.value.trim().toLowerCase();
+      box.hidden = false;
+      Array.prototype.forEach.call(box.querySelectorAll(".fc-pick__opt"), function (o) {
+        o.hidden = !!q && o.textContent.toLowerCase().indexOf(q) < 0;
+      });
+      return;
+    }
+    if (!f) return;
+    b[f === "disc" ? "disc" : f] = e.target.value;
+    if (f === "disc") {
+      formEl.querySelector(".bd-calc__v--final").textContent = money(fin(b));
+    }
+    var r = readiness(b), miss = r.filter(function (x) { return !x.ok; });
+    document.getElementById("bdp-chip-text").textContent = miss.length ? "還缺 " + miss.length + " 項" : "可以建立了";
+    document.getElementById("bdp-primary").disabled = miss.length > 0;
+  });
+  modal.addEventListener("focusin", function (e) {
+    if (e.target.dataset && e.target.dataset.f === "pq") {
+      var box = formEl.querySelector("[data-results]"); if (box) box.hidden = false;
+    }
+  });
+
+  document.getElementById("bdp-remove").addEventListener("click", function () {
+    bundles = bundles.filter(function (b) { return b.id !== cur.id; });
+    cur = null; render();
+  });
+  document.getElementById("bdp-primary").addEventListener("click", function () {
+    var b = cur;
+    if (!b.name.trim()) b.name = suggest(b);
+    if (b.scope === "per") {
+      var kinds = {};
+      b.tickets.forEach(function (id) { var t = tk(id); if (t) kinds[t.type] = 1; });
+      SESSIONS.forEach(function (ss) {
+        seq += 1;
+        bundles.push({ id: "b" + seq, name: b.name + " · " + ss.name, desc: b.desc,
+          tickets: TICKETS.filter(function (t) { return t.sess === ss.id && kinds[t.type]; }).map(function (t) { return t.id; }),
+          items: b.items.slice(), perks: b.perks, disc: b.disc, cap: b.cap,
+          cover: b.cover, scope: "shared", pickOpen: false, fresh: false });
+      });
+    } else {
+      b.fresh = false;
+      if (bundles.indexOf(b) < 0) bundles.push(b);
+    }
+    cur = null; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

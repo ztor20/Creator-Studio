@@ -142,9 +142,21 @@
         <!-- 編輯不再跳頁（2026-08-06）：這一排是「檢視／編輯」兩種狀態的同一組動作，
              由 syncEditMode() 一起驅動，不各自維護。刪除活動只在編輯態出現——
              在唯讀畫面上擺一顆會刪掉整場活動的鈕，太容易誤觸。 -->
+        <!-- 階段轉換（2026-08-13）：狀態機（§7.2）本來只寫在總覽的說明橫幅裡，畫面上卻沒有
+             任何一顆鈕能推進它——草稿填完就是死路。三顆鈕依階段互斥出現，由 syncStage() 驅動：
+             發布開賣（草稿／已排程）→ 取消活動（尚未結束的階段）→ 再開一場（已結束）。 -->
         <div class="page-intro__actions">
           <button class="btn btn--destructive" type="button" data-ed-delete hidden data-i18n="ee.delete">Delete event</button>
           <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
+          <button class="btn btn--ghost" type="button" data-ed-cancelevent hidden data-i18n="event-detail.btn.cancelevent">Cancel event</button>
+          <button class="btn btn--outline" type="button" data-ed-duplicate hidden>
+            <i data-lucide="copy" class="ztor-icon"></i>
+            <span data-i18n="event-detail.btn.duplicate">Run it again</span>
+          </button>
+          <button class="btn btn--primary" type="button" data-ed-golive hidden>
+            <i data-lucide="rocket" class="ztor-icon"></i>
+            <span data-ed-golive-label data-i18n="event-detail.btn.golive">Publish &amp; open sales</span>
+          </button>
           <button class="btn btn--outline" type="button" data-ed-editmode aria-pressed="false">
             <i data-lucide="pencil" class="ztor-icon"></i>
             <span data-ed-editmode-label data-i18n="event-detail.btn.edit">Edit event</span>
@@ -157,10 +169,13 @@
 
       <!-- ═══ KPI 快照 ═══ -->
       <div class="bento mt-16">
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.sold">Tickets sold</div><div class="kpi__value">84 / 200</div><div class="kpi__meta" data-i18n="event-detail.kpi.sold-meta">Across 3 tiers</div></div>
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.kpi.revenue">Event revenue</div><div class="kpi__value">$2,520</div><div class="kpi__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
-        <div class="kpi bento--span-3" data-hide-type="watchparty" data-wp-grow><div class="kpi__label" data-i18n="event-detail.kpi.checkedin">Checked in</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="event-detail.kpi.checkedin-meta">Opens on event day</div></div>
-        <div class="kpi bento--span-3" data-hide-type="watchparty"><div class="kpi__label" data-i18n="event-detail.kpi.refunds">Refund queue</div><div class="kpi__value">0</div><div class="kpi__meta" data-i18n="event-detail.kpi.refunds-meta">v1 refunds disabled (D041)</div></div>
+        <!-- 2026-08-13：後兩張 KPI 掛 data-stage-show——草稿與已排程沒有持票人，
+             「已報到 —」與「退款佇列 0」在那兩個階段只是噪音；活動結束後「開演當天才開放」
+             更是直接錯的。退款那張的值也由「0」改成講清楚是「v1 停用」而不是「目前沒有待處理」。 -->
+        <div class="kpi bento--span-3" data-kpi="sold"><div class="kpi__label" data-i18n="event-detail.kpi.sold">Tickets sold</div><div class="kpi__value">84 / 200</div><div class="kpi__meta" data-i18n="event-detail.kpi.sold-meta">Across 3 tiers</div></div>
+        <div class="kpi bento--span-3" data-kpi="revenue"><div class="kpi__label" data-i18n="event-detail.kpi.revenue">Event revenue</div><div class="kpi__value">$2,520</div><div class="kpi__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
+        <div class="kpi bento--span-3" data-kpi="checkedin" data-hide-type="watchparty" data-wp-grow data-stage-show="on-sale live ended"><div class="kpi__label" data-i18n="event-detail.kpi.checkedin">Checked in</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="event-detail.kpi.checkedin-meta">Opens on event day</div></div>
+        <div class="kpi bento--span-3" data-kpi="refunds" data-hide-type="watchparty" data-stage-show="on-sale live ended cancelled"><div class="kpi__label" data-i18n="event-detail.kpi.refunds">Refund queue</div><div class="kpi__value" data-i18n="event-detail.kpi.refunds-off">Off in v1</div><div class="kpi__meta" data-i18n="event-detail.kpi.refunds-meta">Creator-initiated refunds disabled (D041)</div></div>
       </div>
 
       <!-- ═══ Tabs ═══ -->
@@ -186,6 +201,51 @@
            「編輯畫面的樣子」，檢視模式只是把可以打字的訊號拿掉（shared.css 的 [data-mode="view"]），
            所以切換模式時版面完全不位移。系列子場不給編輯——共用設定在系列母頁改（見下方 syncEditable）。 -->
       <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel" data-editable data-mode="view">
+        <!-- 起飛前檢核清單（2026-07-27 建，2026-08-13 自「退款與贈票」搬來這裡）：
+             卡裡的按鈕都掛 data-view-safe——總覽是可編輯面板，檢視模式下 shared.css 會把
+             未列入白名單的按鈕一律藏起來（那條規則防的是「不按編輯就能改資料」）。檢核、
+             複製連結、匯出、再辦一場都不改這場活動的內容，屬唯讀用途，故放行。
+             開演前還沒準備好的事，排在總覽最上方；活動開始後（live／ended）整張收起。
+             Dashboard「完成檢核」CTA 深連結 event-detail.html#overview 落在這裡。 -->
+        <section class="card mb-16" id="preflight" data-stage-show="draft scheduled on-sale">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--warning"><i data-lucide="alert-triangle" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="event-detail.preflight.title">Pre-flight checklist</h3>
+            </div>
+            <span class="text-sub" style="font-size: var(--fs-12)" data-preflight-sub data-i18n="event-detail.preflight.sub">2 items left before doors</span>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="banknote" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.preflight.refund.title">Refund policy</div>
+                  <div class="data-list__meta" data-i18n="event-detail.preflight.refund.meta">Not set · fans see "contact organizer" until confirmed</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row">
+                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.missing">Missing</span></span>
+                <button class="btn btn--outline btn--sm" type="button" data-view-safe data-preflight-done data-i18n="event-detail.preflight.refund.cta">Set refund policy</button>
+              </div>
+            </div>
+            <!-- 現場人力對線上活動不成立（沒有門口要驗票）——共看派發收起這一列，2026-08-13 -->
+            <div class="data-list__row" data-hide-type="watchparty">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="users" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.preflight.staff.title">On-site staffing</div>
+                  <div class="data-list__meta" data-i18n="event-detail.preflight.staff.meta">2 of 4 roles unconfirmed · door scan &amp; merch desk</div>
+                </div>
+              </div>
+              <div class="data-list__end data-list__end--row">
+                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.unconfirmed">Unconfirmed</span></span>
+                <button class="btn btn--outline btn--sm" type="button" data-view-safe data-preflight-done data-i18n="event-detail.preflight.staff.cta">Confirm staffing</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div class="bento">
 
           <!-- 活動詳情 -->
@@ -198,6 +258,21 @@
             <div class="data-list">
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.ov.type">Type</span></div><span data-i18n="event-detail.ov.type-val">Concert · in-person</span></div>
               <div class="data-list__row" data-hide-type="watchparty"><div class="data-list__row-main"><span data-i18n="event-detail.ov.series">Series</span></div><span data-i18n="event-detail.ov.series-val">Kowloon Café 10th Anniv. · 1 of 3</span></div>
+              <!-- 票務摘要（2026-08-13）：票種與組合包本來只活在「票務」分頁，總覽看不出這場
+                   賣的是什麼、有沒有綁商品。這兩列是唯讀摘要，點右邊的連結切到票務分頁去管理。 -->
+              <div class="data-list__row" data-hide-type="watchparty">
+                <div class="data-list__row-main"><span data-i18n="event-detail.ov.tiers">Ticket types</span></div>
+                <span id="ed-ov-tiers">—</span>
+              </div>
+              <div class="data-list__row" data-hide-type="watchparty">
+                <div class="data-list__row-main"><span data-i18n="event-detail.ov.bundles">Ticket bundles</span></div>
+                <span id="ed-ov-bundles">—</span>
+              </div>
+            </div>
+            <div class="flex-row mt-8" data-hide-type="watchparty">
+              <button class="btn btn--ghost btn--sm" type="button" data-view-safe data-go-tab="tiers">
+                <span data-i18n="event-detail.ov.tickets.manage">Manage tickets &amp; bundles →</span>
+              </button>
             </div>
 
             <div class="field mt-16">
@@ -326,6 +401,62 @@
             </div>
             <p class="text-sub" style="font-size: var(--fs-12);margin-top:12px" data-i18n="event-detail.ov.checkin.note">Scanning a QR returns one of three states. A valid scan moves the ticket issued → used (irreversible; only the creator can reverse). Scanner works offline (~4 h) and re-syncs; on double scan the earliest wins.</p>
           </section>
+
+          <!-- ═══ 線上房間（共看派對，2026-08-13 / D149 落地）═══
+               共看派對沒有票種頁、沒有取票方式、沒有 QR 報到，但錢照收、人照進——
+               「觀眾從哪裡進、進場門檻多少」原本整站沒有一個地方回答。這張卡就是那個落點，
+               位置與報到快照互斥（那張對線上活動不成立、已由 data-hide-type 收掉）。 -->
+          <section class="card bento--span-5" id="ed-room" hidden>
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--info"><i data-lucide="video" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="event-detail.room.title">Online room</h3>
+              </div>
+              <span class="badge badge--info"><span data-i18n="event-detail.room.badge">Online only</span></span>
+            </div>
+            <div class="field mt-16">
+              <div class="field__label" data-i18n="event-detail.room.link">Room link</div>
+              <div class="field-readout" id="ed-room-url">—</div>
+              <p class="field__hint" data-i18n="event-detail.room.hint">Where the audience watches. Sharing this link is how people get in — there is no QR to scan.</p>
+            </div>
+            <div class="flex-row mt-8">
+              <button class="btn btn--outline btn--sm" type="button" data-view-safe id="ed-room-copy"><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.room.copy">Copy link</span></button>
+            </div>
+            <div class="data-list mt-16">
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.entry">Admission</span></div><span id="ed-room-entry">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.seats">Room capacity</span></div><span id="ed-room-seats">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.chat">Live chat</span></div><span id="ed-room-chat">—</span></div>
+            </div>
+            <div class="info-banner mt-16">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="event-detail.room.tbd">One admission for everyone, set in the create flow. Moderation tools and a viewer list are not built yet (D149).</span>
+            </div>
+          </section>
+
+          <!-- ═══ 結案（已結束才出現，2026-08-13）═══
+               此前活動結束後的分頁與售票中一模一樣，等於沒有「收工」這一步：最終到了多少人
+               沒有答案、名單與帳要自己翻分頁找、想照同一套再開一場只能回清單用 kebab。 -->
+          <section class="card bento--span-12" id="ed-wrapup" hidden>
+            <div class="card__head">
+              <div class="card__title-group">
+                <span class="card__title-icon card__title-icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></span>
+                <h3 class="card__title" data-i18n="event-detail.wrap.title">Wrap-up</h3>
+              </div>
+              <span class="text-sub" style="font-size: var(--fs-12)" id="ed-wrap-when">—</span>
+            </div>
+            <div class="bento mt-16">
+              <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.wrap.attended">Attended</div><div class="kpi__value" id="ed-wrap-att">—</div><div class="kpi__meta" id="ed-wrap-att-meta">—</div></div>
+              <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.wrap.noshow">No-shows</div><div class="kpi__value" id="ed-wrap-noshow">—</div><div class="kpi__meta" data-i18n="event-detail.wrap.noshow-meta">Sold but never scanned</div></div>
+              <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.wrap.net">Net to you</div><div class="kpi__value" id="ed-wrap-net">—</div><div class="kpi__meta" data-i18n="event-detail.wrap.net-meta">After the platform fee</div></div>
+              <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="event-detail.wrap.settle">Settlement</div><div class="kpi__value" id="ed-wrap-settle">—</div><div class="kpi__meta" data-i18n="event-detail.wrap.settle-meta">Settled revenue only</div></div>
+            </div>
+            <div class="flex-row mt-16" style="flex-wrap:wrap">
+              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-duplicate><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.btn.duplicate">Run it again</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="attendees"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.att.export">Export attendee list</span></button>
+              <button class="btn btn--outline btn--sm" type="button" data-view-safe data-ed-export="transactions"><i data-lucide="download" class="ztor-icon"></i> <span data-i18n="event-detail.tx.export">Export transactions</span></button>
+              <a class="btn btn--ghost btn--sm" href="earnings.html" data-i18n="event-detail.fin.link.earnings">Open Earnings</a>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -368,14 +499,45 @@
           <div class="card__head">
             <h3 class="card__title" data-i18n="ed.pub.title">Publish settings</h3>
           </div>
-          <div class="data-list">
+          <!-- 唯讀版：開賣之後（on-sale／live／ended／cancelled）。改動會影響已購票的人，
+               那套規則上游未定，故維持唯讀。 -->
+          <div class="data-list" id="ed-pub-read">
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.onsale">Sale mode</span></div><span id="ed-pub-onsale">—</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.pickup">Ticket delivery</span></div><span id="ed-pub-pickup">—</span></div>
             <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="ed.pub.vis">Visibility</span></div><span id="ed-pub-vis">—</span></div>
           </div>
+
+          <!-- 可編輯版：還沒賣出任何一張票的階段（草稿／已排程）。原本這一頁不分階段一律唯讀，
+               理由寫的是「開賣後改會影響買家」——那句話在還沒開賣的活動身上不成立，等於把
+               設定鎖在一個沒有理由鎖的階段（2026-08-13）。 -->
+          <div id="ed-pub-edit" hidden>
+            <div class="field">
+              <div class="field__label" data-i18n="ed.pub.onsale">Sale mode</div>
+              <div class="segmented" role="radiogroup" data-pub="onsale">
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="now" data-i18n="ed.pub.onsale.now">On sale at publish</button>
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="scheduled" data-i18n="ed.pub.onsale.sch">Scheduled</button>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field__label" data-i18n="ed.pub.pickup">Ticket delivery</div>
+              <div class="segmented" role="radiogroup" data-pub="pickup">
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="eticket" data-i18n="ed.pub.pickup.eticket">E-ticket</button>
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="sf" data-i18n="ed.pub.pickup.sf">SF Express</button>
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="store" data-i18n="ed.pub.pickup.store">Store pickup</button>
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <div class="field__label" data-i18n="ed.pub.vis">Visibility</div>
+              <div class="segmented" role="radiogroup" data-pub="visibility">
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="public" data-i18n="ed.pub.vis.public">Public</button>
+                <button type="button" class="segmented__btn" role="radio" aria-checked="false" data-pub-val="private" data-i18n="ed.pub.vis.private">Private link</button>
+              </div>
+            </div>
+          </div>
+
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="ed.pub.edit-tbd">These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.</span>
+            <span id="ed-pub-note" data-i18n="ed.pub.edit-tbd">These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.</span>
           </div>
         </section>
         <section class="card mt-16">
@@ -418,13 +580,25 @@
         <button class="btn btn--outline btn--sm mt-24" type="button" id="ed-tier-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ee.tix.add">Add tier</span></button>
 
         <!-- 票務商品（2026-08-11 使用者指示要在假資料上看得到）：唯讀清單，
-             捆綁包在建立流程設定，這裡的編輯能力等上游規格（ASSUMPTIONS BDL-001）。 -->
-        <section class="card mt-24" id="ed-bundles-card" hidden>
+             組合包在建立流程設定，這裡的編輯能力等上游規格（ASSUMPTIONS BDL-001）。 -->
+        <!-- 2026-08-13：這張卡原本「沒有組合包就整張不見」，於是 14 場活動裡只有 2 場看得到，
+             其餘的畫面沒有任何地方交代「這場有沒有綁商品」——使用者回報找不到組合包資訊。
+             改成常駐，沒有資料時給空狀態說明它是在哪一步設定的。 -->
+        <section class="card mt-24" id="ed-bundles-card">
           <div class="card__head">
-            <h3 class="card__title" data-i18n="ed.bd.title">Ticket bundles</h3>
+            <div class="card__title-group">
+              <span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="ed.bd.title">Ticket bundles</h3>
+            </div>
+            <span class="badge badge--neutral" id="ed-bundle-count"><span>—</span></span>
           </div>
           <p class="field__hint" data-i18n="ed.bd.sub">Tickets bundled with products — they draw from the same ticket pool.</p>
           <div class="data-list mt-16" id="ed-bundle-list"></div>
+          <div class="empty-card" id="ed-bundle-empty" hidden>
+            <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="ed.bd.empty.title">No bundles on this event</h3>
+            <p class="empty-card__text" data-i18n="ed.bd.empty.sub">Bundles pair a ticket with a product (a tee, a vinyl). They are set up in step 6 of the create flow.</p>
+          </div>
           <div class="info-banner mt-16">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
             <span data-i18n="ed.bd.edit-tbd">Bundles are set up in the create flow; editing here lands with the upstream spec (BDL-001).</span>
@@ -584,47 +758,9 @@
           <div class="section-head__sub" data-i18n="event-detail.ref.sub">Refund queue and complimentary tickets (§5.1.6 F5).</div>
         </div>
 
-        <!-- Pre-flight checklist（2026-07-27）：Dashboard「活動檢核尚未完成 → 完成檢核」CTA
-             深連結（event-detail.html#refunds）的落地面。兩個未完成項（退款規則／現場人力）
-             各自帶完成鈕，點了即在原地翻成已完成（原型層級 state flip）——流程在檢核卡上
-             直接走完，不再叫使用者自己找。列格式＝data-list（F4/F6 同款）。 -->
-        <section class="card mb-16" id="preflight">
-          <div class="card__head">
-            <div class="card__title-group">
-              <span class="card__title-icon card__title-icon--warning"><i data-lucide="alert-triangle" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="event-detail.preflight.title">Pre-flight checklist</h3>
-            </div>
-            <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="event-detail.preflight.sub">2 items left before doors</span>
-          </div>
-          <div class="data-list">
-            <div class="data-list__row">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="banknote" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title" data-i18n="event-detail.preflight.refund.title">Refund policy</div>
-                  <div class="data-list__meta" data-i18n="event-detail.preflight.refund.meta">Not set · fans see "contact organizer" until confirmed</div>
-                </div>
-              </div>
-              <div class="data-list__end data-list__end--row">
-                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.missing">Missing</span></span>
-                <button class="btn btn--outline btn--sm" type="button" data-preflight-done data-i18n="event-detail.preflight.refund.cta">Set refund policy</button>
-              </div>
-            </div>
-            <div class="data-list__row">
-              <div class="data-list__row-main">
-                <div class="data-list__icon"><i data-lucide="users" class="ztor-icon"></i></div>
-                <div class="data-list__body">
-                  <div class="data-list__title" data-i18n="event-detail.preflight.staff.title">On-site staffing</div>
-                  <div class="data-list__meta" data-i18n="event-detail.preflight.staff.meta">2 of 4 roles unconfirmed · door scan &amp; merch desk</div>
-                </div>
-              </div>
-              <div class="data-list__end data-list__end--row">
-                <span class="badge badge--warning" data-preflight-badge><span data-i18n="event-detail.preflight.unconfirmed">Unconfirmed</span></span>
-                <button class="btn btn--outline btn--sm" type="button" data-preflight-done data-i18n="event-detail.preflight.staff.cta">Confirm staffing</button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <!-- 墓碑（2026-08-13）：起飛前檢核清單自本分頁搬到「總覽」——它問的是「開演前還有
+             什麼沒準備好」，跟退款佇列與贈票不同題；而且退款分頁在草稿／已排程階段是收起來的，
+             最需要待辦清單的兩個階段反而看不到它。Dashboard 的深連結同日改指 #overview。 -->
 
         <div class="bento">
           <section class="card bento--span-7">
@@ -664,27 +800,29 @@
           <div class="section-head__sub" data-i18n="event-detail.notif.sub">Purchase confirmation, pre-event reminder and change notices (§5.1.6 F5).</div>
         </div>
 
+        <!-- 2026-08-13：三個開關原本是純裝飾的 <div>，點了不會動。改用站上 canonical 的
+             button ＋ role=switch ＋ aria-checked（鍵盤與輔助技術都吃得到），狀態存在本機。 -->
         <section class="card">
           <div class="settings-row">
             <div>
               <div class="settings-row__label" data-i18n="event-detail.notif.purchase.label">Purchase confirmation</div>
               <div class="settings-row__hint" data-i18n="event-detail.notif.purchase.hint">Sent automatically when a ticket is bought.</div>
             </div>
-            <div class="switch switch--on"></div>
+            <button class="switch switch--on" type="button" role="switch" aria-checked="true" data-notif="purchase" aria-label="Purchase confirmation" data-i18n-aria-label="event-detail.notif.purchase.label"></button>
           </div>
           <div class="settings-row">
             <div>
               <div class="settings-row__label" data-i18n="event-detail.notif.reminder.label">Pre-event reminder</div>
               <div class="settings-row__hint" data-i18n="event-detail.notif.reminder.hint">Reminds ticket holders before doors open.</div>
             </div>
-            <div class="switch switch--on"></div>
+            <button class="switch switch--on" type="button" role="switch" aria-checked="true" data-notif="reminder" aria-label="Pre-event reminder" data-i18n-aria-label="event-detail.notif.reminder.label"></button>
           </div>
           <div class="settings-row">
             <div>
               <div class="settings-row__label" data-i18n="event-detail.notif.change.label">Event-change notice</div>
               <div class="settings-row__hint" data-i18n="event-detail.notif.change.hint">Notifies holders of time, venue or lineup changes.</div>
             </div>
-            <div class="switch switch--on"></div>
+            <button class="switch switch--on" type="button" role="switch" aria-checked="true" data-notif="change" aria-label="Event-change notice" data-i18n-aria-label="event-detail.notif.change.label"></button>
           </div>
           <div class="settings-row" style="border-bottom:0">
             <div>
@@ -692,6 +830,49 @@
               <div class="settings-row__hint" data-i18n="event-detail.notif.cancel.hint">If the event is Cancelled, all valid tickets are auto-refunded per the refund flow. Always on.</div>
             </div>
             <span class="badge badge--neutral"><span data-i18n="event-detail.notif.cancel.badge">System</span></span>
+          </div>
+        </section>
+
+        <!-- 寄送紀錄（2026-08-13）：開關只回答「要不要寄」，創作者真正會問的是「到底寄出去了沒」。
+             三列各自帶已寄出筆數或預定寄出時間，由這場活動的交易筆數與開演時間推導，不是另一份資料。 -->
+        <section class="card mt-16">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon"><i data-lucide="history" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="event-detail.notif.log.title">Delivery log</h3>
+            </div>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="mail" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.notif.purchase.label">Purchase confirmation</div>
+                  <div class="data-list__meta" id="ed-notif-log-purchase">—</div>
+                </div>
+              </div>
+              <span class="badge badge--success" id="ed-notif-badge-purchase"><span data-i18n="event-detail.notif.log.sent">Sent</span></span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="bell" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.notif.reminder.label">Pre-event reminder</div>
+                  <div class="data-list__meta" id="ed-notif-log-reminder">—</div>
+                </div>
+              </div>
+              <span class="badge" id="ed-notif-badge-reminder"><span data-i18n="event-detail.notif.log.scheduled">Scheduled</span></span>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="megaphone" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title" data-i18n="event-detail.notif.change.label">Event-change notice</div>
+                  <div class="data-list__meta" id="ed-notif-log-change">—</div>
+                </div>
+              </div>
+              <span class="badge badge--neutral" id="ed-notif-badge-change"><span data-i18n="event-detail.notif.log.none">Not sent</span></span>
+            </div>
           </div>
         </section>
       </div>
@@ -885,6 +1066,24 @@
   </section>
 </div>
 
+<!-- ═══ 確認彈窗（2026-08-13）：三種需要「按下去之前先看清楚後果」的動作共用同一個殼——
+     發布開賣（缺什麼不能賣）、取消活動（會退掉多少張票）、開賣後改高影響欄位（會通知多少人）。
+     標題／內文／主動作文案由 JS 依情境填，因為它們是同一種對話：這是你要做的事、這是影響範圍。 -->
+<div class="payout-modal" id="ed-confirm" hidden>
+  <section class="payout-dialog payout-dialog--narrow" role="dialog" aria-modal="true" aria-labelledby="ed-cf-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ed-cf-title"></h2>
+      <button class="btn btn--icon" type="button" data-cf-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body" id="ed-cf-body"></div>
+    <div class="payout-dialog__foot">
+      <span style="flex:1"></span>
+      <button class="btn btn--outline" type="button" data-cf-close data-i18n="ce.tier.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" id="ed-cf-ok"></button>
+    </div>
+  </section>
+</div>
+
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
@@ -981,7 +1180,15 @@
     return isZh() ? `${h < 12 ? '上午' : (h < 18 ? '下午' : '晚上')} ${h12}:${p[1]}` : `${h12}:${p[1]} ${h < 12 ? 'AM' : 'PM'}`;
   }
   const STAGE_KEY = { 'live': 'events.badge.live', 'on-sale': 'events.badge.on-sale',
-                      'draft': 'events.status.draft', 'ended': 'events.badge.ended', 'scheduled': 'events.badge.scheduled' };
+                      'draft': 'events.status.draft', 'ended': 'events.badge.ended', 'scheduled': 'events.badge.scheduled',
+                      'cancelled': 'event-detail.badge.cancelled' };
+  /* 徽章色態：進行中＝warning、售票中＝success、已取消＝destructive，其餘中性。
+     一個地方決定，頁首與系列清單共用。 */
+  const stageBadgeCls = s => s === 'live' ? ' badge--warning'
+                           : s === 'on-sale' ? ' badge--success'
+                           : s === 'cancelled' ? ' badge--error' : '';
+  /* 顯示用名稱：草稿常常還沒取名，標題與麵包屑不能就這樣開天窗。 */
+  const evName = () => (ev.name || '').trim() || T('event-detail.untitled', 'Untitled event');
 
   /* ── 「系列」分頁的各場清單（2026-08-06）──────────────────────
      這場活動的 store 紀錄帶 series.id 時，從 store 撈出同系列全部場次重繪；
@@ -990,7 +1197,20 @@
      每一列連到那一場自己的詳情頁，本場標「這一場」且不做成連結（點了原地不動）。 */
   function renderSeriesList(ev) {
     const card = document.querySelector('[data-series-list] .data-list');
-    if (!card || !ev.series || !ev.series.id || !window.ztorEvents) return;
+    if (!card || !ev.series || !window.ztorEvents) return;
+    /* 有系列名稱、但沒有 series.id（原型只收錄了這一場）——原本會留著三列示例，
+       那三列講的是別人的巡演。改成一句誠實的說明（2026-08-13）。 */
+    if (!ev.series.id) {
+      card.innerHTML = '<div class="data-list__row"><div class="data-list__row-main">' +
+        '<div class="data-list__icon"><i data-lucide="calendar" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body"><div class="data-list__title">' +
+          String(ev.series.name || '').replace(/[<>&]/g, '') + '</div>' +
+        '<div class="data-list__meta" data-i18n="event-detail.series.only">' +
+          T('event-detail.series.only', 'Other dates in this series are not in this prototype yet.') +
+        '</div></div></div></div>';
+      if (window.ztorIcons) window.ztorIcons.applyIcons(card);
+      return;
+    }
     const all = window.ztorEvents.list()
       .filter(e => e.series && e.series.id === ev.series.id)
       .sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -1004,7 +1224,7 @@
       const qsum = (e.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
       const soldOut = qsum > 0 && e.sold >= qsum;
       const badgeKey = soldOut ? 'events.badge.soldout' : (STAGE_KEY[e.status] || 'events.badge.scheduled');
-      const badgeCls = (soldOut || e.status === 'on-sale') ? ' badge--success' : '';
+      const badgeCls = soldOut ? ' badge--success' : stageBadgeCls(e.status);
       const title = me
         ? esc(e.name)
         : '<a class="card__link" href="event-detail.html?id=' + encodeURIComponent(e.id) + '">' + esc(e.name) + '</a>';
@@ -1038,13 +1258,23 @@
     const crumbBox = document.querySelector('.page-crumb');
     const crumb = crumbBox && crumbBox.querySelector('span:last-child');
     const inSeries = !!(ev.series && ev.series.id);
+    /* 系列母頁的連結（2026-08-13）：原本三個入口（麵包屑中層、返回鈕、兩處「管理系列」）
+       都寫死 series-detail.html、不帶 id，點進去看到的是不特定的系列。現在一律帶 ?id=，
+       而且只有真的有母頁的系列（store 的 series.hasPage）才給連結——原型只做了一個系列母頁。 */
+    const hasSeriesPage = !!(ev.series && ev.series.hasPage);
+    const seriesHref = hasSeriesPage ? 'series-detail.html?id=' + encodeURIComponent(ev.series.id) : '';
+    document.querySelectorAll('[data-i18n="event-detail.series.manage"]').forEach(a => {
+      if (a.tagName !== 'A') return;
+      if (hasSeriesPage) { a.href = seriesHref; a.hidden = false; }
+      else a.hidden = true;             // 沒有母頁就不給連結，連到不存在的頁比沒連結更糟
+    });
     if (crumbBox && inSeries) {
       let mid = crumbBox.querySelector('[data-crumb-series]');
       if (!mid) {
-        mid = document.createElement('a');
-        mid.className = 'card__link';
+        /* 有母頁＝連結，沒有母頁＝只是一層文字（階層還是讀得出來，但不假裝點得進去） */
+        mid = document.createElement(hasSeriesPage ? 'a' : 'span');
+        if (hasSeriesPage) { mid.className = 'card__link'; mid.href = seriesHref; }
         mid.setAttribute('data-crumb-series', '');
-        mid.href = 'series-detail.html';
         const sep = document.createElement('span');
         sep.style.margin = '0 6px';
         sep.textContent = '/';
@@ -1053,33 +1283,35 @@
       }
       mid.textContent = ev.series.name;
       const back = crumbBox.querySelector('.page-crumb__back');
-      if (back) back.href = 'series-detail.html';
+      if (back && hasSeriesPage) back.href = seriesHref;   // 沒有母頁時返回鈕維持回活動清單
     }
     if (crumb && !crumb.hasAttribute('data-i18n')) {
       crumb.textContent = inSeries
         ? T('event-detail.crumb.leg', 'Date {i} · {venue}')
-            .replace('{i}', ev.series.index).replace('{venue}', ev.venue || '')
-        : ev.name;
+            .replace('{i}', ev.series.index).replace('{venue}', ev.venue || T('event-detail.venue.tbd', 'Venue TBD'))
+        : evName();
     }
     /* 分頁標題也要跟著這一場（2026-08-06）：原本只有「找不到活動」那條分支會改 title，
        其餘一律留著 <head> 裡示例活動的名稱——不論打開哪一場，瀏覽器分頁都寫著別人的活動。 */
-    document.title = ev.name + ' · ' + T('event-detail.doctitle', 'Event detail') + ' · Ztor Creator Studio';
+    document.title = evName() + ' · ' + T('event-detail.doctitle', 'Event detail') + ' · Ztor Creator Studio';
     const h1 = $('.page-intro__title');
-    if (h1) { h1.removeAttribute('data-i18n'); h1.textContent = ev.name; }
+    if (h1) { h1.removeAttribute('data-i18n'); h1.textContent = evName(); }
     const sub = $('.page-intro__sub');
     if (sub) {
       sub.removeAttribute('data-i18n');
       const when = [fmtDate(ev.date), fmtTime(ev.start)].filter(Boolean).join(' · ');
-      sub.textContent = [when, [ev.venue, ev.city].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+      const where = [ev.venue, ev.city].filter(Boolean).join(', ');
+      /* 草稿常常日期場地都還沒填——整條副標留白會讓頁首看起來像壞掉的（2026-08-13）。 */
+      sub.textContent = [when, where].filter(Boolean).join(' · ') ||
+        T('event-detail.sub.empty', 'Date and venue not set yet');
     }
     const badges = document.querySelectorAll('.page-intro .badge');
     if (badges[0]) {
-      badges[0].className = 'badge ' + (isLive ? 'badge--warning' : ev.status === 'on-sale' ? 'badge--success' : '');
+      badges[0].className = 'badge' + stageBadgeCls(ev.status);
       const sp = badges[0].querySelector('span');
       if (sp) { sp.setAttribute('data-i18n', STAGE_KEY[ev.status] || 'events.badge.scheduled'); sp.innerHTML = T(STAGE_KEY[ev.status] || 'events.badge.scheduled', ev.status); }
     }
-    /* 系列徽章：store 沒有「系列」這個欄位，掛著寫死的「Series 1/3」等於對這場活動說謊，故收起來。 */
-    if (badges[1]) badges[1].hidden = true;
+    /* 系列徽章由下方 hydrate 的系列段落決定是否顯示（有 series 才顯示真實序號）。 */
     if (badges[2]) {
       const sp = badges[2].querySelector('span');
       /* 用 innerHTML 而非 textContent：字典值本身帶 HTML entity（ce.type.meet = "Meet &amp; Greet"），
@@ -1088,13 +1320,15 @@
     }
     fillEditForm(ev);            // 就地編輯的欄位帶入這一場的現值（2026-08-06）
 
-    const kpis = document.querySelectorAll('.bento .kpi .kpi__value');
+    /* KPI 改用 data-kpi 定位（2026-08-13）：原本靠 `.bento .kpi` 的索引，總覽多了結案卡
+       （裡面也有 4 張 kpi）之後，索引綁的是「排第幾」，最容易被下一次改版洗掉。 */
+    const kpiVal = n => document.querySelector('[data-kpi="' + n + '"] .kpi__value');
     /* 分母＝票種張數加總（真正可賣的數字）。容量已隨「活動人數」撤除（ATT-002）。 */
     const qtySum = (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
-    if (kpis[0]) kpis[0].textContent = fmtNum(ev.sold) + ' / ' + fmtNum(qtySum || ev.sold);
-    if (kpis[1]) kpis[1].textContent = '$' + fmtNum(ev.revenue);
+    if (kpiVal('sold')) kpiVal('sold').textContent = fmtNum(ev.sold) + ' / ' + fmtNum(qtySum || ev.sold);
+    if (kpiVal('revenue')) kpiVal('revenue').textContent = '$' + fmtNum(ev.revenue);
     /* 「Across 3 tiers」是寫死的示例值——這場只有 2 個票種，數字要跟著資料走 */
-    const soldMeta = document.querySelectorAll('.bento .kpi .kpi__meta')[0];
+    const soldMeta = document.querySelector('[data-kpi="sold"] .kpi__meta');
     if (soldMeta) {
       soldMeta.removeAttribute('data-i18n');
       const nTiers = (ev.tiers || []).length;
@@ -1138,6 +1372,25 @@
         if (sp) { sp.removeAttribute('data-i18n'); sp.textContent = ev.series.index + '/' + ev.series.total; }
       } else seriesBadge.hidden = true;
     }
+    /* 總覽的票務摘要兩列（2026-08-13）：值跟著 store 走，管理仍在票務分頁。 */
+    const ovT = rowVal('event-detail.ov.tiers');
+    if (ovT && ovT.val) {
+      const n = (ev.tiers || []).length;
+      const sum = (ev.tiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
+      ovT.val.removeAttribute('data-i18n');
+      ovT.val.textContent = n
+        ? T('event-detail.ov.tiers.val', '{n} types · {m} tickets').replace('{n}', n).replace('{m}', fmtNum(sum))
+        : T('event-detail.ov.none', 'None yet');
+    }
+    const ovB = rowVal('event-detail.ov.bundles');
+    if (ovB && ovB.val) {
+      const bds = ev.bundles || [];
+      const soldSum = bds.reduce((a, b) => a + (Number(b.sold) || 0), 0);
+      ovB.val.removeAttribute('data-i18n');
+      ovB.val.textContent = bds.length
+        ? T('ed.bd.count', '{n} bundles · {m} sold').replace('{n}', bds.length).replace('{m}', fmtNum(soldSum))
+        : T('event-detail.ov.none', 'None yet');
+    }
     /* 「系列」分頁的各場清單：有 series.id 就從 store 撈同系列全部場次重繪，
        本場標「這一場」。沒有 series.id 時什麼都不做——保留原本那三列示例，
        總比對這場活動陳述別人的巡演好。 */
@@ -1169,9 +1422,9 @@
     $('#ed-live-rate').textContent = T('event-detail.live.rate', '{n} in the last 5 min').replace('{n}', recent.length);
     $('#ed-live-since').textContent = T('event-detail.live.since', 'Started {n} min ago').replace('{n}', ev.startedMinutesAgo || 0);
     // KPI 列的「已報到」在進行中場次改成真實數字
-    const kpis = document.querySelectorAll('.bento .kpi');
-    if (kpis[2]) {
-      const v = kpis[2].querySelector('.kpi__value'), m = kpis[2].querySelector('.kpi__meta');
+    const ci = document.querySelector('[data-kpi="checkedin"]');
+    if (ci) {
+      const v = ci.querySelector('.kpi__value'), m = ci.querySelector('.kpi__meta');
       if (v) v.textContent = fmtNum(arrived) + ' / ' + fmtNum(sold);
       if (m) { m.removeAttribute('data-i18n'); m.textContent = T('event-detail.live.kpimeta', '{n}% arrived · updating live').replace('{n}', pct); }
     }
@@ -1297,7 +1550,10 @@
     scheduled:   ['overview', 'dates', 'tiers', 'publish', 'notifications'],
     'on-sale':   ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
     live:        ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
-    ended:       ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance']
+    ended:       ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
+    /* 已取消（2026-08-13）：活動不會再發生，但賣過的票與退款照樣要對帳，所以留下
+       帳務三頁；票種、名單與報到、發布設定對一場不會發生的活動已無意義。 */
+    cancelled:   ['overview', 'dates', 'transactions', 'refunds', 'finance']
   };
   function applyTabs() {
     let allowed = (TABS_BY_STAGE[ev.status] || TABS_BY_STAGE['on-sale']).slice();
@@ -1320,7 +1576,155 @@
     /* 「哪個分頁是作用中」只由頁尾的分頁控制器決定（它跑在本段之後，且已處理
        hash 指向被藏起來的分頁時退回第一個可見分頁）。這裡只負責可見性，不搶著設定作用狀態——
        兩邊都想決定同一件事，就會出現「我點了它又被改掉」這種對打。 */
+
+    /* 分頁以外、同樣只在某些階段成立的區塊，一律掛 data-stage-show＝空白分隔的階段清單，
+       在這裡一次處理（2026-08-13）。這樣「這東西什麼時候該出現」只有一個決策點。 */
+    document.querySelectorAll('[data-stage-show]').forEach(el => {
+      const on = el.dataset.stageShow.split(/\s+/).indexOf(ev.status) >= 0;
+      /* 類型已經收掉的（共看派對的報到 KPI）不因階段又被打開 */
+      const byType = el.dataset.hideType && el.dataset.hideType.split(/\s+/).indexOf(ev.type) >= 0;
+      el.hidden = !on || byType;
+    });
   }
+
+  /* ── 階段轉換（2026-08-13）─────────────────────────────────────
+     §7.2 的狀態機此前只寫在總覽的說明橫幅裡，畫面上沒有任何一顆鈕能推進它。三顆鈕：
+       發布開賣（draft／scheduled → on-sale）：先擋「還不能賣」的資料缺口，缺什麼直接列出來。
+       取消活動（draft／scheduled／on-sale）：按 §7.2 取消會對所有有效票自動退款，
+         確認彈窗要先講清楚會退掉幾張、多少錢，再讓人按。
+       再開一場（ended／cancelled）：以這場為範本開新活動——巡演最常做的動作。
+     ⚠ 與 §7.2 的出入：規格寫「僅 Draft → Cancelled 可逆」，這裡把取消開放到已排程與售票中
+       （見 ASSUMPTIONS STAGE-001），待上游裁決。 */
+  const money0 = n => '$' + fmtNum(Math.round(n));
+  function goLiveBlockers() {
+    const out = [];
+    if (!(ev.name || '').trim()) out.push(T('event-detail.golive.need.name', 'Event name'));
+    const noDate = !(edSessions || []).some(s => (s.date || '').trim());
+    if (noDate) out.push(T('event-detail.golive.need.date', 'At least one date'));
+    if (!(ev.venue || '').trim() && ev.type !== 'watchparty') out.push(T('event-detail.golive.need.venue', 'Venue'));
+    if (!(edTiers || []).length) out.push(T('event-detail.golive.need.tier', 'At least one ticket type'));
+    return out;
+  }
+
+  /* 共用確認殼：三種動作都是同一種對話（這是你要做的事、這是影響範圍）。 */
+  let cfOnOk = null;
+  function openConfirm(opts) {
+    const wrap = $('#ed-confirm');
+    $('#ed-cf-title').textContent = opts.title;
+    $('#ed-cf-body').innerHTML = opts.body;
+    const ok = $('#ed-cf-ok');
+    ok.textContent = opts.okLabel;
+    ok.className = 'btn ' + (opts.danger ? 'btn--destructive' : 'btn--primary');
+    ok.disabled = !!opts.blocked;
+    cfOnOk = opts.onOk || null;
+    wrap.hidden = false;
+    document.body.style.overflow = 'hidden';
+    if (window.ztorIcons) window.ztorIcons.applyIcons(wrap);
+  }
+  function closeConfirm() {
+    $('#ed-confirm').hidden = true;
+    document.body.style.overflow = '';
+    cfOnOk = null;
+  }
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-cf-close]')) { closeConfirm(); return; }
+    if (e.target.closest('#ed-cf-ok')) { const fn = cfOnOk; closeConfirm(); if (fn) fn(); return; }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !$('#ed-confirm').hidden) closeConfirm();
+  });
+
+  function setStage(next) {
+    window.ztorEvents.setStage(ev.id, next);
+    location.reload();                 // 階段換了，整頁的分頁、KPI、動作都要跟著重算
+  }
+
+  function syncStage() {
+    const s = ev.status;
+    const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
+    show('[data-ed-golive]', s === 'draft' || s === 'scheduled');
+    show('[data-ed-cancelevent]', ['draft', 'scheduled', 'on-sale'].indexOf(s) >= 0);
+    document.querySelectorAll('[data-ed-duplicate]').forEach(b => {
+      /* 頁首那顆只在結束後出現；結案卡裡的那顆本來就跟著卡片一起顯示 */
+      if (b.closest('.page-intro__actions')) b.hidden = ['ended', 'cancelled'].indexOf(s) < 0;
+    });
+    const gl = $('[data-ed-golive] [data-ed-golive-label]');
+    if (gl) {
+      const key = s === 'scheduled' ? 'event-detail.btn.opensales' : 'event-detail.btn.golive';
+      gl.setAttribute('data-i18n', key);
+      gl.textContent = T(key, s === 'scheduled' ? 'Open sales now' : 'Publish & open sales');
+    }
+    /* 結束或取消之後不再提供編輯入口——那些欄位改了也不會發生任何事 */
+    const edit = $('[data-ed-editmode]');
+    if (edit && ['ended', 'cancelled'].indexOf(s) >= 0) edit.hidden = true;
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-ed-golive]')) {
+      const miss = goLiveBlockers();
+      if (miss.length) {
+        openConfirm({
+          title: T('event-detail.golive.blocked.title', 'Not ready to sell yet'),
+          body: '<p class="text-sub">' + T('event-detail.golive.blocked.body', 'Fill these in before tickets can go on sale:') + '</p>' +
+                '<div class="data-list mt-8">' + miss.map(m =>
+                  '<div class="data-list__row"><div class="data-list__row-main"><span>' + m + '</span></div>' +
+                  '<span class="badge badge--warning"><span>' + T('event-detail.golive.missing', 'Missing') + '</span></span></div>'
+                ).join('') + '</div>',
+          okLabel: T('event-detail.golive.blocked.ok', 'Publish & open sales'),
+          blocked: true
+        });
+        return;
+      }
+      const qty = (edTiers || []).reduce((a, t) => a + (Number(t.qty) || 0), 0);
+      openConfirm({
+        title: T('event-detail.golive.title', 'Open ticket sales?'),
+        body: '<p>' + T('event-detail.golive.body', 'The event page goes public and {n} tickets become buyable. From here on, changing the date or venue notifies everyone who bought.')
+                .replace('{n}', fmtNum(qty)) + '</p>',
+        okLabel: T('event-detail.golive.ok', 'Open sales'),
+        onOk: () => setStage('on-sale')
+      });
+      return;
+    }
+    if (e.target.closest('[data-ed-cancelevent]')) {
+      const sold = ev.sold || 0;
+      const refund = (ev.tiers || []).reduce((a, t) => a + (Number(t.price) || 0) * (Number(t.sold) || 0), 0);
+      const impact = sold
+        ? T('event-detail.cancel.body', 'All {n} tickets sold are refunded automatically ({m}) and every holder is notified. This cannot be undone.')
+            .replace('{n}', fmtNum(sold)).replace('{m}', money0(refund))
+        : T('event-detail.cancel.body0', 'Nothing has sold yet, so there is nothing to refund. The event stops being publishable.');
+      openConfirm({
+        title: T('event-detail.cancel.title', 'Cancel this event?'),
+        body: '<p>' + impact + '</p>',
+        okLabel: T('event-detail.cancel.ok', 'Cancel event'),
+        danger: true,
+        onOk: () => setStage('cancelled')
+      });
+      return;
+    }
+    if (e.target.closest('[data-ed-duplicate]')) {
+      openConfirm({
+        title: T('event-detail.dup.title', 'Run this event again?'),
+        body: '<p>' + T('event-detail.dup.body', 'Opens the create flow with this event copied in — name, description, lineup, images and ticket types. Dates, venue and every sales figure start empty.') + '</p>',
+        okLabel: T('event-detail.dup.ok', 'Copy into a new event'),
+        onOk: () => { location.href = 'create-event.html?from=' + encodeURIComponent(ev.id); }
+      });
+      return;
+    }
+    /* 總覽的「管理票務與組合包 →」：切到票務分頁（分頁控制器只聽 tablist 上的點擊，
+       所以這裡把點擊轉給那顆分頁鈕，不另外複製一份切換邏輯）。 */
+    const goTab = e.target.closest('[data-go-tab]');
+    if (goTab) {
+      const btn = document.querySelector('[data-tabs] .tabs__item[data-tab="' + goTab.dataset.goTab + '"]');
+      if (btn && !btn.hidden) { btn.click(); btn.scrollIntoView({ block: 'nearest' }); }
+      return;
+    }
+    const exp = e.target.closest('[data-ed-export]');
+    if (exp) {
+      /* 原型不產檔（同站上其他匯出鈕的既有限制），但按了要有回饋 */
+      alert(T('event-detail.export.stub', 'Export is not wired up in the prototype — the file would land in your downloads.'));
+      return;
+    }
+  });
 
   /* ── 交易明細 ─────────────────────────────────────────────── */
   let txAll = [], txFilter = 'all';
@@ -1381,7 +1785,9 @@
      系列子場不可編輯（使用者裁決 2026-08-06）：共用設定在系列母頁改，日期與場地
      「未來可能需要可以單獨修改」——所以鎖的是入口（編輯鈕收起、面板留一則說明），
      欄位本身沒有拆掉，之後要開放只需要把這個判斷拿掉。 */
-  const isSeriesChild = () => !!(ev.series && ev.series.id);
+  /* 「不給編輯」的條件是「共用設定有別的地方可以改」＝這個系列真的有母頁（2026-08-13 修正）。
+     只看 series.id 的話，原型沒做母頁的系列（realive-world-tour）會變成兩邊都不能改。 */
+  const isSeriesChild = () => !!(ev.series && ev.series.hasPage);
 
   function lineupRow(name) {
     const row = document.createElement('div');
@@ -1581,13 +1987,59 @@
     syncEditMode();
   }
 
+  /* 高影響變更＝購票者會在意的欄位：場地、地址、每一場的日期與開演時間。
+     只比對「畫面上現在的值」與 store 的原值，兩者相同就不是變更。 */
+  function highImpactDiffs() {
+    const out = [];
+    const val = k => { const el = document.querySelector('[data-ed="' + k + '"]'); return el ? el.value.trim() : ''; };
+    const dash = T('event-detail.save.empty', 'not set');
+    const push = (label, from, to) => {
+      if ((from || '') === (to || '')) return;
+      out.push({ label: label, from: from || dash, to: to || dash });
+    };
+    const multi = (edSessions || []).length > 1;
+    const suffix = i => multi ? ' · ' + T('ed.sess.n', 'Date {n}').replace('{n}', i + 1) : '';
+    push(T('ce.venue', 'Venue'), ev.venue, val('venue'));
+    push(T('ce.venue.addr', 'Full address'), ev.address, val('address'));
+    (edSessions || []).forEach((s, i) => {
+      const orig = (ev.sessions || [])[i] || (i === 0 ? { date: ev.date, start: ev.start } : {});
+      push(T('ce.date', 'Event date') + suffix(i), fmtDate(orig.date), fmtDate(s.date));
+      push(T('ce.start', 'Start time') + suffix(i), fmtTime(orig.start), fmtTime(s.start));
+    });
+    return out;
+  }
+
+  /* 儲存（原型層級）：確認過影響範圍之後才走到這裡。 */
+  function commitEdit() {
+    alert(T('event-detail.edit.saved', 'Saved.'));
+    setMode('view');
+  }
+
   document.addEventListener('click', e => {
     if (e.target.closest('[data-ed-editmode]')) {
       const panel = document.querySelector('.tab-panel[data-editable]');
       const editing = panel && panel.getAttribute('data-mode') === 'edit';
       if (editing) {                                   // 編輯態按下＝儲存
-        alert(T('event-detail.edit.saved', 'Saved.'));
-        setMode('view');
+        /* 開賣後改日期／場地是「會通知到購票者」的高影響動作（events-store.js 檔頭已如此定義），
+           此前按下儲存就直接存、沒有任何一步讓人看見影響範圍（2026-08-13 補）。 */
+        const diffs = highImpactDiffs();
+        if (diffs.length && ['on-sale', 'live'].indexOf(ev.status) >= 0) {
+          openConfirm({
+            title: T('event-detail.save.title', 'This change reaches buyers'),
+            body: '<div class="data-list">' + diffs.map(d =>
+                    '<div class="data-list__row"><div class="data-list__row-main">' +
+                    '<div class="data-list__body"><div class="data-list__title">' + d.label + '</div>' +
+                    '<div class="data-list__meta">' + d.from + ' → <strong>' + d.to + '</strong></div>' +
+                    '</div></div></div>').join('') + '</div>' +
+                  '<p class="text-sub mt-16">' +
+                    T('event-detail.save.body', 'Saving notifies all {n} ticket holders with an event-change notice.')
+                      .replace('{n}', fmtNum(ev.sold || 0)) + '</p>',
+            okLabel: T('event-detail.save.ok', 'Save & notify'),
+            onOk: () => { commitEdit(); }
+          });
+          return;
+        }
+        commitEdit();
       } else setMode('edit');
       return;
     }
@@ -1830,12 +2282,47 @@
     refreshTix();
   });
 
-  /* ── 票務商品（捆綁包）：唯讀清單。建立流程第 6 步設定的東西，發布後在這裡看得到；
+  /* ── 票務商品（組合包）：唯讀清單。建立流程第 6 步設定的東西，發布後在這裡看得到；
      編輯能力等上游規格（BDL-001）。 */
   /* ── 發布設定（2026-08-11 重新設計）：建立流程第 7 步設的東西，發布後在這裡看得到。
      開賣中改取票方式會影響已售票，那套規則上游未定，先唯讀（面板內有說明）。 */
+  /* 2026-08-13：未開賣的階段（草稿／已排程）改成可以改。原本不分階段一律唯讀，理由寫的是
+     「開賣後改會影響買家」——那句話在還沒賣出任何一張票的活動身上不成立。開賣之後仍維持唯讀。 */
+  const PUB_EDITABLE = ['draft', 'scheduled'];
   function renderPublish() {
     const pub = ev.publish || {};
+    const editable = PUB_EDITABLE.indexOf(ev.status) >= 0;
+    const read = document.getElementById('ed-pub-read');
+    const edit = document.getElementById('ed-pub-edit');
+    if (read) read.hidden = editable;
+    if (edit) edit.hidden = !editable;
+    const note = document.getElementById('ed-pub-note');
+    if (note) {
+      const key = editable ? 'ed.pub.edit-pre' : 'ed.pub.edit-tbd';
+      note.setAttribute('data-i18n', key);
+      note.innerHTML = T(key, editable
+        ? 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale they lock — changing them then affects buyers, and those rules are upstream.'
+        : 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.');
+    }
+    if (edit) {
+      const cur = { onsale: pub.onsale || 'now', pickup: pub.pickup || 'eticket', visibility: pub.visibility || 'public' };
+      edit.querySelectorAll('[data-pub]').forEach(group => {
+        group.querySelectorAll('[data-pub-val]').forEach(b => {
+          const on = b.dataset.pubVal === cur[group.dataset.pub];
+          b.classList.toggle('segmented__btn--active', on);
+          b.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+        if (!group.dataset.wired) {
+          group.dataset.wired = '1';
+          group.addEventListener('click', e => {
+            const b = e.target.closest('[data-pub-val]');
+            if (!b) return;
+            ev.publish = Object.assign({}, ev.publish, { [group.dataset.pub]: b.dataset.pubVal });
+            renderPublish();
+          });
+        }
+      });
+    }
     const set = (id, key, fb) => { const el = document.getElementById(id); if (el) el.textContent = T(key, fb); };
     set('ed-pub-onsale', pub.onsale === 'scheduled' ? 'ed.pub.onsale.sch' : 'ed.pub.onsale.now',
         pub.onsale === 'scheduled' ? 'Scheduled' : 'On sale at publish');
@@ -1855,7 +2342,19 @@
     const list = document.getElementById('ed-bundle-list');
     if (!card || !list) return;
     const bds = ev.bundles || [];
-    card.hidden = !bds.length;
+    /* 共看派對沒有票券，組合包對它不成立（同 D149 收掉票務分頁的口徑） */
+    card.hidden = ev.type === 'watchparty';
+    const empty = document.getElementById('ed-bundle-empty');
+    const count = document.getElementById('ed-bundle-count');
+    if (empty) empty.hidden = !!bds.length;
+    list.hidden = !bds.length;
+    if (count) {
+      const soldSum = bds.reduce((a, b) => a + (Number(b.sold) || 0), 0);
+      count.innerHTML = '<span>' + (bds.length
+        ? T('ed.bd.count', '{n} bundles · {m} sold').replace('{n}', bds.length).replace('{m}', fmtNum(soldSum))
+        : T('ed.bd.count0', 'None')) + '</span>';
+      count.className = 'badge' + (bds.length ? ' badge--success' : ' badge--neutral');
+    }
     if (!bds.length) return;
     list.innerHTML = bds.map(b => {
       const tix = (b.tickets || []).map(x => {
@@ -1878,10 +2377,156 @@
   }
   renderBundles();
 
+  /* ── 結案（已結束／已取消）─────────────────────────────────
+     結束後的問題跟售票中不一樣：最後到了多少人、這場淨賺多少、名單與帳在哪、
+     還要不要再辦一次。此前這四題在畫面上一題都沒有答案。 */
+  function renderWrapUp() {
+    const card = $('#ed-wrapup');
+    if (!card) return;
+    const on = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+    card.hidden = !on;
+    if (!on) return;
+    const ci = window.ztorEvents.checkinSummary(ev.id);
+    const tx = window.ztorEvents.transactions(ev.id).filter(t => t.status === 'paid');
+    const gross = tx.reduce((a, t) => a + t.gross, 0);
+    const fee = tx.reduce((a, t) => a + t.fee, 0);
+    const when = $('#ed-wrap-when');
+    if (when) when.textContent = ev.status === 'cancelled'
+      ? T('event-detail.wrap.cancelled', 'Cancelled — sales below are what had already been paid')
+      : T('event-detail.wrap.when', 'Ended {d}').replace('{d}', fmtDate(ev.date));
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    if (ci && ev.type !== 'watchparty') {
+      set('#ed-wrap-att', fmtNum(ci.valid) + ' / ' + fmtNum(ci.sold));
+      set('#ed-wrap-att-meta', T('event-detail.wrap.rate', '{n}% of tickets sold').replace('{n}', ci.rate));
+      set('#ed-wrap-noshow', fmtNum(ci.sold - ci.valid));
+    } else {
+      /* 共看派對與已取消的場次沒有到場數這件事 */
+      set('#ed-wrap-att', '—');
+      set('#ed-wrap-att-meta', T('event-detail.wrap.noattendance', 'No door check-in for this event'));
+      set('#ed-wrap-noshow', '—');
+    }
+    set('#ed-wrap-net', money0(gross - fee));
+    set('#ed-wrap-settle', ev.status === 'cancelled'
+      ? T('event-detail.wrap.settle.refunding', 'Refunding')
+      : T('event-detail.wrap.settle.done', 'Settled'));
+  }
+
+  /* 已結束的場次：報到快照卡不該再寫「開演當天才開放」，改填這場最後的三色統計。 */
+  function renderFinalCheckin() {
+    const card = $('#ed-checkin-snapshot');
+    const ci = window.ztorEvents.checkinSummary(ev.id);
+    if (!card || !ci) return;
+    const badge = card.querySelector('.card__head .badge span');
+    if (badge) {
+      badge.setAttribute('data-i18n', 'event-detail.ov.checkin.final');
+      badge.textContent = T('event-detail.ov.checkin.final', 'Final');
+    }
+    const vals = card.querySelectorAll('.kpi .kpi__value');
+    if (vals[0]) vals[0].textContent = fmtNum(ci.valid);
+    if (vals[1]) vals[1].textContent = fmtNum(ci.used);
+    if (vals[2]) vals[2].textContent = fmtNum(ci.invalid);
+    /* 頁首那張「已報到」KPI 同理：結束之後還寫「開演當天才開放」是錯的 */
+    const kpi = document.querySelector('[data-kpi="checkedin"]');
+    if (kpi) {
+      const v = kpi.querySelector('.kpi__value'), m = kpi.querySelector('.kpi__meta');
+      if (v) v.textContent = fmtNum(ci.valid) + ' / ' + fmtNum(ci.sold);
+      /* 這一句帶 {n}，不能掛 data-i18n——切語言時 applyI18n 會把它換成含佔位符的原字串。
+         改由下方 i18n:applied 的 handler 重跑本函式（同 paintLive 的作法）。 */
+      if (m) { m.removeAttribute('data-i18n'); m.textContent = T('event-detail.kpi.checkedin-final', 'Final · {n}% arrived').replace('{n}', ci.rate); }
+    }
+  }
+
+  /* ── 線上房間（共看派對）───────────────────────────────── */
+  function renderRoom() {
+    const card = $('#ed-room');
+    if (!card || ev.type !== 'watchparty') return;
+    card.hidden = false;
+    const room = ev.room || {};
+    const url = room.url || ('ztor.live/w/' + ev.id);
+    $('#ed-room-url').textContent = url;
+    const entry = (ev.tiers || [])[0];
+    $('#ed-room-entry').textContent = entry
+      ? (Number(entry.price) ? money0(entry.price) : T('ce.tier.free', 'Free'))
+      : T('ce.tier.free', 'Free');
+    $('#ed-room-seats').textContent = room.capacity
+      ? T('event-detail.room.seats.n', '{n} viewers').replace('{n}', fmtNum(room.capacity))
+      : '—';
+    $('#ed-room-chat').textContent = room.chat === false
+      ? T('event-detail.room.chat.off', 'Off') : T('event-detail.room.chat.on', 'On');
+    const copy = $('#ed-room-copy');
+    if (copy && !copy.dataset.wired) {
+      copy.dataset.wired = '1';
+      copy.addEventListener('click', () => {
+        const abs = 'https://' + url;
+        if (navigator.clipboard) navigator.clipboard.writeText(abs).catch(() => {});
+        const sp = copy.querySelector('span');
+        if (!sp) return;
+        const prev = sp.getAttribute('data-i18n');
+        sp.removeAttribute('data-i18n');
+        sp.textContent = T('event-detail.live.scanner.copied', 'Link copied');
+        setTimeout(() => { if (prev) { sp.setAttribute('data-i18n', prev); if (window.applyI18n) window.applyI18n(sp); } }, 1600);
+      });
+    }
+  }
+
+  /* ── 通知：開關真的會動 ＋ 寄送紀錄 ───────────────────────
+     開關只回答「要不要寄」，創作者真正會問的是「到底寄出去了沒」。紀錄由這場活動的
+     交易筆數與開演日推導，不另外編一份資料。 */
+  const NOTIF_KEY = 'ztor.event-notif.' + ev.id;
+  function notifState() {
+    try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function renderNotif() {
+    const st = notifState();
+    document.querySelectorAll('[data-notif]').forEach(sw => {
+      const on = st[sw.dataset.notif] !== false;          // 預設全開（同 F5）
+      sw.classList.toggle('switch--on', on);
+      sw.setAttribute('aria-checked', on ? 'true' : 'false');
+      if (!sw.dataset.wired) {
+        sw.dataset.wired = '1';
+        sw.addEventListener('click', () => {
+          const s = notifState();
+          s[sw.dataset.notif] = !(s[sw.dataset.notif] !== false);
+          try { localStorage.setItem(NOTIF_KEY, JSON.stringify(s)); } catch (e) {}
+          renderNotif();
+        });
+      }
+    });
+    const paid = window.ztorEvents.transactions(ev.id).filter(t => t.status === 'paid').length;
+    const set = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+    set('#ed-notif-log-purchase', paid
+      ? T('event-detail.notif.log.purchase.n', '{n} sent · one per paid order').replace('{n}', fmtNum(paid))
+      : T('event-detail.notif.log.purchase.0', 'Nothing sold yet — none sent'));
+    const ended = ['ended', 'cancelled'].indexOf(ev.status) >= 0;
+    set('#ed-notif-log-reminder', ended
+      ? T('event-detail.notif.log.reminder.done', 'Sent 24 h before doors')
+      : (ev.date ? T('event-detail.notif.log.reminder.due', 'Goes out 24 h before doors · {d}').replace('{d}', fmtDate(ev.date))
+                 : T('event-detail.notif.log.reminder.nodate', 'Needs a date before it can be scheduled')));
+    set('#ed-notif-log-change', ev.status === 'cancelled'
+      ? T('event-detail.notif.log.change.cancel', 'Cancellation notice sent to all holders')
+      : T('event-detail.notif.log.change.none', 'No date, venue or lineup change since sales opened'));
+    const bp = $('#ed-notif-badge-purchase'), br = $('#ed-notif-badge-reminder'), bc = $('#ed-notif-badge-change');
+    const badge = (el, cls, key, fb) => {
+      if (!el) return;
+      el.className = 'badge' + (cls ? ' ' + cls : '');
+      el.innerHTML = '<span data-i18n="' + key + '">' + T(key, fb) + '</span>';
+    };
+    badge(bp, paid ? 'badge--success' : 'badge--neutral', paid ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.none', paid ? 'Sent' : 'Not sent');
+    badge(br, ended ? 'badge--success' : '', ended ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.scheduled', ended ? 'Sent' : 'Scheduled');
+    badge(bc, ev.status === 'cancelled' ? 'badge--warning' : 'badge--neutral',
+          ev.status === 'cancelled' ? 'event-detail.notif.log.sent' : 'event-detail.notif.log.none',
+          ev.status === 'cancelled' ? 'Sent' : 'Not sent');
+  }
+
   hydrate();
   renderEdTiers();
   syncEditMode();          // 載入後先鎖成唯讀（面板預設 data-mode="view"）
   applyTabs();
+  syncStage();
+  renderWrapUp();
+  renderFinalCheckin();
+  renderRoom();
+  renderNotif();
   initTx();
   if (isLive) initLive();
   /* 防重繪迴圈（2026-08-11，做法沿用 create-event.html 2026-08-04 踩過的同一個坑，
@@ -1896,6 +2541,12 @@
     if (i18nBusy) return;
     i18nBusy = true;
     hydrate();
+    /* 這幾張卡的文字帶數字佔位（{n}／{d}），不能靠 data-i18n 換語言，改成整段重畫 */
+    renderWrapUp();
+    renderFinalCheckin();
+    renderRoom();
+    renderNotif();
+    syncStage();
     if (isLive) paintLive();
     setTimeout(() => { i18nBusy = false; }, 0);
   });
@@ -1941,6 +2592,23 @@
      按鈕收成完成態；兩項都完成時卡片標題列 sub 同步翻成 all-clear。 */
   (function () {
     const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
+    /* 「還剩幾項」由畫面上真的還沒完成的列算出來（2026-08-13）：原本是寫死的「2 items」，
+       線上活動收掉現場人力那一列之後，那句話就對不上了。 */
+    function syncSub() {
+      const card = document.getElementById('preflight');
+      if (!card) return;
+      const left = Array.from(card.querySelectorAll('.data-list__row'))
+        .filter(r => !r.hidden && r.querySelector('.badge--warning')).length;
+      const sub = card.querySelector('[data-preflight-sub]');
+      if (!sub) return;
+      const key = left ? 'event-detail.preflight.subn' : 'event-detail.preflight.clear';
+      sub.setAttribute('data-i18n', key);
+      sub.textContent = left
+        ? T('event-detail.preflight.subn', '{n} items left before doors').replace('{n}', left)
+        : T('event-detail.preflight.clear', 'All clear — ready for doors');
+    }
+    syncSub();
+    document.addEventListener('i18n:applied', syncSub);
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-preflight-done]');
       if (!btn) return;
@@ -1956,9 +2624,8 @@
       btn.classList.add('btn--outline');
       btn.innerHTML = '<span data-i18n="event-detail.preflight.completed">' + T('event-detail.preflight.completed', 'Completed ✓') + '</span>';
       const card = btn.closest('#preflight');
+      syncSub();
       if (card && !card.querySelector('.badge--warning')) {
-        const sub = card.querySelector('.card__head .text-sub');
-        if (sub) sub.innerHTML = '<span data-i18n="event-detail.preflight.clear">' + T('event-detail.preflight.clear', 'All clear — ready for doors') + '</span>';
         const icon = card.querySelector('.card__title-icon');
         if (icon) { icon.classList.remove('card__title-icon--warning'); icon.classList.add('card__title-icon--success'); }
       }

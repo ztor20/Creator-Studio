@@ -78,6 +78,55 @@
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
 
+### Q67：控件的填色要不要跟著所在表面走（2026-08-13 提出，同日裁示「從 DS 和元件一起改」，已落地）
+
+使用者圈選組合包彈窗裡的「＋ 新增權益」：「這個按鈕沒有照階層邏輯」。
+
+**問題**：`.btn--outline` 的填色是**絕對色** `--card`。同一顆按鈕因此在三種表面上讀出三種層級關係——
+
+| 所在表面 | 深色底色 | 按鈕填色 | 讀起來 |
+|---|---|---|---|
+| 頁面畫布 | `#0C0D0D` | `#212223` | 比底亮（對） |
+| 卡片內 | `#212223` | `#212223` | **同色，填色等於不存在** |
+| L2 分組面內 | ≈`#292A2B` | `#212223` | **比底暗，往下沉** |
+
+這與 `.form-section--outlined` 放進卡（Q66）是同一類毛病：**在巢狀情境裡用絕對表面色**。
+
+**裁決＝填色改成相對值**。新增 `--control-raise`：深色 `rgba(222,223,233,.04)`（疊在所在那一層上，固定亮一階）／亮色 `var(--card)`（維持白卡；亮色畫布是 `#FAFAFA`、卡是白，白填在畫布上有升起感，在白卡裡本來就交給邊框——**亮色行為完全不變**）。
+
+`.btn--outline` 原本那句註解（2026-06-12）自己就寫著「a real border works on both white and gray grounds」——邊框接手之後，那個填色就只剩「在某一種表面上剛好對」的絕對值，本題把它收成相對值。
+
+**同輪連帶（元件層）**：`.fc-add` / `.fc-add-item`（新增套組／新增商品／新增權益）改 `border-style: dashed`。站上「這裡還沒有東西、按了才長出來」一律是虛線框——`upload-tile` 的上傳格、`payout-modal` 的新增帳戶、`variant-builder` 的兩顆新增鈕（Q24 同輪改的）都是；這兩顆做的是同一件事，實線會讀成一般按鈕。
+
+**複驗**：events／e-shop／earnings／settings／create-product／project-detail／publish-work／design-system 八頁掃過所有 `.btn--outline`，相對所在表面**最差 +7.6**（改之前在卡與 L2 裡是 0 與負值）；亮暗兩主題各驗一次。
+
+證據：`ds-components/button.css` 的 `.btn--outline`（含 2026-06-12 的沿革註解）、`ds-components/_tokens.css` 的 `--control-raise`、`ds-components/bundle-editor.css` 的 `.fc-add`／`.fc-add-item`。
+
+### Q66：巢狀分組往亮還是往暗（2026-08-13 提出，同日使用者裁示「一起做完」，已全站落地）
+
+站上同一個視覺角色（「卡片裡的一段分組」）目前有**兩套方向相反**的答案，兩套各自都合 token 紀律，機械檢查抓不到：
+
+- **往暗**：`--muted` `#161718`（`.card--muted`）與 `--surface-shell` `#1C1D1E`（`.form-section--outlined`，Q42）。`_tokens.css:612` 的註解直接寫「嵌套襯底：比卡深」。
+- **往亮**：`--nest-surface` `rgba(222,223,233,.04)`（Q24 的 `.nest`）與 `demo-layer-system.html` 的 `--layer-2-surface`（同值，照 Figma `856:27798` 定的）。模型是「疊在誰身上就跟著誰亮一階」。
+
+**觸發**：組合包彈窗把三張分卡放進 `.payout-dialog`（底色 `--card` `#212223`）時，`.form-section--outlined` 的 `--surface-shell` 比面板**更暗**，讀起來是往下沉一階。使用者圈選該區裁示：「依照 figma 修正階層的規則，每加一層的 section 顏色應該是越來越亮。」
+
+**本輪暫依「往亮」**：`docs/bundle-popup-demo.html` 的 `.bdp-sec` 用 `--layer-2-surface`／`--layer-line`，只在該頁作用域內，`_tokens.css` 與既有元件零修改。
+
+**裁決＝全站分組面往亮，且把 `--muted` 的角色收斂**（2026-08-13 使用者「一起做完」）。落地三件事：
+
+1. **`.card--muted` 翻向**：`--muted`（比卡暗）→ `--nest-surface`（疊在卡上、比卡亮一階）。亮色兩層同為白，補一條 `--nest-line` 線框才分得出來（沿用 Q62「亮色分層改用陰影或線框」）。實測深色 host `#1C1D1E` → 子層 +7.8 亮度、亮色白底 + `rgba(16,17,20,.08)` 線框。
+2. **新增 `--nest-line`**：深色 `transparent`（4% 薄膜已足夠，再加線會變成兩套分層語彙疊在一起）／亮色 `rgba(16,17,20,.08)`。
+3. **`--muted` 角色收斂**：只服務**凹槽與襯底**——控件軌道（`.segmented`）、媒體井（圖片未載入的格子）、進度條底。這一類往下凹是對的，**不在翻向範圍**，所以 B 段那 5 頁的 segmented 不動。token 註解已改寫。
+
+**Q42 未被推翻**：`.form-section--outlined` 仍用 `--surface-shell`。它是**頁面層**的分組，坐在畫布 `#0C0D0D` 上本來就比畫布亮、方向正確。改的是「卡／彈窗內的分組」這個不同的角色——規則見下一段。
+
+**連帶規則（寫進 design-system Pillar 6）**：`.form-section--outlined` 是頁面層的分組，**不放進卡或彈窗**；卡／彈窗內的分組用往亮的那一層（`.bd-sec` 之於組合包彈窗、`.card--muted` 之於卡內分組、`.nest` 之於模式切換長出來的整層）。理由：outlined 吃的是絕對色 `--surface-shell`，比 `--card` 暗，一放進卡就往下沉一階。
+
+**全站稽核（2026-08-13，53 頁逐頁量合成後亮度）**：報告在 `docs/階層稽核-2026-08-13.md`。結果——站上大致一致，同類問題只有 **2 處**（`publish-work.html` 的 `.form-section--outlined > .card--muted`、`auction-detail.html` 的 `.form-section--outlined > .ad-hero`，皆 `#161718` 坐在 `#1C1D1E` 上）；另有 **1 個隱患**——`.segmented` 的軌道也吃 `--muted`，但那是「控件凹槽」不是「分組面」，**Q66 若裁全站往亮，必須先把這兩個角色拆成兩個 token**，否則軌道跟著翻亮、滑塊就浮不起來（受影響：create-auction／projects／earnings 三族共 5 頁）。**目前 0 頁**把 `.form-section--outlined`／`.card--muted`／`.nest` 放進 `.card`／`.payout-dialog`／`.drawer`／`.detail-sheet`——組合包彈窗會是第一個，已在 demo 避開。
+
+證據：`ds-components/_tokens.css:607`（`--card`）、`:612`（`--muted` 註解「比卡深」）、`:643`（`--nest-surface`）、`:676`（`--surface-shell`）、`demo-layer-system.html:33-37`、`ds-components/nest.css` 檔頭的兩層填色說明、`docs/bundle-popup-demo.html` 的 `.bdp-sec`、`docs/階層稽核-2026-08-13.md`。
+
 ### Q61～Q64：表面階層要不要收成一組帶級數的 token（2026-08-11 提出，待裁決）
 
 Figma `856:27798`（layer0／layer1／layer2／layer3）把「表面層級」畫成一個通用模型：L0 畫布實色、L1 卡片實色、L2 半透明薄膜（疊在誰身上就跟著誰亮一階、可再疊）、L3 不再疊填色只留 1px 邊框。站上目前有**三套各自管一段的層級語彙**並存，沒有一套是通用的：

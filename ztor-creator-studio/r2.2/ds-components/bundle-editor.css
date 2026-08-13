@@ -30,8 +30,13 @@
 .fc-item-row .upload-tile { min-height: 96px; }
 .fc-item-fields { display: flex; flex-direction: column; gap: var(--sp-8); }
 
-/* 滿版加高的「新增」按鈕（新增套組／新增商品） */
+/* 滿版加高的「新增」按鈕（新增套組／新增商品）。
+   2026-08-13（Q67 同輪）改虛線：站上「這裡還沒有東西、按了才長出來」一律是虛線框
+   （upload-tile 的上傳格、payout-modal 的新增帳戶、variant-builder 的兩顆新增鈕都是），
+   這兩顆做的是同一件事，實線會讀成「一個一般的按鈕」。填色交給 .btn--outline 的
+   --control-raise，所以它坐在哪一層都比那一層亮一階。 */
 .fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
+.fc-add, .fc-add-item { border-style: dashed; }
 .fc-add { min-height: 56px; font-weight: var(--fw-regular); }
 .fc-add-item { min-height: 48px; margin-top: var(--sp-10); }
 
@@ -358,7 +363,7 @@
    後 1,087px，且不再隨場次數膨脹（挑選器選完就收成 chip）。 */
 
 /* ── 收合列：已存在的一組 ────────────────────────────────────────────────
-   一組捆綁包平常只需要回答三件事：叫什麼、裡面有什麼、賣多少。其餘欄位是編輯當下
+   一組組合包平常只需要回答三件事：叫什麼、裡面有什麼、賣多少。其餘欄位是編輯當下
    才要看的東西，點開才給。整列是按鈕（滑鼠不必瞄準小連結）。 */
 .bd-row {
   display: grid;
@@ -388,14 +393,37 @@
 .bd-row__was { margin-left: var(--sp-6); font-size: var(--fs-12); color: var(--muted-foreground); text-decoration: line-through; }
 .bd-row__chev { color: var(--muted-foreground); }
 
-/* 步驟列：坐在 dialog 的 head 與 body 之間，沿用建立流程頂部同一支進度條
-   （`.progress-stepper--segmented`），不另做一套小圓點。flex:none＝它不參與 body 的
-   捲動；左右內距對齊 head／body（20px），上下留白讓它與兩邊的邊界分開。 */
-.bd-steps {
-  flex: none;
-  padding: var(--sp-14) var(--sp-20) var(--sp-16);
-  border-bottom: 1px solid var(--border);
+/* 墓碑 2026-08-13：`.bd-steps`（彈窗頂部的三步進度條）隨「三步改成三張分卡」撤除。
+   步驟閘門的職責移交給 footer 的就緒 chip（`.readiness__chip`）——它一次講完全部缺項，
+   不必走到那一步才發現少了什麼。
+
+── 分卡（`.bd-sec`）與它的表面階層 ──────────────────────────────────────────
+   彈窗內的三張分卡。**不能用 `.form-section--outlined`**：那支吃 `--surface-shell`
+   （深色 #1C1D1E），比彈窗面板的 `--card`（#212223）更暗，放進彈窗會變成往下沉一階，
+   與 Figma 856:27798 的疊層模型（疊上去的一層跟著父層亮一階）方向相反。
+   照模型對上去：L1 彈窗面板 `--card` → L2 本元件 `--nest-surface` 疊上去 ≈ #292A2B
+   → L3 裡面的挑選器與算式列不再疊填色、只留線框。見 STYLE-DECISIONS Q66。 */
+.bd-sec {
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-12);
+  background: var(--nest-surface);
+  border: 1px solid var(--nest-line);
+  border-radius: var(--radius-xl);
 }
+.bd-sec:last-child { margin-bottom: 0; }
+.bd-sec__head { margin-bottom: var(--sp-16); }
+.bd-sec__title { margin: 0; font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground); }
+.bd-sec__sub { margin: var(--sp-4) 0 0; font-size: var(--fs-12); color: var(--muted-foreground); }
+/* L3：分卡裡的挑選器與算式列。**不再疊填色**，改用線框表達層級——Q24 的第三階規則就是
+   「再疊會愈來愈糊、也失去色溫」。算式列原本吃 --muted（往暗的凹槽），在 L2 分卡裡會
+   變成同一畫面上同時有往上與往下兩種疊法，所以這裡一併收成只有框。 */
+/* 邊框用 --border 不用 --nest-line：後者深色是 transparent（L2 靠薄膜分層就夠），
+   L3 拿它當框會變成「沒有底色也沒有邊」＝完全看不見。Q24 明訂 L3 就用 --border。 */
+.bd-sec .bd-pick,
+.bd-sec .bd-calc { background: transparent; border: 1px solid var(--border); }
+
+/* footer 右側：就緒 chip ＋ 主要動作（比照建立商品的底部操作列） */
+.bd-foot-actions { display: flex; align-items: center; gap: var(--sp-12); margin-left: auto; }
 
 /* ── 編輯表單的三段 ──────────────────────────────────────────────────────
    `.bd-form` 是分段版型自己的區塊名（2026-08-13）。它套在 `payout-dialog__body` 上，
