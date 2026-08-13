@@ -1,27 +1,33 @@
 /* ============================================================
-   file:// guard —— 直接開 .html 檔會看到一個「壞掉」的頁面，自動轉回 dev server。
-   （2026-07-27 使用者回報：截圖是一片沒有樣式、沒有側欄的頁面，網址是
-   D:/…/r2.1/order-detail.html。那不是 bug，是根本沒經過 server。）
+   file:// guard —— 已於 2026-08-13 移除（墓碑，請勿還原）。
 
-   為什麼 file:// 一定不能用：
-     · 沒有 dev server ＝ 沒有 no-store 標頭，改了 CSS 也可能吃到舊的
-     · fetch()／XHR 在 file: origin 會被 CORS 擋掉 —— 側欄、i18n、元件渲染全部失效
-       （所以截圖裡連側欄都沒有）
-   與其每次提醒「請用 localhost」，不如讓它自己轉過去。
+   這裡原本有一段：偵測到頁面是用 file:// 開的，就自動轉去 dev server。
+   它的前提是「file:// 開會看到一個沒有樣式、沒有側欄的壞頁面」。
 
-   放在 theme.js 最上面是因為它是 43 個頁面共同載入、且在 <head> 裡的第一支 script，
-   轉址發生在任何算繪之前。轉址後 protocol 變 http:，這段直接 return，不會有迴圈。
-   若 server 沒開，瀏覽器會顯示「無法連線 localhost:7777」——比一個沒有樣式、
-   看起來像壞掉的頁面清楚得多。
+   ── 為什麼移除 ──────────────────────────────────────────
+   那個前提現在是錯的，而且已用實測推翻：2026-08-13 用本機 chrome-headless-shell
+   直接開 `file://…/r2.2/projects.html`（轉址停用），畫面完整——深色主題、側欄、
+   Satoshi 字型、圖示、專案清單縮圖、Cheat Codes 面板全部正常。
+   原因是站上的 CSS／JS／字型／圖片全是相對路徑的本地檔（無 CDN），
+   這類子資源在 file:// 下照常載入；真正被 file: origin 擋掉的只有 fetch／XHR，
+   而全站只有 devtools.js 用到一次（見下方「已知差異」）。
+
+   更關鍵的是它會靜默腐爛：舊版把版本資料夾寫死 `/r2.1/`、埠寫死 `serve-local.py`
+   的 7777。2026-07-26 換成 devserver.py（4325）、07-29 資料夾改名 r2.2 之後，
+   比對再也不會命中，於是「雙擊 .html 自動跳 localhost」這件事無聲無息地停掉——
+   使用者回報「以前可以，現在不行」正是這個。一段會過期、又只在過期時才被發現的
+   自動轉址，不如不要有。
+
+   ── 已知差異（file:// 直接開 vs dev server）────────────────
+   · Cheat Codes 的版本切換讀不到 `feature-scope-map.md`（devtools.js 唯一的
+     fetch，file: origin 被 CORS 擋，該處 .catch 已靜默吞掉）。面板照樣打得開，
+     但 Phase 1–4 的功能範圍不會真的套用。要測版本切換請用 devserver.py。
+   · 沒有 no-store 標頭。改完 CSS 若畫面沒更新，硬性重新整理（Cmd+Shift+R）。
+   兩者都不影響單純看畫面，所以預設讓「雙擊 .html」直接可用。
+
+   要用 dev server 時（AI 驗證、測版本切換）：
+     python3 devserver.py 4325 r2.2      # 從 site/ 執行
    ============================================================ */
-(function redirectFileProtocolToDevServer() {
-  if (location.protocol !== "file:") return;
-  /* serve-local.py 以 r2.1 為根目錄，所以取 /r2.1/ 之後的相對路徑即可
-     （docs/、funding-test/ 這類子目錄也一併正確對應）。 */
-  var rel = location.pathname.match(/\/r2\.1\/(.*)$/);
-  if (!rel) return;
-  location.replace("http://localhost:7777/" + rel[1] + location.search + location.hash);
-})();
 
 /* ============================================================
    Persona 的單一真相（2026-07-28 修，使用者回報「有時候要再點一次周湯豪，
@@ -148,6 +154,11 @@
    趕得上第一次算繪，block 保證「要嘛就是對的字，要嘛還沒畫」，不會換字。
    ============================================================ */
 (function preloadCriticalFonts() {
+  /* file:// 直接開檔時跳過（2026-08-13）：預載一律帶 crossOrigin，而 file: origin
+     的 CORS 請求必定被擋，三個字面各留一則紅色 console 錯誤，看起來像站壞了。
+     擋掉的只是「預載」——字型本身由 fonts.css 的 @font-face 照常載入，畫面正常，
+     只是少了那一層防換字保險（第一次開可能閃一下標題字）。 */
+  if (location.protocol === "file:") return;
   var faces = [
     /* Alumni Sans 於 2026-07-28 第二次裁示中退場（標題改回 Satoshi ＋ 全大寫），
        字檔仍留在 /fonts 但已無人引用，故不再預載。 */

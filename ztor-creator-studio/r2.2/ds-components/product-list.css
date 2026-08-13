@@ -303,6 +303,14 @@
      1.6fr 自動吸收掉這 144px，其餘固定欄不動。 */
   grid-template-columns: 26px 84px minmax(220px, 1.6fr) 144px 88px 64px 96px 72px 40px;
 }
+
+/* 粉絲分級欄在 Phase 1–3 不出現（D187）。格線是固定軌數，只把格子 display:none
+   會讓後面每一欄往左錯一格，所以版本閘一藏就整條換掉軌數——用 :has() 偵測那一欄
+   被藏起來，比在容器上再掛一個 class 少一層需要同步的狀態。 */
+.product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
+.product-list--eshop:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
+  grid-template-columns: 26px 84px minmax(220px, 1.6fr) 88px 64px 96px 72px 40px;
+}
 .product-list--eshop .product-list__price,
 .product-list--eshop .product-list__stock,
 .product-list--eshop .product-list__category-cell { color: var(--foreground); }
@@ -315,6 +323,10 @@
 .product-list--bundles .product-list__head,
 .product-list--bundles .product-list__row {
   grid-template-columns: 84px minmax(180px, 1.4fr) 144px minmax(150px, 1fr) 88px 112px 100px 40px;
+}
+.product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__head,
+.product-list--bundles:has([data-col="tier"].ztd-ver-hidden) .product-list__row {
+  grid-template-columns: 84px minmax(180px, 1.4fr) minmax(150px, 1fr) 88px 112px 100px 40px;
 }
 
 /* ── 粉絲分級門檻欄（2026-07-29 L 裁示：「creator 可以點選哪一級買得到」）─────────

@@ -74,14 +74,16 @@
 
           <div class="list-toolbar">
             <nav class="tabs tabs--underline-short tabs--underline-label" role="tablist" aria-label="商店設定分區">
-              <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-sec="payment" data-i18n="store-settings.group.payment">Payment</div>
+              <!-- 收款＝S05（🔵 Next）：D184 改版時把版本閘弄丟了，Phase 1 因此看得到。
+                   分頁被藏掉時 devtools 會自動改點第一個看得見的分頁。 -->
+              <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-sec="payment" data-feat="S05" data-i18n="store-settings.group.payment">Payment</div>
               <div class="tabs__item" role="tab" aria-selected="false" data-sec="selling" data-i18n="store-settings.group.selling">Selling defaults</div>
               <div class="tabs__item" role="tab" aria-selected="false" data-sec="specs" data-i18n="store-settings.group.specs">Product specs</div>
               <div class="tabs__item" role="tab" aria-selected="false" data-sec="codes" data-i18n="store-settings.group.codes">Discount codes</div>
             </nav>
           </div>
         <div class="ss-stack stack">
-          <section class="settings-section" id="sec-payment">
+          <section class="settings-section" id="sec-payment" data-feat="S05">
             <section class="card">
 
             <div class="ss-status" style="margin-top:2px">
@@ -101,12 +103,13 @@
             <div class="settings-row" style="border-bottom:0; align-items:start">
               <div>
                 <div class="settings-row__label" data-i18n="store-settings.field.currency">Currency</div>
-                <div class="settings-row__hint" data-i18n="store-settings.currency.hint">Default display currency for your shop's pricing.</div>
+                <div class="settings-row__hint" data-i18n="store-settings.currency.hint">Set when the shop opens. Not editable here.</div>
               </div>
+              <!-- 幣別鎖成唯讀、預設一種（2026-08-13 使用者裁示）：四個選項留在 markup 裡，
+                   之後要開放時把 disabled 拿掉就好；原本的「選擇幣別」空選項隨鎖定退場。 -->
               <div style="width:340px">
-                <select class="select" aria-label="Currency" data-i18n-aria-label="store-settings.field.currency">
-                  <option value="" data-i18n="store-settings.currency.choose">Choose currency</option>
-                  <option value="HKD">HKD · Hong Kong Dollar</option>
+                <select class="select" aria-label="Currency" disabled data-i18n-aria-label="store-settings.field.currency">
+                  <option value="HKD" selected>HKD · Hong Kong Dollar</option>
                   <option value="TWD">TWD · New Taiwan Dollar</option>
                   <option value="SGD">SGD · Singapore Dollar</option>
                   <option value="USD">USD · US Dollar</option>
@@ -114,7 +117,8 @@
               </div>
             </div>
             </section>
-            <section class="card">
+            <!-- 出貨預設＝S06（🔵 Next），同樣是 D184 改版掉的閘；幣別那張卡不屬 S06，留著 -->
+            <section class="card" data-feat="S06">
 
             <div class="settings-row" style="align-items:start">
               <div>
@@ -140,7 +144,7 @@
 
 
             <!-- ── F7.1 範本清單 ───────────────────────────── -->
-            <div data-spec-view="list">
+            <div data-spec-list>
               <p class="settings-row__hint" style="margin:2px 0 var(--sp-12)" data-i18n="store-settings.specs.intro">Build a size guide once, then attach it to any item you sell.</p>
 
               <div class="admin-table-wrap" data-spec-table>
@@ -202,182 +206,16 @@
               <button class="btn btn--outline" type="button" style="margin-top:var(--sp-12)" data-spec-new><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.new">Add size guide</span></button>
             </div>
 
-            <!-- ── F7.2 範本編輯（衣服）─────────────────────── -->
-            <div data-spec-view="edit" hidden>
-
-              <div class="ss-spec-editor__head">
-                <button class="btn btn--ghost btn--sm" type="button" data-spec-back><i data-lucide="chevron-left" class="ztor-icon"></i><span data-i18n="store-settings.specs.back">Back to list</span></button>
-                <div class="field">
-                  <label class="field__label" for="ss-spec-name"><span data-i18n="store-settings.specs.f.name">Name</span> <span class="field__req">*</span></label>
-                  <input class="input" id="ss-spec-name" type="text" value="Outerwear fit" placeholder="e.g. Outerwear fit" data-i18n-placeholder="store-settings.specs.f.name.ph">
-                  <p class="field__hint" data-i18n="store-settings.specs.f.name.hint">Only you see this — it's how you'll pick the guide when creating an item.</p>
-                </div>
-              </div>
-
-              <!-- 商品類型：本版只有「衣服」，做成假的可選清單只會讓人以為還有別的
-                   （規格 F7.1：其他類型欄位未由上游定義前不開放選取）。 -->
-              <div class="settings-row">
-                <div>
-                  <div class="settings-row__label" data-i18n="store-settings.specs.f.type">Item type</div>
-                  <div class="settings-row__hint" data-i18n="store-settings.specs.f.type.hint">Shoes and accessories need different measurements — not defined yet.</div>
-                </div>
-                <span class="badge" data-i18n="store-settings.specs.type.apparel">Apparel</span>
-              </div>
-
-              <div class="settings-row">
-                <div>
-                  <div class="settings-row__label" data-i18n="store-settings.specs.f.system">Size labels</div>
-                  <div class="settings-row__hint" data-i18n="store-settings.specs.f.system.hint">Which regional labelling fans see first.</div>
-                </div>
-                <div class="segmented" role="group" aria-label="Size labels" data-i18n-aria-label="store-settings.specs.f.system">
-                  <button class="segmented__btn segmented__btn--active" type="button" data-spec-system data-i18n="store-settings.specs.system.intl">International</button>
-                  <button class="segmented__btn" type="button" data-spec-system>US</button>
-                  <button class="segmented__btn" type="button" data-spec-system>EU</button>
-                  <button class="segmented__btn" type="button" data-spec-system>JP</button>
-                </div>
-              </div>
-
-              <div class="settings-row">
-                <div>
-                  <div class="settings-row__label" data-i18n="store-settings.specs.f.unit">Unit</div>
-                  <div class="settings-row__hint" data-i18n="store-settings.specs.f.unit.hint">Applies to every measurement below.</div>
-                </div>
-                <div class="segmented" role="group" aria-label="Unit" data-i18n-aria-label="store-settings.specs.f.unit">
-                  <button class="segmented__btn segmented__btn--active" type="button" data-spec-unit data-i18n="store-settings.specs.unit.cm">cm</button>
-                  <button class="segmented__btn" type="button" data-spec-unit data-i18n="store-settings.specs.unit.in">inch</button>
-                </div>
-              </div>
-
-              <!-- 尺寸表（F7.2 主資料）：列＝尺碼、欄＝量測項，兩軸都可增刪 -->
-              <div class="ss-spec-block">
-                <div class="settings-row__label" data-i18n="store-settings.specs.f.chart">Size chart</div>
-                <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.chart.hint">Garment laid flat, not body measurements.</div>
-                <div class="sce">
-                  <div class="sce__wrap">
-                    <div class="sce__table" data-spec-chart>
-                      <div class="sce__head">
-                        <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.chart.size">Size</span></div>
-                        <div class="sce__col">
-                          <input class="input sce__col-input" type="text" value="Chest width" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
-                          <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
-                        </div>
-                        <div class="sce__col">
-                          <input class="input sce__col-input" type="text" value="Length" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
-                          <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
-                        </div>
-                        <div class="sce__col">
-                          <input class="input sce__col-input" type="text" value="Sleeve" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
-                          <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
-                        </div>
-                        <div></div>
-                      </div>
-                      <div class="sce__row">
-                        <input class="input sce__cell sce__cell--size" type="text" value="S" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="55" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="66" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="60" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                      </div>
-                      <div class="sce__row">
-                        <input class="input sce__cell sce__cell--size" type="text" value="M" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="58" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="68" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="62" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                      </div>
-                      <div class="sce__row">
-                        <input class="input sce__cell sce__cell--size" type="text" value="L" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="61" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="70" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <input class="input sce__cell" type="text" inputmode="decimal" value="64" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
-                        <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="sce__foot">
-                    <button class="sce__add" type="button" data-spec-addrow><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addrow">Add size</span></button>
-                    <button class="sce__add" type="button" data-spec-addcol><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addcol">Add measurement</span></button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ss-spec-block">
-                <label class="settings-row__label" for="ss-spec-fit" data-i18n="store-settings.specs.f.fit">Fit advice</label>
-                <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.fit.hint">What to do when someone falls between two sizes.</div>
-                <textarea class="textarea" id="ss-spec-fit" style="min-height:78px" placeholder="e.g. Regular fit. Size up if you layer a hoodie underneath. Model is 180 cm / 72 kg, wearing L." data-i18n-placeholder="store-settings.specs.f.fit.ph">Regular fit. Size up if you layer a hoodie underneath. Model is 180 cm / 72 kg, wearing L.</textarea>
-              </div>
-
-              <!-- 身高體重參考：同一支 .sce，欄固定兩欄、表頭不給刪除鈕 -->
-              <div class="ss-spec-block">
-                <div class="settings-row__label" data-i18n="store-settings.specs.f.body">Height &amp; weight guide</div>
-                <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.body.hint">Optional. Helps fans who can't measure a garment they don't own yet.</div>
-                <div class="sce">
-                  <div class="sce__wrap">
-                    <div class="sce__table" style="--sce-cols: 112px minmax(120px, 1fr) minmax(120px, 1fr) 34px">
-                      <div class="sce__head">
-                        <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.chart.size">Size</span></div>
-                        <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.body.height">Height</span></div>
-                        <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.body.weight">Weight</span></div>
-                        <div></div>
-                      </div>
-                      <div class="sce__row">
-                        <input class="input sce__cell sce__cell--size" type="text" value="S" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
-                        <input class="input sce__cell" type="text" value="155 – 165 cm" aria-label="Height" data-i18n-aria-label="store-settings.specs.body.height">
-                        <input class="input sce__cell" type="text" value="45 – 55 kg" aria-label="Weight" data-i18n-aria-label="store-settings.specs.body.weight">
-                        <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                      </div>
-                      <div class="sce__row">
-                        <input class="input sce__cell sce__cell--size" type="text" value="M" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
-                        <input class="input sce__cell" type="text" value="163 – 173 cm" aria-label="Height" data-i18n-aria-label="store-settings.specs.body.height">
-                        <input class="input sce__cell" type="text" value="53 – 65 kg" aria-label="Weight" data-i18n-aria-label="store-settings.specs.body.weight">
-                        <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="sce__foot">
-                    <button class="sce__add" type="button" data-spec-addrow><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addrow">Add size</span></button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 量測方式：逐部位一列，沿用 .spec-row（建立商品的詳細規格同一套） -->
-              <div class="ss-spec-block">
-                <div class="settings-row__label" data-i18n="store-settings.specs.f.howto">How to measure</div>
-                <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.howto.hint">Optional. Written for someone holding a tape measure for the first time.</div>
-                <div data-spec-howto>
-                  <div class="spec-row">
-                    <input class="input" type="text" value="Chest" aria-label="Body part" data-i18n-aria-label="store-settings.specs.howto.part">
-                    <input class="input" type="text" value="Around the fullest part, tape flat, not pulled tight." aria-label="How to measure it" data-i18n-aria-label="store-settings.specs.howto.body">
-                    <button class="btn btn--icon btn--sm" type="button" data-spec-howtorm aria-label="Remove" data-i18n-aria-label="store-settings.specs.howto.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                  </div>
-                  <div class="spec-row">
-                    <input class="input" type="text" value="Waist" aria-label="Body part" data-i18n-aria-label="store-settings.specs.howto.part">
-                    <input class="input" type="text" value="Around the narrowest part, just above the navel." aria-label="How to measure it" data-i18n-aria-label="store-settings.specs.howto.body">
-                    <button class="btn btn--icon btn--sm" type="button" data-spec-howtorm aria-label="Remove" data-i18n-aria-label="store-settings.specs.howto.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
-                  </div>
-                </div>
-                <button class="sce__add" type="button" style="margin-top:var(--sp-8)" data-spec-addhowto><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.howto.add">Add body part</span></button>
-              </div>
-
-              <div class="ss-spec-block">
-                <label class="settings-row__label" for="ss-spec-note" data-i18n="store-settings.specs.f.note">Disclaimer</label>
-                <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.note.hint">Shown under the chart. Sets expectations before a return request.</div>
-                <textarea class="textarea" id="ss-spec-note" style="min-height:56px" placeholder="e.g. Measured flat in cm. Fabric may vary by 1–2 cm." data-i18n-placeholder="store-settings.specs.f.note.ph">Measured flat in cm. Fabric may vary by 1–2 cm.</textarea>
-              </div>
-
-              <!-- 長表單捲到底時的離開路徑，不必滾回頂部找返回鈕 -->
-              <div class="ss-spec-editor__foot">
-                <button class="btn btn--outline btn--sm" type="button" data-spec-back data-i18n="store-settings.specs.backlist">Back to list</button>
-              </div>
-
-            </div>
             </section>
           </section>
           <section class="settings-section" id="sec-codes" hidden>
             <section class="card">
 
 
-              <p class="settings-row__hint" style="margin:2px 0 var(--sp-12)" data-i18n="store-settings.codes.intro">Fans type a code at checkout to get the discount. A partner code does the same, but credits the sale to whoever you gave it to.</p>
+              <!-- 代理碼 Phase 4 才出現（2026-08-13 使用者裁示，D185）：開場白因此成對——
+                   full 版講兩種碼的差別，Phase 1–3 只講折扣本身，不提還看不到的東西。 -->
+              <p class="settings-row__hint" style="margin:2px 0 var(--sp-12)" data-feat="full" data-i18n="store-settings.codes.intro">Fans type a code at checkout to get the discount. A partner code does the same, but credits the sale to whoever you gave it to.</p>
+              <p class="settings-row__hint" style="margin:2px 0 var(--sp-12)" data-feat-off="full" data-i18n="store-settings.codes.intro.base">Fans type a code at checkout to get the discount.</p>
 
               <div class="admin-table-wrap" data-code-table>
                 <table class="ztor-table">
@@ -396,7 +234,7 @@
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
                           <span class="ss-code-cell__code">SUMMER25</span>
-                          <span class="ss-code-cell__meta"><span data-i18n="store-settings.codes.type.own">Own</span></span>
+                          <span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span>
                         </div>
                       </td>
                       <td>25%</td>
@@ -422,7 +260,7 @@
                         </div>
                       </td>
                     </tr>
-                    <tr data-code-kind="partner">
+                    <tr data-code-kind="partner" data-feat="full">
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
                           <span class="ss-code-cell__code">AIKO10</span>
@@ -456,7 +294,7 @@
                       <td class="ztor-table__feature">
                         <div class="ss-code-cell">
                           <span class="ss-code-cell__code">WELCOME</span>
-                          <span class="ss-code-cell__meta"><span data-i18n="store-settings.codes.type.own">Own</span></span>
+                          <span class="ss-code-cell__meta" data-feat="full"><span data-i18n="store-settings.codes.type.own">Own</span></span>
                         </div>
                       </td>
                       <td>$5</td>
@@ -573,6 +411,180 @@
 </div>
 
 
+<!-- 尺寸指南編輯彈窗（spec 5.1.5.5 F7.2；2026-08-13 使用者裁示改成彈窗）：新增與編輯共用同一個。
+     原本是清單↔編輯兩個檢視在同一張卡裡互換，捲到哪、現在在哪一層都得自己記；
+     改成浮起來之後，背景那份清單留在原位，關掉就回到剛才那一行。 -->
+<div class="payout-modal" id="ss-spec-modal" hidden>
+  <section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true" aria-labelledby="ss-spec-modal-title">
+    <div class="payout-dialog__head">
+      <h2 class="payout-dialog__title" id="ss-spec-modal-title" data-i18n="store-settings.specs.new">Add size guide</h2>
+      <button class="btn btn--icon" type="button" data-spec-close aria-label="Close" data-i18n-aria-label="store-settings.specs.close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+            <div class="field">
+              <label class="field__label" for="ss-spec-name"><span data-i18n="store-settings.specs.f.name">Name</span> <span class="field__req">*</span></label>
+              <input class="input" id="ss-spec-name" type="text" value="Outerwear fit" placeholder="e.g. Outerwear fit" data-i18n-placeholder="store-settings.specs.f.name.ph">
+              <p class="field__hint" data-i18n="store-settings.specs.f.name.hint">Only you see this — it's how you'll pick the guide when creating an item.</p>
+            </div>
+
+          <!-- 商品類型：本版只有「衣服」，做成假的可選清單只會讓人以為還有別的
+               （規格 F7.1：其他類型欄位未由上游定義前不開放選取）。 -->
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="store-settings.specs.f.type">Item type</div>
+              <div class="settings-row__hint" data-i18n="store-settings.specs.f.type.hint">Shoes and accessories need different measurements — not defined yet.</div>
+            </div>
+            <span class="badge" data-i18n="store-settings.specs.type.apparel">Apparel</span>
+          </div>
+
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="store-settings.specs.f.system">Size labels</div>
+              <div class="settings-row__hint" data-i18n="store-settings.specs.f.system.hint">Which regional labelling fans see first.</div>
+            </div>
+            <div class="segmented" role="group" aria-label="Size labels" data-i18n-aria-label="store-settings.specs.f.system">
+              <button class="segmented__btn segmented__btn--active" type="button" data-spec-system data-i18n="store-settings.specs.system.intl">International</button>
+              <button class="segmented__btn" type="button" data-spec-system>US</button>
+              <button class="segmented__btn" type="button" data-spec-system>EU</button>
+              <button class="segmented__btn" type="button" data-spec-system>JP</button>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div>
+              <div class="settings-row__label" data-i18n="store-settings.specs.f.unit">Unit</div>
+              <div class="settings-row__hint" data-i18n="store-settings.specs.f.unit.hint">Applies to every measurement below.</div>
+            </div>
+            <div class="segmented" role="group" aria-label="Unit" data-i18n-aria-label="store-settings.specs.f.unit">
+              <button class="segmented__btn segmented__btn--active" type="button" data-spec-unit data-i18n="store-settings.specs.unit.cm">cm</button>
+              <button class="segmented__btn" type="button" data-spec-unit data-i18n="store-settings.specs.unit.in">inch</button>
+            </div>
+          </div>
+
+          <!-- 尺寸表（F7.2 主資料）：列＝尺碼、欄＝量測項，兩軸都可增刪 -->
+          <div class="ss-spec-block">
+            <div class="settings-row__label" data-i18n="store-settings.specs.f.chart">Size chart</div>
+            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.chart.hint">Garment laid flat, not body measurements.</div>
+            <div class="sce">
+              <div class="sce__wrap">
+                <div class="sce__table" data-spec-chart>
+                  <div class="sce__head">
+                    <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.chart.size">Size</span></div>
+                    <div class="sce__col">
+                      <input class="input sce__col-input" type="text" value="Chest width" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
+                      <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
+                    </div>
+                    <div class="sce__col">
+                      <input class="input sce__col-input" type="text" value="Length" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
+                      <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
+                    </div>
+                    <div class="sce__col">
+                      <input class="input sce__col-input" type="text" value="Sleeve" aria-label="Measurement name" data-i18n-aria-label="store-settings.specs.chart.colname">
+                      <button class="sce__col-remove" type="button" data-spec-colrm><i data-lucide="x" class="ztor-icon"></i></button>
+                    </div>
+                    <div></div>
+                  </div>
+                  <div class="sce__row">
+                    <input class="input sce__cell sce__cell--size" type="text" value="S" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="55" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="66" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="60" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  </div>
+                  <div class="sce__row">
+                    <input class="input sce__cell sce__cell--size" type="text" value="M" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="58" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="68" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="62" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  </div>
+                  <div class="sce__row">
+                    <input class="input sce__cell sce__cell--size" type="text" value="L" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="61" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="70" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <input class="input sce__cell" type="text" inputmode="decimal" value="64" aria-label="Measurement" data-i18n-aria-label="store-settings.specs.chart.value">
+                    <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  </div>
+                </div>
+              </div>
+              <div class="sce__foot">
+                <button class="sce__add" type="button" data-spec-addrow><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addrow">Add size</span></button>
+                <button class="sce__add" type="button" data-spec-addcol><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addcol">Add measurement</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ss-spec-block">
+            <label class="settings-row__label" for="ss-spec-fit" data-i18n="store-settings.specs.f.fit">Fit advice</label>
+            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.fit.hint">What to do when someone falls between two sizes.</div>
+            <textarea class="textarea" id="ss-spec-fit" style="min-height:78px" placeholder="e.g. Regular fit. Size up if you layer a hoodie underneath. Model is 180 cm / 72 kg, wearing L." data-i18n-placeholder="store-settings.specs.f.fit.ph">Regular fit. Size up if you layer a hoodie underneath. Model is 180 cm / 72 kg, wearing L.</textarea>
+          </div>
+
+          <!-- 身高體重參考：同一支 .sce，欄固定兩欄、表頭不給刪除鈕 -->
+          <div class="ss-spec-block">
+            <div class="settings-row__label" data-i18n="store-settings.specs.f.body">Height &amp; weight guide</div>
+            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.body.hint">Optional. Helps fans who can't measure a garment they don't own yet.</div>
+            <div class="sce">
+              <div class="sce__wrap">
+                <div class="sce__table" style="--sce-cols: 112px minmax(120px, 1fr) minmax(120px, 1fr) 34px">
+                  <div class="sce__head">
+                    <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.chart.size">Size</span></div>
+                    <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.body.height">Height</span></div>
+                    <div class="sce__col"><span class="sce__col-label" data-i18n="store-settings.specs.body.weight">Weight</span></div>
+                    <div></div>
+                  </div>
+                  <div class="sce__row">
+                    <input class="input sce__cell sce__cell--size" type="text" value="S" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
+                    <input class="input sce__cell" type="text" value="155 – 165 cm" aria-label="Height" data-i18n-aria-label="store-settings.specs.body.height">
+                    <input class="input sce__cell" type="text" value="45 – 55 kg" aria-label="Weight" data-i18n-aria-label="store-settings.specs.body.weight">
+                    <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  </div>
+                  <div class="sce__row">
+                    <input class="input sce__cell sce__cell--size" type="text" value="M" aria-label="Size" data-i18n-aria-label="store-settings.specs.chart.size">
+                    <input class="input sce__cell" type="text" value="163 – 173 cm" aria-label="Height" data-i18n-aria-label="store-settings.specs.body.height">
+                    <input class="input sce__cell" type="text" value="53 – 65 kg" aria-label="Weight" data-i18n-aria-label="store-settings.specs.body.weight">
+                    <button class="sce__row-remove" type="button" data-spec-rowrm><i data-lucide="trash-2" class="ztor-icon"></i></button>
+                  </div>
+                </div>
+              </div>
+              <div class="sce__foot">
+                <button class="sce__add" type="button" data-spec-addrow><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.chart.addrow">Add size</span></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 量測方式：逐部位一列，沿用 .spec-row（建立商品的詳細規格同一套） -->
+          <div class="ss-spec-block">
+            <div class="settings-row__label" data-i18n="store-settings.specs.f.howto">How to measure</div>
+            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.howto.hint">Optional. Written for someone holding a tape measure for the first time.</div>
+            <div data-spec-howto>
+              <div class="spec-row">
+                <input class="input" type="text" value="Chest" aria-label="Body part" data-i18n-aria-label="store-settings.specs.howto.part">
+                <input class="input" type="text" value="Around the fullest part, tape flat, not pulled tight." aria-label="How to measure it" data-i18n-aria-label="store-settings.specs.howto.body">
+                <button class="btn btn--icon btn--sm" type="button" data-spec-howtorm aria-label="Remove" data-i18n-aria-label="store-settings.specs.howto.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+              </div>
+              <div class="spec-row">
+                <input class="input" type="text" value="Waist" aria-label="Body part" data-i18n-aria-label="store-settings.specs.howto.part">
+                <input class="input" type="text" value="Around the narrowest part, just above the navel." aria-label="How to measure it" data-i18n-aria-label="store-settings.specs.howto.body">
+                <button class="btn btn--icon btn--sm" type="button" data-spec-howtorm aria-label="Remove" data-i18n-aria-label="store-settings.specs.howto.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button>
+              </div>
+            </div>
+            <button class="sce__add" type="button" style="margin-top:var(--sp-8)" data-spec-addhowto><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="store-settings.specs.howto.add">Add body part</span></button>
+          </div>
+
+          <div class="ss-spec-block">
+            <label class="settings-row__label" for="ss-spec-note" data-i18n="store-settings.specs.f.note">Disclaimer</label>
+            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.note.hint">Shown under the chart. Sets expectations before a return request.</div>
+            <textarea class="textarea" id="ss-spec-note" style="min-height:56px" placeholder="e.g. Measured flat in cm. Fabric may vary by 1–2 cm." data-i18n-placeholder="store-settings.specs.f.note.ph">Measured flat in cm. Fabric may vary by 1–2 cm.</textarea>
+          </div>
+    </div>
+    <div class="payout-dialog__foot">
+      <button class="btn btn--outline" type="button" data-spec-close data-i18n="store-settings.specs.cancel">Cancel</button>
+      <button class="btn btn--primary" type="button" data-spec-close data-i18n="store-settings.specs.save">Save guide</button>
+    </div>
+  </section>
+</div>
+
 <!-- 優惠碼編輯彈窗（spec 5.1.5.5 F8 / D183）：新增與編輯共用同一個彈窗。
      自用與代理不再是兩顆新增鈕——它們差的只有「誰在賣」，在流程裡切即可（2026-08-11 使用者裁示）。
      頁面改成獨立頁（D184）之後不再住在 iframe 裡，開彈窗不必再付疊層的代價。 -->
@@ -594,7 +606,10 @@
                   <button class="btn btn--icon btn--sm" type="button" data-code-copy aria-label="Copy" title="Copy" data-i18n-aria-label="store-settings.codes.copy" data-i18n-title="store-settings.codes.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
                 </div>
               </div>
-              <div class="settings-row">
+              <!-- 型別切換整列 Phase 4 才出現（D185）：Phase 1–3 沒有代理碼，
+                   只剩「自用」一個選項的切換器等於問一個沒有第二個答案的問題。
+                   藏起來時 openModal() 仍以 'own' 開場，所以行為不變。 -->
+              <div class="settings-row" data-feat="full">
                 <div>
                   <div class="settings-row__label" data-i18n="store-settings.codes.f.type">Type</div>
                   <div class="settings-row__hint" data-code-type-hint data-i18n="store-settings.codes.type.own-sub">You hand it out yourself</div>
@@ -631,8 +646,9 @@
                 </div>
               </div>
 
-              <!-- 代理碼專屬（一組碼綁一位推廣者，D183） -->
-              <div data-code-partner-only hidden>
+              <!-- 代理碼專屬（一組碼綁一位推廣者，D183）；Phase 4 才存在（D185）。
+                   `hidden` 由型別切換控制、`data-feat` 由版本控制，兩道各管各的互不干擾。 -->
+              <div data-code-partner-only data-feat="full" hidden>
                 <div class="settings-row">
                   <div>
                     <div class="settings-row__label" data-i18n="store-settings.codes.f.partner">Partner</div>
@@ -763,25 +779,35 @@
       valueEl.textContent = labelFor(ed.dataset.value || '');
     });
 
-    /* Setting-group tabs */
-    const tabs = document.querySelectorAll('[data-ss-tab]');
-    const panels = document.querySelectorAll('[data-ss-panel]');
-    tabs.forEach(tab => tab.addEventListener('click', () => {
-      const key = tab.getAttribute('data-ss-tab');
-      tabs.forEach(t => { const on = t === tab; t.classList.toggle('tabs__item--active', on); t.setAttribute('aria-selected', on ? 'true' : 'false'); });
-      panels.forEach(p => { p.hidden = p.getAttribute('data-ss-panel') !== key; });
-    }));
+    /* 設定群組分頁的切換已移到頁尾的 [data-sec] 版本（D184 改版時換的選擇器）；
+       這裡原本還留著一份查 [data-ss-tab]／[data-ss-panel] 的舊實作，站上已無對應
+       元素、綁不到任何東西，留著只會讓人以為切換邏輯在這裡。 */
 
     /* F3 商品陳列拖曳排序已移至電子商店 5.1.5 F4 末段（D083），本頁不再處理。 */
 
     /* ── F7 商品規格（spec 5.1.5.5 F7 / D171）· demo 互動，無後端 ────────
-       兩個檢視互切、尺寸表兩軸增刪、量測方式逐列增刪。
-       範本資料不落地：Save changes 一律關閉 popup（同其他三組設定）。 */
+       清單留在頁面上，編輯浮成彈窗（2026-08-13 使用者裁示，呈現層決策見 UI-CHANGES）；
+       尺寸表兩軸增刪、量測方式逐列增刪。
+       範本資料不落地：儲存一律關閉彈窗（同其他三組設定）。 */
     (function specTemplates() {
-      const panel = document.querySelector('[data-ss-panel="specs"]');
-      if (!panel) return;
-      const views = panel.querySelectorAll('[data-spec-view]');
-      const showView = name => views.forEach(v => { v.hidden = v.getAttribute('data-spec-view') !== name; });
+      /* 2026-08-13 修：分區容器在 D184 改版時由 [data-ss-panel] 換成 #sec-*，這一段沒跟著改，
+         整段被開頭的 early return 擋掉，F7 的新增／編輯／複製／刪除全部沒綁上。換選擇器後恢復。 */
+      const panel = document.getElementById('sec-specs');
+      const modal = document.getElementById('ss-spec-modal');
+      if (!panel || !modal) return;
+      const title = document.getElementById('ss-spec-modal-title');
+      const T = k => (window.i18nT && window.i18nT(k)) || '';
+
+      /* 編輯器搬進彈窗後不再是 panel 的子孫，事件改綁 document；
+         每個分支都靠自己的 data-* 收斂，不會誤抓別的彈窗。 */
+      function openModal(titleKey) {
+        if (title) { title.setAttribute('data-i18n', titleKey); title.textContent = T(titleKey) || title.textContent; }
+        modal.hidden = false;
+        document.body.classList.add('is-modal-open');
+      }
+      function closeModal() { modal.hidden = true; document.body.classList.remove('is-modal-open'); }
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
       /* 清單空了就把表格換成空狀態卡（§6.1） */
       const table = panel.querySelector('[data-spec-table]');
@@ -793,13 +819,13 @@
         if (empty) empty.hidden = !none;
       };
 
-      panel.addEventListener('click', e => {
+      document.addEventListener('click', e => {
         const t = e.target;
 
         /* 新增＝空白表單；編輯＝帶既有值（demo 用同一份 markup，新增時清空） */
-        if (t.closest('[data-spec-new]')) { clearEditor(); showView('edit'); return; }
-        if (t.closest('[data-spec-edit]')) { showView('edit'); return; }
-        if (t.closest('[data-spec-back]')) { showView('list'); return; }
+        if (t.closest('[data-spec-new]')) { clearEditor(); openModal('store-settings.specs.new'); return; }
+        if (t.closest('[data-spec-edit]')) { fillEditor(); openModal('store-settings.specs.modal.edit'); return; }
+        if (t.closest('[data-spec-close]')) { closeModal(); return; }
 
         /* 複製：整列複製一份，名稱後綴 copy、套用中歸零（新範本還沒被任何商品用） */
         const dup = t.closest('[data-spec-duplicate]');
@@ -888,7 +914,7 @@
         /* 量測方式：逐部位增刪 */
         const addHowto = t.closest('[data-spec-addhowto]');
         if (addHowto) {
-          const host = panel.querySelector('[data-spec-howto]');
+          const host = modal.querySelector('[data-spec-howto]');
           const fresh = host.lastElementChild.cloneNode(true);
           fresh.querySelectorAll('input').forEach(i => { i.value = ''; });
           host.appendChild(fresh);
@@ -900,14 +926,23 @@
 
         const rmHowto = t.closest('[data-spec-howtorm]');
         if (rmHowto) {
-          const host = panel.querySelector('[data-spec-howto]');
+          const host = modal.querySelector('[data-spec-howto]');
           if (host.children.length > 1) rmHowto.closest('.spec-row').remove();
         }
       });
 
+      /* demo 的一份示範值：新增時清空、編輯時填回去。彈窗共用同一份 markup，
+         沒有這一步的話「新增過一次之後點編輯」會看到一張空白表單。 */
+      const seedValues = [...modal.querySelectorAll('input, textarea')].map(i => i.value);
+      function fillEditor() {
+        [...modal.querySelectorAll('input, textarea')].forEach((i, n) => {
+          if (n < seedValues.length) i.value = seedValues[n];
+        });
+      }
+
       /* 新增範本：清掉編輯器裡的示範值，量測欄名保留（那是欄位定義不是資料） */
       function clearEditor() {
-        const edit = panel.querySelector('[data-spec-view="edit"]');
+        const edit = modal;
         edit.querySelectorAll('.sce__cell, .spec-row .input, #ss-spec-name').forEach(i => { i.value = ''; });
         edit.querySelectorAll('#ss-spec-fit, #ss-spec-note').forEach(i => { i.value = ''; });
         const name = edit.querySelector('#ss-spec-name');
@@ -923,7 +958,7 @@
 
       /* 表頭欄名改動時同步該欄所有格子的 aria-label（i18n 是純靜態 key→字串、
          沒有插值機制，帶使用者自訂欄名只能靠 JS 拼） */
-      panel.addEventListener('input', e => {
+      modal.addEventListener('input', e => {
         const nameInput = e.target.closest('.sce__col-input');
         if (!nameInput) return;
         const head = nameInput.closest('.sce__head');

@@ -38,6 +38,22 @@
    creators／artist-picker 那兩個 lookup 選完就收掉、不會重開，不受影響。 */
 .owner-lookup__result[aria-selected="true"] { background: var(--accent); }
 
+/* 選不了的那一列（2026-08-13 補齊）：這一筆列得出來、但不能選——第一個消費端是 bookyay
+   帶入閘門的「已匯入」（同一場 bookyay 活動在 ztor 上只會存在一次，帶過就不能再帶）。
+   仍然列出來而不是濾掉：搜得到才回答得了「這場我是不是已經建過了」，濾掉的話畫面會說
+   「找不到相符的活動」，那是錯的訊息。
+   狀態由 `disabled` 屬性本身表達，不另設 class——按鈕要能真的擋住點擊，`disabled` 是非加不可的，
+   再多一個 class 就是同一件事寫兩遍、還會出現「有 class 沒 disabled」的破窗。
+   原本這一段寫在 artist-picker.css（那支已無消費頁），2026-08-13 移回本檔：`.owner-lookup__*`
+   的樣式歸 owner-lookup.css 管，留在別支等於只有載入那支的頁面才有這個狀態。
+   改用明確的字色而非整列 opacity：整列淡化會連右邊那顆說明用的標籤一起淡掉，
+   但那顆標籤正是「為什麼點不動」的答案，是這一列最該讀得清楚的東西。 */
+.owner-lookup__result[disabled] { color: var(--muted-foreground); cursor: default; }
+.owner-lookup__result[disabled] .owner-lookup__name { color: var(--muted-foreground); }
+.owner-lookup__result[disabled]:hover { background: transparent; }
+/* 右側狀態標籤：靠右推到底、不參與壓縮（左邊的名稱／說明才是可以被截斷的那一段）。 */
+.owner-lookup__flag { flex: none; align-self: center; margin-left: auto; }
+
 .owner-lookup__avatar {
   display: grid;
   flex: none;
