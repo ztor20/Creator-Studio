@@ -350,6 +350,13 @@
         </div>
       </div>
 
+      <!-- 「再辦一場」帶入的提示（2026-08-13）：畫面上突然有值，要講清楚值是哪來的。 -->
+      <div class="info-banner mb-16" id="ce-dup-note" hidden>
+        <i data-lucide="copy" class="ztor-icon info-banner__icon"></i>
+        <!-- 文案由 JS 帶入來源活動名稱（含 {name} 佔位），切語言時一起重寫，不用 data-i18n 整段換掉 -->
+        <span data-dup-text></span>
+      </div>
+
       <div class="form-section form-section--outlined" data-hide-type="watchparty">
         <div class="field">
           <label class="field__label"><span data-i18n="ce.name">Event name</span> <span class="field__req" data-i18n="ce.req.mark">*</span></label>
@@ -862,33 +869,33 @@
       </div><!-- /.wizard-split -->
     </section>
 
-    <!-- STEP 6 · 票務商品（2026-08-11 使用者指示）：把前面建好的票種與商品綁成捆綁包。
-         **數量共用同一個池**——捆綁包不另設庫存，它含的那張票賣掉一組就從那張票的張數扣掉一張，
+    <!-- STEP 6 · 票務商品（2026-08-11 使用者指示）：把前面建好的票種與商品綁成組合包。
+         **數量共用同一個池**——組合包不另設庫存，它含的那張票賣掉一組就從那張票的張數扣掉一張，
          所以這一步不出現任何數量輸入框（套組編輯器在 `shares:false, work:false` 下本來就不渲染
          數量欄）；「販售上限」是創作者自願加的子上限，不是另一份額度。
-         同輪撤除分票：要讓同一批票有不同賣法，改成包成捆綁包，不再從票裡切額度出來。 -->
+         同輪撤除分票：要讓同一批票有不同賣法，改成包成組合包，不再從票裡切額度出來。 -->
     <section data-step-panel="6" class="hidden">
       <h1 class="wizard__step-title" data-di="d.s6.h1">票務商品</h1>
       <p class="wizard__step-sub" data-di="d.s6.sub">將門票與商品組合成套組販售。數量與票券共用，售出一組即自其扣除一張。</p>
       <div class="wizard-split wizard-split--narrow">
         <div class="wizard-split__main">
           <!-- 2026-08-13（使用者逐項圈選）：這一步只有一個區塊，外面那層填色卡與
-               「捆綁包」小標都撤掉——步驟標題已經是「票務商品」，卡裡再包一張卡（收合列
+               「組合包」小標都撤掉——步驟標題已經是「票務商品」，卡裡再包一張卡（收合列
                本身就是 .card）等於同一件事畫兩層框。庫存共用那條規則移進步驟副標，
                它是這一步的前提、不是某個區塊的註腳。 -->
           <div class="form-section">
-            <!-- 空狀態只回答「現在還沒有」與「怎麼開始」；舉例說明與「不設捆綁包」
-                 那顆出口一併撤除（使用者裁決）——沒有捆綁包本來就是預設，
+            <!-- 空狀態只回答「現在還沒有」與「怎麼開始」；舉例說明與「不設組合包」
+                 那顆出口一併撤除（使用者裁決）——沒有組合包本來就是預設，
                  底部的「下一步」就是那個出口，不需要第二顆按鈕說同一件事。 -->
             <div class="empty-card" id="ce-bd-empty" hidden>
               <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
-              <h4 class="empty-card__title" data-di="d.bd.empty.h">尚未建立捆綁包</h4>
+              <h4 class="empty-card__title" data-di="d.bd.empty.h">尚未建立組合包</h4>
               <div class="empty-card__cta">
-                <button class="btn btn--primary" type="button" id="ce-bd-first" data-di="d.bd.empty.new">新增捆綁包</button>
+                <button class="btn btn--primary" type="button" id="ce-bd-first" data-di="d.bd.empty.new">新增組合包</button>
               </div>
             </div>
             <div id="ce-bd-list"></div>
-            <button class="btn btn--outline fc-add" type="button" id="ce-bd-add"><span data-di="d.bd.add">＋ 新增捆綁包</span></button>
+            <button class="btn btn--outline fc-add" type="button" id="ce-bd-add"><span data-di="d.bd.add">＋ 新增組合包</span></button>
           </div>
         </div>
         <!-- 2026-08-13 修：class 原本是 `wizard-split__side`，但元件裡只有 `__rail`。
@@ -1320,6 +1327,7 @@
 <script src="partials/field-more.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：「再辦一場」(?from=) 要讀來源活動 -->
 <!-- 套組銷售（步驟 5）掛共用套組編輯器；它從 products-store 取既有商品當候選 -->
 <script src="js/products-store.js?v=r2.2"></script>
 <script src="js/bundle-editor.js?v=r2.2"></script>
@@ -1410,7 +1418,7 @@
     next.dataset.i18n = nextKeyOf(step);
     next.textContent = nextLabel(step);
     syncReview();
-    /* 票務商品那一步的右軌報的是「每張票現在幾張、被幾組捆綁包用到」，
+    /* 票務商品那一步的右軌報的是「每張票現在幾張、被幾組組合包用到」，
        票在上一步才剛改完，進來時要重算一次（宣告在後面，用 typeof 擋掉初始化順序）。 */
     if (typeof renderBundlePool === "function") renderBundlePool();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -1953,7 +1961,7 @@
      指示整組撤除，連同 `rootOf`／`splitsOf`／`splitTotalOf`／`splitOut`／`hasSplits`／
      `syncRootQty` 與 `tier.splitFrom`／`tier.splitTotal` 兩個欄位。
      同輪新增的「票務商品」步驟走的是另一條路：要讓同一批票有不同賣法，改成把票包進
-     捆綁包，數量仍與那張票共用同一個池，不再從票裡切額度出來。 */
+     組合包，數量仍與那張票共用同一個池，不再從票裡切額度出來。 */
   // 數量加總一律用「當下的值」——正在打字的那張也要算進去，超標才會即時反映
   /* 2026-08-08：容量欄改成「活動總人數」（活動層級），所以加總是**全部場次的門票**加起來。
      每一張門票只屬於一場，直接全部相加就是總數。 */
@@ -2540,7 +2548,7 @@
                       { phKey: "ce.tier.qty.ph", phFb: "e.g., 200", num: true, locked: t.fix }) +
         tierFieldHTML("fee",   "d.tier.fee",    "Booking fee", d.fee == null ? "" : d.fee, { phKey: "d.tier.fee.ph", phFb: "0", money: true, opt: true, locked: t.fixFee }) +
         /* 「加入商品」欄位撤除（2026-08-11 使用者指示，見 ASSUMPTIONS BDL-001 追加）：
-           把商品跟票綁在一起賣，現在統一交給票務之後的「票務商品」步驟（捆綁包），
+           把商品跟票綁在一起賣，現在統一交給票務之後的「票務商品」步驟（組合包），
            單張票的彈窗不再重複這件事。 */
         /* 提前入場（2026-08-11 使用者指示，見上方 sessDoors／earlyHintText 說明）：
            填的是分鐘數，這裡沿用一般 tierFieldHTML；換算後的實際時間顯示在它的
@@ -2835,7 +2843,7 @@
   const sessionLabel = (s, i) => (s.name || "").trim() || T("ce.series.n", "Date {n}").replace("{n}", i + 1);
 
   /* 票在清單上的可辨識名稱：多場時前面補場次。同一個票種在每一場各有一張，
-     只寫票種名的話捆綁包的勾選清單會出現三個一模一樣的選項。 */
+     只寫票種名的話組合包的勾選清單會出現三個一模一樣的選項。 */
   function tierLabelWithSession(t) {
     const nm = typeName(t) || ticketNames(t)[0];    // 獨立票沒有票種名，用它自己的名字
     if (!multi()) return nm;
@@ -3799,7 +3807,7 @@
     });
   }
 
-  /* 空狀態與「＋ 新增捆綁包」互斥：一顆都沒有時給說明卡（含「不做捆綁包」的出口），
+  /* 空狀態與「＋ 新增組合包」互斥：一顆都沒有時給說明卡（含「不做組合包」的出口），
      有了之後才換成那顆加號。 */
   function syncBundleEmpty() {
     const none = !bundleEd || !bundleEd.getBundles().length;
@@ -3809,13 +3817,13 @@
     if (add) add.hidden = none;
   }
   document.getElementById("ce-bd-first")?.addEventListener("click", () => bundleEd && bundleEd.add());
-  /* 墓碑 2026-08-13：空狀態原本還有一顆「本活動不設捆綁包」直接跳下一步（使用者裁決撤除）。
-     沒有捆綁包本來就是預設，底部的「下一步」就是那個出口，兩顆按鈕說的是同一件事。 */
+  /* 墓碑 2026-08-13：空狀態原本還有一顆「本活動不設組合包」直接跳下一步（使用者裁決撤除）。
+     沒有組合包本來就是預設，底部的「下一步」就是那個出口，兩顆按鈕說的是同一件事。 */
 
   /* 右軌＝「這一步的影響」（2026-08-13 由「票的數量池」改寫）。
      原本它把左邊挑選清單的同一份票再列一次，兩邊資訊重複；右軌真正要回答的是
      「我改這張票的張數會牽動誰」。所以只列**被綁到的票**（標被幾組用到），
-     沒被綁到的收成一行摘要。捆綁包不另設庫存、賣掉一組就從票扣一張，這件事
+     沒被綁到的收成一行摘要。組合包不另設庫存、賣掉一組就從票扣一張，這件事
      寫在說明裡看不出後果，攤成一份名單才讀得到。
      這裡只報「誰用到了」，不做扣減：一組能賣幾份取決於實際銷售，原型沒有銷售資料。 */
   function renderBundlePool() {
@@ -3881,16 +3889,16 @@
                         zh: "將門票與商品組合成套組販售。數量與票券共用，售出一組即自其扣除一張。" },
     /* 墓碑 2026-08-13：`d.bd.h`／`d.bd.sub`（區塊小標與副標）隨外層填色卡一併撤除，
        庫存共用那條規則移進 `d.s6.sub`；`d.bd.empty.text`（舉例）與 `d.bd.empty.skip`
-       （「本活動不設捆綁包」）同輪撤除，理由見上面 markup 的說明。 */
-    "d.bd.add":       { en: "＋ Add a bundle",   zh: "＋ 新增捆綁包" },
+       （「本活動不設組合包」）同輪撤除，理由見上面 markup 的說明。 */
+    "d.bd.add":       { en: "＋ Add a bundle",   zh: "＋ 新增組合包" },
     "d.bd.pool":      { en: "What this step affects", zh: "影響範圍" },
     "d.bd.pool.none": { en: "No bundles yet — every ticket still sells on its own. Bundle some and this lists which tickets get pulled in.",
-                        zh: "尚未建立捆綁包，各票券單獨販售。建立後將列出受影響的票券。" },
+                        zh: "尚未建立組合包，各票券單獨販售。建立後將列出受影響的票券。" },
     "d.bd.pool.n":    { en: "in {n} bundles",    zh: "由 {n} 組使用" },
     "d.bd.pool.idle": { en: "The other {n} tickets aren’t bundled — they sell on their own.",
-                        zh: "其餘 {n} 張票券未納入捆綁包，單獨販售。" },
-    "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立捆綁包" },
-    "d.bd.empty.new": { en: "Add a bundle",      zh: "新增捆綁包" },
+                        zh: "其餘 {n} 張票券未納入組合包，單獨販售。" },
+    "d.bd.empty.h":   { en: "No bundles yet",    zh: "尚未建立組合包" },
+    "d.bd.empty.new": { en: "Add a bundle",      zh: "新增組合包" },
     "d.step.publish": { en: "Publishing",        zh: "發布設定" },
     "d.step.tix":     { en: "Tickets",           zh: "票務" },
     "d.step.types":   { en: "Ticket types",      zh: "票種" },
@@ -5073,14 +5081,65 @@
   }
   document.querySelector("[data-ce=name]")?.addEventListener("input", renderShare);
 
+  /* ── 「再辦一場」帶入（2026-08-13）──────────────────────────────
+     活動詳情頁（結束或取消的活動）按「再辦一場」會連到 `create-event.html?from=<id>`。
+     巡演最常做的就是照上一場再開一場，此前站上只有活動清單 kebab 的 Duplicate、而且沒有接線。
+
+     帶什麼：跟「這場活動是什麼」有關的欄位——名稱、說明、陣容、圖片、票種與價格。
+     不帶什麼：日期、場地、售出數與收入——那些正是新的一場要重新決定的東西。
+     與 bookyay 帶入的差別：這裡不鎖任何欄位（複製過來的東西本來就該可以改）。 */
+  function dupFrom(id) {
+    if (!window.ztorEvents) return;
+    const src = window.ztorEvents.get(id);
+    if (!src) return;
+    chooseType(src.type);                        // 類型跟著來源，不必再選一次
+    enterWizard();
+    const set = (k, v) => {
+      const el = document.querySelector('[data-ce="' + k + '"]');
+      if (!el) return;
+      el.value = v == null ? "" : v;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    set("name", src.name);
+    set("desc", src.desc);
+    const imgs = [src.images && src.images.keyvisual]
+      .concat((src.images && src.images.gallery) || []).filter(Boolean);
+    renderGallery(imgs);
+    if ((src.tiers || []).length) {
+      types = src.tiers.map(t => ({ id: "type-" + (++typeSeq), name: t.name, price: t.price, qty: t.qty, fee: t.fee || "" }));
+      tiers = [];
+      series.list.forEach(ss => types.forEach(ty => tiers.push(newCell(ss, ty))));
+      renderTypes();
+      renderTiers();
+    }
+    renderShare(); syncReview(); renderCalc(); scheduleSave();
+    dupName = (src.name || "").trim() || T("event-detail.untitled", "Untitled event");
+    renderDupNote();
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  }
+
+  /* 帶入提示的文案（含來源活動名稱）——切語言時要跟著重寫，所以獨立一支 */
+  let dupName = "";
+  function renderDupNote() {
+    const note = document.getElementById("ce-dup-note");
+    if (!note || !dupName) return;
+    note.hidden = false;
+    const txt = note.querySelector("[data-dup-text]");
+    if (txt) txt.textContent = T("ce.dup.note",
+      "Copied from {name} — name, description, images and ticket types came along. Dates, venue and sales figures start fresh.")
+      .replace("{name}", dupName);
+  }
+
   function demoInit() {
     renderBkyList();
     demoI18n();
     renderShare();
+    const from = new URLSearchParams(location.search).get("from");
+    if (from) dupFrom(from);
     syncBundleEmpty();     // 一開始一組都沒有＝空狀態說明卡，加號先收起來
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
   }
-  document.addEventListener("i18n:applied", () => demoI18n());
+  document.addEventListener("i18n:applied", () => { demoI18n(); renderDupNote(); });
 
   renderRules();
   applyShape();          // 場次列要先知道是定點還是巡迴，才知道畫成一列一場還是一站一盒

@@ -377,13 +377,14 @@
     // F4 — today's actions. CTA hrefs are DEEP LINKS with the landing state preset
     // (L directive 2026-07-27: the user finishes in the overlay or lands with filters
     // applied — never on a generic page): my-ip #rented + ?ip= flashes the license row;
-    // e-shop ?status=low pre-activates the Low Stock chip; event-detail #refunds opens
-    // the tab holding the Pre-flight checklist card; settings #tax aliases to Payments
+    // e-shop ?status=low pre-activates the Low Stock chip; event-detail #overview opens
+    // the tab holding the Pre-flight checklist card (2026-08-13: the card moved out of
+    // the Refunds tab — that tab is hidden before sales open, exactly when the checklist matters); settings #tax aliases to Payments
     // and flashes the three tax rows.
     'dash-alerts': { items: [
       { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented' },
       { variant: 'error',   icon: 'x-circle-fill',       titleKey: 'alert.stock.title',     title: 'Low stock · 3 items',             descKey: 'alert.stock.desc',     desc: '<em>Pirate Queen zine vol. 02</em>, <em>Kowloon After Dark tee (S)</em>, and the Mong Kok Sniper concept poster are below restock threshold.',   metaKey: 'alert.stock.meta',     meta: 'Critical · E-Shop · Open',      ctaKey: 'alert.stock.cta',     cta: 'Restock',            ctaHref: 'e-shop.html?status=low' },
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>Kowloon Café 10th Anniv. · Apr 12</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html#refunds' },
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>Kowloon Café 10th Anniv. · Apr 12</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html#overview' },
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).
       { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax' },
       // Snoozed (info, soft-closed) — excluded from F2 pending count; reappears in ~7 days (spec §F4).
