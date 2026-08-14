@@ -689,18 +689,22 @@
        在這裡剝掉而不是另建兩個 key：同一句話兩份文案，下次改文案就會分岔。 */
     function plain(k) { return T(k).replace(/^[·・]\s*/, '').replace(/\s*[·・]\s*%$/, ''); }
 
+    /* 適用場次表的一列（2026-08-13 使用者指示「表格化」）：勾選框／票種／售價／張數
+       各佔一欄。原本是一列 `.fc-ref`（縮圖＋名稱＋「$3800 · 共 150 張」），一列的事實
+       全串在同一行字裡——要讀句子才分得出哪個數字是價格、哪個是張數，六列之間也對不齊。
+       票券圖示一併拿掉：分卡標題已經說了這裡列的是票，每列再放一個一模一樣的圖示是裝飾。 */
+    /* 2026-08-13 第二輪（使用者提供參考圖、選定變體 C）：沒勾到的列整列淡化
+       （`--off`），取代原本「勾到的列給一條左緣色線」。同一排列裡要一眼數出選了幾張，
+       靠的是「沒選的退到背景」比「選到的多一條線」直接。 */
     function ticketRowHTML(t, on, labelKind) {
-      return '<label class="fc-ref bd-ticket' + (on ? ' bd-ticket--on' : '') + '">' +
+      return '<label class="bd-tbl__row bd-tbl__row--pick' + (on ? '' : ' bd-tbl__row--off') + '">' +
         '<span class="zcheck__control">' +
           '<input class="zcheck__input" type="checkbox" data-bd-ticket="' + esc(t.id) + '"' + (on ? ' checked' : '') + '>' +
           '<span class="zcheck__box"></span>' +
         '</span>' +
-        '<span class="fc-ref__thumb fc-ref__thumb--work"><i data-lucide="ticket" class="ztor-icon"></i></span>' +
-        '<div><div class="fc-ref__name">' + esc(labelKind && t.kind ? t.kind.name : t.name) + '</div>' +
-          '<div class="fc-ref__meta">' +
-            (Number(t.price) === 0 ? esc(T('ce.tier.free')) : '$' + esc(t.price)) +
-            (t.qty ? ' · ' + esc(T('cpp.bd.tickets.qty').replace('{n}', t.qty)) : '') +
-          '</div></div>' +
+        '<span class="bd-tbl__name">' + esc(labelKind && t.kind ? t.kind.name : t.name) + '</span>' +
+        '<span class="bd-tbl__num">' + esc(Number(t.price) === 0 ? T('ce.tier.free') : money(t.price)) + '</span>' +
+        '<span class="bd-tbl__num">' + esc(t.qty ? String(t.qty) : '—') + '</span>' +
       '</label>';
     }
 
@@ -713,30 +717,24 @@
       }).join('');
     }
 
-    /* 就緒檢查：與 isValid() 同一組條件，只是攤開成逐項，讓 chip 說得出缺什麼。 */
+    /* 就緒檢查：與 isValid() 同一組條件，只是攤開成逐項。
+       2026-08-13 使用者裁決撤除 footer 的就緒 chip（`.readiness__chip` ＋ hover 清單），
+       改由「完成」按鈕自己的 disabled 說話——還不能建立時按鈕就是關的。原本那顆 chip
+       在兩項都齊時只會寫「可以建立了」，等於把按鈕已經表達的事再說一次。
+       這組條件本身不動，它仍然是按鈕停用與否的判準。 */
     function readiness(b) {
       return [
-        { ok: (b.tickets || []).length > 0, label: T('cpp.bd.ready.ticket') },
-        { ok: !!String(b.name || '').trim() || !!suggestName(b), label: T('cpp.bd.ready.name') }
+        (b.tickets || []).length > 0,
+        !!String(b.name || '').trim() || !!suggestName(b),
+        !capOver(b)
       ];
     }
-    function readyMiss(b) { return readiness(b).filter(function (x) { return !x.ok; }); }
-
-    function readyChipHTML(b) {
-      var r = readiness(b), miss = r.filter(function (x) { return !x.ok; });
-      return '<div class="readiness__chip" tabindex="0">' +
-        '<i data-lucide="' + (miss.length ? 'circle' : 'check') + '" class="ztor-icon"></i>' +
-        '<span>' + esc(miss.length ? T('cpp.bd.ready.togo').replace('{n}', miss.length) : T('cpp.bd.ready.ok')) + '</span>' +
-        '<div class="readiness__pop" role="tooltip"><div class="readiness">' +
-          '<div class="readiness__head"><h3 class="readiness__title">' + esc(T('cpp.bd.ready.title')) + '</h3></div>' +
-          '<ul class="readiness__list">' +
-            r.map(function (x) {
-              return '<li class="readiness__item' + (x.ok ? ' is-ok' : '') + '">' +
-                '<i data-lucide="' + (x.ok ? 'check' : 'circle') + '" class="ztor-icon"></i>' + esc(x.label) + '</li>';
-            }).join('') +
-          '</ul>' +
-        '</div></div>' +
-      '</div>';
+    function readyMiss(b) { return readiness(b).filter(function (ok) { return !ok; }); }
+    /* 主要按鈕該不該停用。第 1 步只看它自己那一步答得完的兩件事（有沒有含票、售出上限
+       有沒有超過票券張數）——名稱在第 2 步，還沒走到就要求它會擋在一個看不到的欄位上。 */
+    function gateOffFor(b) {
+      var r = readiness(b);
+      return b.step === 2 ? r.indexOf(false) >= 0 : !(r[0] && r[2]);
     }
 
     /* ⓪ 場次對應（只有多場活動才問）
@@ -824,6 +822,60 @@
       '</section>';
     }
 
+    /* ── 會建立的組合包：「每場次各一組」的實際清單 ────────────────────────
+       點了模式卡只說「會長出 3 組」，但沒說是哪 3 組。這裡照 commit() 的展開邏輯
+       （每一場一顆組合包，內含當場所有已選票種的票）算出真正會建立的清單，逐場列出。
+       名稱欄寫的是展開後的完整名字（`stem · 場次名`），不只是場次名——那才是按下完成
+       之後清單上會出現的字。
+       2026-08-13 使用者指示「和適用場次一樣是一個 section，兩個都要表格化」：從票種分卡
+       裡的一段欄位升格成自己的分卡。它回答的是「按下完成之後會多出哪幾組」，與「這一組
+       賣哪一種票」是兩個決定，擠在同一張卡裡會讀成那個欄位的附註。
+       還沒挑票種時分卡照樣出現、只把說明句換成引導：整塊消失會接不上剛剛那一下點擊。 */
+    function perRows(b) {
+      var picked = {};
+      ticketKinds().forEach(function (k) {
+        if (k.ids.some(function (id) { return (b.tickets || []).indexOf(id) >= 0; })) picked[k.id] = true;
+      });
+      if (!Object.keys(picked).length) return [];
+      return ticketGroups().map(function (g) {
+        var incl = g.rows.filter(function (t) { return t.kind && picked[t.kind.id]; });
+        return incl.length ? { g: g, incl: incl } : null;
+      }).filter(Boolean);
+    }
+    function secPerHTML(b) {
+      if (b.scope !== 'per') return '';
+      // 沒有票種可挑時不出這張卡——kindCardsHTML 的佔位列已經講過那件事
+      if (!ticketGroups().length || !ticketKinds().length) return '';
+      var rows = perRows(b);
+      var stem = b.name || suggestName(b) || T('cpp.bd.untitled');
+      return '<section class="bd-sec">' +
+        '<div class="bd-sec__head">' +
+          '<h3 class="bd-sec__title">' + esc(T('cpp.bd.per.preview')) + '</h3>' +
+          '<p class="bd-sec__sub">' + esc(rows.length
+            ? T('cpp.bd.per.preview.sub').replace('{n}', rows.length)
+            : T('cpp.bd.per.preview.empty')) + '</p>' +
+        '</div>' +
+        (!rows.length ? '' :
+          '<div class="bd-tbl bd-tbl--per">' +
+            '<div class="bd-tbl__head">' +
+              '<span class="bd-tbl__col">' + esc(T('cpp.bd.tbl.bundle')) + '</span>' +
+              '<span class="bd-tbl__col">' + esc(T('cpp.bd.tbl.incl')) + '</span>' +
+              '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.tbl.value')) + '</span>' +
+            '</div>' +
+            rows.map(function (r) {
+              /* 票券原價取這一組裡最高的那一張，與 ticketValue() 同一條規則——
+                 粉絲擇一入場，最高價是保守的算法。 */
+              var top = r.incl.reduce(function (m, t) { return Math.max(m, cash(t.price)); }, 0);
+              return '<div class="bd-tbl__row">' +
+                '<span class="bd-tbl__name">' + esc(stem + ' · ' + r.g.name) + '</span>' +
+                '<span class="bd-tbl__sub">' + esc(r.incl.map(function (t) { return t.kind.name; }).join('、')) + '</span>' +
+                '<span class="bd-tbl__num">' + esc(top ? money(top) : T('ce.tier.free')) + '</span>' +
+              '</div>';
+            }).join('') +
+          '</div>') +
+      '</section>';
+    }
+
     /* ── 適用場次：選配的微調 ──────────────────────────────────────────
        只在「多場 ＋ 全場次共用一組 ＋ 已選票種」時出現。預設每一場都適用，這張表的
        用途是**取消**不販售的那幾場，不是從零勾選——所以標題是「適用場次」而不是
@@ -839,26 +891,45 @@
       if (!kinds.length) return '';
       var live = {};
       kinds.forEach(function (k) { k.ids.forEach(function (id) { live[id] = true; }); });
+      var liveIds = Object.keys(live);
+      var allOn = liveIds.every(function (id) { return chosen.indexOf(id) >= 0; });
+      /* 表頭第一格放「全選」（2026-08-13 第二輪，照使用者提供的參考圖）：勾選框佔的是
+         列首那一欄，與底下每一列的勾選框上下對齊，一整欄讀下來就是「這一格管底下全部」。
+         沒有文字標籤，語意交給位置——所以要補 aria-label，螢幕閱讀器才聽得出它管什麼。 */
       return '<section class="bd-sec">' +
         '<div class="bd-sec__head">' +
           '<h3 class="bd-sec__title">' + esc(T('cpp.bd.sec.sess')) + '</h3>' +
           '<p class="bd-sec__sub">' + esc(T('cpp.bd.sec.sess.sub')) + '</p>' +
         '</div>' +
-        groups.map(function (g) {
-          var rows = g.rows.filter(function (t) { return live[t.id]; });
-          if (!rows.length) return '';
-          var all = rows.every(function (t) { return chosen.indexOf(t.id) >= 0; });
-          return '<div class="bd-grp">' +
-            '<div class="bd-grp__head">' +
-              '<span class="bd-grp__name">' + esc(g.name) + '</span>' +
-              '<label class="zcheck bd-grp__all"><span class="zcheck__control">' +
-                '<input class="zcheck__input" type="checkbox" data-bd-group="' + esc(g.id) + '"' + (all ? ' checked' : '') + '>' +
-                '<span class="zcheck__box"></span></span>' +
-                '<span class="zcheck__label">' + esc(T('cpp.bd.grp.all')) + '</span></label>' +
-            '</div>' +
-            rows.map(function (t) { return ticketRowHTML(t, chosen.indexOf(t.id) >= 0, true); }).join('') +
-          '</div>';
-        }).join('') +
+        '<div class="bd-tbl bd-tbl--sess">' +
+          '<div class="bd-tbl__head">' +
+            '<span class="zcheck__control">' +
+              '<input class="zcheck__input" type="checkbox" data-bd-all' + (allOn ? ' checked' : '') +
+                ' aria-label="' + esc(T('cpp.bd.grp.allsess')) + '">' +
+              '<span class="zcheck__box"></span>' +
+            '</span>' +
+            '<span class="bd-tbl__col">' + esc(T('cpp.bd.tbl.tier')) + '</span>' +
+            '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.tbl.price')) + '</span>' +
+            '<span class="bd-tbl__col bd-tbl__col--num">' + esc(T('cpp.bd.tbl.qty')) + '</span>' +
+          '</div>' +
+          groups.map(function (g) {
+            var rows = g.rows.filter(function (t) { return live[t.id]; });
+            if (!rows.length) return '';
+            var all = rows.every(function (t) { return chosen.indexOf(t.id) >= 0; });
+            /* 場次組頭：勾選框同樣坐在列首那一欄（2026-08-13 使用者指示「放在上面一列、
+               跟其他勾選一樣靠左，不需要寫『全選本場次』」）。原本它靠右、帶一段文字標籤，
+               等於在同一張表裡出現第二種勾選框的擺法；移到同一欄之後，父子關係由位置說完。 */
+            return '<label class="bd-tbl__group">' +
+                '<span class="zcheck__control">' +
+                  '<input class="zcheck__input" type="checkbox" data-bd-group="' + esc(g.id) + '"' + (all ? ' checked' : '') +
+                    ' aria-label="' + esc(T('cpp.bd.grp.all')) + '">' +
+                  '<span class="zcheck__box"></span>' +
+                '</span>' +
+                '<span class="bd-tbl__gname">' + esc(g.name) + '</span>' +
+              '</label>' +
+              rows.map(function (t) { return ticketRowHTML(t, chosen.indexOf(t.id) >= 0, true); }).join('');
+          }).join('') +
+        '</div>' +
       '</section>';
     }
 
@@ -918,22 +989,59 @@
               'tabindex="0" data-bd-disc-toggle></div>' +
           '</div>' +
         '</div>' +
-        '<div class="bd-calc mt-16">' +
-          (on
-            ? '<span class="bd-calc__part"><span class="bd-calc__k">' + esc(T('cpp.bd.calc.base')) + '</span>' +
-                '<span class="bd-calc__v" data-bd-calc-base>' + esc(money(listPrice(b))) + '</span></span>' +
-              '<span class="bd-calc__op">−</span>' +
-              '<span class="bd-calc__part"><span class="bd-calc__k">' + esc(plain('cpp.bd.discount')) + '</span>' +
-                '<span class="amount-field amount-field--suffix amount-field--readonly bd-calc__disc">' +
+        /* 最終價已搬到 footer（2026-08-13 使用者指示「價格放在 footer」）：它是這張卡的
+           結果，而 footer 是釘住的——捲到哪裡都看得到，不必為了確認價格捲回定價那一段。
+           所以這裡只留「輸入」：原價合計與折扣欄。關掉折扣時整個算式塊都不出現——
+           沒有可填的東西，留一個只有一個數字的框是空殼。 */
+        /* 2026-08-13 使用者指示「優惠趴數／原價／優惠價三個欄位各一行」：原本是一列
+           橫向算式（原價 − 折扣%），三個數字擠在同一行、標籤又比值小一階，要左右掃過去
+           才讀得完。改成三個獨立欄位上下堆疊，一行一件事，標籤與值的關係跟站上其他欄位一致。
+           只有折扣是輸入，另外兩個是推導值，所以用 `.field-readout`（唯讀顯示，不畫框、
+           不留 input 內距）而不是停用的 `.input`——停用的輸入框看起來像「這裡本來可以填」。 */
+        (on
+          ? '<div class="mt-16">' +
+              '<div class="field">' +
+                '<label class="field__label">' + esc(plain('cpp.bd.discount')) + '</label>' +
+                '<span class="amount-field amount-field--suffix bd-calc__disc">' +
                   '<input class="amount-field__input input" type="number" min="0" max="100" step="1" data-bd-f="discount" ' +
                     'value="' + esc(b.discount) + '" placeholder="' + esc(T('cpp.bd.discount.ph')) + '">' +
-                  '<span class="amount-field__unit">%</span></span></span>'
-            : '') +
-          '<span class="bd-calc__part bd-calc__final"><span class="bd-calc__k">' + esc(T('cpp.bd.calc.final')) + '</span>' +
-            '<span class="bd-calc__v bd-calc__v--final" data-bd-calc-final>' + esc(money(finalPrice(b))) + '</span></span>' +
-        '</div>' +
-        (on ? '' : '<div class="field__hint mt-8">' + esc(T('cpp.bd.calc.nodisc')) + '</div>') +
+                  '<span class="amount-field__unit">%</span></span>' +
+              '</div>' +
+              '<div class="field">' +
+                '<label class="field__label">' + esc(T('cpp.bd.calc.base')) + '</label>' +
+                '<div class="field-readout" data-bd-calc-base>' + esc(money(listPrice(b))) + '</div>' +
+              '</div>' +
+              '<div class="field">' +
+                '<label class="field__label">' + esc(T('cpp.bd.calc.final')) + '</label>' +
+                '<div class="field-readout" data-bd-calc-final>' + esc(money(finalPrice(b))) + '</div>' +
+              '</div>' +
+            '</div>'
+          : '<div class="field__hint mt-8">' + esc(T('cpp.bd.calc.nodisc')) + '</div>') +
       '</section>';
+    }
+
+    /* 這一組的售出上限不能超過它含的票（2026-08-13 使用者指示「必須小於等於所選票的最低量」）。
+       賣掉一組就要從每一種含的票各扣一張，所以能賣幾組由**張數最少的那一種**決定——
+       取最小值而不是加總。沒有張數資料（qty 留空）的票不參與，全都沒有就沒有上限。 */
+    function ticketCapMax(b) {
+      if (!SECTIONS || !getTickets) return Infinity;
+      var chosen = b.tickets || [];
+      var qs = (getTickets() || [])
+        .filter(function (t) { return chosen.indexOf(t.id) >= 0; })
+        .map(function (t) { return num(t.qty); })
+        .filter(function (n) { return Number.isFinite(n) && n > 0; });
+      return qs.length ? Math.min.apply(null, qs) : Infinity;
+    }
+    function capOver(b) {
+      if (b.avail !== 'limited') return false;
+      var c = num(b.cap), m = ticketCapMax(b);
+      return Number.isFinite(c) && c > 0 && m !== Infinity && c > m;
+    }
+    function capMaxHint(b) {
+      var m = ticketCapMax(b);
+      if (m === Infinity) return '';
+      var n = m.toLocaleString('en-US');
+      return T(capOver(b) ? 'cpp.bd.cap.over' : 'cpp.bd.cap.max').replace(/\{n\}/g, n);
     }
 
     /* ③ 販售數量：不限量／限量二選一（比照建立商品的「庫存」）。
@@ -961,8 +1069,16 @@
           ? '<div class="form-grid mt-16">' +
               '<div class="field">' +
                 '<label class="field__label">' + esc(T('cpp.bd.cap')) + ' <span class="field__req">*</span></label>' +
-                '<input class="input" type="number" min="1" step="1" data-bd-f="cap" value="' + esc(b.cap) +
+                '<input class="input" type="number" min="1" step="1"' +
+                  (ticketCapMax(b) === Infinity ? '' : ' max="' + ticketCapMax(b) + '"') +
+                  (capOver(b) ? ' aria-invalid="true"' : '') +
+                  ' data-bd-f="cap" value="' + esc(b.cap) +
                   '" placeholder="' + esc(T('cpp.bd.cap.ph')) + '">' +
+                /* 上限來自票券張數，寫在欄位底下才不必自己去比對票種那一段 */
+                (capMaxHint(b)
+                  ? '<div class="field__hint' + (capOver(b) ? ' fc-hint--over' : '') + '" data-bd-capmax>' +
+                      esc(capMaxHint(b)) + '</div>'
+                  : '') +
               '</div>' +
             '</div>'
           : '') +
@@ -1022,10 +1138,18 @@
       '</section>';
     }
 
+    /* 兩步彈窗（2026-08-13 使用者指示「基本資料與封面圖放下一步，不需要 stepper」）。
+       第 1 步回答「這一組賣什麼、怎麼賣」，第 2 步才是「它長什麼樣」——名稱與封面圖
+       本來就排在最後，而且名稱會從內容自動擬好，等於是確認而不是填空。
+       **不放 stepper**：兩步的進度條要佔掉 dialog 頂部一整條，卻只表達「兩步中的第幾步」，
+       而分卡標題（基本資料／封面圖）已經說了現在在哪；前後由 footer 的兩顆按鈕承擔。 */
     function secCardHTML(b, i) {
       var groups = ticketGroups();
-      var primaryLabel = b.scope === 'per'
-        ? T('cpp.bd.createn').replace('{n}', groups.length) : T('cpp.bd.done');
+      var step2 = b.step === 2;
+      var primaryLabel = step2
+        ? (b.scope === 'per' ? T('cpp.bd.createn').replace('{n}', perRows(b).length || groups.length) : T('cpp.bd.done'))
+        : T('cpp.bd.next');
+      var gateOff = gateOffFor(b);
       return '' +
       '<div class="payout-modal bd-modal" data-bd-card="' + b.id + '">' +
         '<section class="payout-dialog payout-dialog--wide" role="dialog" aria-modal="true">' +
@@ -1035,18 +1159,34 @@
               '<i data-lucide="x" class="ztor-icon"></i></button>' +
           '</div>' +
           '<div class="payout-dialog__body">' +
-            secKindHTML(b) + secSessionsHTML(b) + secItemsHTML(b) +
-            secPerksHTML(b) + secPriceHTML(b) + secQtyHTML(b) +
-            secInfoHTML(b) + secCoverHTML(b) +
+            (step2
+              ? secInfoHTML(b) + secCoverHTML(b)
+              : secKindHTML(b) + secPerHTML(b) + secSessionsHTML(b) + secItemsHTML(b) +
+                secPerksHTML(b) + secPriceHTML(b) + secQtyHTML(b)) +
           '</div>' +
           '<div class="payout-dialog__foot">' +
+            /* 價格釘在 footer（2026-08-13 使用者指示）：它是整張卡的結果，
+               放在定價那一段的話，捲到「基本資料」就看不到自己定出來的價格了。
+               有折扣時把原價劃線並列，讓「讓了多少」在同一眼裡看得完。
+               2026-08-13 第二輪（使用者指示「靠左」）：它是 footer 的**第一個**子元素、
+               貼左緣，不再跟主要動作擠在右邊那一團——結果歸結果、動作歸動作，
+               擠在一起時那兩行字會被讀成按鈕的說明。 */
+            '<div class="bd-foot-price">' +
+              '<span class="bd-foot-price__k">' + esc(T('cpp.bd.calc.final')) + '</span>' +
+              '<span class="bd-foot-price__v">' +
+                (listPrice(b) > finalPrice(b)
+                  ? '<span class="bd-foot-price__was">' + esc(money(listPrice(b))) + '</span>' : '') +
+                '<span data-bd-calc-final>' + esc(money(finalPrice(b))) + '</span>' +
+              '</span>' +
+            '</div>' +
             (BUNDLES.length > 1
               ? '<button class="btn btn--ghost btn--sm" type="button" data-bd-remove>' + esc(T('cpp.bd.remove')) + '</button>'
-              : '<span></span>') +
+              : '') +
             '<div class="bd-foot-actions">' +
-              readyChipHTML(b) +
+              (step2 ? '<button class="btn btn--outline" type="button" data-bd-back>' +
+                esc(T('cpp.bd.back')) + '</button>' : '') +
               '<button class="btn btn--primary" type="button" data-bd-primary' +
-                (readyMiss(b).length ? ' disabled' : '') + '>' + esc(primaryLabel) + '</button>' +
+                (gateOff ? ' disabled' : '') + '>' + esc(primaryLabel) + '</button>' +
             '</div>' +
           '</div>' +
         '</section>' +
@@ -1308,6 +1448,16 @@
         };
       }
 
+      /* 彈窗捲到哪裡也要記下來（2026-08-13 使用者回報「點了選項就跳回最頂端」）：
+         重畫是整段 innerHTML 換掉，捲動位置歸零，於是在「販售設定」那一段勾一個開關，
+         畫面會自己彈回「票種」——使用者以為自己被送回了第一步。
+         以卡片 id 記，一張卡對一個捲動位置；卡沒了就自然不還原。 */
+      var scrolls = {};
+      list.querySelectorAll('[data-bd-card] .payout-dialog__body').forEach(function (body) {
+        var c = body.closest('[data-bd-card]');
+        if (c && body.scrollTop) scrolls[c.dataset.bdCard] = body.scrollTop;
+      });
+
       /* 分段版型：收合列一律全部畫出來（編輯中的那一組也留著它的列，否則清單會在
          彈窗打開的瞬間少一行），展開的那一組另外附一個彈窗。彈窗排在前面，
          焦點還原的 querySelector 才會先命中它。 */
@@ -1326,6 +1476,23 @@
          `:not(.is-empty)` 判定「已經有圖」，於是把圖示、標題與尺寸提示全部藏起來，
          畫面上只剩一個空的虛線框（2026-08-13 實測）。enhance() 自己會跳過已處理的格子。 */
       if (window.ztorUploadTile && window.ztorUploadTile.init) window.ztorUploadTile.init();
+      /* 全選勾選框的「勾了一部分」是 DOM 屬性、寫不進 HTML 字串，所以每次重畫之後
+         要再補一次；只補這一項，不跑整支 syncPickState（它在某些狀態下會再叫 render）。 */
+      if (SECTIONS) {
+        list.querySelectorAll('[data-bd-card]').forEach(function (card) {
+          var b = get(card.dataset.bdCard);
+          if (b) syncTriBoxes(card, b);
+        });
+      }
+
+      /* 捲動位置還原。要在同一拍做完（不排到下一個 frame）——晚一拍還原，使用者會先
+         看到畫面閃回頂端再跳回來，比不還原更難讀。
+         `o.top`＝換了一步，兩步的內容不一樣，把上一步的捲動位置套上去只會落在別的地方。 */
+      if (o && o.top) scrolls = {};
+      Object.keys(scrolls).forEach(function (id) {
+        var body = list.querySelector('[data-bd-card="' + id + '"] .payout-dialog__body');
+        if (body) body.scrollTop = scrolls[id];
+      });
 
       if (keep && keep.sel && !(o && o.blur)) {
         var target = list.querySelector('[data-bd-card="' + keep.id + '"] ' + keep.sel);
@@ -1365,8 +1532,35 @@
       if (SECTIONS) {
         var baseEl = card.querySelector('[data-bd-calc-base]');
         if (baseEl) baseEl.textContent = money(listPrice(b));
-        var finEl = card.querySelector('[data-bd-calc-final]');
-        if (finEl) finEl.textContent = money(finalPrice(b));
+        /* 最終價現在有兩個落點（定價分卡的欄位、footer 的結果），兩顆都要更新——
+           只取第一顆的話，另一顆會停在重畫當下的舊數字。 */
+        card.querySelectorAll('[data-bd-calc-final]').forEach(function (el) {
+          el.textContent = money(finalPrice(b));
+        });
+        /* 售出上限的提示與紅框：打字當下就要跟著改，不重畫（重畫會踢掉游標）。 */
+        var capMaxEl = card.querySelector('[data-bd-capmax]');
+        if (capMaxEl) {
+          capMaxEl.textContent = capMaxHint(b);
+          capMaxEl.classList.toggle('fc-hint--over', capOver(b));
+        }
+        var capEl = card.querySelector('[data-bd-f="cap"]');
+        if (capEl) {
+          if (capOver(b)) capEl.setAttribute('aria-invalid', 'true');
+          else capEl.removeAttribute('aria-invalid');
+        }
+        var primaryEl = card.querySelector('[data-bd-primary]');
+        if (primaryEl) primaryEl.disabled = gateOffFor(b);
+        /* footer 的劃線原價：折扣打到 0 或清空時要收掉，否則會留著一個
+           跟最終價一模一樣的劃線數字。 */
+        var finEl = card.querySelector('.bd-foot-price [data-bd-calc-final]');
+        var wasEl = card.querySelector('.bd-foot-price__was');
+        var off = listPrice(b) > finalPrice(b);
+        if (wasEl && !off) wasEl.remove();
+        else if (wasEl) wasEl.textContent = money(listPrice(b));
+        else if (off && finEl && finEl.parentNode) {
+          finEl.insertAdjacentHTML('beforebegin',
+            '<span class="bd-foot-price__was">' + esc(money(listPrice(b))) + '</span>');
+        }
         var titleEl = card.querySelector('.fc-sum__name');
         if (titleEl) {
           var idxS = titleEl.querySelector('.fc-bundle__index');
@@ -1413,11 +1607,42 @@
     /* 勾一張票之後，畫面上跟著它走、但不在那一列裡的三件事（分段版型）：
        那一列自己的選中色線、票種捷徑的 active、組頭的整場全選。就地改，不重畫——
        重畫會把正在連續勾選的 checkbox 連同焦點一起換掉。 */
+    /* 組頭與表頭的全選（2026-08-13 第二輪）：標籤文字拿掉之後，這兩顆勾選框只剩位置
+       在說「我管底下那幾列」，所以「勾了一部分」要用 indeterminate 表達——只有 checked
+       的話，取消其中一場會讓組頭整個彈回未勾，看起來像自己的操作被撤銷。
+       表頭那顆的範圍是這張表列得出來的全部票（＝已選票種在各場次的那幾張）。
+       indeterminate 是 DOM 屬性、寫不進 HTML 字串，所以重畫之後也要再跑一次（見 render）。 */
+    function syncTriBoxes(card, b) {
+      var chosen = b.tickets || [];
+      function setTri(box, on, some) {
+        if (!box) return;
+        box.checked = on;
+        box.indeterminate = !on && some;
+      }
+      var live = [];
+      ticketKinds().forEach(function (k) {
+        if (k.ids.some(function (id) { return chosen.indexOf(id) >= 0; })) live = live.concat(k.ids);
+      });
+      ticketGroups().forEach(function (g) {
+        var rows = g.rows.filter(function (t) { return live.indexOf(t.id) >= 0; });
+        setTri(card.querySelector('[data-bd-group="' + g.id + '"]'),
+          rows.length > 0 && rows.every(function (t) { return chosen.indexOf(t.id) >= 0; }),
+          rows.some(function (t) { return chosen.indexOf(t.id) >= 0; }));
+      });
+      setTri(card.querySelector('[data-bd-all]'),
+        live.length > 0 && live.every(function (id) { return chosen.indexOf(id) >= 0; }),
+        live.some(function (id) { return chosen.indexOf(id) >= 0; }));
+    }
+
     function syncPickState(card, b) {
       var chosen = b.tickets || [];
       card.querySelectorAll('[data-bd-ticket]').forEach(function (input) {
+        /* 兩種列型：分段版型的表格列（`.bd-tbl__row`）與預設版型的引用列（`.bd-ticket`）。 */
+        var on = chosen.indexOf(input.dataset.bdTicket) >= 0;
+        var tblRow = input.closest('.bd-tbl__row');
+        if (tblRow) { tblRow.classList.toggle('bd-tbl__row--off', !on); return; }
         var row = input.closest('.bd-ticket');
-        if (row) row.classList.toggle('bd-ticket--on', chosen.indexOf(input.dataset.bdTicket) >= 0);
+        if (row) row.classList.toggle('bd-ticket--on', on);
       });
       ticketKinds().forEach(function (k) {
         var kc = card.querySelector('[data-bd-kind="' + k.id + '"]');
@@ -1438,15 +1663,12 @@
             : (Number(first.price) === 0 ? T('ce.tier.free') : '$' + first.price);
         }
       });
-      ticketGroups().forEach(function (g) {
-        var box = card.querySelector('[data-bd-group="' + g.id + '"]');
-        if (box) box.checked = g.rows.every(function (t) { return chosen.indexOf(t.id) >= 0; });
-      });
+      syncTriBoxes(card, b);
       /* 兩個東西只在「有沒有選到票」翻面的當下才需要重畫：挑選器的「完成選擇」，
-         以及 footer 的就緒 chip 與主要按鈕的停用狀態。 */
+         以及 footer 主要按鈕的停用狀態。 */
       var bar = card.querySelector('.bd-pick__bar');
       var primary = card.querySelector('[data-bd-primary]');
-      var gateWrong = primary && (primary.disabled !== (readyMiss(b).length > 0));
+      var gateWrong = primary && (primary.disabled !== gateOffFor(b));
       if (gateWrong || (bar && !bar.querySelector('[data-bd-pickdone]') && chosen.length)) render({ blur: true });
     }
 
@@ -1523,6 +1745,24 @@
        打字當下夾會讓「清空再重打」變成不可能（每刪一個字就被塞回 1）。
        離開時把狀態與畫面一起補成 1，才不會留下一個空欄位配著算 1 份的價格。 */
     list.addEventListener('change', function (e) {
+      /* 表頭全選（分段版型，2026-08-13）：一次翻掉表上所有列。範圍限「這張表列得出來的票」
+         ——也就是已選票種在各場次的那幾張，不會去動沒被列出來的票種。 */
+      if (e.target.hasAttribute && e.target.hasAttribute('data-bd-all')) {
+        var cardA = e.target.closest('[data-bd-card]');
+        var ba = cardA && get(cardA.dataset.bdCard);
+        if (ba) {
+          var kindsA = ticketKinds().filter(function (k) {
+            return k.ids.some(function (id) { return (ba.tickets || []).indexOf(id) >= 0; });
+          });
+          var allIds = [];
+          kindsA.forEach(function (k) { allIds = allIds.concat(k.ids); });
+          ba.tickets = e.target.checked
+            ? (ba.tickets || []).concat(allIds.filter(function (id) { return ba.tickets.indexOf(id) < 0; }))
+            : (ba.tickets || []).filter(function (id) { return allIds.indexOf(id) < 0; });
+          render({ blur: true });
+        }
+        return;
+      }
       /* 整場全選（分段版型）：一次翻該場的全部票。重畫是必要的——票種捷徑的 active
          狀態與收合態的 chip 都要跟著這一次翻動重算。 */
       var grp = e.target.closest('[data-bd-group]');
@@ -1589,7 +1829,8 @@
         if (bo) {
           BUNDLES.forEach(function (x) { x.collapsed = true; });
           bo.collapsed = false;
-          render({ blur: true });
+          bo.step = 1;          /* 每次打開都從第 1 步開始，不接續上次停在哪 */
+          render({ blur: true, top: true });
         }
         return;
       }
@@ -1631,13 +1872,20 @@
         render({ blur: true });
         return;
       }
-      /* 主要按鈕＝送出。就緒未過時按鈕本來就是停用的，這裡再擋一次是為了
-         鍵盤與程式化觸發。 */
+      /* 主要按鈕：第 1 步是「下一步」、第 2 步才是送出。就緒未過時按鈕本來就是停用的，
+         這裡再擋一次是為了鍵盤與程式化觸發。 */
       if (e.target.closest('[data-bd-primary]')) {
+        if (b.step !== 2) {
+          if (gateOffFor(b)) return;
+          b.step = 2;
+          render({ blur: true, top: true });
+          return;
+        }
         if (readyMiss(b).length) return;
         commit(b);
         return;
       }
+      if (e.target.closest('[data-bd-back]')) { b.step = 1; render({ blur: true, top: true }); return; }
       if (e.target.closest('[data-bd-close]')) { close(b); return; }
 
       var avail = e.target.closest('[data-bd-avail]');
@@ -1717,7 +1965,11 @@
       /* 一個票種都沒挑就沒有東西可展開——維持在編輯狀態，不要靜默生出 N 張空卡。 */
       if (!picked.length || !groups.length) return;
       var stem = b.name || suggestName(b) || T('cpp.bd.untitled');
-      var made = groups.map(function (g) {
+      /* 只展開真的有票可放的場次——那一場沒有賣這個票種的話，展開出來會是一顆空組合包。
+         這一行也讓「會建立的組合包」那張分卡與這裡展開的結果逐列相同（perRows 同條件）。 */
+      var made = groups.filter(function (g) {
+        return g.rows.some(function (t) { return t.kind && picked.indexOf(t.kind.id) >= 0; });
+      }).map(function (g) {
         var copy = newBundle();
         copy.name = stem + ' · ' + g.name;
         copy.desc = b.desc;
@@ -1750,6 +2002,7 @@
       } else {
         b.collapsed = true;
       }
+      b.step = 1;
       render({ blur: true });
     }
 

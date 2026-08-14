@@ -46,6 +46,10 @@
        只有圖示、沒有可見文字，所以字串走 aria-label 與 title 兩條。
        寫「返回上一層」而不是「返回」：這顆退的是麵包屑的上一層，不是瀏覽器
        上一頁，兩者在覆蓋層情境下會退到不同地方。 */
+    /* 詳情浮層（detail-sheet）：2026-08-13 起左邊那顆鈕由「返回清單」改成「整頁開啟」，
+       關閉交給右上角的 ✕。sheet.back 已無消費者、保留墓碑。 */
+    'sheet.openfull':         { en: 'Open as full page',    zh: '整頁開啟' },
+    'sheet.close':            { en: 'Close',                zh: '關閉' },
     'crumb.back':       { en: 'Back to previous level', zh: '返回上一層' },
     /* ─── Topbar ───────────────────────────────────────────── */
     'nav.dashboard':    { en: 'Dashboard',  zh: '總覽' },
@@ -452,6 +456,8 @@
     /* ─── Shared field copy ───────────────────────────────── */
     /* 日期／時間欄位的 placeholder（partials/date-input.js 注入，全站共用一句）*/
     'field.pick-date':        { en: 'Pick a date',           zh: '選擇日期' },
+    'field.pick-time':        { en: 'Pick a time',           zh: '選擇時間' },
+    'field.pick-datetime':    { en: 'Pick date & time',     zh: '選擇日期時間' },
     /* 表單次要欄位收合（ds-components/field-more.css）*/
     'field.show-more':        { en: 'Show more',             zh: '顯示更多' },
     'field.show-less':        { en: 'Show less',             zh: '收合' },
@@ -2486,7 +2492,7 @@
     'events.tab.past':         { en: 'Past',                                zh: '已舉辦' },
     'events.tab.drafts':       { en: 'Drafts',                              zh: '草稿' },
     'events.badge.on-sale':    { en: 'On Sale',                             zh: '售票中' },
-    'events.badge.scheduled':  { en: 'Scheduled',                           zh: '準備中' },
+    'events.badge.scheduled':  { en: 'Scheduled',                           zh: '已排程' },
     'events.badge.ended':      { en: 'Ended',                               zh: '已結束' },
     'events.badge.draft':      { en: 'Draft',                               zh: '草稿' },
     'events.badge.soldout':    { en: 'Sold out',                            zh: '已售完' },
@@ -2654,7 +2660,8 @@
     'events.stage.all':       { en: 'All',           zh: '全部' },
     'events.stage.live':      { en: 'Live',          zh: '進行中' },
     'events.stage.on-sale':   { en: 'On sale',       zh: '售票中' },
-    'events.stage.scheduled': { en: 'Scheduled',     zh: '準備中' },
+    'events.stage.scheduled': { en: 'Scheduled',     zh: '已排程' },
+    'events.stage.cancelled': { en: 'Cancelled',     zh: '已取消' },
     'events.stage.draft':     { en: 'Draft',         zh: '草稿' },
     'events.stage.past':      { en: 'Past',          zh: '已結束' },
     'events.cat.aria':        { en: 'Filter by event type', zh: '依活動類型篩選' },
@@ -4410,6 +4417,19 @@
     /* 墓碑：`cpp.bd.sec.show`／`.sub`（「呈現方式」單張分卡）於 2026-08-13 拆成
        「基本資料」與「封面圖」兩張，比照建立商品的「商品資訊」與「展示它」。 */
     /* 票種／適用場次／商店商品／額外權益：2026-08-13 各自獨立成分卡 */
+    /* 「每場次各一組」的實際預覽（2026-08-13 使用者指示「點下去後要列出是哪些票」） */
+    'cpp.bd.per.preview':   { en: 'Bundles to be created',             zh: '會建立的組合包' },
+    'cpp.bd.per.preview.sub': { en: '{n} bundles — one per date, each with that date’s own tickets.',
+                              zh: '共 {n} 組，一場一組，各自含該場次的票券。' },
+    'cpp.bd.per.preview.empty': { en: 'Pick a tier above to see what gets created.',
+                              zh: '先在上面挑票種，這裡就會列出會建立哪幾組。' },
+    /* 兩張表的欄名（2026-08-13 使用者指示「兩個都要表格化」） */
+    'cpp.bd.tbl.tier':      { en: 'Tier',                             zh: '票種' },
+    'cpp.bd.tbl.price':     { en: 'Price',                            zh: '售價' },
+    'cpp.bd.tbl.qty':       { en: 'Tickets',                          zh: '張數' },
+    'cpp.bd.tbl.bundle':    { en: 'Bundle',                           zh: '組合包名稱' },
+    'cpp.bd.tbl.incl':      { en: 'Ticket inside',                    zh: '內含票種' },
+    'cpp.bd.tbl.value':     { en: 'Ticket value',                     zh: '票券原價' },
     'cpp.bd.sec.kind':      { en: 'Ticket tier',                      zh: '票種' },
     'cpp.bd.sec.kind.sub':  { en: 'Which tier this bundle sells.',     zh: '這一組要賣哪一種票。' },
     'cpp.bd.sec.kind.sub.multi': { en: 'Which tier this bundle sells, and how it maps to the dates.',
@@ -4457,7 +4477,10 @@
     'cpp.bd.pick.kind':     { en: 'Tier', zh: '票種' },
     'cpp.bd.pick.done':     { en: 'Done selecting', zh: '完成選擇' },
     'cpp.bd.pick.edit':     { en: 'Change', zh: '變更' },
+    /* 兩顆全選勾選框的 aria-label（2026-08-13 起不再顯示成文字標籤，語意由位置承擔，
+       所以只給螢幕閱讀器用）。 */
     'cpp.bd.grp.all':       { en: 'Select this date', zh: '全選本場次' },
+    'cpp.bd.grp.allsess':   { en: 'Select every date', zh: '全選所有場次' },
     'cpp.bd.chosen.all':    { en: 'all dates', zh: '全場次' },
     'cpp.bd.tickets.qty':   { en: '{n} left',                        zh: '共 {n} 張' },
     /* 扣庫存的說法：這一組賣掉一份，錢從哪一張票的張數裡扣。多選時扣的是粉絲挑的那張。 */
@@ -4471,13 +4494,14 @@
                               zh: '留空則以票券張數為上限' },
     'cpp.bd.suggest':       { en: 'Apply “{n}”', zh: '套用建議名稱「{n}」' },
     'cpp.bd.done':          { en: 'Done',                            zh: '完成' },
-    /* 就緒檢查（2026-08-13）：取代原本的三步閘門，一次講完全部缺項。
-       墓碑：`cpp.bd.next`／`cpp.bd.back`（三步彈窗的上一步／下一步）同輪撤除。 */
-    'cpp.bd.ready.title':   { en: "What's missing?",                  zh: '這一組還缺什麼？' },
-    'cpp.bd.ready.togo':    { en: '{n} to go',                        zh: '還缺 {n} 項' },
-    'cpp.bd.ready.ok':      { en: 'Ready',                            zh: '可以建立了' },
-    'cpp.bd.ready.ticket':  { en: 'At least one ticket',              zh: '至少含一張票券' },
-    'cpp.bd.ready.name':    { en: 'A name',                           zh: '組合包名稱' },
+    /* 兩步彈窗的前後（2026-08-13 使用者指示「基本資料與封面圖放下一步」）。
+       同名 key 在更早的三步版曾撤除過，本輪重新啟用。 */
+    'cpp.bd.next':          { en: 'Next',                            zh: '下一步' },
+    'cpp.bd.back':          { en: 'Back',                            zh: '上一步' },
+    /* 墓碑 2026-08-13：`cpp.bd.ready.title`／`.togo`／`.ok`／`.ticket`／`.name`
+       隨 footer 的就緒 chip 一併撤除（使用者裁決「不需要」）——還不能建立時由「完成」
+       按鈕自己的 disabled 表達，chip 在條件都齊時只是把按鈕已經說過的話再說一次。
+       同批墓碑：`cpp.bd.next`／`cpp.bd.back`（更早的三步彈窗上一步／下一步）。 */
     'cpp.bd.createn':       { en: 'Create {n} bundles',              zh: '建立 {n} 組' },
     'cpp.bd.units':         { en: 'Copies of the work included',     zh: '含作品份數' },
     'cpp.bd.units.hint':    { en: 'A two-person plan takes 2. Minimum 1.',
@@ -4555,6 +4579,12 @@
                                    zh: '在共創頁設定支持者名額後，這裡會自動算出來。' },
     'cpp.bd.cap':           { en: 'How many can be sold',             zh: '最多可售出幾份' },
     'cpp.bd.cap.ph':        { en: 'e.g. 40',                          zh: '例：40' },
+    /* 售出上限的天花板來自票券張數（2026-08-13 使用者指示「必須小於等於所選票的最低量」）：
+       賣掉一組要從每一種含的票各扣一張，所以由張數最少的那一種決定。 */
+    'cpp.bd.cap.max':       { en: 'Up to {n} — the bundle can only be sold as many times as its scarcest ticket allows.',
+                              zh: '最多 {n} 份——這一組含的票裡，張數最少的那一種只有 {n} 張。' },
+    'cpp.bd.cap.over':      { en: 'Over the limit — {n} at most, set by the scarcest ticket in this bundle.',
+                              zh: '超過了：最多 {n} 份，由這一組含的票裡張數最少的那一種決定。' },
     'cpp.bd.cap.hint':      { en: 'A hard cap you set. Sales stop here even if the pool still has slots.',
                                    zh: '你自己設的硬上限。就算池子還有名額，賣到這個數就停。' },
     /* ── 預購模式（bundle-editor 的 shares:false，2026-08-03 D166）──────────────
@@ -6757,7 +6787,8 @@
     'ed.pub.edit-pre': { en: 'Nothing has sold yet, so these are still yours to change. Once tickets are on sale they lock — changing them then affects buyers, and those rules are upstream.', zh: '還沒賣出任何一張票，這些設定仍然可以改。開賣後會鎖住——那時候改會影響買家，規則在上游還沒定。' },
     'event-detail.tab.overview': { en: 'Overview', zh: '總覽' },
     'event-detail.tab.tiers': { en: 'Tickets', zh: '票務' },
-    'event-detail.tab.attendees': { en: 'Attendees & check-in', zh: '參加者與報到' },
+    'event-detail.tab.bundles': { en: 'Bundles', zh: '票務商品' },
+    'event-detail.tab.attendees': { en: 'Attendee list', zh: '參加者名單' },
     'event-detail.tab.refunds': { en: 'Refunds & comps', zh: '退款與招待票' },
     'event-detail.tab.notifications': { en: 'Notifications', zh: '通知' },
     'event-detail.tab.finance': { en: 'Cost & revenue', zh: '成本與營收' },
@@ -6794,6 +6825,14 @@
     'ed.tix.status.paused': { en: 'Paused',         zh: '已暫停' },
     'ed.tix.pause':       { en: 'Pause sales',      zh: '暫停販售' },
     'ed.tix.resume':      { en: 'Resume sales',     zh: '重新販售' },
+    'ed.venue.title': { en: 'Venue', zh: '地點' },
+    'ed.venue.sub': { en: 'Shared by every date of this event.', zh: '這場活動所有場次共用。' },
+    'ed.bd.price': { en: 'Bundle price', zh: '組合價' },
+    'ed.bd.tickets': { en: 'Tickets inside', zh: '內含票券' },
+    'ed.bd.products': { en: 'Products inside', zh: '內含商品' },
+    'ed.bd.sold': { en: 'Sold', zh: '已售' },
+    'ed.bd.left': { en: 'Left', zh: '剩餘' },
+    'ed.bd.pool': { en: 'Tickets drawn from stock', zh: '已佔用票券' },
     'ed.bd.title':        { en: 'Ticket bundles',   zh: '票務商品' },
     'ed.bd.sub':          { en: 'Tickets bundled with products. They draw from the same ticket pool — selling one takes a ticket from the tier it contains.', zh: '票與商品綁在一起賣的組合包，跟單賣的票共用同一個數量池——賣掉一組就從它含的那張票扣一張。' },
     'ed.bd.contains':     { en: 'Contains',         zh: '內含' },
@@ -6803,8 +6842,8 @@
     /* 2026-08-11 詳情頁重新設計：分頁對齊建立流程（場次／發布設定獨立成頁）、票務彈窗 */
     'event-detail.tab.dates':   { en: 'Date & venue',     zh: '場次' },
     'event-detail.tab.publish': { en: 'Publish settings', zh: '發布設定' },
-    'ed.dates.title':     { en: 'Date & venue',           zh: '場次' },
-    'ed.dates.sub':       { en: "This date's schedule and venue. Series dates share settings on the series page.", zh: '這一場的時間與場地。系列的共用設定在系列母頁改。' },
+    'ed.dates.title':     { en: 'Dates',                  zh: '場次' },
+    'ed.dates.sub':       { en: 'When this event runs. Series dates share settings on the series page.', zh: '這場活動什麼時候舉行。系列的共用設定在系列母頁改。' },
     'ed.pub.title':       { en: 'Publish settings',       zh: '發布設定' },
     'ed.pub.onsale':      { en: 'Sale mode',              zh: '販售方式' },
     'ed.pub.onsale.now':  { en: 'On sale at publish',     zh: '發布後直接開賣' },
@@ -6824,6 +6863,9 @@
     'ed.tm.pause.hint':   { en: 'Rejects new purchases; tickets already sold stay valid.', zh: '擋掉新的購買，已售出的票維持有效。' },
     'ed.sess.add':        { en: 'Add a date',             zh: '新增場次' },
     'ed.sess.n':          { en: 'Date {n}',               zh: '第 {n} 場' },
+    /* 折疊態的一行摘要（2026-08-13，A 案）：{t}＝開放入場時間 */
+    'ed.sess.sum.doors':  { en: 'doors {t}',        zh: '{t} 開場' },
+    'ed.sess.sum.nodate': { en: 'Date not set',     zh: '日期尚未設定' },
     'ed.sess.remove':     { en: 'Remove this date',       zh: '移除這一場' },
     'event-detail.tiers.sub': { en: '1–10 tiers per event. Sale progress turns yellow at 80%, red at 95% (§5.1.6 F5).', zh: '每場活動 1–10 個票種。售票進度達 80% 轉黃、95% 轉紅（§5.1.6 F5）。' },
     'event-detail.tiers.sub2':    { en: 'Tiers that already sold can be closed, but not deleted — buyers hold them.', zh: '已經賣出的票種可以關閉銷售，但不能刪除——票在買方手上。' },
@@ -6848,8 +6890,8 @@
     'event-detail.tiers.rule.pause-meta': { en: 'Rejects new purchases; existing tickets stay valid.', zh: '拒絕新購買；既有票券維持有效。' },
     'event-detail.tiers.rule.pause-state': { en: 'All active', zh: '全部啟用中' },
     'event-detail.tiers.tbd': { en: '<strong>TBD:</strong> Full per-tier field editor (purchase eligibility detail, currency list, sale-window picker) lands with the R 2.1.1 tier setup UI. Fields shown here illustrate defined attributes only.', zh: '<strong>TBD：</strong>完整的單票種欄位編輯器（購買資格細節、幣別清單、售票區間選擇器）將隨 R 2.1.1 票種設定 UI 一併落地。此處欄位僅示意已定義的屬性。' },
-    'event-detail.att.title': { en: 'Attendees & check-in', zh: '參加者與報到' },
-    'event-detail.att.sub': { en: 'Purchase, registration, attendance and export status. Scan returns three states (§5.1.6 F5).', zh: '購買、報名、出席與匯出狀態。掃描回傳三種狀態（§5.1.6 F5）。' },
+    'event-detail.att.title': { en: 'Attendee list', zh: '參加者名單' },
+    'event-detail.att.sub': { en: 'Who bought a ticket and which ticket they hold. Check-in appears on the event day.', zh: '誰買了票、拿到哪一張票券。報到欄在活動當天才出現。' },
     'event-detail.att.col.holder': { en: 'Ticket holder', zh: '持票人' },
     'event-detail.att.col.tier': { en: 'Tier', zh: '票種' },
     'event-detail.att.col.ticketid': { en: 'Ticket ID', zh: '票券 ID' },
@@ -6876,6 +6918,9 @@
     'event-detail.preflight.done':        { en: 'Done',                    zh: '已完成' },
     'event-detail.preflight.completed':   { en: 'Completed ✓',             zh: '已完成 ✓' },
     'event-detail.preflight.clear':       { en: 'All clear — ready for doors', zh: '全部完成，可以開場' },
+    'event-detail.ref.title2': { en: 'Refunds', zh: '退款' },
+    'event-detail.ref.sub2': { en: 'Requests from ticket holders, and how a refund is absorbed (§5.1.6 F5).', zh: '持票人的退款申請，以及退款從哪裡吸收（§5.1.6 F5）。' },
+    'event-detail.comp.sub2': { en: 'Zero-price tickets for performers and crew (§5.1.6 F5).', zh: '發給表演者與工作人員的 $0 票（§5.1.6 F5）。' },
     'event-detail.ref.title': { en: 'Refunds & comps', zh: '退款與招待票' },
     'event-detail.ref.sub': { en: 'Refund queue and complimentary tickets (§5.1.6 F5).', zh: '退款佇列與招待票（§5.1.6 F5）。' },
     'event-detail.ref.queue.title': { en: 'Refund queue', zh: '退款佇列' },
@@ -6926,7 +6971,7 @@
     'event-detail.series.this': { en: 'this event', zh: '本場活動' },
     'event-detail.series.row2.title': { en: 'Kowloon Café 10th Anniv. — Hualien encore', zh: '九龍冰室 十週年 — 花蓮加場' },
     'event-detail.series.row3.title': { en: 'Kowloon Café 10th Anniv. — Online encore', zh: '九龍冰室 十週年 — 線上加場' },
-    'event-detail.badge.scheduled': { en: 'Scheduled', zh: '準備中' },
+    'event-detail.badge.scheduled': { en: 'Scheduled', zh: '已排程' },
     'event-detail.resale.title': { en: 'Resale', zh: '轉售' },
     'event-detail.resale.p2': { en: 'Phase 2', zh: 'Phase 2' },
     'event-detail.resale.note': { en: '<strong>Resale is Phase 2 — not available in this build.</strong> Per-event modes Allowed / Blocked (default) / Limited; Limited sets a price-cap multiple and platform cut, a successful resale atomically transfers the holder and emits a resale_fee revenue event, Blocked rejects all transfers (§5.1.6 F5).', zh: '<strong>轉售屬 Phase 2──此版本不提供。</strong>各活動可設模式 Allowed / Blocked（預設）/ Limited；Limited 可設定價格上限倍數與平台抽成，成功轉售會原子地轉移持票人並產生 resale_fee 營收事件，Blocked 則拒絕所有轉移（§5.1.6 F5）。' },

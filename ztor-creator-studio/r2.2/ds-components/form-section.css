@@ -48,6 +48,16 @@
    （#0C0D0D）的對比仍充足，不重演當初 --muted 貼底消失的問題。亮色不受影響（三者本就同為
    --card #FFFFFF）。 */
 [data-theme="dark"] .form-section--outlined { background: var(--surface-shell); }
+/* outlined section 不該巢狀（2026-08-13，Q66 全站落地）：兩層都吃同一個表面色
+   （深色 --surface-shell、亮色 --card），套在一起就是同色疊同色，只剩陰影在分層。
+   Q66 的稽核當時寫「目前 0 處」，之後長出 6 處（建立活動的票務、系列詳情的場次），
+   所以規則從「不要這樣用」升級成「這樣用時內層自動翻成薄膜」——版面不必重做，
+   層級也讀得出來。外層不動：它是頁面層的分組，方向本來就對。 */
+.form-section--outlined .form-section--outlined {
+  background: var(--nest-surface);
+  box-shadow: inset 0 0 0 1px var(--nest-line);
+}
+
 /* 區塊式建立流程：僅在前方已有可見 outlined section 時留出區段間距。
    使用一般兄弟選擇器，讓中間的條件 section [hidden] 不會留下空白、
    也不會讓下一個可見區段漏掉間距。 */

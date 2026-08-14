@@ -255,9 +255,11 @@
       SESSIONS.map(function (ss) {
         var rows = TICKETS.filter(function (t) { return t.sess === ss.id; });
         var all = rows.every(function (t) { return b.tickets.indexOf(t.id) >= 0; });
-        return '<div class="bd-grp">' +
-          '<div class="bd-grp__head"><span class="bd-grp__name">' + esc(ss.name) + '</span>' +
-            '<label class="zcheck bd-grp__all"><span class="zcheck__control">' +
+        /* 2026-08-13：`.bd-grp*` 隨正式頁表格化併入 `.bd-tbl__group`，這份探索 demo 跟著換名，
+           否則組頭會變成沒有樣式的裸元素。demo 本身停在當時那一版的規劃，不追後續改動。 */
+        return '<div>' +
+          '<div class="bd-tbl__group"><span class="bd-tbl__gname">' + esc(ss.name) + '</span>' +
+            '<label class="zcheck bd-tbl__gall"><span class="zcheck__control">' +
               '<input class="zcheck__input" type="checkbox" data-sess="' + ss.id + '"' + (all ? " checked" : "") + '>' +
               '<span class="zcheck__box"></span></span><span class="zcheck__label">全選本場次</span></label></div>' +
           rows.map(function (t) {

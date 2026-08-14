@@ -333,7 +333,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 120 支；主 class 前 5 個）
+## 元件（ds-components/，共 121 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -354,6 +354,7 @@
 - `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
 - `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control
 - `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state +
+- `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
 - `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
@@ -398,13 +399,13 @@
 - `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
 - `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
 - `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__flag ｜ SiteSpecific Owner lookup — registered user sele
-- `page-intro.css` — .page-intro, .page-crumb, .page-crumb--back, .page-crumb__back, .page-intro__title ｜ Ztor Creator Studio - Page intro molecule
+- `page-intro.css` — .page-intro, .page-intro__lead, .page-intro__media, .page-crumb, .page-crumb--back ｜ Ztor Creator Studio - Page intro molecule
 - `pager.css` — .pager, .pager__ellipsis
 - `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
 - `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
-- `picker.css` — .picker, .picker__search, .picker__search-input, .picker__new, .picker__list ｜ Picker · search box + scrollable pick-list conta
+- `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
 - `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access__main, .scanner-access__label, .scanner-access__url ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
-- `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
+- `preview-card.css` — .preview-card, .card, .payout-dialog, .preview-card__media, .preview-card__dots ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-col, .preview-col__head ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-

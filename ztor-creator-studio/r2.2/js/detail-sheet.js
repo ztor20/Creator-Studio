@@ -38,7 +38,7 @@
   var DETAIL_RE = /(^|\/)([a-z-]+-detail|project-detail)\.html(\?|#|$)/i;
   var PARAM = 'sheet';
 
-  var sheet = null, frame = null, titleEl = null, backEl = null, openBtn = null;
+  var sheet = null, frame = null, titleEl = null, openBtn = null;
   var lastFocus = null, currentUrl = null, pushed = false;
 
   function T(key, fallback) {
@@ -46,10 +46,9 @@
     return s == null ? fallback : s;
   }
 
-  /* 這一頁自己叫什麼——返回鈕要寫出「回到哪裡」。
-     優先用麵包屑，不是 h1：h1 有時是一句話而不是地名（粉絲頁的 h1 是
-     「Your fans, ranked.」，接成「Back to Your fans, ranked.」就不成句了），
-     麵包屑寫的才是這個地方的名字（「Fans」）。h1 退居第二、句號去掉。 */
+  /* 墓碑（2026-08-13）：返回鈕退場後沒有消費者了，但函式先留著——它解過一個實際的坑
+     （h1 有時是一句話而不是地名，「Back to Your fans, ranked.」不成句），
+     之後若要在浮層上寫出「這是從哪裡打開的」還用得到。 */
   function hereName() {
     /* 2026-07-28：麵包屑收成 .page-crumb（原本是 .text-sub ＋ inline style），選擇器跟著改。 */
     var crumb = document.querySelector('.page > .page-crumb [data-i18n], .page > .page-crumb');
@@ -69,15 +68,18 @@
     sheet.innerHTML =
       '<div class="detail-sheet__panel" role="dialog" aria-modal="true" aria-label="Detail">' +
         '<div class="detail-sheet__head">' +
-          '<button class="detail-sheet__back" type="button" data-sheet-close>' +
-            '<i data-lucide="arrow-left" class="ztor-icon"></i><span data-sheet-backlabel></span>' +
+          /* 2026-08-13 使用者指示：左邊的「返回清單」退場，改成「整頁開啟」。
+             返回跟右上角的 ✕ 是同一個動作（都關掉這張浮層回到清單），兩個入口說同一件事；
+             真正缺的是那個從浮層跳去完整頁面的出口，本來只有一顆沒有文字的圖示鈕。 */
+          /* 2026-08-13 第二輪（使用者「不需要文字」）：只留圖示，說明交給 title／aria-label。
+             這一列的主角是活動名稱，左邊擺一段文字會跟標題搶。 */
+          '<button class="detail-sheet__back" type="button" data-sheet-openfull ' +
+            'aria-label="' + T('sheet.openfull', 'Open as full page') + '" ' +
+            'title="' + T('sheet.openfull', 'Open as full page') + '">' +
+            '<i data-lucide="external-link" class="ztor-icon"></i>' +
           '</button>' +
           '<h2 class="detail-sheet__title" data-sheet-title></h2>' +
           '<div class="detail-sheet__actions">' +
-            '<button class="detail-sheet__btn" type="button" data-sheet-openfull ' +
-              'aria-label="' + T('sheet.openfull', 'Open as full page') + '" ' +
-              'title="' + T('sheet.openfull', 'Open as full page') + '">' +
-              '<i data-lucide="external-link" class="ztor-icon"></i></button>' +
             '<button class="detail-sheet__btn" type="button" data-sheet-close ' +
               'aria-label="' + T('sheet.close', 'Close') + '" title="' + T('sheet.close', 'Close') + '">' +
               '<i data-lucide="x" class="ztor-icon"></i></button>' +
@@ -88,7 +90,6 @@
     document.body.appendChild(sheet);
     frame = sheet.querySelector('[data-sheet-frame]');
     titleEl = sheet.querySelector('[data-sheet-title]');
-    backEl = sheet.querySelector('[data-sheet-backlabel]');
     openBtn = sheet.querySelector('[data-sheet-openfull]');
 
     sheet.addEventListener('click', function (e) {
@@ -142,7 +143,8 @@
     }
 
     titleEl.textContent = label || '';
-    backEl.textContent = T('sheet.back', 'Back to') + ' ' + hereName();
+    /* 墓碑：原本這裡寫「返回<清單名>」（i18n key sheet.back 保留未用）；
+       2026-08-13 第二輪改成純圖示鈕，連文字節點都不需要了。 */
     frame.setAttribute('data-loading', '');
     frame.setAttribute('src', withEmbed(url));
     frame.addEventListener('load', onFrameLoad);
