@@ -11,6 +11,40 @@
 
 /* .page-intro__eyebrow retired 2026-05-28. Title + sub now lead. */
 
+/* 主視覺 ＋ 標題並排（2026-08-13 使用者指示「需要有活動圖片在左邊」）。
+   `.page-intro` 本體是「左邊一坨內容、右邊動作」的兩欄，圖片要跟標題黏在一起，
+   所以多包一層 __lead 當左欄；底線對齊沿用外層的 flex-end，圖與標題的基線才不會錯開。
+   直式 2:3 是全站顯示端的統一比例（D164／§7.10），這裡只是縮小版。
+   沒有圖的活動（草稿常常還沒上傳）由消費頁把 __media 收起來，不留一個空框。 */
+.page-intro__lead {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-20);
+  /* 讓左欄可以被壓縮：標題是全站最大的字，不給它縮，長活動名稱會把右邊的動作列
+     整排擠到下一行（實測 1194px 視窗：標題自然寬 517＋圖 96＋動作 293 就爆了）。
+     壓縮之後標題換行、動作留在同一列——那才是這個頁首的兩欄結構。 */
+  /* basis 用固定的 320px 而不是 auto：`.page-intro` 是 flex-wrap:wrap，換行的判斷在
+     壓縮之前——basis:auto 會拿標題的自然寬（長活動名稱可以到 500px 以上）去比，
+     於是還沒開始壓縮就先把動作列擠到下一行。給一個小 basis，這一列永遠排得下，
+     再靠 grow 吃掉剩餘寬度，標題自己換行。 */
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.page-intro__lead > * { min-width: 0; }
+.page-intro__media {
+  flex: none;
+  width: 96px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--muted);
+}
+.page-intro__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 720px) {
+  /* 窄畫面把圖縮一階：標題已經會換行，圖再佔 96px 會把標題擠成一行兩個字 */
+  .page-intro__media { width: 64px; }
+}
+
 /* Breadcrumb / caption above the page title — 2026-07-28（L 裁示：改成品牌橘）。
    在此之前這一列沒有名字：25 個頁面各自寫一次 `class="text-sub" style="font-size:
    var(--fs-12);margin-bottom:14px"`，同一個元件卻要改 25 個地方才換得掉顏色。

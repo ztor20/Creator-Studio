@@ -119,14 +119,18 @@
                與草稿，草稿沒有日期、兩個時段分頁都放不下，才需要 D060/D033(c) 的「草稿跨時段」特例，
                計數也因此對不起來（實測 Past 檢視：All 2、On Sale 0、Draft 1，0+1≠2）。收斂成單一軸後
                特例消失、每一格都是單純的過濾。
-               排序＝注意力優先（不是生命週期順序）：進行中最急，已結束只供回顧故墊底。 -->
+               排序（2026-08-13 使用者指示）＝**生命週期順序**：已排程 → 售票中 → 進行中 → 已結束 → 已取消 → 草稿。
+             一場活動照這個次序往下走，掃視時的心智模型就是那條時間軸；草稿還沒進入這條軸（連日期都不一定有），
+             所以墊底自成一格。已取消獨立一格、不再併進已結束——取消與辦完是兩種不同的結束，
+             帳務與後續處理都不同，合在一起讀不出差別。 -->
           <nav class="tabs tabs--underline-short tabs--underline-label tabs--count-plain" id="ev-tabs" role="tablist">
             <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="all"><span data-i18n="events.stage.all">All</span> <span class="tabs__item-count"></span></div>
-            <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="events.stage.live">Live</span> <span class="tabs__item-count"></span></div>
-            <div class="tabs__item" role="tab" aria-selected="false" data-tab="on-sale"><span data-i18n="events.stage.on-sale">On sale</span> <span class="tabs__item-count"></span></div>
             <div class="tabs__item" role="tab" aria-selected="false" data-tab="scheduled"><span data-i18n="events.stage.scheduled">Scheduled</span> <span class="tabs__item-count"></span></div>
-            <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="events.stage.draft">Draft</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="on-sale"><span data-i18n="events.stage.on-sale">On sale</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="live"><span data-i18n="events.stage.live">Live</span> <span class="tabs__item-count"></span></div>
             <div class="tabs__item" role="tab" aria-selected="false" data-tab="past"><span data-i18n="events.stage.past">Past</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="cancelled"><span data-i18n="events.stage.cancelled">Cancelled</span> <span class="tabs__item-count"></span></div>
+            <div class="tabs__item" role="tab" aria-selected="false" data-tab="draft"><span data-i18n="events.stage.draft">Draft</span> <span class="tabs__item-count"></span></div>
           </nav>
         <!-- 篩選鈕（2026-07-29 L 裁示）：tab 之後、動作群之前，五個清單頁同一位置。
              靜止態 display:none（次層篩選列就攤在下面）；貼頂態出現，點開是錨在鈕正
@@ -692,6 +696,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-dock.js?v=r2.2"></script>
+<script src="js/events-store.js?v=r2.2"></script>   <!-- 2026-08-13：讀活動詳情頁改過的階段（ztor.event-stage） -->
 <script>
 /* Events F3（2026-07-27 改版）— 生命週期階段 × 活動類型 × 搜尋，三者 AND 過濾。
    兩排是兩條互相獨立的軸，每列在每條軸上都只有一個值（data-stage / data-category），
@@ -726,6 +731,43 @@
   /* 「進行中」現在是清單裡真實存在的一列（data-stage="live"，日期＝今天），
      所以不再由 Cheat Codes 的 eventDay 情境推導出來——同一件事不留兩個真相來源。
      eventDay 仍然驅動頁面上方的情境橫幅（js/scenario.js），只是不再偷改任何一列的階段。 */
+  /* 階段覆寫（2026-08-13）：活動詳情頁的「發布並開賣」「取消活動」會把新階段寫進
+     localStorage（ztor.event-stage）。清單這一排列是靜態 HTML，不同步的話會出現
+     「詳情頁顯示已取消、清單仍寫售票中」——同一場活動兩個答案。這裡在篩選之前
+     把有覆寫的列改掉（data-stage ＋ 狀態欄徽章）。
+
+     **已取消有自己的分頁**（2026-08-13 使用者指示，取代同日稍早「併進已結束」的做法）：
+     取消與辦完是兩種不同的結束——一個要退款與對外說明、一個是正常收工，帳務與後續處理都不同，
+     併在同一格讀不出差別。`ended` 仍映射到 `past`（清單的分頁名是「已結束」、store 的值是 ended）。 */
+  const STAGE_TO_TAB = { ended: 'past' };
+  const STAGE_BADGE = {
+    'live':      { key: 'events.badge.live',        cls: 'badge--warning' },
+    'on-sale':   { key: 'events.badge.on-sale',     cls: 'badge--success' },
+    'scheduled': { key: 'events.badge.scheduled',   cls: '' },
+    'draft':     { key: 'events.status.draft',      cls: '' },
+    'ended':     { key: 'events.badge.ended',       cls: '' },
+    'cancelled': { key: 'event-detail.badge.cancelled', cls: 'badge--error' }
+  };
+  function applyStageOverrides() {
+    let map = {};
+    try { map = JSON.parse(localStorage.getItem('ztor.event-stage') || '{}') || {}; } catch (e) { return; }
+    if (!Object.keys(map).length) return;
+    Array.from(list.querySelectorAll('[data-go]')).forEach(r => {
+      const m = /[?&]id=([^&#]+)/.exec(r.dataset.go || '');
+      const st = m && map[decodeURIComponent(m[1])];
+      if (!st) return;
+      r.dataset.stage = STAGE_TO_TAB[st] || st;
+      const cell = r.querySelector('.product-list__status .badge');
+      const def = STAGE_BADGE[st];
+      if (cell && def) {
+        cell.className = 'badge' + (def.cls ? ' ' + def.cls : '');
+        cell.innerHTML = '<span data-i18n="' + def.key + '">' + T(def.key, st) + '</span>';
+      }
+    });
+  }
+  applyStageOverrides();
+  document.addEventListener('i18n:applied', applyStageOverrides);
+
   const inStage = (r, s) => s === 'all' || r.dataset.stage === s;
   const inCat   = (r, c) => c === 'all' || r.dataset.category === c;
 

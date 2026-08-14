@@ -32,6 +32,10 @@
 <!-- 2026-08-11：開放入場與建立流程同步（分鐘欄＋早到政策＋從屬縮排）跟著進來 -->
 <link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<!-- 2026-08-13：場次盒（多場）與開放入場的線框層都吃 .control-group--plain。
+     此前漏連這一支，多場的外框其實一直沒有生效（class 掛著、樣式沒到）。 -->
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/collapse-group.css?v=r2.2">   <!-- 2026-08-13：場次盒的折疊列＋一行摘要 -->
 <link rel="stylesheet" href="ds-components/ticket-tier-card.css?v=r2.2">
 <!-- 2026-08-11 第二輪：票務卡點開的輕量編輯彈窗（沿用站上彈窗殼） -->
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
@@ -130,7 +134,12 @@
 
       <!-- ═══ Hero / 頁首 ═══ -->
       <div class="page-intro">
-        <div>
+        <!-- 主視覺在標題左邊（2026-08-13 使用者指示）：一眼認出「我在哪一場活動」，
+             文字標題在系列裡是重複的（同系列各場刻意同名），圖才是最快的辨識。
+             沒有圖時由 hydrate() 把 __media 整塊收起，不留空框。 -->
+        <div class="page-intro__lead">
+          <span class="page-intro__media" id="ed-hero-img" hidden><img src="" alt=""></span>
+          <div>
           <div class="flex-row" style="gap:8px;margin-bottom:8px">
             <span class="badge badge--success"><span data-i18n="event-detail.badge.on-sale">On Sale</span></span>
             <span class="badge" data-hide-type="watchparty"><span data-i18n="event-detail.badge.series">Series 1/3</span></span>
@@ -138,6 +147,7 @@
           </div>
           <h1 class="page-intro__title" data-i18n="event-detail.h1">Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party</h1>
           <p class="page-intro__sub" data-i18n="event-detail.sub">Apr 12, 2026 · 8:00 PM · Legacy Taipei, Taipei</p>
+          </div>
         </div>
         <!-- 編輯不再跳頁（2026-08-06）：這一排是「檢視／編輯」兩種狀態的同一組動作，
              由 syncEditMode() 一起驅動，不各自維護。刪除活動只在編輯態出現——
@@ -167,17 +177,6 @@
 
       <!-- 樣本資料說明橫幅已移除（2026-07-27，使用者指示）。 -->
 
-      <!-- ═══ KPI 快照 ═══ -->
-      <div class="bento mt-16">
-        <!-- 2026-08-13：後兩張 KPI 掛 data-stage-show——草稿與已排程沒有持票人，
-             「已報到 —」與「退款佇列 0」在那兩個階段只是噪音；活動結束後「開演當天才開放」
-             更是直接錯的。退款那張的值也由「0」改成講清楚是「v1 停用」而不是「目前沒有待處理」。 -->
-        <div class="kpi bento--span-3" data-kpi="sold"><div class="kpi__label" data-i18n="event-detail.kpi.sold">Tickets sold</div><div class="kpi__value">84 / 200</div><div class="kpi__meta" data-i18n="event-detail.kpi.sold-meta">Across 3 tiers</div></div>
-        <div class="kpi bento--span-3" data-kpi="revenue"><div class="kpi__label" data-i18n="event-detail.kpi.revenue">Event revenue</div><div class="kpi__value">$2,520</div><div class="kpi__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
-        <div class="kpi bento--span-3" data-kpi="checkedin" data-hide-type="watchparty" data-wp-grow data-stage-show="on-sale live ended"><div class="kpi__label" data-i18n="event-detail.kpi.checkedin">Checked in</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="event-detail.kpi.checkedin-meta">Opens on event day</div></div>
-        <div class="kpi bento--span-3" data-kpi="refunds" data-hide-type="watchparty" data-stage-show="on-sale live ended cancelled"><div class="kpi__label" data-i18n="event-detail.kpi.refunds">Refund queue</div><div class="kpi__value" data-i18n="event-detail.kpi.refunds-off">Off in v1</div><div class="kpi__meta" data-i18n="event-detail.kpi.refunds-meta">Creator-initiated refunds disabled (D041)</div></div>
-      </div>
-
       <!-- ═══ Tabs ═══ -->
       <nav class="tabs mt-24" role="tablist" data-tabs>
         <!-- 分頁對齊建立流程的資訊架構（2026-08-11 使用者指示重新設計）：
@@ -186,10 +185,14 @@
         <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="event-detail.tab.overview">Overview</button>
         <button class="tabs__item" role="tab" data-tab="dates" aria-selected="false" data-i18n="event-detail.tab.dates">Date &amp; venue</button>
         <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="tiers" aria-selected="false" data-i18n="event-detail.tab.tiers">Tickets</button>
+        <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="bundles" aria-selected="false" data-i18n="event-detail.tab.bundles">Bundles</button>
         <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="publish" aria-selected="false" data-i18n="event-detail.tab.publish">Publish settings</button>
         <button class="tabs__item" role="tab" data-tab="transactions" aria-selected="false" data-i18n="event-detail.tab.transactions">Transactions</button>
-        <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="attendees" aria-selected="false" data-i18n="event-detail.tab.attendees">Attendees &amp; check-in</button>
-        <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="refunds" aria-selected="false" data-i18n="event-detail.tab.refunds">Refunds &amp; comps</button>
+        <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="attendees" aria-selected="false" data-i18n="event-detail.tab.attendees">Attendee list</button>
+        <!-- 墓碑（2026-08-13 使用者裁決）：「退款與招待票」分頁整個退場——退款搬進交易明細
+             （退款是交易的反向）、招待票搬進票務（發招待票就是多發一張 $0 的票）。
+             兩者原本合在一起的理由只是「都不是正常售票」，那是剩下的東西的邏輯、不是任務的邏輯。
+             i18n key event-detail.tab.refunds 保留未用。 -->
         <button class="tabs__item" role="tab" data-tab="notifications" aria-selected="false" data-i18n="event-detail.tab.notifications">Notifications</button>
         <button class="tabs__item" role="tab" data-tab="finance" aria-selected="false" data-i18n="event-detail.tab.finance">Cost &amp; revenue</button>
         <button class="tabs__item" role="tab" data-hide-type="watchparty" data-tab="series" aria-selected="false" data-i18n="event-detail.tab.series">Series</button>
@@ -201,6 +204,21 @@
            「編輯畫面的樣子」，檢視模式只是把可以打字的訊號拿掉（shared.css 的 [data-mode="view"]），
            所以切換模式時版面完全不位移。系列子場不給編輯——共用設定在系列母頁改（見下方 syncEditable）。 -->
       <div class="tab-panel tab-panel--active" data-panel="overview" role="tabpanel" data-editable data-mode="view">
+        <!-- KPI 快照（2026-08-13 使用者指示自頁首搬進總覽，當第一項）：
+             頁首留給「這是哪一場活動」（圖、名稱、時間地點、動作），數字屬於總覽的內容。
+             mb-16＝與下一個區塊的間距同 .bento 的內部 gap（--sp-16）：搬進總覽時漏了這一條，
+             KPI 那排與下面的卡直接貼在一起（使用者圈出）。 -->
+        <div class="bento mb-16">
+        <!-- 2026-08-13：後兩張 KPI 掛 data-stage-show——草稿與已排程沒有持票人，
+             「已報到 —」與「退款佇列 0」在那兩個階段只是噪音；活動結束後「開演當天才開放」
+             更是直接錯的。退款那張的值也由「0」改成講清楚是「v1 停用」而不是「目前沒有待處理」。 -->
+          <div class="kpi bento--span-3" data-kpi="sold"><div class="kpi__label" data-i18n="event-detail.kpi.sold">Tickets sold</div><div class="kpi__value">84 / 200</div><div class="kpi__meta" data-i18n="event-detail.kpi.sold-meta">Across 3 tiers</div></div>
+          <div class="kpi bento--span-3" data-kpi="revenue"><div class="kpi__label" data-i18n="event-detail.kpi.revenue">Event revenue</div><div class="kpi__value">$2,520</div><div class="kpi__meta" data-i18n="event-detail.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
+          <div class="kpi bento--span-3" data-kpi="checkedin" data-hide-type="watchparty" data-wp-grow data-stage-show="on-sale live ended"><div class="kpi__label" data-i18n="event-detail.kpi.checkedin">Checked in</div><div class="kpi__value">—</div><div class="kpi__meta" data-i18n="event-detail.kpi.checkedin-meta">Opens on event day</div></div>
+          <div class="kpi bento--span-3" data-kpi="refunds" data-hide-type="watchparty" data-stage-show="on-sale live ended cancelled"><div class="kpi__label" data-i18n="event-detail.kpi.refunds">Refund queue</div><div class="kpi__value" data-i18n="event-detail.kpi.refunds-off">Off in v1</div><div class="kpi__meta" data-i18n="event-detail.kpi.refunds-meta">Creator-initiated refunds disabled (D041)</div></div>
+        </div>
+
+
         <!-- 起飛前檢核清單（2026-07-27 建，2026-08-13 自「退款與贈票」搬來這裡）：
              卡裡的按鈕都掛 data-view-safe——總覽是可編輯面板，檢視模式下 shared.css 會把
              未列入白名單的按鈕一律藏起來（那條規則防的是「不按編輯就能改資料」）。檢核、
@@ -462,20 +480,14 @@
 
       <!-- ════════════════ 場次（2026-08-11 重新設計：自總覽拆出，對齊建立流程的場次那一步）════════════════ -->
       <div class="tab-panel" data-panel="dates" role="tabpanel" data-editable data-mode="view">
+        <!-- 2026-08-13 使用者指示「分為場次、地點兩個 section」：時間與地點是兩件事——
+             多場活動的時間一場一組，地點卻是整場共用一份（多站活動才會每站不同，那種拆成
+             系列母子頁）。混在同一張卡裡，「場地名稱」看起來像第 1 場的欄位。 -->
         <section class="card">
           <div class="card__head">
-            <h3 class="card__title" data-i18n="ed.dates.title">Date &amp; venue</h3>
+            <h3 class="card__title" data-i18n="ed.dates.title">Dates</h3>
           </div>
-          <p class="field__hint mb-16" data-i18n="ed.dates.sub">This date's schedule and venue. Series dates share settings on the series page.</p>
-
-          <div class="field">
-            <label class="field__label" for="ed-venue"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
-            <input class="input" id="ed-venue" data-ed="venue" data-required>
-          </div>
-          <div class="field">
-            <label class="field__label" for="ed-address"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
-            <input class="input" id="ed-address" data-ed="address">
-          </div>
+          <p class="field__hint mb-16" data-i18n="ed.dates.sub">When this event runs. Series dates share settings on the series page.</p>
 
           <!-- 場次清單（2026-08-11 使用者指示）：定點活動的多場次收進同一頁——一場一盒，
                每盒有日期／開始結束／開放入場（時間↔開演前分鐘互算）／早到政策，與建立流程
@@ -489,6 +501,22 @@
               <div class="alert__title" data-i18n="event-detail.edit.serieslock">This date is part of a series — edit it on the series page</div>
               <div class="alert__meta"><a class="card__link" href="series-detail.html" data-i18n="event-detail.series.manage">Manage the series →</a></div>
             </div>
+          </div>
+        </section>
+
+        <section class="card mt-16">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="ed.venue.title">Venue</h3>
+          </div>
+          <p class="field__hint mb-16" data-i18n="ed.venue.sub">Shared by every date of this event.</p>
+
+          <div class="field">
+            <label class="field__label" for="ed-venue"><span data-i18n="ce.venue.name">Venue name</span> <span class="text-sub" data-i18n="ce.req">· required</span></label>
+            <input class="input" id="ed-venue" data-ed="venue" data-required>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label class="field__label" for="ed-address"><span data-i18n="ce.venue.addr">Full address</span> <span class="text-sub" data-i18n="ce.opt">(optional)</span></label>
+            <input class="input" id="ed-address" data-ed="address">
           </div>
         </section>
       </div>
@@ -579,21 +607,50 @@
         <div id="ed-tier-table" hidden></div>
         <button class="btn btn--outline btn--sm mt-24" type="button" id="ed-tier-add"><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="ee.tix.add">Add tier</span></button>
 
+        <!-- 招待票（2026-08-13 使用者裁決，自「退款與招待票」分頁搬來）：核發招待票就是
+             「多發一張 $0 的票」，發的時候要選票種——跟票種是同一個心智模型，故住在票務。 -->
+        <div class="section-head mt-24">
+          <h2 class="section-head__title" data-i18n="event-detail.comp.title">Comp tickets</h2>
+          <div class="section-head__sub" data-i18n="event-detail.comp.sub2">Zero-price tickets for performers and crew (§5.1.6 F5).</div>
+        </div>
+        <section class="card">
+          <div class="data-list">
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.comp.holder1">Kowloon After Dark (band)</div><div class="data-list__meta" data-i18n="event-detail.comp.row1">VIP + Live stream · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Venue staff x2</div><div class="data-list__meta" data-i18n="event-detail.comp.row2">General Admission · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
+            </div>
+          <button class="btn btn--outline mt-16" style="width:100%" type="button" data-i18n="event-detail.comp.issue">Issue comp ticket</button>
+          <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" data-i18n="event-detail.comp.note">Comp tickets emit a $0 revenue event for audit but never enter net-profit distribution.</p>
+        </section>
+
+        <!-- 墓碑（2026-08-13 使用者確認後刪除）：「售票規則」說明卡整張退場。
+             它講的兩件事都不需要在這一頁用文字陳述——硬性庫存上限是系統行為（創作者
+             不能改也不用決定），暫停售票則是站上已經做出來的操作（票務列表每一列可暫停、
+             票種彈窗也有開關），說明卡等於把看得到的功能再解釋一次。連同那則 R 2.1.1 的
+             TBD 施工註記一起收掉。規則本身仍由規格 §2.6 定義（引用 F5），只是不在畫面上重述；
+             i18n 的 event-detail.tiers.rule.* 與 .tiers.tbd 保留未用。 -->
+      </div>
+
+      <!-- ════════════════ 票務商品（2026-08-13 使用者指示獨立成分頁）════════════════
+           原本是「票務」分頁底下的一張卡，捲到看不見。使用者裁示：場次、票務、票務商品
+           三者是活動詳情頁一定要有的分頁，票券與「票券綁商品」是兩件要分開管的事。 -->
+      <div class="tab-panel" data-panel="bundles" data-hide-type="watchparty" role="tabpanel">
+        <!-- 標題只出現一次：分頁抬頭已經說了這是票務商品，卡片不再重述一遍
+             （數量徽章跟著抬頭走，掃一眼就知道有沒有東西）。 -->
+        <div class="section-head">
+          <h2 class="section-head__title" data-i18n="ed.bd.title">Ticket bundles</h2>
+          <div class="section-head__sub">
+            <span data-i18n="ed.bd.sub">Tickets bundled with products — they draw from the same ticket pool.</span>
+            <span class="badge badge--neutral" id="ed-bundle-count"><span>—</span></span>
+          </div>
+        </div>
+
         <!-- 票務商品（2026-08-11 使用者指示要在假資料上看得到）：唯讀清單，
              組合包在建立流程設定，這裡的編輯能力等上游規格（ASSUMPTIONS BDL-001）。 -->
         <!-- 2026-08-13：這張卡原本「沒有組合包就整張不見」，於是 14 場活動裡只有 2 場看得到，
              其餘的畫面沒有任何地方交代「這場有沒有綁商品」——使用者回報找不到組合包資訊。
              改成常駐，沒有資料時給空狀態說明它是在哪一步設定的。 -->
-        <section class="card mt-24" id="ed-bundles-card">
-          <div class="card__head">
-            <div class="card__title-group">
-              <span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>
-              <h3 class="card__title" data-i18n="ed.bd.title">Ticket bundles</h3>
-            </div>
-            <span class="badge badge--neutral" id="ed-bundle-count"><span>—</span></span>
-          </div>
-          <p class="field__hint" data-i18n="ed.bd.sub">Tickets bundled with products — they draw from the same ticket pool.</p>
-          <div class="data-list mt-16" id="ed-bundle-list"></div>
+        <section class="card" id="ed-bundles-card">
+          <div class="data-list" id="ed-bundle-list"></div>
           <div class="empty-card" id="ed-bundle-empty" hidden>
             <span class="empty-card__icon"><i data-lucide="package" class="ztor-icon"></i></span>
             <h3 class="empty-card__title" data-i18n="ed.bd.empty.title">No bundles on this event</h3>
@@ -605,19 +662,6 @@
           </div>
         </section>
 
-        <section class="card mt-16">
-          <div class="card__head">
-            <h3 class="card__title" data-i18n="event-detail.tiers.rules.title">Sale rules</h3>
-          </div>
-          <div class="data-list">
-            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--info"><i data-lucide="lock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.cap">Hard inventory cap — no overselling</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.cap-meta">Concurrent sales use atomic decrement; the N+1 purchase fails with tier_sold_out and emits no revenue event.</div></div></div></div>
-            <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--neutral"><i data-lucide="pause" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.tiers.rule.pause">Pause sales (Paused)</div><div class="data-list__meta" data-i18n="event-detail.tiers.rule.pause-meta">Rejects new purchases; existing tickets stay valid.</div></div></div><span class="badge badge--neutral"><span data-i18n="event-detail.tiers.rule.pause-state">All active</span></span></div>
-          </div>
-          <div class="info-banner mt-16">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="event-detail.tiers.tbd"><strong>TBD:</strong> Full per-tier field editor (purchase eligibility detail, currency list, sale-window picker) lands with the R 2.1.1 tier setup UI. Fields shown here illustrate defined attributes only.</span>
-          </div>
-        </section>
       </div>
 
       <!-- ════════════════ Attendees & check-in ════════════════ -->
@@ -670,16 +714,42 @@
         <div class="flex-row mt-16" style="gap:8px">
           <button class="btn btn--outline" type="button" data-i18n="event-detail.tx.export">Export transactions</button>
         </div>
+
+        <!-- 退款（2026-08-13 使用者裁決，自「退款與招待票」分頁搬來）：退款是一筆交易的反向，
+             跟「這筆訂單後來怎麼了」是同一個問題，所以住在交易明細，不另開分頁。
+             共看派對不套用退款佇列（D149），整塊收起。 -->
+        <div class="section-head mt-24" data-hide-type="watchparty">
+          <h2 class="section-head__title" data-i18n="event-detail.ref.title2">Refunds</h2>
+          <div class="section-head__sub">
+            <span data-i18n="event-detail.ref.sub2">Requests from ticket holders, and how a refund is absorbed (§5.1.6 F5).</span>
+            <span class="badge badge--neutral"><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
+          </div>
+        </div>
+        <div data-hide-type="watchparty">
+          <section class="card">
+            <div class="empty-card">
+              <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
+              <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
+              <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
+            </div>
+            <div class="info-banner">
+              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+              <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
+            </div>
+          </section>
+
+        </div>
       </div>
 
       <div class="tab-panel" data-panel="attendees" data-hide-type="watchparty" role="tabpanel">
         <div class="section-head">
-          <h2 class="section-head__title" data-i18n="event-detail.att.title">Attendees &amp; check-in</h2>
+          <h2 class="section-head__title" data-i18n="event-detail.att.title">Attendee list</h2>
           <div class="section-head__sub" data-i18n="event-detail.att.sub">Purchase, registration, attendance and export status. Scan returns three states (§5.1.6 F5).</div>
         </div>
 
-        <!-- 報到三色圖例 -->
-        <div class="bento">
+        <!-- 報到三色圖例（2026-08-13 使用者裁決）：只在活動當天之後出現。
+             售票中沒有人核銷過，三格永遠是「—」，掛在那裡是一個兌現不了的承諾。 -->
+        <div class="bento" data-stage-show="live ended">
           <div class="kpi kpi--success bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div><div class="kpi__value">—</div></div>
           <div class="kpi kpi--warning bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div><div class="kpi__value">—</div></div>
           <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div><div class="kpi__value">—</div></div>
@@ -709,6 +779,8 @@
           <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" id="ed-live-roster-note">—</p>
         </div>
 
+        <!-- 名單（非現場時段）：售票中就有持票人，名單本身有用；
+             「報到」那一欄則要到活動當天才有值——由 JS 依階段整欄收起（見 syncAttendees）。 -->
         <section class="card mt-16" id="ed-att-sample" style="padding:0;overflow:hidden">
           <table class="ztor-table">
             <thead>
@@ -716,25 +788,25 @@
                 <th data-i18n="event-detail.att.col.holder">Ticket holder</th>
                 <th data-i18n="event-detail.att.col.tier">Tier</th>
                 <th data-i18n="event-detail.att.col.ticketid">Ticket ID</th>
-                <th data-i18n="event-detail.att.col.state">Check-in</th>
+                <th data-att-col-state data-i18n="event-detail.att.col.state">Check-in</th>
               </tr>
             </thead>
             <tbody>
               <tr class="ztor-table__row">
                 <td data-i18n="event-detail.att.holder1">Aki Tanaka</td><td>VIP + Live stream</td><td><code>tkt_9F2A1</code></td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+                <td data-att-col-state><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td data-i18n="event-detail.att.holder2">Lena Wu</td><td>General Admission</td><td><code>tkt_7C4B8</code></td>
-                <td><span class="badge badge--warning"><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
+                <td data-att-col-state><span class="badge badge--warning"><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td><span class="text-sub" data-i18n="event-detail.att.unknown">Unrecognised QR</span></td><td>—</td><td><code>—</code></td>
-                <td><span class="badge badge--error"><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
+                <td data-att-col-state><span class="badge badge--error"><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
               </tr>
               <tr class="ztor-table__row">
                 <td data-i18n="event-detail.att.holder4">Kowloon After Dark (comp)</td><td>VIP + Live stream</td><td><code>tkt_C0MP3</code></td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
+                <td data-att-col-state><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
               </tr>
             </tbody>
           </table>
@@ -742,54 +814,12 @@
 
         <div class="flex-row mt-16" style="gap:8px">
           <button class="btn btn--outline" type="button" data-i18n="event-detail.att.export">Export attendee list</button>
-          <button class="btn btn--ghost" type="button" data-i18n="event-detail.att.scanner">Open scanner</button>
+          <button class="btn btn--ghost" type="button" data-stage-show="live ended" data-i18n="event-detail.att.scanner">Open scanner</button>
         </div>
 
-        <div class="info-banner mt-16">
+        <div class="info-banner mt-16" data-stage-show="live ended">
           <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
           <span data-i18n="event-detail.att.note"><strong>A valid scan is irreversible.</strong> The ticket moves issued → used; only the creator can reverse it. Scanner runs offline ~4 h and re-syncs on reconnect; on a double scan the earliest scan wins. For online events, external-platform data may be incomplete.</span>
-        </div>
-      </div>
-
-      <!-- ════════════════ Refunds & comps ════════════════ -->
-      <div class="tab-panel" data-panel="refunds" data-hide-type="watchparty" role="tabpanel">
-        <div class="section-head">
-          <h2 class="section-head__title" data-i18n="event-detail.ref.title">Refunds &amp; comps</h2>
-          <div class="section-head__sub" data-i18n="event-detail.ref.sub">Refund queue and complimentary tickets (§5.1.6 F5).</div>
-        </div>
-
-        <!-- 墓碑（2026-08-13）：起飛前檢核清單自本分頁搬到「總覽」——它問的是「開演前還有
-             什麼沒準備好」，跟退款佇列與贈票不同題；而且退款分頁在草稿／已排程階段是收起來的，
-             最需要待辦清單的兩個階段反而看不到它。Dashboard 的深連結同日改指 #overview。 -->
-
-        <div class="bento">
-          <section class="card bento--span-7">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="event-detail.ref.queue.title">Refund queue</h3>
-              <span class="badge badge--neutral"><span data-i18n="event-detail.ref.disabled">v1 disabled</span></span>
-            </div>
-            <div class="empty-card">
-              <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
-              <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
-              <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
-            </div>
-            <div class="info-banner">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
-            </div>
-          </section>
-
-          <section class="card bento--span-5">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="event-detail.comp.title">Comp tickets</h3>
-            </div>
-            <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.comp.holder1">Kowloon After Dark (band)</div><div class="data-list__meta" data-i18n="event-detail.comp.row1">VIP + Live stream · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Venue staff x2</div><div class="data-list__meta" data-i18n="event-detail.comp.row2">General Admission · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
-            </div>
-            <button class="btn btn--outline mt-16" style="width:100%" type="button" data-i18n="event-detail.comp.issue">Issue comp ticket</button>
-            <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" data-i18n="event-detail.comp.note">Comp tickets emit a $0 revenue event for audit but never enter net-profit distribution.</p>
-          </section>
         </div>
       </div>
 
@@ -1157,8 +1187,8 @@
   if (ev.type === 'watchparty') {
     /* 頁首那一排 KPI 收掉兩張後只剩半排，把留下的兩張加寬填滿——純版面決定。
        只限頁首這一個 .bento，別用全域選擇器（其他面板也有 .kpi，會被一起改壞）。 */
-    const headBento = document.querySelector('.page-intro') &&
-      document.querySelector('.page-intro').parentElement.querySelector('.bento');
+    const headBento = document.querySelector('[data-kpi="sold"]') &&
+      document.querySelector('[data-kpi="sold"]').parentElement;
     if (headBento) headBento.querySelectorAll(':scope > .kpi:not([hidden])').forEach(k => {
       k.classList.remove('bento--span-3'); k.classList.add('bento--span-6');
     });
@@ -1317,6 +1347,14 @@
       /* 用 innerHTML 而非 textContent：字典值本身帶 HTML entity（ce.type.meet = "Meet &amp; Greet"），
          textContent 會把它原樣印成「Meet &amp;amp; Greet」。字典是自家可信內容。 */
       if (sp) { sp.setAttribute('data-i18n', ev.typeLabelKey); sp.innerHTML = T(ev.typeLabelKey, ev.type); }
+    }
+    /* 頁首主視覺：有圖才顯示（草稿常常還沒上傳，空框比沒有更糟）。 */
+    const heroImg = $('#ed-hero-img');
+    if (heroImg) {
+      const src = (ev.images && ev.images.keyvisual) || '';
+      heroImg.hidden = !src;
+      const im = heroImg.querySelector('img');
+      if (im && src) { im.src = src; im.alt = evName(); }
     }
     fillEditForm(ev);            // 就地編輯的欄位帶入這一場的現值（2026-08-06）
 
@@ -1545,15 +1583,19 @@
      沒有 ?id= 時維持顯示全部（舊連結不受影響）。 */
   /* 2026-08-11 重新設計：場次與發布設定自總覽拆出，兩者跟總覽同命——設定一直都在，
      每個階段都看得到（草稿階段正是在填它們）。 */
+  /* 2026-08-13 使用者裁示：**場次、票務、票務商品三個分頁在每個階段都要有**——
+     它們是「這場活動賣什麼」的定義，不是某個階段才成立的營運視角。已取消也保留這三個，
+     創作者仍需要查得到當初賣的是什麼。 */
+  const ALWAYS = ['overview', 'dates', 'tiers', 'bundles'];
   const TABS_BY_STAGE = {
-    draft:       ['overview', 'dates', 'tiers', 'publish'],
-    scheduled:   ['overview', 'dates', 'tiers', 'publish', 'notifications'],
-    'on-sale':   ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
-    live:        ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
-    ended:       ['overview', 'dates', 'tiers', 'publish', 'transactions', 'attendees', 'refunds', 'notifications', 'finance'],
-    /* 已取消（2026-08-13）：活動不會再發生，但賣過的票與退款照樣要對帳，所以留下
-       帳務三頁；票種、名單與報到、發布設定對一場不會發生的活動已無意義。 */
-    cancelled:   ['overview', 'dates', 'transactions', 'refunds', 'finance']
+    draft:       ALWAYS.concat(['publish']),
+    scheduled:   ALWAYS.concat(['publish', 'notifications']),
+    'on-sale':   ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+    live:        ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+    ended:       ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+    /* 已取消（2026-08-13）：活動不會再發生，但賣過的票與退款照樣要對帳；
+       名單與報到、發布設定對一場不會發生的活動已無意義，故不留。 */
+    cancelled:   ALWAYS.concat(['transactions', 'finance'])
   };
   function applyTabs() {
     let allowed = (TABS_BY_STAGE[ev.status] || TABS_BY_STAGE['on-sale']).slice();
@@ -1563,7 +1605,7 @@
        只有這一個決策點，兩處都想決定就會互相覆蓋（本函式下方的註解講的就是這件事）。 */
     if (ev.type === 'watchparty') {
       /* 發布設定也不適用：取票方式對線上房間不成立（同建立流程跳過第 7 步的口徑）。 */
-      const NA = ['tiers', 'attendees', 'refunds', 'series', 'publish'];
+      const NA = ['tiers', 'bundles', 'attendees', 'series', 'publish'];
       allowed = allowed.filter(t => NA.indexOf(t) < 0);
     }
     document.querySelectorAll('[data-tabs] .tabs__item').forEach(btn => {
@@ -1854,6 +1896,30 @@
     id: 's1', name: '', date: ev.date, start: ev.start, end: ev.end, doors: ev.doors, early: ev.early || 'warn'
   }]).map(s => Object.assign({ early: 'warn' }, s));
 
+  /* ── 場次盒的折疊（2026-08-13 使用者裁決「A 案」，與建立流程同一套）──────
+     折疊態只留一行摘要：日期 · 起訖時間 · 開放入場。
+     只有一場時不折（盒子本身也不畫）；多場預設全折，新增的那一場自動展開；
+     可以同時展開好幾場。展開狀態存在 Set 而不是 DOM——renderSessions() 會整段重畫。 */
+  const sessOpen = new Set();
+  const WD_ZH = ['日', '一', '二', '三', '四', '五', '六'];
+  const WD_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  function sessSummaryHTML(s) {
+    const d = (s.date || '').trim();
+    if (!d) return '<span class="collapse-head__sum collapse-head__sum--todo">' +
+      tixEsc(T('ed.sess.sum.nodate', 'Date not set')) + '</span>';
+    const p = d.split('-');
+    const dt = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    const wd = isNaN(dt.getTime()) ? ''
+      : (isZh() ? '（' + WD_ZH[dt.getDay()] + '）' : ' (' + WD_EN[dt.getDay()] + ')');
+    /* 日期補零：這一行是要被「一疊」掃過去的，補零＋tabular-nums 才上下對齊。 */
+    const parts = ['<b>' + tixEsc(p[1] + '/' + p[2] + wd) + '</b>'];
+    const t = [s.start, s.end].filter(x => (x || '').trim());
+    if (t.length) parts.push(tixEsc(t.join('–')));
+    if ((s.doors || '').trim()) parts.push(tixEsc(T('ed.sess.sum.doors', 'doors {t}').replace('{t}', s.doors)));
+    return '<span class="collapse-head__sum">' + parts.join(' · ') + '</span>';
+  }
+
   function sessBoxHTML(s, i) {
     const multi = edSessions.length > 1;
     const startM = hhmmToMin(s.start), doorsM = hhmmToMin(s.doors);
@@ -1861,17 +1927,37 @@
     const f = (label, field, type, val) =>
       '<label class="field"><span class="field__label">' + tixEsc(label) + '</span>' +
       '<input class="input" type="' + type + '" data-sess-f="' + field + '" value="' + tixEsc(val == null ? '' : val) + '"></label>';
-    return '<div class="ed-sess' + (multi ? ' control-group control-group--plain' : '') + '" data-sess="' + tixEsc(s.id) + '">' +
-      (multi ? '<div class="ed-sess__head"><span class="card__title">' +
-        tixEsc((s.name || '').trim() || T('ed.sess.n', 'Date {n}').replace('{n}', i + 1)) + '</span>' +
+    /* 場次盒＝L2 分組面，照 Q66 往亮一階用 .card--muted（填色）；
+       線框留給盒內的開放入場那一層（L3）。2026-08-13 使用者指示。 */
+    const open = !multi || sessOpen.has(s.id);
+    /* 標題列：可點的那一段（chevron＋標題＋摘要）＋列尾的移除鈕。按鈕不能包按鈕，
+       所以移除鈕是 .collapse-head 的第二個子元素、不在切換鈕裡面。
+       切換鈕掛 data-view-safe：檢視模式下 shared.css 會把未列入白名單的按鈕藏起來，
+       但開合不會改任何資料，屬唯讀用途。 */
+    return '<div class="ed-sess' + (multi ? ' card card--muted' : '') + '" data-sess="' + tixEsc(s.id) +
+        '" data-open="' + (open ? 'true' : 'false') + '">' +
+      (multi ? '<div class="collapse-head ed-sess__head">' +
+        '<button type="button" class="collapse-head__toggle" data-view-safe data-sess-toggle aria-expanded="' +
+          (open ? 'true' : 'false') + '">' +
+          '<i data-lucide="chevron-right" class="ztor-icon collapse-head__chev"></i>' +
+          '<span class="card__title">' +
+            tixEsc((s.name || '').trim() || T('ed.sess.n', 'Date {n}').replace('{n}', i + 1)) + '</span>' +
+          sessSummaryHTML(s) +
+        '</button>' +
         '<button type="button" class="btn btn--icon btn--sm" data-sess-remove aria-label="' + tixEsc(T('ed.sess.remove', 'Remove this date')) + '"><i data-lucide="x" class="ztor-icon"></i></button>' +
       '</div>' : '') +
+      (multi ? '<div class="ed-sess__body collapse-body"' + (open ? '' : ' hidden') + '>' : '') +
       '<div class="form-grid">' + f(T('ce.date', 'Event date'), 'date', 'date', s.date) + '</div>' +
       '<div class="form-grid">' +
         f(T('ce.start', 'Start time'), 'start', 'time', s.start) +
         f(T('ce.end', 'End time'), 'end', 'time', s.end) +
       '</div>' +
-      '<div class="field">' +
+      /* 2026-08-13 使用者指示「UI 上加一個層級，用線框的 layer」：開放入場整組
+         （時間／開演前兩格＋說明＋早到規則）用 .control-group--plain 的 1px 線框圈起來。
+         它跟上面的日期、開始結束時間不是同一層——那些是「這一場什麼時候」，
+         這一組是「門什麼時候開、早到怎麼辦」的附屬設定。填色層只到 L2（見 nest.css），
+         第三層以後一律用線框表達層級，所以這裡用線框不用底色。 */
+      '<div class="field control-group control-group--plain">' +
         '<div class="field__label"><span>' + tixEsc(T('ce.doors', 'Doors open')) + '</span> <span class="text-sub">' + tixEsc(T('ce.opt', '(optional)')) + '</span></div>' +
         '<div class="form-grid">' +
           f(T('ed.doors.at', 'Time'), 'doors', 'time', s.doors) +
@@ -1881,7 +1967,9 @@
               '<span class="amount-field__unit">' + tixEsc(T('ed.min', 'min')) + '</span>' +
             '</span></label>' +
         '</div>' +
-        '<p class="field__hint">' + tixEsc(T('ed.doors.hint', 'Fill either one and the other works itself out.')) + '</p>' +
+        /* 墓碑（2026-08-13 使用者指示「不需要」）：「兩格填一個就好…」那句說明退場。
+           兩格互相換算這件事，填了任一格就會自己演示給使用者看，不必先講。
+           i18n key `ed.doors.hint` 保留未用。 */
         '<div class="rule-sub" data-early-block' + ((s.doors || '').trim() || String(mins).trim() ? '' : ' hidden') + '>' +
           '<div class="field__label">' + tixEsc(T('ed.early.policy', 'Arriving before that')) + '</div>' +
           '<div class="segmented radio-cards" role="radiogroup">' +
@@ -1890,9 +1978,11 @@
               ((s.early || 'warn') === v ? 'true' : 'false') + '" data-sess-early="' + v + '">' +
               tixEsc(T(v === 'warn' ? 'ed.early.warn' : 'ed.early.block', v === 'warn' ? 'Allow entry' : 'Deny entry')) + '</button>').join('') +
           '</div>' +
-          '<p class="field__hint">' + tixEsc(T('ed.early.policy.hint', 'Ticket types can enter earlier.')) + '</p>' +
+          /* 墓碑（2026-08-13 使用者指示「刪除」）：「票種可以各自提前入場…」那句退場，
+             同 create-event。i18n key `ed.early.policy.hint` 保留未用。 */
         '</div>' +
       '</div>' +
+      (multi ? '</div>' : '') +
     '</div>';
   }
   function renderSessions() {
@@ -1927,11 +2017,24 @@
       if (blk) blk.hidden = !((s.doors || '').trim() || String(s.doorsMin == null ? '' : s.doorsMin).trim());
       refreshTix();
     }
+    /* 折疊態的摘要跟著改的值走（就地換那一行，一樣不重繪整份清單） */
+    const sum = row.querySelector('.collapse-head__sum');
+    if (sum) sum.outerHTML = sessSummaryHTML(s);
   });
   document.getElementById('ed-sess-list')?.addEventListener('click', e => {
     const row = e.target.closest('[data-sess]');
     if (!row) return;
     const s = edSessions.find(x => x.id === row.dataset.sess);
+    /* 折疊開合（2026-08-13）：就地翻，不重繪——重繪會把游標與捲動位置一起洗掉。 */
+    if (e.target.closest('[data-sess-toggle]')) {
+      const open = row.dataset.open !== 'true';
+      row.dataset.open = open ? 'true' : 'false';
+      const body = row.querySelector('.ed-sess__body');
+      if (body) body.hidden = !open;
+      row.querySelector('[data-sess-toggle]')?.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) sessOpen.add(row.dataset.sess); else sessOpen.delete(row.dataset.sess);
+      return;
+    }
     const pick = e.target.closest('[data-sess-early]');
     if (pick && s && !pick.disabled) {
       s.early = pick.dataset.sessEarly;
@@ -1950,8 +2053,12 @@
   document.getElementById('ed-sess-add')?.addEventListener('click', () => {
     const s0 = edSessions[0] || {};
     /* 新場次帶入第一場的時間（多數活動每場時間相同、只有日期不同），日期留空。 */
-    edSessions.push({ id: 's' + (edSessions.length + 1) + '-' + Date.now(), name: '', date: '',
-      start: s0.start || '', end: s0.end || '', doors: s0.doors || '', early: s0.early || 'warn' });
+    const added = { id: 's' + (edSessions.length + 1) + '-' + Date.now(), name: '', date: '',
+      start: s0.start || '', end: s0.end || '', doors: s0.doors || '', early: s0.early || 'warn' };
+    edSessions.push(added);
+    /* 剛加的那一場自動展開；第 2 場出現時第 1 場才第一次有折疊的意義，順手收起來。 */
+    sessOpen.add(added.id);
+    if (edSessions.length === 2) sessOpen.delete(edSessions[0].id);
     renderSessions();
   });
 
@@ -2356,23 +2463,36 @@
       count.className = 'badge' + (bds.length ? ' badge--success' : ' badge--neutral');
     }
     if (!bds.length) return;
-    list.innerHTML = bds.map(b => {
+    /* 一組一張卡（2026-08-13 使用者指示「補完」）：原本一列只寫得下名稱、售價與已售，
+       「這一組到底包了什麼、還剩幾組、佔掉哪一張票的庫存」都要自己推。
+       事實列沿用票種卡的 dt/dd 語彙——同一個分頁裡的兩種東西，讀法一致。 */
+    list.innerHTML = '<div class="tier-grid">' + bds.map(b => {
       const tix = (b.tickets || []).map(x => {
         const t = (ev.tiers || []).find(y => y.id === x.tier);
         return (t ? t.name : x.tier) + (x.n > 1 ? ' ×' + x.n : '');
       });
-      const parts = tix.concat(b.products || []).join(' ＋ ');
-      return '<div class="data-list__row"><div class="data-list__row-main">' +
-        '<div class="data-list__icon data-list__icon--info"><i data-lucide="package" class="ztor-icon"></i></div>' +
-        '<div class="data-list__body">' +
-          '<div class="data-list__title">' + esc(b.name) + ' · $' + fmtNum(b.price) + '</div>' +
-          '<div class="data-list__meta">' + esc(T('ed.bd.contains', 'Contains')) + '：' + esc(parts) + '</div>' +
-        '</div></div>' +
-        '<span class="badge badge--neutral">' +
-          esc(T('ed.bd.soldn', '{n} sold').replace('{n}', fmtNum(b.sold || 0))) +
-          (b.cap ? ' · ' + esc(T('ed.bd.cap', 'Cap {n}').replace('{n}', fmtNum(b.cap))) : '') + '</span>' +
+      const sold = Number(b.sold) || 0;
+      const cap = Number(b.cap) || 0;
+      /* 佔掉的票券張數＝每組含的票 × 已售組數。組合包與單賣的票共用同一個數量池，
+         這個數字才看得出「庫存被組合包吃掉多少」。 */
+      const tickets = (b.tickets || []).reduce((a, x) => a + (Number(x.n) || 1), 0) * sold;
+      const fact = (label, val) =>
+        '<div class="tier-card__fact"><dt>' + esc(label) + '</dt><dd>' + val + '</dd></div>';
+      return '<div class="card tier-card">' +
+        '<div class="tier-card__head">' +
+          '<span class="card__title-icon"><i data-lucide="package" class="ztor-icon"></i></span>' +
+          '<h4 class="tier-card__name">' + esc(b.name) + '</h4>' +
+        '</div>' +
+        '<dl class="tier-card__facts">' +
+          fact(T('ed.bd.price', 'Bundle price'), '$' + fmtNum(b.price)) +
+          fact(T('ed.bd.tickets', 'Tickets inside'), esc(tix.join('，') || '—')) +
+          fact(T('ed.bd.products', 'Products inside'), esc((b.products || []).join('，') || '—')) +
+          fact(T('ed.bd.sold', 'Sold'), fmtNum(sold) + (cap ? ' / ' + fmtNum(cap) : '')) +
+          (cap ? fact(T('ed.bd.left', 'Left'), fmtNum(Math.max(0, cap - sold))) : '') +
+          fact(T('ed.bd.pool', 'Tickets drawn from stock'), fmtNum(tickets)) +
+        '</dl>' +
       '</div>';
-    }).join('');
+    }).join('') + '</div>';
     if (window.ztorIcons) window.ztorIcons.applyIcons(list);
   }
   renderBundles();
@@ -2434,6 +2554,15 @@
          改由下方 i18n:applied 的 handler 重跑本函式（同 paintLive 的作法）。 */
       if (m) { m.removeAttribute('data-i18n'); m.textContent = T('event-detail.kpi.checkedin-final', 'Final · {n}% arrived').replace('{n}', ci.rate); }
     }
+  }
+
+  /* ── 參加者名單：報到那一欄只在活動當天之後出現（2026-08-13 使用者裁決）──────
+     售票中就有持票人，名單本身有用（誰買到票、票券發給誰、匯出給場地）；
+     但那時候沒有人核銷過，報到欄要嘛全空、要嘛像現在示例那樣寫著「已使用」——
+     兩種都是假的。整欄收起，活動當天再出現。 */
+  function syncAttendees() {
+    const on = ['live', 'ended'].indexOf(ev.status) >= 0;
+    document.querySelectorAll('[data-att-col-state]').forEach(el => { el.hidden = !on; });
   }
 
   /* ── 線上房間（共看派對）───────────────────────────────── */
@@ -2527,6 +2656,7 @@
   renderFinalCheckin();
   renderRoom();
   renderNotif();
+  syncAttendees();
   initTx();
   if (isLive) initLive();
   /* 防重繪迴圈（2026-08-11，做法沿用 create-event.html 2026-08-04 踩過的同一個坑，
@@ -2546,6 +2676,7 @@
     renderFinalCheckin();
     renderRoom();
     renderNotif();
+    syncAttendees();
     syncStage();
     if (isLive) paintLive();
     setTimeout(() => { i18nBusy = false; }, 0);
