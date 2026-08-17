@@ -78,6 +78,16 @@
 
 站台：`Project/ztor-creator-studio/site/r2.1`。以下每題都是「同一件事、站上已存在兩種以上做法」的真實矛盾，逐題圈選 A／B／C 後即可一次落 token 或元件、全站生效。證據一律標「檔案:行號」。
 
+### Q68：表格表頭要不要畫底色帶（2026-08-13 提出，同日使用者選 C，維持原裁示）
+
+使用者提供一張外部參考圖（資料表：表頭有一條藍色底色帶、欄名較重、列首一欄勾選框、未選列灰化），指示「這個 table 用這樣的設計，樣式用我們的」。底色帶那一項與 **2026-07-31 已裁示的「列表表頭不畫底色帶」**（`--column-head-ink` 欄名＋留白分隔）直接衝突，因此做成三個變體並排比對（`docs/bundle-table-demo.html`）：
+
+- A：表頭疊一層薄膜（`--nest-surface`）往亮，方向與 Q66 的疊層模型一致
+- B：表頭用品牌橘 10% tint，最接近參考圖那條藍色帶的份量
+- C：不畫底色，維持 2026-07-31 的做法
+
+**裁決：C。** 2026-07-31 的慣例仍是唯一答案，A／B 兩案退場，全站不必改。參考圖的其餘三件事同輪採用到組合包彈窗的兩張表：表頭第一格放全選、所有勾選框（含場次組頭）對齊同一欄、沒勾到的列整列淡化。參考圖還有一欄彩色狀態點，**我們的票券沒有對應的資料欄位**，未採用（要做需先由上游定義那個狀態是什麼）。
+
 ### Q67：控件的填色要不要跟著所在表面走（2026-08-13 提出，同日裁示「從 DS 和元件一起改」，已落地）
 
 使用者圈選組合包彈窗裡的「＋ 新增權益」：「這個按鈕沒有照階層邏輯」。
@@ -103,6 +113,24 @@
 證據：`ds-components/button.css` 的 `.btn--outline`（含 2026-06-12 的沿革註解）、`ds-components/_tokens.css` 的 `--control-raise`、`ds-components/bundle-editor.css` 的 `.fc-add`／`.fc-add-item`。
 
 ### Q66：巢狀分組往亮還是往暗（2026-08-13 提出，同日使用者裁示「一起做完」，已全站落地）
+
+**Q66 全站落地（2026-08-13 第三輪，使用者「都改」）**：先前的稽核只查「亮度方向」，漏掉另一類——**卡／彈窗裡的分組面用實色（更暗的 `--muted` 或與母層同色的 `--card`）**。重掃 25 個代表頁後逐支翻向，一律改成 `--nest-surface` 薄膜 ＋ `--nest-line`、交出浮起陰影：
+
+- 一定在卡內的，直接改元件本體：`.scanner-access`（掃碼器存取）、`.payout-bank-card`／`--empty`／`--option`／`.payout-summary`（提款相關四支）、`.ss-status`、`.msg-schedule`、`.review-status`、`.cb-summary`／`.cb-add-tile`（建立組合包頁內）。
+- 兩種情境都有的，規則掛在情境上、不動頁面層用法：`.card .preview-card`／`.payout-dialog .preview-card`、`.card .funding-panel--card`、`.card .picker`。
+- 結構層：`.payout-dialog .card`、`.form-section--outlined .form-section--outlined`（內層翻向）。
+- 連帶：`.payout-bank-card--selected` 的底色原本吃 `--card`，基底翻成薄膜後它反而比未選態沉，改成薄膜再疊一層。
+- **刻意不改**：`.qr-box`（媒體井，QR 要印在淺底）、`.album-tracks__upload`／`.sce__add`（虛線的「可以放東西進來」動作格）、`.vip-card__plate`（VIP 卡的裝飾板）、`.segmented` 軌道等控件凹槽（Q66 B 段已裁：`--muted` 只服務凹槽與襯底）。
+- **順帶修的控件**：`.scanner-access__url code`（掃碼器連結那一格）原本吃 `--card`——它坐在分組面裡、是第三層卻疊著 L1 卡的顏色；它是唯讀值欄位，改用跟 input 同一個面 `--input-surface`。
+- 對照 demo：`docs/surface-layer-fix-demo.html`（五組左右並排＋亮度差實測）。複驗：13 頁重掃，25 處分組面全部由 −11／0 變成 **+7.6～+7.8**（往亮一階）。
+
+**Q66 延伸落地（2026-08-13 第二輪，使用者指著建立活動的場次盒裁示「開放入場是用線框的，但場次 Day 1 要用背景色」）**：
+
+- **層級分工定案**：L1 區塊卡（`--card`）→ **L2 分組面用填色**（`.card--muted` 的 `--nest-surface` 薄膜）→ **L3 用 1px 線框**（`.control-group--plain`）。這正是 `nest.css` 檔頭寫的「填色只到 L2、第三層起用線框」，本輪把它套到活動的場次結構上。
+- **改了什麼**：建立活動的場次盒與票務「一場一盒」、活動詳情場次分頁的場次盒，由 `.control-group--plain`（線框）改為 `.card--muted`（填色）；盒內的「開放入場」維持線框，成為 L3 的示範用例。
+- **連帶的元件規則**：`.card--muted` 坐在卡或頁面分組裡時交出 `.card` 的浮起陰影與上緣高光（`.card .card--muted, .form-section .card--muted { box-shadow: none }`）——留著會被讀成「浮在卡上的第二張卡」，與「疊上去的一層」是兩種語彙。連帶影響 publish-work、auction-detail 既有的 `.card--muted`（方向一致，屬修正）。
+- **`--plain` 的角色因此收斂**：只服務第三層。兩步（場次那一步、票務那一步）同一種「一場一盒」不再長成兩種樣子。
+
 
 站上同一個視覺角色（「卡片裡的一段分組」）目前有**兩套方向相反**的答案，兩套各自都合 token 紀律，機械檢查抓不到：
 

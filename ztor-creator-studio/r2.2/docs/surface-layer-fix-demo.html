@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 資產一律以 ../（r2.2 根）為前綴，不用 <base>：文件本身沒有可解析的基底網址時
+     （被當成 data: 快照預覽），<base> 會讓整組樣式表一起載不到。 -->
+<title>DEMO · 卡內分組面的表面層級：改前 vs 改後</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/pickup.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/scanner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/review-status.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ── DEMO 專用框架（不進產品頁）───────────────────────────── */
+  body { background: var(--surface-page); color: var(--foreground); }
+  .demo-page { max-width: 1240px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) 140px; }
+  .demo-head h1 { font-family: var(--font-display); font-size: var(--fs-32); margin: 0 0 var(--sp-8); }
+  .demo-head p { color: var(--muted-foreground); font-size: var(--fs-14); margin: 0 0 var(--sp-8); max-width: 76ch; line-height: 1.7; }
+  .demo-head b { color: var(--foreground); font-weight: var(--fw-regular); }
+
+  .legend { display: flex; gap: var(--sp-20); flex-wrap: wrap; margin: var(--sp-20) 0 0; font-size: var(--fs-13); color: var(--muted-foreground); }
+  .legend span { display: inline-flex; align-items: center; gap: var(--sp-8); }
+  .swatch { width: 28px; height: 16px; border-radius: 4px; border: 1px solid var(--border); }
+
+  .case { margin-top: var(--sp-40); }
+  .case__head { display: flex; align-items: baseline; gap: var(--sp-12); flex-wrap: wrap; margin-bottom: var(--sp-8); }
+  .case__no { font-family: var(--font-display); font-size: var(--fs-20); }
+  .case__where { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .case__note { color: var(--muted-foreground); font-size: var(--fs-13); line-height: 1.7; margin: 0 0 var(--sp-16); max-width: 90ch; }
+  .case__note code { color: var(--foreground); }
+
+  /* 左右對照：同一段 markup 各放一份，右邊多掛 .fix */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start; }
+  @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
+  .pane__label {
+    display: flex; align-items: center; gap: var(--sp-8);
+    font-size: var(--fs-12); color: var(--muted-foreground); margin-bottom: var(--sp-8);
+  }
+  .pane__label b { color: var(--foreground); font-weight: var(--fw-regular); }
+  .pane__label--after b { color: var(--status-success-ink); }
+
+  /* ── 「改後」的做法：卡內分組面＝薄膜（L2），不再用更暗的實色或同色實色 ──
+     這正是 .card--muted 現在的做法（--nest-surface ＋ --nest-line ＋ 不帶浮起陰影）。
+     demo 用 .fix 直接套在既有元件上，模擬把那支元件的表面換掉之後長什麼樣。 */
+  .fix .scanner-access,
+  .fix .payout-bank-card,
+  .fix .review-status,
+  .fix .nested-card,
+  /* D 案只換**內層**：外層 outlined 是頁面層的分組，它沒有錯——錯的是被套在裡面的那一層 */
+  .fix .nested-outlined .nested-outlined {
+    background: var(--nest-surface) !important;
+    border: 1px solid var(--nest-line) !important;
+    box-shadow: none !important;
+  }
+  /* QR 的白底盒是「媒體井」不是分組面，兩邊都不動（見說明） */
+
+  .nested-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-16); }
+  .nested-outlined { background: var(--surface-shell); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--sp-16); }
+
+  .measure { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-8); font-variant-numeric: tabular-nums; }
+  .measure b { color: var(--foreground); font-weight: var(--fw-regular); }
+  .toolbar { position: sticky; top: 0; z-index: 5; background: var(--surface-page); padding: var(--sp-12) 0; margin-bottom: var(--sp-8); display: flex; gap: var(--sp-8); align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="demo-page">
+
+  <div class="demo-head">
+    <h1>卡內分組面：改前 vs 改後</h1>
+    <p>
+      左邊是站上現況，右邊是照 <b>Q66／nest.css</b> 的模型改過的樣子——<b>L1 卡是實色、L2 分組面是薄膜（比卡亮一階）、L3 才用 1px 線框</b>。
+      每一組的 markup 完全相同，右邊只是把那一支元件的表面換掉。
+    </p>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--surface-page)"></i>L0 畫布 #0C0D0D</span>
+      <span><i class="swatch" style="background:var(--surface-shell)"></i>頁面分組 #1C1D1E</span>
+      <span><i class="swatch" style="background:var(--card)"></i>L1 卡 #212223</span>
+      <span><i class="swatch" style="background:var(--muted)"></i>凹槽／襯底 #161718</span>
+      <span><i class="swatch" style="background:var(--nest-surface)"></i>L2 薄膜（疊在卡上、亮一階）</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn--outline btn--sm" type="button" data-flip>只看改後（切換左右兩欄）</button>
+    <span class="case__where" data-flip-state>目前：左＝改前、右＝改後</span>
+  </div>
+
+  <!-- ═══ A ═══ -->
+  <section class="case">
+    <div class="case__head"><span class="case__no">A</span><span class="case__where">活動詳情 · 現場報到台裡的「掃碼器存取」（<code>.scanner-access</code>）</span></div>
+    <p class="case__note">
+      分組面吃 <code>--muted #161718</code>，比它坐著的卡（<code>#212223</code>）<b>更暗</b>——讀起來像陷進卡裡，而不是疊在卡上。
+      同一支元件也用在取貨場次詳情。QR 的白底盒不動：那是<b>媒體井</b>（QR 要印在淺底上才掃得到），暗底是對的。
+    </p>
+    <div class="pair">
+      <div>
+        <div class="pane__label"><b>改前</b> · <code>--muted</code> #161718</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">現場報到台</h3><span class="badge badge--warning"><span>已進行 42 分鐘</span></span></div>
+          <div class="data-list__title" style="margin:18px 0 8px;font-size:var(--fs-14)">掃碼器存取</div>
+          <div class="scanner-access">
+            <div class="scanner-access__qr"><div class="qr-box"></div></div>
+            <div class="scanner-access__main">
+              <div class="scanner-access__label">掃碼器連結</div>
+              <div class="scanner-access__url"><code>ztor.live/scan/inner-circle</code><span class="badge badge--success"><span>已啟用</span></span></div>
+              <div class="scanner-access__actions" style="margin-top:var(--sp-12)"><button class="btn btn--outline btn--sm" type="button">開啟掃碼器</button></div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="fix">
+        <div class="pane__label pane__label--after"><b>改後</b> · <code>--nest-surface</code> 薄膜</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">現場報到台</h3><span class="badge badge--warning"><span>已進行 42 分鐘</span></span></div>
+          <div class="data-list__title" style="margin:18px 0 8px;font-size:var(--fs-14)">掃碼器存取</div>
+          <div class="scanner-access">
+            <div class="scanner-access__qr"><div class="qr-box"></div></div>
+            <div class="scanner-access__main">
+              <div class="scanner-access__label">掃碼器連結</div>
+              <div class="scanner-access__url"><code>ztor.live/scan/inner-circle</code><span class="badge badge--success"><span>已啟用</span></span></div>
+              <div class="scanner-access__actions" style="margin-top:var(--sp-12)"><button class="btn btn--outline btn--sm" type="button">開啟掃碼器</button></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <p class="measure" data-measure="a">—</p>
+  </section>
+
+  <!-- ═══ B ═══ -->
+  <section class="case">
+    <div class="case__head"><span class="case__no">B</span><span class="case__where">收入管理 · 提款帳戶（<code>.payout-bank-card</code>）</span></div>
+    <p class="case__note">
+      同樣是 <code>--muted</code> 往暗，而且一次出現好幾張並排——暗成一片時，卡與卡之間只剩那道 1px 線在撐。
+    </p>
+    <div class="pair">
+      <div>
+        <div class="pane__label"><b>改前</b> · <code>--muted</code> #161718</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">提款帳戶</h3></div>
+          <div class="form-grid">
+            <div class="payout-bank-card"><div class="field__label">中國信託 ·••• 4821</div><p class="field__hint" style="margin-top:var(--sp-8)">預設帳戶</p></div>
+            <div class="payout-bank-card payout-bank-card--add"><div class="field__label">＋ 新增帳戶</div></div>
+          </div>
+        </section>
+      </div>
+      <div class="fix">
+        <div class="pane__label pane__label--after"><b>改後</b> · <code>--nest-surface</code> 薄膜</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">提款帳戶</h3></div>
+          <div class="form-grid">
+            <div class="payout-bank-card"><div class="field__label">中國信託 ·••• 4821</div><p class="field__hint" style="margin-top:var(--sp-8)">預設帳戶</p></div>
+            <div class="payout-bank-card payout-bank-card--add"><div class="field__label">＋ 新增帳戶</div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <p class="measure" data-measure="b">—</p>
+  </section>
+
+  <!-- ═══ C ═══ -->
+  <section class="case">
+    <div class="case__head"><span class="case__no">C</span><span class="case__where">項目詳情 · 審核狀態（<code>.review-status</code>）／訂單詳情的商品快照、粉絲 CRM 的卡中卡同型</span></div>
+    <p class="case__note">
+      分組面吃 <code>--card #212223</code>，<b>跟它坐著的卡同色</b>——兩層完全靠那道 1px 線分開，關掉線就看不出有巢狀。
+    </p>
+    <div class="pair">
+      <div>
+        <div class="pane__label"><b>改前</b> · <code>--card</code>（與母卡同色）</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">作品</h3></div>
+          <div class="review-status">
+            <div class="field__label">審核中</div>
+            <p class="field__hint" style="margin-top:var(--sp-6)">送出於 2026/08/10 · 平台審核約 2 個工作天</p>
+          </div>
+        </section>
+      </div>
+      <div class="fix">
+        <div class="pane__label pane__label--after"><b>改後</b> · <code>--nest-surface</code> 薄膜</div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">作品</h3></div>
+          <div class="review-status">
+            <div class="field__label">審核中</div>
+            <p class="field__hint" style="margin-top:var(--sp-6)">送出於 2026/08/10 · 平台審核約 2 個工作天</p>
+          </div>
+        </section>
+      </div>
+    </div>
+    <p class="measure" data-measure="c">—</p>
+  </section>
+
+  <!-- ═══ D ═══ -->
+  <section class="case">
+    <div class="case__head"><span class="case__no">D</span><span class="case__where">建立活動／系列詳情 · outlined section 裡再套一層 outlined section</span></div>
+    <p class="case__note">
+      兩層都吃 <code>--surface-shell #1C1D1E</code>，同色套同色。這是 Q66 稽核當時寫「目前 0 處」的那個情形——現在有 6 處。
+    </p>
+    <div class="pair">
+      <div>
+        <div class="pane__label"><b>改前</b> · 同色套同色</div>
+        <div class="nested-outlined">
+          <h3 class="card__title" style="margin-bottom:var(--sp-12)">票務</h3>
+          <div class="nested-outlined">
+            <div class="field__label">第 1 場 · 2026/10/02</div>
+            <p class="field__hint" style="margin-top:var(--sp-6)">搖滾區 $3,800 · 一般席 $2,200</p>
+          </div>
+        </div>
+      </div>
+      <div class="fix">
+        <div class="pane__label pane__label--after"><b>改後</b> · 內層改薄膜</div>
+        <div class="nested-outlined">
+          <h3 class="card__title" style="margin-bottom:var(--sp-12)">票務</h3>
+          <div class="nested-outlined">
+            <div class="field__label">第 1 場 · 2026/10/02</div>
+            <p class="field__hint" style="margin-top:var(--sp-6)">搖滾區 $3,800 · 一般席 $2,200</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="measure" data-measure="d">—</p>
+  </section>
+
+  <!-- ═══ E ═══ -->
+  <section class="case">
+    <div class="case__head"><span class="case__no">E</span><span class="case__where">三層一起看：卡 → 分組面 → 線框</span></div>
+    <p class="case__note">
+      模型走完整一次的樣子。改後那一欄由外到內是 <b>實色卡 → 薄膜 → 線框</b>，每一層都看得出誰包著誰；改前那一欄第二層往暗、第三層又是一個框，兩層在爭同一種視覺重量。
+    </p>
+    <div class="pair">
+      <div>
+        <div class="pane__label"><b>改前</b></div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">場次</h3></div>
+          <div class="payout-bank-card" style="min-height:0">
+            <div class="field__label" style="margin-bottom:var(--sp-12)">第 1 場</div>
+            <div style="border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--sp-16)">
+              <div class="field__label">開放入場（選填）</div>
+              <p class="field__hint" style="margin-top:var(--sp-6)">18:00 · 開演前 60 分鐘</p>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="fix">
+        <div class="pane__label pane__label--after"><b>改後</b></div>
+        <section class="card">
+          <div class="card__head"><h3 class="card__title">場次</h3></div>
+          <div class="payout-bank-card" style="min-height:0">
+            <div class="field__label" style="margin-bottom:var(--sp-12)">第 1 場</div>
+            <div style="border:1px solid var(--border);border-radius:var(--radius-xl);padding:var(--sp-16)">
+              <div class="field__label">開放入場（選填）</div>
+              <p class="field__hint" style="margin-top:var(--sp-6)">18:00 · 開演前 60 分鐘</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <p class="measure" data-measure="e">—</p>
+  </section>
+
+</div>
+
+<script>
+/* 量測：把每一組左右兩欄的「分組面 vs 它坐著的卡」合成後亮度差算出來，
+   用數字說話——不是「看起來比較好」，是「子層確實比母層亮 N」。 */
+(function () {
+  'use strict';
+  function rgb(el) {
+    var s = getComputedStyle(el).backgroundColor.match(/[\d.]+/g).map(Number);
+    return { r: s[0], g: s[1], b: s[2], a: s.length > 3 ? s[3] : 1 };
+  }
+  function over(fg, bg) {                       /* 半透明疊加合成 */
+    var a = fg.a;
+    return { r: fg.r * a + bg.r * (1 - a), g: fg.g * a + bg.g * (1 - a), b: fg.b * a + bg.b * (1 - a), a: 1 };
+  }
+  function lum(c) { return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; }
+  function pair(pane, sel) {
+    var el = pane.querySelector(sel);
+    if (!el) return null;
+    var host = el.parentElement.closest('.card, .nested-outlined');
+    if (!host) return null;
+    var hc = rgb(host), ec = rgb(el);
+    var composed = ec.a < 1 ? over(ec, hc) : ec;
+    return Math.round((lum(composed) - lum(hc)) * 10) / 10;
+  }
+  var CASES = {
+    a: '.scanner-access', b: '.payout-bank-card', c: '.review-status',
+    d: '.nested-outlined .nested-outlined', e: '.payout-bank-card'
+  };
+  Object.keys(CASES).forEach(function (k) {
+    var sec = document.querySelector('[data-measure="' + k + '"]');
+    if (!sec) return;
+    var panes = sec.closest('.case').querySelectorAll('.pair > div');
+    var before = pair(panes[0], CASES[k]), after = pair(panes[1], CASES[k]);
+    if (before === null || after === null) return;
+    var sign = function (n) { return (n > 0 ? '+' : '') + n; };
+    sec.innerHTML = '子層相對母層的亮度差：改前 <b>' + sign(before) + '</b>（' +
+      (before < 0 ? '往暗，讀起來是陷進去' : before === 0 ? '同色，只靠線分層' : '往亮') +
+      '） → 改後 <b>' + sign(after) + '</b>（往亮一階）';
+  });
+
+  /* 只看改後：把左欄也套上 .fix，一次比較「全站改完」的整體感 */
+  var flipped = false;
+  document.querySelector('[data-flip]').addEventListener('click', function () {
+    flipped = !flipped;
+    document.querySelectorAll('.pair > div:first-child').forEach(function (p) { p.classList.toggle('fix', flipped); });
+    document.querySelector('[data-flip-state]').textContent = flipped
+      ? '目前：兩欄都是改後（左右應該一模一樣）'
+      : '目前：左＝改前、右＝改後';
+    this.textContent = flipped ? '回到對照（左改前／右改後）' : '只看改後（切換左右兩欄）';
+  });
+})();
+</script>
+<script src="../js/icons.js?v=r2.2"></script>
+</body>
+</html>

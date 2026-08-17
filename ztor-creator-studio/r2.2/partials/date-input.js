@@ -7,7 +7,10 @@
 
    做什麼
      1. 掃 input[type=date|datetime-local|time]，各包一層 .date-input
-     2. 注入常駐日曆 icon 與「選擇日期」placeholder（見 ds-components/date-input.css）
+     2. 依 input 的 type 注入對應的常駐 icon 與 placeholder（見 ds-components/date-input.css）：
+        date＝日曆／選擇日期、time＝時鐘／選擇時間、datetime-local＝日曆／選擇日期時間。
+        （2026-08-13 修：此前三種一律日曆圖示＋「選擇日期」，於是只填時間的欄位上寫著
+        「選擇日期」、旁邊還畫一個日曆——使用者圈出開放入場那一格。）
      3. 依 value 有無切 [data-empty]，空值才露 placeholder
      4. 點整格開原生日期選單（showPicker()，瀏覽器不支援就退回點原生欄位的預設行為）
 
@@ -31,8 +34,18 @@
     input.parentNode.insertBefore(wrap, input);
     wrap.appendChild(input);
 
+    /* 這一格在問什麼，由 input 的 type 決定：只填時間的欄位配時鐘與「選擇時間」，
+       日期＋時間的配日曆與「選擇日期時間」。圖示與文案一起換——只換一邊會更怪。 */
+    var kind = (input.getAttribute('type') || 'date').toLowerCase();
+    var BY_TYPE = {
+      'time':           { icon: 'clock',    key: 'field.pick-time',     en: 'Pick a time' },
+      'datetime-local': { icon: 'calendar', key: 'field.pick-datetime', en: 'Pick date & time' },
+      'date':           { icon: 'calendar', key: 'field.pick-date',     en: 'Pick a date' }
+    };
+    var def = BY_TYPE[kind] || BY_TYPE.date;
+
     var icon = document.createElement('i');
-    icon.setAttribute('data-lucide', 'calendar');
+    icon.setAttribute('data-lucide', def.icon);
     icon.className = 'ztor-icon date-input__icon';
     wrap.insertBefore(icon, input);
 
@@ -49,8 +62,8 @@
     } else if (input.hasAttribute('data-ph')) {
       ph.textContent = input.getAttribute('data-ph');
     } else {
-      ph.setAttribute('data-i18n', 'field.pick-date');
-      ph.textContent = 'Pick a date';
+      ph.setAttribute('data-i18n', def.key);
+      ph.textContent = (window.i18nT && window.i18nT(def.key)) || def.en;
     }
     wrap.appendChild(ph);
 

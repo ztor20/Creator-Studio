@@ -419,11 +419,39 @@
    變成同一畫面上同時有往上與往下兩種疊法，所以這裡一併收成只有框。 */
 /* 邊框用 --border 不用 --nest-line：後者深色是 transparent（L2 靠薄膜分層就夠），
    L3 拿它當框會變成「沒有底色也沒有邊」＝完全看不見。Q24 明訂 L3 就用 --border。 */
-.bd-sec .bd-pick,
-.bd-sec .bd-calc { background: transparent; border: 1px solid var(--border); }
+.bd-sec .bd-pick { background: transparent; border: 1px solid var(--border); }
 
-/* footer 右側：就緒 chip ＋ 主要動作（比照建立商品的底部操作列） */
+/* footer 右側的動作。`margin-left: auto` 吃掉中間的空白，所以左邊那一團（最終價、
+   以及多於一組時才出現的「移除」）貼左緣，主要動作貼右緣——footer 的
+   `justify-content: space-between` 只有兩個子元素時才夠用，中間那顆會被推到正中間。 */
 .bd-foot-actions { display: flex; align-items: center; gap: var(--sp-12); margin-left: auto; }
+
+/* footer 的最終價（2026-08-13 使用者指示「價格放在 footer」）：它是整張卡的結果，
+   釘在 footer 才不會因為捲到「基本資料」就看不到自己定出來的價格。
+   2026-08-13 第二輪（使用者指示「靠左」）：改坐在 footer 最左邊、標籤與金額都靠左緣切齊。
+   原本它跟主要動作一起被推到右邊那一團，那兩行字會被讀成按鈕的說明；
+   分到兩端之後，左邊回答「這一組賣多少」、右邊才是「要不要送出」。 */
+.bd-foot-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+}
+.bd-foot-price__k { font-size: var(--fs-11); color: var(--muted-foreground); }
+.bd-foot-price__v {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-6);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-20);
+  color: var(--foreground);
+}
+/* 劃線原價：比最終價小一階、弱化，讓「粉絲實付」維持是那一行的主角。 */
+.bd-foot-price__was {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
 
 /* ── 編輯表單的三段 ──────────────────────────────────────────────────────
    `.bd-form` 是分段版型自己的區塊名（2026-08-13）。它套在 `payout-dialog__body` 上，
@@ -454,46 +482,119 @@
 }
 .bd-pick__barlabel { font-size: var(--fs-12); color: var(--muted-foreground); }
 .bd-pick__done { margin-left: auto; }
-.bd-grp + .bd-grp { margin-top: var(--sp-4); }
-.bd-grp__head { display: flex; align-items: center; gap: var(--sp-10); padding: var(--sp-10) 0 var(--sp-6); }
-.bd-grp__name {
+/* 墓碑 2026-08-13：`.bd-grp`／`__head`／`__name`／`__all`（依場次分組的挑選器組頭）
+   隨「兩塊都表格化」併入 `.bd-tbl__group`。挑選器裡的 `.bd-pick .bd-ticket` 兩條
+   （`.bd-pick` 本身已無消費者）一併移除。
+
+── 分卡裡的表格（`.bd-tbl`，2026-08-13）────────────────────────────────────
+   使用者指示「兩個都要表格化」。這兩塊（適用場次、會建立的組合包）原本都是引用列
+   （`.fc-ref`：縮圖＋名稱＋一行次要資訊），一列的事實全串在同一行文字裡——
+   「$3800 · 共 150 張」要靠讀句子才知道哪個數字是價格、哪個是張數，多列之間也對不齊。
+   表格把每一種事實各給一欄，同一欄的數字上下對齊就能直接比大小；每列一律一個票券圖示
+   則是純裝飾，分卡標題已經說了這裡列的是票，一併拿掉。
+
+   表頭沿用 2026-07-31 使用者裁示的全站列表慣例：**不畫底色帶、不畫下框線**，
+   只有 `--column-head-ink` 的欄名，分隔交給留白（`.restock-table__head` 那種
+   `--muted` 底色帶不能照抄——L2 分卡裡再壓一條暗底會變成往下沉一階，與 Q66 的疊層
+   方向相反）。列與列之間才畫線，且用相鄰選擇器，所以組頭底下的第一列不會被劃線，
+   組頭也就不會被讀成「某一列的底線」。
+   2026-08-13 第二輪（使用者提供參考圖、比過三個表頭底色變體後選定「不加底色」）：
+   底色帶那一案正式退掉，2026-07-31 的慣例維持是唯一答案。同輪從參考圖採用的是另外
+   三件事——表頭第一格放全選、勾選框全部對齊同一欄（含場次組頭）、沒勾到的列整列淡化。
+   整張表加一圈外框（L3 用 `--border`，同 `.bd-pick`／`.bd-calc`），讓它在分卡裡是
+   一個獨立的東西而不是一段浮著的列。 */
+.bd-tbl {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.bd-tbl__head,
+.bd-tbl__row {
+  display: grid;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+}
+.bd-tbl__head {
+  color: var(--column-head-ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-12);
+}
+.bd-tbl__row + .bd-tbl__row { border-top: 1px solid var(--border-soft); }
+.bd-tbl__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.bd-tbl__sub {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* 數字欄右對齊＋等寬數字：上下兩列的位數才會對齊，掃一眼就看得出哪一列比較貴。 */
+.bd-tbl__num {
+  font-family: var(--font-numeric);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.bd-tbl__col--num { text-align: right; }
+
+/* 場次分組的組頭（2026-08-13 第二輪，使用者指示「勾選框放在上面一列、跟其他勾選一樣
+   靠左對齊，不需要寫『全選本場次』」）：改吃跟列一樣的欄位樣板，勾選框因此坐在列首
+   那一欄、與底下每一列的勾選框上下對齊，場次名接在它後面橫跨其餘欄。
+   原本它是 flex、勾選框靠右並帶一段文字標籤，等於同一張表裡有兩種勾選框的擺法。
+   標籤拿掉之後語意由位置承擔，所以 markup 補了 `aria-label`。 */
+.bd-tbl__group {
+  display: grid;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-12) var(--sp-12) var(--sp-6);
+  cursor: pointer;
+}
+.bd-tbl__gname {
+  grid-column: 2 / -1;
   font-family: var(--font-ui);
   font-size: var(--fs-12);
   color: var(--muted-foreground);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.bd-grp__all { margin-left: auto; font-size: var(--fs-12); }
-/* 組內最後一列不畫線——分組本身已經是分隔，再畫一條會讀成「還有下一列」。 */
-.bd-grp .bd-ticket:last-of-type { border-bottom: 0; }
-/* 挑選器裡的票列由 `.bd-pick` 的內距管節奏，不要再吃上面那條 first/last 的外距。 */
-.bd-pick .bd-ticket:first-of-type { margin-top: 0; }
-.bd-pick .bd-ticket:last-of-type { margin-bottom: 0; }
+/* 組頭上面那一列（前一組的最後一列）與它之間要有分隔，否則兩組會黏成一整片。
+   用 margin-top 不用框線——組頭自己已經是分隔，再畫一條會多一層。 */
+.bd-tbl__row + .bd-tbl__group { margin-top: var(--sp-6); }
+
+/* 可勾選的列：整列是點擊區（滑鼠不必瞄準 16px 的小方框）。
+   2026-08-13 第二輪：改成「沒勾到的列整列淡化」（`--off`），取代原本「勾到的列給一條
+   左緣色線」。一排長得一樣的列裡要一眼數出選了幾張，讓沒選的退到背景比替選到的多畫
+   一條線直接；這也是參考圖的做法。墓碑：`.bd-tbl__row--on`。 */
+.bd-tbl__row--pick { cursor: pointer; }
+.bd-tbl__row--pick:hover { background: var(--accent); }
+.bd-tbl__row--off .bd-tbl__name,
+.bd-tbl__row--off .bd-tbl__num { color: var(--muted-foreground); }
+
+/* 欄位樣板。第一欄是 16px 的勾選框（`.zcheck__control` 的固定寬）。 */
+.bd-tbl--sess .bd-tbl__head,
+.bd-tbl--sess .bd-tbl__group,
+.bd-tbl--sess .bd-tbl__row { grid-template-columns: 16px minmax(0, 1fr) 96px 64px; }
+.bd-tbl--per .bd-tbl__head,
+.bd-tbl--per .bd-tbl__row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 96px; }
 
 /* 收合態：已選的票以 chip 呈現＋一顆「更改」 */
 .bd-chosen { display: flex; align-items: flex-start; gap: var(--sp-10); flex-wrap: wrap; }
 .bd-chosen .chip-group { flex: 1 1 auto; }
 
-/* ── 定價：一列算完 ──────────────────────────────────────────────────────
-   原價加總 → 折扣 → 最終價。折扣輸入直接坐在算式裡，改一下就看到結果，
-   不必像預設版型那樣在卡頭的金額與卡底的優惠欄之間來回對照。 */
-.bd-calc {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-14);
-  flex-wrap: wrap;
-  padding: var(--sp-14) var(--sp-16);
-  border-radius: var(--radius-lg);
-  background: var(--muted);
-}
-.bd-calc__part { display: flex; flex-direction: column; gap: var(--sp-4); }
-.bd-calc__k { font-size: var(--fs-11); color: var(--muted-foreground); }
-.bd-calc__v { font-family: var(--font-numeric); font-size: var(--fs-16); color: var(--foreground); }
-.bd-calc__v--final { font-size: var(--fs-24); }
-/* 運算子與數值對齊、不與標籤對齊：那一行的視覺基線是數字。 */
-.bd-calc__op { align-self: center; padding-top: var(--sp-14); color: var(--muted-foreground); font-size: var(--fs-14); }
+/* ── 定價：三個欄位各一行 ────────────────────────────────────────────────
+   2026-08-13 使用者指示「優惠趴數／原價／優惠價三個欄位各一行」。原本是一列橫向
+   算式（`.bd-calc`：原價 − 折扣% 一行算完），三個數字擠在同一行、標籤又比值小一階，
+   要左右掃過去才讀得完。改成三個 `.field` 上下堆疊，一行一件事；只有折扣是輸入，
+   另外兩個用 `.field-readout`（唯讀顯示、不畫框），所以這裡只剩折扣欄的寬度要管。
+   墓碑：`.bd-calc`／`__part`／`__k`／`__v`／`__v--final`／`__op`／`__final`
+   （橫向算式列與它的欄）已無消費者，隨本輪移除；`.bd-sec .bd-calc` 那條 L3 線框規則
+   一併收掉（`.bd-pick` 仍在，規則留給它）。 */
 .bd-calc__disc { width: 108px; }
-.bd-calc__final { margin-left: auto; text-align: right; }
 
 /* ── 包裝：名稱／說明／封面圖同一列 ─────────────────────────────────────
    封面圖是辨識用縮圖，縮成一格擺右邊；預設版型那個獨立的 267px 區塊在這裡不成立
@@ -523,5 +624,4 @@
 
 @media (max-width: 1024px) {
   .bd-brand { grid-template-columns: minmax(0, 1fr); }
-  .bd-calc__final { margin-left: 0; text-align: left; }
 }
