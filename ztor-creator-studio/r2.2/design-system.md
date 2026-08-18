@@ -776,7 +776,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Filter tabs | 🟡 molecule | ✓ App | Secondary status filter pills with live counts, row below the primary tabs (E-Shop F3). Base = grey-muted active (orders, auction-detail); `.filter-tabs--brand` = soft-orange active + orange/bubble-less counts (E-Shop, paired with underline type tabs); `.filter-tabs--source` = active pill tinted with the item's own `--dot` colour + optional `.filter-tabs__dot` leading dot, colourless items fall back to `--primary` (Earnings F5 revenue-source filter, colour shared with chart line + source list) | [filter-tabs.css](./ds-components/filter-tabs.css) |
 | ~~Cookie banner~~ | — | **已退場 2026-08-03** | 從未被任何產品頁消費（零消費連續被 check 11 標記），使用者裁示「沒用就刪」。樣式已移除、檔案保留為墓碑；DS 頁的 demo 與 TOC 一併撤除。之後真要做同意橫條請重寫，不要復活舊實作 | [cookie-banner.css](./ds-components/cookie-banner.css)（tombstone）|
 | Empty stub | 🟡 molecule | ✓ App | Routes not yet built (orange mark + display title + spec refs) | [empty-stub.css](./ds-components/empty-stub.css) |
-| Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker。`.selection-card--icon` 型別磚 2026-07-17 縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊；Q18）。型別磚底色 `--input-surface`（暗色比 section 卡亮一階＝浮出的填色選項、亮色白卡，2026-07-18，對齊 midnight）；已選 icon 卡除橘 outline 外加淡橘底 `color-mix(--primary 5%, --input-surface)`（2026-07-18 Q19，對齊 midnight；icon 維持中性、無勾） | [selection-card.css](./ds-components/selection-card.css) |
+| Selection card | 🟡 molecule | ✓ App | Wizard radio cards (3 wizards) + Settings theme picker + display-mode picker。`.selection-card--icon` 型別磚 2026-07-17 縮小（icon 晶片 42→36、內 icon 28→24、內距 22→`--sp-14`、gap→`--sp-8`，較 Figma 781-4166 更緊；Q18）。型別磚底色 `--input-surface`（暗色比 section 卡亮一階＝浮出的填色選項、亮色白卡，2026-07-18，對齊 midnight）；已選 icon 卡除橘 outline 外加淡橘底 `color-mix(--primary 5%, --input-surface)`（2026-07-18 Q19，對齊 midnight；icon 維持中性、無勾）。`.selection-grid--tiles` 2026-08-18 新增：10 選 1 的方形磚格線（建立項目閘門第二關的內容類型；同日 About 那一格改用下拉，磚只剩閘門在用），只改密度、不改卡面與狀態 | [selection-card.css](./ds-components/selection-card.css) |
 | Composer | 🟡 molecule | ✓ App | Drop / type card + bottom action bar (tool icons · credit meter · circular send) | [composer.css](./ds-components/composer.css) |
 | Dropdown menu | 🟡 molecule | ✓ App | Action menu (details/summary); trigger = any Button — primary "＋ New" or a `btn--icon` kebab (E-Shop product-row actions). Items `<a>` (navigate) or `<button>` (run JS); outside-click / select-to-close needs page JS。變體：`--toggle`（選單內開關列＝menuitemcheckbox，左短標籤＋右 switch，配 data-keep-open；E-Shop 列「在商店上架」）／`--choice`（值列＝menuitemcheckbox，領頭放 tier `.badge`、已選態靠尾端 `.dropdown__check` 不用底色；2026-07-29）／`--danger`（破壞性動作紅字 ghost，如草稿列「刪除」）。面板變體 `.dropdown__menu--ladder`（2026-07-31，E-Shop 粉絲分級門檻）：把一組 `--choice` 當一道階梯，已選列左緣加 2px `--selected-ink` 直線畫出「從頂端連續的一段」，配 `.dropdown__item--preview`（hover 預告，40% 透明 check）、`.dropdown__cap`（選單抬頭小字，非選項不可點）與 `.dropdown__meta`（值列尾端次要資訊，`margin-left:auto` 靠右、`tabular-nums`，用於分級選單的累計人數「988 人」＝門檻設在這一級有多少人買得到，資料來自 `js/tier-population.js`）；點一級＝門檻設在那一級、該級與其上自動包含，互動由頁面 JS 負責。**每個選項前面都要有對應 `.ztor-icon`（2026-07-21 使用者裁示），唯一例外是 `--toggle` 與 `--choice` 那兩種值列**——全站 7 個消費頁全數補齊 | [dropdown-menu.css](./ds-components/dropdown-menu.css) |
 | Header (topbar) | 🟠 organism | ✓ App | All pages — canonical 64px app topbar (`.app-topbar`, injected by `sidebar.js`); hover mega-dropdown nav + action cluster. **≤900px：導覽收進 burger**（`.app-nav-burger`，2026-07-25）——兩種 shell（topbar／sidebar rail）在窄螢幕都只留 logo＋burger，展開為滿版直向面板（max 60vh 可捲）；開啟狀態＝shell 根元素的 `[data-nav-open]`（由 `js/sidebar.js` 切換，回到 >900px 自動清除）；topbar 面板內的 hover mega-dropdown 改為 inline 常開（觸控無 hover） | [header.css](./ds-components/header.css) |
@@ -807,7 +807,10 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Review status | 🟡 molecule | ✓ App | 送審件的狀態面板（2026-08-07，spec 5.1.0.4 F5／5.1.2.2 §2.2.9）：狀態徽章＋唯讀事實（送出時間／送出次數／審核者）＋退件理由（`__note`，`--rejected`／`--approved` 只改左側色條）＋動作列（只在真的有事可做時出現）。審核的兩端共用同一支——創作者在項目頁看結果、審核者在審核頁看同一塊；狀態字彙由 `js/work-review-store.js` 提供，元件不自帶。詳見 §4.119 | [review-status.css](./ds-components/review-status.css) |
 | Ticket tier card | 🟡 molecule | ✓ App | 建立活動的票種卡（spec 5.1.6.1 F9）：收合態＝卡標＋⋮（複製／移除）＋唯讀價格／數量＋整寬 Edit，編輯態＝名稱／價格／數量三欄直排＋每欄清空 ✕＋卡底 Remove／Cancel／Save；`.tier-grid` 網格（無 List／Grid 切換；**2026-08-06 起固定三欄**，1100/720px 降級）、`.tier-toolbar` 批次編輯、`.tier-count`（`--over` 超過容量轉紅）。自訂規則開關 **2026-08-06 由卡內 switch 列改成標題列靠右的 `.tier-card__ownbtn` 按鈕**（`aria-pressed`，開啟態橘框橘字）。卡體吃 `.card`、不重畫。詳見 §4.114 | [ticket-tier-card.css](./ds-components/ticket-tier-card.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product／create-auction／publish-work footer 用（publish-work 只在最後一步顯示，因為送出只發生在那一步；create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
-| Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.ptl__composer`）、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
+| Post composer | 🟡 molecule | ✓ App | 發文框（2026-08-18 promote，自 `progress-timeline.css` 的 `.ptl__composer*`）：**一個發文框、兩個落點**——進度時間軸「今天那一格」的內嵌版（`.composer__stub` 收合成一行提示，點了才加 `.is-open`），以及「發布更新」彈窗。兩邊長一樣、行為一樣，差別只有**有沒有位置訊號**：軸上的落點本身就是發文類型的預設值（D197），彈窗沒有位置所以類型與要完成的里程碑都得問一次。promote 的理由——留在時間軸檔裡的話，彈窗要用就得跨元件借樣式，而借來的樣式沒有人負責，改一邊會靜默弄壞另一邊。組成：`__stub` ／ `__head`（`__who` ＋ `__avatar` ＋ 靠右的受眾下拉）／ `__fields`（類型、標題、內文、`__media`［`--image` 160px ／ `--video`・`--audio` 360px］，每塊自帶 `__media-head` ＋ `__media-drop` ×）／ `__foot`（`__tools` 夾帶入口 ＋ `__acts` 取消與送出）。**一則只能一種夾帶**：三種的版面、播放行為與粉絲端呈現都不一樣，允許混用等於要為每一種組合各定一次規則。**名字不叫 composer** 是因為站上已有一支同名元件（AI 產圖那類「拖放或輸入 ＋ 底部工具列與 credit 計量」的輸入卡，根 class 也是 `.composer`）——兩支做的事不同，同名會在 CSS 與 design-system 錨點上直接對撞。消費頁：project-detail（進度分頁的內嵌發文框） | [post-composer.css](./ds-components/post-composer.css) |
+| Progress mark | 🔵 atom | ✓ App | 進度記號（2026-08-18 兩輪使用者裁決，自 step-list 與 progress-timeline 各自的記號 promote）：**一顆記號、兩個消費者共用**（時間軸與總覽的進度摘要）。語言三條規則——`每一顆里程碑都是一個打勾格`（空心圈＋淡勾＝還沒到、`--done` 實心綠＋白勾、`--alert` 實心紅＋驚嘆號＋紅光暈）：同一個形狀走完一顆里程碑的一生，狀態換的是填色與字符、不是形狀；`填色＝份量`（掃視時第一個被看到的是顏色，字符是停下來之後的確認）；`--ghost`（8px 空心小點）＝這一列不是里程碑（一般更新、項目建立），沒有狀態所以沒有字符。`--today`（12px 品牌色＋光暈）是軸上的一個位置而不是里程碑狀態，不放字符——放勾會讀成「今天完成了」。尺寸只有一個（20px）：第一輪原本分 `--sm` 10px 給軸／`--md` 20px 給摘要、字符只在 md，同日使用者看過實機後追加「軸上也要有勾勾或驚嘆號」，尺寸修飾子因此退場（墓碑）。改版前兩處各有一套畫法（摘要是圈＋字符、軸是點的顏色），同一顆里程碑在兩個畫面上要用兩種讀法，而它們常常前後腳出現。消費頁：project-detail（總覽的進度摘要、進度分頁的時間軸） | [progress-mark.css](./ds-components/progress-mark.css) |
+| Step list | 🟡 molecule | ✓ App | 階段清單（2026-08-18，參考設計 Project status）：一串回答「走到第幾步」的列，**不是時間軸**——沒有日期欄、沒有今天、不能往回捲。`.step-list__row`［`--done`／`--current`／`--alert`／`--todo`］＞ 記號用 [Progress mark](#progress-mark)（與時間軸共用**同一顆**記號，不只是同一套規則）＋ `__body`（`__title` ＋ `__meta`，**同一行不換行**）＋ `__end`（靠右的標籤，逾期用）＋ `__act`（hover 才出現的動作，與 `__end` 共用右端那一格、互換）。列高 50px（14/12 內距，2026-08-18 使用者裁決加高一階：列太薄時滑鼠掃過去底色一閃即逝、hover 出現的按鈕來不及被看見）。掛 `--interactive` 的列 hover／focus-within 給一層 `--accent` 底（負 margin 讓底色比文字往兩側各長 12px，不然 hover 起來像文字被框住）。`--current` 與 `--alert` 把整列一起上色（記號太小、只染記號會被略過）；`--todo` 整列 55% 不透明度。消費頁：project-detail 總覽的進度摘要 | [step-list.css](./ds-components/step-list.css) |
+| Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
 | Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件） | [section-nav.css](./ds-components/section-nav.css) |
 | Stat row | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片） | [stat-row.css](./ds-components/stat-row.css) |
 | Todo list | 🟡 molecule | ✓ App | 可編輯的待辦清單（勾選＋自行增刪） | [todo-list.css](./ds-components/todo-list.css) |
@@ -946,6 +949,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | `.btn--ghost.btn--destructive` | Ghost + `--destructive` red text; hover tints red 10%. Compound（綁 `.btn--ghost`，不獨立成 `.btn--destructive`）防止誤掛在 `.btn--primary` 上做出紅色主按鈕；用於編輯態刪除（create-product / create-auction footer，完整確認 modal 待規格）。2026-07-09 自兩頁頁內樣式 promote |
 | `.btn--soft` | Resting grey fill (`--foreground` 6% on surface), no border; quiet always-visible secondary（2026-06-12） |
 | `.btn--sm` / `.btn--lg` | Compact 28px (`--control-h-xs`) / large 44px (`--control-h-md`); default `.btn` = 36px (`--control-h-sm`) |
+| `.btn--add` | 36px (`--control-h-sm`)、字級 14——欄位或清單正下方的「再加一列」按鈕（2026-08-18 使用者裁示）。它是那組欄位的延伸，用 `--sm` 的 28px 會比它要新增的那一格矮一階，整組讀起來沒對齊。只換尺寸，外觀仍由 `--outline`／`--ghost` 決定 |
 | `.btn--block` | `width: 100%`——按鈕撐滿容器。用在只有單一動作的窄欄位（側欄卡片 CTA、對話框動作區、認證表單）。2026-08-10 promote：站上原本有十多處各寫各的 `style="width:100%"`，新寫的請改用這個 class，不要再寫行內樣式 |
 | `.split-button` > `.split-button__main` + `.dropdown` > `.split-button__caret` | Split button (🟡 molecule): primary main (left-rounded) + caret (right-rounded, inset hairline) opening `.dropdown__menu`; context-aware main label (E-Shop F3, D066) — `split-button.css` |
 
@@ -1344,6 +1348,7 @@ Static callout — no interactive states.
 | Base | `.upload-tile` | 虛線點擊／投放格（min-height 96px） |
 | Portrait | `.upload-tile--portrait` | **直式圖片槽的唯一形狀**（2:3），一律配 `.upload-assets--fill` |
 | File | `.upload-tile--file` | 檔案投放列（數位下載檔、證書；110px） |
+| File · slim | `.upload-tile--slim` | `--file` 的窄版（2026-08-18 使用者裁決「這只是檔案，可以窄一點」）：寬度封頂 360px、內距與圖示各收一階、不設最小高度。給「就是一個檔」的格子用（首個消費者：作品上架的字幕檔）；`--file` 本身不動，它其餘 8 個消費頁的格子是所在區塊的主角 |
 | Video | `.upload-tile--video` | 影片投放格（16:9 等比、容器 2/3 寬；2026-08-10 使用者裁決：站上影片上傳只有這一套，default 與 hover 吃基底，與直式圖片格同一種手感） |
 | Landscape | `.upload-tile--16x9` | 橫式媒體槽（project-detail 的 Demo 影片／音樂），非圖片上傳 |
 | ~~Hero~~ | ~~`.upload-tile--hero`~~ | **已退場（2026-08-09）**，見下方墓碑 |
@@ -1369,7 +1374,8 @@ Static callout — no interactive states.
 |---|---|
 | `.upload-tile` | 虛線上傳格（flex column 置中） |
 | `.upload-tile--file` | 檔案投放列尺寸變體（min-height 110px） |
-| `.upload-tile--video` | 影片投放格（`aspect-ratio:16/9`、`width:66.6667%`；≤640px 轉滿版）。消費頁：create-event／create-project／project-detail／publish-work（兩處） |
+| `.upload-tile--slim` | `--file` 的窄版（`max-width:360px`、`min-height:0`、內距 `--sp-12`、圖示 16px）。消費頁：publish-work／create-project 的字幕檔格 |
+| `.upload-tile--video` | 影片投放格（`aspect-ratio:16/9`、`width:66.6667%`；≤640px 轉滿版）。消費頁：create-event／create-project／project-detail／publish-work（**三處**——2026-08-18 花絮由 `--file` 改用本變體，使用者裁決「要用影片的比例」：收影片的格子就長成影片的樣子） |
 | ~~`.upload-tile--hero`~~ | **已退場（2026-08-09）**：主圖大格連同它的圓角晶片圖示框（Q18）一起收掉，直式圖片槽全部同尺寸 |
 | `.upload-tile__icon` / `__title` / `__hint` | registered Tabler icon／主文案（`--foreground` 500）／限制說明；不用文字 `＋` 或自製 SVG |
 | `.upload-tile.is-filled` | 已選檔狀態（非互動）：實線邊框（`border-style: solid`，取代空狀態的 dashed）＋中性 `--border`／`--foreground` 文字（含 `__title`）。**2026-08-09 使用者裁決「不該有這種綠框元件」，撤除 `--status-success` 綠**——已填／未填改由邊框樣式（實線 vs 虛線）辨別，不再靠顏色，與下方 `[data-upload].is-filled` 互動格既有的中性配方（`border-color: var(--border)`／`color: var(--foreground)`）對齊，統一成同一套「已填」語彙。create-auction／create-event／register-ip 的 toggle 共用（2026-06-16 promote 自頁內） |
@@ -1730,7 +1736,8 @@ Static, non-interactive — it reflects the host control's state via `currentCol
  │   ├ .card__hint        (non-actionable)
  │   └ .card__link →      (chevron after, in head)
  ├ ...section body...
- └ .card__note            (footnote, last child)
+ ├ .card__note            (footnote)
+ └ .card__foot            (action area, pinned to the card's bottom edge)
 ```
 
 **Variants** — `.card--muted` (muted section wrapper, for nested sub-sections).
@@ -1754,6 +1761,7 @@ Static, non-interactive — it reflects the host control's state via `currentCol
 | `.card__title` | 15px / 500 section title |
 | `.card__hint` | 12px subtle non-actionable hint |
 | `.card__note` | 12px subtle footnote below the card body — the sentence that states the figures' basis, denominator or limitation (2026-08-06 promoted from fan-analytics' page-local `.aud-note`). Boundary vs `.card__hint`: hint is one short inline phrase in the head; note is a paragraph after the body, so it carries `--sp-12` top margin and `--lh-normal` |
+| `.card__foot` | 卡底動作區（2026-08-18 promote）——`margin-top:auto` ＋ 16px 上內距，把動作釘在卡的下緣。`.card` 本身是 flex column，多出來的高度全留給內容。用它的理由：同一排的卡內容長短不一，動作若貼著內容走，兩張卡的按鈕會一高一低；釘底之後對齊成同一條線。要排兩顆以上時在裡面再包 `.stack` 或 `.flex-row`，本區只管落點。消費頁：project-detail 總覽的進度摘要／方案摘要 |
 | `.card__link` | 12px action link — underline by default; in `.card__head` becomes underline-less with trailing chevron icon |
 
 **Token usage** (→ Pillar 2 Role)
@@ -2251,6 +2259,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 ```
 .selection-grid                        (auto-fit min 220px grid)
   OR .selection-grid--3                (forced 3 equal columns · theme picker)
+  OR .selection-grid--tiles            (auto-fill min 124px · 10-up content-type tiles, 108px min height)
   .selection-card                      (soft-shadow surface · cursor pointer)
     .selection-card__swatch            (optional · 64px preview block)
       .selection-card__swatch--theme-light|dark|system
@@ -2262,7 +2271,7 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 
 **Variants** — Two canonical compositions: (A) Wizard radio card = title + sub + tag (no swatch); (B) Settings theme picker = swatch + title (+ optional sub), with `--theme-light / --theme-dark / --theme-system` swatch fills.
 
-**Sizes** — Single card size; grid density via `.selection-grid` (auto-fit min 220px) vs `.selection-grid--3` (forced 3 columns).
+**Sizes** — Single card size; grid density via `.selection-grid` (auto-fit min 220px) vs `.selection-grid--3` (forced 3 columns) vs `.selection-grid--tiles` (auto-fill min 124px, `min-height:108px`, contents vertically centered — for 8+ option sets).
 
 **States**
 
@@ -2278,8 +2287,9 @@ The tile itself is static; only the optional `.kpi__link` is interactive.
 |---|---|
 | `.selection-grid` | Auto-fit `minmax(220px, 1fr)` grid, `gap:12px` |
 | `.selection-grid--3` | Forces 3 equal columns (theme picker) |
+| `.selection-grid--tiles` | Auto-fill `minmax(124px, 1fr)` tile grid for large option sets（建立項目閘門第二關的內容類型 10 選 1，2026-08-18）。`min-height:108px` ＋ `justify-content:center`：跨列等高、內容垂直置中（換兩行的標題不會讓另一列縮小）。只改密度——卡面、邊框、hover 與已選態全部沿用 `--icon`；不是第二種選擇卡（Q17 三支分工不變） |
 | `.selection-card` | Column flex card, `--radius-md`, hairline ring, `cursor:pointer`, 150ms transitions |
-| `.selection-card--icon` | Centered icon type-picker (create-product / create-event). **Flat 1px `--border`, no shadow**; parent grid gap tightens to `--sp-8`. Q3 partial ruling 2026-07-16, aligned to Figma node 781-4166; base `.selection-card` keeps its soft shadow |
+| `.selection-card--icon` | Centered icon type-picker (create-product / create-event). **Flat 1px `--border`, no shadow**; parent grid gap tightens to `--sp-8`. Q3 partial ruling 2026-07-16, aligned to Figma node 781-4166; base `.selection-card` keeps its soft shadow. 2026-08-18 起也用於建立項目的內容類型磚（搭 `.selection-grid--tiles`）|
 | `.selection-card--active` | Selected state: tinted bg + double orange outline; recolors child `__tag` |
 | `.selection-card__title` | Required label, `--font-ui` 14px / 500 |
 | `.selection-card__sub` | Optional 12px muted description |
@@ -2598,6 +2608,7 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | default | `.data-list__row` | Hairline `border-bottom: 1px solid var(--border)` |
 | last row | `.data-list__row:last-child` | `border-bottom: 0` |
 | negative amount | `.data-list__amount--neg` | Amount color → `--destructive` |
+| warning amount | `.data-list__amount--warn` | Amount color → `--status-warning-ink`（2026-08-18 補齊 `--neg` 的中間一階；首個消費情境是項目總覽進度摘要的里程碑預計日：逾期紅、今天到期黃、其餘中性） |
 | filtered out | `.data-list__row[hidden]` | `display: none` — must win over the row's own `display: grid`, or a filtered row stays visible (promoted from a pickup-detail.html page-local override, 2026-07-11) |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -2614,6 +2625,10 @@ The shared `transaction-list` renderer (components.js) composes this list with a
 | `.data-list__meta` | 12px `--muted-foreground` secondary line |
 | `.data-list__amount` | Display 15/500, `letter-spacing: -0.3px`, right-aligned |
 | `.data-list__amount--neg` | Switches amount to `--destructive` |
+| `.data-list__amount--warn` | Switches amount to `--status-warning-ink`。消費頁：project-detail 進度摘要的里程碑日期 |
+| `.data-list__thumb` | 縮圖格（2026-08-18）：把清單那一列的圖示格換成一張真的圖（32px，與 `__icon--sm` 同高，換掉它時整列基線不跳）。消費頁：project-detail 總覽的方案摘要 |
+| `.data-list__row--fact` ＋ `.data-list__meta > .ztor-icon` | 事實列：**值在上、標籤在下**（2026-08-18）。值進 `__title`（15px、`--foreground`），標籤進 `__meta`（12px、muted）並自帶一顆與文字同高的行內圖示，左邊那個 32px 圖示框不用。用在「讀者要的是值、標籤只是在說那是什麼」的清單——預設的標籤在上、值在下會把主從讀反。消費頁：project-detail 總覽的項目摘要 |
+| `.data-list__icon--mark`［`--hollow`］ | 標記型的圖示格（2026-08-18）：不畫圓框、不放圖示，只留一顆點（實心 10px／`--hollow` 空心 8px），狀態由既有的 `--success`／`--info`／`--error` 色彩修飾詞決定。給「這一列是時間軸上的一顆節點」那種清單用，讓它與 `progress-timeline` 的軸點讀同一套語彙。消費頁：project-detail 總覽的進度摘要 |
 
 **Token usage** (→ Pillar 2 Role)
 
@@ -2900,9 +2915,9 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 一條由真實日期驅動的垂直時間流，把「答應做什麼、做到哪、跟支持者說了什麼」畫成同一張圖。方向是**未來在上、今天在中、過去在下**（D194 使用者裁決）。版面三欄：日期欄（gutter）／軸線與軸點／內容欄——日期進 gutter 是為了讓軸線保持一條直線，也讓「哪一天發生什麼」在掃視時對得起來。
 
 - **排序只有一個依據就是日期**。沒有手動調整順序這個動作；要換位置就改預計日期。
-- **節點**（`.ptl__node`，里程碑）有軸點、坐在軸上；狀態（`--done` / `--doing` / `--todo` / `--alert`）只染軸點與軸線，節點本身不填色。
+- **節點**（`.ptl__node`，里程碑）有軸點、坐在軸上；狀態（`--done` / `--doing` / `--todo` / `--alert`）只染軸點與軸線。**2026-08-18（A2 改版）軸點不再是圓框＋圖示**，是軸線上的一顆點：里程碑 10px 實心、更新與收合列 8px 空心、今天 12px 品牌色＋光暈；`.ptl__dot .ztor-icon` 一律 `display:none`（JS 仍輸出圖示，在元件層收掉比在五個 render 分支各刪一次安全），節點本身不填色。
 - **子項**（`.ptl__update`，掛在某顆里程碑下的更新）沒有軸點，靠內縮與左側細線表示歸屬；用 `--muted` 淺灰填，**只在比它亮的底上成立**（卡內），這是它要被放進 `.card` 的原因。
-- **今天**（`--today`）是軸上一個真實節點，也是整條軸上唯一會隨情境換說法的位置（`.ptl__lede`）；發文框（`.ptl__composer`）內嵌在它身上。
+- **今天**（`--today`）是軸上一個真實節點，也是整條軸上唯一會隨情境換說法的位置（`.ptl__lede`）；發文框（`.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)））內嵌在它身上。
 
 `--ptl-dot`（28px）與 `--ptl-date`（64px）一次定義軸點直徑、日期欄寬與軸線左邊界，所有列都靠它們對齊。
 
@@ -4039,10 +4054,12 @@ Static; no interactive state.
 - `.ptl` — 容器；定義 `--ptl-dot`（軸點直徑 28px）、`--ptl-date`（日期欄寬 64px）與 `--ptl-gap`
 - `.ptl__node` — 軸上一列；grid 三欄＝日期欄／軸點／內容。`::before` 是連到下一列的軸線
 - `.ptl__date` — 日期欄（gutter）。必須 `align-self: start`，否則日期會置中到整列的中線
-- `.ptl__dot` — 軸點（狀態圖示）
-- `.ptl__body` ＞ `.ptl__head`（`.ptl__name` ＋ `.ptl__tags` ＋ `.ptl__toggle`）／`.ptl__lede`（`__lede-num`）／`.ptl__meta`（`.ptl__meta-item`）／`.ptl__note`（`.ptl__note-body`）／`.ptl__acts`／`.ptl__composer`／`.ptl__updates`
+- `.ptl` — 整條軸。`max-width: 760px`（2026-08-18）：每一列都是「日期＋一行標題」，滿版之後標題與右端動作之間會留下一大片空白
+- `.ptl__dot` — 軸點。長相整組交給 [Progress mark](#progress-mark)（呼叫端掛 `.pmark.pmark--{state}` ＋ 對應字符），本檔只留「這顆點坐在軸上的哪裡」：對齊與 `z-index`（不壓過軸線的話，線會從點的正中間穿過去）。垂直位置由 `calc((--ptl-line - --pmark-size) / 2)` 算出，圓心對到標題中線；今天那顆放大時對齊自動成立。2026-08-18 撤除（墓碑）：`.ptl__node--{done,doing,alert,today,day,start} .ptl__dot` 的顏色／尺寸規則，以及那支只服務軸點的 `ptl-mark` 尺寸變數（改讀 progress-mark 自己的 `--pmark-size`）
+- `.ptl__body` — **不裝卡**（2026-08-18 A2：卡的邊界比軸線還搶眼，而時間軸要說的是「這些事是連著的」）；分行交給一條極淡線（`--border` 的 40%）。＞ `.ptl__head`（`.ptl__late` ＋ `.ptl__name` ＋ `.ptl__vis` ＋ `.ptl__acts`；`.ptl__toggle` 只用在按天收合的 `--day` 列，里程碑不折疊——逾期與名稱同級且排在名稱之前、可見度 12px、動作收成一顆 kebab（`⋯`，`.dropdown` 原生 `<details>`）靠右常駐 55% 不透明度，展開後才是「編輯／刪除」兩個帶文字的選項——2026-08-18 使用者裁決：兩顆圖示鈕常駐時，一條軸掃下來是一整排鉛筆與垃圾桶，它們卻是這條軸上最少用的東西；選單開著時觸發鈕維持全亮，面板 `min-width` 收到 148px）／`.ptl__lede`（`__lede-num`）／`.ptl__meta`（`.ptl__meta-item`）／`.ptl__note`（`.ptl__note-body`）／`.ptl__acts`／`.composer`（見 Composer 元件）／`.ptl__updates`
 - `.ptl__fold` — 被收合鈕收起的那一段；父層帶 `--collapsed` 時整段不顯示
-- `.ptl__composer` ＞ `__composer-head`／`__composer-fields`／`__composer-foot`（`__composer-who`、`__composer-avatar`、`__composer-tools`）— 內嵌發文框
+- 夾帶區已隨發文框 promote 至 [Post composer](#post-composer)（`.post-composer__media`［`--image`／`--video`／`--audio`］），本元件不再定義；軸上只留發文框的落點
+- `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)） ＞ `__composer-head`／`__composer-fields`／`__composer-foot`（`__composer-who`、`__composer-avatar`、`__composer-tools`）— 內嵌發文框
 - `.ptl__update`［`--release`］＞ `.ptl__update-icon`／`__update-title`／`__update-body`／`__update-meta` — 掛在某一列底下的更新
 
 **Variants** — `--todo`／`--doing`／`--done`／`--alert`（里程碑狀態）；`--system`（釘頂的完成作品）／`--today`（今天）／`--start`（軸底的項目建立）／`--day`（按天收合的更新列）；`--collapsed`（收起 `.ptl__fold`）。`.ptl__update--release` 標出「完成作品」那則貼文。
@@ -4057,7 +4074,7 @@ Static; no interactive state.
 
 **狀態色只上在軸點與軸線** — 用 `color-mix` 由 `--status-success`／`--status-info`／`--status-error` 推導；內容區不染色，因為退件理由常常很長，整塊染紅會把一段可讀的文字變成一張警告圖。紅色墨走 `--destructive-ink`（站上唯一的「小字可讀紅」，見 `_tokens.css` 的推導註記）。
 
-**Surface** — 節點本身不填色，白底與灰底都成立。`.ptl__update` 與 `.ptl__composer` 有淺灰填（`--muted`），只在比它亮的底上成立，這是它們被放進 `.card` 的原因。發文框內的 `.select--bare` hover 改用 `--accent`——它預設的 `--muted` hover 跟發文框同色會整顆消失（Surface-Layer Contrast）。
+**Surface** — 節點本身不填色，白底與灰底都成立。`.ptl__update` 與 `.post-composer`（2026-08-18 promote 至 [post-composer.css](./ds-components/post-composer.css)） 有淺灰填（`--muted`），只在比它亮的底上成立，這是它們被放進 `.card` 的原因。發文框內的 `.select--bare` hover 改用 `--accent`——它預設的 `--muted` hover 跟發文框同色會整顆消失（Surface-Layer Contrast）。
 
 **Dependencies** — `.badge`／`.btn`（`--ghost`／`--icon`／`--primary`／`--outline`，皆 `--sm`）／`.input`／`.textarea`／`.select`（`--bare`）／`.ztor-icon`。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆**不另存狀態**、直接讀送審件，所以總覽、進度與作品三處講的一定是同一件事。
 
@@ -5189,10 +5206,11 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 - `.zselect__native` — 原生 `<select>` 仍留在 DOM 當資料來源（`position:absolute` + `clip`，非 `display:none`，否則會退出可提交欄位與量測）
 - `.zselect__caret` — 展開時旋轉 180°
 - `.zselect__option` / `.zselect__option--active` / `[aria-selected="true"]` — 選項列，鍵盤與滑鼠共用同一種高亮
-- `.zselect__check` — 目前選中的打勾（永遠佔位，避免選中時文字跳動）
+- `.zselect__check` — 目前選中的打勾。2026-08-18 起在**列尾**（`margin-left:auto`）：擺列首時每一列都得先跨過一個多數時候是空的欄位才讀到文字。仍永遠佔位，選中不會讓文字左右跳動
+- `.zselect__lead` / `.zselect__icon` — 選項圖示（2026-08-18）。`<option data-icon="…">` 時，觸發鈕（`__lead`）與面板的每一列都在文字前放同一顆 20px 中性灰圖示；沒有該屬性的下拉整欄 `hidden`、版面一格不動。有圖示的選項欄距由 10 收成 8、上下內距 9→10
 - `.zselect__group` — `<optgroup>` 群組標題（全大寫小標）
 
-**Dependencies** — `js/zselect.js`（執行期把 `<select class="select">` 升級成觸發鈕＋自繪 listbox；原生 select 留著照樣派發 `change`/`input`）；面板語彙抄自 `.dropdown__menu`（`--card` 底、`--radius-lg`、`--shadow-float`），非硬性 import。2026-07-28 修過 double-scroll-bar bug：`.zselect__native` 用 `position:absolute` 卻沒配 `top/left`，導致它停在文件流原始位置、把捲動容器撐高出一條看不見的捲軸；補上 `top:0;left:0` 解決，仍保持 `absolute`（非 `display:none`）以維持可提交／可量測。**2026-08-10 起原 `<select>` 的 `data-view-safe` 會一起搬到觸發鈕**：觸發鈕本體是 `<button>`，會被 `shared.css` 那條「`[data-mode="view"]` 底下藏掉所有按鈕」的規則掃到——那條規則針對的是動作鈕，表單控件在唯讀面板裡仍要看得見選到的值。所以坐在可切檢視／編輯的面板裡的 select 要自己標 `data-view-safe`（首個消費者：`project-detail.html` 公開資訊的年齡分級）；不標的維持原行為。
+**Dependencies** — `js/zselect.js`（執行期把 `<select class="select">` 升級成觸發鈕＋自繪 listbox；原生 select 留著照樣派發 `change`/`input`）；面板語彙抄自 `.dropdown__menu`（`--card` 底、`--radius-lg`、`--shadow-float`），非硬性 import。2026-07-28 修過 double-scroll-bar bug：`.zselect__native` 用 `position:absolute` 卻沒配 `top/left`，導致它停在文件流原始位置、把捲動容器撐高出一條看不見的捲軸；補上 `top:0;left:0` 解決，仍保持 `absolute`（非 `display:none`）以維持可提交／可量測。**2026-08-10 起原 `<select>` 的 `data-view-safe` 會一起搬到觸發鈕**：觸發鈕本體是 `<button>`，會被 `shared.css` 那條「`[data-mode="view"]` 底下藏掉所有按鈕」的規則掃到——那條規則針對的是動作鈕，表單控件在唯讀面板裡仍要看得見選到的值。所以坐在可切檢視／編輯的面板裡的 select 要自己標 `data-view-safe`（首個消費者：`project-detail.html` 公開資訊的年齡分級）；不標的維持原行為。 **2026-08-18 兩項**：(1) 支援選項圖示——原生 `<option>` 標 `data-icon` ＋ icon registry 的鍵，腳本在面板渲染與 `syncLabel()` 兩處各畫一次、進 DOM 後呼叫 `ztorIcons.applyIcons()`。收合與展開必須畫同一顆——選完之後圖示消失會讀成「選到的不是剛剛那一個」。圖示一律中性灰、不隨選取換色（選取由勾號與粗體承擔）。首個消費者：`create-project.html` 的內容類型（與閘門第二關那組磚同一份 `CATS`、同一顆圖示）。(2) 勾號移到列尾（全站行為，非單頁覆寫）。
 
 **Consumers** — `ip-bank-reporting.html`、`media-vault.html`、`create-project.html`、`create-auction.html`、`order-detail.html`、`projects.html`、`design-system.html`、`ip-market.html`、`project-detail.html`、`earnings.html`、`create-event.html`、`settings.html`、`admin-ip-bank-entry.html`、`brand-campaigns.html`、`create-product.html`、`product-detail.html`、`admin-platform-fees.html`、`store-settings.html`、`fans-crm.html`（19 頁，全站消費範圍最廣的元件）。
 
@@ -5206,12 +5224,13 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 
 <!-- 升級後（js/zselect.js 於執行期產生的 DOM）-->
 <button class="zselect__trigger select" type="button" aria-expanded="false">
+  <span class="zselect__lead" hidden><!-- 原 option 標了 data-icon 才長出來 --></span>
   <span class="zselect__label">UTC+8 Taipei</span>
   <svg class="zselect__caret"><!-- chevron --></svg>
 </button>
 <div class="zselect__panel">
   <div class="zselect__option" aria-selected="true">
-    <span class="zselect__check">✓</span>UTC+8 Taipei
+    UTC+8 Taipei<span class="zselect__check">✓</span>
   </div>
 </div>
 ```

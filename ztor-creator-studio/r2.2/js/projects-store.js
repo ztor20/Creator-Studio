@@ -75,7 +75,7 @@
       cover: IMG + 'f-i-am-speed-card.webp', poster: IMG + 'f-i-am-speed.webp',
       desc: { en: 'A farm kid muscles his way into motor racing — adapted from Noboru Rokuda\'s classic manga.', zh: '改編自六田登經典漫畫，農村青年憑勇氣闖入賽車世界。' },
       meta: { en: '$8,420 of $15,000 · 134 backers · 21 days left', zh: '$8,420 / $15,000 · 134 位支持者 · 剩 21 天' },
-      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'Co-creation May 18 – Jul 06, 2026', zh: '共創期間 2026/05/18 – 07/06' } },
+      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'May 18 – Jul 06, 2026', zh: '2026/05/18 – 07/06' } },
       list: { goal: { en: '$8,420 / $15,000', zh: '$8,420 / $15,000' }, left: { en: '21 days left', zh: '剩 21 天' } },
       bar: { pct: 56 }, todo: { en: 'Link IP rental', zh: '綁定 IP 租借' }
     },
@@ -87,7 +87,7 @@
       cover: IMG + 'adia-chan-card.webp', poster: IMG + 'adia-chan.webp',
       desc: { en: 'Cantopop classics re-recorded with a new string arrangement, including live session takes.', zh: '經典重唱 × 全新弦樂編制，收錄 Live Session 現場版本。' },
       meta: { en: '$10,000 funded · 176 backers · Now released', zh: '$10,000 已募足 · 176 位支持者 · 現已上線' },
-      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Jun 01 – Sep 01, 2026 · Released', zh: '共創期間 2026/06/01 – 09/01 · 已上線' } },
+      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Jun 01 – Sep 01, 2026 · Released', zh: '2026/06/01 – 09/01 · 已上線' } },
       list: { goal: { en: '$10,000 / $10,000', zh: '$10,000 / $10,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -101,7 +101,7 @@
       cover: IMG + 'mong-kok-shootout-card.webp', poster: IMG + 'shuangyan-zhijian.webp',
       desc: { en: 'A rookie negotiator has 24 hours to close a kidnapping — against the mentor who vanished ten years ago.', zh: '一場 24 小時內必須結案的綁架案，菜鳥談判專家對上失蹤十年的師父。' },
       meta: { en: '$50,000 funded · 612 backers · Now streaming', zh: '$50,000 已募足 · 612 位支持者 · 現已上線' },
-      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Feb 10 – May 10, 2026 · Released', zh: '共創期間 2026/02/10 – 05/10 · 已上線' } },
+      fund: { raised: '$50,000', goal: '$50,000', backers: '612', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Feb 10 – May 10, 2026 · Released', zh: '2026/02/10 – 05/10 · 已上線' } },
       list: { goal: { en: '$50,000 / $50,000', zh: '$50,000 / $50,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -125,12 +125,12 @@
       bar: { pct: 62 }, todo: { en: 'Confirm collector edition quote', zh: '確認典藏版製作報價' }
     },
     {
-      /* 2026-08-17 新增：預購 × 已成立 × 影視。補這一筆的原因是那件被退回的送審作品
+      /* 2026-08-17 新增：預購 × 已成功 × 影視。補這一筆的原因是那件被退回的送審作品
          （work-review-store 的 wr-1003）原本掛在「進行中」的預購項目上，而送審的前置
-         條件是項目已成立——同一頁因此一邊讓人按「修改後重送」、一邊說要等項目成立
+         條件是項目已成功——同一頁因此一邊讓人按「修改後重送」、一邊說要等項目成功
          （矩陣盤點落差 L5）。送審件改掛這一筆，前置條件就成立了。
-         連帶補上兩個原本沒有樣本的組合：預購 × 已成立（Gary Lin 這一批）、
-         以及「作品被退件 ＋ 項目已成立」。 */
+         連帶補上兩個原本沒有樣本的組合：預購 × 已成功（Gary Lin 這一批）、
+         以及「作品被退件 ＋ 項目已成功」。 */
       id: 'north-point-rain', created: '2025/11/18', fundFrom: '2026/01/12', name: '北角的雨', nameEn: "Rain Over North Point",
       cat: 'movie', icon: 'film', type: 'preorder', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'ruguo-wo-keyi-dongmian.webp', poster: IMG + 'ruguo-wo-keyi-dongmian.webp',
@@ -223,22 +223,22 @@
       id: 'pirate-queen-s2', created: '2026/02/01', fundFrom: '2026/03/01', name: '海上霸姬 第二季', nameEn: "Pirate Queen — Season Two",
       cat: 'series', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'pirate-queen-zheng-yi-sao-card.webp', poster: IMG + 'yangtai-shang-de-huai-nuhai.webp',
-      desc: { en: 'The second season — goal met and now in production; backers are waiting on delivery.', zh: '第二季，共創已成立、正在製作中；支持者尚未收到交付。' },
+      desc: { en: 'The second season — goal met and now in production; backers are waiting on delivery.', zh: '第二季，共創已成功、正在製作中；支持者尚未收到交付。' },
       meta: { en: '$80,000 of $80,000 reached · in production', zh: '$80,000 / $80,000 已達標 · 製作中' },
-      fund: { raised: '$80,000', goal: '$80,000', backers: '1,020', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Mar 01 – Apr 30, 2026', zh: '共創期間 2026/03/01 – 04/30' } },
+      fund: { raised: '$80,000', goal: '$80,000', backers: '1,020', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Mar 01 – Apr 30, 2026', zh: '2026/03/01 – 04/30' } },
       list: { goal: { en: '$80,000 / $80,000', zh: '$80,000 / $80,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
     },
 
     {
-      /* default persona 的「已成立 × 影視 × 還沒送過審」樣本（2026-08-07 補）。
+      /* default persona 的「已成功 × 影視 × 還沒送過審」樣本（2026-08-07 補）。
          上一筆 pirate-queen-s2 被審核佇列的審核中種子佔走，理由同 nick-r2-film 的檔頭說明。 */
       id: 'kowloon-night-cut', created: '2026/01/09', fundFrom: '2026/02/20', name: '九龍夜行 導演剪輯版', nameEn: "Kowloon After Dark — Director's Cut",
       cat: 'movie', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'dragon-tiger-gate-kowloon-night-card.webp', poster: IMG + 'anyong-qingshi.webp',
-      desc: { en: 'Twenty-two minutes back in, a new score, and the ending test audiences never saw — goal met, mastering now.', zh: '補回二十二分鐘、重配配樂、換回試片場沒看過的結局；共創已成立，正在做母帶。' },
+      desc: { en: 'Twenty-two minutes back in, a new score, and the ending test audiences never saw — goal met, mastering now.', zh: '補回二十二分鐘、重配配樂、換回試片場沒看過的結局；共創已成功，正在做母帶。' },
       meta: { en: '$36,000 of $36,000 reached · mastering', zh: '$36,000 / $36,000 已達標 · 母帶製作中' },
-      fund: { raised: '$36,000', goal: '$36,000', backers: '540', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Feb 20 – Apr 05, 2026', zh: '共創期間 2026/02/20 – 04/05' } },
+      fund: { raised: '$36,000', goal: '$36,000', backers: '540', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Feb 20 – Apr 05, 2026', zh: '2026/02/20 – 04/05' } },
       list: { goal: { en: '$36,000 / $36,000', zh: '$36,000 / $36,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
     },
@@ -266,20 +266,20 @@
       cover: IMG + 'mong-kok-shootout-card.webp', poster: IMG + 'shuangyan-zhijian.webp',
       desc: { en: 'Three generations of a ferry family, told across one winter — approved by review, waiting on the release date.', zh: '一個渡輪世家的三代人，故事收在同一個冬天；審核已通過，正在等上映日。' },
       meta: { en: '$44,000 of $44,000 reached · approved, goes live Dec 18', zh: '$44,000 / $44,000 已達標 · 審核已過，12/18 上映' },
-      fund: { raised: '$44,000', goal: '$44,000', backers: '705', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Feb 18 – Apr 02, 2026', zh: '共創期間 2026/02/18 – 04/02' } },
+      fund: { raised: '$44,000', goal: '$44,000', backers: '705', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Feb 18 – Apr 02, 2026', zh: '2026/02/18 – 04/02' } },
       list: { goal: { en: '$44,000 / $44,000', zh: '$44,000 / $44,000' }, left: { en: 'Goes live Dec 18', zh: '12/18 上映' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Line up the release-day post', zh: '準備上映當天的貼文' }
     },
     {
-      /* 補「共創 × 已成立 × 影視 × 上映日已過的送審件」——原本站上每一件待審／審核中的
+      /* 補「共創 × 已成功 × 影視 × 上映日已過的送審件」——原本站上每一件待審／審核中的
          送審件上映日都在未來，「審核通過而且上映日已到 ⇒ 直接轉已上線」這條路徑因此
          走不到、無從驗證。對應送審件 wr-1102（待審核、上映日 2026/08/09）。 */
       id: 'victoria-noir', created: '2026/03/06', fundFrom: '2026/04/01', name: '維多利亞的暗面', nameEn: "Victoria Noir",
       cat: 'movie', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'anyong-qingshi.webp', poster: IMG + 'anyong-qingshi.webp',
-      desc: { en: 'A late-night radio host starts reading listeners’ confessions on air — goal met, sent for review.', zh: '深夜電台主持人開始在節目上唸聽眾的告解；共創已成立，作品已送審。' },
+      desc: { en: 'A late-night radio host starts reading listeners’ confessions on air — goal met, sent for review.', zh: '深夜電台主持人開始在節目上唸聽眾的告解；共創已成功，作品已送審。' },
       meta: { en: '$28,000 of $28,000 reached · in review', zh: '$28,000 / $28,000 已達標 · 審核中' },
-      fund: { raised: '$28,000', goal: '$28,000', backers: '430', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Apr 01 – May 20, 2026', zh: '共創期間 2026/04/01 – 05/20' } },
+      fund: { raised: '$28,000', goal: '$28,000', backers: '430', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Apr 01 – May 20, 2026', zh: '2026/04/01 – 05/20' } },
       list: { goal: { en: '$28,000 / $28,000', zh: '$28,000 / $28,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Waiting on platform review', zh: '等待平台審核' }
     },
@@ -398,7 +398,7 @@
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
       desc: { en: 'The fifth studio album — a ten-track rock concept record. Deluxe vinyl and signed edition crowdfunding.', zh: '第五張錄音室專輯，十軌搖滾概念作；豪華黑膠與親簽版共創。' },
       meta: { en: '$88,600 of $120,000 · 2,140 backers · 20 days left', zh: '$88,600 / $120,000 · 2,140 位支持者 · 剩 20 天' },
-      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Co-creation Sep 01 – Oct 30, 2025', zh: '共創期間 2025/09/01 – 10/30' } },
+      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Sep 01 – Oct 30, 2025', zh: '2025/09/01 – 10/30' } },
       list: { goal: { en: '$88,600 / $120,000', zh: '$88,600 / $120,000' }, left: { en: '20 days left', zh: '剩 20 天' } },
       bar: { pct: 74 }, todo: { en: 'Approve vinyl test pressing', zh: '確認黑膠試壓樣' }
     },
@@ -413,46 +413,46 @@
       cover: IMG + 'nick-sdfs.jpg', poster: IMG + 'nick-sdfs.jpg',
       desc: { en: 'A crowdfunded cinematic MV shot on 35mm — backers funded the full one-take production.', zh: '共創拍攝的電影感 MV，35mm 底片一鏡到底；製作費由支持者共同促成。' },
       meta: { en: '$45,000 funded · 980 backers · Now streaming', zh: '$45,000 已募足 · 980 位支持者 · 現已上線' },
-      fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Co-creation Jul 01 – Aug 15, 2024 · Released', zh: '共創期間 2024/07/01 – 08/15 · 已上線' } },
+      fund: { raised: '$45,000', goal: '$45,000', backers: '980', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Jul 01 – Aug 15, 2024 · Released', zh: '2024/07/01 – 08/15 · 已上線' } },
       list: { goal: { en: '$45,000 / $45,000', zh: '$45,000 / $45,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
 
     {
-      /* 共創已成立、尚未交付的影視樣本（2026-08-07 補）。
-         補這一筆的原因：作品上架流程（publish-work.html）只對「已成立 × 影視家族」開放，
+      /* 共創已成功、尚未交付的影視樣本（2026-08-07 補）。
+         補這一筆的原因：作品上架流程（publish-work.html）只對「已成功 × 影視家族」開放，
          而 nick 是站上預設 persona，原本它名下唯一的 succeeded 是黑膠專輯（音樂家族）——
          不切 persona 就點不到任何一個能真的走進上架流程的項目。default persona 那邊
          對應的樣本是 pirate-queen-s2。 */
       id: 'nick-lrh-doc', created: '2025/10/12', fundFrom: '2025/11/10', name: 'LOVE·RAGE·HOPE 巡演紀錄片', nameEn: "LOVE·RAGE·HOPE — Tour Documentary",
       cat: 'movie', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'nick-lrh-tour.jpg', poster: IMG + 'nick-lrh-tour.jpg',
-      desc: { en: 'A feature-length documentary following the Live House tour — goal met, now in post-production; backers are waiting on the release.', zh: '跟拍 Live House 巡演的長片紀錄片；共創已成立、正在後期，支持者尚未收到交付。' },
+      desc: { en: 'A feature-length documentary following the Live House tour — goal met, now in post-production; backers are waiting on the release.', zh: '跟拍 Live House 巡演的長片紀錄片；共創已成功、正在後期，支持者尚未收到交付。' },
       meta: { en: '$62,000 of $62,000 reached · in post-production', zh: '$62,000 / $62,000 已達標 · 後期製作中' },
-      fund: { raised: '$62,000', goal: '$62,000', backers: '1,480', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Nov 10 – Dec 24, 2025', zh: '共創期間 2025/11/10 – 12/24' } },
+      fund: { raised: '$62,000', goal: '$62,000', backers: '1,480', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Nov 10 – Dec 24, 2025', zh: '2025/11/10 – 12/24' } },
       list: { goal: { en: '$62,000 / $62,000', zh: '$62,000 / $62,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
     },
 
     {
-      /* 「已成立 × 影視 × 還沒送過審」的樣本（2026-08-07 補）。
+      /* 「已成功 × 影視 × 還沒送過審」的樣本（2026-08-07 補）。
          上一筆 nick-lrh-doc 被審核佇列的待審核種子佔走了——已經送出去的作品不該再送一次，
          所以它的「完成作品」選項是灰的。兩個 persona 各留一筆沒有送審紀錄的，
          創作者從頭發起一次上架的路徑才走得到（default persona 的對位樣本是 kowloon-night-cut）。 */
       id: 'nick-r2-film', created: '2025/06/18', fundFrom: '2025/07/15', name: 'REALIVE (R2) 演唱會電影', nameEn: "REALIVE (R2) — The Concert Film",
       cat: 'movie', icon: 'film', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'nick-r2-special.jpg', poster: IMG + 'nick-r2-special.jpg',
-      desc: { en: 'The R2 special edition night, cut into a feature — goal met, final grade in progress; backers are waiting on the release.', zh: '把 R2 特仕版那一夜剪成長片；共創已成立、正在調光，支持者尚未收到交付。' },
+      desc: { en: 'The R2 special edition night, cut into a feature — goal met, final grade in progress; backers are waiting on the release.', zh: '把 R2 特仕版那一夜剪成長片；共創已成功、正在調光，支持者尚未收到交付。' },
       meta: { en: '$54,000 of $54,000 reached · in post-production', zh: '$54,000 / $54,000 已達標 · 後期製作中' },
-      fund: { raised: '$54,000', goal: '$54,000', backers: '1,120', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Jul 15 – Sep 12, 2025', zh: '共創期間 2025/07/15 – 09/12' } },
+      fund: { raised: '$54,000', goal: '$54,000', backers: '1,120', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Jul 15 – Sep 12, 2025', zh: '2025/07/15 – 09/12' } },
       list: { goal: { en: '$54,000 / $54,000', zh: '$54,000 / $54,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Publish the finished film', zh: '上架完成的作品' }
     },
 
     {
-      /* 預購 × 影視 × 已成立的樣本（2026-08-07 補）。上架流程的前置條件看的是項目狀態
-         與作品家族、不看發行模式，所以預購走到已成立時跟共創一樣能發起上架——但站上
-         原本沒有任何一筆預購影片走到已成立（唯一的預購影片停在進行中），這條路徑因此
+      /* 預購 × 影視 × 已成功的樣本（2026-08-07 補）。上架流程的前置條件看的是項目狀態
+         與作品家族、不看發行模式，所以預購走到已成功時跟共創一樣能發起上架——但站上
+         原本沒有任何一筆預購影片走到已成功（唯一的預購影片停在進行中），這條路徑因此
          無從驗證。預購沒有分潤名額，方案必含作品本身（D167）。 */
       id: 'nick-nsddd-film', created: '2025/12/02', fundFrom: '2026/01/08', name: '什麼都不必說 短片版', nameEn: "Nothing Left to Say — The Short Film",
       cat: 'short', icon: 'film', type: 'preorder', status: 'succeeded', goalMet: true, delivered: false,
@@ -487,7 +487,7 @@
       cover: IMG + 'nick-realive.jpg', poster: IMG + 'nick-realive.jpg',
       desc: { en: 'The REALIVE EP tied to the arena tour — five tracks including GET REAL and 走三關.', zh: '與小巨蛋巡演同名的 EP，收錄 GET REAL、走三關等五軌。' },
       meta: { en: '$60,000 of $60,000 reached · delivered', zh: '$60,000 / $60,000 已達標 · 已交付' },
-      fund: { raised: '$60,000', goal: '$60,000', backers: '1,580', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Jan 20 – Feb 10, 2023', zh: '共創期間 2023/01/20 – 02/10' } },
+      fund: { raised: '$60,000', goal: '$60,000', backers: '1,580', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Jan 20 – Feb 10, 2023', zh: '2023/01/20 – 02/10' } },
       list: { goal: { en: '$60,000 / $60,000', zh: '$60,000 / $60,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Post a backer update', zh: '發布支持者進度更新' }
     },
@@ -559,9 +559,9 @@
       id: 'nick-lrh-vinyl', created: '2025/10/01', fundFrom: '2025/11/01', name: 'LOVE RAGE HOPE 黑膠典藏版', nameEn: "LOVE RAGE HOPE — Vinyl Collector’s Edition",
       cat: 'album', icon: 'music', type: 'fund', status: 'succeeded', goalMet: true, delivered: false,
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
-      desc: { en: 'The deluxe vinyl pressing — funded and at the plant; backers have not received it yet.', zh: '豪華黑膠壓片版，共創已成立、正在壓片；支持者尚未收到。' },
+      desc: { en: 'The deluxe vinyl pressing — funded and at the plant; backers have not received it yet.', zh: '豪華黑膠壓片版，共創已成功、正在壓片；支持者尚未收到。' },
       meta: { en: '$52,000 of $50,000 reached · at the pressing plant', zh: '$52,000 / $50,000 已達標 · 壓片中' },
-      fund: { raised: '$52,000', goal: '$50,000', backers: '870', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Co-creation Nov 01 – Dec 15, 2025', zh: '共創期間 2025/11/01 – 12/15' } },
+      fund: { raised: '$52,000', goal: '$50,000', backers: '870', pct: 100, left: { en: 'Co-creation closed', zh: '共創已結束' }, period: { en: 'Nov 01 – Dec 15, 2025', zh: '2025/11/01 – 12/15' } },
       list: { goal: { en: '$52,000 / $50,000', zh: '$52,000 / $50,000' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm vinyl shipping window', zh: '確認黑膠出貨時程' }
     },
@@ -638,7 +638,7 @@
       cover: IMG + 'nick-r2.jpg', poster: IMG + 'nick-r2.jpg',
       desc: { en: 'Four free street shows funded by fans — every tier puts one more stage on the map.', zh: '由粉絲共創的四場免費街頭演出；每多一個方案，地圖上就多一個舞台。' },
       meta: { en: '$26,800 of $48,000 · 640 backers · 17 days left', zh: '$26,800 / $48,000 · 640 位支持者 · 剩 17 天' },
-      fund: { raised: '$26,800', goal: '$48,000', backers: '640', pct: 56, left: { en: '17 days left', zh: '剩餘 17 天' }, period: { en: 'Co-creation Jun 15 – Aug 31, 2026', zh: '共創期間 2026/06/15 – 08/31' } },
+      fund: { raised: '$26,800', goal: '$48,000', backers: '640', pct: 56, left: { en: '17 days left', zh: '剩餘 17 天' }, period: { en: 'Jun 15 – Aug 31, 2026', zh: '2026/06/15 – 08/31' } },
       list: { goal: { en: '$26,800 / $48,000', zh: '$26,800 / $48,000' }, left: { en: '17 days left', zh: '剩 17 天' } },
       bar: { pct: 56 }, todo: { en: 'Confirm the four street permits', zh: '確認四場路權' }
     },

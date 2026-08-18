@@ -1,0 +1,102 @@
+/* ============================================================
+   Step list · 階段清單（2026-08-18）
+
+   一串「已經走完／正在做／還沒到」的步驟，每一列自己說出它在哪一段。
+   與 progress-timeline 的差別：那條軸是**時間**（有日期欄、有今天、可以往回捲），
+   這一份是**狀態**（沒有時間軸，只回答走到第幾步）。所以它適合摘要用的欄位，
+   時間軸適合完整的進度分頁。
+
+   Anatomy
+     .step-list
+       .step-list__row  [--done | --current | --alert | --todo]
+         .pmark --md        狀態記號（與時間軸共用，見 progress-mark.css）
+         .step-list__body   .step-list__title ＋ .step-list__meta
+
+   狀態的份量分兩層：記號的顏色由 .pmark 負責（灰＝還沒到、綠＝已完成、紅＝逾期、
+   藍＝進行中），這裡再把**整列**跟著染或壓淡——記號小、色塊也小，只染記號會被略過：
+     --current  整列連標題一起上 info 色
+     --alert    同上，走 error 色（逾期）
+     --todo     整列壓到 55%，還沒到，看得到但不搶注意力
+   ============================================================ */
+
+.step-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-list__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  /* 10 → 14px（2026-08-18 使用者：「高度大一階」）：列高 42 → 50px。這一份是總覽裡
+     可以動手的清單（每一列 hover 會長出自己的「發布更新」），列太薄時滑鼠掃過去
+     底色一閃即逝、按鈕來不及被看見；加高之後每一列才像一個可以停留的目標。 */
+  padding: var(--sp-14) var(--sp-12);
+  margin: 0 calc(var(--sp-12) * -1);
+  border-radius: var(--radius-lg);
+}
+/* 一列是可以動手的東西（2026-08-18 使用者裁決）：hover 給一層底色，右端換成那一顆
+   里程碑自己的「發布更新」。負的 margin 讓底色往兩側各長回 10px，這樣列的內容邊界
+   仍然對齊卡的其他區塊，只有底色比文字寬一點——不然 hover 起來像文字被框住。 */
+.step-list__row--interactive { cursor: default; }
+.step-list__row--interactive:hover,
+.step-list__row--interactive:focus-within { background: var(--accent); }
+/* 動作預設不佔位、也不吃點擊：它與逾期標籤共用右端那一格，hover 時互換。 */
+.step-list__act {
+  position: absolute;
+  right: var(--sp-12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration) var(--easing);
+}
+.step-list__row--interactive:hover .step-list__act,
+.step-list__act:focus-visible { opacity: 1; pointer-events: auto; }
+.step-list__row--interactive:hover .step-list__end { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .step-list__act { transition-duration: 1ms; } }
+
+/* 2026-08-18 撤除（墓碑，使用者裁決方案 B）：.step-list__mark 與它的四個狀態規則
+   （--done 實心綠圈打勾／--current 2px 藍環／--alert 2px 紅環／--todo 虛線灰環淡勾）。
+   記號整組交給 .pmark（ds-components/progress-mark.css）——這一份與進度分頁的時間軸
+   共用同一套語言，只差尺寸（這裡用 --md 20px，軸上用 --sm 10px）。此前兩處各有一套
+   畫法，同一顆里程碑在兩個畫面上要用兩種讀法，而它們常常前後腳出現。
+   呼叫端改成 `<span class="pmark pmark--md pmark--alert">`。 */
+
+/* 一列一行（2026-08-18 使用者裁決）：名稱與日期並排、不換行，逾期改成靠右的標籤。
+   兩行版本讀起來是「一顆里程碑佔兩行」，四顆就是八行；這一份是摘要，要能一眼掃完。
+   ✝ 墓碑 · .step-list__sub（第二行的副標，曾放逾期／日期／可見度）。 */
+.step-list__body {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+  flex: 1 1 auto;
+}
+.step-list__title {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.step-list__meta {
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  flex: none;
+  white-space: nowrap;
+}
+/* 靠右那一格：逾期的標籤。它是這一列唯一需要被找到的東西，右端是掃視時的第二個
+   停留點（第一個是記號），比夾在文字中間好認。 */
+.step-list__end { margin-left: auto; flex: none; }
+
+/* 正在做的那一顆整列上色（參考設計的做法）：它是這一串裡唯一需要被找到的東西，
+   只染記號不夠——記號小、色塊也小，掃過去容易略過。 */
+.step-list__row--current .step-list__title,
+.step-list__row--current .step-list__meta { color: var(--status-info-ink); }
+.step-list__row--alert .step-list__title { color: var(--destructive-ink); }
+
+/* 還沒到的壓淡。用 opacity 而不是換色：換色要為標題與副標各挑一次，壓淡是同一個
+   動作作用在整列上，狀態一多也不會長出第二套灰階。 */
+.step-list__row--todo { opacity: .55; }

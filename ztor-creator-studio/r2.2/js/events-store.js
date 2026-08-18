@@ -205,8 +205,15 @@
       start: '17:00',
       end: '',
       doors: '',
-      capacity: 0,                           // 0 = unlimited（節慶場不由本方售票）
-      tiers: [],
+      /* 2026-08-18 修正（使用者：「是發布活動前至少要有一張票喔」）：這一筆原本是
+         `tiers: []` ＋ `capacity: 0`，用來示範「已排程但還不能開賣」。但票種是**建立流程的
+         必填**（規格 5.1.6.1「至少 1 種」），走完流程才會有已排程這個狀態——沒有票種的
+         已排程活動在產品上生不出來，那是一份自相矛盾的示範資料。要示範「還缺東西」
+         該用草稿，不是已排程。 */
+      capacity: 1200,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 600, qty: 1200, sold: 0 }
+      ],
       sold: 0,
       revenue: 0,
       status: 'scheduled',
@@ -328,8 +335,11 @@
       start: '18:30',
       end: '',
       doors: '',
-      capacity: 0,
-      tiers: [],
+      /* 2026-08-18 修正：同 taiwan-fest-kenting——已排程代表建立流程已走完，而票種是流程的必填。 */
+      capacity: 2000,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 500, qty: 2000, sold: 0 }
+      ],
       sold: 0,
       revenue: 0,
       status: 'scheduled',
@@ -353,8 +363,9 @@
       end: '',
       doors: '',
       capacity: 0,
-      /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範——
-         其餘準備中的活動票種仍為空，示範的是「還不能開賣、缺什麼直接列出來」那一半。 */
+      /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範。
+         （2026-08-18 更正：原本這裡還寫著「其餘準備中的活動票種仍為空」——那批已於同日
+         補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
       tiers: [
         { id: 'tier-early', name: 'Early bird', price: 800, qty: 400, sold: 0 },
         { id: 'tier-ga',    name: 'General admission', price: 1200, qty: 1600, sold: 0 }

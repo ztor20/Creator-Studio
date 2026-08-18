@@ -122,7 +122,7 @@
         <button type="button" class="segmented__btn" data-status="draft">草稿</button>
         <button type="button" class="segmented__btn" data-status="scheduled">準備中</button>
         <button type="button" class="segmented__btn" data-status="published">進行中</button>
-        <button type="button" class="segmented__btn" data-status="succeeded">已成立</button>
+        <button type="button" class="segmented__btn" data-status="succeeded">已成功</button>
         <button type="button" class="segmented__btn segmented__btn--active" data-status="live">已上線</button>
         <button type="button" class="segmented__btn" data-status="cancelled">已取消</button>
       </div>
@@ -226,7 +226,7 @@
    demo 若跟本尊不一致，比較就沒有意義。
    ───────────────────────────────────────────────────────────── */
 const MODE   = { fund: '共創', preorder: '預購', 'go-live': '直接發佈' };
-const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成立', live: '已上線', cancelled: '已取消' };
+const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成功', live: '已上線', cancelled: '已取消' };
 const FAMILY = { film: '影片', music: '音樂', other: '其他' };
 const REVIEW = {
   none: '無送審紀錄', draft: '草稿', pending: '待審核', inreview: '審核中',
@@ -401,7 +401,7 @@ function progressSections() {
   if (!hasRec()) {
     s.push(status === 'succeeded'
       ? { n: '完成作品（節點）', d: '空心圓 ＋「作品做完了就從這裡送審」，主動作是「送作品上架」', f: '項目總覽（完成作品送審狀態）' }
-      : { n: '完成作品（節點）', d: '空心圓 ＋「項目成立後才能上架作品」，動作停用', f: '項目總覽（完成作品送審狀態）' });
+      : { n: '完成作品（節點）', d: '空心圓 ＋「項目成功後才能上架作品」，動作停用', f: '項目總覽（完成作品送審狀態）' });
   } else if (review === 'rejected') {
     s.push({ n: '完成作品（節點）· 審核不通過', d: '紅色警示 ＋ 退件理由全文 ＋ 退件時間，主動作是「修改後重送」', f: '項目總覽＋作品' });
   } else if (review === 'approved-wait') {
@@ -488,7 +488,7 @@ function reachability() {
   if (review === 'draft') out.push('作品審核「草稿」在原型無法到達：送審一律直接寫成待審核（矩陣落差 L10）');
   if (family !== 'film' && hasRec()) out.push('非影片家族不經平台審核閘，不會有送審件掛在' + FAMILY[family] + '家族的項目上');
   if (hasRec() && mode === 'go-live' && status === 'draft') out.push('直接發佈的送審發生在建立流程送出的那一刻，送出後狀態就離開草稿了');
-  if (hasRec() && mode !== 'go-live' && ['draft', 'published', 'cancelled'].indexOf(status) >= 0) out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成立時開（規格 §2.2.9）');
+  if (hasRec() && mode !== 'go-live' && ['draft', 'published', 'cancelled'].indexOf(status) >= 0) out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成功時開（規格 §2.2.9）');
   if (review === 'approved-live' && status !== 'live') out.push('審核通過而且上映日已到會把項目推到已上線，停不在' + STATUS[status]);
   if (review === 'approved-wait' && status !== 'scheduled') out.push('審核通過但上映日還沒到會把項目留在準備中，停不在' + STATUS[status]);
   return out;
@@ -577,7 +577,7 @@ function syncCtl() {
     b.title = blocked || '';
     b.classList.toggle('segmented__btn--active', b.dataset.status === status);
   });
-  if (mode === 'go-live') notes.push('直接發佈停用「進行中」與「已成立」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
+  if (mode === 'go-live') notes.push('直接發佈停用「進行中」與「已成功」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
   document.querySelectorAll('#ctl-review [data-review]').forEach(b => {
     const blocked = family !== 'film' && b.dataset.review !== 'none';
     b.disabled = blocked;
@@ -636,12 +636,12 @@ function renderMap() {
 const OV = [
   ['共創', '準備中', '「現在在等什麼」三段追蹤：等平台審核／等你設上映日／等上映日到來，附作品封面與審核徽章', '上映日留白時給「設定上映日」'],
   ['共創', '進行中', '募資儀表：已募／目標、支持者數、剩餘天數、進度條，加一句「達標即成立」', '發一則更新催進度'],
-  ['共創', '已成立', '交付面板：預期交付日倒數、藍圖走到第幾顆里程碑、撥款進度摘要', '送作品上架（影片家族）'],
+  ['共創', '已成功', '交付面板：預期交付日倒數、藍圖走到第幾顆里程碑、撥款進度摘要', '送作品上架（影片家族）'],
   ['共創', '已上線', '營運摘要：近期收益與觀看走勢縮圖，加作品上線資訊與「編輯作品」', '依項目自己的待辦，沒有就整條不顯示'],
   ['共創', '已取消', '終止面板：終止原因、退款進度、凍結範圍說明', '發一則更新說明退款進度（已取消唯一還開著的動作）'],
   ['預購', '準備中', '同共創', '同共創'],
   ['預購', '進行中', '集單儀表：已預購／最少預購數、單價、截止倒數，加一句「未達最少數量就全額退款」', '發一則更新催進度'],
-  ['預購', '已成立', '交付面板，但沒有撥款進度那一段（預購沒有分批撥款）', '送作品上架（影片家族）'],
+  ['預購', '已成功', '交付面板，但沒有撥款進度那一段（預購沒有分批撥款）', '送作品上架（影片家族）'],
   ['預購', '已上線', '同共創，捷徑沒有版稅', '依項目自己的待辦'],
   ['預購', '已取消', '同共創，退款規則走預購那一套', '發一則更新說明退款進度'],
   ['直接發佈', '準備中 · 影片', '上架追蹤器：送審 → 審核中 → 審核通過 → 設上映日 → 上線，五段標出現在卡在哪', '退件時「修改後重送」；通過且日期留白時「設定上映日」；其餘「編輯作品」'],

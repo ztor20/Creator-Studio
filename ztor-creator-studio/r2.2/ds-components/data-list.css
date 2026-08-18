@@ -75,6 +75,28 @@
    2026-07-25 新增：收支小計列的 ＋／−／＝ 記號——那裡的圖示是運算符號、不是內容縮圖，
    52px 縮圖尺寸會讓框看起來過大。搭配容器覆寫 --data-list-child-indent 讓子列縮排跟著對齊。 */
 .data-list__icon--sm { width: 32px; height: 32px; }
+/* 標記型的圖示格（2026-08-18）：不畫圓框、不放圖示，只留一顆點，狀態由顏色講。
+   給「這一列是時間軸上的一顆節點」那種清單用——項目總覽的進度摘要要跟進度分頁的
+   軸點讀起來是同一套語彙（實心＝里程碑、空心＝更新），而軸上已經沒有圓框了。
+   顏色由消費頁掛 --success／--error 等既有的色彩修飾詞決定。 */
+.data-list__icon--mark {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--foreground-muted);
+  flex: none;
+  align-self: center;
+  margin: 0 var(--sp-6) 0 var(--sp-2);
+}
+.data-list__icon--mark.data-list__icon--success { background: var(--status-success) }
+.data-list__icon--mark.data-list__icon--info    { background: var(--status-info) }
+.data-list__icon--mark.data-list__icon--error   { background: var(--status-error) }
+/* 空心＝不是承諾的那一種（更新、尚未排定）。 */
+.data-list__icon--mark.data-list__icon--hollow {
+  width: 8px; height: 8px;
+  background: transparent;
+  border: 1px solid var(--muted-foreground);
+}
 .data-list__icon--sm .ztor-icon { width: 16px; height: 16px; }
 /* Monochrome icon variants — colored fills retired per user feedback (2026-05-25);
    size unified with alert--card icon (2026-05-27). Semantic variants kept as
@@ -86,6 +108,17 @@
   background: var(--muted);
   color: var(--foreground-muted);
 }
+/* 縮圖格（2026-08-18）：把清單那一列的圖示格換成一張真的圖。首個消費情境是項目
+   總覽的「方案摘要」——方案是一組商品，一張圖比一顆通用圖示更能讓人認出是哪一個。
+   尺寸與 __icon--sm 同高，換掉它的時候整列的基線不會跳。 */
+.data-list__thumb {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--muted);
+}
 .data-list__body { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
 .data-list__title {
   font-family: var(--font-ui);
@@ -96,6 +129,20 @@
   white-space: nowrap;
 }
 .data-list__meta { font-size: var(--fs-12); color: var(--muted-foreground); }
+/* meta 行的行內圖示（2026-08-18）：給「值在上、標籤在下」的事實列用——標籤那一行
+   自己帶一顆小圖示，與文字同高，取代左邊那個 32px 的圖示框。
+   為什麼不是左邊那個框：值升為主行之後，左邊的框會跟兩行文字比高、變成一列裡最重的
+   東西，而它只是在說「這一列是什麼類別」。 */
+.data-list__meta .ztor-icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  margin-right: var(--sp-6);
+}
+/* 事實列：值在上、標籤在下（2026-08-18）。首個消費情境是項目詳情總覽的「項目摘要」——
+   讀者要的是「周湯豪 NICKTHEREAL」，「創作者」只是在說那是什麼；預設的
+   標籤在上、值在下剛好把主從讀反。 */
+.data-list__row--fact .data-list__title { font-size: var(--fs-15); }
 .data-list__amount {
   /* 2026-07-28：由 --font-display（Alumni Sans）改 --font-numeric（Satoshi）。
      金額是一整欄要上下對齊掃讀的數字，不是標題——窄長展示字面＋非等寬數字會讓
@@ -109,6 +156,10 @@
   text-align: right;
 }
 .data-list__amount--neg { color: var(--destructive); }
+/* 2026-08-18：`--warn` 補齊 `--neg` 的中間一階。首個消費情境是項目總覽進度摘要的
+   里程碑預計日——逾期走 --neg、今天到期走 --warn、其餘中性。與 badge 的三色語意
+   同源（error／warning／neutral），差別只在這裡是純文字、不是標籤。 */
+.data-list__amount--warn { color: var(--status-warning-ink); }
 /* End cap — right column stacking amount over a status pill (Dashboard Recent earnings F3). */
 .data-list__end { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 /* Row entry — status pill + source-aware deep-link chevron in one right cell (Dashboard F6). */

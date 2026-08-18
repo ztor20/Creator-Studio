@@ -54,7 +54,7 @@ window.ZTOR_PARTIALS.manualEntryModal = String.raw`
           <div class="payout-field__label" data-i18n="manual.f.attachment">Supporting attachment (optional)</div>
           <div class="payout-field__hint" data-i18n="manual.f.attachment-hint">Receipt, statement, or contract as evidence.</div>
         </div>
-        <button class="btn btn--outline btn--sm" type="button" data-i18n="manual.attach-btn">Add file</button>
+        <button class="btn btn--outline btn--add" type="button" data-i18n="manual.attach-btn">Add file</button>
       </div>
 
       <div class="stickynote mt-16">

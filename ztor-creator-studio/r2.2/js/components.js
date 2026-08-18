@@ -118,7 +118,7 @@
   }
   /* 進度欄同時承擔狀態（2026-07-31 使用者裁示）：只有「正在進行」的列顯示進度數字
      （幾張票／多少支持者），其餘狀態直接把狀態詞寫進這一欄，狀態欄因此整個拿掉。
-     判準是「數字本身就說明了現況」——集資中／售票中屬之；草稿、準備中、已成立、
+     判準是「數字本身就說明了現況」——集資中／售票中屬之；草稿、準備中、已成功、
      已售完、已結束、已取消都要明講，光看數字看不出來。 */
   var RUNNING_STATUS = { 'status.live': 1, 'status.on-sale': 1, 'projects.state.published': 1 };
   function eventProjectTableRow(r) {
@@ -476,7 +476,7 @@
      snoozed (matching the tile's count rule); Active projects = F6 minus drafts, each
      row upgraded to a labelled CTA (Open project / Open event). */
   DATA['ops-pending-list'] = { items: DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; }) };
-  /* 只列「還在跑」的項目與活動：草稿還沒公開、已成立／已結束／已取消都是終態，
+  /* 只列「還在跑」的項目與活動：草稿還沒公開、已成功／已結束／已取消都是終態，
      留在這個彈窗裡會讓 F2 的「進行中項目」數字對不起來（2026-07-31 補齊假資料時）。 */
   var OPS_TERMINAL = { 'status.draft': 1, 'status.succeeded': 1, 'status.ended': 1, 'status.cancelled': 1 };
   DATA['ops-projects-list'] = { rows: DATA['dash-events'].rows

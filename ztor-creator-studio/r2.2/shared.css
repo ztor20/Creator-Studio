@@ -1070,6 +1070,11 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 .wizard__gate { justify-content: center; }
 .wizard__gate-inner { width: 100%; max-width: 760px; margin-inline: auto; padding: var(--sp-32) var(--sp-24); }
 .wizard__gate-foot { display: flex; justify-content: center; margin-top: var(--sp-32); }
+/* 「回上一步」（2026-08-18，建立項目的第二關）：自成一列坐在標題正上方、與內容同一條左緣。
+   放在標題同一列的左邊時，標題與副標會被推成縮排，跟底下的選項格線對不齊；退回上方一列
+   之後，這一頁的左緣只有一條。外觀＝閘門的 ✕ 那一顆（同樣是浮在無框畫面上的圓鈕）。 */
+.wizard__gate-nav { display: inline-flex; margin-bottom: var(--sp-12); background: var(--card); border: 1px solid var(--border); color: var(--foreground-muted); }
+.wizard__gate-nav:hover { background: var(--accent); border-color: var(--border); color: var(--foreground); }
 /* 關閉鈕提亮（2026-07-26 使用者反饋「太暗」）：`.btn--icon-circle` 預設是 --muted 底，
    那組值假設鈕坐在 --card 之上；閘門是 --sectioned 的 --surface-page（全站最暗的面），
    --muted(#161718) 與它只差一階、圓形幾乎看不見。此處改 --card 底＋1px --border 描邊，
@@ -1414,13 +1419,60 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    標題／簡介在框外；創作者脈絡搬進募資卡（.funding-panel--card）框內最下面（取代原 §7.3 註記）。
    募資卡框內：金額／目標／進度／倒數＋末行創作者脈絡。標題／徽章 2026-07-24 由頁首併入右欄。
    沒有外層填色容器——募資卡自己就是 L1 卡（Q3 邊框、Q24 不疊色）。 */
+/* 頁面動作列黏在視窗頂端（2026-08-18 使用者裁決）：這一列的「預覽／發布更新」是
+   整頁通用的動作，捲到哪裡都可能要按；原本靠底部浮出的 sticky-actions 複製一份，
+   等於同一組按鈕有兩個家、兩套顯隱規則。改成這一列自己 sticky 之後只剩一個。
+   底色靠 ::before 溢出到左右：.page 有最大寬與內距，只給這一列上底色的話，
+   捲動時內容會從色帶兩側穿出去。 */
 .pd-detail__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-16);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-14);
+  padding: var(--sp-14) 0;
+  /* 黏住之後底下要留得出間距（2026-08-18 使用者裁決）：這一列會蓋在內容上，
+     間距太小時捲動中的卡片會貼著它跑，看起來像撞在一起。 */
+  margin-bottom: var(--sp-20);
+  background: var(--surface-page);
+}
+/* 縮圖＋名稱：只在捲過頁首之後出現，佔麵包屑原本的位置。名稱不換行、太長就截斷——
+   這一列的高度必須固定，浮在內容上的東西一旦會長高，底下的內容就會跟著跳。 */
+.pd-detail__mini {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  min-width: 0;
+}
+.pd-detail__mini-cover {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex: none;
+}
+.pd-detail__mini-name {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 黏住之後補一條底線：底色與頁面同色，沒有這條線就看不出內容是從它底下捲過去的。 */
+.pd-detail__topbar.is-stuck::before { border-bottom: 1px solid var(--border); }
+.pd-detail__topbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--sp-28) * -1);
+  right: calc(var(--sp-28) * -1);
+  background: inherit;
+  z-index: -1;
 }
 /* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
    所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
@@ -1432,7 +1484,11 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    海報高 330px，跟右欄的內容高度對得上。 */
 .pd-hero {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  /* 海報 220 → 148（2026-08-18）：識別三列搬進總覽的項目摘要之後，右欄只剩徽章、
+     標題與簡介；再配一張 220px 的直式海報，海報撐出來的高度會讓那三樣浮在上緣、
+     下面留一大片空。同日再收到 112px（使用者：「可以再小一點」）——這一格的任務只是「認出是哪一個項目」，
+     不是展示封面；封面本身在公開資訊那一段有大圖。 */
+  grid-template-columns: 112px minmax(0, 1fr);
   gap: var(--sp-24);
   align-items: start;
   margin-bottom: var(--sp-24);
@@ -1554,7 +1610,7 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    project-detail.html 的 render()。這一行原本掛的 id="pd-owner-line" 一併退場。 */
 /* 識別事實列坐在頁面底（--background）而不是卡內：.data-list 本身不填色、只有分隔線，
    兩層 surface 都成立。行寬跟簡介對齊，避免在寬螢幕上拉成一條長線。 */
-.pd-hero__facts { max-width: 520px; margin-top: var(--sp-4); }
+/* ✝ 2026-08-18 墓碑 · .pd-hero__facts（hero 右欄的識別三列）——搬進總覽的「項目摘要」卡。 */
 @media (max-width: 900px) {
   .pd-hero__title { font-size: var(--fs-32); }
 }
@@ -1717,6 +1773,7 @@ a.data-list__row:hover .data-list__title { color: var(--foreground); }
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .page { padding: var(--sp-32) var(--sp-16) var(--sp-80); }
+  .pd-detail__topbar::before { left: calc(var(--sp-16) * -1); right: calc(var(--sp-16) * -1); }
   .hero--fullbleed { margin-left: -16px; margin-right: -16px; border-radius: 0; }
   .hero__slide { grid-template-columns: 1fr; }
   .hero__copy { padding: var(--sp-24) var(--sp-20); }

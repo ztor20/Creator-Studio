@@ -70,7 +70,7 @@
       if (sel.hasAttribute(a)) btn.setAttribute(a, sel.getAttribute(a));
     });
     if (sel.disabled) btn.disabled = true;
-    btn.innerHTML = '<span class="zselect__label"></span>' + CHEVRON;
+    btn.innerHTML = '<span class="zselect__lead" hidden></span><span class="zselect__label"></span>' + CHEVRON;
 
     sel.classList.add('zselect__native');
     sel.setAttribute('tabindex', '-1');
@@ -96,6 +96,21 @@
     var o = state.sel.options[state.sel.selectedIndex];
     var label = state.btn.querySelector('.zselect__label');
     if (label) label.textContent = o ? o.textContent.trim() : '';
+    /* 選項帶 data-icon 時，觸發鈕上的字前面也放同一顆圖示（2026-08-18）——收合的樣子
+       要能對得上展開後那一列，否則選完之後圖示就消失了。沒有 data-icon 的 select
+       完全不受影響：那顆欄位維持 hidden、不佔位。 */
+    var lead = state.btn.querySelector('.zselect__lead');
+    if (lead) {
+      var ic = o && o.dataset ? o.dataset.icon : '';
+      if (ic) {
+        lead.innerHTML = '<i data-lucide="' + esc(ic) + '" class="ztor-icon zselect__icon"></i>';
+        lead.hidden = false;
+        if (window.ztorIcons) window.ztorIcons.applyIcons(lead);
+      } else {
+        lead.innerHTML = '';
+        lead.hidden = true;
+      }
+    }
     state.btn.disabled = state.sel.disabled;
   }
 
@@ -130,6 +145,8 @@
     });
     panel.innerHTML = html;
     document.body.appendChild(panel);
+    /* 選項的 <i data-lucide> 要在進 DOM 之後才換得成 SVG。 */
+    if (window.ztorIcons) window.ztorIcons.applyIcons(panel);
     state.panel = panel;
     open = state;
 
@@ -162,8 +179,9 @@
     return '<div class="zselect__option" role="option" data-i="' + i + '"' +
       ' aria-selected="' + (selected ? 'true' : 'false') + '"' +
       (disabled ? ' aria-disabled="true"' : '') +
-      ' id="' + state.id + '-o' + i + '">' + CHECK +
-      '<span>' + esc(o.textContent.trim()) + '</span></div>';
+      ' id="' + state.id + '-o' + i + '">' +
+      (o.dataset && o.dataset.icon ? '<i data-lucide="' + esc(o.dataset.icon) + '" class="ztor-icon zselect__icon"></i>' : '') +
+      '<span>' + esc(o.textContent.trim()) + '</span>' + CHECK + '</div>';
   }
 
   function close(state) {

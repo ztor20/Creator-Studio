@@ -64,6 +64,15 @@
 
 ## 待裁決
 
+### Q69 · 同一組閘門的兩關用了兩支不同的 1-of-N 元件（2026-08-18 提出，未裁決）
+
+建立項目的閘門 2026-08-18 起有兩關，兩關的選項卡不是同一支元件：
+
+- 第一關「項目類型」＝ `radio-card`（`.radio-cards.radio-cards--3.radio-cards--gate`）：三張橫向大卡，卡內圖示在上、標題＋一段描述，無持久選取態、hover 時右上冒橘點。證據：`create-project.html:63-67`、`ds-components/radio-card.css` 的 `--gate` 變體。
+- 第二關「內容類型」＝ `selection-card`（`.selection-grid--tiles` ＋ `.selection-card--icon`）：十張方形磚，圖示置中、只有標題。證據：`create-project.html` 的 `[data-cat-grid]`、`ds-components/selection-card.css` 的 `--tiles` 變體（本輪新增）。
+
+兩支各自都合 Q17 的分工（三張帶描述的大卡 vs 十個只有標籤的密集選項），數量與資訊量差距也確實撐不起同一種卡；但**連著出現的兩個畫面**用兩套卡面語言，中間沒有任何解釋。可能的收法：**A** 維持現況，在 `design-system.md` 寫明「同一組閘門可依選項數與資訊量換卡型」；**B** 第二關改用 `radio-cards--gate` 的卡面、只調密度；**C** 第一關改用磚、描述改成 hover 或次行小字。暫依 **A**（現況），標 Q69；裁決權在使用者。
+
 ### Q50 · 詳情頁頁首的封面尺寸：站上有三種做法（2026-08-17 記錄，未裁決）
 
 同一個視覺角色「詳情頁頁首左側的封面」，站上目前有三個答案：

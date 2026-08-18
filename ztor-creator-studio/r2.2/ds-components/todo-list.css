@@ -34,10 +34,20 @@
 .todo-list__row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  /* 2026-08-18 使用者指示「checkbox 和標題同一行」：由 center 改 start。
+     系統項目有兩行（標題＋說明），置中會把勾選框對到兩行的中線——看起來像對著說明那一行，
+     而它勾的是標題那件事。改成靠上之後，勾選框、標題與行尾動作都從同一條線起跑；
+     `--check-lift` 補的是控制項高度與標題行高的差，讓它與文字視覺對齊、不是貼齊上緣。 */
+  align-items: start;
   gap: var(--sp-12);
   padding: var(--sp-12) 0;
 }
+.todo-list__row > .zcheck,
+.todo-list__row > .todo-list__end { margin-top: var(--sp-2); }
+/* 只有一行的列（使用者自己加的項目是一個輸入框、沒有說明行）不需要那段補償——
+   輸入框自己帶著上下內距，靠上時本來就對得齊。 */
+.todo-list__row:not(.todo-list__row--system) > .zcheck,
+.todo-list__row:not(.todo-list__row--system) > .todo-list__end { margin-top: var(--sp-6); }
 .todo-list__row + .todo-list__row { border-top: 1px solid var(--border); }
 
 /* 已完成：劃掉並整列退到背景。留在原地而不是移到最下面——一件事做完就跳位，
@@ -95,4 +105,8 @@
   .todo-list__row:focus-within .todo-list__end .btn--icon { opacity: 1; }
 }
 
+/* 2026-08-18 使用者指示「fill width」：這顆是清單底下的「再加一列」，作用範圍就是整條清單，
+   寬度跟著清單走比縮成內容寬更讀得出關係——尤其在窄欄（活動詳情右欄 span-4）裡，
+   一顆縮在左下角的小鈕會讀成漏排版的殘留物。 */
 .todo-list__add { margin-top: var(--sp-12); }
+.todo-list__add > .btn { width: 100%; }

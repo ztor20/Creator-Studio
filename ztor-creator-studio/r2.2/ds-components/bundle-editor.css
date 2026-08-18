@@ -69,7 +69,10 @@
 /* 動作連結不參與壓縮：收合列在寬版面下把摘要撐滿，動作區被擠窄時
    「編輯」「移除」會斷成兩行（2026-07-30 詳情頁實測）。它們是固定尺寸的出口，
    讓摘要去讓位，不是反過來。 */
-.fc-bundle__actions { display: flex; align-items: center; gap: var(--sp-12); flex: 0 0 auto; white-space: nowrap; }
+/* 2026-08-18 撤除（墓碑）：.fc-bundle__actions（收合態標題列右端的「編輯／移除」文字連結）。
+   「編輯」退場——點開卡片本來就是在編輯，再給一個叫「編輯」的連結等於同一個動作有兩個名字；
+   開關改成右上角固定一顆 chevron（.fc-sum__chev）。「移除」收進展開後的卡片底部
+   （.fc-bundle__foot 的紅色 destructive 鈕），要先看到內容才刪得掉。 */
 
 /* 墓碑 2026-07-30：`.fc-bundle--invalid`（未完成卡片的左緣 1px --status-warning 色線）
    依使用者裁決移除，class 一併從模板拿掉、不留死 class。
@@ -86,12 +89,56 @@
 .fc-bundle--collapsed { padding: var(--sp-12) var(--sp-24); cursor: pointer; }
 .fc-bundle--collapsed .fc-bundle__body { display: none; }
 .fc-bundle--collapsed .fc-bundle__head { margin-bottom: 0; }
+/* 2026-08-18（使用者裁決）：多了最前面的縮圖與最右邊的 chevron，四欄——
+   縮圖／名稱與摘要／價格／開關。價格那一欄仍然是 auto，多張卡的金額照樣對齊成一直行。 */
 .fc-sum {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--sp-14);
   width: 100%;
+}
+/* 縮圖：40px，跟收合列的文字兩行等高。圓角用 --radius-md 而不是 pill——
+   它是一張商品照片，不是一個頭像。 */
+.fc-sum__thumb {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--muted);
+}
+.fc-sum__thumb--empty {
+  display: grid;
+  place-items: center;
+  color: var(--muted-foreground);
+}
+.fc-sum__thumb--empty .ztor-icon { width: 18px; height: 18px }
+/* 開關：右上角固定一顆，收合與展開共用、只轉向。做成 tappable 尺寸（32px）而不是
+   只有圖示大小——它是這張卡最常被按的東西。 */
+.fc-sum__chev {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--duration) var(--easing), color var(--duration) var(--easing);
+}
+.fc-sum__chev:hover { background: var(--accent); color: var(--foreground) }
+.fc-sum__chev .ztor-icon {
+  width: 18px; height: 18px;
+  transition: transform var(--duration) var(--easing);
+}
+/* 展開時轉成朝上：轉向而不是換圖示，因為轉的過程本身就在說「這一顆剛剛把卡打開了」。 */
+.fc-sum__chev[aria-expanded="true"] .ztor-icon { transform: rotate(180deg) }
+@media (prefers-reduced-motion: reduce) {
+  .fc-sum__chev, .fc-sum__chev .ztor-icon { transition-duration: 1ms }
 }
 .fc-sum__name { font-family: var(--font-ui); font-size: var(--fs-14); font-weight: var(--fw-regular); color: var(--foreground); }
 .fc-sum__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-2); }
@@ -114,7 +161,9 @@
 
 /* 展開時只留名稱與價格：內容摘要此時就在下面的欄位裡，重複顯示會變成兩個
    可能互相矛盾的真相來源。價格留著的理由相反——它在卡片最後，中間隔著五組欄位，
-   編輯當下看不到自己把價格改成多少（2026-07-30 使用者裁決）。 */
+   編輯當下看不到自己把價格改成多少（2026-07-30 使用者裁決）。
+   縮圖與 chevron 兩態都在（2026-08-18）：那顆 chevron 是這張卡的開關，收合時要能開、
+   展開時要能關，位置不該跟著狀態跑；縮圖留著則是讓兩態的第一欄對齊同一條線。 */
 .fc-bundle:not(.fc-bundle--collapsed) .fc-sum__meta { display: none; }
 .fc-bundle:not(.fc-bundle--collapsed) .fc-sum { cursor: default; }
 .fc-bundle--collapsed .fc-sum { cursor: pointer; }

@@ -30,6 +30,8 @@
 
 推送用的 token 只需 **write 權**即可 commit／push 分支＋開 PR，**不需 merge 權**；**merge 一律由具 merge 權限的協作者在 GitHub 上操作**，AI 不代合。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
 
+**`collab.sh` 沒有錯誤訊息就停在 `Switched to a new branch` 時，先查 token 的寫入權**（2026-08-18 記，同一題第二次發生）：腳本的 `git push` 把輸出導掉了（`>/dev/null 2>&1`），推送失敗時看起來像「跑到一半自己結束」，exit code 是 128。診斷方式——手動 clone 一份再推一次空 commit，就會看到真正的 `403 / Permission denied`。細粒度 PAT（`github_pat_` 開頭）的讀與寫是分開授權的，**Contents 只給 Read 時就是這個症狀**；能讀 repo 代表組織 SSO 已核准，不必往那個方向查。修法是把該 token 的 Contents 與 Pull requests 都改成 Read and write，不必重新產生 token。
+
 ## 其他
 
 - 版本與治理見 [README.md](README.md)：`site/` 不得把畫面、截圖、互動或既有程式靜默反向同步成產品規則。

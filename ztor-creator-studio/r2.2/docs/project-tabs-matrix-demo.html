@@ -115,7 +115,7 @@
         <button type="button" class="segmented__btn" data-status="draft">草稿</button>
         <button type="button" class="segmented__btn" data-status="scheduled">準備中</button>
         <button type="button" class="segmented__btn" data-status="published">進行中</button>
-        <button type="button" class="segmented__btn" data-status="succeeded">已成立</button>
+        <button type="button" class="segmented__btn" data-status="succeeded">已成功</button>
         <button type="button" class="segmented__btn segmented__btn--active" data-status="live">已上線</button>
         <button type="button" class="segmented__btn" data-status="cancelled">已取消</button>
       </div>
@@ -200,7 +200,7 @@
      render() 的 perfReady / store.hasRoyalty() ＝表現與版稅
    ───────────────────────────────────────────────────────────── */
 const MODE   = { fund: '共創', preorder: '預購', 'go-live': '直接發佈' };
-const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成立', live: '已上線', cancelled: '已取消' };
+const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成功', live: '已上線', cancelled: '已取消' };
 const FAMILY = { film: '影片', music: '音樂', other: '其他' };
 const REVIEW = {
   none: '無送審紀錄', draft: '草稿', pending: '待審核', inreview: '審核中',
@@ -366,13 +366,13 @@ const TABS = [
 
 /* ── 十六格的情境與主要操作（取自矩陣文件第三節）───────────────────── */
 const CELL = {
-  'fund|draft':        ['共創計畫剛建好，還沒對外開放支持，創作者還在補素材與規劃回饋方案', '補齊素材與方案。發文彈窗只能發一般更新，「完成作品」停用並寫「項目成立後才能上架作品」'],
-  'fund|scheduled':    ['作品已審核通過、上映日還沒到的等待期。由已成立轉進來，到上映日當天再轉已上線', '等上映日到來。作品分頁可以進去編輯已通過的作品'],
+  'fund|draft':        ['共創計畫剛建好，還沒對外開放支持，創作者還在補素材與規劃回饋方案', '補齊素材與方案。發文彈窗只能發一般更新，「完成作品」停用並寫「項目成功後才能上架作品」'],
+  'fund|scheduled':    ['作品已審核通過、上映日還沒到的等待期。由已成功轉進來，到上映日當天再轉已上線', '等上映日到來。作品分頁可以進去編輯已通過的作品'],
   'fund|published':    ['共創已對外開放，正在收支持款，進度條在跑、倒數在走', '發一般更新催進度。共創進度分頁看逐筆支持者與扣款狀態'],
   'fund|succeeded':    ['共創達標、募資期已結束，錢收了、東西還在做，支持者在等交付', '走完成作品發文接上作品上架流程。已送過審的在項目總覽看審核狀態、在作品分頁改作品'],
   'fund|live':         ['作品已交付、正在賺錢。共創成立這件事變成隨身徽章，項目本身進入營運期', '看收益、看表現、看版稅。作品分頁可改文案與名單'],
   'fund|cancelled':    ['共創未達標或創作者主動終止，已全額退款。這是死路狀態，不會再往前走', '站上與進行中完全一樣——編輯入口、發文彈窗、方案編輯器全部照舊可用（矩陣落差 L11）'],
-  'preorder|draft':    ['預購項目剛建好，還沒開放集單', '補素材與預購方案。「完成作品」停用並寫「項目成立後才能上架作品」'],
+  'preorder|draft':    ['預購項目剛建好，還沒開放集單', '補素材與預購方案。「完成作品」停用並寫「項目成功後才能上架作品」'],
   'preorder|scheduled':['作品已審核通過、上映日未到的等待期，與共創那一格同理', '等上映日到來。作品分頁可以進去編輯已通過的作品'],
   'preorder|published':['預購已開放，正在收單，離最少預購數還差多少一目瞭然', '看預購進度與逐筆訂單扣款狀態。發一般更新'],
   'preorder|succeeded':['預購達標、集單期結束，正在製作，買家在等交付', '走完成作品發文接上作品上架流程，「完成作品」選項可選'],
@@ -455,7 +455,7 @@ function reachability() {
     out.push('直接發佈的送審發生在建立流程送出的那一刻，送出後狀態就離開草稿了');
   }
   if (hasRec() && mode !== 'go-live' && ['draft', 'published', 'cancelled'].indexOf(status) >= 0) {
-    out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成立時開（規格 §2.2.9）');
+    out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成功時開（規格 §2.2.9）');
   }
   if (review === 'approved-live' && status !== 'live') {
     out.push('審核通過而且上映日已到會把項目推到已上線，停不在' + STATUS[status]);
@@ -535,7 +535,7 @@ function syncCtl() {
     b.classList.toggle('segmented__btn--active', b.dataset.status === status);
   });
   if (mode === 'go-live') {
-    notes.push('直接發佈停用「進行中」與「已成立」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
+    notes.push('直接發佈停用「進行中」與「已成功」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
   }
   document.querySelectorAll('#ctl-review [data-review]').forEach(b => {
     const blocked = family !== 'film' && b.dataset.review !== 'none';

@@ -24,7 +24,7 @@
            .ptl__meta         日期、送出次數等唯讀事實
            .ptl__note         說明或退件理由（--alert 時左側色條轉紅）
            .ptl__acts         這一顆能做的事
-           .ptl__composer     內嵌發文框（只出現在今天那一格）
+           .composer          內嵌發文框（只出現在今天那一格；元件在 composer.css）
            .ptl__updates      掛在本列底下的更新
              .ptl__update
 
@@ -37,17 +37,25 @@
    （2026-08-17 全站規則）。
 
    surface：坐在 --card（卡內）與 --surface-page（無卡區段）兩層都成立——
-   節點本身不填色，靠軸線與軸點的 1px 邊界被看見；.ptl__update 與 .ptl__composer
+   節點本身不填色，靠軸線與軸點的 1px 邊界被看見；.ptl__update 與 .composer
    用 --muted 淺灰填，只在比它亮的底上使用（卡內白底），這是它被放進 .card 的原因。
    ============================================================ */
 
 .ptl {
   display: flex;
   flex-direction: column;
-  /* 軸點直徑、日期欄寬與軸線的左邊界一次定義，所有列都靠它對齊。 */
-  --ptl-dot: 28px;
+  /* 整條軸封在可讀的寬度內（2026-08-18 使用者裁決）：軸上每一列都是「日期＋一行標題」，
+     滿版之後標題與右端的動作之間會留下一大片空白，眼睛得橫著跑完整行才找得到那兩顆鈕。
+     760px 約當一行 45 個中文字，也讓完成宣告那段短文不會拉成一行看不完的長句。 */
+  max-width: 760px;
+  /* 軸欄寬、日期欄寬與軸線的左邊界一次定義，所有列都靠它對齊。
+     2026-08-18（A2 改版）：--ptl-dot 由「28px 的圓框」改成「20px 的軸欄」，
+     真正的點交給 .pmark（--pmark-size）；標題列高 --ptl-line 是所有垂直對齊的基準——
+     日期、軸點、標題都對到它的中線，不再靠目測補 margin。 */
+  --ptl-dot: 20px;
+  --ptl-line: 22px;
   --ptl-date: 64px;
-  --ptl-gap: var(--sp-12);
+  --ptl-gap: var(--sp-14);
 }
 
 /* ── 節點 ───────────────────────────────────────────────── */
@@ -67,28 +75,32 @@
 .ptl__node::before {
   content: "";
   position: absolute;
-  left: calc(var(--ptl-date) + var(--ptl-gap) + var(--ptl-dot) / 2 - 1px);
-  top: var(--ptl-dot);
+  left: calc(var(--ptl-date) + var(--ptl-gap) + var(--ptl-dot) / 2);
+  top: calc(var(--ptl-line) / 2);
   bottom: 0;
-  width: 2px;
+  width: 1px;
   background: var(--border);
 }
 .ptl__node:last-child::before,
 .ptl__node--start::before { display: none }
-.ptl__node--done::before { background: color-mix(in srgb, var(--status-success) 45%, transparent) }
+.ptl__node--done::before { background: color-mix(in srgb, var(--status-success) 35%, transparent) }
 
 /* 日期欄。今天那一格的日期是唯一被強調的，其餘只是事實。
    align-self: start 是必要的——grid 項目預設拉滿整列高度，日期就會垂直置中到
    「標題＋說明＋動作」那一整塊的中線，看起來像掉了兩行。它要跟軸點與標題同一條線。 */
 .ptl__date {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums;
   font-size: var(--fs-12);
+  line-height: var(--ptl-line);        /* ＝標題列高，兩者因此天生對齊 */
   color: var(--muted-foreground);
+  text-align: right;
   align-self: start;
-  min-height: var(--ptl-dot);
-  display: flex;
-  align-items: center;
   overflow-wrap: anywhere;
 }
+/* 逾期時日期自己轉紅（2026-08-18）：逾期是從這個日期算出來的，紅在別的地方
+   等於把因果拆成兩處。 */
+.ptl__node--alert > .ptl__date { color: var(--destructive-ink) }
 .ptl__node--today > .ptl__date {
   color: var(--foreground);
   font-weight: var(--fw-medium);
@@ -96,77 +108,62 @@
 /* 沒有預計日期的里程碑：日期欄留白，但欄位仍佔位，軸線才不會歪。 */
 .ptl__date:empty::before { content: "" }
 
+/* 軸點（2026-08-18 A2 改版，使用者裁決「不要有外匡」）：原本每一顆都是
+   「28px 圓框 ＋ 1px 邊 ＋ 卡底色 ＋ 圖示」四層，一條軸七顆就是七個小方塊在跟
+   內容搶注意力。改成軸線上的一顆點，狀態由顏色講。
+   2026-08-18（方案 B，使用者裁決）：長相整組交給 .pmark（ds-components/progress-mark.css）——
+   摘要（step-list）與這條軸共用同一套記號，只差尺寸。本檔只留「這顆點在軸上要坐在哪裡」：
+   對齊、與軸線的疊放順序。狀態與顏色的對照表在 progress-mark.css，不在這裡再寫一份。
+   ✝ 墓碑：.ptl__node--{done,doing,alert,today,day,start} .ptl__dot 的顏色／尺寸規則，
+     以及 .ptl__dot .ztor-icon 的收字符規則——全部由 .pmark 的修飾子承擔，呼叫端改成
+     直接掛 .pmark--{state}。
+   margin-top 一律由「標題列高的一半減半徑」算出，圓心對到標題中線；半徑讀 .pmark
+   自己的 --pmark-size，所以今天那顆放大時對齊仍然自動成立。 */
 .ptl__dot {
-  width: var(--ptl-dot);
-  height: var(--ptl-dot);
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--muted-foreground);
-  display: inline-grid;
-  place-items: center;
-  position: relative;
+  align-self: start;
+  justify-self: center;
+  margin-top: calc((var(--ptl-line) - var(--pmark-size, 10px)) / 2);
+  position: relative;   /* 壓在軸線之上，不然線會從點的正中間穿過去 */
   z-index: 1;
 }
-.ptl__dot .ztor-icon { width: 15px; height: 15px }
-.ptl__node--done .ptl__dot {
-  border-color: color-mix(in srgb, var(--status-success) 55%, transparent);
-  color: var(--status-success-ink);
-}
-.ptl__node--doing .ptl__dot {
-  border-color: color-mix(in srgb, var(--status-info) 55%, transparent);
-  color: var(--status-info-ink);
-}
-.ptl__node--alert .ptl__dot {
-  border-color: color-mix(in srgb, var(--status-error) 55%, transparent);
-  /* 紅色墨走 --destructive-ink（站上唯一的「小字可讀紅」，見 _tokens.css 的推導註記），
-     不是 --status-error 原色——原色在亮底上的小字對比不足。 */
-  color: var(--destructive-ink);
-}
-/* 今天：軸上唯一的實心點，用品牌色。它是整條軸的定位點，必須一眼找得到。 */
-.ptl__node--today .ptl__dot {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--on-primary);
-}
-/* 按天收合的更新列：不是藍圖的一步，所以軸點用中性色、名稱也不用里程碑那個字重。
-   （§2.2.10「過去的日子怎麼收合」：一天一列，寫明那天有幾則，展開才看內容。） */
-.ptl__node--day .ptl__dot { color: var(--foreground-muted) }
 .ptl__node--day .ptl__name { font-weight: var(--fw-regular); color: var(--foreground-muted) }
-/* 軸底的「項目建立」：它是起點不是成就，所以不吃 --done 的綠。 */
-.ptl__node--start .ptl__dot { color: var(--muted-foreground) }
 
-/* 每一格自成一張卡（2026-08-17 使用者反饋）：軸上的一顆里程碑是一個獨立的東西，
-   有自己的標題、狀態、說明與可做的事。不給它一個面，那些內容會平鋪在軸線旁邊，
-   讀起來像同一段文字被日期切開。底色走 Q66 的疊層方向（--nest-surface 比卡亮一階）。 */
+/* 內容不裝卡（2026-08-18 A2 改版）：2026-08-17 那一版讓每一格自成一張卡，結果
+   七張卡疊在一條軸旁邊，卡的邊界比軸線本身還搶眼——而時間軸要說的正是「這些事
+   是連著的」。改成內容直接坐在頁面上，分行交給一條**極淡線**（--border 的 40%）：
+   1px 實線橫著切、跟軸線的方向打架，而左邊已經有軸線與日期兩個對齊訊號在分行；
+   壓淡之後它退成一條若有似無的軌跡，仍能在某一列內容變高時交代哪幾行是同一列。 */
 .ptl__body {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
-  padding: var(--sp-14) var(--sp-16);
-  border: 0;
-  border-radius: var(--radius-xl);
-  /* 一顆里程碑就是頁面上的一張卡（2026-08-17 使用者裁決：外層不是卡、這些才是）。
-     所以吃 --card 與 .card 同一組陰影，不是疊在卡上的 --nest-surface。 */
-  background: var(--card);
-  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  padding-bottom: var(--sp-14);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
 }
-/* 軸點要對齊卡內第一行，不是卡的上緣——卡多了內距，不補這一段軸點會比標題高半行。 */
-.ptl__node > .ptl__date,
-.ptl__node > .ptl__dot { margin-top: var(--sp-14) }
-.ptl__node::before { top: calc(var(--ptl-dot) + var(--sp-14)) }
-/* 收合成一行的日子（N 則更新）內容只有一行，卡內距收窄，不然一行字配一張大卡。 */
-.ptl__node--day > .ptl__body { padding: var(--sp-10) var(--sp-16) }
+.ptl__node:last-child > .ptl__body,
+.ptl__node--start > .ptl__body { padding-bottom: 0; border-bottom: 0 }
 
+/* 標題列一次講完這一列的四件事：遲了幾天／叫什麼／誰看得到／能做什麼。
+   2026-08-18 之前這些分散在標題、tags、meta 三行，多數里程碑因此佔三行高。 */
 .ptl__head {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: var(--sp-8);
-  /* 軸點是 28px 高，標題要跟它的視覺中線對齊，不然每一列都像掉了半行。 */
-  min-height: var(--ptl-dot);
+  min-height: var(--ptl-line);
 }
+/* 逾期與名稱同級（使用者裁決「字要一樣大」）：它們是同一句話的兩半——遲了幾天、
+   遲的是哪一件；一大一小會讀成「標題＋註記」，而它不是註記。
+   排在名稱**之前**也是刻意的：這一列要先讓人看到「遲了」，再看到「遲的是哪一件」。 */
+.ptl__late {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--destructive-ink);
+  flex: none;
+}
+/* 可見度是這一列的屬性、不是另一段說明，所以坐在名稱旁邊而不是自成一行。
+   12px 才是註記的字級。 */
+.ptl__vis { font-size: var(--fs-12); color: var(--muted-foreground); flex: none }
 .ptl__name {
   font-family: var(--font-ui);
   font-size: var(--fs-14);
@@ -178,6 +175,7 @@
 /* 收合鈕：靠右，把說明或當天的更新收起來。 */
 .ptl__toggle {
   margin-left: auto;
+  flex: none;
   border: 0;
   background: none;
   padding: var(--sp-4);
@@ -233,10 +231,22 @@
 .ptl__node--alert .ptl__note { border-left-color: var(--status-error) }
 .ptl__note-body { margin: var(--sp-2) 0 0; color: var(--foreground-muted) }
 
-.ptl__acts { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-2) }
+/* 動作收進標題列最右、常駐但壓到 55%（2026-08-18）：原本每一顆里程碑都是
+   「標題／meta／按鈕」三行，而按鈕是最少用的那個。不做成 hover 才出現——
+   觸控與鍵盤都摸不到 hover。 */
+.ptl__acts { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; flex: none }
+.ptl__acts .btn { opacity: .55; transition: opacity var(--duration) var(--easing) }
+.ptl__node:hover .ptl__acts .btn,
+.ptl__acts .btn:focus-visible,
+/* 選單開著時觸發鈕維持全亮：滑鼠移進選單就離開了節點，觸發鈕跟著淡掉的話，
+   看起來會像這張浮出來的選單不屬於任何一顆里程碑。 */
+.ptl__acts .dropdown[open] .btn { opacity: 1 }
+@media (prefers-reduced-motion: reduce) { .ptl__acts .btn { transition-duration: 1ms } }
+/* 選單面板比預設窄：這裡只有編輯與刪除兩項，230px 的預設寬度是給帶說明的長選項用的。 */
+.ptl__acts .dropdown__menu { min-width: 148px }
+/* 收在 fold 裡的動作列（今天那一格帶過來的里程碑）仍是獨立一列，不靠右。 */
+.ptl__fold > .ptl__acts { margin-left: 0; margin-top: var(--sp-2) }
 
-/* ── 內嵌發文框（今天那一格）───────────────────────────────
-   發文入口長在動線終點上，不是右上角的一顆按鈕（§2.2.10「今天這一格」）。 */
 /* 今天那一格：情境句與發文框同屬一組，但**這一層不自帶面**（2026-08-17 使用者反饋
    「這個裡面多了一層」）。外層 .ptl__body 已經是卡，這裡再給底色就是卡中卡；
    它只負責把兩者排在一起。 */
@@ -245,145 +255,61 @@
   flex-direction: column;
   gap: var(--sp-8);
 }
-/* 發文框本身是這一格裡唯一的填色面：它是可輸入的東西，要跟旁邊的敘述文字分開。
-   底色走 Q66 的疊層方向（--nest-surface 比卡亮一階、疊在卡上），不用 --muted
-   （那是「往下凹」的襯底，用在這裡會讀成陷進卡裡）。 */
-.ptl__composer {
-  border: 1px solid var(--nest-line);
-  border-radius: var(--radius-lg);
-  background: var(--nest-surface);
-  display: flex;
-  flex-direction: column;
-  max-width: 560px;
-}
-.ptl__composer[hidden] { display: none }
-/* 收合態：只露一行提示，點了才展開。展開後 stub 收起、其餘三段出現。 */
-.ptl__composer-stub {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: var(--sp-10) var(--sp-12);
-  font: inherit;
-  font-size: var(--fs-13);
-  color: var(--muted-foreground);
-  background: none;
-  border: 0;
-  border-radius: inherit;
-  cursor: pointer;
-}
-.ptl__composer-stub:hover { color: var(--foreground); background-color: var(--accent) }
-.ptl__composer:not(.is-open) > .ptl__composer-head,
-.ptl__composer:not(.is-open) > .ptl__composer-fields,
-.ptl__composer:not(.is-open) > .ptl__composer-foot { display: none }
-.ptl__composer.is-open > .ptl__composer-stub { display: none }
-.ptl__composer-head,
-.ptl__composer-foot {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-8);
-  padding: var(--sp-10) var(--sp-12);
-}
-.ptl__composer-head { border-bottom: 1px solid var(--border) }
-.ptl__composer-foot { border-top: 1px solid var(--border); justify-content: space-between }
-.ptl__composer-who {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-8);
-  font-size: var(--fs-13);
-  font-weight: var(--fw-medium);
-}
-.ptl__composer-avatar {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--muted-foreground);
-  display: inline-grid;
-  place-items: center;
-}
-.ptl__composer-avatar .ztor-icon { width: 14px; height: 14px }
-.ptl__composer-fields { display: flex; flex-direction: column; gap: var(--sp-8); padding: var(--sp-12) }
-.ptl__composer-tools { display: inline-flex; flex-wrap: wrap; gap: var(--sp-6); align-items: center }
-/* 受眾下拉靠右。js/zselect.js 把原生 select 換成一顆 .zselect__trigger 按鈕插在
-   select 前面（同一個父層），所以靠右的規則要掛在那顆按鈕上；只寫 .select 的話，
-   zselect 接手之後那顆 select 已經視覺隱藏，margin 落在看不見的元素上。 */
-.ptl__composer-head > .zselect__trigger,
-.ptl__composer-head > .select { margin-left: auto }
-/* .input／.select 的基底是 width:100%（表單欄位的預設），放進工具列會各自佔滿一行。
-   這裡的三顆下拉是「一列上的三個決定」，寬度要跟著內容走。 */
-.ptl__composer .zselect__trigger,
-.ptl__composer-head > .select,
-.ptl__composer-tools > .select { width: auto; max-width: 100% }
-/* --bare 的 hover 是 --muted 淺灰填，而發文框本身就是 --muted 底——同色會整顆消失
-   （見 design-system.md 的 Surface-Layer Contrast）。在這一層改用更深一階的 --accent。 */
-.ptl__composer .select--bare:hover,
-.ptl__composer .zselect__trigger.select--bare:hover { background-color: var(--accent) }
-/* 標題那一行是整則更新的主詞，比內文重一階，讓兩個欄位一眼分得出主從。 */
-.ptl__composer-fields .input { font-size: var(--fs-15) }
+
+/* ── 內嵌發文框 ────────────────────────────────────────────
+   2026-08-18 promote（墓碑）：.ptl__composer* 與 .ptl__media* 整組搬到
+   ds-components/composer.css，改名 .composer* / .composer__media*。
+   為什麼搬：同一個發文框有兩個落點——軸上今天那一格的內嵌版，與「發布更新」彈窗。
+   兩邊長一樣、行為一樣，只有「有沒有位置訊號」不同（軸上的位置就是類型的預設值，
+   彈窗沒有位置所以得問）。留在時間軸檔裡的話，彈窗要用就得跨元件借樣式。
+   本檔只保留發文框在軸上的落點（見 .ptl__today 那一段）。 */
 
 /* ── 掛在節點底下的更新 ─────────────────────────────────────
    沒有軸點：它不是藍圖的一步，是掛上去的內容。靠內縮與左側細線表示歸屬。 */
 .ptl__updates { display: flex; flex-direction: column; gap: var(--sp-6); margin-top: var(--sp-4) }
 
 /* 貼文不填底、也不加左側色條（2026-08-17 使用者反饋）：它已經在一顆里程碑的卡裡面，
-   再給它一個面或一條線就是同一格內再分一層。喇叭圖示保留——那是「這是發出去的貼文、
-   不是里程碑自己的欄位」唯一需要的訊號。 */
+   再給它一個面或一條線就是同一格內再分一層。
+   2026-08-18 撤除（墓碑）：.ptl__update-icon（喇叭）／.ptl__update-meta（底下那條
+   「可見度 · 日期」）／.ptl__update--release .ptl__update-icon（綠色喇叭）。
+   使用者裁決「這個沒有意義」——每一則更新都是同一顆喇叭，同一個記號出現在每一列就
+   不再是記號；meta 那條則是把日期與可見度另起一行講。改成跟里程碑同一套標題列：
+   標題在左、日期靠右、可見度只在非公開時寫（見 .ptl__update-head）。 */
+/* 掛在里程碑底下的那一段（2026-08-18）：沒有圖示、沒有標題、沒有 meta，就是一段
+   給支持者看的短文。行高放鬆、寬度封在可讀的行長內。 */
+.ptl__update--nested .ptl__update-body {
+  margin: 0;
+  max-width: 58ch;
+  font-size: var(--fs-13);
+  line-height: var(--lh-relaxed);
+}
 .ptl__update {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--sp-8);
-  align-items: start;
+  display: block;
   background: none;
 }
-.ptl__update-icon { color: var(--muted-foreground); display: inline-grid; place-items: center; padding-top: 1px }
-.ptl__update-icon .ztor-icon { width: 14px; height: 14px }
-.ptl__update-title { font-size: var(--fs-13); overflow-wrap: anywhere }
+/* 標題列與里程碑的 .ptl__head 同一套排法（2026-08-18）：一行講完「這則是什麼、
+   誰看得到、哪一天發的」，內文另起一段。兩種列長得一樣，掃視時才不用切換讀法。 */
+.ptl__update-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+}
+.ptl__update-title { font-size: var(--fs-13); overflow-wrap: anywhere; min-width: 0 }
+.ptl__update-vis { font-size: var(--fs-12); color: var(--muted-foreground); flex: none }
+/* 日期靠右：它是這一列唯一固定長度的東西，靠右對齊之後整段更新的日期排成一直行。 */
+.ptl__update-date { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: auto; flex: none }
 .ptl__update-body {
   font-size: var(--fs-12);
   color: var(--foreground-muted);
   margin: var(--sp-2) 0 0;
   overflow-wrap: anywhere;
 }
-.ptl__update-meta {
-  font-size: var(--fs-11);
-  color: var(--muted-foreground);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-4) var(--sp-10);
-  margin-top: var(--sp-2);
-}
-/* 完成作品那則貼文：它是三件事同時發生的證據。左側色條撤除後改用圖示顏色區分。 */
-.ptl__update--release .ptl__update-icon { color: var(--status-success-ink) }
-
 @media (max-width: 640px) {
   .ptl { --ptl-dot: 24px; --ptl-date: 52px; --ptl-gap: var(--sp-10) }
   .ptl__meta { gap: var(--sp-2) var(--sp-10) }
-  .ptl__composer-head, .ptl__composer-foot { padding: var(--sp-8) var(--sp-10) }
 }
 
-/* ── 交付物清單（掛在「完成作品」那一顆底下）────────────────────
-   2026-08-17 使用者反饋：作品進度應該放進里程碑中。原本是右欄一張獨立的卡，
-   但它講的正是這一顆里程碑要交出去的東西；掛進來之後，「還不能送審」與
-   「因為第 2 集還在轉檔」在同一個地方看得到。
-   底色走 Q66 的疊層方向（--nest-surface 比卡亮一階），與軸上其他附掛區塊一致。 */
-.ptl__deliverables {
-  margin-top: var(--sp-10);
-  padding: var(--sp-12);
-  border: 1px solid var(--nest-line);
-  border-radius: var(--radius-lg);
-  background: var(--nest-surface);
-}
-.ptl__deliverables-head {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  margin-bottom: var(--sp-8);
-  font-size: var(--fs-13);
-  color: var(--muted-foreground);
-}
-.ptl__deliverables-note {
-  margin: var(--sp-8) 0 0;
-  font-size: var(--fs-11);
-  color: var(--muted-foreground);
-}
+/* 2026-08-18 撤除（墓碑）：.ptl__deliverables／__deliverables-head／__deliverables-note
+   ＝掛在「完成作品」那一顆底下的「作品進度」清單。使用者裁示刪除——內容項目的 schema
+   屬另一模組、規格未定，那張表從頭到尾是寫死的示範資料；完成作品那一顆跟其他里程碑
+   長一樣就好。要復活它得先有內容項目的資料模型。 */
