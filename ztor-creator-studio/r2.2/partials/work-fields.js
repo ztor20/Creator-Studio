@@ -191,7 +191,7 @@
     var s = section(host, 'pw.media.subs.title', 'Subtitles', 'pw.media.subs.sub', 'One file per language. SRT or VTT.');
     s.insertAdjacentHTML('beforeend',
       '<div data-pw-subs></div>'
-      + '<button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-sub><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.media.subs.add">'
+      + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-sub><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.media.subs.add">'
       + esc(T('pw.media.subs.add', 'Add a language')) + '</span></button>');
     var wrap = s.querySelector('[data-pw-subs]');
     function syncRemoves() {
@@ -208,11 +208,19 @@
         + optionsHtml(SUB_LANGS) + '</select>'
         + '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-sub aria-label="Remove"><i data-lucide="x" class="ztor-icon"></i></button>'
         + '</div>'
-        /* 這格只有一行「SRT / VTT」提示、沒有標題元素，元件會自己補泛用標籤；
-           字幕收的是檔案不是圖片，故在這裡直接指名（切語言時由 data-i18n-aria-label 重譯）。 */
-        + '<div class="upload-tile upload-tile--file" data-pw-asset="subtitle" data-upload="content" data-upload-accept=".srt,.vtt"'
-        + ' aria-label="' + esc(T('pw.media.subs.file', 'Add a subtitle file')) + '" data-i18n-aria-label="pw.media.subs.file">'
+        /* 2026-08-18 補標題（使用者指示「要有提示拖入或點擊選字幕檔」）：這格原本只有圖示
+           ＋一行「SRT / VTT」，而 .is-empty 會把 __hint 藏到 hover 才出現（upload-tile.css），
+           靜止態因此是一個空框加一顆圖示，看不出可以把檔案拖進來。跟作品檔那格對齊——
+           __title 常駐講怎麼放進來、__hint 留在 hover 講格式限制。
+           標題只講「檔案」不講「字幕檔」：卡頭的語言下拉與區段標題已經說了這是字幕。
+           aria-label 保留（元件註解交代的「更精確說法由消費頁自己寫」），但改寫成以
+           可視標題結尾，讓語音輸入使用者唸得出畫面上看到的那句（WCAG 2.5.3）。
+           2026-08-18 使用者裁決「這只是檔案，可以窄一點」：加 --slim。一份 .srt 不值得
+           一整片投放畫布，何況一種語言就一張卡，堆起來會把整頁撐長。 */
+        + '<div class="upload-tile upload-tile--file upload-tile--slim" data-pw-asset="subtitle" data-upload="content" data-upload-accept=".srt,.vtt"'
+        + ' aria-label="' + esc(T('pw.media.subs.file', 'Subtitle file: drop a file or browse')) + '" data-i18n-aria-label="pw.media.subs.file">'
         + '<span class="upload-tile__icon"><i data-lucide="file-text" class="ztor-icon"></i></span>'
+        + '<span class="upload-tile__title" data-i18n="pw.media.subs.cta">' + esc(T('pw.media.subs.cta', 'Drop a file or browse')) + '</span>'
         + '<span class="upload-tile__hint" data-i18n="pw.media.subs.slot">' + esc(T('pw.media.subs.slot', 'SRT / VTT')) + '</span>'
         + '</div>';
       card.querySelector('[data-pw-drop-sub]').addEventListener('click', function () {
@@ -268,8 +276,19 @@
       tile.setAttribute('data-upload', '');
       tile.setAttribute('aria-label', T('pw.art.stills.add', 'Add a still'));
       tile.setAttribute('data-i18n-aria-label', 'pw.art.stills.add');
-      tile.innerHTML = '<span class="upload-tile__icon">＋</span>';
+      /* 2026-08-18 補標題（同字幕格那一輪）：這格原本只有一個「＋」，空的時候是一片
+         什麼都沒寫的虛線框。改成圖示＋常駐 CTA＋hover 才出現的尺寸提示，與封面格同一套。
+         「＋」換成 Tabler 的 plus：元件說明寫明圖示用 Tabler、不用文字符號，而「加一張」
+         這個語意 plus 圖示照樣講得出來。 */
+      tile.innerHTML =
+        '<span class="upload-tile__icon"><i data-lucide="plus" class="ztor-icon ztor-icon--md"></i></span>'
+        + '<span class="upload-tile__title" data-i18n="pw.art.stills.cta">' + esc(T('pw.art.stills.cta', 'Drop an image or browse')) + '</span>'
+        + '<span class="upload-tile__hint" data-i18n="cp.media.portrait">' + esc(T('cp.media.portrait', '750 × 1125 · portrait')) + '</span>';
       wrap.appendChild(tile);
+      /* 2026-08-18：格子改成「圖示＋標題＋提示」之後，這裡非補 enhance 不可——第一格是
+         宿主頁建完整頁再統一跑一次圖示與 i18n 才活過來的，填滿末格長出的第二格之後就沒有
+         那一次了，少了這行會留下一個 <i data-lucide> 與兩段沒被翻譯的原文。 */
+      enhance(tile);
       if (window.ztorUploadTile) window.ztorUploadTile.enhance(tile);
     }
     wrap.addEventListener('upload:change', function (e) {
@@ -298,7 +317,7 @@
     var s = section(host, 'pw.art.bts.title', 'Behind the scenes', 'pw.art.bts.sub', 'Optional. Extra footage that sits alongside the trailer.');
     s.insertAdjacentHTML('beforeend',
       '<div data-pw-bts></div>'
-      + '<button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-bts><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.art.bts.addmore">'
+      + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-bts><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.art.bts.addmore">'
       + esc(T('pw.art.bts.addmore', 'Add another clip')) + '</span></button>');
     var wrap = s.querySelector('[data-pw-bts]');
     function syncRemoves() {
@@ -314,9 +333,12 @@
         + '<h3 class="card__title">' + esc(T('pw.art.bts.item', 'Clip')) + ' ' + (wrap.children.length + 1) + '</h3>'
         + '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-bts aria-label="' + esc(T('pw.art.bts.drop', 'Remove this clip')) + '" data-i18n-aria-label="pw.art.bts.drop"><i data-lucide="x" class="ztor-icon"></i></button>'
         + '</div>'
-        + '<div class="upload-tile upload-tile--file" data-pw-asset="bts" data-upload="content" data-upload-accept="video/*"'
+        /* 2026-08-18 使用者裁決「要用影片的比例」：花絮收的是影片，格子就長成影片的樣子
+           （16:9、容器 2/3 寬），與預告片、作品檔同一套。原本用 --file 那條長條讀起來像在收文件。 */
+        + '<div class="upload-tile upload-tile--video" data-pw-asset="bts" data-upload="content" data-upload-accept="video/*"'
         + ' aria-label="' + esc(T('pw.art.bts.add', 'Add a behind-the-scenes video')) + '" data-i18n-aria-label="pw.art.bts.add">'
         + '<span class="upload-tile__icon"><i data-lucide="video" class="ztor-icon"></i></span>'
+        + '<span class="upload-tile__title" data-i18n="pw.art.bts.cta">' + esc(T('pw.art.bts.cta', 'Drop a video or browse')) + '</span>'
         + '<span class="upload-tile__hint" data-i18n="pw.art.bts.hint">' + esc(T('pw.art.bts.hint', 'MP4 or MOV')) + '</span>'
         + '</div>';
       card.querySelector('[data-pw-drop-bts]').addEventListener('click', function () {
@@ -351,6 +373,7 @@
       '<div class="upload-tile upload-tile--video" data-pw-asset="trailer" data-upload="content" data-upload-accept="video/*"'
       + ' aria-label="' + esc(T('pw.art.trailer.add', 'Add the trailer')) + '" data-i18n-aria-label="pw.art.trailer.add">'
       + '<span class="upload-tile__icon"><i data-lucide="play" class="ztor-icon"></i></span>'
+      + '<span class="upload-tile__title" data-i18n="pw.art.trailer.cta">' + esc(T('pw.art.trailer.cta', 'Drop a video or browse')) + '</span>'
       + '<span class="upload-tile__hint" data-i18n="pw.art.trailer.hint">' + esc(T('pw.art.trailer.hint', 'Up to 3 minutes')) + '</span>'
       + '</div>');
     enhance(s); upload(s);
@@ -367,7 +390,7 @@
     var s = section(host, 'pw.info.copy.title', 'Name & synopsis', 'pw.info.copy.sub', 'Fans see the version matching their app language.');
     s.insertAdjacentHTML('beforeend',
       '<div data-pw-copy-wrap></div>'
-      + '<button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-lang><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.info.copy.add">'
+      + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-lang><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.info.copy.add">'
       + esc(T('pw.info.copy.add', 'Add a language')) + '</span></button>');
     var wrap = s.querySelector('[data-pw-copy-wrap]');
     var addBtn = s.querySelector('[data-pw-add-lang]');
@@ -601,7 +624,7 @@
       + '<button class="segmented__btn" type="button" data-pw-cur="TWD">TWD</button>'
       + '</div></div>'
       + '<div data-pw-quality-list></div>'
-      + '<button class="btn btn--outline btn--sm mt-16" type="button" data-pw-add-quality><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.price.add">'
+      + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-quality><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.price.add">'
       + esc(T('pw.price.add', 'Add a quality')) + '</span></button>'
       /* 平台費是唯讀揭露、不是欄位，位置跟著定價走（規格 5.1.2.2.1 F14 末段、規劃書 §1.4）。 */
       + '<div class="field__hint mt-16" data-i18n="cpp.s3.fee-hint">' + esc(T('cpp.s3.fee-hint', '5% platform fee + 3% Stripe processing, charged on revenue.')) + '</div>'
@@ -704,7 +727,7 @@
     list.className = 'entry-list';
     var add = document.createElement('button');
     add.type = 'button';
-    add.className = 'btn btn--outline btn--sm entry-list__add';
+    add.className = 'btn btn--outline btn--add entry-list__add';
     add.innerHTML = '<i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.credits.add">' + esc(T('pw.credits.add', 'Add another')) + '</span>';
     var rowsOf = function () { return Array.prototype.slice.call(list.querySelectorAll('.entry-list__row')); };
     function syncRemoves() {

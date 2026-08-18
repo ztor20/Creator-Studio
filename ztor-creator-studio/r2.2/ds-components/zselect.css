@@ -59,6 +59,16 @@
   font-family: inherit;
 }
 .zselect__trigger:disabled { cursor: not-allowed; }
+/* 選項圖示（2026-08-18）：<option data-icon="…"> 時，觸發鈕與面板的每一列都在文字前面
+   放同一顆圖示。收合與展開必須對得上——選完之後圖示消失，會讀成「選到的不是剛剛那一個」。
+   圖示一律中性灰、不隨選取換色（選取由勾號與粗體承擔，見下方 .zselect__check）。
+   `hidden` 時整欄不佔位，所以沒有 data-icon 的下拉版面一格都不會動。 */
+.zselect__lead { display: inline-flex; align-items: center; flex: none; }
+.zselect__lead[hidden] { display: none; }
+/* 雙 class 提權（0,2,0）：`.ztor-icon` 的 16px 與本規則同為 (0,1,0)，誰贏取決於兩支 CSS 的
+   連結順序——那是頁面的事、不該決定元件長相。20px 比勾號大一階半，讓圖示先被讀到、勾號退為狀態記號（2026-08-18 使用者指示由 18 再放大一階）。 */
+.zselect__lead .zselect__icon,
+.zselect__option .zselect__icon { width: 20px; height: 20px; flex: none; color: var(--muted-foreground); }
 /* 標籤吃掉剩餘寬度並在過長時省略——分類名稱可能比欄位寬 */
 .zselect__label {
   flex: 1 1 auto;
@@ -134,6 +144,9 @@
   cursor: pointer;
   user-select: none;
 }
+/* 有圖示的選項是三欄（勾號｜圖示｜文字）。10px 的欄距是給兩欄排的，三欄會讓文字被推得太遠，
+   收成 8px；上下內距同時由 9 加到 10，讓 18px 的圖示不貼著相鄰兩列。 */
+.zselect__option:has(.zselect__icon) { gap: var(--sp-8); padding-top: var(--sp-10); padding-bottom: var(--sp-10); }
 /* 鍵盤與滑鼠共用同一個高亮：兩套高亮（一個框、一個底）會讓人不知道 Enter 會選到哪一個。 */
 .zselect__option--active { background: var(--muted); }
 .zselect__option[aria-disabled="true"] {
@@ -144,11 +157,15 @@
 .zselect__option[aria-disabled="true"].zselect__option--active { background: transparent; }
 
 /* 目前選中：打勾，不是換底色——底色已經是「鍵盤游標在這裡」的意思了。
-   勾號欄永遠佔位（未選中時放一個透明的），選項文字才不會因為選中而左右跳動。 */
+   2026-08-18 使用者指示由列首移到列尾：擺在前面時，每一列都得先跨過一個大多數時候是空的
+   欄位才讀得到文字；擺在列尾就不必為它在左邊留位，文字（與圖示）一律從同一條線起跑。
+   `margin-left:auto` 把它推到右端，所以仍然是「永遠佔位」——未選中時只是看不見，
+   文字不會因為選中而左右跳動。 */
 .zselect__check {
   flex: none;
   width: 16px;
   height: 16px;
+  margin-left: auto;
   color: var(--primary);
   visibility: hidden;
 }

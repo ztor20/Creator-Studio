@@ -157,6 +157,22 @@
 .card__title-icon--accent  { color: var(--status-accent); }
 .card__title-icon--success { color: var(--status-success); }
 .card__hint { font-size: var(--fs-12); color: var(--muted-foreground); }
+/* 卡底動作區（2026-08-18 promote，使用者裁決「置底」）。.card 本身是 flex column，
+   所以 margin-top:auto 會把這一區推到卡的下緣、把多出來的高度全留給內容。
+   為什麼需要它：同一排的卡內容長短不一，動作若貼著內容走，兩張卡的按鈕就一高一低；
+   釘底之後它們對齊成同一條線，那條線本身就在說「這一排的動作在這裡」。
+   內部要排兩顆以上時再包一層 .stack（垂直）或 .flex-row（水平），本區只管落點。 */
+/* :has() 而不是把 .card 一律改成 flex column：後者要動全站每一張卡的排版模型
+   （子元素從此不折疊外距、寬度改由 stretch 決定），為了兩張卡不值得。用 :has() 之後
+   受影響的只有真的帶了 .card__foot 的那幾張。 */
+.card:has(> .card__foot) {
+  display: flex;
+  flex-direction: column;
+}
+.card__foot {
+  margin-top: auto;
+  padding-top: var(--sp-16);
+}
 /* 卡底註腳（2026-08-06 promote，原為 fan-analytics 頁內的 .aud-note）。
    與 .card__hint 的分工：hint 是 head 列裡的一句短提示、行內；note 是卡片內容
    結束後、解釋口徑或限制的整段文字，所以多了上方間距與可讀的行高。 */

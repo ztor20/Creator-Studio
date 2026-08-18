@@ -1,0 +1,154 @@
+/* ============================================================
+   Post composer · 發文框（2026-08-18 promote，自 progress-timeline 的 .ptl__composer）
+
+   一個發文框，兩個落點：
+     ① 進度時間軸「今天那一格」的內嵌版——收合時只露一行提示，點了才展開。
+     ② 頁首與各處「發布更新」按鈕開的彈窗。
+   兩邊長一樣、行為一樣，差別只有「有沒有位置訊號」：軸上的落點本身就是發文類型的
+   預設值（D197），彈窗沒有位置，所以類型與要完成的里程碑都得問一次。
+   促成 promote 的是這件事——留在時間軸檔裡的話，彈窗要用就得跨元件借樣式，
+   而借來的樣式沒有人負責，改一邊會靜默弄壞另一邊。
+
+   Anatomy
+     .post-composer  [.is-open]
+       .post-composer__stub      收合態那一行（內嵌版才有；彈窗一開就是展開態）
+       .post-composer__head      作者 ＋ 受眾下拉（靠右）
+       .post-composer__fields    類型／標題／內文／夾帶
+         .post-composer__media [--image | --video | --audio]
+           .post-composer__media-head  .post-composer__media-title ＋ .post-composer__media-drop（×）
+       .post-composer__foot      .post-composer__tools（夾帶入口）＋ .post-composer__acts（取消／送出）
+
+   ⚠ 名字為什麼是 post-composer 而不是 composer：站上已經有一支 composer.css，
+   那是 AI 產圖那類「拖放或輸入 ＋ 底部工具列與 credit 計量」的輸入卡，根 class 也叫
+   .composer。兩支做的是不同的事（那支收 prompt，這支發一則給支持者的更新），
+   同名會在 CSS 與 design-system 的錨點上直接對撞。
+
+   夾帶一則只能一種：三種的版面、播放行為與粉絲端呈現都不一樣，允許混用等於要為
+   每一種組合各定一次規則。
+   ============================================================ */
+
+/* 底色走 section 的卡面（2026-08-18 使用者裁決）：軸上的內容都沒有面，發文框是
+   唯一一個要「站出來」的區塊——它是動作不是紀錄。用 --card ＋ 卡的陰影，它在無卡的
+   軸上就是那一塊填色的 section；裡面的 .input／.textarea 因此是「卡面上的輸入框」，
+   站上每一張表單本來的關係，不是先前 --nest-surface 面上再疊一層面。 */
+.post-composer {
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  display: flex;
+  flex-direction: column;
+  max-width: 560px;
+}
+.post-composer[hidden] { display: none }
+/* 收合態：只露一行提示，點了才展開。展開後 stub 收起、其餘三段出現。 */
+.post-composer__stub {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-10) var(--sp-12);
+  font: inherit;
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.post-composer__stub:hover { color: var(--foreground); background-color: var(--accent) }
+.post-composer:not(.is-open) > .post-composer__head,
+.post-composer:not(.is-open) > .post-composer__fields,
+.post-composer:not(.is-open) > .post-composer__foot { display: none }
+.post-composer.is-open > .post-composer__stub { display: none }
+.post-composer__head,
+.post-composer__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  padding: var(--sp-10) var(--sp-12);
+}
+.post-composer__head { border-bottom: 1px solid var(--border) }
+.post-composer__foot { border-top: 1px solid var(--border); justify-content: space-between }
+.post-composer__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+}
+.post-composer__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--muted-foreground);
+  display: inline-grid;
+  place-items: center;
+}
+.post-composer__avatar .ztor-icon { width: 14px; height: 14px }
+.post-composer__fields { display: flex; flex-direction: column; gap: var(--sp-8); padding: var(--sp-12) }
+.post-composer__tools { display: inline-flex; flex-wrap: wrap; gap: var(--sp-6); align-items: center }
+.post-composer__tools .btn[disabled] { opacity: .35; pointer-events: none }
+.post-composer__tools .btn.is-active { color: var(--brand-ink) }
+
+/* ── 夾帶（2026-08-18 使用者裁決）──────────────────────────────────
+   按底下的圖片／影片／音樂才長出對應的上傳框，右上角的 × 收掉、回到只有文字。
+   **一則只能一種**：三種的版面、播放行為與粉絲端呈現都不一樣，允許混用等於要為
+   每一種組合各定一次規則。
+   每一塊的寬度貼齊自己的上傳框，頭列因此跟框同寬、× 落在框的右緣——頭列吃滿整個
+   欄位區時，× 會飄在離上傳框很遠的地方，看起來像在關整個發文框。 */
+.post-composer__media { display: flex; flex-direction: column; gap: var(--sp-6); max-width: 100% }
+.post-composer__media--image { width: 160px }
+.post-composer__media--video,
+.post-composer__media--audio { width: 360px }
+.post-composer__media .upload-tile--video { width: 100% }
+.post-composer__media .upload-tile--slim { max-width: none }
+.post-composer__media-head { display: flex; align-items: center; gap: var(--sp-8) }
+.post-composer__media-title { font-size: var(--fs-12); color: var(--foreground-muted); font-weight: var(--fw-medium) }
+.post-composer__media-drop {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  padding: var(--sp-4);
+  cursor: pointer;
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  display: inline-grid;
+  place-items: center;
+}
+.post-composer__media-drop:hover { color: var(--foreground); background: var(--accent) }
+.post-composer__media-drop:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+.post-composer__media-drop .ztor-icon { width: 14px; height: 14px }
+/* 受眾下拉靠右。js/zselect.js 把原生 select 換成一顆 .zselect__trigger 按鈕插在
+   select 前面（同一個父層），所以靠右的規則要掛在那顆按鈕上；只寫 .select 的話，
+   zselect 接手之後那顆 select 已經視覺隱藏，margin 落在看不見的元素上。 */
+.post-composer__head > .zselect__trigger,
+.post-composer__head > .select { margin-left: auto }
+/* .input／.select 的基底是 width:100%（表單欄位的預設），放進工具列會各自佔滿一行。
+   這裡的三顆下拉是「一列上的三個決定」，寬度要跟著內容走。 */
+.post-composer .zselect__trigger,
+.post-composer__head > .select,
+.post-composer__tools > .select { width: auto; max-width: 100% }
+/* --bare 的 hover 是 --muted 淺灰填；發文框改吃 --card 之後兩者仍太近，維持 --accent。 */
+.post-composer .select--bare:hover,
+.post-composer .zselect__trigger.select--bare:hover { background-color: var(--accent) }
+/* 欄位標籤（2026-08-18 使用者裁決「要放在最上面，像截圖一樣有 title 類型」）：
+   發文框的欄位改成與站上表單同一套 .field ＋ .field__label。類型排第一，因為它決定
+   整個表單會做什麼——選「完成作品」時送出鈕就不再是「發布」而是進上架流程；
+   決定行為的欄位要在人開始寫字之前就看見。受眾留在頭列、不另外給標籤：
+   它是送出時的設定，跟送出鈕同一組。 */
+.post-composer__fields .field { margin: 0 }
+.post-composer__fields .field__label { margin-bottom: var(--sp-4) }
+/* 掛哪一顆里程碑由發文框的位置決定（D197），所以那個下拉不再出現在畫面上；
+   元素留著是為了讓既有的送出與同步邏輯有一個單一的值可以讀寫。 */
+.post-composer [data-ptl-ms-slot] { display: none }
+/* 取消與送出綁成一組靠右，換行時整組一起走——主要動作的字會變長
+   （「下一步：上架作品」）。 */
+.post-composer__acts { margin-left: auto; display: inline-flex; align-items: center; gap: var(--sp-8) }
+/* 標題那一行是整則更新的主詞，比內文重一階，讓兩個欄位一眼分得出主從。 */
+.post-composer__fields .input { font-size: var(--fs-15) }
+
+@media (max-width: 640px) {
+  .post-composer__head, .post-composer__foot { padding: var(--sp-8) var(--sp-10) }
+}

@@ -17,6 +17,22 @@
   grid-template-columns: repeat(12, 1fr);
   gap: var(--sp-16);
 }
+/* 側欄（2026-08-18）：坐在右側、內容比左欄短時自己黏住。搭配的做法是把左欄那一疊
+   包成一個 `.bento.bento--span-9`、側欄自己是 `.bento--span-3`。
+   ⚠ 不要改用 `grid-row: 1 / -1` 讓它自動橫跨所有列：`-1` 指的是**顯性**網格的最後一條
+   線，而這裡的列全是自動產生的，實測會把整個 bento 壓成一列、側欄佔滿寬度。
+   側欄 sticky 的理由：左邊那一疊通常比它長，捲動時識別資訊要跟著留在畫面上。
+   首個消費情境：項目詳情總覽的「項目摘要」。 */
+.bento__aside {
+  align-self: start;
+  position: sticky;
+  top: var(--sp-64);
+}
+@media (max-width: 1080px) {
+  /* 窄了就不黏：三欄擠在 1080 以下時側欄本來就會換行到底下，黏住反而擋內容。 */
+  .bento__aside { position: static; }
+}
+
 .bento > * { grid-column: span 12; }
 
 /* [hidden] 要能收起（2026-08-17）：class 直接寫 display 會蓋掉 [hidden] 的

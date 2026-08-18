@@ -670,6 +670,20 @@
    「排在名稱前面」與「會轉」這兩件事。 */
 .product-list__row--group .product-list__product { display: flex; align-items: center; gap: var(--sp-8); }
 .product-list__group-toggle { flex: none; }
+/* 展開鈕跟在名稱後面（2026-08-18）。名稱那一格本身是單行截斷（`overflow:hidden` ＋
+   `text-overflow:ellipsis`），把按鈕放進去會被一起截掉，所以有鈕的那幾列改成一條
+   flex：文字吃剩下的寬度並自己截斷，按鈕固定不縮。只有群組列會命中這條規則。 */
+.product-list__title:has(.product-list__group-toggle) {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.product-list__title:has(.product-list__group-toggle) > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .product-list__group-chevron { transition: transform var(--duration) var(--easing); }
 .product-list__row--group[aria-expanded="true"] .product-list__group-chevron { transform: rotate(180deg); }
 

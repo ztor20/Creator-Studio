@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 進度時間軸重新設計：A 定案版</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/upload-tile.css?v=r2.2">
+
+<style>
+  /* 正式站的 shared.css 開頭就有這條，這頁沒載它。少了它，input.css 的 .textarea
+     （width:100% ＋ 內距）會用 content-box 算，實寬超出容器 → 輸入框爆出發文框外緣。
+     跟前面 [hidden] 那題同一類：demo 頁少載了全站基礎規則。 */
+  *, *::before, *::after { box-sizing: border-box }
+  /* 同上：shared.css 的全域 [hidden]。少了它，任何自帶 display 的元素（.a2__node 的 grid、
+     .a2__media 的 flex）都會贏過瀏覽器內建那條，hidden 形同無效。 */
+  [hidden] { display: none !important }
+
+  body {
+    margin: 0;
+    background: var(--surface-page);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64) }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-48) 0 var(--sp-6) }
+  h3 { font-size: var(--fs-15); margin: var(--sp-24) 0 var(--sp-8); color: var(--foreground-muted) }
+  p  { margin: 0 0 var(--sp-12); color: var(--foreground-muted); max-width: 72ch }
+  .lede { font-size: var(--fs-15) }
+  .why { font-size: var(--fs-13); color: var(--muted-foreground); max-width: 78ch }
+  .why b { color: var(--foreground-muted); font-weight: var(--fw-medium) }
+  ul { margin: 0 0 var(--sp-12); padding-left: var(--sp-20); color: var(--foreground-muted); max-width: 74ch }
+  li { margin-bottom: var(--sp-4) }
+  .stage { padding: var(--sp-24); margin-top: var(--sp-12) }
+  .stage--page { background: var(--surface-page); border: 1px dashed var(--border); border-radius: var(--radius-xl) }
+  .tagline { font-size: var(--fs-12); color: var(--muted-foreground); margin-top: var(--sp-8) }
+  .verdict { margin-top: var(--sp-40) }
+
+  /* =========================================================================
+     共用：三個方向都是同一份資料，只有畫法不同。
+     單位與色一律走既有 token，這頁不引進任何新值。
+     ========================================================================= */
+  .ic { width: 15px; height: 15px; display: block }
+  .ic--sm { width: 13px; height: 13px }
+
+  /* =========================================================================
+     A · 裸軸（Bare rail）
+     軸點＝軸線上的一顆實心小點，沒有外框也沒有底。內容不裝卡，靠留白與
+     一條 hairline 分行。今天是軸上唯一的品牌色點，靠光暈而不是外框被看見。
+     ========================================================================= */
+  .a { --a-date: 60px; --a-rail: 24px; --a-gap: var(--sp-16); display: flex; flex-direction: column }
+  .a__node {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--a-date) var(--a-rail) minmax(0, 1fr);
+    gap: var(--a-gap);
+    padding-bottom: var(--sp-24);
+  }
+  .a__node:last-child { padding-bottom: 0 }
+  .a__node::before {                       /* 軸線 */
+    content: "";
+    position: absolute;
+    left: calc(var(--a-date) + var(--a-gap) + var(--a-rail) / 2 - 1px);
+    top: 12px; bottom: 0; width: 1px;
+    background: var(--border);
+  }
+  .a__node:last-child::before { display: none }
+  .a__date {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+    text-align: right;
+    align-self: start;
+    padding-top: 3px;
+  }
+  .a__dot {                                 /* 外框拿掉：只剩一顆點 */
+    align-self: start;
+    justify-self: center;
+    width: 7px; height: 7px;
+    margin-top: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--muted-foreground);
+    position: relative; z-index: 1;
+  }
+  .a__node--done  .a__dot { background: var(--status-success) }
+  .a__node--doing .a__dot { background: var(--status-info) }
+  .a__node--alert .a__dot { background: var(--status-error) }
+  .a__node--today .a__dot {
+    width: 9px; height: 9px; margin-top: 7px;
+    background: var(--primary);
+    /* 光暈取代外框：它是軸上的定位點，但不該長成一個被框起來的物件 */
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  .a__body { min-width: 0; padding-bottom: var(--sp-16); border-bottom: 1px solid var(--border) }
+  .a__node:last-child .a__body { border-bottom: 0; padding-bottom: 0 }
+  .a__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-8) }
+  .a__name { font-size: var(--fs-14); font-weight: var(--fw-medium); margin: 0 }
+  .a__node--muted .a__name { font-weight: var(--fw-regular); color: var(--foreground-muted) }
+  .a__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-4) 0 0 }
+  .a__acts { display: flex; gap: var(--sp-6); margin-top: var(--sp-10) }
+  .a__lede { font-size: var(--fs-16); font-weight: var(--fw-medium); margin: 0 0 var(--sp-10) }
+  .a__lede-num { color: var(--brand-ink) }
+  .a__composer {
+    background: var(--nest-surface);
+    border: 1px solid var(--nest-line);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-12) var(--sp-14);
+    font-size: var(--fs-13);
+    color: var(--muted-foreground);
+  }
+  .a__update { display: flex; gap: var(--sp-8); margin-top: var(--sp-10); font-size: var(--fs-13) }
+  .a__update-ic { color: var(--muted-foreground); flex: none; margin-top: 2px }
+  .a__update-body { min-width: 0 }
+  .a__update-sub { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-2) 0 0 }
+
+  /* =========================================================================
+     A2 · 裸軸（位置優化版）
+     A 定案之後的第二輪：日期、標籤、按鈕三者各自歸位。
+       日期  → 只在 gutter 出現一次，逾期時它自己轉紅（逾期是從日期算出來的）
+       標籤  → 全部退場，狀態與可見度改成 meta 行的純文字（跟總覽的日期同一個裁決）
+       按鈕  → icon only、移到標題列最右，預設低對比、hover/focus 才升上來，不再佔第三行
+     ========================================================================= */
+  .a2 { --a-date: 64px; --a-rail: 20px; --a-gap: var(--sp-14); display: flex; flex-direction: column }
+  .a2__node {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--a-date) var(--a-rail) minmax(0, 1fr);
+    gap: var(--a-gap);
+    padding-bottom: var(--sp-20);
+  }
+  .a2__node:last-child { padding-bottom: 0 }
+  .a2__node::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--a-date) + var(--a-gap) + var(--a-rail) / 2 - 1px);
+    top: 11px; bottom: 0; width: 1px;
+    background: var(--border);
+  }
+  .a2__node:last-child::before { display: none }
+  /* 日期：與標題第一行對到同一條基線，不再靠目測補 padding。 */
+  .a2__date {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-12);
+    line-height: 22px;                 /* ＝標題列高，兩者因此天生對齊 */
+    color: var(--muted-foreground);
+    text-align: right;
+    align-self: start;
+  }
+  .a2__node--alert .a2__date { color: var(--destructive-ink) }
+  .a2__node--today .a2__date { color: var(--brand-ink); font-weight: var(--fw-medium) }
+  /* 里程碑的軸點（2026-08-18 使用者：「圈圈需要更明顯一點」）：10px 實心，
+     顏色由 --muted-foreground 提到 --foreground-muted。它是藍圖的骨架，
+     份量本來就該壓過更新那一種。margin-top 用「標題列高 22px 的一半減半徑」
+     算出來，讓點的圓心對到標題的中線，不靠目測。 */
+  .a2__dot {
+    align-self: start; justify-self: center;
+    width: 10px; height: 10px; margin-top: 6px;
+    border-radius: var(--radius-pill);
+    background: var(--foreground-muted);
+    position: relative; z-index: 1;
+  }
+  .a2__node--done  .a2__dot { background: var(--status-success) }
+  .a2__node--doing .a2__dot { background: var(--status-info) }
+  .a2__node--alert .a2__dot { background: var(--status-error) }
+  .a2__node--today .a2__dot {
+    width: 12px; height: 12px; margin-top: 5px;
+    background: var(--primary);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 18%, transparent);
+  }
+  /* 軸上有兩種節點，點的樣式要看得出差別（2026-08-18 使用者裁決）：
+       里程碑 ＝ 實心點。它是藍圖上的一個承諾，有預計日期、有狀態、會逾期。
+       更新   ＝ 空心圈。它是一則已經發生的貼文，沒有承諾、不會逾期，份量比較輕。
+     實心／空心是同一個形狀的兩種份量，不引進第二種形狀——軸上已經有夠多東西了。
+     掛在里程碑底下的更新不另外給軸點（它縮排在那顆里程碑的內容裡），
+     軸點只留給「自己站在時間軸上」的那一種。 */
+  .a2__node--update .a2__dot {
+    background: transparent;
+    border: 1px solid var(--muted-foreground);
+    box-sizing: border-box;
+    width: 8px; height: 8px; margin-top: 7px;
+  }
+  /* 收合列：整列可點，標題右邊一個 chevron 表示還有東西在裡面。 */
+  .a2__toggle {
+    all: unset;
+    box-sizing: border-box;
+    display: flex; align-items: center; gap: var(--sp-8);
+    width: 100%; min-height: 22px;
+    cursor: pointer;
+    color: var(--foreground-muted);
+    font-size: var(--fs-14);
+    border-radius: var(--radius-sm);
+  }
+  .a2__toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px }
+  .a2__toggle:hover { color: var(--foreground) }
+  .a2__toggle-ic { margin-left: auto; display: block; transition: transform var(--duration) var(--easing) }
+  .a2__toggle[aria-expanded="true"] .a2__toggle-ic { transform: rotate(90deg) }
+  @media (prefers-reduced-motion: reduce) { .a2__toggle-ic { transition-duration: 1ms } }
+  /* 展開出來的更新：日期欄改寫時間，內容再縮一階，讓它讀起來是「那一天裡面的事」。 */
+  .a2__node--child .a2__name { font-weight: var(--fw-regular) }
+  .a2__node--child .a2__date { color: var(--muted-foreground) }
+  /* 分行方式三選一（2026-08-18 使用者反饋「橫線的區隔有點雜亂，可以用比較大的間距
+     或比較不明顯的線條？」）。切換在 .a2 這一層，節點本身不知道自己被怎麼分行。
+       --sep-none  以留白分行：完全不畫線，改成把節點間距拉大到 --sp-32
+       --sep-faint 極淡線：線還在，但壓到 --border 的 40%，只當一條若有似無的軌跡
+       --sep-line  原本的 1px --border（留著對照用）
+     為什麼預設 none：這一欄左邊已經有軸線與日期兩個對齊訊號在分行，橫線是第三個，
+     而且它橫著切、跟軸線的方向打架——三個訊號講同一件事，最吵的那個該退場。 */
+  .a2__body { min-width: 0 }
+  .a2--sep-line  .a2__body { padding-bottom: var(--sp-14); border-bottom: 1px solid var(--border) }
+  .a2--sep-faint .a2__body { padding-bottom: var(--sp-14); border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent) }
+  .a2--sep-line  .a2__node:last-child .a2__body,
+  .a2--sep-faint .a2__node:last-child .a2__body { border-bottom: 0; padding-bottom: 0 }
+  .a2--sep-none  .a2__node { padding-bottom: var(--sp-32) }
+  .a2--sep-none  .a2__node:last-child { padding-bottom: 0 }
+  /* 標題列：名字靠左、動作靠右，兩者之間留白。所有標題因此對齊同一個左邊界。 */
+  .a2__head { display: flex; align-items: center; gap: var(--sp-8); min-height: 22px }
+  .a2__name { font-size: var(--fs-14); font-weight: var(--fw-medium); margin: 0; min-width: 0 }
+  .a2__node--muted .a2__name { font-weight: var(--fw-regular); color: var(--foreground-muted) }
+  /* 動作：icon only、常駐但低對比。不用 hover 才出現——觸控與鍵盤都摸不到 hover。 */
+  .a2__acts { margin-left: auto; display: flex; gap: var(--sp-2); flex: none }
+  .a2__acts .btn { color: var(--muted-foreground); opacity: .55; transition: opacity var(--duration) var(--easing) }
+  .a2__node:hover .a2__acts .btn,
+  .a2__acts .btn:focus-visible { opacity: 1 }
+  @media (prefers-reduced-motion: reduce) { .a2__acts .btn { transition-duration: 1ms } }
+  /* meta：可見度與狀態改成純文字，中間用 · 串。逾期那一段自己轉紅。 */
+  /* 可見度移到標題旁邊（2026-08-18 使用者裁決）：它是這一列的屬性，不是另一段說明；
+     跟標題同一行時掃過去就知道「這件事誰看得到」，不必為它多開一行。
+     字樣由「僅支持者」縮成「支持者」——「僅」是在跟「公開」比較，而它們本來就
+     並列在同一個位置，比較的意思由位置給了。通知人數整個不寫：那是送出後的結果，
+     創作者在軸上要看的是「這件事做完沒、誰看得到」。 */
+  .a2__vis { font-size: var(--fs-12); color: var(--muted-foreground); font-weight: var(--fw-regular) }
+  /* 逾期併進標題列、而且排在名字前面（2026-08-18 使用者裁決）。原本它自成一行 meta，
+     一列裡兩行、第二行只有三個字。排在名字前面是刻意的——這一列要先讓人看到「遲了」，
+     再看到「遲的是哪一件」；名字擺前面的話，紅字會被推到行尾、掃視時最晚才讀到。 */
+  /* 與標題同級（2026-08-18 使用者：「字要一樣大」）：逾期跟里程碑的名字是同一句話的
+     兩半——遲了幾天、遲的是哪一件；一大一小會讀成「標題＋註記」，而它不是註記。
+     可見度維持 12px，那個才是註記。 */
+  .a2__late { font-size: var(--fs-14); color: var(--destructive-ink); font-weight: var(--fw-medium); flex: none }
+  .a2__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-2) 0 0 }
+  .a2__meta-late { color: var(--destructive-ink) }
+  /* 今天那一格：發文框搬去里程碑之後，這一列留一句「現在該交代的是哪一顆」
+     （2026-08-18 使用者：「原本今天的里程碑還要留著」）。它跟底下 8/11 那一列
+     不算重複——這裡回答「此刻欠著什麼」，那裡是那顆里程碑本身的紀錄；掃到今天
+     就知道要處理哪一件，不必再往下找。
+     2026-08-18 撤除（墓碑）：.a2__now（今天退成一條細品牌色線的版本）。它把
+     「現在在軸的哪一段」講清楚了，卻讓創作者少了那句指路。 */
+  .a2__lede { font-size: var(--fs-16); font-weight: var(--fw-medium); margin: 0; min-height: 22px }
+  .a2__lede-num { color: var(--destructive-ink) }
+  .a2__lede-ok  { color: var(--status-success-ink) }
+  .a2__lede-sub { color: var(--muted-foreground); font-weight: var(--fw-regular) }
+  /* 發文框長在「下一顆要交代的里程碑」底下（2026-08-18 使用者裁決）：
+     發文的起點不是「今天」這個時間點，是「接下來要跟支持者交代哪一件事」。
+     下一顆的判定＝最早的未完成里程碑，**逾期的不跳過**——它才是欠著的那一顆，
+     跳過它去接下一個目標，等於讓畫面幫創作者忽略已經遲到的承諾。 */
+  .a2__node--next .a2__composer { margin-top: var(--sp-12) }
+  /* 發文框不吃滿整欄（2026-08-18 使用者：「寬度適中就好，現在超寬」）：
+     它是一個要打字的欄位，寬到 1000px 的輸入框沒有人會在裡面寫完一段話，
+     而且會把整條軸的視覺重心壓到這一列。520px 約當一行 40 個中文字。 */
+  .a2__composer { max-width: 560px }
+  /* 頭列：左邊「誰在發」、右邊「誰看得到」（沿用既有發文框的做法）。
+     兩件事都是「這則貼文的身分」，不是要填的欄位，所以坐在表單之外的頭列，
+     不跟類型／標題／內文擠同一組。 */
+  .a2__composer-head {
+    display: flex; align-items: center; gap: var(--sp-10);
+    padding: var(--sp-10) var(--sp-14);
+    border-bottom: 1px solid var(--border);
+  }
+  .a2__composer-avatar {
+    width: 26px; height: 26px; flex: none;
+    border-radius: var(--radius-pill);
+    background: var(--accent); color: var(--muted-foreground);
+    display: inline-grid; place-items: center;
+  }
+  .a2__composer-avatar .ic { width: 14px; height: 14px }
+  .a2__composer-who { font-size: var(--fs-13); font-weight: var(--fw-medium); min-width: 0 }
+  .a2__composer-aud { margin-left: auto; max-width: 190px }
+  .a2__composer-fields { display: flex; flex-direction: column; gap: var(--sp-10); padding: var(--sp-12) var(--sp-14) }
+  /* 夾帶：圖片／影片／音樂。它們不是欄位，是「把東西放進這則貼文」的動作，
+     所以跟送出鈕同一列、走 ghost，不佔一個帶標籤的欄位。 */
+  .a2__composer-tools { display: inline-flex; align-items: center; gap: var(--sp-2) }
+  .a2__composer-tools .btn[disabled] { opacity: .35; pointer-events: none }
+  .a2__composer-tools .btn.is-active { color: var(--brand-ink) }
+  /* 夾帶區：選了哪一種就長出那一種的上傳框，右上角的 × 收掉、回到只有文字。
+     一則貼文只能一種夾帶方式（使用者裁決）——三種混在一起的版面、播放行為與
+     粉絲端呈現都不一樣，允許混用等於要為每一種組合各定一次規則。 */
+  /* 每一塊的寬度貼齊自己的上傳框（2026-08-18 使用者：「所有的叉叉都放在這個位置，
+     和下面的框框右邊寬度對齊」）。原本頭列吃滿整個欄位區，× 因此飄在離上傳框
+     很遠的右邊，看起來像在關整個發文框、不是關這一塊夾帶。 */
+  .a2__media { display: flex; flex-direction: column; gap: var(--sp-6); max-width: 100% }
+  .a2__media--image { width: 160px }
+  .a2__media--video,
+  .a2__media--music { width: 360px }
+  .a2__media .upload-tile--video { width: 100% }
+  .a2__media .upload-tile--slim { max-width: none }
+  .a2__media-head { display: flex; align-items: center; gap: var(--sp-8) }
+  .a2__media-title { font-size: var(--fs-12); color: var(--foreground-muted); font-weight: var(--fw-medium) }
+  .a2__media-drop { margin-left: auto; border: 0; background: none; padding: var(--sp-4); cursor: pointer;
+                    color: var(--muted-foreground); border-radius: var(--radius-sm); display: inline-grid; place-items: center }
+  .a2__media-drop:hover { color: var(--foreground); background: var(--muted) }
+  .a2__media-drop:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+
+  /* 靜止態＝一行 stub。它只要做到一件事：讓人知道「可以從這裡開始寫」。 */
+  /* 底色走 section 的卡面（2026-08-18 使用者：「這個背景色用有背景色的 section 顏色」）：
+     軸上的內容都沒有面，發文框是唯一一個要「站出來」的區塊——它是動作不是紀錄。
+     用 --card ＋ 卡的陰影，它在無卡的頁面底上就是那一塊填色的 section。 */
+  .a2__composer-stub {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: var(--card); border: 0;
+    box-shadow: var(--shadow-card), var(--shadow-edge-top);
+    border-radius: var(--radius-lg); padding: var(--sp-12) var(--sp-14);
+    font: inherit; font-size: var(--fs-13); color: var(--muted-foreground);
+  }
+  .a2__composer-stub:hover { color: var(--foreground) }
+  .a2__composer-stub:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+  /* 展開態＝真的要寫字的樣子：內文框 ＋ 一列設定 ＋ 送出。
+     「掛到哪顆里程碑」是預帶值不是問句——發文框長在哪裡，預設就掛在哪裡；
+     長在今天那一列時預設「不掛」，也就是單獨發在時間軸上。 */
+  .a2__composer-open {
+    background: var(--card); border: 0;
+    box-shadow: var(--shadow-card), var(--shadow-edge-top);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  /* 內文框吃 input.css 的原樣（2026-08-18 使用者：「padding 要做出來」）：先前為了
+     「背景色用一階」把它的底、邊框與內距全部拿掉，字就貼著面板邊緣、也看不出
+     可打字的範圍到哪。發文框的面已經從 --nest-surface 換成 --card 之後，
+     「卡面上放一個 --input-surface 的輸入框」就是站上每一張表單的標準關係，
+     不再是面疊面。這裡只補一個最小高度。 */
+  .a2__composer-open .textarea { min-height: 84px; resize: vertical }
+  /* 類型排在最上面、帶標籤（2026-08-18 使用者：「要放在最上面，像截圖一樣有 title 類型」，
+     對齊既有發文彈窗的欄位樣式）。它排第一是因為它決定整個表單會做什麼——選「完成作品」
+     時送出鈕就不再是「發布」而是進上架流程；決定行為的欄位要在人開始寫字之前就看見。
+     受眾留在底下那一列不另外給標籤：它是送出時的設定，跟送出鈕是同一組動作。 */
+  .a2__composer-open .field { margin: 0 }
+  .a2__composer-foot { display: flex; align-items: center; gap: var(--sp-8); flex-wrap: wrap;
+                       padding: var(--sp-10) var(--sp-14); border-top: 1px solid var(--border) }
+  /* 取消放送出左邊、走 ghost：兩顆都做成實體按鈕會讓「取消」看起來跟「發布」一樣重。
+     兩顆綁成一組靠右——主要動作的字會變長（「下一步：上架作品」），沒綁在一起時
+     換行會把取消留在上一行右端、主要動作掉到下一行左端。 */
+  .a2__composer-acts { margin-left: auto; display: flex; align-items: center; gap: var(--sp-8) }
+  .a2__composer[data-open="false"] .a2__composer-open,
+  .a2__composer[data-open="true"]  .a2__composer-stub { display: none }
+  /* 掛在里程碑底下的更新（2026-08-18 使用者：「如果這是內文，那只需要文字」）：
+     拿掉喇叭圖示與並排的框架，就是這顆里程碑內容的一段。它是不是一則更新由
+     底下那行說（受眾與通知人數只有更新才有），不必再加一個圖示重講一次。 */
+  /* 2026-08-18 撤除（墓碑）：.a2__composer-note（發文框底下那句解釋）。使用者裁示移除——
+     「送出後那顆就標記完成」這件事，類型下拉的字面加上送出鈕的字面已經講完了；
+     在下面再寫一段散文是同一句話講第三遍。要說的話寫進按鈕，不要寫成註腳。 */
+  .a2__update { margin-top: var(--sp-10) }
+  /* 這一段是創作者寫給支持者的短文，不是欄位值：行高放鬆、寬度封在可讀的行長內
+     （2026-08-18 使用者：「這邊應該是寫這個里程碑做了什麼更新的小短文」）。 */
+  .a2__update-body {
+    margin: 0;
+    max-width: 58ch;
+    font-size: var(--fs-13);
+    line-height: var(--lh-relaxed);
+    color: var(--foreground-muted);
+  }
+  /* 2026-08-18 撤除（墓碑）：.a2__update-sub（里程碑底下那段短文的可見度行）。
+     使用者裁示刪除——那則更新的可見度就是它所屬里程碑的可見度，標題列已經寫過一次。 */
+
+  /* =========================================================================
+     B · 日期分組（Grouped by day）
+     不畫連續軸線。日期升格成分組標頭，同一天發生的事收在同一組裡。
+     節點標記是標題前的一顆小點，跟著文字走，不佔一個軸欄。
+     ========================================================================= */
+  .b { display: flex; flex-direction: column; gap: var(--sp-8) }
+  .b__group { padding: var(--sp-16) 0; border-bottom: 1px solid var(--border) }
+  .b__group:last-child { border-bottom: 0 }
+  .b__day {
+    display: flex; align-items: baseline; gap: var(--sp-10);
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-12);
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: var(--sp-10);
+  }
+  .b__day-rel { font-size: var(--fs-12); letter-spacing: 0; text-transform: none }
+  .b__group--today {
+    border-left: 2px solid var(--primary);
+    padding-left: var(--sp-16);
+    margin-left: calc(var(--sp-16) * -1);
+  }
+  .b__group--today .b__day { color: var(--brand-ink) }
+  .b__item { display: flex; align-items: flex-start; gap: var(--sp-10); padding: var(--sp-6) 0 }
+  .b__mark { width: 7px; height: 7px; border-radius: var(--radius-pill); background: var(--muted-foreground); flex: none; margin-top: 7px }
+  .b__item--done  .b__mark { background: var(--status-success) }
+  .b__item--doing .b__mark { background: var(--status-info) }
+  .b__item--alert .b__mark { background: var(--status-error) }
+  .b__body { min-width: 0; flex: 1 1 auto }
+  .b__name { font-size: var(--fs-14); font-weight: var(--fw-medium); margin: 0 }
+  .b__item--muted .b__name { font-weight: var(--fw-regular); color: var(--foreground-muted) }
+  .b__meta { font-size: var(--fs-12); color: var(--muted-foreground); margin: var(--sp-2) 0 0 }
+  .b__end { font-size: var(--fs-12); color: var(--muted-foreground); flex: none; padding-top: var(--sp-2) }
+  .b__composer {
+    background: var(--nest-surface);
+    border: 1px solid var(--nest-line);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-12) var(--sp-14);
+    font-size: var(--fs-13);
+    color: var(--muted-foreground);
+    margin-top: var(--sp-8);
+  }
+  .b__acts { display: flex; gap: var(--sp-6); margin-top: var(--sp-8) }
+
+  /* =========================================================================
+     C · 現況去外框（最小改動）
+     結構、卡、間距全部不動，只把軸點的圓框與底拿掉，讓圖示直接坐在軸線上。
+     ========================================================================= */
+  .c { --c-date: 60px; --c-rail: 24px; --c-gap: var(--sp-12); display: flex; flex-direction: column }
+  .c__node {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--c-date) var(--c-rail) minmax(0, 1fr);
+    gap: var(--c-gap);
+    padding-bottom: var(--sp-16);
+  }
+  .c__node:last-child { padding-bottom: 0 }
+  .c__node::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--c-date) + var(--c-gap) + var(--c-rail) / 2 - 1px);
+    top: calc(var(--sp-14) + 22px); bottom: 0; width: 1px;
+    background: var(--border);
+  }
+  .c__node:last-child::before { display: none }
+  .c__date {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--fs-12); color: var(--muted-foreground);
+    text-align: right; align-self: start;
+    margin-top: calc(var(--sp-14) + 3px);
+  }
+  .c__dot {                                  /* 外框與底都拿掉，只剩圖示 */
+    align-self: start; justify-self: center;
+    margin-top: var(--sp-14);
+    color: var(--muted-foreground);
+    /* 軸線穿過圖示會顯髒：用頁面底色在圖示背後開一個小洞 */
+    background: var(--card);
+    padding: var(--sp-2) 0;
+    position: relative; z-index: 1;
+  }
+  .c__node--done  .c__dot { color: var(--status-success-ink) }
+  .c__node--doing .c__dot { color: var(--status-info-ink) }
+  .c__node--alert .c__dot { color: var(--destructive-ink) }
+  .c__node--today .c__dot { color: var(--brand-ink) }
+  .c__body {
+    min-width: 0; display: flex; flex-direction: column; gap: var(--sp-6);
+    padding: var(--sp-14) var(--sp-16);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-card), var(--shadow-edge-top);
+  }
+  .c__head { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-8); min-height: 22px }
+  .c__name { font-size: var(--fs-14); font-weight: var(--fw-medium); margin: 0 }
+  .c__meta { font-size: var(--fs-12); color: var(--muted-foreground) }
+  .c__acts { display: flex; gap: var(--sp-6); margin-top: var(--sp-2) }
+  .c__composer {
+    background: var(--nest-surface); border: 1px solid var(--nest-line);
+    border-radius: var(--radius-lg); padding: var(--sp-12) var(--sp-14);
+    font-size: var(--fs-13); color: var(--muted-foreground);
+  }
+  .c__lede { font-size: var(--fs-16); font-weight: var(--fw-medium); margin: 0 }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>進度時間軸：A 定案版</h1>
+<p class="lede">2026-08-18。第一輪提了三個方向，使用者選 <b>A · 裸軸</b>，並指出「按鈕、標籤、日期的位置要再優化」。下面第一段是優化後的 <b>A2</b>（提議落地的版本），第二段留著原本的 A 供對照，最後收著本輪沒被選上的 B 與 C。</p>
+
+<div class="info-banner">
+  <div class="info-banner__body">
+    <p class="info-banner__text">還沒有動到 <code>ds-components/progress-timeline.css</code>。確認 A2 之後再落地。</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ A2 -->
+<h2>A2 · 位置優化（提議落地這一版）</h2>
+<p class="why">三個東西各自歸位，規則只有一句話：<b>一個資訊只出現一次，出現在它最該出現的那一欄。</b></p>
+<ul>
+  <li><b>日期</b>只在左欄出現一次。原本標題下面還寫一次「預計 11/19」，同一個日期在同一列講兩遍。逾期時<b>日期自己轉紅</b>——逾期本來就是從這個日期算出來的，紅在別的地方等於把因果拆開。左欄的行高直接設成標題列高，日期與標題天生對齊，不再靠目測補 padding。</li>
+  <li><b>標籤全部退場</b>，可見度改成標題旁的一個小字（<code>公開</code>／<code>支持者可見</code>），逾期也併進同一列、而且排在名字之前——這一列要先讓人看到「遲了」再看到「遲的是哪一件」，不另外開一行；<b>「進行中／未開始」整個不寫</b>——那是軸點的顏色已經在講的事，寫出來是同一個訊號的第二份。<b>通知人數也不寫</b>：那是送出後的結果，軸上要回答的是「這件事做完沒、誰看得到」。「僅支持者」縮成「支持者」，因為「僅」是在跟「公開」比較，而兩者本來就並列在同一個位置。沿用你在總覽下的同一個裁決：標籤是給「被指派的狀態值」用的語彙，一條軸上每列掛兩三顆，它們就變成純裝飾。唯一保留紅色的是逾期，而且是文字不是標籤。</li>
+  <li><b>發文框長在「下一顆要交代的里程碑」底下，不再長在「今天」那一格</b>（使用者裁決）。發文的起點不是一個時間點，是「接下來要跟支持者交代哪一件事」。下一顆的判定＝<b>最早的未完成里程碑，逾期的不跳過</b>——它才是欠著的那一顆；跳過它去接下一個目標，等於讓畫面幫創作者忽略已經遲到的承諾。demo 裡因此落在 8/11 那顆逾期的「前期製作完成」，不是 9/20。「今天」那一列改講<b>跨里程碑的一句體溫計</b>（<code>1 件逾期，2 件還沒到</code>），不重複任何一顆的名字——理由見下一段。</li>
+  <li><b>發里程碑的文＝完成那顆里程碑</b>（使用者裁決）。一顆里程碑底下的那段短文就是它的完成宣告，所以<b>未完成的里程碑不會有已附的更新</b>——它只有一個等著被寫的發文框；寫完送出，那顆就變綠。同一天發的、跟里程碑無關的東西，是另一則一般更新，自己站在軸上（demo 的 8/9「場勘的側拍照」）。demo 因此改成：8/11 逾期未完成＝只有發文框，7/28「劇本定稿」已完成＝帶著它的完成宣告。</li>
+  <li><b>軸上兩種節點的點不一樣</b>：里程碑是<b>實心點</b>（藍圖上的承諾，有預計日期、會逾期），更新是<b>空心圈</b>（已經發生的貼文，沒有承諾、不會逾期）。實心／空心是同一個形狀的兩種份量，不引進第二種形狀。里程碑那顆刻意做大（10px 實心、顏色提一階）——它是藍圖的骨架，份量本來就該壓過更新（8px 空心）。掛在某顆里程碑底下的更新不另外給軸點，它就是那顆里程碑內容裡的一段純文字（見 8/11 那則，沒有圖示也沒有框：它是不是更新由受眾與通知人數那行說了算）。</li>
+  <li><b>非里程碑的更新可以摺疊</b>：過去某一天的更新收成一列「N 則更新」，點開才展開成逐則，日期欄改寫當天的時間。里程碑不參與收合——它是藍圖的骨架，永遠看得到。（收合的預設狀態是關起來的，點一下 7/10 那列看展開的樣子。）</li>
+  <li><b>分行改用極淡線</b>（<code>--border</code> 的 40%，使用者裁決）。原本的 1px 橫著切、跟軸線的方向打架，而左邊已經有軸線與日期兩個對齊訊號在分行；壓淡之後它退成一條若有似無的軌跡，仍能在某一列內容變高時（掛了三則更新那種）交代清楚哪幾行是同一列。切換器可以現場比另外兩種。</li>
+  <li><b>按鈕改 icon only、移到標題列最右</b>，不再自己佔第三行。原本每一顆里程碑都是「標題／meta／按鈕」三行，實際上按鈕是最少用的那個。常駐但壓到 55% 不透明度，hover 或鍵盤 focus 才升上來——不做成 hover 才出現，因為觸控與鍵盤都摸不到 hover。</li>
+</ul>
+
+<div class="segmented" role="group" aria-label="分行方式" style="margin-top:var(--sp-12)">
+  <button class="segmented__btn" type="button" data-sep="none">無線 · 加大間距</button>
+  <button class="segmented__btn is-active" type="button" data-sep="faint">極淡線</button>
+  <button class="segmented__btn" type="button" data-sep="line">原本的 1px</button>
+</div>
+
+<div class="stage stage--page">
+  <div class="a2 a2--sep-faint" id="a2">
+    <div class="a2__node a2__node--muted">
+      <span class="a2__date"></span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head"><h4 class="a2__name">完成作品</h4></div>
+        <p class="a2__meta">項目成功後開啟上架流程</p>
+      </div>
+    </div>
+
+    <div class="a2__node">
+      <span class="a2__date">11/19</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">成片定剪</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node">
+      <span class="a2__date">9/20</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">主體拍攝殺青</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--today">
+      <span class="a2__date">今天</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <p class="a2__lede"><span class="a2__lede-num">1 件逾期</span><span class="a2__lede-sub">，2 件還沒到</span></p>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--alert a2__node--next">
+      <span class="a2__date">8/11</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <span class="a2__late">逾期 6 天</span>
+          <h4 class="a2__name">前期製作完成</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+        <div class="a2__composer" data-open="false" data-composer="m">
+          <button class="a2__composer-stub" type="button" data-composer-open>前期製作完成了嗎？寫一段給支持者。</button>
+          <div class="a2__composer-open">
+            <div class="a2__composer-head">
+              <span class="a2__composer-avatar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/><path d="M6 20v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1"/></svg></span>
+              <span class="a2__composer-who">周湯豪 NICKTHEREAL</span>
+              <select class="select a2__composer-aud" aria-label="公開給"><option>公開給：全部</option><option>公開給：支持者</option><option>公開給：超級粉絲以上</option></select>
+            </div>
+            <div class="a2__composer-fields">
+            <div class="field">
+              <label class="field__label" for="a2-kind-m">類型</label>
+              <select class="select" id="a2-kind-m" data-kind><option selected>里程碑更新</option><option>一般更新貼文</option></select>
+            </div>
+            <div class="field" data-kind-title hidden>
+              <label class="field__label" for="a2-title-m">標題</label>
+              <input class="input" id="a2-title-m" placeholder="例如：場勘的側拍照">
+            </div>
+            <div class="field">
+              <label class="field__label" for="a2-body-m">內文</label>
+              <textarea class="textarea" id="a2-body-m" rows="3" placeholder="這一段做到哪了？"></textarea>
+            </div>
+            <div class="a2__media a2__media--image" data-media="image" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">圖片</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6z"/><path d="M3 16l5-5c.9-.9 2.1-.9 3 0l5 5"/></svg></span><span class="upload-tile__title">拖入圖片或點擊選檔</span><span class="upload-tile__hint">直式 750 × 1125</span></div>
+            </div>
+            <div class="a2__media a2__media--video" data-media="video" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">影片</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--video"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14v-4"/><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg></span><span class="upload-tile__title">拖入影片或點擊選檔</span><span class="upload-tile__hint">MP4 或 MOV</span></div>
+            </div>
+            <div class="a2__media a2__media--music" data-media="music" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">音樂</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--file upload-tile--slim"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M13 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M9 17V4h10v13"/><path d="M9 8h10"/></svg></span><span class="upload-tile__title">拖入音檔或點擊選檔</span><span class="upload-tile__hint">MP3 或 WAV</span></div>
+            </div>
+            </div>
+            <div class="a2__composer-foot">
+              <span class="a2__composer-tools"><button class="btn btn--ghost btn--sm" type="button" data-media-add="image"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6z"/><path d="M3 16l5-5c.9-.9 2.1-.9 3 0l5 5"/><path d="M14 14l1-1c.9-.9 2.1-.9 3 0l3 3"/></svg>圖片</button><button class="btn btn--ghost btn--sm" type="button" data-media-add="video"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14v-4"/><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg>影片</button><button class="btn btn--ghost btn--sm" type="button" data-media-add="music"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M13 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M9 17V4h10v13"/><path d="M9 8h10"/></svg>音樂</button></span><span class="a2__composer-acts"><button class="btn btn--ghost btn--sm" type="button" data-composer-cancel>取消</button><button class="btn btn--primary btn--sm" type="button">發布</button></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--update">
+      <span class="a2__date">8/9</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">場勘的側拍照</h4>
+          <span class="a2__vis">支持者可見</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--done">
+      <span class="a2__date">7/28</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">劇本定稿</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+        <div class="a2__update">
+          <p class="a2__update-body">第七稿收工。中段那條支線整個重寫過——原本的版本太急著解釋，讀起來像在補設定。這一版讓它慢下來，該懂的地方自己會浮出來。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--update">
+      <span class="a2__date">7/10</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <button class="a2__toggle" type="button" aria-expanded="false" data-day-toggle="d710">
+          <span>2 則更新</span>
+          <svg class="ic ic--sm a2__toggle-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--update a2__node--child" data-day="d710" hidden>
+      <span class="a2__date">14:20</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head"><h4 class="a2__name">場勘完成，選定三個主場景</h4><span class="a2__vis">公開</span></div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--update a2__node--child" data-day="d710" hidden>
+      <span class="a2__date">09:05</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head"><h4 class="a2__name">工作人員名單確定</h4><span class="a2__vis">支持者可見</span></div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--muted">
+      <span class="a2__date">2025/8/1</span><span class="a2__dot"></span>
+      <div class="a2__body"><div class="a2__head"><h4 class="a2__name">項目建立</h4></div></div>
+    </div>
+  </div>
+  <p class="tagline" id="a2-tag">A2：日期只在左欄、逾期由日期轉紅 · 標籤改純文字 · 按鈕 icon only 收在標題列右端 · 分行＝極淡線</p>
+</div>
+
+<h3>今天那一列該說什麼</h3>
+<p class="why">發文框搬到里程碑之後，今天那一列原本寫的「前期製作完成 逾期 6 天」就跟它下面一格逐字重複了。我把它改成<b>一句跨里程碑的體溫計</b>：<code>1 件逾期，2 件還沒到</code>。</p>
+<p class="why">理由是創作者打開這一頁的動線分四步，今天那一列只負責前兩步：</p>
+<ul>
+  <li><b>① 我在哪</b>——眼睛先找今天。這一列是軸上唯一的定位點，所以它得顯眼。</li>
+  <li><b>② 有沒有事</b>——一眼判斷「這個項目現在健康嗎」。這是<b>只有這一列答得出來的問題</b>：其他每一列都只講自己那一件，沒有人在講全局。</li>
+  <li><b>③ 處理哪一件</b>——往下一格就是那顆逾期的里程碑，它自己是紅的、自己帶著發文框。今天不必再指一次，指了就是同一句話講兩遍。</li>
+  <li><b>④ 回顧</b>——再往下是已經發生的事。</li>
+</ul>
+<p class="why">我另外考慮過三個做法，都比不上這個：<b>(a) 今天完全不放字</b>（先前那版細線）——定位有了，但②沒人回答，得自己數紅點；<b>(b) 今天放一顆「發布更新」按鈕</b>——那會變成第二個發文入口，跟里程碑底下那個打架；<b>(c) 今天寫「下一件是 9/20 主體拍攝殺青」</b>——又在複述下面那一列，而且在有逾期時指錯方向。</p>
+
+<h2>里程碑都完成了：下一格是「完成作品」</h2>
+<p class="why">上一段的規則是「發文框長在下一顆要交代的里程碑底下」。里程碑一顆一顆被完成之後，<b>下一格不是空的</b>——是釘在軸頂的「完成作品」（使用者裁決：「里程碑更新如果碰到了完成作品，那就要顯示完成作品」）。</p>
+<p class="why">所以規則從頭到尾只有一句：<b>發文框長在時間軸上「接下來要交代的那一格」，那一格是誰，就決定類型的預設值。</b></p>
+<ul>
+  <li>還有未完成的里程碑 → 那一格是那顆里程碑，類型預設 <code>里程碑更新</code>，送出就把那顆標記完成。</li>
+  <li>里程碑都完成、且項目已成功 → 那一格是<b>完成作品</b>，類型預設 <code>完成作品</code>，送出不是發一則貼文，是<b>進入作品上架流程送審</b>。</li>
+  <li>里程碑都完成、但項目還沒成功（完成作品那一格還鎖著）→ 沒有可交代的承諾，框回到「今天」那一列，類型預設 <code>一般更新貼文</code>。</li>
+</ul>
+<ul>
+  <li><b>靜止態是一行 stub</b>，不是一個張開的表單。時間軸的主要任務是掃過去看時間怎麼走；一個常駐的三行輸入框會把每次進頁面都變成「要不要寫點什麼」的提問。點一下才展開。</li>
+  <li><b>頭列：誰在發、誰看得到</b>（照既有發文框補上）。左邊是創作者身分（頭像＋名字）——一個項目可能有多位合作者，發出去之後粉絲看到的是誰，寫的時候就該看得到；右邊是受眾（<code>公開給：全部</code>）。這兩件事是「這則貼文的身分」，不是要填的欄位，所以坐在表單之外的頭列，不跟類型／標題／內文擠同一組。受眾因此從底下那一列搬上來。</li>
+  <li><b>夾帶圖片／影片／音樂</b>（照既有發文框補上），放在送出那一列、走 ghost。它們不是欄位，是「把東西放進這則貼文」的動作，跟送出同一組；做成帶標籤的欄位會讓一個可選的附件看起來像必填。<b>按下去才長出那一種的上傳框</b>，右上角的 × 收掉、回到只有文字。<b>一則只能一種夾帶方式</b>（使用者裁決）：選了圖片，影片與音樂就停用——三種的版面、播放行為與粉絲端呈現都不一樣，允許混用等於要為每一種組合各定一次規則。</li>
+  <li><b>選「一般更新貼文」才長出「標題」欄</b>（使用者裁決）。里程碑更新不需要標題——那顆里程碑的名字就是它的標題，軸上那一列已經在講了；一般更新自己站在軸上，沒有標題就只剩一段內文，掃過去認不出它是什麼。切回里程碑更新時這一欄收掉。</li>
+  <li><b>「類型」排在最上面、帶標籤</b>（對齊既有發文彈窗的欄位樣式）。它排第一是因為它決定整個表單會做什麼——選「完成作品」時送出鈕就不再是「發布」；決定行為的欄位要在人開始寫字之前就看見。受眾留在底下那一列、不另外給標籤：它是送出時的設定，跟送出鈕同一組。<b>類型是預帶值不是問句</b>：<code>里程碑更新</code>／<code>一般更新貼文</code>。位置已經回答了它——框長在里程碑上就預設「里程碑更新」（送出＝完成那顆），長在今天就預設「一般更新貼文」，而且此時「里程碑更新」是停用的，因為沒有待完成的里程碑可以完成。下拉只是讓人改，不是讓人選。</li>
+  <li><b>受眾與掛載同一列</b>，取消與發布靠右（取消走 ghost，兩顆都做成實體按鈕會讓它看起來跟發布一樣重）。這兩個是發文前唯一要決定的事，其餘（通知誰、通知幾人）是送出後的結果，不放在寫字的時候問。</li>
+  <li><b>送出鈕會換字</b>：類型是「完成作品」時它不是「發布」而是「下一步：上架作品」——按下去不會把貼文發出去，是進入作品上架流程送審，審核通過那則才發布、項目才轉已上線（D178／D179／D192）。按鈕的字要說出按下去會發生什麼。</li>
+</ul>
+
+<div class="stage stage--page">
+  <div class="a2 a2--sep-faint">
+    <div class="a2__node a2__node--next">
+      <span class="a2__date"></span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head"><h4 class="a2__name">完成作品</h4></div>
+        <p class="a2__meta">里程碑都完成了，可以送審</p>
+        <div class="a2__composer" data-open="false" data-composer="t">
+          <button class="a2__composer-stub" type="button" data-composer-open>作品完成了嗎？寫一段給支持者。</button>
+          <div class="a2__composer-open">
+            <div class="a2__composer-head">
+              <span class="a2__composer-avatar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/><path d="M6 20v-1a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v1"/></svg></span>
+              <span class="a2__composer-who">周湯豪 NICKTHEREAL</span>
+              <select class="select a2__composer-aud" aria-label="公開給"><option>公開給：全部</option><option>公開給：支持者</option><option>公開給：超級粉絲以上</option></select>
+            </div>
+            <div class="a2__composer-fields">
+            <div class="field">
+              <label class="field__label" for="a2-kind-t">類型</label>
+              <select class="select" id="a2-kind-t" data-kind><option selected>完成作品</option><option disabled>里程碑更新</option><option>一般更新貼文</option></select>
+            </div>
+            <div class="field" data-kind-title hidden>
+              <label class="field__label" for="a2-title-t">標題</label>
+              <input class="input" id="a2-title-t" placeholder="例如：殺青酒的照片">
+            </div>
+            <div class="field">
+              <label class="field__label" for="a2-body-t">內文</label>
+              <textarea class="textarea" id="a2-body-t" rows="3" placeholder="想跟支持者說什麼？"></textarea>
+            </div>
+            <div class="a2__media a2__media--image" data-media="image" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">圖片</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--portrait"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6z"/><path d="M3 16l5-5c.9-.9 2.1-.9 3 0l5 5"/></svg></span><span class="upload-tile__title">拖入圖片或點擊選檔</span><span class="upload-tile__hint">直式 750 × 1125</span></div>
+            </div>
+            <div class="a2__media a2__media--video" data-media="video" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">影片</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--video"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14v-4"/><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg></span><span class="upload-tile__title">拖入影片或點擊選檔</span><span class="upload-tile__hint">MP4 或 MOV</span></div>
+            </div>
+            <div class="a2__media a2__media--music" data-media="music" hidden>
+              <div class="a2__media-head"><span class="a2__media-title">音樂</span><button class="a2__media-drop" type="button" data-media-drop aria-label="移除夾帶"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+              <div class="upload-tile upload-tile--file upload-tile--slim"><span class="upload-tile__icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M13 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M9 17V4h10v13"/><path d="M9 8h10"/></svg></span><span class="upload-tile__title">拖入音檔或點擊選檔</span><span class="upload-tile__hint">MP3 或 WAV</span></div>
+            </div>
+            </div>
+            <div class="a2__composer-foot">
+              <span class="a2__composer-tools"><button class="btn btn--ghost btn--sm" type="button" data-media-add="image"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6z"/><path d="M3 16l5-5c.9-.9 2.1-.9 3 0l5 5"/><path d="M14 14l1-1c.9-.9 2.1-.9 3 0l3 3"/></svg>圖片</button><button class="btn btn--ghost btn--sm" type="button" data-media-add="video"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14v-4"/><path d="M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg>影片</button><button class="btn btn--ghost btn--sm" type="button" data-media-add="music"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M13 17a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/><path d="M9 17V4h10v13"/><path d="M9 8h10"/></svg>音樂</button></span><span class="a2__composer-acts"><button class="btn btn--ghost btn--sm" type="button" data-composer-cancel>取消</button><button class="btn btn--primary btn--sm" type="button">下一步：上架作品</button></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--today">
+      <span class="a2__date">今天</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <p class="a2__lede"><span class="a2__lede-ok">里程碑都完成了</span></p>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--done">
+      <span class="a2__date">11/19</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">成片定剪</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+        <div class="a2__update">
+          <p class="a2__update-body">定剪版本鎖了。這一刀比預期短了四分鐘，中段那條支線整段拿掉——留著會讓結尾的力道散掉。混音下週進場。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--done">
+      <span class="a2__date">9/20</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head">
+          <h4 class="a2__name">主體拍攝殺青</h4>
+          <span class="a2__vis">公開</span>
+          <span class="a2__acts">
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="編輯"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn btn--ghost btn--icon btn--sm" type="button" aria-label="刪除"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg></button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--update">
+      <span class="a2__date">8/24</span><span class="a2__dot"></span>
+      <div class="a2__body">
+        <div class="a2__head"><h4 class="a2__name">殺青酒的照片</h4><span class="a2__vis">支持者可見</span></div>
+      </div>
+    </div>
+
+    <div class="a2__node a2__node--muted">
+      <span class="a2__date">2025/8/1</span><span class="a2__dot"></span>
+      <div class="a2__body"><div class="a2__head"><h4 class="a2__name">項目建立</h4></div></div>
+    </div>
+  </div>
+  <p class="tagline">里程碑都完成：下一格是「完成作品」，發文框長在它底下、類型預設「完成作品」，送出接的是上架流程 · 點 stub 展開</p>
+</div>
+
+<h2>對照：A 的原提案</h2>
+<p class="why">標籤掛在標題後面、日期在左欄與 meta 各出現一次、按鈕自成第三行。放在這裡看差別。</p>
+
+<!-- ══════════════════════════════════════════════════════════ A -->
+<p class="why">軸點縮成一顆 7px 的實心點，沒有外框、沒有底、沒有圖示；狀態改由點的顏色講。每一列的內容不再裝卡，直接坐在頁面上，用一條 hairline 分行。<b>今天</b>是軸上唯一放大的點，靠一圈品牌色光暈被看見，而不是靠外框。</p>
+<ul>
+  <li><b>解決什麼</b>：現在每一顆軸點都是「28px 圓框 ＋ 1px 邊 ＋ 卡底色 ＋ 圖示」四層，一條軸上七顆就是七個小方塊在跟內容搶注意力。內容卡也一樣——七張卡疊在一條軸旁邊，卡的邊界比軸線本身還搶眼。</li>
+  <li><b>代價</b>：里程碑失去自己的「面」，可做的事（編輯／刪除）得靠 hover 或常駐的小按鈕撐住，密度變高。</li>
+  <li><b>適合</b>：這條軸的主要任務是「掃過去看時間怎麼走」，而不是「逐格操作」。</li>
+</ul>
+
+<div class="stage stage--page">
+  <div class="a">
+    <div class="a__node a__node--muted">
+      <span class="a__date"></span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">完成作品</h4><span class="badge badge--neutral">未開始</span></div>
+        <p class="a__meta">這個內容類型的上架流程在項目成功後開啟</p>
+      </div>
+    </div>
+
+    <div class="a__node">
+      <span class="a__date">11/19</span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">成片定剪</h4><span class="badge badge--neutral">未開始</span></div>
+        <p class="a__meta">公開 · 預計 11/19</p>
+        <div class="a__acts">
+          <button class="btn btn--ghost btn--sm" type="button">編輯</button>
+          <button class="btn btn--ghost btn--sm" type="button">刪除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="a__node">
+      <span class="a__date">9/20</span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">主體拍攝殺青</h4><span class="badge badge--neutral">未開始</span></div>
+        <p class="a__meta">公開 · 預計 9/20</p>
+        <div class="a__acts">
+          <button class="btn btn--ghost btn--sm" type="button">編輯</button>
+          <button class="btn btn--ghost btn--sm" type="button">刪除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="a__node a__node--today">
+      <span class="a__date">今天</span><span class="a__dot"></span>
+      <div class="a__body">
+        <p class="a__lede">前期製作完成 <span class="a__lede-num">逾期 6 天</span></p>
+        <div class="a__composer">發生了什麼事？</div>
+      </div>
+    </div>
+
+    <div class="a__node a__node--alert">
+      <span class="a__date">8/11</span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">前期製作完成</h4><span class="badge badge--info">進行中</span><span class="badge badge--error">逾期 6 天</span></div>
+        <p class="a__meta">公開 · 預計 8/11</p>
+        <div class="a__update">
+          <span class="a__update-ic"><svg class="ic ic--sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a3 3 0 0 1 0 6"/><path d="M10 8v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-5"/><path d="M12 8l4.5-3.8a.9.9 0 0 1 1.5.7v12.2a.9.9 0 0 1-1.5.7L12 14H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h8"/></svg></span>
+          <div class="a__update-body">
+            <div>前期收工，附上分鏡表</div>
+            <p class="a__update-sub">僅支持者 · 通知 134 人</p>
+          </div>
+        </div>
+        <div class="a__acts">
+          <button class="btn btn--ghost btn--sm" type="button">編輯</button>
+          <button class="btn btn--ghost btn--sm" type="button">刪除</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="a__node a__node--muted">
+      <span class="a__date">7/10</span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">2 則更新</h4></div>
+      </div>
+    </div>
+
+    <div class="a__node a__node--muted">
+      <span class="a__date">2025/8/1</span><span class="a__dot"></span>
+      <div class="a__body">
+        <div class="a__head"><h4 class="a__name">項目建立</h4></div>
+      </div>
+    </div>
+  </div>
+  <p class="tagline">A：軸點 7px 實心點無外框 · 內容無卡 · 今天靠光暈</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ B -->
+<h2>本輪沒被選上的方向</h2>
+<h3>B · 日期分組</h3>
+<p class="why">不畫連續的軸線。日期升格成分組標頭，同一天發生的事收在同一組底下；節點的標記變成標題前的一顆小點，跟著文字走、不佔一個獨立的軸欄。<b>今天</b>整組左邊掛一條品牌色。</p>
+<ul>
+  <li><b>解決什麼</b>：現在「一天一列」與「一顆里程碑一列」混在同一條軸上，同一天有兩件事時會出現兩顆日期一樣的軸點。分組之後，日期只出現一次。</li>
+  <li><b>代價</b>：失去「一條線貫穿」的時間感——它讀起來更像一份依日期整理的清單，而不是一條軸。未來與過去的分界也要另外標。</li>
+  <li><b>適合</b>：一個項目的更新變多之後（一天好幾則），軸線版會被更新列灌爆。</li>
+</ul>
+
+<div class="stage stage--page">
+  <div class="b">
+    <div class="b__group">
+      <div class="b__day">尚未排定</div>
+      <div class="b__item b__item--muted">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">完成作品</h4><p class="b__meta">這個內容類型的上架流程在項目成功後開啟</p></div>
+        <span class="b__end">未開始</span>
+      </div>
+    </div>
+
+    <div class="b__group">
+      <div class="b__day">11/19 <span class="b__day-rel">還有 94 天</span></div>
+      <div class="b__item">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">成片定剪</h4><p class="b__meta">公開</p>
+          <div class="b__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+        </div>
+        <span class="b__end">未開始</span>
+      </div>
+    </div>
+
+    <div class="b__group">
+      <div class="b__day">9/20 <span class="b__day-rel">還有 34 天</span></div>
+      <div class="b__item">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">主體拍攝殺青</h4><p class="b__meta">公開</p>
+          <div class="b__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+        </div>
+        <span class="b__end">未開始</span>
+      </div>
+    </div>
+
+    <div class="b__group b__group--today">
+      <div class="b__day">今天 <span class="b__day-rel">8/17</span></div>
+      <div class="b__composer">發生了什麼事？</div>
+    </div>
+
+    <div class="b__group">
+      <div class="b__day">8/11 <span class="b__day-rel">逾期 6 天</span></div>
+      <div class="b__item b__item--alert">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">前期製作完成</h4><p class="b__meta">公開 · 進行中</p>
+          <div class="b__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+        </div>
+        <span class="b__end">逾期 6 天</span>
+      </div>
+      <div class="b__item b__item--muted">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">前期收工，附上分鏡表</h4><p class="b__meta">僅支持者 · 通知 134 人</p></div>
+      </div>
+    </div>
+
+    <div class="b__group">
+      <div class="b__day">7/10</div>
+      <div class="b__item b__item--muted">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">2 則更新</h4></div>
+      </div>
+    </div>
+
+    <div class="b__group">
+      <div class="b__day">2025/8/1</div>
+      <div class="b__item b__item--muted">
+        <span class="b__mark"></span>
+        <div class="b__body"><h4 class="b__name">項目建立</h4></div>
+      </div>
+    </div>
+  </div>
+  <p class="tagline">B：日期當分組標頭 · 標記跟著文字 · 今天整組掛品牌色</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ C -->
+<h3>C · 現況去外框（最小改動）</h3>
+<p class="why">結構、卡、間距全部維持現況，只把軸點的圓框與底色拿掉，讓圖示直接坐在軸線上，狀態改由圖示本身的顏色講。</p>
+<ul>
+  <li><b>解決什麼</b>：只回答「不要外框」這一件事，其他一律不動。</li>
+  <li><b>代價</b>：卡的邊界仍然比軸線搶眼，一整條軸讀起來還是「七張卡」多於「一條時間」。使用者說的是「重新設計」，這一版嚴格說只是修正。</li>
+  <li><b>適合</b>：想先確認去掉外框的效果，其他等下一輪再說。</li>
+</ul>
+
+<div class="stage card">
+  <div class="c">
+    <div class="c__node">
+      <span class="c__date">11/19</span>
+      <span class="c__dot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/></svg></span>
+      <div class="c__body">
+        <div class="c__head"><h4 class="c__name">成片定剪</h4><span class="badge badge--neutral">未開始</span><span class="badge badge--neutral">公開</span></div>
+        <div class="c__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+      </div>
+    </div>
+
+    <div class="c__node">
+      <span class="c__date">9/20</span>
+      <span class="c__dot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/></svg></span>
+      <div class="c__body">
+        <div class="c__head"><h4 class="c__name">主體拍攝殺青</h4><span class="badge badge--neutral">未開始</span><span class="badge badge--neutral">公開</span></div>
+        <div class="c__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+      </div>
+    </div>
+
+    <div class="c__node c__node--today">
+      <span class="c__date">今天</span>
+      <span class="c__dot"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg></span>
+      <div class="c__body">
+        <p class="c__lede">前期製作完成 逾期 6 天</p>
+        <div class="c__composer">發生了什麼事？</div>
+      </div>
+    </div>
+
+    <div class="c__node c__node--alert">
+      <span class="c__date">8/11</span>
+      <span class="c__dot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></span>
+      <div class="c__body">
+        <div class="c__head"><h4 class="c__name">前期製作完成</h4><span class="badge badge--info">進行中</span><span class="badge badge--error">逾期 6 天</span></div>
+        <div class="c__meta">前期收工，附上分鏡表 · 僅支持者 · 通知 134 人</div>
+        <div class="c__acts"><button class="btn btn--ghost btn--sm" type="button">編輯</button><button class="btn btn--ghost btn--sm" type="button">刪除</button></div>
+      </div>
+    </div>
+
+    <div class="c__node">
+      <span class="c__date">2025/8/1</span>
+      <span class="c__dot"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5v16"/><path d="M5 5h10l-2 3 2 3H5"/></svg></span>
+      <div class="c__body"><div class="c__head"><h4 class="c__name">項目建立</h4></div></div>
+    </div>
+  </div>
+  <p class="tagline">C：只拿掉軸點外框，其餘現況不動</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<h2 class="verdict">落地前還要決定的事</h2>
+<p>A2 若確認，接著要改的是 <code>ds-components/progress-timeline.css</code> 與 <code>project-detail.html</code> 的 <code>renderTimeline()</code>，同時會動到規格 5.1.2.2 §2.2.10（那裡寫著軸點與標籤的呈現）。剩下三個問題我沒有替你決定：</p>
+<ul>
+  <li><b>「公開／僅支持者」還要不要留在 meta 行</b>。它是里程碑的可見度設定，跟狀態不同類；混在同一行用 · 串起來，讀起來像同一種東西。也可以只在非預設值（僅支持者）時才寫。</li>
+  <li><b>里程碑可以不發文就直接標記完成嗎</b>。若「發文＝完成」是唯一路徑，那麼補登過去的里程碑就一定要發一則貼文給粉絲，這可能不是創作者要的。若允許直接標記完成，那顆就會是「綠點但沒有完成宣告」的狀態，也要決定畫面怎麼交代。</li>
+  <li><b>今天那一格的光暈在亮色主題還夠不夠看</b>。demo 只驗了深色。</li>
+  <li><b>更新列（喇叭那一條）要不要也套同一套位置規則</b>。現在它縮排在里程碑底下，A2 沒動它。</li>
+</ul>
+</div>
+
+<script>
+  (function () {
+    var el = document.getElementById('a2');
+    var tag = document.getElementById('a2-tag');
+    var LABEL = { none: '無線加大間距', faint: '極淡線', line: '原本的 1px' };
+    document.querySelectorAll('[data-sep]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var k = btn.dataset.sep;
+        el.className = 'a2 a2--sep-' + k;
+        document.querySelectorAll('[data-sep]').forEach(function (b2) { b2.classList.toggle('is-active', b2 === btn); });
+        tag.textContent = tag.textContent.replace(/分行＝.*$/, '分行＝' + LABEL[k]);
+      });
+    });
+  })();
+
+  (function () {
+    document.querySelectorAll('[data-day-toggle]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        document.querySelectorAll('[data-day="' + btn.dataset.dayToggle + '"]').forEach(function (n) {
+          n.hidden = open;
+        });
+      });
+    });
+  })();
+
+  (function () {
+    document.querySelectorAll('[data-composer-open]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var box = btn.closest('[data-composer]');
+        box.dataset.open = 'true';
+        var ta = box.querySelector('.textarea');
+        if (ta) ta.focus();
+      });
+    });
+    document.querySelectorAll('[data-kind]').forEach(function (sel) {
+      var box = sel.closest('[data-composer]');
+      var title = box.querySelector('[data-kind-title]');
+      function sync() { title.hidden = sel.value !== '一般更新貼文'; }
+      sel.addEventListener('change', sync);
+      sync();
+    });
+    /* 夾帶：一則只能一種。選了就長出那一種的上傳框、其餘兩顆停用；× 收掉後全部復原。 */
+    function mediaReset(box) {
+      box.querySelectorAll('[data-media]').forEach(function (m) { m.hidden = true; });
+      box.querySelectorAll('[data-media-add]').forEach(function (b2) { b2.disabled = false; b2.classList.remove('is-active'); });
+    }
+    document.querySelectorAll('[data-media-add]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var box = btn.closest('[data-composer]');
+        mediaReset(box);
+        box.querySelector('[data-media="' + btn.dataset.mediaAdd + '"]').hidden = false;
+        box.querySelectorAll('[data-media-add]').forEach(function (b2) {
+          if (b2 !== btn) b2.disabled = true;
+        });
+        btn.classList.add('is-active');
+      });
+    });
+    document.querySelectorAll('[data-media-drop]').forEach(function (btn) {
+      btn.addEventListener('click', function () { mediaReset(btn.closest('[data-composer]')); });
+    });
+    document.querySelectorAll('[data-composer-cancel]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var box = btn.closest('[data-composer]');
+        box.dataset.open = 'false';
+        var ta = box.querySelector('.textarea');
+        if (ta) ta.value = '';
+        var sel = box.querySelector('[data-kind]');
+        if (sel) { sel.selectedIndex = 0; sel.dispatchEvent(new Event('change')); }
+        mediaReset(box);
+        box.querySelector('[data-composer-open]').focus();
+      });
+    });
+  })();
+</script>
+</body>
+</html>

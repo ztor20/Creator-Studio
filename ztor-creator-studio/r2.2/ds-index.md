@@ -333,7 +333,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 127 支；主 class 前 5 個）
+## 元件（ds-components/，共 130 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -345,7 +345,7 @@
 - `avatar-stack.css` — .avatar-stack, .avatar-stack__item, .avatar-stack__more ｜ avatar-stack — overlapping backer/member avatars
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix
-- `bento.css` — .bento, .bento--top, .bento__stack ｜ Bento — 12-column grid utility for dashboard / p
+- `bento.css` — .bento, .bento__aside, .bento--top, .bento__stack ｜ Bento — 12-column grid utility for dashboard / p
 - `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
 - `bundle-editor.css` — .fc-bundle, .fc-bundle__body, .fc-bundle__head, .fc-item-row, .fc-item-fields ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
@@ -406,12 +406,14 @@
 - `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
 - `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
 - `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
-- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access__main, .scanner-access__label ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
+- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access--bare, .scanner-access__main ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
+- `post-composer.css` — .post-composer, .post-composer__stub, .post-composer__head, .post-composer__foot, .post-composer__who ｜ Post composer · 發文框（2026-08-18 promote，自 progres
 - `preview-card.css` — .preview-card, .card, .payout-dialog, .preview-card__media, .preview-card__dots ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-col, .preview-col__head ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-
 - `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
+- `progress-mark.css` — .pmark, .pmark--done, .pmark--doing, .pmark--alert, .pmark--today ｜ Progress mark · 進度記號（2026-08-18，使用者裁決方案 B ＋ 同日追加
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper
 - `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--start, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro
@@ -440,6 +442,7 @@
 - `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
 - `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排
 - `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track
+- `step-list.css` — .step-list, .step-list__row, .step-list__row--interactive, .step-list__act, .step-list__body ｜ Step list · 階段清單（2026-08-18）
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input
 - `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ Sticky page actions — keep a page's top CTAs rea
 - `stock-bar.css` — .stock-bar, .stock-bar__fill, .stock-bar__fill--low ｜ Stock Bar — 細長量條（庫存水位／用量比例）
@@ -455,10 +458,10 @@
 - `tier-overview.css` — .tier-ov, .tier-ov--compact, .tier-ov__head, .tier-ov__row, .tier-ov__rowlabel ｜ Tier overview — 分級對照表（唯讀）
 - `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ Ztor — Toast
 - `todo-list.css` — .todo-list, .todo-list__row, .todo-list__row--done, .todo-list__body, .todo-list__text ｜ todo-list.css · 可編輯的待辦清單（勾選 ＋ 自行增刪）
-- `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--video, .upload-tile__icon ｜ Upload tile · dashed upload affordance for creat
+- `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--slim, .upload-tile--video ｜ Upload tile · dashed upload affordance for creat
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板
 - `vip-card.css` — .vip-card, .vip-card__settings, .vip-card__head, .vip-card__title, .vip-card__sub-desc ｜ VIP card · 會員卡卡面自訂器（數位商品分類＝會員卡）
 - `waterfall.css` — .waterfall, .waterfall__row, .waterfall__head, .waterfall__name, .waterfall__meta
 - `wizard-split.css` — .wizard-split, .wizard-split__main, .wizard-split__rail, .wizard-split--narrow, .fd-ov ｜ Wizard split — content column + sticky summary r
-- `zselect.css` — .zselect__native, .zselect__trigger, .zselect__label, .zselect__caret, .zselect__panel ｜ zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們
+- `zselect.css` — .zselect__native, .zselect__trigger, .zselect__lead, .zselect__option, .zselect__label ｜ zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們

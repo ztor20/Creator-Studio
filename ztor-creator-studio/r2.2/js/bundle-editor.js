@@ -959,7 +959,7 @@
           '<p class="bd-sec__sub">' + esc(T('cpp.bd.perks.sec.sub')) + '</p>' +
         '</div>' +
         (b.perks.length ? perksHTML(b) : '') +
-        '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
+        '<button class="btn btn--outline btn--add fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
       '</section>';
     }
 
@@ -1193,6 +1193,16 @@
       '</div>';
     }
 
+    /* 方案的縮圖＝它裝的第一件商品。方案沒有自己的圖片欄位，硬加一個會多出一份要維護
+       （而且會跟商品自己的圖不同步）；取第一件商品是站上三處（方案卡、方案分頁列、
+       總覽的方案摘要）共同的做法。 */
+    function thumbHTML(b) {
+      var img = b.items && b.items[0] && b.items[0].img;
+      return img
+        ? '<img class="fc-sum__thumb" src="' + esc(img) + '" alt="" loading="lazy">'
+        : '<span class="fc-sum__thumb fc-sum__thumb--empty"><i data-lucide="package" class="ztor-icon"></i></span>';
+    }
+
     /* 收合列：叫什麼、裡面有什麼、賣多少。整列可點、點開就是上面那個彈窗。 */
     function secRowHTML(b, i) {
       var base = listPrice(b), fin = finalPrice(b);
@@ -1343,24 +1353,27 @@
           '" data-bd-card="' + b.id + '">' +
         '<div class="fc-bundle__head">' +
           '<div class="fc-sum" data-bd-expand>' +
+            /* 方案圖片排最前面（2026-08-18 使用者裁決）：方案本身沒有自己的圖，它是一組
+               商品的組合——取第一件商品，與方案分頁列與總覽的方案摘要取同一張。沒有商品時
+               留一格包裹圖示的空底，列的基線才不會因為有沒有圖而跳動。 */
+            thumbHTML(b) +
             '<div>' +
               '<div class="fc-sum__name"><span class="fc-bundle__index">' + String(i + 1).padStart(2, '0') + '</span>' +
                 esc(b.name || T('cpp.bd.untitled')) + '</div>' +
               '<div class="fc-sum__meta">' + esc(summaryMeta(b)) + '</div>' +
             '</div>' +
             '<div class="fc-sum__price">' + (b.collapsed ? summaryPriceHTML(b) : headPriceHTML(b)) + '</div>' +
-            '<span></span>' +
+            /* 右上角固定一顆 chevron（2026-08-18 使用者裁決「icon 按鈕在右上」）：收合與展開
+               共用同一顆、只轉向，所以那個位置永遠是「開關這張卡」的地方，不必先讀字才知道
+               現在能按什麼。原本的「編輯」文字連結因此退場——點開卡片本來就是在編輯，
+               再給一個叫「編輯」的連結等於同一個動作有兩個名字。
+               「移除」不留在標題列：它刪掉整張方案且無法復原，收在展開後的卡片底部
+               （.fc-bundle__foot，紅色 destructive 鈕），要先看到內容才刪得掉。 */
+            '<button class="fc-sum__chev" type="button" data-bd-toggle' +
+              ' aria-expanded="' + (b.collapsed ? 'false' : 'true') + '"' +
+              ' aria-label="' + esc(T(b.collapsed ? 'cpp.bd.expand' : 'cpp.bd.collapse')) + '">' +
+              '<i data-lucide="chevron-down" class="ztor-icon"></i></button>' +
           '</div>' +
-          /* 動作只在收合態留在標題列：那時卡片只有一列，沒有別的地方可以放。
-             展開後改放卡片底部（見 .fc-bundle__foot），右上角讓給價格——
-             把「這張卡值多少」跟「刪掉這張卡」擺在同一個角落，是把最常看的資訊
-             和最不可逆的動作放進同一次瞄準。 */
-          (b.collapsed
-            ? '<div class="fc-bundle__actions">' +
-                '<a class="card__link" href="#" data-bd-toggle>' + esc(T('cpp.bd.edit')) + '</a>' +
-                (BUNDLES.length > 1 ? '<a class="card__link" href="#" data-bd-remove>' + esc(T('cpp.bd.remove')) + '</a>' : '') +
-              '</div>'
-            : '') +
         '</div>' +
 
         /* ── 卡片內的順序＝從「輸入」走到「結果」（2026-07-30 重排）───────────
@@ -1385,7 +1398,7 @@
           '<div class="field">' +
             '<div class="field__label">' + esc(T('cpp.bd.perks')) + ' <span class="text-sub">' + esc(T('cpp.bd.perks.sub')) + '</span></div>' +
             (b.perks.length ? perksHTML(b) : '') +
-            '<button class="btn btn--outline btn--sm fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
+            '<button class="btn btn--outline btn--add fc-add-item" type="button" data-bd-perk-add>' + esc(T('cpp.bd.perk.add')) + '</button>' +
           '</div>' +
 
           /* ── 定價區塊：這張卡唯一的「結果」──────────────────────────────
@@ -2059,6 +2072,12 @@
       /* 外部注入的值（每名額單價、名額池）改變時呼叫：就地重算每張卡，不重畫、不搶焦點。 */
       refresh: refreshAll,
       /* 推導（給頁面的摘要／驗證共用同一套算式，不要各自重算一份） */
+      /* 讓外部摘要（總覽的方案摘要）用同一支格式化：金額的四捨五入與千分位在這裡
+         只寫一次，摘要自己 toFixed 遲早會跟卡片顯示的數字差一塊錢。 */
+      money: money,
+      /* 一句話交代這張方案裝了什麼（幾件商品／幾個名額／幾項權益）。總覽的方案摘要
+         與卡片上的摘要行讀同一支，兩邊的算法不會分岔。 */
+      summaryMeta: summaryMeta,
       isValid: isValid,
       listPrice: listPrice,
       finalPrice: finalPrice,

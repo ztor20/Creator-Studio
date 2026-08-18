@@ -1,6 +1,7 @@
 /* Pickup management · spec 5.1.5.11 (E-Shop · Pickup Management · D111).
    Site-specific organism set for the on-site QR redemption workspace:
-     · .scanner-access  — F6 Scanner URL + password card (URL row, QR, actions)
+     · .scanner-access  — F6 Scanner URL + password card (URL row, QR, actions);
+                          `--bare` drops its own surface when it owns a whole card
      · .qr-box          — reusable framed QR placeholder (also used by the
                           shared session modal and the standalone scanner page)
      · .pickup-detail   — single-session detail header + section spacing
@@ -28,6 +29,12 @@
    「票的 QR」，而那是來賓手上的東西；現場人員需要的只是一條網址。少了左欄之後，
    兩欄 grid 會把內容擠成 shrink-to-fit，故收成單欄。 */
 .scanner-access--nomedia { grid-template-columns: 1fr; }
+/* 無外框版（`--bare`，2026-08-18 使用者指示「多了一層」）：本元件原本自帶一層分組面
+   （`--nest-surface` ＋ 圓角 ＋ 內距），前提是它坐在一張更大的卡裡、與同卡其他內容並列。
+   活動詳情已於 2026-08-18 讓它獨佔一張卡——那層面於是變成「卡裡再畫一張卡」，
+   兩層圓角、兩層底色，內容被推進第三層。這個變體把面交還給宿主卡：不畫底、不畫邊、
+   不吃內距，只保留內部的排版關係。仍坐在別人卡裡與其他內容並列時，用原本的（有面）版本。 */
+.scanner-access--bare { background: none; border: 0; padding: 0; border-radius: 0; }
 .scanner-access__main { min-width: 0; }
 .scanner-access__label {
   font-size: var(--fs-12);
@@ -41,10 +48,14 @@
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  flex-wrap: wrap;
+  /* 2026-08-18：由 wrap 改 nowrap。複製鈕作用的對象就是左邊那一格網址，貼著它才讀得出來
+     （2026-08-17 把它從按鈕列收成 icon 的理由）；換行之後它自己站一列，那層關係就斷了。
+     窄欄（活動詳情右欄 span-4）一定會換行，因為值欄原本的 flex-basis 是 220px。 */
+  flex-wrap: nowrap;
 }
 .scanner-access__url code {
-  flex: 1 1 220px;
+  /* basis 0：值欄只吃剩下的寬度，不去搶複製鈕的位置；網址過長就在自己這一格裁掉。 */
+  flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -58,24 +69,13 @@
   background: var(--input-surface);
   color: var(--foreground);
 }
-.scanner-access__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-8);
-  margin-top: var(--sp-12);
-}
-.scanner-access__pw {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  margin-top: var(--sp-14);
-  font-size: var(--fs-13);
-  color: var(--foreground-muted);
-}
-.scanner-access__pw code {
-  letter-spacing: .18em;
-  color: var(--foreground);
-}
+/* 欄位（`__field`，2026-08-18 使用者指示「分成三行，都有跟『連結』一樣的 title」）：
+   連結／掃碼器密碼／開啟掃碼器三塊同構——標籤在上、內容在下。此前三者各長一個樣
+   （標籤＋值／一排按鈕／一條帶鑰匙圖示的行），同樣重要卻要逐塊重新判讀。
+   間距由容器承擔（相鄰才給上緣距離），三塊不各自帶 margin。 */
+.scanner-access__field + .scanner-access__field { margin-top: var(--sp-16); }
+/* 墓碑 2026-08-18：`.scanner-access__actions`（一排文字按鈕）與 `.scanner-access__pw`
+   （鑰匙圖示那一行）隨本輪改版退場，樣式不再定義。 */
 
 /* ── QR placeholder box (framed, theme-independent artwork) ──── */
 .qr-box {

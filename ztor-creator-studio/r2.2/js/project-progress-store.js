@@ -85,7 +85,7 @@
 
   /* 依項目狀態決定藍圖走到第幾顆。索引＝「目前正在進行的那一顆」，它之前的都完成。
        進行中（published）→ 才剛開募，前期在跑
-       已成立（succeeded）→ 錢收了，主體製作中
+       已成功（succeeded）→ 錢收了，主體製作中
        準備中（scheduled）／已上線（live）→ 藍圖走完了，剩下完成作品那一顆系統節點
        已取消（cancelled）→ 停在第一顆，之後的都不會發生（凍結見 §2.2.4） */
   var CURSOR = { published: 0, succeeded: 1, scheduled: 3, live: 3, cancelled: 1, draft: 0 };
@@ -192,17 +192,22 @@
       };
     });
 
-    /* 更新種子：一則掛在第一顆里程碑上、一則不掛。兩種掛法從一開始就在畫面上各有
-       一筆，創作者不必先發一則才看得出差別（§2.2.10 兩種掛法）。不掛的那一則自
-       D194 起也排進同一條軸，不再收進公告盒。 */
+    /* 更新種子：一則掛在**已完成的**里程碑上、其餘不掛。兩種掛法從一開始就在畫面上
+       各有一筆，創作者不必先發一則才看得出差別（§2.2.10 兩種掛法）。不掛的那一則自
+       D194 起也排進同一條軸，不再收進公告盒。
+       2026-08-18（D197）：掛載的那一顆改成「第一顆已完成的里程碑」。里程碑更新就是
+       那顆的完成宣告，發出去等於把它標記完成——所以「未完成的里程碑底下掛著一則已發
+       的更新」這個狀態不可能存在，種子資料不能造出來。全部都未完成時就不掛。 */
+    var firstDone = null;
+    ms.forEach(function (m) { if (!firstDone && m.status === 'done') firstDone = m; });
     var up = [
       {
         id: uid('up'),
         title: { en: 'Pre-production is done — here is the shot list', zh: '前期收工，附上分鏡表' },
         body: { en: 'Storyboards for all 42 scenes are attached. Shooting starts on Monday.', zh: '四十二場戲的分鏡都在附件裡，週一開拍。' },
         audience: 'pd-edit.update.aud-backers',
-        milestoneId: ms[0].id,
-        publishedAt: ms[0].completedAt || shift(-30, 15),
+        milestoneId: firstDone ? firstDone.id : null,
+        publishedAt: (firstDone && firstDone.completedAt) || shift(-30, 15),
         notified: { en: '134 notified', zh: '通知 134 人' },
         kind: 'general'
       },

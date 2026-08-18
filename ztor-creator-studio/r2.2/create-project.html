@@ -71,6 +71,26 @@
     </div>
   </div>
 
+  <!-- 內容類型閘門（第二關，2026-08-18 使用者指示）：項目類型選完緊接著選內容類型，選完才進主流程。
+       理由——內容類型是「直接發佈走四步還是五步」的分流點（D182），在進流程前就定案，stepper 一開始
+       畫出來的就是最終步數，不必在流程中途改寫階段清單。填到一半回來重選項目類型時不再問第二次
+       （比照 create-event.html 的 bookyay 帶入閘門），內容類型改選走 About 那一組磚。
+       兩處的磚由 JS 從同一份 CATS 清單渲染，不會漂移。 -->
+  <div class="wizard__sheet wizard__sheet--sectioned wizard__gate hidden" data-gate2>
+    <div class="wizard__gate-inner">
+      <!-- 兩個出口，語意不同（2026-08-18 使用者指示）：標題左邊那顆是「回上一步」——回第一關重選
+           項目類型；底下那顆維持第一關同款的 ✕＝離開建立項目（填到一半回來重選時則是取消重選）。
+           合成一顆會讓「退一步」與「整個不做了」變成同一個動作。 -->
+      <button class="btn btn--icon-circle wizard__gate-nav" type="button" data-gate2-back data-i18n-aria-label="cpp.gate2.back" aria-label="回上一步"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+      <h1 class="wizard__step-title" data-i18n="cpp.s1b.h1">What kind of work is it?</h1>
+      <p class="wizard__step-sub" data-i18n="cpp.s1b.sub">This decides which fields you fill in next. You can change it later.</p>
+      <div class="selection-grid selection-grid--tiles" data-cat-grid="gate" role="radiogroup" aria-label="Content type"></div>
+      <div class="wizard__gate-foot">
+        <button class="btn btn--icon-circle wizard__gate-close" type="button" data-gate2-close data-i18n-aria-label="cpp.gate.back" aria-label="返回上一頁"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+    </div>
+  </div>
+
   <!-- §5.2.4 頂部框架 v2（2026-06-23）：單列無底線。左＝返回箭頭＋標題/副標；中＝進度條（內容寬，JS 建構）；右＝自動儲存。 -->
   <div class="wizard__sheet wizard__sheet--sectioned hidden" data-sheet>
   <header class="wizard__top">
@@ -98,8 +118,20 @@
 
     <!-- ───────────────────────── STEP · About (shared) ───────────────────────── -->
     <section data-panel="about">
-      <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
-      <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
+      <!-- 標題列帶右側動作（2026-08-18 使用者指示，做法與 create-event.html 的 #ce-type-switch 同一支）：
+           右邊那顆是「換項目類型」——類型在閘門選定，這顆把閘門叫回來重選。原本這一步用一個
+           下拉（#cpp-type）承擔改選，等於把閘門的內容在表單裡再講一次；這一步的主角是項目內容，
+           不是再選一次型別，所以下拉退場、改成標題列的切換鈕。 -->
+      <div class="wizard__step-head">
+        <div class="wizard__step-head-titles">
+          <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
+          <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
+        </div>
+        <button type="button" class="btn btn--outline" id="cpp-type-switch" data-i18n-aria-label="cpp.type.switch" aria-label="Switch project type">
+          <i data-lucide="switch-horizontal" class="ztor-icon"></i>
+          <span id="cpp-type-switch-label"></span>
+        </button>
+      </div>
 
       <!-- 續填草稿的提示（2026-08-17，D193／規格 5.1.2.1 §2 第 3 項）：畫面上突然有值，
            要講清楚值是哪來的，也要讓創作者看得出這是把既有草稿填完、不是多開一個項目。
@@ -110,38 +142,19 @@
         <span data-resume-text></span>
       </div>
 
-      <!-- 型別已在閘門選定；此處供流程中改選。2026-08-04 使用者指示由並排可選卡（radio-cards，D151）
-           改為下拉選單，與建立活動的類型快選同一種做法——三個選項用一個下拉就講完，
-           並排卡在這裡只是把閘門再畫一次，而這一步的主角是項目內容、不是再選一次型別。 -->
+      <!-- 內容類型（2026-08-18 使用者指示）：移到標題之上——它是這一步唯一會改變後面步驟的欄位
+           （直接發佈的四步／五步分流點，D182），排在標題與描述之前才符合填寫順序。
+           同日第二輪改成下拉：十個選項在閘門第二關已經用整版的磚問過一次，這一步是回頭改選，
+           一個下拉就講完；磚在這裡會佔掉兩列、把要填的欄位推到摺線下。選項與磚同一份 CATS。 -->
       <div class="field form-section form-section--outlined">
-        <label class="field__label" for="cpp-type" data-i18n="cpp.s1.type">Project type</label>
-        <select class="select" id="cpp-type" data-type-select>
-          <option value="golive" data-i18n="cpp.golive.title">Direct release</option>
-          <option value="fund" data-i18n="cpp.fund.title">Co-create</option>
-          <option value="preorder" data-i18n="cpp.pre.title">Presale</option>
-        </select>
+        <label class="field__label" for="cpp-cat"><span data-i18n="cpp.s1.content">Content type</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
+        <select class="select" id="cpp-cat" data-cat-select></select>
+        <div class="field__hint" data-i18n="cpp.s1.content-hint">Fans see the content type label. Subcategory only — main category is auto-assigned in E-Shop.</div>
       </div>
 
       <div class="field form-section form-section--outlined" data-gl-hide>
         <label class="field__label" for="proj-title"><span data-i18n="cpp.s1.title">Project title</span> <span class="text-sub" data-i18n="cpp.required">· required</span></label>
         <input id="proj-title" class="input" placeholder="A name fans will remember" value="Kowloon After Dark OST" data-i18n-placeholder="cpp.s1.title.ph">
-      </div>
-
-      <div class="field form-section form-section--outlined">
-        <div class="field__label"><span data-i18n="cpp.s1.content">Content type</span> <span class="text-sub" data-i18n="cpp.required">· required</span></div>
-        <div class="chip-group" id="cat-group">
-          <button type="button" class="chip" data-cat="movie"  data-group="film"  data-i18n="cpp.content.movie">Movie</button>
-          <button type="button" class="chip" data-cat="short"  data-group="film"  data-i18n="cpp.content.short">Short film</button>
-          <button type="button" class="chip" data-cat="series" data-group="film"  data-i18n="cpp.content.series">Series</button>
-          <button type="button" class="chip chip--active" data-cat="song" data-group="music" data-i18n="cpp.content.song">Song</button>
-          <button type="button" class="chip" data-cat="album"  data-group="music" data-i18n="cpp.content.album">Album</button>
-          <button type="button" class="chip" data-cat="mv"     data-group="mvdoc" data-i18n="cpp.content.mv">MV</button>
-          <button type="button" class="chip" data-cat="event"  data-group="event" data-i18n="cpp.content.event">Event</button>
-          <button type="button" class="chip" data-cat="merch"  data-group="merch" data-i18n="cpp.content.merch">Merch</button>
-          <button type="button" class="chip" data-cat="doc"    data-group="mvdoc" data-i18n="cpp.content.doc">Documentary</button>
-          <button type="button" class="chip" data-cat="custom" data-group="custom" data-i18n="cpp.content.custom">Custom</button>
-        </div>
-        <div class="field__hint" data-i18n="cpp.s1.content-hint">Fans see the content type label. Subcategory only — main category is auto-assigned in E-Shop.</div>
       </div>
 
       <div class="field form-section form-section--outlined" data-gl-hide>
@@ -175,7 +188,7 @@
                與作品上架的年齡限制 F13、分類 F11 是同一份，所以這裡只留空殼。
                舊的自訂分級目標（選項待補）與自由文字 Genre 已隨 D182 退場。 -->
           <div class="field" data-gl-drop><label class="field__label" for="cpp-film-age" data-i18n="tax.age.label">Age rating</label><select class="select" id="cpp-film-age" data-taxonomy-age></select></div>
-          <div class="field" data-gl-drop style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.cast">Cast</div><input class="input" placeholder="e.g. Ann Hsu, Kai Ko" data-i18n-placeholder="cpp.tf.cast.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.cast.add">＋ Add cast member</button></div>
+          <div class="field" data-gl-drop style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.cast">Cast</div><input class="input" placeholder="e.g. Ann Hsu, Kai Ko" data-i18n-placeholder="cpp.tf.cast.ph"><button class="btn btn--outline btn--add mt-8" data-i18n="cpp.tf.cast.add">＋ Add cast member</button></div>
           <div class="field" data-gl-drop style="grid-column:span 2"><span class="field__label" data-i18n="pw.info.genre.title">Genres</span><div class="chip-group" data-taxonomy-genres></div></div>
           <div class="field" data-gl-drop><div class="field__label" data-i18n="cpp.tf.language">Language</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.territory">Territory</div><select class="select"><option data-i18n="cpp.tf.tbd">Select… (options TBD)</option></select></div>
@@ -185,7 +198,7 @@
         <div class="form-grid" data-fieldgroup="music">
           <div class="field"><div class="field__label" data-i18n="cpp.tf.artists">Artists</div><input class="input" placeholder="e.g. Sunset Rollercoaster" data-i18n-placeholder="cpp.tf.artists.ph"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.producer">Producer</div><input class="input" placeholder="e.g. Howard Lee" data-i18n-placeholder="cpp.tf.producer.ph"></div>
-          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.featured">Featured artists</div><input class="input" placeholder="e.g. 9m88, Leo Wang" data-i18n-placeholder="cpp.tf.featured.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.featured.add">＋ Add artist</button></div>
+          <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.featured">Featured artists</div><input class="input" placeholder="e.g. 9m88, Leo Wang" data-i18n-placeholder="cpp.tf.featured.ph"><button class="btn btn--outline btn--add mt-8" data-i18n="cpp.tf.featured.add">＋ Add artist</button></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.duration">Duration</div><input class="input" placeholder="e.g. 3:45" data-i18n-placeholder="cpp.tf.duration.ph"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.tracks">Track count</div><input class="input" placeholder="e.g. 5" data-i18n-placeholder="cpp.tf.tracks.ph"></div>
           <div class="field" style="grid-column:span 2"><div class="field__label" data-i18n="cpp.tf.platforms">Platforms</div><input class="input" placeholder="e.g. Spotify, Apple Music" data-i18n-placeholder="cpp.tf.platforms.ph"></div>
@@ -219,7 +232,7 @@
           <div class="field"><div class="field__label" data-i18n="cpp.tf.venue">Venue</div><input class="input" placeholder="e.g. Legacy Taipei" data-i18n-placeholder="cpp.tf.venue.ph"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.datetime">Date &amp; Time</div><input class="input" type="datetime-local"></div>
           <div class="field"><div class="field__label" data-i18n="cpp.tf.capacity">Capacity</div><input class="input" placeholder="e.g. 300" data-i18n-placeholder="cpp.tf.capacity.ph"></div>
-          <div class="field" style="grid-column:span 1"><div class="field__label" data-i18n="cpp.tf.performers">Performers</div><input class="input" placeholder="e.g. Sunset Rollercoaster, Elephant Gym" data-i18n-placeholder="cpp.tf.performers.ph"><button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.tf.performers.add">＋ Add performer</button></div>
+          <div class="field" style="grid-column:span 1"><div class="field__label" data-i18n="cpp.tf.performers">Performers</div><input class="input" placeholder="e.g. Sunset Rollercoaster, Elephant Gym" data-i18n-placeholder="cpp.tf.performers.ph"><button class="btn btn--outline btn--add mt-8" data-i18n="cpp.tf.performers.add">＋ Add performer</button></div>
           <div style="grid-column:span 2">
             <div class="control-row">
               <div><div class="control-row__main" data-i18n="cpp.tf.livestream">Livestream available</div></div>
@@ -253,22 +266,15 @@
       <!-- ⑤ IP rental -->
       <div class="field form-section form-section--outlined">
         <div class="field__label" data-i18n="cpp.s1.iprent">IP Rental · disclose other rights you're using</div>
-        <div>
-          <div class="flex-row" style="justify-content:space-between">
-            <div>
-              <div class="data-list__title" data-i18n="cpp.s1.iprent.empty">No IP rentals attached yet</div>
-              <div class="data-list__meta" data-i18n="cpp.s1.iprent.meta">Sampling someone's work, using a licensed character, or covering a song? Link the rental here.</div>
-            </div>
-            <a class="btn btn--outline btn--sm" href="my-ip.html" data-i18n="cpp.s1.iprent.link">＋ Link from IP Bank</a>
-          </div>
-        </div>
-        <div class="field__hint" data-i18n="cpp.s1.iprent.hint">IP Rental is a rights disclosure, not a monetization model. Brand &amp; Ads live in Monetization.</div>
+        <!-- 2026-08-18 使用者指示：這一格只留標題與一顆按鈕。空狀態句、說明與底下那行提示三者說的
+             是同一件事（「這是揭露你用到的別人的權利」），而標題本身已經講完了。 -->
+        <a class="btn btn--outline btn--add" href="my-ip.html" data-i18n="cpp.s1.iprent.link">Choose IP to link</a>
       </div>
     </section>
 
     <!-- ───────────────────────── STEP · Master file（直接發佈 × 影片家族）─────────────────────────
          規格 5.1.2.2.1 F1／F2／F3。建立流程原本沒有這一步——直接發佈的作品在建立當下就完成了，
-         所以作品本體、原始語音與字幕在這裡收，不必等到項目成立後再走一次上架流程。
+         所以作品本體、原始語音與字幕在這裡收，不必等到項目成功後再走一次上架流程。
          欄位由 partials/work-fields.js 渲染，與 publish-work.html 是同一份實作。 -->
     <section data-panel="master" class="hidden">
       <h1 class="wizard__step-title" data-i18n="cpp.gf.master.h1">Upload the finished work.</h1>
@@ -412,7 +418,7 @@
             <a class="card__link" href="#" data-i18n="cpp.edit">Edit</a>
           </div>
         </div>
-        <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.s3.add-brand">＋ Add brand partnership</button>
+        <button class="btn btn--outline btn--add mt-8" data-i18n="cpp.s3.add-brand">＋ Add brand partnership</button>
       </div>
       </div><!-- /[data-shared-adsbrand] -->
       <div data-monet-extra></div>
@@ -583,7 +589,7 @@
             <div class="flex-row" style="gap:8px"><input class="input budget-pct" type="number" value="10" style="max-width:74px"><span class="text-sub">%</span><button class="btn btn--icon btn--xs" type="button" data-budget-remove aria-label="Remove category" data-i18n-aria-label="cpp.fd.budget.remove"><i data-lucide="trash-2" class="ztor-icon"></i></button></div>
           </div>
         </div>
-        <button class="btn btn--outline btn--sm mt-16" id="budget-add" data-i18n="cpp.fd.budget.add">＋ Add category</button>
+        <button class="btn btn--outline btn--add mt-16" id="budget-add" data-i18n="cpp.fd.budget.add">＋ Add category</button>
         <div class="field__hint mt-8" data-i18n="cpp.fd.budget.hint">Must total 100% before you continue.</div>
       </div>
       </div><!-- /.wizard-split__main -->
@@ -894,7 +900,7 @@
               <div class="flex-row" style="gap:8px"><span class="text-sub">◔</span><span data-i18n="cpp.rv.ms2">Pre-production complete</span></div>
               <div class="flex-row" style="gap:8px"><span class="text-sub">○</span><span data-i18n="cpp.rv.ms3">Delivery to backers</span></div>
             </div>
-            <button class="btn btn--outline btn--sm mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
+            <button class="btn btn--outline btn--add mt-8" data-i18n="cpp.rv.milestones.add">＋ Add milestone</button>
             </div>
           </div>
         </div>
@@ -1034,6 +1040,21 @@
   };
   /* 走得到作品上架那組欄位的內容類型（規格 5.1.2.2.1 §3.1 適用範圍）。 */
   const FILM_CATS = ['movie', 'short', 'series', 'mv', 'doc'];
+  /* 內容類型的唯一清單（2026-08-18）：閘門第二關與 About 那一組磚由同一份渲染，兩處不會漂移。
+     欄位依序是 [值, 類型相關欄位的分組鍵, 圖示, i18n key]；分組鍵對應 [data-fieldgroup]。 */
+  const CATS = [
+    ['movie',  'film',   'film',         'cpp.content.movie'],
+    ['short',  'film',   'video',        'cpp.content.short'],
+    ['series', 'film',   'device-tv',    'cpp.content.series'],
+    ['song',   'music',  'music',        'cpp.content.song'],
+    ['album',  'music',  'disc',         'cpp.content.album'],
+    ['mv',     'mvdoc',  'play',         'cpp.content.mv'],
+    ['event',  'event',  'calendar',     'cpp.content.event'],
+    ['merch',  'merch',  'shopping-bag', 'cpp.content.merch'],
+    ['doc',    'mvdoc',  'camera',       'cpp.content.doc'],
+    ['custom', 'custom', 'sparkles',     'cpp.content.custom'],
+  ];
+  const catRow = (c) => CATS.find(r => r[0] === c) || CATS[0];
   const STEP_LABEL = {
     about: 'cpp.step.about', showcase: 'cpp.step.showcase',
     master: 'cpp.step.master', details: 'cpp.step.details',
@@ -1051,7 +1072,7 @@
   const TYPE_TITLE = { golive: 'cpp.golive.title', fund: 'cpp.fund.title', preorder: 'cpp.pre.title' };
 
   let type = 'golive';
-  let cat = 'song';          /* 內容類型；預設與 #cat-group 上標了 chip--active 的那顆一致 */
+  let cat = 'song';          /* 內容類型的預設值；磚的選取態由 syncCatUI() 依這個值畫出來 */
   let idx = 0;
 
   const T = k => (window.i18nT && window.i18nT(k)) || k;
@@ -1077,21 +1098,32 @@
     }
   }
 
+  /* 2026-08-18 使用者指示：改用建立活動那一版的進度列——分段軌道（一步一段、縫＝步驟分界）
+     ＋每一步下方的狀態小字。實色填的是**已完成**的段，不含現在這一步：它還沒做完，
+     底下的小字也寫「未完成」，兩邊不能互相打架。本頁每一步本來就能點，所以掛 `--anystep`。 */
   function buildStepper() {
     const el = document.getElementById('stepper');
     const f = flow();
-    el.style.setProperty('--progress', Math.round((idx + 1) / f.length * 100) + '%');
+    el.classList.add('progress-stepper--segmented', 'progress-stepper--anystep');
+    el.style.setProperty('--steps', f.length);
+    el.style.setProperty('--at', idx + 1);
+    el.style.setProperty('--progress', Math.round(idx / f.length * 100) + '%');
     el.innerHTML =
       '<div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>' +
       '<div class="progress-stepper__labels">' +
       f.map((s, i) => {
         const cls = 'progress-stepper__label' + (i === idx ? ' progress-stepper__label--current' : '') + (i < idx ? ' progress-stepper__label--done' : '');
-        return `<span class="${cls}" data-jump="${i}">${T(stepLabelKey(s))}</span>`;
+        const state = i < idx
+          ? '<i data-lucide="check" class="ztor-icon"></i>' + T('wiz.step.done')
+          : T('wiz.step.todo');
+        return `<span class="${cls}" data-jump="${i}"><span>${T(stepLabelKey(s))}</span>` +
+               `<span class="progress-stepper__state">${state}</span></span>`;
       }).join('') +
       '</div>';
     el.querySelectorAll('[data-jump]').forEach(it => {
       it.addEventListener('click', () => { idx = Number(it.dataset.jump); render(); });
     });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(el);
   }
 
   /* 頁首副標跟著發行模式走。原本寫死「共創項目」，不管你選哪一型都是那四個字——
@@ -1195,8 +1227,7 @@
       rvTitle.textContent = v || DASH;
     }
     const rvCat = document.getElementById('rv-cat');
-    const catChip = document.querySelector('#cat-group .chip--active');
-    if (rvCat && catChip) { rvCat.dataset.i18n = catChip.dataset.i18n; rvCat.textContent = T(catChip.dataset.i18n); }
+    if (rvCat) { const k = catRow(cat)[3]; rvCat.dataset.i18n = k; rvCat.textContent = T(k); }
     const rvType = document.getElementById('rv-type');
     if (rvType) { rvType.dataset.i18n = TYPE_TITLE[type]; rvType.textContent = T(TYPE_TITLE[type]); }
 
@@ -1227,47 +1258,97 @@
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  // Project type — 閘門與表單的同款 radio-list 共同驅動 type（D150）
-  let typeSyncing = false;                       // 程式改下拉的值時擋掉自己觸發的 change
+  /* ══ 兩關閘門與兩個型別欄位（2026-08-18 改版）══════════════════════════
+     第一關＝項目類型、第二關＝內容類型，兩關都選完才進主流程；因此 stepper 第一次畫出來
+     就是最終步數（直接發佈的四步／五步分流在進流程前已定案，D182）。
+     進流程後要改：項目類型走標題列的切換鈕（把第一關叫回來），內容類型走 About 那一組磚。
+     ──────────────────────────────────────────────────────────────── */
   const gate   = document.querySelector('[data-gate]');
+  const gate2  = document.querySelector('[data-gate2]');
   const sheet  = document.querySelector('[data-sheet]');
   const footer = document.querySelector('[data-footer]');
+  /* 有沒有進過流程——決定「回來重選」時要不要再問一次第二關、以及第一關的 ✕ 是離開還是取消重選
+     （比照 create-event.html 的 enteredWizard）。 */
+  let enteredWizard = false;
+
   function syncTypeUI(t) {
     document.querySelectorAll('[data-gate-type]').forEach(s => {
       const active = s.dataset.gateType === t;
       s.classList.toggle('segmented__btn--active', active);   // 閘門也改用 radio-cards（D152）
       s.setAttribute('aria-checked', String(active));
     });
-    /* 表單那半是下拉（2026-08-04）。zselect 靠 change 事件同步按鈕上的字，程式改值不會自己發，
-       所以這裡補一個，並用 typeSyncing 擋掉回頭再進 chooseType。 */
-    const sel = document.getElementById('cpp-type');
-    if (sel && sel.value !== t) {
-      typeSyncing = true;
-      sel.value = t;
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
-      typeSyncing = false;
-    }
+    /* 標題列切換鈕上的字＝目前類型名。寫 data-i18n 讓語言切換時 i18n.js 自己重譯。 */
+    const sw = document.getElementById('cpp-type-switch-label');
+    if (sw) { sw.dataset.i18n = TYPE_TITLE[t]; sw.textContent = T(TYPE_TITLE[t]); }
   }
   function chooseType(t) { type = t; idx = 0; syncTypeUI(t); render(); }
-  function enterWizard() { gate.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
-  function showGate()    { gate.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); }
 
-  document.querySelectorAll('[data-gate-type]').forEach(c => c.addEventListener('click', () => { chooseType(c.dataset.gateType); enterWizard(); }));
-  document.getElementById('cpp-type')?.addEventListener('change', e => { if (!typeSyncing) chooseType(e.target.value); });
-  document.querySelector('[data-gate-back]').addEventListener('click', () => { if (history.length > 1) history.back(); else location.href = 'projects.html'; });
+  /* 內容類型有兩個入口，選項都從 CATS 出：閘門第二關是整版的磚（[data-cat-grid]），
+     About 那一步是下拉（#cpp-cat）——同一份清單、兩種密度，值域不會漂移。 */
+  let catSyncing = false;                        // 程式改下拉的值時擋掉自己觸發的 change
+  function renderCatPickers() {
+    const tiles = CATS.map(function (r) {
+      return '<button type="button" class="selection-card selection-card--icon" role="radio" aria-checked="false"' +
+             ' data-cat="' + r[0] + '" data-group="' + r[1] + '">' +
+             '<span class="selection-card__ic"><i data-lucide="' + r[2] + '" class="ztor-icon"></i></span>' +
+             '<span class="selection-card__title" data-i18n="' + r[3] + '"></span></button>';
+    }).join('');
+    document.querySelectorAll('[data-cat-grid]').forEach(host => { host.innerHTML = tiles; });
+    const sel = document.getElementById('cpp-cat');
+    /* data-icon 讓 zselect 在觸發鈕與面板的每一列前面放圖示，與閘門那組磚是同一顆。 */
+    if (sel) sel.innerHTML = CATS.map(r => '<option value="' + r[0] + '" data-icon="' + r[2] + '" data-i18n="' + r[3] + '"></option>').join('');
+    if (window.applyI18n) window.applyI18n(document.body);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  }
+  function syncCatUI() {
+    /* 閘門那一組不畫已選態：它是「選了就走」的 picker，沒有持久選取（同第一關的 Q28 慣例）。
+       預先亮起一張會讓人以為已經替他選好了、還要再確認一次。 */
+    const sel = document.getElementById('cpp-cat');
+    if (sel && sel.value !== cat) {
+      /* zselect 靠 change 事件同步觸發鈕上的字，程式改值不會自己發，所以這裡補一個，
+         並用 catSyncing 擋掉回頭再進 chooseCat（同 syncTypeUI 對舊型別下拉的做法）。 */
+      catSyncing = true;
+      sel.value = cat;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      catSyncing = false;
+    }
+    const g = catRow(cat)[1];
+    document.querySelectorAll('[data-fieldgroup]').forEach(fg => fg.classList.toggle('hidden', fg.dataset.fieldgroup !== g));
+  }
+  /* 分流點：內容類型一選定，步驟數就定稿（規格 5.1.2.1 §3）。 */
+  function chooseCat(c) { cat = c; syncCatUI(); render(); }
 
-  // Content type chips → toggle field group（並在直接發佈時決定走四步還是五步）
-  document.querySelectorAll('#cat-group .chip').forEach(c => {
-    c.addEventListener('click', () => {
-      document.querySelectorAll('#cat-group .chip').forEach(s => s.classList.remove('chip--active'));
-      c.classList.add('chip--active');
-      const g = c.dataset.group;
-      document.querySelectorAll('[data-fieldgroup]').forEach(fg => fg.classList.toggle('hidden', fg.dataset.fieldgroup !== g));
-      /* 分流點：內容類型一選定，步驟數就定稿（規劃書 §四 方案 B）。 */
-      cat = c.dataset.cat;
-      render();
-    });
+  function enterWizard() { enteredWizard = true; gate.classList.add('hidden'); gate2.classList.add('hidden'); sheet.classList.remove('hidden'); footer.classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function showGate()    { gate.classList.remove('hidden'); gate2.classList.add('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function showGate2()   { gate.classList.add('hidden'); gate2.classList.remove('hidden'); sheet.classList.add('hidden'); footer.classList.add('hidden'); window.scrollTo({ top: 0, behavior: 'instant' }); }
+
+  document.querySelectorAll('[data-gate-type]').forEach(c => c.addEventListener('click', () => {
+    chooseType(c.dataset.gateType);
+    /* 填到一半回來重選類型：不再問一次內容類型，直接回原本那一步。 */
+    if (enteredWizard) { enterWizard(); return; }
+    showGate2();
+  }));
+  /* ✕ 的意思因情境而異：還沒進流程＝離開建立項目；回來重選＝取消重選、回原本那一步。
+     兩關的 ✕ 共用這一支。 */
+  function leaveFlow() {
+    if (enteredWizard) { enterWizard(); return; }
+    if (history.length > 1) history.back(); else location.href = 'projects.html';
+  }
+  document.querySelector('[data-gate-back]').addEventListener('click', leaveFlow);
+  /* 第二關標題左邊的返回＝回第一關重選項目類型（不是離開，所以用 chevron 不用 ✕）。 */
+  document.querySelector('[data-gate2-back]')?.addEventListener('click', showGate);
+  /* 第二關底下那顆 ✕＝離開建立項目，與第一關的 ✕ 同一條路（含「回來重選時取消重選」那一支）。 */
+  document.querySelector('[data-gate2-close]')?.addEventListener('click', leaveFlow);
+  document.getElementById('cpp-type-switch')?.addEventListener('click', showGate);
+
+  /* 磚是 JS 建的，用事件委派接；閘門第二關按下＝選完就進主流程（使用者裁決 2026-08-18）。 */
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-cat-grid] [data-cat]');
+    if (!b) return;
+    chooseCat(b.dataset.cat);
+    enterWizard();
   });
+  document.getElementById('cpp-cat')?.addEventListener('change', e => { if (!catSyncing) chooseCat(e.target.value); });
 
   /* ══ 直接發佈 × 影片家族：整併進來的作品上架欄位 ══════════════════════════════
      欄位本身住在 partials/work-fields.js（與 publish-work.html 同一份實作），本頁只負責
@@ -1772,8 +1853,7 @@
     chooseType(STORE_TO_WIZ[src.type] || 'golive');
     /* 內容類型跟著草稿走：它決定直接發佈要走四步還是五步（§3 分流點）。 */
     const want = CAT_TO_CHIP[src.cat] || src.cat;
-    const chip = document.querySelector('#cat-group .chip[data-cat="' + want + '"]');
-    if (chip) chip.click();
+    if (CATS.some(r => r[0] === want)) chooseCat(want);
     const set = (elId, val) => { const el = document.getElementById(elId); if (el && val) { el.value = val; el.removeAttribute('data-i18n'); } };
     set('proj-title', src.name);
     const zh = (document.documentElement.lang || '').indexOf('zh') === 0;
@@ -1787,8 +1867,10 @@
   }
   document.addEventListener('i18n:applied', renderResumeNote);
 
+  renderCatPickers();
   render();
   syncTypeUI(type);
+  syncCatUI();
   const draftId = new URLSearchParams(location.search).get('draft');
   /* 查不到那筆草稿就照常從閘門開始——與其停在一個說不出所以然的空表單，
      不如讓人重新選一次類型。 */

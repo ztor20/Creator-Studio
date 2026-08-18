@@ -1083,7 +1083,7 @@
     'status.sold-out':        { en: 'Sold out',              zh: '已售完' },
     'status.ended':           { en: 'Ended',                 zh: '已結束' },
     'status.cancelled':       { en: 'Cancelled',             zh: '已取消' },
-    'status.succeeded':       { en: 'Succeeded',             zh: '已成立' },
+    'status.succeeded':       { en: 'Succeeded',             zh: '已成功' },
     'status.scheduled':       { en: 'Scheduled',             zh: '準備中' },
     'status.on-sale':         { en: 'On sale',               zh: '售票中' },
     'status.draft':           { en: 'Draft',                 zh: '草稿' },
@@ -1393,14 +1393,14 @@
        會讓預購項目被貼上它沒有的語意（稽核 D-05）。規格把各模式的對外字樣列為
        〔產品待確認〕（0-設計規格書 §7.2），這裡先用不綁模式的字。 */
     'projects.state.published':   { en: 'In progress',                           zh: '進行中' },
-    /* 已成立＝達標且已結束，但尚未交付給支持者 */
-    'projects.state.succeeded':   { en: 'Succeeded',                             zh: '已成立' },
+    /* 已成功＝達標且已結束，但尚未交付給支持者 */
+    'projects.state.succeeded':   { en: 'Succeeded',                             zh: '已成功' },
     /* 已上線＝作品在賣、正在賺錢（終點） */
     'projects.state.live':        { en: 'Live',                                  zh: '已上線' },
     'projects.state.cancelled':   { en: 'Cancelled',                             zh: '已取消' },
     /* 事實徽章（不是狀態，不佔 chip） */
     'projects.flag.goalmet':      { en: 'Goal met',                              zh: '已達標' },
-    'projects.flag.succeeded':    { en: 'Succeeded',                             zh: '已成立' },
+    'projects.flag.succeeded':    { en: 'Succeeded',                             zh: '已成功' },
     'projects.cat.label':         { en: 'Content category',                     zh: '內容類別' },
     'projects.cat.all':           { en: 'All categories',                       zh: '所有類別' },
     'projects.cat.grp.filmtv':    { en: 'Film & TV',                            zh: '影視' },
@@ -2933,8 +2933,11 @@
     'event-detail.live.showingall':       { en: 'Showing all {m}',          zh: '已顯示全部 {m} 筆' },
     'event-detail.att.f.all':             { en: 'All',                      zh: '全部' },
     'event-detail.live.scanner.title':    { en: 'Scanner access',           zh: '掃碼器存取' },
-    'event-detail.live.scanner.url':      { en: 'Scanner link',             zh: '掃碼器連結' },
+    'event-detail.live.scanner.url': { en: 'Link',                          zh: '連結' },
     'event-detail.live.scanner.on':       { en: 'Enabled',                  zh: '已啟用' },
+    'event-detail.summary.title':  { en: 'Event summary',                 zh: '活動摘要' },
+    'event-detail.summary.go':    { en: 'Event settings',                 zh: '前往設定' },
+    'event-detail.scanner.title':  { en: 'Scanner',                       zh: '掃碼器' },
     'event-detail.live.scanner.share':    { en: 'Send to staff',            zh: '傳給現場人員' },
     'event-detail.live.scanner.copy':     { en: 'Copy link',                zh: '複製連結' },
     'event-detail.live.scanner.copied':   { en: 'Link copied',              zh: '已複製連結' },
@@ -2942,6 +2945,7 @@
     'event-detail.live.scanner.sharetitle':{ en: 'Ztor scanner',            zh: 'Ztor 掃碼器' },
     'event-detail.live.scanner.sharetext':{ en: 'Check-in scanner for {name}', zh: '{name} 的現場報到掃碼器' },
     'event-detail.live.scanner.open':     { en: 'Open scanner',             zh: '開啟掃碼器' },
+    'event-detail.live.scanner.opencta': { en: 'Open in a new tab',          zh: '在新分頁開啟' },
     'event-detail.live.scanner.pw':       { en: 'Scanner password',         zh: '掃碼器密碼' },
     'event-detail.live.scanner.hint':     { en: 'Staff open the link, enter the password, then scan. The scanner only redeems — it never shows amounts, Earnings or fan data.', zh: '現場人員開啟連結、輸入密碼即可掃碼。掃碼器只做核銷，看不到金額、收益或粉絲資料。' },
 
@@ -3395,6 +3399,9 @@
     'wiz.cancel':           { en: 'Cancel',                           zh: '取消' },
     'wiz.savebtn':          { en: 'Save',                             zh: '儲存' },
     'wiz.savedraft':        { en: 'Save as draft',                    zh: '儲存為草稿' },
+    /* 進度列每一步下方的狀態小字（2026-08-18，建立項目與建立活動同一套說法）。 */
+    'wiz.step.done':        { en: 'Done',                             zh: '已完成' },
+    'wiz.step.todo':        { en: 'Not done',                         zh: '未完成' },
     'wiz.duplicate':        { en: 'Duplicate',                        zh: '複製' },
     'wiz.delete':           { en: 'Delete',                           zh: '刪除' },
     'wiz.more':             { en: 'More',                             zh: '更多' },
@@ -4176,6 +4183,11 @@
     'cpp.s1.sub':           { en: 'Pick a project type and tell us the basics. You can refine everything later — we only need enough to start saving your draft.', zh: '選一種項目類型，告訴我們基本資訊。一切都可之後再調整——目前只需足以存草稿的內容。' },
     'cpp.s1.type':          { en: 'Project type',                     zh: '項目類型' },
     'cpp.gate.back':        { en: 'Back',                             zh: '返回上一頁' },
+    /* 閘門第二關＝內容類型（2026-08-18）。第二關的返回是回第一關重選項目類型，不是離開流程。 */
+    'cpp.s1b.h1':           { en: 'What kind of work is it?',         zh: '這是哪一種作品？' },
+    'cpp.s1b.sub':          { en: 'This decides which fields you fill in next. You can change it later.', zh: '這一項決定接下來要填哪些欄位，之後仍可更改。' },
+    'cpp.gate2.back':       { en: 'Back to project type',             zh: '回上一步重選項目類型' },
+    'cpp.type.switch':      { en: 'Switch project type',              zh: '更換項目類型' },
     'cpp.about.h1':         { en: 'Project basics',                   zh: '基本資料' },
     'cpp.about.sub':        { en: 'Tell us the essentials — you can refine everything later.', zh: '填寫必要資訊，細節都可之後再調整。' },
     'cpp.golive.tag':       { en: 'Fastest',                          zh: '最快' },
@@ -4217,10 +4229,7 @@
        年齡分級全站只剩 §7.11 的六級一套，鍵名一律用 'pw.age.*'，標籤用 'tax.age.label'（上架流程用 'pw.info.age.title'）。 */
     'cpp.s1.type-fields-hint': { en: 'Fields adapt to the chosen content type. Album = label/credits/runtime; Film = director/cast/territory.', zh: '欄位會隨選擇的內容類型變化。專輯 = 廠牌 / 製作 / 長度；電影 = 導演 / 演員 / 授權地區。' },
     'cpp.s1.iprent':        { en: "IP Rental · disclose other rights you're using", zh: 'IP 租借 · 揭露你用到的其他權利' },
-    'cpp.s1.iprent.empty':  { en: 'No IP rentals attached yet',       zh: '尚未綁定任何 IP 租借' },
-    'cpp.s1.iprent.meta':   { en: "Sampling someone's work, using a licensed character, or covering a song? Link the rental here.", zh: '取樣他人作品、使用授權角色、翻唱歌曲？在這裡綁定租借紀錄。' },
-    'cpp.s1.iprent.link':   { en: '+ Link from IP Bank',             zh: '＋ 從 IP 資產庫綁定' },
-    'cpp.s1.iprent.hint':   { en: 'IP Rental is a rights disclosure, not a monetization model. Brand &amp; Ads live in Monetization.', zh: 'IP 租借是權利揭露，不是變現方式。品牌與廣告在 變現方式 設定。' },
+    'cpp.s1.iprent.link':   { en: 'Choose IP to link',                zh: '選擇綁定的 IP' },
 
     /* Step 2 · Showcase */
     'cpp.s2.h1':            { en: 'Show fans why this matters.',      zh: '讓粉絲看見作品的意義' },
@@ -4518,6 +4527,7 @@
     'cpp.bd.add':           { en: '+ Add bundle',                    zh: '＋ 新增套組' },
     'cpp.bd.untitled':      { en: 'Untitled bundle',                  zh: '未命名套組' },
     'cpp.bd.edit':          { en: 'Edit',                             zh: '編輯' },
+    'cpp.bd.expand':        { en: 'Expand',                           zh: '展開' },
     'cpp.bd.collapse':      { en: 'Collapse',                         zh: '收合' },
     'cpp.bd.remove':        { en: 'Remove',                           zh: '移除' },
     /* 展開態的兩個出口寫全字（2026-07-30）：它們在卡片底部、旁邊沒有別的動作可以
@@ -5720,6 +5730,8 @@
     'project-detail.tab.pledges':{en: 'Plans & promises',zh: '方案與承諾'},
     'project-detail.tab.about':{en: 'About the project',zh: '關於項目'},
     'project-detail.tab.progress':{en: 'Progress',zh: '進度'},
+    /* 2026-08-18：支持方案／預購方案由設定分頁抽成獨立分頁，排在總覽之後。 */
+    'project-detail.tab.plans':{en: 'Plans',zh: '方案'},
     'project-detail.tab.work':{en: 'Work',zh: '作品'},
     'project-detail.tab.earnings':{en: 'My earnings',zh: '我的收益'},
     'project-detail.tab.performance':{en: 'Performance',zh: '表現'},
@@ -5759,7 +5771,10 @@
     'pd-ov.end.refund':{en: 'Refunds',zh: '退款'},
     'pd-ov.end.refund-meta':{en: 'Handled by the platform · see the plans in Setup',zh: '由平台處理，條件見設定分頁的方案'},
 
-    'pd-ov.prog.due-today':{en: 'Due today',zh: '今天到期'},
+    /* 2026-08-18 撤除（墓碑）：'pd-ov.prog.due-today'（'Due today'／「今天到期」）與
+       'pd-ov.prog.in-days'（'in {n} days'／「還有 {n} 天」）。進度摘要右邊那格改放預計
+       完成日、不放倒數（使用者裁決「這裡放完成日期，不需要剩餘時間」），兩條倒數文案
+       因此沒有消費者。逾期那條 'pd-prog.ms.overdue' 仍在服役——進度分頁的時間軸還在用。 */
     'pd-ov.prog.nodate':{en: 'No date yet',zh: '尚未排定'},
     'pd-ov.prog.all-done-meta':{en: 'Nothing left on the roadmap',zh: '藍圖上沒有待完成的項目'},
     'pd-ov.prog.none':{en: 'No milestones yet',zh: '還沒有里程碑'},
@@ -5796,8 +5811,10 @@
     'pd-ov.next.postupdate':{en: 'Post a short update so backers know where things stand.',zh: '發一則更新，讓支持者知道現在到哪了。'},
     'pd-ov.next.postupdate-pre':{en: 'Post a short update so buyers know where things stand.',zh: '發一則更新，讓下單的人知道現在到哪了。'},
     'pd-ov.next.inreview':{en: 'The platform is reviewing it. Nothing to do until the result comes back.',zh: '平台審核中，等結果就好。'},
-    'pd-ov.deadline.fund':{en: 'Reaching the goal by the deadline makes it a funded project.',zh: '募資期結束時達標，項目就成立。'},
-    'pd-ov.deadline.pre':{en: 'Missing the minimum by the deadline ends the project and refunds every order in full.',zh: '集單期結束仍未達最少預購數，項目終止、全額退款。'},
+    /* 2026-08-18 撤除（墓碑）：'pd-ov.deadline.fund'／'pd-ov.deadline.pre'（KPI 列底下
+       那句「募資期結束時達標，項目就成立」與預購版的全額退款說明）。使用者裁示移除——
+       那是集資的規則、建立項目時就知道了，每次打開總覽再讀一次沒有新資訊；而它橫跨
+       整列的寬度，讀起來像那四個數字的註腳。規則本身仍在規格 §2.1.1。 */
     'pd-ov.next.publishwork':{en: 'The work is finished — send it through release.',zh: '作品完成了，送去上架。'},
     'pd-ov.next.refundpost':{en: 'A general update still goes out — backers need to hear about the refund.',zh: '一般更新還發得出去；退款進度要讓支持者知道。'},
 
@@ -5818,20 +5835,33 @@
        捷徑由分頁列承擔）。全站零消費才刪。 */
     'pd-ov.prog.title':{en: 'Progress',zh: '進度摘要'},
     'pd-ov.prog.go':{en: 'Go to progress',zh: '前往進度'},
-    'pd-ov.prog.in-days':{en: 'in {n} days',zh: '還有 {n} 天'},
     'pd-ov.prog.all-done':{en: 'All milestones done',zh: '里程碑全部完成'},
     'pd-ov.prog.last-update':{en: 'Latest update',zh: '最近更新'},
     'pd-ov.prog.no-update':{en: 'None yet',zh: '還沒發過'},
     'pd-ov.bk.orders':{en: 'Pre-orders',zh: '預購份數'},
+
+    /* 2026-08-18：總覽右欄由「支持者摘要」改成「項目摘要」——它回答「這是什麼項目」，
+       不回答「現在怎麼樣」。原本那兩列（方案數、收單期間）搬進上面那列 KPI。
+       pd-ov.bk.* 一族暫時留著：預購那一支還在別處引用。 */
+    'pd-ov.plans.title':{en: 'Support plans',zh: '方案摘要'},
+    'pd-ov.plans.go':{en: 'Go to plans',zh: '前往方案'},
+    'pd-ov.about.title':{en: 'About this project',zh: '項目摘要'},
+    'pd-ov.about.go':{en: 'Project settings',zh: '前往設定'},
+    'pd-ov.about.mode':{en: 'Release mode',zh: '發行模式'},
     'pd-ov.bk.title':{en: 'Backers',zh: '支持者摘要'},
     'pd-ov.bk.go':{en: 'Go to backers',zh: '前往支持者'},
     'pd-ov.bk.go-pre':{en: 'Go to pre-orders',zh: '前往預購'},
     'pd-prog.section':{en: 'Project progress',zh: '項目進度'},
     'pd-prog.ms.count':{en: 'Milestones done',zh: '里程碑完成度'},
     'pd-prog.ms.completed':{en: 'Completed',zh: '完成日'},
+    'pd-prog.ms.more':{en: 'More actions',zh: '更多操作'},
     'pd-prog.ms.edit':{en: 'Edit',zh: '編輯'},
     'pd-prog.ms.delete':{en: 'Delete',zh: '刪除'},
     'pd-prog.ms.public':{en: 'Public',zh: '公開'},
+    /* 2026-08-18（A2）：可見度改成標題列上的一個小字，兩個值並列在同一個位置，
+       所以「僅支持者」縮成「支持者可見」——「僅」是在跟「公開」比較，而比較的
+       意思由位置給了。 */
+    'pd-prog.ms.backers': { en: 'Backers only', zh: '支持者可見' },
     'pd-prog.ms.todo':{en: 'Not started',zh: '未開始'},
     'pd-prog.ms.doing':{en: 'In progress',zh: '進行中'},
     'pd-prog.ms.done':{en: 'Done',zh: '已完成'},
@@ -5850,10 +5880,14 @@
     /* 今天那一格的情境句（§2.2.10 狀態變體表）。{n} 是天數、{name} 是里程碑名稱，
        兩者由頁面填入，不寫進翻譯。 */
     'pd-prog.today.start':{en: 'The delivery story starts here — post the first update so backers know how you plan to get there.',zh: '交付從今天開始。發第一則更新，讓支持者知道你打算怎麼走。'},
-    'pd-prog.today.countdown':{en: '{n} days to {name}',zh: '距離 {name} 還有 {n} 天'},
-    'pd-prog.today.msday':{en: '{name} is due today',zh: '今天是 {name} 的預計完成日'},
-    'pd-prog.today.done':{en: '{name} is done',zh: '{name} 完成了'},
-    'pd-prog.today.overdue':{en: '{name} is {n} days late',zh: '{name} 逾期 {n} 天'},
+    /* 2026-08-18（A2）撤除（墓碑）：'pd-prog.today.overdue'（'{name} is {n} days late'）與
+       'pd-prog.today.countdown'（'{n} days to {name}'）、'pd-prog.today.done'、
+       'pd-prog.today.msday'。今天那一列改講跨里程碑的體溫計、不再點名某一顆——
+       發文框搬到里程碑底下之後，點名等於跟下面一格逐字重複。
+       下面三條是接手的新文案：{n} 只數數量，不帶名字。 */
+    'pd-prog.today.late-n':{en: '{n} overdue',zh: '{n} 件逾期'},
+    'pd-prog.today.rest-n':{en: ', {n} still ahead',zh: '，{n} 件還沒到'},
+    'pd-prog.today.ontrack':{en: 'On track · {n} to go',zh: '都在進度上 · 還有 {n} 件'},
     'pd-prog.today.nodates':{en: 'None of the milestones has a date yet. Post an update, or mark one done.',zh: '里程碑都還沒排日期。發一則更新，或把做完的那一顆標成完成。'},
     'pd-prog.today.noms':{en: 'No milestones yet — add a few so backers can see how you plan to get there.',zh: '還沒有里程碑。補上幾顆，支持者才看得出你打算怎麼走。'},
     'pd-prog.today.alldone-send':{en: 'Every milestone is done — send the work for release.',zh: '里程碑都完成了，把作品送去上架。'},
@@ -5873,12 +5907,18 @@
     'pd-c.attach-image':{en: 'Image',zh: '圖片'},
     'pd-c.attach-video':{en: 'Video',zh: '影片'},
     'pd-c.attach-audio':{en: 'Music',zh: '音樂'},
-    'pd-c.attach-note':{en: 'Attachments are not wired up in this prototype.',zh: '原型還沒接上傳，這裡只示意入口位置。'},
+    /* 2026-08-18 夾帶改成長出上傳框（一則限一種）之後需要的三條：關閉那一塊的 aria-label，
+       以及音檔格的 CTA 與格式提示（圖片與影片沿用既有的 cp.media.* 與 pw.art.bts.*）。 */
+    'pd-c.attach-remove':{en: 'Remove attachment',zh: '移除夾帶'},
+    'pd-c.attach-audio-cta':{en: 'Drop an audio file or browse',zh: '拖入音檔或點擊選檔'},
+    'pd-c.attach-audio-hint':{en: 'MP3 or WAV',zh: 'MP3 或 WAV'},
+    /* 2026-08-18 撤除（墓碑）：'pd-c.attach-note'（按下附件只跳一句「原型不接上傳」）。
+       改成長出真的上傳框之後，那句提示沒有消費者——格子自己就在說可以放什麼。 */
 
     'pd-prog.work.node':{en: 'Finished work',zh: '完成作品'},
     'pd-prog.work.blocked':{en: 'No release flow exists for this content type yet.',zh: '這個內容類型的上架流程尚未定義。'},
     'pd-prog.work.ready':{en: 'Send it from here once the work is finished.',zh: '作品完成後從這裡送審。'},
-    'pd-prog.work.locked':{en: 'Opens once the project is funded.',zh: '項目成立後才能上架作品。'},
+    'pd-prog.work.locked':{en: 'Opens once the project is funded.',zh: '項目成功後才能上架作品。'},
     'pd-prog.work.send':{en: 'Send the work for release',zh: '送作品上架'},
     'pd-prog.work.pickday':{en: 'Approved — pick the day it goes live.',zh: '已通過，挑一天上線。'},
 
@@ -5896,6 +5936,12 @@
     'pd-edit.milestone.desc':{en: 'Description',zh: '說明'},
     'pd-edit.milestone.desc-ph':{en: 'What gets delivered at this step',zh: '這一步要交付什麼'},
 
+    /* 2026-08-18（D197）：彈窗沒有「長在哪一格」這個位置訊號，類型選了里程碑更新時
+       得問一次要完成哪一顆；時間軸上的內嵌發文框不問——它長在哪顆底下就是哪顆。
+       舊的「掛在哪裡」是通用掛載的問法，值域含「不掛」，與新規則不同，一併留著給
+       其他消費者（目前無）。 */
+    'pd-edit.update.ms-pick':{en: 'Milestone to complete',zh: '選擇要完成的里程碑'},
+    'pd-edit.update.ms-pick-hint':{en: 'Publishing this update marks it done.',zh: '送出這則更新就會把它標記為完成。'},
     'pd-edit.update.milestone':{en: 'Attach to',zh: '掛在哪裡'},
     /* 2026-08-17（D194）：軸尾的公告區退場，不掛的更新改依發布時間排進同一條軸。 */
     'pd-edit.update.milestone.hint':{en: 'Unattached ones sit on the timeline by their own date.',zh: '不掛的會依自己的發布日期排進時間軸。'},
@@ -5981,6 +6027,9 @@
     'project-detail.tl.pre-open':{en: 'Pre-order opened',zh: '預購開始'},
     'project-detail.tl.pre-deadline':{en: 'Pre-order deadline',zh: '預購截止'},
     'project-detail.tl.pre-deadline-val':{en: 'Jul 06, 2026 · 9 days left',zh: '2026/07/06 · 剩 9 天'},
+    /* 2026-08-18 撤除（墓碑）：'project-detail.items.*' 一族（作品進度清單的標題、
+       逐集名稱與狀態、口徑註腳）。那張清單隨 deliverablesHTML() 一起退場——內容項目的
+       schema 屬另一模組、規格未定，表上的欄位全是寫死的示範資料。 */
     'project-detail.tl.delivery':{en: 'Expected delivery',zh: '預期交付'},
     'project-detail.tl.delivery-val':{en: 'Oct 2026',zh: '2026/10'},
     /* 2026-08-03 D166：預購的全額退款是 §5.3.1 F26 寫死的承諾，不是可關掉的開關，
@@ -6251,15 +6300,6 @@
        —— cp.media.replace（替換圖片）／cp.media.remove（刪除圖片），由共用元件
        partials/upload-tile.js 統一產生。原本這頁自己有一組
        project-detail.showcase.replace／.delete，已無消費者，故移除；要改文案改 cp.media.*。 */
-    'project-detail.items.title':{en: 'Work progress',zh: '作品進度'},
-    'project-detail.items.kind':{en: 'Episodes',zh: '影集'},
-    'project-detail.items.ep1':{en: 'Bloom at Dusk',zh: '暮色綻放'},
-    'project-detail.items.ep1-meta':{en: '12:40 · Encoded',zh: '12:40 · 已轉檔'},
-    'project-detail.items.ep2':{en: "Director's cut",zh: '導演剪輯版'},
-    'project-detail.items.ep2-meta':{en: 'Uploading · 64%',zh: '上傳中 · 64%'},
-    'project-detail.items.ready':{en: 'Ready',zh: '就緒'},
-    'project-detail.items.processing':{en: 'Processing',zh: '處理中'},
-    'project-detail.items.note':{en: 'Content item schema lives in another module — fields shown are illustrative (TBC).',zh: '內容項目 schema 屬另一模組，欄位為示例（待確認）。'},
     'project-detail.details.title':{en: 'Public details',zh: '公開資訊'},
     'project-detail.details.synopsis':{en: 'Synopsis',zh: '簡介'},
     'project-detail.details.synopsis-val':{en: 'Required · 180 words',zh: '必填 · 180 字'},
@@ -6426,9 +6466,13 @@
     'pd-edit.update.kind':{en: 'Type',zh: '類型'},
     'pd-edit.update.kind-general':{en: 'General update',zh: '一般更新'},
     'pd-edit.update.kind-release':{en: 'Work release',zh: '完成作品'},
+    /* 2026-08-18（D197）：發文框長在哪一格就決定類型的預設值，因此多了「里程碑更新」
+       這一種——它送出後會把那顆里程碑標記為完成，所以送出鈕也另有說法。 */
+    'pd-edit.update.kind-ms':{en: 'Milestone update',zh: '里程碑更新'},
+    'pd-edit.update.submit-ms':{en: 'Publish & mark done',zh: '發布並標記完成'},
     'pd-edit.update.kind-film-note':{en: 'You’ll set up the release details next.',zh: '送出後接著設定作品上架資訊。'},
     'pd-edit.update.kind-other-note':{en: 'Release setup is not open for this work type yet — publishing marks the project live right away.',zh: '這個作品類型的上架流程尚未開放，送出後直接發布並將項目標記為已上線。'},
-    'pd-edit.update.kind-locked':{en: 'Work release opens once the project is Succeeded.',zh: '項目成立後才能上架作品。'},
+    'pd-edit.update.kind-locked':{en: 'Work release opens once the project is Succeeded.',zh: '項目成功後才能上架作品。'},
     'pd-edit.update.submit':{en: 'Publish update',zh: '發布更新'},
     'pd-edit.update.submit-next':{en: 'Next: release setup',zh: '下一步：上架作品'},
     'pd-edit.update.submit-live':{en: 'Publish and mark live',zh: '發布並標記上線'},
@@ -6466,7 +6510,10 @@
           片方後台「管理影片」的建立流程盤點（documents/plans/）。 */
     'pw.h1':                { en: 'Publish work',                     zh: '上架作品' },
     'pw.subtitle':          { en: 'Film',                             zh: '影片' },
-    'pw.step.media':        { en: 'Audio',                            zh: '音訊' },
+    /* 2026-08-18 使用者裁決：第一步由「音訊／Audio」改名「影片上傳」。這一步真正的主角是
+       完成片本身（影片檔在最上面、原始語音與字幕是掛在它身上的兩件事），叫「音訊」會讓人
+       以為要先處理聲音。步驟名同時是就緒清單的前綴（「影片上傳 · 影片檔」）。 */
+    'pw.step.media':        { en: 'Upload',                           zh: '影片上傳' },
     'pw.step.art':          { en: 'Artwork',                          zh: '素材' },
     'pw.step.info':         { en: 'Details',                          zh: '詳情' },
     'pw.step.credits':      { en: 'Credits',                          zh: '演職人員' },
@@ -6485,7 +6532,7 @@
     'pw.edit.save':         { en: 'Save changes',                     zh: '儲存變更' },
     'pw.edit.save-review':  { en: 'Save and send for review',         zh: '儲存並重新送審' },
     /* 步驟 1 */
-    'pw.media.h1':          { en: 'Audio & subtitles',                zh: '音訊與字幕' },
+    'pw.media.h1':          { en: 'Upload the film',                  zh: '影片上傳' },
     'pw.media.sub':         { en: 'Upload the finished cut, then say what language it speaks and what subtitles ship with it.', zh: '先傳完成片，再交代它說什麼語言、附哪幾種字幕。' },
     'pw.media.file.title':  { en: 'Video file',                       zh: '影片檔' },
     'pw.media.file.sub':    { en: 'MP4 or MOV, up to 20 GB.',         zh: 'MP4 或 MOV，上限 20 GB。' },
@@ -6498,7 +6545,14 @@
     'pw.media.subs.lang':   { en: 'Subtitle language',              zh: '字幕語言' },
     'pw.media.subs.slot':   { en: 'SRT / VTT',                        zh: 'SRT / VTT' },
     'pw.media.subs.add':    { en: 'Add a language',                   zh: '新增語言' },
-    'pw.media.subs.file':   { en: 'Add a subtitle file',              zh: '新增字幕檔' },
+    /* 2026-08-18 補：四個上傳格的常駐標題（*.cta）。空格子原本只有一顆圖示——說明文字都掛在
+       __hint，而 upload-tile.css 讓 .is-empty 的 __hint 要 hover 才出現，靜止態因此讀不出
+       這裡能拖檔進來。文案只講媒材（檔案／圖片／影片），不重述區段標題已經說過的名字。
+       同輪把四個 aria-label 改寫成「可視標題＋這是哪一格」，讓語音輸入使用者唸得出畫面上那句
+       （中文放句首當前綴、英文接在後面當補語，兩邊都得逐字含住 __title 的原字串、連大小寫都一樣）
+       （WCAG 2.5.3 Label in Name），同時保住元件註解要的「每格說法各自精確」。 */
+    'pw.media.subs.cta':    { en: 'Drop a file or browse',            zh: '拖入檔案或點擊選檔' },
+    'pw.media.subs.file':   { en: 'Drop a file or browse — subtitle file', zh: '字幕檔：拖入檔案或點擊選檔' },
     'pw.lang.yue':          { en: 'Cantonese',                        zh: '粵語' },
     'pw.lang.cmn':          { en: 'Mandarin',                         zh: '國語' },
     'pw.lang.en':           { en: 'English',                          zh: '英語' },
@@ -6509,17 +6563,21 @@
     'pw.art.h1':            { en: 'Artwork & clips',          zh: '封面與影音素材' },
     'pw.art.sub':           { en: 'This is what fans see before they press play.', zh: '這些是粉絲按下播放之前看到的東西。' },
     'pw.art.cover.title':   { en: 'Cover',                            zh: '封面圖' },
-    'pw.art.cover.cta':     { en: 'Add the poster',                   zh: '放上海報' },
+    /* 2026-08-18 改口徑：原為「放上海報」／'Add the poster'，只說要什麼、沒說怎麼給。
+       同輪四個空格補上常駐 CTA 後，這格是整個素材步驟裡唯一還用另一種說法的，改成同一句。 */
+    'pw.art.cover.cta':     { en: 'Drop an image or browse',         zh: '拖入圖片或點擊選檔' },
     'pw.art.stills.title':  { en: 'Stills',                           zh: '劇照' },
     'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it.', zh: '讓人想看、又不爆雷的畫面。' },
     'pw.art.trailer.title': { en: 'Trailer',                          zh: '預告片' },
     'pw.art.trailer.sub':   { en: 'Plays on the work’s page before anyone rents it.', zh: '放在作品頁上，租片前就能看。' },
     'pw.art.trailer.hint':  { en: 'Up to 3 minutes',                  zh: '3 分鐘以內' },
-    'pw.art.trailer.add':   { en: 'Add the trailer',                  zh: '上傳預告片' },
+    'pw.art.trailer.add':   { en: 'Drop a video or browse — trailer',  zh: '預告片：拖入影片或點擊選檔' },
+    'pw.art.trailer.cta':   { en: 'Drop a video or browse',           zh: '拖入影片或點擊選檔' },
     'pw.art.bts.title':     { en: 'Behind the scenes',                zh: '花絮' },
     'pw.art.bts.sub':       { en: 'Optional. Extra footage that sits alongside the trailer.', zh: '選填，會與預告片一起放在作品頁上當延伸內容。' },
     'pw.art.bts.hint':      { en: 'MP4 or MOV',                       zh: 'MP4 或 MOV' },
-    'pw.art.bts.add':       { en: 'Add a behind-the-scenes video',    zh: '上傳花絮影片' },
+    'pw.art.bts.add':       { en: 'Drop a video or browse — clip',    zh: '花絮：拖入影片或點擊選檔' },
+    'pw.art.bts.cta':       { en: 'Drop a video or browse',           zh: '拖入影片或點擊選檔' },
     /* 步驟 3 */
     'pw.info.h1':           { en: 'Video details',                     zh: '影片詳情' },
     'pw.info.sub':          { en: 'Everything on the listing page, plus what it costs to watch.', zh: '作品頁上的資料，加上看一次要多少錢。' },
@@ -6628,7 +6686,8 @@
     'pw.media.file.state.processing': { en: 'Processing',   zh: '處理中' },
     'pw.media.file.state.ready':      { en: 'Ready',        zh: '已就緒' },
     /* F5 劇照可多張、F6 花絮可多筆 */
-    'pw.art.stills.add':    { en: 'Add a still',                      zh: '新增劇照' },
+    'pw.art.stills.add':    { en: 'Drop an image or browse — still',  zh: '劇照：拖入圖片或點擊選檔' },
+    'pw.art.stills.cta':    { en: 'Drop an image or browse',          zh: '拖入圖片或點擊選檔' },
     'pw.art.bts.addmore':   { en: 'Add another clip',                 zh: '再加一支' },
     'pw.art.bts.item':      { en: 'Clip',                             zh: '片段' },
     'pw.art.bts.drop':      { en: 'Remove this clip',                 zh: '移除這一支' },
@@ -6673,7 +6732,7 @@
     'vr.ctx.status':        { en: 'Project status',   zh: '項目狀態' },
     'vr.ctx.post':          { en: 'Post',             zh: '待發貼文' },
     'vr.ctx.audience':      { en: 'Audience',         zh: '受眾' },
-    'vr.projstatus.succeeded': { en: 'Succeeded',     zh: '已成立' },
+    'vr.projstatus.succeeded': { en: 'Succeeded',     zh: '已成功' },
     'vr.projstatus.live':   { en: 'Live',             zh: '已上線' },
     'vr.projstatus.published': { en: 'In progress',   zh: '進行中' },
     'vr.projstatus.draft':  { en: 'Draft',            zh: '草稿' },
