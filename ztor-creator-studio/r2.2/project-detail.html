@@ -26,7 +26,14 @@
 <link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/table.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
+<!-- 進度分頁的交付藍圖時間軸（§2.2.10）：里程碑是節點、更新掛在節點底下、公告收在軸外 -->
+<link rel="stylesheet" href="ds-components/progress-timeline.css?v=r2.2">
+<!-- 總覽的重點面板與進度的交付摘要用同一排大數字 -->
+<link rel="stylesheet" href="ds-components/stat-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<!-- 總覽逐格的「下一步」：一句話＋一顆主要動作（§2.1.1）。 -->
+<link rel="stylesheet" href="ds-components/next-step.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/card.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
@@ -78,7 +85,8 @@
           </button>
           <button class="btn btn--ghost" type="button" data-pd-editcancel hidden data-i18n="project-detail.btn.cancel">Cancel</button>
           <button class="btn btn--outline"><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="project-detail.btn.preview">Preview</span></button>
-          <button class="btn btn--primary" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
+          <!-- 發布項目更新僅共創與預購提供（§2.4 第 4 項；直接發佈 2026-08-17 起沒有這個區段）。 -->
+          <button class="btn btn--primary" data-modal-open="pd-edit-update" data-type="fund preorder" data-i18n="project-detail.btn.post-update">Post update</button>
         </div>
       </div>
 
@@ -99,56 +107,39 @@
           <p class="pd-hero__desc" id="pd-desc">
             A coming-of-age short film about a florist who only blooms at night. Co-creation the final color grade and a limited NFT collectible for backers.
           </p>
-          <div class="funding-panel funding-panel--card">
-            <div class="funding-panel__amount-row">
-              <div class="funding-panel__amount" id="pd-fund-raised">$8,420</div>
-              <span class="funding-panel__backers">
-                <i data-lucide="users" class="ztor-icon ztor-icon--sm"></i>
-                <span id="pd-fund-backers">134 backers</span>
-              </span>
-            </div>
-            <span class="funding-panel__goal" id="pd-fund-goal">Goal $15,000</span>
-            <div class="funding-panel__bar-row">
-              <div class="project-bar"><div class="project-bar__fill" id="pd-fund-bar" style="width:56%"></div></div>
-              <span class="funding-panel__pct" id="pd-fund-pct">56%</span>
-            </div>
-            <div class="funding-panel__status-row">
-              <span class="funding-panel__countdown" id="pd-fund-left">21 days left</span>
-              <span class="funding-panel__period" id="pd-fund-period">Campaign May 18 – Jul 06, 2026</span>
-            </div>
-            <!-- 2026-07-24：創作者脈絡取代原 §7.3 口徑註記，坐在框內最下面。 -->
-            <p class="pd-hero__owner" id="pd-owner-line">By Gary Lin · Created Mar 02, 2026 · Co-creation live since May 18, 2026</p>
-          </div>
-          <div class="info-banner">
-            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-            <span data-i18n="project-detail.nextstep"><strong>Next steps —</strong> IP rental not yet linked · 2 showcase assets pending · 1 milestone update due to backers.</span>
-          </div>
+          <!-- 營運摘要（§2.1 第 2 項）與下一步（第 3 項）2026-08-17 搬進總覽分頁：
+               兩者都隨發行模式與項目狀態換內容（§2.1.1 階段重點面板），屬於「現在怎麼樣、
+               我該做什麼」那一格；hero 留識別與創作者脈絡。見 D193。
+
+               識別事實列（2026-08-17 下午補）：上面那次搬動之後，右欄只剩徽章、標題、
+               簡介與一行創作者脈絡，對著 300px 寬的直式海報空掉一大半。這一列補的是
+               §2.1 第 1 項要求、原本散在別處的識別——內容類型只出現在麵包屑、建立日
+               與創作者擠在同一行。逐筆列出之後右欄站得住，也不與總覽的重點面板重複：
+               這裡全是「這個項目是什麼」，那裡才是「現在怎麼樣」。
+               三筆在每一種發行模式與每一個狀態都存在，所以不會有某一格空掉。 -->
+          <div class="data-list pd-hero__facts" id="pd-hero-facts"></div>
         </div>
       </section>
 
-      <!-- Tabs: Total / Content / Public details / Money (spec resource grouping) -->
-      <!-- 分頁列＋右側「編輯」切換（2026-07-27 使用者裁示：這兩個分頁預設唯讀，
-           要按編輯才能改）。按鈕只在「可編輯」的分頁出現，狀態逐分頁各自記。 -->
-      <!-- ── 分頁出現與否的唯一依據：documents/5.1.2.2-專案詳情.md §2.0 區段適用的項目類型 ──
-           分頁怎麼分組、叫什麼名字是呈現決策（§3），但「這個類型有沒有這個區段」是產品規則，
-           一律照 §2.0 那張表寫進 data-type，不在這裡自行判斷。逐列對照（2026-08-03，D166）：
-             §2.2.5 方案與承諾    — · ✓ ✓  → data-tab="pledges"  data-type="fund preorder"
-             §2.2.10 製作進度     — · ✓ ✓  → data-tab="progress"  data-type="fund preorder"
-             §2.2.3 營利設定      ✓ · — —  → 總覽分頁內的區段 data-type="go-live"
-             §2.3.3 共創監看      — · ✓ —  → data-tab="cofund"    data-type="fund"
-             §2.3.2 淨利池分配    三型都有，但 NFT 分配只有共創 → 分配卡 data-type="fund"
-           §2.0 未涵蓋的兩個站台自訂分頁（表現、版稅）各有自己的條件，見下方 render()。
-           預購的集單進度收在 §2.1 概覽，原型另設「預購進度」分頁屬呈現分組（§2.0 末段允許）。 -->
+      <!-- ── 分頁分群：documents/5.1.2.2-專案詳情.md §3「分群結構」（2026-08-17，D193）──
+           一個分頁＝創作者此刻在做的一件事，不是一個規格章節。分群與命名屬呈現決策（§3），
+           但「這個類型有沒有這個區段」是產品規則，一律照 §2.0 類型表寫進 data-type。
+           逐格對照（右欄＝§3 分群表的「內容來源」）：
+             總覽   一律          → data-tab="overview"  §2.1（含 §2.1.1）；直接發佈另收 §2.2.11 上架追蹤
+             進度   共創・預購    → data-tab="progress"  data-type="fund preorder"  §2.2.10（含 §2.2.9 更新流＋§2.2.11 完成作品節點）
+             支持者 共創・預購    → data-tab="backers"   data-type="fund preorder"  §2.3.3；預購為集單與訂單明細
+             設定   一律          → data-tab="setup"     §2.2.1–§2.2.8
+             收益   一律          → data-tab="earnings"  §2.3.1、§2.3.2
+             表現   見 §2.0       → data-tab="performance"（本輪未動）
+             版稅   見 §2.0       → data-tab="royalty"（本輪未動）
+           支持者的標籤隨發行模式換字（共創＝支持者／預購＝預購），由下方 render() 處理。
+           右側「編輯」切換只在可編輯的分頁（設定）出現，狀態逐分頁各自記。 -->
       <div class="pd-tabbar mt-24">
       <nav class="tabs" role="tablist" data-tabs>
-        <button class="tabs__item tabs__item--active" role="tab" data-tab="settings" aria-selected="true" data-i18n="project-detail.tab.settings">Project overview</button>
-        <button class="tabs__item" role="tab" data-tab="pledges" aria-selected="false" data-i18n="project-detail.tab.pledges" data-type="fund preorder">Plans &amp; promises</button>
-        <button class="tabs__item" role="tab" data-tab="about" aria-selected="false" data-i18n="project-detail.tab.about">About the project</button>
-        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund preorder">Production progress</button>
-        <!-- 作品 · §2.2.11（2026-08-11 新增）。條件不是類型而是「這個項目真的有一件作品」：
-             影片家族 ＋ store 裡有一件送審或已上架的紀錄。直接發佈在建立時就送審，所以
-             建完就有；共創與預購要等作品第一次送審之後才出現。判定寫在下方 renderWork()。 -->
-        <button class="tabs__item" role="tab" data-tab="work" aria-selected="false" data-i18n="project-detail.tab.work" data-work-tab hidden>Work</button>
+        <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="project-detail.tab.overview">Overview</button>
+        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund preorder">Progress</button>
+        <button class="tabs__item" role="tab" data-tab="backers" aria-selected="false" data-i18n="project-detail.tab.backers" data-backers-tab data-type="fund preorder">Backers</button>
+        <button class="tabs__item" role="tab" data-tab="setup" aria-selected="false" data-i18n="project-detail.tab.setup">Setup</button>
         <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings">My earnings</button>
         <!-- 表現 · 緊接在「我的收益」之後（2026-07-28 使用者裁示）。
              收益回答「賺了多少」，表現回答「多少人看／聽、在哪些平台、在哪些地區」；
@@ -156,8 +147,6 @@
              只有作品已上線（status=live）才出現——還沒上線就沒有觀看數可談。 -->
         <button class="tabs__item" role="tab" data-tab="performance" aria-selected="false" data-i18n="project-detail.tab.performance" data-perf-tab hidden>Performance</button>
         <button class="tabs__item" role="tab" data-tab="royalty" aria-selected="false" data-i18n="project-detail.tab.royalty" data-royalty hidden>Royalty</button>
-        <button class="tabs__item" role="tab" data-tab="cofund" aria-selected="false" data-i18n="project-detail.tab.cofund" data-type="fund">Co-creation progress</button>
-        <button class="tabs__item" role="tab" data-tab="preorder" aria-selected="false" data-i18n="project-detail.tab.preorder" data-type="preorder">Pre-order progress</button>
       </nav>
         <button class="btn btn--outline btn--sm pd-tabbar__action" type="button"
                 data-pd-editmode aria-pressed="false" hidden>
@@ -166,228 +155,157 @@
         </button>
       </div>
 
-      <!-- ===================== 1 · PROJECT SETTINGS（規則與權利）===================== -->
-      <div class="tab-panel tab-panel--active" data-panel="settings" data-editable data-mode="view">
-        <div class="bento">
-<!-- 4.9 Updates -->
-          <section class="card">
+      <!-- ═══════════ 總覽 · §2.1 項目概覽 ＋ §2.1.1 階段重點面板 ═══════════
+           2026-08-18 重排（使用者裁決「整個總覽排版重新設計」）。上一版把六件不同性質的
+           東西（標題、上架追蹤條、送審件面板、募資面板、事實列、註腳）疊在同一張 span-7
+           大卡裡，右邊再掛兩張小卡；主次讀不出來，而且募資面板與右欄摘要各自寫了一次
+           支持者數——同一個數字兩個來源。
+
+           現在改成由上而下、一塊只講一件事：
+
+             ① 重點面板   一列 KPI（.kpi × 2–3）——這個階段唯一該盯的那組數字
+                          準備中改為底下的追蹤卡、已取消改為終止卡，三者互斥
+             ② 作品       上架追蹤條 ＋ 送審件面板；沒有送審件也沒有追蹤條就整塊不出現
+             ③ 下一步     沒有歸屬區塊時才自成一張卡（有歸屬時長在該區塊底下，見下方 renderStage）
+             ④ 進度摘要   近期要完成的里程碑（含日期、逾期標記、狀態）＋ 就地發布更新
+             ⑤ 支持者摘要 濃縮，只放 KPI 沒講過的事實
+             ⑥ 通知粉絲   直接發佈限定的群發訊息出口
+
+           **同一個數字只有一個來源**：KPI 用掉的欄位會登記進 renderStage() 的 used 集合，
+           底下兩張摘要卡逐列比對後跳過，所以支持者數、里程碑完成度、撥款進度不會出現兩次。
+           頁首那三列識別事實（創作者／內容類型／建立日期）也因此不進 KPI。
+
+           內容逐格由下方 renderStage() 依「發行模式 × 項目狀態 × 作品家族」產生，對照
+           §2.1.1 的三張表；資料全部來自站上既有來源（送審件、進度 store、todo、
+           releaseDate、募資與集單數字），本頁不新增資料源、不自創狀態。 -->
+      <div class="tab-panel tab-panel--active" data-panel="overview">
+        <div class="bento bento--top">
+
+          <!-- ① 重點面板 · KPI 列。內層再包一個 .bento 的理由：格數會隨情境變（1–3 格），
+               外層那條 12 欄軌道要留給底下的區塊，不能讓 KPI 的欄寬跟著它一起變。 -->
+          <div class="bento bento--span-12" id="pd-ov-kpis" hidden></div>
+
+          <!-- ② 作品（§2.2.11 在總覽的落點）。準備中時它同時是重點面板——追蹤條回答
+               「現在卡在哪一段」，送審件面板回答「那一件作品現在怎麼樣」，兩者講同一條線，
+               所以是同一塊而不是兩塊。已上線時追蹤條收起，只留作品識別、上映日期與編輯入口。
+               **直接讀 js/work-review-store.js，不另存一份**（§2.2.11 兩個落點都讀同一份資料）：
+               總覽的上架追蹤、進度的完成作品節點、作品本身講的一定是同一件事。 -->
+          <section class="card bento--span-12" id="pd-ov-work-card" hidden>
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.updates.title">Project updates</h3>
+              <h3 class="card__title" id="pd-ov-work-title"></h3>
             </div>
-            <!-- 作品審核狀態（規格 5.1.2.2 §2.2.9「本頁對審核狀態的呈現」）。
-                 這一塊講的是「這一件送審作品」走到哪，與頁首的項目狀態徽章是兩套狀態，
-                 所以刻意放在更新區段裡、用自己的元件呈現，不併進那顆徽章。
-                 沒有送審紀錄時整塊不出現（由 JS 控制 hidden）。 -->
-            <div class="review-status mb-16" id="pd-review" hidden>
+
+            <div class="progress-stepper progress-stepper--segmented mb-16" id="pd-ov-track" hidden>
+              <div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>
+              <div class="progress-stepper__labels" id="pd-ov-track-labels"></div>
+            </div>
+
+            <div class="review-status review-status--flat" id="pd-ov-work" hidden>
               <div class="review-status__head">
-                <span class="badge" id="pd-review-badge"></span>
-                <h4 class="review-status__title" data-i18n="pd.review.title">Completed work submission</h4>
+                <img class="review-status__thumb" id="pd-work-cover" alt="">
+                <span class="badge" id="pd-work-badge"></span>
+                <h4 class="review-status__title" id="pd-work-name"></h4>
               </div>
               <div class="review-status__meta">
-                <span class="review-status__meta-item"><span data-i18n="pd.review.submitted">Last sent</span><span id="pd-review-at"></span></span>
-                <span class="review-status__meta-item"><span data-i18n="pd.review.count">Times sent</span><span id="pd-review-count"></span></span>
-                <span class="review-status__meta-item" id="pd-review-decided-wrap" hidden><span data-i18n="pd.review.decided">Decided</span><span id="pd-review-decided"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.work.release">Release date</span><span id="pd-work-release"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.review.submitted">Last sent</span><span id="pd-work-at"></span></span>
+                <span class="review-status__meta-item"><span data-i18n="pd.review.count">Times sent</span><span id="pd-work-count"></span></span>
+                <span class="review-status__meta-item" id="pd-work-edited-wrap" hidden><span data-i18n="pd.work.edited">Last edited</span><span id="pd-work-edited"></span></span>
               </div>
-              <div class="review-status__note" id="pd-review-note" hidden>
-                <span class="review-status__note-label" id="pd-review-note-label"></span>
-                <p class="review-status__note-body" id="pd-review-note-body"></p>
+              <div class="review-status__note" id="pd-work-note" hidden>
+                <span class="review-status__note-label" data-i18n="pd.review.reason">Why it came back</span>
+                <p class="review-status__note-body" id="pd-work-reason"></p>
               </div>
-              <div class="review-status__actions" id="pd-review-actions" hidden>
-                <a class="btn btn--primary btn--sm" id="pd-review-resubmit" href="publish-work.html" data-i18n="pd.review.resubmit">Fix and send again</a>
+              <div class="review-status__actions">
+                <a class="btn btn--primary btn--sm" id="pd-work-edit" href="publish-work.html">
+                  <i data-lucide="pencil" class="ztor-icon ztor-icon--sm"></i><span id="pd-work-edit-label" data-i18n="pd.work.edit">Edit work</span>
+                </a>
               </div>
             </div>
-            <div style="overflow-x:auto">
-            <table class="ztor-table">
-              <thead>
-                <tr class="ztor-table__row">
-                  <th scope="col" data-i18n="project-detail.updates.col.content">Update</th>
-                  <th scope="col" data-i18n="project-detail.updates.col.audience">Audience</th>
-                  <th scope="col" data-i18n="project-detail.updates.col.date">Published</th>
-                  <th scope="col" data-i18n="project-detail.updates.col.notification">Notification</th>
-                </tr>
-              </thead>
-              <tbody id="pd-upd-list">
-                <tr class="ztor-table__row">
-                  <td class="ztor-table__feature" data-i18n="project-detail.updates.row1">Color grade locked — first look inside</td>
-                  <td data-i18n="pd-edit.update.aud-backers">Backers only</td>
-                  <td data-i18n="project-detail.updates.row1-date">Jun 10</td>
-                  <td data-i18n="project-detail.updates.row1-notification">134 notified</td>
-                </tr>
-                <tr>
-                  <td class="ztor-table__feature" data-i18n="project-detail.updates.row2">We hit 50% of our goal</td>
-                  <td data-i18n="pd-edit.update.aud-everyone">Everyone</td>
-                  <td data-i18n="project-detail.updates.row2-date">Jun 01</td>
-                  <td aria-label="—">—</td>
-                </tr>
-              </tbody>
-            </table>
+
+            <!-- 下一步長在它要操作的那個對象底下（見本檔 renderStage 的 owner 判定）。 -->
+            <div class="next-step" id="pd-ov-work-next" hidden>
+              <p class="next-step__text" id="pd-ov-work-next-text"></p>
+              <div class="next-step__act" id="pd-ov-work-next-act"></div>
             </div>
-            <button class="btn btn--outline mt-16" style="width:100%;justify-content:center" data-modal-open="pd-edit-update" data-i18n="project-detail.updates.publish">Post update</button>
           </section>
 
-          
-
-
-
-<!-- 4.6 Collaborators -->
-          <section class="card bento--span-12">
+          <!-- ③ 狀態卡：一組事實 ＋ 一句說明。兩個情境共用——已取消的終止說明（§2.2.4 凍結範圍，
+               此時 KPI 列與進度摘要都不出現：里程碑已凍結、數字停止變動），以及直接發佈非影片
+               家族準備中的上線排程（那一格沒有可盯的數字，只有一個還沒填的日期）。 -->
+          <section class="card bento--span-12" id="pd-ov-panel" hidden>
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.collab.title">Collaborators</h3>
+              <h3 class="card__title" id="pd-ov-panel-title"></h3>
             </div>
-            <div style="overflow-x:auto">
-            <table class="ztor-table">
-              <thead>
-                <tr class="ztor-table__row">
-                  <th scope="col" data-i18n="project-detail.collab.col.name">Collaborator</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.role">Role</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.status">Confirmation status</th>
-                  <th scope="col" data-i18n="project-detail.collab.col.share">Revenue share</th>
-                </tr>
-              </thead>
-              <tbody id="pd-collab-list">
-                <tr class="ztor-table__row">
-                  <td class="ztor-table__feature" data-i18n="project-detail.collab.owner-name">Gary Lin</td>
-                  <td data-i18n="project-detail.collab.role.director">Director</td>
-                  <td data-i18n="project-detail.collab.status.owner">Owner</td>
-                  <td>60%</td>
-                </tr>
-                <tr class="ztor-table__row">
-                  <td class="ztor-table__feature">Jun Park</td>
-                  <td data-i18n="project-detail.collab.role.composer">Composer</td>
-                  <td data-i18n="project-detail.collab.status.confirmed">Confirmed</td>
-                  <td>25%</td>
-                </tr>
-                <tr>
-                  <td class="ztor-table__feature">Rae Lin</td>
-                  <td data-i18n="project-detail.collab.role.editor">Editor</td>
-                  <td data-i18n="project-detail.collab.status.pending">Pending confirmation</td>
-                  <td>15%</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="data-list" id="pd-ov-panel-list"></div>
+            <p class="field__hint" id="pd-ov-panel-note" hidden></p>
+            <div class="next-step" id="pd-ov-panel-next" hidden>
+              <p class="next-step__text" id="pd-ov-panel-next-text"></p>
+              <div class="next-step__act" id="pd-ov-panel-next-act"></div>
             </div>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.collab.note">Split amounts reference Earnings &amp; Project Net Income — not recomputed here.</div>
-            <button class="btn btn--outline mt-16" style="width:100%;justify-content:center" data-modal-open="pd-edit-collab" data-i18n="project-detail.collab.add">＋ Add</button>
           </section>
 
+          <!-- ④ 下一步（自成一卡的版本）。只有在這件事不屬於畫面上任何一個區塊時才出現
+               ——屬於作品的長在作品卡、屬於交付的長在進度摘要、屬於終止的長在終止卡，
+               否則同一顆按鈕會在一頁上畫兩次。 -->
+          <section class="card bento--span-12" id="pd-ov-next" hidden>
+            <div class="next-step next-step--lead">
+              <span class="next-step__label" data-i18n="pd-ov.next.title">Next step</span>
+              <p class="next-step__text" id="pd-ov-next-text"></p>
+              <div class="next-step__act" id="pd-ov-next-act"></div>
+            </div>
+          </section>
 
-
-<!-- 4.7 IP Rental -->
-          <section class="card bento--span-12">
+          <!-- ⑤ 進度摘要（共創與預購）。2026-08-18 使用者裁決：這一塊要放大成主要區塊，
+               列出近期要完成的里程碑（不只一顆），並且能就地發布更新、不必先跳到進度分頁。
+               發布更新走既有的 [data-modal-open="pd-edit-update"]，與頁首那顆、進度分頁那顆
+               是同一個彈窗、同一支 submitUpdate()，不另造第二套發文機制。 -->
+          <section class="card bento--span-8" id="pd-ov-progress" hidden>
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.ip.title">IP Rental</h3>
+              <h3 class="card__title" data-i18n="pd-ov.prog.title">Progress</h3>
+              <span class="badge badge--neutral" id="pd-ov-prog-count" hidden></span>
             </div>
-            <a class="btn btn--outline mt-16" style="width:100%;justify-content:center" href="my-ip.html" data-i18n="project-detail.ip.link">Go to My IP links</a>
+            <p class="field-text" id="pd-ov-prog-lede" hidden></p>
+            <div class="data-list" id="pd-ov-progress-list"></div>
+            <p class="field__hint" id="pd-ov-prog-last"></p>
+            <div class="flex-row mt-16">
+              <button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
+              <button class="btn btn--outline btn--sm" type="button" data-goto-tab="progress" data-i18n="pd-ov.prog.go">Go to progress</button>
+            </div>
           </section>
 
-          <!-- go-live 專屬：內容已就緒立即上線，無共創／訂購門檻、無退款——只需簡單的上線時程。
-               （fund/preorder 的時程在製作進度分頁；go-live 沒有製作進度，時程收在這裡。）-->
-          <section class="card bento--span-12" data-type="go-live">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.golive.title">Publish timeline</h3>
-              <span class="badge badge--success"><span data-i18n="project-detail.golive.badge">Live</span></span>
+          <!-- ⑥ 支持者摘要（共創與預購）。刻意濃縮：只列 KPI 沒講過的事實，
+               支持者數、撥款進度只要已經在上面那列出現過，這裡就跳過那一列。 -->
+          <section class="card bento--span-4" id="pd-ov-backers" hidden>
+            <div class="card__head"><h3 class="card__title" id="pd-ov-backers-title"></h3></div>
+            <div class="data-list" id="pd-ov-backers-list"></div>
+            <div class="flex-row mt-16">
+              <button class="btn btn--outline btn--sm" type="button" data-goto-tab="backers" id="pd-ov-backers-go"></button>
             </div>
-            <!-- 2026-07-26 B 反饋再修訂：改用跟上面「合作者」同款 .ztor-table（表頭＋列），
-                 不是 field 表單——名稱／日期各自獨立成欄。 -->
-            <div style="overflow-x:auto">
-            <table class="ztor-table">
-              <thead>
-                <tr class="ztor-table__row">
-                  <th scope="col" data-i18n="project-detail.golive.field.name">Name</th>
-                  <th scope="col" data-i18n="project-detail.golive.field.date">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="ztor-table__row">
-                  <td class="ztor-table__feature" data-i18n="project-detail.tl.created">Draft created</td>
-                  <td>Sep 20, 2025</td>
-                </tr>
-                <tr>
-                  <td class="ztor-table__feature" data-i18n="project-detail.golive.published">Published live</td>
-                  <td>Oct 05, 2025</td>
-                </tr>
-              </tbody>
-            </table>
-            </div>
-            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-i18n="project-detail.golive.note">Go-live projects publish immediately — no funding or order threshold, no refund. Revenue is shared on earnings after release.</p>
           </section>
 
-          
-
-
-
-
-
-
-
-
-
-          
-
-          
-
-          
-
-          
-
-          
+          <!-- ⑦ 通知粉絲（直接發佈限定，§2.1.1 末段與 §2.4 第 6 項）：本頁只提供出口，
+               發送能力在群發訊息（5.1.7.1），不在這裡重造一套。出口不帶受眾條件——
+               「買過這個項目的人」這一組受眾尚未定義（主規格 §8.24 第 1 項），
+               未裁決前不得自行補進去。 -->
+          <section class="card bento--span-6" data-type="go-live">
+            <div class="card__head"><h3 class="card__title" data-i18n="pd-ov.msg.title">Tell your fans</h3></div>
+            <p class="field-text" data-i18n="pd-ov.msg.body">Direct releases carry no project updates. Reach fans from the broadcast composer instead.</p>
+            <div class="flex-row mt-16">
+              <a class="btn btn--outline btn--sm" href="fans-crm.html?msg=all"><i data-lucide="send" class="ztor-icon ztor-icon--sm"></i><span data-i18n="pd-ov.msg.cta">Go to broadcast</span></a>
+            </div>
+          </section>
 
         </div>
       </div>
 
-      <!-- ============ 2 · PLANS & PROMISES（賣什麼、答應什麼、說了什麼）============ -->
-      <div class="tab-panel" data-panel="pledges" data-type="fund preorder">
-        <div class="bento">
-
-          <!-- Support plans (tier definitions) — moved here 2026-07-24; the per-tier
-               backer counts stay in 項目收益. Editable after publish for now: whether
-               price / slots may change post-publish is a product decision still open
-               (see ASSUMPTIONS.md).
-               2026-07-24：拿掉最外層 .card 外框——每個「套組」自己已是 .form-section--outlined 有框，
-               外面再包一層卡＝卡中卡疊框。改為無框 section（保留 bento--span-12 滿寬）。 -->
-          <!-- 間距對齊建立流程（create-product）：無框 section 內＝區段抬頭（標題＋灰副標）
-               → sp-24 → 逐張套組卡（.form-section--outlined，卡間自帶 sp-24）→ sp-24 → 新增鈕
-               → sp-12 → 底部說明。抬頭沿用建立流程的 .form-section__title／__sub 字級。 -->
-          <!-- 共創方案（欄位沿用 5.1.2.1 §5.2.2 F24／F25，含分潤名額） -->
-          <section class="bento--span-12" data-type="fund">
-            <div class="form-section__head" style="margin-bottom:var(--sp-24)">
-              <h3 class="form-section__title" data-i18n="project-detail.tiers.title">Support plans</h3>
-              <p class="form-section__sub" data-i18n="pd-bundle.editor-sub">Each bundle is a reward tier backers can buy — it can include a profit-share and multiple items. At least one.</p>
-            </div>
-            <div id="pd-bundle-editor"></div>
-            <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add data-i18n="pd-bundle.add">＋ Add bundle</button>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.tiers.note">Plan pricing and slots are a promise to existing backers — changes after publish are still under product review.</div>
-          </section>
-
-          <!-- 預購方案（2026-08-03 D166，欄位沿用 5.1.2.1 §5.3.2 F28／F29，不含分潤名額）。
-               與上面那塊是同一支 js/bundle-editor.js，掛載時 shares:false。 -->
-          <section class="bento--span-12" data-type="preorder">
-            <div class="form-section__head" style="margin-bottom:var(--sp-24)">
-              <h3 class="form-section__title" data-i18n="project-detail.pretiers.title">Pre-order plans</h3>
-              <p class="form-section__sub" data-i18n="pd-bundle.editor-sub-pre">Each plan is one thing a fan can order — the work itself, plus any shop items and perks.</p>
-            </div>
-            <!-- 單位價格＝作品一份的價格，於本區維護（規格 5.1.2.2 §2.2.5、D167）。
-                 每個方案的價格都從它推導，所以它必須跟方案編輯器住在一起——放到別頁去改，
-                 創作者就看不到自己把哪幾個方案的價格改動了。
-                 ⚠ 原型假資料：已發布項目的單價該由哪個欄位／API 提供待上游定義，
-                 這裡先沿用本頁預購 KPI 既有的示範值 $28，重整還原。 -->
-            <div class="field" style="max-width:280px">
-              <label class="field__label" for="pd-pre-unit" data-i18n="pd-bundle.unit">Unit price · USD</label>
-              <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="pd-pre-unit" class="amount-field__input input" value="28"></div>
-              <div class="field__hint" data-i18n="pd-bundle.unit.hint">What one copy of the work costs. Every plan price is worked out from it.</div>
-            </div>
-            <div id="pd-bundle-editor-pre"></div>
-            <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add-pre data-i18n="pd-bundle.add-pre">＋ Add plan</button>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.pretiers.note">Price, contents and quantity limits are a promise to fans who already ordered — how far they may change after publish is still under product review.</div>
-          </section>
-
-          
-
-        </div>
-      </div>
-
-      <!-- ===================== 3 · ABOUT THE WORK（作品長什麼樣）===================== -->
-      <div class="tab-panel" data-panel="about" data-editable data-mode="view">
+      <!-- ═══════════ 設定 · §2.2.1–§2.2.8（這個項目是什麼、賣什麼、誰參與）═══════════
+           2026-08-17（D193）：原本的「關於項目」「方案與承諾」兩個分頁，加上原「項目總覽」
+           分頁裡的合作者、IP 租借與發布時程，合成這一格。分群依據見 §3 分群結構表。
+           檢視／編輯兩段式（D155）套在整格：預設唯讀，按「編輯」才改得動。
+           **方案編輯器例外**（[data-edit-exempt]）：每張方案卡自己就有展開／收合的編輯態，
+           它從來不屬於兩段式那一套；被整格鎖成唯讀會讓卡片點得開卻改不動。 -->
+      <div class="tab-panel" data-panel="setup" data-editable data-mode="view">
         <div class="bento">
 
                     <!-- 展示內容（2026-07-24 重做）：直式圖片列，第一張＝主視覺、其餘＝圖庫，
@@ -500,114 +418,91 @@
             </div>
           </section>
 
-        </div>
-      </div>
-
-      <!-- ===================== 4 · PRODUCTION PROGRESS（製作進度）===================== -->
-      <div class="tab-panel" data-panel="progress" data-type="fund preorder">
-        <div class="bento">
-
-          <!-- 項目時間 + 里程碑整合成單一時間軸（2026-07-24 使用者裁示）：
-               共創排程事件與製作里程碑依時序交錯，編輯日期走 pd-edit-schedule、＋里程碑走 pd-edit-milestone。 -->
-          <section class="card bento--span-7">
-            <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.progress.timeline">Schedule &amp; milestones</h3>
-              <div class="flex-row" style="gap:6px">
-                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-schedule" data-i18n="project-detail.schedule.editbtn">Edit dates</button>
-                <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-milestone" data-i18n="pd-edit.milestone.add">＋ Milestone</button>
-              </div>
+          <!-- Support plans (tier definitions) — moved here 2026-07-24; the per-tier
+               backer counts stay in 項目收益. Editable after publish for now: whether
+               price / slots may change post-publish is a product decision still open
+               (see ASSUMPTIONS.md).
+               2026-07-24：拿掉最外層 .card 外框——每個「套組」自己已是 .form-section--outlined 有框，
+               外面再包一層卡＝卡中卡疊框。改為無框 section（保留 bento--span-12 滿寬）。 -->
+          <!-- 間距對齊建立流程（create-product）：無框 section 內＝區段抬頭（標題＋灰副標）
+               → sp-24 → 逐張套組卡（.form-section--outlined，卡間自帶 sp-24）→ sp-24 → 新增鈕
+               → sp-12 → 底部說明。抬頭沿用建立流程的 .form-section__title／__sub 字級。 -->
+          <!-- 共創方案（欄位沿用 5.1.2.1 §5.2.2 F24／F25，含分潤名額） -->
+          <section class="bento--span-12" data-type="fund" data-edit-exempt>
+            <div class="form-section__head" style="margin-bottom:var(--sp-24)">
+              <h3 class="form-section__title" data-i18n="project-detail.tiers.title">Support plans</h3>
+              <p class="form-section__sub" data-i18n="pd-bundle.editor-sub">Each bundle is a reward tier backers can buy — it can include a profit-share and multiple items. At least one.</p>
             </div>
-            <div class="data-list" id="pd-ms-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.created">Draft created</div>
-                    <div class="data-list__meta">Mar 02, 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.milestones.m1">Principal shoot wrapped</div>
-                    <div class="data-list__meta">Apr 2026</div>
-                  </div>
-                </div>
-                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
-              </div>
-              <div class="data-list__row" data-type="fund">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.published">Co-creation published</div>
-                    <div class="data-list__meta">May 18, 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row" data-type="preorder">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--success"><i data-lucide="check-circle" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.pre-open">Pre-order opened</div>
-                    <div class="data-list__meta">May 18, 2026</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="clock" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.milestones.m2">Final color grade</div>
-                    <div class="data-list__meta" data-i18n="project-detail.milestones.m2-meta">In progress</div>
-                  </div>
-                </div>
-                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
-              </div>
-              <div class="data-list__row" data-type="fund">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="clock" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.deadline">Co-creation deadline</div>
-                    <div class="data-list__meta" data-i18n="project-detail.tl.deadline-val">Jul 06, 2026 · 21 days left</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row" data-type="preorder">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon data-list__icon--info"><i data-lucide="clock" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.pre-deadline">Pre-order deadline</div>
-                    <div class="data-list__meta" data-i18n="project-detail.tl.pre-deadline-val">Jul 06, 2026 · 9 days left</div>
-                  </div>
-                </div>
-              </div>
-              <div class="data-list__row" data-type="preorder">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="truck" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.tl.delivery">Expected delivery</div>
-                    <div class="data-list__meta" data-i18n="project-detail.tl.delivery-val">Oct 2026</div>
-                  </div>
-                </div>
-              </div>
-              <!-- NFT 發行是共創才有的事（分潤名額＝NFT，5.1.2.2 §2.3.2／§2.0）；
-                   預購沒有 NFT 持有人，這則示範里程碑不給預購。預購的時間軸收在「預期交付」。 -->
-              <div class="data-list__row" data-type="fund">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.milestones.m3">Premiere &amp; NFT drop</div>
-                    <div class="data-list__meta" data-i18n="project-detail.milestones.m3-meta">Planned Aug 2026</div>
-                  </div>
-                </div>
-                <span class="badge badge--neutral"><span data-i18n="project-detail.progress.milestone-tag">Milestone</span></span>
-              </div>
+            <div id="pd-bundle-editor"></div>
+            <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add data-i18n="pd-bundle.add">＋ Add bundle</button>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.tiers.note">Plan pricing and slots are a promise to existing backers — changes after publish are still under product review.</div>
+          </section>
+
+          <!-- 預購方案（2026-08-03 D166，欄位沿用 5.1.2.1 §5.3.2 F28／F29，不含分潤名額）。
+               與上面那塊是同一支 js/bundle-editor.js，掛載時 shares:false。 -->
+          <section class="bento--span-12" data-type="preorder" data-edit-exempt>
+            <div class="form-section__head" style="margin-bottom:var(--sp-24)">
+              <h3 class="form-section__title" data-i18n="project-detail.pretiers.title">Pre-order plans</h3>
+              <p class="form-section__sub" data-i18n="pd-bundle.editor-sub-pre">Each plan is one thing a fan can order — the work itself, plus any shop items and perks.</p>
+            </div>
+            <!-- 單位價格＝作品一份的價格，於本區維護（規格 5.1.2.2 §2.2.5、D167）。
+                 每個方案的價格都從它推導，所以它必須跟方案編輯器住在一起——放到別頁去改，
+                 創作者就看不到自己把哪幾個方案的價格改動了。
+                 ⚠ 原型假資料：已發布項目的單價該由哪個欄位／API 提供待上游定義，
+                 這裡先沿用本頁預購 KPI 既有的示範值 $28，重整還原。 -->
+            <div class="field" style="max-width:280px">
+              <label class="field__label" for="pd-pre-unit" data-i18n="pd-bundle.unit">Unit price · USD</label>
+              <div class="amount-field amount-field--readonly"><span class="amount-field__unit"><span class="amount-field__sym">$</span></span><input id="pd-pre-unit" class="amount-field__input input" value="28"></div>
+              <div class="field__hint" data-i18n="pd-bundle.unit.hint">What one copy of the work costs. Every plan price is worked out from it.</div>
+            </div>
+            <div id="pd-bundle-editor-pre"></div>
+            <button class="btn btn--outline fc-add" style="margin-top:var(--sp-12)" type="button" data-bundle-add-pre data-i18n="pd-bundle.add-pre">＋ Add plan</button>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:var(--sp-12)" data-i18n="project-detail.pretiers.note">Price, contents and quantity limits are a promise to fans who already ordered — how far they may change after publish is still under product review.</div>
+          </section>
+
+          <!-- ── 排程與退款（共創與預購，§2.2.4 發布狀態＋§2.2.5 未達標處理）──────────
+               2026-08-17 由原「製作進度」分頁搬來：日期與退款開關是「這個項目怎麼賣」的
+               設定，不是交付進度；進度那一格改放藍圖（§2.2.10）。彈窗與欄位原樣沿用。 -->
+          <section class="card bento--span-12" data-type="fund preorder">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="pd-setup.schedule.title">Campaign dates</h3>
+              <button class="btn btn--ghost btn--sm" data-modal-open="pd-edit-schedule" data-i18n="project-detail.schedule.editbtn">Edit dates</button>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="ztor-table">
+              <thead>
+                <tr class="ztor-table__row">
+                  <th scope="col" data-i18n="project-detail.golive.field.name">Name</th>
+                  <th scope="col" data-i18n="project-detail.golive.field.date">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="ztor-table__row" data-type="fund">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.published">Co-creation published</td>
+                  <td data-i18n="project-detail.tl.published-val">May 18, 2026</td>
+                </tr>
+                <tr class="ztor-table__row" data-type="preorder">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.pre-open">Pre-order opened</td>
+                  <td data-i18n="project-detail.tl.published-val">May 18, 2026</td>
+                </tr>
+                <tr class="ztor-table__row" data-type="fund">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.deadline">Co-creation deadline</td>
+                  <td data-i18n="project-detail.tl.deadline-val">Jul 06, 2026 · 21 days left</td>
+                </tr>
+                <tr class="ztor-table__row" data-type="preorder">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.pre-deadline">Pre-order deadline</td>
+                  <td data-i18n="project-detail.tl.pre-deadline-val">Jul 06, 2026 · 9 days left</td>
+                </tr>
+                <tr data-type="preorder">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.delivery">Expected delivery</td>
+                  <td data-i18n="project-detail.tl.delivery-val">Oct 2026</td>
+                </tr>
+              </tbody>
+            </table>
             </div>
             <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-type="fund" data-i18n="project-detail.schedule.autonote">On the funding deadline the project advances on its own — reaching the goal turns it Funded, missing it turns it Failed with an automatic full refund when the switch below is on. Only cancelling is a manual decision.</p>
             <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-type="preorder" data-i18n="project-detail.schedule.autonote-pre">On the pre-order deadline: reaching the minimum units moves it into production, missing it ends the project and refunds every pre-order in full.</p>
-            <!-- 「未達標時自動全額退款」是共創設定的開關（5.1.2.2 §2.2.4），只給共創。
+            <!-- 「未達標時自動全額退款」是共創設定的開關（§2.2.4），只給共創。
                  預購的全額退款是 §5.3.1 F26 寫死的承諾，不是創作者可以關掉的選項——
                  給預購一顆能關的開關等於在畫面上多發明一條產品規則。 -->
             <div class="settings-row mt-16" style="padding:12px 0;border-top:1px solid var(--border)" data-type="fund">
@@ -617,81 +512,189 @@
               </div>
               <div class="switch switch--on"></div>
             </div>
-            <!-- 5.1.2.2 §2.2.10 的兩個〔產品待確認〕：回報頻率下限與逾期處理、
-                 以及「排定上線日」階段在主規格 §7.2 六態沒有對應狀態。呈現層不自行補規則。 -->
-            <div class="info-banner mt-16" data-type="preorder">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="project-detail.progress.tbd-pre">How often you must report progress, and what happens if a milestone slips, are not defined yet (待確認).</span>
-            </div>
           </section>
 
-<!-- 4.2 Content items (type-dependent: film = episodes; sample) -->
-          <section class="card bento--span-5">
+          <!-- ── 發布時程（直接發佈，§2.2.4 在本頁的落點）─────────────────────────
+               內容已就緒立即上線，無共創／訂購門檻、無退款——只需簡單的上線時程。
+               徽章與兩列日期由下方 render() 依這個項目的實際狀態與排定上線日填入；
+               上線日＝作品上架流程 F10 的上映日期（D180 同一份資料）。 -->
+          <section class="card bento--span-12" data-type="go-live">
             <div class="card__head">
-              <h3 class="card__title" data-i18n="project-detail.items.title">Content items</h3>
-              <span class="badge badge--info"><span data-i18n="project-detail.items.kind">Episodes</span></span>
+              <h3 class="card__title" data-i18n="project-detail.golive.title">Publish timeline</h3>
+              <span class="badge" id="pd-golive-badge"></span>
             </div>
-            <div class="data-list">
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">1</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.items.ep1">Bloom at Dusk</div>
-                    <div class="data-list__meta" data-i18n="project-detail.items.ep1-meta">12:40 · Encoded</div>
-                  </div>
-                </div>
-                <span class="badge badge--success"><span data-i18n="project-detail.items.ready">Ready</span></span>
-              </div>
-              <div class="data-list__row">
-                <div class="data-list__row-main">
-                  <div class="data-list__icon">2</div>
-                  <div class="data-list__body">
-                    <div class="data-list__title" data-i18n="project-detail.items.ep2">Director's cut</div>
-                    <div class="data-list__meta" data-i18n="project-detail.items.ep2-meta">Uploading · 64%</div>
-                  </div>
-                </div>
-                <span class="badge badge--warning"><span data-i18n="project-detail.items.processing">Processing</span></span>
-              </div>
+            <div style="overflow-x:auto">
+            <table class="ztor-table">
+              <thead>
+                <tr class="ztor-table__row">
+                  <th scope="col" data-i18n="project-detail.golive.field.name">Name</th>
+                  <th scope="col" data-i18n="project-detail.golive.field.date">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="ztor-table__row">
+                  <td class="ztor-table__feature" data-i18n="project-detail.tl.created">Draft created</td>
+                  <td id="pd-golive-created"></td>
+                </tr>
+                <tr>
+                  <td class="ztor-table__feature" id="pd-golive-row-label" data-i18n="project-detail.golive.published">Published live</td>
+                  <td id="pd-golive-date"></td>
+                </tr>
+              </tbody>
+            </table>
             </div>
-            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.items.note">Content item schema lives in another module — fields shown are illustrative (待確認).</div>
+            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" id="pd-golive-note" data-i18n="project-detail.golive.note">Direct-release projects publish immediately — no co-creation or order threshold, no refund. Revenue is shared on earnings after release.</p>
+          </section>
+
+          <!-- ── 合作者（§2.2.6）───────────────────────────────────────────── -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="project-detail.collab.title">Collaborators</h3>
+            </div>
+            <div style="overflow-x:auto">
+            <table class="ztor-table">
+              <thead>
+                <tr class="ztor-table__row">
+                  <th scope="col" data-i18n="project-detail.collab.col.name">Collaborator</th>
+                  <th scope="col" data-i18n="project-detail.collab.col.role">Role</th>
+                  <th scope="col" data-i18n="project-detail.collab.col.status">Confirmation status</th>
+                  <th scope="col" data-i18n="project-detail.collab.col.share">Revenue share</th>
+                </tr>
+              </thead>
+              <tbody id="pd-collab-list">
+                <tr class="ztor-table__row">
+                  <td class="ztor-table__feature" data-i18n="project-detail.collab.owner-name">Gary Lin</td>
+                  <td data-i18n="project-detail.collab.role.director">Director</td>
+                  <td data-i18n="project-detail.collab.status.owner">Owner</td>
+                  <td>60%</td>
+                </tr>
+                <tr class="ztor-table__row">
+                  <td class="ztor-table__feature">Jun Park</td>
+                  <td data-i18n="project-detail.collab.role.composer">Composer</td>
+                  <td data-i18n="project-detail.collab.status.confirmed">Confirmed</td>
+                  <td>25%</td>
+                </tr>
+                <tr>
+                  <td class="ztor-table__feature">Rae Lin</td>
+                  <td data-i18n="project-detail.collab.role.editor">Editor</td>
+                  <td data-i18n="project-detail.collab.status.pending">Pending confirmation</td>
+                  <td>15%</td>
+                </tr>
+              </tbody>
+            </table>
+            </div>
+            <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="project-detail.collab.note">Split amounts reference Earnings &amp; Project Net Income — not recomputed here.</div>
+            <button class="btn btn--outline mt-16" style="width:100%;justify-content:center" data-modal-open="pd-edit-collab" data-i18n="project-detail.collab.add">＋ Add</button>
+          </section>
+
+          <!-- ── IP Rental（§2.2.7）──────────────────────────────────────────── -->
+          <section class="card bento--span-12">
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="project-detail.ip.title">IP Rental</h3>
+            </div>
+            <a class="btn btn--outline mt-16" style="width:100%;justify-content:center" href="my-ip.html" data-i18n="project-detail.ip.link">Go to My IP links</a>
           </section>
 
         </div>
       </div>
 
-      <!-- ===================== 作品（§2.2.11）===================== -->
-      <!-- 已送審或已上架的影片作品在這裡有一個常駐落點。承載三件事：這是哪一件作品、
-           它走到哪一步、要改的話從哪裡進去。狀態字彙一律向 js/work-review-store.js 要，
-           與 §2.2.9 的審核狀態是同一份資料、不各自記一套（規格 §2.2.11 明講）。
-           欄位範圍與必填沿用作品上架流程 5.1.2.2.1 F1–F15，本頁不重抄、不另訂值域。 -->
-      <div class="tab-panel" data-panel="work" data-work-panel hidden>
-        <div class="bento">
-          <section class="card bento--span-12">
-            <!-- --flat：外框已由 .card 提供，元件自己再畫一層會變成盒中盒 -->
-            <div class="review-status review-status--flat">
-              <div class="review-status__head">
-                <img class="review-status__thumb" id="pd-work-cover" alt="">
-                <span class="badge" id="pd-work-badge"></span>
-                <h3 class="review-status__title" id="pd-work-name"></h3>
-              </div>
-              <div class="review-status__meta">
-                <span class="review-status__meta-item"><span data-i18n="pd.work.release">Release date</span><span id="pd-work-release"></span></span>
-                <span class="review-status__meta-item"><span data-i18n="pd.review.submitted">Last sent</span><span id="pd-work-at"></span></span>
-                <span class="review-status__meta-item"><span data-i18n="pd.review.count">Times sent</span><span id="pd-work-count"></span></span>
-                <span class="review-status__meta-item" id="pd-work-edited-wrap" hidden><span data-i18n="pd.work.edited">Last edited</span><span id="pd-work-edited"></span></span>
-              </div>
-              <div class="review-status__note" id="pd-work-note" hidden>
-                <span class="review-status__note-label" data-i18n="pd.review.reason">Why it came back</span>
-                <p class="review-status__note-body" id="pd-work-reason"></p>
-              </div>
-              <div class="review-status__actions">
-                <a class="btn btn--primary btn--sm" id="pd-work-edit" href="publish-work.html">
-                  <i data-lucide="pencil" class="ztor-icon ztor-icon--sm"></i><span id="pd-work-edit-label" data-i18n="pd.work.edit">Edit work</span>
-                </a>
+
+      <!-- ═══════════ 進度 · §2.2.10（我答應做什麼、做到哪、跟支持者說了什麼）═══════════
+           2026-08-17 由「製作進度」改名並擴大範圍（D193）。此前里程碑在這一區、更新在
+           總覽、完成作品的送審狀態在作品分頁，同一個交付故事被拆成三份，創作者要自己
+           在腦裡接起來。合併之後這裡是那個故事的唯一落點：
+
+             里程碑是骨架 · 更新是內容 · 完成作品是最後一步
+
+           時間軸由 ds-components/progress-timeline.css 呈現，內容由下方 renderTimeline()
+           依 js/project-progress-store.js（里程碑與更新）＋ js/work-review-store.js
+           （完成作品那一顆，**不另存一份狀態**）產生。 -->
+      <div class="tab-panel" data-panel="progress" data-type="fund preorder">
+        <!-- 不用 --stack-lg：那個修飾子是為了保護寬表格，在 1440 以下把每個 span 撐成滿版。
+             這一分頁已經沒有兩欄表格，留著會讓交付摘要兩格上下疊而不是並排。 -->
+        <div class="bento bento--top">
+
+          <!-- 交付摘要自成一張 section 放在最上面（2026-08-17 使用者反饋）：標題、預期交付、
+               里程碑完成度是「這個項目答應了什麼、走到哪」的總結，與底下逐格的時間軸不同層級；
+               混在同一張卡裡會讀成軸的第一個節點。動作鈕跟著摘要走，因為新增里程碑與發布更新
+               都是對整條軸做的事、不屬於某一格。 -->
+          <!-- 交付摘要（§2.2.10 組成第一項）拆成 bento 兩格（2026-08-17 使用者反饋）：
+               預期交付與里程碑完成度是兩個各自獨立的數字，擠在同一張卡裡要靠一條分隔線
+               才分得開；拆成兩格就由版面本身講清楚。標題撤除——底下那一段已經叫「項目進度」，
+               再頂一個「交付藍圖」等於同一件事取兩個名字。
+               底色走 --nest-surface（.card--muted），與軸上其他面同一層。 -->
+          <div class="kpi bento--span-4" data-prog-kpi="delivery"></div>
+          <div class="kpi bento--span-4" data-prog-kpi="milestones"></div>
+
+          <!-- 時間軸走無底卡（2026-08-17 使用者反饋）：這一區的主角是軸本身，外面再包一張卡
+               等於在軸線外多畫一個框。交付物清單已併進「完成作品」那一顆里程碑，所以
+               這一分頁只剩一欄、不再是 7／5 兩欄。 -->
+          <!-- 外層不是卡（2026-08-17 使用者反饋）：一顆里程碑才是一張卡，外面再包一張
+               就是卡中卡。這一層只負責標題列與版面寬度，所以只留 .bento--span-12，
+               不掛 .card（card__head 的排版本身不依賴 .card）。 -->
+          <section class="bento--span-12">
+            <!-- 動作鈕跟著時間軸走（2026-08-17 使用者反饋）：新增里程碑與發布更新都是對這條軸
+                 做的事，放在上面那張摘要卡會離它要操作的對象太遠。 -->
+            <div class="card__head">
+              <h3 class="card__title" data-i18n="pd-prog.section">Project progress</h3>
+              <div class="flex-row" style="gap:6px;margin-left:auto">
+                <button class="btn btn--ghost btn--sm" type="button" data-ms-add data-i18n="pd-edit.milestone.add">＋ Milestone</button>
+                <button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
               </div>
             </div>
-            <p class="text-sub" style="font-size:var(--fs-11);margin:12px 0 0" data-i18n="pd.work.rule">Swapping the video file, the pricing or the age rating sends the work back for review. Copy, tags and credits do not.</p>
+            <!-- 時間軸（D194：未來在上、今天在中、過去在下，單一排序軸是真實日期）。
+                 軸上由上而下：完成作品（釘頂）→ 未來的里程碑 → 今天 → 過去 → 項目建立。 -->
+            <div class="ptl" id="pd-ptl"></div>
+
+            <!-- 內嵌發文框（§2.2.10「今天這一格」）。它住在 .ptl 外面，每次重繪時由
+                 renderTimeline() 搬進今天那一格的插槽——留在渲染字串裡的話，使用者打到
+                 一半的字與 zselect 的接線會被每一次重繪洗掉。 -->
+            <div class="ptl__composer" id="pd-composer" hidden>
+              <!-- 收合態：軸上平常只留這一行，點了才展開整個發文框（2026-08-17 使用者反饋）。
+                   理由——這一格是時間軸的一個節點，不是常駐的表單；整組欄位常駐會把軸線推開，
+                   讀者會先看到一個大方框而不是「今天走到哪」。 -->
+              <button class="ptl__composer-stub" type="button" data-ptl-composer-open
+                      data-i18n="pd-c.title-ph">What happened?</button>
+              <div class="ptl__composer-head">
+                <span class="ptl__composer-who">
+                  <span class="ptl__composer-avatar"><i data-lucide="user" class="ztor-icon"></i></span>
+                  <span id="pd-c-author">Creator</span>
+                </span>
+                <select class="select select--bare" id="pd-c-aud" data-i18n-aria-label="pd-edit.update.audience" aria-label="Audience">
+                  <option data-i18n="pd-c.aud-everyone">Share with: Everyone</option>
+                  <option data-i18n="pd-c.aud-backers">Share with: Backers only</option>
+                  <option data-i18n="pd-c.aud-superfan">Share with: Superfan+</option>
+                </select>
+              </div>
+              <div class="ptl__composer-fields">
+                <input class="input" id="pd-c-title" data-i18n-placeholder="pd-c.title-ph" placeholder="What happened?">
+                <textarea class="textarea" id="pd-c-body" rows="2" data-i18n-placeholder="pd-edit.update.body-ph" placeholder="Share progress with your backers…"></textarea>
+              </div>
+              <div class="ptl__composer-foot">
+                <div class="ptl__composer-tools">
+                  <select class="select select--bare" id="pd-c-kind" data-i18n-aria-label="pd-edit.update.kind" aria-label="Type">
+                    <option value="general" data-i18n="pd-edit.update.kind-general">General update</option>
+                    <option value="release" data-i18n="pd-edit.update.kind-release">Work release</option>
+                  </select>
+                  <select class="select select--bare" id="pd-c-ms" data-i18n-aria-label="pd-edit.update.milestone" aria-label="Attach to"></select>
+                  <!-- 附件入口。原型不做真的上傳，按下只提示（ASSUMPTIONS UIA-119）。 -->
+                  <button class="btn btn--ghost btn--sm" type="button" data-ptl-attach="image"><i data-lucide="image" class="ztor-icon"></i><span data-i18n="pd-c.attach-image">Image</span></button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-ptl-attach="video"><i data-lucide="video" class="ztor-icon"></i><span data-i18n="pd-c.attach-video">Video</span></button>
+                  <button class="btn btn--ghost btn--sm" type="button" data-ptl-attach="audio"><i data-lucide="music" class="ztor-icon"></i><span data-i18n="pd-c.attach-audio">Music</span></button>
+                </div>
+                <button class="btn btn--primary btn--sm" type="button" id="pd-c-submit" data-i18n="pd-edit.update.submit">Publish update</button>
+              </div>
+            </div>
           </section>
+
+          <!-- §2.2.10 的〔產品待確認〕：回報頻率下限與逾期未回報的處理。呈現層不自行補規則。
+               這條原本掛在「作品進度」那張卡上，該卡已於 2026-08-17 併進完成作品節點，
+               規則層的待確認留在分頁尾端、不跟著進節點（它講的是整條軸不是某一顆）。 -->
+          <div class="info-banner mt-16">
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="project-detail.progress.tbd-pre">How often you must report progress, and what happens if a milestone slips, are not defined yet (待確認).</span>
+          </div>
+
         </div>
       </div>
 
@@ -917,9 +920,13 @@
         </div><!-- /[data-earn-live] -->
       </div>
 
-      <!-- ===================== 7 · CO-CREATION PROGRESS（共創進度，僅共創型）===================== -->
-      <!-- 內容提取自 my-cocreate-proposal.html「共創進度」分頁，改套 R2.1 設計系統。數字示意。 -->
-      <div class="tab-panel" data-panel="cofund" data-type="fund">
+      <!-- ═══════════ 支持者 · §2.3.3（誰付了錢、款項到哪）═══════════
+           2026-08-17（D193）：原「共創進度」與「預購進度」兩個分頁合成這一格，分頁標籤
+           隨發行模式換字（共創＝支持者／預購＝預購，見 §3 分群表）。兩型的內容本來就
+           互斥（共創有分潤名額與撥款、預購沒有），所以同一格底下用 data-type 分流，
+           不是把兩份內容並排。內容提取自 my-cocreate-proposal.html，數字示意。 -->
+      <div class="tab-panel" data-panel="backers" data-type="fund preorder">
+        <div data-type="fund">
         <div class="bento mt-16">
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-cofund.kpi.people">Backers</div>
@@ -1014,12 +1021,11 @@
           </section>
 
         </div>
-      </div>
+        </div><!-- /[data-type=fund] -->
 
-      <!-- ===================== PRE-ORDER PROGRESS（預購進度，僅預購型）===================== -->
-      <!-- 規格 §3.1／§5.3：預購＝提前下單、達最少預購數（累計賣出的作品份數）再生產、未達量全額退款。
-           方案在「方案與承諾」分頁維護（D166／D167），這一區只呈現進度與訂單。 -->
-      <div class="tab-panel" data-panel="preorder" data-type="preorder">
+        <!-- 預購：規格 §3.1／§5.3——提前下單、達最少預購數（累計賣出的作品份數）再生產、
+             未達量全額退款。方案在「設定」分頁維護（D166／D167），這一區只呈現集單與訂單。 -->
+        <div data-type="preorder">
         <div class="bento mt-16">
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-pre.kpi.orders">Pre-orders</div>
@@ -1086,6 +1092,7 @@
             </div>
           </section>
         </div>
+        </div><!-- /[data-type=preorder] -->
       </div>
 
       <!-- ═══════════ 表現 Performance · 已上線項目 ═══════════
@@ -1467,7 +1474,15 @@
       <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-mname" data-i18n="pd-edit.milestone.name">Milestone</label><input class="input" id="pd-f-mname" data-i18n-placeholder="pd-edit.milestone.name-ph" placeholder="Festival submission"></div><div class="field"><label class="field__label" for="pd-f-mdate" data-i18n="pd-edit.milestone.date">Target date</label><input class="input" id="pd-f-mdate" data-i18n-placeholder="pd-edit.milestone.date-ph" placeholder="Sep 2026"></div></div>
+      <!-- 預計日期 2026-08-17 由自由文字改成日期選擇（§2.2.10「以日期選擇取得，不接受
+           自由文字」，D194）。原本填的是 'Sep 2026' 這種顯示字串，兩個日期無法相減，
+           倒數、逾期與排序都做不出來。 -->
+      <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-mname" data-i18n="pd-edit.milestone.name">Milestone</label><input class="input" id="pd-f-mname" data-i18n-placeholder="pd-edit.milestone.name-ph" placeholder="Festival submission"></div><div class="field"><label class="field__label" for="pd-f-mdate" data-i18n="pd-edit.milestone.date">Target date</label><input class="input" type="date" id="pd-f-mdate"><div class="field__hint" data-i18n="pd-edit.milestone.date.hint">Leave it blank until the date is settled. It drives the order on the timeline and the countdown.</div></div></div>
+      <div class="field"><label class="field__label" for="pd-f-mdesc" data-i18n="pd-edit.milestone.desc">Description</label><textarea class="textarea" id="pd-f-mdesc" rows="2" data-i18n-placeholder="pd-edit.milestone.desc-ph" placeholder="What gets delivered at this step"></textarea></div>
+      <!-- 狀態與對粉絲端公開：§2.2.10「里程碑」欄位表。完成日由系統於轉為已完成時寫入，
+           創作者不手填，所以這裡沒有那一格。粉絲端的實際呈現屬〔產品待確認〕（主規格 §8.24 第 3 項）。 -->
+      <div class="field"><label class="field__label" for="pd-f-mstatus" data-i18n="pd-edit.milestone.status">Status</label><select class="select" id="pd-f-mstatus"><option value="todo" data-i18n="pd-prog.ms.todo">Not started</option><option value="doing" data-i18n="pd-prog.ms.doing">In progress</option><option value="done" data-i18n="pd-prog.ms.done">Done</option></select></div>
+      <div class="field"><span class="field__label" data-i18n="pd-edit.milestone.public">Show to fans</span><div class="flex-row" style="justify-content:space-between;gap:var(--sp-12)"><span class="field__hint" data-i18n="pd-edit.milestone.public.hint">Off keeps it off the public blueprint.</span><div class="switch switch--on" id="pd-f-mpublic"></div></div></div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="milestone" data-i18n="pd-edit.milestone.submit">Add milestone</button>
     </div>
   </div>
@@ -1484,6 +1499,11 @@
            勾一個框看不出後面還有一整段上架流程要走，也看不出它只在項目已成立時才成立。 -->
       <div class="field"><label class="field__label" for="pd-f-ukind" data-i18n="pd-edit.update.kind">Type</label><select class="select" id="pd-f-ukind"><option value="general" data-i18n="pd-edit.update.kind-general">General update</option><option value="release" data-i18n="pd-edit.update.kind-release">Work release</option></select><div class="field__hint" id="pd-ukind-note" hidden></div></div>
       <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-utitle" data-i18n="pd-edit.update.name">Title</label><input class="input" id="pd-f-utitle" data-i18n-placeholder="pd-edit.update.name-ph" placeholder="Sound mix is locked"></div><div class="field"><label class="field__label" for="pd-f-uaud" data-i18n="pd-edit.update.audience">Audience</label><select class="select" id="pd-f-uaud"><option data-i18n="pd-edit.update.aud-everyone">Everyone</option><option data-i18n="pd-edit.update.aud-backers">Backers only</option><option data-i18n="pd-edit.update.aud-superfan">Superfan+</option></select></div></div>
+      <!-- 掛載（§2.2.10）：更新可以掛在某一顆里程碑底下，也可以不掛、成為時間軸上的一般公告。
+           兩種在能力上完全相同（受眾、通知、成效追蹤都一樣），差別只有歸屬與落點。
+           選項與預設值由 syncMilestoneField() 依本項目的里程碑產生；選「完成作品發文」時
+           自動鎖定為完成作品節點且不可改。 -->
+      <div class="field"><label class="field__label" for="pd-f-umilestone" data-i18n="pd-edit.update.milestone">Attach to</label><select class="select" id="pd-f-umilestone"></select><div class="field__hint" data-i18n="pd-edit.update.milestone.hint">Unattached updates sit in the announcements box at the end of the timeline.</div></div>
       <div class="field"><label class="field__label" for="pd-f-ubody" data-i18n="pd-edit.update.body">Body</label><textarea class="textarea" id="pd-f-ubody" data-i18n-placeholder="pd-edit.update.body-ph" placeholder="Share progress with your backers…"></textarea></div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="update" data-i18n="pd-edit.update.submit">Publish update</button>
     </div>
@@ -1493,6 +1513,8 @@
 <script src="js/projects-store.js?v=r2.2"></script>
 <!-- 作品送審件（§2.2.9 的審核狀態、退件理由、重送入口）與審核頁共用同一份狀態機。 -->
 <script src="js/work-review-store.js?v=r2.2"></script>
+<!-- 進度分頁的里程碑與更新（§2.2.10）。完成作品那一顆不在這裡，它讀上面那支送審件。 -->
+<script src="js/project-progress-store.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <!-- 公開資訊的年齡分級（§2.2.8）吃主規格 §7.11 那份六級值域，與建立流程、作品上架同一份。 -->
 <script src="js/work-taxonomy.js?v=r2.2"></script>
@@ -1556,7 +1578,9 @@ window.ztorPdLookup = (function () {
     if (!tablist) return;
     const tabs = tablist.querySelectorAll('.tabs__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
-    const NAMES = ['settings', 'pledges', 'about', 'progress', 'work', 'earnings', 'performance', 'royalty', 'cofund', 'preorder', 'money'];
+    /* 分頁 id 清單＝§3 分群結構表那七格（2026-08-17 整併，D193）。
+       深連結（#progress 等）與卡片上的 [data-goto-tab] 都以這份為準。 */
+    const NAMES = ['overview', 'progress', 'backers', 'setup', 'earnings', 'performance', 'royalty'];
 
     function activate(name) {
       tabs.forEach(t => {
@@ -1635,11 +1659,16 @@ window.ztorPdLookup = (function () {
        用 readonly 而不是 disabled：disabled 會把文字變灰、也從無障礙樹移除，
        但檢視模式下那些值正是要讀的內容，必須保持可讀、可選取、可複製。
        <select> 沒有 readonly，只能停用（外觀與互動由 CSS 一起處理）。 */
+    /* [data-edit-exempt] 底下的欄位不受兩段式管轄（2026-08-17）：方案編輯器有自己的
+       展開／收合編輯態，被整格鎖成唯讀會讓卡片點得開卻改不動。 */
+    const exempt = el => !!el.closest('[data-edit-exempt]');
     function applyReadonly(panel, ro) {
       panel.querySelectorAll('input, textarea').forEach(el => {
+        if (exempt(el)) return;
         if (ro) el.setAttribute('readonly', ''); else el.removeAttribute('readonly');
       });
       panel.querySelectorAll('select').forEach(el => {
+        if (exempt(el)) return;
         if (ro) el.setAttribute('disabled', ''); else el.removeAttribute('disabled');
       });
     }
@@ -1694,6 +1723,8 @@ window.ztorPdLookup = (function () {
       const g = e.target.closest('[data-goto-tab]');
       if (!g) return;
       const name = g.getAttribute('data-goto-tab');
+      /* 捷徑有時掛在 <a href="#"> 上（總覽的下一步）——不擋預設行為會先跳到頁首。 */
+      if (g.tagName === 'A') e.preventDefault();
       if (NAMES.includes(name)) { activate(name); tablist.scrollIntoView({ block: 'start' }); }
     });
 
@@ -1704,10 +1735,17 @@ window.ztorPdLookup = (function () {
     else syncEditMode();
   })();
 
-  /* Edit popups (CCR-007 prototype) — 2026-07-24 由側邊 drawer 改成站上共用的中央彈窗殼
-     （.payout-modal / .payout-dialog）。open/close + apply values to the page.
-     No persistence: refresh resets. Save handlers write into the same
-     semantic table rows used by the static lists, so styling stays DS-native. */
+  /* ════════════════════════════════════════════════════════════════════════
+     總覽的階段重點面板（§2.1.1）＋ 進度的交付藍圖（§2.2.10）＋ 彈窗
+     2026-08-17 分頁整併（D193）。這一段負責三件本輪重寫的事：
+
+       1. 總覽逐格換內容——「發行模式 × 項目狀態 × 作品家族」決定重點面板、下一步與捷徑
+       2. 進度的時間軸——里程碑是節點、更新掛在節點底下或收進公告區、完成作品是最後一顆
+       3. 完成作品那一顆**直接讀送審件**（js/work-review-store.js），本頁與進度 store
+          都不另存一份狀態，所以總覽、進度、作品三處永遠是同一件事
+
+     彈窗殼沿用站上共用的 .payout-modal / .payout-dialog；原型層級不落地，重整還原。
+     ════════════════════════════════════════════════════════════════════════ */
   (function () {
     function open(id) { const d = document.getElementById(id); if (d) d.hidden = false; }
     function closeAll() { document.querySelectorAll('.payout-modal:not([hidden])').forEach(d => { d.hidden = true; }); }
@@ -1721,15 +1759,6 @@ window.ztorPdLookup = (function () {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
 
     const v = id => (document.getElementById(id) || {}).value || '';
-    function dataListRow(iconHtml, title, meta, right) {
-      const div = document.createElement('div');
-      div.className = 'data-list__row';
-      div.innerHTML = '<div class="data-list__row-main">' + iconHtml +
-        '<div class="data-list__body"><div class="data-list__title"></div><div class="data-list__meta"></div></div></div>' + (right || '');
-      div.querySelector('.data-list__title').textContent = title;
-      div.querySelector('.data-list__meta').textContent = meta;
-      return div;
-    }
     function tableRow(values) {
       const tr = document.createElement('tr');
       tr.className = 'ztor-table__row';
@@ -1746,79 +1775,928 @@ window.ztorPdLookup = (function () {
       });
       return tr;
     }
-    const SAVE = {
-      /* ✝ about() 已移除（2026-07-27）：它讀的 #pd-f-name / #pd-f-desc 屬於已刪掉的
-         #pd-edit-about 彈窗，而且沒有任何 [data-pd-save="about"] 會呼叫它——留著就是
-         一段看起來還活著的死碼。基本資料現在在頁面上就地編輯。 */
-      schedule() {
-        /* 項目時間為 demo：改了值不真的驅動狀態機，僅示意這裡是排程設定的入口 */
-      },
-      collab() {
-        if (!v('pd-f-cname')) return;
-        const list = document.getElementById('pd-collab-list');
-        list.appendChild(tableRow([
-          v('pd-f-cname'),
-          v('pd-f-crole') || '—',
-          { i18n: 'project-detail.collab.status.pending', fallback: 'Pending confirmation' },
-          (v('pd-f-cshare') || '0') + '%'
-        ]));
-      },
-      milestone() {
-        if (!v('pd-f-mname')) return;
-        const icon = '<div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div>';
-        const el = dataListRow(icon, v('pd-f-mname'), v('pd-f-mdate') || 'TBD');
-        document.getElementById('pd-ms-list').appendChild(el);
-        if (window.ztorIcons) window.ztorIcons.applyIcons(el);
-      },
-      update() {
-        if (!v('pd-f-utitle')) return;
-        const kind = updateKind();
-        /* 影片家族的完成作品：這則貼文要等作品真的上架完才發得出去（不然貼文裡的
-           作品連結是空的），所以先把已填的三格收進 sessionStorage，跳去上架流程，
-           由那邊走完最後一步再回來一次補上貼文與狀態。 */
-        if (kind === 'release' && isFilm()) {
-          try {
-            sessionStorage.setItem(RELEASE_KEY, JSON.stringify({
-              id: proj ? proj.id : '',
-              title: v('pd-f-utitle'),
-              audience: audienceKey(),
-              body: v('pd-f-ubody')
-            }));
-          } catch (err) { /* 無痕模式等寫不進去：流程照走，回跳時當成沒有草稿 */ }
-          location.href = 'publish-work.html?project=' + encodeURIComponent(proj ? proj.id : '');
-          return;
-        }
-        postUpdate(v('pd-f-utitle'), audienceKey());
-        /* 上架流程還沒開放的作品類型：發文本身就是把項目推到已上線的那個動作。 */
-        if (kind === 'release' && window.ztorPdSetStatus) window.ztorPdSetStatus('live');
-      }
-    };
 
-    /* ── 發文類型（2026-08-07）──────────────────────────────────────────
-       「完成作品」在上游規格裡的前置條件是項目已成立（succeeded）；不符合時把選項
-       停用並就地說明原因，而不是讓人選了才被擋。影片家族接得上作品上架流程，其餘
-       家族的上架流程尚未開放，送出即發布並轉已上線。 */
-    const RELEASE_KEY = 'ztor.workRelease';
     /* 哪一個項目由頁首那段 window.ztorPdLookup 一次解析（查不到就整頁換成查詢失敗）。 */
     if (window.ztorPdLookup && window.ztorPdLookup.missing) return;
     const proj = (window.ztorPdLookup && window.ztorPdLookup.project) || null;
+
     /* 審核通過的項目已經是「已上線」。projects-store 是純記憶體資料（重整還原），
        所以通過這件事記在 work-review-store，載入時先把它套回項目物件——否則重新
        整理之後徽章會退回「已成立」，看起來像審核結果被吃掉了。
-       這一段必須在 syncKind() 與下方 render() 之前跑：兩者都讀 status。 */
+       這一段必須跑在下面所有渲染之前：它們都讀 status。 */
     if (proj && window.ztorWorkReview) {
       const ov = window.ztorWorkReview.projectStatus(proj.id);
       if (ov) proj.status = ov;
+      /* 直接發佈的影片項目只要有送審件，就表示建立流程已經送出——D182 第 1 題：送出當下
+         項目狀態進準備中、作品審核狀態進待審核。原型的建立 wizard 不會真的新增一筆項目，
+         送審件掛在既有的草稿樣本上（見 create-project.html 的替身說明），這一行讓那一筆的
+         狀態跟著對，否則剛送完審回到詳情頁會看到「草稿」。 */
+      else if (proj.type === 'go-live' && proj.status === 'draft' && window.ztorWorkReview.forProject(proj.id)) proj.status = 'scheduled';
     }
+
+    /* ── 草稿不進本頁（§2.0 末段、§4 情境 11，D193）────────────────────────────
+       還沒建立完成的項目一律回建立流程續填。用 location.replace 不用 href：返回鍵
+       才不會彈回一個馬上又跳走的頁面（與活動詳情同一條做法，見 event-detail.html）。
+       **判定必須排在上面那段狀態覆寫之後**（§2.0 末段明講）——剛送完審的直接發佈影片
+       項目，種子資料上仍寫著 draft，先判定就會把人踢回建立流程。 */
+    if (proj && proj.status === 'draft') {
+      location.replace('create-project.html?draft=' + encodeURIComponent(proj.id));
+      return;
+    }
+
+    const PROG = window.ztorProjectProgress;
+    const WR = window.ztorWorkReview;
+    const zh = () => document.documentElement.lang === 'zh-Hant';
+    const L = o => (o ? (zh() ? (o.zh || o.en) : (o.en || o.zh)) : '');
+    const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const isFilm = () => !!proj && proj.family === 'film';
-    /* 直接發佈的項目在建立流程裡就把作品上架完了（2026-08-10 整併），所以沒有「事後宣告
-       作品完成」這件事可做——發文類型也就不該出現這個選項。 */
     const isDirect = () => !!proj && proj.type === 'go-live';
     const canRelease = () => !!proj && proj.status === 'succeeded';
-    const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    const rec = () => (WR && proj) ? WR.forProject(proj.id) : null;
+    const releaseOf = r => (r && r.work && r.work.release) || '';
+    const icons = el => { if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(el); };
+    const workHref = () => 'publish-work.html?project=' + encodeURIComponent(proj ? proj.id : '') + '&mode=edit';
+
+    /* ══ 1 · 總覽 · 階段重點面板（§2.1.1 三張表）══════════════════════════════
+       2026-08-18 重排。每一格回傳同一個形狀，套用的程式只有一份——逐格各寫一套渲染
+       是分岔的開始。
+
+         kpis     重點面板那一列大數字：欄位鍵的陣列（見下方 kpi()），空陣列＝這一格
+                  沒有可盯的數字，改由 work 或 panel 承擔重點面板
+         kpiNote  那一列底下的一句規則說明（達標怎麼算、沒達標會怎樣）；沒有就不畫
+         work     作品卡 { titleKey, track?, panel } · null ＝ 整塊不顯示
+                    track   追蹤條 { steps:[i18n key], at:1 起算, alert }
+                    panel   要不要畫送審件面板（有送審件才畫）
+         panel    狀態卡 { titleKey, facts:[{icon,title,meta}], note } · null ＝ 不顯示
+         next     下一步 { text, label, tab|href|modal, kind, owner } · null ＝ 不顯示
+                    owner  這件事屬於哪一塊：'work' / 'panel' / 'progress' / null（自成一卡）
+         progress 要不要畫進度摘要
+         backers  要不要畫支持者摘要
+
+       **同一個數字只有一個來源**：renderStage() 把 kpis 用掉的鍵記進 used，底下兩張
+       摘要卡逐列比對後跳過。頁首那三列識別事實（創作者／內容類型／建立日期）不進這裡。
+    */
+
+    /* 數字格式化與「原型沒有結構化欄位時怎麼辦」───────────────────────────
+       部分 demo 項目只有一句 meta 摘要、沒有 perf / fund 物件。撈不到就回空字串、
+       畫面顯示「—」，**不編造**。正式資料一律走 perf / fund / list 這些欄位。 */
+    const fmtNum = n => (typeof n === 'number' ? n.toLocaleString('en-US') : String(n == null ? '' : n));
+    const metaStr = () => (proj && proj.meta ? L(proj.meta) : '');
+    function metaPick(re) { const m = metaStr().match(re); return m ? (m[1] || m[2] || '') : ''; }
+    function moneyOf() {
+      if (proj.perf && typeof proj.perf.usd === 'number') return 'US$' + fmtNum(proj.perf.usd);
+      return metaPick(/(US\$[\d,]+)/);
+    }
+    function audienceOf() {
+      if (proj.perf && typeof proj.perf.audience === 'number') return fmtNum(proj.perf.audience);
+      return metaPick(/([\d,]{4,})\s*(?:次觀看|次串流|views|streams)/);
+    }
+    /* 量綱：觀看（影視）或串流（音樂）。perf 沒帶就從 meta 的用字判斷。 */
+    function audienceLabelKey() {
+      const k = (proj.perf && proj.perf.kind) || (/串流|streams/.test(metaStr()) ? 'streams' : 'views');
+      return k === 'streams' ? 'pd-ov.kpi.streams' : 'pd-ov.kpi.views';
+    }
+    /* 剩餘時間在資料裡是一句話（「剩餘 21 天」／「21 days left」），KPI 要的是那個數字。 */
+    function daysLeftOf() {
+      const s = (proj.fund && L(proj.fund.left)) || (proj.list && L(proj.list.left)) || '';
+      const m = s.match(/(\d+)/);
+      return m ? m[1] : s;
+    }
+    /* 單價目前沒有自己的欄位，只寫在 meta 摘要裡（見 ASSUMPTIONS UIA-121）。 */
+    function unitPriceOf() { return metaPick(/單價\s*(\$[\d,.]+)|(\$[\d,.]+)\s*each/); }
+
+    /* KPI 欄位登記表。回傳 null ＝ 這個項目沒有這份資料，該格不畫。
+       value/of 分開的理由：「8,420 / 15,000」是一個值，拆兩格會讀成兩個數字。 */
+    function kpi(key) {
+      const f = proj.fund, li = proj.list;
+      const sum = PROG ? PROG.summary(proj) : { done: 0, total: 0 };
+      switch (key) {
+        case 'raised':
+          /* 目標放 meta 而不是跟在數字後面：金額字串長，1024 以下「$88,600 / $120,000」
+             會擠成兩行，主要數字反而被切斷。達成率與進度條講的是同一個比例，一個給數字、
+             一個給形狀。 */
+          return f && { label: T('pd-ov.kpi.raised', 'Raised'), value: f.raised,
+            meta: T('pd-ov.kpi.goal', 'Goal {g}').replace('{g}', f.goal) + ' · ' + f.pct + '%', pct: f.pct };
+        case 'orders':
+          return li && { label: T('pd-ov.kpi.orders', 'Pre-ordered'), value: L(li.goal), pct: proj.bar ? proj.bar.pct : null };
+        case 'backers':
+          return (f && f.backers) ? { label: T('pd-ov.kpi.backers', 'Backers'), value: f.backers } : null;
+        case 'left':
+          return daysLeftOf() ? { label: T('pd-ov.kpi.left', 'Days left'), value: daysLeftOf(), of: ' ' + T('pd-ov.kpi.days', 'days') } : null;
+        case 'unit':
+          return unitPriceOf() ? { label: T('pd-ov.kpi.unit', 'Unit price'), value: unitPriceOf() } : null;
+        case 'delivery':
+          return { label: T('project-detail.tl.delivery', 'Expected delivery'), value: T('project-detail.tl.delivery-val', 'Oct 2026') };
+        case 'milestones':
+          return { label: T('pd-prog.ms.count', 'Milestones done'), value: String(sum.done), of: ' / ' + sum.total };
+        case 'payout':
+          return { label: T('cocreate.tranche.title', 'Payout progress'), value: '40%', meta: T('pd-ov.kpi.payout-meta', ''), pct: 40 };
+        case 'revenue':
+          /* 剛上線、還沒有任何收入事件時值是「—」；這時不附口徑說明——那句話是用來
+             交代「這個數字是誰算的」，沒有數字就沒有要交代的對象。 */
+          return { label: T('pd-ov.kpi.revenue', 'Lifetime revenue'), value: moneyOf() || '—', meta: moneyOf() ? T('pd-ov.kpi.revenue-meta', '') : '' };
+        case 'audience':
+          return { label: T(audienceLabelKey(), 'Views'), value: audienceOf() || '—' };
+        default: return null;
+      }
+    }
+
+    function stage() {
+      const st = proj ? proj.status : '';
+      const r = rec();
+      const rel = releaseOf(r);
+      const relDate = window.ztorProjects && window.ztorProjects.releaseDate
+        ? window.ztorProjects.releaseDate(proj) : '';
+      const todo = proj && proj.todo ? L(proj.todo) : '';
+
+      /* 直接發佈 ─────────────────────────────────────────────────────────── */
+      if (isDirect()) {
+        if (st === 'scheduled' && isFilm()) {
+          /* 上架五段：送審 → 審核中 → 審核通過 → 設定上映日期 → 上線。
+             現在卡在哪一段由送審件決定，不由項目狀態決定（兩套狀態，§2.2.9 末段）。 */
+          let at = 1;
+          if (r) at = (r.status === 'approved') ? (rel ? 5 : 4) : 2;
+          /* 退件理由的全文就在送審件面板裡，下一步只講「接下來做什麼」。 */
+          let next;
+          if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'work' };
+          else if (r && r.status === 'approved' && !rel) next = { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'work' };
+          else if (r && WR.isOpen(r.status)) next = { text: T('pd-ov.next.inreview', ''), label: '', owner: 'work' };
+          else next = { text: T('pd-ov.next.editwork', ''), label: T('pd.work.edit', 'Edit work'), href: workHref(), owner: 'work' };
+          return {
+            kpis: [],
+            work: {
+              titleKey: 'pd-ov.title.track',
+              track: { steps: ['pd-ov.step.submit', 'pd-ov.step.review', 'pd-ov.step.approved', 'pd-ov.step.date', 'pd-ov.step.live'], at: at, alert: !!(r && r.status === 'rejected') },
+              panel: true
+            },
+            panel: null, next: next, progress: false, backers: false
+          };
+        }
+        if (st === 'scheduled') {
+          /* 非影片家族發布即上線、不經審核，所以沒有追蹤條也沒有送審件——這一格
+             要回答的只有「哪一天上線」。 */
+          return {
+            kpis: [], work: null,
+            panel: {
+              titleKey: 'pd-ov.title.schedule',
+              facts: [{ icon: 'rocket', title: T('project-detail.golive.scheduled', 'Scheduled release'), meta: relDate || T('project-detail.golive.nodate', 'Not scheduled yet') }],
+              note: T('project-detail.golive.note', '')
+            },
+            next: relDate ? null : { text: T('pd-ov.next.setgolive', ''), label: T('pd-ov.next.setgolive.cta', 'Set the date'), tab: 'setup', owner: 'panel' },
+            progress: false, backers: false
+          };
+        }
+        if (st === 'cancelled') return cancelledStage();
+        return liveStage(todo);
+      }
+
+      /* 共創與預購 ──────────────────────────────────────────────────────── */
+      const pre = proj.type === 'preorder';
+      if (st === 'scheduled') {
+        /* 三段等待，全部落在同一個「準備中」上（主規格 §7.2，§2.2.11 要求本區分得出來）。 */
+        let at = 1;
+        if (r && r.status === 'approved') at = rel ? 3 : 2;
+        return {
+          kpis: [], work: { titleKey: 'pd-ov.title.waiting', track: { steps: ['pd-ov.wait.review', 'pd-ov.wait.date', 'pd-ov.wait.day'], at: at }, panel: true },
+          panel: null,
+          next: (r && r.status === 'approved' && !rel)
+            ? { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'work' }
+            : null,
+          progress: true, backers: true
+        };
+      }
+      if (st === 'published') {
+        /* 募資／集單進度（§2.1.1）。預購那一列的欄位不同：已預購／最少預購數、單價、截止倒數。 */
+        return {
+          kpis: pre ? ['orders', 'unit', 'left'] : ['raised', 'backers', 'left'],
+          /* 達標／未達標的後果是這一列數字的意思，不是另一件事，所以貼在同一塊底下
+             （§2.1.1 預購差異表第一列要求說明未達最少預購數就終止並全額退款）。 */
+          kpiNote: T(pre ? 'pd-ov.deadline.pre' : 'pd-ov.deadline.fund', ''),
+          work: null, panel: null,
+          next: { text: T(pre ? 'pd-ov.next.postupdate-pre' : 'pd-ov.next.postupdate', ''), label: T('project-detail.btn.post-update', 'Post update'), modal: 'pd-edit-update', owner: 'progress' },
+          progress: true, backers: true
+        };
+      }
+      if (st === 'succeeded') {
+        /* 交付進度：預期交付日期、里程碑完成度、撥款進度（共創）／集單結果（預購）。
+           撥款分期只有共創有——預購不分批撥款（§2.1.1 預購差異表第二列）。 */
+        let next;
+        /* 退件理由全文就在上面那塊送審件面板裡，這裡只講「接下來做什麼」——
+           同一段文字在同一張卡上寫兩次，讀的人會以為那是兩件事。 */
+        if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'work' };
+        /* 已經送出、還在等結果的那一件不該再被叫「去送一次」——那道閘在 §2.2.9 是
+           一件一次（重送的入口只在被退件時出現）。 */
+        else if (r && (WR.isOpen(r.status) || r.status === 'approved')) next = { text: T('pd.review.waiting-body', ''), label: '', owner: 'work' };
+        else if (isFilm()) next = { text: T('pd-ov.next.publishwork', ''), label: T('pd-prog.work.send', 'Send the work for release'), modal: 'pd-edit-update', kind: 'release', owner: null };
+        else next = { text: T('pd-edit.update.kind-other-note', ''), label: '', owner: null };
+        return {
+          /* 預購沒有撥款進度那一段（§2.1.1 預購差異表第二列），所以只有兩格；
+             集單結果留給支持者摘要那張卡，不在這裡再寫一次同一個數字。 */
+          kpis: pre ? ['delivery', 'milestones'] : ['delivery', 'milestones', 'payout'],
+          /* 有送審件才畫作品卡：這個階段的作品可能還沒送出去，沒有東西可追蹤。 */
+          work: rec() ? { titleKey: 'pd-ov.title.work', panel: true } : null,
+          panel: null, next: next, progress: true, backers: true
+        };
+      }
+      if (st === 'cancelled') return cancelledStage();
+      return liveStage(todo);
+    }
+
+    /* 已上線：營運摘要（近期收益與觀看）＋ 作品上線資訊（上映日期與編輯入口，§2.2.11）。 */
+    function liveStage(todo) {
+      const hasWork = !isDirect() || !!rec();
+      return {
+        kpis: isDirect() ? ['revenue', 'audience'] : ['revenue', 'audience', 'milestones'],
+        work: rec() ? { titleKey: 'pd-ov.title.work', panel: true } : null,
+        panel: null,
+        next: todo ? { text: todo, label: '', owner: null } : null,
+        progress: !isDirect(), backers: !isDirect()
+      };
+    }
+
+    function cancelledStage() {
+      /* 終止原因（§2.2.4）：欄位由系統判定或創作者指定，目前上游標〔產品待確認〕，
+         原型也沒有這個欄位。呈現假設——有目標而沒達成＝未達標，其餘＝創作者取消。
+         這是呈現層的推導，不是產品規則，記在 ASSUMPTIONS.md。 */
+      const notFunded = (proj.goalMet === false) && (proj.type !== 'go-live');
+      const facts = [
+        { icon: 'ban', title: T('pd-ov.end.reason', 'Termination reason'), meta: T(notFunded ? 'pd-ov.end.notfunded' : 'pd-ov.end.creator', '') },
+        { icon: 'lock', title: T('pd-ov.end.frozen', 'Frozen'), meta: T('pd-ov.end.frozen-meta', '') }
+      ];
+      /* ✝ 退款不另立一列事實：原型沒有退款進度這份資料（ASSUMPTIONS TABS-001），
+         底下那句 note 已經把「依方案的未達標處理、去設定分頁看」講完了，再列一行
+         等於把同一句話寫兩次。 */
+      return {
+        kpis: [], work: null,
+        panel: { titleKey: 'pd-ov.title.ended', facts: facts, note: isDirect() ? '' : T('pd-ov.end.refund-note', '') },
+        /* 一般更新是已取消狀態下唯一還開著的發文動作（§2.2.4）；里程碑凍結，
+           所以進度摘要不出現，這件事因此歸終止卡。 */
+        next: isDirect() ? null : { text: T('pd-ov.next.refundpost', ''), label: T('project-detail.btn.post-update', 'Post update'), modal: 'pd-edit-update', owner: 'panel' },
+        /* 直接發佈沒有支持者這件事，取消了也不會長出來。 */
+        progress: false, backers: !isDirect()
+      };
+    }
+
+    /* 下一步的動作鈕：三種去處（分頁／連結／彈窗）共用一份組裝，不逐處手寫。 */
+    function nextActHTML(n) {
+      if (!n || !n.label) return '';
+      if (n.tab) return '<button class="btn btn--primary btn--sm" type="button" data-goto-tab="' + esc(n.tab) + '">' + esc(n.label) + '</button>';
+      if (n.href) return '<a class="btn btn--primary btn--sm" href="' + esc(n.href) + '">' + esc(n.label) + '</a>';
+      if (n.modal) return '<button class="btn btn--primary btn--sm" type="button" data-modal-open="' + esc(n.modal) + '"' +
+        (n.kind ? ' data-preset-kind="' + esc(n.kind) + '"' : '') + '>' + esc(n.label) + '</button>';
+      return '';
+    }
+
+    /* 一列事實（狀態卡與支持者摘要共用）。 */
+    function rowHTML(icon, label, value, right) {
+      return '<div class="data-list__row"><div class="data-list__row-main">' +
+        '<div class="data-list__icon data-list__icon--sm"><i data-lucide="' + icon + '" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body"><div class="data-list__title">' + esc(label) + '</div>' +
+        '<div class="data-list__meta">' + esc(value) + '</div></div></div>' + (right || '') + '</div>';
+    }
+
+    /* 近期要完成的里程碑（§2.2.10 的判定，取前三顆）。順序＝逾期最久 → 最近要到 →
+       沒有預計日期。逾期排在最前面的理由與時間軸一致：要處理的是逾期那一顆，
+       不是更遠的下一個目標。 */
+    function upcomingMilestones() {
+      if (!PROG) return [];
+      const T0 = PROG.today();
+      const pending = PROG.milestones(proj).filter(m => m.status !== 'done');
+      const overdue = pending.filter(m => m.date && PROG.diffDays(m.date, T0) < 0).sort((a, b) => a.date - b.date);
+      const dated = pending.filter(m => m.date && PROG.diffDays(m.date, T0) >= 0).sort((a, b) => a.date - b.date);
+      const undated = pending.filter(m => !m.date);
+      return overdue.concat(dated).concat(undated).slice(0, 3);
+    }
+
+    function renderStage() {
+      if (!proj) return;
+      const cfg = stage();
+      /* 這一格的 KPI 用掉了哪些數字。底下兩張摘要卡照它跳過——同一個數字兩個來源
+         遲早會不一致，這個集合就是「一頁一個來源」的機械保證。 */
+      const used = {};
+      (cfg.kpis || []).forEach(k => { used[k] = true; });
+
+      /* ── ① 重點面板 · KPI 列 ─────────────────────────────────────────── */
+      const kbox = document.getElementById('pd-ov-kpis');
+      if (kbox) {
+        const tiles = (cfg.kpis || []).map(kpi).filter(Boolean);
+        kbox.hidden = !tiles.length;
+        const span = tiles.length === 2 ? 6 : 4;
+        kbox.innerHTML = tiles.map(t =>
+          '<div class="kpi bento--span-' + span + '">' +
+            '<div class="kpi__label">' + esc(t.label) + '</div>' +
+            '<div class="kpi__value">' + esc(t.value) + (t.of ? '<span class="stat__of">' + esc(t.of) + '</span>' : '') + '</div>' +
+            (t.pct != null ? '<div class="project-bar"><div class="project-bar__fill" style="width:' + Math.max(0, Math.min(100, t.pct)) + '%"></div></div>' : '') +
+            (t.meta ? '<div class="kpi__meta">' + esc(t.meta) + '</div>' : '') +
+          '</div>').join('') +
+          (tiles.length && cfg.kpiNote ? '<p class="field__hint bento--span-12">' + esc(cfg.kpiNote) + '</p>' : '');
+      }
+
+      /* ── ② 作品卡（追蹤條 ＋ 送審件面板）─────────────────────────────── */
+      const workCard = document.getElementById('pd-ov-work-card');
+      const track = document.getElementById('pd-ov-track');
+      const workBox = document.getElementById('pd-ov-work');
+      const showWorkPanel = !!(cfg.work && cfg.work.panel && rec());
+      if (workCard) {
+        workCard.hidden = !cfg.work || (!cfg.work.track && !showWorkPanel);
+        if (!workCard.hidden) {
+          document.getElementById('pd-ov-work-title').textContent = T(cfg.work.titleKey, '');
+          if (track) {
+            track.hidden = !cfg.work.track;
+            if (cfg.work.track) {
+              const n = cfg.work.track.steps.length, at = cfg.work.track.at;
+              track.style.setProperty('--steps', String(n));
+              track.style.setProperty('--at', String(at));
+              track.style.setProperty('--progress', Math.round((at - 1) / n * 100) + '%');
+              document.getElementById('pd-ov-track-labels').innerHTML = cfg.work.track.steps.map((k, i) => {
+                const cls = i + 1 < at ? ' progress-stepper__label--done' : (i + 1 === at ? ' progress-stepper__label--current' : '');
+                return '<span class="progress-stepper__label' + cls + '">' + esc(T(k, k)) + '</span>';
+              }).join('');
+            }
+          }
+          if (workBox) {
+            workBox.hidden = !showWorkPanel;
+            if (showWorkPanel) renderWorkBlock(workBox);
+          }
+        }
+      }
+
+      /* ── ③ 狀態卡（終止說明／上線排程）───────────────────────────────── */
+      const panel = document.getElementById('pd-ov-panel');
+      if (panel) {
+        panel.hidden = !cfg.panel;
+        if (cfg.panel) {
+          document.getElementById('pd-ov-panel-title').textContent = T(cfg.panel.titleKey, '');
+          const list = document.getElementById('pd-ov-panel-list');
+          list.innerHTML = cfg.panel.facts.map(f => rowHTML(f.icon, f.title, f.meta)).join('');
+          const note = document.getElementById('pd-ov-panel-note');
+          note.hidden = !cfg.panel.note;
+          note.textContent = cfg.panel.note || '';
+          icons(panel);
+        }
+      }
+
+      /* ── ④ 下一步：長在它要操作的那一塊底下；沒有歸屬（或那一塊沒出現）才自成一卡。
+         同一顆按鈕不在一頁上畫兩次，這是關鍵——例如「發布更新」屬於進度摘要，
+         進度摘要自己就有那顆鈕，所以那一格不再另立一張下一步卡。 */
+      const n = cfg.next;
+      const ownerVisible = {
+        work: !!(workCard && !workCard.hidden),
+        panel: !!(panel && !panel.hidden),
+        progress: !!cfg.progress
+      };
+      const inOwner = !!(n && n.owner && ownerVisible[n.owner]);
+      const setNext = (wrapId, textId, actId, on) => {
+        const w = document.getElementById(wrapId);
+        if (!w) return;
+        w.hidden = !on;
+        if (!on) return;
+        document.getElementById(textId).textContent = n.text || '';
+        const act = document.getElementById(actId);
+        act.innerHTML = nextActHTML(n);
+        icons(act);
+      };
+      setNext('pd-ov-work-next', 'pd-ov-work-next-text', 'pd-ov-work-next-act', inOwner && n.owner === 'work');
+      setNext('pd-ov-panel-next', 'pd-ov-panel-next-text', 'pd-ov-panel-next-act', inOwner && n.owner === 'panel');
+      const nextCard = document.getElementById('pd-ov-next');
+      if (nextCard) {
+        const standalone = !!n && !inOwner;
+        nextCard.hidden = !standalone;
+        if (standalone) {
+          document.getElementById('pd-ov-next-text').textContent = n.text || '';
+          const act = document.getElementById('pd-ov-next-act');
+          act.innerHTML = nextActHTML(n);
+          icons(act);
+        }
+      }
+
+      /* ── ⑤ 進度摘要 ──────────────────────────────────────────────────── */
+      const progCard = document.getElementById('pd-ov-progress');
+      if (progCard) {
+        progCard.hidden = !cfg.progress;
+        if (cfg.progress && PROG) {
+          const T0 = PROG.today();
+          const sum = PROG.summary(proj);
+          /* 完成度只有在 KPI 沒講過的時候才由這裡講。 */
+          const count = document.getElementById('pd-ov-prog-count');
+          count.hidden = !!used.milestones || !sum.total;
+          if (!count.hidden) count.textContent = sum.done + ' / ' + sum.total;
+
+          /* 這一格的下一步歸進度摘要時，那句話當這張卡的引言——底下那顆
+             「發布更新」就是它的動作，不再另外畫一顆。 */
+          const lede = document.getElementById('pd-ov-prog-lede');
+          const showLede = inOwner && n.owner === 'progress' && !!n.text;
+          lede.hidden = !showLede;
+          lede.textContent = showLede ? n.text : '';
+
+          const list = upcomingMilestones();
+          const rows = list.map(m => {
+            const over = m.date && PROG.diffDays(m.date, T0) < 0;
+            const due = m.date && PROG.diffDays(m.date, T0) === 0;
+            let badge;
+            if (over) badge = '<span class="badge badge--error">' + esc(T('pd-prog.ms.overdue', '{n} days overdue').replace('{n}', PROG.diffDays(T0, m.date))) + '</span>';
+            else if (due) badge = '<span class="badge badge--warning">' + esc(T('pd-ov.prog.due-today', 'Due today')) + '</span>';
+            else if (m.date) badge = '<span class="badge badge--neutral">' + esc(T('pd-ov.prog.in-days', 'in {n} days').replace('{n}', PROG.diffDays(m.date, T0))) + '</span>';
+            else badge = '<span class="badge badge--neutral">' + esc(T('pd-ov.prog.nodate', 'No date yet')) + '</span>';
+            const meta = [m.date ? fmtDay(m.date) : '', L(PROG.STATUS[m.status])].filter(Boolean).join(' · ');
+            return rowHTML(over ? 'alert-circle' : MS_ICON[m.status], L(m.name), meta, badge);
+          });
+          if (!rows.length) {
+            /* 沒有待完成的里程碑：分兩種——一顆都沒建過，或全部做完了。 */
+            rows.push(sum.total
+              ? rowHTML('check-circle', T('pd-ov.prog.all-done', 'All milestones done'), T('pd-ov.prog.all-done-meta', ''))
+              : rowHTML('flag', T('pd-ov.prog.none', 'No milestones yet'), T('pd-ov.prog.none-meta', '')));
+          }
+          document.getElementById('pd-ov-progress-list').innerHTML = rows.join('');
+          icons(progCard);
+
+          const ups = PROG.updates(proj);
+          const last = ups.length ? ups.slice().sort((a, b) => b.publishedAt - a.publishedAt)[0] : null;
+          document.getElementById('pd-ov-prog-last').textContent =
+            T('pd-ov.prog.last-update', 'Latest update') + ' · ' +
+            (last ? fmtDay(last.publishedAt) : T('pd-ov.prog.no-update', 'None yet'));
+        }
+      }
+
+      /* ── ⑥ 支持者摘要（濃縮）────────────────────────────────────────────
+         候選列依序比對 used，跳過 KPI 已經講過的，最多留三列。 */
+      const bkCard = document.getElementById('pd-ov-backers');
+      if (bkCard) {
+        bkCard.hidden = !cfg.backers;
+        if (cfg.backers) {
+          const pre = proj.type === 'preorder';
+          document.getElementById('pd-ov-backers-title').textContent =
+            T(pre ? 'project-detail.tab.preorders' : 'pd-ov.bk.title', 'Backers');
+          document.getElementById('pd-ov-backers-go').textContent =
+            T(pre ? 'pd-ov.bk.go-pre' : 'pd-ov.bk.go', 'Go to backers');
+          const cands = [];
+          const head = pre ? (proj.list && L(proj.list.goal)) : (proj.fund && proj.fund.backers);
+          if (head) cands.push([pre ? 'orders' : 'backers', 'users', T(pre ? 'pd-ov.kpi.orders' : 'pd-ov.kpi.backers', 'Backers'), head]);
+          /* 方案數與撥款進度引用支持者分頁既有的示範值，不在這裡另寫一份數字。 */
+          cands.push(['plans', 'list', T('pd-cofund.kpi.plans', 'Support plans'), '3']);
+          if (!pre && (proj.status === 'succeeded' || proj.status === 'live')) {
+            cands.push(['payout', 'banknote', T('cocreate.tranche.title', 'Payout progress'), '40%']);
+          }
+          const period = (proj.fund && L(proj.fund.period)) ||
+            (proj.fundFrom ? T('pd-ov.bk.since', 'Open since {d}').replace('{d}', proj.fundFrom) : '');
+          if (period) cands.push(['period', 'calendar', T('pd-ov.bk.period', 'Campaign window'), period]);
+          document.getElementById('pd-ov-backers-list').innerHTML =
+            cands.filter(c => !used[c[0]]).slice(0, 3).map(c => rowHTML(c[1], c[2], c[3])).join('');
+          icons(bkCard);
+        }
+      }
+    }
+
+    /* 送審件面板的內容（總覽用；共創與預購的同一份資料畫在時間軸的完成作品節點上）。 */
+    function renderWorkBlock(box) {
+      const r = rec();
+      if (!r || !WR) return;
+      const cover = document.getElementById('pd-work-cover');
+      if (cover) cover.src = r.cover || proj.poster || proj.cover || '';
+      const title = r.title || {};
+      document.getElementById('pd-work-name').textContent = L(title) || proj.name;
+      const badge = document.getElementById('pd-work-badge');
+      badge.textContent = WR.label(r.status);
+      badge.className = 'badge ' + WR.tone(r.status);
+      document.getElementById('pd-work-release').textContent = releaseOf(r) || T('pd.work.nodate', 'Not set');
+      document.getElementById('pd-work-at').textContent = r.submittedAt || '—';
+      document.getElementById('pd-work-count').textContent = String(r.count || 1);
+      const editedWrap = document.getElementById('pd-work-edited-wrap');
+      editedWrap.hidden = !r.editedAt;
+      if (r.editedAt) document.getElementById('pd-work-edited').textContent = r.editedAt;
+      const rejected = r.status === 'rejected';
+      const note = document.getElementById('pd-work-note');
+      note.hidden = !rejected;
+      if (rejected) document.getElementById('pd-work-reason').textContent = r.reason || '';
+      box.classList.toggle('review-status--rejected', rejected);
+      box.classList.toggle('review-status--approved', r.status === 'approved');
+      /* 動作列收起：總覽的主動作統一在「下一步」那張卡上（見 renderStage 的 next）。 */
+      const acts = box.querySelector('.review-status__actions');
+      if (acts) acts.hidden = true;
+    }
+
+    /* ══ 2 · 進度 · 交付時間軸（§2.2.10 v3.0，D194）═══════════════════════════
+       軸由上而下：完成作品（釘頂）→ 未來的里程碑 → 今天 → 逾期 → 過去 → 項目建立。
+       **唯一的排序依據是真實日期**——D194 撤除了手動上移／下移，所以這裡不再有任何
+       「陣列順序即畫面順序」的地方；要改順序就改預計日期。
+       今天是軸上一個真實節點，也是整條軸上唯一會換說法的位置；發文框內嵌在它身上。 */
+
+    const MS_ICON = { todo: 'circle', doing: 'clock', done: 'check-circle' };
+    const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    /* 收合狀態記在這裡、不記在 DOM：每次重繪都會重建 innerHTML，記在節點上的話，
+       「展開某一天 → 發一則更新 → 那一天又收回去」。key 是里程碑 id 或日期字串。 */
+    const ptlFold = {};
+
+    /* 日期怎麼寫是呈現決策（§2.2.10「顯示格式」）：軸左那一欄很窄，所以只寫月與日，
+       跨年的才補年份——不補的話「8/17」看不出是今年還是去年的事。 */
+    function fmtDay(d) {
+      if (!d) return '';
+      const sameYear = d.getFullYear() === PROG.today().getFullYear();
+      if (zh()) return (sameYear ? '' : d.getFullYear() + '/') + (d.getMonth() + 1) + '/' + d.getDate();
+      return MON_EN[d.getMonth()] + ' ' + d.getDate() + (sameYear ? '' : ', ' + d.getFullYear());
+    }
+
+    /* <input type="date"> 的值域是 YYYY-MM-DD 字串，資料層存的是 Date。兩個方向的
+       轉換各只有一份——散在各處手拼字串是「日期又變回字串」的第一步。 */
+    function isoDay(d) {
+      return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    }
+    function dayFromIso(s) {
+      if (!s) return null;
+      const p = String(s).split('-');
+      if (p.length !== 3) return null;
+      const d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    /* 情境句裡要標色的數字（倒數天數、逾期天數）。文案本身放 i18n，這裡只負責把
+       {n} 換成一個帶 class 的 span——數字進 i18n 字串會讓譯者以為那是可翻譯內容。 */
+    function ledeHTML(key, fb, n, name) {
+      let s = esc(T(key, fb));
+      if (n != null) s = s.replace('{n}', '<span class="ptl__lede-num">' + n + '</span>');
+      if (name != null) s = s.replace('{name}', '<span class="ptl__lede-name">' + esc(name) + '</span>');
+      return s;
+    }
+
+    function toggleBtn(key, open) {
+      return '<button class="ptl__toggle" type="button" data-ptl-fold="' + esc(key) + '" aria-expanded="' + (open ? 'true' : 'false') +
+        '" aria-label="' + esc(T(open ? 'pd-prog.fold.collapse' : 'pd-prog.fold.expand', 'Toggle')) + '">' +
+        '<i data-lucide="chevron-down" class="ztor-icon"></i></button>';
+    }
+
+    function updateHTML(u, release) {
+      const meta = [
+        T(u.audience, ''),
+        fmtDay(u.publishedAt),
+        u.notifiedKey ? T(u.notifiedKey, '') : (u.notified ? L(u.notified) : '')
+      ].filter(Boolean);
+      return '<div class="ptl__update' + (release ? ' ptl__update--release' : '') + '">' +
+        '<span class="ptl__update-icon"><i data-lucide="megaphone" class="ztor-icon"></i></span>' +
+        '<div><div class="ptl__update-title">' + esc(L(u.title)) + '</div>' +
+        (L(u.body) ? '<p class="ptl__update-body">' + esc(L(u.body)) + '</p>' : '') +
+        '<div class="ptl__update-meta">' + meta.map(m => '<span>' + esc(m) + '</span>').join('') + '</div></div></div>';
+    }
+
+    /* 完成作品節點（§2.2.10 的七列狀態表）。**不存自己的狀態**：整顆節點的顯示與動作
+       都是從送審件推出來的，所以改變送審狀態時，總覽、進度與作品三處一起變。
+       狀態與渲染拆開的理由：今天那一格在「里程碑全部完成」時要說出下一步是送審、
+       等結果還是挑上映日，那個判斷跟這顆節點是同一個——推導兩次遲早會分岔。
+       phase 值域：blocked／locked／ready／review／rejected／pickday／scheduled／live。 */
+    function completionState() {
+      const r = rec();
+      const rel = releaseOf(r);
+      const reached = window.ztorProjects && window.ztorProjects.releaseReached
+        ? window.ztorProjects.releaseReached(rel) : true;
+      let phase = 'locked', mod = 'todo', badge = '', metas = [], noteLabel = '', noteBody = '', acts = '';
+
+      if (!isFilm()) {
+        /* 非影片家族走不到作品上架流程（§2.2.9 的作品範圍）：這顆節點永遠停用，
+           而且必須說明原因，不留一顆點不動又沒有解釋的動作（§2.2.10 末段）。 */
+        phase = 'blocked';
+        noteLabel = T('pd-prog.work.blocked', '');
+      } else if (!r) {
+        if (proj.status === 'live') {
+          /* 已上線但原型沒有對應送審件（demo 資料只為部分項目建了送審件）。這時候
+             不能沿用「項目成立後才能上架作品」——旁邊的狀態徽章寫著已上線，同一頁
+             會自打嘴巴。改讀項目狀態當作已完成；正式資料一律有送審件。
+             記在 ASSUMPTIONS UIA-120。 */
+          phase = 'live';
+          mod = 'done';
+          badge = '<span class="badge badge--success">' + esc(T('projects.state.live', 'Live')) + '</span>';
+        } else if (canRelease()) {
+          phase = 'ready';
+          noteLabel = T('pd-prog.work.ready', '');
+          acts = '<button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-preset-kind="release">' + esc(T('pd-prog.work.send', 'Send the work for release')) + '</button>';
+        } else {
+          noteLabel = T('pd-prog.work.locked', '');
+        }
+      } else if (r.status === 'rejected') {
+        phase = 'rejected';
+        mod = 'alert';
+        badge = '<span class="badge ' + WR.tone(r.status) + '">' + esc(WR.label(r.status)) + '</span>';
+        metas = [[T('pd.review.decided', 'Decided'), r.decidedAt || '—']];
+        noteLabel = T('pd.review.reason', 'Why it came back');
+        noteBody = r.reason || '';
+        acts = '<a class="btn btn--primary btn--sm" href="' + workHref() + '">' + esc(T('pd.review.resubmit', 'Fix and send again')) + '</a>';
+      } else if (WR.isOpen(r.status)) {
+        phase = 'review';
+        mod = 'doing';
+        badge = '<span class="badge ' + WR.tone(r.status) + '">' + esc(WR.label(r.status)) + '</span>';
+        metas = [[T('pd.review.submitted', 'Last sent'), r.submittedAt || '—'], [T('pd.review.count', 'Times sent'), String(r.count || 1)]];
+        noteLabel = T('pd.review.waiting-body', '');
+      } else if (r.status === 'approved' && !rel) {
+        phase = 'pickday';
+        mod = 'doing';
+        badge = '<span class="badge ' + WR.tone(r.status) + '">' + esc(WR.label(r.status)) + '</span>';
+        noteLabel = T('pd-prog.work.pickday', '');
+        acts = '<a class="btn btn--primary btn--sm" href="' + workHref() + '">' + esc(T('pd.work.setdate', 'Set the release date')) + '</a>';
+      } else if (r.status === 'approved' && !reached) {
+        phase = 'scheduled';
+        mod = 'doing';
+        badge = '<span class="badge ' + WR.tone(r.status) + '">' + esc(WR.label(r.status)) + '</span>';
+        metas = [[T('pd.work.release', 'Release date'), rel]];
+        acts = '<a class="btn btn--outline btn--sm" href="' + workHref() + '">' + esc(T('pd.work.changedate', 'Change the date')) + '</a>' +
+               '<a class="btn btn--outline btn--sm" href="' + workHref() + '">' + esc(T('pd.work.edit', 'Edit work')) + '</a>';
+      } else {
+        phase = 'live';
+        mod = 'done';
+        badge = '<span class="badge ' + WR.tone(r.status) + '">' + esc(WR.label(r.status)) + '</span>';
+        metas = [[T('pd.work.release', 'Release date'), rel || '—']];
+        acts = '<a class="btn btn--outline btn--sm" href="' + workHref() + '">' + esc(T('pd.work.edit', 'Edit work')) + '</a>';
+      }
+      return { phase: phase, mod: mod, badge: badge, metas: metas, noteLabel: noteLabel, noteBody: noteBody, acts: acts };
+    }
+
+    /* 這顆節點**不進日期排序**，永遠釘在軸的最上方（§2.2.10；位置本身仍標
+       〔產品待確認〕，主規格 §8.25 第 5 項）。理由是它的日期是上映日、可能還沒定，
+       而它在語意上就是最後一步。日期欄留白——填「未定」會讓它看起來像排到了某一天。 */
+    function completionNode(updates) {
+      const s = completionState();
+      /* 上線之後，那則完成作品貼文掛在本節點底下——上線那一刻的三件事（作品上架、
+         貼文發出、項目轉已上線）在同一個畫面上看得見（§2.2.10 表末列）。 */
+      const kids = updates.filter(u => u.milestoneId === 'work');
+      return '<div class="ptl__node ptl__node--' + s.mod + ' ptl__node--system">' +
+        '<span class="ptl__date"></span>' +
+        '<span class="ptl__dot"><i data-lucide="' + (s.mod === 'done' ? 'check-circle' : (s.mod === 'alert' ? 'alert-circle' : (s.mod === 'doing' ? 'clock' : 'circle'))) + '" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body">' +
+          '<div class="ptl__head"><h4 class="ptl__name">' + esc(T('pd-prog.work.node', 'Finished work')) + '</h4>' +
+          '<span class="ptl__tags">' + s.badge + '</span></div>' +
+          (s.metas.length ? '<div class="ptl__meta">' + s.metas.map(m => '<span class="ptl__meta-item"><span>' + esc(m[0]) + '</span><span>' + esc(m[1]) + '</span></span>').join('') + '</div>' : '') +
+          (s.noteLabel ? '<div class="ptl__note"><span>' + esc(s.noteLabel) + '</span>' + (s.noteBody ? '<p class="ptl__note-body">' + esc(s.noteBody) + '</p>' : '') + '</div>' : '') +
+          (s.acts ? '<div class="ptl__acts">' + s.acts + '</div>' : '') +
+          deliverablesHTML() +
+          (kids.length ? '<div class="ptl__updates">' + kids.map(u => updateHTML(u, true)).join('') + '</div>' : '') +
+        '</div></div>';
+    }
+
+    /* 交付物清單掛在「完成作品」這一顆底下（2026-08-17 使用者反饋：作品進度應該放進里程碑中）。
+       原本是右欄一張獨立的卡，但它講的正是這一顆里程碑要交出去的東西——每一集、每一軌
+       就緒了沒。掛進來之後，「這顆還不能送審」與「因為第 2 集還在轉檔」在同一個地方看得到。
+       ⚠ 內容項目的 schema 屬另一模組、目前規格未定（§2.2.2 註記），這裡是示例資料。 */
+    function deliverablesHTML() {
+      const items = [
+        { n: 1, key: 'ep1', metaKey: 'ep1-meta', badge: 'badge--success', stKey: 'ready' },
+        { n: 2, key: 'ep2', metaKey: 'ep2-meta', badge: 'badge--warning', stKey: 'processing' }
+      ];
+      return '<div class="ptl__deliverables">' +
+        '<div class="ptl__deliverables-head">' +
+          '<span>' + esc(T('project-detail.items.title', 'Content items')) + '</span>' +
+          '<span class="badge badge--info">' + esc(T('project-detail.items.kind', 'Episodes')) + '</span>' +
+        '</div>' +
+        '<div class="data-list">' +
+        items.map(it =>
+          '<div class="data-list__row">' +
+            '<div class="data-list__row-main">' +
+              '<div class="data-list__icon">' + it.n + '</div>' +
+              '<div class="data-list__body">' +
+                '<div class="data-list__title">' + esc(T('project-detail.items.' + it.key, '')) + '</div>' +
+                '<div class="data-list__meta">' + esc(T('project-detail.items.' + it.metaKey, '')) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<span class="badge ' + it.badge + '">' + esc(T('project-detail.items.' + it.stKey, '')) + '</span>' +
+          '</div>').join('') +
+        '</div>' +
+        '<p class="ptl__deliverables-note">' + esc(T('project-detail.items.note', '')) + '</p>' +
+      '</div>';
+    }
+
+    /* 一顆里程碑。落位的日期：已完成的用完成日（提前／延後完成都落在真的做完那一天，
+       原定日期以附註留著）；其餘用預計日期；沒有預計日期的日期欄留白。
+       上移／下移兩顆鈕已於 2026-08-17 撤除（D194）——順序由日期決定，就地編輯與刪除
+       保留（§2.2.10「在本區可做的事」）。 */
+    function msNode(m, opt) {
+      opt = opt || {};
+      const T0 = PROG.today();
+      const frozen = proj.status === 'cancelled';
+      const at = m.status === 'done' ? (m.completedAt || m.date) : m.date;
+      const kids = PROG.updates(proj).filter(u => u.milestoneId === m.id);
+      const metas = [];
+      if (m.status === 'done' && m.date && m.completedAt && PROG.diffDays(m.completedAt, m.date) !== 0) {
+        const early = PROG.diffDays(m.date, m.completedAt);
+        metas.push([T(early > 0 ? 'pd-prog.ms.early' : 'pd-prog.ms.late', 'Originally'), fmtDay(m.date)]);
+      }
+      const tags =
+        '<span class="badge ' + (m.status === 'done' ? 'badge--success' : (m.status === 'doing' ? 'badge--info' : 'badge--neutral')) + '">' + esc(L(PROG.STATUS[m.status])) + '</span>' +
+        (opt.overdue ? '<span class="badge badge--error">' + esc(T('pd-prog.ms.overdue', '{n} days overdue').replace('{n}', PROG.diffDays(T0, m.date))) + '</span>' : '') +
+        (m.pub ? '<span class="badge badge--neutral">' + esc(T('pd-prog.ms.public', 'Public')) + '</span>' : '');
+      /* 凍結（已取消）時里程碑不可新增、不可改狀態，既有紀錄保留可讀（§2.2.4）。 */
+      const acts = frozen ? '' :
+        '<button class="btn btn--icon btn--sm" type="button" data-ms-edit="' + m.id + '" aria-label="' + esc(T('pd-prog.ms.edit', 'Edit')) + '"><i data-lucide="pencil" class="ztor-icon"></i></button>' +
+        '<button class="btn btn--icon btn--sm" type="button" data-ms-del="' + m.id + '" aria-label="' + esc(T('pd-prog.ms.delete', 'Delete')) + '"><i data-lucide="trash-2" class="ztor-icon"></i></button>';
+      /* 里程碑的說明不上軸（2026-08-17 使用者裁決「說明移除」）：軸是掃視用的，
+         一顆一顆讀敘述會把它變成一篇文章。說明仍存在資料裡、在編輯彈窗看得到與改得到，
+         只是不在軸上展開。系統節點自己的說明（完成作品的審核狀態、退件理由）不受影響。 */
+      const fold =
+        (metas.length ? '<div class="ptl__meta">' + metas.map(x => '<span class="ptl__meta-item"><span>' + esc(x[0]) + '</span><span>' + esc(x[1]) + '</span></span>').join('') + '</div>' : '') +
+        (acts ? '<div class="ptl__acts">' + acts + '</div>' : '') +
+        (kids.length ? '<div class="ptl__updates">' + kids.map(u => updateHTML(u)).join('') + '</div>' : '');
+      const open = ptlFold[m.id] !== false;   /* 里程碑預設展開 */
+      return '<div class="ptl__node ptl__node--' + (opt.overdue ? 'alert' : m.status) + (fold && !open ? ' ptl__node--collapsed' : '') + '">' +
+        '<span class="ptl__date">' + esc(fmtDay(at)) + '</span>' +
+        '<span class="ptl__dot"><i data-lucide="' + (opt.overdue ? 'alert-circle' : MS_ICON[m.status]) + '" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body">' +
+          '<div class="ptl__head"><h4 class="ptl__name">' + esc(L(m.name)) + '</h4><span class="ptl__tags">' + tags + '</span>' +
+          (fold ? toggleBtn(m.id, open) : '') + '</div>' +
+          (fold ? '<div class="ptl__fold">' + fold + '</div>' : '') +
+        '</div></div>';
+    }
+
+    /* 過去某一天的更新列：一天一列、寫明那天有幾則，展開才看內容（§2.2.10「過去的
+       日子怎麼收合」）。掛在里程碑底下的更新不進這裡——同一則被讀到兩次。 */
+    function dayNode(key, list) {
+      const open = !!ptlFold[key];           /* 過去的日子預設收合 */
+      return '<div class="ptl__node ptl__node--day' + (open ? '' : ' ptl__node--collapsed') + '">' +
+        '<span class="ptl__date">' + esc(fmtDay(list[0].publishedAt)) + '</span>' +
+        '<span class="ptl__dot"><i data-lucide="megaphone" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body">' +
+          '<div class="ptl__head"><h4 class="ptl__name">' +
+          esc(T('pd-prog.day.count', '{n} updates').replace('{n}', list.length)) + '</h4>' +
+          toggleBtn(key, open) + '</div>' +
+          '<div class="ptl__fold"><div class="ptl__updates">' + list.map(u => updateHTML(u)).join('') + '</div></div>' +
+        '</div></div>';
+    }
+
+    /* 今天那一格（§2.2.10「今天這一格」＋狀態變體表）。這是整條軸上唯一會隨情境換
+       說法的位置，其餘節點只陳述事實。判定順序＝由最具體到最一般，與規格表同序。 */
+    function todayNode(ctx) {
+      const T0 = PROG.today();
+      let lede = '', note = '', alert = false;
+      const nameOf = m => L(m.name);
+
+      if (ctx.frozen) {
+        /* 已取消：發文入口保留、發文類型鎖在一般更新（§2.2.4、§2.2.10 末列）。 */
+        lede = ledeHTML('pd-prog.today.cancelled', 'The project has ended.');
+      } else if (ctx.isStartDay) {
+        lede = ledeHTML('pd-prog.today.start', 'The delivery story starts here.');
+      } else if (ctx.doneToday) {
+        lede = ledeHTML('pd-prog.today.done', 'Done today: {name}', null, nameOf(ctx.doneToday));
+      } else if (ctx.dueToday) {
+        lede = ledeHTML('pd-prog.today.msday', 'Due today: {name}', null, nameOf(ctx.dueToday));
+      } else if (ctx.overdue.length) {
+        alert = true;
+        const worst = ctx.overdue[ctx.overdue.length - 1];   /* 逾期最久的那一顆 */
+        lede = ledeHTML('pd-prog.today.overdue', '{name} is {n} days overdue',
+          PROG.diffDays(T0, worst.date), nameOf(worst));
+      } else if (ctx.nextGoal) {
+        lede = ledeHTML('pd-prog.today.countdown', '{n} days to {name}',
+          PROG.diffDays(ctx.nextGoal.date, T0), nameOf(ctx.nextGoal));
+      } else if (!ctx.total) {
+        lede = ledeHTML('pd-prog.today.noms', 'No milestones yet.');
+      } else if (ctx.pending.length) {
+        /* 剩下的未完成里程碑全都沒有預計日期：沒有可倒數的對象。 */
+        lede = ledeHTML('pd-prog.today.nodates', 'None of the milestones have a date yet.');
+      } else {
+        /* 里程碑全部完成：下一步由完成作品節點當下的狀態決定，不另推導一次。 */
+        const k = { ready: 'pd-prog.today.alldone-send', rejected: 'pd-prog.today.alldone-fix',
+          review: 'pd-prog.today.alldone-review', pickday: 'pd-prog.today.alldone-date',
+          scheduled: 'pd-prog.today.alldone-wait', live: 'pd-prog.today.keeppost',
+          blocked: 'pd-prog.today.alldone-blocked' }[ctx.work.phase] || 'pd-prog.today.alldone-send';
+        lede = ledeHTML(k, 'Every milestone is done.');
+      }
+
+      /* 被今天承載的那一顆里程碑（今天到期、或今天標成完成）把它的說明、動作與掛在
+         它底下的更新一起帶過來——它已經不在未來段／過去段出現，內容不能跟著消失。 */
+      const carry = ctx.doneToday || ctx.dueToday;
+      let carried = '';
+      if (carry) {
+        const kids = PROG.updates(proj).filter(u => u.milestoneId === carry.id);
+        if (L(carry.desc)) note = L(carry.desc);
+        carried =
+          (ctx.frozen ? '' : '<div class="ptl__acts">' +
+            '<button class="btn btn--icon btn--sm" type="button" data-ms-edit="' + carry.id + '" aria-label="' + esc(T('pd-prog.ms.edit', 'Edit')) + '"><i data-lucide="pencil" class="ztor-icon"></i></button>' +
+            '<button class="btn btn--icon btn--sm" type="button" data-ms-del="' + carry.id + '" aria-label="' + esc(T('pd-prog.ms.delete', 'Delete')) + '"><i data-lucide="trash-2" class="ztor-icon"></i></button>' +
+            '</div>') +
+          (kids.length ? '<div class="ptl__updates">' + kids.map(u => updateHTML(u)).join('') + '</div>' : '');
+      }
+
+      return '<div class="ptl__node ptl__node--today' + (alert ? ' ptl__node--alert' : '') + '">' +
+        '<span class="ptl__date">' + esc(T('pd-prog.today', 'Today')) + '</span>' +
+        '<span class="ptl__dot"><i data-lucide="circle" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body">' +
+          /* 情境句與發文框包成同一層（2026-08-17 使用者反饋）：兩者講的是同一件事——
+             今天走到哪、以及你現在要說什麼。分成兩塊會讀成軸上兩個各自獨立的東西。 */
+          '<div class="ptl__today">' +
+            '<p class="ptl__lede">' + lede + '</p>' +
+            (note ? '<div class="ptl__note"><p class="ptl__note-body">' + esc(note) + '</p></div>' : '') +
+            carried +
+            '<div data-ptl-composer-slot></div>' +
+          '</div>' +
+          (ctx.todayPosts.length ? '<div class="ptl__updates">' + ctx.todayPosts.map(u => updateHTML(u)).join('') + '</div>' : '') +
+        '</div></div>';
+    }
+
+    function renderTimeline() {
+      const host = document.getElementById('pd-ptl');
+      if (!host || !proj || !PROG || isDirect()) return;
+      const T0 = PROG.today();
+      const ms = PROG.milestones(proj);
+      const ups = PROG.updates(proj);
+      /* 已取消的項目：里程碑凍結、不可新增不可改狀態，既有紀錄保留可讀（§2.2.4）。 */
+      const frozen = proj.status === 'cancelled';
+      const createdAt = PROG.createdAt(proj);
+      const isStartDay = PROG.sameDay(createdAt, T0);
+
+      /* ── 里程碑分流。單一排序軸是真實日期（D194）───────────────────────── */
+      const done = ms.filter(m => m.status === 'done');
+      const pending = ms.filter(m => m.status !== 'done');
+      /* 逾期：預計日期早於今天且尚未完成。由近而遠排——這樣它們接在今天正下方時，
+         整條軸的日期仍然單調遞減。 */
+      const overdue = pending.filter(m => m.date && PROG.diffDays(m.date, T0) < 0)
+        .sort((a, b) => b.date - a.date);
+      /* 今天就是里程碑日：改由今天那一格承載，不在未來段重複出現（§2.2.10 狀態變體）。 */
+      const dueToday = pending.filter(m => m.date && PROG.diffDays(m.date, T0) === 0)[0] || null;
+      /* 未來段：遠的在上、近的在下。沒有預計日期的排在最上方（完成作品節點之下），
+         彼此依建立順序，不參與倒數也不會被判逾期。 */
+      const future = pending.filter(m => m.date && PROG.diffDays(m.date, T0) > 0)
+        .sort((a, b) => b.date - a.date);
+      const undated = pending.filter(m => !m.date);
+      const doneToday = done.filter(m => m.completedAt && PROG.sameDay(m.completedAt, T0))[0] || null;
+
+      /* ── 更新分流。掛里程碑的跟著那顆節點走，其餘依發布時間排進同一條軸
+         （D194 撤除軸尾的公告區）。 */
+      const loose = ups.filter(u => !u.milestoneId);
+      const todayPosts = loose.filter(u => u.publishedAt && PROG.sameDay(u.publishedAt, T0))
+        .sort((a, b) => b.publishedAt - a.publishedAt);
+      const byDay = {};
+      loose.filter(u => u.publishedAt && PROG.diffDays(u.publishedAt, T0) < 0).forEach(u => {
+        const k = PROG.dayKey(u.publishedAt);
+        (byDay[k] = byDay[k] || []).push(u);
+      });
+
+      /* ── 過去段：已完成的里程碑（落在完成日）＋ 按天收合的更新列。
+         同一天既有里程碑又有一般更新時，里程碑列在上、當天的收合列在下。 */
+      const past = [];
+      done.filter(m => m !== doneToday).forEach(m => past.push({ at: m.completedAt || m.date || createdAt, kind: 'ms', m: m }));
+      Object.keys(byDay).forEach(k => {
+        const list = byDay[k].sort((a, b) => b.publishedAt - a.publishedAt);
+        past.push({ at: list[0].publishedAt, kind: 'day', key: k, list: list });
+      });
+      past.sort((a, b) => {
+        const ka = PROG.dayKey(a.at), kb = PROG.dayKey(b.at);
+        if (ka !== kb) return ka < kb ? 1 : -1;
+        if (a.kind !== b.kind) return a.kind === 'ms' ? -1 : 1;
+        return b.at - a.at;
+      });
+
+      /* ── 軸底：項目建立那一刻。永遠是最後一列、不可刪除不可改名。
+         建立當天例外——今天就是建立日時不另立一列，由今天那一格承擔起點的意義。 */
+      const startHTML = isStartDay ? '' :
+        '<div class="ptl__node ptl__node--start">' +
+        '<span class="ptl__date">' + esc(fmtDay(createdAt)) + '</span>' +
+        '<span class="ptl__dot"><i data-lucide="flag" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body"><div class="ptl__head"><h4 class="ptl__name">' +
+        esc(T('pd-prog.start', 'Project created')) + '</h4></div></div></div>';
+
+      /* 發文框是活的 DOM（使用者打到一半的字、zselect 的接線都在上面），不能進
+         innerHTML 的字串。先把它從舊的軸上摘下來，重繪之後再掛回今天那一格。 */
+      const composer = document.getElementById('pd-composer');
+      if (composer && composer.parentNode) composer.parentNode.removeChild(composer);
+
+      host.innerHTML =
+        completionNode(ups) +
+        undated.map(m => msNode(m)).join('') +
+        future.map(m => msNode(m)).join('') +
+        todayNode({
+          frozen: frozen, isStartDay: isStartDay, doneToday: doneToday, dueToday: dueToday,
+          overdue: overdue, nextGoal: PROG.nextGoal(proj), pending: pending, total: ms.length,
+          work: completionState(), todayPosts: todayPosts
+        }) +
+        overdue.map(m => msNode(m, { overdue: true })).join('') +
+        past.map(r => r.kind === 'ms' ? msNode(r.m) : dayNode(r.key, r.list)).join('') +
+        startHTML;
+
+      const slot = host.querySelector('[data-ptl-composer-slot]');
+      if (composer && slot) {
+        slot.appendChild(composer);
+        composer.hidden = false;
+        syncComposer();
+      }
+      icons(host);
+
+      /* 交付摘要（§2.2.10 組成第一項）。 */
+      const sum = PROG.summary(proj);
+      /* 摘要是 bento 兩格（2026-08-17）：一格一個數字，版面自己把兩者分開。 */
+      const kD = document.querySelector('[data-prog-kpi="delivery"]');
+      if (kD) kD.innerHTML =
+        '<div class="kpi__label">' + esc(T('project-detail.tl.delivery', 'Expected delivery')) + '</div>' +
+        '<div class="kpi__value">' + esc(T('project-detail.tl.delivery-val', 'Oct 2026')) + '</div>';
+      const kM = document.querySelector('[data-prog-kpi="milestones"]');
+      if (kM) kM.innerHTML =
+        '<div class="kpi__label">' + esc(T('pd-prog.ms.count', 'Milestones done')) + '</div>' +
+        '<div class="kpi__value">' + sum.done + '<span class="stat__of"> / ' + sum.total + '</span></div>';
+      /* 凍結的項目不給「＋ 里程碑」（§2.2.4：里程碑不可新增、不可改狀態）。 */
+      document.querySelectorAll('[data-ms-add]').forEach(b => { b.hidden = frozen; });
+    }
+
+    /* ══ 3 · 彈窗 ═════════════════════════════════════════════════════════ */
+
+    const RELEASE_KEY = 'ztor.workRelease';
     const kindSel = document.getElementById('pd-f-ukind');
     const kindNote = document.getElementById('pd-ukind-note');
     const kindSubmit = document.querySelector('[data-pd-save="update"]');
+    const msSel = document.getElementById('pd-f-umilestone');
     const updateKind = () => (kindSel && kindSel.value) || 'general';
 
     function audienceKey() {
@@ -1826,40 +2704,51 @@ window.ztorPdLookup = (function () {
       const opt = sel && sel.options[sel.selectedIndex];
       return opt ? opt.dataset.i18n : 'pd-edit.update.aud-everyone';
     }
-    /* 更新清單插一列。彈窗送出與 wizard 回跳共用這一支，兩條路徑的列長得一樣。 */
-    function postUpdate(title, audKey) {
-      const list = document.getElementById('pd-upd-list');
-      if (!list) return;
-      const el = tableRow([
-        title,
-        { i18n: audKey, fallback: 'Everyone' },
-        { i18n: 'project-detail.updates.just-now', fallback: 'Just now' },
-        { i18n: 'project-detail.updates.notification-sent', fallback: 'Notified' }
-      ]);
-      list.insertBefore(el, list.firstChild);
+
+    /* 掛載欄位（§2.2.10）：選項＝本項目的里程碑，外加「不掛（一般公告）」。
+       預設值＝目前狀態為進行中的那一顆；沒有進行中的就預設不掛。
+       發文類型選「完成作品發文」時鎖定為完成作品節點且不可改——那則貼文的意思
+       就是最後一顆節點完成了。 */
+    let msSyncing = false;
+    /* 下拉的房內樣式（js/zselect.js）用一顆按鈕代替原生 select，按鈕上的字靠 change 事件
+       與 MutationObserver 同步。程式改 value 不會自己發 change，所以這裡補一個；
+       用 msSyncing 擋掉「程式自己的 change 被當成使用者改過」。 */
+    function syncMilestoneField() {
+      if (!msSel || !PROG || !proj) return;
+      const release = updateKind() === 'release';
+      const ms = PROG.milestones(proj);
+      const opts = ms.map(m => '<option value="' + m.id + '">' + esc(L(m.name)) + '</option>').join('') +
+        '<option value="">' + esc(T('pd-edit.update.ms-none', 'Do not attach (announcement)')) + '</option>';
+      const workOpt = '<option value="work">' + esc(T('pd-prog.work.node', 'Finished work')) + '</option>';
+      const keep = msSel.dataset.touched === '1' ? msSel.value : null;
+      msSel.innerHTML = release ? workOpt : opts;
+      const want = release ? 'work' : (keep != null ? keep : PROG.defaultMilestoneId(proj));
+      msSyncing = true;
+      msSel.value = want == null ? '' : want;
+      msSel.disabled = release;
+      msSel.dispatchEvent(new Event('change', { bubbles: true }));
+      msSyncing = false;
     }
+    if (msSel) msSel.addEventListener('change', () => { if (!msSyncing) msSel.dataset.touched = '1'; });
 
     /* 說明行與送出鈕文案跟著類型走。i18n key 寫進 dataset，切語言時 i18n.js 會重譯。 */
     function syncKind() {
       if (!kindSel) return;
       const releaseOpt = kindSel.querySelector('option[value="release"]');
-      /* 已經送出、還沒有結果的那一件，不需要也不該再送一次——重送的入口在審核狀態
-         那一塊、而且只在被退件時出現。已通過的則是作品已上線，這件事做完了。 */
-      const rec = (window.ztorWorkReview && proj) ? window.ztorWorkReview.forProject(proj.id) : null;
-      const inflight = !!rec && (window.ztorWorkReview.isOpen(rec.status) || rec.status === 'approved');
-      /* 直接發佈的項目整個拿掉這個選項（2026-08-10 整併，規劃書 §3.3／§5 第 9 題）：
-         「完成作品」的產品意義是宣告先前承諾的作品已完成，而直接發佈沒有承諾這件事——
-         作品在建立當下就交付了，上架也在建立流程裡走完。停用而留著只會讓人一直去點它問
-         為什麼；這個類型對這種項目自始不存在，所以移除而不是灰掉。 */
+      const r = rec();
+      const inflight = !!r && (WR.isOpen(r.status) || r.status === 'approved');
+      /* 直接發佈整個「項目更新」區段已不存在（§2.0，2026-08-17 起），這個彈窗對它
+         不會被打開；保險起見仍把選項移掉。 */
       if (releaseOpt && isDirect()) releaseOpt.remove();
       else if (releaseOpt) releaseOpt.disabled = !canRelease() || inflight;
       if (!kindSel.querySelector('option[value="release"]:not([disabled])') && kindSel.value === 'release') kindSel.value = 'general';
       const kind = updateKind();
       let noteKey = null, submitKey = 'pd-edit.update.submit', submitFb = 'Publish update';
-      /* 直接發佈的項目沒有這個選項，也就沒有「為什麼不能選」要解釋——一行說明掛在一個
-         不存在的選項上，只會讓人去找那個選項在哪。 */
       if (isDirect()) noteKey = null;
-      else if (inflight) noteKey = rec.status === 'approved' ? 'pd.review.kind-live' : 'pd.review.kind-inflight';
+      else if (inflight) {
+        if (r.status !== 'approved') noteKey = 'pd.review.kind-inflight';
+        else noteKey = (WR.projectStatus(proj.id) === 'scheduled') ? 'pd.review.kind-scheduled' : 'pd.review.kind-live';
+      }
       else if (!canRelease()) noteKey = 'pd-edit.update.kind-locked';
       if (kind === 'release') {
         noteKey = isFilm() ? 'pd-edit.update.kind-film-note' : 'pd-edit.update.kind-other-note';
@@ -1872,152 +2761,226 @@ window.ztorPdLookup = (function () {
         else kindNote.removeAttribute('data-i18n');
       }
       if (kindSubmit) { kindSubmit.dataset.i18n = submitKey; kindSubmit.textContent = T(submitKey, submitFb); }
+      syncMilestoneField();
     }
     if (kindSel) kindSel.addEventListener('change', syncKind);
-    document.addEventListener('i18n:applied', syncKind);
-    syncKind();
 
-    /* ── 作品審核狀態（規格 §2.2.9 本頁對審核狀態的呈現）────────────────────
-       這一塊回答創作者三個問題：這件送審走到哪了、被退是為什麼、要怎麼再送一次。
-       狀態字彙一律向 work-review-store 要，本頁不自己寫一套（規格：字詞引用主規格
-       §7.2 作品審核列）。它與頁首那顆項目狀態徽章是兩套狀態，各自呈現、不互相代用。 */
-    const reviewBox = document.getElementById('pd-review');
-    function renderReview() {
-      if (!reviewBox || !window.ztorWorkReview || !proj) return;
-      const rec = window.ztorWorkReview.forProject(proj.id);
-      /* 直接發佈沒有「完成作品發文」這則貼文（2026-08-10 整併，D182 第 9 題），這一塊
-         整段都在講那則貼文與作品一起等審核結果，對它不成立。這種項目的作品審核狀態
-         由作品區段（§2.2.11）承載，同一份資料、只是換一個講得通的地方講。 */
-      const show = !!rec && !isDirect();
-      reviewBox.hidden = !show;
-      if (!show) return;
-      const S = window.ztorWorkReview;
-      const badge = document.getElementById('pd-review-badge');
-      badge.textContent = S.label(rec.status);
-      badge.className = 'badge ' + S.tone(rec.status);
-      reviewBox.classList.toggle('review-status--rejected', rec.status === 'rejected');
-      reviewBox.classList.toggle('review-status--approved', rec.status === 'approved');
-      document.getElementById('pd-review-at').textContent = rec.submittedAt || '—';
-      document.getElementById('pd-review-count').textContent = String(rec.count || 1);
-      const decidedWrap = document.getElementById('pd-review-decided-wrap');
-      decidedWrap.hidden = !rec.decidedAt;
-      if (rec.decidedAt) document.getElementById('pd-review-decided').textContent = rec.decidedAt;
+    /* ── 內嵌發文框（§2.2.10「今天這一格」）─────────────────────────────────
+       發文入口長在時間軸的今天那一格上，不是區段右上角的一顆按鈕。它與區段層級的
+       「發布更新」彈窗寫的是同一件事、同一組欄位、同一份資料——所以送出走同一支
+       submitUpdate()，兩條路徑分開寫遲早會分岔。兩個入口是否長期並存〔產品待確認〕，
+       見主規格 §8.25 第 4 項。 */
+    const cAud = document.getElementById('pd-c-aud');
+    const cKind = document.getElementById('pd-c-kind');
+    const cMs = document.getElementById('pd-c-ms');
+    const cTitle = document.getElementById('pd-c-title');
+    const cBody = document.getElementById('pd-c-body');
+    let cMsSyncing = false;
+    if (cMs) cMs.addEventListener('change', () => { if (!cMsSyncing) cMs.dataset.touched = '1'; });
+    if (cKind) cKind.addEventListener('change', () => syncComposer());
 
-      /* 說明區三種內容：等待中講「貼文也還沒發」、退件講理由、通過講已發生什麼。 */
-      const note = document.getElementById('pd-review-note');
-      const noteLabel = document.getElementById('pd-review-note-label');
-      const noteBody = document.getElementById('pd-review-note-body');
-      const setNote = (labelKey, bodyKey, bodyText) => {
-        note.hidden = false;
-        noteLabel.dataset.i18n = labelKey;
-        noteLabel.textContent = T(labelKey, '');
-        if (bodyText != null) { noteBody.removeAttribute('data-i18n'); noteBody.textContent = bodyText; }
-        else { noteBody.dataset.i18n = bodyKey; noteBody.textContent = T(bodyKey, ''); }
-      };
-      if (rec.status === 'rejected') setNote('pd.review.reason', null, rec.reason || '');
-      else if (rec.status === 'approved') setNote('pd.review.done', 'pd.review.done-body');
-      else if (S.isOpen(rec.status)) setNote('pd.review.waiting', 'pd.review.waiting-body');
-      else { note.hidden = true; noteLabel.removeAttribute('data-i18n'); noteBody.removeAttribute('data-i18n'); }
+    function syncComposer() {
+      if (!cKind || !cMs || !proj || !PROG) return;
+      const author = document.getElementById('pd-c-author');
+      if (author && window.ztorProjects) author.textContent = window.ztorProjects.owner();
+      /* 已取消：發文入口保留，發文類型鎖定在一般更新（§2.2.4 凍結範圍）。 */
+      const frozen = proj.status === 'cancelled';
+      const r = rec();
+      const inflight = !!r && (WR.isOpen(r.status) || r.status === 'approved');
+      const relOpt = cKind.querySelector('option[value="release"]');
+      if (relOpt) relOpt.disabled = frozen || !canRelease() || inflight;
+      if (relOpt && relOpt.disabled && cKind.value === 'release') cKind.value = 'general';
+      cKind.disabled = frozen;
+      const release = cKind.value === 'release';
 
-      /* 重送入口只在被退件時出現——通過與等待中都沒有「再送一次」這件事可做。 */
-      const actions = document.getElementById('pd-review-actions');
-      actions.hidden = rec.status !== 'rejected';
-      document.getElementById('pd-review-resubmit').setAttribute('href', 'publish-work.html?project=' + encodeURIComponent(proj.id));
+      /* 掛載欄位：選項＝本項目的里程碑外加「不掛」；預設值＝狀態為進行中的那一顆，
+         沒有進行中的就預設「不掛」。完成作品發文自動鎖定在完成作品節點且不可改。 */
+      const keep = cMs.dataset.touched === '1' ? cMs.value : null;
+      cMs.innerHTML = release
+        ? '<option value="work">' + esc(T('pd-prog.work.node', 'Finished work')) + '</option>'
+        : PROG.milestones(proj).map(m => '<option value="' + m.id + '">' + esc(L(m.name)) + '</option>').join('') +
+          '<option value="">' + esc(T('pd-edit.update.ms-none', 'Do not attach')) + '</option>';
+      const want = release ? 'work' : (keep != null ? keep : PROG.defaultMilestoneId(proj));
+      cMsSyncing = true;
+      cMs.value = want == null ? '' : want;
+      cMs.disabled = release || frozen;
+      cMs.dispatchEvent(new Event('change', { bubbles: true }));
+      cMsSyncing = false;
 
-      if (rec.status === 'approved') ensureReleaseRow(rec);
+      const submit = document.getElementById('pd-c-submit');
+      if (submit) {
+        const k = release ? (isFilm() ? 'pd-edit.update.submit-next' : 'pd-edit.update.submit-live') : 'pd-edit.update.submit';
+        submit.dataset.i18n = k;
+        submit.textContent = T(k, 'Publish update');
+      }
     }
 
-    /* ── 作品區段（規格 §2.2.11）───────────────────────────────────────────
-       這一區回答的是「作品」的三件事：是哪一件、走到哪一步、要改從哪裡進去；
-       §2.2.9 那一塊回答的是「那則完成作品貼文」。兩邊讀同一筆 store 紀錄。
-       出現條件＝影片家族 ＋ 這個項目真的有一件送審或已上架的作品；沒有作品時
-       整個分頁與面板都不長出來，而不是長出來再給一張空卡。 */
-    function renderWork() {
-      const rec = window.ztorWorkReview && proj ? window.ztorWorkReview.forProject(proj.id) : null;
-      const on = !!rec && isFilm();
-      document.querySelectorAll('[data-work-tab],[data-work-panel]').forEach(el => { el.hidden = !on; });
-      if (!on) return;
-      const S = window.ztorWorkReview;
-      const zh = document.documentElement.lang === 'zh-Hant';
-      const cover = document.getElementById('pd-work-cover');
-      if (cover) cover.src = rec.cover || proj.poster || proj.cover || '';
-      const title = rec.title || {};
-      document.getElementById('pd-work-name').textContent =
-        (zh ? (title.zh || title.en) : (title.en || title.zh)) || proj.name;
-      const badge = document.getElementById('pd-work-badge');
-      badge.textContent = S.label(rec.status);
-      badge.className = 'badge ' + S.tone(rec.status);
-      /* 上映日期＝上架流程 F10，也就是項目的排定上線日（D180：同一個日期、同一份資料）。 */
-      document.getElementById('pd-work-release').textContent = (rec.work && rec.work.release) || '—';
-      document.getElementById('pd-work-at').textContent = rec.submittedAt || '—';
-      document.getElementById('pd-work-count').textContent = String(rec.count || 1);
-      const editedWrap = document.getElementById('pd-work-edited-wrap');
-      editedWrap.hidden = !rec.editedAt;
-      if (rec.editedAt) document.getElementById('pd-work-edited').textContent = rec.editedAt;
+    /* 收合的發文框：點那一行才展開，展開後焦點落在標題欄（不然使用者得再點一次）。
+       只開不關——打到一半的字如果因為點到別處就收掉，等於白打（2026-08-17 使用者反饋）。 */
+    document.addEventListener('click', e => {
+      if (!e.target.closest('[data-ptl-composer-open]')) return;
+      const c = document.getElementById('pd-composer');
+      if (!c) return;
+      c.classList.add('is-open');
+      const t = document.getElementById('pd-c-title');
+      if (t) t.focus();
+    });
 
-      /* 退件理由只在被退件時出現（規格 §2.2.11）；其餘狀態沒有理由可讀。 */
-      const rejected = rec.status === 'rejected';
-      const note = document.getElementById('pd-work-note');
-      note.hidden = !rejected;
-      if (rejected) document.getElementById('pd-work-reason').textContent = rec.reason || '';
-      const box = note.closest('.review-status');
-      box.classList.toggle('review-status--rejected', rejected);
+    /* 附件入口：原型不做真的上傳（ASSUMPTIONS UIA-118），按下只說明一句。 */
+    document.addEventListener('click', e => {
+      const a = e.target.closest('[data-ptl-attach]');
+      if (!a) return;
+      if (window.ztorToast && window.ztorToast.show) window.ztorToast.show(T('pd-c.attach-note', 'Uploads are not wired up in this prototype.'));
+    });
 
-      /* 入口只有一個：進去改。被退件時改完一定會重送，所以按鈕就直接說它會重送。 */
-      const edit = document.getElementById('pd-work-edit');
-      edit.setAttribute('href', 'publish-work.html?project=' + encodeURIComponent(proj.id) + '&mode=edit');
-      const label = document.getElementById('pd-work-edit-label');
-      const k = rejected ? 'pd.review.resubmit' : 'pd.work.edit';
-      label.dataset.i18n = k;
-      label.textContent = T(k, rejected ? 'Fix and send again' : 'Edit work');
-      if (window.ztorIcons) window.ztorIcons.applyIcons(edit);
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#pd-c-submit')) return;
+      if (!cTitle || !cTitle.value.trim()) return;
+      submitUpdate({
+        title: cTitle.value.trim(),
+        body: cBody ? cBody.value.trim() : '',
+        audience: selKey(cAud, 'pd-edit.update.aud-everyone'),
+        milestoneId: cMs ? cMs.value : '',
+        kind: cKind && cKind.value === 'release' ? 'release' : 'general'
+      });
+      cTitle.value = '';
+      if (cBody) cBody.value = '';
+      if (cMs) delete cMs.dataset.touched;
+      /* 發完收回收合態：那則更新已經長在軸上了，展開的空表單留著只是佔位。 */
+      const c = document.getElementById('pd-composer');
+      if (c) c.classList.remove('is-open');
+    });
+
+    /* 受眾的值是 i18n key（存 key 而不是譯好的字，切語言時整串才會跟著換）。 */
+    function selKey(sel, fb) {
+      const opt = sel && sel.options[sel.selectedIndex];
+      return (opt && opt.dataset.i18n) || fb;
     }
 
-    /* 同步跑一次，不等 setTimeout：`#work` 深連結（從編輯流程存檔後回來就是）在同步階段
-       就會被分頁腳本 activate，而稍後那支渲染會把「停在隱藏分頁」的人踢回總覽——分頁得
-       在那之前就長出來。 */
-    renderWork();
+    /* 從「送作品上架」那類按鈕開彈窗時，先把類型預選好——彈窗開了還要自己再選一次
+       等於把剛剛按的那顆按鈕的意思丟掉。 */
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[data-preset-kind]');
+      if (!t || !kindSel) return;
+      const want = t.getAttribute('data-preset-kind');
+      const opt = kindSel.querySelector('option[value="' + want + '"]:not([disabled])');
+      if (opt) { kindSel.value = want; syncKind(); }
+    });
 
-    /* 已通過的那則完成作品貼文要一直留在更新清單上（它真的發出去了）。
-       這頁的更新清單是靜態 markup、重整就回到原樣，所以每次載入都依 store 補一列，
-       並用標記避免補第二次。 */
-    function ensureReleaseRow(rec) {
-      const list = document.getElementById('pd-upd-list');
-      if (!list || list.querySelector('[data-pd-release-row]')) return;
-      const post = rec.post || {};
-      const el = tableRow([
-        post.title || T('pd-edit.update.kind-release', 'Work release'),
-        { i18n: post.audience || 'pd-edit.update.aud-everyone', fallback: 'Everyone' },
-        rec.decidedAt || T('project-detail.updates.just-now', 'Just now'),
-        { i18n: 'project-detail.updates.notification-sent', fallback: 'Notified' }
-      ]);
-      el.setAttribute('data-pd-release-row', '');
-      list.insertBefore(el, list.firstChild);
+    /* ── 里程碑彈窗：新增與編輯共用一份（§2.2.10「在本區可做的事」）─────────── */
+    const msForm = { id: '' };
+    function openMilestone(id) {
+      msForm.id = id || '';
+      const m = id ? PROG.milestones(proj).filter(x => x.id === id)[0] : null;
+      document.getElementById('pd-f-mname').value = m ? L(m.name) : '';
+      document.getElementById('pd-f-mdesc').value = m ? L(m.desc) : '';
+      /* 預計日期是真實日期，欄位是 <input type="date">，值域是 YYYY-MM-DD（§2.2.10
+         「以日期選擇取得，不接受自由文字」）。留白＝尚未排定，不阻擋建立。 */
+      document.getElementById('pd-f-mdate').value = (m && m.date) ? isoDay(m.date) : '';
+      const st = document.getElementById('pd-f-mstatus');
+      if (st) { st.value = m ? m.status : 'todo'; st.dispatchEvent(new Event('change', { bubbles: true })); }
+      const pub = document.getElementById('pd-f-mpublic');
+      if (pub) pub.classList.toggle('switch--on', m ? !!m.pub : true);
+      const title = document.getElementById('pd-edit-milestone-title');
+      const k = id ? 'pd-edit.milestone.edit' : 'pd-edit.milestone.title';
+      title.dataset.i18n = k; title.textContent = T(k, 'Add milestone');
+      const submit = document.querySelector('[data-pd-save="milestone"]');
+      const sk = id ? 'project-detail.btn.save' : 'pd-edit.milestone.submit';
+      submit.dataset.i18n = sk; submit.textContent = T(sk, 'Save');
+      open('pd-edit-milestone');
     }
 
-    /* 審核通過的那一刻才發生的三件事，在創作者這一頁播出來：作品上架（前台實體，
-       原型不模擬）、發布這則完成作品更新、項目狀態轉已上線。用 setTimeout 排到同步
-       腳本之後——狀態徽章的寫入口 window.ztorPdSetStatus 定義在本檔後面那支渲染
-       IIFE 裡，立刻執行會撲空。播完標記 released，重整不會再發一次。 */
-    setTimeout(function playApproved() {
-      renderReview();
-      renderWork();
-      if (!window.ztorWorkReview || !proj) return;
-      const rec = window.ztorWorkReview.pendingRelease(proj.id);
-      if (!rec) return;
-      if (window.ztorPdSetStatus) window.ztorPdSetStatus('live');
-      window.ztorWorkReview.markReleased(rec.id);
-      /* 提示等 js/toast.js 載完再說——它的 <script> 在本段之後，這裡直接呼叫會撲空。 */
-      const toastLive = () => {
-        if (window.ztorToast && window.ztorToast.show) window.ztorToast.show(T('pd.review.toast-live', 'Your work is live'), { tone: 'success' });
-      };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toastLive);
-      else toastLive();
-      renderReview();
-      renderWork();
-      syncKind();
-    }, 0);
-    document.addEventListener('i18n:applied', () => { renderReview(); renderWork(); });
+    const SAVE = {
+      schedule() { /* 項目時間為 demo：改了值不真的驅動狀態機，僅示意這裡是排程設定的入口 */ },
+      collab() {
+        if (!v('pd-f-cname')) return;
+        const list = document.getElementById('pd-collab-list');
+        list.appendChild(tableRow([
+          v('pd-f-cname'),
+          v('pd-f-crole') || '—',
+          { i18n: 'project-detail.collab.status.pending', fallback: 'Pending confirmation' },
+          (v('pd-f-cshare') || '0') + '%'
+        ]));
+      },
+      milestone() {
+        if (!v('pd-f-mname') || !PROG) return;
+        const pub = document.getElementById('pd-f-mpublic');
+        const payload = {
+          name: v('pd-f-mname'),
+          desc: v('pd-f-mdesc'),
+          date: dayFromIso(v('pd-f-mdate')),
+          status: v('pd-f-mstatus') || 'todo',
+          pub: !pub || pub.classList.contains('switch--on')
+        };
+        if (msForm.id) PROG.patchMilestone(proj, msForm.id, payload);
+        else PROG.addMilestone(proj, payload);
+        msForm.id = '';
+        renderTimeline();
+        renderStage();
+      },
+      update() {
+        if (!v('pd-f-utitle')) return;
+        submitUpdate({
+          title: v('pd-f-utitle'),
+          body: v('pd-f-ubody'),
+          audience: audienceKey(),
+          milestoneId: msSel ? msSel.value : '',
+          kind: updateKind()
+        });
+      }
+    };
+
+    /* 發一則更新的唯一路徑：時間軸的內嵌發文框與區段層級的彈窗都走這裡。 */
+    function submitUpdate(o) {
+      if (!PROG || !proj) return;
+      /* 影片家族的完成作品：這則貼文要等作品真的上架完才發得出去（不然貼文裡的
+         作品連結是空的），所以先把已填的三格收進 sessionStorage，跳去上架流程，
+         由那邊走完最後一步再回來一次補上貼文與狀態。 */
+      if (o.kind === 'release' && isFilm()) {
+        try {
+          sessionStorage.setItem(RELEASE_KEY, JSON.stringify({
+            id: proj.id, title: o.title, audience: o.audience, body: o.body || ''
+          }));
+        } catch (err) { /* 無痕模式等寫不進去：流程照走，回跳時當成沒有草稿 */ }
+        location.href = 'publish-work.html?project=' + encodeURIComponent(proj.id);
+        return;
+      }
+      PROG.addUpdate(proj, {
+        title: o.title,
+        body: o.body || '',
+        audience: o.audience,
+        milestoneId: o.milestoneId,
+        kind: o.kind === 'release' ? 'release' : 'general'
+      });
+      /* 上架流程還沒開放的作品類型：發文本身就是把項目推到已上線的那個動作。 */
+      if (o.kind === 'release' && window.ztorPdSetStatus) window.ztorPdSetStatus('live');
+      renderTimeline();
+      renderStage();
+    }
+
+    /* ── 事件委派：里程碑的動作與軸上的收合 ────────────────────────────────
+       ✝ 2026-08-17 撤除 [data-ms-move]（上移／下移，D194）：順序一律由預計日期決定，
+         要改順序就改預計日期。新增、編輯、刪除維持就地維護。 */
+    document.addEventListener('click', e => {
+      if (e.target.closest('[data-ms-add]')) { openMilestone(''); return; }
+      const fold = e.target.closest('[data-ptl-fold]');
+      if (fold) {
+        const k = fold.getAttribute('data-ptl-fold');
+        const node = fold.closest('.ptl__node');
+        const willOpen = node.classList.contains('ptl__node--collapsed');
+        node.classList.toggle('ptl__node--collapsed');
+        fold.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        ptlFold[k] = willOpen;
+        return;
+      }
+      const ed = e.target.closest('[data-ms-edit]');
+      if (ed) { openMilestone(ed.getAttribute('data-ms-edit')); return; }
+      const del = e.target.closest('[data-ms-del]');
+      if (del) { PROG.removeMilestone(proj, del.getAttribute('data-ms-del')); renderTimeline(); renderStage(); return; }
+      const sw = e.target.closest('#pd-f-mpublic');
+      if (sw) sw.classList.toggle('switch--on');
+    });
+
     document.addEventListener('click', e => {
       const btn = e.target.closest('[data-pd-save]');
       if (!btn) return;
@@ -2025,6 +2988,55 @@ window.ztorPdLookup = (function () {
       if (fn) fn();
       closeAll();
     });
+
+    /* 已通過並上線的那則完成作品貼文要一直留在時間軸上（它真的發出去了）。
+       進度 store 是純記憶體、重整還原，所以每次載入都依送審件補一則，並用 kind
+       去重避免補第二次。 */
+    function ensureReleasePost() {
+      const r = rec();
+      if (!r || r.status !== 'approved' || !PROG || isDirect()) return;
+      if (window.ztorProjects && !window.ztorProjects.releaseReached(releaseOf(r))) return;
+      const post = r.post || {};
+      PROG.addWorkPost(proj, {
+        title: post.title || T('pd-edit.update.kind-release', 'Work release'),
+        audience: post.audience || 'pd-edit.update.aud-everyone',
+        /* 送審件的時間戳是 'YYYY-MM-DD HH:mm' 字串；轉成真日期，這則貼文才會落在
+           軸上正確的那一天，而不是被當成「剛剛」擠到今天。 */
+        at: dayFromIso((r.decidedAt || '').slice(0, 10))
+      });
+    }
+
+    function renderAll() { ensureReleasePost(); renderStage(); renderTimeline(); syncKind(); }
+    renderAll();
+
+    /* 審核通過並到了上映日那一刻才發生的三件事，在創作者這一頁播出來：作品上架
+       （前台實體，原型不模擬）、發布這則完成作品更新、項目狀態往前走。用 setTimeout
+       排到同步腳本之後——狀態徽章的寫入口 window.ztorPdSetStatus 定義在本檔後面那支
+       渲染 IIFE 裡，立刻執行會撲空。播完標記 released，重整不會再發一次。 */
+    setTimeout(function playApproved() {
+      if (!WR || !proj) return;
+      const r = WR.pendingRelease(proj.id);
+      if (!r) { renderAll(); return; }
+      const landed = WR.projectStatus(proj.id) || 'live';
+      if (window.ztorPdSetStatus) window.ztorPdSetStatus(landed);
+      WR.markReleased(r.id);
+      const toastLive = () => {
+        if (!window.ztorToast || !window.ztorToast.show) return;
+        const date = releaseOf(r);
+        const msg = landed === 'scheduled'
+          ? T('pd.review.toast-scheduled', 'Approved — goes live on {d}').replace('{d}', date)
+          : T('pd.review.toast-live', 'Your work is live');
+        window.ztorToast.show(msg, { tone: 'success' });
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', toastLive);
+      else toastLive();
+      renderAll();
+    }, 0);
+
+    document.addEventListener('i18n:applied', renderAll);
+    /* 狀態被改寫（審核通過播放、非影片家族的完成作品發文）之後，總覽整格要重畫。 */
+    document.addEventListener('ztor:pdstatus', renderAll);
+    window.ztorPdRenderStage = renderAll;
   })();
 
   /* 支持方案＝回饋套組編輯器。2026-07-30 改：改用共用模組 js/bundle-editor.js，
@@ -2267,6 +3279,11 @@ window.ztorPdLookup = (function () {
     const zh = () => document.documentElement.lang === 'zh-Hant';
     const t = o => (o ? (zh() ? o.zh : o.en) : '');
     const set = (elId, text) => { const el = document.getElementById(elId); if (el && text) el.textContent = text; };
+    /* 頁面自己算出來的字串要翻譯時用它（跟 i18n.js 的字典同一份，不另存一套文案）。 */
+    const tk = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+    /* 這個 IIFE 只有這裡會拼 HTML 字串（識別事實列），值來自項目名稱與使用者輸入，
+       所以照樣要跳脫；上面那支渲染 IIFE 有一份同樣的 esc，兩者刻意不共用全域。 */
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
     const TYPE = { 'go-live': { en: 'Direct release', zh: '直接發佈' }, fund: { en: 'Co-create', zh: '共創' }, preorder: { en: 'Presale', zh: '預購' } };
     /* 狀態字彙與徽章色與 projects.html 的 STATE 表同源（2026-08-04 修）。
@@ -2289,12 +3306,19 @@ window.ztorPdLookup = (function () {
     window.ztorPdSetStatus = function (next) {
       if (!STATUS[next]) return;
       p.status = next;
+      /* 2026-08-18：狀態往前走之後，種子上那句待辦講的是上一個狀態的事（審核通過的項目
+         還掛著「等待平台審核」）。總覽的「下一步」直接讀它，所以這裡一併清掉——待辦
+         怎麼產生仍是產品缺口（ASSUMPTIONS TODO-001），本層只保證它不會自打嘴巴。 */
+      p.todo = null;
       const el = document.getElementById('pd-badge-status');
       if (!el) return;
       el.innerHTML = '';
       el.removeAttribute('data-i18n');
       el.textContent = t(STATUS[next]);
       el.className = 'badge' + (STATUS_TONE[next] ? ' ' + STATUS_TONE[next] : '');
+      /* 總覽的重點面板、下一步與捷徑都吃 status，狀態一改就得整格重畫
+         （2026-08-17：分頁整併後這一頁有兩處讀 status 的渲染器）。 */
+      document.dispatchEvent(new CustomEvent('ztor:pdstatus'));
     };
 
     function render() {
@@ -2305,10 +3329,24 @@ window.ztorPdLookup = (function () {
       /* 公開資訊·簡介用項目簡介（可編輯 textarea） */
       const syn = document.getElementById('pd-about-synopsis');
       if (syn) syn.value = t(p.desc);
-      /* 創作者與日期：同一個 Creator Studio 帳號，日期逐項目不同 */
-      set('pd-owner-line', zh()
-        ? '創作者 ' + store.owner() + ' · 建立於 ' + p.created + (p.fundFrom ? ' · 共創自 ' + p.fundFrom + ' 起' : '')
-        : 'By ' + store.owner() + ' · Created ' + p.created + (p.fundFrom ? ' · Co-creation since ' + p.fundFrom : ''));
+      /* 識別事實列（§2.1 第 1 項）。三筆逐項目都有值，任何發行模式與狀態都不會空掉：
+         創作者是同一個 Creator Studio 帳號、內容類型與建立日在種子裡是必填。
+         刻意不放募資期間或上映日——那些隨狀態變動，落點在總覽的重點面板（§2.1.1），
+         同一個數字在一頁上出現兩次會變成兩個真相來源。 */
+      const facts = document.getElementById('pd-hero-facts');
+      if (facts) {
+        const rows = [
+          ['user', tk('pd-hero.owner', 'Creator'), store.owner()],
+          [p.icon || 'file', tk('pd-hero.cat', 'Content type'), t(store.catLabel(p.cat))],
+          ['calendar', tk('pd-hero.created', 'Created'), p.created || '—']
+        ];
+        facts.innerHTML = rows.map(r =>
+          '<div class="data-list__row"><div class="data-list__row-main">' +
+          '<div class="data-list__icon data-list__icon--sm"><i data-lucide="' + r[0] + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + esc(r[1]) + '</div>' +
+          '<div class="data-list__meta">' + esc(r[2]) + '</div></div></div></div>').join('');
+        if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(facts);
+      }
 
       const badge = (elId, text, tone) => {
         const el = document.getElementById(elId);
@@ -2325,8 +3363,54 @@ window.ztorPdLookup = (function () {
          各模式的對外字樣在規格仍列為〔產品待確認〕（§7.2），見 ASSUMPTIONS UIA-104。 */
       badge('pd-badge-status', t(STATUS[p.status]), STATUS_TONE[p.status]);
       badge('pd-badge-type', t(TYPE[p.type]), 'badge--info');
-      /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：項目 / 分類 / 項目名 */
-      set('pd-crumb-cat', t(store.catLabel(p.cat)));
+
+      /* ── 發布時程（直接發佈專屬，§2.2.4 發布狀態在總覽的落點）─────────────
+         2026-08-17：整張卡原本寫死成綠色「Live」＋兩個固定日期，準備中的項目會在
+         同一頁上同時顯示藍色「準備中」與綠色「Live」。改成跟著這個項目自己的狀態與
+         排定上線日走。徽章與字彙用上面同一張 STATUS／STATUS_TONE（與 projects.html
+         的 STATE 表同源），不另造一套。
+         上線日的出處由 projects-store.releaseDate() 決定：影片家族讀送審件的上映日期、
+         非影片家族讀項目自己的欄位——D180 說兩者是同一份資料，判定只該有一條。
+         第二列的名稱只有兩種寫法：已上線講「正式上線」（已經發生的事），其餘一律講
+         「排定上線日」（還沒發生的約定）；狀態本身由徽章交代，不在列名裡重講一次。 */
+      const relDate = store.releaseDate ? store.releaseDate(p) : '';
+      badge('pd-golive-badge', t(STATUS[p.status]), STATUS_TONE[p.status]);
+      set('pd-golive-created', p.created || '—');
+      const glLabelKey = p.status === 'live' ? 'project-detail.golive.published' : 'project-detail.golive.scheduled';
+      const glLabel = document.getElementById('pd-golive-row-label');
+      if (glLabel) { glLabel.dataset.i18n = glLabelKey; glLabel.textContent = tk(glLabelKey, 'Release date'); }
+      set('pd-golive-date', relDate || tk('project-detail.golive.nodate', 'Not scheduled yet'));
+      /* 說明句依作品家族分兩版：影片家族送出建立流程＝送審，通過後才依上映日上線
+         （D182 第 1／13 題）；非影片家族才是原本那句「發布即上線」。 */
+      const glNote = document.getElementById('pd-golive-note');
+      if (glNote) {
+        const k = p.family === 'film' ? 'project-detail.golive.note-film' : 'project-detail.golive.note';
+        glNote.dataset.i18n = k;
+        glNote.textContent = tk(k, '');
+      }
+      /* ── 頁首「下一步」提示 ───────────────────────────────────────────
+         2026-08-17：原本整句寫死在 markup 裡，每個項目都顯示同一串，連沒有支持者的
+         直接發佈項目也被告知「1 milestone update due to backers」（矩陣盤點落差 L9）。
+         改讀這個項目自己的待辦——資料是 projects-store 的 `todo`，與項目清單那顆提示
+         icon 同一份，不另建第二套。沒有待辦的項目整條不顯示，不塞佔位句。
+         原型每個項目只帶一則待辦；多則待辦與待辦怎麼產生仍屬產品缺口（ASSUMPTIONS TODO-001）。 */
+      const nextStep = document.getElementById('pd-nextstep');
+      if (nextStep) {
+        nextStep.hidden = !p.todo;
+        if (p.todo) set('pd-nextstep-text', t(p.todo));
+      }
+
+      /* 內容分類（原 pd-badge-cat 徽章）改放麵包屑中段：項目 / 分類 / 項目名。
+         2026-08-17：markup 上的 data-i18n="projects.cat.movie" 是靜態預設值，i18n.js
+         每次套用都會把它寫回「電影」，於是音樂項目的麵包屑也寫電影——與頁首新增的
+         「內容類型」那一列當場對不上。改成一併把 key 換成這個項目真正的分類。 */
+      const crumbCat = document.getElementById('pd-crumb-cat');
+      if (crumbCat) {
+        const ck = 'projects.cat.' + p.cat;
+        if (window.i18nT && window.i18nT(ck)) crumbCat.dataset.i18n = ck;
+        else crumbCat.removeAttribute('data-i18n');
+        crumbCat.textContent = t(store.catLabel(p.cat));
+      }
 
       const poster = document.getElementById('pd-poster');
       if (poster) { poster.src = p.poster || p.cover; poster.alt = p.name; }
@@ -2334,42 +3418,12 @@ window.ztorPdLookup = (function () {
       const galleryCover = document.getElementById('pd-gallery-cover');
       if (galleryCover) { galleryCover.src = p.poster || p.cover; galleryCover.alt = p.name; }
 
-      /* 共創面板：有 fund 資料的項目（共創型）才換數字，其餘沿用示意值 */
-      if (p.fund) {
-        set('pd-fund-raised', p.fund.raised);
-        set('pd-fund-backers', p.fund.backers + (zh() ? ' 人支持' : ' backers'));
-        set('pd-fund-goal', (zh() ? '目標 ' : 'Goal ') + p.fund.goal);
-        set('pd-fund-pct', p.fund.pct + '%');
-        set('pd-fund-left', t(p.fund.left));
-        set('pd-fund-period', t(p.fund.period));
-        const bar = document.getElementById('pd-fund-bar');
-        if (bar) bar.style.width = p.fund.pct + '%';
-      } else {
-        /* 非共創（直接發佈／預購）沒有「已募 / 目標 / 進度」的共創語意——改用 meta 摘要，
-           並隱藏共創限定的欄位（目標、進度條、支持人數），避免顯示到 Moonlight Over Sham Shui Po 的預設值。 */
-        const parts = t(p.meta).split(' · ');
-        set('pd-fund-raised', parts[0] || '—');
-        set('pd-fund-left', parts.slice(1).join(' · '));
-        const pe = document.getElementById('pd-fund-period'); if (pe) pe.textContent = '';
-        const hide = sel => { const el = document.querySelector('.funding-panel--card ' + sel); if (el) el.style.display = 'none'; };
-        hide('.funding-panel__goal');
-        hide('.funding-panel__bar-row');
-        hide('.funding-panel__backers');
-      }
-
-      /* 收益概況（landing 一行摘要，明細在項目收益分頁）：
-         共創有 fund 資料就顯示已承諾金額，其餘類型顯示 meta 摘要 */
-      const head = document.getElementById('pd-rev-headline');
-      const sub = document.getElementById('pd-rev-sub');
-      if (head && sub) {
-        if (p.fund) {
-          head.textContent = p.fund.raised;
-          sub.textContent = zh() ? '已承諾 · 達標後開始撥款' : 'Pledged so far · payout starts once the goal is reached';
-        } else {
-          head.textContent = t(p.meta).split(' · ')[0];
-          sub.textContent = t(p.meta).split(' · ').slice(1).join(' · ') || (zh() ? '累計收益' : 'Lifetime revenue');
-        }
-      }
+      /* ✝ 2026-08-18 撤除：總覽的募資面板（`.funding-panel--card#pd-ov-fund` 與 pd-fund-* 一族）。
+         那一塊的數字（已募／目標／達成率／支持者數／倒數）現在由重點面板那一列 KPI 承擔，
+         由 renderStage() 的 kpi() 產生；同一組數字在同一頁上只能有一個來源。
+         非共創項目原本走的「拆 meta 摘要填進同一塊」與跟著隱藏三個共創限定欄位的分支
+         一併退場——那個 hide() 用的是全站第一個 .funding-panel--card，總覽那塊拿掉之後
+         會誤傷支持者分頁的同名面板。meta 摘要改由 kpi() 的 moneyOf()／audienceOf() 讀。 */
 
       /* 版稅＝股份分潤的產物，只有共創型項目有股份，直接發佈／預購沒有（2026-07-25 使用者裁決）。
          因此條件＝共創＋作品已上線；影視與音樂都有，只是面板內容不同（見下方 famKind 切版）。
@@ -2391,7 +3445,11 @@ window.ztorPdLookup = (function () {
          那正是第一筆觀看數存在的時點。
          家族決定平台清單與量綱；cat 決定要不要有 Top 10（專輯有曲目、影集有
          集數，單曲／電影／短片／MV 是單一作品，一列的排行榜沒有意義）。 */
-      const perfFam = store.family(p.cat);              /* film | music | other */
+      /* 家族一律讀項目物件上的 `family`。2026-08-17 之前這一頁有兩種寫法——作品區塊讀
+         `proj.family`（種子手寫的欄位）、這裡讀 `store.family(p.cat)`（用分類反推），
+         兩條路徑對同一筆項目可能給出不同答案（矩陣盤點落差 L12）。現在 store 統一由
+         分類算出 `family` 再寫回物件，全頁只讀這一個欄位。 */
+      const perfFam = p.family;                         /* film | music | other */
       const perfLive = p.status === 'live';
 
       /* ── 收益分頁的家族與上線狀態（2026-07-28 使用者裁示）─────────────────
@@ -2426,7 +3484,7 @@ window.ztorPdLookup = (function () {
         window.ztorPerformance.renderPanel(perfHost, { family: perfFam, cat: p.cat, period: 'q' });
       }
       /* 版稅面板依家族切版：音樂＝串流平台佔比＋Top 10 歌曲；影視＝OTT 平台佔比＋授權明細 */
-      const royaltyFam = store.family(p.cat) === 'music' ? 'music' : 'film';
+      const royaltyFam = p.family === 'music' ? 'music' : 'film';
       document.querySelectorAll('[data-royalty-fam]').forEach(el => {
         el.hidden = el.getAttribute('data-royalty-fam') !== royaltyFam;
       });
@@ -2479,11 +3537,23 @@ window.ztorPdLookup = (function () {
         period.querySelectorAll('.segmented__btn').forEach(c => c.classList.toggle('segmented__btn--active', c === b));
       });
 
-      /* 若當前停在被本類型隱藏的分頁，退回項目總覽 */
+      /* 支持者分頁的標籤隨發行模式換字（§3 分群表：「標籤隨發行模式換字」）——
+         共創底下那批人是支持者，預購底下那批人下的是訂單，同一個詞講不了兩件事。 */
+      const backersTab = document.querySelector('[data-backers-tab]');
+      if (backersTab) {
+        const k = ptype === 'preorder' ? 'project-detail.tab.preorders' : 'project-detail.tab.backers';
+        backersTab.dataset.i18n = k;
+        backersTab.textContent = tk(k, 'Backers');
+      }
+
+      /* 若當前停在被本類型隱藏的分頁，退回總覽 */
       const activePanel = document.querySelector('.tab-panel--active');
       if (activePanel && activePanel.hidden) {
-        const home = document.querySelector('.tabs__item[data-tab="settings"]'); if (home) home.click();
+        const home = document.querySelector('.tabs__item[data-tab="overview"]'); if (home) home.click();
       }
+
+      /* 總覽的捷徑只列「這一刻真的存在的分頁」，所以要等上面把分頁的顯隱算完才畫。 */
+      if (window.ztorPdRenderStage) window.ztorPdRenderStage();
     }
 
     render();

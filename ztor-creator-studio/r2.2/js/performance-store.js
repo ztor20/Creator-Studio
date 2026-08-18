@@ -482,13 +482,14 @@
   function liveWorks() {
     var store = window.ztorProjects;
     if (!store || !store.list) return [];
+    /* 家族讀項目物件上的 `family`（projects-store 由內容分類統一算出後寫回），
+       不在這裡用分類再推一次——站上家族判定只該有一個來源（落差 L12）。 */
     return store.list().filter(function (p) {
-      var famName = store.family ? store.family(p.cat) : null;
-      return p.status === 'live' && p.perf && (famName === 'film' || famName === 'music');
+      return p.status === 'live' && p.perf && (p.family === 'film' || p.family === 'music');
     }).map(function (p) {
       return {
         name: p.name,
-        fam: store.family(p.cat),
+        fam: p.family,
         usd: p.perf.usd,
         audience: p.perf.audience,
         kind: p.perf.kind

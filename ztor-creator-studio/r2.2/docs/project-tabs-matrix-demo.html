@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 項目詳情分頁矩陣：發行模式 × 項目狀態 × 作品家族 × 審核狀態</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+
+<style>
+  body {
+    margin: 0;
+    background: var(--surface-page);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64); }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-40) 0 var(--sp-12) }
+  h3 { font-size: var(--fs-16); margin: 0 0 var(--sp-8) }
+  .lede { color: var(--foreground-muted); max-width: 70ch; margin: 0 0 var(--sp-24) }
+  .demo-note { color: var(--foreground-muted); font-size: var(--fs-13); max-width: 74ch }
+
+  /* 控制列：四個軸各一組 segmented */
+  .ctl { display: flex; flex-wrap: wrap; gap: var(--sp-20) var(--sp-24); align-items: flex-end; margin-bottom: var(--sp-16) }
+  .ctl__group { display: flex; flex-direction: column; gap: var(--sp-8) }
+  .ctl__label { font-size: var(--fs-12); color: var(--foreground-muted); text-transform: uppercase; letter-spacing: .06em }
+
+  /* 【明確標註的特例 · 僅此 demo 頁】segmented 元件只有整組唯讀的 --locked，沒有「同一組裡
+     停掉其中一顆」這個狀態。這一頁要把「直接發佈走不到的兩個項目狀態」與「非影片家族沒有
+     的審核狀態」就地停用，所以在頁面補這一條，不升成 DS 標準——產品頁目前沒有這個需求。 */
+  .segmented__btn[disabled] { opacity: .38; cursor: not-allowed }
+  .segmented__btn[disabled]:hover { color: var(--foreground-muted) }
+
+  /* 主要區域：左邊分頁縮影與內容，右邊情境說明與缺席分頁 */
+  .grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: var(--sp-20); align-items: start }
+  @media (max-width: 920px) { .grid { grid-template-columns: 1fr } }
+
+  /* 分頁縮影：真的 .tabs 要接 JS 才會動，這裡畫一排靜態籤，點得開 */
+  .tabstrip {
+    display: flex; flex-wrap: wrap; gap: var(--sp-4);
+    border-bottom: 1px solid var(--border); padding-bottom: var(--sp-10); margin-bottom: var(--sp-16);
+  }
+  .tabstrip__item {
+    padding: var(--sp-6) var(--sp-10); border-radius: var(--radius-sm);
+    font-size: var(--fs-13); color: var(--foreground-muted); white-space: nowrap;
+    font-family: inherit; border: 0; background: none; cursor: pointer;
+  }
+  .tabstrip__item:hover { color: var(--foreground) }
+  .tabstrip__item:focus-visible { outline: 1px solid var(--ring); outline-offset: 2px }
+  .tabstrip__item--on { color: var(--selected-ink); background: var(--selected-surface) }
+
+  .grp { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-14) var(--sp-16) }
+  .grp__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-8); margin-bottom: var(--sp-12) }
+  .grp__name { font-size: var(--fs-15); font-weight: var(--fw-medium) }
+  .grp__q { font-size: var(--fs-12); color: var(--foreground-muted) }
+  .sec { display: flex; flex-direction: column; gap: var(--sp-10) }
+  .sec__row { display: flex; flex-direction: column; gap: var(--sp-2) }
+  .sec__name { font-size: var(--fs-13); font-weight: var(--fw-medium) }
+  .sec__desc { font-size: var(--fs-12); color: var(--muted-foreground) }
+
+  .side { display: flex; flex-direction: column; gap: var(--sp-16) }
+  .kv { display: flex; flex-direction: column; gap: var(--sp-4); margin-bottom: var(--sp-12) }
+  .kv:last-child { margin-bottom: 0 }
+  .kv__k { font-size: var(--fs-11); color: var(--foreground-muted); text-transform: uppercase; letter-spacing: .06em }
+  .kv__v { font-size: var(--fs-13); color: var(--foreground) }
+  .links { display: flex; flex-direction: column; gap: var(--sp-6); margin-top: var(--sp-4) }
+  .links a { color: var(--selected-ink); font-size: var(--fs-13) }
+  .links span { color: var(--muted-foreground); font-size: var(--fs-12) }
+  .count { font-variant-numeric: tabular-nums }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>項目詳情分頁矩陣</h1>
+  <p class="lede">
+    項目詳情頁一共十個分頁，出現與否由四件事決定：發行模式、項目狀態、作品家族、作品審核狀態。
+    切下面四個軸，看這一格會長出哪些分頁、每個分頁裡大概有什麼，以及沒長出來的那幾格是被哪一條規則擋掉的。
+  </p>
+
+  <div class="alert alert--row alert--info" style="margin-bottom:var(--sp-20)">
+    <div class="alert__body">
+      <div class="alert__title">這是 docs 底下的 demo 頁</div>
+      <div class="alert__meta">
+        不在主導覽裡，也不列進 design-system。分頁清單與顯示條件照 <code>project-detail.html</code> 的實作寫，
+        分頁內容概要取自 <code>documents/plans/項目詳情頁-類型狀態分頁矩陣-2026-08-11.md</code> 與 <code>documents/5.1.2.2-專案詳情.md</code>。
+      </div>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <div class="ctl__group">
+      <span class="ctl__label">發行模式</span>
+      <div class="segmented" role="radiogroup" id="ctl-mode">
+        <button type="button" class="segmented__btn segmented__btn--active" data-mode="fund">共創</button>
+        <button type="button" class="segmented__btn" data-mode="preorder">預購</button>
+        <button type="button" class="segmented__btn" data-mode="go-live">直接發佈</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">項目狀態</span>
+      <div class="segmented" role="radiogroup" id="ctl-status">
+        <button type="button" class="segmented__btn" data-status="draft">草稿</button>
+        <button type="button" class="segmented__btn" data-status="scheduled">準備中</button>
+        <button type="button" class="segmented__btn" data-status="published">進行中</button>
+        <button type="button" class="segmented__btn" data-status="succeeded">已成立</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-status="live">已上線</button>
+        <button type="button" class="segmented__btn" data-status="cancelled">已取消</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">作品家族</span>
+      <div class="segmented" role="radiogroup" id="ctl-family">
+        <button type="button" class="segmented__btn segmented__btn--active" data-family="film">影片</button>
+        <button type="button" class="segmented__btn" data-family="music">音樂</button>
+        <button type="button" class="segmented__btn" data-family="other">其他</button>
+      </div>
+    </div>
+    <div class="ctl__group" style="flex:1 1 100%">
+      <span class="ctl__label">作品審核狀態</span>
+      <div class="segmented" role="radiogroup" id="ctl-review" style="flex-wrap:wrap">
+        <button type="button" class="segmented__btn" data-review="none">無送審紀錄</button>
+        <button type="button" class="segmented__btn" data-review="draft">草稿</button>
+        <button type="button" class="segmented__btn" data-review="pending">待審核</button>
+        <button type="button" class="segmented__btn" data-review="inreview">審核中</button>
+        <button type="button" class="segmented__btn" data-review="approved-wait">審核通過（上映日未到）</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-review="approved-live">審核通過（已上線）</button>
+        <button type="button" class="segmented__btn" data-review="rejected">審核不通過</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="demo-note" id="ctl-note" style="margin:0 0 var(--sp-20)"></p>
+
+  <div class="grid">
+    <section>
+      <div class="grp__q" style="margin-bottom:var(--sp-10)">這一格的分頁列，順序照頁面上的實際順序 · 共 <span class="count" id="cap-count"></span> 個</div>
+      <div class="tabstrip" id="strip"></div>
+      <div id="body"></div>
+    </section>
+
+    <div class="side">
+      <div class="card">
+        <h3>這一格是什麼情境</h3>
+        <div id="cell-info"></div>
+      </div>
+
+      <div class="card">
+        <h3>示範項目</h3>
+        <div id="samples"></div>
+      </div>
+
+      <div class="card">
+        <h3>沒有出現的分頁</h3>
+        <div class="data-list" id="absent"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>十個分頁各自的出現條件</h2>
+  <div class="card">
+    <table class="ztor-table">
+      <thead><tr><th>分頁</th><th>出現條件</th><th>條件寫在哪</th></tr></thead>
+      <tbody id="tbl-cond"></tbody>
+    </table>
+  </div>
+
+  <h2>四個軸之間互相牽動的地方</h2>
+  <div class="card">
+    <div class="data-list" id="notes"></div>
+  </div>
+
+  <div class="info-banner" style="margin-top:var(--sp-20)">
+    <span>
+      作品審核狀態不改變分頁清單——它決定作品分頁裡顯示什麼、項目總覽的審核狀態區塊寫什麼、
+      以及發文彈窗的「完成作品」能不能點。唯一會動到分頁清單的是「有沒有送審紀錄」這件事本身。
+    </span>
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   分頁清單與顯示條件照 project-detail.html 的實作抄，不是照矩陣文件重畫——
+   矩陣寫成之後程式又修過幾輪，以程式現況為準。對應位置：
+     data-type（pledges / progress / cofund / preorder）＝分頁列 markup
+     renderWork()  ＝作品分頁
+     render() 的 perfReady / store.hasRoyalty() ＝表現與版稅
+   ───────────────────────────────────────────────────────────── */
+const MODE   = { fund: '共創', preorder: '預購', 'go-live': '直接發佈' };
+const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成立', live: '已上線', cancelled: '已取消' };
+const FAMILY = { film: '影片', music: '音樂', other: '其他' };
+const REVIEW = {
+  none: '無送審紀錄', draft: '草稿', pending: '待審核', inreview: '審核中',
+  'approved-wait': '審核通過（上映日未到）', 'approved-live': '審核通過（已上線）', rejected: '審核不通過'
+};
+
+/* 直接發佈走不到的兩態：這兩態的意義是「還在收支持或收預購」與「已達標、東西還沒交」，
+   直接發佈的作品在建立當下就完成了，沒有這兩段（主規格 §7.2）。 */
+const GO_LIVE_BLOCKED = {
+  published: '直接發佈的作品在建立當下就完成了，沒有「還在收支持款」這一段',
+  succeeded: '直接發佈沒有達標這件事，也沒有「錢收了、東西還沒交」的等待期'
+};
+
+let mode = 'fund', status = 'live', family = 'film', review = 'approved-live', sel = 0;
+const hasRec = () => review !== 'none';
+
+/* ── 十個分頁：出現條件、一句話的職責、裡面有哪些區段 ───────────────── */
+const TABS = [
+  {
+    id: 'settings', name: '項目總覽', q: '這個項目的辦公桌',
+    on: () => true,
+    cond: '無條件出現，也是預設停留的分頁',
+    src: '規格 §2.2.6 / §2.2.7 / §2.2.9',
+    sections: () => [
+      { n: '項目更新', d: '已發過的更新一則一則列在這裡，也是發新更新的入口' },
+      hasRec() && mode !== 'go-live'
+        ? { n: '完成作品送審狀態', d: '那則完成作品貼文審到哪一步；被退件時長出退件理由與「修改後重送」' } : null,
+      { n: '合作者', d: '誰參與這個項目、分潤名額分給了誰' },
+      { n: 'IP 租借', d: '這個項目租入了哪些他人 IP、授權到哪天' },
+      mode === 'go-live'
+        ? { n: '發布時程', d: '建立日與排定上線日，徽章跟著項目狀態走；說明句依影片／非影片分兩版' } : null
+    ]
+  },
+  {
+    id: 'pledges', name: '方案與承諾', q: '粉絲先付錢，會拿到什麼',
+    on: () => mode !== 'go-live',
+    cond: '共創或預購才有',
+    src: '規格 §2.2.5',
+    why: () => '直接發佈沒有粉絲先付錢這一段，也就沒有要承諾的方案',
+    sections: () => [
+      mode === 'fund'
+        ? { n: '共創方案', d: '每個方案賣什麼、多少錢、限量幾份，含分潤名額' }
+        : { n: '預購方案', d: '每個方案賣什麼、多少錢、限量幾份，不含分潤名額' },
+      mode === 'preorder'
+        ? { n: '單位價格', d: '作品一份的價格；每個方案的價格都從它推導，所以它跟方案編輯器住在一起' } : null
+    ]
+  },
+  {
+    id: 'about', name: '關於項目', q: '粉絲端看得到的門面',
+    on: () => true,
+    cond: '無條件出現',
+    src: '規格 §2.2.2 / §2.2.8',
+    sections: () => [
+      { n: '展示內容', d: '主視覺、圖庫、預告' },
+      { n: '公開資訊', d: '簡介、演職、常見問答、標籤、年齡分級' }
+    ]
+  },
+  {
+    id: 'progress', name: '製作進度', q: '錢收了、東西還沒交出去的那段期間',
+    on: () => mode !== 'go-live',
+    cond: '共創或預購才有',
+    src: '規格 §2.2.10',
+    why: () => '直接發佈的東西在建立當下就完成了，沒有要交代的製作期',
+    sections: () => [
+      { n: '時程與里程碑', d: '各階段日期；期限到了系統怎麼自動走——共創達標即成立、預購未達最少數量即全額退款' },
+      { n: '內容項目', d: '承諾要交付的每一樣東西各自做到哪一步' }
+    ]
+  },
+  {
+    id: 'work', name: '作品', q: '這一件送出去之後的常駐落點',
+    on: () => family === 'film' && (mode === 'go-live' ? status !== 'draft' : true) && hasRec(),
+    cond: '直接發佈＝影片家族＋狀態離開草稿＋有送審件；共創與預購＝影片家族＋有送審件',
+    src: '規格 §2.2.11、renderWork()',
+    why: () => {
+      if (family !== 'film') return FAMILY[family] + '家族不經平台審核閘，沒有送審件可以顯示';
+      if (mode === 'go-live' && status === 'draft') return '直接發佈的作品上架段內嵌在建立流程，送出建立流程才等於送審——草稿還沒送出';
+      if (mode === 'go-live') return '影片家族且已離開草稿，但查不到送審件。原型的判定是兩者都要成立，缺一就不長分頁';
+      return '共創與預購要作品第一次送審之後才有這一格';
+    },
+    sections: () => [
+      { n: '送審件狀態', d: '封面、審核徽章、上映日期、最近送出時間、送出次數' },
+      review === 'rejected'
+        ? { n: '退件理由', d: '退件原因全文，整張卡帶紅色警示，按鈕從「編輯作品」換成「修改後重送」' } : null,
+      review !== 'rejected'
+        ? { n: '編輯入口', d: '進上架流程改這件作品，按鈕字樣是「編輯作品」' } : null,
+      { n: '重送規則', d: '改影片檔、定價或年齡限制要重新送審；改文案、標籤、演職不用' }
+    ]
+  },
+  {
+    id: 'earnings', name: '我的收益', q: '這個項目賺了多少、錢從哪裡來',
+    on: () => true,
+    cond: '無條件出現，但面板內容分兩態',
+    src: '規格 §2.3.1 / §2.3.2',
+    sections: () => status !== 'live'
+      ? [{ n: '收益從上線開始（說明卡）', d: '這一頁之後會顯示什麼、這個項目適用哪些收入類型、什麼時候開始有數字。還沒上線就不畫走勢圖，避免編造數字' }]
+      : [
+          { n: '收益走勢', d: '依收入類型分線的時間軸，可切單一類型只看一條' },
+          { n: '項目作品收益', d: '這個項目底下每一件作品各自賺了多少' },
+          mode === 'fund' ? { n: '淨收益分配', d: '淨利池怎麼在創作者與 NFT 持有人之間分。只有共創有這張卡' } : null,
+          { n: '收益帳目', d: '逐筆入帳紀錄——版稅、佣金、預付金、授權' }
+        ]
+  },
+  {
+    id: 'performance', name: '表現', q: '多少人看了、聽了，在哪些平台與地區',
+    on: () => status === 'live' && family !== 'other',
+    cond: '項目已上線，而且作品家族不是其他',
+    src: '站台自訂分頁，§2.0 沒有這一列',
+    why: () => status !== 'live'
+      ? '還沒上線就沒有觀看數或串流數可談'
+      : '其他家族（活動、商品、自訂）沒有串流通路，所以連分頁都不長出來',
+    sections: () => [
+      family === 'music'
+        ? { n: '串流平台', d: 'Spotify、QQ 音樂、SoundCloud 各自的串流次數與佔比' }
+        : { n: 'OTT 平台', d: 'Ztor、YouTube、Netflix 各自的觀看次數與佔比' },
+      { n: '地區分佈', d: '觀看或收聽發生在哪些地區' },
+      { n: '資料來源說明', d: '數字由各發行平台回報、每日更新，與收益和版稅的結算數字分開' }
+    ]
+  },
+  {
+    id: 'royalty', name: '版稅', q: '股份分潤產生的收入明細',
+    on: () => mode === 'fund' && status === 'live',
+    cond: '共創型，而且項目已上線',
+    src: '站台自訂分頁，判斷收在 projects-store.hasRoyalty()',
+    why: () => mode !== 'fund'
+      ? '只有共創有股份，沒有股份就沒有分潤'
+      : '作品開始賺錢之後才有版稅可分',
+    sections: () => [
+      { n: '地區表現', d: '版稅收入來自哪些地區' },
+      family === 'music'
+        ? { n: '串流平台佔比', d: '各串流平台貢獻的版稅比重' }
+        : { n: 'OTT 平台佔比', d: '各 OTT 平台貢獻的版稅比重' },
+      family === 'music'
+        ? { n: 'Top 10 歌曲', d: '版稅最高的十首，可切成依播放次數排' }
+        : { n: '授權明細', d: '逐筆授權合約與入帳金額' }
+    ]
+  },
+  {
+    id: 'cofund', name: '共創進度', q: '募到多少、誰支持了、款項扣了沒',
+    on: () => mode === 'fund',
+    cond: '共創才有',
+    src: '規格 §2.3.3',
+    why: () => MODE[mode] + '沒有共創這件事',
+    sections: () => [
+      { n: '共創金額', d: '募到多少、目標多少、還剩幾天' },
+      { n: '撥款進度', d: '收到的錢什麼時候、分幾次到創作者手上' },
+      { n: '各方案支持數', d: '哪一個方案賣得動、哪一個沒人要' },
+      { n: '支持者明細', d: '誰買了哪個方案、款項扣了沒' }
+    ]
+  },
+  {
+    id: 'preorder', name: '預購進度', q: '收了幾筆、離最少預購數還差多少',
+    on: () => mode === 'preorder',
+    cond: '預購才有',
+    src: '§2.0 把集單進度收在 §2.1，原型另設分頁屬呈現分組',
+    why: () => MODE[mode] + '沒有集單這件事',
+    sections: () => [
+      { n: '訂單進度', d: '收了幾筆、離最少預購數還差多少' },
+      { n: '沒達到最少數量會怎樣', d: '集單期結束仍未達標就終止項目、全額退款' },
+      { n: '預購明細', d: '逐筆訂單與扣款狀態' }
+    ]
+  }
+];
+
+/* ── 十六格的情境與主要操作（取自矩陣文件第三節）───────────────────── */
+const CELL = {
+  'fund|draft':        ['共創計畫剛建好，還沒對外開放支持，創作者還在補素材與規劃回饋方案', '補齊素材與方案。發文彈窗只能發一般更新，「完成作品」停用並寫「項目成立後才能上架作品」'],
+  'fund|scheduled':    ['作品已審核通過、上映日還沒到的等待期。由已成立轉進來，到上映日當天再轉已上線', '等上映日到來。作品分頁可以進去編輯已通過的作品'],
+  'fund|published':    ['共創已對外開放，正在收支持款，進度條在跑、倒數在走', '發一般更新催進度。共創進度分頁看逐筆支持者與扣款狀態'],
+  'fund|succeeded':    ['共創達標、募資期已結束，錢收了、東西還在做，支持者在等交付', '走完成作品發文接上作品上架流程。已送過審的在項目總覽看審核狀態、在作品分頁改作品'],
+  'fund|live':         ['作品已交付、正在賺錢。共創成立這件事變成隨身徽章，項目本身進入營運期', '看收益、看表現、看版稅。作品分頁可改文案與名單'],
+  'fund|cancelled':    ['共創未達標或創作者主動終止，已全額退款。這是死路狀態，不會再往前走', '站上與進行中完全一樣——編輯入口、發文彈窗、方案編輯器全部照舊可用（矩陣落差 L11）'],
+  'preorder|draft':    ['預購項目剛建好，還沒開放集單', '補素材與預購方案。「完成作品」停用並寫「項目成立後才能上架作品」'],
+  'preorder|scheduled':['作品已審核通過、上映日未到的等待期，與共創那一格同理', '等上映日到來。作品分頁可以進去編輯已通過的作品'],
+  'preorder|published':['預購已開放，正在收單，離最少預購數還差多少一目瞭然', '看預購進度與逐筆訂單扣款狀態。發一般更新'],
+  'preorder|succeeded':['預購達標、集單期結束，正在製作，買家在等交付', '走完成作品發文接上作品上架流程，「完成作品」選項可選'],
+  'preorder|live':     ['預購的東西已交付、上線販售中', '看收益。影片或音樂另可看表現'],
+  'preorder|cancelled':['未達最少預購數或創作者終止，已全額退款', '與進行中一樣沒有凍結（矩陣落差 L11）'],
+  'go-live|draft':     ['直接發佈項目剛開一個草稿，還沒送出建立流程。分頁只有三個，是所有格子裡最少的', '補素材、走完建立流程送出。發文彈窗沒有「完成作品」這個選項，整個選項被移除'],
+  'go-live|scheduled': ['作品已完成、建立流程已送出，正在等平台審核放行，或等上映日到來。這一態同時承載兩段等待', '等審核。作品分頁看審到哪一步、進去編輯作品。發文彈窗只有一般更新'],
+  'go-live|live':      ['作品已上架、正在賺錢，項目進入純營運期', '看收益與表現。影片可從作品分頁編輯已上架的作品'],
+  'go-live|cancelled': ['創作者主動下架或終止，或審核最終被拒後放棄', '站上沒有凍結，編輯入口照舊可用（矩陣落差 L11）']
+};
+
+/* ── 站上的示範項目（照 js/projects-store.js 與 js/work-review-store.js 的種子）──
+   rv 是那一筆項目上掛的送審件狀態；approved 依上映日到了沒分成兩種。 */
+const SAMPLES = [
+  ['shamshuipo-moonlight', 'default', '深水埗的月光', 'fund', 'draft', 'film', 'none'],
+  ['nick-ma-xing-wo', 'nick', '罵醒我 Reimagined', 'fund', 'draft', 'music', 'none'],
+  ['nick-fanmeet-26', 'nick', 'REAL TALK 影迷之夜', 'fund', 'draft', 'other', 'none'],
+  ['harbour-lights', 'default', '維港燈火', 'fund', 'scheduled', 'film', 'approved-wait'],
+  ['f-i-am-speed', 'default', '我要衝線', 'fund', 'published', 'film', 'none'],
+  ['nick-lrh', 'nick', 'LOVE RAGE HOPE', 'fund', 'published', 'music', 'none'],
+  ['nick-street-stage', 'nick', '街頭舞台計畫', 'fund', 'published', 'other', 'none'],
+  ['kowloon-night-cut', 'default', '九龍夜行 導演剪輯版', 'fund', 'succeeded', 'film', 'none'],
+  ['nick-r2-film', 'nick', 'REALIVE R2 演唱會電影', 'fund', 'succeeded', 'film', 'none'],
+  ['nick-lrh-doc', 'nick', 'LOVE·RAGE·HOPE 巡演紀錄片', 'fund', 'succeeded', 'film', 'pending'],
+  ['victoria-noir', 'default', '維多利亞的暗面（上映日已過的待審件）', 'fund', 'succeeded', 'film', 'pending'],
+  ['pirate-queen-s2', 'default', '海上霸姬 第二季', 'fund', 'succeeded', 'film', 'inreview'],
+  ['nick-lrh-vinyl', 'nick', 'LOVE RAGE HOPE 黑膠典藏版', 'fund', 'succeeded', 'music', 'none'],
+  ['mong-kok-shootout', 'default', '旺角狙擊（分頁數最多的一格，共九個）', 'fund', 'live', 'film', 'approved-live'],
+  ['nick-ni-shuo', 'nick', '帥到分手 MV', 'fund', 'live', 'film', 'none'],
+  ['adia-chan', 'default', '陳松伶精選', 'fund', 'live', 'music', 'none'],
+  ['nick-realive', 'nick', 'REALIVE', 'fund', 'live', 'music', 'none'],
+  ['star-ferry-tales', 'default', '天星小輪故事集', 'fund', 'cancelled', 'film', 'none'],
+  ['vulgaria-sequel', 'default', '低俗喜劇之嗨仔番外篇', 'fund', 'cancelled', 'other', 'none'],
+  ['nick-symphony', 'nick', 'NICK 交響樂版演出', 'fund', 'cancelled', 'other', 'none'],
+
+  ['cha-chaan-ost', 'default', '冰室原聲帶', 'preorder', 'draft', 'music', 'none'],
+  ['nick-rlh-live-film', 'nick', 'LOVE·RAGE·HOPE 巡演實錄電影', 'preorder', 'scheduled', 'film', 'approved-wait'],
+  ['dragon-tiger-gate', 'default', '龍虎門外傳：九龍夜行', 'preorder', 'published', 'film', 'none'],
+  ['nick-lrh-cassette', 'nick', 'LOVE RAGE HOPE 卡帶版', 'preorder', 'published', 'music', 'none'],
+  ['kowloon-premiere', 'default', '九龍冰室 十週年放映會', 'preorder', 'published', 'other', 'none'],
+  ['miujie-merch-s2', 'default', '廟街風雲 復刻組合（已超募）', 'preorder', 'published', 'other', 'none'],
+  ['nick-r2', 'nick', 'REALIVE R2 特仕版演唱會', 'preorder', 'published', 'other', 'none'],
+  ['nick-lwh-tour', 'nick', 'Live House Tour', 'preorder', 'published', 'other', 'none'],
+  ['nick-getreal-tee', 'nick', 'GET REAL 聯名 Tee（已超募）', 'preorder', 'published', 'other', 'none'],
+  ['nick-nsddd-film', 'nick', '什麼都不必說 短片版', 'preorder', 'succeeded', 'film', 'none'],
+  ['north-point-rain', 'default', '北角的雨（站上唯一的退件樣本）', 'preorder', 'succeeded', 'film', 'rejected'],
+  ['pirate-queen-shorts', 'default', '海上霸姬 番外短篇', 'preorder', 'live', 'film', 'approved-live'],
+  ['miujie-merch', 'default', '廟街風雲 週邊組合', 'preorder', 'live', 'other', 'none'],
+  ['nick-baipa-goods', 'nick', 'REALIVE 白趴 官方周邊', 'preorder', 'live', 'other', 'none'],
+  ['kowloon-fanmeet', 'default', '九龍冰室 影迷見面會', 'preorder', 'cancelled', 'other', 'none'],
+
+  ['neon-alley', 'default', '霓虹後巷', 'go-live', 'draft', 'film', 'none'],
+  ['nick-rooftop-mv', 'nick', '頂樓 MV', 'go-live', 'draft', 'film', 'none'],
+  ['moonlight-mv', 'default', '深水埗的月光 主題曲 MV', 'go-live', 'scheduled', 'film', 'pending'],
+  ['nick-flames', 'nick', 'FLAMES', 'go-live', 'scheduled', 'film', 'pending'],
+  ['elevator-14f', 'default', '十四樓的電梯', 'go-live', 'scheduled', 'film', 'inreview'],
+  ['nick-onstage-film', 'nick', 'ON STAGE 演唱會電影', 'go-live', 'scheduled', 'film', 'inreview'],
+  ['nick-ost-vol1', 'nick', 'ON STAGE 原聲帶 Vol.1', 'go-live', 'scheduled', 'music', 'none'],
+  ['pirate-queen', 'default', '海上霸姬鄭一嫂', 'go-live', 'live', 'film', 'approved-live'],
+  ['nick-sdfs-mv-live', 'nick', '什麼都不必說', 'go-live', 'live', 'film', 'approved-live'],
+  ['pirate-queen-doc', 'default', '海上霸姬 幕後紀錄（文檔，2026-08-17 起歸影片家族）', 'go-live', 'live', 'film', 'approved-live'],
+  ['kowloon-night-theme', 'default', '九龍夜行 片尾曲', 'go-live', 'live', 'music', 'none'],
+  ['nick-real-life', 'nick', 'REAL LIFE', 'go-live', 'live', 'music', 'none'],
+  ['nick-wo-de-i', 'nick', '帥到分手', 'go-live', 'live', 'music', 'none'],
+  ['nick-wei-le-ni', 'nick', '罵醒我', 'go-live', 'live', 'music', 'none'],
+  ['nick-zou-san-guan', 'nick', '愛上你算我賤', 'go-live', 'live', 'music', 'none'],
+  ['nick-halo', 'nick', 'HALO', 'go-live', 'cancelled', 'music', 'none']
+];
+
+/* 這一格在原型走不走得到——四個軸各自合法，湊在一起未必存在。 */
+function reachability() {
+  const out = [];
+  if (review === 'draft') {
+    out.push('作品審核「草稿」在原型無法到達：送審一律直接寫成待審核，沒有任何路徑會產生這個值（矩陣落差 L10）');
+  }
+  if (family !== 'film' && hasRec()) {
+    out.push('非影片家族不經平台審核閘，站上不會有送審件掛在' + FAMILY[family] + '家族的項目上');
+  }
+  if (hasRec() && mode === 'go-live' && status === 'draft') {
+    out.push('直接發佈的送審發生在建立流程送出的那一刻，送出後狀態就離開草稿了');
+  }
+  if (hasRec() && mode !== 'go-live' && ['draft', 'published', 'cancelled'].indexOf(status) >= 0) {
+    out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成立時開（規格 §2.2.9）');
+  }
+  if (review === 'approved-live' && status !== 'live') {
+    out.push('審核通過而且上映日已到會把項目推到已上線，停不在' + STATUS[status]);
+  }
+  if (review === 'approved-wait' && status !== 'scheduled') {
+    out.push('審核通過但上映日還沒到會把項目留在準備中，停不在' + STATUS[status]);
+  }
+  return out;
+}
+
+function shown() { return TABS.filter(t => t.on()); }
+
+function render() {
+  syncCtl();
+  const on = shown();
+  if (sel >= on.length) sel = 0;
+
+  document.getElementById('cap-count').textContent = on.length;
+  document.getElementById('strip').innerHTML = on.map((t, i) =>
+    '<button type="button" class="tabstrip__item' + (i === sel ? ' tabstrip__item--on' : '') + '" data-i="' + i + '">' + t.name + '</button>'
+  ).join('');
+
+  const cur = on[sel];
+  const secs = cur.sections().filter(Boolean);
+  document.getElementById('body').innerHTML =
+    '<div class="grp">' +
+      '<div class="grp__head"><span class="grp__name">' + cur.name + '</span><span class="grp__q">' + cur.q + '</span></div>' +
+      '<div class="sec">' + secs.map(s =>
+        '<div class="sec__row"><div class="sec__name">' + s.n + '</div><div class="sec__desc">' + s.d + '</div></div>'
+      ).join('') + '</div>' +
+    '</div>';
+
+  /* 情境說明 */
+  const cell = CELL[mode + '|' + status];
+  const reach = reachability();
+  document.getElementById('cell-info').innerHTML =
+    (cell
+      ? '<div class="kv"><span class="kv__k">情境</span><span class="kv__v">' + cell[0] + '</span></div>' +
+        '<div class="kv"><span class="kv__k">主要操作</span><span class="kv__v">' + cell[1] + '</span></div>'
+      : '<div class="kv"><span class="kv__v">直接發佈走不到' + STATUS[status] + '，這一格不存在。</span></div>') +
+    (reach.length
+      ? '<div class="kv"><span class="kv__k">這個組合原型走不到</span><span class="kv__v">' +
+        reach.map(r => '· ' + r).join('<br>') + '</span></div>'
+      : '');
+
+  /* 示範項目：四個軸全對上才算 */
+  const hit = SAMPLES.filter(s => s[3] === mode && s[4] === status && s[5] === family && s[6] === review);
+  const near = hit.length ? [] : SAMPLES.filter(s => s[3] === mode && s[4] === status && s[5] === family);
+  document.getElementById('samples').innerHTML = hit.length
+    ? '<div class="links">' + hit.map(s =>
+        '<a href="../project-detail.html?id=' + s[0] + '&creator=' + s[1] + '">' + s[2] + '</a>').join('') + '</div>'
+    : (near.length
+        ? '<div class="kv__v">這四個軸全對上的樣本站上沒有。同模式、同狀態、同家族但審核狀態不同的有：</div>' +
+          '<div class="links">' + near.map(s =>
+            '<a href="../project-detail.html?id=' + s[0] + '&creator=' + s[1] + '">' + s[2] + '（' + REVIEW[s[6]] + '）</a>').join('') + '</div>'
+        : '<div class="kv__v">這個組合站上沒有示範項目，缺樣本清單見矩陣文件第六節。</div>');
+
+  /* 沒有出現的分頁 */
+  const off = TABS.filter(t => !t.on());
+  document.getElementById('absent').innerHTML = off.length
+    ? off.map(t =>
+        '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+        '<div class="data-list__title">' + t.name + '</div>' +
+        '<div class="data-list__meta">' + t.why() + '（條件：' + t.cond + '）</div>' +
+        '</div></div></div>').join('')
+    : '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+      '<div class="data-list__meta">十個分頁全開。這是分頁數最多的一格。</div></div></div></div>';
+}
+
+/* 控制列：直接發佈走不到的兩態停用；非影片家族的送審狀態一併停用 */
+function syncCtl() {
+  const notes = [];
+  document.querySelectorAll('#ctl-status [data-status]').forEach(b => {
+    const blocked = mode === 'go-live' && GO_LIVE_BLOCKED[b.dataset.status];
+    b.disabled = !!blocked;
+    b.title = blocked || '';
+    b.classList.toggle('segmented__btn--active', b.dataset.status === status);
+  });
+  if (mode === 'go-live') {
+    notes.push('直接發佈停用「進行中」與「已成立」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
+  }
+  document.querySelectorAll('#ctl-review [data-review]').forEach(b => {
+    const blocked = family !== 'film' && b.dataset.review !== 'none';
+    b.disabled = blocked;
+    b.title = blocked ? '非影片家族不經平台審核閘' : '';
+    b.classList.toggle('segmented__btn--active', b.dataset.review === review);
+  });
+  if (family !== 'film') {
+    notes.push('作品家族選了' + FAMILY[family] + '，審核狀態只剩「無送審紀錄」：平台審核只審影片，其他家族沒有送審件。');
+  }
+  document.getElementById('ctl-note').innerHTML = notes.join('<br>');
+}
+
+function pick(rootId, attr, fn) {
+  document.getElementById(rootId).addEventListener('click', e => {
+    const b = e.target.closest('[data-' + attr + ']');
+    if (!b || b.disabled) return;
+    fn(b.dataset[attr === 'family' ? 'family' : attr]);
+    [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+    render();
+  });
+}
+pick('ctl-mode', 'mode', v => {
+  mode = v;
+  /* 換到直接發佈時，若停在它走不到的狀態就退回準備中——留在停用的格子上等於畫面說謊 */
+  if (mode === 'go-live' && GO_LIVE_BLOCKED[status]) status = 'scheduled';
+});
+pick('ctl-status', 'status', v => { status = v; });
+pick('ctl-family', 'family', v => {
+  family = v;
+  if (family !== 'film') review = 'none';
+});
+pick('ctl-review', 'review', v => { review = v; });
+
+document.getElementById('strip').addEventListener('click', e => {
+  const b = e.target.closest('[data-i]'); if (!b) return;
+  sel = +b.dataset.i; render();
+});
+
+/* 出現條件對照表 */
+document.getElementById('tbl-cond').innerHTML = TABS.map(t =>
+  '<tr><td>' + t.name + '</td><td>' + t.cond + '</td><td>' + t.src + '</td></tr>').join('');
+
+/* 四個軸互相牽動的地方 */
+const NOTES = [
+  ['審核通過會同時動到項目狀態', '審核通過那一刻一次觸發三件事：作品上架、完成作品貼文發出、項目狀態往前走，三件事同生共死。往前走到哪一站看上映日期——已到轉已上線，還沒到停在準備中，到當天再轉。所以「準備中」這一格在共創與預購底下，指的就是通過審核之後等上映的那段。'],
+  ['準備中在三種發行模式底下意思不同', '共創與預購的準備中是「作品通過審核、等上映日」；直接發佈的準備中同時承載兩段等待——等平台審核放行，以及審核過了等上映日。另外共創還有第二種讀法（狀態機 draft → scheduled → published 那條路上的排定開始日），兩種在原型落在同一個值上，尚未裁決。'],
+  ['作品分頁的條件依發行模式分兩種', '直接發佈的作品上架段內嵌在建立流程、送出即送審，所以判準是「影片家族＋離開草稿＋有送審件」；共創與預購的送審由完成作品發文觸發，判準是「影片家族＋有送審件」。同一格會因為有沒有送過審而長出不同的分頁列。'],
+  ['版稅不看家族、表現才看', '版稅只問兩件事——是不是共創、有沒有上線。所以活動或商品類的共創項目走到已上線時也會長出版稅分頁。表現則是排除其他家族，因為活動、商品、自訂沒有串流通路。兩條刻意不同。'],
+  ['我的收益一定在，但內容分兩態', '未上線顯示一張說明卡（之後會有什麼、適用哪些收入類型、什麼時候開始有數字），已上線才顯示走勢圖與帳目。淨收益分配那張卡只有共創有。'],
+  ['已取消不凍結', '已取消的項目在站上與進行中的分頁組成一致，編輯入口、發文彈窗、方案編輯器全部照舊可用。規格要求凍結，原型尚未實作（矩陣落差 L11）。']
+];
+document.getElementById('notes').innerHTML = NOTES.map(([k, v]) =>
+  '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+  '<div class="data-list__title">' + k + '</div><div class="data-list__meta">' + v + '</div>' +
+  '</div></div></div>').join('');
+
+render();
+</script>
+</body>
+</html>

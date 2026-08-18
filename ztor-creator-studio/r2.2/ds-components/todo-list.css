@@ -1,0 +1,98 @@
+/* ============================================================
+   todo-list.css · 可編輯的待辦清單（勾選 ＋ 自行增刪）
+
+   一張卡裡的「還有什麼沒做完」。與 `data-list.css` 的分工：`.data-list` 是唯讀的事實列
+   （欄名＋值，內容由系統決定）；`.todo-list` 的每一列是一件**使用者可以自己加、自己改、
+   自己劃掉**的事。判斷句：這一列的文字是不是使用者打進去的？是 → todo-list。
+
+   首個消費情境：活動詳情總覽「下一步」的開演前檢核（2026-08-17 使用者裁決「保留這個
+   功能，但以 to-do list 的方式完善，讓用戶可以自己添加編輯」）。
+
+   anatomy
+     .todo-list
+       .todo-list__row                 一件事（三欄：勾選｜內容｜行尾）
+         label.zcheck                  勾選（用 checkbox.css 的既有控制項，不自己畫）
+         .todo-list__body
+           .todo-list__input           使用者自己的項目：一個看起來像文字的輸入框
+           .todo-list__text            系統項目：不可改的標題
+           .todo-list__meta            系統項目的補充說明（12px、次要色）
+         .todo-list__end               行尾（刪除鈕，或系統項目的前往設定）
+     .todo-list__add                   底下一顆「＋ 新增項目」
+
+   modifier
+     .todo-list__row--done             已完成：文字劃掉並淡化
+     .todo-list__row--system           系統項目：不可刪，行尾放的是通往設定的入口
+
+   note
+     - `.todo-list__input` 刻意**不叫** `.input`：頁面的兩段式編輯（`[data-mode="view"]`）
+       會鎖住所有 `.input`，而待辦清單不該被鎖——勾一件準備事項不是在編輯這場活動。
+       同理，容器那一側掛 `[data-edit-exempt]`（見 project-detail.html 的同名機制）。
+   ============================================================ */
+
+.todo-list { display: flex; flex-direction: column; }
+
+.todo-list__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-12) 0;
+}
+.todo-list__row + .todo-list__row { border-top: 1px solid var(--border); }
+
+/* 已完成：劃掉並整列退到背景。留在原地而不是移到最下面——一件事做完就跳位，
+   會讓人找不到自己剛剛勾的是哪一件。 */
+.todo-list__row--done .todo-list__text,
+.todo-list__row--done .todo-list__input { text-decoration: line-through; }
+.todo-list__row--done { opacity: 0.55; }
+
+.todo-list__body { min-width: 0; }
+
+.todo-list__text {
+  font-size: var(--fs-14);
+  color: var(--foreground);
+}
+.todo-list__meta {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  margin-top: var(--sp-2);
+}
+
+/* 看起來像一行字、點下去才是輸入框：清單多數時間是拿來讀的，每一列都畫一個輸入框
+   會讓整張卡讀起來像一份表單。邊界只在 hover 與 focus 時出現。 */
+.todo-list__input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--sp-6) var(--sp-8);
+  margin-left: calc(var(--sp-8) * -1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--foreground);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-normal);
+}
+.todo-list__input:hover { border-color: var(--border); }
+.todo-list__input:focus {
+  outline: none;
+  border-color: var(--ring);
+  background: var(--card);
+}
+.todo-list__input::placeholder { color: var(--foreground-muted); }
+
+.todo-list__end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+/* 刪除鈕平常不出現：一排垃圾桶會把「這是待辦清單」讀成「這是一份要整理的資料」。
+   hover 或鍵盤走到那一列才浮出來。觸控裝置沒有 hover，一律顯示。 */
+@media (hover: hover) {
+  .todo-list__row:not(.todo-list__row--system) .todo-list__end .btn--icon { opacity: 0; }
+  .todo-list__row:hover .todo-list__end .btn--icon,
+  .todo-list__row:focus-within .todo-list__end .btn--icon { opacity: 1; }
+}
+
+.todo-list__add { margin-top: var(--sp-12); }

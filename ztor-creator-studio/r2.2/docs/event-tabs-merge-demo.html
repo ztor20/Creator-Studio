@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 活動詳情分頁整併：現行最多 10 格 vs 提案最多 3 格</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+<!-- .section-head 定義在 shared.css（不是獨立元件檔） -->
+
+<style>
+  body {
+    margin: 0;
+    background: var(--surface-page);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64); }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-40) 0 var(--sp-12) }
+  h3 { font-size: var(--fs-16); margin: 0 0 var(--sp-8) }
+  .lede { color: var(--foreground-muted); max-width: 68ch; margin: 0 0 var(--sp-24) }
+  .demo-note { color: var(--foreground-muted); font-size: var(--fs-13); max-width: 74ch }
+
+  /* 控制列：階段 × 類型 */
+  .ctl { display: flex; flex-wrap: wrap; gap: var(--sp-24); align-items: flex-end; margin-bottom: var(--sp-24) }
+  .ctl__group { display: flex; flex-direction: column; gap: var(--sp-8) }
+  .ctl__label { font-size: var(--fs-12); color: var(--foreground-muted); text-transform: uppercase; letter-spacing: .06em }
+
+  /* 兩欄對照 */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start }
+  @media (max-width: 900px) { .vs { grid-template-columns: 1fr } }
+  .col__cap {
+    display: flex; align-items: center; gap: var(--sp-8);
+    margin-bottom: var(--sp-10); font-size: var(--fs-13); color: var(--foreground-muted);
+  }
+
+  /* 分頁列縮影：不用真的 .tabs（那支要 JS），畫一排靜態籤 */
+  .tabstrip {
+    display: flex; flex-wrap: wrap; gap: var(--sp-4);
+    border-bottom: 1px solid var(--border); padding-bottom: var(--sp-10); margin-bottom: var(--sp-16);
+  }
+  .tabstrip__item {
+    padding: var(--sp-6) var(--sp-10); border-radius: var(--radius-sm);
+    font-size: var(--fs-13); color: var(--foreground-muted); white-space: nowrap;
+    font-family: inherit; border: 0; background: none; cursor: pointer;
+  }
+  .tabstrip__item:hover { color: var(--foreground) }
+  .tabstrip__item:focus-visible { outline: 1px solid var(--ring); outline-offset: 2px }
+  .tabstrip__item--on { color: var(--foreground); background: var(--nest-surface) }
+  .tabstrip__item--new { color: var(--brand-ink); background: var(--brand-tint) }
+
+  /* 分頁內容對照 */
+  .grp { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-14) var(--sp-16); margin-bottom: var(--sp-10) }
+  .grp__head { display: flex; align-items: baseline; gap: var(--sp-8); margin-bottom: var(--sp-8) }
+  .grp__name { font-size: var(--fs-15); font-weight: var(--fw-medium) }
+  .grp__q { font-size: var(--fs-12); color: var(--foreground-muted) }
+  .grp__items { display: flex; flex-wrap: wrap; gap: var(--sp-6) }
+  .chip {
+    font-size: var(--fs-12); padding: 3px var(--sp-8);
+    border: 1px solid var(--border); border-radius: 999px; color: var(--foreground-muted);
+  }
+  .chip--from { border-style: dashed }
+  .empty-note { font-size: var(--fs-12); color: var(--foreground-muted); font-style: italic }
+
+  .count { font-variant-numeric: tabular-nums }
+  .delta { font-size: var(--fs-13); color: var(--foreground-muted); margin-top: var(--sp-12) }
+  .delta b { color: var(--foreground); font-weight: var(--fw-medium) }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>活動詳情分頁整併</h1>
+  <p class="lede">
+    現行分頁是照「建立流程的第幾步產生這筆資料」分的；提案改成照「創作者此刻在做什麼」分。
+    切換下面的階段與類型，看兩種結構在每個狀態下各自長什麼樣——重點在**極端狀態**：
+    共看派對、已取消、系列子場，這三種最容易讓分頁結構露餡。
+  </p>
+
+  <div class="ctl">
+    <div class="ctl__group">
+      <span class="ctl__label">階段</span>
+      <div class="segmented" role="radiogroup" id="ctl-stage">
+        <button type="button" class="segmented__btn segmented__btn--active" data-stage="scheduled">已排程</button>
+        <button type="button" class="segmented__btn" data-stage="on-sale">售票中</button>
+        <button type="button" class="segmented__btn" data-stage="live">進行中</button>
+        <button type="button" class="segmented__btn" data-stage="ended">已結束</button>
+        <button type="button" class="segmented__btn" data-stage="cancelled">已取消</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">類型</span>
+      <div class="segmented" role="radiogroup" id="ctl-type">
+        <button type="button" class="segmented__btn segmented__btn--active" data-type="normal">一般（實體）</button>
+        <button type="button" class="segmented__btn" data-type="watchparty">共看派對</button>
+        <button type="button" class="segmented__btn" data-type="series">系列子場</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">提案版本</span>
+      <div class="segmented" role="radiogroup" id="ctl-plan">
+        <button type="button" class="segmented__btn" data-plan="4">甲 · 併回總覽</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-plan="5">乙 · 設定獨立（採用）</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">檢視</span>
+      <div class="segmented" role="radiogroup" id="ctl-view">
+        <button type="button" class="segmented__btn segmented__btn--active" data-view="one">逐頁點</button>
+        <button type="button" class="segmented__btn" data-view="all">展開全部</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="demo-note" style="margin:calc(-1 * var(--sp-12)) 0 var(--sp-20)">
+    兩欄的分頁籤都可以點——像真的頁面那樣一格一格切過去，才看得出單一分頁裡裝了多少東西。
+    要一眼比對兩種結構的總量就切「展開全部」。
+  </p>
+
+  <div class="alert alert--row alert--info" style="margin-bottom:var(--sp-20)">
+    <div class="alert__body">
+      <div class="alert__title">草稿不在這一頁的範圍</div>
+      <div class="alert__meta">
+        草稿＝精靈還沒填完，點下去應該回到建立流程續填，不該進活動詳情。所以階段選單從「已排程」開始。
+        現行原型是接錯的（<code>events.html</code> 兩處都指向 <code>event-detail.html?id=next-leg-draft</code>），要一併更正。
+      </div>
+    </div>
+  </div>
+
+  <div class="vs">
+    <section>
+      <div class="col__cap"><span class="badge badge--neutral">現行</span><span id="cap-now"></span></div>
+      <div class="tabstrip" id="strip-now"></div>
+      <div id="body-now"></div>
+    </section>
+    <section>
+      <div class="col__cap"><span class="badge badge--success">提案</span><span id="cap-new"></span></div>
+      <div class="tabstrip" id="strip-new"></div>
+      <div id="body-new"></div>
+    </section>
+  </div>
+
+  <p class="delta" id="delta"></p>
+
+  <h2>提案的每一格，各自回答一個問題</h2>
+  <div class="card">
+    <table class="ztor-table">
+      <thead><tr><th>分頁</th><th>回答的問題</th><th>收進什麼</th><th>什麼時候出現</th></tr></thead>
+      <tbody id="tbl-map"></tbody>
+    </table>
+  </div>
+
+  <h2>audit：其他狀態下會發生什麼</h2>
+  <div class="card">
+    <div class="data-list" id="audit"></div>
+  </div>
+
+  <h2>沒有動的東西</h2>
+  <div class="info-banner">
+    <span>
+      「總覽」的右欄仍照階段換人（開演前檢核 → 現場報到台 → 報到快照 → 結案），那是既有設計，本提案不動。
+      分頁結構現在完全不隨「是不是系列子場」改變形狀——三種類型看到的都是同一組分頁，
+      差別只在共看派對沒有票務（它不賣票券）。
+    </span>
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   現行結構：直接照 event-detail.html 的 TABS_BY_STAGE 與 data-hide-type 抄，
+   不是憑印象重畫——demo 若跟本尊不一致，比較就沒有意義。
+   ───────────────────────────────────────────────────────────── */
+const NOW_ALWAYS = ['overview', 'dates', 'tiers', 'bundles'];
+const NOW_BY_STAGE = {
+  draft:       NOW_ALWAYS.concat(['publish']),
+  scheduled:   NOW_ALWAYS.concat(['publish', 'notifications']),
+  'on-sale':   NOW_ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+  live:        NOW_ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+  ended:       NOW_ALWAYS.concat(['publish', 'transactions', 'attendees', 'notifications', 'finance']),
+  cancelled:   NOW_ALWAYS.concat(['transactions', 'finance'])
+};
+/* 共看派對整格收掉的分頁（data-hide-type="watchparty"） */
+const WP_HIDDEN = ['tiers', 'bundles', 'publish', 'attendees', 'series'];
+
+const NOW_LABEL = {
+  overview: '總覽', dates: '場次', tiers: '票務', bundles: '票務商品',
+  publish: '發布設定', transactions: '交易明細', attendees: '參加者名單',
+  notifications: '通知', finance: '收支', series: '系列'
+};
+
+/* 現行每個分頁裡有什麼（供右欄說明「這些東西搬去哪」） */
+const NOW_CONTENT = {
+  overview:      ['KPI 列', '活動內容欄位', '開演前檢核', '現場報到台', '報到快照', '線上房間', '結案'],
+  dates:         ['場次', '地點'],
+  tiers:         ['票種', '招待票'],
+  bundles:       ['組合包'],
+  publish:       ['販售方式', '取票方式', '公開性', '連結與 QR'],
+  transactions:  ['交易明細', '退款'],
+  attendees:     ['參加者名單'],
+  notifications: ['通知', '寄送紀錄'],
+  finance:       ['收支摘要', '結算去向'],
+  series:        ['系列管理', '轉售']
+};
+
+/* ─────────────────────────────────────────────────────────────
+   提案結構：一個分頁＝一個工作，不是一個建立步驟。
+   items 標出每一塊的來源分頁，右欄才看得出「東西搬去哪了」。
+   ───────────────────────────────────────────────────────────── */
+const NEW_TABS = [
+  { id: 'status', name: '總覽', q: '現在怎麼樣、我該做什麼',
+    items: [
+      { t: 'KPI 列',       from: '總覽' },
+      { t: '開演前檢核',   from: '總覽', stages: ['draft','scheduled','on-sale'] },
+      { t: '現場報到台',   from: '總覽', stages: ['live'], notType: ['watchparty'] },
+      { t: '報到快照',     from: '總覽', stages: ['ended'], notType: ['watchparty'] },
+      { t: '線上房間',     from: '總覽', onlyType: ['watchparty'] },
+      { t: '結案',         from: '總覽', stages: ['ended','cancelled'] },
+      /* 系列不必是一整格分頁（2026-08-17 使用者提問後裁決）：那一格只有兩樣東西——
+         3 場兄弟場次的唯讀清單、外加一則「轉售是 Phase 2、本版不提供」的說明橫幅。
+         前者是「這場活動是什麼」的一部分（它是系列的第幾場），正是總覽在回答的；
+         後者零功能。一格分頁裝一份唯讀清單，成本高於收益。 */
+      { t: '系列場次',   from: '系列', onlyType: ['series'] }
+    ] },
+  { id: 'setup', name: '設定', q: '這場是什麼、何時何地、怎麼賣、誰看得到',
+    items: [
+      { t: '活動內容欄位', from: '總覽' },
+      { t: '場次',         from: '場次' },
+      { t: '地點',         from: '場次' },
+      { t: '販售方式',     from: '發布設定', notType: ['watchparty'], notStages: ['cancelled'] },
+      { t: '取票方式',     from: '發布設定', notType: ['watchparty'], notStages: ['cancelled'] },
+      { t: '公開性',       from: '發布設定', notType: ['watchparty'], notStages: ['cancelled'] },
+      { t: '連結與 QR',    from: '發布設定', notType: ['watchparty'], notStages: ['cancelled'] }
+    ] },
+  { id: 'tickets', name: '票務', q: '賣什麼、賣多少、庫存還剩多少',
+    items: [
+      { t: '票種',     from: '票務',     notType: ['watchparty'] },
+      { t: '組合包',   from: '票務商品', notType: ['watchparty'] },
+      { t: '招待票',   from: '票務',     notType: ['watchparty'] },
+      /* 轉售（Phase 2 說明）從系列搬到票務：它談的是「這場的票能不能轉手」，
+         跟系列一點關係也沒有。現行掛在系列分頁裡，等於只有系列子場的創作者看得到
+         這則說明，一般活動的創作者永遠看不到——那顯然不是本意。 */
+      { t: '轉售（Phase 2）', from: '系列', notType: ['watchparty'] }
+    ] },
+  /* ── 售票紀錄 ＋ 活動名單 合成一格（2026-08-17 使用者裁決）─────────────────
+     兩邊本來就是同一批人、同一批交易的兩種看法：一邊按「筆」看（賣了哪些、退了哪些），
+     一邊按「人」看（誰會來、怎麼通知他們）。分成兩格，等於逼創作者自己記住
+     「這個問題要去哪一格問」——而多數問題（某某人退票了嗎、這筆是誰買的）兩邊都要看。
+     合成一格、內頁切換，切換不換分頁就不會掉失上下文。
+
+     預設看哪一邊隨階段走（使用者指示）：
+       售票中 → 售票紀錄（這時候盯的是賣得如何）
+       進行中 → 活動名單（這時候盯的是誰來了）
+     其餘階段：已排程只有通知那一側成立；已結束與已取消回到售票紀錄（結案對帳）。
+     某一側在該階段完全沒有內容時，切換器只剩另一側、不畫成兩顆假按鈕。 */
+  { id: 'sales', name: '售票與名單', q: '賣了哪些、誰買了',
+    views: [
+      { id: 'record', name: '售票紀錄', items: [
+        { t: '交易明細', from: '交易明細', stages: ['on-sale','live','ended','cancelled'] },
+        { t: '退款',     from: '交易明細', stages: ['on-sale','live','ended','cancelled'] },
+        { t: '收支摘要', from: '收支',     stages: ['on-sale','live','ended','cancelled'] },
+        { t: '結算去向', from: '收支',     stages: ['on-sale','live','ended','cancelled'] }
+      ] },
+      /* ⚠ 未解（同前輪）：共看派對沒有參加者名單（D149），這一側只剩通知。
+         乾淨的解法是讓共看派對也有名單——「誰買了票」對線上活動一樣成立，
+         不成立的只有報到那一欄（本來就是活動當天才出現）。屬 D149 範圍，待上游裁決。 */
+      /* 通知從已排程往後移到開賣之後（2026-08-17 使用者指示）：通知面板的三項
+         （購票確認信／開演前提醒／活動異動通知）全部要有人買票才觸發，寄送紀錄那時
+         也還是空的。已排程時這一格等於三個還沒作用的開關加一份空紀錄——一整格分頁
+         裝「還沒開始」，正是這次整併要拿掉的東西。
+         ⚠ 待確認：若上游希望開賣前就能先調那三個開關，它們屬「設定」而不是「紀錄」，
+         該跟發布設定放在一起，不是留在這一格。 */
+      { id: 'roster', name: '活動名單', items: [
+        { t: '參加者名單', from: '參加者名單', stages: ['on-sale','live','ended'], notType: ['watchparty'] },
+        { t: '通知',       from: '通知',       stages: ['on-sale','live','ended'] },
+        { t: '寄送紀錄',   from: '通知',       stages: ['on-sale','live','ended'] }
+      ] }
+    ] },
+  /* 墓碑：原第 6 格「系列」已於 2026-08-17 拆解——系列場次清單併入總覽、
+     轉售說明併入票務。分頁結構因此不再隨「是不是系列子場」改變形狀。 */
+];
+
+/* ─────────────────────────────────────────────────────────────
+   兩個提案版本，差別只在「設定」要不要獨立成一格。
+     乙 · 五格：設定自成一格。開賣前那一格是主戰場，位置固定好找。
+     甲 · 四格：設定併回總覽。開賣之後那些設定幾乎全鎖住（發布設定唯讀、
+               改場次是需要確認的高影響變更），是查閱資料而不是工作區——
+               一整格分頁給一份查閱資料，成本高於收益。
+   甲把總覽讀成「這場活動」：上半是現在怎麼樣（KPI／檢核／報到台／結案），
+   下半是它是什麼（內容／場次／地點／發布設定）。同一格隨階段從表單變成摘要，
+   正是這一頁既有的檢視／編輯機制在做的事。
+   ───────────────────────────────────────────────────────────── */
+function planTabs() {
+  if (plan === '5') return NEW_TABS;
+  const merged = NEW_TABS.map(t => Object.assign({}, t));
+  const status = merged.find(t => t.id === 'status');
+  const setup  = merged.find(t => t.id === 'setup');
+  status.items = status.items.concat(setup.items);
+  status.q = '現在怎麼樣、我該做什麼，以及這場活動是什麼';
+  return merged.filter(t => t.id !== 'setup');
+}
+
+/* 2026-08-17 使用者裁決採用乙案：設定自成一格。 */
+let stage = 'scheduled', type = 'normal', plan = '5';
+
+const itemOn = it => {
+  if (it.stages && it.stages.indexOf(stage) < 0) return false;
+  if (it.notStages && it.notStages.indexOf(stage) >= 0) return false;
+  if (it.onlyType && it.onlyType.indexOf(type) < 0) return false;
+  if (it.notType && it.notType.indexOf(type) >= 0) return false;
+  return true;
+};
+
+function nowTabs() {
+  let t = (NOW_BY_STAGE[stage] || []).slice();
+  if (type === 'watchparty') t = t.filter(x => WP_HIDDEN.indexOf(x) < 0);
+  if (type === 'series') t = t.concat(['series']);
+  return t;
+}
+
+/* 分頁有兩種形狀：一般分頁掛 items，合併分頁（售票與名單）掛 views。
+   下面三個小工具把差異吃掉，其餘程式碼不必到處分兩種寫法。 */
+const tabViews = t => t.views || null;
+/* 這個階段／類型下，某一側還有沒有內容——沒有的話切換器就不畫那一顆 */
+const viewsOn  = t => (t.views || []).filter(v => v.items.some(itemOn));
+const allItems = t => t.views ? t.views.flatMap(v => v.items) : t.items;
+
+/* 預設看哪一側（使用者指示：售票中看售票紀錄、進行中看名單）。
+   已排程只有名單那側成立，已結束／已取消回到售票紀錄（結案對帳）。 */
+const DEFAULT_VIEW = {
+  scheduled: 'roster', 'on-sale': 'record', live: 'roster', ended: 'record', cancelled: 'record'
+};
+let viewSel = null;   // null＝跟著階段走；使用者手動切過就記住這一輪的選擇
+
+function newTabs() {
+  return planTabs().filter(tab => {
+    if (tab.onlyType && tab.onlyType.indexOf(type) < 0) return false;
+    return allItems(tab).some(itemOn);
+  });
+}
+
+/* 分頁可以點：兩欄的籤都是真的可切換，因為要判斷「這個分頁結構好不好用」，
+   得像真的頁面那樣一格一格點過去，而不是把所有分頁的內容攤平在一頁上比對。
+   兩種讀法各有用處，所以留一個「展開全部」的開關：
+     逐頁（預設）＝模擬真實操作，看單一分頁裡到底裝了多少東西；
+     展開全部   ＝一眼比對兩種結構的總量與分佈。 */
+let nowSel = 0, newSel = 0, showAll = false;
+
+function grpHTML(name, q, itemsHTML) {
+  return `<div class="grp">
+    <div class="grp__head"><span class="grp__name">${name}</span>${q ? `<span class="grp__q">${q}</span>` : ''}</div>
+    <div class="grp__items">${itemsHTML}</div>
+  </div>`;
+}
+
+function render() {
+  const nt = nowTabs(), xt = newTabs();
+  /* 換階段／類型／版本後分頁數會變，選到的那格可能已經不存在——夾回範圍內 */
+  if (nowSel >= nt.length) nowSel = 0;
+  if (newSel >= xt.length) newSel = 0;
+
+  document.getElementById('strip-now').innerHTML = nt
+    .map((k, i) => `<button type="button" class="tabstrip__item${!showAll && i === nowSel ? ' tabstrip__item--on' : ''}" data-now-i="${i}">${NOW_LABEL[k]}</button>`).join('');
+  document.getElementById('strip-new').innerHTML = xt
+    .map((t, i) => `<button type="button" class="tabstrip__item${!showAll && i === newSel ? ' tabstrip__item--new' : ''}" data-new-i="${i}">${t.name}</button>`).join('');
+
+  document.getElementById('cap-now').textContent = nt.length + ' 個分頁';
+  document.getElementById('cap-new').textContent = xt.length + ' 個分頁';
+
+  const nowShown = showAll ? nt : [nt[nowSel]];
+  document.getElementById('body-now').innerHTML = nowShown.filter(Boolean).map(k =>
+    grpHTML(NOW_LABEL[k], '', NOW_CONTENT[k].map(c => `<span class="chip">${c}</span>`).join(''))
+  ).join('');
+
+  const newShown = showAll ? xt : [xt[newSel]];
+  document.getElementById('body-new').innerHTML = newShown.filter(Boolean).map(t => {
+    const chips = list => list.map(i =>
+      `<span class="chip chip--from" title="原本在「${i.from}」">${i.t} <span style="opacity:.55">← ${i.from}</span></span>`
+    ).join('');
+    if (!tabViews(t)) return grpHTML(t.name, t.q, chips(t.items.filter(itemOn)));
+    /* 合併分頁：先畫內頁切換器，再畫選到那一側的內容 */
+    const vs = viewsOn(t);
+    if (!vs.length) return '';
+    const want = viewSel || DEFAULT_VIEW[stage];
+    const cur = vs.find(v => v.id === want) || vs[0];
+    const sw = vs.length > 1
+      ? `<div class="segmented mb-8" role="radiogroup" style="margin-bottom:var(--sp-10)">` + vs.map(v =>
+          `<button type="button" class="segmented__btn${v === cur ? ' segmented__btn--active' : ''}" data-view-sel="${v.id}">${v.name}</button>`
+        ).join('') + `</div>`
+      : `<p class="empty-note" style="margin:0 0 var(--sp-8)">這個階段只有「${cur.name}」這一側成立，不畫切換器。</p>`;
+    const why = viewSel ? '' : `<span class="grp__q">預設：${cur.name}</span>`;
+    return `<div class="grp">
+      <div class="grp__head"><span class="grp__name">${t.name}</span><span class="grp__q">${t.q}</span>${why}</div>
+      ${sw}
+      <div class="grp__items">${chips(cur.items.filter(itemOn))}</div>
+    </div>`;
+  }).join('');
+
+  const d = nt.length - xt.length;
+  document.getElementById('delta').innerHTML = d > 0
+    ? `這個狀態下：<b class="count">${nt.length}</b> 格 → <b class="count">${xt.length}</b> 格，少 <b class="count">${d}</b> 格。`
+    : `這個狀態下兩者都是 <b class="count">${xt.length}</b> 格。`;
+  renderMap();
+}
+
+document.getElementById('ctl-stage').addEventListener('click', e => {
+  const b = e.target.closest('[data-stage]'); if (!b) return;
+  stage = b.dataset.stage;
+  viewSel = null;   // 換階段＝回到該階段的預設側，這正是要示範的行為
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+document.getElementById('ctl-type').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  type = b.dataset.type;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+document.getElementById('ctl-plan').addEventListener('click', e => {
+  const b = e.target.closest('[data-plan]'); if (!b) return;
+  plan = b.dataset.plan;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+document.getElementById('ctl-view').addEventListener('click', e => {
+  const b = e.target.closest('[data-view]'); if (!b) return;
+  showAll = b.dataset.view === 'all';
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+/* 兩欄的分頁籤各自可點 */
+document.getElementById('strip-now').addEventListener('click', e => {
+  const b = e.target.closest('[data-now-i]'); if (!b) return;
+  nowSel = +b.dataset.nowI; showAll = false; syncViewBtns(); render();
+});
+document.getElementById('strip-new').addEventListener('click', e => {
+  const b = e.target.closest('[data-new-i]'); if (!b) return;
+  newSel = +b.dataset.newI; showAll = false; syncViewBtns(); render();
+});
+/* 合併分頁的內頁切換 */
+document.getElementById('body-new').addEventListener('click', e => {
+  const b = e.target.closest('[data-view-sel]'); if (!b) return;
+  viewSel = b.dataset.viewSel; render();
+});
+/* 點了分頁籤等於選擇「逐頁」，開關要跟著回去，不然畫面說一套按鈕說另一套 */
+function syncViewBtns() {
+  document.querySelectorAll('#ctl-view [data-view]').forEach(x =>
+    x.classList.toggle('segmented__btn--active', (x.dataset.view === 'all') === showAll));
+}
+
+/* 對照表：跟著選中的提案版本走 */
+function renderMap() {
+  document.getElementById('tbl-map').innerHTML = planTabs().map(t => `
+    <tr>
+      <td>${t.name}</td>
+      <td>${t.q}</td>
+      <td>${[...new Set(allItems(t).map(i => i.from))].join('、')}</td>
+      <td>${
+        t.id === 'status' || t.id === 'setup' ? '一律'
+        : t.id === 'tickets' ? '一律（共看派對除外）'
+        : t.id === 'sales' ? '開賣之後（該階段沒有的那一側自動收起）'
+        : '—'
+      }</td>
+    </tr>`).join('');
+}
+
+/* audit：極端狀態下的觀察 */
+const AUDIT = [
+  ['共看派對', '現行一次收掉 5 個分頁（票務／票務商品／發布設定／參加者名單／系列），剩 5 格裡有 2 格是空殼概念。提案下「票務」整格消失（同現行），但「設定」只是少掉發布那三段、分頁本身還在——分頁不會因為少一段設定就整個不見。'],
+  ['共看派對 · 命名（仍未解）', '第 4 格經三輪命名：參加者 → 粉絲 → 「活動名單」（2026-08-17 使用者裁決）。問題還在同一個地方：共看派對沒有參加者名單（D149），那一格只剩通知，叫「活動名單」仍然說謊。乾淨的解法不是再換一次名字，而是<b>讓共看派對也有名單</b>——「誰買了票」對線上活動一樣成立，不成立的只有報到那一欄，而報到欄本來就是活動當天才出現。這屬 D149 的範圍，需上游裁決。'],
+  ['已取消', '現行留 6 格，其中「發布設定」對一場不會發生的活動已無意義卻仍在（因為它屬 ALWAYS 之外但 cancelled 沒排除乾淨）。提案下「粉絲」整格收起、「設定」保留場次與內容供對帳查閱，發布那幾段收起。'],
+  ['系列子場', '「系列」維持獨立第 6 格。要注意的是：活動內容欄位裡那則「這一場屬於系列，請到母頁改」的鎖定提示，會跟著內容欄位一起搬進「設定」——那正是它該在的地方（編輯被擋的位置）。'],
+  ['已排程', '收斂最明顯：現行 6 格幾乎全是設定，提案剩 3–4 格。剛走完 8 步精靈的人不必再面對第二套步驟清單。'],
+  ['進行中 / 已結束', '分頁結構不變，差異全落在「總覽」右欄換人（現場報到台 → 報到快照）與 KPI——那是既有設計，本提案不動。'],
+  ['草稿（已移出範圍）', '草稿＝精靈還沒填完，點下去應該回到建立流程續填。現行原型接錯：<code>events.html</code> 的草稿列與選單的「編輯」兩處都指向 <code>event-detail.html?id=next-leg-draft</code>，而 <code>create-event.html</code> 目前也沒有續填入口（只有 <code>?from=</code> 的複製一場）。更正要動三個地方：草稿列改指建立流程、建立流程加續填參數、活動詳情移除 draft 階段（有人直接輸網址時導回建立流程）。'],
+  ['甲 vs 乙 的取捨', '差別只在「設定」要不要獨立一格。開賣後那些設定幾乎全鎖住——發布設定唯讀、改場次是需要確認的高影響變更——是查閱資料而不是工作區，用一整格分頁裝它，成本高於收益。甲把它併回總覽，代價是已排程階段的總覽會比較長。']
+];
+document.getElementById('audit').innerHTML = AUDIT.map(([k, v]) => `
+  <div class="data-list__row">
+    <div class="data-list__row-main">
+      <div class="data-list__body">
+        <div class="data-list__title">${k}</div>
+        <div class="data-list__meta">${v}</div>
+      </div>
+    </div>
+  </div>`).join('');
+
+render();
+</script>
+</body>
+</html>

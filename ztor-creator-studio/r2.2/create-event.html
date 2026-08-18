@@ -5212,6 +5212,8 @@
   function renderDupNote() {
     const note = document.getElementById("ce-dup-note");
     if (!note || !dupName) return;
+    /* 續填草稿時這則橫幅由 resumeNote() 負責，切語言也走它 */
+    if (resumeMode) { resumeNote(); return; }
     note.hidden = false;
     const txt = note.querySelector("[data-dup-text]");
     if (txt) txt.textContent = T("ce.dup.note",
@@ -5219,12 +5221,38 @@
       .replace("{name}", dupName);
   }
 
+  /* 續填模式的提示：dupFrom() 掛的是「複製自 X」，那句話在續填草稿時是錯的
+     （沒有「來源」這回事，就是這一場自己）。改寫同一則橫幅的文字，不另做一支元件。 */
+  let resumeMode = false;
+  function resumeNote(id) {
+    resumeMode = true;
+    const note = document.getElementById("ce-dup-note");
+    if (!note) return;
+    note.hidden = false;
+    const txt = note.querySelector("[data-dup-text]");
+    if (txt) txt.textContent = T("ce.resume.note",
+      "Picking up the draft “{name}” where you left off. Finishing here publishes this event — it does not create a second one.")
+      .replace("{name}", dupName);
+  }
+
   function demoInit() {
     renderBkyList();
     demoI18n();
     renderShare();
-    const from = new URLSearchParams(location.search).get("from");
+    const qs = new URLSearchParams(location.search);
+    const from = qs.get("from");
     if (from) dupFrom(from);
+    /* 續填草稿（2026-08-17 使用者裁決「草稿開啟的應該是創建流程的頁面」）：
+       草稿＝精靈還沒填完，從活動清單點它應該回到這裡把它填完，而不是進活動詳情
+       （那一頁以「已發布的活動」為前提，整套分頁與階段動作對草稿都不成立）。
+       預填沿用 dupFrom() 的搬運路徑——同樣是「把一場既有活動的值倒進表單」；
+       差別只有兩件事：標題不寫「複製自」，而且填完是把原本那一場發布出去、
+       不是多開一場。真實實作要帶著 draft id 回存，原型只做到預填。 */
+    const draft = qs.get("draft");
+    if (draft) {
+      dupFrom(draft);
+      resumeNote(draft);
+    }
     syncBundleEmpty();     // 一開始一組都沒有＝空狀態說明卡，加號先收起來
     if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
   }

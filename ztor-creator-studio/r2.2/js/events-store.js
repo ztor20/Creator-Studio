@@ -64,10 +64,16 @@
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 300 }
       ],
       /* 票務商品（2026-08-11）：建立流程第 6 步綁出來的組合包。與單賣的票共用同一個
-         數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。 */
+         數量池——賣掉一組就從它含的那張票扣一張（BDL-001，編輯規則待上游）。
+         2026-08-17：`products` 由字串陣列改為 `{ name, img }`——售票進度卡要把「這一組裡面
+         裝了什麼」用圖顯示出來，光有名字排不出那排縮圖。商品名與圖沿用 js/products-store.js
+         的 nick 批（同一件商品在電子商店與這裡不該長兩張臉）；圖路徑直接寫在這裡而不是
+         跨檔去查 products-store，理由同 images.keyvisual——那支是 persona 綁定的，
+         活動資料不該跟著 persona 切換而換掉組合包內容。 */
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演 T 恤', tickets: [{ tier: 'tier-vip', n: 1 }],
-          products: ['REALIVE 巡演 T 恤'], price: 4800, sold: 12, cap: 50 }
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ tier: 'tier-vip', n: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+          price: 4800, sold: 12, cap: 50 }
       ],
       /* 發布設定（2026-08-11 新欄）：建立流程第 7 步的三個選擇，沒寫＝直接開賣／電子門票／公開。 */
       publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
@@ -137,8 +143,12 @@
         { id: 'tier-seat',  name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
       ],
       bundles: [
-        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演 T 恤', tickets: [{ tier: 'tier-vip', n: 1 }],
-          products: ['REALIVE 巡演 T 恤'], price: 4800, sold: 3, cap: 50 }
+        { id: 'bd-vip-tee', name: 'VIP ＋ 巡演官方 Tee', tickets: [{ tier: 'tier-vip', n: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+          price: 4800, sold: 3, cap: 50 },
+        { id: 'bd-vip-zine', name: 'VIP ＋ 精裝寫真誌', tickets: [{ tier: 'tier-vip', n: 1 }],
+          products: [{ name: 'REALIVE 巡演精裝寫真誌', img: 'images/products/tour-zine-vol-02.webp' }],
+          price: 5200, sold: 7, cap: 40 }
       ],
       publish: { onsale: 'scheduled', pickup: 'sf', visibility: 'public' },
       sold: 200,
@@ -292,8 +302,9 @@
       /* 2026-08-13：多一筆組合包示範，讓「票券綁商品」不是只有巡演那兩場看得到
          （組合包與單賣的票共用同一個數量池，賣掉一組就從它含的那張票扣一張，BDL-001）。 */
       bundles: [
-        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 黑膠', tickets: [{ tier: 'tier-slot', n: 1 }],
-          products: ['新專輯黑膠'], price: 45, sold: 26, cap: 60 }
+        { id: 'bd-slot-vinyl', name: '簽名場次 ＋ 限量黑膠', tickets: [{ tier: 'tier-slot', n: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp' }],
+          price: 45, sold: 26, cap: 60 }
       ],
       sold: 118,
       revenue: 590,
@@ -453,6 +464,830 @@
       status: 'draft',
       images: { keyvisual: '', banner: '', gallery: [] },
       video: false
+    },
+
+    /* ══ 六個狀態 × 五個類型的完整矩陣（2026-08-17 使用者指示）══════════════════
+       在此之前，可挑的組合有一半是空的：線上活動（virtual）全站一筆都沒有、已取消整個
+       狀態沒有任何活動、進行中只有一場見面會。要看「售票中的多站巡演長什麼樣」可以，
+       要看「已取消的共看派對長什麼樣」就沒有東西可看——而那正是原型要拿來評估的地方。
+
+       矩陣的兩條軸：
+         狀態＝已排程／售票中／進行中／已結束／已取消／草稿（清單上的六個分頁）
+         類型＝演唱會／多站演唱會／粉絲見面會／線上活動／共看派對（使用者指定的五種）
+       多站演唱會每個狀態一個系列、各 2 站（使用者裁決）；同一個系列的兩站共用票種設定，
+       數量各站獨立，與既有的 realive-asia 同一套規則。
+
+       數字的內部一致性：`sold` 與 `revenue` 一律等於票種的加總（sold＝Σsold，
+       revenue＝Σ price×sold），清單那一列的數字與詳情頁票種表因此不可能對不起來。
+       非真實票務數字，同全檔口徑（見 ASSUMPTIONS.md）。 */
+    {
+      id: 'nick-symphonic-taipei',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'NICK Symphonic Night — Taipei',
+      desc: 'The catalogue rearranged for a full orchestra. One night, seated only.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Taipei Music Center',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-12-05',
+      start: '19:30',
+      end: '21:30',
+      doors: '18:30',
+      capacity: 600,
+      tiers: [
+        { id: 'tier-lower', name: 'Lower level', price: 2800, qty: 400, sold: 0 },
+        { id: 'tier-upper', name: 'Upper level', price: 1800, qty: 200, sold: 0 }
+      ],
+      publish: { onsale: 'scheduled', pickup: 'eticket', visibility: 'public' },
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-lwh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-sea-singapore',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-sea', name: 'REALIVE World Tour — Southeast Asia leg', index: 1, total: 2 },
+      name: 'REALIVE World Tour — Southeast Asia leg',
+      desc: 'Two cities, one setlist — the Southeast Asia run.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Capitol Theatre',
+      city: 'Singapore',
+      address: '',
+      date: '2027-01-16',
+      start: '20:00',
+      end: '22:00',
+      doors: '19:00',
+      capacity: 800,
+      tiers: [
+        { id: 'tier-early', name: 'Early bird', price: 1800, qty: 300, sold: 0 },
+        { id: 'tier-ga', name: 'General admission', price: 2400, qty: 500, sold: 0 }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-sea-kl',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-sea', name: 'REALIVE World Tour — Southeast Asia leg', index: 2, total: 2 },
+      name: 'REALIVE World Tour — Southeast Asia leg',
+      desc: 'Two cities, one setlist — the Southeast Asia run.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Zepp Kuala Lumpur',
+      city: 'Kuala Lumpur, Malaysia',
+      address: '',
+      date: '2027-01-23',
+      start: '20:00',
+      end: '22:00',
+      doors: '19:00',
+      capacity: 800,
+      tiers: [
+        { id: 'tier-early', name: 'Early bird', price: 1800, qty: 300, sold: 0 },
+        { id: 'tier-ga', name: 'General admission', price: 2400, qty: 500, sold: 0 }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-signing-taichung',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      series: null,
+      name: 'LOVE RAGE HOPE signing — Taichung',
+      desc: 'In-store signing for the fifth album. 120 numbered slots, one item signed per slot.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Eslite Park Lane',
+      city: 'Taichung, Taiwan',
+      address: '',
+      date: '2026-11-08',
+      start: '14:00',
+      end: '16:00',
+      doors: '13:30',
+      capacity: 120,
+      tiers: [
+        { id: 'tier-slot', name: 'Signing slot', price: 600, qty: 120, sold: 0 }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-writing-class',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'LOVE RAGE HOPE — Writing session, online',
+      desc: 'Two hours on how the album was written, starting from the demo of the opening track.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-11-20',
+      start: '21:00',
+      end: '23:00',
+      doors: '',
+      capacity: 500,
+      room: { url: 'ztor.live/v/lrh-writing-class', chat: true, capacity: 500 },
+      tiers: [
+        { id: 'tier-stream', name: 'Live stream', price: 300, qty: 400, sold: 0 },
+        { id: 'tier-qa', name: 'Stream + Q and A seat', price: 600, qty: 100, sold: 0 }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-wln.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'flames-mv-premiere',
+      type: 'watchparty',
+      typeLabelKey: 'ce.type.watchparty',
+      category: 'online',
+      series: null,
+      name: 'FLAMES MV (remastered) — Premiere watch party',
+      desc: 'Premiere the remastered video together, with the director in chat.',
+      lineup: [],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-12-24',
+      start: '21:00',
+      end: '',
+      doors: '',
+      capacity: 500,
+      room: { url: 'ztor.live/w/flames-mv-premiere', chat: true, capacity: 500 },
+      tiers: [
+        { id: 'tier-entry', name: 'Admission', price: 150, qty: 500, sold: 0 }
+      ],
+      sold: 0,
+      revenue: 0,
+      status: 'scheduled',
+      images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'nantou-lantern-opening',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'Nantou Lantern Festival — Opening night',
+      desc: 'The opening-night stage of the city lantern festival. One set, no support act.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Nantou Expo Center',
+      city: 'Nantou, Taiwan',
+      address: '',
+      date: '2027-01-25',
+      start: '19:00',
+      end: '20:30',
+      doors: '18:00',
+      capacity: 3000,
+      tiers: [
+        { id: 'tier-front', name: 'Front block', price: 1200, qty: 1000, sold: 642 },
+        { id: 'tier-rear', name: 'Rear block', price: 800, qty: 2000, sold: 1198 }
+      ],
+      bundles: [
+        { id: 'bd-front-vinyl', name: '前區票 ＋ 限量黑膠', tickets: [{ tier: 'tier-front', n: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE 限量黑膠 1/500', img: 'images/products/coastline-acetate.webp' }],
+          price: 1900, sold: 63, cap: 200 }
+      ],
+      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      sold: 1840,
+      revenue: 1728800,
+      status: 'on-sale',
+      images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-studio-live',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'LOVE RAGE HOPE — Studio session, online',
+      desc: 'A live broadcast from the studio: three songs from the album, then the room picks the fourth.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-09-20',
+      start: '21:00',
+      end: '22:30',
+      doors: '',
+      capacity: 800,
+      room: { url: 'ztor.live/v/lrh-studio-live', chat: true, capacity: 800 },
+      tiers: [
+        { id: 'tier-stream', name: 'Live stream', price: 350, qty: 700, sold: 402 },
+        { id: 'tier-bts', name: 'Stream + behind the scenes', price: 650, qty: 100, sold: 71 }
+      ],
+      bundles: [
+        { id: 'bd-stream-album', name: '直播票 ＋ 數位專輯', tickets: [{ tier: 'tier-stream', n: 1 }],
+          products: [{ name: 'LOVE RAGE HOPE — 數位專輯', img: 'images/products/nick-album.jpg' }],
+          price: 520, sold: 88, cap: 150 }
+      ],
+      publish: { onsale: 'now', pickup: 'eticket', visibility: 'public' },
+      sold: 473,
+      revenue: 186850,
+      status: 'on-sale',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'fubon-postgame-taipei',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'Fubon Guardians post-game show — Taipei Dome',
+      desc: 'The post-game stage at the Dome. Doors open as the ninth inning ends.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Taipei Dome',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-07-27',
+      start: '19:30',
+      end: '21:00',
+      doors: '18:30',
+      capacity: 1200,
+      tiers: [
+        { id: 'tier-infield', name: 'Infield', price: 1200, qty: 800, sold: 800 },
+        { id: 'tier-outfield', name: 'Outfield', price: 900, qty: 400, sold: 372 }
+      ],
+      bundles: [
+        { id: 'bd-infield-tee', name: '內野票 ＋ 官方 Tee', tickets: [{ tier: 'tier-infield', n: 1 }],
+          products: [{ name: 'REALIVE 白趴 官方 Tee', img: 'images/products/tee-black.webp' }],
+          price: 1700, sold: 41, cap: 120 }
+      ],
+      sold: 1172,
+      revenue: 1294800,
+      status: 'live',
+      startedMinutesAgo: 25,
+      arrivedAtOpen: 774,
+      images: { keyvisual: 'images/projects/nick-lrh-tour.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-campus-ntu',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'lrh-campus', name: 'LOVE·RAGE·HOPE Campus Tour', index: 1, total: 2 },
+      name: 'LOVE·RAGE·HOPE Campus Tour',
+      desc: 'Two campuses in one day — a short set and an open mic with students.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'NTU Sports Centre',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-07-27',
+      start: '12:20',
+      end: '13:30',
+      doors: '12:00',
+      capacity: 400,
+      tiers: [
+        { id: 'tier-entry', name: 'Entry', price: 100, qty: 400, sold: 400 }
+      ],
+      sold: 400,
+      revenue: 40000,
+      status: 'live',
+      startedMinutesAgo: 65,
+      arrivedAtOpen: 291,
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-campus-nccu',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'lrh-campus', name: 'LOVE·RAGE·HOPE Campus Tour', index: 2, total: 2 },
+      name: 'LOVE·RAGE·HOPE Campus Tour',
+      desc: 'Two campuses in one day — a short set and an open mic with students.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'NCCU Arts Hall',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-07-27',
+      start: '18:30',
+      end: '19:40',
+      doors: '18:00',
+      capacity: 400,
+      tiers: [
+        { id: 'tier-entry', name: 'Entry', price: 100, qty: 400, sold: 356 }
+      ],
+      sold: 356,
+      revenue: 35600,
+      status: 'live',
+      startedMinutesAgo: 10,
+      arrivedAtOpen: 208,
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-listening-party',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'LOVE RAGE HOPE — Listening party, online',
+      desc: 'Playing the album end to end, talking through each track as it goes.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-07-27',
+      start: '13:00',
+      end: '15:00',
+      doors: '',
+      capacity: 1000,
+      room: { url: 'ztor.live/v/lrh-listening-party', chat: true, capacity: 1000 },
+      tiers: [
+        { id: 'tier-stream', name: 'Live stream', price: 200, qty: 1000, sold: 731 }
+      ],
+      sold: 731,
+      revenue: 146200,
+      status: 'live',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-doc-watchparty',
+      type: 'watchparty',
+      typeLabelKey: 'ce.type.watchparty',
+      category: 'online',
+      series: null,
+      name: 'LOVE·RAGE·HOPE tour documentary — Watch party',
+      desc: 'Watching the tour documentary together, with the director answering in chat.',
+      lineup: [],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-07-27',
+      start: '13:30',
+      end: '',
+      doors: '',
+      capacity: 600,
+      room: { url: 'ztor.live/w/lrh-doc', chat: true, capacity: 600 },
+      tiers: [
+        { id: 'tier-entry', name: 'Admission', price: 120, qty: 600, sold: 418 }
+      ],
+      sold: 418,
+      revenue: 50160,
+      status: 'live',
+      images: { keyvisual: 'images/projects/nick-lrh-tour.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'sdfs-tour-taipei',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'sdfs-tour', name: 'Too Handsome to Stay — Party Tour (revival)', index: 1, total: 2 },
+      name: 'Too Handsome to Stay — Party Tour (revival)',
+      desc: 'The 2017 party tour, replayed in the two rooms it opened and closed in.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'A Station',
+      city: 'Taipei, Taiwan',
+      address: '',
+      date: '2026-03-14',
+      start: '20:00',
+      end: '22:00',
+      doors: '19:00',
+      capacity: 500,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 900, qty: 500, sold: 500 }
+      ],
+      sold: 500,
+      revenue: 450000,
+      status: 'ended',
+      images: { keyvisual: 'images/projects/nick-sdfs.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'sdfs-tour-chengdu',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'sdfs-tour', name: 'Too Handsome to Stay — Party Tour (revival)', index: 2, total: 2 },
+      name: 'Too Handsome to Stay — Party Tour (revival)',
+      desc: 'The 2017 party tour, replayed in the two rooms it opened and closed in.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Zhenghuo Art Center',
+      city: 'Chengdu, China',
+      address: '',
+      date: '2026-03-21',
+      start: '20:00',
+      end: '22:00',
+      doors: '19:00',
+      capacity: 500,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 900, qty: 500, sold: 468 }
+      ],
+      sold: 468,
+      revenue: 421200,
+      status: 'ended',
+      images: { keyvisual: 'images/projects/nick-sdfs.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'reallife-signing-kaohsiung',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      series: null,
+      name: 'REAL LIFE signing — Kaohsiung',
+      desc: 'In-store signing, 150 numbered slots, one item signed per slot.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Talee Department Store',
+      city: 'Kaohsiung, Taiwan',
+      address: '',
+      date: '2026-05-10',
+      start: '14:00',
+      end: '16:00',
+      doors: '13:30',
+      capacity: 150,
+      tiers: [
+        { id: 'tier-slot', name: 'Signing slot', price: 350, qty: 150, sold: 150 }
+      ],
+      sold: 150,
+      revenue: 52500,
+      status: 'ended',
+      images: { keyvisual: 'images/projects/nick-real-life.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'reallife-full-album-online',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'REAL LIFE — Full album, online',
+      desc: 'The 2022 album played front to back, streamed only.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-06-20',
+      start: '21:00',
+      end: '23:00',
+      doors: '',
+      capacity: 2000,
+      room: { url: 'ztor.live/v/reallife-full-album', chat: true, capacity: 2000 },
+      tiers: [
+        { id: 'tier-stream', name: 'Live stream', price: 400, qty: 1800, sold: 1642 },
+        { id: 'tier-archive', name: 'Stream + 30-day replay', price: 800, qty: 200, sold: 187 }
+      ],
+      sold: 1829,
+      revenue: 806400,
+      status: 'ended',
+      images: { keyvisual: 'images/projects/nick-real-life.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'sdfs-mv-watchback',
+      type: 'watchparty',
+      typeLabelKey: 'ce.type.watchparty',
+      category: 'online',
+      series: null,
+      name: 'Too Handsome to Stay MV — 10-year watch-back',
+      desc: 'Watching the 2016 video back, ten years on.',
+      lineup: [],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-02-14',
+      start: '21:00',
+      end: '',
+      doors: '',
+      capacity: 400,
+      room: { url: 'ztor.live/w/sdfs-mv-watchback', chat: true, capacity: 400 },
+      tiers: [
+        { id: 'tier-entry', name: 'Admission', price: 100, qty: 400, sold: 313 }
+      ],
+      sold: 313,
+      revenue: 31300,
+      status: 'ended',
+      images: { keyvisual: 'images/projects/nick-sdfs.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'hualien-summer-love',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'Hualien Summer Love Festival — NICKTHEREAL set',
+      desc: 'Lakeside stage at Liyu Lake. Cancelled on a typhoon warning.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Liyu Lake',
+      city: 'Hualien, Taiwan',
+      address: '',
+      date: '2026-08-30',
+      start: '18:00',
+      end: '21:00',
+      doors: '17:00',
+      capacity: 1500,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 1000, qty: 1500, sold: 892 }
+      ],
+      sold: 892,
+      revenue: 892000,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-flames.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-china-fuzhou',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-china-2027', name: 'REALIVE World Tour — China leg (2027)', index: 1, total: 2 },
+      name: 'REALIVE World Tour — China leg (2027)',
+      desc: 'Two added China dates. Cancelled when the venue partner withdrew.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Strait Culture and Art Centre',
+      city: 'Fuzhou, China',
+      address: '',
+      date: '2026-11-14',
+      start: '19:30',
+      end: '21:30',
+      doors: '18:30',
+      capacity: 700,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 1100, qty: 700, sold: 421 }
+      ],
+      sold: 421,
+      revenue: 463100,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-china-hangzhou',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-china-2027', name: 'REALIVE World Tour — China leg (2027)', index: 2, total: 2 },
+      name: 'REALIVE World Tour — China leg (2027)',
+      desc: 'Two added China dates. Cancelled when the venue partner withdrew.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'CH8 Livehouse',
+      city: 'Hangzhou, China',
+      address: '',
+      date: '2026-11-21',
+      start: '19:30',
+      end: '21:30',
+      doors: '18:30',
+      capacity: 700,
+      tiers: [
+        { id: 'tier-ga', name: 'General admission', price: 1100, qty: 700, sold: 318 }
+      ],
+      sold: 318,
+      revenue: 349800,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-meet-tokyo',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      series: null,
+      name: 'LOVE RAGE HOPE — Tokyo pop-up meet',
+      desc: 'A pop-up meet at Shibuya Loft. Cancelled when the visa schedule slipped.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Shibuya Loft',
+      city: 'Tokyo, Japan',
+      address: '',
+      date: '2026-10-12',
+      start: '18:00',
+      end: '20:00',
+      doors: '17:30',
+      capacity: 100,
+      tiers: [
+        { id: 'tier-slot', name: 'Meet slot', price: 900, qty: 100, sold: 74 }
+      ],
+      sold: 74,
+      revenue: 66600,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-backers-briefing',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'LOVE RAGE HOPE — Backers briefing, online',
+      desc: 'A progress briefing for backers. Cancelled and folded into the next project update.',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-09-05',
+      start: '21:00',
+      end: '22:00',
+      doors: '',
+      capacity: 600,
+      room: { url: 'ztor.live/v/lrh-backers-briefing', chat: true, capacity: 600 },
+      tiers: [
+        { id: 'tier-stream', name: 'Live stream', price: 200, qty: 600, sold: 233 }
+      ],
+      sold: 233,
+      revenue: 46600,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'r2-rehearsal-watchparty',
+      type: 'watchparty',
+      typeLabelKey: 'ce.type.watchparty',
+      category: 'online',
+      series: null,
+      name: 'REALIVE (R2) rehearsal footage — Watch party',
+      desc: 'Watching the R2 rehearsal footage together. Cancelled with the tour date.',
+      lineup: [],
+      venue: 'Online',
+      city: '',
+      address: '',
+      date: '2026-09-19',
+      start: '21:00',
+      end: '',
+      doors: '',
+      capacity: 300,
+      room: { url: 'ztor.live/w/r2-rehearsal', chat: true, capacity: 300 },
+      tiers: [
+        { id: 'tier-entry', name: 'Admission', price: 120, qty: 300, sold: 96 }
+      ],
+      sold: 96,
+      revenue: 11520,
+      status: 'cancelled',
+      images: { keyvisual: 'images/projects/nick-r2-special.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-japan-draft-1',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-japan', name: 'REALIVE World Tour — Japan leg (planning)', index: 1, total: 2 },
+      name: 'REALIVE World Tour — Japan leg (planning)',
+      desc: '',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'realive-japan-draft-2',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: { id: 'realive-japan', name: 'REALIVE World Tour — Japan leg (planning)', index: 2, total: 2 },
+      name: 'REALIVE World Tour — Japan leg (planning)',
+      desc: '',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-realive.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'onstage-encore-draft',
+      type: 'concert',
+      typeLabelKey: 'ce.type.concert',
+      category: 'concert',
+      series: null,
+      name: 'ON STAGE encore show (planning)',
+      desc: '',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-lwh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'lrh-meet-draft',
+      type: 'meet',
+      typeLabelKey: 'ce.type.meet',
+      category: 'fans-meet',
+      series: null,
+      name: 'LOVE RAGE HOPE fan meet (planning)',
+      desc: '',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-lrh.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'nick-online-draft',
+      type: 'virtual',
+      typeLabelKey: 'ce.type.virtual',
+      category: 'online',
+      series: null,
+      name: 'NICKTHEREAL online show (planning)',
+      desc: '',
+      lineup: ['NICKTHEREAL 周湯豪'],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-nsddd.jpg', banner: '', gallery: [] },
+      video: false
+    },
+    {
+      id: 'onstage-film-watchparty-draft',
+      type: 'watchparty',
+      typeLabelKey: 'ce.type.watchparty',
+      category: 'online',
+      series: null,
+      name: 'ON STAGE concert film — Watch party (planning)',
+      desc: '',
+      lineup: [],
+      venue: '',
+      city: '',
+      address: '',
+      date: '',
+      start: '',
+      end: '',
+      doors: '',
+      capacity: 0,
+      tiers: [],
+      sold: 0,
+      revenue: 0,
+      status: 'draft',
+      images: { keyvisual: 'images/projects/nick-r2.jpg', banner: '', gallery: [] },
+      video: false
     }
   ];
 
@@ -467,21 +1302,80 @@
                'Chloe','Ethan','Rina','Kai','Vera','Leo','Suki','Marco','Yuki','Ines'];
   var FAMILY = ['Lin','Tanaka','Kim','Alvarez','Nair','Chen','Wu','Sato','Park','Silva',
                 'Huang','Ito','Patel','Costa','Yang','Mori','Cheng','Ono','Reyes','Tsai'];
-  var TIERS_LABEL = ['Inner Circle seat', 'Inner Circle + polaroid'];
+  /* 票種名取自這場活動自己的 tiers（2026-08-17 修正）：此前寫死成內圈見面會的兩個票種名，
+     所以只要換一場進行中的活動來看，報到名單上每一列都掛著別場活動的票種——在「進行中」
+     從一場擴充到五場之後這件事會直接被看到。
+     配法：每一位挑「剩餘比例最高」的票種——比的是剩餘張數佔自己總數的比例，不是絕對張數。
+     用絕對張數會讓 180 張／20 張的活動先發完 160 張大票種才輪到小的，而到場的是名單前段，
+     「誰到了」的票種分佈就整個失真；用比例則是每十位出現一位小票種，比例才對得起來。 */
+  /* 到場時間（2026-08-17 改寫）：以「開放入場」為起點、開演後 30 分鐘為終點，
+     密度做成開演前十幾分鐘達到尖峰、開演後迅速收尾的形狀。
+     此前是 `13*60+30 + i*0.62`——兩個問題：
+       · 13:30 是內圈見面會的開放入場時間，寫死在這裡，換一場活動時間全是錯的；
+       · 等速直線把「開場前的排隊尖峰」抹平了，畫成到場節奏圖只會是一排等高的柵欄，
+         而那張圖存在的理由正是回答「門口現在是尖峰還是收尾」。
+     權重是九段固定值、不用亂數，同一場活動每次載入都得到同一條曲線。 */
+  var ARRIVAL_SHAPE = [3, 6, 11, 17, 21, 18, 12, 8, 4];
+  function hhmmMin(s) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(s == null ? '' : s).trim());
+    return m ? (+m[1]) * 60 + (+m[2]) : null;
+  }
+  function arrivalTimes(ev, n) {
+    if (!n) return [];
+    var start = hhmmMin(ev.start);
+    if (start == null) start = 19 * 60;
+    var doors = hhmmMin(ev.doors);
+    if (doors == null || doors >= start) doors = start - 60;
+    var from = doors, to = start + 30, span = to - from;
+    var total = ARRIVAL_SHAPE.reduce(function (a, b) { return a + b; }, 0);
+    var out = [], seg = span / ARRIVAL_SHAPE.length, done = 0;
+    for (var b = 0; b < ARRIVAL_SHAPE.length; b++) {
+      // 這一段該有幾位＝權重比例；最後一段補足餘數，加總才會剛好等於 n
+      var want = (b === ARRIVAL_SHAPE.length - 1)
+        ? n - done
+        : Math.round(n * ARRIVAL_SHAPE[b] / total);
+      for (var k = 0; k < want; k++) {
+        /* 回傳「秒」而不是「分」（2026-08-17）：進場頻率那張圖有「秒」這個檔位，
+           分鐘解析度的資料在那個檔位下會變成每分鐘一根、中間全是零的梳子。
+           段內用 k/want 均分再乘上 60，同一個人永遠落在同一秒。 */
+        out.push(Math.round((from + seg * (b + (want > 1 ? k / want : 0.5))) * 60));
+      }
+      done += want;
+    }
+    return out;
+  }
+
+  function tierPicker(ev) {
+    var pool = (ev.tiers || []).map(function (t) {
+      return { name: t.name, left: t.sold || 0, tot: (t.sold || 0) || 1 };
+    });
+    return function () {
+      var best = null;
+      for (var k = 0; k < pool.length; k++) {
+        if (pool[k].left > 0 && (!best || pool[k].left / pool[k].tot > best.left / best.tot)) best = pool[k];
+      }
+      if (!best) return '';
+      best.left--;
+      return best.name;
+    };
+  }
 
   function buildRoster(ev) {
     var n = ev.sold || 0, arrived = ev.arrivedAtOpen || 0, out = [];
+    var pickTier = tierPicker(ev);
+    var times = arrivalTimes(ev, arrived);
     for (var i = 0; i < n; i++) {
       var g = GIVEN[i % GIVEN.length];
       var f = FAMILY[(i * 7 + 3) % FAMILY.length];
       out.push({
         seq: i + 1,
         name: g + ' ' + f,
-        tier: TIERS_LABEL[i % 17 === 0 ? 1 : 0],          // 約每 17 位一位是加購 polaroid
+        tier: pickTier(),
         code: 'ZT-' + String(4200 + i * 13).slice(-4),
         arrived: i < arrived,
-        /* 到場時間：開場前後散開，僅供顯示（原型不接真實時鐘） */
-        at: i < arrived ? (13 * 60 + 30 + Math.floor(i * 0.62)) : null
+        // 到場時間：見 arrivalTimes()。at＝分（既有消費端用），atSec＝秒（進場頻率圖用）
+        at: i < arrived ? Math.floor(times[i] / 60) : null,
+        atSec: i < arrived ? times[i] : null
       });
     }
     return out;

@@ -807,6 +807,12 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Review status | 🟡 molecule | ✓ App | 送審件的狀態面板（2026-08-07，spec 5.1.0.4 F5／5.1.2.2 §2.2.9）：狀態徽章＋唯讀事實（送出時間／送出次數／審核者）＋退件理由（`__note`，`--rejected`／`--approved` 只改左側色條）＋動作列（只在真的有事可做時出現）。審核的兩端共用同一支——創作者在項目頁看結果、審核者在審核頁看同一塊；狀態字彙由 `js/work-review-store.js` 提供，元件不自帶。詳見 §4.119 | [review-status.css](./ds-components/review-status.css) |
 | Ticket tier card | 🟡 molecule | ✓ App | 建立活動的票種卡（spec 5.1.6.1 F9）：收合態＝卡標＋⋮（複製／移除）＋唯讀價格／數量＋整寬 Edit，編輯態＝名稱／價格／數量三欄直排＋每欄清空 ✕＋卡底 Remove／Cancel／Save；`.tier-grid` 網格（無 List／Grid 切換；**2026-08-06 起固定三欄**，1100/720px 降級）、`.tier-toolbar` 批次編輯、`.tier-count`（`--over` 超過容量轉紅）。自訂規則開關 **2026-08-06 由卡內 switch 列改成標題列靠右的 `.tier-card__ownbtn` 按鈕**（`aria-pressed`，開啟態橘框橘字）。卡體吃 `.card`、不重畫。詳見 §4.114 | [ticket-tier-card.css](./ds-components/ticket-tier-card.css) |
 | Readiness card | 🟡 molecule | ✓ App | 上架前就緒檢查＋還差幾項 banner。footer 變體：`__chip`（貼 footer 主動作的就緒指示 chip，`--ready` 轉綠）＋`__pop`（hover/focus 浮出完整 readiness 卡當 tooltip）；create-product／create-auction／publish-work footer 用（publish-work 只在最後一步顯示，因為送出只發生在那一步；create-campaign 另有自身 pill 變體，待後續收斂） | [readiness.css](./ds-components/readiness.css) |
+| Progress timeline | 🟠 organism | ✓ App | 交付時間軸（2026-08-17，spec 5.1.2.2 §2.2.10 v3.0／D193、D194）：一條由真實日期驅動的垂直時間流，**未來在上、今天在中、過去在下**。版面三欄（日期欄／軸線與軸點／內容欄），排序只有一個依據就是日期。軸上有四種不是里程碑的列：釘頂的 `--system`（完成作品，不帶日期）、`--today`（今天，實心品牌色軸點＋情境句＋內嵌發文框 `.ptl__composer`）、軸底的 `--start`（項目建立，軸線在此停）、`--day`（按天收合的更新列）。狀態色只上在軸點與軸線，內容區不染色。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆不另存狀態。詳見 §4.51b | [progress-timeline.css](./ds-components/progress-timeline.css) |
+| Section nav | 🟡 molecule | ✓ App | 分頁內的側欄分節導覽（原 `.settings-nav`，2026-08-17 提升為中性元件） | [section-nav.css](./ds-components/section-nav.css) |
+| Stat row | 🟡 molecule | ✓ App | 卡內大數字排（取代把 `.kpi` 塞進卡片） | [stat-row.css](./ds-components/stat-row.css) |
+| Todo list | 🟡 molecule | ✓ App | 可編輯的待辦清單（勾選＋自行增刪） | [todo-list.css](./ds-components/todo-list.css) |
+| Meter list | 🟡 molecule | ✓ App | 逐項水位清單（名稱 → 量條 → 數字，三欄一線） | [meter-list.css](./ds-components/meter-list.css) |
+| Next step | 🟡 molecule | ✓ App | 一句話＋一顆主要動作，放在卡的最後一段；與 `.info-banner`（純說明）、`.insight-row`（算出來的結論）的分工是「只有這一支帶動作」 | [next-step.css](./ds-components/next-step.css) |
 | Empty card | 🟡 molecule | ✓ App | 卡片內「已載入但無資料」空狀態 | [empty-card.css](./ds-components/empty-card.css) |
 | Notification matrix | 🟠 organism | ✓ App | 事件×管道逐格開關矩陣（含鎖定通道） | [notification-matrix.css](./ds-components/notification-matrix.css) |
 | Completeness meter | 🟡 molecule | ✓ App | label＋x/y＋進度條（素材包完整度） | [completeness.css](./ds-components/completeness.css) |
@@ -830,13 +836,13 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Variant builder | 🟠 organism | ✓ App | 建立商品多選項（spec 5.1.5.2 §4.1④，僅實體）。**2026-08-10 逐規格圖片（使用者指示，上游無此欄位，ASSUMPTIONS PG-025）**：`.variant-table--img` 在每列開頭加一個 34px 的直式小縮圖 `.variant-thumb`，實線＝這個規格自己的圖、虛線＝沿用商品主圖（沿用上傳格 Q59 的實線/虛線語彙，整列掃過去就知道哪幾個規格被單獨換過圖）；點開「規格圖片」彈窗換圖（`.payout-dialog--narrow` ＋ `.upload-tile-aside`，與建立活動的票種圖片同一個 pattern：這一列自己的圖，沒給就沿用上一層）。狀態只有一個來源（`varData[key].img`，有值＝自己的圖），商品主圖換掉時沿用中的列會跟著換。未掛 `--img` 的表（商品明細唯讀表）欄寬完全不受影響：`.segmented` 切單一/多選項 + `.option-set`（設定好的選項收成一行 `__row`，只有編輯中的展開成 `.variant-option`）+ `.variant-table`（逐規格價格/庫存/SKU/成本，`.--limited` 多出上限欄、`.is-excluded` 排除組合）；可編輯格重用 `.input`。**2026-07-21 庫存欄改唯讀**：庫存格是讀數 `.variant-cell--stock`（`--font-ui`／`--fs-13`／`--foreground`），低於低庫存門檻再加 `.variant-cell--stock-low` 轉 `--destructive` ＋ `--fw-medium`；庫存只能靠留有紀錄的補貨增加，做成 `.input` 會讓人以為可以直接打字覆蓋，轉紅則讓「哪一個規格快沒了」在表上一眼可見。**2026-07-21 逐值 input 改版（使用者裁示）**：值由 chip 膠囊改成「一個值一個 `.input`」（`__value` > `.input` ＋ `__value-remove`），可就地改字——設定選項時最常做的是改一個字，chip 得先刪再重打；底部 `__add-value` 虛線鈕再長一列，Enter 亦可。編輯態欄位加 `.field` 標籤（選項名稱／選項值），底部 `__actions` 靠右放「刪除」（`.btn--ghost.btn--destructive`，破壞性只用透明底）＋「儲存」（`.btn--outline`）。**列的外觀＝Q24 的 L3 規則首次落地**：整組坐在 `.nest`（L2）裡，所以 `__row`／`.variant-option` 去掉 `--input-surface` 填色改 `transparent` ＋ 1px 實線 `--border`；兩顆新增鈕（`__add`／`__add-value`）用 1px **虛線** `--border`（沿用 upload-tile／payout-modal 的「這裡還沒有東西」語彙）。表格外框貼齊內容寬靠左（`width:fit-content`＋`max-width:100%`）、選項組合欄＝內容寬（`max-content`＋110px 下限）不用 fr 吃滿剩餘寬度（2026-07-16）。**2026-07-22 列尾動作分兩種消費**：建立流程用 `.variant-row__remove`（X，把組合排除在建立集合外）；商品明細規格鎖定後不可移除，改列尾 `.dropdown` kebab 選單「單獨下架／重新上架」，下架列加 `.variant-table__row--delisted`（只壓「除下拉外的直接子代」灰階、輸入由 JS 加 `disabled`，kebab 仍可用來重新上架）。列尾用浮動選單的外框要加 `.variant-table-wrap--menu`：基礎 `.variant-table-wrap` 的 `overflow-x:auto` 會裁掉浮出的選單，此修飾在桌面寬度放行 `overflow:visible`（表格本就撐得下），只在 <560px 恢復 `overflow-x:auto` 橫捲。**放行 overflow 後外框圓角不再 clip 內容**（2026-07-23）：表頭（`--muted` 底）與末列的方角會戳出圓角，故改由內容自己貼齊——`--menu` 下給 `.variant-table__head` 上圓角、`.variant-table__row:last-child` 下圓角（半徑 `calc(--radius-xl - 1px)` 貼齊外框內緣）。**2026-07-22 商品明細整張表改唯讀**：價格／SKU／成本／總量欄由 `.input` 換成 `.variant-cell--ro`（純文字、與 `--stock` 同族、`text-overflow:ellipsis`），改值走「⋯ → 編輯」popup；每格加 `data-vc` 標角色（name/price/total/sku/cost）供 popup 讀寫回填。**2026-07-23 兩階層（顏色×尺寸）＋資料驅動**：商品明細的規格表改由 `products-store` 的 `options`／`variants` 驅動——單階層逐值一列、兩階層依第一個選項（顏色）用 `.variant-table__group`（撐滿整列的分組標題、同補貨矩陣語彙）分組、尺寸列在組底下。編輯 popup 用 `.variant-table--preview`（5 欄唯讀組合預覽：規格／價格／庫存／SKU／成本，無總量、無列尾動作），改選項值（加/改名/移除）時笛卡兒積即時重算 | [variant-builder.css](./ds-components/variant-builder.css) |
 | Tag input | 🟡 molecule | ✓ App | 建立商品商品標籤（spec 5.1.5.2 §4.4 F10）：`.tag-input__field` 內已選/自建標籤（`.chip--removable`）＋無框輸入 `.tag-input__entry`＋建議 `.chip-group`；組合自 chip，可重用於專案/粉絲標籤。已選標籤 chip 用**品牌橘 tint**——Q19（2026-07-17）當初為此寫的 `.tag-input .chip--active` 專屬覆寫已於 **2026-07-27 Q8-A 刪除**：全站 `.chip--active` 本身就是橘了，覆寫變成純重複。Q19 的意圖（標籤＝已套用的分類，用橘標）完全保留，只是改由基底承接；順帶修掉原覆寫 `color: var(--primary)` 在亮色模式僅 1.92:1 的對比 bug（基底走 `--selected-ink`） | [tag-input.css](./ds-components/tag-input.css) |
 | Combobox | 🟡 molecule | ✓ App | 多選 search-to-add typeahead：重用 `.tag-input__field`（已選 `.chip--removable` ＋無框 entry）當欄位，欄位右側 `.combobox__chevron`（開啟時翻轉）指示可展開，focus／輸入時彈出 `.combobox__menu` 下拉建議（`--sp-8` 間距浮於欄位下；`.combobox__group` 分組＋`.combobox__opt`＝icon＋名稱＋meta，`.combobox__empty` 空狀態），點選加入為 chip、已選項自建議移除。已選 chip 用中性灰（`--accent` 底，非 `.chip--active` 反白）。與 Tag input 差異＝建議改「focus 觸發浮層下拉」而非常駐 chip-group。首用：建立取貨場次 modal「加入取貨項目」（`partials/pickup-session-modal.js`，spec 5.1.5.12 §4 F2）。**新消費情境（2026-08-09）**：建立活動 `create-event.html` 的「票種」欄（選票種帶入門票）與「加入商品」欄（搜尋帶入 E-Shop 商品），選單與選項皆用 `.combobox`／`.combobox__menu`／`.combobox__opt`，取代原本頁內自造的一套下拉候選樣式；已加入的商品改用 Chip 的 `.chip-group` ＋ `.chip--removable`（見 Chip） | [combobox.css](./ds-components/combobox.css) |
-| Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1）。demo 卡見 `design-system.html` §4.125 | [partials/film-picker.js](./partials/film-picker.js) |
+| Film picker | 🟡 molecule | ✓ App | 電影關聯可搜尋多選（spec 5.1.5.2 §4.5 F12／5.1.5.1 §2.14／D140）：純 JS 元件 `partials/film-picker.js`，**建於 tag-input＋chip 之上、無自帶 CSS**——搜尋輸入格（`.tag-input__entry` type=search）過濾候選、建議 `.chip-group` 點選加入、已選 `.chip--active.chip--removable` 移除；候選來自 `window.ztorFilms`（films-store）。API `window.ZTOR_PARTIALS.createFilmPicker(host,{selected,onChange})`→`{getSelected()}`。consumer：create-product.html（§4.5 獨立區）、product-detail.html（§2.14）。候選為 mock（UIA-053）、可搜尋（BR-NEW-1）。demo 卡見 `design-system.html` §4.123 | [partials/film-picker.js](./partials/film-picker.js) |
 | Work fields | 🟠 organism | ✓ App | 影片作品欄位區塊（spec 5.1.2.2.1 F1–F15）：純 JS 元件 `partials/work-fields.js`，**建於 form-section／form-grid／field-system／card／upload-tile／chip／tag-input／segmented／switch／control-row／amount-field／entry-list 之上、無自帶 CSS**。把「一個欄位區塊長什麼樣」收成單一來源，兩個宿主頁只給空容器＋順序：`publish-work.html`（共創／預購成立後的事後上架，四步）與 `create-project.html`（直接發佈 × 影片家族的建立流程，五步，2026-08-10 整併）。區塊 kind：`file`（含上傳與處理狀態徽章）／`audio`／`subs`／`cover`／`stills`／`bts`／`trailer`／`copy`（逐語言標題與說明）／`spec`（片長＋上映日期）／`genres`（21 值多選）／`tags`／`age`／`pricing`（是否付費＋幣種＋逐畫質四數值＋平台費揭露）／`credits`（九角色名單＋備註）。API `window.ZtorWorkFields.render(host, kind)`／`renderAll(host, kinds)`／`collect()`（收成送審內容）／`checks({stepOf, stepLabel})`（規格 §8 就緒檢查項）；chip 與開關這類沒有原生事件的互動統一補一顆 document 級 `workfields:change`。宿主頁在容器上寫 `data-wf="file,audio,subs"` 宣告要哪幾塊。為什麼是 JS 元件不是 HTML partial：每個區塊都會自己工作（字幕可增可刪、劇照填滿長下一格、語言組不准重複、幣種切換改所有金額符號）。**2026-08-10（D182）`genres` 與 `age` 兩塊的值域搬到 `js/work-taxonomy.js`**，本檔只負責畫外框與就緒檢查、不再自帶清單（見下一列）。**2026-08-11 新增第三個使用場合與 `fill()`**：作品上架後的編輯（spec 5.1.2.2 §2.2.11）走 `publish-work.html?mode=edit`，用 `fill(work, {coverSrc})` 把既有內容寫回欄位——每個區塊自己知道怎麼還原（函式掛在該區塊的 `<section>` 上），`fill()` 只負責找出畫面上有哪些區塊並逐一呼叫。demo 卡見 `design-system.html` §4.123 | [partials/work-fields.js](./partials/work-fields.js) |
-| Work taxonomy | 🟢 atom | ✓ App | 題材（分類）與年齡分級的值域單一來源（主規格 §7.1.2 題材軸 21 值、§7.11 年齡分級六級，D182）：純 JS 元件 `js/work-taxonomy.js`，**無自帶 CSS**，畫面用既有的 `chip`（多選）與 `input.css` 的 `.select`（單選）。為什麼要獨立一支：這兩個值域各有三個落點（題材＝作品上架 F11、建立項目影視組 F4；年齡＝上架 F13、建立項目影視組 F4、項目公開資訊 §2.2.8），規格明講三處是同一份資料，實作也只能有一份清單——2026-08-10 前 `project-detail.html` 自己寫了一組 `PG-13／G／PG／R／NC-17`，同一部片在三個畫面可以顯示三個不同的分級。API `window.ZtorWorkTaxonomy.GENRES`／`AGES`／`genreKey(g)`／`ageOptionsHtml(selected)`／`genreChipsHtml(attr)`／`hydrate(root)`。宿主頁只留空殼：`<select data-taxonomy-age>` 與 `<div class="chip-group" data-taxonomy-genres>`，載入時就地填好、chip 開關走 document 委派，頁面不必寫 JS。載入順序要排在 `partials/work-fields.js` 之前（後者吃它的 `AGES` 與 `genreChipsHtml`），也要排在 `js/zselect.js` 之前（選項要先在，`<select>` 才升級得對）。消費頁：`publish-work.html`、`create-project.html`（影視組類型相關欄位＋影片路徑作品欄位）、`project-detail.html`（公開資訊年齡分級）。沒有載 `js/i18n.js` 的頁面（例如 `design-system.html`）吃內建英文退路，不會顯示成字典鍵。值域一覽見 `design-system.html` §4.124 | [js/work-taxonomy.js](./js/work-taxonomy.js) |
-| Manual entry modal | 🟠 organism | ✓ App | 補登站外收入的彈窗（spec 5.1.8.2 · Earnings F10）：純 JS 模組 `partials/manual-entry-modal.js`，**無自帶 CSS**——重用唯一的 canonical dialog 殼（`payout-modal.css` 的 `.payout-modal`／`.payout-dialog`）與共用表單 helper（Pattern 5.1「Modal shell」）。它給的是 markup 而不是行為：`window.ZTOR_PARTIALS.manualEntryModal` ＝完整彈窗的模板字串，宿主頁注入後自己接開關與送出；介面文案走 `data-i18n`、示意值寫在模板裡。為什麼要收成模組：同一個彈窗有三個收入頁要開，各寫一份就會分岔。消費頁：`earnings.html`、`earnings-overview.html`、`earnings-ztor.html`。demo 卡見 `design-system.html` §4.126 | [partials/manual-entry-modal.js](./partials/manual-entry-modal.js) |
-| Source upload modal | 🟠 organism | ✓ App | 上傳外部平台匯出資料檔的彈窗（spec 5.1.7.8 F1／D165）：純 JS 模組 `partials/source-upload-modal.js`，**無自帶 CSS**，同樣重用 `.payout-modal`／`.payout-dialog` 殼。做成彈窗而不是就地展開：來源明細本身是一顆 popover（`.src-status__panel`），兩層浮層會互相蓋住，而上傳是一段有頭有尾的任務（Q27 裁決的「編輯／新增一筆資料」一律用 dialog 殼）。`openFor(platform)` 帶入平台決定標題與匯出路徑那一句（`sp`／`yt`／`ig`／`tt`；StreetVoice 不開放上傳故無分支）。文案刻意不寫死檔案格式與大小——那四件事仍是〔產品待確認〕（ASSUMPTIONS PG-026～028）。消費頁：`fan-analytics.html`。demo 卡見 `design-system.html` §4.127 | [partials/source-upload-modal.js](./partials/source-upload-modal.js) |
-| Fee exception modal | 🟠 organism | ✓ App | 逐 Creator 覆寫平台費率的彈窗（spec 5.1.0.3 F3／D141）：純 JS 模組 `partials/fee-exception-modal.js`，**無自帶 CSS**，殼同上。一個殼兩種模式：add 顯示 Creator 搜尋（`[data-fx-creator-field]`）、edit 固定 Creator 並藏起搜尋；平台費樹由宿主頁 clone 自己的 `#fee-tree` 注入 `[data-fx-tree]`，支付手續費一律唯讀（全站統一、不逐 Creator）。消費頁：`admin-platform-fees.html`。demo 卡見 `design-system.html` §4.128 | [partials/fee-exception-modal.js](./partials/fee-exception-modal.js) |
-| Content block injector | 🟠 organism | ✓ App | 儀表板與收入管理反覆出現的區塊，由同一支渲染器產生：`js/components.js`，**無自帶 CSS**——每支渲染器吐出的都是既有元件（`data-list`／`table`／`kpi`／`alert`／`card`／`bento`）。機制與 `sidebar.js` 相同：頁面放 `<div data-component="NAME" data-key="KEY">` 佔位，載入時由共用渲染器填好，再對新節點重跑 icons／i18n。為什麼要有：這個靜態原型沒有建置步驟，這是唯一能讓區塊真的「改一次、每頁同步」的做法——交易列格式兩頁共用、不會再分岔，各頁仍給自己的資料列。渲染器：`transaction-list`（`table:true` 與 data-list 兩種輸出）／`ops-summary`／`alerts`／`activity-list`／`events-projects`／`ext-data-status`／`insight-split`；資料集住同一支檔案的 `DATA`。API `window.ZtorComponents.mount(root)`／`RENDERERS`／`DATA`。載入順序：晚於 `icons.js`／`i18n.js`、早於 `reveal.js`。消費頁：`index.html`、`earnings.html`、`earnings-overview.html`、`earnings-ztor.html`、`audience-report.html`。demo 卡見 `design-system.html` §4.129 | [js/components.js](./js/components.js) |
+| Work taxonomy | 🟢 atom | ✓ App | 題材（分類）與年齡分級的值域單一來源（主規格 §7.1.2 題材軸 21 值、§7.11 年齡分級六級，D182）：純 JS 元件 `js/work-taxonomy.js`，**無自帶 CSS**，畫面用既有的 `chip`（多選）與 `input.css` 的 `.select`（單選）。為什麼要獨立一支：這兩個值域各有三個落點（題材＝作品上架 F11、建立項目影視組 F4；年齡＝上架 F13、建立項目影視組 F4、項目公開資訊 §2.2.8），規格明講三處是同一份資料，實作也只能有一份清單——2026-08-10 前 `project-detail.html` 自己寫了一組 `PG-13／G／PG／R／NC-17`，同一部片在三個畫面可以顯示三個不同的分級。API `window.ZtorWorkTaxonomy.GENRES`／`AGES`／`genreKey(g)`／`ageOptionsHtml(selected)`／`genreChipsHtml(attr)`／`hydrate(root)`。宿主頁只留空殼：`<select data-taxonomy-age>` 與 `<div class="chip-group" data-taxonomy-genres>`，載入時就地填好、chip 開關走 document 委派，頁面不必寫 JS。載入順序要排在 `partials/work-fields.js` 之前（後者吃它的 `AGES` 與 `genreChipsHtml`），也要排在 `js/zselect.js` 之前（選項要先在，`<select>` 才升級得對）。消費頁：`publish-work.html`、`create-project.html`（影視組類型相關欄位＋影片路徑作品欄位）、`project-detail.html`（公開資訊年齡分級）。沒有載 `js/i18n.js` 的頁面（例如 `design-system.html`）吃內建英文退路，不會顯示成字典鍵。值域一覽見 `design-system.html` §4.123 | [js/work-taxonomy.js](./js/work-taxonomy.js) |
+| Manual entry modal | 🟠 organism | ✓ App | 補登站外收入的彈窗（spec 5.1.8.2 · Earnings F10）：純 JS 模組 `partials/manual-entry-modal.js`，**無自帶 CSS**——重用唯一的 canonical dialog 殼（`payout-modal.css` 的 `.payout-modal`／`.payout-dialog`）與共用表單 helper（Pattern 5.1「Modal shell」）。它給的是 markup 而不是行為：`window.ZTOR_PARTIALS.manualEntryModal` ＝完整彈窗的模板字串，宿主頁注入後自己接開關與送出；介面文案走 `data-i18n`、示意值寫在模板裡。為什麼要收成模組：同一個彈窗有三個收入頁要開，各寫一份就會分岔。消費頁：`earnings.html`、`earnings-overview.html`、`earnings-ztor.html`。demo 卡見 `design-system.html` §4.123 | [partials/manual-entry-modal.js](./partials/manual-entry-modal.js) |
+| Source upload modal | 🟠 organism | ✓ App | 上傳外部平台匯出資料檔的彈窗（spec 5.1.7.8 F1／D165）：純 JS 模組 `partials/source-upload-modal.js`，**無自帶 CSS**，同樣重用 `.payout-modal`／`.payout-dialog` 殼。做成彈窗而不是就地展開：來源明細本身是一顆 popover（`.src-status__panel`），兩層浮層會互相蓋住，而上傳是一段有頭有尾的任務（Q27 裁決的「編輯／新增一筆資料」一律用 dialog 殼）。`openFor(platform)` 帶入平台決定標題與匯出路徑那一句（`sp`／`yt`／`ig`／`tt`；StreetVoice 不開放上傳故無分支）。文案刻意不寫死檔案格式與大小——那四件事仍是〔產品待確認〕（ASSUMPTIONS PG-026～028）。消費頁：`fan-analytics.html`。demo 卡見 `design-system.html` §4.123 | [partials/source-upload-modal.js](./partials/source-upload-modal.js) |
+| Fee exception modal | 🟠 organism | ✓ App | 逐 Creator 覆寫平台費率的彈窗（spec 5.1.0.3 F3／D141）：純 JS 模組 `partials/fee-exception-modal.js`，**無自帶 CSS**，殼同上。一個殼兩種模式：add 顯示 Creator 搜尋（`[data-fx-creator-field]`）、edit 固定 Creator 並藏起搜尋；平台費樹由宿主頁 clone 自己的 `#fee-tree` 注入 `[data-fx-tree]`，支付手續費一律唯讀（全站統一、不逐 Creator）。消費頁：`admin-platform-fees.html`。demo 卡見 `design-system.html` §4.123 | [partials/fee-exception-modal.js](./partials/fee-exception-modal.js) |
+| Content block injector | 🟠 organism | ✓ App | 儀表板與收入管理反覆出現的區塊，由同一支渲染器產生：`js/components.js`，**無自帶 CSS**——每支渲染器吐出的都是既有元件（`data-list`／`table`／`kpi`／`alert`／`card`／`bento`）。機制與 `sidebar.js` 相同：頁面放 `<div data-component="NAME" data-key="KEY">` 佔位，載入時由共用渲染器填好，再對新節點重跑 icons／i18n。為什麼要有：這個靜態原型沒有建置步驟，這是唯一能讓區塊真的「改一次、每頁同步」的做法——交易列格式兩頁共用、不會再分岔，各頁仍給自己的資料列。渲染器：`transaction-list`（`table:true` 與 data-list 兩種輸出）／`ops-summary`／`alerts`／`activity-list`／`events-projects`／`ext-data-status`／`insight-split`；資料集住同一支檔案的 `DATA`。API `window.ZtorComponents.mount(root)`／`RENDERERS`／`DATA`。載入順序：晚於 `icons.js`／`i18n.js`、早於 `reveal.js`。消費頁：`index.html`、`earnings.html`、`earnings-overview.html`、`earnings-ztor.html`、`audience-report.html`。demo 卡見 `design-system.html` §4.123 | [js/components.js](./js/components.js) |
 | Status axes | 🟡 molecule | ✓ App | 訂單兩條獨立狀態軸（spec 5.1.5.3.1 §2.2 / PCR-001）：履約 vs 付款·結算，不併成單一 badge。`.status-axes`＝清單列並排 badge；`.status-axes--split`＝詳情頁首一列，每軸各自是一個內嵌的 `.status-axes` 群組（混合訂單的履約軸得以在同一組並列兩顆徽章）、群組間以 `border-left` 細線分隔。**2026-08-07**：原 `.status-axes--labeled`／`.status-axis`／`.status-axis__label`（每軸上方大寫標籤）退場——分隔線已達成 PCR-001 的「兩軸不混成一顆徽章」，徽章文字本身已說明所屬軸，標籤重述同一件事，且「收入結算」與徽章「已付款」用詞不一致。用於 order-detail §2.2（orders 清單改為兩軸各自成欄，見 product-list--orders） | [status-axes.css](./ds-components/status-axes.css) |
 | Embed modal | 🟠 organism | ✓ App | 全螢幕 popup 以 iframe 內嵌另一頁、就地開啟（spec 5.1.5 F3 / D065）：電子商店「商店設定」開 `store-settings.html` popup，不離開清單。`.embed-modal`＞`__sheet`＞`__head`(`__title`/`__close`)＋`__frame`(iframe)；lazy 設 src、Esc/backdrop/× 關閉 | [embed-modal.css](./ds-components/embed-modal.css) |
 | Leave dialog | 🟠 organism | ✓ App | 建立／編輯流程的返回離開確認彈窗（spec §5.2.4），由 `partials/wizard-chrome.js` 注入、6 建立頁共用。兩態同殼：有未存編輯→問儲存（儲存並離開 primary／不儲存就離開 outline）；未編輯→純離開（離開 primary）。頂列無儲存入口的頁面加 `.wizard[data-leave-simple]` 可強制永遠走純離開態（2026-07-31，admin-ip-bank-entry）。`.leave-dialog`[data-open]＞`__scrim`＋`__card`＞`__close`/`__title`/`__body`/`__actions`（堆疊滿寬 btn）；Esc/scrim/× 取消。2026-06-29 自 shared.css `.wizard-leave*` promote | [leave-dialog.css](./ds-components/leave-dialog.css) |
@@ -861,7 +867,7 @@ Rows are split by source ownership. `ds-components/` rows are independently impo
 | Stepper | 🟡 molecule | ✓ Project | Wizard 進度條（數字圓圈）。**2026-06-23 起由 Progress stepper 漸層條逐步取代**，仍存於 register-ip / create-project（過渡） | [shared.css](./shared.css) |
 | Progress stepper | 🟡 molecule | ✓ Project | Wizard 進度條：細軌＋品牌漸層填充（`--progress`）＋下方步驟標籤（default／`--current`／`--done` 可回點）。多步驟建立流程用。<br>**2026-08-10（使用者反饋）三項**：<br>軌道 6 → **3px**（它是背景資訊，旁邊的步驟名稱與狀態小字已經在說同一件事）——全站消費頁一起變細。<br>**`--segmented` 變體**：加了它並設 `--steps`（看得到幾步）與 `--at`（現在第幾步，1 起算），軌道就切成一步一段、縫的位置＝步驟分界，**實色＝已完成、淡色＝正在走的那一段、空的＝還沒到**。原本是一條連續長條，填到 40% 這種位置在畫面上不對應任何東西。沒加這個修飾類的消費頁行為不變。<br>**`__state` 選配子元素**：步驟名下方的狀態小字（已完成打勾＋`--status-success-ink`／未完成灰字），消費頁自行決定要不要放。同輪標籤本身改成 `display:flex` 的可點量體（內距撐開命中區、圓角、`--done`／`--current` 才有 `--accent` hover），並補 `.progress-stepper__label[hidden]{display:none}`——display 會蓋掉 UA 的 `[hidden]`，被跳過的步驟得顯式收起。<br>**2026-08-10 第二輪（使用者反饋）兩項**：<br>**標籤與軌道對齊**——預設版的標籤列是 `space-between`（第一個貼左、最後一個貼右、中間平均分空隙，每個標籤佔多寬取決於自己的字數），軌道卻是等寬分段，兩套分法不可能對得上；`--segmented` 的標籤列因此改成 `grid-template-columns: repeat(var(--steps), minmax(0,1fr))`，一格＝一段，內距靠等量負外距抵銷，文字起點就是那一段的起點、hover 底色蓋住的就是那一段（實測 5 步：軌道 x=332 w=764，第二個標籤文字起點 485 對段起點 484.8）。<br>**正在走的那一段換成中性灰**（`color-mix(--foreground-muted 45%, transparent)`）——原本是 `--primary` 稀釋到 28%，在深色軌道 `#161718` 上混出 `#5c4a2a` 這種泥巴棕，既不是品牌橘也不是灰，看起來像沒渲染完的橘色，第一步（完成度 0%）整條軌道只剩它時最明顯。改中性之後色相被保留給「已完成」單獨使用：有顏色＝做完了，亮度只回答「你在哪」。<br>**`--segmented` 的填充不做寬度動畫（2026-08-10 第三輪，使用者反饋「第一個步驟中有一點橘色」）**：連續長條做寬度動畫是有意義的過場（40%→60% 在講「往前推進了」），分段軌道的填充卻永遠停在段的邊界上，動畫過程中的中間值只會畫出一段不存在的「半段橘色」；退回第一步（完成度 0%）時最明顯——填充從有寬度動畫縮到 0 的過程中，軌道最左端會殘留一小截橘色，讀起來像沒渲染完。補 `transition: none` 與 `border-radius: 0`（圓角已由軌道自己的 `--radius-pill` ＋ `overflow:hidden` 收好兩端，填充自己再圓一次在 2× 螢幕的近零寬度盒上會描出髮絲邊）。<br>**hover 範圍改成剛好一段（2026-08-10 第五輪，使用者反饋「目前 hover 的範圍看起來壞掉了」）**：`--segmented` 原本的寫法是「保留基底的左右內距、再用等量負外距抵銷」，文字確實貼齊了段的起點，但 hover 底色的盒子因此比所在的那一段左右各多 8px——底色與上方的分段對不起來，看起來像偏移了半格。負外距拿掉：格線本身就是一段的寬度，標籤盒填滿它，hover 底色正好覆蓋那一段（實測 5 步 1440px：每格 152.8px，五個標籤盒與所屬分段的 x 與寬度差皆為 0）。**左右內距保留**（2026-08-10 第三次修正，使用者反饋「要有左 padding」）：對齊的責任在**盒子**身上——一格＝一段由格線保證、hover 底色因此剛好蓋住那一段；文字則靠內距與盒子左緣拉開 8px，否則字直接貼著 hover 底色的邊、讀起來很擠。盒子貼齊分段、文字在盒子裡呼吸，兩件事不衝突。垂直內距不變，命中區仍有高度（45px）。<br>**`--anystep` 修飾類（2026-08-10 第五輪，使用者指示「這些步驟應該要都可以隨意點開」，選配）**：預設只有 `--done` 與 `--current` 給 hover 與 pointer，因為預設的點擊處理器只允許回點已完成或當前那一步、前進一律走「下一步」——未來的步驟看起來能按卻按不動更糟。加上 `--anystep` 代表消費頁的點擊處理器允許跳到任何一步，標籤的可點外觀就全部打開。**兩件事必須同時做**：只加 class 不改點擊邏輯＝看起來能按、按了沒反應；只改邏輯不加 class＝能按的步驟看不出來可以按。被跳過的步驟本來就 `[hidden]`、不在畫面上，不受影響。首個消費頁 `create-event.html`（同輪把點擊條件由 `n <= step` 放寬成 `n >= first && !skipped(n)`——原型要能直接翻到想看的那一段，發布前的必填把關本來就在 Review 那一步的檢核清單上，不靠「不准你跳過去」實現）。<br>首個 `--segmented` 消費頁：`create-event.html` | [progress-stepper.css](./ds-components/progress-stepper.css) |
 | Wizard frame | 🟠 organism | ✓ Project | 建立流程聚焦版面，**六頁單一框架**（§5.2.4，create-product/-bundle/-auction/-project/-event/register-ip 一致）。**結構 v3（2026-06-24，對齊 `.main` 卡片語言）**：`.wizard`＝灰 canvas（`--surface-shell`，固定高不捲）＞ `.wizard__sheet`＝白色 content 卡（內部捲動、下緣圓角 28px＋向下投影、圓角歸自己）＋ `.wizard__bottom`＝其下 in-flow 平面灰 footer。**Header**（`.wizard__sheet` 內、sticky）：`.wizard__top-bar` grid 三欄＝`.wizard__back`(返回箭頭)＋`.wizard__top-titlewrap`(標題＋`.wizard__top-sub` 副標) 靠左（**2026-07-16：兩者合併為單一返回按鈕**——`.wizard__top-lead` 當膠囊面，hover 套 `--accent` 圓角底[`--radius-lg` 8px、內距 8/16/8/8，Figma 781:4142]、點標題也回上頁；命中區/焦點環由 `.wizard__back::after` stretched 撐滿整個 lead，markup 不變）｜中欄＝多步驟 `.wizard__progress`(漸層 Progress stepper)／單頁空｜`.wizard__top-actions`(自動儲存狀態＋Preview) 右。**三欄軌道（2026-07-24 修）**：`minmax(var(--wizard-lead-min), 1fr) minmax(0, 820px) minmax(min-content, 1fr)`——左欄補 180px 下限。原本兩側都是純 `1fr`，左欄標題塊有 `min-width:0`＋ellipsis 所以最小能縮到 0、右欄的儲存狀態與按鈕不能縮（約 196px），視窗一窄中欄的 820px 就把左欄吃成 0、標題溢出壓在進度條上（1058px 實測 col1=0）；補下限後擠壓改由進度條吸收，寬螢幕（1440px 實測 266/820/266）版面不變。**Footer**：`.wizard__bottom-actions`([Back 多步才有]＋主動作)＋左側次要動作（如 Save & exit）。**`.wizard__bottom--end`（2026-08-09 promote）**：沒有左側次要動作時整組靠右收齊。此前站上有十個 wizard footer 各自寫著同一段 inline `style="justify-content:flex-end"`——正是 Q9 要收斂的「散落的即席樣式」，本輪收成修飾類並把十個消費頁一次換掉（`create-project`／`-auction`／`-bundle`／`-campaign`／`-product`／`-event`／`publish-work`／`funding-simulate`／`admin-ip-bank-entry`／`funding-test/create-campaign`）。建立活動同輪撤掉「儲存並離開」（工作列已有儲存為草稿），因此成為這個修飾類的消費者。**`.wizard__bottom-hint`（2026-07-30 新增）**：主動作（如 Continue）被停用時，在它左側補一行「為什麼不能按」的原因（例：「還需要一個完整的套組才能繼續。」）；只在停用時出現，可按時 JS 加回 `.hidden` 整行清空、不留佔位（不用 `visibility:hidden` 是為了不占版面）。視覺與 `.field__hint`（欄位輔助說明）同級——刻意壓低、不與主動作按鈕搶視覺，靠右對齊、`max-width:320px` 避免長句擠壓按鈕。動機：先前主動作被擋關的原因只寫在步驟內的教練提示（如 Bundles 步驟右軌），使用者看的是 footer 那顆灰按鈕，兩者隔著整個表單、按鈕自己不解釋自己。首個消費頁：`create-project.html`（回饋套組步驟擋關時顯示 `cpp.bd.hint.blocked`）。**`.wizard__body` 表單版修飾類**（2026-07-09 自 7 個建立頁的頁內覆寫 promote）：`.wizard__body--form`（頂距 `--sp-72` 72px，取代逐頁寫死）／`.wizard__body--narrow`（1000px，create-auction/-bundle）／`.wizard__body--mid`（1140px，create-product〔2026-07-16：由 narrow→wide→mid，剛好容下多選項＋限量的逐規格表在 preview-split 表單欄完整展開，比 wide 收斂、floor≈1100〕）／`.wizard__body--wide`（1240px，create-campaign）；create-event/-project/register-ip 只掛 `--form`（維持基底 820px 寬）。已知分岔未收：funding-simulate.html（頂距 32px）、funding-test.html／create-campaign.html 內文其他覆寫（44px），仍留頁內。**`.wizard__step-head`（2026-08-04 新增）**：步驟標題列帶右側動作——`.wizard__step-head-titles`（標題＋副標成一組，靠左）與一顆動作按鈕靠右，兩者 `align-items:center` 垂直置中。**副標的下緣留白移到容器身上**（`.wizard__step-head-titles .wizard__step-sub { margin-bottom: 0 }`）：留在副標上會被算進標題組的高度，按鈕就會對齊到「含那段空白」的中線、看起來偏上。首個消費頁＝`create-event.html` 細節那一步的「切換活動類型」（switch icon＋目前類型名稱，點了把類型閘門叫回來重選；已填欄位不動、選完回到原本那一步）。此前站上 30 個 `.wizard__step-title` 全是單獨一行、右側沒有版位，這是第一個 | [shared.css](./shared.css) |
-| Stack | ⚪ utility | ✓ Project | **區塊之間垂直間距的唯一規則（2026-08-11 使用者指示）**：間距由容器承擔（`gap`），子元素不各自加 margin。此前站上沒有這條共同規則，每頁各自用 `.mt-16`／inline margin／自己的 `gap` 解，於是有的地方黏在一起、有的地方鬆掉——同一個角色三種答案（發現點：商店設定「銷售預設」分區的兩張卡直接相黏）。子元素加 margin 另有兩個壞處：第一個／最後一個要特判；條件隱藏的區塊會把 margin 留在原地，`gap` 不會。`.stack`（`--stack-gap`，預設 `--sp-18`）／`.stack--tight`（12，同一件事的小塊）／`.stack--loose`（24，語意分家的大段落）；個案覆寫寫在容器的 `--stack-gap`，不改子元素。`.settings-section` 內建同一套（settings.css），設定分區放兩張以上的卡不必再補間距。**不適用**：橫向排列（那是 flex-row／grid）、表單欄位之間（`.field` 的 16px 節奏，Q6 已裁決，不疊第二套） | [stack.css](./ds-components/stack.css) |
+| Stack | ⚪ utility | ✓ Project | **區塊之間垂直間距的唯一規則（2026-08-11 使用者指示）**：間距由容器承擔（`gap`），子元素不各自加 margin。此前站上沒有這條共同規則，每頁各自用 `.mt-16`／inline margin／自己的 `gap` 解，於是有的地方黏在一起、有的地方鬆掉——同一個角色三種答案（發現點：商店設定「銷售預設」分區的兩張卡直接相黏）。子元素加 margin 另有兩個壞處：第一個／最後一個要特判；條件隱藏的區塊會把 margin 留在原地，`gap` 不會。`.stack`（`--stack-gap`，預設 `--sp-18`）／`.stack--tight`（12，同一件事的小塊）／`.stack--loose`（24，語意分家的大段落）／`.stack--bento`（16，放進 bento 一欄時對齊 bento 自己的 gap——否則同一個網格上「左右 16、上下 18」，讀起來像對不準的兩套節奏）；個案覆寫寫在容器的 `--stack-gap`，不改子元素。`.settings-section` 內建同一套（settings.css），設定分區放兩張以上的卡不必再補間距。**不適用**：橫向排列（那是 flex-row／grid）、表單欄位之間（`.field` 的 16px 節奏，Q6 已裁決，不疊第二套） | [stack.css](./ds-components/stack.css) |
 | Settings nav | 🟡 molecule | ✓ Project | Sticky local navigation inside Settings。`.settings-layout` 預設是「220px 直式導覽 ＋ 1fr 內容」；區段少、彼此平等時改用 `.settings-layout--stacked`（單欄）＋ 上方一個 **`.list-toolbar` 殼裝橫向分頁**——2026-07-31 分級設定就是這樣改的（3 段平等去處）。那個殼是必要的不是裝飾：`--underline-label` 的底線照容器下緣畫，沒有殼會變成浮在標籤下方一截無所依附的橘線（本輪第一版踩過，已作廢）。**判準**：像 settings.html 那樣 7 段以上、屬設定分類樹 → 留直式 `.settings-nav`；3 段左右、互為平行視圖 → `--stacked` ＋ `.list-toolbar` ＋ tabs | [settings.css](./ds-components/settings.css) |
 | Settings row | 🟡 molecule | ✓ Project | Dense label + hint + value/control/action row | [settings.css](./ds-components/settings.css) |
 | Hero slideshow | 🟠 organism | ✓ Project | Dashboard full-bleed carousel | [shared.css](./shared.css) · [hero.js](./hero.js) |
@@ -2880,6 +2886,85 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 
 ---
 
+### 4.22h0 Section nav（側欄分節導覽，2026-08-17）
+
+分頁**裡面**再分節時用的左側清單。與 `tabs.css` 的分工：`.tabs` 是頁面層級（橫排、少量、每格一個大主題）；`.section-nav` 住在其中一格裡（直排、可以多、每節是同一主題的不同切面）。五項以上橫排會擠成兩行或被截斷，直排天生可長。
+
+- `.section-nav-layout` 兩欄 grid（168px 導覽＋內容），900px 以下疊成上下、導覽改橫向可捲。
+- **間距（2026-08-17 使用者指示加大）**：與上方頁首之間 `--sp-48`（原 24）、兩欄之間 `--sp-40`（原 24）。頁首是「這是哪一場活動」、底下是「這一場的內容」，兩者是不同層級；欄距則要讓人看出左邊是選單、右邊是它選出來的結果。兩個值都寫在元件裡，不靠呼叫端各給一個 `.mt-*`。
+- 已選態沿用品牌橘 tint（Q8 裁決 A）。
+- **原本叫 `.settings-nav`**、只長在設定頁；活動詳情的「售票與名單」要用同一個東西時提升成中性名稱。舊 class 仍列在同一組選擇器裡，`settings.html` 的 markup 不必改，`settings.css` 只留容器的吸附位移。
+
+#### Progress timeline（交付時間軸，2026-08-17）
+
+一條由真實日期驅動的垂直時間流，把「答應做什麼、做到哪、跟支持者說了什麼」畫成同一張圖。方向是**未來在上、今天在中、過去在下**（D194 使用者裁決）。版面三欄：日期欄（gutter）／軸線與軸點／內容欄——日期進 gutter 是為了讓軸線保持一條直線，也讓「哪一天發生什麼」在掃視時對得起來。
+
+- **排序只有一個依據就是日期**。沒有手動調整順序這個動作；要換位置就改預計日期。
+- **節點**（`.ptl__node`，里程碑）有軸點、坐在軸上；狀態（`--done` / `--doing` / `--todo` / `--alert`）只染軸點與軸線，節點本身不填色。
+- **子項**（`.ptl__update`，掛在某顆里程碑下的更新）沒有軸點，靠內縮與左側細線表示歸屬；用 `--muted` 淺灰填，**只在比它亮的底上成立**（卡內），這是它要被放進 `.card` 的原因。
+- **今天**（`--today`）是軸上一個真實節點，也是整條軸上唯一會隨情境換說法的位置（`.ptl__lede`）；發文框（`.ptl__composer`）內嵌在它身上。
+
+`--ptl-dot`（28px）與 `--ptl-date`（64px）一次定義軸點直徑、日期欄寬與軸線左邊界，所有列都靠它們對齊。
+
+兩列不隨日期移動：`--system`（完成作品）釘在最上方、不帶日期；`--start`（項目建立）釘在最下方，軸線在這裡停——軸線關在 `--start` 而不是 `:last-child`，因為渲染時它之後還可能被追加節點。系統節點**不存自己的狀態**，直接讀 `js/work-review-store.js` 的送審件。
+
+**沿革**：2026-08-17 上午照元件檔頭先行補寫（當時消費頁尚未接上），同日消費頁落地後回頭對齊；同日下午依 D194 改寫成日期驅動的時間流。✝ 同輪墓碑：`.ptl__loose` 家族（軸尾公告盒）與里程碑的上移／下移鈕退場。完整規格見 §4.51b。
+
+#### `[hidden]` 一律說了算（2026-08-17，全站規則）
+
+`shared.css` 有一條 `[hidden] { display: none !important; }`。**新寫元件時不必再補 `.x[hidden]`。**
+
+為什麼要全域：CSS 的 class 只要自己寫了 `display`，就會蓋過 UA stylesheet 的 `[hidden] { display:none }`——於是 JS 設了 `el.hidden = true` 的元素照樣佔著版面。站上原本散落 **80 條**同一種補丁（`.alert[hidden]`、`.badge[hidden]`、`.data-list__row[hidden]`…），而 2026-08-17 一天之內又踩到三次：
+
+- `.bento[hidden]` — 名單那節留下 98px 空白，被當成間距問題查了半天
+- `.nav-sections > [data-nav-panel][hidden]` — 沒選到的分節全部畫出來疊成一長串
+- `.tabs__item[hidden]` — 沒有系列的活動仍看得到「系列場次」那一顆（點了沒反應）
+
+逐支補永遠補不完，因為錯誤發生在「新寫一支帶 display 的 class」的當下，而那時沒有人會想到 `[hidden]`。用 `!important` 是必要的（要贏過所有 class），語意上也成立——`[hidden]` 的意思就是「這個元素現在不存在於畫面上」，沒有「隱藏但仍佔位」這種合法用法。全站 81 支元件檔已 grep 確認無此需求。
+
+既有的 80 條逐支補丁與本條不衝突，留著不動。
+
+#### 側欄 ＋ 分節橫列的組裝規則（2026-08-17）
+
+活動詳情落地後的完整組裝，其他「一頁多區域、每區域再多節」的頁面照這個走：
+
+| 層 | 元件 | 說明 |
+|---|---|---|
+| 主要區域（左） | `.section-nav-layout` ＋ `.section-nav` | 直排、吸附。藥丸外形與品牌橘已選態同 `.filter-tabs__item`；**高度 58px、字級 13px 對齊分節橫列**——兩排是同一層級的導覽（一個選區域、一個選分節），量體不一致會讀成有主從 |
+| 分節（上） | `.list-toolbar` ＋ `.tabs--underline-short --underline-label --count-plain` | 與清單頁的類型切換同一組。**殼不能省**：那組修飾子的底線是照容器下緣畫的，沒有殼就變成浮空的橘線（見 tabs.css 的使用鐵律） |
+| 內容 | `.nav-sections > [data-nav-panel]` | **各節全部排在同一頁、不互斥切換**；節內 `--sp-18`、節與節之間 `--sp-32`，直屬子元素外距歸零（照 stack.css：間距歸容器） |
+
+**分節橫列是錨點，不是切換器**（2026-08-17 使用者裁決）：這幾節本來就是同一件事的不同段落（設定＝活動內容→場次→地點→發布→連結），互斥切換會逼人記住「剛剛那一節寫了什麼」才能對照下一節；排在一起可以直接往下讀，也還能一鍵跳。實作三件事：
+
+- 點擊 → `scrollIntoView({ behavior:'smooth', block:'start' })`；`scroll-margin-top: 78px` 讓節首不貼著吸附橫列的底緣。
+- 橫列 `position: sticky; top: 0`——它的角色從「切換」變成「跳到哪一節 ＋ 我現在在哪一節」，捲下去看不到就兩個作用都沒了。
+- 捲動同步標「跨過上緣參考線的最後一節」。三個實測踩到的坑：**捲到頂**時沒有任何一節命中參考線（要 fallback 到第一節）；**捲到底**時最後一節碰不到參考線（要判斷 `scrollHeight - scrollTop - clientHeight < 4`）；**點擊後**平滑捲動途中會經過別節，要暫停同步並在落定後重新標記一次。
+
+**間距**：分節橫列與內容之間也是 `--sp-18`（`.nav-sections { margin-top }`），並把 `.list-toolbar` 自己的 8px 歸零，讓間距只有一個來源。不改 `.list-toolbar` 的預設值，是因為在清單頁它底下緊接的是次層篩選列（同一組控制項的上下兩排，8px 是對的）；這裡它底下是內容區，兩者是「控制」與「被控制的東西」，距離該拉開。
+
+### 4.22h1 Stat row · Meter list · Day bars（總覽階段主卡的三支，2026-08-17）
+
+活動詳情總覽改成「一個階段一張主卡」時新增的三支。共同前提：**它們都住在別人的卡裡**，自己沒有表面——所以不能拿 `.kpi`（那是「一個數字一張卡」的量體）來充數，塞進卡片會變成卡中卡。
+
+| Class | 用途 | 關鍵約定 |
+|---|---|---|
+| `.stat-row` / `.stat` | 卡最上方那排主要數字 | `.stat__of` 讓分母與數字同一行——「200 / 600」是一個值，拆兩行會讀成兩個數字；斜線與數字之間 `white-space: nowrap`，窄欄時整段一起換行（2026-08-18 補） |
+| `.todo-list__row` | 一件可勾、可改、可刪的待辦 | 與 `.data-list`（唯讀事實列）分工：文字是使用者自己打的才用 todo-list。`__input` 刻意不叫 `.input`——頁面的兩段式編輯會鎖住所有 `.input`，而勾一件待辦不是在編輯那筆資料 |
+| `.todo-list__row--system` | 系統項目 | 不可刪，行尾放的是通往設定的入口；刪掉等於連那個入口一起沒了 |
+| `.todo-list__row--done` | 已完成 | 劃掉並淡化，但**留在原地**——勾完就跳到最下面，會讓人找不到剛剛勾的是哪一件 |
+| todo-list 的刪除鈕 | 行尾 | 平常不出現，hover 或鍵盤走到那一列才浮出來（沒有 hover 的裝置一律顯示）——一排垃圾桶會把待辦清單讀成一份要整理的資料 |
+| `.meter-list__row` | 逐項水位，三欄一線（名稱 → 量條 → 數字） | 量條欄設寬度上限；主要數字用前景色不加粗（等寬數字裡換色比換字重好認） |
+| `.meter-list--media` | 最左邊多一欄縮圖 | 名稱欄的上限跟著放寬到 280px：掛圖的清單多半有第二行（「這一組裝了什麼」），180px 會把商品名切掉、等於第二行白寫 |
+| `.meter-list__thumb` | 一張 36px 縮圖 | 第二張起以 −12px 疊在前一張上，外圈用卡片底色描一圈，疊住的地方才看得出是兩張圖 |
+| `.meter-list__name--stack` | 名稱改上下兩行（名稱 ＋ 內容物） | 兩行各自截斷，長商品名不會把整列撐開 |
+| `.meter-list__meter` | `--media` 的第三欄：數字在上、量條在下 | 兩者講的是同一件事的兩種說法，分成左右兩欄要眼睛走兩趟才配得起來（2026-08-17 使用者指示「放在進度條上方靠右」） |
+| `.meter-list__left` | `--media` 的第四欄：還剩多少，貼齊整列最右 | 與左邊那組數字是兩種性質——「119 / 180」是既成事實，「還有 61 位」是接下來要處理的事。一列從左到右因此是「這是什麼 → 賣得如何 → 還差多少」三件事（原 `__num-sub` 做成數字底下的第二行，仍隸屬那一格、讀起來像續行，同日取代） |
+
+搭配：`.stock-bar--total`（總量條 8px 變體）、`.card__subhead`（卡內小節標，比 `.card__title` 低兩階的標籤語彙）。
+
+**為什麼不是繼續用 KPI 列**（2026-08-17 使用者裁決「KPI 和大表格中有重複」）：原本總覽是「KPI 列 → 階段主卡」兩段，但兩者講同一件事——售票中的 KPI 寫「已售 200/600」，售票進度卡再寫一次還畫了水位；進行中的「已報到」與現場報到台重複；已結束的與結案卡幾乎逐項對應。同一個數字在同一畫面出現兩次，讀的人會以為那是兩個不同的數字。數字因此收進主卡頭部，KPI 列整條退場。
+
+
 ### 4.22h Empty card
 
 **`_layer`** · molecule — 卡片內「已載入但沒資料」的空狀態（規格 5.1.1 §F2–F8「其他狀態 · 無資料」）：淡化 icon + 短標題 + 一行引導 + 選配 CTA。與整頁用的 `empty-stub`（路由未建置）區分。儀表板透過 `<html data-data-state="empty">` 與資料視圖互切（`.dash-empty-only` / `.dash-data-only`，見 shared.css）。
@@ -2889,9 +2974,28 @@ body.preview-open .wizard__bottom ← right: --preview-w（固定底欄同步右
 | Class | Effect |
 |---|---|
 | `.empty-card` | 置中直欄堆疊，卡片內距 |
+| `.empty-card--framed` | 虛線外框、仍不填底色 | 空狀態直接落在畫布上、上下都是同一片黑時，「這一節到哪裡為止」看不出來，底下那一節的標題會讀成這一節的一部分。虛線是「這裡預留了位置、還沒有東西」，實心底色是「這裡有一組東西」，兩者不是同一句話 |
 | `.empty-card__icon` | 40×40 淡化 chip（`--muted` 底）內嵌 Tabler |
 | `.empty-card__title / __text` | 14/600 標題、淡化說明（max 320） |
 | `.empty-card__cta` | 選配，用 `.btn` |
+
+**空狀態不吃卡片底色**（2026-08-17 使用者裁決，全站規則，由元件層自動生效）
+
+卡片的底色是在說「這裡有一組東西」。裡面沒有東西時，那塊底色反而替「什麼都沒有」畫出一個實心方塊——版面上最顯眼的一格，內容是零。空狀態要安靜：一個圖示、一句說明、一顆下一步，落在畫布上就好。
+
+規則寫在元件層，呼叫點不必改：
+
+```css
+.card:has(> .empty-card):not(:has(> :not(.empty-card):not(.info-banner))) { background:none; border:none; box-shadow:none; padding:0 }
+```
+
+讀成「這張卡有空狀態子元素，而且沒有任何不是空狀態、也不是 `.info-banner` 的子元素」。三個設計判斷：
+
+- 不用 `:only-child`：有些頁面在同一張卡放兩種空狀態變體、用 `hidden` 互換（`projects.html`），那時畫面上仍然只有一個空狀態。
+- `.info-banner` 不算「別的東西」：它是對這個空狀態的補充說明（「為什麼是空的、要去哪裡設定」），與空狀態是同一則訊息的兩句話。
+- 卡片同時有標題列或真的內容時**不生效**——那時底色框的是那個區塊，不是空狀態。唯一的存量例外是 `store-settings.html` 的代碼設定卡（空狀態下方還有說明、表格與按鈕）。
+
+2026-08-17 全站實測：41 個空狀態中 40 個已無底色，剩下的 1 個就是上述刻意例外。
 
 **CSS** — [`empty-card.css`](./ds-components/empty-card.css)
 
@@ -3148,6 +3252,7 @@ CHART-CARD  .card.chart-card (pad 0) > __head (title-group + .segmented D/W/M + 
 | segmented hover | `.segmented__item:hover` | Text → `--foreground` |
 | icon-btn hover | `.chart-card__icon-btn:hover` | `--muted` bg + `--foreground` |
 | line / bar view | `.chart-card[data-chart-view="line"\|"bar"]` | Hides `.barchart-wrap` / non-bar `.linechart` |
+| **surface** | `.card.chart-card`（兩個 class 一起） | `.chart-card` **沒有自己的表面**——它只把 padding 歸零、交給 `__head`／`__body`／`__foot` 各自補回。單獨用會是一張透明的圖直接躺在畫布上，旁邊的 `.card` 卻有底色、圓角與陰影（2026-08-17 在活動詳情踩過） |
 | tooltip / cursor (JS) | `.chart-tip--show` / `.chart-cursor--show` / `.chart-bar-cursor--show` | Floating value card / vertical cursor / column highlight shown |
 
 **Class API** (CSS classes — Props/API = N/A, static CSS prototype)
@@ -3923,6 +4028,44 @@ Static; no interactive state.
 **Consumers** — `product-detail.html` (right-rail "current stock" card).
 
 **CSS** — [`stock-bar.css`](./ds-components/stock-bar.css)
+
+---
+
+### 4.51b Progress timeline
+
+**Purpose** — 把一段交付故事畫成同一張圖：答應做什麼、做到哪、一路上跟支持者說了什麼。為項目詳情的「進度」分頁而建（spec [5.1.2.2-專案詳情.md](../../documents/5.1.2.2-專案詳情.md) §2.2.10 v3.0、D193、D194）。2026-08-17 由「可手動排序的里程碑清單」改寫成**由真實日期驅動的單軸時間流**：未來在上、今天在中、過去在下。
+
+**Anatomy**
+- `.ptl` — 容器；定義 `--ptl-dot`（軸點直徑 28px）、`--ptl-date`（日期欄寬 64px）與 `--ptl-gap`
+- `.ptl__node` — 軸上一列；grid 三欄＝日期欄／軸點／內容。`::before` 是連到下一列的軸線
+- `.ptl__date` — 日期欄（gutter）。必須 `align-self: start`，否則日期會置中到整列的中線
+- `.ptl__dot` — 軸點（狀態圖示）
+- `.ptl__body` ＞ `.ptl__head`（`.ptl__name` ＋ `.ptl__tags` ＋ `.ptl__toggle`）／`.ptl__lede`（`__lede-num`）／`.ptl__meta`（`.ptl__meta-item`）／`.ptl__note`（`.ptl__note-body`）／`.ptl__acts`／`.ptl__composer`／`.ptl__updates`
+- `.ptl__fold` — 被收合鈕收起的那一段；父層帶 `--collapsed` 時整段不顯示
+- `.ptl__composer` ＞ `__composer-head`／`__composer-fields`／`__composer-foot`（`__composer-who`、`__composer-avatar`、`__composer-tools`）— 內嵌發文框
+- `.ptl__update`［`--release`］＞ `.ptl__update-icon`／`__update-title`／`__update-body`／`__update-meta` — 掛在某一列底下的更新
+
+**Variants** — `--todo`／`--doing`／`--done`／`--alert`（里程碑狀態）；`--system`（釘頂的完成作品）／`--today`（今天）／`--start`（軸底的項目建立）／`--day`（按天收合的更新列）；`--collapsed`（收起 `.ptl__fold`）。`.ptl__update--release` 標出「完成作品」那則貼文。
+
+**軸向與排序** — 單一排序軸是真實日期。未來段由遠而近往下排、沒有預計日期的排在未來段最上方；今天在中間；過去段由近而遠往下排。里程碑落位的日期：已完成的用完成日（提前／延後完成都落在真的做完那一天，原定日期以 `.ptl__meta` 附註），其餘用預計日期。逾期的節點不留在原本的日期位置，排在今天正下方。
+
+**今天那一格** — 整條軸上唯一會換說法的位置。`.ptl__lede` 依情境改寫（倒數、逾期、里程碑日、當天完成、全部完成、沒有日期、已取消…），`__lede-num` 把天數拉成品牌墨、`--alert` 下轉紅。發文框內嵌在它身上，**是活的 DOM**：消費頁每次重繪都要先把它從舊軸上摘下、重繪後掛回插槽，否則使用者打到一半的字與 zselect 的接線會被洗掉。
+
+**兩列不隨日期移動** — `--system`（完成作品）釘在軸的最上方且不帶日期（它的日期是上映日，可能還沒定）；`--start`（項目建立）釘在最下方，也是軸線的終點。軸線關在 `--start` 而不是 `:last-child`，因為渲染時它之後還可能被追加節點。
+
+**收合** — `--day` 列預設收合、里程碑預設展開。收合狀態存在消費頁的 JS 裡，不存在 DOM——每次重繪都會把 DOM 洗掉。
+
+**狀態色只上在軸點與軸線** — 用 `color-mix` 由 `--status-success`／`--status-info`／`--status-error` 推導；內容區不染色，因為退件理由常常很長，整塊染紅會把一段可讀的文字變成一張警告圖。紅色墨走 `--destructive-ink`（站上唯一的「小字可讀紅」，見 `_tokens.css` 的推導註記）。
+
+**Surface** — 節點本身不填色，白底與灰底都成立。`.ptl__update` 與 `.ptl__composer` 有淺灰填（`--muted`），只在比它亮的底上成立，這是它們被放進 `.card` 的原因。發文框內的 `.select--bare` hover 改用 `--accent`——它預設的 `--muted` hover 跟發文框同色會整顆消失（Surface-Layer Contrast）。
+
+**Dependencies** — `.badge`／`.btn`（`--ghost`／`--icon`／`--primary`／`--outline`，皆 `--sm`）／`.input`／`.textarea`／`.select`（`--bare`）／`.ztor-icon`。內容由 `js/project-progress-store.js`（里程碑與更新，日期是真實 `Date`）＋ `js/work-review-store.js`（送審件）產生，完成作品那一顆**不另存狀態**、直接讀送審件，所以總覽、進度與作品三處講的一定是同一件事。
+
+**Consumers** — `project-detail.html`（進度分頁）。
+
+**✝ 2026-08-17 墓碑（D194）** — `.ptl__loose` / `__loose-head` / `__loose-title` / `__loose-sub`（軸尾的公告盒）退場：未掛里程碑的更新改依發布時間排進同一條軸，不再有第二個盒子。同輪撤除里程碑的上移／下移鈕（順序由預計日期決定），對應的 i18n key `pd-prog.ms.up`／`pd-prog.ms.down`／`pd-prog.loose.*` 一併移除。
+
+**CSS** — [`progress-timeline.css`](./ds-components/progress-timeline.css)
 
 ---
 
@@ -5443,6 +5586,8 @@ grid 家族範例（擷取自 `fans-crm.html` 第 200–210 行）：
 **Consumers** — `create-event.html`（快速設定彈窗「生成的門票」預覽）。
 
 **CSS** — [`quick-result-list.css`](./ds-components/quick-result-list.css)
+
+---
 
 ---
 

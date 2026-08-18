@@ -2502,6 +2502,30 @@
     /* 系列母詳情頁 series-detail.html（2026-08-06 使用者裁決：系列要有自己的詳情編輯頁，
        改這裡同步所有場次）。三種詳情頁：單場活動／系列母頁／系列子場，子場走 event-detail。 */
     'sd.crumb.events':   { en: 'Events',                                zh: '活動' },
+    /* 系列母頁改由 ?id= 驅動（2026-08-18）：以下幾條把寫死的「3 場／亞洲段」換成帶參數的版本 */
+    'sd.badge.series.n':  { en: 'Series · {n} dates',   zh: '系列 · {n} 場' },
+    'sd.badge.mixed':     { en: '{n} stages',           zh: '{n} 種階段' },
+    'sd.save.note.n':     { en: 'Applies to all {n} dates', zh: '套用到全部 {n} 場' },
+    'sd.sub.venues':      { en: '{n} venues',           zh: '{n} 個場地' },
+    'sd.sub.nodate':      { en: 'Dates not set yet',    zh: '日期尚未設定' },
+    'sd.kpi.next.none':   { en: 'No upcoming date',     zh: '沒有即將到來的場次' },
+    'sd.sync.note.n':     { en: 'Saving here updates all {n} dates.', zh: '在這裡儲存會更新全部 {n} 場。' },
+    'sd.sync.note.rest':  { en: 'Anything that differs per date — the date itself and the venue — is edited on that date\u2019s own page.', zh: '每一場不同的東西——日期本身與場地——在那一場自己的頁面改。' },
+    'sd.sync.onsale.n':   { en: '{n} of these dates are already on sale — {m} tickets sold', zh: '其中 {n} 場已經開賣——已售出 {m} 張' },
+    'sd.leg.n':           { en: 'Date {i} of {all}',    zh: '第 {i} 場 · 共 {all} 場' },
+    'sd.nodate':          { en: 'Not set',              zh: '未設定' },
+    'sd.novenue':         { en: 'Not set',              zh: '未設定' },
+    'sd.title.suffix':    { en: 'Series',               zh: '系列' },
+    'sd.notfound.title':  { en: 'Series not found',      zh: '找不到這個系列' },
+    'sd.notfound.sub':    { en: 'This series does not exist, or its dates have all been removed.', zh: '這個系列不存在，或它底下的場次已經全部移除。' },
+    'sd.notfound.cta':    { en: 'Back to events',        zh: '回到活動清單' },
+    /* 母設定 vs 已自行調整（2026-08-18 使用者裁決：系列＝多站活動；共用設定是母設定，
+       子活動頁可以獨立變更）。舊鍵 sd.sync.note.rest（「每一場不同的東西在那一場改」）保留未用。 */
+    'sd.sync.note.rest2': { en: 'These are the series defaults. Any date can be changed on its own page — that date then keeps its own values.', zh: '這裡是系列的母設定。任何一場都可以在它自己的頁面改，改過的那一場之後就保留自己的值。' },
+    'sd.diverged.title':  { en: '{n} of these dates have their own settings', zh: '其中 {n} 場已經自行調整過設定' },
+    'sd.diverged.meta':   { en: 'Saving here updates the dates that still follow the series. The ones below were changed on their own page and keep their own values: {list}', zh: '在這裡儲存會更新「還跟著系列走」的那幾場。以下這幾場已經在自己的頁面改過，會保留自己的值：{list}' },
+    'sd.badge.own':       { en: 'Own settings',          zh: '已自行調整' },
+    'sd.sync.note.some':  { en: 'Saving here updates the {n} dates that still follow the series.', zh: '在這裡儲存會更新「還跟著系列走」的 {n} 場。' },
     'sd.h1':             { en: 'REALIVE World Tour — Asia leg',         zh: 'REALIVE 世界巡迴 — 亞洲段' },
     'sd.sub':            { en: '2026/09/12 – 2026/10/03 · 3 venues',    zh: '2026/09/12 – 2026/10/03 · 3 個場地' },
     'sd.badge.series':   { en: 'Series · 3 dates',                      zh: '系列 · 共 3 場' },
@@ -2563,7 +2587,10 @@
     'event-detail.edit.saved':    { en: 'Saved.',                    zh: '已儲存。' },
     'event-detail.edit.confirm-delete': { en: 'Delete this event? Ticket holders will be refunded.', zh: '確定刪除這場活動？持票人會收到退款。' },
     'event-detail.edit.caphint':  { en: 'At least {n} — that many tickets are already sold.', zh: '不能低於 {n}——已經賣掉這麼多張了。' },
+    /* 2026-08-18 使用者裁決：共用設定是母設定，子活動頁可以獨立變更。
+       舊鍵 event-detail.edit.serieslock（「請到系列頁編輯」）保留未用。 */
     'event-detail.edit.serieslock': { en: 'This stop is part of a multi-venue event — shared settings live on its parent page', zh: '這一站屬於多站活動，共用設定在母頁改' },
+    'event-detail.edit.seriesnote': { en: 'This date follows the series settings — changing it here changes only this date', zh: '這一場的設定跟著系列走；在這裡改只會改這一場，不影響其他場' },
     'events.rowSER.title':     { en: 'REALIVE World Tour — Asia leg',       zh: 'REALIVE 世界巡迴 — 亞洲段' },
     'events.rowSER.meta':      { en: 'Concert · 3 dates',                   zh: '演唱會 · 共 3 場' },
     'events.rowSER.datetime':  { en: '2026/09/12 – 2026/10/03',             zh: '2026/09/12 – 2026/10/03' },
@@ -2682,6 +2709,145 @@
     'events.rowFM.datetime':  { en: 'Sep 12, 2026 · 2:00 PM',   zh: '2026/9/12 · 下午 2:00' },
     'events.rowFM.venue':     { en: 'Eslite Xinyi · Taipei',    zh: '誠品信義 · 臺北' },
 
+    /* 狀態 × 類型矩陣那批活動的列文案（2026-08-17）。命名：`events.r.<活動 id>.*` 是一般列
+       與系列子列、`events.g.<系列 id>.*` 是系列母列——鍵名直接帶 id，是為了讓「清單那一列」
+       與「js/events-store.js 那一筆」對得起來，改資料時不必回頭猜哪個 rowN 是哪一場。
+       活動名稱本身是專有名詞，中英文各自寫，不做逐字翻譯。 */
+    'events.r.nick-symphonic-taipei.title':            { en: 'NICK Symphonic Night — Taipei', zh: 'NICK 交響樂版演出 — 臺北' },
+    'events.r.nick-symphonic-taipei.meta':             { en: 'Concert', zh: '演唱會' },
+    'events.r.nick-symphonic-taipei.datetime':         { en: 'Dec 05, 2026 · 7:30 PM', zh: '2026/12/5 · 晚上 7:30' },
+    'events.r.nick-symphonic-taipei.venue':            { en: 'Taipei Music Center · Taipei', zh: '臺北流行音樂中心 · 臺北' },
+    'events.g.realive-sea.title':                      { en: 'REALIVE World Tour — Southeast Asia leg', zh: 'REALIVE 世界巡迴 · 東南亞段' },
+    'events.g.realive-sea.meta':                       { en: 'Concert · 2 dates', zh: '演唱會 · 共 2 場' },
+    'events.g.realive-sea.datetime':                   { en: '2027/01/16 – 2027/01/23', zh: '2027/01/16 – 2027/01/23' },
+    'events.g.realive-sea.venue':                      { en: '2 venues', zh: '2 個場地' },
+    'events.r.realive-sea-singapore.title':            { en: 'Capitol Theatre', zh: 'Capitol Theatre' },
+    'events.r.realive-sea-singapore.meta':             { en: 'Date 1 of 2', zh: '第 1 場 / 共 2 場' },
+    'events.r.realive-sea-singapore.datetime':         { en: 'Jan 16, 2027 · 8:00 PM', zh: '2027/1/16 · 晚上 8:00' },
+    'events.r.realive-sea-singapore.venue':            { en: 'Capitol Theatre · Singapore', zh: 'Capitol Theatre · 新加坡' },
+    'events.r.realive-sea-kl.title':                   { en: 'Zepp Kuala Lumpur', zh: 'Zepp Kuala Lumpur' },
+    'events.r.realive-sea-kl.meta':                    { en: 'Date 2 of 2', zh: '第 2 場 / 共 2 場' },
+    'events.r.realive-sea-kl.datetime':                { en: 'Jan 23, 2027 · 8:00 PM', zh: '2027/1/23 · 晚上 8:00' },
+    'events.r.realive-sea-kl.venue':                   { en: 'Zepp Kuala Lumpur · Kuala Lumpur', zh: 'Zepp Kuala Lumpur · 吉隆坡' },
+    'events.r.lrh-signing-taichung.title':             { en: 'LOVE RAGE HOPE signing — Taichung', zh: 'LOVE RAGE HOPE 專輯簽名會 — 臺中' },
+    'events.r.lrh-signing-taichung.meta':              { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
+    'events.r.lrh-signing-taichung.datetime':          { en: 'Nov 08, 2026 · 2:00 PM', zh: '2026/11/8 · 下午 2:00' },
+    'events.r.lrh-signing-taichung.venue':             { en: 'Eslite Park Lane · Taichung', zh: '誠品園道店 · 臺中' },
+    'events.r.lrh-writing-class.title':                { en: 'LOVE RAGE HOPE — Writing session, online', zh: 'LOVE RAGE HOPE 線上創作課' },
+    'events.r.lrh-writing-class.meta':                 { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.lrh-writing-class.datetime':             { en: 'Nov 20, 2026 · 9:00 PM', zh: '2026/11/20 · 晚上 9:00' },
+    'events.r.lrh-writing-class.venue':                { en: 'Online', zh: '線上' },
+    'events.r.flames-mv-premiere.title':               { en: 'FLAMES MV (remastered) — Premiere watch party', zh: '〈FLAMES〉MV 重製版 首播共看' },
+    'events.r.flames-mv-premiere.meta':                { en: 'Watch Party', zh: '共看派對' },
+    'events.r.flames-mv-premiere.datetime':            { en: 'Dec 24, 2026 · 9:00 PM', zh: '2026/12/24 · 晚上 9:00' },
+    'events.r.flames-mv-premiere.venue':               { en: 'Online', zh: '線上' },
+    'events.r.nantou-lantern-opening.title':           { en: 'Nantou Lantern Festival — Opening night', zh: '南投燈會 開幕日演出' },
+    'events.r.nantou-lantern-opening.meta':            { en: 'Concert', zh: '演唱會' },
+    'events.r.nantou-lantern-opening.datetime':        { en: 'Jan 25, 2027 · 7:00 PM', zh: '2027/1/25 · 晚上 7:00' },
+    'events.r.nantou-lantern-opening.venue':           { en: 'Nantou Expo Center · Nantou', zh: '南投會展中心 · 南投' },
+    'events.r.lrh-studio-live.title':                  { en: 'LOVE RAGE HOPE — Studio session, online', zh: 'LOVE RAGE HOPE 錄音室直播場' },
+    'events.r.lrh-studio-live.meta':                   { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.lrh-studio-live.datetime':               { en: 'Sep 20, 2026 · 9:00 PM', zh: '2026/9/20 · 晚上 9:00' },
+    'events.r.lrh-studio-live.venue':                  { en: 'Online', zh: '線上' },
+    'events.r.fubon-postgame-taipei.title':            { en: 'Fubon Guardians post-game show — Taipei Dome', zh: '富邦悍將賽後演唱會 — 臺北大巨蛋' },
+    'events.r.fubon-postgame-taipei.meta':             { en: 'Concert', zh: '演唱會' },
+    'events.r.fubon-postgame-taipei.datetime':         { en: 'Today · 7:30 PM', zh: '今天 · 晚上 7:30' },
+    'events.r.fubon-postgame-taipei.venue':            { en: 'Taipei Dome · Taipei', zh: '臺北大巨蛋 · 臺北' },
+    'events.g.lrh-campus.title':                       { en: 'LOVE·RAGE·HOPE Campus Tour', zh: 'LOVE·RAGE·HOPE 校園巡迴' },
+    'events.g.lrh-campus.meta':                        { en: 'Concert · 2 dates', zh: '演唱會 · 共 2 場' },
+    'events.g.lrh-campus.datetime':                    { en: 'Today · 2 dates', zh: '今天 · 共 2 場' },
+    'events.g.lrh-campus.venue':                       { en: '2 venues', zh: '2 個場地' },
+    'events.r.lrh-campus-ntu.title':                   { en: 'NTU Sports Centre', zh: '臺大綜合體育館' },
+    'events.r.lrh-campus-ntu.meta':                    { en: 'Date 1 of 2', zh: '第 1 場 / 共 2 場' },
+    'events.r.lrh-campus-ntu.datetime':                { en: 'Today · 12:20 PM', zh: '今天 · 中午 12:20' },
+    'events.r.lrh-campus-ntu.venue':                   { en: 'NTU Sports Centre · Taipei', zh: '臺大綜合體育館 · 臺北' },
+    'events.r.lrh-campus-nccu.title':                  { en: 'NCCU Arts Hall', zh: '政大藝文中心' },
+    'events.r.lrh-campus-nccu.meta':                   { en: 'Date 2 of 2', zh: '第 2 場 / 共 2 場' },
+    'events.r.lrh-campus-nccu.datetime':               { en: 'Today · 6:30 PM', zh: '今天 · 晚上 6:30' },
+    'events.r.lrh-campus-nccu.venue':                  { en: 'NCCU Arts Hall · Taipei', zh: '政大藝文中心 · 臺北' },
+    'events.r.lrh-listening-party.title':              { en: 'LOVE RAGE HOPE — Listening party, online', zh: 'LOVE RAGE HOPE 線上聽歌會' },
+    'events.r.lrh-listening-party.meta':               { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.lrh-listening-party.datetime':           { en: 'Today · 1:00 PM', zh: '今天 · 下午 1:00' },
+    'events.r.lrh-listening-party.venue':              { en: 'Online', zh: '線上' },
+    'events.r.lrh-doc-watchparty.title':               { en: 'LOVE·RAGE·HOPE tour documentary — Watch party', zh: 'LOVE·RAGE·HOPE 巡演紀錄片 共看場' },
+    'events.r.lrh-doc-watchparty.meta':                { en: 'Watch Party', zh: '共看派對' },
+    'events.r.lrh-doc-watchparty.datetime':            { en: 'Today · 1:30 PM', zh: '今天 · 下午 1:30' },
+    'events.r.lrh-doc-watchparty.venue':               { en: 'Online', zh: '線上' },
+    'events.g.sdfs-tour.title':                        { en: 'Too Handsome to Stay — Party Tour (revival)', zh: '帥到分手 Party Tour 復刻場' },
+    'events.g.sdfs-tour.meta':                         { en: 'Concert · 2 dates', zh: '演唱會 · 共 2 場' },
+    'events.g.sdfs-tour.datetime':                     { en: '2026/03/14 – 2026/03/21', zh: '2026/03/14 – 2026/03/21' },
+    'events.g.sdfs-tour.venue':                        { en: '2 venues', zh: '2 個場地' },
+    'events.r.sdfs-tour-taipei.title':                 { en: 'A Station', zh: 'A Station' },
+    'events.r.sdfs-tour-taipei.meta':                  { en: 'Date 1 of 2', zh: '第 1 場 / 共 2 場' },
+    'events.r.sdfs-tour-taipei.datetime':              { en: 'Mar 14, 2026 · 8:00 PM', zh: '2026/3/14 · 晚上 8:00' },
+    'events.r.sdfs-tour-taipei.venue':                 { en: 'A Station · Taipei', zh: 'A Station · 臺北' },
+    'events.r.sdfs-tour-chengdu.title':                { en: 'Zhenghuo Art Center', zh: '梵木創藝區正火藝術中心' },
+    'events.r.sdfs-tour-chengdu.meta':                 { en: 'Date 2 of 2', zh: '第 2 場 / 共 2 場' },
+    'events.r.sdfs-tour-chengdu.datetime':             { en: 'Mar 21, 2026 · 8:00 PM', zh: '2026/3/21 · 晚上 8:00' },
+    'events.r.sdfs-tour-chengdu.venue':                { en: 'Zhenghuo Art Center · Chengdu', zh: '梵木創藝區正火藝術中心 · 成都' },
+    'events.r.reallife-signing-kaohsiung.title':       { en: 'REAL LIFE signing — Kaohsiung', zh: 'REAL LIFE 專輯簽名會 — 高雄' },
+    'events.r.reallife-signing-kaohsiung.meta':        { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
+    'events.r.reallife-signing-kaohsiung.datetime':    { en: 'May 10, 2026 · 2:00 PM', zh: '2026/5/10 · 下午 2:00' },
+    'events.r.reallife-signing-kaohsiung.venue':       { en: 'Talee Department Store · Kaohsiung', zh: '大立百貨 · 高雄' },
+    'events.r.reallife-full-album-online.title':       { en: 'REAL LIFE — Full album, online', zh: 'REAL LIFE 全碟重現 線上場' },
+    'events.r.reallife-full-album-online.meta':        { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.reallife-full-album-online.datetime':    { en: 'Jun 20, 2026 · 9:00 PM', zh: '2026/6/20 · 晚上 9:00' },
+    'events.r.reallife-full-album-online.venue':       { en: 'Online', zh: '線上' },
+    'events.r.sdfs-mv-watchback.title':                { en: 'Too Handsome to Stay MV — 10-year watch-back', zh: '〈帥到分手〉MV 十週年共看' },
+    'events.r.sdfs-mv-watchback.meta':                 { en: 'Watch Party', zh: '共看派對' },
+    'events.r.sdfs-mv-watchback.datetime':             { en: 'Feb 14, 2026 · 9:00 PM', zh: '2026/2/14 · 晚上 9:00' },
+    'events.r.sdfs-mv-watchback.venue':                { en: 'Online', zh: '線上' },
+    'events.r.hualien-summer-love.title':              { en: 'Hualien Summer Love Festival — NICKTHEREAL set', zh: '花蓮夏戀嘉年華 — NICKTHEREAL 專場' },
+    'events.r.hualien-summer-love.meta':               { en: 'Concert', zh: '演唱會' },
+    'events.r.hualien-summer-love.datetime':           { en: 'Aug 30, 2026 · 6:00 PM', zh: '2026/8/30 · 晚上 6:00' },
+    'events.r.hualien-summer-love.venue':              { en: 'Liyu Lake · Hualien', zh: '鯉魚潭 · 花蓮' },
+    'events.g.realive-china-2027.title':               { en: 'REALIVE World Tour — China leg (2027)', zh: 'REALIVE 世界巡迴 · 中國段（2027）' },
+    'events.g.realive-china-2027.meta':                { en: 'Concert · 2 dates', zh: '演唱會 · 共 2 場' },
+    'events.g.realive-china-2027.datetime':            { en: '2026/11/14 – 2026/11/21', zh: '2026/11/14 – 2026/11/21' },
+    'events.g.realive-china-2027.venue':               { en: '2 venues', zh: '2 個場地' },
+    'events.r.realive-china-fuzhou.title':             { en: 'Strait Culture and Art Centre', zh: '福州海峽文化藝術中心' },
+    'events.r.realive-china-fuzhou.meta':              { en: 'Date 1 of 2', zh: '第 1 場 / 共 2 場' },
+    'events.r.realive-china-fuzhou.datetime':          { en: 'Nov 14, 2026 · 7:30 PM', zh: '2026/11/14 · 晚上 7:30' },
+    'events.r.realive-china-fuzhou.venue':             { en: 'Strait Culture and Art Centre · Fuzhou', zh: '福州海峽文化藝術中心 · 福州' },
+    'events.r.realive-china-hangzhou.title':           { en: 'CH8 Livehouse', zh: 'CH8 LIVEHOUSE' },
+    'events.r.realive-china-hangzhou.meta':            { en: 'Date 2 of 2', zh: '第 2 場 / 共 2 場' },
+    'events.r.realive-china-hangzhou.datetime':        { en: 'Nov 21, 2026 · 7:30 PM', zh: '2026/11/21 · 晚上 7:30' },
+    'events.r.realive-china-hangzhou.venue':           { en: 'CH8 Livehouse · Hangzhou', zh: 'CH8 LIVEHOUSE · 杭州' },
+    'events.r.lrh-meet-tokyo.title':                   { en: 'LOVE RAGE HOPE — Tokyo pop-up meet', zh: 'LOVE RAGE HOPE 東京快閃見面會' },
+    'events.r.lrh-meet-tokyo.meta':                    { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
+    'events.r.lrh-meet-tokyo.datetime':                { en: 'Oct 12, 2026 · 6:00 PM', zh: '2026/10/12 · 晚上 6:00' },
+    'events.r.lrh-meet-tokyo.venue':                   { en: 'Shibuya Loft · Tokyo', zh: 'Shibuya Loft · 東京' },
+    'events.r.lrh-backers-briefing.title':             { en: 'LOVE RAGE HOPE — Backers briefing, online', zh: 'LOVE RAGE HOPE 共創進度線上說明會' },
+    'events.r.lrh-backers-briefing.meta':              { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.lrh-backers-briefing.datetime':          { en: 'Sep 05, 2026 · 9:00 PM', zh: '2026/9/5 · 晚上 9:00' },
+    'events.r.lrh-backers-briefing.venue':             { en: 'Online', zh: '線上' },
+    'events.r.r2-rehearsal-watchparty.title':          { en: 'REALIVE (R2) rehearsal footage — Watch party', zh: 'REALIVE (R2) 彩排實錄 共看派對' },
+    'events.r.r2-rehearsal-watchparty.meta':           { en: 'Watch Party', zh: '共看派對' },
+    'events.r.r2-rehearsal-watchparty.datetime':       { en: 'Sep 19, 2026 · 9:00 PM', zh: '2026/9/19 · 晚上 9:00' },
+    'events.r.r2-rehearsal-watchparty.venue':          { en: 'Online', zh: '線上' },
+    'events.g.realive-japan.title':                    { en: 'REALIVE World Tour — Japan leg (planning)', zh: 'REALIVE 世界巡迴 · 日本段（規劃中）' },
+    'events.g.realive-japan.meta':                     { en: 'Concert · 2 dates', zh: '演唱會 · 共 2 場' },
+    'events.g.realive-japan.datetime':                 { en: 'Dates TBD', zh: '日期未定' },
+    'events.g.realive-japan.venue':                    { en: '2 venues', zh: '2 個場地' },
+    'events.r.realive-japan-draft-1.title':            { en: 'REALIVE World Tour — Japan leg (planning)', zh: 'REALIVE 世界巡迴 · 日本段（規劃中）' },
+    'events.r.realive-japan-draft-1.meta':             { en: 'Date 1 of 2', zh: '第 1 場 / 共 2 場' },
+    'events.r.realive-japan-draft-1.datetime':         { en: 'Date TBD', zh: '日期未定' },
+    'events.r.realive-japan-draft-2.title':            { en: 'REALIVE World Tour — Japan leg (planning)', zh: 'REALIVE 世界巡迴 · 日本段（規劃中）' },
+    'events.r.realive-japan-draft-2.meta':             { en: 'Date 2 of 2', zh: '第 2 場 / 共 2 場' },
+    'events.r.realive-japan-draft-2.datetime':         { en: 'Date TBD', zh: '日期未定' },
+    'events.r.onstage-encore-draft.title':             { en: 'ON STAGE encore show (planning)', zh: 'ON STAGE 加場（規劃中）' },
+    'events.r.onstage-encore-draft.meta':              { en: 'Concert', zh: '演唱會' },
+    'events.r.onstage-encore-draft.datetime':          { en: 'Date TBD', zh: '日期未定' },
+    'events.r.lrh-meet-draft.title':                   { en: 'LOVE RAGE HOPE fan meet (planning)', zh: 'LOVE RAGE HOPE 見面會（規劃中）' },
+    'events.r.lrh-meet-draft.meta':                    { en: 'Meet &amp; Greet', zh: '粉絲見面會' },
+    'events.r.lrh-meet-draft.datetime':                { en: 'Date TBD', zh: '日期未定' },
+    'events.r.nick-online-draft.title':                { en: 'NICKTHEREAL online show (planning)', zh: 'NICKTHEREAL 線上專場（規劃中）' },
+    'events.r.nick-online-draft.meta':                 { en: 'Virtual Event', zh: '線上活動' },
+    'events.r.nick-online-draft.datetime':             { en: 'Date TBD', zh: '日期未定' },
+    'events.r.onstage-film-watchparty-draft.title':    { en: 'ON STAGE concert film — Watch party (planning)', zh: 'ON STAGE 演唱會電影 共看（規劃中）' },
+    'events.r.onstage-film-watchparty-draft.meta':     { en: 'Watch Party', zh: '共看派對' },
+    'events.r.onstage-film-watchparty-draft.datetime': { en: 'Date TBD', zh: '日期未定' },
+
     /* edit-event.html 已於 2026-08-06 撤除，整頁換成導引；以下 ee.* 多數 key 已無消費者，
        但票種與刪除等文案已被活動詳情頁的就地編輯沿用，故整批保留不動。 */
     'ee.moved.title':     { en: 'Editing moved to the event page', zh: '編輯搬到活動頁上了' },
@@ -2721,10 +2887,12 @@
     'ee.changed':         { en: 'Changed',                        zh: '已變更' },
 
     /* 交易明細分頁（event-detail.html，2026-07-27） */
-    'event-detail.tab.transactions': { en: 'Transactions',      zh: '交易明細' },
+    'event-detail.tab.transactions': { en: 'Ticket sales',       zh: '售票紀錄' },
     'event-detail.kpi.tiersn':   { en: 'Across {n} tiers',       zh: '共 {n} 個票種' },
     'event-detail.kpi.tiers1':   { en: 'Across 1 tier',          zh: '共 1 個票種' },
-    'event-detail.tx.title':      { en: 'Transactions',         zh: '交易明細' },
+    /* 分節標籤與區段標題必須是同一個詞（2026-08-17 使用者指示）：上面的分節橫列寫
+       「售票紀錄」，底下的標題卻寫「交易明細」，讀的人會以為點錯了地方。 */
+    'event-detail.tx.title':      { en: 'Ticket sales',          zh: '售票紀錄' },
     'event-detail.tx.sub':        { en: 'Every ticket payment for this event. One row per order; platform fee is 10%.', zh: '這場活動的每一筆票款。一列一筆訂單；平台費 10%。' },
     'event-detail.tx.gross':      { en: 'Gross',                zh: '收款總額' },
     'event-detail.tx.orders':     { en: '{n} orders · {q} tickets', zh: '{n} 筆訂單 · {q} 張票' },
@@ -2750,7 +2918,7 @@
     'event-detail.tx.col.status': { en: 'Status',               zh: '狀態' },
     'event-detail.tx.more':       { en: 'Showing {n} of {m} orders — export for the full ledger', zh: '顯示 {n} / {m} 筆訂單——完整帳目請匯出' },
     'event-detail.tx.showingall': { en: 'Showing all {m} orders', zh: '已顯示全部 {m} 筆訂單' },
-    'event-detail.tx.export':     { en: 'Export transactions',  zh: '匯出交易明細' },
+    'event-detail.tx.export':     { en: 'Export ticket sales',  zh: '匯出售票紀錄' },
     'event-detail.series.val':    { en: '{name} · {i} of {n}',  zh: '{name} · 第 {i} / {n} 場' },
 
     /* 現場報到台（event-detail.html 的進行中狀態，2026-07-27） */
@@ -2789,6 +2957,7 @@
     'ee.tix.h1':          { en: 'Tickets',                        zh: '票券' },
     'ee.tix.sub':         { en: 'Tiers that already sold can be closed, but not deleted — buyers hold them.', zh: '已售出的票種只能停售、不能刪除——票在買家手上。' },
     'ee.tix.add':         { en: 'Add ticket tier',                zh: '新增票種' },
+    'ee.tix.add.hint': { en: 'Type, price, quantity', zh: '票種、價格、數量' },
     'ee.tix.name':        { en: 'Tier name',                      zh: '票種名稱' },
     'ee.tix.price':       { en: 'Price',                          zh: '票價' },
     'ee.tix.qty':         { en: 'Quantity',                       zh: '張數' },
@@ -5543,15 +5712,199 @@
        key 全站零消費，而且內容早就跟那張表對不上——live 寫成「進行中」（現為「已上線」），
        funded／completed／failed 是 2026-07-27 狀態模型重構時已退役的舊值。留著只會讓下一個
        人以為「已完成」還是一個有效狀態。 */
-    'project-detail.nextstep':{en: '<strong>Next steps —</strong> IP rental not yet linked · 2 showcase assets pending · 1 milestone update due to backers.',zh: '<strong>下一步 —</strong> 尚未綁定 IP 租借 · 2 項展示素材待補 · 1 則里程碑更新待發給支持者。'},
+    /* 只有前綴進字典：待辦內容逐項目不同，來自 projects-store 的 `todo`（雙語物件），
+       由 project-detail 的 render() 依當前語言寫進去。2026-08-17 之前整句寫死在這一條
+       key 上，每個項目講同一句話（矩陣盤點落差 L9）。 */
+    'project-detail.nextstep-label':{en: 'Next step —',zh: '下一步 —'},
     'project-detail.tab.settings':{en: 'Project overview',zh: '項目總覽'},
     'project-detail.tab.pledges':{en: 'Plans & promises',zh: '方案與承諾'},
     'project-detail.tab.about':{en: 'About the project',zh: '關於項目'},
-    'project-detail.tab.progress':{en: 'Production progress',zh: '製作進度'},
+    'project-detail.tab.progress':{en: 'Progress',zh: '進度'},
     'project-detail.tab.work':{en: 'Work',zh: '作品'},
     'project-detail.tab.earnings':{en: 'My earnings',zh: '我的收益'},
     'project-detail.tab.performance':{en: 'Performance',zh: '表現'},
     'project-detail.tab.royalty':{en: 'Royalty',zh: '版稅'},
+
+    /* ── 項目詳情分頁整併（2026-08-17，D193／規格 5.1.2.2 §3 分群結構）───────────
+       七格分頁的標籤。支持者那一格的字隨發行模式換（共創＝支持者／預購＝預購）。 */
+    'project-detail.tab.overview':{en: 'Overview',zh: '總覽'},
+    'project-detail.tab.backers':{en: 'Backers',zh: '支持者'},
+    'project-detail.tab.preorders':{en: 'Pre-orders',zh: '預購'},
+    'project-detail.tab.setup':{en: 'Setup',zh: '設定'},
+
+    /* ── 頁首識別事實列（§2.1 第 1 項，2026-08-17）───────────────────────────
+       標籤只寫「這一格是什麼」；頁面已經是某個項目，所以不寫「項目建立日期」那種
+       把主詞再講一遍的寫法。 */
+    'pd-hero.owner':{en: 'Creator',zh: '創作者'},
+    'pd-hero.cat':{en: 'Content type',zh: '內容類型'},
+    'pd-hero.created':{en: 'Created',zh: '建立日期'},
+
+    /* ── 總覽 · 階段重點面板（§2.1.1）─────────────────────────────────────── */
+    /* 2026-08-18 重排：重點面板改成一列 KPI，欄位隨發行模式與狀態換人。
+       標籤只答「這一格是什麼」——所在的分頁已經叫總覽，不再把項目兩個字寫進每一格。 */
+    'pd-ov.kpi.raised':{en: 'Raised',zh: '已募'},
+    'pd-ov.kpi.orders':{en: 'Pre-ordered',zh: '已預購'},
+    'pd-ov.kpi.goal':{en: 'Goal {g}',zh: '目標 {g}'},
+    'pd-ov.kpi.backers':{en: 'Backers',zh: '支持者'},
+    'pd-ov.kpi.left':{en: 'Days left',zh: '剩餘天數'},
+    'pd-ov.kpi.days':{en: ' days',zh: ' 天'},
+    'pd-ov.kpi.unit':{en: 'Unit price',zh: '單價'},
+    'pd-ov.kpi.payout-meta':{en: 'First of three tranches released',zh: '三期撥款已撥第一期'},
+    'pd-ov.kpi.revenue':{en: 'Lifetime revenue',zh: '累計收入'},
+    'pd-ov.kpi.revenue-meta':{en: 'Earnings figure · not recomputed',zh: '引用收入管理口徑'},
+    'pd-ov.kpi.views':{en: 'Views',zh: '觀看次數'},
+    'pd-ov.kpi.streams':{en: 'Streams',zh: '串流次數'},
+
+    'pd-ov.title.work':{en: 'The work',zh: '作品'},
+    'pd-ov.end.refund':{en: 'Refunds',zh: '退款'},
+    'pd-ov.end.refund-meta':{en: 'Handled by the platform · see the plans in Setup',zh: '由平台處理，條件見設定分頁的方案'},
+
+    'pd-ov.prog.due-today':{en: 'Due today',zh: '今天到期'},
+    'pd-ov.prog.nodate':{en: 'No date yet',zh: '尚未排定'},
+    'pd-ov.prog.all-done-meta':{en: 'Nothing left on the roadmap',zh: '藍圖上沒有待完成的項目'},
+    'pd-ov.prog.none':{en: 'No milestones yet',zh: '還沒有里程碑'},
+    'pd-ov.prog.none-meta':{en: 'Backers cannot see how you plan to get there',zh: '支持者看不出你打算怎麼走'},
+
+    'pd-ov.bk.period':{en: 'Campaign window',zh: '收單期間'},
+    'pd-ov.bk.since':{en: 'Open since {d}',zh: '{d} 起'},
+
+    'pd-ov.next.title':{en: 'Next step',zh: '下一步'},
+    'pd-ov.msg.title':{en: 'Tell your fans',zh: '通知粉絲'},
+    'pd-ov.msg.body':{en: 'Direct releases carry no project updates. Reach buyers from the broadcast composer instead.',zh: '直接發佈沒有項目更新；要對買家說話，走群發訊息。'},
+    'pd-ov.msg.cta':{en: 'Go to broadcast',zh: '前往群發訊息'},
+
+    'pd-ov.title.track':{en: 'Release tracker',zh: '上架追蹤'},
+    'pd-ov.title.schedule':{en: 'Release schedule',zh: '上線排程'},
+    'pd-ov.title.waiting':{en: "What it's waiting on",zh: '現在在等什麼'},
+    'pd-ov.title.ended':{en: 'Why it ended',zh: '終止說明'},
+
+    'pd-ov.step.submit':{en: 'Submitted',zh: '送審'},
+    'pd-ov.step.review':{en: 'In review',zh: '審核中'},
+    'pd-ov.step.approved':{en: 'Approved',zh: '審核通過'},
+    'pd-ov.step.date':{en: 'Date set',zh: '設定上映日期'},
+    'pd-ov.step.live':{en: 'Live',zh: '上線'},
+
+    'pd-ov.wait.review':{en: 'Platform review',zh: '等平台審核'},
+    'pd-ov.wait.date':{en: 'Your release date',zh: '等你設上映日'},
+    'pd-ov.wait.day':{en: 'Release day',zh: '等上映日到來'},
+
+    'pd-ov.next.rejected':{en: 'It came back from review. Fix what is flagged and send it again.',zh: '審核退回了，改完再送一次。'},
+    'pd-ov.next.setdate':{en: 'Review passed. Pick the day it goes live.',zh: '審核過了，挑一天上線。'},
+    'pd-ov.next.editwork':{en: 'There is still time to change the work before it goes live.',zh: '上線前還能改這件作品。'},
+    'pd-ov.next.setgolive':{en: 'Nothing is scheduled yet, so it will sit here until a date is set.',zh: '還沒排上線日期，不設就一直停在這裡。'},
+    'pd-ov.next.setgolive.cta':{en: 'Set the date',zh: '設定日期'},
+    'pd-ov.next.postupdate':{en: 'Post a short update so backers know where things stand.',zh: '發一則更新，讓支持者知道現在到哪了。'},
+    'pd-ov.next.postupdate-pre':{en: 'Post a short update so buyers know where things stand.',zh: '發一則更新，讓下單的人知道現在到哪了。'},
+    'pd-ov.next.inreview':{en: 'The platform is reviewing it. Nothing to do until the result comes back.',zh: '平台審核中，等結果就好。'},
+    'pd-ov.deadline.fund':{en: 'Reaching the goal by the deadline makes it a funded project.',zh: '募資期結束時達標，項目就成立。'},
+    'pd-ov.deadline.pre':{en: 'Missing the minimum by the deadline ends the project and refunds every order in full.',zh: '集單期結束仍未達最少預購數，項目終止、全額退款。'},
+    'pd-ov.next.publishwork':{en: 'The work is finished — send it through release.',zh: '作品完成了，送去上架。'},
+    'pd-ov.next.refundpost':{en: 'A general update still goes out — backers need to hear about the refund.',zh: '一般更新還發得出去；退款進度要讓支持者知道。'},
+
+    'pd-ov.end.reason':{en: 'Termination reason',zh: '終止原因'},
+    'pd-ov.end.notfunded':{en: 'Not funded',zh: '未達標'},
+    'pd-ov.end.creator':{en: 'Creator cancelled',zh: '創作者取消'},
+    'pd-ov.end.frozen':{en: 'Frozen',zh: '凍結範圍'},
+    'pd-ov.end.frozen-meta':{en: 'Monetization, plans and milestones are read-only from here on.',zh: '營利設定、方案與里程碑自此唯讀。'},
+    'pd-ov.end.refund-note':{en: 'Refunds follow the terms on the plans — see Setup.',zh: '退款依方案的未達標處理，見設定分頁。'},
+
+    /* ── 進度 · 交付時間軸（§2.2.10 v3.0，D194）─────────────────────────────
+       ✝ 2026-08-17 撤除：'pd-prog.ms.up'／'pd-prog.ms.down'（上移／下移退場，順序由
+         預計日期決定）、'pd-prog.loose.title'／'pd-prog.loose.sub'（軸尾的公告區退場，
+         未掛里程碑的更新改排進同一條軸）。 */
+    'pd-prog.title':{en: 'Delivery blueprint',zh: '交付藍圖'},
+    /* 2026-08-18 撤除（墓碑）：pd-ov.title.raise／.orders／.delivery／.running（總覽左卡標題，
+       重點面板改成 KPI 列／追蹤條／終止卡三態後沒有那張卡了）、pd-ov.jump.title（捷徑卡，
+       捷徑由分頁列承擔）。全站零消費才刪。 */
+    'pd-ov.prog.title':{en: 'Progress',zh: '進度摘要'},
+    'pd-ov.prog.go':{en: 'Go to progress',zh: '前往進度'},
+    'pd-ov.prog.in-days':{en: 'in {n} days',zh: '還有 {n} 天'},
+    'pd-ov.prog.all-done':{en: 'All milestones done',zh: '里程碑全部完成'},
+    'pd-ov.prog.last-update':{en: 'Latest update',zh: '最近更新'},
+    'pd-ov.prog.no-update':{en: 'None yet',zh: '還沒發過'},
+    'pd-ov.bk.orders':{en: 'Pre-orders',zh: '預購份數'},
+    'pd-ov.bk.title':{en: 'Backers',zh: '支持者摘要'},
+    'pd-ov.bk.go':{en: 'Go to backers',zh: '前往支持者'},
+    'pd-ov.bk.go-pre':{en: 'Go to pre-orders',zh: '前往預購'},
+    'pd-prog.section':{en: 'Project progress',zh: '項目進度'},
+    'pd-prog.ms.count':{en: 'Milestones done',zh: '里程碑完成度'},
+    'pd-prog.ms.completed':{en: 'Completed',zh: '完成日'},
+    'pd-prog.ms.edit':{en: 'Edit',zh: '編輯'},
+    'pd-prog.ms.delete':{en: 'Delete',zh: '刪除'},
+    'pd-prog.ms.public':{en: 'Public',zh: '公開'},
+    'pd-prog.ms.todo':{en: 'Not started',zh: '未開始'},
+    'pd-prog.ms.doing':{en: 'In progress',zh: '進行中'},
+    'pd-prog.ms.done':{en: 'Done',zh: '已完成'},
+    'pd-prog.ms.overdue':{en: '{n} days late',zh: '逾期 {n} 天'},
+    /* 提前／延後完成時附註原定日期，看得出差多久（§2.2.10「提前完成」）。 */
+    'pd-prog.ms.early':{en: 'Ahead of',zh: '早於原定'},
+    'pd-prog.ms.late':{en: 'Behind',zh: '晚於原定'},
+
+    /* 軸上的三個固定位置。 */
+    'pd-prog.today':{en: 'Today',zh: '今天'},
+    'pd-prog.start':{en: 'Project created',zh: '項目建立'},
+    'pd-prog.day.count':{en: '{n} updates',zh: '{n} 則更新'},
+    'pd-prog.fold.expand':{en: 'Expand',zh: '展開'},
+    'pd-prog.fold.collapse':{en: 'Collapse',zh: '收合'},
+
+    /* 今天那一格的情境句（§2.2.10 狀態變體表）。{n} 是天數、{name} 是里程碑名稱，
+       兩者由頁面填入，不寫進翻譯。 */
+    'pd-prog.today.start':{en: 'The delivery story starts here — post the first update so backers know how you plan to get there.',zh: '交付從今天開始。發第一則更新，讓支持者知道你打算怎麼走。'},
+    'pd-prog.today.countdown':{en: '{n} days to {name}',zh: '距離 {name} 還有 {n} 天'},
+    'pd-prog.today.msday':{en: '{name} is due today',zh: '今天是 {name} 的預計完成日'},
+    'pd-prog.today.done':{en: '{name} is done',zh: '{name} 完成了'},
+    'pd-prog.today.overdue':{en: '{name} is {n} days late',zh: '{name} 逾期 {n} 天'},
+    'pd-prog.today.nodates':{en: 'None of the milestones has a date yet. Post an update, or mark one done.',zh: '里程碑都還沒排日期。發一則更新，或把做完的那一顆標成完成。'},
+    'pd-prog.today.noms':{en: 'No milestones yet — add a few so backers can see how you plan to get there.',zh: '還沒有里程碑。補上幾顆，支持者才看得出你打算怎麼走。'},
+    'pd-prog.today.alldone-send':{en: 'Every milestone is done — send the work for release.',zh: '里程碑都完成了，把作品送去上架。'},
+    'pd-prog.today.alldone-fix':{en: 'Every milestone is done, but the work came back from review.',zh: '里程碑都完成了，但作品被退件了。'},
+    'pd-prog.today.alldone-review':{en: 'Every milestone is done — the work is with the reviewers.',zh: '里程碑都完成了，作品在審核中。'},
+    'pd-prog.today.alldone-date':{en: 'Every milestone is done — pick the day it goes live.',zh: '里程碑都完成了，挑一天上線。'},
+    'pd-prog.today.alldone-wait':{en: 'Every milestone is done — the release date is set.',zh: '里程碑都完成了，上映日期已經排好。'},
+    'pd-prog.today.alldone-blocked':{en: 'Every milestone is done. Keep backers posted while release for this content type is worked out.',zh: '里程碑都完成了。這個內容類型的上架流程還沒定義，先繼續跟支持者說話。'},
+    'pd-prog.today.keeppost':{en: 'The work is out. This is still where you talk to the people who paid for it.',zh: '作品已經上線。這裡仍然是對出錢的人說話的地方。'},
+    'pd-prog.today.cancelled':{en: 'The project has ended. Milestones are frozen — a general update still goes out.',zh: '項目已終止，里程碑凍結。一般更新還發得出去。'},
+
+    /* 內嵌發文框（今天那一格）。受眾三值的權威定義在 §2.2.9。 */
+    'pd-c.aud-everyone':{en: 'Share with: Everyone',zh: '公開給：全部'},
+    'pd-c.aud-backers':{en: 'Share with: Backers only',zh: '公開給：僅支持者'},
+    'pd-c.aud-superfan':{en: 'Share with: Superfan+',zh: '公開給：Superfan 以上'},
+    'pd-c.title-ph':{en: 'What happened?',zh: '發生了什麼事？'},
+    'pd-c.attach-image':{en: 'Image',zh: '圖片'},
+    'pd-c.attach-video':{en: 'Video',zh: '影片'},
+    'pd-c.attach-audio':{en: 'Music',zh: '音樂'},
+    'pd-c.attach-note':{en: 'Attachments are not wired up in this prototype.',zh: '原型還沒接上傳，這裡只示意入口位置。'},
+
+    'pd-prog.work.node':{en: 'Finished work',zh: '完成作品'},
+    'pd-prog.work.blocked':{en: 'No release flow exists for this content type yet.',zh: '這個內容類型的上架流程尚未定義。'},
+    'pd-prog.work.ready':{en: 'Send it from here once the work is finished.',zh: '作品完成後從這裡送審。'},
+    'pd-prog.work.locked':{en: 'Opens once the project is funded.',zh: '項目成立後才能上架作品。'},
+    'pd-prog.work.send':{en: 'Send the work for release',zh: '送作品上架'},
+    'pd-prog.work.pickday':{en: 'Approved — pick the day it goes live.',zh: '已通過，挑一天上線。'},
+
+    'pd.work.setdate':{en: 'Set the release date',zh: '設定上映日期'},
+    'pd.work.changedate':{en: 'Change the date',zh: '改上映日期'},
+    'pd.work.nodate':{en: 'Not set',zh: '尚未設定'},
+
+    'pd-edit.milestone.edit':{en: 'Edit milestone',zh: '編輯里程碑'},
+    'pd-edit.milestone.status':{en: 'Status',zh: '狀態'},
+    'pd-edit.milestone.public':{en: 'Show to fans',zh: '對粉絲端公開'},
+    'pd-edit.milestone.public.hint':{en: 'Off keeps it off the public blueprint.',zh: '關掉就不會出現在粉絲端的藍圖。'},
+    /* hint 只寫做決定需要知道的事：留白會怎樣、這個日期會影響什麼（D194 起它同時是
+       排序依據與倒數基準）。 */
+    'pd-edit.milestone.date.hint':{en: 'Blank means not scheduled yet. The date sets the order on the timeline and the countdown.',zh: '留白代表還沒排定。這個日期決定它在時間軸上的位置與倒數天數。'},
+    'pd-edit.milestone.desc':{en: 'Description',zh: '說明'},
+    'pd-edit.milestone.desc-ph':{en: 'What gets delivered at this step',zh: '這一步要交付什麼'},
+
+    'pd-edit.update.milestone':{en: 'Attach to',zh: '掛在哪裡'},
+    /* 2026-08-17（D194）：軸尾的公告區退場，不掛的更新改依發布時間排進同一條軸。 */
+    'pd-edit.update.milestone.hint':{en: 'Unattached ones sit on the timeline by their own date.',zh: '不掛的會依自己的發布日期排進時間軸。'},
+    'pd-edit.update.ms-none':{en: 'Do not attach',zh: '不掛里程碑'},
+
+    'pd-setup.schedule.title':{en: 'Dates and refunds',zh: '排程與退款'},
+    /* 建立項目流程 · 續填草稿的橫幅（2026-08-17，D193）。 */
+    'cpp.resume.note':{en: 'Picking up the draft “{name}” where you left off. Finishing here publishes this project — it does not create a second one.',zh: '接著把草稿「{name}」填完。在這裡完成的是同一個項目，不會多開一個。'},
+    'project-detail.tl.published-val':{en: 'May 18, 2026',zh: '2026/05/18'},
 
     /* ── 表現 Performance（2026-07-28）· project-detail 分頁 ＋ Dashboard 兩張卡
        量綱一律是「次數／人數／比率」，不含金額——金額在我的收益與版稅兩個分頁。 */
@@ -5639,6 +5992,12 @@
     'project-detail.golive.badge':{en: 'Live',zh: '已上線'},
     'project-detail.golive.published':{en: 'Published live',zh: '正式上線'},
     'project-detail.golive.note':{en: 'Direct-release projects publish immediately — no co-creation or order threshold, no refund. Revenue is shared on earnings after release.',zh: '直接發佈的項目立即發布——無共創／訂購門檻、無退款；上線後依營收分潤。'},
+    /* 2026-08-17：發布時程卡改成跟著項目狀態走，第二列的名稱因此有兩種寫法——
+       已上線講已經發生的事，其餘講還沒發生的約定。`golive.badge` 保留未用
+       （徽章改讀 STATUS 表，不再是固定字串）。 */
+    'project-detail.golive.scheduled':{en: 'Scheduled release',zh: '排定上線日'},
+    'project-detail.golive.nodate':{en: 'Not scheduled yet',zh: '尚未排定'},
+    'project-detail.golive.note-film':{en: 'Sending the creation flow sends the work for review. Once it passes, it goes live on the release date; if it does not, it comes back with a reason and can be sent again.',zh: '送出建立流程就等於送審。通過之後依上映日期上線；沒通過會退回並附理由，可以改完再送一次。'},
     'project-detail.golive.field.name':{en: 'Name',zh: '名稱'},
     'project-detail.golive.field.date':{en: 'Date',zh: '日期'},
     'pd-pre.kpi.orders':{en: 'Pre-orders',zh: '已下單'},
@@ -6086,9 +6445,13 @@
     'pd.review.waiting-body':{ en: 'The work is not on sale yet and the completion post has not gone out — both wait for the result.', zh: '作品還沒上線，這則完成作品貼文也還沒發出；兩者一起等審核結果。' },
     'pd.review.done':       { en: 'What this triggered',       zh: '通過之後發生的事' },
     'pd.review.done-body':  { en: 'The work is on sale, the completion post reached its audience, and this project turned Live.', zh: '作品已上線、完成作品貼文已發給選定受眾、項目已轉為已上線。' },
+    /* 通過但上映日還沒到的那一種（D182 第 1 題）：東西還沒開賣，不能沿用上面那句。 */
+    'pd.review.done-scheduled': { en: 'The work passed review and the completion post reached its audience. It goes on sale on {d}.', zh: '作品已通過審核、完成作品貼文已發給選定受眾；作品在 {d} 當天上線。' },
+    'pd.review.toast-scheduled':{ en: 'Approved — goes live on {d}', zh: '審核通過 · {d} 上映' },
     'pd.review.resubmit':   { en: 'Fix and send again',        zh: '修改後重送' },
     'pd.review.kind-inflight':{ en: 'This work is with the review team — no need to send it again.', zh: '這件作品在平台審核中，不用再送一次。' },
     'pd.review.kind-live':  { en: 'This work is already live.', zh: '這件作品已經上線了。' },
+    'pd.review.kind-scheduled': { en: 'This work passed review and goes on sale on its release date.', zh: '這件作品已通過審核，會在上映日當天上線。' },
     'pd.review.toast-live': { en: 'Your work is live',         zh: '作品已上線' },
     /* ── 作品區段（`pd.work.*`，規格 5.1.2.2 §2.2.11）────────────────────────
        這一區講的是「這件作品」，不是「那則貼文」，所以字串另立命名空間。
@@ -6717,6 +7080,11 @@
     'event-detail.btn.cancelevent': { en: 'Cancel event', zh: '取消活動' },
     'event-detail.btn.duplicate': { en: 'Run it again', zh: '再辦一場' },
     'event-detail.badge.cancelled': { en: 'Cancelled', zh: '已取消' },
+    /* 多站場次清單用的狀態徽章（2026-08-17）：這幾個階段原本沒有自己的 key，
+       因為清單是寫死的假資料、只出現「售票中」與「已排程」兩種。 */
+    'event-detail.badge.draft':  { en: 'Draft',         zh: '草稿' },
+    'event-detail.badge.live':   { en: 'Happening now', zh: '進行中' },
+    'event-detail.badge.ended':  { en: 'Ended',         zh: '已結束' },
     'event-detail.untitled': { en: 'Untitled event', zh: '未命名活動' },
     'event-detail.venue.tbd': { en: 'Venue TBD', zh: '場地未定' },
     'event-detail.sub.empty': { en: 'Date and venue not set yet', zh: '日期與場地尚未設定' },
@@ -6793,7 +7161,7 @@
     'event-detail.tab.notifications': { en: 'Notifications', zh: '通知' },
     'event-detail.tab.finance': { en: 'Cost & revenue', zh: '成本與營收' },
     'event-detail.tab.series': { en: 'Stops', zh: '多站' },
-    'event-detail.ov.details.title': { en: 'Event details', zh: '活動詳情' },
+    'event-detail.ov.details.title': { en: 'Event details', zh: '活動內容' },
     'event-detail.ov.type': { en: 'Type', zh: '類型' },
     'event-detail.ov.type-val': { en: 'Concert · in-person', zh: '演唱會 · 實體' },
     'event-detail.ov.datetime': { en: 'Date & time', zh: '日期與時間' },
@@ -6810,7 +7178,9 @@
     'event-detail.checkin.used': { en: 'Already used (yellow)', zh: '已使用（黃）' },
     'event-detail.checkin.invalid': { en: 'Invalid (red)', zh: '無效（紅）' },
     'event-detail.ov.checkin.note': { en: 'Scanning a QR returns one of three states. A valid scan moves the ticket issued → used (irreversible; only the creator can reverse). Scanner works offline (~4 h) and re-syncs; on double scan the earliest wins.', zh: '掃描 QR 會回傳三種狀態之一。有效掃描會將票券由 issued → used（不可逆；僅創作者可回復）。掃描器可離線運作（約 4 小時）並會重新同步；重複掃描時以最早一次為準。' },
-    'event-detail.tiers.title': { en: 'Tickets', zh: '票務' },
+    /* 分頁叫「票務」，裡面第一節不該也叫「票務」——那是重述上下文（見 CLAUDE.md
+       「UI 文案不重述上下文」）。節名改「票種」，跟它列的東西一致。 */
+    'event-detail.tiers.title': { en: 'Ticket tiers', zh: '票種' },
     /* 2026-08-11 票務分頁改版：卡片／列表雙檢視、庫存欄位、暫停販售、票務商品 */
     'ed.tix.view.cards':  { en: 'Cards',            zh: '卡片' },
     'ed.tix.view.list':   { en: 'List',             zh: '列表' },
@@ -6855,6 +7225,127 @@
     'ed.pub.vis':         { en: 'Visibility',             zh: '公開性' },
     'ed.pub.vis.public':  { en: 'Public',                 zh: '公開活動' },
     'ed.pub.vis.private': { en: 'Private link',           zh: '私人連結' },
+    /* ── 發布設定改用建立流程第 7 步的版面（2026-08-17 使用者裁決）─────────────
+       每個選項多一行說明：選項名字回答「這是哪一個」，說明回答「選了會怎樣」。
+       中文沿用建立流程既有的講法，同一個決定不在兩個地方用兩套詞。 */
+    /* 一張票都還沒建的空狀態（2026-08-17 使用者指示） */
+    'ed.tix.empty.title': { en: 'No ticket tiers yet',    zh: '還沒有票種' },
+    'ed.tix.empty.sub':   { en: 'A tier is one kind of ticket — a price, a quantity, what it gets you. Add the first one to start selling.',
+                            zh: '票種就是一種票：一個價格、一個張數、買到什麼。建了第一種才能開始賣。' },
+    /* ── 總覽階段主卡（2026-08-17）───────────────────────────────────── */
+    'event-detail.tab.setup':  { en: 'Setup',              zh: '設定' },
+    'event-detail.tab.sales':  { en: 'Sales & list',       zh: '售票與名單' },
+    'ed.tix.view.aria': { en: 'Ticket view', zh: '票種檢視方式' },
+    'event-detail.tx.f.aria':  { en: 'Filter transactions', zh: '篩選交易' },
+    'event-detail.att.f.aria': { en: 'Filter attendees',    zh: '篩選參加者' },
+    /* 提前開賣與取消活動（2026-08-17 自頁首搬進設定） */
+    'event-detail.golive.early':     { en: 'Start selling ahead of schedule', zh: '提前開賣' },
+    'event-detail.golive.early-sub': { en: 'Tickets go on sale straight away instead of waiting for the time above.',
+                                       zh: '不等上面設定的時間，立刻開賣。' },
+    'event-detail.danger.title':     { en: 'Cancel this event',  zh: '取消活動' },
+    'event-detail.danger.sub':       { en: 'Cancelling refunds every valid ticket and cannot be undone (§7.2 F5).',
+                                       zh: '取消會對所有有效票自動退款，且無法復原（§7.2 F5）。' },
+    'event-detail.ov.nav.status': { en: 'Status',        zh: '狀態' },
+    'event-detail.series.count':  { en: '{n} of {all}',  zh: '{all} 場中的第 {n} 場' },
+    /* 2026-08-17 使用者裁決改名「多站場次」：一場巡演的每一站。「系列」在站上還指
+       別的東西（系列母頁、系列設定），而這張卡列的就是同一個巡演的各個站點。 */
+    'event-detail.series.title': { en: 'Tour stops',      zh: '多站場次' },
+    'event-detail.series.note':  { en: 'Other stops are managed on their own page — this list is read-only.',
+                                   zh: '其他站點在各自的頁面管理，這份清單唯讀。' },
+    /* 續填草稿（2026-08-17）：草稿從活動清單點進來時走建立流程，不是活動詳情 */
+    'ce.resume.note': { en: 'Picking up the draft “{name}” where you left off. Finishing here publishes this event — it does not create a second one.',
+                        zh: '接著把草稿「{name}」填完。在這裡完成就是發布這一場，不會另外多開一場。' },
+    /* 側欄五節（2026-08-17 使用者指定的名稱與順序） */
+    'ed.nav.content': { en: 'Event details', zh: '活動內容' },
+    'event-detail.sv.record':  { en: 'Sales record',       zh: '售票紀錄' },
+    'event-detail.sv.roster':  { en: 'Attendee list',      zh: '活動名單' },
+    'event-detail.sv.notif':   { en: 'Notifications',      zh: '通知' },
+    'event-detail.sv.refund':  { en: 'Refunds',            zh: '退款' },
+    'event-detail.sv.finance': { en: 'Cost & revenue',     zh: '成本與營收摘要' },
+    'event-detail.sales.title':{ en: 'Sales progress',     zh: '售票進度' },
+    'event-detail.sales.sold': { en: 'Sold',               zh: '已售出' },
+    'event-detail.sales.bytier':{ en: 'By tier',           zh: '各票種' },
+    'event-detail.sales.week': { en: 'Last 7 days',        zh: '最近 7 天' },
+    'event-detail.sales.left': { en: 'left {n}',           zh: '剩 {n}' },
+    'event-detail.sales.held': { en: '{n} held',           zh: '{n} 保留' },
+    'event-detail.sales.tickets': { en: 'tickets',         zh: '張' },
+    'event-detail.sales.tosellout': { en: '{n} to sell out', zh: '離售罄還差 {n} 張' },
+    'event-detail.sales.weeksum': { en: '{n} sold · {a}/day on average', zh: '共售出 {n} 張 · 平均每天 {a} 張' },
+    /* 星期軸：中文用單字、英文用首字母，逗號分隔（由 JS split） */
+    'event-detail.sales.dows': { en: 'M,T,W,T,F,S,S',      zh: '一,二,三,四,五,六,日' },
+    /* 售票進度卡分成「票券」與「票務商品」兩段（2026-08-17 使用者指示）。
+       `sales.tix-head` 是段落標題（票券），與既有的 `sales.tickets`（單位「張」）是兩件事，
+       所以另開一個鍵而不是共用——一個是名詞、一個是量詞。 */
+    'event-detail.sales.tix-head': { en: 'Tickets',        zh: '票券' },
+    'event-detail.sales.bundles': { en: 'Ticket bundles',  zh: '票務商品' },
+    /* 售票趨勢（2026-08-17）：日／週兩種尺度共用一張折線圖 */
+    'event-detail.trend.title':    { en: 'Ticket sales',   zh: '售票趨勢' },
+    'event-detail.trend.day':      { en: 'Day',            zh: '天' },
+    'event-detail.trend.week':     { en: 'Week',           zh: '週' },
+    'event-detail.trend.thisweek': { en: 'This week',      zh: '本週' },
+    'event-detail.trend.wago':     { en: '−{n}w',          zh: '−{n} 週' },
+    'event-detail.trend.footday':  { en: '{n} sold · {a}/day on average',  zh: '共售出 {n} 張 · 平均每天 {a} 張' },
+    'event-detail.trend.footweek': { en: '{n} sold · {a}/week on average', zh: '共售出 {n} 張 · 平均每週 {a} 張' },
+    /* 天／週／月三種尺度（2026-08-17 使用者裁決，進行中那張由「到場節奏」改成購票統計） */
+    'event-detail.trend.sub':       { en: 'by purchase date',   zh: '依購買時間' },
+    'event-detail.trend.month':     { en: 'Month',              zh: '月' },
+    'event-detail.trend.thismonth': { en: 'This month',         zh: '本月' },
+    'event-detail.trend.mago':      { en: '−{n}mo',             zh: '−{n} 月' },
+    'event-detail.trend.footmonth': { en: '{n} sold · {a}/month on average', zh: '共售出 {n} 張 · 平均每月 {a} 張' },
+    /* 總覽三段（2026-08-17 使用者裁決）：此刻＝只有數字、下一步＝該做的事、活動資訊＝不隨階段變的事實。
+       舊的 event-detail.ov.nav.status 已無消費者，保留未用。 */
+    'event-detail.ov.nav.now':   { en: 'Now',              zh: '此刻' },
+    'event-detail.ov.nav.next':  { en: 'Next up',          zh: '下一步' },
+    'event-detail.ov.nav.about': { en: 'About this event', zh: '活動資訊' },
+    /* 開演前檢核改成可編輯待辦清單（產品變更提案，見 ASSUMPTIONS TODO-001） */
+    'event-detail.todo.add':         { en: 'Add an item',            zh: '新增項目' },
+    'event-detail.todo.del':         { en: 'Delete item',            zh: '刪除這一項' },
+    'event-detail.todo.placeholder': { en: 'What still needs doing?', zh: '還有什麼要準備？' },
+    'event-detail.todo.left':        { en: '{n} left',               zh: '還有 {n} 項' },
+    'event-detail.todo.ready':       { en: 'Ready',                  zh: '已就緒' },
+    /* 現場那一格（2026-08-17 使用者裁決重組）：各票種到場、到場節奏、場次脈絡。
+       event-detail.live.title（現場報到台）與 .since（已進行 N 分鐘）已無消費者，保留未用。 */
+    'event-detail.live.bytier':      { en: 'By ticket type',    zh: '依票種統計' },
+    'event-detail.live.tierleft':    { en: '{n} to come',       zh: '還有 {n} 位' },
+    'event-detail.live.rhythm':      { en: 'Entry rate',        zh: '進場頻率' },
+    'event-detail.live.rhythm.sub':  { en: 'by check-in time',   zh: '依到場時間' },
+    'event-detail.live.rhythm.note': { en: 'Peak {t} · {n} through the door', zh: '尖峰 {t} · 進場 {n} 位' },
+    'event-detail.live.unit.sec':    { en: 'Sec',               zh: '秒' },
+    'event-detail.live.unit.min':    { en: 'Min',               zh: '分' },
+    'event-detail.live.unit.hr':     { en: 'Hr',                zh: '時' },
+    'event-detail.live.where.start': { en: 'Starts',            zh: '開演' },
+    'event-detail.live.where.doors': { en: 'Doors',             zh: '開放入場' },
+    'event-detail.lineup.title': { en: 'Dates & tickets at a glance', zh: '場次與票務概況' },
+    'event-detail.lineup.badge': { en: 'Becomes sales progress once selling opens', zh: '開賣後這張換成售票進度' },
+    'event-detail.lineup.dates': { en: 'Dates',            zh: '場次' },
+    'event-detail.lineup.venue': { en: 'Venue',            zh: '地點' },
+    'event-detail.lineup.qty':   { en: 'Tickets available', zh: '可售張數' },
+    'event-detail.lineup.n':     { en: 'date',             zh: '場' },
+    'event-detail.live.rev-meta':{ en: 'Already settled by now', zh: '已定局' },
+    'event-detail.wrap.checkin': { en: 'Check-in result',  zh: '報到結果' },
+    'ed.pub.sale.sub':    { en: 'When fans can start buying, and until when.', zh: '粉絲從什麼時候開始買得到、買到什麼時候為止。' },
+    'ed.pub.onsale.now.sub': { en: 'Selling starts the moment it goes live, and runs until the event begins.',
+                              zh: '發布後立刻開賣，賣到活動開始為止。' },
+    'ed.pub.onsale.sch.sub': { en: 'You set when selling opens and closes; outside that window nobody can buy.',
+                              zh: '自己指定開賣與停售時間，時間外買不到。' },
+    'ed.pub.sale.from':   { en: 'Sale opens',              zh: '開賣時間' },
+    'ed.pub.sale.to':     { en: 'Sale closes',             zh: '停售時間' },
+    'ed.pub.ship.sub':    { en: 'How fans get hold of the ticket.', zh: '粉絲怎麼拿到票。' },
+    'ed.pub.pickup.eticket.sub': { en: 'The ticket lives in the app; scan it at the door.',
+                              zh: '票收在 App 裡，入場掃碼。' },
+    'ed.pub.pickup.sf.sub': { en: "A physical ticket ships to the fan's address; the fan pays postage.",
+                              zh: '實體票寄到粉絲填的地址，運費粉絲付。' },
+    'ed.pub.pickup.store.sub': { en: 'The fan collects it with ID at a named store or at the venue.',
+                              zh: '粉絲到指定門市或活動現場憑證件領票。' },
+    'ed.pub.ship.fee':    { en: 'Postage',                 zh: '運費' },
+    'ed.pub.ship.fee.hint': { en: 'Fans pay this on top at checkout.', zh: '粉絲結帳時另外付這筆。' },
+    'ed.pub.ship.spot':   { en: 'Pickup location',         zh: '取貨地點' },
+    'ed.pub.ship.spot.hint': { en: 'Fans bring ID here to collect the ticket.', zh: '粉絲帶證件到這裡領票。' },
+    'ed.pub.vis.sub':     { en: 'Who gets to find this event.', zh: '決定誰找得到這場活動。' },
+    'ed.pub.vis.public.sub': { en: 'Shows up in the ztor event list and in search.',
+                              zh: '出現在 ztor 活動列表與搜尋結果。' },
+    'ed.pub.vis.private.sub': { en: 'Only people holding the link or the QR can get in.',
+                              zh: '只有拿到連結或 QR 的人進得來。' },
     'ed.pub.link':        { en: 'Event link & QR',        zh: '活動連結與 QR' },
     'ed.pub.link.hint':   { en: 'Where fans buy tickets. The QR points at the same page.', zh: '粉絲買票的入口，QR 指向同一頁。' },
     'ed.pub.edit-tbd':    { en: 'These were set in the create flow. Changing them after tickets are on sale affects buyers — the rules for that are upstream, so they read as view-only here for now.', zh: '這些是建立時設定的。開賣後改動會影響已購票的粉絲，那套規則在上游還沒定，所以先唯讀。' },
@@ -6965,7 +7456,9 @@
     'event-detail.fin.link.earnings': { en: 'Open Earnings', zh: '開啟收益' },
     'event-detail.fin.link.netincome': { en: 'Project net income', zh: '企劃淨收入' },
     'event-detail.fin.note': { en: '<strong>Settlement state machine:</strong> accrued → settled → (refunded / disputed) per §7.2. Refund / cancel effects on revenue follow the §7.3 absorption order; v1 refund scope is in §8.6.', zh: '<strong>結算狀態機：</strong>accrued → settled →（refunded / disputed），依 §7.2。退款／取消對營收的影響遵循 §7.3 吸收順序；v1 退款範圍見 §8.6。' },
-    'event-detail.series.title': { en: 'Stops', zh: '多站管理' },
+    /* 墓碑 2026-08-17：本檔曾有第二個同名 key（'Stops' / 「多站管理」），
+       定義在後面所以永遠蓋掉前面那個。原「系列」分頁退場、清單改成總覽的一節之後，
+       節名統一為「系列場次」——它列的就是這個系列的每一場。 */
     'event-detail.series.sub': { en: 'How this single date relates to the whole series (§5.1.6 F5).', zh: '這一場與整個系列的關聯（§5.1.6 F5）。' },
     'event-detail.series.row1.title': { en: 'Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party', zh: '九龍冰室 十週年 — 九龍夜行 原聲帶 試聽派對' },
     'event-detail.series.this': { en: 'this event', zh: '本場活動' },

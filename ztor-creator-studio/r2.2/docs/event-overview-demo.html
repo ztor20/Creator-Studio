@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 活動詳情「總覽」分頁：一個階段一張主卡</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bento.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/kpi.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/stock-bar.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+<!-- .section-head 定義在 shared.css（不是獨立元件檔） -->
+
+<style>
+  body {
+    margin: 0; background: var(--surface-page); color: var(--foreground);
+    font-family: var(--font-ui); font-size: var(--fs-14); line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64) }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-40) 0 var(--sp-12) }
+  .lede { color: var(--foreground-muted); max-width: 70ch; margin: 0 0 var(--sp-24) }
+  .demo-note { color: var(--foreground-muted); font-size: var(--fs-13); max-width: 76ch }
+
+  .ctl { display: flex; flex-wrap: wrap; gap: var(--sp-24); align-items: flex-end; margin-bottom: var(--sp-24) }
+  .ctl__group { display: flex; flex-direction: column; gap: var(--sp-8) }
+  .ctl__label { font-size: var(--fs-12); color: var(--foreground-muted); text-transform: uppercase; letter-spacing: .06em }
+
+  /* 頁面外框：模擬活動詳情的分頁列，讓總覽這一格看起來在它真正的位置上 */
+  .fake-page { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--sp-20); background: var(--surface-page) }
+  .fake-tabs { display: flex; gap: var(--sp-4); border-bottom: 1px solid var(--border); padding-bottom: var(--sp-10); margin-bottom: var(--sp-20) }
+  .fake-tabs__item { padding: var(--sp-6) var(--sp-10); border-radius: var(--radius-sm); font-size: var(--fs-13); color: var(--foreground-muted) }
+  .fake-tabs__item--on { color: var(--brand-ink); background: var(--brand-tint) }
+
+  /* ── 售票進度卡 ─────────────────────────────────────────────────────
+     一列一個票種，三欄一線讀完：名稱 → 進度條 → 數字。
+     原本是「名稱靠左、數字靠右、進度條另起一行」，卡片一寬，眼睛要從最左跑到最右
+     才配得起來，還要再往下一行找那條進度條——同一筆資料被拆到三個地方。 */
+  .sp__tier {
+    display: grid;
+    /* 進度條那一欄設上限：卡片一寬，條子會拉成一條跨半個畫面的細線，
+       而數字被推到最右邊，兩者又分家了。條子夠長就能比較，不必更長。 */
+    grid-template-columns: minmax(90px, 180px) minmax(120px, 260px) auto;
+    gap: var(--sp-16);
+    justify-content: start;
+    align-items: center;
+    padding: var(--sp-12) 0;
+  }
+  .sp__tier + .sp__tier { border-top: 1px solid var(--border) }
+  .sp__tname { font-size: var(--fs-14); display: flex; align-items: center; gap: var(--sp-6); min-width: 0 }
+  .sp__tname > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+  /* 數字靠右對齊、等寬字：一疊百分比上下對齊才掃得出誰高誰低 */
+  .sp__tnum { font-size: var(--fs-13); color: var(--foreground-muted); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap }
+  .sp__tnum b { color: var(--foreground); font-weight: var(--fw-regular) }
+  /* 售罄或幾乎售罄的那一列，數字轉品牌色——那是唯一需要立刻做決定的訊號 */
+  .sp__tnum--hot b { color: var(--brand-ink) }
+  .sp__tier .stock-bar { margin: 0 }
+  /* 已暫停的票種整列淡化：它還在清單上（庫存仍佔著），但不是現在的戰場 */
+  .sp__tier--off { opacity: .55 }
+
+  /* 總量那一條做粗一階，跟票種列的細條分出主從 */
+  .sp__total.stock-bar { height: 8px; margin: var(--sp-4) 0 0 }
+
+  /* ── 最近 7 天 ─────────────────────────────────────────────────────
+     加上星期標籤：沒有標籤的長條只能看出高低起伏，看不出「週末賣得比較好」，
+     而那正是創作者看這張圖唯一會做的推論。 */
+  .spark { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--sp-6); align-items: end; max-width: 320px }
+  .spark__col { display: flex; flex-direction: column; align-items: center; gap: var(--sp-6) }
+  .spark__b { width: 100%; background: var(--primary); border-radius: 2px 2px 0 0; opacity: .8; min-height: 2px }
+  .spark__b--top { opacity: 1 }
+  .spark__d { font-size: var(--fs-12); color: var(--foreground-muted); font-variant-numeric: tabular-nums }
+  .spark__lbl { font-size: var(--fs-12); color: var(--foreground-muted); margin-top: var(--sp-10) }
+
+  /* 卡內小節標：比 card__title 低一階，用來分「主要數字」與「明細」 */
+  .sp__subhead {
+    font-size: var(--fs-12); color: var(--foreground-muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin: var(--sp-20) 0 var(--sp-4);
+  }
+
+  /* ── 卡內大數字排：取代 KPI 列 ───────────────────────────────────────
+     用分隔線分欄，不用卡——KPI 元件是「一格一張卡」的量體，收進卡片頭部會變成卡中卡。 */
+  .stat-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--sp-28); margin-bottom: var(--sp-20) }
+  .stat { min-width: 104px }
+  .stat + .stat { padding-left: var(--sp-28); border-left: 1px solid var(--border) }
+  .stat__label { font-size: var(--fs-12); color: var(--foreground-muted); margin-bottom: var(--sp-6) }
+  .stat__value { font-size: var(--fs-32); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.01em }
+  .stat__value--success { color: var(--status-success-ink) }
+  .stat__value--warning { color: var(--status-warning-ink) }
+  .stat__of { font-size: var(--fs-14); color: var(--foreground-muted); letter-spacing: 0 }
+  .stat__meta { font-size: var(--fs-12); color: var(--foreground-muted); margin-top: var(--sp-6) }
+
+  .note-why {
+    border-left: 2px solid var(--primary); padding: var(--sp-4) 0 var(--sp-4) var(--sp-12);
+    margin: var(--sp-16) 0 0; color: var(--foreground-muted); font-size: var(--fs-13); max-width: 74ch;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>「總覽」分頁：一個階段一張主卡</h1>
+  <p class="lede">
+    乙案定案後，總覽只剩「現在怎麼樣、我該做什麼」。這一頁示範它在每個階段各長什麼樣——
+    版面收成<b>一個階段一張主卡</b>：數字直接長在卡的頭部，不再另外掛一排 KPI——
+    同一個數字在同一畫面出現兩次，讀的人會以為那是兩個不同的數字。
+  </p>
+
+  <div class="ctl">
+    <div class="ctl__group">
+      <span class="ctl__label">階段</span>
+      <div class="segmented" role="radiogroup" id="ctl-stage">
+        <button type="button" class="segmented__btn" data-stage="scheduled">已排程</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-stage="on-sale">售票中</button>
+        <button type="button" class="segmented__btn" data-stage="live">進行中</button>
+        <button type="button" class="segmented__btn" data-stage="ended">已結束</button>
+        <button type="button" class="segmented__btn" data-stage="cancelled">已取消</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">類型</span>
+      <div class="segmented" role="radiogroup" id="ctl-type">
+        <button type="button" class="segmented__btn segmented__btn--active" data-type="normal">一般</button>
+        <button type="button" class="segmented__btn" data-type="series">系列子場</button>
+        <button type="button" class="segmented__btn" data-type="watchparty">共看派對</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fake-page">
+    <div class="fake-tabs" id="fake-tabs"></div>
+    <div id="ov"></div>
+  </div>
+
+  <h2>這一版改了什麼</h2>
+  <div class="card">
+    <div class="data-list" id="changes"></div>
+  </div>
+
+  <h2>需要你裁決的</h2>
+  <div class="card">
+    <div class="data-list" id="asks"></div>
+  </div>
+
+</div>
+
+<script>
+/* 資料照 events-store.js 的 realive-asia-taipei（售票中、三個票種、一組組合包）抄，
+   數字不是編的——demo 若用漂亮的假資料，看不出真實資料下版面會不會爆。 */
+const EV = {
+  name: 'REALIVE World Tour — Asia leg',
+  capacity: 600,
+  tiers: [
+    { name: 'VIP',    price: 4200, qty: 100, sold: 40,  reserved: 6 },
+    { name: 'Floor',  price: 3300, qty: 200, sold: 60,  reserved: 11 },
+    { name: 'Seated', price: 2400, qty: 300, sold: 100, paused: true }
+  ],
+  bundle: { name: 'VIP ＋ 巡演 T 恤', sold: 3, cap: 50 },
+  week: [12, 18, 9, 24, 31, 22, 15],      // 最近 7 天售出張數
+  revenue: 606000,
+  checkin: { valid: 176, used: 8, invalid: 2 }
+};
+const sum = a => a.reduce((x, y) => x + y, 0);
+const soldAll = sum(EV.tiers.map(t => t.sold));
+const qtyAll  = sum(EV.tiers.map(t => t.qty));
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+const fmt = n => n.toLocaleString('en-US');
+
+let stage = 'on-sale', type = 'normal';
+
+/* ── 2026-08-17 使用者裁決：KPI 列與主卡重複，合併 ─────────────────────────
+   原本版面是「KPI 列 → 階段主卡」，但兩者講同一件事：售票中的 KPI 寫「已售 200/600」，
+   底下的售票進度卡也寫「200/600」還畫了水位；進行中的 KPI 寫「已報到 176/200」，
+   報到台卡再寫一次；已結束的 KPI 與結案卡幾乎逐項對應。同一個數字在同一畫面出現兩次，
+   讀的人會以為那是兩個不同的數字，然後花時間確認它們一不一樣。
+
+   改成**一個階段一張卡**，數字收進那張卡的頭部：
+     已排程 → 開演前檢核 ＋ 場次與票務概況（還沒開賣，沒有已售、沒有營收、沒有報到）
+     售票中 → 售票進度（頭部：售出張數 ＋ 營收）
+     進行中 → 現場報到台（頭部：已報到 ＋ 售出 ＋ 營收）
+     已結束／已取消 → 結案（最終數字全部在這裡）
+   KPI 列因此整條退場。這推翻 2026-08-13「bento 放在總覽第一項」那次裁決——
+   當時總覽還裝著活動內容，KPI 是那一頁唯一的狀態訊號；設定搬走、主卡補上之後，
+   它變成主卡的複述。 */
+
+/* 卡片頭部的一排大數字：取代原本的 KPI 列，同一張卡裡只出現一次 */
+function statRow(items) {
+  return `<div class="stat-row">` + items.map(i => `
+    <div class="stat">
+      <div class="stat__label">${i.label}</div>
+      <div class="stat__value${i.tone ? ' stat__value--' + i.tone : ''}">${i.value}</div>
+      ${i.meta ? `<div class="stat__meta">${i.meta}</div>` : ''}
+    </div>`).join('') + `</div>`;
+}
+
+/* ── 階段主卡 ─────────────────────────────────────────────────────── */
+function mainCard() {
+  if (stage === 'scheduled') return preflight() + lineupCard();
+  if (stage === 'on-sale')   return salesProgress();
+  if (stage === 'live')      return type === 'watchparty' ? room() : deskCard();
+  if (stage === 'ended')     return wrapUp(true);
+  return wrapUp(false);
+}
+
+/* 已排程：現場人力那一列刪除（2026-08-17 使用者指示）——系統裡沒有崗位資料、
+   沒有地方可以配置，那句「4 個崗位尚有 2 個未確認」是寫死的假文案，按鈕也哪都不去。 */
+function preflight() {
+  return `<section class="card">
+    <div class="card__head">
+      <div class="card__title-group"><h3 class="card__title">開演前檢核</h3></div>
+      <span class="badge badge--warning"><span>還有 1 項未完成</span></span>
+    </div>
+    <div class="data-list">
+      <div class="data-list__row">
+        <div class="data-list__row-main"><div class="data-list__body">
+          <div class="data-list__title">退款規則</div>
+          <div class="data-list__meta">尚未設定 · 確認前粉絲只會看到「請聯絡主辦方」</div>
+        </div></div>
+        <div class="data-list__end data-list__end--row">
+          <span class="badge badge--warning"><span>未設定</span></span>
+          <button class="btn btn--outline btn--sm" type="button">設定退款規則</button>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* 已排程的第二張卡（2026-08-17 使用者指示「可以列出一眼就懂的場次與票務概況」）：
+   這個階段沒有任何動態數字可看——票還沒開賣。創作者這時要確認的是「我排的東西對不對」：
+   哪一天、在哪裡、賣哪幾種票、各幾張。全部是已經填好的靜態值，一眼掃完就好。 */
+function lineupCard() {
+  return `<section class="card" style="margin-top:var(--sp-16)">
+    <div class="card__head">
+      <div class="card__title-group"><h3 class="card__title">場次與票務概況</h3></div>
+      <span class="badge badge--neutral"><span>開賣後這張換成售票進度</span></span>
+    </div>
+    ${statRow([
+      { label: '場次', value: '1 場', meta: '2026/10/3 · 晚上 7:00' },
+      { label: '地點', value: 'Taipei Arena', meta: '台北市南港區' },
+      { label: '可售張數', value: fmt(qtyAll), meta: `場地容量 ${fmt(EV.capacity)}` }
+    ])}
+    <div style="margin-top:var(--sp-16)">
+      ${EV.tiers.map(t => `
+        <div class="sp__tier">
+          <span class="sp__tname">${t.name}</span>
+          <span class="sp__tnum">$${fmt(t.price)} · ${fmt(t.qty)} 張</span>
+        </div>`).join('')}
+      <div class="sp__tier">
+        <span class="sp__tname">${EV.bundle.name} <span class="badge badge--neutral"><span>組合包</span></span></span>
+        <span class="sp__tnum">上限 ${EV.bundle.cap} 組</span>
+      </div>
+    </div>
+  </section>`;
+}
+
+function salesProgress() {
+  const left = qtyAll - soldAll;
+  const max = Math.max(...EV.week);
+  return `<section class="card">
+    <div class="card__head">
+      <div class="card__title-group"><h3 class="card__title">售票進度</h3></div>
+      <span class="badge badge--neutral"><span>離售罄還差 ${fmt(left)} 張</span></span>
+    </div>
+
+    ${statRow([
+      { label: '已售出', value: `${fmt(soldAll)} <span class="stat__of">/ ${fmt(qtyAll)} 張</span>`, meta: `${pct(soldAll, qtyAll)}%` },
+      { label: '活動營收', value: '$' + fmt(EV.revenue), meta: '收益數字不重新計算' }
+    ])}
+    <div class="stock-bar sp__total"><span class="stock-bar__fill" style="width:${pct(soldAll, qtyAll)}%"></span></div>
+
+    <div class="sp__subhead">各票種</div>
+    <div>
+      ${EV.tiers.map(t => {
+        const p = pct(t.sold, t.qty), left = t.qty - t.sold, hot = p >= 80;
+        return `
+        <div class="sp__tier${t.paused ? ' sp__tier--off' : ''}">
+          <span class="sp__tname"><span>${t.name}</span>${t.paused ? '<span class="badge badge--neutral"><span>已暫停</span></span>' : ''}</span>
+          <span class="stock-bar"><span class="stock-bar__fill" style="width:${p}%"></span></span>
+          <span class="sp__tnum${hot ? ' sp__tnum--hot' : ''}"><b>${fmt(t.sold)}</b> / ${fmt(t.qty)} · 剩 ${fmt(left)}${t.reserved ? ` · ${t.reserved} 保留` : ''}</span>
+        </div>`; }).join('')}
+      <div class="sp__tier">
+        <span class="sp__tname"><span>${EV.bundle.name}</span><span class="badge badge--neutral"><span>組合包</span></span></span>
+        <span class="stock-bar"><span class="stock-bar__fill" style="width:${pct(EV.bundle.sold, EV.bundle.cap)}%"></span></span>
+        <span class="sp__tnum"><b>${EV.bundle.sold}</b> / ${EV.bundle.cap} 組</span>
+      </div>
+    </div>
+
+    <div class="sp__subhead">最近 7 天</div>
+      <div class="spark">${EV.week.map((v, i) => `
+        <span class="spark__col">
+          <span class="spark__d">${v}</span>
+          <span class="spark__b${v === max ? ' spark__b--top' : ''}" style="height:${Math.max(2, Math.round(v / max * 44))}px"></span>
+          <span class="spark__d">${'一二三四五六日'[i]}</span>
+        </span>`).join('')}
+      </div>
+      <div class="spark__lbl">共售出 ${fmt(sum(EV.week))} 張 · 平均每天 ${Math.round(sum(EV.week) / 7)} 張</div>
+  </section>`;
+}
+
+function deskCard() {
+  return `<section class="card">
+    <div class="card__head">
+      <div class="card__title-group"><h3 class="card__title">現場報到台</h3></div>
+      <span class="badge badge--warning"><span>已開演 42 分鐘</span></span>
+    </div>
+    ${statRow([
+      { label: '已報到', value: `${fmt(EV.checkin.valid)} <span class="stat__of">/ ${fmt(soldAll)} 人</span>`, meta: `${pct(EV.checkin.valid, soldAll)}% 到場`, tone: 'success' },
+      { label: '未到場', value: fmt(soldAll - EV.checkin.valid), meta: '仍可在門口報到' },
+      { label: '活動營收', value: '$' + fmt(EV.revenue), meta: '已定局' }
+    ])}
+    <div class="stock-bar"><span class="stock-bar__fill" style="width:${pct(EV.checkin.valid, soldAll)}%"></span></div>
+    <div class="info-banner" style="margin-top:var(--sp-16)"><span>掃碼連結與密碼在這張卡裡發給現場人員（本 demo 略）。</span></div>
+  </section>`;
+}
+
+function room() {
+  return `<section class="card">
+    <div class="card__head"><div class="card__title-group"><h3 class="card__title">線上房間</h3></div><span class="badge badge--info"><span>僅線上</span></span></div>
+    ${statRow([
+      { label: '已售出', value: `${fmt(soldAll)} 張`, meta: '線上活動沒有報到' },
+      { label: '活動營收', value: '$' + fmt(EV.revenue), meta: '已定局' }
+    ])}
+    <div class="data-list" style="margin-top:var(--sp-8)">
+      <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+        <div class="data-list__title">ztor.live/room/realive-watchparty</div>
+        <div class="data-list__meta">觀眾從這個連結進場，沒有 QR 可掃。</div>
+      </div></div></div>
+    </div>
+  </section>`;
+}
+
+/* 已結束／已取消：結案卡把最終數字全部收進來（2026-08-17 使用者指示
+   「結案和 KPI 有很大重複，可以合併成一個」）。 */
+function wrapUp(ended) {
+  return `<section class="card">
+    <div class="card__head">
+      <div class="card__title-group"><h3 class="card__title">結案</h3></div>
+      <span class="badge ${ended ? 'badge--success' : 'badge--neutral'}"><span>${ended ? '已結算' : '退款中'}</span></span>
+    </div>
+    ${ended ? statRow([
+      { label: '最終售出', value: `${fmt(soldAll)} <span class="stat__of">/ ${fmt(qtyAll)} 張</span>`, meta: `${pct(soldAll, qtyAll)}% 售出` },
+      { label: '最終營收', value: '$' + fmt(EV.revenue) },
+      { label: '到場率', value: pct(EV.checkin.valid, soldAll) + '%', meta: `${fmt(EV.checkin.valid)} 人到場`, tone: 'success' }
+    ]) : statRow([
+      { label: '取消前售出', value: `${fmt(soldAll)} 張` },
+      { label: '待退金額', value: '$' + fmt(EV.revenue), tone: 'warning' },
+      { label: '退款進度', value: '處理中', meta: '對所有有效票自動退款' }
+    ])}
+    ${ended ? `
+    <div style="margin-top:var(--sp-16)">
+      <div class="data-list__title" style="font-size:var(--fs-14);margin-bottom:var(--sp-8)">報到結果</div>
+      <div class="bento">
+        <div class="kpi kpi--success bento--span-4"><div class="kpi__label">有效（綠）</div><div class="kpi__value">${EV.checkin.valid}</div></div>
+        <div class="kpi kpi--warning bento--span-4"><div class="kpi__label">已使用（黃）</div><div class="kpi__value">${EV.checkin.used}</div></div>
+        <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label">無效（紅）</div><div class="kpi__value">${EV.checkin.invalid}</div></div>
+      </div>
+    </div>` : `
+    <div class="info-banner" style="margin-top:var(--sp-16)"><span>取消會對所有有效票自動退款（§7.2 F5）。退款明細在「售票與名單」。</span></div>`}
+  </section>`;
+}
+
+/* 系列子場：3 場兄弟場次的唯讀清單，從原「系列」分頁併進來 */
+function seriesCard() {
+  return `<section class="card" style="margin-top:var(--sp-16)">
+    <div class="card__head"><div class="card__title-group"><h3 class="card__title">系列場次</h3></div><span class="badge badge--neutral"><span>3 場中的第 1 場</span></span></div>
+    <div class="data-list">
+      ${[['Kowloon Café 10th Anniv. — Kowloon After Dark OST', '2026/4/12 · Legacy Taipei', true],
+         ['Kowloon Café 10th Anniv. — 花蓮加場', '2026/4/19 · 花蓮文化中心', false],
+         ['Kowloon Café 10th Anniv. — 線上加場', '待定 · 線上（Zoom）', false]]
+        .map(([t, m, me]) => `
+        <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+          <div class="data-list__title">${t}${me ? ' <span class="badge badge--info"><span>這一場</span></span>' : ''}</div>
+          <div class="data-list__meta">${m}</div>
+        </div></div></div>`).join('')}
+    </div>
+    <p class="demo-note" style="margin-top:var(--sp-12)">其他場次不在這裡改，共用設定在系列母頁。</p>
+  </section>`;
+}
+
+function tabsOf() {
+  const t = ['總覽', '設定'];
+  if (type !== 'watchparty') t.push('票務');
+  if (stage !== 'scheduled') t.push('售票與名單');
+  return t;
+}
+
+function render() {
+  document.getElementById('fake-tabs').innerHTML = tabsOf()
+    .map((n, i) => `<span class="fake-tabs__item${i === 0 ? ' fake-tabs__item--on' : ''}">${n}</span>`).join('');
+  document.getElementById('ov').innerHTML = mainCard() + (type === 'series' ? seriesCard() : '');
+}
+
+document.getElementById('ctl-stage').addEventListener('click', e => {
+  const b = e.target.closest('[data-stage]'); if (!b) return;
+  stage = b.dataset.stage;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+document.getElementById('ctl-type').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  type = b.dataset.type;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+  render();
+});
+
+const CHANGES = [
+  ['一個階段一張主卡，KPI 列退場', 'KPI 與主卡講的是同一件事：售票中的 KPI 寫「已售 200/600」，底下售票進度卡再寫一次還畫了水位；進行中的「已報到 176/200」也重複；已結束的 KPI 與結案卡幾乎逐項對應。同一個數字在同一畫面出現兩次，讀的人會以為是兩個不同的數字，然後花時間確認它們一不一樣。數字改成長在主卡頭部。'],
+  ['已排程補「場次與票務概況」', '這個階段沒有任何動態數字可看——票還沒開賣，已售必然是 0。創作者這時要確認的是「我排的東西對不對」：哪一天、在哪裡、賣哪幾種票各幾張。全部是已填好的靜態值，一眼掃完。開賣後這張換成售票進度。'],
+  ['刪除「現場人力」檢核項', '系統裡沒有崗位資料、沒有地方可以配置，「4 個崗位尚有 2 個未確認」是寫死的假文案，按鈕也哪都不去。開演前檢核因此只剩退款規則一項。'],
+  ['新增「售票進度」主卡（售票中）', '售票中是生命週期最長的一段，現行總覽在那個階段只有 KPI 與檢核卡，「賣得怎麼樣、哪一種票快完了」整頁沒有地方回答，票種分佈藏在「票務」分頁。這張卡給總量水位、逐票種水位（含保留中與已暫停）、組合包、最近 7 天。'],
+  ['已取消也有主卡', '現行已取消是「檢核不見了、報到台不成立、只剩 KPI」。改成結案卡的退款版：取消前售出、待退金額、退款進度。'],
+  ['系列場次併進來', '原「系列」分頁的兄弟場次清單改成總覽的附屬卡（只有系列子場才有），那個分頁整格退場。']
+];
+document.getElementById('changes').innerHTML = CHANGES.map(([k, v]) => `
+  <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+    <div class="data-list__title">${k}</div><div class="data-list__meta">${v}</div>
+  </div></div></div>`).join('');
+
+const ASKS = [
+  ['這推翻了 2026-08-13 的一次裁決', '當時你指示「bento 放在總覽第一項」。那時總覽還裝著活動內容，KPI 是那一頁唯一的狀態訊號；設定搬走、主卡補上之後，它變成主卡的複述。所以這一版把它收掉——若你要保留一排常駐 KPI，說一聲我改回來。'],
+  ['要不要預估售罄時間', '「依最近 7 天速度，約 X 天售罄」很好用，但用幾天平均、暫停中的票種算不算，是產品決策不是版面決策。本 demo 只給事實（最近 7 天共售出、平均每天幾張）。'],
+  ['暫停中的票種算不算進分母', '本 demo 算進去（Seated 已暫停，300 張仍計入 600）。不算的話，暫停一個票種進度會從 33% 跳到 50%——同一場活動的進度因為一個營運動作而跳動。兩種都說得通，需要一個答案。'],
+  ['共看派對的售票中主卡', '本 demo 沿用售票進度（它有票、有數量），進行中才換成線上房間。但共看派對沒有票種頁，票怎麼記需要確認。'],
+  ['「現場人力」要不要留在規格', 'documents/5.1.6.3 §2.4.1 明文寫了這一項。UI 刪掉之後規格要同步，否則兩邊不一致——這是產品規格變更，需要你確認才回寫。']
+];
+document.getElementById('asks').innerHTML = ASKS.map(([k, v]) => `
+  <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">
+    <div class="data-list__title">${k}</div><div class="data-list__meta">${v}</div>
+  </div></div></div>`).join('');
+
+render();
+</script>
+</body>
+</html>

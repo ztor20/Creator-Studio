@@ -1,0 +1,195 @@
+/* ============================================================
+   section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看）
+
+   一個分頁／一個頁面底下還有好幾節內容時，用左側一欄清單切換。與 `tabs.css`
+   的分工：`.tabs` 是頁面層級的主要分頁（橫排、少量、每一格是一個大主題）；
+   `.section-nav` 是分頁**裡面**的分節（直排、可以多、每一節是同一主題的不同切面）。
+   五節以上橫排會擠成兩行或被截斷，直排則天生可長。
+
+   歷史：這組樣式原本叫 `.settings-nav`，只長在設定頁（`settings.css`）。
+   2026-08-17 活動詳情的「售票與名單」需要同一個東西時提升成中性名稱；
+   舊 class 一併保留在下面的選擇器裡，設定頁不必改 markup。
+
+   anatomy
+     .section-nav-layout          兩欄版面（導覽｜內容），900px 以下自動疊成上下
+       .section-nav               直排清單，捲動時吸附
+         .section-nav__item       一節（button 或 a）
+         .section-nav__item--active
+       .section-nav__body         內容欄
+   ============================================================ */
+
+/* 與上方頁首之間的距離（2026-08-17 使用者指示加大，28 → 48）：頁首是「這是哪一場活動」，
+   底下是「這一場的內容」，兩者是不同層級的東西。原本 24px 的上外距讓分節橫列看起來像
+   緊接在標題下面的第三行資訊，而不是另一個開始。距離寫在元件裡、不靠呼叫端的 .mt-24，
+   免得每個消費頁各給一個值。 */
+.section-nav-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-20);
+  margin-top: var(--sp-48);
+}
+@media (min-width: 900px) {
+  .section-nav-layout {
+    /* 導覽欄固定寬：它裝的是幾個並列的短標籤，跟著內容一起伸縮只會讓標籤忽寬忽窄。 */
+    grid-template-columns: 168px minmax(0, 1fr);
+    /* 兩欄的間距（2026-08-17 使用者指示加大，24 → 40）：導覽與內容是兩個獨立的東西，
+       24px 在這個寬度下讀起來像「同一組東西的兩欄」，看不出左邊是選單、右邊是它選出來的
+       結果。拉開之後兩者的關係才對。 */
+    column-gap: var(--sp-40);
+    row-gap: var(--sp-20);
+  }
+}
+
+.section-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  align-self: flex-start;
+}
+@media (min-width: 900px) {
+  /* 內容比導覽長是常態（一節可能是一整張表）；吸附讓切換入口一直在手邊。
+     top 值對齊站上其他吸附元素（見 settings.css 的既有值）。 */
+  .section-nav { position: sticky; top: 78px; }
+}
+/* 窄畫面疊成上下時改成橫向可捲，不要一條直的清單把內容推到一個螢幕以下 */
+@media (max-width: 899px) {
+  .section-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: var(--sp-4);
+    padding-bottom: var(--sp-4);
+  }
+  .section-nav .section-nav__item { white-space: nowrap; }
+}
+
+/* 項目的視覺對齊 filter-tabs（2026-08-17 使用者指示「要像 filter-tabs--brand 一樣的
+   style」）：藥丸外形、--sp-32 高、12px 字，已選＝品牌橘 tint。理由是它們是同一個角色——
+   「一排可選的入口，選中的那個用品牌橘 tint」——而那個角色的答案早在 Q8（2026-07-27）
+   就統一過了。此前 section-nav 用的是 --radius-sm 的方塊、13px 字，等於同一個角色的
+   第三種畫法。
+   直排與橫排的差異只留在容器（.section-nav 是 column、.filter-tabs 是 row），項目本身
+   兩邊一致。 */
+.section-nav__item,
+.settings-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  box-sizing: border-box;
+  /* 高度與字級對齊分節橫列（2026-08-17 使用者指示「每個選項的高度和字的大小應該和
+     上方那排一樣大」）：上排的項目被 .list-toolbar 的 58px 殼撐滿，字是 13px。
+     兩排是同一層級的導覽——一個選區域、一個選分節——量體不一致會讀成有主從。
+     這裡用 min-height 而不是固定高：側欄的標籤可能長到換行（「售票與名單」已經接近），
+     固定高會把第二行切掉。 */
+  min-height: 58px;
+  /* 左右內距比上排大一階（2026-08-17 使用者指示「前後間距大一點」）：上排的項目擠在
+     一條 58px 的橫殼裡、左右要省著用；側欄是一整欄，文字貼著藥丸邊緣會顯得侷促。 */
+  padding: var(--sp-10) var(--sp-20);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    background-color var(--duration) var(--easing),
+    color var(--duration) var(--easing);
+}
+.section-nav__item:hover,
+.settings-nav__item:hover { background: var(--muted); color: var(--foreground); }
+.section-nav__item:focus-visible,
+.settings-nav__item:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* 已選＝品牌橘 tint（Q8 裁決 A，與 .filter-tabs__item--active、.app-sidebar 同一個答案） */
+.section-nav__item--active,
+.settings-nav__item--active {
+  background: var(--selected-surface);
+  color: var(--selected-ink);
+  font-weight: var(--fw-medium);
+}
+.section-nav__item--active:hover,
+.settings-nav__item--active:hover { background: var(--selected-surface-hover); color: var(--selected-ink); }
+
+.section-nav__body { min-width: 0; }
+
+/* ── 每一節內部的垂直節奏（2026-08-17 使用者指示「section 之間要有間距」）──────
+   容器是 `.nav-sections`（分節內容區）——2026-08-17 同日把主分頁與分節的版面對調之後，
+   分節的內容不再住在 `.section-nav__body` 裡，而是在各分頁自己的 `.nav-sections` 底下。
+   一節裡通常是「小標 ＋ 一兩張卡 ＋ 一則說明」。此前這些區塊各自帶 `.mt-16`／
+   `.mt-24`／元件自己的 margin，實測量出來是 10 / 12 / 14 / 16 / 48 五種間距——
+   同一個角色五個答案。
+
+   照 stack.css 已經裁決過的規則辦：**間距由容器承擔（gap），不由子元素各自加
+   margin**。子元素加 margin 會在「第一個／最後一個」與「條件隱藏的區塊」上出錯——
+   隱藏的那一塊仍然把 margin 留在原地，gap 不會（本頁到處都是依階段隱藏的區塊，
+   這件事會實際發生）。 */
+/* 分節全部排在同一頁（2026-08-17 使用者裁決），所以容器自己也要有節奏：
+   節與節之間 --sp-32 比節內的 --sp-18 大一階，讀得出「這裡換一節了」。 */
+.nav-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-32);
+  min-width: 0;
+}
+
+.nav-sections > [data-nav-panel] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-18);
+  min-width: 0;
+  /* 點上排跳過來時，別讓節首貼著吸附的橫列底緣 */
+  scroll-margin-top: 78px;
+}
+
+/* 墓碑 2026-08-17（同日加、同日撤，使用者指示「去掉那個 border」）：這裡原本替
+   票務的「票種」與「票務商品」兩節各畫一圈外框，理由是那兩節裝的是直接落在畫布上的
+   東西（票種是一格格的卡、組合包是清單加空狀態），兩節接在一起時中間只有間距。
+   撤掉之後兩節仍靠 .nav-sections 的 --sp-32 分開；節與節的邊界由標題承擔，不再畫線。
+   要再區隔時先想「有沒有標題可以承擔」，不要直接回來加框——框線一多，
+   卡片自己的邊界就讀不出來了。 */
+
+/* 直屬子元素自帶的上外距會疊在 gap 之上，節奏又亂掉。就地歸零，不回頭改幾十個
+   呼叫點——那些 class 在別的版面裡仍然是對的，錯的只是「在 stack 容器裡」。 */
+.nav-sections > [data-nav-panel] > * { margin-top: 0; margin-bottom: 0; }
+
+/* 墓碑 2026-08-17：本檔曾補 `.nav-sections > [data-nav-panel][hidden]`。
+   同日 shared.css 加了全域的 `[hidden] { display:none !important }`，這一條不再需要，
+   保留註解說明成因。原文：上面那條 `display:flex` 會蓋掉 `[hidden]` 的 `display:none`——沒選到的那幾節仍然
+   全部畫出來，一節接一節疊成一長串。這是本檔自己造出來的第二個同型錯誤（第一個是
+   `.bento[hidden]`，同日修在 bento.css）；凡是 class 自己寫了 display，就要補這一條。 */
+.nav-sections > [data-nav-panel][hidden] { display: none; }
+
+/* `.section-head` 內部最後一行還帶 10px 的間隙（它自己的 sub 行距），實測讓那一處
+   變成 28px。小標與其下方的內容本來就該比兩張卡之間近一點，這 10px 留著是對的——
+   同一則訊息的兩段，不必跟「兩個不同區塊」等距。
+
+   量到的殘差：`.section-head` 自帶 14px 下外距、`.text-sub` 自帶 10px 上外距等，
+   疊在 18px 的 gap 上就變成 28 / 30 / 32 / 34 四種。上面那條把直屬子元素的上下外距
+   一併歸零，節奏才真的只有一個值。子元素在別的版面裡仍然保有自己的外距——
+   錯的只是「在這個 gap 容器裡再加一次」。 */
+
+
+/* ── 分節橫列與內容之間的間距（2026-08-17 使用者指示「section 間要有間距，同時寫進 DS」）──
+   分節橫列（`.list-toolbar` 殼裡的 `.tabs`）與它底下的內容之間，要跟「兩個區塊之間」
+   同一個節奏（`--sp-18`），而不是 `.list-toolbar` 自己預設的 8px。
+
+   為什麼不改 `.list-toolbar` 的預設值：在清單頁（e-shop、projects）它底下緊接的是次層
+   篩選列（`.list-status-row`），那兩層是同一組控制項的上下兩排，8px 是對的。這裡它底下
+   是內容區，兩者是「控制」與「被控制的東西」，距離該拉開。所以規則寫在消費端。 */
+.nav-sections { margin-top: var(--sp-18); }
+/* .list-toolbar 自己的 8px 會疊在上面，就地歸零，讓間距只有一個來源 */
+[data-nav] > .list-toolbar { margin-bottom: 0; }
+
+
+/* 分節橫列吸附在捲動容器頂端（2026-08-17）：分節改成同一頁堆疊之後，上排的角色從
+   「切換」變成「跳到哪一節 ＋ 我現在在哪一節」。捲下去就看不到它的話，兩個作用都沒了。
+   z-index 讓它蓋過捲上來的內容；--surface-shell 是實色，內容不會透出來。 */
+[data-nav] > .list-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+}

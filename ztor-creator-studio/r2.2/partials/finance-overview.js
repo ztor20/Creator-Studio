@@ -90,9 +90,10 @@
      2026-07-27 使用者裁示：「OTT 版稅是影視收益，點 OTT 應該列出影片／MV，不該出現單曲。」
      舊版 SLOTS 按 index 配型，跟項目是什麼完全脫鉤——nick persona 前六筆是單曲／專輯，
      於是 OTT 篩出一排歌，語意就錯了。projects-store 早就有正解：family
-       film  = movie／short／series／mv（MV 是影片，算影視）
+       film  = movie／short／series／mv／document（MV 是影片，算影視；文檔＝紀錄影片，
+               2026-08-17 依主規格 §7.2 歸回影片家族）
        music = song／album
-       other = event／merch／document／custom
+       other = event／merch／custom
      故：OTT 版稅＝film、音樂版稅＝music、門票＝event、商品＝merch，
      共創計畫＝群眾集資型（type:'fund'），授權收益＝原創影音（film＋music）。 */
   var FAMILY_TYPES = {
