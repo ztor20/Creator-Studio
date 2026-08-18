@@ -101,6 +101,15 @@
       <h1 class="wizard__step-title" data-i18n="cpp.about.h1">Project basics</h1>
       <p class="wizard__step-sub" data-i18n="cpp.about.sub">Tell us the essentials — you can refine everything later.</p>
 
+      <!-- 續填草稿的提示（2026-08-17，D193／規格 5.1.2.1 §2 第 3 項）：畫面上突然有值，
+           要講清楚值是哪來的，也要讓創作者看得出這是把既有草稿填完、不是多開一個項目。
+           做法照活動頁的既有慣例（create-event.html 的 #ce-dup-note）：同一則橫幅、
+           文案由 JS 帶入項目名稱，切語言時一起重寫。 -->
+      <div class="info-banner mb-16" id="cpp-resume-note" hidden>
+        <i data-lucide="pencil" class="ztor-icon info-banner__icon"></i>
+        <span data-resume-text></span>
+      </div>
+
       <!-- 型別已在閘門選定；此處供流程中改選。2026-08-04 使用者指示由並排可選卡（radio-cards，D151）
            改為下拉選單，與建立活動的類型快選同一種做法——三個選項用一個下拉就講完，
            並排卡在這裡只是把閘門再畫一次，而這一步的主角是項目內容、不是再選一次型別。 -->
@@ -1351,7 +1360,10 @@
     const filmGolive = list.filter(p => p.type === 'go-live' && p.family === 'film');
     /* 已經有送審紀錄的項目不能再被當成落點——那會把別人那一件覆寫掉，看起來像資料錯亂。 */
     const free = filmGolive.filter(p => !(window.ztorWorkReview && window.ztorWorkReview.forProject(p.id)));
-    const sample = free.filter(p => p.status === 'scheduled')[0] || free[0] || filmGolive[0];
+    /* 落點優先挑還在草稿的那一筆（2026-08-17 改）：這個 wizard 做的事就是「把一個還沒
+       送出的項目送出去」，草稿樣本正是那個處境；送出之後項目詳情會依送審件把它顯示成
+       準備中（D182 第 1 題，判定寫在 project-detail.html）。沒有草稿樣本才退而求其次。 */
+    const sample = free.filter(p => p.status === 'draft')[0] || free.filter(p => p.status === 'scheduled')[0] || free[0] || filmGolive[0];
     const target = sample ? sample.id : '';
     if (window.ztorWorkReview && target) {
       window.ztorWorkReview.submit({
@@ -1733,9 +1745,54 @@
   ['input', 'change', 'upload:change', 'workfields:change', 'ztor:devstate-changed'].forEach(evt => {
     document.addEventListener(evt, () => { if (isFilmFlow() && flow()[idx] === 'review') render(); });
   });
+  /* ══ 續填草稿（2026-08-17，D193）══════════════════════════════════════════
+     規格 5.1.2.1 §2 第 2 項：草稿項目一律回到本流程續填、不進項目詳情。兩個路徑
+     都導到這裡——項目清單的草稿列（projects.html 的 goHref），以及有人直接開詳情頁
+     網址而該項目仍是草稿（project-detail.html 的 location.replace）。
+
+     做法照活動頁的既有慣例，不另發明第二套：網址參數叫 `draft`（不是 `id`，一眼看得出
+     這是續填不是新開）、預填走既有的搬運路徑、橫幅用同一則。
+
+     〔產品待確認〕是否回到上次離開的那一步：站上沒有「最後編輯步驟」這份資料
+     （主規格 §8.24 第 2 項），所以一律從第一步開始並帶入已填值。
+     原型只做到預填，不回存草稿。 */
+  const CAT_TO_CHIP = { document: 'doc' };     /* store 的 cat 與本頁 chip 的代號差一個字 */
+  const STORE_TO_WIZ = { 'go-live': 'golive', fund: 'fund', preorder: 'preorder' };
+  let resumeName = '';
+  function renderResumeNote() {
+    const note = document.getElementById('cpp-resume-note');
+    if (!note || !resumeName) return;
+    note.hidden = false;
+    const txt = note.querySelector('[data-resume-text]');
+    if (txt) txt.textContent = T('cpp.resume.note').replace('{name}', resumeName);
+  }
+  function resumeDraft(id) {
+    const src = window.ztorProjects && window.ztorProjects.get(id);
+    if (!src) return false;
+    chooseType(STORE_TO_WIZ[src.type] || 'golive');
+    /* 內容類型跟著草稿走：它決定直接發佈要走四步還是五步（§3 分流點）。 */
+    const want = CAT_TO_CHIP[src.cat] || src.cat;
+    const chip = document.querySelector('#cat-group .chip[data-cat="' + want + '"]');
+    if (chip) chip.click();
+    const set = (elId, val) => { const el = document.getElementById(elId); if (el && val) { el.value = val; el.removeAttribute('data-i18n'); } };
+    set('proj-title', src.name);
+    const zh = (document.documentElement.lang || '').indexOf('zh') === 0;
+    set('proj-desc', src.desc ? (zh ? src.desc.zh : src.desc.en) : '');
+    enterWizard();
+    resumeName = (src.name || '').trim();
+    renderResumeNote();
+    render();
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+    return true;
+  }
+  document.addEventListener('i18n:applied', renderResumeNote);
+
   render();
   syncTypeUI(type);
-  showGate();   // 流程從項目類型閘門開始（D150）
+  const draftId = new URLSearchParams(location.search).get('draft');
+  /* 查不到那筆草稿就照常從閘門開始——與其停在一個說不出所以然的空表單，
+     不如讓人重新選一次類型。 */
+  if (!draftId || !resumeDraft(draftId)) showGate();   // 流程從項目類型閘門開始（D150）
 })();
 </script>
 <script src="js/reveal.js?v=r2.2"></script>

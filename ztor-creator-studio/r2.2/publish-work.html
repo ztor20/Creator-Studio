@@ -382,7 +382,12 @@
       const k = resubmit ? 'pw.toast.resent' : 'pw.toast.saved';
       window.ztorToast.queue(T(k, resubmit ? 'Sent for review again' : 'Changes saved'), { key: k, tone: 'success' });
     }
-    location.href = 'project-detail.html?id=' + encodeURIComponent(pid) + '#work';
+    /* 回到作品現在住的那一格（2026-08-17 分頁整併，D193）：共創與預購的作品收在
+       「進度」的完成作品節點，直接發佈的收在「總覽」的上架追蹤。原本一律回 `#work`，
+       那個分頁已經不存在，deep link 會落空。 */
+    const back = window.ztorProjects && window.ztorProjects.get(pid);
+    const hash = (back && back.type !== 'go-live') ? '#progress' : '#overview';
+    location.href = 'project-detail.html?id=' + encodeURIComponent(pid) + hash;
   }
 
   /* ---- 送出前的就緒檢查（規格 §8）--------------------------------------------

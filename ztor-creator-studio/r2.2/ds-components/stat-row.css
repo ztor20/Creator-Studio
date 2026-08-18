@@ -1,0 +1,82 @@
+/* ============================================================
+   stat-row.css · 卡內大數字排
+
+   一張卡最上方的那一排主要數字。與 `.kpi`（bento 裡一格一張的獨立卡）
+   的分工：`.kpi` 是「一個數字一張卡」的量體，收進另一張卡的頭部會變成
+   卡中卡；`.stat-row` 沒有自己的表面，它是所在卡片的一部分。
+
+   首個消費情境：活動詳情的總覽分頁（2026-08-17 使用者裁決「KPI 和大表格中
+   有重複」）。原本是「KPI 列 → 階段主卡」兩段，但兩者講同一件事——售票中的
+   KPI 寫「已售 200/600」，底下的售票進度卡再寫一次還畫了水位；進行中的
+   「已報到」也重複；已結束的 KPI 與結案卡幾乎逐項對應。同一個數字在同一畫面
+   出現兩次，讀的人會以為那是兩個不同的數字，然後花時間確認它們一不一樣。
+   數字因此收進主卡頭部，KPI 列整條退場。
+
+   anatomy
+     .stat-row                  一排，會換行
+       .stat                    一欄
+         .stat__label           欄名（12px，次要色）
+         .stat__value           數字（32px，等寬數字）
+           .stat__of            同一行的單位／分母（14px，次要色）
+         .stat__meta            數字底下一行補充（12px，次要色）
+
+   modifier（值的語意色，只在整個數字帶狀態語意時用；一般數字不染色）
+     .stat__value--success      到場率、已完成
+     .stat__value--warning      待退金額、逾期
+   ============================================================ */
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-28);
+  margin-bottom: var(--sp-20);
+}
+
+.stat { min-width: 104px; }
+
+/* 分隔線畫在第二欄之後，第一欄不帶線——線是「欄與欄之間」，不是「每一欄的左邊」 */
+.stat + .stat {
+  padding-left: var(--sp-28);
+  border-left: 1px solid var(--border);
+}
+
+.stat__label {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  margin-bottom: var(--sp-6);
+}
+
+.stat__value {
+  font-size: var(--fs-32);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.stat__value--success { color: var(--status-success-ink); }
+.stat__value--warning { color: var(--status-warning-ink); }
+
+/* 分母與單位跟數字同一行：「200 / 600 張」是一個值，拆兩行會讀成兩個數字。
+   字級退兩階、不吃 letter-spacing（負字距是給大字用的）。 */
+.stat__of {
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+  letter-spacing: 0;
+  /* 分母是一個詞：斜線與數字不可拆行。窄欄時整段一起掉到第二行，
+     不會出現「數字在上、一條斜線孤零零在下」（2026-08-18 於項目詳情 KPI 列發現）。 */
+  white-space: nowrap;
+}
+
+.stat__meta {
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+  margin-top: var(--sp-6);
+}
+
+
+/* 墓碑 2026-08-17（同日新增、同日退場）：這裡原本有 `.stat-row--tight`，
+   把間距收成 --sp-16，理由是這一排被放進活動詳情現場報到台的兩欄版面左欄、
+   400 出頭的寬度會擠掉最後一格。同一天使用者裁決把右欄的掃碼器整塊移到「下一步」，
+   那一排回到整卡寬度，--tight 的前提就不存在了。
+   之後真的又遇到「這排數字被放進窄欄」，重新加一個修飾子即可——不要為了留著它
+   而在不需要的地方套上。 */

@@ -15,6 +15,12 @@
     const body = card.querySelector('.chart-card__body');
     if (!body) return;
 
+    /* hover 那一層是選配的（只有帶 data-chart-series 的卡才建）。這個旗標必須宣告在
+       view toggle 之前：toggle 的 handler 會呼叫 hide()，而 hide() 讀的 tip/cursor/dot
+       都是下面才 const 出來的——沒有 series 的卡在第 35 行就 return 了，那三個變數永遠
+       停在 TDZ，一按切換就 ReferenceError（2026-08-17 在活動詳情的購票統計卡踩到）。 */
+    let hoverReady = false;
+
     /* ── view toggle ── */
     const toggle = card.querySelector('[data-chart-toggle]');
     if (toggle) {
@@ -40,6 +46,7 @@
     const cursor = el('div', 'chart-cursor');
     const dot = el('div', 'chart-cursor__dot');
     body.append(cursor, dot, tip);
+    hoverReady = true;   // 三個節點都建好之後才開旗標
 
     function activeMain() {
       const bar = card.getAttribute('data-chart-view') === 'bar';
@@ -49,6 +56,7 @@
     }
 
     function hide() {
+      if (!hoverReady) return;
       tip.classList.remove('chart-tip--show');
       cursor.classList.remove('chart-cursor--show');
       dot.classList.remove('chart-cursor__dot--show');

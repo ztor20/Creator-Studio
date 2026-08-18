@@ -333,7 +333,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 121 支；主 class 前 5 個）
+## 元件（ds-components/，共 127 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table__film, .admin-table__thumb, .admin-table__owner, .admin-table__avatar ｜ Admin IP Bank data-table presentation. Shared by
@@ -366,7 +366,7 @@
 - `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer__head, .drawer__title
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `embed-modal.css` — .embed-modal, .embed-modal__sheet, .embed-modal__head, .embed-modal__title, .embed-modal__close ｜ Embed modal · full-viewport popup that hosts ano
-- `empty-card.css` — .empty-card, .empty-card__icon, .empty-card__icon--primary, .empty-card__icon--warning, .empty-card__icon--info ｜ Empty card — in-card empty state for a loaded-bu
+- `empty-card.css` — .empty-card, .empty-card--framed, .card, .empty-card__icon, .empty-card__icon--primary ｜ Empty card — in-card empty state for a loaded-bu
 - `empty-stub.css` — .empty-stub, .empty-stub__inner, .empty-stub__mark, .empty-stub__title, .empty-stub__sub ｜ Empty stub — placeholder page for routes that ar
 - `entry-list.css` — .entry-list, .entry-list__row, .entry-list__add ｜ entry-list.css · 逐筆單欄輸入清單（可增可刪）
 - `event-preview-card.css` — .event-preview-card, .event-preview-card__poster, .event-preview-card--landscape, .event-preview-card__type-tag, .event-preview-card__body ｜ Event Preview Card · 粉絲端活動卡即時預覽（spec 5.1.6.1 §4.
@@ -396,7 +396,9 @@
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
+- `meter-list.css` — .meter-list__row, .meter-list__name, .meter-list__num, .meter-list__num--hot, .meter-list__row--off ｜ meter-list.css · 逐項水位清單（名稱 → 量條 → 數字，三欄一線）
 - `nest.css` — .nest, .form-section--outlined ｜ nest.css · 巢狀層（卡片內的滿版子層）
+- `next-step.css` — .next-step, .next-step--lead, .next-step__label, .next-step__text, .next-step__act ｜ next-step.css · 下一步（一句話 ＋ 一顆主要動作）
 - `notification-matrix.css` — .notif-matrix, .notif-matrix__corner, .notif-matrix__chead, .notif-matrix__label, .notif-matrix__label-title ｜ Notification matrix — event-type (rows) × channe
 - `owner-lookup.css` — .owner-lookup, .owner-lookup__results, .owner-lookup__result, .owner-lookup__result--empty, .owner-lookup__flag ｜ SiteSpecific Owner lookup — registered user sele
 - `page-intro.css` — .page-intro, .page-intro__lead, .page-intro__media, .page-crumb, .page-crumb--back ｜ Ztor Creator Studio - Page intro molecule
@@ -404,13 +406,14 @@
 - `payout-modal.css` — .payout-bank-grid, .payout-bank-card, .payout-bank-card--selected, .payout-bank-card--add, .payout-bank-card__top
 - `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
 - `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
-- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access__main, .scanner-access__label, .scanner-access__url ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
+- `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access__main, .scanner-access__label ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
 - `preview-card.css` — .preview-card, .card, .payout-dialog, .preview-card__media, .preview-card__dots ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-col, .preview-col__head ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
 - `product-list.css` — .product-list, .product-list__head, .product-list__row, .product-list--eshop, .product-list--bundles ｜ Product list — borderless inventory table for E-
 - `product-post-modal.css` — .payout-dialog, .npp-intro, .npp-product, .npp-product__thumb, .npp-product__info ｜ New Product Post — composer popup for announcing
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper
+- `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--start, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro
 - `quick-result-list.css` — .quick-result, .quick-result__head, .quick-result__row, .quick-result__name, .quick-result__num ｜ Quick result list · 批次生成結果的唯讀預覽（一列一項）
 - `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡）
@@ -423,17 +426,19 @@
 - `review-status.css` — .review-status, .review-status--flat, .review-status__head, .review-status__thumb, .review-status__title ｜ Review status · 送審件的狀態面板（2026-08-07）
 - `scanner.css` — .scanner-page, .scanner-frame, .scanner-top, .scanner-top__brand, .scanner-top__title ｜ Mobile scanner · spec 5.1.5.11 F7 (standalone ph
 - `search-collapse.css` — .search-collapse, .search-collapse__field, .search-collapse__close ｜ search-collapse — 收合於工具列的搜尋（點放大鏡展開成 field-pill）
+- `section-nav.css` — .section-nav-layout, .section-nav, .section-nav__item, .settings-nav__item, .section-nav__item--active ｜ section-nav.css · 側欄分節導覽（一頁多節，左邊選、右邊看）
 - `segmented.css` — .segmented, .segmented__btn, .segmented__btn--active, .segmented__btn--icon, .segmented--locked ｜ Segmented control · 2/3-way text toggle in a mut
 - `selection-card.css` — .selection-grid, .selection-grid--3, .selection-card, .selection-card--active, .selection-card__title ｜ Selection card — click-to-select 1-of-N card wit
 - `session-list.css` — .session-list, .session-list__row, .session-list__no, .session-list__fields, .session-list__row--main ｜ Session list — 系列場次清單（2026-08-06）
-- `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-nav__item, .settings-nav__item--active ｜ Ztor Creator Studio - Settings layout, nav, and 
+- `settings.css` — .settings-layout, .settings-layout--stacked, .settings-nav, .settings-section, .settings-section__title ｜ Ztor Creator Studio - Settings layout, nav, and 
 - `size-chart-editor.css` — .sce, .sce__wrap, .sce__table, .sce__head, .sce__row ｜ size-chart-editor — 尺寸表編輯矩陣（列＝尺碼、欄＝量測項，兩個維度都可增刪）
 - `sortable.css` — .sort-th, .sort-th--end, .sort-th__ind, .ztor-table, .table-head ｜ Ztor — Sortable columns
 - `source-import.css` — .source-import, .source-gate, .source-gate__head, .source-gate__titles, .source-gate__acts ｜ Source import · 從外部平台搜尋一筆既有紀錄帶入表單
 - `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
-- `stack.css` — .stack, .stack--tight, .stack--loose ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
+- `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
+- `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排
 - `status-axes.css` — .status-axes, .status-axes--split ｜ Status axes · two INDEPENDENT order status track
 - `stepper.css` — .zstep, .zstep--nounit, .zstep__btns, .zstep__btn ｜ Stepper — house up/down control for number input
 - `sticky-actions.css` — .sticky-actions, .sticky-actions__inner, .main ｜ Sticky page actions — keep a page's top CTAs rea
@@ -449,6 +454,7 @@
 - `ticket-tier-card.css` — .tier-grid, .tier-list, .tier-toolbar, .tier-toolbar__actions, .tier-add ｜ Ticket tier card — 票種卡（spec 5.1.6.1 F9 / F9.1 / 
 - `tier-overview.css` — .tier-ov, .tier-ov--compact, .tier-ov__head, .tier-ov__row, .tier-ov__rowlabel ｜ Tier overview — 分級對照表（唯讀）
 - `toast.css` — .ztor-toasts, .ztor-toast, .ztor-toast__icon, .ztor-toast--error, .ztor-toast__text ｜ Ztor — Toast
+- `todo-list.css` — .todo-list, .todo-list__row, .todo-list__row--done, .todo-list__body, .todo-list__text ｜ todo-list.css · 可編輯的待辦清單（勾選 ＋ 自行增刪）
 - `upload-tile.css` — .upload-tile, .upload-tile__act, .upload-tile--file, .upload-tile--video, .upload-tile__icon ｜ Upload tile · dashed upload affordance for creat
 - `variant-builder.css` — .variant-builder, .option-set, .option-set__row, .option-set__add, .option-set__name ｜ Variant builder · Shopify-style options + per-va
 - `vault-share.css` — .vshare, .vshare__section, .vshare__label, .vshare__hint, .vshare__intent ｜ Vault share · 加密連結／NFC 鑰匙的發放面板

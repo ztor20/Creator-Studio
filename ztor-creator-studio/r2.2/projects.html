@@ -130,16 +130,19 @@
             <option value="short" data-i18n="projects.cat.short">Short film</option>
             <option value="series" data-i18n="projects.cat.series">Series</option>
             <option value="mv" data-i18n="projects.cat.mv">MV</option>
+            <!-- 文檔 2026-08-17 從 Other 移到這一組：主規格 §7.2 的影片家族是
+                 「電影、短劇、影集、MV、文檔」，每一列右下的家族標籤讀的是同一條
+                 規則，選單分組跟著它走才不會一邊寫影視、一邊擺在其他底下。 -->
+            <option value="document" data-i18n="projects.cat.document">Document</option>
           </optgroup>
           <optgroup id="proj-cat-grp-music" label="Music">
             <option value="song" data-i18n="projects.cat.song">Song</option>
             <option value="album" data-i18n="projects.cat.album">Album</option>
           </optgroup>
-          <!-- 影視／音樂以外的內容類型（spec 5.1.2.1 §4.1 F3）：活動／其他商品／文檔／自訂 -->
+          <!-- 影視／音樂以外的內容類型（spec 5.1.2.1 §4.1 F3）：活動／其他商品／自訂 -->
           <optgroup id="proj-cat-grp-other" label="Other">
             <option value="event" data-i18n="projects.cat.event">Event</option>
             <option value="merch" data-i18n="projects.cat.merch">Merch</option>
-            <option value="document" data-i18n="projects.cat.document">Document</option>
             <option value="custom" data-i18n="projects.cat.custom">Custom</option>
           </optgroup>
         </select>
@@ -212,7 +215,7 @@
 /* Projects F1 — single data source renders both list & card views; status tab + type select +
    category select + search filter the same set. Sample data is bilingual (re-renders on <html lang> change).
    Per-item display depends on project type × status (spec 5.1.2 F1). Detail link →
-   project-detail.html?id=<id>. */
+   project-detail.html?id=<id>，草稿例外 → create-project.html?draft=<id>（見 goHref）。 */
 (function () {
   /* Live 指示燈在分頁切到背景時停止動畫（tabs.css 讀 html[data-hidden]）。
      瀏覽器不會替 CSS 動畫做這件事，背景分頁會一直合成畫面。 */
@@ -231,11 +234,10 @@
     name: window.ztorProjects.nameLabel(p).en || p.name
   }));
 
-  /* Content-category leaf → its group (Film&TV / Music). Group headers are the optgroups
-     in markup (non-selectable, matching cocreate). Only leaves are filter values. */
-  const CAT_GROUP = { movie:'filmtv', short:'filmtv', series:'filmtv', mv:'filmtv',
-                     song:'music', album:'music',
-                     event:'other', merch:'other', document:'other', custom:'other' };
+  /* 內容類型 → 家族的對照表原本在這裡有一份（CAT_GROUP），從來沒有被呼叫過，卻是
+     站上第三份寫著同一件事的表。2026-08-17 刪除：家族只有一個來源，就是
+     js/projects-store.js 的 FAMILY，本頁要用就呼叫 store 的 family()（見下方 famLabel）。
+     選單的分組由 markup 的 optgroup 承擔，只有葉節點是可選的篩選值。 */
 
   /* ── 狀態字典（2026-07-27 重構，模型說明見 js/projects-store.js 檔頭）──────
      live      ＝作品已上線、正在賺錢（終點）→ 品牌橘，與 Live chip 的活動點同色
@@ -362,9 +364,18 @@
       + '<span class="project-list__goal-amt">' + esc(amt) + '</span>'
     + '</div>';
   }
+  /* 一筆項目點進去要去哪（2026-08-17，D193／規格 5.1.2 F3「每筆操作」）：
+     **草稿回建立流程續填，不進詳情頁**——草稿還沒建立完成，詳情頁對它多半是空的。
+     參數名用 draft 不用 id，網址上就看得出這是把既有草稿填完、不是多開一個新項目
+     （與活動清單指向 create-event.html?draft= 同一條慣例）。 */
+  function goHref(p) {
+    return p.status === 'draft'
+      ? 'create-project.html?draft=' + encodeURIComponent(p.id)
+      : 'project-detail.html?id=' + encodeURIComponent(p.id);
+  }
   function rowHtml(p) {
     const left = p.list && p.list.left ? t(p.list.left) : null;
-    return '<a class="project-list__row" role="row" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
+    return '<a class="project-list__row" role="row" href="' + goHref(p) + '" data-id="' + p.id + '">'
       + imgHtml(p)
       + '<div class="project-list__project" role="cell">'
         + '<div class="project-list__kind">' + esc(t(MODE[p.type])) + '</div>'
@@ -383,7 +394,7 @@
   }
   function cardHtml(p) {
     const bar = projectBarData(p);
-    return '<a class="project-card" href="project-detail.html?id=' + encodeURIComponent(p.id) + '" data-id="' + p.id + '">'
+    return '<a class="project-card" href="' + goHref(p) + '" data-id="' + p.id + '">'
       /* 有海報就放海報，沒有的項目退回原本的圖示佔位（新建項目還沒上傳素材時會走這條） */
       + '<div class="project-card__cover">'
         + (p.cover

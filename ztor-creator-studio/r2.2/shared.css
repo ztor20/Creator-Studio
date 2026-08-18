@@ -15,12 +15,16 @@
 
 /* Header is the canonical DS component — single source in ds-components/header.css.
    All product pages load shared.css, so this @import gives every page the topbar
-   from the one place; design-system.html links header.css directly. */
-@import url("ds-components/header.css?v=20260726x");
-@import url("ds-components/icon.css?v=20260726x");
-@import url("ds-components/page-intro.css?v=20260726x");
-@import url("ds-components/field-system.css?v=20260726x");
-@import url("ds-components/settings.css?v=20260726x");
+   from the one place; design-system.html links header.css directly.
+
+   2026-08-17：這五條的版本字串停在 `20260726x`，全站其餘資產早在 r2.2 就統一成 `?v=r2.2`
+   （見專案 CLAUDE.md「cache-bust 版本已凍結成固定字串」）。@import 藏在 CSS 裡，
+   逐頁掃 <link> 的檢查看不到它們，所以漏了一輪。統一成 r2.2。 */
+@import url("ds-components/header.css?v=r2.2");
+@import url("ds-components/icon.css?v=r2.2");
+@import url("ds-components/page-intro.css?v=r2.2");
+@import url("ds-components/field-system.css?v=r2.2");
+@import url("ds-components/settings.css?v=r2.2");
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -166,6 +170,28 @@ body {
 a { color: inherit; text-decoration: none; }
 
 /* ---------- App shell ---------- */
+/* ============================================================
+   [hidden] 一律說了算（2026-08-17）
+   ------------------------------------------------------------
+   CSS 的 class 只要自己寫了 `display`，就會蓋過 UA stylesheet 的
+   `[hidden] { display: none }`——於是 JS 設了 `el.hidden = true` 的元素
+   照樣佔著版面。這在站上已經發生過很多次，各元件檔目前散落 **80 條**
+   同一種補丁（`.alert[hidden]`、`.badge[hidden]`、`.data-list__row[hidden]`…），
+   而 2026-08-17 一天之內就又踩到三次：
+     · `.bento[hidden]` — 名單那節留下一塊 98px 空白，被當成間距問題
+     · `.nav-sections > [data-nav-panel][hidden]` — 沒選到的節全部畫出來疊成一長串
+     · `.tabs__item[hidden]` — 沒有系列的活動仍看得到「系列場次」那一顆（點了沒反應）
+
+   逐支補是永遠補不完的，因為錯誤發生在「新寫一支帶 display 的 class」的當下，
+   而那時沒有人會想到 `[hidden]`。改成一條全域規則：屬性一旦掛上就一定收起。
+   用 `!important` 是必要的——它要贏過所有 class；而 `[hidden]` 的語意本來就是
+   「這個元素現在不存在於畫面上」，沒有「隱藏但仍佔位」這種合法用法。
+
+   已確認全站沒有任何一處刻意讓 `[hidden]` 元素保持可見（grep 過 81 支元件檔）。
+   既有的 80 條逐支補丁與本條不衝突，留著不動；日後新寫元件不必再補。
+   ============================================================ */
+[hidden] { display: none !important; }
+
 .app { min-height: 100vh; display: flex; flex-direction: column; }
 /* 桌機：app shell 固定滿版、不隨文件捲動；只有 .main 內部捲動（2026-06-14）。
    窄螢幕（≤900px）維持一般文件捲動（見各 @media）。 */
@@ -1399,9 +1425,14 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 /* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
    所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
 .pd-detail__breadcrumb { min-width: 0; margin-bottom: 0; }
+/* 封面欄 2026-08-17 由 300px 收到 220px。為什麼：D193 把營運摘要與下一步搬進總覽
+   分頁之後，右欄只剩識別（徽章／標題／簡介／識別事實），內容高度約 300px，而 300px
+   寬的 2:3 海報有 450px 高——右半永遠空一大塊。海報比例是全站統一的 --img-portrait
+   （2 / 3，D164／Q39 使用者裁決），不能為了填滿而改裁切，所以改的是寬度：220px 的
+   海報高 330px，跟右欄的內容高度對得上。 */
 .pd-hero {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--sp-24);
   align-items: start;
   margin-bottom: var(--sp-24);
@@ -1517,12 +1548,13 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   letter-spacing: -1px;
 }
 .pd-hero__desc { margin: 0; color: var(--foreground-muted); max-width: 720px; }
-/* 創作者脈絡＝募資卡框內最下面的頁腳行（取代原 §7.3 口徑註記）；與募資數字間留一格。 */
-.pd-hero__owner {
-  margin: var(--sp-14) 0 0;
-  color: var(--muted-foreground);
-  font-size: var(--fs-13);
-}
+/* ✝ 2026-08-17 墓碑 · .pd-hero__owner（單行「創作者 X · 建立於 Y · 共創自 Z 起」）
+   三個事實塞在一行、靠 · 分隔，讀起來是一句話而不是三筆資料，而且撐不起右欄的高度。
+   改用站上既有的 .data-list（#pd-hero-facts）逐筆列出，標籤與值分開；欄位內容見
+   project-detail.html 的 render()。這一行原本掛的 id="pd-owner-line" 一併退場。 */
+/* 識別事實列坐在頁面底（--background）而不是卡內：.data-list 本身不填色、只有分隔線，
+   兩層 surface 都成立。行寬跟簡介對齊，避免在寬螢幕上拉成一條長線。 */
+.pd-hero__facts { max-width: 520px; margin-top: var(--sp-4); }
 @media (max-width: 900px) {
   .pd-hero__title { font-size: var(--fs-32); }
 }
@@ -1727,6 +1759,14 @@ html.reveal-on .reveal.is-in {
   html.reveal-on .reveal { opacity: 1; transform: none; transition: none; }
 }
 
+/* 分節內容不做進場動畫（2026-08-17）：`.nav-sections` 底下的節是錨點目標，一頁堆疊、
+   隨時可能被「跳過去」而不是「捲過去」。實測有節卡在 `opacity:0`——`.is-in` 已經掛上、
+   規則也命中，但值沒回到 1（元素在 tag 當下位於已隱藏的子樹，transition 起不來）。
+   結果是那一節整段空白，而使用者剛剛才點了它。
+   這正是 reveal.js 檔頭已經推導過的同一類問題（見它 2026-07-28 的註解：「少一次進場
+   動畫，換掉一整類『切到那一步就是空白』的 bug」）——這裡把那個結論延伸到分節。 */
+html.reveal-on .nav-sections .reveal { opacity: 1; transform: none; }
+
 /* Hero copy — the container itself stays visible (not animated by reveal).
    Children are driven by JS WAAPI in hero.js (see runHeroIntro). */
 html.reveal-on .hero__copy.reveal {
@@ -1910,7 +1950,12 @@ html[data-embed] .main {
   margin: 0;
   border-radius: 0;
   overflow: visible;
-  min-height: 0;
+  /* 撐滿覆蓋層的框高（2026-08-17 使用者回報「下方不應該是灰色的」）：
+     embed 模式把 .app 的 100vh 拿掉改成單層捲動，於是內容短的時候整頁只有內容那麼高，
+     底下露出 <body> 的 --surface-shell——一條灰帶橫在浮層下半，看起來像頁面只畫了一半。
+     在 iframe 裡 100vh ＝ 框自己的高度，所以這一條剛好讓頁面底色鋪滿、又不會造出第二條捲軸
+     （min-height 不是 height，內容比框高時照樣往下長）。 */
+  min-height: 100vh;
   background: var(--surface-page);
 }
 /* 頁面欄的上緣留白在覆蓋層裡不需要——標題列已經在正上方 24px 處。 */

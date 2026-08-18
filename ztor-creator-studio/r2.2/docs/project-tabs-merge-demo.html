@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · 項目詳情分頁整併：現行最多 9 格 vs 提案最多 7 格</title>
+
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/alert.css?v=r2.2">
+
+<style>
+  body {
+    margin: 0;
+    background: var(--surface-page);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: var(--fs-14);
+    line-height: var(--lh-normal);
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: var(--sp-40) var(--sp-24) var(--sp-64); }
+  h1 { font-size: var(--fs-28); margin: 0 0 var(--sp-8) }
+  h2 { font-size: var(--fs-20); margin: var(--sp-40) 0 var(--sp-12) }
+  h3 { font-size: var(--fs-16); margin: 0 0 var(--sp-8) }
+  .lede { color: var(--foreground-muted); max-width: 70ch; margin: 0 0 var(--sp-24) }
+  .demo-note { color: var(--foreground-muted); font-size: var(--fs-13); max-width: 78ch }
+
+  /* 控制列：四個軸各一組 segmented，另加提案版本與檢視 */
+  .ctl { display: flex; flex-wrap: wrap; gap: var(--sp-20) var(--sp-24); align-items: flex-end; margin-bottom: var(--sp-16) }
+  .ctl__group { display: flex; flex-direction: column; gap: var(--sp-8) }
+  .ctl__label { font-size: var(--fs-12); color: var(--foreground-muted); text-transform: uppercase; letter-spacing: .06em }
+
+  /* 【明確標註的特例 · 僅此 demo 頁，沿用 project-tabs-matrix-demo 的同一條】
+     segmented 元件只有整組唯讀的 --locked，沒有「同一組裡停掉其中一顆」這個狀態。
+     這一頁要把「直接發佈走不到的兩個項目狀態」與「非影片家族沒有的審核狀態」就地停用，
+     所以在頁面補這一條，不升成 DS 標準——產品頁目前沒有這個需求。 */
+  .segmented__btn[disabled] { opacity: .38; cursor: not-allowed }
+  .segmented__btn[disabled]:hover { color: var(--foreground-muted) }
+
+  /* 兩欄對照 */
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-20); align-items: start }
+  @media (max-width: 940px) { .vs { grid-template-columns: 1fr } }
+  .col__cap {
+    display: flex; align-items: center; gap: var(--sp-8);
+    margin-bottom: var(--sp-10); font-size: var(--fs-13); color: var(--foreground-muted);
+  }
+
+  /* 分頁列縮影：真的 .tabs 要接 JS 才會動，這裡畫一排靜態籤，點得開 */
+  .tabstrip {
+    display: flex; flex-wrap: wrap; gap: var(--sp-4);
+    border-bottom: 1px solid var(--border); padding-bottom: var(--sp-10); margin-bottom: var(--sp-16);
+    min-height: var(--sp-24);
+  }
+  .tabstrip__item {
+    padding: var(--sp-6) var(--sp-10); border-radius: var(--radius-sm);
+    font-size: var(--fs-13); color: var(--foreground-muted); white-space: nowrap;
+    font-family: inherit; border: 0; background: none; cursor: pointer;
+  }
+  .tabstrip__item:hover { color: var(--foreground) }
+  .tabstrip__item:focus-visible { outline: 1px solid var(--ring); outline-offset: 2px }
+  .tabstrip__item--on { color: var(--selected-ink); background: var(--selected-surface) }
+
+  .grp { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-14) var(--sp-16); margin-bottom: var(--sp-10) }
+  .grp__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--sp-8); margin-bottom: var(--sp-12) }
+  .grp__name { font-size: var(--fs-15); font-weight: var(--fw-medium) }
+  .grp__q { font-size: var(--fs-12); color: var(--foreground-muted) }
+  .sec { display: flex; flex-direction: column; gap: var(--sp-10) }
+  .sec__row { display: flex; flex-direction: column; gap: var(--sp-2) }
+  .sec__name { font-size: var(--fs-13); font-weight: var(--fw-medium) }
+  .sec__desc { font-size: var(--fs-12); color: var(--muted-foreground) }
+  .sec__from { font-size: var(--fs-11); color: var(--foreground-muted) }
+
+  .delta { font-size: var(--fs-13); color: var(--foreground-muted); margin-top: var(--sp-12) }
+  .delta b { color: var(--foreground); font-weight: var(--fw-medium) }
+  .count { font-variant-numeric: tabular-nums }
+  .links { display: flex; flex-wrap: wrap; gap: var(--sp-10); margin-top: var(--sp-6) }
+  .links a { color: var(--selected-ink); font-size: var(--fs-13) }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>項目詳情分頁整併</h1>
+  <p class="lede">
+    現行的十個分頁是照規格章節編號分的；提案改成照「創作者此刻在做什麼」分。
+    切下面四個軸，看兩種結構在同一格底下各自長什麼樣。兩欄的分頁籤都可以點——
+    像真的頁面那樣一格一格切過去，才看得出單一分頁裡裝了多少東西。
+  </p>
+
+  <div class="alert alert--row alert--info" style="margin-bottom:var(--sp-20)">
+    <div class="alert__body">
+      <div class="alert__title">這是 docs 底下的提案 demo，產品頁一行未改</div>
+      <div class="alert__meta">
+        不在主導覽裡，也不列進 design-system。左欄「現行」的分頁清單與顯示條件照
+        <code>project-detail.html</code> 的實作寫（與 <code>docs/project-tabs-matrix-demo.html</code> 同源）；
+        右欄「提案」的設計與理由寫在
+        <code>documents/plans/項目詳情分頁整併-提案-2026-08-17.md</code>。
+        <strong>表現與版稅兩個分頁在提案裡維持現況</strong>，條件、內容、位置一律不動。
+      </div>
+    </div>
+  </div>
+
+  <div class="ctl">
+    <div class="ctl__group">
+      <span class="ctl__label">發行模式</span>
+      <div class="segmented" role="radiogroup" id="ctl-mode">
+        <button type="button" class="segmented__btn segmented__btn--active" data-mode="fund">共創</button>
+        <button type="button" class="segmented__btn" data-mode="preorder">預購</button>
+        <button type="button" class="segmented__btn" data-mode="go-live">直接發佈</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">項目狀態</span>
+      <div class="segmented" role="radiogroup" id="ctl-status">
+        <button type="button" class="segmented__btn" data-status="draft">草稿</button>
+        <button type="button" class="segmented__btn" data-status="scheduled">準備中</button>
+        <button type="button" class="segmented__btn" data-status="published">進行中</button>
+        <button type="button" class="segmented__btn" data-status="succeeded">已成立</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-status="live">已上線</button>
+        <button type="button" class="segmented__btn" data-status="cancelled">已取消</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">作品家族</span>
+      <div class="segmented" role="radiogroup" id="ctl-family">
+        <button type="button" class="segmented__btn segmented__btn--active" data-family="film">影片</button>
+        <button type="button" class="segmented__btn" data-family="music">音樂</button>
+        <button type="button" class="segmented__btn" data-family="other">其他</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">提案版本</span>
+      <div class="segmented" role="radiogroup" id="ctl-plan">
+        <button type="button" class="segmented__btn" data-plan="a">甲 · 進度併進支持者</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-plan="b">乙 · 進度自成一格（推薦）</button>
+      </div>
+    </div>
+    <div class="ctl__group" style="flex:1 1 100%">
+      <span class="ctl__label">作品審核狀態</span>
+      <div class="segmented" role="radiogroup" id="ctl-review" style="flex-wrap:wrap">
+        <button type="button" class="segmented__btn" data-review="none">無送審紀錄</button>
+        <button type="button" class="segmented__btn" data-review="draft">草稿</button>
+        <button type="button" class="segmented__btn" data-review="pending">待審核</button>
+        <button type="button" class="segmented__btn" data-review="inreview">審核中</button>
+        <button type="button" class="segmented__btn" data-review="approved-wait">審核通過（上映日未到）</button>
+        <button type="button" class="segmented__btn segmented__btn--active" data-review="approved-live">審核通過（已上線）</button>
+        <button type="button" class="segmented__btn" data-review="rejected">審核不通過</button>
+      </div>
+    </div>
+    <div class="ctl__group">
+      <span class="ctl__label">檢視</span>
+      <div class="segmented" role="radiogroup" id="ctl-view">
+        <button type="button" class="segmented__btn segmented__btn--active" data-view="one">逐頁點</button>
+        <button type="button" class="segmented__btn" data-view="all">展開全部</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="demo-note" id="ctl-note" style="margin:0 0 var(--sp-20)"></p>
+
+  <div class="vs">
+    <section>
+      <div class="col__cap"><span class="badge badge--neutral">現行</span><span id="cap-now"></span></div>
+      <div class="tabstrip" id="strip-now"></div>
+      <div id="body-now"></div>
+    </section>
+    <section>
+      <div class="col__cap"><span class="badge badge--success">提案</span><span id="cap-new"></span></div>
+      <div class="tabstrip" id="strip-new"></div>
+      <div id="body-new"></div>
+    </section>
+  </div>
+
+  <p class="delta" id="delta"></p>
+
+  <div id="samples" style="margin-top:var(--sp-16)"></div>
+
+  <h2>提案的每一格，各自回答一個問題</h2>
+  <div class="card">
+    <table class="ztor-table">
+      <thead><tr><th>分頁</th><th>回答的問題</th><th>收進什麼</th><th>什麼時候出現</th></tr></thead>
+      <tbody id="tbl-map"></tbody>
+    </table>
+  </div>
+
+  <h2>總覽在每一個狀態下呈現什麼</h2>
+  <p class="demo-note" style="margin:0 0 var(--sp-12)">
+    這是使用者第 4 點反饋的重點。現行的總覽在所有格子裡長得幾乎一樣（一份更新清單加三張設定卡）；
+    提案讓它在每一格都不同。切上面的發行模式與狀態，右欄第一格就是這張表的那一列。
+  </p>
+  <div class="card">
+    <table class="ztor-table">
+      <thead><tr><th>發行模式</th><th>項目狀態</th><th>重點面板</th><th>下一步</th></tr></thead>
+      <tbody id="tbl-ov"></tbody>
+    </table>
+  </div>
+
+  <h2>要注意的地方</h2>
+  <div class="card">
+    <div class="data-list" id="audit"></div>
+  </div>
+
+  <div class="info-banner" style="margin-top:var(--sp-20)">
+    <span>
+      風險、取捨與更保守的替代做法逐項寫在提案文件第 9 節；需要使用者先裁決的三件事與六個產品缺口在第 10 節。
+      這一頁只負責讓兩種結構並排看得見。
+    </span>
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   左欄「現行」：分頁清單與顯示條件照 project-detail.html 的實作抄，
+   與 docs/project-tabs-matrix-demo.html 同源、逐條對過。對應位置：
+     data-type（pledges / progress / cofund / preorder）＝分頁列 markup
+     renderWork()  ＝作品分頁
+     render() 的 perfReady / store.hasRoyalty() ＝表現與版稅
+   demo 若跟本尊不一致，比較就沒有意義。
+   ───────────────────────────────────────────────────────────── */
+const MODE   = { fund: '共創', preorder: '預購', 'go-live': '直接發佈' };
+const STATUS = { draft: '草稿', scheduled: '準備中', published: '進行中', succeeded: '已成立', live: '已上線', cancelled: '已取消' };
+const FAMILY = { film: '影片', music: '音樂', other: '其他' };
+const REVIEW = {
+  none: '無送審紀錄', draft: '草稿', pending: '待審核', inreview: '審核中',
+  'approved-wait': '審核通過（上映日未到）', 'approved-live': '審核通過（已上線）', rejected: '審核不通過'
+};
+
+/* 直接發佈走不到的兩態（主規格 §7.2） */
+const GO_LIVE_BLOCKED = {
+  published: '直接發佈的作品在建立當下就完成了，沒有「還在收支持款」這一段',
+  succeeded: '直接發佈沒有達標這件事，也沒有「錢收了、東西還沒交」的等待期'
+};
+
+let mode = 'fund', status = 'live', family = 'film', review = 'approved-live';
+let plan = 'b', showAll = false, nowSel = 0, newSel = 0;
+const hasRec = () => review !== 'none';
+const isFilm = () => family === 'film';
+
+/* ── 現行的十個分頁 ─────────────────────────────────────────── */
+const NOW_TABS = [
+  { id: 'settings', name: '項目總覽', on: () => true,
+    sections: () => [
+      { n: '項目更新', d: '已發過的更新一則一則列在這裡，也是發新更新的入口' },
+      hasRec() && mode !== 'go-live'
+        ? { n: '完成作品送審狀態', d: '那則完成作品貼文審到哪一步；被退件時長出退件理由與「修改後重送」' } : null,
+      { n: '合作者', d: '誰參與這個項目、分潤名額分給了誰' },
+      { n: 'IP 租借', d: '這個項目租入了哪些他人 IP、授權到哪天' },
+      mode === 'go-live'
+        ? { n: '發布時程', d: '建立日與排定上線日，徽章跟著項目狀態走' } : null
+    ] },
+  { id: 'pledges', name: '方案與承諾', on: () => mode !== 'go-live',
+    sections: () => [
+      mode === 'fund'
+        ? { n: '共創方案', d: '每個方案賣什麼、多少錢、限量幾份，含分潤名額' }
+        : { n: '預購方案', d: '每個方案賣什麼、多少錢、限量幾份，不含分潤名額' },
+      mode === 'preorder' ? { n: '單位價格', d: '作品一份的價格；每個方案的價格都從它推導' } : null
+    ] },
+  { id: 'about', name: '關於項目', on: () => true,
+    sections: () => [
+      { n: '展示內容', d: '主視覺、圖庫、預告' },
+      { n: '公開資訊', d: '簡介、演職、常見問答、標籤、年齡分級' }
+    ] },
+  { id: 'progress', name: '製作進度', on: () => mode !== 'go-live',
+    sections: () => [
+      { n: '時程與里程碑', d: '各階段日期；期限到了系統怎麼自動走' },
+      { n: '內容項目', d: '承諾要交付的每一樣東西各自做到哪一步' }
+    ] },
+  { id: 'work', name: '作品',
+    on: () => isFilm() && (mode === 'go-live' ? status !== 'draft' : true) && hasRec(),
+    sections: () => [
+      { n: '送審件狀態', d: '封面、審核徽章、上映日期、最近送出時間、送出次數' },
+      review === 'rejected' ? { n: '退件理由', d: '退件原因全文，按鈕換成「修改後重送」' } : null,
+      review !== 'rejected' ? { n: '編輯入口', d: '進上架流程改這件作品' } : null,
+      { n: '重送規則', d: '改影片檔、定價或年齡限制要重新送審；改文案、標籤、演職不用' }
+    ] },
+  { id: 'earnings', name: '我的收益', on: () => true, sections: () => earnSections() },
+  { id: 'performance', name: '表現', on: () => status === 'live' && family !== 'other', sections: () => perfSections() },
+  { id: 'royalty', name: '版稅', on: () => mode === 'fund' && status === 'live', sections: () => royaltySections() },
+  { id: 'cofund', name: '共創進度', on: () => mode === 'fund', sections: () => fundSections() },
+  { id: 'preorder', name: '預購進度', on: () => mode === 'preorder', sections: () => preorderSections() }
+];
+
+/* 三個金流分頁的內容在兩欄完全一樣，所以抽成共用函式——提案不動它們，
+   兩邊各寫一份反而會讓人以為改過。 */
+function earnSections() {
+  return status !== 'live'
+    ? [{ n: '收益從上線開始（說明卡）', d: '這一頁之後會顯示什麼、適用哪些收入類型、什麼時候開始有數字' }]
+    : [
+        { n: '收益走勢', d: '依收入類型分線的時間軸' },
+        { n: '項目作品收益', d: '這個項目底下每一件作品各自賺了多少' },
+        mode === 'fund' ? { n: '淨收益分配', d: '淨利池怎麼在創作者與 NFT 持有人之間分' } : null,
+        { n: '收益帳目', d: '逐筆入帳紀錄——版稅、佣金、預付金、授權' }
+      ];
+}
+function perfSections() {
+  return [
+    family === 'music'
+      ? { n: '串流平台', d: 'Spotify、QQ 音樂、SoundCloud 各自的串流次數與佔比' }
+      : { n: 'OTT 平台', d: 'Ztor、YouTube、Netflix 各自的觀看次數與佔比' },
+    { n: '地區分佈', d: '觀看或收聽發生在哪些地區' },
+    { n: '資料來源說明', d: '數字由各發行平台回報、每日更新' }
+  ];
+}
+function royaltySections() {
+  return [
+    { n: '地區表現', d: '版稅收入來自哪些地區' },
+    family === 'music'
+      ? { n: '串流平台佔比', d: '各串流平台貢獻的版稅比重' }
+      : { n: 'OTT 平台佔比', d: '各 OTT 平台貢獻的版稅比重' },
+    family === 'music'
+      ? { n: 'Top 10 歌曲', d: '版稅最高的十首，可切成依播放次數排' }
+      : { n: '授權明細', d: '逐筆授權合約與入帳金額' }
+  ];
+}
+function fundSections() {
+  return [
+    { n: '共創金額', d: '募到多少、目標多少、還剩幾天' },
+    { n: '撥款進度', d: '收到的錢什麼時候、分幾次到創作者手上' },
+    { n: '各方案支持數', d: '哪一個方案賣得動、哪一個沒人要' },
+    { n: '支持者明細', d: '誰買了哪個方案、款項扣了沒' }
+  ];
+}
+function preorderSections() {
+  return [
+    { n: '訂單進度', d: '收了幾筆、離最少預購數還差多少' },
+    { n: '沒達到最少數量會怎樣', d: '集單期結束仍未達標就終止項目、全額退款' },
+    { n: '預購明細', d: '逐筆訂單與扣款狀態' }
+  ];
+}
+
+/* ─────────────────────────────────────────────────────────────
+   右欄「提案」：一個分頁＝一件工作，不是一個規格章節。
+   每一段標出來源分頁（from），才看得出東西搬去哪了。
+   ───────────────────────────────────────────────────────────── */
+
+/* 總覽的重點面板逐格不同——這是使用者第 4 點反饋的落點。
+   資料都在站上（送審件、todo、releaseDate、募資與集單數字），不需要新資料源。 */
+function overviewSections() {
+  const s = [];
+  if (mode === 'go-live') {
+    if (status === 'scheduled') {
+      if (isFilm()) {
+        s.push({ n: '上架追蹤器', d: '送審 → 審核中 → 審核通過 → 設上映日 → 上線，五段標出現在卡在哪。附封面、審核徽章、送出時間、送出次數', f: '作品' });
+        if (review === 'rejected') s.push({ n: '退件理由與重送', d: '退件原因全文，主動作是「修改後重送」', f: '作品' });
+        else if (review === 'approved-wait') s.push({ n: '設定上映日', d: '已通過審核、日期還沒定或還沒到；主動作是挑一天或改期', f: '作品' });
+        else s.push({ n: '編輯作品', d: '進上架流程改這件作品', f: '作品' });
+      } else {
+        s.push({ n: '排程面板', d: '建立日、排定上線日、「發布即上線、不經審核」的說明', f: '項目總覽' });
+      }
+    } else if (status === 'live') {
+      s.push({ n: '營運摘要', d: '近期收益與觀看走勢縮圖', f: '新增（資料取自收益與表現）' });
+      if (isFilm()) s.push({ n: '作品上線資訊', d: '正式上線日與「編輯作品」入口', f: '作品' });
+    } else if (status === 'cancelled') {
+      s.push({ n: '終止面板', d: '下架或終止原因、凍結範圍說明', f: '項目總覽' });
+    }
+    s.push({ n: '通知粉絲', d: '連到粉絲關係管理的群發訊息並預帶這個項目的連結——直接發佈沒有支持者，發文改走那裡', f: '取代「項目更新」' });
+  } else {
+    if (status === 'scheduled') {
+      s.push({ n: '現在在等什麼', d: '等平台審核／等你設上映日／等上映日到來，三段標出目前這一段', f: '作品' });
+      s.push({ n: '設定上映日', d: '上映日留白時的主動作', f: '作品' });
+    } else if (status === 'published') {
+      s.push(mode === 'fund'
+        ? { n: '募資儀表', d: '已募／目標、支持者數、剩餘天數、進度條', f: '共創進度' }
+        : { n: '集單儀表', d: '已預購／最少預購數、單價、截止倒數', f: '預購進度' });
+      s.push(mode === 'fund'
+        ? { n: '期限到了會怎樣', d: '募資期結束時達標即成立', f: '製作進度' }
+        : { n: '期限到了會怎樣', d: '集單期結束仍未達最少數量就終止項目、全額退款', f: '製作進度' });
+      s.push({ n: '下一步：發一則更新催進度', d: '主動作直接開發文彈窗', f: '項目總覽' });
+    } else if (status === 'succeeded') {
+      s.push({ n: '交付面板', d: '預期交付日倒數、藍圖走到第幾顆里程碑（一行摘要）' + (mode === 'fund' ? '、撥款進度摘要' : ''), f: '製作進度' + (mode === 'fund' ? '＋共創進度' : '') });
+      s.push(isFilm()
+        ? { n: '下一步：送作品上架', d: '主動作接上作品上架流程', f: '項目總覽' }
+        : { n: '下一步：這個家族的上架流程尚未定義', d: '規格 §2.2.9 已標〔產品待確認〕，這裡只說明、不給假按鈕', f: '項目總覽' });
+    } else if (status === 'live') {
+      s.push({ n: '營運摘要', d: '近期收益與觀看走勢縮圖', f: '新增（資料取自收益與表現）' });
+      if (isFilm() && hasRec()) s.push({ n: '作品上線資訊', d: '正式上線日與「編輯作品」入口', f: '作品' });
+    } else if (status === 'cancelled') {
+      s.push({ n: '終止面板', d: '終止原因（未達標／創作者取消）、退款進度、凍結範圍說明', f: '項目總覽' });
+      s.push({ n: '下一步：發一則更新說明退款進度', d: '依 §2.2.4 這是已取消唯一還開著的動作', f: '項目總覽' });
+    }
+  }
+  s.push({ n: '下一步待辦', d: '沒有待辦的項目整條不顯示，不塞佔位句', f: '英雄區既有' });
+  return s;
+}
+
+/* 進度＝項目藍圖。里程碑是節點、更新掛在節點底下、最後一顆固定是「完成作品」。 */
+function progressSections() {
+  const s = [
+    { n: '頂部摘要列', d: '預期交付日、里程碑完成度、主動作「發布更新」', f: '製作進度＋項目總覽' },
+    { n: '藍圖時間軸', d: '一條垂直軸，里程碑是節點（名稱／預計日期／三態狀態／是否公開），發出的更新以子項掛在所屬節點底下', f: '製作進度＋項目總覽（項目更新）' }
+  ];
+  /* 完成作品是系統節點：不可刪、不可改名、永遠在最後。狀態直接讀送審件，不另存一份。 */
+  if (!hasRec()) {
+    s.push(status === 'succeeded'
+      ? { n: '完成作品（節點）', d: '空心圓 ＋「作品做完了就從這裡送審」，主動作是「送作品上架」', f: '項目總覽（完成作品送審狀態）' }
+      : { n: '完成作品（節點）', d: '空心圓 ＋「項目成立後才能上架作品」，動作停用', f: '項目總覽（完成作品送審狀態）' });
+  } else if (review === 'rejected') {
+    s.push({ n: '完成作品（節點）· 審核不通過', d: '紅色警示 ＋ 退件理由全文 ＋ 退件時間，主動作是「修改後重送」', f: '項目總覽＋作品' });
+  } else if (review === 'approved-wait') {
+    s.push({ n: '完成作品（節點）· 已通過，等上映日', d: '進度符號 ＋「◯月◯日上線」，動作是「改上映日」與「編輯作品」；日期留白時改成「挑一天上線」', f: '項目總覽＋作品' });
+  } else if (review === 'approved-live') {
+    s.push({ n: '完成作品（節點）· 已上線', d: '綠色檢查 ＋ 上線日；那則完成作品貼文掛在節點底下——上線那一刻的三件事在同一個畫面上看得見', f: '項目總覽＋作品' });
+  } else {
+    s.push({ n: '完成作品（節點）· ' + REVIEW[review], d: '進度符號 ＋ 審核徽章 ＋ 最近送出時間 ＋ 送出次數，此時唯讀', f: '項目總覽＋作品' });
+  }
+  s.push({ n: '編輯作品入口', d: '通過審核之後掛在完成作品節點上，改影片檔、定價或年齡限制要重新送審', f: '作品' });
+  s.push({ n: '未掛里程碑的公告', d: '不屬於任何階段的一般更新收在最底下', f: '項目總覽（項目更新）' });
+  s.push({ n: '內容項目', d: '承諾要交付的每一樣東西各自做到哪一步', f: '製作進度' });
+  return s;
+}
+
+function backerSections() {
+  return mode === 'fund' ? fundSections() : preorderSections();
+}
+
+function setupSections() {
+  const s = [
+    { n: '展示內容', d: '主視覺、圖庫、預告', f: '關於項目' },
+    { n: '公開資訊', d: '簡介、演職、常見問答、標籤、年齡分級', f: '關於項目' }
+  ];
+  if (mode !== 'go-live') {
+    s.push(mode === 'fund'
+      ? { n: '共創方案', d: '每個方案賣什麼、多少錢、限量幾份，含分潤名額', f: '方案與承諾' }
+      : { n: '預購方案', d: '每個方案賣什麼、多少錢、限量幾份，不含分潤名額', f: '方案與承諾' });
+    if (mode === 'preorder') s.push({ n: '單位價格', d: '作品一份的價格；每個方案的價格都從它推導', f: '方案與承諾' });
+  }
+  s.push({ n: '合作者', d: '誰參與這個項目、分潤名額分給了誰', f: '項目總覽' });
+  s.push({ n: 'IP 租借', d: '這個項目租入了哪些他人 IP、授權到哪天', f: '項目總覽' });
+  if (mode === 'go-live') s.push({ n: '發布時程', d: '建立日與排定上線日', f: '項目總覽' });
+  return s;
+}
+
+const NEW_TABS = [
+  { id: 'overview', name: '總覽', q: '現在怎麼樣、我該做什麼',
+    on: () => true, when: '一律', from: '項目總覽、作品（直接發佈）、共創與預購進度的摘要',
+    sections: overviewSections },
+  { id: 'progress', name: '進度', q: '我答應做什麼、做到哪、跟支持者說了什麼',
+    on: () => mode !== 'go-live', when: '共創・預購', from: '製作進度、項目總覽（項目更新／完成作品送審狀態）、作品',
+    sections: progressSections },
+  { id: 'backers', name: '支持者', q: '誰付了錢、款項到哪',
+    on: () => mode !== 'go-live', when: '共創・預購（標籤隨模式換字）', from: '共創進度、預購進度',
+    sections: backerSections },
+  { id: 'setup', name: '設定', q: '這個項目是什麼、賣什麼、誰參與',
+    on: () => true, when: '一律', from: '關於項目、方案與承諾、項目總覽（合作者／IP 租借／發布時程）',
+    sections: setupSections },
+  { id: 'earnings', name: '收益', q: '這個項目賺了多少',
+    on: () => true, when: '一律', from: '我的收益（不動）', sections: earnSections },
+  { id: 'performance', name: '表現', q: '多少人看了、聽了',
+    on: () => status === 'live' && family !== 'other', when: '已上線 ＋ 家族非其他（不動）', from: '表現（不動）', sections: perfSections },
+  { id: 'royalty', name: '版稅', q: '股份分潤產生的收入明細',
+    on: () => mode === 'fund' && status === 'live', when: '共創 ＋ 已上線（不動）', from: '版稅（不動）', sections: royaltySections }
+];
+
+/* 甲案：進度併進支持者，一格底下兩個檢視。預設看哪一邊隨狀態走。 */
+const DEFAULT_VIEW = { scheduled: 'progress', published: 'raise', succeeded: 'progress', live: 'progress', cancelled: 'raise' };
+let viewSel = null;
+
+function planTabs() {
+  if (plan === 'b') return NEW_TABS;
+  const merged = NEW_TABS.filter(t => t.id !== 'progress').map(t => Object.assign({}, t));
+  const b = merged.find(t => t.id === 'backers');
+  b.q = '誰付了錢、我做到哪';
+  b.from = '共創進度、預購進度、製作進度、項目總覽（項目更新）、作品';
+  b.views = [
+    { id: 'raise', name: mode === 'fund' ? '募集' : '集單', sections: backerSections },
+    { id: 'progress', name: '進度', sections: progressSections }
+  ];
+  return merged;
+}
+
+/* 草稿在提案裡整個移出這一頁——點下去回建立流程續填，不進詳情頁。 */
+const isDraft = () => status === 'draft';
+
+function nowTabs() { return NOW_TABS.filter(t => t.on()); }
+function newTabs() { return isDraft() ? [] : planTabs().filter(t => t.on()); }
+
+/* 這一格在原型走不走得到——四個軸各自合法，湊在一起未必存在。 */
+function reachability() {
+  const out = [];
+  if (review === 'draft') out.push('作品審核「草稿」在原型無法到達：送審一律直接寫成待審核（矩陣落差 L10）');
+  if (family !== 'film' && hasRec()) out.push('非影片家族不經平台審核閘，不會有送審件掛在' + FAMILY[family] + '家族的項目上');
+  if (hasRec() && mode === 'go-live' && status === 'draft') out.push('直接發佈的送審發生在建立流程送出的那一刻，送出後狀態就離開草稿了');
+  if (hasRec() && mode !== 'go-live' && ['draft', 'published', 'cancelled'].indexOf(status) >= 0) out.push('共創與預購的送審由「完成作品」發文觸發，那道閘只在項目已成立時開（規格 §2.2.9）');
+  if (review === 'approved-live' && status !== 'live') out.push('審核通過而且上映日已到會把項目推到已上線，停不在' + STATUS[status]);
+  if (review === 'approved-wait' && status !== 'scheduled') out.push('審核通過但上映日還沒到會把項目留在準備中，停不在' + STATUS[status]);
+  return out;
+}
+
+function grpHTML(name, q, secs, withFrom) {
+  const rows = secs.filter(Boolean).map(s =>
+    '<div class="sec__row"><div class="sec__name">' + s.n + '</div>' +
+    '<div class="sec__desc">' + s.d + '</div>' +
+    (withFrom && s.f ? '<div class="sec__from">← ' + s.f + '</div>' : '') +
+    '</div>').join('');
+  return '<div class="grp"><div class="grp__head"><span class="grp__name">' + name + '</span>' +
+    (q ? '<span class="grp__q">' + q + '</span>' : '') + '</div>' +
+    '<div class="sec">' + rows + '</div></div>';
+}
+
+function render() {
+  syncCtl();
+  const nt = nowTabs(), xt = newTabs();
+  if (nowSel >= nt.length) nowSel = 0;
+  if (newSel >= xt.length) newSel = 0;
+
+  document.getElementById('strip-now').innerHTML = nt.map((t, i) =>
+    '<button type="button" class="tabstrip__item' + (!showAll && i === nowSel ? ' tabstrip__item--on' : '') +
+    '" data-now-i="' + i + '">' + t.name + '</button>').join('');
+  document.getElementById('strip-new').innerHTML = xt.map((t, i) =>
+    '<button type="button" class="tabstrip__item' + (!showAll && i === newSel ? ' tabstrip__item--on' : '') +
+    '" data-new-i="' + i + '">' + (t.id === 'backers' && mode === 'preorder' ? '預購' : t.name) + '</button>').join('');
+
+  document.getElementById('cap-now').textContent = nt.length + ' 個分頁';
+  document.getElementById('cap-new').textContent = isDraft() ? '不進這一頁' : xt.length + ' 個分頁';
+
+  const nowShown = showAll ? nt : [nt[nowSel]];
+  document.getElementById('body-now').innerHTML = nowShown.filter(Boolean)
+    .map(t => grpHTML(t.name, '', t.sections(), false)).join('');
+
+  if (isDraft()) {
+    document.getElementById('body-new').innerHTML = grpHTML('草稿回建立流程續填', '這一頁沒有草稿', [
+      { n: '活動詳情已經做過同一件事', d: '照抄它的慣例、不另發明：清單頁指向 create-event.html?draft=…、詳情頁偵測到草稿就 location.replace、建立流程讀 ?draft= 預填並顯示續填橫幅', f: '2026-08-17 commit 82fc21f' },
+      { n: '清單頁改連建立流程', d: '草稿列與草稿卡改連 create-project.html?draft=…，其餘狀態照舊連詳情頁。參數名用 draft 不用 id，網址上就看得出這是續填、不是新開一個', f: 'projects.html 的 rowHtml() 與 cardHtml()' },
+      { n: '建立流程接續填參數', d: '讀出該草稿的發行模式與內容類型，跳過類型閘門直接進 wizard。記住斷點需要「最後編輯步驟」欄位，站上沒有，屬產品缺口', f: 'create-project.html（目前不讀任何 URL 參數，預填要新寫）' },
+      { n: '詳情頁被直接開時導回', d: '偵測到草稿就 location.replace 回建立流程。用 replace 不用 href，返回鍵才不會彈回一個馬上又跳走的頁面', f: 'project-detail.html' },
+      { n: '實作陷阱', d: '詳情頁有一段把「直接發佈影片 ＋ 有送審件」的草稿改寫成準備中的邏輯。導回判定必須排在那段覆寫之後，否則剛送完審的創作者會被踢回建立流程', f: 'project-detail.html 的狀態覆寫' }
+    ], true);
+  } else {
+    const newShown = showAll ? xt : [xt[newSel]];
+    document.getElementById('body-new').innerHTML = newShown.filter(Boolean).map(t => {
+      if (!t.views) return grpHTML(t.name, t.q, t.sections(), true);
+      /* 甲案的合併分頁：先畫內頁切換器，再畫選到那一側的內容 */
+      const want = viewSel || DEFAULT_VIEW[status] || 'raise';
+      const cur = t.views.find(v => v.id === want) || t.views[0];
+      const sw = '<div class="segmented" role="radiogroup" style="margin-bottom:var(--sp-10)">' +
+        t.views.map(v => '<button type="button" class="segmented__btn' + (v === cur ? ' segmented__btn--active' : '') +
+          '" data-view-sel="' + v.id + '">' + v.name + '</button>').join('') + '</div>';
+      const why = viewSel ? '' : '<span class="grp__q">預設：' + cur.name + '</span>';
+      const rows = cur.sections().filter(Boolean).map(s =>
+        '<div class="sec__row"><div class="sec__name">' + s.n + '</div><div class="sec__desc">' + s.d + '</div>' +
+        (s.f ? '<div class="sec__from">← ' + s.f + '</div>' : '') + '</div>').join('');
+      return '<div class="grp"><div class="grp__head"><span class="grp__name">' + t.name + '</span>' +
+        '<span class="grp__q">' + t.q + '</span>' + why + '</div>' + sw +
+        '<div class="sec">' + rows + '</div></div>';
+    }).join('');
+  }
+
+  const d = nt.length - xt.length;
+  document.getElementById('delta').innerHTML = isDraft()
+    ? '這個狀態下：現行 <b class="count">' + nt.length + '</b> 格，提案<b>整格移出項目詳情</b>——草稿回建立流程續填。'
+    : (d > 0
+        ? '這個狀態下：<b class="count">' + nt.length + '</b> 格 → <b class="count">' + xt.length + '</b> 格，少 <b class="count">' + d + '</b> 格。'
+        : '這個狀態下兩者都是 <b class="count">' + xt.length + '</b> 格。');
+
+  const reach = reachability();
+  document.getElementById('samples').innerHTML = reach.length
+    ? '<p class="demo-note">這個組合在原型走不到：' + reach.map(r => '<br>· ' + r).join('') + '</p>'
+    : '';
+
+  renderMap();
+}
+
+/* 控制列：直接發佈走不到的兩態停用；非影片家族的送審狀態一併停用 */
+function syncCtl() {
+  const notes = [];
+  document.querySelectorAll('#ctl-status [data-status]').forEach(b => {
+    const blocked = mode === 'go-live' && GO_LIVE_BLOCKED[b.dataset.status];
+    b.disabled = !!blocked;
+    b.title = blocked || '';
+    b.classList.toggle('segmented__btn--active', b.dataset.status === status);
+  });
+  if (mode === 'go-live') notes.push('直接發佈停用「進行中」與「已成立」：' + GO_LIVE_BLOCKED.published + '；' + GO_LIVE_BLOCKED.succeeded + '（主規格 §7.2）。');
+  document.querySelectorAll('#ctl-review [data-review]').forEach(b => {
+    const blocked = family !== 'film' && b.dataset.review !== 'none';
+    b.disabled = blocked;
+    b.title = blocked ? '非影片家族不經平台審核閘' : '';
+    b.classList.toggle('segmented__btn--active', b.dataset.review === review);
+  });
+  if (family !== 'film') notes.push('作品家族選了' + FAMILY[family] + '，審核狀態只剩「無送審紀錄」：平台審核只審影片。');
+  if (status === 'draft') notes.push('草稿在提案裡整個移出項目詳情，所以右欄沒有分頁列。');
+  document.getElementById('ctl-note').innerHTML = notes.join('<br>');
+}
+
+function pick(rootId, attr, fn) {
+  document.getElementById(rootId).addEventListener('click', e => {
+    const b = e.target.closest('[data-' + attr + ']');
+    if (!b || b.disabled) return;
+    fn(b.dataset[attr]);
+    [...e.currentTarget.children].forEach(x => x.classList.toggle('segmented__btn--active', x === b));
+    render();
+  });
+}
+pick('ctl-mode', 'mode', v => {
+  mode = v;
+  /* 換到直接發佈時，若停在它走不到的狀態就退回準備中——留在停用的格子上等於畫面說謊 */
+  if (mode === 'go-live' && GO_LIVE_BLOCKED[status]) status = 'scheduled';
+});
+pick('ctl-status', 'status', v => { status = v; viewSel = null; });
+pick('ctl-family', 'family', v => { family = v; if (family !== 'film') review = 'none'; });
+pick('ctl-review', 'review', v => { review = v; });
+pick('ctl-plan', 'plan', v => { plan = v; newSel = 0; viewSel = null; });
+pick('ctl-view', 'view', v => { showAll = v === 'all'; });
+
+document.getElementById('strip-now').addEventListener('click', e => {
+  const b = e.target.closest('[data-now-i]'); if (!b) return;
+  nowSel = +b.dataset.nowI; showAll = false; syncViewBtns(); render();
+});
+document.getElementById('strip-new').addEventListener('click', e => {
+  const b = e.target.closest('[data-new-i]'); if (!b) return;
+  newSel = +b.dataset.newI; showAll = false; syncViewBtns(); render();
+});
+document.getElementById('body-new').addEventListener('click', e => {
+  const b = e.target.closest('[data-view-sel]'); if (!b) return;
+  viewSel = b.dataset.viewSel; render();
+});
+/* 點了分頁籤等於選擇「逐頁」，開關要跟著回去，不然畫面說一套按鈕說另一套 */
+function syncViewBtns() {
+  document.querySelectorAll('#ctl-view [data-view]').forEach(x =>
+    x.classList.toggle('segmented__btn--active', (x.dataset.view === 'all') === showAll));
+}
+
+function renderMap() {
+  document.getElementById('tbl-map').innerHTML = planTabs().map(t =>
+    '<tr><td>' + t.name + '</td><td>' + t.q + '</td><td>' + t.from + '</td><td>' + t.when + '</td></tr>').join('');
+}
+
+/* 總覽逐狀態表：使用者第 4 點反饋的完整答案 */
+const OV = [
+  ['共創', '準備中', '「現在在等什麼」三段追蹤：等平台審核／等你設上映日／等上映日到來，附作品封面與審核徽章', '上映日留白時給「設定上映日」'],
+  ['共創', '進行中', '募資儀表：已募／目標、支持者數、剩餘天數、進度條，加一句「達標即成立」', '發一則更新催進度'],
+  ['共創', '已成立', '交付面板：預期交付日倒數、藍圖走到第幾顆里程碑、撥款進度摘要', '送作品上架（影片家族）'],
+  ['共創', '已上線', '營運摘要：近期收益與觀看走勢縮圖，加作品上線資訊與「編輯作品」', '依項目自己的待辦，沒有就整條不顯示'],
+  ['共創', '已取消', '終止面板：終止原因、退款進度、凍結範圍說明', '發一則更新說明退款進度（已取消唯一還開著的動作）'],
+  ['預購', '準備中', '同共創', '同共創'],
+  ['預購', '進行中', '集單儀表：已預購／最少預購數、單價、截止倒數，加一句「未達最少數量就全額退款」', '發一則更新催進度'],
+  ['預購', '已成立', '交付面板，但沒有撥款進度那一段（預購沒有分批撥款）', '送作品上架（影片家族）'],
+  ['預購', '已上線', '同共創，捷徑沒有版稅', '依項目自己的待辦'],
+  ['預購', '已取消', '同共創，退款規則走預購那一套', '發一則更新說明退款進度'],
+  ['直接發佈', '準備中 · 影片', '上架追蹤器：送審 → 審核中 → 審核通過 → 設上映日 → 上線，五段標出現在卡在哪', '退件時「修改後重送」；通過且日期留白時「設定上映日」；其餘「編輯作品」'],
+  ['直接發佈', '準備中 · 非影片', '排程面板：建立日、排定上線日、「發布即上線、不經審核」的說明', '排定上線日未填時「設定上線日」'],
+  ['直接發佈', '已上線', '營運摘要，加作品上線資訊與「編輯作品」', '依項目自己的待辦'],
+  ['直接發佈', '已取消', '終止面板：下架或終止原因、凍結範圍說明', '無'],
+  ['三型', '草稿', '整格移出項目詳情', '回建立流程續填']
+];
+document.getElementById('tbl-ov').innerHTML = OV.map(r =>
+  '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
+
+const AUDIT = [
+  ['表現與版稅一行未改', '兩個分頁的出現條件、面板內容、在分頁列上的位置一律維持現況——表現＝已上線 ＋ 家族非其他，版稅＝共創 ＋ 已上線。切上面的軸可以自己驗：兩欄的這兩格永遠同時出現、同時消失、內容一字不差。'],
+  ['最大的一格從九格收成七格', '共創 × 已上線 × 影片 × 審核通過是現行分頁最多的一格（九格）。乙案七格、甲案六格。收掉的是製作進度、作品、方案與承諾、以及共創進度與預購進度合成一格所省下的那一個 id。'],
+  ['直接發佈的音樂項目沒有變化', '它現行就只有總覽、關於項目、我的收益、表現四格，已經是最精簡的組合。提案在這一格只做了改名與內容重排，格數不變——整併的收益本來就集中在共創與預購。'],
+  ['「進度」為什麼裝得下三個現行分頁', '規格 §2.2.10 自己寫了「進度回報：以項目更新（§2.2.9）發布……本區不另建一套」——製作進度只擁有里程碑這份資料，發送動作整個借用項目更新。§2.2.11 作品也寫了「與 §2.2.9 的呈現責任是同一份資料、不重複記兩套」。三個分頁本來就是同一條故事的三段。上游 requirement 的「項目藍圖」（資金用途、里程碑、更新日誌，對粉絲端公開）是這一格的完整依據。'],
+  ['直接發佈拿掉項目更新，要先改上游', '§2.0 類型表目前把 §2.2.9 判給三型。拿掉直接發佈那一格等於改類型表，屬產品變更，必須先改規格。保守替代是「保留區段但改成導引」——內容換成「這個項目沒有支持者，發文請到粉絲關係管理」加一顆連過去的按鈕，這樣不需要改 §2.0。'],
+  ['拿掉之後，站上的替代管道查過了', '群發訊息（粉絲關係管理，唯一入口）能力比項目更新的一般更新強：有排程、有成效歷史、有個人化 token、有退訂合規。兩個洞：事後宣傳沒有帶項目連結的落點（新品貼文只在建立當下彈一次），以及群發訊息的受眾沒有「買過這個項目的人」。兩者都已登記在主規格 §8.13 與 5.1.7.1，屬另案。'],
+  ['方案與承諾併進設定是可以單獨退回的', '這一項與其他整併不相依。若使用者認為方案是開募前的主戰場、需要固定位置，維持獨立分頁即可，全站上限從七變八，仍比現行的九少。'],
+  ['甲案與乙案的差別只有一件事', '進度要不要自成一格。推薦乙案：進度是創作者在達標之後好幾個月裡唯一持續動的地方，需要固定好找的位置；募集明細在成立之後基本上是查閱資料。甲案在已上線之後才划算——那時候兩邊都變成存檔。']
+];
+document.getElementById('audit').innerHTML = AUDIT.map(([k, v]) =>
+  '<div class="data-list__row"><div class="data-list__row-main"><div class="data-list__body">' +
+  '<div class="data-list__title">' + k + '</div><div class="data-list__meta">' + v + '</div>' +
+  '</div></div></div>').join('');
+
+render();
+</script>
+</body>
+</html>
