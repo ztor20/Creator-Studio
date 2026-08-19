@@ -8,14 +8,13 @@
 
    Anatomy
      .step-list
-       .step-list__row  [--done | --current | --alert | --todo]
+       .step-list__row  [--done | --alert | --todo]
          .pmark --md        狀態記號（與時間軸共用，見 progress-mark.css）
          .step-list__body   .step-list__title ＋ .step-list__meta
 
    狀態的份量分兩層：記號的顏色由 .pmark 負責（灰＝還沒到、綠＝已完成、紅＝逾期、
    藍＝進行中），這裡再把**整列**跟著染或壓淡——記號小、色塊也小，只染記號會被略過：
-     --current  整列連標題一起上 info 色
-     --alert    同上，走 error 色（逾期）
+     --alert    整列連標題一起上 error 色（逾期）
      --todo     整列壓到 55%，還沒到，看得到但不搶注意力
    ============================================================ */
 
@@ -93,8 +92,10 @@
 
 /* 正在做的那一顆整列上色（參考設計的做法）：它是這一串裡唯一需要被找到的東西，
    只染記號不夠——記號小、色塊也小，掃過去容易略過。 */
-.step-list__row--current .step-list__title,
-.step-list__row--current .step-list__meta { color: var(--status-info-ink); }
+/* 2026-08-18 撤除（墓碑）：.step-list__row--current（整列上 info 藍）。里程碑的
+   「進行中」狀態由使用者裁決取消，這個修飾子因此沒有產生者。若日後有別的清單需要
+   「正在做的那一列」，復活時請一併確認它跟 --todo 的界線說得出口——這次撤除的原因
+   正是說不出口：一件有日期的事，日期還沒到就是還沒到。 */
 .step-list__row--alert .step-list__title { color: var(--destructive-ink); }
 
 /* 還沒到的壓淡。用 opacity 而不是換色：換色要為標題與副標各挑一次，壓淡是同一個

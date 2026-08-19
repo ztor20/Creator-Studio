@@ -21,7 +21,8 @@
 <!-- 現場報到台的掃碼連結沿用取貨場次同一組元件：scanner.css＝.scanner-access、pickup.css＝.qr-box -->
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<!-- 2026-08-18 撤除：sticky-actions（底部浮出的動作列）。頁面動作改由 .detail-topbar 自己黏在視窗頂端——
+     同一組按鈕原本有兩個家、兩套顯隱規則。做法與 project-detail 同日的裁決一致。 -->
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <!-- 2026-08-06：編輯搬進本頁，欄位、格線與上傳格的樣式跟著進來 -->
 <link rel="stylesheet" href="ds-components/input.css?v=r2.2">
@@ -126,11 +127,41 @@
     <div class="page">
 
       <!-- Breadcrumb -->
+      <!-- 頂列（2026-08-18 使用者指示「就是這一條」）：麵包屑、捲動後的縮圖＋名稱、頁面動作
+           同一列，黏在視窗頂端。做法與項目詳情同一支（shared.css 的 `.detail-topbar`，
+           那一頁 2026-08-18 先做，本頁是第二個消費者、CSS 已 promote 成通用名）。
+           理由相同：這一列的動作整頁通用，捲到哪裡都可能要按；捲過頁首之後麵包屑那串路徑
+           已經沒有用（人不是在找路，是在做事），位置讓給「你正在對哪一場下指令」。 -->
+      <div class="detail-topbar">
       <div class="page-crumb page-crumb--back">
         <a class="btn btn--icon-circle btn--sm page-crumb__back" href="events.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
         <a href="events.html" class="card__link" data-i18n="event-detail.crumb.events">Events</a>
         <span style="margin:0 6px">/</span>
         <span>Kowloon Café 10th Anniv. — Kowloon After Dark OST listening party</span>
+      </div>
+        <div class="detail-topbar__mini" data-ed-mini hidden>
+          <img class="detail-topbar__cover" id="ed-mini-cover" src="" alt="">
+          <span class="detail-topbar__name" id="ed-mini-name"></span>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--destructive" type="button" data-ed-delete hidden data-i18n="ee.delete">Delete event</button>
+          <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
+          <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
+               頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
+               放在最順手的位置只會增加誤觸——它該待在設定的末端，跟其他破壞性動作一起。 -->
+          <button class="btn btn--outline" type="button" data-ed-duplicate hidden>
+            <i data-lucide="copy" class="ztor-icon"></i>
+            <span data-i18n="event-detail.btn.duplicate">Run it again</span>
+          </button>
+          <!-- 墓碑 2026-08-17：「現在開賣」搬進「設定 → 販售方式」（使用者指示，並重新想過流程）。
+               推導：販售方式選「發布後直接開賣」時，發布本身就是開賣，不需要第二顆按鈕；
+               只有選「排程開賣」、而且想比原定時間早開，才需要一個手動的動作。
+               所以它不是頁首的常駐動作，而是販售方式那一節裡的一個例外出口。 -->
+          <!-- 墓碑 2026-08-18：「編輯活動」搬進「設定」分頁的工作列右端（使用者指示）。
+               它要編輯的東西全部住在那一頁，開關卻掛在頁首、離對象兩個層級遠；工作列採
+               e-shop 那組骨架（左 tabs、右動作群）之後，那裡本來就是這一頁動作的落點。 -->
+          <button class="btn btn--ghost" type="button" data-ed-preview data-i18n="event-detail.btn.preview">View ticket page</button>
+        </div>
       </div>
 
       <!-- ═══ Hero / 頁首 ═══ -->
@@ -156,25 +187,6 @@
         <!-- 階段轉換（2026-08-13）：狀態機（§7.2）本來只寫在總覽的說明橫幅裡，畫面上卻沒有
              任何一顆鈕能推進它——草稿填完就是死路。三顆鈕依階段互斥出現，由 syncStage() 驅動：
              發布開賣（草稿／已排程）→ 取消活動（尚未結束的階段）→ 再開一場（已結束）。 -->
-        <div class="page-intro__actions">
-          <button class="btn btn--destructive" type="button" data-ed-delete hidden data-i18n="ee.delete">Delete event</button>
-          <button class="btn btn--ghost" type="button" data-ed-cancel hidden data-i18n="ee.discard">Discard changes</button>
-          <!-- 墓碑 2026-08-17：「取消活動」搬到「設定」分頁最下面（使用者指示）。
-               頁首那一排是「常用動作」，取消活動是不可逆、而且很少按的一次性決定，
-               放在最順手的位置只會增加誤觸——它該待在設定的末端，跟其他破壞性動作一起。 -->
-          <button class="btn btn--outline" type="button" data-ed-duplicate hidden>
-            <i data-lucide="copy" class="ztor-icon"></i>
-            <span data-i18n="event-detail.btn.duplicate">Run it again</span>
-          </button>
-          <!-- 墓碑 2026-08-17：「現在開賣」搬進「設定 → 販售方式」（使用者指示，並重新想過流程）。
-               推導：販售方式選「發布後直接開賣」時，發布本身就是開賣，不需要第二顆按鈕；
-               只有選「排程開賣」、而且想比原定時間早開，才需要一個手動的動作。
-               所以它不是頁首的常駐動作，而是販售方式那一節裡的一個例外出口。 -->
-          <!-- 墓碑 2026-08-18：「編輯活動」搬進「設定」分頁的工作列右端（使用者指示）。
-               它要編輯的東西全部住在那一頁，開關卻掛在頁首、離對象兩個層級遠；工作列採
-               e-shop 那組骨架（左 tabs、右動作群）之後，那裡本來就是這一頁動作的落點。 -->
-          <button class="btn btn--ghost" type="button" data-ed-preview data-i18n="event-detail.btn.preview">View ticket page</button>
-        </div>
       </div>
 
       <!-- 樣本資料說明橫幅已移除（2026-07-27，使用者指示）。 -->
@@ -372,31 +384,33 @@
                  共看派對沒有票種頁、沒有取票方式、沒有 QR 報到，但錢照收、人照進——
                  「觀眾從哪裡進、進場門檻多少」原本整站沒有一個地方回答。這張卡就是那個落點，
                  位置與報到快照互斥（那張對線上活動不成立、已由 data-hide-type 收掉）。 -->
-            <section class="card" id="ed-room" hidden>            <div class="card__head">
+            <!-- 2026-08-18 重新設計（使用者指示）：這張卡與掃碼器卡是同一類東西——一條發出去
+                 就能進場的連結，加上幾個唯讀設定——所以長相對齊那一張：卡頭只有標題與狀態徽章
+                 （拿掉卡名左邊的圖示，掃碼器卡沒有，兩張並排時多一顆會讀成不同層級），連結與
+                 複製鈕同一行（動作貼著它作用的值），其餘設定收進一條唯讀清單。
+                 撤除（墓碑）：卡底的 info-banner「全場一種入場券…（D149）」——那是講給我們自己
+                 聽的實作備註，不是創作者在這張卡上要做的決定；i18n `event-detail.room.tbd` 保留未用。 -->
+            <section class="card" id="ed-room" hidden>
+              <div class="card__head">
                 <div class="card__title-group">
-                  <span class="card__title-icon card__title-icon--info"><i data-lucide="video" class="ztor-icon"></i></span>
                   <h3 class="card__title" data-i18n="event-detail.room.title">Online room</h3>
                 </div>
                 <span class="badge badge--info"><span data-i18n="event-detail.room.badge">Online only</span></span>
               </div>
-              <div class="field mt-16">
+              <div class="field">
                 <div class="field__label" data-i18n="event-detail.room.link">Room link</div>
-                <div class="field-readout" id="ed-room-url">—</div>
-                <p class="field__hint" data-i18n="event-detail.room.hint">Where the audience watches. Sharing this link is how people get in — there is no QR to scan.</p>
-              </div>
-              <div class="flex-row mt-8">
-                <button class="btn btn--outline btn--sm" type="button" data-view-safe id="ed-room-copy"><i data-lucide="copy" class="ztor-icon"></i> <span data-i18n="event-detail.room.copy">Copy link</span></button>
+                <div class="field-readout field-readout--row">
+                  <span class="field-readout__value" id="ed-room-url">—</span>
+                  <button class="btn btn--icon btn--sm" type="button" data-view-safe id="ed-room-copy"
+                          aria-label="Copy link" title="Copy link"
+                          data-i18n-aria-label="event-detail.room.copy" data-i18n-title="event-detail.room.copy"><i data-lucide="copy" class="ztor-icon"></i></button>
+                </div>
+                <p class="field__hint" data-i18n="event-detail.room.hint">Where the audience watches. Sending the link is how they get in — nothing to scan.</p>
               </div>
               <div class="data-list mt-16">
                 <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.entry">Admission</span></div><span id="ed-room-entry">—</span></div>
                 <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.seats">Room capacity</span></div><span id="ed-room-seats">—</span></div>
                 <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.room.chat">Live chat</span></div><span id="ed-room-chat">—</span></div>
-              </div>
-              <!-- 這段講的是「單一入場券」，那是共看派對的規則（D149）；線上活動可以分票種，
-                   掛在它身上會變成錯的說明。 -->
-              <div class="info-banner mt-16" data-hide-type="virtual">
-                <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-                <span data-i18n="event-detail.room.tbd">One admission for everyone, set in the create flow. Moderation tools and a viewer list are not built yet (D149).</span>
               </div>
             </section>
           </div>
@@ -1118,10 +1132,16 @@
           <div class="section-head__sub" data-i18n="event-detail.comp.sub2">Zero-price tickets for performers and crew (§5.1.6 F5).</div>
         </div>
         <section class="card">
-          <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="event-detail.comp.holder1">Kowloon After Dark (band)</div><div class="data-list__meta" data-i18n="event-detail.comp.row1">VIP + Live stream · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title">Venue staff x2</div><div class="data-list__meta" data-i18n="event-detail.comp.row2">General Admission · $0 · comp</div></div></div><span class="badge badge--neutral">$0</span></div>
-            </div>
+          <!-- 2026-08-19 修復：原本兩列是寫死的假招待票（樂團／場地人員），票種名對不上
+               任何活動的真實票種。改成從這場活動自己的 tiers 現撈——沒有票種（草稿／已排程
+               還沒建票）就沒有東西可核發，給空狀態；領用人本身沒有資料來源（原型沒有招待票
+               核發紀錄），固定用「巡演工作人員」「場地人員」這兩個放諸四海皆準的角色
+               （見 ASSUMPTIONS 素材），只有票種與金額吃真實資料。 -->
+          <div class="data-list" id="ed-comp-list"></div>
+          <div class="empty-card empty-card--framed" id="ed-comp-empty" hidden>
+            <span class="empty-card__icon"><i data-lucide="gift" class="ztor-icon"></i></span>
+            <h3 class="empty-card__title" data-i18n="event-detail.comp.empty.title">No comp tickets issued yet</h3>
+          </div>
           <button class="btn btn--outline mt-16" style="width:100%" type="button" data-i18n="event-detail.comp.issue">Issue comp ticket</button>
           <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" data-i18n="event-detail.comp.note">Comp tickets emit a $0 revenue event for audit but never enter net-profit distribution.</p>
         </section>
@@ -1230,8 +1250,14 @@
         </div>
 
         <!-- 報到三色圖例（2026-08-13 使用者裁決）：只在活動當天之後出現。
-             售票中沒有人核銷過，三格永遠是「—」，掛在那裡是一個兌現不了的承諾。 -->
-        <div class="bento" data-stage-show="live ended">
+             售票中沒有人核銷過，三格永遠是「—」，掛在那裡是一個兌現不了的承諾。
+             2026-08-19 修復：這三格沒有 id，沒有任何 JS 指向它——與總覽「結案卡」的
+             三色報到（#ed-wrap-checkin）長得一模一樣，卻永遠停在「—」，即便同一場活動
+             的結案卡已經顯示了真實數字。這正是使用者回報「同一筆活動在不同分頁看到的
+             數字兜不起來」的直接證據。補上 id，改由 renderFinalCheckin() 一併填值——
+             同一份 checkinSummary()，兩個分頁保證同一組數字。線上活動沒有 QR 報到，
+             同 #ed-wrap-checkin 的排除規則整塊收起。 -->
+        <div class="bento" id="ed-roster-checkin" data-stage-show="live ended" data-hide-type="watchparty virtual">
           <div class="kpi kpi--success bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.valid">Valid (green)</div><div class="kpi__value">—</div></div>
           <div class="kpi kpi--warning bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.used">Already used (yellow)</div><div class="kpi__value">—</div></div>
           <div class="kpi kpi--destructive bento--span-4"><div class="kpi__label" data-i18n="event-detail.checkin.invalid">Invalid (red)</div><div class="kpi__value">—</div></div>
@@ -1262,7 +1288,18 @@
         </div>
 
         <!-- 名單（非現場時段）：售票中就有持票人，名單本身有用；
-             「報到」那一欄則要到活動當天才有值——由 JS 依階段整欄收起（見 syncAttendees）。 -->
+             「報到」那一欄則要到活動當天才有值——由 JS 依階段整欄收起（見 syncAttendees）。
+             2026-08-19 修復：這張表原本是四筆寫死的假人（Aki Tanaka 等），票種名對不上任何
+             活動的真實票種，且只有「進行中＋非線上」把它藏起——已排程、售票中、已結束、
+             已取消、以及進行中的線上活動一律看到同一批假名單。改由 renderAttendeeSample()
+             用 store 的 roster()（依 sold/arrivedAtOpen 決定性生成，同一套名單池，
+             跟現場即時名單 #ed-live-roster 是同一份資料的不同視角）現撈：
+               · sold=0：空狀態
+               · 售票中／進行中線上：顯示持票人，報到欄統一「—」
+               · 已結束非線上：顯示最終報到結果
+               · 進行中非線上：這張表整個藏起，即時名單另有 #ed-live-roster（不動它）
+             線上活動的報到欄整支隱藏（syncAttendees 統一處理），已取消由 syncSalesView
+             把整節收起，不必在這裡另外處理。 -->
         <section class="card mt-16" id="ed-att-sample" style="padding:0;overflow:hidden">
           <table class="ztor-table">
             <thead>
@@ -1273,26 +1310,14 @@
                 <th data-att-col-state data-i18n="event-detail.att.col.state">Check-in</th>
               </tr>
             </thead>
-            <tbody>
-              <tr class="ztor-table__row">
-                <td data-i18n="event-detail.att.holder1">Aki Tanaka</td><td>VIP + Live stream</td><td><code>tkt_9F2A1</code></td>
-                <td data-att-col-state><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td data-i18n="event-detail.att.holder2">Lena Wu</td><td>General Admission</td><td><code>tkt_7C4B8</code></td>
-                <td data-att-col-state><span class="badge badge--warning"><span data-i18n="event-detail.att.state.used">Already used</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td><span class="text-sub" data-i18n="event-detail.att.unknown">Unrecognised QR</span></td><td>—</td><td><code>—</code></td>
-                <td data-att-col-state><span class="badge badge--error"><span data-i18n="event-detail.att.state.invalid">Invalid</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td data-i18n="event-detail.att.holder4">Kowloon After Dark (comp)</td><td>VIP + Live stream</td><td><code>tkt_C0MP3</code></td>
-                <td data-att-col-state><span class="badge badge--success"><span data-i18n="event-detail.att.state.valid">Valid</span></span></td>
-              </tr>
-            </tbody>
+            <tbody id="ed-att-sample-body"></tbody>
           </table>
         </section>
+        <p class="text-sub" style="font-size: var(--fs-12);margin-top:10px" id="ed-att-sample-note" hidden>—</p>
+        <div class="empty-card empty-card--framed mt-16" id="ed-att-sample-empty" hidden>
+          <span class="empty-card__icon"><i data-lucide="users" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="event-detail.att.sample.empty.title">No ticket holders yet</h3>
+        </div>
 
         <div class="flex-row mt-16" style="gap:8px">
           <button class="btn btn--outline" type="button" data-i18n="event-detail.att.export">Export attendee list</button>
@@ -1402,18 +1427,36 @@
           </div>
         </div>
         <div data-hide-type="watchparty">
-          <section class="card">
+          <!-- 2026-08-19 修復：這張卡此前固定寫「無退款請求」，但交易明細對同一場活動
+               明確列出 2 筆 refunded 交易、KPI 也顯示「Refunded: 2」——兩個分頁互相矛盾。
+               「無退款請求」講的是「粉絲主動申請」（v1 尚未開放），跟「有沒有發生過退款」
+               是兩件事，但畫面上沒有任何文字說明這個差異。改成有退款紀錄就從交易資料
+               （txAll，與交易明細分頁同一份）匯總一行摘要，真的 0 筆才顯示原本的空狀態。 -->
+          <section class="card" id="ed-refund-empty">
             <div class="empty-card">
               <span class="empty-card__icon"><i data-lucide="inbox" class="ztor-icon"></i></span>
               <h3 class="empty-card__title" data-i18n="event-detail.ref.empty.title">No refund requests</h3>
               <p class="empty-card__text" data-i18n="event-detail.ref.empty.sub">Creator-initiated refunds are disabled in v1 (D041 · Refund Reserve 0%). When open, fans can request up to 24 h before doors; the creator approves/rejects one-tap.</p>
             </div>
-            <div class="info-banner">
-              <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-              <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
+          </section>
+          <section class="card" id="ed-refund-summary" hidden>
+            <div class="data-list">
+              <div class="data-list__row">
+                <div class="data-list__row-main">
+                  <div class="data-list__icon data-list__icon--warning"><i data-lucide="rotate-ccw" class="ztor-icon"></i></div>
+                  <div class="data-list__body">
+                    <div class="data-list__title" data-i18n="event-detail.ref.summary.title">Refunds issued</div>
+                    <div class="data-list__meta" id="ed-refund-summary-meta">—</div>
+                  </div>
+                </div>
+                <span class="badge badge--warning" id="ed-refund-summary-count">—</span>
+              </div>
             </div>
           </section>
-
+          <div class="info-banner mt-16">
+            <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+            <span data-i18n="event-detail.ref.absorb"><strong>Refund absorption order (TBD until refunds open, §7.3):</strong> Refund Reserve → current distributable profit → carry-forward deficit (no clawback). Approving a refund emits a refunded revenue event and voids the ticket QR. v1 refund scope is in §8.6.</span>
+          </div>
         </div>
           </div>
 
@@ -1424,6 +1467,16 @@
           <div class="section-head__sub" data-i18n="event-detail.fin.sub">Each sale emits a ticket revenue event. This page never recomputes — figures roll up to Earnings &amp; Project Net Income (§5.1.6 F5).</div>
         </div>
 
+        <!-- 2026-08-19 修復：整張卡此前 100% 寫死（三筆固定營收事件 $80/$30/$0、
+             總結區塊固定 Gross $2,520/Accrued $780/Settled $1,740），不受任何活動的真實
+             sold／revenue 影響、也不受階段或類型控制。改成綁定交易明細分頁同一份
+             txAll（見 renderFinance()）：表格行項換成「依票種的收入小計」＋手續費一行，
+             摘要區塊的 Gross/Fee/Net/Refunded 沿用 renderTx() 的既有算式——兩個分頁的
+             四個金額因此保證完全一致。原本的 Accrued/Settled 兩態在這個原型沒有真正的
+             資料模型（buildTx 沒有區分應計／已結算，所有 paid 交易都視同已結算），
+             改用真的有資料支撐的 Gross/Fee/Net/Refunded 取代，i18n 的 fin.accrued／
+             fin.settled 保留未用。 -->
+        <div id="ed-fin-wrap">
         <section class="card" style="padding:0;overflow:hidden">
           <table class="ztor-table">
             <thead>
@@ -1435,30 +1488,23 @@
                 <th data-i18n="event-detail.fin.col.status">Settlement</th>
               </tr>
             </thead>
-            <tbody>
-              <tr class="ztor-table__row">
-                <td><code>rev_8H2KQ4</code></td><td>VIP + Live stream</td><td>$80.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">Settled</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td><code>rev_7C4B81</code></td><td>General Admission</td><td>$30.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--orange"><span data-i18n="event-detail.fin.st.accrued">Accrued</span></span></td>
-              </tr>
-              <tr class="ztor-table__row">
-                <td><code>rev_C0MP30</code></td><td>VIP (comp)</td><td>$0.00</td><td>cfg-2026.02</td>
-                <td><span class="badge badge--neutral"><span data-i18n="event-detail.fin.st.comp">Comp · audit only</span></span></td>
-              </tr>
-            </tbody>
+            <tbody id="ed-fin-body"></tbody>
           </table>
         </section>
+        </div>
+        <div class="empty-card empty-card--framed" id="ed-fin-empty" hidden>
+          <span class="empty-card__icon"><i data-lucide="receipt" class="ztor-icon"></i></span>
+          <h3 class="empty-card__title" data-i18n="event-detail.fin.empty.title">No revenue yet</h3>
+        </div>
 
         <div class="bento mt-16">
           <section class="card bento--span-7">
             <div class="card__head"><h3 class="card__title" data-i18n="event-detail.fin.summary.title">Summary</h3></div>
             <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.gross">Gross ticket revenue</span></div><span>$2,520.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.accrued">Of which accrued (待結算)</span></div><span>$780.00</span></div>
-              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.settled">Of which settled (已結算)</span></div><span>$1,740.00</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.gross">Gross</span></div><span id="ed-fin-gross">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.fee">Platform fee</span></div><span id="ed-fin-fee">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.net">Net to you</span></div><span id="ed-fin-net">—</span></div>
+              <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.tx.refunded">Refunded</span></div><span id="ed-fin-refunded">—</span></div>
               <div class="data-list__row"><div class="data-list__row-main"><span data-i18n="event-detail.fin.category">Category</span></div><span data-i18n="event-detail.fin.category-val">Event ticketing</span></div>
             </div>
           </section>
@@ -1586,7 +1632,6 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
-<script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
 <script src="js/chart.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -1615,8 +1660,8 @@
 
    在此之前這頁完全不看 ?id=，不論從清單點哪一場，看到的都是同一份寫死的示例活動。
    本段把「store 真的有的欄位」接上：頁首（徽章／標題／日期場地）、KPI 列、總覽的報到卡、
-   名單分頁。其餘分頁（票種明細／退款／通知／收支／系列）仍是示例內容——頁面上方的
-   樣本資料說明已據此改寫，明講哪些是這場活動的真實數字、哪些還是示例。
+   名單分頁。（2026-08-19 起票種明細／退款／通知／收支／系列也已全部接上 store，
+   本頁不再有整段寫死的示例分頁。）
 
    進行中的場次額外啟用現場報到台：到場人數即時往上跑、誰到了誰還沒到、掃碼連結可複製與分享。
    計時器是原型示意（每 4 秒一位左右），不接真實票務系統。 */
@@ -1626,9 +1671,11 @@
   const T = (k, f) => (window.i18nT && window.i18nT(k)) || f;
   const $ = s => document.querySelector(s);
   const params = new URLSearchParams(location.search);
-  const id = params.get('id');
-  if (!id) return;                       // 沒帶 id＝維持原本的靜態示例頁，不動它
-  const ev = window.ztorEvents.get(id);
+  const idParam = params.get('id');
+  /* 沒帶 id＝示例頁。2026-08-19 改：照 store 的既有約定（get() 無 id 回首筆）整頁 hydrate。
+     過去這裡直接 return，但頁首另一段 hydrate 照跑，造成示例頁 h1 已換成首筆活動、
+     <title> 與麵包屑卻停在舊示例文案的自相矛盾狀態。 */
+  const ev = window.ztorEvents.get(idParam);
   if (!ev) {                             // id 有帶但查不到：不顯示別人的活動，改顯示查詢失敗
     const page = document.querySelector('.page');
     if (page) {
@@ -1647,6 +1694,7 @@
     if (foot) foot.hidden = true;
     return;
   }
+  const id = ev.id;                      // 後續一律用真實 id（示例頁＝首筆的 id）
   /* ── 依活動類型收起不適用的區塊（D149：共看派對不套用票種／QR 報到／退款佇列／系列）──
      慣例沿用 create-event.html 的 data-hide-type。共看派對的進場＝分享連結＋選配付費牆、
      單一入場券；房間控場與觀看名單是否進本頁＝D149 標為待產品確認，所以這裡只收掉
@@ -1857,9 +1905,13 @@
     /* 2026-08-06：總覽的日期／場地／演出陣容三列改成可編輯欄位後，這裡只剩「類型」與「系列」
        兩列唯讀。**改成用標籤 key 定位、不再用索引** —— 原本是 vals[0]..vals[5] 依序對應六列，
        少了四列之後索引全部錯位，系列那一格會被填進日期（實測抓到）。索引綁的是「排第幾」，
-       那是最容易被下一次改版洗掉的東西。 */
+       那是最容易被下一次改版洗掉的東西。
+       2026-08-19 修復：選擇器仍寫死 `[data-panel="overview"]`，但「活動內容」卡（類型／系列／
+       票種／組合包四列）已於 2026-08-17 搬進「設定」分頁（`data-panel="dates"`）——搬遷後
+       這裡永遠找不到目標，四個 if 區塊全部靜默不執行，畫面因此卡死在示例活動的假資料
+       （見 documents ASSUMPTIONS 素材）。改指向 `dates`，四列才吃得到這一場的真實 ev 資料。 */
     const rowVal = key => {
-      const label = document.querySelector('[data-panel="overview"] .data-list__row [data-i18n="' + key + '"]');
+      const label = document.querySelector('[data-panel="dates"] .data-list__row [data-i18n="' + key + '"]');
       const row = label && label.closest('.data-list__row');
       return row ? { row: row, val: row.querySelector(':scope > span:last-child') } : null;
     };
@@ -2112,8 +2164,11 @@
        所以那四個分頁一律不出現。放在這裡而不是另外再設一次 hidden——分頁可見性
        只有這一個決策點，兩處都想決定就會互相覆蓋（本函式下方的註解講的就是這件事）。 */
     if (ev.type === 'watchparty') {
-      /* 發布設定也不適用：取票方式對線上房間不成立（同建立流程跳過第 7 步的口徑）。 */
-      const NA = ['tiers', 'bundles', 'attendees', 'series', 'publish'];
+      /* 發布設定也不適用：取票方式對線上房間不成立（同建立流程跳過第 7 步的口徑）。
+         2026-08-19 清掉殭屍鍵：'bundles'/'attendees'/'publish' 是分頁併頁前的舊分頁名稱，
+         TABS_BY_STAGE 從未產生過這三個值——這裡只有 'tiers'／'series' 是真的存在的頂層
+         分頁鍵，過濾別的字串不會有任何效果，留著只會誤導以為它們曾經是獨立分頁。 */
+      const NA = ['tiers', 'series'];
       allowed = allowed.filter(t => NA.indexOf(t) < 0);
     }
     document.querySelectorAll('[data-tabs] [data-tab]').forEach(btn => {
@@ -2375,6 +2430,80 @@
       renderTx();
     }));
     renderTx();
+  }
+
+  /* ── 收支（2026-08-19 修復）───────────────────────────────────────
+     此前整張卡 100% 寫死（固定三筆營收事件、固定 Gross/Accrued/Settled），跟這場活動
+     的真實 sold／revenue 完全無關。改成跟交易明細分頁綁同一份 txAll（renderTx() 用的
+     那一份、由 store 的 buildTx() 決定性生成），Gross/Fee/Net 沿用 renderTx() 的算式，
+     Refunded 用同一個 refunded 筆數——四個金額因此保證跟交易明細分頁完全一致。
+     表格行項改成「依票種的收入小計」（tier 名 × 單價 × 已售）＋手續費一行，不再是
+     對不上任何活動的 $80/$30/$0 假列。 */
+  function renderFinance() {
+    const body = document.getElementById('ed-fin-body');
+    const wrap = document.getElementById('ed-fin-wrap');
+    const empty = document.getElementById('ed-fin-empty');
+    if (!body) return;
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    const paid = txAll.filter(t => t.status === 'paid');
+    const refunded = txAll.filter(t => t.status === 'refunded');
+    const gross = paid.reduce((a, t) => a + t.gross, 0);
+    const fee = paid.reduce((a, t) => a + t.fee, 0);
+    setVal('ed-fin-gross', money(gross));
+    setVal('ed-fin-fee', '−' + money(fee));
+    setVal('ed-fin-net', money(gross - fee));
+    setVal('ed-fin-refunded', fmtNum(refunded.length));
+    const tiers = ev.tiers || [];
+    if (!tiers.length || !(ev.sold || 0)) {
+      body.innerHTML = '';
+      if (wrap) wrap.hidden = true;
+      if (empty) empty.hidden = false;
+      return;
+    }
+    if (wrap) wrap.hidden = false;
+    if (empty) empty.hidden = true;
+    const settledBadge = '<span class="badge badge--success"><span data-i18n="event-detail.fin.st.settled">' +
+      T('event-detail.fin.st.settled', 'Settled') + '</span></span>';
+    const rows = tiers.filter(t => (Number(t.sold) || 0) > 0).map((t, i) => {
+      const amt = (Number(t.price) || 0) * (Number(t.sold) || 0);
+      return '<tr class="ztor-table__row"><td><code>rev_' + esc(t.id || ('tier' + i)) + '</code></td>' +
+        '<td>' + esc(t.name) + '</td><td>' + money(amt) + '</td><td>cfg-2026.02</td>' +
+        '<td>' + settledBadge + '</td></tr>';
+    });
+    if (fee > 0) {
+      rows.push('<tr class="ztor-table__row"><td><code>fee_' + esc(ev.id) + '</code></td>' +
+        '<td>' + esc(T('event-detail.tx.fee', 'Platform fee')) + '</td><td>−' + money(fee) + '</td><td>—</td><td>—</td></tr>');
+    }
+    body.innerHTML = rows.join('');
+  }
+
+  /* ── 退款（2026-08-19 修復）───────────────────────────────────────
+     此前固定顯示「無退款請求」，但交易明細對同一場活動明確列出 refunded 交易——
+     「無退款請求」講的是「粉絲主動申請退款」（v1 尚未開放），跟「這場有沒有發生過
+     退款」是兩件事，畫面上卻沒有任何文字交代這個差異，讀起來就是兩個分頁互相矛盾。
+     改成從 txAll 匯總已退款筆數與金額，真的 0 筆才顯示原本的空狀態；v1 停用的
+     說明文字保留在空狀態卡與下方的吸收順序banner裡。 */
+  function renderRefunds() {
+    const emptyCard = document.getElementById('ed-refund-empty');
+    const summaryCard = document.getElementById('ed-refund-summary');
+    if (!emptyCard || !summaryCard) return;
+    const refunded = txAll.filter(t => t.status === 'refunded');
+    if (!refunded.length) {
+      emptyCard.hidden = false;
+      summaryCard.hidden = true;
+      return;
+    }
+    emptyCard.hidden = true;
+    summaryCard.hidden = false;
+    const amount = refunded.reduce((a, t) => a + t.gross, 0);
+    const countEl = document.getElementById('ed-refund-summary-count');
+    const metaEl = document.getElementById('ed-refund-summary-meta');
+    if (countEl) countEl.textContent = fmtNum(refunded.length);
+    if (metaEl) metaEl.textContent = T('event-detail.ref.summary.meta',
+      '{amt} returned across {n} orders — see Transactions for detail')
+      .replace('{amt}', money(amount)).replace('{n}', fmtNum(refunded.length));
   }
 
   /* ══ 就地編輯（2026-08-06）══════════════════════════════════════════
@@ -3781,6 +3910,43 @@
     const qr = document.getElementById('ed-pub-qr');
     if (qr && window.ztorFauxQr) qr.innerHTML = window.ztorFauxQr(ev.id.length * 3 + 5);
   }
+  /* 頂列黏住之後，麵包屑換成「縮圖＋名稱」（2026-08-18，做法與 project-detail 同一支）：
+     黏在頂端的那一列如果只剩按鈕，看不出是在對哪一場活動下指令；而麵包屑那串路徑捲下來
+     之後已經沒有用——人不是在找路，是在做事。
+     用捲動位置判斷、不用 IntersectionObserver：站上的捲軸在 main.main 而不是視窗，
+     observer 掛這種內層捲動容器時觸發時機不穩。門檻取頁首自己的高度，版面改了不用改數字。 */
+  (function () {
+    const scroller = document.querySelector('main.main');
+    const bar = document.querySelector('.detail-topbar');
+    const hero = document.querySelector('.page-intro');
+    const mini = document.querySelector('[data-ed-mini]');
+    const crumb = bar && bar.querySelector('.page-crumb');
+    if (!scroller || !bar || !hero || !mini || !crumb) return;
+    const cover = document.getElementById('ed-mini-cover');
+    const name = document.getElementById('ed-mini-name');
+    let on = null;
+    function sync() {
+      const gone = scroller.scrollTop > hero.offsetTop + hero.offsetHeight - bar.offsetHeight;
+      if (gone === on) return;
+      on = gone;
+      mini.hidden = !gone;
+      crumb.hidden = gone;
+      bar.classList.toggle('is-stuck', gone);
+      if (gone) {
+        const heroImg = document.querySelector('#ed-hero-img img');
+        const title = document.querySelector('.page-intro__title');
+        if (cover) {
+          const src = heroImg && heroImg.getAttribute('src');
+          cover.hidden = !src;                    // 沒有主視覺就只留名稱，不畫空框
+          if (src) { cover.src = src; cover.alt = heroImg.alt || ''; }
+        }
+        if (name && title) name.textContent = title.textContent.trim();
+      }
+    }
+    scroller.addEventListener('scroll', sync, { passive: true });
+    sync();
+  })();
+
   renderPublish();
   renderSales();
   renderLiveWhere();          // 兩個階段共用同一支：進行中在右欄底、售票中在右欄頂
@@ -3804,16 +3970,10 @@
     /* 共看派對沒有票券，組合包對它不成立（同 D149 收掉票務分頁的口徑） */
     card.hidden = ev.type === 'watchparty';
     const empty = document.getElementById('ed-bundle-empty');
-    const count = document.getElementById('ed-bundle-count');
     if (empty) empty.hidden = !!bds.length;
     list.hidden = !bds.length;
-    if (count) {
-      const soldSum = bds.reduce((a, b) => a + (Number(b.sold) || 0), 0);
-      count.innerHTML = '<span>' + (bds.length
-        ? T('ed.bd.count', '{n} bundles · {m} sold').replace('{n}', bds.length).replace('{m}', fmtNum(soldSum))
-        : T('ed.bd.count0', 'None')) + '</span>';
-      count.className = 'badge' + (bds.length ? ' badge--success' : ' badge--neutral');
-    }
+    /* 2026-08-19 清掉 #ed-bundle-count 死分支：計數徽章已在 2026-08-18 依使用者指示
+       從 markup 移除，這段 guard 住的填值程式永遠不會執行，只會讓 id 稽核一直掛名。 */
     if (!bds.length) return;
     /* 一組一張卡（2026-08-13 使用者指示「補完」）：原本一列只寫得下名稱、售價與已售，
        「這一組到底包了什麼、還剩幾組、佔掉哪一張票的庫存」都要自己推。
@@ -3851,6 +4011,43 @@
   }
   renderBundles();
 
+  /* ── 招待票（2026-08-19 修復）───────────────────────────────
+     原本兩列是寫死的假資料（樂團／場地人員的票種名跟這場活動的真實票種對不上）。
+     原型沒有「招待票核發紀錄」這份資料，領用人本身生不出真實內容；改成只有票種與
+     金額吃真實資料——票種名取這場活動 tiers 的第一、二個（見 ASSUMPTIONS 素材），
+     領用人固定用「巡演工作人員」「場地人員」這兩個跟任何活動類型都相容的角色。
+     沒有票種（草稿／已排程還沒建票）就沒有票可核發，給空狀態。 */
+  function renderComp() {
+    const list = document.getElementById('ed-comp-list');
+    const empty = document.getElementById('ed-comp-empty');
+    if (!list) return;
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const tiers = ev.tiers || [];
+    if (!tiers.length) {
+      list.innerHTML = '';
+      list.hidden = true;
+      if (empty) empty.hidden = false;
+      return;
+    }
+    if (empty) empty.hidden = true;
+    list.hidden = false;
+    const rows = [
+      { labelKey: 'event-detail.comp.holder.crew', fb: 'Tour crew ×2', tier: tiers[0].name },
+      { labelKey: 'event-detail.comp.holder.venue', fb: 'Venue staff ×2', tier: (tiers[1] || tiers[0]).name }
+    ];
+    list.innerHTML = rows.map(r => {
+      const meta = T('event-detail.comp.meta', '{tier} · $0 · comp').replace('{tier}', esc(r.tier));
+      return '<div class="data-list__row"><div class="data-list__row-main">' +
+        '<div class="data-list__icon data-list__icon--success"><i data-lucide="gift" class="ztor-icon"></i></div>' +
+        '<div class="data-list__body"><div class="data-list__title">' + esc(T(r.labelKey, r.fb)) + '</div>' +
+        '<div class="data-list__meta">' + meta + '</div></div></div>' +
+        '<span class="badge badge--neutral">$0</span></div>';
+    }).join('');
+    if (window.ztorIcons) window.ztorIcons.applyIcons(list);
+  }
+  renderComp();
+
   /* ── 結案（已結束／已取消）─────────────────────────────────
      結束後的問題跟售票中不一樣：最後到了多少人、這場淨賺多少、名單與帳在哪、
      還要不要再辦一次。此前這四題在畫面上一題都沒有答案。 */
@@ -3869,7 +4066,10 @@
       ? T('event-detail.wrap.cancelled', 'Cancelled — sales below are what had already been paid')
       : T('event-detail.wrap.when', 'Ended {d}').replace('{d}', fmtDate(ev.date));
     const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-    if (ci && ev.type !== 'watchparty') {
+    /* 2026-08-19 修復：判斷式仍只排除共看派對，2026-08-17 全站已把「線上」統一改成
+       ONLINE_TYPES（其餘 5 處都改過，唯獨這裡漏網）——結果線上活動（virtual）結束後
+       照樣套用實體報到率，對純直播活動顯示不存在的「開演當天門口報到」數字。 */
+    if (ci && ONLINE_TYPES.indexOf(ev.type) < 0) {
       set('#ed-wrap-att', fmtNum(ci.valid) + ' / ' + fmtNum(ci.sold));
       set('#ed-wrap-att-meta', T('event-detail.wrap.rate', '{n}% of tickets sold').replace('{n}', ci.rate));
       set('#ed-wrap-noshow', fmtNum(ci.sold - ci.valid));
@@ -3887,14 +4087,21 @@
 
   /* 已結束的場次：報到快照卡不該再寫「開演當天才開放」，改填這場最後的三色統計。 */
   function renderFinalCheckin() {
-    /* 2026-08-17：三色統計自「報到快照」卡併進結案卡，填的對象換成 #ed-wrap-checkin。 */
-    const card = document.getElementById('ed-wrap-checkin');
+    /* 2026-08-17：三色統計自「報到快照」卡併進結案卡，填的對象換成 #ed-wrap-checkin。
+       2026-08-19 修復：「售票與名單→活動名單」分頁也有一組長得一模一樣的三色圖例
+       （#ed-roster-checkin），此前沒有 id、沒有任何 JS 指向它，永遠停在「—」——跟這裡
+       填的結案卡數字不一致，正是使用者回報「同一筆活動在不同分頁看到的數字兜不起來」
+       的直接證據。改成同一個 checkinSummary() 結果一次填兩張卡，保證兩邊永遠同一組數字。 */
     const ci = window.ztorEvents.checkinSummary(ev.id);
-    if (!card || !ci) return;
-    const vals = card.querySelectorAll('.kpi .kpi__value');
-    if (vals[0]) vals[0].textContent = fmtNum(ci.valid);
-    if (vals[1]) vals[1].textContent = fmtNum(ci.used);
-    if (vals[2]) vals[2].textContent = fmtNum(ci.invalid);
+    const fillLegend = card => {
+      if (!card || !ci) return;
+      const vals = card.querySelectorAll('.kpi .kpi__value');
+      if (vals[0]) vals[0].textContent = fmtNum(ci.valid);
+      if (vals[1]) vals[1].textContent = fmtNum(ci.used);
+      if (vals[2]) vals[2].textContent = fmtNum(ci.invalid);
+    };
+    fillLegend(document.getElementById('ed-wrap-checkin'));
+    fillLegend(document.getElementById('ed-roster-checkin'));
     /* 墓碑 2026-08-17：這裡原本還把最終數字寫進 KPI 列的「已報到」那一格。
        KPI 列已退場（數字改長在主卡頭部），同步的對象因此不存在了。 */
   }
@@ -3904,10 +4111,70 @@
      但那時候沒有人核銷過，報到欄要嘛全空、要嘛像現在示例那樣寫著「已使用」——
      兩種都是假的。整欄收起，活動當天再出現。 */
   /* 名單上的「到場」欄只對實體活動成立（2026-08-17 補）：純線上的活動沒有人在門口掃碼，
-     一整欄「未到」不是事實、是這欄不適用。名單本身留著——「誰買了票」對線上一樣要看。 */
+     一整欄「未到」不是事實、是這欄不適用。名單本身留著——「誰買了票」對線上一樣要看。
+     2026-08-19 修復：原本只在 live／ended 顯示這一欄，其餘階段整欄收起——但售票中
+     其實該留著欄位、只是值統一「—」（見 renderAttendeeSample），不是欄位本身不適用。
+     改成只由「是不是線上活動」決定欄要不要存在，值交給 renderAttendeeSample() 依階段決定。 */
   function syncAttendees() {
-    const on = ['live', 'ended'].indexOf(ev.status) >= 0 && ONLINE_TYPES.indexOf(ev.type) < 0;
-    document.querySelectorAll('[data-att-col-state]').forEach(el => { el.hidden = !on; });
+    const online = ONLINE_TYPES.indexOf(ev.type) >= 0;
+    document.querySelectorAll('[data-att-col-state]').forEach(el => { el.hidden = online; });
+  }
+
+  /* ── 名單分頁的持票人清單（2026-08-19 修復）─────────────────────────
+     #ed-att-sample 這張表此前是四筆寫死的示例（Aki Tanaka 等），票種名對不上任何活動的
+     真實票種，且只有「進行中＋非線上」把它藏起——已排程、售票中、已結束、已取消、
+     進行中的線上活動一律看到同一批假名單。改用 store 的 roster()（依 sold/arrivedAtOpen
+     決定性生成，跟現場即時名單 #ed-live-roster 是同一份資料池的不同視角）現撈：
+       · sold=0：空狀態
+       · 進行中非線上：這張表整個藏起，即時名單另有 #ed-live-roster（不動它）
+       · 售票中／進行中線上：顯示持票人，報到欄統一「—」（還沒到活動日，或線上本來
+         就沒有 QR 報到——線上的欄本身已由 syncAttendees() 整支隱藏）
+       · 已結束非線上：顯示最終報到結果（roster 的 arrived 布林值） */
+  function renderAttendeeSample() {
+    const section = document.getElementById('ed-att-sample');
+    const body = document.getElementById('ed-att-sample-body');
+    const note = document.getElementById('ed-att-sample-note');
+    const empty = document.getElementById('ed-att-sample-empty');
+    if (!section || !body) return;
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const online = ONLINE_TYPES.indexOf(ev.type) >= 0;
+    const liveInPerson = ev.status === 'live' && !online;
+    if (liveInPerson) {
+      // 現場即時名單另有一張表（見 initLive/paintRoster），這裡讓開，不重複顯示
+      section.hidden = true;
+      if (note) note.hidden = true;
+      if (empty) empty.hidden = true;
+      return;
+    }
+    const sold = ev.sold || 0;
+    if (!sold) {
+      section.hidden = true;
+      if (note) note.hidden = true;
+      if (empty) empty.hidden = false;
+      return;
+    }
+    if (empty) empty.hidden = true;
+    section.hidden = false;
+    const ended = ev.status === 'ended';
+    const list = window.ztorEvents.roster(ev.id);
+    const CAP = 40;
+    body.innerHTML = list.slice(0, CAP).map(r => {
+      const state = ended
+        ? (r.arrived
+            ? '<span class="badge badge--success"><span>' + T('event-detail.att.state.valid', 'Valid') + '</span></span>'
+            : '<span class="badge"><span>' + T('event-detail.live.notarrived', 'Not arrived') + '</span></span>')
+        : '—';
+      return '<tr class="ztor-table__row"><td>' + esc(r.name) + '</td><td>' + esc(r.tier) + '</td>' +
+        '<td><code>' + esc(r.code) + '</code></td><td data-att-col-state>' + state + '</td></tr>';
+    }).join('');
+    if (note) {
+      note.hidden = false;
+      note.textContent = list.length > CAP
+        ? T('event-detail.att.sample.more', 'Showing {n} of {m} — export for the full list').replace('{n}', CAP).replace('{m}', fmtNum(list.length))
+        : T('event-detail.att.sample.showingall', 'Showing all {m}').replace('{m}', fmtNum(list.length));
+    }
+    syncAttendees();   // 剛畫出來的新 <td data-att-col-state> 也要套上線上類型的隱藏規則
   }
 
   /* ── 線上房間（共看派對與線上活動）─────────────────────────
@@ -4012,7 +4279,10 @@
   renderFinalCheckin();
   renderNotif();
   syncAttendees();
+  renderAttendeeSample();  // 2026-08-19：名單分頁的持票人清單，見函式註解
   initTx();
+  renderFinance();         // 2026-08-19：收支分頁，依賴 initTx() 填好的 txAll
+  renderRefunds();         // 2026-08-19：退款摘要，同樣依賴 txAll
   if (isLive) initLive();
   renderTodo();
   syncNavSections();
@@ -4056,6 +4326,10 @@
     renderRoom();
     renderNotif();
     syncAttendees();
+    renderAttendeeSample();  // 2026-08-19：持票人名單／空狀態文字要跟著語言重畫
+    renderComp();            // 2026-08-19：招待票的領用人標籤要跟著語言重畫
+    renderFinance();         // 2026-08-19：收支的空狀態文字要跟著語言重畫
+    renderRefunds();         // 2026-08-19：退款摘要文字要跟著語言重畫
     syncStage();
     if (isLive) paintLive();
     setTimeout(() => { i18nBusy = false; }, 0);

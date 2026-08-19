@@ -31,7 +31,9 @@
      內容變了就換鍵名，讓之前開過站的瀏覽器自然吃到新種子，不寫遷移程式——同 v2 的做法。 */
   /* v4（2026-08-17 下午）：退件那一筆改掛已成功的項目（落差 L5），另補一筆文檔類的
      直接發佈送審件（落差 L2 把文檔歸回影片家族之後才成立）。同上，換鍵名取代遷移。 */
-  var LS = 'ztor.workReview.v4';
+  /* v5（2026-08-19）：假資料盤查修復——補 nick-ni-shuo 的送審件（A11）、旺角狙擊
+     上映日改 06/28 留出製作期（B11）。同上，換鍵名取代遷移。 */
+  var LS = 'ztor.workReview.v5';
 
   /* 狀態字彙：中英各一份，站上任何頁都從這裡拿，不各自寫死。
      tone 對應 badge.css 的既有語意色，讓審核狀態與站上其他狀態徽章同一套配色。 */
@@ -193,7 +195,9 @@
           zhTitle: '旺角狙擊', zhDesc: '24 小時內必須結案的綁架案，菜鳥談判專家對上失蹤十年的師父。',
           enTitle: 'Mong Kok Sniper', enDesc: 'A rookie negotiator has 24 hours to close a kidnapping — against the mentor who vanished ten years ago.',
           subs: [['pw.lang.zh', 'mk_zh-hant.srt']],
-          stills: 4, bts: 1, runtime: '02:04:00', release: '2026/05/10',
+          /* 2026-08-19（B11）：上映日由 2026/05/10 改 06/28——共創期迄日也是 05/10，
+             募資結束當天就上映等於片在募資期間早已拍完，改成留出製作期。 */
+          stills: 4, bts: 1, runtime: '02:04:00', release: '2026/06/28',
           genres: ['pw.genre.crime', 'pw.genre.thriller'], age: 'pw.age.16',
           paid: true, currency: 'HKD'
         }),
@@ -308,6 +312,17 @@
         zhDesc: '從影集剪出來的三則番外。', enDesc: 'Three side stories cut from the series.',
         genres: ['pw.genre.adventure'], age: 'pw.age.13',
         post: { title: '番外短篇上線了', audience: 'pd-edit.update.aud-everyone' }
+      }),
+      /* 2026-08-19 補（盤查 A11）：nick-ni-shuo 是共創 MV、status=live——影視家族走到
+         已上線必經審核通過，卻是唯一沒有送審件的，總覽作品卡與進度的完成作品節點
+         因此長不出來。格式比照 wr-1206；上映日 2024/08/20，裁決日早於上映日。 */
+      demoRec({
+        id: 'wr-1208', projectId: 'nick-ni-shuo', persona: 'nick', cover: 'nick-sdfs.jpg',
+        zh: '帥到分手 MV', en: 'Too Handsome to Stay (MV)', status: 'approved',
+        at: '2024-08-10 11:20', reviewer: 'ztor Ops · Ivy', decidedAt: '2024-08-12 15:40',
+        file: 'sdfs-mv_master.mp4', audio: 'pw.lang.cmn', runtime: '00:04:52', release: '2024/08/20',
+        zhDesc: '共創拍攝的電影感 MV，35mm 底片一鏡到底。', enDesc: 'A crowdfunded cinematic MV shot on 35mm, in one take.',
+        genres: ['pw.genre.music'], age: 'pw.age.all'
       }),
       demoRec({
         id: 'wr-1104', projectId: 'nick-rlh-live-film', persona: 'nick', cover: 'nick-lrh-tour.jpg',

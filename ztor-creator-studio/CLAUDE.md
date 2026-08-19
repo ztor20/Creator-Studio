@@ -30,7 +30,11 @@ ztor Creator Studio 的原型 site。**2026-06-18 起站點搬進 monorepo [`zto
 
 推送用的 token 只需 **write 權**即可 commit／push 分支＋開 PR，**不需 merge 權**；**merge 一律由具 merge 權限的協作者在 GitHub 上操作**，AI 不代合。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
 
-**`collab.sh` 沒有錯誤訊息就停在 `Switched to a new branch` 時，先查 token 的寫入權**（2026-08-18 記，同一題第二次發生）：腳本的 `git push` 把輸出導掉了（`>/dev/null 2>&1`），推送失敗時看起來像「跑到一半自己結束」，exit code 是 128。診斷方式——手動 clone 一份再推一次空 commit，就會看到真正的 `403 / Permission denied`。細粒度 PAT（`github_pat_` 開頭）的讀與寫是分開授權的，**Contents 只給 Read 時就是這個症狀**；能讀 repo 代表組織 SSO 已核准，不必往那個方向查。修法是把該 token 的 Contents 與 Pull requests 都改成 Read and write，不必重新產生 token。
+**`collab.sh` 沒有錯誤訊息就停在 `Switched to a new branch` 時，先查 token 的寫入權**（2026-08-18 記，同一題第二次發生；**2026-08-19 第三次**）：腳本的 `git push` 把輸出導掉了（`>/dev/null 2>&1`），推送失敗時看起來像「跑到一半自己結束」，exit code 是 128。診斷方式——手動 clone 一份再推一次空 commit，就會看到真正的 `403 / Permission denied`。細粒度 PAT（`github_pat_` 開頭）的讀與寫是分開授權的，**Contents 只給 Read 時就是這個症狀**；能讀 repo 代表組織 SSO 已核准，不必往那個方向查。修法是把該 token 的 Contents 與 Pull requests 都改成 Read and write，不必重新產生 token。
+
+  **2026-08-19 補的兩件事**（第三次踩到）：<br>
+  (a) **不要用 REST API 的 `permissions` 判斷有沒有寫入權**——`GET /repos/{owner}/{repo}` 回的 `{"push": true, "maintain": true}` 是**使用者在該 repo 的角色**，不是這把細粒度 PAT 被授予的範圍。實測角色顯示 push=true，實際推送仍是 403。唯一可靠的判斷是真的推一次。<br>
+  (b) **診斷用的探針要推到丟棄分支、不要推 main**：`git clone --depth 1` → `commit --allow-empty` → `push origin probe/write-test`。推失敗時遠端不會留下任何東西（實測 `branches` 清單為空）；萬一推成功，記得立刻刪掉那個分支。
 
 ## 其他
 
