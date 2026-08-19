@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full" data-data-state="has-data">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="../">
+<title>V2 粉絲優先 · 儀表板重設計</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<link rel="stylesheet" href="ds-components/badge.css">
+<link rel="stylesheet" href="ds-components/bento.css">
+<link rel="stylesheet" href="ds-components/kpi.css">
+<link rel="stylesheet" href="ds-components/data-list.css">
+<link rel="stylesheet" href="ds-components/info-banner.css">
+<link rel="stylesheet" href="ds-components/alert.css">
+<link rel="stylesheet" href="ds-components/card.css">
+<link rel="stylesheet" href="ds-components/empty-card.css">
+<link rel="stylesheet" href="ds-components/input.css">
+<link rel="stylesheet" href="ds-components/header.css">
+<link rel="stylesheet" href="ds-components/table.css">
+<link rel="stylesheet" href="ds-components/tabs.css">
+<link rel="stylesheet" href="ds-components/chip.css">
+<link rel="stylesheet" href="ds-components/chart.css">
+<link rel="stylesheet" href="ds-components/payout-modal.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ── DEMO 專用樣式（探索頁；採用後 .band／.sum3／.v2-kpis 需 promote）────── */
+  .demo-bar { display:flex; align-items:center; gap: var(--sp-10); flex-wrap: wrap;
+              padding: var(--sp-10) var(--sp-14); margin-bottom: var(--sp-20);
+              border: 1px dashed var(--border); border-radius: var(--radius-xl);
+              background: var(--accent); font-family: var(--font-ui); font-size: var(--fs-13);
+              color: var(--muted-foreground); }
+  .demo-bar__tag { font-weight: var(--fw-medium); color: var(--foreground); }
+  .demo-bar__spacer { margin-left: auto; }
+
+  .band { display:flex; align-items: baseline; gap: var(--sp-10);
+          margin: var(--sp-32) 0 var(--sp-12); font-family: var(--font-ui);
+          font-size: var(--fs-12); letter-spacing: 0.4px; text-transform: uppercase;
+          color: var(--muted-foreground); }
+
+  .sum3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-24); }
+  .sum3 > * + * { padding-left: var(--sp-24); border-left: 1px solid var(--border-soft); }
+  .sum3 .kpi__value { margin-top: var(--sp-4); }
+  .sum3 .kpi__delta { align-self: flex-start; margin-top: var(--sp-6); }
+  .sum3 .kpi__meta { margin-top: var(--sp-8); }
+  @media (max-width: 900px) {
+    .sum3 { grid-template-columns: 1fr; }
+    .sum3 > * + * { padding-left: 0; border-left: 0; padding-top: var(--sp-16); border-top: 1px solid var(--border-soft); }
+  }
+
+  /* 右欄 KPI 疊：hero 吃掉剩餘高度，跟左邊的粉絲組成 hero 收齊；
+     兩顆計數 KPI 並排半寬。 */
+  .v2-kpis__hero { flex: 1; justify-content: center; }
+  .v2-kpis__minis { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-16); }
+
+  /* 粉絲組成 hero：圓餅放大、圖例列間距拉開一階，撐住主角的份量 */
+  .v2-fans-hero .pie-figure { gap: var(--sp-32); padding: var(--sp-8) 0; }
+  .v2-fans-hero .source-list { gap: var(--sp-14); }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <!-- ══ DEMO 切換條（非設計的一部分）════════════════════════════ -->
+      <div class="demo-bar">
+        <span class="demo-bar__tag">V2 · 粉絲優先</span>
+        <span>硬約束：ztor 粉絲組成第一眼就看到</span>
+        <span class="demo-bar__spacer"></span>
+        <a class="card__link" href="index.html">現況</a>
+        <a class="card__link" href="docs/dashboard-v1-旅程版.html">V1 旅程版</a>
+        <a class="card__link" href="docs/dashboard-v3-全資料版.html">V3 全資料</a>
+      </div>
+
+      <div class="page-crumb">
+        <span data-i18n="nav.dashboard">Dashboard</span>
+      </div>
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title" data-i18n="dash.h1">Studio</h1>
+          <p class="page-intro__sub">你的粉絲盤、進來的錢，以及今天需要你處理的事。</p>
+        </div>
+        <div class="page-intro__actions"><p class="greeting" data-greeting></p></div>
+      </div>
+
+      <!-- 旅程 E：官方訊息帶（可關） -->
+      <div class="info-banner info-banner--dismissible mb-16" data-demo-dismiss>
+        <i data-lucide="megaphone" class="ztor-icon info-banner__icon"></i>
+        <span><strong>ztor 夏季企劃徵件中</strong> — 入選作品進站上首頁推薦位，投件到 8 月 31 日。</span>
+        <a class="card__link" href="ip-market.html">查看企劃</a>
+        <button class="btn btn--icon btn--xs info-banner__close" type="button" aria-label="關閉"><i data-lucide="x" class="ztor-icon"></i></button>
+      </div>
+
+      <!-- ══ Row 1 · 粉絲組成 hero ｜ KPI 疊 ═══════════════════════════════
+           硬約束的落點：粉絲組成放第一排主位（span-8、圓餅放大到 220px），
+           「人」取代「錢」成為第一眼。三塊 KPI 壓進右欄直向疊——總收入仍是
+           橘色 hero、由 flex 吃掉剩餘高度與左卡收齊；待處理／進行中縮成
+           半寬 mini，維持「點了開彈出層」的既有行為。 -->
+      <div class="bento bento--stack-md mb-16">
+        <section class="card bento--span-8 v2-fans-hero">
+          <div class="card__head">
+            <h3 class="card__title" data-i18n="dash.tiers.title">ztor 粉絲組成</h3>
+            <span class="chip chip--static" data-i18n="dash.tiers.chip">只算站內，不含外部平台</span>
+          </div>
+          <div class="pie-figure">
+            <div class="pie" aria-hidden="true"
+                 style="--pie-size: 220px; --pie-stops:
+                   var(--primary) 0 12%,
+                   var(--status-info) 0 40%,
+                   var(--status-success) 0 77%,
+                   var(--foreground-muted) 0 100%"></div>
+            <div class="pie-figure__legend">
+              <div class="source-list">
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--primary)"></span><span data-i18n="fans.tier.inner-row">Inner Circle · 12%</span><span class="source-row__amt" data-i18n="fans.tier.inner-cnt">154 位</span><span class="source-row__pct">$8,420</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-info)"></span><span data-i18n="fans.tier.super-row">超級粉絲 · 28%</span><span class="source-row__amt" data-i18n="fans.tier.super-cnt">359 位</span><span class="source-row__pct">$6,180</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--status-success)"></span><span data-i18n="fans.tier.devoted-row">上榜粉絲 · 37%</span><span class="source-row__amt" data-i18n="fans.tier.devoted-cnt">475 位</span><span class="source-row__pct">$4,890</span></div>
+                <div class="source-row"><span class="source-row__swatch" style="background:var(--foreground-muted)"></span><span data-i18n="fans.tier.fan-row">一般粉絲 · 23%</span><span class="source-row__amt" data-i18n="fans.tier.fan-cnt">295 位</span><span class="source-row__pct">$1,210</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="card__note" data-i18n="dash.tiers.note">站內有帳號的 1,283 位粉絲，按分級切開——跟粉絲各頁算的是同一份名冊。粉絲分析頁的受眾數字含只在外部平台看得到的人，兩者分母不同。</p>
+        </section>
+
+        <div class="bento__stack bento--span-4 v2-kpis">
+          <div class="kpi kpi--hero v2-kpis__hero">
+            <div class="kpi__label" data-i18n="ops.revenue">當前總收入</div>
+            <div class="kpi__value">$24,830</div>
+            <div class="kpi__delta" data-i18n="ops.revenue-delta">較上週 +12.6%</div>
+            <div class="kpi__meta"><a class="card__link" href="earnings.html" data-i18n="ops.revenue-meta">2 小時前更新 · 查看 Earnings</a></div>
+          </div>
+          <div class="v2-kpis__minis">
+            <button type="button" class="kpi kpi--tappable" data-bd-open="ops-pending">
+              <i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>
+              <div class="kpi__label" data-i18n="ops.pending">待處理事項</div>
+              <div class="kpi__value">4</div>
+            </button>
+            <button type="button" class="kpi kpi--tappable" data-bd-open="ops-projects">
+              <i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>
+              <div class="kpi__label" data-i18n="ops.projects">進行中項目</div>
+              <div class="kpi__value">4</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Row 2 · 今日待處理（滿寬前 3 筆，同 V1）═══════════════════════ -->
+      <section class="card">
+        <div class="card__head">
+          <div class="card__title-group">
+            <span class="card__title-icon card__title-icon--warning"><i data-lucide="bell" class="ztor-icon"></i></span>
+            <h3 class="card__title" data-i18n="section.alerts">Alerts &amp; actions</h3>
+          </div>
+          <a class="card__link" href="index.html">查看全部</a>
+        </div>
+        <div data-component="alerts" data-key="dash-alerts" data-demo-limit="3"></div>
+        <p class="card__note">另有 1 筆阻斷型與 1 筆已暫緩的事項，在完整待辦視圖查看。</p>
+      </section>
+
+      <!-- ══ 帶 2 · 進行中（同 V1：F6 主位＋F5 分頁、F3 側欄）══════════════ -->
+      <p class="band">進行中</p>
+
+      <div class="bento bento--stack-lg">
+        <section class="card bento--span-8">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--accent"><i data-lucide="calendar" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="dash.progress.title">Events &amp; projects</h3>
+            </div>
+            <a class="card__link" href="projects.html" data-i18n="dash.progress.link">View all</a>
+          </div>
+          <nav class="tabs" role="tablist" data-demo-tabs>
+            <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-tab="ongoing">進行中</button>
+            <button class="tabs__item" type="button" role="tab" aria-selected="false" data-tab="recent">最近發生</button>
+          </nav>
+          <div class="tab-panel tab-panel--active" data-panel="ongoing">
+            <div data-component="events-projects" data-key="dash-events"></div>
+          </div>
+          <div class="tab-panel" data-panel="recent">
+            <div data-component="activity-list" data-key="dash-activity"></div>
+          </div>
+        </section>
+
+        <section class="card bento--span-4">
+          <div class="card__head">
+            <div class="card__title-group">
+              <span class="card__title-icon card__title-icon--primary"><i data-lucide="dollar-sign" class="ztor-icon"></i></span>
+              <h3 class="card__title" data-i18n="section.recent-earnings">Recent earnings</h3>
+            </div>
+            <a class="card__link" href="earnings.html" data-i18n="btn.view-all">View all</a>
+          </div>
+          <div class="data-list">
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--info"><i data-lucide="play" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>REAL LIFE</em>（Q4 結算）</div>
+                  <div class="data-list__meta">串流版稅 · 昨天</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$684.32</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>海上霸姬 幕後寫真誌</em> × 14</div>
+                  <div class="data-list__meta">電子商店銷售 · 11/22</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$392.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon"><i data-lucide="file-text" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>帥到分手</em> 故事世界授權</div>
+                  <div class="data-list__meta">故事世界授權 · 11/20</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$2,400.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="badge-check" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title">NICKTHEREAL 肖像 → 2 位被授權者</div>
+                  <div class="data-list__meta">IP 授權版稅 · 11/19</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$960.00</div></div>
+            </div>
+            <div class="data-list__row">
+              <div class="data-list__row-main">
+                <div class="data-list__icon data-list__icon--success"><i data-lucide="ticket" class="ztor-icon"></i></div>
+                <div class="data-list__body">
+                  <div class="data-list__title"><em>REALIVE (R2)</em> × 52</div>
+                  <div class="data-list__meta">活動票券 · 11/17</div>
+                </div>
+              </div>
+              <div class="data-list__end"><div class="data-list__amount">+US$1,560.00</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ══ 帶 3 · 表現與受眾（同 V1 的入口卡；中欄改粉絲關係，
+           承接頂部 hero 的敘事——組成在上面講過了，這裡講「這群人怎麼動」）══ -->
+      <p class="band">表現與受眾</p>
+
+      <section class="card">
+        <div class="card__head">
+          <div class="card__title-group">
+            <span class="card__title-icon card__title-icon--info"><i data-lucide="bar-chart-3" class="ztor-icon"></i></span>
+            <h3 class="card__title">表現與受眾</h3>
+          </div>
+          <a class="btn btn--outline btn--sm" href="fan-analytics.html">查看完整表現分析</a>
+        </div>
+        <div class="sum3">
+          <div class="kpi-plain">
+            <div class="kpi__label">本週受眾</div>
+            <div class="kpi__value">1.24M</div>
+            <span class="kpi__delta">+8.4% vs 上週</span>
+            <p class="kpi__meta">觀看＋串流，5 個平台合計</p>
+          </div>
+          <div class="kpi-plain">
+            <div class="kpi__label">流失風險</div>
+            <div class="kpi__value">5 位</div>
+            <p class="kpi__meta">超級粉絲 14+ 天未互動，進 Fans CRM 發送私訊跟進</p>
+          </div>
+          <div class="kpi-plain">
+            <div class="kpi__label">資料新鮮度</div>
+            <div class="kpi__value">4 / 5</div>
+            <p class="kpi__meta">Spotify 同步中斷，已列入今日待處理</p>
+          </div>
+        </div>
+        <p class="card__note">頂部的站上粉絲只算有 ztor 帳號的人，與本週受眾分母不同、不可互比或加總。</p>
+      </section>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>V2 · 粉絲優先（儀表板重設計 demo）</span>
+      <span>·</span>
+      <span>探索頁，不屬正式站台</span>
+      <span>·</span>
+      <span>依據 docs/dashboard-重設計-2026-08-19.md</span>
+    </footer>
+  </main>
+</div>
+
+<div class="payout-modal" data-bd-modal="ops-pending" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-pending-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-pending-title" data-i18n="ops.modal.pending-title">Pending actions</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.pending-sub">Each item has one clear next step</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="alerts" data-key="ops-pending-list"></div>
+    </div>
+  </section>
+</div>
+
+<div class="payout-modal" data-bd-modal="ops-projects" hidden>
+  <section class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="ops-projects-title">
+    <div class="payout-dialog__head">
+      <div>
+        <h2 class="payout-dialog__title" id="ops-projects-title" data-i18n="ops.modal.projects-title">Active projects</h2>
+        <span class="text-sub" style="font-size: var(--fs-12)" data-i18n="ops.modal.projects-sub">Live, funding and scheduled right now</span>
+      </div>
+      <button class="btn btn--icon" type="button" aria-label="Close" data-bd-close><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div data-component="events-projects" data-key="ops-projects-list"></div>
+    </div>
+  </section>
+</div>
+
+<script src="js/icons.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/sidebar.js"></script>
+<script src="js/components.js"></script>
+<script src="js/projects-store.js"></script>
+<script src="js/reveal.js"></script>
+<script src="js/detail-sheet.js"></script>
+<script>
+(function () {
+  document.querySelectorAll('[data-demo-tabs]').forEach(function (nav) {
+    var card = nav.closest('.card');
+    nav.addEventListener('click', function (e) {
+      var btn = e.target.closest('.tabs__item[data-tab]');
+      if (!btn) return;
+      nav.querySelectorAll('.tabs__item').forEach(function (t) {
+        var on = t === btn;
+        t.classList.toggle('tabs__item--active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      card.querySelectorAll('.tab-panel[data-panel]').forEach(function (p) {
+        p.classList.toggle('tab-panel--active', p.getAttribute('data-panel') === btn.getAttribute('data-tab'));
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-demo-limit]').forEach(function (host) {
+    var n = parseInt(host.getAttribute('data-demo-limit'), 10);
+    Array.from(host.children).slice(n).forEach(function (el) { el.hidden = true; });
+  });
+
+  var ann = document.querySelector('[data-demo-dismiss]');
+  if (ann) ann.addEventListener('click', function (e) {
+    if (e.target.closest('.info-banner__close')) ann.hidden = true;
+  });
+
+  function closeAll() {
+    document.querySelectorAll('.payout-modal[data-bd-modal]').forEach(function (m) { m.hidden = true; });
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('click', function (e) {
+    var opener = e.target.closest('[data-bd-open]');
+    if (opener) {
+      /* 2026-08-19：opener 可能是 <a href="#">（F4「查看全部」）。不擋預設行為的話，
+         有 <base> 的頁面會把 # 解析成 base 的位址而整頁跳走；沒 base 的頁面也會在
+         網址列留一個空 hash。 */
+      e.preventDefault();
+      /* 先關掉其他彈出層再開新的（2026-08-19）：這頁的彈出層是互斥的，而且
+         「待處理 → 查看全部」那顆按鈕同時掛了 data-bd-close 與 data-bd-open，
+         開啟分支先 return 的話 close 永遠跑不到，兩層會疊在一起。 */
+      closeAll();
+      var m = document.querySelector('[data-bd-modal="' + opener.dataset.bdOpen + '"]');
+      if (m) { m.hidden = false; document.body.style.overflow = 'hidden'; }
+      return;
+    }
+    if (e.target.closest('[data-bd-close]')) { closeAll(); return; }
+    if (e.target.classList && e.target.classList.contains('payout-modal') && e.target.hasAttribute('data-bd-modal')) closeAll();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+})();
+
+(function () {
+  function zh() { return (document.documentElement.lang || '').toLowerCase().indexOf('zh') === 0; }
+  function greet(h) {
+    if (h < 5)  return zh() ? '夜深了' : 'Still up';
+    if (h < 11) return zh() ? '早安'   : 'Good morning';
+    if (h < 17) return zh() ? '午安'   : 'Good afternoon';
+    return         zh() ? '晚安'   : 'Good evening';
+  }
+  function dateLine(d) {
+    if (zh()) {
+      var wk = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+      return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · 週' + wk;
+    }
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function paint() {
+    var el = document.querySelector('[data-greeting]');
+    if (!el) return;
+    var name = (window.ztorProjects && window.ztorProjects.displayName && window.ztorProjects.displayName()) || '';
+    var d = new Date();
+    var sep = zh() ? '，' : ', ';
+    el.innerHTML =
+      '<span class="greeting__hi">' + greet(d.getHours()) + (name ? sep + '<span class="greeting__name"></span>' : '') + '</span>' +
+      '<span class="greeting__meta"></span>';
+    var n = el.querySelector('.greeting__name');
+    if (n) n.textContent = name;
+    el.querySelector('.greeting__meta').textContent = dateLine(d);
+  }
+  paint();
+  document.addEventListener('i18n:applied', paint);
+})();
+</script>
+</body>
+</html>

@@ -16,283 +16,483 @@
 <link rel="stylesheet" href="ds-components/scanner.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/stock-bar.css?v=r2.2">
 </head>
 <body>
 <div class="scanner-page">
   <div class="scanner-frame">
 
-    <!-- Top bar · session identity -->
-    <div class="scanner-top">
-      <span class="scanner-top__brand">
-        <i data-lucide="qr-code" class="ztor-icon" style="width:18px;height:18px;color:var(--primary)"></i>
-        <span class="scanner-top__title" data-i18n="sc.brand">ztor scanner</span>
-      </span>
-      <span class="scanner-top__spacer"></span>
-      <span class="scanner-top__sub" data-sc-session data-i18n="sc.session">Taipei signing — pickup</span>
+    <!-- Top bar · which session this scanner is scanning for（解鎖後才出現）-->
+    <div class="scanner-top" data-sc-top hidden>
+      <span class="scanner-top__name" data-sc-session data-i18n="sc.session">Taipei signing — pickup</span>
+      <span class="badge badge--accent" data-sc-state><span data-i18n="sc.state.live">Live now</span></span>
     </div>
 
-    <!-- SCREEN 1 · password gate -->
+    <!-- SCREEN · password gate（F1.1）— session identity shows BEFORE unlock -->
     <div class="scanner-screen scanner-pw" data-sc-screen="pw">
-      <div class="scanner-pw__icon"><i data-lucide="lock" class="ztor-icon"></i></div>
-      <div class="scanner-pw__title" data-i18n="sc.pw.title">Enter scanner password</div>
-      <div class="scanner-pw__sub" data-i18n="sc.pw.sub">Ask the organizer for this session's password. Demo: enter any text.</div>
-      <input class="input" type="password" data-sc-pw placeholder="Password" data-i18n-placeholder="sc.pw.ph" autocomplete="off" style="text-align:center">
-      <div class="scanner-pw__err" data-sc-pw-err></div>
-    </div>
-
-    <!-- F1 sub-nav（Scan／Items／Roster）· 解鎖後顯示，僅本頁內三個畫面互切，不連出其他 Creator Studio 頁面 -->
-    <nav class="tabs" role="tablist" aria-label="Scanner sections" data-sc-nav hidden style="margin:0 12px">
-      <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-sc-navto="scan" data-i18n="sc.nav.scan">Scan</button>
-      <button class="tabs__item" type="button" role="tab" aria-selected="false" data-sc-navto="items" data-i18n="sc.nav.items">Items</button>
-      <button class="tabs__item" type="button" role="tab" aria-selected="false" data-sc-navto="roster" data-i18n="sc.nav.roster">Roster</button>
-    </nav>
-
-    <!-- SCREEN 2 · scan -->
-    <div class="scanner-screen" data-sc-screen="scan" hidden>
-      <div class="scanner-cam">
-        <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a buyer's QR code</span>
-        <div class="scanner-cam__reticle"></div>
-        <div class="scanner-cam__line"></div>
+      <div class="scanner-brand"><em>ztor</em> <span data-i18n="sc.brand.mark">Scanner</span></div>
+      <div class="scanner-session">
+        <div class="scanner-session__name" data-sc-session-name data-i18n="sc.session">Taipei signing — pickup</div>
+        <div class="scanner-session__meta">
+          <span class="badge badge--accent" data-sc-gate-state><span data-i18n="sc.state.live">Live now</span></span>
+          <span data-i18n="sc.gate.place">Huashan Creative Park · Hall 4B</span>
+        </div>
+        <div class="scanner-session__meta"><span data-i18n="sc.gate.time">Today 13:00 – 18:00</span></div>
       </div>
-      <button class="btn btn--primary" type="button" data-sc-simulate><i data-lucide="scan" class="ztor-icon"></i> <span data-i18n="sc.scan.simulate">Simulate a scan</span></button>
-      <div class="scanner-manual"><a href="#" class="card__link" data-sc-manual data-i18n="sc.scan.manual">Enter code manually</a></div>
+      <div class="field">
+        <label class="field__label" for="sc-pw" data-i18n="sc.pw.title">Enter scanner password</label>
+        <input class="input" type="password" id="sc-pw" data-sc-pw placeholder="Password" data-i18n-placeholder="sc.pw.ph" autocomplete="off">
+        <div class="scanner-pw__err" data-sc-pw-err></div>
+      </div>
+      <div class="field">
+        <label class="field__label" for="sc-staff"><span data-i18n="sc.pw.staff">Staff name</span> <span style="color:var(--muted-foreground);font-weight:var(--fw-regular)" data-i18n="sc.pw.staff.opt">Optional</span></label>
+        <input class="input" type="text" id="sc-staff" data-sc-staff autocomplete="off">
+        <div class="field__hint" data-i18n="sc.pw.staff.hint">Recorded on every redemption for later reconciliation.</div>
+      </div>
+      <button class="btn btn--primary" type="button" data-sc-unlock data-i18n="sc.pw.unlock">Unlock scanner</button>
+      <div class="scanner-hint" data-i18n="sc.pw.sub">Ask the organizer for this session's password. Demo: enter any text.</div>
       <div class="scanner-hint" data-i18n="sc.scan.note">The scanner only redeems — it can't see amounts, Earnings or fan data.</div>
     </div>
 
-    <!-- SCREEN 3 · result -->
-    <div class="scanner-screen" data-sc-screen="result" hidden>
-      <div class="scanner-result">
-        <div class="scanner-result__banner" data-sc-banner>
-          <span data-sc-banner-icon><i data-lucide="check-circle" class="ztor-icon"></i></span>
-          <span data-sc-banner-text data-i18n="sc.res.valid">Valid — ready to redeem</span>
+    <!-- SCREEN · lockout（5.1.5.15 F2.3：5 次錯誤鎖 10 分鐘）-->
+    <div class="scanner-screen" data-sc-screen="lock" hidden>
+      <div class="scanner-brand"><em>ztor</em> <span data-i18n="sc.brand.mark">Scanner</span></div>
+      <div class="scanner-lockout">
+        <span class="scanner-lockout__icon"><i data-lucide="lock" class="ztor-icon"></i></span>
+        <b class="scanner-lockout__title" data-i18n="sc.lock.title">Temporarily locked</b>
+        <div class="scanner-lockout__count" data-sc-lock-count>00:10</div>
+        <p class="scanner-lockout__body" data-i18n="sc.lock.body">5 wrong attempts — this device is locked for 10 minutes. The creator can still change the password in the studio. (Demo: 10 seconds.)</p>
+      </div>
+    </div>
+
+    <!-- Offline banner（呈現假設 SCAN-002）＋ counts strip：解鎖後顯示 -->
+    <div class="scanner-offline" data-sc-offline>
+      <i data-lucide="alert-triangle" class="ztor-icon"></i>
+      <span data-i18n="sc.off.banner">Offline — results are held, not redeemed</span>
+      <span class="scanner-offline__queue" data-sc-queue hidden><span data-i18n="sc.off.queue">To send</span> <b data-sc-queue-n>0</b></span>
+    </div>
+    <div class="scanner-counts" data-sc-counts hidden>
+      <div class="scanner-count"><b data-sc-cnt-pending>0</b><span data-i18n="sc.cnt.pending">Pending</span></div>
+      <div class="scanner-count scanner-count--done"><b data-sc-cnt-done>0</b><span data-i18n="sc.cnt.done">Redeemed</span></div>
+    </div>
+
+    <!-- BODY · scan / roster / items panes + sheet overlays -->
+    <div class="scanner-body" data-sc-body hidden>
+
+      <!-- SCREEN · scan（F1.2）— camera is the home screen -->
+      <div class="scanner-screen scanner-screen--cam" data-sc-screen="scan">
+        <div class="scanner-cam">
+          <div class="scanner-cam__reticle"><div class="scanner-cam__line"></div></div>
+          <button class="btn btn--outline scanner-manual" type="button" data-sc-manual><span data-i18n="sc.scan.manual">Enter code manually</span></button>
+          <span class="scanner-cam__hint" data-i18n="sc.cam.hint">Point the camera at a buyer's QR code</span>
         </div>
-        <dl class="scanner-result__rows" data-sc-rows></dl>
-        <div class="info-banner" data-sc-note hidden>
-          <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
-          <span data-sc-note-text></span>
+      </div>
+
+      <!-- SCREEN · F3 roster（唯讀查詢；點列帶入手動輸入代碼）-->
+      <div class="scanner-screen scanner-screen--list" data-sc-screen="roster" hidden>
+        <div class="field">
+          <input class="input" placeholder="Name, email, order #, ticket ID" data-sc-roster-search data-i18n-placeholder="pk.roster.search.ph">
+          <div class="field__hint" data-i18n="sc.roster.tap">Tap a row to fill its code into manual entry.</div>
+        </div>
+        <div class="data-list" data-sc-roster></div>
+        <div class="field__hint" data-i18n="sc.roster.hint">Read-only lookup — reverse a redemption only in Pickup session detail on the creator dashboard.</div>
+      </div>
+
+      <!-- SCREEN · F2 verifiable items（正式定義；統計連動核銷）-->
+      <div class="scanner-screen scanner-screen--list" data-sc-screen="items" hidden>
+        <div class="data-list__title" style="font-size:var(--fs-13);color:var(--muted-foreground)" data-i18n="pk.f4.products">Pickup items</div>
+        <div class="data-list" data-sc-items-goods></div>
+        <div class="data-list__title" style="font-size:var(--fs-13);color:var(--muted-foreground)" data-i18n="pk.f4.tickets">Event tickets</div>
+        <div class="data-list" data-sc-items-tickets></div>
+        <div class="field__hint" data-i18n="sc.items.hint">To change what this session can redeem, edit the session in the studio.</div>
+      </div>
+
+      <!-- Blocked（F1.3 場次未開始／已結束）-->
+      <div class="scanner-block" data-sc-block>
+        <div class="scanner-block__inner">
+          <i data-lucide="clock" class="ztor-icon"></i>
+          <b class="scanner-block__title" data-sc-block-title></b>
+          <p class="scanner-block__body" data-sc-block-body></p>
+        </div>
+      </div>
+
+      <!-- Result bottom sheet（F1.2／F1.3）-->
+      <div class="scanner-scrim" data-sc-scrim></div>
+      <div class="scanner-sheet" data-sc-sheet>
+        <div class="scanner-sheet__band" data-sc-sheet-band></div>
+        <div class="scanner-sheet__body" data-sc-sheet-body></div>
+        <div class="scanner-sheet__foot" data-sc-sheet-foot></div>
+      </div>
+
+      <!-- Manual-entry sheet（F1.1 手動輸入）-->
+      <div class="scanner-sheet" data-sc-msheet>
+        <div class="scanner-sheet__band"><span data-i18n="sc.manual.title">Enter a code</span></div>
+        <div class="scanner-sheet__body">
+          <div class="field">
+            <input class="input" data-sc-mcode placeholder="QR code, ticket ID or pickup code" data-i18n-placeholder="sc.manual.ph" autocomplete="off">
+            <div class="field__hint" data-i18n="sc.manual.hint">For when the camera can't scan or the buyer has no QR.</div>
+          </div>
+        </div>
+        <div class="scanner-sheet__foot">
+          <button class="btn btn--primary" type="button" data-sc-mgo data-i18n="sc.manual.go">Check code</button>
+          <button class="btn btn--outline" type="button" data-sc-mclose data-i18n="sc.manual.x">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Success flash（F1.4 回寫回饋）-->
+      <div class="scanner-flash" data-sc-flash>
+        <div class="scanner-flash__inner">
+          <i data-lucide="check-circle-fill" class="ztor-icon"></i>
+          <b data-sc-flash-title></b>
+          <span data-sc-flash-sub></span>
         </div>
       </div>
     </div>
 
-    <!-- SCREEN 4 · F2 可核銷項目（Verifiable Items，正式定義）-->
-    <div class="scanner-screen scanner-screen--list" data-sc-screen="items" hidden>
-      <div class="data-list__title" style="font-size: var(--fs-13);color:var(--muted-foreground)" data-i18n="pk.f4.products">Pickup items</div>
-      <div class="data-list">
-        <div class="data-list__row">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title" data-i18n="pk.item.zine">Pirate Queen zine vol. 02</div>
-              <div class="pickup-stats mt-4"><span data-i18n="pk.stat.sold">Sold</span> <b>40</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.pending">Pending</span> <b>12</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.done">Redeemed</span> <b>28</b></div>
-            </div>
-          </div>
-        </div>
-        <div class="data-list__row">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="package" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title" data-i18n="pk.item.tee">Kowloon After Dark tee · M / L</div>
-              <div class="pickup-stats mt-4"><span data-i18n="pk.stat.sold">Sold</span> <b>22</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.pending">Pending</span> <b>5</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.done">Redeemed</span> <b>17</b></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="data-list__title mt-16" style="font-size: var(--fs-13);color:var(--muted-foreground)" data-i18n="pk.f4.tickets">Event tickets</div>
-      <div class="data-list">
-        <div class="data-list__row">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title" data-i18n="pk.tk.signing">Signing session · GA entry</div>
-              <div class="pickup-stats mt-4"><span data-i18n="pk.stat.issued">Issued</span> <b>60</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.waiting">To check in</span> <b>6</b> <span class="pickup-stats__dot">·</span> <span data-i18n="pk.stat.checkedin">Checked in</span> <b>54</b></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SCREEN 5 · F3 取貨／入場名單（簡化版，唯讀查詢，QR 無法掃描時人工核對）-->
-    <div class="scanner-screen scanner-screen--list" data-sc-screen="roster" hidden>
-      <input class="input" placeholder="Name, email, order #, ticket ID" data-sc-roster-search data-i18n-placeholder="pk.roster.search.ph">
-      <div class="data-list mt-16">
-        <div class="data-list__row" data-sc-roster-row data-sc-roster-text="mika l zt-10482 zine">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">Mika L.</div>
-              <div class="data-list__meta" data-i18n="pk.roster.r1">Order #ZT-10482 · Pirate Queen zine vol. 02 ×1</div>
-            </div>
-          </div>
-          <div class="data-list__end data-list__end--row">
-            <span class="badge badge--warning"><span data-i18n="pk.st.pending">Pending</span></span>
-          </div>
-        </div>
-        <div class="data-list__row" data-sc-roster-row data-sc-roster-text="devon w zt-10475 tee m">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">Devon W.</div>
-              <div class="data-list__meta" data-i18n="pk.roster.r2">Order #ZT-10475 · Kowloon After Dark tee (M) ×1 · redeemed 14:22</div>
-            </div>
-          </div>
-          <div class="data-list__end data-list__end--row">
-            <span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span>
-          </div>
-        </div>
-        <div class="data-list__row" data-sc-roster-row data-sc-roster-text="aria s ticket ga signing checked">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">Aria S.</div>
-              <div class="data-list__meta" data-i18n="pk.roster.r3">Ticket TK-88213 · Signing GA entry · checked in 14:05</div>
-            </div>
-          </div>
-          <div class="data-list__end data-list__end--row">
-            <span class="badge badge--success"><span data-i18n="pk.st.checkedin">Checked in</span></span>
-          </div>
-        </div>
-        <div class="data-list__row" data-sc-roster-row data-sc-roster-text="kai t zt-10466 tee l redeemed">
-          <div class="data-list__row-main">
-            <div class="data-list__icon"><i data-lucide="user" class="ztor-icon"></i></div>
-            <div class="data-list__body">
-              <div class="data-list__title">Kai T.</div>
-              <div class="data-list__meta" data-i18n="pk.roster.r4">Order #ZT-10466 · Kowloon After Dark tee (L) ×1 · redeemed 14:31</div>
-            </div>
-          </div>
-          <div class="data-list__end data-list__end--row">
-            <span class="badge badge--success"><span data-i18n="pk.st.done">Redeemed</span></span>
-          </div>
-        </div>
-      </div>
-      <div class="field__hint mt-16" data-i18n="sc.roster.hint">Read-only lookup — reverse a redemption only in Pickup session detail on the creator dashboard.</div>
-    </div>
-
-    <!-- Foot · scan screen -->
-    <div class="scanner-foot" data-sc-foot="scan" hidden>
-      <span class="scanner-top__sub" style="align-self:center;margin:0 auto" data-sc-count>42 redeemed · 18 pending</span>
-    </div>
-    <!-- Foot · result screen -->
-    <div class="scanner-foot" data-sc-foot="result" hidden>
-      <button class="btn btn--outline" type="button" data-sc-back data-i18n="sc.res.back">Back</button>
-      <button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirm">Confirm pickup</button>
-    </div>
+    <!-- Bottom tab bar -->
+    <nav class="scanner-tabbar" data-sc-tabbar hidden aria-label="Scanner sections">
+      <button class="scanner-tabbar__btn is-on" type="button" data-sc-navto="scan"><i data-lucide="scan" class="ztor-icon"></i><span data-i18n="sc.nav.scan">Scan</span></button>
+      <button class="scanner-tabbar__btn" type="button" data-sc-navto="roster"><i data-lucide="users" class="ztor-icon"></i><span data-i18n="sc.nav.roster">Roster</span></button>
+      <button class="scanner-tabbar__btn" type="button" data-sc-navto="items"><i data-lucide="package" class="ztor-icon"></i><span data-i18n="sc.nav.items">Items</span></button>
+    </nav>
   </div>
+
+  <!-- Demo scenario rail（prototype-only，畫面旁邊）-->
+  <aside class="scanner-demo">
+    <span class="scanner-demo__title" data-i18n="sc.demo.title">Demo scenarios</span>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="ok"><i data-lucide="check" class="ztor-icon"></i> <span data-i18n="sc.demo.ok">Scan: success</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="dup"><i data-lucide="rotate-ccw" class="ztor-icon"></i> <span data-i18n="sc.demo.dup">Duplicate scan</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="notin"><i data-lucide="x-circle" class="ztor-icon"></i> <span data-i18n="sc.demo.notin">Not in this session</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="refund"><i data-lucide="ban" class="ztor-icon"></i> <span data-i18n="sc.demo.refund">Cancelled / refunded</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="offline"><i data-lucide="alert-triangle" class="ztor-icon"></i> <span data-i18n="sc.demo.offline">Toggle offline</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="time"><i data-lucide="clock" class="ztor-icon"></i> <span data-i18n="sc.demo.time">Cycle session time</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="lock"><i data-lucide="lock" class="ztor-icon"></i> <span data-i18n="sc.demo.lock">Password lockout</span></button>
+    <button class="btn btn--outline btn--sm" type="button" data-sc-demo="reset"><i data-lucide="rotate-ccw" class="ztor-icon"></i> <span data-i18n="sc.demo.reset">Reset demo</span></button>
+    <span class="scanner-demo__note" data-i18n="sc.demo.note">Prototype-only controls — the real page has no such rail.</span>
+  </aside>
 </div>
 
 <script>
-  /* Standalone mobile scanner demo · spec 5.1.5.11 F7.
-     pw gate → scan → cycle through result scenarios → confirm. No backend. */
-  (function () {
-    var SCEN = [
-      { kind: 'ok',  banner: 'sc.res.valid',    icon: 'check-circle', cls: 'scanner-result__banner--ok',
-        rows: [['sc.r.buyer', 'Mika L.'], ['sc.r.source', 'Order #ZT-10482'], ['sc.r.item', 'Pirate Queen zine vol. 02'], ['sc.r.qty', '×1'], ['sc.r.status', 'sc.st.pending']], canRedeem: true },
-      { kind: 'ok',  banner: 'sc.res.valid',    icon: 'check-circle', cls: 'scanner-result__banner--ok',
-        rows: [['sc.r.holder', 'Aria S.'], ['sc.r.source', 'Ticket TK-88213'], ['sc.r.item', 'Signing GA entry'], ['sc.r.status', 'sc.st.waiting']], canRedeem: true },
-      { kind: 'warn', banner: 'sc.res.dup',     icon: 'alert-triangle', cls: 'scanner-result__banner--warn',
-        rows: [['sc.r.buyer', 'Kai T.'], ['sc.r.source', 'Order #ZT-10466'], ['sc.r.item', 'Kowloon After Dark tee (L)'], ['sc.r.status', 'sc.st.doneat']], canRedeem: false, note: 'sc.note.dup' },
-      { kind: 'bad', banner: 'sc.res.notin',    icon: 'x-circle', cls: 'scanner-result__banner--bad',
-        rows: [['sc.r.item', 'Poster print A2'], ['sc.r.source', 'Order #ZT-10490']], canRedeem: false, note: 'sc.note.notin' }
-    ];
-    var idx = -1;
-    var frame = document.querySelector('.scanner-frame');
-    function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
-    var nav = document.querySelector('[data-sc-nav]');
-    function show(screen) {
-      frame.querySelectorAll('[data-sc-screen]').forEach(function (s) { s.hidden = s.getAttribute('data-sc-screen') !== screen; });
-      frame.querySelectorAll('[data-sc-foot]').forEach(function (f) { f.hidden = f.getAttribute('data-sc-foot') !== screen; });
-      if (nav) {
-        var navScreen = (screen === 'result') ? 'scan' : screen; /* 掃描結果仍算在 Scan 分頁下 */
-        nav.querySelectorAll('[data-sc-navto]').forEach(function (b) {
-          var on = b.getAttribute('data-sc-navto') === navScreen;
-          b.classList.toggle('tabs__item--active', on);
-          b.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-      }
-    }
-    /* password gate */
-    var pwBtnScreen = document.querySelector('[data-sc-screen="pw"]');
-    var pw = document.querySelector('[data-sc-pw]');
-    var pwErr = document.querySelector('[data-sc-pw-err]');
-    function unlock() {
-      if (!pw.value.trim()) { pwErr.textContent = T('sc.pw.err', 'Enter the password to continue.'); return; }
-      pwErr.textContent = ''; if (nav) nav.hidden = false; show('scan');
-    }
-    pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
-    /* add an explicit unlock button under the password field */
-    var unlockBtn = document.createElement('button');
-    unlockBtn.className = 'btn btn--primary';
-    unlockBtn.type = 'button';
-    unlockBtn.setAttribute('data-i18n', 'sc.pw.unlock');
-    unlockBtn.textContent = 'Unlock scanner';
-    pwBtnScreen.appendChild(unlockBtn);
-    unlockBtn.addEventListener('click', unlock);
+/* Mobile scanner · spec 5.1.5.14（2026-08-19 flow redesign）.
+   Camera-first home + bottom-sheet results + live in-memory roster.
+   Demo rail beside the frame drives every scenario. No backend. */
+(function () {
+  function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
+  var q = function (s) { return document.querySelector(s); };
 
-    /* F1 sub-nav：Scan／Items／Roster 互切 */
-    if (nav) nav.querySelectorAll('[data-sc-navto]').forEach(function (b) {
-      b.addEventListener('click', function () { show(b.getAttribute('data-sc-navto')); });
+  /* ── demo data：roster drives every count（items 統計連動核銷）── */
+  var ROSTER = [
+    { code: 'ZT-10482', name: 'Mika L.',  src: 'Order #ZT-10482', status: 'pending',
+      items: [{ k: 'pk.item.zine', qty: 1 }] },
+    { code: 'ZT-10491', name: 'Noor P.',  src: 'Order #ZT-10491', status: 'pending',
+      items: [{ k: 'pk.item.tee', qty: 1 }, { k: 'pk.tk.signing', qty: 1 }] },
+    { code: 'TK-88230', name: 'Jules R.', src: 'Ticket TK-88230', status: 'pending',
+      items: [{ k: 'pk.tk.signing', qty: 2 }] },
+    { code: 'ZT-10475', name: 'Devon W.', src: 'Order #ZT-10475', status: 'done', at: '14:22',
+      items: [{ k: 'pk.item.tee', qty: 1 }] },
+    { code: 'TK-88213', name: 'Aria S.',  src: 'Ticket TK-88213', status: 'done', at: '14:05',
+      items: [{ k: 'pk.tk.signing', qty: 1 }] },
+    { code: 'ZT-10466', name: 'Kai T.',   src: 'Order #ZT-10466', status: 'done', at: '14:31',
+      items: [{ k: 'pk.item.tee', qty: 1 }] }
+  ];
+  /* sold/done 基數含名單外的歷史核銷；done 隨本頁核銷遞增 */
+  var ITEMS = [
+    { k: 'pk.item.zine', type: 'goods',  icon: 'package', sold: 40, done: 28 },
+    { k: 'pk.item.tee',  type: 'goods',  icon: 'package', sold: 22, done: 17 },
+    { k: 'pk.tk.signing', type: 'ticket', icon: 'ticket', sold: 60, done: 54 }
+  ];
+  var timeState = 'live';   /* notyet | live | ended */
+  var offline = false;
+  var queue = [];
+
+  /* ── screens ── */
+  function show(screen) {
+    document.querySelectorAll('[data-sc-screen]').forEach(function (s) {
+      s.hidden = s.getAttribute('data-sc-screen') !== screen;
     });
+  }
+  function unlockUI() {
+    q('[data-sc-top]').hidden = false;
+    q('[data-sc-counts]').hidden = false;
+    q('[data-sc-body]').hidden = false;
+    q('[data-sc-tabbar]').hidden = false;
+    q('[data-sc-screen="pw"]').hidden = true;
+    q('[data-sc-screen="lock"]').hidden = true;
+    setTab('scan');
+  }
+  function lockUI() {
+    q('[data-sc-top]').hidden = true;
+    q('[data-sc-counts]').hidden = true;
+    q('[data-sc-body]').hidden = true;
+    q('[data-sc-tabbar]').hidden = true;
+  }
 
-    /* F3 取貨／入場名單（簡化版）搜尋 */
-    var rSearch = document.querySelector('[data-sc-roster-search]');
-    var rRows = [].slice.call(document.querySelectorAll('[data-sc-roster-row]'));
-    if (rSearch && rRows.length) rSearch.addEventListener('input', function () {
-      var q = rSearch.value.trim().toLowerCase();
-      rRows.forEach(function (r) { r.hidden = !!q && (r.getAttribute('data-sc-roster-text') || '').indexOf(q) < 0; });
+  /* ── password gate（demo：任意文字解鎖；鎖定情境由 demo 列觸發）── */
+  var pw = q('[data-sc-pw]'), pwErr = q('[data-sc-pw-err]');
+  function unlock() {
+    if (!pw.value.trim()) { pwErr.textContent = T('sc.pw.err', 'Enter the password to continue.'); return; }
+    pwErr.textContent = '';
+    unlockUI(); refresh(); applyTime();
+  }
+  q('[data-sc-unlock]').addEventListener('click', unlock);
+  pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') unlock(); });
+  var lockTimer = null;
+  function lockout() {
+    lockUI(); show('lock');
+    var s = 10; /* demo：以 10 秒代替 10 分鐘 */
+    var el = q('[data-sc-lock-count]');
+    function render() { el.textContent = '00:' + String(s).padStart(2, '0'); }
+    render();
+    clearInterval(lockTimer);
+    lockTimer = setInterval(function () {
+      s--; render();
+      if (s <= 0) { clearInterval(lockTimer); pw.value = ''; show('pw'); }
+    }, 1000);
+  }
+
+  /* ── bottom tabs ── */
+  function setTab(name) {
+    document.querySelectorAll('[data-sc-navto]').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-sc-navto') === name);
     });
+    show(name);
+  }
+  document.querySelectorAll('[data-sc-navto]').forEach(function (b) {
+    b.addEventListener('click', function () { setTab(b.getAttribute('data-sc-navto')); });
+  });
 
-    /* scan → result */
-    function renderResult(s) {
-      var banner = document.querySelector('[data-sc-banner]');
-      banner.className = 'scanner-result__banner ' + s.cls;
-      var ic = document.querySelector('[data-sc-banner-icon]');
-      ic.innerHTML = '<i data-lucide="' + s.icon + '" class="ztor-icon"></i>';
-      var bt = document.querySelector('[data-sc-banner-text]');
-      bt.setAttribute('data-i18n', s.banner); bt.textContent = T(s.banner);
-      var rows = document.querySelector('[data-sc-rows]');
-      rows.innerHTML = s.rows.map(function (r) {
-        var val = r[1].indexOf('sc.') === 0 ? '<span data-i18n="' + r[1] + '">' + T(r[1]) + '</span>' : r[1];
-        return '<div class="scanner-result__row"><dt data-i18n="' + r[0] + '">' + T(r[0]) + '</dt><dd>' + val + '</dd></div>';
+  /* ── counts / roster / items rendering ── */
+  function itemDef(k) { for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].k === k) return ITEMS[i]; return null; }
+  function refresh() {
+    var pend = 0, done = 0;
+    ITEMS.forEach(function (it) { pend += it.sold - it.done; done += it.done; });
+    q('[data-sc-cnt-pending]').textContent = pend;
+    q('[data-sc-cnt-done]').textContent = done;
+    renderRoster(); renderItems();
+  }
+  function renderRoster() {
+    var kw = (q('[data-sc-roster-search]').value || '').trim().toLowerCase();
+    var host = q('[data-sc-roster]');
+    host.innerHTML = ROSTER.filter(function (p) {
+      var hay = (p.name + ' ' + p.src + ' ' + p.code).toLowerCase();
+      return !kw || hay.indexOf(kw) >= 0;
+    }).map(function (p) {
+      var meta = p.src + ' · ' + p.items.map(function (i) { return T(i.k) + ' ×' + i.qty; }).join(' · ');
+      var badge = p.status === 'done'
+        ? '<span class="badge badge--success"><span>' + T('pk.st.done', 'Redeemed') + (p.at ? ' ' + p.at : '') + '</span></span>'
+        : '<span class="badge badge--warning"><span>' + T('pk.st.pending', 'Pending') + '</span></span>';
+      return '<button class="data-list__row scanner-rosterrow" type="button" data-sc-code="' + p.code + '">' +
+        '<div class="data-list__row-main">' +
+          '<div class="data-list__icon"><i data-lucide="' + (p.code.indexOf('TK-') === 0 ? 'ticket' : 'user') + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + p.name + '</div>' +
+          '<div class="data-list__meta">' + meta + '</div></div>' +
+        '</div>' +
+        '<div class="data-list__end data-list__end--row">' + badge + '</div>' +
+      '</button>';
+    }).join('');
+    host.querySelectorAll('[data-sc-code]').forEach(function (row) {
+      /* 規格 F1.1：名單只做身分核對，核銷仍走手動輸入——點列預填代碼、保留確認 */
+      row.addEventListener('click', function () { openManual(row.getAttribute('data-sc-code')); });
+    });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(host);
+  }
+  function renderItems() {
+    function rows(type) {
+      return ITEMS.filter(function (it) { return it.type === type; }).map(function (it) {
+        var pend = it.sold - it.done;
+        var pct = it.sold ? Math.round(it.done / it.sold * 100) : 0;
+        var stat = type === 'ticket'
+          ? '<span>' + T('pk.stat.issued', 'Issued') + '</span> <b>' + it.sold + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.waiting', 'To check in') + '</span> <b>' + pend + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.checkedin', 'Checked in') + '</span> <b>' + it.done + '</b>'
+          : '<span>' + T('pk.stat.sold', 'Sold') + '</span> <b>' + it.sold + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.pending', 'Pending') + '</span> <b>' + pend + '</b> <span class="pickup-stats__dot">·</span> <span>' + T('pk.stat.done', 'Redeemed') + '</span> <b>' + it.done + '</b>';
+        return '<div class="data-list__row"><div class="data-list__row-main">' +
+          '<div class="data-list__icon"><i data-lucide="' + it.icon + '" class="ztor-icon"></i></div>' +
+          '<div class="data-list__body"><div class="data-list__title">' + T(it.k) + '</div>' +
+          '<div class="pickup-stats mt-4">' + stat + '</div>' +
+          '<div class="stock-bar mt-4"><div class="stock-bar__fill" style="width:' + pct + '%"></div></div>' +
+          '</div></div></div>';
       }).join('');
-      var note = document.querySelector('[data-sc-note]');
-      if (s.note) { note.hidden = false; var nt = document.querySelector('[data-sc-note-text]'); nt.setAttribute('data-i18n', s.note); nt.textContent = T(s.note); }
-      else note.hidden = true;
-      var confirm = document.querySelector('[data-sc-confirm]');
-      confirm.hidden = !s.canRedeem;
-      if (window.ztorIcons) window.ztorIcons.applyIcons(document.querySelector('[data-sc-screen="result"]'));
-      if (window.applyI18n) window.applyI18n(document.querySelector('[data-sc-screen="result"]'));
-      show('result');
     }
-    document.querySelector('[data-sc-simulate]').addEventListener('click', function () {
-      idx = (idx + 1) % SCEN.length; renderResult(SCEN[idx]);
+    q('[data-sc-items-goods]').innerHTML = rows('goods');
+    q('[data-sc-items-tickets]').innerHTML = rows('ticket');
+    if (window.ztorIcons) { window.ztorIcons.applyIcons(q('[data-sc-items-goods]')); window.ztorIcons.applyIcons(q('[data-sc-items-tickets]')); }
+  }
+  q('[data-sc-roster-search]').addEventListener('input', renderRoster);
+
+  /* ── result sheet ── */
+  var sheet = q('[data-sc-sheet]'), scrim = q('[data-sc-scrim]');
+  function openSheet(kind, person, extraCode) {
+    var band = q('[data-sc-sheet-band]'), body = q('[data-sc-sheet-body]'), foot = q('[data-sc-sheet-foot]');
+    sheet.className = 'scanner-sheet is-on scanner-sheet--' + ({ ok: 'ok', dup: 'warn', notin: 'bad', refund: 'bad' }[kind]);
+    scrim.classList.add('is-on');
+    function buyer(p) {
+      return '<div class="scanner-buyer"><b>' + p.name + '</b><span>' + p.src + ' · ' + p.code + '</span></div>';
+    }
+    function claims(p) {
+      return '<div class="scanner-claims">' + p.items.map(function (i) {
+        return '<div class="scanner-claim"><span class="scanner-claim__name">' + T(i.k) + '</span><span class="scanner-claim__qty">×' + i.qty + '</span></div>';
+      }).join('') + '</div>';
+    }
+    function note(key, fb) {
+      return '<div class="info-banner"><i data-lucide="info" class="ztor-icon info-banner__icon"></i><span data-i18n="' + key + '">' + T(key, fb) + '</span></div>';
+    }
+    if (kind === 'ok') {
+      band.innerHTML = '<i data-lucide="badge-check" class="ztor-icon"></i><span data-i18n="sc.res.valid">' + T('sc.res.valid') + '</span>';
+      body.innerHTML = buyer(person) + claims(person);
+      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-confirm data-i18n="sc.res.confirmall">' + T('sc.res.confirmall', 'Confirm — redeem everything') + '</button>' +
+        '<button class="btn btn--outline" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+      foot.querySelector('[data-sc-confirm]').addEventListener('click', function () { confirmRedeem(person); });
+    } else if (kind === 'dup') {
+      band.innerHTML = '<i data-lucide="alert-triangle" class="ztor-icon"></i><span data-i18n="sc.res.dup">' + T('sc.res.dup') + '</span>';
+      body.innerHTML = buyer(person) +
+        '<dl class="scanner-result__rows"><div class="scanner-result__row"><dt data-i18n="sc.last">' + T('sc.last', 'Last redeemed') + '</dt><dd>' + (person.at || '14:05') + '</dd></div></dl>' +
+        note('sc.note.dup');
+      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+    } else if (kind === 'notin') {
+      band.innerHTML = '<i data-lucide="x-circle" class="ztor-icon"></i><span data-i18n="sc.res.notin">' + T('sc.res.notin') + '</span>';
+      body.innerHTML = '<div class="scanner-buyer"><b>' + (extraCode || 'ZT-10490') + '</b><span><span data-i18n="sc.notin.item">' + T('sc.notin.item', 'Poster print A2') + '</span> · Order #ZT-10490</span></div>' + note('sc.note.notin');
+      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+    } else if (kind === 'refund') {
+      band.innerHTML = '<i data-lucide="ban" class="ztor-icon"></i><span data-i18n="sc.res.refund">' + T('sc.res.refund', 'Order cancelled / refunded') + '</span>';
+      body.innerHTML = '<div class="scanner-buyer"><b>Rio C.</b><span>Order #ZT-10429 · ' + T('sc.r.item', 'Item') + ': ' + T('pk.item.zine') + '</span></div>' + note('sc.note.refund');
+      foot.innerHTML = '<button class="btn btn--primary" type="button" data-sc-close data-i18n="sc.res.back">' + T('sc.res.back', 'Back') + '</button>';
+    }
+    foot.querySelectorAll('[data-sc-close]').forEach(function (b) { b.addEventListener('click', closeSheet); });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(sheet);
+  }
+  function closeSheet() { sheet.classList.remove('is-on'); scrim.classList.remove('is-on'); }
+  scrim.addEventListener('click', function () { closeSheet(); closeManual(); });
+
+  function flash(titleKey, subKey) {
+    var f = q('[data-sc-flash]');
+    q('[data-sc-flash-title]').textContent = T(titleKey);
+    q('[data-sc-flash-sub]').textContent = T(subKey);
+    f.classList.add('is-on');
+    if (window.ztorIcons) window.ztorIcons.applyIcons(f);
+    setTimeout(function () { f.classList.remove('is-on'); }, 1100);
+  }
+  function confirmRedeem(person) {
+    closeSheet();
+    if (offline) {
+      if (queue.indexOf(person.code) < 0) queue.push(person.code);
+      q('[data-sc-queue]').hidden = false;
+      q('[data-sc-queue-n]').textContent = queue.length;
+      flash('sc.flash.held', 'sc.flash.heldsub');
+      return;
+    }
+    applyRedeem(person);
+    flash('sc.flash.done', 'sc.flash.sub');
+  }
+  function applyRedeem(person) {
+    if (person.status === 'done') return;
+    person.status = 'done';
+    person.at = new Date().toTimeString().slice(0, 5);
+    person.items.forEach(function (i) { var d = itemDef(i.k); if (d) d.done += i.qty; });
+    refresh();
+  }
+
+  /* ── manual entry（F1.1；roster 點列預填）── */
+  var msheet = q('[data-sc-msheet]'), mcode = q('[data-sc-mcode]');
+  function openManual(prefill) {
+    mcode.value = prefill || '';
+    msheet.classList.add('is-on'); scrim.classList.add('is-on');
+    if (!prefill) mcode.focus();
+  }
+  function closeManual() { msheet.classList.remove('is-on'); scrim.classList.remove('is-on'); }
+  q('[data-sc-manual]').addEventListener('click', function () { openManual(); });
+  q('[data-sc-mclose]').addEventListener('click', closeManual);
+  q('[data-sc-mgo]').addEventListener('click', function () {
+    var code = mcode.value.trim();
+    closeManual();
+    if (timeState !== 'live') return; /* blocked overlay 已擋 */
+    var p = null;
+    ROSTER.forEach(function (x) { if (x.code.toLowerCase() === code.toLowerCase()) p = x; });
+    if (!p) { openSheet('notin', null, code || '—'); return; }
+    openSheet(p.status === 'done' ? 'dup' : 'ok', p);
+  });
+
+  /* ── session time boundary（F1.3）── */
+  function applyTime() {
+    var map = {
+      notyet: { key: 'sc.state.notyet', badge: 'badge badge--neutral', block: true,  t: 'sc.block.notyet.t', b: 'sc.block.notyet.b' },
+      live:   { key: 'sc.state.live',   badge: 'badge badge--accent',  block: false },
+      ended:  { key: 'sc.state.ended',  badge: 'badge badge--neutral', block: true,  t: 'sc.block.ended.t', b: 'sc.block.ended.b' }
+    }[timeState];
+    /* 場次狀態在閘門與解鎖後的頂列各出現一次，兩處同步 */
+    document.querySelectorAll('[data-sc-state], [data-sc-gate-state]').forEach(function (st) {
+      st.className = map.badge;
+      st.innerHTML = '<span data-i18n="' + map.key + '">' + T(map.key) + '</span>';
     });
-    var manual = document.querySelector('[data-sc-manual]');
-    if (manual) manual.addEventListener('click', function (e) { e.preventDefault(); idx = (idx + 1) % SCEN.length; renderResult(SCEN[idx]); });
-    document.querySelector('[data-sc-back]').addEventListener('click', function () { show('scan'); });
-    document.querySelector('[data-sc-confirm]').addEventListener('click', function () {
-      var banner = document.querySelector('[data-sc-banner]');
-      banner.className = 'scanner-result__banner scanner-result__banner--ok';
-      var bt = document.querySelector('[data-sc-banner-text]');
-      bt.setAttribute('data-i18n', 'sc.res.redeemed'); bt.textContent = T('sc.res.redeemed', 'Redeemed ✓');
-      document.querySelector('[data-sc-confirm]').hidden = true;
-      setTimeout(function () { show('scan'); }, 900);
+    var blk = q('[data-sc-block]');
+    blk.classList.toggle('is-on', map.block);
+    if (map.block) {
+      var bt = q('[data-sc-block-title]'), bb = q('[data-sc-block-body]');
+      bt.setAttribute('data-i18n', map.t); bt.textContent = T(map.t);
+      bb.setAttribute('data-i18n', map.b); bb.textContent = T(map.b);
+    }
+    if (window.ztorIcons) window.ztorIcons.applyIcons(blk);
+  }
+
+  /* ── demo rail ── */
+  document.querySelectorAll('[data-sc-demo]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-sc-demo');
+      if (k === 'reset') { location.reload(); return; }
+      if (k === 'lock') { lockout(); return; }
+      if (k === 'offline') {
+        offline = !offline;
+        q('[data-sc-offline]').classList.toggle('is-on', offline);
+        if (!offline && queue.length) {
+          queue.forEach(function (c) {
+            ROSTER.forEach(function (p) { if (p.code === c) applyRedeem(p); });
+          });
+          queue = [];
+          q('[data-sc-queue]').hidden = true;
+          flash('sc.flash.sent', 'sc.flash.sentsub');
+        }
+        return;
+      }
+      if (k === 'time') { timeState = { notyet: 'live', live: 'ended', ended: 'notyet' }[timeState]; applyTime(); return; }
+      /* scan scenarios need an unlocked, live session */
+      if (q('[data-sc-body]').hidden) return;
+      if (timeState !== 'live') return;
+      if (k === 'ok') {
+        var p = null;
+        ROSTER.forEach(function (x) { if (!p && x.status === 'pending') p = x; });
+        if (p) openSheet('ok', p); else openSheet('dup', ROSTER[0]);
+      }
+      if (k === 'dup') {
+        var d = null;
+        ROSTER.forEach(function (x) { if (!d && x.status === 'done') d = x; });
+        openSheet('dup', d || ROSTER[3]);
+      }
+      if (k === 'notin') openSheet('notin');
+      if (k === 'refund') openSheet('refund');
     });
-  })();
+  });
+
+  /* i18n.js 在本 script 之後載入且預設繁中：每次 apply()（含首次與 cheat-code
+     切語言）後重繪 JS 渲染的名單／項目，動態字串才跟著換語言 */
+  document.addEventListener('i18n:applied', function () { renderRoster(); renderItems(); applyTime(); });
+
+  refresh(); applyTime();
+})();
 </script>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
 <script>
 /* ?event=<id>（2026-07-27）：從活動的現場報到台分享出來的連結會帶上場次 id。
-   收到連結的現場人員第一眼要知道「這是哪一場的掃碼器」，故把頂列的場次名稱換成該活動。
-   沒帶 event 參數時維持原本的取貨場次標題，行為不變。 */
+   收到連結的現場人員第一眼要知道「這是哪一場的掃碼器」，故把頂列與密碼閘門
+   的場次名稱換成該活動。沒帶 event 參數時維持原本的取貨場次標題，行為不變。 */
 (function () {
   var id = new URLSearchParams(location.search).get('event');
   if (!id || !window.ztorEvents) return;
   var ev = window.ztorEvents.get(id);
   if (!ev) return;
-  var el = document.querySelector('[data-sc-session]');
-  if (el) { el.removeAttribute('data-i18n'); el.textContent = ev.name; }
+  ['[data-sc-session]', '[data-sc-session-name]'].forEach(function (sel) {
+    var el = document.querySelector(sel);
+    if (el) { el.removeAttribute('data-i18n'); el.textContent = ev.name; }
+  });
   document.title = ev.name + ' · Scanner · Ztor';
 }());
 </script>

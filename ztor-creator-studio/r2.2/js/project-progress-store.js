@@ -78,17 +78,25 @@
   /* 交付藍圖的預設骨架。共創與預購共用同一組——兩者達標後同樣進入製作與交付
      （§2.0 界線清單）。名稱沿用建立流程 F10 的用法（「Pre-production complete」那種）。 */
   var BLUEPRINT = [
-    { key: 'preprod', name: { en: 'Pre-production wrapped',  zh: '前期製作完成' }, desc: { en: 'Script locked, crew booked, locations secured.', zh: '劇本定稿、劇組到位、場景談定。' } },
-    { key: 'shoot',   name: { en: 'Principal shoot wrapped', zh: '主體拍攝殺青' }, desc: { en: 'All scheduled shooting days are in the can.', zh: '排定的拍攝日全部完成。' } },
-    { key: 'post',    name: { en: 'Final cut locked',        zh: '成片定剪' },     desc: { en: 'Picture, sound and grade are signed off.', zh: '畫面、聲音與調光都定稿。' } }
+    { key: 'preprod', name: { en: 'Pre-production wrapped',  zh: '前期製作完成' },   desc: { en: 'Script locked, crew booked, locations secured.', zh: '劇本定稿、劇組到位、場景談定。' } },
+    { key: 'shoot',   name: { en: 'Principal shoot wrapped', zh: '主體拍攝殺青' },   desc: { en: 'All scheduled shooting days are in the can.', zh: '排定的拍攝日全部完成。' } },
+    { key: 'rough',   name: { en: 'Rough cut assembled',     zh: '初剪完成' },       desc: { en: 'The whole film runs end to end; length and structure are settled.', zh: '全片順得過去，長度與結構定下來。' } },
+    { key: 'post',    name: { en: 'Final cut locked',        zh: '成片定剪' },       desc: { en: 'Picture is locked — no more editing from here.', zh: '畫面鎖定，之後不再動剪接。' } },
+    { key: 'mix',     name: { en: 'Sound and grade signed off', zh: '聲音與調光完成' }, desc: { en: 'Mix, score and colour are approved.', zh: '混音、配樂與調光都簽核。' } },
+    { key: 'deliver', name: { en: 'Delivered to backers',    zh: '支持者交付' },     desc: { en: 'Viewing links are out and the physical rewards have shipped.', zh: '觀看連結與實體回饋都寄出。' } }
   ];
 
   /* 依項目狀態決定藍圖走到第幾顆。索引＝「目前正在進行的那一顆」，它之前的都完成。
        進行中（published）→ 才剛開募，前期在跑
-       已成功（succeeded）→ 錢收了，主體製作中
-       準備中（scheduled）／已上線（live）→ 藍圖走完了，剩下完成作品那一顆系統節點
-       已取消（cancelled）→ 停在第一顆，之後的都不會發生（凍結見 §2.2.4） */
-  var CURSOR = { published: 0, succeeded: 1, scheduled: 3, live: 3, cancelled: 1, draft: 0 };
+       已成功（succeeded）→ 錢收了，拍完在剪
+       準備中（scheduled）→ 製作都完成、還沒上映——「支持者交付」（觀看連結與實體
+                            回饋都寄出）不可能已完成，所以停在 5、deliver 留 todo
+                            （2026-08-19 盤查 A12：原本寫 6，害還沒上映的項目顯示已交付）
+       已上線（live）→ 藍圖走完了，剩下完成作品那一顆系統節點
+       已取消（cancelled）→ 停在第一顆，之後的都不會發生（凍結見 §2.2.4）
+     ⚠ 這裡的數字是「藍圖的第幾顆」，改 BLUEPRINT 長度時要一起看：走完藍圖的狀態
+       要等於長度本身，不然最後幾顆會永遠停在 todo。 */
+  var CURSOR = { published: 0, succeeded: 2, scheduled: 5, live: 6, cancelled: 1, draft: 0 };
 
   /* ── 示範資料：狀態變體 ────────────────────────────────────────────────
      §2.2.10「狀態變體」表列的情境，如果每個項目的種子都長一樣就一個也看不到。
@@ -102,37 +110,79 @@
      每一把 key 都必須是共創或預購的項目——「進度」分頁只給這兩型（§2.0），
      掛在直接發佈項目上的變體永遠不會被畫出來。 */
   var VARIANTS = {
-    /* 逾期：第一顆的預計日期已經過了六天還沒完成（§2.2.10「倒數、逾期與提前完成」）。 */
+    /* 逾期：有一顆的預計日期已經過了六天還沒完成（§2.2.10「倒數、逾期與提前完成」）。
+       2026-08-18 擴寫成六顆：這是站上主要的示範項目，總覽的進度摘要與進度分頁的時間軸
+       都吃它，所以它得同時長出**每一種狀態**——兩顆已完成（一顆提前、一顆延後，才看得到
+       「原定日期」那條註記）、一顆逾期、三顆還沒到。只有三顆時，兩個畫面永遠只有灰與紅，
+       綠色的完成態在原型上一次都出現不了。 */
     'nick-lrh': {
-      ms: [{ d: -6, s: 'doing' }, { d: 34, s: 'todo' }, { d: 94, s: 'todo' }]
+      ms: [
+        { d: -75, s: 'done', cd: -78 },   /* 提前 3 天完成 */
+        { d: -40, s: 'done', cd: -36 },   /* 延後 4 天完成 */
+        { d: -6,  s: 'todo' },           /* 逾期 6 天 */
+        { d: 34,  s: 'todo' },
+        { d: 74,  s: 'todo' },
+        { d: 110, s: 'todo' }
+      ]
     },
+    /* 作品已送過審（wr-1003 退件）＝成片存在，preprod～mix 五顆必須都完成、
+       完成日全部早於送審日 2026-08-01（今天 -16 天）；只留支持者交付 todo
+       （2026-08-19 盤查 A13 改）。 */
     'north-point-rain': {
-      ms: [{ d: -11, s: 'doing' }, { d: 25, s: 'todo' }, { d: 80, s: 'todo' }]
+      ms: [
+        { d: -88, s: 'done', cd: -88 },
+        { d: -52, s: 'done', cd: -45 },
+        { d: -30, s: 'done', cd: -28 },
+        { d: -22, s: 'done', cd: -20 },
+        { d: -18, s: 'done', cd: -17 },
+        { d: 100, s: 'todo' }
+      ]
     },
-    /* 里程碑全部完成、作品還沒上線：今天那一格改成指向完成作品節點的下一步。 */
+    /* 後期走到一半的已成功項目（2026-08-19 盤查 A12 改）：desc 說「正在調光」，
+       所以調光（第五顆）與支持者交付（第六顆）都還是 todo，不能全 done。 */
     'nick-r2-film': {
-      ms: [{ d: -120, s: 'done', cd: -120 }, { d: -60, s: 'done', cd: -58 }, { d: -8, s: 'done', cd: -8 }]
+      ms: [{ d: -120, s: 'done', cd: -120 }, { d: -96, s: 'done', cd: -94 }, { d: -60, s: 'done', cd: -58 },
+           { d: -40, s: 'done', cd: -40 }, { d: 10, s: 'todo' }, { d: 45, s: 'todo' }]
     },
+    /* 審核中的已成功項目：片剪完混完（前五顆 done），但作品還沒上線，
+       支持者交付不可能已完成（2026-08-19 盤查 A12：第六顆由 done 改 todo）。 */
     'victoria-noir': {
-      ms: [{ d: -140, s: 'done', cd: -140 }, { d: -75, s: 'done', cd: -70 }, { d: -14, s: 'done', cd: -14 }]
+      ms: [{ d: -140, s: 'done', cd: -140 }, { d: -110, s: 'done', cd: -112 }, { d: -75, s: 'done', cd: -70 },
+           { d: -52, s: 'done', cd: -52 }, { d: -30, s: 'done', cd: -30 }, { d: 30, s: 'todo' }]
     },
     /* 今天就是里程碑日、尚未完成：該顆改由今天那一格承載，不在未來段重複出現。 */
     'nick-street-stage': {
-      ms: [{ d: -70, s: 'done', cd: -70 }, { d: 0, s: 'doing' }, { d: 60, s: 'todo' }]
+      /* 這個項目 2026/05/12 才建立（今天 -97 天），前兩顆得排在那之後——不然會被上面
+         那道「不早於建立日」的夾子夾到同一天，讀起來像項目一建立就完成了第一顆。 */
+      ms: [{ d: -85, s: 'done', cd: -85 }, { d: -55, s: 'done', cd: -52 }, { d: 0, s: 'todo' },
+           { d: 30, s: 'todo' }, { d: 60, s: 'todo' }, { d: 95, s: 'todo' }]
     },
-    /* 提前完成：完成日早於預計日期，節點落在實際完成日並附註原定日期。 */
+    /* 提前完成：完成日早於預計日期，節點落在實際完成日並附註原定日期。
+       2026-08-19 盤查 A13 改：作品已送審（wr-1001 待審核）＝成片存在，preprod～mix
+       五顆都完成、完成日全部早於送審日 2026-08-05（今天 -12 天），只留支持者交付 todo。 */
     'nick-lrh-doc': {
-      ms: [{ d: -90, s: 'done', cd: -92 }, { d: -12, s: 'done', cd: -26 }, { d: 48, s: 'todo' }]
+      ms: [{ d: -90, s: 'done', cd: -92 }, { d: -55, s: 'done', cd: -60 }, { d: -35, s: 'done', cd: -40 },
+           { d: -18, s: 'done', cd: -26 }, { d: -8, s: 'done', cd: -14 }, { d: 84, s: 'todo' }]
     },
     'kowloon-night-cut': {
-      ms: [{ d: -100, s: 'done', cd: -104 }, { d: -20, s: 'done', cd: -33 }, { d: 40, s: 'todo' }]
+      ms: [{ d: -100, s: 'done', cd: -104 }, { d: -62, s: 'done', cd: -70 }, { d: -20, s: 'done', cd: -33 },
+           { d: 12, s: 'todo' }, { d: 40, s: 'todo' }, { d: 78, s: 'todo' }]
+    },
+    /* 作品已送過審（wr-1002 審核中，首次送件 2026-07-28＝今天 -20 天）＝成片存在：
+       preprod～mix 五顆完成、完成日全部早於首次送件日，只留支持者交付 todo
+       （2026-08-19 盤查 A13 補——原本沒有變體、走 cursor 2 會說片還沒剪完）。 */
+    'pirate-queen-s2': {
+      ms: [{ d: -160, s: 'done', cd: -160 }, { d: -124, s: 'done', cd: -126 }, { d: -90, s: 'done', cd: -95 },
+           { d: -58, s: 'done', cd: -58 }, { d: -26, s: 'done', cd: -30 }, { d: 28, s: 'todo' }]
     },
     /* 里程碑都沒有預計日期：沒有可倒數的對象，今天那一格改成提示句。 */
     'nick-lwh-tour': {
-      ms: [{ d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' }]
+      ms: [{ d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' },
+           { d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' }]
     },
     'miujie-merch-s2': {
-      ms: [{ d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' }]
+      ms: [{ d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' },
+           { d: null, s: 'todo' }, { d: null, s: 'todo' }, { d: null, s: 'todo' }]
     },
     /* 里程碑全部完成、作品已上線之後仍繼續發文：時間軸不關閉。 */
     'nick-ni-shuo': {
@@ -162,24 +212,82 @@
     return shift(-365);
   }
 
+  /* ── live 項目的里程碑錨（2026-08-19 盤查 A14）───────────────────────────
+     已上線項目的六顆完成日原本以「今天」為錨往回推，與項目自己的年代完全脫鉤：
+     2023 年交付的專輯，里程碑卻完成在 2026 年。改成以**該項目的上映日**為錨——
+     取不到上映日就用共創期迄日（fund.period 的迄日），再取不到才退回今天。
+     六顆從錨往回每 30–60 天一顆、最後一顆（支持者交付）落在錨的隔天（±7 天內）；
+     錨與建立日之間放不下 195 天時等比壓縮（每段至少 1 天），配合既有的
+     「不得早於建立日」夾子，六顆永遠落在建立日與錨之間、單調遞增。 */
+  function parseYmd(s) {
+    var m = String(s || '').match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
+    return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+  }
+  function periodEndOf(project) {
+    /* fund.period 的 zh 形如 '2026/01/05 – 03/05 · 已上線'：迄日與起日同年。 */
+    var s = project && project.fund && project.fund.period && project.fund.period.zh;
+    var m = String(s || '').match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s*–\s*(\d{1,2})\/(\d{1,2})/);
+    return m ? new Date(+m[1], +m[4] - 1, +m[5]) : null;
+  }
+  function liveOffsets(project, born) {
+    var anchor = null;
+    if (window.ztorProjects && window.ztorProjects.releaseDate) {
+      anchor = parseYmd(window.ztorProjects.releaseDate(project));
+    }
+    if (!anchor) anchor = periodEndOf(project);
+    if (!anchor) anchor = today();
+    var GAPS = [50, 42, 38, 34, 31];             /* 第 i 與 i+1 顆之間的天數（30–60） */
+    var span = diffDays(anchor, born) - 1;       /* 建立日到錨之間放得下的天數 */
+    var total = 195;                             /* GAPS 總和 */
+    var scale = (span > 0 && span < total) ? span / total : 1;
+    var offs = [];
+    /* 支持者交付：錨的隔天（±7 內），但不落在未來——已完成的事不能完成在明天
+       （錨退回「今天」的項目才會撞到這個上限）。 */
+    var cur = Math.min(diffDays(anchor, today()) + 1, 0);
+    offs[5] = cur;
+    for (var i = 4; i >= 0; i--) {
+      cur -= Math.max(1, Math.round(GAPS[i] * scale));
+      offs[i] = cur;
+    }
+    return offs;
+  }
+
   function seedFor(project) {
+    var born = createdAtOf(project);
     var cursor = CURSOR[project.status];
     if (cursor == null) cursor = 0;
     var v = VARIANTS[project.id] || {};
     var over = v.ms || null;
+    /* 有變體的項目不受影響（變體優先）；live 且無變體才走上映日錨。 */
+    var anchored = (project.status === 'live' && !over) ? liveOffsets(project, born) : null;
 
     var ms = BLUEPRINT.map(function (b, i) {
-      var o = over ? (over[i] || {}) : {};
-      var status = o.s || (i < cursor ? 'done' : (i === cursor ? 'doing' : 'todo'));
+      /* 變體只覆寫它列到的那幾顆；沒列到的回退到 cursor 推導值。
+         用 `'d' in o` 而不是 `o.d != null` 判斷：`d: null` 是「這顆刻意沒有預計日期」
+         （見 nick-lwh-tour），跟「這顆變體沒提到」是兩件事。BLUEPRINT 加長時，
+         沒跟著加長的變體會走這條回退，而不是整排變成沒有日期的里程碑。 */
+      var o = (over && over[i]) ? over[i] : {};
+      var covered = (over && over[i]) ? true : false;
+      /* 2026-08-18 使用者裁決：里程碑取消「進行中」，只留未開始／已完成兩態。
+         「現在做到哪一顆」由時間軸上「今天」的位置回答——一顆有日期的里程碑，日期還沒到
+         就是還沒到，中間再加一個要創作者手動維護的狀態，多出來的只有維護成本。 */
+      var status = o.s || (i < cursor ? 'done' : 'todo');
       /* 沒有覆寫時，日期由 cursor 推：正在跑的那一顆落在 30 天後，前面的每顆再往前
          60 天。這樣「已完成的在過去、進行中的在未來」永遠成立，不會出現「項目才
-         剛開募、第一顆就已經逾期」這種自打嘴巴的畫面。 */
-      var dd = over ? o.d : (i - cursor) * 60 + 30;
+         剛開募、第一顆就已經逾期」這種自打嘴巴的畫面。
+         live 且無變體改吃上映日錨（anchored，見 liveOffsets），不再以今天為錨。 */
+      var dd = (covered && 'd' in o) ? o.d : anchored ? anchored[i] : (i - cursor) * 60 + 30;
       var date = dd == null ? null : shift(dd);
+      /* 不讓任何一顆落在項目建立之前（2026-08-18）：藍圖擴成六顆之後，往前推的那幾顆
+         有機會早於 projects-store 的 created 日期，軸上就會出現「項目還沒建立，里程碑
+         已經完成了」——時間軸是照真實日期排的，這種資料會直接讀成矛盾。
+         夾住而不是報錯：這是示範資料，夾到建立日當天仍然是合理的畫面。 */
+      if (date && date < born) date = new Date(born.getTime());
       var completedAt = null;
       if (status === 'done') {
         var cd = o.cd != null ? o.cd : dd;
         completedAt = cd == null ? shift(-1, 11) : shift(cd, 11);
+        if (completedAt < born) { completedAt = new Date(born.getTime()); completedAt.setHours(11, 0, 0, 0); }
       }
       return {
         id: uid('ms'),
@@ -197,41 +305,121 @@
        D194 起也排進同一條軸，不再收進公告盒。
        2026-08-18（D197）：掛載的那一顆改成「第一顆已完成的里程碑」。里程碑更新就是
        那顆的完成宣告，發出去等於把它標記完成——所以「未完成的里程碑底下掛著一則已發
-       的更新」這個狀態不可能存在，種子資料不能造出來。全部都未完成時就不掛。 */
+       的更新」這個狀態不可能存在，種子資料不能造出來。全部都未完成時就不掛。
+       ── 2026-08-19（盤查 B1）：文案依家族分三套 ─────────────────────────
+       原本全站共用同一套影視文案，T 恤與卡帶也在講「四十二場戲的分鏡」。現在：
+       - 影視／音樂／其他各一套（1 則里程碑更新＋3 則一般更新），語氣同前。
+       - 里程碑更新只在 firstDone 存在時給——「前期收工」不能發生在一顆里程碑
+         都還沒完成的項目上。
+       - 「通知 N 人」由 fund.backers 生成；沒有支持者數（預購未帶 fund）就不標。
+       - 已取消的項目只留一則終止公告（受眾所有人，講退款進度）；「入選影展」這種
+         還在推進的種子不該出現在已終止的項目上。
+       發布時間沿用原本的相對天數（-38／-18／-30），最早一則 2026-07-10，仍晚於
+       所有非草稿項目的建立日；最後一則刻意落在最新已完成里程碑之後，保住
+       「兩顆里程碑之間整段收合」的分組示範（2026-08-18 的那條理由不變）。 */
     var firstDone = null;
     ms.forEach(function (m) { if (!firstDone && m.status === 'done') firstDone = m; });
-    var up = [
-      {
-        id: uid('up'),
-        title: { en: 'Pre-production is done — here is the shot list', zh: '前期收工，附上分鏡表' },
-        body: { en: 'Storyboards for all 42 scenes are attached. Shooting starts on Monday.', zh: '四十二場戲的分鏡都在附件裡，週一開拍。' },
-        audience: 'pd-edit.update.aud-backers',
-        milestoneId: firstDone ? firstDone.id : null,
-        publishedAt: (firstDone && firstDone.completedAt) || shift(-30, 15),
-        notified: { en: '134 notified', zh: '通知 134 人' },
-        kind: 'general'
+
+    var fam = (window.ztorProjects && window.ztorProjects.family)
+      ? window.ztorProjects.family(project.cat)
+      : (project.family || 'other');
+    var backers = project.fund && project.fund.backers;
+    var notified = backers ? { en: backers + ' notified', zh: '通知 ' + backers + ' 人' } : null;
+
+    var COPY = {
+      film: {
+        ms: { title: { en: 'Pre-production is done — here is the shot list', zh: '前期收工，附上分鏡表' },
+              body:  { en: 'Storyboards for all 42 scenes are attached. Shooting starts on Monday.', zh: '四十二場戲的分鏡都在附件裡，週一開拍。' } },
+        a:  { title: { en: 'The film festival picked us up', zh: '入選影展的消息' },
+              body:  { en: 'We are in the competition section this autumn — nothing to do with the shoot, but worth telling you.', zh: '今年秋天入選競賽單元。跟拍攝進度無關，但值得跟大家說一聲。' } },
+        b:  { title: { en: 'Location scouting notes', zh: '場勘紀錄' },
+              body:  { en: 'Three streets, one rooftop, and the tea house on the corner. Photos inside.', zh: '三條街、一個天台，還有轉角那間茶餐廳。照片在裡面。' } },
+        c:  { title: { en: 'The edit suite is booked for six weeks', zh: '剪接室訂了六個星期' },
+              body:  { en: 'Assembly starts Monday. Expect the rough cut a lot sooner than the schedule says.', zh: '下週一開始順片。初剪應該會比表定早不少。' } }
       },
-      {
+      music: {
+        ms: { title: { en: 'Tracking is done — a 30-second rough is attached', zh: '錄音收工，附上三十秒試聽' },
+              body:  { en: 'Every track is recorded. Here is an unmixed rough so you can hear where it is going.', zh: '所有歌都錄完了，附一段還沒混音的版本，先聽個感覺。' } },
+        a:  { title: { en: 'Notes from the cover shoot', zh: '封面拍攝側記' },
+              body:  { en: 'A whole afternoon on a rooftop. Three finalists — photos inside.', zh: '在天台拍了一整個下午，選出三張候選，照片在裡面。' } },
+        b:  { title: { en: 'The handwritten lyrics', zh: '歌詞手稿公開' },
+              body:  { en: 'The scrapped drafts are in there too — you can see how the songs grew.', zh: '連寫壞的版本一起放上來，看得到這些歌是怎麼長出來的。' } },
+        c:  { title: { en: 'The mix room is booked for three weeks', zh: '混音棚訂了三個星期' },
+              body:  { en: 'We start Monday — slightly ahead of schedule.', zh: '下週一進棚，進度比表定快一點。' } }
+      },
+      other: {
+        ms: { title: { en: 'Groundwork is done', zh: '前置作業收工' },
+              body:  { en: 'Everything that needed locking is locked. Now we run the plan.', zh: '該談的都談定了，接下來照表執行。' } },
+        a:  { title: { en: 'A first look at the design', zh: '先看一眼設計圖' },
+              body:  { en: 'We picked one of two directions — the artwork is inside.', zh: '兩個方向選了一個，圖在裡面，之後就照這版走。' } },
+        b:  { title: { en: 'The partner is confirmed', zh: '合作夥伴定了' },
+              body:  { en: 'Three quotes later, we went with the one that delivers on time.', zh: '比了三家，選了交期最穩的那一家。' } },
+        c:  { title: { en: 'The home-stretch schedule', zh: '最後階段的時程表' },
+              body:  { en: 'The next three weeks are mapped out — we should land ahead of schedule.', zh: '接下來三週的安排都在裡面，會比表定早一點完成。' } }
+      }
+    };
+    var copy = COPY[fam] || COPY.other;
+    function txt(t) { return { en: t.en, zh: t.zh }; }
+
+    var up = [];
+    if (project.status === 'cancelled') {
+      up.push({
         id: uid('up'),
-        title: { en: 'The film festival picked us up', zh: '入選影展的消息' },
-        body: { en: 'We are in the competition section this autumn — nothing to do with the shoot, but worth telling you.', zh: '今年秋天入選競賽單元。跟拍攝進度無關，但值得跟大家說一聲。' },
+        title: { en: 'This project has ended — where refunds stand', zh: '項目已終止，退款進度說明' },
+        body: { en: 'All pledges have been refunded to the original payment method — allow three to seven business days. Get in touch if yours has not landed.', zh: '所有款項已原路退回，依付款方式約三到七個工作天入帳；沒收到請與我們聯絡。' },
+        audience: 'pd-edit.update.aud-everyone',
+        milestoneId: null,
+        publishedAt: shift(-30, 10),
+        notified: null,
+        kind: 'general'
+      });
+    } else {
+      if (firstDone) {
+        up.push({
+          id: uid('up'),
+          title: txt(copy.ms.title),
+          body: txt(copy.ms.body),
+          audience: 'pd-edit.update.aud-backers',
+          milestoneId: firstDone.id,
+          publishedAt: firstDone.completedAt || shift(-30, 15),
+          notified: notified,
+          kind: 'general'
+        });
+      }
+      up.push({
+        id: uid('up'),
+        title: txt(copy.a.title),
+        body: txt(copy.a.body),
         audience: 'pd-edit.update.aud-everyone',
         milestoneId: null,
         publishedAt: shift(-38, 10),
         notified: null,
         kind: 'general'
-      },
-      {
+      });
+      up.push({
         id: uid('up'),
-        title: { en: 'Location scouting in Sham Shui Po', zh: '深水埗場勘紀錄' },
-        body: { en: 'Three streets, one rooftop, and the tea house on the corner. Photos inside.', zh: '三條街、一個天台，還有轉角那間茶餐廳。照片在裡面。' },
+        title: txt(copy.b.title),
+        body: txt(copy.b.body),
         audience: 'pd-edit.update.aud-everyone',
         milestoneId: null,
         publishedAt: shift(-38, 16),
         notified: null,
         kind: 'general'
-      }
-    ];
+      });
+      /* 這一則刻意落在最新的那顆已完成里程碑「之後」（2026-08-18）：一般更新自本日起
+         按「兩顆里程碑之間」整段收合，只有一段的話看不出分組規則在做什麼。有了這一則，
+         軸上就有兩段——最上面那一段（還沒有下一顆里程碑封口）與夾在兩顆之間的那一段。 */
+      up.push({
+        id: uid('up'),
+        title: txt(copy.c.title),
+        body: txt(copy.c.body),
+        audience: 'pd-edit.update.aud-backers',
+        milestoneId: null,
+        publishedAt: shift(-18, 14),
+        notified: null,
+        kind: 'general'
+      });
+    }
 
     (v.posts || []).forEach(function (p) {
       up.push({
@@ -268,10 +456,12 @@
     updates: function (project) { return bucket(project).up.slice(); },
     createdAt: function (project) { return bucket(project).createdAt; },
 
-    /* 掛載欄位的預設值（§2.2.10）：目前狀態為「進行中」的那一顆；沒有就「不掛」。 */
+    /* 掛載欄位的預設值（§2.2.10）：最早的那一顆未完成里程碑；全部完成就「不掛」。
+       2026-08-18：原本取「狀態為進行中」的那一顆，該狀態同日撤除。改成取最早的未完成，
+       結果在多數情況下一樣（藍圖是有序的），而且不必靠人手動維護一個中間狀態。 */
     defaultMilestoneId: function (project) {
       var ms = bucket(project).ms;
-      for (var i = 0; i < ms.length; i++) if (ms[i].status === 'doing') return ms[i].id;
+      for (var i = 0; i < ms.length; i++) if (ms[i].status !== 'done') return ms[i].id;
       return '';
     },
 

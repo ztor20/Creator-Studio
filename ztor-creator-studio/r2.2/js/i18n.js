@@ -526,7 +526,12 @@
     'ops.revenue-delta':      { en: '+12.6% vs last week',   zh: '較上週 +12.6%' },
     'ops.revenue-meta':       { en: 'Updated 2h ago · view in Earnings', zh: '2 小時前更新 · 查看 Earnings' },
     'ops.pending':            { en: 'Pending actions',       zh: '待處理事項' },
-    'ops.pending-meta':       { en: '3 open · 1 in progress', zh: '3 件待處理 · 1 件處理中' },
+    'dash.tab.ongoing':       { en: 'Ongoing',  zh: '進行中' },
+    'dash.tab.recent':        { en: 'Recent',   zh: '最近發生' },
+    'ops.revenue-since':      { en: 'Updated 2h ago', zh: '2 小時前更新' },
+    'ops.revenue-link':       { en: 'View in Earnings', zh: '查看 Earnings' },
+    'ops.fans-meta':          { en: 'Inner Circle 12% · Superfan 28%', zh: 'Inner Circle 12% · 超級粉絲 28%' },
+    'ops.pending-meta':       { en: '{open} open · {prog} in progress', zh: '{open} 件待處理 · {prog} 件處理中' },
     'ops.projects':           { en: 'Active projects',       zh: '進行中項目' },
     'ops.projects-meta':      { en: 'Live · co-create · scheduled', zh: '進行中 · 共創 · 準備中' },
     /* F2 tile popups（2026-07-27）— in-place 明細彈窗，每項自帶 CTA */
@@ -599,9 +604,9 @@
     'alert.stock.src':        { en: 'From · E-Shop',          zh: '來自 · 電子商店' },
     'alert.stock.cta':        { en: 'Restock',                zh: '補貨' },
     'alert.event.title':      { en: 'Event pre-flight incomplete', zh: '活動檢核尚未完成' },
-    /* 2026-07-27：活動名對齊落地頁——event-detail.html 就是 Kowloon Café 10th Anniv.（Apr 12），
-       原文案的「Pirate Queen zine · 14 Jun」在任何 persona 資料裡都不存在。 */
-    'alert.event.desc':       { en: '<em>Kowloon Café 10th Anniv. · Apr 12</em> still needs refund policy and on-site staffing confirmed.', zh: '「<em>九龍冰室 十週年 · Apr 12</em>」尚未確認退款規則與現場人力配置。' },
+    /* 2026-08-19：活動名再次對齊落地頁——卡片改顯式連 realive-chongqing（store 真實活動），
+       舊文案的 Kowloon Café（Apr 12）已不在 store，落地頁也不再顯示它。 */
+    'alert.event.desc':       { en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs refund policy and on-site staffing confirmed.', zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認退款規則與現場人力配置。' },
     'alert.event.src':        { en: 'From · Events',          zh: '來自 · 活動' },
     'alert.event.cta':        { en: 'Complete checklist',     zh: '完成檢核' },
     'alert.payout-block.title':{ en: 'Payouts on hold — tax form required', zh: '提款已暫停 — 需補稅務表單' },
@@ -1165,8 +1170,12 @@
     'dash.progress.row2.prog': { en: '$8,420 / $15,000', zh: '$8,420 / $15,000' },
     'dash.progress.row2.due': { en: '21 days left', zh: '剩 21 天' },
     'dash.progress.row3.cat': { en: 'In-person event', zh: '實體活動' },
-    'dash.progress.row3.prog': { en: '84 / 200 tickets', zh: '84 / 200 張票' },
-    'dash.progress.row3.due': { en: 'Apr 12', zh: '4/12' },
+    /* 2026-08-19 修正：另一 agent 把這張卡的目標活動從查無此活動的假資料改指向 store
+       真實存在的 realive-chongqing（見 js/components.js:412 附近的改動註解），
+       prog／due 兩鍵要跟著換成該筆活動的真實已售／容量與日期，否則卡片文字與 go 連結
+       指向的活動兜不起來。 */
+    'dash.progress.row3.prog': { en: '84 / 120 tickets', zh: '84 / 120 張票' },
+    'dash.progress.row3.due': { en: 'Oct 25', zh: '10/25' },
     'dash.progress.row4.cat': { en: 'Release project', zh: '上線項目' },
     'dash.progress.row4.prog': { en: '—', zh: '—' },
     'dash.progress.row4.due': { en: 'scheduled to launch Dec 01', zh: '12/01 上線' },
@@ -1197,8 +1206,10 @@
     'dash.progress.row1.meta': { en: 'Project · Projects · 62 / 100 supporters · ends Dec 14', zh: '項目 · Projects · 62 / 100 位支持者 · 12/14 截止' },
     'dash.progress.row2.title':{ en: '<em>什麼都不必說</em>',           zh: '<em>什麼都不必說</em>' },
     'dash.progress.row2.meta': { en: 'Project · Projects · $8,420 / $15,000 · 21 days left', zh: '項目 · Projects · $8,420 / $15,000 · 剩 21 天' },
-    'dash.progress.row3.title':{ en: '<em>REALIVE (R2)</em> concert',            zh: '<em>REALIVE (R2)</em> 特仕版演唱會' },
-    'dash.progress.row3.meta': { en: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei', zh: '活動 · Events · 4/12 · 84 / 200 張票 · 台北' },
+    /* 2026-08-19 同上：標題原本掛的是「REALIVE (R2)」品牌（臺北小巨蛋特仕版），
+       跟改指向的重慶站是不同場次，一併換成這一筆自己的名稱與城市。 */
+    'dash.progress.row3.title':{ en: '<em>REALIVE World Tour</em> — Chongqing', zh: '<em>REALIVE 世界巡迴</em> — 重慶場' },
+    'dash.progress.row3.meta': { en: 'Event · Events · Oct 25 · 84 / 120 tickets · Chongqing', zh: '活動 · Events · 10/25 · 84 / 120 張票 · 重慶' },
     'dash.progress.row4.title':{ en: '<em>FLAMES</em>',            zh: '<em>FLAMES</em>' },
     'dash.progress.row4.meta': { en: 'Project · Projects · scheduled to launch Dec 01',    zh: '項目 · Projects · 12/01 上線' },
     'dash.progress.row5.title':{ en: '<em>帥到分手</em> photo book',   zh: '<em>帥到分手</em> 影像故事集' },
@@ -2622,6 +2633,8 @@
     'events.col.tickets':      { en: 'Tickets',                             zh: '票券' },
     'events.col.revenue':      { en: 'Revenue',                             zh: '收入' },
     'events.col.status':       { en: 'Status',                              zh: '狀態' },
+    'events.view':          { en: 'Open event page',                   zh: '查看活動頁' },
+    'events.view.series':   { en: 'Open series page',                  zh: '查看系列頁' },
     'events.edit':             { en: 'Edit',                                zh: '編輯' },
     'events.duplicate':        { en: 'Duplicate',                           zh: '複製' },
     'events.delete':           { en: 'Delete',                              zh: '刪除' },
@@ -2641,8 +2654,33 @@
     /* 第二場共看派對：一同回顧既有演出實錄（共看內容＝該場 live house 巡演） */
     'events.rowWP2.title':     { en: 'Live house tour — Watch-back party', zh: 'Live House 巡演 — 線上一同回顧' },
     'events.rowWP2.meta':      { en: 'Watch Party',                        zh: '共看派對' },
-    'events.rowWP2.datetime':  { en: 'Aug 08, 2026 · 9:00 PM',            zh: '2026/8/8 · 晚上 9:00' },
+    /* 2026-08-19 修正：events.html 該列的日期改到 9/16（另一 agent 的改動，見該檔第 389 行
+       註解），這支字典檔當時不在改動範圍內、日期文字沒有跟著換，造成 fallback 與字典值不同步。 */
+    'events.rowWP2.datetime':  { en: 'Sep 16, 2026 · 9:00 PM',            zh: '2026/9/16 · 晚上 9:00' },
     'events.rowWP2.venue':     { en: 'Online · Tour recording',            zh: '線上 · 巡演實錄' },
+
+    /* 2026-08-19 新增：另一 agent 在 events.html 開了「REALIVE World Tour」這組（母列＋
+       R2 臺北小巨蛋／重慶／下一站三筆子場），對應 store 的 series.id='realive-world-tour'
+       （realive-r2-arena／realive-chongqing／next-leg-draft 三筆，見 events-store.js）。
+       這支字典當時不在改動範圍內，四組 key 完全缺漏，data-i18n 只能顯示英文 fallback。
+       zh 譯法沿用站上既有的「REALIVE 世界巡迴」「第 N 場 / 共 M 場」「重慶場」等慣例
+       （見 events.g.realive-sea.*／events.r.sdfs-tour-taipei.*／PERSONA_DICT.nick 的
+       events.row3/row6 既有翻譯）。 */
+    'events.g.realive-world-tour.title':    { en: 'REALIVE World Tour', zh: 'REALIVE 世界巡迴' },
+    'events.g.realive-world-tour.meta':     { en: 'Concert · 3 dates', zh: '演唱會 · 共 3 場' },
+    'events.g.realive-world-tour.datetime': { en: '2025/05/23 – 2026/10/25', zh: '2025/05/23 – 2026/10/25' },
+    'events.g.realive-world-tour.venue':    { en: '2 venues', zh: '2 個場地' },
+    'events.r.realive-r2-arena.title':      { en: 'REALIVE (R2) Special Ed. — Taipei Arena', zh: 'REALIVE (R2) 特仕版 — 臺北小巨蛋' },
+    'events.r.realive-r2-arena.meta':       { en: 'Date 1 of 3', zh: '第 1 場 / 共 3 場' },
+    'events.r.realive-r2-arena.datetime':   { en: 'May 23, 2025 · 8:00 PM', zh: '2025/5/23 · 晚上 8:00' },
+    'events.r.realive-r2-arena.venue':      { en: 'Taipei Arena · Taipei', zh: '臺北小巨蛋 · 臺北' },
+    'events.r.realive-chongqing.title':     { en: 'REALIVE World Tour (China) — Chongqing', zh: 'REALIVE 世界巡迴 · 中國段 — 重慶場' },
+    'events.r.realive-chongqing.meta':      { en: 'Date 2 of 3', zh: '第 2 場 / 共 3 場' },
+    'events.r.realive-chongqing.datetime':  { en: 'Oct 25, 2026 · 8:00 PM', zh: '2026/10/25 · 晚上 8:00' },
+    'events.r.realive-chongqing.venue':     { en: 'Feisheng Livehouse · Chongqing', zh: '蜚聲 LIVEHOUSE · 重慶' },
+    'events.r.next-leg-draft.title':        { en: 'REALIVE World Tour — Next leg (planning)', zh: 'REALIVE 世界巡迴 — 下一站（規劃中）' },
+    'events.r.next-leg-draft.meta':         { en: 'Date 3 of 3', zh: '第 3 場 / 共 3 場' },
+    'events.r.next-leg-draft.datetime':     { en: 'Date TBD', zh: '日期未定' },
     'events.row2.title':       { en: 'Kowloon Café 10th Anniv. — Hualien encore',      zh: '九龍冰室 十週年 — 花蓮加場' },
     'events.row2.meta':        { en: 'Concert · Series 2/3',                zh: '演出 · 系列 2/3' },
     'events.row2.datetime':    { en: 'Oct 19, 2026 · 7:30 PM',             zh: '2026/10/19 · 晚上 7:30' },
@@ -5294,6 +5332,7 @@
 
     /* ── D111 · 手機 scanner scanner.html（sc.*）── */
     'sc.brand':         { en: 'ztor scanner',  zh: 'ztor scanner' },
+    'sc.brand.mark':    { en: 'Scanner',       zh: 'Scanner' },
     'sc.session':       { en: 'Taipei signing — pickup', zh: '台北簽書會取貨' },
     'sc.pw.title':      { en: 'Enter scanner password', zh: '輸入 scanner 密碼' },
     'sc.pw.sub':        { en: 'Ask the organizer for this session’s password. Demo: enter any text.', zh: '向主辦者取得此場次密碼。示範：輸入任意文字。' },
@@ -5325,6 +5364,53 @@
     'sc.st.doneat':     { en: 'Redeemed 13:58', zh: '13:58 已核銷' },
     'sc.note.dup':      { en: 'This QR was already redeemed. Ask a creator to reverse it before redeeming again.', zh: '此 QR 已核銷過。需再次核銷請先請創作者反轉。' },
     'sc.note.notin':    { en: 'This QR is valid but not added to this session. Add the item in Pickup management or use the right session.', zh: '此 QR 有效但未加入本場次。請在取貨管理加入該項目，或使用正確場次。' },
+    /* 2026-08-19 掃碼流程重規劃（camera-first＋bottom sheet）新增 */
+    'sc.gate.place':    { en: 'Huashan Creative Park · Hall 4B', zh: '華山文創園區 中4B' },
+    'sc.gate.time':     { en: 'Today 13:00 – 18:00', zh: '今天 13:00 – 18:00' },
+    'sc.state.live':    { en: 'Live now',       zh: '進行中' },
+    'sc.state.notyet':  { en: 'Not started',    zh: '尚未開始' },
+    'sc.state.ended':   { en: 'Ended',          zh: '已結束' },
+    'sc.pw.staff':      { en: 'Staff name',     zh: '工作人員標示' },
+    'sc.pw.staff.opt':  { en: 'Optional',       zh: '選填' },
+    'sc.pw.staff.hint': { en: 'Recorded on every redemption for later reconciliation.', zh: '會記在每筆核銷紀錄上，方便事後對帳。' },
+    'sc.lock.title':    { en: 'Temporarily locked', zh: '已暫時鎖定' },
+    'sc.lock.body':     { en: '5 wrong attempts — this device is locked for 10 minutes. The creator can still change the password in the studio. (Demo: 10 seconds.)', zh: '密碼連續錯誤 5 次，此裝置暫停輸入 10 分鐘；創作者仍可在後台修改密碼。（demo 以 10 秒代替）' },
+    'sc.cnt.pending':   { en: 'Pending',        zh: '待核銷' },
+    'sc.cnt.done':      { en: 'Redeemed',       zh: '已核銷' },
+    'sc.res.confirmall':{ en: 'Confirm — redeem everything', zh: '確認核銷，一次領取全部' },
+    'sc.res.refund':    { en: 'Order cancelled / refunded', zh: '訂單已取消／退款' },
+    'sc.note.refund':   { en: 'This entitlement is no longer valid. If the buyer disputes it, point them to the creator.', zh: '此資格已失效；如有爭議請買家聯繫創作者。' },
+    'sc.last':          { en: 'Last redeemed',  zh: '最近核銷時間' },
+    'sc.notin.item':    { en: 'Poster print A2', zh: 'A2 海報印刷' },
+    'sc.flash.done':    { en: 'Redeemed',       zh: '已完成核銷' },
+    'sc.flash.sub':     { en: 'Roster and redemption log updated', zh: '已回寫名單與核銷紀錄' },
+    'sc.flash.held':    { en: 'Result held',    zh: '已保留結果' },
+    'sc.flash.heldsub': { en: 'Offline — it only counts once the server confirms it', zh: '離線中，送達伺服器才算核銷完成' },
+    'sc.flash.sent':    { en: 'Held results sent', zh: '已送出離線保留的結果' },
+    'sc.flash.sentsub': { en: 'The server sync result is authoritative', zh: '以 server 同步結果為準' },
+    'sc.block.notyet.t':{ en: 'Session hasn’t started', zh: '場次尚未開始' },
+    'sc.block.notyet.b':{ en: 'Starts at 13:00. To open earlier, adjust the start time in session detail.', zh: '開始時間 13:00；要提早開場，請創作者在場次詳情調整開始時間。' },
+    'sc.block.ended.t': { en: 'Session has ended', zh: '場次已結束' },
+    'sc.block.ended.b': { en: 'Ended at 18:00. Unredeemed entitlements stay pending; extend the end time in session detail to keep scanning.', zh: '結束時間 18:00 已過；未領取的資格維持待核銷，要延長請創作者在場次詳情調整結束時間。' },
+    'sc.off.banner':    { en: 'Offline — results are held, not redeemed', zh: '目前離線——結果先保留，不算核銷' },
+    'sc.off.queue':     { en: 'To send',        zh: '待送出' },
+    'sc.manual.title':  { en: 'Enter a code',   zh: '手動輸入代碼' },
+    'sc.manual.ph':     { en: 'QR code, ticket ID or pickup code', zh: 'QR 代碼、票號或取貨代碼' },
+    'sc.manual.hint':   { en: 'For when the camera can’t scan or the buyer has no QR.', zh: '相機掃不到或買家出示不了 QR 時使用。' },
+    'sc.manual.go':     { en: 'Check code',     zh: '驗證代碼' },
+    'sc.manual.x':      { en: 'Cancel',         zh: '取消' },
+    'sc.roster.tap':    { en: 'Tap a row to fill its code into manual entry.', zh: '點名單列可把代碼帶入手動輸入。' },
+    'sc.items.hint':    { en: 'To change what this session can redeem, edit the session in the studio.', zh: '要調整可核銷範圍，請回場次詳情的編輯入口。' },
+    'sc.demo.title':    { en: 'Demo scenarios', zh: 'Demo 情境' },
+    'sc.demo.ok':       { en: 'Scan: success',  zh: '模擬掃描：成功' },
+    'sc.demo.dup':      { en: 'Duplicate scan', zh: '重複掃描' },
+    'sc.demo.notin':    { en: 'Not in this session', zh: '不屬於此場次' },
+    'sc.demo.refund':   { en: 'Cancelled / refunded', zh: '已取消／退款' },
+    'sc.demo.offline':  { en: 'Toggle offline', zh: '切換離線' },
+    'sc.demo.time':     { en: 'Cycle session time', zh: '切換場次時間狀態' },
+    'sc.demo.lock':     { en: 'Password lockout', zh: '模擬密碼鎖定' },
+    'sc.demo.reset':    { en: 'Reset demo',     zh: '重設 demo' },
+    'sc.demo.note':     { en: 'Prototype-only controls — the real page has no such rail.', zh: '原型專用控制列——正式產品沒有這一欄。' },
 
     'od.item1.name':  { en: 'Pirate Queen zine vol. 02', zh: '海上霸姬 幕後寫真誌 vol.02' },
     'od.item2.name':  { en: 'Kowloon After Dark tee (M)', zh: '九龍夜行 紀念 T 恤 (M)' },
@@ -5762,6 +5848,7 @@
     'pd-ov.kpi.days':{en: ' days',zh: ' 天'},
     'pd-ov.kpi.unit':{en: 'Unit price',zh: '單價'},
     'pd-ov.kpi.payout-meta':{en: 'First of three tranches released',zh: '三期撥款已撥第一期'},
+    'pd-ov.kpi.payout-meta-live':{en: 'Two of three tranches released — final settling',zh: '三期已撥兩期，尾款結算中'},
     'pd-ov.kpi.revenue':{en: 'Lifetime revenue',zh: '累計收入'},
     'pd-ov.kpi.revenue-meta':{en: 'Earnings figure · not recomputed',zh: '引用收入管理口徑'},
     'pd-ov.kpi.views':{en: 'Views',zh: '觀看次數'},
@@ -5834,8 +5921,15 @@
        重點面板改成 KPI 列／追蹤條／終止卡三態後沒有那張卡了）、pd-ov.jump.title（捷徑卡，
        捷徑由分頁列承擔）。全站零消費才刪。 */
     'pd-ov.prog.title':{en: 'Progress',zh: '進度摘要'},
+    'pd-ov.prog.fresh':{en: 'Last post {when}',zh: '上次發文是{when}'},
+    'pd-ov.prog.fresh-today':{en: 'today',zh: '今天'},
+    'pd-ov.prog.fresh-days':{en: '{n} days ago',zh: ' {n} 天前'},
+    'pd-ov.prog.fresh-none':{en: 'You have not posted since launch.',zh: '上線後還沒發過更新。'},
+    'pd.share':{en: 'Share project',zh: '分享項目'},
+    'pd.share.copied':{en: 'Project link copied',zh: '已複製項目連結'},
     'pd-ov.prog.go':{en: 'Go to progress',zh: '前往進度'},
     'pd-ov.prog.all-done':{en: 'All milestones done',zh: '里程碑全部完成'},
+    'pd-ov.prog.done-of':{en: '{d} of {t} done',zh: '已完成 {d} / {t}'},
     'pd-ov.prog.last-update':{en: 'Latest update',zh: '最近更新'},
     'pd-ov.prog.no-update':{en: 'None yet',zh: '還沒發過'},
     'pd-ov.bk.orders':{en: 'Pre-orders',zh: '預購份數'},
@@ -5863,6 +5957,8 @@
        意思由位置給了。 */
     'pd-prog.ms.backers': { en: 'Backers only', zh: '支持者可見' },
     'pd-prog.ms.todo':{en: 'Not started',zh: '未開始'},
+    /* 2026-08-18 撤除（墓碑）：里程碑的「進行中」狀態由使用者裁決取消，只留未開始／已完成。
+       字串留著不刪——完成作品那顆系統節點的審核中仍走 --doing 的視覺，之後若要文字版可直接取用。 */
     'pd-prog.ms.doing':{en: 'In progress',zh: '進行中'},
     'pd-prog.ms.done':{en: 'Done',zh: '已完成'},
     'pd-prog.ms.overdue':{en: '{n} days late',zh: '逾期 {n} 天'},
@@ -5948,8 +6044,11 @@
     'pd-edit.update.ms-none':{en: 'Do not attach',zh: '不掛里程碑'},
 
     'pd-setup.schedule.title':{en: 'Dates and refunds',zh: '排程與退款'},
+    'pd-setup.schedule.tbd':{en: 'Not set yet',zh: '未定'},
+    'pd-bundle.untitled':{en: 'Untitled plan',zh: '未命名方案'},
     /* 建立項目流程 · 續填草稿的橫幅（2026-08-17，D193）。 */
     'cpp.resume.note':{en: 'Picking up the draft “{name}” where you left off. Finishing here publishes this project — it does not create a second one.',zh: '接著把草稿「{name}」填完。在這裡完成的是同一個項目，不會多開一個。'},
+    /* 2026-08-19 起無消費者（A8：收單時程表改讀各項目自己的 fundFrom／period）——棄用，留檔備查 */
     'project-detail.tl.published-val':{en: 'May 18, 2026',zh: '2026/05/18'},
 
     /* ── 表現 Performance（2026-07-28）· project-detail 分頁 ＋ Dashboard 兩張卡
@@ -6026,6 +6125,7 @@
     'project-detail.tab.preorder':{en: 'Pre-order progress',zh: '預購進度'},
     'project-detail.tl.pre-open':{en: 'Pre-order opened',zh: '預購開始'},
     'project-detail.tl.pre-deadline':{en: 'Pre-order deadline',zh: '預購截止'},
+    /* 2026-08-19 起無消費者（A8）——棄用，留檔備查 */
     'project-detail.tl.pre-deadline-val':{en: 'Jul 06, 2026 · 9 days left',zh: '2026/07/06 · 剩 9 天'},
     /* 2026-08-18 撤除（墓碑）：'project-detail.items.*' 一族（作品進度清單的標題、
        逐集名稱與狀態、口徑註腳）。那張清單隨 deliverablesHTML() 一起退場——內容項目的
@@ -6054,12 +6154,14 @@
     'pd-pre.kpi.min':{en: 'Minimum units',zh: '最少預購數'},
     'pd-pre.kpi.min-meta':{en: 'Below the minimum = full refund',zh: '未達量＝全額退款'},
     'pd-pre.kpi.deadline':{en: 'Pre-order deadline',zh: '預購截止'},
+    /* 2026-08-19 起無消費者（A7：倒數改讀 list.left）——棄用，留檔備查 */
     'pd-pre.kpi.deadline-meta':{en: '9 days left',zh: '剩 9 天'},
     'pd-pre.progress.title':{en: 'Order progress',zh: '訂購進度'},
-    'pd-pre.unit':{en: 'Unit price $28',zh: '單價 $28'},
+    'pd-pre.unit':{en: 'Unit price {p}',zh: '單價 {p}'},
     'pd-pre.progress.goal':{en: 'Reaches the minimum to go into production',zh: '達最少預購數才進入生產'},
+    /* 2026-08-19 起無消費者（A7：倒數改讀 list.left）——棄用，留檔備查 */
     'pd-pre.progress.left':{en: '9 days left',zh: '剩 9 天'},
-    'pd-pre.progress.delivery':{en: 'Expected delivery Oct 2026',zh: '預期交付 2026/10'},
+    'pd-pre.progress.delivery':{en: 'Expected delivery {d}',zh: '預期交付 {d}'},
     'pd-pre.progress.note':{en: 'Cards verified on order · charged only when the minimum units are met; below it, all orders are refunded in full.',zh: '下單僅驗證卡片 · 達最少預購數才實際扣款；未達量則全部訂單全額退款。'},
     'pd-pre.refund.title':{en: 'If the minimum is missed',zh: '未達量時'},
     'pd-pre.refund.body':{en: '<strong>Full refund guaranteed.</strong> If pre-orders don\'t reach 100 by the deadline, every order is refunded in full. Buyers are only charged once the minimum is met.',zh: '<strong>保證全額退款。</strong> 若預購到截止未達 100 筆，每筆訂單全額退款；達量才向買家扣款。'},
@@ -6136,13 +6238,17 @@
     'pd-cofund.kpi.people':{en: 'Backers',zh: '已參與人數'},
     'pd-cofund.kpi.people-meta':{en: 'All charge states included',zh: '含所有扣款狀態的支持登記'},
     'pd-cofund.kpi.plans':{en: 'Support plans',zh: '支持方案'},
+    /* 2026-08-19 起無消費者（A7：方案名改讀方案編輯器）——棄用，留檔備查 */
     'pd-cofund.kpi.plans-meta':{en: 'Digital · Physical + digital · Premium',zh: '數位版 · 實體＋數位版 · 尊享版'},
-    'pd-cofund.kpi.live':{en: 'Live since',zh: '上架日期'},
-    'pd-cofund.kpi.live-meta':{en: 'Open to view',zh: '已開放觀看'},
+    'pd-cofund.kpi.live':{en: 'Campaign start',zh: '開始收單'},
+    'pd-cofund.kpi.live-meta':{en: 'Backing open since this date',zh: '自此日起開放支持'},
+    /* 下四把 2026-08-19 起無消費者（A7：共創金額卡改讀 fund.raised／goal）——棄用，留檔備查 */
     'pd-cofund.payable':{en: '/ payable USD 9,000',zh: '／ 應撥 USD 9,000'},
     'pd-cofund.collected':{en: 'Collected · after 8.4% + HKD$2.40 fees',zh: '已收取 · 扣 8.4% + HKD$2.40 系統費用後'},
     'pd-cofund.pledged':{en: 'Pledged USD 10,000',zh: '支持總金額 USD 10,000'},
     'pd-cofund.goal':{en: 'Goal USD 10,000',zh: '計畫總金額（目標）USD 10,000'},
+    'pd-cofund.goal-of':{en: '/ goal {g}',zh: '／ 目標 {g}'},
+    'pd-cofund.payable-note':{en: '≈ {amt} payable after 8.4% + HKD$2.40 fees',zh: '扣 8.4% + HKD$2.40 系統費用後，可撥付約 {amt}'},
     'pd-cofund.col.pct':{en: 'Filled',zh: '達成率'},
     'pd-cofund.charged':{en: 'Charged',zh: '已扣款'},
     'pd-cofund.refunded':{en: 'Refunded',zh: '已退款'},
@@ -6246,6 +6352,7 @@
     'project-detail.tl.created':{en: 'Draft created',zh: '建立草稿'},
     'project-detail.tl.published':{en: 'Co-creation published',zh: '共創發布'},
     'project-detail.tl.deadline':{en: 'Co-creation deadline',zh: '共創截止'},
+    /* 2026-08-19 起無消費者（A8）——棄用，留檔備查 */
     'project-detail.tl.deadline-val':{en: 'Jul 06, 2026 · 21 days left',zh: '2026/07/06 · 剩 21 天'},
     'project-detail.refund.label':{en: 'Auto full refund if goal missed',zh: '未達標時自動全額退款'},
     'project-detail.refund.hint':{en: 'Co-creation-only · refunds follow §7.3.',zh: '僅共創型 · 退款依 §7.3 口徑。'},
@@ -6374,7 +6481,10 @@
     'pd-cf.tranche-tier':{en: 'Budget under 50k',zh: '預算 5 萬以下'},
     'pd-cf.s1-meta':{en: '40% · after goal reached',zh: '40% · 達標後'},
     'pd-cf.s2-meta':{en: '30% · pending submission',zh: '30% · 待遞交'},
-    'pd-cf.s3-meta':{en: '30% · planned Aug 2026',zh: '30% · 計畫 2026/08'},
+    'pd-cf.s3-meta':{en: '30% · planned {m}',zh: '30% · 計畫 {m}'},
+    'pd-cf.s3-meta-nodate':{en: '30% · after delivery',zh: '30% · 交付後撥付'},
+    'pd-cf.s2-meta-live':{en: '30% · released',zh: '30% · 已撥付'},
+    'pd-cf.s3-meta-live':{en: '30% · final settling',zh: '30% · 尾款結算中'},
     'pd-cf.pending-charge':{en: 'Charge on goal',zh: '達標才扣款'},
     'pd-cf.charge-note':{en: 'Cards verified on pledge · charged only when the goal is reached.',zh: '支持時僅驗證卡片 · 達標才實際扣款。'},
 
@@ -7530,6 +7640,18 @@
     'event-detail.footer1': { en: 'Kowloon Café 10th Anniv. — Kowloon After Dark OST · Series 1 of 3', zh: '九龍冰室 十週年 — 九龍夜行 原聲帶 · 系列第 1 場（共 3 場）' },
     'event-detail.footer2': { en: 'Ticket revenue rolls up to Earnings → Event ticketing', zh: '票券營收彙整至收益 → 活動售票' },
 
+    /* 2026-08-19 詳情頁假資料一致性修復（新增 key，逐項對應 event-detail.html 的改動）── */
+    'event-detail.att.sample.empty.title': { en: 'No ticket holders yet', zh: '尚無持票人' },
+    'event-detail.att.sample.more':        { en: 'Showing {n} of {m} — export for the full list', zh: '顯示 {n} / {m} 位——完整名單請匯出' },
+    'event-detail.att.sample.showingall':  { en: 'Showing all {m}', zh: '已顯示全部 {m} 位' },
+    'event-detail.comp.holder.crew':       { en: 'Tour crew ×2', zh: '巡演工作人員 ×2' },
+    'event-detail.comp.holder.venue':      { en: 'Venue staff ×2', zh: '場地人員 ×2' },
+    'event-detail.comp.meta':              { en: '{tier} · $0 · comp', zh: '{tier} · $0 · 招待' },
+    'event-detail.comp.empty.title':       { en: 'No comp tickets issued yet', zh: '尚未核發招待票' },
+    'event-detail.fin.empty.title':        { en: 'No revenue yet', zh: '尚無收入' },
+    'event-detail.ref.summary.title':      { en: 'Refunds issued', zh: '已核發退款' },
+    'event-detail.ref.summary.meta':       { en: '{amt} returned across {n} orders — see Transactions for detail', zh: '共 {n} 筆訂單、退回 {amt}——明細見交易紀錄' },
+
     /* Fan detail (5.1.7 F7 / F9–F12) */
     'fan-detail.crumb.fans': { en: 'Fans', zh: '粉絲' },
     'fan-detail.demo': { en: 'Sample fan data for prototype illustration.', zh: '示例粉絲資料，供原型展示。' },
@@ -8475,7 +8597,10 @@
       'notif.split-confirm.meta': { zh: '「LOVE RAGE HOPE」合作者分潤等待你確認。', en: '“LOVE RAGE HOPE” collaborators are waiting on your split approval.' },
       'alert.ip-rental.desc': { zh: '<em>祝你好命</em> 品牌識別授權於 25 May 到期，請於到期前續租或解除以避免違約。', en: '<em>Wish You A Good Life</em> brand-mark license expires May 25. Renew or release before expiry to avoid breach.' },
       'alert.stock.desc':     { zh: '「<em>REALIVE 巡演精裝寫真誌</em>」、「<em>REALIVE 白趴 官方 Tee (S)</em>」與 REALIVE 巡演海報低於補貨門檻。', en: '<em>REALIVE tour photobook</em>, <em>REALIVE White Party tee (S)</em>, and the REALIVE tour poster are below restock threshold.' },
-      'alert.event.desc':     { zh: '「<em>REALIVE (R2) 特仕版演唱會 · Apr 12</em>」尚未確認退款規則與現場人力配置。', en: '<em>REALIVE (R2) Special Edition Concert · Apr 12</em> still needs refund policy and on-site staffing confirmed.' },
+      /* 2026-08-19：對齊 Dashboard 卡的新指向（realive-chongqing）——舊值點名的 R2 特仕版
+         已是已結束場，掛在「檢核未完成」提醒上自相矛盾。persona 覆寫字典後定義蓋前，
+         base 區塊（約 604 行）已同步改，這裡不改會被本行舊值蓋回去。 */
+      'alert.event.desc':     { zh: '「<em>REALIVE World Tour (China) — 重慶站 · 10/25</em>」尚未確認退款規則與現場人力配置。', en: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs refund policy and on-site staffing confirmed.' },
       'e-shop.alert.meta':    { zh: 'REALIVE 巡演精裝寫真誌 · REALIVE 白趴 官方 Tee (S) · REALIVE 巡演海報', en: 'REALIVE tour photobook · REALIVE White Party tee (S) · REALIVE tour poster' },
       /* 收入／儀表板 */
       'tx.merch.title':     { zh: '<em>REALIVE 巡演精裝寫真誌</em> × 14', en: '<em>REALIVE tour photobook</em> × 14' },

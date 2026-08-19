@@ -75,19 +75,19 @@
       cover: IMG + 'f-i-am-speed-card.webp', poster: IMG + 'f-i-am-speed.webp',
       desc: { en: 'A farm kid muscles his way into motor racing — adapted from Noboru Rokuda\'s classic manga.', zh: '改編自六田登經典漫畫，農村青年憑勇氣闖入賽車世界。' },
       meta: { en: '$8,420 of $15,000 · 134 backers · 21 days left', zh: '$8,420 / $15,000 · 134 位支持者 · 剩 21 天' },
-      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'May 18 – Jul 06, 2026', zh: '2026/05/18 – 07/06' } },
+      fund: { raised: '$8,420', goal: '$15,000', backers: '134', pct: 56, left: { en: '21 days left', zh: '剩餘 21 天' }, period: { en: 'May 18 – Sep 07, 2026', zh: '2026/05/18 – 09/07' } },
       list: { goal: { en: '$8,420 / $15,000', zh: '$8,420 / $15,000' }, left: { en: '21 days left', zh: '剩 21 天' } },
       bar: { pct: 56 }, todo: { en: 'Link IP rental', zh: '綁定 IP 租借' }
     },
     {
-      id: 'adia-chan', created: '2026/04/18', fundFrom: '2026/06/01', name: '陳松伶精選', nameEn: "Nadia Chan: Greatest Hits",
+      id: 'adia-chan', created: '2025/12/20', fundFrom: '2026/01/05', name: '陳松伶精選', nameEn: "Nadia Chan: Greatest Hits",
       cat: 'album', icon: 'music', type: 'fund', status: 'live', goalMet: true, delivered: true,
       /* 表現彙總用（meta 未載明，依募資規模給一致的示意值）*/
       perf: { usd: 4200, audience: 96000, kind: 'streams' },
       cover: IMG + 'adia-chan-card.webp', poster: IMG + 'adia-chan.webp',
       desc: { en: 'Cantopop classics re-recorded with a new string arrangement, including live session takes.', zh: '經典重唱 × 全新弦樂編制，收錄 Live Session 現場版本。' },
       meta: { en: '$10,000 funded · 176 backers · Now released', zh: '$10,000 已募足 · 176 位支持者 · 現已上線' },
-      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Jun 01 – Sep 01, 2026 · Released', zh: '2026/06/01 – 09/01 · 已上線' } },
+      fund: { raised: '$10,000', goal: '$10,000', backers: '176', pct: 100, left: { en: 'Released', zh: '已上線' }, period: { en: 'Jan 05 – Mar 05, 2026 · Released', zh: '2026/01/05 – 03/05 · 已上線' } },
       list: { goal: { en: '$10,000 / $10,000', zh: '$10,000 / $10,000' }, left: { en: 'Released', zh: '已上線' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Review Q2 royalty report', zh: '查看 Q2 版稅報表' }
     },
@@ -121,7 +121,7 @@
       cover: IMG + 'dragon-tiger-gate-kowloon-night-card.webp', poster: IMG + 'anyong-qingshi.webp',
       desc: { en: 'A new chapter of the classic martial-arts IP — old scores settled in neon back alleys.', zh: '經典武打 IP 新章，霓虹巷弄裡的江湖再起。' },
       meta: { en: '62 / 100 pre-orders · $28 each · 9 days left', zh: '62 / 100 筆預購 · 單價 $28 · 剩 9 天' },
-      list: { goal: { en: '62 / 100', zh: '62 / 100 筆' }, left: { en: '9 days left', zh: '剩 9 天' } },
+      list: { goal: { en: '62 / 100', zh: '62 / 100 筆' }, left: { en: '9 days left', zh: '剩 9 天' }, period: { en: 'Presale May 02 – Aug 26, 2026', zh: '預購期間 2026/05/02 – 08/26' } },
       bar: { pct: 62 }, todo: { en: 'Confirm collector edition quote', zh: '確認典藏版製作報價' }
     },
     {
@@ -166,7 +166,7 @@
       cat: 'mv', icon: 'film', type: 'go-live', status: 'scheduled',
       cover: IMG + 'cc-video-1.jpg', poster: IMG + 'ruguo-wo-keyi-dongmian.webp',
       desc: { en: 'The title-track music video, shot on the same night market set as the short film.', zh: '主題曲 MV，與短片共用同一組夜市場景拍攝。' },
-      meta: { en: 'Goes live Dec 01 · cover art uploaded', zh: '12/01 上線 · 封面已上傳' },
+      meta: { en: 'In review · goes live Dec 01', zh: '審核中 · 12/01 上線' },
       bar: null, todo: { en: 'Set monetization', zh: '設定變現方式' }
     },
     {
@@ -188,7 +188,7 @@
       cover: IMG + 'kowloon-bingsutt.jpg', poster: null,
       desc: { en: 'A tenth-anniversary screening with a cast reunion talk.', zh: '十週年放映會，映後有原班人馬座談。' },
       meta: { en: '180 / 240 tickets · $35 each · 12 days left', zh: '180 / 240 張票 · 單價 $35 · 剩 12 天' },
-      list: { goal: { en: '180 / 240', zh: '180 / 240 張' }, left: { en: '12 days left', zh: '剩 12 天' } },
+      list: { goal: { en: '180 / 240', zh: '180 / 240 張' }, left: { en: '12 days left', zh: '剩 12 天' }, period: { en: 'Presale May 06 – Aug 29, 2026', zh: '預購期間 2026/05/06 – 08/29' } },
       bar: { pct: 75 }, todo: { en: 'Confirm venue seating map', zh: '確認場地座位圖' }
     },
     {
@@ -202,7 +202,8 @@
     {
       id: 'pirate-queen-doc', created: '2026/01/23', name: '海上霸姬 幕後紀錄', nameEn: "Pirate Queen — Behind the Scenes",
       cat: 'document', icon: 'file-text', type: 'go-live', status: 'live',
-      releaseDate: '2026/02/11',
+      /* releaseDate 已移除（B6，2026-08-19）：文檔屬影片家族、有送審件（wr-1207），
+         上線日以送審件的 work.release 為權威——兩處並存違反「兩處只會有一個有值」。 */
       cover: IMG + 'cc-concept-2.jpg', poster: null,
       desc: { en: 'Production notes, storyboards and research from the pirate-queen shoot.', zh: '製作筆記、分鏡與史料考據，記錄海上霸姬的拍攝過程。' },
       meta: { en: 'US$1,240 lifetime · 3,180 reads', zh: '累計 US$1,240 · 3,180 次閱讀' },
@@ -248,7 +249,7 @@
       cover: IMG + 'miujie-fungwan.jpg', poster: null,
       desc: { en: 'A reissue of the street-market set — already past its target and still taking pre-orders.', zh: '老街市井組合復刻版，已超過目標、仍在接受預購。' },
       meta: { en: '410 / 300 pre-orders · $32 each · 6 days left', zh: '410 / 300 筆預購 · 單價 $32 · 剩 6 天' },
-      list: { goal: { en: '410 / 300', zh: '410 / 300 筆' }, left: { en: '6 days left', zh: '剩 6 天' } },
+      list: { goal: { en: '410 / 300', zh: '410 / 300 筆' }, left: { en: '6 days left', zh: '剩 6 天' }, period: { en: 'Presale Jun 20 – Aug 23, 2026', zh: '預購期間 2026/06/20 – 08/23' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm reprint quantity', zh: '確認加印數量' }
     },
 
@@ -393,12 +394,12 @@
 
     /* ── ② 募資專輯（募資中）───────────────────────────────────── */
     {
-      id: 'nick-lrh', created: '2025/08/01', fundFrom: '2025/09/01', name: 'LOVE RAGE HOPE', nameEn: "LOVE RAGE HOPE",
+      id: 'nick-lrh', created: '2025/08/01', fundFrom: '2026/06/18', name: 'LOVE RAGE HOPE', nameEn: "LOVE RAGE HOPE",
       cat: 'album', icon: 'music', type: 'fund', status: 'published', goalMet: false, delivered: false,
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
       desc: { en: 'The fifth studio album — a ten-track rock concept record. Deluxe vinyl and signed edition crowdfunding.', zh: '第五張錄音室專輯，十軌搖滾概念作；豪華黑膠與親簽版共創。' },
       meta: { en: '$88,600 of $120,000 · 2,140 backers · 20 days left', zh: '$88,600 / $120,000 · 2,140 位支持者 · 剩 20 天' },
-      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Sep 01 – Oct 30, 2025', zh: '2025/09/01 – 10/30' } },
+      fund: { raised: '$88,600', goal: '$120,000', backers: '2,140', pct: 74, left: { en: '20 days left', zh: '剩餘 20 天' }, period: { en: 'Jun 18 – Sep 06, 2026', zh: '2026/06/18 – 09/06' } },
       list: { goal: { en: '$88,600 / $120,000', zh: '$88,600 / $120,000' }, left: { en: '20 days left', zh: '剩 20 天' } },
       bar: { pct: 74 }, todo: { en: 'Approve vinyl test pressing', zh: '確認黑膠試壓樣' }
     },
@@ -517,7 +518,7 @@
       cat: 'mv', icon: 'film', type: 'go-live', status: 'scheduled',
       cover: IMG + 'nick-flames.jpg', poster: IMG + 'nick-flames.jpg',
       desc: { en: 'FLAMES — second single off LOVE RAGE HOPE. Official MV scheduled Sep 19.', zh: 'FLAMES，LOVE RAGE HOPE 第二主打；官方 MV 9/19 上線。' },
-      meta: { en: 'Goes live Sep 19 · cover art uploaded', zh: '9/19 上線 · 封面已上傳' },
+      meta: { en: 'In review · goes live Sep 19', zh: '審核中 · 9/19 上線' },
       bar: null, todo: { en: 'Set monetization', zh: '設定變現方式' }
     },
     {
@@ -529,21 +530,21 @@
       bar: null, todo: { en: 'Add showcase assets', zh: '補上展示素材' }
     },
     {
-      id: 'nick-r2', created: '2024/09/01', fundFrom: '2024/10/05', name: 'REALIVE (R2) 特仕版演唱會', nameEn: "REALIVE (R2) Special Edition Concert",
+      id: 'nick-r2', created: '2026/07/01', fundFrom: '2026/07/20', name: 'REALIVE (R2) 特仕版演唱會', nameEn: "REALIVE (R2) Special Edition Concert",
       cat: 'event', icon: 'ticket', type: 'preorder', status: 'published', goalMet: false, delivered: false,
       cover: IMG + 'nick-r2.jpg', poster: IMG + 'nick-r2.jpg',
-      desc: { en: 'motorola presents REALIVE (R2) — Taipei Arena, Nov 23–24, 2024. Full upgrade with 70+ stage looks.', zh: 'motorola 呈獻 REALIVE (R2) 特仕版，臺北小巨蛋 11/23–24；全面升級、逾 70 套舞台造型。' },
+      desc: { en: 'motorola presents REALIVE (R2) — Taipei Arena, Nov 23–24, 2026. Full upgrade with 70+ stage looks.', zh: 'motorola 呈獻 REALIVE (R2) 特仕版，臺北小巨蛋 11/23–24；全面升級、逾 70 套舞台造型。' },
       meta: { en: '18,400 / 20,000 tickets · $95 each · 8 days left', zh: '18,400 / 20,000 張票 · 單價 $95 · 剩 8 天' },
-      list: { goal: { en: '18,400 / 20,000', zh: '18,400 / 20,000 張' }, left: { en: '8 days left', zh: '剩 8 天' } },
+      list: { goal: { en: '18,400 / 20,000', zh: '18,400 / 20,000 張' }, left: { en: '8 days left', zh: '剩 8 天' }, period: { en: 'Presale Jul 20 – Aug 25, 2026', zh: '預購期間 2026/07/20 – 08/25' } },
       bar: { pct: 92 }, todo: { en: 'Confirm floor seating map', zh: '確認搖滾區座位圖' }
     },
     {
-      id: 'nick-lwh-tour', created: '2025/08/15', fundFrom: '2025/09/01', name: 'LOVE·RAGE·HOPE Live House Tour', nameEn: "LOVE·RAGE·HOPE Live House Tour",
+      id: 'nick-lwh-tour', created: '2025/08/15', fundFrom: '2026/07/15', name: 'LOVE·RAGE·HOPE Live House Tour', nameEn: "LOVE·RAGE·HOPE Live House Tour",
       cat: 'event', icon: 'ticket', type: 'preorder', status: 'published', goalMet: false, delivered: false,
       cover: IMG + 'nick-lwh.jpg', poster: IMG + 'nick-lwh.jpg',
-      desc: { en: 'The album-concept live house tour — Taipei Legacy MAX / Kaohsiung / Taichung, Sep–Oct 2025.', zh: '圍繞新專輯概念的 Live House 巡演，台北 Legacy MAX／高雄／台中，2025/09–10。' },
+      desc: { en: 'The album-concept live house tour — Taipei Legacy MAX / Kaohsiung / Taichung, Sep–Oct 2026.', zh: '圍繞新專輯概念的 Live House 巡演，台北 Legacy MAX／高雄／台中，2026/09–10。' },
       meta: { en: '1,240 / 1,600 tickets · $58 each · 12 days left', zh: '1,240 / 1,600 張票 · 單價 $58 · 剩 12 天' },
-      list: { goal: { en: '1,240 / 1,600', zh: '1,240 / 1,600 張' }, left: { en: '12 days left', zh: '剩 12 天' } },
+      list: { goal: { en: '1,240 / 1,600', zh: '1,240 / 1,600 張' }, left: { en: '12 days left', zh: '剩 12 天' }, period: { en: 'Presale Jul 15 – Aug 29, 2026', zh: '預購期間 2026/07/15 – 08/29' } },
       bar: { pct: 78 }, todo: { en: 'Confirm venue seating map', zh: '確認場地座位圖' }
     },
     {
@@ -571,7 +572,7 @@
       cover: IMG + 'nick-baipa-goods.jpg', poster: IMG + 'nick-baipa-goods.jpg',
       desc: { en: 'A collab tee already past target and still taking pre-orders — every extra unit is upside.', zh: '聯名 Tee 已超過目標、仍在接受預購；超出的每一件都是額外收益。' },
       meta: { en: '1,180 / 800 pre-orders · $42 each · 9 days left', zh: '1,180 / 800 筆預購 · 單價 $42 · 剩 9 天' },
-      list: { goal: { en: '1,180 / 800', zh: '1,180 / 800 筆' }, left: { en: '9 days left', zh: '剩 9 天' } },
+      list: { goal: { en: '1,180 / 800', zh: '1,180 / 800 筆' }, left: { en: '9 days left', zh: '剩 9 天' }, period: { en: 'Presale Jul 01 – Aug 26, 2026', zh: '預購期間 2026/07/01 – 08/26' } },
       bar: { pct: 100, variant: 'success' }, todo: { en: 'Confirm extra print run', zh: '確認追加印量' }
     },
     {
@@ -637,9 +638,9 @@
       cat: 'event', icon: 'ticket', type: 'fund', status: 'published', goalMet: false, delivered: false,
       cover: IMG + 'nick-r2.jpg', poster: IMG + 'nick-r2.jpg',
       desc: { en: 'Four free street shows funded by fans — every tier puts one more stage on the map.', zh: '由粉絲共創的四場免費街頭演出；每多一個方案，地圖上就多一個舞台。' },
-      meta: { en: '$26,800 of $48,000 · 640 backers · 17 days left', zh: '$26,800 / $48,000 · 640 位支持者 · 剩 17 天' },
-      fund: { raised: '$26,800', goal: '$48,000', backers: '640', pct: 56, left: { en: '17 days left', zh: '剩餘 17 天' }, period: { en: 'Jun 15 – Aug 31, 2026', zh: '2026/06/15 – 08/31' } },
-      list: { goal: { en: '$26,800 / $48,000', zh: '$26,800 / $48,000' }, left: { en: '17 days left', zh: '剩 17 天' } },
+      meta: { en: '$26,800 of $48,000 · 640 backers · 14 days left', zh: '$26,800 / $48,000 · 640 位支持者 · 剩 14 天' },
+      fund: { raised: '$26,800', goal: '$48,000', backers: '640', pct: 56, left: { en: '14 days left', zh: '剩餘 14 天' }, period: { en: 'Jun 15 – Aug 31, 2026', zh: '2026/06/15 – 08/31' } },
+      list: { goal: { en: '$26,800 / $48,000', zh: '$26,800 / $48,000' }, left: { en: '14 days left', zh: '剩 14 天' } },
       bar: { pct: 56 }, todo: { en: 'Confirm the four street permits', zh: '確認四場路權' }
     },
     {
@@ -649,7 +650,7 @@
       cover: IMG + 'nick-lrh.jpg', poster: IMG + 'nick-lrh.jpg',
       desc: { en: 'A limited cassette pressing with a hand-numbered sleeve — taking pre-orders now.', zh: '限量卡帶版，封套手寫編號；現正接受預購。' },
       meta: { en: '520 / 900 pre-orders · $22 each · 14 days left', zh: '520 / 900 筆預購 · 單價 $22 · 剩 14 天' },
-      list: { goal: { en: '520 / 900', zh: '520 / 900 筆' }, left: { en: '14 days left', zh: '剩 14 天' } },
+      list: { goal: { en: '520 / 900', zh: '520 / 900 筆' }, left: { en: '14 days left', zh: '剩 14 天' }, period: { en: 'Presale Jul 08 – Aug 31, 2026', zh: '預購期間 2026/07/08 – 08/31' } },
       bar: { pct: 58 }, todo: { en: 'Confirm the tape duplication run', zh: '確認卡帶壓製批量' }
     },
     {

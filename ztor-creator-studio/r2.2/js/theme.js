@@ -126,7 +126,17 @@
    不會先閃一下側欄再消失。 */
 (function markEmbedMode() {
   try {
-    if (new URLSearchParams(location.search).get('embed') === '1') {
+    /* 兩個判準，缺一不可（第二個為 2026-08-18 補）：
+         ?embed=1        — 覆蓋層第一次載入那一頁時加的參數
+         被嵌在 iframe 裡 — 在覆蓋層**內部**再導航一次時的唯一線索
+       只看參數會漏掉後者：從母活動的系列清單點進子場次，是 iframe 自己換頁，
+       新網址沒有帶 embed，於是覆蓋層裡長出第二套側欄與頁尾（使用者 2026-08-18 回報）。
+       「在別人的框裡」本來就等於「不要畫自己的全域導覽」，判斷放在這裡最貼近事實，
+       不必要求每一個頁內連結都記得把參數接上。 */
+    var embedded = new URLSearchParams(location.search).get('embed') === '1';
+    var framed = false;
+    try { framed = window.self !== window.top; } catch (_) { framed = true; }   // 跨源存取被擋＝確實在別人的框裡
+    if (embedded || framed) {
       document.documentElement.setAttribute('data-embed', '1');
     }
   } catch (_) {}

@@ -49,6 +49,14 @@ const REGISTRY = {
   'chevron-left':   '<path d="M15 6l-6 6l6 6" />',                                              // 上一張 / 返回
   'chevron-right':  '<path d="M9 6l6 6l-6 6" />',                                               // 下一張 / next
   'chevron-down':   '<path d="M6 9l6 6l6 -6" />',                                                // dropdown / select 展開
+  /* 粗體勾勾，兩段深淺（2026-08-19 使用者指定的圖案）。短的那一撇壓到 45%、
+     長的那一捺留滿，兩段的明度差就是筆順——先落筆再挑起來。
+     用在儀表板告警通知條左側：它不是「警告符號」，是「這裡有事要勾掉」——
+     嚴重度已經寫在標題裡，不需要再放一顆紅色驚嘆號講第二次。
+     opacity 寫在 path 上而不是分兩個顏色：這樣整組跟著 currentColor 走，
+     一支圖示在中性與警示兩種情境都能用。
+     線寬與圓角收邊由消費端的 CSS 決定（registry 注入的是全站預設 1.2）。 */
+  'check-bold': '<path d="M2.5 12l6 6" opacity="0.45" /> <path d="M8.5 18l13 -13" />',
   'chevron-up':     '<path d="M6 15l6 -6l6 6" />',                                               // 數字欄位的加值鈕（ds-components/stepper.css）；2026-07-27 補上——registry 原本只有 left/right/down，缺 up 的那顆鈕就整個沒圖示
   'upload':         '<path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /> <path d="M7 9l5 -5l5 5" /> <path d="M12 4l0 12" />', // 上傳
   'play':           '<path d="M7 4v16l13 -8l-13 -8" />',         // 播放
@@ -56,6 +64,7 @@ const REGISTRY = {
   'layout-grid':    '<path d="M4 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4" /> <path d="M14 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4" /> <path d="M4 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4" /> <path d="M14 15a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -4" />', // 卡片檢視
   'list':           '<path d="M9 6l11 0" /> <path d="M9 12l11 0" /> <path d="M9 18l11 0" /> <path d="M5 6l0 .01" /> <path d="M5 12l0 .01" /> <path d="M5 18l0 .01" />',                                          // 清單檢視
   'grip-vertical':  '<path d="M8 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M8 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M8 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M14 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M14 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M14 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />',  // 拖曳把手（商品陳列排序）
+  'share': '<path d="M6 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 6m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /> <path d="M8.7 10.7l6.6 -3.4" /> <path d="M8.7 13.3l6.6 3.4" />',  // 分享項目（lucide share-2）
   'more-vertical':  '<path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M11 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /> <path d="M11 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />',  // 列操作選單觸發（kebab）
   'film':           '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12" /> <path d="M8 4l0 16" /> <path d="M16 4l0 16" /> <path d="M4 8l4 0" /> <path d="M4 16l4 0" /> <path d="M4 12l16 0" /> <path d="M16 8l4 0" /> <path d="M16 16l4 0" />',  // 影片 / 電影 / 紀錄片 內容類型
   'music':          '<path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /> <path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /> <path d="M9 17v-13h10v13" /> <path d="M9 8h10" />',  // 音樂 / 專輯 / 歌單 內容類型

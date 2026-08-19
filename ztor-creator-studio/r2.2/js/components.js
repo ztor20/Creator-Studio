@@ -158,7 +158,10 @@
     var sub = '';
     if (t.delta) sub += '<div class="kpi__delta' + (t.delta.neg ? ' kpi__delta--neg' : '') + '"' + di18n(t.delta.key) + '>' + s(t.delta.text) + '</div>';
     if (t.metaLink) sub += '<div class="kpi__meta"><a class="card__link" href="' + t.metaLink.href + '"' + di18n(t.metaLink.key) + '>' + s(t.metaLink.text) + '</a></div>';
-    else if (!t.delta && t.meta) sub += '<div class="kpi__meta"' + di18n(t.meta.key) + '>' + s(t.meta.text) + '</div>';
+    /* 原本是 else-if 且要求「沒有 delta」才顯示 meta——有 delta 的卡就永遠看不到註腳。
+       2026-08-19 放寬成 plainMeta 明示（V3 的總收入卡同時要 delta 與「2 小時前更新」），
+       既有呼叫端沒有 plainMeta，行為完全不變。 */
+    else if (t.meta && (t.plainMeta || !t.delta)) sub += '<div class="kpi__meta"' + di18n(t.meta.key) + '>' + s(t.meta.text) + '</div>';
     /* t.open = key of a .payout-modal on the page (data-bd-modal). The whole tile
        becomes a <button> that opens it — an in-place detail popup instead of a
        cross-page jump (L directive 2026-07-27: consistent UX, clear next step).
@@ -168,22 +171,55 @@
        carries data-i18n, and a language apply rewrites its innerHTML, which would
        wipe an inline icon. */
     var chev = t.open ? '<i data-lucide="chevron-right" class="ztor-icon kpi__chevron" aria-hidden="true"></i>' : '';
-    var inner = chev
+    /* t.topLink = 右上角的去處連結（＋chevron），與 kpi__meta 的純文字註腳分開。
+       2026-08-19 為儀表板 V3 探索頁新增：原本「時間 · 去處」擠在同一條底線連結裡，
+       使用者要求把去處提到右上、時間留在原地且不要連結底線。純選配，既有呼叫端不受影響。 */
+    /* 文字與 chevron 包在同一個 <a> 裡（2026-08-19 修）：原本是兩個各自絕對定位的元素，
+       文字有行高、圖示沒有，兩者的視覺中線對不齊。包成一個 inline-flex 就由 align-items
+       負責對齊，不必手動配 top 值。
+       data-i18n 掛在內層 <span> 而非 <a>：換語言會重寫該節點的 innerHTML，掛在 <a> 上
+       會把 chevron 一起洗掉（同 kpi__chevron 當初的處置）。 */
+    /* 2026-08-19 使用者裁決：畫面上只留箭頭、不留文字，顏色回到與其他三塊 KPI 的
+       .kpi__chevron 一致的中性色（不用橘）。文字改成 .u-visually-hidden——它仍在
+       無障礙樹裡當這個連結的名字，只是不佔墨；純圖示連結沒有名字讀屏會唸不出去處。
+       data-i18n 掛在那個 <span> 上而不是 <a>：換語言會重寫該節點的 innerHTML，
+       掛在 <a> 上會把箭頭一起洗掉。 */
+    var topLink = t.topLink
+      ? '<a class="kpi__toplink" href="' + t.topLink.href + '">'
+        + '<span class="u-visually-hidden"' + di18n(t.topLink.key) + '>' + s(t.topLink.text) + '</span>'
+        + '<i data-lucide="chevron-right" class="ztor-icon kpi__toplink-chev" aria-hidden="true"></i>'
+        + '</a>'
+      : '';
+    var inner = chev + topLink
       + '<div class="kpi__label"' + di18n(t.labelKey) + '>' + s(t.label) + '</div>'
       + '<div class="kpi__value">' + s(t.value) + '</div>'
       + sub;
-    /* t.hero = 這一列的主角數字（.kpi--hero → 數字染 --brand-ink 橘）。一列只給一個。 */
-    var hero = t.hero ? ' kpi--hero' : '';
-    if (t.open) return '<button type="button" class="kpi kpi--tappable bento--span-4' + hero + '" data-bd-open="' + t.open + '">' + inner + '</button>';
-    return '<div class="kpi bento--span-4' + hero + '">' + inner + '</div>';
+    /* t.hero = 這一列的主角數字（.kpi--hero → 整張卡實色橘）。一列只給一個。
+       t.accent = 只把數字染成 --brand-ink 橘、底色維持一般（
+       墨色一律走 --brand-ink，不得 var(--primary)，見 STYLE-DECISIONS Q8）。
+       t.span = 欄寬（預設 4；V3 一排四塊時給 3）。 */
+    var mods = (t.hero ? ' kpi--hero' : '')
+      + (t.accent ? ' kpi--accent' : '')
+;
+    var span = ' bento--span-' + (t.span || 4);
+    if (t.open) return '<button type="button" class="kpi kpi--tappable' + span + mods + '" data-bd-open="' + t.open + '">' + inner + '</button>';
+    return '<div class="kpi' + span + mods + '">' + inner + '</div>';
   }
 
   // F4 — alert / action card. Processing state lives in a.meta (severity · object · Open/In progress/Snoozed).
   // a.snoozed = soft-closed info item (muted, reappears ~7d, spec 5.1.1 §F4); a.blocking = compliance-type
   // item that can only be resolved in its source module → the close control is disabled (locked).
   function alertCard(a) {
+    /* 右上控制鈕三態（spec §F4「處理狀態」）：
+         阻斷型  → 鎖頭 disabled，只能在來源模組解決
+         資訊型  → 暫緩（軟關）：規格允許資訊型軟關、約 7 天後重新浮現並留痕
+         其餘    → 前往（整卡導航的顯性把手）
+       2026-08-19 修：此前非阻斷一律給 chevron「前往」，等於軟關這個動作全站不存在，
+       規格的「處理狀態」只做到唯讀顯示。 */
     var close = a.blocking
       ? '<button class="alert__close btn btn--icon btn--xs" type="button" disabled aria-label="Resolve in source module" title="Resolve in the source module"><i data-lucide="lock" class="ztor-icon"></i></button>'
+      : (a.variant === 'info' && !a.snoozed)
+      ? '<button class="alert__close btn btn--icon btn--xs" type="button" data-snooze="' + s(a.id) + '" aria-label="Snooze" title="Snooze — reappears in about 7 days"><i data-lucide="clock" class="ztor-icon"></i></button>'
       : '<button class="alert__close btn btn--icon btn--xs" type="button" aria-label="Open"><i data-lucide="chevron-right" class="ztor-icon"></i></button>';
     /* data-go：整張卡都可點、去 CTA 的同一個深連結（L directive 2026-07-27 —— 點擊目標
        不只那行小字）。委派 handler 在 mount 下方；內部 <a>（CTA）維持原生導航不重複處理。
@@ -308,6 +344,26 @@
     return fansCol + audCol + toast;
   }
 
+  /* ── F4 urgency 排序（spec 5.1.1 §F4）─────────────────────────────────
+     規格：阻斷 > 即將到期（≤7 天）> 待審 > 待確認付款 > 低庫存 > 資訊，
+     阻斷恆為最高；權重數值為可調參數、留實作層。此前是資料陣列的寫死順序，
+     阻斷型那筆實際排在第 4（2026-08-19 稽核發現）。
+     已軟關（snoozed）的一律沉到最後——它當下不需要處理，但仍要看得到。 */
+  var URGENCY = { blocking: 100, expiring: 80, review: 60, payment: 50, lowstock: 40, info: 10 };
+  function urgencyScore(a) {
+    if (a.blocking) return URGENCY.blocking;              // 阻斷恆為最高，不受 kind 影響
+    return URGENCY[a.kind] != null ? URGENCY[a.kind] : URGENCY.info;
+  }
+  function sortByUrgency(items) {
+    return (items || []).slice().sort(function (x, y) {
+      if (!!x.snoozed !== !!y.snoozed) return x.snoozed ? 1 : -1;   // 已軟關的沉底
+      return urgencyScore(y) - urgencyScore(x);                     // 穩定排序：同分維持原序
+    });
+  }
+  /* 首頁摘要最多 5 筆（spec §F4）。此前沒有程式化上限，資料一多就整串渲染。
+     完整清單走「查看全部」的完整待辦視圖。 */
+  var F4_SUMMARY_MAX = 5;
+
   var RENDERERS = {
     'transaction-list': function (d) {
       var hide = d.hideStatus;
@@ -318,7 +374,11 @@
       return '<div class="data-list">' + (d.rows || []).map(function (r) { return txRow(r, hide); }).join('') + '</div>';
     },
     'ops-summary':      function (d) { return (d.tiles || []).map(kpiTile).join(''); },
-    'alerts':           function (d) { return (d.items || []).map(alertCard).join(''); },
+    'alerts':           function (d) {
+      var items = sortByUrgency(d.items);
+      var cap = d.limit === 0 ? items.length : (d.limit || F4_SUMMARY_MAX);
+      return items.slice(0, cap).map(alertCard).join('');
+    },
     'activity-list':    function (d) {
       if (d.table) return tableWrap(
         th('dash.col.event', 'Event', ' class="ztor-table__media-head"') + th('dash.col.status', 'Status'),
@@ -382,13 +442,16 @@
     // the Refunds tab — that tab is hidden before sales open, exactly when the checklist matters); settings #tax aliases to Payments
     // and flashes the three tax rows.
     'dash-alerts': { items: [
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented' },
-      { variant: 'error',   icon: 'x-circle-fill',       titleKey: 'alert.stock.title',     title: 'Low stock · 3 items',             descKey: 'alert.stock.desc',     desc: '<em>Pirate Queen zine vol. 02</em>, <em>Kowloon After Dark tee (S)</em>, and the Mong Kok Sniper concept poster are below restock threshold.',   metaKey: 'alert.stock.meta',     meta: 'Critical · E-Shop · Open',      ctaKey: 'alert.stock.cta',     cta: 'Restock',            ctaHref: 'e-shop.html?status=low' },
-      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>Kowloon Café 10th Anniv. · Apr 12</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html#overview' },
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.ip-rental.title', title: 'IP rental expires in 6 days',     descKey: 'alert.ip-rental.desc', desc: '<em>Dragon Tiger Gate key art</em> brand license expires May 25. Renew or release before expiry to avoid breach.',     metaKey: 'alert.ip-rental.meta', meta: 'Warning · My IP · In progress', ctaKey: 'alert.ip-rental.cta', cta: 'Renew',              ctaHref: 'my-ip.html?ip=neon-tide#rented', id: 'ip-rental', kind: 'expiring', src: 'my-ip', srcKey: 'nav.my-ip' },
+      { variant: 'error',   icon: 'x-circle-fill',       titleKey: 'alert.stock.title',     title: 'Low stock · 3 items',             descKey: 'alert.stock.desc',     desc: '<em>Pirate Queen zine vol. 02</em>, <em>Kowloon After Dark tee (S)</em>, and the Mong Kok Sniper concept poster are below restock threshold.',   metaKey: 'alert.stock.meta',     meta: 'Critical · E-Shop · Open',      ctaKey: 'alert.stock.cta',     cta: 'Restock',            ctaHref: 'e-shop.html?status=low', id: 'low-stock', kind: 'lowstock', src: 'e-shop', srcKey: 'nav.e-shop' },
+      { variant: 'warning', icon: 'alert-triangle-fill', titleKey: 'alert.event.title',     title: 'Event pre-flight incomplete',     descKey: 'alert.event.desc',     desc: '<em>REALIVE World Tour (China) — Chongqing · Oct 25</em> still needs refund policy and on-site staffing confirmed.',                 metaKey: 'alert.event.meta',     meta: 'Warning · Events · Open',       ctaKey: 'alert.event.cta',     cta: 'Complete checklist', ctaHref: 'event-detail.html?id=realive-chongqing#overview', id: 'event-preflight', kind: 'review', src: 'events', srcKey: 'nav.events' },
       // Blocking (compliance) — resolvable only in its source module; close control is disabled (spec §F4).
-      { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax' },
-      // Snoozed (info, soft-closed) — excluded from F2 pending count; reappears in ~7 days (spec §F4).
-      { variant: 'info',    icon: 'info-fill',           snoozed: true,  titleKey: 'alert.spotify.title',   title: 'SPOTIFY sync stopped',            descKey: 'alert.spotify.desc',   desc: 'Spotify is an official ztor integration — we\u2019re fixing it. Upload an export if you need the figures now.',            metaKey: 'alert.spotify.meta',   meta: 'Info · Fan analytics · Snoozed', ctaKey: 'alert.spotify.cta',   cta: 'Upload data',        ctaHref: 'fan-analytics.html' }
+      { variant: 'error',   icon: 'lock',                blocking: true, titleKey: 'alert.payout-block.title', title: 'Payouts on hold — tax form required', descKey: 'alert.payout-block.desc', desc: 'A W-8/W-9 tax form is required before any withdrawal can be released. Resolve in Settings.',  metaKey: 'alert.payout-block.meta', meta: 'Critical · Settings · Open · Blocking', ctaKey: 'alert.payout-block.cta', cta: 'Add tax form',  ctaHref: 'settings.html#tax', id: 'payout-tax', kind: 'blocking', src: 'settings', srcKey: 'nav.settings' },
+      // Info-type item — the only kind the spec lets the creator soft-close (§F4). Shipped as
+      // Open, not pre-snoozed: until 2026-08-19 this row was hardcoded snoozed:true, which meant
+      // the snooze CONTROL never rendered anywhere and the whole soft-close path was unreachable.
+      // Snoozing it now is a live action — the card recedes, sinks to the bottom, and F2's count drops.
+      { variant: 'info',    icon: 'info-fill',           titleKey: 'alert.spotify.title',   title: 'SPOTIFY sync stopped',            descKey: 'alert.spotify.desc',   desc: 'Spotify is an official ztor integration — we\u2019re fixing it. Upload an export if you need the figures now.',            metaKey: 'alert.spotify.meta',   meta: 'Info · Fan analytics · Open', ctaKey: 'alert.spotify.cta',   cta: 'Upload data',        ctaHref: 'fan-analytics.html', id: 'spotify-sync', kind: 'info', src: 'fan-analytics', srcKey: 'nav.fans' }
     ] },
 
     // F5 — recent activity (completed / record-only events).
@@ -405,11 +468,19 @@
     // F6 — recent events & ongoing projects. `go` links are per-item deep links (2026-07-27):
     // project rows → project-detail.html?id=<the store project whose numbers these rows cite>
     // (established format, projects.html uses it; unknown id degrades to store.first());
-    // Kowloon Café 10th Anniv. → event-detail.html, which IS that event's page.
+    // 2026-08-19：提醒卡改點名 realive-chongqing 並顯式帶 ?id=——舊文案指的 Kowloon Café
+    // 已不在 store，無 id 示例頁如今 hydrate 成 store 首筆，寫死舊活動名會與落地頁對不上。
     'dash-events': { table: true, rows: [
       { icon: 'circle', titleKey: 'dash.progress.row1.title', title: '<em>LOVE RAGE HOPE</em> vinyl',      img: 'images/projects/nick-lrh.jpg', metaKey: 'dash.progress.row1.meta', meta: 'Project · Projects · 62 / 100 supporters · ends Dec 14', catKey: 'dash.progress.row1.cat', cat: 'Pre-order project', pct: 62, progKey: 'dash.progress.row1.prog', prog: '62 / 100 supporters', dueKey: 'dash.progress.row1.due', due: 'ends Dec 14', status: { key: 'status.live',      fallback: 'Live',      variant: 'orange' },  go: 'project-detail.html?id=dragon-tiger-gate' },
       { icon: 'circle', titleKey: 'dash.progress.row2.title', title: '<em>什麼都不必說</em>',              img: 'images/projects/nick-smdbbs.jpg', metaKey: 'dash.progress.row2.meta', meta: 'Project · Projects · $8,420 / $15,000 · 21 days left', catKey: 'dash.progress.row2.cat', cat: 'Co-create project', progKey: 'dash.progress.row2.prog', prog: '$8,420 / $15,000', dueKey: 'dash.progress.row2.due', due: '21 days left',   status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' },    go: 'project-detail.html?id=f-i-am-speed' },
-      { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>REALIVE (R2)</em> concert',      img: 'images/projects/nick-r2.jpg', metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Apr 12 · 84 / 200 tickets · Taipei', catKey: 'dash.progress.row3.cat', cat: 'In-person event', pct: 42, progKey: 'dash.progress.row3.prog', prog: '84 / 200 tickets', dueKey: 'dash.progress.row3.due', due: 'Apr 12',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'event-detail.html' },
+      /* 2026-08-19 修正：這張卡原本寫 title「REALIVE (R2) concert」、文案「Apr 12・84/200・Taipei」，
+         store（js/events-store.js）裡查無這場活動，go 也沒帶 ?id=——點下去只會落在 event-detail.html
+         的預設示例活動，跟卡片講的完全是兩回事。改指向 store 真實存在的一筆 on-sale 活動
+         realive-chongqing（date 2026-10-25、sold 84、capacity 120、city Chongqing），
+         文案數字（日期/售出/容量/城市）與 pct 同步改成該筆真實數字（84/120≈70%）；
+         標題原本掛的是「REALIVE (R2)」品牌（臺北小巨蛋特仕版），與重慶站是不同場次，
+         一併改成這一筆自己的名稱，避免「R2 品牌＋重慶內容」的新錯配。 */
+      { icon: 'circle', titleKey: 'dash.progress.row3.title', title: '<em>REALIVE World Tour</em> — Chongqing', img: 'images/projects/nick-realive.jpg', metaKey: 'dash.progress.row3.meta', meta: 'Event · Events · Oct 25 · 84 / 120 tickets · Chongqing', catKey: 'dash.progress.row3.cat', cat: 'In-person event', pct: 70, progKey: 'dash.progress.row3.prog', prog: '84 / 120 tickets', dueKey: 'dash.progress.row3.due', due: 'Oct 25',    status: { key: 'status.on-sale',   fallback: 'On sale',   variant: 'success' }, go: 'event-detail.html?id=realive-chongqing' },
       { icon: 'circle', titleKey: 'dash.progress.row4.title', title: '<em>FLAMES</em>',                    img: 'images/projects/nick-flames.jpg', metaKey: 'dash.progress.row4.meta', meta: 'Project · Projects · scheduled to launch Dec 01', catKey: 'dash.progress.row4.cat', cat: 'Release project', progKey: 'dash.progress.row4.prog', prog: '—', dueKey: 'dash.progress.row4.due', due: 'scheduled to launch Dec 01',        status: { key: 'status.draft',     fallback: 'Draft',     variant: '' },        go: 'projects.html' },
       { icon: 'circle', titleKey: 'dash.progress.row5.title', title: '<em>帥到分手</em> photo book',       img: 'images/projects/nick-sdfs.jpg', metaKey: 'dash.progress.row5.meta', meta: 'Project · Projects · closed Nov 10', catKey: 'dash.progress.row5.cat', cat: 'Co-create project', progKey: 'dash.progress.row5.prog', prog: '—', dueKey: 'dash.progress.row5.due', due: 'closed Nov 10', status: { key: 'status.succeeded', fallback: 'Succeeded', variant: 'success' }, go: 'project-detail.html?id=f-i-am-speed' },
       { icon: 'circle', titleKey: 'dash.progress.row6.title', title: '<em>REALIVE (R2)</em> concert film watch party', img: 'images/projects/nick-r2.jpg', metaKey: 'dash.progress.row6.meta', meta: 'Event · Events · Jan 18', catKey: 'dash.progress.row6.cat', cat: 'Online event', progKey: 'dash.progress.row6.prog', prog: '—', dueKey: 'dash.progress.row6.due', due: 'Jan 18', status: { key: 'status.scheduled', fallback: 'Scheduled', variant: 'info' }, go: 'events.html' }
@@ -475,7 +546,83 @@
      popup can only ever show what the cards below already show. Pending = F4 minus
      snoozed (matching the tile's count rule); Active projects = F6 minus drafts, each
      row upgraded to a labelled CTA (Open project / Open event). */
-  DATA['ops-pending-list'] = { items: DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; }) };
+  DATA['ops-pending-list'] = { items: DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; }), limit: 0 };
+  /* 完整待辦視圖（spec §F4）：全部都在（含已軟關），不套 5 筆摘要上限；
+     來源模組篩選由 index/demo 頁的 popup wiring 負責（data-todo-src）。 */
+  DATA['ops-todo-all'] = { items: DATA['dash-alerts'].items, limit: 0 };
+
+  /* 只取阻斷型（2026-08-19 使用者裁決）：告警是例外狀態，讓它獨佔第一屏最大的
+     區塊等於為異常設計版面——實測 534px，是 KPI 那排的 3.6 倍、吃掉第一屏 53%。
+     改成份量跟著嚴重度走：會擋錢的（阻斷型）留卡片形態在第一屏，其餘收成一行
+     摘要導向完整視圖。沒有阻斷型的日子，這個資料集是空的、整塊自然不佔位。
+     用 getter 而非快照：軟關會改寫 dash-alerts，取值時才過濾才不會落後。 */
+  /* F3 的側欄版（2026-08-19）：同一批已結算收入，只是不走表格密度——
+     卡片降到 span-4 之後表格欄位會擠成多行。table:false 走 data-list 列格式
+     （名稱／來源·日期／金額），資料與 dash-recent 完全同一份、不另存。 */
+  Object.defineProperty(DATA, 'dash-recent-compact', {
+    get: function () { return { rows: DATA['dash-recent'].rows, hideStatus: true }; }
+  });
+
+  Object.defineProperty(DATA, 'dash-alerts-blocking', {
+    get: function () {
+      return { items: DATA['dash-alerts'].items.filter(function (a) { return a.blocking; }), limit: 0 };
+    }
+  });
+
+  /* F2「待處理事項」的數字與副標改為從 F4 推導（2026-08-19）——此前是寫死的 '4' 與
+     '3 open · 1 in progress'，軟關一筆之後兩邊就對不起來。口徑照規格：Open + In Progress，
+     排除 Snoozed，且顯示真實總數（不受首頁 5 筆摘要上限影響）。 */
+  function pendingStats() {
+    var live = DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; });
+    var inProg = live.filter(function (a) { return /In progress/i.test(a.meta || ''); }).length;
+    return { total: live.length, open: live.length - inProg, inProgress: inProg };
+  }
+  /* 副標帶動態數字，所以不能掛 data-i18n（字典值會把算好的字蓋掉——2026-08-19 實測
+     顯示「3 open」而總數是 4）。照站上既有做法：字典存 {open}/{prog} 佔位符，
+     這裡取字串後就地替換，語言切換時重算一次。 */
+  function pendingMetaText() {
+    var st = pendingStats();
+    var tpl = (window.i18nT && window.i18nT('ops.pending-meta')) || '{open} open · {prog} in progress';
+    return tpl.replace('{open}', st.open).replace('{prog}', st.inProgress);
+  }
+  function syncPendingTile() {
+    var st = pendingStats();
+    var tile = DATA['dash-ops'].tiles.filter(function (t) { return t.open === 'ops-pending'; })[0];
+    if (!tile) return st;
+    tile.value = String(st.total);
+    tile.meta = { text: pendingMetaText() };     // 刻意不帶 key，見上方註解
+    return st;
+  }
+  syncPendingTile();
+
+  /* ── 四塊 KPI 的營運摘要（2026-08-19 使用者裁決）──────────────────────
+     與 dash-ops 的差別只有三件事，資料本身共用同一組推導：
+       · 一排四塊（span 3），第四塊是「站上粉絲」，點開才看圓餅與分級明細
+       · 總收入卡不再是實色橘 hero，改成一般底色＋橘色數字（--brand-ink，Q8）
+       · 「查看 Earnings」提到右上角，「2 小時前更新」留在註腳且不帶連結底線
+     用 getter：待處理那塊的數字由 syncPendingTile() 寫進 dash-ops，取值時才複製
+     才不會落後（軟關會改寫它）。 */
+  Object.defineProperty(DATA, 'dash-ops-4up', {
+    get: function () {
+      var src = DATA['dash-ops'].tiles;
+      var pending = src.filter(function (t) { return t.open === 'ops-pending'; })[0];
+      var projects = src.filter(function (t) { return t.open === 'ops-projects'; })[0];
+      return { tiles: [
+        { span: 3, accent: true, plainMeta: true,
+          labelKey: 'ops.revenue', label: 'Total revenue', value: '$24,830',
+          delta: { key: 'ops.revenue-delta', text: '+12.6% vs last week' },
+          meta: { key: 'ops.revenue-since', text: 'Updated 2h ago' },
+          topLink: { href: 'earnings.html', key: 'ops.revenue-link', text: 'View in Earnings' } },
+        { span: 3, labelKey: pending.labelKey, label: pending.label, value: pending.value,
+          meta: pending.meta, open: 'ops-pending' },
+        { span: 3, labelKey: projects.labelKey, label: projects.label, value: projects.value,
+          meta: projects.meta, open: 'ops-projects' },
+        { span: 3, labelKey: 'dash.tiers.title', label: 'Fans on Ztor', value: '1,283',
+          meta: { key: 'ops.fans-meta', text: 'Inner Circle 12% · Superfan 28%' },
+          open: 'fans-tiers' }
+      ] };
+    }
+  });
   /* 只列「還在跑」的項目與活動：草稿還沒公開、已成功／已結束／已取消都是終態，
      留在這個彈窗裡會讓 F2 的「進行中項目」數字對不起來（2026-07-31 補齊假資料時）。 */
   var OPS_TERMINAL = { 'status.draft': 1, 'status.succeeded': 1, 'status.ended': 1, 'status.cancelled': 1 };
@@ -528,5 +675,48 @@
     if (card && e.target === card) location.href = card.getAttribute('data-go');
   });
 
-  window.ZtorComponents = { mount: mount, RENDERERS: RENDERERS, DATA: DATA };
+  /* ── 軟關（Snooze）· spec 5.1.1 §F4 ──────────────────────────────────
+     資訊型可軟關，約 7 天後自動重新浮現並留痕。原型層級：把該筆標成 snoozed
+     （沉到清單底、視覺降階、退出 F2 計數），並在 meta 尾巴留下狀態痕跡。
+     重新浮現的排程屬後端行為，原型不模擬時間流逝。
+     重繪範圍只限 alerts 與 ops-summary 兩種佔位，不整頁 remount——
+     其他區塊（分頁內的動態清單等）沒有理由跟著重畫。 */
+  function rerender(names) {
+    var sel = names.map(function (n) { return '[data-component="' + n + '"]'; }).join(',');
+    document.querySelectorAll(sel).forEach(function (el) {
+      var fn = RENDERERS[el.getAttribute('data-component')];
+      var key = el.getAttribute('data-key');
+      if (fn) el.innerHTML = fn(key ? (DATA[key] || {}) : {});
+      if (window.ztorIcons) window.ztorIcons.applyIcons(el);
+      if (window.applyI18n) window.applyI18n(el);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('[data-snooze]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();                       // 不要觸發整卡導航
+    var id = btn.getAttribute('data-snooze');
+    DATA['dash-alerts'].items.forEach(function (a) {
+      if (a.id !== id) return;
+      a.snoozed = true;
+      a.metaKey = '';                          // 狀態文字改由此處接管，脫離原 i18n key
+      a.meta = String(a.meta || '').replace(/·\s*(Open|In progress)\b/i, '· Snoozed');
+    });
+    DATA['ops-pending-list'].items = DATA['dash-alerts'].items.filter(function (a) { return !a.snoozed; });
+    syncPendingTile();
+    rerender(['alerts', 'ops-summary']);
+  }, true);                                    // capture：搶在 data-go 的整卡導航之前
+
+  /* 換語言後副標要用新語言重算（它不走 data-i18n，applyI18n 不會碰它） */
+  document.addEventListener('i18n:applied', function () {
+    var tile = DATA['dash-ops'].tiles.filter(function (t) { return t.open === 'ops-pending'; })[0];
+    if (!tile) return;
+    var next = pendingMetaText();
+    if (tile.meta && tile.meta.text === next) return;   // 沒變就不重畫，避免與 applyI18n 互相觸發
+    tile.meta = { text: next };
+    rerender(['ops-summary']);
+  });
+
+  window.ZtorComponents = { mount: mount, RENDERERS: RENDERERS, DATA: DATA, rerender: rerender };
 })();
