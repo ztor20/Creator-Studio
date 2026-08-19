@@ -2,7 +2,7 @@
 # Ztor Creator Studio · 從 monorepo 同步最新版到本機 site/（真 git merge 版）
 # 用法: ./pull.sh
 #
-# 2026-07-26 改寫（原「三方檔案比對」版備份在 pull-legacy.sh）：
+# 2026-07-26 改寫（原「三方檔案比對」版已於 2026-08-19 刪除）：
 #   舊版是自己拿快照逐檔比對，模擬三方合併——它不知道誰比較新，只能把兩邊都改過的
 #   檔列出來要人判斷；而 collab.sh 送出去的是整包快照，本機落後就會靜默還原別人
 #   已合併的改動（因為分支永遠從最新 main 開，git 看不出分歧，PR 一律顯示 CLEAN）。
@@ -28,15 +28,11 @@ SUBDIR="ztor-creator-studio"
 SITE="$(git rev-parse --show-toplevel)"
 cd "$SITE"
 
-CENTRAL="$HOME/AI/cfg/personal.env"
-[ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
-# shellcheck disable=SC1090
-[ -f "$CENTRAL" ] && source "$CENTRAL" || true
-TOKEN="${ZTOR20_GH_TOKEN:-}"
-if [ -z "$TOKEN" ]; then
-  echo "找不到 ZTOR20_GH_TOKEN（中央倉 $CENTRAL）。請先放對 ${REPO_SLUG} 有讀取權的 token。"
-  exit 1
-fi
+# 認證（2026-08-19 改）：同 collab.sh 走 gh-auth.sh，但這裡只需要**讀取**權，
+# 所以用 gh_token_read（不試推、不產生任何遠端動作）。
+# shellcheck disable=SC1091
+source "$(dirname "$0")/gh-auth.sh"
+TOKEN="$(gh_token_read)" || exit 1
 AUTH="https://x-access-token:${TOKEN}@${HOST}/${REPO_SLUG}.git"
 
 WORK="$(mktemp -d)"

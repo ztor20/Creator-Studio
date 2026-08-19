@@ -10,7 +10,7 @@
 - **`./pull.sh` ＝ 真正的 `git merge`**（2026-07-26 改寫）：它 clone monorepo、用 `git subtree split --prefix=ztor-creator-studio` 把子目錄攤平成與本機 `site/` 對齊的分支，再 `git merge` 進來。所以有共同祖先、有三方合併——**撞到同一行才衝突，撞到了會停下來要你解，其餘自動合併**。未追蹤檔（`fonts/`、scratch）不會被碰；未提交的編輯會自動 stash／pop。
   - 純 `?v=` 版本字串的衝突沒有語意，腳本自動以本機版收掉，並提醒發版前重跑 `bump_ver`。
   - **開工前建議跑一次**，但不跑也不會出事——`collab.sh` 發版前會強制再跑一次。
-- **為什麼要這樣**：舊版 `collab.sh` 是「clone 最新 main → 清空子目錄 → 灌本機整包 → 從最新 main 開分支」。分支永遠是 main 的線性子代、沒有分歧點，**git 因此永遠不會報衝突**：本機任何一個落後的檔，在 PR 裡都長成「你刻意改成這樣」，merge 後同事已合併的工作就被靜默還原了。改成真 merge 之後，本機 = 遠端 ⊕ 你的改動，才不可能洗掉別人。舊版腳本留在 `pull-legacy.sh` / `collab-legacy.sh` 備查。
+- **為什麼要這樣**：舊版 `collab.sh` 是「clone 最新 main → 清空子目錄 → 灌本機整包 → 從最新 main 開分支」。分支永遠是 main 的線性子代、沒有分歧點，**git 因此永遠不會報衝突**：本機任何一個落後的檔，在 PR 裡都長成「你刻意改成這樣」，merge 後同事已合併的工作就被靜默還原了。改成真 merge 之後，本機 = 遠端 ⊕ 你的改動，才不可能洗掉別人。舊版腳本已於 2026-08-19 刪除（保留只是誘人誤跑一個會靜默還原別人工作的流程；沿革看本段與 git 歷史就夠）。
 - **殘留分支與重複 PR 的清理已內建，不用手動掃**（2026-07-26 新增 `cleanup.sh`）：`pull.sh` 每次跑完會順手刪掉已合併／已關閉 PR 留下的殘留分支；`collab.sh` 發版前會先比對內容，發現這包跟你已經開著的某個 PR 一字不差就直接停下、不再開一個。想看完整清單就跑 `./cleanup.sh`，只想看不想動就加 `--dry-run`。
   - **會累積的原因**：`collab.sh` 每跑一次就開一個新的時間戳分支＋新 PR，本來不會回頭看有沒有等效的 PR 存在；repo 又沒開 `delete_branch_on_merge`，合併過的分支不會自己消失。兩件事疊起來，幾天就長出一堆看不出誰還有用的分支。
   - **兩人不同電腦共用同一個 repo 的安全界線**：分支沒有「誰的機器」這個欄位，能區分的只有 PR 作者帳號（各人用各自的 token）。所以自動刪的範圍只有兩種——已 MERGED 的 PR 分支（不分作者，內容已在 main，刪掉誰都不損失）、以及自己關掉的 PR 分支。別人的 open PR、別人關掉的分支、還有沒有對應 PR 的分支，一律只列出不處理；最後那種可能正是對方 `collab.sh` 跑到一半、PR 還沒開出來的瞬間。
@@ -24,13 +24,20 @@
 - 開好 PR 後可由使用者在 GitHub 按 Merge 上線；若使用者明確授權，也可由 AI 代為合併（上線的最後關卡仍以使用者授權為準）。
 - PR 有衝突（GitHub 顯示無法自動合併）時，**先問使用者、取得其確認後**再解衝突並合併；不自行強推或硬合。
 
-## 認證
+## 認證（2026-08-19 改：不再只認中央倉一把 token）
 
-`collab.sh` 自動讀中央倉 `~/AI/cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（需對 `ztor20/Creator-Studio` 有**寫入權**）。協作者沒有該檔時，需自備對該 repo 有寫入權的 token。**repo 內不留明文 token**。
+`collab.sh` 與 `pull.sh` 都改用 **`gh-auth.sh`** 解析憑證。它依序試這些候選，**實際試推一個丟棄分支**來確認寫入權，選第一個推得動的：
 
-推送用的 token 只需 **write 權**即可 commit／push 分支＋開 PR，**不需 merge 權**；**merge 一律由具 merge 權限的協作者在 GitHub 上操作**，AI 不代合。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
+1. 中央倉 `~/AI/cfg/personal.env` 的 `ZTOR20_GH_TOKEN`（協作者各自的 token）
+2. 本機 `gh` 已登入的每個帳號（`gh auth token --user <帳號>`）
 
-**`collab.sh` 沒有錯誤訊息就停在 `Switched to a new branch` 時，先查 token 的寫入權**（2026-08-18 記，同一題第二次發生）：腳本的 `git push` 把輸出導掉了（`>/dev/null 2>&1`），推送失敗時看起來像「跑到一半自己結束」，exit code 是 128。診斷方式——手動 clone 一份再推一次空 commit，就會看到真正的 `403 / Permission denied`。細粒度 PAT（`github_pat_` 開頭）的讀與寫是分開授權的，**Contents 只給 Read 時就是這個症狀**；能讀 repo 代表組織 SSO 已核准，不必往那個方向查。修法是把該 token 的 Contents 與 Pull requests 都改成 Read and write，不必重新產生 token。
+`pull.sh` 只需要讀取權，走 `gh_token_read`，不試推、不對遠端產生任何動作。`collab.sh` 需要寫入權，走 `gh_token_write`。兩個都找不到時會印出兩條修法（開 PAT 的權限、或 `gh auth login`），不會靜默失敗。**repo 內不留明文 token**。
+
+**為什麼要做成「實際試推」而不是查 API**：細粒度 PAT（`github_pat_` 開頭）的讀與寫是分開授權的。`GET /repos/{owner}/{repo}` 回的 `permissions: {"push": true}` 是**使用者在該 repo 的角色**，不是這把 token 被授予的範圍——實測角色顯示可推、真的推仍是 `403 Permission denied`。試推一個 `probe/write-check-$$` 分支是唯一可靠的判斷；推成功會立刻刪掉該分支，推失敗遠端不會留下任何東西。
+
+**push 的輸出不再導掉**。舊版 `collab.sh` 寫成 `git push ... >/dev/null 2>&1`，推送失敗時看起來像「沒有錯誤訊息就停在 `Switched to a new branch`」，同一題查了三次（2026-08-17／08-18／08-19）才定位。現在失敗會直接印出 git 的原始錯誤（token 已遮蔽）並以非零碼結束。
+
+merge 一律由具 merge 權限的協作者在 GitHub 上操作。各協作者的個人帳號路由屬本機設定，不寫在此共編檔。
 
 ## 其他
 
