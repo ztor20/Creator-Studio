@@ -137,6 +137,6 @@ flowchart TD
 
 改成真 merge 後：1、2 由 `pull.sh` 的三方合併擋下；3 由「`collab.sh` 內建同步 ＋ GitHub 對落後基準做真三方比對」擋下。
 
-舊版腳本保留在 `pull-legacy.sh` / `collab-legacy.sh` 備查。一次性的歷史接合（`git subtree split` ＋ `-s ours` graft）在 site/ 留了安全點 tag `pre-subtree-graft-20260726`。
+舊版腳本已於 2026-08-19 刪除（保留只是誘人誤跑一個會靜默還原別人工作的流程；沿革看本段與 git 歷史就夠）。一次性的歷史接合（`git subtree split` ＋ `-s ours` graft）在 site/ 留了安全點 tag `pre-subtree-graft-20260726`。
 
 > 另一條線（不在此圖）：`documents/`、`requirement/` 等 `site/` 以外的內容，是一般 `git push`，**無 PR、無 merge 關卡**。

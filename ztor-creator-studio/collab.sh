@@ -6,7 +6,7 @@
 # 背景（2026-06-18 起）：站點在 monorepo ztor20/Creator-Studio 的 `ztor-creator-studio/`
 #   子目錄；本機 site/ 的 repo 根對應該子目錄，層級對不上所以不能直接 push。
 #
-# 2026-07-26 改寫（舊版備份在 collab-legacy.sh）——修掉「兩人並行會靜默還原對方工作」：
+# 2026-07-26 改寫（舊版已於 2026-08-19 刪除）——修掉「兩人並行會靜默還原對方工作」：
 #   舊版直接 clone 最新 main、清空子目錄、灌入本機整包快照，再從最新 main 開分支。
 #   因為分支永遠是 main 的線性子代、沒有分歧點，git 永遠不會報衝突：本機任何一個
 #   落後的檔，在 PR 裡都長成「你刻意改成這樣」，merge 後對方已合併的改動就沒了。
@@ -37,15 +37,13 @@ fi
 SITE="$(git rev-parse --show-toplevel)"   # vault 的 site/ 工作目錄（本機 git repo）
 
 # 中央倉：優先新路徑 ~/AI/cfg/，找不到再退回舊路徑（相容尚未搬遷的機器）
-CENTRAL="$HOME/AI/cfg/personal.env"
-[ -f "$CENTRAL" ] || CENTRAL="$HOME/SynologyDrive/.cfg/personal.env"
-# shellcheck disable=SC1090
-[ -f "$CENTRAL" ] && source "$CENTRAL" || true
-TOKEN="${ZTOR20_GH_TOKEN:-}"
-if [ -z "$TOKEN" ]; then
-  echo "找不到 ZTOR20_GH_TOKEN（中央倉 $CENTRAL）。請先把對 ${REPO_SLUG} 有寫入權的 token 放進中央倉。"
-  exit 1
-fi
+# 認證（2026-08-19 改）：不再只認中央倉那一把。gh-auth.sh 會依序試中央倉的
+# ZTOR20_GH_TOKEN 與本機 gh 已登入的每個帳號，**實際試推一個丟棄分支**來確認寫入權，
+# 選出第一個推得動的。原本只認中央倉的寫法在那把細粒度 PAT 只給 Contents:Read 時
+# 會一路走到 push 才 403，而 push 的輸出當時又被導掉，於是同一題查了三次。
+# shellcheck disable=SC1091
+source "$(dirname "$0")/gh-auth.sh"
+TOKEN="$(gh_token_write)" || exit 1
 AUTH="https://x-access-token:${TOKEN}@${HOST}/${REPO_SLUG}.git"
 
 # ── 0) 強制先同步：這是「不會洗掉別人工作」的唯一保證，不可跳過 ──
@@ -69,7 +67,9 @@ trap 'rm -rf "$WORK"' EXIT
 
 # 1) clone monorepo
 echo "→ clone ${REPO_SLUG} …"
-git clone --depth 1 "$AUTH" "$WORK/mono" >/dev/null 2>&1
+if ! git clone --depth 1 "$AUTH" "$WORK/mono" 2>/tmp/collab_clone_err; then
+  echo "✗ clone 失敗："; sed "s#${TOKEN}#***#g" /tmp/collab_clone_err | tail -5; exit 1
+fi
 DEST="$WORK/mono/$SUBDIR"
 if [ ! -d "$DEST" ]; then
   echo "monorepo 沒有 ${SUBDIR}/ 子目錄，停止。"
@@ -81,8 +81,29 @@ fi
 #    ——這一步之所以安全，前提是上面第 0 步已經把遠端改動合進本機了。
 echo "→ 同步 site/ 追蹤檔 → ${SUBDIR}/ …"
 find "$DEST" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-TREEISH="$(git -C "$SITE" stash create || true)"
-[ -z "$TREEISH" ] && TREEISH="HEAD"      # 無未提交變更時用 HEAD
+# 發版取的是「工作目錄快照」＝已提交內容 ＋ 未提交編輯（刻意設計，見檔頭）。
+# 但這台機器可能同時有別的 session 在編輯——那些半成品會被一起打包送出去。
+# 所以把「這次會掃進哪些未提交檔案」列出來（2026-08-19 新增；當天實測踩到：
+# 另一個 session 正在做的 D202 生命週期事件差點被連帶發版）。
+# 只要不是你自己這一輪改的，先讓對方提交或收進 stash，再發版。
+DIRTY="$(git -C "$SITE" status --porcelain --untracked-files=no)"
+if [ -n "$DIRTY" ]; then
+  echo ""
+  echo "  ⚠ 這次會一併打包下列**未提交**的編輯（確認都是你這一輪的）："
+  echo "$DIRTY" | sed 's/^/     /'
+  echo "     → 若其中有別人／別的 session 正在做的東西，先中止（Ctrl-C），"
+  echo "       等對方提交或 stash 後再發版；或改用 PUBLISH_FROM=HEAD 只發已提交內容。"
+  echo ""
+fi
+
+# PUBLISH_FROM=HEAD → 只發已提交內容，忽略工作目錄的未提交編輯
+if [ "${PUBLISH_FROM:-}" = "HEAD" ]; then
+  echo "→ PUBLISH_FROM=HEAD：只發已提交內容，未提交編輯不打包"
+  TREEISH="HEAD"
+else
+  TREEISH="$(git -C "$SITE" stash create || true)"
+  [ -z "$TREEISH" ] && TREEISH="HEAD"      # 無未提交變更時用 HEAD
+fi
 git -C "$SITE" archive --format=tar "$TREEISH" | tar -x -C "$DEST"
 
 # 3) 沒變更就結束
@@ -138,7 +159,14 @@ BR="edit/$(date +%Y%m%d-%H%M%S)"
 git switch -c "$BR" >/dev/null
 git add -A
 git -c user.name="lern2317" -c user.email="lern2317@gmail.com" commit -q -m "$MSG"
-git push "$AUTH" "$BR" >/dev/null 2>&1
+# push 的輸出**不再導掉**：這正是「沒有錯誤訊息就停在 Switched to a new branch」
+# 那個症狀的成因（2026-08-19，同一題第三次之後修）。
+if ! git push "$AUTH" "$BR" 2>/tmp/collab_push_err; then
+  echo ""
+  echo "✗ 推送失敗（分支 $BR 未上傳，遠端不會留下任何東西）："
+  sed "s#${TOKEN}#***#g" /tmp/collab_push_err | tail -6
+  exit 1
+fi
 PR_URL="$(GH_TOKEN="$TOKEN" gh pr create --repo "$REPO_SLUG" --base main --head "$BR" \
           --title "$MSG" --body "由 collab.sh 自動建立（從 vault site/ 同步進 ${SUBDIR}/）。發版前已跑 pull.sh 做真 git merge。" 2>&1 | tail -1)" \
   || PR_URL="(PR 自動建立失敗，手動開: https://github.com/${REPO_SLUG}/pull/new/${BR})"
