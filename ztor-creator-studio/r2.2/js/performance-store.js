@@ -426,6 +426,36 @@
       + '</section>';
   }
 
+  /* ── 依項目累計值縮放（2026-08-19，盤查 B2）─────────────────────────
+     FILM／MUSIC 是固定的示意資料集，原本每個項目看到同一組數字，與總覽 KPI 的
+     累計觀看／串流直接矛盾（45,000 vs 1,286,500）。renderPanel 收 opts.audience
+     （＝ projects-store 的 perf.audience 累計值）時，把整份資料集等比縮放——
+     縮放率 ＝ audience ÷ 資料集的年總量，於是「近 12 個月」的 hero 總量剛好等於
+     該項目的累計值，曲線形狀、平台與地區的相對比例全部保留。
+     比率欄（完播率等 fmt:'pct'）不縮放；Top 10 的權重分配吃縮放後的池子，自動對齊。 */
+  function scaleFamily(family, k) {
+    if (!(k > 0) || k === 1) return family;
+    function sv(v) { return { m: v.m * k, q: v.q * k, y: v.y * k }; }
+    return {
+      metric: family.metric,
+      unitKind: family.unitKind,
+      total: sv(family.total),
+      sub: family.sub.map(function (s) {
+        return { id: s.id, i18n: s.i18n, fmt: s.fmt, v: s.fmt === 'pct' ? s.v : sv(s.v) };
+      }),
+      platforms: family.platforms.map(function (p) {
+        return { name: p.name, i18n: p.i18n, rest: p.rest, v: sv(p.v) };
+      }),
+      territories: family.territories.map(function (g) {
+        return { i18n: g.i18n, rest: g.rest, v: sv(g.v) };
+      }),
+      units: family.units,
+      unitsSub: family.unitsSub,
+      unitsA: family.unitsA,
+      unitsB: family.unitsB
+    };
+  }
+
   /* ═══════════════════ 掛載 ═══════════════════ */
 
   function refresh(el) {
@@ -442,13 +472,18 @@
     if (fam === 'other') { el.innerHTML = emptyHTML('perf.empty.kind'); refresh(el); return; }
     if (opts.live === false) { el.innerHTML = emptyHTML('perf.empty.pending'); refresh(el); return; }
 
-    var family = FAMILY[fam];
+    /* opts.audience ＝ 該項目的累計觀看／串流（projects-store 的 perf.audience）。
+       有值就把資料集縮放到「年總量 ＝ 累計值」；沒有就照原資料集畫（見 scaleFamily）。 */
+    var audience = parseFloat(opts.audience);
+    var scale = (audience > 0) ? audience / FAMILY[fam].total.y : 0;
+    var family = scaleFamily(FAMILY[fam], scale);
     /* 多單元才有 Top 10：專輯有曲目、影集有集數；單曲／電影／短片／MV 沒有。 */
     var hasUnits = opts.cat === 'album' || opts.cat === 'series';
     el.innerHTML = panelHTML(fam, family, period, hasUnits);
     el.setAttribute('data-perf-family', fam);
     el.setAttribute('data-perf-cat', opts.cat || '');
     el.setAttribute('data-perf-period', period);
+    el.setAttribute('data-perf-audience', audience > 0 ? String(audience) : '');
     refresh(el);
   }
 
@@ -461,7 +496,8 @@
     renderPanel(host, {
       family: host.getAttribute('data-perf-family'),
       cat: host.getAttribute('data-perf-cat'),
-      period: btn.getAttribute('data-perf-p')
+      period: btn.getAttribute('data-perf-p'),
+      audience: host.getAttribute('data-perf-audience')
     });
   });
 

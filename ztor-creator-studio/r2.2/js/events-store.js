@@ -28,9 +28,25 @@
    sold／status 是編輯態的行為輸入、不只是顯示值：
      · sold > 0  → 場次已售出，容量不得低於 sold、已售票種不可刪。
      · status='on-sale' → 已公開販售，改日期／場地屬「會通知到購票者」的高影響欄位。
-   資料為原型 mock，非真實票務數字（見 ASSUMPTIONS.md）。 */
+   資料為原型 mock，非真實票務數字（見 ASSUMPTIONS.md）。
+
+   2026-08-19 修正：status:'live' 的 date 一律動態＝今天（見下方 todayStr()），不得寫死日期。
+   起因——6 筆 live 活動先前把 date 釘死在 2026-07-27（寫檔那天），寫檔一過就與「進行中」
+   狀態自相矛盾（進行中的活動理當就是今天開演）。改用 todayStr() 之後這批 mock 不會再老化；
+   這是本檔唯一允許用 new Date() 的地方——「今天」錨點本來就該跟著使用者系統時間走，
+   不受檔頭「deterministic、不用 Math.random」原則管轄（那條原則管的是抽樣邏輯，不是日期錨）。 */
 (function () {
   'use strict';
+
+  /* 「今天」錨點（2026-08-19 新增，回歸腳本 scripts/check_events_store.js 會驗證這條）：
+     只給 status:'live' 的活動使用，回傳本機今天的 'YYYY-MM-DD'。 */
+  function todayStr() {
+    var d = new Date();
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
 
   var EVENTS = [
     {
@@ -232,7 +248,11 @@
       venue: 'Online',
       city: '',
       address: '',
-      date: '2026-08-08',
+      /* 2026-08-19 修正：date 原本是 '2026-08-08'，早於今天（2026-08-19），
+         與 status:'on-sale'（仍在賣票）矛盾——賣票中的場次不該日期已過。
+         改到 9 月中旬，跟 desc「一起回顧臺中那一夜」的語意相容（回顧場辦在
+         正式場次結束後不久，不必是很久以後）。 */
+      date: '2026-09-16',
       start: '21:00',
       end: '',
       doors: '',
@@ -249,8 +269,10 @@
       video: false
     },
     {
-      /* 進行中的場次（2026-07-27）——今天就是開演日，所以 stage/status 是 'live'。
+      /* 進行中的場次——今天就是開演日，所以 stage/status 是 'live'。
          必須是「今天」：日期寫未來卻標進行中，會跟它自己顯示的日期打架。
+         2026-08-19 修正：date 原本釘死 '2026-07-27'（寫檔當天），改用 todayStr() 動態算，
+         否則過幾天「進行中」就會變成「未來的進行中」，見檔頭同日新增的規則說明。
          這是唯一帶 roster（到場名單）的一筆，現場報到台面就靠它。 */
       id: 'inner-circle-taipei',
       type: 'meet',
@@ -263,7 +285,7 @@
       venue: 'Neo Studio',
       city: 'Taipei, Taiwan',
       address: 'No. 88 Bade Rd Sec 4, Songshan District',
-      date: '2026-07-27',
+      date: todayStr(),          // 2026-08-19：live 活動的日期一律動態＝今天，見檔頭規則
       start: '14:00',
       end: '16:00',
       doors: '13:30',
@@ -362,7 +384,10 @@
       start: '22:00',
       end: '',
       doors: '',
-      capacity: 0,
+      /* 2026-08-19 修正：capacity 原本是 0，但下面的 tiers 加總（400+1,600）＝2,000——
+         2026-08-18 補票種時漏改 capacity，變成「有票可賣、場地卻是 0 人」的自相矛盾。
+         改成 2,000，與 Σtiers.qty 對齊。 */
+      capacity: 2000,
       /* 2026-08-13：這一場備好票種，當「準備中 → 開賣」那條動線的完整示範。
          （2026-08-18 更正：原本這裡還寫著「其餘準備中的活動票種仍為空」——那批已於同日
          補上票種。票種是建立流程的必填，已排程卻沒有票種的活動在產品上生不出來。） */
@@ -409,9 +434,18 @@
       type: 'concert',
       typeLabelKey: 'ce.type.concert',
       category: 'concert',                  // 見檔頭 TYPE→CATEGORY 對應表
-      series: { name: 'LOVE·RAGE·HOPE Live House Tour', index: 3, total: 6 },
+      /* 2026-08-19 修正：原本 series 是 { name, index:3, total:6 }——缺 series.id（其他有系列的
+         活動都靠 series.id 讓系列分頁撈出同系列場次，這筆沒有就撈不到），且宣稱「6 站巡演的
+         第 3 站」，但全檔只有這一筆屬於這個系列，另外 5 站根本不存在。與全檔「series.total＝
+         實際同系列筆數」的慣例（其餘 6 個系列 realive-asia／realive-sea／lrh-campus／sdfs-tour／
+         realive-china-2027／realive-japan／realive-world-tour 皆滿足）牴觸。
+         取捨：降為單場（series: null），不去新增另外 5 場沒人要求過的假活動去湊滿 6 站
+         ——那會是憑空生資料。desc 順手微調，讀起來是一場獨立的 live house 專場，
+         不再暗示「巡演的一站」。name 維持不動（events.html 既有列文字對齊，且「Live House Tour」
+         在這裡讀作專有名稱／系列品牌字面，不是在宣稱這一筆本身有其他站）。 */
+      series: null,
       name: 'LOVE·RAGE·HOPE Live House Tour — Taichung',
-      desc: 'Taichung stop of the LOVE·RAGE·HOPE live house tour.',
+      desc: 'A one-off Live House night in Taichung, in the LOVE·RAGE·HOPE era.',
       lineup: ['NICKTHEREAL 周湯豪'],
       venue: 'Legacy Taichung',
       city: 'Taichung, Taiwan',
@@ -733,7 +767,7 @@
       venue: 'Taipei Dome',
       city: 'Taipei, Taiwan',
       address: '',
-      date: '2026-07-27',
+      date: todayStr(),          // 2026-08-19：live 活動的日期一律動態＝今天，見檔頭規則
       start: '19:30',
       end: '21:00',
       doors: '18:30',
@@ -767,7 +801,9 @@
       venue: 'NTU Sports Centre',
       city: 'Taipei, Taiwan',
       address: '',
-      date: '2026-07-27',
+      /* 2026-08-19：date 改用 todayStr()（見檔頭規則）。這站與 lrh-campus-nccu 是「同天雙場」
+         設計（NTU 中午場、NCCU 傍晚場），兩筆都動態＝今天，兩站的日期依然相同、不會脫鉤。 */
+      date: todayStr(),
       start: '12:20',
       end: '13:30',
       doors: '12:00',
@@ -795,7 +831,7 @@
       venue: 'NCCU Arts Hall',
       city: 'Taipei, Taiwan',
       address: '',
-      date: '2026-07-27',
+      date: todayStr(),          // 2026-08-19：同 lrh-campus-ntu，同天雙場、動態＝今天
       start: '18:30',
       end: '19:40',
       doors: '18:00',
@@ -823,7 +859,7 @@
       venue: 'Online',
       city: '',
       address: '',
-      date: '2026-07-27',
+      date: todayStr(),          // 2026-08-19：live 活動的日期一律動態＝今天，見檔頭規則
       start: '13:00',
       end: '15:00',
       doors: '',
@@ -850,7 +886,7 @@
       venue: 'Online',
       city: '',
       address: '',
-      date: '2026-07-27',
+      date: todayStr(),          // 2026-08-19：live 活動的日期一律動態＝今天，見檔頭規則
       start: '13:30',
       end: '',
       doors: '',
@@ -1508,10 +1544,23 @@
       return { sold: sold, valid: valid, used: used, invalid: invalid,
                rate: sold ? Math.round(valid / sold * 100) : 0 };
     },
-    /* 到場名單：只有進行中的場次會用到（現場報到台面） */
+    /* 持票人名單（2026-08-19 放寬）：原本只有進行中會生成，售票中／已結束的名單分頁
+       因此永遠是空表。改成有金流即有名單——名單問的是「誰持票」，不是「誰到場」：
+       · 售票中：無 arrivedAtOpen → 全員未報到（活動還沒發生，正確）
+       · 進行中：照舊，用該場的 arrivedAtOpen
+       · 已結束：到場數用 checkinSummary 同一條公式（sold × 0.91），
+         名單表逐列的已到場加總才會等於結案卡與圖例的正常核銷數，不會兩處打架
+       已取消不生成：名單分頁在該狀態整節收起（syncSalesView），沒有消費端。 */
     roster: function (id) {
       var ev = window.ztorEvents.get(id);
-      return ev && ev.status === 'live' ? buildRoster(ev) : [];
+      if (!ev) return [];
+      if (ev.status === 'live' || ev.status === 'on-sale') return buildRoster(ev);
+      if (ev.status === 'ended') {
+        var done = clone(ev);
+        done.arrivedAtOpen = Math.round((ev.sold || 0) * 0.91);
+        return buildRoster(done);
+      }
+      return [];
     },
     /* 票種已售出的張數（容量下限與「可否刪除票種」都靠它） */
     soldOf: function (ev) {

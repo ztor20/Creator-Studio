@@ -96,6 +96,11 @@
             <span data-pd-editmode-label data-i18n="project-detail.btn.edit">Edit</span>
           </button>
           <button class="btn btn--ghost" type="button" data-pd-editcancel hidden data-i18n="project-detail.btn.cancel">Cancel</button>
+          <!-- 分享（2026-08-19 使用者裁決，D200）：三種發行模式都有，只是一顆 icon、
+               放在預覽旁邊——它是「把粉絲端連結拿去貼」的小動作，不是一個要被推銷的功能。
+               與通知粉絲（群發訊息出口，直接發佈限定）是兩件事：那是站內對名單發訊息，
+               這是把公開連結帶去站外。原型行為＝複製粉絲端連結＋toast（UIA-122）。 -->
+          <button class="btn btn--outline btn--icon" type="button" data-pd-share aria-label="Share project" title="Share project" data-i18n-aria-label="pd.share" data-i18n-title="pd.share"><i data-lucide="share" class="ztor-icon"></i></button>
           <button class="btn btn--outline"><i data-lucide="eye" class="ztor-icon"></i><span data-i18n="project-detail.btn.preview">Preview</span></button>
           <!-- 發布項目更新僅共創與預購提供（§2.4 第 4 項；直接發佈 2026-08-17 起沒有這個區段）。 -->
           <button class="btn btn--primary" data-modal-open="pd-edit-update" data-type="fund preorder" data-i18n="project-detail.btn.post-update">Post update</button>
@@ -306,7 +311,11 @@
             <!-- .card__foot（2026-08-18 使用者裁決「置底」）：動作釘在卡的下緣，不跟著
                  內容浮動。同一排的兩張卡（進度摘要、方案摘要）內容長度不一樣，動作若貼著
                  內容走，兩顆按鈕就會一高一低；釘底之後它們對齊成同一條線。 -->
+            <!-- live 限定（2026-08-19，D201）：最近發文的鮮度一行＋卡底通用發文鈕。
+                 兩者都由 JS 依 proj.status 開關，其他狀態維持 8/18 的撤除決定。 -->
+            <p class="field__hint" id="pd-ov-prog-fresh" hidden></p>
             <div class="card__foot stack stack--tight">
+              <button class="btn btn--primary btn--block" type="button" id="pd-ov-prog-post" data-modal-open="pd-edit-update" hidden data-i18n="project-detail.btn.post-update">Post update</button>
               <button class="btn btn--outline btn--block" type="button" data-goto-tab="progress" data-i18n="pd-ov.prog.go">Go to progress</button>
             </div>
           </section>
@@ -546,26 +555,29 @@
                   <th scope="col" data-i18n="project-detail.golive.field.date">Date</th>
                 </tr>
               </thead>
+              <!-- 2026-08-19（A8）：五格日期原是 i18n 常數（51 項全看同一組「05/18／07/06 剩 21 天」，
+                   與釘死的今天 08/17 自相矛盾）。改由 renderDataPanels() 讀該項目自己的
+                   fundFrom／fund.period／fund.left／list.period／list.left／進度 store 最後一顆里程碑填入。 -->
               <tbody>
                 <tr class="ztor-table__row" data-type="fund">
                   <td class="ztor-table__feature" data-i18n="project-detail.tl.published">Co-creation published</td>
-                  <td data-i18n="project-detail.tl.published-val">May 18, 2026</td>
+                  <td id="pd-sched-fund-open"></td>
                 </tr>
                 <tr class="ztor-table__row" data-type="preorder">
                   <td class="ztor-table__feature" data-i18n="project-detail.tl.pre-open">Pre-order opened</td>
-                  <td data-i18n="project-detail.tl.published-val">May 18, 2026</td>
+                  <td id="pd-sched-pre-open"></td>
                 </tr>
                 <tr class="ztor-table__row" data-type="fund">
                   <td class="ztor-table__feature" data-i18n="project-detail.tl.deadline">Co-creation deadline</td>
-                  <td data-i18n="project-detail.tl.deadline-val">Jul 06, 2026 · 21 days left</td>
+                  <td id="pd-sched-fund-deadline"></td>
                 </tr>
                 <tr class="ztor-table__row" data-type="preorder">
                   <td class="ztor-table__feature" data-i18n="project-detail.tl.pre-deadline">Pre-order deadline</td>
-                  <td data-i18n="project-detail.tl.pre-deadline-val">Jul 06, 2026 · 9 days left</td>
+                  <td id="pd-sched-pre-deadline"></td>
                 </tr>
                 <tr data-type="preorder">
                   <td class="ztor-table__feature" data-i18n="project-detail.tl.delivery">Expected delivery</td>
-                  <td data-i18n="project-detail.tl.delivery-val">Oct 2026</td>
+                  <td id="pd-sched-delivery"></td>
                 </tr>
               </tbody>
             </table>
@@ -910,7 +922,10 @@
 
             <div class="bento mt-16">
               <!-- 計畫項目收益：收入 − 支出 ＝ 淨收益（小計列可展開看組成）
-                   2026-07-25 B 反饋：改滿版寬（span-12），淨收益分配卡改排下方一整列 -->
+                   2026-07-25 B 反饋：改滿版寬（span-12），淨收益分配卡改排下方一整列
+                   2026-08-19（A10）：金額原本寫死 USD 500,000 一組、51 項全同值。改由
+                   renderDataPanels() 以該項目 perf.usd（沒有就用 fund.raised）為基準等比縮放
+                   各列（data-deep-amt 標記），HTML 裡的數字只是後備樣板。 -->
               <section class="card bento--span-12">
                 <div class="card__head">
                   <h3 class="card__title" data-i18n="pd-earn.items.title">Project item earnings</h3>
@@ -922,13 +937,13 @@
                       <div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.income.sub">Income subtotal</div></div>
                     </div>
                     <div class="pd-deep__amount-group">
-                      <span class="data-list__amount">USD 500,000</span>
+                      <span class="data-list__amount" data-deep-amt="income">USD 500,000</span>
                       <button class="btn btn--icon btn--sm" type="button" data-sub-toggle="income" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
                     </div>
                   </div>
                   <div class="data-list__row data-list__row--child" data-sub-child="income" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.royalty">Item royalty income</div></div>
-                    <div class="data-list__amount">USD 500,000</div>
+                    <div class="data-list__amount" data-deep-amt="income">USD 500,000</div>
                   </div>
 
                   <div class="data-list__row">
@@ -937,21 +952,21 @@
                       <div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.expense.sub">Expense subtotal</div></div>
                     </div>
                     <div class="pd-deep__amount-group">
-                      <span class="data-list__amount">USD 100,000</span>
+                      <span class="data-list__amount" data-deep-amt="expense">USD 100,000</span>
                       <button class="btn btn--icon btn--sm" type="button" data-sub-toggle="expense" aria-expanded="false" aria-label="Expand" data-i18n-aria-label="pd-earn.deep.expand"><i data-lucide="chevron-down" class="ztor-icon"></i></button>
                     </div>
                   </div>
                   <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.platform">Platform fee</div></div>
-                    <div class="data-list__amount">USD 50,000</div>
+                    <div class="data-list__amount" data-deep-amt="platform">USD 50,000</div>
                   </div>
                   <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.promo">Promotion &amp; marketing</div></div>
-                    <div class="data-list__amount">USD 25,000</div>
+                    <div class="data-list__amount" data-deep-amt="promo">USD 25,000</div>
                   </div>
                   <div class="data-list__row data-list__row--child" data-sub-child="expense" hidden>
                     <div class="data-list__row-main"><div class="data-list__body" data-i18n="pd-earn.item.critic">Critic commission</div></div>
-                    <div class="data-list__amount">USD 25,000</div>
+                    <div class="data-list__amount" data-deep-amt="critic">USD 25,000</div>
                   </div>
 
                   <div class="data-list__row">
@@ -959,7 +974,7 @@
                       <div class="data-list__icon data-list__icon--sm data-list__icon--success"><i data-lucide="equal" class="ztor-icon"></i></div>
                       <div class="data-list__body"><div class="data-list__title" data-i18n="pd-earn.net.plain">Net income</div></div>
                     </div>
-                    <div class="data-list__amount" style="color:var(--status-success)">USD 400,000</div>
+                    <div class="data-list__amount" style="color:var(--status-success)" data-deep-amt="net">USD 400,000</div>
                   </div>
                 </div>
               </section>
@@ -971,20 +986,20 @@
                 <div class="donut mt-16" style="--donut-p:70">
                   <div class="donut__center">
                     <div class="donut__label" data-i18n="pd-earn.net.plain">Net income</div>
-                    <div class="donut__value">USD 400,000</div>
+                    <div class="donut__value" data-deep-amt="net">USD 400,000</div>
                   </div>
                 </div>
                 <div class="source-list">
                   <div class="source-row">
                     <span class="source-row__swatch" style="background:var(--chart-3)"></span>
                     <span data-i18n="pd-earn.dist.founder">Initiator</span>
-                    <span class="source-row__amt">USD 280,000</span>
+                    <span class="source-row__amt" data-deep-amt="founder">USD 280,000</span>
                     <span class="source-row__pct">70%</span>
                   </div>
                   <div class="source-row">
                     <span class="source-row__swatch" style="background:var(--chart-5)"></span>
                     <span data-i18n="pd-earn.dist.supporter">Supporters</span>
-                    <span class="source-row__amt">USD 120,000</span>
+                    <span class="source-row__amt" data-deep-amt="supporters">USD 120,000</span>
                     <span class="source-row__pct">30%</span>
                   </div>
                 </div>
@@ -1009,11 +1024,11 @@
                   <th data-i18n="pd-earn.col.type">Activity type</th>
                 </tr></thead>
                 <tbody>
-                  <tr class="ztor-table__row"><td>2026-09-11</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 40</td><td data-i18n="pd-earn.act.critic15">Critic commission (15%)</td></tr>
-                  <tr class="ztor-table__row"><td>2026-09-10</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 30</td><td data-i18n="pd-earn.act.ott" data-earn-royalty-act>OTT royalty (2%)</td></tr>
-                  <tr class="ztor-table__row"><td>2026-09-08</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.license">Licensing (2%)</td></tr>
-                  <tr class="ztor-table__row"><td>2026-09-07</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 200</td><td data-i18n="pd-earn.act.critic12">Critic commission (12%)</td></tr>
-                  <tr class="ztor-table__row"><td>2026-09-04</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.advance">Critic advance</td></tr>
+                  <tr class="ztor-table__row"><td>2026-08-16</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 40</td><td data-i18n="pd-earn.act.critic15">Critic commission (15%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-08-12</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 30</td><td data-i18n="pd-earn.act.ott" data-earn-royalty-act>OTT royalty (2%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-08-05</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.license">Licensing (2%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-07-28</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 200</td><td data-i18n="pd-earn.act.critic12">Critic commission (12%)</td></tr>
+                  <tr class="ztor-table__row"><td>2026-07-19</td><td style="text-align:right;font-weight:var(--fw-regular)">USD 10</td><td data-i18n="pd-earn.act.advance">Critic advance</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1028,59 +1043,65 @@
            隨發行模式換字（共創＝支持者／預購＝預購，見 §3 分群表）。兩型的內容本來就
            互斥（共創有分潤名額與撥款、預購沒有），所以同一格底下用 data-type 分流，
            不是把兩份內容並排。內容提取自 my-cocreate-proposal.html，數字示意。 -->
+      <!-- 2026-08-19（A7）：本分頁原是整頁寫死的靜態數字（「5,525 位支持者」「USD 7,200／9,000」
+           「Digital $13…」對 51 項全部同一組，與總覽 KPI 直接對撞）。改由 renderDataPanels()
+           讀 proj.fund／proj.list／window.ztorPdBundles 動態填入；HTML 保留的數字只是後備樣板。 -->
       <div class="tab-panel" data-panel="backers" data-type="fund preorder">
         <div data-type="fund">
         <div class="bento mt-16">
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-cofund.kpi.people">Backers</div>
-            <div class="kpi__value">5,525</div>
+            <div class="kpi__value" id="pd-cofund-people">—</div>
             <div class="kpi__meta" data-i18n="pd-cofund.kpi.people-meta">All charge states included</div>
           </div>
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-cofund.kpi.plans">Support plans</div>
-            <div class="kpi__value">3</div>
-            <div class="kpi__meta" data-i18n="pd-cofund.kpi.plans-meta">Digital · Physical + digital · Premium</div>
+            <div class="kpi__value" id="pd-cofund-plans">—</div>
+            <div class="kpi__meta" id="pd-cofund-plans-meta"></div>
           </div>
           <div class="kpi bento--span-4">
-            <div class="kpi__label" data-i18n="pd-cofund.kpi.live">Live since</div>
-            <div class="kpi__value">2026-06-01</div>
-            <div class="kpi__meta" data-i18n="pd-cofund.kpi.live-meta">Open to view</div>
+            <div class="kpi__label" data-i18n="pd-cofund.kpi.live">Campaign start</div>
+            <div class="kpi__value" id="pd-cofund-since">—</div>
+            <div class="kpi__meta" data-i18n="pd-cofund.kpi.live-meta">Backing open since this date</div>
           </div>
         </div>
         <div class="bento mt-24">
 
-          <!-- 共創金額 -->
+          <!-- 共創金額：已募／目標／達成率讀 fund.raised／goal／pct；可撥付＝已募扣 8.4%＋HKD$2.40
+               系統費的示意推導（原型沒有逐筆扣款資料）。 -->
           <section class="card bento--span-7">
             <div class="card__head"><h3 class="card__title" data-i18n="cocreate.payout.title">Co-creation funds</h3></div>
             <div class="funding-panel funding-panel--card" style="margin:0">
               <div class="funding-panel__amount-row">
-                <div class="funding-panel__amount">USD 7,200</div>
-                <span class="funding-panel__backers" data-i18n="pd-cofund.payable">/ payable USD 9,000</span>
+                <div class="funding-panel__amount" id="pd-cofund-amount">—</div>
+                <span class="funding-panel__backers" id="pd-cofund-goal-of"></span>
               </div>
-              <span class="funding-panel__goal" data-i18n="pd-cofund.collected">Collected · after 8.4% + HKD$2.40 fees</span>
+              <span class="funding-panel__goal" id="pd-cofund-payable-note"></span>
               <div class="funding-panel__bar-row">
-                <div class="project-bar"><div class="project-bar__fill" style="width:80%"></div></div>
-                <span class="funding-panel__pct">80%</span>
+                <div class="project-bar"><div class="project-bar__fill" id="pd-cofund-bar" style="width:0%"></div></div>
+                <span class="funding-panel__pct" id="pd-cofund-pct"></span>
               </div>
               <div class="funding-panel__status-row">
-                <span class="funding-panel__countdown" data-i18n="pd-cofund.pledged">Pledged USD 10,000</span>
-                <span class="funding-panel__period" data-i18n="pd-cofund.goal">Goal USD 10,000</span>
+                <span class="funding-panel__countdown" id="pd-cofund-left"></span>
+                <span class="funding-panel__period" id="pd-cofund-period"></span>
               </div>
             </div>
           </section>
 
-          <!-- 撥款進度（沿用 tranche 規則）-->
+          <!-- 撥款進度（沿用 tranche 規則）。金額＝fund.raised 按 40/30/30 拆（B9 同一條規則：
+               succeeded＝已撥第一期 40%、live＝已撥兩期 70%）；示意推導，原型沒有真的撥款資料。 -->
           <section class="card bento--span-5">
             <div class="card__head"><h3 class="card__title" data-i18n="cocreate.tranche.title">Payout progress</h3><span class="badge badge--info"><span data-i18n="pd-cf.tranche-tier">Budget under 50k</span></span></div>
             <p class="field-text" style="margin:0 0 12px" data-i18n="pd-cf.tranche-rule">Budget tier under 50k pays out in three tranches — 40% / 30% / 30%. Each tranche after the first is released once its materials are submitted.</p>
             <div class="data-list">
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="clock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s1">All backer charges completed</div><div class="data-list__meta" data-i18n="pd-cf.s1-meta">40% · after goal reached</div></div></div><div class="data-list__amount">USD 3,600</div></div>
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="file-check" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s2">Submit script / cast / schedule / materials</div><div class="data-list__meta" data-i18n="pd-cf.s2-meta">30% · pending submission</div></div></div><div class="data-list__amount">USD 2,700</div></div>
-              <div class="data-list__row"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s3">Release &amp; distribution</div><div class="data-list__meta" data-i18n="pd-cf.s3-meta">30% · planned Aug 2026</div></div></div><div class="data-list__amount">USD 2,700</div></div>
+              <div class="data-list__row" data-tranche-row="1"><div class="data-list__row-main"><div class="data-list__icon data-list__icon--success"><i data-lucide="clock" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s1">All backer charges completed</div><div class="data-list__meta" data-i18n="pd-cf.s1-meta">40% · after goal reached</div></div></div><div class="data-list__amount" data-tranche-amt="1">—</div></div>
+              <div class="data-list__row" data-tranche-row="2"><div class="data-list__row-main"><div class="data-list__icon" data-tranche-icon="2"><i data-lucide="file-check" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s2">Submit script / cast / schedule / materials</div><div class="data-list__meta" data-tranche-meta="2" data-i18n="pd-cf.s2-meta">30% · pending submission</div></div></div><div class="data-list__amount" data-tranche-amt="2">—</div></div>
+              <div class="data-list__row" data-tranche-row="3"><div class="data-list__row-main"><div class="data-list__icon"><i data-lucide="flag" class="ztor-icon"></i></div><div class="data-list__body"><div class="data-list__title" data-i18n="cocreate.tranche.s3">Release &amp; distribution</div><div class="data-list__meta" data-tranche-meta="3">30%</div></div></div><div class="data-list__amount" data-tranche-amt="3">—</div></div>
             </div>
           </section>
 
-          <!-- 方案支持統計 -->
+          <!-- 方案支持統計：列由方案編輯器（ztorPdBundles）的同一份方案生成，
+               名稱與價格與方案分頁永遠一致；每方案支持人數＝fund.backers 的示意拆分。 -->
           <section class="card bento--span-12">
             <div class="card__head"><h3 class="card__title" data-i18n="cocreate.tiers.title">Support by plan</h3></div>
             <div style="overflow-x:auto">
@@ -1092,16 +1113,13 @@
                   <th style="width:120px" data-i18n="pd-cofund.col.pct">Filled</th>
                   <th style="text-align:right;width:110px" data-i18n="pd-cf.col.backers">Backers</th>
                 </tr></thead>
-                <tbody>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)" data-i18n="project-detail.plan.digital">Digital</td><td>$13</td><td data-i18n="pd-cf.slots.unlimited">Unlimited</td><td>—</td><td style="text-align:right;font-weight:var(--fw-regular)">500</td></tr>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)" data-i18n="project-detail.plan.bundle">Physical + digital</td><td>$65</td><td>5,000</td><td>100%</td><td style="text-align:right;font-weight:var(--fw-regular)">5,000</td></tr>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)" data-i18n="project-detail.plan.premium">Premium</td><td>$385</td><td>50</td><td>50%</td><td style="text-align:right;font-weight:var(--fw-regular)">25</td></tr>
-                </tbody>
+                <tbody id="pd-cofund-tiers"></tbody>
               </table>
             </div>
           </section>
 
-          <!-- 支持者明細 -->
+          <!-- 支持者明細：示意名單（人名固定），方案名稱取自方案編輯器、日期以 fundFrom
+               起算——原型沒有逐筆支持者資料。 -->
           <section class="card bento--span-12">
             <div class="card__head"><h3 class="card__title" data-i18n="cocreate.backers.title">Backer detail</h3><button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button></div>
             <div style="overflow-x:auto">
@@ -1112,12 +1130,7 @@
                   <th style="width:170px" data-i18n="pd-cf.col.date">Date</th>
                   <th style="text-align:right;width:130px" data-i18n="pd-cf.col.charge">Charge</th>
                 </tr></thead>
-                <tbody>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">Gary</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-30 09:30</td><td style="text-align:right"><span class="badge badge--success"><span data-i18n="pd-cofund.charged">Charged</span></span></td></tr>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">Mary Ann</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-29 09:30</td><td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-cf.pending-charge">Charge on goal</span></span></td></tr>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">王立揚</td><td data-i18n="project-detail.plan.premium">Premium</td><td>2026-04-28 09:30</td><td style="text-align:right"><span class="badge badge--warning"><span data-i18n="cocreate.backers.retry">Retrying charge</span></span></td></tr>
-                  <tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">Mr JJJ</td><td data-i18n="project-detail.plan.bundle">Physical + digital</td><td>2026-04-27 09:30</td><td style="text-align:right"><span class="badge"><span data-i18n="pd-cofund.refunded">Refunded</span></span></td></tr>
-                </tbody>
+                <tbody id="pd-cofund-backers"></tbody>
               </table>
             </div>
             <div class="text-sub" style="font-size: var(--fs-11);margin-top:10px" data-i18n="pd-cf.charge-note">Cards verified on pledge · charged only when the goal is reached.</div>
@@ -1128,40 +1141,44 @@
 
         <!-- 預購：規格 §3.1／§5.3——提前下單、達最少預購數（累計賣出的作品份數）再生產、
              未達量全額退款。方案在「設定」分頁維護（D166／D167），這一區只呈現集單與訂單。 -->
+        <!-- 2026-08-19（A7 預購半邊）：62/100・$28・「Jul 06 剩 9 天」原為靜態同一組。
+             改由 renderDataPanels() 讀 proj.list（集單分數與 period／left，資料層 2026-08-19
+             剛補上 period）、proj.bar 與 meta 裡的單價填入；沒有集單資料的預購項目
+             （如已上線的舊商品）整張進度卡與訂單明細卡隱藏，不編造數字。 -->
         <div data-type="preorder">
         <div class="bento mt-16">
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-pre.kpi.orders">Pre-orders</div>
-            <div class="kpi__value">62</div>
+            <div class="kpi__value" id="pd-pre-orders">—</div>
             <div class="kpi__meta" data-i18n="pd-pre.kpi.orders-meta">Cards verified · charged when the minimum is met</div>
           </div>
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-pre.kpi.min">Minimum units</div>
-            <div class="kpi__value">100</div>
+            <div class="kpi__value" id="pd-pre-min">—</div>
             <div class="kpi__meta" data-i18n="pd-pre.kpi.min-meta">Below the minimum = full refund</div>
           </div>
           <div class="kpi bento--span-4">
             <div class="kpi__label" data-i18n="pd-pre.kpi.deadline">Pre-order deadline</div>
-            <div class="kpi__value">Jul 06</div>
-            <div class="kpi__meta" data-i18n="pd-pre.kpi.deadline-meta">9 days left</div>
+            <div class="kpi__value" id="pd-pre-deadline">—</div>
+            <div class="kpi__meta" id="pd-pre-deadline-meta"></div>
           </div>
         </div>
         <div class="bento mt-24">
-          <section class="card bento--span-7">
+          <section class="card bento--span-7" id="pd-pre-progress-card">
             <div class="card__head"><h3 class="card__title" data-i18n="pd-pre.progress.title">Order progress</h3></div>
             <div class="funding-panel funding-panel--card" style="margin:0">
               <div class="funding-panel__amount-row">
-                <div class="funding-panel__amount">62 / 100</div>
-                <span class="funding-panel__backers" data-i18n="pd-pre.unit">Unit price $28</span>
+                <div class="funding-panel__amount" id="pd-pre-progress">—</div>
+                <span class="funding-panel__backers" id="pd-pre-unitprice"></span>
               </div>
               <span class="funding-panel__goal" data-i18n="pd-pre.progress.goal">Reaches the minimum to go into production</span>
               <div class="funding-panel__bar-row">
-                <div class="project-bar"><div class="project-bar__fill" style="width:62%"></div></div>
-                <span class="funding-panel__pct">62%</span>
+                <div class="project-bar"><div class="project-bar__fill" id="pd-pre-bar" style="width:0%"></div></div>
+                <span class="funding-panel__pct" id="pd-pre-pct"></span>
               </div>
               <div class="funding-panel__status-row">
-                <span class="funding-panel__countdown" data-i18n="pd-pre.progress.left">9 days left</span>
-                <span class="funding-panel__period" data-i18n="pd-pre.progress.delivery">Expected delivery Oct 2026</span>
+                <span class="funding-panel__countdown" id="pd-pre-left"></span>
+                <span class="funding-panel__period" id="pd-pre-delivery"></span>
               </div>
               <p class="funding-panel__note">
                 <i data-lucide="info" class="ztor-icon ztor-icon--xs"></i>
@@ -1176,7 +1193,8 @@
               <span data-i18n="pd-pre.refund.body"><strong>Full refund guaranteed.</strong> If pre-orders don't reach 100 by the deadline, every order is refunded in full. Buyers are only charged once the minimum is met.</span>
             </div>
           </section>
-          <section class="card bento--span-12">
+          <!-- 訂單明細：示意名單（人名固定），編號接在集單數之後、日期以 fundFrom 起算。 -->
+          <section class="card bento--span-12" id="pd-pre-orders-card">
             <div class="card__head"><h3 class="card__title" data-i18n="pd-pre.orders.title">Pre-order detail</h3><button class="btn btn--ghost btn--sm" data-i18n="cocreate.backers.all">View full list</button></div>
             <div style="overflow-x:auto">
               <table class="ztor-table">
@@ -1186,11 +1204,7 @@
                   <th style="width:170px" data-i18n="pd-cf.col.date">Order date</th>
                   <th style="text-align:right;width:130px" data-i18n="pd-cf.col.charge">Charge</th>
                 </tr></thead>
-                <tbody>
-                  <tr class="ztor-table__row"><td>#62</td><td style="font-weight:var(--fw-regular)">Yiu Pictures</td><td>2026-06-28 14:20</td><td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-pre.charge.min">Charge on minimum</span></span></td></tr>
-                  <tr class="ztor-table__row"><td>#61</td><td style="font-weight:var(--fw-regular)">Liminal Films</td><td>2026-06-27 11:05</td><td style="text-align:right"><span class="badge badge--info"><span data-i18n="pd-pre.charge.min">Charge on minimum</span></span></td></tr>
-                  <tr class="ztor-table__row"><td>#60</td><td style="font-weight:var(--fw-regular)">Rae Lin</td><td>2026-06-26 09:41</td><td style="text-align:right"><span class="badge badge--warning"><span data-i18n="cocreate.backers.retry">Retrying charge</span></span></td></tr>
-                </tbody>
+                <tbody id="pd-pre-orders-body"></tbody>
               </table>
             </div>
           </section>
@@ -1225,11 +1239,13 @@
             <span data-i18n="pd-roy.proposal-note"><strong>Proposal · not finalized —</strong> royalty reporting for music-type co-creation projects. Distributors deliver reports periodically (some sources lag ~a quarter), counted separately from funding. Figures illustrative, pending product decision.</span>
           </div>
 
-          <!-- Quarterly royalty total -->
+          <!-- Quarterly royalty total
+               2026-08-19（B3）：總額原為 51 項同值的靜態 US$1,590。改由 renderDataPanels()
+               按該項目 perf.usd 等比縮放；期間字樣（Q2）維持不動。 -->
           <div class="bento mt-16">
             <div class="kpi bento--span-12">
               <div class="kpi__label" data-i18n="pd-roy.total-label">Q2 2026 royalties</div>
-              <div class="kpi__value">US$1,590</div>
+              <div class="kpi__value" id="pd-roy-total">US$1,590</div>
               <div class="kpi__meta" data-i18n="pd-roy.total-meta">Total royalties · Apr–Jun 2026 · all songs, platforms & regions · as of Jun 30</div>
             </div>
           </div>
@@ -1584,7 +1600,7 @@
       <div class="field"><label class="field__label" for="pd-f-mdesc" data-i18n="pd-edit.milestone.desc">Description</label><textarea class="textarea" id="pd-f-mdesc" rows="2" data-i18n-placeholder="pd-edit.milestone.desc-ph" placeholder="What gets delivered at this step"></textarea></div>
       <!-- 狀態與對粉絲端公開：§2.2.10「里程碑」欄位表。完成日由系統於轉為已完成時寫入，
            創作者不手填，所以這裡沒有那一格。粉絲端的實際呈現屬〔產品待確認〕（主規格 §8.24 第 3 項）。 -->
-      <div class="field"><label class="field__label" for="pd-f-mstatus" data-i18n="pd-edit.milestone.status">Status</label><select class="select" id="pd-f-mstatus"><option value="todo" data-i18n="pd-prog.ms.todo">Not started</option><option value="doing" data-i18n="pd-prog.ms.doing">In progress</option><option value="done" data-i18n="pd-prog.ms.done">Done</option></select></div>
+      <div class="field"><label class="field__label" for="pd-f-mstatus" data-i18n="pd-edit.milestone.status">Status</label><select class="select" id="pd-f-mstatus"><option value="todo" data-i18n="pd-prog.ms.todo">Not started</option><option value="done" data-i18n="pd-prog.ms.done">Done</option></select></div>
       <div class="field"><span class="field__label" data-i18n="pd-edit.milestone.public">Show to fans</span><div class="flex-row" style="justify-content:space-between;gap:var(--sp-12)"><span class="field__hint" data-i18n="pd-edit.milestone.public.hint">Off keeps it off the public blueprint.</span><div class="switch switch--on" id="pd-f-mpublic"></div></div></div>
       <button class="btn btn--primary mt-16" style="width:100%" data-pd-save="milestone" data-i18n="pd-edit.milestone.submit">Add milestone</button>
     </div>
@@ -1970,6 +1986,17 @@ window.ztorPdLookup = (function () {
     }
     /* 單價目前沒有自己的欄位，只寫在 meta 摘要裡（見 ASSUMPTIONS UIA-121）。 */
     function unitPriceOf() { return metaPick(/單價\s*(\$[\d,.]+)|(\$[\d,.]+)\s*each/); }
+    /* 金額字串（'$88,600'）解析成數字；撥款拆分與深度明細縮放共用。 */
+    function moneyNum(s) { const n = parseFloat(String(s || '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; }
+    /* 預期交付＝進度藍圖最後一顆里程碑（支持者交付）的預計日期，格式 YYYY/MM。
+       2026-08-19（B8／A8）：原本是 i18n 常數「2026/10」，51 項同值；改讀各項目自己的藍圖。 */
+    function deliveryYM() {
+      if (!PROG || !proj || isDirect()) return '';
+      const ms = PROG.milestones(proj);
+      const last = ms.length ? ms[ms.length - 1] : null;
+      if (!last || !last.date) return '';
+      return last.date.getFullYear() + '/' + String(last.date.getMonth() + 1).padStart(2, '0');
+    }
 
     /* KPI 欄位登記表。回傳 null ＝ 這個項目沒有這份資料，該格不畫。
        value/of 分開的理由：「8,420 / 15,000」是一個值，拆兩格會讀成兩個數字。 */
@@ -2000,11 +2027,19 @@ window.ztorPdLookup = (function () {
         case 'unit':
           return unitPriceOf() ? { label: T('pd-ov.kpi.unit', 'Unit price'), value: unitPriceOf() } : null;
         case 'delivery':
-          return { label: T('project-detail.tl.delivery', 'Expected delivery'), value: T('project-detail.tl.delivery-val', 'Oct 2026') };
+          /* 讀進度藍圖最後一顆里程碑的預計日期（B8）；藍圖沒排日期時退回 i18n 常數。 */
+          return { label: T('project-detail.tl.delivery', 'Expected delivery'),
+            value: deliveryYM() || T('project-detail.tl.delivery-val', 'Oct 2026') };
         case 'milestones':
           return { label: T('pd-prog.ms.count', 'Milestones done'), value: String(sum.done), of: ' / ' + sum.total };
-        case 'payout':
-          return { label: T('cocreate.tranche.title', 'Payout progress'), value: '40%', meta: T('pd-ov.kpi.payout-meta', ''), pct: 40 };
+        case 'payout': {
+          /* 示意推導（B9，原型沒有真的撥款資料）：三期 40/30/30——
+             succeeded＝達標收單結束、已撥第一期（40%）；live＝已交付上線、已撥兩期（70%）。
+             支持者分頁的撥款卡（renderDataPanels）照同一條規則拆金額。 */
+          const done = proj.status === 'live' ? 70 : 40;
+          return { label: T('cocreate.tranche.title', 'Payout progress'), value: done + '%',
+            meta: T(done === 70 ? 'pd-ov.kpi.payout-meta-live' : 'pd-ov.kpi.payout-meta', ''), pct: done };
+        }
         case 'revenue':
           /* 剛上線、還沒有任何收入事件時值是「—」；這時不附口徑說明——那句話是用來
              交代「這個數字是誰算的」，沒有數字就沒有要交代的對象。 */
@@ -2129,8 +2164,13 @@ window.ztorPdLookup = (function () {
     /* 已上線：營運摘要（近期收益與觀看）＋ 作品上線資訊（上映日期與編輯入口，§2.2.11）。 */
     function liveStage(todo) {
       const hasWork = !isDirect() || !!rec();
+      /* 已上線的第三格 KPI（2026-08-19 使用者裁決重設計，D201）：
+         里程碑完成度退場——上線之後它永遠停在 N/N，一個不會再動的數字不值得佔一格。
+         共創換成撥款進度：它還在動，而且直接關係到「給支持者的錢走到哪」；
+         預購沒有分潤（D166），第三格不硬湊、只留收入與觀看。 */
       return {
-        kpis: isDirect() ? ['revenue', 'audience'] : ['revenue', 'audience', 'milestones'],
+        kpis: isDirect() ? ['revenue', 'audience']
+          : (proj.type === 'preorder' ? ['revenue', 'audience'] : ['revenue', 'audience', 'payout']),
         work: rec() ? { titleKey: 'pd-ov.title.work', panel: true } : null,
         panel: null,
         next: todo ? { text: todo, label: '', owner: null } : null,
@@ -2189,7 +2229,10 @@ window.ztorPdLookup = (function () {
       const overdue = pending.filter(m => m.date && PROG.diffDays(m.date, T0) < 0).sort((a, b) => a.date - b.date);
       const dated = pending.filter(m => m.date && PROG.diffDays(m.date, T0) >= 0).sort((a, b) => a.date - b.date);
       const undated = pending.filter(m => !m.date);
-      return overdue.concat(dated).concat(undated).slice(0, 3);
+      /* 取 4 顆（2026-08-18 由 3 顆放寬）：藍圖擴成六顆之後，只留三顆會讓「還有幾件沒做」
+         這件事在總覽上被截掉一段而且沒說。截斷本身仍然可能發生，所以卡頭補了完成度
+         徽章——摘要可以短，但不能讓人以為這就是全部。 */
+      return overdue.concat(dated).concat(undated).slice(0, 4);
     }
 
     function renderStage() {
@@ -2303,11 +2346,15 @@ window.ztorPdLookup = (function () {
         if (cfg.progress && PROG) {
           const T0 = PROG.today();
           const sum = PROG.summary(proj);
-          /* 2026-08-18 撤除（墓碑）：卡頭的徽章。它先是「完成度 0/3」、同日改成「N 件逾期」，
-             再同日撤除——逾期改成掛在那一列右端的標籤之後，卡頭再說一次「1 件逾期」就是
-             同一件事講兩遍，而且列上那顆才指得出是哪一顆。 */
+          /* 卡頭徽章＝完成度（2026-08-18 第三輪復活）。它先是「完成度 0/3」、同日改成
+             「N 件逾期」而後撤除——撤的理由是逾期已經寫在那一列右端，卡頭再說一次是同一件事
+             講兩遍。這一輪換回完成度，講的是另一件事：底下只列最近要處理的幾顆，
+             「總共幾顆、做完幾顆」在總覽上原本一個字都沒有，而清單會截斷。
+             進度分頁的同名 KPI 不算重複——那是另一個畫面，這裡的總覽沒有它。 */
           const count = document.getElementById('pd-ov-prog-count');
-          count.hidden = true;
+          count.textContent = T('pd-ov.prog.done-of', '{d} of {t} done')
+            .replace('{d}', sum.done).replace('{t}', sum.total);
+          count.hidden = !sum.total;
 
           const list = upcomingMilestones();
           /* 2026-08-18（使用者裁決，參考 Project status 那份設計）：這一份不是時間軸的縮圖，
@@ -2315,12 +2362,13 @@ window.ztorPdLookup = (function () {
              正在做的那一顆整列上色，還沒到的整列壓淡。時間軸（進度分頁）不跟著改。 */
           const rows = list.map(m => {
             const over = m.date && PROG.diffDays(m.date, T0) < 0;
-            const mod = over ? 'alert' : (m.status === 'doing' ? 'current' : 'todo');
+            /* 2026-08-18 使用者裁決：里程碑取消「進行中」。剩下的兩態＋逾期就是全部。 */
+            const mod = over ? 'alert' : 'todo';
             /* 記號是一顆實心點（.pmark，與時間軸共用），裡面放不含外圈的驚嘆號或打勾——
                alert-circle／check-circle 自帶一個圓，疊在點上會變成兩個同心圓。
                「進行中」不放時鐘：藍色本身就在說它進行中，而時鐘跟日期講的是同一件事。 */
             /* 每一顆里程碑都是一個打勾格：還沒到淡勾、完成白勾、逾期換驚嘆號。 */
-            const ic = over ? 'exclamation-mark' : (m.status === 'doing' ? '' : 'check');
+            const ic = over ? 'exclamation-mark' : 'check';
             const meta = [
               m.date ? fmtDay(m.date) : T('pd-ov.prog.nodate', 'No date yet'),
               m.pub ? '' : T('pd-prog.ms.backers', 'Backers only')
@@ -2351,6 +2399,33 @@ window.ztorPdLookup = (function () {
               '<span class="step-list__meta">' + esc(T(done ? 'pd-ov.prog.all-done-meta' : 'pd-ov.prog.none-meta', '')) + '</span>' +
               '</div></div>');
           }
+          /* 已上線之後這張卡換問題（2026-08-19 使用者裁決重設計，D201）：交付故事完結，
+             「接下來要交代什麼」沒有答案了，這張卡改答「我多久沒跟支持者說話了」——
+             時間軸不關閉（§2.2.10 狀態變體表 live 列），發文是這個階段唯一持續的動作。
+             所以 live 時列出最近一則更新的鮮度，卡底補回通用的「發布更新」。
+             （8/18 撤掉的「最近更新 · 日期」與卡底發文鈕都只在 live 復活：當時撤除的理由
+             ——底下每一列自帶預選好的發文鈕、日期屬回頭看——在沒有待完成里程碑的 live
+             狀態都不成立：沒有列可帶鈕，鮮度正是要往前看的依據。） */
+          const fresh = document.getElementById('pd-ov-prog-fresh');
+          const postBtn = document.getElementById('pd-ov-prog-post');
+          const isLive = proj.status === 'live';
+          if (fresh) {
+            fresh.hidden = !isLive;
+            if (isLive) {
+              const ups = PROG.updates(proj).slice().sort((a, b) => b.publishedAt - a.publishedAt);
+              const last = ups[0];
+              if (last) {
+                const days = PROG.diffDays(T0, last.publishedAt);
+                const when = days <= 0 ? T('pd-ov.prog.fresh-today', 'today')
+                  : T('pd-ov.prog.fresh-days', '{n} days ago').replace('{n}', days);
+                fresh.textContent = T('pd-ov.prog.fresh', 'Last post {when}').replace('{when}', when) +
+                  ' · ' + L(last.title);
+              } else {
+                fresh.textContent = T('pd-ov.prog.fresh-none', 'You have not posted since launch.');
+              }
+            }
+          }
+          if (postBtn) postBtn.hidden = !isLive;
           document.getElementById('pd-ov-progress-list').innerHTML = rows.join('');
           icons(progCard);
 
@@ -2742,7 +2817,6 @@ window.ztorPdLookup = (function () {
     function todayNode(ctx) {
       const T0 = PROG.today();
       let lede = '', note = '', alert = false;
-      const nameOf = m => L(m.name);
 
       /* 2026-08-18（A2）：今天這一列改講**跨里程碑的一句體溫計**，不再點名某一顆。
          發文框搬到那顆里程碑底下之後，原本的「{name} 逾期 {n} 天」跟它下面一格逐字
@@ -2778,17 +2852,13 @@ window.ztorPdLookup = (function () {
         lede = ledeHTML(k, 'Every milestone is done.');
       }
 
-      /* 被今天承載的那一顆里程碑（今天到期、或今天標成完成）把它的說明、動作與掛在
-         它底下的更新一起帶過來——它已經不在未來段／過去段出現，內容不能跟著消失。 */
-      const carry = ctx.doneToday || ctx.dueToday;
-      let carried = '';
-      if (carry) {
-        const kids = PROG.updates(proj).filter(u => u.milestoneId === carry.id);
-        if (L(carry.desc)) note = L(carry.desc);
-        carried =
-          (ctx.frozen ? '' : '<div class="ptl__acts">' + msMenu(carry.id) + '</div>') +
-          (kids.length ? '<div class="ptl__updates">' + kids.map(u => updateHTML(u, 'nested')).join('') + '</div>' : '');
-      }
+      /* 2026-08-18 撤除（墓碑）：今天那一格「承載」今天到期／今天完成的那一顆里程碑。
+         它把那顆的說明、動作與掛在底下的更新搬進今天這一列，那顆因此在軸上沒有自己的列，
+         名字整條軸都找不到（使用者回報「項目進度沒有這一項」）。
+         規格 §2.2.10 狀態變體表本來就寫著「該顆落在今天的日期位置、**自成一列**，
+         不併進今天那一列」——是原型沒跟上，所以改原型不改規格。今天那一列因此回到
+         純粹的跨里程碑摘要，不點名任何一顆（D197）。 */
+      const carried = '';
 
       return '<div class="ptl__node ptl__node--today' + (alert ? ' ptl__node--alert' : '') + '">' +
         '<span class="ptl__date">' + esc(T('pd-prog.today', 'Today')) + '</span>' +
@@ -2846,7 +2916,9 @@ window.ztorPdLookup = (function () {
          （2026-08-18 使用者裁決，取代原本的按天分組）。同一天既有里程碑又有一般更新時，
          里程碑列在上、更新在下——里程碑是那天的主要事件。 */
       const flat = [];
-      done.filter(m => m !== doneToday).forEach(m => flat.push({ at: m.completedAt || m.date || createdAt, kind: 'ms', m: m }));
+      /* 今天標成完成的那一顆也照常進過去段（2026-08-18）：它的完成日就是今天，會排在
+         過去段最上面、自成一列。此前它被今天那一格吸收，結果是軸上找不到這一顆。 */
+      done.forEach(m => flat.push({ at: m.completedAt || m.date || createdAt, kind: 'ms', m: m }));
       pastPosts.forEach(u => flat.push({ at: u.publishedAt, kind: 'up', u: u }));
       flat.sort((a, b) => {
         const ka = PROG.dayKey(a.at), kb = PROG.dayKey(b.at);
@@ -2902,6 +2974,9 @@ window.ztorPdLookup = (function () {
           overdue: overdue, nextGoal: PROG.nextGoal(proj), pending: pending, total: ms.length,
           work: completionState(), todayPosts: todayPosts, composer: composerAt === 'today'
         }) +
+        /* 今天到期、尚未完成的那一顆：落在今天的日期位置、自成一列（§2.2.10 狀態變體表）。
+           排在今天那一列正下方，與逾期節點同一個處理——它們都是「今天要面對的事」。 */
+        (dueToday ? msNode(dueToday, { composer: composerAt === 'ms' && dueToday === nextMs }) : '') +
         overdue.map(m => msNode(m, { overdue: true, composer: composerAt === 'ms' && m === nextMs })).join('') +
         past.map(r => r.kind === 'ms' ? msNode(r.m) : gapNode(r.key, r.list)).join('') +
         startHTML;
@@ -3326,6 +3401,25 @@ window.ztorPdLookup = (function () {
       if (sw) sw.classList.toggle('switch--on');
     });
 
+    /* 分享（D200）：複製粉絲端連結。原型沒有真的粉絲端站台，連結是示意值（UIA-122）；
+       真正要交代的行為只有「按了之後我拿到什麼」——連結進剪貼簿、toast 告知。
+       clipboard API 在非安全來源會失敗，退回 execCommand 讓本機 http 預覽也能用。 */
+    document.addEventListener('click', e => {
+      if (!e.target.closest('[data-pd-share]')) return;
+      const link = 'https://ztor.com/p/' + (proj ? proj.id : '');
+      const done = () => window.ztorToast && window.ztorToast.show(T('pd.share.copied', 'Project link copied'), { tone: 'success' });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(done, () => fallbackCopy(link, done));
+      } else fallbackCopy(link, done);
+      function fallbackCopy(text, cb) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        document.body.removeChild(ta); cb();
+      }
+    });
+
     /* 里程碑 kebab（⋯）下拉的收合：原生 <details> 只管開，不會自己收——補上「點了選項就收」
        「點外面就收」「一次只開一個」三件事。同 e-shop 列選單那一套，行為要一致。 */
     document.addEventListener('click', e => {
@@ -3361,7 +3455,228 @@ window.ztorPdLookup = (function () {
       });
     }
 
-    function renderAll() { ensureReleasePost(); renderStage(); renderTimeline(); syncKind(); }
+    /* ══ 靜態面板動態化（2026-08-19，A7／A8／A10、B3／B9）══════════════════════
+       支持者分頁、設定的收單時程表、收益深度明細與版稅 KPI 原本是寫死的示意數字，
+       51 個項目全看同一組（盤查報告 docs/假資料盤查-2026-08-19.md）。以下改讀該項目
+       自己的 fund／list／perf／進度藍圖；原型沒有的資料（每方案支持人數、逐筆支持者
+       與訂單、撥款實況）以**程式內標明的示意拆分**補足，不發明新事實；完全沒有資料
+       來源的區塊直接隱藏。 */
+    function renderDataPanels() {
+      if (!proj) return;
+      const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      const usdFmt = n => 'USD ' + Math.round(n).toLocaleString('en-US');
+      const moneyNum = s => { const n = parseFloat(String(s || '').replace(/[^0-9.]/g, '')); return isFinite(n) ? n : 0; };
+      const parseYmd = s => { const p = String(s || '').split('/'); return p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null; };
+      const isoAt = (start, off, hm) => {
+        const d = new Date(start.getTime()); d.setDate(d.getDate() + off);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0') + ' ' + hm;
+      };
+      const f = proj.fund || null, li = proj.list || null;
+
+      /* ── 設定 · 收單時程（A8）：起日＝fundFrom，截止＝period（進行中補倒數），
+             預期交付＝進度藍圖最後一顆里程碑。 ── */
+      const withLeft = (period, left) =>
+        period ? (period + (left && proj.status === 'published' ? ' · ' + left : '')) : '—';
+      setText('pd-sched-fund-open', proj.fundFrom || '—');
+      setText('pd-sched-pre-open', proj.fundFrom || '—');
+      setText('pd-sched-fund-deadline', withLeft(f ? L(f.period) : '', f ? L(f.left) : ''));
+      setText('pd-sched-pre-deadline', withLeft(li ? L(li.period) : '', li ? L(li.left) : ''));
+      setText('pd-sched-delivery', deliveryYM() || T('pd-setup.schedule.tbd', 'Not set yet'));
+
+      /* ── 支持者分頁 · 共創（A7）── */
+      const BD = window.ztorPdBundles;
+      const bundles = (proj.type === 'fund' && BD) ? BD.getBundles() : [];
+      if (proj.type === 'fund' && f) {
+        setText('pd-cofund-people', f.backers || '—');
+        setText('pd-cofund-since', proj.fundFrom || '—');
+        if (bundles.length) {
+          setText('pd-cofund-plans', String(bundles.length));
+          setText('pd-cofund-plans-meta',
+            bundles.map(b => b.name || T('pd-bundle.untitled', 'Untitled plan')).join(' · '));
+        }
+        const raisedN = moneyNum(f.raised);
+        setText('pd-cofund-amount', f.raised || '—');
+        setText('pd-cofund-goal-of', T('pd-cofund.goal-of', '/ goal {g}').replace('{g}', f.goal || '—'));
+        /* 可撥付＝已募 ×（1 − 8.4%）的量級示意；HKD$2.40 是逐筆固定費，對量級無感，不逐筆算。 */
+        setText('pd-cofund-payable-note', T('pd-cofund.payable-note', '≈ {amt} payable after 8.4% + HKD$2.40 fees')
+          .replace('{amt}', '$' + Math.round(raisedN * 0.916).toLocaleString('en-US')));
+        const bar = document.getElementById('pd-cofund-bar');
+        if (bar) bar.style.width = Math.max(0, Math.min(100, f.pct || 0)) + '%';
+        setText('pd-cofund-pct', (f.pct != null ? f.pct : 0) + '%');
+        setText('pd-cofund-left', L(f.left) || '');
+        setText('pd-cofund-period', L(f.period) || '');
+
+        /* 撥款卡（B9 同一條規則）：金額＝已募 × 40/30/30 的示意拆分；
+           live（已交付上線）＝前兩期已撥，第三期尾款結算中。 */
+        const t1 = Math.round(raisedN * 0.4), t2 = Math.round(raisedN * 0.3);
+        const t3 = Math.round(raisedN) - t1 - t2;
+        const tAmt = { 1: t1, 2: t2, 3: t3 };
+        document.querySelectorAll('[data-tranche-amt]').forEach(el => {
+          el.textContent = raisedN > 0 ? usdFmt(tAmt[el.getAttribute('data-tranche-amt')]) : '—';
+        });
+        const live = proj.status === 'live';
+        const icon2 = document.querySelector('[data-tranche-icon="2"]');
+        if (icon2) icon2.classList.toggle('data-list__icon--success', live);
+        const meta2 = document.querySelector('[data-tranche-meta="2"]');
+        if (meta2) meta2.textContent = live ? T('pd-cf.s2-meta-live', '30% · released') : T('pd-cf.s2-meta', '30% · pending submission');
+        const meta3 = document.querySelector('[data-tranche-meta="3"]');
+        if (meta3) {
+          /* 第三期的「計畫月份」讀交付里程碑（藍圖最後一顆）的預計日期——與設定分頁的
+             「預期交付」同一個來源，不再是烤死的 2026/08（2026-08-19 補修，盤查漏網）。
+             沒有日期就退回不帶月份的說法，不編日期。 */
+          let plan = '';
+          if (!live && PROG) {
+            const ms = PROG.milestones(proj);
+            const lastD = ms.length && ms[ms.length - 1].date;
+            if (lastD) plan = lastD.getFullYear() + '/' + ('0' + (lastD.getMonth() + 1)).slice(-2);
+          }
+          meta3.textContent = live ? T('pd-cf.s3-meta-live', '30% · final settling')
+            : (plan ? T('pd-cf.s3-meta', '30% · planned {m}').replace('{m}', plan)
+                    : T('pd-cf.s3-meta-nodate', '30% · after delivery'));
+        }
+
+        /* 方案支持統計：方案本體（名稱／價格／上限）讀方案編輯器同一份資料；
+           每方案支持人數原型沒有這份資料——以 fund.backers 按遞減權重（入門方案人最多）
+           做示意拆分，限量方案不超過上限、溢出補回第一個方案。 */
+        const tiers = document.getElementById('pd-cofund-tiers');
+        if (tiers && BD && bundles.length) {
+          const total = Math.round(moneyNum(f.backers));
+          const n = bundles.length;
+          const weights = bundles.map((b, i) => n - i);
+          const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+          const capOf = b => (b.avail === 'limited' && +b.cap > 0) ? +b.cap : 0;
+          const counts = bundles.map((b, i) => Math.round(total * weights[i] / wsum));
+          bundles.forEach((b, i) => {
+            const cap = capOf(b);
+            if (cap && counts[i] > cap) { counts[0] += counts[i] - cap; counts[i] = cap; }
+          });
+          counts[0] = Math.max(0, counts[0] + (total - counts.reduce((a, b) => a + b, 0)));
+          tiers.innerHTML = bundles.map((b, i) => {
+            const cap = capOf(b);
+            const filled = cap ? Math.min(100, Math.round(counts[i] / cap * 100)) + '%' : '—';
+            const slots = cap ? cap.toLocaleString('en-US') : T('pd-cf.slots.unlimited', 'Unlimited');
+            return '<tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">' +
+              esc(b.name || T('pd-bundle.untitled', 'Untitled plan')) + '</td>' +
+              '<td>' + esc(BD.money(BD.finalPrice(b))) + '</td>' +
+              '<td>' + esc(slots) + '</td><td>' + filled + '</td>' +
+              '<td style="text-align:right;font-weight:var(--fw-regular)">' + counts[i].toLocaleString('en-US') + '</td></tr>';
+          }).join('');
+        }
+
+        /* 支持者明細：示意名單（人名固定），方案名讀方案編輯器、日期以 fundFrom 起算，
+           扣款狀態依 goalMet（共創達標才扣款）。 */
+        const bkBody = document.getElementById('pd-cofund-backers');
+        const start = parseYmd(proj.fundFrom);
+        if (bkBody && bundles.length && start) {
+          const planName = i => esc(bundles[Math.min(i, bundles.length - 1)].name || '');
+          const charged = proj.goalMet !== false;
+          const badge = k => k === 'ok'
+            ? (charged
+              ? '<span class="badge badge--success"><span>' + esc(T('pd-cofund.charged', 'Charged')) + '</span></span>'
+              : '<span class="badge badge--info"><span>' + esc(T('pd-cf.pending-charge', 'Charge on goal')) + '</span></span>')
+            : k === 'retry'
+              ? '<span class="badge badge--warning"><span>' + esc(T('cocreate.backers.retry', 'Retrying charge')) + '</span></span>'
+              : '<span class="badge"><span>' + esc(T('pd-cofund.refunded', 'Refunded')) + '</span></span>';
+          bkBody.innerHTML = [
+            ['Gary', 1, isoAt(start, 12, '09:30'), badge('ok')],
+            ['Mary Ann', 1, isoAt(start, 11, '14:05'), badge('ok')],
+            ['王立揚', 2, isoAt(start, 10, '21:47'), badge('retry')],
+            ['Mr JJJ', 1, isoAt(start, 9, '09:30'), badge('refund')]
+          ].map(r => '<tr class="ztor-table__row"><td style="font-weight:var(--fw-regular)">' + esc(r[0]) +
+            '</td><td>' + planName(r[1]) + '</td><td>' + r[2] +
+            '</td><td style="text-align:right">' + r[3] + '</td></tr>').join('');
+        }
+      }
+
+      /* ── 支持者分頁 · 預購（A7）：集單分數讀 list.goal、截止由 list.left 推、
+             倒數讀 list.left、交付讀進度藍圖。沒有集單資料的預購項目
+             （已上線的舊商品樣本）隱藏進度卡與訂單卡，KPI 顯示「—」。 ── */
+      if (proj.type === 'preorder') {
+        const gs = li ? L(li.goal) : '';
+        const gm = gs.match(/([\d,]+)\s*\/\s*([\d,]+)/);
+        const sold = gm ? gm[1] : '', minu = gm ? gm[2] : '';
+        setText('pd-pre-orders', sold || '—');
+        setText('pd-pre-min', minu || '—');
+        const leftStr = li ? (L(li.left) || '') : '';
+        const dm = leftStr.match(/(\d+)/);
+        let dl = '—';
+        if (dm && PROG) {
+          /* 截止日＝原型的今天 ＋「剩 N 天」——與 list.period 的迄日同一件事的推導。 */
+          const d = PROG.today(); d.setDate(d.getDate() + +dm[1]);
+          const MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          dl = zh() ? String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0')
+            : MONS[d.getMonth()] + ' ' + d.getDate();
+        }
+        setText('pd-pre-deadline', dl);
+        setText('pd-pre-deadline-meta', leftStr);
+        const hasList = !!gm;
+        const progCard = document.getElementById('pd-pre-progress-card');
+        if (progCard) progCard.hidden = !hasList;
+        if (hasList) {
+          setText('pd-pre-progress', sold + ' / ' + minu);
+          const up = unitPriceOf();
+          setText('pd-pre-unitprice', up ? T('pd-pre.unit', 'Unit price {p}').replace('{p}', up) : '');
+          const pct = proj.bar ? proj.bar.pct
+            : Math.min(100, Math.round(moneyNum(sold) / (moneyNum(minu) || 1) * 100));
+          const bar2 = document.getElementById('pd-pre-bar');
+          if (bar2) bar2.style.width = Math.max(0, Math.min(100, pct)) + '%';
+          setText('pd-pre-pct', pct + '%');
+          setText('pd-pre-left', leftStr);
+          const dv = deliveryYM();
+          setText('pd-pre-delivery', dv ? T('pd-pre.progress.delivery', 'Expected delivery {d}').replace('{d}', dv) : '');
+        }
+        const ordCard = document.getElementById('pd-pre-orders-card');
+        const ordBody = document.getElementById('pd-pre-orders-body');
+        const soldN = Math.round(moneyNum(sold));
+        const st2 = parseYmd(proj.fundFrom);
+        const canRows = soldN > 2 && !!st2;
+        if (ordCard) ordCard.hidden = !canRows;
+        if (ordBody && canRows) {
+          const met = proj.goalMet === true;
+          const okBadge = met
+            ? '<span class="badge badge--success"><span>' + esc(T('pd-cofund.charged', 'Charged')) + '</span></span>'
+            : '<span class="badge badge--info"><span>' + esc(T('pd-pre.charge.min', 'Charge on minimum')) + '</span></span>';
+          ordBody.innerHTML = [
+            ['#' + soldN, 'Yiu Pictures', isoAt(st2, 7, '14:20'), okBadge],
+            ['#' + (soldN - 1), 'Liminal Films', isoAt(st2, 6, '11:05'), okBadge],
+            ['#' + (soldN - 2), 'Rae Lin', isoAt(st2, 5, '09:41'),
+              '<span class="badge badge--warning"><span>' + esc(T('cocreate.backers.retry', 'Retrying charge')) + '</span></span>']
+          ].map(r => '<tr class="ztor-table__row"><td>' + r[0] + '</td><td style="font-weight:var(--fw-regular)">' +
+            esc(r[1]) + '</td><td>' + r[2] + '</td><td style="text-align:right">' + r[3] + '</td></tr>').join('');
+        }
+      }
+
+      /* ── 收益 · 深度明細（A10）：以 perf.usd（沒有就用 fund.raised）為收入小計，
+             各費用列按固定比例（平台 10%／行銷 5%／影評 5%）取到百位，淨收益與
+             70/30 分配由減法回推，加總關係恆成立。比例沿用原靜態樣板 500k 那組。 ── */
+      const deepBase = (proj.perf && typeof proj.perf.usd === 'number') ? proj.perf.usd
+        : (moneyNum(f && f.raised) || moneyNum(metaPick(/(US\$[\d,]+)/)));
+      if (deepBase > 0) {
+        const r100 = n => Math.round(n / 100) * 100;
+        const income = Math.round(deepBase);
+        const platform = r100(income * 0.10), promo = r100(income * 0.05), critic = r100(income * 0.05);
+        const expense = platform + promo + critic;
+        const net = income - expense;
+        const founder = r100(net * 0.7), supporters = net - founder;
+        const vals = { income: income, expense: expense, platform: platform, promo: promo,
+          critic: critic, net: net, founder: founder, supporters: supporters };
+        document.querySelectorAll('[data-deep-amt]').forEach(el => {
+          const v = vals[el.getAttribute('data-deep-amt')];
+          if (v != null) el.textContent = usdFmt(v);
+        });
+      }
+
+      /* ── 版稅 KPI（B3）：基準取原靜態樣本 US$1,590 ÷ 影視版稅樣本項目
+             mong-kok-shootout 的累計 US$21,400 ≈ 7.5%——單季版稅 ≈ 累計收益 × 7.5%，
+             四捨五入到十位。期間字樣（Q2）不動。 ── */
+      const roy = document.getElementById('pd-roy-total');
+      if (roy && proj.perf && typeof proj.perf.usd === 'number') {
+        roy.textContent = 'US$' + (Math.round(proj.perf.usd * 0.075 / 10) * 10).toLocaleString('en-US');
+      }
+    }
+
+    function renderAll() { ensureReleasePost(); renderStage(); renderTimeline(); syncKind(); renderDataPanels(); }
     /* 方案編輯器掛載完成後會回頭叫它重畫總覽的方案摘要（見 pd-bundle-editor 那一段）。 */
     window.ztorPdRenderStage = renderStage;
 
@@ -3862,7 +4177,10 @@ window.ztorPdLookup = (function () {
       document.querySelectorAll('[data-perf-tab]').forEach(el => { el.hidden = !perfReady; });
       const perfHost = document.querySelector('[data-perf="panel"]');
       if (perfHost && perfReady && window.ztorPerformance) {
-        window.ztorPerformance.renderPanel(perfHost, { family: perfFam, cat: p.cat, period: 'q' });
+        /* audience＝該項目的累計觀看／串流：performance-store 據此把示意資料集
+           縮放到與總覽 KPI 同量級（2026-08-19，盤查 B2）。 */
+        window.ztorPerformance.renderPanel(perfHost, { family: perfFam, cat: p.cat, period: 'q',
+          audience: p.perf && p.perf.audience });
       }
       /* 版稅面板依家族切版：音樂＝串流平台佔比＋Top 10 歌曲；影視＝OTT 平台佔比＋授權明細 */
       const royaltyFam = p.family === 'music' ? 'music' : 'film';

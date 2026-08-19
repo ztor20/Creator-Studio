@@ -23,8 +23,10 @@
 <link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/product-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
-<link rel="stylesheet" href="ds-components/sticky-actions.css?v=r2.2">
+<!-- 2026-08-18 撤除：sticky-actions（底部浮出的動作列）。頁面動作改由 .detail-topbar 自己黏在視窗頂端，
+     與項目詳情、活動詳情同日的裁決一致——同一組按鈕不該有兩個家、兩套顯隱規則。 -->
 <link rel="stylesheet" href="ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/section-nav.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* series-detail 專屬：場次表的欄寬（比照 events.html 的做法，欄數為本頁專屬故留頁內）。
@@ -63,29 +65,20 @@
   <main class="main">
     <div class="page">
 
-      <!-- Breadcrumb -->
-      <div class="page-crumb page-crumb--back">
-        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="events.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
-        <a href="events.html" class="card__link" data-i18n="sd.crumb.events">Events</a>
-        <span style="margin:0 6px">/</span>
-        <span data-i18n="sd.h1">REALIVE World Tour — Asia leg</span>
-      </div>
-
-      <!-- ═══ 頁首 ═══
-           這一頁是「系列」本身，不是任何一場。所以標題不掛日期與場地——那是各場自己的事，
-           頁首只說這個系列是什麼、有幾場、橫跨多久。 -->
-      <div class="page-intro">
-        <div>
-          <div class="flex-row" style="gap:8px;margin-bottom:8px">
-            <span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span>
-            <span class="badge badge--neutral"><span data-i18n="sd.badge.series">Series · 3 dates</span></span>
-            <span class="badge badge--info"><span data-i18n="sd.badge.type">Concert</span></span>
-          </div>
-          <h1 class="page-intro__title" data-i18n="sd.h1">REALIVE World Tour — Asia leg</h1>
-          <p class="page-intro__sub" data-i18n="sd.sub">2026/09/12 – 2026/10/03 · 3 venues</p>
+      <!-- 頂列（2026-08-18：母頁排版對齊子活動詳情頁）：麵包屑、捲動後的縮圖＋名稱、頁面動作
+           同一列黏在視窗頂端，用共用的 `.detail-topbar`（shared.css；項目詳情首例、活動詳情
+           同日成為第二個消費者）。母頁與子頁是同一種東西的兩個層級，版面骨架不該是兩套。 -->
+      <div class="detail-topbar">
+        <div class="page-crumb page-crumb--back">
+          <a class="btn btn--icon-circle btn--sm page-crumb__back" href="events.html" aria-label="Back to previous level" data-i18n-aria-label="crumb.back" title="Back to previous level" data-i18n-title="crumb.back"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+          <a href="events.html" class="card__link" data-i18n="sd.crumb.events">Events</a>
+          <span style="margin:0 6px">/</span>
+          <span data-i18n="sd.h1">REALIVE World Tour — Asia leg</span>
         </div>
-        <!-- 儲存放頁首動作區：全站的 sticky-actions.js 會在這一排捲出畫面時自己複製一份吸底，
-             不必在頁內手刻一條動作列（那支元件的 markup 是它產生的，不是手寫的）。 -->
+        <div class="detail-topbar__mini" data-sd-mini hidden>
+          <img class="detail-topbar__cover" id="sd-mini-cover" src="" alt="">
+          <span class="detail-topbar__name" id="sd-mini-name"></span>
+        </div>
         <div class="page-intro__actions">
           <span class="text-sub" data-i18n="sd.save.note">Applies to all 3 dates</span>
           <button class="btn btn--ghost" type="button" data-i18n="sd.btn.preview">View ticket page</button>
@@ -93,19 +86,77 @@
         </div>
       </div>
 
-      <!-- ═══ KPI：整個系列的加總 ═══ -->
-      <div class="bento mt-16">
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.dates">Dates</div><div class="kpi__value">3</div><div class="kpi__meta" data-i18n="sd.kpi.dates-meta">2 on sale · 1 sold out</div></div>
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.sold">Tickets sold</div><div class="kpi__value">1,240 / 1,800</div><div class="kpi__meta" data-i18n="sd.kpi.sold-meta">Every date counts its own stock</div></div>
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.revenue">Revenue</div><div class="kpi__value">$3,732,000</div><div class="kpi__meta" data-i18n="sd.kpi.revenue-meta">Earnings figure · not recomputed</div></div>
-        <div class="kpi bento--span-3"><div class="kpi__label" data-i18n="sd.kpi.next">Next date</div><div class="kpi__value">09/26</div><div class="kpi__meta" data-i18n="sd.kpi.next-meta">Taichung Intercontinental</div></div>
+      <!-- ═══ 頁首 ═══
+           這一頁是「系列」本身，不是任何一場。所以標題不掛日期與場地——那是各場自己的事，
+           頁首只說這個系列是什麼、有幾場、橫跨多久。
+           主視覺在標題左邊（2026-08-18，同子活動詳情頁）：同系列各場刻意同名，圖才是最快的
+           辨識；沒有圖時由 hydrate() 把 __media 整塊收起，不留空框。 -->
+      <div class="page-intro">
+        <div class="page-intro__lead">
+          <span class="page-intro__media" id="sd-hero-img" hidden><img src="" alt=""></span>
+          <div>
+            <div class="flex-row" style="gap:8px;margin-bottom:8px">
+              <span class="badge badge--success"><span data-i18n="events.badge.on-sale">On Sale</span></span>
+              <span class="badge badge--neutral"><span data-i18n="sd.badge.series">Series · 3 dates</span></span>
+              <span class="badge badge--info"><span data-i18n="sd.badge.type">Concert</span></span>
+            </div>
+            <h1 class="page-intro__title" data-i18n="sd.h1">REALIVE World Tour — Asia leg</h1>
+            <p class="page-intro__sub" data-i18n="sd.sub">2026/09/12 – 2026/10/03 · 3 venues</p>
+          </div>
+        </div>
       </div>
 
-      <!-- ═══ Tabs ═══ -->
-      <nav class="tabs mt-24" role="tablist" data-tabs>
-        <button class="tabs__item tabs__item--active" role="tab" data-tab="shared" aria-selected="true" data-i18n="sd.tab.shared">Shared settings</button>
-        <button class="tabs__item" role="tab" data-tab="dates" aria-selected="false" data-i18n="sd.tab.dates">Dates</button>
-      </nav>
+      <!-- ═══ 系列加總（2026-08-18 由四張 .kpi 改成四張卡＋stat-row）═══
+           與子活動詳情頁的數字卡同一種長相：`.kpi` 是清單頁那種密集小卡，詳情頁的數字
+           一格一張卡、標籤在上值在下。四格橫跨兩個分頁都成立，所以留在分頁之外。 -->
+      <div class="bento mt-16">
+        <section class="card bento--span-3">
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat__label" data-i18n="sd.kpi.dates">Dates</div>
+              <div class="stat__value">3</div>
+            <div class="stat__meta" data-i18n="sd.kpi.dates-meta">2 on sale · 1 sold out</div>
+            </div>
+          </div>
+        </section>
+        <section class="card bento--span-3">
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat__label" data-i18n="sd.kpi.sold">Tickets sold</div>
+              <div class="stat__value">1,240 / 1,800</div>
+            <div class="stat__meta" data-i18n="sd.kpi.sold-meta">Every date counts its own stock</div>
+            </div>
+          </div>
+        </section>
+        <section class="card bento--span-3">
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat__label" data-i18n="sd.kpi.revenue">Revenue</div>
+              <div class="stat__value">$3,732,000</div>
+            <div class="stat__meta" data-i18n="sd.kpi.revenue-meta">Earnings figure · not recomputed</div>
+            </div>
+          </div>
+        </section>
+        <section class="card bento--span-3">
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat__label" data-i18n="sd.kpi.next">Next date</div>
+              <div class="stat__value">09/26</div>
+            <div class="stat__meta" data-i18n="sd.kpi.next-meta">Taichung Intercontinental</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ═══ 區段導覽（2026-08-18：由上方水平 tabs 改成左側直排，與子活動詳情頁同一套）═══
+           母頁與子頁是同一種東西的兩個層級，切區域的控制項不該一個在上面一個在左邊。
+           骨架＝`.section-nav-layout`（左 `nav.section-nav` ＋ 右 `.section-nav__body`）。 -->
+      <div class="section-nav-layout mt-24">
+        <nav class="section-nav" role="tablist" data-tabs aria-label="Series sections">
+          <button class="section-nav__item section-nav__item--active" role="tab" data-tab="shared" aria-selected="true" data-i18n="sd.tab.shared">Shared settings</button>
+          <button class="section-nav__item" role="tab" data-tab="dates" aria-selected="false" data-i18n="sd.tab.dates">Dates</button>
+        </nav>
+        <div class="section-nav__body">
 
       <!-- ════════════════ 共用設定（改這裡＝改全部場次）════════════════ -->
       <div class="tab-panel tab-panel--active" data-panel="shared" role="tabpanel">
@@ -225,6 +276,8 @@
           <span data-i18n="sd.cancel.note"><strong>Cancelling one date follows the same refund rules as cancelling a standalone event (§5.1.6 F5).</strong> Being part of a series changes nothing about what is owed to that date's ticket holders — refunds are issued on all valid tickets for that date; the other dates are untouched.</span>
         </div>
       </div>
+        </div>
+      </div>
 
     </div>
 
@@ -240,7 +293,6 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
-<script src="js/sticky-actions.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script>
   /* ── 這一頁是哪一個系列（2026-08-18）───────────────────────────────────
@@ -340,6 +392,14 @@
     /* 頁首：麵包屑、標題、區間。這一頁是系列本身，不掛單場的日期與場地。 */
     set('.page-crumb span[data-i18n="sd.h1"]', S.name);
     set('.page-intro__title', S.name);
+    /* 主視覺（2026-08-18）：同子活動詳情頁——同系列各場刻意同名，圖才是最快的辨識。
+       圖沿用第一場的主視覺（系列本身沒有自己的圖，`imgs` 也是這樣取的）。 */
+    (function () {
+      const box = document.getElementById('sd-hero-img');
+      const img = box && box.querySelector('img');
+      const src = (S.images && S.images[0]) || '';
+      if (box && img) { box.hidden = !src; if (src) { img.src = src; img.alt = ''; } }
+    })();
     const dated = S.legs.filter(e => e.date);
     const venues = new Set(S.legs.map(e => e.venue).filter(Boolean));
     const range = dated.length
@@ -500,19 +560,50 @@
   (function () {
     const tablist = document.querySelector('[data-tabs]');
     if (!tablist) return;
-    const tabs = tablist.querySelectorAll('.tabs__item');
+    /* 2026-08-18：分頁控制項由 `.tabs__item` 改成 `.section-nav__item`（左側直排）。 */
+    /* 頂列黏住之後，麵包屑換成「縮圖＋名稱」（2026-08-18，與項目詳情、活動詳情同一支）。 */
+    (function () {
+      const scroller = document.querySelector('main.main');
+      const bar = document.querySelector('.detail-topbar');
+      const hero = document.querySelector('.page-intro');
+      const mini = document.querySelector('[data-sd-mini]');
+      const crumb = bar && bar.querySelector('.page-crumb');
+      if (!scroller || !bar || !hero || !mini || !crumb) return;
+      const cover = document.getElementById('sd-mini-cover');
+      const name = document.getElementById('sd-mini-name');
+      let on = null;
+      function sync() {
+        const gone = scroller.scrollTop > hero.offsetTop + hero.offsetHeight - bar.offsetHeight;
+        if (gone === on) return;
+        on = gone;
+        mini.hidden = !gone;
+        crumb.hidden = gone;
+        bar.classList.toggle('is-stuck', gone);
+        if (gone) {
+          const heroImg = document.querySelector('#sd-hero-img img');
+          const title = document.querySelector('.page-intro__title');
+          const src = heroImg && heroImg.getAttribute('src');
+          if (cover) { cover.hidden = !src; if (src) cover.src = src; }
+          if (name && title) name.textContent = title.textContent.trim();
+        }
+      }
+      scroller.addEventListener('scroll', sync, { passive: true });
+      sync();
+    })();
+
+    const tabs = tablist.querySelectorAll('.section-nav__item');
     const panels = document.querySelectorAll('.tab-panel[data-panel]');
     function activate(name) {
       tabs.forEach(t => {
         const on = t.dataset.tab === name;
-        t.classList.toggle('tabs__item--active', on);
+        t.classList.toggle('section-nav__item--active', on);
         t.setAttribute('aria-selected', on ? 'true' : 'false');
       });
       panels.forEach(p => p.classList.toggle('tab-panel--active', p.dataset.panel === name));
       try { history.replaceState(null, '', '#' + name); } catch (_) {}
     }
     tablist.addEventListener('click', e => {
-      const btn = e.target.closest('.tabs__item');
+      const btn = e.target.closest('.section-nav__item');
       if (btn && btn.dataset.tab) activate(btn.dataset.tab);
     });
     const initial = (location.hash || '').replace('#', '');

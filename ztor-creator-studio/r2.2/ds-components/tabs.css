@@ -132,7 +132,13 @@
      bottom:0 才落在分頁底緣）。**只適用「標籤包在子元素裡」的分頁**——標籤為 <button> 直接
      文字的分頁（product-detail／admin-platform-fees）不加此 class，維持整條 item 底線。
      2026-07-24 使用者反饋：projects 狀態列底線不要延伸到計數數字下方。 ── */
-.tabs--underline-label.tabs--underline-short .tabs__item--active::after {
+/* 只在標籤真的包在子元素裡時才關掉整條 item 的底線（2026-08-18 防呆）。
+   原本無條件關掉，於是「標籤是純文字的 <button>」掛上這個 class 後兩條底線都畫不出來——
+   base 那條被關、`> :first-child` 那條沒有對象。註解早就寫著「這種分頁不要加此 class」，
+   但誤用一次就是一排看不出選了哪一格的分頁，而且畫面上沒有任何線索指向這個 class
+   （2026-08-18 使用者：「這應該是元件，為什麼每次都做錯」）。改成由元件自己判斷：
+   有子元素才走 label 版，沒有就退回整條 item 的底線。 */
+.tabs--underline-label.tabs--underline-short .tabs__item--active:has(> *)::after {
   content: none;
 }
 .tabs--underline-label .tabs__item > :first-child {

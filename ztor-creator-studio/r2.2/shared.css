@@ -1419,12 +1419,20 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
    標題／簡介在框外；創作者脈絡搬進募資卡（.funding-panel--card）框內最下面（取代原 §7.3 註記）。
    募資卡框內：金額／目標／進度／倒數＋末行創作者脈絡。標題／徽章 2026-07-24 由頁首併入右欄。
    沒有外層填色容器——募資卡自己就是 L1 卡（Q3 邊框、Q24 不疊色）。 */
-/* 頁面動作列黏在視窗頂端（2026-08-18 使用者裁決）：這一列的「預覽／發布更新」是
+/* 詳情頁的頂列（sticky topbar）。**新的消費者請用 `.detail-topbar` 這組通用名**——
+   `pd-` 那組是它第一次出現在項目詳情時的命名，2026-08-18 活動詳情成為第二個消費者時
+   併成同一份規則；舊名保留給既有 markup，兩組完全等價。
+   anatomy：`.detail-topbar`（列）＞ `.page-crumb`（麵包屑，捲動後隱藏）
+            ＋ `.detail-topbar__mini`（`__cover` 縮圖 ＋ `__name` 名稱，捲動後出現）
+            ＋ 動作群。捲動門檻與 `is-stuck` 由消費頁的一小段 JS 給。
+
+   頁面動作列黏在視窗頂端（2026-08-18 使用者裁決）：這一列的「預覽／發布更新」是
    整頁通用的動作，捲到哪裡都可能要按；原本靠底部浮出的 sticky-actions 複製一份，
    等於同一組按鈕有兩個家、兩套顯隱規則。改成這一列自己 sticky 之後只剩一個。
    底色靠 ::before 溢出到左右：.page 有最大寬與內距，只給這一列上底色的話，
    捲動時內容會從色帶兩側穿出去。 */
-.pd-detail__topbar {
+.pd-detail__topbar,
+.detail-topbar {
   position: sticky;
   top: 0;
   z-index: 30;
@@ -1441,20 +1449,23 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 /* 縮圖＋名稱：只在捲過頁首之後出現，佔麵包屑原本的位置。名稱不換行、太長就截斷——
    這一列的高度必須固定，浮在內容上的東西一旦會長高，底下的內容就會跟著跳。 */
-.pd-detail__mini {
+.pd-detail__mini,
+.detail-topbar__mini {
   display: flex;
   align-items: center;
   gap: var(--sp-10);
   min-width: 0;
 }
-.pd-detail__mini-cover {
+.pd-detail__mini-cover,
+.detail-topbar__cover {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-md);
   object-fit: cover;
   flex: none;
 }
-.pd-detail__mini-name {
+.pd-detail__mini-name,
+.detail-topbar__name {
   font-size: var(--fs-14);
   font-weight: var(--fw-medium);
   color: var(--foreground);
@@ -1463,8 +1474,10 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
   white-space: nowrap;
 }
 /* 黏住之後補一條底線：底色與頁面同色，沒有這條線就看不出內容是從它底下捲過去的。 */
-.pd-detail__topbar.is-stuck::before { border-bottom: 1px solid var(--border); }
-.pd-detail__topbar::before {
+.pd-detail__topbar.is-stuck::before,
+.detail-topbar.is-stuck::before { border-bottom: 1px solid var(--border); }
+.pd-detail__topbar::before,
+.detail-topbar::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1476,7 +1489,8 @@ html:not([data-nav-mode="sidebar"]) .hero--fullbleed {
 }
 /* 這條麵包屑與頁面動作同一列（.pd-detail__topbar），列本身已經有下方間距，
    所以取消 .page-crumb 的 margin-bottom；顏色／字級照收。 */
-.pd-detail__breadcrumb { min-width: 0; margin-bottom: 0; }
+.pd-detail__breadcrumb,
+.detail-topbar > .page-crumb { min-width: 0; margin-bottom: 0; }
 /* 封面欄 2026-08-17 由 300px 收到 220px。為什麼：D193 把營運摘要與下一步搬進總覽
    分頁之後，右欄只剩識別（徽章／標題／簡介／識別事實），內容高度約 300px，而 300px
    寬的 2:3 海報有 450px 高——右半永遠空一大塊。海報比例是全站統一的 --img-portrait
@@ -1773,7 +1787,8 @@ a.data-list__row:hover .data-list__title { color: var(--foreground); }
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .page { padding: var(--sp-32) var(--sp-16) var(--sp-80); }
-  .pd-detail__topbar::before { left: calc(var(--sp-16) * -1); right: calc(var(--sp-16) * -1); }
+  .pd-detail__topbar::before,
+  .detail-topbar::before { left: calc(var(--sp-16) * -1); right: calc(var(--sp-16) * -1); }
   .hero--fullbleed { margin-left: -16px; margin-right: -16px; border-radius: 0; }
   .hero__slide { grid-template-columns: 1fr; }
   .hero__copy { padding: var(--sp-24) var(--sp-20); }
@@ -1957,8 +1972,6 @@ html[data-data-state="empty"] .when-data { display: none; }
 .wizard__top-title,
 .wizard__step-title,
 .fd-ov__title,
-.scanner-top__title,
-.scanner-pw__title,
 .ss-status__title {
   text-transform: uppercase;
   letter-spacing: var(--title-caps-tracking);
@@ -2088,4 +2101,20 @@ body,
 @media (max-width: 900px) {
   /* 窄螢幕時 .page-intro 會換行，問候語跟著標題靠左，右對齊在那裡讀起來像沒對齊 */
   .greeting { text-align: left; }
+}
+
+/* ============================================================
+   u-visually-hidden — 看得見的版面上不佔墨，但留在無障礙樹裡
+   （2026-08-19 由 ds-components/sortable.css 搬來：它是全域工具類，
+   不屬於表格排序那支元件。用途例：只有圖示的連結需要一個可讀名稱、
+   排名獎牌欄的欄名對眼睛顯而易見但讀屏需要。）
+   ============================================================ */
+.u-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }

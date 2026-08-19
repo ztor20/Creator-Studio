@@ -100,8 +100,15 @@
   }
 
   /* 桶的結束時間＝這一格代表的期間。tooltip 的日期就是它。
-     以 2026-06-30 為「現在」，與同頁版稅／表現分頁的資料截止日一致。 */
-  var NOW = new Date(Date.UTC(2026, 5, 30));
+     「現在」跟全站唯一的時間錨（project-progress-store.js 的 TODAY_ISO＝2026-08-17）
+     同一天（2026-08-19，盤查 A9／B7：原本這裡自帶 2026-06-30，同一頁三個「今天」互相
+     矛盾）。progress store 在本檔之前載入，直接讀它；萬一拿不到才用後備常數——
+     後備值必須與 TODAY_ISO 同步改。 */
+  var PROG_TODAY = (window.ztorProjectProgress && window.ztorProjectProgress.today)
+    ? window.ztorProjectProgress.today() : null;
+  var NOW = PROG_TODAY
+    ? new Date(Date.UTC(PROG_TODAY.getFullYear(), PROG_TODAY.getMonth(), PROG_TODAY.getDate()))
+    : new Date(Date.UTC(2026, 7, 17));
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   function labelsFor(periodKey, n) {
     var out = [];
