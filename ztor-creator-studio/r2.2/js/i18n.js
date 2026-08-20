@@ -1916,7 +1916,8 @@
     'store-settings.specs.f.type':       { en: 'Item type',              zh: '商品類型' },
     'store-settings.specs.f.type.hint':  { en: 'Gear and print need different measurements — not defined yet.', zh: '器材、印刷品要量的部位不同，尚未定義。' },
     'store-settings.specs.f.system':     { en: 'Size labels',            zh: '尺碼制' },
-    'store-settings.specs.f.system.hint':{ en: 'Which regional labelling fans see first.', zh: '粉絲第一眼看到哪一種標示法。' },
+    /* D214：尺碼制改成尺寸表的分頁，四種都要填；切換只換尺碼欄，量測值共用。 */
+    'store-settings.specs.f.system.hint':{ en: 'Fill in every system. Switching only swaps the size column — the measurements stay the same.', zh: '四種都要填。切換只換尺碼欄，量測值共用。' },
     'store-settings.specs.system.intl':  { en: 'International',          zh: '國際' },
     'store-settings.specs.f.unit':       { en: 'Unit',                   zh: '量測單位' },
     'store-settings.specs.f.unit.hint':  { en: 'Applies to every measurement below.', zh: '以下所有數值都用這個單位。' },

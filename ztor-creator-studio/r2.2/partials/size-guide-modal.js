@@ -40,22 +40,10 @@
     '            <span class="badge" data-i18n="store-settings.specs.type.apparelacc">Apparel &amp; accessories</span>\n' +
     '          </div>\n' +
     '\n' +
-    '          <div class="settings-row">\n' +
-    '            <div>\n' +
-    '              <div class="settings-row__label" data-i18n="store-settings.specs.f.system">Size labels</div>\n' +
-    '              <div class="settings-row__hint" data-i18n="store-settings.specs.f.system.hint">Which regional labelling fans see first.</div>\n' +
-    '            </div>\n' +
-    '            <div class="segmented" role="group" aria-label="Size labels" data-i18n-aria-label="store-settings.specs.f.system">\n' +
-    '              <button class="segmented__btn segmented__btn--active" type="button" data-spec-system data-i18n="store-settings.specs.system.intl">International</button>\n' +
-    '              <button class="segmented__btn" type="button" data-spec-system>US</button>\n' +
-    '              <button class="segmented__btn" type="button" data-spec-system>EU</button>\n' +
-    '              <button class="segmented__btn" type="button" data-spec-system>JP</button>\n' +
-    '            </div>\n' +
-    '          </div>\n' +
-    '\n' +
     '          <!-- 尺寸表（F7.2 主資料）：列＝尺碼、欄＝量測項，兩軸都可增刪。\n' +
-    '               量測單位坐在這張表的右上（2026-08-20 使用者指示）：公分與英吋是絕對換算，\n' +
-    '               切換＝換一種看法，不是另外填一份資料，所以它屬於這張表、不是獨立設定。 -->\n' +
+    '               右上的量測單位是絕對換算（公分↔英吋），切換＝換一種看法（D212）。\n' +
+    '               尺碼制改成這張表的分頁（D214，2026-08-20 使用者裁示）：四種標示法都要填，\n' +
+    '               切換只換尺碼欄，量測值四制共用——同一件衣服不會因為換一種標法就變大。 -->\n' +
     '          <div class="sce-block">\n' +
     '            <div class="sce-block__head">\n' +
     '              <div>\n' +
@@ -67,6 +55,13 @@
     '                <button class="segmented__btn" type="button" data-spec-unit="in" data-i18n="store-settings.specs.unit.in">inch</button>\n' +
     '              </div>\n' +
     '            </div>\n' +
+    '            <nav class="tabs tabs--count-plain sce-block__tabs" role="tablist" aria-label="Size labels" data-i18n-aria-label="store-settings.specs.f.system" data-spec-sys-tabs>\n' +
+    '              <button class="tabs__item tabs__item--active" type="button" role="tab" aria-selected="true" data-spec-system="intl"><span data-i18n="store-settings.specs.system.intl">International</span><span class="tabs__item-count" data-spec-sys-todo hidden></span></button>\n' +
+    '              <button class="tabs__item" type="button" role="tab" aria-selected="false" data-spec-system="us">US<span class="tabs__item-count" data-spec-sys-todo hidden></span></button>\n' +
+    '              <button class="tabs__item" type="button" role="tab" aria-selected="false" data-spec-system="eu">EU<span class="tabs__item-count" data-spec-sys-todo hidden></span></button>\n' +
+    '              <button class="tabs__item" type="button" role="tab" aria-selected="false" data-spec-system="jp">JP<span class="tabs__item-count" data-spec-sys-todo hidden></span></button>\n' +
+    '            </nav>\n' +
+    '            <p class="settings-row__hint sce-block__tabs-hint" data-i18n="store-settings.specs.f.system.hint">Fill in every system. Switching only swaps the size column — the measurements stay the same.</p>\n' +
     '            <div class="sce">\n' +
     '              <div class="sce__wrap">\n' +
     '                <div class="sce__table" data-spec-chart>\n' +
@@ -221,6 +216,7 @@
     if (namefield) namefield.hidden = opts.showName === false;
 
     if (opts.blank) clearValues(); else fillValues();
+    resetSystems(!!opts.blank);
 
     var name = modal.querySelector('#sg-name');
     if (name && opts.showName !== false) {
@@ -255,6 +251,69 @@
   /* 新增＝清掉示範值，量測欄名保留（那是欄位定義、不是資料） */
   function clearValues() {
     [].forEach.call(modal.querySelectorAll('.sce__cell, .spec-row .input, #sg-name, #sg-fit, #sg-note'), function (i) { i.value = ''; });
+  }
+
+  /* ── 尺碼制分頁（D214）────────────────────────────────────────
+     一列＝一個實體尺碼，四種標示法只是它的四個名字，所以每一制存一份「尺碼欄」，
+     量測值那幾欄四制共用。切換分頁＝把現在畫面上的尺碼欄收進 sysLabels，
+     再把目標那一制的填回去。分頁上的數字是「這一制還有幾格沒填」。 */
+  var SYSTEMS = ['intl', 'us', 'eu', 'jp'];
+  var sysLabels = {};
+  var curSys = 'intl';
+
+  function sizeCells() {
+    var chart = modal.querySelector('[data-spec-chart]');
+    if (!chart) return [];
+    return [].slice.call(chart.querySelectorAll('.sce__cell--size'));
+  }
+
+  function stash() {
+    sysLabels[curSys] = sizeCells().map(function (c) { return c.value; });
+  }
+
+  function restore(sys) {
+    var vals = sysLabels[sys] || [];
+    sizeCells().forEach(function (c, i) { c.value = vals[i] != null ? vals[i] : ''; });
+  }
+
+  function paintSysTabs() {
+    var rows = sizeCells().length;
+    [].forEach.call(modal.querySelectorAll('[data-spec-sys-tabs] [data-spec-system]'), function (tab) {
+      var sys = tab.getAttribute('data-spec-system');
+      var vals = sys === curSys ? sizeCells().map(function (c) { return c.value; }) : (sysLabels[sys] || []);
+      var todo = 0;
+      for (var i = 0; i < rows; i++) if (!vals[i] || !String(vals[i]).trim()) todo++;
+      var badge = tab.querySelector('[data-spec-sys-todo]');
+      if (!badge) return;
+      badge.hidden = todo === 0;
+      badge.textContent = todo ? String(todo) : '';
+    });
+  }
+
+  function switchSystem(sys) {
+    if (SYSTEMS.indexOf(sys) < 0 || sys === curSys) return;
+    stash();
+    curSys = sys;
+    restore(sys);
+    [].forEach.call(modal.querySelectorAll('[data-spec-sys-tabs] [data-spec-system]'), function (tab) {
+      var on = tab.getAttribute('data-spec-system') === sys;
+      tab.classList.toggle('tabs__item--active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    paintSysTabs();
+  }
+
+  /* 開啟彈窗時重置成第一個分頁：示範值是國際制，其餘三制留空等創作者填 */
+  function resetSystems(blank) {
+    sysLabels = {};
+    curSys = 'intl';
+    [].forEach.call(modal.querySelectorAll('[data-spec-sys-tabs] [data-spec-system]'), function (tab) {
+      var on = tab.getAttribute('data-spec-system') === 'intl';
+      tab.classList.toggle('tabs__item--active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (blank) sizeCells().forEach(function (c) { c.value = ''; });
+    paintSysTabs();
   }
 
   /* 尺寸表的數值一律以公分存（cell.dataset.cm 是唯一真值），畫面依目前單位換算後顯示。
@@ -320,14 +379,12 @@
         return;
       }
 
-      /* 尺碼制：demo 只換標籤，四制共用同一份數值——國際／US／EU／JP 之間沒有絕對的
-         換算比例（同一個 US 8 在不同品類與品牌對到的公分數並不一樣），是否逐制填值
-         上游未定（ASSUMPTIONS UIA-106），所以不預先做成四份平行資料。 */
-      var seg = t.closest('[data-spec-system]');
-      if (seg) {
-        [].forEach.call(seg.parentElement.querySelectorAll('.segmented__btn'), function (b) {
-          b.classList.toggle('segmented__btn--active', b === seg);
-        });
+      /* 尺碼制：這張表的分頁（D214）。四種標示法各自一份尺碼欄，量測值四制共用——
+         國際／US／EU／JP 之間沒有換算公式（同一個 US 8 在不同品類與品牌對到的公分數
+         並不一樣），所以只能逐制填；但同一件衣服不會因為換一種標法就變大，量測值共用。 */
+      var tab = t.closest('[data-spec-system]');
+      if (tab) {
+        switchSystem(tab.getAttribute('data-spec-system'));
         return;
       }
 
@@ -357,6 +414,7 @@
         [].forEach.call(fresh.querySelectorAll('input'), function (i) { i.value = ''; });
         last.after(fresh);
         if (window.ztorIcons) window.ztorIcons.applyIcons(fresh);
+        paintSysTabs();
         fresh.querySelector('input').focus();
         return;
       }
@@ -364,7 +422,13 @@
       var rmRow = t.closest('[data-spec-rowrm]');
       if (rmRow) {
         var rchart = rmRow.closest('.sce__table');
-        if (rchart.querySelectorAll('.sce__row').length > 1) rmRow.closest('.sce__row').remove();
+        if (rchart.querySelectorAll('.sce__row').length > 1) {
+          var idx = [].slice.call(rchart.querySelectorAll('.sce__row')).indexOf(rmRow.closest('.sce__row'));
+          rmRow.closest('.sce__row').remove();
+          /* 其他三制存的是「第幾列」，刪了一列就要把它們的那一格也拿掉，否則對不回去 */
+          SYSTEMS.forEach(function (sys) { if (sysLabels[sys]) sysLabels[sys].splice(idx, 1); });
+          paintSysTabs();
+        }
         return;
       }
 
@@ -428,11 +492,12 @@
       }
     });
 
-    /* 量測值改動時把真值（公分）跟著更新，之後切換單位才換得對 */
+    /* 量測值改動時把真值（公分）跟著更新，之後切換單位才換得對；
+       尺碼欄改動時重畫分頁上的待填數。 */
     modal.addEventListener('input', function (e) {
       var cell = e.target.closest('.sce__cell');
-      if (!cell || cell.classList.contains('sce__cell--size')) return;
-      if (!cell.closest('[data-spec-chart]')) return;
+      if (!cell || !cell.closest('[data-spec-chart]')) return;
+      if (cell.classList.contains('sce__cell--size')) { paintSysTabs(); return; }
       syncCanonical(cell);
     });
 
