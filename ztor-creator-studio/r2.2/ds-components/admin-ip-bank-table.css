@@ -7,6 +7,18 @@
   box-shadow: var(--shadow-card);
 }
 .admin-table-wrap .ztor-table { min-width:840px; border:0; border-radius:0; }
+
+/* --menu：列尾動作是浮動下拉（kebab）的清單。外框的 overflow 會把選單裁掉——
+   最後一列尤其明顯，選單往下長出去就只剩半截（2026-08-20 使用者回報：商店設定的
+   尺寸指南清單「下拉被藏在裡面遮住了」）。做法沿用 variant-table-wrap--menu：
+   放行 overflow、欄寬改跟著內容走（840px 是給欄位多得多的 admin IP 銀行表用的）。
+   overflow 放行之後外框圓角不再 clip 內容，所以首列表頭與末列自己補圓角貼齊內緣。 */
+.admin-table-wrap--menu { overflow: visible; }
+.admin-table-wrap--menu .ztor-table { min-width: 0; overflow: visible; }
+.admin-table-wrap--menu .ztor-table thead th:first-child { border-top-left-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table thead th:last-child { border-top-right-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table tbody tr:last-child td:first-child { border-bottom-left-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table tbody tr:last-child td:last-child { border-bottom-right-radius: calc(var(--radius-xl) - 1px); }
 .admin-table__film { display:flex; align-items:center; gap:var(--sp-10); min-width:170px; font-family:var(--font-ui); font-weight:var(--fw-regular); }
 /* 2026-07-31 使用者：作品縮圖改直式。與 .ztor-table__thumb 同一個做法——鎖高度 36px
    （＝原尺寸，列高不動）、寬度由全站直式比例 --img-portrait 換算（2026-08-05 D176
