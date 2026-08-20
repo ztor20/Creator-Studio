@@ -25,6 +25,16 @@
 - 實測（`http://localhost:4332`）：`my-ip.html` 英文介面的來源頁籤讀到「All 10／Made on Ztor 5／External 5」、清單來源欄讀到「External／Made on Ztor／Licensed in」、0 個 raw key；中文介面維持「全部／Ztor 產出／站外登錄」；`manage-ip.html?id=row9` 的來源欄英文讀到「External」。
 - 驗證：`r2.2/` 內 `Registered externally` 只剩本檔的歷史紀錄段落（2026-07-27 那筆命名決策原文保留不改寫）；`my-ip.html` 六處、`manage-ip.html` 一處、`js/i18n.js` 兩條 key 逐處讀回確認；`check_ds_sync.py` 12 項全 PASS（僅既有的裸色 WARN，與本次無關）。純文案改動，未動樣式與元件。
 
+## 2026-08-20 · 商店設定分頁改名「尺寸指南設定」；量測單位歸尺寸表管；清單的 kebab 選單不再被外框裁掉（B 反饋導入 · A spec-derived，D212）
+
+**範圍**：`store-settings.html`（分頁名、兩張清單掛 `--menu`）、`partials/size-guide-modal.js`（量測單位移進尺寸表抬頭＋真的換算）、`ds-components/size-chart-editor.css`（`.sce-block__head`）、`ds-components/admin-ip-bank-table.css`（`.admin-table-wrap--menu`）、`ds-components/store-settings.css`（交出 `#sec-codes` 的 min-width 例外）、`js/i18n.js`、design-system 兩份。
+
+**改名**：第三個設定群組由「商品規格 / Product specs」改為 **「尺寸指南設定 / Size guides」**（使用者指示）。D211 之後這一組只剩尺寸指南一件事，叫商品規格會讓人以為它還管詳細規格、材質、重量那些——那些都在建立商品那一頁。規格 5.1.5.5 的 F7 標題同步改名，F 編號不變。
+
+**量測單位改成尺寸表的檢視切換**：使用者問「尺碼制是可以換算的嗎？如果是絕對的換算比例，那尺碼制和量測單位應該跟著尺寸表可以在右上調整」。答案分兩半，落地也分兩半——**公分／英吋是絕對換算**（1 inch = 2.54 cm），所以它移到尺寸表右上（新的 `.sce-block__head`），切換即換算、顯示到小數一位；資料以公分為真值存在 `cell.dataset.cm`，畫面從真值算出來，不拿畫面數字反覆相乘（來回切兩次就會四捨五入漂掉，55 → 21.7 → 55.1）。使用者在英吋模式下打的字也會換回公分存。**尺碼制（國際／US／EU／JP）不是換算**：同一個 US 8 在不同品類與品牌對到的公分數不一樣，各國尺碼表是慣例對照、不是公式，所以它留在上面當設定列（規格已記，逐制填值或平台建議對照仍待上游）。身高體重參考不換算——那格是「155 – 165 cm」這種自由文字區間。
+
+**清單的 kebab 選單被外框裁掉**（使用者：「下拉被藏在裡面遮住了」）：`.admin-table-wrap` 的 `overflow-x:auto` 連縱向一起裁，最後一列的選單往下長就只剩半截。新增 `.admin-table-wrap--menu` 修飾子（外框與 `.ztor-table` 兩層一起放行 overflow——表格自己也是 `overflow:hidden`，只放行外框選單仍然出不來、把 840px 最小寬歸零、首末列自己補圓角貼齊內緣），尺寸指南與優惠碼兩張清單一起掛上——同一個結構同一個毛病，只修一張下次還會遇到。順帶解掉尺寸指南清單那條沒必要的橫向捲軸（840px 是給欄位多得多的 Admin IP 銀行表用的，也正是那條捲軸把「名稱」欄推出畫面）。
+
 ## 2026-08-20 · 尺寸指南改成「商店的全部顯示、商品專屬覆蓋」；編輯器抽成共用 partial（A spec-derived · B 反饋導入 · C 撤除，D211）
 
 **範圍**：新增 `partials/size-guide-modal.js`（尺寸指南編輯器，兩頁共用）；`create-product.html`（F2 商品資訊新增「尺寸指南」欄位＋接線）；`store-settings.html`（F7 清單改寫、編輯器移出頁面）；`ds-components/size-chart-editor.css`（接收 `.sce-block`）、`ds-components/store-settings.css`（交出 `.ss-spec-block`）、`ds-components/settings.css`（新增 `.settings-row__actions`）；`js/i18n.js`（新增 15 把、改寫 3 把）；design-system 兩份。

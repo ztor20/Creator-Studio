@@ -1820,9 +1820,10 @@
     /* 幣別鎖成唯讀（2026-08-13 使用者裁示）：說明只寫「為什麼不能點」，不解釋改的管道——上游未定 */
     'store-settings.currency.hint':  { en: 'Set when the shop opens. Not editable here.', zh: '開店時設定，此處不可更改。' },
 
-    /* F7 商品規格（spec 5.1.5.5 F7 / D171）— 尺寸表範本庫。
-       標籤不重述「商品規格」（Q44）：分頁標題已經是脈絡。 */
-    'store-settings.group.specs':        { en: 'Product specs',          zh: '商品規格' },
+    /* F7 尺寸指南設定（spec 5.1.5.5 F7 / D171、D211）。2026-08-20 使用者指示由「商品規格」
+       改名——D211 之後這一組就只有尺寸指南一件事，叫商品規格會讓人以為還管別的。
+       底下的標籤不重述分頁名（Q44）。 */
+    'store-settings.group.specs':        { en: 'Size guides',            zh: '尺寸指南設定' },
     'store-settings.crumb.self':       { en: 'Store settings',   zh: '商店設定' },
     'store-settings.h1':               { en: 'Store settings',   zh: '商店設定' },
     'store-settings.sub':              { en: 'How your shop looks, how you get paid, how you ship, and what discounts you hand out.', zh: '粉絲看到的店長什麼樣、怎麼收錢、怎麼出貨，還有折扣怎麼給。' },

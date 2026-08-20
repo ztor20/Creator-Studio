@@ -1,7 +1,7 @@
 // partials/size-guide-modal.js — 尺寸指南編輯器（規格 5.1.5.5 F7.2 / D171、D211）
 //
 // 兩個地方在編同一張表，所以編輯器住在這裡、不住在任何一頁：
-//   商店設定 · 商品規格（store-settings.html）＝這間店的尺寸指南，建了就出現在所有商品上；
+//   商店設定 · 尺寸指南設定（store-settings.html）＝這間店的尺寸指南，建了就出現在所有商品上；
 //   建立商品 · 商品資訊（create-product.html）＝這件商品專屬的一份，設了就蓋掉商店那幾份。
 // 欄位定義同一套（尺碼制／量測單位／尺寸表／版型建議／身高體重／量測方式／免責），
 // 差別只有「要不要問名字」——商品專屬那份沒有名字（它只屬於那一件商品）。
@@ -53,21 +53,20 @@
     '            </div>\n' +
     '          </div>\n' +
     '\n' +
-    '          <div class="settings-row">\n' +
-    '            <div>\n' +
-    '              <div class="settings-row__label" data-i18n="store-settings.specs.f.unit">Unit</div>\n' +
-    '              <div class="settings-row__hint" data-i18n="store-settings.specs.f.unit.hint">Applies to every measurement below.</div>\n' +
-    '            </div>\n' +
-    '            <div class="segmented" role="group" aria-label="Unit" data-i18n-aria-label="store-settings.specs.f.unit">\n' +
-    '              <button class="segmented__btn segmented__btn--active" type="button" data-spec-unit data-i18n="store-settings.specs.unit.cm">cm</button>\n' +
-    '              <button class="segmented__btn" type="button" data-spec-unit data-i18n="store-settings.specs.unit.in">inch</button>\n' +
-    '            </div>\n' +
-    '          </div>\n' +
-    '\n' +
-    '          <!-- 尺寸表（F7.2 主資料）：列＝尺碼、欄＝量測項，兩軸都可增刪 -->\n' +
+    '          <!-- 尺寸表（F7.2 主資料）：列＝尺碼、欄＝量測項，兩軸都可增刪。\n' +
+    '               量測單位坐在這張表的右上（2026-08-20 使用者指示）：公分與英吋是絕對換算，\n' +
+    '               切換＝換一種看法，不是另外填一份資料，所以它屬於這張表、不是獨立設定。 -->\n' +
     '          <div class="sce-block">\n' +
-    '            <div class="settings-row__label" data-i18n="store-settings.specs.f.chart">Size chart</div>\n' +
-    '            <div class="settings-row__hint" style="margin-bottom:var(--sp-8)" data-i18n="store-settings.specs.f.chart.hint">Garment laid flat, not body measurements.</div>\n' +
+    '            <div class="sce-block__head">\n' +
+    '              <div>\n' +
+    '                <div class="settings-row__label" data-i18n="store-settings.specs.f.chart">Size chart</div>\n' +
+    '                <div class="settings-row__hint" data-i18n="store-settings.specs.f.chart.hint">Garment laid flat, not body measurements.</div>\n' +
+    '              </div>\n' +
+    '              <div class="segmented" role="group" aria-label="Unit" data-i18n-aria-label="store-settings.specs.f.unit" data-spec-unit-group>\n' +
+    '                <button class="segmented__btn segmented__btn--active" type="button" data-spec-unit="cm" data-i18n="store-settings.specs.unit.cm">cm</button>\n' +
+    '                <button class="segmented__btn" type="button" data-spec-unit="in" data-i18n="store-settings.specs.unit.in">inch</button>\n' +
+    '              </div>\n' +
+    '            </div>\n' +
     '            <div class="sce">\n' +
     '              <div class="sce__wrap">\n' +
     '                <div class="sce__table" data-spec-chart>\n' +
@@ -258,6 +257,44 @@
     [].forEach.call(modal.querySelectorAll('.sce__cell, .spec-row .input, #sg-name, #sg-fit, #sg-note'), function (i) { i.value = ''; });
   }
 
+  /* 尺寸表的數值一律以公分存（cell.dataset.cm 是唯一真值），畫面依目前單位換算後顯示。
+     不直接拿畫面上的數字乘來乘去——來回切換兩次就會因為四捨五入漂掉（55 → 21.7 → 55.1）。
+     只動量測欄：尺碼欄是標示、身高體重參考是「155 – 165 cm」這種自由文字區間，換算會弄壞它。 */
+  function chartCells() {
+    var chart = modal.querySelector('[data-spec-chart]');
+    if (!chart) return [];
+    return [].filter.call(chart.querySelectorAll('.sce__cell'), function (c) {
+      return !c.classList.contains('sce__cell--size');
+    });
+  }
+
+  function trim(n) { return String(Math.round(n * 10) / 10); }
+
+  function currentUnit() {
+    var group = modal.querySelector('[data-spec-unit-group]');
+    return (group && group.getAttribute('data-unit')) || 'cm';
+  }
+
+  /* 使用者打字時，把輸入值換回公分存進真值 */
+  function syncCanonical(cell) {
+    var n = parseFloat(cell.value);
+    if (isNaN(n)) { delete cell.dataset.cm; return; }
+    cell.dataset.cm = String(currentUnit() === 'in' ? n * 2.54 : n);
+  }
+
+  function renderChart(unit) {
+    chartCells().forEach(function (cell) {
+      if (cell.dataset.cm == null) {
+        var n0 = parseFloat(cell.value);
+        if (isNaN(n0)) return;
+        /* 還沒有真值的格子＝載入時的示範值，當時的單位一定是公分（預設） */
+        cell.dataset.cm = String(n0);
+      }
+      var cm = parseFloat(cell.dataset.cm);
+      cell.value = unit === 'in' ? trim(cm / 2.54) : trim(cm);
+    });
+  }
+
   /* 依目前欄數重寫 --sce-cols：首欄尺碼、中間量測欄均分、末欄列刪除鈕 */
   function syncCols(chart) {
     var measures = chart.querySelector('.sce__head').children.length - 2;
@@ -283,13 +320,31 @@
         return;
       }
 
-      /* 分段切換（尺碼制、單位）：demo 只換標籤，四制共用同一份數值——是否逐制填值
+      /* 尺碼制：demo 只換標籤，四制共用同一份數值——國際／US／EU／JP 之間沒有絕對的
+         換算比例（同一個 US 8 在不同品類與品牌對到的公分數並不一樣），是否逐制填值
          上游未定（ASSUMPTIONS UIA-106），所以不預先做成四份平行資料。 */
-      var seg = t.closest('[data-spec-system], [data-spec-unit]');
+      var seg = t.closest('[data-spec-system]');
       if (seg) {
         [].forEach.call(seg.parentElement.querySelectorAll('.segmented__btn'), function (b) {
           b.classList.toggle('segmented__btn--active', b === seg);
         });
+        return;
+      }
+
+      /* 量測單位：公分與英吋是絕對換算（1 inch = 2.54 cm），所以切換不是換一份資料、
+         是換一種看法——直接把尺寸表的數值換過去，小數一位。空格與非數值原樣留著。 */
+      var unit = t.closest('[data-spec-unit]');
+      if (unit) {
+        var group = unit.closest('[data-spec-unit-group]');
+        var from = group.getAttribute('data-unit') || 'cm';
+        var to = unit.getAttribute('data-spec-unit');
+        [].forEach.call(group.querySelectorAll('.segmented__btn'), function (b) {
+          b.classList.toggle('segmented__btn--active', b === unit);
+        });
+        if (from !== to) {
+          group.setAttribute('data-unit', to);
+          renderChart(to);
+        }
         return;
       }
 
@@ -371,6 +426,14 @@
         var hhost = modal.querySelector('[data-spec-howto]');
         if (hhost.children.length > 1) rmHowto.closest('.spec-row').remove();
       }
+    });
+
+    /* 量測值改動時把真值（公分）跟著更新，之後切換單位才換得對 */
+    modal.addEventListener('input', function (e) {
+      var cell = e.target.closest('.sce__cell');
+      if (!cell || cell.classList.contains('sce__cell--size')) return;
+      if (!cell.closest('[data-spec-chart]')) return;
+      syncCanonical(cell);
     });
 
     /* 表頭欄名改動時同步該欄所有格子的 aria-label（i18n 是純靜態 key→字串、
