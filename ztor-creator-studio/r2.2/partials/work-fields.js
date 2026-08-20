@@ -263,13 +263,24 @@
     return s;
   }
 
-  /* ── F5 劇照：張數不設限。永遠留一格空的在最後；填滿它就長出下一格，
-        清空中間某一格就把那一格移出。 */
+  /* ── F5 劇照：1–8 張（規格 F5，D182 定案）。永遠留一格空的在最後；填滿它就長出
+        下一格，清空中間某一格就把那一格移出。到第 8 張就不再長出空格——「沒有第 9 格
+        可以按」本身就是上限的說法，不必再多一句錯誤訊息。 */
+  var MAX_STILLS = 8;
   function renderStills(host) {
     var s = section(host, 'pw.art.stills.title', 'Stills', 'pw.art.stills.sub', 'Frames that sell the film without spoiling it.');
     s.insertAdjacentHTML('beforeend', '<div class="upload-assets upload-assets--fill" data-pw-stills></div>');
     var wrap = s.querySelector('[data-pw-stills]');
+    function tileCount() { return wrap.querySelectorAll('.upload-tile').length; }
+    function isFilledTile(t) { return !!t && (t.classList.contains('is-filled') || t.classList.contains('is-optimized')); }
+    /* 刪掉一張之後要把可用的空格補回來（達上限時原本一格空的都沒有）。 */
+    function ensureBlank() {
+      var tiles = Array.prototype.slice.call(wrap.querySelectorAll('.upload-tile'));
+      var last = tiles[tiles.length - 1];
+      if (!last || isFilledTile(last)) add();
+    }
     function add() {
+      if (tileCount() >= MAX_STILLS) return;
       var tile = document.createElement('div');
       tile.className = 'upload-tile upload-tile--portrait';
       tile.setAttribute('data-pw-asset', 'still');
@@ -298,11 +309,12 @@
       var last = tiles[tiles.length - 1];
       if (e.detail && e.detail.filled) { if (tile === last) add(); return; }
       if (tile !== last) tile.remove();
+      ensureBlank();
       emit();
     });
     enhance(s); add();
     s._fill = function (w, o) {
-      var n = (w && Number(w.stills)) || 0;
+      var n = Math.min((w && Number(w.stills)) || 0, MAX_STILLS);
       for (var i = 0; i < n; i++) {
         var tiles = wrap.querySelectorAll('.upload-tile');
         /* 末格填滿會由上面的監聽器自己長出下一格，所以每次都填最後那一格。 */
@@ -497,23 +509,28 @@
       + '<div class="field"><select class="select" id="pw-mm2" aria-label="MM"></select></div>'
       + '<div class="field"><select class="select" id="pw-dd" aria-label="DD"></select></div>'
       + '</div>'
-      + '<div class="field__hint" data-i18n="pw.info.release.hint">' + esc(T('pw.info.release.hint', 'Leave it as today to go live the moment review passes; a future date holds it until then.')) + '</div>'
+      + '<div class="field__hint" data-i18n="pw.info.release.hint">' + esc(T('pw.info.release.hint', 'Optional. Leave it undecided and set the date after review passes; today or a past date goes live the moment review passes, a future date waits for that day.')) + '</div>'
       + '</div>');
+    /* D192：上映日期選填，「留白」是一個真的能選到的值——所以每個下拉的第一個選項是
+       空值的「未決定」。沒有這個選項時創作者填不出留白，等於這條規則不存在。 */
     function fill(el, from, to, pad) {
+      var blank = document.createElement('option');
+      blank.value = '';
+      blank.setAttribute('data-i18n', 'pw.info.release.undecided');
+      blank.textContent = T('pw.info.release.undecided', 'Not decided');
+      el.appendChild(blank);
       for (var n = from; n <= to; n++) {
         var o = document.createElement('option');
         o.value = String(n);
         o.textContent = pad && n < 10 ? '0' + n : String(n);
         el.appendChild(o);
       }
+      el.value = '';
     }
     var now = new Date();
     fill(s.querySelector('#pw-yyyy'), now.getFullYear() - 20, now.getFullYear() + 2, false);
     fill(s.querySelector('#pw-mm2'), 1, 12, true);
     fill(s.querySelector('#pw-dd'), 1, 31, true);
-    s.querySelector('#pw-yyyy').value = String(now.getFullYear());
-    s.querySelector('#pw-mm2').value = String(now.getMonth() + 1);
-    s.querySelector('#pw-dd').value = String(now.getDate());
     enhance(s);
     s._fill = function (w) {
       if (!w) return;
@@ -522,8 +539,11 @@
       /* 存下來的日期可能是補零的（2026/09/12），下拉的 value 沒有補零，先轉成數字再比。 */
       var d = String(w.release || '').split('/');
       ['#pw-yyyy', '#pw-mm2', '#pw-dd'].forEach(function (id, i) {
+        var el = s.querySelector(id);
         var n = parseInt(d[i], 10);
-        if (!isNaN(n)) setVal(s.querySelector(id), String(n));
+        /* 沒存過日期＝創作者還沒決定，回到「未決定」，不要留著上一筆的殘值 */
+        if (isNaN(n)) { if (el) el.value = ''; return; }
+        setVal(el, String(n));
       });
     };
     return s;
@@ -860,7 +880,12 @@
         };
       }),
       runtime: ['#pw-hh', '#pw-mm', '#pw-ss'].map(function (id) { return val(q(id)) || '00'; }).join(':'),
-      release: ['#pw-yyyy', '#pw-mm2', '#pw-dd'].map(function (id) { return val(q(id)); }).join('/'),
+      /* 三格都有值才算填了日期；缺一格就是留白（不是 '//' 這種半截字串），
+         下游的 releaseReached() 靠空字串認出「還沒決定」。 */
+      release: (function () {
+        var p = ['#pw-yyyy', '#pw-mm2', '#pw-dd'].map(function (id) { return val(q(id)); });
+        return p.every(Boolean) ? p.join('/') : '';
+      })(),
       genres: qa('[data-pw-genres] .chip--active').map(function (c) { return c.getAttribute('data-i18n'); }),
       tags: tags.slice(),
       age: optKey('#pw-age'),
@@ -880,7 +905,8 @@
     };
   }
 
-  /* ── 就緒檢查（規格 §8「必填齊全」＝F1、F2、F4、F8、F9、F10、F11、F13，付費再加 F14）
+  /* ── 就緒檢查（規格 §8「必填齊全」＝F1、F2、F4、F8、F9、F11、F13，付費再加 F14）
+     F10 上映日期**不在**必填清單：2026-08-17 D192 起改選填，留白不得阻擋送出。
      opts.stepOf：本檔的區塊 kind → 宿主頁的步驟鍵（兩個宿主的步驟切法不同）
      opts.stepLabel：步驟鍵 → 顯示名 */
   function checks(opts) {
@@ -905,7 +931,6 @@
         }
       },
       { block: 'spec', k: 'pw.info.runtime', fb: 'Runtime', done: function () { return ['#pw-hh', '#pw-mm', '#pw-ss'].every(function (id) { return hasVal(q(id)); }); } },
-      { block: 'spec', k: 'pw.info.release', fb: 'Release date', done: function () { return ['#pw-yyyy', '#pw-mm2', '#pw-dd'].every(function (id) { return hasVal(q(id)); }); } },
       { block: 'genres', k: 'pw.info.genre.title', fb: 'Genres', done: function () { return !!q('[data-pw-genres] .chip--active'); } },
       { block: 'age', k: 'pw.info.age.title', fb: 'Age rating', done: function () { return hasVal(q('#pw-age')); } }
     ];

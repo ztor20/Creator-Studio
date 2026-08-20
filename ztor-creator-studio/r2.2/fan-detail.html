@@ -102,8 +102,13 @@
           </div>
         </div>
         <div class="fan-hero__actions">
-          <a class="btn btn--outline" href="fans-crm.html"><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fan-detail.btn.message">Message</span></a>
-          <a class="btn btn--ghost btn--sm" href="tier-settings.html" data-i18n="fan-detail.btn.tier-settings">Tier settings</a>
+          <!-- 兩顆都用深連結回總覽頁的彈窗（2026-08-20 修正）：
+               · Message 帶 ?fan= 這位粉絲，落地即開群發撰寫器並把收件對象設成他本人
+                 （規格 5.1.7.7 §2「進入群發訊息並帶入該粉絲」，原本只連到清單頁）。
+               · Tier settings 連 ?tier=settings；D169 之後分級設定是總覽頁的彈窗，
+                 原本指向的 tier-settings.html 已經是退出導覽的墓碑頁。 -->
+          <a class="btn btn--outline" href="fans-crm.html?msg=inner&amp;fan=Wei%20Yu-han" data-fd-msg><i data-lucide="send" class="ztor-icon"></i><span data-i18n="fan-detail.btn.message">Message</span></a>
+          <a class="btn btn--ghost btn--sm" href="fans-crm.html?tier=settings" data-i18n="fan-detail.btn.tier-settings">Tier settings</a>
         </div>
       </section>
 
@@ -444,6 +449,10 @@
   if (window.i18nT) {
     var fdName = window.i18nT('fan-detail.name');
     if (fdName) document.title = fdName + ' · Fan detail · Ztor Creator Studio';
+    /* Message 的深連結要帶「目前這位粉絲」的名字——persona 或語言換過之後名字會變，
+       所以連結在這裡依當下的 i18n 值重寫，不用寫死在 href 裡。 */
+    var msgLink = document.querySelector('[data-fd-msg]');
+    if (msgLink && fdName) msgLink.href = 'fans-crm.html?msg=inner&fan=' + encodeURIComponent(fdName);
   }
 
   // Tabs ↔ panels switching (canonical pattern, see earnings.html).

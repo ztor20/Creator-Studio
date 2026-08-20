@@ -521,7 +521,7 @@
           <section class="card chart-card" id="ed-livetrend-card" data-chart-view="line">
             <div class="chart-card__head">
               <div class="chart-card__title-group">
-                <h3 class="chart-card__title" data-i18n="event-detail.live.rhythm">Entry rate</h3>
+                <h3 class="chart-card__title" data-i18n="event-detail.live.rhythm">Arrival Pattern</h3>
                 <span class="chart-card__subtitle">· <span data-i18n="event-detail.live.rhythm.sub">by check-in time</span></span>
               </div>
               <div class="chart-card__controls">
@@ -1624,6 +1624,8 @@
     <div class="payout-dialog__foot">
       <span style="flex:1"></span>
       <button class="btn btn--outline" type="button" data-cf-close data-i18n="ce.tier.cancel">Cancel</button>
+      <!-- 第二選項（離開前對話的「不儲存就離開」用；平常隱藏，見 openConfirm 的 altLabel） -->
+      <button class="btn btn--outline" type="button" id="ed-cf-alt" hidden></button>
       <button class="btn btn--primary" type="button" id="ed-cf-ok"></button>
     </div>
   </section>
@@ -2251,6 +2253,7 @@
 
   /* 共用確認殼：三種動作都是同一種對話（這是你要做的事、這是影響範圍）。 */
   let cfOnOk = null;
+  let cfOnAlt = null;
   function openConfirm(opts) {
     const wrap = $('#ed-confirm');
     $('#ed-cf-title').textContent = opts.title;
@@ -2260,6 +2263,11 @@
     ok.className = 'btn ' + (opts.danger ? 'btn--destructive' : 'btn--primary');
     ok.disabled = !!opts.blocked;
     cfOnOk = opts.onOk || null;
+    /* 第二選項：只有離開前對話用得到（儲存並離開／不儲存就離開／取消三選一）。 */
+    const alt = $('#ed-cf-alt');
+    alt.hidden = !opts.altLabel;
+    alt.textContent = opts.altLabel || '';
+    cfOnAlt = opts.onAlt || null;
     wrap.hidden = false;
     document.body.style.overflow = 'hidden';
     if (window.ztorIcons) window.ztorIcons.applyIcons(wrap);
@@ -2268,9 +2276,11 @@
     $('#ed-confirm').hidden = true;
     document.body.style.overflow = '';
     cfOnOk = null;
+    cfOnAlt = null;
   }
   document.addEventListener('click', e => {
     if (e.target.closest('[data-cf-close]')) { closeConfirm(); return; }
+    if (e.target.closest('#ed-cf-alt')) { const fn = cfOnAlt; closeConfirm(); if (fn) fn(); return; }
     if (e.target.closest('#ed-cf-ok')) { const fn = cfOnOk; closeConfirm(); if (fn) fn(); return; }
   });
   document.addEventListener('keydown', e => {
@@ -2786,8 +2796,80 @@
 
   function setMode(mode) {
     document.querySelectorAll('.tab-panel[data-editable]').forEach(p => p.setAttribute('data-mode', mode));
+    /* 進入編輯就記下基準值；離開編輯把基準清掉（沒有基準＝沒有未儲存的變更，
+       離開防護也就不該攔人）。 */
+    edBaseline = mode === 'edit' ? editSnapshot() : null;
     syncEditMode();
+    syncDirty();
   }
+
+  /* ── 變更追蹤（規格 5.1.6.2 F10「已變更」／F12「儲存 N 項變更」）─────────────
+     規格把維護面向切成幾列，變更數算的是「動過幾個面向」而不是幾個欄位——名稱與
+     描述一起算一項、場地與地址一起算一項。比對基準是進入編輯模式當下的值（就地
+     編輯的「開頁」等價點），改回原值記號就會自己消失。
+     ⚠ 這一頁是就地編輯、不是規格假設的獨立編輯頁，所以「無變動時兩鈕都停用」只落
+     一半：捨棄照規格停用，儲存維持可按（它同時是唯一的離開編輯態出口，停用會把人
+     鎖在編輯模式）。差異記於 ASSUMPTIONS EDIT-002。 */
+  const ED_ASPECTS = [
+    ['basics', s => s.name + ' ' + s.desc],
+    ['venue',  s => s.venue + ' ' + s.address],
+    ['dates',  s => s.sessions],
+    ['lineup', s => s.lineup],
+    ['images', s => s.gallery],
+    ['tiers',  s => s.tiers]
+  ];
+  let edBaseline = null;
+  function editSnapshot() {
+    const f = k => { const el = document.querySelector('[data-ed="' + k + '"]'); return el ? String(el.value || '').trim() : ''; };
+    const arr = sel => JSON.stringify([].slice.call(document.querySelectorAll(sel)).map(el => el.value != null ? String(el.value).trim() : (el.getAttribute('src') || '')));
+    return {
+      name: f('name'), desc: f('desc'), venue: f('venue'), address: f('address'),
+      sessions: JSON.stringify(edSessions || []),
+      tiers: JSON.stringify(edTiers || []),
+      lineup: arr('#ed-lineup [data-ed-lineup-row] input'),
+      gallery: arr('#ed-gallery [data-gallery-tile] img')
+    };
+  }
+  function changedAspects() {
+    if (!edBaseline) return [];
+    const now = editSnapshot();
+    return ED_ASPECTS.filter(a => a[1](edBaseline) !== a[1](now)).map(a => a[0]);
+  }
+  function isDirty() { return changedAspects().length > 0; }
+  /* 欄位、票種、場次、陣容、圖片都可能被改——與其在每一處插一行，統一在這四個容器
+     上看 DOM 變動，加上 document 級的 input／change。 */
+  function syncDirty() {
+    const n = changedAspects().length;
+    const btn = document.querySelector('[data-ed-editmode]');
+    const panel = document.querySelector('.tab-panel[data-editable]');
+    const editing = panel && panel.getAttribute('data-mode') === 'edit';
+    if (btn && editing) {
+      const label = btn.querySelector('[data-ed-editmode-label]');
+      if (label) {
+        if (n > 0) {
+          label.removeAttribute('data-i18n');
+          label.textContent = T('event-detail.btn.save-n', 'Save {n} changes').replace('{n}', String(n));
+        } else {
+          label.setAttribute('data-i18n', 'event-detail.btn.save');
+          label.textContent = T('event-detail.btn.save', 'Save changes');
+        }
+      }
+    }
+    const cancel = document.querySelector('[data-ed-cancel]');
+    if (cancel) cancel.disabled = editing ? n === 0 : false;
+    /* F10 的「已變更」記號沒有落點：那是獨立編輯頁的總覽摘要列，這一頁是就地編輯、
+       沒有那份摘要（EDIT-001 已登記編輯頁退場）。變更數改由儲存鈕的文案表達。 */
+  }
+
+  /* 變更偵測的觸發：欄位打字走 input／change；票種、場次、陣容、圖片都是整段重畫，
+     所以改看容器的 DOM 變動，不必在每個 render 後面各插一行。 */
+  document.addEventListener('input', () => { if (edBaseline) syncDirty(); });
+  document.addEventListener('change', () => { if (edBaseline) syncDirty(); });
+  (function watchEditContainers() {
+    const ids = ['ed-tier-list', 'ed-sess-list', 'ed-lineup', 'ed-gallery'];
+    const mo = new MutationObserver(() => { if (edBaseline) syncDirty(); });
+    ids.forEach(id => { const el = document.getElementById(id); if (el) mo.observe(el, { childList: true, subtree: true }); });
+  })();
 
   /* 高影響變更＝購票者會在意的欄位：場地、地址、每一場的日期與開演時間。
      只比對「畫面上現在的值」與 store 的原值，兩者相同就不是變更。 */
@@ -2816,6 +2898,38 @@
     alert(T('event-detail.edit.saved', 'Saved.'));
     setMode('view');
   }
+  /* 捨棄：所有欄位（含票種、場次、陣容、圖片）還原成進入編輯當下的值。 */
+  function discardEdit() {
+    edSessions = (ev.sessions || []).map(s => Object.assign({}, s));
+    edTiers = (ev.tiers || []).map(t => Object.assign({}, t));
+    fillEditForm(ev);
+    renderEdTiers();
+    setMode('view');
+  }
+  /* ── 離開防護（F12「離開防護」）─────────────────────────────────────
+     不自動儲存的必要配套：沒有它，誤觸返回就把整段輸入丟了。站內的返回／麵包屑
+     用三選一對話（儲存並離開／不儲存就離開／取消）；關分頁或重新整理攔不到自訂
+     對話，退回瀏覽器原生的 beforeunload 提示。 */
+  window.addEventListener('beforeunload', e => {
+    if (!isDirty()) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+  document.addEventListener('click', e => {
+    const link = e.target.closest('a[href]');
+    if (!link || !isDirty()) return;
+    const href = link.getAttribute('href') || '';
+    if (!href || href.charAt(0) === '#' || link.target === '_blank') return;
+    e.preventDefault();
+    openConfirm({
+      title: T('event-detail.leave.title', 'Leave without saving?'),
+      body: '<p class="text-sub">' + T('event-detail.leave.body', 'You have changes that have not been saved.') + '</p>',
+      okLabel: T('event-detail.leave.save', 'Save & leave'),
+      altLabel: T('event-detail.leave.discard', 'Leave without saving'),
+      onOk: () => { commitEdit(); location.href = href; },
+      onAlt: () => { edBaseline = null; location.href = href; }
+    });
+  }, true);
 
   document.addEventListener('click', e => {
     if (e.target.closest('[data-ed-editmode]')) {
@@ -2845,7 +2959,17 @@
       } else setMode('edit');
       return;
     }
-    if (e.target.closest('[data-ed-cancel]')) { fillEditForm(ev); edTiers = (ev.tiers || []).map(t => Object.assign({}, t)); renderEdTiers(); setMode('view'); return; }
+    if (e.target.closest('[data-ed-cancel]')) {
+      /* F12：捨棄要二次確認——這是唯一會把已輸入內容丟掉的動作，而且不可復原。 */
+      openConfirm({
+        title: T('event-detail.discard.title', 'Discard changes?'),
+        body: '<p class="text-sub">' + T('event-detail.discard.body', 'The event goes back to what it was when you started editing.') + '</p>',
+        okLabel: T('event-detail.discard.ok', 'Discard'),
+        danger: true,
+        onOk: () => { discardEdit(); }
+      });
+      return;
+    }
     if (e.target.closest('[data-ed-delete]')) {
       if (confirm(T('event-detail.edit.confirm-delete', 'Delete this event? Ticket holders will be refunded.'))) {
         location.href = 'events.html';

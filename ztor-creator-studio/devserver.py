@@ -23,6 +23,7 @@
 """
 import functools
 import http.server
+import os
 import socketserver
 import sys
 
@@ -57,8 +58,29 @@ class ReusableServer(socketserver.ThreadingTCPServer):
 
 
 def main() -> int:
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 4325
-    directory = sys.argv[2] if len(sys.argv) > 2 else "."
+    """參數順序不拘、port 可由環境變數指派（2026-08-19）。
+
+    為什麼要改：預覽面板（.claude/launch.json）在多個 chat 同時開著時會搶同一個
+    寫死的 port，第二個 chat 就起不來。改成 `autoPort` 之後由面板指派 port 並透過
+    PORT 環境變數傳進來，所以這裡不能再假設 argv[1] 一定是 port。
+
+    解析規則：第一個純數字的參數當 port，其餘第一個參數當 directory。
+    這樣三種寫法都成立，舊的呼叫方式一字不用改——
+        devserver.py 4325 r2.2   （舊用法，port 明寫）
+        devserver.py r2.2        （port 走 PORT 環境變數）
+        devserver.py             （兩者都用預設）
+    """
+    port = None
+    directory = None
+    for arg in sys.argv[1:]:
+        if port is None and arg.isdigit():
+            port = int(arg)
+        elif directory is None:
+            directory = arg
+    if port is None:
+        port = int(os.environ.get("PORT") or 4325)
+    if directory is None:
+        directory = "."
     handler = functools.partial(NoStoreHandler, directory=directory)
     with ReusableServer(("", port), handler) as httpd:
         print(f"serving {directory} on http://localhost:{port}  (Cache-Control: no-store)")

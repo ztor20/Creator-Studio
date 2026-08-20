@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="ds-components/step-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/dropdown-menu.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/post-composer.css?v=r2.2">   <!-- 2026-08-18：總覽進度摘要的階段清單 -->   <!-- 2026-08-18：進度摘要的動作改上下兩排時才用到 -->
 <link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
@@ -154,7 +155,7 @@
       <nav class="tabs" role="tablist" data-tabs>
         <button class="tabs__item tabs__item--active" role="tab" data-tab="overview" aria-selected="true" data-i18n="project-detail.tab.overview">Overview</button>
         <button class="tabs__item" role="tab" data-tab="plans" aria-selected="false" data-i18n="project-detail.tab.plans" data-type="fund preorder">Plans</button>
-        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-type="fund preorder">Progress</button>
+        <button class="tabs__item" role="tab" data-tab="progress" aria-selected="false" data-i18n="project-detail.tab.progress" data-pd-progress-tab>Progress</button>
         <button class="tabs__item" role="tab" data-tab="backers" aria-selected="false" data-i18n="project-detail.tab.backers" data-backers-tab data-type="fund preorder">Backers</button>
         <button class="tabs__item" role="tab" data-tab="setup" aria-selected="false" data-i18n="project-detail.tab.setup">Setup</button>
         <button class="tabs__item" role="tab" data-tab="earnings" aria-selected="false" data-i18n="project-detail.tab.earnings">My earnings</button>
@@ -691,7 +692,12 @@
            時間軸由 ds-components/progress-timeline.css 呈現，內容由下方 renderTimeline()
            依 js/project-progress-store.js（里程碑與更新）＋ js/work-review-store.js
            （完成作品那一顆，**不另存一份狀態**）產生。 -->
-      <div class="tab-panel" data-panel="progress" data-type="fund preorder">
+      <!-- 2026-08-19 使用者裁決（D203）：進度分頁開放給直接發佈。上架追蹤那五段
+           （送審→審核中→審核通過→設定上映日期→上線）全部都是「某天發生的事」，
+           用橫向 stepper 只說得出卡在第幾段，排進時間軸才說得出哪一天發生、隔了多久。
+           直接發佈沒有里程碑也沒有項目更新（D193），所以它的軸只有作品那一條線；
+           分頁名稱因此依發行模式分：直接發佈叫「上架進度」、共創與預購叫「項目進度」。 -->
+      <div class="tab-panel" data-panel="progress">
         <!-- 不用 --stack-lg：那個修飾子是為了保護寬表格，在 1440 以下把每個 span 撐成滿版。
              這一分頁已經沒有兩欄表格，留著會讓交付摘要兩格上下疊而不是並排。 -->
         <div class="bento bento--top">
@@ -705,8 +711,8 @@
                才分得開；拆成兩格就由版面本身講清楚。標題撤除——底下那一段已經叫「項目進度」，
                再頂一個「交付藍圖」等於同一件事取兩個名字。
                底色走 --nest-surface（.card--muted），與軸上其他面同一層。 -->
-          <div class="kpi bento--span-4" data-prog-kpi="delivery"></div>
-          <div class="kpi bento--span-4" data-prog-kpi="milestones"></div>
+          <div class="kpi bento--span-4" data-prog-kpi="delivery" data-type="fund preorder"></div>
+          <div class="kpi bento--span-4" data-prog-kpi="milestones" data-type="fund preorder"></div>
 
           <!-- 時間軸走無底卡（2026-08-17 使用者反饋）：這一區的主角是軸本身，外面再包一張卡
                等於在軸線外多畫一個框。交付物清單已併進「完成作品」那一顆里程碑，所以
@@ -721,10 +727,14 @@
                  標題列若撐滿整個內容區，「＋ 里程碑／發布更新」會落在離軸線很遠的右邊，
                  看起來像對別的東西下指令。 -->
             <div class="card__head" style="max-width:760px">
-              <h3 class="card__title" data-i18n="pd-prog.section">Project progress</h3>
+              <!-- 標題依發行模式換字（2026-08-19 使用者裁決）：直接發佈叫「上架進度」，
+                   共創與預購叫「項目進度」。由 syncProgressLabels() 同時改分頁按鈕與這裡。 -->
+              <h3 class="card__title" data-pd-progress-title data-i18n="pd-prog.section">Project progress</h3>
               <div class="flex-row" style="gap:6px;margin-left:auto">
-                <button class="btn btn--ghost btn--sm" type="button" data-ms-add data-i18n="pd-edit.milestone.add">＋ Milestone</button>
-                <button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-i18n="project-detail.btn.post-update">Post update</button>
+                <!-- 兩顆都只給共創與預購：直接發佈沒有里程碑（不設交付承諾），
+                     也沒有項目更新（D193 撤除）。 -->
+                <button class="btn btn--ghost btn--sm" type="button" data-ms-add data-type="fund preorder" data-i18n="pd-edit.milestone.add">＋ Milestone</button>
+                <button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-type="fund preorder" data-i18n="project-detail.btn.post-update">Post update</button>
               </div>
             </div>
             <!-- 時間軸（D194：未來在上、今天在中、過去在下，單一排序軸是真實日期）。
@@ -805,7 +815,7 @@
           <!-- §2.2.10 的〔產品待確認〕：回報頻率下限與逾期未回報的處理。呈現層不自行補規則。
                這條原本掛在「作品進度」那張卡上，該卡已於 2026-08-17 併進完成作品節點，
                規則層的待確認留在分頁尾端、不跟著進節點（它講的是整條軸不是某一顆）。 -->
-          <div class="info-banner mt-16">
+          <div class="info-banner mt-16" data-type="fund preorder">
             <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
             <span data-i18n="project-detail.progress.tbd-pre">How often you must report progress, and what happens if a milestone slips, are not defined yet (待確認).</span>
           </div>
@@ -1596,7 +1606,7 @@
       <!-- 預計日期 2026-08-17 由自由文字改成日期選擇（§2.2.10「以日期選擇取得，不接受
            自由文字」，D194）。原本填的是 'Sep 2026' 這種顯示字串，兩個日期無法相減，
            倒數、逾期與排序都做不出來。 -->
-      <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-mname" data-i18n="pd-edit.milestone.name">Milestone</label><input class="input" id="pd-f-mname" data-i18n-placeholder="pd-edit.milestone.name-ph" placeholder="Festival submission"></div><div class="field"><label class="field__label" for="pd-f-mdate" data-i18n="pd-edit.milestone.date">Target date</label><input class="input" type="date" id="pd-f-mdate"><div class="field__hint" data-i18n="pd-edit.milestone.date.hint">Leave it blank until the date is settled. It drives the order on the timeline and the countdown.</div></div></div>
+      <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-mname" data-i18n="pd-edit.milestone.name">Milestone</label><input class="input" id="pd-f-mname" data-i18n-placeholder="pd-edit.milestone.name-ph" placeholder="Festival submission"></div><div class="field"><label class="field__label" for="pd-f-mdate" data-i18n="pd-edit.milestone.date">Target date</label><input class="input" type="date" id="pd-f-mdate"><div class="field__hint" data-i18n="pd-edit.milestone.date.hint">Leave it blank until the date is settled. It drives the order on the timeline and the countdown.</div><p class="field__error" data-pd-mdate-err hidden data-i18n="pd-edit.milestone.date.err">A milestone can't be dated before the project was created.</p></div></div>
       <div class="field"><label class="field__label" for="pd-f-mdesc" data-i18n="pd-edit.milestone.desc">Description</label><textarea class="textarea" id="pd-f-mdesc" rows="2" data-i18n-placeholder="pd-edit.milestone.desc-ph" placeholder="What gets delivered at this step"></textarea></div>
       <!-- 狀態與對粉絲端公開：§2.2.10「里程碑」欄位表。完成日由系統於轉為已完成時寫入，
            創作者不手填，所以這裡沒有那一格。粉絲端的實際呈現屬〔產品待確認〕（主規格 §8.24 第 3 項）。 -->
@@ -1606,6 +1616,28 @@
     </div>
   </div>
 </div>
+<!-- 一則更新的完整紀錄（2026-08-19 使用者裁決）：軸上那一列只放讀得下去的份量
+     （標題、內文、日期），其餘全部收在這裡——受眾、通知人數、掛在哪顆里程碑，以及
+     **那顆里程碑當初答應的日期與實際差了幾天**。原定日期本來寫在軸上里程碑那一列旁邊，
+     同一列同時掛兩個日期讀者要自己分辨哪個是真的，所以搬進這裡。唯讀，不提供編輯。 -->
+<div class="payout-modal" id="pd-update-detail" hidden>
+  <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-ud-title">
+    <!-- 標題就是這則貼文自己的標題（2026-08-19 改版）：原本頭列寫死「更新內容」、
+         底下再用表單的「標題／內文」兩個 label 去裝唯讀內容，讀起來像一張被停用的表單。
+         一則貼文的主詞就是它的標題，讓它當彈窗的名字；類型與受眾是它的屬性，
+         收成標題底下那一行；剩下的紀錄走 .fact-list（一項一行、值靠右）。 -->
+    <div class="payout-dialog__head">
+      <h3 class="payout-dialog__title" id="pd-ud-title"></h3>
+      <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
+    </div>
+    <div class="payout-dialog__body">
+      <div class="flex-row" style="gap:8px;flex-wrap:wrap" id="pd-ud-meta"></div>
+      <p class="field-text mt-8" id="pd-ud-body"></p>
+      <div class="fact-list mt-16" id="pd-ud-facts"></div>
+    </div>
+  </div>
+</div>
+
 <div class="payout-modal" id="pd-edit-update" hidden>
   <div class="payout-dialog" role="dialog" aria-modal="true" aria-labelledby="pd-edit-update-title">
     <div class="payout-dialog__head">
@@ -1613,10 +1645,13 @@
       <button class="btn btn--icon btn--sm" type="button" data-modal-close aria-label="Close"><i data-lucide="x" class="ztor-icon"></i></button>
     </div>
     <div class="payout-dialog__body">
-      <!-- 類型放在第一格：選了哪一種，決定下面送出鈕會做什麼（發一則更新，或接著走上架流程）。
-           2026-08-07 由原本的「此更新同時標記項目完成」checkbox 改成兩選一的下拉——
-           勾一個框看不出後面還有一整段上架流程要走，也看不出它只在項目已成功時才可用。 -->
-      <div class="field"><label class="field__label" for="pd-f-ukind" data-i18n="pd-edit.update.kind">Type</label><select class="select" id="pd-f-ukind"><option value="milestone" data-i18n="pd-edit.update.kind-ms">Milestone update</option><option value="general" data-i18n="pd-edit.update.kind-general">General update</option><option value="release" data-i18n="pd-edit.update.kind-release">Work release</option></select><div class="field__hint" id="pd-ukind-note" hidden></div></div>
+      <!-- 類型放在第一格：選了哪一種，決定送出鈕會不會順手把一顆里程碑標記完成。
+           2026-08-19 撤除（墓碑，D207）：第三個選項「完成作品發文」。它按下去不發貼文，
+           而是把人帶去十五欄的上架流程——發文框答應要發一則貼文，選項卻通往交件，
+           打好的字還會被丟進暫存看不見。上架改由上架階段那一列自己的動作鈕進入
+           （見 relNode 的 actFor.submit），這個下拉從此只剩兩個真的會產生貼文的選項，
+           與一則更新的兩種分類（一般／里程碑，D206）對齊。 -->
+      <div class="field"><label class="field__label" for="pd-f-ukind" data-i18n="pd-edit.update.kind">Type</label><select class="select" id="pd-f-ukind"><option value="milestone" data-i18n="pd-edit.update.kind-ms">Milestone update</option><option value="general" data-i18n="pd-edit.update.kind-general">General update</option></select><div class="field__hint" id="pd-ukind-note" hidden></div></div>
       <div class="form-grid"><div class="field"><label class="field__label" for="pd-f-utitle" data-i18n="pd-edit.update.name">Title</label><input class="input" id="pd-f-utitle" data-i18n-placeholder="pd-edit.update.name-ph" placeholder="Sound mix is locked"></div><div class="field"><label class="field__label" for="pd-f-uaud" data-i18n="pd-edit.update.audience">Audience</label><select class="select" id="pd-f-uaud"><option data-i18n="pd-edit.update.aud-everyone">Everyone</option><option data-i18n="pd-edit.update.aud-backers">Backers only</option><option data-i18n="pd-edit.update.aud-superfan">Superfan+</option></select></div></div>
       <!-- 掛載（§2.2.10）：更新可以掛在某一顆里程碑底下，也可以不掛、成為時間軸上的一般公告。
            兩種在能力上完全相同（受眾、通知、成效追蹤都一樣），差別只有歸屬與落點。
@@ -1938,6 +1973,10 @@ window.ztorPdLookup = (function () {
     const releaseOf = r => (r && r.work && r.work.release) || '';
     const icons = el => { if (window.ztorIcons && window.ztorIcons.applyIcons) window.ztorIcons.applyIcons(el); };
     const workHref = () => 'publish-work.html?project=' + encodeURIComponent(proj ? proj.id : '') + '&mode=edit';
+    /* 第一次送作品上架（D207）：同一頁、沒有 mode=edit——編輯態走的是另一條分支
+       （改已上架的作品、不產生貼文）。這條路 2026-08-19 起直接進上架流程，不再先
+       開發文彈窗；理由見 submitUpdate() 上方那段。 */
+    const releaseHref = () => 'publish-work.html?project=' + encodeURIComponent(proj ? proj.id : '');
 
     /* ══ 1 · 總覽 · 階段重點面板（§2.1.1 三張表）══════════════════════════════
        2026-08-18 重排。每一格回傳同一個形狀，套用的程式只有一份——逐格各寫一套渲染
@@ -2068,24 +2107,19 @@ window.ztorPdLookup = (function () {
       /* 直接發佈 ─────────────────────────────────────────────────────────── */
       if (isDirect()) {
         if (st === 'scheduled' && isFilm()) {
-          /* 上架五段：送審 → 審核中 → 審核通過 → 設定上映日期 → 上線。
-             現在卡在哪一段由送審件決定，不由項目狀態決定（兩套狀態，§2.2.9 末段）。 */
-          let at = 1;
-          if (r) at = (r.status === 'approved') ? (rel ? 5 : 4) : 2;
-          /* 退件理由的全文就在送審件面板裡，下一步只講「接下來做什麼」。 */
+          /* 2026-08-19 撤除（墓碑，D203）：上架五段追蹤條（送審→審核中→審核通過→
+             設定上映日期→上線）與它的 `at` 推導。那五段全部是「某天發生的事」，已經以
+             生命週期事件排進時間軸（本型自本輪起有進度分頁，叫「上架進度」）；橫向
+             stepper 只說得出卡在第幾段，軸說得出哪一天、隔了多久。狀態與動作改由進度
+             摘要的「完成作品」那一列承載。 */
           let next;
-          if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'work' };
-          else if (r && r.status === 'approved' && !rel) next = { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'work' };
-          else if (r && WR.isOpen(r.status)) next = { text: T('pd-ov.next.inreview', ''), label: '', owner: 'work' };
-          else next = { text: T('pd-ov.next.editwork', ''), label: T('pd.work.edit', 'Edit work'), href: workHref(), owner: 'work' };
+          if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'progress' };
+          else if (r && r.status === 'approved' && !rel) next = { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'progress' };
+          else if (r && WR.isOpen(r.status)) next = { text: T('pd-ov.next.inreview', ''), label: '', owner: 'progress' };
+          else next = { text: T('pd-ov.next.editwork', ''), label: T('pd.work.edit', 'Edit work'), href: workHref(), owner: 'progress' };
           return {
-            kpis: [],
-            work: {
-              titleKey: 'pd-ov.title.track',
-              track: { steps: ['pd-ov.step.submit', 'pd-ov.step.review', 'pd-ov.step.approved', 'pd-ov.step.date', 'pd-ov.step.live'], at: at, alert: !!(r && r.status === 'rejected') },
-              panel: true
-            },
-            panel: null, next: next, progress: false, backers: false
+            kpis: [], work: null,
+            panel: null, next: next, progress: true, backers: false
           };
         }
         if (st === 'scheduled') {
@@ -2112,11 +2146,14 @@ window.ztorPdLookup = (function () {
         /* 三段等待，全部落在同一個「準備中」上（主規格 §7.2，§2.2.11 要求本區分得出來）。 */
         let at = 1;
         if (r && r.status === 'approved') at = rel ? 3 : 2;
+        /* 2026-08-19 使用者裁決（D202）：三段等待的追蹤卡併入進度摘要——審核／挑日／
+           等上映本來就是交付故事的最後一步，進度摘要清單尾端現在有「完成作品」那一列，
+           同一件事不開兩張卡。作品卡自此只服務直接發佈與已上線的作品識別。 */
         return {
-          kpis: [], work: { titleKey: 'pd-ov.title.waiting', track: { steps: ['pd-ov.wait.review', 'pd-ov.wait.date', 'pd-ov.wait.day'], at: at }, panel: true },
+          kpis: [], work: null,
           panel: null,
           next: (r && r.status === 'approved' && !rel)
-            ? { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'work' }
+            ? { text: T('pd-ov.next.setdate', ''), label: T('pd.work.setdate', 'Set the release date'), href: workHref(), owner: 'progress' }
             : null,
           progress: true, backers: true
         };
@@ -2142,18 +2179,22 @@ window.ztorPdLookup = (function () {
         let next;
         /* 退件理由全文就在上面那塊送審件面板裡，這裡只講「接下來做什麼」——
            同一段文字在同一張卡上寫兩次，讀的人會以為那是兩件事。 */
-        if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'work' };
+        /* 2026-08-19 使用者裁決（D202）：下一步歸進度摘要——作品審核的狀態與動作現在
+           就在進度摘要清單的「完成作品」那一列上（badge＋hover 動作），不再另立作品卡。 */
+        if (r && r.status === 'rejected') next = { text: T('pd-ov.next.rejected', ''), label: T('pd.review.resubmit', 'Fix and send again'), href: workHref(), owner: 'progress' };
         /* 已經送出、還在等結果的那一件不該再被叫「去送一次」——那道閘在 §2.2.9 是
            一件一次（重送的入口只在被退件時出現）。 */
-        else if (r && (WR.isOpen(r.status) || r.status === 'approved')) next = { text: T('pd.review.waiting-body', ''), label: '', owner: 'work' };
-        else if (isFilm()) next = { text: T('pd-ov.next.publishwork', ''), label: T('pd-prog.work.send', 'Send the work for release'), modal: 'pd-edit-update', kind: 'release', owner: null };
+        else if (r && (WR.isOpen(r.status) || r.status === 'approved')) next = { text: T('pd.review.waiting-body', ''), label: '', owner: 'progress' };
+        /* D207：直接進上架流程，不再先開發文彈窗把類型預選成「完成作品」。 */
+        else if (isFilm()) next = { text: T('pd-ov.next.publishwork', ''), label: T('pd-prog.work.send', 'Send the work for release'), href: releaseHref(), owner: 'progress' };
         else next = { text: T('pd-edit.update.kind-other-note', ''), label: '', owner: null };
         return {
           /* 預購沒有撥款進度那一段（§2.1.1 預購差異表第二列），所以只有兩格；
              集單結果留給支持者摘要那張卡，不在這裡再寫一次同一個數字。 */
           kpis: pre ? ['delivery', 'milestones'] : ['delivery', 'milestones', 'payout'],
-          /* 有送審件才畫作品卡：這個階段的作品可能還沒送出去，沒有東西可追蹤。 */
-          work: rec() ? { titleKey: 'pd-ov.title.work', panel: true } : null,
+          /* 2026-08-19（D202）：作品審核併入進度摘要（清單尾端的「完成作品」列），
+             作品卡在共創與預購不再出現。 */
+          work: null,
           panel: null, next: next, progress: true, backers: true
         };
       }
@@ -2163,7 +2204,8 @@ window.ztorPdLookup = (function () {
 
     /* 已上線：營運摘要（近期收益與觀看）＋ 作品上線資訊（上映日期與編輯入口，§2.2.11）。 */
     function liveStage(todo) {
-      const hasWork = !isDirect() || !!rec();
+      /* 2026-08-19（D203）：已上線也不再另立作品卡——上映日期與編輯入口移到進度摘要
+         「完成作品」那一列，一個地方講作品走到哪。 */
       /* 已上線的第三格 KPI（2026-08-19 使用者裁決重設計，D201）：
          里程碑完成度退場——上線之後它永遠停在 N/N，一個不會再動的數字不值得佔一格。
          共創換成撥款進度：它還在動，而且直接關係到「給支持者的錢走到哪」；
@@ -2171,10 +2213,10 @@ window.ztorPdLookup = (function () {
       return {
         kpis: isDirect() ? ['revenue', 'audience']
           : (proj.type === 'preorder' ? ['revenue', 'audience'] : ['revenue', 'audience', 'payout']),
-        work: rec() ? { titleKey: 'pd-ov.title.work', panel: true } : null,
+        work: null,
         panel: null,
         next: todo ? { text: todo, label: '', owner: null } : null,
-        progress: !isDirect(), backers: !isDirect()
+        progress: true, backers: !isDirect()
       };
     }
 
@@ -2206,8 +2248,9 @@ window.ztorPdLookup = (function () {
       if (!n || !n.label) return '';
       if (n.tab) return '<button class="btn btn--primary btn--sm" type="button" data-goto-tab="' + esc(n.tab) + '">' + esc(n.label) + '</button>';
       if (n.href) return '<a class="btn btn--primary btn--sm" href="' + esc(n.href) + '">' + esc(n.label) + '</a>';
-      if (n.modal) return '<button class="btn btn--primary btn--sm" type="button" data-modal-open="' + esc(n.modal) + '"' +
-        (n.kind ? ' data-preset-kind="' + esc(n.kind) + '"' : '') + '>' + esc(n.label) + '</button>';
+      /* 2026-08-19（D207）：拿掉 data-preset-kind。彈窗只剩兩個都會產生貼文的類型，
+         沒有哪一顆按鈕需要幫使用者先選好——會需要預選的那一種已經改走連結。 */
+      if (n.modal) return '<button class="btn btn--primary btn--sm" type="button" data-modal-open="' + esc(n.modal) + '">' + esc(n.label) + '</button>';
       return '';
     }
 
@@ -2224,15 +2267,36 @@ window.ztorPdLookup = (function () {
        不是更遠的下一個目標。 */
     function upcomingMilestones() {
       if (!PROG) return [];
-      const T0 = PROG.today();
-      const pending = PROG.milestones(proj).filter(m => m.status !== 'done');
-      const overdue = pending.filter(m => m.date && PROG.diffDays(m.date, T0) < 0).sort((a, b) => a.date - b.date);
-      const dated = pending.filter(m => m.date && PROG.diffDays(m.date, T0) >= 0).sort((a, b) => a.date - b.date);
-      const undated = pending.filter(m => !m.date);
-      /* 取 4 顆（2026-08-18 由 3 顆放寬）：藍圖擴成六顆之後，只留三顆會讓「還有幾件沒做」
-         這件事在總覽上被截掉一段而且沒說。截斷本身仍然可能發生，所以卡頭補了完成度
-         徽章——摘要可以短，但不能讓人以為這就是全部。 */
-      return overdue.concat(dated).concat(undated).slice(0, 4);
+      /* 2026-08-19 使用者裁決：**已完成的也列出來**（劃掉），不再只給待辦。
+         原本只列未完成、又切到 4 顆，讀者看得到還欠什麼、看不出整條路走到哪；
+         做完的留在原位劃掉之後，這張卡才是一份可以由上往下讀完的清單。
+         排序改成單純依日期（已完成的用完成日）——這一份現在是完整清單而不是待辦佇列，
+         逾期優先那套排法會讓做完的與沒做的交錯，讀起來不像一條路。
+         沒有日期的排在最後（它們還沒被排進時間裡）。 */
+      /* 方向與時間軸一致（2026-08-19 使用者裁決「最久的放最下面」）：**新的在上、舊的在下**。
+         兩個畫面講同一條路，方向相反的話從總覽點進進度會整個上下顛倒。
+         沒有日期的排在最上面（同時間軸把它們放在未來段的頂端）——它們還沒被排進時間裡。
+
+         2026-08-19 第二輪：**上架階段與里程碑合流排序**（D204 修正）。第一版把上架四段
+         整塊釘在最頂，結果「送出審核 8/5」（已經發生）壓在「作品上線 9/12」「支持者交付 11/9」
+         （都還沒到）上面——一條照日期讀的清單裡混進一塊不照日期的東西，整張卡就讀不成
+         一條時間線了。兩種列現在用同一把尺排：有日期的照日期、沒日期的置頂。 */
+      const keyOf = x => x.date;
+      const msItems = PROG.milestones(proj).map(m => ({
+        kind: 'ms', m: m,
+        date: m.status === 'done' ? (m.completedAt || m.date) : m.date
+      }));
+      /* 上架階段只給影視家族，且該項目走得到上架流程（blocked＝這個內容類型沒有流程）。 */
+      const relItems = (isFilm() && completionState().phase !== 'blocked')
+        ? releaseStages().slice().reverse().map(st => ({
+            kind: 'rel', st: st, date: st.completedAt || st.date
+          }))
+        : [];
+      const items = msItems.concat(relItems);
+      const dated = items.filter(keyOf).sort((a, b) => keyOf(b) - keyOf(a));
+      /* 沒有日期的維持原順序：里程碑照建立順序、上架階段照路徑反排（後面的在上）。 */
+      const undated = items.filter(x => !keyOf(x));
+      return undated.concat(dated);
     }
 
     function renderStage() {
@@ -2360,17 +2424,25 @@ window.ztorPdLookup = (function () {
           /* 2026-08-18（使用者裁決，參考 Project status 那份設計）：這一份不是時間軸的縮圖，
              是一串「走到第幾步」——所以用 step-list：記號分實心／色環／虛線三種份量，
              正在做的那一顆整列上色，還沒到的整列壓淡。時間軸（進度分頁）不跟著改。 */
-          const rows = list.map(m => {
-            const over = m.date && PROG.diffDays(m.date, T0) < 0;
-            /* 2026-08-18 使用者裁決：里程碑取消「進行中」。剩下的兩態＋逾期就是全部。 */
-            const mod = over ? 'alert' : 'todo';
+          const rows = list.map(it => it.kind === 'rel' ? relRow(it.st) : msRow(it.m));
+
+          /* 一顆里程碑的列。 */
+          function msRow(m) {
+            const isDone = m.status === 'done';
+            /* 已完成的不會逾期——逾期是「答應的日子過了還沒做」，做完了就沒有這件事。 */
+            const over = !isDone && m.date && PROG.diffDays(m.date, T0) < 0;
+            /* 2026-08-18 使用者裁決：里程碑取消「進行中」。剩下的兩態＋逾期就是全部。
+               2026-08-19：已完成的走 --done（標題劃刪除線）。 */
+            const mod = isDone ? 'done' : (over ? 'alert' : 'todo');
             /* 記號是一顆實心點（.pmark，與時間軸共用），裡面放不含外圈的驚嘆號或打勾——
                alert-circle／check-circle 自帶一個圓，疊在點上會變成兩個同心圓。
                「進行中」不放時鐘：藍色本身就在說它進行中，而時鐘跟日期講的是同一件事。 */
             /* 每一顆里程碑都是一個打勾格：還沒到淡勾、完成白勾、逾期換驚嘆號。 */
             const ic = over ? 'exclamation-mark' : 'check';
+            /* 已完成的日期改讀完成日：它回答的是「什麼時候做完的」，不是當初答應哪一天。 */
+            const dayShown = isDone ? (m.completedAt || m.date) : m.date;
             const meta = [
-              m.date ? fmtDay(m.date) : T('pd-ov.prog.nodate', 'No date yet'),
+              dayShown ? fmtDay(dayShown) : T('pd-ov.prog.nodate', 'No date yet'),
               m.pub ? '' : T('pd-prog.ms.backers', 'Backers only')
             ].filter(Boolean).join(' · ');
             const tag = over
@@ -2380,15 +2452,44 @@ window.ztorPdLookup = (function () {
             /* 每一列自己帶一顆「發布更新」，hover 才出現（2026-08-18 使用者裁決）：
                卡底那顆是「發一則更新」的通用入口，這一顆已經指定了要交代哪一顆里程碑，
                按下去彈窗的類型與里程碑都預選好。 */
-            const act = '<button class="btn btn--primary btn--sm step-list__act" type="button" data-ov-post="' + m.id + '" data-i18n="project-detail.btn.post-update">' +
+            /* 已完成的那一列不給這顆鈕：里程碑更新就是它的完成宣告，發過了（D197）；
+               這裡再給一顆「發布更新」會讀成「還要再交代一次」。 */
+            const act = isDone ? '' :
+              '<button class="btn btn--primary btn--sm step-list__act" type="button" data-ov-post="' + m.id + '" data-i18n="project-detail.btn.post-update">' +
               esc(T('project-detail.btn.post-update', 'Post update')) + '</button>';
-            return '<div class="step-list__row step-list__row--' + mod + ' step-list__row--interactive">' +
+            return '<div class="step-list__row step-list__row--' + mod + (act ? ' step-list__row--interactive' : '') + '">' +
               '<span class="pmark pmark--' + (over ? 'alert' : m.status) + '">' +
               (ic ? '<i data-lucide="' + ic + '" class="ztor-icon"></i>' : '') + '</span>' +
               '<div class="step-list__body"><span class="step-list__title">' + esc(L(m.name)) + '</span>' +
               '<span class="step-list__meta">' + esc(meta) + '</span></div>' + tag + act + '</div>';
-          });
-          if (!rows.length) {
+          }
+
+          /* 一段上架階段的列（D204）：與里程碑同一種版型，差別只有動作來源與不可編輯。 */
+          function relRow(st) {
+            const w = completionState();
+            const isDone = st.status === 'done';
+            const mod = st.status === 'alert' ? 'alert' : (isDone ? 'done' : 'todo');
+            const at = st.completedAt || st.date;
+            const stAct = {
+              /* D207：這顆直接進上架流程。原本先開發文彈窗、把類型預選成「完成作品」，
+                 使用者看到的是一個寫貼文的框，按下去才發現後面還有十五欄要填。 */
+              submit: w.phase === 'ready' ? '<a class="btn btn--primary btn--sm step-list__act" href="' + releaseHref() + '">' + esc(T('pd-prog.work.send', 'Send the work for release')) + '</a>' : '',
+              review: w.phase === 'rejected' ? '<a class="btn btn--primary btn--sm step-list__act" href="' + workHref() + '">' + esc(T('pd.review.resubmit', 'Fix and send again')) + '</a>' : '',
+              setdate: w.phase === 'pickday' ? '<a class="btn btn--primary btn--sm step-list__act" href="' + workHref() + '">' + esc(T('pd.work.setdate', 'Set the release date')) + '</a>' : '',
+              live: (w.phase === 'scheduled' || w.phase === 'live') ? '<a class="btn btn--outline btn--sm step-list__act" href="' + workHref() + '">' + esc(T('pd.work.edit', 'Edit work')) + '</a>' : ''
+            }[st.key] || '';
+            return '<div class="step-list__row step-list__row--' + mod +
+              (stAct ? ' step-list__row--interactive' : '') + '">' +
+              '<span class="pmark pmark--' + mod + '"><i data-lucide="' +
+              (mod === 'alert' ? 'exclamation-mark' : 'check') + '" class="ztor-icon"></i></span>' +
+              '<div class="step-list__body"><span class="step-list__title">' + esc(L(st.name)) + '</span>' +
+              (at ? '<span class="step-list__meta">' + esc(fmtDay(at)) + '</span>' : '') + '</div>' +
+              stAct + '</div>';
+          }
+          /* 直接發佈沒有里程碑，但它的清單不是空的——上架四段就是它的內容（D204）。
+             所以空狀態只在「連上架階段都沒有」時才出現，否則會冒出一句
+             「還沒有里程碑」壓在四段上面。 */
+          if (!rows.length && !(isFilm() && completionState().phase !== 'blocked')) {
             /* 沒有待完成的里程碑：分兩種——一顆都沒建過，或全部做完了。 */
             const done = sum.total;
             rows.push('<div class="step-list__row step-list__row--' + (done ? 'done' : 'todo') + '">' +
@@ -2547,6 +2648,22 @@ window.ztorPdLookup = (function () {
       return MON_EN[d.getMonth()] + ' ' + d.getDate() + (sameYear ? '' : ', ' + d.getFullYear());
     }
 
+    /* 時間軸日期欄的那一格（2026-08-20 使用者裁決「年要換行」）。欄寬只有 64px，
+       跨年的日期整串放不下，瀏覽器會在數字中間斷行——「2025/12/1」換行「6」，
+       一個被折斷的數字要讀兩次才知道是幾號。所以**年自己一行**，而且順序照該語言
+       的日期寫法：中文年在上（2025 ／ 12/16），英文年在下（Dec 16 ／ 2025）。
+       同一年的日期本來就只有月日、不會折，維持一行。 */
+    function dateCell(d) {
+      if (!d) return '<span class="ptl__date"></span>';
+      const y = d.getFullYear();
+      if (y === PROG.today().getFullYear()) return '<span class="ptl__date">' + esc(fmtDay(d)) + '</span>';
+      const md = zh() ? (d.getMonth() + 1) + '/' + d.getDate() : MON_EN[d.getMonth()] + ' ' + d.getDate();
+      const parts = zh() ? [String(y), md] : [md, String(y)];
+      return '<span class="ptl__date">' +
+        '<span class="ptl__date-part">' + esc(parts[0]) + '</span>' +
+        '<span class="ptl__date-part">' + esc(parts[1]) + '</span></span>';
+    }
+
     /* <input type="date"> 的值域是 YYYY-MM-DD 字串，資料層存的是 Date。兩個方向的
        轉換各只有一份——散在各處手拼字串是「日期又變回字串」的第一步。 */
     function isoDay(d) {
@@ -2555,6 +2672,16 @@ window.ztorPdLookup = (function () {
     function dayFromIso(s) {
       if (!s) return null;
       const p = String(s).split('-');
+      if (p.length !== 3) return null;
+      const d = new Date(+p[0], +p[1] - 1, +p[2]);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    /* 'YYYY/MM/DD' 或 'YYYY-MM-DD' 轉真日期。projects-store 的 created 與送審件的
+       上映日期都是這種斜線字串；releaseStages() 與 renderTimeline() 共用，所以放共用層
+       （2026-08-19：原本定義在 renderTimeline 內，releaseStages 看不到它）。 */
+    function parseSlash(str) {
+      const p = String(str || '').split(/[\/\-]/);
       if (p.length !== 3) return null;
       const d = new Date(+p[0], +p[1] - 1, +p[2]);
       return isNaN(d.getTime()) ? null : d;
@@ -2624,10 +2751,25 @@ window.ztorPdLookup = (function () {
        它是那顆里程碑內容裡的一段，標題由里程碑的名字擔任、可見度標題列已經寫過，
        再給它圖示、標題與 meta 三層就是同一件事講三遍。 */
     function updateHTML(u, mode) {
+      /* 每一則都可以點開看完整紀錄（2026-08-19 使用者裁決）：軸上只放讀得下去的份量，
+         剩下的（受眾、通知人數、掛在哪顆里程碑、那顆的原定日期與差幾天）進詳情彈窗。 */
+      const openAttr = ' role="button" tabindex="0" data-up-open="' + esc(u.id) + '"';
       if (mode === 'nested') {
         const txt = L(u.body) || L(u.title);
-        return '<div class="ptl__update ptl__update--nested">' +
+        return '<div class="ptl__update ptl__update--nested"' + openAttr + '>' +
           '<p class="ptl__update-body">' + esc(txt) + '</p></div>';
+      }
+      /* 'axis' ＝這一則自己站在軸上、有自己的點（2026-08-20 使用者裁決，見 D209）。
+         與底下那種擠在一格裡的差別只有兩件事：日期搬到日期欄（軸上每一列的日期都在
+         同一直行，這一則不該自己把日期塞在標題右邊），標題列改用 .ptl__head——它的
+         min-height 就是 --ptl-line，標題因此落在軸點的中線上。 */
+      if (mode === 'axis') {
+        const visA = u.audience === 'pd-edit.update.aud-backers'
+          ? '<span class="ptl__vis">' + esc(audShort(u)) + '</span>' : '';
+        return '<div class="ptl__update"' + openAttr + '>' +
+          '<div class="ptl__head"><span class="ptl__update-title">' + esc(L(u.title)) + '</span>' + visA + '</div>' +
+          (L(u.body) ? '<p class="ptl__update-body">' + esc(L(u.body)) + '</p>' : '') +
+          '</div>';
       }
       /* 2026-08-18 使用者裁決（「這個沒有意義」）：喇叭圖示與底下那條 meta 列一起撤除，
          版型重整成跟里程碑的標題列同一套——標題在左、日期靠右、可見度只在非公開時寫。
@@ -2639,7 +2781,7 @@ window.ztorPdLookup = (function () {
              一個群組會跨好幾天，每一則得自己說出是哪一天發的。 */
       const vis = u.audience === 'pd-edit.update.aud-backers'
         ? '<span class="ptl__update-vis">' + esc(audShort(u)) + '</span>' : '';
-      return '<div class="ptl__update' + (mode === 'release' ? ' ptl__update--release' : '') + '">' +
+      return '<div class="ptl__update' + (mode === 'release' ? ' ptl__update--release' : '') + '"' + openAttr + '>' +
         '<div class="ptl__update-head">' +
         '<span class="ptl__update-title">' + esc(L(u.title)) + '</span>' + vis +
         '<span class="ptl__update-date">' + esc(fmtDay(u.publishedAt)) + '</span></div>' +
@@ -2676,7 +2818,10 @@ window.ztorPdLookup = (function () {
         } else if (canRelease()) {
           phase = 'ready';
           noteLabel = T('pd-prog.work.ready', '');
-          acts = '<button class="btn btn--primary btn--sm" type="button" data-modal-open="pd-edit-update" data-preset-kind="release">' + esc(T('pd-prog.work.send', 'Send the work for release')) + '</button>';
+          /* 2026-08-19 撤除（墓碑，使用者裁決）：這一格的「送作品上架」鈕。
+             發文框在里程碑全部完成時就長在這一格上（見 renderTimeline 的 workOpen），
+             它的送出鈕本來就是「下一步：上架作品」——同一格裡兩顆鈕做同一件事。
+             總覽的進度摘要「完成作品」那一列仍有這顆動作（D202），入口不減。 */
         } else {
           noteLabel = T('pd-prog.work.locked', '');
         }
@@ -2717,27 +2862,10 @@ window.ztorPdLookup = (function () {
       return { phase: phase, mod: mod, badge: badge, metas: metas, noteLabel: noteLabel, noteBody: noteBody, acts: acts };
     }
 
-    /* 這顆節點**不進日期排序**，永遠釘在軸的最上方（§2.2.10；位置本身仍標
-       〔產品待確認〕，主規格 §8.25 第 5 項）。理由是它的日期是上映日、可能還沒定，
-       而它在語意上就是最後一步。日期欄留白——填「未定」會讓它看起來像排到了某一天。 */
-    function completionNode(updates, withComposer) {
-      const s = completionState();
-      /* 上線之後，那則完成作品貼文掛在本節點底下——上線那一刻的三件事（作品上架、
-         貼文發出、項目轉已上線）在同一個畫面上看得見（§2.2.10 表末列）。 */
-      const kids = updates.filter(u => u.milestoneId === 'work');
-      return '<div class="ptl__node ptl__node--' + s.mod + ' ptl__node--system">' +
-        '<span class="ptl__date"></span>' +
-        dotHTML(s.mod) +
-        '<div class="ptl__body">' +
-          '<div class="ptl__head"><h4 class="ptl__name">' + esc(T('pd-prog.work.node', 'Finished work')) + '</h4>' +
-          '<span class="ptl__tags">' + s.badge + '</span></div>' +
-          (s.metas.length ? '<div class="ptl__meta">' + s.metas.map(m => '<span class="ptl__meta-item"><span>' + esc(m[0]) + '</span><span>' + esc(m[1]) + '</span></span>').join('') + '</div>' : '') +
-          (s.noteLabel ? '<div class="ptl__note"><span>' + esc(s.noteLabel) + '</span>' + (s.noteBody ? '<p class="ptl__note-body">' + esc(s.noteBody) + '</p>' : '') + '</div>' : '') +
-          (s.acts ? '<div class="ptl__acts">' + s.acts + '</div>' : '') +
-          (kids.length ? '<div class="ptl__updates">' + kids.map(u => updateHTML(u, 'release')).join('') + '</div>' : '') +
-          (withComposer ? '<div data-ptl-composer-slot></div>' : '') +
-        '</div></div>';
-    }
+    /* 2026-08-19 撤除（墓碑，D207）：completionNode()。它是釘在軸頂的那顆「完成作品」
+       系統節點，D204 把上架路徑攤成四段里程碑（relNode）之後就沒有人呼叫了——同一件事
+       兩份渲染，留著只會讓下一個人改錯那一份。它讀的狀態來源 completionState() 仍在用
+       （四段列的動作、今天那一列的下一步都靠它），只有這層外殼撤除。 */
 
     /* 2026-08-18 撤除（墓碑）：deliverablesHTML()。它是掛在「完成作品」那一顆底下的
        「作品進度」清單（每一集／每一軌就緒了沒），2026-08-17 從右欄搬進來。使用者裁示
@@ -2755,11 +2883,12 @@ window.ztorPdLookup = (function () {
       const frozen = proj.status === 'cancelled';
       const at = m.status === 'done' ? (m.completedAt || m.date) : m.date;
       const kids = PROG.updates(proj).filter(u => u.milestoneId === m.id);
+      /* 2026-08-19 撤除（墓碑，使用者裁決）：「早於原定 M/D」「晚於原定 M/D」那一行 meta。
+         提前或延後完成時，這一列的日期本來就已經是**實際完成日**（節點落在完成日的位置），
+         再掛一個原定日期在旁邊，等於同一列同時放著兩個日期、要讀的人自己分辨哪個是真的。
+         原定日期沒有消失——它進了那則完成宣告的詳情彈窗（見 openUpdateDetail），
+         想追「當初答應哪一天、差了幾天」在那裡看得到全部。 */
       const metas = [];
-      if (m.status === 'done' && m.date && m.completedAt && PROG.diffDays(m.completedAt, m.date) !== 0) {
-        const early = PROG.diffDays(m.date, m.completedAt);
-        metas.push([T(early > 0 ? 'pd-prog.ms.early' : 'pd-prog.ms.late', 'Originally'), fmtDay(m.date)]);
-      }
       /* 2026-08-18（A2）：狀態徽章整組退場。「進行中／未開始」是軸點的顏色已經在講的事，
          寫出來是同一個訊號的第二份；逾期與可見度改成標題列上的純文字（逾期與名稱同級、
          排在名稱之前，可見度 12px 排在名稱之後）。 */
@@ -2780,15 +2909,107 @@ window.ztorPdLookup = (function () {
          加上（有的話）一段完成宣告，沒有多到需要收起來的內容；收合鈕反而讓每一列
          右邊多一顆按不出什麼的鈕。收合仍保留給「某一天的 N 則更新」那種列。 */
       const nodeState = opt.overdue ? 'alert' : m.status;
+      /* 這一列可以點開完整紀錄（2026-08-20 使用者裁決，見 D208）。**只有已完成的才可點**：
+         紀錄回答的是「這顆里程碑發生過什麼」——當初答應哪一天、實際哪一天完成、差幾天、
+         有沒有跟支持者交代過。還沒完成的那一顆沒有這段歷史，能寫的只有軸上已經寫著的
+         預計日期，點開會是一個沒有新東西的彈窗。
+         點擊落在標題列而不是整個 .ptl__body：底下那則完成宣告自己就是可點的一列
+         （data-up-open），兩層都可點會變成點哪裡都對、但不知道自己點到哪一個。
+         兩者最後開的是同一份紀錄——有完成宣告時，這一列的 data-ms-open 會解析到那一則。 */
+      const msOpen = m.status === 'done'
+        ? ' role="button" tabindex="0" data-ms-open="' + esc(m.id) + '"' : '';
       return '<div class="ptl__node ptl__node--' + nodeState + '">' +
-        '<span class="ptl__date">' + esc(fmtDay(at)) + '</span>' +
+        dateCell(at) +
         dotHTML(nodeState) +
         '<div class="ptl__body">' +
-          '<div class="ptl__head">' + late + '<h4 class="ptl__name">' + esc(L(m.name)) + '</h4>' + vis +
+          '<div class="ptl__head"' + msOpen + '>' + late + '<h4 class="ptl__name">' + esc(L(m.name)) + '</h4>' + vis +
           (acts ? '<div class="ptl__acts">' + acts + '</div>' : '') +
           '</div>' + fold +
           (opt.composer ? '<div data-ptl-composer-slot></div>' : '') +
         '</div></div>';
+    }
+
+    /* 上架階段＝進度上的里程碑（2026-08-19 使用者裁決，D204）
+       ------------------------------------------------------------------
+       原本上架那五段（送審→審核中→審核通過→設定上映日期→上線）是一條橫向追蹤條，
+       D203 把它拆成生命週期事件排進軸；使用者本輪再裁示「這些審核階段也都要轉成
+       進度的里程碑」——所以它們不再是沒有份量的小點，而是與交付里程碑同一種列：
+       同樣的記號、同樣的份量、做完的劃掉，只是不能編輯也不能刪除（系統推出來的）。
+
+       四段而不是五段：「審核中」不是一件會發生的事，是「送出審核」與「平台審核」
+       之間的等待狀態——它由「平台審核」那一顆還沒完成來表達。硬列成一列的話，
+       軸上會有一顆永遠沒有日期、也永遠不會被完成的東西。
+
+       日期取真實時間戳：送出＝submittedAt、審核結果＝decidedAt、上線＝上映日期。
+       「設定上映日期」本身沒有時間戳（原型沒有記錄創作者哪一天設的），所以它沒有日期，
+       未完成時排在未來段最上方（同沒有預計日期的里程碑）。 */
+    function releaseStages() {
+      if (!isFilm()) return [];
+      const r = rec();
+      const rel = releaseOf(r);
+      const reached = !!(r && r.status === 'approved' && window.ztorProjects &&
+        window.ztorProjects.releaseReached(rel));
+      const dayOf = str => dayFromIso(String(str || '').split(' ')[0]);
+      const sub = r ? dayOf(r.submittedAt) : null;
+      const dec = r ? dayOf(r.decidedAt) : null;
+      const relD = parseSlash(rel);
+      const rejected = !!(r && r.status === 'rejected');
+      const approved = !!(r && r.status === 'approved');
+
+      return [
+        { key: 'submit', name: { en: 'Sent for review', zh: '送出審核' },
+          date: sub, status: r ? 'done' : 'todo', completedAt: sub },
+        rejected
+          ? { key: 'review', name: { en: 'Sent back by review', zh: '審核退回' },
+              date: dec, status: 'alert', completedAt: dec }
+          : { key: 'review', name: { en: 'Approved by review', zh: '平台審核通過' },
+              date: approved ? dec : null, status: approved ? 'done' : 'todo', completedAt: approved ? dec : null },
+        /* 「設定上映日期」只在它還是待辦時列出來（2026-08-19）：它是唯一沒有時間戳的一段
+           ——原型沒有記錄創作者哪一天設的，正式資料也不見得會記。做完之後如果照樣列一列，
+           軸上就會出現一顆沒有日期、擺不進任何位置的節點（實測會直接從軸上消失，
+           但摘要還在，兩個畫面對不起來）。它做完的證據就是下一段有日期可用，所以做完即退場。 */
+        rel ? null : { key: 'setdate', name: { en: 'Set the release date', zh: '設定上映日期' },
+          date: null, status: 'todo', completedAt: null },
+        { key: 'live', name: { en: 'Work goes live', zh: '作品上線' },
+          date: relD, status: reached ? 'done' : 'todo', completedAt: reached ? relD : null }
+      ].filter(Boolean);
+    }
+
+    /* 上架階段在軸上的一列。與 msNode 同一種版型（記號、標題、日期欄），差別只有兩件事：
+       沒有 kebab（系統推導出來的，不能改名不能刪），以及動作依階段而定。 */
+    function relNode(st, opt) {
+      opt = opt || {};
+      const w = completionState();
+      const isDone = st.status === 'done';
+      const mod = st.status === 'alert' ? 'alert' : (isDone ? 'done' : 'todo');
+      const ic = mod === 'alert' ? 'exclamation-mark' : 'check';
+      /* 動作只長在「現在輪到它」的那一段上，而且只有創作者真的能動手時才給。 */
+      const actFor = {
+        /* D207：這顆是上架的入口，直接進上架流程——上架不是發一則貼文，是交一份件。 */
+        submit: w.phase === 'ready' ? '<a class="btn btn--primary btn--sm" href="' + releaseHref() + '">' + esc(T('pd-prog.work.send', 'Send the work for release')) + '</a>' : '',
+        review: w.phase === 'rejected' ? '<a class="btn btn--primary btn--sm" href="' + workHref() + '">' + esc(T('pd.review.resubmit', 'Fix and send again')) + '</a>' : '',
+        setdate: w.phase === 'pickday' ? '<a class="btn btn--primary btn--sm" href="' + workHref() + '">' + esc(T('pd.work.setdate', 'Set the release date')) + '</a>' : '',
+        live: (w.phase === 'scheduled' || w.phase === 'live') ? '<a class="btn btn--outline btn--sm" href="' + workHref() + '">' + esc(T('pd.work.edit', 'Edit work')) + '</a>' : ''
+      }[st.key] || '';
+      const at = st.completedAt || st.date;
+      return '<div class="ptl__node ptl__node--' + mod + ' ptl__node--system">' +
+        dateCell(at) +
+        '<span class="ptl__dot pmark pmark--' + mod + '"><i data-lucide="' + ic + '" class="ztor-icon"></i></span>' +
+        '<div class="ptl__body">' +
+          '<div class="ptl__head"><h4 class="ptl__name">' + esc(L(st.name)) + '</h4>' +
+          (actFor ? '<div class="ptl__acts">' + actFor + '</div>' : '') + '</div>' +
+          (opt.note ? '<div class="ptl__note"><span>' + esc(opt.note) + '</span></div>' : '') +
+          (opt.kids && opt.kids.length ? '<div class="ptl__updates">' + opt.kids.map(u => updateHTML(u, 'release')).join('') + '</div>' : '') +
+          (opt.composer ? '<div data-ptl-composer-slot></div>' : '') +
+        '</div></div>';
+    }
+
+    /* 生命週期事件列（D202）：長相同「項目建立」——空心小點、只有名字與日期。 */
+    function evNode(ev) {
+      return '<div class="ptl__node ptl__node--start">' +
+        dateCell(ev.at) +
+        dotHTML('ghost') +
+        '<div class="ptl__body"><div class="ptl__head"><h4 class="ptl__name">' + esc(ev.name) + '</h4></div></div></div>';
     }
 
     /* 兩顆里程碑之間的一般更新，整段一起收合（2026-08-18 使用者裁決，取代原本的
@@ -2799,17 +3020,33 @@ window.ztorPdLookup = (function () {
        的處理）；每一則更新自己的日期寫在它的標題列右端。
        key 用「上方（較新那側）那顆里程碑的 id」而不是日期：往這一段裡再發一則更新時
        key 不變，展開狀態才不會被重繪洗掉。 */
+    /* 兩顆里程碑之間的那一段一般貼文（2026-08-20 使用者裁決「這應該要分成三個點」）。
+       收合時是一列「N 則更新」；展開時那一列留下來當收合鈕，**每一則各自成為軸上的
+       一列、各有自己的點與自己的日期**。改法的理由——展開之後三則擠在同一顆點底下，
+       軸上看起來像「這一天發生了一件事」，實際是三件各自發生在不同日子的事；而軸的
+       承諾就是「一顆點＝一件事」，這一格是全軸唯一違反它的地方。
+       收合的單位不變（整段一起收、一起展，D:2026-08-18），變的只是展開後長什麼樣。 */
     function gapNode(key, list) {
       const open = !!ptlFold[key];           /* 過去的段落預設收合 */
-      return '<div class="ptl__node ptl__node--day' + (open ? '' : ' ptl__node--collapsed') + '">' +
+      const head = '<div class="ptl__node ptl__node--day' + (open ? '' : ' ptl__node--collapsed') + '">' +
         '<span class="ptl__date"></span>' +
         dotHTML('ghost') +
         '<div class="ptl__body">' +
           '<div class="ptl__head"><h4 class="ptl__name">' +
           esc(T('pd-prog.day.count', '{n} updates').replace('{n}', list.length)) + '</h4>' +
           toggleBtn(key, open) + '</div>' +
-          '<div class="ptl__fold"><div class="ptl__updates">' + list.map(u => updateHTML(u)).join('') + '</div></div>' +
         '</div></div>';
+      return open ? head + list.map(u => postNode(u)).join('') : head;
+    }
+
+    /* 一則一般貼文在軸上的一列：日期欄是它的發布日、一顆空心小點（它不是里程碑、
+       沒有狀態）、內容沿用 .ptl__update 的可點區塊。 */
+    function postNode(u) {
+      return '<div class="ptl__node ptl__node--post">' +
+        dateCell(u.publishedAt) +
+        dotHTML('ghost') +
+        '<div class="ptl__body">' + updateHTML(u, 'axis') + '</div>' +
+        '</div>';
     }
 
     /* 今天那一格（§2.2.10「今天這一格」＋狀態變體表）。這是整條軸上唯一會隨情境換
@@ -2838,6 +3075,14 @@ window.ztorPdLookup = (function () {
         }
       } else if (ctx.pending.length) {
         lede = ledeHTML('pd-prog.today.ontrack', 'On track', ctx.pending.length);
+      } else if (isDirect()) {
+        /* 直接發佈沒有里程碑（D203）：今天這一列改講作品走到哪，由完成作品那一格的
+           當下狀態決定說法——它是這一型唯一有進度可言的東西。 */
+        const k = { ready: 'pd-prog.today.dr-send', rejected: 'pd-prog.today.dr-fix',
+          review: 'pd-prog.today.dr-review', pickday: 'pd-prog.today.dr-date',
+          scheduled: 'pd-prog.today.dr-wait', live: 'pd-prog.today.dr-live',
+          blocked: 'pd-prog.today.dr-blocked' }[ctx.work.phase] || 'pd-prog.today.dr-send';
+        lede = ledeHTML(k, '');
       } else if (!ctx.total) {
         lede = ledeHTML('pd-prog.today.noms', 'No milestones yet.');
       } else if (ctx.pending.length) {
@@ -2879,7 +3124,10 @@ window.ztorPdLookup = (function () {
 
     function renderTimeline() {
       const host = document.getElementById('pd-ptl');
-      if (!host || !proj || !PROG || isDirect()) return;
+      /* 2026-08-19（D203）：直接發佈也畫軸。它沒有里程碑與更新，所以底下每一段
+         （里程碑分流、更新分流、發文框落點）拿到的都是空集合，軸上只剩完成作品節點、
+         生命週期事件與項目建立——那正是這一型的完整故事。 */
+      if (!host || !proj || !PROG) return;
       const T0 = PROG.today();
       const ms = PROG.milestones(proj);
       const ups = PROG.updates(proj);
@@ -2911,37 +3159,108 @@ window.ztorPdLookup = (function () {
         .sort((a, b) => b.publishedAt - a.publishedAt);
       const pastPosts = loose.filter(u => u.publishedAt && PROG.diffDays(u.publishedAt, T0) < 0);
 
+      /* ── 生命週期事件（2026-08-19 使用者裁決，D202）：項目發生的事也要上軸——
+         開始收單、達標成功、作品送審與審核結果。它們是系統寫下的事實，不是創作者的
+         承諾（里程碑）也不是他說的話（更新），所以用與「項目建立」同一種空心小點，
+         沒有動作、沒有內容，只有名字與日期。已取消沒有終止時間欄位可讀，暫缺
+         （終止原因欄位見 D154，時間欄位〔產品待確認〕）。 */
+      /* 收單期迄日只從 zh 那一份解析（資料契約：zh 一律「YYYY/MM/DD – MM/DD[ · 尾註]」，
+         en 是散文格式）。第二段沒帶年份且早於起日＝跨年。 */
+      const periodEndOf = () => {
+        const raw = (proj.fund && proj.fund.period && proj.fund.period.zh) ||
+                    (proj.list && proj.list.period && proj.list.period.zh) || '';
+        const m = raw.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})\s*[–—-]\s*(?:(\d{4})\/)?(\d{1,2})\/(\d{1,2})/);
+        if (!m) return null;
+        let y2 = m[4] ? +m[4] : +m[1];
+        if (!m[4] && (+m[5] < +m[2] || (+m[5] === +m[2] && +m[6] < +m[3]))) y2 += 1;
+        const d = new Date(y2, +m[5] - 1, +m[6]);
+        return isNaN(d.getTime()) ? null : d;
+      };
+      const sysEvents = [];
+      const preT = proj.type === 'preorder';
+      /* 收單事件只有共創與預購有（直接發佈沒有收單這件事）。 */
+      if (proj.status !== 'draft' && !isDirect()) {
+        const fFrom = parseSlash(proj.fundFrom);
+        if (fFrom && fFrom <= T0 && !PROG.sameDay(fFrom, createdAt)) {
+          sysEvents.push({ at: fFrom, name: T(preT ? 'pd-prog.ev.prestart' : 'pd-prog.ev.fundstart', 'Opened') });
+        }
+        const endD = periodEndOf();
+        if (endD && endD <= T0 && proj.goalMet && ['succeeded', 'scheduled', 'live'].indexOf(proj.status) >= 0) {
+          sysEvents.push({ at: endD, name: T(preT ? 'pd-prog.ev.premet' : 'pd-prog.ev.funded', 'Goal reached') });
+        }
+      }
+      /* 上架四段自 2026-08-19（D204）起是里程碑列（relNode），不再重複成生命週期事件——
+         同一件事在軸上出現兩次。這裡只留收單那兩個事件。 */
+      const rv = null;
+      if (rv) {
+        const rvDay = str => { const d = dayFromIso(String(str || '').split(' ')[0]); return d; };
+        const sub = rvDay(rv.submittedAt);
+        if (sub && sub <= T0) sysEvents.push({ at: sub, name: T('pd-prog.ev.submitted', 'Work sent for review') });
+        const dec = rvDay(rv.decidedAt);
+        if (dec && dec <= T0 && rv.status === 'approved') sysEvents.push({ at: dec, name: T('pd-prog.ev.approved', 'Work approved') });
+        if (dec && dec <= T0 && rv.status === 'rejected') sysEvents.push({ at: dec, name: T('pd-prog.ev.rejected', 'Work sent back') });
+        /* 作品上線（2026-08-19，D203）：上架故事的最後一件事。上映日期在未來時不畫——
+           那是預定、不是已經發生的事實；未來的落點是釘在軸頂的完成作品節點。 */
+        const relD = parseSlash(releaseOf(rv));
+        if (relD && relD <= T0 && rv.status === 'approved') sysEvents.push({ at: relD, name: T('pd-prog.ev.released', 'Work went live') });
+      }
+
       /* ── 過去段：已完成的里程碑（落在完成日）＋ 夾在里程碑之間的一般更新。
          先把兩種東西攤成一條依日期遞減的序列，再把「連續的一般更新」併成一段
          （2026-08-18 使用者裁決，取代原本的按天分組）。同一天既有里程碑又有一般更新時，
          里程碑列在上、更新在下——里程碑是那天的主要事件。 */
+      /* 上架階段（D204）：未完成的排在未來段最上方（作品上線是整條路的終點，所以在最頂），
+         已完成的依完成日排進過去段、與里程碑一起參與日期排序。 */
+      const relStages = (isFilm() && completionState().phase !== 'blocked') ? releaseStages() : [];
+      const relDone = relStages.filter(x => x.status === 'done' || x.status === 'alert');
+      const relPendingAll = relStages.filter(x => x.status !== 'done' && x.status !== 'alert');
+      /* 未完成的上架階段與里程碑用同一把尺排（2026-08-19 第二輪，D204 修正）：
+         有日期的照日期排進未來段、沒日期的置頂。第一版把整組釘在軸頂，結果
+         「作品上線 9/12」壓在「支持者交付 11/9」上面——同一條軸上出現兩種排序邏輯。 */
+      /* 有日期的待辦階段依日期落位——日期已經過了就排進過去段，不留在未來段。
+         （實測 victoria-noir：上映日 8/9 已過、作品卻還在審核中；硬放未來段會讓
+         「作品上線 8/9」壓在「送出審核 8/13」上面，軸的日期就不再是單調遞減。
+         這種資料真實世界也會有：排定的上映日過了、作品還沒放行。） */
+      const relFuture = relPendingAll.filter(x => x.date && PROG.diffDays(x.date, T0) > 0);
+      const relLate = relPendingAll.filter(x => x.date && PROG.diffDays(x.date, T0) <= 0);
+      const relUndated = relPendingAll.filter(x => !x.date).reverse();
+      const relKids = ups.filter(u => u.milestoneId === 'work');
+
       const flat = [];
       /* 今天標成完成的那一顆也照常進過去段（2026-08-18）：它的完成日就是今天，會排在
          過去段最上面、自成一列。此前它被今天那一格吸收，結果是軸上找不到這一顆。 */
       done.forEach(m => flat.push({ at: m.completedAt || m.date || createdAt, kind: 'ms', m: m }));
       pastPosts.forEach(u => flat.push({ at: u.publishedAt, kind: 'up', u: u }));
+      sysEvents.forEach(ev => flat.push({ at: ev.at, kind: 'ev', ev: ev }));
+      relDone.forEach(st => { if (st.completedAt || st.date) flat.push({ at: st.completedAt || st.date, kind: 'rel', st: st }); });
+      relLate.forEach(st => flat.push({ at: st.date, kind: 'rel', st: st }));
+      /* 同一天的相對次序：里程碑（骨架）→ 事件（系統事實）→ 更新（內容）。 */
+      const rank = { ms: 0, rel: 1, ev: 2, up: 3 };
       flat.sort((a, b) => {
         const ka = PROG.dayKey(a.at), kb = PROG.dayKey(b.at);
         if (ka !== kb) return ka < kb ? 1 : -1;
-        if (a.kind !== b.kind) return a.kind === 'ms' ? -1 : 1;
+        if (a.kind !== b.kind) return rank[a.kind] - rank[b.kind];
         return b.at - a.at;
       });
       /* key 取上方（較新那側）那顆里程碑的 id：往同一段裡再發一則更新時 key 不變，
          展開狀態才不會被重繪洗掉。最上面那一段沒有上界，固定叫 'top'。 */
       const past = [];
-      let gapKey = 'gap:top';
+      let gapKey = 'gap:top', gapSeq = 0;
       flat.forEach(r => {
-        if (r.kind === 'ms') { past.push(r); gapKey = 'gap:' + r.m.id; return; }
+        if (r.kind === 'ms') { past.push(r); gapKey = 'gap:' + r.m.id; gapSeq = 0; return; }
+        /* 事件自成一列、也會把一段更新切成兩段——切出來的第二段要有自己的收合 key，
+           不然兩段共用同一個 key、會一起開一起關。 */
+        if (r.kind === 'ev' || r.kind === 'rel') { past.push(r); gapSeq++; return; }
         const last = past[past.length - 1];
         if (last && last.kind === 'gap') { last.list.push(r.u); return; }
-        past.push({ kind: 'gap', key: gapKey, list: [r.u] });
+        past.push({ kind: 'gap', key: gapKey + (gapSeq ? ':' + gapSeq : ''), list: [r.u] });
       });
 
       /* ── 軸底：項目建立那一刻。永遠是最後一列、不可刪除不可改名。
          建立當天例外——今天就是建立日時不另立一列，由今天那一格承擔起點的意義。 */
       const startHTML = isStartDay ? '' :
-        '<div class="ptl__node ptl__node--start">' +
-        '<span class="ptl__date">' + esc(fmtDay(createdAt)) + '</span>' +
+        '<div class="ptl__node ptl__node--start ptl__node--foot">' +
+        dateCell(createdAt) +
         dotHTML('ghost') +
         '<div class="ptl__body"><div class="ptl__head"><h4 class="ptl__name">' +
         esc(T('pd-prog.start', 'Project created')) + '</h4></div></div></div>';
@@ -2955,20 +3274,36 @@ window.ztorPdLookup = (function () {
          發文的起點不是一個時間點，是「接下來要跟支持者交代哪一件事」。落點依序：
            ① 最早的未完成里程碑——**逾期的不跳過**。它才是欠著的那一顆；跳過它去接
               下一個目標，等於讓畫面幫創作者忽略已經遲到的承諾。
-           ② 里程碑都完成了 → 完成作品那一格（此時它就是下一件要交代的事）。
-           ③ 兩者都沒有（沒建過里程碑、完成作品還鎖著、或項目已取消）→ 今天那一列。
-         位置本身就是發文類型的預設值，所以只有一格會拿到插槽。 */
-      const nextMs = frozen ? null
+           ② 沒有未完成的里程碑（都完成了、或根本沒建過）→ 今天那一列。
+         位置本身就是發文類型的預設值，所以只有一格會拿到插槽。
+
+         2026-08-19 撤除（墓碑，D207）：原本的落點②「里程碑都完成了 → 完成作品那一格」。
+         那一格的送出鈕做的不是發文，是把人帶去上架流程——發文框長在那裡，等於用一個
+         寫貼文的介面收一份交件的意圖。上架階段輪到誰，就由那一列自己的動作鈕負責；
+         里程碑都完成、還在等上架時，發文框回到今天那一列，創作者照樣說得了話。 */
+      /* 直接發佈沒有項目更新（D193），整條軸都不掛發文框（D203）。 */
+      const noPost = frozen || isDirect();
+      const nextMs = noPost ? null
         : (overdue[overdue.length - 1] || dueToday || future[future.length - 1] || undated[0] || null);
-      const workOpen = !frozen && !nextMs &&
-        ['ready', 'rejected', 'pickday'].indexOf(completionState().phase) >= 0;
-      const composerAt = nextMs ? 'ms' : (workOpen ? 'work' : 'today');
+      const composerAt = nextMs ? 'ms' : (noPost && isDirect() ? 'none' : 'today');
       composerCtx = { at: composerAt, msId: nextMs ? nextMs.id : '' };
 
+      /* 未來段＝沒日期的（上架階段在上、里程碑在下）＋ 有日期的依日期遞減，兩種列合流。
+         relOpen＝待辦中路徑最前面的那一段，用來掛那句說明（現在輪到誰、在等什麼）。
+         發文框不再落在這裡（D207），只有說明句還跟著它走。 */
+      const relOpen = relPendingAll[0] || null;
+      const futureMixed = future.map(m => ({ kind: 'ms', m: m, at: m.date }))
+        .concat(relFuture.map(st => ({ kind: 'rel', st: st, at: st.date })))
+        .sort((a, b) => b.at - a.at);
+
       host.innerHTML =
-        completionNode(ups, composerAt === 'work') +
+        relUndated.map(st => relNode(st, {
+          note: st === relOpen ? completionState().noteLabel : ''
+        })).join('') +
         undated.map(m => msNode(m, { composer: composerAt === 'ms' && m === nextMs })).join('') +
-        future.map(m => msNode(m, { composer: composerAt === 'ms' && m === nextMs })).join('') +
+        futureMixed.map(x => x.kind === 'ms'
+          ? msNode(x.m, { composer: composerAt === 'ms' && x.m === nextMs })
+          : relNode(x.st, { note: x.st === relOpen ? completionState().noteLabel : '' })).join('') +
         todayNode({
           frozen: frozen, isStartDay: isStartDay, doneToday: doneToday, dueToday: dueToday,
           overdue: overdue, nextGoal: PROG.nextGoal(proj), pending: pending, total: ms.length,
@@ -2978,7 +3313,9 @@ window.ztorPdLookup = (function () {
            排在今天那一列正下方，與逾期節點同一個處理——它們都是「今天要面對的事」。 */
         (dueToday ? msNode(dueToday, { composer: composerAt === 'ms' && dueToday === nextMs }) : '') +
         overdue.map(m => msNode(m, { overdue: true, composer: composerAt === 'ms' && m === nextMs })).join('') +
-        past.map(r => r.kind === 'ms' ? msNode(r.m) : gapNode(r.key, r.list)).join('') +
+        past.map(r => r.kind === 'ms' ? msNode(r.m)
+          : r.kind === 'rel' ? relNode(r.st, { kids: r.st.key === 'live' ? relKids : [] })
+          : r.kind === 'ev' ? evNode(r.ev) : gapNode(r.key, r.list)).join('') +
         startHTML;
 
       const slot = host.querySelector('[data-ptl-composer-slot]');
@@ -3001,12 +3338,16 @@ window.ztorPdLookup = (function () {
         '<div class="kpi__label">' + esc(T('pd-prog.ms.count', 'Milestones done')) + '</div>' +
         '<div class="kpi__value">' + sum.done + '<span class="stat__of"> / ' + sum.total + '</span></div>';
       /* 凍結的項目不給「＋ 里程碑」（§2.2.4：里程碑不可新增、不可改狀態）。 */
-      document.querySelectorAll('[data-ms-add]').forEach(b => { b.hidden = frozen; });
+      /* 2026-08-19（D203）：直接發佈沒有里程碑，這顆鈕連同 data-type 的收起一起判斷——
+         原本只看 frozen，會把 data-type 已經收起的鈕再打開。 */
+      document.querySelectorAll('[data-ms-add]').forEach(b => { b.hidden = frozen || isDirect(); });
     }
 
     /* ══ 3 · 彈窗 ═════════════════════════════════════════════════════════ */
 
-    const RELEASE_KEY = 'ztor.workRelease';
+    /* 2026-08-19 撤除（墓碑，D207）：RELEASE_KEY（sessionStorage 'ztor.workRelease'）。
+       它是「在發文框打好字 → 存進暫存 → 跳去上架流程 → 那邊送出時撈回來」的接力棒。
+       給粉絲的那段話改在上架流程的最後一步直接收，接力棒沒有東西要傳了。 */
     const kindSel = document.getElementById('pd-f-ukind');
     const kindNote = document.getElementById('pd-ukind-note');
     const kindSubmit = document.querySelector('[data-pd-save="update"]');
@@ -3038,15 +3379,12 @@ window.ztorPdLookup = (function () {
       if (field) field.hidden = kind !== 'milestone';
       const pending = PROG.milestones(proj).filter(m => m.status !== 'done');
       const keep = msSel.dataset.touched === '1' ? msSel.value : null;
-      msSel.innerHTML = kind === 'release'
-        ? '<option value="work">' + esc(T('pd-prog.work.node', 'Finished work')) + '</option>'
-        : (kind === 'milestone'
-            ? pending.map(m => '<option value="' + m.id + '">' + esc(L(m.name)) + '</option>').join('')
-            : '<option value=""></option>');
-      const want = kind === 'release' ? 'work'
-        : (kind === 'milestone'
-            ? (keep != null && pending.some(m => m.id === keep) ? keep : (pending[0] ? pending[0].id : ''))
-            : '');
+      msSel.innerHTML = kind === 'milestone'
+        ? pending.map(m => '<option value="' + m.id + '">' + esc(L(m.name)) + '</option>').join('')
+        : '<option value=""></option>';
+      const want = kind === 'milestone'
+        ? (keep != null && pending.some(m => m.id === keep) ? keep : (pending[0] ? pending[0].id : ''))
+        : '';
       msSyncing = true;
       msSel.value = want;
       msSel.disabled = kind !== 'milestone';
@@ -3055,43 +3393,29 @@ window.ztorPdLookup = (function () {
     }
     if (msSel) msSel.addEventListener('change', () => { if (!msSyncing) msSel.dataset.touched = '1'; });
 
-    /* 說明行與送出鈕文案跟著類型走。i18n key 寫進 dataset，切語言時 i18n.js 會重譯。 */
+    /* 說明行與送出鈕文案跟著類型走。i18n key 寫進 dataset，切語言時 i18n.js 會重譯。
+       2026-08-19（D207）：與「完成作品」有關的分支全部撤除——那條路已不從發文框走，
+       改由上架階段那一列自己的動作鈕進入。說明行連帶清空：剩下的兩種都是「發一則
+       貼文」，沒有前置條件要事先解釋（原本那幾句講的都是上架的前置條件）。 */
     function syncKind() {
       if (!kindSel) return;
-      const releaseOpt = kindSel.querySelector('option[value="release"]');
-      const r = rec();
-      const inflight = !!r && (WR.isOpen(r.status) || r.status === 'approved');
-      /* 直接發佈整個「項目更新」區段已不存在（§2.0，2026-08-17 起），這個彈窗對它
-         不會被打開；保險起見仍把選項移掉。 */
-      if (releaseOpt && isDirect()) releaseOpt.remove();
-      else if (releaseOpt) releaseOpt.disabled = !canRelease() || inflight;
-      if (!kindSel.querySelector('option[value="release"]:not([disabled])') && kindSel.value === 'release') kindSel.value = 'general';
+      /* 已取消：發文類型鎖定在一般更新（§2.2.4 凍結範圍）。內嵌時間軸的發文框已經
+         這樣做（syncComposer 的 frozen），而這個彈窗是同一份資料的另一個入口——
+         同一個撰寫器不能因為從哪裡打開而給出不同的值域。 */
+      const frozen = !!proj && proj.status === 'cancelled';
       const kind = updateKind();
       let noteKey = null, submitKey = 'pd-edit.update.submit', submitFb = 'Publish update';
-      /* 說明行只講「完成作品」這一種的狀況（2026-08-18）：類型多了「里程碑更新」之後，
-         把「項目成功後才能上架作品」掛在里程碑更新底下會讓人以為那句在說這一種。
-         完成作品不可選時，停用的選項本身就在說它現在不能用。 */
-      if (isDirect() || kind !== 'release') noteKey = null;
-      else if (inflight) {
-        if (r.status !== 'approved') noteKey = 'pd.review.kind-inflight';
-        else noteKey = (WR.projectStatus(proj.id) === 'scheduled') ? 'pd.review.kind-scheduled' : 'pd.review.kind-live';
-      }
-      else if (!canRelease()) noteKey = 'pd-edit.update.kind-locked';
-      if (kind === 'release') {
-        noteKey = isFilm() ? 'pd-edit.update.kind-film-note' : 'pd-edit.update.kind-other-note';
-        submitKey = isFilm() ? 'pd-edit.update.submit-next' : 'pd-edit.update.submit-live';
-        submitFb = isFilm() ? 'Next: release setup' : 'Publish and mark live';
-      } else if (kind === 'milestone') {
+      if (kind === 'milestone') {
         submitKey = 'pd-edit.update.submit-ms';
         submitFb = 'Publish & mark done';
       }
-      /* 標題只有一般更新貼文才有（D197）：另外兩種的標題是那顆節點的名字。 */
+      /* 標題只有一般更新貼文才有（D197）：里程碑更新的標題是那顆里程碑的名字。 */
       const titleField = document.getElementById('pd-f-utitle');
       if (titleField && titleField.closest('.field')) titleField.closest('.field').hidden = kind !== 'general';
       /* 沒有未完成的里程碑就沒有可完成的對象，這個類型停用。 */
       const msOpt = kindSel.querySelector('option[value="milestone"]');
       if (msOpt && PROG && proj) {
-        msOpt.disabled = !PROG.milestones(proj).some(m => m.status !== 'done');
+        msOpt.disabled = frozen || !PROG.milestones(proj).some(m => m.status !== 'done');
         if (msOpt.disabled && kindSel.value === 'milestone') kindSel.value = 'general';
       }
       if (kindNote) {
@@ -3128,23 +3452,20 @@ window.ztorPdLookup = (function () {
       if (author && window.ztorProjects) author.textContent = window.ztorProjects.owner();
       /* 已取消：發文入口保留，發文類型鎖定在一般更新（§2.2.4 凍結範圍）。 */
       const frozen = proj.status === 'cancelled';
-      const r = rec();
-      const inflight = !!r && (WR.isOpen(r.status) || r.status === 'approved');
-      const canWork = !frozen && canRelease() && !inflight;
 
       /* 類型的選項與預設值都跟著落點走（D197）：
-           落在里程碑   → 里程碑更新（預設）／一般更新貼文
-           落在完成作品 → 完成作品（預設）／一般更新貼文
-           落在今天     → 一般更新貼文；里程碑更新停用（沒有待完成的里程碑可以完成） */
+           落在里程碑 → 里程碑更新（預設）／一般更新貼文
+           落在今天   → 一般更新貼文；里程碑更新停用（沒有待完成的里程碑可以完成）
+         2026-08-19 撤除（墓碑，D207）：第三個選項「完成作品」與它的落點 'work'。
+         發文框不再長在上架階段那一列上——上架不是發一則貼文，是交一份件，
+         它的入口是那一列自己的動作鈕（relNode 的 actFor.submit）。 */
       const keepKind = cKind.dataset.touched === '1' ? cKind.value : null;
       const opts = [];
-      if (composerCtx.at === 'work') opts.push(['release', 'pd-edit.update.kind-release', 'Work release', !canWork]);
       opts.push(['milestone', 'pd-edit.update.kind-ms', 'Milestone update', frozen || composerCtx.at !== 'ms']);
       opts.push(['general', 'pd-edit.update.kind-general', 'General update', false]);
       cKind.innerHTML = opts.map(o =>
         '<option value="' + o[0] + '"' + (o[3] ? ' disabled' : '') + ' data-i18n="' + o[1] + '">' + esc(T(o[1], o[2])) + '</option>').join('');
-      const fallback = composerCtx.at === 'work' && canWork ? 'release'
-        : (composerCtx.at === 'ms' && !frozen ? 'milestone' : 'general');
+      const fallback = composerCtx.at === 'ms' && !frozen ? 'milestone' : 'general';
       const wantKind = keepKind && !opts.some(o => o[0] === keepKind && o[3]) ? keepKind : fallback;
       cKind.value = wantKind;
       if (!cKind.value) cKind.value = 'general';
@@ -3154,10 +3475,10 @@ window.ztorPdLookup = (function () {
       /* 掛載不再是一個要回答的問題：位置已經回答了它。這個 select 不出現在畫面上，
          只是給送出邏輯一個單一的值可以讀。 */
       cMsSyncing = true;
-      cMs.innerHTML = '<option value="work"></option>' +
+      cMs.innerHTML =
         PROG.milestones(proj).map(m => '<option value="' + m.id + '"></option>').join('') +
         '<option value=""></option>';
-      cMs.value = kind === 'release' ? 'work' : (kind === 'milestone' ? composerCtx.msId : '');
+      cMs.value = kind === 'milestone' ? composerCtx.msId : '';
       cMsSyncing = false;
 
       /* 標題只有一般更新貼文才有（D197）。 */
@@ -3166,8 +3487,7 @@ window.ztorPdLookup = (function () {
 
       const submit = document.getElementById('pd-c-submit');
       if (submit) {
-        const k = kind === 'release' ? (isFilm() ? 'pd-edit.update.submit-next' : 'pd-edit.update.submit-live')
-          : (kind === 'milestone' ? 'pd-edit.update.submit-ms' : 'pd-edit.update.submit');
+        const k = kind === 'milestone' ? 'pd-edit.update.submit-ms' : 'pd-edit.update.submit';
         submit.dataset.i18n = k;
         submit.textContent = T(k, 'Publish update');
       }
@@ -3236,8 +3556,8 @@ window.ztorPdLookup = (function () {
 
     document.addEventListener('click', e => {
       if (!e.target.closest('#pd-c-submit')) return;
-      /* 一般更新貼文靠標題認人（軸上那一列讀的就是它），所以它必填；里程碑更新與
-         完成作品的標題是節點的名字，改成內文必填。 */
+      /* 一般更新貼文靠標題認人（軸上那一列讀的就是它），所以它必填；里程碑更新的
+         標題是那顆里程碑的名字，改成內文必填。 */
       const kindNow = cKind ? cKind.value : 'general';
       if (kindNow === 'general' && (!cTitle || !cTitle.value.trim())) return;
       if (kindNow !== 'general' && (!cBody || !cBody.value.trim())) return;
@@ -3245,8 +3565,7 @@ window.ztorPdLookup = (function () {
         title: cTitle.value.trim(),
         body: cBody ? cBody.value.trim() : '',
         audience: selKey(cAud, 'pd-edit.update.aud-everyone'),
-        milestoneId: cMs ? cMs.value : '',
-        kind: cKind && cKind.value === 'release' ? 'release' : 'general'
+        milestoneId: cMs ? cMs.value : ''
       });
       /* 發里程碑的文＝完成那顆里程碑（D197）：那段短文就是它的完成宣告。 */
       if (cKind && cKind.value === 'milestone' && composerCtx.msId) {
@@ -3268,18 +3587,24 @@ window.ztorPdLookup = (function () {
       return (opt && opt.dataset.i18n) || fb;
     }
 
-    /* 從「送作品上架」那類按鈕開彈窗時，先把類型預選好——彈窗開了還要自己再選一次
-       等於把剛剛按的那顆按鈕的意思丟掉。 */
-    document.addEventListener('click', e => {
-      const t = e.target.closest('[data-preset-kind]');
-      if (!t || !kindSel) return;
-      const want = t.getAttribute('data-preset-kind');
-      const opt = kindSel.querySelector('option[value="' + want + '"]:not([disabled])');
-      if (opt) { kindSel.value = want; syncKind(); }
-    });
+    /* 2026-08-19 撤除（墓碑，D207）：data-preset-kind 的處理器。它的用途只有一個
+       ——「送作品上架」那類按鈕開彈窗時把類型預選成「完成作品」。那個類型已經不在
+       發文框裡，這條路也改成直接進上架流程，沒有東西需要預選了。 */
 
     /* ── 里程碑彈窗：新增與編輯共用一份（§2.2.10「在本區可做的事」）─────────── */
     const msForm = { id: '' };
+    /* D199：里程碑的預計日期與完成日都不得早於項目建立時間。建立日是 'YYYY/MM/DD'
+       字串，這裡轉成 <input type="date"> 的 ISO 值域（同格式可直接字典序比大小）。 */
+    function createdFloorIso() {
+      const m = String((proj && proj.created) || '').match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
+      return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : '';
+    }
+    function setMsDateError(on) {
+      const err = document.querySelector('[data-pd-mdate-err]');
+      const inp = document.getElementById('pd-f-mdate');
+      if (err) err.hidden = !on;
+      if (inp) { if (on) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
+    }
     function openMilestone(id) {
       msForm.id = id || '';
       const m = id ? PROG.milestones(proj).filter(x => x.id === id)[0] : null;
@@ -3287,7 +3612,12 @@ window.ztorPdLookup = (function () {
       document.getElementById('pd-f-mdesc').value = m ? L(m.desc) : '';
       /* 預計日期是真實日期，欄位是 <input type="date">，值域是 YYYY-MM-DD（§2.2.10
          「以日期選擇取得，不接受自由文字」）。留白＝尚未排定，不阻擋建立。 */
-      document.getElementById('pd-f-mdate').value = (m && m.date) ? isoDay(m.date) : '';
+      const mdate = document.getElementById('pd-f-mdate');
+      mdate.value = (m && m.date) ? isoDay(m.date) : '';
+      /* 日曆選不到建立日之前（D199）；鍵入仍可能繞過，送出時再驗一次。 */
+      const floor = createdFloorIso();
+      if (floor) mdate.min = floor; else mdate.removeAttribute('min');
+      setMsDateError(false);
       const st = document.getElementById('pd-f-mstatus');
       if (st) { st.value = m ? m.status : 'todo'; st.dispatchEvent(new Event('change', { bubbles: true })); }
       const pub = document.getElementById('pd-f-mpublic');
@@ -3315,6 +3645,12 @@ window.ztorPdLookup = (function () {
       },
       milestone() {
         if (!v('pd-f-mname') || !PROG) return;
+        /* D199：預計日期不得早於項目建立時間。min 只擋日曆挑選，擋不住直接鍵入，
+           所以送出前再驗一次；不合就停在彈窗、把原因寫在欄位下方。 */
+        const dISO = v('pd-f-mdate');
+        const floor = createdFloorIso();
+        if (dISO && floor && dISO < floor) { setMsDateError(true); return false; }
+        setMsDateError(false);
         const pub = document.getElementById('pd-f-mpublic');
         const payload = {
           name: v('pd-f-mname'),
@@ -3330,8 +3666,8 @@ window.ztorPdLookup = (function () {
         renderStage();
       },
       update() {
-        /* 一般更新貼文靠標題認人（軸上那一列讀的就是它），所以它必填；里程碑更新與
-           完成作品的標題是節點的名字，改成內文必填（與內嵌發文框同一條規則）。 */
+        /* 一般更新貼文靠標題認人（軸上那一列讀的就是它），所以它必填；里程碑更新的
+           標題是那顆里程碑的名字，改成內文必填（與內嵌發文框同一條規則）。 */
         const kind = updateKind();
         if (kind === 'general' && !v('pd-f-utitle')) return;
         if (kind !== 'general' && !v('pd-f-ubody')) return;
@@ -3339,8 +3675,7 @@ window.ztorPdLookup = (function () {
           title: v('pd-f-utitle'),
           body: v('pd-f-ubody'),
           audience: audienceKey(),
-          milestoneId: msSel ? msSel.value : '',
-          kind: kind
+          milestoneId: msSel ? msSel.value : ''
         });
         /* 發里程碑的文＝完成那顆里程碑（D197）。 */
         if (kind === 'milestone' && msSel && msSel.value) {
@@ -3351,29 +3686,20 @@ window.ztorPdLookup = (function () {
     };
 
     /* 發一則更新的唯一路徑：時間軸的內嵌發文框與區段層級的彈窗都走這裡。 */
+    /* 2026-08-19（D207）：這支只做一件事——發一則貼文。原本的第一段是「類型＝完成作品
+       就把三格字收進 sessionStorage、跳去上架流程」，那不是發文，是交件；上架的入口
+       已改成上架階段那一列自己的動作鈕（直接進 publish-work.html），給粉絲的那段話
+       改在上架流程的最後一步收（5.1.2.2.1 F16）。連帶撤除的還有「非影片家族發完文
+       就把項目推成已上線」那條假設路徑——非影片家族走不到上架流程（§2.2.9 作品範圍），
+       完成作品節點本來就是 blocked 並寫明原因，這裡再開一條後門只會兩處對不起來。 */
     function submitUpdate(o) {
       if (!PROG || !proj) return;
-      /* 影片家族的完成作品：這則貼文要等作品真的上架完才發得出去（不然貼文裡的
-         作品連結是空的），所以先把已填的三格收進 sessionStorage，跳去上架流程，
-         由那邊走完最後一步再回來一次補上貼文與狀態。 */
-      if (o.kind === 'release' && isFilm()) {
-        try {
-          sessionStorage.setItem(RELEASE_KEY, JSON.stringify({
-            id: proj.id, title: o.title, audience: o.audience, body: o.body || ''
-          }));
-        } catch (err) { /* 無痕模式等寫不進去：流程照走，回跳時當成沒有草稿 */ }
-        location.href = 'publish-work.html?project=' + encodeURIComponent(proj.id);
-        return;
-      }
       PROG.addUpdate(proj, {
         title: o.title,
         body: o.body || '',
         audience: o.audience,
-        milestoneId: o.milestoneId,
-        kind: o.kind === 'release' ? 'release' : 'general'
+        milestoneId: o.milestoneId
       });
-      /* 上架流程還沒開放的作品類型：發文本身就是把項目推到已上線的那個動作。 */
-      if (o.kind === 'release' && window.ztorPdSetStatus) window.ztorPdSetStatus('live');
       renderTimeline();
       renderStage();
     }
@@ -3385,12 +3711,12 @@ window.ztorPdLookup = (function () {
       if (e.target.closest('[data-ms-add]')) { openMilestone(''); return; }
       const fold = e.target.closest('[data-ptl-fold]');
       if (fold) {
+        /* 2026-08-20（D209）：改成重繪。展開之後每一則貼文是軸上獨立的一列，
+           不再是收在 .ptl__fold 裡的一塊——切 class 藏不掉也長不出兄弟節點。 */
         const k = fold.getAttribute('data-ptl-fold');
         const node = fold.closest('.ptl__node');
-        const willOpen = node.classList.contains('ptl__node--collapsed');
-        node.classList.toggle('ptl__node--collapsed');
-        fold.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-        ptlFold[k] = willOpen;
+        ptlFold[k] = node.classList.contains('ptl__node--collapsed');
+        renderTimeline();
         return;
       }
       const ed = e.target.closest('[data-ms-edit]');
@@ -3399,6 +3725,132 @@ window.ztorPdLookup = (function () {
       if (del) { PROG.removeMilestone(proj, del.getAttribute('data-ms-del')); renderTimeline(); renderStage(); return; }
       const sw = e.target.closest('#pd-f-mpublic');
       if (sw) sw.classList.toggle('switch--on');
+    });
+
+    /* 一則更新的完整紀錄（2026-08-19 使用者裁決）。唯讀：這裡回答「這則發過什麼、
+       發給誰、掛在哪」，不是編輯器；要改內容走發文那條路。
+       里程碑的原定日期與差幾天在這裡出現，而不是在軸上那一列——軸上那一列的日期
+       已經是實際完成日，旁邊再掛一個原定日期會變成同一列兩個日期。 */
+    function openUpdateDetail(id) {
+      if (!PROG || !proj) return;
+      const u = PROG.updates(proj).filter(x => x.id === id)[0];
+      if (!u) return;
+      const titleEl = document.getElementById('pd-ud-title');
+      const metaEl = document.getElementById('pd-ud-meta');
+      const bodyEl = document.getElementById('pd-ud-body');
+      const facts = document.getElementById('pd-ud-facts');
+      if (!titleEl || !metaEl || !bodyEl || !facts) return;
+
+      /* 里程碑貼文沒有自己的標題（D197）——那顆里程碑的名字就是它的標題。 */
+      const ms = u.milestoneId && u.milestoneId !== 'work'
+        ? PROG.milestones(proj).filter(m => m.id === u.milestoneId)[0] : null;
+      titleEl.textContent = L(u.title) || (ms ? L(ms.name) : T('pd-prog.work.node', 'Finished work'));
+      bodyEl.textContent = L(u.body) || T('pd-ud.nobody', 'No body text.');
+
+      /* 更新貼文只有兩種（2026-08-19 使用者裁決）：一般貼文、里程碑貼文。
+         **完成作品那一則歸里程碑貼文**——D204 之後上架那條路本來就是進度上的里程碑，
+         它掛的 `work` 就是其中一顆，不是第三種類型。 */
+      const isMsPost = !!u.milestoneId;
+      metaEl.innerHTML =
+        '<span class="badge ' + (isMsPost ? 'badge--info' : 'badge--neutral') + '">' +
+        esc(T(isMsPost ? 'pd-ud.kind-ms' : 'pd-ud.kind-general', '')) + '</span>' +
+        '<span class="badge badge--neutral">' + esc(audShort(u)) + '</span>';
+
+      const rows = [];
+      rows.push([T('pd-ud.published', 'Published'), fmtDay(u.publishedAt)]);
+      if (u.notified) rows.push([T('pd-ud.notified', 'Notified'), L(u.notified)]);
+      if (u.milestoneId === 'work') {
+        rows.push([T('pd-ud.attached', 'Attached to'), T('pd-prog.work.node', 'Finished work')]);
+      } else if (ms) {
+        rows.push([T('pd-ud.attached', 'Attached to'), L(ms.name)]);
+        /* 原定日期只在「當初有答應一個日期」時才寫；沒排過日期就沒有可比對的東西。 */
+        if (ms.date) rows.push([T('pd-ud.ms-target', 'Milestone target date'), fmtDay(ms.date)]);
+        if (ms.completedAt) rows.push([T('pd-ud.ms-done', 'Marked done'), fmtDay(ms.completedAt)]);
+        if (ms.date && ms.completedAt) {
+          const d = PROG.diffDays(ms.date, ms.completedAt);
+          if (d !== 0) {
+            rows.push([T('pd-ud.ms-gap', 'Against the promise'),
+              T(d > 0 ? 'pd-ud.gap-early' : 'pd-ud.gap-late', '{n} days').replace('{n}', Math.abs(d))]);
+          }
+        }
+      }
+      facts.innerHTML = rows.map(r =>
+        '<div class="fact-list__item"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>').join('');
+      const dlg = document.getElementById('pd-update-detail');
+      if (dlg) dlg.hidden = false;
+    }
+
+    /* 一顆已完成里程碑的完整紀錄（2026-08-20 使用者裁決，見 D208）。
+       更新貼文只有兩種（D206），兩種都要點得開；里程碑貼文在軸上的樣子就是那一列
+       里程碑，所以可點的是整條標題列，不是只有底下那一小段內文。
+       這一支負責分流：那顆里程碑發過完成宣告就開那則貼文的紀錄（與從內文點進去
+       同一份），沒發過就開里程碑自己的紀錄——後者要回答的問題其實是同一個
+       （當初答應哪一天、實際哪一天、有沒有交代過），只是答案裡沒有貼文。 */
+    function openMilestoneDetail(msId) {
+      if (!PROG || !proj) return;
+      const m = PROG.milestones(proj).filter(x => x.id === msId)[0];
+      if (!m) return;
+      /* 有完成宣告就走貼文那條路：同一顆里程碑不該有兩份長得不一樣的紀錄。
+         一顆里程碑理論上只會有一則完成宣告（發文框只列未完成的里程碑，送出即把它
+         轉成已完成），但這裡不靠「陣列剛好只有一筆」——取**最早發布的那一則**，
+         因為讓它變成已完成的就是那一則。 */
+      const post = PROG.updates(proj)
+        .filter(u => u.milestoneId === m.id)
+        .sort((a, b) => a.publishedAt - b.publishedAt)[0];
+      if (post) { openUpdateDetail(post.id); return; }
+
+      const titleEl = document.getElementById('pd-ud-title');
+      const metaEl = document.getElementById('pd-ud-meta');
+      const bodyEl = document.getElementById('pd-ud-body');
+      const facts = document.getElementById('pd-ud-facts');
+      if (!titleEl || !metaEl || !bodyEl || !facts) return;
+
+      titleEl.textContent = L(m.name);
+      /* 說明不上軸（軸是掃視用的），但它在這裡是這份紀錄唯一的敘述，放內文那一段。 */
+      bodyEl.textContent = L(m.desc) || T('pd-ud.ms-nodesc', 'No description.');
+      /* 徽章寫「里程碑」而不是「里程碑貼文」——這一顆沒有貼文，寫成貼文等於謊報。
+         第二顆是可見度，與貼文紀錄的受眾那一顆同一個位置、答同一個問題。 */
+      metaEl.innerHTML =
+        '<span class="badge badge--info">' + esc(T('pd-ud.kind-msonly', 'Milestone')) + '</span>' +
+        '<span class="badge badge--neutral">' +
+        esc(T(m.pub ? 'pd-prog.ms.public' : 'pd-prog.ms.backers', '')) + '</span>';
+
+      const rows = [];
+      if (m.date) rows.push([T('pd-ud.ms-target', 'Milestone target date'), fmtDay(m.date)]);
+      if (m.completedAt) rows.push([T('pd-ud.ms-done', 'Marked done'), fmtDay(m.completedAt)]);
+      if (m.date && m.completedAt) {
+        const d = PROG.diffDays(m.date, m.completedAt);
+        if (d !== 0) {
+          rows.push([T('pd-ud.ms-gap', 'Against the promise'),
+            T(d > 0 ? 'pd-ud.gap-early' : 'pd-ud.gap-late', '{n} days').replace('{n}', Math.abs(d))]);
+        }
+      }
+      /* 這一列是這份紀錄存在的理由：創作者最想知道的是「這顆我到底有沒有跟支持者說過」。 */
+      rows.push([T('pd-ud.ms-post', 'Completion post'), T('pd-ud.ms-nopost', 'Never posted')]);
+      facts.innerHTML = rows.map(r =>
+        '<div class="fact-list__item"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>').join('');
+      const dlg = document.getElementById('pd-update-detail');
+      if (dlg) dlg.hidden = false;
+    }
+
+    /* 標題列右端的 ⋯（編輯／刪除）也在可點區域裡，按它不該同時開紀錄彈窗。 */
+    const msOpenFrom = t => (t && t.closest && !t.closest('.ptl__acts')) ? t.closest('[data-ms-open]') : null;
+
+    document.addEventListener('click', e => {
+      const el = e.target.closest('[data-up-open]');
+      if (el) { openUpdateDetail(el.getAttribute('data-up-open')); return; }
+      const ms = msOpenFrom(e.target);
+      if (ms) openMilestoneDetail(ms.getAttribute('data-ms-open'));
+    });
+    /* 鍵盤也要能開：那一列是 role="button"，只掛滑鼠等於只有一半的人用得到。 */
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const el = e.target.closest && e.target.closest('[data-up-open]');
+      if (el) { e.preventDefault(); openUpdateDetail(el.getAttribute('data-up-open')); return; }
+      const ms = msOpenFrom(e.target);
+      if (!ms) return;
+      e.preventDefault();
+      openMilestoneDetail(ms.getAttribute('data-ms-open'));
     });
 
     /* 分享（D200）：複製粉絲端連結。原型沒有真的粉絲端站台，連結是示意值（UIA-122）；
@@ -3434,7 +3886,8 @@ window.ztorPdLookup = (function () {
       const btn = e.target.closest('[data-pd-save]');
       if (!btn) return;
       const fn = SAVE[btn.getAttribute('data-pd-save')];
-      if (fn) fn();
+      /* 回傳 false ＝ 驗證沒過，停在彈窗讓創作者看得到原因；其餘一律關閉。 */
+      if (fn && fn() === false) return;
       closeAll();
     });
 
@@ -3447,7 +3900,14 @@ window.ztorPdLookup = (function () {
       if (window.ztorProjects && !window.ztorProjects.releaseReached(releaseOf(r))) return;
       const post = r.post || {};
       PROG.addWorkPost(proj, {
-        title: post.title || T('pd-edit.update.kind-release', 'Work release'),
+        /* 標題退而求其次用「作品已上線」（D207 改）：原本借的是發文類型「完成作品」
+           那個選項的字，那個選項已經不存在，繼續借會讓字串跟著一個不存在的東西走。
+           這個 key 就是上架流程給同一則貼文用的標題預設值，兩處同一句話。 */
+        title: post.title || T('pw.update.fallback', 'The work is live'),
+        /* 補內文（2026-08-19 使用者裁決「補上發布貼文的內文」）：這一則此前只有標題，
+           軸上展開來是一則沒有話的貼文。送審件沒有內文欄位，所以用作品名與上映日期
+           湊一句真的說得出口的話——它交代的正是這則貼文存在的理由。 */
+        body: post.body || T('pd-prog.release.body', 'The work is live. Backers can watch it now.'),
         audience: post.audience || 'pd-edit.update.aud-everyone',
         /* 送審件的時間戳是 'YYYY-MM-DD HH:mm' 字串；轉成真日期，這則貼文才會落在
            軸上正確的那一天，而不是被當成「剛剛」擠到今天。 */
@@ -3676,7 +4136,27 @@ window.ztorPdLookup = (function () {
       }
     }
 
-    function renderAll() { ensureReleasePost(); renderStage(); renderTimeline(); syncKind(); renderDataPanels(); }
+    /* 進度分頁的名稱依發行模式換字（2026-08-19 使用者裁決，D203）：直接發佈的軸上
+       只有作品那一條線，叫「上架進度」才說得出它是什麼；共創與預購有里程碑與更新，
+       叫「項目進度」。分頁按鈕與分頁內的標題共用同一組判斷，兩處不各寫一次。
+       連 data-i18n 的 key 一起換掉——語言切換時 i18n 會照 key 把文字寫回去，
+       只改 textContent 的話切一次語言就變回原本那個名字。 */
+    function syncProgressLabels() {
+      if (!proj) return;
+      const dr = isDirect();
+      const pairs = [
+        ['[data-pd-progress-tab]', dr ? 'project-detail.tab.progress-release' : 'project-detail.tab.progress', dr ? 'Release progress' : 'Progress'],
+        ['[data-pd-progress-title]', dr ? 'pd-prog.section.release' : 'pd-prog.section', dr ? 'Release progress' : 'Project progress']
+      ];
+      pairs.forEach(([sel, key, fb]) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        el.setAttribute('data-i18n', key);
+        el.textContent = T(key, fb);
+      });
+    }
+
+    function renderAll() { ensureReleasePost(); renderStage(); renderTimeline(); syncKind(); renderDataPanels(); syncProgressLabels(); }
     /* 方案編輯器掛載完成後會回頭叫它重畫總覽的方案摘要（見 pd-bundle-editor 那一段）。 */
     window.ztorPdRenderStage = renderStage;
 
@@ -4197,6 +4677,7 @@ window.ztorPdLookup = (function () {
       document.querySelectorAll('[data-type]').forEach(el => {
         el.hidden = !el.getAttribute('data-type').split(/\s+/).includes(ptype);
       });
+
       /* 收益走勢的類型 chips 與期間切換：純視覺切 active（資料為示意、不重算）。
          「共創計畫 · 深度明細」只在切到 OTT 版稅收益時出現——共創收支拆解與 70/30 分配
          是版稅這條收益線才有的語意，其他類型（佣金／預付金／授權）沒有對應拆解。 */

@@ -340,6 +340,16 @@
      TOPBAR mode (R 2.0 canonical) — horizontal bar markup.
      ───────────────────────────────────────────────────────── */
   function topbarNavHtml(locked) {
+    /* Admin 平台層：列出五個同層目的地，用與 sidebar 同一份 ADMIN_NAV。
+       2026-08-20 修正：這裡原本把 Admin 也當成 locked 直接回空字串，於是 topbar
+       模式下 Admin 五頁之間完全沒有導航可走（sidebar 模式正常），違反主規格
+       §6.4「仍可使用」與 §6.9.2「兩個模式是同一套地圖、只差排列」。 */
+    if (isAdminPlatform) {
+      return ADMIN_NAV.map(function (it) {
+        var active = [it.href].concat(it.match || []).includes(path);
+        return `<li><a class="app-topbar__link" href="${it.href}"${active ? ' aria-current="page"' : ''} data-i18n="${it.key}">${it.key}</a></li>`;
+      }).join("");
+    }
     /* D107: 未選定 creator（Tier 0 名冊）時，Tier 1 模組不在導航呈現——
        只留「Creator 管理」marker，不列出鎖住項。 */
     if (locked) return "";
@@ -592,7 +602,10 @@
      Mount / re-mount.
      ───────────────────────────────────────────────────────── */
   function currentMode() {
-    if (isAdminPlatform) return "sidebar";
+    /* 2026-08-20：Admin 平台層原本一律鎖 sidebar（導航其實沒消失，但也切不成
+       topbar）。主規格 §6.9.2 說兩個模式是同一套地圖、只差排列，沒有「某一層只能
+       用其中一種」的例外，所以改為跟隨使用者選的模式；topbarNavHtml 已補上與
+       sidebar 同一份 ADMIN_NAV 的分支。 */
     return document.documentElement.getAttribute("data-nav-mode") === "sidebar"
       ? "sidebar" : "topbar";
   }

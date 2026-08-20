@@ -1065,6 +1065,8 @@
   };
   /* 兩個方案步驟共用同一套擋關與教練提示的機制，只有文案與最小張數不同。 */
   const TIER_STEPS = ['tiers', 'tiers-pre'];
+  /* 會自己設 Continue 擋關狀態的步驟（見 render()）：方案兩步＋共創資金步（預算 100%）。 */
+  const GATED_STEPS = TIER_STEPS.concat(['funding']);
   /* 影片路徑有三個步驟名跟其他路徑不同（同一個面板、不同的說法）：第一步收的是作品本身
      而不只是項目資料，第三步收的是成品素材而不是宣傳素材，最後一步送的是送審件而不是上線。
      名稱以規劃書 §2.1 為準。 */
@@ -1158,14 +1160,15 @@
     const body = document.querySelector('.wizard__body');
     if (body) body.classList.toggle('wizard__body--mid', cur === 'funding' || cur === 'tiers');
     if (cur === 'funding') renderFundingOverview();
-    /* Continue 的 disabled 只由兩個方案步驟管；離開它們一定要放開，
+    /* Continue 的 disabled 由「自己有擋關條件」的步驟管：兩個方案步驟（有效套組數）
+       ＋共創資金步驟（預算總和 100%，規格 §5.2.1 F23）。離開它們一定要放開，
        否則其他步驟會被上一步的驗證狀態卡住。 */
-    const onTierStep = TIER_STEPS.indexOf(cur) >= 0;
+    const onGatedStep = GATED_STEPS.indexOf(cur) >= 0;
     const nextBtn = document.querySelector('[data-action=next]');
-    if (nextBtn && !onTierStep) nextBtn.disabled = false;
-    /* 原因行跟著擋關狀態走：離開方案步驟一定要清掉，否則會殘留在其他步驟。
-       還在這些步驟時由各自的 overview／coach 依當下的套組狀態重設。 */
-    if (!onTierStep) setNextHint(null);
+    if (nextBtn && !onGatedStep) nextBtn.disabled = false;
+    /* 原因行跟著擋關狀態走：離開這些步驟一定要清掉，否則會殘留在其他步驟。
+       還在這些步驟時由各自的 overview／coach 依當下狀態重設。 */
+    if (!onGatedStep) setNextHint(null);
     if (cur === 'tiers' && typeof ensureBundles === 'function') ensureBundles();
     if (cur === 'tiers-pre' && typeof ensurePreBundles === 'function') ensurePreBundles();
 
@@ -1539,6 +1542,14 @@
       ovBadge.textContent = sum + '%';
       ovBadge.classList.toggle('badge--success', sum === 100);
       ovBadge.classList.toggle('badge--warning', sum !== 100);
+    }
+    /* 規格 §5.2.1 F23：預算分配總和必須達 100%，未達不可進入下一步。變色只是提示，
+       擋關才是規則——只在共創的資金這一步擋，離開由 render() 的 GATED_STEPS 放開。 */
+    if (flow()[idx] === 'funding') {
+      const short = sum !== 100;
+      const next = document.querySelector('[data-action=next]');
+      if (next) next.disabled = short;
+      setNextHint(short ? 'cpp.fd.hint.budget' : null);
     }
   }
 

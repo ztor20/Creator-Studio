@@ -486,7 +486,15 @@
     } else if (rec.status === 'approved') {
       note.hidden = false;
       document.getElementById('vr-head-note-label').textContent = T('vr.approved.label', 'What this triggered');
-      document.getElementById('vr-head-note-body').textContent = T('vr.approved.body', 'The work is on sale, the completion post went out, and the project is Live.');
+      /* D192：通過只做放行，三件事發生在作品上線那一刻——所以這裡要照上映日期分開講，
+         不能一律說「已經發生了」。判定沿用 store 的 projectStatus()，不另寫一套。 */
+      var landed = S.projectStatus ? S.projectStatus(rec.projectId) : 'live';
+      var relDate = (rec.work && rec.work.release) || '';
+      var approvedBody;
+      if (landed === 'live') approvedBody = T('vr.approved.body', 'The work is on sale, the completion post went out, and the project is Live.');
+      else if (relDate) approvedBody = T('vr.approved.body-scheduled', 'Cleared for release. On {d} the work goes on sale, the completion post goes out and the project turns Live.').replace('{d}', relDate);
+      else approvedBody = T('vr.approved.body-undated', 'Cleared for release. The creator has not set a release date yet — nothing goes live until they do.');
+      document.getElementById('vr-head-note-body').textContent = approvedBody;
     } else { note.hidden = true; }
 
     /* 已審完的件只保留檢視（規格 F4 其他狀態）；待審核先接手、審核中才給裁決兩顆。 */

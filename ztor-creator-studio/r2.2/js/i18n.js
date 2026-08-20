@@ -1320,7 +1320,6 @@
     'ip-market.crumb.self':      { en: 'IP Market',                     zh: 'IP 市場' },
     'ip-market.sub':             { en: "License other creators' worlds, music, and brands for your next project.", zh: '為下一個企劃授權其他創作者的世界、音樂與品牌。' },
     'ip-market.btn.my-filters':  { en: 'My filters',                    zh: '我的篩選' },
-    'ip-market.btn.list-ip':     { en: '+ List my IP',                 zh: '＋ 上架我的 IP' },
     'ip-market.filter.type':         { en: 'Type',         zh: '類型' },
     'ip-market.filter.royalty':      { en: 'Royalty ≤',    zh: '版稅 ≤' },
     'ip-market.filter.region':       { en: 'Region',       zh: '地區' },
@@ -1881,11 +1880,22 @@
     'store-settings.codes.record.title': { en: 'Sales through this code', zh: '這組碼賣掉的' },
     'store-settings.codes.record.share': { en: 'Their cut',      zh: '對方拿' },
     'store-settings.codes.record.hint': { en: 'Figures follow Earnings. Payouts to partners are not part of this release.', zh: '金額以收入管理為準。撥款給對方還沒做。' },
-    'store-settings.specs.intro':        { en: 'Build a size guide once, then attach it to any item you sell.', zh: '尺寸指南建一次，之後每件商品直接套用。' },
+    /* D211：這一層不再是「範本庫、建商品時挑一組」，而是「這間店的尺寸指南」——
+       建了就出現在所有商品上；例外是某件商品自己設了專屬指南。 */
+    'store-settings.specs.intro':        { en: "Every guide here shows on every item you sell.", zh: '這裡的每一份都會出現在所有商品上。' },
+    'store-settings.specs.exceptions':   { en: '2 items use their own guide instead.', zh: '有 2 件商品改用自己的專屬指南。' },
+    'store-settings.specs.deleted':      { en: 'Removed from every item', zh: '所有商品都不再顯示這一份' },
     'store-settings.specs.col.name':     { en: 'Name',                   zh: '名稱' },
     'store-settings.specs.col.type':     { en: 'Item type',              zh: '商品類型' },
-    'store-settings.specs.col.inuse':    { en: 'In use',                 zh: '套用中' },
-    'store-settings.specs.type.apparel': { en: 'Apparel',                zh: '衣服' },
+    /* 墓碑（2026-08-20 D211）：'store-settings.specs.col.inuse'（套用中）——每一份指南都套用在
+       全部商品上，逐列計數沒有資訊量，欄位隨模型改寫一起撤除。 */
+    /* 2026-08-20（D210）：商品類型改取 §7.1 的次分類群組層——原本的「衣服／Apparel」不是分類裡的值，
+       葉節點是 服飾／配件，群組才叫服飾配件。墓碑：'store-settings.specs.type.apparel'。 */
+    'store-settings.specs.type.apparelacc': { en: 'Apparel & accessories', zh: '服飾配件' },
+    /* 預設帶的三組範本，名稱就是那類服飾的名字（D210）；可改名、可刪、可另外新增。 */
+    'store-settings.specs.row.tops':     { en: 'Tops',                   zh: '衣服' },
+    'store-settings.specs.row.bottoms':  { en: 'Bottoms',                zh: '褲子' },
+    'store-settings.specs.row.hats':     { en: 'Hats',                   zh: '帽子' },
     'store-settings.specs.more':         { en: 'More actions',           zh: '更多操作' },
     'store-settings.specs.edit':         { en: 'Edit',                   zh: '編輯' },
     'store-settings.specs.duplicate':    { en: 'Duplicate',              zh: '複製' },
@@ -1900,10 +1910,10 @@
     'store-settings.specs.empty.title':  { en: 'No size guides yet',     zh: '還沒有尺寸指南' },
     'store-settings.specs.empty.text':   { en: "Fans check measurements before they buy. One guide covers every item that shares a fit.", zh: '粉絲下單前會先對尺寸。同一種版型的商品共用一份指南就夠。' },
     'store-settings.specs.f.name':       { en: 'Name',                   zh: '名稱' },
-    'store-settings.specs.f.name.ph':    { en: 'e.g. Outerwear fit',     zh: '例如：外套版型' },
+    'store-settings.specs.f.name.ph':    { en: 'e.g. Tops',             zh: '例如：衣服' },
     'store-settings.specs.f.name.hint':  { en: "Only you see this — it's how you'll pick the guide when creating an item.", zh: '只有你看得到，建立商品時靠它認出要套哪一份。' },
     'store-settings.specs.f.type':       { en: 'Item type',              zh: '商品類型' },
-    'store-settings.specs.f.type.hint':  { en: 'Shoes and accessories need different measurements — not defined yet.', zh: '鞋子與配件要量的部位不同，尚未定義。' },
+    'store-settings.specs.f.type.hint':  { en: 'Gear and print need different measurements — not defined yet.', zh: '器材、印刷品要量的部位不同，尚未定義。' },
     'store-settings.specs.f.system':     { en: 'Size labels',            zh: '尺碼制' },
     'store-settings.specs.f.system.hint':{ en: 'Which regional labelling fans see first.', zh: '粉絲第一眼看到哪一種標示法。' },
     'store-settings.specs.system.intl':  { en: 'International',          zh: '國際' },
@@ -2595,6 +2605,15 @@
     'event-detail.crumb.leg':     { en: 'Date {i} · {venue}',        zh: '第 {i} 場 · {venue}' },
     /* 就地編輯（2026-08-06，編輯搬進詳情頁、edit-event.html 撤除） */
     'event-detail.btn.save':      { en: 'Save changes',              zh: '儲存變更' },
+    /* 規格 5.1.6.2 F12：有變動時儲存鈕要說出動了幾項；F12 的捨棄二次確認與離開防護同段。 */
+    'event-detail.btn.save-n':    { en: 'Save {n} changes',          zh: '儲存 {n} 項變更' },
+    'event-detail.discard.title': { en: 'Discard changes?',          zh: '要捨棄變更嗎？' },
+    'event-detail.discard.body':  { en: 'The event goes back to what it was when you started editing.', zh: '活動會回到你開始編輯之前的內容。' },
+    'event-detail.discard.ok':    { en: 'Discard',                   zh: '捨棄變更' },
+    'event-detail.leave.title':   { en: 'Leave without saving?',     zh: '還沒儲存就要離開嗎？' },
+    'event-detail.leave.body':    { en: 'You have changes that have not been saved.', zh: '你有還沒儲存的變更。' },
+    'event-detail.leave.save':    { en: 'Save & leave',              zh: '儲存並離開' },
+    'event-detail.leave.discard': { en: 'Leave without saving',      zh: '不儲存就離開' },
     'event-detail.edit.saved':    { en: 'Saved.',                    zh: '已儲存。' },
     'event-detail.edit.confirm-delete': { en: 'Delete this event? Ticket holders will be refunded.', zh: '確定刪除這場活動？持票人會收到退款。' },
     'event-detail.edit.caphint':  { en: 'At least {n} — that many tickets are already sold.', zh: '不能低於 {n}——已經賣掉這麼多張了。' },
@@ -3920,6 +3939,19 @@
     'cp.auc.shipby.14':     { en: 'Within 14 days of end',           zh: '結束後 14 天內' },
     'cp.spec.title':        { en: 'Specifications',                   zh: '詳細規格' },
     'cp.spec.sub':          { en: "Help buyers know exactly what they're getting.", zh: '讓買家清楚會拿到什麼。' },
+    /* 尺寸指南（D211）：預設沿用商店的全部，可改成這件商品專屬的一份 */
+    'cp.sg.title':          { en: 'Size guide',                 zh: '尺寸指南' },
+    'cp.sg.inherit':        { en: "Using your shop's size guides", zh: '沿用商店的尺寸指南' },
+    'cp.sg.inherit.hint':   { en: 'Buyers see all of them:',     zh: '買家會看到全部：' },
+    'cp.sg.switch':         { en: 'Use its own guide',           zh: '改用專屬指南' },
+    'cp.sg.own':            { en: 'Using its own size guide',    zh: '使用專屬尺寸指南' },
+    'cp.sg.own.hint':       { en: "Your shop's guides don't show here.", zh: '商店那幾份不會出現在這裡。' },
+    'cp.sg.edit':           { en: 'Edit',                        zh: '編輯' },
+    'cp.sg.remove':         { en: 'Remove',                      zh: '移除' },
+    'cp.sg.modal.new':      { en: 'Size guide for this item',    zh: '專屬尺寸指南' },
+    'cp.sg.modal.edit':     { en: "Edit this item's size guide", zh: '編輯專屬尺寸指南' },
+    'cp.sg.toast.saved':    { en: 'Saved as its own size guide',  zh: '已存成專屬尺寸指南' },
+    'cp.sg.toast.removed':  { en: "Back to your shop's size guides", zh: '回到沿用商店的尺寸指南' },
     'cp.spec.add':          { en: 'Add spec',                         zh: '新增詳細規格' },
     'cp.spec.name.ph':      { en: 'e.g., Material',                   zh: '例：材質' },
     'cp.spec.value.ph':     { en: 'e.g., 100% organic cotton',        zh: '例：100% 有機棉' },
@@ -4869,6 +4901,9 @@
        旁邊，所以只留「還缺什麼」——完整條件留在右軌那句。 */
     'cpp.bd.hint.blocked':  { en: 'One complete bundle is needed to continue.',
                               zh: '還需要一個完整的套組才能繼續。' },
+    /* 共創資金步的擋關原因（規格 §5.2.1 F23：預算分配總和須達 100%）。 */
+    'cpp.fd.hint.budget':   { en: 'Budget allocation must add up to 100% to continue.',
+                              zh: '預算分配加起來要滿 100% 才能繼續。' },
     'cpp.bd.coach.few':     { en: 'Works as is. {n} more would give backers a real choice; most campaigns offer three.',
                               zh: '這樣就能用了。再多 {n} 個能讓支持者真的有得選；多數項目會開三個。' },
     'cpp.bd.coach.ok':      { en: 'A good spread. Backers have a real choice.',
@@ -5520,7 +5555,6 @@
     'ip-market.noresult.clear':     { en: 'Clear filters',      zh: '清除篩選' },
     'ip-market.coldstart.title':    { en: 'No IP listed yet',   zh: '市場上還沒有 IP' },
     'ip-market.coldstart.text':     { en: 'The marketplace is just getting started. Be the first creator to list your IP for others to license.', zh: '市場剛起步。成為第一個上架 IP 供他人授權的創作者。' },
-    'ip-market.coldstart.cta':      { en: 'List your IP',       zh: '上架你的 IP' },
 
     /* Fans CRM — tabs / Pareto / list ops / Recovered / load-more (5.1.7 F1–F6) */
     'fans.btn.explain':      { en: 'How this works', zh: '系統說明' },
@@ -5925,6 +5959,45 @@
     'pd-ov.prog.fresh-today':{en: 'today',zh: '今天'},
     'pd-ov.prog.fresh-days':{en: '{n} days ago',zh: ' {n} 天前'},
     'pd-ov.prog.fresh-none':{en: 'You have not posted since launch.',zh: '上線後還沒發過更新。'},
+    'pd-ud.kind-ms':{en: 'Milestone post',zh: '里程碑貼文'},
+    'pd-ud.kind-general':{en: 'General post',zh: '一般貼文'},
+    'pd-ud.title':{en: 'Update detail',zh: '更新內容'},
+    'pd-ud.nobody':{en: 'No body text.',zh: '這一則沒有內文。'},
+    'pd-ud.published':{en: 'Published',zh: '發布時間'},
+    'pd-ud.notified':{en: 'Notified',zh: '通知人數'},
+    'pd-ud.attached':{en: 'Attached to',zh: '掛在'},
+    'pd-ud.attached-none':{en: 'Not attached to a milestone',zh: '沒有掛里程碑'},
+    /* 已完成但沒發過完成宣告的那一顆，點開來是里程碑自己的紀錄（2026-08-20，D208）。
+       徽章寫「里程碑」不寫「里程碑貼文」——那一顆沒有貼文。 */
+    'pd-ud.kind-msonly':{en: 'Milestone',zh: '里程碑'},
+    'pd-ud.ms-nodesc':{en: 'No description.',zh: '這顆里程碑沒有填說明。'},
+    'pd-ud.ms-post':{en: 'Completion post',zh: '完成宣告'},
+    'pd-ud.ms-nopost':{en: 'Never posted',zh: '沒有發過'},
+    'pd-ud.ms-target':{en: 'Milestone target date',zh: '里程碑原定日期'},
+    'pd-ud.ms-done':{en: 'Marked done',zh: '標記完成於'},
+    'pd-ud.ms-gap':{en: 'Against the promise',zh: '與原定相差'},
+    'pd-ud.gap-early':{en: '{n} days early',zh: '早 {n} 天'},
+    'pd-ud.gap-late':{en: '{n} days late',zh: '晚 {n} 天'},
+    'pd-prog.release.body':{en: 'The work is live — backers can watch it now.',zh: '作品已經上線，支持者現在就看得到。'},
+    'pd-prog.ev.released':{en: 'Work went live',zh: '作品上線'},
+    'pd-prog.section.release':{en: 'Release progress',zh: '上架進度'},
+    'project-detail.tab.progress-release':{en: 'Release progress',zh: '上架進度'},
+    'pd-prog.today.dr-send':{en: 'The work is ready — send it for review.',zh: '作品備妥了，送出審核吧。'},
+    'pd-prog.today.dr-review':{en: 'Waiting on platform review.',zh: '等平台審核結果。'},
+    'pd-prog.today.dr-fix':{en: 'Sent back — fix it and send again.',zh: '被退回了，修改後重送。'},
+    'pd-prog.today.dr-date':{en: 'Approved — now pick the release date.',zh: '審核通過了，挑一個上映日期。'},
+    'pd-prog.today.dr-wait':{en: 'Everything is set — waiting for the release day.',zh: '都設定好了，等上映日到來。'},
+    'pd-prog.today.dr-live':{en: 'The work is live.',zh: '作品已經上線。'},
+    'pd-prog.today.dr-blocked':{en: 'This content type has no release flow yet.',zh: '這個內容類型的上架流程尚未定義。'},
+    'pd-prog.ev.fundstart':{en: 'Co-creation opened',zh: '開始共創'},
+    'pd-prog.ev.prestart':{en: 'Presale opened',zh: '開始預購'},
+    'pd-prog.ev.funded':{en: 'Goal reached — project succeeded',zh: '共創達標，項目成功'},
+    'pd-prog.ev.premet':{en: 'Minimum reached — project succeeded',zh: '預購達量，項目成功'},
+    'pd-prog.ev.submitted':{en: 'Work sent for review',zh: '作品送出審核'},
+    'pd-prog.ev.approved':{en: 'Work approved',zh: '作品審核通過'},
+    'pd-prog.ev.rejected':{en: 'Work sent back',zh: '作品審核退回'},
+    'pd-ov.prog.work-locked':{en: 'Opens after the last milestone',zh: '里程碑完成後送審'},
+    'pd-ov.prog.work-ready':{en: 'Ready to send for review',zh: '可送出審核'},
     'pd.share':{en: 'Share project',zh: '分享項目'},
     'pd.share.copied':{en: 'Project link copied',zh: '已複製項目連結'},
     'pd-ov.prog.go':{en: 'Go to progress',zh: '前往進度'},
@@ -6029,6 +6102,8 @@
     /* hint 只寫做決定需要知道的事：留白會怎樣、這個日期會影響什麼（D194 起它同時是
        排序依據與倒數基準）。 */
     'pd-edit.milestone.date.hint':{en: 'Blank means not scheduled yet. The date sets the order on the timeline and the countdown.',zh: '留白代表還沒排定。這個日期決定它在時間軸上的位置與倒數天數。'},
+    /* D199：里程碑日期不得早於項目建立時間，送出前擋下（欄位 min 只擋日曆挑選）。 */
+    'pd-edit.milestone.date.err':{en: "A milestone can't be dated before the project was created.",zh: '里程碑的日期不能早於項目建立的那一天。'},
     'pd-edit.milestone.desc':{en: 'Description',zh: '說明'},
     'pd-edit.milestone.desc-ph':{en: 'What gets delivered at this step',zh: '這一步要交付什麼'},
 
@@ -6575,17 +6650,19 @@
        改成兩選一。彈窗標題已經說了這是發布更新，所以標籤只寫「類型」。 */
     'pd-edit.update.kind':{en: 'Type',zh: '類型'},
     'pd-edit.update.kind-general':{en: 'General update',zh: '一般更新'},
-    'pd-edit.update.kind-release':{en: 'Work release',zh: '完成作品'},
     /* 2026-08-18（D197）：發文框長在哪一格就決定類型的預設值，因此多了「里程碑更新」
        這一種——它送出後會把那顆里程碑標記為完成，所以送出鈕也另有說法。 */
     'pd-edit.update.kind-ms':{en: 'Milestone update',zh: '里程碑更新'},
     'pd-edit.update.submit-ms':{en: 'Publish & mark done',zh: '發布並標記完成'},
-    'pd-edit.update.kind-film-note':{en: 'You’ll set up the release details next.',zh: '送出後接著設定作品上架資訊。'},
-    'pd-edit.update.kind-other-note':{en: 'Release setup is not open for this work type yet — publishing marks the project live right away.',zh: '這個作品類型的上架流程尚未開放，送出後直接發布並將項目標記為已上線。'},
-    'pd-edit.update.kind-locked':{en: 'Work release opens once the project is Succeeded.',zh: '項目成功後才能上架作品。'},
+    'pd-edit.update.kind-other-note':{en: 'Release setup is not open for this work type yet.',zh: '這個作品類型的上架流程尚未開放。'},
     'pd-edit.update.submit':{en: 'Publish update',zh: '發布更新'},
-    'pd-edit.update.submit-next':{en: 'Next: release setup',zh: '下一步：上架作品'},
-    'pd-edit.update.submit-live':{en: 'Publish and mark live',zh: '發布並標記上線'},
+    /* 2026-08-19 撤除（墓碑，D207）：`kind-release`、`kind-film-note`、`kind-locked`、
+       `submit-next`、`submit-live`，以及 `pd.review.kind-inflight`／`kind-scheduled`／
+       `kind-live`。這八條全是發文框裡「完成作品」那個選項的字——選項的字、它的說明行、
+       它在各種狀態下不能選的理由、它送出鈕的兩種說法。那個選項已撤除（上架改由上架
+       階段那一列自己的動作鈕進入），字串跟著退場。
+       `kind-other-note` 留著但改寫：它現在只在總覽的下一步講「這個作品類型還不能上架」，
+       原本後半句「送出後直接發布並標記為已上線」講的是已撤除的那條假設路徑。 */
 
     /* ── 作品審核狀態在創作者端的呈現（`pd.review.*`，規格 5.1.2.2 §2.2.9）──────
           狀態字詞本身（待審核／審核中／…）由 js/work-review-store.js 提供，這裡只放
@@ -6603,9 +6680,9 @@
     'pd.review.done-scheduled': { en: 'The work passed review and the completion post reached its audience. It goes on sale on {d}.', zh: '作品已通過審核、完成作品貼文已發給選定受眾；作品在 {d} 當天上線。' },
     'pd.review.toast-scheduled':{ en: 'Approved — goes live on {d}', zh: '審核通過 · {d} 上映' },
     'pd.review.resubmit':   { en: 'Fix and send again',        zh: '修改後重送' },
-    'pd.review.kind-inflight':{ en: 'This work is with the review team — no need to send it again.', zh: '這件作品在平台審核中，不用再送一次。' },
-    'pd.review.kind-live':  { en: 'This work is already live.', zh: '這件作品已經上線了。' },
-    'pd.review.kind-scheduled': { en: 'This work passed review and goes on sale on its release date.', zh: '這件作品已通過審核，會在上映日當天上線。' },
+    /* 2026-08-19 撤除（墓碑，D207）：`kind-inflight`／`kind-live`／`kind-scheduled`。
+       三句都是發文框裡「完成作品」那個選項在各種送審狀態下不能選的理由；選項已撤除。
+       同樣的資訊在軸上那四段上架階段的列與說明句裡本來就看得到。 */
     'pd.review.toast-live': { en: 'Your work is live',         zh: '作品已上線' },
     /* ── 作品區段（`pd.work.*`，規格 5.1.2.2 §2.2.11）────────────────────────
        這一區講的是「這件作品」，不是「那則貼文」，所以字串另立命名空間。
@@ -6627,6 +6704,10 @@
     'pw.step.art':          { en: 'Artwork',                          zh: '素材' },
     'pw.step.info':         { en: 'Details',                          zh: '詳情' },
     'pw.step.credits':      { en: 'Credits',                          zh: '演職人員' },
+    /* 第五步「給粉絲的話」（2026-08-19 使用者裁決，D207）：上線那天要發的那則貼文，
+       只在第一次上架時出現。中文不叫「公告」——公告是平台對使用者說話，這裡是創作者
+       對自己的支持者說話。英文用 Announcement 反而正確：那是這個情境的產品慣用語。 */
+    'pw.step.announce':     { en: 'Announcement',                     zh: '給粉絲的話' },
     /* 送出＝送審（2026-08-07 D179）：按下去的結果是「交出去等審核」，不是「上線」。
        主動作與就緒檢查三處字樣一起改，不然按鈕說發布、旁邊說可以發布了，使用者會以為按完就上線。 */
     'pw.submit':            { en: 'Send for review',                  zh: '送出審核' },
@@ -6677,7 +6758,7 @@
        同輪四個空格補上常駐 CTA 後，這格是整個素材步驟裡唯一還用另一種說法的，改成同一句。 */
     'pw.art.cover.cta':     { en: 'Drop an image or browse',         zh: '拖入圖片或點擊選檔' },
     'pw.art.stills.title':  { en: 'Stills',                           zh: '劇照' },
-    'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it.', zh: '讓人想看、又不爆雷的畫面。' },
+    'pw.art.stills.sub':    { en: 'Frames that sell the film without spoiling it. Up to 8.', zh: '讓人想看、又不爆雷的畫面。最多 8 張。' },
     'pw.art.trailer.title': { en: 'Trailer',                          zh: '預告片' },
     'pw.art.trailer.sub':   { en: 'Plays on the work’s page before anyone rents it.', zh: '放在作品頁上，租片前就能看。' },
     'pw.art.trailer.hint':  { en: 'Up to 3 minutes',                  zh: '3 分鐘以內' },
@@ -6713,7 +6794,9 @@
     'pw.info.release':      { en: 'Release date',                     zh: '上映日期' },
     /* 上映日期＝作品什麼時候對外看得到（D180 的排定上線日）。整併之後它同時吸收了建立流程的
        「發布時間」，所以要說清楚留今天與填未來日期的差別（規劃書 §5 第 4 題）。 */
-    'pw.info.release.hint': { en: 'Leave it as today to go live the moment review passes; a future date holds it until then.', zh: '留今天＝審核通過就上線；填未來日期＝到那天才上線。' },
+    /* D192：上映日期改選填，三種情形都要講清楚——留白等你之後決定、今天即刻上線、未來日期等那天 */
+    'pw.info.release.hint': { en: 'Optional — leave it undecided and pick the date after review passes. Today or a past date goes live the moment review passes; a future date waits for that day.', zh: '選填。可以先不決定，等審核通過再回來設定；填今天或已過去的日期＝審核通過就上線，填未來日期＝到那天才上線。' },
+    'pw.info.release.undecided': { en: 'Not decided', zh: '未決定' },
     'pw.info.genre.title':  { en: 'Genres',                           zh: '分類' },
     'pw.info.genre.sub':    { en: 'Pick every one that fits — they drive where the work shows up.', zh: '符合的都選，這會決定作品出現在哪些片單。' },
     'pw.info.tags.title':   { en: 'Tags',                             zh: '標籤' },
@@ -6779,8 +6862,17 @@
     'pw.role.producer':     { en: 'Producer',                         zh: '監製' },
     'pw.role.writer':       { en: 'Writer',                           zh: '編劇' },
     'pw.role.studio':       { en: 'Production company',               zh: '出品製作公司' },
+    /* 步驟 5 · 給粉絲的話（2026-08-19，D207）。副標要把時點講死：創作者在這裡打的字
+       不是現在發出去，是作品上線那一刻才發（§2.2.9 的三件事）——不講清楚的話，送出
+       之後粉絲沒收到通知，他會以為系統壞了。 */
+    'pw.ann.h1':            { en: 'Tell your backers',                zh: '給粉絲的話' },
+    'pw.ann.sub':           { en: 'This goes out as an update the moment the work goes live — not now.', zh: '這則會在作品上線那一刻自動發出去，不是現在。' },
+    'pw.ann.body':          { en: 'Message',                          zh: '內文' },
+    'pw.ann.body-ph':       { en: 'It’s finished. Here’s where to watch it…', zh: '作品完成了，這裡可以看…' },
+    'pw.ann.aud':           { en: 'Who sees it',                      zh: '誰看得到' },
     /* 送出前的就緒檢查（規格 §8）。chip 的「剩餘 N 項」與「已略過驗證」共用建立商品那兩個 key。 */
     'pw.ready.title':       { en: 'Ready to send?',                   zh: '可以送審了嗎？' },
+    'pw.ready.ann':         { en: 'Announcement · message',           zh: '給粉絲的話 · 內文' },
     'pw.ready.chip.ready':  { en: 'Ready to send',                    zh: '可以送審了' },
     'pw.ready.banner.ready':{ en: 'Ready to send!',                   zh: '可以送審了！' },
     'pw.ready.banner.needed':{ en: '{n} items still needed',          zh: '還差 {n} 項才能送審' },
@@ -6805,7 +6897,9 @@
     /* ── 影片上架審核（`vr.*` — admin-video-review.html，2026-08-07 D179）────────
           Admin 端的審核頁。狀態字詞（待審核／審核中／…）由 js/work-review-store.js
           提供給程式用；分頁標籤這裡各留一份 key，讓靜態 markup 也能被 i18n 掃到。 */
-    'vr.lede':              { en: 'Creators send finished films here before they go live. Approving one publishes the work, sends the completion post to its fans and moves the project to Live.', zh: '創作者做完的影片先送到這裡。按下通過的那一刻，作品上架、完成作品貼文發給粉絲、項目轉為已上線，三件事一起發生。' },
+    /* D192：通過只做放行，作品上架／貼文發出／項目轉已上線三件事發生在作品上線那一刻，
+       時點由創作者填的上映日期決定。以下五條文案一律照這個語意寫。 */
+    'vr.lede':              { en: 'Creators send finished films here before they go live. Approving is a green light, not a launch — the work goes on sale, its completion post reaches fans and the project turns Live on the release date the creator sets.', zh: '創作者做完的影片先送到這裡。通過是放行，不是上線——作品上架、完成作品貼文發給粉絲、項目轉為已上線，這三件事要到創作者設定的上映日才一起發生。' },
     'vr.status.pending':    { en: 'Pending review',   zh: '待審核' },
     'vr.status.inreview':   { en: 'In review',        zh: '審核中' },
     'vr.status.approved':   { en: 'Approved',         zh: '審核通過' },
@@ -6837,7 +6931,7 @@
     'vr.act.reject':        { en: 'Reject',           zh: '審核不通過' },
     'vr.act.back':          { en: 'Back to queue',    zh: '返回清單' },
     'vr.ctx.title':         { en: 'Source project',   zh: '來源項目' },
-    'vr.ctx.sub':           { en: 'Approving publishes the post below to the audience the creator picked.', zh: '通過之後，下面這則貼文會依創作者選的受眾發出去。' },
+    'vr.ctx.sub':           { en: 'This post reaches the audience the creator picked on the day the work goes live — not the moment you approve it.', zh: '下面這則貼文會依創作者選的受眾發出，時間點是作品上線那天，不是按下通過的當下。' },
     'vr.ctx.project':       { en: 'Project',          zh: '項目' },
     'vr.ctx.status':        { en: 'Project status',   zh: '項目狀態' },
     'vr.ctx.post':          { en: 'Post',             zh: '待發貼文' },
@@ -6878,12 +6972,15 @@
     'vr.reject.hint':       { en: 'The creator sees this word for word on the project page.', zh: '這段話會原封不動出現在創作者的項目頁上。' },
     'vr.reject.confirm':    { en: 'Send it back',     zh: '退回創作者' },
     'vr.approve.title':     { en: 'Approve and publish', zh: '通過並上架' },
-    'vr.approve.body':      { en: 'Three things happen at once: the work goes on sale, the completion post reaches its audience, and the project turns Live. There is no undo.', zh: '三件事會同時發生：作品上架、完成作品貼文發給選定受眾、項目轉為已上線。執行後無法原地撤回。' },
+    'vr.approve.body':      { en: 'This clears the work for release; it does not put it on sale now. Going on sale, sending the completion post and turning the project Live all follow the creator’s release date. There is no undo.', zh: '這一步是放行，不會讓作品現在就上架。上架、發出完成作品貼文、項目轉為已上線，都跟著創作者設定的上映日走。執行後無法原地撤回。' },
     'vr.approve.confirm':   { en: 'Approve and publish', zh: '通過並上架' },
     'vr.approved.label':    { en: 'What this triggered', zh: '通過之後發生的事' },
     'vr.approved.body':     { en: 'The work is on sale, the completion post went out, and the project is Live.', zh: '作品已上線、完成作品貼文已發出、項目已轉為已上線。' },
+    /* 通過但還沒上線的兩種情形（D192）：有上映日等那天，沒填等創作者決定。 */
+    'vr.approved.body-scheduled': { en: 'Cleared for release. On {d} the work goes on sale, the completion post goes out and the project turns Live.', zh: '已放行。{d} 當天作品上架、完成作品貼文發出、項目轉為已上線。' },
+    'vr.approved.body-undated':   { en: 'Cleared for release. The creator has not set a release date yet — nothing goes live until they do.', zh: '已放行。創作者還沒設定上映日，設定之前不會上線。' },
     'vr.toast.start':       { en: 'You are reviewing this one', zh: '已接手這一件' },
-    'vr.toast.approved':    { en: 'Approved — the work is live', zh: '已通過，作品上線' },
+    'vr.toast.approved':    { en: 'Approved — cleared for release', zh: '已通過，作品已放行' },
     'vr.toast.rejected':    { en: 'Sent back to the creator', zh: '已退回創作者' },
     'vr.noaccess.title':    { en: 'Platform operators only', zh: '限平台營運' },
     'vr.noaccess.text':     { en: 'Reviewing belongs to the ztor operations team. A creator workspace cannot review its own work or anyone else’s.', zh: '審核由 ztor 營運團隊執行。創作者工作區無法審核自己或他人的作品。' },
@@ -7476,7 +7573,9 @@
        event-detail.live.title（現場報到台）與 .since（已進行 N 分鐘）已無消費者，保留未用。 */
     'event-detail.live.bytier':      { en: 'By ticket type',    zh: '依票種統計' },
     'event-detail.live.tierleft':    { en: '{n} to come',       zh: '還有 {n} 位' },
-    'event-detail.live.rhythm':      { en: 'Entry rate',        zh: '進場頻率' },
+    /* 2026-08-20 使用者指示改名 Entry rate → Arrival Pattern：這張圖畫的是整段開門
+       時間裡人潮怎麼分布（前段湧入還是壓線才到），不是單位時間進場幾人的速率。 */
+    'event-detail.live.rhythm':      { en: 'Arrival Pattern',   zh: '進場頻率' },
     'event-detail.live.rhythm.sub':  { en: 'by check-in time',   zh: '依到場時間' },
     'event-detail.live.rhythm.note': { en: 'Peak {t} · {n} through the door', zh: '尖峰 {t} · 進場 {n} 位' },
     'event-detail.live.unit.sec':    { en: 'Sec',               zh: '秒' },
