@@ -66,8 +66,14 @@
   gap: var(--ptl-gap);
   padding-bottom: var(--sp-20);
 }
+/* 只有軸底那一列不留下方間距（2026-08-20 修正）。原本這條掛的是 `--start`，
+   而 `--start` 當時只有一個成員＝「項目建立」，它永遠是最後一列。D202 之後
+   生命週期事件（開始收單、達標成功、送審、審核結果）沿用同一個修飾子長相，
+   於是軸中間每出現一個事件，它與下一列就黏在一起、中間也沒有分隔線。
+   軸底改用自己的 `--foot`：`--start` 從此只講「這一列是系統事實、只有名字與
+   日期」，`--foot` 只講「這一列是軸的終點」。 */
 .ptl__node:last-child,
-.ptl__node--start { padding-bottom: 0 }
+.ptl__node--foot { padding-bottom: 0 }
 
 /* 軸線：從自己的軸點下緣連到下一列。軸底那一列不畫，否則軸會憑空多出一截。
    2026-08-17：軸的終點由「完成作品」改為「項目建立」（--start），因為方向反轉後
@@ -82,7 +88,7 @@
   background: var(--border);
 }
 .ptl__node:last-child::before,
-.ptl__node--start::before { display: none }
+.ptl__node--foot::before { display: none }
 .ptl__node--done::before { background: color-mix(in srgb, var(--status-success) 35%, transparent) }
 
 /* 日期欄。今天那一格的日期是唯一被強調的，其餘只是事實。
@@ -98,6 +104,12 @@
   align-self: start;
   overflow-wrap: anywhere;
 }
+/* 跨年的日期年自己一行（2026-08-20 使用者裁決）：日期欄只有 64px，「2025/12/16」
+   會在數字中間斷成「2025/12/1」＋「6」——一個被折斷的數字要讀兩次才知道是幾號。
+   第一行沿用 --ptl-line 的行高，日期才跟軸點與標題同一條線；第二行收緊，兩行才
+   讀成一個日期而不是兩件事。哪一行是年由呼叫端依語言決定（中文年在上、英文在下）。 */
+.ptl__date-part { display: block }
+.ptl__date-part + .ptl__date-part { line-height: var(--lh-comfy) }
 /* 逾期時日期自己轉紅（2026-08-18）：逾期是從這個日期算出來的，紅在別的地方
    等於把因果拆成兩處。 */
 .ptl__node--alert > .ptl__date { color: var(--destructive-ink) }
@@ -142,7 +154,7 @@
   border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
 }
 .ptl__node:last-child > .ptl__body,
-.ptl__node--start > .ptl__body { padding-bottom: 0; border-bottom: 0 }
+.ptl__node--foot > .ptl__body { padding-bottom: 0; border-bottom: 0 }
 
 /* 標題列一次講完這一列的四件事：遲了幾天／叫什麼／誰看得到／能做什麼。
    2026-08-18 之前這些分散在標題、tags、meta 三行，多數里程碑因此佔三行高。 */
@@ -164,6 +176,25 @@
 /* 可見度是這一列的屬性、不是另一段說明，所以坐在名稱旁邊而不是自成一行。
    12px 才是註記的字級。 */
 .ptl__vis { font-size: var(--fs-12); color: var(--muted-foreground); flex: none }
+/* 已完成的里程碑，整條標題列可點開完整紀錄（2026-08-20）：可點就要看得出可點，
+   處理與 .ptl__update[data-up-open] 同一套——負的左右 margin 讓 hover 的底色比文字
+   往兩側各長 8px，不然亮起來像標題被框住。垂直方向不加 padding：這一列的高度由
+   min-height 與軸點對齊，加了會讓點跟字錯開。 */
+.ptl__head[data-ms-open] {
+  cursor: pointer;
+  padding: 0 var(--sp-8);
+  margin: 0 calc(var(--sp-8) * -1);
+  border-radius: var(--radius-md);
+  transition: background var(--duration) var(--easing);
+}
+.ptl__head[data-ms-open]:hover { background: var(--accent) }
+.ptl__head[data-ms-open]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) { .ptl__head[data-ms-open] { transition-duration: 1ms } }
+
 .ptl__name {
   font-family: var(--font-ui);
   font-size: var(--fs-14);
@@ -287,6 +318,27 @@
   display: block;
   background: none;
 }
+/* 每一則可以點開完整紀錄（2026-08-19）：可點就要看得出可點——負的左右 margin 讓
+   hover 的底色比文字往兩側各長 8px（同 step-list 那一列的處理），不然亮起來像文字
+   被框住。鍵盤走 :focus-visible，兩種操作看到同一個狀態。 */
+.ptl__update[data-up-open] {
+  cursor: pointer;
+  padding: var(--sp-6) var(--sp-8);
+  margin: 0 calc(var(--sp-8) * -1);
+  border-radius: var(--radius-md);
+  transition: background var(--duration) var(--easing);
+}
+.ptl__update[data-up-open]:hover { background: var(--accent) }
+.ptl__update[data-up-open]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  background: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) { .ptl__update[data-up-open] { transition-duration: 1ms } }
+/* 自己站在軸上的那一則（`.ptl__node--post`，2026-08-20 D209）：可點區塊沿用同一套，
+   只收掉上方 padding——標題列（`.ptl__head`）的 min-height 就是 --ptl-line，
+   上面再墊 6px 的話標題會掉到軸點下面去，一條軸掃下來點與字錯開。 */
+.ptl__node--post .ptl__update[data-up-open] { padding-top: 0; padding-bottom: var(--sp-6) }
 /* 標題列與里程碑的 .ptl__head 同一套排法（2026-08-18）：一行講完「這則是什麼、
    誰看得到、哪一天發的」，內文另起一段。兩種列長得一樣，掃視時才不用切換讀法。 */
 .ptl__update-head {

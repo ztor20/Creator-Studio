@@ -2,7 +2,7 @@
    intentionally presentation state, not a settlement or payout source of truth. */
 (function () {
   'use strict';
-  var KEY = 'ztor.adminIpBank.v1';
+  var KEY = 'ztor.adminIpBank.v2';   /* v2：片名對齊 films-store 的 canonical 寫法（2026-08-20） */
   /* Prototype directory used by the Owner lookup. Production receives only
      permissioned directory results from the Ztor user service. */
   var ownerDirectory = [
@@ -17,12 +17,12 @@
     return { kind:'linked', userId:user.id, displayName:user.displayName, username:user.username, email:user.email };
   }
   var seed = [
-    { id:'ip-1', film:'海上霸王 - 鄭一嫂', title:'Zheng Yi Sao (lead character)', type:'Character / Likeness', owner:linkedOwner('user-denise'), status:'linked', share:20, withdrawn:2200 },
-    { id:'ip-2', film:'海上霸王 - 鄭一嫂', title:'Original score', type:'Music & Score', owner:linkedOwner('user-wong'), status:'linked', share:35, withdrawn:0 },
-    { id:'ip-3', film:'海上霸王 - 鄭一嫂', title:'Original screenplay', type:'Original Story / Screenplay', owner:{ kind:'invite', email:'huei-ling@example.com' }, status:'pending', invitation:{ status:'pending', email:'huei-ling@example.com', createdAt:'2026-07-14T09:00:00.000Z', delivery:'not-sent-prototype' }, share:15, withdrawn:0 },
-    { id:'ip-4', film:'Fist Of Fury', title:'Bruce Lee likeness', type:'Character / Likeness', owner:linkedOwner('user-lee-estate'), status:'linked', share:50, withdrawn:0 }
+    { id:'ip-1', film:'海上霸王 · 鄭一嫂', title:'Zheng Yi Sao (lead character)', type:'Character / Likeness', owner:linkedOwner('user-denise'), status:'linked', share:20, withdrawn:2200 },
+    { id:'ip-2', film:'海上霸王 · 鄭一嫂', title:'Original score', type:'Music & Score', owner:linkedOwner('user-wong'), status:'linked', share:35, withdrawn:0 },
+    { id:'ip-3', film:'海上霸王 · 鄭一嫂', title:'Original screenplay', type:'Original Story / Screenplay', owner:{ kind:'invite', email:'huei-ling@example.com' }, status:'pending', invitation:{ status:'pending', email:'huei-ling@example.com', createdAt:'2026-07-14T09:00:00.000Z', delivery:'not-sent-prototype' }, share:15, withdrawn:0 },
+    { id:'ip-4', film:'Fist of Fury: Redux', title:'Bruce Lee likeness', type:'Character / Likeness', owner:linkedOwner('user-lee-estate'), status:'linked', share:50, withdrawn:0 }
   ];
-  var revenues = { '海上霸王 - 鄭一嫂':79300, 'Fist Of Fury':48000 };
+  var revenues = { '海上霸王 · 鄭一嫂':79300, 'Fist of Fury: Redux':48000 };
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
   function findOwner(value) {
     var query=String(value||'').trim().toLowerCase();
@@ -51,7 +51,19 @@
   function read(){ try { var v=JSON.parse(localStorage.getItem(KEY)); return (Array.isArray(v)?v:seed).map(normalizeEntry); } catch(e){ return seed.map(normalizeEntry); } }
   function write(rows){ try{localStorage.setItem(KEY,JSON.stringify(rows));}catch(e){} return rows; }
   function list(){ return read(); }
-  function films(){ var out=[]; list().forEach(function(r){if(out.indexOf(r.film)<0)out.push(r.film);}); return out; }
+  /* Film 候選＝前台已上架電影目錄（films-store，BR-NEW-1 的來源）。
+     2026-08-20 修正：原本只從既有 entry 反查片名，等於「只挑得到已經建過的片」——
+     平台 6 部片有 4 部永遠選不到、規格 5.1.0.1.1 F1 的必填因此填不出來，連
+     「一筆 entry 都還沒有」時要建第一筆都做不到。目錄沒有的舊片名一併保留，
+     免得既有 entry 選不到自己的值。 */
+  function films(){
+    var out=[];
+    if (window.ztorFilms && window.ztorFilms.list) {
+      window.ztorFilms.list().forEach(function(f){ if(out.indexOf(f.title)<0) out.push(f.title); });
+    }
+    list().forEach(function(r){ if(out.indexOf(r.film)<0) out.push(r.film); });
+    return out;
+  }
   function allocated(film, excludeId){ return list().filter(function(r){return r.film===film && r.id!==excludeId;}).reduce(function(s,r){return s+Number(r.share||0);},0); }
   function save(entry){ var rows=list(), row=normalizeEntry(entry), i=rows.findIndex(function(r){return r.id===row.id;}); if(row.owner.kind==='invite'&&isPendingInviteDuplicate(row.owner.email,row.id))throw new Error('duplicate-pending-invitation'); if(i>=0)rows[i]=row; else rows.push(row); return write(rows); }
   function remove(id){ return write(list().filter(function(r){return r.id!==id;})); }

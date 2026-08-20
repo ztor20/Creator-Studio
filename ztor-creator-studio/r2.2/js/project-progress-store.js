@@ -254,6 +254,12 @@
 
   function seedFor(project) {
     var born = createdAtOf(project);
+    /* 直接發佈沒有里程碑（2026-08-19，D203）：里程碑是「錢先收了、東西還沒做」時對支持者
+       的交付承諾，直接發佈的作品在建立當下就已完成，沒有可承諾的東西。此前每個項目都種
+       六顆，反正直接發佈畫不出時間軸也看不到；D203 開放它的進度分頁之後就看得到了——
+       一個已經上線的作品掛著六顆「前期製作完成」是憑空捏造的進度。更新同理（D193 已撤除
+       直接發佈的項目更新），所以整份種子回空。 */
+    if (project && project.type === 'go-live') return { ms: [], up: [], createdAt: born };
     var cursor = CURSOR[project.status];
     if (cursor == null) cursor = 0;
     var v = VARIANTS[project.id] || {};
@@ -371,7 +377,7 @@
         milestoneId: null,
         publishedAt: shift(-30, 10),
         notified: null,
-        kind: 'general'
+        source: 'creator'
       });
     } else {
       if (firstDone) {
@@ -383,7 +389,7 @@
           milestoneId: firstDone.id,
           publishedAt: firstDone.completedAt || shift(-30, 15),
           notified: notified,
-          kind: 'general'
+          source: 'creator'
         });
       }
       up.push({
@@ -394,7 +400,7 @@
         milestoneId: null,
         publishedAt: shift(-38, 10),
         notified: null,
-        kind: 'general'
+        source: 'creator'
       });
       up.push({
         id: uid('up'),
@@ -404,7 +410,7 @@
         milestoneId: null,
         publishedAt: shift(-38, 16),
         notified: null,
-        kind: 'general'
+        source: 'creator'
       });
       /* 這一則刻意落在最新的那顆已完成里程碑「之後」（2026-08-18）：一般更新自本日起
          按「兩顆里程碑之間」整段收合，只有一段的話看不出分組規則在做什麼。有了這一則，
@@ -417,7 +423,7 @@
         milestoneId: null,
         publishedAt: shift(-18, 14),
         notified: null,
-        kind: 'general'
+        source: 'creator'
       });
     }
 
@@ -430,7 +436,7 @@
         milestoneId: null,
         publishedAt: shift(p.at, 9),
         notified: null,
-        kind: 'general'
+        source: 'creator'
       });
     });
 
@@ -546,17 +552,23 @@
         publishedAt: now(),
         notified: null,
         notifiedKey: 'project-detail.updates.notification-sent',
-        kind: o.kind || 'general'
+        /* 一則貼文屬於哪一類，由掛不掛里程碑決定（D206：沒掛＝一般貼文、掛了＝里程碑
+           貼文），不由這個欄位決定。這裡只記「誰生出這一則」：'general'＝創作者自己發的。 */
+        source: 'creator'
       };
       b.up.push(u);
       return u;
     },
 
     /* 完成作品那則貼文（審核通過並上線時發出）。它掛在完成作品節點底下，
-       所以 milestoneId 用保留字 'work'，不佔任何一顆真的里程碑。 */
+       所以 milestoneId 用保留字 'work'，不佔任何一顆真的里程碑。
+       2026-08-20（D207）：此前這一則的 `kind` 欄位存 'release'，而 'release' 同時是
+       發文類型的第三個值。那個值已撤除（上架不是發文），欄位改名為 `source`、值改為
+       'work-live'——它記的本來就不是「哪一種貼文」，是「這一則由系統在作品上線那一刻
+       補上、不要補第二次」。 */
     addWorkPost: function (project, o) {
       var b = bucket(project);
-      if (b.up.some(function (u) { return u.kind === 'release'; })) return null;
+      if (b.up.some(function (u) { return u.source === 'work-live'; })) return null;
       var u = {
         id: uid('up'),
         title: { en: o.title || '', zh: o.title || '' },
@@ -566,7 +578,7 @@
         publishedAt: o.at instanceof Date ? o.at : now(),
         notified: null,
         notifiedKey: 'project-detail.updates.notification-sent',
-        kind: 'release'
+        source: 'work-live'
       };
       b.up.push(u);
       return u;

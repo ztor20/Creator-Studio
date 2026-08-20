@@ -94,6 +94,29 @@
       <p class="wizard__step-sub" data-i18n="pw.credits.sub">Names appear on the work's page in the order you enter them.</p>
       <div data-wf="credits"></div>
     </section>
+
+    <!-- 上線那天要發的那則貼文（2026-08-19 使用者裁決，D207／規格 5.1.2.2.1 F16）。
+         為什麼收在這一步而不是發文框：這則貼文跟作品一起送出、一起等審核、上線那一刻
+         才發出去（§2.2.9 的三件事）。原本先在項目頁的發文框打字、再被帶進本流程，
+         打好的字會消失進 sessionStorage，而且創作者以為自己已經發文了、實際上還沒。
+         寫在交件的最後一步，它的時點才跟它真正發出去的時點對得上。
+         標題不在這裡問：貼文標題沿用作品標題（submit() 取第一組填了字的語言）。 -->
+    <section data-panel="announce" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.ann.h1">Tell your backers</h1>
+      <p class="wizard__step-sub" data-i18n="pw.ann.sub">This goes out as an update the moment the work goes live — not now.</p>
+      <div class="field">
+        <label class="field__label" for="pw-ann-body" data-i18n="pw.ann.body">Message</label>
+        <textarea class="textarea" id="pw-ann-body" rows="5" data-i18n-placeholder="pw.ann.body-ph" placeholder="It's finished. Here's where to watch it…"></textarea>
+      </div>
+      <div class="field">
+        <label class="field__label" for="pw-ann-aud" data-i18n="pw.ann.aud">Who sees it</label>
+        <select class="select" id="pw-ann-aud">
+          <option data-i18n="pd-edit.update.aud-everyone">Everyone</option>
+          <option data-i18n="pd-edit.update.aud-backers">Backers only</option>
+          <option data-i18n="pd-edit.update.aud-superfan">Superfan+</option>
+        </select>
+      </div>
+    </section>
   </div>
   </div><!-- /.wizard__sheet -->
 
@@ -156,7 +179,8 @@
 (function () {
   const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
   const zh = () => document.documentElement.lang === 'zh-Hant';
-  const RELEASE_KEY = 'ztor.workRelease';
+  /* 2026-08-19 撤除（墓碑，D207）：RELEASE_KEY（sessionStorage 'ztor.workRelease'）。
+     貼文的內文與受眾改在本流程最後一步直接收，不再由項目頁的發文框接力傳過來。 */
 
   /* ---- 頁首：這是哪一個項目的作品 ---- */
   const params = new URLSearchParams(location.search);
@@ -259,8 +283,10 @@
   }
 
   /* ---- 分步 ---- */
-  const FLOW = ['media', 'art', 'info', 'credits'];
-  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits' };
+  /* 最後一步「給粉絲的話」只在第一次上架時出現（D207）：編輯已上架作品不產生新的
+     貼文（那則早就發過了），多一步問一次只會讓人以為改了會再發一次。 */
+  const FLOW = editMode ? ['media', 'art', 'info', 'credits'] : ['media', 'art', 'info', 'credits', 'announce'];
+  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits', announce: 'pw.step.announce' };
   /* 就緒檢查項屬於哪一步：模組不知道宿主頁怎麼分步，所以由這裡對應（規格 §8）。 */
   const STEP_OF = { file: 'media', audio: 'media', cover: 'art', copy: 'info', spec: 'info', genres: 'info', age: 'info', pricing: 'info' };
   let idx = 0;
@@ -327,9 +353,17 @@
   function submit() {
     /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件。 */
     if (editMode) { saveEdit(); return; }
-    let post = null;
-    try { post = JSON.parse(sessionStorage.getItem(RELEASE_KEY) || 'null'); } catch (err) { post = null; }
-    if (!post) post = { id: pid, title: '', audience: 'pd-edit.update.aud-everyone', body: '' };
+    /* 貼文的內文與受眾在最後一步問（D207）。2026-08-19 之前它們是在項目頁的發文框
+       打好、經 sessionStorage 傳過來的；那條接力棒已撤除。 */
+    const annBody = document.getElementById('pw-ann-body');
+    const annAud = document.getElementById('pw-ann-aud');
+    const annAudOpt = annAud && annAud.options[annAud.selectedIndex];
+    const post = {
+      id: pid,
+      title: '',
+      audience: (annAudOpt && annAudOpt.dataset.i18n) || 'pd-edit.update.aud-everyone',
+      body: annBody ? annBody.value.trim() : ''
+    };
 
     const work = window.ZtorWorkFields.collect();
     /* 貼文標題退而求其次用作品標題：語言組是可增可刪的，所以取「第一個填了字的那一組」。 */
@@ -351,9 +385,8 @@
         work: work
       });
     }
-    /* 貼文草稿已經交給 store 保管，sessionStorage 這份就沒有用了——留著會在下一次
-       進項目詳情時被舊的續作邏輯誤讀成「有一件剛走完的上架」。 */
-    try { sessionStorage.removeItem(RELEASE_KEY); } catch (err) {}
+    /* 2026-08-19 撤除（墓碑，D207）：清掉 sessionStorage 的貼文草稿。草稿是發文框
+       傳過來的接力棒，發文框已不再產生它。 */
     if (window.ztorToast && window.ztorToast.queue) {
       window.ztorToast.queue(T('pw.toast.submitted', 'Sent for review'), { key: 'pw.toast.submitted', tone: 'success' });
     }
@@ -408,7 +441,16 @@
     /* 每一格改動都可能讓「這次要不要重新送審」翻面，主動作與頂部那句話跟著重算。 */
     syncPrimary(); renderEditBanner();
     const last = idx === FLOW.length - 1;
-    const checks = window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) });
+    /* 「給粉絲的話」不是作品欄位，所以不在 ZtorWorkFields 那份清單裡（那份的權威是
+       5.1.2.2.1 F1–F15），但它跟作品一起送出、送出後就發得出去，缺了要擋——所以
+       在這裡補一項就緒檢查。必填的理由：這則貼文會直接推播給所有支持者，內文空白時
+       他們收到的是一個只有作品名的通知。 */
+    const annBody = document.getElementById('pw-ann-body');
+    const annCheck = (editMode || !annBody) ? [] : [{
+      label: T('pw.ready.ann', 'A message for your backers'),
+      done: () => !!annBody.value.trim()
+    }];
+    const checks = window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) }).concat(annCheck);
     const remaining = checks.filter(c => !c.done()).length;
     readyList.innerHTML = '';
     checks.forEach(c => {

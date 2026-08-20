@@ -277,7 +277,7 @@
             <button class="filter-tabs__item filter-tabs__item--active" type="button" role="tab" aria-selected="true" data-tier="all"><span data-i18n="fans.filter.all">All fans</span><span class="filter-tabs__count" data-tier-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="inner"><span data-i18n="tier-settings.tier.inner">Inner Circle</span><span class="filter-tabs__count" data-tier-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="super"><span data-i18n="tier-settings.tier.superfan">Superfan</span><span class="filter-tabs__count" data-tier-count>0</span></button>
-            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="devoted"><span data-i18n="fans.tier.devoted">Ranked fans/span><span class="filter-tabs__count" data-tier-count>0</span></button>
+            <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="devoted"><span data-i18n="fans.tier.devoted">Ranked fans</span><span class="filter-tabs__count" data-tier-count>0</span></button>
             <button class="filter-tabs__item" type="button" role="tab" aria-selected="false" data-tier="fan"><span data-i18n="tier-settings.tier.fan">Fan</span><span class="filter-tabs__count" data-tier-count>0</span></button>
           </nav>
           <!-- 標籤改下拉（2026-07-31 使用者裁示），與項目頁的「內容類別」同一個做法：
@@ -793,7 +793,7 @@
               <span></span>
               <span class="tier-ov__cell"><span class="badge badge--orange"><span data-i18n="tier-settings.tier.inner">Inner Circle</span></span></span>
               <span class="tier-ov__cell"><span class="badge badge--info"><span data-i18n="tier-settings.tier.superfan">Superfan</span></span></span>
-              <span class="tier-ov__cell"><span class="badge badge--success"><span data-i18n="fans.tier.devoted">Ranked fans/span></span></span>
+              <span class="tier-ov__cell"><span class="badge badge--success"><span data-i18n="fans.tier.devoted">Ranked fans</span></span></span>
               <span class="tier-ov__cell"><span class="badge"><span data-i18n="tier-settings.tier.fan">Fan</span></span></span>
             </div>
             <!-- 權益數量：由下面那些列實際算出來的，不寫死——編輯時開關一動就要跟著變，
@@ -1301,8 +1301,13 @@
      收件對象預選（如 ?msg=risk → At risk (5)）——使用者一鍵從提醒直達可執行的動作，
      不用自己再找入口。值必須是 AUDIENCE 的合法鍵，否則忽略。 */
   try {
-    const mq = new URLSearchParams(location.search).get('msg');
-    if (mq && AUDIENCE[mq]) openModal(mq);
+    const dq = new URLSearchParams(location.search);
+    const mq = dq.get('msg');
+    /* ?fan=<名字>（2026-08-20）：粉絲詳情的「Message」帶著那一位粉絲過來，落地即開
+       撰寫器並把收件對象設成他本人（規格 5.1.7.7 §2）。openModal 的第二個參數本來
+       就支援單人，這裡只是把它接到跨頁入口上。 */
+    const fq = dq.get('fan');
+    if (mq && AUDIENCE[mq]) openModal(mq, fq || undefined);
   } catch (err) {}
 
   /* ---- tabs ---- */
@@ -1754,13 +1759,20 @@
        body 的鎖不能收——收了背景會突然可捲。 */
     if (!Object.values(tierModals).some(x => !x.hidden)) document.body.classList.remove('is-modal-open');
   }
+  function openTier(name) {
+    const m = tierModals[name];
+    if (!m) return;
+    m.hidden = false;
+    document.body.classList.add('is-modal-open');
+  }
   document.querySelectorAll('[data-tier-open]').forEach(b =>
-    b.addEventListener('click', () => {
-      const m = tierModals[b.getAttribute('data-tier-open')];
-      if (!m) return;
-      m.hidden = false;
-      document.body.classList.add('is-modal-open');
-    }));
+    b.addEventListener('click', () => openTier(b.getAttribute('data-tier-open'))));
+  /* ?tier=settings（2026-08-20）：分級設定在 D169 之後是本頁的彈窗、不再是獨立頁，
+     所以跨頁入口（粉絲詳情的「Tier settings」）只能用深連結表達。 */
+  try {
+    const tq = new URLSearchParams(location.search).get('tier');
+    if (tq) openTier(tq);
+  } catch (err) {}
   /* Esc 只關最上面那一層：history 疊在 settings 上，先關 history。 */
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;

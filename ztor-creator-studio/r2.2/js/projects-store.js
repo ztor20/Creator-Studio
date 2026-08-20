@@ -747,16 +747,17 @@
     return String(fromWork || p.releaseDate || '');
   }
 
-  /* 上映日期到了沒有。規則照 D182 第 4 題與 D180 待確認第 3 項：
-       不填 ＝ 審核通過即上線（視同已到）
+  /* 上映日期到了沒有。規則照 5.1.2.2.1 F10（2026-08-17 D192 改寫）：
+       留白 ＝ 還沒決定，審核通過後停在 Scheduled 等創作者到作品區段設定日期
        填今天 ＝ 已到
        填未來 ＝ 未到，到當天才轉已上線
        填的日期已經過去 ＝ 視同已到，直接上線
      上映日期只有「日」這一層、沒有時間，所以比的是當地時間的當天零點。
-     讀不懂的字串一律視同已到——寧可放行，也不要讓格式問題把項目卡在準備中。 */
+     留白回 false 是規格語意（Scheduled 承載「等創作者設定日期」這一段等待）；
+     讀不懂的字串則回 true——那是資料壞掉，寧可放行也不要把項目卡在準備中。 */
   function releaseReached(dateStr) {
     const s = String(dateStr || '').trim();
-    if (!s) return true;
+    if (!s) return false;
     const m = s.match(/(\d{4})\D(\d{1,2})\D(\d{1,2})/);
     if (!m) return true;
     const d = new Date(+m[1], +m[2] - 1, +m[3]);

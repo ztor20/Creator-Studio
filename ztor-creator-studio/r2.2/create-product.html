@@ -39,7 +39,9 @@
 <link rel="stylesheet" href="ds-components/preview-column.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/spec-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/pickup.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
@@ -168,7 +170,7 @@
           <option data-i18n="cp.psub.album">Album</option>
           <option data-i18n="cp.psub.documentary">Documentary</option>
           <option data-i18n="cp.psub.merch">Merch</option>
-        </select><i data-lucide="chevron-down" class="ztor-icon select-wrap__icon" aria-hidden="true"></i></span>
+        </select></span>
       </div>
       <div class="field" data-cp-show="digital">
         <div class="field__label" data-i18n="cp.category">Category</div>
@@ -183,14 +185,41 @@
           <option data-cfile="video" data-i18n="cp.dsub.documentary">Documentary</option>
           <option data-cfile="membership" data-i18n="cp.dsub.membership">Membership / VIP card</option>
           <option data-cfile="other" data-i18n="cp.dsub.merch">Merch</option>
-        </select><i data-lucide="chevron-down" class="ztor-icon select-wrap__icon" aria-hidden="true"></i></span>
+        </select></span>
       </div>
       <!-- §4.1② 詳細規格 Specifications（僅實體；併入商品資訊）· spec 5.1.5.2 §4.1② / v3.0 -->
-      <div class="field" data-cp-show="physical" style="margin-bottom:0">
+      <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
         <div class="field__label" data-i18n="cp.spec.title">Specifications</div>
         <div class="field__hint" data-i18n="cp.spec.sub">Help buyers know exactly what they're getting.</div>
         <div id="spec-rows"></div>
         <button class="btn btn--outline" id="cp-add-spec" style="align-self:flex-start;margin-top:var(--sp-4)"><i data-lucide="plus" class="ztor-icon"></i><span data-i18n="cp.spec.add">Add spec</span></button>
+      </div>
+
+      <!-- 尺寸指南（spec 5.1.5.2 §4.1 F2 / D211）：二選一，預設沿用商店的全部。
+           設了專屬指南＝粉絲在這件商品只看得到那一份，商店那幾份全部不出現。
+           2026-08-20 使用者指示改成「線框的 layer」：這一組自己圈一個框，
+           與旁邊裸的詳細規格欄位分開（線框層做法同建立活動的「開放入場」）。 -->
+      <div class="field" data-cp-show="physical" style="margin-top:var(--sp-24);margin-bottom:0">
+        <div class="field__label" data-i18n="cp.sg.title">Size guide</div>
+        <div class="control-group control-group--plain">
+          <div class="control-row" data-cp-sg="inherit">
+            <div>
+              <div class="control-row__main" data-i18n="cp.sg.inherit">Using your shop's size guides</div>
+              <div class="control-row__sub"><span data-i18n="cp.sg.inherit.hint">Buyers see all of them:</span> <span data-cp-sg-list>Tops · Bottoms · Hats</span></div>
+            </div>
+            <button class="btn btn--outline" type="button" data-cp-sg-own><span data-i18n="cp.sg.switch">Use its own guide</span></button>
+          </div>
+          <div class="control-row" data-cp-sg="own" hidden>
+            <div>
+              <div class="control-row__main" data-i18n="cp.sg.own">Using its own size guide</div>
+              <div class="control-row__sub" data-i18n="cp.sg.own.hint">Your shop&#39;s guides don&#39;t show here.</div>
+            </div>
+            <div class="control-row__actions">
+              <button class="btn btn--outline btn--sm" type="button" data-cp-sg-edit data-i18n="cp.sg.edit">Edit</button>
+              <button class="btn btn--ghost btn--sm" type="button" data-cp-sg-remove data-i18n="cp.sg.remove">Remove</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1569,6 +1598,55 @@
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
 <div data-pickup-modal-host></div>
 <script src="partials/pickup-session-modal.js?v=r2.2"></script>
+<script src="js/toast.js?v=r2.2"></script>
+<script src="partials/size-guide-modal.js?v=r2.2"></script>
+<script>
+  /* 尺寸指南（spec 5.1.5.2 §4.1 F2 / D211）· demo，無後端 ─────────────
+     二選一：沿用商店的全部（預設）／這件商品專屬的一份。設了專屬的，
+     商店那幾份就不會出現在這件商品上。編輯器與商店設定共用同一支 partial。 */
+  (function sizeGuideField() {
+    var section = document.querySelector('[data-cp-sg="inherit"]');
+    if (!section || !window.ztorSizeGuide) return;
+    var own = document.querySelector('[data-cp-sg="own"]');
+    var list = document.querySelector('[data-cp-sg-list]');
+    var T = function (k) { return (window.i18nT && window.i18nT(k)) || ''; };
+
+    /* 沿用中的清單直接引商店那三份的 i18n key，切語言自動跟著換；
+       demo 沒有真的商店資料，這裡就是 store-settings 那三列的同一組 key。 */
+    var SHOP_GUIDES = ['store-settings.specs.row.tops', 'store-settings.specs.row.bottoms', 'store-settings.specs.row.hats'];
+    function paintList() {
+      if (list) list.textContent = SHOP_GUIDES.map(T).filter(Boolean).join(' · ');
+    }
+    paintList();
+    document.addEventListener('i18n:applied', paintList);
+
+    function setOwn(hasOwn) {
+      section.hidden = hasOwn;
+      own.hidden = !hasOwn;
+    }
+
+    function openEditor(isNew) {
+      window.ztorSizeGuide.open({
+        titleKey: isNew ? 'cp.sg.modal.new' : 'cp.sg.modal.edit',
+        showName: false,          /* 商品專屬那份沒有名字——它只屬於這一件商品 */
+        blank: isNew,
+        onSave: function () {
+          setOwn(true);
+          if (window.ztorToast) window.ztorToast.show(T('cp.sg.toast.saved') || 'Size guide saved for this item');
+        }
+      });
+    }
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-cp-sg-own]')) { openEditor(true); return; }
+      if (e.target.closest('[data-cp-sg-edit]')) { openEditor(false); return; }
+      if (e.target.closest('[data-cp-sg-remove]')) {
+        setOwn(false);
+        if (window.ztorToast) window.ztorToast.show(T('cp.sg.toast.removed') || "Back to your shop's size guides");
+      }
+    });
+  })();
+</script>
 <script>
   /* D111 · 現場 QR 領取 → 建立取貨場次共用 popup（本商品預先加入）。
      Faux-QR helper needed by the shared modal's result step. */

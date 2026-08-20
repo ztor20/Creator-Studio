@@ -9,6 +9,7 @@
    Anatomy
      .step-list
        .step-list__row  [--done | --alert | --todo]
+                          --done  已完成：標題劃刪除線、轉灰（2026-08-19）
          .pmark --md        狀態記號（與時間軸共用，見 progress-mark.css）
          .step-list__body   .step-list__title ＋ .step-list__meta
 
@@ -98,6 +99,23 @@
    正是說不出口：一件有日期的事，日期還沒到就是還沒到。 */
 .step-list__row--alert .step-list__title { color: var(--destructive-ink); }
 
-/* 還沒到的壓淡。用 opacity 而不是換色：換色要為標題與副標各挑一次，壓淡是同一個
-   動作作用在整列上，狀態一多也不會長出第二套灰階。 */
-.step-list__row--todo { opacity: .55; }
+/* 還沒到的壓淡（2026-08-19 改寫）：**壓的是內容、不是整列**。
+   原本寫在 `.step-list__row` 上（`opacity:.55`），父層的 opacity 會開一個新的堆疊脈絡，
+   子元素再怎麼設 opacity 都爬不回 1——於是 hover 才長出來的「發布更新」也跟著半透明，
+   看起來像顆停用的鈕（使用者回報）。改成只壓記號與文字兩處，動作維持全不透明。 */
+.step-list__row--todo .step-list__mark,
+.step-list__row--todo .pmark,
+.step-list__row--todo .step-list__title,
+.step-list__row--todo .step-list__meta { opacity: .55; }
+
+/* 已完成的那幾列（2026-08-19 使用者裁決）：也列出來，但劃掉。
+   為什麼列出來——摘要原本只給待辦，讀者看不出「整條路走到哪」，只看得到還欠什麼；
+   把做完的也留在原位並劃掉，這張卡才是一份可以由上往下讀完的清單。
+   刪除線只給標題：日期與標記不是「被完成」的東西，劃掉它們只是讓那一行更難讀。 */
+.step-list__row--done .step-list__title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
+  color: var(--muted-foreground);
+}
+.step-list__row--done .step-list__meta { opacity: .55; }

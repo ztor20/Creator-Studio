@@ -63,6 +63,7 @@
 <link rel="stylesheet" href="ds-components/stack.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/step-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/progress-mark.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fact-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/post-composer.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/size-chart-editor.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
@@ -564,6 +565,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#empty">Empty stub</a>
     <a class="toc__link toc__link--sub" href="#progress-timeline">Progress timeline</a>
     <a class="toc__link toc__link--sub" href="#post-composer">Post composer</a>
+    <a class="toc__link toc__link--sub" href="#fact-list">Fact list</a>
     <a class="toc__link toc__link--sub" href="#progress-mark">Progress mark</a>
     <a class="toc__link toc__link--sub" href="#step-list">Step list</a>
     <a class="toc__link toc__link--sub" href="#section-nav">Section nav</a>
@@ -1498,6 +1500,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <p class="field-text" data-en>In short: <strong>soft is white-surface only; on grey use outline.</strong> Outline has a real border, so it holds on both — the safest cross-layer secondary.</p>
   <p class="field-text" data-zh>一句話：<strong>soft 只活在白底；要放灰底就改 outline。</strong> outline 有實線框，白灰底都成立，是跨層最安全的次要。</p>
 
+  <p class="sub__desc" data-en><b>Collapsing groups by milestone, one row per post</b> (2026-08-20, D209) — general posts between two milestones collapse and expand together, regardless of date. Collapsed, the <code>--day</code> row states how many there are; expanded, that row stays as the control and <b>each post becomes its own <code>--post</code> row: its own date gutter, its own <code>--ghost</code> dot</b>. The axis promises one dot = one thing that happened, and three posts from three different days sharing a single dot read as one event. Consequence: expanding and collapsing <b>must re-render</b> — those rows are siblings, not a block tucked inside <code>.ptl__fold</code>, so toggling a class can neither hide nor create them.</p>
+  <p class="sub__desc" data-zh><b>收合的單位是「兩顆里程碑之間」，展開後一則一列</b>（2026-08-20，D209）——里程碑與里程碑之間的一般貼文一起收合、一起展開，不限日期。收合時 <code>--day</code> 那一列說出這一段有幾則；展開時那一列留下來當控制項，<b>每一則各自成為 <code>--post</code>：自己的日期欄、自己的一顆 <code>--ghost</code> 點</b>。這條軸的承諾是「一顆點＝一件事」，三則發生在不同日子的貼文擠在同一顆點底下，會讀成「這裡發生了一件事」。連帶影響：展開與收合<b>必須重繪</b>，那幾列是兄弟節點、不是收在 <code>.ptl__fold</code> 裡的一塊，切 class 藏不掉也長不出來。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
 
   <div class="compose">
@@ -2358,6 +2362,25 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
         <div class="form-grid">
           <label class="field" style="margin-bottom:0"><span class="field__label">Time</span><input class="input" value="18:30"></label>
           <label class="field" style="margin-bottom:0"><span class="field__label">Before start</span><input class="input" value="60"></label>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <p class="field-label" data-en>Two actions on one row <span class="field-note">(<code>__actions</code>, 2026-08-20 · D211)</span></p>
+  <p class="field-label" data-zh>一列右側兩個動作 <span class="field-note">（<code>__actions</code>，2026-08-20 · D211）</span></p>
+  <p class="sub__desc" data-en>Until now every <code>.control-row</code> held exactly one control on the right. <code>.control-row__actions</code> lays two or more out in a row (8px gap). First use: the size guide on Add new item — the whole group sits in a <code>--plain</code> outlined box so it reads apart from the bare fields next to it (user call, 2026-08-20: “make it the outlined layer”).</p>
+  <p class="sub__desc" data-zh>在此之前每一條 <code>.control-row</code> 的右側都只放一個控件；<code>.control-row__actions</code> 讓兩個以上的動作橫排（gap 8px）。首個用例是建立商品的尺寸指南——整組包在 <code>--plain</code> 線框盒裡，與旁邊裸的詳細規格欄位分開（2026-08-20 使用者指示「改成線框的 layer」）。它名義上是第二層、照 Q66 該用填色的 <code>.card--muted</code>，這一處是使用者裁示的例外，通則不變。</p>
+  <div class="demo"><div style="width:100%;max-width:420px">
+    <div class="control-group control-group--plain">
+      <div class="control-row">
+        <div>
+          <div class="control-row__main">Using its own size guide</div>
+          <div class="control-row__sub">Your shop's guides don't show here.</div>
+        </div>
+        <div class="control-row__actions">
+          <button class="btn btn--outline btn--sm" type="button">Edit</button>
+          <button class="btn btn--ghost btn--sm" type="button">Remove</button>
         </div>
       </div>
     </div>
@@ -5694,6 +5717,23 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </div>
 </section>
 
+<section class="sub" id="fact-list">
+  <h3 class="sub__title">Fact list <span class="sub__meta">🔵 atom · fact-list.css</span></h3>
+  <p class="sub__desc" data-en>A read-only record: label on the left, value on the right, one per line, hairline separators. For detail dialogs and anywhere that answers questions rather than collecting answers. <b>Not <code>.field</code></b> — form labels are the vocabulary of &ldquo;waiting for you to type&rdquo;, and read-only content dressed in them reads as a disabled form. <b>Not <code>.data-list</code></b> — that one is for lists of <em>things</em> (40px icon tile, taller rows, often clickable); a fact is not a thing, it is one line saying what a value is, and eight of them in a data list blows each one up into an object. Distinct from <code>.review-status__meta</code> / <code>.ptl__meta</code>, which flow inline and suit one or two footnotes under a heading; this one is a column you read down.</p>
+  <p class="sub__desc" data-zh>一組唯讀紀錄：左邊灰字說這是什麼、右邊放值，一項一行、髮絲線分隔。給詳情彈窗這類「回答問題、不能編輯」的內容用。<b>不用 <code>.field</code></b>——表單標籤是「等你填」的語彙，拿它裝唯讀內容會讀成一張被停用的表單。<b>也不用 <code>.data-list</code></b>——那支是給「一列一個東西、可能可以點進去」的清單用的，有 40px 圖示磚與較大行高；事實不是物件，它只是一句「這一欄的值是什麼」，八項排出來每一項都被放大成一個獨立的東西。與 <code>.review-status__meta</code>／<code>.ptl__meta</code> 的分工：那兩支是行內流式，適合一兩項附註掛在標題底下；本支一項一行、值靠右，適合五項以上要逐行對照的紀錄。2026-08-19 建（消費頁：project-detail 的更新詳情彈窗）。</p>
+  <div class="demo demo--preview">
+    <div class="ds-preview ds-preview--narrow">
+      <div class="fact-list">
+        <div class="fact-list__item"><span>發布時間</span><span>5/17</span></div>
+        <div class="fact-list__item"><span>通知人數</span><span>通知 1,480 人</span></div>
+        <div class="fact-list__item"><span>掛在</span><span>前期製作完成</span></div>
+        <div class="fact-list__item"><span>里程碑原定日期</span><span>5/19</span></div>
+        <div class="fact-list__item"><span>與原定相差</span><span>早 2 天</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="sub" id="progress-mark">
   <h3 class="sub__title">Progress mark <span class="sub__meta">🔵 atom · progress-mark.css</span></h3>
   <p class="sub__desc" data-en>One mark shared by both progress surfaces — <a href="#progress-timeline">Progress timeline</a> and <a href="#step-list">Step list</a>. Three rules: <b>every milestone is a tick box</b> (hollow ring + faint check = not yet, filled green + white check = done, filled red + exclamation = overdue) — one shape for a milestone's whole life, only the fill and the glyph change; <b>fill = weight</b>, read first when scanning, with the glyph as the confirmation you get on stopping; <b>a small hollow dot (<code>--ghost</code>) means this row is not a milestone</b> (a general update, the project-created node) — no state, so no glyph. <code>--today</code> is a position on the axis rather than a milestone state, so it stays glyph-less: a check there would read as &ldquo;today is done&rdquo;.</p>
@@ -5740,6 +5780,8 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   <div class="sub__head"><h3 class="sub__title">4.51b Progress timeline</h3><span class="layer layer--organism">🟠 organism</span></div>
   <p class="sub__desc" data-en>A vertical time flow driven by real dates: <b>future at the top, today in the middle, the past below</b> (spec 5.1.2.2 §2.2.10 v3.0, D194). Three columns — date gutter / axis with its dot / content. The single sort key is the date, so there is no manual reordering: change the date and the node moves. <b>Today is a real node on the axis</b>, the only row whose wording changes with the situation, and the post composer is embedded in it.</p>
   <p class="sub__desc" data-zh>一條由真實日期驅動的垂直時間流：<b>未來在上、今天在中、過去在下</b>（規格 5.1.2.2 §2.2.10 v3.0，D194）。版面三欄：日期欄／軸線與軸點／內容欄。排序只有一個依據就是日期，所以沒有手動調整順序——要換位置就改日期。<b>今天是軸上一個真實節點</b>，也是整條軸上唯一會隨情境換說法的位置，發文框內嵌在它身上。</p>
+  <p class="sub__desc" data-en><b>What on the axis opens</b> — the axis is for scanning, so each row carries only what reads at a glance; the rest goes into a detail dialog. Two click targets share one hover/focus treatment (negative side margins so the highlight runs 8px wider than the text — otherwise it reads as a box drawn around the words): <code>.ptl__update[data-up-open]</code> (2026-08-19, D205) is any update, including the completion note nested under a milestone; <code>.ptl__head[data-ms-open]</code> (2026-08-20, D208) is the title row of a <b>completed</b> milestone. There are only two kinds of update post (D206) and both must open — and a milestone post's whole appearance on the axis <em>is</em> that milestone row, so leaving only its nested body clickable makes half of that post unreachable. Unfinished milestones stay unclickable: the record answers &ldquo;what happened to this one&rdquo;, and one that has not happened yet has nothing the row is not already showing.</p>
+  <p class="sub__desc" data-zh><b>軸上哪些東西點得開</b>——軸是掃視用的，一列只放讀得下去的份量，其餘進詳情彈窗。兩種可點目標共用同一套 hover／focus（負的左右 margin 讓底色比文字往兩側各長 8px，不然亮起來像文字被框住）：<code>.ptl__update[data-up-open]</code>（2026-08-19，D205）＝每一則更新，含掛在里程碑底下的完成宣告；<code>.ptl__head[data-ms-open]</code>（2026-08-20，D208）＝<b>已完成</b>里程碑的整條標題列。更新貼文只有兩種（D206），兩種都要點得開，而里程碑貼文在軸上的樣子就是那一列里程碑——只讓底下那一小段內文可點，等於這一類貼文有一半的呈現點不開。<b>未完成的不可點</b>：紀錄回答的是「這顆發生過什麼」，還沒完成的那一顆能寫的只有軸上已經寫著的預計日期。</p>
   <p class="field-label" data-en>Relationships</p><p class="field-label" data-zh>元件關係</p>
   <div class="compose">
     <div class="compose__dir"><span data-en>Built from</span><span data-zh>由哪些元件組成</span> ↓</div>
@@ -5763,7 +5805,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <span class="ptl__date">10/4</span>
           <span class="ptl__dot pmark"><i data-lucide="check" class="ztor-icon"></i></span>
           <div class="ptl__body">
-            <div class="ptl__head"><h4 class="ptl__name">成片定剪</h4><span class="ptl__vis">公開</span><div class="ptl__acts"><details class="dropdown"><summary class="btn btn--icon btn--sm" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem"><i data-lucide="trash-2" class="ztor-icon"></i><span>刪除</span></button></div></details></div></div>
+            <div class="ptl__head" role="button" tabindex="0" data-ms-open="demo"><h4 class="ptl__name">成片定剪</h4><span class="ptl__vis">公開</span><div class="ptl__acts"><details class="dropdown"><summary class="btn btn--icon btn--sm" aria-label="更多操作" title="更多操作"><i data-lucide="more-vertical" class="ztor-icon"></i></summary><div class="dropdown__menu" role="menu"><button class="dropdown__item" type="button" role="menuitem"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯</span></button><button class="dropdown__item dropdown__item--danger" type="button" role="menuitem"><i data-lucide="trash-2" class="ztor-icon"></i><span>刪除</span></button></div></details></div></div>
             <div class="ptl__fold">
               <div class="ptl__note"><p class="ptl__note-body">畫面、聲音與調光都定稿。</p></div>
             </div>
@@ -5826,7 +5868,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
             </div></div>
           </div>
         </div>
-        <div class="ptl__node ptl__node--start">
+        <div class="ptl__node ptl__node--start ptl__node--foot">
           <span class="ptl__date">2025/8/1</span>
           <span class="ptl__dot pmark pmark--ghost"></span>
           <div class="ptl__body"><div class="ptl__head"><h4 class="ptl__name">項目建立</h4></div></div>
@@ -9575,7 +9617,9 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <p class="field-text"><strong>欄定義只住在 <code>--sce-cols</code> 這一個變數上</strong>（宣告在 <code>.sce__table</code>，<code>__head</code> 與每個 <code>__row</code> 都 <code>var()</code> 取用）。<code>__head</code> 與每一列是各自獨立的 grid container，欄寬要對齊就只能吃同一份 <code>grid-template-columns</code>；JS 增減欄時只改這個變數＋每列補一格 DOM，不動 CSS。</p>
     <p class="field-text"><strong>首欄必須固定寬、不能用 <code>max-content</code></strong>：兩個 grid 會各自解析 —— 表頭那格只有文字（72px）、資料列那格是輸入框（152px），兩邊就錯開。已改固定 <code>112px</code>。</p>
     <p class="field-text">表頭的欄名輸入框平常收起邊界：<code>.input</code> 的邊界是 <code>box-shadow</code> 環不是 <code>border</code>，所以要清 <code>box-shadow</code>，改 <code>border-color</code> 沒有作用。</p>
-    <p class="field-text"><code>ds-components/size-chart-editor.css</code>。消費頁：<code>store-settings.html</code>（spec 5.1.5.5 F7.2 · D171）—— 尺寸表與身高體重參考各一個實例，後者欄固定、不掛欄刪除鈕。</p>
+    <p class="field-text"><code>.sce-block</code>（2026-08-20 由 <code>store-settings.css</code> 的 <code>.ss-spec-block</code> 搬來改名）＝編輯器裡各子塊之間的呼吸：上下 20px ＋ 一條 <code>--border-soft</code> 上分隔線，不各自畫框；彈窗裡第一個子塊不畫上線。</p>
+    <p class="field-text"><strong>編輯器是共用 partial</strong>（<code>partials/size-guide-modal.js</code>，2026-08-20 · D211）：<code>window.ztorSizeGuide.open({ titleKey, showName, blank, name, nameKey, onSave })</code>。<code>showName:false</code> ＝商品專屬那份不問名字。增刪列／欄、<code>--sce-cols</code> 同步與 aria-label 同步都在這支裡，兩頁不各寫一份。</p>
+    <p class="field-text"><code>ds-components/size-chart-editor.css</code>。消費頁：<code>store-settings.html</code>（spec 5.1.5.5 F7.2 · D171——商店的尺寸指南）與 <code>create-product.html</code>（spec 5.1.5.2 §4.1 F2 · D211——這件商品專屬的一份）；每次開啟含尺寸表與身高體重參考各一個實例，後者欄固定、不掛欄刪除鈕。</p>
   </div>
   </details>
 </section>
