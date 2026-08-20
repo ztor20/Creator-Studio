@@ -25,6 +25,14 @@
 - 實測（`http://localhost:4332`）：`my-ip.html` 英文介面的來源頁籤讀到「All 10／Made on Ztor 5／External 5」、清單來源欄讀到「External／Made on Ztor／Licensed in」、0 個 raw key；中文介面維持「全部／Ztor 產出／站外登錄」；`manage-ip.html?id=row9` 的來源欄英文讀到「External」。
 - 驗證：`r2.2/` 內 `Registered externally` 只剩本檔的歷史紀錄段落（2026-07-27 那筆命名決策原文保留不改寫）；`my-ip.html` 六處、`manage-ip.html` 一處、`js/i18n.js` 兩條 key 逐處讀回確認；`check_ds_sync.py` 12 項全 PASS（僅既有的裸色 WARN，與本次無關）。純文案改動，未動樣式與元件。
 
+## 2026-08-20 · 商品專屬尺寸指南收進 Phase 4（D infra，D213）
+
+**範圍**：`create-product.html`（兩處 `data-feat="full"`）、`feature-scope-map.md` 登記。
+
+**動機**：使用者裁示「改用專屬指南的按鈕只在 Phase 4 開發」。這個能力是 D211 當天長出來的，`feature-scope-map.md` 的功能表沒有它的編號，三個 tier 沒有一個能表達「只在 Phase 4」（⚪ TBD 在 Phase 3 就看得到），所以走保留 gate `data-feat="full"`——與註冊入口（2026-08-04）、代理優惠碼（D185）同一個做法。
+
+**做了什麼**：切換按鈕與按下去之後那一列「使用專屬尺寸指南」都掛 gate（那一列低版本本來就到不了，一起關掉才不會有任何路徑露出來）。Phase 1–3 那一格仍讀得到「沿用商店的尺寸指南」與目前有哪幾份，只是沒有覆寫的路。**商店設定的尺寸指南（5.1.5.5 F7）不掛 gate**：各版本都要能把店裡的指南建起來。實測 Phase 1 只剩沿用那一行、線框盒不留空殼。
+
 ## 2026-08-20 · 商店設定分頁改名「尺寸指南設定」；量測單位歸尺寸表管；清單的 kebab 選單不再被外框裁掉（B 反饋導入 · A spec-derived，D212）
 
 **範圍**：`store-settings.html`（分頁名、兩張清單掛 `--menu`）、`partials/size-guide-modal.js`（量測單位移進尺寸表抬頭＋真的換算）、`ds-components/size-chart-editor.css`（`.sce-block__head`）、`ds-components/admin-ip-bank-table.css`（`.admin-table-wrap--menu`）、`ds-components/store-settings.css`（交出 `#sec-codes` 的 min-width 例外）、`js/i18n.js`、design-system 兩份。
