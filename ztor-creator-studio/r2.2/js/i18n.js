@@ -3944,7 +3944,13 @@
     /* 尺寸指南（D211）：預設沿用商店的全部，可改成這件商品專屬的一份 */
     'cp.sg.title':          { en: 'Size guide',                 zh: '尺寸指南' },
     'cp.sg.inherit':        { en: "Using your shop's size guides", zh: '沿用商店的尺寸指南' },
-    'cp.sg.inherit.hint':   { en: 'Buyers see all of them:',     zh: '買家會看到全部：' },
+    /* 「預設 衣服 · 褲子 · 帽子 尺寸指南。點擊查看」——中英文句構不同，所以拆成
+       前綴／清單／後綴三段各自在地化（D215）。墓碑：'cp.sg.inherit.hint'（買家會看到全部：）。 */
+    'cp.sg.inherit.pre':    { en: 'Default size guides: ',     zh: '預設' },
+    'cp.sg.inherit.post':   { en: '. ',                       zh: '尺寸指南。' },
+    'cp.sg.view':           { en: 'View',                      zh: '點擊查看' },
+    'cp.sg.shop.title':     { en: "Your shop's size guide",    zh: '商店的尺寸指南' },
+    'cp.sg.shop.notice':    { en: 'Editing this changes it for every item that uses your shop guides. Manage them in Store settings.', zh: '這是商店的指南，改了會影響所有沿用中的商品；要管理整組請到商店設定。' },
     'cp.sg.switch':         { en: 'Use its own guide',           zh: '改用專屬指南' },
     'cp.sg.own':            { en: 'Using its own size guide',    zh: '使用專屬尺寸指南' },
     'cp.sg.own.hint':       { en: "Your shop's guides don't show here.", zh: '商店那幾份不會出現在這裡。' },

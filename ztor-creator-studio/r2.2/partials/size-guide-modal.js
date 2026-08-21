@@ -24,6 +24,7 @@
     '      <button class="btn btn--icon" type="button" data-spec-close aria-label="Close" data-i18n-aria-label="store-settings.specs.close"><i data-lucide="x" class="ztor-icon"></i></button>\n' +
     '    </div>\n' +
     '    <div class="payout-dialog__body">\n' +
+    '      <p class="field__hint" data-sg-notice hidden></p>\n' +
     '            <div class="field" data-sg-namefield>\n' +
     '              <label class="field__label" for="sg-name"><span data-i18n="store-settings.specs.f.name">Name</span> <span class="field__req">*</span></label>\n' +
     '              <input class="input" id="sg-name" type="text" value="Tops" data-i18n-value="store-settings.specs.row.tops" placeholder="e.g. Tops" data-i18n-placeholder="store-settings.specs.f.name.ph">\n' +
@@ -214,6 +215,21 @@
     /* 名稱欄：商店的指南要有名字（清單靠它辨識），商品專屬那份不需要 */
     var namefield = modal.querySelector('[data-sg-namefield]');
     if (namefield) namefield.hidden = opts.showName === false;
+
+    /* 提示位：從別的地方開這個編輯器時說清楚「你現在改的是誰」——
+       建立商品那頁的「點擊查看」開的是商店的指南，改動會影響所有沿用中的商品（D215）。 */
+    var notice = modal.querySelector('[data-sg-notice]');
+    if (notice) {
+      if (opts.noticeKey) {
+        notice.setAttribute('data-i18n', opts.noticeKey);
+        notice.textContent = T(opts.noticeKey) || '';
+        notice.hidden = false;
+      } else {
+        notice.removeAttribute('data-i18n');
+        notice.textContent = '';
+        notice.hidden = true;
+      }
+    }
 
     if (opts.blank) clearValues(); else fillValues();
     resetSystems(!!opts.blank);
