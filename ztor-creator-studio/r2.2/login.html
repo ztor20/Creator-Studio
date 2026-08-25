@@ -36,9 +36,12 @@
     <span class="auth-brand__name" data-i18n="login.brand">Creator Studio</span>
   </div>
 
-  <!-- 語言選擇器（D222，撤除 D221 的雙概念）：釘畫面右上角，跟品牌角標同一層級——
-       不屬於任何一個 F1/F2/F3 步驟，三步都看得到、切畫面不會跟著消失。選了立即
-       ztorLang.set()，本頁文字（含尚未切換到的其他步驟）跟著换語言。沿用 select--bare
+  <!-- 語言選擇器（D225 修訂 D222）：釘畫面右上角，跟品牌角標同一層級——不屬於任何一個
+       F1/F2/F3 步驟，三步都看得到、切畫面不會跟著消失。選了**只套用本頁畫面顯示**
+       （ztorLang.preview()，見 js/i18n.js），**不寫入帳號預設語言**（不呼叫 set()）：
+       本頁文字（含尚未切換到的其他步驟）跟著换語言，但這是不是要成為帳號預設值，
+       交給登入完成後落地頁的 partials/login-lang-prompt.js 詢問（D225）。選擇同步記
+       sessionStorage ztor-r22-login-lang-pick，供該詢問彈窗比對。沿用 select--bare
        （本頁沒有卡片，控件直接坐在頁面底色上，Q4 既有規則），zselect.js 已載入會自動
        升級成站上樣式。地球 icon 用 js/icons.js 的 'world' registry key，非自畫 svg；
        擺法沿用站上既有的欄位前置圖示範式 control-prefix ＋ select--with-prefix
@@ -275,6 +278,16 @@
   function T(k, fb) { return (window.i18nT && window.i18nT(k)) || fb || k; }
   function $(sel, root) { return (root || shell).querySelector(sel); }
 
+  /* D225：登入完成、即將導向落地頁前，留一個一次性標記，讓落地頁的
+     partials/login-lang-prompt.js 分辨「這是一次剛完成的登入」（而不是之後任何一次
+     換頁）。同一把 key 在 sessionStorage，落地頁問完（或沒得問）就會自己清掉；
+     這裡不判斷是否真的選過語言——沒選過的話 login-lang-pick 這把 key 不存在，
+     落地頁看到沒有語言可比對，一樣不會跳。 */
+  var LOGIN_PENDING_KEY = 'ztor-r22-login-lang-pending';
+  function markJustLoggedIn() {
+    try { sessionStorage.setItem(LOGIN_PENDING_KEY, '1'); } catch (e) {}
+  }
+
   /* ── 畫面切換 ───────────────────────────────────────── */
   var history_ = ['method'];
   function show(step) {
@@ -303,7 +316,7 @@
      所以直接視為登入成功、落地 index.html（與電子郵件登入非 admin 的落點一致）。
      正式流程（授權範圍、首次登入是否要綁既有帳號、失敗與取消怎麼回）皆〔上游待確認〕。 */
   shell.querySelectorAll('[data-auth-oauth]').forEach(function (b) {
-    b.addEventListener('click', function () { location.href = 'index.html'; });
+    b.addEventListener('click', function () { markJustLoggedIn(); location.href = 'index.html'; });
   });
 
   /* ── 主要行動的啟用條件（規格：欄位填妥前停用）─────────── */
@@ -384,6 +397,7 @@
         return;
       }
       /* demo 手法：信箱含 admin ＝ Admin 身分。正式分流依帳號本身的身分標記（F4，上游待確認） */
+      markJustLoggedIn();
       location.href = v.indexOf('admin') >= 0 ? 'creators.html' : 'index.html';
     }, 700);
   });
@@ -401,6 +415,7 @@
         sync();
         return;
       }
+      markJustLoggedIn();
       location.href = 'index.html';
     }, 700);
   });
@@ -420,18 +435,27 @@
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
 <script>
-/* 語言選擇器接線（D222）：必須排在 js/i18n.js 之後才拿得到 window.ztorLang；
+/* 語言選擇器接線（D225 修訂 D222）：必須排在 js/i18n.js 之後才拿得到 window.ztorLang；
    本檔頂部的登入控制器 <script> 在文件順序上比這裡早，寫在那裡的話 ztorLang 還沒定義，
-   所以獨立成這一小段接在 i18n.js 後面（settings.html 的語言接線同一個順序理由）。 */
+   所以獨立成這一小段接在 i18n.js 後面（settings.html 的語言接線同一個順序理由）。
+
+   D225：選了只呼叫 preview()（只套用本頁顯示，不寫 localStorage），並把選擇記進
+   sessionStorage ztor-r22-login-lang-pick，供落地頁的 partials/login-lang-prompt.js
+   讀出來跟帳號預設語言比對。這裡刻意不呼叫 ztorLang.set()——那會直接覆寫帳號預設值，
+   讓「登入後詢問」這個情境永遠不會發生。 */
 (function () {
   var sel = document.getElementById('login-lang-select');
   if (!sel || !window.ztorLang) return;
+  var PICK_KEY = 'ztor-r22-login-lang-pick';
   function refresh() {
     var current = window.ztorLang.get();
     if (sel.value !== current) sel.value = current;
   }
   refresh();
-  sel.addEventListener('change', function () { window.ztorLang.set(sel.value); });
+  sel.addEventListener('change', function () {
+    window.ztorLang.preview(sel.value);
+    try { sessionStorage.setItem(PICK_KEY, sel.value); } catch (e) {}
+  });
   document.addEventListener('ztor:lang-changed', refresh);
 }());
 </script>

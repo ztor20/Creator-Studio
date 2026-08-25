@@ -8371,6 +8371,15 @@
     /* F5：憑證錯誤刻意不分辨「帳號不存在」與「密碼錯誤」，避免帳號列舉 */
     'login.err.credentials':  { en: 'Email or password is incorrect.', zh: '電子郵件或密碼不正確。' },
     'login.err.phone':        { en: 'This number isn’t activated yet — please contact the platform.', zh: '此號碼尚未開通，請聯繫平台。' },
+
+    /* ─── 登入語言詢問彈窗（D225，partials/login-lang-prompt.js）───
+       登入畫面選的語言與帳號預設語言不一致時，落地頁跳出詢問；{picked}/{default}
+       插值語言的可讀名稱（window.ztorLang.list() 的第二欄）。 */
+    'loginlangprompt.title':  { en: 'Keep this language?', zh: '要繼續用這個語言嗎？' },
+    'loginlangprompt.body':   { en: 'You picked {picked} at login. Your account’s default language is {default}.', zh: '您在登入畫面選了{picked}，帳號的預設語言是{default}。' },
+    'loginlangprompt.use':    { en: 'Use {picked}', zh: '改用{picked}' },
+    'loginlangprompt.keep':   { en: 'Keep {default} (my default)', zh: '保留{default}（我的預設語言）' },
+
     /* F6 註冊入口：2026-08-04 使用者裁示整段移除，原型任何版本都沒有這個入口，
        login.signup.q／login.signup.cta 兩個 key 一併刪除（無其他消費者） */
     /* 原型旁白：說明哪個輸入會走哪條分支，不是產品文案（見 ASSUMPTIONS UIA-105） */
@@ -8936,7 +8945,15 @@
      帳戶選單／login.html）── get() 回四碼值（en/zh-Hant/zh-Hans/id）；set(lang) 寫入並
      套用，同時廣播 ztor:lang-changed 讓其他已開啟的 UI（topbar/sidebar 帳戶選單、
      settings.html 的語言 select、lang-switch.js 的內容語言主語系）跟著更新，不必各自
-     重讀 localStorage。 */
+     重讀 localStorage。
+
+     preview(lang)（D225 新增）：只套用當前頁面顯示、不寫 localStorage、不廣播
+     ztor:lang-changed——語意上不是「換了帳號預設語言」，只是「這一頁現在用這個語言
+     顯示」。換頁（含整頁導轉）就還原成 localStorage 裡的值，因為 preview 從未寫入。
+     用途：login.html 選語言只想立即看到當前畫面套用新語言、不想動帳號預設值；
+     partials/login-lang-prompt.js 落地詢問彈窗跳出前，先用它把畫面套成登入時選的
+     語言、使用者選「保留原本的預設語言」時再用它切回帳號值（同樣不寫入，因為那本來
+     就是已存的值）。 */
   window.ztorLang = {
     list: function () {
       return [
@@ -8952,6 +8969,10 @@
     set: function (lang) {
       setLang(lang);
       document.dispatchEvent(new CustomEvent('ztor:lang-changed', { detail: { lang: document.documentElement.lang } }));
+    },
+    preview: function (lang) {
+      document.documentElement.lang = normalizeLangCode(lang);
+      apply();
     }
   };
 

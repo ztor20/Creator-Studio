@@ -4,6 +4,38 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-25 · 帳戶選單的語言列與其他列對齊（B 反饋導入）
+
+**範圍**：`shared.css`（`.app-sidebar__sub-link--lang-toggle` 補 `text-align: left`、`.app-sidebar__sub-link--lang` 內距 `--sp-56` → `--sp-48`）、`ds-components/header.css`（`.app-topbar__dropdown-option--lang` 內距 `--sp-40` → `--sp-20`，＝基礎列 `--sp-12` 再加 8px）。
+
+**動機**：使用者標出帳戶選單、要求對齊。原本同一份選單裡有三條左緣——Profile／Settings／Payments／Log out 一條、展開列的字因為 button 預設 `text-align: center` 自成一條、四個語系選項又多縮排一階再一條。修法分兩處：展開列補上 button reset 漏掉的 `text-align: left`（topbar 那顆本來就有，兩個殼原本不一致）；語系選項的縮排收斂。兩個殼各自的基礎列樣式不動，只調語言那組。
+
+**縮排的第二次調整（同日追加裁示）**：第一版把語系選項拉到與其他列完全齊平（`--sp-40`／基礎列），使用者看過後裁示「向後退一點點，一點點可以和上一層區分就好」——改成比上一層多 8px（側欄 `--sp-48`、topbar `--sp-20`），級距上的半階。要的是「看得出低一層」而不是「另起一欄」，所以不回到原本深一整階的 `--sp-56`。這也順帶緩解下面那條已知效果：展開列與第一個選項同名時，8px 的落差讓兩者不再像同一層的重複。
+
+**已知的連帶效果（未處理，待裁決）**：展開列顯示目前語言、第一個選項又是同一個語言，兩者現在同一左緣、上下相鄰，只靠尾端圖示（chevron vs 打勾）區分，讀起來像重複一次。原本的深一階縮排把這個重複稍微遮掉了。要收掉的話有兩條路——展開時讓展開列不再重複語言名（例如只留一個群組標籤），或展開後把展開列收起來。兩者都超出「對齊」的範圍，等使用者裁決。
+
+---
+
+## 2026-08-25 · 登入所選語言與帳號預設語言不同時，登入後詢問（A spec-derived，D225）
+
+**範圍**：新增 `partials/login-lang-prompt.js`；`js/i18n.js`（`window.ztorLang` 新增 `preview(lang)` API——只套用當前頁顯示、不寫 localStorage、不廣播 `ztor:lang-changed`；新增 `loginlangprompt.*` 四個 i18n key）；`login.html`（語言選擇器改呼叫 `ztorLang.preview()`＋記 sessionStorage `ztor-r22-login-lang-pick`，不再直接 `ztorLang.set()`；三條登入成功路徑〔email／phone／第三方 OAuth〕落地前寫一次性旗標 `ztor-r22-login-lang-pending`）；`index.html`／`creators.html`（掛載 `partials/login-lang-prompt.js`）；`design-system.html`（新增 §4.131 demo section＋TOC＋Pillar 4 總表列＋script 掛載，JS 元件計數 8→9）；`design-system.md`（~~Lang mismatch dialog~~ 條目改寫為在役的 Login lang prompt 條目，記沿革）；`requirements-map.md`（5.1.10 列）／`BUILD-SPEC.md`／`ASSUMPTIONS.md`（Esc／遮罩等同哪個選項的呈現假設）同步。
+
+**動機**：D222（2026-08-24）把「顯示語言」與「預設語言」收回單一概念後，站上只剩一個語言值，但一個情境仍然存在——使用者在登入畫面臨時選了跟帳號常用不同的語言（例如公用電腦、代人操作），登入後應該問一次「這次選的要不要變成以後的預設」，而不是靜默覆寫帳號設定，也不是登入時就直接寫死帳號值。這是使用者 2026-08-25 裁示、D222 拍板時留下的待確認項；規格由另一路（D225）同步撰寫。
+
+**A（依裁示 D225）**：
+
+- **`window.ztorLang.preview(lang)`（`js/i18n.js`）**：只把 `document.documentElement.lang` 換成指定語言並重新 `apply()`，**不寫 localStorage、不廣播 `ztor:lang-changed`**——語意上不是「換了帳號預設語言」，只是「這一頁現在用這個語言顯示」，換頁即還原成 localStorage 裡的值。
+- **`login.html` 語言選擇器改用 `preview()`**：選了立即套用本頁顯示（三個 F1/F2/F3 步驟都看得到），但不再覆寫帳號預設值；選擇同步記 sessionStorage `ztor-r22-login-lang-pick`，供落地頁比對。
+- **三條登入成功路徑寫 pending 旗標**：email／phone／第三方 OAuth 三處成功導向前都寫 sessionStorage `ztor-r22-login-lang-pending=1`（`login.html` 的 `markJustLoggedIn()`），讓落地頁能分辨「這是一次剛完成的登入」，換頁、重整都不再誤觸。
+- **新元件 `partials/login-lang-prompt.js`**：掛了本檔的 shell 頁載入時，見 pending 旗標存在才判斷——沒有 pick（沒動過選擇器）或 pick 等於帳號預設語言都直接清旗標、不跳；pick 不同才先 `ztorLang.preview(pick)` 把畫面套成登入時選的語言、再開確認框。殼固定 `.payout-modal`／`.payout-dialog--narrow`（Q27 唯一殼層裁決）。兩顆按鈕：「改用剛選的語言」→ `ztorLang.set(pick)`（成為帳號預設語言，介面已經在該語言、維持不動）／「保留原本的預設語言」→ `ztorLang.preview(default)`（帳號值不變，介面切回帳號預設語言）。**Esc／點遮罩視同「保留原本的預設語言」**（呈現假設，見 `ASSUMPTIONS.md`）。任一種結束方式都清掉兩把 sessionStorage 旗標，同一次登入只問一次。
+- **掛載範圍**：`index.html`／`creators.html`（兩條登入落點，F4 分流的兩個目的地）。
+
+**與已退場的 Lang mismatch dialog 的關係**：2026-08-24 曾有 `partials/lang-mismatch-dialog.js`（D221 引入），比對的是「顯示語言」與「預設語言」兩個只存在一天的概念，D222 同日把兩者收回單一概念後該檔即刪除（無 tombstone 檔）。**本輪是語意重寫的復活，不是原樣搬回**：站上依然只有一個語言值，本檔比對的是「登入畫面剛選的語言」與「帳號已存的預設語言」——沿用同一種殼與開關寫法（`.payout-modal`／Esc／遮罩收），狀態模型（sessionStorage 旗標的名稱、寫入時機、preview API）整個重建，也用了全新獨立的 i18n key 前綴 `loginlangprompt.*`，不沿用已清除的 `langmismatch.*`。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.2"` PASS（見收尾記錄）；邏輯核對登入畫面選語言只改當前頁顯示（不寫 `ztor-r21-lang`）、三條登入路徑都寫 pending＋pick、落地頁有 pending 且兩者不同才跳、選擇後清旗標同一次登入不再問、Esc／遮罩切回帳號預設語言。
+
+---
+
 ## 2026-08-24 · 翻譯檢視挪到發布前預覽確認層，帳戶選單語言列收合簡化（A spec-derived · D infra 退場，D223）
 
 **範圍**：新增 `partials/publish-preview.js`＋`ds-components/publish-preview.css`；`create-product.html`／`create-event.html`／`create-project.html`／`publish-work.html`（卸載 `lang-switch.js` 掛載與 `data-ls-field`，新發布路徑接 `window.ztorPublishPreview.open()`，補掛 `payout-modal.css`／`tabs.css`／`table.css`／`publish-preview.css` 等依賴，create-project／publish-work 另補 `info-banner.css`／`preview-card.css`）；`partials/work-fields.js`（F8 `renderCopy` 移除 `opts.lsField` 接線）；`js/sidebar.js`（`langMenuHtml()` 收合列只顯示目前語言名稱＋`aria-label`）；`js/i18n.js`（`ls.*` 改名遷移進 `pp.*`，新增 `settings.lang.toggle-label`）；`shared.css`／`ds-components/header.css`（清 `.app-sidebar__lang-current` 等只服務舊兩行結構的死樣式）；`design-system.html`（§4.130 由 Lang switch 改寫為 Publish preview、TOC／總表同步、帳戶選單語言列 demo 更新、script 掛載換成 `publish-preview.js`）；`design-system.md`（Lang switch 條目標退場、新增 Publish preview 條目、Work fields／App topbar 條目同步）；`requirements-map.md`／`BUILD-SPEC.md`／`ASSUMPTIONS.md`（新增 LANG-006、LANG-002 補註）／`STYLE-DECISIONS.md`（Q70 補註 D223 收合列簡化）同步；`partials/lang-switch.js` 刪除。
