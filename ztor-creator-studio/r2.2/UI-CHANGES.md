@@ -4,6 +4,155 @@
 >
 > 每筆紀錄日期 + 範圍 + 動機（為什麼這樣設計）。R 2.1 是從零搭起，所以首筆紀錄包山包海；之後的調整一筆一筆來。**2026-07-29 起版本改為 R 2.2**，本檔沿用 R 2.1 的完整紀錄繼續往下寫（R 2.1 資料夾已凍結唯讀）。
 
+## 2026-08-24 · 翻譯檢視挪到發布前預覽確認層，帳戶選單語言列收合簡化（A spec-derived · D infra 退場，D223）
+
+**範圍**：新增 `partials/publish-preview.js`＋`ds-components/publish-preview.css`；`create-product.html`／`create-event.html`／`create-project.html`／`publish-work.html`（卸載 `lang-switch.js` 掛載與 `data-ls-field`，新發布路徑接 `window.ztorPublishPreview.open()`，補掛 `payout-modal.css`／`tabs.css`／`table.css`／`publish-preview.css` 等依賴，create-project／publish-work 另補 `info-banner.css`／`preview-card.css`）；`partials/work-fields.js`（F8 `renderCopy` 移除 `opts.lsField` 接線）；`js/sidebar.js`（`langMenuHtml()` 收合列只顯示目前語言名稱＋`aria-label`）；`js/i18n.js`（`ls.*` 改名遷移進 `pp.*`，新增 `settings.lang.toggle-label`）；`shared.css`／`ds-components/header.css`（清 `.app-sidebar__lang-current` 等只服務舊兩行結構的死樣式）；`design-system.html`（§4.130 由 Lang switch 改寫為 Publish preview、TOC／總表同步、帳戶選單語言列 demo 更新、script 掛載換成 `publish-preview.js`）；`design-system.md`（Lang switch 條目標退場、新增 Publish preview 條目、Work fields／App topbar 條目同步）；`requirements-map.md`／`BUILD-SPEC.md`／`ASSUMPTIONS.md`（新增 LANG-006、LANG-002 補註）／`STYLE-DECISIONS.md`（Q70 補註 D223 收合列簡化）同步；`partials/lang-switch.js` 刪除。
+
+**動機**：使用者看過站台後回饋兩件事。(1) 帳戶選單語言列收合態同時寫「預設語言」標籤與目前值兩行，比同選單其他列（Profile／Settings／Payments，純文字一行）明顯重，審查也抓到視覺上只剩語言名時 toggle 按鈕沒有可報讀的「這是語言切換」語意。(2) 建立商品／活動／專案／發布作品四個表單頂部常駐一條「內容檢視語言」分頁（D220 引入），使用者實際填表時覺得干擾——語言不是填表過程要分心的事，應該挪到「確認要發布了」那一刻才處理：先看渲染後的畫面長什麼樣，或用表格一次核對所有語系再送出。
+
+**A（依裁示 D223）**：
+
+- **帳戶選單語言列收合態簡化**：拿掉「預設語言」前置 label 與兩行 title/sub 結構，只顯示目前語言名稱＋chevron，縮排字級對齊 Profile／Settings／Payments；toggle 補 `aria-label`（`data-i18n-aria-label="settings.lang.toggle-label"`）。
+- **新元件 `partials/publish-preview.js`**：呼叫式 API `window.ztorPublishPreview.open({ fields, previewClone, previewSlots, onConfirm })`。殼固定 `.payout-modal`／`.payout-dialog--xwide`（Q27 唯一殼層裁決）；語言 `.tabs` 四語系（預設語言 tab 標「預設」徽章）＋`.segmented` 預覽/列表二段切換（Q8：主要檢視 vs 控件層 toggle 分工）；預覽檢視 clone 宿主頁既有預覽卡（create-product 的 `.preview-card`、create-event 的 `.event-preview-card`）或內建 generic 名稱＋描述卡（create-project、publish-work），非預設語系欄位 `contenteditable`；列表檢視用 `.ztor-table`，非預設語系每欄 `input`/`textarea`、預設語言欄唯讀。翻譯草稿存模組記憶體（跨開關不丟）；未手動編輯的語系即時鏡射預設語言目前值（示意自動翻譯，沿用 D220 的 LANG-002 邏輯）。
+- **四頁接線，只攔新發布路徑**：create-product `#cp-primary` 非 `editMode`／`embed` 分支、create-event `tryPublish()` 必填／超賣檢查通過之後、create-project `publish()` 的 `isFilmFlow()` 兩分岔皆先過、publish-work `submit()` 非 `editMode` 分支；編輯已上架內容的分支（Save changes／saveEdit）不變，見 `ASSUMPTIONS.md` LANG-006。
+
+**D（infra／退場）**：
+
+- **`partials/lang-switch.js` 整支刪除**：D220 引入的頁級「內容檢視語言」分頁，職責由 Publish preview 接手，不留 tombstone 檔（無其餘檔案依賴）。四個消費頁卸載 `<script>` 與欄位上的 `data-ls-field`；`work-fields.js` 的 `opts.lsField` 接線一併撤除；`sessionStorage` key `ztor-r22-content-lang` 只有該檔自己讀寫，刪檔即退場，未留殘值需遷移。
+- **i18n key 遷移**：`ls.tabs.label`／`ls.default-badge`／`ls.banner` 改名進 `pp.*`（`pp.tabs-label`／`pp.default-badge`／`pp.banner`），`pp.default-badge` 沿用 `ls.default-badge` 同一份文案；新增 `pp.modal-title`／`pp.close`／`pp.view.preview`／`pp.view.list`／`pp.table.field`／`pp.back`／`pp.confirm`／`pp.field.name`／`pp.field.desc`／`settings.lang.toggle-label`。
+- **design-system.html／design-system.md 除名**：`design-system.html` 的 TOC（`#lang-switch`→`#publish-preview`）、Pillar 4 總表列、§4.130 demo section 三處改寫為 Publish preview（含可觸發的真彈窗 demo，非靜態鏡像）；`design-system.md` 的 Lang switch 條目改標 `~~已退場~~`，新增 Publish preview 條目。
+
+**追加（同日，使用者看過站台後裁示）· create-product 預覽升級成買家前台 shop-item mock**：`partials/publish-preview.js` 新增 `previewRender(container, api)` 自訂渲染介面（與 `previewClone` 互斥），只交出 `api.getValue()`／`api.isDefault`／`api.bindEditable()` 三個介面，不猜測頁面結構；渲染完後補跑一次 `applyI18n(host)`（原本只在 `open()` 掛載當下跑一次，語言／檢視切換會整段重建容器，不補跑會露出字典英文預設值）。`create-product.html` 新增 `buildShopItemPreview()` 與 `.cp-shopmock` 頁面層 CSS：兩欄（縮圖直欄＋大圖｜名稱／價格／描述／尺寸／顏色／購物車列／取貨資訊）＋下半部（商品詳情／規格／取貨與退換），結構參照外部 repo `ztor-eshop-fe` 的 shop-item 頁（呈現參考，非產品權威，見 `ASSUMPTIONS.md` LANG-007）；尺寸／顏色／購物車／取貨列是裝飾性佔位，只有名稱與描述接真實可翻譯資料、圖庫讀真的已上傳縮圖、規格表的分類讀表單當下值。補掛 `ds-components/kv-list.css`。修正一個過程中發現的 bug：複製自既有頁面節點的預覽欄位常帶 `data-i18n`（例如 `#cp-pv-name` 的字典 key），`open()` 的全域 `applyI18n()` 會把剛寫入的真實值蓋回字典 placeholder——`applyFieldToSlot()` 統一在寫值時先 `removeAttribute('data-i18n')`，clone 與自訂渲染兩條路徑共用同一個修法。
+
+**再追加（同日）· create-product 動態欄位（詳細規格列／商品選項）進翻譯**：`partials/publish-preview.js` 的 `fields` 陣列新增通用 `f.group` 屬性——`renderListPanel()` 連續欄位共用同一個 group 字串時，只在該組第一列前插一次跨欄分組小標（新增 CSS `.pp-group-row`），不逐列重複組名。`create-product.html` 新增 `collectSpecFields()`／`collectOptionFields()`：開預覽層當下即時掃 `#spec-rows` 的每一列（名稱＋值兩個欄位）與 `varOptions`（多選項商品的選項組，組名＋各值），空列／空組不收集；規格列讀真的 `<input>` 元素，選項組收合時沒有真的 DOM 輸入（只有 `editingOpt` 指到的那組才展開成表單），改用 `{ value }` 快照物件餵給 `publish-preview.js`（它本就只讀 `f.el.value`，不要求真 DOM 節點）。欄位鍵是位置索引（`spec-name-{i}`／`optgroup-value-{oi}-{vi}`），非穩定 id，見 `ASSUMPTIONS.md` LANG-008 的已知限制。`buildShopItemPreview()` 同步更新：規格表改讀 `api.getValue()` 的真實規格譯文（分類仍是非翻譯的表單當下值）；尺寸/顏色那一列改成有多選項資料就顯示真實選項組（統一畫成方塊，不再嘗試依組名猜是不是顏色該畫圓點）、沒有就維持原本的裝飾佔位。這兩類清單在 shopmock 內不就地編輯，只顯示目前語系譯文——改法是切去列表檢視（`.pp-banner` 既有文案已涵蓋，未改字），理由見 `ASSUMPTIONS.md` LANG-008。i18n 新增 `pp.field.spec-group`／`pp.field.spec-name`／`pp.field.spec-value`／`pp.field.option-group`／`pp.field.option-name`／`pp.field.option-value`（en/zh）。
+
+**驗證**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.2"` PASS（見收尾記錄）；四個接線頁手動走一次新發布路徑，確認彈窗開啟／語言切換／預覽可編輯／列表讀寫同一份資料／返回編輯保留草稿／確認後走原本後續；`editMode`／`embed`／saveEdit 分支不受影響；create-product 的買家前台 mock 額外核對兩欄版面、規格表與選項方塊吃真實翻譯值、切非預設語系可編輯名稱與描述；填 2 組選項＋2 列規格後開預覽層，列表檢視應見「規格」「選項」兩個分組小標且各列可辨識、空列/空組不出現。
+
+---
+
+## 2026-08-24 · 登入頁語言選擇：地球 icon 換成純地球，並移進欄位內文字前面（B 反饋導入）
+
+**範圍**：`js/icons.js`（新增 registry key `world`）、`login.html`（語言選擇器改用 `world`，並改成 `control-prefix` ＋ `select--with-prefix` 的欄位內前置圖示寫法）、`ds-components/auth.css`（`.auth-lang__icon` 退場、`.auth-lang` 簡化）、`ds-components/input.css`（新增 `.select--bare.select--with-prefix`）、`design-system.md`／`design-system.html`（補該組合的說明）。
+
+**動機**：使用者看到實際畫面後回饋「不要這個，是要一個地球，不是有底座的」。原本沿用的 registry `globe` 是**地球儀**造型（球體＋支架底座，Tabler `globe`），服務的是「支援地區」那類語意，在 14px 的觸發器裡細節會糊成一團。改用 Tabler `world`（純球體＋兩條緯線＋兩條經線）：這是語言切換的慣用圖形，小尺寸下輪廓也讀得出來。
+
+`globe` 保留不動（仍有既有消費者），並在 registry 那一行補註「地球儀造型，別拿來當語言切換」，避免下次又挑錯。新 key 沿用 Tabler 原名 `world`，所以 `design-system.md` 的「registry key ↔ Tabler 名稱」對照表不需要新增列（該表只收兩者不同名的）。
+
+**擺法（使用者同日追加回饋「要在 dropdown 的文字前面」）**：圖示原本是控件外面的一顆獨立 `<i>`，改成站上既有的欄位前置圖示範式——`control-prefix` 定位殼 ＋ `select--with-prefix` 左內距（媒體庫檢視器同款，2026-08-01 建）。zselect 會把原 select 的 class 原封搬到觸發鈕，所以升級後的按鈕一樣吃得到。圖示掛在**欄位**上而不是逐個 `<option>` 的 `data-icon`：後者會讓展開清單每一列都長出一顆地球，而這顆圖示講的是「這一格是語言」，不是某個語言的識別。
+
+**連帶修一個 DS 層的空隙**：`.select--bare` 與 `.select--with-prefix` 併用時圖示會疊到文字上——前者用 `padding` 簡寫、又排在後者之後，同權重下把 `padding-left` 整個蓋掉。登入頁是第一個同時用到這兩個 modifier 的地方，規則補在 `input.css` 的 `.select--bare` 區塊之後，兩份 DS 文件同步記載。其餘 5 個 `.select--bare` 消費頁沒有併用 `--with-prefix`，不受影響。
+
+---
+
+## 2026-08-24 · 語言收回單一概念，撤除「顯示語言／預設語言」拆分（A spec-derived · D infra 退場，D222 撤除 D221）
+
+**範圍**：`js/i18n.js`（移除 `window.ztorDefaultLang`／`ztor-r22-default-lang`／`ztor:defaultlang-changed`，加舊值遷移）、`partials/lang-switch.js`（主語系改讀 `window.ztorLang`）、`settings.html`（語言區塊改回一列）、`js/sidebar.js`（帳戶選單語言列移除「預設」徽章與提示行）、`ds-components/header.css`、`shared.css`（清對應死樣式）、`ds-components/auth.css`（`.auth-lang` 改 flex 容納地球 icon）、`login.html`（語言選擇器前加地球 icon、移除三條登入路徑的 `ztor-r22-langcheck` 旗標與 `flagLangCheck()`）、`partials/lang-mismatch-dialog.js`（整支刪除）、`index.html`、`creators.html`（卸載對應 `<script>`）、`design-system.html`（TOC／總表／§4.131 demo 除名，§4.130 說明改寫，帳戶選單 demo 卡同步）、`design-system.md`（§4.131 條目標退場、Lang switch／Header 條目改寫）、`requirements-map.md`（5.1.9／5.1.10／四個創建流程覆蓋敘述更新）、`BUILD-SPEC.md`（§5.3.1／5.3.2 語言狀態模型改回單一）、`ASSUMPTIONS.md`（LANG-004 標已失效、LANG-005／LANG-001 更新）、`STYLE-DECISIONS.md`（Q70 更新為單概念後的樣子）。
+
+**動機**：使用者當日裁示，撤除同日稍早那筆「顯示語言與預設語言分離」（D221）——語言只保留一個概念「預設語言」，可在三處修改：settings.html、app shell 帳戶選單、登入畫面。D221 曾把這件事拆成兩個各自獨立的 state，理由是修正 D220「預設語言雙重身分」互相打架的問題；但拆開後使用者發現雙概念本身增加了不必要的複雜度（兩個 select、兩套 localStorage key、登入後可能跳出的不一致確認框），裁示收回單一概念更符合直覺——同一個人不需要「介面顯示的語言」跟「輸入內容用的語言」是兩件事。
+
+**A（依裁示 D222）**：
+
+- **`window.ztorLang` 成為語言唯一 API**：`js/i18n.js` 移除 `window.ztorDefaultLang`／localStorage key `ztor-r22-default-lang`／事件 `ztor:defaultlang-changed` 與那段一次性 seed 邏輯；`ztorLang` 保留原 key `ztor-r21-lang` 與事件 `ztor:lang-changed`，同時決定介面顯示語言與建立內容的輸入語言。啟動時做**舊值遷移**：若 `ztor-r22-default-lang` 還留著值、而 `ztor-r21-lang` 缺值，讀舊值當語言值，不論是否用到都清掉舊 key，避免孤兒值。
+- **`settings.html` 語言區塊由兩列合回一列**：「預設語言」接 `window.ztorLang`，hint 涵蓋雙重作用（介面顯示語言＋內容輸入語言）並點名另兩處入口（帳戶選單、登入畫面）。JS 接線 `wireLangSelect()` 由通用雙 select 版本簡化為單一消費者版本。
+- **`partials/lang-switch.js` 主語系改跟唯一語言值**：內容檢視語言的主語系（標「預設」徽章那份）跟 `window.ztorLang.get()`，監聽 `ztor:lang-changed`（原本監聽 `ztor:defaultlang-changed`）——語言變更時即時重置內容語言為新值、徽章跟著換；D221 時代「顯示語言變更刻意不接手」的分工一併撤除。
+- **`js/sidebar.js` 帳戶選單語言列簡化**：保留可展開四語系單選（使用者要的入口之一），移除 D221 時代的「預設」徽章與「去設定改預設語言」提示行；`refreshLangRows()` 只監聽 `ztor:lang-changed`。對應 CSS（`header.css`／`shared.css`）清掉只服務徽章／提示行的規則。
+- **`login.html` 語言選擇器加地球 icon**：`.auth-lang` 前方新增 `<i data-lucide="globe">`，沿用 `js/icons.js` 既有 registry key（非自畫 svg），`.auth-lang` 改 `display:flex` 容納並垂直置中。選擇器本身保留（三步都看得到，選了立即 `ztorLang.set()`）。
+
+**D（infra／退場）**：
+
+- **`partials/lang-mismatch-dialog.js` 整支刪除**：D221 引入的登入後「顯示語言≠預設語言」確認框，語言收回單一概念後這個情境不可能再發生。`index.html`／`creators.html` 卸載對應 `<script>` 掛載標籤；`login.html` 三條登入成功路徑（email／phone／第三方 OAuth）移除 `ztor-r22-langcheck` 旗標寫入與 `flagLangCheck()` 函式。
+- **i18n key 清除**：`settings.lang.display`／`settings.lang.display-hint`／`nav.lang.gotosettings`／`langmismatch.*`（title／body／keep／switch）全數移除；`settings.lang.sub`／`settings.lang.default-hint` 改寫為單概念版本。
+- **design-system.html／design-system.md 除名**：`design-system.html` 的 TOC（`#lang-mismatch-dialog` 錨點）、Pillar 4 總表列、§4.131 demo section 三處一併移除；`design-system.md` 的 Lang mismatch dialog 條目改標 `~~已退場~~`（tombstone，因對應檔案已刪除、非改樣式，故不留 CSS tombstone、只留條目記錄事件）。§4.130 Lang switch 與 Header 章節的 D221 描述改寫為 D222 現況。
+- **`ASSUMPTIONS.md`**：LANG-004（登入後不一致 popup）標「已失效（D222）」；LANG-005（登入頁語言初始值）、LANG-001（zh-Hans／id 字典 fallback）更新措辭以反映單概念，論述本身不受影響。
+- **`STYLE-DECISIONS.md` Q70**：更新為單概念後的樣子——帳戶選單的可展開語言清單仍在（「選單內可展開單選清單」這個站上第一次出現的 pattern 未受影響），但列上不再有徽章與提示行。
+
+**驗收**：`python3 ../../Skills/project-ui-creator/scripts/check_ds_sync.py "site/r2.2"` PASS（見本輪 commit 前的收尾紀錄）。
+
+## 2026-08-24 · 顯示語言與預設語言分離；帳戶選單語言切換以新形式回復（A spec-derived · B 反饋回復，D221 修訂 D220）
+
+**範圍**：`js/i18n.js`（新增 `window.ztorDefaultLang`）、`partials/lang-switch.js`（主語系改跟）、`settings.html`（語言區塊一列改兩列）、`js/sidebar.js`（帳戶選單新增顯示語言可展開列）、`ds-components/header.css`、`shared.css`、`login.html`（新增 `.auth-lang` 選擇器＋三條登入路徑寫旗標）、`partials/lang-mismatch-dialog.js`（新元件）、`index.html`、`creators.html`（掛載）、`design-system.html`、`design-system.md`、`requirements-map.md`、`BUILD-SPEC.md`、`ASSUMPTIONS.md`（新增 LANG-004/005）、`STYLE-DECISIONS.md`（新增待裁決 Q70）。
+
+**動機**：使用者當日裁示，修訂同日下方那筆「多語系內容模型」（D220）的兩個決定。D220 把「預設語言」設計成同時扮演兩個角色——帳號怎麼看介面、以及建立內容時輸入哪個語系——這個雙重身分在實際使用時會互相打架：使用者切介面顯示語言，內容輸入語言會跟著被悄悄改變，違反「兩件事互相獨立」的直覺。同一輪，D220 把 app shell（topbar／sidebar）的語言切換鈕整組退場、收斂到 settings.html 單一入口，使用者裁示這個決定太緊，帳戶選單原本就是查看/切換帳號層級設定的地方，值得保留一個切換捷徑。
+
+**A（依裁示 D221）**：
+
+- **`window.ztorDefaultLang`（`js/i18n.js` 新對外 API）**：與 `window.ztorLang`（顯示語言）完全獨立的第二個 state，localStorage key `ztor-r22-default-lang`。缺值時一次性 seed（種子＝當下顯示語言，兩者都拿不到才退回 `DEFAULT_LANG`）並立刻寫回，**之後永遠讀 localStorage 值、不再動態鏡射顯示語言**——這正是修正 D220「兩者曾經是同一顆 state」的關鍵；切顯示語言不會再連帶改到預設語言。`set()` 廣播新事件 `ztor:defaultlang-changed`。
+- **`settings.html` 語言區塊由一列拆成兩列**：「預設語言」接 `ztorDefaultLang`（hint：建立商品、活動等內容的輸入語言，其他語系由系統自動翻譯）、「顯示語言」接 `ztorLang`（hint：介面文字顯示的語言，也可在帳戶選單或登入時切換）。兩顆 select 共用一支 `wireLangSelect()` 接線函式。
+- **`partials/lang-switch.js` 主語系改跟預設語言**：`forDefault`／「預設」徽章改對照 `window.ztorDefaultLang.get()`，不再是掛載當下的 `window.ztorLang.get()`；監聽 `ztor:defaultlang-changed` 即時重置內容語言為新預設語言，監聽 `ztor:lang-changed` 刻意不做任何事（只讓 badge／banner 的 `data-i18n` 跟全域 `apply()` 更新）。
+- **帳戶選單新增可展開的顯示語言列（topbar 下拉／sidebar 子選單兩種殼都有，`js/sidebar.js` 的 `langMenuHtml()`/`langOptionsHtml()`）**：常駐一列（標籤＋目前值＋chevron），點了才展開四語系＋「預設」徽章（掛在預設語言那一列）＋連到 `settings.html#language` 的提示行。刻意沿用兩個選單各自既有的列樣式（`.app-topbar__dropdown-option`／`.app-sidebar__sub-link`），不是 e-shop 分級選單的 `.dropdown__item--choice`／`--ladder`；狀態靠 `refreshLangRows()` 監聽兩個語言事件就地 patch，不整段 remount。點語言只呼叫 `ztorLang.set()`，不動預設語言。這是站上第一個「選單內可展開單選清單」的形狀，記入 STYLE-DECISIONS 待裁決 Q70。
+- **`login.html` 新增顯示語言選擇器（`.auth-lang`，右上角常駐，三步都看得到）**：`.select.select--bare`（Q4 既有規則，頁面無卡片）。選了立即 `ztorLang.set()`，登入頁文字即時換語言。
+- **登入後不一致 popup（新元件 `partials/lang-mismatch-dialog.js`）**：三條登入成功路徑（email／phone／第三方 OAuth）落地前寫 sessionStorage 旗標 `ztor-r22-langcheck`；掛 `js/sidebar.js` 的 shell 頁（`index.html`／`creators.html`）啟動時，見旗標且顯示語言≠預設語言，用 `.payout-modal`／`.payout-dialog--narrow` 殼（STYLE-DECISIONS Q27）跳確認框，兩顆按鈕「切換成預設語言」／「保持目前顯示語言」，選完清旗標（同一次登入只問一次，呈現假設見 ASSUMPTIONS LANG-004）。三件套：`design-system.md` §4.131 條目＋`design-system.html` 同號 demo 卡（可實際點開）＋TOC。
+
+**B（反饋回復）**：帳戶選單的語言切換鈕在同一天先被 D220 移除、又在 D221 以新形式（可展開單選列，而非常駐攤平的舊版）復原——形狀不同於退場前，功能意圖相同。
+
+## 2026-08-24 · 多語系內容模型：介面語言收斂到設定頁、內容語言改頁級切換（A spec-derived · D infra 退場，D220）
+
+**範圍**：`js/sidebar.js`、`js/i18n.js`、`shared.css`、`ds-components/header.css`、`e-shop.html`、`demo-layer-e-shop.html`、`funding-simulate.html`、`create-campaign.html`、`settings.html`、`partials/lang-switch.js`（新元件）、`create-product.html`、`create-event.html`、`create-project.html`、`publish-work.html`、`partials/work-fields.js`、`design-system.html`、`design-system.md`、`requirements-map.md`、`BUILD-SPEC.md`、`ASSUMPTIONS.md`（新增 LANG-001/002/003）。
+
+**動機**：`documents/decisions.md` D220、`0-設計規格書.md` §7.4、`5.1.9-設定.md` F8 把「介面語言」與「內容檢視語言」定義成兩個獨立概念——前者是帳號怎麼看這個產品，後者是建立商品／活動等內容時輸入哪個語系的文案。站台此前把兩者混在一起：topbar／帳號選單有一顆語言切換鈕（只在 en／繁中二選一），F8 名稱與說明則是「一語言一張卡、可自由增刪 zh/en/ja/ko」。兩邊都要重做才對得上規格。
+
+**A（依規格 D220）**：
+
+- **介面語言唯一控制點收斂到 settings.html**：新增「語言」區塊（Appearance 之後），四碼可選 English／繁體中文／简体中文／Bahasa Indonesia，接 `window.ztorLang.get()/set()`（新對外 API，掛在 `js/i18n.js`）。`setLang()` 由寫死 zh/en 二選一改為接受四碼，字典仍只有 en/zh 兩套，zh-Hans 借 zh 字典、id 借 en 字典呈現（呈現假設，見 ASSUMPTIONS LANG-001）。
+- **新元件 `partials/lang-switch.js`（頁級內容檢視語言切換）**：宣告式接線——欄位掛 `data-ls-field="name|desc"`，載入時自動掃描整頁，找到就在該欄位所在的 `.wizard__body` 正上方（手足節點，插在它前面、不進去動它的子元素——create-product.html 的 `.wizard__body` 同時是 `.preview-split` 兩欄 grid 容器，插進子層會把表單／預覽欄擠成三欄，2026-08-24 QA 修正）插入四語系 `.tabs` 分頁，水平對齊改用手動比照 `.wizard__body` 當下的 max-width／左右 padding 貼齊；預設語言那個 tab 標「預設」徽章。狀態與介面語言完全分離（紅線）：存 `sessionStorage['ztor-r22-content-lang']`（連同掛載當下的預設語言一起存，預設語言之後若變更，舊記憶自動作廢重置，不會出現內容語言分頁停在過期語系上），絕不呼叫 `setLang`、絕不寫 `ztor-r21-lang`。某語系未被手動編輯過時即時鏡射預設語言目前的值（示意自動翻譯，呈現假設見 ASSUMPTIONS LANG-002）；切到非預設語系顯示 `.info-banner` 說明。四頁接線：create-product.html（`#cp-f-name`/`#cp-f-desc`）、create-event.html（`[data-ce="name"]`/`[data-ce="desc"]`）、create-project.html（`#proj-title`/`#proj-desc`）、publish-work.html（`work-fields.js` 的 F8 卡）。三件套：`design-system.md` §4.130 條目＋`design-system.html` 同號 in-context demo 卡＋TOC。
+- **`partials/work-fields.js` 的 F8「名稱與說明」由多語卡收編為單卡**：移除 `COPY_LANGS`／`COPY_PH`、per-card 語言下拉與新增／移除語言按鈕，語言維度交給 lang-switch。`create-project.html` 影視家族分支共用同一支渲染器，一併收編，但不重複掛 `data-ls-field`（沿用自己的 `#proj-title`/`#proj-desc`）。ja/ko 兩個語言選項隨舊模型消失，是 D220 收編後的正確結果，非本輪自行刪減（見 ASSUMPTIONS LANG-003）。
+
+**D（infra／舊語言切換退場）**：
+
+- 移除 app shell 的語言切換鈕：`js/sidebar.js` 的 `LANG_PICKER` 定義與 topbar 帳號下拉／側欄帳號子選單兩處插入點；`js/i18n.js` 的 `[data-lang-pick]` 綁定、`toggleLang()`／`.app-topbar__lang` 獨立 click handler 與 `window.toggleLang` 匯出；`shared.css` 的 `.nav-lang`／`.app-sidebar__sub-lang`／`.app-topbar__dropdown-lang` 樣式；`ds-components/header.css` 的 `.app-topbar__lang` 區塊。`e-shop.html`／`demo-layer-e-shop.html` 各移除一段委派監聽這兩個已不存在選擇器的程式。
+- **附帶清掉兩個獨立於 app shell、但同樣呼叫已退場 `window.toggleLang` 的殘留控件**：`funding-simulate.html`／`create-campaign.html` 各自的 `#fc-lang`（中／EN）按鈕與對應 CSS——這兩顆是舊架構下的頁面局部語言切換，違反 D220「唯一控制點在設定頁」，一併移除；兩頁的本地 `lang()` 判斷函式改用與 `js/i18n.js` 相同的 zh-Hant/zh-Hans→zh、en/id→en 判斷式。
+- `design-system.html` 的 topbar 元件展示（§4.20 Header）移除語言鈕 demo、敘述補一句 D220 退場說明；`design-system.md` 同步。
+
+## 2026-08-24 · 編輯 creator 改成獨立頁面（覆蓋層開啟）＋兩個分頁（A spec-derived · C 撤除，D224）
+
+**範圍**：新增 `creator-detail.html`；`creators.html`（列與 ⋯ 選單改開覆蓋層、編輯模式整組退場）、`js/sidebar.js`（編輯結果落 `localStorage`、新頁登記進 ADMIN_ROUTES）、`js/i18n.js`（撤 3 把、新增 15 把）。demo 留在 `docs/creator-sheet-demo.html`／`docs/creator-detail-demo.html`。
+
+**為什麼從對話框搬出來**：D218 的編輯是 520px 對話框，D219 又把匯入 bookyay 活動塞進去。內容已經不只是幾個欄位——還有一份會長的已匯入活動名單，對話框裝不下會成長的東西。
+
+**開啟方式沿用既有的 detail-sheet**，不是新做一個大彈窗：近乎滿版的覆蓋層 ＋ iframe 載入 `creator-detail.html` 本人。名冊的篩選、搜尋與捲動位置留在底下，關掉就在原地；直接開網址與從覆蓋層開看到的是同一份，沒有第二份設計要維護。
+
+**兩個分頁 ＋ 兩個入口**：基本資料｜bookyay 活動（標籤帶已匯入場次數）。⋯ 選單分成「編輯」與「匯入活動」，各自落在對應分頁（`?tab=`）；整列點擊＝編輯；「前往」仍是整頁進工作區。
+
+**版面（使用者回饋「一個欄位一行、寬度不要滿版」）**：整頁收成 880px 置中欄，頁首跟著同一條邊界（只收表單會變成上寬下窄的偏頭版面）；欄位一列一個；輸入框 360、活動下拉 420，沿用 settings 那一頁「短欄位個別 max-width」的做法。唯讀那一組不做成 disabled 的 `<input>`——長得像欄位卻不能改，讀起來是「壞掉」而不是「別處管的」，改成唯讀事實列。
+
+**一個要處理的坑**：覆蓋層裡是另一個 window，兩邊各有一份 creator 陣列。儲存改寫進 `localStorage`（`ztor.creatorEdits`），名冊收到 storage 事件後重套覆寫再重繪，否則關掉覆蓋層還是舊的。查詢鍵用原始 handle（`seed`）而不是現值——店鋪網址改得掉。
+
+## 2026-08-21 · Creator 名冊整列點擊改成開編輯；ztor 帳號唯讀（A spec-derived，D218）
+
+**範圍**：`creators.html`、`js/i18n.js`（新增 4 把）。
+
+**改了什麼**：名冊列點下去，開的不再是「進入該 creator 工作區」，而是**建檔表單的編輯模式**；進工作區改由列尾的「前往」按鈕獨佔。同一列有兩個目的地時，破壞性小的那個（可取消的對話框）拿大面積，會換頁的那個留給明確的按鈕。
+
+**ztor 帳號唯讀**（使用者裁示）：編輯模式的帳號那一格改成 `readonly`、標籤由「搜尋 ztor 帳號」換成「ztor 帳號」，底下補一句「ztor 帳號不可變更。」。帳號是這個 creator 的身分來源，換掉等於換一個人。可改的是店鋪網址與電話（同日再加上匯入 bookyay 活動，見 D219）；名稱／email／頭像沿用該帳號、本來就唯讀。
+
+**一個對話框兩種模式**：只有標題、送出鈕與帳號那一格隨模式切換，其餘結構共用——編輯的欄位集合就是建立的欄位集合，拆成兩個對話框只會養出兩份會走鐘的表單。連帶：店鋪網址的唯一性檢核在編輯時排除自己；改到的若正好是目前代管中的那一位，`localStorage` 的「現在代管誰」跟著換 handle。
+
+## 2026-08-21 · 編輯 creator 裡匯入 bookyay 活動；帳號綁定整組撤除（A spec-derived · C 撤除，D219 取代 D217）
+
+**範圍**：`creators.html`、`js/sidebar.js`（creator 改存 `bookyayEvents` 清單，`BOOKYAY_ACCOUNTS` 換成 `BOOKYAY_EVENTS`）、`js/i18n.js`（撤 7 把、新增 11 把）。
+
+**C 撤除**：同日稍早做的「與 bookyay 連接」（D217，建立表單一格＋名冊一欄）整組拿掉。綁一個帳號只是把兩邊的身分接起來，Admin 真正要做的事是把這位 creator 已經在 bookyay 上賣的活動搬過來——中間那一層省掉。
+
+**新的做法**：在**編輯 creator**（D218 的編輯模式）新增「匯入 bookyay 活動」——下拉多選 → 按「匯入」 → 落進下方「已匯入的活動」名單。建立時不出現：新建的 creator 手上還沒有東西可搬。
+
+**為什麼選好再按匯入，而不是選了就進名單**：一次挑好幾場是常態，邊挑邊進名單會讓清單在挑的過程中一直跳動，也沒有反悔的空檔。選中的先以 chip 留在欄位裡。
+
+**匯過的點不動**：已在名單裡的活動在下拉中照樣列出、`disabled` 並標「已匯入」。同一場 bookyay 活動在 ztor 上只會存在一次；濾掉會回答成「查無此活動」，而打開下拉常常正是為了確認某一場搬過沒有——與建立活動帶入閘門同一條規則。
+
+**用料全是既有元件**：下拉是 `combobox`，選中用它本來就有的 `.is-active` 底色加右側一個勾——沒有縮圖可放，所以不用 `__opt-icon` 那個 28px 方塊（空著的縮圖槽會讀成「圖還沒載出來」）；chip 用 `tag-input__field` ＋ `.chip--removable`；名單用 `data-list`。沒有新增 ds-component。
+
+**「匯入」那顆按鈕（同日回饋「UI 不對」）**：原本擺在欄位右邊、用 `btn--secondary`——那個變體全站沒有第二個消費者，28px 也比欄位矮一階。改成站上既有的形狀：移到欄位正下方、`btn--outline btn--add`（與 `.input` 同高，2026-08-18 使用者裁示），字上寫出要匯入幾場（離下拉有一段距離，只寫「匯入」看不出份量）。這顆的字帶數量，所以不掛 `data-i18n`、改聽 `i18n:applied` 自己重寫，英文另備單數形。觸發器補朝下箭頭（那一格長得像輸入框，其實是點開來選），名單補抬頭「已匯入的活動 (N)」。
+
+**一個踩到的坑**：選單的點擊處理會重畫選單，`e.target` 因此離開文件，而「點空白處關閉」那段靠 `closest()` 找祖先——對已離開文件的節點永遠找不到，於是每點一項就把選單關掉。改成在選單自己的處理裡 `stopPropagation()`。
+
+## 2026-08-21 · 商店指南彈窗裡加一層「看哪一份」切換（B 反饋導入，D216）
+
+**範圍**：`partials/size-guide-modal.js`（`guides`／`guideKey` 參數＋每份一份快照）、`create-product.html`、`js/i18n.js`（新增 1 把）。
+
+**動機**：D215 留下的那一項——商店有三份指南，「點擊查看」只開得了第一份。使用者選「彈窗裡加一層切換」。
+
+**做了什麼**：彈窗頂端多一列「看哪一份」，商店有幾份就列幾份。**同日第二輪（使用者：「改成 dropdown」）由 `.segmented` 改成下拉**——指南份數可以一直加，三顆並列還撐得住、六顆就會把那一列撐爆；下拉不受份數影響。用站上的 `.select`＋zselect（新增 `.sg-picker__select` 收窄到 180px；彈窗是後生成的所以自己叫 `ztorSelect.mount()`，面板每次展開依現況重建、換過選項不必 refresh），切換改吃 `change` 事件，鍵盤與滑鼠、原生與自訂面板走同一段。切換時把現在畫面上的整份表單收進 `guideStore`（含四制的尺碼欄、每格的公分真值、目前單位與目前分頁），換回來原封不動；還沒看過的那一份回到示範值。**這個模式下名稱欄不出現**——切換列已經寫著在看哪一份，名稱欄再寫一次是重複；改名字屬於商店設定。從商店設定點單一份進來時（沒有 `guides`）行為完全不變：沒有切換列、名稱欄照舊、也沒有那行提示。
+
 ## 2026-08-21 · 建立商品的沿用那一列改成一句話，「點擊查看」直接開商店的指南（B 反饋導入，D215）
 
 **範圍**：`create-product.html`、`partials/size-guide-modal.js`（新增 `noticeKey`）、`ds-components/control-row.css`（`.control-row__link`）、`js/i18n.js`（新增 5 把、`cp.sg.inherit.hint` 退場）、design-system 兩份。

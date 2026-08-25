@@ -333,7 +333,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 131 支；主 class 前 5 個）
+## 元件（ds-components/，共 132 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb, .admin-table__owner ｜ Admin IP Bank data-table presentation. Shared by
@@ -418,6 +418,7 @@
 - `progress-stepper.css` — .progress-stepper, .progress-stepper__track, .progress-stepper__fill, .progress-stepper--segmented, .progress-stepper__labels ｜ ── Progress stepper
 - `progress-timeline.css` — .ptl, .ptl__node, .ptl__node--foot, .ptl__node--done, .ptl__date ｜ Progress timeline · 交付時間軸（規格 5.1.2.2 §2.2.10，D19
 - `project-list.css` — .project-list, .project-list__head, .project-list__row, .project-list__status, .project-list__image ｜ Project list — borderless table list for the Pro
+- `publish-preview.css` — .pp-toolbar, .pp-lang-tabs, .pp-view-toggle, .pp-banner, .pp-preview-slot ｜ Publish preview · 發布前預覽確認層（D223，2026-08-24）
 - `quick-result-list.css` — .quick-result, .quick-result__head, .quick-result__row, .quick-result__name, .quick-result__num ｜ Quick result list · 批次生成結果的唯讀預覽（一列一項）
 - `radio-card.css` — .segmented, .radio-cards, .radio-cards--icon, .radio-card__icon, .radio-card__text ｜ radio-card.css · 並排可選卡（radio 卡）
 - `radio-list.css` — .radio-list, .radio-list__item, .radio-list__trigger, .radio-list__dot, .radio-list__item--active ｜ radio-list.css · 輕量單選列（1-of-N，資料選擇）

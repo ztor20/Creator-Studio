@@ -65,14 +65,13 @@
     return s;
   }
 
-  /* 語言值域：字幕、原始語音、文案語言三處都從這裡取，不各自寫一份清單。 */
+  /* 語言值域：字幕、原始語音兩處從這裡取，不各自寫一份清單。
+     舊版還有 COPY_LANGS／COPY_PH（F8 名稱與說明的多語卡語言選單），D220（2026-08-24）
+     收編後已移除——F8 改回單卡，語言維度不再由這裡的下拉決定，D223（同日）改交給
+     發布前預覽確認層（partials/publish-preview.js）。ja/ko 兩個語言卡選項隨之消失，
+     見 ASSUMPTIONS.md。 */
   var SUB_LANGS = ['pw.lang.yue', 'pw.lang.cmn', 'pw.lang.en', 'pw.lang.ja', 'pw.lang.ko'];
   var AUDIO_LANGS = ['pw.lang.yue', 'pw.lang.cmn', 'pw.lang.en', 'pw.lang.ja', 'pw.lang.ko', 'pw.lang.none'];
-  var COPY_LANGS = ['pw.lang.zh', 'pw.lang.enName', 'pw.lang.ja', 'pw.lang.ko'];
-  var COPY_PH = {
-    'pw.lang.zh': { t: 'pw.info.title.ph-zh', d: 'pw.info.desc.ph' },
-    'pw.lang.enName': { t: 'pw.info.title.ph-en', d: 'pw.info.desc.ph-en' }
-  };
   /* 題材（分類）與年齡分級的值域住在 js/work-taxonomy.js——建立項目流程的影視組與項目公開資訊
      也吃同一份（主規格 §7.1.2、§7.11 明講三處是同一份資料）。本檔不再自帶副本。 */
   var TAX = window.ZtorWorkTaxonomy;
@@ -395,96 +394,37 @@
     return s;
   }
 
-  /* ── F8 名稱與說明：一張卡＝一個語言組。預設繁中與英文兩組，可再加、可移除，
-        最後一組不給移除（拿掉就沒有任何前台文案了）。同一種語言不准出現兩次。 */
+  /* ── F8 名稱與說明：單卡（D220，2026-08-24 收編）。舊版「一語言一張卡、可自由
+        增刪 zh/en/ja/ko」已移除——語言維度交給發布前預覽確認層（D223，
+        partials/publish-preview.js，掛在 publish-work.html 的送出動作上），這裡永遠
+        只有一組欄位。ja/ko 兩個語言卡選項隨舊版一起消失，這是規格 D220 收編後的
+        正確結果（原型層屬呈現假設，見 ASSUMPTIONS.md）。opts.lsField 曾是 D220 的
+        接線旗標（替 Title/Synopsis 掛 data-ls-field 給頁級 partials/lang-switch.js
+        接手），D223 撤除 lang-switch.js 之後一併退場，publish-work.html 已不再傳。 */
   function renderCopy(host, opts) {
     opts = opts || {};
     var s = section(host, 'pw.info.copy.title', 'Name & synopsis', 'pw.info.copy.sub', 'Fans see the version matching their app language.');
     s.insertAdjacentHTML('beforeend',
-      '<div data-pw-copy-wrap></div>'
-      + '<button class="btn btn--outline btn--add mt-16" type="button" data-pw-add-lang><i data-lucide="plus" class="ztor-icon"></i> <span data-i18n="pw.info.copy.add">'
-      + esc(T('pw.info.copy.add', 'Add a language')) + '</span></button>');
-    var wrap = s.querySelector('[data-pw-copy-wrap]');
-    var addBtn = s.querySelector('[data-pw-add-lang]');
-    var seq = 0;
-    var used = function () {
-      return Array.prototype.slice.call(wrap.querySelectorAll('[data-pw-copy] select')).map(function (x) { return x.value; });
-    };
-    function syncControls() {
-      var cards = wrap.querySelectorAll('[data-pw-copy]');
-      cards.forEach(function (c) { c.querySelector('[data-pw-drop-lang]').hidden = cards.length <= 1; });
-      addBtn.disabled = cards.length >= COPY_LANGS.length;
-    }
-    function syncLangOptions() {
-      wrap.querySelectorAll('[data-pw-copy] select').forEach(function (sel) {
-        var mine = sel.value;
-        var taken = used().filter(function (v) { return v !== mine; });
-        sel.querySelectorAll('option').forEach(function (o) { o.disabled = taken.indexOf(o.value) >= 0; });
-      });
-    }
-    function applyPh(card) {
-      var key = card.querySelector('select').value;
-      var ph = COPY_PH[key] || { d: 'pw.info.desc.ph' };
-      var title = card.querySelector('[data-pw-title]');
-      var desc = card.querySelector('[data-pw-desc]');
-      if (ph.t) { title.placeholder = T(ph.t, ''); title.setAttribute('data-i18n-placeholder', ph.t); }
-      else { title.placeholder = ''; title.removeAttribute('data-i18n-placeholder'); }
-      desc.placeholder = T(ph.d, ''); desc.setAttribute('data-i18n-placeholder', ph.d);
-    }
-    function add(langKey) {
-      var n = ++seq;
-      var card = document.createElement('div');
-      card.className = 'card card--muted' + (wrap.children.length ? ' mt-16' : '');
-      card.setAttribute('data-pw-copy', '');
-      card.innerHTML =
-        '<div class="card__head">'
-        + '<select class="select" style="max-width:200px" aria-label="' + esc(T('pw.info.copy.lang', 'Language')) + '" data-i18n-aria-label="pw.info.copy.lang">'
-        + optionsHtml(COPY_LANGS, langKey) + '</select>'
-        + '<button class="btn btn--icon btn--sm" type="button" data-pw-drop-lang aria-label="' + esc(T('pw.info.copy.drop', 'Remove this language')) + '" data-i18n-aria-label="pw.info.copy.drop"><i data-lucide="x" class="ztor-icon"></i></button>'
-        + '</div>'
-        + '<div class="field">'
-        + '<label class="field__label" for="pw-title-' + n + '" data-i18n="pw.info.title">' + esc(T('pw.info.title', 'Title')) + '</label>'
-        + '<input class="input" id="pw-title-' + n + '" data-pw-title>'
-        + '</div>'
-        + '<div class="field" style="margin-bottom:0">'
-        + '<label class="field__label" for="pw-desc-' + n + '" data-i18n="pw.info.desc">' + esc(T('pw.info.desc', 'Synopsis')) + '</label>'
-        + '<textarea class="textarea" id="pw-desc-' + n + '" data-pw-desc></textarea>'
-        + '</div>';
-      var sel = card.querySelector('select');
-      sel.value = langKey;
-      sel.addEventListener('change', function () { applyPh(card); syncLangOptions(); });
-      card.querySelector('[data-pw-drop-lang]').addEventListener('click', function () {
-        if (wrap.children.length <= 1) return;
-        card.remove();
-        Array.prototype.slice.call(wrap.children).forEach(function (c, i) { c.classList.toggle('mt-16', i > 0); });
-        syncControls(); syncLangOptions(); emit();
-        if (opts.onChange) opts.onChange();
-      });
-      wrap.appendChild(card);
-      applyPh(card); enhance(card);
-      syncControls(); syncLangOptions(); emit();
-      if (opts.onChange) opts.onChange();
-    }
-    addBtn.addEventListener('click', function () {
-      var next = COPY_LANGS.filter(function (k) { return used().indexOf(k) < 0; })[0];
-      if (next) add(next);
-    });
+      '<div class="card card--muted" data-pw-copy>'
+      + '<div class="field">'
+      + '<label class="field__label" for="pw-title" data-i18n="pw.info.title">' + esc(T('pw.info.title', 'Title')) + '</label>'
+      + '<input class="input" id="pw-title" data-pw-title placeholder="' + esc(T('cpp.s1.title.ph', 'A name fans will remember')) + '" data-i18n-placeholder="cpp.s1.title.ph">'
+      + '</div>'
+      + '<div class="field" style="margin-bottom:0">'
+      + '<label class="field__label" for="pw-desc" data-i18n="pw.info.desc">' + esc(T('pw.info.desc', 'Synopsis')) + '</label>'
+      + '<textarea class="textarea" id="pw-desc" data-pw-desc placeholder="' + esc(T('pw.info.desc.ph', 'Three or four sentences on what this is about.')) + '" data-i18n-placeholder="pw.info.desc.ph"></textarea>'
+      + '</div>'
+      + '</div>');
+    /* Title/Synopsis 是原生 input/textarea，變動會原生冒泡到 document——宿主頁的全域
+       'input' 監聽（見兩個宿主頁的 renderReadiness 接線）已經涵蓋，這裡不必像舊版
+       select/add/remove 那樣手動補 emit()。 */
     enhance(s);
-    add('pw.lang.zh'); add('pw.lang.enName');
     s._fill = function (w) {
       var copy = (w && w.copy) || [];
-      if (!copy.length) return;
-      /* 語言組數是創作者自己決定的，還原時就要還原成當初那幾組——多的移除、少的補上。 */
-      while (wrap.children.length > copy.length) wrap.lastElementChild.remove();
-      while (wrap.children.length < copy.length) add(COPY_LANGS.filter(function (k) { return used().indexOf(k) < 0; })[0] || COPY_LANGS[0]);
-      Array.prototype.slice.call(wrap.querySelectorAll('[data-pw-copy]')).forEach(function (card, i) {
-        var it = copy[i]; if (!it) return;
-        setVal(card.querySelector('select'), it.lang);
-        applyPh(card);
-        setVal(card.querySelector('[data-pw-title]'), it.title);
-        setVal(card.querySelector('[data-pw-desc]'), it.desc);
-      });
-      syncControls(); syncLangOptions();
+      var it = copy[0];
+      if (!it) return;
+      setVal(s.querySelector('[data-pw-title]'), it.title);
+      setVal(s.querySelector('[data-pw-desc]'), it.desc);
     };
     return s;
   }
@@ -872,9 +812,13 @@
       stills: qa('[data-pw-stills] .upload-tile.is-filled, [data-pw-stills] .upload-tile.is-optimized').length,
       bts: qa('[data-pw-bts] .upload-tile.is-filled').length,
       trailer: (q('[data-pw-asset="trailer"] .upload-tile__filename') || {}).textContent || '',
+      /* D220（2026-08-24）：F8 收編成單卡，語言維度交給發布前預覽確認層（D223，
+         partials/publish-preview.js），這裡只收「這組文案記在哪個語系」一個標記
+         （沿用 zh/en 字典 fallback 規則），不再有 per-card 語言下拉。 */
       copy: qa('[data-pw-copy]').map(function (c) {
+        var l = (window.ztorLang && window.ztorLang.get()) || 'en';
         return {
-          lang: c.querySelector('select').value,
+          lang: String(l).indexOf('zh') === 0 ? 'pw.lang.zh' : 'pw.lang.enName',
           title: val(c.querySelector('[data-pw-title]')),
           desc: val(c.querySelector('[data-pw-desc]'))
         };
@@ -921,7 +865,8 @@
       { block: 'file', k: 'pw.media.file.title', fb: 'Video file', done: function () { return filled('[data-pw-asset="video"]'); } },
       { block: 'audio', k: 'pw.media.audio.lang', fb: 'Original language', done: function () { return hasVal(q('#pw-audio')); } },
       { block: 'cover', k: 'pw.art.cover.title', fb: 'Cover', done: function () { return filled('[data-pw-asset="cover"]'); } },
-      /* F8 要每一個語言組的標題與說明都有值——留一組空白等於那個語言的作品頁是空的。 */
+      /* F8 要標題與說明都有值——D220 起單卡即代表預設語言，其他語系由系統自動翻譯，
+         不再逐語言組檢查必填。 */
       {
         block: 'copy', k: 'pw.info.copy.title', fb: 'Name & synopsis', done: function () {
           var cards = Array.prototype.slice.call(scope.querySelectorAll('[data-pw-copy]'));
@@ -955,7 +900,7 @@
   }
 
   window.ZtorWorkFields = {
-    LANGS: { sub: SUB_LANGS.slice(), audio: AUDIO_LANGS.slice(), copy: COPY_LANGS.slice() },
+    LANGS: { sub: SUB_LANGS.slice(), audio: AUDIO_LANGS.slice() },
     QUALITY_PRESETS: QUALITY_PRESETS.slice(),
     render: function (host, kind, opts) {
       var fn = RENDER[kind];

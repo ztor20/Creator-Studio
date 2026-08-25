@@ -36,7 +36,7 @@
   /* 2026-08-07（D179）：Admin 同層目的地由四個增為五個——新增影片上架審核
      （spec 5.1.0.4，登記於 0-設計規格書 §3.2 產品地圖 Tier 0）。它跨全平台、
      不需選定 Artist，與其他四個同層。 */
-  const ADMIN_ROUTES = new Set(["creators.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
+  const ADMIN_ROUTES = new Set(["creators.html", "creator-detail.html", "admin-ip-bank.html", "admin-ip-bank-entry.html", "ip-bank-reporting.html", "admin-platform-fees.html", "admin-video-review.html"]);
   const ADMIN_NAV = [
     { href: "creators.html",          key: "admin.creator-mgmt", icon: "users" },
     { href: "admin-video-review.html", key: "admin.video-review", icon: "file-check" },
@@ -48,11 +48,12 @@
   const isAdminPlatform = ADMIN_ROUTES.has(path);
   /* Demo roster (prototype data; the real list comes from the backend).
      Mirrors the concept sketch (denise / aya / kmt). */
-  /* D107: creator 資料含 email／電話（選填）／建立時間。email 供 phase 2 交還本人。 */
+  /* D107: creator 資料含 email／電話（選填）／建立時間。email 供 phase 2 交還本人。
+     D219: 另含 bookyayEvents——已從 bookyay 匯入的活動 id 清單，只在編輯 creator 裡加。 */
   const CREATORS = [
-    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active",   email: "denise@example.com", phone: "",             created: "2026-01-08" },
-    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19" },
-    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30" },
+    { handle: "denise", name: "Denise Lonely",  shop: "/shop/denise", status: "active",   email: "denise@example.com", phone: "",             created: "2026-01-08", bookyayEvents: ["bky-ev-03"] },
+    { handle: "aya",    name: "Aya Kondo",       shop: "/shop/aya",    status: "active",   email: "aya@example.com",    phone: "+81 90-1234-5678", created: "2026-02-19", bookyayEvents: [] },
+    { handle: "kmt",    name: "KMT Collective",  shop: "/shop/kmt",    status: "disabled", email: "team@kmt.example",   phone: "",             created: "2025-11-30", bookyayEvents: ["bky-ev-01", "bky-ev-05"] },
   ];
   /* BR-02 開店前置：一個 creator 的來源是本人先在 ztor 前台（買家端）自助註冊 ztor／Store
      帳號。Admin 在 Creator 管理「建立 creator」時，是搜尋這批已註冊、但尚未建檔的帳號，
@@ -65,6 +66,68 @@
     { id: "u-1288", name: "Sora Kim",      username: "sora",       email: "sora.kim@example.com",     phone: "+82 10 5555 7777", registered: "2026-07-15" },
     { id: "u-1301", name: "Diego Alvarez", username: "diego.a",    email: "diego@example.com",        phone: "",                 registered: "2026-07-18" },
   ];
+  /* D219 bookyay 活動匯入：bookyay 是外部售票平台，creator 的活動可能已經在那邊賣了。
+     Admin 在編輯 creator 時可以從這份名錄挑幾場（可多選）匯入，成為這位 creator 在
+     ztor 上的活動；匯過的就留在「已匯入」名單裡、不能再匯一次（下拉裡照樣列出但點不動，
+     理由與建立活動帶入閘門的「已匯入」同一條：濾掉會回答成「查無此活動」）。
+     prototype 假資料；真實名錄由 bookyay 端提供，而「哪些活動算這位 creator 的」
+     怎麼界定〔產品待確認〕——原型把整份名錄列給每一位。 */
+  const BOOKYAY_EVENTS = [
+    { id: "bky-ev-01", name: "REALIVE 世界巡迴 · 台北",  date: "2026-09-12", venue: "台北流行音樂中心" },
+    { id: "bky-ev-02", name: "REALIVE 世界巡迴 · 高雄",  date: "2026-09-20", venue: "高雄流行音樂中心" },
+    { id: "bky-ev-03", name: "什麼都不必說 聽團日",       date: "2026-10-04", venue: "Legacy Taipei" },
+    { id: "bky-ev-04", name: "黑膠典藏版 簽名會",         date: "2026-10-18", venue: "誠品信義店" },
+    { id: "bky-ev-05", name: "FLAMES 前導試聽會",         date: "2026-11-02", venue: "華山 Legacy mini" },
+    { id: "bky-ev-06", name: "年末感謝祭 Fan Meeting",     date: "2026-12-21", venue: "TICC 台北國際會議中心" },
+  ];
+  /* D224 · creator 的編輯結果（店鋪網址、電話、已匯入的 bookyay 活動）存 localStorage。
+     編輯搬到獨立頁 creator-detail.html 之後，它是被 detail-sheet 放進 iframe 的
+     「另一個 window」——兩邊各有一份 CREATORS 陣列，改在那一邊不會傳回名冊。
+     落在 localStorage 是同源共享的最小解：寫入端呼叫 saveCreator()，另一份文件收到
+     瀏覽器的 storage 事件後呼叫 refreshCreators() 重新套一次覆寫。
+     原型限制：只存被改過的欄位，示範資料本身仍寫在這支檔裡。 */
+  const CREATOR_EDITS_LS = "ztor.creatorEdits";
+  /* 新建立的 creator 也要落地：編輯搬到獨立頁之後，名冊與詳情頁是兩份文件，
+     只活在其中一份記憶體裡的 creator，在另一份會變成「查無此 creator」。 */
+  const CREATOR_ADDS_LS  = "ztor.creatorAdds";
+  function readEdits() {
+    try { return JSON.parse(localStorage.getItem(CREATOR_EDITS_LS) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  function refreshCreators() {
+    const edits = readEdits();
+    CREATORS.forEach(c => {
+      const patch = edits[c.seed || c.handle];
+      if (patch) Object.assign(c, patch);
+    });
+    return CREATORS;
+  }
+  /* seed＝這一筆在示範資料裡的原始 handle。店鋪網址改得掉，所以不能拿現值當鍵，
+     否則改過一次之後就對不回同一筆。 */
+  CREATORS.forEach(c => { c.seed = c.handle; });
+  try {
+    const added = JSON.parse(localStorage.getItem(CREATOR_ADDS_LS) || "[]");
+    if (Array.isArray(added)) added.forEach(c => {
+      if (c && c.seed && !CREATORS.some(x => x.seed === c.seed)) CREATORS.push(c);
+    });
+  } catch (e) {}
+  function addCreator(c) {
+    CREATORS.push(c);
+    try {
+      const added = JSON.parse(localStorage.getItem(CREATOR_ADDS_LS) || "[]");
+      added.push(c);
+      localStorage.setItem(CREATOR_ADDS_LS, JSON.stringify(added));
+    } catch (e) {}
+    return c;
+  }
+  function saveCreator(seed, patch) {
+    const edits = readEdits();
+    edits[seed] = Object.assign({}, edits[seed], patch);
+    try { localStorage.setItem(CREATOR_EDITS_LS, JSON.stringify(edits)); } catch (e) {}
+    refreshCreators();
+  }
+  refreshCreators();
+
   const CREATOR_LS = "ztor.activeCreator";
   function getCreator() {
     try { return CREATORS.find(c => c.handle === localStorage.getItem(CREATOR_LS)) || null; }
@@ -82,7 +145,9 @@
   }
   /* Shared with creators.html (roster render + onboard flow) and devtools.js (cheat-code switch).
      registered = BR-02 pre-registered accounts pool (searched by the「建立 creator」onboard wizard). */
-  window.ztorCreator = { list: CREATORS, registered: REGISTERED, get: getCreator, set: setCreator, rosterPage: ROSTER_PAGE };
+  window.ztorCreator = { list: CREATORS, registered: REGISTERED, bookyayEvents: BOOKYAY_EVENTS,
+                        get: getCreator, set: setCreator, rosterPage: ROSTER_PAGE,
+                        save: saveCreator, add: addCreator, refresh: refreshCreators };
 
   /* ── Admin 從某個 Admin 頁進入某位創作者的工作區（2026-08-07）──────────────
      既有的代管路徑是「Creator 管理選一位」（上面的 ztor.activeCreator）。影片上架
@@ -149,18 +214,6 @@
   /* 這份 path 在站上有兩份複本：本檔是正本，login.html 是副本（登入頁刻意不載
      sidebar.js）。改 logo 要兩邊一起改，見 UI-CHANGES 2026-08-04。 */
   const LOGO_SVG = '<svg class="app-topbar__brand-logo" viewBox="0 0 101 32" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path opacity="0.99" d="M55.749 7.35352C62.3102 6.56387 68.1795 8.99977 70.8506 13.6182C71.8335 15.3184 72.2187 16.7656 72.3027 19.0908C72.4094 22.015 71.9544 23.817 70.5332 26.0986C69.8395 27.2145 67.9548 29.025 66.6904 29.792C62.6322 32.2529 56.4412 32.7086 51.6602 30.8984C48.7838 29.81 46.349 27.6537 45.0264 25.0264C44.2163 23.4148 43.8408 21.6966 43.8311 19.5537C43.8214 17.4853 44.0078 16.4756 44.6934 14.8818C45.864 12.1628 48.31 9.81044 51.2637 8.56543C52.486 8.05031 54.5137 7.50209 55.749 7.35352ZM96.4805 23.1143C98.9761 23.1143 101 24.9861 101 27.2949C101 29.6039 98.9763 31.4766 96.4805 31.4766C93.9848 31.4764 91.9619 29.6038 91.9619 27.2949C91.9622 24.9863 93.985 23.1145 96.4805 23.1143ZM89.5264 7.31055C90.089 7.31055 90.5439 7.76583 90.5439 8.32617V12.2227C90.5439 12.6328 90.2997 12.9866 89.9473 13.1465L89.9102 13.1621L83.6123 15.9268C83.2129 16.1318 82.9384 16.5458 82.9336 17.0254V30.1709C82.9336 30.7329 82.4771 31.1875 81.916 31.1875H76.9004C76.3379 31.1873 75.8838 30.7311 75.8838 30.1709V8.68457C75.8838 8.12275 76.3395 7.66917 76.9004 7.66895H81.916C82.4787 7.66895 82.9336 8.12423 82.9336 8.68457V9.69531C82.9336 9.84549 83.0567 9.96875 83.207 9.96875C83.2424 9.96868 83.2764 9.96012 83.3086 9.94727C83.3103 9.94707 83.3154 9.94482 83.3164 9.94434L89.1035 7.4043L89.1465 7.38477C89.2644 7.33638 89.3923 7.31061 89.5264 7.31055ZM35.6514 0C36.214 0 36.6689 0.455327 36.6689 1.01562V7.56348C36.6689 7.83628 36.89 8.05745 37.1631 8.05762H40.5762C41.1387 8.05762 41.5935 8.51311 41.5938 9.07324V12.5742C41.5938 13.1362 41.1372 13.5908 40.5762 13.5908H37.1631C36.89 13.591 36.6689 13.8122 36.6689 14.085V30.1699C36.6689 30.7318 36.2124 31.1855 35.6514 31.1855H30.6592C30.0966 31.1855 29.6417 30.7302 29.6416 30.1699V14.085C29.6416 13.8122 29.4205 13.5911 29.1475 13.5908H27.9102C27.3475 13.5908 26.8936 13.1346 26.8936 12.5742V9.07324C26.8938 8.51149 27.3493 8.05762 27.9102 8.05762H29.1475C29.4205 8.05738 29.6416 7.83624 29.6416 7.56348V1.01562C29.6417 0.453712 30.0982 0 30.6592 0H35.6514ZM23.1084 8.04492C23.7194 8.0451 24.2138 8.5392 24.2139 9.14941C24.2139 9.37374 24.1479 9.58055 24.0332 9.75488L23.8936 9.92773L20.9365 13.5889L12.6016 23.9072C12.5773 23.9347 12.5552 23.9641 12.5342 23.9932C12.4161 24.1563 12.3467 24.3549 12.3467 24.5713C12.3468 25.1201 12.7923 25.5652 13.3418 25.5654H23.4619L23.4639 25.5645C24.0265 25.5645 24.4805 26.0198 24.4805 26.5801V30.168C24.4805 30.7299 24.0249 31.1835 23.4639 31.1836H0.998047C0.4467 31.1836 0 30.7382 0 30.1875C2.76681e-06 29.9727 0.0710906 29.7725 0.1875 29.6094L0.256836 29.5234L3.45312 25.5645L12.5 14.3652C12.5017 14.3637 12.5049 14.3619 12.5049 14.3604C12.5581 14.2814 12.5888 14.1864 12.5889 14.085C12.5889 13.8121 12.367 13.5908 12.0938 13.5908H2.12988C1.56722 13.5908 1.1123 13.1346 1.1123 12.5742V9.06055C1.11243 8.49869 1.56891 8.04492 2.12988 8.04492H23.1084ZM59.7852 13.2803C56.0761 12.3824 52.1339 14.574 51.2188 18.041C50.9957 18.8888 50.9911 20.5182 51.2109 21.2852C51.8885 23.6539 54.3762 25.684 57.0762 26.0732C60.5912 26.5803 64.1954 24.3252 64.9893 21.123C65.201 20.2655 65.1817 18.8623 64.9473 18.0518C64.2681 15.7105 62.2975 13.8891 59.7852 13.2803ZM24.2168 8.05762L24.2012 8.04492H24.2168V8.05762Z"/></svg>';
-
-  /* 語言選擇（2026-07-28 使用者裁示）。介面語言屬於「這個帳號怎麼看這個產品」，
-     與 Profile／Settings／Payments 同一組，所以進帳號選單、不另闢一列。
-     兩個 shell 共用這一段（側欄群組 ＋ topbar dropdown）——兩種版面「同一份
-     sitemap、只換位置」，語言列不該只有其中一邊有。
-     切換行為在 i18n.js（[data-lang-pick]）；[data-lang] 是選中態標記，由 i18n
-     的 apply() 每次套用語言後重寫 aria-current。 */
-  const LANG_PICKER = `<span class="nav-lang">
-      <button class="nav-lang__pick" type="button" data-lang-pick="en" data-lang="en" lang="en">EN</button>
-      <span class="nav-lang__sep" aria-hidden="true">·</span>
-      <button class="nav-lang__pick" type="button" data-lang-pick="zh-Hant" data-lang="zh" lang="zh-Hant">中</button>
-    </span>`;
 
   /* Nav definition · spec §3.2.1 order. Each top-level item carries a Tabler
      icon (used by the sidebar mode). Dropdowns (panel) = IP Bank + E-Shop
@@ -337,6 +390,65 @@
   }
 
   /* ─────────────────────────────────────────────────────────
+     語言列（D222，撤除 D221 的雙概念）——帳戶選單裡一顆可展開的單選清單，topbar／
+     sidebar 兩種殼共用同一套資料，只是外層 row 的 class 不同（各自沿用該選單本來的
+     列樣式，不引入 dropdown__item--choice／--ladder 那支分級選單元件，見
+     STYLE-DECISIONS Q70）。常駐只顯示「預設語言」＋目前值＋展開指示；點了才展開
+     四個語系。選中的那個語言打勾；D221 曾有的「預設」徽章與「去設定改預設語言」
+     提示行已撤除——語言只有一個概念，這裡點哪個就是哪個，不必再區分「這是不是預設」
+     或指去別處改。點語言列只呼叫 ztorLang.set()。渲染當下讀一次目前值；之後的變更由
+     refreshLangRows()（見下）patch DOM，不整段重繪（sidebar.js 只在
+     navmode/creator/devstate 變更時 remount）。 */
+  function langOptionsHtml(kind) {
+    var optClass = kind === "topbar"
+      ? "app-topbar__dropdown-option app-topbar__dropdown-option--lang"
+      : "app-sidebar__sub-link app-sidebar__sub-link--lang";
+    var textClass = kind === "topbar" ? "app-topbar__dropdown-option-text" : "app-sidebar__lang-text";
+    var checkClass = kind === "topbar" ? "app-topbar__dropdown-lang-check" : "app-sidebar__lang-check";
+    var current = window.ztorLang ? window.ztorLang.get() : "en";
+    var list = window.ztorLang ? window.ztorLang.list() : [["en", "English"]];
+    return list.map(function (pair) {
+      var code = pair[0], label = pair[1];
+      var checked = code === current;
+      return `<li role="presentation"><button class="${optClass}" type="button" role="menuitemradio" aria-checked="${checked ? "true" : "false"}" data-lang-pick="${code}">
+        <span class="${textClass}">${label}</span>
+        ${checked ? `<i data-lucide="check" class="ztor-icon ztor-icon--sm ${checkClass}"></i>` : ""}
+      </button></li>`;
+    }).join("");
+  }
+  function langMenuHtml(kind) {
+    var current = window.ztorLang ? window.ztorLang.get() : "en";
+    var list = window.ztorLang ? window.ztorLang.list() : [["en", "English"]];
+    var currentLabel = (list.filter(function (p) { return p[0] === current; })[0] || list[0])[1];
+    /* D223 收合修正：收合列改成只顯示目前語言（拿掉「預設語言」前置 label 與
+       title/sub 兩行結構），縮排與字級對齊選單其他列（Profile／Settings／Payments，
+       都是純文字直接放在 .app-topbar__dropdown-option / .app-sidebar__sub-link 裡，
+       不套 -option-text/-title/-sub 那組 icon+子標列樣式）。視覺上只剩語言名稱，
+       螢幕報讀失去「這是語言切換」的語意，補 aria-label（data-i18n-aria-label，
+       2026-08-24 審查抓到）。 */
+    if (kind === "topbar") {
+      return `<li class="app-topbar__dropdown-langgroup" role="presentation" data-lang-group>
+        <button class="app-topbar__dropdown-option app-topbar__dropdown-option--toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Switch language" data-i18n-aria-label="settings.lang.toggle-label" data-lang-toggle>
+          <span data-lang-current-label>${currentLabel}</span>
+          <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-topbar__dropdown-lang-chevron"></i>
+        </button>
+        <ul class="app-topbar__dropdown-langlist" role="menu" hidden>
+          ${langOptionsHtml("topbar")}
+        </ul>
+      </li>`;
+    }
+    return `<li class="app-sidebar__lang-group">
+      <button class="app-sidebar__sub-link app-sidebar__sub-link--lang-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Switch language" data-i18n-aria-label="settings.lang.toggle-label" data-lang-toggle>
+        <span data-lang-current-label>${currentLabel}</span>
+        <i data-lucide="chevron-down" class="ztor-icon ztor-icon--sm app-sidebar__lang-chevron"></i>
+      </button>
+      <ul class="app-sidebar__lang-panel" hidden>
+        ${langOptionsHtml("sidebar")}
+      </ul>
+    </li>`;
+  }
+
+  /* ─────────────────────────────────────────────────────────
      TOPBAR mode (R 2.0 canonical) — horizontal bar markup.
      ───────────────────────────────────────────────────────── */
   function topbarNavHtml(locked) {
@@ -448,10 +560,8 @@
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#profile" role="menuitem" data-i18n="nav.profile">Profile</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html" role="menuitem" data-i18n="nav.settings">Settings</a></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="settings.html#payments" role="menuitem" data-i18n="nav.payments">Payments</a></li>
-          <li class="app-topbar__dropdown-lang" role="presentation">
-            <span data-i18n="nav.lang">Language</span>
-            ${LANG_PICKER}
-          </li>
+          <li class="app-topbar__dropdown-divider" role="separator"></li>
+          ${langMenuHtml("topbar")}
           <li class="app-topbar__dropdown-divider" role="separator"></li>
           <li role="presentation"><a class="app-topbar__dropdown-option" href="login.html" role="menuitem" data-logout data-i18n="nav.logout" style="color:var(--destructive)">Log out</a></li>
         </ul>
@@ -586,10 +696,7 @@
           <li><a class="app-sidebar__sub-link" href="settings.html#profile" data-i18n="nav.profile">Profile</a></li>
           <li><a class="app-sidebar__sub-link" href="settings.html" data-i18n="nav.settings">Settings</a></li>
           <li><a class="app-sidebar__sub-link" href="settings.html#payments" data-i18n="nav.payments">Payments</a></li>
-          <li class="app-sidebar__sub-lang">
-            <span data-i18n="nav.lang">Language</span>
-            ${LANG_PICKER}
-          </li>
+          ${langMenuHtml("sidebar")}
           <li><a class="app-sidebar__sub-link" href="login.html" data-logout data-i18n="nav.logout" style="color:var(--destructive)">Log out</a></li>
         </div></ul>
       </div>
@@ -708,10 +815,6 @@
       if (link && navEl.contains(link)) moveTo(link);
     });
     navEl.addEventListener("pointerleave", rest);
-    /* Language toggle changes label widths → recompute resting pill. */
-    document.addEventListener("click", e => {
-      if (e.target.closest(".app-topbar__lang")) setTimeout(rest, 60);
-    });
   }
 
   /* Topbar dropdown state — animated via data-state (open|closed). */
@@ -841,6 +944,67 @@
     document.querySelectorAll("[data-currency-current]").forEach(el => { el.textContent = cur; });
   }
 
+  /* 語言列（帳戶選單內可展開的單選清單，D222）——topbar／sidebar 共用同一組
+     data 屬性。展開／收合只影響這一顆嵌套面板，不牽動外層帳戶下拉本身（[data-lang-toggle]
+     不是 [data-dropdown] 的直接子節點，不會被上面 setOpen/closeAll 那組 topbar 開合
+     邏輯攔截；sidebar 這顆也刻意不用 .app-sidebar__group class，避免跟帳戶外層的
+     accordion 群組互相干擾，見鐵律 9 判準的反向應用——這裡刻意不共用外層那套狀態機）。 */
+  document.addEventListener("click", e => {
+    const toggle = e.target.closest("[data-lang-toggle]");
+    if (!toggle) return;
+    e.preventDefault();
+    const panel = toggle.parentElement.querySelector(".app-topbar__dropdown-langlist, .app-sidebar__lang-panel");
+    if (!panel) return;
+    const open = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", open ? "false" : "true");
+    panel.hidden = open;
+  });
+  /* 點語言＝呼叫 ztorLang.set()（語言的唯一 API）。選完收合面板，其餘欄位（打勾、
+     目前值標籤）由下面的 refreshLangRows() 隨 ztor:lang-changed 廣播統一 patch，
+     不在這裡重複寫一份。 */
+  document.addEventListener("click", e => {
+    const pick = e.target.closest("[data-lang-pick]");
+    if (!pick) return;
+    e.preventDefault();
+    if (window.ztorLang) window.ztorLang.set(pick.getAttribute("data-lang-pick"));
+    const panel = pick.closest(".app-topbar__dropdown-langlist, .app-sidebar__lang-panel");
+    if (panel) {
+      panel.hidden = true;
+      const toggle = panel.parentElement.querySelector("[data-lang-toggle]");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+  });
+  /* 語言變更時，patch 所有已掛載的語言列（topbar／sidebar 可能同時存在於
+     DOM——burger 收合面板與桌面版共用同一份 markup）：目前值標籤、打勾。不整段
+     重繪——sidebar.js 只在 navmode/creator/devstate 變更時 remount，語言變更不屬於
+     這三者。D221 曾在這裡一併 patch「預設」徽章，D222 撤除該概念後移除。 */
+  function refreshLangRows() {
+    if (!window.ztorLang) return;
+    const current = window.ztorLang.get();
+    const list = window.ztorLang.list();
+    const labelFor = code => (list.find(p => p[0] === code) || [code, code])[1];
+    document.querySelectorAll("[data-lang-current-label]").forEach(el => { el.textContent = labelFor(current); });
+    document.querySelectorAll("[data-lang-pick]").forEach(btn => {
+      const code = btn.getAttribute("data-lang-pick");
+      const checked = code === current;
+      btn.setAttribute("aria-checked", checked ? "true" : "false");
+      let check = btn.querySelector("[data-lucide='check']");
+      if (checked && !check) {
+        const isTopbar = btn.classList.contains("app-topbar__dropdown-option");
+        const i = document.createElement("i");
+        i.setAttribute("data-lucide", "check");
+        i.className = "ztor-icon ztor-icon--sm " + (isTopbar ? "app-topbar__dropdown-lang-check" : "app-sidebar__lang-check");
+        const textEl = btn.querySelector(".app-topbar__dropdown-option-text, .app-sidebar__lang-text");
+        if (textEl) textEl.insertAdjacentElement("afterend", i); else btn.appendChild(i);
+        if (window.ztorIcons) window.ztorIcons.applyIcons(btn);
+      } else if (!checked && check) {
+        check.remove();
+      }
+    });
+  }
+  /* 首次呼叫交給下面的 mountAndRestore()（mount() 產生 DOM 之後才有東西可 patch）。 */
+  document.addEventListener("ztor:lang-changed", refreshLangRows);
+
   /* ── 登出 ─────────────────────────────────────────────────
      三個入口共用同一條處理：topbar 帳戶下拉、側欄帳戶選單、Admin 側欄底部。
      全部標 [data-logout]，行為只在這裡定義一次。
@@ -871,7 +1035,7 @@
   });
 
   /* Initial mount + re-mount when the display mode or active creator changes. */
-  function mountAndRestore() { mount(); applySavedCurrency(); refreshAvatar(); }
+  function mountAndRestore() { mount(); applySavedCurrency(); refreshAvatar(); refreshLangRows(); }
   mountAndRestore();
 
   /* sidebar.js 在多數頁面比 projects-store.js 早載入（實測 index.html：

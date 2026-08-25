@@ -33,6 +33,12 @@
 <link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
 <!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<!-- 發布前預覽確認層（D223）：彈窗殼＋語言分頁＋列表 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 </head>
 <body>
@@ -152,6 +158,7 @@
 <!-- 提供 window.ztorToast.queue()：上架成功的提示排到項目詳情頁再顯示。 -->
 <script src="js/toast.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/publish-preview.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <!-- 分類與年齡分級的值域（主規格 §7.1.2／§7.11）：建立項目流程與項目公開資訊吃同一份，
@@ -238,7 +245,11 @@
      建到一半就跑會讀到還沒宣告的變數，所以在最後一段開燈，在此之前呼叫都直接返回。 */
   let readinessOn = false;
 
-  /* ---- 欄位區塊：容器上的 data-wf 就是這一步要哪幾塊、照什麼順序 ---- */
+  /* ---- 欄位區塊：容器上的 data-wf 就是這一步要哪幾塊、照什麼順序 ----
+     D220 曾在此傳 lsField:true 讓 F8 名稱與說明卡掛 data-ls-field，交給頁級
+     partials/lang-switch.js 接手內容檢視語言切換；D223 撤除 lang-switch.js，
+     翻譯檢視改在送出（submit()）時交給 partials/publish-preview.js，這裡不再需要
+     那個旗標。 */
   document.querySelectorAll('[data-wf]').forEach(host => {
     window.ZtorWorkFields.renderAll(host, host.dataset.wf.split(','), { onChange: () => renderReadiness() });
   });
@@ -351,8 +362,22 @@
      那一刻才由項目詳情頁播出「發貼文＋轉已上線」。為什麼三件事不在這裡做：
      它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。 */
   function submit() {
-    /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件。 */
+    /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件——
+       這條分支不算「新發布」，不進發布前預覽確認層（D223，見 ASSUMPTIONS.md）。 */
     if (editMode) { saveEdit(); return; }
+    if (window.ztorPublishPreview) {
+      window.ztorPublishPreview.open({
+        fields: [
+          { key: 'name', el: document.getElementById('pw-title'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+          { key: 'desc', el: document.getElementById('pw-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+        ],
+        onConfirm: doSubmitNew
+      });
+      return;
+    }
+    doSubmitNew();
+  }
+  function doSubmitNew() {
     /* 貼文的內文與受眾在最後一步問（D207）。2026-08-19 之前它們是在項目頁的發文框
        打好、經 sessionStorage 傳過來的；那條接力棒已撤除。 */
     const annBody = document.getElementById('pw-ann-body');

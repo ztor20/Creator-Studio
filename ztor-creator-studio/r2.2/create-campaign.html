@@ -60,9 +60,6 @@
   .fc-add, .fc-add-item { display: flex; width: 100%; justify-content: center; align-items: center; }
   .fc-add { min-height: 56px; font-weight: var(--fw-regular); }
   .fc-add-item { min-height: 48px; margin-top: 10px; }
-  /* 語言切換鈕（中／EN，working） */
-  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--card); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--muted-foreground); }
-  .fc-lang:hover { background: var(--accent); color: var(--foreground); }
   /* 添加共創者：搜尋框 + 結果下拉 + 已添加 chips */
   .fc-cc-search { position: relative; }
   .fc-cc-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card); border: 1px solid var(--border-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-float); z-index: 20; max-height: 280px; overflow-y: auto; }
@@ -100,7 +97,6 @@
       </div>
 
       <div class="wizard__top-actions">
-        <button class="fc-lang" type="button" id="fc-lang" aria-label="Switch language">中 / EN</button>
         <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
         <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
       </div>
@@ -305,12 +301,12 @@
 <script>
 /* 募資創建（測試版）互動 · 依 r2.1_funding-test/5.1.1-募資計畫創建流程.md
    3 步精靈（基本資料／金額與股權／套組）＋全程即時預覽＋就緒檢查；每股金額/股權即時換算。
-   i18n：共用 r2.1 的 i18n.js 處理 wiz.* chrome；本頁內容用獨立 data-fi 字典（不改 r2.1 的 i18n.js）。 */
+   i18n：共用 r2.1 的 i18n.js 處理 wiz.* chrome；本頁內容用獨立 data-fi 字典（不改 r2.1 的 i18n.js）。
+   D220：本頁不再有獨立語言切換鈕，data-fi 一律跟隨語言。D222（撤除 D221）：語言收回
+   單一概念，三處入口——settings.html「預設語言」列、帳戶選單可展開語言列、login.html——
+   改的都是同一個值，本頁的 data-fi 跟的就是這個值。 */
 (function () {
-  /* 預設中文；若使用者已用「中/EN」切換過（localStorage 已存）則沿用其選擇。 */
-  try { if (!localStorage.getItem('ztor-r21-lang')) document.documentElement.lang = 'zh-Hant'; } catch (e) { document.documentElement.lang = 'zh-Hant'; }
-
-  /* ---------- 本頁雙語字典（data-fi / data-fi-ph；中文預設，可中／EN 切換）---------- */
+  /* ---------- 本頁雙語字典（data-fi / data-fi-ph；跟隨介面語言）---------- */
   const FI = {
     'fc.h1': { zh: '建立新的共創計畫', en: 'New campaign' },
     'fc.draft': { zh: '共創共創計畫 · 草稿', en: 'Co-creation campaign · Draft' },
@@ -398,7 +394,7 @@
     'fc.ready.chip.ready': { zh: '可建立', en: 'Ready' },
   };
 
-  const lang = () => (document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en');
+  const lang = () => (String(document.documentElement.lang || '').indexOf('zh') === 0 ? 'zh' : 'en');
   function fiText(k) { const e = FI[k]; return e ? e[lang()] : null; }
   function applyFI(root) {
     (root || document).querySelectorAll('[data-fi]').forEach(el => { const v = fiText(el.dataset.fi); if (v != null) el.textContent = v; });
@@ -609,7 +605,6 @@
   });
 
   /* ---------- 綁定 ---------- */
-  document.getElementById('fc-lang').addEventListener('click', () => { if (window.toggleLang) window.toggleLang(); });
   document.getElementById('fc-add-bundle').addEventListener('click', () => { document.getElementById('fc-bundles').appendChild(bundleCard()); updatePreview(); });
   function submitCampaign() {
     const c = calc();

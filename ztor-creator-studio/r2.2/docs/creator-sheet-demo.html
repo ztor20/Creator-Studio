@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ============================================================
+     DEMO · Creator 名冊 → 頁面型 popup（launcher）
+     2026-08-24 · 配合 creator-detail-demo.html 一起看。
+
+     這一份示範的是「怎麼開」：
+       · 列上的 ⋯ 選單分成「編輯」與「匯入活動」，各自落在同一頁的不同分頁
+         （?tab=basic ／ ?tab=events）——指示 2
+       · 打開的方式是站上既有的 detail-sheet：近乎滿版的覆蓋層 ＋ iframe 載入
+         那一頁本人。這就是「一個頁面的 popup」——指示 3。不是新做一個大彈窗，
+         而是沿用站上已經在 e-shop／收入／活動等頁用了一個月的同一套。
+       · 「前往」按鈕仍然是整頁進工作區（不開覆蓋層）。
+
+     DEMO 限制：三筆假資料、只有繁中、覆蓋層裡的儲存不落地。
+     ============================================================ -->
+<title>DEMO · Creator 名冊 → 頁面型 popup</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-pill.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/filter-tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/product-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/detail-sheet.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/footer.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  .creator-ava {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: color-mix(in srgb, var(--primary) 16%, var(--muted));
+    color: var(--foreground); font-size: var(--fs-14);
+  }
+  .product-list--creators .product-list__head,
+  .product-list--creators .product-list__row { grid-template-columns: 52px minmax(0,1fr) 120px 104px 140px; gap: 16px; align-items: center; }
+  .product-list--creators .product-list__row { cursor: pointer; }
+  .creators-row__created { color: var(--muted-foreground); font-size: var(--fs-13); }
+  .creators-row__actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .demo-note { margin: 0 0 24px; padding: 12px 14px; border: 1px dashed var(--border); border-radius: var(--radius-md); color: var(--muted-foreground); font-size: var(--fs-13); line-height: 1.7; }
+  .demo-note strong { color: var(--foreground); }
+</style>
+</head>
+<body data-sheet-nav>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-intro">
+        <div>
+          <h1 class="page-intro__title">Creator 管理</h1>
+          <p class="page-intro__sub">管理平台上所有 creator。選一個進入並代為操作其工作區。</p>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--primary" type="button"><i data-lucide="plus" class="ztor-icon ztor-icon--sm"></i><span>建立 creator</span></button>
+        </div>
+      </div>
+
+      <p class="demo-note">
+        <strong>DEMO 怎麼看：</strong>點任一列（或列尾 ⋯ →「編輯」）會把 Creator 詳情頁<strong>整頁抬起來</strong>當彈窗；
+        ⋯ →「匯入活動」開的是同一頁，但直接落在「bookyay 活動」分頁。
+        「前往」仍然是整頁進工作區。關閉用 ✕、Esc、點背板或瀏覽器上一頁。
+      </p>
+
+      <div class="product-list-scroll">
+        <div class="product-list product-list--creators">
+          <div class="product-list__head" role="row">
+            <div role="columnheader" aria-hidden="true"></div>
+            <div role="columnheader">Creator</div>
+            <div role="columnheader">創建時間</div>
+            <div role="columnheader">狀態</div>
+            <div role="columnheader" aria-hidden="true"></div>
+          </div>
+          <div id="roster"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>Ztor Creator Studio · R 2.2 · DEMO</span>
+      <span>·</span>
+      <span>Admin · Creator 管理 → 頁面型 popup</span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script src="../js/icons-all.js?v=r2.2"></script>
+<script src="../js/i18n.js?v=r2.2"></script>
+<script src="../js/sidebar.js?v=r2.2"></script>
+<script src="../js/detail-sheet.js?v=r2.2"></script>
+<script>
+(function () {
+  'use strict';
+  var LIST = [
+    { handle: 'denise', name: 'Denise Lonely',  created: '2026-01-08', status: 'active' },
+    { handle: 'aya',    name: 'Aya Kondo',      created: '2026-02-19', status: 'active' },
+    { handle: 'kmt',    name: 'KMT Collective', created: '2025-11-30', status: 'disabled' }
+  ];
+  var roster = document.getElementById('roster');
+  function initial(n) { return (n || '?').charAt(0).toUpperCase(); }
+
+  roster.innerHTML = LIST.map(function (c) {
+    var off = c.status === 'disabled';
+    return '<div class="product-list__row" role="row" data-row data-handle="' + c.handle + '" data-name="' + c.name + '">'
+      + '<span class="creator-ava" role="cell">' + initial(c.name) + '</span>'
+      + '<div class="product-list__body" role="cell">'
+      +   '<div class="product-list__title">' + c.name + '</div>'
+      +   '<div class="product-list__meta">/shop/' + c.handle + '</div>'
+      + '</div>'
+      + '<div class="creators-row__created" role="cell">' + c.created + '</div>'
+      + '<div class="product-list__cell" role="cell"><span class="badge ' + (off ? 'badge--neutral' : 'badge--success') + '">' + (off ? '已停用' : '啟用中') + '</span></div>'
+      + '<div class="creators-row__actions" role="cell">'
+      +   '<button class="btn btn--primary btn--sm" type="button" data-enter>前往</button>'
+      +   '<details class="dropdown">'
+      +     '<summary class="btn btn--ghost btn--icon btn--sm" aria-label="更多操作"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>'
+      +     '<div class="dropdown__menu" role="menu">'
+      /* 指示 2：兩個入口，各自進對應分頁 */
+      +       '<button class="dropdown__item" type="button" role="menuitem" data-open="basic"><i data-lucide="pencil" class="ztor-icon"></i><span>編輯</span></button>'
+      +       '<button class="dropdown__item" type="button" role="menuitem" data-open="events"><i data-lucide="download" class="ztor-icon"></i><span>匯入活動</span></button>'
+      +       '<button class="dropdown__item" type="button" role="menuitem"><i data-lucide="' + (off ? 'check-circle' : 'x-circle') + '" class="ztor-icon"></i><span>' + (off ? '啟用' : '停用') + '</span></button>'
+      +     '</div>'
+      +   '</details>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+  if (window.ztorIcons) window.ztorIcons.applyIcons(roster);
+
+  /* 站上既有的覆蓋層：iframe 載入 creator 詳情頁本人（?embed=1 由 detail-sheet.js 自己補）。
+     這裡直接叫它的公開 API，因為 demo 檔名不是 *-detail.html、走不到自動攔截。 */
+  function openSheet(row, tab) {
+    var url = 'creator-detail-demo.html?handle=' + row.getAttribute('data-handle') + '&tab=' + tab;
+    window.ztorDetailSheet.open(url, row.getAttribute('data-name'), row);
+  }
+
+  roster.addEventListener('click', function (e) {
+    var open = e.target.closest('[data-open]');
+    if (open) {
+      e.preventDefault();
+      var d = open.closest('details'); if (d) d.open = false;
+      openSheet(open.closest('[data-row]'), open.getAttribute('data-open'));
+      return;
+    }
+    if (e.target.closest('[data-enter]')) { alert('DEMO：這裡會整頁進入該 creator 的工作區'); return; }
+    if (e.target.closest('.dropdown')) return;
+    var row = e.target.closest('[data-row]');
+    if (row) openSheet(row, 'basic');      /* 整列點擊＝編輯（D218） */
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ============================================================
+     DEMO · Creator 詳情／編輯（頁面型 popup 的內容）
+     2026-08-24 · 使用者三項指示：
+       1. 匯入 bookyay 活動獨立成一個分頁
+       2. 名冊列的 ⋯ 選單分成「編輯」與「匯入活動」，各自進對應分頁
+       3. Edit creator 的彈窗重新設計成「一個頁面的 popup」
+     這一份是「頁面」本身。它被 docs/creator-sheet-demo.html 用站上既有的
+     detail-sheet（覆蓋層 ＋ iframe）開起來——那就是站上「把一整頁抬起來當彈窗」
+     的既有答案（ds-components/detail-sheet.css、js/detail-sheet.js），不是新發明。
+     直接開這一份也看得到完整頁面（沒有 ?embed=1 時導覽列照常出現）。
+
+     DEMO 限制：只有繁中一種語言（沒接 i18n）、資料寫死在檔案裡、儲存不落地。
+     資產一律以 ../ 為前綴（見 bundle-step-demo.html 的說明）。
+     ============================================================ -->
+<title>DEMO · Creator 詳情／編輯</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/page-intro.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/combobox.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/data-list.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/empty-card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/dropdown-menu.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/header.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/footer.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* 頁內樣式＝這一頁自己的排版，元件本體一律用 ds-components。 */
+
+  /* 頁首身分區：頭像 ＋ 名稱 ＋ 一行事實（店鋪／建立時間／狀態） */
+  .cd-ava {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: grid; place-items: center; flex: none;
+    background: color-mix(in srgb, var(--primary) 16%, var(--muted));
+    color: var(--foreground); font-size: var(--fs-22);
+  }
+  .cd-facts { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px; color: var(--muted-foreground); font-size: var(--fs-13); }
+  .cd-facts__dot { opacity: .5; }
+
+  /* 分頁內容（2026-08-24 使用者指示「一個欄位一行、寬度不要滿版」）：
+     內容收成一欄的閱讀寬度。浮層可以有 1440px，但表單不該跟著長——一行 1100px
+     的說明字讀起來要換行找位置，而店鋪網址、電話這種短值攤成滿版更像壞掉。
+     欄位一列一個；控件本身再收一次寬（沿用 settings.html 的做法：那一頁的
+     短欄位都個別 max-width，不讓輸入框吃滿整列）。 */
+  /* 整頁收成一個置中的欄，不只收表單：頁首（麵包屑、名稱、動作）跟著同一條邊界，
+     否則浮層很寬時會變成「上面橫跨到底、下面縮在左邊」的偏頭版面。
+     .page 本來就有 margin:0 auto，給它一個上限就會置中。 */
+  .page { max-width: 880px; }
+  .cd-panel { padding-top: 8px; }
+  .cd-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .cd-panel .input { max-width: 360px; }
+
+  /* 唯讀那一組：值不是輸入框，是事實。用一條一條的唯讀列，
+     不做成 disabled 的 <input>——長得像欄位卻不能改，讀起來是「壞掉」。 */
+  .cd-ro { display: flex; flex-direction: column; gap: 2px; }
+  .cd-ro__k { font-size: var(--fs-12); color: var(--muted-foreground); }
+  .cd-ro__v { font-size: var(--fs-14); }
+
+  /* bookyay 分頁的匯入工具列：頁面有寬度，下拉與按鈕可以並排 */
+  .cd-import { display: flex; align-items: center; gap: 12px; }
+  .cd-import .combobox { flex: 1; min-width: 0; max-width: 420px; }
+  .cd-import__field { cursor: pointer; }
+  .cd-import__ph { color: var(--muted-foreground); font-size: var(--fs-13); padding: 0 2px; }
+  .cd-import__caret { flex: none; margin-left: auto; color: var(--muted-foreground); align-self: center; }
+  .cd-import__check { flex: none; margin-left: auto; display: grid; place-items: center; color: var(--primary); }
+  .cd-opt[disabled] { cursor: default; }
+  .cd-opt[disabled] .combobox__opt-name { color: var(--muted-foreground); }
+  .cd-flag { flex: none; margin-left: auto; align-self: center; }
+
+  .cd-listhead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 28px 0 8px; }
+  .cd-listhead__t { font-size: var(--fs-14); }
+  .cd-listhead__n { font-size: var(--fs-13); color: var(--muted-foreground); }
+
+  /* 分頁底部的動作列。不用 .sticky-actions：內嵌模式（?embed=1）會把它隱藏，
+     而這一頁正是要被 detail-sheet 內嵌的那一頁。 */
+  .cd-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-soft); }
+  .cd-saved { align-self: center; margin-right: auto; color: var(--muted-foreground); font-size: var(--fs-13); }
+  .cd-saved[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-topbar" id="sidebar"></header>
+
+  <main class="main">
+    <div class="page">
+
+      <div class="page-crumb page-crumb--back">
+        <a class="btn btn--icon-circle btn--sm page-crumb__back" href="../creators.html" aria-label="回上一層"><i data-lucide="chevron-left" class="ztor-icon"></i></a>
+        <a href="../creators.html" class="card__link">Creator 管理</a> <span style="margin:0 6px">/</span>
+        <span data-cd-crumb>Denise Lonely</span>
+      </div>
+
+      <!-- 頁首：這一位是誰、現在什麼狀態，以及兩個離開這一頁的去處 -->
+      <div class="page-intro">
+        <div class="page-intro__lead">
+          <span class="cd-ava" data-cd-ava aria-hidden="true">D</span>
+          <div>
+            <h1 class="page-intro__title" data-cd-name>Denise Lonely</h1>
+            <div class="cd-facts">
+              <span data-cd-shop>ztor.com/shop/denise</span>
+              <span class="cd-facts__dot">·</span>
+              <span data-cd-created>建立於 2026-01-08</span>
+              <span class="cd-facts__dot">·</span>
+              <span class="badge badge--success">啟用中</span>
+            </div>
+          </div>
+        </div>
+        <div class="page-intro__actions">
+          <button class="btn btn--outline" type="button">停用</button>
+          <a class="btn btn--primary" href="../index.html">前往工作區</a>
+        </div>
+      </div>
+
+      <!-- 分頁：基本資料｜bookyay 活動（指示 1：匯入獨立成一個分頁） -->
+      <nav class="tabs tabs--count-plain" role="tablist" id="cd-tabs">
+        <div class="tabs__item tabs__item--active" role="tab" aria-selected="true" data-tab="basic">基本資料</div>
+        <div class="tabs__item" role="tab" aria-selected="false" data-tab="events">bookyay 活動 <span class="tabs__item-count" data-cd-count>1</span></div>
+      </nav>
+
+      <!-- ── 分頁一 · 基本資料 ─────────────────────────────────────── -->
+      <section class="tab-panel tab-panel--active cd-panel" data-panel="basic">
+
+        <div class="form-section" style="padding-top:28px">
+          <h2 class="form-section__title">帳號來源</h2>
+          <p class="form-section__sub">這位 creator 的身分來自他本人在 ztor 前台註冊的帳號。<strong>不可在此變更</strong>——換掉等於換一個人，那是建另一個 creator。</p>
+          <div class="cd-grid" style="margin-top:20px">
+            <div class="cd-ro"><span class="cd-ro__k">帳號名稱</span><span class="cd-ro__v">Denise Lonely</span></div>
+            <div class="cd-ro"><span class="cd-ro__k">Email</span><span class="cd-ro__v">denise@example.com</span></div>
+            <div class="cd-ro"><span class="cd-ro__k">Username</span><span class="cd-ro__v">@denise</span></div>
+            <div class="cd-ro"><span class="cd-ro__k">建立時間</span><span class="cd-ro__v">2026-01-08</span></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2 class="form-section__title">商店與聯絡方式</h2>
+          <p class="form-section__sub">這一組是 Admin 可以改的。</p>
+          <div class="cd-grid" style="margin-top:20px">
+            <label class="field">
+              <span class="field__label">店鋪網址</span>
+              <input class="input" type="text" id="cd-handle" value="denise">
+              <span class="field__hint" id="cd-handle-prev">ztor.com/shop/denise</span>
+            </label>
+            <label class="field">
+              <span class="field__label">電話 <span class="text-sub">（選填）</span></span>
+              <input class="input" type="tel" placeholder="+886 900 000 000">
+            </label>
+          </div>
+        </div>
+
+        <div class="cd-actions">
+          <span class="cd-saved" id="cd-saved-basic" hidden>已儲存（demo，不落地）</span>
+          <a class="btn btn--ghost" href="../creators.html">取消</a>
+          <button class="btn btn--primary" type="button" data-cd-save="basic">儲存</button>
+        </div>
+      </section>
+
+      <!-- ── 分頁二 · bookyay 活動 ─────────────────────────────────── -->
+      <section class="tab-panel cd-panel" data-panel="events">
+
+        <div class="form-section" style="padding-top:28px">
+          <!-- 標題不寫 bookyay：.form-section__title 是全大寫（站上慣例），
+               寫進去會變成 BOOKYAY——那是小寫的品牌名。留在副標裡。 -->
+          <h2 class="form-section__title">匯入活動</h2>
+          <p class="form-section__sub">這位 creator 已經在 bookyay（外部售票平台）上販售的活動，可以整場搬進 ztor。一次可以選多場；同一場只會匯入一次，匯過的在清單裡點不動。</p>
+
+          <div class="cd-import" style="margin-top:20px">
+            <div class="combobox">
+              <div class="tag-input__field cd-import__field" id="cd-imp-field" role="combobox" tabindex="0"
+                   aria-expanded="false" aria-controls="cd-imp-menu" aria-haspopup="listbox"></div>
+              <div class="combobox__menu" id="cd-imp-menu" role="listbox" aria-multiselectable="true" hidden></div>
+            </div>
+            <button class="btn btn--primary" type="button" id="cd-imp-do" disabled>
+              <i data-lucide="download" class="ztor-icon"></i><span id="cd-imp-do-label">匯入</span>
+            </button>
+          </div>
+
+          <div class="cd-listhead">
+            <span class="cd-listhead__t">已匯入的活動</span>
+            <span class="cd-listhead__n" id="cd-imp-n">1 場</span>
+          </div>
+          <div id="cd-imp-list"></div>
+        </div>
+
+        <div class="cd-actions">
+          <span class="cd-saved" id="cd-saved-events" hidden>已儲存（demo，不落地）</span>
+          <a class="btn btn--ghost" href="../creators.html">取消</a>
+          <button class="btn btn--primary" type="button" data-cd-save="events">儲存</button>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="app-footer">
+      <span>Ztor Creator Studio · R 2.2 · DEMO</span>
+      <span>·</span>
+      <span>Admin · Creator 詳情／編輯</span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script src="../js/icons-all.js?v=r2.2"></script>
+<script src="../js/i18n.js?v=r2.2"></script>
+<script src="../js/sidebar.js?v=r2.2"></script>
+<script>
+/* DEMO 邏輯：分頁切換（吃 ?tab=）＋ bookyay 活動多選匯入。 */
+(function () {
+  'use strict';
+
+  /* ── 假資料 ─────────────────────────────────────────────────── */
+  var EVENTS = [
+    { id: 'e1', name: 'REALIVE 世界巡迴 · 台北', date: '2026-09-12', venue: '台北流行音樂中心' },
+    { id: 'e2', name: 'REALIVE 世界巡迴 · 高雄', date: '2026-09-20', venue: '高雄流行音樂中心' },
+    { id: 'e3', name: '什麼都不必說 聽團日',     date: '2026-10-04', venue: 'Legacy Taipei' },
+    { id: 'e4', name: '黑膠典藏版 簽名會',       date: '2026-10-18', venue: '誠品信義店' },
+    { id: 'e5', name: 'FLAMES 前導試聽會',       date: '2026-11-02', venue: '華山 Legacy mini' },
+    { id: 'e6', name: '年末感謝祭 Fan Meeting',  date: '2026-12-21', venue: 'TICC 台北國際會議中心' }
+  ];
+  var imported = ['e3'];    /* 已匯入 */
+  var picked   = [];        /* 下拉裡勾起來、還沒按匯入 */
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>'"]/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]; }); }
+  function ev(id) { return EVENTS.filter(function (e) { return e.id === id; })[0] || null; }
+  function icons(el) { if (window.ztorIcons) window.ztorIcons.applyIcons(el); }
+
+  /* ── 分頁 ───────────────────────────────────────────────────── */
+  var tabs = document.getElementById('cd-tabs');
+  function showTab(name) {
+    Array.prototype.forEach.call(tabs.querySelectorAll('.tabs__item'), function (t) {
+      var on = t.getAttribute('data-tab') === name;
+      t.classList.toggle('tabs__item--active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.tab-panel'), function (p) {
+      p.classList.toggle('tab-panel--active', p.getAttribute('data-panel') === name);
+    });
+  }
+  tabs.addEventListener('click', function (e) {
+    var t = e.target.closest('.tabs__item');
+    if (t) showTab(t.getAttribute('data-tab'));
+  });
+  /* 指示 2：⋯ 選單的兩個入口是同一頁的兩個分頁，靠 ?tab= 決定落在哪一頁 */
+  var wanted = new URLSearchParams(location.search).get('tab');
+  if (wanted === 'events') showTab('events');
+
+  /* ── 店鋪網址預覽 ───────────────────────────────────────────── */
+  var handle = document.getElementById('cd-handle'), prev = document.getElementById('cd-handle-prev');
+  handle.addEventListener('input', function () {
+    var h = handle.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    prev.textContent = 'ztor.com/shop/' + (h || '…');
+  });
+
+  /* ── bookyay 活動：下拉多選 → 匯入 ─────────────────────────── */
+  var field = document.getElementById('cd-imp-field');
+  var menu  = document.getElementById('cd-imp-menu');
+  var doBtn = document.getElementById('cd-imp-do');
+  var doLbl = document.getElementById('cd-imp-do-label');
+  var listEl = document.getElementById('cd-imp-list');
+  var countEl = document.getElementById('cd-imp-n');
+  var tabCount = document.querySelector('[data-cd-count]');
+
+  function menuOpen() { return !menu.hidden; }
+  function openMenu() { renderMenu(); menu.hidden = false; field.setAttribute('aria-expanded', 'true'); }
+  function closeMenu() { menu.hidden = true; field.setAttribute('aria-expanded', 'false'); }
+
+  function renderField() {
+    field.innerHTML = picked.length
+      ? picked.map(function (id) {
+          var e = ev(id); if (!e) return '';
+          return '<span class="chip chip--active chip--removable">' + esc(e.name)
+            + '<button type="button" class="chip__remove" data-unpick="' + esc(id) + '" aria-label="移除">'
+            + '<i data-lucide="x" class="ztor-icon"></i></button></span>';
+        }).join('')
+      : '<span class="cd-import__ph">選擇活動…</span>';
+    field.insertAdjacentHTML('beforeend', '<i data-lucide="chevron-down" class="ztor-icon cd-import__caret" aria-hidden="true"></i>');
+    doBtn.disabled = !picked.length;
+    doLbl.textContent = picked.length ? '匯入 ' + picked.length + ' 場活動' : '匯入';
+    icons(field); icons(doBtn);
+  }
+  function renderMenu() {
+    menu.innerHTML = EVENTS.map(function (e) {
+      var done = imported.indexOf(e.id) !== -1;
+      var on   = picked.indexOf(e.id) !== -1;
+      return '<button type="button" class="combobox__opt cd-opt' + (on ? ' is-active' : '') + '" role="option"'
+        + ' aria-selected="' + (on ? 'true' : 'false') + '" data-pick="' + esc(e.id) + '"'
+        + (done ? ' disabled aria-disabled="true"' : '') + '>'
+        + '<span class="combobox__opt-text">'
+        +   '<span class="combobox__opt-name">' + esc(e.name) + '</span>'
+        +   '<span class="combobox__opt-meta">' + esc(e.date) + ' · ' + esc(e.venue) + '</span>'
+        + '</span>'
+        + (done ? '<span class="badge badge--neutral cd-flag">已匯入</span>'
+                : (on ? '<span class="cd-import__check"><i data-lucide="check" class="ztor-icon"></i></span>' : ''))
+        + '</button>';
+    }).join('');
+    icons(menu);
+  }
+  function renderList() {
+    countEl.textContent = imported.length + ' 場';
+    tabCount.textContent = imported.length;
+    if (!imported.length) {
+      listEl.innerHTML = '<div class="empty-card">'
+        + '<div class="empty-card__icon"><i data-lucide="ticket" class="ztor-icon"></i></div>'
+        + '<h2 class="empty-card__title">尚未匯入任何活動</h2>'
+        + '<p class="empty-card__text">從上面的清單挑一場或多場，按「匯入」搬進 ztor。</p>'
+        + '</div>';
+      icons(listEl);
+      return;
+    }
+    listEl.innerHTML = '<div class="data-list">' + imported.map(function (id) {
+      var e = ev(id); if (!e) return '';
+      return '<div class="data-list__row">'
+        + '<div class="data-list__row-main">'
+        +   '<span class="data-list__icon data-list__icon--neutral"><i data-lucide="ticket" class="ztor-icon"></i></span>'
+        +   '<div class="data-list__body">'
+        +     '<div class="data-list__title">' + esc(e.name) + '</div>'
+        +     '<div class="data-list__meta">' + esc(e.date) + ' · ' + esc(e.venue) + '</div>'
+        +   '</div>'
+        + '</div>'
+        + '<span class="badge badge--neutral">已匯入</span>'
+        + '</div>';
+    }).join('') + '</div>';
+    icons(listEl);
+  }
+  function renderAll() { renderField(); renderList(); if (menuOpen()) renderMenu(); }
+
+  field.addEventListener('click', function (e) {
+    e.stopPropagation();   /* 這一段會重畫自己，e.target 會離開文件 */
+    var rm = e.target.closest('[data-unpick]');
+    if (rm) { picked = picked.filter(function (x) { return x !== rm.getAttribute('data-unpick'); }); renderAll(); return; }
+    menuOpen() ? closeMenu() : openMenu();
+  });
+  field.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); menuOpen() ? closeMenu() : openMenu(); }
+    if (e.key === 'Escape' && menuOpen()) { e.stopPropagation(); closeMenu(); }
+  });
+  menu.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var opt = e.target.closest('[data-pick]');
+    if (!opt || opt.disabled) return;
+    var id = opt.getAttribute('data-pick'), at = picked.indexOf(id);
+    if (at === -1) picked.push(id); else picked.splice(at, 1);
+    renderField(); renderMenu();   /* 選單留著開，一次挑多場 */
+  });
+  document.addEventListener('click', function (e) {
+    if (menuOpen() && !e.target.closest('.cd-import')) closeMenu();
+  });
+  doBtn.addEventListener('click', function () {
+    picked.forEach(function (id) { if (imported.indexOf(id) === -1) imported.push(id); });
+    picked = []; closeMenu(); renderAll();
+  });
+
+  /* 儲存：demo 不落地，只回一句話 */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cd-save]'), function (b) {
+    b.addEventListener('click', function () {
+      var note = document.getElementById('cd-saved-' + b.getAttribute('data-cd-save'));
+      note.hidden = false;
+      window.setTimeout(function () { note.hidden = true; }, 2200);
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

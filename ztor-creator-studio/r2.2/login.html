@@ -36,6 +36,25 @@
     <span class="auth-brand__name" data-i18n="login.brand">Creator Studio</span>
   </div>
 
+  <!-- 語言選擇器（D222，撤除 D221 的雙概念）：釘畫面右上角，跟品牌角標同一層級——
+       不屬於任何一個 F1/F2/F3 步驟，三步都看得到、切畫面不會跟著消失。選了立即
+       ztorLang.set()，本頁文字（含尚未切換到的其他步驟）跟著换語言。沿用 select--bare
+       （本頁沒有卡片，控件直接坐在頁面底色上，Q4 既有規則），zselect.js 已載入會自動
+       升級成站上樣式。地球 icon 用 js/icons.js 的 'world' registry key，非自畫 svg；
+       擺法沿用站上既有的欄位前置圖示範式 control-prefix ＋ select--with-prefix
+       （媒體庫檢視器同款），圖示坐在欄位內、文字前面，不在控件外面另擺一顆。 -->
+  <div class="auth-lang">
+    <span class="control-prefix">
+      <span class="control-prefix__icon"><i data-lucide="world" class="ztor-icon"></i></span>
+      <select class="select select--bare select--with-prefix" id="login-lang-select" aria-label="Default language" data-i18n-aria-label="settings.lang.default">
+      <option value="en">English</option>
+      <option value="zh-Hant">繁體中文</option>
+      <option value="zh-Hans">简体中文</option>
+      <option value="id">Bahasa Indonesia</option>
+      </select>
+    </span>
+  </div>
+
   <div class="auth-shell">
 
     <!-- ── F1 · 登入方式選擇 ────────────────────────────────
@@ -400,6 +419,22 @@
 </script>
 <script src="js/icons.js?v=r2.2"></script>
 <script src="js/i18n.js?v=r2.2"></script>
+<script>
+/* 語言選擇器接線（D222）：必須排在 js/i18n.js 之後才拿得到 window.ztorLang；
+   本檔頂部的登入控制器 <script> 在文件順序上比這裡早，寫在那裡的話 ztorLang 還沒定義，
+   所以獨立成這一小段接在 i18n.js 後面（settings.html 的語言接線同一個順序理由）。 */
+(function () {
+  var sel = document.getElementById('login-lang-select');
+  if (!sel || !window.ztorLang) return;
+  function refresh() {
+    var current = window.ztorLang.get();
+    if (sel.value !== current) sel.value = current;
+  }
+  refresh();
+  sel.addEventListener('change', function () { window.ztorLang.set(sel.value); });
+  document.addEventListener('ztor:lang-changed', refresh);
+}());
+</script>
 <script src="js/zselect.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 </body>

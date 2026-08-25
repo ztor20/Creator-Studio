@@ -118,7 +118,7 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
         components.js           · runtime-injected content blocks（同 sidebar.js 注入模式）；Dashboard F2–F8 區塊 + 跨頁共用的 transaction-list（index.html F3 與 earnings.html 共用同一 renderer）。詳見 component-library.md
         theme.js                · 主題（[data-theme] cycle light / dark / system，window.ztorTheme）＋顯示模式（[data-nav-mode] topbar / sidebar，window.ztorNavMode）；皆在 <head> 早期套用避免 FOUC、localStorage 持久化（spec §6.9 / D016）
         icons.js                · Tabler SVG registry，**全頁面 active 載入**；新增 icon 必須先進 REGISTRY
-        i18n.js                 · 雙語字典（EN / zh-Hant）+ data-i18n / data-i18n-placeholder / data-i18n-aria-label apply 機制 + 透過 .app-topbar__lang 切換 + localStorage 持久化
+        i18n.js                 · 雙語字典（EN / zh-Hant）+ data-i18n / data-i18n-placeholder / data-i18n-aria-label apply 機制 + localStorage 持久化。D220/D222（2026-08-24；D221 同日曾短暫拆成兩個 state，同日即撤除）：語言是單一概念（window.ztorLang，三處入口：settings.html／帳戶選單／login.html），字典僅 en/zh 兩套故 zh-Hans 借 zh、id 借 en；app shell 的語言切換鈕以可展開語言列回復
         devtools.js             · 「Cheat Codes」原型情境工具（Alt＋右鍵開、無常駐鈕）；自包含、DS tokens 樣式。Skip validation／Onboarding／Event Day 狀態存 localStorage `ztor.devstate`＋同步 URL＋反映 `<html data-onboarding/data-event-day>`；內建元素 inspector（hover 標元件/非元件、可拖移調高）。對外 `window.ztorDevState` + 事件 `ztor:devstate-changed`。掛在全部產品頁（design-system.html 除外）。**「版本」切換**讀 feature-scope-map，依 `data-feat`（功能在版本內才顯示）／`data-feat-off`（功能不在版本內才顯示＝base 呈現）成對切換元素；2026-07-02 補：ID 解析支援小數點子 ID（`S31.1`）＋新增 `data-feat-off` 反向閘（首用於 S31.1 低庫存門檻自訂）。**2026-07-16 補 page-scoped 預覽開關**：頁面在載入 devtools 前設 `window.ZTOR_DEV_PAGE_GROUPS = [{key,label,options,def},…]`，面板即在版本組下渲染對應單選組（`data-kind=page`），選值存 `state.pageOpts[key]`（localStorage 持久化）並經 `ztor:devstate-changed` 的 `detail.pageOpts` 派給該頁自行套用；未設定即不渲染、其他頁零影響。首用於 product-detail 的 D137 鎖定欄位替代版面預覽（`pd-cat`／`pd-var`／`pd-edition`）
         scenario.js             · 把 devstate 接到頁面：Dashboard 吃 Onboarding Flow、Events 吃 Event Day，頂部顯示情境提示橫幅。自包含、DS tokens；掛在 index.html／events.html
 ```
@@ -224,11 +224,11 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 | 5.1.6.1 建立活動 | create-event.html | ◑ 5-step | Type · Details(名稱/描述/Lineup/4 圖+影片) · Venue & Time · Tickets(≥1) · Review+Quality check · Publish |
 | 03 §5.1.7 Fans CRM | fans-crm.html | ◑ Structure | 4 KPI · Who's who 分布 · at-risk alert · Leaderboard/Hall of fame tabs · 3 sample fans |
 | 03 §5.1.8 Earnings | earnings.html | ✓ Full | **5 tabs**（D050）· Overview（KPI / line chart / source / recent）/ Transactions（6 欄 ztor-table + filter chips + Manual entry + Export）/ **Breakdown（segmented「本期間 F12 金流瀑布 / 依項目 F11 收益拆解」一次顯示一個；報表式 waterfall——bar 只留里程碑、扣項純文字縮排列）**/ Payouts（4 status KPI + Request payout card + F8 淨利池/退款準備金摘要 + history）/ Tax docs（year chip + doc list + 7 regions）。F12＝`waterfall.css`（總收入→淨利池→Creator/NFT，§7.3，數字同 F3）；F11 重用 `waterfall` 做項目財務階梯（項目總收入→…→項目淨利）＋項目選單＋追溯/匯出入口。提款 popup 含不可逆確認閘門（§4.5）＋摘要結算來源/費率版本（§4.4）；**F10 手動補登 popup**（`partials/manual-entry-modal.js`，重用 payout dialog 外殼，§5.1.8.2）由 Transactions 觸發。**F7 逐筆可追溯**：交易表可展開列（`table.css` expandable-row variant），收入列展開＝Event ID（可複製）＋費率版本（cfg-2026.02）＋該筆金流瀑布（重用 `waterfall`），非收入列展開＝Event ID＋註記。F3 Net income 卡有 `.kpi__link`「View breakdown →」捷徑（`data-tab-jump="breakdown"`）。Earnings 全 F1–F12 已覆蓋 |
-| 03 §5.1.9 Settings | settings.html | ✓ Full | Profile / Appearance / Notifications (Email + Push) / Privacy & Security / Payments / Integrations |
+| 03 §5.1.9 Settings | settings.html | ✓ Full | Profile / Appearance / **Language（D220 新增、D221 一度拆成兩列、D222 撤除拆分：一列——預設語言 en/zh-Hant/zh-Hans/id 接 window.ztorLang，語言的唯一 API）** / Notifications (Email + Push) / Privacy & Security / Payments / Integrations |
 | 03 §5.3.1 商品分類 | create-product.html | ◑ | 類型卡三型（實體/數位/拍賣）+ Category 下拉；與 §7.1 主分類 taxonomy 的對應待協調（documents/decisions D026）|
 | 03 §5.3.2 狀態語言 | 全站 | ✓ | 統一 pill 元件 + 同 token |
 | 03 §5.3.3 財務術語 | earnings.html, index.html, product-detail.html | ✓ | 毛利/淨利/待結算/Available/Payout 全部分開呈現 |
-| 03 §5.3.4 語言 | 全站 17 頁 body 完整 i18n | ✓ Full | i18n.js DICT 約 1,080 keys · `.app-topbar__lang` EN · 中 toggle · localStorage 持久化 · 預設 EN · 全站頁面 body 字串皆已覆蓋 |
+| 03 §5.3.4 語言 | 全站 17 頁 body 完整 i18n | ✓ Full | i18n.js DICT 約 1,080 keys · localStorage 持久化 · 預設 EN · 全站頁面 body 字串皆已覆蓋。**D220/D222/D223（2026-08-24；D221 同日曾短暫拆分、同日即撤除）**：語言四碼 en/zh-Hant/zh-Hans/id 是單一概念（`window.ztorLang`，三處入口：settings.html／帳戶選單／login.html，改的是同一個值）；app shell 的語言切換鈕以帳戶選單可展開語言列回復，D223 再把收合列簡化成只顯示目前語言。內容語言（產品專屬多語系欄位）另見 §7.4／F8，**D223 起改由發布前預覽確認層 `partials/publish-preview.js` 提供**（原 D220 頁級 `partials/lang-switch.js` 已退場），主語系仍跟唯一的語言值 |
 
 ✓ Full = 滿足 spec 主要功能 · ◑ Structure = 結構齊全但 detail 未深入 · ◑ Step 1 = 多步驟流程只做第一步
 
@@ -273,12 +273,68 @@ R 2.1 的視覺取向：**highlighter-orange 沒有藏起來。** 它在 active 
 
 ### 5.3 語言（i18n）
 
-- **預設 EN**，可切繁中（zh-Hant）。透過 topbar `.app-topbar__lang` 的 `EN · 中` toggle 切換
-- 字典在 `i18n.js` 的 `DICT` 物件，約 1,080 keys（含顯示模式、orders、order-detail、payout modal）。三種 binding：`data-i18n`（textContent / innerHTML）、`data-i18n-placeholder`、`data-i18n-aria-label`
-- localStorage key `ztor-r21-lang` 持久化，`<html lang>` 同步寫
+- **預設 EN**，四碼可選 `en` / `zh-Hant` / `zh-Hans` / `id`（**D220，2026-08-24；D221 同日修訂、D222 同日撤除 D221**，見下方「5.3.1 語言狀態模型」）。語言是**單一概念**（`window.ztorLang`），三處入口：settings.html「預設語言」列、帳戶選單（topbar／sidebar 可展開語言列，見 UI-CHANGES B 類）、`login.html`——三處改的是同一個值，同時決定介面顯示語言與建立內容的輸入語言
+- 字典在 `i18n.js` 的 `DICT` 物件，約 1,080 keys（含顯示模式、orders、order-detail、payout modal），僅 en/zh 兩套。三種 binding：`data-i18n`（textContent / innerHTML）、`data-i18n-placeholder`、`data-i18n-aria-label`
+- **四碼 → 字典 fallback（呈現假設，見 ASSUMPTIONS.md）**：`zh-Hant`／`zh-Hans` 都查 zh 字典，`en`／`id` 都查 en 字典；`<html lang>` 仍寫入四碼原值（非字典解析後的二碼），供未來擴充字典時語意不變
+- localStorage key `ztor-r21-lang` 持久化，`<html lang>` 同步寫；舊值 `zh`/`zh-Hant` 相容映射
 - **覆蓋範圍**：全站 17 頁 body 完整覆蓋（topbar 通用 + Dashboard + Earnings + orders / order-detail + 其餘內容頁）。`applyI18n()` 以 `document.querySelectorAll('[data-i18n*]')` 全域套用，runtime 注入的區塊（sidebar / components.js）注入後再各自呼叫一次
 - 切換後 `applyI18n()` 重新跑 query selectors，不需 reload
 - **CJK fallback** 字型：自架 `Noto Sans TC`（subset woff2；R 2.1.39 起取代、R 2.1.40 起自架；Taipei Sans TC Beta 已移除）
+
+#### 5.3.1 語言狀態模型（D222 收回單一概念、D223 翻譯檢視挪到發布前）
+
+D220（2026-08-24）先把「介面語言」與「內容檢視語言」拆成兩個獨立 state；同日 D221 修訂 D220，把
+「介面語言」再拆成「顯示語言」與「預設語言」兩個各自獨立的 state；同日 D222 撤除 D221 的拆分，
+語言收回單一概念；同日 D223 把「內容檢視語言」的時機從「填表當下常駐分頁」改成「發布前彈窗確認」
+（頁級 Lang switch 退場，見下方）。現行模型如下：
+
+- **語言**（`window.ztorLang`）＝這個帳號的唯一語言值，**同時**決定「介面文字用哪個語言顯示」與
+  「建立商品／活動等內容時的輸入語言（也是新語系內容自動翻譯的來源語系）」。`get()/set()` 對外
+  API，`set()` 呼叫既有的 `setLang()` 並廣播 `ztor:lang-changed`；localStorage key `ztor-r21-lang`
+  不變。**三處入口**：settings.html「預設語言」列、帳戶選單（topbar／sidebar，可展開的語言列，
+  詳見下方 §5.3.2）、login.html（頁面右上角常駐選擇器，2026-08-24 新增地球 icon）——三處改的是
+  同一個值
+- **舊值遷移**：D221 曾另外用 localStorage key `ztor-r22-default-lang` 存「預設語言」；D222 撤除後，
+  `js/i18n.js` 啟動時一次性遷移——若使用者身上還留著這把舊 key、而 `ztor-r21-lang` 缺值，讀舊值當
+  語言值，之後一律清掉舊 key，不留孤兒值
+- **內容檢視語言／翻譯檢視（D223，2026-08-24，取代 D220 的頁級 Lang switch）**＝建立商品／活動／
+  專案／作品發布時，決定「現在看哪個語系的可翻譯欄位」；**時機從「填表當下」挪到「按下發布之後、
+  真正送出之前」**——四個建立／發布流程在「新發布」的按鈕 handler 裡呼叫
+  `window.ztorPublishPreview.open({...})` 打開發布前預覽確認層，語言分頁＋預覽/列表切換都在這一層
+  裡，不再常駐表單頂部。翻譯草稿存在 `partials/publish-preview.js` 的模組記憶體（非
+  `sessionStorage`，「返回編輯」關掉再重開仍看得到剛才的修改）；**絕不寫入 `ztor-r21-lang`、絕不呼叫
+  `setLang`／`ztorLang.set`**。主語系（標「預設」徽章那份）即時讀取表單當下的值，**列表檢視的預設
+  語言欄唯讀**（它是母本，改母本要回表單）
+- 翻譯檢視切到非預設語系時，預覽檢視顯示 `.info-banner`：「此語系內容由系統自動翻譯生成…」；欄位顯示邏輯＝「該語系已手動編輯過就顯示手動值，否則顯示預設語言目前值充當自動翻譯示意」（原型無真翻譯，呈現假設）
+- **只攔「新發布」路徑**：四個接線頁在編輯已上架內容的分支（Save changes／saveEdit）不呼叫這一層，直接走原本的儲存邏輯（呈現假設，見 ASSUMPTIONS.md）。四個接線頁：create-product.html（`#cp-f-name`/`#cp-f-desc`，clone 右欄 `.preview-card`）、create-event.html（`[data-ce="name"]`/`[data-ce="desc"]`，clone `.event-preview-card`，攔在 `tryPublish()` 必填／超賣檢查通過之後）、create-project.html（`#proj-title`/`#proj-desc`，generic 卡，`isFilmFlow()` 兩分岔皆先過）、publish-work.html（`#pw-title`/`#pw-desc`，generic 卡）
+- publish-work.html 的 F8「一語言一卡、可自由增刪 zh/en/ja/ko」已收編為單卡；ja/ko 輸入能力隨舊模型移除，`work-fields.js` 的 `collect()`/`checks()`/`_fill` 同步改為單卡形狀（`work.copy` 仍是陣列，但只剩一筆）
+- **create-product 預覽升級成買家前台 mock（同日追加裁示）**：`previewRender(container, api)` 自訂渲染介面（與 `previewClone` 互斥），唯一消費者 `create-product.html` 的 `.cp-shopmock`——結構參照外部 repo `ztor-eshop-fe` 的 shop-item 頁（呈現參考，非產品權威，見 ASSUMPTIONS.md LANG-007），只有名稱／描述是真實可編輯資料，尺寸／顏色／購物車／取貨列是裝飾性佔位；頁面層 CSS，不 promote 進 ds-components（單一消費者、且是對外部參照頁的一次性結構模仿）
+- **登入後不一致 popup 已退場**：D221 曾新增（顯示語言≠預設語言時跳確認框，`partials/lang-mismatch-dialog.js`）；D222 語言收回單一概念後，這個情境不復存在，該檔連同 `login.html` 三條成功路徑的 `ztor-r22-langcheck` 旗標、`index.html`／`creators.html` 的掛載一併移除
+- 呈現決策，不影響產品語意；產品缺口（真實翻譯引擎、多語系欄位的正式資料模型）見 ASSUMPTIONS.md
+
+#### 5.3.2 帳戶選單的語言列（D221 新增、D222 簡化、D223 收合列再簡化）
+
+topbar 與 sidebar 兩種 shell 的帳戶選單都有一列語言切換（`js/sidebar.js` 的
+`langMenuHtml()`／`langOptionsHtml()`）。呈現決策：
+
+- **不引入新的 1-of-N 元件**：沿用兩個選單各自既有的列樣式——topbar 用
+  `.app-topbar__dropdown-option`、sidebar 用 `.app-sidebar__sub-link`——不塞
+  `.dropdown__item--choice`／`--ladder`（那是 e-shop 分級選單的殼，語意不合）。選中語意自行補
+  `role="menuitemradio"` + `aria-checked` + `check` icon
+- **收成可展開的一列**：點了才展開四個語系。理由：`sidebar.js` 已有 700px 視窗下四語系常駐攤平
+  會撐爆選單的前例（見 sidebar.js 內註解），改成可展開就不會重演
+- **D223（2026-08-24，審查抓到的兩點修正）**：收合列改成**只顯示目前語言名稱**＋chevron——拿掉
+  D222 遺留的「預設語言」前置 label 與兩行 title/sub 結構（`.app-topbar__dropdown-option-title`/
+  `-sub`），縮排與字級對齊上方的純文字列（Profile／Settings／Payments）。視覺上不再出現「語言」
+  字樣，補 `aria-label`（`data-i18n-aria-label="settings.lang.toggle-label"`）維持螢幕報讀語意。
+  另外語言選項（四語系清單、收合列本身）補了 button reset（`border:0;background:transparent`），
+  修掉瀏覽器預設 buttonface 灰底把四顆選項都填成實心、誤讀成「全部選中」的問題（兩種 shell 同病）
+- **狀態不整段重繪**：`sidebar.js` 只在 navmode／creator／devstate 變更時 remount 整個 shell；
+  語言變更改由 `refreshLangRows()` 監聽 `ztor:lang-changed`，patch 目前值標籤與打勾，不重建 DOM
+- **點語言呼叫 `ztorLang.set()`**——語言的唯一 API
+- D221 曾在此列另掛 `.badge.badge--neutral`「Default」徽章與「去設定改預設語言」的提示行，
+  D222 語言收回單一概念後撤除——選單本身「收合式單選」的形狀不受影響，這是「選單內可展開的單選
+  清單」在站上第一次出現，記入 `STYLE-DECISIONS.md` 待裁決 Q70（交叉引用 Q17／Q51／Q55 既有 1-of-N 分工爭議）
 
 ### 5.4 響應式（Responsive）
 
