@@ -668,7 +668,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#source-import">Source import gate</a>
     <a class="toc__link toc__link--sub" href="#field-source-tag">Field source tag</a>
     <a class="toc__link toc__link--sub" href="#quick-result-list">Quick result list</a>
-    <div class="toc__subgroup"><span data-en>JS components without their own CSS (8)</span><span data-zh>無自帶 CSS 的 JS 元件（8）</span></div>
+    <div class="toc__subgroup"><span data-en>JS components without their own CSS (9)</span><span data-zh>無自帶 CSS 的 JS 元件（9）</span></div>
     <a class="toc__link toc__link--sub" href="#work-fields">Work fields</a>
     <a class="toc__link toc__link--sub" href="#work-taxonomy">Work taxonomy</a>
     <a class="toc__link toc__link--sub" href="#film-picker">Film picker</a>
@@ -677,6 +677,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
     <a class="toc__link toc__link--sub" href="#fee-exception-modal">Fee exception modal</a>
     <a class="toc__link toc__link--sub" href="#content-blocks">Content block injector</a>
     <a class="toc__link toc__link--sub" href="#publish-preview">Publish preview</a>
+    <a class="toc__link toc__link--sub" href="#login-lang-prompt">Login lang prompt</a>
     <div class="toc__group"><span data-en>Pillar 5 · Pattern</span><span data-zh>Pillar 5 · Pattern</span></div>
     <a class="toc__link" href="#patterns"><span data-en>5.1 Pattern cards</span><span data-zh>5.1 Pattern 卡</span></a>
     <a class="toc__link" href="#voice"><span data-en>5.2 Voice</span><span data-zh>5.2 語氣</span></a>
@@ -1467,6 +1468,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
           <tr><td><a href="#fee-exception-modal">Fee exception modal</a></td><td>🟠</td><td><span data-en>Platform fees — per-creator overrides on the rate tree</span><span data-zh>平台費率 — 逐 Creator 的費率覆寫</span></td><td><code>partials/fee-exception-modal.js</code></td></tr>
           <tr><td><a href="#content-blocks">Content block injector</a></td><td>🟠</td><td><span data-en>Dashboard and Earnings blocks rendered from one shared renderer</span><span data-zh>儀表板與收入管理的區塊由同一支渲染器產生</span></td><td><code>js/components.js</code></td></tr>
           <tr><td><a href="#publish-preview">Publish preview</a></td><td>🟠</td><td><span data-en>D223 pre-publish translation review modal (replaces D220 Lang switch — see the tombstone note in the section)</span><span data-zh>D223 發布前翻譯預覽確認層（取代 D220 Lang switch，見該節的墓碑說明）</span></td><td><code>partials/publish-preview.js</code></td></tr>
+          <tr><td><a href="#login-lang-prompt">Login lang prompt</a></td><td>🟠</td><td><span data-en>D225 post-login "keep this language?" prompt when the login-screen pick differs from the account default (revives the retired Lang mismatch dialog's shell with a rewritten meaning — see the section's lineage note)</span><span data-zh>D225 登入畫面所選語言與帳號預設語言不同時的登入後詢問（沿用已退場的 Lang mismatch dialog 的殼、語意整個重寫，見該節的沿革說明）</span></td><td><code>partials/login-lang-prompt.js</code></td></tr>
         </tbody></table>
       </section>
 
@@ -10034,6 +10036,34 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   </details>
 </section>
 
+<section class="sub" id="login-lang-prompt">
+  <div class="sub__head">
+    <h3 class="sub__title">4.131 Login lang prompt <span class="field-note">(D225)</span></h3>
+    <span class="layer layer--organism">🟠 organism</span>
+  </div>
+  <p class="field-label" data-en>Purpose</p><p class="field-label" data-zh>用途</p>
+  <p class="sub__desc" data-en>Asks, once, right after login: does the language you picked on the login screen become your account default? <strong>Lineage — a rewritten revival, not a straight comeback:</strong> 2026-08-24 had a ~~Lang mismatch dialog~~ (D221, <code>partials/lang-mismatch-dialog.js</code>), which compared two concepts — "display language" vs. "default language" — that existed for one day before D222 collapsed them back into a single value (<code>window.ztorLang</code>) and the old file was deleted outright. <strong>This module compares something entirely different:</strong> the site still has only one language value; what's being compared is "the language you just picked on the login screen" vs. "the language already saved as your account default" — same shell convention reused, semantics rebuilt from zero. Pure JS, <strong>no CSS of its own</strong> beyond the canonical <a href="#payout">.payout-modal</a> / <code>.payout-dialog--narrow</code> shell (STYLE-DECISIONS Q27).</p>
+  <p class="sub__desc" data-zh>登入完成後問一次：登入畫面剛選的語言，要不要成為帳號預設語言？<strong>沿革——語意重寫的復活，不是原樣搬回：</strong>2026-08-24 曾有 ~~Lang mismatch dialog~~（D221，<code>partials/lang-mismatch-dialog.js</code>），比對的是「顯示語言」與「預設語言」兩個只存在一天的概念，D222 當天就把兩者收回單一概念（<code>window.ztorLang</code>），舊檔直接刪除。<strong>本檔比對的是完全不同的東西：</strong>站上依然只有一個語言值，比對的是「登入畫面剛選的語言」vs.「帳號已存的預設語言」——沿用同一種殼的寫法，語意從零重建。純 JS，除沿用正典 <a href="#payout">.payout-modal</a>／<code>.payout-dialog--narrow</code> 殼外**無自帶 CSS**（STYLE-DECISIONS Q27）。</p>
+  <p class="field-label" data-en>Rendered preview <span class="field-note">(demo only — bypasses the sessionStorage flags, see code below)</span></p>
+  <p class="field-label" data-zh>視覺展示 <span class="field-note">（僅示範，不走 sessionStorage 旗標判斷，見下方程式碼）</span></p>
+  <div class="demo">
+    <button class="btn btn--primary" type="button" id="ds-llp-demo-btn" data-en>Open login lang prompt (demo)</button>
+    <button class="btn btn--primary" type="button" id="ds-llp-demo-btn-zh" data-zh>開登入語言詢問（示範）</button>
+  </div>
+  <details class="code-fold"><summary><i data-lucide="file-text" class="ztor-icon"></i><span data-en>For developers — API · code</span><span data-zh>給工程師 — API · 程式碼</span></summary>
+  <div class="code-fold__body">
+    <p class="field-text"><strong data-en>State model.</strong><strong data-zh>狀態模型。</strong><span data-en> </span><code>login.html</code><span data-en>'s language selector calls the new </span><span data-zh> 的語言選擇器改呼叫新的 </span><code>window.ztorLang.preview(lang)</code><span data-en> (in <code>js/i18n.js</code>) — applies display only, never writes </span><span data-zh>（在 <code>js/i18n.js</code>）——只套用畫面顯示，</span><strong data-en>never writes localStorage, never dispatches ztor:lang-changed</strong><strong data-zh>從不寫 localStorage、從不廣播 ztor:lang-changed</strong><span data-en>, and records the pick in sessionStorage </span><span data-zh>，並把選擇記進 sessionStorage </span><code>ztor-r22-login-lang-pick</code><span data-en>. All three successful login paths (email / phone / third-party OAuth) write a one-time flag </span><span data-zh>。三條登入成功路徑（email／phone／第三方 OAuth）落地前都寫一次性旗標 </span><code>ztor-r22-login-lang-pending</code><span data-en> before navigating away (see <code>login.html</code>'s </span><span data-zh>（見 </span><code>markJustLoggedIn()</code><span data-en>).</span><span data-zh>）。</span></p>
+    <p class="field-text"><strong data-en>On the landing shell page (</strong><strong data-zh>落地 shell 頁載入時（</strong><code>index.html</code>/<code>creators.html</code><span data-en>):</span><span data-zh>）：</span></p>
+    <p class="field-text">1. <span data-en>no pending flag → zero DOM, zero cost.</span><span data-zh>沒有 pending 旗標 → 零 DOM、零開銷。</span></p>
+    <p class="field-text">2. <span data-en>pending but no pick (user never touched the selector on login.html) → clear the flag, don't ask.</span><span data-zh>有 pending 但沒有 pick（登入畫面沒動過選擇器）→ 清旗標，不問。</span></p>
+    <p class="field-text">3. <span data-en>pick equals the account default → clear both flags, don't ask.</span><span data-zh>pick 等於帳號預設語言 → 清兩把旗標，不問。</span></p>
+    <p class="field-text">4. <span data-en>pick differs → </span><span data-zh>pick 不同 → </span><code>window.ztorLang.preview(pick)</code><span data-en> re-applies the picked language to the page first (so the dialog opens on top of content already shown in that language), then opens the confirm dialog.</span><span data-zh> 先把畫面套回登入時選的語言（讓確認框跳出時，背景內容已經是那個語言），再開確認框。</span></p>
+    <p class="field-text"><strong data-en>Two buttons</strong><strong data-zh>兩顆按鈕</strong>：<code>loginlangprompt.use</code> (<span data-en>"Use {picked}"</span><span data-zh>「改用 {picked}」</span>) → <code>window.ztorLang.set(pick)</code><span data-en> — becomes the new account default; the interface is already showing it, so nothing visibly changes. </span><span data-zh>——成為新的帳號預設語言；介面已經在該語言，畫面上什麼都不變。</span><code>loginlangprompt.keep</code> (<span data-en>"Keep {default}"</span><span data-zh>「保留 {default}」</span>) → <code>window.ztorLang.preview(default)</code><span data-en> — account value untouched, interface switches back to the account default. </span><span data-zh>——帳號值不變，介面切回帳號預設語言。</span><strong data-en>Esc / backdrop click is treated as "Keep {default}"</strong><strong data-zh>Esc／點遮罩視同「保留 {default}」</strong><span data-en> (a presentation assumption — not actively choosing "use" is read as not wanting to change the account default; see ASSUMPTIONS.md). Any resolution — including Esc/backdrop — clears both sessionStorage flags, so the same login only ever asks once (page changes and reloads afterward don't re-trigger it).</span><span data-zh>（呈現假設，見 ASSUMPTIONS.md）。任一種結束方式（含 Esc／遮罩）都會清掉兩把 sessionStorage 旗標，同一次登入只問一次，之後換頁或重整不會再跳。</span></p>
+    <p class="field-text"><code>partials/login-lang-prompt.js</code>。<span data-en>i18n keys: brand-new </span><span data-zh>i18n key：全新獨立的 </span><code>loginlangprompt.*</code>（<code>title</code>/<code>body</code>/<code>use</code>/<code>keep</code>，<span data-en>{picked}/{default} interpolate the language's readable name from </span><span data-zh>{picked}/{default} 插值 </span><code>window.ztorLang.list()</code><span data-en> — deliberately not reusing the cleared </span><span data-zh> 的可讀名稱——刻意不沿用已清除的 </span><code>langmismatch.*</code>）。<span data-en>consumers: </span><span data-zh>消費頁：</span><code>index.html</code>、<code>creators.html</code>（<span data-en>the two login landing points</span><span data-zh>兩條登入落點</span>）。<span data-en>manual trigger for this demo: </span><span data-zh>本頁 demo 的手動觸發：</span><code>window.ztorLoginLangPrompt.show(pickedLang, defaultLang)</code>（<span data-en>bypasses the flags entirely</span><span data-zh>完全不走旗標</span>）。<span data-en>Tombstone: </span><span data-zh>墓碑：</span><code>partials/lang-mismatch-dialog.js</code>（<span data-en>deleted 2026-08-24, D222</span><span data-zh>2026-08-24（D222）已刪除</span>）。</p>
+  </div>
+  </details>
+</section>
+
 <section class="pillar" id="patterns">
       <div><span class="pillar__num">05.1 · Pattern ▸ Cards</span></div>
       <h2 class="pillar__title"><span data-en>How components assemble.</span><span data-zh>元件如何組合</span></h2>
@@ -10282,12 +10312,14 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 <script src="partials/owner-lookup.js?v=r2.2"></script>
 <script src="partials/radio-list.js?v=r2.2"></script>
 <script src="partials/field-more.js?v=r2.2"></script>
-<!-- 無自帶 CSS 的 JS 元件（§4.123–4.130）：demo 由這些模組當場產生，不是照模板手抄。
+<!-- 無自帶 CSS 的 JS 元件（§4.123–4.131）：demo 由這些模組當場產生，不是照模板手抄。
      順序有兩個約束：work-taxonomy 要早於 work-fields（後者初始化時就取它的值域）、
      films-store 要早於 film-picker（候選來源）。components.js 執行當下就掛載，
      所以它的佔位 div（§4.129 的卡）在文件裡本來就在它上面。publish-preview.js
-     （§4.130，D223 取代 lang-switch.js）是呼叫式 API，不必特別排序，demo 按鈕的
-     接線見下方 script。 -->
+     （§4.130，D223 取代 lang-switch.js）與 login-lang-prompt.js（§4.131，D225）都是
+     呼叫式 API，不必特別排序，demo 按鈕的接線見下方 script。login-lang-prompt.js
+     載入當下會自檢 sessionStorage 旗標（見 §4.131），本頁沒寫過那兩把旗標，檢查
+     一定落空、不會憑空跳出彈窗。 -->
 <script src="js/work-taxonomy.js?v=r2.2"></script>
 <script src="partials/work-fields.js?v=r2.2"></script>
 <script src="js/films-store.js?v=r2.2"></script>
@@ -10296,6 +10328,7 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
 <script src="partials/source-upload-modal.js?v=r2.2"></script>
 <script src="partials/fee-exception-modal.js?v=r2.2"></script>
 <script src="partials/publish-preview.js?v=r2.2"></script>
+<script src="partials/login-lang-prompt.js?v=r2.2"></script>
 <script src="js/components.js?v=r2.2"></script>
 <script>
 /* §4.123–4.129 的 demo 掛載。三種掛法各對應元件自己的用法：
@@ -10329,6 +10362,17 @@ code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.92em
   var ppBtn2 = document.getElementById('ds-pp-demo-btn-zh');
   if (ppBtn1) ppBtn1.addEventListener('click', openPpDemo);
   if (ppBtn2) ppBtn2.addEventListener('click', openPpDemo);
+
+  /* §4.131 Login lang prompt demo：手動 API，不走 sessionStorage 旗標——固定示範
+     「登入時選了繁中、帳號預設是英文」這組情境。 */
+  function openLlpDemo() {
+    if (!window.ztorLoginLangPrompt) return;
+    window.ztorLoginLangPrompt.show('zh-Hant', 'en');
+  }
+  var llpBtn1 = document.getElementById('ds-llp-demo-btn');
+  var llpBtn2 = document.getElementById('ds-llp-demo-btn-zh');
+  if (llpBtn1) llpBtn1.addEventListener('click', openLlpDemo);
+  if (llpBtn2) llpBtn2.addEventListener('click', openLlpDemo);
 
   document.querySelectorAll('[data-ds-partial]').forEach(function (host) {
     var tpl = window.ZTOR_PARTIALS && window.ZTOR_PARTIALS[host.getAttribute('data-ds-partial')];

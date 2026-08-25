@@ -309,8 +309,20 @@ D220（2026-08-24）先把「介面語言」與「內容檢視語言」拆成兩
 - **只攔「新發布」路徑**：四個接線頁在編輯已上架內容的分支（Save changes／saveEdit）不呼叫這一層，直接走原本的儲存邏輯（呈現假設，見 ASSUMPTIONS.md）。四個接線頁：create-product.html（`#cp-f-name`/`#cp-f-desc`，clone 右欄 `.preview-card`）、create-event.html（`[data-ce="name"]`/`[data-ce="desc"]`，clone `.event-preview-card`，攔在 `tryPublish()` 必填／超賣檢查通過之後）、create-project.html（`#proj-title`/`#proj-desc`，generic 卡，`isFilmFlow()` 兩分岔皆先過）、publish-work.html（`#pw-title`/`#pw-desc`，generic 卡）
 - publish-work.html 的 F8「一語言一卡、可自由增刪 zh/en/ja/ko」已收編為單卡；ja/ko 輸入能力隨舊模型移除，`work-fields.js` 的 `collect()`/`checks()`/`_fill` 同步改為單卡形狀（`work.copy` 仍是陣列，但只剩一筆）
 - **create-product 預覽升級成買家前台 mock（同日追加裁示）**：`previewRender(container, api)` 自訂渲染介面（與 `previewClone` 互斥），唯一消費者 `create-product.html` 的 `.cp-shopmock`——結構參照外部 repo `ztor-eshop-fe` 的 shop-item 頁（呈現參考，非產品權威，見 ASSUMPTIONS.md LANG-007），只有名稱／描述是真實可編輯資料，尺寸／顏色／購物車／取貨列是裝飾性佔位；頁面層 CSS，不 promote 進 ds-components（單一消費者、且是對外部參照頁的一次性結構模仿）
-- **登入後不一致 popup 已退場**：D221 曾新增（顯示語言≠預設語言時跳確認框，`partials/lang-mismatch-dialog.js`）；D222 語言收回單一概念後，這個情境不復存在，該檔連同 `login.html` 三條成功路徑的 `ztor-r22-langcheck` 旗標、`index.html`／`creators.html` 的掛載一併移除
+- **登入後詢問已復活、語意重寫（D225，2026-08-25，見 §5.3.3）**：D221 曾新增登入後不一致 popup（比對「顯示語言」與「預設語言」兩個已撤除的概念，`partials/lang-mismatch-dialog.js`），D222 語言收回單一概念後該檔連同旗標、掛載一併移除。D225 是拍板 D222 時留下的待確認項——單一概念下仍有「登入畫面臨時選了跟帳號不同的語言，該不該變成新預設」這個情境要問，新元件 `partials/login-lang-prompt.js` 沿用同一種殼但狀態模型整個重建，見 §5.3.3
 - 呈現決策，不影響產品語意；產品缺口（真實翻譯引擎、多語系欄位的正式資料模型）見 ASSUMPTIONS.md
+
+#### 5.3.3 登入語言詢問（D225，2026-08-25）
+
+`window.ztorLang` 新增 `preview(lang)`：只把 `document.documentElement.lang` 換成指定語言、重新 `apply()`，**不寫 localStorage、不廣播 `ztor:lang-changed`**——語意上不是「換了帳號預設語言」，換頁（含整頁導轉）即還原成 localStorage 裡的值。
+
+- **`login.html` 語言選擇器改呼叫 `preview()`**（不再呼叫 `set()`）：選了立即套用本頁三個步驟的顯示，但不覆寫帳號預設值；選擇同步記 sessionStorage `ztor-r22-login-lang-pick`
+- **三條登入成功路徑寫一次性旗標**：email／phone／第三方 OAuth 三處成功導向前都寫 sessionStorage `ztor-r22-login-lang-pending=1`（`login.html` 的 `markJustLoggedIn()`），供落地頁分辨「這是一次剛完成的登入」，避免換頁、重整誤觸
+- **落地頁（`index.html`／`creators.html`，掛 `partials/login-lang-prompt.js`）載入時**：沒有 pending 旗標→零開銷；有 pending 但沒有 pick（沒動過選擇器）→清旗標、不問；pick 等於帳號預設語言（`ztorLang.get()`）→清旗標、不問；pick 不同→先 `ztorLang.preview(pick)` 把畫面套成登入時選的語言，再開確認框（`.payout-modal`／`.payout-dialog--narrow`，Q27 殼層裁決）
+- **兩顆按鈕**：「改用剛選的語言」→ `ztorLang.set(pick)`（成為帳號預設語言，介面已在該語言，維持不動）／「保留原本的預設語言」→ `ztorLang.preview(default)`（帳號值不變，介面切回帳號預設語言）
+- **Esc／點遮罩視同「保留原本的預設語言」**（呈現假設，見 ASSUMPTIONS.md）
+- 任一種結束方式（含 Esc／遮罩）都清掉兩把 sessionStorage 旗標（`ztor-r22-login-lang-pending`／`ztor-r22-login-lang-pick`），同一次登入只問一次
+- i18n key 全新獨立前綴 `loginlangprompt.*`（`title`／`body`／`use`／`keep`），不沿用已清除的 `langmismatch.*`
 
 #### 5.3.2 帳戶選單的語言列（D221 新增、D222 簡化、D223 收合列再簡化）
 

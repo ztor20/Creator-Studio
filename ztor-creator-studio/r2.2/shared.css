@@ -349,6 +349,10 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   background: transparent;
   cursor: pointer;
   font-family: inherit;
+  /* 2026-08-25：button 的瀏覽器預設是 text-align:center，漏了這條會讓這一列的字
+     置中、跟同選單其他列（Profile／Settings／Payments 都是靠左）對不齊。topbar 那顆
+     （.app-topbar__dropdown-option--toggle）本來就有，兩個殼要一致。 */
+  text-align: left;
 }
 .app-sidebar__sub-link--lang-toggle > *:first-child { flex: 1 1 auto; min-width: 0; }
 .app-sidebar__lang-chevron {
@@ -367,7 +371,11 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   gap: 2px;
 }
 .app-sidebar__lang-panel[hidden] { display: none; }
-/* 語言選項比上面的展開列再深一階縮排（--sp-56，展開列本身已是 --sp-40） */
+/* 語言選項的縮排（2026-08-25 兩次裁示）：原本比展開列深一整階（--sp-56），同一個
+   選單裡就有三條左緣；先拉平成 --sp-40 與其他列齊平，使用者再裁示「向後退一點點，
+   一點點可以和上一層區分就好」——改成 --sp-48，比上一層多 8px，是級距上的半階。
+   要的是「看得出低一層」而不是「另起一欄」，所以不回到 --sp-56。topbar 殼同步
+   （ds-components/header.css 的 .app-topbar__dropdown-option--lang，同樣 +8px）。 */
 /* 語言選項是 <button>，繼承 .app-sidebar__sub-link 的 flex/padding，但那支基礎規則
    從未給過 button reset（平常只套在 <a> 上）——沒補這條，瀏覽器預設的 buttonface 灰底
    會蓋成四顆實心灰膠囊，跟同選單其他列（Profile/Settings/Payments，透明底）不一致，
@@ -380,7 +388,7 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
   cursor: pointer;
   font-family: inherit;
   text-align: left;
-  padding-left: var(--sp-56);
+  padding-left: var(--sp-48);
 }
 .app-sidebar__sub-link--lang > *:first-child { flex: 1 1 auto; }
 .app-sidebar__lang-check { flex: 0 0 auto; color: var(--foreground); }
