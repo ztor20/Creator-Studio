@@ -339,6 +339,52 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 .app-sidebar__sub-link[aria-current="page"] { background: var(--selected-surface); color: var(--selected-ink); }
 .app-sidebar__sub-link[aria-current="page"]:hover { background: var(--selected-surface-hover); color: var(--selected-ink); }
 
+/* 帳戶選單的語言列（D222，撤除 D221 的雙概念）——可展開的單選清單，坐在帳戶子選單裡，
+   沿用 .app-sidebar__sub-link 的列樣式（不是另一支分級選單元件，見 STYLE-DECISIONS Q70）。
+   刻意不用 .app-sidebar__group／__group-toggle（外層帳戶選單本身就是那個 class），
+   避免巢狀 accordion 互相干擾點擊收合邏輯。常駐只有一列，點了才展開四個語系。 */
+.app-sidebar__sub-link--lang-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.app-sidebar__sub-link--lang-toggle > *:first-child { flex: 1 1 auto; min-width: 0; }
+.app-sidebar__lang-chevron {
+  flex: 0 0 auto;
+  transition: transform .15s ease;
+}
+.app-sidebar__sub-link--lang-toggle[aria-expanded="true"] .app-sidebar__lang-chevron {
+  transform: rotate(180deg);
+}
+.app-sidebar__lang-panel {
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-sidebar__lang-panel[hidden] { display: none; }
+/* 語言選項比上面的展開列再深一階縮排（--sp-56，展開列本身已是 --sp-40） */
+/* 語言選項是 <button>，繼承 .app-sidebar__sub-link 的 flex/padding，但那支基礎規則
+   從未給過 button reset（平常只套在 <a> 上）——沒補這條，瀏覽器預設的 buttonface 灰底
+   會蓋成四顆實心灰膠囊，跟同選單其他列（Profile/Settings/Payments，透明底）不一致，
+   也會被誤讀成「全部都被選中」（2026-08-24 審查抓到，topbar 同病同修）。選中語意只交給
+   check icon／aria-checked，不靠填色。 */
+.app-sidebar__sub-link--lang {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  padding-left: var(--sp-56);
+}
+.app-sidebar__sub-link--lang > *:first-child { flex: 1 1 auto; }
+.app-sidebar__lang-check { flex: 0 0 auto; color: var(--foreground); }
+
 /* Bottom action cluster — search / notifications / language / theme / account */
 .app-sidebar__actions {
   /* 2026-07-27：flex:none ＝ 釘在底部、永遠不參與捲動（nav 才是讓步的那一區）。
@@ -360,38 +406,6 @@ html[data-nav-mode="sidebar"] .hero--fullbleed {
 .app-sidebar__action .ztor-icon { width: 18px; height: 18px; flex: 0 0 auto; }
 .app-sidebar__action .app-topbar__badge-dot { position: static; margin-left: auto; }
 .app-topbar__badge-dot[data-read="true"] { display: none; }
-/* ── Language picker inside the Account menu (2026-07-28 使用者裁示) ──────────
-   一份樣式、兩個 shell：側欄的帳號群組與 topbar 的帳號 dropdown 用同一個
-   .nav-lang（兩種版面「同一份 sitemap、只換位置」的規矩，語言列也照辦）。
-   兩個語言就兩顆並排、直接選——不為兩個選項多開一層 accordion。 */
-.nav-lang { display: inline-flex; align-items: center; gap: var(--sp-6); }
-.nav-lang__sep { color: var(--border); }
-.nav-lang__pick {
-  border: 0; background: transparent; padding: 0; cursor: pointer;
-  font: inherit; font-size: var(--fs-13); line-height: var(--lh-snug);
-  color: var(--foreground-muted); font-weight: var(--fw-regular);
-  transition: color .14s ease;
-}
-.nav-lang__pick:hover { color: var(--foreground); }
-.nav-lang__pick[aria-current="false"] { color: var(--foreground-muted); }
-/* 已選＝品牌橘，與導航其他「已選」語彙（.app-sidebar__link[aria-current]）同一個 ink token。 */
-.nav-lang__pick[aria-current="true"] { color: var(--selected-ink); }
-
-/* 側欄版：與 .app-sidebar__sub-link 同一組幾何（同高、同左縮排 40px、同右內距），
-   差別只在右側多一個選擇器——讀起來仍是帳號選單的一列，不是外掛上去的控件。 */
-.app-sidebar__sub-lang {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8);
-  height: var(--control-h-sm);
-  padding: 0 var(--sp-12) 0 var(--sp-40);
-  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
-}
-/* Topbar 版：吃 .app-topbar__dropdown-option 的內距，但不是連結、沒有 hover 底
-   （它本身不導航，可點的只有右邊那兩顆）。 */
-.app-topbar__dropdown-lang {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12);
-  padding: var(--sp-10) var(--sp-12);
-  font-size: var(--fs-13); line-height: var(--lh-snug); color: var(--foreground-muted);
-}
 .app-sidebar__search { gap: var(--sp-8); cursor: text; }
 .app-sidebar__search-input {
   flex: 1 1 auto; min-width: 0; border: 0; background: transparent;

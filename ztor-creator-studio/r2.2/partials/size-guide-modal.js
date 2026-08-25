@@ -25,6 +25,12 @@
     '    </div>\n' +
     '    <div class="payout-dialog__body">\n' +
     '      <p class="field__hint" data-sg-notice hidden></p>\n' +
+    '      <!-- 指南切換（D216）：從建立商品的「點擊查看」開進來時，商店有幾份就列幾份，\n' +
+    '           在彈窗裡直接換著看，不必為了看另一份退出去重點一次。 -->\n' +
+    '      <div class="settings-row" data-sg-picker hidden>\n' +
+    '        <div class="settings-row__label" data-i18n="cp.sg.shop.picker">Shop guide</div>\n' +
+    '        <span class="select-wrap"><select class="select sg-picker__select" aria-label="Which guide" data-i18n-aria-label="cp.sg.shop.picker" data-sg-picker-select></select></span>\n' +
+    '      </div>\n' +
     '            <div class="field" data-sg-namefield>\n' +
     '              <label class="field__label" for="sg-name"><span data-i18n="store-settings.specs.f.name">Name</span> <span class="field__req">*</span></label>\n' +
     '              <input class="input" id="sg-name" type="text" value="Tops" data-i18n-value="store-settings.specs.row.tops" placeholder="e.g. Tops" data-i18n-placeholder="store-settings.specs.f.name.ph">\n' +
@@ -233,6 +239,7 @@
 
     if (opts.blank) clearValues(); else fillValues();
     resetSystems(!!opts.blank);
+    buildPicker(opts.guides, opts.guideKey);
 
     var name = modal.querySelector('#sg-name');
     if (name && opts.showName !== false) {
@@ -267,6 +274,87 @@
   /* 新增＝清掉示範值，量測欄名保留（那是欄位定義、不是資料） */
   function clearValues() {
     [].forEach.call(modal.querySelectorAll('.sce__cell, .spec-row .input, #sg-name, #sg-fit, #sg-note'), function (i) { i.value = ''; });
+  }
+
+  /* ── 指南切換（D216）─────────────────────────────────────────
+     商店有幾份指南就列幾份，在彈窗裡換著看。每一份的內容各自獨立，所以換之前先把
+     現在畫面上的整份表單（含四制的尺碼欄與目前單位）收進 guideStore，換回來還在。
+     demo 沒有真的三份資料，所以第一次打開某一份時看到的是同一組示範值——改過的才會留。 */
+  var guideStore = {};
+  var curGuide = '';
+
+  function snapshotForm() {
+    stash();
+    return {
+      values: [].map.call(modal.querySelectorAll('input, textarea'), function (i) { return i.value; }),
+      cm: chartCells().map(function (c) { return c.dataset.cm; }),
+      sys: JSON.parse(JSON.stringify(sysLabels)),
+      curSys: curSys,
+      unit: currentUnit()
+    };
+  }
+
+  function restoreForm(snap) {
+    [].forEach.call(modal.querySelectorAll('input, textarea'), function (i, n) {
+      if (n < snap.values.length) i.value = snap.values[n];
+    });
+    chartCells().forEach(function (c, n) {
+      if (snap.cm[n] != null) c.dataset.cm = snap.cm[n]; else delete c.dataset.cm;
+    });
+    sysLabels = JSON.parse(JSON.stringify(snap.sys));
+    curSys = snap.curSys;
+    var group = modal.querySelector('[data-spec-unit-group]');
+    if (group) {
+      group.setAttribute('data-unit', snap.unit);
+      [].forEach.call(group.querySelectorAll('[data-spec-unit]'), function (b) {
+        b.classList.toggle('segmented__btn--active', b.getAttribute('data-spec-unit') === snap.unit);
+      });
+    }
+    [].forEach.call(modal.querySelectorAll('[data-spec-sys-tabs] [data-spec-system]'), function (tab) {
+      var on = tab.getAttribute('data-spec-system') === curSys;
+      tab.classList.toggle('tabs__item--active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    restore(curSys);
+    paintSysTabs();
+  }
+
+  function buildPicker(guides, activeKey) {
+    var row = modal.querySelector('[data-sg-picker]');
+    var sel = modal.querySelector('[data-sg-picker-select]');
+    guideStore = {};
+    curGuide = '';
+    if (!row || !sel) return;
+    if (!guides || guides.length < 2) { row.hidden = true; sel.innerHTML = ''; return; }
+    curGuide = activeKey || guides[0];
+    sel.innerHTML = guides.map(function (key) {
+      return '<option value="' + key + '" data-i18n="' + key + '">' + (T(key) || key) + '</option>';
+    }).join('');
+    sel.value = curGuide;
+    row.hidden = false;
+    /* 彈窗是後生成的，要自己叫 zselect 接手（enhance 有 ready 旗標，重複呼叫無害）；
+       面板每次展開才依 <option> 現況重建，所以換過選項也不必特別 refresh。 */
+    if (window.ztorSelect) window.ztorSelect.mount(modal);
+  }
+
+  function switchGuide(key) {
+    if (!key || key === curGuide) return;
+    guideStore[curGuide] = snapshotForm();
+    curGuide = key;
+    if (guideStore[key]) {
+      restoreForm(guideStore[key]);
+    } else {
+      /* 還沒看過的那一份：回到示範值，名稱換成它自己的 */
+      fillValues();
+      resetSystems(false);
+    }
+    var name = modal.querySelector('#sg-name');
+    if (name) {
+      name.setAttribute('data-i18n-value', key);
+      name.value = T(key) || name.value;
+    }
+    var sel = modal.querySelector('[data-sg-picker-select]');
+    if (sel && sel.value !== key) sel.value = key;
   }
 
   /* ── 尺碼制分頁（D214）────────────────────────────────────────
@@ -506,6 +594,13 @@
         var hhost = modal.querySelector('[data-spec-howto]');
         if (hhost.children.length > 1) rmHowto.closest('.spec-row').remove();
       }
+    });
+
+    /* 指南切換（D216，2026-08-21 改成下拉）：原生 select 的 change——zselect 選完之後
+       也會派這個事件，所以兩種操作路徑（鍵盤／滑鼠、原生／自訂面板）共用同一段。 */
+    modal.addEventListener('change', function (e) {
+      var sel = e.target.closest('[data-sg-picker-select]');
+      if (sel) switchGuide(sel.value);
     });
 
     /* 量測值改動時把真值（公分）跟著更新，之後切換單位才換得對；

@@ -6,13 +6,22 @@
  *   <button data-i18n-aria-label="nav.lang-label"/>           → swaps aria-label
  *   <button data-i18n-title="nav.search"/>                    → swaps title (tooltip)
  *
- * The .app-topbar__lang button toggles via toggleLang(); state persists in localStorage.
- * Default language is English (R 2.1's body copy is mostly EN); zh-Hant is the alternate.
+ * D222（2026-08-24）撤除 D221：語言收回**單一概念**——「預設語言」（window.ztorLang）。
+ * 不再區分「顯示語言」與「預設語言」兩個獨立 state；同一個值同時決定介面顯示語言與建立
+ * 內容（商品/活動等）的輸入語言，也是新語系內容自動翻譯的來源語系。三處入口可改這個唯一
+ * 的值：settings.html「預設語言」列、帳戶選單（topbar／sidebar）的可展開語言列、
+ * login.html。持久化沿用 D220/D221 的 localStorage key（見下 STORAGE_KEY）與四碼模型
+ * en/zh-Hant/zh-Hans/id。本檔的雙語 DICT 只有 en/zh 兩組，所以 zh-Hans 走 zh 字典、id 走
+ * en 字典（呈現假設，見 ASSUMPTIONS.md：zh-Hans/id 介面字典 fallback）。
+ * D221 曾短暫引入 window.ztorDefaultLang（獨立 key `ztor-r22-default-lang`）；D222 撤除，
+ * 啟動時做一次性遷移（見下）並清除舊 key，避免使用者身上留下孤兒值。
  * --------------------------------------------------------------------------- */
 (function () {
   const STORAGE_KEY = 'ztor-r21-lang';
-  /* [local-default] 本機預覽預設語言＝英文。上游為 'zh-Hant'（D108: v1 單一語言＝繁體中文，
-     不提供語言切換）；已存過語言的瀏覽器仍以 localStorage 的值優先。 */
+  /* [local-default] 本機預覽預設語言＝英文，維持原值不動。D220 已把「介面預設語言」
+     改為帳號可在 settings.html 設定的四碼值（en/zh-Hant/zh-Hans/id），初始值〔產品待確認〕；
+     這支常數只影響「從未存過語言的瀏覽器」第一次載入時看到什麼，已存過語言的瀏覽器一律
+     以 localStorage 的值優先。 */
   const DEFAULT_LANG = 'en';
 
   /* ── Persona（cheat-code「User」切換）───────────────────────────
@@ -308,6 +317,38 @@
     'creators.title':     { en: 'Creator Management',  zh: 'Creator 管理' },
     'creators.lede':      { en: 'Manage every creator on the platform. Pick one to open and operate their studio on their behalf.', zh: '管理平台上所有 creator。選一個進入並代為操作其工作區。' },
     'creators.create':    { en: 'Create creator',      zh: '建立 creator' },
+    /* D218／D224 · 編輯 creator（2026-08-24 起是獨立頁 creator-detail.html） */
+    'creators.form-save': { en: 'Save',                zh: '儲存' },
+    /* D219 · 編輯 creator 時匯入 bookyay 活動（下拉多選 → 匯入 → 已匯入名單） */
+    'creators.imp-label': { en: 'Import bookyay events', zh: '匯入 bookyay 活動' },
+    'creators.imp-ph':    { en: 'Choose events…',      zh: '選擇活動…' },
+    'creators.imp-do':    { en: 'Import',              zh: '匯入' },
+    'creators.imp-do-1':  { en: 'Import 1 event',      zh: '匯入 1 場活動' },
+    'creators.imp-do-n':  { en: 'Import {n} events',   zh: '匯入 {n} 場活動' },
+    'creators.imp-hint':  { en: "Pick the events already selling on bookyay. Importing pulls them in as this creator's ztor events.", zh: '挑出已經在 bookyay 上賣的活動。匯入後會成為這位 creator 在 ztor 上的活動。' },
+    'creators.imp-none':  { en: 'No bookyay events found.', zh: '找不到 bookyay 活動。' },
+    'creators.imp-list':  { en: 'Imported events',      zh: '已匯入的活動' },
+    'creators.imp-empty': { en: 'No events imported yet.',  zh: '尚未匯入任何活動。' },
+    'creators.imp-done':  { en: 'Imported',            zh: '已匯入' },
+    'creators.imp-unpick':{ en: 'Remove',              zh: '移除' },
+    /* D224 · Creator 詳情／編輯頁 creator-detail.html */
+    'cd.tab.basic':       { en: 'Details',             zh: '基本資料' },
+    'cd.tab.events':      { en: 'bookyay events',      zh: 'bookyay 活動' },
+    'cd.enter':           { en: 'Enter workspace',     zh: '前往工作區' },
+    'cd.created':         { en: 'Created {date}',      zh: '建立於 {date}' },
+    'cd.saved':           { en: 'Saved',               zh: '已儲存' },
+    'cd.acc.title':       { en: 'Account source',      zh: '帳號來源' },
+    'cd.acc.sub':         { en: "This creator's identity comes from the ztor account they registered themselves. It can't be changed here — swapping it means a different person, which is a different creator.", zh: '這位 creator 的身分來自他本人在 ztor 前台註冊的帳號。不可在此變更——換掉等於換一個人，那是建另一個 creator。' },
+    'cd.shop.title':      { en: 'Shop and contact',    zh: '商店與聯絡方式' },
+    'cd.shop.sub':        { en: 'This is the part Admin can change.', zh: '這一組是 Admin 可以改的。' },
+    'cd.imp.title':       { en: 'Import events',       zh: '匯入活動' },
+    'cd.imp.sub':         { en: 'Events this creator already sells on bookyay (an external ticketing platform) can be pulled into ztor. Pick as many as you like; each bookyay event imports once, so the ones already in can\'t be picked again.', zh: '這位 creator 已經在 bookyay（外部售票平台）上販售的活動，可以整場搬進 ztor。一次可以選多場；同一場只會匯入一次，匯過的在清單裡點不動。' },
+    'cd.imp.count-1':     { en: '1 event',             zh: '1 場' },
+    'cd.imp.count-n':     { en: '{n} events',          zh: '{n} 場' },
+    'cd.imp.empty-desc':  { en: 'Pick one or more from the list above and import them.', zh: '從上面的清單挑一場或多場，按「匯入」搬進 ztor。' },
+    'cd.unknown.title':   { en: 'Creator not found',   zh: '找不到這個 creator' },
+    'cd.unknown.desc':    { en: 'This creator no longer exists, or the link is wrong.', zh: '這個 creator 已經不存在，或連結有誤。' },
+    'cd.unknown.back':    { en: 'Back to Creator Management', zh: '回到 Creator 管理' },
     'creators.create-cancel': { en: 'Cancel',          zh: '取消' },
     'creators.col-name':  { en: 'Creator',             zh: 'Creator' },
     'creators.col-handle':{ en: 'Shop handle',         zh: '店鋪識別' },
@@ -317,6 +358,8 @@
     'creators.status-active':   { en: 'Active',         zh: '啟用中' },
     'creators.status-disabled': { en: 'Disabled',       zh: '已停用' },
     'creators.row-actions': { en: 'More actions',       zh: '更多操作' },
+    'creators.action-edit':    { en: 'Edit',            zh: '編輯' },
+    'creators.action-import':  { en: 'Import events',   zh: '匯入活動' },
     'creators.action-disable': { en: 'Disable',         zh: '停用' },
     'creators.action-enable':  { en: 'Enable',          zh: '啟用' },
     'creators.search-ph':  { en: 'Search name or handle', zh: '搜尋名稱或店鋪識別' },
@@ -3328,6 +3371,7 @@
     'settings.btn.save':        { en: 'Save changes',                         zh: '儲存變更' },
     'settings.nav.profile':         { en: 'Profile',              zh: '個人資料' },
     'settings.nav.appearance':      { en: 'Appearance',           zh: '外觀' },
+    'settings.nav.language':        { en: 'Language',             zh: '語言' },
     'settings.nav.notifications':   { en: 'Notifications',        zh: '通知' },
     'settings.nav.privacy':         { en: 'Privacy &amp; Security', zh: '隱私與安全' },
     'settings.nav.payments':        { en: 'Payments',             zh: '付款' },
@@ -3366,6 +3410,16 @@
     'settings.navmode.sidebar':     { en: 'Sidebar',              zh: '側邊欄' },
     'settings.navmode.sidebar-desc':{ en: 'Vertical rail on the left — the default. Dropdowns become expandable groups.', zh: '左側直向導航列——預設。下拉改為可展開群組。' },
     'nav.navmode-label':            { en: 'Display mode',         zh: '顯示模式' },
+    /* D222（2026-08-24，撤除 D221）：語言收回單一概念「預設語言」，見 window.ztorLang。
+       D221 曾在此加過「顯示語言」第二列與 nav.lang.gotosettings／langmismatch.* 三組 key，
+       D222 撤除；lang-mismatch-dialog 已退場（見 partials/、design-system.md §4.131 墓碑）。 */
+    'settings.lang.title':          { en: 'Language',             zh: '語言' },
+    'settings.lang.sub':            { en: 'One language setting for this account.', zh: '這個帳號只有一個語言設定。' },
+    'settings.lang.default':        { en: 'Default language',     zh: '預設語言' },
+    'settings.lang.default-hint':   { en: 'Sets both the interface language and the language you write content in — products, events and other listings; other languages are auto-translated from it. You can also change it from the account menu or at login — all three change the same value.', zh: '同時決定介面顯示語言，以及你建立商品、活動等內容時的輸入語言；其他語系由系統以此自動翻譯。也可以在帳戶選單或登入畫面調整，三處改的是同一個值。' },
+    /* D223（2026-08-24）：帳戶選單語言列收合態只顯示語言名稱，視覺上失去「這是語言
+       切換」的語意，靠 aria-label 補給螢幕報讀。 */
+    'settings.lang.toggle-label':   { en: 'Switch language',     zh: '切換語言' },
     'settings.notif.title':         { en: 'Notifications',        zh: '通知' },
     'settings.notif.sub':           { en: 'Pick a channel for every event. Email, push and in-app are independent — locked rows are kept on for compliance.', zh: '為每個事件選擇管道。Email、推播、站內各自獨立——鎖定列為合規保持開啟。' },
     'settings.notif.email':         { en: 'Email',                zh: 'Email' },
@@ -3452,6 +3506,52 @@
     'settings.int.x':               { en: 'Follower growth signals only.', zh: '僅追蹤成長指標。' },
     'settings.int.discord':         { en: 'Cross-post fan announcements.', zh: '同步發送粉絲公告。' },
     'settings.footer':              { en: 'Settings saved automatically when fields blur · high-risk actions confirm separately', zh: '欄位離開焦點時自動儲存 · 高風險動作需另行確認' },
+
+    /* ─── partials/lang-switch.js — D220 頁級內容檢視語言切換（2026-08-24）─── */
+    /* D223（2026-08-24）：頁級「內容檢視語言」分頁（lang-switch.js）退場，翻譯檢視
+       搬進發布前預覽確認層（partials/publish-preview.js）。以下 pp.* 取代原本的
+       ls.*（ls.default-badge 沿用同一份文案改名遷移，其餘視新元件的結構重寫）。 */
+    'pp.modal-title':       { en: 'Preview before publishing',        zh: '發布前確認' },
+    'pp.close':             { en: 'Close',                            zh: '關閉' },
+    'pp.tabs-label':        { en: 'Translation language',             zh: '翻譯語言' },
+    'pp.default-badge':     { en: 'Default',                          zh: '預設' },
+    'pp.view.preview':      { en: 'Preview',                          zh: '預覽' },
+    'pp.view.list':         { en: 'List',                             zh: '列表' },
+    'pp.banner':            { en: 'This language’s content is auto-translated by the system — you can edit it directly here or in the list view.', zh: '此語系內容由系統自動翻譯生成，可以在這裡或列表檢視直接修改。' },
+    'pp.table.field':       { en: 'Field',                            zh: '欄位' },
+    'pp.back':              { en: 'Back to editing',                  zh: '返回編輯' },
+    'pp.confirm':           { en: 'Confirm & publish',                zh: '確認發布' },
+    'pp.field.name':        { en: 'Name',                             zh: '名稱' },
+    'pp.field.desc':        { en: 'Description',                     zh: '說明' },
+    /* 動態欄位分組（使用者 2026-08-24 追加裁示）——create-product 的詳細規格列與
+       多選項商品的選項組是列數不定的清單，每列的名稱/值都要能翻譯。這組 key 是
+       列表檢視分組小標與逐列標籤共用的組字，不是某一列的固定文案，故用「組字＋
+       序號／該列當下的預設語言內容」組出可辨識的標籤，不是重述已經在分組小標
+       講過的字（見鐵律「UI 文案不重述上下文」）。 */
+    'pp.field.spec-group':   { en: 'Spec',                            zh: '規格' },
+    'pp.field.spec-name':    { en: 'Name',                            zh: '名稱' },
+    'pp.field.spec-value':   { en: 'Value',                           zh: '值' },
+    'pp.field.option-group': { en: 'Option',                          zh: '選項' },
+    'pp.field.option-name':  { en: 'Group name',                      zh: '組名' },
+    'pp.field.option-value': { en: 'Value',                           zh: '值' },
+    /* create-product 買家前台 mock（.cp-shopmock，見 create-product.html 的
+       buildShopItemPreview）專用字串——使用者 2026-08-24 追加裁示，只有這頁的預覽檢視
+       升級成這個結構，其餘三頁沿用既有 preview 卡／generic 卡，不共用這組 key。 */
+    'pp.mock.crumb':          { en: 'Store ›',                        zh: '電子商店 ›' },
+    'pp.mock.size':           { en: 'Size',                           zh: '尺寸' },
+    'pp.mock.size-guide':     { en: 'Size guide',                     zh: '尺寸指南' },
+    'pp.mock.color-black':    { en: 'Black',                          zh: '黑色' },
+    'pp.mock.color-white':    { en: 'White',                          zh: '白色' },
+    'pp.mock.add-to-cart':    { en: 'Add to cart',                    zh: '加入購物車' },
+    'pp.mock.pickup':         { en: 'On-site QR pickup',              zh: '現場 QR 領取' },
+    'pp.mock.shipping':       { en: 'Free shipping',                  zh: '免運費' },
+    'pp.mock.details':        { en: 'Product details',                zh: '商品詳情' },
+    'pp.mock.specs':          { en: 'Specifications',                 zh: '規格' },
+    'pp.mock.spec-material':  { en: 'Material',                       zh: '材質' },
+    'pp.mock.spec-category':  { en: 'Category',                       zh: '分類' },
+    'pp.mock.spec-pending':   { en: 'To be confirmed',                zh: '待確認' },
+    'pp.mock.pickup-exchange':      { en: 'Pickup & exchange',        zh: '取貨與退換' },
+    'pp.mock.pickup-exchange-body': { en: 'Ready within 3–5 business days. Exchanges accepted within 7 days of delivery, unworn and with tags attached.', zh: '3–5 個工作天內備妥。到貨 7 天內、未拆標籤可辦理退換。' },
 
     /* ─── Shared wizard chrome ────────────────────────────── */
     'wiz.close':            { en: '✕ Close',                          zh: '✕ 關閉' },
@@ -3950,6 +4050,7 @@
     'cp.sg.inherit.post':   { en: '. ',                       zh: '尺寸指南。' },
     'cp.sg.view':           { en: 'View',                      zh: '點擊查看' },
     'cp.sg.shop.title':     { en: "Your shop's size guide",    zh: '商店的尺寸指南' },
+    'cp.sg.shop.picker':    { en: 'Which guide',              zh: '看哪一份' },
     'cp.sg.shop.notice':    { en: 'Editing this changes it for every item that uses your shop guides. Manage them in Store settings.', zh: '這是商店的指南，改了會影響所有沿用中的商品；要管理整組請到商店設定。' },
     'cp.sg.switch':         { en: 'Use its own guide',           zh: '改用專屬指南' },
     'cp.sg.own':            { en: 'Using its own size guide',    zh: '使用專屬尺寸指南' },
@@ -6782,20 +6883,16 @@
     'pw.info.sub':          { en: 'Everything on the listing page, plus what it costs to watch.', zh: '作品頁上的資料，加上看一次要多少錢。' },
     'pw.info.copy.title':   { en: 'Name & synopsis',                  zh: '名稱與簡介' },
     'pw.info.copy.sub':     { en: 'Fans see the version matching their app language.', zh: '粉絲會看到與自己 App 語言相符的那一份。' },
-    'pw.info.copy.lang':    { en: 'Language',                         zh: '語言' },
-    'pw.info.copy.add':     { en: 'Add a language',                   zh: '新增語言' },
-    'pw.info.copy.drop':    { en: 'Remove this language',             zh: '移除這個語言' },
+    /* pw.lang.zh／pw.lang.enName：D220（2026-08-24）起單卡不再有語言下拉，但這兩個
+       key 仍被 collect() 用來標記「這組文案記在哪個語系」（work.copy[0].lang），
+       admin-video-review.html 送審檢視頁靠它顯示語言標籤，故保留。舊版多語卡的
+       add/drop/語言下拉與逐語言 placeholder（pw.info.copy.add/.lang/.drop、
+       pw.info.title.ph-zh/-en、pw.info.desc.ph-en）已隨單卡收編移除。 */
     'pw.lang.zh':           { en: 'Traditional Chinese',              zh: '繁體中文' },
     'pw.lang.enName':       { en: 'English',                          zh: 'English' },
     'pw.info.title':        { en: 'Title',                            zh: '標題' },
-    /* 語言組的標題範例：兩個 key 各自只有一種寫法（該語言的），所以 en／zh 兩欄同值——
-       它示範的是「這一格要用哪個語言填」，不隨介面語言改。沿用建立項目那頁同一格的說法
-       （cpp.s1.title.ph），不指名任何一部作品：寫死片名會在別的創作者頁面上讀起來像填錯資料。 */
-    'pw.info.title.ph-zh':  { en: '粉絲會記住的名稱',                   zh: '粉絲會記住的名稱' },
-    'pw.info.title.ph-en':  { en: 'A name fans will remember',        zh: 'A name fans will remember' },
     'pw.info.desc':         { en: 'Synopsis',                         zh: '說明' },
     'pw.info.desc.ph':      { en: 'Three or four sentences on what this is about.', zh: '用三、四句話講完這部片在講什麼。' },
-    'pw.info.desc.ph-en':   { en: 'Three or four sentences on what this is about.', zh: 'Three or four sentences on what this is about.' },
     'pw.info.spec.title':   { en: 'Runtime & release',                zh: '時長與上映' },
     'pw.info.runtime':      { en: 'Runtime',                          zh: '時長' },
     'pw.info.runtime.units':{ en: 'Hours · minutes · seconds',        zh: '時 · 分 · 秒' },
@@ -8739,8 +8836,16 @@
     userB: {}
   };
 
+  /* D220 四碼 → 字典二碼 fallback：zh-Hant/zh-Hans 都查 zh 字典、en/id 都查 en 字典。 */
   function currentLang() {
-    return document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en';
+    return String(document.documentElement.lang || DEFAULT_LANG).indexOf('zh') === 0 ? 'zh' : 'en';
+  }
+
+  function normalizeLangCode(lang) {
+    if (lang === 'zh' || lang === 'zh-Hant') return 'zh-Hant';
+    if (lang === 'zh-Hans') return 'zh-Hans';
+    if (lang === 'id') return 'id';
+    return 'en';
   }
 
   function t(key) {
@@ -8778,56 +8883,44 @@
       const v = t(el.dataset.i18nValue);
       if (v != null) el.value = v;
     });
-    /* Lang pickers (topbar button + sidebar account row): highlight the active
-       language via [data-lang] markers. */
-    document.querySelectorAll('.app-topbar__lang, .nav-lang').forEach(btn => {
-      const lang = currentLang();
-      btn.querySelectorAll('[data-lang]').forEach(span => {
-        span.setAttribute('aria-current', span.dataset.lang === lang ? 'true' : 'false');
-      });
-    });
     /* Let scripts that own a dynamic, state-dependent label (e.g. hero.js's
        play/pause button) re-localize themselves after each apply. */
     document.dispatchEvent(new CustomEvent('i18n:applied'));
   }
 
+  /* D222（撤除 D221，修訂 D220）：這支管**唯一**的語言四碼 en/zh-Hant/zh-Hans/id，
+     同時決定介面顯示語言與建立內容的輸入語言。三處入口——settings.html「預設語言」列、
+     帳戶選單（topbar/sidebar）可展開的語言列、login.html——都呼叫 window.ztorLang
+     （見下）。setLang() 仍是底層寫入函式，舊呼叫端（cheat code、既有 bookmark）傳入
+     舊值 'zh' 會相容映射成 'zh-Hant'。 */
   function setLang(lang) {
-    const normalized = lang === 'zh' || lang === 'zh-Hant' ? 'zh-Hant' : 'en';
+    const normalized = normalizeLangCode(lang);
     document.documentElement.lang = normalized;
     try { localStorage.setItem(STORAGE_KEY, normalized); } catch (_) {}
     apply();
   }
 
-  function toggleLang() {
-    setLang(currentLang() === 'en' ? 'zh-Hant' : 'en');
-  }
-
-  /* D108: v1 預設繁體中文、product UI 不提供切換；但 cheat code（devtools）可切語言預覽，
-     其選擇透過 setLang() 存入 localStorage，換頁後要沿用而非被強制拉回繁中。
-     無儲存值＝繁中預設（新訪客照常看繁中）。 */
+  /* v1 預設英文；無儲存值時語言＝英文預設。cheat code（devtools）仍可透過 setLang()
+     直接切換預覽，其選擇存入 localStorage，換頁後沿用。
+     D222 舊值遷移：D221 曾另外用 ztor-r22-default-lang 存「預設語言」，兩概念合一後
+     若使用者身上還留著這把舊 key、而 STORAGE_KEY（ztor-r21-lang）缺值，就把舊值當成
+     語言值讀進來；不論是否用到都清掉舊 key，避免留下孤兒值。 */
+  const LEGACY_DEFAULT_LANG_KEY = 'ztor-r22-default-lang';
   let restored = DEFAULT_LANG;
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'en' || saved === 'zh-Hant') restored = saved;
+    if (saved) {
+      restored = normalizeLangCode(saved);
+    } else {
+      const legacyDefault = localStorage.getItem(LEGACY_DEFAULT_LANG_KEY);
+      if (legacyDefault) {
+        restored = normalizeLangCode(legacyDefault);
+        try { localStorage.setItem(STORAGE_KEY, restored); } catch (_) {}
+      }
+    }
+    localStorage.removeItem(LEGACY_DEFAULT_LANG_KEY);
   } catch (_) {}
   document.documentElement.lang = restored;
-
-  /* Wire the topbar lang button (delegated — sidebar.js injects it lazily). */
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('.app-topbar__lang');
-    if (!btn) return;
-    e.preventDefault();
-    toggleLang();
-  });
-
-  /* Explicit language pick (側欄帳號群組的 EN · 中)。與上面的 toggle 不同：
-     使用者按的是「哪一個語言」，不是「換一個」——按已選中的那顆不該把語言換掉。 */
-  document.addEventListener('click', e => {
-    const pick = e.target.closest('[data-lang-pick]');
-    if (!pick) return;
-    e.preventDefault();
-    setLang(pick.getAttribute('data-lang-pick'));
-  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => apply());
@@ -8837,8 +8930,30 @@
 
   window.applyI18n  = apply;
   window.setLang    = setLang;
-  window.toggleLang = toggleLang;
   window.i18nT      = t;     /* translate a key in the current language (or null) */
+
+  /* ── ztorLang API（D222：語言的唯一概念，三處入口共用——settings.html「預設語言」列／
+     帳戶選單／login.html）── get() 回四碼值（en/zh-Hant/zh-Hans/id）；set(lang) 寫入並
+     套用，同時廣播 ztor:lang-changed 讓其他已開啟的 UI（topbar/sidebar 帳戶選單、
+     settings.html 的語言 select、lang-switch.js 的內容語言主語系）跟著更新，不必各自
+     重讀 localStorage。 */
+  window.ztorLang = {
+    list: function () {
+      return [
+        ['en',      'English'],
+        ['zh-Hant', '繁體中文'],
+        ['zh-Hans', '简体中文'],
+        ['id',      'Bahasa Indonesia']
+      ];
+    },
+    get: function () {
+      return document.documentElement.lang || DEFAULT_LANG;
+    },
+    set: function (lang) {
+      setLang(lang);
+      document.dispatchEvent(new CustomEvent('ztor:lang-changed', { detail: { lang: document.documentElement.lang } }));
+    }
+  };
 
   /* ── Persona API（cheat code 的「User」組呼叫）──────────────────
      get()＝目前資料 persona（default/nick/userB）。set(id) 接受四個 cheat 選項：

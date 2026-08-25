@@ -14,8 +14,6 @@
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   .wizard__body { max-width: 1000px; padding-top: 32px; }
-  .fc-lang { font-family: var(--font-ui); font-size: var(--fs-12); border: 1px solid var(--border-soft); background: var(--card); border-radius: var(--radius-pill); padding: 4px 12px; cursor: pointer; color: var(--muted-foreground); }
-  .fc-lang:hover { background: var(--accent); color: var(--foreground); }
   /* 前台試算：共用池條 + 套組認購列（沿用 create-campaign 的樣式） */
   .fc-sim-pool { background: var(--muted); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: 16px 18px; margin: 0 0 16px; }
   .fc-sim-pool__row { display: flex; justify-content: space-between; align-items: baseline; }
@@ -53,7 +51,6 @@
         </div>
       </div>
       <div class="wizard__top-actions">
-        <button class="fc-lang" type="button" id="fc-lang" aria-label="Switch language">中 / EN</button>
         <button class="btn btn--outline btn--sm" type="button" id="fc-reset" data-fi="sim.reset">重設試算</button>
       </div>
     </div>
@@ -112,7 +109,7 @@
     'sim.soldout':  { zh: '售罄', en: 'Sold out' },
     'sim.nonshare': { zh: '不佔股份池', en: 'no pool shares' },
   };
-  const lang = () => (document.documentElement.lang === 'zh-Hant' ? 'zh' : 'en');
+  const lang = () => (String(document.documentElement.lang || '').indexOf('zh') === 0 ? 'zh' : 'en');
   const fiText = k => (FI[k] ? FI[k][lang()] : null);
   function applyFI() {
     document.querySelectorAll('[data-fi]').forEach(el => { const v = fiText(el.dataset.fi); if (v != null) el.textContent = v; });
@@ -185,7 +182,6 @@
   $('fc-back').addEventListener('click', goBack);
   $('fc-close').addEventListener('click', doClose);
   $('fc-reset').addEventListener('click', () => { sim.forEach(b => b.sold = 0); renderSim(); });
-  $('fc-lang').addEventListener('click', () => { if (window.toggleLang) window.toggleLang(); });
   document.addEventListener('i18n:applied', () => { applyFI(); renderSim(); });
 
   applyFI();

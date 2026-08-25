@@ -40,6 +40,13 @@
 <link rel="stylesheet" href="ds-components/checkbox.css?v=r2.2">
 <!-- 發布後的成功提示排到下一頁顯示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
 <link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<!-- 發布前預覽確認層（D223）：彈窗殼＋語言分頁＋列表 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
 <link rel="stylesheet" href="shared.css?v=r2.2">
 <style>
   /* 型別欄位網格（原 .tf-grid）與 distribution 三欄改用 ds-components/form-grid.css；
@@ -997,6 +1004,7 @@
 <script src="js/bundle-editor.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
 <script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/publish-preview.js?v=r2.2"></script>
 <script src="partials/stepper.js?v=r2.2"></script>
 <!-- 素材格（[data-upload]）：work-fields 渲染的上傳格要靠它增強，所以必須排在其前面。 -->
 <script src="partials/upload-tile.js?v=r2.2"></script>
@@ -1799,7 +1807,10 @@
 
      排程發布是另一件事：東西還沒上線，說「已發布」是對創作者做假陳述，
      所以照 Publish timing 那組選項分成兩句文案。 */
-  function publish() {
+  /* 真正發布：isFilmFlow() 的兩個分岔（送審 submitForReview／直接發布）都先過
+     發布前預覽確認層（D223），確認後才各自走原本的後續——這個 wizard 沒有編輯
+     已存在專案的分支（無後端、無寫入，見檔頭原型替身說明），永遠是新發布。 */
+  function doPublishConfirmed() {
     if (isFilmFlow()) return submitForReview();
     const scheduled = !!document.querySelector('[data-publish="schedule"].selection-card--active');
     const key = scheduled ? 'cpp.publish.toast.scheduled' : 'cpp.publish.toast.now';
@@ -1813,6 +1824,19 @@
     const list = (window.ztorProjects && window.ztorProjects.list()) || [];
     const sample = list.filter(p => p.type === want)[0];
     location.href = 'project-detail.html' + (sample ? '?id=' + encodeURIComponent(sample.id) : '');
+  }
+  function publish() {
+    if (window.ztorPublishPreview) {
+      window.ztorPublishPreview.open({
+        fields: [
+          { key: 'name', el: document.getElementById('proj-title'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+          { key: 'desc', el: document.getElementById('proj-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+        ],
+        onConfirm: doPublishConfirmed
+      });
+      return;
+    }
+    doPublishConfirmed();
   }
 
   // Nav

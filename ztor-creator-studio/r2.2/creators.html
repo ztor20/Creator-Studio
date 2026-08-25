@@ -20,6 +20,11 @@
 <link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/owner-lookup.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/detail-sheet.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/combobox.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/data-list.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/header.css?v=r2.2">
 <link rel="stylesheet" href="ds-components/list-footer.css?v=r2.2">
@@ -222,6 +227,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/sticky-actions.js?v=r2.2"></script>
+<script src="js/detail-sheet.js?v=r2.2"></script>
 <script src="js/devtools.js?v=r2.2"></script>
 <script>
 /* Creator roster page logic (Tier 0). Reads the shared model from sidebar.js
@@ -310,6 +316,9 @@
         +   '<details class="dropdown">'
         +     '<summary class="btn btn--ghost btn--icon btn--sm" aria-label="' + ((window.i18nT && window.i18nT('creators.row-actions')) || 'More actions') + '"><i data-lucide="more-horizontal" class="ztor-icon"></i></summary>'
         +     '<div class="dropdown__menu" role="menu">'
+        /* D224：兩個入口都開同一個詳情頁，只是落在不同分頁 */
+        +       '<button class="dropdown__item" type="button" role="menuitem" data-detail="' + c.handle + '" data-tab="basic"><i data-lucide="pencil" class="ztor-icon"></i><span data-i18n="creators.action-edit">Edit</span></button>'
+        +       '<button class="dropdown__item" type="button" role="menuitem" data-detail="' + c.handle + '" data-tab="events"><i data-lucide="download" class="ztor-icon"></i><span data-i18n="creators.action-import">Import events</span></button>'
         +       '<button class="dropdown__item" type="button" role="menuitem" data-toggle="' + c.handle + '"><i data-lucide="' + toggleIcon + '" class="ztor-icon"></i><span data-i18n="' + toggleKey + '">' + toggleKey + '</span></button>'
         +     '</div>'
         +   '</details>'
@@ -323,20 +332,52 @@
 
   function goManage(handle) { window.ztorCreator.set(handle); location.href = 'index.html'; }
 
+  /* D224 · 開 Creator 詳情頁。用站上既有的 detail-sheet：把那一頁本人放進覆蓋層的
+     iframe，名冊的篩選、搜尋與捲動位置原封不動留在底下，關掉就在原地。
+     直接叫它的 API 而不是靠 detail-sheet.js 的連結攔截——列上是按鈕不是 <a>，
+     而且要帶 tab 參數。 */
+  function openDetail(handle, tab, trigger) {
+    var c = list.filter(function (x) { return x.handle === handle; })[0];
+    /* 帶的是 seed（示範資料的原始 handle），不是現值——店鋪網址改得掉，
+       拿現值當鍵的話，改過之後這個連結就對不回同一筆。 */
+    var key = c && c.seed ? c.seed : handle;
+    window.ztorDetailSheet.open('creator-detail.html?handle=' + encodeURIComponent(key) + '&tab=' + (tab || 'basic'),
+                                c ? c.name : '', trigger);
+  }
+  /* 覆蓋層裡的詳情頁是另一個 window，改完會寫進 localStorage；同源的另一份文件會收到
+     storage 事件。收到就把名冊的資料重新套一次覆寫再重繪——否則關掉覆蓋層還是舊的。 */
+  window.addEventListener('storage', function (e) {
+    if (e.key !== 'ztor.creatorEdits') return;
+    if (window.ztorCreator.refresh) window.ztorCreator.refresh();
+    render();
+  });
+
   roster.addEventListener('click', function (e) {
     var toggle = e.target.closest('[data-toggle]');
     if (toggle) {
       e.preventDefault();
       var h = toggle.getAttribute('data-toggle');
       var c = list.filter(function (x) { return x.handle === h; })[0];
-      if (c) { c.status = (st(c) === 'disabled') ? 'active' : 'disabled'; render(); }
+      /* 走 save() 落地：同一個開關在詳情頁也有（D224），兩邊都改記憶體的話，
+         重新整理後會各說各話。 */
+      if (c) { window.ztorCreator.save(c.seed || c.handle, { status: st(c) === 'disabled' ? 'active' : 'disabled' }); render(); }
+      return;
+    }
+    /* D224：⋯ 選單的「編輯」與「匯入活動」是同一個詳情頁的兩個分頁。 */
+    var detail = e.target.closest('[data-detail]');
+    if (detail) {
+      e.preventDefault();
+      var dd = detail.closest('details'); if (dd) dd.open = false;
+      openDetail(detail.getAttribute('data-detail'), detail.getAttribute('data-tab'), detail);
       return;
     }
     if (e.target.closest('.dropdown')) return;   /* native <details> handles open/close */
     var manage = e.target.closest('[data-manage]');
     if (manage) { goManage(manage.getAttribute('data-manage')); return; }
+    /* D218／D224：整列點擊開詳情頁（基本資料那一頁），不是進工作區——進工作區留給
+       「前往」那顆按鈕。同一列兩個目的地，破壞性小的那個（可關掉的覆蓋層）拿大面積。 */
     var row = e.target.closest('[data-creator-row]');
-    if (row) goManage(row.getAttribute('data-handle'));
+    if (row) openDetail(row.getAttribute('data-handle'), 'basic', row);
   });
 
   /* Status filter (filter-tabs) */
@@ -367,7 +408,7 @@
   var phoneInput  = form.querySelector('input[name="phone"]');
   var handlePrev  = form.querySelector('[data-handle-preview]');
   var formAva     = document.getElementById('creator-form-ava');
-  var picked = null;   /* the selected registered account */
+  var picked = null;      /* the selected registered account */
 
   function tx(key, fallback) { return (window.i18nT && window.i18nT(key)) || fallback; }
   function slug(s) { return (s || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, ''); }
@@ -446,7 +487,8 @@
     if (e.key === 'Escape' && !results.hidden) { e.stopPropagation(); hideResults(); }
   });
 
-  /* Modal chrome */
+  /* ── Modal chrome — 建立 creator（搜尋 ztor 帳號 → 選一個 → 表單出現 → 建立）。
+     編輯已於 2026-08-24 搬到獨立頁面 creator-detail.html（D224），這裡只剩建立。 ── */
   function openModal() {
     modal.hidden = false; document.body.classList.add('is-modal-open');
     accSearch.focus();
@@ -479,14 +521,18 @@
     if (!picked) return;
     var handle = slug(handleInput.value);
     if (!handle) { handleInput.reportValidity(); return; }
-    /* D107: 店鋪網址 (handle) 平台唯一——建立時擋重複。 */
+    /* D107: 店鋪網址 (handle) 平台唯一——建立時擋重複；編輯時把自己排除在外。 */
     if (list.some(function (c) { return c.handle === handle; })) {
       handleInput.setCustomValidity(tx('creators.form-handle-dup', '此店鋪網址已被使用'));
       handleInput.reportValidity();
       return;
     }
-    list.push({ handle: handle, name: picked.name, shop: '/shop/' + handle, status: 'active',
-                email: picked.email, phone: (phoneInput.value || '').trim(), created: todayStr() });
+    /* 走 add() 而不是 list.push()：新 creator 要落地，否則詳情頁（另一份文件）
+       看不到它、會顯示「查無此 creator」（D224）。 */
+    window.ztorCreator.add({ handle: handle, name: picked.name, shop: '/shop/' + handle, status: 'active',
+                email: picked.email, phone: (phoneInput.value || '').trim(), created: todayStr(),
+                bookyayEvents: [],      /* D219：匯入的 bookyay 活動在詳情頁做 */
+                seed: handle });        /* D224：詳情頁的查詢鍵，之後改店鋪網址也對得回來 */
     /* Onboarded → leave the pre-registered pool so it can't be created twice. */
     var idx = registered.indexOf(picked);
     if (idx !== -1) registered.splice(idx, 1);

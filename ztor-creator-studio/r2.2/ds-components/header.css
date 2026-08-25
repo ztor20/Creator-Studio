@@ -206,6 +206,54 @@
   margin: var(--sp-6) 0;
 }
 
+/* 帳戶選單的語言列（D222，撤除 D221 的雙概念）——可展開的單選清單，坐在同一個
+   .app-topbar__dropdown 選單裡，沿用 .app-topbar__dropdown-option 的列樣式（不是
+   另一支分級選單元件，見 STYLE-DECISIONS Q70）。常駐只有一列（標題＋目前值＋chevron），
+   點了才展開四個語系；展開態不影響外層帳戶下拉本身的開合。 */
+.app-topbar__dropdown-option--toggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.app-topbar__dropdown-option--toggle > *:first-child { flex: 1 1 auto; min-width: 0; }
+.app-topbar__dropdown-lang-chevron {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+  transition: transform .15s ease;
+}
+.app-topbar__dropdown-option--toggle[aria-expanded="true"] .app-topbar__dropdown-lang-chevron {
+  transform: rotate(180deg);
+}
+.app-topbar__dropdown-langlist {
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-topbar__dropdown-langlist[hidden] { display: none; }
+/* 語言選項列一律縮排到與側欄子項同一階（--sp-40），視覺上讀成「屬於上面那顆展開列」 */
+/* 語言選項是 <button>，繼承 .app-topbar__dropdown-option 的 flex/padding，但那支基礎
+   規則從未給過 button reset（它平常只套在 <a> 上）——沒補這條，瀏覽器預設的
+   buttonface 灰底會蓋成四顆實心灰膠囊，跟同選單其他列（透明底）不一致，也會被誤讀成
+   「全部都被選中」（2026-08-24 審查抓到，兩個 shell 同病，見 .app-topbar__dropdown-option--toggle
+   同樣需要 reset）。選中語意只交給 check icon／aria-checked，不靠填色。 */
+.app-topbar__dropdown-option--lang {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  padding-left: var(--sp-40);
+}
+.app-topbar__dropdown-option--lang > *:first-child { flex: 1 1 auto; }
+.app-topbar__dropdown-lang-check { flex: 0 0 auto; color: var(--foreground); }
+
 /* Right-side cluster: theme · search · lang · notifications · avatar */
 .app-topbar__actions {
   margin-left: auto;
@@ -227,24 +275,6 @@
   border-radius: 50%;
   background: var(--primary);
 }
-
-.app-topbar__lang {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-4);
-  padding: 0 var(--sp-10);
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  font-family: var(--font-ui);
-  font-size: var(--fs-11);
-  font-weight: var(--fw-regular);
-  color: var(--foreground-muted);
-  cursor: pointer;
-}
-.app-topbar__lang [aria-current="true"]  { color: var(--foreground); }
-.app-topbar__lang [aria-current="false"] { color: var(--muted-foreground); }
 
 .app-topbar__avatar {
   width: 32px; height: 32px;
