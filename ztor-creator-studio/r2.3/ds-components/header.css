@@ -411,3 +411,143 @@
     padding: 0 0 var(--sp-4) var(--sp-24);
   }
 }
+
+/* ── 側欄收合成只有 icon（2026-08-31 使用者裁示「全頁都要有」）──────
+   鈕由 sidebar.js 產出，所以全站的側欄都有；狀態掛在 `.app.is-nav-rail`、
+   存在 localStorage，跨頁維持同一個選擇——每點一次導覽就重新展開的話，
+   那顆鈕等於沒用。
+
+   收起時**只藏字不藏路**：每一個 icon 留在原來的位置，圖示與名稱的對應關係
+   因此不必重學；子選單整段收起（它本來就要靠名稱才讀得懂）；品牌換成只有記號
+   的版本——ztor 的字標在 76px 裡扣掉內距只剩約 48px，硬縮會被切成「zto」。 */
+/* 收合鈕與品牌同一行（2026-08-31 使用者裁示「移到上面」）：它是這一欄的控制，
+   不是導覽的一項；跟 logo 並排就讀得出「這顆管的是整條側欄」，另起一列則會
+   被當成導覽清單的第一項。 */
+.app-sidebar__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  flex: none;
+}
+.app-nav-rail-toggle {
+  appearance: none;
+  border: 0;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing), background-color var(--duration) var(--easing);
+}
+.app-nav-rail-toggle:hover { color: var(--foreground); background: var(--accent); }
+.app-nav-rail-toggle:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.app-nav-rail-toggle .ztor-icon { width: 18px; height: 18px; }
+
+/* 記號版標誌預設不顯示；收起時與字標對調。 */
+.app-sidebar__brand-symbol { width: 24px; height: 24px; display: none; }
+.app.is-nav-rail .app-sidebar__brand-symbol { display: block; }
+/* 字標的 class 是 `app-topbar__brand-logo`——兩個外殼（topbar／sidebar）共用同一支
+   標誌，名字沿用 topbar 那邊。寫成 `app-sidebar__brand-logo` 會完全選不到（實測）。 */
+.app.is-nav-rail .app-sidebar__brand .app-topbar__brand-logo { display: none; }
+
+/* 欄寬：選擇器必須帶 `#sidebar` 且要改 `flex-basis`。真正的來源是 shared.css 的
+   `html[data-nav-mode="sidebar"] #sidebar { flex: 0 0 248px }`——純 class 的規則
+   壓不過帶 id 的那條（實測改了 `width` 欄寬仍是 248px），而在 flex row 裡
+   只改 `width` 也不決定尺寸。 */
+html[data-nav-mode="sidebar"] #sidebar {
+  transition: flex-basis var(--duration-slow, 320ms) var(--easing),
+              width var(--duration-slow, 320ms) var(--easing);
+}
+html[data-nav-mode="sidebar"] .app.is-nav-rail #sidebar {
+  flex: 0 0 76px;
+  width: 76px;
+  min-width: 76px;
+}
+
+.app.is-nav-rail .app-sidebar__link-label,
+.app.is-nav-rail .app-sidebar__action-label,
+.app.is-nav-rail .app-sidebar__brand-name,
+.app.is-nav-rail .app-sidebar__search-input,
+.app.is-nav-rail .app-sidebar__subnav,
+.app.is-nav-rail .app-sidebar__context,
+.app.is-nav-rail .app-sidebar__group-toggle > .ztor-icon:last-child {
+  display: none;
+}
+/* 收起來之後每一列只剩一顆 icon：置中，並把為文字留的左右內距收掉。 */
+.app.is-nav-rail .app-sidebar__link,
+.app.is-nav-rail .app-sidebar__action {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* 品牌區是**直向** flex（標誌在上、Creator Studio 在下），所以橫向置中要用
+   `align-items`，不是 `justify-content`——後者在直向 flex 裡管的是垂直，
+   寫了會顯示成 center 但記號仍然貼左（2026-08-31 實測偏左 12px＝記號的半寬）。 */
+.app.is-nav-rail .app-sidebar__brand {
+  align-items: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* 收起時（2026-08-31 使用者裁示三次：先「移到上面」、再「縮小後可以放在下面」、
+   最後「這個 icon 要移上去，並在下面加一條分隔線」）：品牌在最上、收合鈕緊接在它
+   底下自成一列、下面畫一條分隔線。
+   為什麼是自成一列而不是與品牌並排：76px 的欄裡那一行只放得下一樣東西
+   （記號 24 ＋間距 8 ＋鈕 32 ＝ 64，扣掉內距只剩約 60，並排會折行）。
+   分隔線做什麼：鈕獨自站在導覽上方時，看起來會像「第一個導覽項」；一條線把
+   「這一欄的控制」與「要去哪一頁」分成兩段，那顆鈕才讀得出自己不是目的地。
+   `display: contents` 讓包裝層在收合時退出排版，品牌與鈕直接成為側欄的 flex 子項，
+   排序才跟得上 DOM（品牌 → 鈕 → 導覽）。 */
+.app.is-nav-rail .app-sidebar__top {
+  display: contents;
+}
+.app.is-nav-rail .app-nav-rail-toggle {
+  order: 0;
+  align-self: center;
+  margin: var(--sp-4) 0 var(--sp-12);
+}
+/* 分隔線畫在導覽清單的上緣，不是畫在鈕的底下：鈕只有 32px 寬，線跟著它就只有
+   32px，看起來像鈕的一部分而不是一條分界。掛在清單上，線才吃滿整條欄的寬度。 */
+.app.is-nav-rail .app-sidebar__nav {
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-12);
+}
+
+/* 窄畫面本來就由 burger 接手，收合鈕與這一整套規則一併退場——
+   兩套收合機制同時在，讀者會不知道哪一顆管哪一件事。 */
+@media (max-width: 900px) {
+  .app-nav-rail-toggle { display: none; }
+  html[data-nav-mode="sidebar"] .app.is-nav-rail #sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+  }
+  .app.is-nav-rail .app-sidebar__link-label,
+  .app.is-nav-rail .app-sidebar__action-label,
+  .app.is-nav-rail .app-sidebar__brand-name { display: inline; }
+  .app.is-nav-rail .app-sidebar__brand-symbol { display: none; }
+  .app.is-nav-rail .app-sidebar__brand .app-topbar__brand-logo { display: block; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-nav-mode="sidebar"] #sidebar { transition: none; }
+}
+
+
+/* 收起時的未讀點：貼在 icon 的右上角，不是排在它旁邊（2026-08-31 使用者裁示）。
+   展開時標籤還在，點跟在標籤後面讀得出「這一項有未讀」；收起後標籤沒了，
+   點就變成 icon 旁邊一顆浮著的橘色圓，看不出它在講誰。
+   只改收合狀態——展開的側欄是全站每一頁在用的，這裡不動它。 */
+.app.is-nav-rail .app-sidebar__action { position: relative; }
+.app.is-nav-rail .app-sidebar__action .app-topbar__badge-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(6px, -13px);
+}

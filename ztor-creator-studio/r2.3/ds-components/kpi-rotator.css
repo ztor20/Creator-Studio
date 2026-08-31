@@ -1,0 +1,144 @@
+/* ============================================================
+   kpi-rotator — 一格位置輪流講兩件事（2026-08-31 建）
+
+   定位：一屏不捲的展示版型左欄第一格。收入與粉絲組成各自是一張完整的 KPI 卡，
+   但展示版的左欄只有三格，兩件事得共用一格。
+
+   為什麼是輪播不是並排：兩張卡各自都有大數字與走勢圖，並排會把數字壓到讀不出
+   氣勢，那正是展示版唯一要保住的東西。輪播讓每一張在自己的十秒裡是滿版的。
+
+   為什麼淡入淡出不是滑動：滑動帶方向，方向會被讀成「還有下一頁、可以自己翻」；
+   這裡沒有翻頁動作，它自己會換。淡入淡出不承諾任何可操作性。
+
+   全站只能有一個東西在自己動：收入欄的 10 秒輪替（earnings-feed）與這一格不會
+   同時出現——展示版沒有收入欄，正式儀表板沒有這一格。同一畫面上兩組自己在動的
+   東西會互相搶眼，兩個都讀不完。
+
+   解剖：
+     .kpi-rotator                  外框（高度由最高的那一張撐開，見 __sizer）
+       .kpi-rotator__sizer         不可見的撐高層：把所有張疊在一起量出最大高度
+       .kpi-rotator__slide         一張（絕對定位，只有 --active 可見）
+       .distribution               一張（見本檔末的分布卡）
+         .canvas-nav               標題右邊的左右兩顆箭頭（共用，見 canvas-home.css）
+           .canvas-step
+   ============================================================ */
+
+.kpi-rotator {
+  position: relative;
+  display: grid;
+}
+
+/* 所有張都放進同一個 grid 格：格子的高度自然取最高的那一張，換張時外框不會抖。
+   用 grid 疊放而不是 `position: absolute`——絕對定位的元素不參與高度計算，
+   外框就得靠 JS 量高度，換一次語言、換一次字型都要重量一次。 */
+.kpi-rotator__slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-slow, 320ms) var(--easing);
+}
+.kpi-rotator__slide--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 進度點已於 2026-08-31 退場，改成標題右邊可點的左右兩顆箭頭（`.canvas-step`）：
+   點只是純指示、告訴你有幾張，箭頭同時讓你自己往下一張。同一個位置能多做一件事
+   就沒有理由留著只會看的那一種。 */
+
+@media (prefers-reduced-motion: reduce) {
+  /* 內容照換、動畫不播：輪替是資訊不是裝飾，停掉的話這一格會有一半的內容
+     永遠看不到。 */
+  .kpi-rotator__slide { transition: none; }
+}
+
+/* ── 分布卡（2026-08-31）：一個總數 ＋ 它的組成 ───────────────
+   輪播裡的每一張。標題與其他兩區的區塊標題同一階（`--fs-14` 前景色）——
+   它們在同一欄裡由上而下讀，標題級別不一致會讓人以為分了層。
+   前一版沿用 `.kpi`，標題是 muted 小標，在照片上讀起來像註腳。 */
+.distribution {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+}
+.distribution__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.distribution__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium, 500);
+  color: var(--foreground);
+  margin: 0;
+}
+/* 切換用的左右兩顆箭頭 2026-08-31 提升成左欄共用的 `.canvas-step`（定義在
+   canvas-home.css）：進行中那一格同日也改成左右切換，同一個手勢不該有兩顆長得
+   一樣、卻各自定義的按鈕。原本的 `.distribution__nav`／`.distribution__step`
+   同時退場（墓碑）。與另外兩區的「查看更多」同一個字形與尺寸——三區的標題列
+   因此對得起來；差別在於這兩顆不離開頁面，所以擺在標題內側、不在區塊的右上外緣。 */
+
+/* 總數與漲跌同一行、基線對齊：漲跌是這個數字的註解，另起一行會讀成第二個事實。 */
+/* 粉絲那一張的環往下讓一段（2026-08-31 使用者裁示「粉絲分布加一點上 padding，
+   收入不用動」）：收入那張的下一件事是一行大數字，字的上緣本來就有行高撐著；
+   環是一個實心的圓，緊接在標題底下會像貼在標題上。只加在這一張，收入那張不受影響
+   （輪播的外框高度取最高的那一張，多這 16px 不會讓兩張的高度打架）。 */
+.distribution .donut-mix { margin-top: var(--sp-16); }
+
+.distribution__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-8);
+}
+.distribution__value {
+  font-family: var(--font-numeric, var(--font-display));
+  /* 32 → 44 → 56 → 44（2026-08-31 三次裁示，最後一次是「字小一點」）：這一格是左欄的
+     頭一件事，總數要能一眼讀完；但 56px 之後它比第二屏那些卡上的數字還大一階，
+     整頁最大的字落在一個示意數字上。44 仍然是這一欄最大的字。 */
+  font-size: var(--fs-44);
+  line-height: 1.1;
+  color: var(--foreground);
+}
+.distribution__delta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--status-success, var(--chart-3));
+}
+
+/* 走勢曲線那一型（2026-08-31 使用者裁示「收入改成曲線圖」）：借 `.sparkline`
+   畫，只把繪圖高度接手過來。64px 是「看得出形狀」與「不吃掉這一格」之間的取捨——
+   30px（sparkline 預設）在這個寬度上只剩一條抖動的線，76px（`--detail`）則會把
+   底下兩格往下推。刻度與格線一律不帶，見資料端的說明。 */
+.distribution__curve { margin-top: var(--sp-6); }
+.distribution__curve .sparkline { --spark-plot-h: 64px; }
+
+/* 幾條線各是誰：一排小色鍵，不是完整圖例——完整圖例要三行，這一格沒有那個高度。
+   色鍵只有「色點＋名稱」，沒有數值：線的高低本來就是拿來比較的，寫上數值等於
+   要讀者在兩個地方讀同一件事。主線那一顆吃中性墨色，與圖上的主線一致。 */
+/* 排在曲線上方、靠右（2026-08-31 使用者裁示）：色鍵是讀圖的前提，先看到才知道
+   等一下的三條線各是誰。靠右讓它與左邊的大數字分工——同一段的兩端，一邊是答案、
+   一邊是圖例。 */
+.distribution__keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-4) var(--sp-12);
+  margin-top: var(--sp-6);
+}
+.distribution__key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.distribution__key::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--key, var(--chart-1));
+}
+.distribution__key--ink::before { background: var(--muted-foreground); }

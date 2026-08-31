@@ -1,0 +1,108 @@
+/* ============================================================
+   donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
+
+   使用者提供參考圖（智慧樓宇儀表板的用電組成圓環）並裁示「fan mix 換成這種圓環圖」。
+   首個消費情境：展示版左欄第一格的粉絲分布（見 kpi-rotator.css）。
+
+   **與站上另外兩支圓環的分工**（三支並存，不互相取代）：
+     `.donut`（chart.css）  只吃兩段，一個百分比就切完；中心是「達成率」那種單一數字。
+     `.pie`（chart.css）    conic-gradient 的多段圓餅，段與段相鄰、沒有縫也沒有圓端。
+     `.donut-mix`（本檔）   多段、段間留縫、端點是圓的、中心放總數。
+
+   **為什麼不是擴充 `.pie`**：conic-gradient 畫不出「圓端」與「段間的縫」——那兩件事
+   正是參考圖的樣子，也是這個圖與圓餅在讀法上的差別：圓餅讀的是「切開的整體」，
+   這個環讀的是「幾段各自的長度」，縫讓每一段成為獨立的一筆。所以改用 SVG 的
+   `stroke-dasharray` 畫弧，圓端交給 `stroke-linecap: round`。
+
+   **與 split-bar 的分工**：同一份資料的兩種畫法。長條省高度、環省寬度（它把總數
+   收進中心，不必另外排一行大數字）。這一格選環是因為它的寬度只有 300px，
+   而環＋圖例並排剛好用得完。
+
+   解剖：
+     .donut-mix                外框（環 ＋ 圖例並排）
+       .donut-mix__ring        SVG（旋轉 -90°，第一段從十二點鐘開始）
+         .donut-mix__track     底環（沒有資料的那一圈，薄膜色）
+         .donut-mix__seg       一段弧（顏色由行內 `--seg` 帶進來）
+       .donut-mix__center      環心：總數 ＋ 單位
+         .donut-mix__value
+         .donut-mix__unit
+       圖例沿用 `.split-bar__legend`／`__row`／`__dot`／`__label`／`__pct`
+       （見 split-bar.css）：同一份資料的圖例沒有理由有兩套寫法。
+   ============================================================ */
+
+/* 環在左、圖例貼著整段的右緣（2026-08-31 使用者裁示「這一堆在整個 section 靠右」）：
+   兩者之間的空白因此是「這一格有多寬」的結果，不是一個寫死的間距；圖例的百分比
+   也就與這一格裡其他靠右的東西（標題列的兩顆箭頭）收在同一條線上。 */
+.donut-mix {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+
+/* 環自己不縮：圖例那一欄吃剩下的寬度。 */
+.donut-mix__ringwrap {
+  position: relative;
+  flex: none;
+  /* 116 → 150（2026-08-31 使用者裁示「大一點」）：環是這一張的主體，旁邊的圖例
+     只有四行、吃不掉那麼多寬度，環放大之後這一格才不會上下都是空的。 */
+  width: var(--donut-mix-size, 150px);
+  height: var(--donut-mix-size, 150px);
+}
+.donut-mix__ring {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* 從十二點鐘開始畫（SVG 的 0° 在三點鐘方向）。 */
+  transform: rotate(-90deg);
+}
+.donut-mix__track {
+  fill: none;
+  stroke: var(--ztu-film);
+  stroke-width: var(--donut-mix-thickness, 9);
+}
+.donut-mix__seg {
+  fill: none;
+  stroke: var(--seg, var(--chart-1));
+  /* 12 → 9（2026-08-31 使用者裁示「線窄一點」）。這個數字與 components.js 的
+     `donutMix()` 裡的 W 是同一件事：段間的縫要扣掉一整個描邊寬，兩邊不同步
+     縫就會忽寬忽窄。 */
+  stroke-width: var(--donut-mix-thickness, 9);
+  stroke-linecap: round;
+}
+
+/* 環心：總數與單位。字級刻意比左欄那個 56px 的大數字小——它住在 88px 的洞裡，
+   再大就得把環撐大，而環一大這一格的寬度就不夠讓圖例並排。 */
+.donut-mix__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  text-align: center;
+  pointer-events: none;
+}
+.donut-mix__value {
+  font-family: var(--font-numeric, var(--font-display));
+  font-size: var(--fs-24);
+  line-height: 1.05;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+.donut-mix__unit {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+
+/* 圖例那一欄：借 split-bar 的列，只把寬度接手過來。 */
+/* 圖例收窄（2026-08-31 使用者裁示「窄一點」）：名稱是 `flex: 1` 撐開的，欄位有多寬
+   百分比就被推多遠，四行讀起來像四段各自為政的長句。給一個上限之後，名稱與它的
+   百分比重新收成一組。 */
+.donut-mix__legend {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 190px;
+}

@@ -1,0 +1,354 @@
+/* ============================================================
+   live-item — 進行中的一件（2026-08-31 建）
+
+   展示版第二屏的主角。使用者裁示：「這一頁會一次看到一兩個正在進行的項目或活動，
+   看到目前的進行狀態；如果有更多在進行，可以快速再按下一輪。因此每一個活動的
+   簡要資訊與狀態很重要。」同日再裁示：「海報要大一點、佔整頁高度多一點，
+   **不要用卡片的形式**，文字可以大一點，有更多空間可以利用。」
+
+   **玻璃卡面**（2026-08-31 使用者裁示三次走到位：有卡 → 不畫卡面 → 「還是把原本的
+   玻璃卡片加回來吧」）：這一屏同日也換成「用正中央那一件的海報當背景」，卡面因此
+   有了存在的理由——字躺在一張糊掉的照片上讀不乾淨，玻璃是把它從照片上撐起來的那一層。
+   外框直接用站上的 `.card`，不另做一套面；模糊在這裡是合法的（Q77 的但書：
+   父層是照片時可以糊），因為它下面真的是一張圖。
+
+   **與作品磚（`work-card`）的分工**：磚列回答「我有哪些作品」——一排小封面、
+   一眼掃過目錄；這一支回答「哪幾件正在跑、跑到哪」——一次一件、把狀態說完。
+   同一批資料的兩種讀法，兩支並存不互相取代。
+
+   一件事的資訊分兩堆，這是刻意的：
+     上半（身分）  `__stage` 階段藥丸 ＋ `__kind` 作品分類、`__name` 名稱、`__meta` 場次或條件
+     下半（狀態）  `__value` ＋ `__den` 已賣對總量、`__bar` ＋ `__pct` 進度、`__side` 還剩多久
+   身分貼著上緣、狀態貼著下緣，中間的空白是海報的高度換來的——把兩堆黏在一起
+   會讓這一屏又變回一張小卡。
+
+   排法是「置中輪播」（2026-08-31 使用者裁示）：中間那一件是現在在講的，左右各露出
+   一截前一件與下一件，翻頁鈕一左一右夾著它，一次轉一件。列是**環狀**的——渲染器把
+   最後一件排在最前面，所以一開始置中的是第一件、左邊露出的是最後一件。
+
+   解剖：
+     .live-rail__wrap        可視區 ＋ 兩顆翻頁鈕（鈕與捲動區同在 wrap 底下，
+                             共用的磚列 JS 是從鈕的父層往下找捲動區的）
+       .live-rail__view      可視區（`overflow: hidden`），兩緣的漸消遮罩畫在這一層
+         .live-rail          會位移的軌道（transform；遮罩不能掛這裡，會跟著動）
+           .live-item        一件（海報 ＋ 文字欄）
+       .live-rail__nav       翻頁鈕
+   ============================================================ */
+
+/* 一顆鈕在左、一顆在右，中間是這一列（2026-08-31 使用者裁示）：鈕排在流裡而不是
+   壓在內容上（磚列那兩顆是絕對定位，因為那一列沒有多餘的寬度可以讓）。
+   **用格線、兩側各留一格固定寬**：到頭那顆會被共用腳本設成 `hidden`，而站上有一條
+   全域規則 `[hidden] { display: none !important }`（shared.css，2026-08-17 立）；
+   格線的欄寬不會因為裡面的元素消失而收掉，所以中間那一列不會左右跳一格。 */
+/* ── 這一屏的背景：正中央那一件的海報 ─────────────────────────
+   2026-08-31 使用者裁示「選到那個活動或項目時，要用那個海報當背景，並模糊化」。
+   糊到看不出細節、只留顏色與明暗：它的工作是回答「你現在看的是這一件」，
+   不是再放一次那張圖——看得清楚反而會與卡片裡那張搶。
+   往左右各溢出一段頁面內距，讓它讀起來是「這一屏的地」而不是一塊貼在內容區裡的圖；
+   上下不溢出，否則會蓋到相鄰兩屏。換圖時先淡出再淡入（換 `background-image` 沒有
+   中間狀態可以補間，靠 opacity 帶過去）。 */
+.live-bg {
+  /* `fixed` 鋪滿整個視窗、壓在**所有東西的最後面**（2026-08-31 使用者更正：
+     「是整個畫面最後面的背景，你現在是把背景疊在 content 上，那是不對的」）：
+     與第一屏的底圖同一種做法（見 canvas-home.css 的 `.canvas-home__stage`）——
+     圖要滿到視窗邊才讀得出「這張圖是地」，只鋪內容區的話側欄與四周會露出底色，
+     變成「內容區裡放了一張圖」。 */
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-position: center;
+  background-size: cover;
+  /* 90 → 48 → 16px（2026-08-31 三次：兩次「模糊少一點」之後在調參器裡定案）：
+     糊的目的是把細節拿掉、只留顏色與大塊的明暗，而糊過頭會讓每一張海報都變成同一團
+     彩霧——認不出是哪一件，這一層就白做了。16px 這一階看得出構圖、讀不出細節。
+     亮度壓到 0.85（使用者裁示「背景可以暗一點」）：卡片是玻璃，底圖一亮就從卡面
+     透上來、把卡上的字吃掉；壓一階之後顏色還在，字回到玻璃上面。
+     放大 1.18：模糊會把邊緣糊出一圈透明，放大是把那一圈推到視窗外面；模糊愈輕
+     需要的放大其實愈少，這裡多留一點是為了讓 `background-size: cover` 的裁切
+     不要每張都切在同一個位置。
+     ⚠ 這一組值在 `docs/live-bg-tuner.html` 的 `BASE` 裡有一份副本，改這裡要同步。 */
+  filter: blur(24px) saturate(1.3) brightness(0.74);
+  transform: scale(1.18);
+  pointer-events: none;
+  /* 只有這一屏佔著畫面時才亮起來（class 由頁面的捲動監聽切換）：不關掉的話，
+     它會連第一屏與第三屏的地一起換掉。 */
+  opacity: 0;
+  transition: opacity var(--duration-slow, 320ms) var(--easing);
+}
+.is-live-bg .live-bg { opacity: 1; }
+/* 壓一層暗紗：糊過的海報仍有亮塊，白字落在那上面會斷掉。 */
+.live-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom,
+    color-mix(in srgb, var(--ztu-canvas, #000) 56%, transparent),
+    color-mix(in srgb, var(--ztu-canvas, #000) 80%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-bg { transition: none; }
+}
+
+.live-rail__wrap {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: var(--sp-20);
+}
+/* 三個欄位都要指定，不能靠自動配位：到頭那顆鈕是 `display: none`，自動配位時
+   後面的東西會整個往前遞補一格（實測可視區縮成 40px、整列被擠成一條）。 */
+.live-rail__nav--prev { grid-column: 1; }
+.live-rail__view      { grid-column: 2; }
+.live-rail__nav--next { grid-column: 3; }
+
+/* 可視區吃掉兩顆鈕以外的全部寬度（2026-08-31 使用者裁示三次走到位：右邊留三分之一 →
+   留五分之一 → 「不用留空了，一左一右」）：翻頁鈕改成一顆在左、一顆在右，鈕本身就是
+   這一列的左右邊界，再留一段空白等於同一件事做兩次。
+   **兩邊都漸消**（同日再調，這一列改成置中輪播之後）：中間那一件是現在在講的，
+   左右各露出一截前一件與下一件；用硬邊切斷會讀成「壞掉的版面」。
+   遮罩掛在這一層、不掛在裡面那一層：裡面那一層是會動的（transform），
+   遮罩跟著動的東西走會在動畫時一起位移。 */
+.live-rail__view {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  /* 上下留出畫陰影的地方，再用等量的負外距把版面收回來（2026-08-31 使用者回報
+     「這個後面有奇怪被切掉的陰影」）：卡的陰影是 `0 24px 60px`，往下伸出去 84px，
+     而這一層的框剛好等於卡的高度——`overflow: hidden` 於是把陰影切在框上，
+     背景上就出現一條與卡無關的硬邊。左右不必補：那兩側由遮罩漸消，切口本來就是軟的。 */
+  padding: 90px 0;
+  margin: -90px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, var(--foreground) 12%, var(--foreground) 88%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, var(--foreground) 12%, var(--foreground) 88%, transparent 100%);
+}
+/* 環狀的列用位移、不用原生捲動（2026-08-31 使用者裁示「置中輪播，左邊放最後一個」）：
+   原生捲動一定有兩個端點，要偽裝成環狀就得複製節點或在端點瞬間跳位，兩種都看得出來。
+   位移只要在動畫結束後把第一件搬到最後、位置歸零，就等於轉了一格（見 components.js）。 */
+.live-rail {
+  display: flex;
+  /* 件與件之間 24 → 40（2026-08-31 使用者裁示「間距大一點」）：這一列一次只看一件，
+     縫是「這是另一件」的唯一分隔——不畫卡面之後，縫太小兩張海報會讀成一張拼貼。 */
+  gap: var(--live-item-gap, 40px);
+  will-change: transform;
+  transition: transform var(--duration-slow, 320ms) var(--easing);
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-rail { transition: none; }
+}
+
+.live-rail__empty {
+  margin: 0;
+  padding: var(--sp-24) 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--muted-foreground);
+}
+
+/* 翻頁鈕：與磚列同一顆圓鈕，但排在流裡（磚列那兩顆是絕對定位、壓在封面上）。
+   這一列右邊本來就是留白，鈕站進去剛好，不必壓在內容上。 */
+.live-rail__nav {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--ztu-film);
+  color: var(--foreground-muted);
+  cursor: pointer;
+}
+
+.live-rail__nav:hover { color: var(--foreground); background: var(--accent); }
+.live-rail__nav:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.live-rail__nav .ztor-icon { width: 20px; height: 20px; }
+
+/* ── 一件 ─────────────────────────────────────────────── */
+/* 一件的寬度由可視區反推：（可視區 − 縫）÷ 1.5，於是置中那一件的左右各露出
+   約四分之一件。用算的而不是寫死一個像素值，視窗寬窄變了這個比例仍然成立
+   （百分比算的是這一層的寬度，而這一層是可視區的區塊子元素、寬度等於可視區）。 */
+.live-item {
+  flex: 0 0 calc((100% - var(--live-item-gap, 40px)) / 1.5);
+  display: flex;
+  gap: var(--sp-24);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--duration) var(--easing),
+              box-shadow var(--duration) var(--easing);
+}
+/* 滑過抬一點點：這一整塊是連結，抬起是「可以點」的唯一提示（卡面本身不換色，
+   換色會讀成「被選中」）。 */
+.live-item:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+  .live-item { transition: none; }
+  .live-item:hover { transform: none; }
+}
+
+/* 海報吃掉這一屏大半的高度（2026-08-31 使用者裁示「大一點、佔整頁高度多一點」）：
+   2:3 直式，寬度由高度決定。它現在是這一屏的視覺主體，文字欄靠著它排。 */
+.live-item__poster {
+  flex: none;
+  /* 高度跟著視窗走、寬度由 2:3 推出來（2026-08-31 使用者裁示「上下間距再留多一點」）：
+     這一屏是一整屏，上下的留白＝一屏減掉這一塊的高度，所以要留白就得從**高度**下手。
+     先前是「寬度佔這一件的 52%」，高度因此被視窗的**寬**決定——寬螢幕上海報愈長、
+     上下的呼吸愈少，正好相反。
+     `min()` 的第二個值是上限：超大螢幕上 50vh 會長到六百多，一張海報獨佔整屏
+     反而讓卡上的字顯得零星。 */
+  height: var(--live-item-poster-h, min(50vh, 520px));
+  width: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--ztu-film);
+}
+.live-item__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--duration-slow, 320ms) var(--easing);
+}
+.live-item:hover .live-item__poster img { transform: scale(1.03); }
+@media (prefers-reduced-motion: reduce) {
+  .live-item__poster img { transition: none; }
+  .live-item:hover .live-item__poster img { transform: none; }
+}
+
+.live-item__body {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+  padding: var(--sp-4) 0;
+}
+
+.live-item__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+/* 階段做成藥丸：它是這一件上唯一「現在走到哪」的字，與旁邊的作品分類（音樂／MV）
+   不同類——不給它一個面，兩個灰字會讀成同一串標籤。 */
+.live-item__stage {
+  padding: var(--sp-2) var(--sp-10);
+  border-radius: var(--radius-pill);
+  background: var(--ztu-film);
+  font-size: var(--fs-12);
+  color: var(--foreground-muted);
+}
+.live-item__kind {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+/* 名稱換行、不截斷：這一欄有 500px 的高度可用，把長名字截成省略號只是在省
+   本來就用不完的空間；最多兩行，第三行以後的名字在這個位置也認不出來。 */
+.live-item__name {
+  margin-top: var(--sp-12);
+  font-family: var(--font-display);
+  font-size: var(--fs-28);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.live-item__meta {
+  margin-top: var(--sp-8);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+/* 狀態那一堆貼著下緣（`margin-top: auto`）：海報決定高度，身分在上、狀態在下，
+   中間那段空白就是「這一屏一次只講一件事」的樣子。 */
+.live-item__status { margin-top: auto; }
+
+.live-item__value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4) var(--sp-12);
+  flex-wrap: wrap;
+}
+.live-item__value {
+  white-space: nowrap;
+  font-family: var(--font-numeric, var(--font-display));
+  font-size: var(--fs-32);
+  line-height: 1.1;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+/* 分母與單位同一階小灰字（與左欄那一列同一套讀法）：分子是答案，分母是讀懂它
+   需要的尺度；同樣大小的話「18,400 / 20,000」會讀成兩個並列的數字。 */
+.live-item__den,
+.live-item__unit {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--muted-foreground);
+}
+/* 幣別符號緊貼數字時補一點空（自己帶空白的單位不補，否則會變成兩倍寬）。 */
+.live-item__unit--pre { margin-right: 3px; }
+.live-item__unit--post { margin-left: 3px; }
+
+/* 進度條與它的讀數同一行：百分比是那條長條的數值，分開排會變成兩件事。
+   `.project-bar` 在 shared.css 是給 div 用的，這裡包在 <a> 裡、標記是 span。 */
+.live-item__bar-row {
+  margin-top: var(--sp-12);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+.live-item__bar {
+  display: block;
+  flex: 1 1 auto;
+  height: 8px;
+  margin-top: 0;
+}
+.live-item__bar .project-bar__fill { display: block; }
+.live-item__pct {
+  flex: none;
+  font-family: var(--font-numeric, var(--font-display));
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  font-variant-numeric: tabular-nums;
+}
+.live-item__side {
+  display: block;
+  margin-top: var(--sp-8);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+
+/* 二級按鈕、擺在卡的右下角（2026-08-31 使用者裁示「放右下二級按鈕」）：先前是一行
+   灰字加箭頭，與上面的「剩 9 天」同一階——讀者分不出哪一行是動作。給它一顆二級按鈕的
+   殼、推到右下角之後，卡的左上是身分、左下是狀態、右下是動作，一張卡有三個落點。
+   樣式吃站上的 `.btn.btn--outline.btn--sm`，這裡只管位置與跟著整張卡一起亮。 */
+.live-item__go {
+  align-self: flex-end;
+  margin-top: var(--sp-20);
+}
+.live-item__go .ztor-icon { width: 16px; height: 16px; }
+.live-item:hover .live-item__go {
+  background: var(--control-raise-hover);
+  border-color: var(--ztu-glass-rim);
+}
+.live-item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+/* 窄視窗：整件與海報都是算出來的，會自己跟著縮；只把字級收一階，
+   免得 28px 的名稱在變窄的文字欄裡每一件都排成三行。 */
+@media (max-width: 1200px) {
+  .live-rail { --live-item-gap: var(--sp-24); }
+  .live-item__poster { --live-item-poster-h: min(46vh, 420px); }
+  .live-item__name { font-size: var(--fs-24); }
+  .live-item__value { font-size: var(--fs-28); }
+}

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：這頁住在 docs/，資產、store 與 iframe 都以 r2.3 根為準（與另外兩支調參器同一組相對路徑）。
+     副作用：純 #hash 連結會被 base 解析成換頁，所以本頁不用裸 #anchor。 -->
+<base href="../">
+<title>調參器 · 進行中那一屏的背景</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   調參器（lab）· 新版總覽第二屏（進行中）的背景
+
+   這一屏的地是「正中央那一件的海報」：`fixed` 鋪滿整個視窗、壓在所有東西的
+   最後面（`.live-bg`），上面再蓋一層由上而下的暗紗（`.live-bg::after`）。
+   要調的就是那兩層——糊多少、留多少顏色、壓多暗。
+
+   這是實驗場不是正式層：規則全部 lab- 前綴、收在本頁內，不建 ds-components、
+   不定義新 token。調出定案值之後，由人把「輸出」那段貼回 `ds-components/live-item.css`。
+
+   預覽用 iframe 開真正的那一頁並自動捲到第二屏，不是另做一個替身：要判斷的是
+   「卡片上的字在這張底圖上讀不讀得到」，而卡是玻璃——底圖一亮就會從卡面透上來，
+   替身做得再像也複製不了那件事。同源，所以本頁可以把一段 <style> 塞進 iframe 即時改。
+   ════════════════════════════════════════════════════════════════════ */
+
+.lab-body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  background-color: var(--ztu-canvas);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+}
+@media (max-width: 1100px) { .lab-body { grid-template-columns: 1fr; height: auto; } }
+
+/* ── 左：控制欄 ─────────────────────────────────────────── */
+.lab-panel {
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px 20px 64px;
+  background: #111110;
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+.lab-panel h1 { font-size: 18px; font-weight: 500; margin: 0 0 4px; letter-spacing: .2px; }
+.lab-lede { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 18px; }
+.lab-group { margin-bottom: 24px; }
+.lab-group__title {
+  font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--brand-ink); margin: 0 0 4px;
+}
+.lab-group__note { font-size: 11px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 10px; }
+.lab-row { display: grid; grid-template-columns: 1fr 22px 58px; gap: 6px 8px; align-items: center; margin-bottom: 10px; }
+.lab-row label { font-size: 12px; color: var(--foreground); }
+.lab-row output { font-size: 11px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+.lab-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ztu-orange); }
+.lab-reset {
+  width: 20px; height: 20px; padding: 0; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 6px;
+  background: none; color: var(--muted-foreground);
+  font-size: 11px; cursor: pointer;
+}
+.lab-reset:hover { background: var(--ztu-film); color: var(--foreground); }
+.lab-reset.is-dirty { border-color: var(--ztu-orange); color: var(--ztu-orange); }
+
+/* 兩層各自可以關掉：關掉才看得出它到底在做什麼 */
+.lab-layers { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(255,255,255,.03); }
+.lab-layer { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; line-height: 1.6; color: var(--muted-foreground); padding: 5px 0; cursor: pointer; }
+.lab-layer input { accent-color: var(--ztu-orange); margin-top: 2px; }
+.lab-layer b { color: var(--foreground); font-weight: 500; }
+.lab-layer code { font-size: 10px; color: var(--muted-foreground); }
+
+/* 海報選單：縮圖直接選，換一張立刻套到預覽的背景 */
+.lab-shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.lab-shot {
+  position: relative; aspect-ratio: 2 / 3; padding: 0; border: 0; cursor: pointer;
+  border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.05);
+  outline: 2px solid transparent; outline-offset: 1px;
+}
+.lab-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lab-shot--active { outline-color: var(--ztu-orange); }
+.lab-shot__tag {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 4px;
+  font-size: 9px; line-height: 1.3; color: #fff; text-align: left;
+  background: linear-gradient(to top, rgba(0,0,0,.8), transparent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lab-hint { font-size: 11px; line-height: 1.6; color: var(--muted-foreground); margin: 10px 0 0; }
+
+.lab-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 10px; }
+.lab-out {
+  width: 100%; min-height: 200px; box-sizing: border-box;
+  background: #0a0a09; color: #d7d7d2;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+  padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; line-height: 1.65; white-space: pre; overflow: auto;
+}
+
+/* ── 右：預覽 ───────────────────────────────────────────── */
+.lab-view { position: relative; height: 100vh; background: #000; }
+.lab-view iframe { width: 100%; height: 100%; border: 0; display: block; }
+.lab-view__hint {
+  position: absolute; left: 12px; bottom: 12px; z-index: 2;
+  font-size: 11px; color: rgba(255,255,255,.55);
+  background: rgba(0,0,0,.45); border-radius: 8px; padding: 4px 8px;
+  backdrop-filter: blur(8px);
+}
+</style>
+</head>
+
+<body class="lab-body">
+
+<aside class="lab-panel">
+  <h1>第二屏背景調參器</h1>
+  <p class="lab-lede">新版總覽第二屏（進行中）的地是「正中央那一件的海報」，糊過再壓一層暗紗。右邊是真的那一頁、已經捲到第二屏，改任何一根滑桿都即時生效；定案後按「複製 CSS」把輸出貼回 <code>ds-components/live-item.css</code>。</p>
+
+  <div class="lab-group">
+    <p class="lab-group__title">層次與開關</p>
+    <p class="lab-group__note">由下到上。取消勾選＝暫時關掉那一層。</p>
+    <div class="lab-layers">
+      <label class="lab-layer"><input type="checkbox" id="L-bg" checked><span><b>1 海報底層</b> <code>.live-bg</code><br><code>fixed 鋪滿視窗、放大模糊</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-scrim" checked><span><b>2 暗紗</b> <code>.live-bg::after</code><br><code>由上而下壓暗，讓玻璃卡上的字站得住</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-cards" checked><span><b>＋ 卡片與內容</b><br><code>關掉只看純背景</code></span></label>
+    </div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">海報</p>
+    <p class="lab-group__note">正式頁面是「正中央那一件的海報」自動換。這裡先手動指定一張來調——在預覽裡按左右翻頁，控制權就交還給頁面自己。</p>
+    <div class="lab-shots" id="shots"></div>
+    <p class="lab-hint">深色海報要看暗紗會不會把它壓成一塊黑；亮色海報要看卡上的白字還撐不撐得住。兩種各挑一張來回比。</p>
+  </div>
+
+  <div class="lab-group" data-layer="bg">
+    <p class="lab-group__title">1 海報底層</p>
+    <p class="lab-group__note">糊的目的是把細節拿掉、只留顏色與大塊明暗。糊過頭每張海報都變成同一團彩霧，認不出是哪一件，這一層就白做了。</p>
+    <div class="lab-row"><label for="blur">模糊</label><button class="lab-reset" data-for="blur">↺</button><output id="blur-o"></output><input type="range" id="blur" min="0" max="140" step="2"></div>
+    <div class="lab-row"><label for="sat">彩度</label><button class="lab-reset" data-for="sat">↺</button><output id="sat-o"></output><input type="range" id="sat" min="0" max="250" step="5"></div>
+    <div class="lab-row"><label for="bright">亮度</label><button class="lab-reset" data-for="bright">↺</button><output id="bright-o"></output><input type="range" id="bright" min="30" max="160" step="1"></div>
+    <div class="lab-row"><label for="contrast">對比</label><button class="lab-reset" data-for="contrast">↺</button><output id="contrast-o"></output><input type="range" id="contrast" min="40" max="160" step="1"></div>
+    <div class="lab-row"><label for="opa">不透明度</label><button class="lab-reset" data-for="opa">↺</button><output id="opa-o"></output><input type="range" id="opa" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="scale">放大</label><button class="lab-reset" data-for="scale">↺</button><output id="scale-o"></output><input type="range" id="scale" min="100" max="200" step="1"></div>
+  </div>
+
+  <div class="lab-group" data-layer="scrim">
+    <p class="lab-group__title">2 暗紗</p>
+    <p class="lab-group__note">上淡下濃：卡片下半是數字與進度條，那一段要最暗。壓太多整屏會變成一塊黑，海報是誰就看不出來了。</p>
+    <div class="lab-row"><label for="s0">上端濃度</label><button class="lab-reset" data-for="s0">↺</button><output id="s0-o"></output><input type="range" id="s0" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="s1">下端濃度</label><button class="lab-reset" data-for="s1">↺</button><output id="s1-o"></output><input type="range" id="s1" min="0" max="100" step="1"></div>
+  </div>
+
+  <div class="lab-actions">
+    <button class="btn btn--primary btn--sm" id="copy">複製 CSS</button>
+    <button class="btn btn--outline btn--sm" id="reset">全部重置</button>
+  </div>
+  <textarea class="lab-out" id="out" readonly></textarea>
+</aside>
+
+<div class="lab-view">
+  <iframe id="view" src="home-canvas.html" title="新版總覽第二屏預覽"></iframe>
+  <div class="lab-view__hint">預覽是真的那一頁，已捲到第二屏；卡片是玻璃，底圖一亮就會透上來</div>
+</div>
+
+<!-- 兩個資料 store：海報清單與第二屏用的是同一批素材（項目＋活動），不另外編一份 -->
+<script src="js/projects-store.js"></script>
+<script src="js/events-store.js"></script>
+<script>
+(function () {
+  /* ── 現行值＝live-item.css 此刻的定案值。「重置」回到這裡，不是回到 0。
+     ⚠ 定案值改進 live-item.css 之後，這一份也要跟著改：調參器一開啟就用自己的值
+       覆蓋，兩邊不同步時這裡看到的會是舊畫面、正式頁卻已經新了（另一支調參器踩過）。
+     最後同步：2026-09-01（blur 24 / 彩度 1.3 / 亮度 0.74 / 放大 1.18 / 暗紗 56–80）。 ── */
+  var BASE = {
+    blur: 24, sat: 130, bright: 74, contrast: 100, opa: 100, scale: 118,
+    s0: 56, s1: 80
+  };
+  var KEYS = Object.keys(BASE);
+  var val = {}; KEYS.forEach(function (k) { val[k] = BASE[k]; });
+  var layers = { bg: true, scrim: true, cards: true };
+  var current = null;      // 手動指定的海報 { img, title }
+
+  var view = document.getElementById('view');
+  var out = document.getElementById('out');
+
+  /* ── 素材清單：與第二屏同一批來源（項目的海報＋活動的主視覺） ── */
+  function shots() {
+    var list = [], api = window.ztorProjects;
+    if (api) api.list().forEach(function (p) {
+      var img = p.poster || p.cover; if (!img) return;
+      var nm = api.nameLabel(p);
+      list.push({ img: img, title: nm.zh || nm.en });
+    });
+    var ev = window.ztorEvents;
+    if (ev) ev.list().forEach(function (e) {
+      var img = e.images && e.images.keyvisual; if (!img) return;
+      list.push({ img: img, title: e.name });
+    });
+    var seen = {}, uniq = [];
+    list.forEach(function (it) { if (seen[it.img]) return; seen[it.img] = 1; uniq.push(it); });
+    return uniq;
+  }
+
+  function renderShots() {
+    var wrap = document.getElementById('shots'), list = shots();
+    wrap.innerHTML = list.map(function (it, i) {
+      return '<button type="button" class="lab-shot" data-i="' + i + '" title="' + it.title + '">'
+        + '<img src="' + it.img + '" alt="" loading="lazy">'
+        + '<span class="lab-shot__tag">' + it.title + '</span></button>';
+    }).join('');
+    wrap.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-i]'); if (!b) return;
+      current = list[+b.getAttribute('data-i')];
+      wrap.querySelectorAll('.lab-shot').forEach(function (x) { x.classList.toggle('lab-shot--active', x === b); });
+      apply();
+    });
+    return list;
+  }
+
+  /* ── 產出要塞進 iframe 的 CSS ────────────────────────────────
+     只寫覆蓋，不重寫整支：關掉調參器（重新整理）就回到正式值。 */
+  function css() {
+    var v = val, L = layers;
+    var s = '';
+    s += '.live-bg {'
+      + ' opacity:' + (L.bg ? (v.opa / 100) + ' !important' : '0 !important') + ';'
+      + ' transform: scale(' + (v.scale / 100) + ');'
+      + ' filter: blur(' + v.blur + 'px) saturate(' + (v.sat / 100) + ') brightness(' + (v.bright / 100) + ') contrast(' + (v.contrast / 100) + '); }\n';
+    s += '.live-bg::after {'
+      + ' display:' + (L.scrim ? 'block' : 'none') + ';'
+      + ' background: linear-gradient(to bottom,'
+      + ' color-mix(in srgb, var(--ztu-canvas) ' + v.s0 + '%, transparent),'
+      + ' color-mix(in srgb, var(--ztu-canvas) ' + v.s1 + '%, transparent)); }\n';
+    s += '.canvas-sheet--live .live-rail__wrap, .canvas-sheet--live .canvas-sheet__foot {'
+      + ' visibility:' + (L.cards ? 'visible' : 'hidden') + '; }\n';
+    return s;
+  }
+
+  /* 捲到第二屏並把背景點亮：正式頁面靠捲動位置決定要不要亮，而 iframe 一載入是在
+     最上面，不捲過去就只看得到第一屏的底圖。 */
+  /* 站上的 `theme.js` 只要發現自己在別人的 iframe 裡就會標 `data-embed`（那是給
+     詳情浮層用的內嵌模式），而內嵌模式會把外殼的高度鎖與側欄一起收掉——頁面因此
+     改由 iframe 的視窗自己捲，`.main` 不再是捲動區（實測 `.main` 的 clientHeight
+     等於 scrollHeight，怎麼設 scrollTop 都是 0）。
+     這裡把那個標記拿掉，預覽就回到與正式頁面一模一樣的外殼；拿掉之後補發一次
+     `resize`，讓頁面自己的版面計算（sticky 容器的高度）重新算一遍。 */
+  function unembed(doc, win) {
+    if (!doc.documentElement.hasAttribute('data-embed')) return;
+    doc.documentElement.removeAttribute('data-embed');
+    try { win.dispatchEvent(new Event('resize')); } catch (e) {}
+  }
+
+  function goLive(doc) {
+    var m = doc.querySelector('.main'), sheet = doc.querySelector('.canvas-sheet--live');
+    if (!m || !sheet) return;
+    /* 先關掉平滑捲動再跳：站上的捲動區是 smooth 的，一路設 scrollTop 只會排隊
+       播動畫，而每一次都從「還沒到位」的位置重算，最後停在半路。 */
+    var prev = m.style.scrollBehavior;
+    m.style.scrollBehavior = 'auto';
+    for (var i = 0; i < 4; i++) m.scrollTop = m.scrollTop + sheet.getBoundingClientRect().top;
+    m.style.scrollBehavior = prev;
+    doc.body.classList.add('is-live-bg', 'is-past-hero');
+  }
+
+  function apply() {
+    var doc = view.contentDocument; if (!doc) return;
+    var tag = doc.getElementById('lab-live-bg');
+    if (!tag) { tag = doc.createElement('style'); tag.id = 'lab-live-bg'; }
+    tag.textContent = css();
+    /* 每次都重新 append：`appendChild` 對已在文件裡的節點是「搬到最後」。
+       這一層與正式規則權重相同（都是單一 class），誰在後面誰贏——而第一次套用
+       往往發生在 iframe 還在解析 <head> 的時候，那時插進去的 style 會被後面才
+       解析到的 <link> 蓋掉（另一支調參器踩過：滑桿動了、注入的字串也對，畫面卻不動）。 */
+    doc.head.appendChild(tag);
+    if (current) {
+      var bg = doc.querySelector('[data-live-bg]');
+      if (bg) { bg.style.backgroundImage = 'url("' + current.img + '")'; bg.setAttribute('data-src', current.img); }
+    }
+    out.value = outputCSS();
+    KEYS.forEach(function (k) {
+      var b = document.querySelector('.lab-reset[data-for="' + k + '"]');
+      if (b) b.classList.toggle('is-dirty', val[k] !== BASE[k]);
+    });
+    document.querySelectorAll('.lab-group[data-layer]').forEach(function (g) {
+      g.style.opacity = layers[g.getAttribute('data-layer')] ? '1' : '.45';
+    });
+  }
+
+  /* 「複製 CSS」給的是可以直接貼回 live-item.css 的兩個宣告區塊 */
+  function outputCSS() {
+    var v = val, l = [];
+    l.push('/* live-item.css — 調參器（docs/live-bg-tuner.html）產出 */');
+    l.push('.live-bg {');
+    l.push('  filter: blur(' + v.blur + 'px) saturate(' + (v.sat / 100) + ') brightness(' + (v.bright / 100) + ')'
+      + (v.contrast !== 100 ? ' contrast(' + (v.contrast / 100) + ')' : '') + ';');
+    l.push('  transform: scale(' + (v.scale / 100) + ');');
+    l.push('}');
+    l.push('.is-live-bg .live-bg { opacity: ' + (v.opa / 100) + '; }');
+    l.push('.live-bg::after {');
+    l.push('  background: linear-gradient(to bottom,');
+    l.push('    color-mix(in srgb, var(--ztu-canvas, #000) ' + v.s0 + '%, transparent),');
+    l.push('    color-mix(in srgb, var(--ztu-canvas, #000) ' + v.s1 + '%, transparent));');
+    l.push('}');
+    return l.join('\n');
+  }
+
+  /* ── 綁定 ─────────────────────────────────────────────── */
+  KEYS.forEach(function (k) {
+    var el = document.getElementById(k); if (!el) return;
+    el.value = val[k];
+    var o = document.getElementById(k + '-o');
+    function sync() {
+      val[k] = +el.value;
+      if (o) o.textContent = (k === 'blur' ? val[k] + 'px'
+        : /^(sat|bright|contrast|opa|scale)$/.test(k) ? (val[k] / 100).toFixed(2)
+        : val[k] + '%');
+      apply();
+    }
+    el.addEventListener('input', sync);
+    sync();
+  });
+  document.querySelectorAll('.lab-reset').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-for');
+      var el = document.getElementById(k); if (!el) return;
+      el.value = BASE[k]; el.dispatchEvent(new Event('input'));
+    });
+  });
+  Object.keys(layers).forEach(function (k) {
+    var el = document.getElementById('L-' + k); if (!el) return;
+    el.checked = layers[k];
+    el.addEventListener('change', function () { layers[k] = el.checked; apply(); });
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    KEYS.forEach(function (k) {
+      var el = document.getElementById(k); if (!el) return;
+      el.value = BASE[k]; el.dispatchEvent(new Event('input'));
+    });
+  });
+  document.getElementById('copy').addEventListener('click', function () {
+    out.select(); document.execCommand('copy');
+    var b = this, t = b.textContent; b.textContent = '已複製';
+    setTimeout(function () { b.textContent = t; }, 1200);
+  });
+
+  /* iframe 一載入（含重新整理）就捲到第二屏、點亮背景、補回調參器的設定：
+     那一層樣式住在 iframe 的 <head>，頁面重畫時會跟整份文件一起被丟掉。
+     延遲兩拍是等元件把卡片畫出來、圖載進來，第二屏的位置才算得準。 */
+  view.addEventListener('load', function () {
+    var doc = view.contentDocument, win = view.contentWindow;
+    unembed(doc, win);
+    apply();
+    setTimeout(function () { unembed(doc, win); goLive(doc); apply(); }, 400);
+    setTimeout(function () { goLive(doc); apply(); }, 1200);
+  });
+
+  var list = renderShots();
+  if (list.length) {
+    var first = document.querySelector('.lab-shot');
+    if (first) first.classList.add('lab-shot--active');
+  }
+})();
+</script>
+</body>
+</html>

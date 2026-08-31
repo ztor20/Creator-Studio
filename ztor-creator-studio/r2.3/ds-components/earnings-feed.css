@@ -45,6 +45,24 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-8);
+  flex: 1 1 0;
+  /* 下限：另外兩欄若某天變得很短，清單也不該塌到只剩一筆。 */
+  min-height: 240px;
+  overflow-y: auto;
+  /* 底部漸消用 mask，不用覆一層漸層：卡是玻璃面，蓋實色漸層會出現接縫，
+     mask 是讓內容自己淡出、底下的玻璃照常透。它同時是「下面還有」的訊號。 */
+  /* 用 `--foreground` 而不是 `#000`：遮罩只讀 alpha 通道，任何不透明色的效果
+     完全一樣，所以這裡沒有理由寫死一個色值（tokens 紀律，check_ds_sync 第 10 項）。 */
+  -webkit-mask-image: linear-gradient(to bottom, var(--foreground) calc(100% - 40px), transparent);
+          mask-image: linear-gradient(to bottom, var(--foreground) calc(100% - 40px), transparent);
+  /* 捲軸不畫：這一欄很窄，一條捲軸會吃掉金額的位置；漸消已經在說「還有」。 */
+  scrollbar-width: none;
+}
+.earnings-feed::-webkit-scrollbar { display: none; }
+/* 捲到底就把漸消關掉，否則最後一筆永遠是半透明的、讀起來像沒載完。 */
+.earnings-feed.is-at-end {
+  -webkit-mask-image: none;
+          mask-image: none;
 }
 
 /* 一筆一個框。內距用 --sp-12/--sp-14 與 .issue-card 同一階——兩者都是「玻璃卡裡的
@@ -139,7 +157,27 @@
    已隨外框回歸移除，否則會與卡的內距疊成兩倍。
    「查看全部」放在標題列右側而不是卡底整寬按鈕：省一整行，而且與標題同一列時
    讀者一眼就知道這一區通往哪裡。 */
-.earnings-col { min-width: 0; }
+/* 欄＝縱向 flex：清單吃掉「標題列與底部按鈕以外」的全部高度，並在自己內部捲動。
+   不這麼做的話清單會把卡撐高，超出卡邊界的部分被切掉，最後一筆與底部按鈕黏成一團
+   （2026-08-31 使用者回報）。`gap` 取代按鈕原本掛的 `mt-16`：那顆按鈕是 flex item，
+   間距交給容器一次講清楚，比在 utility class 與元件層各講一半好追。 */
+.earnings-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+}
+/* 渲染器掛在一層 `data-component` 的 wrapper 上，wrapper 要一起變成可壓縮的
+   flex item，否則 `min-height: 0` 傳不到裡面那層、捲動不會發生。 */
+/* `flex-basis: 0` 是關鍵，不是 `auto`：這張卡住在 bento 的格線列裡，列高由最高的
+   那一欄決定。若清單用 auto 起算，八筆的自然高度會反過來把整列撐高，另外兩欄跟著
+   拉長，捲動永遠不會發生。改成 0 之後清單不貢獻高度，列高由左邊的 KPI 疊與中間的
+   面板決定，清單再長回剩下的空間、超出的部分自己捲。 */
+.earnings-col > [data-component="earnings-feed"] {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+}
 .earnings-col__more {
   display: inline-flex;
   align-items: center;

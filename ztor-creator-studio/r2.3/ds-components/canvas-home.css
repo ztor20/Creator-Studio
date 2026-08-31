@@ -1,0 +1,767 @@
+/* ============================================================
+   canvas-home — 一屏不捲的展示版型（2026-08-31 建）
+
+   定位：`home-canvas.html` 專用的版型層。它與正式儀表板（index.html）是兩種
+   需求：儀表板是每天在用的工作台，可以捲、可以深入；這一版是給人看的，一眼看完，
+   所以第一條規則就是**不捲**——所有東西必須在一個螢幕裡放完。
+
+   為什麼另開一頁而不是改儀表板：不捲是很強的限制，它會逼著砍掉工作台需要的深度
+   （分組、完整清單、往下的區塊）。兩種需求各自最佳化，比一個版型兩邊都遷就好。
+   掛在 cheat code 的 Presentation demo 那一組，與 Deck for Sony 並列。
+
+   版面：左欄窄（三格：收入輪播／兩個進行中項目／三則待處理）、右邊一大塊畫布。
+   左欄回答「錢與待辦」，畫布回答儀表板副標的第三句「作品正在哪裡被聽見、被看見」。
+
+   解剖：
+     body.canvas-home-shell        整頁不捲的開關（只有這一頁掛）
+       .canvas-home                版面本體：左欄 ＋ 畫布
+         .canvas-home__rail        左欄（三格，縱向 flex）
+         .canvas-wall              畫布（見 canvas-wall.css）
+       .canvas-home__bar           頂列：頁名 ／ 時間 · 今日進帳 · 通知
+   ============================================================ */
+
+/* **第一屏不捲、往下有第二段**（2026-08-31 使用者裁示「往下滑，內容要換」）。
+   外殼維持站上原本那一套（`.app` 固定高、`overflow: hidden`，捲動發生在 `.main`
+   自己身上）——這一頁不該自己發明一種捲法。「剛好一屏」的責任交給 `.canvas-hero`。 */
+.canvas-home-shell { height: 100vh; overflow: hidden; }
+.canvas-home-shell .app {
+  height: calc(100vh - var(--ztu-shell-gutter) * 2);
+  overflow: hidden;
+}
+/* 第一屏的高度＝視窗扣掉三段留白：外殼上下各 14、`.main` 的上外距 16、
+   `.page` 的上內距 24。任何一段沒扣，第一屏就會比一個視窗高，下緣被裁掉一截。
+   `flex: none` 是必要的：`.page` 是 `min-height: 0` 的 flex column，不寫的話這一格
+   會被下面的內容壓縮成 0（2026-08-31 實測，第二段直接疊到第一屏上）。 */
+.canvas-hero {
+  flex: none;
+  /* `min-height` 不是 `height`（2026-08-31 使用者裁示「待辦事項有更多就繼續往下排，
+     那一頁就繼續延伸」）：一屏是**下限**不是上限——內容剛好時它就是一屏，事項多了
+     它就自己長高，往下捲仍在第一段裡，第二段（磚列／平台表現）在它之後才出現。 */
+  min-height: calc(100vh - var(--ztu-shell-gutter) * 2 - var(--space-shell-gutter) - var(--sp-24));
+  display: flex;
+  flex-direction: column;
+  /* 2026-08-31 移除同一支規則裡多寫的 `min-height: 0`：它排在上面那行後面、直接把
+     「至少一屏」蓋成 0。先前看不出來是因為左欄夠長，第一屏自然就有一屏高；
+     「上線進行中」那一格撤掉之後左欄變短，第一屏跟著縮到 653，第二屏於是從
+     視窗中間就開始露出來（實測 liveTop 707 < 視窗 856）。 */
+}
+/* 第二段：一般的工作內容。它躺在站上原本的星空檯面上，不再壓在照片上——
+   底圖捲過半屏就淡掉（見 home-canvas.html 的捲動監聽）。上內距是與第一屏的分界，
+   下內距讓最後一張卡不貼著視窗底邊。 */
+.canvas-below {
+  position: relative;
+  z-index: 1;
+  padding: 0 0 var(--sp-48);
+}
+
+/* ── 第二、三段：一段一屏（2026-08-31 使用者裁示「這個要自己佔一頁的篇幅」）──
+   每一段至少一個視窗高、內容垂直置中。為什麼要一屏：這兩段各自只講一件事
+   （手上有哪些作品／它們表現如何），擠在同一屏裡會變成「捲到一半的兩個半區塊」，
+   而這一頁的整個敘事就是「一次看一件事」。 */
+.canvas-sheet {
+  min-height: calc(100vh - var(--ztu-shell-gutter) * 2 - var(--space-shell-gutter));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-20);
+}
+/* 一屏只有一件事時，出口該在讀完之後的位置，不是在標題旁邊
+   （原本「更多」掛在標題列右上，2026-08-31 使用者裁示移到海報下方）。
+   **置中、主按鈕、寫「查看更多」**（同日走過置中 → 靠右 → 靠左 → 置中）：輪播改成
+   置中之後，這一屏的視覺重心在中線上，出口跟著回到中線；用主按鈕而不是外框鈕，
+   因為它是這一屏唯一的動作。 */
+.canvas-sheet__foot {
+  display: flex;
+  justify-content: center;
+  /* 16 → 40（2026-08-31 使用者裁示「往下放一點」）：卡片回到玻璃面之後，卡的下緣
+     本身就是一條邊界，出口離那條邊界太近會讀成卡的一部分。 */
+  margin-top: var(--sp-40);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 往下捲的提示（2026-08-31 使用者裁示）──────────────────────────
+   貼著第一屏的底、置中：左右兩欄之間那道空隙的底端是整屏最空的一塊，提示站在那裡
+   不擠掉任何內容，而「往下」的手勢與位置一致。
+   它躺在照片上，所以吃一層薄玻璃＋白字＋壓底陰影（與右緣那一排同一套）。
+   捲動一開始就淡出，並且不再吃指標事件——留著會擋到第二屏的卡片。 */
+.canvas-hero { position: relative; }
+.canvas-hint {
+  position: absolute;
+  /* 往右讓開一段（2026-09-01 使用者裁示「往右邊一點，然後大一點」）：內容區的正中
+     偏左，左欄那一欄的重量本來就壓在左邊，提示站在正中會被讀成左欄的收尾。 */
+  left: calc(50% + var(--sp-72));
+  bottom: var(--sp-24);
+  transform: translateX(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  /* 放大一階（同一次裁示）：它是這一屏唯一的出口，先前 12px 的字配 6/14 的內距
+     在整屏照片上像一張貼紙。 */
+  padding: var(--sp-10) var(--sp-20);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--ztu-film);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: color-mix(in srgb, var(--on-media) 88%, transparent);
+  text-shadow: 0 1px 3px color-mix(in srgb, var(--scrim-media) 45%, transparent);
+  cursor: pointer;
+  transition: opacity var(--duration-slow, 320ms) var(--easing),
+              color var(--duration) var(--easing);
+}
+.canvas-hint:hover { color: var(--on-media); }
+.canvas-hint:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.canvas-hint .ztor-icon { width: 18px; height: 18px; }
+/* 箭頭自己輕輕點頭：整顆鈕在動會變成畫面上第二個「自己在動的東西」（那個名額
+   已經給了收入輪播），只讓 16px 的箭頭動，餘光看得到、正眼看不吵。 */
+@media (prefers-reduced-motion: no-preference) {
+  .canvas-hint .ztor-icon { animation: canvas-hint-nudge 2.4s var(--easing) infinite; }
+}
+@keyframes canvas-hint-nudge {
+  0%, 70%, 100% { transform: translateY(0); }
+  85%           { transform: translateY(3px); }
+}
+.is-scrolled .canvas-hint { opacity: 0; pointer-events: none; }
+
+/* ── 第二屏：進行中的卡片列（2026-08-31 使用者裁示重做）────────────────
+   先前這一屏是作品磚列（`work-cards`，海報放大到 240px、右緣漸消）。使用者裁示
+   改成「一次兩個活動、第二個顯示一半、右邊三分之一留白」，並且內容換成**正在跑的**
+   項目與活動（募資／預購／售票中）——磚列答的是「我有哪些作品」，這一屏要答的是
+   「哪幾件正在跑、跑到哪」。排法與卡本身在 `ds-components/live-card.css`，
+   這裡只負責這一屏在版面上的位置。 */
+/* ── 平台表現：一塊約三分之一寬、一塊一行（2026-08-31 使用者裁示兩段
+   「這些區塊都不要這麼寬，大概佔頁面三分之一就好」「這三個各一行」「這也換一行」）──
+   最早是「一個類型一行、標題固定 200px 在左、清單吃剩下的寬度」，在 1440 的視窗裡把
+   長條拉到 1000px 以上——長條的工作是比長短，只需要夠長到看得出差距；拉滿一整行之後，
+   第一名與第五名之間隔著半個螢幕，眼睛反而得來回掃。
+   中途試過三塊並排，使用者裁示改成由上而下一塊一行：版稅／影視／音樂／平台觸及／
+   觀眾在哪裡五塊，各自標題在上、清單在下，寬度一律收在約三分之一。一次讀一塊，
+   五塊共用同一條左緣，第一名的長條起點也因此全部對齊。
+   代價要知道：五塊疊起來高過一屏，這一段要捲一下才看得完（其餘兩段仍是一屏）。 */
+/* 卡標題前面那顆圖示一律不畫（2026-08-31 使用者裁示「平台表現的這個 icon 都去掉」）：
+   這一屏的卡片已經收窄到 480，每一張卡的標題只有四五個字，前面再掛一顆彩色方塊會比
+   標題本身更先被看到；而這一頁的節奏是「字自己排出層次」（第一屏三格、第二屏的卡都
+   沒有圖示）。**只在這一頁改**：正式儀表板的同一批卡仍有圖示，那一頁的卡更大、
+   一屏裡的卡種類也更多，圖示在那裡是分辨用的。 */
+.canvas-sheet--perf .card__title-icon { display: none; }
+
+/* 五張卡（含卡裡的三塊）一律各佔一行：bento 收成單欄，卡片自帶的 `--span-6` 一併覆寫。 */
+.canvas-sheet--perf .bento { grid-template-columns: 1fr; }
+.canvas-sheet--perf .bento > * { grid-column: 1 / -1; }
+
+/* 第一張卡裡的三塊也是一塊一行。`.perf-twin` 本來是「左邊錢、右邊觀眾」的兩欄並置，
+   一屏裡讀者得在兩欄之間跳；拆成單欄之後，錢那一格是一塊、觀眾那一格是兩塊，
+   由上而下剛好是版稅、影視、音樂。 */
+.canvas-sheet--perf .perf-twin,
+.canvas-sheet--perf .perf-twin > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-20);
+}
+/* 渲染器在兩個家族之間插了一個 `.mt-16` 當間隔——間隔改由 `gap` 給，它自己藏起來
+   （留著會多出一段雙倍的空白）。 */
+.canvas-sheet--perf .perf-twin .mt-16 { display: none; }
+.canvas-sheet--perf .perf-cap { margin: 0 0 var(--sp-8); }
+/* 卡片本身也不吃滿頁寬（2026-08-31 使用者裁示「不要充滿頁寬」）：清單只有 400px 上下，
+   卡面卻橫跨 1254px 時，一張卡有三分之二是空的——那塊空白會讀成「這裡本來還有東西」。
+   卡收到 480 之後，卡面與它裝的東西差不多寬，清單也就跟著吃滿卡的內寬。 */
+.canvas-sheet--perf .bento > .card { max-width: 480px; }
+/* 清單吃滿卡的內寬（卡已經收到 480，內寬約 440）：長條到這個長度就分得出第一名與
+   第五名，再長只是把同一個差距攤開。 */
+.canvas-sheet--perf .perf-rank { max-width: 100%; }
+/* 後兩張卡的清單被渲染器包在一層 `.mt-16` 裡（不是裸的 `.perf-rank`），
+   上外距在這裡要留著——它們的標題與清單本來就是上下排的。 */
+.canvas-sheet--perf .bento > .card:not(:first-child) > .mt-16 { margin-top: var(--sp-16); }
+/* 窄清單裡的列改吃內容寬：預設的名稱欄上限 148px 是為作品全名訂的，平台與地區
+   一律 2–7 個字，照 148 留位會把長條壓到只剩十幾像素。百分比欄也從 52 收到 44。 */
+.canvas-sheet--perf .bento > .card:not(:first-child) .perf-rank__row {
+  grid-template-columns: 20px minmax(48px, max-content) minmax(0, 1fr) 44px auto;
+  gap: var(--sp-8);
+}
+/* 每一類只留前五名：第六名之後在這個位置不幫忙做決定，完整清單走每張卡自己的
+   「依項目查看」。 */
+.canvas-sheet--perf .perf-rank__row:nth-child(n+6) { display: none; }
+/* 頁面容器讓出限制：展示版要吃滿螢幕寬（1280 的上限是為閱讀長文件設的），
+   上下內距也收掉——那是為「下面還有東西」預留的呼吸，這一頁下面沒有東西。 */
+/* 下內距 0：內容區的底邊要與側欄的底邊切齊（2026-08-31 使用者裁示）。
+   留 24px 的話，左欄最後一格會比側欄早結束一截，幾根柱子
+   的底部就對不齊。上內距留著——頂列本來就需要與外殼上緣拉開。 */
+.canvas-home-shell .page {
+  max-width: none;
+  padding: var(--sp-24) var(--sp-28) 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* 底圖捲過半屏就淡掉（2026-08-31）：它是 `fixed` 的——要滿到視窗邊才讀得出
+   「這張圖是地」——所以捲動時不會自己離開。第二段是一般的工作內容，躺在一張
+   人臉上讀不乾淨。 */
+.canvas-home-shell .canvas-home__stage,
+.canvas-home-shell .canvas-hero__picks {
+  transition: opacity var(--duration-slow, 320ms) var(--easing);
+}
+/* 切換器跟著底圖一起走（2026-08-31）：它是「這張照片是哪一件作品」的控制，照片不在了
+   它就沒有對象。不跟著走的話它會比頂列晚 128px 才離開視窗——那一段正好疊在第二段的
+   磚列上（實測捲到 940 時它壓在封面磚上）。 */
+.canvas-home-shell.is-past-hero .canvas-home__stage,
+.canvas-home-shell.is-past-hero .canvas-hero__picks { opacity: 0; }
+.canvas-home-shell.is-past-hero .canvas-hero__picks { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .canvas-home-shell .canvas-home__stage,
+  .canvas-home-shell .canvas-hero__picks { transition: none; }
+}
+
+/* ── 頂列 ─────────────────────────────────────────────── */
+/* 對應參考版型的「頁名 ｜ 時間 · 天氣 · 鈴鐺」。ztor 的對應是頁名 ｜ 時間 ·
+   今日進帳 · 通知——天氣對創作者沒有意義，今日進帳才是他起床第一個想知道的事。 */
+/* 頂列與作品切換器同一塊 sticky（2026-08-31 使用者裁示「往下滑時要 fix 住、直到
+   下一段出現才滑掉」＋「他們應該同步往上滑不見」）：sticky 的容器是 `.canvas-hero`，
+   所以整塊只在第一段的範圍內釘著，第二段推到頂時被推走。
+   **兩者一定要在同一塊裡**：sticky 的元素是被自己容器的下緣推走的，時機取決於元素
+   自己的高度——切換器 250px、頂列 46px，各自 sticky 一定不同步（實測捲到 860 時
+   頂列還在 4、切換器已經到 -139）。
+   不用 `fixed`：那會脫離版面、還要另外算左右偏移，側欄一收合就對不齊。 */
+.canvas-hero__chrome {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  /* 外層 `__stick` 為了控制「什麼時候被推走」會長得比自己高、蓋到下面的內容上，
+     所以那一層不吃指標事件，這一層自己收回來。 */
+  pointer-events: auto;
+}
+/* sticky 的容器（2026-08-31 使用者裁示兩次：先「下一段出現時，這兩個也一起往上
+   滑不見」，再「在左欄那一塊滑走之前，頂列與右側都不要動」）：高度由頁尾腳本算成
+   「下緣切齊左欄的下緣」，多出來的部分用等量的負下外距抵銷，所以底下的內容位置不變。
+   容器一短，sticky 就早一點放手——放手的時刻剛好是左欄捲完的時刻。 */
+.canvas-hero__stick {
+  position: relative;
+  pointer-events: none;
+}
+/* 切換器掛在頂列底下、貼內容區右緣。`position: absolute` ＋ `top: 100%`：它不佔
+   版面高度（第一段的高度由左欄決定），又跟著上面那塊一起被 sticky 帶著走。 */
+/* 貼齊內容區右緣（2026-08-31 同日改回：中途曾往內縮，讓「前往 ＋ 箭頭」凸到玻璃面
+   外面；使用者再裁示「前往和箭頭要在框框裡面」之後，那一組回到面內，這一排就得
+   把讓出來的那一段還原）。**名稱與時間仍然切齊**，改由頂列的右內距去接名稱那條線
+   （見下面 `.canvas-home__bar`）：動作那一組收回面內之後，玻璃面自己要多吃 70px，
+   這一排再往右移就會頂到外殼的 `overflow: hidden`。 */
+.canvas-hero__picks {
+  position: absolute;
+  /* 與左欄第一格切齊（2026-08-31 使用者裁示「選項要放在綠色的位置」）：這一排原本
+     緊接在頂列底下，於是它的第一項會落在頂列與工作區之間那段呼吸裡，看起來像頂列的
+     附屬品。往下讓開同一段間距之後，左右兩邊的內容從同一條線開始。 */
+  top: calc(100% + var(--sp-56));
+  /* 往內縮 24px（2026-08-31）：滑鼠進到這一排時，玻璃面要往右長 60px（讓「前往 ＋ 箭頭」
+     從名稱那條線凸出去、又留在框內），那 60px 得有地方去——貼著內容區的邊時，
+     長出去的部分會被外殼的 `overflow: hidden` 切掉一角。 */
+  right: var(--sp-24);
+  /* 下緣接到 sticky 容器的底（＝左欄的下緣），再讓這一排在裡面垂直置中
+     （2026-08-31 使用者裁示「這一整個是不是稍微往下移一點」）：這一排只有 315px，
+     左欄那一欄有 725px，兩邊都從同一條線開始的話，右半邊的重量全壓在上面、
+     下半邊整片空著。改成置中之後，右邊這一組與左欄讀成同一個高度的兩欄。
+     **不用寫死的位移**：容器的高度是腳本按左欄算出來的，待辦一多左欄就變長，
+     置中會自己跟著走。 */
+  bottom: calc(-1 * var(--picks-span, 0px));
+  display: flex;
+  justify-content: flex-end;
+  /* 上緣固定、成長往下推（2026-09-01 使用者裁示「再往上移一點，然後標題是 fix 的，
+     hover 上去的時候往下推動位置」）：垂直置中會讓「滑過哪一列」改變整排的高度、
+     整排跟著上下跳——包括那行標題。改成從上緣量一段固定的距離，標題就是一條不動的線，
+     滑鼠底下那一列長出的那行小字只把它下面的項目往下推。
+     那段距離取容器高度的 0.2（容器＝頂列下緣到左欄下緣，由腳本寫進 `--picks-span`）：
+     用比例不用寫死的數字，待辦一多左欄變長時這一排會跟著往下，兩欄的關係不變。 */
+  align-items: flex-start;
+  padding-top: calc(var(--picks-span, 0px) * 0.2);
+  /* 這個框現在有整欄那麼高、蓋在底圖上，自己不吃指標事件，只有裡面那一排吃。 */
+  pointer-events: none;
+}
+.canvas-hero__picks > * { pointer-events: auto; }
+.canvas-home__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-16);
+  /* 56px（2026-08-31 兩次調整：20 → 40 → 56）：問候那一行與底下的工作區是兩件事，
+     間距不夠時它會讀成「第一格的標題」。這一頁不捲，多出來的高度由畫布吸收，
+     其他三格不受影響。 */
+  margin-bottom: var(--sp-56);
+  /* 右邊讓出切換器那一格（2026-08-31 使用者裁示兩次：先「都要靠紅線對齊」，
+     再「項目名稱的尾巴與上面時間切齊」）：頂列的時間與右緣切換器的作品名都是靠右的
+     字，它們該收在同一條線上。**移動的是時間、不是切換器**——「前往 ＋ 箭頭」同日
+     裁示要收在玻璃面裡面，玻璃面的右緣已經抵著內容區的邊，再往右推就會被外殼裁掉。
+     這一格＝切換器往內縮的 24 ＋ 玻璃面的右內距 10（2026-08-31 再調）：名稱那條線現在
+     固定不動——滑鼠進到那一排時往右長的是玻璃面、字留在原地——所以時間對齊那條線
+     一次就永遠對齊。 */
+  padding-right: calc(var(--sp-24) + var(--sp-10));
+}
+/* 問候與副標疊成一組，與右邊的日期時間分列兩端。 */
+.canvas-home__lead { min-width: 0; }
+/* 副標與正式儀表板同一句（2026-08-31 使用者裁示）：它是這一頁在講什麼的一句話，
+   兩頁不各寫一份。字級比問候小兩階、走 muted——它是說明不是標題。 */
+/* 一行寫完、不斷行（2026-08-31 使用者裁示）：這一句是招呼底下的說明，斷成兩行之後
+   它在版面上的份量就跟底下的區塊標題一樣重，讀起來像一個段落而不是一句話。
+   `46ch` 的上限同時撤除——那是為斷行後的行長訂的，留著會與不斷行互相打架。 */
+.canvas-home__sub {
+  margin: var(--sp-4) 0 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-relaxed, 1.5);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.canvas-home__title {
+  font-family: var(--font-display);
+  /* 28 → 22（2026-08-31 使用者裁示字小一點）：這一行是招呼，不是這一頁的標題；
+     真正要被讀的大數字在下面那一格，兩個都大就沒有大的。 */
+  font-size: var(--fs-22);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-snug);
+  color: var(--foreground);
+  margin: 0;
+}
+.canvas-home__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-16);
+  font-family: var(--font-ui);
+  /* 13 → 15（2026-08-31 使用者裁示「字再大一點」）：這一行與問候是頂列的兩端，
+     問候 22px 的另一邊擺 13px 會讀成註腳；它是這一頁少數幾個要被看見的事實之一。 */
+  font-size: var(--fs-15);
+  color: var(--muted-foreground);
+}
+.canvas-home__clock {
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+/* 日期與時間同一階：兩者都是「現在是什麼時候」的一部分，分不出主次。
+   （2026-08-31 使用者裁示頂列只留日期與時間，原本的「今日進帳」一併移除——
+   進帳金額在左欄第一格的收入分布裡講得更完整。） */
+.canvas-home__date {
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+.canvas-home__sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+}
+
+/* ── 版面 ─────────────────────────────────────────────── */
+/* 不是兩欄格線：舞台鋪滿整塊，左欄浮在它上面（2026-08-31 使用者裁示改成參考版型
+   的做法）。用格線切成兩欄的話，圖就變成「右邊那一格的內容」，而參考版型的圖是
+   整個畫面的地——差別就在這裡，也是這一版唯一要學到的東西。 */
+.canvas-home {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+/* 底圖鋪滿整個視窗，不是只鋪內容區（2026-08-31 使用者裁示「是一整個背景都換」）：
+   參考版型的圖是整個瀏覽器視窗的地，頁名與時間都浮在上面。所以用 `fixed` 而不是
+   `absolute`——`absolute` 只鋪得到 `.canvas-home` 那一塊，側欄與頂列會露出底色，
+   讀起來就變成「右邊那一格放了張圖」。 */
+.canvas-home__stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  /* 不吃指標事件（2026-08-31 使用者回報「滑鼠只有對著左邊內容滑動畫面才會往下」）：
+     它是 `fixed` 的，滾輪落在它身上時瀏覽器找的是「它的容器塊」——那是視窗，
+     而視窗這一層是鎖住不捲的（外殼固定高、內容在 `.main` 裡捲）。放行之後，
+     滾輪穿過它交給底下的 `.main`，畫面哪裡都捲得動。它本來就沒有可點的東西。 */
+  pointer-events: none;
+}
+/* 外殼讓出底色，整片交給底圖。側欄**保留**它原本那層 4% 的薄膜玻璃：那一層幾乎
+   看不見，但它讓導覽的字在照片上仍有一層自己的底，拿掉之後圖一亮就吃字。
+   它只需要被抬到底圖之上。 */
+.canvas-home-shell .app,
+.canvas-home-shell .main,
+.canvas-home-shell .page { background: none; }
+.canvas-home-shell .app-sidebar {
+  position: relative;
+  z-index: 1;
+}
+/* 側欄上下都要留出外殼的內距（2026-08-31 使用者裁示「下方也要有一個間距」）。
+   shared.css 給的是 `height: 100vh`，那在有內距的外殼裡會從上緣的內距之後
+   一路長到視窗底、把下面那段內距吃掉，看起來就是「上面有間距、下面沒有」。
+   這一頁不捲，所以改成跟著 flex 的 `stretch` 走，高度自然等於扣掉上下內距的內容區。
+   只改這一頁：其他頁面會捲，`100vh` ＋ sticky 才是對的。 */
+.canvas-home-shell #sidebar {
+  height: auto;
+  align-self: stretch;
+}
+/* 頁面內容一律浮在底圖之上（釘住那件事已經由外面那層 `.canvas-hero__chrome` 負責）。 */
+.canvas-home-shell .canvas-home__bar { position: relative; z-index: 1; }
+.canvas-home__rail { position: relative; z-index: 1; }
+/* 左欄往上捲時上緣漸消（2026-08-31 使用者裁示）：遮罩的位置由 JS 跟著捲動量寫進
+   `--rail-fade`（見 home-canvas.html）——遮罩是相對元素自己的框算的，而「畫面頂端
+   現在切到這一欄的哪裡」只有捲動量知道。用遮罩不是蓋一層漸層色塊：底下是照片，
+   任何一塊實色都會在照片上留下一道看得見的邊。 */
+/* **遮罩只在捲動開始之後才掛上**（2026-09-01 使用者回報「這個 hover 壞掉了」）：
+   帶遮罩的元素會自成一層「背景根」，它裡面任何 `backdrop-filter` 就只取樣得到這一層
+   自己的內容、取樣不到後面的照片——待辦那幾則 hover 時的毛玻璃因此整個失效，畫面上
+   只剩 5% 的白，看起來就是「滑過去沒有反應」。而還沒捲動時遮罩的兩個端點都是 0px、
+   本來就沒有在遮任何東西，掛著只有副作用。`is-scrolled` 是頁尾腳本在 `y > 8` 時加的，
+   與提示鈕淡出同一個開關。 */
+.is-scrolled .canvas-home__rail {
+  -webkit-mask-image: linear-gradient(to bottom, transparent var(--rail-fade-start, 0px), var(--foreground) var(--rail-fade-end, 0px));
+          mask-image: linear-gradient(to bottom, transparent var(--rail-fade-start, 0px), var(--foreground) var(--rail-fade-end, 0px));
+}
+
+/* 浮層層：貼齊**內容區**的四邊，不是視窗邊（2026-08-31 使用者裁示「這些是一個
+   區塊，所以間距要重新調整」）。底圖要滿到視窗邊才讀得出「這張圖是地」，但模式
+   作品切換器必須跟左欄同一個框——貼視窗邊的話，右邊那幾個控制
+   會比左欄多凸出頁面內距那一段，四個角就對不齊。
+   自己不吃指標事件、只有裡面的控制吃：這一層蓋在左欄上面，不放行的話左欄整個點不動。 */
+.canvas-home__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.canvas-home__overlay > * { pointer-events: auto; }
+
+/* 左欄浮在圖上。寬度寫死而不是比例：它現在不參與任何格線，寬度只由「這幾個數字
+   要多寬才讀得舒服」決定。 */
+.canvas-home__rail {
+  position: relative;
+  z-index: 1;
+  width: 300px;
+  /* 高度是下限不是上限（2026-08-31）：待辦事項多了就往下長，整段跟著變高。 */
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* 28 → 48（2026-08-31 使用者裁示「這三個區域的間距要再大一點」）：同日稍早把
+     兩區的**列距**歸零之後，區塊之間就成了整欄唯一的分隔——區內不留空、區與區
+     之間放大，三格才讀成三件事而不是一長串。多出來的高度由最後一格（待辦）
+     吸收，它是 `flex: 1` 的那一格。 */
+  /* 48 → 72（2026-08-31 使用者裁示「增加間距」）：「上線進行中」那一格撤除之後
+     左欄只剩兩格，48 在兩格之間讀起來像是「同一段落斷了一行」；放大到 72 之後，
+     收入那一格與待辦那一格才各自成一件事。 */
+  gap: var(--sp-72);
+  /* 兩格往下鋪滿整屏（2026-08-31 使用者裁示「把左欄的兩格往下鋪滿，讓左欄的底邊與
+     右欄的視覺重量對稱」）：`space-between` 之後，上面那格貼著頂、待辦那格貼著底，
+     中間的空白由這一屏剩下多少決定；`gap: 72` 因此變成兩格之間的**下限**。
+     **同時移除同一支規則裡多寫的 `min-height: 0`**——它排在上面那行 `min-height: 100%`
+     後面、把「至少一屏高」整條蓋掉，左欄因此一直停在內容結束的地方（實測 731，
+     底下空著 100px）。`.canvas-hero` 同日踩過一模一樣的坑。 */
+  justify-content: space-between;
+  /* 左右與上緣不留內距：左欄的四邊就是內容區的四邊，右邊那幾個浮層也對齊同一個框
+     （2026-08-31 使用者裁示「這些是一個區塊」）。留 4px 或 8px 的話，左上角與
+     右上角就會差那幾像素，一整塊讀起來是歪的。
+     **只有下緣留白**（2026-08-31 兩次裁示：先「下面稍微留一點距離不要全貼」給 24，
+     再「是不是有點放太低了」加到 72）：兩格上下撐開之後，最後一列會壓在內容區的
+     最底線上——那條線同時是外殼圓角的起點，字貼著它會像被切到邊界之外；而右邊那一排
+     只到畫面中段，左欄一路壓到底時兩邊的重量也不平衡。
+     72 → 96（2026-09-01 使用者裁示「往上移動一點」）。
+     這是這一欄唯一的調節旋鈕：值愈大整欄愈往上收，兩格之間的空白同時變小。 */
+  padding: 0 0 calc(var(--sp-72) + var(--sp-24));
+}
+
+/* 左欄的三格一律不畫卡框：字直接壓在圖上（參考版型就是這樣）。畫了框就等於在
+   照片上貼三張紙，圖與內容各自為政。可讀性交給舞台那層左濃右淡的壓底。 */
+.canvas-home__rail .card,
+.canvas-home__rail .kpi,
+.canvas-home__rail .issue-panel {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+}
+/* 例外：待處理的每一則仍有自己的面。它們是三則獨立的事，沒有任何界線會在花的
+   底圖上糊成一段文字（參考版型的環境監測三小卡也保留了框，同一個理由）。
+   面的配方由 `issue-panel.css` 的 `--compact` 給（半透明毛玻璃、無框）——
+   這裡不再覆寫，兩處各寫一半會讓下一個人不知道該改哪邊。 */
+
+/* 標題列：標題靠左、左右切換靠右（2026-08-31 使用者裁示「兩個區塊的切換按鈕都
+   靠右，試試看看」）。取捨要知道：靠右之後箭頭離它控制的標題最遠，但整欄多了一條
+   對齊線——收入分布與進行中的兩組箭頭現在收在同一個右緣，讀起來是同一種控制。
+   一次只有兩顆、位置固定，找一次就記得住。 */
+.canvas-block__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-12);
+}
+.canvas-block__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium, 500);
+  color: var(--foreground);
+  margin: 0;
+}
+/* 兩區的切換都靠右（2026-08-31）：`margin-left: auto` 而不是把標題列改成
+   `space-between`——標題列將來若多一個東西，`space-between` 會把它攤到中間，
+   `auto` 邊距只管「這一個推到底」。 */
+.canvas-block__head .canvas-nav,
+.canvas-home__rail .distribution__head .canvas-nav { margin-left: auto; }
+/* 2026-08-31 撤除（墓碑）：`.canvas-block__sub`（灰字的組名）。組名改成整句寫進
+   標題本身（「上線進行中」），一句話比「主標＋灰字限定詞」兩截好讀，也就不再需要
+   第二個 span。 */
+
+/* ── 左右切換（`.canvas-step`）：左欄兩處共用的同一顆控制 ──────────
+   收入／粉絲分布那一格與進行中那一格都要「換下一件」，同一個手勢就該是同一顆
+   按鈕：同樣的 24px 方框、同樣的 muted → foreground、同樣的薄膜 hover。
+   2026-08-31 由 `.distribution__step` 提升上來，該處改用這一支（見 kpi-rotator.css）。 */
+.canvas-nav {
+  display: inline-flex;
+  align-items: center;
+}
+.canvas-step {
+  appearance: none;
+  border: 0;
+  background: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 20px 不是 24px（2026-08-31 使用者裁示「兩個箭頭靠近一點」）：24px 的方框裝
+     16px 的圖示，左右各留 4px，兩顆並排就有 8px 把它們推開——看起來像兩顆分開的
+     按鈕，而它們其實是同一組前後。縮到 20px 之後圖示之間只剩 4px，讀成一組。
+     高度維持 24px，點擊面積不跟著縮。 */
+  width: 20px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: color var(--duration) var(--easing), background-color var(--duration) var(--easing);
+}
+.canvas-step:hover { color: var(--foreground); background: var(--ztu-film); }
+.canvas-step:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.canvas-step .ztor-icon { width: 16px; height: 16px; }
+/* 最後一格（待辦）**不吃剩下的高度**（2026-08-31 再調）：左欄改成 `space-between`
+   之後，剩下的高度應該變成兩格之間的空白、把待辦推到底；而這一格若還 `flex: 1`，
+   多出來的高度會被它自己吸走——框到了底邊、裡面的清單卻停在原處，看起來就是
+   「說好靠底卻沒有靠底」（實測框的底 886、最後一列停在 731，中間空了 155px）。
+   仍然不裁掉超出的部分：清單比空間長時它就把整段撐高，往下捲看得到（原本的
+   `overflow: hidden` 會把第四則之後直接切掉）。 */
+.canvas-home__rail > :last-child {
+  flex: none;
+  min-height: 0;
+}
+
+/* 兩張進行中項目並排。用 grid 而不是磚列的橫捲：只有兩張，捲動的機制一個都用不到，
+   留著只會多一組不會動的翻頁鈕。 */
+.canvas-works {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-12);
+}
+/* 這兩張借磚列的 work-card，但拿掉它為橫捲設的固定寬度——這裡的寬度由格線給。 */
+.canvas-works .work-card {
+  width: auto;
+  min-width: 0;
+  scroll-snap-align: none;
+}
+
+/* 窄畫面：左欄與畫布改成上下，並解除「不捲」——一屏不捲是為大螢幕設的前提，
+   在手機上硬套會把每一格壓到讀不出來。 */
+@media (max-width: 1024px) {
+  .canvas-home-shell,
+  .canvas-home-shell .app { height: auto; overflow: visible; }
+  .canvas-home__rail { width: auto; height: auto; }
+  .canvas-home__rail > :last-child { flex: none; }
+  /* 窄畫面把舞台降成一塊定高的頭圖：滿版的底圖在手機上會讓左欄的字整段落在
+     圖的細節裡，怎麼壓都讀不乾淨。 */
+  .canvas-home { display: flex; flex-direction: column; gap: var(--sp-20); }
+  .canvas-home__stage { position: relative; inset: auto; height: 40vh; }
+  .canvas-home-shell .app-sidebar { background: var(--card); }
+}
+
+/* ── 這一頁的區塊標題一律同一階（2026-08-31 使用者裁示「都改成像收入走勢一樣的
+   文字大小」）──────────────────────────────────────────
+   基準是左欄第一格的 `.distribution__title`（`--fs-14` ／ 500）。原本這一頁上有三種
+   標題字級：14（收入走勢、進行中）、18（待辦事項）、22（進行中／近期、平台表現），
+   而它們在版面上是**同一階的東西**——都是「這一區叫什麼」。字級不一致會讓人以為
+   分了層。
+   **只在這一頁改**：`.issue-panel__title` 是全站共用的，正式儀表板那邊的節奏是對的
+   （那一頁的區塊更大、階層更多），所以選擇器綁在這一頁自己的容器上。
+   （2026-08-31 同日兩次收斂：磚列的分頁詞隨磚列一起退場；第二、三屏的區塊標題
+   「進行中」「平台表現」也依使用者裁示整個刪除——那兩屏各自只有一件事，
+   而卡片與卡上的字已經說完它是什麼，標題只是重複一次。） */
+.canvas-home__rail .issue-panel__title {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium, 500);
+  letter-spacing: 0;
+}
+
+/* ── 進行中項目：橫的一列一件（2026-08-31 使用者裁示「用橫的，像參考圖那樣」）──
+   參考版型左欄的每一區都是橫向的行——圖示或縮圖在左、名稱與數字在右。直式封面
+   在一條 300px 的窄欄裡會把兩件事排成兩根柱子，跟上下兩區的節奏對不起來，也把
+   這一格的高度吃掉一半（待處理那格才是需要高度的）。 */
+.canvas-works {
+  display: flex;
+  flex-direction: column;
+  /* 12 → 20 → 12 → 0（2026-08-31 同日三次裁示，最後一次是「直接去掉間距」）：
+     每一列等高（`min-height: 88px`）之後，空白已經由那個高度與每一列自己的內距
+     提供了；列距是第三份空白，加上去只會把兩件事推開到讀不成一組。
+     歸零之後兩列仍然分得開——縮圖之間有 22px、hover 的薄膜也各自畫在自己的
+     內距上，只是不再有一段刻意的空。 */
+  gap: 0;
+}
+.work-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  /* 每一列等高（2026-08-31 使用者裁示「所有高度都以募資的高度為最大標準」）：
+     不等高的話，切到上線那一組整塊會往上縮一截，四組輪流看就是畫面在跳。
+     88 → 78（同日再調）：最底下那行小字收掉、剩餘天數併進數字那一行之後，四組的
+     自然高度都變成 78px——由縮圖（66）加上下內距決定，不再是文字。88 只是多出
+     10px 的空。留著 `min-height` 而不是拿掉：哪一組將來少一條進度條時，它仍然
+     是那個「以最高的為準」的保險。 */
+  min-height: 78px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  margin: 0 calc(var(--sp-6) * -1);
+  transition: background-color var(--duration) var(--easing);
+}
+.work-row:hover { background: var(--ztu-film); }
+.work-row:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* 縮圖走 2:3 直式（2026-08-31 使用者裁示「這些圖都要用直的」）：站上的作品主視覺
+   本來就是直式海報，切成正方會把海報的上下裁掉、變成一張認不出來的方塊。
+   尺寸取 44×66 而不是照文字高度放大：這一列有三段字（名稱·類型／關鍵數字／
+   進度條＋小字）66–74px，縮圖與它幾乎等高，橫排的節奏還在；再大就會把整列
+   撐成一張卡。 */
+.work-row__thumb {
+  flex: none;
+  width: 44px;
+  height: 66px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--ztu-film);
+}
+.work-row__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.work-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+/* 一列三段（2026-08-31 使用者裁示）：
+     灰字   名稱 · 類型
+     白字   關鍵數字（倒數／已募／已售）
+     進度條 ＋ 小字（上線日期或剩餘時間）
+   字級刻意拉開兩階以上（13 → 20 → 11）：三行擠在 66px 的縮圖旁邊，只靠顏色
+   分主次不夠，一眼掃過去會讀成三行等重的說明。白字全欄只有這一個，它就是
+   這一列的答案。 */
+.work-row__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-6);
+  min-width: 0;
+  font-family: var(--font-ui);
+  /* 13 → 12（2026-08-31 使用者裁示「其他字都用灰色變小」）：這一列只有一個東西
+     該被讀到，其餘的字愈退愈好。 */
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.work-row__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 類型接在名稱後面、用一個點隔開：它是名稱的補述而不是第二個欄位，另起一行
+   會把這一列變成四行。名稱長就先截名稱，類型永遠留得住（`flex: none`）。 */
+.work-row__kind { flex: none; }
+.work-row__kind::before { content: '·'; margin-right: var(--sp-6); }
+/* 只有數字是白的大字，單位詞（幣別符號、「還有」「天」「張票」）降成灰的小字
+   （2026-08-31 使用者裁示）：一列裡真正要被讀到的是那個數字，單位是讀懂它需要的
+   最少的字——同樣大小同樣白的話，「還有 12 天」四個字裡有三個在跟那個 12 搶。
+   切分在渲染器（`workValue()`），CSS 只負責這兩種字長什麼樣。 */
+.work-row__unit {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+/* 緊貼數字的那一種單位（幣別符號）補一點外距：`$88,600` 兩者黏在一起時，
+   小字的 `$` 讀起來像大數字的一部分被壓扁了（2026-08-31 使用者裁示）。
+   自己帶空白的單位（「還有 」「 天」）不掛這個 class，補了會變成兩倍寬。 */
+.work-row__unit--pre { margin-right: var(--sp-2); }
+.work-row__unit--post { margin-left: var(--sp-2); }
+/* 分母（2026-08-31 使用者裁示「要有 1000/1000，分母用小字」）：與單位詞同一階
+   ——它們是同一種東西，都是「讀懂那個白色數字需要的最少的字」。分子是這一列的
+   答案，分母是它的尺度；同樣大小的話「18,400 / 20,000」會讀成兩個並列的數字。 */
+.work-row__den {
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+}
+.work-row__value {
+  font-family: var(--font-ui);
+  /* 20 → 24（2026-08-31 使用者裁示「白色數字都再大一點」）：單位詞退成灰的小字
+     之後，白字只剩那個數字，字級跟著補上——這一列的答案應該一眼就落在它身上。 */
+  font-size: var(--fs-24);
+  line-height: var(--lh-tight, 1.2);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 數字與剩餘天數同一行、兩端對齊（2026-08-31 使用者裁示「所有剩餘天數都移到
+   進度條上方那一列靠右邊」）：兩者講的是同一件事的兩面（賣了多少／還剩多久），
+   排成上下兩行會讀成兩件事，也讓每一列多長一行。基線對齊而不是置中——大數字
+   與小字置中時，小字會浮在數字的腰上。
+   2026-08-31 撤除（墓碑）：`.work-row__foot`（原本在最底下的小字，上線放日期、
+   其餘放剩餘時間）。上線那一組的日期一併撤除——倒數已經是同一個日期的另一種說法。 */
+.work-row__value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  min-width: 0;
+}
+.work-row__side {
+  flex: none;
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+}
+.work-row__bar { margin-top: var(--sp-4); }
+
+/* ── 2026-08-31 撤除（墓碑）：`.canvas-block__more` 與 `.issue-panel__more`
+   （兩區標題旁的「查看更多」箭頭），使用者裁示移除。取捨要知道：進行中只出兩件、
+   待辦只出三則，現在畫面上沒有一條路通往其餘的。之所以還過得去，是兩區的標題都
+   不宣稱總數——待辦同日已改成只寫「待辦事項」，進行中寫的是「上線進行中」這種
+   組名，沒有一個數字在說「還有更多」。展示版的前提是一眼看完，不是查得完。 */
+
+/* 待辦面板左右各讓出 12px（2026-08-31 修）：面板是左欄的最後一格，帶著
+   `overflow: hidden`（那是為了在內容過長時切掉，不是為了裁樣式）；而每一則卡片
+   靠 `margin: 0 -12px` 把 hover 的玻璃面撐到文字之外——兩者相撞，滑過時那塊面
+   會被切掉左右各 12px，圓角也跟著削平（使用者回報「hover 的樣式好像壞掉了」）。
+   面板自己吃同寬的內距、再用負外距抵銷回去：內容的位置一格都沒動（標題與卡片
+   仍對齊左欄其他兩格），但卡片的外擴從此發生在面板的內距裡，不再碰到裁切邊。 */
+.canvas-home__rail .issue-panel--compact {
+  padding-left: var(--sp-12);
+  padding-right: var(--sp-12);
+  margin-left: calc(var(--sp-12) * -1);
+  margin-right: calc(var(--sp-12) * -1);
+}
+
+/* 面板標題列改成 標題 ＋ chevron ＋ 收合鈕 三者同一行。 */
+.canvas-home__rail .issue-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+/* 側欄收合（只有 icon）2026-08-31 已升級成全站功能，規則搬到 header.css 的
+   `.app.is-nav-rail`；這一頁不再自帶一份。 */
+
+/* ── 2026-08-31 撤除（墓碑）：`.canvas-tabs`／`__tab`／`__tab--active`（進行中的
+   四個分頁標籤）。使用者裁示「改成和收入分佈一樣，不需要列出上線募資預購等，
+   直接左右切換即可」——四個標籤在 300px 的欄裡是一直在那裡、卻九成時間不會被按
+   的四個字。切換改由標題旁的 `.canvas-step` 兩顆箭頭承擔，當前組名接在標題後面。
+   空狀態留著、改名 `.canvas-block__empty`：四組裡總有幾組當下是空的，留白會讀成壞掉。 */
+.canvas-block__empty {
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+  color: var(--muted-foreground);
+  padding: var(--sp-8) 0;
+}

@@ -97,7 +97,7 @@
   display: grid;
   place-items: center;
   padding: var(--sp-24);
-  background: color-mix(in srgb, var(--background) 68%, var(--overlay-tint));
+  background: var(--overlay-scrim);
   backdrop-filter: blur(14px);
 }
 /* Footer/header 釘住、只捲 body（2026-07-23，收斂到元件層）：
@@ -117,9 +117,14 @@
      （ztorUI 規格 §2.4／§9 第 3 點，r2.2 換皮踩過的坑）。底吃 --popover，
      邊吃玻璃頂緣那支白 15%，投影維持既有的 --shadow-overlay（Wave 1 已把它的深色值對齊沙盒）。
      舊值：background: var(--card)（且吃 _tokens.css 檔尾的 --overlay-blur 毛玻璃，該段本輪已退役）。 */
-  background: var(--popover);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  /* 2026-09-01 使用者裁示「彈窗要改成玻璃面」：面由實色 `--popover` 改成同色的
+     72%，底下那一頁透得出來一點，浮層才讀得出是一片玻璃而不是一張貼上去的紙。
+     **這裡不掛 `backdrop-filter`**：遮罩那一層（`.payout-modal`）自己帶著模糊，
+     它因此是一個「背景根」，掛在裡面的模糊只取樣得到遮罩自己那一片平色，等於白寫。
+     推遠後面那一頁的工作本來就由遮罩負責——模糊 ＋ 68% 畫布色 ＋ 遮罩色，
+     所以 2026-08-28 改成不透明時擔心的「看穿兩層、底下的字浮上來」在這個配方裡
+     不成立：透過來的已經是糊掉又壓過色的一層。真的要再收，動的是那一層的數值。 */
+  background: color-mix(in srgb, var(--popover) 72%, transparent);
   border: 1px solid var(--ztu-glass-rim);
   box-shadow: var(--shadow-overlay);
 }

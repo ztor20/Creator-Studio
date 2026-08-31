@@ -139,8 +139,13 @@
    祖先清單從單一 .payout-dialog 擴成本站所有實色浮層容器，並補上關模糊與降圓角。
    這一條是真規則、不是為了特異度而生的補丁：即使兩邊特異度相同，語意上也必須存在。
    舊值：只有 .payout-dialog 一個祖先，且只改 background／border-color／box-shadow。 */
+/* 2026-08-31：detail-sheet 用 iframe 開詳情頁，祖先選擇器過不了 iframe 邊界——
+   浮層裡那一頁的元素永遠選不到上面那條規則，卡片就帶著給實色檯面用的投影坐在玻璃上
+   （使用者：「陰影太重了」）。html[data-embed] 就是「這一頁整份坐在 detail-sheet 裡」，
+   所以併進同一條規則，不另立第二套配方。 */
 :is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel,
-    .preview-panel__sheet, .detail-sheet, .overlay-surface) .card {
+    .preview-panel__sheet, .detail-sheet, .overlay-surface) .card,
+html[data-embed] .card {
   background: var(--ztu-film);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;

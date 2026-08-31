@@ -1,0 +1,88 @@
+/* ============================================================
+   split-bar — 一個總量拆成幾塊（2026-08-31 建）
+
+   一個大數字，加上「它是由哪幾塊組成的」：一條分段長條 ＋ 一份圖例。
+   首個消費情境是展示版左欄第一格（收入分布／粉絲等級分布，見 kpi-rotator.css）。
+
+   為什麼是橫的一條而不是圓餅：這一格只有 300px 寬，圓餅要佔掉一個正方形才畫得下，
+   而它旁邊還有一個必須夠大的總數。橫條吃一行的高度就講完同一件事，剩下的空間
+   留給圖例——真正要讀的是「哪一塊比較大、差多少」，那在條上一眼就看得出來。
+
+   為什麼圖例只有兩欄（名稱與佔比），沒有中間的金額或人數：
+   把佔比乘回總數就能得到一個「看起來很具體」的數字，但那兩個數字未必來自同一個
+   期間（收入的百分比取自收入總覽頁、總額是本週），乘起來就是一個憑空的金額。
+   寧可少一欄，不要多一個編出來的數字。
+
+   anatomy
+     .split-bar
+       .split-bar__track            分段長條（每段一個 __seg）
+         .split-bar__seg
+       .split-bar__legend           圖例（一列一塊）
+         .split-bar__row
+           .split-bar__dot          色點（顏色與該段相同）
+           .split-bar__label        名稱（過長截斷）
+           .split-bar__pct          佔比，靠右、等寬數字
+   ============================================================ */
+
+.split-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+/* 分段之間留 2px 的縫：不留縫時相鄰兩段若明度接近，會讀成一整條。
+   縫用 `gap` 而不是邊框——邊框會算進寬度，各段的比例就不再準確。 */
+.split-bar__track {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+}
+.split-bar__seg {
+  height: 100%;
+  border-radius: 999px;
+  min-width: 4px;      /* 佔比極小的那一塊也要看得見，否則圖例上會有一列對不到條 */
+}
+
+.split-bar__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.split-bar__row {
+  display: flex;
+  align-items: center;
+  /* 點縮小之後間距跟著收一階（8 → 6，2026-08-31 使用者裁示同時提醒要留意這一段）：
+     間距是固定的話，點愈小、那段空白看起來就愈寬，色點會與它要標示的名稱脫鉤。 */
+  gap: var(--sp-6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-13);
+}
+/* 實心圓點（2026-08-31 使用者裁示；原本刻意做成空心，理由是「條上是實心＝面積
+   代表量，圖例上是空心＝只是索引」）。改回實心的理由更實際：這一格躺在照片上，
+   9px 的空心圈只剩一圈 2px 的線，在花的底圖上幾乎看不出顏色，而顏色正是它與
+   條上那一段對應起來的唯一線索。 */
+.split-bar__dot {
+  flex: none;
+  /* 9 → 7px（2026-08-31 使用者裁示）：改成實心之後，同樣的直徑比空心圈重得多，
+     一排五顆會先被看成五個點、再被看成五個名稱。 */
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.split-bar__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* 白字（2026-08-31 使用者裁示）：這一排躺在照片上，`--foreground-muted`
+     那階灰在亮一點的底圖上就糊掉了。右邊的百分比本來就是白的，名稱跟著它同色，
+     一列讀起來是一件事，不是「灰的名稱」加「白的數字」兩截。 */
+  color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.split-bar__pct {
+  flex: none;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}

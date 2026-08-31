@@ -319,8 +319,13 @@
   box-shadow: var(--shadow-card), var(--shadow-edge-top);
 }
 /* 浮層裡的通知條退回薄膜（ztorUI 規格 §2.5 浮層實色律，同 card.css 的對應規則）。 */
+/* 2026-08-31：detail-sheet 用 iframe 開詳情頁，祖先選擇器過不了 iframe 邊界——
+   浮層裡那一頁的元素永遠選不到上面那條規則，卡片就帶著給實色檯面用的投影坐在玻璃上
+   （使用者：「陰影太重了」）。html[data-embed] 就是「這一頁整份坐在 detail-sheet 裡」，
+   所以併進同一條規則，不另立第二套配方。 */
 :is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel,
-    .preview-panel__sheet, .detail-sheet, .overlay-surface) .alert--bar {
+    .preview-panel__sheet, .detail-sheet, .overlay-surface) .alert--bar,
+html[data-embed] .alert--bar {
   background: var(--ztu-film);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;

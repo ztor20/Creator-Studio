@@ -58,8 +58,13 @@
   box-shadow: none;
 }
 /* 浮層裡的 KPI 同理退回薄膜（ztorUI 規格 §2.5 浮層實色律，同 card.css 的對應規則）。 */
+/* 2026-08-31：detail-sheet 用 iframe 開詳情頁，祖先選擇器過不了 iframe 邊界——
+   浮層裡那一頁的元素永遠選不到上面那條規則，卡片就帶著給實色檯面用的投影坐在玻璃上
+   （使用者：「陰影太重了」）。html[data-embed] 就是「這一頁整份坐在 detail-sheet 裡」，
+   所以併進同一條規則，不另立第二套配方。 */
 :is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel,
-    .preview-panel__sheet, .detail-sheet, .overlay-surface) .kpi {
+    .preview-panel__sheet, .detail-sheet, .overlay-surface) .kpi,
+html[data-embed] .kpi {
   background: var(--ztu-film);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -140,12 +145,30 @@
   flex-wrap: wrap;
 }
 .kpi__value-row .kpi__delta { flex: 0 0 auto; }
+/* 註腳搬到金額那一行的最右邊（2026-08-31 使用者裁示）：原本 .kpi__meta 是卡底獨立一行，
+   在有長條＋圖例的卡上它被推到圖例底下，離它在說明的那個數字最遠。
+   移進 value-row 之後與金額同一行、靠右對齊——「$88,600」與「目標 $120,000 · 74%」
+   本來就是同一句話的兩半。baseline 對齊由 value-row 自己負責，這裡只補靠右與不換行。 */
+.kpi__value-row .kpi__meta {
+  margin-left: auto;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
 
 
 /* 走勢圖沉到卡底（.sparkline 元件見 sparkline.css）：數字在上、走勢在下，與參照語彙一致。
    墨色一律中性、不跟卡片主色走（2026-08-28 使用者：兩張卡的走勢圖要同一個顏色）——
    顏色留給數字與 delta 膠囊，兩條線都用 --muted-foreground 就不會有「橘線比較重要」的暗示。 */
 .kpi .sparkline { margin-top: auto; padding-top: var(--sp-10); }
+
+/* KPI 磚裡的堆疊長條收成與 .project-bar 同一個粗細（2026-08-31 使用者：「進度條太粗了，
+   改成和剩餘天數一樣」）。--stacked-bar 預設 14px 是給獨立成段的比例圖用的（粉絲分析那種，
+   一整列就是它自己）；在 KPI 磚裡它只是數字底下的一條註記，跟隔壁那格的 6px 併排時
+   粗一倍會讀成「這一格比較重要」。上外距也跟著對齊，兩格的條才在同一條線上。 */
+.kpi .stacked-bar {
+  height: 6px;
+  margin-top: var(--sp-4);
+}
 .kpi__delta--neg {
   color: var(--destructive-ink);
   background: var(--destructive-fill);

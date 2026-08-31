@@ -1,9 +1,11 @@
 /* ============================================================
    Post composer · 發文框（2026-08-18 promote，自 progress-timeline 的 .ptl__composer）
 
-   一個發文框，兩個落點：
+   一個發文框，三個落點：
      ① 進度時間軸「今天那一格」的內嵌版——收合時只露一行提示，點了才展開。
      ② 頁首與各處「發布更新」按鈕開的彈窗。
+     ③ 總覽「進度摘要」卡頭底下的收合入口（2026-08-31 使用者裁示）——那張卡上只放
+        收合那一行，點了把這個活的發文框搬過去展開，不另做一份欄位。
    兩邊長一樣、行為一樣，差別只有「有沒有位置訊號」：軸上的落點本身就是發文類型的
    預設值（D197），彈窗沒有位置，所以類型與要完成的里程碑都得問一次。
    促成 promote 的是這件事——留在時間軸檔裡的話，彈窗要用就得跨元件借樣式，
@@ -32,15 +34,44 @@
    軸上就是那一塊填色的 section；裡面的 .input／.textarea 因此是「卡面上的輸入框」，
    站上每一張表單本來的關係，不是先前 --nest-surface 面上再疊一層面。 */
 .post-composer {
-  border: 0;
+  /* ztorUI 換裝補課（2026-08-31）：本檔原本寫死 `--card` ＋ 卡陰影，用意就是「跟站上的卡
+     同一個面」（見上一段註解）。換裝時 .card 改成玻璃、發文框沒有跟上，兩者並排就露餡——
+     總覽把發文框拆成獨立區塊之後，它與底下的進度摘要卡是上下兩塊，色差一眼看得到。
+     改成引用同一組原料，之後 .card 再變也不會各走各的。
+     舊值：background: var(--card)；box-shadow: var(--shadow-card), var(--shadow-edge-top)。 */
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: var(--card);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
   box-shadow: var(--shadow-card), var(--shadow-edge-top);
   display: flex;
   flex-direction: column;
   max-width: 560px;
 }
+/* 浮層裡退回薄膜，與 card.css／kpi.css 的同名規則同一套配方（2026-08-31）。
+   `html[data-embed]` 是 detail-sheet 用 iframe 開詳情頁的情形——祖先選擇器過不了 iframe 邊界。 */
+:is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel,
+    .preview-panel__sheet, .detail-sheet, .overlay-surface) .post-composer,
+html[data-embed] .post-composer {
+  background: var(--ztu-film);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--nest-line);
+  box-shadow: none;
+}
 .post-composer[hidden] { display: none }
+/* 疊在一張卡裡時整組去面（2026-08-31）：它是那張卡的內容，不是卡中卡。
+   留著面就會在卡裡再畫一個框，兩層邊界互相干擾。
+   max-width 一併解除：欄有多寬就用多寬，560px 是給時間軸那個落點限的行長。 */
+.card .post-composer {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  max-width: none;
+}
 /* 收合態：只露一行提示，點了才展開。展開後 stub 收起、其餘三段出現。 */
 .post-composer__stub {
   display: block;
@@ -140,9 +171,38 @@
    它是送出時的設定，跟送出鈕同一組。 */
 .post-composer__fields .field { margin: 0 }
 .post-composer__fields .field__label { margin-bottom: var(--sp-4) }
-/* 掛哪一顆里程碑由發文框的位置決定（D197），所以那個下拉不再出現在畫面上；
-   元素留著是為了讓既有的送出與同步邏輯有一個單一的值可以讀寫。 */
-.post-composer [data-ptl-ms-slot] { display: none }
+/* 掛哪一顆里程碑由發文框的位置決定（D197）——時間軸那個落點是這樣。
+   2026-08-31：總覽的落點沒有位置訊號，類型選「里程碑更新」時得問一次，所以這一格
+   改成由 JS 用 `hidden` 屬性控制顯隱（全域 `[hidden]{display:none!important}` 負責藏），
+   不再由 CSS 一律關掉。舊值：.post-composer [data-ptl-ms-slot] { display: none }。 */
+
+/* 卡內的收合入口（--inset，2026-08-31）：上面那條「疊在卡裡就整組去面」會讓這一行變成
+   裸文字，看不出可以打字。給它輸入框的面——薄膜底＋卡內圓角，讀起來就是一個空的輸入框。
+   展開後的發文框不吃這個修飾子，維持去面（它是卡的內容，不是卡中卡）。 */
+/* 2026-08-31（使用者：「這兩個不要包在裡面」）：面給輸入那一行本身，不給整個區塊。
+   原本整塊鋪薄膜，等於把夾帶那一列也框進輸入框裡——它們是兩件事：一行是要打字的地方，
+   一列是卡面上的三個動作。區塊本身維持透明（`.card .post-composer` 的整組去面），
+   只有 stub 拿到輸入框的面。 */
+/* 浮層／內嵌那條規則（上面）權重比 `.card .post-composer` 高，會把去面蓋回薄膜，
+   所以這裡要把同一個情境也寫出來，否則浮層裡整塊還是有面。 */
+.card .post-composer--inset,
+html[data-embed] .card .post-composer--inset,
+:is(.payout-dialog, .payout-modal, .dropdown__menu, .zselect__panel,
+    .preview-panel__sheet, .detail-sheet, .overlay-surface) .card .post-composer--inset { background: transparent; }
+.card .post-composer--inset > .post-composer__stub {
+  background: var(--ztu-film);
+  border-radius: var(--radius-lg);
+}
+/* 收合入口的快捷夾帶列（2026-08-31 使用者裁示）：收合態也給圖片／影片／音樂三個入口，
+   點一下直接展開並選好那一種，比「先點開、再找夾帶」少一步。
+   刻意不用 .post-composer__foot——那一段在收合態被上面那條規則藏起來，
+   而這一列要的正是「只在收合態出現」。展開後整個 --inset 區塊讓位給發文框，它自然消失。 */
+.post-composer__quick {
+  display: flex;
+  gap: var(--sp-4);
+  /* 左緣與輸入行的文字對齊（stub 的內距是 12px，ghost 鈕自己有 9px 的左內距）。 */
+  padding: var(--sp-8) 0 0 var(--sp-4);
+}
 /* 取消與送出綁成一組靠右，換行時整組一起走——主要動作的字會變長
    （「下一步：上架作品」）。 */
 .post-composer__acts { margin-left: auto; display: inline-flex; align-items: center; gap: var(--sp-8) }

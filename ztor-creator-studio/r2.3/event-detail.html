@@ -415,22 +415,13 @@
             </section>
           </div>
           <div class="bento--span-4 stack stack--bento">
-            <!-- 場次脈絡（2026-08-18 使用者指示「場次與票務概況 如 1」）：與進行中右欄那張
-                 同一支 data-list——幾點開演、幾點開放入場、在哪裡，三行唯讀事實。
-                 兩處由同一個 renderer 填（[data-where-list]），不各寫一份。 -->
-            <!-- 只在售票中出現：已排程與已結束仍由左欄的「場次與票務概況」講同一件事，
-                 兩張都在時會變成同一組事實講兩遍。 -->
-            <section class="card" id="ed-onsale-context" data-stage-show="on-sale">
-              <div class="card__head">
-                <div class="card__title-group">
-                  <h3 class="card__title" data-i18n="event-detail.summary.title">Event summary</h3>
-                </div>
-              </div>
-              <div class="data-list" data-where-list></div>
-              <div class="flex-row mt-16">
-                <button class="btn btn--outline btn--block" type="button" data-view-safe data-goto-setup data-i18n="event-detail.summary.go">Event settings</button>
-              </div>
-            </section>
+            <!-- 墓碑 2026-08-31：「活動摘要」卡（#ed-onsale-context）整張撤除（使用者指示）。
+                 同日頁首副標改成「日期 · 開演 · 開放入場」＋「場地」兩行之後，這張卡的三行
+                 唯讀事實（開演／開放入場／地點）與頁首逐字重複——同一組事實在同一個畫面上
+                 講兩遍，而且頁首那份先被讀到。卡上唯一的動作「前往設定」不是唯一入口：
+                 左側區域導覽的「設定」一直在，捲到哪裡都看得見。
+                 renderLiveWhere() 與 [data-where-list] 保留——進行中階段的 #ed-live-where
+                 仍在用同一支 renderer（那個階段的頁首講的是別的事）。 -->
   <!-- ═══ 開演前檢核（規格 5.1.6.3 §2.4.1；2026-08-17 使用者裁決改成可編輯的待辦清單）═══
                  規格原本只定義兩個寫死的項目（退款政策、現場人力）與一個「完成」動作。現場人力
                  已於同日依使用者指示刪除，只剩一項，一整張卡在講一句話；規格自己也把「這份清單
@@ -1635,6 +1626,7 @@
 <script src="js/i18n.js?v=r2.2"></script>
 <script src="js/sidebar.js?v=r2.2"></script>
 <script src="js/events-store.js?v=r2.2"></script>
+<script src="js/linechart.js?v=r2.2"></script>   <!-- 2026-08-31：走勢圖的共用產生器 -->
 <script src="js/chart.js?v=r2.2"></script>
 <script src="partials/upload-tile.js?v=r2.2"></script>
 <script src="partials/date-input.js?v=r2.2"></script>
@@ -1854,11 +1846,21 @@
     const sub = $('.page-intro__sub');
     if (sub) {
       sub.removeAttribute('data-i18n');
+      /* 2026-08-31 使用者指示：第一行「開演＋開放入場」、第二行「地點」。
+         這兩行答的是不同問題（幾點到／去哪裡），過去串成一條時，長場地名把時間
+         擠到換行，斷點落在哪由視窗寬度決定，讀者每次看到的分組都不一樣。
+         開放入場沿用建立流程的字典鍵 ce.doors，不另發明第二個「開放入場」。 */
       const when = [fmtDate(ev.date), fmtTime(ev.start)].filter(Boolean).join(' · ');
-      const where = [ev.venue, ev.city].filter(Boolean).join(', ');
+      const doors = (ev.doors || '').trim()
+        ? T('ce.doors', 'Doors open') + ' ' + fmtTime(ev.doors) : '';
+      const line1 = [when, doors].filter(Boolean).join(' · ');
+      const line2 = [ev.venue, ev.city].filter(Boolean).join(', ');
+      sub.classList.add('page-intro__sub--stack');
+      sub.textContent = '';
       /* 草稿常常日期場地都還沒填——整條副標留白會讓頁首看起來像壞掉的（2026-08-13）。 */
-      sub.textContent = [when, where].filter(Boolean).join(' · ') ||
-        T('event-detail.sub.empty', 'Date and venue not set yet');
+      const lines = [line1, line2].filter(Boolean);
+      (lines.length ? lines : [T('event-detail.sub.empty', 'Date and venue not set yet')])
+        .forEach(t => { const sp = document.createElement('span'); sp.textContent = t; sub.appendChild(sp); });
     }
     const badges = document.querySelectorAll('.page-intro .badge');
     if (badges[0]) {
@@ -3833,29 +3835,16 @@
     const n = series.length;
     const max = Math.max.apply(null, series) || 1;
 
-    // 值 → y：0 落在 158、最大值落在 23，與 linechart 的四條格線同一組座標
-    const X = i => n < 2 ? 0 : (i * 600) / (n - 1);
-    const Y = v => 158 - (v / max) * 135;
-    const pts = series.map((v, i) => [X(i), Y(v)]);
-    /* Catmull-Rom 轉三次貝茲：折線在這個寬度下會看起來像鋸齒，平滑之後才讀得出趨勢。 */
-    let d = 'M ' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || pts[i + 1];
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      d += ' C ' + c1[0].toFixed(1) + ',' + c1[1].toFixed(1) +
-           ' ' + c2[0].toFixed(1) + ',' + c2[1].toFixed(1) +
-           ' ' + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
-    }
+    /* 2026-08-31：座標、平滑與刻度的產生搬進 js/linechart.js（`ZtorLinechart`）。
+       這一段原本就寫著「站上『一段時間的走勢』從此只有一種畫法」，但那個畫法只長在
+       這個函式裡；項目詳情要畫同一張圖時只剩「抄第二份」或「抽共用」兩條路，抽了。
+       輸出與 2026-08-17 那版逐字相同（同一組座標、同一個平滑法），故本頁外觀不變。 */
+    const LC = window.ZtorLinechart;
     const svg = document.getElementById(ids.svg);
-    if (svg) svg.innerHTML =
-      [23, 68, 113, 158].map(y =>
-        '<line class="linechart__grid" x1="0" y1="' + y + '" x2="600" y2="' + y + '" />').join('') +
-      '<path class="linechart__area" d="' + d + ' L 600,180 L 0,180 Z" />' +
-      '<path class="linechart__line linechart__line--s1" d="' + d + '" />';
+    if (svg && LC) svg.innerHTML =
+      LC.gridHTML() + LC.seriesHTML([{ values: series, cls: 's1', area: true }], max);
 
-    const yHtml = [[13, max], [38, Math.round(max * 2 / 3)], [63, Math.round(max / 3)], [88, 0]]
-      .map(([top, v]) => '<span class="linechart__y-tick" style="top:' + top + '%">' + fmtNum(v) + '</span>').join('');
+    const yHtml = LC ? LC.yTicksHTML(max, fmtNum) : '';
     [ids.y, ids.ybar].forEach(id => { const el = id && document.getElementById(id); if (el) el.innerHTML = yHtml; });
 
     const dows = T('event-detail.sales.dows', 'M,T,W,T,F,S,S').split(',');

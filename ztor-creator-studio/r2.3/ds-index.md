@@ -5,7 +5,7 @@
 > 用途：**動手改 UI 前先掃這頁**——色彩／字體／間距／陰影一律用下列 token，版面一律先找既有元件；
 > 用法細節與規範看 `design-system.md`（AI 契約）／`design-system.html`（人看）。只列亮色值，暗色屬 Pillar 3。
 
-## Tokens（_tokens.css，亮色，共 277 條）
+## Tokens（_tokens.css，亮色，共 285 條）
 
 ### --accent-*
 - `--accent`: #F3F3F3
@@ -44,6 +44,7 @@
 
 ### --control-*
 - `--control-raise`: var(--card)
+- `--control-raise-hover`: var(--accent)
 - `--control-h-xs`: 28px
 - `--control-h-sm`: 36px
 - `--control-h-md`: 44px
@@ -137,10 +138,13 @@
 
 ### --on-*
 - `--on-primary`: #171717
+- `--on-media`: #FFFFFF
+- `--on-media-muted`: rgba(255, 255, 255, 0.66)
 
 ### --overlay-*
 - `--overlay-blur`: blur(24px) saturate(1.25)
-- `--overlay-tint`: rgba(0, 0, 0, 0.45)
+- `--overlay-tint`: rgba(0, 0, 0, 0.32)
+- `--overlay-scrim`: color-mix(in srgb, var(--background) 40%, var(--overlay-tint))
 
 ### --popover-*
 - `--popover`: #FFFFFF
@@ -162,6 +166,9 @@
 
 ### --ring-*
 - `--ring`: var(--primary)
+
+### --scrim-*
+- `--scrim-media`: rgba(0, 0, 0, 0.82)
 
 ### --scrollbar-*
 - `--scrollbar-size`: 12px
@@ -340,16 +347,16 @@
 - `--ztu-orange`: #ffa33f
 - `--ztu-orange-hi`: #ffc178
 - `--ztu-orange-lo`: #f2871f
-- `--ztu-glass-bg`: rgba(255, 255, 255, 0.07)
+- `--ztu-glass-bg`: rgba(255, 255, 255, 0.05)
 - `--ztu-glass-strong`: rgba(255, 255, 255, 0.12)
 - `--ztu-glass-rim`: rgba(255, 255, 255, 0.15)
-- `--ztu-film`: rgba(255, 255, 255, 0.06)
+- `--ztu-film`: rgba(255, 255, 255, 0.085)
 - `--ztu-canvas`: #0a0a09
 - `--ztu-blur-shell`: 14px
 - `--ztu-shell-gutter`: 14px
 - `--ztu-shell-solid`: #1c1c1b
 - `--ztu-blur-glass`: 24px
-- `--ztu-blur-heavy`: 40px
+- `--ztu-blur-heavy`: 50px
 - `--ztu-shadow-card`: 0 24px 60px rgba(0, 0, 0, 0.45)
 - `--ztu-shadow-pop`: 0 12px 40px rgba(0, 0, 0, 0.5)
 - `--ztu-shadow-pop-up`: 0 -12px 40px rgba(0, 0, 0, 0.5)
@@ -364,9 +371,12 @@
 - `--ztu-accent-blur`: blur(16px) saturate(1.25)
 - `--ztu-accent-glow`: 0 4px 18px color-mix(in srgb, #ffa33f 30%, transparent), inset 0 1px …
 - `--ztu-pill-active-glow`: 0 2px 10px color-mix(in srgb, #ffa33f 24%, transparent), inset 0 1px …
-- `--ztu-accent-fg`: rgba(255, 255, 255, 0.95)
+- `--ztu-accent-fg`: rgba(255, 255, 255, 1)
+- `--ztu-accent-wash-hover`: color-mix(in srgb, var(--ztu-orange) 18%, transparent)
+- `--ztu-accent-glow-hover`: 0 6px 24px color-mix(in srgb, #ffa33f 42%, transparent), inset 0 1px …
+- `--ztu-accent-ink-shadow`: 0 1px 3px rgba(0, 0, 0, 0.45)
 
-## 元件（ds-components/，共 135 支；主 class 前 5 個）
+## 元件（ds-components/，共 142 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb, .admin-table__owner ｜ Admin IP Bank data-table presentation. Shared by
@@ -377,10 +387,12 @@
 - `auth.css` — .auth-page, .auth-shell, .auth-brand, .auth-brand__logo, .auth-brand__name ｜ Auth shell · 未登入層的置中表單殼（spec 5.1.10 · D170）
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix
-- `bento.css` — .bento, .bento__aside, .bento--top, .bento__stack, .bento__stack--fill ｜ Bento — 12-column grid utility for dashboard / p
+- `bento.css` — .bento, .bento--top, .bento__stack, .bento__stack--fill ｜ Bento — 12-column grid utility for dashboard / p
 - `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
-- `bundle-editor.css` — .fc-bundle, .fc-bundle__body, .fc-bundle__head, .fc-item-row, .fc-item-fields ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
+- `bundle-editor.css` — .fc-bundle-col, .fc-bundle, .fc-bundle__body, .fc-bundle__head, .fc-item-row ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
+- `canvas-home.css` — .canvas-home-shell, .canvas-hero, .canvas-below, .canvas-sheet, .canvas-sheet__foot ｜ canvas-home — 一屏不捲的展示版型（2026-08-31 建）
+- `canvas-stage.css` — .canvas-stage, .canvas-stage__bg, .canvas-stage__img, .canvas-stage__scrim, .canvas-stage__marker ｜ canvas-stage — 首頁展示版的滿版舞台（2026-08-31 建）
 - `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制）
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart-tip.css` — .linechart__main, .fin-hitline, .fin-area, .fin-guide, .fin-marker ｜ chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28）
@@ -394,8 +406,10 @@
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `data-list.css` — .data-list, .data-list__row, .data-list__row--child, .data-list__row-main, .data-list__icon ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
+- `detail-overview.css` — .detail-overview, .detail-overview--2col, .detail-overview__col, .detail-overview__kpis, .detail-overview__kpi-row ｜ detail-overview.css · 詳情頁總覽的三欄骨架（2026-08-31 使用者裁
 - `detail-rail.css` — .detail-grid, .detail-main, .detail-grid--full, .detail-grid--norail, .detail-rail ｜ Detail Rail — 詳情頁「主欄 + 右側常駐 meta 欄」版型殼
 - `detail-sheet.css` — .detail-sheet, .detail-sheet__panel, .detail-sheet__head, .detail-sheet__back, .detail-sheet__title ｜ detail-sheet — 清單點進細節時的覆蓋層（2026-07-28 使用者裁示）
+- `donut-mix.css` — .donut-mix, .donut-mix__ringwrap, .donut-mix__ring, .donut-mix__track, .donut-mix__seg ｜ donut-mix — 一個總數拆成幾塊的圓環（2026-08-31 建）
 - `drawer.css` — .drawer, .drawer__scrim, .drawer__panel, .drawer__head, .drawer__title
 - `dropdown-menu.css` — .dropdown, .dropdown__menu, .dropdown__item, .dropdown--left, .dropdown__item--toggle ｜ Ztor — Dropdown menu (action menu)
 - `earnings-feed.css` — .earnings-feed, .earnings-feed__item, .earnings-feed__name, .earnings-feed__amount, .earnings-feed__amount--neg ｜ earnings-feed.css · 近期收入：一筆一個框
@@ -422,12 +436,14 @@
 - `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Neutral informational banner — for contextual ex
 - `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
-- `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__count ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）
+- `issue-panel.css` — .issue-panel, .issue-panel__head, .issue-panel__toggle, .issue-panel__title, .issue-panel__n ｜ issue-panel.css · 待處理事項面板（依來源模組分組、逐項展開）
+- `kpi-rotator.css` — .kpi-rotator, .kpi-rotator__slide, .kpi-rotator__slide--active, .distribution, .distribution__head ｜ kpi-rotator — 一格位置輪流講兩件事（2026-08-31 建）
 - `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta
 - `kv-list.css` — .kv, .kv--lead, .kv__k, .kv__v ｜ KV List — 唯讀鍵值列（label 左、value 右，逐列細分隔線）
 - `leave-dialog.css` — .leave-dialog, .leave-dialog__scrim, .leave-dialog__card, .leave-dialog__close, .leave-dialog__title
 - `list-footer.css` — .list-footer, .list-footer__count, .list-footer--center ｜ List footer — paginated-list footer pairing a "S
 - `list-toolbar.css` — .list-toolbar, .list-toolbar__actions, .list-toolbar__filter, .list-toolbar__filter-count, .list-status-row ｜ List toolbar · 清單頁頭的兩層控制骨架
+- `live-item.css` — .live-bg, .is-live-bg, .live-rail__wrap, .live-rail__nav--prev, .live-rail__view ｜ live-item — 進行中的一件（2026-08-31 建）
 - `manage-ip.css` — .mi-chips, .mi-dot, .mi-verify, .mi-verify__title, .mi-verify__text ｜ manage-ip.css — 「管理我的 IP」頁專屬版面（manage-ip.html）。
 - `media-vault.css` — .vault-layout, .vault-layout--norail, .vault-rail, .vault-rail__head, .vault-rail__label ｜ Media Vault · 加密媒體庫（Fans → 媒體庫）
 - `message-modal.css` — .payout-dialog, .msg-dialog, .msg-compose, .msg-field, .msg-field__label
@@ -442,7 +458,7 @@
 - `perf-rank.css` — .perf-rank, .perf-rank__row, .perf-rank--nopct, .perf-rank--tight, .perf-rank--wide ｜ perf-rank — 表現排行（Performance ranking）
 - `picker.css` — .picker, .card, .payout-dialog, .picker__search, .picker__search-input ｜ Picker · search box + scrollable pick-list conta
 - `pickup.css` — .scanner-access, .scanner-access__qr, .scanner-access--nomedia, .scanner-access--bare, .scanner-access__main ｜ Pickup management · spec 5.1.5.11 (E-Shop · Pick
-- `post-composer.css` — .post-composer, .post-composer__stub, .post-composer__head, .post-composer__foot, .post-composer__who ｜ Post composer · 發文框（2026-08-18 promote，自 progres
+- `post-composer.css` — .post-composer, .card, .post-composer__stub, .post-composer__head, .post-composer__foot ｜ Post composer · 發文框（2026-08-18 promote，自 progres
 - `preview-card.css` — .preview-card, .preview-card__media, .preview-card__dots, .preview-card__dot, .preview-card__dot--on ｜ Preview Card · 粉絲端即時預覽卡（spec §5.2.5）
 - `preview-column.css` — .preview-split, .preview-split__form, .preview-split--narrow, .preview-col, .preview-col__head ｜ preview-column.css · 即時預覽欄（表單旁 sticky 常駐欄）
 - `preview-panel.css` — .preview-panel, .preview-panel--inset, .wizard, .main, .preview-panel__backdrop ｜ Preview Panel · 建立流程即時預覽的右側面板（spec §5.2.5）
@@ -475,6 +491,7 @@
 - `source-status.css` — .src-status, .src-status__pill, .src-status__dot, .src-status__chevron, .src-status__panel ｜ Source status · 資料來源狀態（spec 5.1.7.8 F1 · D159）
 - `sparkline.css` — .sparkline, .sparkline__plot, .sparkline__main, .sparkline__canvas, .sparkline__svg ｜ Sparkline · 卡片內的微型走勢圖（無座標軸、無標籤、無互動）
 - `spec-row.css` — .spec-row ｜ spec-row — 逐筆規格列（規格名稱＋規格值＋行尾刪除鈕）
+- `split-bar.css` — .split-bar, .split-bar__track, .split-bar__seg, .split-bar__legend, .split-bar__row ｜ split-bar — 一個總量拆成幾塊（2026-08-31 建）
 - `split-button.css` — .split-button, .split-button__main, .split-button__caret ｜ Split button · a primary action joined to a care
 - `stack.css` — .stack, .stack--tight, .stack--loose, .stack--bento ｜ Stack · 區塊之間的垂直間距（2026-08-11 使用者指示）
 - `stat-row.css` — .stat-row, .stat, .stat__label, .stat__value, .stat__value--success ｜ stat-row.css · 卡內大數字排

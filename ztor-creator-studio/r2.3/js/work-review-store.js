@@ -33,7 +33,9 @@
      直接發佈送審件（落差 L2 把文檔歸回影片家族之後才成立）。同上，換鍵名取代遷移。 */
   /* v5（2026-08-19）：假資料盤查修復——補 nick-ni-shuo 的送審件（A11）、旺角狙擊
      上映日改 06/28 留出製作期（B11）。同上，換鍵名取代遷移。 */
-  var LS = 'ztor.workReview.v5';
+  /* v6（2026-09-01）：兩支影視送審件的片名／檔名／片長／主視覺跟著 projects-store 的
+     名稱對調換位（見該檔說明）。同上，換鍵名取代遷移。 */
+  var LS = 'ztor.workReview.v6';
 
   /* 狀態字彙：中英各一份，站上任何頁都從這裡拿，不各自寫死。
      tone 對應 badge.css 的既有語意色，讓審核狀態與站上其他狀態徽章同一套配色。 */
@@ -313,25 +315,28 @@
         genres: ['pw.genre.adventure'], age: 'pw.age.13',
         post: { title: '番外短篇上線了', audience: 'pd-edit.update.aud-everyone' }
       }),
-      /* 2026-08-19 補（盤查 A11）：nick-ni-shuo 是共創 MV、status=live——影視家族走到
+      /* 2026-08-19 補（盤查 A11）：nick-ni-shuo 是共創影視件、status=live——影視家族走到
          已上線必經審核通過，卻是唯一沒有送審件的，總覽作品卡與進度的完成作品節點
-         因此長不出來。格式比照 wr-1206；上映日 2024/08/20，裁決日早於上映日。 */
+         因此長不出來。格式比照 wr-1206；上映日 2024/08/20，裁決日早於上映日。
+         2026-09-01：兩支影視件在 projects-store 互換了名稱與主視覺（見該檔說明），
+         這裡的片名、檔名、片長與主視覺跟著走——送審件講的是「哪一部片」，
+         而審核日期與上映日講的是「這一件走到哪」，後者留在原位。 */
       demoRec({
-        id: 'wr-1208', projectId: 'nick-ni-shuo', persona: 'nick', cover: 'nick-sdfs.jpg',
-        zh: '帥到分手 MV', en: 'Too Handsome to Stay (MV)', status: 'approved',
+        id: 'wr-1208', projectId: 'nick-ni-shuo', persona: 'nick', cover: 'nick-lrh-tour.jpg',
+        zh: 'LOVE·RAGE·HOPE 巡演實錄電影', en: 'LOVE·RAGE·HOPE — Tour Film', status: 'approved',
         at: '2024-08-10 11:20', reviewer: 'ztor Ops · Ivy', decidedAt: '2024-08-12 15:40',
-        file: 'sdfs-mv_master.mp4', audio: 'pw.lang.cmn', runtime: '00:04:52', release: '2024/08/20',
-        zhDesc: '共創拍攝的電影感 MV，35mm 底片一鏡到底。', enDesc: 'A crowdfunded cinematic MV shot on 35mm, in one take.',
-        genres: ['pw.genre.music'], age: 'pw.age.all'
+        file: 'lrh-tour-film_master_4k.mov', audio: 'pw.lang.cmn', runtime: '01:58:00', release: '2024/08/20',
+        zhDesc: '把巡演最後一夜剪成長片。', enDesc: 'The final night of the tour, cut into a feature.',
+        genres: ['pw.genre.music', 'pw.genre.documentary'], age: 'pw.age.all'
       }),
       demoRec({
-        id: 'wr-1104', projectId: 'nick-rlh-live-film', persona: 'nick', cover: 'nick-lrh-tour.jpg',
-        zh: 'LOVE·RAGE·HOPE 巡演實錄電影', en: 'LOVE·RAGE·HOPE — Tour Film', status: 'approved',
+        id: 'wr-1104', projectId: 'nick-rlh-live-film', persona: 'nick', cover: 'nick-sdfs.jpg',
+        zh: '帥到分手 MV', en: 'Too Handsome to Stay (MV)', status: 'approved',
         at: '2026-07-18 14:00', reviewer: 'ztor Ops · Ivy', decidedAt: '2026-07-21 16:25',
-        file: 'lrh-tour-film_master_4k.mov', audio: 'pw.lang.cmn', runtime: '01:58:00', release: '2026/11/07',
-        zhDesc: '把巡演最後一夜剪成長片。', enDesc: 'The final night of the tour, cut into a feature.',
-        genres: ['pw.genre.music', 'pw.genre.documentary'], age: 'pw.age.all',
-        post: { title: '巡演實錄電影完成了，11/07 上映', audience: 'pd-edit.update.aud-backers' }
+        file: 'sdfs-mv_master.mp4', audio: 'pw.lang.cmn', runtime: '00:04:52', release: '2026/11/07',
+        zhDesc: '35mm 底片一鏡到底的電影感 MV。', enDesc: 'A cinematic MV shot on 35mm, in one take.',
+        genres: ['pw.genre.music'], age: 'pw.age.all',
+        post: { title: 'MV 完成了，11/07 上映', audience: 'pd-edit.update.aud-backers' }
       })
     ];
   }

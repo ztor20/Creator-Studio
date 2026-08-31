@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：這頁住在 docs/，資產、store 與 iframe 都以 r2.3 根為準（與 sheet-button-tuner 同一組相對路徑）。
+     副作用：純 #hash 連結會被 base 解析成換頁，所以本頁不用裸 #anchor。 -->
+<base href="../">
+<title>調參器 · 新版總覽的背景</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   調參器（lab）· 新版總覽（home-canvas.html）的背景四層
+
+   這是實驗場不是正式層：規則全部 lab- 前綴、收在本頁內，不建 ds-components、
+   不定義新 token。調出定案值之後，由人把「輸出」那段貼回 canvas-stage.css。
+
+   預覽用 iframe 開真正的那一頁，不是另做一個替身：要判斷的是「左欄的字在這張
+   底圖上讀不讀得到」，替身做得再像，字的位置、字級、壓底的落點都不會一樣。
+   同源，所以本頁可以直接把一段 <style> 塞進 iframe 裡即時改樣式。
+   ════════════════════════════════════════════════════════════════════ */
+
+.lab-body {
+  margin: 0;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  background-color: var(--ztu-canvas);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+}
+@media (max-width: 1100px) { .lab-body { grid-template-columns: 1fr; height: auto; } }
+
+/* ── 左：控制欄 ─────────────────────────────────────────── */
+.lab-panel {
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px 20px 64px;
+  background: #111110;
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+.lab-panel h1 { font-size: 18px; font-weight: 500; margin: 0 0 4px; letter-spacing: .2px; }
+.lab-lede { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 18px; }
+.lab-group { margin-bottom: 24px; }
+.lab-group__title {
+  font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--brand-ink); margin: 0 0 4px;
+}
+.lab-group__note { font-size: 11px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 10px; }
+.lab-row { display: grid; grid-template-columns: 1fr 22px 58px; gap: 6px 8px; align-items: center; margin-bottom: 10px; }
+.lab-row label { font-size: 12px; color: var(--foreground); }
+.lab-row output { font-size: 11px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+.lab-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ztu-orange); }
+.lab-row.is-off { opacity: .4; }
+.lab-reset {
+  width: 20px; height: 20px; padding: 0; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 6px;
+  background: none; color: var(--muted-foreground);
+  font-size: 11px; cursor: pointer;
+}
+.lab-reset:hover { background: var(--ztu-film); color: var(--foreground); }
+.lab-reset.is-dirty { border-color: var(--ztu-orange); color: var(--ztu-orange); }
+
+/* 層次圖例＋開關：每一層都可以單獨關掉，關掉才看得出它到底在做什麼 */
+.lab-layers { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: rgba(255,255,255,.03); }
+.lab-layer { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; line-height: 1.6; color: var(--muted-foreground); padding: 5px 0; cursor: pointer; }
+.lab-layer input { accent-color: var(--ztu-orange); margin-top: 2px; }
+.lab-layer b { color: var(--foreground); font-weight: 500; }
+.lab-layer code { font-size: 10px; color: var(--muted-foreground); }
+
+/* 背景圖選單：縮圖直接選，換一張立刻套用到預覽 */
+.lab-shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.lab-shot {
+  position: relative; aspect-ratio: 1; padding: 0; border: 0; cursor: pointer;
+  border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.05);
+  outline: 2px solid transparent; outline-offset: 1px;
+}
+.lab-shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lab-shot--active { outline-color: var(--ztu-orange); }
+.lab-shot__tag {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 4px;
+  font-size: 9px; line-height: 1.3; color: #fff; text-align: left;
+  background: linear-gradient(to top, rgba(0,0,0,.8), transparent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lab-swatch { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted-foreground); margin: 10px 0 12px; }
+.lab-swatch i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2); }
+
+.lab-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 10px; }
+.lab-out {
+  width: 100%; min-height: 220px; box-sizing: border-box;
+  background: #0a0a09; color: #d7d7d2;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 10px;
+  padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; line-height: 1.65; white-space: pre; overflow: auto;
+}
+
+/* ── 右：預覽 ───────────────────────────────────────────── */
+.lab-view { position: relative; height: 100vh; background: #000; }
+.lab-view iframe { width: 100%; height: 100%; border: 0; display: block; }
+.lab-view__hint {
+  position: absolute; left: 12px; bottom: 12px; z-index: 2;
+  font-size: 11px; color: rgba(255,255,255,.55);
+  background: rgba(0,0,0,.45); border-radius: 8px; padding: 4px 8px;
+  backdrop-filter: blur(8px);
+}
+</style>
+</head>
+
+<body class="lab-body">
+
+<aside class="lab-panel">
+  <h1>背景調參器</h1>
+  <p class="lab-lede">新版總覽（<code>home-canvas.html</code>）的底圖是四層疊起來的。右邊是真的那一頁，改任何一根滑桿都即時生效；定案後按「複製 CSS」把輸出貼回 <code>ds-components/canvas-stage.css</code>。</p>
+
+  <div class="lab-group">
+    <p class="lab-group__title">層次與開關</p>
+    <p class="lab-group__note">由下到上。取消勾選＝暫時關掉那一層，用來確認每一層各自在做什麼。</p>
+    <div class="lab-layers">
+      <label class="lab-layer"><input type="checkbox" id="L-tint" checked><span><b>1 主色鋪底</b>（已上線）<br><code>由這張圖算出的平均色鋪成漸層</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-bg" checked><span><b>2 模糊底層</b> <code>.canvas-stage__bg</code><br><code>同一張圖鋪滿視窗、放大模糊</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-img" checked><span><b>3 清晰主視覺</b> <code>.canvas-stage__img</code><br><code>貼右緣、左緣用遮罩溶掉</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-scrim" checked><span><b>4 壓底漸層</b> <code>.canvas-stage__scrim</code><br><code>左濃右淡＋底部一道</code></span></label>
+      <label class="lab-layer"><input type="checkbox" id="L-rail" checked><span><b>＋ 左欄與浮層</b><br><code>關掉只看純背景</code></span></label>
+    </div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">背景圖</p>
+    <p class="lab-group__note">站上實際有的主視覺（作品／商品／活動）。選一張就同時換掉第 2、3 層。</p>
+    <div class="lab-shots" id="shots"></div>
+    <div class="lab-swatch"><i id="tint-swatch"></i><span id="tint-label">主色 —</span></div>
+  </div>
+
+  <div class="lab-group" data-layer="tint">
+    <p class="lab-group__title">1 主色鋪底</p>
+    <p class="lab-group__note">從這張圖算出的平均色，鋪成一整面漸層。它沒有局部明暗，所以永遠不會出現「黑一塊」。<b>2026-08-31 已上線</b>：正式頁面由 JS 逐張算色寫進 <code>--canvas-tint</code>（見 components.js 的 `canvasTint`），這裡的三根滑桿調的是漸層本身（亮度、角度、末端淡出），調完把那三個數字反映到 `canvas-stage.css` 的 <code>.canvas-stage</code>。</p>
+    <div class="lab-row"><label for="tintL">亮度</label><button class="lab-reset" data-for="tintL">↺</button><output id="tintL-o"></output><input type="range" id="tintL" min="20" max="200" step="5"></div>
+    <div class="lab-row"><label for="tintA">角度</label><button class="lab-reset" data-for="tintA">↺</button><output id="tintA-o"></output><input type="range" id="tintA" min="0" max="360" step="5"></div>
+    <div class="lab-row"><label for="tintF">末端淡出</label><button class="lab-reset" data-for="tintF">↺</button><output id="tintF-o"></output><input type="range" id="tintF" min="0" max="100" step="5"></div>
+  </div>
+
+  <div class="lab-group" data-layer="bg">
+    <p class="lab-group__title">2 模糊底層</p>
+    <p class="lab-group__note">模糊愈輕，原圖的輪廓保留愈多——那正是「黑一塊」的來源：圖左半的深色會糊成一團看得出形狀的雲。</p>
+    <div class="lab-row"><label for="blur">模糊</label><button class="lab-reset" data-for="blur">↺</button><output id="blur-o"></output><input type="range" id="blur" min="0" max="200" step="2"></div>
+    <div class="lab-row"><label for="bright">亮度</label><button class="lab-reset" data-for="bright">↺</button><output id="bright-o"></output><input type="range" id="bright" min="50" max="200" step="1"></div>
+    <div class="lab-row"><label for="contrast">對比</label><button class="lab-reset" data-for="contrast">↺</button><output id="contrast-o"></output><input type="range" id="contrast" min="20" max="150" step="1"></div>
+    <div class="lab-row"><label for="sat">彩度</label><button class="lab-reset" data-for="sat">↺</button><output id="sat-o"></output><input type="range" id="sat" min="0" max="250" step="5"></div>
+    <div class="lab-row"><label for="opa">不透明度</label><button class="lab-reset" data-for="opa">↺</button><output id="opa-o"></output><input type="range" id="opa" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="scale">放大</label><button class="lab-reset" data-for="scale">↺</button><output id="scale-o"></output><input type="range" id="scale" min="100" max="250" step="1"></div>
+  </div>
+
+  <div class="lab-group" data-layer="img">
+    <p class="lab-group__title">3 清晰主視覺</p>
+    <p class="lab-group__note"><b>先調「寬度」，不是「寬度上限」。</b>上限是天花板：圖的寬度平常由<em>高度 × 自己的比例</em>決定（正方素材在 900 高的視窗上就是 900px＝約 63%），上限比它大就完全不起作用——這就是為什麼把上限拉到 83、84% 以後畫面不再變。要真的變寬請動「寬度」，它直接指定寬度，多出來的部分由 <code>cover</code> 裁切，留下哪一段看下面的裁切位置。<br>高度收到 100% 以下時，圖不再貼滿一屏、底部會露出模糊層。遮罩斜坡愈長，交界愈像景深、愈不像接縫。</p>
+    <div class="lab-row"><label for="imgfw">寬度</label><button class="lab-reset" data-for="imgfw">↺</button><output id="imgfw-o"></output><input type="range" id="imgfw" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="imgw">寬度上限</label><button class="lab-reset" data-for="imgw">↺</button><output id="imgw-o"></output><input type="range" id="imgw" min="40" max="100" step="1"></div>
+    <div class="lab-row"><label for="mask0">遮罩起點</label><button class="lab-reset" data-for="mask0">↺</button><output id="mask0-o"></output><input type="range" id="mask0" min="0" max="40" step="1"></div>
+    <div class="lab-row"><label for="mask1">遮罩終點</label><button class="lab-reset" data-for="mask1">↺</button><output id="mask1-o"></output><input type="range" id="mask1" min="10" max="100" step="1"></div>
+    <div class="lab-row"><label for="imgh">高度</label><button class="lab-reset" data-for="imgh">↺</button><output id="imgh-o"></output><input type="range" id="imgh" min="50" max="100" step="1"></div>
+    <div class="lab-row"><label for="posx">裁切位置 ↔</label><button class="lab-reset" data-for="posx">↺</button><output id="posx-o"></output><input type="range" id="posx" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="posy">裁切位置 ↕</label><button class="lab-reset" data-for="posy">↺</button><output id="posy-o"></output><input type="range" id="posy" min="0" max="100" step="1"></div>
+  </div>
+
+  <div class="lab-group" data-layer="scrim">
+    <p class="lab-group__title">4 壓底漸層</p>
+    <p class="lab-group__note">左三分之一是左欄每一行字的落點，那一段必須夠暗。<b>右緣另有一道</b>：右邊那一排是白字浮在照片上，遇到亮色主視覺整排會消失，所以同樣要壓一段——但只壓到四成寬，再往左會把中間的主體也吃掉。</p>
+    <div class="lab-row"><label for="s0">左端濃度</label><button class="lab-reset" data-for="s0">↺</button><output id="s0-o"></output><input type="range" id="s0" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="s1">第二段濃度</label><button class="lab-reset" data-for="s1">↺</button><output id="s1-o"></output><input type="range" id="s1" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="p1">第二段位置</label><button class="lab-reset" data-for="p1">↺</button><output id="p1-o"></output><input type="range" id="p1" min="0" max="60" step="1"></div>
+    <div class="lab-row"><label for="s2">第三段濃度</label><button class="lab-reset" data-for="s2">↺</button><output id="s2-o"></output><input type="range" id="s2" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="p2">第三段位置</label><button class="lab-reset" data-for="p2">↺</button><output id="p2-o"></output><input type="range" id="p2" min="10" max="80" step="1"></div>
+    <div class="lab-row"><label for="s3">第四段濃度</label><button class="lab-reset" data-for="s3">↺</button><output id="s3-o"></output><input type="range" id="s3" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="p3">第四段位置</label><button class="lab-reset" data-for="p3">↺</button><output id="p3-o"></output><input type="range" id="p3" min="20" max="95" step="1"></div>
+    <div class="lab-row"><label for="pend">收尾位置</label><button class="lab-reset" data-for="pend">↺</button><output id="pend-o"></output><input type="range" id="pend" min="30" max="100" step="1"></div>
+    <div class="lab-row"><label for="sb">底部濃度</label><button class="lab-reset" data-for="sb">↺</button><output id="sb-o"></output><input type="range" id="sb" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="pb">底部高度</label><button class="lab-reset" data-for="pb">↺</button><output id="pb-o"></output><input type="range" id="pb" min="5" max="80" step="1"></div>
+    <div class="lab-row"><label for="sr">右端濃度</label><button class="lab-reset" data-for="sr">↺</button><output id="sr-o"></output><input type="range" id="sr" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="sr2">右段中間濃度</label><button class="lab-reset" data-for="sr2">↺</button><output id="sr2-o"></output><input type="range" id="sr2" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="pr">右段寬度</label><button class="lab-reset" data-for="pr">↺</button><output id="pr-o"></output><input type="range" id="pr" min="10" max="70" step="1"></div>
+    <div class="lab-row"><label for="vig">暗角濃度</label><button class="lab-reset" data-for="vig">↺</button><output id="vig-o"></output><input type="range" id="vig" min="0" max="100" step="1"></div>
+    <div class="lab-row"><label for="vigr">暗角範圍</label><button class="lab-reset" data-for="vigr">↺</button><output id="vigr-o"></output><input type="range" id="vigr" min="30" max="100" step="1"></div>
+    <div class="lab-row"><label for="vigx">暗角中心 ↔</label><button class="lab-reset" data-for="vigx">↺</button><output id="vigx-o"></output><input type="range" id="vigx" min="0" max="100" step="1"></div>
+  </div>
+
+  <div class="lab-actions">
+    <button class="btn btn--primary btn--sm" id="copy">複製 CSS</button>
+    <button class="btn btn--outline btn--sm" id="reset">全部重置</button>
+  </div>
+  <textarea class="lab-out" id="out" readonly></textarea>
+</aside>
+
+<div class="lab-view">
+  <iframe id="view" src="home-canvas.html" title="新版總覽預覽"></iframe>
+  <div class="lab-view__hint">預覽是真的那一頁：左欄、壓底、字級都與正式一致</div>
+</div>
+
+<!-- 三個資料 store：縮圖清單與畫布用的是同一批素材，不另外編一份 -->
+<script src="js/projects-store.js"></script>
+<script src="js/work-review-store.js"></script>
+<script src="js/products-store.js"></script>
+<script src="js/events-store.js"></script>
+<script>
+(function () {
+  /* ── 現行值＝canvas-stage.css 此刻的定案值。「重置」回到這裡，不是回到 0。
+     ⚠ 定案值改進 canvas-stage.css 之後，這一份也要跟著改：調參器一開啟就會用
+       自己的值覆蓋整頁，兩邊不同步時，這裡看到的會是舊畫面、正式頁卻已經新了
+       （2026-08-31 踩過：值已上線，使用者在調參器裡看還是舊的）。
+     最後同步：2026-08-31（blur 174 / 亮度 1.5 / 不透明度 0.6 / 放大 1 / 寬度 72%（上限解除） / 遮罩 0–30 / 暗角 82 / 右緣 66–41）。 ── */
+  var BASE = {
+    blur: 174, bright: 150, contrast: 85, sat: 130, opa: 60, scale: 100,
+    imgw: 84, mask0: 0, mask1: 30, imgh: 100, posx: 50, posy: 50, imgfw: 72,
+    s0: 100, s1: 90, p1: 16, s2: 60, p2: 34, s3: 26, p3: 54, pend: 74,
+    sb: 55, pb: 32, sr: 66, sr2: 41, pr: 40, vig: 82, vigr: 72, vigx: 60,
+    tintL: 100, tintA: 135, tintF: 70
+  };
+  var KEYS = Object.keys(BASE);
+  var val = {}; KEYS.forEach(function (k) { val[k] = BASE[k]; });
+  var layers = { tint: true, bg: true, img: true, scrim: true, rail: true };
+  var current = null;          // 目前選的背景圖 { img, title }
+  var tint = '#3a4a55';        // 目前這張圖的平均色
+
+  var view = document.getElementById('view');
+  var out = document.getElementById('out');
+
+  /* ── 素材清單：與畫布同一批來源（作品／商品／活動），順序也一樣 ── */
+  function shots() {
+    var list = [], api = window.ztorProjects;
+    if (api) api.list().forEach(function (p) {
+      var img = p.poster || p.cover; if (!img) return;
+      var nm = api.nameLabel(p);
+      list.push({ img: img, title: nm.zh || nm.en });
+    });
+    var P = window.ZTOR_PRODUCTS;
+    if (P) Object.keys(P).forEach(function (k) {
+      var pr = P[k]; if (!pr || !pr.img) return;
+      list.push({ img: 'images/products/' + pr.img, title: pr.name });
+    });
+    var ev = window.ztorEvents;
+    if (ev) ev.list().forEach(function (e) {
+      var img = e.images && e.images.keyvisual; if (!img) return;
+      list.push({ img: img, title: e.name });
+    });
+    /* 同一張圖只留一次：商品與作品常共用同一個檔 */
+    var seen = {}, uniq = [];
+    list.forEach(function (it) { if (seen[it.img]) return; seen[it.img] = 1; uniq.push(it); });
+    return uniq;
+  }
+
+  /* 平均色：把圖畫進 1×1 的畫布讓瀏覽器自己做平均。同源，所以讀得到像素。
+     這是「主色鋪底」那一層的顏色來源，也是判斷這張圖會不會糊出暗塊的線索。 */
+  function averageColor(src, cb) {
+    var im = new Image();
+    im.onload = function () {
+      try {
+        var c = document.createElement('canvas'); c.width = 1; c.height = 1;
+        var x = c.getContext('2d'); x.drawImage(im, 0, 0, 1, 1);
+        var d = x.getImageData(0, 0, 1, 1).data;
+        cb('#' + [d[0], d[1], d[2]].map(function (n) { return ('0' + n.toString(16)).slice(-2); }).join(''));
+      } catch (e) { cb('#3a4a55'); }
+    };
+    im.onerror = function () { cb('#3a4a55'); };
+    im.src = src;
+  }
+
+  function renderShots() {
+    var wrap = document.getElementById('shots'), list = shots();
+    wrap.innerHTML = list.map(function (it, i) {
+      return '<button type="button" class="lab-shot" data-i="' + i + '" title="' + it.title + '">'
+        + '<img src="' + it.img + '" alt="" loading="lazy">'
+        + '<span class="lab-shot__tag">' + it.title + '</span></button>';
+    }).join('');
+    wrap.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-i]'); if (!b) return;
+      pick(list[+b.getAttribute('data-i')]);
+      wrap.querySelectorAll('.lab-shot').forEach(function (x) { x.classList.toggle('lab-shot--active', x === b); });
+    });
+    return list;
+  }
+
+  function pick(it) {
+    current = it;
+    averageColor(it.img, function (hex) {
+      tint = hex;
+      document.getElementById('tint-swatch').style.background = hex;
+      document.getElementById('tint-label').textContent = '主色 ' + hex;
+      apply();
+    });
+    apply();
+  }
+
+  /* ── 產出要塞進 iframe 的 CSS ────────────────────────────────
+     只寫覆蓋，不重寫整支：這樣關掉調參器（重新整理）就回到正式值。 */
+  function css() {
+    var v = val, L = layers;
+    var scrimH = 'linear-gradient(to right,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.s0 + '%, transparent) 0%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.s1 + '%, transparent) ' + v.p1 + '%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.s2 + '%, transparent) ' + v.p2 + '%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.s3 + '%, transparent) ' + v.p3 + '%,'
+      + ' transparent ' + v.pend + '%)';
+    var scrimV = 'linear-gradient(to top, color-mix(in srgb, var(--scrim-media) ' + v.sb + '%, transparent) 0%, transparent ' + v.pb + '%)';
+    var vignette = 'radial-gradient(ellipse ' + v.vigr + '% ' + Math.round(v.vigr * 1.14) + '% at ' + v.vigx + '% 52%,'
+      + ' transparent 0%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + Math.round(v.vig / 3) + '%, transparent) 58%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.vig + '%, transparent) 100%)';
+    var scrimR = 'linear-gradient(to left,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.sr + '%, transparent) 0%,'
+      + ' color-mix(in srgb, var(--scrim-media) ' + v.sr2 + '%, transparent) 18%,'
+      + ' transparent ' + v.pr + '%)';
+    var s = '';
+    /* 1 主色鋪底：畫在舞台自己身上（它原本沒有底色，透出來的是頁面底） */
+    s += '.canvas-stage { background:' + (L.tint
+      ? ' linear-gradient(' + v.tintA + 'deg, color-mix(in srgb, ' + tint + ' ' + v.tintL + '%, black) 0%,'
+        + ' color-mix(in srgb, ' + tint + ' ' + Math.round(v.tintL * v.tintF / 100) + '%, black) 100%)'
+      : ' none') + '; }\n';
+    s += '.canvas-stage__bg {'
+      + ' display:' + (L.bg ? 'block' : 'none') + ';'
+      + ' transform: scale(' + (v.scale / 100) + ');'
+      + ' filter: blur(' + v.blur + 'px) saturate(' + (v.sat / 100) + ') brightness(' + (v.bright / 100) + ') contrast(' + (v.contrast / 100) + ');'
+      + ' opacity:' + (v.opa / 100) + '; }\n';
+    s += '.canvas-stage__img {'
+      + ' display:' + (L.img ? 'block' : 'none') + ';'
+      /* 指定了寬度就把上限拿掉：`max-width` 會壓過 `width`，兩個一起留著時，
+         寬度拉過上限之後畫面就不動了（實測拉到 90% 仍停在上限的 84%）。 */
+      + ' max-width:' + (v.imgfw ? 'none' : v.imgw + '%') + ';'
+      + ' width:' + (v.imgfw ? v.imgfw + '%' : 'auto') + ';'
+      + ' height:' + v.imgh + '%;'
+      + ' object-position:' + v.posx + '% ' + v.posy + '%;'
+      + ' -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent ' + v.mask0 + '%, var(--foreground) ' + v.mask1 + '%);'
+      + ' mask-image: linear-gradient(to right, transparent 0%, transparent ' + v.mask0 + '%, var(--foreground) ' + v.mask1 + '%); }\n';
+    s += '.canvas-stage__scrim {'
+      + ' display:' + (L.scrim ? 'block' : 'none') + ';'
+      + ' background: ' + vignette + ', ' + scrimH + ', ' + scrimR + ', ' + scrimV + '; }\n';
+    s += '.canvas-home__rail, .canvas-home__overlay, .canvas-home__bar {'
+      + ' visibility:' + (L.rail ? 'visible' : 'hidden') + '; }\n';
+    return s;
+  }
+
+  function apply() {
+    var doc = view.contentDocument; if (!doc) return;
+    var tag = doc.getElementById('lab-bg');
+    if (!tag) { tag = doc.createElement('style'); tag.id = 'lab-bg'; }
+    tag.textContent = css();
+    /* 每次都重新 append：`appendChild` 對已在文件裡的節點是「搬到最後」。
+       這一層與正式規則的權重相同（都是單一 class），誰在後面誰贏——而第一次
+       套用往往發生在 iframe 還在解析 <head> 的時候，那時插進去的 style 會被
+       後面才解析到的 <link> 蓋掉（2026-08-31 踩過：滑桿動了、注入的字串也對，
+       畫面卻不動）。 */
+    doc.head.appendChild(tag);
+    if (current) {
+      var bg = doc.querySelector('.canvas-stage__bg'), im = doc.querySelector('.canvas-stage__img');
+      if (bg) bg.src = current.img;
+      if (im) im.src = current.img;
+    }
+    out.value = outputCSS();
+    KEYS.forEach(function (k) {
+      var b = document.querySelector('.lab-reset[data-for="' + k + '"]');
+      if (b) b.classList.toggle('is-dirty', val[k] !== BASE[k]);
+    });
+    document.querySelectorAll('.lab-group[data-layer]').forEach(function (g) {
+      g.style.opacity = layers[g.getAttribute('data-layer')] ? '1' : '.45';
+    });
+    /* 指定寬度之後上限那一根就不再有作用，把它變灰讓人知道現在動它沒有用。 */
+    var capRow = document.getElementById('imgw');
+    if (capRow) capRow.closest('.lab-row').classList.toggle('is-off', !!val.imgfw);
+  }
+
+  /* 「複製 CSS」給的是可以直接貼回 canvas-stage.css 的三個宣告區塊 */
+  function outputCSS() {
+    var v = val;
+    var l = [];
+    l.push('/* canvas-stage.css — 調參器（docs/canvas-bg-tuner.html）產出 */');
+    l.push('.canvas-stage__bg {');
+    l.push('  transform: scale(' + (v.scale / 100) + ');');
+    l.push('  filter: blur(' + v.blur + 'px) saturate(' + (v.sat / 100) + ') brightness(' + (v.bright / 100) + ') contrast(' + (v.contrast / 100) + ');');
+    l.push('  opacity: ' + (v.opa / 100) + ';');
+    l.push('}');
+    l.push('.canvas-stage__img {');
+    l.push('  max-width: ' + (v.imgfw ? 'none' : v.imgw + '%') + ';');
+    l.push('  width: ' + (v.imgfw ? v.imgfw + '%' : 'auto') + ';');
+    l.push('  height: ' + v.imgh + '%;');
+    l.push('  object-position: ' + v.posx + '% ' + v.posy + '%;');
+    l.push('  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent ' + v.mask0 + '%, var(--foreground) ' + v.mask1 + '%);');
+    l.push('          mask-image: linear-gradient(to right, transparent 0%, transparent ' + v.mask0 + '%, var(--foreground) ' + v.mask1 + '%);');
+    l.push('}');
+    l.push('.canvas-stage__scrim {');
+    l.push('  background:');
+    l.push('    radial-gradient(ellipse ' + v.vigr + '% ' + Math.round(v.vigr * 1.14) + '% at ' + v.vigx + '% 52%,');
+    l.push('      transparent 0%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + Math.round(v.vig / 3) + '%, transparent) 58%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.vig + '%, transparent) 100%),');
+    l.push('    linear-gradient(to right,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.s0 + '%, transparent) 0%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.s1 + '%, transparent) ' + v.p1 + '%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.s2 + '%, transparent) ' + v.p2 + '%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.s3 + '%, transparent) ' + v.p3 + '%,');
+    l.push('      transparent ' + v.pend + '%),');
+    l.push('    linear-gradient(to left,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.sr + '%, transparent) 0%,');
+    l.push('      color-mix(in srgb, var(--scrim-media) ' + v.sr2 + '%, transparent) 18%,');
+    l.push('      transparent ' + v.pr + '%),');
+    l.push('    linear-gradient(to top, color-mix(in srgb, var(--scrim-media) ' + v.sb + '%, transparent) 0%, transparent ' + v.pb + '%);');
+    l.push('}');
+    if (layers.tint) {
+      l.push('.canvas-stage {');
+      l.push('  background: linear-gradient(' + v.tintA + 'deg,');
+      l.push('    color-mix(in srgb, var(--canvas-tint, var(--ztu-canvas)) ' + v.tintL + '%, black) 0%,');
+      l.push('    color-mix(in srgb, var(--canvas-tint, var(--ztu-canvas)) '
+        + Math.round(v.tintL * v.tintF / 100) + '%, black) 100%);');
+      l.push('}');
+      l.push('/* 顏色本身不寫進 CSS：`--canvas-tint` 由 JS 逐張算（components.js 的 canvasTint）。');
+      l.push('   這張圖現在算出來是 ' + tint + '，只供對照。 */');
+    }
+    return l.join('\n');
+  }
+
+  /* ── 綁定 ─────────────────────────────────────────────── */
+  KEYS.forEach(function (k) {
+    var el = document.getElementById(k); if (!el) return;
+    el.value = val[k];
+    var o = document.getElementById(k + '-o');
+    function sync() {
+      val[k] = +el.value;
+      if (o) o.textContent = (k === 'imgfw' && !val[k] ? '自動'
+        : k === 'blur' ? val[k] + 'px'
+        : /^(bright|contrast|sat|opa|scale|tintL)$/.test(k) ? (val[k] / 100).toFixed(2)
+        : val[k] + (k === 'tintA' ? '\u00b0' : '%'));
+      apply();
+    }
+    el.addEventListener('input', sync);
+    sync();
+  });
+  document.querySelectorAll('.lab-reset').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-for');
+      var el = document.getElementById(k); if (!el) return;
+      el.value = BASE[k]; el.dispatchEvent(new Event('input'));
+    });
+  });
+  Object.keys(layers).forEach(function (k) {
+    var el = document.getElementById('L-' + k); if (!el) return;
+    el.checked = layers[k];
+    el.addEventListener('change', function () { layers[k] = el.checked; apply(); });
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    KEYS.forEach(function (k) {
+      var el = document.getElementById(k); if (!el) return;
+      el.value = BASE[k]; el.dispatchEvent(new Event('input'));
+    });
+  });
+  document.getElementById('copy').addEventListener('click', function () {
+    out.select(); document.execCommand('copy');
+    var b = this, t = b.textContent; b.textContent = '已複製';
+    setTimeout(function () { b.textContent = t; }, 1200);
+  });
+
+  /* iframe 內容一換掉（切作品、切語言、重新整理）就把調參器的設定補回去：
+     那一層樣式住在 iframe 的 <head>，頁面重畫時會連同整份文件一起被丟掉。 */
+  /* 站上的 `theme.js` 只要發現自己在別人的 iframe 裡就標 `data-embed`（詳情浮層的
+     內嵌模式），那會收掉外殼的高度鎖與側欄——預覽因此不是正式頁面的樣子。
+     拿掉標記再補一次 `resize`，讓頁面自己的版面計算重新算一遍。 */
+  function unembed(doc, win) {
+    if (!doc || !doc.documentElement.hasAttribute('data-embed')) return;
+    doc.documentElement.removeAttribute('data-embed');
+    try { win.dispatchEvent(new Event('resize')); } catch (e) {}
+  }
+
+  view.addEventListener('load', function () {
+    unembed(view.contentDocument, view.contentWindow);
+    apply();
+    var doc = view.contentDocument;
+    var stage = doc && doc.querySelector('.canvas-home__stage');
+    if (stage && window.MutationObserver) {
+      new MutationObserver(function () { apply(); }).observe(stage, { childList: true, subtree: true });
+    }
+  });
+
+  var list = renderShots();
+  if (list.length) {
+    var first = document.querySelector('.lab-shot');
+    if (first) first.classList.add('lab-shot--active');
+    pick(list[0]);
+  }
+})();
+</script>
+</body>
+</html>

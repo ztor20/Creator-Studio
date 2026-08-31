@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- base：住在 docs/，資產與 iframe 都以 r2.3 根為準（與另外兩支調參器同一組相對路徑）。 -->
+<base href="../">
+<title>調參器 · 圖表色票與分段條</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css">
+<link rel="stylesheet" href="ds-components/fonts.css">
+<link rel="stylesheet" href="ds-components/button.css">
+<link rel="stylesheet" href="ds-components/split-bar.css">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   調參器（lab）· 圖表色票 `--chart-1…8` ＋ 分段條 `.split-bar` 的造型
+
+   實驗場不是正式層：規則全部 lab- 前綴、收在本頁內，不建元件也不改 token。
+   選定之後由人把「輸出」那段貼進 `_tokens.css`（深色區塊）與 `split-bar.css`。
+
+   ⚠ 這組色票是**全站共用**的：折線圖、圓餅、排行條、篩選膠囊都吃它
+   （chart.css / chart-tip.css / perf-rank.css / filter-tabs.css /
+   js/project-earnings-chart.js…）。換色票＝換整站的資料色，不只是這一條。
+   ════════════════════════════════════════════════════════════════════ */
+
+.lab-body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  background-color: var(--ztu-canvas);
+  color: var(--foreground);
+  font-family: var(--font-ui);
+}
+@media (max-width: 1100px) { .lab-body { grid-template-columns: 1fr; } }
+
+.lab-panel {
+  height: 100vh; overflow-y: auto; padding: 20px 20px 64px;
+  background: #111110; border-right: 1px solid rgba(255,255,255,.08);
+}
+.lab-panel h1 { font-size: 18px; font-weight: 500; margin: 0 0 4px; }
+.lab-lede { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 18px; }
+.lab-group { margin-bottom: 24px; }
+.lab-group__title { font-size: 11px; letter-spacing: .8px; text-transform: uppercase; color: var(--brand-ink); margin: 0 0 4px; }
+.lab-group__note { font-size: 11px; line-height: 1.6; color: var(--muted-foreground); margin: 0 0 10px; }
+
+/* 色票選單：一列一套，左邊是名字與說明、右邊是八色縮圖 */
+.lab-pal { display: flex; flex-direction: column; gap: 8px; }
+.lab-pal__item {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  padding: 10px 12px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03);
+  color: inherit; font-family: inherit;
+}
+.lab-pal__item--active { border-color: var(--ztu-orange); background: rgba(255,255,255,.06); }
+.lab-pal__name { font-size: 13px; margin-bottom: 2px; }
+.lab-pal__why { font-size: 11px; line-height: 1.55; color: var(--muted-foreground); }
+.lab-pal__chips { display: flex; gap: 3px; margin-top: 8px; }
+.lab-pal__chips i { flex: 1; height: 12px; border-radius: 3px; }
+
+/* 單色微調 */
+.lab-swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.lab-sw { display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: var(--muted-foreground); }
+.lab-sw input[type="color"] {
+  width: 100%; height: 30px; padding: 0; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: none;
+}
+
+.lab-row { display: grid; grid-template-columns: 1fr 58px; gap: 6px 8px; align-items: center; margin-bottom: 10px; }
+.lab-row label { font-size: 12px; }
+.lab-row output { font-size: 11px; color: var(--muted-foreground); text-align: right; font-variant-numeric: tabular-nums; }
+.lab-row input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ztu-orange); }
+
+.lab-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 10px; }
+.lab-out {
+  width: 100%; min-height: 240px; box-sizing: border-box;
+  background: #0a0a09; color: #d7d7d2; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px; padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.65;
+  white-space: pre; overflow: auto;
+}
+
+/* ── 右：變體長廊 ＋ 真頁預覽 ─────────────────────────── */
+.lab-view { height: 100vh; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.lab-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.lab-card {
+  padding: 16px; border-radius: 16px; cursor: pointer; text-align: left;
+  border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.03); color: inherit;
+  font-family: inherit;
+}
+.lab-card--active { border-color: var(--ztu-orange); background: rgba(255,255,255,.06); }
+.lab-card__name { font-size: 13px; margin-bottom: 2px; }
+.lab-card__why { font-size: 11px; line-height: 1.55; color: var(--muted-foreground); margin-bottom: 12px; }
+.lab-frame { flex: none; height: 620px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); }
+.lab-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.lab-hint { font-size: 11px; color: var(--muted-foreground); }
+</style>
+</head>
+
+<body class="lab-body">
+
+<aside class="lab-panel">
+  <h1>圖表色票與分段條</h1>
+  <p class="lab-lede">左邊挑色票、右邊挑分段條的造型，兩者都即時套進下方那一頁（真的 <code>home-canvas.html</code>）。<b>這組色票是全站共用的</b>——折線圖、圓餅、排行條、篩選膠囊都吃它，換色票等於換整站的資料色。</p>
+
+  <div class="lab-group">
+    <p class="lab-group__title">色票</p>
+    <p class="lab-group__note">五套提案。每一套的第一色都保留 ztor 橘，那是品牌色、也是站上「第一順位」的既定語彙。</p>
+    <div class="lab-pal" id="pals"></div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">單色微調</p>
+    <p class="lab-group__note">選定一套之後，個別顏色可以再調。改過的值會一起寫進輸出。</p>
+    <div class="lab-swatches" id="sws"></div>
+  </div>
+
+  <div class="lab-group">
+    <p class="lab-group__title">分段條尺寸</p>
+    <div class="lab-row"><label for="h">高度</label><output id="h-o"></output><input type="range" id="h" min="3" max="24" step="1"></div>
+    <div class="lab-row"><label for="r">圓角</label><output id="r-o"></output><input type="range" id="r" min="0" max="12" step="1"></div>
+    <div class="lab-row"><label for="g">段間距</label><output id="g-o"></output><input type="range" id="g" min="0" max="8" step="1"></div>
+    <div class="lab-row"><label for="d">圖例色點</label><output id="d-o"></output><input type="range" id="d" min="4" max="14" step="1"></div>
+  </div>
+
+  <div class="lab-actions">
+    <button class="btn btn--primary btn--sm" id="copy">複製 CSS</button>
+    <button class="btn btn--outline btn--sm" id="reset">全部重置</button>
+  </div>
+  <textarea class="lab-out" id="out" readonly></textarea>
+</aside>
+
+<div class="lab-view">
+  <p class="lab-hint">分段條的五種造型（點一張套用；底下的預覽會跟著換）</p>
+  <div class="lab-gallery" id="gallery"></div>
+  <p class="lab-hint">真頁預覽：色票與造型都已套用</p>
+  <div class="lab-frame"><iframe id="view" src="home-canvas.html" title="新版總覽預覽"></iframe></div>
+</div>
+
+<script>
+(function () {
+  /* ── 五套色票 ────────────────────────────────────────────
+     每一套八色，對應 `--chart-1…8`（深色主題的值）。第一色一律是 ztor 橘：
+     它是品牌色，也是站上「第一順位」的既定語彙，換掉會連帶動到很多既有畫面。 */
+  var PALETTES = [
+    { id: 'base', name: 'A 現況（Baseline）',
+      why: '站上現在這一套。彩度高、色相分得開，缺點是綠與站上的「成功」狀態色撞在一起，讀者會把某一段誤讀成「這一段是好的」。',
+      colors: ['#FFA33F', '#5896F3', '#4ADE80', '#F3CF58', '#A78BFA', '#F472B6', '#22D3EE', '#C88B6A'] },
+    { id: 'ladder', name: 'B 品牌色階（單色相）',
+      why: '沿 ztor 橘往兩邊走的一條暖色階。優點：一條分段條讀起來是「同一件事的組成」，不是五個各自為政的類別；缺點：類別多的圖（八條線）會分不出來，適合這種「總量拆成幾塊」的場景，不適合折線圖。',
+      colors: ['#FFA33F', '#FFC98A', '#E07B4C', '#B8623F', '#8C6A57', '#D9A066', '#6E5445', '#4A3A32'] },
+    { id: 'duo', name: 'C 冷暖雙軸（避開綠）',
+      why: '暖的一半給收入類、冷的一半給人／流量類，中間不放綠——綠在站上代表「成功／已完成」，資料色再用一次會混淆。分得開，又不像 A 那樣五種原色一起喊。',
+      colors: ['#FFA33F', '#FFC46B', '#7FD3E8', '#4FA9D6', '#2E6FA8', '#C8B8FF', '#F49BB8', '#9AA7B5'] },
+    { id: 'muted', name: 'D 靜音玻璃（低彩度）',
+      why: '把 A 的每一色降彩度、提亮度，與 ztorUI 的深底玻璃同調。在滿版照片與玻璃卡上不會跳出來搶戲；代價是相鄰兩段的差異變小，很細的條要靠圖例才分得清。',
+      colors: ['#E8A75F', '#7FA5D8', '#79C6A3', '#E0CB7A', '#A493D6', '#D98CA8', '#74C1CF', '#B08A72'] },
+    { id: 'cud', name: 'E 色盲友善（Okabe-Ito 改）',
+      why: '取自色覺障礙友善的標準色組，依深底提亮。最保險的一套：紅綠色盲也分得出每一段；代價是黃與橘偏亮，畫面整體會比現在更「跳」。',
+      colors: ['#FFA33F', '#63C4F0', '#00C08B', '#F5E663', '#DE94BE', '#EE7733', '#3B9AE1', '#B0B0B0'] }
+  ];
+
+  /* ── 五種分段條造型 ──────────────────────────────────── */
+  var VARIANTS = [
+    { id: 'seg', name: '1 分段膠囊（現況）', why: '每一段自己是一顆膠囊，之間留 2px 的縫。縫用 gap 不用邊框——邊框會算進寬度、比例就不準。',
+      css: function (v) { return '.split-bar__track{height:' + v.h + 'px;gap:' + v.g + 'px;border-radius:0;background:none;overflow:visible}'
+        + '.split-bar__seg{border-radius:999px;min-width:4px}'; } },
+    { id: 'rail', name: '2 連續軌（無縫）', why: '整條是一根圓角軌，段與段直接相鄰、靠顏色分界。讀起來最像「一個總量」，但相鄰兩段明度接近時會黏成一段。',
+      css: function (v) { return '.split-bar__track{height:' + v.h + 'px;gap:0;border-radius:999px;overflow:hidden;background:var(--ztu-film)}'
+        + '.split-bar__seg{border-radius:0;min-width:2px}'; } },
+    { id: 'hair', name: '3 細線', why: '高度收到 4px、直角、1px 縫。最安靜的一種——它退到數字後面當註腳，不與大數字搶。',
+      css: function (v) { return '.split-bar__track{height:4px;gap:1px;border-radius:0;background:none;overflow:visible}'
+        + '.split-bar__seg{border-radius:0;min-width:3px}'; } },
+    { id: 'slab', name: '4 粗塊', why: '高度拉到 14px、小圓角、3px 縫。比例本身成為畫面的一個元素，適合這一格就是要講「組成」的時候。',
+      css: function (v) { return '.split-bar__track{height:14px;gap:3px;border-radius:0;background:none;overflow:visible}'
+        + '.split-bar__seg{border-radius:4px;min-width:6px}'; } },
+    { id: 'inset', name: '5 軌道底＋分段', why: '底下先鋪一條薄膜軌，分段坐在上面。多出來的資訊是「這條軌有多長」，在還沒填滿的情境（例如目標達成率）才有意義。',
+      css: function (v) { return '.split-bar__track{height:' + v.h + 'px;gap:' + v.g + 'px;border-radius:999px;background:var(--ztu-film);padding:2px;box-sizing:content-box;overflow:hidden}'
+        + '.split-bar__seg{border-radius:999px;min-width:4px}'; } }
+  ];
+
+  var BASE = { h: 8, r: 999, g: 2, d: 7 };
+  var state = { pal: 'base', variant: 'seg', colors: PALETTES[0].colors.slice(), h: 8, r: 999, g: 2, d: 7 };
+  var view = document.getElementById('view');
+  var out = document.getElementById('out');
+
+  function palById(id) { for (var i = 0; i < PALETTES.length; i++) if (PALETTES[i].id === id) return PALETTES[i]; return PALETTES[0]; }
+  function varById(id) { for (var i = 0; i < VARIANTS.length; i++) if (VARIANTS[i].id === id) return VARIANTS[i]; return VARIANTS[0]; }
+
+  function renderPals() {
+    document.getElementById('pals').innerHTML = PALETTES.map(function (p) {
+      return '<button type="button" class="lab-pal__item' + (p.id === state.pal ? ' lab-pal__item--active' : '') + '" data-pal="' + p.id + '">'
+        + '<div class="lab-pal__name">' + p.name + '</div>'
+        + '<div class="lab-pal__why">' + p.why + '</div>'
+        + '<div class="lab-pal__chips">' + p.colors.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</div>'
+        + '</button>';
+    }).join('');
+  }
+  function renderSwatches() {
+    document.getElementById('sws').innerHTML = state.colors.map(function (c, i) {
+      return '<label class="lab-sw">chart-' + (i + 1) + '<input type="color" value="' + c + '" data-ci="' + i + '"></label>';
+    }).join('');
+  }
+  function renderGallery() {
+    document.getElementById('gallery').innerHTML = VARIANTS.map(function (v) {
+      return '<button type="button" class="lab-card' + (v.id === state.variant ? ' lab-card--active' : '') + '" data-var="' + v.id + '">'
+        + '<div class="lab-card__name">' + v.name + '</div>'
+        + '<div class="lab-card__why">' + v.why + '</div>'
+        + '<div class="split-bar" data-demo="' + v.id + '">'
+        +   '<div class="split-bar__track">'
+        +     [28, 20, 14, 11, 27].map(function (n, i) { return '<span class="split-bar__seg" style="flex:' + n + ';background:' + state.colors[i] + '"></span>'; }).join('')
+        +   '</div>'
+        + '</div>'
+        + '</button>';
+    }).join('');
+    /* 長廊裡每一張各自套自己的造型：同一支 CSS 用屬性選擇器圈住範圍 */
+    var tag = document.getElementById('lab-gallery-css') || (function () {
+      var t = document.createElement('style'); t.id = 'lab-gallery-css'; document.head.appendChild(t); return t;
+    })();
+    tag.textContent = VARIANTS.map(function (v) {
+      return v.css(state).replace(/\.split-bar/g, '[data-demo="' + v.id + '"].split-bar, [data-demo="' + v.id + '"] .split-bar');
+    }).join('\n');
+  }
+
+  function css() {
+    var v = varById(state.variant);
+    var vars = state.colors.map(function (c, i) { return '--chart-' + (i + 1) + ':' + c + ';'; }).join('');
+    return ':root, html[data-theme="dark"]{' + vars + '}\n'
+      + v.css(state) + '\n'
+      + '.split-bar__dot{width:' + state.d + 'px;height:' + state.d + 'px}';
+  }
+  function outputCSS() {
+    var v = varById(state.variant);
+    var l = ['/* _tokens.css — 深色主題的圖表色票（調參器 docs/chart-palette-tuner.html 產出） */'];
+    state.colors.forEach(function (c, i) { l.push('  --chart-' + (i + 1) + ':           ' + c.toUpperCase() + ';'); });
+    l.push('');
+    l.push('/* split-bar.css — ' + v.name + ' */');
+    v.css(state).split('}').filter(Boolean).forEach(function (rule) {
+      var p = rule.split('{');
+      l.push(p[0].trim() + ' {');
+      p[1].split(';').filter(Boolean).forEach(function (d) { l.push('  ' + d.trim() + ';'); });
+      l.push('}');
+    });
+    l.push('.split-bar__dot { width: ' + state.d + 'px; height: ' + state.d + 'px; }');
+    l.push('');
+    l.push('/* ⚠ 這組色票全站共用（chart.css / chart-tip.css / perf-rank.css /');
+    l.push('   filter-tabs.css / project-earnings-chart.js…）。換色票要一起看那幾頁，');
+    l.push('   不是只看這一條分段條。淺色主題的那一組（_tokens.css 前段）另外調。 */');
+    return l.join('\n');
+  }
+
+  function apply() {
+    var doc = view.contentDocument; if (!doc) return;
+    var tag = doc.getElementById('lab-chart');
+    if (!tag) { tag = doc.createElement('style'); tag.id = 'lab-chart'; }
+    tag.textContent = css();
+    /* 每次都重新 append＝搬到最後：第一次套用常發生在 iframe 還在解析 <head>，
+       那時插進去的 style 會被後面才解析到的 <link> 蓋掉。 */
+    doc.head.appendChild(tag);
+    out.value = outputCSS();
+  }
+
+  document.getElementById('pals').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-pal]'); if (!b) return;
+    state.pal = b.getAttribute('data-pal');
+    state.colors = palById(state.pal).colors.slice();
+    renderPals(); renderSwatches(); renderGallery(); apply();
+  });
+  document.getElementById('sws').addEventListener('input', function (e) {
+    var i = e.target.getAttribute('data-ci'); if (i === null) return;
+    state.colors[+i] = e.target.value;
+    renderGallery(); apply();
+  });
+  document.getElementById('gallery').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-var]'); if (!b) return;
+    state.variant = b.getAttribute('data-var');
+    renderGallery(); apply();
+  });
+  ['h', 'r', 'g', 'd'].forEach(function (k) {
+    var el = document.getElementById(k); if (!el) return;
+    el.value = state[k] === 999 ? BASE[k] : state[k];
+    var o = document.getElementById(k + '-o');
+    function sync() { state[k] = +el.value; if (o) o.textContent = state[k] + 'px'; renderGallery(); apply(); }
+    el.addEventListener('input', sync); sync();
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    state = { pal: 'base', variant: 'seg', colors: PALETTES[0].colors.slice(), h: 8, r: 999, g: 2, d: 7 };
+    ['h', 'g', 'd'].forEach(function (k) { var el = document.getElementById(k); el.value = BASE[k]; });
+    renderPals(); renderSwatches(); renderGallery(); apply();
+  });
+  document.getElementById('copy').addEventListener('click', function () {
+    out.select(); document.execCommand('copy');
+    var b = this, t = b.textContent; b.textContent = '已複製';
+    setTimeout(function () { b.textContent = t; }, 1200);
+  });
+  view.addEventListener('load', apply);
+
+  renderPals(); renderSwatches(); renderGallery(); apply();
+})();
+</script>
+</body>
+</html>
