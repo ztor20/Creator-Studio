@@ -2,17 +2,18 @@
    nest.css · 巢狀層（卡片內的滿版子層）
    ------------------------------------------------------------
    一塊嵌在母卡「底部」的子區塊：左右與下緣切齊母卡外緣（滿版出血），
-   靠一道向上打的陰影跟母卡面分開。用在「切換某個模式後，下方長出一整組
+   上緣兩個圓角外露、其餘三邊被母卡裁齊。用在「切換某個模式後，下方長出一整組
    設定表單」的情境——例如建立商品的商品選項切到「多選項」後出現的選項建構器。
-   對齊 Figma node 856:27798（2026-07-21 使用者裁示）。
+   對齊 Figma node 856:27798（2026-07-21 使用者裁示）；
+   Q71 定案 2026-08-25：拿掉向上陰影、改用上緣髮絲線分層，左右下三邊貼齊母卡外緣。
 
-     .form-section--outlined        母卡（padding: --sp-16、radius --radius-xl）
+     .form-section--outlined        母卡（padding: --sp-16、radius --radius-xl、須 overflow:hidden）
        .nest                        巢狀層：負 margin 抵銷母卡 padding → 滿版貼齊
 
    ---- 與 .card--muted 的分工（同為「卡中卡」，不可混用）----
    .card--muted  ＝ 卡片內部單純換底色的子區塊，維持母卡內距、四周留白、無方向性陰影。
                     適合「一段內容需要被框起來」的靜態分組。
-   .nest（本元件）＝ 滿版貼齊母卡底緣、有向上陰影的「疊上去的一層」。
+   .nest（本元件）＝ 滿版貼齊母卡底緣、上緣髮絲線分層的「疊上去的一層」。
                     適合「模式切換後長出來的整組表單」，要讀起來像另一個平面。
    判斷句：這塊東西是「卡片裡的一段」還是「疊在卡片上的另一層」？前者用 --muted，後者用 .nest。
 
@@ -28,10 +29,12 @@
   margin: var(--sp-16) calc(var(--sp-16) * -1) calc(var(--sp-16) * -1);
   padding: var(--sp-16);
   background: var(--nest-surface);
+  /* 上緣髮絲線（Q71 定案）：亮色兩層同為白，靠這道線分層；深色 --nest-line 為
+     transparent，改靠 --nest-surface 的 4% 薄膜分層，線本身不可見（無害）。 */
+  border-top: 1px solid var(--nest-line);
   /* 與母卡外圓角同值——因為三邊已貼齊母卡外緣，同值才會完全重合。
-     母卡的 overflow:hidden 會再裁一次，兩者搭配才不露白邊。 */
+     母卡的 overflow:hidden 會再裁一次，左右下三個圓角被裁掉，只留上方兩個圓角外露。 */
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-nest-up);
 }
 /* [hidden] 必須蓋過消費端可能帶的 display（如 .variant-builder 的 flex）*/
 .nest[hidden] { display: none; }

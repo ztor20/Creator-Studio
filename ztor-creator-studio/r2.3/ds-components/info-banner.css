@@ -1,0 +1,80 @@
+/* Neutral informational banner — for contextual explanation, not warnings. */
+/* ztorUI 換裝（2026-08-28 Wave 3 C-1 裁決執行）：面改中性玻璃，不再借 --accent
+   （那支 token 語意是「hover 底色」，跟這裡當卡片材質用完全是兩回事；本檔也是
+   Wave 2 熔接漏掉的一支，見 docs/wave3-巡檢-batch3.md 的元件層缺口記錄）。
+   四件套跟 card.css 的 .card 同配方：半透明白底＋backdrop 模糊＋1px 邊＋頂緣內光；
+   drop-shadow（--shadow-card 那層外陰影）不跟——banner 是一條扁窄的行內提示，
+   不是浮起的卡，只要「這是一個面」的材質語言，不需要卡片級的浮起投影。
+   「這是說明、要注意」原本靠實色橘面表達，現在色彩從面移到圖示（見下方
+   .ztor-icon 規則）——面永遠中性，色彩只留給光與字（Q77）。
+   舊值：background: var(--accent)（無 blur、無頂緣內光）。 */
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-12);
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-edge-top);
+  color: var(--foreground-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  line-height: var(--lh-normal);
+}
+
+.info-banner .info-banner__icon {
+  width: var(--fs-20);
+  height: var(--fs-20);
+  flex: none;
+}
+/* 橘色元素承擔「注意」（2026-08-28 C-1）：選 icon 而非標題／行首文字——icon 是
+   本元件唯一在幾乎每個實例都存在的固定錨點（少數例外：admin-video-review.html
+   的純文字 `<p class="info-banner">`、manage-ip.html 的 .mi-verify 兩行式驗證橫幅
+   直接用 .ztor-icon 未套 .info-banner__icon class，本規則用祖先選擇器一併涵蓋，
+   不必改 HTML）。單層柔光、比照 filter-tabs 選中字光的做法（暖橘 text-shadow/
+   drop-shadow 兩層堆疊）但只留一層、半徑收小——banner 是被動的說明，不是使用者
+   選中的互動態，光要比選中態更安靜，"不要過量"。 */
+.info-banner .ztor-icon {
+  color: var(--ztu-orange-hi);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ztu-orange) 45%, transparent));
+}
+
+.info-banner[hidden] {
+  display: none;
+}
+
+/* ── Dismissible variant (opt-in) ──────────────────────────────
+   2026-07-27 使用者裁示：這類長期提示是雜訊，要能關掉；但「重新登入」時仍該出現。
+   狀態因此存在 sessionStorage（隨工作階段結束自動清掉），不是 localStorage。
+   純新增 modifier ＋ 一個關閉鈕，既有 .info-banner 消費者完全不受影響。
+   關閉鈕本身走 Button atom（.btn.btn--icon.btn--xs），這裡只負責靠右與配色。 */
+.info-banner__close {
+  margin-left: auto;
+  flex: none;
+  color: var(--muted-foreground);
+}
+.info-banner__close:hover {
+  color: var(--foreground);
+}
+/* 關閉鈕自帶內距，右側外距收窄一階，視覺上與左側圖示對稱 */
+.info-banner--dismissible {
+  padding-right: var(--sp-8);
+}
+
+@media (max-width: 640px) {
+  .info-banner {
+    align-items: flex-start;
+    gap: var(--sp-8);
+    padding: var(--sp-10) var(--sp-12);
+    border-radius: var(--radius-xl);
+    font-size: var(--fs-13);
+  }
+
+  .info-banner .info-banner__icon {
+    width: var(--fs-18);
+    height: var(--fs-18);
+  }
+}

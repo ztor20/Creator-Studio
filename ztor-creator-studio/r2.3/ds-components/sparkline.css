@@ -1,0 +1,183 @@
+/* ============================================================
+   Sparkline · 卡片內的微型走勢圖（無座標軸、無標籤、無互動）
+   Promoted 2026-08-28 自儀表板 KPI 卡（使用者：「下面要有走勢圖，但小小的」，
+   參照 ztorUI 語彙的 Live Passenger Volume / Operational Efficiency 卡）。
+
+   與 chart.css 的 .linechart 分工——那支是「圖表本身就是內容」的完整圖表
+   （180px 高、有格線／座標／標籤／tooltip）；這支是「數字的附註」，
+   只回答「最近是往上還往下」，不回答「哪一天是多少」。所以刻意沒有座標軸、
+   沒有資料點、沒有 hover——要讀得出精確值的情境該用 .linechart，不是把這支加大。
+
+   結構：
+     .sparkline               外殼
+       .sparkline__plot       繪圖列（繪圖欄＋縱軸並排）
+         .sparkline__main     繪圖欄（畫布＋橫軸同寬，橫軸才會對齊折線的起訖）
+           .sparkline__canvas 畫布（SVG 與標籤的共同定位框，高度吃 --spark-plot-h）
+           .sparkline__svg    preserveAspectRatio="none" 撐滿剩餘寬度
+           .sparkline__grid   水平虛線格線（每個縱軸刻度一條）
+           .sparkline__band   標記區間的直立色塊
+           .sparkline__area   線下的淡色填充
+           .sparkline__line   折線本身
+           .sparkline__seg    區間內的重點線段（--up／--down 為漲跌語意色）
+           .sparkline__target 目標值的虛線
+           .sparkline__mark   區間的數值標籤（HTML，疊在 SVG 上；同樣有 --up／--down）
+         .sparkline__axis-y   縱軸刻度（選配，由上而下）
+           .sparkline__axis-x 橫軸刻度（選配，由左而右）
+
+   軸、格線、目標線、標記區間都是選配：只要趨勢方向時整組省略（`.sparkline` 裸用），
+   需要讀出量級、期間與「有沒有達標」時才逐項加上去。
+
+   主折線的墨色走 --spark-ink 這支區域變數，一律中性、各卡一致（2026-08-28 使用者裁示）；
+   會帶顏色的只有標記區間——那是狀態（漲／跌），走 --up／--down 的語意色。
+   ============================================================ */
+
+.sparkline {
+  --spark-ink: var(--muted-foreground);
+  --spark-plot-h: 30px;
+  position: relative;
+  width: 100%;
+}
+
+/* 繪圖區與縱軸並排（不是把縱軸絕對定位疊上去）：疊上去的話折線會跑到刻度底下，
+   數字一長就互相蓋住；並排讓 flex 自己讓出寬度，刻度多寬繪圖區就少多寬。 */
+.sparkline__plot {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+}
+
+/* 繪圖區這一欄（畫布＋橫軸）。橫軸必須跟畫布同寬——2026-08-28 修：
+   原本橫軸是 .sparkline 的直接子層，寬度含右側縱軸那一欄，最後一個刻度（本週）
+   因此被推到縱軸標籤底下，而不是折線真正結束的位置。 */
+.sparkline__main {
+  flex: 1 1 auto;
+  min-width: 0;          /* flex item 預設 min-width:auto，不歸零會撐破容器 */
+}
+
+/* 繪圖畫布：SVG 與疊在它上面的 HTML 標籤共用同一個定位框。
+   標籤不能畫進 SVG——preserveAspectRatio="none" 只拉伸 x，SVG 裡的文字會被拉成扁字。 */
+.sparkline__canvas {
+  position: relative;
+  height: var(--spark-plot-h);
+}
+
+.sparkline__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* 標記區間的數值標籤（例如「上週→本週 +12.6%」的 +12.6%）。
+   位置由渲染器算成百分比：水平對齊區間、垂直落在區間最高點之上。 */
+.sparkline__mark {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding-bottom: 3px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--foreground);
+  pointer-events: none;
+}
+/* 貼右緣的區間改成靠右對齊，否則置中的標籤會溢出畫布。 */
+.sparkline__mark--end { transform: translate(-100%, -100%); }
+.sparkline__mark--up   { color: var(--status-success-ink); }
+.sparkline__mark--down { color: var(--destructive-ink); }
+
+/* 縱軸：只標最大與最小兩個刻度。中間再多標一格在 30px 高度裡會擠成一團，
+   而這支圖本來就不負責讀出精確值（要精確值請用 chart.css 的 .linechart）。 */
+.sparkline__axis-y,
+.sparkline__axis-x {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  line-height: 1;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.sparkline__axis-y {
+  flex: 0 0 auto;
+  height: var(--spark-plot-h);   /* 對齊畫布高度，不含底下的橫軸 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  text-align: right;
+}
+.sparkline__axis-x {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--sp-4);
+}
+
+/* preserveAspectRatio="none" 會把 viewBox 橫向拉伸，線寬跟著變形；
+   non-scaling-stroke 讓筆畫維持固定粗細（同 .linechart 的處置）。 */
+.sparkline__line {
+  fill: none;
+  stroke: var(--spark-ink);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.85;
+}
+
+.sparkline__area {
+  fill: var(--spark-ink);
+  opacity: 0.1;
+  stroke: none;
+}
+
+
+/* ── 以下為「細節版」的選配零件（2026-08-28 使用者指定照參照圖畫）────────────────
+   參照圖的資訊層次是：格線（讀量級）→ 目標線（讀達標與否）→ 折線（讀趨勢）
+   → 標記區間＋端點圓點（讀「這段發生了什麼」）。四層各自的墨色一路遞增，
+   最淡的是格線、最實的是端點圓點，讓眼睛照這個順序讀。 */
+
+/* 格線與目標線都是虛線，靠粗細與明度分階：格線最淡最細、目標線稍實。
+   兩者都用 non-scaling-stroke，否則 preserveAspectRatio="none" 會把虛線間距橫向拉長。 */
+.sparkline__grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.55;
+}
+.sparkline__target {
+  fill: none;
+  stroke: var(--muted-foreground);
+  stroke-width: 1;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+
+/* 標記區間：直立色塊，只用明度不用色相——色相留給端點與重點線段。 */
+.sparkline__band {
+  fill: var(--foreground);
+  opacity: 0.06;
+}
+
+
+/* 重點線段：疊在主折線之上、只畫區間內那幾點，所以主線不必被切斷。 */
+.sparkline__seg {
+  fill: none;
+  stroke: var(--foreground);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+/* 區間的語意色跟 delta 膠囊同一套：漲＝成功色、跌＝警示色。
+   2026-08-28 使用者裁示由品牌橘改綠——這段標的是「成長率」，屬狀態而非品牌強調，
+   橘色在本系統代表主角／主要動作，用在這裡會跟「這是重點操作」撞語彙。 */
+.sparkline__seg--up   { stroke: var(--status-success-ink); }
+.sparkline__seg--down { stroke: var(--destructive-ink); }
+
+
+/* 細節版把繪圖區加高：四段縱軸刻度要在 30px 裡排開會疊字，
+   而密集折線在太矮的區域裡會糊成一條帶子、看不出起伏。 */
+.sparkline--detail { --spark-plot-h: 76px; }
+.sparkline--detail .sparkline__area { opacity: 0.06; }

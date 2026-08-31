@@ -1,0 +1,46 @@
+/* Admin IP Bank data-table presentation. Shared by the allocation and reporting pages. */
+/* ztorUI 換裝（2026-08-28 Wave 3 B 級巡檢補修，配方抄 card.css 的 .card 黃金基準／Q77 裁決）：
+   外框改玻璃四件套——半透明白底＋backdrop 模糊＋1px 邊＋既有 shadow token（--shadow-card
+   ＋--shadow-edge-top 頂緣內光）。原本只有實色底＋單一 --shadow-card，玻璃化之後外框在
+   星空底上會比全站其他卡面扁平，故補足與 .card 一致的四件套與雙層陰影。
+   .ztor-table 疊在裡面的表頭與 hover 列維持自己既有的 --column-head-ink／--accent
+   token（見 table.css），不受外框改玻璃影響——實測見 wave3-巡檢-batch1.md。
+   舊值：background: var(--card)（實色）；box-shadow 只有 var(--shadow-card) 一層。 */
+.admin-table-wrap { overflow-x:auto; position:relative; background:var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border:1px solid var(--border); border-radius:var(--radius-xl);
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);
+}
+.admin-table-wrap .ztor-table { min-width:840px; border:0; border-radius:0; }
+
+/* --menu：列尾動作是浮動下拉（kebab）的清單。外框的 overflow 會把選單裁掉——
+   最後一列尤其明顯，選單往下長出去就只剩半截（2026-08-20 使用者回報：商店設定的
+   尺寸指南清單「下拉被藏在裡面遮住了」）。做法沿用 variant-table-wrap--menu：
+   放行 overflow、欄寬改跟著內容走（840px 是給欄位多得多的 admin IP 銀行表用的）。
+   overflow 放行之後外框圓角不再 clip 內容，所以首列表頭與末列自己補圓角貼齊內緣。 */
+.admin-table-wrap--menu { overflow: visible; }
+.admin-table-wrap--menu .ztor-table { min-width: 0; overflow: visible; }
+.admin-table-wrap--menu .ztor-table thead th:first-child { border-top-left-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table thead th:last-child { border-top-right-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table tbody tr:last-child td:first-child { border-bottom-left-radius: calc(var(--radius-xl) - 1px); }
+.admin-table-wrap--menu .ztor-table tbody tr:last-child td:last-child { border-bottom-right-radius: calc(var(--radius-xl) - 1px); }
+.admin-table__film { display:flex; align-items:center; gap:var(--sp-10); min-width:170px; font-family:var(--font-ui); font-weight:var(--fw-regular); }
+/* 2026-07-31 使用者：作品縮圖改直式。與 .ztor-table__thumb 同一個做法——鎖高度 36px
+   （＝原尺寸，列高不動）、寬度由全站直式比例 --img-portrait 換算（2026-08-05 D176
+   比例改 2:3 後為 36 × 2/3 ＝ 24px；改比例前是 ≈29px）。 */
+.admin-table__thumb { width:calc(36px * var(--img-portrait)); height:36px; border-radius:var(--radius-sm); background:var(--muted); border:1px solid var(--border); flex:0 0 auto; }
+.admin-table__owner { display:flex; align-items:center; gap:var(--sp-8); }
+.admin-table__avatar { width:28px; height:28px; border-radius:50%; background:var(--accent); color:var(--muted-foreground); display:grid; place-items:center; font-family:var(--font-ui); font-size:var(--fs-11); }
+.admin-table__share, .admin-table__money { font-family: var(--font-numeric); font-weight:var(--fw-regular); white-space:nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.admin-table__actions { display:flex; justify-content:flex-end; gap:var(--sp-8); min-width:40px; white-space:nowrap; }
+.admin-table__actions .dropdown__menu { min-width:148px; }
+.admin-note { margin:var(--sp-12) 0 0; color:var(--muted-foreground); font-size:var(--fs-13); line-height:var(--lh-relaxed); }
+.admin-kpis { margin:0 0 var(--sp-32); }
+.admin-report-filters { display:flex; align-items:end; gap:var(--sp-12); flex-wrap:wrap; margin:0 0 var(--sp-12); }
+.admin-report-filters .field { margin:0; min-width:160px; }
+.admin-report-filters__range { display:flex; align-items:end; gap:var(--sp-8); }
+.admin-report-filters__separator { color:var(--muted-foreground); font-size:var(--fs-13); padding-bottom:var(--sp-10); }
+@media (max-width:700px) { .admin-report-filters { align-items:stretch; } .admin-report-filters .field { flex:1 1 100%; } .admin-report-filters__range { width:100%; } .admin-report-filters__range .field { min-width:0; } }

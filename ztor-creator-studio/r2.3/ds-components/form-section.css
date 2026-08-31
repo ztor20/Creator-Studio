@@ -1,0 +1,172 @@
+/* ============================================================
+   form-section.css · 無卡片表單區段（建立流程共用骨架）
+   ------------------------------------------------------------
+   一個區段 = 標題 + 灰副標 + 上分隔線 + 寬鬆留白；區段內沿用
+   .field / .input / .select / .segmented 等原元件，只在
+   .form-section 作用域內微調 field 間距與 label 字級，
+   不影響全站其他地方的 .field（Settings、e-shop 等）。
+   取代各建立頁原本頁內的 .cp-section / .ce-section… 散裝樣式。
+   ============================================================ */
+
+.form-section { padding: 44px 0; margin: 0; }            /* 上下寬鬆留白＝區段間隔 */
+.form-section[hidden] { display: none; }
+.form-section + .form-section { border-top: 1px solid var(--border-soft); }   /* 區段間分隔線 */
+
+/* (2026-07-17) `.form-section--modal` 已退場：pickup session modal 當日改用頂部頁籤
+   （shared .tabs + .tab-panel）分區，不再套填色面板；此變體無其他消費者，故移除。 */
+
+/* Opt-in outlined variant — reserved for evaluation pages until a product
+   flow explicitly adopts it. In light mode the section is the brightest
+   layer (`--card`) inside the `--surface-page` main and `--surface-shell`
+   app. Dark mode deliberately uses `--muted`, one step above the #191A1A
+   page surface. 2026-07-16 使用者裁示：去除外框線（保留填色卡＝bg＋圓角＋內距），
+   兩模式都靠填色對比區分區塊、不再有 1px 邊界。 */
+/* 寫成 .form-section.form-section--outlined 提高權重（0,2,0）蓋過
+   `.form-section + .form-section` 的 border-top 分隔線（同權重），確保四邊皆無 border——
+   否則相鄰 outlined 卡頂端會殘留一條分隔線。 */
+/* 2026-07-17（使用者裁示，Q14 修訂）：無邊框填色卡再加「浮起感」——resting card 陰影(E2)＋頂緣高光，
+   讓區塊像浮在內容底上的卡（midnight 探索頁做法）。仍無 1px 邊框；填色＋陰影＋上緣光共同分區。 */
+/* 2026-07-27 L 回報「這兩張卡好擠」＋「我們有設 design token，但它沒在跟」——確認屬實。
+   這個區塊在視覺上就是一張卡（--card 底、--radius-xl、卡陰影，第 18 行的註解也寫明
+   圓角是刻意「與 form-section--outlined 統一」的），但內距卻寫死 var(--sp-16)＝16px，
+   完全沒有接上卡片的 --card-pad token。旁邊真正的 .card（右側設定總覽）算出來是 20px，
+   .ztor-card 是 24px——所以同一個畫面上三種卡有三種內距，而這一張是最擠的那個，
+   而且不管未來怎麼調 --card-pad 都不會跟著動。
+   改成宣告並消費 --card-pad：內距回到 DESIGN.md 記載的卡片 24px，之後也跟著 token 走。 */
+/* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 demo/ztorui-skin §3.2）：區塊卡改玻璃四件套。
+   .form-section 是**內容區塊**、不是浮層，所以吃玻璃而不是實色（ztorUI 規格 §7.4）。
+   邊框回來了：玻璃需要那道 1px 把厚度畫出來，這與 2026-07-16「去外框線、靠填色分區」
+   的理由不衝突——當時是實色卡、邊只是多餘的線，現在邊是玻璃材質的一部分。
+   舊值：background: var(--card)；border: 0（2026-07-16 去外框線）。 */
+.form-section.form-section--outlined {
+  --card-pad: var(--sp-24);
+  padding: var(--card-pad);
+  position: relative;
+  background: var(--ztu-glass-bg);
+  backdrop-filter: blur(var(--ztu-blur-glass));
+  -webkit-backdrop-filter: blur(var(--ztu-blur-glass));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);   /* 16px — 對齊 Figma node 781-4166（2026-07-16 使用者裁示全站統一）*/
+  box-shadow: var(--shadow-card), var(--shadow-edge-top);   /* 2026-07-17：E2 浮起＋頂緣高光（Q14 修訂）*/
+}
+/* 2026-07-17 midnight：暗色改用 --card（原 --muted）——midnight 壓暗後 --muted(#131414) 與頁面底(#111212)
+   幾乎同色、區塊會消失；--card(#191A1B) 在新層次裡正是「浮在內容底上的卡」，與亮色行為一致。
+   2026-08-01 使用者比對同一頁的 .list-toolbar／.alert-inset（皆用 --surface-shell #1C1D1E）
+   裁示「都用 #1C1D1E 吧」：暗色改吃 --surface-shell，與另兩者同色階；對頁面底 --surface-page
+   （#0C0D0D）的對比仍充足，不重演當初 --muted 貼底消失的問題。亮色不受影響（三者本就同為
+   --card #FFFFFF）。 */
+/* ztorUI 換裝（2026-08-28 Wave 2a）：深色專屬的 --surface-shell 覆寫已刪除——玻璃底不分主題
+   寫在上面那條本體規則裡，留著這條反而會用同權重的排序把玻璃蓋回實色。
+   刪掉的舊宣告：[data-theme="dark"] .form-section--outlined { background: var(--surface-shell); }
+   （2026-08-01 使用者裁示「都用 #1C1D1E」，是全站唯一一個「深色卡面不等於 --card」的例外，
+   換皮後這個例外不再需要存在。） */
+/* outlined section 不該巢狀（2026-08-13，Q66 全站落地）：兩層都吃同一個表面色
+   （深色 --surface-shell、亮色 --card），套在一起就是同色疊同色，只剩陰影在分層。
+   Q66 的稽核當時寫「目前 0 處」，之後長出 6 處（建立活動的票務、系列詳情的場次），
+   所以規則從「不要這樣用」升級成「這樣用時內層自動翻成薄膜」——版面不必重做，
+   層級也讀得出來。外層不動：它是頁面層的分組，方向本來就對。 */
+/* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 skin §3.2）：內層退回巢狀薄膜——關模糊、去外框、
+   圓角降一階，邊界交給內陰影那一圈。理由同 .card--muted：巢狀層再模糊只會取樣到自己的母卡。
+   舊值：background: var(--nest-surface)（4% 薄膜），無 backdrop-filter／border／border-radius 覆寫。 */
+.form-section--outlined .form-section--outlined {
+  background: var(--ztu-film);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 0 1px var(--nest-line);
+}
+
+/* 區塊式建立流程：僅在前方已有可見 outlined section 時留出區段間距。
+   使用一般兄弟選擇器，讓中間的條件 section [hidden] 不會留下空白、
+   也不會讓下一個可見區段漏掉間距。 */
+.form-section--outlined:not([hidden]) ~ .form-section--outlined:not([hidden]) {
+  margin-top: var(--sp-24);
+}
+
+.form-section__head { margin-bottom: var(--sp-24); }
+/* 標題列帶右側動作（2026-07-22）：標題群靠左、動作群（按鈕／⋯選單）靠右。
+   預設 head 是堆疊的 title＋sub，改成 flex 會讓兩者並排，故用 --actions 修飾＋把標題群包進
+   __head-titles，只在需要動作的區段啟用。用於商品明細庫存卡（補貨紀錄鈕＋新增/編輯/補貨選單）。 */
+.form-section__head--actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-12);
+}
+.form-section__head--actions .form-section__head-titles { min-width: 0; }
+.form-section__head-actions { display: flex; align-items: center; gap: var(--sp-8); flex: none; }
+/* 區段標題：title role（font-display）／16px／medium
+   2026-07-20（Q21）：18→14，與 .field__label 同級——區塊標題與欄位標籤拉平，
+   層級改由卡片邊界承擔，不再靠字級放大。
+   2026-08-11（Q65，使用者裁示「這個層級的標題字都應該大一級」「全站都要改，
+   應該是從 DS 去改」）：**14→16，部分推翻 Q21**。實務上「靠卡片邊界承擔層級」在
+   一張卡只有一組欄位時成立，但建立活動這種一步有三張卡、卡內還有小標與欄位標籤的
+   版面，三層字全是 14px，掃過去分不出誰統轄誰。改回讓區塊標題比小標與欄位標籤大
+   一階；`.form-section__subhead` 與 `.field__label` 維持 14，Q21 的其餘四點
+   （__sub 11px／field__hint 色階／kpi 底色／頁寬）不動。全站 21 個消費頁一起生效。 */
+.form-section__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-16);
+  font-weight: var(--type-title-24-weight);
+  letter-spacing: var(--type-title-24-tracking);
+  line-height: var(--lh-normal);
+  margin: 0 0 var(--sp-4);
+}
+/* 2026-07-20（Q21）：14→11 且色階壓暗（--foreground-muted → --muted-foreground），
+   與 .field__hint 同級——區塊副標與欄位說明是同一種「輔助說明」角色。 */
+/* 描述字級 --fs-12（Q73，2026-08-25 使用者裁示「用 12、偶數為主」）：
+   原為 --fs-11，與站上其他「標題底下的說明句」（.control-row__sub、.field__hint）
+   的 --fs-12 不同值——同一個角色不留兩個字級。 */
+.form-section__sub { font-size: var(--fs-12); color: var(--muted-foreground); margin: 0; }
+
+/* ── 區段內小標（.form-section__subhead）─────────────────────────────────
+   2026-08-09 自 create-event.html 的頁內 `.ce-subhead` promote。一個
+   .form-section 裡有好幾組東西時（例：場次區段的「場次日期與時間」／
+   「場次細節」）用它分組，比拆成多張卡合適——它們回答的是同一個問題的
+   幾個部分。字型跟 .form-section__title 一樣走 display，但**字級停在 --fs-14**：
+   2026-08-11（Q65）區塊標題升到 16 之後，這一級自然落在標題與欄位標籤之間，
+   層級由「比標題小一階」＋上分隔線＋留白三者共同承擔。
+   （Q21 時期兩者同為 14px、完全靠邊界分層，該做法已由 Q65 部分推翻。） */
+.form-section__subhead {
+  font-family: var(--font-display);
+  font-size: var(--fs-14);
+  font-weight: var(--type-title-24-weight);
+  letter-spacing: var(--type-title-24-tracking);
+  line-height: var(--lh-normal);
+  color: var(--foreground);
+  border-top: 1px solid var(--border-soft);
+  margin: var(--sp-28) 0 var(--sp-16);
+  padding-top: var(--sp-24);
+}
+/* 卡片頂端第一個小標不用分隔線——上面就是區段標題本人 */
+.form-section__head + .form-section__subhead { margin-top: 0; padding-top: 0; border-top: 0; }
+/* 小標底下的欄位分組（例如「每一場的人數」統轄最少／最多兩欄）：
+   Q21 之後這一級與欄位標籤同字級，靠上方留白與網格分群，不再另造第四種字級。 */
+.form-section__grouplabel { margin-top: var(--sp-20); margin-bottom: var(--sp-10); }
+
+/* ---- 區段內 field 微調（作用域限 .form-section）---- */
+/* Q6 2026-07-13：以 .field 為準——移除 field 垂直節奏的局部覆寫（原 gap 4px／欄位間距 26px 裸值），
+   改吃基礎 .field（gap 6px、margin-bottom --sp-16=16px），全站表單節奏統一。
+   （label 字級屬另一議題，維持 form-section 的 14px regular。若長建立流程日後想恢復較寬鬆的
+   欄位間距，可加 `.form-section .field { margin-bottom: var(--sp-24); }` 單獨處理。）*/
+.form-section .field__label { font-size: var(--fs-14); font-weight: var(--fw-regular); }
+.form-section .field__label + .field__hint { margin-top: -4px; }        /* 描述貼齊 label（gap 0）*/
+.form-section .field__hint--count { text-align: right; }                /* 字數計數靠右 */
+
+/* 選項卡群組與它下面的內容之間要有一格呼吸（2026-08-10 使用者反饋「間距要做出來」）：
+   區段內的垂直節奏一直是靠 .field 自帶的 margin-bottom 撐出來的，選項卡群組
+   （.segmented.radio-cards）不是 .field、身上沒有那段留白，直接放進區段就會與下一個
+   元素貼成 0px。「選了才出現的欄位」最明顯——揭示出來的欄位標籤剛好貼在卡片下緣，
+   讀起來像被卡片壓住。
+
+   條件寫成「後面**還有看得見的東西**」而不是 `:not(:last-child)`（2026-08-10 修）：
+   這種卡片群組下面接的往往正是「選了才出現」的揭示區，收合時那些元素帶著 `hidden`
+   仍留在 DOM 上，`:not(:last-child)` 只看結構、看不出它們是隱形的，於是預設收合狀態下
+   區段底部會白白多出 16px。用 `:has(~ :not([hidden]))` 問的是「後面有沒有任何一個
+   還顯示著的兄弟」——這也同時處理了「第一個揭示區藏著、第二個才是展開那個」的情形
+   （取票方式選到店自取時，順豐那一塊是隱藏的），用相鄰選擇器 `+` 會漏掉。 */
+.form-section > .segmented.radio-cards:has(~ :not([hidden])) { margin-bottom: var(--sp-16); }
+
+/* Form footnote：表單底部置中小字說明（如 Stripe 保障文案）。2026-07-09 自 create-product/auction 頁內樣式 promote；數值照舊（margin-top 22px 非 token，維持零視覺變動） */
+.form-footnote { text-align: center; font-size: var(--fs-12); color: var(--muted-foreground); margin-top: 22px; }

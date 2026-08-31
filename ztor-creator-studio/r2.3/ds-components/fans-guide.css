@@ -1,0 +1,416 @@
+/* ============================================================
+   Ztor — Fans guide
+
+   An explainer, not a manual (使用者裁示 2026-07-28). The rule that
+   shaped it: FOUR IDENTICAL CARDS WOULD BE A LIE ABOUT THE PRODUCT.
+   Each capability has a different shape in reality — ranked data, a
+   matrix, a ladder, a flow — so each act on this page takes the shape of
+   the thing it explains. The reader recognises the real screen when they
+   get there, because they have already seen its silhouette here.
+
+   The spine is the tier ladder itself, because that is what the whole
+   feature is: fans climbing. The page climbs with them.
+   ============================================================ */
+
+/* ── Motion ────────────────────────────────────────────────────
+   使用者裁示 2026-07-28: slower, and much more dramatic.
+
+   Drama here is not longer durations on the same slide. Three things do
+   the work: (1) things arrive OUT OF FOCUS and resolve — blur is the
+   cheapest way to make an entrance feel like it travelled from somewhere;
+   (2) each act arrives in PARTS, title then body then evidence, so you
+   read in the order the argument is made; (3) the two composed demos
+   assemble in the direction they mean — the ladder builds from the
+   bottom rung upward because that is what climbing is, and the campaign
+   flow lays itself left to right because that is the order events happen.
+
+   A single exponential ease-out from an already-visible default: nothing
+   here starts at opacity 0 and stays there if the script never runs. */
+.fg {
+  --fg-rail: 2px;
+  --fg-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --fg-dur: 1150ms;
+  --fg-travel: 34px;
+}
+
+/* ── Opening statement ─────────────────────────────────────────
+   No hero-metric template. One sentence that says what changes for
+   the creator, at a size that means it. */
+.fg-open {
+  padding: clamp(var(--sp-32), 7vw, var(--sp-80)) 0 var(--sp-48);
+  /* NOT ch. The ch unit measures the Latin "0", but a CJK glyph is about
+     twice that — so a `22ch` column is ~11 characters here and shattered
+     this headline across four lines. Sized in rem, which is script-neutral. */
+  max-width: min(100%, 46rem);
+}
+.fg-open__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  font-size: var(--fs-12);
+  color: var(--primary);
+  margin-bottom: var(--sp-16);
+}
+.fg-open__kicker .ztor-icon { width: 14px; height: 14px; }
+.fg-open__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  margin: 0;
+  text-wrap: balance;
+}
+.fg-open__title em {
+  font-style: normal;
+  color: var(--primary);
+}
+.fg-open__sub {
+  max-width: 46ch;
+  margin: var(--sp-20) 0 0;
+  font-size: var(--fs-15);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+  text-wrap: pretty;
+}
+
+/* ── The climb ─────────────────────────────────────────────────
+   A single continuous rail runs the page. Each act hangs off it, so the
+   four capabilities read as one ascent rather than four features. */
+.fg-climb {
+  position: relative;
+  padding-left: clamp(var(--sp-24), 5vw, var(--sp-56));
+}
+.fg-climb::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 6px; bottom: 0;
+  width: var(--fg-rail);
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--primary) 0%,
+    color-mix(in srgb, var(--primary) 45%, transparent) 38%,
+    var(--border) 100%);
+}
+
+.fg-act { position: relative; padding-bottom: clamp(var(--sp-48), 8vw, var(--sp-80)); }
+.fg-act:last-child { padding-bottom: 0; }
+
+/* The rung. Sits ON the rail, so the eye tracks the climb. */
+.fg--motion .fg-act__rung {
+  position: absolute;
+  left: calc(clamp(var(--sp-24), 5vw, var(--sp-56)) * -1);
+  top: 2px;
+  width: 14px; height: 14px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: var(--background);
+  box-shadow: 0 0 0 2px var(--primary);
+  transform: scale(0.2);
+  opacity: 0;
+  transition: transform 900ms var(--fg-ease), opacity 600ms var(--fg-ease), box-shadow 900ms var(--fg-ease);
+}
+/* The rung lands first and overshoots into a halo that then tightens —
+   the page's one moment of impact, on the element that marks arrival. */
+.fg--motion .fg-act.is-in .fg-act__rung {
+  transform: scale(1);
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--primary), 0 0 0 9px color-mix(in srgb, var(--primary) 0%, transparent);
+  animation: fg-rung-pulse 1400ms var(--fg-ease);
+}
+@keyframes fg-rung-pulse {
+  0%   { box-shadow: 0 0 0 2px var(--primary), 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 2px var(--primary), 0 0 0 14px color-mix(in srgb, var(--primary) 0%, transparent); }
+  100% { box-shadow: 0 0 0 2px var(--primary), 0 0 0 14px color-mix(in srgb, var(--primary) 0%, transparent); }
+}
+
+/* Title, body, evidence — in that order, because that is the order the
+   argument is made. Not one block sliding as a unit. */
+.fg--motion .fg-act__title,
+.fg--motion .fg-act__body {
+  opacity: 0;
+  transform: translateY(var(--fg-travel));
+  filter: blur(10px);
+  transition:
+    opacity   var(--fg-dur) var(--fg-ease),
+    transform var(--fg-dur) var(--fg-ease),
+    filter    var(--fg-dur) var(--fg-ease);
+}
+.fg--motion .fg-act__body { transition-delay: 140ms; }
+.fg--motion .fg-act.is-in .fg-act__title,
+.fg--motion .fg-act.is-in .fg-act__body {
+  opacity: 1; transform: none; filter: blur(0);
+}
+
+.fg-act__head { max-width: 54ch; }
+.fg-act__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+  margin: 0 0 var(--sp-10);
+  text-wrap: balance;
+}
+.fg-act__body {
+  margin: 0;
+  font-size: var(--fs-14);
+  line-height: var(--lh-relaxed);
+  color: var(--foreground-muted);
+  text-wrap: pretty;
+}
+.fg-act__body strong { color: var(--foreground); font-weight: var(--fw-medium); }
+
+/* The demo sits below its explanation, indented — it is evidence for
+   the claim above it, not a decorative companion. */
+.fg-demo {
+  margin-top: var(--sp-20);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  padding: var(--sp-16);
+}
+.fg--motion .fg-demo {
+  opacity: 0;
+  transform: translateY(var(--fg-travel)) scale(0.985);
+  filter: blur(14px);
+  transition:
+    opacity   var(--fg-dur) var(--fg-ease),
+    transform var(--fg-dur) var(--fg-ease),
+    filter    var(--fg-dur) var(--fg-ease);
+  transition-delay: 300ms;   /* the evidence lands after the claim */
+}
+.fg--motion .fg-act.is-in .fg-demo { opacity: 1; transform: none; filter: blur(0); }
+
+/* ── Act 1 · the ranked list ─────────────────────────────────── */
+.fg-rank { display: flex; flex-direction: column; }
+.fg-rank__row {
+  display: grid;
+  grid-template-columns: 26px minmax(0,1fr) auto auto;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-13);
+}
+.fg-rank__row:last-child { border-bottom: 0; }
+.fg-rank__n {
+  font-family: var(--font-display);
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.fg-rank__name { color: var(--foreground); }
+.fg-rank__bar {
+  width: clamp(60px, 14vw, 140px);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--muted);
+  overflow: hidden;
+}
+/* The bars sweep out one after another, slowly enough to read as a
+   ranking being drawn rather than four bars appearing. */
+.fg-rank__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--primary);
+  transform-origin: left center;
+  transform: scaleX(var(--w, 1));
+}
+.fg--motion .fg-rank__fill {
+  transform: scaleX(0);
+  transition: transform 1400ms var(--fg-ease);
+}
+.fg--motion .fg-act.is-in .fg-rank__fill { transform: scaleX(var(--w, 1)); }
+.fg--motion .fg-act.is-in .fg-rank__row:nth-child(1) .fg-rank__fill { transition-delay: 620ms; }
+.fg--motion .fg-act.is-in .fg-rank__row:nth-child(2) .fg-rank__fill { transition-delay: 760ms; }
+.fg--motion .fg-act.is-in .fg-rank__row:nth-child(3) .fg-rank__fill { transition-delay: 900ms; }
+.fg--motion .fg-act.is-in .fg-rank__row:nth-child(4) .fg-rank__fill { transition-delay: 1040ms; }
+.fg-rank__val {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  min-width: 52px;
+  text-align: right;
+}
+
+/* ── Act 2 · the matrix ──────────────────────────────────────── */
+.fg-matrix { display: grid; gap: var(--sp-8); font-size: var(--fs-12); }
+.fg-matrix__row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) repeat(3, 54px);
+  align-items: center;
+  gap: var(--sp-8);
+}
+.fg-matrix__label { color: var(--foreground-muted); }
+.fg-matrix__head span:not(:first-child) {
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: var(--fs-11);
+}
+.fg-dot {
+  justify-self: center;
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border);
+  display: grid; place-items: center;
+  color: transparent;
+  transition: background-color 260ms var(--easing), color 260ms var(--easing);
+}
+.fg-dot .ztor-icon { width: 12px; height: 12px; }
+.fg-dot--on {
+  background: color-mix(in srgb, var(--primary) 22%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent);
+  color: var(--primary);
+}
+
+/* ── Act 3 · the ladder ──────────────────────────────────────── */
+.fg-ladder { display: flex; flex-direction: column-reverse; gap: var(--sp-8); }
+.fg-tier {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-12) var(--sp-14);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+  /* Each rung is physically wider than the one below: the ladder narrows
+     as it rises, so scarcity is visible before it is read. */
+  width: var(--w, 100%);
+  margin-left: auto;
+}
+.fg-tier__name {
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  flex: none;
+}
+.fg-tier__perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-left: auto;
+  justify-content: flex-end;
+}
+.fg-perk {
+  font-size: var(--fs-11);
+  padding: 3px var(--sp-8);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--foreground-muted);
+  white-space: nowrap;
+}
+.fg-tier--top { background: color-mix(in srgb, var(--primary) 14%, var(--card)); }
+.fg-tier--top .fg-tier__name { color: var(--primary); }
+
+/* The ladder BUILDS FROM THE BOTTOM UP. The container is
+   column-reverse, so :nth-child(1) is the base rung — delaying in source
+   order therefore stacks upward on screen, which is what climbing looks
+   like. Reversing these delays would have the top tier appear first and
+   quietly contradict the whole point of the section. */
+.fg--motion .fg-tier {
+  opacity: 0;
+  transform: translateY(18px) scaleX(0.94);
+  transform-origin: right center;
+  filter: blur(6px);
+  transition:
+    opacity   760ms var(--fg-ease),
+    transform 760ms var(--fg-ease),
+    filter    760ms var(--fg-ease);
+}
+.fg--motion .fg-act.is-in .fg-tier { opacity: 1; transform: none; filter: blur(0); }
+.fg--motion .fg-act.is-in .fg-tier:nth-child(1) { transition-delay: 480ms; }
+.fg--motion .fg-act.is-in .fg-tier:nth-child(2) { transition-delay: 700ms; }
+.fg--motion .fg-act.is-in .fg-tier:nth-child(3) { transition-delay: 920ms; }
+.fg--motion .fg-act.is-in .fg-tier:nth-child(4) { transition-delay: 1140ms; }
+
+/* ── Act 4 · the flow ────────────────────────────────────────── */
+.fg-flow {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+}
+.fg-step {
+  flex: 1 1 130px;
+  min-width: 0;
+  padding: var(--sp-12);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+.fg-step__icon { color: var(--muted-foreground); }
+.fg-step__icon .ztor-icon { width: 18px; height: 18px; }
+.fg-step__t { font-size: var(--fs-13); color: var(--foreground); }
+.fg-step__d { font-size: var(--fs-11); color: var(--muted-foreground); line-height: 1.45; }
+/* The payoff step earns the accent — it is the only one where money
+   moves, and the flow exists to arrive here. */
+.fg-step--payoff {
+  background: color-mix(in srgb, var(--primary) 14%, var(--card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+.fg-step--payoff .fg-step__icon,
+.fg-step--payoff .fg-step__t { color: var(--primary); }
+.fg-step--payoff .fg-step__d { color: var(--foreground-muted); }
+
+/* The flow lays itself out left to right, in the order the events
+   actually happen — so the payoff arrives last, which is also when it
+   arrives in real life. */
+.fg--motion .fg-step {
+  opacity: 0;
+  transform: translateX(-16px);
+  filter: blur(6px);
+  transition:
+    opacity   700ms var(--fg-ease),
+    transform 700ms var(--fg-ease),
+    filter    700ms var(--fg-ease);
+}
+.fg--motion .fg-act.is-in .fg-step { opacity: 1; transform: none; filter: blur(0); }
+.fg--motion .fg-act.is-in .fg-step:nth-child(1) { transition-delay: 480ms; }
+.fg--motion .fg-act.is-in .fg-step:nth-child(2) { transition-delay: 700ms; }
+.fg--motion .fg-act.is-in .fg-step:nth-child(3) { transition-delay: 920ms; }
+.fg--motion .fg-act.is-in .fg-step:nth-child(4) { transition-delay: 1180ms; }
+
+/* ── Close ─────────────────────────────────────────────────── */
+.fg-close {
+  margin-top: clamp(var(--sp-40), 7vw, var(--sp-64));
+  padding-top: var(--sp-32);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  flex-wrap: wrap;
+}
+.fg-close__text {
+  font-size: var(--fs-14);
+  color: var(--foreground-muted);
+  margin: 0 auto 0 0;
+  max-width: 42ch;
+}
+
+@media (max-width: 640px) {
+  .fg-matrix__row { grid-template-columns: minmax(0,1fr) repeat(3, 40px); }
+  .fg-tier { width: 100% !important; }
+  .fg-tier__perks { margin-left: 0; justify-content: flex-start; }
+}
+
+/* Reduced motion gets the whole page at rest, instantly. A long,
+   blur-heavy sequence is exactly what this setting exists to refuse. */
+@media (prefers-reduced-motion: reduce) {
+  .fg-act__rung, .fg-demo, .fg-rank__fill,
+  .fg-act__title, .fg-act__body, .fg-tier, .fg-step {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .fg-act__rung { transform: scale(1); animation: none; }
+  .fg-rank__fill { transform: scaleX(var(--w, 1)); }
+}

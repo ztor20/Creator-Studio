@@ -1,0 +1,82 @@
+/* ============================================================
+   collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
+   ------------------------------------------------------------
+   一整組欄位收在一個盒子裡，折疊時只留「這一組是什麼、現在的值是什麼」一行。
+   首個消費情境：活動的場次（2026-08-13 使用者裁決 A 案）——一場一盒，
+   排到第 8 場時整頁都是攤開的表單，要找「第 5 場在哪一天」得一路捲。
+
+   anatomy
+     .card--muted[data-open]           盒（表面層級照 Q66，本檔不管填色）
+       .collapse-head                  標題列（整列一排：切換鈕＋右側的次要動作）
+         .collapse-head__toggle        可點的那一段：chevron ＋ 標題 ＋ 摘要
+           .collapse-head__chev        ▸，展開時轉 90°
+           .collapse-head__sum         一行摘要，靠右、單行不換行
+         （切換鈕之外的動作，如移除，是 .collapse-head 的第二個子元素——
+           按鈕不能包按鈕，所以不放進 __toggle 裡）
+       .collapse-body[hidden]          折疊時整段收起
+
+   為什麼摘要放同一行、不換行到標題下方（A 案，2026-08-13 使用者裁決）：
+   這一步的任務是排時間，折疊態要回答的只有「這場是哪天、幾點」——一行就夠，
+   十場也只佔半個畫面。帶標籤的三欄事實列（B 案）在這個情境是重複勞動：
+   日期長得就像日期，不必再標一次「日期」。
+   ============================================================ */
+
+.collapse-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+}
+
+/* 可點的那一段吃掉整列剩餘寬度：點標題、點摘要、點空白處都算「開合這一組」，
+   要瞄準 chevron 才點得開的話，等於把一顆 16px 的按鈕當成整組的入口。 */
+.collapse-head__toggle {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.collapse-head__toggle:focus-visible {
+  outline: 1px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.collapse-head__chev {
+  flex: none;
+  color: var(--muted-foreground);
+  transition: transform 180ms var(--easing);
+}
+[data-open="true"] > .collapse-head .collapse-head__chev { transform: rotate(90deg); }
+
+/* 摘要：靠右、單行。窄畫面塞不下時截斷而不是換行——換行會把標題列撐成兩層，
+   折疊態就失去「一行掃過去」的意義。 */
+.collapse-head__sum {
+  margin-left: auto;
+  color: var(--muted-foreground);
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 摘要裡最重要的那一段（場次日期）用一般前景色，其餘維持次要色 */
+.collapse-head__sum b { color: var(--foreground); font-weight: var(--fw-regular); }
+/* 還沒填完的那一組：摘要說「尚未設定」，用警示墨色講出來 */
+.collapse-head__sum--todo { color: var(--status-warning-ink); }
+/* 展開時摘要收起：同一組數字在畫面上出現兩次，讀起來像有兩份資料 */
+[data-open="true"] > .collapse-head .collapse-head__sum { display: none; }
+
+.collapse-body[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .collapse-head__chev { transition: none; }
+}

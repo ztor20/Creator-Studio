@@ -1,0 +1,105 @@
+/* ============================================================
+   Ztor — Toast
+
+   Transient confirmation, sliding up from the bottom of the viewport
+   (使用者裁示 2026-07-27, tier-benefits Save).
+
+   Why bottom-centre and not a corner: the thing being confirmed lives in
+   the page, and the action button that triggered it sits at the TOP.
+   A toast at the bottom edge never covers the content you just edited,
+   and it reads as a status line for the whole page rather than a note
+   attached to one control.
+
+   z-index 1100 — above the 1000 bottom-nav and the 80 dialog layer,
+   because a confirmation must be readable even with a sheet open.
+   ============================================================ */
+
+.ztor-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: var(--sp-24);
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column-reverse;   /* newest nearest the bottom edge */
+  align-items: center;
+  gap: var(--sp-8);
+  pointer-events: none;             /* never blocks the page underneath */
+  width: max-content;
+  max-width: min(420px, calc(100vw - var(--sp-32)));
+}
+
+.ztor-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-16);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  box-shadow: var(--shadow-overlay), inset 0 0 0 1px var(--border);
+  font-size: var(--fs-13);
+  color: var(--foreground);
+  /* Enters by rising; leaves faster than it arrived. */
+  animation: ztor-toast-in 260ms var(--easing);
+}
+.ztor-toast__icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  color: var(--status-success);
+}
+.ztor-toast__icon .ztor-icon { width: 16px; height: 16px; }
+.ztor-toast--error .ztor-toast__icon { color: var(--destructive); }
+.ztor-toast__text { min-width: 0; }
+
+.ztor-toast.is-leaving {
+  animation: ztor-toast-out 180ms var(--easing) forwards;
+}
+
+@keyframes ztor-toast-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes ztor-toast-out {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ztor-toast,
+  .ztor-toast.is-leaving { animation-duration: 1ms; }
+}
+
+/* ------------------------------------------------------------------
+   Save state — the button and its "last saved" line.
+
+   A Save button that stays lit after a successful save is lying: there
+   is nothing left to save. So the button disables itself when the page
+   is clean and wakes up the moment anything changes, and the timestamp
+   beside it carries the reassurance instead.
+   ------------------------------------------------------------------ */
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+  /* Reserve the line so the actions row does not jump on first save. */
+  min-height: 20px;
+}
+.save-status__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--status-success);
+  flex: none;
+}
+/* Unsaved changes waiting — amber, not red: nothing is wrong yet. */
+.save-status--dirty { color: var(--status-warning-ink); }
+.save-status--dirty .save-status__dot { background: var(--status-warning); }
+
+.btn[data-save][disabled] {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}

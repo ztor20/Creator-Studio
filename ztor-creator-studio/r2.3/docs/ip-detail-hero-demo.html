@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO · IP 詳情 hero 排版探索</title>
+<script src="../js/theme.js"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css">
+<link rel="stylesheet" href="../ds-components/fonts.css">
+<link rel="stylesheet" href="../ds-components/button.css">
+<link rel="stylesheet" href="../ds-components/badge.css">
+<link rel="stylesheet" href="../ds-components/switch.css">
+<link rel="stylesheet" href="../ds-components/card.css">
+<link rel="stylesheet" href="../shared.css">
+<style>
+  /* ── DEMO 專用樣式（探索頁，未進 ds-components；確認後再 promote）───────────── */
+  body { background: var(--background); color: var(--foreground); margin: 0; font-family: var(--font-body); }
+  .demo-wrap { max-width: 1180px; margin: 0 auto; padding: 40px 32px 80px; }
+  .demo-note { font-size: var(--fs-13); color: var(--muted-foreground); margin: 0 0 8px; }
+  .demo-h { font-family: var(--font-display); font-size: var(--fs-24); font-weight: var(--fw-medium);
+            letter-spacing: -0.4px; margin: 48px 0 6px; }
+  .demo-h:first-of-type { margin-top: 24px; }
+  .demo-tag { display:inline-block; font-size: var(--fs-11); color: var(--muted-foreground);
+              border:1px solid var(--border-soft); border-radius: var(--radius-pill);
+              padding: 2px 10px; margin-bottom: 14px; }
+
+  /* 塊1：hero 上塊 = 封面(3:4) + 資訊，兩欄（租用卡已移到下方，不再佔右欄）*/
+  /* 封面寬度刻意配合右側文字的自然高度（3:4 → 200×267 ≈ 文字 247），
+     讓兩欄底部幾乎齊平，不留死空間。 */
+  .demo-hero { display:grid; grid-template-columns: 200px minmax(0,1fr); gap: var(--sp-24);
+               padding: var(--sp-24); border-radius: var(--radius-md);
+               background: var(--card); box-shadow: var(--shadow-card); }
+  .demo-cover { position:relative; overflow:hidden; align-self:start; width:100%; aspect-ratio:3/4;
+                border-radius: var(--radius-md);
+                background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 30%, var(--surface-inverse)) 100%);
+                display:grid; place-items:center; color: var(--primary-foreground);
+                font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-medium);
+                letter-spacing:-0.6px; text-align:center; }
+  .demo-title { font-family: var(--font-display); font-size: var(--fs-32); font-weight: var(--fw-medium);
+                letter-spacing:-0.8px; margin: var(--sp-6) 0 var(--sp-4); }
+  .demo-owner { color: var(--foreground-muted); font-size: var(--fs-14); margin-bottom: var(--sp-14); }
+  .demo-desc  { margin:0 0 12px; max-width:540px; color: var(--foreground-muted); }
+  /* 右欄承載全部內容（資訊＋租用區）；照片獨佔左欄、頂對齊不動 */
+  .demo-info  { display:flex; flex-direction:column; min-width:0; }
+  .demo-meta  { display:grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr));
+                gap: var(--sp-16) var(--sp-14); margin-top: var(--sp-18); padding-top: var(--sp-16);
+                border-top:1px solid var(--border-soft); }
+  .demo-meta__label { font-size: var(--fs-12); color: var(--muted-foreground); margin-bottom: 2px; }
+  .demo-meta__value { font-size: var(--fs-15); font-weight: var(--fw-medium); }
+
+  /* 全寬「租用此 IP」條共用底 */
+  .rentbar { border-radius: var(--radius-md); background: var(--card); box-shadow: var(--shadow-card);
+             padding: var(--sp-16) var(--sp-24); margin-top: var(--sp-16); }
+  .rentbar__eyebrow { font-size: var(--fs-11); letter-spacing:.4px; text-transform:uppercase;
+                      color: var(--muted-foreground); margin-bottom: var(--sp-12); }
+  .rentbar__label { font-size: var(--fs-11); letter-spacing:.4px; text-transform:uppercase;
+                    color: var(--muted-foreground); margin-bottom: var(--sp-8); }
+  .rentbar__total { font-family: var(--font-display); font-size: var(--fs-28); font-weight: var(--fw-medium);
+                    letter-spacing:-.6px; }
+  .rentbar__terms { display:flex; gap: var(--sp-8); }
+  .rentbar__terms .duration-chip { flex:1; }
+  .rentbar .settings-row { padding: 6px 0; border:0; }
+  .rentbar .rental-card__breakdown { margin-top: 2px; }
+  .rentbar__legal { font-size: var(--fs-11); color: var(--muted-foreground); margin-top: var(--sp-8); }
+  .rentbar__col { min-width:0; }
+  .rentbar__col + .rentbar__col { padding-left: var(--sp-24); border-left: 1px solid var(--border-soft); }
+
+  /* 變體 A（定案）：兩組搬進 hero 卡內、垂直排 —— 組1（租期＋獨家）在上、組2（費用明細＋結算）在下。
+     組內兩格左右並排（避免整體過高），組間用細橫線分隔。 */
+  .rentbar--a { display:flex; flex-direction:column; gap: var(--sp-16); }
+  .rentbar__group { display:grid; grid-template-columns: 1.3fr 1fr; gap: var(--sp-24); min-width:0; align-items:start; }
+  .rentbar__group + .rentbar__group { padding-top: var(--sp-16); border-top:1px solid var(--border); }
+  .rentbar__sub { min-width:0; }
+
+  @media (max-width: 860px){
+    .demo-hero { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 620px){
+    /* 手機：組內兩格也改上下堆疊，避免每格被壓太窄 */
+    .rentbar__group { grid-template-columns: 1fr; gap: var(--sp-16); }
+  }
+</style>
+</head>
+<body>
+<div class="demo-wrap">
+  <p class="demo-note">這是排版探索 DEMO（非正式頁）。「租用此 IP」已收回 hero 卡內、填掉封面右側的空白，並垂直排成兩組：組 1＝租期＋獨家、組 2＝費用明細＋結算。</p>
+
+  <h2 class="demo-h">Hero（封面 ＋ 資訊 ＋ 租用區）</h2>
+  <span class="demo-tag">封面 3:4 · 租用區在卡內垂直排 1 → 2</span>
+  <section class="demo-hero">
+    <div class="demo-cover">哈利<br>波特</div>
+    <div class="demo-info">
+      <div class="flex-row" style="gap:8px">
+        <span class="badge badge--orange"><span>可租用</span></span>
+        <span class="badge"><span>故事世界</span></span>
+        <span class="badge badge--info"><span>5 名額剩 3</span></span>
+      </div>
+      <h1 class="demo-title">哈利波特 Harry Potter</h1>
+      <div class="demo-owner">權利人 Warner Bros. · 已驗證的版權所有人 · 上架於 2025/08/12</div>
+      <p class="demo-desc">一個舉世聞名的魔法世界故事宇宙，涵蓋魔法學校、學院與咒語體系。包含 14 位具名角色、世界觀美術手冊與管弦配樂動機庫。</p>
+      <div class="demo-meta">
+        <div><div class="demo-meta__label">版稅</div><div class="demo-meta__value">12%</div></div>
+        <div><div class="demo-meta__label">起租費</div><div class="demo-meta__value">$420</div></div>
+        <div><div class="demo-meta__label">租期</div><div class="demo-meta__value">3–24 個月</div></div>
+        <div><div class="demo-meta__label">獨家</div><div class="demo-meta__value">可選</div></div>
+      </div>
+
+      <!-- 租用區：跟資訊同在右欄（照片獨佔左欄、不動），垂直排 組1 → 組2 -->
+      <div class="rentbar--a" style="margin-top:var(--sp-18);padding-top:var(--sp-16);border-top:1px solid var(--border)">
+        <div class="rentbar__eyebrow" style="margin:0">租用此 IP</div>
+
+        <!-- 組 1：租期 ＋ 獨家 -->
+        <div class="rentbar__group">
+          <div class="rentbar__sub">
+            <div class="rentbar__label">租期</div>
+            <div class="rentbar__terms">
+              <div class="duration-chip"><span>3 個月</span><span class="duration-chip__price">$640</span></div>
+              <div class="duration-chip duration-chip--active"><span>6 個月</span><span class="duration-chip__price">$1,140</span></div>
+              <div class="duration-chip"><span>12 個月</span><span class="duration-chip__price">$1,980</span></div>
+            </div>
+          </div>
+          <div class="rentbar__sub">
+            <div class="rentbar__label">獨家</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row__label">獨家租用</div>
+                <div class="settings-row__hint">+40% · 鎖定全部 5 個名額</div>
+              </div>
+              <div class="switch"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 組 2：費用明細 ＋ 結算 -->
+        <div class="rentbar__group">
+          <div class="rentbar__sub">
+            <div class="rentbar__label">費用明細</div>
+            <div class="rental-card__breakdown">
+              <div class="rental-card__breakdown-row"><span>基本授權 · 6 個月</span><span>$1,140.00</span></div>
+              <div class="rental-card__breakdown-row"><span>版稅分潤</span><span>收入的 12%</span></div>
+              <div class="rental-card__breakdown-row" style="font-weight:var(--fw-medium);color:var(--foreground)"><span>預估總額</span><span>$1,140.00</span></div>
+            </div>
+          </div>
+          <div class="rentbar__sub">
+            <div class="flex-row" style="justify-content:space-between;align-items:baseline">
+              <div class="rentbar__label" style="margin:0">結算</div>
+              <div class="rentbar__total">$1,140<span class="text-sub" style="font-size:var(--fs-13);font-weight:var(--fw-regular)"> USD</span></div>
+            </div>
+            <button class="btn btn--primary" style="width:100%;margin-top:10px">送出租用申請</button>
+            <button class="btn btn--ghost btn--sm" style="width:100%;margin-top:6px">稍後再說</button>
+            <div class="rentbar__legal">送出後建立一筆 Draft 授權、進入權利人核准佇列，非付款。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

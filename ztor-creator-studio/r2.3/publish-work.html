@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark" data-page-feat="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publish work · Ztor Creator Studio</title>
+<script src="js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-section.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/form-grid.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/control-row.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/zselect.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/amount-field.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/segmented.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/switch.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/chip.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tag-input.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/upload-tile.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/entry-list.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/progress-stepper.css?v=r2.2">
+<!-- 送出前的就緒檢查（規格 §8）沿用建立商品／建立拍賣那顆 footer chip。 -->
+<link rel="stylesheet" href="ds-components/readiness.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/leave-dialog.css?v=r2.2">
+<!-- 編輯已上架作品時，頁面頂部那句「這次的變更會不會重新送審」（規格 5.1.2.2 §2.2.11）。 -->
+<link rel="stylesheet" href="ds-components/info-banner.css?v=r2.2">
+<!-- 查無此項目 id 時的整頁錯誤狀態（與項目詳情同一種說法，見 D154） -->
+<link rel="stylesheet" href="ds-components/empty-stub.css?v=r2.2">
+<!-- 送出後回項目詳情頁才顯示成功提示（js/toast.js 的跨頁佇列），樣式在這裡就要備好。 -->
+<link rel="stylesheet" href="ds-components/toast.css?v=r2.2">
+<!-- 發布前預覽確認層（D223）：彈窗殼＋語言分頁＋列表 -->
+<link rel="stylesheet" href="ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/tabs.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/table.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/preview-card.css?v=r2.2">
+<link rel="stylesheet" href="ds-components/publish-preview.css?v=r2.2">
+<link rel="stylesheet" href="shared.css?v=r2.2">
+</head>
+<body>
+<div class="wizard">
+  <div class="wizard__sheet wizard__sheet--sectioned">
+  <header class="wizard__top">
+    <div class="wizard__top-bar">
+      <div class="wizard__top-lead">
+        <button class="wizard__back" type="button" data-wizard-back aria-label="Back" data-i18n-aria-label="wiz.back"><i data-lucide="chevron-left" class="ztor-icon"></i></button>
+        <div class="wizard__top-titlewrap">
+          <span class="wizard__top-title" data-i18n="pw.h1">Publish work</span>
+          <span class="wizard__top-sub" id="pw-sub" data-i18n="pw.subtitle">Film</span>
+        </div>
+      </div>
+
+      <div class="wizard__progress">
+        <div class="progress-stepper" id="stepper"><!-- 由 JS 依 FLOW 建 --></div>
+      </div>
+
+      <div class="wizard__top-actions">
+        <span class="wizard__save-status" data-wizard-save data-state="saved"><span class="wizard__save-status__dot"></span><span data-wizard-save-text>Saved</span></span>
+        <button class="btn btn--outline" type="button" data-wizard-savedraft data-i18n="wiz.savedraft">Save as draft</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 四個步驟的欄位區塊全部由 partials/work-fields.js 渲染（2026-08-10）。
+       原本這些 markup 直接寫在本頁；直接發佈的建立流程整併進來之後，同一組欄位有了
+       兩個宿主，寫兩份 markup 就會分岔，所以抽成共用 JS 元件，本頁只留空容器與順序。 -->
+  <div class="wizard__body wizard__body--form wizard__body--narrow">
+    <!-- 只有編輯已上架作品時出現（規格 5.1.2.2 §2.2.11）：創作者改到一半最需要知道的
+         是「這次改的東西會不會又要等審核」，所以這句話跟著改動即時換，不是靜態說明。 -->
+    <div class="info-banner mb-16" id="pw-edit-banner" hidden>
+      <i data-lucide="info" class="ztor-icon info-banner__icon"></i>
+      <span id="pw-edit-banner-text"></span>
+    </div>
+
+    <section data-panel="media">
+      <h1 class="wizard__step-title" data-i18n="pw.media.h1">Upload the film</h1>
+      <p class="wizard__step-sub" data-i18n="pw.media.sub">Upload the finished cut, then say what language it speaks and what subtitles ship with it.</p>
+      <div data-wf="file,audio,subs"></div>
+    </section>
+
+    <section data-panel="art" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.art.h1">Artwork &amp; clips</h1>
+      <p class="wizard__step-sub" data-i18n="pw.art.sub">This is what fans see before they press play.</p>
+      <!-- 花絮在預告片之前＝規格 §4／§5 的欄位順序（F6 花絮、F7 預告片）。 -->
+      <div data-wf="cover,stills,bts,trailer"></div>
+    </section>
+
+    <section data-panel="info" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.info.h1">Video details</h1>
+      <p class="wizard__step-sub" data-i18n="pw.info.sub">Everything on the listing page, plus what it costs to watch.</p>
+      <div data-wf="copy,spec,genres,tags,age,pricing"></div>
+    </section>
+
+    <section data-panel="credits" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.credits.h1">Cast &amp; crew</h1>
+      <p class="wizard__step-sub" data-i18n="pw.credits.sub">Names appear on the work's page in the order you enter them.</p>
+      <div data-wf="credits"></div>
+    </section>
+
+    <!-- 上線那天要發的那則貼文（2026-08-19 使用者裁決，D207／規格 5.1.2.2.1 F16）。
+         為什麼收在這一步而不是發文框：這則貼文跟作品一起送出、一起等審核、上線那一刻
+         才發出去（§2.2.9 的三件事）。原本先在項目頁的發文框打字、再被帶進本流程，
+         打好的字會消失進 sessionStorage，而且創作者以為自己已經發文了、實際上還沒。
+         寫在交件的最後一步，它的時點才跟它真正發出去的時點對得上。
+         標題不在這裡問：貼文標題沿用作品標題（submit() 取第一組填了字的語言）。 -->
+    <section data-panel="announce" class="hidden">
+      <h1 class="wizard__step-title" data-i18n="pw.ann.h1">Tell your backers</h1>
+      <p class="wizard__step-sub" data-i18n="pw.ann.sub">This goes out as an update the moment the work goes live — not now.</p>
+      <div class="field">
+        <label class="field__label" for="pw-ann-body" data-i18n="pw.ann.body">Message</label>
+        <textarea class="textarea" id="pw-ann-body" rows="5" data-i18n-placeholder="pw.ann.body-ph" placeholder="It's finished. Here's where to watch it…"></textarea>
+      </div>
+      <div class="field">
+        <label class="field__label" for="pw-ann-aud" data-i18n="pw.ann.aud">Who sees it</label>
+        <select class="select" id="pw-ann-aud">
+          <option data-i18n="pd-edit.update.aud-everyone">Everyone</option>
+          <option data-i18n="pd-edit.update.aud-backers">Backers only</option>
+          <option data-i18n="pd-edit.update.aud-superfan">Superfan+</option>
+        </select>
+      </div>
+    </section>
+  </div>
+  </div><!-- /.wizard__sheet -->
+
+  <footer class="wizard__bottom wizard__bottom--end" data-footer>
+    <div class="wizard__bottom-actions">
+      <!-- 送出前的就緒檢查（規格 §8）。做法與建立商品／建立拍賣同一顆 readiness chip：
+           缺項時主動作停用、chip 說明缺什麼、在第幾步；只在最後一步出現，因為送出只發生在
+           那一步（前三步的主動作是「下一步」，不該被擋）。
+           2026-08-18 使用者裁決：chip 移到「上一步」左邊。原本夾在上一步與送出之間，把兩顆
+           按鈕拆開；現在兩顆按鈕連在一起、chip 在它們左邊當說明，讀起來是「還缺這些 → 
+           上一步 / 送出」。彈出框仍靠右對齊自己（right:0），往左展開不會撞出畫面。 -->
+      <span class="readiness__chip" id="pw-ready-chip" tabindex="0" hidden><i data-lucide="circle" class="ztor-icon"></i><span id="pw-ready-chip-text">6 to go</span>
+        <span class="readiness__pop">
+          <section class="readiness">
+            <div class="readiness__head"><h3 class="readiness__title" id="pw-ready-title" data-i18n="pw.ready.title">Ready to send?</h3></div>
+            <ul class="readiness__list" id="pw-ready-list"></ul>
+            <div class="readiness__banner" id="pw-ready-banner"></div>
+          </section>
+        </span>
+      </span>
+      <button class="btn btn--outline" type="button" data-action="back" data-i18n="wiz.back">Back</button>
+      <button class="btn btn--primary" type="button" data-action="next" data-i18n="wiz.continue">Continue</button>
+    </div>
+  </footer>
+</div>
+
+<script src="js/icons.js?v=r2.2"></script>
+<script src="js/i18n.js?v=r2.2"></script>
+<!-- 頁首副標要顯示是哪一個項目的作品，成功後也要導回該項目的詳情頁。 -->
+<script src="js/projects-store.js?v=r2.2"></script>
+<!-- 送出＝建立一件送審作品；狀態機與字彙都在這支 store 裡（審核頁與項目詳情共用同一份）。 -->
+<script src="js/work-review-store.js?v=r2.2"></script>
+<!-- 提供 window.ztorToast.queue()：上架成功的提示排到項目詳情頁再顯示。 -->
+<script src="js/toast.js?v=r2.2"></script>
+<script src="partials/wizard-chrome.js?v=r2.2"></script>
+<script src="partials/publish-preview.js?v=r2.2"></script>
+<!-- 素材格（[data-upload]）：點擊選檔、hover 替換／刪除，由共用元件產生。 -->
+<script src="partials/upload-tile.js?v=r2.2"></script>
+<!-- 分類與年齡分級的值域（主規格 §7.1.2／§7.11）：建立項目流程與項目公開資訊吃同一份，
+     所以必須排在 work-fields.js 前面。 -->
+<script src="js/work-taxonomy.js?v=r2.2"></script>
+<!-- 作品欄位區塊（F1–F15）的單一來源，與 create-project.html 的直接發佈影片路徑共用。 -->
+<script src="partials/work-fields.js?v=r2.2"></script>
+<script>
+/* 作品上架流程（publish-work.html）· 四步：音訊與字幕 → 封面與影音素材 → 影片詳情 → 演職人員詳情
+   ------------------------------------------------------------------------------
+   入口：項目詳情頁的發文彈窗選「完成作品」＋影片家族的項目（`?project=<id>`）。
+   沒帶參數也能單獨開啟（便於獨立檢視版面），此時副標退回泛稱、送出後回項目清單的第一筆。
+   全前端 demo：上傳不真的上傳、送出不真的建檔。
+
+   ── 送出＝送審，不是上線（2026-08-07 改，規格 §3.3／§4 共用操作與送出）──────
+   送出只把作品審核狀態由草稿轉成待審核；作品尚未上線、那則完成作品更新尚未發出、
+   項目狀態維持已成功。三件事（作品上架、發貼文、項目轉已上線）等到 Admin 在
+   影片上架審核頁按下通過才一次發生。這頁因此只做兩件事：把送審內容寫進
+   js/work-review-store.js、queue 一則「已送出審核」的提示，然後回項目詳情。
+   被退件後從同一個入口回來修改、再送一次，送出次數 +1（store 負責計數）。
+
+   ── 欄位由 partials/work-fields.js 渲染（2026-08-10）──────────────────────
+   直接發佈的建立流程整併之後，同一組欄位有兩個宿主；欄位規格只有一份，實作也只能
+   有一份。本頁保留的是「哪些區塊在第幾步、送出做什麼」，欄位本身不在這裡。 */
+(function () {
+  const T = (k, fb) => (window.i18nT && window.i18nT(k)) || fb;
+  const zh = () => document.documentElement.lang === 'zh-Hant';
+  /* 2026-08-19 撤除（墓碑，D207）：RELEASE_KEY（sessionStorage 'ztor.workRelease'）。
+     貼文的內文與受眾改在本流程最後一步直接收，不再由項目頁的發文框接力傳過來。 */
+
+  /* ---- 頁首：這是哪一個項目的作品 ---- */
+  const params = new URLSearchParams(location.search);
+  const pid = params.get('project') || '';
+  const store = window.ztorProjects;
+  const proj = store ? ((pid && store.get(pid)) || null) : null;
+  /* 帶了 ?project= 卻查不到（連結過期、項目已移除，或那是別位創作者的項目）＝這一趟
+     上架不成立：接下來每一步都會把作品掛到一個不存在的項目上，送出還會生出一件孤兒
+     送審件。所以在這裡就停，說法與項目詳情共用同一組文案（2026-08-07 補，D154 慣例）。
+     沒帶參數仍維持原樣（獨立開啟看版面），那是刻意保留的展示入口。 */
+  if (pid && !proj) {
+    const wiz = document.querySelector('.wizard');
+    if (wiz) {
+      const stub = document.createElement('div');
+      stub.className = 'empty-stub';
+      stub.innerHTML =
+        '<div class="empty-stub__inner">' +
+        '<div class="empty-stub__mark">!</div>' +
+        '<h2 class="empty-stub__title" data-i18n="project.notfound.title">Project not found</h2>' +
+        '<p class="empty-stub__sub" data-i18n="project.notfound.sub">This link may be out of date, the project was removed, or it belongs to another creator. Go back to the list and pick one.</p>' +
+        '<div class="empty-stub__refs"><a class="btn btn--primary" href="projects.html" data-i18n="project.notfound.back">Back to projects</a></div>' +
+        '</div>';
+      wiz.parentNode.insertBefore(stub, wiz);
+      wiz.hidden = true;
+      if (window.applyI18n) window.applyI18n(stub);
+    }
+    document.title = ((window.i18nT && window.i18nT('project.notfound.title')) || 'Project not found') + ' · Ztor Creator Studio';
+    return;
+  }
+  /* ---- 編輯已上架作品（?mode=edit，規格 5.1.2.2 §2.2.11）--------------------
+     同一組步驟、同一份欄位，差別只在三件事：欄位預先帶入這件作品現有的內容、
+     頂部多一句「這次的變更會不會重新送審」、最後一步的主動作依那條分界換字與換行為。
+     為什麼沿用本頁而不是另開一頁：欄位規格的權威只有一份（5.1.2.2.1 F1–F15），
+     編輯與上架看到的必須是同一組欄位；「編輯是走同一組步驟或改為就地編輯單一區段」
+     上游仍標〔產品待確認〕，本頁的做法是呈現假設，見 ASSUMPTIONS。 */
+  const rec = (window.ztorWorkReview && pid) ? window.ztorWorkReview.forProject(pid) : null;
+  const editMode = params.get('mode') === 'edit' && !!rec;
+  /* 要重新送審的欄位（規格 §2.2.11）：影片檔（F1）、定價（F14）、年齡限制（F13）。
+     不必重新送審：多語言標題與說明（F8）、標籤（F12）、演職名單（F15）。
+     其餘欄位落在哪一邊，上游標〔產品待確認〕——本頁不代為拍板，見下方 impact()。
+     ⚠ 原始語音（F2）在規格 §2.2.11 的三份清單裡都沒出現（三＋三＋八＝十四，F1–F15 少一項），
+     這裡歸進待確認那一群而不是預設「不用送審」：漏列不等於已經決定。見 ASSUMPTIONS WEDIT-001。 */
+  const UNDECIDED = ['audio', 'subs', 'cover', 'stills', 'bts', 'trailer', 'runtime', 'release', 'genres'];
+  let base = null;   /* 進來時的內容快照，用來比對這次改了哪一類欄位 */
+
+  const subEl = document.getElementById('pw-sub');
+  /* 有帶 ?project 就把副標換成該項目的名字（跟著語言換）；沒帶就留 markup 的泛稱。 */
+  function syncSub() {
+    if (!proj || !subEl) return;
+    subEl.removeAttribute('data-i18n');
+    subEl.textContent = zh() ? proj.name : (proj.nameEn || proj.name);
+  }
+
+  /* 就緒檢查要讀到頁面所有欄位才算得出來，而那些欄位是下面一段一段建起來的；
+     建到一半就跑會讀到還沒宣告的變數，所以在最後一段開燈，在此之前呼叫都直接返回。 */
+  let readinessOn = false;
+
+  /* ---- 欄位區塊：容器上的 data-wf 就是這一步要哪幾塊、照什麼順序 ----
+     D220 曾在此傳 lsField:true 讓 F8 名稱與說明卡掛 data-ls-field，交給頁級
+     partials/lang-switch.js 接手內容檢視語言切換；D223 撤除 lang-switch.js，
+     翻譯檢視改在送出（submit()）時交給 partials/publish-preview.js，這裡不再需要
+     那個旗標。 */
+  document.querySelectorAll('[data-wf]').forEach(host => {
+    window.ZtorWorkFields.renderAll(host, host.dataset.wf.split(','), { onChange: () => renderReadiness() });
+  });
+
+  /* 編輯態：把這件作品現有的內容寫回欄位，再拍一份快照當比對基準。
+     快照取自畫面（collect）而不是 store 原始資料——兩邊要比的是同一種形狀，
+     否則「原本就存不進原型的東西」會被誤判成使用者改過。 */
+  if (editMode) {
+    window.ZtorWorkFields.fill(rec.work || {}, { coverSrc: rec.cover || (proj ? (proj.cover || proj.poster || '') : '') });
+    base = window.ZtorWorkFields.collect();
+    const h1 = document.querySelector('[data-i18n="pw.h1"]');
+    if (h1) { h1.dataset.i18n = 'pw.edit.h1'; h1.textContent = T('pw.edit.h1', 'Edit work'); }
+    document.title = T('pw.edit.h1', 'Edit work') + ' · Ztor Creator Studio';
+  }
+
+  /* 這次的變更落在哪一邊。三個結果：gate＝要重新送審、other＝落在待確認那一群、
+     none＝只動了不必送審的欄位。被退件的那一件不管改什麼都要重送（它本來就在等修正）。 */
+  function impact() {
+    if (!editMode || !base) return { gate: false, other: false, resubmit: false };
+    const now = window.ZtorWorkFields.collect();
+    const j = v => JSON.stringify(v);
+    const gate = now.file.name !== base.file.name
+      || now.age !== base.age
+      || j([now.paid, now.currency, now.qualities]) !== j([base.paid, base.currency, base.qualities]);
+    const other = UNDECIDED.some(k => j(now[k]) !== j(base[k]));
+    return { gate: gate, other: other, resubmit: gate || rec.status === 'rejected' };
+  }
+
+  const editBanner = document.getElementById('pw-edit-banner');
+  const editBannerText = document.getElementById('pw-edit-banner-text');
+  function renderEditBanner() {
+    if (!editMode || !editBanner) return;
+    editBanner.hidden = false;
+    const im = impact();
+    /* 還沒改到東西時就先把分界講清楚——與作品區段那一句是同一條規則，共用同一個 key。 */
+    let key = 'pd.work.rule';
+    if (rec.status === 'rejected') key = 'pw.edit.banner.rejected';
+    else if (im.gate) key = 'pw.edit.banner.resubmit';
+    else if (im.other) key = 'pw.edit.banner.undecided';
+    editBannerText.dataset.i18n = key;
+    editBannerText.textContent = T(key, '');
+  }
+
+  /* ---- 分步 ---- */
+  /* 最後一步「給粉絲的話」只在第一次上架時出現（D207）：編輯已上架作品不產生新的
+     貼文（那則早就發過了），多一步問一次只會讓人以為改了會再發一次。 */
+  const FLOW = editMode ? ['media', 'art', 'info', 'credits'] : ['media', 'art', 'info', 'credits', 'announce'];
+  const STEP_LABEL = { media: 'pw.step.media', art: 'pw.step.art', info: 'pw.step.info', credits: 'pw.step.credits', announce: 'pw.step.announce' };
+  /* 就緒檢查項屬於哪一步：模組不知道宿主頁怎麼分步，所以由這裡對應（規格 §8）。 */
+  const STEP_OF = { file: 'media', audio: 'media', cover: 'art', copy: 'info', spec: 'info', genres: 'info', age: 'info', pricing: 'info' };
+  let idx = 0;
+
+  const stepperEl = document.getElementById('stepper');
+  const backBtn = document.querySelector('[data-action=back]');
+  const nextBtn = document.querySelector('[data-action=next]');
+
+  function buildStepper() {
+    stepperEl.style.setProperty('--progress', Math.round((idx + 1) / FLOW.length * 100) + '%');
+    stepperEl.innerHTML =
+      '<div class="progress-stepper__track"><div class="progress-stepper__fill"></div></div>' +
+      '<div class="progress-stepper__labels">' +
+      FLOW.map((s, i) => {
+        const cls = 'progress-stepper__label' + (i === idx ? ' progress-stepper__label--current' : '') + (i < idx ? ' progress-stepper__label--done' : '');
+        return '<span class="' + cls + '" data-jump="' + i + '">' + T(STEP_LABEL[s], s) + '</span>';
+      }).join('') +
+      '</div>';
+    stepperEl.querySelectorAll('[data-jump]').forEach(it => {
+      it.addEventListener('click', () => { idx = Number(it.dataset.jump); render(true); });
+    });
+  }
+
+  /* 最後一步的主動作就是這一趟的結尾，所以按鈕自己換名字——底下不另加第二顆送出鈕。
+     編輯態的結尾有兩種：要重新送審，或只是存起來；名字必須說中哪一種，因為兩者的
+     後果差很多（一個讓作品回到待審核，一個不動狀態）。 */
+  function syncPrimary() {
+    const last = idx === FLOW.length - 1;
+    let key = last ? 'pw.submit' : 'wiz.continue';
+    let fb = last ? 'Send for review' : 'Continue';
+    if (last && editMode) {
+      const resubmit = impact().resubmit;
+      key = resubmit ? 'pw.edit.save-review' : 'pw.edit.save';
+      fb = resubmit ? 'Save and send for review' : 'Save changes';
+    }
+    nextBtn.dataset.i18n = key;
+    nextBtn.textContent = T(key, fb);
+  }
+
+  function render(scroll) {
+    const cur = FLOW[idx];
+    document.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== cur));
+    backBtn.classList.toggle('hidden', idx === 0);
+    /* 最後一步的主動作就是送出上架，所以按鈕自己換名字——底下不另加第二顆送出鈕，
+       否則同一列會同時出現「繼續」與「發布」，使用者得先猜哪一顆才是結尾。 */
+    syncPrimary();
+    buildStepper();
+    syncSub();
+    renderReadiness();
+    if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.ztorIcons) window.ztorIcons.applyIcons(document.body);
+  }
+
+  backBtn.addEventListener('click', () => { if (idx > 0) { idx--; render(true); } });
+  nextBtn.addEventListener('click', () => {
+    if (nextBtn.disabled) return;
+    if (idx < FLOW.length - 1) { idx++; render(true); return; }
+    submit();
+  });
+
+  /* 走完＝把這一件送進平台審核。貼文與作品內容一起交給 store 保管，等審核通過
+     那一刻才由項目詳情頁播出「發貼文＋轉已上線」。為什麼三件事不在這裡做：
+     它們的觸發條件是審核通過，不是送出（規格 §3.3、5.1.0.4 F4）。 */
+  function submit() {
+    /* 編輯已上架作品是另一條路：它不產生新的貼文，也不一定產生新的送審件——
+       這條分支不算「新發布」，不進發布前預覽確認層（D223，見 ASSUMPTIONS.md）。 */
+    if (editMode) { saveEdit(); return; }
+    if (window.ztorPublishPreview) {
+      window.ztorPublishPreview.open({
+        fields: [
+          { key: 'name', el: document.getElementById('pw-title'), kind: 'input', labelKey: 'pp.field.name', labelFallback: 'Name' },
+          { key: 'desc', el: document.getElementById('pw-desc'), kind: 'textarea', labelKey: 'pp.field.desc', labelFallback: 'Description' }
+        ],
+        onConfirm: doSubmitNew
+      });
+      return;
+    }
+    doSubmitNew();
+  }
+  function doSubmitNew() {
+    /* 貼文的內文與受眾在最後一步問（D207）。2026-08-19 之前它們是在項目頁的發文框
+       打好、經 sessionStorage 傳過來的；那條接力棒已撤除。 */
+    const annBody = document.getElementById('pw-ann-body');
+    const annAud = document.getElementById('pw-ann-aud');
+    const annAudOpt = annAud && annAud.options[annAud.selectedIndex];
+    const post = {
+      id: pid,
+      title: '',
+      audience: (annAudOpt && annAudOpt.dataset.i18n) || 'pd-edit.update.aud-everyone',
+      body: annBody ? annBody.value.trim() : ''
+    };
+
+    const work = window.ZtorWorkFields.collect();
+    /* 貼文標題退而求其次用作品標題：語言組是可增可刪的，所以取「第一個填了字的那一組」。 */
+    const firstTitle = (work.copy.find(t => t.title) || {}).title || '';
+    if (!post.title) post.title = firstTitle || T('pw.update.fallback', 'The work is live');
+
+    const target = post.id || pid || (store && store.first() ? store.first().id : '');
+    const workName = firstTitle || (proj ? proj.name : '');
+    const workNameEn = firstTitle || (proj ? (proj.nameEn || proj.name) : '');
+
+    if (window.ztorWorkReview) {
+      window.ztorWorkReview.submit({
+        projectId: target,
+        creator: store ? store.owner() : '',
+        cover: proj ? (proj.cover || proj.poster || '') : '',
+        title: { zh: workName, en: workNameEn },
+        projectName: { zh: proj ? proj.name : '', en: proj ? (proj.nameEn || proj.name) : '' },
+        post: { title: post.title, audience: post.audience || 'pd-edit.update.aud-everyone', body: post.body || '' },
+        work: work
+      });
+    }
+    /* 2026-08-19 撤除（墓碑，D207）：清掉 sessionStorage 的貼文草稿。草稿是發文框
+       傳過來的接力棒，發文框已不再產生它。 */
+    if (window.ztorToast && window.ztorToast.queue) {
+      window.ztorToast.queue(T('pw.toast.submitted', 'Sent for review'), { key: 'pw.toast.submitted', tone: 'success' });
+    }
+    location.href = 'project-detail.html' + (target ? '?id=' + encodeURIComponent(target) : '');
+  }
+
+  /* 編輯已上架作品的儲存（規格 5.1.2.2 §2.2.11 的分界）：
+     改到影片檔／定價／年齡限制（或這一件本來就被退件）＝重新送審，走與第一次上架
+     同一支 store.submit()，作品回到待審核、送出次數 +1、Admin 的審核清單看得到；
+     其餘變更只換內容、不動審核狀態。兩條路都不碰那則完成作品貼文——貼文早就發過了。 */
+  function saveEdit() {
+    const work = window.ZtorWorkFields.collect();
+    const resubmit = impact().resubmit;
+    if (resubmit) {
+      window.ztorWorkReview.submit({
+        projectId: pid,
+        persona: rec.persona,
+        creator: rec.creator,
+        cover: rec.cover,
+        title: rec.title,
+        projectName: rec.projectName,
+        post: rec.post,
+        work: work
+      });
+    } else {
+      window.ztorWorkReview.saveWork(pid, work);
+    }
+    if (window.ztorToast && window.ztorToast.queue) {
+      const k = resubmit ? 'pw.toast.resent' : 'pw.toast.saved';
+      window.ztorToast.queue(T(k, resubmit ? 'Sent for review again' : 'Changes saved'), { key: k, tone: 'success' });
+    }
+    /* 回到作品現在住的那一格（2026-08-17 分頁整併，D193）：共創與預購的作品收在
+       「進度」的完成作品節點，直接發佈的收在「總覽」的上架追蹤。原本一律回 `#work`，
+       那個分頁已經不存在，deep link 會落空。 */
+    const back = window.ztorProjects && window.ztorProjects.get(pid);
+    const hash = (back && back.type !== 'go-live') ? '#progress' : '#overview';
+    location.href = 'project-detail.html?id=' + encodeURIComponent(pid) + hash;
+  }
+
+  /* ---- 送出前的就緒檢查（規格 §8）--------------------------------------------
+     項目清單來自 work-fields 模組（欄位在哪、算不算填好都是它的事），本頁只負責
+     把它畫成清單、決定擋不擋關。做法沿用建立商品／建立拍賣的 readiness chip。 */
+  const readyList = document.getElementById('pw-ready-list');
+  const readyBanner = document.getElementById('pw-ready-banner');
+  const readyChip = document.getElementById('pw-ready-chip');
+  const readyChipText = document.getElementById('pw-ready-chip-text');
+  const readyChipIcon = readyChip.querySelector('.ztor-icon');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  function renderReadiness() {
+    if (!readinessOn) return;
+    /* 每一格改動都可能讓「這次要不要重新送審」翻面，主動作與頂部那句話跟著重算。 */
+    syncPrimary(); renderEditBanner();
+    const last = idx === FLOW.length - 1;
+    /* 「給粉絲的話」不是作品欄位，所以不在 ZtorWorkFields 那份清單裡（那份的權威是
+       5.1.2.2.1 F1–F15），但它跟作品一起送出、送出後就發得出去，缺了要擋——所以
+       在這裡補一項就緒檢查。必填的理由：這則貼文會直接推播給所有支持者，內文空白時
+       他們收到的是一個只有作品名的通知。 */
+    const annBody = document.getElementById('pw-ann-body');
+    const annCheck = (editMode || !annBody) ? [] : [{
+      label: T('pw.ready.ann', 'A message for your backers'),
+      done: () => !!annBody.value.trim()
+    }];
+    const checks = window.ZtorWorkFields.checks({ stepOf: STEP_OF, stepLabel: k => T(STEP_LABEL[k], k) }).concat(annCheck);
+    const remaining = checks.filter(c => !c.done()).length;
+    readyList.innerHTML = '';
+    checks.forEach(c => {
+      const done = c.done();
+      const li = document.createElement('li');
+      li.className = 'readiness__item' + (done ? ' readiness__item--done' : '');
+      li.innerHTML = '<span class="readiness__mark">' + (done ? '<i data-lucide="check" class="ztor-icon"></i>' : '') + '</span><span>' + esc(c.label) + '</span>';
+      readyList.appendChild(li);
+    });
+    const ready = remaining === 0;
+    /* Cheat Codes 的 Skip validation：開著就放行，與站上其他建立流程一致。 */
+    const skip = !!(window.ztorDevState && window.ztorDevState.get().skipValidation);
+    if (ready) {
+      readyBanner.textContent = T('pw.ready.banner.ready', 'Ready to send!');
+      readyBanner.classList.add('readiness__banner--ready');
+      readyChipText.textContent = T('pw.ready.chip.ready', 'Ready to send');
+      readyChip.classList.add('readiness__chip--ready');
+      readyChipIcon.setAttribute('data-lucide', 'check-circle');
+    } else {
+      readyBanner.textContent = skip
+        ? T('pw.ready.banner.skip', '{n} items missing · validation skipped (dev)').replace('{n}', remaining)
+        : T('pw.ready.banner.needed', '{n} items still needed').replace('{n}', remaining);
+      readyBanner.classList.remove('readiness__banner--ready');
+      readyChipText.textContent = skip
+        ? T('cp.ready.chip.skip', 'Validation skipped')
+        : T('cp.ready.chip.togo', '{n} to go').replace('{n}', remaining);
+      readyChip.classList.remove('readiness__chip--ready');
+      readyChipIcon.setAttribute('data-lucide', 'circle');
+    }
+    /* 只有最後一步的主動作是「送出」，擋關與 chip 都跟著它走。 */
+    readyChip.hidden = !last;
+    nextBtn.disabled = last && !(ready || skip);
+    if (window.ztorIcons) window.ztorIcons.applyIcons(readyList), window.ztorIcons.applyIcons(readyChip);
+  }
+  /* 任何一格改動都可能讓清單變短：輸入、下拉、上傳各有原生事件；chip 與開關這類
+     沒有原生事件的，由 work-fields 統一補一顆 workfields:change。 */
+  document.addEventListener('input', renderReadiness);
+  document.addEventListener('change', renderReadiness);
+  document.addEventListener('upload:change', renderReadiness);
+  document.addEventListener('workfields:change', renderReadiness);
+  readinessOn = true;
+
+  /* 切語言時步驟名與主動作文案都要跟著換；主動作的字隨「是不是最後一步」而不同，
+     所以整個 render() 重跑一次最省事（面板顯隱本來就冪等）。 */
+  document.addEventListener('i18n:applied', () => { render(false); renderEditBanner(); });
+  render(false);
+  renderEditBanner();
+})();
+</script>
+<script src="js/reveal.js?v=r2.2"></script>
+<script src="js/devtools.js?v=r2.2"></script>
+<script src="js/zselect.js?v=r2.2"></script>
+</body>
+</html>

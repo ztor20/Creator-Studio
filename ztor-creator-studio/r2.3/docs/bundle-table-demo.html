@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 資產一律以 ../（r2.2 根）為前綴，不用 <base>：文件本身沒有可解析的基底網址時
+     （被當成 data: 快照預覽），<base> 會讓整組樣式表一起載不到。 -->
+<title>DEMO · 適用場次表格（照參考設計，樣式走我們的 token）</title>
+<script src="../js/theme.js?v=r2.2"></script>
+<link rel="stylesheet" href="../ds-components/_tokens.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/fonts.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/button.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/card.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/checkbox.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/badge.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/field-system.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/payout-modal.css?v=r2.2">
+<link rel="stylesheet" href="../ds-components/bundle-editor.css?v=r2.2">
+<link rel="stylesheet" href="../shared.css?v=r2.2">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     DEMO 專用（探索頁，未進 ds-components；裁決後才 promote 回 bundle-editor.css）
+     參考圖的做法拆成四件事：
+       ① 表頭有一條底色帶，欄名比內文重（粗體、對比高）
+       ② 表頭第一格放「全選」勾選框（＋一顆展開／收合箭頭）
+       ③ 每一列一條分隔線，整列可點
+       ④ 沒被選到的列整列淡化（參考圖裡的灰字列）
+     ①的底色往哪個方向走是這份 demo 要裁決的事，所以做成三個變體並排比。
+     ══════════════════════════════════════════════════════════════════════ */
+  body { background: var(--surface-page, var(--background)); }
+  .dx-page { max-width: 940px; margin: 0 auto; padding: var(--sp-32) var(--sp-24) var(--sp-64); }
+  .dx-note { padding: var(--sp-12) var(--sp-16); margin-bottom: var(--sp-24);
+             border: 1px dashed var(--border); border-radius: var(--radius-xl);
+             background: var(--accent); font-family: var(--font-ui);
+             font-size: var(--fs-13); line-height: 1.7; color: var(--muted-foreground); }
+  .dx-note strong { color: var(--foreground); }
+  /* 三個變體上下排；表格有五欄，並排會把票種名擠成 0 寬 */
+  .dx-grid { display: grid; gap: var(--sp-24); }
+  .dx-h { font-family: var(--font-ui); font-size: var(--fs-16); color: var(--foreground);
+          margin: 0 0 var(--sp-6); }
+  .dx-h span { display: block; margin-left: 0; margin-top: var(--sp-2); }
+  .dx-h span { font-size: var(--fs-12); color: var(--muted-foreground); margin-left: var(--sp-8); }
+  /* 彈窗面板（L1）→ 分卡（L2）的實際疊層，照正式頁一樣，否則底色比較不準 */
+  .dx-panel { background: var(--card); border-radius: var(--radius-xl); padding: var(--sp-16); }
+
+  /* ── 表格本體（三個變體共用的骨架）────────────────────────────────── */
+  .dxt__head,
+  .dxt__row {
+    display: grid;
+    grid-template-columns: 16px 20px minmax(0, 1fr) 96px 72px;
+    align-items: center;
+    gap: var(--sp-12);
+    padding: var(--sp-10) var(--sp-12);
+  }
+  .dxt__head {
+    font-family: var(--font-ui);
+    font-size: var(--fs-12);
+    /* ②的箭頭要跟勾選框並排，所以表頭的第二欄借給它 */
+    color: var(--foreground);
+    font-weight: var(--fw-medium);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+  .dxt__chev { display: grid; place-items: center; color: var(--muted-foreground); }
+  .dxt__chev .ztor-icon { width: 14px; height: 14px; }
+  .dxt__col--num { text-align: right; }
+  .dxt__row { cursor: pointer; }
+  .dxt__row + .dxt__row { border-top: 1px solid var(--border-soft); }
+  .dxt__row:hover { background: var(--accent); }
+  .dxt__name { font-family: var(--font-ui); font-size: var(--fs-14); color: var(--foreground);
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dxt__num { font-family: var(--font-numeric); font-size: var(--fs-14); color: var(--foreground);
+              font-variant-numeric: tabular-nums; text-align: right; }
+  /* ④ 沒勾到的列整列淡化——參考圖用灰字表達「這一列現在不算數」 */
+  .dxt__row--off .dxt__name,
+  .dxt__row--off .dxt__num { color: var(--muted-foreground); }
+  /* ③ 場次分組列（參考圖是平的清單，我們的資料有場次這一層，保留） */
+  .dxt__group { display: flex; align-items: center; gap: var(--sp-10);
+                padding: var(--sp-14) var(--sp-12) var(--sp-4); }
+  .dxt__gname { font-family: var(--font-ui); font-size: var(--fs-12); color: var(--muted-foreground);
+                letter-spacing: 0.04em; text-transform: uppercase; }
+  .dxt__gall { margin-left: auto; font-size: var(--fs-12); }
+  /* 狀態點：參考圖有一欄小圓點。我們沒有對應的資料欄位，做成可切換的示意 */
+  .dxt__dot { width: 8px; height: 8px; border-radius: 999px; background: var(--status-success); justify-self: center; }
+  .dxt__row--off .dxt__dot { background: var(--border); }
+
+  /* ── 變體 A：表頭疊一層薄膜（往亮）──────────────────────────────── */
+  .dxt--a .dxt__head { background: var(--nest-surface); }
+
+  /* ── 變體 B：表頭用品牌橘極淡 tint（最接近參考圖的藍色帶）─────────── */
+  .dxt--b .dxt__head { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+  /* ── 變體 C：表頭不加底色（＝站上 2026-07-31 慣例、也是目前正式頁的做法）── */
+  .dxt--c .dxt__head { background: transparent; color: var(--column-head-ink); font-weight: var(--fw-regular); }
+
+  /* 帶外框的整表（參考圖整張表有一圈框＋表頭壓在框的上緣） */
+  .dxt--boxed { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="dx-page">
+
+  <div class="dx-note">
+    <strong>已裁決（2026-08-13）：選 C，已改到正式頁上。</strong>本頁保留為當時的比對紀錄，裁決內容見 <code>STYLE-DECISIONS.md</code> Q68。<br><br>
+    <strong>DEMO — 適用場次表格改照參考圖的設計。</strong><br>
+    參考圖拆出四件事：表頭有底色帶且欄名較重、表頭第一格放全選（＋箭頭）、每列一條分隔線、沒選到的列整列淡化。<br>
+    後三件三個變體都一樣，差別只在<strong>表頭底色往哪個方向走</strong>——這是要裁決的那一項。
+    站上 2026-07-31 有一條「列表表頭不畫底色帶」的裁示（`--column-head-ink` 欄名＋留白分隔），所以 A／B 等於推翻它、C 是維持現況。<br>
+    另外參考圖有一欄彩色圓點（Status）。<strong>我們的票券沒有對應的狀態欄位</strong>，這裡先用綠點／灰點示意「這一列現在算不算數」，要真的做需要上游給定義。
+  </div>
+
+  <div class="dx-grid">
+    <div>
+      <h2 class="dx-h">變體 A<span>表頭疊一層薄膜（往亮）——照我們的疊層模型，方向與 Q66 一致</span></h2>
+      <div class="dx-panel"><section class="bd-sec"><div class="bd-sec__head">
+        <h3 class="bd-sec__title">適用場次</h3>
+        <p class="bd-sec__sub">預設每一場都適用，取消不販售的場次即可。</p>
+      </div><div class="dxt dxt--a dxt--boxed" data-tbl></div></section></div>
+    </div>
+
+    <div>
+      <h2 class="dx-h">變體 B<span>表頭用品牌橘 10% tint——最接近參考圖那條藍色帶</span></h2>
+      <div class="dx-panel"><section class="bd-sec"><div class="bd-sec__head">
+        <h3 class="bd-sec__title">適用場次</h3>
+        <p class="bd-sec__sub">預設每一場都適用，取消不販售的場次即可。</p>
+      </div><div class="dxt dxt--b dxt--boxed" data-tbl></div></section></div>
+    </div>
+
+    <div>
+      <h2 class="dx-h">變體 C<span>表頭不加底色＝目前正式頁的做法（對照組）</span></h2>
+      <div class="dx-panel"><section class="bd-sec"><div class="bd-sec__head">
+        <h3 class="bd-sec__title">適用場次</h3>
+        <p class="bd-sec__sub">預設每一場都適用，取消不販售的場次即可。</p>
+      </div><div class="dxt dxt--c dxt--boxed" data-tbl></div></section></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../js/icons.js?v=r2.2"></script>
+<script>
+(function () {
+  /* MIRROR FANMEETING 的假資料（三場 × 兩票種），與正式頁 bookyay 帶入後的內容相同 */
+  var GROUPS = [
+    { id: 'd1', name: 'Day 1', rows: [
+      { id: 'd1-a', name: '搖滾區', price: 3800, qty: 150, on: true },
+      { id: 'd1-b', name: '一般席', price: 2200, qty: 400, on: true } ] },
+    { id: 'd2', name: 'Day 2', rows: [
+      { id: 'd2-a', name: '搖滾區', price: 3800, qty: 150, on: true },
+      { id: 'd2-b', name: '一般席', price: 2200, qty: 400, on: false } ] },
+    { id: 'd3', name: 'Day 3', rows: [
+      { id: 'd3-a', name: '搖滾區', price: 3800, qty: 150, on: true },
+      { id: 'd3-b', name: '一般席', price: 2200, qty: 400, on: false } ] }
+  ];
+  function money(n) { return '$' + Number(n).toLocaleString('en-US'); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function cb(attr, on) {
+    return '<span class="zcheck__control"><input class="zcheck__input" type="checkbox" ' + attr +
+      (on ? ' checked' : '') + '><span class="zcheck__box"></span></span>';
+  }
+
+  function render(root, state) {
+    var allOn = state.every(function (g) { return g.rows.every(function (t) { return t.on; }); });
+    root.innerHTML =
+      '<div class="dxt__head">' +
+        cb('data-all', allOn) +
+        '<span class="dxt__chev"><i data-lucide="chevron-down" class="ztor-icon"></i></span>' +
+        '<span>票種</span>' +
+        '<span class="dxt__col--num">售價</span>' +
+        '<span class="dxt__col--num">張數</span>' +
+      '</div>' +
+      state.map(function (g) {
+        var gOn = g.rows.every(function (t) { return t.on; });
+        return '<div class="dxt__group">' +
+            '<span class="dxt__gname">' + esc(g.name) + '</span>' +
+            '<label class="zcheck dxt__gall">' + cb('data-grp="' + g.id + '"', gOn) +
+              '<span class="zcheck__label">全選本場次</span></label>' +
+          '</div>' +
+          g.rows.map(function (t) {
+            return '<label class="dxt__row' + (t.on ? '' : ' dxt__row--off') + '">' +
+              cb('data-tk="' + t.id + '"', t.on) +
+              '<span class="dxt__dot"></span>' +
+              '<span class="dxt__name">' + esc(t.name) + '</span>' +
+              '<span class="dxt__num">' + money(t.price) + '</span>' +
+              '<span class="dxt__num">' + t.qty + '</span>' +
+            '</label>';
+          }).join('');
+      }).join('');
+    if (window.ztorIcons && window.ztorIcons.render) window.ztorIcons.render(root);
+  }
+
+  document.querySelectorAll('[data-tbl]').forEach(function (root) {
+    var state = JSON.parse(JSON.stringify(GROUPS));
+    render(root, state);
+    root.addEventListener('change', function (e) {
+      var i = e.target;
+      if (i.dataset.all !== undefined) {
+        state.forEach(function (g) { g.rows.forEach(function (t) { t.on = i.checked; }); });
+      } else if (i.dataset.grp) {
+        var g = state.filter(function (x) { return x.id === i.dataset.grp; })[0];
+        if (g) g.rows.forEach(function (t) { t.on = i.checked; });
+      } else if (i.dataset.tk) {
+        state.forEach(function (g) { g.rows.forEach(function (t) {
+          if (t.id === i.dataset.tk) t.on = i.checked; }); });
+      } else { return; }
+      render(root, state);
+    });
+  });
+})();
+</script>
+</body>
+</html>

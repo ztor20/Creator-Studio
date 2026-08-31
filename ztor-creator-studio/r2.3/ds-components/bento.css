@@ -1,0 +1,101 @@
+/* ============================================================
+   Bento — 12-column grid utility for dashboard / page layout.
+
+   The default span is 12 (full row); add a `--span-N` modifier to
+   any child to make it take N columns. Active modifiers: 3, 4, 5,
+   6, 7, 8, 9, 12.
+
+   Responsive: below 900 px the modifiers fall back to span 12 so
+   every child is a full row.
+
+   Used on Dashboard (KPI row, recent earnings + alerts row, trend
+   row, activity row), Earnings (KPI row, trend + source row),
+   Payouts (KPI row), Settings (section grids).
+   ============================================================ */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--sp-16);
+}
+/* 側欄（2026-08-18）：坐在右側、內容比左欄短時自己黏住。搭配的做法是把左欄那一疊
+   包成一個 `.bento.bento--span-9`、側欄自己是 `.bento--span-3`。
+   ⚠ 不要改用 `grid-row: 1 / -1` 讓它自動橫跨所有列：`-1` 指的是**顯性**網格的最後一條
+   線，而這裡的列全是自動產生的，實測會把整個 bento 壓成一列、側欄佔滿寬度。
+   側欄 sticky 的理由：左邊那一疊通常比它長，捲動時識別資訊要跟著留在畫面上。
+   首個消費情境：項目詳情總覽的「項目摘要」。 */
+.bento__aside {
+  align-self: start;
+  position: sticky;
+  top: var(--sp-64);
+}
+@media (max-width: 1080px) {
+  /* 窄了就不黏：三欄擠在 1080 以下時側欄本來就會換行到底下，黏住反而擋內容。 */
+  .bento__aside { position: static; }
+}
+
+.bento > * { grid-column: span 12; }
+
+/* [hidden] 要能收起（2026-08-17）：class 直接寫 display 會蓋掉 [hidden] 的
+   display:none，所以隱藏中的 bento 仍然佔著版面高度。活動詳情的「報到三色圖例」
+   （只在活動當天之後出現）就是這樣在名單那一節留下一塊 98px 的空白，看起來像
+   兩個區塊之間莫名其妙的大間距。同 empty-card.css 已有的處理。 */
+.bento[hidden] { display: none; }
+
+/* ── --top：卡片各自保留自然高度，不被同排最高的那張拉長（2026-08-07）───────
+   grid 預設 align-items:stretch，所以一排裡的卡會全部拉到最高那張的高度。
+   多數情況這是對的（同量級的卡等高比較整齊），但一排裡兩張卡的內容量差很多時，
+   矮的那張會被撐出一大塊空白——儀表板「ztor 粉絲組成（309px）｜今日待處理（783px）」
+   就是這個情形，圓餅卡底下會空出快 480px。
+   給那一排的 .bento 加 --top，該排改成頂端對齊、各自保留自然高度；
+   其餘 .bento 不受影響，仍是 stretch。 */
+.bento--top { align-items: start; }
+
+/* ── __stack：一個 grid 欄位裡直向疊兩張以上的卡（2026-08-07）─────────────
+   一排兩欄時，兩邊內容量常常不對等：矮的那欄底下會空一大塊（--top 讓卡不被
+   拉長，但空的還是空）。把兩張矮卡疊進同一欄，兩欄的高度才收得齊。
+   自己是 grid item（吃 --span-N），內部用 flex 直排、間距與 .bento 的 gap 同值。 */
+.bento__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-16);
+  min-width: 0;
+}
+
+/* --fill：這一疊要跟旁邊那欄齊底（2026-08-28，儀表板兩欄版面）。
+   疊裡的卡高度取決於各自的內容，旁邊那欄通常不會剛好一樣高，兩欄底部就會參差。
+   讓最後一張卡吃掉剩下的高度——只給最後一張、不平均分配：平均分配會把帶圖表的卡
+   一起撐高，圖的縱橫比跟著跑掉。用在最矮、內容量最少的那張才不留痕跡。
+   前提是這一排的 .bento 不能帶 --top（那條讓每欄各自保留自然高度，等高就無從談起）。 */
+.bento__stack--fill { height: 100%; }
+.bento__stack--fill > :last-child { flex: 1 1 auto; }
+
+@media (min-width: 900px) {
+  .bento--span-3  { grid-column: span 3; }
+  .bento--span-4  { grid-column: span 4; }
+  .bento--span-5  { grid-column: span 5; }
+  .bento--span-6  { grid-column: span 6; }
+  .bento--span-7  { grid-column: span 7; }
+  .bento--span-8  { grid-column: span 8; }
+  .bento--span-9  { grid-column: span 9; }
+  .bento--span-12 { grid-column: span 12; }
+}
+
+/* ── 內容較寬的一排：延後到 1440px 才並排（2026-07-31）──────────────
+   預設 900px 的斷點是為 KPI 這類短內容定的；裝了表格的卡不適用——實測
+   近期收入需要 597px、最近動態 448px、近期活動與項目 632px 才不擠，
+   換算回視窗約 1480px。低於這個寬度硬並排，欄位就會擠成多行（使用者
+   2026-07-31 回報「都變形了」）。
+   給那一排的 .bento 加 --stack-lg，就讓該排的 span 修飾子延後生效；
+   其餘 .bento（KPI 列等）不受影響，仍是 900px。 */
+@media (max-width: 1439.98px) {
+  .bento--stack-lg > * { grid-column: span 12; }
+}
+
+/* ── --stack-md：同樣的手法、門檻放在 1200px（2026-08-07）──────────────────
+   給「不是表格、但兩張卡都還是需要一點寬度」的排用。預設的 900px 對它們太早：
+   儀表板「ztor 粉絲組成｜今日待處理」在 1024 實測，圓餅的圖例會折行（20→39px）、
+   告警欄只剩 286px，兩邊都難讀。1200 以下改單欄，1280 這種筆電寬度仍維持併排。
+   與 --stack-lg 的分工：裝表格的排用 lg（1440），其餘需要保護的排用 md（1200）。 */
+@media (max-width: 1199.98px) {
+  .bento--stack-md > * { grid-column: span 12; }
+}

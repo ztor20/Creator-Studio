@@ -1,0 +1,177 @@
+/* ============================================================
+   Ztor — Sortable columns
+
+   ONE sort affordance for every table in Studio. Two table families
+   share it (2026-07-27 使用者裁示「for all tables in the system」):
+
+     · real  <table class="ztor-table">  — <th> heads, <tbody> rows
+     · grid  .data-list / .msg-history   — a head row whose
+       grid-template-columns matches its rows
+
+   A column title becomes sortable by wrapping its label in
+   <button class="sort-th">; js/table-sort.js does the rest.
+
+   Rest state is IDENTICAL to a static column title — the header row
+   must not look like a toolbar. The caret only exists once you point
+   at it (ghost = where the first click will take you) or once the
+   column is actually sorting. The indicator well is always present at
+   full size, so nothing on the row shifts when the caret appears.
+   ============================================================ */
+
+.sort-th {
+  /* Reset the button back to inherited header type — a sortable title
+     and a static title must be indistinguishable at rest. */
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  /* 40px hit area (the label itself is ~15px tall) without adding height
+     to the header row: the row's own padding absorbs it. */
+  min-height: var(--sp-40, 40px);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition-property: color;
+  transition-duration: var(--duration);
+  transition-timing-function: var(--easing);
+}
+.sort-th:hover { color: var(--foreground); }
+.sort-th:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Right-aligned columns (money, counts, percentages) mirror the control:
+   caret first, label flush right, so the title stays welded to the
+   numerals it names instead of drifting left by the caret's width. */
+.sort-th--end {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+/* The indicator well. Fixed box, reserved permanently — this is what
+   makes the caret appear and disappear with zero layout shift. */
+.sort-th__ind {
+  position: relative;
+  flex: none;
+  width: 12px;
+  height: 12px;
+}
+.sort-th__ind .ztor-icon {
+  position: absolute;
+  inset: 0;
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  transform: scale(0.25);
+  filter: blur(4px);
+  /* Never `all` — only the three the compositor can take. Transitions
+     (not keyframes) so a fast second click interrupts cleanly. */
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--duration);
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ── Which caret, and why ──────────────────────────────────────
+   使用者裁示 2026-07-27：the arrow describes how the column READS from
+   the top down, not the mathematical direction. So:
+
+     ▼ down = A → Z  and  high → low   ← always the FIRST click
+     ▲ up   = Z → A  and  low → high   ← always the second click
+
+   A text column's first click is ascending and a numeric column's first
+   click is descending, yet both show ▼ — because both read "biggest /
+   earliest first, then downward". Keying the caret to asc/desc instead
+   is what made Country show ▲ while listing Australia → United Kingdom.
+   That is why the rules below pair data-sort-state with data-sort-first
+   rather than reading the state alone. */
+
+/* Unsorted + hovered/focused → ghost the down caret: the first click
+   always sorts "downward", whatever the column holds. */
+.sort-th[data-sort-state="none"]:hover .ztor-icon[data-caret="down"],
+.sort-th[data-sort-state="none"]:focus-visible .ztor-icon[data-caret="down"] {
+  opacity: 0.45;
+  transform: scale(1);
+  filter: blur(0);
+}
+
+/* Sorting → the caret is solid, in the brand accent, and the label goes
+   full-strength. One column can be sorting at a time, so this reads as
+   "the table is ordered by THIS". */
+.sort-th[data-sort-state="desc"],
+.sort-th[data-sort-state="asc"] { color: var(--foreground); }
+
+/* First-click state → ▼ ; second-click state → ▲ */
+.sort-th[data-sort-first="asc"][data-sort-state="asc"]   .ztor-icon[data-caret="down"],
+.sort-th[data-sort-first="desc"][data-sort-state="desc"] .ztor-icon[data-caret="down"],
+.sort-th[data-sort-first="asc"][data-sort-state="desc"]  .ztor-icon[data-caret="up"],
+.sort-th[data-sort-first="desc"][data-sort-state="asc"]  .ztor-icon[data-caret="up"] {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sort-th,
+  .sort-th__ind .ztor-icon { transition-duration: 1ms; }
+}
+
+/* ------------------------------------------------------------------
+   Real-table family — <th> already carries the type voice, so the
+   button only needs to fill the cell so the whole head is clickable.
+   ------------------------------------------------------------------ */
+.ztor-table thead th .sort-th { width: 100%; }
+.ztor-table thead th:has(.sort-th) { padding-block: var(--sp-6); }
+
+/* ------------------------------------------------------------------
+   Grid-table family — the head row. Consumers set
+   grid-template-columns on BOTH .table-head and their row class (one
+   declaration, two selectors) so the titles cannot drift out of
+   alignment with the values underneath them.
+   Type voice is lifted verbatim from .msg-history__head, which was the
+   only column-title style in the system before this component existed.
+   ------------------------------------------------------------------ */
+.table-head {
+  display: grid;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: 0 0 var(--sp-8);
+  /* 2026-07-31 使用者裁示：列表表頭不畫下框線（先做 e-shop 探索頁確認效果後全面套用）。
+     分隔改由表頭與內容之間的留白承擔；每一列自己的分隔線不動。 */
+}
+.table-head > * {
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--column-head-ink);
+  min-width: 0;
+}
+/* Right-align the head cell of a numeric column so the title sits over
+   its own digits (the values are already text-align:right). */
+.table-head > .table-head__end { text-align: right; justify-self: end; }
+
+/* 墓碑（2026-08-19）：`.u-visually-hidden` 搬到 shared.css。
+   它是全域工具類（「看不到但讀屏唸得到」），不屬於表格排序這支元件——
+   儀表板的 KPI 純箭頭連結也要用它當可讀名稱，那些頁沒有理由載入 sortable.css。
+   本檔既有的消費端不受影響：載 sortable.css 的五頁全部也載 shared.css。 */
+
+/* Wide tables keep their table-ness on small screens: the grid scrolls
+   sideways inside its own container rather than restacking into cards,
+   which would strand the column titles. Page owns the min-width. */
+.table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}

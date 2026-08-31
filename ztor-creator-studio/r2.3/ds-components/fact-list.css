@@ -1,0 +1,53 @@
+/* ============================================================
+   Fact list · 唯讀事實列（2026-08-19）
+
+   一組「欄目名 → 值」的唯讀紀錄：左邊灰字說這是什麼、右邊放值，一項一行、
+   髮絲線分隔。給詳情彈窗這類「回答問題、不能編輯」的內容用。
+
+   為什麼不用既有的兩支：
+     · `.field` ＋ `.field__label`（表單欄位）——那是「等你填」的語彙。拿它裝唯讀內容，
+       讀起來像一張被停用的表單（2026-08-19 使用者回報「這樣的 UI 不好吧」）。
+     · `.data-list`（清單列）——它是給「一列一個東西、可能可以點進去」的清單用的，
+       每一列有 40px 的圖示磚與較大的行高。八項事實用它排出來，每一項都被放大成
+       一個獨立的物件（使用者回報「不需要每個都佔這麼大吧」）；事實不是物件，
+       它只是一句「這一欄的值是什麼」。
+
+   與 `.review-status__meta`／`.ptl__meta` 的分工：那兩支是**行內流式**的（label value
+   label value 一路排下去、擠得下就同一行），適合一兩項附註掛在標題底下；本支是
+   **一項一行、值靠右**，適合五項以上、要能逐行對照的紀錄。兩種排法解決的問題不同，
+   不互相取代。
+
+   Anatomy
+     .fact-list
+       .fact-list__item        > span:first-child ＝欄目名  ／ > span:last-child ＝值
+   ============================================================ */
+
+.fact-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-12);
+  padding: var(--sp-8) 0;
+  font-size: var(--fs-13);
+  line-height: var(--lh-normal);
+}
+/* 分隔線只放在項與項之間，不放最外緣——最外緣由容器自己的邊界負責，
+   多一條線會讓這一組看起來像一張被框住的表。 */
+.fact-list__item + .fact-list__item {
+  border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+.fact-list__item > span:first-child {
+  color: var(--muted-foreground);
+  flex: none;
+}
+/* 值靠右：五項以上時右邊界對齊，眼睛才掃得下來。 */
+.fact-list__item > span:last-child {
+  margin-left: auto;
+  text-align: right;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}

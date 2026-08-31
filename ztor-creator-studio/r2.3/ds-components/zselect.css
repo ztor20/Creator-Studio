@@ -1,0 +1,202 @@
+/* ============================================================
+   zselect — 下拉選單的房內樣式（2026-07-28 使用者裁示：「下拉的樣式還不是我們 Ztor 的」）
+
+   問題不是 CSS 沒寫，是寫不到：<select> 收合時的樣子由我們控制（見 input.css 的
+   .select——自繪 chevron、圓角、陰影邊線都在），但**展開後那張選單是作業系統畫的**，
+   任何瀏覽器都不開放樣式化。使用者截圖裡的藍底高亮、系統字、直角面板，就是 Windows
+   自己的清單，不是我們的樣式漏掉。
+
+   所以唯一的解法是不要用原生清單：js/zselect.js 在執行期把每個 <select class="select">
+   升級成「一顆觸發鈕 ＋ 一張我們自己的 listbox」。原生 <select> 留在 DOM 裡當資料來源，
+   選取後照樣派發 change/input，既有的表單與監聽器完全不用改。
+
+   面板刻意抄 .dropdown__menu 的語彙（--card 底、--radius-lg、--shadow-float、
+   上下 6px 內距、選項自帶 16px 左右內距讓 hover 頂到邊緣）——站上已經有一種
+   「浮起的選單」長相，下拉不該是第二種。
+   差異只有兩處，因為角色不同：
+     · 選項要能顯示「目前選中」（listbox 有值，action menu 沒有）
+     · 支援 <optgroup> 群組標題（分類選單有「影視／音樂／其他」三群）
+   ============================================================ */
+
+/* 原生 select：留著但不顯示。用 clip 而非 display:none——display:none 會讓它
+   從表單的可提交欄位裡消失，也讓 el.offsetWidth 之類的量測歸零。 */
+/* 2026-07-28 L 回報「double scroll bar」——成因就在這一條。
+   `position:absolute` 沒有配 top/left 時，元素會停在它的「靜態位置」，也就是原本
+   在文件流裡的那一點；而 create-project 的 <select> 那一點在捲動中的
+   .wizard__sheet 裡，文件座標 y≒1456。
+   關鍵在於 .wizard／.wizard__sheet 都是 position:static，所以它們不是這個絕對定位
+   元素的 containing block——containing block 變成 initial containing block，
+   兩層 overflow 都夾不住它。於是這顆 1px 的隱形 select 把「文件」撐到 1456 高，
+   外層長出一條什麼都沒有的捲軸，疊在 sheet 自己那條上面＝兩條捲軸。
+   （視覺上完全看不出來，因為它 1px 又被 clip 掉；只有捲軸洩漏了它的存在。）
+
+   補上 top/left:0 就解決：元素釘在 containing block 的原點，不再撐開任何東西。
+   仍然是 absolute（不是 display:none），所以它照樣可提交、可對焦、可被量測——
+   那是這條規則原本就寫明的用意，不動它。 */
+.zselect__native {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 觸發鈕沿用 .select 的所有外觀（腳本會把原 select 的 class 原封搬過來），
+   這裡只補 <button> 與 <select> 在排版上的差異。 */
+.zselect__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-8);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+.zselect__trigger:disabled { cursor: not-allowed; }
+/* 選項圖示（2026-08-18）：<option data-icon="…"> 時，觸發鈕與面板的每一列都在文字前面
+   放同一顆圖示。收合與展開必須對得上——選完之後圖示消失，會讀成「選到的不是剛剛那一個」。
+   圖示一律中性灰、不隨選取換色（選取由勾號與粗體承擔，見下方 .zselect__check）。
+   `hidden` 時整欄不佔位，所以沒有 data-icon 的下拉版面一格都不會動。 */
+.zselect__lead { display: inline-flex; align-items: center; flex: none; }
+.zselect__lead[hidden] { display: none; }
+/* 雙 class 提權（0,2,0）：`.ztor-icon` 的 16px 與本規則同為 (0,1,0)，誰贏取決於兩支 CSS 的
+   連結順序——那是頁面的事、不該決定元件長相。20px 比勾號大一階半，讓圖示先被讀到、勾號退為狀態記號（2026-08-18 使用者指示由 18 再放大一階）。 */
+.zselect__lead .zselect__icon,
+.zselect__option .zselect__icon { width: 20px; height: 20px; flex: none; color: var(--muted-foreground); }
+/* 標籤吃掉剩餘寬度並在過長時省略——分類名稱可能比欄位寬 */
+.zselect__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 展開時 chevron 轉 180°：狀態要看得見，不能只有面板出現。 */
+.zselect__trigger[aria-expanded="true"] { background-image: none; }
+.zselect__caret {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: -6px;        /* 貼回 .select 原本 chevron 的視覺位置 */
+  color: var(--muted-foreground);
+  transition: transform var(--duration, 160ms) var(--easing, ease);
+}
+.zselect__trigger[aria-expanded="true"] .zselect__caret { transform: rotate(180deg); }
+/* .select 自繪的背景 chevron 對 button 版本要關掉——我們改用真的 <svg> 才能轉動 */
+.zselect__trigger.select { background-image: none; padding-right: var(--sp-12); }
+
+/* ── 面板 ────────────────────────────────────────────────
+   掛在 <body> 下、position:fixed。不是掛在觸發鈕旁邊的 absolute——
+   專案頁那顆分類選單就住在貼頂列的 overflow-x:auto 裡，absolute 面板會被那層裁掉一半。
+   固定定位由腳本每次開啟時算座標，捲動與縮放時重算。 */
+.zselect__panel {
+  position: fixed;
+  /* 2026-08-06：60 → 1050。面板掛在 <body> 下、跟開啟它的那顆下拉不在同一個堆疊脈絡裡，
+     所以它必須高過**任何可能包著下拉的容器**，否則就開在那個容器底下、看不見也點不到
+     （實測：建立活動的售票規則彈窗 .payout-modal 是 80，面板整個被蓋住）。
+     站上目前最高的是 toast(1100)——toast 要蓋過所有東西，所以面板取 1050：
+     高過 drawer(200)／leave-dialog(100)／detail-sheet(90)／payout-modal(80)，仍在 toast 之下。
+     原本的 60 是照當時「彈窗殼 50」寫的，那個數字後來被各家彈窗各自往上加，這條沒跟上。 */
+  z-index: 1050;
+  min-width: 200px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-6) 0;
+  /* ztorUI 換裝（2026-08-28 Wave 2a 熔接自 demo/ztorui-skin §3.6）：浮層一律不透明。
+     內容表面改玻璃之後，浮層若也半透明就是看穿兩層、底下的字會浮出來
+     （ztorUI 規格 §2.4／§9 第 3 點，r2.2 換皮踩過的坑）。底吃 --popover，
+     邊吃玻璃頂緣那支白 15%，投影用浮層級的 --shadow-float。
+     舊值：background: var(--card)（且吃 _tokens.css 檔尾的 --overlay-blur 毛玻璃，該段本輪已退役）。 */
+  background: var(--popover);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--ztu-glass-rim);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  /* 展開＝一個很短的落下。180ms 以內、只做位移與淡入，不做縮放——
+     選單是「出現」不是「彈出來」。 */
+  animation: zselect-in 160ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.zselect__panel--up { transform-origin: bottom center; }
+@keyframes zselect-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zselect__panel { animation: none; }
+  .zselect__caret { transition: none; }
+}
+.zselect__panel::-webkit-scrollbar { width: 10px; }
+.zselect__panel::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 18%, transparent);
+  border: 3px solid var(--card);
+  border-radius: var(--radius-pill);
+}
+
+/* ── 選項 ──────────────────────────────────────────────── */
+.zselect__option {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  padding: 9px var(--sp-16);
+  font-family: var(--font-ui);
+  font-size: var(--fs-14);
+  color: var(--foreground);
+  cursor: pointer;
+  user-select: none;
+}
+/* 有圖示的選項是三欄（勾號｜圖示｜文字）。10px 的欄距是給兩欄排的，三欄會讓文字被推得太遠，
+   收成 8px；上下內距同時由 9 加到 10，讓 18px 的圖示不貼著相鄰兩列。 */
+.zselect__option:has(.zselect__icon) { gap: var(--sp-8); padding-top: var(--sp-10); padding-bottom: var(--sp-10); }
+/* 鍵盤與滑鼠共用同一個高亮：兩套高亮（一個框、一個底）會讓人不知道 Enter 會選到哪一個。 */
+.zselect__option--active { background: var(--muted); }
+.zselect__option[aria-disabled="true"] {
+  color: var(--foreground-muted);
+  opacity: .55;
+  cursor: not-allowed;
+}
+.zselect__option[aria-disabled="true"].zselect__option--active { background: transparent; }
+
+/* 目前選中：打勾，不是換底色——底色已經是「鍵盤游標在這裡」的意思了。
+   2026-08-18 使用者指示由列首移到列尾：擺在前面時，每一列都得先跨過一個大多數時候是空的
+   欄位才讀得到文字；擺在列尾就不必為它在左邊留位，文字（與圖示）一律從同一條線起跑。
+   `margin-left:auto` 把它推到右端，所以仍然是「永遠佔位」——未選中時只是看不見，
+   文字不會因為選中而左右跳動。 */
+.zselect__check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: var(--primary);
+  visibility: hidden;
+}
+.zselect__option[aria-selected="true"] .zselect__check { visibility: visible; }
+.zselect__option[aria-selected="true"] { font-weight: var(--fw-medium); }
+
+/* ── <optgroup> 群組標題 ────────────────────────────────
+   全大寫小標，與站上其他 label 同一個配方（見 shared.css「標題＝全大寫」的理由）。
+   第一組不留上緣間距，其餘各組上方補一條間距把群分開。 */
+.zselect__group {
+  padding: var(--sp-10) var(--sp-16) var(--sp-4);
+  font-family: var(--font-ui);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-regular);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.zselect__group + .zselect__option { margin-top: 0; }
+.zselect__panel > .zselect__group:first-child { padding-top: var(--sp-4); }
+/* 群組之間的分隔：第二組起在標題上方畫一條 hairline，比純間距更能讀出「換一群了」 */
+.zselect__option + .zselect__group {
+  margin-top: var(--sp-6);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-10);
+}

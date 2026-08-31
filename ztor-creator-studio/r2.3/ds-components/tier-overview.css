@@ -1,0 +1,132 @@
+/* ============================================================
+   Tier overview — 分級對照表（唯讀）
+
+   四個分級並排成欄、每一列是一個比較項目（門檻、人數、權益）。粉絲管理的
+   「粉絲分級設定」分頁用它把原本兩頁（分級設定＋分級權益）攤成一張表。
+
+   為什麼是一張表而不是四張卡：這裡的每個問題都是比較題——「核心圈比超級粉絲
+   多什麼」「往下走條件有沒有越來越鬆」。四個分級並排在同一組欄位裡，答案是用
+   看的；拆成四張卡或四個彈窗，答案就得靠記憶。門檻的單調性（往下走前 % 名遞增、
+   最低點數遞減）是儲存的前提，尤其需要並排才驗得出來。
+
+   唯讀。要改走 .payout-dialog 的編輯彈窗（那裡用 .bmx 矩陣，同一份資料的可編輯版）。
+
+   anatomy
+     .tier-ov__head          — 欄頭列：空的列名格 ＋ 四個分級 badge
+       .tier-ov__cell
+     .tier-ov__row           — 一列比較項目
+       .tier-ov__rowlabel    — 左側項目名（可帶 <small> 補充）
+       .tier-ov__cell        — 四個分級各一格
+         .tier-ov__yes / --no — 有／沒有
+
+   全值引用 _tokens.css。
+   ============================================================ */
+
+.tier-ov {
+  display: grid;
+  /* 列名 ＋ 四個分級。minmax(0,1fr) 讓四欄等寬且真的能縮，
+     不設 0 的話 grid 子項預設 min-width:auto、長字會把欄撐破。 */
+  grid-template-columns: 168px repeat(4, minmax(0, 1fr));
+  gap: var(--sp-12);
+  align-items: center;
+}
+
+/* 窄容器（例如放進兩欄版面的其中一欄）用這個：列名收窄、欄距縮小。 */
+.tier-ov--compact {
+  grid-template-columns: 132px repeat(4, minmax(0, 1fr));
+  gap: var(--sp-8);
+}
+
+/* 表頭不畫下框線（2026-08-01，補齊 2026-07-31 的全站裁示——product-list 與
+   benefit-matrix 當時已改，這支後來才建立、漏掉了）。分隔改由表頭與第一列之間
+   的留白承擔；每一列自己的分隔線不動。 */
+.tier-ov__head {
+  padding-bottom: var(--sp-10);
+}
+
+.tier-ov__row {
+  padding: var(--sp-14) 0;   /* 2026-08-01 使用者裁示：列高再高一點（原 --sp-10） */
+  border-bottom: 1px solid var(--border);
+}
+.tier-ov__row:last-child { border-bottom: 0; }
+
+.tier-ov__rowlabel {
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+}
+.tier-ov__rowlabel small {
+  display: block;
+  font-size: var(--fs-11);
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+.tier-ov__cell {
+  font-size: var(--fs-13);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 有／沒有。用色而不用圖示大小差異——一整欄掃下來要能立刻數出「這一階拿到幾項」。 */
+.tier-ov__yes { color: var(--status-success); }
+.tier-ov__no  { color: var(--muted-foreground); }
+
+/* 窄到排不下四欄時橫向捲，不硬折——折行會讓同一列的四個值錯開，
+   比捲動更難讀。捲軸隱藏，跟 .list-toolbar 的分頁列同一個處理。 */
+@media (max-width: 640px) {
+  .tier-ov-scroll { overflow-x: auto; scrollbar-width: none; }
+  .tier-ov-scroll::-webkit-scrollbar { display: none; }
+  .tier-ov { min-width: 560px; }
+}
+
+/* ── 編輯狀態（2026-08-01）────────────────────────────────────
+   同一張表有兩個狀態：預設（唯讀）與編輯（格子換成輸入框／開關）。
+   兩份內容都在 DOM 裡、用 display 切換，而不是編輯時才生成——生成式會在
+   切換的那一幀重排整張表，而且捨棄時要把原值找回來。
+
+   **列高以較高的那個狀態為基準**（使用者裁示）：唯讀時格子是一行文字（約 19px），
+   編輯時是 36px 的輸入框。若不預留，按下「編輯」整張表會往下抽高、下面的內容
+   整片位移。所以格子恆為 var(--control-h-sm) 高，兩個狀態共用同一個高度基準。 */
+.tier-ov__cell {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-h-sm);
+}
+.tier-ov__rowlabel { align-self: center; }
+
+/* 預設：只見唯讀值 */
+.tier-ov__edit { display: none; }
+.tier-ov__cell .amount-field { width: 100%; max-width: 104px; }
+
+/* 編輯：換成輸入框／開關。
+   選擇器掛在「任一祖先帶 .is-editing」而不是 .tier-ov 自己——因為同一張卡裡除了
+   四欄表，還有不走四欄骨架的 .settings-row（行為加權）。原本寫成 .tier-ov.is-editing
+   的時候，那幾列的 .tier-ov__cell 找不到帶 .is-editing 的 .tier-ov 祖先，
+   於是行為加權整組點不動（2026-08-01 實測踩到）。 */
+.is-editing .tier-ov__read { display: none; }
+.is-editing .tier-ov__edit { display: flex; align-items: center; width: 100%; }
+
+/* 不可編輯的列（權益數量是算出來的）在編輯態要看得出「這格不是給你改的」，
+   但不能整列消失——它是判斷門檻要怎麼調的依據。降一階、不加控制項。 */
+.is-editing .tier-ov__row--locked .tier-ov__cell { opacity: 0.55; }
+
+/* 列名帶說明鈕時，鈕貼著文字、不推到欄位最右（同 tier-settings 的 .gate-grid 做法）。 */
+.tier-ov__labelrow { display: inline-flex; align-items: center; gap: var(--sp-6); }
+
+/* 列尾的「…」選單。只在編輯態出現——唯讀時沒有可做的動作，一排恆亮的選單鈕
+   只會讓人以為這張表隨時可改。 */
+.tier-ov__rowmenu { display: none; justify-self: end; }
+.is-editing .tier-ov__rowmenu { display: block; }
+
+/* 有選單的列多一欄放它。欄寬固定，四個分級欄才不會因為多這一欄而錯開。 */
+.tier-ov:has(.tier-ov__rowmenu) { grid-template-columns: 168px repeat(4, minmax(0, 1fr)) 32px; }
+.tier-ov--compact:has(.tier-ov__rowmenu) { grid-template-columns: 132px repeat(4, minmax(0, 1fr)) 32px; }
+/* 沒有選單的列（表頭、門檻、權益數量）補一格空的，讓所有列的四欄對齊同一組位置。 */
+.tier-ov__head::after,
+.tier-ov__row:not(:has(.tier-ov__rowmenu))::after { content: ""; }
+.tier-ov__head, .tier-ov__row:not(:has(.tier-ov__rowmenu)) {
+  grid-template-columns: 168px repeat(4, minmax(0, 1fr)) 32px;
+}
+.tier-ov--compact.tier-ov__head,
+.tier-ov--compact.tier-ov__row:not(:has(.tier-ov__rowmenu)) {
+  grid-template-columns: 132px repeat(4, minmax(0, 1fr)) 32px;
+}

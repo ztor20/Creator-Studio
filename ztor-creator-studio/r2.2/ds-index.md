@@ -333,7 +333,7 @@
 - `--w-220`: 220px
 - `--w-300`: 300px
 
-## 元件（ds-components/，共 132 支；主 class 前 5 個）
+## 元件（ds-components/，共 131 支；主 class 前 5 個）
 
 - `accordion.css` — .ztor-accordion, .ztor-accordion__item, .ztor-accordion__trigger, .ztor-accordion__chevron, .ztor-accordion__content ｜ Ztor — Accordion (FAQ pattern)
 - `admin-ip-bank-table.css` — .admin-table-wrap, .admin-table-wrap--menu, .admin-table__film, .admin-table__thumb, .admin-table__owner ｜ Admin IP Bank data-table presentation. Shared by
@@ -342,22 +342,22 @@
 - `amount-field.css` — .amount-field, .amount-field__unit, .amount-field__sym, .amount-field__chev, .amount-field--readonly ｜ Ztor — Amount field (money input with a unit pre
 - `artist-picker.css` — .artist-picker__list, .artist-picker__row, .artist-picker__row--pending, .artist-picker__remove, .owner-lookup__tag ｜ Artist picker — added-artist list under the sear
 - `auth.css` — .auth-page, .auth-shell, .auth-brand, .auth-brand__logo, .auth-brand__name ｜ Auth shell · 未登入層的置中表單殼（spec 5.1.10 · D170）
-- `avatar-stack.css` — .avatar-stack, .avatar-stack__item, .avatar-stack__more ｜ avatar-stack — overlapping backer/member avatars
 - `badge.css` — .ztor-metric-pill, .ztor-metric-pill__icon, .ztor-badge, .ztor-badge--success, .ztor-badge--error ｜ Ztor — Badge / Inline metric pill / Status dot
 - `benefit-matrix.css` — .bmx, .bmx__head, .bmx__head-label, .bmx__tier, .bmx__tier-count ｜ Ztor — Benefit matrix
 - `bento.css` — .bento, .bento__aside, .bento--top, .bento__stack ｜ Bento — 12-column grid utility for dashboard / p
 - `brand-card.css` — .brand-grid, .brand-card, .brand-card__head, .brand-card__logo, .brand-card__mark ｜ Ztor — Brand partner card
 - `bundle-editor.css` — .fc-bundle, .fc-bundle__body, .fc-bundle__head, .fc-item-row, .fc-item-fields ｜ bundle-editor.css · 套組編輯器（共創募資回饋方案）
 - `button.css` — .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--destructive ｜ Ztor Creator Studio · R 2.1 — Button
+- `card-group.css` — .group-title, .group-desc, .group-divider, .card-head, .card-head__title ｜ card-group.css · 卡內分組三件組（Q71 三級制）
 - `card.css` — .ztor-card, .ztor-card--clickable, .ztor-card__title, .ztor-card__meta, .ztor-card__body ｜ Ztor — Card
 - `chart-tip.css` — .linechart__main, .fin-hitline, .fin-area, .fin-guide, .fin-marker ｜ chart-tip — 折線圖的滑過浮層與點擊熱區（2026-07-28）
 - `chart.css` — .linechart, .linechart__svg, .linechart__grid, .linechart__area, .linechart__line ｜ Chart — SVG-based data visualizations for the da
+- `check-card.css` — .check-cards, .check-card__group, .check-card, .check-card__mark, .check-card--on ｜ check-card.css · 多選卡（Cosmos 版型）
 - `checkbox.css` — .zcheck, .zcheck__control, .zcheck__input, .zcheck__box, .zcheck__label ｜ Checkbox — the house choice control
 - `chip.css` — .chip-group, .chip-group--loose, .chip, .chip--active, .chip--static ｜ Chip — clickable filter pill with active state +
 - `collapse-group.css` — .collapse-head, .collapse-head__toggle, .collapse-head__chev, .collapse-head__sum, .collapse-head__sum--todo ｜ collapse-group.css · 可折疊的分組盒（標題列＋一行摘要）
 - `combobox.css` — .combobox, .combobox__menu, .combobox__group, .combobox__opt, .combobox__opt-icon ｜ combobox.css · multi-select typeahead (search-to
 - `completeness.css` — .completeness, .completeness__head, .completeness__label, .completeness__count, .completeness__track ｜ Completeness meter · 素材包完整度（spec 0-設計規格書 §7.7「目前
-- `composer.css` — .composer, .composer__drop, .composer__textarea, .composer__bar, .composer__bar-group ｜ Composer — drop-or-type input card with bottom a
 - `control-row.css` — .control-row, .control-row__main, .control-row__sub, .control-group, .control-group--plain ｜ control-row.css · 有外框的「左文字右控件」獨立列
 - `data-list.css` — .data-list, .data-list__row, .data-list__row--child, .data-list__row-main, .data-list__icon ｜ Data list — row-divider list (no card per row).
 - `date-input.css` — .date-input, .date-input__icon, .date-input__ph ｜ date-input.css · 日期／時間欄位的 placeholder 外觀（2026-07
@@ -386,7 +386,6 @@
 - `header.css` — .app-topbar, .app-topbar__brand, .app-topbar__brand-logo, .app-topbar__nav, .app-topbar__nav-group ｜ Ztor Creator Studio — Header (canonical app topb
 - `icon.css` — .ztor-icon, .ztor-icon--xs, .ztor-icon--sm, .ztor-icon--md, .ztor-icon--lg ｜ Ztor Creator Studio - Icon atom
 - `info-banner.css` — .info-banner, .info-banner__close, .info-banner--dismissible ｜ Neutral informational banner — for contextual ex
-- `inline-edit.css` — . ｜ ✝ SUPERSEDED — do not link this file, do not add
 - `input.css` — .input, .textarea, .input--with-prefix, .select--with-prefix, .control-prefix ｜ Ztor — Input (form field)
 - `insight-row.css` — .insight-row, .insight-row__icon, .insight-row__text ｜ Insight row — single-line auto-computed callout 
 - `kpi.css` — .kpi, .card, .kpi__label, .kpi__value, .kpi__delta ｜ KPI — metric tile (label / value / delta or meta

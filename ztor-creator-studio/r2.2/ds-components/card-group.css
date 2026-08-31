@@ -1,0 +1,124 @@
+/* ============================================================
+   card-group.css · 卡內分組三件組（Q71 三級制）
+   ------------------------------------------------------------
+   Q71 定案 2026-08-25（demo-eshop-styles.html 卡內分組頁 G-A～G-E 探索）：
+   一張卡（一層）裡有多組資訊時，判準是「這塊需要多強的獨立性」，由弱到強
+   三級——與 layers 規則（頁面級：預設 L0、分組才疊層）同一條軸線的卡內版：
+
+     第 1 級（預設・平級分組）── 本檔負責
+       次級標題或分隔線做區分，不加任何層。基本型＝ G-B「小標＋滿版髮絲線」
+       （`.group-title` ＋ `.group-divider`）；G-D 左標籤欄視內容需要可選、
+       G-A／G-C／G-E 落選。
+
+     第 2 級（些微強調的功能區塊）── 用既有 `.control-group`（control-row.css）
+       1px 線框圈出來、不加填色層。現行範例＝創建商品的「尺寸指南」資訊列。
+       本檔不重複定義，第 2 級直接沿用 control-group。
+
+     第 3 級（全新且必須被強調、又隸屬於某段落的區塊）── 用 `.nest`（nest.css）
+       才加新的一層（填色層），語言是站上正式的巢狀層 `--nest-surface`
+       （Q66「往亮疊、不往暗陷」）。**灰填色巢狀層樣式已否決，不再出現**——
+       第 3 級真正該禁的是「自創往暗的灰底」，不是「加層」本身。本檔不重複定義。
+
+   大區塊標題（子組之上再一階，服務整張卡）── 定案 T-A2＝卡頭＋滿版線
+   （`.card-head`）；T-A／T-B／T-C（卡內大標／卡外標題／大寫卡頭）撤除。
+
+   間距階梯（2026-08-25 使用者：「與下面的間距要再大一點」／「區隔間距要再大
+   一點」，兩輪定案）：層級越高、間距越大，且不同層級的間距手法要拉開差距——
+     列與列（同組內）      14＋14
+     小標 → 內容           32（合併值，見 .group-title 下方各條註解）
+     組線上下              32／32（＝組界總留白 64＋線）
+     卡頭線上／下          24／32
+   組距（線）與小標距（純留白）刻意不同軌：線是「換一組了」的訊號，留白純粹
+   是視覺呼吸，兩者不必疊加。
+
+   anatomy
+     .card / .ztor-card              母卡（提供 --card-pad 供本檔出血對齊）
+       .group-title (+ .group-desc)  子組小標（可選描述）
+       ...一組內容（.control-group／.radio-list／.segmented／.kv 等）...
+       .group-divider                組分隔線（負外距出血到卡緣）
+       ...下一組內容...
+       .attr-value / .attr-link      附屬：屬性列純文字值＋底線文字動作
+
+     .card.card-head                 卡頭變體（padding-top 加大一階）
+       .card-head__title (+ .card-head__desc)
+       .card-head__rule              滿版線（出血到卡緣）
+       ...第一組內容...
+   ============================================================ */
+
+/* ── 子組小標（G-B 基本型）───────────────────────────────────────────── */
+.group-title {
+  margin: 0 0 var(--sp-18);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+/* 帶描述時：標題與描述貼緊（4px，讀成一個單位），描述改承擔到內容的距離，
+   跟「標題的帶描述／不帶描述」不改變標題群到內容的總距離（32px）一致。 */
+.group-title:has(+ .group-desc) { margin-bottom: var(--sp-4); }
+.group-desc {
+  margin: 0 0 var(--sp-18);
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+
+/* 小標 → 內容＝合併後總距 32px（2026-08-25 定案）。相鄰外距會合併取最大值，
+   所以上面 .group-title／.group-desc 給的 18px 是「假設內容自帶 14px 上內距」
+   的預設值（18＋14＝32，如 kv-list 的行內版面）；下列內容型別若自身無上內距
+   或內距不是 14，改用各自的合併總值直接覆寫，讓最終視覺距離都收斂到 32px。
+   目前只收站上已有元件；`.mini-t`／`.grow`／`.flatrow` 等 demo 尚未 promote
+   的版面型別，等它們正式進 ds-components 時再補對應選擇器。 */
+.group-title + .control-group, .group-desc + .control-group,
+.group-title + .radio-list,    .group-desc + .radio-list,
+.group-title + .segmented,     .group-desc + .segmented,
+.group-title + .kv,            .group-desc + .kv {
+  margin-top: var(--sp-32);
+}
+
+/* ── 組分隔線 ──────────────────────────────────────────────────────────
+   負外距出血到卡緣（`--card-pad` 由 `.card`/`.ztor-card` 提供，預設回退 --sp-20）；
+   上下各 32，兩組之間的總留白 64＋線，明顯大於小標的 32——線是比留白更強的
+   「換一組了」訊號，兩者刻意不同軌。 */
+.group-divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-32) calc(-1 * var(--card-pad, var(--sp-20)));
+}
+
+/* ── 大區塊標題：T-A2＝卡頭＋滿版線（唯一定案，T-A／T-B／T-C 已撤除）──────
+   標題上下留白比子組小標再放大一階（24／32），讓卡頭讀起來是「整張卡的頭」
+   而不是第一個子組的標題。 */
+.card-head { padding-top: var(--sp-24); }
+.card-head__title {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: var(--fw-medium);
+  color: var(--foreground);
+}
+.card-head__title + .card-head__desc { margin-top: var(--sp-4); }
+.card-head__desc {
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted-foreground);
+}
+.card-head__rule {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-24) calc(-1 * var(--card-pad, var(--sp-20))) var(--sp-32);
+}
+
+/* ── 附屬：屬性列純文字值＋底線文字動作（2026-08-25 使用者指正：不用黑底標籤）──
+   用於卡內列式版面中，值本身是純文字、旁邊帶一個「編輯／查看」之類的次要動作。 */
+.attr-value { font-size: var(--fs-13); color: var(--foreground); }
+.attr-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-13);
+  color: var(--foreground-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.attr-link:hover { color: var(--foreground); }
